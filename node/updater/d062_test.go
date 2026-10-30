@@ -89,9 +89,8 @@ func TestUPD_D062_RollbackReportsRestoredHealthAndKeepsCandidate(t *testing.T) {
 	if err != nil || string(snap.CandidateHealth) != string(txn.CandidateHealth) || snap.State != "rolled_back" {
 		t.Fatalf("snapshot: %+v %v", snap, err)
 	}
-	raw, err := json.Marshal(res)
-	if err != nil || strings.Contains(string(raw), "candidate_health") {
-		t.Fatal("candidate-only field leaked onto the wire", err)
+	if got := requiredValue(t, res.CandidateHealth); got != *candidate {
+		t.Fatalf("wire candidate health differs from journal: %+v", got)
 	}
 }
 

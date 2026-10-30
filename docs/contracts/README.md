@@ -405,9 +405,10 @@ OpenAPI defaults are annotations, not runtime initialization. The generated Go
 field retains `int` with `omitempty` for source compatibility; owners must
 materialize 21600 before validating/persisting/scheduling an omitted interval.
 Explicit zero is rejected at the HTTP boundary. `attribution: null` remains
-valid in the generated type and both payload schemas. The current lower-level
-`dnspolicy.ValidateSource` still rejects blank attribution notes after policy
-conversion; resolving that behavior is a policy/DNS owner follow-up.
+valid in the generated type and both payload schemas. JSON null converts to a
+nil note and is accepted by `dnspolicy.ValidateAttributionNote`; a non-null
+blank or whitespace-only note is rejected at policy validation and again before
+the fetch (DNS follow-up 6, #113).
 
 ## Service-enforced rules
 

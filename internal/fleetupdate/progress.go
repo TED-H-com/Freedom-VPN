@@ -227,9 +227,15 @@ func (s *Service) GetBatch(ctx context.Context, id uuid.UUID, cursor string, lim
 // Shared by response mapping, evidence queries and node summaries. Receipt time
 // must be strictly after authorization; another incarnation never confirms work.
 const needsAttentionSQL = `coalesce(j.needs_attention,false) OR coalesce(j.state IN ('failed','rolled_back','blocked'),false) OR coalesce(j.state='already_current' AND n.current_release_id IS DISTINCT FROM j.release_id,false)`
+
+// D-062: a generationless receipt has no observation incarnation to confirm
+// update work. This nullable marker survives raw-heartbeat retention; the numeric
+// cache remains a separate monotonic high-water mark for allocation and ordering.
+const observedGenerationSQL = `CASE WHEN s.observation_incarnation_id IS NULL THEN NULL
+ ELSE s.observed_update_generation END`
 const unconfirmedSQL = `j.id IS NULL OR j.issued_at IS NULL OR s.last_observed_at IS NULL
  OR s.observation_incarnation_id IS DISTINCT FROM j.execution_incarnation_id
- OR coalesce(s.observed_update_generation<j.generation,true)
+ OR (` + observedGenerationSQL + `) IS DISTINCT FROM j.generation
  OR coalesce(s.received_at<=j.issued_at,true)
  OR coalesce(j.last_result_at>s.received_at,false)
  OR j.last_observed_at IS DISTINCT FROM s.last_observed_at`

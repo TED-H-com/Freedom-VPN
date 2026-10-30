@@ -356,7 +356,11 @@ func (l *lab) putObject(ctx context.Context, name string, body []byte) error {
 	return nil
 }
 
-func (l *lab) signedRelease(dir, product, sequence, commit, buildID string, installed map[string]string) (uuid.UUID, []byte, error) {
+func (l *lab) signedRelease(dir, product, sequence, commit, buildID string, installed map[string]string, options ...ReleaseOptions) (uuid.UUID, []byte, error) {
+	allowed := []uuid.UUID{}
+	if len(options) > 0 {
+		allowed = RollbackAllowlist(uuid.Nil, options[0].AllowedReleaseIDs...)
+	}
 	key, err := release.LoadKey(filepath.Join(l.state, "release", "key.json"))
 	if err != nil {
 		return uuid.Nil, nil, err
@@ -382,7 +386,7 @@ func (l *lab) signedRelease(dir, product, sequence, commit, buildID string, inst
 			RequiresServiceRestart: true, MigrationId: presence.NewNullNullable[string](),
 		},
 		Rollback: api.ManifestRollback{
-			AllowedReleaseIds: []uuid.UUID{}, StateReadableByPrevious: true,
+			AllowedReleaseIds: allowed, StateReadableByPrevious: true,
 			RequiredFreeBytes: decstr.MustParse("4096"), HealthProfile: "vpn-node-standard-v1",
 		},
 		Evidence: release.EvidenceInput{

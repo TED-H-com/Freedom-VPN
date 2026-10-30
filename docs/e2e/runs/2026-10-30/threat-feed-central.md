@@ -4,9 +4,9 @@ Approved feed bootstrap, wrong pin and resolver publication
 
 Status: pass
 
-Run: 5de03570-0436-477d-9847-6f6984432bd8
+Run: dc2f6353-89ec-434c-bc68-567066d9fe51
 
-Source: a7a712aab8a67fcc33514a9ac76cb877a90c8143
+Source: b15ff057cd5e91e227477de6a09d977931fa62d8
 
 Spec: §12.3, §12.5, §19 AT22
 
@@ -18,7 +18,7 @@ Spec: §12.3, §12.5, §19 AT22
 - normalized_rule_count: 10
 - content_kind: approved_snapshot
 - bootstrap_audit_count: 1
-- metrics_after_bootstrap: fvpn_dns_feed_last_good_age_seconds{feed_code="e2e-feed"} 0.650716218; fvpn_dns_feed_refresh_total{feed_code="e2e-feed",result="success"} 1
+- metrics_after_bootstrap: fvpn_dns_feed_last_good_age_seconds{feed_code="e2e-feed"} 0.339107726; fvpn_dns_feed_refresh_total{feed_code="e2e-feed",result="success"} 1
 - create_e2e-feed-profile: 201
 - activate_profile: 202
 - resolver_document_exists: true
@@ -33,5 +33,7 @@ Spec: §12.3, §12.5, §19 AT22
 - wrong_pin_consecutive_failures: 1
 - refresh_failed_audit_count: 1
 - previous_revision_last_good_and_publication_retained: true
-- metrics_after_bad_pin: fvpn_dns_feed_last_good_age_seconds{feed_code="e2e-feed"} 2.73611176; fvpn_dns_feed_refresh_total{feed_code="e2e-feed",result="content_mismatch"} 1; fvpn_dns_feed_refresh_total{feed_code="e2e-feed",result="success"} 1
+- metrics_after_bad_pin: fvpn_dns_feed_last_good_age_seconds{feed_code="e2e-feed"} +Inf; fvpn_dns_feed_refresh_total{feed_code="e2e-feed",result="content_mismatch"} 1; fvpn_dns_feed_refresh_total{feed_code="e2e-feed",result="success"} 1
 - scope: Last-good is per revision: the rejected new revision stays null; the prior approved content and resolver generation remain intact. No on-node claim.
+- activate_restore_good_feed: 202
+- approved_feed_restored_for_node: true
