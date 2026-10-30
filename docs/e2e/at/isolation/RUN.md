@@ -47,9 +47,16 @@ All interface and route changes are confined to disposable containers.
 
 Publication excludes B while retaining A, then disables and restores the exit.
 Revocation observes established TCP/UDP fixtures, conntrack deletion, the next
-serving generation and an admitted sibling. Native route withdrawal limits
-independent attribution of post-revoke kernel ingress. Restart waits for a new
-serving heartbeat before checking recovery.
+serving generation and an admitted sibling. After that generation is serving,
+`Stack.ObserveMemberIngress` injects one UDP/9 datagram from the revoked
+overlay address and one from the still-admitted sibling onto `fvmb0`
+(`tun-mirred`, link type 65534, source port 40000). The revoked source must
+move `ctunku` by exactly one packet, leave every `u_`/`d_` counter still, and
+stay off `fvup0` and the origin. The sibling must move its own `u_<hex>` by
+exactly one packet and appear on both captures. The overlay calls that method
+on the prepared `Stack`; it does not exec `fvpn-netlab` itself. The same hook
+measures a forged `100.64.7.7` source for the AT12 unknown-source check.
+Restart waits for a new serving heartbeat before checking recovery.
 
 The finite-member expiry case checks the actual signed member deadline, then
 stops both control and worker before it. This preserves the advertised route
@@ -58,7 +65,7 @@ admission bytes. Both services are restarted afterward.
 
 Whole-node expiry then `PUT`s `/api/v1/admin/fleet-config` to
 `max_offline_lease_seconds=60` with reason
-`TEST ONLY: AT13 whole-node expiry (isolation follow-up 3)`, using the strong
+`TEST ONLY: AT13 whole-node expiry (isolation follow-up 4)`, using the strong
 ETag, `If-Match` and `Idempotency-Key`. A capacity patch, the same desired-state
 change the harness already makes, forces a renewal. The node must hold a 60s
 lease with member grants. Control and worker are stopped before the renewal
@@ -66,13 +73,16 @@ lead. The node must keep forwarding until that signed deadline and return to
 the baseline within one configured agent tick after it: ingress on `fvmb0`,
 nothing on the uplink, admission counters flat. After control answers,
 `86400` is restored with reason
-`TEST ONLY: restore AT13 whole-node expiry ceiling (isolation follow-up 3)`.
+`TEST ONLY: restore AT13 whole-node expiry ceiling (isolation follow-up 4)`.
 Both `fleet_config.update` audit events are recorded. No host clock is changed.
 No `fleet_config` row is written except through that API.
 
 From publication until the first counted member byte, the runner samples
 desired and applied generations, lease grant counts, observation block reasons
-and the forward chain. The samples are `convergence-timeline.json`. The live
+and the forward chain. The samples are `convergence-timeline.json`. Agent
+follow-up 18 is on this `main`, so a grant-less same-generation sample must
+show lease-check `error_code` `AWAITING_MEMBER_GRANTS` and block reason
+`awaiting_member_grants`. The live
 AT13 record repeats the SHA256 of `capture.go` concatenated with
 `capture_review_test.go`; the singular/plural parser from follow-up 2 stays.
 

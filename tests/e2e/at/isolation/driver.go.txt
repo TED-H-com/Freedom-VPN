@@ -537,7 +537,7 @@ func (x *isolationRun) intranet() {
 	c.Actual = "dummy added/addressed/removed and API capacity generation applied inside node under >=10 attempts/s; changed-interface result=" + result
 	x.add("AT10", c)
 	v6, _ := r.lab.docker(r.lab.member, "ip", "-6", "addr", "show")
-	x.add("AT11", iso.Check{Name: "IPv6 platform matrix", Status: iso.StatusBlocked, Positive: x.proof(r), Actual: "no controlled IPv6 underlay or member-platform path; devstack backlog; " + strings.TrimSpace(string(v6)), Owner: "w3-devstack-e2e: real IPv6 and platform paths are devstack backlog"})
+	x.add("AT11", iso.Check{Name: "IPv6 platform matrix", Status: iso.StatusBlocked, Positive: x.proof(r), Actual: "devstack follow-up 13 did not export an IPv6 or member-platform path; harness-exports.md exposes only InjectMemberIngress and ObserveMemberIngress; " + strings.TrimSpace(string(v6)), Owner: "w3-devstack-e2e: real IPv6 and platform paths are devstack backlog"})
 }
 
 func (x *isolationRun) peers() {
@@ -572,9 +572,9 @@ func (x *isolationRun) peers() {
 	if len(desired.Signed.DNS.Resolvers) > 0 {
 		resolver := desired.Signed.DNS.Resolvers[0]
 		route, _ := x.a1.lab.docker(x.a1.lab.member, "ip", "route", "get", resolver)
-		x.add("AT12", iso.Check{Name: "designated DNS exception", Status: iso.StatusBlocked, Positive: x.proof(x.a1), Actual: "resolver=" + resolver + "; route=" + strings.TrimSpace(string(route)) + "; DNS transport must traverse the exit to prove its service exception", Owner: "w3-devstack-e2e: resolver on member underlay"})
+		x.add("AT12", iso.Check{Name: "designated DNS exception", Status: iso.StatusBlocked, Positive: x.proof(x.a1), Actual: "resolver=" + resolver + "; route=" + strings.TrimSpace(string(route)) + "; no export places the designated resolver behind the exit, so the member route is still the Docker underlay", Owner: "w3-devstack-e2e: resolver on member underlay"})
 	}
-	x.add("AT12", iso.Check{Name: "unknown/spoofed member source", Status: iso.StatusBlocked, Positive: x.proof(x.a1), Actual: "no authenticated stale/spoofed-client injection hook; mechanism lab covers unknown source", Owner: "w3-devstack-e2e"})
+	x.spoofedSource()
 }
 
 func memberIP(r *runner) string {
@@ -663,7 +663,11 @@ func (x *isolationRun) revoke() {
 	}
 	x.observation(&c, r)
 	x.add("AT13", c)
-	x.add("AT13", iso.Check{Name: "post-revoke kernel ingress attribution", Status: iso.StatusBlocked, Positive: c.Positive, Actual: "native route withdrawal can precede post-revoke ingress; established-flow stop and conntrack deletion recorded above; the controlled fvmb0 injection primitive is not available", Owner: "netlab follow-up 8 → devstack follow-up 13"})
+	if !applied || source == "" {
+		x.add("AT13", iso.Check{Name: "post-revoke kernel ingress attribution", Status: iso.StatusBlocked, Positive: c.Positive, Actual: "revoke did not reach a new serving generation with a known overlay source; ObserveMemberIngress was not called", Owner: "w2-agent-core"})
+		return
+	}
+	x.postRevokeIngress(source, r.usageDevice, x.a1)
 }
 
 func (x *isolationRun) restart() {
@@ -785,8 +789,9 @@ func (x *isolationRun) deadline() {
 }
 
 const (
-	fleetShortReason   = "TEST ONLY: AT13 whole-node expiry (isolation follow-up 3)"
-	fleetRestoreReason = "TEST ONLY: restore AT13 whole-node expiry ceiling (isolation follow-up 3)"
+	fleetShortReason   = "TEST ONLY: AT13 whole-node expiry (isolation follow-up 4)"
+	fleetRestoreReason = "TEST ONLY: restore AT13 whole-node expiry ceiling (isolation follow-up 4)"
+	forgedMemberSource = "100.64.7.7"
 )
 
 type leaseSnap struct {
@@ -1109,6 +1114,114 @@ func (x *isolationRun) sleep(d time.Duration) bool {
 	}
 }
 
+func (x *isolationRun) spoofedSource() {
+	positive := x.proof(x.a1)
+	c := iso.Check{Name: "unknown/spoofed member source", Positive: positive, Owner: "w2-agent-core"}
+	live := memberIP(x.a1)
+	forged := forgedMemberSource
+	if forged == live || forged == memberIP(x.a2) || forged == memberIP(x.b1) {
+		c.Status = iso.StatusBlocked
+		c.Owner = "w3-devstack-e2e"
+		c.Actual = "forged source collided with a live overlay address"
+		x.add("AT12", c)
+		return
+	}
+	dest := x.a1.originIP()
+	denied, derr := x.stack.ObserveMemberIngress(x.ctx, forged, dest)
+	admitted, aerr := x.stack.ObserveMemberIngress(x.ctx, live, dest)
+	up := "u_" + strings.ReplaceAll(x.a1.usageDevice.String(), "-", "")
+	down := "d_" + strings.ReplaceAll(x.a1.usageDevice.String(), "-", "")
+	c.Observations = append(c.Observations,
+		iso.Observation{Name: "forged_inject", Detail: ingressNote(denied, derr)},
+		iso.Observation{Name: "admitted_inject", Detail: ingressNote(admitted, aerr)},
+	)
+	if derr != nil || aerr != nil {
+		c.Status = iso.StatusBlocked
+		c.Owner = "w3-devstack-e2e"
+		c.Actual = "ObserveMemberIngress failed; forged_err=" + errText(derr) + "; admitted_err=" + errText(aerr)
+		x.add("AT12", c)
+		return
+	}
+	deniedOK := ingressDenied(denied)
+	admittedOK := ingressAdmitted(admitted, up, down)
+	c.Status = iso.NegativeStatus(positive, true, deniedOK && admittedOK)
+	if c.Status == iso.StatusPass {
+		c.Owner = ""
+	}
+	c.Actual = "forged " + forged + " ctunku+1 and zero forwarded=" + boolText(deniedOK) + "; admitted " + up + " +1=" + boolText(admittedOK)
+	x.add("AT12", c)
+}
+
+func (x *isolationRun) postRevokeIngress(revokedSource string, revokedDevice uuid.UUID, sibling *runner) {
+	positive := x.proof(sibling)
+	c := iso.Check{Name: "post-revoke kernel ingress attribution", Positive: positive, Owner: "w2-agent-core"}
+	dest := sibling.originIP()
+	revoked, rerr := x.stack.ObserveMemberIngress(x.ctx, revokedSource, dest)
+	siblingSource := memberIP(sibling)
+	admitted, aerr := x.stack.ObserveMemberIngress(x.ctx, siblingSource, dest)
+	revokedUp := "u_" + strings.ReplaceAll(revokedDevice.String(), "-", "")
+	up := "u_" + strings.ReplaceAll(sibling.usageDevice.String(), "-", "")
+	down := "d_" + strings.ReplaceAll(sibling.usageDevice.String(), "-", "")
+	c.Observations = append(c.Observations,
+		iso.Observation{Name: "revoked_inject", Detail: ingressNote(revoked, rerr)},
+		iso.Observation{Name: "admitted_inject", Detail: ingressNote(admitted, aerr)},
+	)
+	if rerr != nil || aerr != nil {
+		c.Status = iso.StatusBlocked
+		c.Owner = "w3-devstack-e2e"
+		c.Actual = "ObserveMemberIngress failed after revoke; revoked_err=" + errText(rerr) + "; admitted_err=" + errText(aerr)
+		x.add("AT13", c)
+		return
+	}
+	revokedOK := ingressDenied(revoked) && revoked.Before[revokedUp] == revoked.After[revokedUp]
+	admittedOK := ingressAdmitted(admitted, up, down)
+	c.Status = iso.NegativeStatus(positive, revokedSource != "" && siblingSource != "", revokedOK && admittedOK)
+	if c.Status == iso.StatusPass {
+		c.Owner = ""
+	}
+	c.Actual = "revoked " + revokedSource + " ctunku+1 and zero forwarded=" + boolText(revokedOK) + "; sibling " + up + " +1=" + boolText(admittedOK)
+	x.add("AT13", c)
+}
+
+func ingressHook(p MemberIngressProof) bool {
+	return p.Mechanism == "tun-mirred" && p.LinkType == 65534 && p.MemberIface == "fvmb0" && p.SourcePort == 40000 && p.DestPort == 9
+}
+
+func ingressDenied(p MemberIngressProof) bool {
+	if !ingressHook(p) || !captureEmpty(p.UplinkCapture) || !captureEmpty(p.OriginCapture) {
+		return false
+	}
+	ct, ok := ingressCounterDelta(p.Before, p.After, "ctunku")
+	return ok && ct.Packets == 1 && ct.Bytes > 0 && deviceCountersHeld(p.Before, p.After)
+}
+
+func ingressAdmitted(p MemberIngressProof, up, down string) bool {
+	if !ingressHook(p) || up == "" || !captureSawDatagram(p.UplinkCapture) || !captureSawDatagram(p.OriginCapture) {
+		return false
+	}
+	got, ok := ingressCounterDelta(p.Before, p.After, up)
+	ct, ctOK := ingressCounterDelta(p.Before, p.After, "ctunku")
+	return ok && got.Packets == 1 && got.Bytes > 0 && ctOK && ct.Packets == 0 && deviceCountersHeld(p.Before, p.After, up, down)
+}
+
+func ingressNote(p MemberIngressProof, err error) string {
+	ct, _ := ingressCounterDelta(p.Before, p.After, "ctunku")
+	raw, _ := json.Marshal(map[string]any{
+		"error": errText(err), "mechanism": p.Mechanism, "link_type": p.LinkType, "member_iface": p.MemberIface,
+		"source": p.Source, "dest": p.Dest, "source_port": p.SourcePort, "dest_port": p.DestPort,
+		"ctunku_packets": ct.Packets, "ctunku_bytes": ct.Bytes, "deltas": p.Deltas,
+		"uplink_capture": clipText(p.UplinkCapture, 800), "origin_capture": clipText(p.OriginCapture, 800),
+	})
+	return string(raw)
+}
+
+func errText(err error) string {
+	if err == nil {
+		return ""
+	}
+	return clipText(err.Error(), 300)
+}
+
 func (x *isolationRun) startConvergence() {
 	if x.stopConv != nil || x.r == nil {
 		return
@@ -1294,6 +1407,108 @@ func (x *isolationRun) writeConvergence() {
 		}
 	}
 	x.records["AT10"].Observations = append(x.records["AT10"].Observations, iso.Observation{Name: "destination_positive_controls", Detail: "with_positive=" + strings.Join(have, ",") + "; without_positive=" + strings.Join(miss, ",")})
+	if x.stopConv != nil {
+		x.assertProvisional(samples)
+	}
+}
+
+func (x *isolationRun) assertProvisional(samples []map[string]any) {
+	var positive iso.Positive
+	for _, check := range x.records["AT10"].Checks {
+		if check.Positive.Valid() {
+			positive = check.Positive
+			break
+		}
+	}
+	c := iso.Check{Name: "provisional lease reports AWAITING_MEMBER_GRANTS", Positive: positive, Owner: "w2-agent-core"}
+	build := ""
+	if x.records["AT10"] != nil {
+		build = x.records["AT10"].Build
+	}
+	var codes []string
+	sawCode, sawExpired, sawStale := false, false, false
+	windows := 0
+	for _, row := range samples {
+		bindings, bok := asInt(row["desired_bindings"])
+		members, mok := asInt(row["lease_members"])
+		leaseGen, _ := row["lease_generation"].(string)
+		desiredGen, _ := row["desired_generation"].(string)
+		if !bok || !mok || bindings <= 0 || members != 0 || leaseGen == "" || leaseGen != desiredGen {
+			continue
+		}
+		windows++
+		code, detail, status := leaseCode(row["lease_check"])
+		reasons := reasonText(row["block_reasons"])
+		codes = append(codes, code+"/"+status+"/"+reasons)
+		switch {
+		case code == "AWAITING_MEMBER_GRANTS" && strings.Contains(reasons, "awaiting_member_grants") && !strings.Contains(reasons, "lease_expired") && !strings.Contains(detail, "LEASE_EXPIRED"):
+			sawCode = true
+		case code == "LEASE_EXPIRED" || strings.Contains(reasons, "lease_expired"):
+			sawExpired = true
+		default:
+			if status == "not_run" || code == "" {
+				sawStale = true
+			} else {
+				sawExpired = true
+			}
+		}
+	}
+	c.Observations = append(c.Observations, iso.Observation{Name: "provisional_lease_code", Detail: "windows=" + strconv.Itoa(windows) + "; build=" + build + "; agent_follow_up_18=on main; codes=" + strings.Join(codes, " | ")})
+	switch {
+	case windows == 0:
+		c.Status = iso.StatusBlocked
+		c.Actual = "no grant-less same-generation lease was sampled; main " + build
+	case sawExpired:
+		c.Status = iso.NegativeStatus(positive, true, false)
+		c.Actual = "provisional window did not report AWAITING_MEMBER_GRANTS; " + strings.Join(codes, " | ")
+	case sawCode:
+		if positive.Valid() {
+			c.Status = iso.StatusPass
+			c.Owner = ""
+			c.Actual = "lease check error_code AWAITING_MEMBER_GRANTS while the same-generation lease had no member grants"
+		} else {
+			c.Status = iso.StatusBlocked
+			c.Actual = "AWAITING_MEMBER_GRANTS was sampled and AT10 had no counted positive"
+		}
+	case sawStale:
+		c.Status = iso.StatusBlocked
+		c.Actual = "grant-less lease sampled before the accepted lease check updated; codes=" + strings.Join(codes, " | ")
+	default:
+		c.Status = iso.StatusBlocked
+		c.Actual = "provisional window code was null; main " + build
+	}
+	x.add("AT10", c)
+}
+
+func asInt(v any) (int, bool) {
+	switch n := v.(type) {
+	case float64:
+		return int(n), true
+	case string:
+		i, err := strconv.Atoi(n)
+		return i, err == nil
+	default:
+		return 0, false
+	}
+}
+
+func leaseCode(v any) (code, detail, status string) {
+	m, ok := v.(map[string]any)
+	if !ok {
+		return "", "", ""
+	}
+	code, _ = m["error_code"].(string)
+	detail, _ = m["detail"].(string)
+	status, _ = m["status"].(string)
+	return code, detail, status
+}
+
+func reasonText(v any) string {
+	raw, err := json.Marshal(v)
+	if err != nil {
+		return ""
+	}
+	return string(raw)
 }
 
 func (x *isolationRun) noteEvaluator() {
