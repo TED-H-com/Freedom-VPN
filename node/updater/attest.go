@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"os"
 	"sync"
 	"time"
 
@@ -140,15 +141,25 @@ func (n NodeChecks) evaluate(ctx context.Context, v ReleaseView) checkSnap {
 }
 
 func (n NodeChecks) poll(ctx context.Context, v ReleaseView, bound healthattest.Challenge, prior healthattest.Observed, phase string) checkSnap {
-	deadline := time.Now().Add(n.wait())
+	deadline := n.now().Add(n.wait())
+	// The injected clock controls the deadline. Also bound a stalled clock
+	// so clock adjustments cannot keep an updater waiting indefinitely.
+	ctx, cancel := context.WithTimeout(ctx, n.wait())
+	defer cancel()
 	var last healthattest.Reason = healthattest.ReasonMissing
 	var got *healthattest.Attestation
 	for {
-		last, got = n.readOnce(bound, prior)
-		if got != nil {
-			break
+		reason, at := n.readOnce(bound, prior)
+		if at != nil {
+			last, got = reason, at
+			if reason == "" && at.Checks.InternetOnly.Status == api.HealthCheckStatusPassed &&
+				at.Checks.DNSPolicy.Status == api.HealthCheckStatusPassed && at.Checks.TunnelProbe.Status == api.HealthCheckStatusPassed {
+				break
+			}
+		} else if got == nil {
+			last = reason
 		}
-		if !time.Now().Before(deadline) || ctx.Err() != nil {
+		if !n.now().Before(deadline) || ctx.Err() != nil {
 			break
 		}
 		if err := n.sleep(ctx, n.pollInterval()); err != nil {
@@ -172,8 +183,11 @@ func (n NodeChecks) readOnce(bound healthattest.Challenge, prior healthattest.Ob
 	if n.Node.ID.String() != "" && fileCh.NodeID != n.Node.ID.String() {
 		return healthattest.ReasonNodeMismatch, nil
 	}
-	cur, err := healthattest.ObserveAttestation(n.Journal)
+	at, cur, err := healthattest.ReadObservedAttestation(n.Journal)
 	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return healthattest.ReasonMissing, nil
+		}
 		if r := healthattest.ReasonOf(err); r != "" {
 			return r, nil
 		}
@@ -184,13 +198,6 @@ func (n NodeChecks) readOnce(bound healthattest.Challenge, prior healthattest.Ob
 			return healthattest.ReasonPreseeded, nil
 		}
 		return healthattest.ReasonMissing, nil
-	}
-	at, _, err := healthattest.ReadAttestation(n.Journal)
-	if err != nil {
-		if r := healthattest.ReasonOf(err); r != "" {
-			return r, nil
-		}
-		return healthattest.ReasonUnreadable, nil
 	}
 	reason := healthattest.Validate(bound, at, n.now(), bound.Components)
 	if reason != "" && reason != healthattest.ReasonNotRun {

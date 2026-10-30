@@ -46,5 +46,10 @@ func (m *feedMetrics) Collect(ch chan<- prometheus.Metric) {
 func (m *feedMetrics) set(id uuid.UUID, code string, at time.Time) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
+	for oldID, age := range m.ages {
+		if oldID != id && age.code == code {
+			delete(m.ages, oldID)
+		}
+	}
 	m.ages[id] = feedAge{code: code, at: at}
 }

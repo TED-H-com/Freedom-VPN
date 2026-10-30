@@ -12,6 +12,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/dnspolicy"
 	"github.com/TED-H-com/Freedom-VPN/internal/dnspublish"
+	dnsoperation "github.com/TED-H-com/Freedom-VPN/internal/dnspublish/operation"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 	"github.com/google/uuid"
@@ -31,6 +32,7 @@ const (
 type Config struct {
 	Upstreams    []string
 	BootstrapDNS []string
+	Clock        func() time.Time
 }
 
 // Publication is the stored document plus the generation desired state references.
@@ -56,6 +58,9 @@ type Publisher struct {
 func NewPublisher(pool *pgxpool.Pool, cfg Config) (*Publisher, error) {
 	if len(cfg.Upstreams) == 0 {
 		return nil, errors.New("dns upstreams are required")
+	}
+	if cfg.Clock == nil {
+		cfg.Clock = time.Now
 	}
 	cfg.Upstreams = append([]string(nil), cfg.Upstreams...)
 	if cfg.BootstrapDNS != nil {
@@ -100,6 +105,14 @@ func (p *Publisher) Handle(ctx context.Context, event db.ClaimedEvent) (string, 
 	if err != nil {
 		return "", fmt.Errorf("generation: %w", err)
 	}
+	// Repair publications carry no operation ID. Attach their read-back to the
+	// same activation generation, including recovery after an earlier failure.
+	if body.OperationID == "" {
+		err := p.pool.QueryRow(ctx, `SELECT id::text FROM operations WHERE kind='policy.activate' AND resource_id=$1 AND desired_generation=$2::numeric ORDER BY created_at DESC LIMIT 1`, defID, gen.String()).Scan(&body.OperationID)
+		if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+			return "", err
+		}
+	}
 	if body.Action == statusWithdrawn || body.Action == "withdraw" {
 		if err := p.withdraw(ctx, defID, revID, gen, body.OperationID); err != nil {
 			return "", err
@@ -108,6 +121,9 @@ func (p *Publisher) Handle(ctx context.Context, event db.ClaimedEvent) (string, 
 	}
 	pub, err := p.activate(ctx, defID, revID, gen, body.OperationID)
 	if err != nil {
+		if failureErr := p.recordFailure(ctx, defID, revID, gen, body.OperationID, err); failureErr != nil {
+			return "", failureErr
+		}
 		return "", err
 	}
 	return "dns-document:" + pub.DocumentHash, nil
@@ -146,7 +162,7 @@ func (p *Publisher) activate(ctx context.Context, defID, revID uuid.UUID, gen de
 			}
 			return err
 		}
-		in, code, err := loadProfile(ctx, tx, defID, revID)
+		in, code, err := loadProfile(ctx, tx, defID, revID, p.cfg.Clock().UTC())
 		if err != nil {
 			return err
 		}
@@ -158,14 +174,15 @@ func (p *Publisher) activate(ctx context.Context, defID, revID uuid.UUID, gen de
 		}
 		var headRev uuid.UUID
 		var headGen, headHash, headStatus string
-		err = tx.QueryRow(ctx, `SELECT profile_revision_id,policy_generation::text,document_sha256,status FROM dns_publication_heads WHERE definition_id=$1`, defID).Scan(&headRev, &headGen, &headHash, &headStatus)
+		var feedInvalidated bool
+		err = tx.QueryRow(ctx, `SELECT profile_revision_id,policy_generation::text,document_sha256,status,feed_invalidated FROM dns_publication_heads WHERE definition_id=$1`, defID).Scan(&headRev, &headGen, &headHash, &headStatus, &feedInvalidated)
 		if err != nil && !errors.Is(err, pgx.ErrNoRows) {
 			return err
 		}
-		if err == nil && headRev == revID && headStatus == statusWithdrawn {
+		if err == nil && headRev == revID && headStatus == statusWithdrawn && !feedInvalidated {
 			return errors.New("dns publication is withdrawn")
 		}
-		if err == nil && headRev == revID && headHash == compiled.Hash {
+		if err == nil && headRev == revID && headHash == compiled.Hash && headStatus == statusActive {
 			gen, err = decstr.Parse(headGen)
 			if err != nil {
 				return err
@@ -322,7 +339,7 @@ func (p *Publisher) Head(ctx context.Context, defID uuid.UUID) (Publication, err
 	return p.getByRevision(ctx, revID, nil)
 }
 
-func loadProfile(ctx context.Context, tx pgx.Tx, defID, revID uuid.UUID) (dnspublish.Input, string, error) {
+func loadProfile(ctx context.Context, tx pgx.Tx, defID, revID uuid.UUID, now time.Time) (dnspublish.Input, string, error) {
 	var (
 		gotDef  uuid.UUID
 		typ     string
@@ -359,7 +376,7 @@ func loadProfile(ctx context.Context, tx pgx.Tx, defID, revID uuid.UUID) (dnspub
 	if err != nil {
 		return dnspublish.Input{}, "", err
 	}
-	feeds, err := loadFeeds(ctx, tx, profile)
+	feeds, err := loadFeeds(ctx, tx, profile, now)
 	if err != nil {
 		return dnspublish.Input{}, "", err
 	}
@@ -410,13 +427,14 @@ func loadRules(ctx context.Context, tx pgx.Tx, profile api.DnsProfilePayload) ([
 	return rules, nil
 }
 
-func loadFeeds(ctx context.Context, tx pgx.Tx, profile api.DnsProfilePayload) ([]dnspublish.Feed, error) {
+func loadFeeds(ctx context.Context, tx pgx.Tx, profile api.DnsProfilePayload, now time.Time) ([]dnspublish.Feed, error) {
 	var feeds []dnspublish.Feed
 	for _, id := range profile.ThreatFeedRevisionIds {
 		revID := uuid.UUID(id)
 		var typ string
+		var active bool
 		var payload []byte
-		err := tx.QueryRow(ctx, `SELECT type, payload FROM policy_revisions WHERE id = $1`, revID).Scan(&typ, &payload)
+		err := tx.QueryRow(ctx, `SELECT r.type,r.payload,coalesce(d.active_revision_id=r.id,false) FROM policy_revisions r JOIN policy_definitions d ON d.id=r.definition_id WHERE r.id=$1 FOR SHARE OF d`, revID).Scan(&typ, &payload, &active)
 		if err != nil {
 			return nil, fmt.Errorf("threat feed %s: %w", revID, err)
 		}
@@ -426,6 +444,9 @@ func loadFeeds(ctx context.Context, tx pgx.Tx, profile api.DnsProfilePayload) ([
 		var feed api.ThreatFeedPayload
 		if err := json.Unmarshal(payload, &feed); err != nil {
 			return nil, err
+		}
+		if !active || now.Before(feed.ValidFrom) || !now.Before(feed.ValidUntil) {
+			return nil, errFeedUnavailable
 		}
 		var contentHash string
 		var entriesJSON []byte
@@ -530,6 +551,7 @@ func advanceHead(ctx context.Context, tx pgx.Tx, defID, revID uuid.UUID, gen dec
 		    policy_generation = $3::numeric,
 		    document_sha256 = $4,
 		    status = $5,
+		    feed_invalidated = false,
 		    resource_version = resource_version + 1
 		WHERE definition_id = $1`,
 		defID, revID, gen.String(), hash, status,
@@ -607,23 +629,12 @@ func noteOperation(ctx context.Context, tx pgx.Tx, operationID string, gen decst
 	if err != nil {
 		return err
 	}
-	evidence, err := json.Marshal(map[string]string{
-		"generation":     gen.String(),
-		"content_sha256": hash,
-		"status":         status,
-		"observed_at":    time.Now().UTC().Format(time.RFC3339Nano),
-	})
-	if err != nil {
+	var documentID uuid.UUID
+	if err := tx.QueryRow(ctx, `SELECT id FROM dns_resolver_documents WHERE policy_generation=$1::numeric AND document_sha256=$2`, gen.String(), hash).Scan(&documentID); err != nil {
 		return err
 	}
-	// Leave the operation pending: desired_state_compile is still the policies
-	// step. Record the document so the center can tell desired from applied (§14.5).
-	_, err = tx.Exec(ctx, `
-		UPDATE operations
-		SET observed_refs = jsonb_set(observed_refs, '{dns_document}', $2::jsonb, true),
-		    updated_at = clock_timestamp()
-		WHERE id = $1 AND status IN ('pending', 'running')`,
-		id, string(evidence),
-	)
-	return err
+	// The persisted document row is read-back evidence of central publication,
+	// not a claim that a node applied it. The operations package preserves this
+	// typed reference when other required steps finish in either order.
+	return dnsoperation.Record(ctx, tx, id, dnsoperation.DocumentStep, "dns_resolver_document:"+documentID.String(), nil, time.Now().UTC())
 }
