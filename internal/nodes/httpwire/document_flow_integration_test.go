@@ -143,9 +143,6 @@ func TestD056_D058_CompilerSeamDocumentWindowAndSignedProbe(t *testing.T) {
 	check(second)
 	t.Run("transport_cache_header_core_owner", func(t *testing.T) {
 		w := f.call("GET", path(second), nil, cert, nil)
-		if w.Header().Get("Cache-Control") == "no-store" {
-			t.Skip("control-core owns the pending f11-transport-cache.patch; compiler/document bytes and generation window verified above")
-		}
 		if w.Header().Get("Cache-Control") != "private, max-age=0" {
 			t.Fatal(w.Header())
 		}

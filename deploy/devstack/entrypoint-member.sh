@@ -25,7 +25,7 @@ while true; do
         rm -f /var/lib/vpn-node/e2e/user-auth
         printf '%s\n' '{"stage":"user_auth_started"}' > /var/lib/vpn-node/e2e/status.json
         if netbird up --management-url https://netbird.example.invalid:443 \
-            --hostname fvpn-member-e2e \
+            --hostname "${FVPN_E2E_MEMBER_NAME:-fvpn-member-e2e}" \
             --interface-name fvnb0 --disable-dns --disable-ipv6 --no-browser \
             --log-level info --log-file console > /var/lib/vpn-node/e2e/netbird-up.log 2>&1; then
             printf '%s\n' '{"stage":"netbird_up"}' > /var/lib/vpn-node/e2e/status.json

@@ -13,7 +13,6 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes/nodestest"
 	"github.com/TED-H-com/Freedom-VPN/internal/pki/pkitest"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
-	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/google/uuid"
 )
@@ -23,12 +22,8 @@ func TestD056_D058_HTTPObservationDocumentEvidenceAndCheckDetail(t *testing.T) {
 	f := setupRuntime(t, runtime)
 	cert := pkitest.Certificate(t, enrolled.Response.CertificatePem)
 	path := "/api/v1/admin/nodes/" + report.NodeId.String()
-	type detail struct {
-		api.NodeDetail
-		Evidence presence.Nullable[api.DnsPolicyEvidence] `json:"dns_policy_evidence"`
-	}
-	before := decode[detail](t, f.call("GET", path, nil, nil, nil), http.StatusOK)
-	if !before.Evidence.IsNull() {
+	before := decode[api.NodeDetail](t, f.call("GET", path, nil, nil, nil), http.StatusOK)
+	if !before.DnsPolicyEvidence.IsNull() {
 		t.Fatal("unknown DNS evidence fabricated")
 	}
 	raw, err := os.ReadFile("../../../contracts/examples/valid/ObservationReport.resolver-document.json")
@@ -51,12 +46,12 @@ func TestD056_D058_HTTPObservationDocumentEvidenceAndCheckDetail(t *testing.T) {
 		t.Fatal("observation receipt replay changed")
 	}
 	w := f.call("GET", path, nil, nil, nil)
-	got := decode[detail](t, w, http.StatusOK)
-	if !reflect.DeepEqual(got.Evidence, report.DnsPolicyEvidence) || got.Checks[0].Detail == nil || *got.Checks[0].Detail != message {
+	got := decode[api.NodeDetail](t, w, http.StatusOK)
+	if !reflect.DeepEqual(got.DnsPolicyEvidence, report.DnsPolicyEvidence) || got.Checks[0].Detail == nil || *got.Checks[0].Detail != message {
 		t.Fatalf("evidence/detail missing: %s", w.Body.String())
 	}
-	// The additive evidence projection remains valid against revision 5's open
-	// NodeDetail schema while the typed generated field is coordinated upstream.
+	// Revision 6 declares the evidence on NodeDetail; validate its typed schema
+	// as well as decoding through the generated response model above.
 	spec, err := openapi3.NewLoader().LoadFromFile("../../../contracts/openapi.yaml")
 	if err != nil {
 		t.Fatal(err)
@@ -86,15 +81,15 @@ func TestD056_D058_HTTPObservationDocumentEvidenceAndCheckDetail(t *testing.T) {
 	report.ObservedAt = report.ObservedAt.Add(-time.Second)
 	report.DnsPolicyEvidence.SetNull()
 	decode[api.ObservationAccepted](t, f.call("POST", "/api/v1/agent/observations", report, cert, nil), http.StatusAccepted)
-	got = decode[detail](t, f.call("GET", path, nil, nil, nil), http.StatusOK)
-	if !reflect.DeepEqual(got.Evidence, example.DnsPolicyEvidence) {
+	got = decode[api.NodeDetail](t, f.call("GET", path, nil, nil, nil), http.StatusOK)
+	if !reflect.DeepEqual(got.DnsPolicyEvidence, example.DnsPolicyEvidence) {
 		t.Fatal("stale report replaced evidence")
 	}
 	report.ReportId = uuid.New()
 	report.ObservedAt = time.Now().UTC()
 	decode[api.ObservationAccepted](t, f.call("POST", "/api/v1/agent/observations", report, cert, nil), http.StatusAccepted)
-	got = decode[detail](t, f.call("GET", path, nil, nil, nil), http.StatusOK)
-	if !got.Evidence.IsNull() {
+	got = decode[api.NodeDetail](t, f.call("GET", path, nil, nil, nil), http.StatusOK)
+	if !got.DnsPolicyEvidence.IsNull() {
 		t.Fatal("unknown evidence replaced with last known policy")
 	}
 }

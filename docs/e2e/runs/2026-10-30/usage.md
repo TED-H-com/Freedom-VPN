@@ -1,14 +1,15 @@
 # usage
 
-Sampled usage visible with exact bytes
+Agent samples after native admitted traffic
 
 Status: blocked
 
-Run: 5de03570-0436-477d-9847-6f6984432bd8
+Run: dc2f6353-89ec-434c-bc68-567066d9fe51
 
-Source: a7a712aab8a67fcc33514a9ac76cb877a90c8143
+Source: b15ff057cd5e91e227477de6a09d977931fa62d8
 
 Spec: §10, §19 AT14, §19 AT15
 
-- member: no session
-- owner: w3-wire-nodes follow-up 11: serving binding prerequisite; then w3-wire-usage acceptance
+- member_usage: 200
+- note: No positive counted flow; no synthetic sample is submitted.
+- owner: w2-agent-core: positive counted-flow prerequisite; then w3-wire-usage sampler acceptance
