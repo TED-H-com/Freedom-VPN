@@ -792,8 +792,9 @@ func (e *Engine) RevokeOverride(ctx context.Context, in RevokeOverrideInput) (*E
 
 // GetMemberStatus returns the member-visible `api.FairUseStatus` for `(memberID, periodID)` (§11.2, §11.6, FUP03).
 // In shadow mode it always reports `state: "normal"` with no rate or tier throttling.
-// In enforce mode `Applying` remains `true` until all serving nodes have reported
-// `applied_fup_generation >= generation` (never claiming applied on a 202).
+// In enforce mode `Applying` remains `true` until every published exit carrying the member
+// has applied the compiled config generation that contains this member generation
+// (never claiming applied on a 202).
 func (e *Engine) GetMemberStatus(ctx context.Context, memberID uuid.UUID, periodID string) (api.FairUseStatus, error) {
 	adminStatus, err := e.GetAdminMemberStatus(ctx, memberID, periodID)
 	if err != nil {
@@ -844,7 +845,7 @@ func (e *Engine) GetAdminMemberStatus(ctx context.Context, memberID uuid.UUID, p
 		}
 		nodeSyncSummary = "shadow (no enforcement)"
 	} else {
-		// Enforce mode (§11.2, FUP03): Applying is true until all serving nodes ACK the generation.
+		// Enforce mode (§11.2, FUP03): Applying is true until every carrying exit ACKs the compiled generation.
 		applying := false
 		if st.Generation > 0 {
 			if ackStatus.TotalServingNodes == 0 || ackStatus.PendingNodes > 0 {
@@ -1501,7 +1502,115 @@ type pgNodeAckReader struct {
 	db *pgxpool.Pool
 }
 
-func (r *pgNodeAckReader) GetMemberNodeAckStatus(ctx context.Context, _ uuid.UUID, generation decstr.U64) (NodeAckStatus, error) {
+func (r *pgNodeAckReader) GetMemberNodeAckStatus(ctx context.Context, memberID uuid.UUID, generation decstr.U64) (NodeAckStatus, error) {
+	status, carrying, err := r.carryingExitAckStatus(ctx, memberID, generation)
+	if err != nil {
+		return NodeAckStatus{}, err
+	}
+	if carrying {
+		return status, nil
+	}
+	// No published exit carries this member. Keep the registered-node read of
+	// checks.applied_policy_refs so callers that have not compiled exits still
+	// observe the same pending/applied counts. Production observations store
+	// applied_policy_refs on report_payload, and that value is the fleet
+	// generation, so it is not used once an exit carries the member.
+	return r.legacyRegisteredNodeAckStatus(ctx, generation)
+}
+
+// carryingExitAckStatus counts published exits that serve memberID. An exit has
+// acknowledged when its current desired-state envelope already contains this
+// member generation and nodes.applied_config_generation has reached that
+// envelope's config generation, and the latest observation passed safety while
+// online. The fleet applied_policy_refs.fup_generation is a different counter
+// from fup_member_states.generation, so comparing them leaves applying set
+// after the exits have installed the member class.
+func (r *pgNodeAckReader) carryingExitAckStatus(ctx context.Context, memberID uuid.UUID, generation decstr.U64) (NodeAckStatus, bool, error) {
+	rows, err := r.db.Query(ctx, `
+		WITH carrying AS (
+			SELECT DISTINCT n.id AS node_id
+			FROM members m
+			JOIN entitlements ent ON ent.member_id = m.id
+			JOIN exits e ON e.publication_intent = 'published'
+			JOIN exit_groups eg ON eg.exit_id = e.id
+			JOIN nodes n ON n.id = e.node_id
+			WHERE m.id = $1
+			  AND m.status = 'active'
+			  AND NOT m.admin_suspended
+			  AND NOT ent.admin_suspended
+			  AND ent.state NOT IN ('pending_payment','suspended','expired','closed')
+			  AND ent.valid_from <= clock_timestamp()
+			  AND clock_timestamp() < ent.effective_service_end
+			  AND n.lifecycle_state = 'registered'
+			  AND n.current_incarnation_id IS NOT NULL
+			  AND EXISTS (
+				SELECT 1
+				FROM jsonb_array_elements_text(ent.projection->'exit_group_ids') g(id)
+				WHERE g.id = eg.group_id::text
+			  )
+		)
+		SELECT
+			n.applied_config_generation::text,
+			COALESCE(env.generation::text, '0'),
+			COALESCE((
+				SELECT v->>'generation'
+				FROM jsonb_array_elements(COALESCE(env.envelope->'signed'->'member_rate_policies', '[]'::jsonb)) v
+				WHERE v->>'member_id' = $1::text
+				LIMIT 1
+			), ''),
+			COALESCE((
+				SELECT no.safety_status = 'passed' AND no.control_status = 'online'
+				FROM node_observations no
+				WHERE no.node_id = n.id
+				ORDER BY no.received_at DESC, no.id DESC
+				LIMIT 1
+			), false)
+		FROM carrying c
+		JOIN nodes n ON n.id = c.node_id
+		LEFT JOIN desired_state_envelopes env
+		  ON env.node_id = n.id AND env.incarnation_id = n.current_incarnation_id
+		ORDER BY n.id`, memberID)
+	if err != nil {
+		return NodeAckStatus{}, false, fmt.Errorf("fup: query carrying exit ack status: %w", err)
+	}
+	defer rows.Close()
+
+	var status NodeAckStatus
+	for rows.Next() {
+		var appliedStr, envGenStr, memberGenStr string
+		var obsOK bool
+		if err := rows.Scan(&appliedStr, &envGenStr, &memberGenStr, &obsOK); err != nil {
+			return NodeAckStatus{}, false, err
+		}
+		status.TotalServingNodes++
+		if !obsOK || memberGenStr == "" {
+			continue
+		}
+		memberGen, err := decstr.Parse(memberGenStr)
+		if err != nil || memberGen < generation {
+			continue
+		}
+		applied, err := decstr.Parse(appliedStr)
+		if err != nil {
+			continue
+		}
+		envGen, err := decstr.Parse(envGenStr)
+		if err != nil || envGen == 0 || applied < envGen {
+			continue
+		}
+		status.AckedNodes++
+	}
+	if err := rows.Err(); err != nil {
+		return NodeAckStatus{}, false, err
+	}
+	if status.TotalServingNodes == 0 {
+		return NodeAckStatus{}, false, nil
+	}
+	status.PendingNodes = status.TotalServingNodes - status.AckedNodes
+	return status, true, nil
+}
+
+func (r *pgNodeAckReader) legacyRegisteredNodeAckStatus(ctx context.Context, generation decstr.U64) (NodeAckStatus, error) {
 	rows, err := r.db.Query(ctx, `
 		SELECT COALESCE(
 		           (SELECT no.checks->'applied_policy_refs'->>'fup_generation'

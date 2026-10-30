@@ -28,16 +28,17 @@ import (
 
 // Outbox event types consumed by the desired-state recompilation worker (§5.2, §9, §11, §13).
 const (
-	EventMemberEntitlementChanged = "member.entitlement_changed"
-	EventDeviceAuthorized         = "device.authorized"
-	EventDeviceRevoked            = "device.revoked"
-	EventMemberSuspended          = "member.suspended"
-	EventPolicyActivated          = "policy.activated"
-	EventNodePublicationChanged   = "node.publication_changed"
-	EventReleaseTargetChanged     = "release.target_changed"
-	EventNodeUpdated              = nodes.EventNodeUpdated
-	EventNodeRevoked              = nodes.EventNodeRevoked
-	EventNodeRetired              = nodes.EventNodeRetired
+	EventMemberEntitlementChanged   = "member.entitlement_changed"
+	EventDeviceAuthorized           = "device.authorized"
+	EventDeviceRevoked              = "device.revoked"
+	EventMemberSuspended            = "member.suspended"
+	EventPolicyActivated            = "policy.activated"
+	EventFUPMemberGenerationChanged = "fup.member_generation_changed"
+	EventNodePublicationChanged     = "node.publication_changed"
+	EventReleaseTargetChanged       = "release.target_changed"
+	EventNodeUpdated                = nodes.EventNodeUpdated
+	EventNodeRevoked                = nodes.EventNodeRevoked
+	EventNodeRetired                = nodes.EventNodeRetired
 )
 
 // Compiler compiles, signs, persists, and serves per-node desired-state envelopes (§5, §14.4, §14.7).
@@ -852,46 +853,90 @@ func etagMatches(ifNoneMatch, currentETag string) bool {
 
 // RecompileBatch coalesces a burst of outbox events into a deduplicated set of affected
 // nodes and recompiles each affected node once without regressing config_generation (§5, §14.7).
+// A fair_use activation with no node ids, and fup.member_generation_changed, select only the
+// published exits carrying the affected members. A second delivery does not compile again when
+// the stored envelope already matches that Fair-Use state.
 func (c *Compiler) RecompileBatch(ctx context.Context, events []db.ClaimedEvent) ([]CompiledDesiredState, error) {
 	if len(events) == 0 {
 		return nil, nil
 	}
 
 	affectedNodes := map[uuid.UUID]bool{}
+	fupOnly := map[uuid.UUID]bool{}
+	fupScopes := map[uuid.UUID]*fupMemberScope{}
 	recompileAllActive := false
 
 	for _, ev := range events {
 		switch ev.EventType {
 		case EventNodePublicationChanged, EventNodeUpdated, EventNodeRevoked, EventNodeRetired:
 			if ev.AggregateID != uuid.Nil {
-				affectedNodes[ev.AggregateID] = true
+				noteAffected(affectedNodes, fupOnly, ev.AggregateID, false)
 			}
 			var payload struct {
 				NodeID string `json:"node_id"`
 			}
 			if json.Unmarshal(ev.Payload, &payload) == nil && payload.NodeID != "" {
 				if nid, err := uuid.Parse(payload.NodeID); err == nil {
-					affectedNodes[nid] = true
+					noteAffected(affectedNodes, fupOnly, nid, false)
 				}
 			}
 		case EventPolicyActivated, EventReleaseTargetChanged:
 			var payload struct {
 				NodeID  string   `json:"node_id"`
 				NodeIDs []string `json:"node_ids"`
+				Type    string   `json:"type"`
 			}
 			_ = json.Unmarshal(ev.Payload, &payload)
 			if payload.NodeID != "" {
 				if nid, err := uuid.Parse(payload.NodeID); err == nil {
-					affectedNodes[nid] = true
+					noteAffected(affectedNodes, fupOnly, nid, false)
 				}
 			}
 			for _, raw := range payload.NodeIDs {
 				if nid, err := uuid.Parse(raw); err == nil {
-					affectedNodes[nid] = true
+					noteAffected(affectedNodes, fupOnly, nid, false)
 				}
 			}
-			if payload.NodeID == "" && len(payload.NodeIDs) == 0 {
+			// A named node list, even if it does not parse, is not a fleet-wide activation.
+			if payload.NodeID != "" || len(payload.NodeIDs) > 0 {
+				break
+			}
+			// fair_use activations name no node. Recompile the exits that serve members,
+			// not every registered node. Other policy types keep the fleet-wide path.
+			if ev.EventType == EventPolicyActivated && payload.Type == string(api.PolicyTypeFairUse) {
+				ids, err := c.exitsCarryingMembers(ctx, nil)
+				if err != nil {
+					return nil, err
+				}
+				for _, id := range ids {
+					noteAffected(affectedNodes, fupOnly, id, true)
+					if fupOnly[id] {
+						noteFUPScope(fupScopes, id, nil)
+					}
+				}
+			} else {
 				recompileAllActive = true
+			}
+		case EventFUPMemberGenerationChanged:
+			var payload struct {
+				MemberID string `json:"member_id"`
+			}
+			if err := json.Unmarshal(ev.Payload, &payload); err != nil {
+				return nil, fmt.Errorf("desiredstate: decode fup.member_generation_changed: %w", err)
+			}
+			memberID, err := uuid.Parse(payload.MemberID)
+			if err != nil {
+				return nil, fmt.Errorf("desiredstate: fup.member_generation_changed member_id: %w", err)
+			}
+			ids, err := c.exitsCarryingMembers(ctx, []uuid.UUID{memberID})
+			if err != nil {
+				return nil, err
+			}
+			for _, id := range ids {
+				noteAffected(affectedNodes, fupOnly, id, true)
+				if fupOnly[id] {
+					noteFUPScope(fupScopes, id, &memberID)
+				}
 			}
 		case EventMemberEntitlementChanged, EventDeviceAuthorized, EventDeviceRevoked, EventMemberSuspended:
 			var payload struct {
@@ -904,7 +949,7 @@ func (c *Compiler) RecompileBatch(ctx context.Context, events []db.ClaimedEvent)
 			_ = json.Unmarshal(ev.Payload, &payload)
 			for _, raw := range payload.NodeIDs {
 				if nid, err := uuid.Parse(raw); err == nil {
-					affectedNodes[nid] = true
+					noteAffected(affectedNodes, fupOnly, nid, false)
 				}
 			}
 			rawGroups := append([]string(nil), payload.GroupIDs...)
@@ -925,7 +970,7 @@ func (c *Compiler) RecompileBatch(ctx context.Context, events []db.ClaimedEvent)
 					return nil, err
 				}
 				for _, id := range ids {
-					affectedNodes[id] = true
+					noteAffected(affectedNodes, fupOnly, id, false)
 				}
 			}
 			if len(rawGroups) > 0 {
@@ -941,7 +986,7 @@ func (c *Compiler) RecompileBatch(ctx context.Context, events []db.ClaimedEvent)
 						return nil, err
 					}
 					for _, nid := range nids {
-						affectedNodes[nid] = true
+						noteAffected(affectedNodes, fupOnly, nid, false)
 					}
 				}
 			} else if len(payload.NodeIDs) == 0 {
@@ -966,7 +1011,7 @@ func (c *Compiler) RecompileBatch(ctx context.Context, events []db.ClaimedEvent)
 				rows.Close()
 				return nil, err
 			}
-			affectedNodes[nid] = true
+			noteAffected(affectedNodes, fupOnly, nid, false)
 		}
 		if err := rows.Err(); err != nil {
 			rows.Close()
@@ -985,6 +1030,21 @@ func (c *Compiler) RecompileBatch(ctx context.Context, events []db.ClaimedEvent)
 
 	var compiled []CompiledDesiredState
 	for _, nid := range orderedNodeIDs {
+		if fupOnly[nid] {
+			var filter []uuid.UUID
+			if sc := fupScopes[nid]; sc != nil && !sc.all {
+				for id := range sc.ids {
+					filter = append(filter, id)
+				}
+			}
+			current, err := c.fairUseEnvelopeCurrent(ctx, nid, filter)
+			if err != nil {
+				return compiled, err
+			}
+			if current {
+				continue
+			}
+		}
 		res, err := c.Compile(ctx, nid)
 		if err != nil {
 			var apiErr *apierr.Error
@@ -1019,6 +1079,240 @@ func (c *Compiler) findNodesForGroups(ctx context.Context, groupIDs []uuid.UUID)
 		nids = append(nids, nid)
 	}
 	return nids, rows.Err()
+}
+
+// fupMemberScope is the set of members a Fair-Use-only recompile must refresh.
+// all is a fleet fair_use activation. ids is one or more generation changes.
+type fupMemberScope struct {
+	all bool
+	ids map[uuid.UUID]struct{}
+}
+
+func noteAffected(affected, fupOnly map[uuid.UUID]bool, id uuid.UUID, fromFUP bool) {
+	if id == uuid.Nil {
+		return
+	}
+	if !fromFUP {
+		affected[id] = true
+		delete(fupOnly, id)
+		return
+	}
+	if !affected[id] {
+		affected[id] = true
+		fupOnly[id] = true
+	}
+}
+
+func noteFUPScope(scopes map[uuid.UUID]*fupMemberScope, id uuid.UUID, member *uuid.UUID) {
+	sc := scopes[id]
+	if sc == nil {
+		sc = &fupMemberScope{ids: map[uuid.UUID]struct{}{}}
+		scopes[id] = sc
+	}
+	if member == nil {
+		sc.all = true
+		return
+	}
+	sc.ids[*member] = struct{}{}
+}
+
+// exitsCarryingMembers returns published, registered exits whose groups overlap a
+// serving entitlement, plus published exits whose current envelope already names
+// one of those members. memberIDs nil selects every serving member.
+func (c *Compiler) exitsCarryingMembers(ctx context.Context, memberIDs []uuid.UUID) ([]uuid.UUID, error) {
+	if c.pool == nil {
+		return nil, errors.New("desiredstate: database required to select fair-use exits")
+	}
+	asOf := time.Now().UTC()
+	if c.now != nil {
+		asOf = c.now().UTC()
+	}
+	allMembers := memberIDs == nil
+	if memberIDs == nil {
+		memberIDs = []uuid.UUID{}
+	}
+	rows, err := c.pool.Query(ctx, `
+		WITH serving AS (
+			SELECT m.id AS member_id, ent.projection->'exit_group_ids' AS groups
+			FROM members m
+			JOIN entitlements ent ON ent.member_id = m.id
+			WHERE m.status = 'active'
+			  AND NOT m.admin_suspended
+			  AND NOT ent.admin_suspended
+			  AND ent.state NOT IN ('pending_payment','suspended','expired','closed')
+			  AND ent.valid_from <= $3
+			  AND $3 < ent.effective_service_end
+			  AND ($1::bool OR m.id = ANY($2::uuid[]))
+		)
+		SELECT DISTINCT e.node_id
+		FROM exits e
+		JOIN nodes n ON n.id = e.node_id
+		JOIN exit_groups eg ON eg.exit_id = e.id
+		JOIN serving s ON EXISTS (
+			SELECT 1 FROM jsonb_array_elements_text(s.groups) g(id) WHERE g.id = eg.group_id::text
+		)
+		WHERE e.publication_intent = 'published'
+		  AND n.lifecycle_state = 'registered'
+		  AND n.current_incarnation_id IS NOT NULL
+		UNION
+		SELECT DISTINCT n.id
+		FROM desired_state_envelopes env
+		JOIN nodes n ON n.id = env.node_id AND n.current_incarnation_id = env.incarnation_id
+		JOIN exits e ON e.node_id = n.id
+		WHERE e.publication_intent = 'published'
+		  AND n.lifecycle_state = 'registered'
+		  AND EXISTS (
+			SELECT 1
+			FROM jsonb_array_elements(COALESCE(env.envelope->'signed'->'member_rate_policies', '[]'::jsonb)) v
+			WHERE $1::bool OR (v->>'member_id')::uuid = ANY($2::uuid[])
+		  )`, allMembers, memberIDs, asOf)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var ids []uuid.UUID
+	for rows.Next() {
+		var id uuid.UUID
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		ids = append(ids, id)
+	}
+	return ids, rows.Err()
+}
+
+// fairUseEnvelopeCurrent reports whether nodeID's stored envelope already carries
+// the fleet fair-use generation and the member rate generation and mode Compile
+// would write. memberFilter empty checks every entitled member on the exit.
+// A matching envelope is not compiled again, so an outbox replay does not bump
+// desired_config_generation.
+func (c *Compiler) fairUseEnvelopeCurrent(ctx context.Context, nodeID uuid.UUID, memberFilter []uuid.UUID) (bool, error) {
+	if c.pool == nil {
+		return false, errors.New("desiredstate: database required to read fair-use envelope")
+	}
+	asOf := time.Now().UTC()
+	if c.now != nil {
+		asOf = c.now().UTC()
+	}
+	var raw []byte
+	err := c.pool.QueryRow(ctx, `
+		SELECT env.envelope
+		FROM desired_state_envelopes env
+		JOIN nodes n ON n.id = env.node_id AND n.current_incarnation_id = env.incarnation_id
+		WHERE env.node_id = $1`, nodeID).Scan(&raw)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return false, nil
+	}
+	if err != nil {
+		return false, err
+	}
+	var env api.DesiredStateEnvelope
+	if err := json.Unmarshal(raw, &env); err != nil {
+		return false, nil
+	}
+
+	polReader := c.policies
+	if polReader == nil {
+		polReader = NewDBPolicyReader(c.pool)
+	}
+	snap, err := polReader.ReadPolicySnapshot(ctx, nodeID, asOf)
+	if err != nil {
+		return false, err
+	}
+	fleetGen := snap.FairUseGeneration
+	if fleetGen == 0 {
+		fleetGen = 1
+	}
+	if uint64(env.Signed.PolicyRefs.FupGeneration) != fleetGen {
+		return false, nil
+	}
+
+	rows, err := c.pool.Query(ctx, `
+		SELECT eg.group_id
+		FROM exits e
+		JOIN exit_groups eg ON eg.exit_id = e.id
+		WHERE e.node_id = $1 AND e.publication_intent = 'published'`, nodeID)
+	if err != nil {
+		return false, err
+	}
+	var groupIDs []uuid.UUID
+	for rows.Next() {
+		var gid uuid.UUID
+		if err := rows.Scan(&gid); err != nil {
+			rows.Close()
+			return false, err
+		}
+		groupIDs = append(groupIDs, gid)
+	}
+	if err := rows.Err(); err != nil {
+		rows.Close()
+		return false, err
+	}
+	rows.Close()
+
+	entReader := c.entitlements
+	if entReader == nil {
+		entReader = NewDBEntitlementReader(c.pool)
+	}
+	var entitled []MemberEntitlement
+	if len(groupIDs) > 0 {
+		entitled, err = entReader.ListEntitledMembersForGroups(ctx, groupIDs, asOf)
+		if err != nil {
+			return false, err
+		}
+	}
+	filter := map[uuid.UUID]struct{}{}
+	for _, id := range memberFilter {
+		filter[id] = struct{}{}
+	}
+	byMember := make(map[uuid.UUID]api.MemberRatePolicy, len(env.Signed.MemberRatePolicies))
+	for _, pol := range env.Signed.MemberRatePolicies {
+		byMember[pol.MemberId] = pol
+	}
+	want := map[uuid.UUID]struct {
+		gen  uint64
+		mode api.MemberRatePolicyMode
+	}{}
+	for _, m := range entitled {
+		if m.PlanDownBps <= 0 || m.PlanUpBps <= 0 {
+			continue
+		}
+		if len(filter) > 0 {
+			if _, ok := filter[m.MemberID]; !ok {
+				continue
+			}
+		}
+		gen := m.FairUsePolicyGen
+		if !m.HasFairUseGen && gen == 0 {
+			gen = fleetGen
+		}
+		mode := m.Mode
+		if mode == "" {
+			mode = api.MemberRatePolicyModeEnforce
+		}
+		want[m.MemberID] = struct {
+			gen  uint64
+			mode api.MemberRatePolicyMode
+		}{gen, mode}
+	}
+	if len(filter) > 0 {
+		for id := range filter {
+			if _, ok := want[id]; ok {
+				continue
+			}
+			// Compile would omit a member this exit no longer serves.
+			if _, stillThere := byMember[id]; stillThere {
+				return false, nil
+			}
+		}
+	}
+	for id, w := range want {
+		pol, ok := byMember[id]
+		if !ok || uint64(pol.Generation) != w.gen || pol.Mode != w.mode {
+			return false, nil
+		}
+	}
+	return true, nil
 }
 
 // nodeCapacityRatePair converts an api.NodeCapacity into the directional per-member rate cap
