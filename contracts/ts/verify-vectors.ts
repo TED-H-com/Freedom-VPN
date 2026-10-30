@@ -68,6 +68,16 @@ function ed25519Verify(pubB64: string, message: string, sigB64: string): boolean
   return verify(null, Buffer.from(message, "utf8"), key, Buffer.from(sigB64, "base64"));
 }
 
+// D-056: compare the exact external bytes to the signed reference before apply.
+const resolverBytes = readFileSync(join(vectorsDir, "../examples/valid/ResolverDocument.json"));
+const resolverState = load("desired-state-resolver-probe-signing.json").signed;
+const resolverRef = resolverState.dns.resolver_document;
+check(resolverBytes.toString("utf8") === canonicalize(parseStrictJSON(resolverBytes)), "resolver bytes already canonical");
+check(resolverBytes.length === resolverRef.size_bytes, "signed resolver byte length");
+check(sha256hex(resolverBytes) === resolverRef.content_sha256, "signed resolver byte digest");
+check(sha256hex(Buffer.concat([resolverBytes, Buffer.from("\n")])) !== resolverRef.content_sha256, "resolver trailing newline rejected");
+check(resolverRef.generation === "9007199254740993", "resolver policy generation retains precision");
+
 // ---- canonical JSON vectors
 const cj = load("canonical-json.json");
 for (const c of cj.cases) {
@@ -105,7 +115,7 @@ check(isDecimalString(urPolicy.result.policy_generation) && BigInt(urPolicy.resu
 check(hashWithout({ ...urPolicy.result, policy_generation: "9007199254740994" }, "payload_hash") !== urPolicy.payload_hash, "changed applied generation changes hash");
 
 // ---- signing vectors
-for (const f of ["release-trust-update-signing.json", "release-manifest-signing.json", "desired-state-signing.json", "desired-state-revocations-signing.json", "serving-lease-signing.json", "usage-checkpoint-signing.json"]) {
+for (const f of ["release-trust-update-signing.json", "release-manifest-signing.json", "desired-state-signing.json", "desired-state-revocations-signing.json", "desired-state-resolver-probe-signing.json", "serving-lease-signing.json", "usage-checkpoint-signing.json"]) {
   const v = load(f);
   const canon = canonicalize(v.signed);
   check(canon === v.canonical_signed, `${f} canonical signed`);

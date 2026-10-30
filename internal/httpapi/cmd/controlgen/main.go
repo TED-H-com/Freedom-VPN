@@ -50,6 +50,12 @@ func main() {
 	}
 	fmt.Fprintln(&b, "return c,nil }")
 	for _, m := range methods {
+		switch m {
+		case "GetResolverDocument":
+			fmt.Fprintln(&b, "// TODO(w3-wire-nodes follow-up): authorize and deliver issued resolver documents; fallback uses WriteError/apierr.Write with 501 NOT_IMPLEMENTED.")
+		case "ListAdminGroups", "CreateAdminGroup":
+			fmt.Fprintln(&b, "// TODO(w3-wire-nodes follow-up): implement immutable member groups; fallback uses WriteError/apierr.Write with 501 NOT_IMPLEMENTED.")
+		}
 		fmt.Fprintf(&b, "func(c *Composite)%s(ctx context.Context,r gen.%sRequestObject)(gen.%sResponseObject,error){for _,s:=range c.sets {if h,ok:=s.(interface{%s(context.Context,gen.%sRequestObject)(gen.%sResponseObject,error)});ok{return h.%s(ctx,r)}};return nil,errNotImplemented}\n", m, m, m, m, m, m, m)
 	}
 	fmt.Fprintln(&b, "var _ gen.StrictServerInterface = (*Composite)(nil)")

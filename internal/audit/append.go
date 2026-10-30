@@ -54,6 +54,8 @@ func Append(ctx context.Context, tx pgx.Tx, row db.AuditEvent, before, after map
 	return AppendEvent(ctx, tx, event)
 }
 
+// NewEvent validates resource types against the generated contract, including
+// member_group for group.create (D-059, §15.2, §16.4); unknown types fail closed.
 func NewEvent(e Entry) (Event, error) {
 	if !e.Actor.Type.Valid() || e.Actor.ID == uuid.Nil || !e.Resource.Type.Valid() || e.Resource.Id == uuid.Nil || !e.Result.Valid() || len(e.Action) > 128 || !regexp.MustCompile(`^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)+$`).MatchString(e.Action) {
 		return Event{}, errors.New("invalid audit entry")

@@ -2,11 +2,11 @@
 
 Good release reaches a terminal updater state
 
-Status: blocked
+Status: pass
 
-Run: 6bf270e4-abb1-43ff-93eb-18d282fc7c2a
+Run: 5852f09a-30e8-45bc-8983-b5f212e33640
 
-Source: 5477de091f449047193fdc9114cfca4ced5b36e6
+Source: 5eb716e1a36ced17b8013646c9282c92746c81da
 
 Spec: §13, §19 AT23, §19 AT25
 
@@ -14,16 +14,18 @@ Spec: §13, §19 AT23, §19 AT25
 - fleet_generation: 1
 - target_count: 1
 - desired_contains_release: true
-- exit_code: 2
-- locally_succeeded: false
+- running_candidate_executable: true
+- exit_code: 0
+- locally_succeeded: true
 - rolled_back: false
 - HASH_MISMATCH: false
-- recovery_required: true
+- recovery_required: false
 - ISOLATION_BASELINE_MISSING: false
 - artifact url address: false
-- health_json: {"dns_policy":"failed","identity_and_state":"passed","internet_only":"failed","processes":"passed","tunnel_probe":"failed"}
-- error_code: ROLLBACK_FAILED
+- health_json: {"dns_policy":"passed","identity_and_state":"passed","internet_only":"passed","processes":"passed","tunnel_probe":"passed"}
+- health_attestation: {"agent_dns_policy":"passed","agent_internet_only":"passed","agent_tunnel_probe":"passed","agent_version":"1.0.1","dns_policy_reason":"policy in force","internet_only_reason":"baseline held","kind":"health_attest","netbird_version":"0.82.0","phase":"candidate","published":"published","tunnel_probe_reason":"overlay_up"}
+- error_code: -
 - result_last_error: -
-- journal_excerpt: stage=recovery_required error_code=ROLLBACK_FAILED error_stage=rollback error_detail=ROLLBACK_FAILED | health_json {"dns_policy":"failed","identity_and_state":"passed","internet_only":"failed","processes":"passed","tunnel_probe":"failed"}
-- note: journal health_json {"dns_policy":"failed","identity_and_state":"passed","internet_only":"failed","processes":"passed","tunnel_probe":"failed"}; error_code ROLLBACK_FAILED; result last_error -. Stock NodeChecks Isolation, DNSPolicy and TunnelProbe return failed with no lab probe. locally_succeeded was not reached. ROLLBACK_FAILED is the rollback decision when no last-good release can be restored
+- journal_excerpt: stage=locally_succeeded error_code= error_stage= error_detail= | health_json {"dns_policy":"passed","identity_and_state":"passed","internet_only":"passed","processes":"passed","tunnel_probe":"passed"} | event seq=8 stage=checking detail={"kind":"health_attest","phase":"candidate","statuses":{"dns_policy":"passed","identity_and_state":"passed","internet_only":"passed","processes":" | event seq=9 stage=locally_succeeded detail=
+- note: locally_succeeded was observed
 

@@ -40,11 +40,13 @@ jobs:
           go-version: "1.27.3"
       - name: Attempt assigned fresh stack
         id: up
-        continue-on-error: true
-        run: make -f mk/e2e.mk e2e-up
+        run: E2E_RESET=1 make -f mk/e2e.mk e2e-up
       - name: Record live acceptance (blocked is non-green)
         if: steps.up.outcome == 'success'
         run: make -f mk/at-members.mk at-members
+      - name: Supplement projection and scheduled feed evidence
+        if: always() && steps.up.outcome == 'success'
+        run: make -f mk/at-members.mk at-members-readback
       - name: Remove only this job's stack
         if: always() && steps.up.outcome != 'skipped'
         run: make -f mk/e2e.mk e2e-down

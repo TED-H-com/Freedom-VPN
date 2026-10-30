@@ -98,6 +98,7 @@ Milestones, gates and work packages come from the Project Plan v1.0. Durations a
 | w3-devstack-e2e follow-up 2: policies/usage settings in the lab, side-by-side stacks (prefix + port base), NetBird signal via gateway, plan catalog, forwarding baseline check | WP11 | done (#59; 7/12 scenarios pass, 5 blocked on the serving-node and device-binding preconditions) |
 | w3-devstack-e2e follow-up 3: publish step in the scenarios, member admission as a native user peer, usage replay with the real device | WP04, WP05, WP09 | done (#68): publish and native member join driven through the product; publication deadlock and missing NetBird user mapping found |
 | w3-devstack-e2e follow-up 4: one embedded Dex issuer for the portal and NetBird clients (D-052), publication blockers captured, boot release allowlist aligned, redacted evidence | WP04, WP05, WP09 | done (#81) |
+| w3-devstack-e2e follow-up 5: real candidate releases through the D-053 health path (update-good passes), central threat-feed scenario, neutral image cache, re-run on main (9 pass / 6 blocked) | WP04, WP05, WP09 | done (#88) |
 | w2-policies-fup follow-up: reconcile embedded policy schemas with contracts/schemas/policies (D-044), fup uint64 overflow instead of clamp, D-029 audit conformance for policies and fup writers | WP07 | done (#46) |
 | r2-updater-review re-run: confirm the updater follow-ups 1–2 against main (read-only) | WP09 | done (16/16 findings closed; regressions R-01..R-05 → updater follow-up 3) |
 | w2-updater follow-up 3: review re-run regressions (revoked-current rescue path, artifact origin allowlist D-046, extract caps and ./ root D-047, resume semantics, nodelock start time) | WP09 | done (#47) |
@@ -110,6 +111,8 @@ Milestones, gates and work packages come from the Project Plan v1.0. Durations a
 | w2-nodes-desiredstate follow-up 4: SetPublicationTx seam for all publication intents, one member rate algorithm (fup builder) | WP05, WP07 | done (#53) |
 | w3-wire-nodes follow-up 4: route SetNodePublication through the exits seam, remove the last placeholder 503 | WP04, WP05 | done (#57) |
 | w3-contracts-r4: UpdateTarget applied-policy evidence members (D-048), positive DomainRule.revision (D-049), writer survey re-run | WP02 | done (#58) |
+| w3-contracts-r5: contracts revision 5 — resolver-document delivery (D-056), member groups and publication membership (D-057), signed egress probe, check detail, feed status, feed cadence default (D-058); 44 operations, info 1.1.0 | WP02 | done (#85) |
+| w3-contracts-r6: contracts revision 5.1 — member_group audit resource type (D-059), API 1.1.1, stale operation counts corrected | WP02 | done (#87) |
 | w3-wire-nodes follow-up 5: worker execution of node.publication_changed via exits.ExecuteOperation, applied-policy evidence on update targets (D-048) | WP04, WP05, WP09 | done (#60; worker executes node.publication_changed through the exits executor with a real NetBird adapter; UpdateTarget policy evidence populated) |
 | w3-wire-nodes follow-up 6: terminal `failed` for publication operations once the dispatcher's retry budget is exhausted | WP04, WP05 | done (#61) |
 | w3-wire-nodes follow-up 7: worker members-domain jobs receive the desired-state compiler (member changes recompile desired state) | WP04, WP05 | done (#62) |
@@ -117,6 +120,7 @@ Milestones, gates and work packages come from the Project Plan v1.0. Durations a
 | w3-wire-nodes follow-up 9: baseline readiness without a management peer id (central side of the publication deadlock) | WP04, WP05, WP09 | done (#77) |
 | w3-wire-nodes follow-up 10: management peer discovery through one-off enrollment correlation groups (D-055), fenced worker discovery with terminal conflicts | WP04, WP05, WP09 | done (#83) |
 | w4-at-members: acceptance tests for members, devices, entitlements and billing against the lab | WP10 | harness merged (#64): 75 live subchecks pass; AT01–AT22 blocked on member admission (setup-key peer has no NetBird user), the serving node and operator runs |
+| w4-at-members follow-up 1 | Members harness re-run on main: native admission through the shared issuer (D-052), last-slot race, device isolation, usage receipts, billing permutations, D-054 feed readback; ten full ATs stay blocked on serving, forwarding and resolver-document delivery | done (#89) |
 | w4-at-security-ops: acceptance tests for sessions, PKI, leases, recovery and operations against the lab | WP10 | harness merged (#63): AT28 passed live; AT29–AT32 blocked on the serving node, WAL archiving, the IdP identity fixture and operator runs |
 | w4-at-isolation: acceptance tests for publication, forwarding, isolation and leases against the lab (netlab) | WP10 | harness merged (#65): netlab mechanism cases pass for AT10/AT13; assembled-stack AT10–AT13 blocked (publication 422: provisioning applying, safety failed); gate semantics and AT12 capture in follow-up 1 |
 | w4-at-isolation follow-up 1: non-zero exit while blocked; AT12 netlab capture; re-run on main | WP10 | done (#69) |
@@ -124,6 +128,7 @@ Milestones, gates and work packages come from the Project Plan v1.0. Durations a
 | w4-at-usage: acceptance tests for usage metering, fair use and billing against the lab | WP10 | harness merged (#80): AT14–AT19 blocked on the serving baseline and on exit-group bootstrap (no admin path creates member groups or attaches exits; D-057 in contracts revision 5) |
 | w4-handover: production deployment runbook, AT30 restore drill record, calibration guide, operator and member guides | WP12 | done (#55) |
 | w4-handover follow-up 1: security-ops review documentation mismatches DOC01–DOC11 and DOC13 resolved (member guide, README, references) | WP12 | done (#72) |
+| w4-ops-backups: central PostgreSQL backups — pgBackRest WAL archiving, base backups, point-in-time restore drill in CI, post-restore checklist and runbook (SECOPS-05, AT30) | WP12 | done (#86) |
 | w3-wire-policies-usage follow-up 3: durable idempotent replay for usage batches (stored first response, no in-memory map) | WP08 | done (#48) |
 | w2-control-core follow-up 6: httpapi command-record accessor for keyed handlers, system actor constant moved to internal/audit | WP04 | done (#51) |
 | w2-control-core follow-up 7 (hotfix): migrate the DNS publish fixture to audit.SystemActor and drop the deprecated releases alias (dns-lint SA1019 on main) | WP04 | done (#52) |

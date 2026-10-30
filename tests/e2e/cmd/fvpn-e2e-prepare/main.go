@@ -306,6 +306,9 @@ func run(state string, reset bool, lay layout) error {
 	if err := os.MkdirAll(filepath.Join(state, "adguard", "work"), 0o755); err != nil {
 		return err
 	}
+	if err := writeFeed(state); err != nil {
+		return err
+	}
 	stack := map[string]any{
 		"public_origin":  "https://portal.example.invalid:8443",
 		"agent_origin":   "https://agent.example.invalid:9443",

@@ -54,6 +54,10 @@ const ERROR_CODE_MESSAGES: Record<ApiErrorCode, Record<'zh-TW' | 'en', string>> 
     'zh-TW': '找不到指定的資源。',
     en: 'The requested resource was not found.',
   },
+  NOT_FOUND: {
+    'zh-TW': '找不到指定的資源。',
+    en: 'The requested resource was not found.',
+  },
   METHOD_NOT_ALLOWED: {
     'zh-TW': '不支援的 HTTP 請求方法。',
     en: 'HTTP method not allowed for this endpoint.',

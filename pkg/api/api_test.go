@@ -17,6 +17,18 @@ import (
 )
 
 var registry = map[string]func() any{
+	"AuditEvent":          func() any { return new(AuditEvent) },
+	"ResolverDocument":    func() any { return new(ResolverDocument) },
+	"MemberGroup":         func() any { return new(MemberGroup) },
+	"MemberGroupCreate":   func() any { return new(MemberGroupCreate) },
+	"MemberGroupList":     func() any { return new(MemberGroupList) },
+	"DnsPolicyEvidence":   func() any { return new(DnsPolicyEvidence) },
+	"EgressProbe":         func() any { return new(EgressProbe) },
+	"NodeCheck":           func() any { return new(NodeCheck) },
+	"ThreatFeedStatus":    func() any { return new(ThreatFeedStatus) },
+	"ThreatFeedPayload":   func() any { return new(ThreatFeedPayload) },
+	"ResolverDocumentRef": func() any { return new(ResolverDocumentRef) },
+
 	"NodeError":                   func() any { return new(NodeError) },
 	"AgentBootstrap":              func() any { return new(AgentBootstrap) },
 	"UpdateTarget":                func() any { return new(UpdateTarget) },
