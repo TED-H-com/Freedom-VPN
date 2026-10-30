@@ -47,29 +47,21 @@ func (l *lab) buildRelease(ctx context.Context, spec releaseSpec) (builtRelease,
 		return builtRelease{}, err
 	}
 	defer os.RemoveAll(dir)
-	tree := filepath.Join(dir, "tree", "bin")
-	if err := os.MkdirAll(tree, 0o755); err != nil {
-		return builtRelease{}, err
-	}
-	if err := os.WriteFile(filepath.Join(tree, "marker"), []byte(spec.marker), 0o644); err != nil {
-		return builtRelease{}, err
-	}
+	when := time.Unix(1_700_000_000, 0).UTC()
+	var blob []byte
 	if spec.blobBytes > 0 {
-		blob := make([]byte, spec.blobBytes)
+		blob = make([]byte, spec.blobBytes)
 		for i := range blob {
 			blob[i] = byte(i*17 + 3)
-		}
-		if err := os.WriteFile(filepath.Join(tree, "blob"), blob, 0o644); err != nil {
-			return builtRelease{}, err
 		}
 	}
 	amd := filepath.Join(dir, "amd64.tar.zst")
 	arm := filepath.Join(dir, "arm64.tar.zst")
-	when := time.Unix(1_700_000_000, 0).UTC()
-	if err := release.PackageDir(filepath.Join(dir, "tree"), amd, when); err != nil {
+	// Distinct trees so the journal sha identifies which architecture was fetched (§13.3, AT23).
+	if err := packageArch(dir, "amd64", spec.marker, blob, when, amd); err != nil {
 		return builtRelease{}, err
 	}
-	if err := release.PackageDir(filepath.Join(dir, "tree"), arm, when); err != nil {
+	if err := packageArch(dir, "arm64", spec.marker, blob, when, arm); err != nil {
 		return builtRelease{}, err
 	}
 	amdSum, err := fileSHA(amd)
@@ -147,6 +139,22 @@ func (l *lab) buildRelease(ctx context.Context, spec releaseSpec) (builtRelease,
 		}
 	}
 	return builtRelease{ID: id, AMDSHA: amdSum, ARMSHA: armSum, Canonical: canonical}, nil
+}
+
+func packageArch(dir, arch, marker string, blob []byte, when time.Time, dest string) error {
+	tree := filepath.Join(dir, "tree-"+arch, "bin")
+	if err := os.MkdirAll(tree, 0o755); err != nil {
+		return err
+	}
+	if err := os.WriteFile(filepath.Join(tree, "marker"), []byte(marker+arch+"\n"), 0o644); err != nil {
+		return err
+	}
+	if len(blob) > 0 {
+		if err := os.WriteFile(filepath.Join(tree, "blob"), blob, 0o644); err != nil {
+			return err
+		}
+	}
+	return release.PackageDir(filepath.Join(dir, "tree-"+arch), dest, when)
 }
 
 func fileSHA(path string) (string, error) {
