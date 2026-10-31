@@ -100,7 +100,7 @@ The separate worker RestartPolicy issue remains closed by #240.
 
 ### D-098 handover pins
 
-The members8 claim test already reads immutable `docs/handover/fixtures/`
+The members8 claim test already reads immutable `tests/handover/testdata/`
 snapshots, so its claims remain true without editing outside this lane.
 Handover may adopt the now-published follow-up-8 archive and SHA256SUMS in its
 own lane; no outside pin change is required for this rerun.
