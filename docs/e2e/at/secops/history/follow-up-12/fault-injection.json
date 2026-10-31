@@ -1,0 +1,50 @@
+{
+  "started_at": "2026-10-30T09:40:18.382590Z",
+  "scope": "only own worker frozen while own control is stopped; prevents provider/peer reconciliation from confounding timeout proof",
+  "script_sha256": "1d9844048783739b8057ad725e01a05966d8aed9defc66114f1807fad6fd2151",
+  "events": [
+    {
+      "utc": "2026-10-30T09:40:20.839536Z",
+      "monotonic_elapsed_seconds": 2.456867992063053,
+      "command": [
+        "docker",
+        "pause",
+        "fvpn-w4-secops-worker"
+      ],
+      "exit_code": 0
+    },
+    {
+      "utc": "2026-10-30T09:41:13.239111Z",
+      "monotonic_elapsed_seconds": 54.856448521022685,
+      "command": [
+        "docker",
+        "unpause",
+        "fvpn-w4-secops-worker"
+      ],
+      "exit_code": 0
+    },
+    {
+      "utc": "2026-10-30T09:43:48.738568Z",
+      "monotonic_elapsed_seconds": 210.35590364097152,
+      "command": [
+        "docker",
+        "pause",
+        "fvpn-w4-secops-worker"
+      ],
+      "exit_code": 0
+    },
+    {
+      "utc": "2026-10-30T09:44:42.544429Z",
+      "monotonic_elapsed_seconds": 264.1617605549982,
+      "command": [
+        "docker",
+        "unpause",
+        "fvpn-w4-secops-worker"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "finished_at": "2026-10-30T09:44:42.794634Z",
+  "completed_cycles": 2,
+  "status": "passed"
+}
