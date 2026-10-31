@@ -1,0 +1,9 @@
+# Follow-up 6 diagnostic run
+
+Run `82eac082-27a1-4526-b1a4-ae05246824b2`, harness `5ddd1126ff1ea72799384b9543f80419cfad4ebf`, product baseline `5d1e5ce8727ca824fa24197ce2568bd513bac7f3` (#256). Product UTC `2026-10-31T04:19:29Z`–`2026-10-31T04:34:36Z`; source clean at build. Full assembled test 907.01 s; mechanism 25.813 s; make exit 2 (`lab=0 stack=1`). All requested subsets passed except disable confirmation, plus the known IPv6/designated-DNS/continuous-fault gaps. Both expiry checks passed, ceiling restored to 86400.
+
+501 convergence samples, median spacing 250.013 ms, maximum 1448.474 ms. Zero desired-bindings-positive / same-generation / grant-less samples, zero accepted AWAITING_MEMBER_GRANTS bootstrap reports. Product observation tc is absent; the mechanism tc section is preserved verbatim.
+
+The disable helper stopped at `partially_succeeded` and restored publication before agent withdrawal confirmation. Operation `1315dee2-57f7-4c75-a019-703b484ef80c`: central route withdrawal succeeded but agent policy was unconfirmed. `disable-operation-evidence.json` retains the steps and related observation IDs. The owned wait now lets observation-driven completion arrive before restoring the intent. A sampler evaluation edge case was also tightened so repeated populated samples cannot multiply two provisional reads into three. Current root records come from the subsequent full run; these diagnostic records were not reclassified.
+
+The convergence timeline is whitespace-normalized to one sample per line; every captured JSON value is unchanged.

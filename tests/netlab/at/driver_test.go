@@ -138,6 +138,10 @@ func scratchExists(path string) bool {
 type applyDoc struct {
 	Generation uint64 `json:"generation"`
 	Admitted   int    `json:"admitted"`
+	Verified   bool   `json:"verified"`
+	Evidence   struct {
+		TC json.RawMessage `json:"tc"`
+	} `json:"evidence"`
 }
 
 func labModel(gen uint64, binds []bind, revoke []string) enforce.Model {

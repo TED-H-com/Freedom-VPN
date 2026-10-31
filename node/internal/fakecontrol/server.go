@@ -84,16 +84,17 @@ type Server struct {
 	// grantsReady is false while the node is not ready. Renewals then omit
 	// member grants the way RenewTx does when includeMembers is false.
 	// TEST ONLY. The default is ready.
-	grantsReady   bool
-	corrupt       bool
-	wrongNode     bool
-	wrongInc      bool
-	expire        bool
-	delay         time.Duration
-	failLeft      int
-	leaseFail     int
-	leaseRetryN   int
-	leaseRetryFor time.Duration
+	identityFrozen *bool
+	grantsReady    bool
+	corrupt        bool
+	wrongNode      bool
+	wrongInc       bool
+	expire         bool
+	delay          time.Duration
+	failLeft       int
+	leaseFail      int
+	leaseRetryN    int
+	leaseRetryFor  time.Duration
 	// leasePosts counts POST /lease-renewals, including a forced failure.
 	leasePosts int
 	// lastLeaseIssued keeps a new lease strictly after the previous one
@@ -689,4 +690,17 @@ func (s *Server) issue(pub *ecdsa.PublicKey, node, inc uuid.UUID) (api.EnrollRes
 		NodeIncarnationId:   inc,
 		PublicationIntent:   api.PublicationIntentPublished,
 	}, nil
+}
+
+// SetIdentityFrozen controls the optional observation response flag (TEST ONLY).
+// True also models the frozen incarnation's grant-less 60-second lease.
+func (s *Server) SetIdentityFrozen(v *bool) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.identityFrozen = nil
+	if v != nil {
+		b := *v
+		s.identityFrozen = &b
+	}
+	s.stickyRaw = nil
 }

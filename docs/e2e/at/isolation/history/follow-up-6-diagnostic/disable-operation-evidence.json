@@ -1,0 +1,59 @@
+{
+  "run_id": "82eac082-27a1-4526-b1a4-ae05246824b2",
+  "build": "5ddd1126ff1ea72799384b9543f80419cfad4ebf",
+  "evidence": [
+    {
+      "kind": "node.disable",
+      "steps": {
+        "agent_policy": {
+          "order": 1,
+          "status": "failed",
+          "required": true,
+          "error_code": "DEPENDENCY_UNAVAILABLE",
+          "updated_at": "2026-10-31T04:27:38.890205123Z",
+          "error_message": "central NetBird route withdrawn; node agent withdrawal unconfirmed"
+        },
+        "data_path_probe": {
+          "order": 3,
+          "reason": "route withdrawn; data path probe not applicable",
+          "status": "not_required",
+          "required": false,
+          "updated_at": "2026-10-31T04:27:38.828797467Z"
+        },
+        "netbird_route_readback": {
+          "order": 2,
+          "status": "succeeded",
+          "required": true,
+          "updated_at": "2026-10-31T04:27:38.890205123Z",
+          "observed_at": "2026-10-31T04:27:38.890205123Z",
+          "observed_ref": "netbird_route_readback"
+        }
+      },
+      "status": "partially_succeeded",
+      "updated_at": "2026-10-31T04:27:38.919319Z",
+      "operation_id": "1315dee2-57f7-4c75-a019-703b484ef80c",
+      "desired_generation": "19",
+      "observed_generation": null
+    },
+    {
+      "errors": [],
+      "safety": "passed",
+      "report_id": "01a19036-671a-71ff-bc51-752cd5432529",
+      "forwarding": true,
+      "generation": "18",
+      "observed_at": "2026-10-31T04:27:26.874127406Z",
+      "provisioning": "ready",
+      "observation_id": "447fe760-81ae-48c3-a3f8-ac4e984cf337"
+    },
+    {
+      "errors": [],
+      "safety": "passed",
+      "report_id": "01a19036-defd-75f8-8373-33aa28f161bb",
+      "forwarding": true,
+      "generation": "21",
+      "observed_at": "2026-10-31T04:27:57.565387871Z",
+      "provisioning": "ready",
+      "observation_id": "1cb3025b-dbfa-47e5-b907-35726a6a8910"
+    }
+  ]
+}

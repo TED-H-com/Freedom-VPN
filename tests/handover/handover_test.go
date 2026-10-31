@@ -1899,7 +1899,8 @@ func TestHandover_Followup13Claims(t *testing.T) {
 					Status string `json:"status"`
 				} `json:"checks"`
 			}
-			if err := json.Unmarshal([]byte(readOwnedDoc(t, root, "docs/e2e/at/isolation/"+id+".json")), &record); err != nil {
+			// D-098: current files carry follow-up 6's run, which handover follow-up 14 adopts.
+			if err := json.Unmarshal([]byte(readOwnedDoc(t, root, "docs/e2e/at/isolation/history/follow-up-5/"+id+".json")), &record); err != nil {
 				t.Fatal(err)
 			}
 			counts := map[string]int{}
