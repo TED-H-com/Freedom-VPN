@@ -365,16 +365,50 @@ func (x *isolationRun) noteRulesetReadback() {
 	}
 	defer conn.Close(x.ctx)
 	var payload []byte
-	if conn.QueryRow(x.ctx, `SELECT report_payload FROM node_observations WHERE node_id=$1 ORDER BY received_at DESC LIMIT 1`, x.r.nodeID).Scan(&payload) == nil {
+	var observationID uuid.UUID
+	if conn.QueryRow(x.ctx, `SELECT id, report_payload FROM node_observations WHERE node_id=$1 ORDER BY received_at DESC LIMIT 1`, x.r.nodeID).Scan(&observationID, &payload) == nil {
 		rec.Observations = append(rec.Observations, iso.Observation{Name: "observation_report", Detail: string(payload)})
 		var report map[string]json.RawMessage
 		_ = json.Unmarshal(payload, &report)
 		tc, ok := report["tc"]
+		_, hasEvidence := report["serving_evidence"]
+		meta, _ := json.MarshalIndent(map[string]any{
+			"run_id": rec.RunID, "build": rec.Build, "observation_id": observationID.String(),
+			"report_id": report["report_id"], "observed_at": report["observed_at"],
+			"has_tc": ok, "has_serving_evidence": hasEvidence,
+		}, "", "  ")
+		if err := iso.WriteExtra(x.dir, "serving-readback-metadata.json", string(meta)+"\n"); err != nil {
+			x.t.Error(err)
+		}
 		if ok {
 			rec.Observations = append(rec.Observations, iso.Observation{Name: "tc_readback", Detail: string(tc)})
 		} else {
-			rec.Observations = append(rec.Observations, iso.Observation{Name: "tc_readback", Detail: "absent from product observation report; report_id=" + string(report["report_id"]) + "; owner w1-netlab / w2-agent-core; mechanism evidence is separately recorded in lab-AT10-tc.json"})
+			rec.Observations = append(rec.Observations, iso.Observation{Name: "tc_readback", Detail: "absent from product observation report; observation_id=" + observationID.String() + "; report_id=" + string(report["report_id"]) + "; owner w1-netlab / w2-agent-core; mechanism evidence is separately recorded in lab-AT10-tc.json"})
 		}
+	}
+	// Retain the accepted report/issuance history as well as sampled state.
+	// This distinguishes a missed short window from a bootstrap that never
+	// emitted the provisional report. No node observation is synthesized.
+	var history []byte
+	if err := conn.QueryRow(x.ctx, `SELECT jsonb_build_object(
+		'run_id', $2::text, 'build', $3::text,
+		'captured_at', to_char(clock_timestamp() AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"'),
+		'scope', 'Read-only bootstrap history through first counted control completion; no synthetic observations submitted.',
+		'awaiting_report_count', (SELECT count(*) FROM node_observations WHERE node_id=$1 AND report_payload->'forwarding_block_reasons' ? 'awaiting_member_grants'),
+		'leases', (SELECT jsonb_agg(v ORDER BY issued_at) FROM (SELECT issued_at, jsonb_build_object(
+			'lease_id', id, 'generation', policy_generation::text,
+			'issued_at', to_char(issued_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"'),
+			'member_count', jsonb_array_length(envelope->'signed'->'members')) v FROM serving_leases WHERE node_id=$1) s),
+		'reports', (SELECT jsonb_agg(v ORDER BY received_at) FROM (SELECT received_at, jsonb_build_object(
+			'observation_id', id, 'report_id', report_id, 'observed_at', report_payload->'observed_at',
+			'received_at', to_char(received_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"'),
+			'generation', report_payload->'applied_config_generation', 'provisioning', report_payload->'provisioning_state',
+			'safety', report_payload->'safety_status', 'reasons', report_payload->'forwarding_block_reasons',
+			'errors', report_payload->'errors') v FROM node_observations WHERE node_id=$1) s)
+	)`, x.r.nodeID, rec.RunID, rec.Build).Scan(&history); err != nil {
+		x.t.Error("bootstrap history read failed")
+	} else if err := iso.WriteExtra(x.dir, "bootstrap-renewal-evidence.json", string(history)+"\n"); err != nil {
+		x.t.Error(err)
 	}
 }
 
@@ -574,8 +608,14 @@ func (x *isolationRun) publication(intent string, groups []uuid.UUID, c *iso.Che
 		if e != nil || last.Status != 200 || json.Unmarshal(last.Body, &v) != nil {
 			return false
 		}
+		if status != v.Status {
+			note("operation_transition", time.Now().UTC().Format(time.RFC3339Nano)+" "+v.Status)
+		}
 		status = v.Status
-		return status == "succeeded" || status == "failed" || status == "partially_succeeded"
+		// Central withdrawal may be confirmed before the agent ACK. Its
+		// partially_succeeded operation still accepts observation-driven
+		// completion; keep the disabled intent until that read-back arrives.
+		return status == "succeeded" || status == "failed"
 	})
 	note("operation", string(last.Body))
 	node, _ := x.admin.call(x.ctx, "GET", path, nil, nil)

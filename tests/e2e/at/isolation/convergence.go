@@ -100,6 +100,7 @@ func EvaluateProvisional(rows []map[string]any) ProvisionalResult {
 			}
 			r.Status, r.Generation, r.ObservationID, r.LeaseID = StatusPass, first.Desired, first.ObservationID, key
 			r.ReadyAt, r.PopulatedAt, r.ReadyToPopulatedMS = first.ObservedAt, s.IssuedAt, issued.Sub(ready).Milliseconds()
+			r.SampleTimes = nil
 			for _, sample := range g {
 				at, err := time.Parse(time.RFC3339Nano, sample.At)
 				if err == nil && !at.Before(ready) && at.Before(issued) {

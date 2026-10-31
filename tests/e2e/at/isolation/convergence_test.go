@@ -55,3 +55,12 @@ func TestAT10_ProvisionalSamplingRequiresShapeAndThreeReads(t *testing.T) {
 		})
 	}
 }
+
+func TestAT10_PopulatedReadsDoNotMultiplyProvisionalSamples(t *testing.T) {
+	rows := provisionalRows(t)
+	rows[2]["at"] = "2026-10-31T00:00:05.100Z"
+	rows = append(rows, rows[3], rows[3])
+	if got := EvaluateProvisional(rows); got.Status != StatusBlocked || len(got.SampleTimes) != 2 {
+		t.Fatalf("two reads inside the interval must stay blocked: %+v", got)
+	}
+}
