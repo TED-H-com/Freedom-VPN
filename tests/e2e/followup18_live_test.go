@@ -274,7 +274,9 @@ func (r *runner) installerServing18(ctx context.Context, s *Stack) {
 	var row []byte
 	err = db.QueryRow(ctx, `SELECT jsonb_build_object('received_at',received_at,'report',report_payload) FROM node_observations WHERE node_id=$1 ORDER BY received_at DESC LIMIT 1`, r.nodeID).Scan(&row)
 	note("central_observation", string(row))
-	if err == nil && strings.Contains(string(beat), "serving 1") {
+	_, activeErr := r.lab.docker(c, "systemctl", "is-active", "--quiet", "fvpn-agent.service")
+	note("agent_active", boolText(activeErr == nil))
+	if err == nil && activeErr == nil && servingHeartbeatSince(beat, time.Now().Add(-15*time.Second)) {
 		rec.Status = StatusPass
 	}
 }
@@ -326,6 +328,7 @@ func (r *runner) installerUsage18(ctx context.Context, s, selected *Stack) {
 	first, e1 := s.UsageLedgerSnapshotBytes(ctx, "installer-node")
 	second, e2 := s.UsageLedgerSnapshotBytes(ctx, "installer-node")
 	note("quiescent_snapshot_byte_equal", boolText(e1 == nil && e2 == nil && bytes.Equal(first, second)))
+	restoreAt := time.Now()
 	restoreErr := s.RestoreInstallerServices(ctx, "installer-node", again.Services)
 	note("services_restored", boolText(restoreErr == nil))
 	if restoreErr != nil {
@@ -351,7 +354,7 @@ func (r *runner) installerUsage18(ctx context.Context, s, selected *Stack) {
 	fresh, stop := context.WithTimeout(ctx, 45*time.Second)
 	ready := waitUntil(fresh, time.Second, func() bool {
 		b, e := r.lab.docker(s.installerContainer(), "cat", "/run/vpn-node/heartbeat")
-		return e == nil && strings.Contains(string(b), "serving 1")
+		return e == nil && servingHeartbeatSince(b, restoreAt)
 	})
 	stop()
 	note("serving_after_restore", boolText(ready))
