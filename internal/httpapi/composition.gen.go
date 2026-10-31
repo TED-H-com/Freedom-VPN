@@ -32,6 +32,19 @@ func Compose(sets ...any) (*Composite, error) {
 		n := 0
 		for _, s := range sets {
 			if _, ok := s.(interface {
+				ListAdminDevices(context.Context, gen.ListAdminDevicesRequestObject) (gen.ListAdminDevicesResponseObject, error)
+			}); ok {
+				n++
+			}
+		}
+		if n > 1 {
+			return nil, fmt.Errorf("duplicate handler: ListAdminDevices")
+		}
+	}
+	{
+		n := 0
+		for _, s := range sets {
+			if _, ok := s.(interface {
 				CreateEnrollment(context.Context, gen.CreateEnrollmentRequestObject) (gen.CreateEnrollmentResponseObject, error)
 			}); ok {
 				n++
@@ -156,6 +169,19 @@ func Compose(sets ...any) (*Composite, error) {
 		}
 		if n > 1 {
 			return nil, fmt.Errorf("duplicate handler: UpdateMember")
+		}
+	}
+	{
+		n := 0
+		for _, s := range sets {
+			if _, ok := s.(interface {
+				AuthorizeMemberDevice(context.Context, gen.AuthorizeMemberDeviceRequestObject) (gen.AuthorizeMemberDeviceResponseObject, error)
+			}); ok {
+				n++
+			}
+		}
+		if n > 1 {
+			return nil, fmt.Errorf("duplicate handler: AuthorizeMemberDevice")
 		}
 	}
 	{
@@ -640,6 +666,17 @@ func (c *Composite) ListAuditEvents(ctx context.Context, r gen.ListAuditEventsRe
 	return nil, errNotImplemented
 }
 
+func (c *Composite) ListAdminDevices(ctx context.Context, r gen.ListAdminDevicesRequestObject) (gen.ListAdminDevicesResponseObject, error) {
+	for _, s := range c.sets {
+		if h, ok := s.(interface {
+			ListAdminDevices(context.Context, gen.ListAdminDevicesRequestObject) (gen.ListAdminDevicesResponseObject, error)
+		}); ok {
+			return h.ListAdminDevices(ctx, r)
+		}
+	}
+	return nil, errNotImplemented
+}
+
 func (c *Composite) CreateEnrollment(ctx context.Context, r gen.CreateEnrollmentRequestObject) (gen.CreateEnrollmentResponseObject, error) {
 	for _, s := range c.sets {
 		if h, ok := s.(interface {
@@ -745,6 +782,17 @@ func (c *Composite) UpdateMember(ctx context.Context, r gen.UpdateMemberRequestO
 			UpdateMember(context.Context, gen.UpdateMemberRequestObject) (gen.UpdateMemberResponseObject, error)
 		}); ok {
 			return h.UpdateMember(ctx, r)
+		}
+	}
+	return nil, errNotImplemented
+}
+
+func (c *Composite) AuthorizeMemberDevice(ctx context.Context, r gen.AuthorizeMemberDeviceRequestObject) (gen.AuthorizeMemberDeviceResponseObject, error) {
+	for _, s := range c.sets {
+		if h, ok := s.(interface {
+			AuthorizeMemberDevice(context.Context, gen.AuthorizeMemberDeviceRequestObject) (gen.AuthorizeMemberDeviceResponseObject, error)
+		}); ok {
+			return h.AuthorizeMemberDevice(ctx, r)
 		}
 	}
 	return nil, errNotImplemented

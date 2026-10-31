@@ -9,7 +9,7 @@ The product contract is [`docs/spec/PROJECT_SPEC.zh-TW.md`](../spec/PROJECT_SPEC
 
 | Artifact | Path | Kind |
 |---|---|---|
-| OpenAPI 3.0.3 document, 47 endpoints (§14.2 to §14.4 plus D-015, D-056, D-057, D-065, ENR-02/ENR-03, D-067, D-071, D-072) | [`contracts/openapi.yaml`](../../contracts/openapi.yaml) | hand-written, **source of truth** |
+| OpenAPI 3.0.3 document, 49 endpoints (§14.2 to §14.4 plus D-015, D-056, D-057, D-065, ENR-02/ENR-03, D-067, D-071, D-072, D-076, D-077, SECOPS-19) | [`contracts/openapi.yaml`](../../contracts/openapi.yaml) | hand-written, **source of truth** |
 | JSON Schema 2020-12 for API signed or hashed documents | [`contracts/schemas/`](../../contracts/schemas) | generated from `openapi.yaml` |
 | Go types (types only, oapi-codegen v2.8.1) | [`pkg/api/api.gen.go`](../../pkg/api/api.gen.go) | generated |
 | TypeScript types (openapi-typescript 7.13.0) | [`contracts/ts/openapi.d.ts`](../../contracts/ts/openapi.d.ts) | generated |
@@ -113,7 +113,7 @@ malformed public key, and missing revocation timestamp.
 These rules are enforced by tests in `contracts/` (test names in brackets).
 
 - **Prefix and paths.** Paths are relative to the server URL `.../api/v1`.
-  JSON is UTF-8. [`TestAPI01_EndpointCountIs47`]
+  JSON is UTF-8. [`TestAPI01_EndpointCountIs49`]
 - **IDs.** Our entity, operation and request IDs are UUIDs (`format: uuid`).
   External IDs (NetBird peer, OIDC subject, provider price) are opaque strings.
   [`TestAPI01_IDTimeAndMoneyConventions`]
@@ -242,7 +242,7 @@ meanings and where those codes may appear are in [Revision 8](#revision-8).
 ## Browser role selector (D-032)
 
 `GET /auth/session` and `POST /auth/logout` are existing browser routes outside
-`/api/v1` and outside the 47-endpoint API. Their query parameter is recorded in
+`/api/v1` and outside the 49-endpoint API. Their query parameter is recorded in
 `openapi.yaml` under `x-fvpn-browser-auth`:
 
 | Parameter | Type | Presence | Cookies |
@@ -254,6 +254,36 @@ identity and logout CSRF context come from the selected cookie. The selector
 does not grant a role. The task's proposed `/api/v1/auth/*` aliases do not exist
 on main; adding them would violate the fixed endpoint count. No aliases are
 introduced by this revision.
+
+## Revision 12
+
+API version **1.8.0**. The endpoint count is **49**. No new `ErrorCode`. Audit actions stay free strings.
+
+### D-077 `MemberDevice.authorization_unconfirmed`
+
+`MemberDevice` gains required read-only `authorization_unconfirmed` (`boolean`). It is `true` while a `device_authorization_fences` row exists for the device and `false` otherwise. `DeviceStatus` is unchanged: a fenced device reads `status: pending` with `authorization_unconfirmed: true`. The member cannot clear it. It clears when an operator re-authorizes the device (`authorizeMemberDevice`) or the device is revoked. A device-limit rejection never sets it (§17.4, D-076).
+
+`GET /admin/devices` (`listAdminDevices`) is the operator list of devices that need re-authorization after a ledger restore, and it also answers per-member device questions. Query filters are optional `member_id` (uuid), `authorization_unconfirmed` (boolean) and `status` (`DeviceStatus`), plus `Cursor` and `Limit`. The page is `AdminDeviceList` (`items`, `next_cursor`). Ordering is the same opaque-cursor keyset as `listMembers` and `listMemberDevices`: stable ascending (`member_id`, `device_id`), `limit` default 50, maximum 100. Filters select the page and do not change that order.
+
+`AdminDevice` is `allOf` `MemberDevice` plus required `member_id` (uuid) and `authorization_unconfirmed_since` (nullable UTC date-time: the fence row's creation time, `null` when not fenced).
+
+`POST /admin/members/{member_id}/devices/{device_id}/authorize` (`authorizeMemberDevice`) takes `MemberId`, `DeviceId` and `IdempotencyKey` and no request body. `202` is `OperationAccepted` with kind `member.device_authorize`. `404` when the device does not belong to the member. `409` `STATE_CONFLICT` when the device is `revoked`. `422` `DEVICE_LIMIT_REACHED` when authorizing would exceed the member's device allowance. This is the only path that re-grants a fenced device (D-076), and it is also the ordinary admin authorization of a `pending` device.
+
+Both operations cite `§14.2, §17.4, §9.4` and requirements `MEM03` and `DATA01` (the restore vocabulary: backup and restore can be reconciled, AT30). `x-fvpn-spec` keeps the `§14.` prefix the operation-id test requires; `§17.4, §9.4` follow it. Auth matches `/admin/members`: session on the list, session plus CSRF on the command.
+
+wire-members follow-up 10 replaces the composition stubs `ListAdminDevices` and `AuthorizeMemberDevice`. Portal follow-up 15 renders the flag and the operator action. Handover follow-up 11 states them for operators. Those consumers are not this revision.
+
+### SECOPS-19 `NodeDetail.usage_outbox`
+
+`NodeDetail` gains optional nullable `usage_outbox` (`allOf` `NodeUsageOutbox`, nullable, the same absent-versus-null shape as `identity_conflict`). `NodeUsageOutbox` repeats the `UsageOutboxStatus` fields verbatim and adds required `observed_at` (the accepted observation report's receipt time). It is not `allOf` `UsageOutboxStatus`: that schema sets `additionalProperties: false`, so an `allOf` extension rejects `observed_at`. `null` until a report with a usage block has been accepted for the current incarnation. Absent means the server does not project it yet (pre-revision-12). Operators read it to see whether a node's outbox is backing up. It never affects `safety_status` or forwarding.
+
+It participates in the node strong ETag by the same rule as the other observation-derived fields (`checks`, `recent_errors`, `safety_status`, `member_forwarding_observed`, `data_health`, `dns_policy_evidence`): accepting an observation increments `nodes.resource_version`, and `GET /admin/nodes/{node_id}` returns `ETag` `"<resource_version>"`. Projection is wire-nodes' consumer follow-up.
+
+| Change | Contract surface | Consumers |
+|---|---|---|
+| D-077 | `MemberDevice.authorization_unconfirmed`; `GET /admin/devices`; `POST .../authorize` | wire-members follow-up 10 (`ListAdminDevices`, `AuthorizeMemberDevice`); portal follow-up 15; handover follow-up 11 |
+| SECOPS-19 | `NodeDetail.usage_outbox` | wire-nodes projects the field |
+| D-071 example | `ObservationReport.awaiting-member-grants.json` carries the one `errors[]` entry and the three failed checks | `internal/nodes/publication_evidence_test.go` pins that one-entry shape |
 
 ## Revision 11
 
@@ -739,7 +769,7 @@ through `npx`). The Redocly configuration is `contracts/redocly.yaml`
 
 ## How to add or change an endpoint
 
-1. Find the requirement in the spec. New endpoints change the current count of 47 (including D-015, D-065 and ENR-03);
+1. Find the requirement in the spec. New endpoints change the current count of 49 (including D-015, D-065, ENR-03 and D-077);
    coordinate with the orchestrator and update `specEndpoints` and
    `specStatuses` in `contracts/openapi_test.go`.
 2. Edit `contracts/openapi.yaml`: path, `operationId` (lowerCamelCase, stable),
@@ -785,6 +815,8 @@ against `x-fvpn-spec` and `x-fvpn-requirements` by `TestDocs_EndpointTable`.
 | `GET /admin/members/{member_id}` | `getMember` | adminSession | 200 | §14.2, §9.2 | MEM01 BILL02 ENT01 |
 | `PATCH /admin/members/{member_id}` | `updateMember` | adminSession + csrfToken | 200,202 | §14.2, §9.2, §14.5 | MEM03 BILL02 ENT02 API01 |
 | `POST /admin/members/{member_id}/grants` | `createMemberGrant` | adminSession + csrfToken | 202 | §14.2, §9.2, §15.2 | BILL02 ENT01 |
+| `GET /admin/devices` | `listAdminDevices` | adminSession | 200 | §14.2, §17.4, §9.4 | MEM03 DATA01 |
+| `POST /admin/members/{member_id}/devices/{device_id}/authorize` | `authorizeMemberDevice` | adminSession + csrfToken | 202 | §14.2, §17.4, §9.4 | MEM03 DATA01 |
 | `GET /admin/policies` | `listPolicies` | adminSession | 200 | §14.2, §15.3 | FUP01 DNS01 UPD04 |
 | `POST /admin/policies` | `createPolicyRevision` | adminSession + csrfToken | 201 | §14.2, §11.1, §12.4, §15.3 | FUP01 DNS01 DNS02 UPD04 API01 |
 | `POST /admin/policies/{definition_id}/activate` | `activatePolicyRevision` | adminSession + csrfToken | 202 | §14.2, §11.2, §12.5 | FUP01 DNS01 ISO02 API01 |

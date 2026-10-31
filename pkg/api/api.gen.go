@@ -14,6 +14,36 @@ import (
 	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
+// Defines values for AdminDevicePlatform.
+const (
+	AdminDevicePlatformAndroid AdminDevicePlatform = "android"
+	AdminDevicePlatformIos     AdminDevicePlatform = "ios"
+	AdminDevicePlatformLinux   AdminDevicePlatform = "linux"
+	AdminDevicePlatformMacos   AdminDevicePlatform = "macos"
+	AdminDevicePlatformUnknown AdminDevicePlatform = "unknown"
+	AdminDevicePlatformWindows AdminDevicePlatform = "windows"
+)
+
+// Valid indicates whether the value is a known member of the AdminDevicePlatform enum.
+func (e AdminDevicePlatform) Valid() bool {
+	switch e {
+	case AdminDevicePlatformAndroid:
+		return true
+	case AdminDevicePlatformIos:
+		return true
+	case AdminDevicePlatformLinux:
+		return true
+	case AdminDevicePlatformMacos:
+		return true
+	case AdminDevicePlatformUnknown:
+		return true
+	case AdminDevicePlatformWindows:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for Architecture.
 const (
 	ArchitectureAmd64 Architecture = "amd64"
@@ -2423,6 +2453,46 @@ type AccountingPeriod struct {
 	PeriodStart time.Time `json:"period_start"`
 }
 
+// AdminDevice One member device on the operator list (D-077). `member_id` is the owner.
+// `authorization_unconfirmed_since` is the fence row's creation time, null
+// when the device is not fenced.
+type AdminDevice struct {
+	// AuthorizationUnconfirmed True while a `device_authorization_fences` row exists for this device,
+	// false otherwise. `DeviceStatus` is unchanged: a fenced device reads
+	// `status: pending` with `authorization_unconfirmed: true`. The member
+	// cannot clear it. It clears when an operator re-authorizes the device
+	// (`POST /admin/members/{member_id}/devices/{device_id}/authorize`) or
+	// the device is revoked. A device-limit rejection never sets it
+	// (§17.4, D-076).
+	AuthorizationUnconfirmed *bool `json:"authorization_unconfirmed"`
+
+	// AuthorizationUnconfirmedSince Creation time of the `device_authorization_fences` row. Null when the device is not fenced.
+	AuthorizationUnconfirmedSince nullable.Nullable[time.Time] `json:"authorization_unconfirmed_since"`
+	AuthorizedAt                  nullable.Nullable[time.Time] `json:"authorized_at"`
+	CreatedAt                     time.Time                    `json:"created_at"`
+	DeviceId                      openapi_types.UUID           `json:"device_id"`
+	LastSeenAt                    nullable.Nullable[time.Time] `json:"last_seen_at"`
+	MemberId                      *openapi_types.UUID          `json:"member_id,omitempty"`
+	Name                          string                       `json:"name"`
+	Platform                      AdminDevicePlatform          `json:"platform"`
+	RevokedAt                     nullable.Nullable[time.Time] `json:"revoked_at"`
+
+	// Status Member device authorization state (§9.4). New peers start without exit rights.
+	Status DeviceStatus `json:"status"`
+}
+
+// AdminDevicePlatform defines model for AdminDevice.Platform.
+type AdminDevicePlatform string
+
+// AdminDeviceList A page of member devices for operators. Same list conventions as
+// `MemberDeviceList` and `listMembers`: opaque cursor, `limit` default 50
+// maximum 100, stable ascending keyset on (`member_id`, `device_id`).
+// This page does not include `device_limit` or `authorized_count`.
+type AdminDeviceList struct {
+	Items      []AdminDevice             `json:"items"`
+	NextCursor nullable.Nullable[string] `json:"next_cursor"`
+}
+
 // AgentBootstrap One-time NetBird setup credential delivered only over agent mTLS (D-015, §6.4). TEST ONLY examples are not usable keys.
 type AgentBootstrap struct {
 	// ExpiresAt UTC expiry of the bootstrap credential. The server also enforces the separate delivery deadline.
@@ -3524,13 +3594,21 @@ type MemberDetailAccountStatus string
 
 // MemberDevice defines model for MemberDevice.
 type MemberDevice struct {
-	AuthorizedAt nullable.Nullable[time.Time] `json:"authorized_at"`
-	CreatedAt    time.Time                    `json:"created_at"`
-	DeviceId     openapi_types.UUID           `json:"device_id"`
-	LastSeenAt   nullable.Nullable[time.Time] `json:"last_seen_at"`
-	Name         string                       `json:"name"`
-	Platform     MemberDevicePlatform         `json:"platform"`
-	RevokedAt    nullable.Nullable[time.Time] `json:"revoked_at"`
+	// AuthorizationUnconfirmed True while a `device_authorization_fences` row exists for this device,
+	// false otherwise. `DeviceStatus` is unchanged: a fenced device reads
+	// `status: pending` with `authorization_unconfirmed: true`. The member
+	// cannot clear it. It clears when an operator re-authorizes the device
+	// (`POST /admin/members/{member_id}/devices/{device_id}/authorize`) or
+	// the device is revoked. A device-limit rejection never sets it
+	// (§17.4, D-076).
+	AuthorizationUnconfirmed *bool                        `json:"authorization_unconfirmed"`
+	AuthorizedAt             nullable.Nullable[time.Time] `json:"authorized_at"`
+	CreatedAt                time.Time                    `json:"created_at"`
+	DeviceId                 openapi_types.UUID           `json:"device_id"`
+	LastSeenAt               nullable.Nullable[time.Time] `json:"last_seen_at"`
+	Name                     string                       `json:"name"`
+	Platform                 MemberDevicePlatform         `json:"platform"`
+	RevokedAt                nullable.Nullable[time.Time] `json:"revoked_at"`
 
 	// Status Member device authorization state (§9.4). New peers start without exit rights.
 	Status DeviceStatus `json:"status"`
@@ -3853,6 +3931,18 @@ type NodeDetail struct {
 	// SafetyStatus Whether isolation and a valid policy meet the baseline (§5).
 	SafetyStatus SafetyStatus                         `json:"safety_status"`
 	Update       nullable.Nullable[NodeUpdateSummary] `json:"update"`
+
+	// UsageOutbox Last reported usage outbox status for the node's current incarnation
+	// (SECOPS-19). `null` until a report with a usage block has been accepted
+	// for the current incarnation. Absent means the server does not project
+	// it yet (pre-revision-12). Operators read it to see whether a node's
+	// outbox is backing up. It never affects `safety_status` or forwarding.
+	// It participates in the node strong ETag by the same rule as the other
+	// observation-derived fields (`checks`, `recent_errors`, `safety_status`,
+	// `member_forwarding_observed`, `data_health`, `dns_policy_evidence`):
+	// accepting an observation increments `nodes.resource_version`, and
+	// `GET /admin/nodes/{node_id}` returns `ETag` `"<resource_version>"`.
+	UsageOutbox nullable.Nullable[NodeUsageOutbox] `json:"usage_outbox,omitzero"`
 }
 
 // NodeError defines model for NodeError.
@@ -4112,6 +4202,36 @@ type NodeUpdateSummary struct {
 	// `cancelled_retired` (§13.1). Batch counts fold `superseded_incarnation`
 	// into `superseded` and both cancelled states into `cancelled`.
 	State UpdateJobState `json:"state"`
+}
+
+// NodeUsageOutbox Usage outbox status from the last accepted observation that carried a
+// usage block for the node's current incarnation, plus that report's
+// receipt time (SECOPS-19). The field definitions match `UsageOutboxStatus`
+// verbatim. They are not `allOf` that schema: `UsageOutboxStatus` sets
+// `additionalProperties: false`, and an `allOf` extension then rejects
+// `observed_at`.
+type NodeUsageOutbox struct {
+	// AckedArchiveBytes Replay archive size, budgeted separately from the unacked backlog (§10.8).
+	AckedArchiveBytes decstr.U64                    `json:"acked_archive_bytes"`
+	BlockedSeq        nullable.Nullable[decstr.U64] `json:"blocked_seq"`
+
+	// CentralAckedThrough Highest contiguous ACK received in ledger_epoch; "0" when none.
+	CentralAckedThrough decstr.U64 `json:"central_acked_through"`
+
+	// LastDurableEventSeq "0" when no event exists yet.
+	LastDurableEventSeq decstr.U64 `json:"last_durable_event_seq"`
+
+	// LedgerEpoch Central ledger epoch the node is synchronized with.
+	LedgerEpoch  nullable.Nullable[openapi_types.UUID] `json:"ledger_epoch"`
+	MeterEpochId nullable.Nullable[openapi_types.UUID] `json:"meter_epoch_id"`
+
+	// ObservedAt Receipt time of the accepted observation report (central `received_at`).
+	ObservedAt        time.Time                    `json:"observed_at"`
+	OldestUnackedAt   nullable.Nullable[time.Time] `json:"oldest_unacked_at"`
+	UnackedEventCount int                          `json:"unacked_event_count"`
+
+	// UnackedPayloadBytes Sum of canonical payload bytes of unacknowledged events (§10.8).
+	UnackedPayloadBytes decstr.U64 `json:"unacked_payload_bytes"`
 }
 
 // ObservationAccepted The report was durably accepted. Not a claim that it was cross-verified (§14.4).
@@ -5600,6 +5720,23 @@ type ListAuditEventsParams struct {
 	OccurredTo *time.Time `form:"occurred_to,omitempty" json:"occurred_to,omitempty"`
 }
 
+// ListAdminDevicesParams defines parameters for ListAdminDevices.
+type ListAdminDevicesParams struct {
+	// Cursor Opaque cursor from a previous page's `next_cursor`. Never parse or construct it (§14.1).
+	Cursor *Cursor `form:"cursor,omitempty" json:"cursor,omitempty"`
+
+	// Limit Page size. Default 50, maximum 100 (§14.1, recommended default).
+	Limit *Limit `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// MemberId Restrict the page to one member.
+	MemberId *openapi_types.UUID `form:"member_id,omitempty" json:"member_id,omitempty"`
+
+	// AuthorizationUnconfirmed When true, only fenced devices. When false, only devices with no
+	// fence row. Omit to return both.
+	AuthorizationUnconfirmed *bool         `form:"authorization_unconfirmed,omitempty" json:"authorization_unconfirmed,omitempty"`
+	Status                   *DeviceStatus `form:"status,omitempty" json:"status,omitempty"`
+}
+
 // CreateEnrollmentParams defines parameters for CreateEnrollment.
 type CreateEnrollmentParams struct {
 	// IdempotencyKey Client-generated UUID (§14.5). Scope: principal, HTTP method, normalized
@@ -5674,6 +5811,16 @@ type UpdateMemberParams struct {
 	// RESOURCE_VERSION_CONFLICT with details.current_resource_version.
 	IfMatch IfMatch `json:"If-Match"`
 
+	// IdempotencyKey Client-generated UUID (§14.5). Scope: principal, HTTP method, normalized
+	// route and key. Same key and same validated payload return the same resource
+	// or operation; same key and a different payload return 409
+	// IDEMPOTENCY_CONFLICT. Kept at least 7 days (recommended default). Missing
+	// header: 400 MALFORMED_REQUEST.
+	IdempotencyKey IdempotencyKey `json:"Idempotency-Key"`
+}
+
+// AuthorizeMemberDeviceParams defines parameters for AuthorizeMemberDevice.
+type AuthorizeMemberDeviceParams struct {
 	// IdempotencyKey Client-generated UUID (§14.5). Scope: principal, HTTP method, normalized
 	// route and key. Same key and same validated payload return the same resource
 	// or operation; same key and a different payload return 409

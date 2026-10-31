@@ -870,7 +870,7 @@ func TestHandover_Followup7Claims(t *testing.T) {
 	root := repoRoot(t)
 
 	// 1. Parse contracts/openapi.yaml for the live operation count and FleetConfigUpdate max_offline_lease_seconds bounds (60..86400).
-	// Revision 10 advanced the count from 46 to 47 (listNodeIncarnations). This test still pins follow-up 7's fleet-config decisions.
+	// Revision 12 advanced the count from 47 to 49 (listAdminDevices, authorizeMemberDevice). This test still pins follow-up 7's fleet-config decisions.
 	rawSpec, err := os.ReadFile(filepath.Join(root, "contracts", "openapi.yaml"))
 	if err != nil {
 		t.Fatalf("read contracts/openapi.yaml: %v", err)
@@ -897,8 +897,8 @@ func TestHandover_Followup7Claims(t *testing.T) {
 			}
 		}
 	}
-	if opCount != 47 {
-		t.Fatalf("contracts/openapi.yaml operation count = %d, want 47", opCount)
+	if opCount != 49 {
+		t.Fatalf("contracts/openapi.yaml operation count = %d, want 49", opCount)
 	}
 	if _, ok := spec.Paths["/admin/fleet-config"]; !ok {
 		t.Fatal("contracts/openapi.yaml missing /admin/fleet-config path")
@@ -1220,8 +1220,8 @@ func TestHandover_Followup8Claims(t *testing.T) {
 func TestHandover_Followup9Claims(t *testing.T) {
 	root := repoRoot(t)
 
-	// 1. Verify OpenAPI 1.7.0 revision 11 (#213) schema elements: ErrorCode.AWAITING_MEMBER_GRANTS (D-071)
-	// and NodeDetail.identity_conflict / NodeIdentityConflict (D-072).
+	// 1. Verify revision 11 schema elements still present after revision 12 advanced info.version to 1.8.0:
+	// ErrorCode.AWAITING_MEMBER_GRANTS (D-071) and NodeDetail.identity_conflict / NodeIdentityConflict (D-072).
 	rawSpec, err := os.ReadFile(filepath.Join(root, "contracts", "openapi.yaml"))
 	if err != nil {
 		t.Fatalf("read contracts/openapi.yaml: %v", err)
@@ -1243,8 +1243,8 @@ func TestHandover_Followup9Claims(t *testing.T) {
 	if err := yaml.Unmarshal(rawSpec, &spec); err != nil {
 		t.Fatalf("parse contracts/openapi.yaml: %v", err)
 	}
-	if spec.Info.Version != "1.7.0" {
-		t.Fatalf("contracts/openapi.yaml info.version = %q, want 1.7.0", spec.Info.Version)
+	if spec.Info.Version != "1.8.0" {
+		t.Fatalf("contracts/openapi.yaml info.version = %q, want 1.8.0", spec.Info.Version)
 	}
 	if !slices.Contains(spec.Components.Schemas["ErrorCode"].Enum, "AWAITING_MEMBER_GRANTS") {
 		t.Fatal("contracts/openapi.yaml ErrorCode enum missing AWAITING_MEMBER_GRANTS")
@@ -1279,7 +1279,7 @@ func TestHandover_Followup9Claims(t *testing.T) {
 	// worker contention (#205/#208), control follow-up 20 (#215), and acceptance cross-references (#204/#207/#210/#212/#214).
 	operatorGuide := readOwnedDoc(t, root, "docs/handover/operator-guide.md")
 	for _, token := range []string{
-		"OpenAPI `1.7.0`, revision 11",
+		"OpenAPI `1.8.0`, revision 12",
 		"#204", "#205", "#206", "#207", "#208", "#210", "#211", "#212", "#213", "#214", "#215", "#216",
 		"D-070", "D-071", "D-072",
 		// Provisional window (D-067, D-071, #206, #213, #216).
