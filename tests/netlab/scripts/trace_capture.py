@@ -40,5 +40,14 @@ def stop(base):
             time.sleep(.01)
 
 
+def finish_stream(path):
+    Path(path + ".trace-stop").touch()
+    end = time.monotonic() + 5
+    while not Path(path + ".trace-done").exists():
+        if time.monotonic() > end:
+            raise RuntimeError("stream did not finish its pending read")
+        time.sleep(.01)
+
+
 if __name__ == "__main__":
-    {"start": start, "stop": stop}[sys.argv[1]](sys.argv[2])
+    {"start": start, "stop": stop, "finish-stream": finish_stream}[sys.argv[1]](sys.argv[2])

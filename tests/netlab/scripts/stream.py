@@ -18,8 +18,16 @@ def main() -> None:
     logf = open(path, "a", encoding="utf-8")
 
     trace = open(path + ".jsonl", "a", encoding="utf-8")
+    for suffix in (".trace-stop", ".trace-done"):
+        try:
+            os.unlink(path + suffix)
+        except FileNotFoundError:
+            pass
+    recording = True
 
     def event(kind: str, **fields) -> None:
+        if not recording:
+            return
         # TEST ONLY metadata. Never record payloads or query names.
         trace.write(json.dumps(dict(event=kind, sequence=n,
                                     wall_ns=str(time.time_ns()),
@@ -38,6 +46,12 @@ def main() -> None:
     log("up")
     n = 0
     while True:
+        if recording and os.path.exists(path + ".trace-stop"):
+            # The preceding read is complete. Keep the acceptance stream
+            # running for revoke tests, but end this measurement sidecar.
+            recording = False
+            with open(path + ".trace-done", "w", encoding="utf-8") as done:
+                done.write("ok\n")
         n += 1
         token = f"t{n}\n".encode()
         stage = "tcp"

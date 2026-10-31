@@ -92,8 +92,6 @@ func TestAT10_AT13_ReloadRevokeBaseline(t *testing.T) {
 			fmt.Printf("AT10 regen %d a1=%d a2=%d\n", gen, a1, a2)
 		}
 	}
-	// Let an in-flight 1.5 s read finish so the last reload cannot hide a timeout.
-	time.Sleep(1600 * time.Millisecond)
 	finishReloadTrace(t)
 	if !streamHealthy(t, "/scratch/stream-a1.log") {
 		save(t, "stream-during-regen.log", readScratch(t, "/scratch/stream-a1.log"))

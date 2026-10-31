@@ -133,6 +133,7 @@ def analyze(stream, apply, trace_base):
                    timeouts_by_send=dict(Counter(d['send_guard_position'] for d in timeouts)),
                    timeouts_without_node_egress=sum(d['stages']['node_egress'] is None for d in timeouts),
                    tcp_timeouts=sum(e['event']=='tcp_read' and e.get('outcome')=='TimeoutError' for e in events),
+                   unobserved_node_ingress=sum(d['stages']['node_ingress'] is None for d in datagrams),
                    incomplete_udp_reads=sum(d['read'] is None for d in datagrams),
                    mismatched_echoes=sum(d['read'] is not None and d['read'].get('response_matches') is False for d in datagrams),
                    guard_lower_ns=distribution([w['lower_ns'] for w in windows]),

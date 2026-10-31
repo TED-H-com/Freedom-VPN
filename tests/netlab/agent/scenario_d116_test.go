@@ -62,6 +62,7 @@ func TestD116_AT10_InstallerMarkerEnrollment(t *testing.T) {
 	stopWatch()
 	flushConntrack(t)
 	saveD116(t, "before-enrollment.json", readScratch(t, labDir+"/before-enrollment.json"))
+	saveD116(t, "before-enrollment.txt", readScratch(t, labDir+"/before-enrollment.txt"))
 	admin(t, "/release", "")
 	admin(t, "/service", `{"seconds":3600}`)
 	script := "echo $$ > /scratch/trace-agent.pid; exec fvpn-netlab agent-trace -config " + labDir + "/agent.json >" + labDir + "/agent.log 2>&1"
@@ -94,8 +95,8 @@ func TestD116_AT10_InstallerMarkerEnrollment(t *testing.T) {
 		t.Fatal(err)
 	}
 	t.Cleanup(func() {
-		// Complete any in-flight socket read before ending the independent trace.
-		time.Sleep(1600 * time.Millisecond)
+		// Complete the last recorded read before ending the independent trace.
+		mustExec(t, "python3", "/opt/netlab/scripts/trace_capture.py", "finish-stream", "/scratch/agent-stream.log")
 		mustExec(t, "python3", "/opt/netlab/scripts/trace_capture.py", "stop", "/scratch/agent-at10")
 		stopProc("unused-stream-name", "/scratch/agent-stream.log.pid")
 		for _, name := range []string{"agent-at10-origin.txt", "agent-at10-origin.err", "agent-at10-node.txt", "agent-at10-node.err", "agent-at10-responder.txt", "agent-at10-responder.err", "agent-stream.log.jsonl", "agent-stream.log"} {
@@ -142,23 +143,10 @@ func assertMarkerRuleset(t *testing.T, name string, marker bool) {
 	if (count == 1) != marker {
 		t.Fatalf("marker=%v count=%d", marker, count)
 	}
-	// add table + per-chain flush never deletes the table metadata.
-	var doc struct {
-		Nftables []map[string]json.RawMessage `json:"nftables"`
+	// Read text too: nft 1.0.9 JSON may omit table metadata.
+	text := mustExec(t, "nft", "list", "table", "inet", "fvpn")
+	saveD116(t, strings.TrimSuffix(name, ".json")+".txt", text)
+	if !strings.Contains(text, `comment "managed-by=fvpn-node-install"`) {
+		t.Fatal("owned table comment lost after Apply")
 	}
-	if err := json.Unmarshal([]byte(raw), &doc); err != nil {
-		t.Fatal(err)
-	}
-	for _, o := range doc.Nftables {
-		var table struct{ Family, Name, Comment string }
-		if b := o["table"]; b != nil {
-			if err := json.Unmarshal(b, &table); err != nil {
-				t.Fatal(err)
-			}
-			if table.Family == "inet" && table.Name == "fvpn" && table.Comment == "managed-by=fvpn-node-install" {
-				return
-			}
-		}
-	}
-	t.Fatal("owned table comment lost after Apply")
 }
