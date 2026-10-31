@@ -130,7 +130,7 @@ func TestE2E_Followup18Installer(t *testing.T) {
 	r.installerUsage18(ctx, s, selected)
 	r.installerServing18(ctx, s)
 	r.installerCapture17(ctx, s)
-	r.installerUpgrade18(ctx, s)
+	r.installerUpgrade18(ctx, s, os.Getenv("FVPN_E2E_CANDIDATE18") == "1")
 	r.installerReenroll17(ctx, s, b)
 	// Exercise the changed ordinary entrypoint with an enrolled agent, then a
 	// real process restart. Do this after installer measurements because the
@@ -201,11 +201,31 @@ func (r *runner) installerMarker18(ctx context.Context, s *Stack) {
 	}
 }
 
-func (r *runner) installerUpgrade18(ctx context.Context, s *Stack) {
+func (r *runner) installerUpgrade18(ctx context.Context, s *Stack, quiescent bool) {
 	rec := Record{ID: "installer-journaled-upgrade", Title: "Genuine final sample and staged installer candidate health", Spec: []string{"UPD05", "AT26", "§13.5"}, Status: StatusFail}
 	defer func() { r.record(rec) }()
 	note := recPathNote(&rec)
 	c := s.installerContainer()
+	if quiescent {
+		rec.ID = "installer-quiescent-candidate"
+		rec.Title = "Isolated candidate health after genuine agent shutdown barrier"
+		note("scope", "TEST ONLY candidate-health isolation: explicitly stop watchdog/agent and require the agent's genuine checkpoint. This does not prove the serving-node updater handshake; its separate failed row remains authoritative.")
+		_, stopErr := r.lab.docker(c, "systemctl", "stop", "fvpn-watchdog.service", "fvpn-agent.service")
+		if stopErr != nil {
+			note("stop_error", stopErr.Error())
+			return
+		}
+		wait, cancel := context.WithTimeout(ctx, 30*time.Second)
+		closed := waitUntil(wait, time.Second, func() bool {
+			_, e := r.lab.docker(c, "test", "-s", "/var/lib/vpn-node/state/meter.checkpoint")
+			return e == nil
+		})
+		cancel()
+		if !closed {
+			note("shutdown_checkpoint", "absent; no substitute supplied")
+			return
+		}
+	}
 	if err := s.HoldInstallerApply(ctx, true); err != nil {
 		note("barrier", err.Error())
 		return
