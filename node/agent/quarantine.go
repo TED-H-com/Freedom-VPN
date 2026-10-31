@@ -126,7 +126,12 @@ func (e *Engine) quarantine(ctx context.Context) {
 		}
 		defer lock.Release()
 	}
-	q, err := e.plane.Quarantine(ctx, *e.appliedModel)
+	var q enforce.QuarantineEvidence
+	err := e.baselineCall("foreign_tc_quarantine", func() error {
+		var err error
+		q, err = e.plane.Quarantine(ctx, *e.appliedModel)
+		return err
+	})
 	e.containment.Quarantine = cleanQuarantine(q)
 	if e.containment.InitialQuarantine == nil {
 		e.containment.InitialQuarantine = cleanQuarantine(q)

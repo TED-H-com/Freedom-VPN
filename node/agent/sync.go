@@ -113,6 +113,7 @@ func (e *Engine) syncLease(ctx context.Context) error {
 	if e.lease != nil && e.lease.LeaseId != uuid.Nil {
 		req.CurrentLeaseId = presence.NewNullableWithValue(e.lease.LeaseId)
 	}
+	e.leaseRefreshPending = false
 	e.leaseAttempted = true
 	e.leaseAttemptAt = mono
 	// The local measurement records the actual request and resulting accepted
@@ -146,7 +147,7 @@ func (e *Engine) syncLease(ctx context.Context) error {
 }
 
 func (e *Engine) needRenew() bool {
-	if e.leaseRetryAt > 0 || !e.leaseFresh || e.lease == nil || e.leaseMono <= 0 || !e.anchorOK || (!e.identityFrozen && ((e.applyError == nil && e.leaseBehindApplied()) || (e.applyError != nil && e.leaseBehindDesired()))) {
+	if e.leaseRefreshPending || e.leaseRetryAt > 0 || !e.leaseFresh || e.lease == nil || e.leaseMono <= 0 || !e.anchorOK || (!e.identityFrozen && ((e.applyError == nil && e.leaseBehindApplied()) || (e.applyError != nil && e.leaseBehindDesired()))) {
 		return true
 	}
 	// D-067 bounds every grant-less renewal, including an empty lease

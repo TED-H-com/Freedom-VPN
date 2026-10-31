@@ -5,6 +5,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
@@ -52,7 +53,8 @@ func run(cmd string, args []string) int {
 		fmt.Fprintln(os.Stderr, "watchdog: boot id")
 		return 1
 	}
-	w := &watchdog.Watch{Config: cfg, Enforce: watchdog.SystemEnforcer{}, BootID: boot}
+	w := &watchdog.Watch{Config: cfg, Enforce: watchdog.SystemEnforcer{}, BootID: boot,
+		Log: slog.New(slog.NewJSONHandler(os.Stderr, nil))}
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 	if cmd == "once" {

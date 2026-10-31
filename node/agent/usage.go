@@ -415,7 +415,7 @@ func (e *Engine) shutdownUsage() {
 	e.shutUsage = true
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
-	if e.sampleOn {
+	if e.sampleOn && !e.preserveServingOnStop(ctx) {
 		e.handoff(ctx)
 	}
 	if e.loopCancel != nil {

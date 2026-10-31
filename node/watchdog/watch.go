@@ -5,12 +5,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/netip"
 	"os"
 	"os/exec"
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/node/enforce"
+	"github.com/TED-H-com/Freedom-VPN/node/internal/nodelock"
 	"github.com/TED-H-com/Freedom-VPN/node/internal/timeanchor"
 	"github.com/google/uuid"
 )
@@ -37,11 +39,9 @@ func (SystemEnforcer) BaselinePresent(ctx context.Context) (bool, error) {
 	cmd.Stdout = nil
 	cmd.Stderr = nil
 	if err := cmd.Run(); err != nil {
-		var ee *exec.ExitError
-		if errors.As(err, &ee) {
-			return false, nil
-		}
-		return false, nil
+		// An exit status alone cannot distinguish a missing table from a
+		// failed read. Preserve that uncertainty in the baseline reason.
+		return false, errors.New("watchdog: baseline read failed")
 	}
 	return true, nil
 }
@@ -49,6 +49,7 @@ func (SystemEnforcer) BaselinePresent(ctx context.Context) (bool, error) {
 // Config is the watchdog's view of agent.json. Unknown fields are ignored so
 // the agent and the watchdog can share one file.
 type Config struct {
+	LockPath                string         `json:"lock_path"`
 	HeartbeatPath           string         `json:"heartbeat_path"`
 	WatchdogStaleSeconds    int            `json:"watchdog_stale_seconds"`
 	WatchdogIntervalSeconds int            `json:"watchdog_interval_seconds"`
@@ -72,6 +73,9 @@ func LoadConfig(path string) (Config, error) {
 	var c Config
 	if err := json.Unmarshal(b, &c); err != nil {
 		return Config{}, fmt.Errorf("watchdog: config: %w", err)
+	}
+	if c.LockPath == "" {
+		c.LockPath = nodelock.DefaultPath
 	}
 	if c.HeartbeatPath == "" {
 		c.HeartbeatPath = "/run/vpn-node/heartbeat"
@@ -101,6 +105,7 @@ func (c Config) datapath() (enforce.Datapath, error) {
 
 // Watch is one watchdog loop.
 type Watch struct {
+	Log     *slog.Logger
 	Config  Config
 	Enforce Enforcer
 	BootID  uuid.UUID
@@ -112,6 +117,8 @@ type Watch struct {
 // Once checks liveness once. A healthy node does not touch the ruleset, so a
 // restart of the watchdog cannot restart a kernel timeout (§16.3).
 func (w *Watch) Once(ctx context.Context) error {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
 	if w.Enforce == nil {
 		return errors.New("watchdog: no enforcer")
 	}
@@ -119,47 +126,86 @@ func (w *Watch) Once(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	if w.needsBaseline(ctx) {
-		if err := w.Enforce.Baseline(ctx, dp); err != nil {
+	// Serialize with Apply. Re-read the heartbeat after acquiring the lock:
+	// an old expiry/stale decision must not erase a just-installed renewal.
+	if w.Config.LockPath != "" {
+		lock, err := nodelock.TryAcquire(w.Config.LockPath)
+		if errors.Is(err, nodelock.ErrBusy) {
+			return nil
+		}
+		if err != nil {
 			return err
 		}
+		defer lock.Release()
 	}
-	return nil
+	reason, beat, mono := w.baselineDecision(ctx)
+	if reason == "" {
+		return nil
+	}
+	log := w.Log
+	if log == nil {
+		log = slog.Default()
+	}
+	log.Info("baseline decision", "writer", "watchdog", "cause", reason,
+		"boot_id", w.BootID, "mono_ns", int64(mono), "heartbeat_mono_ns", int64(beat.Mono),
+		"policy_expires_mono_ns", int64(beat.PolicyExpires), "generation", beat.Generation,
+		"serving", beat.Serving, "baseline_ok", beat.BaselineOK)
+	// A slow presence read can overlap a fresh heartbeat even under the
+	// apply lock. Re-evaluate immediately before the destructive operation.
+	reason, beat, mono = w.baselineDecision(ctx)
+	if reason == "" {
+		log.Info("baseline canceled", "writer", "watchdog", "cause", "heartbeat_refreshed")
+		return nil
+	}
+	log.Info("baseline write", "writer", "watchdog", "phase", "begin", "cause", reason,
+		"mono_ns", int64(mono), "heartbeat_mono_ns", int64(beat.Mono),
+		"policy_expires_mono_ns", int64(beat.PolicyExpires), "generation", beat.Generation)
+	err = w.Enforce.Baseline(ctx, dp)
+	end, _ := w.mono()
+	log.Info("baseline write", "writer", "watchdog", "phase", "end", "cause", reason,
+		"mono_ns", int64(end), "succeeded", err == nil)
+	return err
 }
 
-func (w *Watch) needsBaseline(ctx context.Context) bool {
+func (w *Watch) baselineDecision(ctx context.Context) (string, Beat, time.Duration) {
+	// Read the atomically replaced heartbeat BEFORE sampling now. Otherwise
+	// a heartbeat written between the two reads looks like a clock rollback.
+	beat, readErr := ReadHeartbeat(w.Config.HeartbeatPath)
 	mono, err := w.mono()
 	if err != nil || mono <= 0 {
-		return true
+		return "clock_unavailable", beat, mono
 	}
-	beat, err := ReadHeartbeat(w.Config.HeartbeatPath)
-	if err != nil {
-		return true
+	if readErr != nil {
+		return "heartbeat_unreadable", beat, mono
 	}
 	if w.BootID != uuid.Nil && beat.BootID != w.BootID {
-		return true
+		return "boot_changed", beat, mono
 	}
 	if beat.Mono > mono {
-		return true
+		return "heartbeat_in_future", beat, mono
 	}
-	age := mono - beat.Mono
-	if age > time.Duration(w.Config.WatchdogStaleSeconds)*time.Second {
-		return true
+	if mono-beat.Mono > time.Duration(w.Config.WatchdogStaleSeconds)*time.Second {
+		return "heartbeat_stale", beat, mono
 	}
 	if !beat.BaselineOK {
-		return true
+		return "baseline_unverified", beat, mono
 	}
 	if beat.PolicyExpires > 0 && mono >= beat.PolicyExpires {
-		return true
+		return "policy_expired", beat, mono
 	}
 	if beat.Serving && beat.PolicyExpires <= 0 {
-		return true
+		return "serving_without_deadline", beat, mono
 	}
-	ok, err := w.Enforce.BaselinePresent(ctx)
-	if err != nil || !ok {
-		return true
+	readCtx, cancel := context.WithTimeout(ctx, time.Second)
+	defer cancel()
+	ok, err := w.Enforce.BaselinePresent(readCtx)
+	if err != nil {
+		return "baseline_unreadable", beat, mono
 	}
-	return false
+	if !ok {
+		return "baseline_missing", beat, mono
+	}
+	return "", beat, mono
 }
 
 func (w *Watch) mono() (time.Duration, error) {

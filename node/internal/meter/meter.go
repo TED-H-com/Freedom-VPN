@@ -326,6 +326,18 @@ func (m *Meter) Barrier(ctx context.Context) error {
 // FinalSample takes the closing sample and shuts the meter epoch (§13.6
 // step 8). The next process opens a new epoch at the checkpointed counters.
 func (m *Meter) FinalSample(ctx context.Context) error {
+	return m.pausedSample(ctx, true)
+}
+
+// CheckpointForRestart persists the last observed delta without closing the
+// epoch or clearing the kernel counters. A same-boot successor accounts for
+// bytes admitted during the process gap using the existing continuity path.
+// Updater withdrawal must still use FinalSample.
+func (m *Meter) CheckpointForRestart(ctx context.Context) error {
+	return m.pausedSample(ctx, false)
+}
+
+func (m *Meter) pausedSample(ctx context.Context, final bool) error {
 	if err := m.Barrier(ctx); err != nil {
 		return err
 	}
@@ -341,7 +353,7 @@ func (m *Meter) FinalSample(ctx context.Context) error {
 		m.inFinal = false
 		m.mu.Unlock()
 	}()
-	return m.sample(ctx, true)
+	return m.sample(ctx, final)
 }
 
 // PrepareSampling durably opens the next epoch from a real counter read while

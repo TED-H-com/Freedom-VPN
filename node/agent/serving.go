@@ -39,8 +39,49 @@ func (e *Engine) verifyServingModel(ctx context.Context, model enforce.Model, as
 	if err == nil {
 		return true
 	}
-	e.rejectServing(ctx, model, evidence, err)
+	if !e.repairGeneration(ctx, model, evidence, err) {
+		e.rejectServing(ctx, model, evidence, err)
+	}
 	return false
+}
+
+// A replaced generation is repairable with the already-authorized lease.
+// Queue the truthful failed read BEFORE repair can replace its evidence. No
+// control I/O, baseline, or new lease is required on the successful path.
+// Other failures (especially foreign tc) still follow quarantine/withdrawal.
+func (e *Engine) repairGeneration(ctx context.Context, model enforce.Model, evidence enforce.ServingEvidence, err error) bool {
+	var check *enforce.CheckError
+	if e.meter == nil || e.planeLocked || e.repairing || ctx.Err() != nil || !errors.As(err, &check) || check.Reason != enforce.ReasonGenerationMismatch {
+		return false
+	}
+	e.refreshDesired()
+	in := e.input()
+	in.ApplyError = nil
+	d := Decide(in)
+	if !d.Serve || e.leaseBoot != e.bootID || e.appliedGen != model.Generation || d.Model.Generation != model.Generation {
+		return false
+	}
+	e.repairing = true
+	defer func() { e.repairing = false }()
+	e.noteApply(err)
+	if e.kernel != nil && e.expectServing.Load() {
+		e.kernel.rejectedGeneration()
+	}
+	e.serving = false
+	e.decision = Decide(e.input())
+	e.lastObs = time.Time{}
+	if err := e.observe(ctx); err != nil {
+		return false
+	}
+	if err := e.enforce(ctx, d); err != nil {
+		return false
+	}
+	if !e.serving {
+		return false
+	}
+	e.decision = Decide(e.input())
+	e.beat()
+	return true
 }
 
 func (e *Engine) verifyCurrentServing(ctx context.Context) bool {
@@ -58,7 +99,12 @@ func (e *Engine) verifyCurrentServing(ctx context.Context) bool {
 		return false
 	}
 	// The live read may straddle expiry. It proves rules, not a renewed lease.
-	return !e.expireServing(ctx)
+	if e.expireServing(ctx) {
+		return false
+	}
+	// Publish the verified state before synchronous control work can stall.
+	e.beat()
+	return true
 }
 
 func (e *Engine) expireServing(ctx context.Context) bool {
@@ -160,4 +206,13 @@ func (e *Engine) auditBlocked(ctx context.Context) {
 type retainedApplied struct {
 	Model       enforce.Model        `json:"model"`
 	Assignments map[uuid.UUID]uint16 `json:"assignments"`
+}
+
+// One shared budget, independent of the number of endpoints and retries.
+func (e *Engine) controlPassTimeout() time.Duration {
+	stale := time.Duration(e.cfg.WatchdogStaleSeconds) * time.Second
+	if stale <= 0 {
+		stale = 30 * time.Second
+	}
+	return min(5*time.Second, stale/3)
 }

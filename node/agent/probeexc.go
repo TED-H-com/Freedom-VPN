@@ -158,7 +158,7 @@ func (e *Engine) installProbeException(ctx context.Context, ch healthattest.Chal
 		bare.Probe = nil
 		cleanupCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
 		defer cancel()
-		if err := e.plane.BaselineModel(cleanupCtx, bare); err != nil {
+		if err := e.baselineCall("probe_clear", func() error { return e.plane.BaselineModel(cleanupCtx, bare) }); err != nil {
 			e.baselineOK = false
 			e.lastProbe.Check = api.HealthCheckStatusFailed
 			e.lastProbe.Health = api.DataHealthFailed
@@ -168,7 +168,7 @@ func (e *Engine) installProbeException(ctx context.Context, ch healthattest.Chal
 		issuance.Cleared = true
 		e.saveProbeIssuance(cleanupCtx, issuance)
 	}
-	if err := e.plane.BaselineModel(ctx, model); err != nil {
+	if err := e.baselineCall("probe_install", func() error { return e.plane.BaselineModel(ctx, model) }); err != nil {
 		clear()
 		e.log.Warn("probe exception", "err", "not installed")
 		return nil, false

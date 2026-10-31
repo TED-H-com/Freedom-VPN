@@ -28,6 +28,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/node/internal/usageupload"
 	"github.com/TED-H-com/Freedom-VPN/node/watchdog"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 	"github.com/TED-H-com/Freedom-VPN/pkg/envelope"
 	"github.com/google/uuid"
 )
@@ -122,6 +123,7 @@ type Engine struct {
 	leaseBoot            uuid.UUID
 	highestIssued        time.Time
 	leaseFresh           bool
+	leaseRefreshPending  bool
 	anchor               timeanchor.Anchor
 	anchorOK             bool
 	baselineOK           bool
@@ -131,6 +133,7 @@ type Engine struct {
 	appliedAssignments   map[uuid.UUID]uint16
 	appliedGen           uint64
 	planeLocked          bool
+	repairing            bool
 	quarantinePending    bool
 	containment          *containmentEvidence
 	memberPath           *MemberPath
@@ -381,8 +384,8 @@ func (e *Engine) loadIdentity(ctx context.Context) error {
 	return nil
 }
 
-// Boot installs the fail-closed baseline before any member forwarding (§8.2, §13.5).
-// A stored lease does not count as fresh until this process accepts one.
+// Boot adopts a verified same-boot ruleset or installs the fail-closed baseline.
+// Reboot/clock loss still requires new authorization (§16.3).
 func (e *Engine) Boot(ctx context.Context) error {
 	if p, ok := e.plane.(interface{ MissingExecutables() []string }); ok {
 		missing := p.MissingExecutables()
@@ -391,18 +394,9 @@ func (e *Engine) Boot(ctx context.Context) error {
 			e.log.Error("enforcement dependency unavailable", "executable", name)
 		}
 	}
-	dp, err := e.cfg.DatapathValue()
-	if err != nil {
-		return err
-	}
-	if err := e.plane.Baseline(ctx, dp); err != nil {
-		e.baselineOK = false
-		e.log.Error("baseline", "err", "baseline not installed")
-	} else {
-		e.baselineOK = true
-	}
 	if err := e.loadRuntime(ctx); err != nil {
 		e.storageOK = false
+		_ = e.baseline(ctx)
 		return err
 	}
 	e.leaseFresh = false
@@ -412,6 +406,19 @@ func (e *Engine) Boot(ctx context.Context) error {
 	if e.identityFrozen && !e.freezeDurable {
 		e.persistFreeze(ctx)
 	}
+	if e.adoptStoredServing(ctx) {
+		e.beat()
+		e.answerHealthOnBoot(ctx)
+		return nil
+	}
+	dp, err := e.cfg.DatapathValue()
+	if err != nil {
+		return err
+	}
+	err = e.baselineCall("boot_unverified", func() error { return e.plane.Baseline(ctx, dp) })
+	e.baselineOK = err == nil
+	e.serving, e.leaseFresh = false, false
+	e.policyExpires = 0
 	e.ensureUsage(ctx)
 	e.decision = Decide(e.input())
 	e.beat()
@@ -486,6 +493,12 @@ func signaled(ch <-chan os.Signal) bool {
 // forwarding stays off unless every gate in Decide passes.
 func (e *Engine) Step(ctx context.Context) error {
 	defer e.finishServingStep(ctx)
+	// Leave time for live verification and heartbeat even during a control
+	// outage. A 30s HTTP timeout previously exceeded the watchdog's stale
+	// threshold before the next heartbeat (ISO-F6-03).
+	ioCtx, cancelIO := context.WithTimeout(ctx, e.controlPassTimeout())
+	defer cancelIO()
+	previousDesired, previousLease := e.desired, e.lease
 	e.leaseAttempted = false
 	if err := ctx.Err(); err != nil {
 		return err
@@ -498,8 +511,8 @@ func (e *Engine) Step(ctx context.Context) error {
 		e.withdraw(ctx)
 		e.evaluate(ctx)
 		e.publishMeterEpoch()
-		_ = e.observe(ctx)
-		_ = e.flush(ctx)
+		_ = e.observe(ioCtx)
+		_ = e.flush(ioCtx)
 		e.answerHealth(ctx)
 		return nil
 	}
@@ -507,10 +520,11 @@ func (e *Engine) Step(ctx context.Context) error {
 		return nil
 	}
 	// Check the retained model before Apply can overwrite evidence of drift.
-	// This step only withdraws; a later step must perform a clean full Apply.
+	// A valid same-generation mismatch is repaired immediately after retaining
+	// the rejected read. Other failures still withdraw before a later Apply.
 	if !e.verifyCurrentServing(ctx) {
-		_ = e.observe(ctx)
-		_ = e.flush(ctx)
+		_ = e.observe(ioCtx)
+		_ = e.flush(ioCtx)
 		return nil
 	}
 	// Refresh the anchor before any 304. A wall jump must be visible to the
@@ -519,7 +533,7 @@ func (e *Engine) Step(ctx context.Context) error {
 	// A due grant-less renewal must not wait behind observation retries or
 	// desired-state HTTP work. Generation changes are still handled below.
 	if e.leaseGrantless() {
-		if err := e.syncLease(ctx); err != nil && ctx.Err() != nil {
+		if err := e.syncLease(ioCtx); err != nil && ctx.Err() != nil {
 			return err
 		}
 		if e.revoked {
@@ -527,8 +541,8 @@ func (e *Engine) Step(ctx context.Context) error {
 			return nil
 		}
 	}
-	_ = e.flush(ctx)
-	if err := e.syncDesired(ctx); err != nil && ctx.Err() != nil {
+	_ = e.flush(ioCtx)
+	if err := e.syncDesired(ioCtx); err != nil && ctx.Err() != nil {
 		return err
 	}
 	if e.revoked {
@@ -540,7 +554,7 @@ func (e *Engine) Step(ctx context.Context) error {
 	// stored desired state is loaded with desiredOK still false, and the
 	// provisional schedule is armed in the same step that accepts the lease.
 	e.refreshDesired()
-	if err := e.syncLease(ctx); err != nil && ctx.Err() != nil {
+	if err := e.syncLease(ioCtx); err != nil && ctx.Err() != nil {
 		return err
 	}
 	if e.revoked {
@@ -548,29 +562,40 @@ func (e *Engine) Step(ctx context.Context) error {
 		e.answerHealth(ctx)
 		return nil
 	}
-	_ = e.syncCert(ctx)
-	_ = e.syncBootstrap(ctx)
+	_ = e.syncCert(ioCtx)
+	_ = e.syncBootstrap(ioCtx)
 	e.refreshDesired()
 	e.ensureUsage(ctx)
 	if e.uploader != nil && e.uploader.NeedsRestore() {
-		e.restoreUsage(ctx)
+		e.restoreUsage(ioCtx)
 	}
 	e.readMeter(ctx)
 	if pending, err := e.store.Pending(ctx); err == nil {
 		e.outboxFull = len(pending) >= 32
 	}
 	e.evaluate(ctx)
-	if err := e.enforce(ctx, e.decision); err != nil && ctx.Err() != nil {
-		return err
+	// A timed-out control pass did not authorize a new policy. Keep the
+	// just-verified generation instead of re-installing the same expiring
+	// allowset on each outage retry. No guard/timeout is reset by this path.
+	retain := ioCtx.Err() != nil && e.serving && e.decision.Serve && e.applyError == nil &&
+		previousDesired == e.desired && previousLease == e.lease && e.appliedModel != nil &&
+		e.appliedGen == e.decision.Model.Generation && e.policyExpires == e.decision.PolicyExpires &&
+		len(e.pendingRevoke) == 0 && !e.memberPathPending && !e.quarantinePending
+	if retain {
+		e.checkMemberPath(ctx, *e.appliedModel)
+	} else {
+		if err := e.enforce(ctx, e.decision); err != nil && ctx.Err() != nil {
+			return err
+		}
 	}
 	// The generation this step just applied is visible only after enforce.
 	// The matching lease is requested before heartbeat and observation.
-	if err := e.renewAppliedLease(ctx); err != nil && ctx.Err() != nil {
+	if err := e.renewAppliedLease(ioCtx); err != nil && ctx.Err() != nil {
 		return err
 	}
 	e.publishMeterEpoch()
-	_ = e.observe(ctx)
-	_ = e.flush(ctx)
+	_ = e.observe(ioCtx)
+	_ = e.flush(ioCtx)
 	e.answerHealth(ctx)
 	return nil
 }
@@ -846,7 +871,7 @@ func (e *Engine) baseline(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	if err := e.plane.Baseline(ctx, dp); err != nil {
+	if err := e.baselineCall(e.baselineReason(), func() error { return e.plane.Baseline(ctx, dp) }); err != nil {
 		e.baselineOK = false
 		return err
 	}
@@ -996,6 +1021,15 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 	timing := &applyReadTiming{now: e.clock.Wall}
 	res, err := e.plane.Apply(context.WithValue(ctx, applyReadKey{}, timing), model, prev)
 	e.measureTiming(res.Evidence, "apply")
+	for _, b := range timing.baselines {
+		b.Cause = "apply_rollback"
+		if res.Quarantine != nil {
+			b.Cause = "apply_quarantine"
+		}
+		e.log.Info("baseline write", "writer", "agent_apply", "cause", b.Cause,
+			"start_mono_ns", int64(b.Start), "end_mono_ns", int64(b.End), "succeeded", b.Succeeded)
+		e.writeMeasurement(Measurement{Source: "baseline", Baseline: &b})
+	}
 	e.retainTCReadback(res.Evidence)
 	if !timing.at.IsZero() {
 		e.retainServingRead(res.Evidence, model.Generation, timing.at, "apply", res.Verified)
@@ -1122,6 +1156,7 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 		e.resumeSampling()
 		e.switchEpoch(ctx)
 	}
+	e.beat() // publish renewed expiry before releasing the shared Apply lock
 	return nil
 }
 
@@ -1204,6 +1239,10 @@ func (e *Engine) beat() {
 		PolicyExpires: e.policyExpires, BaselineOK: e.baselineOK, Serving: e.serving,
 		Generation: e.appliedGen, Reason: reason, Evidence: e.containmentJSON(),
 	})
+	e.writeMeasurement(Measurement{Source: "heartbeat", Heartbeat: &MeasurementHeartbeat{
+		Mono: mono, PolicyExpires: e.policyExpires, Generation: decstr.U64(e.appliedGen),
+		BaselineOK: e.baselineOK, Serving: e.serving, Reason: reason, Written: err == nil,
+	}})
 	if err != nil {
 		e.log.Warn("heartbeat", "err", err.Error())
 	}

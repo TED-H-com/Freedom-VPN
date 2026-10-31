@@ -1,0 +1,351 @@
+{
+  "label": "TEST ONLY - captured operation clocks, no account identifiers; initial baseline writer unknown",
+  "deadline_ns": "42835508568707",
+  "rows": [
+    {
+      "sequence": "955",
+      "source": "apply",
+      "anchor": {
+        "mono_before_ns": "42818695580230",
+        "wall": "2026-10-31T15:08:01.179209101Z",
+        "mono_after_ns": "42818695580459"
+      },
+      "timing": {
+        "version": 1,
+        "clock": "CLOCK_MONOTONIC",
+        "operation": "apply",
+        "candidate_generation": "30",
+        "start_ns": "42818613771792",
+        "end_ns": "42818695575712",
+        "succeeded": true,
+        "verified": true,
+        "deadline": {
+          "granularity_ns": "1000000",
+          "install_bound_ns": "100000000",
+          "apply_start_ns": "42818613771792",
+          "render_start_ns": "42818630366260",
+          "install_start_ns": "42818630501352",
+          "installed_by_ns": "42818657458209",
+          "install_ok": true,
+          "release_start_ns": "42818657465107",
+          "release_end_ns": "42818671314903",
+          "guard_released": true
+        },
+        "verifications": [
+          {
+            "start_ns": "42818671318973",
+            "end_ns": "42818695564457",
+            "nft_read": {
+              "start_ns": "42818671319117",
+              "end_ns": "42818673649120",
+              "ok": true
+            },
+            "tc_read": {
+              "start_ns": "42818676915325",
+              "end_ns": "42818693948774",
+              "ok": true
+            },
+            "precision_read": {
+              "start_ns": "42818675348165",
+              "end_ns": "42818676904615",
+              "elements": 2,
+              "read_ok": true,
+              "verified": true
+            },
+            "tc_sha256": "8b7d9d6a39026f4407302a5eeb88fc688f79815e304589fa98fad8bc654f86de",
+            "verified": true
+          }
+        ]
+      }
+    },
+    {
+      "sequence": "956",
+      "source": "live",
+      "anchor": {
+        "mono_before_ns": "42818717102121",
+        "wall": "2026-10-31T15:08:01.200731124Z",
+        "mono_after_ns": "42818717102475"
+      },
+      "timing": {
+        "version": 1,
+        "clock": "CLOCK_MONOTONIC",
+        "operation": "verify",
+        "candidate_generation": "30",
+        "start_ns": "42818695648021",
+        "end_ns": "42818717097522",
+        "succeeded": true,
+        "verified": true,
+        "deadline": {
+          "granularity_ns": "0",
+          "install_bound_ns": "0",
+          "apply_start_ns": "0",
+          "render_start_ns": "0",
+          "install_start_ns": "0",
+          "installed_by_ns": "0",
+          "install_ok": false,
+          "release_start_ns": "0",
+          "release_end_ns": "0",
+          "guard_released": false
+        },
+        "verifications": [
+          {
+            "start_ns": "42818695648021",
+            "end_ns": "42818717097522",
+            "nft_read": {
+              "start_ns": "42818695648295",
+              "end_ns": "42818697878780",
+              "ok": true
+            },
+            "tc_read": {
+              "start_ns": "42818700944542",
+              "end_ns": "42818715679712",
+              "ok": true
+            },
+            "precision_read": {
+              "start_ns": "42818699553866",
+              "end_ns": "42818700934392",
+              "elements": 2,
+              "read_ok": true,
+              "verified": true
+            },
+            "tc_sha256": "8b7d9d6a39026f4407302a5eeb88fc688f79815e304589fa98fad8bc654f86de",
+            "verified": true
+          }
+        ]
+      }
+    },
+    {
+      "sequence": "957",
+      "source": "live",
+      "anchor": {
+        "mono_before_ns": "42821842056180",
+        "wall": "2026-10-31T15:08:04.325685104Z",
+        "mono_after_ns": "42821842056440"
+      },
+      "timing": {
+        "version": 1,
+        "clock": "CLOCK_MONOTONIC",
+        "operation": "verify",
+        "candidate_generation": "30",
+        "start_ns": "42821800903874",
+        "end_ns": "42821842052444",
+        "succeeded": true,
+        "verified": true,
+        "deadline": {
+          "granularity_ns": "0",
+          "install_bound_ns": "0",
+          "apply_start_ns": "0",
+          "render_start_ns": "0",
+          "install_start_ns": "0",
+          "installed_by_ns": "0",
+          "install_ok": false,
+          "release_start_ns": "0",
+          "release_end_ns": "0",
+          "guard_released": false
+        },
+        "verifications": [
+          {
+            "start_ns": "42821800903874",
+            "end_ns": "42821842052444",
+            "nft_read": {
+              "start_ns": "42821800904040",
+              "end_ns": "42821803162429",
+              "ok": true
+            },
+            "tc_read": {
+              "start_ns": "42821824313618",
+              "end_ns": "42821840584671",
+              "ok": true
+            },
+            "precision_read": {
+              "start_ns": "42821804737514",
+              "end_ns": "42821824303022",
+              "elements": 2,
+              "read_ok": true,
+              "verified": true
+            },
+            "tc_sha256": "8b7d9d6a39026f4407302a5eeb88fc688f79815e304589fa98fad8bc654f86de",
+            "verified": true
+          }
+        ]
+      }
+    },
+    {
+      "sequence": "958",
+      "source": "live",
+      "anchor": {
+        "mono_before_ns": "42821853748806",
+        "wall": "2026-10-31T15:08:04.337377684Z",
+        "mono_after_ns": "42821853749030"
+      },
+      "timing": {
+        "version": 1,
+        "clock": "CLOCK_MONOTONIC",
+        "operation": "verify",
+        "candidate_generation": "30",
+        "start_ns": "42821844519578",
+        "end_ns": "42821853746383",
+        "succeeded": false,
+        "verified": false,
+        "deadline": {
+          "granularity_ns": "0",
+          "install_bound_ns": "0",
+          "apply_start_ns": "0",
+          "render_start_ns": "0",
+          "install_start_ns": "0",
+          "installed_by_ns": "0",
+          "install_ok": false,
+          "release_start_ns": "0",
+          "release_end_ns": "0",
+          "guard_released": false
+        },
+        "verifications": [
+          {
+            "start_ns": "42821844519578",
+            "end_ns": "42821853746383",
+            "nft_read": {
+              "start_ns": "42821844519732",
+              "end_ns": "42821846014079",
+              "ok": true
+            },
+            "tc_read": {
+              "start_ns": "42821846458023",
+              "end_ns": "42821852619394",
+              "ok": true
+            },
+            "precision_read": {
+              "start_ns": "0",
+              "end_ns": "0",
+              "elements": 0,
+              "read_ok": false,
+              "verified": false
+            },
+            "tc_sha256": "1ece0c59a69ede7189b07cae26efda1411305903611f1a3f24a21da82fe2804e",
+            "verified": false
+          }
+        ]
+      }
+    },
+    {
+      "sequence": "959",
+      "source": "blocked_audit",
+      "anchor": {
+        "mono_before_ns": "42821921449036",
+        "wall": "2026-10-31T15:08:04.405077877Z",
+        "mono_after_ns": "42821921449226"
+      },
+      "timing": {
+        "version": 1,
+        "clock": "CLOCK_MONOTONIC",
+        "operation": "verify",
+        "candidate_generation": "30",
+        "start_ns": "42821911346135",
+        "end_ns": "42821921446657",
+        "succeeded": false,
+        "verified": false,
+        "deadline": {
+          "granularity_ns": "0",
+          "install_bound_ns": "0",
+          "apply_start_ns": "0",
+          "render_start_ns": "0",
+          "install_start_ns": "0",
+          "installed_by_ns": "0",
+          "install_ok": false,
+          "release_start_ns": "0",
+          "release_end_ns": "0",
+          "guard_released": false
+        },
+        "verifications": [
+          {
+            "start_ns": "42821911346135",
+            "end_ns": "42821921446657",
+            "nft_read": {
+              "start_ns": "42821911346246",
+              "end_ns": "42821912734114",
+              "ok": true
+            },
+            "tc_read": {
+              "start_ns": "42821913117098",
+              "end_ns": "42821920223661",
+              "ok": true
+            },
+            "precision_read": {
+              "start_ns": "0",
+              "end_ns": "0",
+              "elements": 0,
+              "read_ok": false,
+              "verified": false
+            },
+            "tc_sha256": "1ece0c59a69ede7189b07cae26efda1411305903611f1a3f24a21da82fe2804e",
+            "verified": false
+          }
+        ]
+      }
+    },
+    {
+      "sequence": "960",
+      "source": "renewal",
+      "anchor": {
+        "mono_before_ns": "42832097324748",
+        "wall": "2026-10-31T15:08:14.580953605Z",
+        "mono_after_ns": "42832097324942"
+      }
+    },
+    {
+      "sequence": "961",
+      "source": "apply",
+      "anchor": {
+        "mono_before_ns": "42832182045542",
+        "wall": "2026-10-31T15:08:14.665674404Z",
+        "mono_after_ns": "42832182045743"
+      },
+      "timing": {
+        "version": 1,
+        "clock": "CLOCK_MONOTONIC",
+        "operation": "apply",
+        "candidate_generation": "30",
+        "start_ns": "42832118805031",
+        "end_ns": "42832182042859",
+        "succeeded": true,
+        "verified": true,
+        "deadline": {
+          "granularity_ns": "1000000",
+          "install_bound_ns": "100000000",
+          "apply_start_ns": "42832118805031",
+          "render_start_ns": "42832131489853",
+          "install_start_ns": "42832131549058",
+          "installed_by_ns": "42832146531158",
+          "install_ok": true,
+          "release_start_ns": "42832146540788",
+          "release_end_ns": "42832160422196",
+          "guard_released": true
+        },
+        "verifications": [
+          {
+            "start_ns": "42832160423711",
+            "end_ns": "42832182035623",
+            "nft_read": {
+              "start_ns": "42832160423813",
+              "end_ns": "42832162456076",
+              "ok": true
+            },
+            "tc_read": {
+              "start_ns": "42832165450960",
+              "end_ns": "42832180660407",
+              "ok": true
+            },
+            "precision_read": {
+              "start_ns": "42832164161009",
+              "end_ns": "42832165432989",
+              "elements": 2,
+              "read_ok": true,
+              "verified": true
+            },
+            "tc_sha256": "8b7d9d6a39026f4407302a5eeb88fc688f79815e304589fa98fad8bc654f86de",
+            "verified": true
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -334,7 +334,7 @@ func assertProvisionalDecision(t *testing.T, d Decision) {
 		t.Fatalf("lease check: status=%s code=%s detail=%q", lease.Status, codeOf(t, lease), detailValue(lease))
 	}
 	qos, ok := checkBy(d.Checks, api.NodeCheckNameQos)
-	if !ok || qos.Status != api.HealthCheckStatusFailed || codeOf(t, qos) != api.ErrorCodeAWAITINGMEMBERGRANTS || detailValue(qos) != "Rate policy could not be applied." {
+	if !ok || qos.Status != api.HealthCheckStatusFailed || codeOf(t, qos) != api.ErrorCodeAWAITINGMEMBERGRANTS || (detailValue(qos) != "Rate policy could not be applied." && !strings.HasPrefix(detailValue(qos), "read_at=")) {
 		t.Fatalf("qos: status=%s detail=%q", qos.Status, detailValue(qos))
 	}
 	bind, ok := checkBy(d.Checks, api.NodeCheckNameSourceBinding)
@@ -374,7 +374,7 @@ func assertProvisionalReport(t *testing.T, rep api.ObservationReport) {
 		t.Fatalf("report lease: status=%s detail=%q", lease.Status, detailValue(lease))
 	}
 	qos, ok := checkBy(rep.Checks, api.NodeCheckNameQos)
-	if !ok || qos.Status != api.HealthCheckStatusFailed || codeOf(t, qos) != api.ErrorCodeAWAITINGMEMBERGRANTS || detailValue(qos) != "Rate policy could not be applied." {
+	if !ok || qos.Status != api.HealthCheckStatusFailed || codeOf(t, qos) != api.ErrorCodeAWAITINGMEMBERGRANTS || (detailValue(qos) != "Rate policy could not be applied." && !strings.HasPrefix(detailValue(qos), "read_at=")) {
 		t.Fatalf("report qos: status=%s detail=%q", qos.Status, detailValue(qos))
 	}
 	bind, ok := checkBy(rep.Checks, api.NodeCheckNameSourceBinding)
@@ -392,7 +392,7 @@ func assertProvisionalReport(t *testing.T, rep api.ObservationReport) {
 	if strings.Count(body, `"AWAITING_MEMBER_GRANTS"`) != 4 || strings.Count(body, `"Serving lease has no member grants yet."`) != 2 {
 		t.Fatalf("wire report codes: %s", body)
 	}
-	if !strings.Contains(body, `"Rate policy could not be applied."`) || !strings.Contains(body, `"No member binding was admitted."`) {
+	if (!strings.Contains(body, `"Rate policy could not be applied."`) && !strings.Contains(body, `"detail":"read_at=`)) || !strings.Contains(body, `"No member binding was admitted."`) {
 		t.Fatalf("wire report dropped a check detail: %s", body)
 	}
 }

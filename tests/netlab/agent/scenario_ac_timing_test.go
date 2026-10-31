@@ -27,6 +27,8 @@ func TestLabD087_D104_GrantRenewalExpiryCorrelation(t *testing.T) {
 	}
 	cfg["renew_lead_seconds"], cfg["observation_seconds"] = 30, 3600
 	cfg["test_timing_path"] = labDir + "/operations.jsonl"
+	// Match assembled isolation liveness settings; retain watchdog reasons.
+	cfg["watchdog_stale_seconds"], cfg["watchdog_interval_seconds"] = 30, 1
 	raw, err := json.Marshal(cfg)
 	if err != nil {
 		t.Fatal(err)
@@ -111,6 +113,8 @@ func TestLabD087_D104_GrantRenewalExpiryCorrelation(t *testing.T) {
 	checkCleanEvidence(t, granted)
 	t.Logf("D087 qualifying report=%s generation=%s; grant-ready to counted forwarding=%s counters=%d->%d; observation interval=3600s", provisional.ReportId, gen, time.Since(readyAt), counterBefore, counterAfter)
 
+	startWatch(t)
+	defer stopWatch()
 	// The foreground collector includes all ordinary one-second guarded
 	// Applies and at least two natural renewals; 80ms deadlines never use D-120.
 	mustExec(t, "python3", "/work/tests/netlab/agent/timing-probes.py", "trace", "renewal", "0", labDir+"/renewal.json")
@@ -128,7 +132,7 @@ print(int(r[1])+round((b-a).total_seconds()*1000000000))`)
 	if _, err := fmt.Sscan(d, &mono); err != nil {
 		t.Fatal(err)
 	}
-	mustExec(t, "python3", "/work/tests/netlab/agent/timing-probes.py", "trace", "expiry", fmt.Sprint(mono), labDir+"/expiry.json")
+	mustExec(t, "python3", "/work/tests/netlab/agent/timing-probes.py", "trace", "expiry_restart", fmt.Sprint(mono), labDir+"/expiry.json")
 	stopAgent()
 	outDir := os.Getenv("FVPN_AGENT_EVIDENCE_DIR")
 	if outDir == "" {
@@ -142,7 +146,7 @@ print(int(r[1])+round((b-a).total_seconds()*1000000000))`)
 	if err := os.MkdirAll(outDir, 0700); err != nil {
 		t.Fatal(err)
 	}
-	for _, name := range []string{"operations.jsonl", "renewal.json", "expiry.json"} {
+	for _, name := range []string{"operations.jsonl", "renewal.json", "expiry.json", "expiry.json.restart.json", "agent.log", "watchdog.log"} {
 		if err := os.WriteFile(filepath.Join(outDir, name), []byte(readScratch(t, labDir+"/"+name)), 0600); err != nil {
 			t.Fatal(err)
 		}
