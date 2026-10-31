@@ -4,17 +4,17 @@ Mechanism: revocation, agent SIGKILL and baseline
 
 Status: pass
 
-Run: fa0074cc-3b1a-403d-b8c2-3a3439fe2b7e; started UTC: 2026-10-31T00:26:17Z; source dirty: false
+Run: c0106e5d-d8e8-400b-abe0-181d6428fc55; started UTC: 2026-10-31T01:57:50Z; source dirty: false
 
 Spec: §19 AT13, ISO02, ENT02, SEC01
 
-UTC: 2026-10-31T00:26:22Z
+UTC: 2026-10-31T01:57:55Z
 
-Build: 491a307dd505e33b14dc0e993aa7e86b28e82f68
+Build: 7fa0443c532b1c9a395cd93620152fb6902584ae
 
 Image digests:
 
-- fvpn-w4-isolation-lab:lab sha256:bca785405a902525083ea32e0e34f11ea9ce9575484a26ed4dbc9a5f232eb66a
+- fvpn-w4-isolation-lab:lab sha256:7c4d3eabd27e2cb8d996dd644e48526fb3aeace6e2050c03783974cb4abb2475
 
 Policy revision: generation 4000-4100
 

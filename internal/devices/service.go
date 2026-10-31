@@ -61,7 +61,21 @@ type Device struct {
 	CreatedAt                           time.Time
 	Version                             decstr.U64 `json:"resource_version"`
 	ObservedAuthorized                  bool       `json:"observed_authorized"`
+	// AuthorizationUnconfirmed is true exactly while a device_authorization_fences row exists.
+	AuthorizationUnconfirmed bool
+	// FencedAt is that row's fenced_at, nil when the device is not fenced.
+	FencedAt *time.Time
 }
+
+// PublicStatus is the contract DeviceStatus. An authorized device whose
+// read-back is not current, including a fenced device, stays pending.
+func (d Device) PublicStatus() string {
+	if d.Status == "authorized" && !d.ObservedAuthorized {
+		return "pending"
+	}
+	return d.Status
+}
+
 type Change struct {
 	DeviceID, MemberID uuid.UUID
 	OperationID        *uuid.UUID
@@ -264,11 +278,14 @@ func (s *Service) AuthorizeDevice(ctx context.Context, c entitlement.Command, p 
 	return result, err
 }
 
-const deviceColumns = `id,member_id,name,platform,status,authorized_at,coalesce(revoked_at,closed_at),last_seen_at,created_at,resource_version::text,coalesce((SELECT o.observed_authorized AND o.observed_version=member_devices.resource_version AND o.observed_entitlement_revision=e.revision AND e.valid_from<=clock_timestamp() AND e.effective_service_end>clock_timestamp() AND NOT e.admin_suspended FROM device_authorization_observations o JOIN entitlements e ON e.member_id=member_devices.member_id WHERE o.device_id=member_devices.id),false)`
+// observedAuthorizedSQL is the read-back used for DeviceStatus. It is not the fence.
+const observedAuthorizedSQL = `coalesce((SELECT o.observed_authorized AND o.observed_version=member_devices.resource_version AND o.observed_entitlement_revision=e.revision AND e.valid_from<=clock_timestamp() AND e.effective_service_end>clock_timestamp() AND NOT e.admin_suspended FROM device_authorization_observations o JOIN entitlements e ON e.member_id=member_devices.member_id WHERE o.device_id=member_devices.id),false)`
+
+const deviceColumns = `id,member_id,name,platform,status,authorized_at,coalesce(revoked_at,closed_at),last_seen_at,created_at,resource_version::text,` + observedAuthorizedSQL + `,EXISTS(SELECT 1 FROM device_authorization_fences f WHERE f.device_id=member_devices.id),(SELECT f.fenced_at FROM device_authorization_fences f WHERE f.device_id=member_devices.id)`
 
 func scan(row pgx.Row) (Device, error) {
 	var d Device
-	err := row.Scan(&d.ID, &d.MemberID, &d.Name, &d.Platform, &d.Status, &d.AuthorizedAt, &d.RevokedAt, &d.LastSeenAt, &d.CreatedAt, &d.Version, &d.ObservedAuthorized)
+	err := row.Scan(&d.ID, &d.MemberID, &d.Name, &d.Platform, &d.Status, &d.AuthorizedAt, &d.RevokedAt, &d.LastSeenAt, &d.CreatedAt, &d.Version, &d.ObservedAuthorized, &d.AuthorizationUnconfirmed, &d.FencedAt)
 	if d.Status == "closed" {
 		d.Status = "revoked"
 	}
@@ -359,6 +376,9 @@ func (s *Service) RevokeDevice(ctx context.Context, c entitlement.Command, id uu
 		}
 		if status == "revoked" || status == "closed" {
 			result.Replayed = true
+			if err = deleteAuthorizationFence(ctx, tx, id); err != nil {
+				return err
+			}
 			op, err := s.targetOperation(ctx, tx, c.Actor, id, d.MemberID, api.OperationKindMemberDeviceRevoke, "device.revoked", projection.Revision)
 			if err != nil {
 				return err
@@ -391,6 +411,10 @@ func (s *Service) RevokeDevice(ctx context.Context, c entitlement.Command, id uu
 			return err
 		}
 		if err = entitlement.Audit(ctx, tx, c.Actor, "device.revoke", api.ResourceTypeMemberDevice, id, map[string]any{"status": status}, map[string]any{"status": "revoked"}, &op); err != nil {
+			return err
+		}
+		// D-077: revocation clears the fence in the same transaction. Quota withdrawal does not.
+		if err = deleteAuthorizationFence(ctx, tx, id); err != nil {
 			return err
 		}
 		result.MemberID = d.MemberID

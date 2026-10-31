@@ -23,6 +23,8 @@ func members() Domain {
 		if e != nil {
 			return Built{}, &config.SettingError{Name: "members_config_file", Err: e}
 		}
+		// Handlers owns listAdminDevices and authorizeMemberDevice. Composition
+		// binds the methods; there is no separate route table.
 		return Built{Handlers: []any{httpadapter.Handlers{Pool: d.Pool, Services: &services.HTTP}}, Middleware: httpadapter.RequestContext}, nil
 	}}
 }

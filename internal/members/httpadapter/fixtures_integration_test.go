@@ -377,8 +377,11 @@ type netbirdFake struct {
 	mu             sync.Mutex
 	objects        map[string]map[string]map[string]any
 	serial, writes int
-	stale          bool
-	onUsersRead    func() error
+	// grants counts peers newly added to an fvpn-paid-* group. A repeat PUT
+	// that leaves the peer in place does not increment it.
+	grants      int
+	stale       bool
+	onUsersRead func() error
 }
 
 func newNetBird(t *testing.T) (*netbirdFake, *httptest.Server) {
@@ -468,6 +471,22 @@ func (f *netbirdFake) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	f.writes++
+	if kind == "groups" {
+		name, _ := obj["name"].(string)
+		if strings.HasPrefix(name, "fvpn-paid-") {
+			prev := map[string]bool{}
+			if old, ok := bucket[id]; ok {
+				for _, peer := range peerList(old["peers"]) {
+					prev[peer] = true
+				}
+			}
+			for _, peer := range peerList(obj["peers"]) {
+				if peer != "" && !prev[peer] {
+					f.grants++
+				}
+			}
+		}
+	}
 	if id == "" {
 		f.serial++
 		id = fmt.Sprintf("TEST-created-%d", f.serial)
@@ -482,6 +501,91 @@ func (f *netbirdFake) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	respond(obj)
+}
+
+func (f *netbirdFake) grantCount() int {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	return f.grants
+}
+
+// withdrawPaid removes a peer from paid groups without an HTTP write, so the
+// grant counter stays put. The next authorization PUT is then observable.
+func (f *netbirdFake) withdrawPaid(peer string) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	for _, obj := range f.objects["groups"] {
+		name, _ := obj["name"].(string)
+		if !strings.HasPrefix(name, "fvpn-paid-") {
+			continue
+		}
+		kept := []string{}
+		for _, id := range peerList(obj["peers"]) {
+			if id != peer {
+				kept = append(kept, id)
+			}
+		}
+		obj["peers"] = kept
+	}
+}
+
+func (f *netbirdFake) inPaidGroup(peer string) bool {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	for _, obj := range f.objects["groups"] {
+		name, _ := obj["name"].(string)
+		if !strings.HasPrefix(name, "fvpn-paid-") {
+			continue
+		}
+		for _, id := range peerList(obj["peers"]) {
+			if id == peer {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func peerList(v any) []string {
+	switch p := v.(type) {
+	case nil:
+		return nil
+	case []string:
+		return append([]string{}, p...)
+	case []any:
+		out := make([]string, 0, len(p))
+		for _, item := range p {
+			switch x := item.(type) {
+			case string:
+				out = append(out, x)
+			case map[string]any:
+				if id, ok := x["id"].(string); ok {
+					out = append(out, id)
+				}
+			}
+		}
+		return out
+	default:
+		b, err := json.Marshal(v)
+		if err != nil {
+			return nil
+		}
+		var ids []string
+		if json.Unmarshal(b, &ids) == nil && (len(ids) > 0 || string(b) == "[]" || string(b) == "null") {
+			return ids
+		}
+		var objs []map[string]any
+		if json.Unmarshal(b, &objs) != nil {
+			return nil
+		}
+		out := make([]string, 0, len(objs))
+		for _, o := range objs {
+			if id, ok := o["id"].(string); ok {
+				out = append(out, id)
+			}
+		}
+		return out
+	}
 }
 
 // Test dependencies enter through the generic build seam; listeners, middleware
