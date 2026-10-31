@@ -72,3 +72,11 @@ Production composition in `fvpn-control`, `fvpn-worker`, and `fvpn-usage-admin` 
 | `rollup_retention_months` | `int` (`1..120`) | Required | Retention window in months for `usage_rollups` and `usage_rollup_details` (§15.4). |
 | `audit_retention_days` | `int` (`1..3650`) | Required | Retention window in days for `audit_events` (§15.4). |
 | `projection_batch_size` | `int` (`1..10000`) | Required | Batch size for usage projection rebuild/processing. |
+| `sampling_interval_bound_seconds` | Positive integer fitting a Go duration | Optional; omitted defaults to 10 | D-112/D-115 central retired-stream hand-off bound. Explicit zero, negative or null fails loading. `NewUsageHandler` passes seconds as `usage.Config.SamplingIntervalBound`; node sampling must be <= this bound. |
+
+A complete [usage configuration example](usage-config.example.json) includes the
+D-112 bound. Its other settings are TEST ONLY deployment placeholders. Increasing
+node sampling beyond 10 seconds requires increasing this central bound before
+hand-off. The bound is a central parameter; no per-stream historical sampling
+configuration is inferred or stored. See the
+[D-105/D-112/D-115 hand-off note](2026-10-31-d105-retired-stream-handoff.md).
