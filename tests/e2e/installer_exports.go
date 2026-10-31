@@ -19,13 +19,13 @@ import (
 // InstallerHashes are the files a re-run must keep stable. Absent files are
 // "absent". Current is the readlink text of /opt/vpn-node/current, not a digest.
 type InstallerHashes struct {
-	Key       string `json:"key_sha256"`
-	Cert      string `json:"cert_sha256"`
-	NodeJSON  string `json:"node_json_sha256"`
-	UsageDB   string `json:"usage_db_sha256"`
-	UsageWAL  string `json:"usage_wal_sha256"`
-	MachineID string `json:"machine_id_sha256"`
-	Current   string `json:"current_target"`
+	Key       string `json:"key_sha256,omitempty"`
+	Cert      string `json:"cert_sha256,omitempty"`
+	NodeJSON  string `json:"node_json_sha256,omitempty"`
+	UsageDB   string `json:"usage_db_sha256,omitempty"`
+	UsageWAL  string `json:"usage_wal_sha256,omitempty"`
+	MachineID string `json:"machine_id_sha256,omitempty"`
+	Current   string `json:"current_target,omitempty"`
 }
 
 // InstallerOutcome is one fvpn-node-install invocation. Exit follows the

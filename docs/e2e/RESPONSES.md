@@ -149,8 +149,9 @@ blocked until those real traces exist. There is no simulated clock pass.
 I read `docs/portal/DEV.md` on this checkout. It documents D-101's simulated
 kernel/QoS/usage/updater evidence but does **not** contain the requested 15-value
 D-093 table. The classification below therefore audits the current
-`apps/portal/e2e/dev-stack.mjs` directly against the 15 groups in the request;
-it does not claim to have read a table that is absent from this base. No portal
+`apps/portal/e2e/dev-stack.mjs` directly. The 15 audit rows below group concrete
+writes in that simulator; their numbering is not a row-for-row match to the
+absent table. No portal
 file is changed. Live values below mean the real agent/control/worker paths in
 the assembled privileged devstack, not the portal's mTLS reporter simulator.
 
