@@ -74,7 +74,7 @@ func (l *live) dnsRules(r *record) {
 		got, _ := l.policy("domain_rule_set", map[string]any{"rules": []any{rule(domain, true, "block")}})
 		r.check("reject noncanonical "+domain, "422 (contract canonical ASCII)", detail(got), "POST /admin/policies domain_rule_set", got.status == 422)
 	}
-	canonical := []any{rule("lab.example.invalid", true, "block"), rule("xn--bcher-kva.example.com", false, "block"), rule("feed-01.example.invalid", false, "allow")}
+	canonical := []any{rule("lab.example.invalid", true, "block"), rule("xn--bcher-kva.example.com", false, "block"), rule("feed-01.example.invalid", true, "block"), rule("blocked-cname.example.invalid", true, "block"), rule("rebind.example.invalid", true, "allow")}
 	good, id := l.policy("domain_rule_set", map[string]any{"rules": canonical})
 	l.dnsRuleRev = id
 	r.check("canonical rules", "201, immutable canonical payload", detail(good), "POST canonical A-label, include_subdomains and allow rules", good.status == 201)
@@ -121,42 +121,11 @@ func (l *live) dnsRules(r *record) {
 		r.block("Requested block rule was absent after the bounded resolver application wait; typed evidence below identifies the stage.")
 	}
 	l.resolverEvidence(r)
-	r.block("Native member admission is tested in AT01/AT02, but the entrypoint disables native DNS and there is no applied member DNS/forwarding path or controlled CNAME/HTTPS/SVCB/rebinding zone fixture. Apex/label matching, block TTL expiry and allowlist-versus-isolation need an applied policy and those fixtures; API validation alone does not pass AT20.")
+	l.nativeDNSMatrix(r)
 }
 func (l *live) dnsFailure(r *record) {
-	raw, readErr := l.inside("member", "cat", "/var/lib/netbird/default.json")
-	var native struct{ DisableDNS bool }
-	decodeErr := json.Unmarshal(raw, &native)
-	r.check("native DNS configuration", "record actual persisted client DNS setting", fmt.Sprintf("read_ok=%t; DisableDNS=%t", readErr == nil && decodeErr == nil, native.DisableDNS), "read /var/lib/netbird/default.json in memory; emit DisableDNS boolean only", readErr == nil && decodeErr == nil)
-
-	if !l.secondExit(r) || !l.installProbe() {
-		r.block("F4-02: second resolver prerequisite unavailable")
-		return
-	}
-	// Two independent filtering resolvers, not one filter plus its authority.
-	for _, item := range []struct{ node, resolver string }{{"node", "adguard"}, {"node2", "node2-adguard"}} {
-		other := "node2"
-		if item.node == "node2" {
-			other = "node"
-		}
-		before, _ := l.inside(item.node, "/tmp/at-members-probe", "dns", "127.0.0.1:53", "lab.example.invalid", "1", "udp")
-		_, pause := l.docker("pause", l.name(item.resolver))
-		if pause != nil {
-			r.block("Filtering resolver fault unavailable: " + item.resolver)
-			continue
-		}
-		l.t.Cleanup(func() { l.cleanupDocker("unpause", l.name(item.resolver)) })
-		unavailable, _ := l.inside(item.node, "/tmp/at-members-probe", "dns", "127.0.0.1:53", "lab.example.invalid", "1", "udp")
-		fallback, _ := l.inside(other, "/tmp/at-members-probe", "dns", "127.0.0.1:53", "lab.example.invalid", "1", "udp")
-		_, resume := l.docker("unpause", l.name(item.resolver))
-		r.check(item.resolver+" isolated failure", "paused filter unavailable; other filter still blocks synthetic domain", fmt.Sprintf("before=%s; paused=%s; other=%s", before, unavailable, fallback), "pause exactly one filtering resolver; query both node loopbacks; unpause (explicit probes, not native client failover)", resume == nil && strings.Contains(string(unavailable), `"available":false`) && strings.Contains(string(fallback), `"rcode":3`))
-	}
-	l.resolverEvidence(r)
-	restore := l.useSecond()
-	l.resolverEvidence(r)
-	restore()
+	l.nativeDNSFallback(r)
 	l.dnsSyncFault(r)
-	r.block("F4-05: two independent filtering resolvers survive alternating faults, but the native member entrypoint still uses --disable-dns. No product-distributed two-resolver client configuration/fallback is available; loopback probes do not prove automatic member failover or public-DNS exclusion. Owner: w3-devstack-e2e deploy/devstack/entrypoint-member.sh and native DNS fixture. Android Private DNS/browser DoH remain needs operator run; guidance in OPERATORS.md.")
 }
 
 func (l *live) dnsSyncFault(r *record) {
@@ -195,8 +164,11 @@ func (l *live) dnsSyncFault(r *record) {
 }
 func (l *live) privacy(r *record) {
 	sentinel := "privacy-" + l.run + ".example.invalid"
-	response := l.dnsLocal(sentinel, "1", "udp")
-	r.check("privacy sentinel query", "controlled resolver responds", response, "node loopback probe DNS unique TEST ONLY sentinel (resolver privacy only)", strings.Contains(response, `"available":true`))
+	answer, nativeErr := l.hook.ProbeNativeDNS(l.ctx, "", sentinel, 1, false, "")
+	responseRaw, _ := json.Marshal(answer)
+	response := string(responseRaw)
+	r.check("privacy native stub in use", "native two-resolver configuration available", fmt.Sprintf("native_configured=%t; probe_ok=%t", l.nativeDNS, nativeErr == nil), "AT20 native DNS configuration and member OS stub", l.nativeDNS && nativeErr == nil)
+	r.check("privacy sentinel query", "controlled resolver responds", response, "native member OS stub unique TEST ONLY sentinel through issued resolver pair", strings.Contains(response, `"available":true`))
 	for _, path := range []string{"/control/querylog/config", "/control/stats/config"} {
 		raw, err := l.resolver(path)
 		var v struct {
@@ -257,7 +229,9 @@ func (l *live) privacy(r *record) {
 	}
 	feeds := l.count(`SELECT count(*) FROM policy_definitions WHERE type='threat_feed' AND active_revision_id IS NOT NULL`)
 	r.check("feed inventory", "record actual active feed count", fmt.Sprintf("active_feed_definitions=%d", feeds), "SELECT active threat_feed policies", true)
-	r.block("No active licensed threat feed exists before the supplemental at-members-readback experiment; it supplies a self-authored licensed input and polls the real 300-second failure cadence. Sentinel scan covers DNS; forwarding uses a fixed controlled health path without a URL sentinel. F4-06: raw usage/rollup purge, file-content scans, retained backup expiry and representative full-qname/URL privacy require the missing fixtures; no complete privacy pass is claimed.")
+	l.secondPrivacy(r)
+	l.feedLastGood(r)
+	r.block("F4-06: raw usage/rollup purge, file-content scans, retained backup expiry, representative URL privacy and commercial feed approval remain with devstack/usage/database/backup owners. TEST ONLY self-authored feed last-good evidence does not approve a commercial source.")
 }
 
 // D-056: a central document or HTTP 200 alone never proves node application.

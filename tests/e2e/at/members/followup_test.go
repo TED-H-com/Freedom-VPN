@@ -179,8 +179,8 @@ func (l *live) feedLastGood(r *record) {
 	}
 	beforeDNS := l.dnsLocal("feed-01.example.invalid", "1", "udp")
 	if !strings.Contains(beforeDNS, `"rcode":0`) {
-		var baseRev uuid.UUID
-		if l.pool.QueryRow(l.ctx, `SELECT id FROM policy_revisions WHERE type='dns_profile' AND jsonb_array_length(coalesce(payload->'threat_feed_revision_ids','[]'::jsonb))=0 ORDER BY created_at DESC LIMIT 1`).Scan(&baseRev) == nil && baseRev != uuid.Nil {
+		_, baseRev := l.policy("dns_profile", map[string]any{"profile_code": "at-feed-positive", "display_name": map[string]string{"zh-TW": "TEST ONLY feed positive control"}, "block_response": "nxdomain", "blocked_ttl_seconds": 5, "domain_rule_set_revision_ids": []string{}, "threat_feed_revision_ids": []string{}})
+		if baseRev != uuid.Nil {
 			_ = l.activate(baseRev)
 			_ = l.wait(45*time.Second, func() bool {
 				beforeDNS = l.dnsLocal("feed-01.example.invalid", "1", "udp")

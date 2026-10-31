@@ -298,6 +298,5 @@ func (l *live) entitlements(r *record) {
 		l.publicationCommand(r, "disabled", []uuid.UUID{l.groupA})
 		restore()
 	}
-	r.block("F4-04: persistent TCP refund withdrawal is attempted on both real exits. The shared UDP/4443 hook is an authenticated updater-only probe, not a member echo service; do not count it as member traffic. Member UDP withdrawal timing remains unproved; TCP refund, expiry and suspension are measured on both nodes. Owner: w3-devstack-e2e traffic fixtures.")
-	r.block("The full case additionally needs member UDP withdrawal timing and rendered suspended/expired member screens. Individual TCP observations above retain their actual pass/fail; OPERATORS.md retains the remaining exact scripts.")
+	r.block("F4-04: persistent member TCP/UDP withdrawal is measured above on both exits. Rendered suspended/expired member screens remain with the portal/operator owner; API state alone does not pass the full case.")
 }
