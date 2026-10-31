@@ -44,3 +44,12 @@ this before probing and records before/after routes, addresses, packet headers,
 per-rule named counters, allowlist timeouts, conntrack and origin arrival.
 See [follow-up 9 trace](../followup9-forwarding-trace.md) for measured deltas and
 [first-class owner requests](../requests.md) for any remaining product gate.
+
+## Follow-up 14
+
+`forwarding` samples the forward chain immediately after the first counted
+flow, before the usage poll. The pass condition is unchanged: member accepts
+greater than zero, generation at least 1, and a counted flow. `member-traffic`
+also records `provisioning_ready_at`, `populated_lease_at`, and
+`ready_to_populated_lease_seconds`. A missing populated lease stays a D-067
+product observation. The scenario does not restart the agent to force a renew.

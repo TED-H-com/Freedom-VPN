@@ -4,6 +4,8 @@
 
 The updater is a separate program. This process opens the usage ledger, samples forward-admission counters after forwarding is admitted, and uploads them. It does not apply a release.
 
+The Ubuntu installer is [install.md](install.md).
+
 ## Commands
 
 ```text

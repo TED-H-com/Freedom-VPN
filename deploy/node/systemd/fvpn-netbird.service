@@ -1,0 +1,30 @@
+[Unit]
+Description=NetBird client for Freedom VPN
+# CAP_NET_ADMIN and CAP_NET_RAW: WireGuard interface, routes and the tunnel.
+# PrivateDevices is off so /dev/net/tun stays visible. The setup key is not
+# in this unit (§18.2). --disable-firewall keeps NetBird off the host ruleset.
+After=network-online.target
+Wants=network-online.target
+StartLimitIntervalSec=120
+StartLimitBurst=5
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/netbird service run --log-level warn --log-file console
+Restart=on-failure
+RestartSec=2s
+RestartMaxDelaySec=30s
+RestartSteps=5
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=no
+RuntimeDirectory=vpn-node
+UMask=0077
+ReadWritePaths=-/var/lib/netbird -/etc/netbird /run/vpn-node
+CapabilityBoundingSet=CAP_NET_ADMIN CAP_NET_RAW
+AmbientCapabilities=CAP_NET_ADMIN CAP_NET_RAW
+
+[Install]
+WantedBy=multi-user.target

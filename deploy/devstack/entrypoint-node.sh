@@ -14,6 +14,26 @@ if ! ip link show fvup0 >/dev/null 2>&1; then
     ip link set "$uplink" name fvup0
     ip link set fvup0 up
 fi
+# Docker's embedded DNS installs iptables-nft xt DNAT/SNAT for 127.0.0.11 in
+# this netns. Whole-ruleset read-back treats an xt target reachable from
+# postrouting as FLOWTABLE_BYPASS. inet fvpn is a different table and is left
+# alone. AdGuard's upstream is CoreDNS by address, so this netns does not
+# need 127.0.0.11. Pin the control-plane names before enrollment. A hostname
+# already in /etc/hosts wins. The clone's lab-hosts names the presentation
+# /24; this loop must not replace that line with the lab address. This file
+# is the process container's hosts file. --network container: does not share
+# it with the netns container. compose extra_hosts and docker --add-host
+# both conflict with that network mode, so neither is used.
+nft delete table ip nat >/dev/null 2>&1 || true
+if [ -s /etc/vpn-node/lab-hosts ]; then
+    while read -r ip name _; do
+        [ -n "${name:-}" ] || continue
+        case "$ip" in \#*) continue ;; esac
+        if ! awk -v n="$name" 'BEGIN{f=1} {for (i=2;i<=NF;i++) if ($i==n) {f=0; exit}} END{exit f}' /etc/hosts; then
+            printf '%s %s\n' "$ip" "$name" >> /etc/hosts
+        fi
+    done < /etc/vpn-node/lab-hosts
+fi
 if [ -f /etc/vpn-node/ca.pem ]; then
     cp /etc/vpn-node/ca.pem /usr/local/share/ca-certificates/lab-ca.crt
     update-ca-certificates >/dev/null 2>&1 || true
@@ -58,23 +78,24 @@ fvpn-e2e-nodeconfig
 fvpn-e2e-nodeconfig resolver-proxy >/var/lib/vpn-node/e2e/resolver-proxy.log 2>&1 &
 printf '%s\n' '{"stage":"enrolled"}' > /var/lib/vpn-node/e2e/status.json
 fvpn-watchdog run -config /etc/vpn-node/agent-run.json >/var/lib/vpn-node/e2e/watchdog.log 2>&1 &
+# TEST ONLY supervisor. This loop is the only owner of fvpn-agent. Public
+# agent-service.sh stop/start only toggle pause-agent and wait. Poll is 0.2s
+# so a stop/start cycle does not wait out the old 2s period; a slower poll
+# still converges because the public commands wait across more than one poll.
+# Every iteration reaps while paused and respawns while running, including
+# after a crash. --supervisor must not call the public wait path.
 (
-    paused=0
     while true; do
         if [ -f /var/lib/vpn-node/e2e/pause-agent ]; then
-            if [ "$paused" -eq 0 ]; then
-                agent-service.sh stop
-                paused=1
-            fi
+            agent-service.sh --supervisor stop || true
         else
-            paused=0
             selected=/usr/local
             if [ -f /var/lib/vpn-node/e2e/agent-selected ]; then
                 selected=$(cat /var/lib/vpn-node/e2e/agent-selected)
             fi
-            agent-service.sh start "$selected"
+            agent-service.sh --supervisor start "$selected" || true
         fi
-        sleep 2
+        sleep 0.2
     done
 ) &
 (

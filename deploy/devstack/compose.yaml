@@ -202,7 +202,9 @@ services:
       timeout: 3s
       retries: 40
       start_period: 15s
-    restart: "no"
+    # Management, signal, and relay share this one container. A process exit
+    # restarts it. docker stop still leaves it down (unless-stopped).
+    restart: unless-stopped
 
   gateway:
     image: ${FVPN_E2E_IMAGE_NGINX:-fvpn-devstack-nginx:1.30.0}
@@ -278,7 +280,8 @@ services:
       timeout: 5s
       retries: 40
       start_period: 20s
-    restart: "no"
+    # docker stop (lease-expiry) stays down. A process crash restarts control.
+    restart: unless-stopped
 
   worker:
     image: ${FVPN_E2E_IMAGE_WORKER:-fvpn-devstack-worker:local}
@@ -301,7 +304,10 @@ services:
       lab:
         ipv4_address: ${FVPN_E2E_LAB_PREFIX:-172.28.30}.31
       origin: {}
-    restart: "no"
+    # A runner exit (worker stopped / STARTUP_OR_RUNTIME_FAILURE) comes back.
+    # docker stop stays down. Readiness is http://127.0.0.1:9092/readyz inside
+    # the container; 9092 is not published on the host.
+    restart: unless-stopped
 
   # Keep loopback DNS and the node interfaces in one namespace across either
   # process-container restart. This container runs no network configuration.
@@ -332,6 +338,8 @@ services:
         condition: service_healthy
       gateway:
         condition: service_started
+    # Names are pinned by entrypoint-node.sh from /etc/vpn-node/lab-hosts.
+    # extra_hosts cannot be combined with network_mode: service:.
     network_mode: service:node-netns
     restart: "no"
 

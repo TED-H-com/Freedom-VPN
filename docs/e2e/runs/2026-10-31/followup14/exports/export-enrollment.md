@@ -1,0 +1,17 @@
+# export-enrollment
+
+Harness key replay, race and actual one-time peer bootstrap
+
+Status: pass
+
+Run: 0a687f3a-2351-4234-b43d-882109267967
+
+Source: 7029dbe631b8344ccd0db3991fac81e773a26ed5
+
+Spec: §6.2, AT06, ENR-04
+
+- race_result: {"enroll_http":201,"bootstrap_http":0,"request_sha256":"eec39fe83d1c9d5590ad61a287a66ed69c5df38b10328b85a7818179fc82589e","response_discarded":true,"joined":false,"node_id":"00000000-0000-0000-0000-000000000000","incarnation_id":"00000000-0000-0000-0000-000000000000"}
+- race_result: {"enroll_http":409,"bootstrap_http":0,"error_code":"ENROLLMENT_KEY_MISMATCH","request_sha256":"dbcbdedfef22dcff1072262e8b6ed39dc4bccd4e436ce2bebc687add869a84e8","response_discarded":true,"joined":false,"node_id":"00000000-0000-0000-0000-000000000000","incarnation_id":"00000000-0000-0000-0000-000000000000"}
+- replay_join: {"enroll_http":200,"bootstrap_http":200,"request_sha256":"eec39fe83d1c9d5590ad61a287a66ed69c5df38b10328b85a7818179fc82589e","response_discarded":false,"joined":true,"node_id":"01a18f89-c081-7cc2-8cf5-1e177bd11620","incarnation_id":"8fa02972-8717-4000-af42-8a28873b4a89"}
+- peer_inventory: {"enrollment_id":"01a18f89-c081-7cc1-a188-cbfe305c4b57","operation_id":"01a18f89-c55e-7cc5-9321-cba6e9d35352","node_id":"01a18f89-c081-7cc2-8cf5-1e177bd11620","incarnation_id":"8fa02972-8717-4000-af42-8a28873b4a89","enrollment_state":"consumed","setup_keys":1,"setup_key_uses":1,"correlation_groups":0,"peers":1,"projected_peer_present":true,"complete":true}
+- incarnation_history: current API incarnation observed; complete history/count remains ENR-03, nodes/control + PKI

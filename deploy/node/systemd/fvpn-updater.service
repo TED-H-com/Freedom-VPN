@@ -1,0 +1,26 @@
+[Unit]
+Description=Freedom VPN node updater
+# No NET_ADMIN and no NET_RAW. The updater writes files and asks systemd
+# to stop and start the agent. It does not program nftables.
+# boot_id in updater.json is refreshed first. The updater pins that UUID
+# and does not read a boot-id file (待實測 until the updater grows that hook).
+After=network-online.target fvpn-netbird.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+SuccessExitStatus=0 2
+ExecStartPre=/opt/vpn-node/current/fvpn-node-install refresh-boot-id
+ExecStart=/opt/vpn-node/current/fvpn-updater run -config /etc/vpn-node/updater.json
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+RuntimeDirectory=vpn-node
+UMask=0077
+# refresh-boot-id rewrites updater.json. /etc is read-only under ProtectSystem=strict.
+ReadWritePaths=/var/lib/vpn-node /opt/vpn-node /run/vpn-node /etc/vpn-node
+CapabilityBoundingSet=
+
+[Install]
+WantedBy=multi-user.target
