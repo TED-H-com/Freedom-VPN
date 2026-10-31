@@ -4,17 +4,17 @@ Mechanism: IPv6 block mode, metadata and special addresses
 
 Status: pass
 
-Run: bf671f3a-c6ac-4824-9107-425c4c5a5f02; started UTC: 2026-10-31T04:36:40Z; source dirty: false
+Run: 041e9e48-79a6-45dd-a19d-8b5a63290655; started UTC: 2026-10-31T06:15:34Z; source dirty: false
 
 Spec: §19 AT11, ISO01, ISO03, §8.3
 
-UTC: 2026-10-31T04:36:42Z
+UTC: 2026-10-31T06:15:37Z
 
-Build: e711ebd822eda2ea1b5ba10b187818fda6777a74
+Build: 15ce5f60a1c39d194ef9544a29a02fe40575ab84
 
 Image digests:
 
-- fvpn-w4-isolation-lab:lab sha256:742c095b7ba24205a3da1d66480b12423f488183b657c12433fe10f5315f0cb2
+- fvpn-w4-isolation-lab:lab sha256:20ab0acdd306acdf25186f86060bbba4a29c8d4c2a79ae8ed7d20dfa6aadce7e
 
 Policy revision: generation 11
 

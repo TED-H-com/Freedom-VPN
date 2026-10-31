@@ -32,8 +32,8 @@ at-isolation-lint:
 	@$(at-isolation-disk) go vet -tags netlab ./tests/netlab/at/...
 	@$(at-isolation-disk) go run $(AT_STATICCHECK) $(AT_PACKAGES)
 	@$(at-isolation-disk) go run $(AT_STATICCHECK) -tags netlab ./tests/netlab/at/...
-	@$(at-isolation-disk) go vet tests/e2e/at/isolation/probe_main.go
-	@$(at-isolation-disk) go run $(AT_STATICCHECK) tests/e2e/at/isolation/probe_main.go
+	@$(at-isolation-disk) go vet tests/e2e/at/isolation/probe_main.go tests/e2e/at/isolation/observer_main.go
+	@$(at-isolation-disk) go run $(AT_STATICCHECK) tests/e2e/at/isolation/probe_main.go tests/e2e/at/isolation/observer_main.go
 	@python3 tests/e2e/at/isolation/driver.py lint
 
 # Offline evaluation only; archive the original AT13 first (see RUN.md).

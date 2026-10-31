@@ -1,20 +1,35 @@
-# Enrollment acceptance
+# Enrollment acceptance — follow-up 5
 
-Every required check must pass. Missing hooks keep the complete AT blocked.
-
-| AT | Status | Decisive observation | Evidence |
+| Case | Result | Current checks | Prior failure review |
 |---|---|---|---|
-| AT06 | pass | Prior run bebfe230 429 RATE_LIMITED failures on audit_read, issue_reinstall, incarnation_history and probe_process are reviewed as resolved under D-078. Harness Retry-After retries landed in 286eb57b44c2e783257767918680a0e1f097f106 (#210). Run 60a7102e is re-scored in this record: raw http_429 2, both class browser, named checks passed, join phase http_429 0. The saved samples do not include a Retry-After value. Run 35e542f8 probe_process and rate_limit_review stay in prior_checks and stop blocking on that behaviour evidence. Run 1d5c02a4 probe_process was the clone-present parser (wget dropped the 403 body); it stops blocking when this probe exits 0. Limiter class was browser BrowserRate 10/s burst 30. | [AT06.json](AT06.json), [AT06.md](AT06.md) |
-| AT07 | blocked | ENR-05 stays blocked, waiting on devstack f15. Expected exports: HoldUsageAcknowledgements(ctx, slot, hold), UsageLedgerSnapshot(ctx, slot), CountedMemberTraffic. fvpn-agent usage snapshot [-json] is merged and is not these hooks. Owner: w4-usage, then devstack. Not emulated. | [AT07.json](AT07.json), [AT07.md](AT07.md) |
+| [AT06](AT06.md) | **pass** | 344 pass / 0 blocked / 0 fail | resolved |
+| [AT07](AT07.md) | **blocked** | 19 pass / 6 blocked / 0 fail | resolved |
 
-See [RUN.md](RUN.md) and [requests.md](requests.md). Immutable attempts are in `history/`.
+Run [`4011dd32-73ef-4f49-b78b-6cf1ab8496c9`](history/4011dd32-73ef-4f49-b78b-6cf1ab8496c9/AT07.json),
+UTC 2026-10-31T06:10:11Z–2026-10-31T06:15:49Z, source `200c027` clean at invocation.
+Both live probes and all teardown commands exited 0. The make target exited 2
+because six required AT07 checks remain blocked. Final owned inventory is
+`containers=0, networks=0, volumes=0, images=0`.
 
-## Follow-up 4 — run `ec2e6279-0649-4d47-b31a-cf13aeba7303`
+#266's initial real installer invocation reproduced exit **1**, code `failed`,
+after enrollment. The journal confirmed NetBird's read-only socket and the
+`/run/vpn-node` failure. Usage hold/snapshot/transport exports all rejected
+`installer-node`. These are the current ENR-05/ENR-06 blockers, with exact asks
+in [requests.md](requests.md). No counted-backlog delivery, post-reinstall
+monthly equality, successful installer rerun, retired directory, or installer
+old-certificate denial is claimed.
 
-UTC `2026-10-31T02:18:00Z`–`2026-10-31T02:23:47Z`. Source `9e493e8` dirty, tree `d57359f925f2860a4efab951ed1c6d10025bfe916d3ff4474b4a57203437d2d5`. Both probes exited 0. Cleanup `{containers:0,networks:0,volumes:0,images:0}`. `make -f mk/at-enrollment.mk at-enrollment` exited 2 because AT07 is blocked.
+The regular-node usage endpoint-scope probe passed: retryable 503 while held,
+desired-state 200, release to validation 422, unchanged paused snapshots and
+successful cleanup. It had zero pending events and is not ENR-05 acceptance.
+The clone conflict/revocation/recovery check still passed.
 
-AT06: 305 passing, 0 blocked, 0 failed. Full-phase `rate_limit_review` passed with `http_429` 2, both class `browser`, `Retry-After` present, and the retry succeeded. Join phase `http_429` 0. Follow-up 3 run `60a7102e` is re-scored in the JSON; its raw count stays in `prior_checks`, and the saved samples have no `Retry-After` value. Disposition `resolved`.
+AT06 observed **zero 429s in both phases**. #233 retained browser 10/s burst 30;
+#252 moved admin lists to `read` 30/s burst 60 (ingress 20/s burst 60). Those are
+reviewed source defaults, not a live saturation measurement. D-078 still scores
+Retry-After behavior. AT07's retained `bebfe230` and `35e542f8` process rows are
+now explicitly reviewed and resolved, alongside `1d5c02a4`; no history was deleted.
 
-AT07: 16 passing, 6 blocked, 0 failed. `cloned_identity_conflict` passed on `fvpn-w4-enroll-node-clone-net` (`172.29.38.0/24`): one frozen conflict, one audit, stable count, forwarding withdrawn, revoke 202, new incarnation `01a18fc3-386b-716e-960f-fa63faeb507a`, cleared projection, and the clone's old certificate received 403 `IDENTITY_REVOKED`. The six blocked checks are ENR-05 and ENR-06, waiting on devstack f15. The entrypoint re-enroll is not ENR-06. `same_lab_slash24` and `same_origin_slash24` stayed true because the clone netns remains on those bridges; the conflict domain is the presentation `/24`.
-
-Run `1d5c02a4-b254-4a9b-b687-b1535428fb3f` is the earlier attempt in this follow-up. Its process exit is the clone-present parser (wget dropped the 403 body). That history directory is unchanged. The `IDENTITY_REVOKED` pass is this run only.
+Full evidence: [AT06.json](AT06.json), [AT07.json](AT07.json).
+Reproduction and gate output: [RUN.md](RUN.md). Prior root records:
+[follow-up 4](history/follow-up-4/README.md).

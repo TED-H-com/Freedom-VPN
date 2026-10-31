@@ -65,6 +65,8 @@ class EvidenceTests(unittest.TestCase):
         # These are emitted by the probe and are not required-name fillers.
         for name in ("audit_read", "issue_reinstall"):
             checks.append(dict(at="AT06", name=name, status="pass", detail="TEST ONLY"))
+        for at in run.REQUIRED:
+            checks.append(dict(at=at, name="probe_process", status="pass", detail={"exit_code": 0, "phase": "full"}))
         return checks
 
     def reviewed_prior(self):
@@ -177,6 +179,42 @@ class EvidenceTests(unittest.TestCase):
         recs = run.records(self.meta(), self.passing(), prior)
         self.assertEqual(recs["AT06"]["status"], "pass")
         self.assertEqual(recs["AT06"]["prior_checks"][0]["status"], "fail")
+
+    def test_at07_shared_process_failures_resolve_with_current_cross_case_evidence(self):
+        prior = {at: [] for at in run.REQUIRED}
+        prior["AT07"] = [dict(name="probe_process", status="fail", run_id=rid) for rid in (
+            "bebfe230-26d4-4e3d-b052-81d258d04e07", "35e542f8-730e-4be0-8214-e4a9dd818c40")]
+        recs = run.records(self.meta(), self.passing(), prior)
+        self.assertEqual(recs["AT07"]["prior_failure_review"]["disposition"], "resolved")
+        self.assertEqual(recs["AT07"]["prior_checks"], prior["AT07"])
+        for name in ("probe_process", "audit_read", "incarnation_history", "rate_limit_review"):
+            checks = [c for c in self.passing() if c["name"] != name]
+            recs = run.records(self.meta(), checks, prior)
+            self.assertEqual(recs["AT07"]["status"], "blocked", name)
+            self.assertEqual(recs["AT07"]["prior_failure_review"]["disposition"], "not_applied", name)
+
+    def test_at07_process_review_can_resolve_while_installer_is_blocked(self):
+        prior = {at: [] for at in run.REQUIRED}
+        prior["AT07"] = [dict(name="probe_process", status="fail", run_id="bebfe230-26d4-4e3d-b052-81d258d04e07")]
+        checks = self.passing()
+        for c in checks:
+            if c["name"] == "installer_rerun":
+                c["status"] = "blocked"
+        recs = run.records(self.meta(), checks, prior)
+        self.assertEqual(recs["AT07"]["status"], "blocked")
+        self.assertEqual(recs["AT07"]["prior_failure_review"]["disposition"], "resolved")
+
+    def test_read_bucket_429_success_uses_same_behavior_rule(self):
+        checks = self.with_review(self.review(http_429=2, samples=self.browser_samples(klass="read")))
+        recs = run.records(self.meta(), checks, self.reviewed_prior())
+        self.assertEqual(recs["AT06"]["status"], "pass")
+
+    def test_at07_unreviewed_process_exit_is_not_covered(self):
+        prior = {at: [] for at in run.REQUIRED}
+        prior["AT07"] = [dict(name="probe_process", status="fail", run_id="another-run")]
+        recs = run.records(self.meta(), self.passing(), prior)
+        self.assertEqual(recs["AT07"]["status"], "blocked")
+        self.assertEqual(recs["AT07"]["prior_failure_review"]["disposition"], "not_applied")
 
 
 if __name__ == "__main__":

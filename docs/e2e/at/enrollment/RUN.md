@@ -55,17 +55,13 @@ the harness creates. A second incarnation is created only by `revokeNode`, then
 The acceptance stack keeps `node` and `node2` for clean `Enroll` / `EnrollAt`
 first boots, `MachineIdentityFingerprints`, and `StartClonedIdentityFixture`.
 `JoinEnrolledIdentity` needs `node2` while that slot is still waiting, so the
-runner brings up a second fresh stack for `EnrollmentPeerInventory`. Counted
-usage and the installer rerun stay blocked on the product hooks named in the
-follow-up 13 recheck (ENR-05 owner w4-usage, ENR-06 owner packaging/installer).
-Devstack #219 did not export `HoldUsageAcknowledgements`, `UsageLedgerSnapshot`,
-`CountedMemberTraffic`, `RerunInstaller` or `ControlledReinstall`. The clone
-conflict stays blocked on a second lab `/24` (ENR-07, devstack follow-up 14):
-`StartClonedIdentityFixture` has no network argument, and this slot's lab
-`172.28.38.0/24` and origin `192.0.11.0/24` are each one compatibility domain.
-The production `ObserveEndpointTx` caller (#211) and `identity_conflict`
-projection (#217) are on this tree. The harness records `Observe` and
-`getNode` around the clone and does not invent a second network.
+runner brings up a second fresh stack for `EnrollmentPeerInventory`. Follow-up 15 #266 supplies usage and installer wrappers, but their slots differ:
+usage hold/snapshot/transport use `node`, `node2`, `node-clone`; installation uses
+only `installer-node`. The run checks this boundary and the real install result.
+The regular node's endpoint-scope/snapshot proof is separate from counted usage
+across reinstall. The current installer failure and exact remaining asks are in
+[requests.md](requests.md); no service override, fake daemon, copied ledger or
+alternate enrollment path substitutes for those prerequisites.
 
 Control, worker and both available nodes' console streams plus node agent,
 watchdog, resolver proxy and NetBird streams are scanned in memory for every
@@ -77,12 +73,14 @@ keys, full CSRs, proofs, session cookies and raw logs never enter public records
 Every previous check is retained with its run ID in `prior_checks`; historical
 attempts are not overwritten. Any current failed subcheck determines the blocked AT observation. A
 prior failed check prevents a later full pass until the orchestrator explicitly
-reviews its resolution. The bebfe230 browser-class 429 failures
-(`audit_read`, `issue_reinstall`, `incarnation_history`, `probe_process`) are
-that review: they stop blocking only when the current `rate_limit_review` check
-passes with `http_429` 0 and those checks pass. The failed rows stay in
-`prior_checks`. Any other prior failure still blocks. A partial readback cannot
-erase a prior failure.
+reviews its resolution. The historical process failures are reviewed by name against explicit current
+process exits, current AT06 audit/reinstall/history evidence, and D-078 behavior.
+Under control #252, browser and read 429s are acceptable when Retry-After is
+present and the next attempt succeeds; join must record zero. Class is inferred
+from the current operation mapping, not a nonexistent response header. Historical
+class labels stay as measured on their original tree. The AT07 `bebfe230` and
+`35e542f8` process failures came from the shared AT06 invocation. They and the
+`1d5c02a4` wget-body parser failure remain in `prior_checks`.
 
 PR CI runs only formatting, vet, pinned staticcheck, offline harness tests and
 amd64/arm64 compilation. Manual workflow dispatch runs Docker acceptance, as
@@ -421,3 +419,101 @@ records: docs/e2e/at/enrollment; run ec2e6279-0649-4d47-b31a-cf13aeba7303
 ```
 
 Runner exit 1 because AT07 is blocked. `make -f mk/at-enrollment.mk at-enrollment` exit 2 by design. Final inventory `{containers:0,networks:0,volumes:0,images:0}`.
+
+## Follow-up 5 implementation and prerequisites
+
+Follow-up 4's root records are preserved in [history/follow-up-4](history/follow-up-4/README.md).
+This run invokes `PrepareInstallerNode`, API token creation, `StageInstallerToken`
+and initial `RerunInstaller` against `fvpn-w4-enroll-installer-node`. The result
+records actual exit/status/code, identity IDs, image digest, before/after hashes,
+UTC invocation times, and boolean journal diagnostics. Raw journals, outcome
+messages and tokens are not published. Successful rerun/reinstall assertions
+require a working initial installation and same-slot counted-usage support.
+
+`usage_hold_endpoint_scope` stops the regular node agent through `Service`,
+records the CLI snapshot, holds only the usage POST route, verifies the retryable
+503 while desired-state still responds, releases the hold, checks central's
+malformed-JSON validation response, and compares exact snapshot stdout. Cleanup
+releases the marker and resumes the agent. This probe has no member traffic and
+cannot satisfy `counted_unacked_usage` or historical usage retention. No monthly
+total, held-byte or central-once assertion is claimed from it.
+
+The shipped wrappers leave agent/watchdog/updater stopped after hash sampling;
+forwarding restoration needs a devstack export. `Reenroll` retains old unACKed
+usage but explicitly has no authorized upload path after the identity changes.
+These limitations are owned requests, not skipped evidence represented as pass.
+
+### Follow-up 5 measured result — `4011dd32-73ef-4f49-b78b-6cf1ab8496c9`
+
+UTC **2026-10-31T06:10:11Z–2026-10-31T06:15:49Z**. Source
+`200c027144ecf523c647c0954659467ca873ae5f`, clean at invocation; tree SHA-256
+`04e361cfab859e45662593cf6bd439100f28019e1a6af4399fa9ec595438ccf9`. Test binary SHA-256
+`9ded592b18155b5490d617efc49e00d0ecb9b678fe0b6ad9da4ef93e83092878`. The final evidence commit also corrects
+one legacy reporting sentence to say browser/read under #252 and removes an
+unnecessary Python string escape; neither changes the measured predicates.
+The immutable records retain the exact wording emitted by the measured source.
+
+AT06 **344 / 0 / 0** (pass / blocked / fail); AT07 **19 / 6 / 0**.
+Both `prior_failure_review` dispositions are `resolved`. AT07 explicitly names
+`bebfe230` and `35e542f8` as shared AT06 process failures, plus the `1d5c02a4`
+403-body parser miss. The current processes each exited 0, and the supporting
+AT06 audit/reinstall/history and D-078 checks passed. Original rows remain.
+
+Full and join phases each recorded `http_429: 0`. `rate_limit_review` includes
+#233/#252 defaults and method/path classification provenance. No class-specific
+rejection or new saturation limit was observed in this run.
+
+| Measurement | Actual result |
+|---|---|
+| Hold mechanism | Network-side proxy marker on `node`; only usage POST withheld before control; no ledger-epoch rotation |
+| Hold requested / applied | `2026-10-31T06:12:05.707281842Z` / `2026-10-31T06:12:05.728533112Z` |
+| Release requested / applied | `2026-10-31T06:12:05.829922214Z` / `2026-10-31T06:12:05.850705481Z` |
+| Held / other / released responses | 503 `DEPENDENCY_UNAVAILABLE`, retryable true / desired-state 200 / usage 422 `VALIDATION_FAILED` for an empty JSON body |
+| Ledger | Exact paused stdout unchanged before/during/after; event sequence and ACK `"0"`, unACKed count 0; no member traffic; not a retention/drain proof |
+| Cleanup | Hold released, agent resumed |
+| Installer invocation | `2026-10-31T06:13:19.306946818Z`–`2026-10-31T06:13:42.72750912Z`; `PrepareInstallerNode` → API token → `StageInstallerToken` → `RerunInstaller` |
+| Initial install | Exit `1`, code `failed`, status empty, wrapper error false; real enrollment succeeded, service startup failed |
+| Installer identity | Node `01a19097-5517-7833-bb6e-7a0fb2533c95`, incarnation `01a19097-5a5e-7a9d-be44-03ed39315faf`; API has one active/current row; safety unknown, forwarding null |
+| Installer diagnostics | `netbird_socket_readonly: true`, `agent_heartbeat_readonly: true`; journal scan 0 secret matches |
+| Same-slot support | Hold, snapshot and selected member transport each returned `unknown node slot` for `installer-node` |
+| Still unreached | Counted backlog, successful rerun, controlled reinstall, mode-0700 retirement, old certificate on both runtime paths, nonzero historical attribution after new traffic |
+
+The initial `RerunInstaller` is an installation attempt, not evidence of an
+idempotent rerun on an enrolled, forwarding node. Its real exit 1 is preserved
+inside each dependent blocked check. It does not create a synthetic failed
+`probe_process` row. No unit overrides or NetBird stub were used.
+
+Actual make output tail (exit 2; long result descriptions omitted here, retained
+verbatim in the AT records and private command log):
+
+```text
+fresh_teardown: exit 0
+fresh_startup: exit 0
+compile_probe: exit 0
+live_probe: exit 0
+join_teardown: exit 0
+join_startup: exit 0
+live_probe_join: exit 0
+final_teardown: exit 0
+records: docs/e2e/at/enrollment; run 4011dd32-73ef-4f49-b78b-6cf1ab8496c9
+make: *** [mk/at-enrollment.mk:12: at-enrollment] Error 1
+```
+
+Area lint, final output tail (exit 0):
+
+```text
+ok  	github.com/TED-H-com/Freedom-VPN/tests/e2e/at/enrollment	0.007s
+..................
+----------------------------------------------------------------------
+Ran 18 tests in 0.004s
+
+OK
+at-enrollment-lint: gofmt, vet, pinned staticcheck, offline checks and amd64/arm64 compilation passed
+```
+
+`make go-lint` and `go vet ./...` exited 0 with empty stdout/stderr.
+`git diff --check` passed. Area lint includes the tagged/offline tests, pinned
+staticcheck and linux/amd64 plus linux/arm64 compilation. Live execution was
+amd64; physical arm64 remains unmeasured. No dependencies changed.
+All fresh/join/final teardowns exited 0 and the final owned-prefix inventory
+was `{containers:0, networks:0, volumes:0, images:0}`.

@@ -818,6 +818,9 @@ func (p *liveProbe) finish() {
 	if phase := os.Getenv("FVPN_SECOPS_FOLLOWUP6"); phase == "profile" || phase == "helper" {
 		name = "followup6-" + phase + "-live.json"
 	}
+	if phase := os.Getenv("FVPN_SECOPS_FOLLOWUP11"); phase == "restore" || phase == "transports" {
+		name = "followup11-" + phase + "-live.json"
+	}
 	if os.WriteFile(filepath.Join(p.root, "docs/e2e/at/secops", name), append(out, '\n'), 0644) != nil {
 		p.t.Error("evidence write")
 	}

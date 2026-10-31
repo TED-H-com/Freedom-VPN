@@ -96,3 +96,28 @@ shape. Counted historical usage across an installer rerun is still unmeasured.
 On run `ec2e6279-0649-4d47-b31a-cf13aeba7303` the clone presented from `fvpn-w4-enroll-node-clone-net` (`172.29.38.0/24`). Before the fixture, `getNode` HTTP 200 projected `{mapping_frozen: false, conflict_count: 0, last_conflict_at: null}` with `provisioning_state` `applying`. After the presentation conflict, the same read projected `{mapping_frozen: true, conflict_count: 1, last_conflict_at present}`, `provisioning_state` `failed`, `member_forwarding_observed` false, `safety_status` `failed`. One `node.identity.conflict` audit was present, and the count was unchanged after 8 seconds. `Observe` agreed: `conflicts` 1, `mapping_frozen` true, `endpoint_rows` 1.
 
 After revoke (202) and the entrypoint re-enroll, `getNode` on the replacement incarnation projected the object `{mapping_frozen: false, conflict_count: 0, last_conflict_at: null}` with `provisioning_state` `applying`. That object was still cleared after the old certificate requested desired-state and received HTTP 403 `IDENTITY_REVOKED`. `Observe` on the retired incarnation stayed at one frozen conflict. ENR-05 and ENR-06 symbols are still absent from `docs/e2e/RUN.md`. The quiet-window negative was not part of this follow-up.
+
+## Follow-up 5 — #266 exports and #252 rate classes
+
+No HTTP contract change is needed for token hashes or newest-first incarnation
+history. #252 moves the five admin list GETs to `read` (30/s, burst 60 per
+session); browser detail/write remains 10/s, burst 30. Both retain Retry-After.
+The live runner records successful process exits explicitly and reviews retained
+AT07 process rows using their shared AT06 cause.
+
+#266 exports `HoldUsageAcknowledgements` and `UsageLedgerSnapshot` on
+`node`/`node2`/`node-clone`. The hold is a network-side proxy 503 before control,
+not a central freeze or post-commit lost ACK. `CountedMemberTraffic` reads device
+counters; `StartEstablishedTransports` generates traffic. `PrepareInstallerNode`,
+`StageInstallerToken`, `RerunInstaller` and `ControlledReinstall` use only
+`installer-node`. The initial wrapper uses the real packaged units and NetBird;
+#266 records a startup failure. These exports cannot currently drive the composed
+counted-usage/reinstall test. `UsageLedgerSnapshot` is not a central ledger API.
+
+`listNodeIncarnations` returns the field `usage` (upload/download/through), not a
+field literally called `retained_usage`. This is the existing historical
+attribution surface. It cannot prove that unuploaded events were accepted once.
+The current installer retains the old usage database with its original identity
+and documents no re-home/upload path. A new authenticated incarnation cannot
+upload old-incarnation batches; the required authorized protocol is an open
+usage/installer/control question. No direct SQL read or mutation is used here.
