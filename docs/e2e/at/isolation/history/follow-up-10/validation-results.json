@@ -1,0 +1,152 @@
+{
+  "run_id": "bfcc3880-dc02-485d-990c-13811d6e8835",
+  "product_baseline": "96ec0630e4834e13a3a14d65553ba8108bb5da55",
+  "live_source": "cd2e89746b710eda1580d2c822ceff3f636fb013",
+  "source_dirty": false,
+  "assembled": {
+    "command": "make -f mk/at-isolation.mk at-isolation",
+    "exit": 2,
+    "elapsed_seconds": 1226.1989486217499,
+    "driver_seconds": 1096.7,
+    "lab_exit": 0,
+    "stack_exit": 1,
+    "reason": "AT11 and AT13 retain operator coverage gaps; current AT10/AT12 pass; earlier failures remain separately archived.",
+    "output_tail": " Volume fvpn-w4-isolation-pg Removed \ne2e stack is down\nowned-prefix inventory: {\"containers\": [], \"images\": [], \"networks\": [], \"volumes\": []}\nat-isolation lab=0 stack=1\nmake: *** [mk/at-isolation.mk:57: at-isolation] Error 2"
+  },
+  "gates": [
+    {
+      "gate": "area",
+      "command": [
+        "make",
+        "-f",
+        "mk/at-isolation.mk",
+        "at-isolation-lint",
+        "at-isolation-test",
+        "at-isolation-build"
+      ],
+      "exit": 0,
+      "elapsed_seconds": 5.048,
+      "output_tail": "+ go vet ./tests/e2e/at/isolation/... ./tests/netlab/at/...\n+ go vet -tags netlab ./tests/netlab/at/...\n+ go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 ./tests/e2e/at/isolation/... ./tests/netlab/at/...\n+ go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 -tags netlab ./tests/netlab/at/...\n+ go vet tests/e2e/at/isolation/probe_main.go tests/e2e/at/isolation/observer_main.go\n+ go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 tests/e2e/at/isolation/probe_main.go tests/e2e/at/isolation/observer_main.go\n+ go test -count=1 ./tests/e2e/at/isolation/... ./tests/netlab/at/...\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/isolation\t0.861s\n?   \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab/at\t[no test files]\n+ python3 tests/e2e/at/isolation/driver.py build\n+ sh -ec for arch in amd64 arm64; do GOOS=linux GOARCH=$arch go build -o \"$GOTMPDIR/probe-$arch\" tests/e2e/at/isolation/probe_main.go tests/e2e/at/isolation/observer_main.go; done"
+    },
+    {
+      "gate": "handover",
+      "command": [
+        "python3",
+        "tests/e2e/at/isolation/run.py",
+        "go",
+        "test",
+        "-count=1",
+        "./tests/handover/..."
+      ],
+      "exit": 0,
+      "elapsed_seconds": 0.717,
+      "output_tail": "+ go test -count=1 ./tests/handover/...\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/handover\t0.396s"
+    },
+    {
+      "gate": "root-lint",
+      "command": [
+        "python3",
+        "tests/e2e/at/isolation/run.py",
+        "make",
+        "go-lint",
+        "go-with-disk-tmp="
+      ],
+      "exit": 0,
+      "elapsed_seconds": 1.02,
+      "output_tail": "+ make go-lint go-with-disk-tmp="
+    },
+    {
+      "gate": "gofmt",
+      "command": [
+        "bash",
+        "-c",
+        "test -z \"$(gofmt -l $(git ls-files '*.go'))\""
+      ],
+      "exit": 0,
+      "elapsed_seconds": 0.088,
+      "output_tail": ""
+    },
+    {
+      "gate": "diff-check",
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit": 0,
+      "elapsed_seconds": 0.388,
+      "output_tail": ""
+    },
+    {
+      "gate": "hygiene",
+      "command": [
+        "python3",
+        "tests/e2e/at/isolation/run.py",
+        "go",
+        "test",
+        "-count=1",
+        "-v",
+        "-run",
+        "^TestCommittedEvidenceFiles_ValidAndHygieneClean$",
+        "./tests/e2e/at/isolation"
+      ],
+      "exit": 0,
+      "elapsed_seconds": 0.763,
+      "output_tail": "+ go test -count=1 -v -run ^TestCommittedEvidenceFiles_ValidAndHygieneClean$ ./tests/e2e/at/isolation\n=== RUN   TestCommittedEvidenceFiles_ValidAndHygieneClean\n--- PASS: TestCommittedEvidenceFiles_ValidAndHygieneClean (0.63s)\nPASS\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/isolation\t0.633s"
+    }
+  ],
+  "root_lint_note": "The Python disk-temp wrapper owns cleanup; go-with-disk-tmp= removes only the root shell-trap wrapper, retaining whole-module gofmt/vet/staticcheck.",
+  "archives": [
+    {
+      "archive": "follow-up-6",
+      "pins": 44,
+      "status": "pass"
+    },
+    {
+      "archive": "follow-up-7",
+      "pins": 52,
+      "status": "pass"
+    },
+    {
+      "archive": "follow-up-8",
+      "pins": 80,
+      "status": "pass"
+    },
+    {
+      "archive": "follow-up-9",
+      "pins": 86,
+      "status": "pass"
+    },
+    {
+      "archive": "follow-up-10-attempt-1",
+      "pins": 92,
+      "status": "pass"
+    },
+    {
+      "archive": "follow-up-10-attempt-2",
+      "pins": 98,
+      "status": "pass"
+    }
+  ],
+  "d098_original_bytes": "86/86 follow-up 9 files equal baseline main bytes; earlier follow-up 6/7/8 trees unchanged.",
+  "handover": "Pass; immutable reads already used, so no D-132 edit or claim pin move.",
+  "d120_replay": {
+    "status": "pass",
+    "byte_identical_json": true,
+    "output": "AT10 PASS under D-120\ndatagram | generation | bracket start ns | bracket end ns | upper ms | render-installed ms | classification | next datagram | failures\n37 | 1059 | 1793473511622023474 | 1793473511667897477 | 45.873661 | 26.081340 | boundary | ok | none\n",
+    "terminal_blank_lines_normalized": [
+      "lab-AT12-captures.txt",
+      "reload-stream/TestAT10_AT13_ReloadRevokeBaseline/at10-origin.txt",
+      "reload-stream/TestAT10_AT13_ReloadRevokeBaseline/at10-responder.txt",
+      "reload-stream/TestAT10_AT13_ReloadRevokeBaseline/at10-node.txt"
+    ],
+    "scope": "Only current text captures; archives and original JSON wire bytes untouched."
+  },
+  "cleanup_inventory": {
+    "containers": [],
+    "images": [],
+    "networks": [],
+    "volumes": []
+  },
+  "requests": 4
+}
