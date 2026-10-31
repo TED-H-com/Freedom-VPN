@@ -1,0 +1,30 @@
+[Unit]
+Description=Bring NetBird up from the setup key file
+# Runs after the agent has had a chance to write identity/setup.key.
+# The installer binary passes --setup-key-file and never the key itself.
+After=fvpn-netbird.service fvpn-agent.service
+Requires=fvpn-netbird.service
+StartLimitIntervalSec=120
+StartLimitBurst=5
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/opt/vpn-node/current/fvpn-node-install netbird-up
+Restart=on-failure
+RestartSec=2s
+RestartMaxDelaySec=30s
+RestartSteps=5
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=no
+RuntimeDirectory=vpn-node
+UMask=0077
+ReadWritePaths=-/var/lib/netbird -/etc/netbird /var/lib/vpn-node /run/vpn-node
+CapabilityBoundingSet=CAP_NET_ADMIN CAP_NET_RAW
+AmbientCapabilities=CAP_NET_ADMIN CAP_NET_RAW
+
+[Install]
+WantedBy=multi-user.target

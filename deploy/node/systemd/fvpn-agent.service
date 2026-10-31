@@ -1,0 +1,30 @@
+[Unit]
+Description=Freedom VPN node agent
+# After NetBird and update recovery. Not Requires=recover: a recover failure
+# must not keep the agent down; the updater latch is inside the updater (§13.5).
+# CAP_NET_ADMIN: nftables, tc, ip and network namespaces.
+# CAP_NET_RAW: the datapath's raw sockets and conntrack helpers.
+After=network-online.target fvpn-netbird.service fvpn-updater-recover.service
+Wants=network-online.target
+StartLimitIntervalSec=120
+StartLimitBurst=5
+
+[Service]
+Type=simple
+ExecStart=/opt/vpn-node/current/fvpn-agent run -config /etc/vpn-node/agent.json
+Restart=on-failure
+RestartSec=2s
+RestartMaxDelaySec=30s
+RestartSteps=5
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+RuntimeDirectory=vpn-node
+UMask=0077
+ReadWritePaths=/var/lib/vpn-node /run/vpn-node
+CapabilityBoundingSet=CAP_NET_ADMIN CAP_NET_RAW
+AmbientCapabilities=CAP_NET_ADMIN CAP_NET_RAW
+
+[Install]
+WantedBy=multi-user.target
