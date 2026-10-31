@@ -104,24 +104,27 @@ func (f *firstOfferObserver) wrap(next http.Handler) http.Handler {
 			w.Header()[k] = v
 		}
 		w.WriteHeader(rr.Code)
-		n, writeErr := w.Write(rr.Body.Bytes())
+		var n int
+		var writeErr error
+		if rr.Body.Len() > 0 {
+			n, writeErr = w.Write(rr.Body.Bytes())
+		}
 		if desired && writeErr == nil {
 			writeErr = http.NewResponseController(w).Flush()
 		}
 		at := time.Now().UTC()
-		if desired && rr.Code == 200 && ev.First == nil {
+		if desired && ev.First == nil {
 			var doc struct {
 				Signed struct {
 					Generation string `json:"config_generation"`
 				} `json:"signed"`
 			}
-			if json.Unmarshal(rr.Body.Bytes(), &doc) != nil || doc.Signed.Generation == "" {
+			if rr.Code == 200 && (json.Unmarshal(rr.Body.Bytes(), &doc) != nil || doc.Signed.Generation == "") {
 				ev.Error = "desired envelope not decoded"
-			} else {
-				ev.First = &offertrace.Delivery{Generation: doc.Signed.Generation, BodySHA256: digestBytes(rr.Body.Bytes()), Bytes: n, At: at, WriteComplete: writeErr == nil && n == rr.Body.Len()}
 			}
+			ev.First = &offertrace.Delivery{HTTPStatus: rr.Code, Generation: doc.Signed.Generation, BodySHA256: digestBytes(rr.Body.Bytes()), Bytes: n, At: at, WriteComplete: writeErr == nil && n == rr.Body.Len()}
 		}
-		if observation && ev.First != nil {
+		if observation && ev.First != nil && ev.First.HTTPStatus == 200 && ev.First.Generation != "" {
 			local, e := readAccepted(r.Context(), f.store)
 			if e != nil {
 				ev.Error = "local store unavailable"

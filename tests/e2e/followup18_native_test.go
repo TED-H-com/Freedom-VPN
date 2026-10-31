@@ -118,7 +118,7 @@ func (r *runner) firstOffer18(ctx context.Context, s *Stack) {
 	var got FirstOfferEvidence
 	ok := waitUntil(wait, time.Second, func() bool {
 		got, err = s.FirstDesiredOffer(wait, "node")
-		return err == nil && got.CaptureID == id && got.First != nil && got.First.WriteComplete && got.Local != nil && got.ACK != nil
+		return err == nil && got.CaptureID == id && got.First != nil && got.First.HTTPStatus == 200 && got.First.WriteComplete && got.Local != nil && got.ACK != nil
 	})
 	noteJSON(&rec, "capture", got)
 	recPathNote(&rec)("scope", "live hold/release of retained state; full PostgreSQL restore and greater-than-retained assertion belong to secops")

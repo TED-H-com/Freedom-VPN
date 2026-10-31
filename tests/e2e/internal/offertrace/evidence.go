@@ -4,6 +4,7 @@ package offertrace
 import "time"
 
 type Delivery struct {
+	HTTPStatus    int       `json:"http_status"`
 	Generation    string    `json:"generation"`
 	BodySHA256    string    `json:"body_sha256"`
 	Bytes         int       `json:"bytes"`
