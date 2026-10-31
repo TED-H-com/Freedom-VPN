@@ -32,7 +32,7 @@ type Controller interface {
 
 `FinalSample` calls `Barrier`, samples once more, and closes the meter epoch. If that sample has to open a new epoch because of a discontinuity, it closes the fresh epoch as well so the next process opens its own. `ErrNoEpoch` means there was nothing to finish. `ErrHold` means the wall clock jittered by less than one sample interval; the updater should retry rather than switch.
 
-`Health` returns the store gate (§10.8) and, when the last counter read failed and the store has no reason of its own, `ForwardingAllowed=false` with reason `meter_path_invalid`. Member forwarding stops. The control channel is not stopped here. Sampling continues while a cap is open so the outbox can drain. If a sample cannot be persisted, `Health` reports `persist_failed` until a later commit succeeds (§10.7, last paragraph).
+`Health` calls `usagestore.EvaluateGate`, which is the call that persists `gate_stopped` (§10.8). `OutboxStatus` does not. When the last counter read failed and the store has no reason of its own, `Health` returns `ForwardingAllowed=false` with reason `meter_path_invalid`. Member forwarding stops. The control channel is not stopped here. Sampling continues while a cap is open so the outbox can drain. If a sample cannot be persisted, `Health` reports `persist_failed` until a later commit succeeds (§10.7, last paragraph).
 
 `Close` stops the sampler. It does not close the store.
 
