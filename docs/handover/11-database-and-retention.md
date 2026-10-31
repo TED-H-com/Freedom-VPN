@@ -8,4 +8,6 @@ The complete forward inventory is `db/migrations/*.sql`, embedded by the migrato
 | `00188_device_authorization_fences.sql` | Restored authorization fence; list and explicitly re-authorize devices after recovery (D-076). |
 | `00189_node_incarnation_usage_outbox.sql` | `node_incarnations.usage_outbox` JSONB and `usage_outbox_observed_at` timestamp (`#243`, SECOPS-19 / D-075 / D-077 §2). Both are null on a new incarnation. An accepted usage observation updates them transactionally; an omitted usage block preserves the prior summary. `NodeDetail.usage_outbox` is projected from this domain row and participates in the strong ETag. |
 
+| `00190_serving_leases_clamp.sql` | D-084 (#259): the immutable-row guard permits only strictly shortening `expires_at`, with every other column unchanged. The freeze transaction clamps matching stored leases at transaction time + 60 s; signed envelopes and replay stay unchanged. Run this forward migration before the new freeze code. |
+
 The outbox summary is informational and independent of audit retention; it does not alter readiness, leases, or publication. See [operator guide §2.3](operator-guide.md) and [database retention policy](../db/README.md). Historical usage remains attributed to its original node incarnation after reinstall; do not move its ledger to a replacement identity.
