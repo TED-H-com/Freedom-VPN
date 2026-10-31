@@ -9,6 +9,7 @@ import (
 
 	"github.com/TED-H-com/Freedom-VPN/internal/config"
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
+	"github.com/TED-H-com/Freedom-VPN/internal/desiredstate"
 	"github.com/TED-H-com/Freedom-VPN/internal/devices"
 	"github.com/TED-H-com/Freedom-VPN/internal/entitlement"
 	membersruntime "github.com/TED-H-com/Freedom-VPN/internal/members/runtime"
@@ -93,7 +94,8 @@ func memberJob(ctx context.Context, event db.ClaimedEvent) (string, error) {
 		if !matches {
 			return "", errors.New("device event mismatch")
 		}
-		if e := s.HTTP.Devices.SyncDevice(ctx, p.DeviceID); e != nil {
+		syncErr := s.HTTP.Devices.SyncDevice(ctx, p.DeviceID)
+		if e := errors.Join(syncErr, recompileFencedMember(ctx, s, p.MemberID)); e != nil {
 			return "", e
 		}
 		if event.EventType == "netbird.device_sync" {
@@ -114,8 +116,9 @@ func memberJob(ctx context.Context, event db.ClaimedEvent) (string, error) {
 		// Grant withdrawal uses this same path, including when a future grant's
 		// removal leaves the projection unchanged. SyncMember observes the
 		// member.grant_revoke netbird step only after every device read-back;
-		// compilation below leaves the nodes step for actual enforcement ACKs.
-		if e := s.HTTP.Devices.SyncMember(ctx, p.MemberID); e != nil {
+		// fence fanout must finish before the job's policy receipt is acknowledged.
+		syncErr := s.HTTP.Devices.SyncMember(ctx, p.MemberID)
+		if e := errors.Join(syncErr, recompileFencedMember(ctx, s, p.MemberID)); e != nil {
 			return "", e
 		}
 	case "billing.reconcile":
@@ -165,7 +168,8 @@ func memberJob(ctx context.Context, event db.ClaimedEvent) (string, error) {
 			if e = db.InTx(ctx, pool, db.TxOptions{}, func(tx pgx.Tx) error { _, e := s.HTTP.Members.Entitlements.Recompute(ctx, tx, id); return e }); e != nil {
 				return "", e
 			}
-			if e = s.HTTP.Devices.SyncMember(ctx, id); e != nil {
+			syncErr := s.HTTP.Devices.SyncMember(ctx, id)
+			if e = errors.Join(syncErr, recompileFencedMember(ctx, s, id)); e != nil {
 				return "", e
 			}
 		}
@@ -232,6 +236,45 @@ func memberJob(ctx context.Context, event db.ClaimedEvent) (string, error) {
 		return "", e
 	}
 	return "audit_event:" + event.ID.String(), nil
+}
+
+// recompileFencedMember uses the same fanout as device revocation before the
+// triggering job is acknowledged. A sync can commit a fence and then fail, so
+// callers run this even on errors. The persisted fence and signed bindings also
+// recover work after a crash; no transient "new fence" flag is required.
+func recompileFencedMember(ctx context.Context, s *membersruntime.Services, member uuid.UUID) error {
+	rows, err := s.HTTP.Members.Pool.Query(ctx, `
+		SELECT e.node_id FROM desired_state_envelopes e
+		JOIN nodes n ON n.id=e.node_id AND n.current_incarnation_id=e.incarnation_id
+		WHERE EXISTS (
+			SELECT 1 FROM jsonb_array_elements(e.envelope->'signed'->'device_bindings') b
+			JOIN device_authorization_fences f ON f.device_id::text=b->>'device_id'
+			JOIN member_devices d ON d.id=f.device_id
+			WHERE d.member_id=$1
+		) ORDER BY e.node_id`, member)
+	if err != nil {
+		return err
+	}
+	ids, err := pgx.CollectRows(rows, pgx.RowTo[uuid.UUID])
+	if err != nil || len(ids) == 0 {
+		return err
+	}
+	compiler := s.Compiler
+	if compiler == nil {
+		compiler = membersruntime.CompilerFromContext(ctx)
+	}
+	if compiler == nil {
+		return errors.New("member desired-state compiler required")
+	}
+	// This is an in-process invalidation hint, not a device status transition or
+	// a new revoke operation. Explicit node IDs include old groups still bound
+	// in signed state and avoid recompiling exits that already dropped the peer.
+	payload, err := canonjson.Marshal(map[string]any{"node_ids": ids})
+	if err != nil {
+		return err
+	}
+	_, err = compiler.RecompileBatch(ctx, []db.ClaimedEvent{{OutboxEvent: db.OutboxEvent{EventType: desiredstate.EventDeviceRevoked, Payload: payload}}})
+	return err
 }
 
 type scheduledPage struct {
