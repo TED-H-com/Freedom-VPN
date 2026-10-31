@@ -86,3 +86,16 @@ up to its last sample; it does not trim intervals, discard over-window bytes or
 substitute the locally observed retirement time. Central's over-window
 `rejected` / `VALIDATION_FAILED` receipt is recorded as final for that event.
 The vector's 30-second bound is a TEST ONLY override, not the production default.
+
+
+2026-10-31 — D-118 activation: `Engine.ensureUsage` now supplies
+`RetirePreviousAt: e.clock.Wall()` when opening the ledger for the verified
+current identity. The normal closing meter barrier commits the final sample
+before the stopped agent's ledger is adopted; restart after identity installation
+also performs the atomic retirement. The agent regression obtains a new mTLS
+certificate for the same node, retains the final unacknowledged sample byte for
+byte, uploads the retired stream first with `origin_incarnation_id`, verifies
+independent ACKs and a current stream beginning at sequence 1, and proves that
+reopening the unchanged incarnation creates no additional retirement. This
+activates the package hand-off described above for ENR-05; real assembled
+reinstall evidence remains with enrollment follow-up 8 and usage AT follow-up 5.

@@ -160,10 +160,11 @@ func streamKey(node, inc uuid.UUID) string {
 }
 
 type inboundBatch struct {
-	Events            []json.RawMessage `json:"events"`
-	LedgerEpoch       json.RawMessage   `json:"ledger_epoch"`
-	NodeID            uuid.UUID         `json:"node_id"`
-	NodeIncarnationID uuid.UUID         `json:"node_incarnation_id"`
+	Events              []json.RawMessage `json:"events"`
+	LedgerEpoch         json.RawMessage   `json:"ledger_epoch"`
+	NodeID              uuid.UUID         `json:"node_id"`
+	NodeIncarnationID   uuid.UUID         `json:"node_incarnation_id"`
+	OriginIncarnationID *uuid.UUID        `json:"origin_incarnation_id,omitempty"`
 }
 
 type parsedUsage struct {
@@ -238,6 +239,15 @@ func (s *Server) usage(w http.ResponseWriter, r *http.Request) {
 		apierr.Write(w, r, apierr.New(apierr.LedgerEpochMismatch, "Ledger epoch does not match.").WithDetail("current_ledger_epoch", current.String()))
 		return
 	}
+	if batch.OriginIncarnationID != nil {
+		origin := *batch.OriginIncarnationID
+		if origin == inc || s.retiredIncarnations[origin] != node {
+			apierr.Write(w, r, apierr.New(apierr.StateConflict, "Origin is not retired for this node."))
+			return
+		}
+		inc = origin
+	}
+	s.usageBodies = append(s.usageBodies, append([]byte(nil), body...))
 	key := streamKey(node, inc)
 	led := s.usageNodes[key]
 	if led == nil {

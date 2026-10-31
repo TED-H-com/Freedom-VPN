@@ -73,11 +73,14 @@ type Server struct {
 	leaseID   string
 	recID     string
 
-	tokens   map[string]*enrolled
-	revoked  map[uuid.UUID]bool
-	fixture  Fixture
-	genDelta int64
-	forceGen uint64
+	tokens              map[string]*enrolled
+	reenrollTargets     map[string]uuid.UUID    // TEST ONLY token -> existing node
+	retiredIncarnations map[uuid.UUID]uuid.UUID // TEST ONLY origin -> node
+	usageBodies         [][]byte                // TEST ONLY accepted request bodies
+	revoked             map[uuid.UUID]bool
+	fixture             Fixture
+	genDelta            int64
+	forceGen            uint64
 	// leaseGen, when non-zero, is signed into the lease only. Desired state
 	// keeps configGeneration. TEST ONLY, for a stale-generation lease.
 	leaseGen uint64
@@ -653,12 +656,26 @@ func (s *Server) enroll(w http.ResponseWriter, r *http.Request) {
 	}
 	pub := csr.PublicKey.(*ecdsa.PublicKey)
 	node := uuid.Must(uuid.NewV7())
+	if target := s.reenrollTargets[hash]; target != uuid.Nil {
+		node = target
+	}
 	resp, err := s.issue(pub, node, req.NodeIncarnationId)
 	if err != nil {
 		apierr.Write(w, r, apierr.New(apierr.InternalError, "Internal error."))
 		return
 	}
 	s.tokens[hash] = &enrolled{fp: fp, request: req.EnrollmentRequestId, inc: req.NodeIncarnationId, node: node, resp: resp}
+	if s.reenrollTargets[hash] != uuid.Nil {
+		if s.retiredIncarnations == nil {
+			s.retiredIncarnations = map[uuid.UUID]uuid.UUID{}
+		}
+		for _, old := range s.tokens {
+			if old != nil && old.node == node && old.inc != req.NodeIncarnationId {
+				s.retiredIncarnations[old.inc] = node
+			}
+		}
+		s.stickyRaw, s.stickyETag = nil, ""
+	}
 	writeJSON(w, http.StatusCreated, resp)
 }
 

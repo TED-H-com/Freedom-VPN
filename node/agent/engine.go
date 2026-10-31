@@ -147,6 +147,7 @@ type Engine struct {
 	meterFailed          bool
 	applyError           *api.NodeError
 	servingRead          *servingRead
+	tcReadback           *api.TCReadbackEvidence
 	dependencyMissing    bool
 	leaseRetryAt         time.Duration
 	leaseAttempted       bool
@@ -976,6 +977,7 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 	}
 	timing := &applyReadTiming{now: e.clock.Wall}
 	res, err := e.plane.Apply(context.WithValue(ctx, applyReadKey{}, timing), model, prev)
+	e.retainTCReadback(res.Evidence)
 	if !timing.at.IsZero() {
 		e.retainServingRead(res.Evidence, model.Generation, timing.at, "apply", res.Verified)
 	}

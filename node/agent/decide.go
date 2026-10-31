@@ -608,6 +608,7 @@ func buildModel(in Input) (enforce.Model, time.Duration, error) {
 	}
 	now := in.Lease.IssuedAt.Add(elapsed)
 	nodeWindow := in.Lease.ExpiresAt.Sub(in.Lease.IssuedAt)
+	nodeWindow = min(nodeWindow, in.Desired.ExpiresAt.Sub(in.Lease.IssuedAt), time.Duration(in.Lease.MaxOfflineSeconds)*time.Second)
 	nodeDeadline, ok := timeanchor.MemberDeadline(in.LeaseMonoSent, nodeWindow)
 	if !ok {
 		return enforce.Model{}, 0, errCapacity
@@ -620,9 +621,9 @@ func buildModel(in Input) (enforce.Model, time.Duration, error) {
 	}
 	var bindings []enforce.Binding
 	var leases []enforce.MemberLease
-	seenLease := map[uuid.UUID]bool{}
+	leaseIndex := map[uuid.UUID]int{}
 	seenAddr := map[netip.Addr]bool{}
-	admitted := map[uuid.UUID]uint64{}
+	admitted := map[uuid.UUID]bool{}
 	for _, b := range in.Desired.DeviceBindings {
 		ml, ok := byMember[b.MemberId]
 		if !ok {
@@ -635,16 +636,15 @@ func buildModel(in Input) (enforce.Model, time.Duration, error) {
 			continue
 		}
 		window := timeanchor.Window(in.Lease.IssuedAt, ml.LeaseEnd, ml.EffectiveServiceEnd)
-		if nw := timeanchor.Window(in.Lease.IssuedAt, in.Lease.ExpiresAt, ml.EffectiveServiceEnd); nw < window {
-			window = nw
+		window = min(window, nodeWindow)
+		if !b.ValidUntil.IsZero() {
+			window = min(window, b.ValidUntil.Sub(in.Lease.IssuedAt))
 		}
 		deadline, ok := timeanchor.MemberDeadline(in.LeaseMonoSent, window)
 		if !ok {
 			continue
 		}
-		rem := timeanchor.Remaining(deadline, in.MonoNow)
-		sec := uint64(rem / time.Second)
-		if sec < 1 {
+		if timeanchor.Remaining(deadline, in.MonoNow) <= 0 {
 			continue
 		}
 		if deadline < policyExpires {
@@ -665,14 +665,20 @@ func buildModel(in Input) (enforce.Model, time.Duration, error) {
 			AllowedV4: prefs, BindingRevision: uint64(b.BindingRevision),
 			ValidFrom: b.ValidFrom, ValidUntil: b.ValidUntil,
 		})
-		admitted[b.MemberId] = sec
-		if !seenLease[b.MemberId] {
-			seenLease[b.MemberId] = true
+		admitted[b.MemberId] = true
+		if i, exists := leaseIndex[b.MemberId]; exists {
+			// One member lease can cover several devices. Retain the earliest
+			// applicable binding limit, independent of binding iteration order.
+			if deadline < *leases[i].DeadlineMono {
+				leases[i].DeadlineMono = &deadline
+			}
+		} else {
+			leaseIndex[b.MemberId] = len(leases)
 			end := in.Lease.IssuedAt.Add(window)
 			leases = append(leases, enforce.MemberLease{
 				MemberID: b.MemberId, EffectiveServiceEnd: end, NodeLeaseEnd: end,
 				SignedServerTime: in.Lease.IssuedAt, MaxOfflineSeconds: uint64(in.Lease.MaxOfflineSeconds),
-				TimeoutCeilSeconds: sec,
+				DeadlineMono: &deadline,
 			})
 		}
 	}
@@ -696,6 +702,7 @@ func buildModel(in Input) (enforce.Model, time.Duration, error) {
 		Generation:    uint64(in.Desired.ConfigGeneration),
 		IPv6Mode:      enforce.IPv6Block,
 		Now:           now,
+		NowMono:       in.MonoNow,
 		Datapath:      in.Datapath,
 		Bindings:      bindings,
 		Leases:        leases,
@@ -742,7 +749,7 @@ func hostPrefix(s string) (netip.Prefix, error) {
 	return p, nil
 }
 
-func buildQoS(in Input, upParent, downParent, upCap, downCap, host uint64, admitted map[uuid.UUID]uint64, now time.Time) (enforce.QoS, error) {
+func buildQoS(in Input, upParent, downParent, upCap, downCap, host uint64, admitted map[uuid.UUID]bool, now time.Time) (enforce.QoS, error) {
 	n := len(admitted)
 	q := enforce.QoS{
 		Up:          enforce.Rate{RateBPS: upParent, CeilBPS: upParent},

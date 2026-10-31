@@ -80,7 +80,7 @@ func (s *Server) identity(r *http.Request) (uuid.UUID, uuid.UUID, bool) {
 		return uuid.Nil, uuid.Nil, false
 	}
 	s.mu.Lock()
-	rev := s.revoked[node]
+	rev := s.revoked[node] || s.retiredIncarnations[inc] != uuid.Nil
 	s.mu.Unlock()
 	if rev {
 		return node, inc, false
@@ -94,7 +94,7 @@ func (s *Server) requireIdentity(w http.ResponseWriter, r *http.Request) (uuid.U
 		return node, inc, true
 	}
 	s.mu.Lock()
-	rev := node != uuid.Nil && s.revoked[node]
+	rev := node != uuid.Nil && (s.revoked[node] || s.retiredIncarnations[inc] != uuid.Nil)
 	s.mu.Unlock()
 	if rev {
 		apierr.Write(w, r, apierr.New(apierr.IdentityRevoked, "Identity is revoked."))

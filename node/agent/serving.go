@@ -138,6 +138,7 @@ func (e *Engine) auditBlocked(ctx context.Context) {
 	readCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), e.servingReadTimeout())
 	defer cancel()
 	ev, err := e.plane.VerifyServing(readCtx, *e.appliedModel, e.appliedAssignments)
+	e.retainTCReadback(ev)
 	var check *enforce.CheckError
 	if errors.As(err, &check) && check.Reason == enforce.ReasonTCForeignFilter {
 		e.noteApply(err)

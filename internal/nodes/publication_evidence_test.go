@@ -141,6 +141,8 @@ func buildAgentReportForTest(now time.Time, revocationPending, conntrackBlocked 
 		ServingReleaseIds: []uuid.UUID{relID},
 		ConfigGeneration:  3,
 		BindingRevision:   2,
+		IssuedAt:          now,
+		ExpiresAt:         now.Add(time.Hour),
 		NodeCapacity: presence.NewNullableWithValue(api.NodeCapacity{
 			UpBps: 200_000_000, DownBps: 200_000_000,
 		}),

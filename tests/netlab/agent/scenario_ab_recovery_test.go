@@ -3,8 +3,10 @@
 package agentlab
 
 import (
+	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
 	"strings"
 	"testing"
 	"time"
@@ -179,6 +181,22 @@ func qosDetail(rep api.ObservationReport) string {
 }
 func checkCleanEvidence(t *testing.T, rep api.ObservationReport) {
 	t.Helper()
+	tc, err := rep.TcEvidence.Get()
+	gen, _ := rep.AppliedConfigGeneration.Get()
+	if err != nil || !tc.Verified || !tc.ErrorCode.IsNull() || !tc.Rejected.IsNull() || tc.CandidateGeneration != gen || tc.ReadAt.IsZero() || tc.ReadAt.After(rep.ObservedAt) {
+		t.Fatalf("missing clean D106: %+v %v", tc, err)
+	}
+	raw, err := json.Marshal(map[string]any{"reads": tc.ReadsTotal, "objects": tc.ObjectsTotal, "truncated": tc.Truncated, "tc": tc.Attachments})
+	if err != nil {
+		t.Fatal(err)
+	}
+	canonical, err := canonjson.Canonicalize(raw)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := fmt.Sprintf("%x", sha256.Sum256(canonical)); got != tc.Sha256 {
+		t.Fatal("D106 digest mismatch", got, tc.Sha256)
+	}
 	for _, c := range rep.Checks {
 		if c.Name == api.NodeCheckNameQos && c.Status == api.HealthCheckStatusPassed && c.Detail != nil && strings.Contains(*c.Detail, "source=live") && strings.Contains(*c.Detail, "verified=true") && strings.Contains(*c.Detail, "sha256") && len(*c.Detail) <= 500 {
 			return

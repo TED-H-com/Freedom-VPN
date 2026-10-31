@@ -20,10 +20,24 @@ type servingRead struct {
 }
 
 func (e *Engine) retainServingRead(ev enforce.ServingEvidence, gen uint64, at time.Time, source string, verified bool) {
+	e.retainTCReadback(ev)
 	e.servingRead = &servingRead{ev, gen, at.UTC(), source, verified}
 }
 
+// Capture before diagnostic serialization: the enforce snapshot is private and
+// authoritative for read time, complete verifier outcome, bounds and digest.
+// A call with no read does not erase the last actual read or fabricate success.
+func (e *Engine) retainTCReadback(ev enforce.ServingEvidence) {
+	if tc := ev.TCReadbackEvidence(); tc != nil {
+		e.tcReadback = tc
+	}
+}
+
 func (e *Engine) attachServingRead(rep *api.ObservationReport) {
+	rep.TcEvidence.SetNull()
+	if e.tcReadback != nil {
+		rep.TcEvidence.Set(*e.tcReadback)
+	}
 	r := e.servingRead
 	if r == nil {
 		return

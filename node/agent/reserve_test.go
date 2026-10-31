@@ -146,6 +146,7 @@ func servingInput() Input {
 	rel := uuid.MustParse("019a0000-0000-7000-8000-0000000000c1")
 	issued := time.Date(2026, 10, 29, 12, 0, 0, 0, time.UTC)
 	ds := &api.DesiredState{
+		IssuedAt: issued, ExpiresAt: issued.Add(time.Hour),
 		PublicationIntent: api.PublicationIntentPublished,
 		ServingReleaseIds: []uuid.UUID{rel},
 		ConfigGeneration:  1,
@@ -155,10 +156,11 @@ func servingInput() Input {
 		Dns: api.DnsServiceConfig{ResolverIpv4: []string{}, ResolverIpv6: []string{}},
 	}
 	lease := &api.ServingLease{
-		ConfigGeneration: 1,
-		IssuedAt:         issued,
-		ExpiresAt:        issued.Add(time.Hour),
-		Members:          []api.MemberLease{},
+		MaxOfflineSeconds: 3600,
+		ConfigGeneration:  1,
+		IssuedAt:          issued,
+		ExpiresAt:         issued.Add(time.Hour),
+		Members:           []api.MemberLease{},
 	}
 	return Input{
 		Now: issued, MonoNow: 2 * time.Second,

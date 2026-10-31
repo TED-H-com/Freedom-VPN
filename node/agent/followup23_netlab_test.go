@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/TED-H-com/Freedom-VPN/node/internal/timeanchor"
+	"github.com/TED-H-com/Freedom-VPN/node/enforce"
 )
 
 // Runs after D-096 in the same exclusively owned container and namespace.
@@ -33,7 +33,7 @@ func followup23LiveProof(t *testing.T, r *rig) {
 	binding.ValidUntil = r.clock.Wall().Add(3 * time.Hour)
 	r.srv.SetServiceFor(2 * time.Hour)
 	r.srv.SetFixture(generationFixture(3, binding))
-	advanceToRenewal(r)
+
 	stepOK(t, r)
 	if !mustBeat(t, r).Serving || r.eng.memberPath.Generation != 3 {
 		t.Fatalf("newer Apply did not recapture: %+v", r.eng.decision.Errors)
@@ -50,19 +50,20 @@ func followup23LiveProof(t *testing.T, r *rig) {
 	}
 	r.eng.cfg.TestMode = true
 	r.eng.cfg.TestExemptV4 = []string{"203.0.113.0/24"}
-	r.srv.FailLeases(100)
-	deadline := r.eng.policyExpires
-	r.clock.Advance(deadline - r.clock.Mono() - 2900*time.Millisecond)
-	// Map this deterministic remaining allowance onto the shared kernel clock
-	// immediately before the actual Apply. This is not a wall-time subtraction.
-	mono, err := timeanchor.Mono()
-	if err != nil {
-		t.Fatal(err)
-	}
-	packetDeadline := mono + deadline - r.clock.Mono()
+	// A new signed generation/lease uses a 2.9s member window. The engine,
+	// library and packet collector now all use the actual CLOCK_MONOTONIC.
+	stepOK(t, r) // install the explicit TEST ONLY destination exemption before measuring
+	followup25Renewals(t, r)
+	r.srv.SetServiceFor(2900 * time.Millisecond)
+	r.srv.SetFixture(generationFixture(5, binding))
 	stepOK(t, r)
 	if !r.eng.serving || len(r.eng.appliedModel.Bindings) != 1 {
 		t.Fatalf("expiry setup failed: %+v", r.eng.decision.Errors)
+	}
+	r.srv.FailLeases(100)
+	packetDeadline := r.eng.policyExpires
+	if d := r.eng.appliedModel.Leases[0].DeadlineMono; d == nil || *d != packetDeadline {
+		t.Fatal("absolute deadline missing")
 	}
 	beforeNFT, _ := exec.CommandContext(t.Context(), "nft", "list", "table", "inet", "fvpn").CombinedOutput()
 	cmd := exec.CommandContext(t.Context(), "python3", "-u", "-c", expiryPacketScript, fmt.Sprint(int64(packetDeadline)))
@@ -84,11 +85,15 @@ func followup23LiveProof(t *testing.T, r *rig) {
 	}
 	var lastPositive, firstDrop int64
 	positive, drops := 0, 0
+	dropped := false
 	for _, p := range trace.Packets {
 		if p.Ingress == 0 {
 			t.Fatal("packet did not reach member ingress", string(raw))
 		}
 		if p.Egress > 0 {
+			if dropped {
+				t.Fatal("positive after expiry drop", string(raw))
+			}
 			positive++
 			lastPositive = p.Egress
 			if p.Egress >= trace.Deadline {
@@ -96,18 +101,23 @@ func followup23LiveProof(t *testing.T, r *rig) {
 			}
 		} else {
 			drops++
+			dropped = true
 			if firstDrop == 0 {
 				firstDrop = p.Sent
 			}
 		}
 	}
-	if positive < 3 || drops < 3 || firstDrop == 0 || firstDrop >= trace.Deadline {
+	if positive < 3 || drops < 3 || firstDrop == 0 || firstDrop > trace.Deadline+int64(100*time.Millisecond) || lastPositive < trace.Deadline-int64(enforce.DeadlineInstallBound+enforce.DeadlineGranularity) {
 		afterNFT, _ := exec.CommandContext(t.Context(), "nft", "list", "table", "inet", "fvpn").CombinedOutput()
 		t.Logf("before nft:\n%s\nafter nft:\n%s", beforeNFT, afterNFT)
-		t.Fatal("expected known early-expiry reproduction, not continuity proof", string(raw))
+		t.Fatal("D-104 continuity bound failed", string(raw))
 	}
-	t.Logf("ISO-F6-03 OPEN renderer precision reproduction: deadline_mono_ns=%d last_positive_ns=%d offset=%s first_dropped_send_ns=%d offset=%s positives=%d drops=%d cadence=100ms", trace.Deadline, lastPositive, time.Duration(lastPositive-trace.Deadline), firstDrop, time.Duration(firstDrop-trace.Deadline), positive, drops)
-	t.Logf("ISO-F6-03 packet trace (one CLOCK_MONOTONIC): %s", raw)
+	t.Logf("D104 agent deadline continuity: deadline_mono_ns=%d last_positive_ns=%d offset=%s first_dropped_send_ns=%d offset=%s positives=%d drops=%d cadence=100ms", trace.Deadline, lastPositive, time.Duration(lastPositive-trace.Deadline), firstDrop, time.Duration(firstDrop-trace.Deadline), positive, drops)
+	t.Logf("D104 packet trace (one CLOCK_MONOTONIC): %s", raw)
+	r.eng.finishServingStep(t.Context())
+	if mustBeat(t, r).Serving {
+		t.Fatal("post-expiry heartbeat served")
+	}
 }
 
 const expiryPacketScript = `import socket,struct,time,select,json,sys
@@ -121,7 +131,7 @@ send=socket.socket(socket.AF_PACKET,socket.SOCK_RAW,socket.htons(3));send.bind((
 reads=[]
 for dev in ['fv-fh','fv-ih']:
  s=socket.socket(socket.AF_PACKET,socket.SOCK_RAW,socket.htons(3));s.bind((dev,0));s.setblocking(False);reads.append(s)
-rows=[];start=time.monotonic_ns();seq=0
+rows=[];now=time.monotonic_ns();phase=D-101000000;start=phase-((phase-now)//100000000)*100000000;seq=0
 while time.monotonic_ns()<D+600000000:
  target=start+seq*100000000;time.sleep(max(0,(target-time.monotonic_ns())/1e9))
  payload=struct.pack('!I',seq)+b'TEST ONLY'
