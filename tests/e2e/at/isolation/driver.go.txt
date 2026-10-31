@@ -978,6 +978,7 @@ func (x *isolationRun) restart() {
 	before, _ := x.r.lab.docker(x.r.lab.node, "cat", "/run/vpn-node/heartbeat")
 	boot := regexp.MustCompile(`(?m)^boot_id (\S+)$`).FindStringSubmatch(string(before))
 	out, e := exec.Command("docker", "restart", x.r.lab.node).CombinedOutput()
+	_ = exec.Command("docker", "exec", "-d", x.r.lab.node, "/tmp/isolation-probe", "nft-clock").Run()
 	wait, cancel := context.WithTimeout(x.ctx, 90*time.Second)
 	ready := waitUntil(wait, 2*time.Second, func() bool {
 		raw, _ := x.r.lab.docker(x.r.lab.node, "cat", "/run/vpn-node/heartbeat")
@@ -2091,6 +2092,7 @@ func (x *isolationRun) foreignRedirect() {
 	after := x.proof(x.a1)
 	rows = append(rows, map[string]any{"label": "final counted control", "at": time.Now().UTC().Format(time.RFC3339Nano), "positive": after})
 	rows = append(rows, x.networkSnapshot("final recovered state"))
+	x.captureApplied()
 	c.Observations = append(c.Observations, iso.Observation{Name: "recovered_counted_control", Detail: mustJSON(after)})
 	c.Actual = fmt.Sprintf("contained=%t recovered=%t counted=%t; unattended native topology recovery; six-assertion review follows receiver export", contained, recovered, after.Valid())
 	if !contained || !recovered || !after.Valid() {
@@ -2157,4 +2159,32 @@ func (x *isolationRun) reviewFollowup8() {
 			x.records["AT10"].Checks[i] = c
 		}
 	}
+}
+
+// Read-only snapshot of state that production persists only after verified Apply.
+func (x *isolationRun) captureApplied() {
+	dir := x.t.TempDir()
+	for _, name := range []string{"agent.db", "agent.db-wal", "agent.db-shm"} {
+		_ = exec.Command("docker", "cp", x.r.lab.node+":/var/lib/vpn-node/state/"+name, filepath.Join(dir, name)).Run()
+	}
+	db, err := sql.Open("sqlite", "file:"+filepath.Join(dir, "agent.db")+"?mode=ro")
+	if err != nil {
+		return
+	}
+	defer db.Close()
+	result := map[string]any{"read_at": time.Now().UTC().Format(time.RFC3339Nano), "source": "read-only node SQLite snapshot; production persistence after verified Apply"}
+	for _, key := range []string{"retained_applied", "member_path"} {
+		var raw string
+		if db.QueryRow(`SELECT value FROM meta WHERE key=?`, key).Scan(&raw) == nil && json.Valid([]byte(raw)) {
+			result[key] = json.RawMessage(raw)
+		}
+	}
+	var applied int64
+	_ = db.QueryRow(`SELECT applied_generation FROM desired WHERE id=1`).Scan(&applied)
+	result["applied_generation"] = fmt.Sprint(applied)
+	lease, ok := x.readNodeLease()
+	if ok {
+		result["lease"] = lease
+	}
+	x.extra("recovery-applied-state.json", result)
 }

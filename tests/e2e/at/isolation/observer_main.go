@@ -251,7 +251,7 @@ func packetClock() {
 // Passive netlink monitor: timestamps are userspace receipt bounds, never
 // mislabelled as renderer start or command completion.
 func nftClock() {
-	f, e := os.Create("/var/lib/vpn-node/e2e/isolation-nft-events.jsonl")
+	f, e := os.OpenFile("/var/lib/vpn-node/e2e/isolation-nft-events.jsonl", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0600)
 	must(e)
 	defer f.Close()
 	ctx, cancel := context.WithTimeout(context.Background(), 45*time.Minute)
