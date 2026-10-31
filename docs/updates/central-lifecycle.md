@@ -207,7 +207,7 @@ original failure code.
 
 Migrations `00191_installer_update_results.sql` and
 `00192_installer_outcome_corrections.sql` store immutable payload, hash, release,
-state, incarnation, receipt time and ACK under `(node_id, job_id, outcome_sequence)`.
+state, incarnation, receipt time and ACK under `(node_id, job_id, result_id)`.
 D-110 derives the job ID from the requested release, verified manifest digest
 and authenticated incarnation through `internal/installerjob`. Wrong IDs return
 409 `STATE_CONFLICT` with `details.reason=job_id_mismatch`. D-127 permits one
@@ -271,8 +271,10 @@ rolled_back → succeeded. Exact replays of either stored payload remain valid.
 The updater retains a bare `ACK_CONFLICT` as `OutboxConflict`; only the existing
 `STATE_CONFLICT` / `job_id_mismatch` case retires a delivery as `OutboxRejected`.
 
-Migration 00192 adds `outcome_sequence` (1 or 2) to the primary key. Existing
-rows default to 1 without changing their payload or ACK. The first row stays
+Migration 00192 derives the UUID `result_id` from the immutable payload for the
+primary key, preserving the repository's UUID key invariant. A separate unique
+`(node_id, job_id, outcome_sequence)` constraint bounds the sequence to 1 or 2.
+Existing rows default to 1 without changing their payload or ACK. The first row stays
 immutable history: its original `accepted_as_history` and applied flags are
 never rewritten to describe the later correction. Sequence 2 carries its own
 payload, ACK and acceptance audit. Exact replay never reapplies a historical

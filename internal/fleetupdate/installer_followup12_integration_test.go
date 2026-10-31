@@ -403,7 +403,7 @@ func TestD127_Migration192RoundTripPreservesEvidenceAndBounds(t *testing.T) {
 	installerAccept(t, l, i, next)
 	// A duplicate key or a sequence outside 1..2 cannot extend the evidence stream.
 	for _, seq := range []int{1, 2, 0, 3} {
-		_, err = l.s.pool.Exec(l.ctx, `INSERT INTO installer_update_results SELECT node_id,job_id,incarnation_id,release_id,state,payload,payload_hash,ack,received_at,$1 FROM installer_update_results WHERE node_id=$2 AND outcome_sequence=1`, seq, i.NodeID)
+		_, err = l.s.pool.Exec(l.ctx, `INSERT INTO installer_update_results(node_id,job_id,incarnation_id,release_id,state,payload,payload_hash,ack,received_at,outcome_sequence) SELECT node_id,job_id,incarnation_id,release_id,state,jsonb_set(payload,'{result_id}',to_jsonb($3::text)),payload_hash,ack,received_at,$1 FROM installer_update_results WHERE node_id=$2 AND outcome_sequence=1`, seq, i.NodeID, uuid.NewString())
 		var pe *pgconn.PgError
 		want := "23514"
 		if seq == 1 || seq == 2 {
