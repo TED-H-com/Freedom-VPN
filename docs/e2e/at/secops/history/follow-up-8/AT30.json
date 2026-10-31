@@ -1,0 +1,178 @@
+{
+  "schema_version": 1,
+  "follow_up": 8,
+  "started_at": "2026-10-30T22:00:15Z",
+  "finished_at": "2026-10-30T22:10:16Z",
+  "source_revision": "6350853010054cf656465e5e677c60dc29553cb5",
+  "application_base": "6b98422",
+  "run_id": "0f5fb60d-f6a7-45c6-8ebe-175e0a480bd8",
+  "driver_run_id": "af67be8e-3c40-4728-95e2-159e2aa5a3f6",
+  "hardware": "shared development host; not candidate hardware",
+  "commands": [
+    [
+      "make",
+      "-f",
+      "mk/e2e.mk",
+      "e2e-up"
+    ],
+    [
+      "go",
+      "test",
+      "-json",
+      "-tags",
+      "e2e,integration",
+      "-p",
+      "1",
+      "-parallel",
+      "2",
+      "-count=1",
+      "-timeout",
+      "35m",
+      "-run",
+      "^TestAT30_Followup8_LiveRestoreReconcile$",
+      "./tests/e2e/at/secops"
+    ],
+    [
+      "make",
+      "-f",
+      "mk/e2e.mk",
+      "e2e-down"
+    ]
+  ],
+  "probe_source_sha256": "bf66c5da34e1a13e3666fde94c784f56c0036614e796d16d569410b2dfe69408",
+  "policy_revision": "01a18ed4-4e97-7280-89b5-45ac54906282",
+  "node_incarnation": "",
+  "agent_node_incarnation": "01a18ed4-5b85-70fc-9461-7893a7c017f7",
+  "image_digests": [
+    {
+      "image_id": "sha256:d062093db4e8d1608a6a1f4f842e7d245134547bbce86ed3bc1aab1f92ba2da3",
+      "service": "postgres"
+    },
+    {
+      "image_id": "sha256:4872a19bbfc3b343b6820038907bff443bc9207595fb1586084c9ff85c9e8ae0",
+      "service": "idp"
+    },
+    {
+      "image_id": "sha256:72fe0e15780f77ceb50b993c938ad34e5c31faf47bbe215c16c7c4cf1f7d2893",
+      "service": "payment"
+    },
+    {
+      "image_id": "sha256:7ffd5075db74ae3a3bafe4825bdf1ad3dd7365c87cedf862083e144f4ed8daa2",
+      "service": "origin"
+    },
+    {
+      "image_id": "sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c",
+      "service": "netbird"
+    },
+    {
+      "image_id": "sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce",
+      "service": "gateway"
+    },
+    {
+      "image_id": "sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97",
+      "service": "coredns"
+    },
+    {
+      "image_id": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
+      "service": "adguard"
+    },
+    {
+      "image_id": "sha256:cbe2d2500e03e41c12d81b100ce3e8b93365edde25d640d13afe2412532a3b16",
+      "service": "control"
+    },
+    {
+      "image_id": "sha256:46d8c2345888d80f0da6ef5d5b1da05803f8d40b4f1ee18de1367fb2d6b039f7",
+      "service": "worker"
+    },
+    {
+      "image_id": "sha256:a8eba036d655382ff88f337102dec08d08a28360b5ec98e0b9bea376bd5df590",
+      "service": "node-netns"
+    },
+    {
+      "image_id": "sha256:a8eba036d655382ff88f337102dec08d08a28360b5ec98e0b9bea376bd5df590",
+      "service": "node"
+    },
+    {
+      "image_id": "sha256:a8eba036d655382ff88f337102dec08d08a28360b5ec98e0b9bea376bd5df590",
+      "service": "member"
+    },
+    {
+      "image_id": "sha256:4538b115de157572484778b131051d5b3954668da94e14e2ee6c45dbb0bb9786",
+      "service": "restore-live"
+    },
+    {
+      "image_id": "sha256:a8eba036d655382ff88f337102dec08d08a28360b5ec98e0b9bea376bd5df590",
+      "service": "member-at30-m2-d3-t1"
+    },
+    {
+      "image_id": "sha256:a8eba036d655382ff88f337102dec08d08a28360b5ec98e0b9bea376bd5df590",
+      "service": "member-at30-m3-d1-t1"
+    },
+    {
+      "image_id": "sha256:a8eba036d655382ff88f337102dec08d08a28360b5ec98e0b9bea376bd5df590",
+      "service": "member-at30-m2-d2"
+    },
+    {
+      "image_id": "sha256:a8eba036d655382ff88f337102dec08d08a28360b5ec98e0b9bea376bd5df590",
+      "service": "member-at30-m2-d1"
+    },
+    {
+      "image_id": "sha256:a8eba036d655382ff88f337102dec08d08a28360b5ec98e0b9bea376bd5df590",
+      "service": "member-at30-m1-d1"
+    }
+  ],
+  "build_digests": [
+    {
+      "name": "amd64.test",
+      "sha256": "5478e23b83b35ab98bbd1b6117957fcbd05046c544c79f16329c43eaa684829d"
+    },
+    {
+      "name": "arm64.test",
+      "sha256": "f4f0e3857f90e6859fd620e624cca99ad51e492496568b64c77445254e5fecc7"
+    },
+    {
+      "name": "proxyprobe",
+      "sha256": "a9109d38c54602b0e23cb033f5979caa3ccfa730ed42da9d7cd7267da9368bed"
+    }
+  ],
+  "previous_run": "history/follow-up-7/",
+  "projector_owned_rows_written": [],
+  "id": "AT30",
+  "requirements": [
+    "DATA01",
+    "BILL01",
+    "MTR03"
+  ],
+  "status": "blocked",
+  "expected": "An isolated DB/WAL restore replays previously ACKed node archives, reconciles provider and peers without duplicates or entitlement extension, preserves or explains revocation intent, and measures complete-service RPO/RTO.",
+  "actual": {
+    "evaluation": {
+      "primary_overwrite_refusal": true,
+      "post_restore_checklist_6_of_6": true,
+      "fail_safe_negative_without_protocol": true,
+      "product_restore_protocol_5_steps": true,
+      "retained_node_usage_replay": true,
+      "provider_reconciliation": true,
+      "unmapped_peer_discovery_deduplicated": true,
+      "existing_member_t1_peer_rediscovered": true,
+      "t0_t1_device_revocation_preserved": false
+    },
+    "evidence": [
+      "restore-reconcile.json",
+      "restore-reconcile.md",
+      "history/follow-up-6/pitr.json"
+    ],
+    "rpo_seconds": {
+      "pre_replay_db_rpo_seconds": 116.651367,
+      "post_replay_service_rpo_seconds": 0
+    },
+    "rto_seconds": {
+      "protocol_rto_seconds": 105.938765968,
+      "total_outage_rto_seconds": 111.512077088
+    },
+    "previous_record": "history/follow-up-7/AT30.json"
+  },
+  "blockers": [
+    "SECOPS-18 (w2-members / internal/devices): A device revoked in T0..T1 (peerM2D2) has member_devices.status='authorized' in the restored T0 database while NetBird N1 has already withdrawn it from fvpn-paid-<group_id> (with no external revocation tombstone in NetBird). When members.reconcile -> SyncMember -> SyncDevice (apps/worker/jobs_members.go:158, internal/devices/worker.go:72-93) runs after restore, it treats T0 member_devices.status='authorized' as authoritative and calls s.Adapter.SetAuthorization(ctx, deployment, peer, true, groups), silently re-adding the revoked peer to NetBird's paid group and re-including it in the node's active device_bindings without a discrepancy audit or re-confirmation."
+  ]
+}

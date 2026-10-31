@@ -791,6 +791,9 @@ func (p *liveProbe) finish() {
 		}
 	}
 	name := "live.json"
+	if os.Getenv("FVPN_SECOPS_FOLLOWUP9") == "1" {
+		name = "followup9-live.json"
+	}
 	if os.Getenv("FVPN_SECOPS_FOLLOWUP8") == "1" {
 		name = "followup8-live.json"
 	}
