@@ -1,5 +1,5 @@
 # Standalone, private disk scratch; never use a tmpfs test basetemp.
-usage-with-disk-tmp = set -eu; mkdir -p .agent/tmp; task_tmp=$$(mktemp -d "$$(pwd)/.agent/tmp/usage.XXXXXX"); trap 'rm -rf "$$task_tmp"' EXIT; export TMPDIR="$$task_tmp" GOTMPDIR="$$task_tmp";
+usage-with-disk-tmp = set -eu; mkdir -p .agent/tmp; export TMPDIR="$$(pwd)/.agent/tmp" GOTMPDIR="$$(pwd)/.agent/tmp";
 
 BUILD_TARGETS += usage-build
 TEST_TARGETS += usage-test
