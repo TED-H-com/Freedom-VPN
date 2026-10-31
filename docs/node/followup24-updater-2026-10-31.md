@@ -20,6 +20,26 @@ invalidates stale evidence. Repeated finalization reads the same completed
 close and does not generate another sequence. The unit proof uses the real
 usage store/meter and the unchanged `updater.FileMeter` reader.
 
+The full kernel gate also exposed a race between live serving verification and
+the periodic sampler: a generation rejection could install the planned baseline
+before the sampler saw the external clear. The agent now retains that observed
+reset before withdrawal, so the real final sample commits the discontinuity gap
+before publishing its checkpoint. Idle counters do not invent usage or a gap.
+
+Closing quiet epochs exposed a second ordering defect: the first recovery bytes
+could arrive before the asynchronous sampler reopened its epoch and become that
+epoch's baseline. The agent now opens the next epoch durably from a real read
+while forwarding and sampling remain blocked, before Apply admits any traffic.
+Only a verified Apply resumes the loop. A read failure withholds Apply and retries
+the barrier; the regression checks both recovery and bytes arriving inside Apply.
+Installed binding metadata is also retained before later live/topology checks.
+If those checks reject a restarted process, its final sample can still attribute
+packets admitted by the installed model before withdrawal. A library verification
+rollback retains those bindings only when its evidence identifies the installed
+`verify` phase; a `pre_apply` foreign rejection does not replace them. Tests prove
+both rejection paths retain their actual bytes without serving or acknowledging
+the rejected state.
+
 ## Candidate identity and final health
 
 At process start, the agent resolves configurable `current_release_path`
@@ -30,6 +50,15 @@ its canonical envelope digest is checked. This resolves once per process: an
 old process cannot adopt the candidate merely because the symlink moved.
 `/etc/vpn-node` remains read-only; the install-time release ID is a development
 or pre-seed fallback, not the candidate's health identity.
+
+The first unchanged installer run exposed an initial-install ordering case:
+`fvpn-updater-recover` initializes the journal before agent bootstrap, while
+installer seed waits until bootstrap has supplied the NetBird setup key. The
+agent permits that initialized but unseeded journal only for the configured
+initial release with a matching running inode and no release, job, transaction
+or result history. Missing current pointers after any history still fail closed.
+The regression rejects both a different configured release and a journal with
+installed history but no current pointer.
 
 `node/internal/fakecontrol.UpgradeHealthFixture` supplies actual signed
 unpublished desired-state and lease responses for the final health stage. Its
@@ -58,3 +87,23 @@ Installer follow-up 4 owns `tests/installer/cmd/fvpn-w5-control/main.go` and its
 harness wiring: consume the signed desired/lease and reachable probe fixture,
 then rerun final candidate health. The final report records the actual stopping
 stage; no synthetic checkpoint or passing health adapter is used to promote it.
+
+## Unchanged installer result
+
+The final run at 09:53–09:54 UTC passed initial install/seed and consumed the
+real checkpoint, then reached candidate restart and health checking. The agent
+journal reports HTTP 404 for desired state and lease, so it cannot write a valid
+challenge-bound health answer. Candidate and restored-release health both fail;
+the updater returns 2 and seals `state=failed`, `stage=rollback`,
+`journal_stage=recovery_required`, with the original release current and
+`meter_checkpoint_present=true`. The Go test exits 1 as required by its unchanged
+success assertion. Its `identity_and_state=passed` is the persistent-data check,
+not proof of a passing agent health attestation.
+
+The prior attempt failed before seed because of the initialized-empty-journal
+case described above; that agent regression is fixed and tested. The final
+failure has advanced beyond F9-03's missing file. It does not close full product
+upgrade acceptance: installer follow-up 4 must supply the missing signed control
+responses and real probe topology for both candidate and restored health, and
+updater follow-up 15 still owns the serving-node barrier handshake. No changes
+to either owner's files were made.

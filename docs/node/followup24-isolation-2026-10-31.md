@@ -53,9 +53,34 @@ host monotonic durations including Docker commands and read completion, so they
 are upper bounds, not a production containment guarantee. It does not claim zero
 escaped packets between injection and containment.
 
-Kernel gate timings and outcomes are recorded in the final hand-off report.
+The final full suite passed on 2026-10-31 at 09:51–09:52 UTC. Injection to
+contained read was 897.120435 ms; removal to clean link-up was 494.491529 ms;
+removal to counted serving observation was 3.161412923 s. Applied and lease
+generations were both 3. The initial counted observation carried a live verified
+generation-2 read at 09:51:10.583689753Z; recovery retained the historical rejection.
+The same suite recorded exactly 12,112 admission bytes, contiguous ACK through
+sequence 4, and an external-reset gap followed by recovery in 1.850 s.
+
+The separate live-read lab passed at 09:52 UTC: 90 reads over 30 Steps,
+15.812 ms mean read, 16.823 ms p95, 17.471 ms maximum; combined live and topology
+verification cost 49.879 ms per Step. Its injected next-Step withdrawal took
+155.650 ms. The explicit bypass test counted one uplink packet before quarantine
+and zero afterward, with node uplink control and TLS observation still passing.
 The native NetBird recovery evidence remains D-108's G2 follow-up 14 campaign;
 this mechanism test does not promote assembled AT10–AT13 or physical arm64.
+
+The harness restores both address families after its injected quarantine. Its
+health journal now has the required private 0700 directory mode. Existing
+meter/watchdog cases start the watchdog only after a fresh serving heartbeat;
+the crash/loss/timeout assertions remain. Ordinary cases run a lab topology
+owner that restores saved addresses and peer routes only while the link is
+already UP. It never raises a quarantined link. This handles fail-closed
+quarantine during a canceled shutdown read on the static veth fixture. The
+ISO-F6 injection test leaves that owner stopped and requires its explicit
+post-Apply repair, preserving the deciding topology-hold assertion. This is
+harness behavior and does not claim native NetBird or production serialization.
+The unpublished case requires an observation newer than its publication change;
+revocation runs last because that incarnation cannot be reused afterward.
 
 ## D-087 safe provisional recipe
 
@@ -103,3 +128,8 @@ delay Step completion and its heartbeat under control loss. Follow-up 23 added
 the deadline wake/final-read guard, but cannot establish sub-second continuity
 without the renderer/install-latency contract. Do not reinterpret the failed
 one-second-tick acceptance predicate as passing.
+
+The unchanged diagnostic in this follow-up's live lab again reports the gap:
+last positive packet at -927.430422 ms and first dropped send at -827.627804 ms,
+with 100 ms cadence (19 positives, 15 drops). The diagnostic passes as a
+reproduction; strict near-deadline continuity remains unproved and open.

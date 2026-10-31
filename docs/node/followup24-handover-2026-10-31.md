@@ -31,7 +31,9 @@ restart, including when a fixed restart recovered the intent. Those assertions
 now require the fixed outcome: frozen after restart, meta row recovered, and no
 forwarding after Step. This strengthens the positive regression without changing
 the injected failure. Additional tests cover Step retries, withheld acceptance,
-and a central freeze response lost before any local freeze write.
+and a central freeze response lost before any local freeze write. Identity is
+loaded before retrying the sidecar: two successive process exits before Boot,
+with the meta-row failure still injected, must preserve the same incarnation.
 
 The specifically requested `node/enforce/review_r16_quarantine_test.go` is the
 only path outside the ownership block; it is imported under the explicit §6
@@ -52,3 +54,12 @@ node-build`, then `node-test-netlab`, then `node-test-live-netlab`, then root
 also needs disk-backed TMPDIR/GOTMPDIR. The final `.agent/REPORT.md` retains real
 exit codes and output tails, including any blocked installer result. No push,
 PR, merge or production rollout is part of this lane.
+
+The final ordered node gates, privileged netlab, live lab, root lint and diff
+check exited 0. The literal recursive gofmt check exited 0 but reported an
+unreadable inherited ignored AdGuard scratch directory; root lint verified all
+tracked and unignored Go files. The unchanged installer proof exited 1 after
+consuming the real checkpoint and reaching health/rollback: its enrollment-only
+control returns 404 for desired state and lease. See the updater/installer note
+for the terminal `recovery_required` evidence and owning-file requests. All
+matching lane containers, images, networks and volumes were removed.
