@@ -1,0 +1,467 @@
+{
+  "run_id": "17c14696-3eb1-469d-8aab-f947f6f425e4",
+  "source_commit": "2da5acfbbe08f094fa46dc91802bf75012481f71",
+  "source": "Byte-identical first follow-up 10 attempt; incomplete expiry and real install-bound failures retained. Files explicitly marked inherited are not measurements from this attempt.",
+  "files": [
+    {
+      "path": "AT10.json",
+      "sha256": "88fa1d9710337808012a9cd3cfea22e4cf5e395952c50d1dd9e9e0edd40152e0",
+      "inherited_unchanged_from_follow_up_9": false
+    },
+    {
+      "path": "AT10.md",
+      "sha256": "fcf0eb5e0a153f78652fe1c0bba6546601ab2001ae55eb73e019bfa03cf740e9",
+      "inherited_unchanged_from_follow_up_9": false
+    },
+    {
+      "path": "AT11.json",
+      "sha256": "b2464ecb1da8dcaff14b2bfa8cde8231ae7edba56569070a167a9c62a50598dd",
+      "inherited_unchanged_from_follow_up_9": false
+    },
+    {
+      "path": "AT11.md",
+      "sha256": "d5f5f51c27cfbe2c0a684e7a258933adf70159998f49c90d70177658959a539d",
+      "inherited_unchanged_from_follow_up_9": false
+    },
+    {
+      "path": "AT12.json",
+      "sha256": "16982da0054a45a107be33ef4b786926d19a6d081e78566d3b36dd70d012759b",
+      "inherited_unchanged_from_follow_up_9": false
+    },
+    {
+      "path": "AT12.md",
+      "sha256": "87a7046717f2c1568079e165fd0641cb8acb889ee25b3991a4a17b28bdc1cf24",
+      "inherited_unchanged_from_follow_up_9": false
+    },
+    {
+      "path": "AT13.json",
+      "sha256": "fe146e4f4999a4531cd57fcbc54fa78debe0b56a418d618739652db356c34b59",
+      "inherited_unchanged_from_follow_up_9": false
+    },
+    {
+      "path": "AT13.md",
+      "sha256": "e0af452c51da87b47bdb44febb494e11f91894799642a64921aa78ba3848cd97",
+      "inherited_unchanged_from_follow_up_9": false
+    },
+    {
+      "path": "README.md",
+      "sha256": "6cbd1738b5a3dbafb9f43a3dcc8c3f68d63ab4eacbd9525e166fc4b9e0c401bb",
+      "inherited_unchanged_from_follow_up_9": true
+    },
+    {
+      "path": "RUN.md",
+      "sha256": "1ba9792567fec1a5dd82691f3c14c51ca4c072f723cf5099406fa85dd6acbfac",
+      "inherited_unchanged_from_follow_up_9": false
+    },
+    {
+      "path": "agent.log.txt",
+      "sha256": "29d90b6fa57b6b7366d48c62ac319cbdfb9754ec872b35a3c9145e8b503d3276",
+      "inherited_unchanged_from_follow_up_9": false
+    },
+    {
+      "path": "attempt-failure-analysis.json",
+      "sha256": "840547099cd0113bfcd078d9ed78469e05b9151c5eff99ea1750b82d6841bab0",
+      "inherited_unchanged_from_follow_up_9": false
+    },
+    {
+      "path": "bootstrap-renewal-evidence.json",
+      "sha256": "998bf26eef7b94b76225eafd165cf2cdd7c660171d9a49053c6ba5bc125ce525",
+      "inherited_unchanged_from_follow_up_9": false
+    },
+    {
+      "path": "cleanup-inventory.json",
+      "sha256": "9df16e0196bfcc7d3b0ffec5e026f3a1e3fee05443e42a14ec0ad2fdbff109a1",
+      "inherited_unchanged_from_follow_up_9": true
+    },
+    {
+      "path": "continuity-analysis.json",
+      "sha256": "5e843b0f855d0501de62f31b0c37552376f051532aa41db2d0a7439406ce9fcb",
+      "inherited_unchanged_from_follow_up_9": false
+    },
+    {
+      "path": "convergence-timeline.json",
+      "sha256": "6ade408c13be634e1667fb5247687db8ed2c176300165a2edd859aa16012014b",
+      "inherited_unchanged_from_follow_up_9": false
+    },
+    {
+      "path": "d093-reconciliation.md",
+      "sha256": "2dc33bdd7845401d0c33fdae4c51ba8d6ffa0afc3622eafe662118595f156249",
+      "inherited_unchanged_from_follow_up_9": false
+    },
+    {
+      "path": "deadline-verdict.json",
+      "sha256": "ccc5e79523450d97718d57ba0e9290e3356f025bdb7839bd66ab7abb13d1fb90",
+      "inherited_unchanged_from_follow_up_9": true
+    },
+    {
+      "path": "expiry-failure-correlation.json",
+      "sha256": "f5589fb1b5325ba8c293808cbff61e1f874c64dbfa02d5aa6645b92d013c29ac",
+      "inherited_unchanged_from_follow_up_9": true
+    },
+    {
+      "path": "expiry-timing-analysis.json",
+      "sha256": "6607ae1159b2b780ee8a87e849febb41b4f44fa0323abb4c5cd5148d5b55bc7a",
+      "inherited_unchanged_from_follow_up_9": false
+    },
+    {
+      "path": "fleet-before-enrollment.json",
+      "sha256": "0af32853aa5aba59183604db59ca871566548b102698d39679f2679fd9f17d20",
+      "inherited_unchanged_from_follow_up_9": false
+    },
+    {
+      "path": "foreign-redirect-analysis.json",
+      "sha256": "c5c50ec43fbad699a6dd3111ae5cb0f5f30d0577d45697dfd9e9fbaccb7b9c79",
+      "inherited_unchanged_from_follow_up_9": false
+    },
+    {
+      "path": "foreign-redirect.json",
+      "sha256": "ff94c1eb325a79ddb44f99c25921b3cc6064945aed93fdd6348ab8a38db12caa",
+      "inherited_unchanged_from_follow_up_9": true
+    },
+    {
+      "path": "identity-freeze.json",
+      "sha256": "497023b8b6441de0d044efa186aea6539feb6435c1725b80d0ff1be259e8204a",
+      "inherited_unchanged_from_follow_up_9": false
+    },
+    {
+      "path": "lab-AT10-matrix.txt",
+      "sha256": "2a6dace8c0eeca2229846b3aedfb21eb577a80d736a39201102f3b0364e3e0ec",
+      "inherited_unchanged_from_follow_up_9": true
+    },
+    {
+      "path": "lab-AT10-ruleset.nft",
+      "sha256": "f8e4bd3a0e2ac023f9f5c29e3a5096b002abbeeda82476d21529301fef9c72af",
+      "inherited_unchanged_from_follow_up_9": false
+    },
+    {
+      "path": "lab-AT10-tc.json",
+      "sha256": "f927049a108125ab744981fdee0633f4df6057e019db104a2f42cde8b6165efd",
+      "inherited_unchanged_from_follow_up_9": true
+    },
+    {
+      "path": "lab-AT10.json",
+      "sha256": "786e35768a2931b0ac7fa3891ff2e5117d90e87edd03e24e5f1bebe2f97f5aa9",
+      "inherited_unchanged_from_follow_up_9": false
+    },
+    {
+      "path": "lab-AT10.md",
+      "sha256": "f34f5202cfe6b09a465fc39f0eb4d38c55389d6dacd29fd6522e90a22fdf5802",
+      "inherited_unchanged_from_follow_up_9": false
+    },
+    {
+      "path": "lab-AT11-coverage.txt",
+      "sha256": "5805fb2fdf343dc8a3ee7a78561cbe1afff30d70db7e112cded05c6dc5baff2a",
+      "inherited_unchanged_from_follow_up_9": true
+    },
+    {
+      "path": "lab-AT11.json",
+      "sha256": "7404933b00ce6b5ad9f763c59780094440bff69845f4d3f362f718a0d96713f3",
+      "inherited_unchanged_from_follow_up_9": false
+    },
+    {
+      "path": "lab-AT11.md",
+      "sha256": "07f6ee58742bdc59aa349645cf61eb9eccb812730c7499ba5f3c3e9198f29752",
+      "inherited_unchanged_from_follow_up_9": false
+    },
+    {
+      "path": "lab-AT12-captures.txt",
+      "sha256": "99c424265051c7619372be681641029d2b1b8ba5d50aabf074dfa52c9170c231",
+      "inherited_unchanged_from_follow_up_9": false
+    },
+    {
+      "path": "lab-AT12-matrix.txt",
+      "sha256": "fc85a157effd6e021e8d04fbd6434d2c0dfe35b32f3cad82324df9b799d0192c",
+      "inherited_unchanged_from_follow_up_9": true
+    },
+    {
+      "path": "lab-AT12.json",
+      "sha256": "fec9fafab2dabf0aa7d86e4e19267fc56ed778e7cd0dbc634fb8293569f7bef6",
+      "inherited_unchanged_from_follow_up_9": false
+    },
+    {
+      "path": "lab-AT12.md",
+      "sha256": "c566b6a761ac033cd5c9ab92623cca475678c962188ed6fe1c51169794e5fe13",
+      "inherited_unchanged_from_follow_up_9": false
+    },
+    {
+      "path": "lab-AT13-ruleset.nft",
+      "sha256": "70887a39873cc16a6f679171069dc7f9edec0328afb4e82b266cc63f21f90c59",
+      "inherited_unchanged_from_follow_up_9": false
+    },
+    {
+      "path": "lab-AT13-timeline.txt",
+      "sha256": "211909c710793ba45d58363f80d7208d6ea1592058c271671b3c9e87eb77e64c",
+      "inherited_unchanged_from_follow_up_9": false
+    },
+    {
+      "path": "lab-AT13.json",
+      "sha256": "fdade3fea28e924842bb3ac90cc1e89510bb63a71f1d3cfe7b5cc5bbc122423d",
+      "inherited_unchanged_from_follow_up_9": false
+    },
+    {
+      "path": "lab-AT13.md",
+      "sha256": "1b03d941bec4bb5fd41daed37bf5468f7ae84331c170cdf8565f348da242fcad",
+      "inherited_unchanged_from_follow_up_9": false
+    },
+    {
+      "path": "lease-history.json",
+      "sha256": "d5fbbd803ea12d3d773a2d029786795bf09f51e3a795af13a92c023cd4ee48c6",
+      "inherited_unchanged_from_follow_up_9": false
+    },
+    {
+      "path": "member-grants-audit.json",
+      "sha256": "3bc99a384bd2fc0ae564447534f8cf268e4bdd638c40d36cdefeddf2149fa2be",
+      "inherited_unchanged_from_follow_up_9": false
+    },
+    {
+      "path": "member-grants-transition.json",
+      "sha256": "1575fe834c4c145641b213b8518c4e6676c8a95d71becd5b7f7bfbd34c182559",
+      "inherited_unchanged_from_follow_up_9": false
+    },
+    {
+      "path": "member-grants-wire.json",
+      "sha256": "e126540d17556a33b0e69af4daff9736558bb6f165939a16c88a6a2c4e1d05b0",
+      "inherited_unchanged_from_follow_up_9": false
+    },
+    {
+      "path": "nft-event-receipts.json",
+      "sha256": "9e177a6e8e08c8f3c271f8a5f512df231b8cdc5c1972bffc7c1162292dc5fe59",
+      "inherited_unchanged_from_follow_up_9": false
+    },
+    {
+      "path": "node-events.txt",
+      "sha256": "f0e792f6081f88594a4cd4758d84d11bac9952f0b8422f67717f4d25f6e3c888",
+      "inherited_unchanged_from_follow_up_9": false
+    },
+    {
+      "path": "operator-run.md",
+      "sha256": "5f9439450f936b5a6b9de976937f9eba473ced4c4da7cae4596684ab0cca95ac",
+      "inherited_unchanged_from_follow_up_9": true
+    },
+    {
+      "path": "producer-clock-after-restart.json",
+      "sha256": "7062634d1233c26eb4fe09b73de9c18ffd9f7633eb115e5ef60c11a3bcb78f8e",
+      "inherited_unchanged_from_follow_up_9": false
+    },
+    {
+      "path": "producer-clock.json",
+      "sha256": "868e2f830b4a759bef305a7c415b2388d81fe8e6ed656eee10d98400095d6b2f",
+      "inherited_unchanged_from_follow_up_9": false
+    },
+    {
+      "path": "producer-operations.jsonl",
+      "sha256": "3ef6f2eaffbe7d889dfda4d2498414988b5098e6b9ea8bd7fb1d5060e10a7455",
+      "inherited_unchanged_from_follow_up_9": false
+    },
+    {
+      "path": "producer-timing-analysis.json",
+      "sha256": "87d92ceb41d0ac0bbc5de93784a14274cfeb76ea3cfb220bdb97e4466aaf5a89",
+      "inherited_unchanged_from_follow_up_9": true
+    },
+    {
+      "path": "producer-timing-unavailable.json",
+      "sha256": "3add9659d7f858b9999922eac078c4fc52411473f247ffa0149e31517d32702b",
+      "inherited_unchanged_from_follow_up_9": false
+    },
+    {
+      "path": "provisional-receiver-analysis.json",
+      "sha256": "3c60e997f7e9a173ab8cf46ede135959a705fa8ebfd165cf87540b33d3db746c",
+      "inherited_unchanged_from_follow_up_9": false
+    },
+    {
+      "path": "receiver-capture.json",
+      "sha256": "db53a4f2e1f909a5fc7db92b95cca488a1a47ad5b0070cf9c846d694fad5ed45",
+      "inherited_unchanged_from_follow_up_9": false
+    },
+    {
+      "path": "receiver-closure.json",
+      "sha256": "9a5b6f3c4b0f7e9d09df88d7b135b8cbaef0ecc7b98d818812459f638f878777",
+      "inherited_unchanged_from_follow_up_9": false
+    },
+    {
+      "path": "recovery-applied-state.json",
+      "sha256": "a589f1a45204999d7e96180bb995431098996b5029c1adb4ae4e913bb397ba8d",
+      "inherited_unchanged_from_follow_up_9": true
+    },
+    {
+      "path": "recovery-verdict.json",
+      "sha256": "bba3ffbb8d1c34015276d83665369a81ba99fa738b80226620778bbce7129354",
+      "inherited_unchanged_from_follow_up_9": false
+    },
+    {
+      "path": "redirect-node-capture.txt",
+      "sha256": "2fd287d953f6d735f766025cf1f300345c551234242083415c9793fc0ce95ad3",
+      "inherited_unchanged_from_follow_up_9": true
+    },
+    {
+      "path": "reload-stream/SUMMARY.txt",
+      "sha256": "01e28674ffb84d54984284fc34ef2879021e9065780c2c45b9166b65c7250d36",
+      "inherited_unchanged_from_follow_up_9": false
+    },
+    {
+      "path": "reload-stream/TestAT10_AT13_ReloadRevokeBaseline/at10-analysis.json",
+      "sha256": "321c0a9a2b179c76148f04b0ddf5f9224e0ead4f3149ee042907c7e1b4ec61ed",
+      "inherited_unchanged_from_follow_up_9": false
+    },
+    {
+      "path": "reload-stream/TestAT10_AT13_ReloadRevokeBaseline/at10-apply.jsonl",
+      "sha256": "75a91ddd54475019a8118cef10b117724e8bb7a6c7d49c57ab4e970352c87b6f",
+      "inherited_unchanged_from_follow_up_9": false
+    },
+    {
+      "path": "reload-stream/TestAT10_AT13_ReloadRevokeBaseline/at10-node.err",
+      "sha256": "251efa6f66afe0e3155cdd372a1aca7351f9b85befaaab99e4ea1ae5607e5b9a",
+      "inherited_unchanged_from_follow_up_9": false
+    },
+    {
+      "path": "reload-stream/TestAT10_AT13_ReloadRevokeBaseline/at10-node.txt",
+      "sha256": "25fa86d87148ed8befa76f1291cab50c151b7bac9b07aae224f29959f804c855",
+      "inherited_unchanged_from_follow_up_9": false
+    },
+    {
+      "path": "reload-stream/TestAT10_AT13_ReloadRevokeBaseline/at10-origin.err",
+      "sha256": "6630d26cac3c7f295d4d3572695befa741f8ff6198934098e7b8c6598472233d",
+      "inherited_unchanged_from_follow_up_9": false
+    },
+    {
+      "path": "reload-stream/TestAT10_AT13_ReloadRevokeBaseline/at10-origin.txt",
+      "sha256": "49329dd968336e9efc80d525b02ef01447a9fb93a5d2f88925b1aa3173e1b3e1",
+      "inherited_unchanged_from_follow_up_9": false
+    },
+    {
+      "path": "reload-stream/TestAT10_AT13_ReloadRevokeBaseline/at10-responder.err",
+      "sha256": "6630d26cac3c7f295d4d3572695befa741f8ff6198934098e7b8c6598472233d",
+      "inherited_unchanged_from_follow_up_9": false
+    },
+    {
+      "path": "reload-stream/TestAT10_AT13_ReloadRevokeBaseline/at10-responder.txt",
+      "sha256": "fcb68d2092f2fc0567eb9d501f4e783e15a658a6e9ac87731cabbf484ca269dd",
+      "inherited_unchanged_from_follow_up_9": false
+    },
+    {
+      "path": "reload-stream/TestAT10_AT13_ReloadRevokeBaseline/conntrack-after-revoke.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "inherited_unchanged_from_follow_up_9": true
+    },
+    {
+      "path": "reload-stream/TestAT10_AT13_ReloadRevokeBaseline/conntrack-before-revoke.txt",
+      "sha256": "b6f96fbc21be478ad6b194afefa7b753841ca26525ba48f81275da18636ab03d",
+      "inherited_unchanged_from_follow_up_9": false
+    },
+    {
+      "path": "reload-stream/TestAT10_AT13_ReloadRevokeBaseline/d120-verdict.txt",
+      "sha256": "219b6f8a19f05fe893b8539363fd75c92683bbba68152e3413dc4e9be0e0c02a",
+      "inherited_unchanged_from_follow_up_9": false
+    },
+    {
+      "path": "reload-stream/TestAT10_AT13_ReloadRevokeBaseline/reload.txt",
+      "sha256": "483ab9bb4b42d953c421717eda65c2ba59886209e73bdce80a6a063139587de4",
+      "inherited_unchanged_from_follow_up_9": false
+    },
+    {
+      "path": "reload-stream/TestAT10_AT13_ReloadRevokeBaseline/stream-a1.log.jsonl",
+      "sha256": "857c00f16185f50898e1aab1ee175750eaf71a54a36ffb4d19f42808194e4925",
+      "inherited_unchanged_from_follow_up_9": false
+    },
+    {
+      "path": "reload-stream/TestAT10_AT13_ReloadRevokeBaseline/stream-a1.txt",
+      "sha256": "dde83451d17cc02f7fab23cfadea5dd4bb4445fc9783ee77f4d271c3d258a3d9",
+      "inherited_unchanged_from_follow_up_9": false
+    },
+    {
+      "path": "reload-stream/TestD104_AT13_DeadlineContinuity/trace.json",
+      "sha256": "c3f512192d91d98abde587b98da4e4bb5538a01600c9296a4b1b130d9c38fdae",
+      "inherited_unchanged_from_follow_up_9": false
+    },
+    {
+      "path": "renewal-node-capture.txt",
+      "sha256": "af8a9c1b30b24163512b8bb92372f992415531e5cf3f72a05a79755e13754d34",
+      "inherited_unchanged_from_follow_up_9": false
+    },
+    {
+      "path": "renewal-packets.json",
+      "sha256": "02774fe252e9f17a8481b743248ed2561fa0891ccbf8b4c8b89a288867e8b676",
+      "inherited_unchanged_from_follow_up_9": false
+    },
+    {
+      "path": "renewal-probes.json",
+      "sha256": "f265b210c6c210b1a7fbb1500c0b5897f210b0e62c762af101fabac29868cd8d",
+      "inherited_unchanged_from_follow_up_9": false
+    },
+    {
+      "path": "requests.md",
+      "sha256": "d5be3ad0a9b5acc7658318430f0e45daad022ec9e03f3f8cd441c46160d4bfe8",
+      "inherited_unchanged_from_follow_up_9": true
+    },
+    {
+      "path": "serving-readback-metadata.json",
+      "sha256": "dcfdd20a6bf1a9990e0918ec83a5476e71532096685904d6c56b175e649970ec",
+      "inherited_unchanged_from_follow_up_9": false
+    },
+    {
+      "path": "summary.md",
+      "sha256": "72d299731810e6c115bc2235079800e0ede6f8dd3bb1f829109b8da26bc7e711",
+      "inherited_unchanged_from_follow_up_9": true
+    },
+    {
+      "path": "support/publish.json",
+      "sha256": "dbe00213206ca628f68e7fbc489497d9cf5551f649ab701889da82eea4fa8772",
+      "inherited_unchanged_from_follow_up_9": false
+    },
+    {
+      "path": "support/publish.md",
+      "sha256": "46baa7b9904903775396680532f51519773bc4051e5019dd46442fe7df0e856d",
+      "inherited_unchanged_from_follow_up_9": false
+    },
+    {
+      "path": "support/serving-catalogue.json",
+      "sha256": "ceb1c27f993ba63e28230a20e8fa32785c17ae3615739f79d31867d9e3798ac8",
+      "inherited_unchanged_from_follow_up_9": false
+    },
+    {
+      "path": "support/serving-catalogue.md",
+      "sha256": "7dc3e2a6060a7a33a86e28907def0cee67945197e1f5ba520b5fa883f8a0fd2e",
+      "inherited_unchanged_from_follow_up_9": false
+    },
+    {
+      "path": "tc-evidence-index.json",
+      "sha256": "95a7c5e7eb05e5231682307987e2b2b92f6590641a8bc3ea0e776d6645b91f59",
+      "inherited_unchanged_from_follow_up_9": false
+    },
+    {
+      "path": "validation-results.json",
+      "sha256": "752dbe2c4230b582e5f481537a229101595b1a4c868e352217f104b0e71e28d7",
+      "inherited_unchanged_from_follow_up_9": true
+    },
+    {
+      "path": "watchdog.log.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "inherited_unchanged_from_follow_up_9": true
+    },
+    {
+      "path": "whole-node-bracketed-reads.json",
+      "sha256": "c20cbb452fc08444a59d69332d599e8a7f4d08eb4a7a93f9bb51580a3b4721d8",
+      "inherited_unchanged_from_follow_up_9": true
+    },
+    {
+      "path": "whole-node-continuous-reads.json",
+      "sha256": "9022d06c9b09131a91073896fc32232eb788090f5dd212e97feae1046f81ccb6",
+      "inherited_unchanged_from_follow_up_9": true
+    },
+    {
+      "path": "whole-node-node-capture.txt",
+      "sha256": "067e14cf749b805ac5bc51317d0e7a28b49a2638611711a0a64d76ef1c28828c",
+      "inherited_unchanged_from_follow_up_9": true
+    },
+    {
+      "path": "whole-node-packets.json",
+      "sha256": "29309ad3a87a7f037f9f06d07ce649d5a1cdff673dc9f313f0c0d7044b72cd3a",
+      "inherited_unchanged_from_follow_up_9": true
+    },
+    {
+      "path": "whole-node-probes.json",
+      "sha256": "aa326945c05c9d2105e3ff6f723d9fffe367fb6383f563263d547d5f56779607",
+      "inherited_unchanged_from_follow_up_9": true
+    }
+  ]
+}

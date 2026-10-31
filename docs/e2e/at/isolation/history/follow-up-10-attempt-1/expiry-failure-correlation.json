@@ -1,0 +1,1547 @@
+{
+  "run_id": "2be2797b-7a28-4e9f-a1fe-5fffa4c1b047",
+  "status": "fail",
+  "owner": "w2-agent-core: node/agent/engine.go Step/finishServingStep/verifyCurrentServing and node/watchdog/watch.go Watch.needsBaseline; netlab supports verifier diagnostics",
+  "premise": "A generation-0 baseline read is distinct from a timed guard. No baseline-writer timestamp/identity is exported; watchdog involvement remains an inference.",
+  "deadline_ns": "42835508568707",
+  "producer_run_id": "0b191fdd-c510-4e70-912b-4ef818aae62a",
+  "early_dropout": {
+    "count": 96,
+    "packet_ids": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45,
+      46,
+      47,
+      48,
+      49,
+      50,
+      51,
+      52,
+      53,
+      54,
+      55,
+      56,
+      57,
+      58,
+      59,
+      60,
+      61,
+      62,
+      63,
+      64,
+      65,
+      66,
+      67,
+      68,
+      69,
+      70,
+      71,
+      72,
+      73,
+      74,
+      75,
+      76,
+      77,
+      78,
+      79,
+      80,
+      81,
+      82,
+      83,
+      84,
+      85,
+      86,
+      87,
+      88,
+      89,
+      90,
+      91,
+      92,
+      93,
+      94,
+      95,
+      96
+    ],
+    "first_ingress_offset_ns": "-8098843780",
+    "first_subsequent_positive_offset_ns": "-3298889928",
+    "ingress_inside_guard": 1,
+    "outside_guard": 95
+  },
+  "final_expiry_drops": {
+    "count": 41,
+    "first_ingress_offset_ns": "-62863882",
+    "post_deadline_positives": 0
+  },
+  "exact_producer_sequence": [
+    {
+      "run_id": "0b191fdd-c510-4e70-912b-4ef818aae62a",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "953",
+      "source": "live",
+      "anchor": {
+        "mono_before_ns": "42785507314445",
+        "wall": "2026-10-31T15:07:27.99094332Z",
+        "mono_after_ns": "42785507314681"
+      },
+      "timing": {
+        "version": 1,
+        "clock": "CLOCK_MONOTONIC",
+        "operation": "verify",
+        "candidate_generation": "30",
+        "start_ns": "42785484611996",
+        "end_ns": "42785507309910",
+        "succeeded": true,
+        "verified": true,
+        "deadline": {
+          "granularity_ns": "0",
+          "install_bound_ns": "0",
+          "apply_start_ns": "0",
+          "render_start_ns": "0",
+          "install_start_ns": "0",
+          "installed_by_ns": "0",
+          "install_ok": false,
+          "release_start_ns": "0",
+          "release_end_ns": "0",
+          "guard_released": false
+        },
+        "verifications": [
+          {
+            "start_ns": "42785484611996",
+            "end_ns": "42785507309910",
+            "nft_read": {
+              "start_ns": "42785484612218",
+              "end_ns": "42785486724607",
+              "ok": true
+            },
+            "tc_read": {
+              "start_ns": "42785489728213",
+              "end_ns": "42785505631983",
+              "ok": true
+            },
+            "precision_read": {
+              "start_ns": "42785488370590",
+              "end_ns": "42785489721046",
+              "elements": 2,
+              "read_ok": true,
+              "verified": true
+            },
+            "tc_sha256": "8b7d9d6a39026f4407302a5eeb88fc688f79815e304589fa98fad8bc654f86de",
+            "verified": true
+          }
+        ]
+      },
+      "tc_sha256": "8b7d9d6a39026f4407302a5eeb88fc688f79815e304589fa98fad8bc654f86de",
+      "lease": {
+        "lease_id": "bfeb6b9b-8fa6-47ed-85cd-9a4034d6f75e",
+        "generation": "30",
+        "issued_at": "2026-10-31T15:07:17.994901292Z",
+        "expires_at": "2026-10-31T15:08:17.994901292Z",
+        "request_mono_ns": "42775508568707",
+        "node_deadline_ns": "42835508568707",
+        "members": 2
+      }
+    },
+    {
+      "run_id": "0b191fdd-c510-4e70-912b-4ef818aae62a",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "954",
+      "source": "renewal",
+      "anchor": {
+        "mono_before_ns": "42818593392021",
+        "wall": "2026-10-31T15:08:01.077020886Z",
+        "mono_after_ns": "42818593392218"
+      },
+      "lease": {
+        "lease_id": "bfeb6b9b-8fa6-47ed-85cd-9a4034d6f75e",
+        "generation": "30",
+        "issued_at": "2026-10-31T15:07:17.994901292Z",
+        "expires_at": "2026-10-31T15:08:17.994901292Z",
+        "request_mono_ns": "42775508568707",
+        "node_deadline_ns": "42835508568707",
+        "members": 2
+      },
+      "renewal": {
+        "request_id": "01a19280-d0a7-7d29-aa06-8a00ec660dab",
+        "start_ns": "42815508232691",
+        "end_ns": "42818593390994",
+        "request_wall": "2026-10-31T15:07:57.991861541Z",
+        "new_lease": false
+      }
+    },
+    {
+      "run_id": "0b191fdd-c510-4e70-912b-4ef818aae62a",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "955",
+      "source": "apply",
+      "anchor": {
+        "mono_before_ns": "42818695580230",
+        "wall": "2026-10-31T15:08:01.179209101Z",
+        "mono_after_ns": "42818695580459"
+      },
+      "timing": {
+        "version": 1,
+        "clock": "CLOCK_MONOTONIC",
+        "operation": "apply",
+        "candidate_generation": "30",
+        "start_ns": "42818613771792",
+        "end_ns": "42818695575712",
+        "succeeded": true,
+        "verified": true,
+        "deadline": {
+          "granularity_ns": "1000000",
+          "install_bound_ns": "100000000",
+          "apply_start_ns": "42818613771792",
+          "render_start_ns": "42818630366260",
+          "install_start_ns": "42818630501352",
+          "installed_by_ns": "42818657458209",
+          "install_ok": true,
+          "release_start_ns": "42818657465107",
+          "release_end_ns": "42818671314903",
+          "guard_released": true
+        },
+        "verifications": [
+          {
+            "start_ns": "42818671318973",
+            "end_ns": "42818695564457",
+            "nft_read": {
+              "start_ns": "42818671319117",
+              "end_ns": "42818673649120",
+              "ok": true
+            },
+            "tc_read": {
+              "start_ns": "42818676915325",
+              "end_ns": "42818693948774",
+              "ok": true
+            },
+            "precision_read": {
+              "start_ns": "42818675348165",
+              "end_ns": "42818676904615",
+              "elements": 2,
+              "read_ok": true,
+              "verified": true
+            },
+            "tc_sha256": "8b7d9d6a39026f4407302a5eeb88fc688f79815e304589fa98fad8bc654f86de",
+            "verified": true
+          }
+        ]
+      },
+      "tc_sha256": "8b7d9d6a39026f4407302a5eeb88fc688f79815e304589fa98fad8bc654f86de",
+      "lease": {
+        "lease_id": "bfeb6b9b-8fa6-47ed-85cd-9a4034d6f75e",
+        "generation": "30",
+        "issued_at": "2026-10-31T15:07:17.994901292Z",
+        "expires_at": "2026-10-31T15:08:17.994901292Z",
+        "request_mono_ns": "42775508568707",
+        "node_deadline_ns": "42835508568707",
+        "members": 2
+      }
+    },
+    {
+      "run_id": "0b191fdd-c510-4e70-912b-4ef818aae62a",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "956",
+      "source": "live",
+      "anchor": {
+        "mono_before_ns": "42818717102121",
+        "wall": "2026-10-31T15:08:01.200731124Z",
+        "mono_after_ns": "42818717102475"
+      },
+      "timing": {
+        "version": 1,
+        "clock": "CLOCK_MONOTONIC",
+        "operation": "verify",
+        "candidate_generation": "30",
+        "start_ns": "42818695648021",
+        "end_ns": "42818717097522",
+        "succeeded": true,
+        "verified": true,
+        "deadline": {
+          "granularity_ns": "0",
+          "install_bound_ns": "0",
+          "apply_start_ns": "0",
+          "render_start_ns": "0",
+          "install_start_ns": "0",
+          "installed_by_ns": "0",
+          "install_ok": false,
+          "release_start_ns": "0",
+          "release_end_ns": "0",
+          "guard_released": false
+        },
+        "verifications": [
+          {
+            "start_ns": "42818695648021",
+            "end_ns": "42818717097522",
+            "nft_read": {
+              "start_ns": "42818695648295",
+              "end_ns": "42818697878780",
+              "ok": true
+            },
+            "tc_read": {
+              "start_ns": "42818700944542",
+              "end_ns": "42818715679712",
+              "ok": true
+            },
+            "precision_read": {
+              "start_ns": "42818699553866",
+              "end_ns": "42818700934392",
+              "elements": 2,
+              "read_ok": true,
+              "verified": true
+            },
+            "tc_sha256": "8b7d9d6a39026f4407302a5eeb88fc688f79815e304589fa98fad8bc654f86de",
+            "verified": true
+          }
+        ]
+      },
+      "tc_sha256": "8b7d9d6a39026f4407302a5eeb88fc688f79815e304589fa98fad8bc654f86de",
+      "lease": {
+        "lease_id": "bfeb6b9b-8fa6-47ed-85cd-9a4034d6f75e",
+        "generation": "30",
+        "issued_at": "2026-10-31T15:07:17.994901292Z",
+        "expires_at": "2026-10-31T15:08:17.994901292Z",
+        "request_mono_ns": "42775508568707",
+        "node_deadline_ns": "42835508568707",
+        "members": 2
+      }
+    },
+    {
+      "run_id": "0b191fdd-c510-4e70-912b-4ef818aae62a",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "957",
+      "source": "live",
+      "anchor": {
+        "mono_before_ns": "42821842056180",
+        "wall": "2026-10-31T15:08:04.325685104Z",
+        "mono_after_ns": "42821842056440"
+      },
+      "timing": {
+        "version": 1,
+        "clock": "CLOCK_MONOTONIC",
+        "operation": "verify",
+        "candidate_generation": "30",
+        "start_ns": "42821800903874",
+        "end_ns": "42821842052444",
+        "succeeded": true,
+        "verified": true,
+        "deadline": {
+          "granularity_ns": "0",
+          "install_bound_ns": "0",
+          "apply_start_ns": "0",
+          "render_start_ns": "0",
+          "install_start_ns": "0",
+          "installed_by_ns": "0",
+          "install_ok": false,
+          "release_start_ns": "0",
+          "release_end_ns": "0",
+          "guard_released": false
+        },
+        "verifications": [
+          {
+            "start_ns": "42821800903874",
+            "end_ns": "42821842052444",
+            "nft_read": {
+              "start_ns": "42821800904040",
+              "end_ns": "42821803162429",
+              "ok": true
+            },
+            "tc_read": {
+              "start_ns": "42821824313618",
+              "end_ns": "42821840584671",
+              "ok": true
+            },
+            "precision_read": {
+              "start_ns": "42821804737514",
+              "end_ns": "42821824303022",
+              "elements": 2,
+              "read_ok": true,
+              "verified": true
+            },
+            "tc_sha256": "8b7d9d6a39026f4407302a5eeb88fc688f79815e304589fa98fad8bc654f86de",
+            "verified": true
+          }
+        ]
+      },
+      "tc_sha256": "8b7d9d6a39026f4407302a5eeb88fc688f79815e304589fa98fad8bc654f86de",
+      "lease": {
+        "lease_id": "bfeb6b9b-8fa6-47ed-85cd-9a4034d6f75e",
+        "generation": "30",
+        "issued_at": "2026-10-31T15:07:17.994901292Z",
+        "expires_at": "2026-10-31T15:08:17.994901292Z",
+        "request_mono_ns": "42775508568707",
+        "node_deadline_ns": "42835508568707",
+        "members": 2
+      }
+    },
+    {
+      "run_id": "0b191fdd-c510-4e70-912b-4ef818aae62a",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "958",
+      "source": "live",
+      "anchor": {
+        "mono_before_ns": "42821853748806",
+        "wall": "2026-10-31T15:08:04.337377684Z",
+        "mono_after_ns": "42821853749030"
+      },
+      "timing": {
+        "version": 1,
+        "clock": "CLOCK_MONOTONIC",
+        "operation": "verify",
+        "candidate_generation": "30",
+        "start_ns": "42821844519578",
+        "end_ns": "42821853746383",
+        "succeeded": false,
+        "verified": false,
+        "deadline": {
+          "granularity_ns": "0",
+          "install_bound_ns": "0",
+          "apply_start_ns": "0",
+          "render_start_ns": "0",
+          "install_start_ns": "0",
+          "installed_by_ns": "0",
+          "install_ok": false,
+          "release_start_ns": "0",
+          "release_end_ns": "0",
+          "guard_released": false
+        },
+        "verifications": [
+          {
+            "start_ns": "42821844519578",
+            "end_ns": "42821853746383",
+            "nft_read": {
+              "start_ns": "42821844519732",
+              "end_ns": "42821846014079",
+              "ok": true
+            },
+            "tc_read": {
+              "start_ns": "42821846458023",
+              "end_ns": "42821852619394",
+              "ok": true
+            },
+            "precision_read": {
+              "start_ns": "0",
+              "end_ns": "0",
+              "elements": 0,
+              "read_ok": false,
+              "verified": false
+            },
+            "tc_sha256": "1ece0c59a69ede7189b07cae26efda1411305903611f1a3f24a21da82fe2804e",
+            "verified": false
+          }
+        ]
+      },
+      "tc_sha256": "1ece0c59a69ede7189b07cae26efda1411305903611f1a3f24a21da82fe2804e",
+      "lease": {
+        "lease_id": "bfeb6b9b-8fa6-47ed-85cd-9a4034d6f75e",
+        "generation": "30",
+        "issued_at": "2026-10-31T15:07:17.994901292Z",
+        "expires_at": "2026-10-31T15:08:17.994901292Z",
+        "request_mono_ns": "42775508568707",
+        "node_deadline_ns": "42835508568707",
+        "members": 2
+      }
+    },
+    {
+      "run_id": "0b191fdd-c510-4e70-912b-4ef818aae62a",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "959",
+      "source": "blocked_audit",
+      "anchor": {
+        "mono_before_ns": "42821921449036",
+        "wall": "2026-10-31T15:08:04.405077877Z",
+        "mono_after_ns": "42821921449226"
+      },
+      "timing": {
+        "version": 1,
+        "clock": "CLOCK_MONOTONIC",
+        "operation": "verify",
+        "candidate_generation": "30",
+        "start_ns": "42821911346135",
+        "end_ns": "42821921446657",
+        "succeeded": false,
+        "verified": false,
+        "deadline": {
+          "granularity_ns": "0",
+          "install_bound_ns": "0",
+          "apply_start_ns": "0",
+          "render_start_ns": "0",
+          "install_start_ns": "0",
+          "installed_by_ns": "0",
+          "install_ok": false,
+          "release_start_ns": "0",
+          "release_end_ns": "0",
+          "guard_released": false
+        },
+        "verifications": [
+          {
+            "start_ns": "42821911346135",
+            "end_ns": "42821921446657",
+            "nft_read": {
+              "start_ns": "42821911346246",
+              "end_ns": "42821912734114",
+              "ok": true
+            },
+            "tc_read": {
+              "start_ns": "42821913117098",
+              "end_ns": "42821920223661",
+              "ok": true
+            },
+            "precision_read": {
+              "start_ns": "0",
+              "end_ns": "0",
+              "elements": 0,
+              "read_ok": false,
+              "verified": false
+            },
+            "tc_sha256": "1ece0c59a69ede7189b07cae26efda1411305903611f1a3f24a21da82fe2804e",
+            "verified": false
+          }
+        ]
+      },
+      "tc_sha256": "1ece0c59a69ede7189b07cae26efda1411305903611f1a3f24a21da82fe2804e",
+      "lease": {
+        "lease_id": "bfeb6b9b-8fa6-47ed-85cd-9a4034d6f75e",
+        "generation": "30",
+        "issued_at": "2026-10-31T15:07:17.994901292Z",
+        "expires_at": "2026-10-31T15:08:17.994901292Z",
+        "request_mono_ns": "42775508568707",
+        "node_deadline_ns": "42835508568707",
+        "members": 2
+      }
+    },
+    {
+      "run_id": "0b191fdd-c510-4e70-912b-4ef818aae62a",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "960",
+      "source": "renewal",
+      "anchor": {
+        "mono_before_ns": "42832097324748",
+        "wall": "2026-10-31T15:08:14.580953605Z",
+        "mono_after_ns": "42832097324942"
+      },
+      "lease": {
+        "lease_id": "bfeb6b9b-8fa6-47ed-85cd-9a4034d6f75e",
+        "generation": "30",
+        "issued_at": "2026-10-31T15:07:17.994901292Z",
+        "expires_at": "2026-10-31T15:08:17.994901292Z",
+        "request_mono_ns": "42775508568707",
+        "node_deadline_ns": "42835508568707",
+        "members": 2
+      },
+      "renewal": {
+        "request_id": "01a19281-0575-72fd-9267-a3881696c1aa",
+        "start_ns": "42829025566429",
+        "end_ns": "42832097323935",
+        "request_wall": "2026-10-31T15:08:11.509195255Z",
+        "new_lease": false
+      }
+    },
+    {
+      "run_id": "0b191fdd-c510-4e70-912b-4ef818aae62a",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "961",
+      "source": "apply",
+      "anchor": {
+        "mono_before_ns": "42832182045542",
+        "wall": "2026-10-31T15:08:14.665674404Z",
+        "mono_after_ns": "42832182045743"
+      },
+      "timing": {
+        "version": 1,
+        "clock": "CLOCK_MONOTONIC",
+        "operation": "apply",
+        "candidate_generation": "30",
+        "start_ns": "42832118805031",
+        "end_ns": "42832182042859",
+        "succeeded": true,
+        "verified": true,
+        "deadline": {
+          "granularity_ns": "1000000",
+          "install_bound_ns": "100000000",
+          "apply_start_ns": "42832118805031",
+          "render_start_ns": "42832131489853",
+          "install_start_ns": "42832131549058",
+          "installed_by_ns": "42832146531158",
+          "install_ok": true,
+          "release_start_ns": "42832146540788",
+          "release_end_ns": "42832160422196",
+          "guard_released": true
+        },
+        "verifications": [
+          {
+            "start_ns": "42832160423711",
+            "end_ns": "42832182035623",
+            "nft_read": {
+              "start_ns": "42832160423813",
+              "end_ns": "42832162456076",
+              "ok": true
+            },
+            "tc_read": {
+              "start_ns": "42832165450960",
+              "end_ns": "42832180660407",
+              "ok": true
+            },
+            "precision_read": {
+              "start_ns": "42832164161009",
+              "end_ns": "42832165432989",
+              "elements": 2,
+              "read_ok": true,
+              "verified": true
+            },
+            "tc_sha256": "8b7d9d6a39026f4407302a5eeb88fc688f79815e304589fa98fad8bc654f86de",
+            "verified": true
+          }
+        ]
+      },
+      "tc_sha256": "8b7d9d6a39026f4407302a5eeb88fc688f79815e304589fa98fad8bc654f86de",
+      "lease": {
+        "lease_id": "bfeb6b9b-8fa6-47ed-85cd-9a4034d6f75e",
+        "generation": "30",
+        "issued_at": "2026-10-31T15:07:17.994901292Z",
+        "expires_at": "2026-10-31T15:08:17.994901292Z",
+        "request_mono_ns": "42775508568707",
+        "node_deadline_ns": "42835508568707",
+        "members": 2
+      }
+    },
+    {
+      "run_id": "0b191fdd-c510-4e70-912b-4ef818aae62a",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "962",
+      "source": "live",
+      "anchor": {
+        "mono_before_ns": "42832202998596",
+        "wall": "2026-10-31T15:08:14.686627501Z",
+        "mono_after_ns": "42832202998863"
+      },
+      "timing": {
+        "version": 1,
+        "clock": "CLOCK_MONOTONIC",
+        "operation": "verify",
+        "candidate_generation": "30",
+        "start_ns": "42832182087334",
+        "end_ns": "42832202993859",
+        "succeeded": true,
+        "verified": true,
+        "deadline": {
+          "granularity_ns": "0",
+          "install_bound_ns": "0",
+          "apply_start_ns": "0",
+          "render_start_ns": "0",
+          "install_start_ns": "0",
+          "installed_by_ns": "0",
+          "install_ok": false,
+          "release_start_ns": "0",
+          "release_end_ns": "0",
+          "guard_released": false
+        },
+        "verifications": [
+          {
+            "start_ns": "42832182087334",
+            "end_ns": "42832202993859",
+            "nft_read": {
+              "start_ns": "42832182087496",
+              "end_ns": "42832184183339",
+              "ok": true
+            },
+            "tc_read": {
+              "start_ns": "42832186601343",
+              "end_ns": "42832201577195",
+              "ok": true
+            },
+            "precision_read": {
+              "start_ns": "42832185136606",
+              "end_ns": "42832186592484",
+              "elements": 2,
+              "read_ok": true,
+              "verified": true
+            },
+            "tc_sha256": "8b7d9d6a39026f4407302a5eeb88fc688f79815e304589fa98fad8bc654f86de",
+            "verified": true
+          }
+        ]
+      },
+      "tc_sha256": "8b7d9d6a39026f4407302a5eeb88fc688f79815e304589fa98fad8bc654f86de",
+      "lease": {
+        "lease_id": "bfeb6b9b-8fa6-47ed-85cd-9a4034d6f75e",
+        "generation": "30",
+        "issued_at": "2026-10-31T15:07:17.994901292Z",
+        "expires_at": "2026-10-31T15:08:17.994901292Z",
+        "request_mono_ns": "42775508568707",
+        "node_deadline_ns": "42835508568707",
+        "members": 2
+      }
+    },
+    {
+      "run_id": "0b191fdd-c510-4e70-912b-4ef818aae62a",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "963",
+      "source": "live",
+      "anchor": {
+        "mono_before_ns": "42835327491945",
+        "wall": "2026-10-31T15:08:17.811120778Z",
+        "mono_after_ns": "42835327492104"
+      },
+      "timing": {
+        "version": 1,
+        "clock": "CLOCK_MONOTONIC",
+        "operation": "verify",
+        "candidate_generation": "30",
+        "start_ns": "42835305480482",
+        "end_ns": "42835327489353",
+        "succeeded": true,
+        "verified": true,
+        "deadline": {
+          "granularity_ns": "0",
+          "install_bound_ns": "0",
+          "apply_start_ns": "0",
+          "render_start_ns": "0",
+          "install_start_ns": "0",
+          "installed_by_ns": "0",
+          "install_ok": false,
+          "release_start_ns": "0",
+          "release_end_ns": "0",
+          "guard_released": false
+        },
+        "verifications": [
+          {
+            "start_ns": "42835305480482",
+            "end_ns": "42835327489353",
+            "nft_read": {
+              "start_ns": "42835305480582",
+              "end_ns": "42835307630323",
+              "ok": true
+            },
+            "tc_read": {
+              "start_ns": "42835310335947",
+              "end_ns": "42835326018401",
+              "ok": true
+            },
+            "precision_read": {
+              "start_ns": "42835308954691",
+              "end_ns": "42835310329740",
+              "elements": 2,
+              "read_ok": true,
+              "verified": true
+            },
+            "tc_sha256": "8b7d9d6a39026f4407302a5eeb88fc688f79815e304589fa98fad8bc654f86de",
+            "verified": true
+          }
+        ]
+      },
+      "tc_sha256": "8b7d9d6a39026f4407302a5eeb88fc688f79815e304589fa98fad8bc654f86de",
+      "lease": {
+        "lease_id": "bfeb6b9b-8fa6-47ed-85cd-9a4034d6f75e",
+        "generation": "30",
+        "issued_at": "2026-10-31T15:07:17.994901292Z",
+        "expires_at": "2026-10-31T15:08:17.994901292Z",
+        "request_mono_ns": "42775508568707",
+        "node_deadline_ns": "42835508568707",
+        "members": 2
+      }
+    }
+  ],
+  "wire_reports": [
+    {
+      "report": {
+        "agent_version": "0.1.0",
+        "applied_binding_revision": "1",
+        "applied_config_generation": "30",
+        "applied_policy_refs": {
+          "authorization_generation": "1",
+          "dns_generation": "1",
+          "fup_generation": "1"
+        },
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "checks": [
+          {
+            "error_code": null,
+            "name": "dns_policy",
+            "observed_at": "2026-10-31T15:08:01.098997072Z",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "internet_only",
+            "observed_at": "2026-10-31T15:08:01.098997072Z",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "lease",
+            "observed_at": "2026-10-31T15:08:01.098997072Z",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "meter_path",
+            "observed_at": "2026-10-31T15:08:01.098997072Z",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "policy_signature",
+            "observed_at": "2026-10-31T15:08:01.098997072Z",
+            "status": "passed"
+          },
+          {
+            "detail": "read_at=2026-10-31T15:08:01.200770927Z source=live candidate=30 verified=true {\"generation\":\"30\",\"phase\":\"verify\",\"reads\":20,\"objects\":6,\"truncated\":true,\"sha256\":\"8b7d9d6a39026f4407302a5eeb88fc688f79815e304589fa98fad8bc654f86de\"}",
+            "error_code": null,
+            "name": "qos",
+            "observed_at": "2026-10-31T15:08:01.098997072Z",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "release_supported",
+            "observed_at": "2026-10-31T15:08:01.098997072Z",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "source_binding",
+            "observed_at": "2026-10-31T15:08:01.098997072Z",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "storage",
+            "observed_at": "2026-10-31T15:08:01.098997072Z",
+            "status": "passed"
+          },
+          {
+            "detail": "Egress probe used no extra target.",
+            "error_code": null,
+            "name": "tunnel_probe",
+            "observed_at": "2026-10-31T15:08:01.098997072Z",
+            "status": "passed"
+          }
+        ],
+        "current_release_id": "01a19274-9710-7c43-b8e3-d8738a725c9a",
+        "data_health": "healthy",
+        "dns_policy_evidence": {
+          "applied_at": "2026-10-31T15:08:01.096283698Z",
+          "content_sha256": "3fae83d34e5b716ed23f44ebb4dd0a97826e9e2473c3774ab76d737b544e3b4d",
+          "document_id": "01a19274-9e6f-7eac-b716-227b588f82c9",
+          "error_code": null,
+          "feeds": [],
+          "generation": "1",
+          "outcome": "applied"
+        },
+        "errors": [
+          {
+            "code": "METER_EPOCH_CHANGE",
+            "message": "ruleset was reset outside the agent",
+            "observed_at": "2026-10-31T15:08:01.21565805Z",
+            "stage": "meter"
+          }
+        ],
+        "forwarding_block_reasons": [],
+        "last_good_release_id": "01a19274-9710-7c43-b8e3-d8738a725c9a",
+        "lease": {
+          "expires_at": "2026-10-31T15:08:17.994901292Z",
+          "lease_id": "bfeb6b9b-8fa6-47ed-85cd-9a4034d6f75e"
+        },
+        "member_forwarding_enabled": true,
+        "netbird": {
+          "backend": "kernel",
+          "peer_id": null,
+          "version": null
+        },
+        "node_id": "01a19274-9bfd-76d5-9059-8f447c2abc3e",
+        "node_incarnation_id": "01a19274-9ca1-7144-8501-ad6f4dcfe24a",
+        "observed_at": "2026-10-31T15:08:01.215658392Z",
+        "provisioning_state": "ready",
+        "report_id": "01a19280-dd3f-7c8c-a830-a38d5da57027",
+        "safety_status": "passed",
+        "tc_evidence": {
+          "attachments": [
+            {
+              "attachment": "qdisc",
+              "interface": "fvmb0",
+              "objects": [
+                {
+                  "handle": "5dd2:",
+                  "kind": "fq_codel",
+                  "parent": "1:5dd2"
+                },
+                {
+                  "handle": "6be7:",
+                  "kind": "fq_codel",
+                  "parent": "1:6be7"
+                },
+                {
+                  "handle": "1:",
+                  "kind": "htb",
+                  "root": true
+                }
+              ]
+            },
+            {
+              "attachment": "qdisc",
+              "interface": "fvup0",
+              "objects": [
+                {
+                  "handle": "5dd2:",
+                  "kind": "fq_codel",
+                  "parent": "1:5dd2"
+                },
+                {
+                  "handle": "6be7:",
+                  "kind": "fq_codel",
+                  "parent": "1:6be7"
+                },
+                {
+                  "handle": "1:",
+                  "kind": "htb",
+                  "root": true
+                }
+              ]
+            },
+            {
+              "attachment": "1:1",
+              "interface": "fvmb0",
+              "objects": []
+            },
+            {
+              "attachment": "1:5dd2",
+              "interface": "fvmb0",
+              "objects": []
+            },
+            {
+              "attachment": "1:6be7",
+              "interface": "fvmb0",
+              "objects": []
+            },
+            {
+              "attachment": "1:fffe",
+              "interface": "fvmb0",
+              "objects": []
+            },
+            {
+              "attachment": "5dd2:",
+              "interface": "fvmb0",
+              "objects": []
+            },
+            {
+              "attachment": "6be7:",
+              "interface": "fvmb0",
+              "objects": []
+            },
+            {
+              "attachment": "egress",
+              "interface": "fvmb0",
+              "objects": []
+            },
+            {
+              "attachment": "ingress",
+              "interface": "fvmb0",
+              "objects": []
+            },
+            {
+              "attachment": "root",
+              "interface": "fvmb0",
+              "objects": []
+            },
+            {
+              "attachment": "1:1",
+              "interface": "fvup0",
+              "objects": []
+            },
+            {
+              "attachment": "1:5dd2",
+              "interface": "fvup0",
+              "objects": []
+            },
+            {
+              "attachment": "1:6be7",
+              "interface": "fvup0",
+              "objects": []
+            },
+            {
+              "attachment": "1:fffe",
+              "interface": "fvup0",
+              "objects": []
+            },
+            {
+              "attachment": "5dd2:",
+              "interface": "fvup0",
+              "objects": []
+            }
+          ],
+          "candidate_generation": "30",
+          "error_code": null,
+          "objects_total": 6,
+          "phase": "verify",
+          "read_at": "2026-10-31T15:08:01.200619109Z",
+          "reads_total": 20,
+          "rejected": null,
+          "sha256": "8b7d9d6a39026f4407302a5eeb88fc688f79815e304589fa98fad8bc654f86de",
+          "truncated": true,
+          "verified": true
+        },
+        "update": {
+          "generation": null,
+          "job_id": null,
+          "stage": null,
+          "state": null
+        },
+        "usage": {
+          "acked_archive_bytes": "16853",
+          "blocked_seq": "27",
+          "central_acked_through": "26",
+          "last_durable_event_seq": "106",
+          "ledger_epoch": "7c59872b-e2cb-418b-8802-adeda6d5b65d",
+          "meter_epoch_id": "01a19280-dd3e-7509-b9cf-c64099ac697b",
+          "oldest_unacked_at": "2026-10-31T15:01:21.099228621Z",
+          "unacked_event_count": 80,
+          "unacked_payload_bytes": "51654"
+        }
+      },
+      "attempts": [
+        {
+          "received_at": "2026-10-31T15:08:01.219891531Z",
+          "response_at": "2026-10-31T15:08:04.276834268Z",
+          "status": 502
+        },
+        {
+          "received_at": "2026-10-31T15:08:05.330573155Z",
+          "response_at": "2026-10-31T15:08:08.436939968Z",
+          "status": 502
+        },
+        {
+          "received_at": "2026-10-31T15:08:14.701305895Z",
+          "response_at": "2026-10-31T15:08:17.780949013Z",
+          "status": 502
+        },
+        {
+          "received_at": "2026-10-31T15:08:24.110849471Z",
+          "response_at": "2026-10-31T15:08:27.188818393Z",
+          "status": 502
+        },
+        {
+          "received_at": "2026-10-31T15:08:35.425367102Z",
+          "response_at": "2026-10-31T15:08:35.436354815Z",
+          "status": 202
+        }
+      ]
+    },
+    {
+      "report": {
+        "agent_version": "0.1.0",
+        "applied_binding_revision": "1",
+        "applied_config_generation": "30",
+        "applied_policy_refs": {
+          "authorization_generation": "1",
+          "dns_generation": "1",
+          "fup_generation": "1"
+        },
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "checks": [
+          {
+            "error_code": null,
+            "name": "dns_policy",
+            "observed_at": "2026-10-31T15:08:04.396141299Z",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "internet_only",
+            "observed_at": "2026-10-31T15:08:04.396141299Z",
+            "status": "passed"
+          },
+          {
+            "error_code": "GENERATION_MISMATCH",
+            "name": "lease",
+            "observed_at": "2026-10-31T15:08:04.396141299Z",
+            "status": "failed"
+          },
+          {
+            "error_code": null,
+            "name": "meter_path",
+            "observed_at": "2026-10-31T15:08:04.396141299Z",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "policy_signature",
+            "observed_at": "2026-10-31T15:08:04.396141299Z",
+            "status": "passed"
+          },
+          {
+            "detail": "read_at=2026-10-31T15:08:04.337416142Z source=live candidate=30 verified=false {\"generation\":\"30\",\"phase\":\"verify\",\"reads\":8,\"objects\":2,\"truncated\":false,\"sha256\":\"1ece0c59a69ede7189b07cae26efda1411305903611f1a3f24a21da82fe2804e\"}",
+            "error_code": "GENERATION_MISMATCH",
+            "name": "qos",
+            "observed_at": "2026-10-31T15:08:04.396141299Z",
+            "status": "failed"
+          },
+          {
+            "error_code": null,
+            "name": "release_supported",
+            "observed_at": "2026-10-31T15:08:04.396141299Z",
+            "status": "passed"
+          },
+          {
+            "error_code": "GENERATION_MISMATCH",
+            "name": "source_binding",
+            "observed_at": "2026-10-31T15:08:04.396141299Z",
+            "status": "failed"
+          },
+          {
+            "error_code": null,
+            "name": "storage",
+            "observed_at": "2026-10-31T15:08:04.396141299Z",
+            "status": "passed"
+          },
+          {
+            "detail": "Egress probe used no extra target.",
+            "error_code": null,
+            "name": "tunnel_probe",
+            "observed_at": "2026-10-31T15:08:04.396141299Z",
+            "status": "passed"
+          }
+        ],
+        "current_release_id": "01a19274-9710-7c43-b8e3-d8738a725c9a",
+        "data_health": "healthy",
+        "dns_policy_evidence": {
+          "applied_at": "2026-10-31T15:08:01.096283698Z",
+          "content_sha256": "3fae83d34e5b716ed23f44ebb4dd0a97826e9e2473c3774ab76d737b544e3b4d",
+          "document_id": "01a19274-9e6f-7eac-b716-227b588f82c9",
+          "error_code": null,
+          "feeds": [],
+          "generation": "1",
+          "outcome": "applied"
+        },
+        "errors": [
+          {
+            "code": "GENERATION_MISMATCH",
+            "message": "GENERATION_MISMATCH",
+            "observed_at": "2026-10-31T15:08:04.337586019Z",
+            "stage": "apply"
+          }
+        ],
+        "forwarding_block_reasons": [
+          "safety_check_failed"
+        ],
+        "last_good_release_id": "01a19274-9710-7c43-b8e3-d8738a725c9a",
+        "lease": {
+          "expires_at": "2026-10-31T15:08:17.994901292Z",
+          "lease_id": "bfeb6b9b-8fa6-47ed-85cd-9a4034d6f75e"
+        },
+        "member_forwarding_enabled": false,
+        "netbird": {
+          "backend": "kernel",
+          "peer_id": null,
+          "version": null
+        },
+        "node_id": "01a19274-9bfd-76d5-9059-8f447c2abc3e",
+        "node_incarnation_id": "01a19274-9ca1-7144-8501-ad6f4dcfe24a",
+        "observed_at": "2026-10-31T15:08:04.393464367Z",
+        "provisioning_state": "applying",
+        "report_id": "01a19280-e9a9-7747-887f-3ba2aee9176e",
+        "safety_status": "failed",
+        "tc_evidence": {
+          "attachments": [
+            {
+              "attachment": "qdisc",
+              "interface": "fvmb0",
+              "objects": [
+                {
+                  "handle": "0:",
+                  "kind": "noqueue",
+                  "root": true
+                }
+              ]
+            },
+            {
+              "attachment": "qdisc",
+              "interface": "fvup0",
+              "objects": [
+                {
+                  "handle": "0:",
+                  "kind": "noqueue",
+                  "root": true
+                }
+              ]
+            },
+            {
+              "attachment": "egress",
+              "interface": "fvmb0",
+              "objects": []
+            },
+            {
+              "attachment": "ingress",
+              "interface": "fvmb0",
+              "objects": []
+            },
+            {
+              "attachment": "root",
+              "interface": "fvmb0",
+              "objects": []
+            },
+            {
+              "attachment": "egress",
+              "interface": "fvup0",
+              "objects": []
+            },
+            {
+              "attachment": "ingress",
+              "interface": "fvup0",
+              "objects": []
+            },
+            {
+              "attachment": "root",
+              "interface": "fvup0",
+              "objects": []
+            }
+          ],
+          "candidate_generation": "30",
+          "error_code": "GENERATION_MISMATCH",
+          "objects_total": 2,
+          "phase": "verify",
+          "read_at": "2026-10-31T15:08:04.337333026Z",
+          "reads_total": 8,
+          "rejected": null,
+          "sha256": "1ece0c59a69ede7189b07cae26efda1411305903611f1a3f24a21da82fe2804e",
+          "truncated": false,
+          "verified": false
+        },
+        "update": {
+          "generation": null,
+          "job_id": null,
+          "stage": null,
+          "state": null
+        },
+        "usage": {
+          "acked_archive_bytes": "16853",
+          "blocked_seq": "27",
+          "central_acked_through": "26",
+          "last_durable_event_seq": "106",
+          "ledger_epoch": "7c59872b-e2cb-418b-8802-adeda6d5b65d",
+          "meter_epoch_id": null,
+          "oldest_unacked_at": "2026-10-31T15:01:21.099228621Z",
+          "unacked_event_count": 80,
+          "unacked_payload_bytes": "51654"
+        }
+      },
+      "attempts": [
+        {
+          "received_at": "2026-10-31T15:08:35.43866798Z",
+          "response_at": "2026-10-31T15:08:35.44321729Z",
+          "status": 202
+        }
+      ]
+    },
+    {
+      "report": {
+        "agent_version": "0.1.0",
+        "applied_binding_revision": "1",
+        "applied_config_generation": "30",
+        "applied_policy_refs": {
+          "authorization_generation": "1",
+          "dns_generation": "1",
+          "fup_generation": "1"
+        },
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "checks": [
+          {
+            "error_code": null,
+            "name": "dns_policy",
+            "observed_at": "2026-10-31T15:08:14.700201395Z",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "internet_only",
+            "observed_at": "2026-10-31T15:08:14.700201395Z",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "lease",
+            "observed_at": "2026-10-31T15:08:14.700201395Z",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "meter_path",
+            "observed_at": "2026-10-31T15:08:14.700201395Z",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "policy_signature",
+            "observed_at": "2026-10-31T15:08:14.700201395Z",
+            "status": "passed"
+          },
+          {
+            "detail": "read_at=2026-10-31T15:08:14.686674968Z source=live candidate=30 verified=true {\"generation\":\"30\",\"phase\":\"verify\",\"reads\":20,\"objects\":6,\"truncated\":true,\"sha256\":\"8b7d9d6a39026f4407302a5eeb88fc688f79815e304589fa98fad8bc654f86de\"}",
+            "error_code": null,
+            "name": "qos",
+            "observed_at": "2026-10-31T15:08:14.700201395Z",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "release_supported",
+            "observed_at": "2026-10-31T15:08:14.700201395Z",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "source_binding",
+            "observed_at": "2026-10-31T15:08:14.700201395Z",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "storage",
+            "observed_at": "2026-10-31T15:08:14.700201395Z",
+            "status": "passed"
+          },
+          {
+            "detail": "Egress probe used no extra target.",
+            "error_code": null,
+            "name": "tunnel_probe",
+            "observed_at": "2026-10-31T15:08:14.700201395Z",
+            "status": "passed"
+          }
+        ],
+        "current_release_id": "01a19274-9710-7c43-b8e3-d8738a725c9a",
+        "data_health": "healthy",
+        "dns_policy_evidence": {
+          "applied_at": "2026-10-31T15:08:14.597469955Z",
+          "content_sha256": "3fae83d34e5b716ed23f44ebb4dd0a97826e9e2473c3774ab76d737b544e3b4d",
+          "document_id": "01a19274-9e6f-7eac-b716-227b588f82c9",
+          "error_code": null,
+          "feeds": [],
+          "generation": "1",
+          "outcome": "applied"
+        },
+        "errors": [],
+        "forwarding_block_reasons": [],
+        "last_good_release_id": "01a19274-9710-7c43-b8e3-d8738a725c9a",
+        "lease": {
+          "expires_at": "2026-10-31T15:08:17.994901292Z",
+          "lease_id": "bfeb6b9b-8fa6-47ed-85cd-9a4034d6f75e"
+        },
+        "member_forwarding_enabled": true,
+        "netbird": {
+          "backend": "kernel",
+          "peer_id": null,
+          "version": null
+        },
+        "node_id": "01a19274-9bfd-76d5-9059-8f447c2abc3e",
+        "node_incarnation_id": "01a19274-9ca1-7144-8501-ad6f4dcfe24a",
+        "observed_at": "2026-10-31T15:08:14.697532064Z",
+        "provisioning_state": "ready",
+        "report_id": "01a19281-11e9-7847-baf3-35eadd4c85aa",
+        "safety_status": "passed",
+        "tc_evidence": {
+          "attachments": [
+            {
+              "attachment": "qdisc",
+              "interface": "fvmb0",
+              "objects": [
+                {
+                  "handle": "5dd2:",
+                  "kind": "fq_codel",
+                  "parent": "1:5dd2"
+                },
+                {
+                  "handle": "6be7:",
+                  "kind": "fq_codel",
+                  "parent": "1:6be7"
+                },
+                {
+                  "handle": "1:",
+                  "kind": "htb",
+                  "root": true
+                }
+              ]
+            },
+            {
+              "attachment": "qdisc",
+              "interface": "fvup0",
+              "objects": [
+                {
+                  "handle": "5dd2:",
+                  "kind": "fq_codel",
+                  "parent": "1:5dd2"
+                },
+                {
+                  "handle": "6be7:",
+                  "kind": "fq_codel",
+                  "parent": "1:6be7"
+                },
+                {
+                  "handle": "1:",
+                  "kind": "htb",
+                  "root": true
+                }
+              ]
+            },
+            {
+              "attachment": "1:1",
+              "interface": "fvmb0",
+              "objects": []
+            },
+            {
+              "attachment": "1:5dd2",
+              "interface": "fvmb0",
+              "objects": []
+            },
+            {
+              "attachment": "1:6be7",
+              "interface": "fvmb0",
+              "objects": []
+            },
+            {
+              "attachment": "1:fffe",
+              "interface": "fvmb0",
+              "objects": []
+            },
+            {
+              "attachment": "5dd2:",
+              "interface": "fvmb0",
+              "objects": []
+            },
+            {
+              "attachment": "6be7:",
+              "interface": "fvmb0",
+              "objects": []
+            },
+            {
+              "attachment": "egress",
+              "interface": "fvmb0",
+              "objects": []
+            },
+            {
+              "attachment": "ingress",
+              "interface": "fvmb0",
+              "objects": []
+            },
+            {
+              "attachment": "root",
+              "interface": "fvmb0",
+              "objects": []
+            },
+            {
+              "attachment": "1:1",
+              "interface": "fvup0",
+              "objects": []
+            },
+            {
+              "attachment": "1:5dd2",
+              "interface": "fvup0",
+              "objects": []
+            },
+            {
+              "attachment": "1:6be7",
+              "interface": "fvup0",
+              "objects": []
+            },
+            {
+              "attachment": "1:fffe",
+              "interface": "fvup0",
+              "objects": []
+            },
+            {
+              "attachment": "5dd2:",
+              "interface": "fvup0",
+              "objects": []
+            }
+          ],
+          "candidate_generation": "30",
+          "error_code": null,
+          "objects_total": 6,
+          "phase": "verify",
+          "read_at": "2026-10-31T15:08:14.686523984Z",
+          "reads_total": 20,
+          "rejected": null,
+          "sha256": "8b7d9d6a39026f4407302a5eeb88fc688f79815e304589fa98fad8bc654f86de",
+          "truncated": true,
+          "verified": true
+        },
+        "update": {
+          "generation": null,
+          "job_id": null,
+          "stage": null,
+          "state": null
+        },
+        "usage": {
+          "acked_archive_bytes": "16853",
+          "blocked_seq": "27",
+          "central_acked_through": "26",
+          "last_durable_event_seq": "106",
+          "ledger_epoch": "7c59872b-e2cb-418b-8802-adeda6d5b65d",
+          "meter_epoch_id": "01a19281-1188-7d4b-8b77-2590a89916cf",
+          "oldest_unacked_at": "2026-10-31T15:01:21.099228621Z",
+          "unacked_event_count": 80,
+          "unacked_payload_bytes": "51654"
+        }
+      },
+      "attempts": [
+        {
+          "received_at": "2026-10-31T15:08:35.445342554Z",
+          "response_at": "2026-10-31T15:08:35.449413747Z",
+          "status": 202
+        }
+      ]
+    }
+  ],
+  "first_baseline_read": {
+    "read_end": "2026-10-31T15:08:08.259486099Z",
+    "read_start": "2026-10-31T15:08:08.23076421Z",
+    "readback": "{\"mono_ns\":\"42825768311296\",\"wall\":\"2026-10-31T15:08:08.251940608Z\"}\ntable inet fvpn {\n\tset allowed_v4 {\n\t\ttype ipv4_addr\n\t\tflags timeout\n\t}\n}\ntable inet fvpn {\n\tchain forward {\n\t\ttype filter hook forward priority mangle; policy drop;\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=0 fvpn_baseline=1 fvpn_metering=forward_admission_v1\"\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a19274-b8e6-74d2-bd47-531a9763e7f3:6be7\"\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a19275-3d5c-7628-ac75-7bd6f7024fce:5dd2\"\n\t\tiifname \"fvmb0\" counter name \"ctbase\" drop\n\t\toifname \"fvmb0\" counter name \"ctbase\" drop\n\t\tiifname \"fvmb0\" meta nfproto ipv6 counter name \"ctv6\" drop\n\t\toifname \"fvmb0\" meta nfproto ipv6 counter name \"ctv6\" drop\n\t}\n}\nv1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 42821921476024\nwall_unix_ns 1793459284405104945\npolicy_expires_mono_ns 0\nbaseline_ok 1\nserving 0\ngeneration 30\nreason safety_check_failed\n{\"mono_ns\":\"42825772741759\",\"wall\":\"2026-10-31T15:08:08.256371028Z\"}\n"
+  },
+  "last_baseline_read": {
+    "read_end": "2026-10-31T15:08:33.069798759Z",
+    "read_start": "2026-10-31T15:08:33.040969758Z",
+    "readback": "{\"mono_ns\":\"42850578970584\",\"wall\":\"2026-10-31T15:08:33.062600695Z\"}\ntable inet fvpn {\n\tset allowed_v4 {\n\t\ttype ipv4_addr\n\t\tflags timeout\n\t}\n}\ntable inet fvpn {\n\tchain forward {\n\t\ttype filter hook forward priority mangle; policy drop;\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=0 fvpn_baseline=1 fvpn_metering=forward_admission_v1\"\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a19274-b8e6-74d2-bd47-531a9763e7f3:6be7\"\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a19275-3d5c-7628-ac75-7bd6f7024fce:5dd2\"\n\t\tiifname \"fvmb0\" counter name \"ctbase\" drop\n\t\toifname \"fvmb0\" counter name \"ctbase\" drop\n\t\tiifname \"fvmb0\" meta nfproto ipv6 counter name \"ctv6\" drop\n\t\toifname \"fvmb0\" meta nfproto ipv6 counter name \"ctv6\" drop\n\t}\n}\nv1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 42844720318808\nwall_unix_ns 1793459307203948124\npolicy_expires_mono_ns 0\nbaseline_ok 1\nserving 0\ngeneration 30\nreason lease_expired\n{\"mono_ns\":\"42850583361487\",\"wall\":\"2026-10-31T15:08:33.06699093Z\"}\n"
+  },
+  "missing_writer_evidence": "Engine Apply/Verify timing does not timestamp external ApplyBaseline invocations, including the independent watchdog. Its retained log is separate.",
+  "all_loss_windows": "producer-timing-analysis.json and expiry-timing-analysis.json retain every loss, with command and verifier references."
+}

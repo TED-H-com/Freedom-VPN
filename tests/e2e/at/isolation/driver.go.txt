@@ -987,6 +987,7 @@ func (x *isolationRun) restart() {
 	c := iso.Check{Name: "node restart with durable identity", Positive: x.proof(x.a1), Owner: "w2-agent-core / w3-devstack-e2e"}
 	before, _ := x.r.lab.docker(x.r.lab.node, "cat", "/run/vpn-node/heartbeat")
 	boot := regexp.MustCompile(`(?m)^boot_id (\S+)$`).FindStringSubmatch(string(before))
+	x.retainReasonLogs("before-restart")
 	out, e := exec.Command("docker", "restart", x.r.lab.node).CombinedOutput()
 	_ = exec.Command("docker", "exec", "-d", x.r.lab.node, "/tmp/isolation-probe", "nft-clock").Run()
 	wait, cancel := context.WithTimeout(x.ctx, 90*time.Second)
@@ -1041,24 +1042,44 @@ func (x *isolationRun) deadline() {
 	}
 	defer conn.Close(x.ctx)
 	var lease []byte
-	e = conn.QueryRow(x.ctx, `SELECT jsonb_build_object('issued_at',issued_at,'expires_at',expires_at,'generation',policy_generation::text,'members',envelope->'signed'->'members') FROM serving_leases WHERE node_id=$1 ORDER BY issued_at DESC LIMIT 1`, r.nodeID).Scan(&lease)
-	c.Observations = append(c.Observations, iso.Observation{Name: "signed_lease_bounds", Detail: string(lease)}, iso.Observation{Name: "grant_deadline", Detail: end.Format(time.RFC3339)})
 	binding, bound := readProjectedBinding(r.desiredRaw(), r.usageDevice)
 	var bounds struct {
+		Expires time.Time `json:"expires_at"`
 		Members []struct {
 			Member     uuid.UUID `json:"member_id"`
 			End        time.Time `json:"lease_end"`
 			ServiceEnd time.Time `json:"effective_service_end"`
 		} `json:"members"`
 	}
-	leaseBound := false
-	if json.Unmarshal(lease, &bounds) == nil && bound {
+	// With a fixed 60-second node window, an early lease correctly expires
+	// before this finite grant. Wait for ordinary renewal to reach the member
+	// deadline while the node lease still extends beyond it. Never edit either.
+	wait, cancel := context.WithDeadline(x.ctx, end.Add(-25*time.Second))
+	samples := []map[string]any{}
+	leaseBound := waitUntil(wait, time.Second, func() bool {
+		e = conn.QueryRow(wait, `SELECT jsonb_build_object('lease_id',id,'issued_at',issued_at,'expires_at',expires_at,'generation',policy_generation::text,'members',envelope->'signed'->'members',
+            'accepted_serving',EXISTS(SELECT 1 FROM node_observations o WHERE o.node_id=s.node_id AND o.report_payload->'lease'->>'lease_id'=s.id::text AND o.report_payload->>'member_forwarding_enabled'='true'))
+            FROM serving_leases s WHERE node_id=$1 ORDER BY issued_at DESC LIMIT 1`, r.nodeID).Scan(&lease)
+		if e != nil || json.Unmarshal(lease, &bounds) != nil {
+			return false
+		}
+		samples = append(samples, map[string]any{"at": time.Now().UTC(), "lease": json.RawMessage(append([]byte(nil), lease...))})
+		var receipt struct {
+			Accepted bool `json:"accepted_serving"`
+		}
+		if json.Unmarshal(lease, &receipt) != nil || !receipt.Accepted || !bound || !bounds.Expires.After(end) {
+			return false
+		}
 		for _, m := range bounds.Members {
 			if m.Member == binding.Member && m.ServiceEnd.Equal(end) && m.End.Equal(end) {
-				leaseBound = true
+				return true
 			}
 		}
-	}
+		return false
+	})
+	cancel()
+	x.extra("finite-member-renewal-wait.json", map[string]any{"run_id": x.records["AT13"].RunID, "member_deadline": end, "samples": samples, "qualified": leaseBound})
+	c.Observations = append(c.Observations, iso.Observation{Name: "signed_lease_bounds", Detail: string(lease)}, iso.Observation{Name: "grant_deadline", Detail: end.Format(time.RFC3339)})
 	if !c.Positive.Valid() || e != nil || !leaseBound || !time.Now().Before(end.Add(-25*time.Second)) {
 		c.Status = iso.StatusBlocked
 		c.Actual = "counted finite flow, matching signed member deadline, or pre-expiry fault window unavailable"
@@ -2018,6 +2039,20 @@ chmod 755 /usr/local/bin/fvpn-e2e-nodeconfig
 	}
 	return true
 }
+
+// The shared supervisor truncates its log on process replacement. Retain each
+// source segment before the harness requests a restart or clone preparation.
+func (x *isolationRun) retainReasonLogs(label string) {
+	for _, name := range []string{"agent", "watchdog"} {
+		raw, err := exec.Command("docker", "exec", x.r.lab.node, "cat", "/var/lib/vpn-node/e2e/"+name+".log").Output()
+		if err != nil {
+			x.t.Errorf("reason log retention %s/%s failed", name, label)
+			continue
+		}
+		_ = iso.WriteExtra(x.dir, name+"-"+label+".log.txt", string(raw))
+	}
+}
+
 func (x *isolationRun) archiveReceiver() {
 	if x.r == nil {
 		return
@@ -2052,10 +2087,18 @@ func (x *isolationRun) archiveReceiver() {
 			x.t.Errorf("producer retention %s: %v", item.name, err)
 		}
 	}
-	for _, name := range []string{"agent.log", "watchdog.log"} {
-		raw, _ := exec.Command("docker", "exec", x.r.lab.node, "cat", "/var/lib/vpn-node/e2e/"+name).Output()
-		_ = iso.WriteExtra(x.dir, name+".txt", iso.Redact(string(raw)))
+	x.retainReasonLogs("final")
+	for _, name := range []string{"agent", "watchdog"} {
+		var all bytes.Buffer
+		for _, label := range []string{"before-restart", "before-clone", "final"} {
+			raw, err := os.ReadFile(filepath.Join(x.dir, name+"-"+label+".log.txt"))
+			if err == nil {
+				all.Write(raw)
+			}
+		}
+		_ = iso.WriteExtra(x.dir, name+".log.txt", all.String())
 	}
+
 	// Stream the full private capture to task disk, outside diagnostic stdout.
 	scratch := filepath.Join(x.r.lab.root, ".agent", "tmp", "isolation-receiver.jsonl")
 	_, err := (&Stack{lab: x.r.lab}).ExportContainerFile(x.ctx, "node", "/var/lib/vpn-node/e2e/isolation-observations.jsonl", scratch)
@@ -2255,6 +2298,7 @@ func (x *isolationRun) foreignRedirect() {
 	}
 }
 func (x *isolationRun) freezeIdentity() {
+	x.retainReasonLogs("before-clone")
 	at := time.Now()
 	fixture, err := x.stack.StartClonedIdentityFixture(x.ctx, "node")
 	evidence := map[string]any{"started_at": at.UTC().Format(time.RFC3339Nano), "owner": "ENR-02 / ENR-03; this is the consumer latch observation only"}

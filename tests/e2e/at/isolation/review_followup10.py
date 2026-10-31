@@ -7,6 +7,18 @@ import sys
 from producer_timing import analyze
 
 root=Path(sys.argv[1] if len(sys.argv)>1 else 'docs/e2e/at/isolation')
+# Refuse inherited packet files when this attempt did not execute expiry.
+current=json.loads((root/'AT13.json').read_text())
+expiry=next((c for c in current.get('checks',[]) if c['name']=='short whole-node lease expiry'),{})
+if 'D-104 exact packet deadline verdict=' not in expiry.get('actual',''):
+    from producer_timing import validate_operations
+    rows=[json.loads(line) for line in (root/'producer-operations.jsonl').read_text().splitlines()]
+    v=validate_operations(rows)
+    incomplete=dict(run_id=current['run_id'],status='unavailable',reason='This attempt did not execute the whole-node packet window; inherited packet files are not evidence for it.',
+        check=expiry,source_counts=v['source_counts'],snapshots=v['snapshots'],brackets=v['brackets'],failed_applies=v['failed_applies'])
+    (root/'producer-timing-unavailable.json').write_text(json.dumps(incomplete,indent=2)+'\n')
+    raise SystemExit('Current expiry measurement unavailable; refusing inherited packet evidence')
+
 sys.argv=[sys.argv[0],str(root)]
 runpy.run_path(str(Path(__file__).with_name('summarize_followup8.py')),run_name='__main__')
 r=analyze(root)
