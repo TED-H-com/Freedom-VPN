@@ -177,6 +177,7 @@ func (r *runner) installerUpgrade19(ctx context.Context, s *Stack, quiescent boo
 	}
 	note("correlated_with_original_boot_deadline", boolText(correlated))
 	sealedOK := false
+	var sealedPayloads []string
 	if copyErr == nil && exportErr == nil {
 		db, err := sql.Open("sqlite", "file:"+dest+"?mode=ro")
 		if err == nil {
@@ -194,6 +195,7 @@ func (r *runner) installerUpgrade19(ctx context.Context, s *Stack, quiescent boo
 						continue
 					}
 					note("sealed_receipt", string(body))
+					sealedPayloads = append(sealedPayloads, string(body))
 					sum, err := canonjson.HashHex(body, "payload_hash")
 					note("receipt_hash_verified", boolText(err == nil && sum == hash))
 					var v struct {
@@ -220,6 +222,40 @@ func (r *runner) installerUpgrade19(ctx context.Context, s *Stack, quiescent boo
 		noteJSON(&rec, "failed_apply_replay_exit", commandExit(replayErr))
 		note("failed_recover", string(recoverOut))
 		noteJSON(&rec, "failed_recover_exit", commandExit(recoverErr))
+		current, _ := run("readlink", "/opt/vpn-node/current")
+		latch, latchErr := run("cat", "/var/lib/vpn-node/update-journal/forwarding.blocked")
+		note("failed_recovery_pointer_unchanged", boolText(bytes.Equal(before, current)))
+		note("failed_recovery_gate_blocked", boolText(latchErr == nil && len(bytes.TrimSpace(latch)) > 0))
+		_, copyAgainErr := run("/usr/local/bin/fvpn-e2e-nodeconfig", "journal-copy")
+		second := filepath.Join(r.lab.root, ".agent/tmp/followup19", r.runID+"-after-recovery.db")
+		exported, exportAgainErr := s.ExportContainerFile(ctx, "installer-node", "/var/lib/vpn-node/e2e/journal.snapshot.db", second)
+		noteJSON(&rec, "recovery_journal_snapshot", exported)
+		same := copyAgainErr == nil && exportAgainErr == nil && len(sealedPayloads) > 0
+		if same {
+			db, err := sql.Open("sqlite", "file:"+second+"?mode=ro")
+			if err != nil {
+				same = false
+			} else {
+				defer db.Close()
+				rows, err := db.Query("SELECT payload FROM result_outbox ORDER BY seq")
+				if err != nil {
+					same = false
+				} else {
+					defer rows.Close()
+					i := 0
+					for rows.Next() {
+						var payload []byte
+						if rows.Scan(&payload) != nil || i >= len(sealedPayloads) || string(payload) != sealedPayloads[i] {
+							same = false
+						}
+						i++
+					}
+					same = same && rows.Err() == nil && i == len(sealedPayloads)
+				}
+			}
+		}
+		note("failed_recovery_seal_byte_identical", boolText(same))
+
 	}
 	note("owner", "updater / agent-core; sealed failure remains failure; no checkpoint supplied")
 	if stageOK && applyErr == nil && statusErr == nil && healthy && cpErr == nil && observerErr == nil && correlated && sealedOK && finalEventOK && usageErr == nil && !bytes.Equal(before, after) && strings.Contains(string(executable), strings.TrimSpace(string(after))) {
