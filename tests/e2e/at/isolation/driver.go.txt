@@ -296,15 +296,117 @@ func (x *isolationRun) prepare() bool {
 	r.publish(x.ctx, x.admin, n.NodeID)
 	c := iso.Check{Name: "serving setup", Status: iso.StatusBlocked, Owner: "w2-agent-core / w3-wire-nodes"}
 	if !x.publication("published", []uuid.UUID{r.groupID, x.groupB}, &c) {
-		c.Actual = "publication did not complete; exact product response and observation retained"
+		x.noteServingGap(&c)
 		x.observation(&c, r)
 		for _, id := range []string{"AT10", "AT11", "AT12", "AT13"} {
 			x.add(id, c)
 		}
+		x.noteUnmeasured(c)
 		return false
 	}
 	x.startConvergence()
 	return true
+}
+
+// noteServingGap reads the node ruleset after a failed publication. It does
+// not write nft. #220 fail-closes a foreign postrouting xt target as
+// FLOWTABLE_BYPASS, and the agent reports only that code.
+func (x *isolationRun) noteServingGap(c *iso.Check) {
+	summary := "nft ruleset was not read"
+	if x.r != nil && x.r.lab != nil {
+		raw, err := x.r.lab.docker(x.r.lab.node, "nft", "-j", "list", "ruleset")
+		if err != nil {
+			summary = "nft -j list ruleset failed: " + clipText(strings.TrimSpace(string(raw)+" "+err.Error()), 400)
+		} else {
+			summary = foreignRulesetSummary(raw)
+		}
+	}
+	c.Observations = append(c.Observations, iso.Observation{Name: "foreign_ruleset", Detail: summary})
+	if dockerEmbeddedDNS(summary) {
+		c.Owner = "w3-devstack-e2e: node netns table ip nat POSTROUTING xt SNAT for 127.0.0.11"
+		c.Actual = "serving publication fail-closed FLOWTABLE_BYPASS (#220 VerifyServing) on Docker embedded DNS NAT; " + summary + "; the harness did not write nft; devstack follow-up 14 must keep this postrouting xt SNAT out of the ruleset VerifyServing reads"
+		return
+	}
+	c.Actual = "publication did not complete; foreign ruleset: " + summary
+}
+
+func (x *isolationRun) noteUnmeasured(serving iso.Check) {
+	gap := "not measured; serving setup blocked (" + serving.Owner + ")"
+	build := ""
+	if x.records["AT10"] != nil {
+		build = x.records["AT10"].Build
+	}
+	x.add("AT10", iso.Check{Name: "provisional lease reports AWAITING_MEMBER_GRANTS", Status: iso.StatusBlocked, Owner: "w2-agent-core", Actual: "agent follow-up 18 is on main " + build + "; the grant-less lease window was not sampled because serving publication never succeeded"})
+	x.add("AT11", iso.Check{Name: "IPv6 platform matrix", Status: iso.StatusBlocked, Owner: "w3-devstack-e2e: real IPv6 and platform paths are devstack backlog", Actual: "devstack follow-up 13 did not export an IPv6 or member-platform path; harness-exports.md exposes only InjectMemberIngress and ObserveMemberIngress"})
+	x.add("AT12", iso.Check{Name: "designated DNS exception", Status: iso.StatusBlocked, Owner: "w3-devstack-e2e: resolver on member underlay", Actual: "no export places the designated resolver behind the exit; harness-exports.md exposes only InjectMemberIngress and ObserveMemberIngress"})
+	x.add("AT12", iso.Check{Name: "unknown/spoofed member source", Status: iso.StatusBlocked, Owner: serving.Owner, Actual: gap + "; ObserveMemberIngress was not called"})
+	x.add("AT13", iso.Check{Name: "post-revoke kernel ingress attribution", Status: iso.StatusBlocked, Owner: serving.Owner, Actual: gap + "; ObserveMemberIngress was not called"})
+	x.add("AT13", iso.Check{Name: "short whole-node lease expiry", Status: iso.StatusBlocked, Owner: serving.Owner, Actual: gap + "; the fleet-config PUT was not issued"})
+	x.add("AT13", iso.Check{Name: "lease member expiry", Status: iso.StatusBlocked, Owner: serving.Owner, Actual: gap + "; finite-member expiry was not re-measured"})
+	x.add("AT13", iso.Check{Name: "continuous crash/NetBird/reboot/updater transitions", Status: iso.StatusBlocked, Owner: "acceptance / operator", Actual: "full continuous fault matrix remains unproved"})
+}
+
+func foreignRulesetSummary(raw []byte) string {
+	var doc struct {
+		Nftables []map[string]json.RawMessage `json:"nftables"`
+	}
+	if json.Unmarshal(raw, &doc) != nil {
+		return "nft json unreadable"
+	}
+	var lines []string
+	for _, obj := range doc.Nftables {
+		if body, ok := obj["flowtable"]; ok {
+			lines = append(lines, "flowtable "+clipText(string(body), 240))
+		}
+		if body, ok := obj["chain"]; ok {
+			var c struct {
+				Family string          `json:"family"`
+				Table  string          `json:"table"`
+				Name   string          `json:"name"`
+				Hook   string          `json:"hook"`
+				Policy string          `json:"policy"`
+				Prio   json.RawMessage `json:"prio"`
+			}
+			if json.Unmarshal(body, &c) != nil || c.Hook == "" || (c.Family == "inet" && c.Table == "fvpn") {
+				continue
+			}
+			lines = append(lines, fmt.Sprintf("chain %s %s %s hook %s prio %s policy %s", c.Family, c.Table, c.Name, c.Hook, strings.TrimSpace(string(c.Prio)), c.Policy))
+		}
+		if body, ok := obj["rule"]; ok {
+			var rule struct {
+				Family string                       `json:"family"`
+				Table  string                       `json:"table"`
+				Chain  string                       `json:"chain"`
+				Expr   []map[string]json.RawMessage `json:"expr"`
+			}
+			if json.Unmarshal(body, &rule) != nil || (rule.Family == "inet" && rule.Table == "fvpn") {
+				continue
+			}
+			for _, expr := range rule.Expr {
+				for _, key := range []string{"xt", "flow", "snat", "dnat", "masquerade", "mangle", "jump"} {
+					stmt, ok := expr[key]
+					if !ok {
+						continue
+					}
+					lines = append(lines, fmt.Sprintf("rule %s %s %s %s %s", rule.Family, rule.Table, rule.Chain, key, clipText(string(stmt), 160)))
+				}
+				if match, ok := expr["match"]; ok && strings.Contains(string(match), "127.0.0.11") {
+					lines = append(lines, fmt.Sprintf("rule %s %s %s match %s", rule.Family, rule.Table, rule.Chain, clipText(string(match), 160)))
+				}
+			}
+		}
+		if len(lines) >= 40 {
+			break
+		}
+	}
+	if len(lines) == 0 {
+		return "no foreign flowtable, xt statement, or base chain outside inet fvpn"
+	}
+	return clipText(strings.Join(lines, "; "), 4000)
+}
+
+func dockerEmbeddedDNS(summary string) bool {
+	return strings.Contains(summary, "nat") && strings.Contains(summary, "POSTROUTING") && strings.Contains(summary, "xt") && strings.Contains(summary, "127.0.0.11")
 }
 
 func (x *isolationRun) publication(intent string, groups []uuid.UUID, c *iso.Check) bool {
