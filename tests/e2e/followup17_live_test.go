@@ -237,12 +237,16 @@ func (r *runner) installerCapture17(ctx context.Context, s *Stack) {
 	origin := s.lab.prefix + "-origin"
 	cmd := exec.CommandContext(ctx, "docker", "exec", origin, "sh", "-c", `timeout 15 tcpdump -U -nn -i lo -c 2 -w /tmp/e2e-origin.pcap 'tcp port 443' >/tmp/e2e-capture.log 2>&1 & pid=$!; sleep 1; wget -q --no-check-certificate -O /dev/null https://127.0.0.1/healthz; wait "$pid"`)
 	captureErr := cmd.Run()
-	path := filepath.Join(s.lab.root, ".agent", "tmp", "followup17-origin.pcap")
+	scratch := filepath.Join(s.lab.root, ".agent", "tmp")
+	if os.Getenv("FVPN_E2E_FOLLOWUP19") == "1" {
+		scratch = filepath.Join(scratch, "followup19", r.runID)
+	}
+	path := filepath.Join(scratch, "followup17-origin.pcap")
 	capture, exportErr := s.ExportContainerFile(ctx, "origin", "/tmp/e2e-origin.pcap", path)
 	noteJSON(&rec, "origin_pcap", capture)
 	// The independent large fixture exceeds the old diagnostic ceiling.
 	_, createErr := r.lab.docker(origin, "sh", "-c", "dd if=/dev/zero of=/tmp/e2e-large-export bs=1048576 count=3 status=none")
-	large, largeErr := s.ExportContainerFile(ctx, "origin", "/tmp/e2e-large-export", filepath.Join(s.lab.root, ".agent", "tmp", "followup17-large-export"))
+	large, largeErr := s.ExportContainerFile(ctx, "origin", "/tmp/e2e-large-export", filepath.Join(scratch, "followup17-large-export"))
 	noteJSON(&rec, "large_export", large)
 	_, overflowErr := r.lab.docker(origin, "cat", "/tmp/e2e-large-export")
 	note("diagnostic_overflow_explicit", boolText(overflowErr != nil))
@@ -255,6 +259,10 @@ func (r *runner) installerReenroll17(ctx context.Context, s *Stack, admin Browse
 	rec := Record{ID: "installer-reenroll", Title: "Controlled reinstall, retained identity and retired certificate refusal", Spec: []string{"ENR-06", "AT07", "§6.3"}, Status: StatusFail}
 	defer func() { r.record(rec) }()
 	note := recPathNote(&rec)
+	var originCopy string
+	if os.Getenv("FVPN_E2E_FOLLOWUP19") == "1" {
+		originCopy, _ = r.usageCopy19(ctx, s, "origin")
+	}
 	if !r.revokeInstallerNode(ctx, s, admin, r.nodeID, note) {
 		return
 	}
@@ -292,6 +300,20 @@ func (r *runner) installerReenroll17(ctx context.Context, s *Stack, admin Browse
 		moved = moved && out.RetiredBoundState[name] == digest
 	}
 	kept := out.Before.UsageDB == out.Hashes.UsageDB && out.Before.UsageWAL == out.Hashes.UsageWAL
+	if os.Getenv("FVPN_E2E_FOLLOWUP19") == "1" {
+		afterCopy, copyErr := r.usageCopy19(ctx, s, "adopted")
+		var retainedErr error
+		kept, retainedErr = retainedUsage19(originCopy, afterCopy, r.incID.String())
+		note("canonical_origin_events_retained", boolText(kept && copyErr == nil && retainedErr == nil))
+		if retainedErr != nil {
+			note("retained_events_error", retainedErr.Error())
+		}
+		check, _ := r.lab.docker(s.installerContainer(), "/usr/local/bin/fvpn-node-install", "check", "--json")
+		note("post_reenroll_seed_check", string(check))
+		if strings.Contains(string(check), "HASH_MISMATCH") {
+			r.seedInventory19(ctx, s, note)
+		}
+	}
 	identity := out.Before.Key == out.RetiredHashes.Key && out.Before.Cert == out.RetiredHashes.Cert && out.Before.NodeJSON == out.RetiredHashes.NodeJSON
 	note("usage_retained", boolText(kept))
 	note("bound_state_retired", boolText(moved))
@@ -305,6 +327,9 @@ func (r *runner) installerReenroll17(ctx context.Context, s *Stack, admin Browse
 		err = s.RestoreInstallerServices(ctx, "installer-node", out.Services)
 	}
 	note("restoration", boolText(err == nil))
+	if err != nil {
+		rec.Status = StatusFail
+	}
 }
 
 func (r *runner) installerUpgrade17(ctx context.Context, s *Stack) {

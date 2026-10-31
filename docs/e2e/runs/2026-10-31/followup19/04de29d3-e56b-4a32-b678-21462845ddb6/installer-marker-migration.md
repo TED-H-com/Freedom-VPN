@@ -1,0 +1,299 @@
+# installer-marker-migration
+
+D-116 legacy marker migrated by same-release install
+
+Status: pass
+
+Run: 04de29d3-e56b-4a32-b678-21462845ddb6
+
+Source: fb5b8fcee72bd71b3bd0a4536af9049df4055096
+
+Spec: AT07, ENR-05, D-116
+
+- before_ruleset: {"nftables": [{"metainfo": {"version": "1.0.9", "release_name": "Old Doc Yak #3", "json_schema_version": 1}}, {"table": {"family": "inet", "name": "fvpn_install", "handle": 2}}, {"chain": {"family": "inet", "table": "fvpn_install", "name": "owner", "handle": 1, "comment": "managed-by=fvpn-node-install"}}, {"table": {"family": "inet", "name": "fvpn", "handle": 3}}, {"counter": {"family": "inet", "name": "ctbase", "table": "fvpn", "handle": 1, "packets": 0, "bytes": 0}}, {"counter": {"family": "inet", "name": "ctv6", "table": "fvpn", "handle": 2, "packets": 0, "bytes": 0}}, {"counter": {"family": "inet", "name": "ctin", "table": "fvpn", "handle": 3, "packets": 0, "bytes": 0}}, {"counter": {"family": "inet", "name": "ctbadns", "table": "fvpn", "handle": 159, "packets": 0, "bytes": 0}}, {"counter": {"family": "inet", "name": "ctdeny", "table": "fvpn", "handle": 160, "packets": 0, "bytes": 0}}, {"counter": {"family": "inet", "name": "cthost", "table": "fvpn", "handle": 161, "packets": 0, "bytes": 0}}, {"counter": {"family": "inet", "name": "ctinv", "table": "fvpn", "handle": 162, "packets": 0, "bytes": 0}}, {"counter": {"family": "inet", "name": "ctnodn", "table": "fvpn", "handle": 163, "packets": 0, "bytes": 0}}, {"counter": {"family": "inet", "name": "ctunkd", "table": "fvpn", "handle": 164, "packets": 0, "bytes": 0}}, {"counter": {"family": "inet", "name": "ctunku", "table": "fvpn", "handle": 165, "packets": 0, "bytes": 0}}, {"counter": {"family": "inet", "name": "d_01a1924e8bf57b59bc65ece94dd391ca", "table": "fvpn", "handle": 411, "packets": 8, "bytes": 1519}}, {"counter": {"family": "inet", "name": "nd_01a1924e8bf57b59bc65ece94dd391ca", "table": "fvpn", "handle": 412, "packets": 0, "bytes": 0}}, {"counter": {"family": "inet", "name": "nu_01a1924e8bf57b59bc65ece94dd391ca", "table": "fvpn", "handle": 413, "packets": 0, "bytes": 0}}, {"counter": {"family": "inet", "name": "u_01a1924e8bf57b59bc65ece94dd391ca", "table": "fvpn", "handle": 414, "packets": 8, "bytes": 1113}}, {"set": {"family": "inet", "name": "allowed_v4", "table": "fvpn", "type": "ipv4_addr", "handle": 4, "flags": ["timeout"]}}, {"set": {"family": "inet", "name": "denied_v4", "table": "fvpn", "type": "ipv4_addr", "handle": 166, "flags": ["interval"], "elem": [{"prefix": {"addr": "0.0.0.0", "len": 8}}, {"prefix": {"addr": "10.0.0.0", "len": 8}}, {"prefix": {"addr": "100.64.0.0", "len": 10}}, {"prefix": {"addr": "127.0.0.0", "len": 8}}, {"prefix": {"addr": "169.254.0.0", "len": 16}}, {"prefix": {"addr": "172.16.0.0", "len": 12}}, {"prefix": {"addr": "192.0.0.0", "len": 24}}, {"prefix": {"addr": "192.0.2.0", "len": 24}}, {"prefix": {"addr": "192.88.99.0", "len": 24}}, {"prefix": {"addr": "192.168.0.0", "len": 16}}, {"prefix": {"addr": "198.18.0.0", "len": 15}}, {"prefix": {"addr": "198.51.100.0", "len": 24}}, {"prefix": {"addr": "203.0.113.0", "len": 24}}, {"prefix": {"addr": "224.0.0.0", "len": 3}}]}}, {"set": {"family": "inet", "name": "host_v4", "table": "fvpn", "type": "ipv4_addr", "handle": 167, "flags": ["interval"], "elem": ["192.0.3.24"]}}, {"set": {"family": "inet", "name": "resolver_v4", "table": "fvpn", "type": "ipv4_addr", "handle": 168, "elem": ["192.0.3.53"]}}, {"set": {"family": "inet", "name": "quarantine_fvmb0", "table": "fvpn", "type": "ifname", "handle": 502}}, {"chain": {"family": "inet", "table": "fvpn", "name": "forward", "handle": 539, "type": "filter", "hook": "forward", "prio": -150, "policy": "drop"}}, {"chain": {"family": "inet", "table": "fvpn", "name": "input", "handle": 540, "type": "filter", "hook": "input", "prio": -150, "policy": "accept"}}, {"chain": {"family": "inet", "table": "fvpn", "name": "output", "handle": 541, "type": "filter", "hook": "output", "prio": -150, "policy": "accept"}}, {"chain": {"family": "inet", "table": "fvpn", "name": "postrouting", "handle": 542, "type": "nat", "hook": "postrouting", "prio": 100, "policy": "accept"}}, {"rule": {"family": "inet", "table": "fvpn", "chain": "forward", "handle": 543, "comment": "fvpn_generation=0 fvpn_baseline=1 fvpn_metering=forward_admission_v1", "expr": [{"match": {"op": "==", "left": {"payload": {"protocol": "ip", "field": "saddr"}}, "right": "192.0.2.255"}}, {"match": {"op": "==", "left": {"payload": {"protocol": "ip", "field": "daddr"}}, "right": "192.0.2.255"}}]}}, {"rule": {"family": "inet", "table": "fvpn", "chain": "forward", "handle": 544, "comment": "fvpn_class=01a1924e-4e61-7626-bb8b-147951a6220d:eba7", "expr": [{"match": {"op": "==", "left": {"payload": {"protocol": "ip", "field": "saddr"}}, "right": "192.0.2.255"}}, {"match": {"op": "==", "left": {"payload": {"protocol": "ip", "field": "daddr"}}, "right": "192.0.2.255"}}]}}, {"rule": {"family": "inet", "table": "fvpn", "chain": "forward", "handle": 545, "expr": [{"match": {"op": "==", "left": {"meta": {"key": "iifname"}}, "right": "fvmb0"}}, {"counter": "ctbase"}, {"drop": null}]}}, {"rule": {"family": "inet", "table": "fvpn", "chain": "forward", "handle": 546, "expr": [{"match": {"op": "==", "left": {"meta": {"key": "oifname"}}, "right": "fvmb0"}}, {"counter": "ctbase"}, {"drop": null}]}}, {"rule": {"family": "inet", "table": "fvpn", "chain": "forward", "handle": 547, "expr": [{"match": {"op": "==", "left": {"meta": {"key": "iifname"}}, "right": "fvmb0"}}, {"match": {"op": "==", "left": {"meta": {"key": "nfproto"}}, "right": "ipv6"}}, {"counter": "ctv6"}, {"drop": null}]}}, {"rule": {"family": "inet", "table": "fvpn", "chain": "forward", "handle": 548, "expr": [{"match": {"op": "==", "left": {"meta": {"key": "oifname"}}, "right": "fvmb0"}}, {"match": {"op": "==", "left": {"meta": {"key": "nfproto"}}, "right": "ipv6"}}, {"counter": "ctv6"}, {"drop": null}]}}, {"rule": {"family": "inet", "table": "fvpn", "chain": "input", "handle": 549, "expr": [{"match": {"op": "==", "left": {"meta": {"key": "iifname"}}, "right": "fvmb0"}}, {"counter": "ctin"}, {"drop": null}]}}, {"rule": {"family": "inet", "table": "fvpn", "chain": "input", "handle": 550, "expr": [{"match": {"op": "==", "left": {"payload": {"protocol": "ip", "field": "saddr"}}, "right": {"prefix": {"addr": "100.64.0.0", "len": 10}}}}, {"counter": "ctin"}, {"drop": null}]}}]}
+
+- legacy_ruleset: {"nftables": [{"metainfo": {"version": "1.0.9", "release_name": "Old Doc Yak #3", "json_schema_version": 1}}, {"table": {"family": "inet", "name": "fvpn", "handle": 3}}, {"counter": {"family": "inet", "name": "ctbase", "table": "fvpn", "handle": 1, "packets": 0, "bytes": 0}}, {"counter": {"family": "inet", "name": "ctv6", "table": "fvpn", "handle": 2, "packets": 0, "bytes": 0}}, {"counter": {"family": "inet", "name": "ctin", "table": "fvpn", "handle": 3, "packets": 0, "bytes": 0}}, {"counter": {"family": "inet", "name": "ctbadns", "table": "fvpn", "handle": 159, "packets": 0, "bytes": 0}}, {"counter": {"family": "inet", "name": "ctdeny", "table": "fvpn", "handle": 160, "packets": 0, "bytes": 0}}, {"counter": {"family": "inet", "name": "cthost", "table": "fvpn", "handle": 161, "packets": 0, "bytes": 0}}, {"counter": {"family": "inet", "name": "ctinv", "table": "fvpn", "handle": 162, "packets": 0, "bytes": 0}}, {"counter": {"family": "inet", "name": "ctnodn", "table": "fvpn", "handle": 163, "packets": 0, "bytes": 0}}, {"counter": {"family": "inet", "name": "ctunkd", "table": "fvpn", "handle": 164, "packets": 0, "bytes": 0}}, {"counter": {"family": "inet", "name": "ctunku", "table": "fvpn", "handle": 165, "packets": 0, "bytes": 0}}, {"counter": {"family": "inet", "name": "d_01a1924e8bf57b59bc65ece94dd391ca", "table": "fvpn", "handle": 411, "packets": 8, "bytes": 1519}}, {"counter": {"family": "inet", "name": "nd_01a1924e8bf57b59bc65ece94dd391ca", "table": "fvpn", "handle": 412, "packets": 0, "bytes": 0}}, {"counter": {"family": "inet", "name": "nu_01a1924e8bf57b59bc65ece94dd391ca", "table": "fvpn", "handle": 413, "packets": 0, "bytes": 0}}, {"counter": {"family": "inet", "name": "u_01a1924e8bf57b59bc65ece94dd391ca", "table": "fvpn", "handle": 414, "packets": 8, "bytes": 1113}}, {"set": {"family": "inet", "name": "allowed_v4", "table": "fvpn", "type": "ipv4_addr", "handle": 4, "flags": ["timeout"]}}, {"set": {"family": "inet", "name": "denied_v4", "table": "fvpn", "type": "ipv4_addr", "handle": 166, "flags": ["interval"], "elem": [{"prefix": {"addr": "0.0.0.0", "len": 8}}, {"prefix": {"addr": "10.0.0.0", "len": 8}}, {"prefix": {"addr": "100.64.0.0", "len": 10}}, {"prefix": {"addr": "127.0.0.0", "len": 8}}, {"prefix": {"addr": "169.254.0.0", "len": 16}}, {"prefix": {"addr": "172.16.0.0", "len": 12}}, {"prefix": {"addr": "192.0.0.0", "len": 24}}, {"prefix": {"addr": "192.0.2.0", "len": 24}}, {"prefix": {"addr": "192.88.99.0", "len": 24}}, {"prefix": {"addr": "192.168.0.0", "len": 16}}, {"prefix": {"addr": "198.18.0.0", "len": 15}}, {"prefix": {"addr": "198.51.100.0", "len": 24}}, {"prefix": {"addr": "203.0.113.0", "len": 24}}, {"prefix": {"addr": "224.0.0.0", "len": 3}}]}}, {"set": {"family": "inet", "name": "host_v4", "table": "fvpn", "type": "ipv4_addr", "handle": 167, "flags": ["interval"], "elem": ["192.0.3.24"]}}, {"set": {"family": "inet", "name": "resolver_v4", "table": "fvpn", "type": "ipv4_addr", "handle": 168, "elem": ["192.0.3.53"]}}, {"set": {"family": "inet", "name": "quarantine_fvmb0", "table": "fvpn", "type": "ifname", "handle": 502}}, {"chain": {"family": "inet", "table": "fvpn", "name": "forward", "handle": 539, "type": "filter", "hook": "forward", "prio": -150, "policy": "drop"}}, {"chain": {"family": "inet", "table": "fvpn", "name": "input", "handle": 540, "type": "filter", "hook": "input", "prio": -150, "policy": "accept"}}, {"chain": {"family": "inet", "table": "fvpn", "name": "output", "handle": 541, "type": "filter", "hook": "output", "prio": -150, "policy": "accept"}}, {"chain": {"family": "inet", "table": "fvpn", "name": "postrouting", "handle": 542, "type": "nat", "hook": "postrouting", "prio": 100, "policy": "accept"}}, {"chain": {"family": "inet", "table": "fvpn", "name": "owner", "handle": 551, "comment": "managed-by=fvpn-node-install"}}, {"rule": {"family": "inet", "table": "fvpn", "chain": "forward", "handle": 543, "comment": "fvpn_generation=0 fvpn_baseline=1 fvpn_metering=forward_admission_v1", "expr": [{"match": {"op": "==", "left": {"payload": {"protocol": "ip", "field": "saddr"}}, "right": "192.0.2.255"}}, {"match": {"op": "==", "left": {"payload": {"protocol": "ip", "field": "daddr"}}, "right": "192.0.2.255"}}]}}, {"rule": {"family": "inet", "table": "fvpn", "chain": "forward", "handle": 544, "comment": "fvpn_class=01a1924e-4e61-7626-bb8b-147951a6220d:eba7", "expr": [{"match": {"op": "==", "left": {"payload": {"protocol": "ip", "field": "saddr"}}, "right": "192.0.2.255"}}, {"match": {"op": "==", "left": {"payload": {"protocol": "ip", "field": "daddr"}}, "right": "192.0.2.255"}}]}}, {"rule": {"family": "inet", "table": "fvpn", "chain": "forward", "handle": 545, "expr": [{"match": {"op": "==", "left": {"meta": {"key": "iifname"}}, "right": "fvmb0"}}, {"counter": "ctbase"}, {"drop": null}]}}, {"rule": {"family": "inet", "table": "fvpn", "chain": "forward", "handle": 546, "expr": [{"match": {"op": "==", "left": {"meta": {"key": "oifname"}}, "right": "fvmb0"}}, {"counter": "ctbase"}, {"drop": null}]}}, {"rule": {"family": "inet", "table": "fvpn", "chain": "forward", "handle": 547, "expr": [{"match": {"op": "==", "left": {"meta": {"key": "iifname"}}, "right": "fvmb0"}}, {"match": {"op": "==", "left": {"meta": {"key": "nfproto"}}, "right": "ipv6"}}, {"counter": "ctv6"}, {"drop": null}]}}, {"rule": {"family": "inet", "table": "fvpn", "chain": "forward", "handle": 548, "expr": [{"match": {"op": "==", "left": {"meta": {"key": "oifname"}}, "right": "fvmb0"}}, {"match": {"op": "==", "left": {"meta": {"key": "nfproto"}}, "right": "ipv6"}}, {"counter": "ctv6"}, {"drop": null}]}}, {"rule": {"family": "inet", "table": "fvpn", "chain": "input", "handle": 549, "expr": [{"match": {"op": "==", "left": {"meta": {"key": "iifname"}}, "right": "fvmb0"}}, {"counter": "ctin"}, {"drop": null}]}}, {"rule": {"family": "inet", "table": "fvpn", "chain": "input", "handle": 550, "expr": [{"match": {"op": "==", "left": {"payload": {"protocol": "ip", "field": "saddr"}}, "right": {"prefix": {"addr": "100.64.0.0", "len": 10}}}}, {"counter": "ctin"}, {"drop": null}]}}]}
+
+- legacy_check: {
+  "status": "drifted",
+  "baseline": {
+    "status": "seeded",
+    "manifest_path": "/var/lib/vpn-node/update-staging/01a1924d-93c5-7e6e-879f-528a14cc7a18.manifest.json",
+    "tree_path": "/opt/vpn-node/releases/01a1924d-93c5-7e6e-879f-528a14cc7a18",
+    "probe": {
+      "exit_code": 64,
+      "stderr": "Usage of seed:\n  -config string\n    \tupdater config JSON (paths only, no keys)\n  -manifest string\n    \tretained signed release envelope\n  -pending string\n    \tinstaller pending-release.json to apply\n  -tree string\n    \tresolved current release directory to verify\n"
+    },
+    "seed": {
+      "exit_code": 0,
+      "stderr": "{\"time\":\"2026-10-31T14:12:20.242204007Z\",\"level\":\"INFO\",\"msg\":\"verified installer baseline seeded\",\"release_id\":\"01a1924d-93c5-7e6e-879f-528a14cc7a18\"}\n"
+    }
+  },
+  "os_id": "ubuntu",
+  "os_version": "24.04",
+  "arch": "amd64",
+  "kernel": "Linux 7.0.0-38-generic",
+  "release_id": "01a1924d-93c5-7e6e-879f-528a14cc7a18",
+  "manifest_sha256": "0f32fde0fd482890b50ebf9888470e789b312ff89391d763d4c1060f721b371f",
+  "release_source": "updater_journal",
+  "install_record": {
+    "release_id": "01a1924d-93c5-7e6e-879f-528a14cc7a18",
+    "manifest_sha256": "0f32fde0fd482890b50ebf9888470e789b312ff89391d763d4c1060f721b371f",
+    "release_sequence": "10",
+    "product_version": "1.1.0",
+    "arch": "amd64",
+    "installed_at": "2026-10-31T14:12:08Z",
+    "netbird_package_installed": false
+  },
+  "updater": {
+    "current_release_id": "01a1924d-93c5-7e6e-879f-528a14cc7a18",
+    "state": "",
+    "recovery_required": false,
+    "seeded_baseline": {
+      "release_id": "01a1924d-93c5-7e6e-879f-528a14cc7a18",
+      "manifest_sha256": "0f32fde0fd482890b50ebf9888470e789b312ff89391d763d4c1060f721b371f"
+    }
+  },
+  "units": {
+    "fvpn-agent.service": "inactive",
+    "fvpn-netbird.service": "active",
+    "fvpn-node-netbird-up.service": "active",
+    "fvpn-updater-recover.service": "active",
+    "fvpn-updater.service": "inactive",
+    "fvpn-updater.timer": "inactive",
+    "fvpn-watchdog.service": "inactive"
+  },
+  "directories": [
+    {
+      "path": "/etc/vpn-node",
+      "mode": "0755",
+      "expected": "0755",
+      "ok": true
+    },
+    {
+      "path": "/var/lib/vpn-node",
+      "mode": "0700",
+      "expected": "0700",
+      "ok": true
+    },
+    {
+      "path": "/var/lib/vpn-node/identity",
+      "mode": "0700",
+      "expected": "0700",
+      "ok": true
+    },
+    {
+      "path": "/var/lib/vpn-node/state",
+      "mode": "0700",
+      "expected": "0700",
+      "ok": true
+    },
+    {
+      "path": "/var/lib/vpn-node/update-journal",
+      "mode": "0700",
+      "expected": "0700",
+      "ok": true
+    },
+    {
+      "path": "/var/lib/vpn-node/update-staging",
+      "mode": "0700",
+      "expected": "0700",
+      "ok": true
+    },
+    {
+      "path": "/var/lib/vpn-node/install",
+      "mode": "0700",
+      "expected": "0700",
+      "ok": true
+    },
+    {
+      "path": "/opt/vpn-node",
+      "mode": "0755",
+      "expected": "0755",
+      "ok": true
+    },
+    {
+      "path": "/opt/vpn-node/releases",
+      "mode": "0755",
+      "expected": "0755",
+      "ok": true
+    },
+    {
+      "path": "/run/vpn-node",
+      "mode": "0755",
+      "expected": "0755",
+      "ok": true
+    }
+  ],
+  "lock": {
+    "held": false,
+    "pid": 2282,
+    "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+    "start_time": 3947909
+  },
+  "identity": {
+    "present": true,
+    "incarnation_id": "01a1924d-b2ed-7dae-875c-392d39febfa2",
+    "node_id": "01a1924d-ad8a-75f0-9fab-9ac72ddcc32f"
+  },
+  "usage_store_present": true,
+  "netbird": {
+    "version": "0.82.0",
+    "daemon": "connected"
+  },
+  "installer_marker": {
+    "table": "fvpn_install",
+    "present": false,
+    "legacy_owner": true
+  },
+  "drifts": [
+    "installer_marker",
+    "unit fvpn-watchdog.service inactive",
+    "unit fvpn-agent.service inactive",
+    "unit fvpn-updater.timer inactive"
+  ]
+}
+drifted: installer_marker, unit fvpn-watchdog.service inactive, unit fvpn-agent.service inactive, unit fvpn-updater.timer inactive
+
+- migration: {"Exit":0,"Status":"already_current","Code":"baseline","Incarnation":"01a1924d-b2ed-7dae-875c-392d39febfa2","NodeID":"01a1924d-ad8a-75f0-9fab-9ac72ddcc32f","RetiredMode":"","RetiredHashes":{},"BoundStateBefore":null,"RetiredBoundState":null,"Message":"already_current","Before":{"key_sha256":"089481b80da5d1a59010dc3a87074576a6b4cf6337fbf075f560818bf4c6d518","cert_sha256":"0416b71e0b602e3840c6af2bce5587b83fe79d0b5ad46d009b297034ab90df8c","node_json_sha256":"1ad2927c061be6a7df7ba221187f17c5973a9aff6bcff2556d4ee7b48a19e00e","usage_db_sha256":"3cfaf870df018cb41631bf786d210a90f9c339e362d108d17f00dfe5e7014cae","usage_wal_sha256":"absent","machine_id_sha256":"186cc62b3ea133e7b6da9685430b24e54bb999ea093280f231a8b358af70ce92","current_target":"releases/01a1924d-93c5-7e6e-879f-528a14cc7a18"},"Hashes":{"key_sha256":"089481b80da5d1a59010dc3a87074576a6b4cf6337fbf075f560818bf4c6d518","cert_sha256":"0416b71e0b602e3840c6af2bce5587b83fe79d0b5ad46d009b297034ab90df8c","node_json_sha256":"1ad2927c061be6a7df7ba221187f17c5973a9aff6bcff2556d4ee7b48a19e00e","usage_db_sha256":"3cfaf870df018cb41631bf786d210a90f9c339e362d108d17f00dfe5e7014cae","usage_wal_sha256":"absent","machine_id_sha256":"186cc62b3ea133e7b6da9685430b24e54bb999ea093280f231a8b358af70ce92","current_target":"releases/01a1924d-93c5-7e6e-879f-528a14cc7a18"},"Services":{"fvpn-agent.service":"inactive","fvpn-updater.service":"inactive","fvpn-updater.timer":"inactive","fvpn-watchdog.service":"inactive"}}
+- after_ruleset: {"nftables": [{"metainfo": {"version": "1.0.9", "release_name": "Old Doc Yak #3", "json_schema_version": 1}}, {"table": {"family": "inet", "name": "fvpn", "handle": 3}}, {"counter": {"family": "inet", "name": "ctbase", "table": "fvpn", "handle": 1, "packets": 0, "bytes": 0}}, {"counter": {"family": "inet", "name": "ctv6", "table": "fvpn", "handle": 2, "packets": 0, "bytes": 0}}, {"counter": {"family": "inet", "name": "ctin", "table": "fvpn", "handle": 3, "packets": 0, "bytes": 0}}, {"counter": {"family": "inet", "name": "ctbadns", "table": "fvpn", "handle": 159, "packets": 0, "bytes": 0}}, {"counter": {"family": "inet", "name": "ctdeny", "table": "fvpn", "handle": 160, "packets": 0, "bytes": 0}}, {"counter": {"family": "inet", "name": "cthost", "table": "fvpn", "handle": 161, "packets": 0, "bytes": 0}}, {"counter": {"family": "inet", "name": "ctinv", "table": "fvpn", "handle": 162, "packets": 0, "bytes": 0}}, {"counter": {"family": "inet", "name": "ctnodn", "table": "fvpn", "handle": 163, "packets": 0, "bytes": 0}}, {"counter": {"family": "inet", "name": "ctunkd", "table": "fvpn", "handle": 164, "packets": 0, "bytes": 0}}, {"counter": {"family": "inet", "name": "ctunku", "table": "fvpn", "handle": 165, "packets": 0, "bytes": 0}}, {"counter": {"family": "inet", "name": "d_01a1924e8bf57b59bc65ece94dd391ca", "table": "fvpn", "handle": 411, "packets": 8, "bytes": 1519}}, {"counter": {"family": "inet", "name": "nd_01a1924e8bf57b59bc65ece94dd391ca", "table": "fvpn", "handle": 412, "packets": 0, "bytes": 0}}, {"counter": {"family": "inet", "name": "nu_01a1924e8bf57b59bc65ece94dd391ca", "table": "fvpn", "handle": 413, "packets": 0, "bytes": 0}}, {"counter": {"family": "inet", "name": "u_01a1924e8bf57b59bc65ece94dd391ca", "table": "fvpn", "handle": 414, "packets": 8, "bytes": 1113}}, {"set": {"family": "inet", "name": "allowed_v4", "table": "fvpn", "type": "ipv4_addr", "handle": 4, "flags": ["timeout"]}}, {"set": {"family": "inet", "name": "denied_v4", "table": "fvpn", "type": "ipv4_addr", "handle": 166, "flags": ["interval"], "elem": [{"prefix": {"addr": "0.0.0.0", "len": 8}}, {"prefix": {"addr": "10.0.0.0", "len": 8}}, {"prefix": {"addr": "100.64.0.0", "len": 10}}, {"prefix": {"addr": "127.0.0.0", "len": 8}}, {"prefix": {"addr": "169.254.0.0", "len": 16}}, {"prefix": {"addr": "172.16.0.0", "len": 12}}, {"prefix": {"addr": "192.0.0.0", "len": 24}}, {"prefix": {"addr": "192.0.2.0", "len": 24}}, {"prefix": {"addr": "192.88.99.0", "len": 24}}, {"prefix": {"addr": "192.168.0.0", "len": 16}}, {"prefix": {"addr": "198.18.0.0", "len": 15}}, {"prefix": {"addr": "198.51.100.0", "len": 24}}, {"prefix": {"addr": "203.0.113.0", "len": 24}}, {"prefix": {"addr": "224.0.0.0", "len": 3}}]}}, {"set": {"family": "inet", "name": "host_v4", "table": "fvpn", "type": "ipv4_addr", "handle": 167, "flags": ["interval"], "elem": ["192.0.3.24"]}}, {"set": {"family": "inet", "name": "resolver_v4", "table": "fvpn", "type": "ipv4_addr", "handle": 168, "elem": ["192.0.3.53"]}}, {"set": {"family": "inet", "name": "quarantine_fvmb0", "table": "fvpn", "type": "ifname", "handle": 502}}, {"chain": {"family": "inet", "table": "fvpn", "name": "forward", "handle": 539, "type": "filter", "hook": "forward", "prio": -150, "policy": "drop"}}, {"chain": {"family": "inet", "table": "fvpn", "name": "input", "handle": 540, "type": "filter", "hook": "input", "prio": -150, "policy": "accept"}}, {"chain": {"family": "inet", "table": "fvpn", "name": "output", "handle": 541, "type": "filter", "hook": "output", "prio": -150, "policy": "accept"}}, {"chain": {"family": "inet", "table": "fvpn", "name": "postrouting", "handle": 542, "type": "nat", "hook": "postrouting", "prio": 100, "policy": "accept"}}, {"rule": {"family": "inet", "table": "fvpn", "chain": "forward", "handle": 543, "comment": "fvpn_generation=0 fvpn_baseline=1 fvpn_metering=forward_admission_v1", "expr": [{"match": {"op": "==", "left": {"payload": {"protocol": "ip", "field": "saddr"}}, "right": "192.0.2.255"}}, {"match": {"op": "==", "left": {"payload": {"protocol": "ip", "field": "daddr"}}, "right": "192.0.2.255"}}]}}, {"rule": {"family": "inet", "table": "fvpn", "chain": "forward", "handle": 544, "comment": "fvpn_class=01a1924e-4e61-7626-bb8b-147951a6220d:eba7", "expr": [{"match": {"op": "==", "left": {"payload": {"protocol": "ip", "field": "saddr"}}, "right": "192.0.2.255"}}, {"match": {"op": "==", "left": {"payload": {"protocol": "ip", "field": "daddr"}}, "right": "192.0.2.255"}}]}}, {"rule": {"family": "inet", "table": "fvpn", "chain": "forward", "handle": 545, "expr": [{"match": {"op": "==", "left": {"meta": {"key": "iifname"}}, "right": "fvmb0"}}, {"counter": "ctbase"}, {"drop": null}]}}, {"rule": {"family": "inet", "table": "fvpn", "chain": "forward", "handle": 546, "expr": [{"match": {"op": "==", "left": {"meta": {"key": "oifname"}}, "right": "fvmb0"}}, {"counter": "ctbase"}, {"drop": null}]}}, {"rule": {"family": "inet", "table": "fvpn", "chain": "forward", "handle": 547, "expr": [{"match": {"op": "==", "left": {"meta": {"key": "iifname"}}, "right": "fvmb0"}}, {"match": {"op": "==", "left": {"meta": {"key": "nfproto"}}, "right": "ipv6"}}, {"counter": "ctv6"}, {"drop": null}]}}, {"rule": {"family": "inet", "table": "fvpn", "chain": "forward", "handle": 548, "expr": [{"match": {"op": "==", "left": {"meta": {"key": "oifname"}}, "right": "fvmb0"}}, {"match": {"op": "==", "left": {"meta": {"key": "nfproto"}}, "right": "ipv6"}}, {"counter": "ctv6"}, {"drop": null}]}}, {"rule": {"family": "inet", "table": "fvpn", "chain": "input", "handle": 549, "expr": [{"match": {"op": "==", "left": {"meta": {"key": "iifname"}}, "right": "fvmb0"}}, {"counter": "ctin"}, {"drop": null}]}}, {"rule": {"family": "inet", "table": "fvpn", "chain": "input", "handle": 550, "expr": [{"match": {"op": "==", "left": {"payload": {"protocol": "ip", "field": "saddr"}}, "right": {"prefix": {"addr": "100.64.0.0", "len": 10}}}}, {"counter": "ctin"}, {"drop": null}]}}, {"table": {"family": "inet", "name": "fvpn_install", "handle": 4}}, {"chain": {"family": "inet", "table": "fvpn_install", "name": "owner", "handle": 1, "comment": "managed-by=fvpn-node-install"}}]}
+
+- migrated_check: {
+  "status": "drifted",
+  "baseline": {
+    "status": "seeded",
+    "manifest_path": "/var/lib/vpn-node/update-staging/01a1924d-93c5-7e6e-879f-528a14cc7a18.manifest.json",
+    "tree_path": "/opt/vpn-node/releases/01a1924d-93c5-7e6e-879f-528a14cc7a18",
+    "probe": {
+      "exit_code": 64,
+      "stderr": "Usage of seed:\n  -config string\n    \tupdater config JSON (paths only, no keys)\n  -manifest string\n    \tretained signed release envelope\n  -pending string\n    \tinstaller pending-release.json to apply\n  -tree string\n    \tresolved current release directory to verify\n"
+    },
+    "seed": {
+      "exit_code": 0,
+      "stderr": "{\"time\":\"2026-10-31T14:13:18.831935075Z\",\"level\":\"INFO\",\"msg\":\"verified installer baseline seeded\",\"release_id\":\"01a1924d-93c5-7e6e-879f-528a14cc7a18\"}\n"
+    }
+  },
+  "os_id": "ubuntu",
+  "os_version": "24.04",
+  "arch": "amd64",
+  "kernel": "Linux 7.0.0-38-generic",
+  "release_id": "01a1924d-93c5-7e6e-879f-528a14cc7a18",
+  "manifest_sha256": "0f32fde0fd482890b50ebf9888470e789b312ff89391d763d4c1060f721b371f",
+  "release_source": "updater_journal",
+  "install_record": {
+    "release_id": "01a1924d-93c5-7e6e-879f-528a14cc7a18",
+    "manifest_sha256": "0f32fde0fd482890b50ebf9888470e789b312ff89391d763d4c1060f721b371f",
+    "release_sequence": "10",
+    "product_version": "1.1.0",
+    "arch": "amd64",
+    "installed_at": "2026-10-31T14:12:08Z",
+    "netbird_package_installed": false
+  },
+  "updater": {
+    "current_release_id": "01a1924d-93c5-7e6e-879f-528a14cc7a18",
+    "state": "",
+    "recovery_required": false,
+    "seeded_baseline": {
+      "release_id": "01a1924d-93c5-7e6e-879f-528a14cc7a18",
+      "manifest_sha256": "0f32fde0fd482890b50ebf9888470e789b312ff89391d763d4c1060f721b371f"
+    }
+  },
+  "units": {
+    "fvpn-agent.service": "inactive",
+    "fvpn-netbird.service": "active",
+    "fvpn-node-netbird-up.service": "active",
+    "fvpn-updater-recover.service": "active",
+    "fvpn-updater.service": "inactive",
+    "fvpn-updater.timer": "inactive",
+    "fvpn-watchdog.service": "inactive"
+  },
+  "directories": [
+    {
+      "path": "/etc/vpn-node",
+      "mode": "0755",
+      "expected": "0755",
+      "ok": true
+    },
+    {
+      "path": "/var/lib/vpn-node",
+      "mode": "0700",
+      "expected": "0700",
+      "ok": true
+    },
+    {
+      "path": "/var/lib/vpn-node/identity",
+      "mode": "0700",
+      "expected": "0700",
+      "ok": true
+    },
+    {
+      "path": "/var/lib/vpn-node/state",
+      "mode": "0700",
+      "expected": "0700",
+      "ok": true
+    },
+    {
+      "path": "/var/lib/vpn-node/update-journal",
+      "mode": "0700",
+      "expected": "0700",
+      "ok": true
+    },
+    {
+      "path": "/var/lib/vpn-node/update-staging",
+      "mode": "0700",
+      "expected": "0700",
+      "ok": true
+    },
+    {
+      "path": "/var/lib/vpn-node/install",
+      "mode": "0700",
+      "expected": "0700",
+      "ok": true
+    },
+    {
+      "path": "/opt/vpn-node",
+      "mode": "0755",
+      "expected": "0755",
+      "ok": true
+    },
+    {
+      "path": "/opt/vpn-node/releases",
+      "mode": "0755",
+      "expected": "0755",
+      "ok": true
+    },
+    {
+      "path": "/run/vpn-node",
+      "mode": "0755",
+      "expected": "0755",
+      "ok": true
+    }
+  ],
+  "lock": {
+    "held": false,
+    "pid": 4130,
+    "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+    "start_time": 3953614
+  },
+  "identity": {
+    "present": true,
+    "incarnation_id": "01a1924d-b2ed-7dae-875c-392d39febfa2",
+    "node_id": "01a1924d-ad8a-75f0-9fab-9ac72ddcc32f"
+  },
+  "usage_store_present": true,
+  "netbird": {
+    "version": "0.82.0",
+    "daemon": "connected"
+  },
+  "installer_marker": {
+    "table": "fvpn_install",
+    "present": true,
+    "legacy_owner": false
+  },
+  "drifts": [
+    "unit fvpn-watchdog.service inactive",
+    "unit fvpn-agent.service inactive",
+    "unit fvpn-updater.timer inactive"
+  ]
+}
+drifted: unit fvpn-watchdog.service inactive, unit fvpn-agent.service inactive, unit fvpn-updater.timer inactive

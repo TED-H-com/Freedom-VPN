@@ -30,7 +30,7 @@ func TestE2E_Followup18Native(t *testing.T) {
 	defer cancel()
 	head, _ := exec.CommandContext(ctx, "git", "rev-parse", "HEAD").Output()
 	id := uuid.NewString()
-	r := &runner{t: t, lab: l, runID: id, sourceCommit: strings.TrimSpace(string(head)), dir: filepath.Join(l.root, "docs/e2e/runs", time.Now().UTC().Format("2006-01-02"), "followup18", id)}
+	r := &runner{t: t, lab: l, runID: id, sourceCommit: strings.TrimSpace(string(head)), dir: filepath.Join(l.root, "docs/e2e/runs", time.Now().UTC().Format("2006-01-02"), installerCampaignDirectory(), id)}
 	defer r.finish()
 	s := &Stack{lab: l}
 	must := func(e error) {
@@ -61,9 +61,16 @@ func TestE2E_Followup18Native(t *testing.T) {
 	r.publish(ctx, admin, r.nodeID)
 	r.fixtureServingMember(ctx, admin)
 	if r.flowCounted {
-		r.nativeMTU18(ctx, s)
+		if os.Getenv("FVPN_E2E_FOLLOWUP19") == "1" {
+			r.nativeMTU19(ctx, s)
+		} else {
+			r.nativeMTU18(ctx, s)
+		}
 	} else {
 		r.record(Record{ID: "native-mtu-comparison", Title: "MTU comparison requires counted path", Status: StatusBlocked})
+	}
+	if os.Getenv("FVPN_E2E_FOLLOWUP19") == "1" {
+		return
 	}
 	r.firstOffer18(ctx, s, admin)
 	// Reproduce members F8-01 on a second exit without the primary's
@@ -111,7 +118,7 @@ func TestE2E_Followup18FirstOffer(t *testing.T) {
 	defer cancel()
 	head, _ := exec.CommandContext(ctx, "git", "rev-parse", "HEAD").Output()
 	id := uuid.NewString()
-	r := &runner{t: t, lab: l, runID: id, sourceCommit: strings.TrimSpace(string(head)), dir: filepath.Join(l.root, "docs/e2e/runs", time.Now().UTC().Format("2006-01-02"), "followup18", id)}
+	r := &runner{t: t, lab: l, runID: id, sourceCommit: strings.TrimSpace(string(head)), dir: filepath.Join(l.root, "docs/e2e/runs", time.Now().UTC().Format("2006-01-02"), installerCampaignDirectory(), id)}
 	defer r.finish()
 	raw, err := l.docker(l.node, "cat", "/var/lib/vpn-node/identity/node.json")
 	var identity struct {

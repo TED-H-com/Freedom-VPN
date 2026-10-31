@@ -2,13 +2,16 @@ package main
 
 import (
 	"bufio"
+	"encoding/json"
 	"io"
 	"net"
+	"os"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/probeauth"
+	"github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/streamstats"
 	"github.com/google/uuid"
 )
 
@@ -36,6 +39,32 @@ func (m *memberEcho) serveTCP(ln net.Listener) {
 
 func (m *memberEcho) handleTCP(conn net.Conn) {
 	defer conn.Close()
+	var trace *streamstats.Conn
+	if _, e := os.Stat("/var/lib/fvpn-evidence/enable"); e == nil {
+		trace = streamstats.Wrap(conn)
+		conn = trace
+		f, e := os.OpenFile("/var/lib/fvpn-evidence/echo.jsonl", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0600)
+		if e == nil {
+			done := make(chan struct{})
+			finished := make(chan struct{})
+			go func() {
+				defer close(finished)
+				enc := json.NewEncoder(f)
+				ticker := time.NewTicker(250 * time.Millisecond)
+				defer ticker.Stop()
+				for {
+					select {
+					case <-done:
+						_ = enc.Encode(trace.Snapshot())
+						return
+					case <-ticker.C:
+						_ = enc.Encode(trace.Snapshot())
+					}
+				}
+			}()
+			defer func() { close(done); <-finished; _ = f.Close() }()
+		}
+	}
 	_ = conn.SetDeadline(time.Now().Add(25 * time.Minute))
 	reader := bufio.NewReaderSize(conn, 2048)
 	line, err := readLimitedLine(reader, 80)
@@ -59,6 +88,9 @@ func (m *memberEcho) handleTCP(conn net.Conn) {
 	}
 	for {
 		line, err = readLimitedLine(reader, 1024)
+		if trace != nil {
+			trace.Line(len(line), err == nil, err)
+		}
 		if err != nil {
 			return
 		}
@@ -111,7 +143,7 @@ func readLimitedLine(r *bufio.Reader, max int) (string, error) {
 	for len(buf) <= max {
 		b, err := r.ReadByte()
 		if err != nil {
-			return "", err
+			return string(buf), err
 		}
 		if b == '\n' {
 			return strings.TrimRight(string(buf), "\r"), nil

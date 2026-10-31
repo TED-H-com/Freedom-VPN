@@ -1,0 +1,31 @@
+{
+  "id": "capture-and-boot",
+  "title": "Kernel identity and complete on-disk capture export",
+  "spec": [
+    "AT23",
+    "ISO01",
+    "F9-06"
+  ],
+  "status": "pass",
+  "observations": [
+    {
+      "name": "agent_boot_equals_kernel_and_lab",
+      "detail": "true"
+    },
+    {
+      "name": "origin_pcap",
+      "detail": "{\"bytes\":\"204\",\"sha256\":\"0e5b6a4775ca5d084bcec7f1c5bb1db6e43c267c45f7a1b8b2730939eb51da55\"}"
+    },
+    {
+      "name": "large_export",
+      "detail": "{\"bytes\":\"3145728\",\"sha256\":\"bbd05cf6097ac9b1f89ea29d2542c1b7b67ee46848393895f5a9e43fa1f621e5\"}"
+    },
+    {
+      "name": "diagnostic_overflow_explicit",
+      "detail": "true"
+    }
+  ],
+  "at": "2026-10-31T14:07:30Z",
+  "run_id": "d6aaa798-6c39-49f1-8fa9-5f84f696ac91",
+  "source_commit": "a9ad1c471720a2df27f7d4aaa3a0ae1a565fa2cd"
+}
