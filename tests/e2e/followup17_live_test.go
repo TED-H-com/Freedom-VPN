@@ -201,8 +201,9 @@ func (r *runner) installerCapture17(ctx context.Context, s *Stack) {
 	kernel, ke := r.lab.docker(c, "cat", "/proc/sys/kernel/random/boot_id")
 	beat, be := r.lab.docker(c, "cat", "/run/vpn-node/heartbeat")
 	regular, re := r.lab.docker(s.lab.prefix+"-node", "cat", "/etc/vpn-node/boot-id")
+	regularKernel, rke := r.lab.docker(s.lab.prefix+"-node", "cat", "/proc/sys/kernel/random/boot_id")
 	note := recPathNote(&rec)
-	aligned := ke == nil && be == nil && re == nil && bytes.Equal(kernel, regular) && strings.Contains(string(beat), "boot_id "+strings.TrimSpace(string(kernel)))
+	aligned := ke == nil && be == nil && re == nil && rke == nil && bytes.Equal(regularKernel, regular) && strings.Contains(string(beat), "boot_id "+strings.TrimSpace(string(kernel)))
 	note("agent_boot_equals_kernel_and_lab", boolText(aligned))
 	// Capture bounded local loopback traffic, independent of node capture tools.
 	origin := s.lab.prefix + "-origin"
@@ -310,7 +311,12 @@ func (r *runner) installerUpgrade17(ctx context.Context, s *Stack) {
 		State  string            `json:"state"`
 		Health map[string]string `json:"health"`
 	}
-	if statusErr == nil && json.Unmarshal(status, &v) == nil && v.State == "succeeded" && !bytes.Equal(before, after) && len(v.Health) > 0 {
+	decoded := json.Unmarshal(status, &v) == nil
+	healthy := true
+	for _, check := range []string{"processes", "identity_and_state", "internet_only", "dns_policy", "tunnel_probe"} {
+		healthy = healthy && v.Health[check] == "passed"
+	}
+	if statusErr == nil && decoded && v.State == "succeeded" && !bytes.Equal(before, after) && healthy {
 		rec.Status = StatusPass
 	}
 }
