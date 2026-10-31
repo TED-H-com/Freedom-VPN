@@ -71,8 +71,8 @@ wait. No service stop, start, switch or new epoch occurs on handshake failure.
 Before publishing the latch, the updater atomically writes and fsyncs a private
 `meter-wait-<txn>` note in its journal directory with its boot ID, start, deadline
 and opaque latch identity. The agent echoes this identity only after its barrier
-completes. `FileGate.Block` preserves an existing identity; `Unblock` removes the latch and fsyncs the
-parent. A later block has another identity. Missing, replaced or unreadable
+completes. `FileGate.Block` preserves an existing identity; `Unblock` removes
+the latch and fsyncs the parent. A later block has another identity. Missing, replaced or unreadable
 latches discard the pending sample, including an unblock/reblock between polls.
 The updater checks the latch before and after each checkpoint read.
 
@@ -85,8 +85,8 @@ durable sequence are refused. Deadline checks surround each read as well.
 The standalone `FileMeter.FinalSample` remains a legacy decoder without a
 persisted identity and refuses the correlated format. Engine uses the same
 single-read decoder with its validated wait identity; calling the standalone
-method cannot substitute for the journaled handshake. The updater never writes or deletes the agent's
-checkpoint, never fabricates sequence numbers and never repairs meter state.
+method cannot substitute for the journaled handshake. The updater never writes
+or deletes the agent's checkpoint, never fabricates sequence numbers and never repairs meter state.
 
 | Failure | Sealed receipt and local diagnostic |
 |---|---|
@@ -103,8 +103,9 @@ retained without restart. The local transaction finishes as nondestructive
 `rolled_back`, with job/result outcome `failed` and the durable gate blocked.
 Both initial `apply` and replay of this sealed pre-stop failure exit 1 with
 `outcome=failed` and the error code on stderr; `recover` of the blocked failure
-exits 2. Destructive recovery-required failures retain exit 2. Neither recovery nor a checkpoint arriving after the deadline reopens the
-sealed job or changes its receipt bytes.
+exits 2. Destructive recovery-required failures retain exit 2. Neither recovery
+nor a checkpoint arriving after the deadline reopens the sealed job or changes
+its receipt bytes.
 
 Recovery at `prepared`/`blocked` retains the original deadline and rereads the
 current latch and checkpoint. It never republishes a missing handshake latch
