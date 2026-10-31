@@ -1,21 +1,28 @@
-# Native transport and DNS evidence — Follow-up 9
+# Native transport and DNS evidence — Follow-up 10
 
-Run `11e305fe-6360-4dbd-95b1-67274aa4988c`, harness `49fbb48e013b824c4ce107d3cb551db79b915b42`, product baseline `7e044c71` (agent-core 25 #312, devstack 18 #313, dns-publish 8 #309 and netlab 18), assigned `w4-members / 24000`.
+Run `2be2d32f-bfd9-46f5-bf29-afaa6617ae94`, harness `731be5a7af7657660d96c240695747a23a3f5c96`, product baseline `d3e9a0f1` (agent-core 27 #325, wire-nodes 32 #321, netlab 19 #318; devstack 18 and dns-publish 8 retained), assigned `w4-members / 24000`.
 
 All family labels below refer to underlay availability. The payload destination is IPv4. D-123 permits an IPv6Block/no-leak assertion and IPv4 completion at MTU 1280; it supplies no IPv6 end-to-end MTU/PMTU row. Independent no-leak and IPv4 ICMP traversal evidence: [netlab follow-up 18](../../../poc/G2-f802-mtu1280-2026-10-31.md).
 
 | Native row | Selected underlay before → after | Bytes / requested | Milliseconds | Upload / download delta | Result |
 |---|---|---:|---:|---:|---|
-| native ipv4 MTU 1500 transfer | ipv4 → ipv4 | 64064 / 64064 | 2 | 66612 / 68035 | pass |
-| native ipv6 MTU 1500 transfer | ipv6 → ipv6 | 64064 / 64064 | 1 | 66924 / 68087 | pass |
-| native dual MTU 1500 transfer | ipv6 → ipv6 | 64064 / 64064 | 1 | 66196 / 68191 | pass |
-| native dual MTU 1280 transfer | ipv4 → ipv4 | 64064 / 64064 | 1 | 67652 / 68139 | pass |
+| native ipv4 MTU 1500 transfer | ipv4 → ipv4 | 64064 / 64064 | 1 | 67392 / 68191 | pass |
+| native ipv6 MTU 1500 transfer | ipv6 → ipv6 | 64064 / 64064 | 1 | 66612 / 68191 | pass |
+| native dual MTU 1500 transfer | ipv4 → ipv4 | 64064 / 64064 | 1 | 66924 / 68087 | pass |
+| native dual MTU 1280 transfer | ipv4 → ipv4 | 64064 / 64064 | 1 | 67236 / 68243 | pass |
 
-The original F8-02 failure (11,011/64,064 bytes in 12,011 ms) remains archived and unattributed. Devstack 18 captured failures with either underlay family, with and without reconnect. Netlab completes IPv4 at 1280; neither owner establishes whether the original native partial transfer is a NetBird defect or fixture echo/read behavior. See [dated requests](requests.md).
+The original F8-02 failure (11,011/64,064 bytes in 12,011 ms) remains archived and unattributed. Devstack 18 captured failures with either underlay family, with and without reconnect. [Netlab 19](../../../poc/G2-f802-native-attribution-2026-10-31.md) establishes no single transport cause. Devstack 19 owns the exact-sequence header decode/capture and endpoint read/write counts. A later MTU-1280 pass is no fix proof. See [dated requests](requests.md).
 
 [Complete restart capture](AT09-restart.json) retains all 90 seconds, boot/final nft/tc, heartbeats, central observations and redacted agent log. Historical rejections are retained; no topology/state/generation repair is performed.
 
-Restart: desired 30 → 30, applied 30 → 30; restart `2026-10-31T12:06:31.816656225Z`, fresh serving `2026-10-31T12:06:47.545258Z` (15.729 s), first counted byte `2026-10-31T12:06:53.190469871Z` (21.374 s). Composite recovery/lease assertion: **fail** because it includes the D-067 mixed-state predicate. The generation, new populated lease, fresh serving and counted-traffic evidence close F8-01; F9-01 preserves the separate reporting-contract failure.
+Restart: desired 29 → 29, applied 29 → 29; restart `2026-10-31T14:00:14.473094656Z`, fresh serving `2026-10-31T14:00:30.224689Z` (15.752 s), first counted byte `2026-10-31T14:00:35.830146766Z` (21.357 s). Recovery assertion: **pass**.
+
+**F10-04:** the requested exact generation-30 reproduction was not obtained;
+the unchanged full sequence produced 29. The same-generation recovery and D-126
+composition pass do not waive this qualification gap or full AT09 blockers.
+The mixed report at receiver time `14:00:15.201584Z` retains both reasons,
+`TC_FOREIGN_FILTER` on all three dependent checks and the separate AWAITING
+lease error. All three provisional reports pass; none claims `lease_expired`.
 
 | AT20 native query | Backend row / scope | RCODE | Answer types | SOA / TTL | Result |
 |---|---|---:|---|---|---|
@@ -57,3 +64,10 @@ RCODE 0 with zero answers and SOA is NODATA, never NXDOMAIN. Synthetic filtering
 | AT22 node last-good block response | F8-A / F8-TTL5 | 3 | [] | True / 5 | pass |
 
 All platform/QUIC unavailable selectors remain blocked. [OPERATORS.md](OPERATORS.md) retains the required real-device procedures. Native distribution remains TEST ONLY. DNS wording closure does not close IDNA, platform, production distribution, URL privacy or retention gaps.
+
+**F10-03 cache failure:** the initial positive answer has TTL 10, but the
+before-TTL query at `13:52:12.96280019Z` already returns the changed private
+address class. The negative control remains NXDOMAIN/SOA TTL 1; after-TTL
+controls pass. [Capture](F10-03-cache.json) retains the authority-only change and
+query results. The table above remains unchanged in its expected RCODE/SOA/TTL
+semantics; no failed cache row is promoted by passing RR filtering rows.
