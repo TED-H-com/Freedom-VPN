@@ -1143,20 +1143,23 @@ func (s *liveSuite) measurePerIncarnationRetainedUsage() incarnationRetentionMea
 	if err := os.MkdirAll(tokenDir, 0o700); err != nil {
 		s.t.Fatalf("ENR-03 mkdir %s: %v", tokenDir, err)
 	}
+	// Pre-arm pause-agent before writing enrollment.token so fvpn-agent enroll completes
+	// (writing status.json="enrolled" and identity/node.json) without starting fvpn-agent run
+	// (so GET /api/v1/agent/usage-checkpoint is not called yet and newInc2 has through=null).
+	if err := os.WriteFile(filepath.Join(tokenDir, "pause-agent"), []byte("1\n"), 0o600); err != nil {
+		s.t.Fatalf("ENR-03 write pause-agent failed: %v", err)
+	}
 	tokenPath := filepath.Join(tokenDir, "enrollment.token")
 	if err := os.WriteFile(tokenPath+".tmp", []byte(token+"\n"), 0o600); err != nil || os.Rename(tokenPath+".tmp", tokenPath) != nil {
 		s.t.Fatalf("ENR-03 write enrollment.token failed: %v", err)
 	}
 
-	// Wait for fvpn-agent's first bootstrap step to write setup.key (before netbird up creates fvmb0
-	// and before fvpn-agent can admit forwarding or sample usage on newInc2), then pause the agent.
 	if !s.waitFor(60*time.Second, func() bool {
-		_, code, err := s.execInContainer("node2", "test", "-s", "/var/lib/vpn-node/identity/setup.key")
-		return err == nil && code == 0
+		raw, code, err := s.execInContainer("node2", "cat", "/var/lib/vpn-node/e2e/status.json")
+		return err == nil && code == 0 && strings.Contains(string(raw), `"enrolled"`)
 	}) {
-		s.t.Fatalf("ENR-03 node2 reinstall setup.key timed out")
+		s.t.Fatalf("ENR-03 node2 reinstall status.json=enrolled timed out")
 	}
-	s.stopNodeAgent("node2")
 
 	identRaw, identCode, identErr := s.execInContainer("node2", "cat", "/var/lib/vpn-node/identity/node.json")
 	var newIdent struct {
@@ -1171,7 +1174,7 @@ func (s *liveSuite) measurePerIncarnationRetainedUsage() incarnationRetentionMea
 	s.incarnation2ID = newInc2
 	s.node2Client = s.buildNodeMTLSClient("node2")
 
-	// 5. Inspect GET /api/v1/admin/nodes/{node2_id}/incarnations and member usage immediately after reinstall
+	// 5. Inspect GET /api/v1/admin/nodes/{node2_id}/incarnations and member usage immediately after reinstall (before fvpn-agent run initializes a checkpoint)
 	incReinstalledResp := s.apiCall(s.admin, http.MethodGet, "/api/v1/admin/nodes/"+s.node2ID.String()+"/incarnations", nil, nil)
 	var incReinstalled api.NodeIncarnationList
 	_ = json.Unmarshal(incReinstalledResp.body, &incReinstalled)
@@ -1197,13 +1200,15 @@ func (s *liveSuite) measurePerIncarnationRetainedUsage() incarnationRetentionMea
 		s.t.Fatalf("ENR-03 post-reinstall check failed: inc=%+v memBefore=%+v memAfter=%+v", incReinstalled, memBefore.Totals, memReinstalled.Totals)
 	}
 
-	// Wait for node2's NetBird subshell to finish bringing fvmb0 up using setup.key before step 6
+	// Unpause node2 agent so fvpn-agent run writes setup.key and NetBird brings fvmb0 up before step 6
+	s.startNodeAgent("node2")
 	if !s.waitFor(180*time.Second, func() bool {
 		raw, code, err := s.execInContainer("node2", "cat", "/var/lib/vpn-node/e2e/netbird.json")
 		return err == nil && code == 0 && strings.Contains(string(raw), `"netbird_up"`)
 	}) {
 		s.t.Fatalf("ENR-03 node2 reinstall netbird_up timed out")
 	}
+	s.stopNodeAgent("node2")
 
 	// 6. Publish node2 under newInc2, probe data path, ingest usage on newInc2 via newInc2's mTLS identity, and verify retained vs new usage
 	s.exit2ID, s.exit2NetID = s.configureAndPublishNode("node2", s.node2ID, newInc2, s.node2Client, 15000000, 8000000)
