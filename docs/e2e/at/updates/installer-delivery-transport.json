@@ -1,0 +1,130 @@
+{
+  "run_id": "daddad24-b6f7-4c32-ba8e-1c7d24f76ea2",
+  "source_commit": "3ac13f7e115edf22e2ec9d3a6450733ec1fb7b6a",
+  "scope": "Real central route logs through installer extension completion, before regular node enrollment; no other update producer exists in this interval",
+  "logs": [
+    {
+      "time": "2026-10-31T18:17:13.346523789Z",
+      "msg": "http request",
+      "request_id": "01a1932e-157b-7100-adda-a1d6dc538646",
+      "route": "POST /api/v1/agent/update-results",
+      "status": 202
+    },
+    {
+      "time": "2026-10-31T18:17:14.244516182Z",
+      "msg": "http request",
+      "request_id": "01a1932e-1902-73c4-81e6-9e062566df3e",
+      "route": "POST /api/v1/agent/update-results",
+      "status": 202
+    },
+    {
+      "time": "2026-10-31T18:17:14.33527038Z",
+      "msg": "http request",
+      "request_id": "01a1932e-195c-79ea-9209-2a12eb3e1ac9",
+      "route": "POST /api/v1/agent/update-results",
+      "status": 202
+    },
+    {
+      "time": "2026-10-31T18:17:14.417539732Z",
+      "msg": "http request",
+      "request_id": "01a1932e-19af-761d-a0f9-ac64e08e8fd6",
+      "route": "POST /api/v1/agent/update-results",
+      "status": 202
+    },
+    {
+      "time": "2026-10-31T18:17:14.5234823Z",
+      "msg": "http request",
+      "request_id": "01a1932e-1a18-766d-a64a-77b7cd43f93b",
+      "route": "POST /api/v1/agent/update-results",
+      "status": 409
+    },
+    {
+      "time": "2026-10-31T18:17:14.610026239Z",
+      "msg": "http request",
+      "request_id": "01a1932e-1a70-72fd-975d-e40644147fbd",
+      "route": "POST /api/v1/agent/update-results",
+      "status": 409
+    },
+    {
+      "time": "2026-10-31T18:17:45.238810127Z",
+      "msg": "http request",
+      "request_id": "01a1932e-920c-72dd-8c26-11de8c4b8ca9",
+      "route": "POST /api/v1/agent/update-results",
+      "status": 202
+    },
+    {
+      "time": "2026-10-31T18:17:45.82390839Z",
+      "msg": "http request",
+      "request_id": "01a1932e-945d-722d-837d-5b51e5dbb254",
+      "route": "POST /api/v1/agent/update-results",
+      "status": 202
+    },
+    {
+      "time": "2026-10-31T18:17:45.94612436Z",
+      "msg": "http request",
+      "request_id": "01a1932e-94d4-76b1-b4f7-026354f9e544",
+      "route": "POST /api/v1/agent/update-results",
+      "status": 202
+    },
+    {
+      "time": "2026-10-31T18:17:46.02948359Z",
+      "msg": "http request",
+      "request_id": "01a1932e-952b-7763-b436-99688a774597",
+      "route": "POST /api/v1/agent/update-results",
+      "status": 202
+    },
+    {
+      "time": "2026-10-31T18:17:46.12022335Z",
+      "msg": "http request",
+      "request_id": "01a1932e-9585-7d64-b8d9-681f92e2a83a",
+      "route": "POST /api/v1/agent/update-results",
+      "status": 202
+    },
+    {
+      "time": "2026-10-31T18:17:46.190290846Z",
+      "msg": "http request",
+      "request_id": "01a1932e-95cb-76fe-9f19-983c4898736a",
+      "route": "POST /api/v1/agent/update-results",
+      "status": 202
+    },
+    {
+      "time": "2026-10-31T18:17:46.279515708Z",
+      "msg": "http request",
+      "request_id": "01a1932e-9625-7557-a741-9afde7d108f8",
+      "route": "POST /api/v1/agent/update-results",
+      "status": 409
+    }
+  ],
+  "manual_contract_stimuli": {
+    "success_submission": 202,
+    "keyed_exact_replay": 202,
+    "new_key_exact_replay": 202,
+    "modified_replay": 409,
+    "wrong_job_id": 409,
+    "failure_submission": 202,
+    "rollback_correction": 202,
+    "first_receipt_after_correction": 202,
+    "correction_exact_replay": 202,
+    "correction_new_key_replay": 202,
+    "third_outcome_conflict": 409
+  },
+  "automatic_result_posts": 2,
+  "automatic_success_posts": 1,
+  "automatic_failure_posts": 1,
+  "local_counts_before_manual_replays": {
+    "history": 1,
+    "outbox": 0
+  },
+  "success_ack": {
+    "accepted": true,
+    "accepted_as_history": false,
+    "applied_to_current_observation": true,
+    "observed_update_generation": "0",
+    "received_at": "2026-10-31T18:17:13.343497Z",
+    "result_id": "c14779ae-bf73-5a58-ae3c-3236ffb604f2"
+  },
+  "no_repeat_flush_post": true,
+  "at": "2026-10-31T18:17:46Z",
+  "explanation": "13 result-route requests: 11 explicitly recorded curl contract stimuli plus one automatic success and one automatic stopped-producer failure. First automatic success precedes every curl stimulus; the stored ACK received_at matches the first request. Repeated product flush produces no additional POST. HTTP replay stimuli intentionally retransmit the same receipt and are counted separately.",
+  "capture": "docker logs fvpn-w4-updates-control, JSON records with route POST /api/v1/agent/update-results from stack creation through the installer evidence completion second (exclusive 2026-10-31T18:17:47Z). Export only time, message, request ID, route and status; no request bodies or credentials."
+}

@@ -42,7 +42,7 @@ def main():
                 ['go', 'vet', '-tags', 'e2e', './tests/e2e/at/updates'],
                 ['go', 'run', 'honnef.co/go/tools/cmd/staticcheck@v0.8.2', './tests/e2e/at/updates'],
                 ['go', 'run', 'honnef.co/go/tools/cmd/staticcheck@v0.8.2', '-tags', 'e2e', './tests/e2e/at/updates'],
-                ['go', 'test', '-tags', 'e2e', './tests/e2e/at/updates', '-run', '^(TestUpdatesFollowupEvidence|TestD098_Followup9ArchivePins)$'],
+                ['go', 'test', '-tags', 'e2e', './tests/e2e/at/updates', '-run', '^(TestUpdatesFollowupEvidence|TestD098_Followup9ArchivePins|TestD132_Followup10ArchivePins)$'],
             ]:
                 code = run(args, env)
                 if code:

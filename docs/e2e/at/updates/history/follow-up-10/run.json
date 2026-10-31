@@ -1,0 +1,24 @@
+{
+  "run_id": "695f977c-b587-4768-88f1-0514f3a4f1ac",
+  "source_commit": "0df8599dc84d4b85e48182f20aa4b0fc741bc72a",
+  "product_main": "fb5e002549f79e8ef61bebcf42cce1678ab65cb1",
+  "at": "2026-10-31T15:30:11Z",
+  "prefix": "w4-updates",
+  "port_base": 42000,
+  "regular_cases": {
+    "AT23": "blocked",
+    "AT24": "blocked",
+    "AT25": "blocked",
+    "AT26": "blocked",
+    "AT27": "blocked"
+  },
+  "installer_extension": "pass",
+  "live_make_exit": 2,
+  "live_go_test_exit": 1,
+  "product_sources_changed": false,
+  "pass_claims": "Only this run. Installer extension passes with an explicit reporting adapter. Regular AT23 fails its candidate identity prerequisite; AT24–AT27 are blocked. No F9 pass carried forward.",
+  "requests": [
+    "F10-01",
+    "F10-02"
+  ]
+}
