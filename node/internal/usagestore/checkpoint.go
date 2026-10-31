@@ -15,6 +15,7 @@ type MeterCheckpoint struct {
 	LastDurableEventSeq decstr.U64 `json:"last_durable_event_seq"`
 	CentralAckedThrough decstr.U64 `json:"central_acked_through"`
 	NewMeterEpochID     string     `json:"new_meter_epoch_id"`
+	BarrierID           string     `json:"barrier_id,omitempty"`
 }
 
 // ClosedCheckpoint reads the epoch close and both sequence watermarks in one

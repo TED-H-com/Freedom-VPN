@@ -100,6 +100,13 @@ func TestD118_ENR05_VerifiedReenrollmentHandsOffFinalSample(t *testing.T) {
 	if err := next.Boot(t.Context()); err != nil {
 		t.Fatal(err)
 	}
+	// Holding the node lock must prevent retirement, even after verified
+	// identity installation. No meter/uploader for the new stream may start.
+	if next.usage != nil || next.usageOnce || next.loopCancel != nil {
+		t.Fatal("retirement escaped the node lock")
+	}
+	lock.Release()
+	next.ensureUsage(t.Context())
 	stopUsageLoops(t, r)
 	if next.usage == nil || next.usagePersist {
 		t.Fatal("production adoption hook failed")
@@ -183,6 +190,21 @@ func TestD118_ENR05_VerifiedReenrollmentHandsOffFinalSample(t *testing.T) {
 	head, err = next.usage.Head(t.Context())
 	if err != nil || head.AckedThrough != 2 {
 		t.Fatal("current ACK", head, err)
+	}
+	retiredPosts := 0
+	for _, body := range r.srv.UsageBodies() {
+		var stream struct {
+			Origin string `json:"origin_incarnation_id"`
+		}
+		if err := json.Unmarshal(body, &stream); err != nil {
+			t.Fatal(err)
+		}
+		if stream.Origin == origin.String() {
+			retiredPosts++
+		}
+	}
+	if retiredPosts != 1 {
+		t.Fatalf("historical attribution submitted %d times after ACK", retiredPosts)
 	}
 	// Same verified incarnation has now reopened twice; neither retired itself
 	// nor rotated the prior stream again. The ledger file stayed in place.
