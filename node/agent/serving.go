@@ -45,22 +45,48 @@ func (e *Engine) verifyCurrentServing(ctx context.Context) bool {
 	if !e.serving {
 		return true
 	}
+	if e.expireServing(ctx) {
+		return false
+	}
 	if e.appliedModel == nil {
 		e.rejectServing(ctx, enforce.Model{}, enforce.ServingEvidence{}, errors.New("missing applied model"))
 		return false
 	}
-	return e.verifyServingModel(ctx, *e.appliedModel, e.appliedAssignments)
+	if !e.verifyServingModel(ctx, *e.appliedModel, e.appliedAssignments) {
+		return false
+	}
+	// The live read may straddle expiry. It proves rules, not a renewed lease.
+	return !e.expireServing(ctx)
+}
+
+func (e *Engine) expireServing(ctx context.Context) bool {
+	if !e.serving || (e.policyExpires > 0 && e.clock.Mono() < e.policyExpires) {
+		return false
+	}
+	cleanup, cancel := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
+	defer cancel()
+	e.withdraw(cleanup)
+	e.decision = Decide(e.input())
+	e.lastObs = time.Time{}
+	return true
 }
 
 // rejectServing is the common withdrawal point for Apply and live reads.
-// The exact model and evidence remain available here for the D-090 quarantine
-// consumer in follow-up 22. Today withdrawal installs the existing baseline;
-// it does not remove or neutralize a foreign ingress redirect.
-func (e *Engine) rejectServing(ctx context.Context, _ enforce.Model, _ enforce.ServingEvidence, err error) {
+// Quarantine precedes withdrawal and always uses the retained applied model.
+func (e *Engine) rejectServing(ctx context.Context, _ enforce.Model, evidence enforce.ServingEvidence, err error) {
 	e.noteApply(err)
 	// A failed/canceled read must still be able to install the baseline.
 	cleanupCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
 	defer cancel()
+	var check *enforce.CheckError
+	if errors.As(err, &check) && check.Reason == enforce.ReasonTCForeignFilter {
+		e.quarantinePending = true
+		e.memberPathPending = true
+		e.recordForeign(evidence)
+	}
+	if e.quarantinePending {
+		e.quarantine(cleanupCtx)
+	}
 	e.withdraw(cleanupCtx)
 	e.decision = Decide(e.input())
 	e.lastObs = time.Time{}
@@ -71,11 +97,47 @@ func (e *Engine) rejectServing(ctx context.Context, _ enforce.Model, _ enforce.S
 // a failure also queues and delivers a corrected observation on this step.
 func (e *Engine) finishServingStep(ctx context.Context) {
 	ok := e.verifyCurrentServing(ctx)
+	if !e.serving {
+		e.auditBlocked(ctx)
+	}
+	if !e.serving && e.quarantinePending {
+		cleanup, cancel := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
+		e.quarantine(cleanup)
+		cancel()
+		e.decision = Decide(e.input())
+		ok = false
+	}
 	e.beat()
-	if !ok {
+	if !ok || (e.identityFrozen && e.lastObs.IsZero()) {
 		reportCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
 		defer cancel()
 		_ = e.observe(reportCtx)
 		_ = e.flush(reportCtx)
 	}
+}
+
+// A baseline is not proof that an ingress redirect disappeared. Audit the
+// retained member path even on revoked, canceled and already-blocked returns.
+func (e *Engine) auditBlocked(ctx context.Context) {
+	if e.appliedModel == nil {
+		return
+	}
+	readCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), e.servingReadTimeout())
+	defer cancel()
+	ev, err := e.plane.VerifyServing(readCtx, *e.appliedModel, e.appliedAssignments)
+	var check *enforce.CheckError
+	if errors.As(err, &check) && check.Reason == enforce.ReasonTCForeignFilter {
+		e.noteApply(err)
+		e.recordForeign(ev)
+		e.quarantinePending, e.memberPathPending = true, true
+	}
+	if ev.Quarantined {
+		e.quarantinePending, e.memberPathPending = true, true
+	}
+}
+
+// Retained solely for containment auditing; never used as desired state.
+type retainedApplied struct {
+	Model       enforce.Model        `json:"model"`
+	Assignments map[uuid.UUID]uint16 `json:"assignments"`
 }

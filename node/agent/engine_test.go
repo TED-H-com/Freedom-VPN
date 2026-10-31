@@ -39,6 +39,13 @@ type memPlane struct {
 	calls     []planeCall
 }
 
+func (m *memPlane) Quarantine(_ context.Context, model enforce.Model) (enforce.QuarantineEvidence, error) {
+	return enforce.QuarantineEvidence{Quarantined: true, Recorded: true, Baseline: enforce.BaselineEvidence{Installed: true, Verified: true}}, nil
+}
+func (m *memPlane) MemberPath(_ context.Context, _ enforce.Model, _ *MemberPath) (MemberPath, error) {
+	return MemberPath{}, nil
+}
+
 func (m *memPlane) VerifyServing(ctx context.Context, _ enforce.Model, _ map[uuid.UUID]uint16) (enforce.ServingEvidence, error) {
 	return enforce.ServingEvidence{}, ctx.Err()
 }
@@ -51,7 +58,7 @@ func (m *memPlane) Apply(_ context.Context, model enforce.Model, _ map[string]en
 	m.applies++
 	m.last = model
 	m.calls = append(m.calls, planeCall{kind: "apply", model: model})
-	res := enforce.ApplyResult{Plan: plan}
+	res := enforce.ApplyResult{Plan: plan, Verified: true}
 	if model.Probe != nil {
 		// The real apply returns these diagnostic counters. The agent must
 		// not copy them into member usage.
