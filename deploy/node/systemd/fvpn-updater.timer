@@ -1,0 +1,13 @@
+[Unit]
+Description=Freedom VPN node updater schedule
+# The interval is 待實測. Five minutes is a lab default, not an SLO (§13.6).
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=5min
+AccuracySec=1min
+Persistent=true
+Unit=fvpn-updater.service
+
+[Install]
+WantedBy=timers.target
