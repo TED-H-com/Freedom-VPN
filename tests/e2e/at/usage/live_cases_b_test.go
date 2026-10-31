@@ -351,7 +351,7 @@ func (s *liveSuite) evalAT19(t *testing.T) Record {
 	// Ensure outbox and node generations are settled before Transition 1
 	_ = s.waitFor(15*time.Second, func() bool {
 		var pending int
-		_ = s.pool.QueryRow(s.ctx, `SELECT count(*) FROM outbox_events WHERE delivered_at IS NULL AND dead_lettered_at IS NULL AND event_type NOT LIKE '%.reconcile' AND event_type <> 'devices.discover'`).Scan(&pending)
+		_ = s.pool.QueryRow(s.ctx, `SELECT count(*) FROM outbox_events WHERE delivered_at IS NULL AND dead_lettered_at IS NULL AND (event_type LIKE 'fup.%' OR event_type LIKE 'policy.%')`).Scan(&pending)
 		return pending == 0
 	})
 	_, _, _, _ = s.ackNodeGeneration(s.nodeID, s.incarnationID, s.agentClient, 0)
@@ -568,7 +568,7 @@ func (s *liveSuite) evalAT19(t *testing.T) Record {
 		}
 		if !s.waitFor(20*time.Second, func() bool {
 			var pending int
-			_ = s.pool.QueryRow(s.ctx, `SELECT count(*) FROM outbox_events WHERE delivered_at IS NULL AND dead_lettered_at IS NULL AND event_type NOT LIKE '%.reconcile' AND event_type <> 'devices.discover'`).Scan(&pending)
+			_ = s.pool.QueryRow(s.ctx, `SELECT count(*) FROM outbox_events WHERE delivered_at IS NULL AND dead_lettered_at IS NULL AND (event_type LIKE 'fup.%' OR event_type LIKE 'policy.%')`).Scan(&pending)
 			_, _, tierIdx, downBps, _ := s.queryFUPMemberState(s.memberB.memberID)
 			return pending == 0 && tierIdx == 0 && downBps == 100000000
 		}) {
@@ -592,7 +592,7 @@ func (s *liveSuite) evalAT19(t *testing.T) Record {
 	// Ensure outbox and node generations are completely settled before driving threshold-crossing usage ingestion
 	_ = s.waitFor(10*time.Second, func() bool {
 		var pending int
-		_ = s.pool.QueryRow(s.ctx, `SELECT count(*) FROM outbox_events WHERE delivered_at IS NULL AND dead_lettered_at IS NULL AND event_type NOT LIKE '%.reconcile' AND event_type <> 'devices.discover'`).Scan(&pending)
+		_ = s.pool.QueryRow(s.ctx, `SELECT count(*) FROM outbox_events WHERE delivered_at IS NULL AND dead_lettered_at IS NULL AND (event_type LIKE 'fup.%' OR event_type LIKE 'policy.%')`).Scan(&pending)
 		return pending == 0
 	})
 

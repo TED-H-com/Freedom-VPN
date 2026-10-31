@@ -593,11 +593,15 @@ func (s *liveSuite) retireStaleNodesExcept(keepIDs ...uuid.UUID) {
 		return
 	}
 	for _, id := range staleIDs {
-		_ = s.nodeMutation(id, http.MethodPut, "/publication", map[string]any{
-			"publication_intent": "disabled",
-			"group_ids":          []string{},
-			"reason":             "TEST ONLY retire stale node publication",
-		})
+		var wasPublished bool
+		_ = s.pool.QueryRow(s.ctx, `SELECT COALESCE(publication_intent, '') = 'published' FROM exits WHERE node_id = $1`, id).Scan(&wasPublished)
+		if wasPublished {
+			_ = s.nodeMutation(id, http.MethodPut, "/publication", map[string]any{
+				"publication_intent": "disabled",
+				"group_ids":          []string{},
+				"reason":             "TEST ONLY retire stale node publication",
+			})
+		}
 		_ = s.nodeMutation(id, http.MethodPost, "/revoke", map[string]any{
 			"reason": "TEST ONLY retire stale node incarnation",
 		})
@@ -653,7 +657,7 @@ func (s *liveSuite) ensureUnpublishedReadyBaseline(nodeService string, nodeID uu
 	_ = s.waitFor(20*time.Second, func() bool {
 		var pending int
 		var intent string
-		_ = s.pool.QueryRow(s.ctx, `SELECT count(*) FROM outbox_events WHERE delivered_at IS NULL AND dead_lettered_at IS NULL AND event_type NOT LIKE '%.reconcile' AND event_type <> 'devices.discover'`).Scan(&pending)
+		_ = s.pool.QueryRow(s.ctx, `SELECT count(*) FROM outbox_events WHERE delivered_at IS NULL AND dead_lettered_at IS NULL AND aggregate_id = $1 AND event_type IN ('node.publication_changed', 'node.updated')`, nodeID).Scan(&pending)
 		_ = s.pool.QueryRow(s.ctx, `SELECT COALESCE(envelope->'signed'->>'publication_intent', '') FROM desired_state_envelopes WHERE node_id = $1 ORDER BY generation DESC LIMIT 1`, nodeID).Scan(&intent)
 		return pending == 0 && (intent == "unpublished" || intent == "disabled")
 	})
