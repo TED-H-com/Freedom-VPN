@@ -137,6 +137,7 @@ type Engine struct {
 	dependencyMissing  bool
 	leaseRetryAt       time.Duration
 	leaseAttempted     bool
+	leaseAttemptAt     time.Duration
 	provisionalStreak  int
 	provisionalRetryAt time.Duration
 	decision           Decision
@@ -409,7 +410,7 @@ func (e *Engine) Run(ctx context.Context) error {
 		if signaled(hup) {
 			e.reloadResolvers()
 		}
-		timer := time.NewTimer(interval)
+		timer := time.NewTimer(e.nextStepDelay(interval))
 		select {
 		case <-ctx.Done():
 			timer.Stop()
@@ -420,6 +421,22 @@ func (e *Engine) Run(ctx context.Context) error {
 		case <-timer.C:
 		}
 	}
+}
+
+// nextStepDelay wakes at a grant-less renewal slot even when the preceding
+// control work took time or the configured poll is longer than the slot.
+// Failed requests and replayed expired leases retry at the control cadence,
+// rather than spinning on an already elapsed deadline. Retry-After wins.
+func (e *Engine) nextStepDelay(interval time.Duration) time.Duration {
+	if !e.enrolled || e.revoked || !e.leaseGrantless() {
+		return interval
+	}
+	interval = min(interval, provisionalRenewCap)
+	at := max(e.provisionalRetryAt, e.leaseRetryAt)
+	if e.leaseAttempted && at <= e.leaseAttemptAt {
+		at = e.leaseAttemptAt + interval
+	}
+	return min(interval, max(0, at-e.clock.Mono()))
 }
 
 func signaled(ch <-chan os.Signal) bool {
@@ -455,6 +472,17 @@ func (e *Engine) Step(ctx context.Context) error {
 	// Refresh the anchor before any 304. A wall jump must be visible to the
 	// lease renewal decision even when desired state is unchanged (§16.3).
 	_, _ = e.verifyTime()
+	// A due grant-less renewal must not wait behind observation retries or
+	// desired-state HTTP work. Generation changes are still handled below.
+	if e.leaseGrantless() {
+		if err := e.syncLease(ctx); err != nil && ctx.Err() != nil {
+			return err
+		}
+		if e.revoked {
+			e.answerHealth(ctx)
+			return nil
+		}
+	}
 	_ = e.flush(ctx)
 	if err := e.syncDesired(ctx); err != nil && ctx.Err() != nil {
 		return err
