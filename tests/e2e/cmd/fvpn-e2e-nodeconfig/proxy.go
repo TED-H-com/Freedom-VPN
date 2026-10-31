@@ -125,6 +125,6 @@ func resolverProxy() error {
 		}
 		proxy.ServeHTTP(w, r)
 	})
-	srv := &http.Server{Addr: "127.0.0.1:9444", Handler: handler, ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 30 * time.Second, WriteTimeout: 30 * time.Second, TLSConfig: &tls.Config{MinVersion: tls.VersionTLS12, ClientCAs: clientRoots, ClientAuth: tls.RequireAndVerifyClientCert}}
+	srv := &http.Server{Addr: "127.0.0.1:9444", Handler: newFirstOfferObserver().wrap(handler), ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 30 * time.Second, WriteTimeout: 30 * time.Second, TLSConfig: &tls.Config{MinVersion: tls.VersionTLS12, ClientCAs: clientRoots, ClientAuth: tls.RequireAndVerifyClientCert}}
 	return srv.ListenAndServeTLS("/etc/vpn-node/fault-proxy.crt", "/etc/vpn-node/fault-proxy.key")
 }

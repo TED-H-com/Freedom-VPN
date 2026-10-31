@@ -76,3 +76,6 @@ type FixtureProbeResult = e2e.FixtureProbeResult
 func SelectNativeFixture(in NativeFixtureInputs) (NativeFixtureSelection, error) {
 	return e2e.SelectNativeFixture(in)
 }
+
+type FirstOfferEvidence = e2e.FirstOfferEvidence
+type NamespaceRestartEvidence = e2e.NamespaceRestartEvidence
