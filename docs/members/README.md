@@ -52,14 +52,16 @@ The node/desired-state/lease owners must adopt these helpers in their follow-ups
 | `GetMember` | `GET /admin/members/{member_id}` | Admin detail, finite grants, subscription reconciliation and strong ETag. |
 | `UpdateMember` | `PATCH /admin/members/{member_id}` | If-Match under the member lock; metadata 200, changed service rights 202. |
 | `CreateMemberGrant` | `POST /admin/members/{member_id}/grants` | Explicit finite, reasoned grant; 202 operation. |
+| `ListAdminDevices` | `GET /admin/devices` | Admin page of every member device. Opaque cursor, stable ascending (`member_id`, `device_id`), limit default 50 maximum 100. Optional `member_id`, `authorization_unconfirmed`, and `status` select the page and do not change the order. |
+| `AuthorizeMemberDevice` | `POST /admin/members/{member_id}/devices/{device_id}/authorize` | Admin session, CSRF, `Idempotency-Key`, no body. 202 `member.device_authorize`. Re-grants a fenced device and authorizes an ordinary pending device. |
 | `GetMemberSelf` | `GET /member/me` | Principal-owned account, entitlement, subscription, limits and next actions. |
-| `ListMemberDevices` | `GET /member/devices` | Principal-owned devices; unobserved authorization appears pending. |
+| `ListMemberDevices` | `GET /member/devices` | Principal-owned devices. Unobserved authorization appears pending. Every item sets `authorization_unconfirmed`, `false` included. |
 | `RevokeMemberDevice` | `DELETE /member/devices/{device_id}` | Ownership in SQL, local slot release, tombstone and 202 read-back operation. |
 | `CreateCheckoutSession` | `POST /member/checkout-sessions` | Reserve intent, call provider after commit, persist encrypted result and return 201 with checkout_url. |
 | `CreateBillingPortalSession` | `POST /member/billing-portal-sessions` | Commit intent first, then provider I/O, then 201 hosted URL. |
 | `ReceiveProviderWebhook` | `POST /webhooks/{provider}` | Signature over original bytes, transactional encrypted inbox plus dispatch intent, then 202. |
 
-There are **ten** operation IDs in this table: four Admin operations, five Member
+There are **twelve** operation IDs in this table: six Admin operations, five Member
 operations and one webhook. Operation polling itself remains owned by the control
 framework. Member exits and detailed usage routes remain owned by the node and
 usage areas; no additional subscription, device-create or hosted-session GET
@@ -276,18 +278,30 @@ logged as `device authorization unconfirmed during ledger restore` (device,
 member, peer, ledger mode) and counted in
 `fvpn_device_restore_fence_decisions_total` on the worker registry.
 
-Re-authorization is the existing `AuthorizeDevice` command, operation kind
-`member.device_authorize`, for a `system` or `admin` actor and a new
-idempotency key. It deletes the fence, marks the stored read-back unconfirmed,
-and enqueues `device.authorized` so the next sync grants. Discovery uses that
-same command through `ObserveAndAuthorize`. Replaying the original idempotency
-key does not clear the fence. A member's HTTP device route is
-`DELETE /member/devices/{device_id}` (revoke) only. `MemberDevice` has no field
-that means this fence: after the read-back is withdrawn, `GET /member/devices`
-shows `pending`, which is also the state of a device that has never been
-confirmed. Revision 12 needs a read-only `authorization_unconfirmed` boolean on
-`MemberDevice`, and an admin re-authorize operation if operators are not meant
-to call the member-principal `member.device_authorize` command directly.
+Re-authorization deletes the fence in the same transaction as the grant, marks
+the stored read-back unconfirmed, and enqueues `device.authorized` so the next
+sync grants. The service command is still `AuthorizeDevice`
+(`member.device_authorize`) for a `system` or `admin` actor and a new
+idempotency key. Discovery uses that command through `ObserveAndAuthorize`.
+Replaying the original idempotency key does not clear the fence. Entitlement
+restoration does not delete it. Revocation does: `DELETE /member/devices/{device_id}`
+removes the fence row in the same transaction as the revoke.
+
+Operators find fenced devices with `GET /admin/devices?authorization_unconfirmed=true`
+instead of querying the audit log. `authorization_unconfirmed` is true exactly
+while the fence row exists. On that list, `authorization_unconfirmed_since` is
+the row's `fenced_at`, and null when the device is not fenced. A fenced device
+reads `status: pending`. `GET /member/devices` sets `authorization_unconfirmed`
+on every item, `false` included, from the same fence lookup as the device row.
+Re-authorize with `POST /admin/members/{member_id}/devices/{device_id}/authorize`
+(admin session, CSRF, new `Idempotency-Key`, no body). It returns 202
+`member.device_authorize`. A device that does not belong to the member is 404.
+A revoked device is 409 `STATE_CONFLICT`. Authorizing a pending device past the
+member's allowance returns 409 `DEVICE_LIMIT_REACHED` and leaves the fence row.
+The audit trail stays `device.authorization.external_withdrawal` plus the
+existing `device.authorize` audit. A member cannot call the admin route. The
+member read-back after a successful re-authorization follows the normal
+observe path.
 
 ## Events and maintenance
 
