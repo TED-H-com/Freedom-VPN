@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -31,9 +32,37 @@ func TestMain(m *testing.M) {
 	}
 	if err := prepareLab(); err != nil {
 		fmt.Fprintln(os.Stderr, "agentlab:", err)
+		captureSuiteEvidence()
 		os.Exit(1)
 	}
-	os.Exit(m.Run())
+	status := m.Run()
+	captureSuiteEvidence()
+	os.Exit(status)
+}
+
+// Keep the complete stream, including setup and tests after the D-104 capture.
+// Its assembled/ snapshot remains untouched: it is a shorter measurement, not
+// permission to discard later failures. Only TEST ONLY opted-in runs export.
+func captureSuiteEvidence() {
+	dir := os.Getenv("FVPN_AGENT_EVIDENCE_DIR")
+	if dir == "" {
+		return
+	}
+	dir = filepath.Join(dir, "suite")
+	if err := os.MkdirAll(dir, 0700); err != nil {
+		fmt.Fprintln(os.Stderr, "agentlab: suite evidence unavailable")
+		return
+	}
+	for _, name := range []string{"operations.jsonl", "agent.log", "watchdog.log"} {
+		raw, err := exec.Command("docker", "exec", prefix(), "cat", labDir+"/"+name).Output()
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "agentlab: artifact unavailable:", name)
+			continue
+		}
+		if err := os.WriteFile(filepath.Join(dir, name), raw, 0600); err != nil {
+			fmt.Fprintln(os.Stderr, "agentlab: artifact write failed:", name)
+		}
+	}
 }
 
 func prefix() string {
@@ -172,6 +201,9 @@ func writeAgentConfig(controlURL string, stale, interval int) error {
 		// The lab container has no NetBird daemon. The probe reads this
 		// fixture. test_mode does not skip the probe.
 		"netbird_status_file": labDir + "/netbird-status.json",
+	}
+	if os.Getenv("FVPN_AGENT_EVIDENCE_DIR") != "" {
+		cfg["test_timing_path"] = labDir + "/operations.jsonl"
 	}
 	status := []byte("{" +
 		`"daemonVersion":"0.76.2",` +
