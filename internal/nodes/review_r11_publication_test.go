@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/TED-H-com/Freedom-VPN/internal/operations"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/google/uuid"
 )
@@ -54,6 +55,12 @@ func TestReviewR11_PublicationReasonVocabulary(t *testing.T) {
 		reasons[name] = got
 		if got != "" && !documentedPublicationReasons()[got] {
 			t.Fatalf("reason %q is outside the WIRING.md vocabulary", got)
+		}
+		if got != "" {
+			message, ok := operations.PublicationGateMessage("member_forwarding_unconfirmed", got)
+			if !ok || message != "member_forwarding_unconfirmed ("+got+")" || len(message) > 1000 {
+				t.Fatalf("publication gate cause %q is missing from the bounded API projection: %q", got, message)
+			}
 		}
 	}
 	empty := reviewReport(true)

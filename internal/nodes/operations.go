@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/internal/auth"
+	"github.com/TED-H-com/Freedom-VPN/internal/operations"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
@@ -462,6 +463,11 @@ func scanOperation(ctx context.Context, q Querier, opID uuid.UUID) (api.Operatio
 		}
 		if item.step.ErrorMessage != nil && *item.step.ErrorMessage != "" {
 			msgCopy := *item.step.ErrorMessage
+			if op.Kind == api.OperationKindNodePublish {
+				if message, ok := operations.PublicationGateMessage(msgCopy, item.step.Reason); ok {
+					msgCopy = message
+				}
+			}
 			stepOut.Message.Set(msgCopy)
 		} else if item.step.Reason != "" {
 			reasonCopy := item.step.Reason

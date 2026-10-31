@@ -103,6 +103,7 @@ type PolicyRuleEvidence struct {
 // ServingEvidence is the live read-back retained even when verification fails.
 // Counters are for Apply's samples and are not duplicated in JSON evidence.
 type ServingEvidence struct {
+	DeadlineRead     DeadlineReadEvidence    `json:"deadline_read"`
 	Quarantined      bool                    `json:"quarantined"`
 	QuarantinedLinks []string                `json:"quarantined_links,omitempty"`
 	TC               []TCReadEvidence        `json:"tc"`
@@ -134,6 +135,9 @@ func verifyServing(ctx context.Context, ex Executor, m Model, assignments map[uu
 			ev.Quarantined = len(ev.QuarantinedLinks) > 0
 		}
 		nftErr = verifyServingRuleset(raw, m, assignments)
+	}
+	if nftErr == nil {
+		ev.DeadlineRead, nftErr = readAllowedLifetimes(ctx, ex, m)
 	}
 	// Scan tc even with the link down or nft baseline installed: neither may
 	// hide the retained redirect or change its specific failure reason.
