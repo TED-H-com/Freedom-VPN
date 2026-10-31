@@ -5,7 +5,7 @@ Runtime objects are `fvpn-<prefix>-*`; immutable per-run image IDs pin neutral
 `fvpn-devstack-*` build-cache images. The devstack owner uses `e2e` / `18000`.
 `e2e-down` selects that exact prefix. A name belongs to the prefix when it is
 `fvpn-<prefix>` or `fvpn-<prefix>-<known token>` (compose service, `pg`,
-`pgbackrest-repo`, `nb`, `member` and its peer suffix, `node2`, `node-clone`,
+`pgbackrest-repo`, `nb`, `member` and its peer suffix, `node2`, `node3`, `node-clone`,
 `restore`, `state-reset`). Prefix `e2e` therefore leaves `fvpn-e2e-exports-*`
 alone, including while both stacks exist. Never use another owner's running
 containers or the shared test PostgreSQL.
@@ -712,3 +712,23 @@ the retired files rather than by demanding that the new database be absent.
 Product start/recovery failures remain failed evidence with their owner;
 these wrappers do not substitute fake enrollment or certify old-cert rejection.
 `e2e-down` removes the installer container/image and its private artifacts.
+
+## Follow-up 16 fixture campaign
+
+See [the shared hook reference](README.md#follow-up-16-shared-fixtures) for
+`ReplaceFiniteGrant`, native family/MTU/platform selectors, two-resolver DNS,
+negative/cache/rebinding inputs, and the retained third-node lifecycle. Use
+`FVPN_E2E_TWO_RESOLVERS=true` when preparing a fresh stack. Wait for `e2e-up` to
+finish before the foreground test command. The native setup requires the primary
+entrypoint's `waiting_token` stage and runs before first enrollment/apply.
+
+The optional native bridge is `fvpn-<prefix>-node-underlay`, with a slot-specific
+`2001:db8:<lab-slot>::/64`. It does not masquerade. The member and node gain IPv6
+underlay reachability; the product's IPv4-only overlay choice is retained. The
+private rebinding targets are TEST ONLY addresses on a node-owned dummy interface,
+never a host or third-party destination. `node3`, `node3-netns`, `node3-adguard`
+and `origin-dns-secondary` are exact-prefix teardown objects. Shared caches and
+other lanes' objects remain outside this prefix's inventory.
+
+D-102 responses are appended in [RESPONSES.md](RESPONSES.md). Do not append
+answers to another lane's request log.

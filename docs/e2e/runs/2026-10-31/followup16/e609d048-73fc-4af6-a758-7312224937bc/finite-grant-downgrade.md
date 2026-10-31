@@ -1,0 +1,16 @@
+# finite-grant-downgrade
+
+Finite plan downgrade via production revoke, admin create and worker readback
+
+Status: pass
+
+Run: e609d048-73fc-4af6-a758-7312224937bc
+
+Source: f771bdb79c0d42b7a3d47090fb52b0d79489d82b
+
+Spec: §9.2, AT02, D-050, D-081
+
+- native_cohort: {"streams":[{"stream":"fvpn-e2e-member-finite-u01-p1/protected-device-flow","result":"scanned","scan":{"present":true,"bytes":103,"mode":"0:600","device_flow_keys":1},"deleted":true},{"stream":"fvpn-e2e-member-finite-u01-p2/protected-device-flow","result":"scanned","scan":{"present":true,"bytes":103,"mode":"0:600","device_flow_keys":1},"deleted":true},{"stream":"fvpn-e2e-member-finite-u01-p3/protected-device-flow","result":"scanned","scan":{"present":true,"bytes":103,"mode":"0:600","device_flow_keys":1},"deleted":true}],"Users":1,"Peers":3,"IdentityMatches":3,"Authorized":3,"ScannedLogs":3,"ProtectedLogs":3,"SimultaneousAuthorized":3}
+- downgrade: {"member_id":"01a190a1-adaa-742d-a983-60494fc3dd27","plan_revision_id":"01a190a2-03ea-7b8d-8cbf-9014dd407b74","revoked_grants":["01a190a1-adb0-7cd3-b8e7-f568dea4066c"],"operation_id":"01a190a2-041e-7535-bb46-5dc3e14e26b1","accepted":true,"projected":true,"before_revision":"1","after_revision":"3","device_limit":2,"authorized":2,"pending":1,"valid_until":"2026-10-31T07:24:59.387948358Z","observed_at":"2026-10-31T06:25:27.491779407Z"}
+- expired_input_rejected: true
+- restored: {"member_id":"01a190a1-adaa-742d-a983-60494fc3dd27","plan_revision_id":"01a1909e-e299-7587-88b1-d166d2e382e3","revoked_grants":["01a190a2-0418-7c33-ae0a-a5e5e573c958"],"operation_id":"01a190a2-71e1-7cd4-9099-ff329c650981","accepted":true,"projected":true,"before_revision":"3","after_revision":"5","device_limit":3,"authorized":3,"pending":0,"valid_until":"2026-10-31T07:25:27.491858769Z","observed_at":"2026-10-31T06:26:00.567452056Z"}

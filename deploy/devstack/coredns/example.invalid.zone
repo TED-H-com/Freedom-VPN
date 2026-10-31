@@ -1,6 +1,23 @@
 $ORIGIN example.invalid.
-@   3600 IN SOA ns.example.invalid. hostmaster.example.invalid. 1 3600 600 86400 60
+@   5 IN SOA ns.example.invalid. hostmaster.example.invalid. 1001 3600 600 86400 5
 @   3600 IN NS  ns.example.invalid.
 ns  3600 IN A   172.28.30.54
 lab 3600 IN A   172.28.30.53
 feed-01 60 IN A 198.51.100.42
+; TEST ONLY controlled RR, label-boundary, cache and rebinding inputs.
+; Rebinding starts at the controlled origin; the fixture changes these two RRs.
+rr 5 IN A 192.0.3.10
+rr 5 IN AAAA 2001:db8:30::10
+alias 5 IN CNAME rr.example.invalid.
+service 5 IN SVCB 1 rr.example.invalid. alpn="h3,h2" port=443
+service 5 IN HTTPS 1 rr.example.invalid. alpn="h3,h2" port=443
+feed-01 5 IN AAAA 2001:db8:30::10
+feed-01 5 IN HTTPS 1 rr.example.invalid. alpn="h3" port=443
+feed-01 5 IN SVCB 1 rr.example.invalid. alpn="h3" port=443
+blocked-alias 5 IN CNAME feed-01.example.invalid.
+sub.feed-01 5 IN A 192.0.3.10
+notfeed-01 5 IN A 192.0.3.10
+cache 10 IN A 192.0.3.10
+rebind 5 IN A 192.0.3.10
+rebind 5 IN AAAA 2001:db8:30::10
+blocked-cname 5 IN CNAME rr.example.invalid.

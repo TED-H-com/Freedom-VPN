@@ -1,4 +1,4 @@
-# Enrollment acceptance requests — follow-up 4
+# Enrollment acceptance requests — follow-up 5
 
 Current binding: `w4-enroll / 12000`. D-050 applies to every request. The
 initial 66000 attempts are immutable history, not the current binding.
@@ -9,8 +9,8 @@ initial 66000 attempts are immutable history, not the current binding.
 | ENR-02 | closed | pki-enroll #195 | Contract revision 10 `Enrollment.token_sha256` (`^[0-9a-f]{64}$`) is SHA-256 of the exact plaintext token. Run `7615d23d-d572-4db1-a903-9610dd3bcef3` matched the harness digest on create, get, revoke and `enrollment.created` `changes.after.token_sha256`. Consumed and revoked events omit the field. Plaintext was absent from admin reads and the log streams. |
 | ENR-03 | closed | w3-wire-nodes #200 | `GET /api/v1/admin/nodes/{node_id}/incarnations` (`listNodeIncarnations`). The same run: a fresh Node has one current incarnation equal to `getNode.current_incarnation_id` and `getEnrollment.node_incarnation_id`; the same-holder retry and the two-key race left the count at one; after `revokeNode` (202) and a second bound enroll, the list is newest-first with count 2, the previous row `retired` / `reinstall` (it was `revocation` before the replacement), usage `"0"`/`"0"` unchanged, cursor round-trip with no duplicates, and 404 for an unknown Node. |
 | ENR-04 | closed | devstack follow-up 12 #204 | `JoinEnrolledIdentity` and `EnrollmentPeerInventory` ran on a second fresh stack. Discarded-response race: HTTP 201 and 409 `ENROLLMENT_KEY_MISMATCH`. Replay joined (enroll 200, bootstrap 200). Inventory `complete`: one setup key, `setup_key_uses` 1, one projected peer, `correlation_groups` 0. A second read stayed at one peer. |
-| ENR-05 | blocked, waiting on devstack f15 | w4-usage, then devstack | Expected exports: `HoldUsageAcknowledgements(ctx, slot, hold)`, `UsageLedgerSnapshot(ctx, slot)`, `CountedMemberTraffic`. `fvpn-agent usage snapshot [-json]` is merged and is not these hooks. Not emulated. |
-| ENR-06 | blocked, waiting on devstack f15 | packaging/installer, then devstack | Expected exports: `RerunInstaller(ctx, slot)`, `ControlledReinstall(ctx, slot, enrollment)`. `fvpn-node-install install --json` and `reenroll --json --token-file` are on main (`#239`) and are not these wrappers. The clone-conflict entrypoint re-enroll is not ENR-06. Not emulated. |
+| ENR-05 | open: exports shipped, composed path unavailable | devstack; usage/installer | #266 exports the network-side hold and snapshot for `node`, `node2`, `node-clone`; installer wrappers accept only `installer-node`. Export hold/snapshot/selected member transport on that installer slot. Define authorized delivery of the old incarnation’s held events after revocation: current `Reenroll` explicitly leaves them on disk unuploaded. Prove central total = before + held bytes once, stable member total during hold, retired attribution and new accumulation. |
+| ENR-06 | open: wrappers shipped, running-node prerequisite unavailable | packaging/installer and deploy/node/systemd (installer follow-up 3), then devstack | #266 reports actual install exit 1 after enrollment: NetBird cannot bind `/var/run/netbird.sock` under the packaged write allowlist; shared `/run/vpn-node` lifecycle also fails. Fix the units and rerun. Wrappers stop agent/watchdog/updater for hash sampling; export restoration of their prior state so forwarding can be measured after the run. Successful initial installation, idempotent rerun, controlled reinstall, retired mode/history, and old-certificate rejection on both paths are still required. |
 | ENR-07 | measured | devstack follow-up 14 #240 | Fingerprints stay measured. On run `ec2e6279-0649-4d47-b31a-cf13aeba7303`, `StartClonedIdentityFixture(ctx, "node")` presented the node certificate from `fvpn-w4-enroll-node-clone-net` (`172.29.38.0/24`, control `172.29.38.30`, clone `172.29.38.23`). `lab-hosts` maps `agent.example.invalid` to that control address; `add_host` is false. Central recorded one conflict, `mapping_frozen`, one `node.identity.conflict` audit, and a stable count. Forwarding was withdrawn. Operator revoke (202) plus the node entrypoint after the identity files were removed produced a new incarnation and `identity_conflict` `{mapping_frozen: false, conflict_count: 0, last_conflict_at: null}`. The clone's later desired-state request returned 403 `IDENTITY_REVOKED`. |
 | ENR-08 | closed; conflict measured | wire-nodes #211 and #217 | `ObserveEndpointTx` runs inside lease renewal and observation submit (#211, `e9f1a70`). `GET /api/v1/admin/nodes/{node_id}` projects `identity_conflict` (#217, `6b98422`). Run `ec2e6279-0649-4d47-b31a-cf13aeba7303` measured the frozen object and the cleared object after revoke plus re-enroll. |
 
@@ -22,8 +22,7 @@ copy is proposed.
 The merged lab exports `Enroll`, `StartSecondExit`, `EnrollAt`, `PauseAgent`,
 durable restart, `JoinEnrolledIdentity`, `EnrollmentPeerInventory`,
 `MachineIdentityFingerprints`, `StartClonedIdentityFixture` and
-`AttachClonePresentationNetwork` (`tests/e2e/internal/labstack`). It does not
-export the ENR-05/ENR-06 names. Shared hook documentation: [RUN.md](../../RUN.md).
+`AttachClonePresentationNetwork` (`tests/e2e/internal/labstack`). #266 now exports the ENR-05/ENR-06 names with the separate slot restrictions above. Shared hook documentation: [RUN.md](../../RUN.md).
 
 Run `7615d23d-d572-4db1-a903-9610dd3bcef3` closed ENR-02, ENR-03 and ENR-04 and
 measured fingerprints. Run `9bb66c4e-e429-450b-8671-521d33926ede` measured the
@@ -123,3 +122,36 @@ ENR-06: `PrepareInstallerNode`, `StageInstallerToken`, `RerunInstaller` and `Con
 ENR-01/04 remain the existing slot and enrolled-identity exports. ENR-07 was delivered in #240: `StartClonedIdentityFixture` presents the copied certificate on the second /24 and the exports scenario reads the D-072 identity conflict. The retained browser-class 429 review belongs to control; this follow-up does not override or skip rate limits. ENR-02/03/08 conclusions remain the enrollment harness's.
 
 Live ENR-06 diagnosis (2026-10-31): real enrollment succeeded in the dedicated systemd node, then install returned exit 1 because `fvpn-netbird.service` cannot bind `/var/run/netbird.sock` under its `ProtectSystem=strict` write allowlist. The agent also logged `mkdir /run/vpn-node: read-only file system` during service restart. Owner: packaging/installer and `deploy/node/systemd`. `tests/installer` uses a NetBird stub, so its proof does not exercise this socket. No service override or stub is used here. Successful idempotent re-run/newer-archive/controlled-reenroll retention assertions remain unreached until the product service startup succeeds; the wrapper surfaces the actual failure.
+
+## Follow-up 5 review and current dependencies
+
+The authoritative devstack evidence is [follow-up 15](../../runs/2026-10-31/followup15/README.md), [installer finding](../../runs/2026-10-31/followup15/installer-finding.md), and [PR #266](https://github.com/TED-H-com/Freedom-VPN/pull/266). The export-availability requests are closed by #266; the composed AT07 requirements stay open in the table above. `CountedMemberTraffic` reads counters; `StartEstablishedTransports` generates member traffic. No old-incarnation rows or outbox are rewritten by this harness.
+
+`packaging/installer/reenroll.go` documents a separate product constraint: the usage store retains its original Node/incarnation, `usagestore.Open` rejects a changed identity, and the uploader has no re-home path. Central rejects a batch whose incarnation differs from mTLS. The requested automatic post-reinstall delivery cannot be inferred from disk preservation. Owner usage/installer (with control/pki for authorization): define and implement the authorized handoff/replay path. This is a spec question under §6.2, §6.3, §10.5 and §19 AT07, not permission to bypass revocation.
+
+Control follow-up 21 [#233](https://github.com/TED-H-com/Freedom-VPN/pull/233) retained browser 10/s burst 30. Follow-up 22 [#252](https://github.com/TED-H-com/Freedom-VPN/pull/252) supersedes the list-read portion: class `read`, 30/s burst 60 for audit-events, nodes, incarnations, members and devices; detail/write routes stay `browser`, 10/s burst 30. Ingress is 20/s burst 60 per class/address. These are source/default observations, not a new load calibration. The harness scores successful Retry-After behavior for both browser-session classes and requires zero join-phase 429s. It labels per-request class from the current method/path mapping, because the HTTP response has no class header.
+
+AT07 process review now names `bebfe230-26d4-4e3d-b052-81d258d04e07` and `35e542f8-730e-4be0-8214-e4a9dd818c40`. Their only AT07 failed row is `probe_process`; both share the same failed Go invocation with AT06. The former's AT06 failures are the un-retried browser 429s, and the latter's sole AT06 assertion failure is the withdrawn zero-429 review rule. Resolution requires explicit current exit-0 process rows, the AT06 audit/reinstall/history checks and behavior review, and the corrected clone check. The review of `1d5c02a4` still names the missing wget `--content-on-error`. All original rows and immutable directories remain.
+
+### Follow-up 5 measured disposition
+
+Run `4011dd32-73ef-4f49-b78b-6cf1ab8496c9` (2026-10-31T06:10:11Z–2026-10-31T06:15:49Z) reproduced #266's
+installer failure after successful enrollment: exit 1, code `failed`, no success
+status, both read-only diagnostics true. Node `01a19097-5517-7833-bb6e-7a0fb2533c95` and incarnation
+`01a19097-5a5e-7a9d-be44-03ed39315faf` are visible through the API. Forwarding is null and
+safety unknown, so there is no serving baseline for the rerun/reinstall checks.
+All three installer-slot usage probes returned `unknown node slot`.
+
+ENR-05 and ENR-06 therefore remain **open**, with the precise owners/asks in the
+top table. The six blocked check names are `counted_unacked_usage`,
+`installer_rerun`, `identity_ledger_preserved`, `controlled_reinstall`,
+`old_certificate_denied`, `historical_usage_retained`. Successful wrapper
+invocations, retained-identity mode/history, both old-certificate denial paths,
+counted nonzero retained usage and automatic once-only delivery remain unmeasured.
+The endpoint-scope probe on `node` passed at 2026-10-31T06:12:05.728533112Z–2026-10-31T06:12:05.850705481Z,
+but had zero pending events and cannot close ENR-05.
+
+AT06 passed 344/0/0 with zero full/join 429s. AT07 is 19/6/0 with no failed
+assertions. Both historical review dispositions are **resolved**, including
+AT07 `bebfe230` and `35e542f8`. There is no remaining orchestrator review request
+for those two rows. All teardown commands exited 0; owned inventory is zero.

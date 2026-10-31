@@ -1,0 +1,241 @@
+{
+  "id": "dns-negative",
+  "title": "Controlled RR types, label boundaries, cache expiry and allowlisted rebinding",
+  "spec": [
+    "§12.5",
+    "§12.8",
+    "AT20",
+    "ISO01",
+    "DNS02"
+  ],
+  "status": "fail",
+  "observations": [
+    {
+      "name": "case_0_false",
+      "detail": "{\"actual\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[1],\"ttls\":[5],\"address_classes\":[\"other_ipv4\"],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"case\":\"rr\",\"expected_answer\":true,\"expected_rcode\":0,\"rr_type\":1,\"tcp\":false}"
+    },
+    {
+      "name": "case_1_false",
+      "detail": "{\"actual\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[28],\"ttls\":[5],\"address_classes\":[\"other_ipv6\"],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"case\":\"rr\",\"expected_answer\":true,\"expected_rcode\":0,\"rr_type\":28,\"tcp\":false}"
+    },
+    {
+      "name": "case_2_false",
+      "detail": "{\"actual\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[5],\"ttls\":[5],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"case\":\"alias\",\"expected_answer\":true,\"expected_rcode\":0,\"rr_type\":5,\"tcp\":false}"
+    },
+    {
+      "name": "case_3_false",
+      "detail": "{\"actual\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[64],\"ttls\":[5],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"case\":\"service\",\"expected_answer\":true,\"expected_rcode\":0,\"rr_type\":64,\"tcp\":false}"
+    },
+    {
+      "name": "case_4_false",
+      "detail": "{\"actual\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[65],\"ttls\":[5],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"case\":\"service\",\"expected_answer\":true,\"expected_rcode\":0,\"rr_type\":65,\"tcp\":false}"
+    },
+    {
+      "name": "authority_5_false",
+      "detail": "{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[1],\"ttls\":[60],\"address_classes\":[\"other_ipv4\"],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":0}"
+    },
+    {
+      "name": "case_6_false",
+      "detail": "{\"actual\":{\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":0},\"case\":\"feed-01\",\"expected_answer\":false,\"expected_rcode\":3,\"rr_type\":1,\"tcp\":false}"
+    },
+    {
+      "name": "authority_7_false",
+      "detail": "{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[28],\"ttls\":[5],\"address_classes\":[\"other_ipv6\"],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":0}"
+    },
+    {
+      "name": "case_8_false",
+      "detail": "{\"actual\":{\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"case\":\"feed-01\",\"expected_answer\":false,\"expected_rcode\":3,\"rr_type\":28,\"tcp\":false}"
+    },
+    {
+      "name": "authority_9_false",
+      "detail": "{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[5],\"ttls\":[5],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":0}"
+    },
+    {
+      "name": "case_10_false",
+      "detail": "{\"actual\":{\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":0,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":2},\"case\":\"blocked-cname\",\"expected_answer\":false,\"expected_rcode\":3,\"rr_type\":5,\"tcp\":false}"
+    },
+    {
+      "name": "authority_11_false",
+      "detail": "{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[64],\"ttls\":[5],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":0}"
+    },
+    {
+      "name": "case_12_false",
+      "detail": "{\"actual\":{\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":0,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"case\":\"feed-01\",\"expected_answer\":false,\"expected_rcode\":3,\"rr_type\":64,\"tcp\":false}"
+    },
+    {
+      "name": "authority_13_false",
+      "detail": "{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[65],\"ttls\":[5],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":0}"
+    },
+    {
+      "name": "case_14_false",
+      "detail": "{\"actual\":{\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"case\":\"feed-01\",\"expected_answer\":false,\"expected_rcode\":3,\"rr_type\":65,\"tcp\":false}"
+    },
+    {
+      "name": "authority_15_false",
+      "detail": "{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[5,1],\"ttls\":[5,60],\"address_classes\":[\"other_ipv4\"],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":0}"
+    },
+    {
+      "name": "case_16_false",
+      "detail": "{\"actual\":{\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"case\":\"blocked-alias\",\"expected_answer\":false,\"expected_rcode\":3,\"rr_type\":1,\"tcp\":false}"
+    },
+    {
+      "name": "authority_17_false",
+      "detail": "{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[1],\"ttls\":[5],\"address_classes\":[\"other_ipv4\"],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":0}"
+    },
+    {
+      "name": "case_18_false",
+      "detail": "{\"actual\":{\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"case\":\"sub\",\"expected_answer\":false,\"expected_rcode\":3,\"rr_type\":1,\"tcp\":false}"
+    },
+    {
+      "name": "case_19_false",
+      "detail": "{\"actual\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[1],\"ttls\":[5],\"address_classes\":[\"other_ipv4\"],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"case\":\"notfeed-01\",\"expected_answer\":true,\"expected_rcode\":0,\"rr_type\":1,\"tcp\":false}"
+    },
+    {
+      "name": "case_20_false",
+      "detail": "{\"actual\":{\"authority_ttl\":3600,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":4},\"case\":\"absent\",\"expected_answer\":false,\"expected_rcode\":3,\"rr_type\":1,\"tcp\":false}"
+    },
+    {
+      "name": "case_21_true",
+      "detail": "{\"actual\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[1],\"ttls\":[5],\"address_classes\":[\"other_ipv4\"],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"case\":\"rr\",\"expected_answer\":true,\"expected_rcode\":0,\"rr_type\":1,\"tcp\":true}"
+    },
+    {
+      "name": "case_22_true",
+      "detail": "{\"actual\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[28],\"ttls\":[5],\"address_classes\":[\"other_ipv6\"],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"case\":\"rr\",\"expected_answer\":true,\"expected_rcode\":0,\"rr_type\":28,\"tcp\":true}"
+    },
+    {
+      "name": "case_23_true",
+      "detail": "{\"actual\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[5],\"ttls\":[5],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"case\":\"alias\",\"expected_answer\":true,\"expected_rcode\":0,\"rr_type\":5,\"tcp\":true}"
+    },
+    {
+      "name": "case_24_true",
+      "detail": "{\"actual\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[64],\"ttls\":[5],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":6},\"case\":\"service\",\"expected_answer\":true,\"expected_rcode\":0,\"rr_type\":64,\"tcp\":true}"
+    },
+    {
+      "name": "case_25_true",
+      "detail": "{\"actual\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[65],\"ttls\":[5],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":2},\"case\":\"service\",\"expected_answer\":true,\"expected_rcode\":0,\"rr_type\":65,\"tcp\":true}"
+    },
+    {
+      "name": "authority_26_true",
+      "detail": "{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[1],\"ttls\":[60],\"address_classes\":[\"other_ipv4\"],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":0}"
+    },
+    {
+      "name": "case_27_true",
+      "detail": "{\"actual\":{\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"case\":\"feed-01\",\"expected_answer\":false,\"expected_rcode\":3,\"rr_type\":1,\"tcp\":true}"
+    },
+    {
+      "name": "authority_28_true",
+      "detail": "{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[28],\"ttls\":[5],\"address_classes\":[\"other_ipv6\"],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":0}"
+    },
+    {
+      "name": "case_29_true",
+      "detail": "{\"actual\":{\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":3},\"case\":\"feed-01\",\"expected_answer\":false,\"expected_rcode\":3,\"rr_type\":28,\"tcp\":true}"
+    },
+    {
+      "name": "authority_30_true",
+      "detail": "{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[5],\"ttls\":[5],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":0}"
+    },
+    {
+      "name": "case_31_true",
+      "detail": "{\"actual\":{\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":0,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":2},\"case\":\"blocked-cname\",\"expected_answer\":false,\"expected_rcode\":3,\"rr_type\":5,\"tcp\":true}"
+    },
+    {
+      "name": "authority_32_true",
+      "detail": "{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[64],\"ttls\":[5],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":0}"
+    },
+    {
+      "name": "case_33_true",
+      "detail": "{\"actual\":{\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":0,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":2},\"case\":\"feed-01\",\"expected_answer\":false,\"expected_rcode\":3,\"rr_type\":64,\"tcp\":true}"
+    },
+    {
+      "name": "authority_34_true",
+      "detail": "{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[65],\"ttls\":[5],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":0}"
+    },
+    {
+      "name": "case_35_true",
+      "detail": "{\"actual\":{\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"case\":\"feed-01\",\"expected_answer\":false,\"expected_rcode\":3,\"rr_type\":65,\"tcp\":true}"
+    },
+    {
+      "name": "authority_36_true",
+      "detail": "{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[5,1],\"ttls\":[5,60],\"address_classes\":[\"other_ipv4\"],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":0}"
+    },
+    {
+      "name": "case_37_true",
+      "detail": "{\"actual\":{\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"case\":\"blocked-alias\",\"expected_answer\":false,\"expected_rcode\":3,\"rr_type\":1,\"tcp\":true}"
+    },
+    {
+      "name": "authority_38_true",
+      "detail": "{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[1],\"ttls\":[5],\"address_classes\":[\"other_ipv4\"],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":0}"
+    },
+    {
+      "name": "case_39_true",
+      "detail": "{\"actual\":{\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":3},\"case\":\"sub\",\"expected_answer\":false,\"expected_rcode\":3,\"rr_type\":1,\"tcp\":true}"
+    },
+    {
+      "name": "case_40_true",
+      "detail": "{\"actual\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[1],\"ttls\":[4],\"address_classes\":[\"other_ipv4\"],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":2},\"case\":\"notfeed-01\",\"expected_answer\":true,\"expected_rcode\":0,\"rr_type\":1,\"tcp\":true}"
+    },
+    {
+      "name": "case_41_true",
+      "detail": "{\"actual\":{\"authority_ttl\":3599,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"case\":\"absent\",\"expected_answer\":false,\"expected_rcode\":3,\"rr_type\":1,\"tcp\":true}"
+    },
+    {
+      "name": "cache_initial",
+      "detail": "{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[1],\"ttls\":[10],\"address_classes\":[\"other_ipv4\"],\"expected_answer\":true,\"connected\":false,\"bytes\":0,\"milliseconds\":5}"
+    },
+    {
+      "name": "rebind_initial",
+      "detail": "{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[1],\"ttls\":[5],\"address_classes\":[\"other_ipv4\"],\"expected_answer\":true,\"connected\":false,\"bytes\":0,\"milliseconds\":4}"
+    },
+    {
+      "name": "changed_authority",
+      "detail": "{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[1],\"ttls\":[10],\"address_classes\":[\"private_ipv4\"],\"expected_answer\":true,\"connected\":false,\"bytes\":0,\"milliseconds\":0}"
+    },
+    {
+      "name": "negative_cache_before_ttl",
+      "detail": "{\"authority_ttl\":3598,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1}"
+    },
+    {
+      "name": "cache_before_ttl",
+      "detail": "{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[1],\"ttls\":[9],\"address_classes\":[\"other_ipv4\"],\"expected_answer\":true,\"connected\":false,\"bytes\":0,\"milliseconds\":1}"
+    },
+    {
+      "name": "negative_cache_after_ttl",
+      "detail": "{\"authority_ttl\":3586,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":2}"
+    },
+    {
+      "name": "cache_after_ttl",
+      "detail": "{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[1],\"ttls\":[10],\"address_classes\":[\"private_ipv4\"],\"expected_answer\":true,\"connected\":false,\"bytes\":0,\"milliseconds\":1}"
+    },
+    {
+      "name": "rebind_rr_1",
+      "detail": "{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[1],\"ttls\":[2],\"address_classes\":[\"private_ipv4\"],\"expected_answer\":true,\"connected\":false,\"bytes\":0,\"milliseconds\":1}"
+    },
+    {
+      "name": "rebind_rr_28",
+      "detail": "{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[28],\"ttls\":[5],\"address_classes\":[\"private_ipv6\"],\"expected_answer\":true,\"connected\":false,\"bytes\":0,\"milliseconds\":1}"
+    },
+    {
+      "name": "private_target_positive_control",
+      "detail": "{\"authority_ttl\":0,\"has_soa\":false,\"available\":false,\"rcode\":-1,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":0,\"error\":\"connect_unavailable\"}"
+    },
+    {
+      "name": "rebind_private_connect",
+      "detail": "{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":-1,\"types\":[],\"ttls\":[],\"address_classes\":[\"private_ipv4\",\"private_ipv6\"],\"expected_answer\":true,\"connected\":false,\"bytes\":0,\"milliseconds\":12011}"
+    },
+    {
+      "name": "private_ipv6_positive_control",
+      "detail": "{\"authority_ttl\":0,\"has_soa\":false,\"available\":false,\"rcode\":-1,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":0,\"error\":\"connect_unavailable\"}"
+    },
+    {
+      "name": "private_ipv6_denied",
+      "detail": "{\"authority_ttl\":0,\"has_soa\":false,\"available\":false,\"rcode\":-1,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":0,\"error\":\"connect_unavailable\"}"
+    },
+    {
+      "name": "expected",
+      "detail": "blocked names/types and CNAME targets yield NXDOMAIN; allowed label boundary resolves; old cache survives until TTL then changes; allowlisted private A/AAAA never authorize member forwarding"
+    }
+  ],
+  "at": "2026-10-31T06:31:07Z",
+  "run_id": "0e34514e-bad1-4fe6-89fa-ff55da5fee12",
+  "source_commit": "59903b57c41115f02ccfb0b2bc1d56dc095b5a39"
+}

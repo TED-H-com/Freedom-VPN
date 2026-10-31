@@ -61,3 +61,16 @@ type InstallerOutcome = e2e.InstallerOutcome
 
 type MemberTransportStatus = e2e.MemberTransportStatus
 type DNSPathObservation = e2e.DNSPathObservation
+
+type GrantTransition = e2e.GrantTransition
+
+type EnrollingFleetSnapshot = e2e.EnrollingFleetSnapshot
+type NativeFixtureInputs = e2e.NativeFixtureInputs
+type NativeFixtureSelection = e2e.NativeFixtureSelection
+type NativeUnderlayObservation = e2e.NativeUnderlayObservation
+type NativeDNSConfiguration = e2e.NativeDNSConfiguration
+type FixtureProbeResult = e2e.FixtureProbeResult
+
+func SelectNativeFixture(in NativeFixtureInputs) (NativeFixtureSelection, error) {
+	return e2e.SelectNativeFixture(in)
+}

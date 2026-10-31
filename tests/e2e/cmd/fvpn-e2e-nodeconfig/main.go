@@ -123,6 +123,10 @@ func nodeDNSRelay() error {
 	if ip == nil {
 		return fmt.Errorf("DNS relay address")
 	}
-	ip[3] = 53
+	sourceOctet := byte(53)
+	if ip[3] == 22 {
+		sourceOctet = 54
+	}
+	ip[3] = sourceOctet
 	return dnsrelay.Serve(cfg.Datapath.SNAT+":5353", "127.0.0.1:53", ip.String())
 }
