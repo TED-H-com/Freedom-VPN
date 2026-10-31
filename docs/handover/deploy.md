@@ -1,5 +1,7 @@
 # Production Deployment Runbook (`docs/handover/deploy.md`)
 
+**Current cut — [follow-up 18](follow-up-18.md) (2026-10-31 EDT):** Deploy migration 00192 before the new control binary. Down refuses once installer corrections exist. #320/#323 provide checkpoint correlation; the devstack 19 serving-node rerun is not yet proved.
+
 Latest cutoff: [follow-up 17 operator evidence](follow-up-17.md). #313
 harness-proves the SECOPS-21 first-offer capture (2/0/0, delivery 4 > retained 3,
 matching local digest and central 202); full restore remains open for secops 13.

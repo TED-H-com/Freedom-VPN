@@ -1,5 +1,7 @@
 # Operations Runbooks Index (`docs/ops/`)
 
+**Current cut — [follow-up 18](../handover/follow-up-18.md) (2026-10-31 EDT):** Current acceptance is follow-up 18 through #324; the dated tables below retain their own cutoffs.
+
 Latest reconciliation: [follow-up 17](#follow-up-17-acceptance-snapshot-2026-10-31-edt),
 main `7e044c71` through #313. Earlier tables retain the verdicts at their own cutoffs.
 
@@ -142,3 +144,25 @@ D-104's 100 ms installation bound is unchanged. D-123 excludes IPv6 overlay
 forwarding and end-to-end IPv6 MTU / PMTU acceptance, without excusing native
 underlay failures. Process-only ownership decisions are kept in the
 [decision register](../handover/README.md#follow-up-17-decisions-register-2026-10-31-edt).
+
+## Follow-up 18 acceptance snapshot (2026-10-31 EDT)
+
+Verified on main `6d0022d8` through #324; [claims and sources](../handover/follow-up-18.md).
+Handover ran no new live acceptance. Earlier tables retain their original cutoff.
+
+| Merge | Current disposition |
+|---|---|
+| Security-ops 13 (#316) | SECOPS-21 closed on the assembled harness: delivered 19 > 15, matching digest and applied 202. AT30 passed, RPO 92.163 s (−14.287) / RTO 81.016 s (+6.486); AT29 / AT31 resources remain blocked. |
+| Members 9 (#317) | F8-01 closed in generation 30; AT09 fails on F9-01 pending agent-core 27 / members 10. F8-02 remains unattributed. |
+| Netlab 19 (#318) | MSS unchanged at observed hops; kernel-only pass with zero tc drops neither reproduces nor clears native F8-02. TimingEvidence() enables isolation 9 correlation; 17 historical losses stay open. |
+| Handover 17 (#319) | Through #313 plus #316 manifest reconciliation; eleven subtests, 242 digests / 141 paths. |
+| Agent-core 26 (#320) | D-125 exact latch UUID; D-118 node-lock adoption and lifetime usage.db.lock. Chain resume changed the cancelled-ACK test only. |
+| Wire-nodes 32 (#321) | D-126 mixed report stored/projected value-unchanged, publication blocked, stored ACK replay with 202 Accepted. D-128 is JCS/hash equality, not literal JSONB whitespace retention. D093-12 option (ii) is advice only. |
+| Fleet-update 12 (#322) | D-127 first receipt plus one eligible correction; stored replay, unchanged generation fence. Migration 00192 before control. PostgreSQL harness-proved; live captures not yet run. |
+| Updater 17 (#323) | D-125 consumed; component proof, live serving-node rerun not yet proved. Pre-#307 extractor reproduces seed HASH_MISMATCH; installer 6 / devstack 19 still consume the fix. |
+| Usage AT 5 (#324) | AT14–AT20 pass in live run 170ea3e3; controlled-installer retired-stream hand-off, immutable tail and same-key replay. Follow-up 4 archived; full enrollment case remains separate. |
+
+Still open: AT09 F9-01; F8-02 attribution; the three devstack 18 historical
+live failures (pre-#307 serving handshake, post-upgrade seed HASH_MISMATCH,
+native MTU 1280 in both families); five AT07 rows; isolation's 17 renewal losses;
+AT29 / AT31 resources; real clients; physical arm64 and power-loss qualification.

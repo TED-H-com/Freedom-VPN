@@ -1,5 +1,7 @@
 # Backup and Restore Drill Record (`docs/handover/restore-drill.md`)
 
+**Current cut — [follow-up 18](follow-up-18.md) (2026-10-31 EDT):** Security-ops 13 (#316): SECOPS-21 closed on the assembled restore harness, first delivered 19 > retained 15 with matching digest and applied 202 receipt. AT30 RPO 92.163 s (−14.287), RTO 81.016 s (+6.486); shared-host measurements, not production objectives.
+
 Latest cutoff: [follow-up 17 operator evidence](follow-up-17.md). #313
 harness-proves the SECOPS-21 first-offer capture (2/0/0, delivery 4 > retained 3,
 matching local digest and central 202); full restore remains open for secops 13.

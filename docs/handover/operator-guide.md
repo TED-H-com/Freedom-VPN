@@ -1,5 +1,7 @@
 # Operator Guide (`docs/handover/operator-guide.md`)
 
+**Current cut — [follow-up 18](follow-up-18.md) (2026-10-31 EDT):** D-125 checkpoint correlation and D-118 lifetime locking are merged (#320/#323); D-126/D-128 retain cumulative observation values with a 202 receipt. D-127 permits one bounded installer correction (#322). SECOPS-21 closed on the assembled harness; live upgrade and correction captures remain open.
+
 Current evidence cutoff: **#313**, main `7e044c71`. The
 [follow-up 17 operator evidence](follow-up-17.md) records AT10 PASS under
 D-120, D-118 activation, D-123 IPv6Block posture, DNS per-type replies, and

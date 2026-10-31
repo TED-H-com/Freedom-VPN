@@ -1,8 +1,8 @@
-# Adversarial Security Reviews Archive (`r3`–`r16`)
+# Adversarial Security Reviews Archive (`r3`–`r17`)
 
 - **Date:** 2026-10-29 to 2026-10-31 (closure status)
 - **Reviewing model:** `grok/grok-4.7`, `agy/gemini-4-argon-high`, `antigravity/gemini`, `antigravity/gemini-4-argon` (see per-review metadata below; `r5` and `r8` commits carried no `Agent:` trailer)
-- **Decision / scope reviewed:** Wave 3 and Wave 4 adversarial security reviews (`r3-d055-review` through `r16-rev13-d089-d099-review`) across management peer discovery (`D-055`), DNS threat feeds (`D-054`), PostgreSQL pgBackRest backups and PITR drill (`D-025`, `AT30`), challenge-bound update health attestation (`D-053`), member identity mapping and device slot accounting (`D-052`, `D-029`), exit-group fencing and resolver-document delivery (`D-056`, `D-057`, `D-061`), update result evidence and rate limiting (`D-062`, `D-060`), synthetic-probe exception bounds and node agent hardening (`D-063`, `D-064`), zero-binding publication gating (`SECOPS-11`), node enforcement verifier, control rate-limit tables/large-body validation, `probe_omitted` evidence, and pre-result heartbeat seeding (`#167`–`#172`), the `r12` remediation verification wave (`#166`–`#174`), and the `r13` remediation and `D-067`–`D-072` verification wave (`#189`–`#202`). Earlier Wave 1 and Wave 2 reviews (`r1-db-review`, `r1-contracts-review`, `r2-control-review`, `r2-updater-review`, `r2-ledger-review`) are recorded in [`docs/ROADMAP.md`](../ROADMAP.md).
+- **Decision / scope reviewed:** Wave 3 and Wave 4 adversarial security reviews (`r3-d055-review` through `r17-rev14-d104-d117-review`) across management peer discovery (`D-055`), DNS threat feeds (`D-054`), PostgreSQL pgBackRest backups and PITR drill (`D-025`, `AT30`), challenge-bound update health attestation (`D-053`), member identity mapping and device slot accounting (`D-052`, `D-029`), exit-group fencing and resolver-document delivery (`D-056`, `D-057`, `D-061`), update result evidence and rate limiting (`D-062`, `D-060`), synthetic-probe exception bounds and node agent hardening (`D-063`, `D-064`), zero-binding publication gating (`SECOPS-11`), node enforcement verifier, control rate-limit tables/large-body validation, `probe_omitted` evidence, and pre-result heartbeat seeding (`#167`–`#172`), the `r12` remediation verification wave (`#166`–`#174`), and the `r13` remediation and `D-067`–`D-072` verification wave (`#189`–`#202`). Earlier Wave 1 and Wave 2 reviews (`r1-db-review`, `r1-contracts-review`, `r2-control-review`, `r2-updater-review`, `r2-ledger-review`) are recorded in [`docs/ROADMAP.md`](../ROADMAP.md).
 
 ## Archive Index
 
@@ -22,6 +22,7 @@
 | `r14-d067-d070-review` | [`r14-d067-d070-review.md`](r14-d067-d070-review.md) | 2026-10-30 | `grok/grok-4.7` (commit `70efbde` trailer) | D-067/D-068/D-070 and r13 fixes: revoke fence, migrated addresses, stale readiness, foreign nft rules, node ingress, eviction and anonymous cap | 7 (1 High, 4 Medium, 2 Low); closed #215/#216/#217/#220 | `internal/nodes/observation_readiness_integration_test.go`, `node/agent/review_r14_m1_test.go`, `node/agent/followup15_test.go`, `node/enforce/followup10_review_test.go`, `tests/netlab/scenario_foreign_test.go`, `internal/httpapi/followup20_review_test.go` |
 | `r15-d072-d075-review` | [`r15-d072-d075-review.md`](r15-d072-d075-review.md) | 2026-10-30 | `grok/grok-4.7` (commit `dfafae0` trailer) | D-072–D-075 clone detection, lock order, revoke fence, gated publication, Fair-Use ACK, tc bypass and anonymous reserve | 8 (1 High, 6 Medium, 1 Low) — owner fixes adopted in #254/#259/#263/#256/#262/#252; packet-stop and agent quarantine integration remain qualified | [Adopted main proofs](r15-d072-d075-review.md#adopted-proof-files-on-main) |
 | `r16-rev13-d089-d099-review` | [`r16-rev13-d089-d099-review.md`](r16-rev13-d089-d099-review.md) | 2026-10-31 | `grok/grok-4.7` | Revision 13, D-089 / D-097 installer results, D-088 freeze, D-090 / D-096 containment, D-095 / D-099 restore hold; base `5575470` | 4 (1 High, 2 Medium, 1 Low); H-1 fixed #291, M-2/L-1 fixed #300, M-1 pending; two known HTTP defects fixed #277 | Owners adopt `TestReviewR16_*`; only the report is archived here. |
+| `r17-rev14-d104-d117-review` | [r17-rev14-d104-d117-review.md](r17-rev14-d104-d117-review.md) | 2026-10-31 | `grok/grok-4.7`, base `62f24e6d` | Revision 14, D-104–D-118 | 1 Medium: M-1 → fleet-update 12 (#322), D-127; r16 H-1 / M-1 / M-2 / L-1 re-run and held | [installer correction proof](../../internal/fleetupdate/review_r17_installer_integration_test.go) |
 
 ## What Held Across the Reviews
 
@@ -73,3 +74,25 @@ orchestrator's current routing is below; no proof files were adopted here.
 D-110 / D-111 and their delivery boundaries are in the [operator decisions
 register](../handover/README.md#follow-up-17-decisions-register-2026-10-31-edt).
 Owners adopt the `TestReviewR16_*` proofs in their follow-ups.
+
+## r17 disposition at the follow-up 18 cutoff
+
+The archive is byte-identical to `.agent/REVIEW.md` at
+`origin/r17-rev14-d104-d117-review`, commit
+`dcabc41e7d0c12725b1a7090425e2831faa3a12e`, reviewed from main `62f24e6d` by
+`grok/grok-4.7`. SHA-256:
+`3e2078550ddf24d365881dcee1399da474ae642bf76899f484a8c8ec60d787f7`.
+
+One finding: **M-1 (Medium)**, a later eligible installer outcome could not
+correct current/last-good on the same incarnation. Fleet-update 12 (#322)
+implements D-127's one-correction bound, immutable first receipt, stored ACK
+replay, generation fence and migration 00192. This is harness-proved on
+PostgreSQL tests; live install → seed → success and success → rollback captures
+remain devstack / updates work not yet run.
+
+r16 H-1 / M-1 / M-2 / L-1 were re-run and held. The review's “Not examined” list
+notes D-118 register drift. Follow-up 18 now pins activation in #312, lifetime
+locking in #320 and live usage acceptance in #324; pending assertions in the
+older claims tests are explicitly historical. The archive itself is unchanged.
+SECOPS-21 closed on the assembled restore harness in #316; the open status in
+the dated r16/follow-up 17 dispositions above is historical.
