@@ -167,6 +167,8 @@ func (s *liveSuite) replayCurrentBatches(db *sql.DB, node, current uuid.UUID, cl
 }
 
 func (s *liveSuite) verifyFreshCountedStream(rec *Record, node, current, origin uuid.UUID, originACK, period string, states map[string]string, presenter *http.Client, before api.MemberUsage, beforeInc api.NodeIncarnationList) string {
+	rec.Observations["d130_incarnations_before"] = beforeInc
+	rec.Observations["d130_member_period_before"] = before
 	// Respect the shipped systemd start limit after deliberate fixture restarts.
 	s.t.Log("AT20 waiting beyond the unchanged 120-second systemd start window")
 	startAfter := time.Now().Add(121 * time.Second)
@@ -232,11 +234,13 @@ func (s *liveSuite) verifyFreshCountedStream(rec *Record, node, current, origin 
 		s.t.Fatal("D-130 counted event differs from exact measured direction counters or original member/device/period")
 	}
 	after := s.memberPeriodUsage(period)
+	rec.Observations["d130_member_period_after"] = after
 	up, down := r.UploadBytes.String(), r.DownloadBytes.String()
 	if after.Totals.UploadBytes.String() != decimalSum(before.Totals.UploadBytes.String(), up) || after.Totals.DownloadBytes.String() != decimalSum(before.Totals.DownloadBytes.String(), down) || after.Totals.TotalBytes.String() != decimalSum(before.Totals.TotalBytes.String(), decimalSum(up, down)) {
 		s.t.Fatal("D-130 member period before + measured bytes != after")
 	}
 	afterInc := s.incarnationView(node)
+	rec.Observations["d130_incarnations_after"] = afterInc
 	if len(afterInc.Items) != 2 || len(beforeInc.Items) != 2 {
 		s.t.Fatal("D-130 incarnation views missing")
 	}
@@ -250,9 +254,6 @@ func (s *liveSuite) verifyFreshCountedStream(rec *Record, node, current, origin 
 			}
 		}
 	}
-	rec.Observations["d130_member_period_before"] = before
-	rec.Observations["d130_member_period_after"] = after
-	rec.Observations["d130_incarnations_after"] = afterInc
 	rec.Observations["d130_exact_counter_and_attribution_equality"] = true
 	rec.Observations["d130_current_batches_and_stored_replays"] = s.replayCurrentBatches(db, node, current, presenter)
 	s.verifyHistoricalEvents([]handoffEvent{gap, counted})

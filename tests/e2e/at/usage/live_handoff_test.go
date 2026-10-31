@@ -716,8 +716,17 @@ func (s *liveSuite) evalAT20(t *testing.T) (rec Record) {
 	if acceptedLate != 0 || s.centralStreamACK(node, origin) != oldACK {
 		t.Fatal("AT20 rejected event mutated accepted ledger/ACK")
 	}
+	// The deliberate rejection updates the origin checkpoint's updated_at,
+	// exposed as usage.through. Establish the current-traffic baseline after
+	// that probe, while still requiring its origin byte attribution unchanged.
+	freshBeforeInc := s.incarnationView(node)
+	for _, row := range freshBeforeInc.Items {
+		if row.IncarnationId == origin && (row.Usage.UploadBytes != originUsage.UploadBytes || row.Usage.DownloadBytes != originUsage.DownloadBytes) {
+			t.Fatal("AT20 rejected event changed origin byte attribution")
+		}
+	}
 	stage("D-130 fresh counted event ACK 2, exact attribution and stored replays")
-	freshSummary := s.verifyFreshCountedStream(&rec, node, current, origin, oldACK, period, states, presenter, after, afterInc)
+	freshSummary := s.verifyFreshCountedStream(&rec, node, current, origin, oldACK, period, states, presenter, after, freshBeforeInc)
 	rec.Status = StatusPass
 	for _, check := range []string{"BeforePlusHeldByteEquality", "OriginalPayloadAndHistoricalAttribution", "AgentSameKeyStoredResultReplay", "OriginACKAndIndependentCurrentACK", "D112ConfiguredIntervalWithinBound", "LiveLateEventRejectedAndAudited", "RetiredCertificateRefused", "D130FreshGapACK1", "D130CountedACK2ExactAttribution", "D130MicrosecondProjection", "D130SameKeyStoredACK1AndACK2Replay"} {
 		s.addHandoffCheck(&rec, check, true, "Live assertion completed; deciding API, ledger and byte evidence retained in observations.")
