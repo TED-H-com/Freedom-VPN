@@ -293,6 +293,7 @@ func (x *isolationRun) prepare() bool {
 		return false
 	}
 	r.nodeID, r.incID = n.NodeID, n.IncarnationID
+	x.startConvergence()
 	r.publish(x.ctx, x.admin, n.NodeID)
 	c := iso.Check{Name: "serving setup", Status: iso.StatusBlocked, Owner: "w2-agent-core / w3-wire-nodes"}
 	if !x.publication("published", []uuid.UUID{r.groupID, x.groupB}, &c) {
@@ -304,8 +305,6 @@ func (x *isolationRun) prepare() bool {
 		x.noteUnmeasured(c)
 		return false
 	}
-	x.noteRulesetReadback()
-	x.startConvergence()
 	return true
 }
 
@@ -349,11 +348,11 @@ func (x *isolationRun) noteRulesetReadback() {
 		rec.Observations = append(rec.Observations, iso.Observation{Name: "foreign_rules", Detail: "nft -j list ruleset failed: " + clipText(strings.TrimSpace(string(raw)+" "+err.Error()), 400)})
 	} else {
 		listing, dockerNAT := foreignRulesetListing(raw)
-		class := "no foreign rule; Docker embedded DNS NAT absent; loopback_scoped not emitted because D-079 is not in this tree"
+		class := "no foreign rule; Docker embedded DNS NAT absent; serving pass attributable to lab fix #240; D-079 #241 present but not exercised"
 		if dockerNAT {
-			class = "Docker embedded DNS NAT is still present; D-079 is not in this tree so the observation report has no loopback_scoped classification"
+			class = "Docker embedded DNS NAT present; inspect the foreign rule scopes for D-079 attribution; observation report has no per-rule classification field"
 		} else if listing != "[]" {
-			class = "foreign rules are listed verbatim; none is Docker 127.0.0.11 NAT; D-079 is not in this tree so the observation report has no per-rule classification"
+			class = "foreign rules listed verbatim; no Docker embedded DNS NAT; observation report has no per-rule classification field"
 		}
 		rec.Observations = append(rec.Observations,
 			iso.Observation{Name: "foreign_rules", Detail: listing},
@@ -368,6 +367,14 @@ func (x *isolationRun) noteRulesetReadback() {
 	var payload []byte
 	if conn.QueryRow(x.ctx, `SELECT report_payload FROM node_observations WHERE node_id=$1 ORDER BY received_at DESC LIMIT 1`, x.r.nodeID).Scan(&payload) == nil {
 		rec.Observations = append(rec.Observations, iso.Observation{Name: "observation_report", Detail: string(payload)})
+		var report map[string]json.RawMessage
+		_ = json.Unmarshal(payload, &report)
+		tc, ok := report["tc"]
+		if ok {
+			rec.Observations = append(rec.Observations, iso.Observation{Name: "tc_readback", Detail: string(tc)})
+		} else {
+			rec.Observations = append(rec.Observations, iso.Observation{Name: "tc_readback", Detail: "absent from product observation report; report_id=" + string(report["report_id"]) + "; owner w1-netlab / w2-agent-core; mechanism evidence is separately recorded in lab-AT10-tc.json"})
+		}
 	}
 }
 
@@ -458,7 +465,7 @@ func (x *isolationRun) noteUnmeasured(serving iso.Check) {
 	if x.records["AT10"] != nil {
 		build = x.records["AT10"].Build
 	}
-	x.add("AT10", iso.Check{Name: "provisional lease reports AWAITING_MEMBER_GRANTS", Status: iso.StatusBlocked, Owner: "w2-agent-core", Actual: "agent follow-up 18 is on main " + build + "; the grant-less lease window was not sampled because serving publication never succeeded"})
+	x.add("AT10", iso.Check{Name: "provisional lease reports AWAITING_MEMBER_GRANTS", Status: iso.StatusBlocked, Owner: "w2-agent-core", Actual: "agent follow-up 20 (#250) is on main " + build + "; the grant-less lease window was not sampled because serving publication never succeeded"})
 	x.add("AT11", iso.Check{Name: "IPv6 platform matrix", Status: iso.StatusBlocked, Owner: "w3-devstack-e2e: real IPv6 and platform paths are devstack backlog", Actual: "devstack follow-up 13 did not export an IPv6 or member-platform path; harness-exports.md exposes only InjectMemberIngress and ObserveMemberIngress"})
 	x.add("AT12", iso.Check{Name: "designated DNS exception", Status: iso.StatusBlocked, Owner: "w3-devstack-e2e: resolver on member underlay", Actual: "no export places the designated resolver behind the exit; harness-exports.md exposes only InjectMemberIngress and ObserveMemberIngress"})
 	x.add("AT12", iso.Check{Name: "unknown/spoofed member source", Status: iso.StatusBlocked, Owner: serving.Owner, Actual: gap + "; ObserveMemberIngress was not called"})
@@ -1479,18 +1486,18 @@ func (x *isolationRun) stopConvergence() {
 
 func (x *isolationRun) sampleLoop() {
 	defer close(x.convStopped)
-	x.takeSample(true)
-	tick := time.NewTicker(2 * time.Second)
+	x.takeSample()
+	tick := time.NewTicker(250 * time.Millisecond)
 	defer tick.Stop()
 	for {
 		select {
 		case <-x.ctx.Done():
 			return
 		case <-x.stopConv:
-			x.takeSample(true)
+			x.takeSample()
 			return
 		case <-tick.C:
-			x.takeSample(false)
+			x.takeSample()
 		}
 	}
 }
@@ -1503,11 +1510,11 @@ func (x *isolationRun) noteFirstCounted(p iso.Positive) {
 	}
 	x.firstCounted = "at=" + p.At + " device=" + p.DeviceID + " bytes=" + p.Before + "->" + p.After
 	x.convMu.Unlock()
-	x.takeSample(true)
 	x.signalConv()
+	x.noteRulesetReadback()
 }
 
-func (x *isolationRun) takeSample(force bool) {
+func (x *isolationRun) takeSample() {
 	if x.r == nil || x.r.nodeID == uuid.Nil {
 		return
 	}
@@ -1525,12 +1532,18 @@ func (x *isolationRun) takeSample(force bool) {
 			'publication_intent', e.publication_intent,
 			'publication_observed', e.publication_observed,
 			'desired_bindings', (SELECT jsonb_array_length(COALESCE(d.envelope->'signed'->'device_bindings','[]'::jsonb)) FROM desired_state_envelopes d WHERE d.node_id=n.id),
+			'lease_id', (SELECT s.id::text FROM serving_leases s WHERE s.node_id=n.id ORDER BY s.issued_at DESC LIMIT 1),
+			'lease_issued_at', (SELECT to_char(s.issued_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"') FROM serving_leases s WHERE s.node_id=n.id ORDER BY s.issued_at DESC LIMIT 1),
 			'lease_generation', (SELECT s.policy_generation::text FROM serving_leases s WHERE s.node_id=n.id ORDER BY s.issued_at DESC LIMIT 1),
 			'lease_members', (SELECT jsonb_array_length(COALESCE(s.envelope->'signed'->'members','[]'::jsonb)) FROM serving_leases s WHERE s.node_id=n.id ORDER BY s.issued_at DESC LIMIT 1),
 			'lease_max_offline_seconds', (SELECT s.envelope->'signed'->'max_offline_seconds' FROM serving_leases s WHERE s.node_id=n.id ORDER BY s.issued_at DESC LIMIT 1),
 			'block_reasons', (SELECT o.report_payload->'forwarding_block_reasons' FROM node_observations o WHERE o.node_id=n.id ORDER BY o.received_at DESC LIMIT 1),
 			'forwarding', (SELECT o.report_payload->'member_forwarding_enabled' FROM node_observations o WHERE o.node_id=n.id ORDER BY o.received_at DESC LIMIT 1),
 			'observation_generation', (SELECT o.report_payload->'applied_config_generation' FROM node_observations o WHERE o.node_id=n.id ORDER BY o.received_at DESC LIMIT 1),
+			'observation_id', (SELECT o.id::text FROM node_observations o WHERE o.node_id=n.id ORDER BY o.received_at DESC LIMIT 1),
+			'observation_at', (SELECT o.report_payload->>'observed_at' FROM node_observations o WHERE o.node_id=n.id ORDER BY o.received_at DESC LIMIT 1),
+			'observed_lease_id', (SELECT o.report_payload->'lease'->>'lease_id' FROM node_observations o WHERE o.node_id=n.id ORDER BY o.received_at DESC LIMIT 1),
+			'errors', (SELECT o.report_payload->'errors' FROM node_observations o WHERE o.node_id=n.id ORDER BY o.received_at DESC LIMIT 1),
 			'checks', (SELECT o.report_payload->'checks' FROM node_observations o WHERE o.node_id=n.id ORDER BY o.received_at DESC LIMIT 1)
 		) FROM nodes n LEFT JOIN exits e ON e.node_id=n.id WHERE n.id=$1`, x.r.nodeID).Scan(&raw)
 		_ = conn.Close(x.ctx)
@@ -1541,27 +1554,19 @@ func (x *isolationRun) takeSample(force bool) {
 		} else {
 			row["at"] = time.Now().UTC().Format(time.RFC3339Nano)
 			row["lease_check"] = leaseCheckOnly(row["checks"])
-			delete(row, "checks")
 		}
 	}
 	chain := x.r.lab.forwardChain()
-	row["forward_generation"] = chain.Generation
+	row["forward_generation"] = strconv.Itoa(chain.Generation)
+	row["forward_chain_at"] = time.Now().UTC().Format(time.RFC3339Nano)
+	row["forward_present"] = chain.Present
 	row["forward_baseline"] = chain.Baseline
 	row["forward_member_accept"] = chain.MemberAccept
-	key := sampleKey(row)
 	x.convMu.Lock()
 	defer x.convMu.Unlock()
-	if !force && len(x.conv) > 0 {
-		prev := x.conv[len(x.conv)-1]
-		if sampleKey(prev) == key {
-			if at, _ := prev["at"].(string); at != "" {
-				if t, e := time.Parse(time.RFC3339Nano, at); e == nil && time.Since(t) < 15*time.Second {
-					return
-				}
-			}
-		}
-	}
-	if len(x.conv) >= 500 {
+	// Preserve repeated observations: three distinct reads inside the measured
+	// five-second window are evidence even when the accepted report is unchanged.
+	if len(x.conv) >= 4000 {
 		return
 	}
 	x.conv = append(x.conv, row)
@@ -1584,17 +1589,6 @@ func leaseCheckOnly(v any) any {
 	return nil
 }
 
-func sampleKey(row map[string]any) string {
-	copyRow := map[string]any{}
-	for k, v := range row {
-		if k != "at" {
-			copyRow[k] = v
-		}
-	}
-	raw, _ := json.Marshal(copyRow)
-	return string(raw)
-}
-
 func (x *isolationRun) writeConvergence() {
 	if x.records["AT10"] == nil {
 		return
@@ -1603,7 +1597,7 @@ func (x *isolationRun) writeConvergence() {
 	samples := append([]map[string]any(nil), x.conv...)
 	first := x.firstCounted
 	x.convMu.Unlock()
-	doc := map[string]any{"run_id": x.records["AT10"].RunID, "build": x.records["AT10"].Build, "first_counted_member_byte": first, "samples": samples}
+	doc := map[string]any{"run_id": x.records["AT10"].RunID, "build": x.records["AT10"].Build, "first_counted_member_byte": first, "samples": samples, "sample_cadence_ms": 250, "reference_window_ms": []int{5021, 5025}}
 	raw, err := json.MarshalIndent(doc, "", "  ")
 	if err == nil {
 		_ = os.WriteFile(filepath.Join(x.dir, "convergence-timeline.json"), []byte(iso.Redact(string(raw))+"\n"), 0o644)
@@ -1648,94 +1642,19 @@ func (x *isolationRun) assertProvisional(samples []map[string]any) {
 		}
 	}
 	c := iso.Check{Name: "provisional lease reports AWAITING_MEMBER_GRANTS", Positive: positive, Owner: "w2-agent-core"}
-	build := ""
-	if x.records["AT10"] != nil {
-		build = x.records["AT10"].Build
+	result := iso.EvaluateProvisional(samples)
+	raw, _ := json.Marshal(result)
+	c.Observations = append(c.Observations, iso.Observation{Name: "provisional_window", Detail: string(raw)})
+	c.Status = result.Status
+	c.Actual = result.Detail
+	if !positive.Valid() {
+		c.Status = iso.StatusBlocked
+		c.Actual += "; no counted member positive"
 	}
-	var codes []string
-	sawCode, sawExpired, sawStale := false, false, false
-	windows := 0
-	for _, row := range samples {
-		bindings, bok := asInt(row["desired_bindings"])
-		members, mok := asInt(row["lease_members"])
-		leaseGen, _ := row["lease_generation"].(string)
-		desiredGen, _ := row["desired_generation"].(string)
-		if !bok || !mok || bindings <= 0 || members != 0 || leaseGen == "" || leaseGen != desiredGen {
-			continue
-		}
-		windows++
-		code, detail, status := leaseCode(row["lease_check"])
-		reasons := reasonText(row["block_reasons"])
-		codes = append(codes, code+"/"+status+"/"+reasons)
-		switch {
-		case code == "AWAITING_MEMBER_GRANTS" && strings.Contains(reasons, "awaiting_member_grants") && !strings.Contains(reasons, "lease_expired") && !strings.Contains(detail, "LEASE_EXPIRED"):
-			sawCode = true
-		case code == "LEASE_EXPIRED" || strings.Contains(reasons, "lease_expired"):
-			sawExpired = true
-		default:
-			if status == "not_run" || code == "" {
-				sawStale = true
-			} else {
-				sawExpired = true
-			}
-		}
-	}
-	c.Observations = append(c.Observations, iso.Observation{Name: "provisional_lease_code", Detail: "windows=" + strconv.Itoa(windows) + "; build=" + build + "; agent_follow_up_18=on main; codes=" + strings.Join(codes, " | ")})
-	switch {
-	case windows == 0:
-		c.Status = iso.StatusBlocked
-		c.Actual = "no grant-less same-generation lease was sampled; main " + build
-	case sawExpired:
-		c.Status = iso.NegativeStatus(positive, true, false)
-		c.Actual = "provisional window did not report AWAITING_MEMBER_GRANTS; " + strings.Join(codes, " | ")
-	case sawCode:
-		if positive.Valid() {
-			c.Status = iso.StatusPass
-			c.Owner = ""
-			c.Actual = "lease check error_code AWAITING_MEMBER_GRANTS while the same-generation lease had no member grants"
-		} else {
-			c.Status = iso.StatusBlocked
-			c.Actual = "AWAITING_MEMBER_GRANTS was sampled and AT10 had no counted positive"
-		}
-	case sawStale:
-		c.Status = iso.StatusBlocked
-		c.Actual = "grant-less lease sampled before the accepted lease check updated; codes=" + strings.Join(codes, " | ")
-	default:
-		c.Status = iso.StatusBlocked
-		c.Actual = "provisional window code was null; main " + build
+	if c.Status == iso.StatusPass {
+		c.Owner = ""
 	}
 	x.add("AT10", c)
-}
-
-func asInt(v any) (int, bool) {
-	switch n := v.(type) {
-	case float64:
-		return int(n), true
-	case string:
-		i, err := strconv.Atoi(n)
-		return i, err == nil
-	default:
-		return 0, false
-	}
-}
-
-func leaseCode(v any) (code, detail, status string) {
-	m, ok := v.(map[string]any)
-	if !ok {
-		return "", "", ""
-	}
-	code, _ = m["error_code"].(string)
-	detail, _ = m["detail"].(string)
-	status, _ = m["status"].(string)
-	return code, detail, status
-}
-
-func reasonText(v any) string {
-	raw, err := json.Marshal(v)
-	if err != nil {
-		return ""
-	}
-	return string(raw)
 }
 
 func (x *isolationRun) noteEvaluator() {
