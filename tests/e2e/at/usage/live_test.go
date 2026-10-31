@@ -154,16 +154,34 @@ func TestATUsage_Live(t *testing.T) {
 	evalMap := make(map[string]Record, 6)
 	t.Log("evaluating AT16")
 	evalMap["AT16"] = s.evalAT16(t)
+	if err := WriteEvidence(s.evidence, evalMap["AT16"], s.extraRedactions...); err != nil {
+		t.Fatal(err)
+	}
 	t.Log("evaluating AT14")
 	evalMap["AT14"] = s.evalAT14(t)
+	if err := WriteEvidence(s.evidence, evalMap["AT14"], s.extraRedactions...); err != nil {
+		t.Fatal(err)
+	}
 	t.Log("evaluating AT18")
 	evalMap["AT18"] = s.evalAT18(t)
+	if err := WriteEvidence(s.evidence, evalMap["AT18"], s.extraRedactions...); err != nil {
+		t.Fatal(err)
+	}
 	t.Log("evaluating AT19")
 	evalMap["AT19"] = s.evalAT19(t)
+	if err := WriteEvidence(s.evidence, evalMap["AT19"], s.extraRedactions...); err != nil {
+		t.Fatal(err)
+	}
 	t.Log("evaluating AT17")
 	evalMap["AT17"] = s.evalAT17(t)
+	if err := WriteEvidence(s.evidence, evalMap["AT17"], s.extraRedactions...); err != nil {
+		t.Fatal(err)
+	}
 	t.Log("evaluating AT15")
 	evalMap["AT15"] = s.evalAT15(t)
+	if err := WriteEvidence(s.evidence, evalMap["AT15"], s.extraRedactions...); err != nil {
+		t.Fatal(err)
+	}
 
 	orderedIDs := []string{"AT14", "AT15", "AT16", "AT17", "AT18", "AT19"}
 	records := make([]Record, 0, len(orderedIDs))

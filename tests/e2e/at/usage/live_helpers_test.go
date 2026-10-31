@@ -1134,9 +1134,10 @@ func (s *liveSuite) measurePerIncarnationRetainedUsage() incarnationRetentionMea
 	s.exit2ID, s.exit2NetID = s.configureAndPublishNode("node2", s.node2ID, newInc2, s.node2Client, 15000000, 8000000)
 	origin2IP, _ := s.originAndSNAT("node2")
 	_, _ = s.selectExitRoute("member", s.exit2NetID, origin2IP)
+	newTrafficStarted := time.Now().UTC()
 	trNew := s.runCountedTransfer("member", "node2", s.deviceA, 1)
 	_, _ = s.selectExitRoute("member", s.exitNetID, origin2IP)
-	s.waitForUploadedTraffic("node2", s.node2ID, newInc2, s.deviceA)
+	s.waitForUploadedTraffic("node2", s.node2ID, newInc2, s.deviceA, newTrafficStarted)
 	s.stopNodeAgent("node2")
 
 	incAfterTrafficResp := s.apiCall(s.admin, http.MethodGet, "/api/v1/admin/nodes/"+s.node2ID.String()+"/incarnations", nil, nil)

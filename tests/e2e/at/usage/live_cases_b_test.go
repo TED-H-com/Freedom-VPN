@@ -285,16 +285,14 @@ func (s *liveSuite) evalAT19(t *testing.T) Record {
 	// Each ACK below is emitted by the real agent after kernel apply.
 	s.stopNodeAgent("node")
 	s.stopNodeAgent("node2")
-	s.t.Cleanup(func() {
-		s.startNodeAgent("node")
-	})
 	_, _, _, _ = s.ackNodeGeneration(s.nodeID, s.incarnationID, s.agentClient, 0)
 	_, _, _, _ = s.ackNodeGeneration(s.node2ID, s.incarnation2ID, s.node2Client, 0)
 
 	originIP, _ := s.originAndSNAT("node2")
 	_, _ = s.selectExitRoute("member", s.exit2NetID, originIP)
+	node2TransferStarted := time.Now().UTC()
 	trNode2 := s.runCountedTransfer("member", "node2", s.deviceA, 1)
-	s.waitForUploadedTraffic("node2", s.node2ID, s.incarnation2ID, s.deviceA)
+	s.waitForUploadedTraffic("node2", s.node2ID, s.incarnation2ID, s.deviceA, node2TransferStarted)
 
 	// Restore member route selection to primary node
 	_, _ = s.selectExitRoute("member", s.exitNetID, originIP)

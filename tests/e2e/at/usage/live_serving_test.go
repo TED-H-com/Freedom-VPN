@@ -46,8 +46,8 @@ func (s *liveSuite) captureFirstServing() {
 	var received time.Time
 	err := s.pool.QueryRow(s.ctx, `SELECT report_payload, received_at FROM node_observations
 		WHERE node_id=$1 AND incarnation_id=$2 AND safety_status='passed'
-		AND report_payload->>'member_forwarding_enabled'='true'
-		ORDER BY received_at ASC LIMIT 1`, s.nodeID, s.incarnationID).Scan(&raw, &received)
+		AND report_payload->>'member_forwarding_enabled'='true' AND received_at>$3
+		ORDER BY received_at ASC LIMIT 1`, s.nodeID, s.incarnationID, s.d067BringUp.ReadyObservationReceivedAt).Scan(&raw, &received)
 	if err != nil {
 		s.t.Fatalf("first serving observation: %v", err)
 	}

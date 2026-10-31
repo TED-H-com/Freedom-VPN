@@ -33,7 +33,8 @@ func (s *liveSuite) evalAT14(t *testing.T) Record {
 
 	// 1. Live transfer probe and exclusion probes on node
 	bUp0, bDown0, _, _, _ := s.deviceCounters("node", s.deviceB)
-	tr := s.runCountedTransfer("member", "node", s.deviceA, 2)
+	transferStarted := time.Now().UTC()
+	tr := s.runCountedTransfer("member", "node", s.deviceA, 8)
 	bUp1, bDown1, _, allAfter, _ := s.deviceCounters("node", s.deviceB)
 
 	uBeforeRFC, dBeforeRFC, _, cBeforeRFC, _ := s.deviceCounters("node", s.deviceA)
@@ -81,7 +82,7 @@ ip route del 10.254.254.1/32 dev fvnb0 2>/dev/null || true
 	)
 
 	// 2. Ingest signed UsageEvent from node (s.nodeID / s.incarnationID) for memberA / s.deviceA and verify central ledger + GET /api/v1/member/usage
-	s.waitForUploadedTraffic("node", s.nodeID, s.incarnationID, s.deviceA)
+	s.waitForUploadedTraffic("node", s.nodeID, s.incarnationID, s.deviceA, transferStarted)
 	sqlSnap := s.inspectNodeUsageSQLite("node", s.deviceA)
 
 	var pgSamplesUp, pgSamplesDown string
