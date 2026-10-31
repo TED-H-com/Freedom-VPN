@@ -255,8 +255,7 @@ func (p *probe) checkServingFreeze(node uuid.UUID, m *freezeMonitor) {
 	reportOK := p.freezeSQL(fmt.Sprintf("SELECT report_payload FROM node_observations WHERE node_id='%s' ORDER BY received_at DESC LIMIT 1", node), &report)
 	receiptOK := false
 	if reportOK {
-		cmd := exec.CommandContext(p.ctx, "docker", "exec", "-i", "fvpn-w4-enroll-node", "wget", "-q", "-O", "-", "--content-on-error", "--timeout=10", "--ca-certificate=/etc/vpn-node/ca.pem", "--certificate=/var/lib/vpn-node/identity/cert.pem", "--private-key=/var/lib/vpn-node/identity/key.pem", "--header=Content-Type: application/json", "--header=Idempotency-Key: "+uuid.NewString(), "--post-file=/dev/stdin", "https://127.0.0.1:9444/api/v1/agent/observations")
-		cmd.Stdin = bytes.NewReader(report)
+		cmd := exec.CommandContext(p.ctx, "docker", "exec", "-i", "fvpn-w4-enroll-node", "wget", "-q", "-O", "-", "--content-on-error", "--timeout=10", "--ca-certificate=/etc/vpn-node/ca.pem", "--certificate=/var/lib/vpn-node/identity/cert.pem", "--private-key=/var/lib/vpn-node/identity/key.pem", "--header=Content-Type: application/json", "--header=Idempotency-Key: "+uuid.NewString(), "--post-data="+string(report), "https://127.0.0.1:9444/api/v1/agent/observations")
 		raw, err := cmd.Output()
 		var receipt api.ObservationAccepted
 		receiptOK = err == nil && json.Unmarshal(raw, &receipt) == nil && receipt.IdentityFrozen != nil && *receipt.IdentityFrozen

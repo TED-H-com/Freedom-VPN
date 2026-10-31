@@ -21,7 +21,7 @@ import (
 
 const installerOwnerProof = "docs/e2e/runs/2026-10-31/followup17/a7c41436-82b3-4665-b75c-e2887f2e1009/installer-owner-chain.md"
 const installerServingGap = "D-116 / ENR-06: installer inet fvpn owner marker fails verifyChainSet with HOOK_PRIORITY_MISMATCH; serving rerun/reinstall and nonzero same-slot usage remain blocked. Proof: " + installerOwnerProof
-const usageInstallerGap = "D-105 / D-112 / ENR-05: contracts revision 14 defines the retired-stream handoff; central acceptance and node uploader are not merged on this source. Before+held-byte equality and historical attribution remain blocked. Serving prerequisite also blocked by D-116. Proof: " + installerOwnerProof
+const usageInstallerGap = "D-105 / D-112 / ENR-05: contracts revision 14 defines the retired-stream handoff; central acceptance and node uploader are not merged on this source. Before+held-byte equality and historical attribution remain blocked. Contract proof: contracts/openapi.yaml submitUsageBatch and docs/contracts/README.md revision 14. Implementation boundary: packaging/installer/reenroll.go retains events without upload. Serving prerequisite also blocked by D-116. Proof: " + installerOwnerProof
 const installerStartupGap = "ENR-06: initial installer prerequisite did not complete; see actual exit, failing step, journal, unit and socket observations."
 
 // This is a narrow availability/snapshot proof on the regular node. It must
