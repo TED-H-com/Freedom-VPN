@@ -6,7 +6,9 @@
 
 ## Batch bytes
 
-Each event in the batch is the stored canonical payload, embedded unchanged. The client does not rebuild an event. `ledger_epoch` is JSON null until a verified checkpoint has been applied. A batch response never changes the ledger epoch.
+Each event in the batch is the stored canonical payload, embedded unchanged. The client does not rebuild an event. `ledger_epoch` is JSON null until a verified checkpoint has been applied. A batch response never changes the ledger epoch. `OutboxStatus.ledger_epoch` follows that same rule: an ACK can advance `central_acked_through` while the epoch stays null. Null means no verified generation has been accepted (§17.3).
+
+`overThreshold` calls `OutboxStatus` and does not evaluate the forwarding gate. `meter.Health` → `EvaluateGate` is what persists `gate_stopped`, from the agent run loop. A status read during upload does not stop or resume member forwarding.
 
 `Idempotency-Key` is a new UUIDv7 for a new body. A retry of the same bytes reuses the key and the stored body. `HTTPTransport` sets `Content-Type: application/json` and that header. `fvpn-agent` does not build a second TLS stack: it posts through the control client's usage class (`Exchange`), which already uses the node certificate and TLS 1.2 minimum. That class has its own concurrency budget, separate from the lease budget. `HTTPTransport` remains for a caller that already holds an `*http.Client`.
 
@@ -27,3 +29,7 @@ The checkpoint body is the raw recovery envelope. `ApplyCheckpoint` verifies it 
 ## Fault injection
 
 `Config.Hook` may fail at `upload.build` (body is built, not yet remembered), `upload.post` (before the request) and `upload.apply` (before the ACK or the conflict block is written).
+
+## Reading the local ledger
+
+`fvpn-agent usage snapshot` is the read-only view of this outbox and its watermark. The field list, exit codes and the lab contract `UsageLedgerSnapshot` (this command's `-json`) are in `docs/node/usage-store.md`. The command does not upload and does not apply an ACK. A 503 from the center leaves the snapshot byte-identical, including `payload_sha256` of the bytes this package resends.

@@ -4,13 +4,13 @@
 # root Makefile includes mk/*.mk. Recipes run from the repository root.
 #
 #   usage-agent-build   linux/amd64 and linux/arm64 compile of the packages
-#   usage-agent-test    store, meter and upload tests
+#   usage-agent-test    store, meter, upload and the usage snapshot command
 #   usage-agent-lint    gofmt, vet and the same staticcheck pin as mk/go.mk
 #   usage-agent-verify  lint, test and build
 
 USAGE_AGENT_GO ?= go
 USAGE_AGENT_ENV := CGO_ENABLED=0 GOTOOLCHAIN=local
-USAGE_AGENT_PKGS := ./node/internal/meter/... ./node/internal/usagestore/... ./node/internal/usageupload/...
+USAGE_AGENT_PKGS := ./node/internal/meter/... ./node/internal/usagestore/... ./node/internal/usageupload/... ./node/agent/cmd/fvpn-agent/...
 USAGE_AGENT_STATICCHECK := honnef.co/go/tools/cmd/staticcheck@v0.8.2
 
 BUILD_TARGETS += usage-agent-build
@@ -28,7 +28,7 @@ usage-agent-test:
 	$(USAGE_AGENT_ENV) $(USAGE_AGENT_GO) test $(USAGE_AGENT_PKGS)
 
 usage-agent-lint:
-	@test -z "$$(gofmt -l node/internal/meter node/internal/usagestore node/internal/usageupload)" || { echo 'gofmt required'; exit 1; }
+	@test -z "$$(gofmt -l node/internal/meter node/internal/usagestore node/internal/usageupload node/agent/usage_snapshot.go node/agent/cmd/fvpn-agent)" || { echo 'gofmt required'; exit 1; }
 	$(USAGE_AGENT_ENV) $(USAGE_AGENT_GO) vet $(USAGE_AGENT_PKGS)
 	$(USAGE_AGENT_ENV) $(USAGE_AGENT_GO) run $(USAGE_AGENT_STATICCHECK) $(USAGE_AGENT_PKGS)
 

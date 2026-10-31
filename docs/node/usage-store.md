@@ -47,6 +47,14 @@ Archived payloads stay for at least 72 hours after the local ACK (`DefaultArchiv
 
 The stopped flag is stored in `meta`, so a process restart keeps the gate closed until the resume line.
 
+## Outbox status
+
+`OutboxStatus` fills `api.UsageOutboxStatus` for an observation (§10.5, §10.6, §10.8). It is a read of the persisted stream. It does not call `EvaluateGate`, it does not stat the disk, and it does not update `gate_stopped` or `persistFailed`. Two calls with no commit and no ACK between them return the same value. The database file, its WAL, and its shared-memory index are unchanged.
+
+`EvaluateGate` is the call that persists the forwarding gate. The agent run loop reaches it through `meter.Health`. That is where a hot cap sets `gate_stopped` and where a stopped gate resumes once every tripped meter is under 80%. An observation does not take that step, and neither does the uploader's size check. A backlog that is already over a cap stays `gate_stopped = 0` until `EvaluateGate` runs. A gate that is already stopped stays stopped until `EvaluateGate` sees the resume line.
+
+`ledger_epoch` on that status is the central generation `ApplyCheckpoint` adopted. It is null until that verified checkpoint, including when `central_acked_through` is already greater than zero. A batch ACK advances the contiguous watermark and does not store the epoch named in the result (§10.5 step 5, §10.6, §17.3). Null means this node has not accepted a verified ledger generation. The watermark is still the highest contiguous ACK; it is not yet bound to a generation. `fvpn-agent usage snapshot` prints the same null. `UsageBatchRequest.ledger_epoch` already says the field is null before the first checkpoint.
+
 ## Checkpoint
 
 `ApplyCheckpoint` verifies the envelope with `envelope.PurposeRecovery` against the node trust store (`NewNodeTrustStore` / `ParseNodeTrustStoreJSON`). Verification fails closed (`ErrNoTrust`, `ErrBadCheckpoint`). A node bundle cannot carry the central-only `ledger-epoch` purpose.
@@ -58,3 +66,76 @@ Inside the current ledger epoch the ACK never falls. A lower watermark is accept
 ## Fault injection
 
 `Options.Hook` may return `ErrInjectedCrash` at `commit.insert`, `commit.checkpoint`, `commit.before_commit`, `commit.after_commit`, `ack.before_commit` and `ack.after_commit`. A hook must not call back into the store. Steps before commit roll the transaction back. `commit.after_commit` and `ack.after_commit` run after the commit is durable.
+
+## Reading the local ledger
+
+`fvpn-agent usage snapshot` prints the ledger without writing it. It is safe while `fvpn-agent run` is serving. It does not take the node update lock (`/var/lib/vpn-node/update.lock`). It opens `state_dir/usage.db` with SQLite `mode=ro` and `query_only`, waits at most one second (`usagestore.SnapshotBusyTimeout`) if the file is busy, and reads the schema version, the cursor, the meter epochs and every unacknowledged payload in one deferred read transaction. It does not create the file, migrate it, checkpoint it, or call the upload or ACK paths.
+
+The ledger stores member and device UUIDs, period ids, decimal byte counters and the canonical event. It does not store tokens, private keys, or raw member browsing data (no DNS names, URLs or packet contents). The command does not print those either, and a failure is one fixed sentence with no stack trace and no file path.
+
+```text
+fvpn-agent usage snapshot -config /etc/vpn-node/agent-run.json
+fvpn-agent usage snapshot -config /etc/vpn-node/agent-run.json -json
+```
+
+The text form is an operator table. `-json` is one compact JSON object and a trailing newline. Two snapshots with no commit and no ACK between them are byte-identical, in either form.
+
+### What the numbers mean
+
+| Field | Meaning |
+|---|---|
+| `schema_version` | SQLite `user_version` of this ledger. This agent reads version 1 only. |
+| `node_id`, `node_incarnation_id` | The stream this file belongs to (§10.6). |
+| `ledger_epoch` | Central ledger generation the watermark belongs to (§17.3). JSON `null` (text `none`) until a verified checkpoint is applied. A batch ACK does not set it. |
+| `meter_epochs` | Counter generations in open order. `current` is the open epoch. `closed` epochs stay so a reinstall can show the id did not reset (§10.7). |
+| `last_event_seq` | Highest sequence this incarnation has assigned (`next_seq - 1`), as a decimal string. It does not reset on restart, counter rebuild or meter-epoch change. A purged archive row can leave this above the highest row still on disk. |
+| `acked_through` | Contiguous central watermark, decimal. Unacknowledged events have a greater sequence. The same ledger epoch never lowers it (§10.6, §10.8). |
+| `unacked_count` | Outbox rows. |
+| `unacked_payload_bytes` | Sum of those rows' stored canonical payload lengths, decimal. This is the §10.8 byte total, not a file size. |
+| `unacked_events` | One object per outbox row, in sequence order. |
+
+Each unacknowledged event has `event_seq`, `period_ids` (first-seen order), `records` and `payload_sha256`. Each record copies `member_id`, `device_id`, `binding_revision`, `period_id`, `upload_bytes` and `download_bytes` from the stored payload. `payload_sha256` is the immutable hash: SHA-256 of the canonical payload with that field removed, checked against the stored column and against the exact bytes the uploader resends. A gap with no device records has an empty `records` array. In the text table that row uses `-` for the record columns.
+
+An installer re-run that keeps this file should show the same hashes, the same sequences, the same meter-epoch ids and the same watermark after `fvpn-agent run` starts again. The watermark in that snapshot is the one the store had persisted, not a value reconstructed from memory (§10.6, §10.8).
+
+### Consistency
+
+`ApplyACK` updates the outbox rows and `acked_through` in one SQLite transaction, and commits that transaction before it returns (§10.6). The snapshot's single read transaction therefore shows either the pre-ACK watermark and the pre-ACK outbox, or the post-ACK watermark and the post-ACK outbox. It does not show a new watermark with the old outbox, or the reverse. WAL mode lets this read proceed while `fvpn-agent run` holds its own writer. The snapshot process does not share that process's mutex, and it does not hold a write lock across the read.
+
+### Exit codes
+
+| Exit | Meaning | Stderr |
+|---|---|---|
+| 0 | Snapshot on stdout | empty |
+| 1 | The snapshot was read but stdout could not be written | `fvpn-agent: usage snapshot failed` |
+| 2 | Bad invocation, or the config file is not usable | `usage: ...` or `fvpn-agent: configuration error` |
+| 3 | The usage database file is not there. Nothing is created | `fvpn-agent: usage store is absent` |
+| 4 | SQLite stayed busy for the whole one-second wait | `fvpn-agent: usage store is locked` |
+| 5 | The file is unreadable, not this schema, or fails the hash check | `fvpn-agent: usage store is corrupt` |
+| 64 | `host_reserve_bps` is missing or zero, the same rule as `run` | the configuration sentence used by `run` |
+
+### Lab contract
+
+`UsageLedgerSnapshot` in the lab is the stdout of:
+
+```text
+fvpn-agent usage snapshot -config <agent-run.json> -json
+```
+
+The devstack harness diffs that byte string. It must not edit or delete outbox rows to build the view. Field names and types:
+
+| JSON field | Type |
+|---|---|
+| `schema_version` | number |
+| `node_id` | string, canonical UUID |
+| `node_incarnation_id` | string, canonical UUID |
+| `ledger_epoch` | string UUID, or `null` |
+| `meter_epochs` | array of `{meter_epoch_id, state}` where `state` is `current` or `closed` |
+| `last_event_seq` | decimal string |
+| `acked_through` | decimal string |
+| `unacked_count` | number |
+| `unacked_payload_bytes` | decimal string |
+| `unacked_events` | array of `{event_seq, period_ids, records, payload_sha256}` |
+| `records[]` | `{member_id, device_id, binding_revision, period_id, upload_bytes, download_bytes}`, all strings |
+
+Decimal strings match `^(0|[1-9][0-9]*)$`. `payload_sha256` is 64 lowercase hex digits. The object key order is the order in this table.

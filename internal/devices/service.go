@@ -5,9 +5,11 @@ import (
 	"context"
 	"encoding/base64"
 	"errors"
-	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+	"log/slog"
 	"net/netip"
 	"time"
+
+	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/entitlement"
@@ -45,6 +47,9 @@ type Service struct {
 	Pool         *pgxpool.Pool
 	Entitlements *entitlement.Store
 	Adapter      Adapter
+	// Logger receives fence decisions. Nil uses slog.Default.
+	Logger *slog.Logger
+	fences *fenceAccounting
 }
 type Device struct {
 	ID                                  uuid.UUID `json:"device_id"`
@@ -178,9 +183,38 @@ func (s *Service) AuthorizeDevice(ctx context.Context, c entitlement.Command, p 
 				return entitlement.ErrConflict
 			}
 
+			var versionBefore decstr.U64
+			if err = tx.QueryRow(ctx, `SELECT resource_version::text FROM member_devices WHERE id=$1`, existing).Scan(&versionBefore); err != nil {
+				return err
+			}
 			op, err := s.targetOperation(ctx, tx, c.Actor, existing, member, api.OperationKindMemberDeviceAuthorize, "device.authorized", projection.Revision)
 			if err != nil {
 				return err
+			}
+			cleared, err := clearAuthorizationFence(ctx, tx, existing)
+			if err != nil {
+				return err
+			}
+			if cleared {
+				// A replay of the original idempotency key never reaches this
+				// branch. If that command already has an outbox row at this
+				// version, bump so the grant sync has its own identity.
+				var version, binding decstr.U64
+				var deployment, peerID string
+				if err = tx.QueryRow(ctx, `SELECT resource_version::text,deployment_id,peer_id FROM member_devices WHERE id=$1`, existing).Scan(&version, &deployment, &peerID); err != nil {
+					return err
+				}
+				if version == versionBefore {
+					if err = tx.QueryRow(ctx, `UPDATE member_devices SET resource_version=resource_version+1 WHERE id=$1 RETURNING resource_version::text,deployment_id,peer_id`, existing).Scan(&version, &deployment, &peerID); err != nil {
+						return err
+					}
+					if err = tx.QueryRow(ctx, `SELECT coalesce(max(binding_revision),0)::text FROM device_bindings WHERE device_id=$1`, existing).Scan(&binding); err != nil {
+						return err
+					}
+					if err = enqueue(ctx, tx, "device.authorized", Event{MemberID: member, DeviceID: existing, DeviceVersion: version, EntitlementRevision: projection.Revision, DeploymentID: deployment, PeerID: peerID, BindingRevision: binding, OperationID: &op}); err != nil {
+						return err
+					}
+				}
 			}
 			result = Change{DeviceID: existing, MemberID: member, Revision: projection.Revision, OperationID: &op, Replayed: true}
 			return entitlement.Complete(ctx, tx, record, api.ResourceTypeMemberDevice, existing, &op, 202)

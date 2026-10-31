@@ -412,12 +412,28 @@ func TestAT08_PopulatedPublicationGenerationDelivery(t *testing.T) {
 			if publicationGateCount(t, f, report.NodeId) != 0 {
 				t.Error("populated failed observation queued recovery")
 			}
-			// A requested publish execution still records its failed gate as
-			// error, without withdrawing the previously verified attachment.
+			// A requested publish execution waits in pending/running while retries
+			// remain without changing publication_observed or withdrawing the route,
+			// and records error only when the retry budget exhausts (D-074).
 			retry := f.publicationCommand(report.NodeId, api.PublicationIntentPublished)
-			dispatcher = f.publicationDispatcher(nb, 1)
+			dispatcher = f.publicationDispatcher(nb, 2)
 			f.publicationDispatch(dispatcher, retry.OperationId)
+			waiting := f.publicationOperation(retry.OperationId)
+			if waiting.Status != api.OperationStatusRunning || !waiting.Error.IsNull() {
+				t.Fatalf("populated gated publish did not wait: %+v", waiting)
+			}
 			var observed string
+			if err := r.Pool.QueryRow(t.Context(), `SELECT publication_observed FROM exits WHERE node_id=$1`, report.NodeId).Scan(&observed); err != nil {
+				t.Fatal(err)
+			}
+			if observed != "active" || nb.WithdrawCalls() != 0 {
+				t.Errorf("populated waiting gate changed route semantics: observed=%s withdraws=%d", observed, nb.WithdrawCalls())
+			}
+			f.publicationDispatch(dispatcher, retry.OperationId)
+			exhausted := f.publicationOperation(retry.OperationId)
+			if exhausted.Status != api.OperationStatusFailed || exhausted.Error.IsNull() {
+				t.Fatalf("populated exhausted gate did not fail: %+v", exhausted)
+			}
 			if err := r.Pool.QueryRow(t.Context(), `SELECT publication_observed FROM exits WHERE node_id=$1`, report.NodeId).Scan(&observed); err != nil {
 				t.Fatal(err)
 			}
@@ -427,6 +443,290 @@ func TestAT08_PopulatedPublicationGenerationDelivery(t *testing.T) {
 
 		})
 	}
+}
+
+func TestD074_GatedNodePublishWaitsThenCompletesOrExhausts(t *testing.T) {
+	t.Run("a_stale_generation_waits_and_completes_on_next_observation", func(t *testing.T) {
+		f, enrolled, cert, _, _ := publicationFixture(t)
+		nb := exits.NewFakeNetBirdAdapter()
+		op := f.publicationCommand(enrolled.NodeId, api.PublicationIntentPublished)
+		d := f.publicationDispatcher(nb, 3)
+
+		// Attempt 1 runs while applied_config_generation < desired_config_generation.
+		f.publicationDispatch(d, op.OperationId)
+		waiting := f.publicationOperation(op.OperationId)
+		if waiting.Status != api.OperationStatusRunning || !waiting.Error.IsNull() {
+			t.Fatalf("attempt 1 op = (status=%s, error=%+v), want running with null error", waiting.Status, waiting.Error)
+		}
+		var stepStatus, errCode, errMsg, reason, pubObserved string
+		if err := f.r.Pool.QueryRow(t.Context(), `
+			SELECT o.steps->'agent_policy'->>'status',
+			       o.steps->'agent_policy'->>'error_code',
+			       o.steps->'agent_policy'->>'error_message',
+			       o.steps->'agent_policy'->>'reason',
+			       e.publication_observed
+			FROM operations o
+			JOIN exits e ON e.node_id = o.resource_id
+			WHERE o.id = $1`, op.OperationId).Scan(&stepStatus, &errCode, &errMsg, &reason, &pubObserved); err != nil {
+			t.Fatal(err)
+		}
+		if stepStatus != "pending" || errCode != string(apierr.NodeNotServiceable) || errMsg != "member_forwarding_unconfirmed" || reason != "stale_generation" || pubObserved != "absent" {
+			t.Fatalf("attempt 1 gate state = (step=%s, code=%s, msg=%s, reason=%s, observed=%s), want (pending, NODE_NOT_SERVICEABLE, member_forwarding_unconfirmed, stale_generation, absent)",
+				stepStatus, errCode, errMsg, reason, pubObserved)
+		}
+		for _, st := range waiting.Steps {
+			if st.Name == nodes.StepAgentPolicy {
+				code, cErr := st.ErrorCode.Get()
+				msg, mErr := st.Message.Get()
+				if st.Status != api.OperationStepStatusPending || cErr != nil || code != api.ErrorCodeNODENOTSERVICEABLE || mErr != nil || msg != "member_forwarding_unconfirmed" {
+					t.Fatalf("API agent_policy step = %+v, want pending with NODE_NOT_SERVICEABLE / member_forwarding_unconfirmed", st)
+				}
+			}
+			if st.Name == nodes.StepDataPathProbe && st.Status != api.OperationStepStatusPending {
+				t.Fatalf("API data_path_probe step = %+v, want pending", st)
+			}
+		}
+
+		// Next observation acknowledging the generation satisfies agent_policy and data_path_probe,
+		// wakes the outbox event, and completes the operation on the woken worker retry.
+		f.acknowledgePublication(enrolled, cert, true)
+		f.sql(`UPDATE outbox_events SET available_at=clock_timestamp()+interval '1 day' WHERE event_type<>$1`, desiredstate.EventNodePublicationChanged)
+		var availableNow bool
+		if err := f.r.Pool.QueryRow(t.Context(), `
+			SELECT available_at <= clock_timestamp()
+			FROM outbox_events
+			WHERE event_type = $1 AND payload->>'operation_id' = $2 AND delivered_at IS NULL`,
+			desiredstate.EventNodePublicationChanged, op.OperationId.String()).Scan(&availableNow); err != nil || !availableNow {
+			t.Fatalf("acknowledging observation did not wake outbox event: availableNow=%v err=%v", availableNow, err)
+		}
+		if worked, err := d.Once(t.Context()); err != nil || !worked {
+			t.Fatalf("woken worker retry did not run: worked=%v err=%v", worked, err)
+		}
+		done := f.publicationOperation(op.OperationId)
+		if done.Status != api.OperationStatusSucceeded || !done.Error.IsNull() || nb.RouteCount() != 1 {
+			t.Fatalf("completed op = %+v routes=%d, want succeeded with 1 route", done, nb.RouteCount())
+		}
+		if err := f.r.Pool.QueryRow(t.Context(), `SELECT publication_observed FROM exits WHERE node_id = $1`, enrolled.NodeId).Scan(&pubObserved); err != nil || pubObserved != "active" {
+			t.Fatalf("publication_observed = %q (%v), want active", pubObserved, err)
+		}
+	})
+
+	t.Run("b_member_forwarding_unconfirmed_on_data_path_probe_waits_and_completes", func(t *testing.T) {
+		f, enrolled, cert, _, _ := publicationFixture(t)
+		nb := exits.NewFakeNetBirdAdapter()
+		op := f.publicationCommand(enrolled.NodeId, api.PublicationIntentPublished)
+		// Acknowledge the generation with member_forwarding_enabled=false so agent_policy passes
+		// and data_path_probe is gated with forwarding_disabled.
+		f.acknowledgePublication(enrolled, cert, false)
+		d := f.publicationDispatcher(nb, 3)
+
+		f.publicationDispatch(d, op.OperationId)
+		waiting := f.publicationOperation(op.OperationId)
+		if waiting.Status != api.OperationStatusRunning || !waiting.Error.IsNull() {
+			t.Fatalf("attempt 1 op = (status=%s, error=%+v), want running with null error", waiting.Status, waiting.Error)
+		}
+		var policyStatus, probeStatus, errCode, errMsg, reason, pubObserved string
+		if err := f.r.Pool.QueryRow(t.Context(), `
+			SELECT o.steps->'agent_policy'->>'status',
+			       o.steps->'data_path_probe'->>'status',
+			       o.steps->'data_path_probe'->>'error_code',
+			       o.steps->'data_path_probe'->>'error_message',
+			       o.steps->'data_path_probe'->>'reason',
+			       e.publication_observed
+			FROM operations o
+			JOIN exits e ON e.node_id = o.resource_id
+			WHERE o.id = $1`, op.OperationId).Scan(&policyStatus, &probeStatus, &errCode, &errMsg, &reason, &pubObserved); err != nil {
+			t.Fatal(err)
+		}
+		if policyStatus != "succeeded" || probeStatus != "pending" || errCode != string(apierr.NodeNotServiceable) || errMsg != "member_forwarding_unconfirmed" || reason != "forwarding_disabled" || pubObserved != "absent" {
+			t.Fatalf("attempt 1 probe gate = (policy=%s, probe=%s, code=%s, msg=%s, reason=%s, observed=%s)",
+				policyStatus, probeStatus, errCode, errMsg, reason, pubObserved)
+		}
+
+		// Next observation with armed forwarding satisfies data_path_probe and wakes the worker retry.
+		f.acknowledgePublication(enrolled, cert, true)
+		f.sql(`UPDATE outbox_events SET available_at=clock_timestamp()+interval '1 day' WHERE event_type<>$1`, desiredstate.EventNodePublicationChanged)
+		if worked, err := d.Once(t.Context()); err != nil || !worked {
+			t.Fatalf("woken worker retry did not run: worked=%v err=%v", worked, err)
+		}
+		done := f.publicationOperation(op.OperationId)
+		if done.Status != api.OperationStatusSucceeded || !done.Error.IsNull() || nb.RouteCount() != 1 {
+			t.Fatalf("completed op = %+v routes=%d, want succeeded with 1 route", done, nb.RouteCount())
+		}
+		if err := f.r.Pool.QueryRow(t.Context(), `SELECT publication_observed FROM exits WHERE node_id = $1`, enrolled.NodeId).Scan(&pubObserved); err != nil || pubObserved != "active" {
+			t.Fatalf("publication_observed = %q (%v), want active", pubObserved, err)
+		}
+	})
+
+	t.Run("c_exhaustion_marks_step_and_operation_failed_and_sets_error", func(t *testing.T) {
+		f, enrolled, _, _, _ := publicationFixture(t)
+		nb := exits.NewFakeNetBirdAdapter()
+		op := f.publicationCommand(enrolled.NodeId, api.PublicationIntentPublished)
+		d := f.publicationDispatcher(nb, 2)
+
+		// Attempt 1 of 2: waiting.
+		f.publicationDispatch(d, op.OperationId)
+		if got := f.publicationOperation(op.OperationId); got.Status != api.OperationStatusRunning || !got.Error.IsNull() {
+			t.Fatalf("attempt 1 op = %+v, want running with null error", got)
+		}
+		// Attempt 2 of 2: exhausted -> failed step, failed operation, publication_observed = 'error'.
+		f.publicationDispatch(d, op.OperationId)
+		exhausted := f.publicationOperation(op.OperationId)
+		if exhausted.Status != api.OperationStatusFailed || exhausted.Error.IsNull() {
+			t.Fatalf("attempt 2 exhausted op = %+v, want failed with error", exhausted)
+		}
+		opErr, err := exhausted.Error.Get()
+		if err != nil || opErr.Code != api.ErrorCodeNODENOTSERVICEABLE {
+			t.Fatalf("exhausted op.Error = (%+v, %v), want NODE_NOT_SERVICEABLE", opErr, err)
+		}
+		for _, st := range exhausted.Steps {
+			if st.Name == nodes.StepAgentPolicy {
+				code, cErr := st.ErrorCode.Get()
+				msg, mErr := st.Message.Get()
+				if st.Status != api.OperationStepStatusFailed || cErr != nil || code != api.ErrorCodeNODENOTSERVICEABLE || mErr != nil || msg != "member_forwarding_unconfirmed" {
+					t.Fatalf("exhausted agent_policy step = %+v, want failed with NODE_NOT_SERVICEABLE / member_forwarding_unconfirmed", st)
+				}
+			}
+		}
+		var stepStatus, reason, pubObserved string
+		if err := f.r.Pool.QueryRow(t.Context(), `
+			SELECT o.steps->'agent_policy'->>'status',
+			       o.steps->'agent_policy'->>'reason',
+			       e.publication_observed
+			FROM operations o
+			JOIN exits e ON e.node_id = o.resource_id
+			WHERE o.id = $1`, op.OperationId).Scan(&stepStatus, &reason, &pubObserved); err != nil {
+			t.Fatal(err)
+		}
+		if stepStatus != "failed" || reason != "stale_generation" || pubObserved != "error" {
+			t.Fatalf("exhausted state = (step=%s, reason=%s, observed=%s), want (failed, stale_generation, error)", stepStatus, reason, pubObserved)
+		}
+	})
+
+	t.Run("d_adapter_failure_fails_step_and_sets_error_immediately", func(t *testing.T) {
+		f, enrolled, cert, _, _ := publicationFixture(t)
+		nb := exits.NewFakeNetBirdAdapter()
+		nb.SetPublishError(errors.New("TEST ONLY adapter 503"))
+		op := f.publicationCommand(enrolled.NodeId, api.PublicationIntentPublished)
+		f.acknowledgePublication(enrolled, cert, true)
+		d := f.publicationDispatcher(nb, 3)
+
+		// Even on attempt 1 of 3, an adapter failure marks netbird_route_readback failed and sets publication_observed = 'error'.
+		f.publicationDispatch(d, op.OperationId)
+		after := f.publicationOperation(op.OperationId)
+		assertPublicationFailure(t, after, api.OperationStatusRunning)
+		var pubObserved string
+		if err := f.r.Pool.QueryRow(t.Context(), `SELECT publication_observed FROM exits WHERE node_id = $1`, enrolled.NodeId).Scan(&pubObserved); err != nil || pubObserved != "error" {
+			t.Fatalf("adapter failure publication_observed = %q (%v), want error", pubObserved, err)
+		}
+	})
+
+	t.Run("e_r11_empty_exception_withdraws_while_pending_and_keeps_withdrawn_on_exhaustion", func(t *testing.T) {
+		r, enrolled, report := nodestest.BaselineObservation(t, "../../../contracts/examples/valid/ObservationReport.json")
+		f := setupRuntime(t, r)
+		cert := pkitest.Certificate(t, enrolled.Response.CertificatePem)
+		decode[api.ObservationAccepted](t, f.call("POST", "/api/v1/agent/observations", report, cert, nil), 202)
+		group := f.group("d074-r11")
+		path := "/api/v1/admin/nodes/" + report.NodeId.String()
+		detail := f.call("GET", path, nil, nil, nil)
+		op := decode[api.Operation](t, f.call("PUT", path+"/publication", api.PublicationRequest{
+			PublicationIntent: api.PublicationIntentPublished,
+			Reason:            "TEST ONLY r11 empty publish",
+			GroupIds:          &[]uuid.UUID{group.GroupId},
+		}, nil, map[string]string{"If-Match": detail.Header().Get("ETag"), "Idempotency-Key": uuid.NewString()}), 202)
+
+		reader := desiredstate.NewFakeEntitlementReader()
+		compiler := desiredstate.NewCompiler(r.Pool, publicationSigner{r.Provider}, desiredstate.WithEntitlementReader(reader), desiredstate.WithPolicyReader(desiredstate.NewFakePolicyReader(desiredstate.PolicySnapshot{})))
+		compiled, err := compiler.Compile(t.Context(), report.NodeId)
+		if err != nil {
+			t.Fatal(err)
+		}
+		report.ReportId, report.ObservedAt = uuid.New(), time.Now().UTC()
+		report.AppliedConfigGeneration.Set(compiled.Envelope.Signed.ConfigGeneration)
+		report.MemberForwardingEnabled, report.DataHealth = true, api.DataHealthHealthy
+		for i := range report.Checks {
+			report.Checks[i].ObservedAt = report.ObservedAt
+			if report.Checks[i].Name == api.NodeCheckNameTunnelProbe {
+				report.Checks[i].Status = api.HealthCheckStatusPassed
+			}
+		}
+		decode[api.ObservationAccepted](t, f.call("POST", "/api/v1/agent/observations", report, cert, nil), 202)
+		nb := exits.NewFakeNetBirdAdapter()
+		d := f.publicationDispatcher(nb, 2)
+		f.publicationDispatch(d, op.OperationId)
+
+		now := time.Now().UTC()
+		reader.SetMembers(desiredstate.MemberEntitlement{
+			MemberID: uuid.New(), GroupIDs: []uuid.UUID{group.GroupId},
+			ValidFrom: now.Add(-time.Hour), EffectiveServiceEnd: now.Add(time.Hour),
+			PlanDownBps: 100000000, PlanUpBps: 50000000,
+			Bindings: []desiredstate.MemberDeviceBinding{{
+				DeviceID: uuid.New(), NetbirdPeerID: "TEST ONLY member peer",
+				AllowedIPv4: []string{"100.64.0.2/32"}, BindingRevision: 1,
+				ValidFrom: now.Add(-time.Hour), ValidUntil: now.Add(time.Hour),
+			}},
+		})
+		bound, err := compiler.Compile(t.Context(), report.NodeId)
+		if err != nil {
+			t.Fatal(err)
+		}
+		acked := report
+		acked.ReportId, acked.ObservedAt = uuid.New(), time.Now().UTC()
+		acked.AppliedConfigGeneration.Set(bound.Envelope.Signed.ConfigGeneration)
+		decode[api.ObservationAccepted](t, f.call("POST", "/api/v1/agent/observations", acked, cert, nil), 202)
+
+		var gate uuid.UUID
+		if err := r.Pool.QueryRow(t.Context(), `SELECT id FROM operations WHERE resource_id=$1 AND principal=$2 ORDER BY created_at DESC,id DESC LIMIT 1`, report.NodeId, nodes.PublicationGatePrincipal).Scan(&gate); err != nil {
+			t.Fatal(err)
+		}
+		var exitID uuid.UUID
+		if err := r.Pool.QueryRow(t.Context(), `SELECT id FROM exits WHERE node_id=$1`, report.NodeId).Scan(&exitID); err != nil {
+			t.Fatal(err)
+		}
+
+		// Attempt 1 of 2: withdraws route and sets publication_observed='withdrawn', while step stays pending and operation stays running.
+		d = f.publicationDispatcher(nb, 2)
+		f.publicationDispatch(d, gate)
+		waiting := f.publicationOperation(gate)
+		if waiting.Status != api.OperationStatusRunning || !waiting.Error.IsNull() {
+			t.Fatalf("r11 gate attempt 1 op = %+v, want running with null error", waiting)
+		}
+		remote, err := nb.ReadExitState(t.Context(), r.Config.NetBirdDeployment, exitID, "")
+		if err != nil || remote.Enabled {
+			t.Fatalf("r11 gate attempt 1 route still enabled: %+v (%v)", remote, err)
+		}
+		var probeStatus, reason, observed string
+		if err := r.Pool.QueryRow(t.Context(), `
+			SELECT o.steps->'data_path_probe'->>'status',
+			       o.steps->'data_path_probe'->>'reason',
+			       e.publication_observed
+			FROM operations o
+			JOIN exits e ON e.node_id = o.resource_id
+			WHERE o.id = $1`, gate).Scan(&probeStatus, &reason, &observed); err != nil {
+			t.Fatal(err)
+		}
+		if probeStatus != "pending" || reason != "serving_checks_unconfirmed" || observed != "withdrawn" {
+			t.Fatalf("r11 gate attempt 1 = (probe=%s, reason=%s, observed=%s), want (pending, serving_checks_unconfirmed, withdrawn)", probeStatus, reason, observed)
+		}
+
+		// Attempt 2 of 2 (exhaustion): marks step and operation failed while keeping publication_observed='withdrawn'.
+		f.publicationDispatch(d, gate)
+		exhausted := f.publicationOperation(gate)
+		if exhausted.Status != api.OperationStatusFailed || exhausted.Error.IsNull() {
+			t.Fatalf("r11 gate attempt 2 exhausted op = %+v, want failed", exhausted)
+		}
+		if err := r.Pool.QueryRow(t.Context(), `
+			SELECT o.steps->'data_path_probe'->>'status',
+			       e.publication_observed
+			FROM operations o
+			JOIN exits e ON e.node_id = o.resource_id
+			WHERE o.id = $1`, gate).Scan(&probeStatus, &observed); err != nil {
+			t.Fatal(err)
+		}
+		if probeStatus != "failed" || observed != "withdrawn" {
+			t.Fatalf("r11 gate attempt 2 = (probe=%s, observed=%s), want (failed, withdrawn)", probeStatus, observed)
+		}
+	})
 }
 
 func publicationGateCount(t *testing.T, f *fixture, node uuid.UUID) int {

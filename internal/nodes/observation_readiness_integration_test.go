@@ -1656,4 +1656,70 @@ func TestReviewR14_RepeatedStalePassedReportKeepsReady(t *testing.T) {
 			t.Fatalf("second safety=passed report of applied generation %s kept provisioning_state=%s safety=%s while desired is %s (compile had reached %s)", applied, detail.ProvisioningState, detail.SafetyStatus, detail.ConfigGeneration.Desired, desired)
 		}
 	})
+
+	t.Run("decision_uses_incarnation_column_when_audit_event_absent", func(t *testing.T) {
+		w := newR14World(t)
+		ctx := w.t.Context()
+		if _, err := w.compiler.Compile(ctx, w.primary.NodeId); err != nil {
+			t.Fatal(err)
+		}
+		comp, err := w.compiler.Compile(ctx, w.primary.NodeId)
+		if err != nil {
+			t.Fatal(err)
+		}
+		desired := comp.Envelope.Signed.ConfigGeneration
+		first, _ := w.prepare(w.primary, false, false)
+		baseline, err := w.primary.AppliedConfigGeneration.Get()
+		if err != nil {
+			t.Fatal(err)
+		}
+		first.AppliedConfigGeneration.Set(baseline)
+		w.observe(first)
+
+		var graceAt *time.Time
+		if err := w.r.Pool.QueryRow(ctx, `SELECT stale_generation_grace_at FROM node_incarnations WHERE id=$1`, w.primary.NodeIncarnationId).Scan(&graceAt); err != nil {
+			t.Fatal(err)
+		}
+		if graceAt == nil {
+			t.Fatal("expected node_incarnations.stale_generation_grace_at to be set after first stale report")
+		}
+
+		// Delete the node.observation_applied audit rows for this node using the
+		// owner retention setting so we prove the control-plane decision does not
+		// consult audit_events (D-075).
+		if err := db.InTx(ctx, w.r.Pool, db.TxOptions{}, func(tx pgx.Tx) error {
+			if _, err := tx.Exec(ctx, `SET LOCAL fvpn.retention_purge = 'on'`); err != nil {
+				return err
+			}
+			tag, err := tx.Exec(ctx, `DELETE FROM audit_events WHERE resource = $1 AND action = 'node.observation_applied'`, "node:"+w.primary.NodeId.String())
+			if err != nil {
+				return err
+			}
+			if tag.RowsAffected() == 0 {
+				t.Fatal("expected at least one node.observation_applied audit row to delete")
+			}
+			return nil
+		}); err != nil {
+			t.Fatalf("delete node.observation_applied audit rows: %v", err)
+		}
+
+		second, _ := w.prepare(w.primary, false, false)
+		second.AppliedConfigGeneration.Set(baseline)
+		w.observe(second)
+
+		detail, _, err := w.r.Nodes.GetNode(ctx, w.primary.NodeId)
+		if err != nil {
+			t.Fatal(err)
+		}
+		applied, _ := detail.ConfigGeneration.Applied.Get()
+		if detail.ProvisioningState != api.ProvisioningStateApplying || applied >= detail.ConfigGeneration.Desired {
+			t.Fatalf("with audit_events row deleted, second stale report kept provisioning_state=%s (applied=%s desired=%s, compile=%s); want applying", detail.ProvisioningState, applied, detail.ConfigGeneration.Desired, desired)
+		}
+		if err := w.r.Pool.QueryRow(ctx, `SELECT stale_generation_grace_at FROM node_incarnations WHERE id=$1`, w.primary.NodeIncarnationId).Scan(&graceAt); err != nil {
+			t.Fatal(err)
+		}
+		if graceAt != nil {
+			t.Fatalf("expected stale_generation_grace_at cleared to NULL after downgrade to applying, got %v", graceAt)
+		}
+	})
 }

@@ -39,13 +39,31 @@ MISSING = {
     "peer_uniqueness": "ENR-04 join cycle did not record EnrollmentPeerInventory; devstack follow-up 12 PR #204 exports JoinEnrolledIdentity",
     "distinct_first_boot": "ENR-07 MachineIdentityFingerprints was not read; devstack follow-up 12 PR #204 exports it",
     "machine_identity": "ENR-07 MachineIdentityFingerprints was not read; devstack follow-up 12 PR #204 exports it",
-    "counted_unacked_usage": "ENR-05 / devstack follow-up 13: HoldUsageAcknowledgements, UsageLedgerSnapshot and CountedMemberTraffic are not exported",
-    "installer_rerun": "ENR-06 / devstack follow-up 13: RerunInstaller is not exported",
-    "identity_ledger_preserved": "ENR-05/ENR-06: counted unacknowledged ledger and installer rerun required",
-    "controlled_reinstall": "ENR-06 / devstack follow-up 13: ControlledReinstall is not exported",
-    "old_certificate_denied": "ENR-06: retain old certificate locally and exercise mTLS after controlled reinstall",
-    "historical_usage_retained": "ENR-05/ENR-06 / devstack follow-up 13: counted usage across RerunInstaller/ControlledReinstall is not exported; listNodeIncarnations usage retention is measured separately",
-    "cloned_identity_conflict": "ENR-07 StartClonedIdentityFixture was not observed; devstack follow-up 12 PR #204 exports it",
+    "counted_unacked_usage": "ENR-05 stays blocked after devstack follow-up 13 (#219). HoldUsageAcknowledgements, UsageLedgerSnapshot and CountedMemberTraffic are not exported. Owner: w4-usage, then devstack. Not emulated.",
+    "installer_rerun": "ENR-06 stays blocked after devstack follow-up 13 (#219). RerunInstaller is not exported. Owner: packaging/installer, then devstack. Not emulated.",
+    "identity_ledger_preserved": "ENR-05/ENR-06: counted unacknowledged ledger and installer rerun required. Not emulated.",
+    "controlled_reinstall": "ENR-06 stays blocked after devstack follow-up 13 (#219). ControlledReinstall is not exported. Owner: packaging/installer, then devstack. Not emulated.",
+    "old_certificate_denied": "ENR-06: old-certificate mTLS rejection stays inside ControlledReinstall. Not emulated.",
+    "historical_usage_retained": "ENR-05/ENR-06: counted usage across reinstall is not exported. listNodeIncarnations usage retention is measured separately. Not emulated.",
+    "cloned_identity_conflict": "ENR-07 / devstack follow-up 14: StartClonedIdentityFixture was not observed on a second /24. The export has no network argument.",
+}
+
+# Orchestrator review of the bebfe230 harness burst. A prior fail stays in
+# prior_checks. It stops blocking only when this run's rate_limit_review passes
+# with http_429 0 and the named checks pass. Any other prior fail still blocks.
+REVIEWED = {
+    "AT06": {
+        "commit": "286eb57b44c2e783257767918680a0e1f097f106",
+        "what_changed": "Harness Retry-After retries for HTTP 429 RATE_LIMITED landed in 286eb57 (#210). The four bebfe230 failures were a burst against browser BrowserRate 10/s burst 30. Run 35e542f8 recorded two retried browser 429s and then failed the Go process on that review signal; those two rows are the same signal, not a new product failure.",
+        "sentence": "Prior run bebfe230 429 RATE_LIMITED failures on audit_read, issue_reinstall, incarnation_history and probe_process are reviewed as resolved: harness Retry-After retries landed in 286eb57b44c2e783257767918680a0e1f097f106 (#210); this run recorded http_429 0 and those checks passed. Limiter class was browser BrowserRate 10/s burst 30. Run 35e542f8 probe_process and rate_limit_review stay in prior_checks and stop blocking on the same zero-429 evidence.",
+        "evidence_names": ("audit_read", "issue_reinstall", "incarnation_history", "probe_process"),
+        "runs": (
+            {"run_id": "bebfe230-26d4-4e3d-b052-81d258d04e07",
+             "names": ("audit_read", "issue_reinstall", "incarnation_history", "probe_process")},
+            {"run_id": "35e542f8-730e-4be0-8214-e4a9dd818c40",
+             "names": ("probe_process", "rate_limit_review")},
+        ),
+    },
 }
 
 
@@ -81,13 +99,53 @@ def previous(docdir, at):
     return old.get("prior_checks", []) + [dict(c, run_id=old["run_id"]) for c in old["checks"]]
 
 
-def verdict(checks, prior):
+def observation(detail):
+    if isinstance(detail, dict) and isinstance(detail.get("gap"), str):
+        return detail["gap"]
+    return str(detail)
+
+
+def http_429(detail):
+    if isinstance(detail, dict) and detail.get("http_429") == 0:
+        return 0
+    return 1
+
+
+def review_evidence(at, checks):
+    spec = REVIEWED.get(at)
+    if not spec:
+        return False
+    by_name = {}
+    for check in checks:
+        by_name.setdefault(check["name"], []).append(check)
+    for name in spec["evidence_names"]:
+        hits = by_name.get(name, [])
+        if name == "probe_process":
+            if any(hit["status"] != "pass" for hit in hits):
+                return False
+            continue
+        if not hits or any(hit["status"] != "pass" for hit in hits):
+            return False
+    reviews = by_name.get("rate_limit_review", [])
+    return bool(reviews) and all(hit["status"] == "pass" and http_429(hit["detail"]) == 0 for hit in reviews)
+
+
+def review_covers(at, prior, checks):
+    spec = REVIEWED.get(at)
+    if not spec or not review_evidence(at, checks):
+        return False
+    return any(prior.get("run_id") == group["run_id"] and prior.get("name") in group["names"]
+               for group in spec["runs"])
+
+
+def verdict(at, checks, prior):
     # A failed subcheck remains explicit evidence and blocks the complete AT.
-    # The follow-up's aggregate gate is pass/blocked, never green on a failure.
+    # An unreviewed prior failure still blocks. A reviewed prior failure stays
+    # visible and stops blocking only when review_evidence is true.
     if any(c["status"] != "pass" for c in checks):
         return "blocked"
-    if any(c["status"] == "fail" for c in prior):
-        return "blocked"  # explicit orchestrator review is required to close a prior failure
+    if any(c["status"] == "fail" and not review_covers(at, c, checks) for c in prior):
+        return "blocked"
     return "pass"
 
 
@@ -99,15 +157,38 @@ def records(meta, observed, prior):
         checks += [{"at": at, "name": name, "status": "blocked", "observed_at": meta["finished_at"],
                     "detail": MISSING.get(name, "Not reached: fresh-stack/API prerequisite unavailable")}
                    for name in required if name not in seen]
-        status = verdict(checks, prior[at])
+        status = verdict(at, checks, prior[at])
         failed = next((c for c in checks if c["status"] == "fail"), None)
         decisive = failed or next((c for c in checks if c["status"] == "blocked"), None)
-        actual = (str(decisive["detail"]) if decisive else
-                  "Prior failed check requires explicit review" if status != "pass" else "All required checks passed")
-        result[at] = dict(meta, id=at, status=status, actual=actual,
-                          requirements=["ENR01", "ENR02", "SEC01"] if at == "AT06" else ["ENR03", "PKG01", "DATA01"],
-                          spec=["§19 " + at, "§6.1", "§6.2", "§6.3", "§6.4"],
-                          checks=checks, prior_checks=prior[at])
+        reviewed_pass = status == "pass" and any(c["status"] == "fail" for c in prior[at])
+        actual = (observation(decisive["detail"]) if decisive else
+                  "Prior failed check requires explicit review" if status != "pass" else
+                  REVIEWED[at]["sentence"] if reviewed_pass else "All required checks passed")
+        record = dict(meta, id=at, status=status, actual=actual,
+                      requirements=["ENR01", "ENR02", "SEC01"] if at == "AT06" else ["ENR03", "PKG01", "DATA01"],
+                      spec=["§19 " + at, "§6.1", "§6.2", "§6.3", "§6.4"],
+                      checks=checks, prior_checks=prior[at])
+        if at in REVIEWED:
+            disposition = "not_applied"
+            if review_evidence(at, checks) and status == "pass":
+                disposition = "resolved"
+            elif any(c["name"] == "rate_limit_review" and (c["status"] != "pass" or http_429(c["detail"]) != 0) for c in checks):
+                disposition = "recurs"
+            record["prior_failure_review"] = {
+                "disposition": disposition,
+                "run_id": REVIEWED[at]["runs"][0]["run_id"],
+                "names": list(REVIEWED[at]["runs"][0]["names"]),
+                "also_covers": [{"run_id": group["run_id"], "names": list(group["names"])}
+                                for group in REVIEWED[at]["runs"][1:]],
+                "commit": REVIEWED[at]["commit"],
+                "what_changed": REVIEWED[at]["what_changed"],
+                "limiter_class": "browser",
+                "bucket": "BrowserRate",
+                "per_second": 10,
+                "burst": 30,
+                "owner_if_recurs": "control",
+            }
+        result[at] = record
     return result
 
 

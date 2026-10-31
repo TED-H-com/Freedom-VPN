@@ -333,7 +333,7 @@ func TestHandover_FVPnBinaries(t *testing.T) {
 		"node/cmd/fvpn-*",
 		"internal/*/cmd/fvpn-*",
 		"packaging/*/cmd/fvpn-*",
-		"tests/e2e/cmd/fvpn-*",
+		"tests/*/cmd/fvpn-*",
 	}
 	binaries := map[string]string{}
 	for _, g := range cmdGlobs {
@@ -551,28 +551,70 @@ func TestHandover_MigrationInventory(t *testing.T) {
 }
 
 type sqlBlock struct {
-	Doc            string
-	Index          int
-	ClusterRoleDDL bool
-	Raw            string
+	Doc                    string
+	Index                  int
+	ClusterRoleDDL         bool
+	MutatingMaintenanceSQL bool
+	Raw                    string
 }
 
+func sqlCheckedDocs(t testing.TB, root string) []string {
+	t.Helper()
+	matches, err := filepath.Glob(filepath.Join(root, "docs", "handover", "*.md"))
+	if err != nil {
+		t.Fatalf("glob docs/handover/*.md: %v", err)
+	}
+	var docs []string
+	for _, m := range matches {
+		rel, err := filepath.Rel(root, m)
+		if err != nil {
+			t.Fatalf("rel path for %s: %v", m, err)
+		}
+		docs = append(docs, filepath.ToSlash(rel))
+	}
+	docs = append(docs, "docs/ops/README.md")
+	slices.Sort(docs)
+	return docs
+}
+
+// extractSQLBlocks extracts every ```sql fence from docs/handover/*.md (including
+// restore-drill.md) and docs/ops/README.md using the exact line-based handoverSQL
+// rule from tests/backup/drill_integration_test.go.
 func extractSQLBlocks(t testing.TB, root string) []sqlBlock {
 	t.Helper()
-	sqlFenceRE := regexp.MustCompile("(?s)```sql\\n(.*?)```")
 	var out []sqlBlock
-	for _, doc := range ownedDocs {
+	for _, doc := range sqlCheckedDocs(t, root) {
 		content := readOwnedDoc(t, root, doc)
-		matches := sqlFenceRE.FindAllStringSubmatch(content, -1)
-		for i, m := range matches {
-			body := strings.TrimSpace(m[1])
-			clusterDDL := strings.HasPrefix(body, "-- [mechanical-check: cluster-role-ddl]")
-			out = append(out, sqlBlock{
-				Doc:            doc,
-				Index:          i + 1,
-				ClusterRoleDDL: clusterDDL,
-				Raw:            body,
-			})
+		var inFence bool
+		var cur []string
+		idx := 0
+		for _, line := range strings.Split(content, "\n") {
+			trimmed := strings.TrimSpace(line)
+			if !inFence {
+				if trimmed == "```sql" {
+					inFence = true
+					cur = nil
+				}
+				continue
+			}
+			if trimmed == "```" {
+				inFence = false
+				body := strings.TrimSpace(strings.Join(cur, "\n"))
+				if body != "" {
+					idx++
+					clusterDDL := strings.HasPrefix(body, "-- [mechanical-check: cluster-role-ddl]")
+					mutatingMaint := strings.HasPrefix(body, "-- [mechanical-check: mutating-maintenance-sql]")
+					out = append(out, sqlBlock{
+						Doc:                    doc,
+						Index:                  idx,
+						ClusterRoleDDL:         clusterDDL,
+						MutatingMaintenanceSQL: mutatingMaint,
+						Raw:                    body,
+					})
+				}
+				continue
+			}
+			cur = append(cur, line)
 		}
 	}
 	return out
@@ -584,14 +626,28 @@ func TestHandover_SQLBlocksClassified(t *testing.T) {
 	if len(blocks) == 0 {
 		t.Fatal("expected to find SQL blocks in owned handover docs")
 	}
+	restoreDrillBlocks := 0
 	for _, b := range blocks {
+		if b.Doc == "docs/handover/restore-drill.md" {
+			restoreDrillBlocks++
+			if b.ClusterRoleDDL || b.MutatingMaintenanceSQL || strings.Contains(b.Raw, "[mechanical-check:") {
+				t.Errorf("%s SQL block #%d must not carry any [mechanical-check: ...] exemption because TestAT30_BackupPITRDrill executes every fence read-only", b.Doc, b.Index)
+			}
+		}
 		if b.ClusterRoleDDL {
 			t.Logf("[non-mechanical: cluster-role-ddl] %s SQL block #%d explicitly marked as superuser/cluster role DDL", b.Doc, b.Index)
+			continue
+		}
+		if b.MutatingMaintenanceSQL {
+			t.Logf("[mechanical-check: mutating-maintenance-sql] %s SQL block #%d explicitly marked as mutating maintenance SQL (executed in rolled-back read-write tx)", b.Doc, b.Index)
 			continue
 		}
 		if strings.Contains(b.Raw, "CREATE DATABASE") || strings.Contains(b.Raw, "CREATE ROLE") {
 			t.Errorf("%s SQL block #%d contains cluster DDL without -- [mechanical-check: cluster-role-ddl] marker", b.Doc, b.Index)
 		}
+	}
+	if restoreDrillBlocks < 5 {
+		t.Errorf("expected at least 5 SQL blocks in docs/handover/restore-drill.md, got %d", restoreDrillBlocks)
 	}
 }
 
@@ -870,7 +926,7 @@ func TestHandover_Followup7Claims(t *testing.T) {
 	root := repoRoot(t)
 
 	// 1. Parse contracts/openapi.yaml for the live operation count and FleetConfigUpdate max_offline_lease_seconds bounds (60..86400).
-	// Revision 10 advanced the count from 46 to 47 (listNodeIncarnations). This test still pins follow-up 7's fleet-config decisions.
+	// Revision 12 advanced the count from 47 to 49 (listAdminDevices, authorizeMemberDevice). This test still pins follow-up 7's fleet-config decisions.
 	rawSpec, err := os.ReadFile(filepath.Join(root, "contracts", "openapi.yaml"))
 	if err != nil {
 		t.Fatalf("read contracts/openapi.yaml: %v", err)
@@ -897,8 +953,8 @@ func TestHandover_Followup7Claims(t *testing.T) {
 			}
 		}
 	}
-	if opCount != 47 {
-		t.Fatalf("contracts/openapi.yaml operation count = %d, want 47", opCount)
+	if opCount != 49 {
+		t.Fatalf("contracts/openapi.yaml operation count = %d, want 49", opCount)
 	}
 	if _, ok := spec.Paths["/admin/fleet-config"]; !ok {
 		t.Fatal("contracts/openapi.yaml missing /admin/fleet-config path")
@@ -1220,8 +1276,8 @@ func TestHandover_Followup8Claims(t *testing.T) {
 func TestHandover_Followup9Claims(t *testing.T) {
 	root := repoRoot(t)
 
-	// 1. Verify OpenAPI 1.7.0 revision 11 (#213) schema elements: ErrorCode.AWAITING_MEMBER_GRANTS (D-071)
-	// and NodeDetail.identity_conflict / NodeIdentityConflict (D-072).
+	// 1. Verify revision 11 schema elements still present after revision 12 advanced info.version to 1.8.0:
+	// ErrorCode.AWAITING_MEMBER_GRANTS (D-071) and NodeDetail.identity_conflict / NodeIdentityConflict (D-072).
 	rawSpec, err := os.ReadFile(filepath.Join(root, "contracts", "openapi.yaml"))
 	if err != nil {
 		t.Fatalf("read contracts/openapi.yaml: %v", err)
@@ -1243,8 +1299,8 @@ func TestHandover_Followup9Claims(t *testing.T) {
 	if err := yaml.Unmarshal(rawSpec, &spec); err != nil {
 		t.Fatalf("parse contracts/openapi.yaml: %v", err)
 	}
-	if spec.Info.Version != "1.7.0" {
-		t.Fatalf("contracts/openapi.yaml info.version = %q, want 1.7.0", spec.Info.Version)
+	if spec.Info.Version != "1.8.0" {
+		t.Fatalf("contracts/openapi.yaml info.version = %q, want 1.8.0", spec.Info.Version)
 	}
 	if !slices.Contains(spec.Components.Schemas["ErrorCode"].Enum, "AWAITING_MEMBER_GRANTS") {
 		t.Fatal("contracts/openapi.yaml ErrorCode enum missing AWAITING_MEMBER_GRANTS")
@@ -1279,7 +1335,7 @@ func TestHandover_Followup9Claims(t *testing.T) {
 	// worker contention (#205/#208), control follow-up 20 (#215), and acceptance cross-references (#204/#207/#210/#212/#214).
 	operatorGuide := readOwnedDoc(t, root, "docs/handover/operator-guide.md")
 	for _, token := range []string{
-		"OpenAPI `1.7.0`, revision 11",
+		"OpenAPI `1.8.0`, revision 12",
 		"#204", "#205", "#206", "#207", "#208", "#210", "#211", "#212", "#213", "#214", "#215", "#216",
 		"D-070", "D-071", "D-072",
 		// Provisional window (D-067, D-071, #206, #213, #216).
@@ -1376,5 +1432,336 @@ func TestHandover_Followup9Claims(t *testing.T) {
 		if !strings.Contains(opsREADME, token) {
 			t.Errorf("docs/ops/README.md missing expected follow-up 9 token %q", token)
 		}
+	}
+}
+
+func TestHandover_Followup10Claims(t *testing.T) {
+	root := repoRoot(t)
+
+	// 1. Verify operator-guide.md pins for follow-up 10:
+	// - Cloned-identity runbook addition (#217, #223) + docs/portal/README.md §6 cross-reference
+	// - Revoke completion fence (exit-group + 90 s freshness) and one-shot stale-generation grace in node.observation_applied audit (#217, D-075 note)
+	// - Whole-ruleset nftables read-back (#220)
+	// - Fair-Use enforcement reach and fair_use.applying convergence (#222)
+	// - D-074 gated node.publish waiting state (#224)
+	// - Acceptance cross-references for devstack follow-up 13 (#219) and secops follow-up 8 (#221)
+	operatorGuide := readOwnedDoc(t, root, "docs/handover/operator-guide.md")
+	for _, token := range []string{
+		"#217", "#219", "#220", "#221", "#222", "#223", "#224",
+		"D-074",
+		// Cloned-identity projection & portal cross-reference (#217, #223).
+		"identity_conflict.mapping_frozen: true",
+		"participates in the node strong `ETag`",
+		"304 Not Modified",
+		"mapping_frozen: false, conflict_count: 0",
+		"the new incarnation resets the projection",
+		"../portal/README.md#6-operator-node-detail-notes-provisional-lease-waiting-copy--identity-conflict-d-067-d-071-d-072",
+		// Revoke completion fence & stale-generation grace (#217).
+		"ObserveRevokedDeviceCutoffTx",
+		"DefaultStaleTimeout = 90 s",
+		"stale or ungrouped/unrelated nodes never hold a revoke",
+		"awaiting_serving_exit_observation",
+		"staleGenerationGraceAvailableTx",
+		"once per generation change",
+		"node.observation_applied",
+		"stale_generation_grace: true",
+		"D-075",
+		// Whole-ruleset nftables read-back (#220).
+		"node/enforce/verify_foreign.go",
+		"nft -j list ruleset",
+		"table <t> family <f> hook <h> priority <p> chain <c> statement <s>",
+		"ufw",
+		"firewalld",
+		// Fair-Use enforcement reach (#222).
+		"Fair-Use Enforcement Reach and `fair_use.applying` Convergence",
+		"fup.member_generation_changed",
+		"Compiler.RecompileBatch",
+		"computeMemberFUPApplying",
+		"\"look at the node\", not \"look at the policy\"",
+		"`plan`-only rate changes (`policy.activated` with `domain = \"plan\"`) wait for the next compile trigger",
+		// D-074 gated node.publish waiting state (#224).
+		"When a `node.publish` operation stays `running` with `agent_policy` or `data_path_probe` in `status: \"pending\"`, `error_code: \"NODE_NOT_SERVICEABLE\"`, and `message: \"member_forwarding_unconfirmed\"`, central is waiting for the node to apply the latest compiled configuration generation and report passing serving checks (`exits.publication_observed` remains unchanged, or `\"withdrawn\"` if an empty-exception route was withdrawn first); the step clears automatically on the next qualifying observation and worker pass, and transitions to `status: \"failed\"` (`publication_observed: \"error\"`) only if the worker retry budget (`worker_attempts` = 10 attempts, ~4.3–8.5 minutes of jittered exponential backoff from 1s to 300s) is exhausted, at which point you should verify node health and re-issue `PUT /api/v1/admin/nodes/{node_id}/publication`.",
+		// Acceptance cross-references (#219, #221).
+		"InjectMemberIngress",
+		"ObserveMemberIngress",
+		"ctunku",
+		"4c97ebef",
+		"26 pass / 1 blocked / 0 fail",
+		"0f5fb60d-f6a7-45c6-8ebe-175e0a480bd8",
+		"105.94 s",
+		"111.51 s",
+		"116.651 s",
+		"120.12 s",
+		"SECOPS-18",
+		"D-076",
+	} {
+		if !strings.Contains(operatorGuide, token) {
+			t.Errorf("docs/handover/operator-guide.md missing expected follow-up 10 token %q", token)
+		}
+	}
+
+	// 2. Verify calibration.md pins for #220 (whole-ruleset read-back), #222 (Fair-Use recompile & fair_use.applying), and #224 (D-074 retry budget).
+	calibrationGuide := readOwnedDoc(t, root, "docs/handover/calibration.md")
+	for _, token := range []string{
+		"#220", "#222", "#224",
+		"D-074",
+		"Compiler.RecompileBatch",
+		"fup.member_generation_changed",
+		"computeMemberFUPApplying",
+		"\"look at the node\", not \"look at the policy\"",
+		"`plan`-only rate changes",
+		"255.5 s..511 s",
+		"~4.3–8.5 minutes",
+		"node/enforce/verify_foreign.go",
+		"nft -j list ruleset",
+		"table <t> family <f> hook <h> priority <p> chain <c> statement <s>",
+		"ufw",
+		"firewalld",
+	} {
+		if !strings.Contains(calibrationGuide, token) {
+			t.Errorf("docs/handover/calibration.md missing expected follow-up 10 token %q", token)
+		}
+	}
+
+	// 3. Verify restore-drill.md and deploy.md pins for #221 (measured AT30 5-step protocol, RTO/RPO numbers, and dated D-076 pointer) and #220.
+	restoreDrill := readOwnedDoc(t, root, "docs/handover/restore-drill.md")
+	for _, token := range []string{
+		"#221",
+		"0f5fb60d-f6a7-45c6-8ebe-175e0a480bd8",
+		"3.64 s",
+		"120.12 s",
+		"ErrAckRegress",
+		"105.94 s",
+		"111.51 s",
+		"116.651 s",
+		"0 s",
+		"SECOPS-18",
+		"D-076",
+		"review devices fenced as authorization-unconfirmed and re-authorize explicitly",
+	} {
+		if !strings.Contains(restoreDrill, token) {
+			t.Errorf("docs/handover/restore-drill.md missing expected follow-up 10 token %q", token)
+		}
+	}
+
+	deployGuide := readOwnedDoc(t, root, "docs/handover/deploy.md")
+	for _, token := range []string{
+		"#220", "#221",
+		"node/enforce/verify_foreign.go",
+		"nft -j list ruleset",
+		"0f5fb60d-f6a7-45c6-8ebe-175e0a480bd8",
+		"105.94 s",
+		"111.51 s",
+		"116.651 s",
+		"120.12 s",
+		"SECOPS-18",
+		"D-076",
+		"review devices fenced as authorization-unconfirmed and re-authorize explicitly",
+	} {
+		if !strings.Contains(deployGuide, token) {
+			t.Errorf("docs/handover/deploy.md missing expected follow-up 10 token %q", token)
+		}
+	}
+}
+
+func TestHandover_Followup11Claims(t *testing.T) {
+	root := repoRoot(t)
+
+	// 1. Verify operator-guide.md pins for Follow-up 11:
+	// - D-076 (#227): device_authorization_fences (migration 00188), device.authorization.external_withdrawal, fvpn_device_restore_fence_decisions_total, exact quoted paragraph from docs/members/README.md, explicit AuthorizeDevice / member.device_authorize, dated pointer to revision 12 D-077.
+	// - D-073 & D-075 (#228): node_identity_endpoints candidate_hash / candidate_first_seen_at / candidate_last_seen_at under SELECT ... FOR UPDATE, node_incarnations.stale_generation_grace_at (migration 00187), decisions never read audit_events.
+	// - fvpn-agent usage snapshot (#225): -config /etc/vpn-node/agent-run.json [-json], fields, exit codes 0/1/2/3/4/5/64, ApplyACK non-torn rule, installer re-run preservation.
+	// - SECOPS-19 (#226): ObservationReport.usage carries live UsageOutboxStatus in node_observations.report_payload, dated pointer to revision 12 NodeDetail.usage_outbox.
+	// - D-078 & acceptance cross-references (#229, #231): Retry-After 429 rule, control follow-up 21 dated note, enrollment follow-up 3 (run 60a7102e, ENR-08 closed, AT06 254 pass / 1 blocked, AT07 15 pass / 7 blocked), members follow-up 6 (run 80db103b, AT02 42/0 strict fvmb0 ingress injection, AT09 36.976 s / 41.695 s).
+	operatorGuide := readOwnedDoc(t, root, "docs/handover/operator-guide.md")
+	for _, token := range []string{
+		"#225", "#226", "#227", "#228", "#229", "#231",
+		// D-076 (#227) & exact owner quote.
+		"D-076",
+		"db/migrations/00188_device_authorization_fences.sql",
+		"device_authorization_fences",
+		"device.authorization.external_withdrawal",
+		"fvpn_device_restore_fence_decisions_total",
+		"device authorization unconfirmed during ledger restore",
+		"GET /api/v1/admin/audit-events?resource_type=member_device&resource_id=<device_id>",
+		"While `usage_ledger_state.mode` is `frozen` or `reconciling`, each device that `SyncDevice` newly fences is logged once as `device authorization unconfirmed during ledger restore` with `device_id`, `member_id`, `peer_id`, and `ledger_mode`, and counted in `fvpn_device_restore_fence_decisions_total` on the worker registry. Those device ids need an explicit re-authorization decision after `complete-recovery` if the member is still entitled.",
+		"Entitlement restoration does not clear a fence; only an explicit re-authorization (`AuthorizeDevice`, operation kind `member.device_authorize`, actor `system` or `admin`, new idempotency key) or a revoke does",
+		"D-077",
+		"MemberDevice.authorization_unconfirmed",
+		// D-073 & D-075 (#228).
+		"D-073",
+		"D-075",
+		"db/migrations/00187_identity_roaming_and_readiness_grace.sql",
+		"candidate_hash",
+		"candidate_first_seen_at",
+		"candidate_last_seen_at",
+		"SELECT ... FOR UPDATE",
+		"node_incarnations.stale_generation_grace_at",
+		"readiness and grace decisions never read `audit_events`",
+		// fvpn-agent usage snapshot (#225).
+		"fvpn-agent usage snapshot -config /etc/vpn-node/agent-run.json",
+		"node/agent/cmd/fvpn-agent/usage_snapshot.go",
+		"docs/node/usage-store.md",
+		"acked_through",
+		"unacked_count",
+		"unacked_payload_bytes",
+		"unacked_events",
+		"payload_sha256",
+		// SECOPS-19 (#226).
+		"SECOPS-19",
+		"ObservationReport.usage",
+		"UsageOutboxStatus",
+		"unacked_event_count",
+		"oldest_unacked_at",
+		"node/agent/usage_status.go",
+		"node_observations.report_payload",
+		"NodeDetail.usage_outbox",
+		// D-078 & acceptance cross-references (#229, #231).
+		"D-078",
+		"a `429` that carries `Retry-After` and whose retry succeeds is the limiter working as specified; harnesses report the counts as evidence, and calibration stays with `control`",
+		"control follow-up 21 reviews `browser_rate`",
+		"60a7102e-b824-4927-a576-62033f458157",
+		"254 pass / 1 blocked / 0 fail",
+		"rate_limit_review",
+		"15 pass / 7 blocked / 0 fail",
+		"80db103b-622c-42b1-946d-4628daaa213d",
+		"3 pass / 7 blocked / 0 fail",
+		"36.976 s",
+		"41.695 s",
+		"31 -> 32",
+	} {
+		if !strings.Contains(operatorGuide, token) {
+			t.Errorf("docs/handover/operator-guide.md missing expected follow-up 11 token %q", token)
+		}
+	}
+
+	// 2. Verify deploy.md and restore-drill.md pins for #227 (D-076 post-complete-recovery step) and #228 (D-073 durable roaming candidate across two replicas).
+	deployGuide := readOwnedDoc(t, root, "docs/handover/deploy.md")
+	for _, token := range []string{
+		"#227", "#228",
+		"D-073",
+		"D-076",
+		"D-077",
+		"db/migrations/00187_identity_roaming_and_readiness_grace.sql",
+		"db/migrations/00188_device_authorization_fences.sql",
+		"candidate_hash",
+		"candidate_first_seen_at",
+		"candidate_last_seen_at",
+		"SELECT ... FOR UPDATE",
+		"device_authorization_fences",
+		"device.authorization.external_withdrawal",
+		"device authorization unconfirmed during ledger restore",
+		"fvpn_device_restore_fence_decisions_total",
+	} {
+		if !strings.Contains(deployGuide, token) {
+			t.Errorf("docs/handover/deploy.md missing expected follow-up 11 token %q", token)
+		}
+	}
+
+	restoreDrill := readOwnedDoc(t, root, "docs/handover/restore-drill.md")
+	for _, token := range []string{
+		"#227",
+		"D-076",
+		"D-077",
+		"db/migrations/00188_device_authorization_fences.sql",
+		"device_authorization_fences",
+		"device.authorization.external_withdrawal",
+		"device authorization unconfirmed during ledger restore",
+		"fvpn_device_restore_fence_decisions_total",
+		"6.3 Review Devices Fenced as Authorization-Unconfirmed",
+	} {
+		if !strings.Contains(restoreDrill, token) {
+			t.Errorf("docs/handover/restore-drill.md missing expected follow-up 11 token %q", token)
+		}
+	}
+
+	// 3. Verify member-guide.md (zh-TW and en) pins for D-076 (#227) and members follow-up 6 (#231).
+	memberGuide := readOwnedDoc(t, root, "docs/handover/member-guide.md")
+	for _, token := range []string{
+		"#227", "#231",
+		"D-076",
+		"在服務備份還原後，若某台裝置的授權狀態尚待營運人員確認，該裝置亦可能暫時顯示為 `pending`，直到營運人員完成確認為止，會員端的任何操作均不會改變此狀態",
+		"After a service restore, a device may show as `pending` until an operator confirms it, and nothing you do on the member side changes that",
+		"80db103b-622c-42b1-946d-4628daaa213d",
+		"36.976",
+		"41.695",
+	} {
+		if !strings.Contains(memberGuide, token) {
+			t.Errorf("docs/handover/member-guide.md missing expected follow-up 11 token %q", token)
+		}
+	}
+
+	// 4. Verify calibration.md pins for D-078 (#229) and BrowserRate 10/s burst 30 / AgentRate 5/s burst 10.
+	calibrationGuide := readOwnedDoc(t, root, "docs/handover/calibration.md")
+	for _, token := range []string{
+		"#229",
+		"D-078",
+		"`browser_rate` (`10/s`, burst `30`",
+		"`agent_rate` (`5/s`, burst `10`)",
+		"a `429` that carries `Retry-After` and whose retry succeeds is the limiter working as specified; harnesses report the counts as evidence, and calibration stays with `control`",
+		"control follow-up 21 reviews `browser_rate`",
+	} {
+		if !strings.Contains(calibrationGuide, token) {
+			t.Errorf("docs/handover/calibration.md missing expected follow-up 11 token %q", token)
+		}
+	}
+
+	// 5. Verify ops/README.md and handover/README.md index pins.
+	for _, rel := range []string{"docs/ops/README.md", "docs/handover/README.md"} {
+		doc := readOwnedDoc(t, root, rel)
+		for _, token := range []string{
+			"#225", "#226", "#227", "#228", "#229", "#231",
+			"D-073", "D-075", "D-076", "D-078",
+		} {
+			if !strings.Contains(doc, token) {
+				t.Errorf("%s missing expected follow-up 11 token %q", rel, token)
+			}
+		}
+	}
+}
+
+func TestHandover_Followup12Claims(t *testing.T) {
+	root := repoRoot(t)
+
+	restoreDrill := readOwnedDoc(t, root, "docs/handover/restore-drill.md")
+	wantFenceQuery := strings.Join([]string{
+		"SELECT f.device_id, d.member_id, d.peer_id, d.status, f.fenced_at, f.observed_group_ids",
+		"     FROM device_authorization_fences f",
+		"     JOIN member_devices d ON d.id = f.device_id",
+		"     ORDER BY f.fenced_at DESC;",
+	}, "\n")
+	if !strings.Contains(restoreDrill, wantFenceQuery) {
+		t.Errorf("docs/handover/restore-drill.md missing corrected D-076 fence review SQL query:\n%s", wantFenceQuery)
+	}
+
+	operatorGuide := readOwnedDoc(t, root, "docs/handover/operator-guide.md")
+	for _, docName := range sqlCheckedDocs(t, root) {
+		content := readOwnedDoc(t, root, docName)
+		for _, forbidden := range []string{
+			"SELECT device_id, member_id, peer_id, reason, fenced_at",
+			"columns `device_id`, `member_id`, `fenced_at`, `reason`",
+			"`device_authorization_fences` (`reason =",
+		} {
+			if strings.Contains(content, forbidden) {
+				t.Errorf("%s still contains stale D-076 fence schema text %q", docName, forbidden)
+			}
+		}
+	}
+
+	for _, rel := range []string{"docs/handover/restore-drill.md", "docs/handover/operator-guide.md"} {
+		content := readOwnedDoc(t, root, rel)
+		for _, token := range []string{
+			"`device_id`, `fenced_at`, `observed_group_ids`",
+			"member_devices",
+			"device.authorization.external_withdrawal",
+			"device authorization unconfirmed during ledger restore",
+		} {
+			if !strings.Contains(content, token) {
+				t.Errorf("%s missing expected follow-up 12 token %q", rel, token)
+			}
+		}
+	}
+	if !strings.Contains(operatorGuide, "-- [mechanical-check: mutating-maintenance-sql]") {
+		t.Error("docs/handover/operator-guide.md missing -- [mechanical-check: mutating-maintenance-sql] marker on purge_retained SQL fence")
 	}
 }
