@@ -12,6 +12,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/TED-H-com/Freedom-VPN/internal/installerjob"
 	"github.com/TED-H-com/Freedom-VPN/node/internal/updatejournal"
 	"github.com/TED-H-com/Freedom-VPN/node/nodelock"
 	"github.com/TED-H-com/Freedom-VPN/node/updater/fsutil"
@@ -119,17 +120,13 @@ func TestD089_SeedThenInstallerApply(t *testing.T) {
 	if err := os.WriteFile(pending, raw, 0o600); err != nil {
 		t.Fatal(err)
 	}
-	rec, err := readPending(pending)
-	if err != nil {
-		t.Fatal(err)
-	}
 	if err := w.run(); err != nil {
 		t.Fatal(err)
 	}
 	w.mustCurrent(next.id)
 	payload, result := lastPayload(t, w)
 	assertInstallerWireSource(t, payload)
-	wantJob := uuid.NewSHA1(installerJobID(next.id.String(), next.sum), []byte(rec.digest+"|"+w.node.Incarnation.String()))
+	wantJob := installerjob.ID(next.id, next.sum, w.node.Incarnation)
 	if result.JobId != wantJob || result.Attempt != 1 || result.State != api.UpdateResultStateSucceeded || requiredValue(t, result.CurrentReleaseId) != next.id || requiredValue(t, result.Health).Processes != api.HealthCheckStatusPassed || result.MemberForwardingEnabled {
 		t.Fatalf("apply result: %+v", result)
 	}

@@ -724,6 +724,16 @@ func (j *Journal) GetJob(ctx context.Context, jobID string, attempt int) (Job, e
 	return scanJob(j.db.QueryRowContext(ctx, jobSelect+` WHERE job_id = ? AND attempt = ?`, jobID, attempt))
 }
 
+// InstallerJob finds the original local claim, including pre-D-110 identities.
+// A new staging request cannot mint another receipt for the same release and
+// incarnation. Old claims and acknowledged history remain immutable.
+func (j *Journal) InstallerJob(ctx context.Context, releaseID, manifestSHA, incarnation string) (Job, error) {
+	return scanJob(j.db.QueryRowContext(ctx, jobSelect+` WHERE release_id = ?
+		AND lower(manifest_sha256) = lower(?) AND json_extract(intent_json, '$.source') = 'installer'
+		AND json_extract(intent_json, '$.intent.incarnation_id') = ?
+		ORDER BY claimed_at, rowid LIMIT 1`, releaseID, manifestSHA, incarnation))
+}
+
 // OpenJobs returns jobs that are not done, oldest claim first.
 func (j *Journal) OpenJobs(ctx context.Context) ([]Job, error) {
 	rows, err := j.db.QueryContext(ctx, jobSelect+` WHERE phase != ? ORDER BY claimed_at, job_id`, string(JobDone))

@@ -53,6 +53,22 @@ func responseCode(body []byte) string {
 	return envelope.Error.Code
 }
 
+// responseReason retains only D-110's fixed reason, never arbitrary server text.
+func responseReason(body []byte) string {
+	var envelope struct {
+		Error struct {
+			Code    string `json:"code"`
+			Details struct {
+				Reason string `json:"reason"`
+			} `json:"details"`
+		} `json:"error"`
+	}
+	if json.Unmarshal(body, &envelope) == nil && envelope.Error.Code == string(apierr.StateConflict) && envelope.Error.Details.Reason == "job_id_mismatch" {
+		return "job_id_mismatch"
+	}
+	return ""
+}
+
 func retryAfter(header string, now time.Time) time.Time {
 	header = strings.TrimSpace(header)
 	if len(header) <= 128 {
