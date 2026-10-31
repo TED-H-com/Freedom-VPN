@@ -46,6 +46,33 @@ class EvidenceTests(unittest.TestCase):
             self.assertNotIn("Key", labels)
             self.assertNotIn("Cert", labels)
 
+    def test_archived_followup6_retains_prior_failures(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp)
+            archive = path / "history/follow-up-6"
+            archive.mkdir(parents=True)
+            (archive / "AT06.json").write_text(json.dumps(dict(
+                run_id="followup6", prior_checks=[dict(name="old", status="fail")],
+                checks=[dict(name="current", status="pass")])))
+            rows = run.previous(path, "AT06")
+            self.assertEqual([r["status"] for r in rows], ["fail", "pass"])
+            self.assertEqual(rows[1]["run_id"], "followup6")
+
+    def test_committed_evidence_hygiene(self):
+        # Scan all immutable attempts as well as the current publication.
+        import re
+        directory = Path(__file__).resolve().parents[4] / "docs/e2e/at/enrollment"
+        files = list(directory.rglob("*.json")) + list(directory.rglob("*.md"))
+        self.assertTrue(files)
+        unsafe = re.compile(r"fvpn_enr_[A-Za-z0-9_-]{20,}|-----BEGIN .*PRIVATE KEY|/" + r"home/|sk_" + r"live_|gh" + r"p_|gh" + r"o_")
+        for path in files:
+            raw = path.read_text()
+            self.assertIsNone(unsafe.search(raw), str(path.relative_to(directory)))
+            if path.suffix == ".json":
+                rec = json.loads(raw)
+                self.assertIn(rec["status"], ("pass", "blocked", "fail"))
+                self.assertTrue(rec["run_id"])
+
     def test_failed_prior_cannot_be_silently_superseded(self):
         checks = [dict(at=at, name=name, status="pass", detail="TEST ONLY")
                   for at, names in run.REQUIRED.items() for name in names]

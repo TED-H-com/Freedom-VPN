@@ -33,14 +33,16 @@ REQUIRED = {
              "incarnation_uniqueness", "incarnation_history",
              "machine_identity", "counted_unacked_usage", "installer_rerun",
              "identity_ledger_preserved", "controlled_reinstall", "old_certificate_denied",
-             "historical_usage_retained", "cloned_identity_conflict"],
+             "historical_usage_retained", "cloned_identity_conflict", "serving_freeze_withdrawal", "serving_freeze_restart",
+             "installer_stopped_hash_equality", "installer_rerun_identity",
+             "installer_reinstall_identity", "installer_service_restoration", "installer_usage_hold_release"],
 }
 MISSING = {
     "peer_uniqueness": "ENR-04 join cycle did not record EnrollmentPeerInventory; devstack follow-up 12 PR #204 exports JoinEnrolledIdentity",
     "distinct_first_boot": "ENR-07 MachineIdentityFingerprints was not read; devstack follow-up 12 PR #204 exports it",
     "machine_identity": "ENR-07 MachineIdentityFingerprints was not read; devstack follow-up 12 PR #204 exports it",
-    "counted_unacked_usage": "ENR-05: devstack #266 usage hooks exclude installer-node. Owner devstack: expose the hold, ledger snapshot and selected member transport on the installer slot. Owner usage/installer: define authorized delivery of retained old-incarnation events after reenroll; current Reenroll preserves them unuploaded.",
-    "installer_rerun": "ENR-06: installer probe not reached. Installer #279 fixes the prior startup cause; owner devstack: restore prior service state after wrapper hash sampling.",
+    "counted_unacked_usage": "ENR-05: D-116 installer owner chain blocks serving; see docs/e2e/runs/2026-10-31/followup17/a7c41436-82b3-4665-b75c-e2887f2e1009/installer-owner-chain.md. Owner usage/installer: define authorized delivery of retained old-incarnation events after reenroll; current Reenroll preserves them unuploaded.",
+    "installer_rerun": "ENR-06: installer probe not reached. Installer #279 fixes the prior startup cause; devstack #294 exports RestoreInstallerServices; D-116 still blocks serving.",
     "identity_ledger_preserved": "ENR-05/ENR-06: requires a running installer-node with counted unACKed usage, retired mode 0700 and newest-first incarnation history. Not reached.",
     "controlled_reinstall": "ENR-06: ControlledReinstall on installer-node not reached; a successful initial install and documented service restoration are prerequisites.",
     "old_certificate_denied": "ENR-06: retired installer certificate unavailable until ControlledReinstall; desired-state and observation denial not reached.",
@@ -136,6 +138,8 @@ def digest_labels(value):
 
 def previous(docdir, at):
     path = docdir / (at + ".json")
+    if not path.exists():
+        path = docdir / "history/follow-up-6" / (at + ".json")
     if not path.exists():
         return []
     old = json.loads(path.read_text())
