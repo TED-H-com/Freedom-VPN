@@ -54,6 +54,7 @@ func TestD089_RealSeedThenJournaledUpgrade(t *testing.T) {
 	assertSeedUmasks(t, c)
 	enableUpgradeProbe(t, c)
 	testPendingHandoff(t, c, r.Baseline)
+	assertPostUpgradeReenroll(t, c, url, ca)
 }
 
 func assertSeedUmasks(t *testing.T, c string) {
@@ -102,8 +103,11 @@ func enableUpgradeProbe(t *testing.T, c string) {
 	}
 	writeStdin(t, c, "/etc/vpn-node/agent.json", string(raw), "0644")
 	mustExec(t, c, "systemctl", "start", "fvpn-agent")
-	waitPath(t, c, "/var/lib/vpn-node/state/meter.checkpoint")
-	t.Log("TEST ONLY NetBird management/relay status; signed unpublished desired/lease and real isolated TCP probe; meter checkpoint is produced by the real agent")
+	waitPath(t, c, "/var/lib/vpn-node/state/desired-state.json")
+	// D-125 publishes only for an actual updater block. Waiting for a quiet
+	// shutdown checkpoint here would deadlock before apply creates its latch.
+	assertNoBarrier(t, c)
+	t.Log("TEST ONLY NetBird management/relay status; signed unpublished desired/lease and real isolated TCP probe; no checkpoint before the updater block")
 }
 
 func testPendingHandoff(t *testing.T, c string, baseline *installer.BaselineResult) {
@@ -166,7 +170,9 @@ func testPendingHandoff(t *testing.T, c string, baseline *installer.BaselineResu
 	if got := strings.TrimSpace(mustExec(t, c, "readlink", "/opt/vpn-node/current")); got != before {
 		t.Fatal("staging moved current")
 	}
-	applyOut, code := dexec(t, c, updater, "apply", "--config", config, "--pending", pendingPath)
+	assertNoBarrier(t, c)
+	// Reproduce devstack 18's direct apply followed by installer seed (077).
+	applyOut, code := dexec(t, c, "sh", "-c", `umask 022; exec "$@"`, "sh", updater, "apply", "--config", config, "--pending", pendingPath)
 	view := status(rel2.ReleaseID)
 	if baseline.Status != "seeded" {
 		t.Fatal("real seeded baseline required")
@@ -185,6 +191,10 @@ func testPendingHandoff(t *testing.T, c string, baseline *installer.BaselineResu
 			t.Fatalf("health %s: %v", check, health[check])
 		}
 	}
+	if got := strings.TrimSpace(mustExec(t, c, "readlink", "/opt/vpn-node/current")); got != "releases/"+rel2.ReleaseID {
+		t.Fatalf("candidate pointer did not switch: %s", got)
+	}
+	assertCorrelatedReceipt(t, c, view["job_id"].(string))
 	checked := mustCheck(t, c, 0)
 	if checked.ReleaseID != rel2.ReleaseID || checked.ReleaseSource != "updater_journal" || checked.InstallRecord.ReleaseID != rel1.ReleaseID {
 		t.Fatalf("post-switch check did not reconcile install record: %+v", checked)
