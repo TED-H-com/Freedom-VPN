@@ -1,13 +1,13 @@
 positive control fv-a1 direction=in:
-IP 192.0.2.33.58139 > 100.64.1.1.8080: UDP, length 7
+IP 192.0.2.33.59076 > 100.64.1.1.8080: UDP, length 7
 
 
 positive control fv-a2 direction=in:
-IP 192.0.2.33.47179 > 100.64.1.2.8080: UDP, length 7
+IP 192.0.2.33.48315 > 100.64.1.2.8080: UDP, length 7
 
 
 positive control fv-b1 direction=in:
-IP 192.0.2.33.51313 > 100.64.2.1.8080: UDP, length 7
+IP 192.0.2.33.52510 > 100.64.2.1.8080: UDP, length 7
 
 
 deny matrix lan direction=in packets=0:
@@ -26,8 +26,8 @@ deny matrix inet direction=in packets=0:
 
 
 a2 direction=inout (original filter):
-IP 100.64.1.2.55094 > 100.64.1.1.8080: Flags [S], seq 3280558791, win 64860, options [mss 1380,sackOK,TS val 1591090367 ecr 0,nop,wscale 10], length 0
+IP 100.64.1.2.60156 > 100.64.1.1.8080: Flags [S], seq 187756539, win 64860, options [mss 1380,sackOK,TS val 3199760460 ecr 0,nop,wscale 10], length 0
 
 
 a2 direction=out:
-IP 100.64.1.2.55094 > 100.64.1.1.8080: Flags [S], seq 3280558791, win 64860, options [mss 1380,sackOK,TS val 1591090367 ecr 0,nop,wscale 10], length 0
+IP 100.64.1.2.60156 > 100.64.1.1.8080: Flags [S], seq 187756539, win 64860, options [mss 1380,sackOK,TS val 3199760460 ecr 0,nop,wscale 10], length 0

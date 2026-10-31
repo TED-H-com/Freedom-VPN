@@ -1918,15 +1918,16 @@ func (x *isolationRun) archiveReceiver() {
 	// Stream the full private capture to task disk, outside diagnostic stdout.
 	scratch := filepath.Join(x.r.lab.root, ".agent", "tmp", "isolation-receiver.jsonl")
 	_, err := (&Stack{lab: x.r.lab}).ExportContainerFile(x.ctx, "node", "/var/lib/vpn-node/e2e/isolation-observations.jsonl", scratch)
-	if err != nil {
-		nftRaw, _ := exec.Command("docker", "exec", x.r.lab.node, "cat", "/var/lib/vpn-node/e2e/isolation-nft-events.jsonl").Output()
-		nftRows := []json.RawMessage{}
-		for _, line := range bytes.Split(nftRaw, []byte("\n")) {
-			if json.Valid(line) {
-				nftRows = append(nftRows, append(json.RawMessage(nil), line...))
-			}
+	nftRaw, _ := exec.Command("docker", "exec", x.r.lab.node, "cat", "/var/lib/vpn-node/e2e/isolation-nft-events.jsonl").Output()
+	nftRows := []json.RawMessage{}
+	for _, line := range bytes.Split(nftRaw, []byte("\n")) {
+		if json.Valid(line) {
+			nftRows = append(nftRows, append(json.RawMessage(nil), line...))
 		}
-		x.extra("nft-event-receipts.json", map[string]any{"clock": "CLOCK_MONOTONIC; passive netlink userspace receipt; not render/command timestamps", "events": nftRows})
+	}
+	x.extra("nft-event-receipts.json", map[string]any{"clock": "CLOCK_MONOTONIC; passive netlink userspace receipt; not render/command timestamps", "events": nftRows})
+	if err != nil {
+
 		x.extra("receiver-capture.json", map[string]any{"error": "capture export failed"})
 		return
 	}

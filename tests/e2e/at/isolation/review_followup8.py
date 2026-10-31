@@ -66,7 +66,7 @@ removal = first('remove all injected objects')
 clean_request = first('publish clean newer generation')
 start, end = injection.get('start', '9999'), removal.get('end', '9999')
 rejections = [r for r in reports if start <= r['report'].get('observed_at', '') < end and tc(r['report']).get('error_code') == 'TC_FOREIGN_FILTER']
-clean = [r for r in reports if r['report'].get('observed_at', '') >= clean_request.get('at', '9999') and tc(r['report']).get('verified') is True and int(tc(r['report']).get('candidate_generation') or 0) > initial_gen and tc(r['report']).get('read_at', '') >= end and tc(r['report']).get('error_code') is None and tc(r['report']).get('rejected') is None]
+clean = [r for r in reports if r['report'].get('observed_at', '') >= clean_request.get('at', '9999') and tc(r['report']).get('verified') is True and tc(r['report']).get('phase') == 'verify' and int(tc(r['report']).get('candidate_generation') or 0) > initial_gen and tc(r['report']).get('read_at', '') >= end and tc(r['report']).get('error_code') is None and tc(r['report']).get('rejected') is None]
 apply = [r for r in clean if 'source=apply' in qos(r['report']) and 'verified=true' in qos(r['report'])]
 live = [r for r in clean if 'source=live' in qos(r['report']) and 'verified=true' in qos(r['report'])]
 matching = [r for r in clean if r['report'].get('member_forwarding_enabled') is True and (r['report'].get('lease') or {}).get('config_generation') == r['report'].get('applied_config_generation') == tc(r['report']).get('candidate_generation')]
@@ -74,7 +74,7 @@ matching = [r for r in clean if r['report'].get('member_forwarding_enabled') is 
 leases = {r['response']['signed']['lease_id']:r['response']['signed'] for r in transactions if 'lease' in r.get('path', '') and isinstance(r.get('response'), dict) and 'signed' in r['response']}
 for r in clean:
     b=r['report']; l=leases.get((b.get('lease') or {}).get('lease_id'), {})
-    if b.get('member_forwarding_enabled') is True and l.get('config_generation') == b.get('applied_config_generation') == tc(b).get('candidate_generation') and r not in matching:
+    if b.get('member_forwarding_enabled') is True and l.get('members') and l.get('config_generation') == b.get('applied_config_generation') == tc(b).get('candidate_generation') and r not in matching:
         matching.append(r)
 negative = labelled('dirty newer generation')
 dirty_reports = [r.get('observation', {}) for r in negative]
@@ -93,7 +93,8 @@ state_gen=str(model.get('generation', model.get('Generation', '0')))
 state_apply=(int(state_gen)>initial_gen and state.get('applied_generation')==state_gen
              and (state.get('lease') or {}).get('generation')==state_gen
              and 'fvpn_generation='+state_gen in final.get('kernel_ruleset', '')
-             and bool(state.get('member_path')))
+             and int((state.get('lease') or {}).get('member_count') or 0)>0
+             and (state.get('member_path') or {}).get('generation')==state_gen)
 capture_path=root/'redirect-node-capture.txt'
 capture=capture_path.read_text() if capture_path.exists() else ''
 packet_lines=[line for line in capture.splitlines() if re.match(r'^\d+\.\d+ ',line)]
