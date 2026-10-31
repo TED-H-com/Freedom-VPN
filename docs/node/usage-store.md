@@ -47,6 +47,14 @@ Archived payloads stay for at least 72 hours after the local ACK (`DefaultArchiv
 
 The stopped flag is stored in `meta`, so a process restart keeps the gate closed until the resume line.
 
+## Outbox status
+
+`OutboxStatus` fills `api.UsageOutboxStatus` for an observation (§10.5, §10.6, §10.8). It is a read of the persisted stream. It does not call `EvaluateGate`, it does not stat the disk, and it does not update `gate_stopped` or `persistFailed`. Two calls with no commit and no ACK between them return the same value. The database file, its WAL, and its shared-memory index are unchanged.
+
+`EvaluateGate` is the call that persists the forwarding gate. The agent run loop reaches it through `meter.Health`. That is where a hot cap sets `gate_stopped` and where a stopped gate resumes once every tripped meter is under 80%. An observation does not take that step, and neither does the uploader's size check. A backlog that is already over a cap stays `gate_stopped = 0` until `EvaluateGate` runs. A gate that is already stopped stays stopped until `EvaluateGate` sees the resume line.
+
+`ledger_epoch` on that status is the central generation `ApplyCheckpoint` adopted. It is null until that verified checkpoint, including when `central_acked_through` is already greater than zero. A batch ACK advances the contiguous watermark and does not store the epoch named in the result (§10.5 step 5, §10.6, §17.3). Null means this node has not accepted a verified ledger generation. The watermark is still the highest contiguous ACK; it is not yet bound to a generation. `fvpn-agent usage snapshot` prints the same null. `UsageBatchRequest.ledger_epoch` already says the field is null before the first checkpoint.
+
 ## Checkpoint
 
 `ApplyCheckpoint` verifies the envelope with `envelope.PurposeRecovery` against the node trust store (`NewNodeTrustStore` / `ParseNodeTrustStoreJSON`). Verification fails closed (`ErrNoTrust`, `ErrBadCheckpoint`). A node bundle cannot carry the central-only `ledger-epoch` purpose.
