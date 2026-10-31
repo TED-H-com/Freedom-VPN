@@ -20,6 +20,39 @@ func main() {
 		os.Exit(2)
 	}
 	switch os.Args[1] {
+	case "observe-proxy":
+		observeProxy()
+	case "configure-observation":
+		configureObservation()
+	case "timed":
+		seconds, _ := strconv.Atoi(os.Args[4])
+		end := time.Now().Add(time.Duration(seconds) * time.Second)
+		f, e := os.Create(os.Args[5])
+		must(e)
+		defer f.Close()
+		for time.Now().Before(end) {
+			start := time.Now()
+			c, e := net.DialTimeout("tcp4", net.JoinHostPort(os.Args[2], os.Args[3]), 150*time.Millisecond)
+			result := "timeout"
+			if e == nil {
+				result = "connected"
+				c.Close()
+			} else if strings.Contains(e.Error(), "refused") {
+				result = "refused"
+			}
+			_ = json.NewEncoder(f).Encode(map[string]any{"start": start.UTC().Format(time.RFC3339Nano), "end": time.Now().UTC().Format(time.RFC3339Nano), "result": result})
+			time.Sleep(50 * time.Millisecond)
+		}
+	case "pulse":
+		seconds, _ := strconv.Atoi(os.Args[3])
+		end := time.Now().Add(time.Duration(seconds) * time.Second)
+		c, e := net.Dial("udp4", net.JoinHostPort(os.Args[2], "9"))
+		must(e)
+		defer c.Close()
+		for time.Now().Before(end) {
+			_, _ = c.Write([]byte("TEST ONLY"))
+			time.Sleep(50 * time.Millisecond)
+		}
 	case "loop":
 		seconds, _ := strconv.Atoi(os.Args[3])
 		end := time.Now().Add(time.Duration(seconds) * time.Second)
