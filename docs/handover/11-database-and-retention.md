@@ -1,5 +1,7 @@
 # Database and retention index
 
+**Current cut — [follow-up 18](follow-up-18.md) (2026-10-31 EDT):** Deploy migration 00192 before the new control binary; installer corrections require the new evidence key and bound.
+
 The complete forward inventory is `db/migrations/*.sql`, embedded by the migrator. Follow [deployment §3](deploy.md) for migration status and role separation and the [restore drill](restore-drill.md) for read-only reconciliation queries. `TestHandover_MigrationInventory` derives the count and highest number from the files; examples intentionally abbreviate status output instead of pinning a count that becomes stale.
 
 | Migration | Operator significance |
@@ -9,6 +11,7 @@ The complete forward inventory is `db/migrations/*.sql`, embedded by the migrato
 | `00189_node_incarnation_usage_outbox.sql` | `node_incarnations.usage_outbox` JSONB and `usage_outbox_observed_at` timestamp (`#243`, SECOPS-19 / D-075 / D-077 §2). Both are null on a new incarnation. An accepted usage observation updates them transactionally; an omitted usage block preserves the prior summary. `NodeDetail.usage_outbox` is projected from this domain row and participates in the strong ETag. |
 | `00190_serving_leases_clamp.sql` | D-084 (#259): the immutable-row guard permits only strictly shortening `expires_at`, with every other column unchanged. The freeze transaction clamps matching stored leases at transaction time + 60 s; signed envelopes and replay stay unchanged. Run this forward migration before the new freeze code. |
 | `00191_installer_update_results.sql` | D-089 / D-097 (#273): append-only installer receipts, exact ACK replay and current-incarnation installer summary. Includes Down; apply before the new control binary. |
+| `00192_installer_outcome_corrections.sql` | D-127 (#322): payload-derived UUID result_id key plus unique outcome_sequence bounded to 1..2 per node/job. First receipt and stored ACKs remain immutable. Apply before control; Down refuses once corrections exist. |
 
 The outbox summary is informational and independent of audit retention; it does not alter readiness, leases, or publication. See [operator guide §2.3](operator-guide.md) and [database retention policy](../db/README.md). Historical usage remains attributed to its original node incarnation after reinstall; do not move its ledger to a replacement identity.
 

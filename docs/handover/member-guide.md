@@ -1,5 +1,7 @@
 # Freedom VPN 會員使用手冊 / Member Guide (`docs/handover/member-guide.md`)
 
+**Current cut — [follow-up 18](follow-up-18.md) (2026-10-31 EDT):** 2026-10-31：F8-01 已於世代 30 重啟序列結案；AT09 仍因 F9-01 失敗，待 agent-core 27 / members 10 驗證。F8-02 原生傳輸失敗原因未定。F8-01 closed at generation 30; AT09 still fails on F9-01, and F8-02 remains unattributed. Real platform qualification remains open.
+
 本文件包含繁體中文（預設語言，`zh-TW`）與英文（`en`）雙語完整說明（`AGENTS.md §3`、`§7.3`、`§8.1`–`§8.3`、`§9.2`、`§9.4`、`§10`–`§12`、`§16.3`、`§16.5`、`§18.4`–`§18.5`、`§19.1`）。
 This document provides the complete Member Guide in Traditional Chinese (`zh-TW`, primary) followed by English (`en`, secondary).
 

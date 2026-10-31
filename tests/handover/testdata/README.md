@@ -53,3 +53,23 @@ dated decisions heading, excluding unrelated catalogue text; the manifest
 records source byte offset, length, full-source digest and excerpt digest.
 All other snapshots are complete source files, byte-identical at the cutoff.
 Live document digests are separate in the owned secops scope-review manifest.
+
+
+## Follow-up 18 provenance
+
+`followup18-main.json` freezes 12 roadmap rows from main
+`6d0022d83345ae78d26aaaf31c64f026d38dea3b`: #312, #314/#315 and #316–#324.
+`followup18-snapshots.json` pins 26 byte-identical source files by path, source
+commit and SHA-256. Lane results use run-ID filenames (including usage's short
+run ID 170ea3e3); dated source prose and secops' carried-forward AT29/AT31 rows
+are under `history/follow-up-18/`. Those secops rows retain their original
+transport run identity, not the newer restore run ID. The register17 snapshot
+keeps the old cutoff explicit while the current register advances through #324.
+The r17 review is copied directly from `.agent/REVIEW.md` on review commit
+`dcabc41e7d0c12725b1a7090425e2831faa3a12e`; its bytes are not reformatted.
+
+Snapshot Markdown retains original links and source wording; resolve those
+links at the manifest's original source location and commit. These fixtures
+are test inputs, not additional operator runbooks. No claims test reads a
+lane's current acceptance file. Living document-integrity digests remain in
+`docs/e2e/at/secops/scope-review.json` and are checked separately.
