@@ -34,7 +34,7 @@ func TestE2E_Followup16Fixtures(t *testing.T) {
 		t.Fatal(err)
 	}
 	runID := uuid.NewString()
-	r := &runner{t: t, lab: l, runID: runID, sourceCommit: strings.TrimSpace(string(head)), dir: filepath.Join(l.root, "docs/e2e/runs", time.Now().UTC().Format("2006-01-02"), "followup16", runID)}
+	r := &runner{t: t, lab: l, runID: runID, sourceCommit: strings.TrimSpace(string(head)), dir: filepath.Join(l.root, "docs/e2e/runs", time.Now().UTC().Format("2006-01-02"), fixtureCampaignDirectory(), runID)}
 	defer r.finish()
 	s := &Stack{lab: l}
 	if err = s.SetDNSFixturePhase("initial"); err != nil {
@@ -529,4 +529,11 @@ func (r *runner) fixtureFiniteGrant(ctx context.Context, s *Stack, admin Browser
 			recPathNote(&rec)("restore_error", err.Error())
 		}
 	}
+}
+
+func fixtureCampaignDirectory() string {
+	if os.Getenv("FVPN_E2E_FOLLOWUP19") == "1" {
+		return "followup19"
+	}
+	return "followup16"
 }

@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/streamstats"
 	"io"
 	"net"
 	"net/netip"
@@ -19,18 +20,19 @@ import (
 )
 
 type result struct {
-	AuthorityTTL   uint32   `json:"authority_ttl"`
-	HasSOA         bool     `json:"has_soa"`
-	Available      bool     `json:"available"`
-	RCode          int      `json:"rcode"`
-	Types          []uint16 `json:"types"`
-	TTLs           []uint32 `json:"ttls"`
-	Classes        []string `json:"address_classes"`
-	ExpectedAnswer bool     `json:"expected_answer"`
-	Connected      bool     `json:"connected"`
-	Bytes          int      `json:"bytes"`
-	Milliseconds   int64    `json:"milliseconds"`
-	Error          string   `json:"error,omitempty"`
+	Endpoint       *streamstats.Sample `json:"endpoint,omitempty"`
+	AuthorityTTL   uint32              `json:"authority_ttl"`
+	HasSOA         bool                `json:"has_soa"`
+	Available      bool                `json:"available"`
+	RCode          int                 `json:"rcode"`
+	Types          []uint16            `json:"types"`
+	TTLs           []uint32            `json:"ttls"`
+	Classes        []string            `json:"address_classes"`
+	ExpectedAnswer bool                `json:"expected_answer"`
+	Connected      bool                `json:"connected"`
+	Bytes          int                 `json:"bytes"`
+	Milliseconds   int64               `json:"milliseconds"`
+	Error          string              `json:"error,omitempty"`
 }
 
 func class(ip netip.Addr) string {
@@ -76,6 +78,7 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), *timeout)
 	defer cancel()
 	out := result{RCode: -1, Types: []uint16{}, TTLs: []uint32{}, Classes: []string{}}
+	var trace *streamstats.Conn
 	switch *mode {
 	case "dns":
 		if !strings.HasSuffix(strings.TrimSuffix(strings.ToLower(*name), "."), ".example.invalid") {
@@ -148,6 +151,8 @@ func main() {
 			break
 		}
 		defer c.Close()
+		trace = streamstats.Wrap(c)
+		c = trace
 		_ = c.SetDeadline(start.Add(*timeout))
 		reader := bufio.NewReader(c)
 		_, e = fmt.Fprintf(c, "MEMBER %s\n", *device)
@@ -166,6 +171,7 @@ func main() {
 		}
 		for i := 0; i < 64; i++ {
 			line, readErr := reader.ReadString('\n')
+			trace.Line(len(line), readErr == nil && line == "ECHO "+payload, readErr)
 			if readErr != nil || line != "ECHO "+payload {
 				e = fmt.Errorf("echo mismatch")
 				break
@@ -179,6 +185,10 @@ func main() {
 		out.Connected = true
 	default:
 		os.Exit(2)
+	}
+	if trace != nil {
+		sample := trace.Snapshot()
+		out.Endpoint = &sample
 	}
 	out.Milliseconds = time.Since(start).Milliseconds()
 	_ = json.NewEncoder(os.Stdout).Encode(out)

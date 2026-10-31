@@ -47,6 +47,11 @@ func upgradeObserve() error {
 		nft, e := exec.Command("nft", "-j", "list", "table", "inet", "fvpn").Output()
 		row["nft"] = string(nft)
 		row["nft_read_ok"] = e == nil
+		control, controlErr := exec.Command("curl", "--silent", "--max-time", "2", "--cacert", "/etc/vpn-node/ca.pem", "--cert", root+"identity/cert.pem", "--key", root+"identity/key.pem", "-o", "/dev/null", "-w", "%{http_code}", "https://agent.example.invalid:9443/api/v1/agent/desired-state").Output()
+		row["control_http_status"] = string(control)
+		row["control_read_ok"] = controlErr == nil
+		row["read_finished_at"] = time.Now().UTC()
+
 		if err = enc.Encode(row); err != nil {
 			return err
 		}

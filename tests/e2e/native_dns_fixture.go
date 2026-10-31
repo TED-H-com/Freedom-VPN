@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/streamstats"
 	"net"
 	"os"
 	"os/exec"
@@ -20,18 +21,19 @@ import (
 const fixtureProbe = "/usr/local/bin/fvpn-e2e-fixture-probe"
 
 type FixtureProbeResult struct {
-	AuthorityTTL   uint32   `json:"authority_ttl"`
-	HasSOA         bool     `json:"has_soa"`
-	Available      bool     `json:"available"`
-	RCode          int      `json:"rcode"`
-	Types          []uint16 `json:"types"`
-	TTLs           []uint32 `json:"ttls"`
-	Classes        []string `json:"address_classes"`
-	ExpectedAnswer bool     `json:"expected_answer"`
-	Connected      bool     `json:"connected"`
-	Bytes          int      `json:"bytes"`
-	Milliseconds   int64    `json:"milliseconds"`
-	Error          string   `json:"error,omitempty"`
+	Endpoint       *streamstats.Sample `json:"endpoint,omitempty"`
+	AuthorityTTL   uint32              `json:"authority_ttl"`
+	HasSOA         bool                `json:"has_soa"`
+	Available      bool                `json:"available"`
+	RCode          int                 `json:"rcode"`
+	Types          []uint16            `json:"types"`
+	TTLs           []uint32            `json:"ttls"`
+	Classes        []string            `json:"address_classes"`
+	ExpectedAnswer bool                `json:"expected_answer"`
+	Connected      bool                `json:"connected"`
+	Bytes          int                 `json:"bytes"`
+	Milliseconds   int64               `json:"milliseconds"`
+	Error          string              `json:"error,omitempty"`
 }
 
 func (s *Stack) InstallFixtureProbe(ctx context.Context) error {

@@ -469,3 +469,48 @@ expiry and rebinding controls keep their separate assertions.
 installer-side evidence; it does not replace ENR-05. The real serving acceptance
 remains devstack 18's scoped native traffic/ledger proof and the separately
 recorded follow-up 19 combined-source upgrade rerun.
+
+## isolation / agent-core — 2026-10-31 (follow-up 19)
+
+> D-087 clean provisional recipe — agent-core + devstack.
+
+The corresponding assembled central switch is **not available on this base**.
+`internal/nodes/httpwire/state.go:RenewServingLease` constructs
+`leases.NewService` directly with the production DB entitlement reader.
+`internal/leases/leases.go` requires published + registered + ready + unfrozen
+state before including grants. `SetMemberGrantsReady` and `/member-grants`
+exist only in fake control/labcontrol; the assembled devstack runs the real
+central HTTP handler. Holding a lease response produces a transport error;
+it cannot create an authentic empty signed lease. Unpublish, mapping freeze,
+changing entitlements, editing projector rows or re-signing a stripped response
+would not be the requested clean fixed-generation trigger.
+
+This item stops at the ownership boundary. Requested owner change:
+`internal/nodes/httpwire/state.go` (and its runtime dependency wiring) needs a
+TEST ONLY injectable grant-eligibility reader/factory, defaulting to the exact
+production reader, that can withhold future grants without changing desired
+bindings/generation or ready/published state. `leases.WithEntitlementReader`
+already exists; the HTTP handler does not expose that seam. No production
+bypass or synthetic accepted observation was added in this lane.
+
+Once that owner seam exists, the exported harness sequence must be: arm false
+on a clean unfrozen published generation with bindings; let the existing
+populated lease renew naturally (false does not revoke it); retain the genuine
+empty signed lease and every actual observation; require ready/passed, exactly
+`awaiting_member_grants`, the three AWAITING checks and one lease error; release
+true only after the qualifying report is accepted; require a populated lease,
+a distinct accepted serving report, unchanged generation/bindings and counted
+native traffic. The agent-core 27 labcontrol proof remains producer evidence,
+not an executed central/devstack trigger. Isolation's assembled AT10 remains
+unproved here.
+
+## orchestrator — 2026-10-31 (follow-up 19)
+
+> D-124 fixture
+
+On source `33034048`, `tests/e2e/cmd/fvpn-e2e-prepare/agent_config_test.go`
+contains only config/hosts tests and never calls `agent.Decide`. No file in
+that command directory calls it. The referenced model
+`internal/nodes/publication_evidence_test.go` already sets both desired and
+lease future expiries. No unrelated fixture or assertion was changed. Route
+the actual stale fixture path if another file was intended.
