@@ -98,6 +98,12 @@ func TestAT30_Followup10_LiveRestoreReconcile(t *testing.T) {
 		"m2_d1": p.waitCountedFlow(peerM2D1, 45*time.Second),
 		"m2_d2": p.waitCountedFlow(peerM2D2, 45*time.Second),
 	}
+	for name, value := range t0Flows {
+		if value.(map[string]any)["counted"] != true {
+			t.Fatal("T0 counted-flow precondition failed for", name)
+		}
+	}
+	p.metadata["serving_flow_positive"] = map[string]any{"status": "passed", "evidence": "AT30_restore_reconcile.step1_checkpoint_t0.initial_flows", "scope": "three native AT30 peers; the unadmitted base member probe is not this measurement"}
 	for range 4 {
 		_ = p.rawFlow(peerM1D1)
 		_ = p.rawFlow(peerM2D1)
