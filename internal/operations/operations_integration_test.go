@@ -144,18 +144,25 @@ func TestSECOPS11_AdminOperationProjectsOnlyBoundedFailureCauses(t *testing.T) {
 	cases := []struct {
 		name      string
 		stored    *string
+		reason    string
 		wantAdmin string
 	}{
-		{"route_missing", strPtr("route_missing"), "route_missing"},
-		{"route_disabled", strPtr("route_disabled"), "route_disabled"},
-		{"publish_rejected_503", strPtr("publish_rejected:503"), "publish_rejected:503"},
-		{"readback_failed_unconfirmed", strPtr("readback_failed:unconfirmed"), "readback_failed:unconfirmed"},
-		{"no_distribution_groups", strPtr("no_distribution_groups"), "no_distribution_groups"},
-		{"member_forwarding_unconfirmed", strPtr("member_forwarding_unconfirmed"), "member_forwarding_unconfirmed"},
-		{"desired_state_unavailable", strPtr("desired_state_unavailable"), "desired_state_unavailable"},
-		{"unlisted_withdrawal_sentence", strPtr("central NetBird route withdrawn; node agent withdrawal unconfirmed"), "Step failed; quote the operation ID."},
-		{"unlisted_secret", strPtr("TEST ONLY upstream response body"), "Step failed; quote the operation ID."},
-		{"nil_error_message", nil, "Step failed; quote the operation ID."},
+		{"route_missing", strPtr("route_missing"), "", "route_missing"},
+		{"route_disabled", strPtr("route_disabled"), "", "route_disabled"},
+		{"publish_rejected_503", strPtr("publish_rejected:503"), "", "publish_rejected:503"},
+		{"readback_failed_unconfirmed", strPtr("readback_failed:unconfirmed"), "", "readback_failed:unconfirmed"},
+		{"no_distribution_groups", strPtr("no_distribution_groups"), "", "no_distribution_groups"},
+		{"member_forwarding_unconfirmed", strPtr("member_forwarding_unconfirmed"), "", "member_forwarding_unconfirmed"},
+		{"desired_state_unavailable", strPtr("desired_state_unavailable"), "", "desired_state_unavailable"},
+		{"unlisted_withdrawal_sentence", strPtr("central NetBird route withdrawn; node agent withdrawal unconfirmed"), "", "Step failed; quote the operation ID."},
+		{"unlisted_secret", strPtr("TEST ONLY upstream response body"), "", "Step failed; quote the operation ID."},
+		{"nil_error_message", nil, "", "Step failed; quote the operation ID."},
+		// D-107: only bounded pairs are combined; member redaction below stays identical.
+		{"lease_unconfirmed", strPtr("member_forwarding_unconfirmed"), "lease_unconfirmed", "member_forwarding_unconfirmed (lease_unconfirmed)"},
+		{"lease_expired_not_in_vocabulary", strPtr("member_forwarding_unconfirmed"), "lease_expired", "member_forwarding_unconfirmed"},
+		{"unlisted_reason", strPtr("member_forwarding_unconfirmed"), "TEST ONLY upstream response body", "member_forwarding_unconfirmed"},
+		{"unlisted_message_with_reason", strPtr("TEST ONLY upstream response body"), "lease_unconfirmed", "Step failed; quote the operation ID."},
+		{"nil_message_with_reason", nil, "lease_unconfirmed", "Step failed; quote the operation ID."},
 	}
 
 	for _, tc := range cases {
@@ -182,6 +189,12 @@ func TestSECOPS11_AdminOperationProjectsOnlyBoundedFailureCauses(t *testing.T) {
 			}
 			if tc.stored != nil {
 				if _, err := pool.Exec(t.Context(), `UPDATE operations SET steps = jsonb_set(steps, '{netbird_route_readback,error_message}', to_jsonb($2::text), true) WHERE id = $1`, opID, *tc.stored); err != nil {
+					t.Fatal(err)
+				}
+			}
+
+			if tc.reason != "" {
+				if _, err := pool.Exec(t.Context(), `UPDATE operations SET steps = jsonb_set(steps, '{netbird_route_readback,reason}', to_jsonb($2::text), true) WHERE id = $1`, opID, tc.reason); err != nil {
 					t.Fatal(err)
 				}
 			}
