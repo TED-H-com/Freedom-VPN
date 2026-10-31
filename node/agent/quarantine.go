@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"regexp"
 	"time"
 
@@ -13,6 +14,8 @@ import (
 )
 
 type containmentEvidence struct {
+	Generation        uint64                      `json:"-"`
+	ReadAt            time.Time                   `json:"read_at"`
 	InitialQuarantine *enforce.QuarantineEvidence `json:"initial_quarantine,omitempty"`
 	Code              api.ErrorCode               `json:"code"`
 	TC                []enforce.TCReadEvidence    `json:"tc,omitempty"`
@@ -51,7 +54,7 @@ func (e *Engine) recordForeign(ev enforce.ServingEvidence) {
 		}
 		reads = append(reads, v)
 	}
-	if len(reads) != 0 {
+	if len(reads) != 0 && len(e.containment.TC) == 0 {
 		e.containment.TC = reads
 	}
 }
@@ -152,7 +155,14 @@ func (e *Engine) attachContainment(rep *api.ObservationReport, at time.Time) {
 	// no HTTP contract extension is necessary.
 	add := func(stage string, value any) {
 		b, _ := json.Marshal(value)
-		rep.Errors = append(rep.Errors, api.NodeError{Code: e.containment.Code, Stage: stage, Message: clipMsg(string(b)), ObservedAt: at})
+		observed := at
+		if stage == "tc_evidence" && !e.containment.ReadAt.IsZero() {
+			observed = e.containment.ReadAt
+		}
+		rep.Errors = append(rep.Errors, api.NodeError{Code: e.containment.Code, Stage: stage, Message: clipMsg(string(b)), ObservedAt: observed})
+	}
+	if len(e.containment.TC) > 0 {
+		add("tc_evidence", map[string]string{"candidate_generation": fmt.Sprint(e.containment.Generation), "read_at": e.containment.ReadAt.Format(time.RFC3339Nano), "source": "rejected"})
 	}
 	for _, r := range e.containment.TC {
 		if len(r.Objects) == 0 {

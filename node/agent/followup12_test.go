@@ -253,9 +253,48 @@ type renderedExecutor struct {
 	folded    int
 	table     listedTable
 	foreignTC bool
+	linkDown  bool
+	tcModel   enforce.Model
+	tcReady   bool
+}
+
+func (ex *renderedExecutor) TCBatch(context.Context, string) error {
+	ex.tcModel, ex.tcReady = ex.model, true
+	return nil
 }
 
 func (ex *renderedExecutor) Output(ctx context.Context, name string, args ...string) ([]byte, error) {
+	if name == "tc" && len(args) > 1 && args[0] == "-j" && args[1] != "filter" {
+		if !ex.tcReady {
+			return []byte(`[]`), nil
+		}
+		candidate := ex.model
+		ex.model = ex.tcModel
+		defer func() { ex.model = candidate }()
+	}
+
+	if name == "ip" && len(args) == 5 && args[0] == "link" && args[1] == "set" {
+		ex.linkDown = args[4] == "down"
+		return nil, nil
+	}
+	if name == "ip" && len(args) == 5 && args[0] == "-j" && args[1] == "link" {
+		flags := []string{"UP"}
+		if ex.linkDown {
+			flags = []string{}
+		}
+		return json.Marshal([]any{map[string]any{"ifname": args[4], "flags": flags, "operstate": "UNKNOWN"}})
+	}
+	if name == "tc" && len(ex.model.Bindings) == 0 && len(args) > 1 && args[0] == "-j" && args[1] != "filter" {
+		if args[1] == "qdisc" {
+			return []byte(`[{"kind":"htb","handle":"1:","root":true,"options":{"default":"fffe"}}]`), nil
+		}
+		parent, host := ex.model.QoS.Up, ex.model.QoS.HostUp
+		if args[len(args)-1] == ex.model.Datapath.MemberIngress {
+			parent, host = ex.model.QoS.Down, ex.model.QoS.HostDown
+		}
+		return fmt.Appendf(nil, `[{"kind":"htb","handle":"1:1","options":{"rate":"%dbit","ceil":"%dbit"}},{"kind":"htb","handle":"1:fffe","options":{"rate":"%dbit","ceil":"%dbit"}}]`, parent.RateBPS, parent.CeilBPS, host.RateBPS, host.CeilBPS), nil
+	}
+
 	if (name == "tc" && len(args) > 1 && args[0] == "-j" && args[1] == "filter") || name == "ip" {
 		if ex.foreignTC && name == "tc" && strings.Join(args, " ") == "-j filter show dev "+ex.model.Datapath.MemberIngress+" ingress" {
 			return []byte(`[{"kind":"matchall","options":{"handle":1,"actions":[{"kind":"mirred"}]}}]`), nil
@@ -1106,8 +1145,7 @@ func (b *followup14Buffer) Count() int {
 }
 func (b *followup14Buffer) String() string { b.mu.Lock(); defer b.mu.Unlock(); return b.b.String() }
 
-// Diagnostic reproduction for agent-core 23. The original rejected object's
-// identity is not recoverable from ISO-F6-01; this proves the subsequent latch.
+// Regression for the reproduced agent-core 23 recovery latch.
 func TestISO_F6_RetainedFailureBlocksNewGeneration(t *testing.T) {
 	r := newRig(t)
 	alignControlClock(r)
@@ -1128,8 +1166,9 @@ func TestISO_F6_RetainedFailureBlocksNewGeneration(t *testing.T) {
 		r.clock.Advance(time.Second)
 		stepOK(t, r)
 	}
-	if r.eng.serving || r.eng.appliedGen != 2 || r.eng.desired.ConfigGeneration != 3 || r.eng.lease.ConfigGeneration != 2 || len(p.results) != applies || r.srv.LeaseRenewals() != renewals || r.eng.needRenew() {
-		t.Fatalf("latch reproduction changed: serving=%t applied=%d desired=%s lease=%s apply_calls=%d renewals=%d", r.eng.serving, r.eng.appliedGen, r.eng.desired.ConfigGeneration, r.eng.lease.ConfigGeneration, len(p.results)-applies, r.srv.LeaseRenewals()-renewals)
+	if !r.eng.serving || r.eng.appliedGen != 3 || r.eng.lease.ConfigGeneration != 3 || len(p.results) <= applies || r.srv.LeaseRenewals() <= renewals {
+		t.Logf("errors=%v decision=%+v", p.errors, r.eng.decision)
+		t.Fatalf("recovery failed: serving=%t applied=%d desired=%s lease=%s apply_calls=%d renewals=%d", r.eng.serving, r.eng.appliedGen, r.eng.desired.ConfigGeneration, r.eng.lease.ConfigGeneration, len(p.results)-applies, r.srv.LeaseRenewals()-renewals)
 	}
-	t.Log("ISO-F6-01 recovery latch: foreign tc removed; desired=3 applied=2 lease=2; 5 steps / 5s; new Apply calls=0 renewals=0 needRenew=false; retained TC_FOREIGN_FILTER + policy_missing")
+	t.Logf("ISO-F6-01 recovered: Apply delta=%d renewal delta=%d lease=%s serving=%t", len(p.results)-applies, r.srv.LeaseRenewals()-renewals, r.eng.lease.ConfigGeneration, r.eng.serving)
 }

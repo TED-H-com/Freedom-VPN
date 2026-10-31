@@ -107,7 +107,7 @@ func (e *Engine) syncLease(ctx context.Context) error {
 		NodeIncarnationId:       e.incID,
 		RenewalRequestId:        reqID,
 	}
-	if !e.identityFrozen && e.appliedGen > 0 {
+	if !e.identityFrozen && !e.freezeUncertain && e.applyError == nil && e.appliedGen > 0 {
 		req.AppliedConfigGeneration = presence.NewNullableWithValue(decstr.U64(e.appliedGen))
 	}
 	if e.lease != nil && e.lease.LeaseId != uuid.Nil {
