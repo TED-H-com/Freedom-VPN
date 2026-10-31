@@ -1,5 +1,8 @@
 # Operations Runbooks Index (`docs/ops/`)
 
+Latest reconciliation: [follow-up 17](#follow-up-17-acceptance-snapshot-2026-10-31-edt),
+main `7e044c71` through #313. Earlier tables retain the verdicts at their own cutoffs.
+
 Operational runbooks, deployment guides, parameter calibration references, and disaster recovery checklists are maintained under [`docs/handover/`](../handover/README.md) alongside domain-specific operational references:
 
 ## Hand-Over & Production Runbooks (`docs/handover/`)
@@ -81,9 +84,9 @@ merged rows are in `tests/handover/testdata/followup15-main.json`.
 | Agent-core follow-up 23 (#276) | D-100 and the real-emission `identity_frozen` consumer pass; **ISO-F6-03 / AT13 remains failed**. Whole-second truncation reproduced in agent and renderer: diagnostic lab exit 0 is not acceptance. D-104 now has netlab 15 merged (#290); agent-core 24/25 → isolation follow-up 8 re-assertion remain. [Dated note](../node/followup23-2026-10-31.md); pins `TestD100_TopologyRefreshRequiresCleanNewerPublishedApply`, `TestD088_RealHTTPWireFreezeConsumer`. |
 | Devstack follow-up 16 (#284), run `a81785fa-77eb-428a-b846-fb33196a2dcf`, source `ec84d71` | **16/16 acceptance fixtures pass**: finite-grant transition, native IPv4/IPv6/dual and MTU 1500/1280 selectors, two-resolver native DNS with RR/cache/rebinding probes, retained pre-enrollment third node. QUIC and non-Linux selectors explicitly report unavailable; no platform pass is inferred. ENR-06 was not rerun. Pin: [immutable run directory](../e2e/runs/2026-10-31/followup16/a81785fa-77eb-428a-b846-fb33196a2dcf/finite-grant-downgrade.json), all 16 JSON records hashed. D-102 answers are in `docs/e2e/RESPONSES.md`. |
 
-The [decision register and coming table](../handover/README.md#follow-up-16-decisions-register-2026-10-31-edt)
+The [decision register and coming table](../handover/README.md#follow-up-17-decisions-register-2026-10-31-edt)
 now distinguish the #303 merged consumers from pending activation and live evidence;
-the table above retains the historical #290 status. [r16 dispositions](../reviews/README.md#r16-dispositions-at-the-follow-up-16-cutoff)
+the table above retains the historical #290 status. [r16 dispositions](../reviews/README.md#r16-dispositions-at-the-follow-up-17-cutoff)
 retain the four routed findings and distinguish the two known #277 fixes.
 
 ### Follow-up 16 acceptance snapshot (2026-10-31 EDT)
@@ -107,6 +110,35 @@ test names. These are shared-development-host results, not candidate hardware.
 | Members 8 (#303) | Run `69f92f49-73dc-4779-8101-dfb6a802a96b` on #284 fixtures: **3 pass / 6 blocked / 1 fail**, subchecks **558 pass / 5 blocked / 4 fail**. AT02 / AT03 / AT08 pass with `ReplaceFiniteGrant`, real expiry **3/0 → 0/3 → 3/0** and counted recovery. AT01 / AT04 / AT05 / AT20–AT22 blocked only on platform/operator/selector rows; every executed check there passes. **AT09 fails**: same-generation namespace restart never recovers serving (F8-01 → agent-core 25); dual-stack MTU-1280 transfer incomplete, 11,011 of 64,064 bytes in about 12 s (F8-02 → devstack 18 / netlab 18). D-119 resolves the finite-expiry question: deadline means expiry, a boundary plan change needs a billing-issued replacement grant. Follow-up 7 uses its final 31-file archive; local run-ID pins retired. |
 
 Pending means no merge or live pass is claimed: agent-core follow-up 24, updater
-follow-up 15 and netlab follow-up 17. The [decision register](../handover/README.md#follow-up-16-decisions-register-2026-10-31-edt)
-records D-112–D-119 and the [review index](../reviews/README.md#r16-dispositions-at-the-follow-up-16-cutoff)
+follow-up 15 and netlab follow-up 17. The [decision register](../handover/README.md#follow-up-17-decisions-register-2026-10-31-edt)
+records D-112–D-119 and the [review index](../reviews/README.md#r16-dispositions-at-the-follow-up-17-cutoff)
 records the current r16 dispositions.
+
+## Follow-up 17 acceptance snapshot (2026-10-31 EDT)
+
+Main `7e044c71`, #304–#313; [operator evidence and source links](../handover/follow-up-17.md).
+No new live acceptance was run by handover. Pins are in `TestHandover_Followup17Claims`.
+
+| Merged delivery | Verified scope and remaining limit |
+|---|---|
+| Netlab 17 (#304) | D-116 hookless marker scope and real-agent serving proved; hooked drop still rejected, fifth owned chain still HOOK_PRIORITY_MISMATCH. Three UDP losses across two reload runs; **AT10 failed under the pre-D-120 rule**. |
+| Agent-core 24 (#305) | Deny-all recovery candidate breaks ISO-F6-01; 897 ms containment / 494 ms clean link / 3.161 s counted serving, generations 3. Revision 13 details, durable checkpoint, candidate identity, D-087 and r16 M-1 delivered. Original installer health/rollback 404 failure retained; D-104 continuity deferred at that cut. |
+| Handover 16 (#306) | Historical #303 cutoff with D-112–D-119; #304 reconciled here. |
+| Updater 15 (#307) | D-110 catalog-bound receipts; D-114 terminal mismatch/replacement; F9-02 modes and F9-03 exit codes; real PostgreSQL interoperability. Component / isolated-database proof, no new live updates acceptance. |
+| Netlab 18 (#308) | **AT10 PASS under D-120** in both runs: one loss among 48 datagrams in the lane, none focused. IPv4 MTU-1280 and bidirectional PMTU-error traversal proved. D-123 preserves IPv6Block; native F8-02 remains unattributed. |
+| DNS-publish 8 (#309) | A/AAAA/HTTPS NXDOMAIN; CNAME/SVCB/TXT/MX/NS NODATA; SOA TTL honours 60/5 settings. 432-exchange conformance probe. Fail-closed for answers, not uniform NXDOMAIN. |
+| Updater 16 (#310) | Bounded FileMeter wait and restart safeguards; current uncorrelated evidence refused. Fresh correlated success not yet proved → updater 17 / agent-core 26. |
+| Installer 5 (#311) | Local privileged suite **13/13** with real checkpoint, signed candidate health and TCP probe; lower sequence refused before staging. Harness-proved local upgrade, not serving-node handshake or physical arm64. |
+| Agent-core 25 (#312) | D-104 absolute deadlines and D-106 authoritative evidence consumed; D-118 active; same-generation kernel recovery 1.419 s. TEST ONLY guard-inclusive 74,796/76,000 (98.4158%) is not production availability. AT13 / AT09 / retired-stream acceptance not promoted. |
+| Devstack 18 (#313) | ENR-05 real installer rerun **harness-proved**; final first-offer supplement **2/0/0 passed**, delivery 4 > retained 3, exact local digest and 202 receipt. **SECOPS-21 full restore remains open** → secops 13. |
+| Devstack 18 retained failures (#313) | Serving `apply` exits 0 but seals **final_sample / failed / rolled_back**, no checkpoint or switch → updater 17 / agent-core 26 `barrier_id`. Post-upgrade seed **HASH_MISMATCH** → installer 6 / updater 17. Native MTU 1280 fails in both underlay families across attempts → netlab 19 / wire-nodes 32. All three remain **FAIL**, not yet proved fixed. Quiescent candidate health does not close the serving failure. |
+
+AT09 F8-01 / F8-02, the five AT07 rows (enrollment 8), D-104 assembled
+continuity / AT13, retired-stream usage 5, AT31 hardware and AT29 guest-clock
+rows, real platform clients and physical arm64 remain open. The generation-3
+native restart passes in 5.96 s; generation-30/full-history recovery remains
+not yet proved. D-120 is a test-acceptance definition, not a product guarantee;
+D-104's 100 ms installation bound is unchanged. D-123 excludes IPv6 overlay
+forwarding and end-to-end IPv6 MTU / PMTU acceptance, without excusing native
+underlay failures. Process-only ownership decisions are kept in the
+[decision register](../handover/README.md#follow-up-17-decisions-register-2026-10-31-edt).
