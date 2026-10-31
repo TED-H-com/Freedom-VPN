@@ -102,6 +102,31 @@ func (r *runner) installerUpgrade19(ctx context.Context, s *Stack, quiescent boo
 	note("post_switch_check", string(check))
 	usageAfter, _ := s.UsageLedgerSnapshot(ctx, "installer-node")
 	noteJSON(&rec, "usage_after", usageAfter)
+	usagePath, usageCopyErr := r.usageCopy19(ctx, s, "final-sample")
+	finalEventOK := false
+	if usageCopyErr == nil {
+		usageDB, openErr := sql.Open("sqlite", "file:"+usagePath+"?mode=ro")
+		if openErr == nil {
+			defer usageDB.Close()
+			var cp struct {
+				Seq   string `json:"last_durable_event_seq"`
+				Epoch string `json:"closed_meter_epoch_id"`
+			}
+			if json.Unmarshal(checkpoint, &cp) == nil {
+				var payload []byte
+				var hash, epoch, ended string
+				queryErr := usageDB.QueryRow("SELECT payload,payload_sha256,epoch_id,interval_end FROM events WHERE CAST(seq AS TEXT)=?", cp.Seq).Scan(&payload, &hash, &epoch, &ended)
+				if queryErr == nil {
+					sum, hashErr := canonjson.HashHex(payload, "payload_sha256")
+					finalEventOK = hashErr == nil && sum == hash && epoch == cp.Epoch
+					note("final_sample_canonical_event", string(payload))
+					note("final_sample_event_end", ended)
+					note("final_sample_event_verified", boolText(finalEventOK))
+				}
+			}
+		}
+	}
+
 	_, copyErr := run("/usr/local/bin/fvpn-e2e-nodeconfig", "journal-copy")
 	dest := filepath.Join(r.lab.root, ".agent/tmp/followup19", r.runID+"-installer-journal.db")
 	receipt, exportErr := s.ExportContainerFile(ctx, "installer-node", "/var/lib/vpn-node/e2e/journal.snapshot.db", dest)
@@ -194,7 +219,7 @@ func (r *runner) installerUpgrade19(ctx context.Context, s *Stack, quiescent boo
 		noteJSON(&rec, "failed_recover_exit", commandExit(recoverErr))
 	}
 	note("owner", "updater / agent-core; sealed failure remains failure; no checkpoint supplied")
-	if stageOK && applyErr == nil && statusErr == nil && healthy && cpErr == nil && observerErr == nil && correlated && sealedOK && usageErr == nil && !bytes.Equal(before, after) && strings.Contains(string(executable), strings.TrimSpace(string(after))) {
+	if stageOK && applyErr == nil && statusErr == nil && healthy && cpErr == nil && observerErr == nil && correlated && sealedOK && finalEventOK && usageErr == nil && !bytes.Equal(before, after) && strings.Contains(string(executable), strings.TrimSpace(string(after))) {
 		rec.Status = StatusPass
 	}
 }
