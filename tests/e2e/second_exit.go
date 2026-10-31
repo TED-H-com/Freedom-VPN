@@ -19,18 +19,24 @@ import (
 // It does not publish the exit or infer serviceability. e2e-down removes it.
 func (s *Stack) StartSecondExit(ctx context.Context) error { return s.startSecondExit(ctx, false) }
 func (s *Stack) startSecondExit(ctx context.Context, clone bool) error {
-	slot := "node2"
-	lastOctet := ".22"
+	slot, octet := "node2", ".22"
 	if clone {
-		slot = "node-clone"
-		lastOctet = ".23"
+		slot, octet = "node-clone", ".23"
 	}
+	return s.startExitSlot(ctx, slot, octet, clone, false)
+}
+func (s *Stack) startExitSlot(ctx context.Context, slot, lastOctet string, clone, hold bool) error {
 	base := filepath.Join(s.lab.state, slot)
 	if err := os.Mkdir(base, 0700); err != nil {
 		return fmt.Errorf("second node requires a fresh slot: %w", err)
 	}
 	for _, dir := range []string{"etc", "var/e2e", "adguard/conf", "adguard/work", "netbird", "opt"} {
 		if err := os.MkdirAll(filepath.Join(base, dir), 0700); err != nil {
+			return err
+		}
+	}
+	if hold {
+		if err := os.WriteFile(filepath.Join(base, "var/e2e/hold-enrolling"), nil, 0600); err != nil {
 			return err
 		}
 	}

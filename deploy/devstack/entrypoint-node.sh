@@ -71,6 +71,13 @@ else
         exit 1
     fi
 fi
+# TEST ONLY retained-enrollment fixture: durable real identity exists, but no
+# bootstrap, peer join or agent heartbeat has occurred. Remove only this marker
+# when the fleet harness is ready to boot its pre-existing third identity.
+if [ -f /var/lib/vpn-node/e2e/hold-enrolling ]; then
+    printf '%s\n' '{"stage":"enrolling_snapshot"}' > /var/lib/vpn-node/e2e/status.json
+    while [ -f /var/lib/vpn-node/e2e/hold-enrolling ]; do sleep 1; done
+fi
 # PIDs belong to the old container process tree, not the durable identity.
 rm -f /var/lib/vpn-node/e2e/agent.pid
 fvpn-e2e-nodeconfig

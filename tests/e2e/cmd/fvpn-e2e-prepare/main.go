@@ -15,6 +15,7 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/internal/config"
@@ -32,6 +33,7 @@ func main() {
 	prefix := flag.String("prefix", "e2e", "short stack prefix")
 	portBase := flag.Int("port-base", 18000, "loopback port base")
 	graceSeconds := flag.Int("grace-seconds", 0, "TEST ONLY payment grace seconds (0 disables grace; prepare-time setting)")
+	twoResolvers := flag.Bool("two-resolvers", false, "TEST ONLY publish two controlled resolver addresses")
 	flag.Parse()
 	if *state == "" {
 		fmt.Fprintln(os.Stderr, "fvpn-e2e-prepare: -state is required")
@@ -42,14 +44,14 @@ func main() {
 		fmt.Fprintf(os.Stderr, "fvpn-e2e-prepare: %s\n", err.Error())
 		os.Exit(2)
 	}
-	if err := run(*state, *reset, lay, *graceSeconds); err != nil {
+	if err := run(*state, *reset, lay, *graceSeconds, *twoResolvers); err != nil {
 		fmt.Fprintf(os.Stderr, "fvpn-e2e-prepare: failed: %s\n", err.Error())
 		os.Exit(1)
 	}
 	fmt.Println("e2e state ready")
 }
 
-func run(state string, reset bool, lay layout, graceSeconds int) error {
+func run(state string, reset bool, lay layout, graceSeconds int, twoResolvers ...bool) error {
 	if graceSeconds < 0 || graceSeconds > 366*24*60*60 {
 		return fmt.Errorf("grace-seconds must be 0..31622400")
 	}
@@ -240,6 +242,9 @@ func run(state string, reset bool, lay layout, graceSeconds int) error {
 		DNSResolverIPv4:  []string{lay.OriginPrefix + ".53"}, DNSResolverIPv6: []string{},
 		ReleaseOrigins: []string{"https://releases.example.invalid"},
 	}
+	if len(twoResolvers) > 0 && twoResolvers[0] {
+		nodes.DNSResolverIPv4 = append(nodes.DNSResolverIPv4, lay.OriginPrefix+".54")
+	}
 	if err := nodes.Validate(); err != nil {
 		return err
 	}
@@ -316,7 +321,7 @@ func run(state string, reset bool, lay layout, graceSeconds int) error {
 	if err := writeNetBird(state); err != nil {
 		return err
 	}
-	if err := writeAdGuard(state, lay.CoreDNSIP); err != nil {
+	if err := writeAdGuard(state, lay.CoreDNSIP, len(twoResolvers) > 0 && twoResolvers[0]); err != nil {
 		return err
 	}
 	if err := os.MkdirAll(filepath.Join(state, "releases"), 0o755); err != nil {
@@ -447,7 +452,7 @@ func writeNetBird(state string) error {
 	return writeJSON(filepath.Join(state, "netbird", "config.yaml"), cfg)
 }
 
-func writeAdGuard(state, coreDNS string) error {
+func writeAdGuard(state, coreDNS string, rrMatrix ...bool) error {
 	password, err := randomHex(16)
 	if err != nil {
 		return err
@@ -550,6 +555,9 @@ users:
     password: %q
 whitelist_filters: []
 `, coreDNS, coreDNS, string(hash))
+	if len(rrMatrix) > 0 && rrMatrix[0] {
+		body = strings.Replace(body, "aaaa_disabled: true", "aaaa_disabled: false", 1)
+	}
 	dir := filepath.Join(state, "adguard", "conf")
 	if err := os.MkdirAll(dir, 0o700); err != nil {
 		return err

@@ -1,5 +1,7 @@
 example.invalid:53 {
-    file /etc/coredns/example.invalid.zone
+    file /etc/coredns/example.invalid.zone {
+        reload 1s
+    }
 }
 
 .:53 {
