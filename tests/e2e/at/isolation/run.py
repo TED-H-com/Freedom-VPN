@@ -55,6 +55,7 @@ with tempfile.TemporaryDirectory(prefix='at-isolation.', dir=ROOT / '.agent/tmp'
     import uuid
     env.setdefault('FVPN_AT_RUN_ID', str(uuid.uuid4()))
     env['FVPN_NETLAB'] = '1'
+    env['FVPN_E2E_GRANT_SEAM'] = '1'
     env['FVPN_LAB_PREFIX'] = 'fvpn-w4-isolation-lab'
     evidence = str(ROOT / env.get('FVPN_AT_EVIDENCE_DIR', 'docs/e2e/at/isolation'))
     env['FVPN_AT_EVIDENCE_DIR'] = evidence
@@ -73,7 +74,7 @@ with tempfile.TemporaryDirectory(prefix='at-isolation.', dir=ROOT / '.agent/tmp'
         stack = call(['python3', 'tests/e2e/at/isolation/stack.py', 'up'], env)
         if stack == 0:
             stack = call(['python3', 'tests/e2e/at/isolation/driver.py', 'run'], env)
-            review = call(['python3', '-B', 'tests/e2e/at/isolation/review_followup9.py', evidence], env)
+            review = call(['python3', '-B', 'tests/e2e/at/isolation/review_followup10.py', evidence], env)
             stack = stack or review
     finally:
         lab = call(['sh', 'tests/e2e/at/isolation/lab.sh', 'down'], env) or lab

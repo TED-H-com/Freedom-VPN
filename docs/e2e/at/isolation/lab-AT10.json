@@ -1,6 +1,6 @@
 {
-  "run_id": "2be2797b-7a28-4e9f-a1fe-5fffa4c1b047",
-  "started_at": "2026-10-31T14:53:42Z",
+  "run_id": "bfcc3880-dc02-485d-990c-13811d6e8835",
+  "started_at": "2026-10-31T19:05:25Z",
   "source_dirty": false,
   "id": "lab-AT10",
   "title": "Mechanism: host and upstream isolation during apply and interface change",
@@ -10,15 +10,15 @@
     "ISO02"
   ],
   "status": "pass",
-  "at": "2026-10-31T14:53:48Z",
-  "build": "e496d826c04054bd718186de078b8f972353fb94",
+  "at": "2026-10-31T19:05:32Z",
+  "build": "cd2e89746b710eda1580d2c822ceff3f636fb013",
   "image_digests": [
-    "fvpn-w4-isolation-lab:lab sha256:e65f01e7e28952df01847101c1279adee4d7cc89771c4299b8daee3f597ef08d"
+    "fvpn-w4-isolation-lab:lab sha256:60b275ba558796e79084deadb6becf660f7a94da475052d91c5c33114ae9a8c8"
   ],
   "policy_revision": "generation 3000-3020",
   "node_incarnation": "mechanism-lab",
   "expected": "Protected IPv4 destinations stay denied while the ruleset is regenerated and a lab veth appears. The controlled Internet endpoint stays reachable. The probe holds at least ten attempts per second and records no allow.",
-  "actual": "20 regenerations, interface flap, rate 86.5 attempts/s, protected destinations denied, 203.0.113.10:80 allowed, captures empty. This is the mechanism lab, not the assembled stack.",
+  "actual": "20 regenerations, interface flap, rate 85.0 attempts/s, protected destinations denied, 203.0.113.10:80 allowed, captures empty. This is the mechanism lab, not the assembled stack.",
   "commands": [
     "FVPN_LAB_PREFIX=fvpn-w4-isolation-lab make -f mk/at-isolation.mk at-isolation-lab-up",
     "FVPN_NETLAB=1 FVPN_LAB_PREFIX=fvpn-w4-isolation-lab FVPN_AT_EVIDENCE_DIR=docs/e2e/at/isolation go test -tags netlab -count=1 -timeout 40m -p 1 -parallel 1 ./tests/netlab/at"
@@ -34,11 +34,11 @@
     },
     {
       "name": "seconds",
-      "detail": "4.045"
+      "detail": "4.116"
     },
     {
       "name": "rate_per_s",
-      "detail": "86.53"
+      "detail": "85.03"
     },
     {
       "name": "regenerations",

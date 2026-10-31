@@ -1,190 +1,217 @@
-# Isolation follow-up 9 — 2026-10-31
+# Isolation follow-up 10 — 2026-10-31
 
-One assembled run: **`2be2797b-7a28-4e9f-a1fe-5fffa4c1b047`**, live source
-`e496d826c04054bd718186de078b8f972353fb94`, product baseline `fb5e0025`
-(includes netlab 19, agent-core 27 and devstack 19). Source dirty: **false**;
-the product tree is unchanged. **14:54:34–15:10:27 UTC, 953.07 seconds**.
-The gate returned **2 (lab=0, stack=1)**. This run is retained, including the
-new AT13 failure; no second run substitutes for it.
+Current assembled run **`bfcc3880-dc02-485d-990c-13811d6e8835`**, live source `cd2e89746b710eda1580d2c822ceff3f636fb013`,
+source dirty **false**, product baseline `96ec0630` (through PR #344).
+The assembled driver ran **1,096.70 seconds**; the full command took
+**1,226.199 seconds** and returned **2 (lab=0, stack=1)**. All production paths
+remain unchanged. The two earlier attempts remain separate
+immutable evidence: [first attempt](first-attempt.md), [second attempt](second-attempt.md).
+No later pass reclassifies a failed sample.
 
-| Case | Result: pass / blocked / fail | Deciding evidence / next owner |
-|---|---|---|
-| AT10 / ISO01, ISO02 | **blocked: 8 / 1 / 0** | [AT10](AT10.json). D-087 blocked on wire-nodes 33's central grant-eligibility seam, then devstack 20's hook. |
-| AT11 / ISO01, ISO03 | **blocked: 2 / 1 / 0** | [AT11](AT11.json). Native IPv6/member-platform matrix: devstack/operators. |
-| AT12 / ISO01, ISO04, DNS03 | **pass: 10 / 0 / 0** | [AT12](AT12.json). Counted peer, management, DNS, spoof and group-withdrawal controls. |
-| AT13 / ISO02, ENT02, SEC01 | **fail: 5 / 1 / 1** | [AT13](AT13.json). Whole-node expiry has early drops followed by later positives; full fault/platform matrix separately blocked. |
-| ISO-F6-01 | **pass: six assertions** | [Recovery verdict](recovery-verdict.json), [raw sequence](foreign-redirect.json), [durable Apply state](recovery-applied-state.json). |
-| ISO-F6-02 / D-106 | **pass: 557 / 557 digests** | [Wire read index](tc-evidence-index.json); all also match retained producer verifier digests. |
-| ISO-F6-03 renewal | **3 losses / 1,396 probes**, all three ingress reads inside install brackets | [Exact correlation](continuity-analysis.json). Finding is guard duration; no tolerance change and no loss-free claim. |
-| ISO-F6-03 expiry / D-104 | **fail** | [Packet verdict](deadline-verdict.json), [failure index](expiry-failure-correlation.json). Agent-core serving/heartbeat/watchdog interaction; baseline writer unproved. |
+| Case | Result: pass / blocked / fail |
+|---|---|
+| [AT10](AT10.json) | **pass: 9 / 0 / 0** |
+| [AT11](AT11.json) | **blocked: 2 / 1 / 0** |
+| [AT12](AT12.json) | **pass: 10 / 0 / 0** |
+| [AT13](AT13.json) | **blocked: 6 / 1 / 0** |
 
-Spec: §19 AT10–AT13, §8.2–8.3, §16.3. Real arm64 and the complete platform
-matrix remain 待實測. Helper cross-builds cover linux/amd64 and linux/arm64.
-Mechanism results remain separate from assembled acceptance.
+Spec §19 AT10–AT13, §8.2–8.3, §16.3; ISO01–ISO04, ENT02, SEC01, DNS03.
+The two carried operator items are stated once in the current
+[requests](requests.md#follow-up-10-requests--2026-10-31); they remain open.
+Mechanism evidence and helper cross-compiles do not establish physical arm64.
 
-## D-098 first; historical evidence unchanged
+## D-098 / D-132 and retained attempts
 
-Follow-up 8 run `7779d83c` is archived **byte-identically, 80/80 SHA-256 pins**,
-including root files, support records and reload-stream inputs, in
-[history/follow-up-8](history/follow-up-8/archive.json). Its deadline, recovery
-and continuity pins exactly match netlab 20's requested digests. Follow-up 6
-`bf671f3a` (**44/44**) and follow-up 7 `041e9e48` (**52/52**) are untouched.
-Handover already reads archives/immutable fixtures. Its living AT10 path-string
-rejection test does not read that file. **No handover change or pin move was
-needed; the one-file exception was unused.**
+Before any root evidence rewrite, commit `5e9cb21d` archived all **86** follow-up
+9 root files byte-identically, including SHA-256 pins, under
+[history/follow-up-9](history/follow-up-9/archive.json). All 86 also compare equal
+to their original main bytes. Follow-ups 6/7/8 are untouched: **44/52/80** pins,
+including netlab 20's three exact follow-up 8 digests. Handover uses immutable
+claims; its living AT10/AT13 path strings are rejection-test data, not file
+reads. No D-132 handover change or pin move was needed.
 
-The historical **17 losses among 1,396 probes** lack exact producer timestamps.
-They remain in the pinned [follow-up 8 continuity record](history/follow-up-8/continuity-analysis.json)
-and are not retrospectively assigned the new run's timing.
+The [first archive](history/follow-up-10-attempt-1/archive.json) pins 92 original
+files and explicitly labels 23 inherited files as not new measurements.
+Its finite-member setup was incompatible with the fixed 60-second node window;
+a separate real install-bound failure occurred during renewal, and subsequent
+expiry/recovery lacked their required positive controls. It retains D-087 pass
+at 2,035 ms, 49 failed Applies and 279 renewal losses.
+The old reviewer rejected mixed clock/namespace inputs. Current review refuses
+unexecuted expiry windows, and generated artifacts were cleared before reruns.
 
-## Exact producer timing and renewal
+The [second archive](history/follow-up-10-attempt-2/archive.json) pins 98 files.
+Its initial counted flow incorrectly followed the stability wait, allowing
+ordinary initial FUP projection to change generation 12→13 before false.
+The exact fixed-generation predicate failed; true was cleanup only, with no
+new serving duration. Its D-104 pass, seven renewal losses and eight failed
+pre-install Applies remain separate measurements. The corrected third run
+counts first and then waits for stability. Both earlier attempts ended with
+zero owned Docker inventory.
 
-[Original source JSONL](producer-operations.jsonl) retains **3,289 snapshots**
-across three process runs: 810 Applies, 2,436 standalone verifications and 43
-renewal transactions. **41 failed operations** remain present. The successful
-quarantine recovery has both verifier records (process `0b191fdd`, sequence 1031).
-There are 3,240 verifier invocations in total. Sequences are contiguous per run;
-all nanosecond fields remain decimal strings. The [full analysis](producer-timing-analysis.json)
-validates order, flags, clocks and matching D-106 digests.
+## AT10 on the real D-087 trigger
 
-| Producer bracket, entire source trace | Samples | Median ms | Worst ms |
-|---|---:|---:|---:|
-| Apply | 810 | 78.578258 | 156.946129 |
-| Final render → installed-by | 803 | 16.115437 | 30.980245 |
-| Install command | 803 | 15.966763 | 30.823930 |
-| Release command | 803 | 14.709242 | 30.966682 |
-| Outer guard | 803 | 30.901338 | 52.596424 |
-| Complete verifier | 3,240 | 23.331450 | 74.176367 |
-| nft ruleset read | 3,240 | 2.293239 | 8.888025 |
-| Millisecond precision text read | 3,207 | 1.471820 | 19.565508 |
-| Aggregate tc read | 3,240 | 16.379201 | 66.671903 |
+A fresh dedicated `FVPN_E2E_GRANT_SEAM=1` runtime uses wire-nodes 33's reader
+factory through devstack 20's exported loopback adapter. The TEST ONLY offline
+window was set to **60 seconds before enrollment** and remained fixed.
+Initial native counted traffic precedes **65 seconds of identical invariants**,
+allowing ordinary initial FUP projection to settle. The node is published,
+unfrozen, ready/passed, has bindings, and holds applied=desired **generation 13**.
+Real accepted observations retain baseline, meter and tunnel checks.
 
-Partial/failed calls remain in the source trace; only completed install/release
-commands establish an outer guard. Total Apply duration is not D-104's
-render-to-install budget. The inner definitely-guarded interval has median
-0.006019 ms and maximum 0.026280 ms; kernel commits occur somewhere inside
-the surrounding command brackets.
+False completed at **19:09:31.409608131 UTC**. A natural signed empty lease
+`bb2890af-dd8a-4626-b536-bbaaa9ba2f10` completed at **19:09:32.347800630**.
+The actual **HTTP 202** provisional receipt completed at **19:09:32.471404691**:
+ready/passed, forwarding false, exactly `awaiting_member_grants`,
+`AWAITING_MEMBER_GRANTS` on lease/qos/source_binding and exactly one error with
+that code at `stage=lease`. It names that empty lease; expiry or a safety failure
+does not supply the receipt.
 
-The independent **80 ms dual-phase diagnostic** captured two real signed
-renewals (producer sequences 780 and 913), **70 Applies / 70 complete guards**,
-**1,396 probes / 1,393 echoes / three losses (99.7851% echo availability)**.
-Every probe has ingress; all three losses lack uplink egress. AF_PACKET drops=0.
-All three send→completion windows and captured ingress reads overlap the exact
-install command, and all three overlap the outer guard:
+Only then did true complete at **19:09:32.571782557**. A new populated signed
+lease `ecafb4a5-6440-4bd0-ace4-df3e88a7e523` completed at **19:09:33.390501686**;
+a distinct accepted serving report completed at **19:09:33.534230637**.
+True→accepted serving is **962 ms** (**962.448080 ms** from original timestamps).
+The subsequent native counter increases **2,633→5,266 bytes**. Member, node
+ingress and uplink each capture 16 packets with zero capture drops; first
+uplink packet **19:09:35.490018** is after the serving receipt.
 
-| Lost packet | Apply sequence in process `0b191fdd` | Install ms | Release ms | Outer guard ms |
-|---|---:|---:|---:|---:|
-| 54 | 660 | 12.881333 | 24.789611 | 37.676074 |
-| 294 | 708 | 20.232754 | 15.855947 | 36.090627 |
-| 1315 | 914 | 23.129270 | 27.064374 | 50.196105 |
+The independent [audit](member-grants-audit.json) verifies **297 original wire
+hashes**, three desired responses during the transition, identical ETags and
+byte-equal before/provisional/after invariants: envelope, generation, bindings,
+ready/passed state, publication, freeze, entitlement and device outputs.
+[Original wire](member-grants-wire.json), [capture sequence](member-grants-transition.json)
+and [actual node acceptance joins](member-grants-timing.json) retain separate
+server, node and observation samples. No scheduled slot is treated as acceptance.
+No compiler change, projector stop, forced generation, freeze, unpublish,
+transport hold, synthetic report or synthetic lease drives this transition.
 
-The per-loss records retain exact start/end samples, final render, both command
-flags, verifier and executor read brackets, digest and lease. These are
-command/capture correlations, not exact kernel drop instants. **Each loss remains
-a loss; D-120 is not applied.** The measured finding is the guard size, with no
-new tolerance or renewed request for an already-delivered timing surface.
+| Independent sample | True→accepted serving, ms |
+|---|---:|
+| Historical isolation | 4,767 / 5,021 / 5,025 |
+| Devstack 20 | 3,980 / 4,112 |
+| Isolation 10 first attempt | 2,035 |
+| Isolation 10 second attempt | No qualifying transition |
+| Isolation 10 current run | **962** |
 
-The initial offline clock check rejected differing namespace IDs. Raw evidence
-showed the same boot and exactly zero monotonic/boottime offsets across the
-containers. A read-only [live agent `/proc` snapshot](producer-clock-after-restart.json)
-confirmed that the source agent and node packet recorder share the post-restart
-namespace. The member sender has a separate namespace with the same exact zero
-clock origin. The analyzer now validates that basis and rejects offset/boot
-mismatches; it adds no allowance. The same read is integrated for future runs.
-This collector correction did not replace the running product or probe binary.
-See the offset contract in [Linux time_namespaces(7)](https://man7.org/linux/man-pages/man7/time_namespaces.7.html).
+The separate 100-reload stream passes **unchanged D-120**: 101 verified Applies,
+45 datagrams, one eligible UDP loss, zero TCP timeouts. Packet 37 at generation
+1059 is a boundary loss; the next datagram succeeds. Its outer guard is
+45.873661 ms and render→installed 26.081340 ms; maxima across the stream are
+50.399956 / 30.949933 ms. All original conditions (i)–(v) remain required.
+[Printed verdict](reload-stream/TestAT10_AT13_ReloadRevokeBaseline/d120-verdict.txt).
+D-120 is never applied to the separate renewal/expiry diagnostics.
 
-## Whole-node expiry failure outside guard brackets
+## New expiry and renewal measurements
 
-Generation-30 lease `bfeb6b9b-8fa6-47ed-85cd-9a4034d6f75e` was issued at
-15:07:17.994901292Z, expiring 15:08:17.994901292Z. Its retained request anchor
-is `42775508568707` ns, so **D=`42835508568707` ns**. The producer and node-held
-deadline agree; no new lease was accepted during the expiry capture.
+D-104 packet predicate: **pass**, D=`58085626424739` ns,
+**161 positives / 41 drops**. Last positive offset
+**-99.655342 ms**, first drop offset
+**-63.564818 ms**. There are no later or post-D positives; packet capture drops are zero.
+The original signed deadline and
+D−101 ms / D+100 ms bounds are unchanged. See the [packet verdict](deadline-verdict.json),
+[producer correlation](expiry-failure-correlation.json) and
+[all loss brackets](expiry-timing-analysis.json).
+**One pre-deadline ingress loss remains counted**;
+literal zero-pre-deadline loss is **false**.
 
-All **202 probes** have independent ingress/read evidence; the packet capture
-reports zero drops. There are **65 positives and 137 drops**:
+Historical follow-up 9 remains **failed: 96 early drops / 65 subsequent positives /
+41 final expiry drops** in its [immutable verdict](history/follow-up-9/deadline-verdict.json).
+Its first baseline writer remains **unattributed**. A new bounded-expiry pass or
+restart adoption cannot resolve that historical row or strict ISO-F6-03.
+Fresh baseline rows name only fresh agent writes; watchdog decisions and writes
+come from retained reason logs, never inferred from a generation-0 read alone.
 
-- **96 early drops**, packet IDs 1–96. First ingress is **D−8,098.843780 ms**;
-  forwarding resumes at **D−3,298.889928 ms**. **95** are outside every completed
-  guard; packet 96 overlaps the recovering install.
-- **65 subsequent positives**. Last positive egress is **D−99.972452 ms**,
-  satisfying the unchanged D−101 ms bound by 1.027548 ms.
-- **41 final expiry drops**, beginning **D−62.863882 ms**. There is no positive
-  at/after D. Nevertheless, the overall predicate **fails** because positives
-  occur after the earlier drops. The early interval is not removed or forgiven.
+The independent 80 ms renewal diagnostic has **1,396 probes /
+1,366 positives / 30 losses**, two actual
+accepted renewals and 69 completed guards.
+**30** lost ingresses lie in completed guard brackets;
+**0** remain outside those brackets. Every loss remains a
+loss. [Exact renewal correlation](continuity-analysis.json) retains original
+Apply, render, install/release, verifier, baseline and heartbeat samples.
 
-The [focused failure index](expiry-failure-correlation.json) and
-[all loss windows](expiry-timing-analysis.json) retain the deciding sequence:
+## Completed-guard distributions and failed Applies
 
-1. Apply 955 succeeds at 15:08:01.179209101Z, followed by verified live reads 956
-   and 957. The last of these reads ends at 15:08:04.325685104Z.
-2. Live verifier 958 fails at 15:08:04.337377684Z, followed by blocked audit 959.
-   Real report `01a19280-e9a9-7747-887f-3ba2aee9176e` carries
-   **GENERATION_MISMATCH** and `safety_check_failed` while its accepted lease
-   remains valid. The failed verifier skips the precision text stage; its zero
-   samples are preserved, not called a successful read.
-3. The first periodic kernel read at 15:08:08.230764210–15:08:08.259486099Z sees
-   **generation-0 baseline, empty allowed_v4, serving 0**. Its heartbeat remains
-   generation 30 with `safety_check_failed`.
-4. Apply 961 installs generation 30 again: exact install
-   `42832131549058`–`42832146531158` ns, release
-   `42832146540788`–`42832160422196` ns. Verified Apply/live reads follow;
-   packet 97 forwards. The lease and its original D are unchanged.
+The original [producer stream](producer-operations.jsonl) retains **8,088**
+contiguous snapshots. Source counts: baseline=128, heartbeat=3949, renewal=73, apply=975, live=2926, blocked_audit=37.
+New baseline/heartbeat kinds are included in sequence and timing validation.
+The retained watchdog log explicitly names its bootstrap `heartbeat_unreadable`
+write at 19:06:25 UTC; it contains no later write. This is fresh evidence only.
+Reason logs preserve pre-restart, pre-clone and final segments; concatenated
+[agent](agent.log.txt) and [watchdog](watchdog.log.txt) logs retain those originals.
 
-**Next owner: w2-agent-core**, specifically `node/agent/engine.go`
-`Step` / `finishServingStep` / `verifyCurrentServing` and
-`node/watchdog/watch.go` `Watch.needsBaseline`, with netlab supporting the
-verifier diagnostics. Reconcile the control-loss I/O, heartbeat and concurrent
-baseline sequence. Watchdog participation is an inference: its log is empty,
-and Engine timing does not record an external `ApplyBaseline` writer or its
-command bracket. No actor is invented from baseline presence alone. Those
-product paths are outside this lane; that item stops at the evidence hand-off.
+Nearest rank over completed guards only, milliseconds:
 
-## Recovery, D-106 and D-120
+| Population | n | p50 | p90 | p99 | max |
+|---|---:|---:|---:|---:|---:|
+| Outer guard | 968 | 31.085118 | 40.528987 | 48.851468 | 52.927957 |
+| Matching install command | 968 | 16.109632 | 22.319402 | 27.699284 | 30.619698 |
 
-ISO-F6-01 passes all six assertions. Serving generation 30 → labelled foreign
-tc injection → dirty generation 31 remains rejected → complete removal → clean
-generation 32, matching populated lease, verified Apply/live read and counted
-recovery. Injection→contained observation ≤**444.013107 ms**; removal→link-up
-≤**657.675093 ms**, serving ≤**8.505691 s**, counted completion ≤**17.667501 s**.
-Admission bytes increase **175,420 → 178,960**. These are observation upper
-bounds including polling/probe time, not product guarantees. No restart,
-route/address repair, link raise or D-100 override assists this recovery.
+All seven failed Applies reject before install during the labelled foreign-tc
+scenario; no install-bound overrun occurs in this sample. Failed Applies are
+listed separately; full command flags, partial samples and
+verifier brackets remain in [producer-timing-analysis.json](producer-timing-analysis.json):
 
-Node `any`: **2,386 parsed/reported packets, zero drops**. Two unsnatted redirected
-UDP/9 packets and one ordinary SNAT packet precede confirmed quarantine; no
-uplink UDP/9 packet occurs from confirmed down until removal. All 14 foreign-tc
-rejected reads belong to the labelled harness injection. No unsolicited rejected
-tc object appears. The original follow-up 6 creator remains unknown.
+- Process `f5e8c05d-bf49-4021-8351-509b40d1c7d6`, sequence **2310**; Apply `58113062105883`–`58113114374641` ns, completed guard=false.
+- Process `f5e8c05d-bf49-4021-8351-509b40d1c7d6`, sequence **2317**; Apply `58114055110218`–`58114100292478` ns, completed guard=false.
+- Process `f5e8c05d-bf49-4021-8351-509b40d1c7d6`, sequence **2325**; Apply `58114252138103`–`58114308910214` ns, completed guard=false.
+- Process `f5e8c05d-bf49-4021-8351-509b40d1c7d6`, sequence **2332**; Apply `58115244686480`–`58115301221571` ns, completed guard=false.
+- Process `f5e8c05d-bf49-4021-8351-509b40d1c7d6`, sequence **2340**; Apply `58116256699009`–`58116309545044` ns, completed guard=false.
+- Process `f5e8c05d-bf49-4021-8351-509b40d1c7d6`, sequence **2347**; Apply `58117253417988`–`58117307302601` ns, completed guard=false.
+- Process `f5e8c05d-bf49-4021-8351-509b40d1c7d6`, sequence **2354**; Apply `58118248366905`–`58118300918350` ns, completed guard=false.
 
-D-106: **557/557** wire digests recompute, and all match a retained producer
-digest. Historical rejected evidence remains separate from current objects.
-The [receiver](receiver-capture.json) retains 562 observation POSTs: 549 HTTP 202,
-seven 502 and six 429 responses. D-087 has zero qualifying accepted reports,
-and its recipe was **not executed** because the real central seam is missing.
-No new duration replaces historical **4,767 / 5,021 / 5,025 ms**.
+Earlier completed-guard samples remain independent:
 
-The separate AT10 stream prints **PASS under unchanged D-120**: 100 reloads,
-101 verified Applies, 50 datagrams, **one UDP loss / zero TCP timeouts**.
-Packet **12**, generation **1020**, is at the guard boundary; the next datagram
-succeeds and all conditions (i)–(v) pass. Its outer command bracket is
-`1793458402431275719`–`1793458402456886806` wall ns (**25.610760 ms**), with
-render→installed **9.737676 ms**. Maximum guard and render→installed across
-that stream are **50.129072 / 29.194891 ms**. The complete
-[per-loss verdict](reload-stream/TestAT10_AT13_ReloadRevokeBaseline/d120-verdict.txt)
-and analyzer inputs are retained. D-120 is never widened to cover the renewal
-or expiry diagnostic.
+| Attempt / population | n | p50 ms | p90 ms | p99 ms | max ms |
+|---|---:|---:|---:|---:|---:|
+| First / outer | 678 | 31.634581 | 41.827776 | 51.362069 | 57.630034 |
+| First / install | 678 | 16.459780 | 22.524217 | 28.101933 | 30.792366 |
+| Second / outer | 931 | 30.749663 | 38.828002 | 46.306456 | 49.844866 |
+| Second / install | 931 | 15.779444 | 21.512728 | 26.901864 | 30.439422 |
 
-[D-093 reconciliation](d093-reconciliation.md): all 15 classifications agree;
-13 open and two retired within portal simulator scope. The clone/freeze wire
-fixture is retained without expanding its acceptance claim.
+The first attempt's 49 failed installs are **excluded from completed-guard
+percentiles and retained separately**, including Apply 712's 215.890796 ms
+render→installed bound violation and baseline 713's explicit `apply_rollback`
+writer. The second attempt's eight pre-install rejections occur in the labelled
+foreign-tc scenario. Full sequence lists are in the two attempt documents.
+
+Agent-core 28's separate D-133 A/B reference measured live outer-guard p99
+51.67 / 50.46 ms versus unchanged main's 38.07 / 40.34 ms, and assembled
+43.60 / 41.24 ms versus 47.89 / 49.75 ms. These are separate samples; this run
+is not a controlled A/B experiment and supplies no causal performance claim.
+
+## Recovery, digests and reconciliation
+
+ISO-F6-01 **passes all six assertions** in the
+[recovery verdict](recovery-verdict.json), with genuine observations, populated
+lease, durable applied state, kernel topology and counted forwarding.
+Injection→containment ≤445.418286 ms;
+removal→link-up ≤652.416785 ms, serving
+≤8485.502956 ms, counted completion
+≤17728.987910 ms. These are observation upper bounds,
+not product guarantees. Recovery assistance=false. The original runtime log
+prints the preliminary recovery check as blocked; the existing six-assertion
+review joins durable verified Apply and fresh live evidence before the final
+AT10 record is written. That final review passes; no packet predicate changes.
+The node-any capture has 2,392 packets and zero capture drops: two redirected
+packets and one ordinary SNAT packet precede confirmed containment, and no
+uplink packet appears after containment until removal.
+There are 12 retained rejected reads and
+0 unsolicited rejected reads. The original
+unretained follow-up 6 foreign-object creator remains unknown.
+
+D-106: **654/654** canonical wire digests recompute;
+**654** also match original producer reads.
+[D-093 reconciliation](d093-reconciliation.md) preserves all 15 agreements,
+13 open / two retired only within simulator scope; the new grant seam changes
+none of those simulator claims.
 
 ## Gates and cleanup
 
-Owned lint/test/build, handover, root go-lint, gofmt, diff and committed-evidence
-hygiene pass; [actual output tails](validation-results.json). The assembled gate
-returns 2 for the measured failed/blocked states, not only blocked scope.
-Mechanism suites passed in 22.488 s and 19.399 s. Five text captures had only
-terminal blank lines removed; D-120 analysis recomputed byte-identically afterward.
-After teardown: **containers=0, images=0, networks=0, volumes=0** under the owned
-prefix; [inventory](cleanup-inventory.json). [Five routed requests](requests.md#follow-up-9-requests--2026-10-31).
+Exact foreground gate results and output tails are in
+[validation-results.json](validation-results.json). The assembled command's
+exit 2 preserves the two current operator gaps. Owned lint/test/build, handover,
+root go-lint, formatting, diff and committed-evidence hygiene all **pass**.
+Only four current text captures had terminal blank lines normalized; the D-120
+JSON replay is byte-identical afterward. All original JSON wire and archive
+bytes remain untouched. Final owned-prefix [inventory](cleanup-inventory.json):
+**containers=0, images=0, networks=0, volumes=0**.
+Four items are routed under [Requests to orchestrator](requests.md#follow-up-10-requests--2026-10-31).

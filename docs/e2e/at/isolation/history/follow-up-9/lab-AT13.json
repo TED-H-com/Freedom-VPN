@@ -1,0 +1,49 @@
+{
+  "run_id": "2be2797b-7a28-4e9f-a1fe-5fffa4c1b047",
+  "started_at": "2026-10-31T14:53:56Z",
+  "source_dirty": false,
+  "id": "lab-AT13",
+  "title": "Mechanism: revocation, agent SIGKILL and baseline",
+  "spec": [
+    "§19 AT13",
+    "ISO02",
+    "ENT02",
+    "SEC01"
+  ],
+  "status": "pass",
+  "at": "2026-10-31T14:54:01Z",
+  "build": "e496d826c04054bd718186de078b8f972353fb94",
+  "image_digests": [
+    "fvpn-w4-isolation-lab:lab sha256:e65f01e7e28952df01847101c1279adee4d7cc89771c4299b8daee3f597ef08d"
+  ],
+  "policy_revision": "generation 4000-4100",
+  "node_incarnation": "mechanism-lab",
+  "expected": "An established flow dies on revoke, conntrack for that source is removed, SIGKILL leaves the ruleset, and baseline keeps member forwarding off.",
+  "actual": "Revoke stopped the live flow and cleared its conntrack. SIGKILL left generation 4100. Baseline returned generation 0 and denied both members while 127.0.0.1:2222 stayed up. NetBird restart, node reboot and the updater switch are not in this container.",
+  "commands": [
+    "FVPN_LAB_PREFIX=fvpn-w4-isolation-lab make -f mk/at-isolation.mk at-isolation-lab-up",
+    "FVPN_NETLAB=1 FVPN_LAB_PREFIX=fvpn-w4-isolation-lab FVPN_AT_EVIDENCE_DIR=docs/e2e/at/isolation go test -tags netlab -count=1 -timeout 40m -p 1 -parallel 1 ./tests/netlab/at"
+  ],
+  "observations": [
+    {
+      "name": "conntrack",
+      "detail": "100.64.1.1 removed after revoke"
+    },
+    {
+      "name": "sigkill",
+      "detail": "generation 4100 remained"
+    },
+    {
+      "name": "baseline",
+      "detail": "generation 0, member forwarding denied"
+    },
+    {
+      "name": "not_exercised",
+      "detail": "NetBird restart, node reboot, updater switch"
+    },
+    {
+      "name": "scope",
+      "detail": "mechanism lab; product status is AT13.json"
+    }
+  ]
+}

@@ -1,23 +1,22 @@
 # AT10–AT13 isolation evidence
 
-Follow-up 9 run **`2be2797b-7a28-4e9f-a1fe-5fffa4c1b047`**:
-**AT10 blocked, AT11 blocked, AT12 pass, AT13 fail.**
+Follow-up 10 run **`bfcc3880-dc02-485d-990c-13811d6e8835`**:
+**AT10 pass, AT11 blocked, AT12 pass, AT13 blocked.**
 
-Exact producer timing correlates all three new renewal losses with install
-brackets. Whole-node expiry has 96 early drops followed by later forwarding;
-95 of those drops are outside completed guards. The strict predicate stays
-failed. Historical 17 losses are preserved without retrospective attribution.
-Recovery passes all six assertions; 557/557 D-106 digests match. The separate
-AT10 reload stream passes under unchanged D-120 with one eligible loss.
+The real D-087 transition passes at **962 ms** true→accepted serving, followed
+by counted native forwarding at unchanged generation 13. All 297 original wire
+hashes verify. D-104 passes with 161 positives / 41 drops, including one pre-D
+ingress loss. Renewal retains 30 losses among 1,396 probes; none is forgiven.
+ISO-F6-01 passes six assertions; all 654 D-106 digests match producer reads.
 
-[Summary](summary.md), [procedure](RUN.md), [requests](requests.md),
-[producer analysis](producer-timing-analysis.json),
-[expiry failure](expiry-failure-correlation.json), [validation](validation-results.json).
-D-087 remains blocked on wire-nodes 33 → devstack 20 → isolation 10.
+[Summary](summary.md), [procedure](RUN.md), [requests](requests.md#follow-up-10-requests--2026-10-31),
+[grant audit](member-grants-audit.json), [producer analysis](producer-timing-analysis.json),
+[validation](validation-results.json).
 
-Corrected immutable archives:
-[follow-up 6](history/follow-up-6/archive.json),
-[follow-up 7](history/follow-up-7/archive.json),
-[follow-up 8](history/follow-up-8/archive.json).
-No handover claim pin moved. Mechanism evidence under `lab-*` / `reload-stream/`
-does not replace assembled acceptance or the real-device matrix.
+Historical follow-up 9 expiry remains failed and unattributed in its
+[86-file immutable archive](history/follow-up-9/archive.json). The
+[first attempt](first-attempt.md) retains its install-bound failure;
+the [second attempt](second-attempt.md) retains its AT10 setup failure.
+Earlier archives and netlab's follow-up 8 pins are untouched. Handover needed
+no pin move. Operator platform coverage remains open; no physical arm64 result
+is inferred from helper cross-compilation.

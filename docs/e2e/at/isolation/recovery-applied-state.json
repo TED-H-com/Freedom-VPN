@@ -1,18 +1,18 @@
 {
   "applied_generation": "32",
   "lease": {
-    "issued_at": "2026-10-31T15:08:59.666257899Z",
-    "expires_at": "2026-11-01T15:08:59.666257899Z",
+    "issued_at": "2026-10-31T19:23:09.789712229Z",
+    "expires_at": "2026-10-31T19:24:09.789712229Z",
     "generation": "32",
-    "max_offline_seconds": 86400,
+    "max_offline_seconds": 60,
     "member_count": 2,
     "source": "",
-    "mono_sent_ns": "42877180473721",
-    "deadline_mono_ns": "129277180473721",
+    "mono_sent_ns": "58127303727275",
+    "deadline_mono_ns": "58187303727275",
     "anchor": {
-      "mono_ns": "42877180473721",
-      "server_unix_ns": "1793459339666257899",
-      "wall_unix_ns": "1793459339664102627",
+      "mono_ns": "58127303727275",
+      "server_unix_ns": "1793474589789712229",
+      "wall_unix_ns": "1793474589787356084",
       "trusted": 1
     }
   },
@@ -20,22 +20,22 @@
     "generation": "32",
     "interface": "fvmb0",
     "addresses": [
-      "26f1249bf76f5ebfe4dbe7c0c0395b28f1403ee3f6a475644505a2f592a1ba1c"
+      "1a6448657a60b4404b2b2ca5e2b262353663ee9485ae9a03c200b6fb110c02c1"
     ],
     "routes": [
-      "5840a8fb3142ca292bf510efbfc7751b85a2acd27f7185ea494f493ebd1ba6b6",
-      "1832645a5d0e1fc84b1a167fe2b79685109e90bbc24bfcab4346859ff06a92a3",
-      "b4c73876de7e9be3f65df5ce29439aff646533debfd2c703f3583cd18c76714f",
+      "9c562a03ab6389294f2a76af9d1b989ad22afc7f9d455fb3a1fbef50e2a7c1ec",
+      "9ad6823fbca1cdf3b055aa7a5ba486ad81b4193f3eb38e8a66fb0d9bc3658551",
+      "44ccd8ef47cfadd291e11483739081f4be4d05c6e386fc35beb3b2124790cb7b",
       "4c531061c743132243c3420573a46d3eb3a1ff0dbc5b0c2bef91c952fcdc2ff9"
     ]
   },
-  "read_at": "2026-10-31T15:09:09.235772001Z",
+  "read_at": "2026-10-31T19:23:19.43196544Z",
   "retained_applied": {
     "model": {
       "generation": 32,
       "ipv6_mode": "block",
-      "now": "2026-10-31T15:09:08.718178516Z",
-      "now_mono_ns": "42886232394338",
+      "now": "2026-10-31T19:23:18.848557438Z",
+      "now_mono_ns": "58136362572484",
       "datapath": {
         "member_ingress": "fvmb0",
         "uplink": "fvup0",
@@ -43,44 +43,44 @@
       },
       "bindings": [
         {
-          "member_id": "01a19274-b8e6-74d2-bd47-531a9763e7f3",
-          "device_id": "01a19274-fce6-75a0-b7ef-e09de16fd34a",
-          "peer_id": "dbj02ev8k4c000dn1ru0",
+          "member_id": "01a1935b-3c2b-711e-ad01-b341f631e86d",
+          "device_id": "01a1935b-7fd2-7ef2-b83d-e97f1728e6ba",
+          "peer_id": "dbj3ofn8k4c0008lmnp0",
           "allowed_v4": [
-            "100.111.75.102/32"
+            "100.115.227.238/32"
           ],
           "binding_revision": 1,
-          "valid_from": "2026-10-31T14:55:02.886369Z",
-          "valid_until": "2026-10-31T15:55:04.416106Z"
+          "valid_from": "2026-10-31T19:06:49.682979Z",
+          "valid_until": "2026-10-31T20:06:51.308144Z"
         },
         {
-          "member_id": "01a19275-3d5c-7628-ac75-7bd6f7024fce",
-          "device_id": "01a19275-7302-7e12-b0b4-469a11e2708b",
-          "peer_id": "dbj02nf8k4c000dn21ug",
+          "member_id": "01a1935b-bc9a-71fb-8dcd-7c4d10fc112d",
+          "device_id": "01a1935b-f5e4-77eb-a4cb-f0f703dfff4a",
+          "peer_id": "dbj3onv8k4c0008lmtpg",
           "allowed_v4": [
-            "100.111.136.217/32"
+            "100.115.176.202/32"
           ],
           "binding_revision": 1,
-          "valid_from": "2026-10-31T14:55:33.122922Z",
-          "valid_until": "2026-10-31T15:55:19.258908Z"
+          "valid_from": "2026-10-31T19:07:19.908519Z",
+          "valid_until": "2026-10-31T20:07:05.134044Z"
         }
       ],
       "leases": [
         {
-          "member_id": "01a19274-b8e6-74d2-bd47-531a9763e7f3",
-          "effective_service_end": "2026-10-31T15:18:51.586265761Z",
-          "node_lease_end": "2026-10-31T15:18:51.586265761Z",
-          "signed_server_time": "2026-10-31T15:08:59.666257899Z",
-          "max_offline_seconds": 86400,
-          "deadline_mono_ns": "43469100481583"
+          "member_id": "01a1935b-3c2b-711e-ad01-b341f631e86d",
+          "effective_service_end": "2026-10-31T19:24:09.789712229Z",
+          "node_lease_end": "2026-10-31T19:24:09.789712229Z",
+          "signed_server_time": "2026-10-31T19:23:09.789712229Z",
+          "max_offline_seconds": 60,
+          "deadline_mono_ns": "58187303727275"
         },
         {
-          "member_id": "01a19275-3d5c-7628-ac75-7bd6f7024fce",
-          "effective_service_end": "2026-10-31T15:18:51.586265761Z",
-          "node_lease_end": "2026-10-31T15:18:51.586265761Z",
-          "signed_server_time": "2026-10-31T15:08:59.666257899Z",
-          "max_offline_seconds": 86400,
-          "deadline_mono_ns": "43469100481583"
+          "member_id": "01a1935b-bc9a-71fb-8dcd-7c4d10fc112d",
+          "effective_service_end": "2026-10-31T19:24:09.789712229Z",
+          "node_lease_end": "2026-10-31T19:24:09.789712229Z",
+          "signed_server_time": "2026-10-31T19:23:09.789712229Z",
+          "max_offline_seconds": 60,
+          "deadline_mono_ns": "58187303727275"
         }
       ],
       "resolvers": [
@@ -105,7 +105,7 @@
         },
         "members": [
           {
-            "member_id": "01a19274-b8e6-74d2-bd47-531a9763e7f3",
+            "member_id": "01a1935b-3c2b-711e-ad01-b341f631e86d",
             "up": {
               "rate_bps": 99500000,
               "ceil_bps": 100000000
@@ -116,7 +116,7 @@
             }
           },
           {
-            "member_id": "01a19275-3d5c-7628-ac75-7bd6f7024fce",
+            "member_id": "01a1935b-bc9a-71fb-8dcd-7c4d10fc112d",
             "up": {
               "rate_bps": 99500000,
               "ceil_bps": 100000000
@@ -128,14 +128,14 @@
           }
         ],
         "assignments": {
-          "01a19274-b8e6-74d2-bd47-531a9763e7f3": 27623,
-          "01a19275-3d5c-7628-ac75-7bd6f7024fce": 24018
+          "01a1935b-3c2b-711e-ad01-b341f631e86d": 46301,
+          "01a1935b-bc9a-71fb-8dcd-7c4d10fc112d": 975
         }
       }
     },
     "assignments": {
-      "01a19274-b8e6-74d2-bd47-531a9763e7f3": 27623,
-      "01a19275-3d5c-7628-ac75-7bd6f7024fce": 24018
+      "01a1935b-3c2b-711e-ad01-b341f631e86d": 46301,
+      "01a1935b-bc9a-71fb-8dcd-7c4d10fc112d": 975
     }
   },
   "source": "read-only node SQLite snapshot; production persistence after verified Apply"

@@ -63,3 +63,39 @@ func TestD098_Followup8ArchivePins(t *testing.T) {
 		t.Fatal("netlab pins missing from manifest")
 	}
 }
+
+func TestD098_Followup9ArchivePins(t *testing.T) {
+	root := "../../../../docs/e2e/at/isolation/history/follow-up-9"
+	raw, err := os.ReadFile(filepath.Join(root, "archive.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var manifest struct {
+		RunID string `json:"run_id"`
+		Files []struct{ Path, SHA256 string }
+	}
+	if err = json.Unmarshal(raw, &manifest); err != nil {
+		t.Fatal(err)
+	}
+	if manifest.RunID != "2be2797b-7a28-4e9f-a1fe-5fffa4c1b047" || len(manifest.Files) != 86 {
+		t.Fatal("wrong archived run")
+	}
+	for _, f := range manifest.Files {
+		body, e := os.ReadFile(filepath.Join(root, f.Path))
+		if e != nil {
+			t.Fatal(e)
+		}
+		sum := sha256.Sum256(body)
+		if hex.EncodeToString(sum[:]) != f.SHA256 {
+			t.Errorf("archive changed: %s", f.Path)
+		}
+	}
+}
+
+func TestD087_OriginalWireAndAcceptedTransition(t *testing.T) {
+	out, err := exec.Command("python3", "-B", "-m", "unittest", "-v", "grant_evidence_test.py").CombinedOutput()
+	if err != nil {
+		t.Fatalf("grant transition: %v\n%s", err, out)
+	}
+	t.Log(string(out))
+}

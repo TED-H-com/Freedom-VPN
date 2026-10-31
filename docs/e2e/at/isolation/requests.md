@@ -281,11 +281,11 @@ root go-lint and evidence hygiene pass; owned Docker inventory is zero.
 
 ## Follow-up 9 requests — 2026-10-31
 
-Current run **`2be2797b-7a28-4e9f-a1fe-5fffa4c1b047`**, live source `e496d826`,
+Historical run **`2be2797b-7a28-4e9f-a1fe-5fffa4c1b047`**, live source `e496d826`,
 product baseline `fb5e0025`, 953.07 s. **AT10 blocked (8/1/0), AT11 blocked
 (2/1/0), AT12 pass (10/0/0), AT13 fail (5/1/1)**; counts are pass/blocked/fail.
 The assembled gate returns 2 (lab=0, stack=1). No rerun replaces this outcome.
-The [summary](summary.md) preserves every measured result and its scope.
+The [summary](history/follow-up-9/summary.md) preserves every measured result and its scope.
 
 Delivered prerequisites: netlab 19 / agent-core 27 timing is consumed in 3,289
 retained snapshots, including failures and both recovery verifiers. ISO-F6-01
@@ -308,8 +308,8 @@ D-093 reconciles 15 agreements, 13 open / two retired within simulator scope.
 2. **ISO-F6-03 new expiry failure — w2-agent-core, serving/heartbeat/watchdog path.**
    Exact locations: `node/agent/engine.go` `Step`, `finishServingStep`,
    `verifyCurrentServing`; `node/watchdog/watch.go` `Watch.needsBaseline`.
-   Netlab supports verifier diagnostics. See the [focused failure index](expiry-failure-correlation.json)
-   and [every loss window](producer-timing-analysis.json). Generation-30 lease
+   Netlab supports verifier diagnostics. See the [focused failure index](history/follow-up-9/expiry-failure-correlation.json)
+   and [every loss window](history/follow-up-9/producer-timing-analysis.json). Generation-30 lease
    deadline D=`42835508568707` ns stays valid. Apply 955 and live reads 956/957
    succeed; verifier 958 fails with `GENERATION_MISMATCH`, followed by blocked
    audit 959. The periodic kernel read shows generation-0 baseline, empty
@@ -360,3 +360,61 @@ D-098 archived 80/80 follow-up 8 files before rewriting root evidence; follow-up
 6 and 7 are untouched (44/44 and 52/52). Handover already uses immutable claims,
 so no file or pin moved. Owned lint/test/build, handover, root lint and hygiene
 pass. Owned Docker inventory is zero. No push, PR, tag or product edit.
+
+## Follow-up 10 requests — 2026-10-31
+
+D-087 is delivered: the dedicated grant-eligibility runtime, natural signed
+renewals and actual accepted ready/passed observations qualify the transition.
+The independent original-wire audit passes. The current measured duration is
+962 ms; the first attempt's 2,035 ms, historical isolation 4,767 / 5,021 /
+5,025 ms and devstack 3,980 / 4,112 ms remain separate samples.
+D-098 archived all 86 follow-up 9 files byte-identically before rewriting root
+artifacts. Earlier archives and netlab's three follow-up 8 pins are unchanged.
+The previously requested producer surface is delivered and consumed, including
+baseline and heartbeat source kinds plus retained normal reason-log segments.
+
+### Requests to orchestrator
+
+1. **Agent-core / enforcement / netlab: investigate the retained install-bound
+   failure and strict continuity losses.** The [first attempt](first-attempt.md)
+   retains 49 failed Applies. Process `2e7247e0-7303-4080-bd68-ca9ce9abb565`,
+   Apply 712, rendered at `54858887599306` ns and installed during
+   `54858887720453`–`54859103490102` ns: render→installed **215.890796 ms**,
+   beyond the unchanged 100 ms bound; no guard release completed. Baseline 713
+   explicitly names the agent's `apply_rollback` write at
+   `54859107743361`–`54859384608119` ns, followed by the two retained
+   `verification_HEALTH_CHECK_FAILED` writes. Every failed Apply and all 279
+   renewal losses remain in the archived
+   [failure analysis](history/follow-up-10-attempt-1/attempt-failure-analysis.json).
+   Later passing bounded-expiry measurements do not resolve this event,
+   strict renewal losses, or historical ISO-F6-03. The historical follow-up 9
+   96 early drops / 65 later positives / 41 final drops remain failed and its
+   writer remains unattributed. No host-contention cause is claimed. Product
+   paths are outside this lane; no product repair was attempted. The current
+   sample retains 30 renewal losses among 1,396 probes, all inside completed
+   guards, plus one pre-D ingress loss in its passing D-104 window. See the
+   [exact current correlation](producer-timing-analysis.json).
+
+2. **Node documentation owner: pin four historical follow-up 28 sources.**
+   `docs/node/followup28-iso-f6-03-2026-10-31.md` lines 11–14 still link living
+   isolation root files for its historical follow-up 9 event. Repoint
+   `expiry-failure-correlation.json`, `producer-operations.jsonl`,
+   `producer-timing-analysis.json` and `whole-node-continuous-reads.json` to
+   `docs/e2e/at/isolation/history/follow-up-9/`. This file is outside owned paths,
+   so that item alone is stopped. Handover has no such mutable file reads; its
+   AT10/AT13 path-string rejection tests require no D-132 edit or pin move.
+
+3. **AT11 operator item (carried from follow-up 9 request 3).** Devstack and
+   platform operators supply the native dual-stack/member-platform route and
+   capture matrix. Current mechanism and metadata/6to4 evidence does not close
+   this item.
+
+4. **AT13 operator item (carried from follow-up 9 request 4).** Acceptance and
+   operators execute the full continuous fault/platform matrix, including
+   physical arm64. Ordinary process restart, a bounded expiry pass and arm64
+   cross-compilation do not close this item.
+
+There are **four routed requests**. The [current summary](summary.md) and
+[validation](validation-results.json) retain the exact assembled result and
+completed-guard distributions. The two earlier follow-up 10 attempts are
+independently archived, including their failures; no later row reclassifies them.
