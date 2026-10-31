@@ -89,7 +89,16 @@ func (e *Engine) ApplyPending(ctx context.Context, path string) error {
 				}
 				if c.PendingSHA256 == rec.digest && c.PendingPath == path {
 					if errors.Is(recovered, ErrMembersBlocked) {
-						return fmt.Errorf("updater: installer outcome=%s (%s): %w", job.Outcome, job.ErrorCode, ErrMembersBlocked)
+						txn, err := e.Journal.LastTxn(ctx)
+						// A sealed pre-stop final-sample failure is an apply
+						// failure (1), including replay of pre-D-125 journals.
+						// Recover still reports the blocked gate (2). Destructive
+						// failures and unrelated recovery keep their exit 2.
+						if err != nil || txn.JobID != job.JobID || txn.Attempt != job.Attempt ||
+							txn.Stage != updatejournal.StageRolledBack || txn.Destructive ||
+							txn.ErrorStage != string(api.UpdateStageFinalSample) {
+							return fmt.Errorf("updater: installer outcome=%s (%s): %w", job.Outcome, job.ErrorCode, ErrMembersBlocked)
+						}
 					}
 					return permanent(apierr.Code(job.ErrorCode), fmt.Sprintf("installer outcome=%s", job.Outcome))
 				}

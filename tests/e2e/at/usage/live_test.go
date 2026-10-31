@@ -151,7 +151,7 @@ func TestATUsage_Live(t *testing.T) {
 	// so fvpn-agent on node exclusively owns the usage sequence stream through D-067
 	// Cycle 1 (bring_up), AT16 sampler restart, D-067 Cycle 2 (agent_restart), and
 	// watchdog withdrawal before AT14/18/19/17/15 drive mTLS usage and observations.
-	evalMap := make(map[string]Record, 6)
+	evalMap := make(map[string]Record, 7)
 	t.Log("evaluating AT16")
 	evalMap["AT16"] = s.evalAT16(t)
 	if err := WriteEvidence(s.evidence, evalMap["AT16"], s.extraRedactions...); err != nil {
@@ -177,13 +177,15 @@ func TestATUsage_Live(t *testing.T) {
 	if err := WriteEvidence(s.evidence, evalMap["AT17"], s.extraRedactions...); err != nil {
 		t.Fatal(err)
 	}
+	t.Log("evaluating AT20")
+	evalMap["AT20"] = s.evalAT20(t)
 	t.Log("evaluating AT15")
 	evalMap["AT15"] = s.evalAT15(t)
 	if err := WriteEvidence(s.evidence, evalMap["AT15"], s.extraRedactions...); err != nil {
 		t.Fatal(err)
 	}
 
-	orderedIDs := []string{"AT14", "AT15", "AT16", "AT17", "AT18", "AT19"}
+	orderedIDs := []string{"AT14", "AT15", "AT16", "AT17", "AT18", "AT19", "AT20"}
 	records := make([]Record, 0, len(orderedIDs))
 	for _, id := range orderedIDs {
 		rec := evalMap[id]

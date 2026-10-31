@@ -28,7 +28,7 @@ func (s *barrierCounterSource) Read(context.Context) (meter.Observation, error) 
 // The fake agent uses the real meter, durable usage store, snapshot type and
 // atomic/fsynced publication order from agent-core 24. Only kernel reads and
 // forwarding are fixtures; no JSON checkpoint or sequence is fabricated.
-func agentBarrierBytes(t *testing.T, boot uuid.UUID) []byte {
+func agentBarrier(t *testing.T, boot uuid.UUID) func() usagestore.MeterCheckpoint {
 	t.Helper()
 	node, inc, dev, member := uuid.New(), uuid.New(), uuid.New(), uuid.New()
 	now := fixedNow()
@@ -36,7 +36,7 @@ func agentBarrierBytes(t *testing.T, boot uuid.UUID) []byte {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer s.Close()
+	t.Cleanup(func() { _ = s.Close() })
 	src := &barrierCounterSource{obs: meter.Observation{
 		BootID: boot.String(), Bindings: []enforce.Binding{{DeviceID: dev, MemberID: member, BindingRevision: 1}},
 		Counters: map[string]enforce.CounterValue{
@@ -47,23 +47,32 @@ func agentBarrierBytes(t *testing.T, boot uuid.UUID) []byte {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer m.Close()
-	now = now.Add(time.Second)
-	src.obs.Counters[meter.CounterName(dev, meter.DirUpload)] = enforce.CounterValue{Bytes: 123, Packets: 1}
-	if err := m.Barrier(t.Context()); err != nil {
-		t.Fatal(err)
+	t.Cleanup(m.Close)
+	return func() usagestore.MeterCheckpoint {
+		t.Helper()
+		now = now.Add(time.Second)
+		src.obs.Counters[meter.CounterName(dev, meter.DirUpload)] = enforce.CounterValue{Bytes: 123, Packets: 1}
+		if err := m.Barrier(t.Context()); err != nil {
+			t.Fatal(err)
+		}
+		if err := m.FinalSample(t.Context()); err != nil && !errors.Is(err, meter.ErrNoEpoch) {
+			t.Fatal(err)
+		}
+		cp, err := s.ClosedCheckpoint(t.Context())
+		if err != nil || cp.LastDurableEventSeq == 0 || cp.NewMeterEpochID != "" {
+			t.Fatalf("real final sample: %+v %v", cp, err)
+		}
+		events, err := s.Unacked(t.Context(), 0, 10, 1<<20)
+		if err != nil || len(events) != 1 || !bytes.Contains(events[0].Payload, []byte(`"upload_bytes":"123"`)) {
+			t.Fatalf("durable nonzero usage missing: events=%d err=%v", len(events), err)
+		}
+		return cp
 	}
-	if err := m.FinalSample(t.Context()); err != nil {
-		t.Fatal(err)
-	}
-	cp, err := s.ClosedCheckpoint(t.Context())
-	if err != nil || cp.LastDurableEventSeq == 0 || cp.NewMeterEpochID != "" {
-		t.Fatalf("real final sample: %+v %v", cp, err)
-	}
-	events, err := s.Unacked(t.Context(), 0, 10, 1<<20)
-	if err != nil || len(events) != 1 || !bytes.Contains(events[0].Payload, []byte(`"upload_bytes":"123"`)) {
-		t.Fatalf("durable nonzero usage missing: events=%d err=%v", len(events), err)
-	}
+}
+
+func agentBarrierBytes(t *testing.T, boot uuid.UUID) []byte {
+	t.Helper()
+	cp := agentBarrier(t, boot)()
 	raw, err := json.Marshal(cp)
 	if err != nil {
 		t.Fatal(err)

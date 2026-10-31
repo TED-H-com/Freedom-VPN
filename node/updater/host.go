@@ -252,7 +252,8 @@ func ExitCode(err error) int {
 // enables member forwarding. The real nftables gate belongs to the agent.
 // Block preserves an existing latch; Unblock removes and fsyncs it. Both are
 // idempotent. A new latch gets an opaque identity for withdrawal detection.
-// The agent only consumes presence; this identity is NOT agent barrier evidence.
+// D-125 acknowledges this exact identity only after withdrawal/finalization;
+// the latch alone is not evidence that the agent has completed its barrier.
 type FileGate struct {
 	Path string
 }
