@@ -64,8 +64,14 @@ func (s *Service) FreezeIngest(ctx context.Context, actor, reason string) error 
 	}
 	now := s.now()
 	return db.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
-		if _, err := s.lockLedgerStateForUpdateInTx(ctx, tx); err != nil {
+		state, err := s.lockLedgerStateForUpdateInTx(ctx, tx)
+		if err != nil {
 			return fmt.Errorf("usage: lock ledger state for freeze: %w", err)
+		}
+		if state.Mode != LedgerModeFrozen {
+			if err := holdDesiredStateAfterRestore(ctx, tx, now); err != nil {
+				return fmt.Errorf("usage: hold desired state after restore: %w", err)
+			}
 		}
 		tag, err := tx.Exec(ctx, `
 			UPDATE usage_ledger_state
@@ -154,6 +160,13 @@ func (s *Service) BeginRecovery(ctx context.Context, req RecoveryRequest) (Recov
 		prevEpoch := state.LedgerEpoch
 		if newEpoch == prevEpoch {
 			return apierr.Validation("new_ledger_epoch must differ from current ledger_epoch", apierr.FieldError{Field: "/new_ledger_epoch", Reason: "conflict"})
+		}
+		// Direct BeginRecovery must install the same D-095 hold as FreezeIngest.
+		// The normal freeze -> begin sequence retains the original freeze cutoff.
+		if state.Mode != LedgerModeFrozen {
+			if err := holdDesiredStateAfterRestore(ctx, tx, now); err != nil {
+				return fmt.Errorf("usage: hold desired state after restore: %w", err)
+			}
 		}
 
 		// Discover all node incarnation streams from checkpoints, events, and node_incarnations.
