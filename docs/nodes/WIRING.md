@@ -32,7 +32,7 @@ The following transitional 501 handlers are removed:
 | `enrollNode` | CSR proof, durable incarnation/certificate/provisioning operation; same proof returns the original certificate. |
 | `consumeAgentBootstrap` | Authenticated single delivery: 409 not ready, one 200, then 410 consumed; expired undelivered material returns 410 expired. |
 | `renewAgentCertificate` | New CSR and serial with bounded older-serial overlap; same renewal ID replays. |
-| `listNodes`, `getNode`, `listMemberExits` | Registry and member-scoped exit views, including the current fleet job summary. Node detail projects current exit `group_ids`, reported DNS document evidence and check diagnostics. |
+| `listNodes`, `getNode`, `listMemberExits` | Registry and member-scoped exit views, including the current fleet job summary. Node detail projects current exit `group_ids`, reported DNS document evidence, check diagnostics, `identity_conflict` (D-072), and per-incarnation `usage_outbox` (`node_incarnations.usage_outbox` + `usage_outbox_observed_at`, migration `00189`, SECOPS-19 / D-075 / D-077 §2). |
 | `createAdminGroup`, `listAdminGroups` | Immutable groups, unique code/name, exact code filtering and cursor pages; creation has an idempotent 201 receipt and `group.create` audit. |
 | `getResolverDocument` | mTLS node/current-incarnation issuance authorization, exact canonical bytes, digest ETag and a current/previous-generation window. Publisher and compiler integration status is described below. |
 | `updateNode`, `revokeNode`, `retireNode` | Strong If-Match under transaction locks; metadata 200 or pending operation 202; retirement retains history. |
