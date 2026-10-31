@@ -22,6 +22,11 @@ func TestE2E_Followup16Fixtures(t *testing.T) {
 	if os.Getenv("FVPN_E2E_FIXTURES16") != "1" {
 		t.Skip("set FVPN_E2E_FIXTURES16=1 with a fresh two-resolver owned stack")
 	}
+	runFixtureCampaign(t, false)
+}
+
+func runFixtureCampaign(t *testing.T, dnsOnly bool) {
+	t.Helper()
 	l, err := openLab()
 	if err != nil {
 		t.Fatal(err)
@@ -116,8 +121,10 @@ func TestE2E_Followup16Fixtures(t *testing.T) {
 		cancel()
 	}
 	r.record(rec)
-	r.fixtureUnderlay(ctx, s)
-	r.fixtureInputs(ctx, s)
+	if !dnsOnly {
+		r.fixtureUnderlay(ctx, s)
+		r.fixtureInputs(ctx, s)
+	}
 	config, dnsErr := s.ConfigureNativeDNS(ctx, b, r.usageDevice, []uuid.UUID{node, second.NodeID})
 	rec = Record{ID: "native-dns-config", Title: "Native client uses the two issued controlled resolvers", Spec: []string{"§12.2", "AT21"}, Status: StatusPass}
 	noteJSON(&rec, "configuration", config)
@@ -133,6 +140,9 @@ func TestE2E_Followup16Fixtures(t *testing.T) {
 		for _, id := range []string{"native-dns-fallback", "dns-negative"} {
 			r.record(Record{ID: id, Title: id, Spec: []string{"AT20", "AT21"}, Status: StatusBlocked, Observations: []Observation{{Name: "prerequisite", Detail: "native DNS configuration failed"}}})
 		}
+	}
+	if dnsOnly {
+		return
 	}
 	r.fixtureFiniteGrant(ctx, s, b)
 	rec = Record{ID: "fleet-midrun-boot", Title: "Retained third identity resumes and becomes eligible mid-run", Spec: []string{"§6.2", "AT24", "AT26", "D-089"}, Status: StatusBlocked}
@@ -346,6 +356,25 @@ func (r *runner) fixtureFallback(ctx context.Context, s *Stack) {
 func (r *runner) fixtureDNSNegative(ctx context.Context, s *Stack) {
 	rec := Record{ID: "dns-negative", Title: "Controlled RR types, label boundaries, cache expiry and allowlisted rebinding", Spec: []string{"§12.5", "§12.8", "AT20", "ISO01", "DNS02"}, Status: StatusPass}
 	defer func() { r.record(rec) }()
+	for _, phase := range []string{"before", "after"} {
+		read := func() {
+			for _, slot := range []string{s.lab.node, s.lab.prefix + "-node2"} {
+				raw, err := s.lab.docker(slot, "/usr/local/bin/fvpn-e2e-nodeconfig", "dns-readback")
+				var info map[string]any
+				if err != nil || json.Unmarshal(raw, &info) != nil {
+					rec.Status = StatusFail
+					recPathNote(&rec)("resolver_settings_"+phase, "read failed")
+					continue
+				}
+				noteJSON(&rec, "resolver_settings_"+phase+"_"+strings.TrimPrefix(slot, s.lab.prefix+"-"), info)
+			}
+		}
+		if phase == "before" {
+			read()
+		} else {
+			defer read()
+		}
+	}
 	for _, proto := range []bool{false, true} {
 		for _, tc := range []struct {
 			name   string
@@ -536,6 +565,9 @@ func (r *runner) fixtureFiniteGrant(ctx context.Context, s *Stack, admin Browser
 }
 
 func fixtureCampaignDirectory() string {
+	if os.Getenv("FVPN_E2E_FOLLOWUP21") == "1" {
+		return "followup21"
+	}
 	if os.Getenv("FVPN_E2E_FOLLOWUP20") == "1" {
 		return "followup20"
 	}

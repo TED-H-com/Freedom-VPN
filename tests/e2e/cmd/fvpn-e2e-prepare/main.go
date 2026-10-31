@@ -497,6 +497,7 @@ dns:
     - 0.0.0.0
   bootstrap_dns:
     - %s:53
+  # TEST ONLY: keep the historical 4 KiB fixture override; pin default is 4 MiB.
   cache_size: 4096
   cache_ttl_max: 0
   cache_ttl_min: 0
