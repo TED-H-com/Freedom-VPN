@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 )
@@ -60,9 +61,13 @@ func (r *runner) nativeMTU19(ctx context.Context, s *Stack) {
 			cancel()
 			time.Sleep(3 * time.Second)
 		}
+		var ipv6Control FixtureProbeResult
+		if row.family == "dual" {
+			ipv6Control, _ = s.fixtureProbe(ctx, r.lab.node, "-mode", "connect", "-addr", "[fd00::30]:9447")
+		}
 		paths := []string{r.lab.member, r.lab.node, r.lab.prefix + "-origin"}
 		for _, c := range paths {
-			script := `echo $$ > /var/lib/vpn-node/e2e/mtu-capture.pid; exec tcpdump --immediate-mode -U -nn -s 128 -i any -w /var/lib/vpn-node/e2e/mtu.pcap 'icmp or icmp6 or tcp port 9446 or udp' 2>/var/lib/vpn-node/e2e/mtu-capture.log`
+			script := `echo $$ > /var/lib/vpn-node/e2e/mtu-capture.pid; exec tcpdump --immediate-mode -U -nn -s 128 -i any -w /var/lib/vpn-node/e2e/mtu.pcap 'icmp or icmp6 or tcp port 9446 or tcp port 9447 or udp' 2>/var/lib/vpn-node/e2e/mtu-capture.log`
 			e := exec.CommandContext(ctx, "docker", "exec", "-d", c, "sh", "-c", script).Run()
 			if e != nil {
 				rec.Status = StatusFail
@@ -80,6 +85,13 @@ func (r *runner) nativeMTU19(ctx context.Context, s *Stack) {
 		if e != nil || ae != nil || cbErr != nil || caErr != nil || !chosenBefore.Connected || !chosenAfter.Connected || !got.Available || got.Bytes != 64064 || !after.Present || after.Upload <= before.Upload || after.Download <= before.Download {
 			rec.Status = StatusFail
 		}
+		if row.family == "dual" {
+			denied, denyErr := s.fixtureProbe(ctx, r.lab.member, "-mode", "connect", "-addr", "[fd00::30]:9447")
+			noteJSON(&rec, row.name+"_ipv6_block", map[string]any{"positive_control": ipv6Control, "native_member": denied, "scope": "D-123: IPv6 connection must fail; IPv4 bulk must complete. Native refusal may precede tunnel ingress; this does not claim ctv6 was hit. Kernel ctv6 proof is the separate netlab row."})
+			if !ipv6Control.Connected || denyErr != nil || denied.Connected {
+				rec.Status = StatusFail
+			}
+		}
 		for i, c := range paths {
 			_, _ = r.lab.docker(c, "sh", "-c", `kill -INT "$(cat /var/lib/vpn-node/e2e/mtu-capture.pid)"`)
 			flush, stop := context.WithTimeout(ctx, 3*time.Second)
@@ -88,6 +100,16 @@ func (r *runner) nativeMTU19(ctx context.Context, s *Stack) {
 				return e != nil
 			})
 			stop()
+			if row.family == "dual" && i == 1 {
+				index, indexErr := r.lab.docker(c, "cat", "/sys/class/net/fvup0/ifindex")
+				filter := "ip6 and tcp port 9447 and outbound and ifindex " + strings.TrimSpace(string(index))
+				escaped, leakErr := exec.CommandContext(ctx, "docker", "exec", c, "tcpdump", "-nn", "-r", "/var/lib/vpn-node/e2e/mtu.pcap", filter).Output()
+				noLeak := indexErr == nil && leakErr == nil && len(strings.TrimSpace(string(escaped))) == 0
+				recPathNote(&rec)(row.name+"_ipv6_uplink_no_leak", boolText(noLeak))
+				if !noLeak {
+					rec.Status = StatusFail
+				}
+			}
 			stats, _ := r.lab.docker(c, "cat", "/var/lib/vpn-node/e2e/mtu-capture.log")
 			recPathNote(&rec)(fmt.Sprintf("%s_capture_%d_stats", row.name, i), string(stats))
 			// TCP SYN metadata contains MSS; ICMP summaries contain advertised MTU.
