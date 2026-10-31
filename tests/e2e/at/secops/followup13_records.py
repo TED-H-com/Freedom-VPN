@@ -113,7 +113,8 @@ def main():
     common = dict(schema_version=1, follow_up=13, application_base=run.get('application_base'),
                   source_revision=run.get('source_revision'), run_id=live.get('run_id'), driver_run_id=run.get('driver_run_id'),
                   started_at=run.get('started_at'), finished_at=run.get('finished_at'),
-                  hardware='shared development host; not candidate hardware', record_renderer_sha256=digest(Path(__file__)),
+                  hardware='shared development host; not candidate hardware', probe_source_sha256=live.get('probe_source_sha256'),
+                  record_renderer_sha256=digest(Path(__file__)),
                   previous_run='history/follow-up-12/', projector_owned_rows_written=[])
     current = measurements(case)
     baseline = measurements(load(ARCHIVE / 'restore-reconcile.json').get('case', {}))

@@ -24,6 +24,10 @@ def main():
     assert run['follow_up'] == live['follow_up'] == 13
     assert run['phase'] == 'restore' and run['finished_at']
     assert run['source_revision'] == live['source_revision']
+    probe = hashlib.sha256()
+    for path in sorted((ROOT/'tests/e2e/at/secops').glob('*.go')):
+        probe.update(path.read_bytes())
+    assert probe.hexdigest() == live['probe_source_sha256'], 'measured Go probe differs from current source'
     assert run['live']['status'] == 'passed' and live['go_test_failed'] is False
     assert clean_inventory(run['inventory_after']) and run['state_cleanup']['removed']
     assert all(not r['known_secret_matches'] and not r['device_flow_key_lines'] and r['read_ok'] for r in live['secret_scan'])
