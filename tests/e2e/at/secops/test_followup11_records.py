@@ -36,6 +36,10 @@ class Followup11VerdictTests(unittest.TestCase):
             'first_offer_local_store':{'accepted':True,'generation':'15'}}}
         self.assertEqual(generation_status({'d099_roadmap_present':False},live),'open — D-099 pending')
         self.assertEqual(generation_status({'d099_roadmap_present':True},live),'closed')
+        missing=copy.deepcopy(live)
+        missing['SECOPS-21']['first_http_offer'].pop('generation')
+        missing['SECOPS-21']['first_offer_local_store'].pop('generation')
+        self.assertEqual(generation_status({'d099_roadmap_present':True},missing),'open')
         del live['SECOPS-21']['first_offer_local_store']
         self.assertEqual(generation_status({'d099_roadmap_present':True},live),'open')
         live['SECOPS-21']['first_offer_local_store']={'accepted':True,'generation':'16'}

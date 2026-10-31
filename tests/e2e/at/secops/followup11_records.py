@@ -39,7 +39,7 @@ def generation_status(run, live):
     stored = row.get('first_offer_local_store', {})
     return 'closed' if (live.get('D-095', {}).get('passed') is True and generation_verdict(row)
                        and first.get('first_response_proven') is True
-                       and first.get('generation') == stored.get('generation')
+                       and first.get('generation') == row['offers'][0]['generation'] == stored.get('generation')
                        and stored.get('accepted') is True) else 'open'
 
 

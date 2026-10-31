@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Verify archive provenance, live references, scope hashes and public hygiene."""
+import argparse
 import hashlib
 import json
 import subprocess
@@ -7,6 +8,9 @@ from run import ROOT, PUBLIC, scan
 
 
 def main():
+    parser=argparse.ArgumentParser()
+    parser.add_argument("--archive-only",action="store_true",help="verify immutable archives and current scope pins without claiming live execution")
+    args=parser.parse_args()
     index=json.loads((PUBLIC/'history/index.json').read_text())
     for name in ('follow_up_9','follow_up_10'):
         path=PUBLIC/'history'/name.replace('_','-')
@@ -25,6 +29,9 @@ def main():
         for entry in scope.get(section,{}).get(key,[]):
             assert hashlib.sha256((ROOT/entry['path']).read_bytes()).hexdigest()==entry['sha256'],entry['path']
             count+=1
+    if args.archive_only:
+        print(f'PASS: merged Follow-up 10 archive, unchanged Follow-up 9 restore and {count} current SHA-256 pins; live execution not checked')
+        return
     for phase in ('transports','restore'):
         run=json.loads((PUBLIC/f'followup11-{phase}-run.json').read_text())
         live=json.loads((PUBLIC/f'followup11-{phase}-live.json').read_text())
