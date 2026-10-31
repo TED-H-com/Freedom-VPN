@@ -214,3 +214,32 @@ func kernelClockModel(m enforce.Model) enforce.Model {
 	m.NowMono = now
 	return m
 }
+
+func TestISO_F6_RetainedErrorRenewsDesiredWithoutACK(t *testing.T) {
+	r := newRig(t)
+	alignControlClock(r)
+	serveBoundGeneration(t, r)
+	r.manualUsage(t)
+	p := &revocationPlane{memPlane: r.plane}
+	r.eng.plane = p
+	p.ex.foreignTC = true
+	stepOK(t, r)
+	r.srv.SetFixture(generationFixture(3, oneBinding(r.clock.Wall())))
+	if err := r.eng.syncDesired(t.Context()); err != nil {
+		t.Fatal(err)
+	}
+	r.eng.refreshDesired()
+	if r.eng.leaseBehindApplied() || !r.eng.needRenew() {
+		t.Fatal("retained failure suppressed desired-generation renewal")
+	}
+	before := r.srv.LeaseRenewals()
+	stepOK(t, r)
+	if r.srv.LeaseRenewals() != before+1 || r.eng.lease.ConfigGeneration != 3 || r.eng.appliedGen != 2 || r.eng.serving || r.eng.applyError == nil {
+		t.Fatal("renewal acknowledged dirty serving")
+	}
+	p.ex.foreignTC = false
+	stepOK(t, r)
+	if !r.eng.serving || r.eng.appliedGen != 3 || r.eng.applyError != nil || r.eng.containment == nil {
+		t.Fatal("clean matching lease Apply did not recover with history")
+	}
+}

@@ -141,7 +141,7 @@ func (e *Engine) syncLease(ctx context.Context) error {
 }
 
 func (e *Engine) needRenew() bool {
-	if e.leaseRetryAt > 0 || !e.leaseFresh || e.lease == nil || e.leaseMono <= 0 || !e.anchorOK || (!e.identityFrozen && e.applyError == nil && e.leaseBehindApplied()) {
+	if e.leaseRetryAt > 0 || !e.leaseFresh || e.lease == nil || e.leaseMono <= 0 || !e.anchorOK || (!e.identityFrozen && ((e.applyError == nil && e.leaseBehindApplied()) || (e.applyError != nil && e.leaseBehindDesired()))) {
 		return true
 	}
 	// D-067 bounds every grant-less renewal, including an empty lease
@@ -156,6 +156,14 @@ func (e *Engine) needRenew() bool {
 		return true
 	}
 	return timeanchor.Remaining(deadline, e.clock.Mono()) <= e.renewLead(window)+leadJitter(e.renewLead(window))
+}
+
+// A retained failure must not suppress acquisition of the desired generation's
+// authorization. syncLease still omits the applied-generation ACK on that
+// request; only a fresh, clean Apply can clear the failure and acknowledge it.
+func (e *Engine) leaseBehindDesired() bool {
+	return e.lease != nil && e.desired != nil && e.desiredOK && !e.desiredExpired &&
+		e.desired.ConfigGeneration != 0 && e.lease.ConfigGeneration != e.desired.ConfigGeneration
 }
 
 func (e *Engine) leaseGrantless() bool {
