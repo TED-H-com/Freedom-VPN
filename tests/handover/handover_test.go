@@ -1989,6 +1989,30 @@ func TestHandover_Followup14Claims(t *testing.T) {
 	const op = "docs/handover/operator-guide.md"
 	const ops = "docs/ops/README.md"
 	const fixtures = "tests/handover/testdata/"
+	t.Run("merged_roadmap_boundary", func(t *testing.T) {
+		var evidence struct {
+			Commit string   `json:"commit"`
+			Rows   []string `json:"rows"`
+		}
+		if err := json.Unmarshal([]byte(readOwnedDoc(t, root, fixtures+"followup14-main.json")), &evidence); err != nil {
+			t.Fatal(err)
+		}
+		if evidence.Commit != "c6e3eca92d3813aeec4a4c212b204fd32648ca5a" {
+			t.Fatal("wrong main snapshot")
+		}
+		rows := strings.Join(evidence.Rows, "\n")
+		for _, pr := range []int{247, 250, 260, 264, 252, 253, 254, 259, 256, 262, 257, 258, 261, 263, 268, 266, 265, 255, 267, 269, 270, 271, 272} {
+			if !strings.Contains(rows, fmt.Sprintf("#%d)", pr)) {
+				t.Errorf("missing merged PR #%d", pr)
+			}
+		}
+		for _, coming := range []string{"| w2-fleet-update follow-up 10 |", "| w4-at-enrollment follow-up 5 |", "| w3-wire-nodes follow-up 29 |"} {
+			if strings.Contains(rows, coming) {
+				t.Errorf("coming boundary changed: %s", coming)
+			}
+		}
+	})
+
 	t.Run("revision13_and_freeze_producer_boundary", func(t *testing.T) {
 		var contract struct {
 			Components struct {
@@ -2082,6 +2106,8 @@ func TestHandover_Followup14Claims(t *testing.T) {
 		require(op, "D-091 (#263)", "no published exit carries this member", "node_identity_endpoints.mapping_frozen", "registered-node fallback reading `checks.applied_policy_refs` is deleted", "owner's Step 6")
 		require("apps/worker/review_r15_q9_fup_integration_test.go", "TestReviewR15_UnpublishDropsTheCarryingExitAndApplyingSticks", "TestReviewR15_FrozenCarryingExitKeepsFairUseApplying")
 		require("docs/usage/restore-runbook.md", "### Step 6:", "409 STATE_CONFLICT", "409 DEVICE_LIMIT_REACHED")
+		require("apps/portal/src/pages/admin/AdminDevicesListPage.tsx", "DeviceAuthorizationReceipt", "authorization_unconfirmed")
+		require("apps/portal/src/pages/admin/AdminNodeDetailPage.tsx", "getNodeUsageOutboxState", "node-usage-outbox-section")
 	})
 	t.Run("usage_followup4_measured_numbers", func(t *testing.T) {
 		type record struct {
