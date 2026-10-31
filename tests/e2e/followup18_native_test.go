@@ -186,20 +186,15 @@ func (r *runner) firstOffer18(ctx context.Context, s *Stack, admin *session) {
 		return
 	}
 	changed, stopChanged := context.WithTimeout(ctx, 30*time.Second)
-	var queryErr error
 	ready := waitUntil(changed, time.Second, func() bool {
-		var advanced bool
-		// Compilation happens on the agent's real GET. Only wait for command
-		// intent here; the export below must prove delivery and application.
-		queryErr = db.QueryRow(changed, `SELECT desired_config_generation > $2::text::numeric FROM nodes WHERE id=$1`, r.nodeID, retained).Scan(&advanced)
-		return queryErr == nil && advanced
+		// Generation advancement also happens on the agent GET. Read back the
+		// requested capacity here, then prove delivery/application separately.
+		got, e := admin.call(changed, "GET", r.lab.public+"/api/v1/admin/nodes/"+r.nodeID.String(), nil, nil)
+		return e == nil && got.Status == 200 && json.Unmarshal(got.Body, &current) == nil && current.Capacity.Down == parentRate
 	})
 	stopChanged()
 	if !ready {
-		recPathNote(&rec)("command", "new desired generation unavailable")
-		if queryErr != nil {
-			recPathNote(&rec)("query_error", queryErr.Error())
-		}
+		recPathNote(&rec)("command", "requested capacity not read back")
 		return
 	}
 	if err = s.Service(ctx, "start", release); err != nil {
