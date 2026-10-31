@@ -22,7 +22,11 @@ def main():
                         "import subprocess,sys\n"
                         "old='fvpn-w5-node-installer'\n"
                         "new='fvpn-w2-agent-core-lab-installer'\n"
-                        f"p=subprocess.run([{docker!r}]+[x.replace(old,new) for x in sys.argv[1:]], stdout=subprocess.PIPE)\n"
+                        "def mapped(x):\n"
+                        " if x.startswith(old): return new+x[len(old):]\n"
+                        " if x.startswith('name='+old): return 'name='+new+x[len('name='+old):]\n"
+                        " return x\n"
+                        f"p=subprocess.run([{docker!r}]+[mapped(x) for x in sys.argv[1:]], stdout=subprocess.PIPE)\n"
                         "sys.stdout.buffer.write(p.stdout.replace(new.encode(),old.encode()))\n"
                         "sys.exit(p.returncode)\n")
         shim.chmod(0o700)
