@@ -50,9 +50,8 @@ cp /etc/vpn-node/machine-id /etc/machine-id
 # Containers restart processes, not the kernel. Use the same boot identity as
 # the packaged updater; a process restart must not impersonate an OS reboot.
 cat /proc/sys/kernel/random/boot_id > /etc/vpn-node/boot-id
-epoch=$(cat /proc/sys/kernel/random/uuid)
-epoch2=$(cat /proc/sys/kernel/random/uuid)
-printf '{"closed_meter_epoch_id":"%s","last_durable_event_seq":"0","central_acked_through":"0","new_meter_epoch_id":"%s"}\n' "$epoch" "$epoch2" > /var/lib/vpn-node/e2e/meter.json
+# The real agent writes state/meter.checkpoint after the updater's D-125
+# withdrawal barrier. The fixture never fabricates a meter checkpoint.
 # A durable identity resumes through the normal fail-closed runtime. Do not
 # request or consume another installer token on a container restart. A partial
 # identity is an error, never permission to silently enroll a second incarnation.

@@ -616,14 +616,8 @@ func (r *runner) oneUpdate(ctx context.Context, id, title string, spec []string,
 			finishProbe()
 		}
 	}()
-	pause := filepath.Join(r.lab.state, "node", "var", "e2e", "pause-agent")
-	if err := os.WriteFile(pause, []byte("1\n"), 0o644); err != nil {
-		rec.Status = StatusFail
-		r.record(rec)
-		return
-	}
-	defer os.Remove(pause)
-	time.Sleep(4 * time.Second)
+	// D-125 requires the running agent to answer the fresh withdrawal latch.
+	// The real updater owns stop/start after it verifies that checkpoint.
 	_ = os.Remove(filepath.Join(r.lab.state, "node", "var", "e2e", "updater-result.json"))
 	if err := r.writeUpdaterConfig(); err != nil {
 		rec.Observations = append(rec.Observations, Observation{Name: "updater_config", Detail: "write failed"})
@@ -639,7 +633,6 @@ func (r *runner) oneUpdate(ctx context.Context, id, title string, spec []string,
 		}
 		return r.lab.fileNonEmpty(r.lab.node, "/var/lib/vpn-node/e2e/updater-result.json")
 	})
-	_ = os.Remove(filepath.Join(r.lab.state, "node", "var", "e2e", "pause-agent"))
 	if !finished {
 		rec.Observations = append(rec.Observations, Observation{Name: "updater", Detail: "timed out"})
 		r.record(rec)
@@ -688,6 +681,9 @@ func (r *runner) oneUpdate(ctx context.Context, id, title string, spec []string,
 		finishProbe = nil
 	}
 	switch {
+	case !wantHash && words["locally_succeeded"] && !candidateRunning:
+		rec.Status = StatusFail
+		recPathNote(&rec)("candidate_identity", "journal success without the exact release-root executable")
 	case !wantHash && words["locally_succeeded"] && !issued:
 		rec.Status = StatusFail
 		recPathNote(&rec)("probe_gate", "terminal success without the configured probe in a fresh challenge")
