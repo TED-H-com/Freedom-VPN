@@ -21,6 +21,7 @@ import (
 
 	"github.com/TED-H-com/Freedom-VPN/internal/config"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
+	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
 )
 
 // ownedDocs lists the handover, ops, and root Markdown files owned by
@@ -36,6 +37,7 @@ var ownedDocs = []string{
 	"docs/handover/operator-guide.md",
 	"docs/handover/member-guide.md",
 	"docs/handover/follow-up-17.md",
+	"docs/handover/follow-up-18.md",
 	"docs/ops/README.md",
 	"docs/reviews/README.md",
 	"docs/reviews/r3-d055-review.md",
@@ -686,6 +688,7 @@ func TestHandover_ReviewsArchive(t *testing.T) {
 		"r14-d067-d070-review.md",
 		"r15-d072-d075-review.md",
 		"r16-rev13-d089-d099-review.md",
+		"r17-rev14-d104-d117-review.md",
 	}
 
 	var gotFiles []string
@@ -709,9 +712,9 @@ func TestHandover_ReviewsArchive(t *testing.T) {
 	for _, name := range gotFiles {
 		rel := filepath.Join("docs", "reviews", name)
 		content := readOwnedDoc(t, root, rel)
-		if name == "r16-rev13-d089-d099-review.md" {
+		if name == "r16-rev13-d089-d099-review.md" || name == "r17-rev14-d104-d117-review.md" {
 			// D-098 forbids reformatting the raw report to our older table schema.
-			// Followup15Claims verifies its SHA-256 and original review metadata.
+			// Followup15Claims / Followup18Claims verify SHA-256 and review metadata.
 			continue
 		}
 
@@ -2742,7 +2745,9 @@ func TestHandover_Followup16Claims(t *testing.T) {
 		require(fixture+"history/follow-up-16/reviews.md", "Fixed by wire-nodes follow-up 31", "(#291)", "Open → agent-core follow-up 24", "Fixed by fleet-update follow-up 11 (#300)")
 		require(register, "one-file test-fixture ownership extension", "second r16 replay fixture", "production replay unchanged", "legacy unaccepted outbox receipts must be re-derived once or retired on 409", "Pending updater follow-up 15")
 	})
-	t.Run("D105_central_and_inactive_node_handoff", func(t *testing.T) {
+	// This is the frozen #303 register, before #312 activation.
+	// Followup18Claims checks the current active register and consuming proof.
+	t.Run("historical_D105_before_D118_activation", func(t *testing.T) {
 		require("internal/usage/handoff_integration_test.go", "TestMTR03_D105ContractVectorsAndExamples", "TestMTR03_D105IneligibleAndMixedStreams", "TestMTR03_D105HTTPSameKeyStoredReplayAndStreamACK", "TestENR05_D105RetiredCertificateRefused", "TestMTR03_D112HTTPConfiguredSamplingBound", "TestMTR03_D105PartialBatchAndIndependentACKs")
 		require("internal/httpapi/usage_handoff_test.go", "TestMTR03_D115UsageGateDelegatesOnlyExplicitOrigin", "TestMTR03_D115UsageGateKeepsAuthenticationAndValidation")
 		require("internal/httpapi/usage_handoff_integration_test.go", "TestMTR03_D115UsageForeignIdentityRejectedAndAudited")
@@ -2954,7 +2959,7 @@ func TestHandover_Followup17Claims(t *testing.T) {
 	const mainPin = fixture + "followup17-main.json"
 	const cut = "7e044c71ecf1d07f63e89721bd213db6611a6a47"
 	const doc = "docs/handover/follow-up-17.md"
-	const register = "docs/handover/README.md"
+	const register = fixture + "history/follow-up-18/register17.md"
 	const runs = "docs/e2e/runs/2026-10-31/followup18/"
 	require := func(path string, tokens ...string) {
 		t.Helper()
@@ -3246,6 +3251,365 @@ func TestHandover_Followup17Claims(t *testing.T) {
 		for _, path := range []string{"docs/node/2026-10-31-d104-d106-agent.md", "docs/e2e/RESPONSES.md", "docs/dns/BACKEND.md", "docs/e2e/at/enrollment/AT07.json"} {
 			if claimTokenAllowed(path, "some prose") {
 				t.Errorf("D-109 allows living prose: %s", path)
+			}
+		}
+	})
+}
+
+// TestHandover_Followup18Claims fixes the starting main cutoff, including #323.
+// D-098 evidence is frozen; D-109 runtime pins are Go test declarations only.
+func TestHandover_Followup18Claims(t *testing.T) {
+	root := repoRoot(t)
+	const cut = "6d0022d83345ae78d26aaaf31c64f026d38dea3b"
+	const fixture = "tests/handover/testdata/"
+	const archive = fixture + "history/follow-up-18/"
+	const mainPin = fixture + "followup18-main.json"
+	const doc = "docs/handover/follow-up-18.md"
+	const register = "docs/handover/README.md"
+	const restore = fixture + "5218b7d5-1415-4e1b-8618-48ea2d3cf03e-"
+	require := func(path string, tokens ...string) {
+		t.Helper()
+		requireHandoverClaimTokens(t, root, path, tokens...)
+	}
+	readJSON := func(path string, dst any) {
+		t.Helper()
+		if err := json.Unmarshal([]byte(readOwnedDoc(t, root, path)), dst); err != nil {
+			t.Fatalf("decode %s: %v", path, err)
+		}
+	}
+	// Navigate objects without turning decimal strings or integers into float64.
+	value := func(path string, keys ...string) json.RawMessage {
+		t.Helper()
+		raw := json.RawMessage(readOwnedDoc(t, root, path))
+		for _, key := range keys {
+			var object map[string]json.RawMessage
+			if err := json.Unmarshal(raw, &object); err != nil || object[key] == nil {
+				t.Fatalf("%s: missing object key %s (%v)", path, key, err)
+			}
+			raw = object[key]
+		}
+		return raw
+	}
+	wantValue := func(path, want string, keys ...string) {
+		t.Helper()
+		if got := string(value(path, keys...)); got != want {
+			t.Errorf("%s %v = %s, want %s", path, keys, got, want)
+		}
+	}
+	t.Run("main_cut_and_operator_entrypoints", func(t *testing.T) {
+		var pin struct {
+			Commit string
+			Rows   []string
+		}
+		readJSON(mainPin, &pin)
+		if pin.Commit != cut || len(pin.Rows) != 12 {
+			t.Fatalf("wrong cutoff: %+v", pin)
+		}
+		for _, row := range pin.Rows {
+			require("docs/ROADMAP.md", row)
+		}
+		for pr := 316; pr <= 324; pr++ {
+			require(mainPin, fmt.Sprintf("done (#%d)", pr))
+			require("docs/ops/README.md", fmt.Sprintf("#%d", pr))
+		}
+		require(doc, cut, "including updater 17 (#323)", "Handover ran no new live acceptance")
+		for _, path := range []string{"README.md", "docs/handover/00-index.md", "docs/handover/deploy.md", "docs/handover/operator-guide.md", "docs/handover/member-guide.md", "docs/handover/restore-drill.md", "docs/ops/README.md"} {
+			require(path, "Current cut", "follow-up-18.md")
+		}
+	})
+	t.Run("SECOPS21_first_delivered_restore_and_AT30", func(t *testing.T) {
+		p := restore + "SECOPS-21.json"
+		wantValue(p, `"closed"`, "request_status")
+		wantValue(p, `"passed"`, "status")
+		var guards map[string]bool
+		if err := json.Unmarshal(value(p, "closure_guards"), &guards); err != nil || len(guards) != 10 {
+			t.Fatalf("closure guards: %v %v", guards, err)
+		}
+		for name, passed := range guards {
+			if !passed {
+				t.Errorf("closure guard failed: %s", name)
+			}
+		}
+		wantValue(p, "1", "first_delivered_offer", "arm_count")
+		wantValue(p, `"15"`, "first_delivered_offer", "retained_before_restore", "node_accepted_desired")
+		wantValue(p, `"19"`, "first_delivered_offer", "capture", "first", "generation")
+		wantValue(p, "200", "first_delivered_offer", "capture", "first", "http_status")
+		wantValue(p, "true", "first_delivered_offer", "capture", "first", "write_complete")
+		wantValue(p, `"19"`, "first_delivered_offer", "capture", "local", "accepted_generation")
+		wantValue(p, `"19"`, "first_delivered_offer", "capture", "local", "applied_generation")
+		wantValue(p, "202", "first_delivered_offer", "capture", "ack", "http_status")
+		wantValue(p, `"19"`, "first_delivered_offer", "central_receipt", "applied_generation")
+		if string(value(p, "first_delivered_offer", "capture", "first", "body_sha256")) != string(value(p, "first_delivered_offer", "capture", "local", "envelope_sha256")) || string(value(p, "first_delivered_offer", "capture", "ack", "report_id")) != string(value(p, "first_delivered_offer", "central_receipt", "report_id")) {
+			t.Fatal("delivery, durable store and central receipt no longer join")
+		}
+		p = restore + "AT30.json"
+		wantValue(p, `"passed"`, "status")
+		for _, tc := range []struct{ metric, current, delta string }{
+			{"Pre-replay database RPO (s)", "92.163101", "-14.286899"},
+			{"Total outage RTO (s)", "81.016113709", "6.486113709"},
+		} {
+			wantValue(p, tc.current, "development_host_deltas", tc.metric, "follow_up_13_seconds")
+			wantValue(p, tc.delta, "development_host_deltas", tc.metric, "delta_seconds")
+		}
+		require(archive+"secops13.md", "Follow-up 12 archive", "byte-identical to PR #301", "Post-replay service usage RPO (s) | 0 | 0")
+		require(doc, "SECOPS-21 on the assembled stack", "19 > retained 15", "harness-proved on the assembled stack, not a live-fleet guarantee", "RPO 92.163 s (−14.287 s)", "RTO 81.016 s (+6.486 s)", "published rounded comparison", "4 > 3 proof is separate")
+	})
+	t.Run("members9_F801_closed_F901_still_failing", func(t *testing.T) {
+		p := fixture + "11e305fe-6360-4dbd-95b1-67274aa4988c-AT09.json"
+		wantValue(p, `"fail"`, "status")
+		var r struct {
+			Steps []struct{ Name, Status, Actual string }
+		}
+		readJSON(p, &r)
+		failures := 0
+		for _, step := range r.Steps {
+			if step.Status != "fail" {
+				continue
+			}
+			failures++
+			switch step.Name {
+			case "D-067 revision 11 provisional lease observation":
+				var v struct {
+					Match bool `json:"all_match_revision_11"`
+				}
+				if err := json.Unmarshal([]byte(step.Actual), &v); err != nil || v.Match {
+					t.Fatal("F9-01 predicate was promoted", err)
+				}
+			case "same-generation D-067 restart recovery and lease sequence":
+				var v map[string]json.RawMessage
+				if err := json.Unmarshal([]byte(step.Actual), &v); err != nil {
+					t.Fatal(err)
+				}
+				for _, key := range []string{"desired_before", "desired_after", "applied_before", "applied_after"} {
+					if string(v[key]) != `"30"` {
+						t.Errorf("generation changed: %s = %s", key, v[key])
+					}
+				}
+			default:
+				t.Errorf("unexpected AT09 failure %s", step.Name)
+			}
+		}
+		if failures != 2 {
+			t.Fatalf("AT09 failing subchecks = %d", failures)
+		}
+		files, err := filepath.Glob(filepath.Join(root, fixture, "69f92f49-73dc-4779-8101-dfb6a802a96b-*"))
+		if err != nil || len(files) != 13 {
+			t.Fatalf("members8 adoption inventory %d: %v", len(files), err)
+		}
+		for _, file := range files {
+			name := strings.TrimPrefix(filepath.Base(file), "69f92f49-73dc-4779-8101-dfb6a802a96b-")
+			if readOwnedDoc(t, root, fixture+filepath.Base(file)) != readOwnedDoc(t, root, "docs/e2e/at/members/history/follow-up-8/"+name) {
+				t.Errorf("members8 adoption changed %s", name)
+			}
+		}
+		require(mainPin, "15.728602 s", "21.373814 s", "all 13 handover snapshots matching")
+		require(doc, "F8-01 in the original generation-30 sequence", "AT09 is failing on F9-01", "Agent-core 27 must confirm the composition or fix a reporter race", "members 10", "D-067 revision-11 predicate to D-126")
+	})
+	t.Run("D126_D128_cumulative_report_and_value_equality", func(t *testing.T) {
+		var report struct {
+			Reasons []string `json:"forwarding_block_reasons"`
+		}
+		readJSON(archive+"mixed-observation.json", &report)
+		if len(report.Reasons) != 2 || !slices.Contains(report.Reasons, "safety_check_failed") || !slices.Contains(report.Reasons, "awaiting_member_grants") {
+			t.Fatalf("mixed reasons lost: %v", report.Reasons)
+		}
+		var evidence struct {
+			Checks []struct {
+				Name string
+				Code string `json:"error_code"`
+			}
+			Errors []struct{ Stage, Code string }
+		}
+		readJSON(archive+"mixed-observation.json", &evidence)
+		checks := 0
+		for _, check := range evidence.Checks {
+			if slices.Contains([]string{"lease", "qos", "source_binding"}, check.Name) {
+				checks++
+				if check.Code != "TC_FOREIGN_FILTER" {
+					t.Errorf("%s code = %s", check.Name, check.Code)
+				}
+			}
+		}
+		lease := false
+		for _, e := range evidence.Errors {
+			lease = lease || e.Stage == "lease" && e.Code == "AWAITING_MEMBER_GRANTS"
+		}
+		if checks != 3 || !lease {
+			t.Fatal("per-check priority and stage-specific cause lost")
+		}
+		require("internal/nodes/observations_followup32_test.go", "TestD126_MixedObservationEvidenceUnchanged")
+		require("internal/nodes/httpwire/followup32_integration_test.go", "TestD126_MixedObservationReceiptAndProjections")
+		require(doc, "safety failure > provisional / awaiting > ok", "stage's own cause", "202 Accepted", "keeps publication blocked", "replay returns the stored ACK", "complete JSON-value equality, byte-identical", "JCS output and the same SHA-256", "literal whitespace", "key order are not retained", "no schema change is planned", "D-113 is unchanged", "No revision-15 first-delivery marker", "nodes.release_fetcher = fixture", "dev-tag worker", "design advice, not implemented", "SQL shortcut stays")
+	})
+	t.Run("netlab19_unattributed_native_and_producer_timing", func(t *testing.T) {
+		require(archive+"native-attribution.md", "No single transport cause is established", "11,011/64,064-byte", "no MSS rewriting at the observed node hops", "zero tc drops", "neither reproduces nor disproves", "omitting ordinary seq/ack/SACK", "underlay candidate family")
+		require(archive+"producer-timing.md", "TimingEvidence()", "detached snapshot", "failed Apply timing record", "decimal JSON strings", "local diagnostic sibling of D-106", "17 losses", "missing/ambiguous matches remain unproved")
+		require("node/enforce/timing_test.go", "TestD104_ISOF603_TimingSurvivesFailure", "TestD104_ISOF603_TimingRecoveryAndLiveRead", "TestD104_ISOF603_NoInventedStages")
+		require(doc, "Handshake MSS is unchanged", "zero tc drops", "neither reproduces nor", "No single transport cause is established", "ServingEvidence.TimingEvidence()", "clear isolation's 17 historical renewal losses", "Isolation 9", "D-120's AT10 allowance does not apply", "IPv6Block by design")
+	})
+	t.Run("D125_producer_and_merged_updater17", func(t *testing.T) {
+		require(archive+"agent26.md", "preserves the", "UUID's spelling", "never just relabels", "original checkpoint bytes", "removes checkpoint evidence", "malformed", "four existing members")
+		require("node/agent/followup26_test.go", "TestD125_Rule1FreshBlockCheckpointWithLatchIdentity", "TestD125_Rule3SecondBlockQuietClosedEpochSameWatermarks", "TestD125_Rule3FinalDoneCannotRelabel", "TestD125_Rule4WithdrawalRemovesCheckpointBeforeResume", "TestD125_Rule5RestartPresentIdenticalRepublish", "TestD125_Rule5MalformedLatchPublishesNothingAndStaysBlocked")
+		require("node/updater/followup17_test.go", "TestD125_RuleCorrelatedFreshPostBlockAccounting", "TestD125_RuleCorrelatedLateWithinBound", "TestD125_RulePreviousBlockIdentity", "TestD125_RuleMalformedIdentity", "TestD125_RuleCorrelatedPriorBootRejected", "TestD125_RuleByteEqualUUIDSpelling")
+		require(doc, "every checkpoint names the latch identity it finalized against", "MeterCheckpoint.BarrierID", "barrier_id", "omitempty", "opaque spelling", "every new", "same-identity restart", "is merged (#323) at this cutoff", "byte-equal", "not yet proved")
+	})
+	t.Run("D118_active_locking_and_cancelled_ACK", func(t *testing.T) {
+		require(mainPin, "D-118 active", "adoption", "usage.db.lock", "until final sampling", "done (#312)", "done (#320)")
+		require("node/agent/followup26_test.go", "TestD118_LedgerOwnershipWaitsForPreviousLoops")
+		require("node/agent/followup25_usage_test.go", "TestD118_ENR05_VerifiedReenrollmentHandsOffFinalSample", "TestD118_UnchangedIncarnationDoesNotRetire")
+		require(doc, "real gap in #312", "RetirePreviousAt", "node lock", "usage.db.lock", "lifetime of the meter / uploader / store", "one body digest with one accepted event", "Runtime unchanged by that resume")
+		require(register, "Active in agent-core follow-up 25 (#312)", "#320 fixes adoption under the node lock", "#324 passes live retired-stream hand-off")
+		for _, line := range strings.Split(readOwnedDoc(t, root, register), "\n") {
+			if strings.HasPrefix(line, "| D-118 |") && (strings.Contains(line, "inactive") || strings.Contains(line, "activation pending")) {
+				t.Fatal("D-118 current register drift returned")
+			}
+		}
+	})
+	t.Run("D127_bounded_corrections_and_migration_order", func(t *testing.T) {
+		require(archive+"fleet12.md", "one** correction", "same", "incarnation", "D-111 pre-health", "whose ACK applied a null-baseline seed", "every third distinct", "00192", "UUID `result_id`", "outcome_sequence", "Down fails atomically", "Deploy 00192 before the new control binary")
+		require("internal/fleetupdate/installer_followup12_integration_test.go", "TestD127_SuccessAfterSeedMovesBothVersions", "TestD127_RollbackAfterSuccessMovesBothVersions", "TestD127_ExactReplayOfEitherOutcomeReturnsStoredAck", "TestD127_ThirdFlipIsAckConflict", "TestD127_OtherSecondEvidenceIsAckConflict", "TestD127_CorrectionRespectsCentralGenerationHighWater", "TestD127_Migration192RoundTripPreservesEvidenceAndBounds")
+		require("internal/fleetupdate/installer_followup12_http_integration_test.go", "TestD127_CorrectionHTTPReplaysBothStoredAcks")
+		require("docs/handover/11-database-and-retention.md", "00192_installer_outcome_corrections.sql", "outcome_sequence bounded to 1..2", "Apply before control; Down refuses once corrections exist")
+		require(doc, "applied D-111 pre-health seed", "under the unchanged generation fence", "first receipt stays", "original ACK flags", "Replay of either payload returns its stored ACK", "third payload", "ACK_CONFLICT", "Deploy migration 00192 before the new control binary", "payload-derived", "outcome_sequence", "1..2", "Down", "harness-proved on PostgreSQL tests", "not yet run")
+	})
+	t.Run("usage5_live_retired_stream_and_same_key_replay", func(t *testing.T) {
+		for n := 14; n <= 20; n++ {
+			p := fmt.Sprintf("%s170ea3e3-AT%d.json", fixture, n)
+			wantValue(p, `"170ea3e3"`, "run_id")
+			wantValue(p, `"pass"`, "status")
+		}
+		p := fixture + "170ea3e3-AT20.json"
+		wantValue(p, "true", "observations", "before_plus_held_equals_after")
+		wantValue(p, "true", "observations", "reinstall_original_payload_bytes_equal")
+		wantValue(p, "false", "observations", "reinstall_usage_files_byte_equal")
+		for key, want := range map[string]string{"origin_central_ack": "2", "current_ack_before_origin_replay": "0", "current_ack_after_origin_replay": "0", "held_total_bytes": "7782"} {
+			wantValue(p, strconv.Quote(want), "observations", key)
+		}
+		wantValue(p, `"33750"`, "observations", "member_period_before", "totals", "total_bytes")
+		wantValue(p, `"41532"`, "observations", "member_period_after", "totals", "total_bytes")
+		wantValue(p, "403", "observations", "retired_certificate_refusal", "http_status")
+		var batches []struct {
+			Key    string          `json:"idempotency_key"`
+			Stored json.RawMessage `json:"stored_response"`
+			Replay json.RawMessage `json:"replayed_response"`
+		}
+		if err := json.Unmarshal(value(p, "observations", "agent_batches_and_stored_replays"), &batches); err != nil || len(batches) != 1 {
+			t.Fatalf("stored replay inventory: %v", err)
+		}
+		for _, batch := range batches {
+			a, errA := canonjson.Canonicalize(batch.Stored)
+			b, errB := canonjson.Canonicalize(batch.Replay)
+			if batch.Key == "" || errA != nil || errB != nil || string(a) != string(b) {
+				t.Fatal("same-key replay changed stored canonical ACK")
+			}
+		}
+		require(archive+"usage5.md", "Follow-up 4", "immutable payloads", "independent ACKs", "No ledger rows or retirement timestamps are edited")
+		require(doc, "AT14–AT20 pass in live run 170ea3e3", "controlled installer exit", "immutable", "tail across reinstall", "AT20 same-key replay", "33,750 + 7,782 = 41,532", "usage DB/WAL", "file hashes can change", "ENR-05 extension, not the DNS case")
+	})
+	t.Run("handover17_r17_archive_and_process_only_D124", func(t *testing.T) {
+		var manifest any
+		readJSON(archive+"scope-review17.json", &manifest)
+		count := 0
+		paths := map[string]bool{}
+		var walk func(any)
+		walk = func(v any) {
+			switch v := v.(type) {
+			case map[string]any:
+				if path, ok := v["path"].(string); ok && v["sha256"] != nil {
+					count++
+					paths[path] = true
+				}
+				for _, x := range v {
+					walk(x)
+				}
+			case []any:
+				for _, x := range v {
+					walk(x)
+				}
+			}
+		}
+		walk(manifest)
+		if count != 242 || len(paths) != 141 {
+			t.Fatalf("#319 pins %d/%d", count, len(paths))
+		}
+		require(mainPin, "11 subtests incl. `post_cutoff_secops_notice`", "through #313", "242 SHA-256 entries across 141 paths")
+		require("docs/reviews/r17-rev14-d104-d117-review.md", "grok/grok-4.7", "62f24e6d", "### M-1 (Medium)", "r16 dispositions re-run", "## Not examined", "activation as pending")
+		require("docs/reviews/README.md", "dcabc41e7d0c12725b1a7090425e2831faa3a12e", "3e2078550ddf24d365881dcee1399da474ae642bf76899f484a8c8ec60d787f7", "r16 H-1 / M-1 / M-2 / L-1 were re-run and held", "Fleet-update 12 (#322)")
+		require(register, "D-124", "one-resume ownership extension", "internal/nodes/publication_evidence_test.go", "fixture-only", "Usage #324 also refreshes its deadline fixture")
+		previous := -1
+		for n := 98; n <= 128; n++ {
+			pos := strings.Index(readOwnedDoc(t, root, register), fmt.Sprintf("| D-%03d |", n))
+			if pos <= previous {
+				t.Fatalf("decision %d missing or out of order", n)
+			}
+			previous = pos
+		}
+		for _, line := range strings.Split(readOwnedDoc(t, root, register), "\n") {
+			if strings.HasPrefix(line, "| D-124 |") && (!strings.Contains(line, "Orchestration process only") || !strings.Contains(line, "No operator guarantee")) {
+				t.Fatal("D-124 promoted")
+			}
+		}
+		if strings.Contains(readOwnedDoc(t, root, doc), "D-124") {
+			t.Fatal("D-124 belongs only in the decision log")
+		}
+	})
+	t.Run("followup18_live_document_hashes", func(t *testing.T) {
+		var manifest struct {
+			Followup struct {
+				Documents []struct{ Path, SHA256 string } `json:"reviewed_documents"`
+			} `json:"handover_follow_up_18"`
+		}
+		readJSON("docs/e2e/at/secops/scope-review.json", &manifest)
+		if len(manifest.Followup.Documents) != 12 {
+			t.Fatalf("live inventory = %d", len(manifest.Followup.Documents))
+		}
+		for _, pin := range manifest.Followup.Documents {
+			sum := sha256.Sum256([]byte(readOwnedDoc(t, root, pin.Path)))
+			if hex.EncodeToString(sum[:]) != pin.SHA256 {
+				t.Errorf("live hash stale: %s", pin.Path)
+			}
+		}
+	})
+
+	t.Run("unpromoted_acceptance_and_D098_D109_integrity", func(t *testing.T) {
+		for _, at := range []string{"AT29", "AT31"} {
+			wantValue(archive+"cf81f6f8-4ccf-43d2-aae2-10121f6b169d-"+at+".json", `"blocked"`, "status")
+		}
+		checkHandoverRecord(t, root, "docs/e2e/at/enrollment/history/59ef4bf8-7d4a-490f-a74d-6b54394375e0/AT07.json", "59ef4bf8-7d4a-490f-a74d-6b54394375e0", "blocked", 36, 5, 0)
+		require(archive+"updater17.md", "84b6a342", "does not contain PR #307", "PR #310", "Devstack 19 owns the serving-node rerun", "Installer 6 separately consumes")
+		require(doc, "pre-#307 binary source `84b6a342`", "#307's F9-03 exit codes", "#310's fail-closed handshake", "post-upgrade re-enrollment seed `HASH_MISMATCH`", "pre-#307 extractor", "native MTU 1280 in both families", "Five AT07 rows", "Enrollment 8", "Independently clocked guest / 60-peer candidate hardware", "Real Windows, macOS, iOS and Android clients", "physical arm64 and power-loss qualification")
+		var pins []struct {
+			Path   string `json:"path"`
+			Source string `json:"source"`
+			Commit string `json:"source_commit"`
+			SHA256 string `json:"sha256"`
+		}
+		readJSON(fixture+"followup18-snapshots.json", &pins)
+		if len(pins) != 26 {
+			t.Fatalf("snapshot count %d", len(pins))
+		}
+		seen := map[string]bool{}
+		for _, pin := range pins {
+			isReview := pin.Path == "docs/reviews/r17-rev14-d104-d117-review.md"
+			commit := cut
+			if isReview {
+				commit = "dcabc41e7d0c12725b1a7090425e2831faa3a12e"
+			}
+			if pin.Source == "" || pin.Commit != commit || seen[pin.Path] {
+				t.Fatalf("invalid provenance %+v", pin)
+			}
+			seen[pin.Path] = true
+			if !isReview && !strings.Contains(pin.Path, "/history/") && !regexp.MustCompile(`/[0-9a-f]{8}(?:-|[0-9a-f-]*-)AT|/[0-9a-f-]+-SECOPS-21`).MatchString(pin.Path) {
+				t.Fatalf("mutable evidence %s", pin.Path)
+			}
+			sum := sha256.Sum256([]byte(readOwnedDoc(t, root, pin.Path)))
+			if hex.EncodeToString(sum[:]) != pin.SHA256 {
+				t.Errorf("pinned bytes changed: %s", pin.Path)
+			}
+		}
+		for _, path := range []string{"docs/e2e/at/usage/AT20.json", "docs/e2e/at/members/AT09.json", "docs/poc/G2-f802-native-attribution-2026-10-31.md", "docs/node/followup26-updater-2026-10-31.md"} {
+			if claimTokenAllowed(path, "some prose") {
+				t.Errorf("D-109 accepts living source %s", path)
 			}
 		}
 	})
