@@ -289,7 +289,9 @@ def analyze(root):
                                ingress_in_outer_guard=sum(bool(p['ingress_in_outer_guard']) for p in losses),
                                unresolved_ingress=sum(not p['ingress_in_outer_guard'] for p in losses)),
                   expiry=dict(deadline_ns=str(deadline), last_accepted_renewal=before_expiry[-1], packet_verdict= {k:v for k,v in verdict.items() if k!='packets'},
-                              losses=expiry_losses),
+                              losses=expiry_losses,
+                              pre_deadline_losses=sum(p['expiry_region']=='before deadline' for p in expiry_losses),
+                              literal_zero_pre_deadline_loss=not any(p['expiry_region']=='before deadline' for p in expiry_losses)),
                   interpretation='Outer bracket is install-start through release-end; inner is installed-by through release-start. Capture reads and command overlaps do not locate the kernel commit/drop instant. All loss counts remain unchanged.')
     (root/'producer-timing-analysis.json').write_text(json.dumps(result,indent=2)+'\n')
     compact = dict({k:v for k,v in result.items() if k not in ('producer_rows','failed_applies')}, renewal={k:v for k,v in result['renewal'].items() if k not in ('losses','actual_renewals')},
