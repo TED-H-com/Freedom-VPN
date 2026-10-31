@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """First-delivery closure guards and restore-only Follow-up 13 evidence."""
 import datetime as dt
+from decimal import Decimal
 import hashlib
 import json
 from pathlib import Path
@@ -122,7 +123,7 @@ def main():
     for key, previous in [('Pre-replay database RPO (s)', 106.45), ('Total outage RTO (s)', 74.53)]:
         value = current[key]
         deltas[key] = dict(follow_up_12_baseline_seconds=previous, follow_up_13_seconds=value,
-                          delta_seconds=value - previous if isinstance(value, (int, float)) else None)
+                          delta_seconds=float(Decimal(str(value)) - Decimal(str(previous))) if isinstance(value, (int, float)) else None)
     write_json(PUBLIC / 'restore-reconcile.json', dict(common, id='AT30-RESTORE-RECONCILE', status=status, case=case,
         evaluation=evaluation, blockers=blockers, measurement_comparison={'follow_up_12': baseline, 'follow_up_13': current},
         development_host_deltas=deltas, production_sla_claimed=False))
