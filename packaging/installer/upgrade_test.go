@@ -11,15 +11,22 @@ import (
 )
 
 func TestF905_DowngradeRefusedBeforeStaging(t *testing.T) {
-	for _, seq := range []string{"9", "10"} {
-		t.Run(seq, func(t *testing.T) {
+	for _, tc := range []struct {
+		name, seq string
+		sameID    bool
+	}{{"lower", "9", false}, {"equal_different_id", "10", false}, {"lower_same_id", "9", true}} {
+		t.Run(tc.name, func(t *testing.T) {
 			dir := t.TempDir()
 			env := baseEnv(t, dir)
 			current := mustRelease(t, dir, uuid.NewString(), "10")
 			if _, err := Install(t.Context(), env, mustReq(t, dir, current)); err != nil {
 				t.Fatal(err)
 			}
-			lower := mustRelease(t, dir, uuid.NewString(), seq)
+			id := uuid.NewString()
+			if tc.sameID {
+				id = current.ReleaseID
+			}
+			lower := mustRelease(t, dir, id, tc.seq)
 			// Preserve an existing handoff as well as the installed release.
 			if err := os.WriteFile(env.Layout.pendingUpgrade(), []byte("TEST ONLY existing handoff\n"), 0600); err != nil {
 				t.Fatal(err)
@@ -33,7 +40,7 @@ func TestF905_DowngradeRefusedBeforeStaging(t *testing.T) {
 			if after := upgradeTrees(t, env.Layout); after != before || joinedCalls(env) != calls {
 				t.Fatal("refusal changed staging/releases or ran host/service commands")
 			}
-			if _, err := os.Stat(env.Layout.releaseDir(lower.ReleaseID)); !os.IsNotExist(err) {
+			if _, err := os.Stat(env.Layout.releaseDir(lower.ReleaseID)); !tc.sameID && !os.IsNotExist(err) {
 				t.Fatalf("candidate was extracted: %v", err)
 			}
 		})

@@ -105,6 +105,8 @@ Initial install also retains the verified archive as `update-staging/<artifact-s
 
 Installer-sourced results are supported centrally. Local `status` does not prove central acceptance. The real agent writes `state/meter.checkpoint` only after its durable final meter sample and epoch close. The updater consumes that checkpoint before stopping services and switching releases. Final candidate health requires signed desired-state/lease responses, the candidate's challenge-bound attestation and reachable probe targets. A missing checkpoint or failed health check remains a failure; never manufacture either result.
 
+<a id="temporary-updater-contract-retire-after-follow-up-15--agent-core-follow-up-24"></a>
+
 ### Updater extraction and terminal results
 
 Extraction modes are independent of the caller's umask (F9-02): the release root and nested directories are explicitly 0755; regular files retain the archive permission bits, with zero defaulting to 0644. Installer extraction and updater seed use the same extractor. Standalone seed no longer needs a matching umask. Seed still refuses permission drift; restore an older mismatched tree from the verified archive before seeding.

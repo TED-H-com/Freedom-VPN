@@ -110,6 +110,10 @@ func TestD089_CheckAfterJournaledSwitch(t *testing.T) {
 	if err == nil || !strings.Contains(strings.Join(r.Drifts, ","), "current") {
 		t.Fatalf("current drift hidden: %+v", r)
 	}
+	before = upgradeTrees(t, env.Layout)
+	if _, err := Upgrade(ctx, env, next.Manifest, next.Artifact, next.Trust); err == nil || AsError(err).Code != "installed_state" || upgradeTrees(t, env.Layout) != before {
+		t.Fatalf("upgrade ignored live/journal pointer mismatch: %v", err)
+	}
 	// An unreadable journal must not fall back to the now-matching install record.
 	if err := engine.Close(); err != nil {
 		t.Fatal(err)
@@ -120,6 +124,9 @@ func TestD089_CheckAfterJournaledSwitch(t *testing.T) {
 	r, err = Check(ctx, env)
 	if err == nil || !strings.Contains(strings.Join(r.Drifts, ","), "updater_journal") {
 		t.Fatalf("journal drift hidden: %+v", r)
+	}
+	if _, err := Upgrade(ctx, env, next.Manifest, next.Artifact, next.Trust); err == nil || AsError(err).Code != "installed_state" || upgradeTrees(t, env.Layout) != before {
+		t.Fatalf("upgrade ignored unreadable journal: %v", err)
 	}
 	t.Log("real offline seed and journaled switch; current reconciled with unchanged install record; stale pointer and unreadable journal refused")
 }

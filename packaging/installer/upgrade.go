@@ -63,12 +63,12 @@ func Upgrade(ctx context.Context, env *Env, manifestPath, artifactPath, trustPat
 		return nil, err
 	}
 	id := verified.Manifest.ReleaseId.String()
-	if cur.ReleaseID == id && cur.ManifestSHA256 != verified.SHA {
-		return nil, errf(ExitFailed, "IMMUTABLE", "release %s is already installed with a different manifest", id)
-	}
 	if seqCmp(cur.ReleaseSequence, verified.Manifest.ReleaseSequence.String()) > 0 ||
 		(cur.ReleaseID != id && seqCmp(cur.ReleaseSequence, verified.Manifest.ReleaseSequence.String()) == 0) {
 		return nil, errf(ExitFailed, "DOWNGRADE", "refusing to replace release %s with %s", cur.ReleaseID, id)
+	}
+	if cur.ReleaseID == id && cur.ManifestSHA256 != verified.SHA {
+		return nil, errf(ExitFailed, "IMMUTABLE", "release %s is already installed with a different manifest", id)
 	}
 	if err := reconcileMarker(ctx, env); err != nil {
 		return nil, err
@@ -161,7 +161,7 @@ func upgradeCurrent(ctx context.Context, env *Env) (installedState, error) {
 	if err != nil {
 		return refused()
 	}
-	if target != l.releaseDir(cur.ReleaseID) {
+	if target != l.releaseDir(cur.ReleaseID) || readBaseline(l).Status == "seeded" {
 		st, err := readUpdaterStatus(ctx, env, true)
 		if err != nil || st == nil || st.CurrentReleaseID == "" || st.RecoveryRequired {
 			return refused()

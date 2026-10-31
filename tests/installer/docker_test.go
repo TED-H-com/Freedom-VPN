@@ -114,7 +114,7 @@ func buildBins() error {
 			return fmt.Errorf("build %s: %w", p.out, err)
 		}
 	}
-	cmd := exec.Command("go", "build", "-tags", "installer", "-trimpath", "-o", filepath.Join(binDir, "fvpn-w5-control"), "./tests/installer/cmd/fvpn-w5-control")
+	cmd := exec.Command("python3", "tests/installer/control-build.py", "build", filepath.Join(binDir, "fvpn-w5-control"))
 	cmd.Dir, cmd.Env = rootDir, env
 	cmd.Stdout, cmd.Stderr = os.Stdout, os.Stderr
 	if err := cmd.Run(); err != nil {
@@ -326,16 +326,17 @@ func writeStdin(t *testing.T, c, path, body string, mode string) {
 	}
 }
 
-func startControl(t *testing.T, c string) (url, ca, bundle string) {
+func startControl(t *testing.T, c string, extra ...string) (url, ca, bundle string) {
 	t.Helper()
 	mustExec(t, c, "mkdir", "-p", "/run/w5-control")
 	writeStdin(t, c, "/run/w5-control/token.in", token1+"\n", "0600")
 	writeStdin(t, c, "/run/w5-control/token2.in", token2+"\n", "0600")
-	out, code := runCmd(t, 30*time.Second, "docker", "exec", "-d", c,
+	args := []string{"exec", "-d", c,
 		"/usr/local/bin/fvpn-w5-control",
 		"-dir", "/run/w5-control",
 		"-token-file", "/run/w5-control/token.in",
-		"-extra-token-file", "/run/w5-control/token2.in")
+		"-extra-token-file", "/run/w5-control/token2.in"}
+	out, code := runCmd(t, 30*time.Second, "docker", append(args, extra...)...)
 	if code != 0 {
 		t.Fatalf("control: %s", out)
 	}
