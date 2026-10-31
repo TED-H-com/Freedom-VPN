@@ -588,3 +588,97 @@ MTU-1280 timeout with 12 complete echoes and no partial final line. One
 again completes all four transfers. No instrumented failure was captured;
 per-I/O tracing can affect scheduling/segmentation. These controls do not
 erase the failures or establish the exact kernel drop reason.
+
+## isolation / wire-nodes / agent-core — 2026-10-31 (follow-up 20, D-102)
+
+> D-087 / D-131: export the clean false → natural empty renewal → accepted
+> provisional report → true → populated lease / serving transition.
+
+The seam is now wired into a dedicated TEST ONLY composition of real control,
+using exactly `WithTestOnlyGrantEligibilityReaderFactory(grants.ReaderFactory)`
+and one `nodestest.NewMemberGrantEligibility()` instance. Prepare with
+`FVPN_E2E_GRANT_SEAM=1`; the [export contract](scenarios/harness-exports.md#follow-up-20--d-087-f10-02-and-f10-03-test-only)
+documents `SetMemberGrantsReady`, `MemberGrantEvidence` and
+`MemberGrantInvariants`, including the required receipt ordering. The production
+binary, desired compiler and entitlement projector are unchanged.
+
+[Run 5ab1f11c](runs/2026-10-31/followup20/5ab1f11c-a36b-4b77-bc70-85d902c93da6/member-grants-fixed-generation.md)
+passes 7/0/0. Generation 7, desired envelope/ETag, bindings, ready/passed state,
+publication, freeze flag and entitlement/device outputs remain byte-identical.
+The real empty and populated signed leases join to distinct accepted reports;
+true → serving receipt is 3,980 ms, followed by a complete 64,064-byte native
+transfer and increasing admission counters. No generation bump or state repair
+is made to drive the transition. This supplies isolation 10's central trigger;
+it does not replace isolation's assembled AT10 result or historical durations.
+
+The [first attempt](runs/2026-10-31/followup20/b4d2d001-a781-4df5-80d2-f7aad09f5b55/member-grants-fixed-generation.md)
+remains failed: normal initial FUP projection changed rate-policy generation
+1→0 and desired generation 5→6 during the window. The runner now lets initial
+outputs settle for 65 seconds before arming, without stopping either compiler.
+It also corrects its lease response decoder to the actual `signed.members`
+field. No failed evidence is rewritten.
+
+## members — 2026-10-31 (follow-up 20, F10-02 / F10-04, D-102)
+
+> Retain the counter-reader error category and correlate every sample with
+> enforcement/read timestamps; preserve the original failed finite-expiry row.
+
+The shared reader now retains category, stage, exit code, start/completion,
+kernel generation and both surrounding heartbeat reads. The session-status
+reader independently records its own failure category; consumers can distinguish
+which half caused `read_ok=false`. Missing counters remain distinct from failed
+reads. `EnableEnforcementTiming` before enrollment also enables the existing
+agent observer: each read carries same-boot monotonic bounds and before/after
+enforcement sequence records, with the full detached trace exported separately.
+No retry or assertion relaxation is introduced. The exact fields and
+category limits are in the [export contract](scenarios/harness-exports.md#follow-up-20--d-087-f10-02-and-f10-03-test-only).
+
+[Run 218e18c9](runs/2026-10-31/followup20/218e18c9-50ee-4050-a60e-a96e188b0167/finite-expiry-reader-diagnostics.md)
+retains 214 finite-expiry samples: all counter categories are `none`, both readers
+succeed, and all heartbeat reads are present. Last observed TCP/UDP increments
+are 182.021266 ms before the finite deadline. Senders stay active, final counters
+are stable/removed, and sampling continues six seconds after expiry. This is a
+reader-diagnostic reproduction, not a rerun of the complete members AT02 row.
+Container-visible host load is 8.94 / 10.61 / 11.69; the historical run has no
+matching retained load measurement, so comparable host load is unproven.
+The original 13:35:45.333735552Z error was not retained and cannot be recovered
+retrospectively. F10-02 remains historically failed and unattributed.
+
+F10-04: the shared hooks preserve the generation the product actually issues.
+This task adds no mutation to force generation 30. Members' generation-29 full
+sequence and original generation-30 recovery remain distinct records. Exact-30
+history reconciliation belongs to the orchestrator and the generation-producing
+owners; neither this clean D-087 run nor another passing subset closes it.
+
+## updates — 2026-10-31 (follow-up 20, F10-01, D-102)
+
+> Align regular release artifacts, supervisor and shared assertions with the
+> installer release-root contract; use the actual product meter checkpoint.
+
+Regular bundles now contain root `fvpn-agent`, `fvpn-updater`, `fvpn-watchdog`
+and `release.json`. `InstallerLayout` adds the installer binary and original
+units. The supervisor separately handles `/usr/local/bin` bootstrap and exact
+`/opt/vpn-node/releases/<id>/fvpn-agent` candidate ownership. Shared executable
+assertions use the root path; product executable/journal validation is intact.
+Both shared recovery configurations use `/var/lib/vpn-node/state/meter.checkpoint`
+(the default from `node/agent/config.go`, documented in `docs/node/usage-upload.md`).
+The fixture no longer manufactures `e2e/meter.json`. A regular update keeps the
+agent alive for the genuine fresh D-125 checkpoint; the updater owns stop/start.
+
+Updates 11 must consume this layout in its own `tests/e2e/at/updates/live_test.go`
+(candidate-running and tampered-artifact absence checks still name `bin/`) and
+`tests/e2e/at/updates/lab_test.go` (its config still names `e2e/meter.json`).
+Those recipient-owned adapters were not edited here. D-102 keeps this answer
+in RESPONSES.md and their request/evidence registers with that lane.
+
+## security-ops / enrollment / usage — 2026-10-31 (follow-up 20, D-102)
+
+The merged secops 13 register reports SECOPS-21 closed using its own restore
+run and the shared first-offer export. No new export discrepancy is reported.
+Independently clocked disposable guests and full candidate-hardware capacity
+remain operator resources; this lane never changes the shared clock or claims
+physical arm64 acceptance. Manual grant revocation remains the wire-members /
+contracts API item; D-087 future eligibility suppression is not a substitute.
+Enrollment 9 reports zero new requests. Usage's D-118 canonical-event/origin-ACK
+clarification was already answered in follow-up 19; the DB/WAL file hashes are
+not preservation invariants across real adoption. No recipient register changes.
