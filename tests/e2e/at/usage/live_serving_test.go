@@ -23,7 +23,8 @@ func (s *liveSuite) waitForUploadedTraffic(service string, nodeID, incID, device
 		since = after[0]
 	}
 	var event api.UsageEvent
-	if !s.waitFor(40*time.Second, func() bool {
+	// Product defaults: 10s sampling plus 60s upload cadence, with scheduling margin.
+	if !s.waitFor(90*time.Second, func() bool {
 		var raw []byte
 		err := s.pool.QueryRow(s.ctx, `
 			SELECT p.payload FROM usage_events e

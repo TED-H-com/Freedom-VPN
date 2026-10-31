@@ -26,6 +26,13 @@ WRAPPER
     git merge-base HEAD origin/main > .agent/usage-image-main.txt
     E2E_RESET=${E2E_RESET:-1} make -f mk/e2e.mk e2e-up
     ;;
-  down) make -f mk/e2e.mk e2e-down ;;
+  down)
+    make -f mk/e2e.mk e2e-down
+    # The shared driver's ownership tokens call this service "gateway";
+    # its neutral nginx image tag was scoped by this wrapper as well.
+    if docker image inspect fvpn-w4-usage-nginx:1.30.0 >/dev/null 2>&1; then
+      docker image rm fvpn-w4-usage-nginx:1.30.0
+    fi
+    ;;
   *) echo 'usage: bash tests/e2e/at/usage/stack.sh up|down' >&2; exit 2 ;;
 esac
