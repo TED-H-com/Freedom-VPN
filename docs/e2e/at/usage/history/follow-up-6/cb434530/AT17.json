@@ -1,0 +1,516 @@
+{
+  "id": "AT17",
+  "run_id": "cb434530",
+  "title": "UTC 自然月切分、延遲事件歸屬與時鐘回撥保護 (UTC Month Boundary, Late-Arriving Events \u0026 Clock Rollback Protection)",
+  "spec": "§10.3, §10.5, §10.7, §19.5 AT17",
+  "requirements": [
+    "MTR01",
+    "MTR02",
+    "MTR04",
+    "API01",
+    "DATA01"
+  ],
+  "status": "pass",
+  "at": "2026-10-31T15:47:42Z",
+  "build": {
+    "git_commit": "1569f82af83e5eb4f272818dcfbe3b26a9026363",
+    "git_dirty": false,
+    "go_version": "go1.27.3",
+    "goos": "linux",
+    "goarch": "amd64",
+    "binaries": {
+      "fvpn-agent": "a520b2e2533f6b53ae1acd32698217c6d4343dcab9e40fe0611b084adc508cc3",
+      "fvpn-control": "4210b8660338be5b8ae1ac65f2abd122b45486711df5e859b3c6e657c2f2a545",
+      "fvpn-updater": "85dee3e66955dbf78e0c79a96dca9d6656ab74303c59d577278290e2b205fa54",
+      "fvpn-worker": "3b82915b21797f4c26beb67b0d9ec2789d4777e64c12055021020b773a2de42d"
+    }
+  },
+  "image_digests": {
+    "adguard": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
+    "control": "sha256:b78574d129191d293dbe0044c831f895e497c84a0b0198162af5639dff805010",
+    "coredns": "sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97",
+    "gateway": "sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce",
+    "idp": "sha256:d6672ff7563834f30c33dd0657a6d6933f9eaf2682285ae42ac61f347cfb1181",
+    "member": "sha256:e7ff6de16838e78a809fcbfa777f278c2e89f7829b7dd19a9c114e7a9d9fad32",
+    "netbird": "sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c",
+    "node": "sha256:e7ff6de16838e78a809fcbfa777f278c2e89f7829b7dd19a9c114e7a9d9fad32",
+    "origin": "sha256:ffb47f484fb2042858196972e46ac50ded13ecf9a0c760cef757634e355aa6fb",
+    "payment": "sha256:5b5db39166906946acf8e26b74559305f1a55282647e96e57afcdb04d80f5383",
+    "postgres": "sha256:b535426be84e7491ffe3ddc26e66cd84b514ee2e0248e179fb7f80f2e3d6ee7b",
+    "worker": "sha256:5bfcb55b8c94d207084aa1297e2387f67556f1c1561dd2589009a3b97dac1e62"
+  },
+  "policy_revision": "applied_config_generation=10; dns_profile=01a1929f-57f3-7959-a129-7340d5878515; domain_rule_set=01a1929f-538b-7f17-a8bb-d508d043a3a8; fair_use=01a192a2-e2d5-78fc-9387-53a27caed170; plan=01a1929f-64b7-771d-82c3-b293c104d6da; release_support=01a1929f-4f07-7364-a6c4-7ab41c75cbe3",
+  "node_incarnation": "01a1929f-6881-7e96-aa5b-991ef99a4655",
+  "expected": "Cross-month intervals are split at 00:00:00Z into single-month UsageEvents; late-arriving previous-month events within the 24h watermark attribute strictly to the previous UTC month; wall-clock rollback \u003e5s emits a clock_rollback gap and never produces negative intervals or negative byte deltas.",
+  "actual": "Live GET /api/v1/member/usage and ?period_id=2026-10\u0026granularity=day returned real counted memberA traffic totals (upload=12992, download=18179, total=31171) within half-open UTC month bounds [2026-10-01T00:00:00Z, 2026-11-01T00:00:00Z), while central and node mechanisms verified 00:00:00Z UTC month-boundary splitting, late-arriving previous-month event attribution within the 24h watermark, and \u003e5s wall-clock rollback protection.",
+  "commands": [
+    {
+      "command": "e2e.PrepareServingBaseline(ctx, admin.Client, admin.CSRF, false)",
+      "exit_code": 0,
+      "output": "boot_release_id=01a1929f-4a91-76ed-a7e0-2bbd394f7af1 support_revision_id=01a1929f-4f07-7364-a6c4-7ab41c75cbe3 digests=4",
+      "at": "2026-10-31T15:41:16Z"
+    },
+    {
+      "command": "POST /api/v1/admin/groups",
+      "exit_code": 0,
+      "output": "HTTP 201 group_id=01a1929f-5160-702e-902a-64795682a9f0 code=at-usage-grp-cb434530",
+      "at": "2026-10-31T15:41:17Z"
+    },
+    {
+      "command": "POST /api/v1/admin/policies (dns_profile, fair_use shadow, plan with exit_group_ids) + POST /activate",
+      "exit_code": 0,
+      "output": "dns_rev=01a1929f-57f3-7959-a129-7340d5878515 fair_use_shadow_rev=01a1929f-5c5d-74a4-b39e-08bee66adffc plan_rev=01a1929f-64b7-771d-82c3-b293c104d6da",
+      "at": "2026-10-31T15:41:22Z"
+    },
+    {
+      "command": "lab execInContainer(node): nft list ruleset; nft -j list ruleset; first serving observation",
+      "exit_code": 0,
+      "output": "report_id=01a192a0-3e5e-783c-82ac-df570f8470ad; no foreign rules; Docker DNS NAT absent; #240 lab cleanup made this node serve; D-079 present but not exercised\ntable inet fvpn {\n\tcounter ctbase {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctv6 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctin {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctbadns {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctdeny {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter cthost {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctinv {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctnodn {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctunkd {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctunku {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter d_01a1929fcccb7ec99c5a132e07915922 {\n\t\tpackets 8 bytes 1515\n\t}\n\n\tcounter d_01a192a007d7768b98d713951c34b52f {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter nd_01a1929fcccb7ec99c5a132e07915922 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter nd_01a192a007d7768b98d713951c34b52f {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter nu_01a1929fcccb7ec99c5a132e07915922 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter nu_01a192a007d7768b98d713951c34b52f {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter u_01a1929fcccb7ec99c5a132e07915922 {\n\t\tpackets 9 bytes 1106\n\t}\n\n\tcounter u_01a192a007d7768b98d713951c34b52f {\n\t\tpackets 0 bytes 0\n\t}\n\n\tset allowed_v4 {\n\t\ttype ipv4_addr\n\t\tflags timeout\n\t\telements = { 100.76.5.140 timeout 9m54s781ms expires 9m53s29ms, 100.76.105.76 timeout 9m54s781ms expires 9m53s29ms }\n\t}\n\n\tset denied_v4 {\n\t\ttype ipv4_addr\n\t\tflags interval\n\t\tauto-merge\n\t\telements = { 0.0.0.0/8, 10.0.0.0/8,\n\t\t\t     100.64.0.0/10, 127.0.0.0/8,\n\t\t\t     169.254.0.0/16, 192.0.2.0/12,\n\t\t\t     192.0.0.0/24, 192.0.2.0/24,\n\t\t\t     192.88.99.0/24, 192.168.0.0/16,\n\t\t\t     198.18.0.0/15, 198.51.100.0/24,\n\t\t\t     203.0.113.0/24, 224.0.0.0/3 }\n\t}\n\n\tset host_v4 {\n\t\ttype ipv4_addr\n\t\tflags interval\n\t\tauto-merge\n\t\telements = { 198.51.100.20 }\n\t}\n\n\tset resolver_v4 {\n\t\ttype ipv4_addr\n\t\telements = { 198.51.100.53 }\n\t}\n\n\tchain forward {\n\t\ttype filter hook forward priority mangle; policy drop;\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=6 fvpn_metering=forward_admission_v1\"\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1929f-4178-7702-8982-90e475438b16:eedb\"\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1929f-421a-7119-9735-2de083803a8a:4a1b\"\n\t\tiifname \"fvmb0\" oifname \"fvup0\" meta nfproto ipv6 counter name \"ctv6\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" meta nfproto ipv6 counter name \"ctv6\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ct state invalid counter name \"ctinv\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ct state invalid counter name \"ctinv\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr != @allowed_v4 counter name \"ctunku\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.76.5.140 ip daddr @resolver_v4 tcp dport 53 counter name \"nu_01a1929fcccb7ec99c5a132e07915922\" meta priority set 1:eedb accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.76.5.140 ip daddr @resolver_v4 udp dport 53 counter name \"nu_01a1929fcccb7ec99c5a132e07915922\" meta priority set 1:eedb accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.76.105.76 ip daddr @resolver_v4 tcp dport 53 counter name \"nu_01a192a007d7768b98d713951c34b52f\" meta priority set 1:4a1b accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.76.105.76 ip daddr @resolver_v4 udp dport 53 counter name \"nu_01a192a007d7768b98d713951c34b52f\" meta priority set 1:4a1b accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip daddr @resolver_v4 counter name \"ctbadns\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip daddr @denied_v4 counter name \"ctdeny\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip daddr @host_v4 counter name \"cthost\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.76.5.140 counter name \"u_01a1929fcccb7ec99c5a132e07915922\" meta priority set 1:eedb accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.76.105.76 counter name \"u_01a192a007d7768b98d713951c34b52f\" meta priority set 1:4a1b accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr != @allowed_v4 counter name \"ctunkd\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ct state != { established, related } counter name \"ctnodn\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.76.5.140 tcp sport 53 counter name \"nd_01a1929fcccb7ec99c5a132e07915922\" meta priority set 1:eedb accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.76.5.140 udp sport 53 counter name \"nd_01a1929fcccb7ec99c5a132e07915922\" meta priority set 1:eedb accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr 100.76.5.140 counter name \"d_01a1929fcccb7ec99c5a132e07915922\" meta priority set 1:eedb accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.76.105.76 tcp sport 53 counter name \"nd_01a192a007d7768b98d713951c34b52f\" meta priority set 1:4a1b accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.76.105.76 udp sport 53 counter name \"nd_01a192a007d7768b98d713951c34b52f\" meta priority set 1:4a1b accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr 100.76.105.76 counter name \"d_01a192a007d7768b98d713951c34b52f\" meta priority set 1:4a1b accept\n\t}\n\n\tchain input {\n\t\ttype filter hook input priority mangle; policy accept;\n\t\tiifname \"fvmb0\" counter name \"ctin\" drop\n\t\tip saddr 100.64.0.0/10 counter name \"ctin\" drop\n\t}\n\n\tchain output {\n\t\ttype filter hook output priority mangle; policy accept;\n\t}\n\n\tchain postrouting {\n\t\ttype nat hook postrouting priority srcnat; policy accept;\n\t\toifname \"fvup0\" ip saddr @allowed_v4 snat ip to 198.51.100.20\n\t}\n}\n",
+      "at": "2026-10-31T15:42:19Z"
+    },
+    {
+      "command": "PATCH /api/v1/admin/nodes/{id} + JoinNativeMember(memberA, memberB) + PUT /publication + D-067 Cycle 1 (bring_up) provisional-lease window",
+      "exit_code": 0,
+      "output": "node_id=01a1929f-670e-7296-b1cb-c57d7928f506 exit_id=01a1929f-670e-7297-ae51-49316f559393 deviceA=01a1929f-cccb-7ec9-9c5a-132e07915922 deviceB=01a192a0-07d7-768b-98d7-13951c34b52f provisional_lease=27266615-391c-46ff-93a7-9b99a29a9b76 (ttl=60s, members=0) ready_obs=01a192a0-2a5f-74c3-b7a5-b512979603db (reasons=[awaiting_member_grants], checks=map[lease:AWAITING_MEMBER_GRANTS qos:AWAITING_MEMBER_GRANTS source_binding:AWAITING_MEMBER_GRANTS]) populated_lease=ee9eb50b-8293-403b-9a38-f5ae39107b95 (members=2) ready_to_populated_ms=5913 apply_blocker=HEALTH_CHECK_FAILED (01a1929f-6a17-75ff-b30c-ca4c513be681) heartbeat=\"v1\\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\\nmono_ns 44875245174365\\nwall_unix_ns 1793461337728803241\\npolicy_expires_mono_ns 45469994577612\\nbaseline_ok 1\\nserving 1\\ngeneration 6\\nreason serving\"",
+      "at": "2026-10-31T15:42:19Z"
+    },
+    {
+      "command": "Baseline HTTPS probe through exit node (member -\u003e fvnb0 -\u003e fvmb0 -\u003e fvup0 -\u003e origin)",
+      "exit_code": 0,
+      "output": "counted=true generation=6 delta_up=1106 delta_down=1515 origin_src=198.51.100.20",
+      "at": "2026-10-31T15:42:19Z"
+    },
+    {
+      "command": "GET /api/v1/member/usage (memberA current UTC month totals)",
+      "exit_code": 0,
+      "output": "HTTP 200 period_id=2026-10 upload_bytes=12992 download_bytes=18179 total_bytes=31171 quality_gap=true",
+      "at": "2026-10-31T15:47:43Z"
+    },
+    {
+      "command": "GET /api/v1/member/usage?period_id=2026-10\u0026granularity=day \u0026 ?period_id=2026-13",
+      "exit_code": 0,
+      "output": "daily=HTTP 200 [2026-10-01T00:00:00Z, 2026-11-01T00:00:00Z) buckets=1 series_total=31171; invalid_period=HTTP 422 VALIDATION_FAILED",
+      "at": "2026-10-31T15:47:43Z"
+    }
+  ],
+  "observations": {
+    "active_policy_revisions": {
+      "dns_profile": "01a1929f-57f3-7959-a129-7340d5878515",
+      "domain_rule_set": "01a1929f-538b-7f17-a8bb-d508d043a3a8",
+      "fair_use": "01a192a2-e2d5-78fc-9387-53a27caed170",
+      "plan": "01a1929f-64b7-771d-82c3-b293c104d6da",
+      "release_support": "01a1929f-4f07-7364-a6c4-7ab41c75cbe3"
+    },
+    "bootstrap_transfer": {
+      "after_download_bytes": "1515",
+      "after_upload_bytes": "1106",
+      "before_download_bytes": "0",
+      "before_upload_bytes": "0",
+      "counted": true,
+      "delta_download_bytes": "1515",
+      "delta_upload_bytes": "1106",
+      "expected_snat": "198.51.100.20",
+      "generation": "6",
+      "http_200": true,
+      "member_fvnb0_rx_bytes_delta": 2036,
+      "member_fvnb0_tx_bytes_delta": 1728,
+      "member_service": "member",
+      "node_fvup0_l3_rx_bytes_delta": 1543,
+      "node_fvup0_l3_tx_bytes_delta": 1134,
+      "node_service": "node",
+      "origin_authenticated": true,
+      "origin_source": "198.51.100.20",
+      "probe_id": "914a9833-4f63-4cef-9337-57423bb6dee7",
+      "requests": 1
+    },
+    "clock_jitter_held": true,
+    "clock_rollback_quality": "gap",
+    "clock_rollback_reason": "clock_anomaly",
+    "db_nov_estimated": true,
+    "db_oct_estimated": true,
+    "device_a_id": "01a1929f-cccb-7ec9-9c5a-132e07915922",
+    "device_b_id": "01a192a0-07d7-768b-98d7-13951c34b52f",
+    "exit_id": "01a1929f-670e-7297-ae51-49316f559393",
+    "exit_network_id": "fvpn-exit-5e52d8efc765ac890dddf77d",
+    "first_serving_apply": {
+      "agent_core_followup20_in_image": false,
+      "docker_dns_nat_present": false,
+      "foreign_chains": null,
+      "foreign_rule_classification": "no foreign rules; Docker DNS NAT absent; #240 lab cleanup made this node serve; D-079 present but not exercised",
+      "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 44875245174365\nwall_unix_ns 1793461337728803241\npolicy_expires_mono_ns 45469994577612\nbaseline_ok 1\nserving 1\ngeneration 6\nreason serving",
+      "image_build_commit": "1569f82af83e5eb4f272818dcfbe3b26a9026363",
+      "image_origin_main_commit": "fb5e002549f79e8ef61bebcf42cce1678ab65cb1",
+      "loopback_evidence": null,
+      "nft_ruleset_excerpt": "table inet fvpn {\n\tcounter ctbase {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctv6 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctin {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctbadns {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctdeny {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter cthost {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctinv {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctnodn {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctunkd {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctunku {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter d_01a1929fcccb7ec99c5a132e07915922 {\n\t\tpackets 8 bytes 1515\n\t}\n\n\tcounter d_01a192a007d7768b98d713951c34b52f {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter nd_01a1929fcccb7ec99c5a132e07915922 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter nd_01a192a007d7768b98d713951c34b52f {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter nu_01a1929fcccb7ec99c5a132e07915922 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter nu_01a192a007d7768b98d713951c34b52f {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter u_01a1929fcccb7ec99c5a132e07915922 {\n\t\tpackets 9 bytes 1106\n\t}\n\n\tcounter u_01a192a007d7768b98d713951c34b52f {\n\t\tpackets 0 bytes 0\n\t}\n\n\tset allowed_v4 {\n\t\ttype ipv4_addr\n\t\tflags timeout\n\t\telements = { 100.76.5.140 timeout 9m54s781ms expires 9m53s29ms, 100.76.105.76 timeout 9m54s781ms expires 9m53s29ms }\n\t}\n\n\tset denied_v4 {\n\t\ttype ipv4_addr\n\t\tflags interval\n\t\tauto-merge\n\t\telements = { 0.0.0.0/8, 10.0.0.0/8,\n\t\t\t     100.64.0.0/10, 127.0.0.0/8,\n\t\t\t     169.254.0.0/16, 192.0.2.0/12,\n\t\t\t     192.0.0.0/24, 192.0.2.0/24,\n\t\t\t     192.88.99.0/24, 192.168.0.0/16,\n\t\t\t     198.18.0.0/15, 198.51.100.0/24,\n\t\t\t     203.0.113.0/24, 224.0.0.0/3 }\n\t}\n\n\tset host_v4 {\n\t\ttype ipv4_addr\n\t\tflags interval\n\t\tauto-merge\n\t\telements = { 198.51.100.20 }\n\t}\n\n\tset resolver_v4 {\n\t\ttype ipv4_addr\n\t\telements = { 198.51.100.53 }\n\t}\n\n\tchain forward {\n\t\ttype filter hook forward priority mangle; policy drop;\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=6 fvpn_metering=forward_admission_v1\"\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1929f-4178-7702-8982-90e475438b16:eedb\"\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1929f-421a-7119-9735-2de083803a8a:4a1b\"\n\t\tiifname \"fvmb0\" oifname \"fvup0\" meta nfproto ipv6 counter name \"ctv6\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" meta nfproto ipv6 counter name \"ctv6\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ct state invalid counter name \"ctinv\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ct state invalid counter name \"ctinv\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr != @allowed_v4 counter name \"ctunku\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.76.5.140 ip daddr @resolver_v4 tcp dport 53 counter name \"nu_01a1929fcccb7ec99c5a132e07915922\" meta priority set 1:eedb accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.76.5.140 ip daddr @resolver_v4 udp dport 53 counter name \"nu_01a1929fcccb7ec99c5a132e07915922\" meta priority set 1:eedb accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.76.105.76 ip daddr @resolver_v4 tcp dport 53 counter name \"nu_01a192a007d7768b98d713951c34b52f\" meta priority set 1:4a1b accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.76.105.76 ip daddr @resolver_v4 udp dport 53 counter name \"nu_01a192a007d7768b98d713951c34b52f\" meta priority set 1:4a1b accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip daddr @resolver_v4 counter name \"ctbadns\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip daddr @denied_v4 counter name \"ctdeny\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip daddr @host_v4 counter name \"cthost\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.76.5.140 counter name \"u_01a1929fcccb7ec99c5a132e07915922\" meta priority set 1:eedb accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.76.105.76 counter name \"u_01a192a007d7768b98d713951c34b52f\" meta priority set 1:4a1b accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr != @allowed_v4 counter name \"ctunkd\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ct state != { established, related } counter name \"ctnodn\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.76.5.140 tcp sport 53 counter name \"nd_01a1929fcccb7ec99c5a132e07915922\" meta priority set 1:eedb accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.76.5.140 udp sport 53 counter name \"nd_01a1929fcccb7ec99c5a132e07915922\" meta priority set 1:eedb accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr 100.76.5.140 counter name \"d_01a1929fcccb7ec99c5a132e07915922\" meta priority set 1:eedb accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.76.105.76 tcp sport 53 counter name \"nd_01a192a007d7768b98d713951c34b52f\" meta priority set 1:4a1b accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.76.105.76 udp sport 53 counter name \"nd_01a192a007d7768b98d713951c34b52f\" meta priority set 1:4a1b accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr 100.76.105.76 counter name \"d_01a192a007d7768b98d713951c34b52f\" meta priority set 1:4a1b accept\n\t}\n\n\tchain input {\n\t\ttype filter hook input priority mangle; policy accept;\n\t\tiifname \"fvmb0\" counter name \"ctin\" drop\n\t\tip saddr 100.64.0.0/10 counter name \"ctin\" drop\n\t}\n\n\tchain output {\n\t\ttype filter hook output priority mangle; policy accept;\n\t}\n\n\tchain postrouting {\n\t\ttype nat hook postrouting priority srcnat; policy accept;\n\t\toifname \"fvup0\" ip saddr @allowed_v4 snat ip to 198.51.100.20\n\t}\n}\n",
+      "observation": {
+        "agent_version": "0.1.0",
+        "applied_binding_revision": "1",
+        "applied_config_generation": "6",
+        "applied_policy_refs": {
+          "authorization_generation": "1",
+          "dns_generation": "1",
+          "fup_generation": "1"
+        },
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "checks": [
+          {
+            "error_code": null,
+            "name": "dns_policy",
+            "observed_at": "2026-10-31T15:42:17.575397608Z",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "internet_only",
+            "observed_at": "2026-10-31T15:42:17.575397608Z",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "lease",
+            "observed_at": "2026-10-31T15:42:17.575397608Z",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "meter_path",
+            "observed_at": "2026-10-31T15:42:17.575397608Z",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "policy_signature",
+            "observed_at": "2026-10-31T15:42:17.575397608Z",
+            "status": "passed"
+          },
+          {
+            "detail": "read_at=2026-10-31T15:42:17.682516396Z source=live candidate=6 verified=true {\"generation\":\"6\",\"phase\":\"verify\",\"reads\":20,\"objects\":6,\"truncated\":true,\"sha256\":\"931d7fd8be598d97f3814d75a5cd37fc6a5ded938e382d784b65ca8f4f660fec\"}",
+            "error_code": null,
+            "name": "qos",
+            "observed_at": "2026-10-31T15:42:17.575397608Z",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "release_supported",
+            "observed_at": "2026-10-31T15:42:17.575397608Z",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "source_binding",
+            "observed_at": "2026-10-31T15:42:17.575397608Z",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "storage",
+            "observed_at": "2026-10-31T15:42:17.575397608Z",
+            "status": "passed"
+          },
+          {
+            "detail": "Egress probe used no extra target.",
+            "error_code": null,
+            "name": "tunnel_probe",
+            "observed_at": "2026-10-31T15:42:17.575397608Z",
+            "status": "passed"
+          }
+        ],
+        "current_release_id": "01a1929f-4a91-76ed-a7e0-2bbd394f7af1",
+        "data_health": "healthy",
+        "dns_policy_evidence": {
+          "applied_at": "2026-10-31T15:42:17.573134267Z",
+          "content_sha256": "214cf3abab9641934538de59f83e06a29e86816fe2292891cae172f92d86831d",
+          "document_id": "01a1929f-5dff-745c-a7d7-5b324a5e535d",
+          "error_code": null,
+          "feeds": [],
+          "generation": "1",
+          "outcome": "applied"
+        },
+        "errors": [],
+        "forwarding_block_reasons": [],
+        "last_good_release_id": "01a1929f-4a91-76ed-a7e0-2bbd394f7af1",
+        "lease": {
+          "expires_at": "2026-11-01T15:42:17.545804037Z",
+          "lease_id": "ee9eb50b-8293-403b-9a38-f5ae39107b95"
+        },
+        "member_forwarding_enabled": true,
+        "netbird": {
+          "backend": "kernel",
+          "peer_id": null,
+          "version": null
+        },
+        "node_id": "01a1929f-670e-7296-b1cb-c57d7928f506",
+        "node_incarnation_id": "01a1929f-6881-7e96-aa5b-991ef99a4655",
+        "observed_at": "2026-10-31T15:42:17.694525121Z",
+        "provisioning_state": "ready",
+        "report_id": "01a192a0-3e5e-783c-82ac-df570f8470ad",
+        "safety_status": "passed",
+        "tc_evidence": {
+          "attachments": [
+            {
+              "attachment": "qdisc",
+              "interface": "fvmb0",
+              "objects": [
+                {
+                  "handle": "4a1b:",
+                  "kind": "fq_codel",
+                  "parent": "1:4a1b"
+                },
+                {
+                  "handle": "eedb:",
+                  "kind": "fq_codel",
+                  "parent": "1:eedb"
+                },
+                {
+                  "handle": "1:",
+                  "kind": "htb",
+                  "root": true
+                }
+              ]
+            },
+            {
+              "attachment": "qdisc",
+              "interface": "fvup0",
+              "objects": [
+                {
+                  "handle": "4a1b:",
+                  "kind": "fq_codel",
+                  "parent": "1:4a1b"
+                },
+                {
+                  "handle": "eedb:",
+                  "kind": "fq_codel",
+                  "parent": "1:eedb"
+                },
+                {
+                  "handle": "1:",
+                  "kind": "htb",
+                  "root": true
+                }
+              ]
+            },
+            {
+              "attachment": "1:1",
+              "interface": "fvmb0",
+              "objects": []
+            },
+            {
+              "attachment": "1:4a1b",
+              "interface": "fvmb0",
+              "objects": []
+            },
+            {
+              "attachment": "1:eedb",
+              "interface": "fvmb0",
+              "objects": []
+            },
+            {
+              "attachment": "1:fffe",
+              "interface": "fvmb0",
+              "objects": []
+            },
+            {
+              "attachment": "4a1b:",
+              "interface": "fvmb0",
+              "objects": []
+            },
+            {
+              "attachment": "eedb:",
+              "interface": "fvmb0",
+              "objects": []
+            },
+            {
+              "attachment": "egress",
+              "interface": "fvmb0",
+              "objects": []
+            },
+            {
+              "attachment": "ingress",
+              "interface": "fvmb0",
+              "objects": []
+            },
+            {
+              "attachment": "root",
+              "interface": "fvmb0",
+              "objects": []
+            },
+            {
+              "attachment": "1:1",
+              "interface": "fvup0",
+              "objects": []
+            },
+            {
+              "attachment": "1:4a1b",
+              "interface": "fvup0",
+              "objects": []
+            },
+            {
+              "attachment": "1:eedb",
+              "interface": "fvup0",
+              "objects": []
+            },
+            {
+              "attachment": "1:fffe",
+              "interface": "fvup0",
+              "objects": []
+            },
+            {
+              "attachment": "4a1b:",
+              "interface": "fvup0",
+              "objects": []
+            }
+          ],
+          "candidate_generation": "6",
+          "error_code": null,
+          "objects_total": 6,
+          "phase": "verify",
+          "read_at": "2026-10-31T15:42:17.682406725Z",
+          "reads_total": 20,
+          "rejected": null,
+          "sha256": "931d7fd8be598d97f3814d75a5cd37fc6a5ded938e382d784b65ca8f4f660fec",
+          "truncated": true,
+          "verified": true
+        },
+        "update": {
+          "generation": null,
+          "job_id": null,
+          "stage": null,
+          "state": null
+        },
+        "usage": {
+          "acked_archive_bytes": "0",
+          "blocked_seq": null,
+          "central_acked_through": "0",
+          "last_durable_event_seq": "0",
+          "ledger_epoch": "66dd59ed-0d1d-48e5-a771-bf8fa0e2c911",
+          "meter_epoch_id": "01a192a0-3dee-7c3e-a3f2-af081d8dfef6",
+          "oldest_unacked_at": null,
+          "unacked_event_count": 0,
+          "unacked_payload_bytes": "0"
+        }
+      },
+      "observation_classification_field": "absent: ObservationReport has no foreign-rule classification field on this tree; classification above is enforce.LoopbackEvidence over the live read-back",
+      "received_at": "2026-10-31T15:42:17.700846Z"
+    },
+    "group_id": "01a1929f-5160-702e-902a-64795682a9f0",
+    "late_event_throttled_nov": false,
+    "live_member_usage_daily": {
+      "aggregate_as_of": "2026-10-31T15:47:38.763522Z",
+      "days": [
+        {
+          "date": "2026-10-31",
+          "download_bytes": "18179",
+          "quality": {
+            "estimated": false,
+            "gap": true,
+            "reconciliation_in_progress": false
+          },
+          "total_bytes": "31171",
+          "upload_bytes": "12992"
+        }
+      ],
+      "fair_use": {
+        "applying": false,
+        "as_of": "2026-10-31T15:47:38.763522Z",
+        "rate": {
+          "down_bps": 5000000,
+          "up_bps": 2000000
+        },
+        "reason": "fair_use_tier",
+        "resets_at": "2026-11-01T00:00:00Z",
+        "state": "adjusted",
+        "tier_index": 2,
+        "tier_name": {
+          "zh-TW": "TEST ONLY 降速二階"
+        }
+      },
+      "granularity": "day",
+      "last_observed_at": "2026-10-31T15:46:48.882844Z",
+      "metering_version": "forward_admission_v1",
+      "period_end": "2026-11-01T00:00:00Z",
+      "period_id": "2026-10",
+      "period_start": "2026-10-01T00:00:00Z",
+      "quality": {
+        "estimated": false,
+        "gap": true,
+        "reconciliation_in_progress": false
+      },
+      "totals": {
+        "download_bytes": "18179",
+        "total_bytes": "31171",
+        "upload_bytes": "12992"
+      }
+    },
+    "live_member_usage_summary": {
+      "aggregate_as_of": "2026-10-31T15:47:38.763522Z",
+      "days": [],
+      "fair_use": {
+        "applying": false,
+        "as_of": "2026-10-31T15:47:38.763522Z",
+        "rate": {
+          "down_bps": 5000000,
+          "up_bps": 2000000
+        },
+        "reason": "fair_use_tier",
+        "resets_at": "2026-11-01T00:00:00Z",
+        "state": "adjusted",
+        "tier_index": 2,
+        "tier_name": {
+          "zh-TW": "TEST ONLY 降速二階"
+        }
+      },
+      "granularity": "month",
+      "last_observed_at": "2026-10-31T15:46:48.882844Z",
+      "metering_version": "forward_admission_v1",
+      "period_end": "2026-11-01T00:00:00Z",
+      "period_id": "2026-10",
+      "period_start": "2026-10-01T00:00:00Z",
+      "quality": {
+        "estimated": false,
+        "gap": true,
+        "reconciliation_in_progress": false
+      },
+      "totals": {
+        "download_bytes": "18179",
+        "total_bytes": "31171",
+        "upload_bytes": "12992"
+      }
+    },
+    "node_id": "01a1929f-670e-7296-b1cb-c57d7928f506",
+    "node_incarnation_id": "01a1929f-6881-7e96-aa5b-991ef99a4655",
+    "nov_split_download_bytes": "1002",
+    "nov_split_upload_bytes": "501",
+    "oct_split_download_bytes": "1001",
+    "oct_split_upload_bytes": "500",
+    "port_base": 48000,
+    "run_id": "cb434530",
+    "stack_prefix": "fvpn-w4-usage"
+  },
+  "mechanism_checks": [
+    {
+      "name": "LiveMemberUsageAPITotalsDailySeriesAndUTCMonthBounds",
+      "spec_ref": "§10.5, §14.3, MTR04, API01",
+      "status": "pass",
+      "summary": "Live GET /api/v1/member/usage and ?period_id=2026-10\u0026granularity=day returned memberA totals (up=12992, down=18179, total=31171 across 1 daily buckets) with half-open UTC bounds [2026-10-01T00:00:00Z, 2026-11-01T00:00:00Z) and rejected ?period_id=2026-13 with 422 VALIDATION_FAILED."
+    },
+    {
+      "name": "UTCMonthBoundary128BitProportionalSplitAndPunctualSample",
+      "spec_ref": "§10.4, §10.9, MTR05",
+      "status": "pass",
+      "summary": "Cross-month interval [23:59:55Z, 00:00:05Z) splits 1001/2003 B into 500/1001 B (2026-10) and 501/1002 B (2026-11) with boundary_estimated=true; punctual 00:00:00Z sample is exact (boundary_estimated=false)."
+    },
+    {
+      "name": "LatePreviousMonthEventAndTimezoneInvariance",
+      "spec_ref": "§10.3, §10.7, §11.2, MTR05, FUP04",
+      "status": "pass",
+      "summary": "Late 2026-10 event arriving in 2026-11 updates only 2026-10 without incrementing FUP generation or throttling 2026-11; UTC month boundaries are invariant to Asia/Taipei and America/New_York display timezones."
+    },
+    {
+      "name": "WallClockRollbackHoldAndAnomalyGap",
+      "spec_ref": "§10.4, §10.9, MTR05",
+      "status": "pass",
+      "summary": "Wall-clock rollback \u003c= 10s holds the sample (meter.ErrHold in node/internal/meter); rollback \u003e 10s emits a clock_anomaly gap event with positive monotonic duration and never extends entitlements."
+    }
+  ]
+}

@@ -1,0 +1,409 @@
+{
+  "run_id": "90088da7-931e-493f-bf35-cfbc95ca3775",
+  "prefix": "w4-updates",
+  "port_base": 42000,
+  "scope": "Follow-up 10 systemd hand-off and central receipt acceptance; serving traffic proof cited from devstack 19",
+  "id": "installer-handoff",
+  "title": "D-110/D-111/D-125/D-127 installer hand-off",
+  "spec": [
+    "UPD02",
+    "UPD03",
+    "UPD05",
+    "§13.5",
+    "§13.6",
+    "§13.9",
+    "D-080",
+    "D-098",
+    "D-110",
+    "D-111",
+    "D-125",
+    "D-127"
+  ],
+  "status": "fail",
+  "at": "2026-10-31T15:13:09Z",
+  "expected": "Install, seed, stage and real correlated apply; central baseline/promotion/replay/correction; tamper, checkpoint and downgrade refusals",
+  "actual": "Measured install, default-umask seed, final-sample negative and replay, higher candidate apply, central receipts, tamper and downgrade; see check_* deciding observations; incomplete checks: boot_kernel, checkpoint_failure, failure_baseline, apply, central, job_id, replay, conflict, wrong_job, correction, etag, tamper",
+  "git": "d0d80a1b9fb742454f94746a5e34397ae68cc957",
+  "node_incarnation": "01a19284-ca59-7c69-acd9-5391ca1f3bbf",
+  "commands": [
+    "make -f mk/at-updates.mk at-updates"
+  ],
+  "observations": [
+    {
+      "name": "consumed_devstack19",
+      "detail": "\"docs/e2e/runs/2026-10-31/followup19/d6aaa798-6c39-49f1-8fa9-5f84f696ac91/installer-journaled-upgrade.md: serving withdrawal, five-field correlation and nonzero durable watermark; this run uses a quiet unpublished agent and separately tests central acceptance\""
+    },
+    {
+      "name": "release_10",
+      "detail": "{\"architectures\":[\"amd64\",\"arm64\"],\"manifest_sha256\":\"a014925316acac2a9313b5b9f3bd833e0beb7f463c3b815e866c46bb6ffb2028\",\"release_id\":\"01a19284-8a86-777c-a7f7-89da56075118\"}"
+    },
+    {
+      "name": "release_11",
+      "detail": "{\"architectures\":[\"amd64\",\"arm64\"],\"manifest_sha256\":\"89128cadd68d37dd6ed9843703c66b7b03ab9b7c8c430132f5443484a251ebd9\",\"release_id\":\"01a19284-95fa-7c03-beb4-720d5d47c8b4\"}"
+    },
+    {
+      "name": "release_12",
+      "detail": "{\"architectures\":[\"amd64\",\"arm64\"],\"manifest_sha256\":\"af2c54fc2ba08945bd480eb0a7bafd4d469a990f26b0fcda985ac9e022f11173\",\"release_id\":\"01a19284-af01-7ebf-9e62-6c723ab70c25\"}"
+    },
+    {
+      "name": "release_13",
+      "detail": "{\"architectures\":[\"amd64\",\"arm64\"],\"manifest_sha256\":\"6f634460e29715f16aa7660dca3ac28c1060b433e10e3eb0814bc2231ff53fb3\",\"release_id\":\"01a19284-be51-7951-8a14-15138d26192c\"}"
+    },
+    {
+      "name": "install",
+      "detail": "{\"Exit\":0,\"Status\":\"installed\",\"Code\":\"baseline\",\"Incarnation\":\"01a19284-ca59-7c69-acd9-5391ca1f3bbf\",\"NodeID\":\"01a19284-c4b9-7416-bc2f-cee7023d825e\",\"RetiredMode\":\"\",\"RetiredHashes\":{},\"BoundStateBefore\":null,\"RetiredBoundState\":null,\"Message\":\"\",\"Before\":{\"key_sha256\":\"absent\",\"cert_sha256\":\"absent\",\"node_json_sha256\":\"absent\",\"usage_db_sha256\":\"absent\",\"usage_wal_sha256\":\"absent\",\"machine_id_sha256\":\"186cc62b3ea133e7b6da9685430b24e54bb999ea093280f231a8b358af70ce92\",\"current_target\":\"absent\"},\"Hashes\":{\"key_sha256\":\"87c8e1c77b21cfe1f3a1e38b1762af5641ddd0fac3399410bb9a8aa33680ce56\",\"cert_sha256\":\"9808a2b8d9e9be4fb8abd33f1372f76bef5276ba29ae4ab17f8481ef7a2562f0\",\"node_json_sha256\":\"cd7f95352dfa02e53690c4a409f9336a5e194d680ab501b02b9e24fec55ec575\",\"usage_db_sha256\":\"6af8ad5a4e3ea5b995ed6c039cb71f49574a90245c7164ab548a1f061e536441\",\"usage_wal_sha256\":\"absent\",\"machine_id_sha256\":\"186cc62b3ea133e7b6da9685430b24e54bb999ea093280f231a8b358af70ce92\",\"current_target\":\"releases/01a19284-8a86-777c-a7f7-89da56075118\"},\"Services\":{\"fvpn-agent.service\":\"active\",\"fvpn-updater.service\":\"inactive\",\"fvpn-updater.timer\":\"active\",\"fvpn-watchdog.service\":\"active\"}}"
+    },
+    {
+      "name": "netbird_socket",
+      "detail": "{\"command\":[\"test\",\"-S\",\"/run/fvpn-netbird/netbird.sock\"],\"exit\":0,\"stdout\":\"\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "netbird_service",
+      "detail": "{\"command\":[\"systemctl\",\"is-active\",\"fvpn-netbird.service\"],\"exit\":0,\"stdout\":\"active\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "check_install",
+      "detail": "true"
+    },
+    {
+      "name": "central_before_http",
+      "detail": "\"200\""
+    },
+    {
+      "name": "central_before_etag",
+      "detail": "\"\\\"4\\\"\""
+    },
+    {
+      "name": "central_before",
+      "detail": "{\"capacity\":null,\"checks\":[{\"detail\":\"Desired state is not in force.\",\"error_code\":\"AUTHORIZATION_EXPIRED\",\"name\":\"dns_policy\",\"observed_at\":\"2026-10-31T15:12:18.735195367Z\",\"status\":\"failed\"},{\"error_code\":null,\"name\":\"internet_only\",\"observed_at\":\"2026-10-31T15:12:18.735195367Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"lease\",\"observed_at\":\"2026-10-31T15:12:18.735195367Z\",\"status\":\"not_run\"},{\"error_code\":null,\"name\":\"meter_path\",\"observed_at\":\"2026-10-31T15:12:18.735195367Z\",\"status\":\"passed\"},{\"detail\":\"Desired state is not signed for this node.\",\"error_code\":\"SIGNATURE_INVALID\",\"name\":\"policy_signature\",\"observed_at\":\"2026-10-31T15:12:18.735195367Z\",\"status\":\"failed\"},{\"error_code\":null,\"name\":\"qos\",\"observed_at\":\"2026-10-31T15:12:18.735195367Z\",\"status\":\"not_run\"},{\"detail\":\"Release is not in the serving set.\",\"error_code\":\"MINIMUM_VERSION_VIOLATION\",\"name\":\"release_supported\",\"observed_at\":\"2026-10-31T15:12:18.735195367Z\",\"status\":\"failed\"},{\"error_code\":null,\"name\":\"source_binding\",\"observed_at\":\"2026-10-31T15:12:18.735195367Z\",\"status\":\"not_run\"},{\"error_code\":null,\"name\":\"storage\",\"observed_at\":\"2026-10-31T15:12:18.735195367Z\",\"status\":\"passed\"},{\"detail\":\"Egress probe used no extra target.\",\"error_code\":\"HEALTH_CHECK_FAILED\",\"name\":\"tunnel_probe\",\"observed_at\":\"2026-10-31T15:12:18.735195367Z\",\"status\":\"failed\"}],\"config_generation\":{\"applied\":\"0\",\"desired\":\"0\"},\"control_status\":\"online\",\"created_at\":\"2026-10-31T15:12:17.080989Z\",\"current_incarnation_id\":\"01a19284-ca59-7c69-acd9-5391ca1f3bbf\",\"data_health\":\"failed\",\"dns_policy_evidence\":null,\"drift\":[],\"exit_id\":\"01a19284-c4b9-7417-9fdf-abef8c3e4e89\",\"group_ids\":[],\"identity_conflict\":{\"conflict_count\":0,\"last_conflict_at\":null,\"mapping_frozen\":false},\"last_seen_at\":\"2026-10-31T15:12:18.792417Z\",\"lifecycle_state\":\"registered\",\"member_forwarding_observed\":false,\"member_group_ids\":[],\"name\":\"TEST ONLY installer handoff\",\"netbird_peer_id\":null,\"node_id\":\"01a19284-c4b9-7416-bc2f-cee7023d825e\",\"notes\":null,\"observed_exit_ipv4\":null,\"observed_exit_ipv6\":null,\"platform\":{\"arch\":\"amd64\",\"os\":\"ubuntu\",\"os_version\":\"24.04\"},\"provisioning_state\":\"applying\",\"publication_intent\":\"unpublished\",\"publication_observed\":\"absent\",\"recent_errors\":[{\"code\":\"HEALTH_CHECK_FAILED\",\"message\":\"tunnel_probe\",\"observed_at\":\"2026-10-31T15:12:18.735195367Z\",\"stage\":\"probe\"}],\"region\":null,\"releases\":{\"current_release_id\":null,\"desired_release_id\":null,\"last_good_release_id\":null},\"resource_version\":\"4\",\"retired_at\":null,\"safety_status\":\"failed\",\"update\":null,\"usage_outbox\":{\"acked_archive_bytes\":\"0\",\"blocked_seq\":null,\"central_acked_through\":\"0\",\"last_durable_event_seq\":\"0\",\"ledger_epoch\":\"97172993-bf61-4fa9-85db-f2be6f9cd6ca\",\"meter_epoch_id\":null,\"observed_at\":\"2026-10-31T15:12:18.792417Z\",\"oldest_unacked_at\":null,\"unacked_event_count\":0,\"unacked_payload_bytes\":\"0\"}}"
+    },
+    {
+      "name": "null_central_baseline",
+      "detail": "null"
+    },
+    {
+      "name": "seed_default_umask",
+      "detail": "{\"command\":[\"/opt/vpn-node/current/fvpn-updater\",\"seed\",\"--config\",\"/etc/vpn-node/updater.json\",\"--manifest\",\"/var/lib/vpn-node/update-staging/01a19284-8a86-777c-a7f7-89da56075118.manifest.json\",\"--tree\",\"/opt/vpn-node/releases/01a19284-8a86-777c-a7f7-89da56075118\"],\"exit\":0,\"stdout\":\"\",\"stderr\":\"{\\\"time\\\":\\\"2026-10-31T15:12:29.912194707Z\\\",\\\"level\\\":\\\"INFO\\\",\\\"msg\\\":\\\"verified installer baseline seeded\\\",\\\"release_id\\\":\\\"01a19284-8a86-777c-a7f7-89da56075118\\\"}\"}"
+    },
+    {
+      "name": "status_seeded",
+      "detail": "{\"command\":[\"/opt/vpn-node/current/fvpn-updater\",\"status\",\"--config\",\"/etc/vpn-node/updater.json\"],\"exit\":0,\"stdout\":\"{\\n  \\\"generation\\\": null,\\n  \\\"job_id\\\": \\\"\\\",\\n  \\\"stage\\\": \\\"\\\",\\n  \\\"state\\\": \\\"\\\",\\n  \\\"current_release_id\\\": \\\"01a19284-8a86-777c-a7f7-89da56075118\\\",\\n  \\\"last_good_release_id\\\": \\\"\\\",\\n  \\\"seeded_baseline\\\": {\\n    \\\"release_id\\\": \\\"01a19284-8a86-777c-a7f7-89da56075118\\\",\\n    \\\"manifest_sha256\\\": \\\"a014925316acac2a9313b5b9f3bd833e0beb7f463c3b815e866c46bb6ffb2028\\\",\\n    \\\"tree_hash\\\": \\\"55e91f97c33f64a3ff1ae9398ef0b668dd67539845569ff4645979de952070f3\\\",\\n    \\\"boot_id\\\": \\\"97c018d7-a925-4723-9127-83c097de1c8a\\\",\\n    \\\"seeded_at\\\": \\\"2026-10-31T15:12:29.125392111Z\\\"\\n  },\\n  \\\"recovery_required\\\": false,\\n  \\\"last_result_state\\\": \\\"\\\",\\n  \\\"last_rejection\\\": null,\\n  \\\"health\\\": null,\\n  \\\"candidate_health_json\\\": null\\n}\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "seed_umask077",
+      "detail": "{\"command\":[\"sh\",\"-c\",\"umask 077; exec \\\"$@\\\"\",\"sh\",\"/opt/vpn-node/current/fvpn-updater\",\"seed\",\"--config\",\"/etc/vpn-node/updater.json\",\"--manifest\",\"/var/lib/vpn-node/update-staging/01a19284-8a86-777c-a7f7-89da56075118.manifest.json\",\"--tree\",\"/opt/vpn-node/releases/01a19284-8a86-777c-a7f7-89da56075118\"],\"exit\":0,\"stdout\":\"\",\"stderr\":\"{\\\"time\\\":\\\"2026-10-31T15:12:30.151865161Z\\\",\\\"level\\\":\\\"INFO\\\",\\\"msg\\\":\\\"verified installer baseline seeded\\\",\\\"release_id\\\":\\\"01a19284-8a86-777c-a7f7-89da56075118\\\"}\"}"
+    },
+    {
+      "name": "status_seeded_again",
+      "detail": "{\"command\":[\"/opt/vpn-node/current/fvpn-updater\",\"status\",\"--config\",\"/etc/vpn-node/updater.json\"],\"exit\":0,\"stdout\":\"{\\n  \\\"generation\\\": null,\\n  \\\"job_id\\\": \\\"\\\",\\n  \\\"stage\\\": \\\"\\\",\\n  \\\"state\\\": \\\"\\\",\\n  \\\"current_release_id\\\": \\\"01a19284-8a86-777c-a7f7-89da56075118\\\",\\n  \\\"last_good_release_id\\\": \\\"\\\",\\n  \\\"seeded_baseline\\\": {\\n    \\\"release_id\\\": \\\"01a19284-8a86-777c-a7f7-89da56075118\\\",\\n    \\\"manifest_sha256\\\": \\\"a014925316acac2a9313b5b9f3bd833e0beb7f463c3b815e866c46bb6ffb2028\\\",\\n    \\\"tree_hash\\\": \\\"55e91f97c33f64a3ff1ae9398ef0b668dd67539845569ff4645979de952070f3\\\",\\n    \\\"boot_id\\\": \\\"97c018d7-a925-4723-9127-83c097de1c8a\\\",\\n    \\\"seeded_at\\\": \\\"2026-10-31T15:12:29.125392111Z\\\"\\n  },\\n  \\\"recovery_required\\\": false,\\n  \\\"last_result_state\\\": \\\"\\\",\\n  \\\"last_rejection\\\": null,\\n  \\\"health\\\": null,\\n  \\\"candidate_health_json\\\": null\\n}\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "check_seed",
+      "detail": "true"
+    },
+    {
+      "name": "generated_config",
+      "detail": "{\"desired_state\":\"/var/lib/vpn-node/state/desired-state.json\",\"desired_trust\":\"/etc/vpn-node/desired-trust.json\",\"incarnation_id\":\"01a19284-ca59-7c69-acd9-5391ca1f3bbf\",\"meter_checkpoint\":\"/var/lib/vpn-node/state/meter.checkpoint\",\"mtls_ca\":\"/var/lib/vpn-node/identity/ca.pem\",\"mtls_cert\":\"/var/lib/vpn-node/identity/cert.pem\",\"mtls_key\":\"/var/lib/vpn-node/identity/key.pem\",\"node_id\":\"01a19284-c4b9-7416-bc2f-cee7023d825e\",\"platform\":{\"os_id\":\"ubuntu\",\"os_version\":\"24.04\",\"architecture\":\"amd64\",\"updater_version\":\"1.0.0\",\"control_api_major\":1,\"policy_schema\":1,\"usage_schema\":1,\"state_schema\":1},\"release_trust\":\"/etc/vpn-node/release-trust.json\",\"result_url\":\"\",\"start_command\":[\"/bin/sh\",\"-c\",\"exec systemctl start fvpn-watchdog.service fvpn-agent.service\",\"fvpn-updater-start\"],\"stop_command\":[\"systemctl\",\"stop\",\"fvpn-agent.service\",\"fvpn-watchdog.service\"]}"
+    },
+    {
+      "name": "fresh_oneshot",
+      "detail": "{\"command\":[\"systemctl\",\"start\",\"fvpn-updater.service\"],\"exit\":0,\"stdout\":\"\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "fresh_unit",
+      "detail": "{\"command\":[\"systemctl\",\"show\",\"fvpn-updater.service\",\"-p\",\"ExecMainStatus\",\"-p\",\"Result\"],\"exit\":0,\"stdout\":\"Result=success\\nExecMainStatus=0\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "fresh_run",
+      "detail": "{\"command\":[\"/opt/vpn-node/current/fvpn-updater\",\"run\",\"--config\",\"/etc/vpn-node/updater.json\"],\"exit\":0,\"stdout\":\"\",\"stderr\":\"{\\\"time\\\":\\\"2026-10-31T15:12:30.427368265Z\\\",\\\"level\\\":\\\"INFO\\\",\\\"msg\\\":\\\"desired-state file is absent\\\"}\"}"
+    },
+    {
+      "name": "check_fresh_no_work",
+      "detail": "true"
+    },
+    {
+      "name": "check_fresh_guard_clear",
+      "detail": "true"
+    },
+    {
+      "name": "kernel_boot_id",
+      "detail": "{\"command\":[\"cat\",\"/proc/sys/kernel/random/boot_id\"],\"exit\":0,\"stdout\":\"97c018d7-a925-4723-9127-83c097de1c8a\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "legacy_boot_config",
+      "detail": "{\"command\":[\"/opt/vpn-node/current/fvpn-updater\",\"run\",\"--config\",\"/var/tmp/e2e-rel/legacy-updater.json\"],\"exit\":0,\"stdout\":\"\",\"stderr\":\"{\\\"time\\\":\\\"2026-10-31T15:12:30.605392965Z\\\",\\\"level\\\":\\\"INFO\\\",\\\"msg\\\":\\\"desired-state file is absent\\\"}\"}"
+    },
+    {
+      "name": "legacy_lock_holder",
+      "detail": "{\"command\":[\"cat\",\"/var/lib/vpn-node/update.lock\"],\"exit\":0,\"stdout\":\"{\\\"pid\\\":1848,\\\"boot_id\\\":\\\"97c018d7-a925-4723-9127-83c097de1c8a\\\",\\\"start_time\\\":4308809}\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "check_legacy_boot_config",
+      "detail": "true"
+    },
+    {
+      "name": "reporting_adapter",
+      "detail": "\"Explicit owned result_url, CA and origins; generated installer reporting configuration is not claimed\""
+    },
+    {
+      "name": "agent_ready",
+      "detail": "true"
+    },
+    {
+      "name": "agent_boot",
+      "detail": "{\"command\":[\"cat\",\"/run/vpn-node/heartbeat\"],\"exit\":0,\"stdout\":\"v1\\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\\nmono_ns 43088832004388\\nwall_unix_ns 1793459551315633640\\npolicy_expires_mono_ns 0\\nbaseline_ok 1\\nserving 0\\ngeneration 1\\nreason recovery_required\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "check_boot_kernel",
+      "detail": "true"
+    },
+    {
+      "name": "stop_for_checkpoint_negative",
+      "detail": "{\"command\":[\"systemctl\",\"stop\",\"fvpn-watchdog.service\",\"fvpn-agent.service\"],\"exit\":0,\"stdout\":\"\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "stage_checkpoint_negative",
+      "detail": "{\"Exit\":0,\"Status\":\"staged\",\"Code\":\"\",\"Incarnation\":\"\",\"NodeID\":\"\",\"RetiredMode\":\"\",\"RetiredHashes\":{},\"BoundStateBefore\":null,\"RetiredBoundState\":null,\"Message\":\"staged; updater run completed; inspect fvpn-updater status for the apply result\",\"Before\":{},\"Hashes\":{},\"Services\":null}"
+    },
+    {
+      "name": "failure_pending",
+      "detail": "{\"command\":[\"cat\",\"/var/lib/vpn-node/update-staging/pending-release.json\"],\"exit\":0,\"stdout\":\"{\\n  \\\"release_id\\\": \\\"01a19284-95fa-7c03-beb4-720d5d47c8b4\\\",\\n  \\\"manifest_path\\\": \\\"/var/lib/vpn-node/update-staging/01a19284-95fa-7c03-beb4-720d5d47c8b4.manifest.json\\\",\\n  \\\"request_id\\\": \\\"1f4d8807-9272-4177-b1ed-f84e559f5e04\\\",\\n  \\\"manifest_sha256\\\": \\\"89128cadd68d37dd6ed9843703c66b7b03ab9b7c8c430132f5443484a251ebd9\\\",\\n  \\\"artifact_path\\\": \\\"/var/lib/vpn-node/update-staging/f4b684ebc760c246b852f9ad3a7d3ff67f4ed14ebf227ec40b77d2531f1544ea.tar.zst\\\",\\n  \\\"tree_path\\\": \\\"/opt/vpn-node/releases/01a19284-95fa-7c03-beb4-720d5d47c8b4\\\",\\n  \\\"updater_command\\\": \\\"/opt/vpn-node/current/fvpn-updater run -config /etc/vpn-node/updater.json\\\"\\n}\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "preserve_failure_pending",
+      "detail": "{\"command\":[\"cp\",\"/var/lib/vpn-node/update-staging/pending-release.json\",\"/var/tmp/e2e-rel/failure-pending.json\"],\"exit\":0,\"stdout\":\"\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "current_before_failure",
+      "detail": "\"releases/01a19284-8a86-777c-a7f7-89da56075118\""
+    },
+    {
+      "name": "checkpoint_before_negative",
+      "detail": "{\"command\":[\"cat\",\"/var/lib/vpn-node/state/meter.checkpoint\"],\"exit\":1,\"stdout\":\"\",\"stderr\":\"cat: /var/lib/vpn-node/state/meter.checkpoint: No such file or directory\"}"
+    },
+    {
+      "name": "apply_checkpoint_negative",
+      "detail": "{\"command\":[\"/opt/vpn-node/current/fvpn-updater\",\"apply\",\"--config\",\"/etc/vpn-node/updater.json\",\"--pending\",\"/var/lib/vpn-node/update-staging/pending-release.json\"],\"exit\":1,\"stdout\":\"\",\"stderr\":\"{\\\"time\\\":\\\"2026-10-31T15:12:31.854782169Z\\\",\\\"level\\\":\\\"INFO\\\",\\\"msg\\\":\\\"applying installer pending release\\\",\\\"release_id\\\":\\\"01a19284-95fa-7c03-beb4-720d5d47c8b4\\\"}\\nfvpn-updater: updater: CHECKPOINT_FAILED: installer outcome=failed\"}"
+    },
+    {
+      "name": "checkpoint_failure_status",
+      "detail": "{\"command\":[\"/opt/vpn-node/current/fvpn-updater\",\"status\",\"--config\",\"/etc/vpn-node/updater.json\"],\"exit\":0,\"stdout\":\"{\\n  \\\"generation\\\": \\\"1\\\",\\n  \\\"job_id\\\": \\\"25b444cf-9342-563b-9986-7525ccc9aa1b\\\",\\n  \\\"source\\\": \\\"installer\\\",\\n  \\\"requested_release_id\\\": \\\"01a19284-95fa-7c03-beb4-720d5d47c8b4\\\",\\n  \\\"stage\\\": \\\"final_sample\\\",\\n  \\\"state\\\": \\\"failed\\\",\\n  \\\"journal_stage\\\": \\\"rolled_back\\\",\\n  \\\"current_release_id\\\": \\\"01a19284-8a86-777c-a7f7-89da56075118\\\",\\n  \\\"last_good_release_id\\\": \\\"\\\",\\n  \\\"seeded_baseline\\\": {\\n    \\\"release_id\\\": \\\"01a19284-8a86-777c-a7f7-89da56075118\\\",\\n    \\\"manifest_sha256\\\": \\\"a014925316acac2a9313b5b9f3bd833e0beb7f463c3b815e866c46bb6ffb2028\\\",\\n    \\\"tree_hash\\\": \\\"55e91f97c33f64a3ff1ae9398ef0b668dd67539845569ff4645979de952070f3\\\",\\n    \\\"boot_id\\\": \\\"97c018d7-a925-4723-9127-83c097de1c8a\\\",\\n    \\\"seeded_at\\\": \\\"2026-10-31T15:12:29.125392111Z\\\"\\n  },\\n  \\\"recovery_required\\\": false,\\n  \\\"last_result_state\\\": \\\"failed\\\",\\n  \\\"last_rejection\\\": null,\\n  \\\"health\\\": null,\\n  \\\"candidate_health_json\\\": null\\n}\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "journal_snapshot",
+      "detail": "{\"bytes\":\"73728\",\"sha256\":\"6a0d8a1bee98007f61514cd9b3c9ae5d988043f54ae034d7174d18a0b056c4ca\"}"
+    },
+    {
+      "name": "current_after_failure",
+      "detail": "\"releases/01a19284-8a86-777c-a7f7-89da56075118\""
+    },
+    {
+      "name": "failure_latch",
+      "detail": "{\"command\":[\"cat\",\"/var/lib/vpn-node/update-journal/forwarding.blocked\"],\"exit\":0,\"stdout\":\"0119b5eb-b4a8-43a8-ae28-26a42c044d3b\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "check_checkpoint_failure",
+      "detail": "false"
+    },
+    {
+      "name": "restore_exact_failure_pending",
+      "detail": "{\"command\":[\"cp\",\"/var/tmp/e2e-rel/failure-pending.json\",\"/var/lib/vpn-node/update-staging/pending-release.json\"],\"exit\":0,\"stdout\":\"\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "sealed_failure_apply",
+      "detail": "{\"command\":[\"/opt/vpn-node/current/fvpn-updater\",\"apply\",\"--config\",\"/etc/vpn-node/updater.json\",\"--pending\",\"/var/lib/vpn-node/update-staging/pending-release.json\"],\"exit\":1,\"stdout\":\"\",\"stderr\":\"fvpn-updater: updater: CHECKPOINT_FAILED: installer outcome=failed\"}"
+    },
+    {
+      "name": "sealed_failure_recover",
+      "detail": "{\"command\":[\"/opt/vpn-node/current/fvpn-updater\",\"recover\",\"--config\",\"/etc/vpn-node/updater.json\"],\"exit\":2,\"stdout\":\"\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "journal_snapshot",
+      "detail": "{\"bytes\":\"73728\",\"sha256\":\"6a0d8a1bee98007f61514cd9b3c9ae5d988043f54ae034d7174d18a0b056c4ca\"}"
+    },
+    {
+      "name": "check_failure_replay",
+      "detail": "true"
+    },
+    {
+      "name": "failure_submission",
+      "detail": "\"no sealed receipt available\""
+    },
+    {
+      "name": "central_seeded_failure_http",
+      "detail": "\"200\""
+    },
+    {
+      "name": "central_seeded_failure_etag",
+      "detail": "\"\\\"8\\\"\""
+    },
+    {
+      "name": "central_seeded_failure",
+      "detail": "{\"capacity\":null,\"checks\":[{\"error_code\":null,\"name\":\"dns_policy\",\"observed_at\":\"2026-10-31T15:12:31.244724073Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"internet_only\",\"observed_at\":\"2026-10-31T15:12:31.244724073Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"lease\",\"observed_at\":\"2026-10-31T15:12:31.244724073Z\",\"status\":\"not_run\"},{\"error_code\":null,\"name\":\"meter_path\",\"observed_at\":\"2026-10-31T15:12:31.244724073Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"policy_signature\",\"observed_at\":\"2026-10-31T15:12:31.244724073Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"qos\",\"observed_at\":\"2026-10-31T15:12:31.244724073Z\",\"status\":\"not_run\"},{\"error_code\":null,\"name\":\"release_supported\",\"observed_at\":\"2026-10-31T15:12:31.244724073Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"source_binding\",\"observed_at\":\"2026-10-31T15:12:31.244724073Z\",\"status\":\"not_run\"},{\"error_code\":null,\"name\":\"storage\",\"observed_at\":\"2026-10-31T15:12:31.244724073Z\",\"status\":\"passed\"},{\"detail\":\"Egress probe used no extra target.\",\"error_code\":null,\"name\":\"tunnel_probe\",\"observed_at\":\"2026-10-31T15:12:31.244724073Z\",\"status\":\"passed\"}],\"config_generation\":{\"applied\":\"1\",\"desired\":\"1\"},\"control_status\":\"online\",\"created_at\":\"2026-10-31T15:12:17.080989Z\",\"current_incarnation_id\":\"01a19284-ca59-7c69-acd9-5391ca1f3bbf\",\"data_health\":\"healthy\",\"dns_policy_evidence\":null,\"drift\":[],\"exit_id\":\"01a19284-c4b9-7417-9fdf-abef8c3e4e89\",\"group_ids\":[],\"identity_conflict\":{\"conflict_count\":0,\"last_conflict_at\":null,\"mapping_frozen\":false},\"last_seen_at\":\"2026-10-31T15:12:31.309664Z\",\"lifecycle_state\":\"registered\",\"member_forwarding_observed\":false,\"member_group_ids\":[],\"name\":\"TEST ONLY installer handoff\",\"netbird_peer_id\":\"dbj0an78k4c000e0th70\",\"node_id\":\"01a19284-c4b9-7416-bc2f-cee7023d825e\",\"notes\":null,\"observed_exit_ipv4\":null,\"observed_exit_ipv6\":null,\"platform\":{\"arch\":\"amd64\",\"os\":\"ubuntu\",\"os_version\":\"24.04\"},\"provisioning_state\":\"ready\",\"publication_intent\":\"unpublished\",\"publication_observed\":\"absent\",\"recent_errors\":[],\"region\":null,\"releases\":{\"current_release_id\":\"01a19284-8a86-777c-a7f7-89da56075118\",\"desired_release_id\":null,\"last_good_release_id\":\"01a19284-8a86-777c-a7f7-89da56075118\"},\"resource_version\":\"8\",\"retired_at\":null,\"safety_status\":\"passed\",\"update\":{\"batch_id\":null,\"generation\":\"1\",\"job_id\":\"25b444cf-9342-563b-9986-7525ccc9aa1b\",\"last_error_code\":\"CHECKPOINT_FAILED\",\"last_observed_at\":null,\"last_result_at\":\"2026-10-31T15:13:02.014198Z\",\"source\":\"installer\",\"state\":\"failed\"},\"usage_outbox\":{\"acked_archive_bytes\":\"0\",\"blocked_seq\":null,\"central_acked_through\":\"0\",\"last_durable_event_seq\":\"0\",\"ledger_epoch\":\"97172993-bf61-4fa9-85db-f2be6f9cd6ca\",\"meter_epoch_id\":null,\"observed_at\":\"2026-10-31T15:12:31.309664Z\",\"oldest_unacked_at\":null,\"unacked_event_count\":0,\"unacked_payload_bytes\":\"0\"}}"
+    },
+    {
+      "name": "check_failure_baseline",
+      "detail": "false"
+    },
+    {
+      "name": "flush_failure",
+      "detail": "{\"command\":[\"/opt/vpn-node/current/fvpn-updater\",\"flush\",\"--config\",\"/etc/vpn-node/updater.json\"],\"exit\":0,\"stdout\":\"\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "upgrade",
+      "detail": "{\"Exit\":0,\"Status\":\"staged\",\"Code\":\"\",\"Incarnation\":\"\",\"NodeID\":\"\",\"RetiredMode\":\"\",\"RetiredHashes\":{},\"BoundStateBefore\":null,\"RetiredBoundState\":null,\"Message\":\"staged; updater run completed; inspect fvpn-updater status for the apply result\",\"Before\":{},\"Hashes\":{},\"Services\":null}"
+    },
+    {
+      "name": "pending_before_apply",
+      "detail": "{\"command\":[\"cat\",\"/var/lib/vpn-node/update-staging/pending-release.json\"],\"exit\":0,\"stdout\":\"{\\n  \\\"release_id\\\": \\\"01a19284-af01-7ebf-9e62-6c723ab70c25\\\",\\n  \\\"manifest_path\\\": \\\"/var/lib/vpn-node/update-staging/01a19284-af01-7ebf-9e62-6c723ab70c25.manifest.json\\\",\\n  \\\"request_id\\\": \\\"840ddafb-5477-4518-ba96-31a9c9440800\\\",\\n  \\\"manifest_sha256\\\": \\\"af2c54fc2ba08945bd480eb0a7bafd4d469a990f26b0fcda985ac9e022f11173\\\",\\n  \\\"artifact_path\\\": \\\"/var/lib/vpn-node/update-staging/d3091113ab488b1993b298aeff1f927de1629476acca683fb2a6b79488f61b0b.tar.zst\\\",\\n  \\\"tree_path\\\": \\\"/opt/vpn-node/releases/01a19284-af01-7ebf-9e62-6c723ab70c25\\\",\\n  \\\"updater_command\\\": \\\"/opt/vpn-node/current/fvpn-updater run -config /etc/vpn-node/updater.json\\\"\\n}\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "current_after_stage",
+      "detail": "\"releases/01a19284-8a86-777c-a7f7-89da56075118\""
+    },
+    {
+      "name": "staged_pending",
+      "detail": "{\"artifact_path\":\"/var/lib/vpn-node/update-staging/d3091113ab488b1993b298aeff1f927de1629476acca683fb2a6b79488f61b0b.tar.zst\",\"manifest_path\":\"/var/lib/vpn-node/update-staging/01a19284-af01-7ebf-9e62-6c723ab70c25.manifest.json\",\"manifest_sha256\":\"af2c54fc2ba08945bd480eb0a7bafd4d469a990f26b0fcda985ac9e022f11173\",\"release_id\":\"01a19284-af01-7ebf-9e62-6c723ab70c25\",\"request_id\":\"840ddafb-5477-4518-ba96-31a9c9440800\",\"tree_path\":\"/opt/vpn-node/releases/01a19284-af01-7ebf-9e62-6c723ab70c25\",\"updater_command\":\"/opt/vpn-node/current/fvpn-updater run -config /etc/vpn-node/updater.json\"}"
+    },
+    {
+      "name": "check_staged",
+      "detail": "true"
+    },
+    {
+      "name": "units_before_apply",
+      "detail": "{\"command\":[\"systemctl\",\"show\",\"fvpn-agent.service\",\"fvpn-watchdog.service\",\"-p\",\"Id\",\"-p\",\"ExecMainStartTimestampMonotonic\"],\"exit\":0,\"stdout\":\"ExecMainStartTimestampMonotonic=43120195610\\nId=fvpn-agent.service\\n\\nExecMainStartTimestampMonotonic=43120284028\\nId=fvpn-watchdog.service\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "apply",
+      "detail": "{\"command\":[\"/opt/vpn-node/current/fvpn-updater\",\"apply\",\"--config\",\"/etc/vpn-node/updater.json\",\"--pending\",\"/var/lib/vpn-node/update-staging/pending-release.json\"],\"exit\":2,\"stdout\":\"\",\"stderr\":\"{\\\"time\\\":\\\"2026-10-31T15:13:03.495798232Z\\\",\\\"level\\\":\\\"INFO\\\",\\\"msg\\\":\\\"applying installer pending release\\\",\\\"release_id\\\":\\\"01a19284-af01-7ebf-9e62-6c723ab70c25\\\"}\\nfvpn-updater: updater: member forwarding must stay blocked\"}"
+    },
+    {
+      "name": "handshake_trace",
+      "detail": "{\"command\":[\"cat\",\"/var/lib/vpn-node/e2e/upgrade-observe.jsonl\"],\"exit\":0,\"stdout\":\"{\\\"at\\\":\\\"2026-10-31T15:13:03.364145819Z\\\",\\\"boot_id\\\":\\\"97c018d7-a925-4723-9127-83c097de1c8a\\\",\\\"checkpoint\\\":\\\"{\\\\\\\"closed_meter_epoch_id\\\\\\\":\\\\\\\"01a19284-fbe0-782a-acc7-9d329a96230e\\\\\\\",\\\\\\\"last_durable_event_seq\\\\\\\":\\\\\\\"0\\\\\\\",\\\\\\\"central_acked_through\\\\\\\":\\\\\\\"0\\\\\\\",\\\\\\\"new_meter_epoch_id\\\\\\\":\\\\\\\"\\\\\\\",\\\\\\\"barrier_id\\\\\\\":\\\\\\\"0119b5eb-b4a8-43a8-ae28-26a42c044d3b\\\\\\\"}\\\",\\\"control_http_status\\\":\\\"200\\\",\\\"control_read_ok\\\":true,\\\"heartbeat\\\":\\\"v1\\\\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\\\\nmono_ns 43120347420489\\\\nwall_unix_ns 1793459582831049721\\\\npolicy_expires_mono_ns 0\\\\nbaseline_ok 1\\\\nserving 0\\\\ngeneration 1\\\\nreason recovery_required\\\",\\\"latch\\\":\\\"0119b5eb-b4a8-43a8-ae28-26a42c044d3b\\\",\\\"nft\\\":\\\"{\\\\\\\"nftables\\\\\\\": [{\\\\\\\"metainfo\\\\\\\": {\\\\\\\"version\\\\\\\": \\\\\\\"1.0.9\\\\\\\", \\\\\\\"release_name\\\\\\\": \\\\\\\"Old Doc Yak #3\\\\\\\", \\\\\\\"json_schema_version\\\\\\\": 1}}, {\\\\\\\"table\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"handle\\\\\\\": 3}}, {\\\\\\\"counter\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"ctbase\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"handle\\\\\\\": 1, \\\\\\\"packets\\\\\\\": 0, \\\\\\\"bytes\\\\\\\": 0}}, {\\\\\\\"counter\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"ctv6\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"handle\\\\\\\": 2, \\\\\\\"packets\\\\\\\": 0, \\\\\\\"bytes\\\\\\\": 0}}, {\\\\\\\"counter\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"ctin\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"handle\\\\\\\": 3, \\\\\\\"packets\\\\\\\": 0, \\\\\\\"bytes\\\\\\\": 0}}, {\\\\\\\"set\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"allowed_v4\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"type\\\\\\\": \\\\\\\"ipv4_addr\\\\\\\", \\\\\\\"handle\\\\\\\": 4, \\\\\\\"flags\\\\\\\": [\\\\\\\"timeout\\\\\\\"]}}, {\\\\\\\"chain\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"forward\\\\\\\", \\\\\\\"handle\\\\\\\": 115, \\\\\\\"type\\\\\\\": \\\\\\\"filter\\\\\\\", \\\\\\\"hook\\\\\\\": \\\\\\\"forward\\\\\\\", \\\\\\\"prio\\\\\\\": -150, \\\\\\\"policy\\\\\\\": \\\\\\\"drop\\\\\\\"}}, {\\\\\\\"chain\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"input\\\\\\\", \\\\\\\"handle\\\\\\\": 116, \\\\\\\"type\\\\\\\": \\\\\\\"filter\\\\\\\", \\\\\\\"hook\\\\\\\": \\\\\\\"input\\\\\\\", \\\\\\\"prio\\\\\\\": -150, \\\\\\\"policy\\\\\\\": \\\\\\\"accept\\\\\\\"}}, {\\\\\\\"chain\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"output\\\\\\\", \\\\\\\"handle\\\\\\\": 117, \\\\\\\"type\\\\\\\": \\\\\\\"filter\\\\\\\", \\\\\\\"hook\\\\\\\": \\\\\\\"output\\\\\\\", \\\\\\\"prio\\\\\\\": -150, \\\\\\\"policy\\\\\\\": \\\\\\\"accept\\\\\\\"}}, {\\\\\\\"chain\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"postrouting\\\\\\\", \\\\\\\"handle\\\\\\\": 118, \\\\\\\"type\\\\\\\": \\\\\\\"nat\\\\\\\", \\\\\\\"hook\\\\\\\": \\\\\\\"postrouting\\\\\\\", \\\\\\\"prio\\\\\\\": 100, \\\\\\\"policy\\\\\\\": \\\\\\\"accept\\\\\\\"}}, {\\\\\\\"rule\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"chain\\\\\\\": \\\\\\\"forward\\\\\\\", \\\\\\\"handle\\\\\\\": 119, \\\\\\\"comment\\\\\\\": \\\\\\\"fvpn_generation=0 fvpn_baseline=1 fvpn_metering=forward_admission_v1\\\\\\\", \\\\\\\"expr\\\\\\\": [{\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"payload\\\\\\\": {\\\\\\\"protocol\\\\\\\": \\\\\\\"ip\\\\\\\", \\\\\\\"field\\\\\\\": \\\\\\\"saddr\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"192.0.2.255\\\\\\\"}}, {\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"payload\\\\\\\": {\\\\\\\"protocol\\\\\\\": \\\\\\\"ip\\\\\\\", \\\\\\\"field\\\\\\\": \\\\\\\"daddr\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"192.0.2.255\\\\\\\"}}]}}, {\\\\\\\"rule\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"chain\\\\\\\": \\\\\\\"forward\\\\\\\", \\\\\\\"handle\\\\\\\": 120, \\\\\\\"expr\\\\\\\": [{\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"meta\\\\\\\": {\\\\\\\"key\\\\\\\": \\\\\\\"iifname\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"fvmb0\\\\\\\"}}, {\\\\\\\"counter\\\\\\\": \\\\\\\"ctbase\\\\\\\"}, {\\\\\\\"drop\\\\\\\": null}]}}, {\\\\\\\"rule\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"chain\\\\\\\": \\\\\\\"forward\\\\\\\", \\\\\\\"handle\\\\\\\": 121, \\\\\\\"expr\\\\\\\": [{\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"meta\\\\\\\": {\\\\\\\"key\\\\\\\": \\\\\\\"oifname\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"fvmb0\\\\\\\"}}, {\\\\\\\"counter\\\\\\\": \\\\\\\"ctbase\\\\\\\"}, {\\\\\\\"drop\\\\\\\": null}]}}, {\\\\\\\"rule\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"chain\\\\\\\": \\\\\\\"forward\\\\\\\", \\\\\\\"handle\\\\\\\": 122, \\\\\\\"expr\\\\\\\": [{\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"meta\\\\\\\": {\\\\\\\"key\\\\\\\": \\\\\\\"iifname\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"fvmb0\\\\\\\"}}, {\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"meta\\\\\\\": {\\\\\\\"key\\\\\\\": \\\\\\\"nfproto\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"ipv6\\\\\\\"}}, {\\\\\\\"counter\\\\\\\": \\\\\\\"ctv6\\\\\\\"}, {\\\\\\\"drop\\\\\\\": null}]}}, {\\\\\\\"rule\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"chain\\\\\\\": \\\\\\\"forward\\\\\\\", \\\\\\\"handle\\\\\\\": 123, \\\\\\\"expr\\\\\\\": [{\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"meta\\\\\\\": {\\\\\\\"key\\\\\\\": \\\\\\\"oifname\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"fvmb0\\\\\\\"}}, {\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"meta\\\\\\\": {\\\\\\\"key\\\\\\\": \\\\\\\"nfproto\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"ipv6\\\\\\\"}}, {\\\\\\\"counter\\\\\\\": \\\\\\\"ctv6\\\\\\\"}, {\\\\\\\"drop\\\\\\\": null}]}}, {\\\\\\\"rule\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"chain\\\\\\\": \\\\\\\"input\\\\\\\", \\\\\\\"handle\\\\\\\": 124, \\\\\\\"expr\\\\\\\": [{\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"meta\\\\\\\": {\\\\\\\"key\\\\\\\": \\\\\\\"iifname\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"fvmb0\\\\\\\"}}, {\\\\\\\"counter\\\\\\\": \\\\\\\"ctin\\\\\\\"}, {\\\\\\\"drop\\\\\\\": null}]}}, {\\\\\\\"rule\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"chain\\\\\\\": \\\\\\\"input\\\\\\\", \\\\\\\"handle\\\\\\\": 125, \\\\\\\"expr\\\\\\\": [{\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"payload\\\\\\\": {\\\\\\\"protocol\\\\\\\": \\\\\\\"ip\\\\\\\", \\\\\\\"field\\\\\\\": \\\\\\\"saddr\\\\\\\"}}, \\\\\\\"right\\\\\\\": {\\\\\\\"prefix\\\\\\\": {\\\\\\\"addr\\\\\\\": \\\\\\\"100.64.0.0\\\\\\\", \\\\\\\"len\\\\\\\": 10}}}}, {\\\\\\\"counter\\\\\\\": \\\\\\\"ctin\\\\\\\"}, {\\\\\\\"drop\\\\\\\": null}]}}]}\\\\n\\\",\\\"nft_read_ok\\\":true,\\\"read_finished_at\\\":\\\"2026-10-31T15:13:03.376145648Z\\\",\\\"wait_notes\\\":{}}\\n{\\\"at\\\":\\\"2026-10-31T15:13:03.681268312Z\\\",\\\"boot_id\\\":\\\"97c018d7-a925-4723-9127-83c097de1c8a\\\",\\\"checkpoint\\\":\\\"{\\\\\\\"closed_meter_epoch_id\\\\\\\":\\\\\\\"01a19284-fbe0-782a-acc7-9d329a96230e\\\\\\\",\\\\\\\"last_durable_event_seq\\\\\\\":\\\\\\\"0\\\\\\\",\\\\\\\"central_acked_through\\\\\\\":\\\\\\\"0\\\\\\\",\\\\\\\"new_meter_epoch_id\\\\\\\":\\\\\\\"\\\\\\\",\\\\\\\"barrier_id\\\\\\\":\\\\\\\"0119b5eb-b4a8-43a8-ae28-26a42c044d3b\\\\\\\"}\\\",\\\"control_http_status\\\":\\\"200\\\",\\\"control_read_ok\\\":true,\\\"heartbeat\\\":\\\"v1\\\\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\\\\nmono_ns 43120347420489\\\\nwall_unix_ns 1793459582831049721\\\\npolicy_expires_mono_ns 0\\\\nbaseline_ok 1\\\\nserving 0\\\\ngeneration 1\\\\nreason recovery_required\\\",\\\"latch\\\":\\\"d770e5a6-fa4d-455d-b8bb-c588d2e39569\\\",\\\"nft\\\":\\\"{\\\\\\\"nftables\\\\\\\": [{\\\\\\\"metainfo\\\\\\\": {\\\\\\\"version\\\\\\\": \\\\\\\"1.0.9\\\\\\\", \\\\\\\"release_name\\\\\\\": \\\\\\\"Old Doc Yak #3\\\\\\\", \\\\\\\"json_schema_version\\\\\\\": 1}}, {\\\\\\\"table\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"handle\\\\\\\": 3}}, {\\\\\\\"counter\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"ctbase\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"handle\\\\\\\": 1, \\\\\\\"packets\\\\\\\": 0, \\\\\\\"bytes\\\\\\\": 0}}, {\\\\\\\"counter\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"ctv6\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"handle\\\\\\\": 2, \\\\\\\"packets\\\\\\\": 0, \\\\\\\"bytes\\\\\\\": 0}}, {\\\\\\\"counter\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"ctin\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"handle\\\\\\\": 3, \\\\\\\"packets\\\\\\\": 0, \\\\\\\"bytes\\\\\\\": 0}}, {\\\\\\\"set\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"allowed_v4\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"type\\\\\\\": \\\\\\\"ipv4_addr\\\\\\\", \\\\\\\"handle\\\\\\\": 4, \\\\\\\"flags\\\\\\\": [\\\\\\\"timeout\\\\\\\"]}}, {\\\\\\\"chain\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"forward\\\\\\\", \\\\\\\"handle\\\\\\\": 115, \\\\\\\"type\\\\\\\": \\\\\\\"filter\\\\\\\", \\\\\\\"hook\\\\\\\": \\\\\\\"forward\\\\\\\", \\\\\\\"prio\\\\\\\": -150, \\\\\\\"policy\\\\\\\": \\\\\\\"drop\\\\\\\"}}, {\\\\\\\"chain\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"input\\\\\\\", \\\\\\\"handle\\\\\\\": 116, \\\\\\\"type\\\\\\\": \\\\\\\"filter\\\\\\\", \\\\\\\"hook\\\\\\\": \\\\\\\"input\\\\\\\", \\\\\\\"prio\\\\\\\": -150, \\\\\\\"policy\\\\\\\": \\\\\\\"accept\\\\\\\"}}, {\\\\\\\"chain\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"output\\\\\\\", \\\\\\\"handle\\\\\\\": 117, \\\\\\\"type\\\\\\\": \\\\\\\"filter\\\\\\\", \\\\\\\"hook\\\\\\\": \\\\\\\"output\\\\\\\", \\\\\\\"prio\\\\\\\": -150, \\\\\\\"policy\\\\\\\": \\\\\\\"accept\\\\\\\"}}, {\\\\\\\"chain\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"postrouting\\\\\\\", \\\\\\\"handle\\\\\\\": 118, \\\\\\\"type\\\\\\\": \\\\\\\"nat\\\\\\\", \\\\\\\"hook\\\\\\\": \\\\\\\"postrouting\\\\\\\", \\\\\\\"prio\\\\\\\": 100, \\\\\\\"policy\\\\\\\": \\\\\\\"accept\\\\\\\"}}, {\\\\\\\"rule\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"chain\\\\\\\": \\\\\\\"forward\\\\\\\", \\\\\\\"handle\\\\\\\": 119, \\\\\\\"comment\\\\\\\": \\\\\\\"fvpn_generation=0 fvpn_baseline=1 fvpn_metering=forward_admission_v1\\\\\\\", \\\\\\\"expr\\\\\\\": [{\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"payload\\\\\\\": {\\\\\\\"protocol\\\\\\\": \\\\\\\"ip\\\\\\\", \\\\\\\"field\\\\\\\": \\\\\\\"saddr\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"192.0.2.255\\\\\\\"}}, {\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"payload\\\\\\\": {\\\\\\\"protocol\\\\\\\": \\\\\\\"ip\\\\\\\", \\\\\\\"field\\\\\\\": \\\\\\\"daddr\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"192.0.2.255\\\\\\\"}}]}}, {\\\\\\\"rule\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"chain\\\\\\\": \\\\\\\"forward\\\\\\\", \\\\\\\"handle\\\\\\\": 120, \\\\\\\"expr\\\\\\\": [{\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"meta\\\\\\\": {\\\\\\\"key\\\\\\\": \\\\\\\"iifname\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"fvmb0\\\\\\\"}}, {\\\\\\\"counter\\\\\\\": \\\\\\\"ctbase\\\\\\\"}, {\\\\\\\"drop\\\\\\\": null}]}}, {\\\\\\\"rule\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"chain\\\\\\\": \\\\\\\"forward\\\\\\\", \\\\\\\"handle\\\\\\\": 121, \\\\\\\"expr\\\\\\\": [{\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"meta\\\\\\\": {\\\\\\\"key\\\\\\\": \\\\\\\"oifname\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"fvmb0\\\\\\\"}}, {\\\\\\\"counter\\\\\\\": \\\\\\\"ctbase\\\\\\\"}, {\\\\\\\"drop\\\\\\\": null}]}}, {\\\\\\\"rule\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"chain\\\\\\\": \\\\\\\"forward\\\\\\\", \\\\\\\"handle\\\\\\\": 122, \\\\\\\"expr\\\\\\\": [{\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"meta\\\\\\\": {\\\\\\\"key\\\\\\\": \\\\\\\"iifname\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"fvmb0\\\\\\\"}}, {\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"meta\\\\\\\": {\\\\\\\"key\\\\\\\": \\\\\\\"nfproto\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"ipv6\\\\\\\"}}, {\\\\\\\"counter\\\\\\\": \\\\\\\"ctv6\\\\\\\"}, {\\\\\\\"drop\\\\\\\": null}]}}, {\\\\\\\"rule\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"chain\\\\\\\": \\\\\\\"forward\\\\\\\", \\\\\\\"handle\\\\\\\": 123, \\\\\\\"expr\\\\\\\": [{\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"meta\\\\\\\": {\\\\\\\"key\\\\\\\": \\\\\\\"oifname\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"fvmb0\\\\\\\"}}, {\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"meta\\\\\\\": {\\\\\\\"key\\\\\\\": \\\\\\\"nfproto\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"ipv6\\\\\\\"}}, {\\\\\\\"counter\\\\\\\": \\\\\\\"ctv6\\\\\\\"}, {\\\\\\\"drop\\\\\\\": null}]}}, {\\\\\\\"rule\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"chain\\\\\\\": \\\\\\\"input\\\\\\\", \\\\\\\"handle\\\\\\\": 124, \\\\\\\"expr\\\\\\\": [{\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"meta\\\\\\\": {\\\\\\\"key\\\\\\\": \\\\\\\"iifname\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"fvmb0\\\\\\\"}}, {\\\\\\\"counter\\\\\\\": \\\\\\\"ctin\\\\\\\"}, {\\\\\\\"drop\\\\\\\": null}]}}, {\\\\\\\"rule\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"chain\\\\\\\": \\\\\\\"input\\\\\\\", \\\\\\\"handle\\\\\\\": 125, \\\\\\\"expr\\\\\\\": [{\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"payload\\\\\\\": {\\\\\\\"protocol\\\\\\\": \\\\\\\"ip\\\\\\\", \\\\\\\"field\\\\\\\": \\\\\\\"saddr\\\\\\\"}}, \\\\\\\"right\\\\\\\": {\\\\\\\"prefix\\\\\\\": {\\\\\\\"addr\\\\\\\": \\\\\\\"100.64.0.0\\\\\\\", \\\\\\\"len\\\\\\\": 10}}}}, {\\\\\\\"counter\\\\\\\": \\\\\\\"ctin\\\\\\\"}, {\\\\\\\"drop\\\\\\\": null}]}}]}\\\\n\\\",\\\"nft_read_ok\\\":true,\\\"read_finished_at\\\":\\\"2026-10-31T15:13:03.694107129Z\\\",\\\"wait_notes\\\":{\\\"meter-wait-01a19285-7abc-777e-9bee-c7e34149a798\\\":\\\"{\\\\\\\"boot_id\\\\\\\":\\\\\\\"97c018d7-a925-4723-9127-83c097de1c8a\\\\\\\",\\\\\\\"identity\\\\\\\":\\\\\\\"d770e5a6-fa4d-455d-b8bb-c588d2e39569\\\\\\\",\\\\\\\"started\\\\\\\":\\\\\\\"2026-10-31T15:13:03.677696159Z\\\\\\\",\\\\\\\"deadline\\\\\\\":\\\\\\\"2026-10-31T15:13:33.677696159Z\\\\\\\"}\\\"}}\\n{\\\"at\\\":\\\"2026-10-31T15:13:07.85656483Z\\\",\\\"boot_id\\\":\\\"97c018d7-a925-4723-9127-83c097de1c8a\\\",\\\"checkpoint\\\":\\\"{\\\\\\\"closed_meter_epoch_id\\\\\\\":\\\\\\\"01a19284-fbe0-782a-acc7-9d329a96230e\\\\\\\",\\\\\\\"last_durable_event_seq\\\\\\\":\\\\\\\"0\\\\\\\",\\\\\\\"central_acked_through\\\\\\\":\\\\\\\"0\\\\\\\",\\\\\\\"new_meter_epoch_id\\\\\\\":\\\\\\\"\\\\\\\",\\\\\\\"barrier_id\\\\\\\":\\\\\\\"d770e5a6-fa4d-455d-b8bb-c588d2e39569\\\\\\\"}\\\",\\\"control_http_status\\\":\\\"200\\\",\\\"control_read_ok\\\":true,\\\"heartbeat\\\":\\\"v1\\\\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\\\\nmono_ns 43120347420489\\\\nwall_unix_ns 1793459582831049721\\\\npolicy_expires_mono_ns 0\\\\nbaseline_ok 1\\\\nserving 0\\\\ngeneration 1\\\\nreason recovery_required\\\",\\\"latch\\\":\\\"d770e5a6-fa4d-455d-b8bb-c588d2e39569\\\",\\\"nft\\\":\\\"{\\\\\\\"nftables\\\\\\\": [{\\\\\\\"metainfo\\\\\\\": {\\\\\\\"version\\\\\\\": \\\\\\\"1.0.9\\\\\\\", \\\\\\\"release_name\\\\\\\": \\\\\\\"Old Doc Yak #3\\\\\\\", \\\\\\\"json_schema_version\\\\\\\": 1}}, {\\\\\\\"table\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"handle\\\\\\\": 3}}, {\\\\\\\"counter\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"ctbase\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"handle\\\\\\\": 1, \\\\\\\"packets\\\\\\\": 0, \\\\\\\"bytes\\\\\\\": 0}}, {\\\\\\\"counter\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"ctv6\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"handle\\\\\\\": 2, \\\\\\\"packets\\\\\\\": 0, \\\\\\\"bytes\\\\\\\": 0}}, {\\\\\\\"counter\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"ctin\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"handle\\\\\\\": 3, \\\\\\\"packets\\\\\\\": 0, \\\\\\\"bytes\\\\\\\": 0}}, {\\\\\\\"set\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"allowed_v4\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"type\\\\\\\": \\\\\\\"ipv4_addr\\\\\\\", \\\\\\\"handle\\\\\\\": 4, \\\\\\\"flags\\\\\\\": [\\\\\\\"timeout\\\\\\\"]}}, {\\\\\\\"chain\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"forward\\\\\\\", \\\\\\\"handle\\\\\\\": 137, \\\\\\\"type\\\\\\\": \\\\\\\"filter\\\\\\\", \\\\\\\"hook\\\\\\\": \\\\\\\"forward\\\\\\\", \\\\\\\"prio\\\\\\\": -150, \\\\\\\"policy\\\\\\\": \\\\\\\"drop\\\\\\\"}}, {\\\\\\\"chain\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"input\\\\\\\", \\\\\\\"handle\\\\\\\": 138, \\\\\\\"type\\\\\\\": \\\\\\\"filter\\\\\\\", \\\\\\\"hook\\\\\\\": \\\\\\\"input\\\\\\\", \\\\\\\"prio\\\\\\\": -150, \\\\\\\"policy\\\\\\\": \\\\\\\"accept\\\\\\\"}}, {\\\\\\\"chain\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"output\\\\\\\", \\\\\\\"handle\\\\\\\": 139, \\\\\\\"type\\\\\\\": \\\\\\\"filter\\\\\\\", \\\\\\\"hook\\\\\\\": \\\\\\\"output\\\\\\\", \\\\\\\"prio\\\\\\\": -150, \\\\\\\"policy\\\\\\\": \\\\\\\"accept\\\\\\\"}}, {\\\\\\\"chain\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"postrouting\\\\\\\", \\\\\\\"handle\\\\\\\": 140, \\\\\\\"type\\\\\\\": \\\\\\\"nat\\\\\\\", \\\\\\\"hook\\\\\\\": \\\\\\\"postrouting\\\\\\\", \\\\\\\"prio\\\\\\\": 100, \\\\\\\"policy\\\\\\\": \\\\\\\"accept\\\\\\\"}}, {\\\\\\\"rule\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"chain\\\\\\\": \\\\\\\"forward\\\\\\\", \\\\\\\"handle\\\\\\\": 141, \\\\\\\"comment\\\\\\\": \\\\\\\"fvpn_generation=0 fvpn_baseline=1 fvpn_metering=forward_admission_v1\\\\\\\", \\\\\\\"expr\\\\\\\": [{\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"payload\\\\\\\": {\\\\\\\"protocol\\\\\\\": \\\\\\\"ip\\\\\\\", \\\\\\\"field\\\\\\\": \\\\\\\"saddr\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"192.0.2.255\\\\\\\"}}, {\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"payload\\\\\\\": {\\\\\\\"protocol\\\\\\\": \\\\\\\"ip\\\\\\\", \\\\\\\"field\\\\\\\": \\\\\\\"daddr\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"192.0.2.255\\\\\\\"}}]}}, {\\\\\\\"rule\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"chain\\\\\\\": \\\\\\\"forward\\\\\\\", \\\\\\\"handle\\\\\\\": 142, \\\\\\\"expr\\\\\\\": [{\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"meta\\\\\\\": {\\\\\\\"key\\\\\\\": \\\\\\\"iifname\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"fvmb0\\\\\\\"}}, {\\\\\\\"counter\\\\\\\": \\\\\\\"ctbase\\\\\\\"}, {\\\\\\\"drop\\\\\\\": null}]}}, {\\\\\\\"rule\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"chain\\\\\\\": \\\\\\\"forward\\\\\\\", \\\\\\\"handle\\\\\\\": 143, \\\\\\\"expr\\\\\\\": [{\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"meta\\\\\\\": {\\\\\\\"key\\\\\\\": \\\\\\\"oifname\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"fvmb0\\\\\\\"}}, {\\\\\\\"counter\\\\\\\": \\\\\\\"ctbase\\\\\\\"}, {\\\\\\\"drop\\\\\\\": null}]}}, {\\\\\\\"rule\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"chain\\\\\\\": \\\\\\\"forward\\\\\\\", \\\\\\\"handle\\\\\\\": 144, \\\\\\\"expr\\\\\\\": [{\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"meta\\\\\\\": {\\\\\\\"key\\\\\\\": \\\\\\\"iifname\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"fvmb0\\\\\\\"}}, {\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"meta\\\\\\\": {\\\\\\\"key\\\\\\\": \\\\\\\"nfproto\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"ipv6\\\\\\\"}}, {\\\\\\\"counter\\\\\\\": \\\\\\\"ctv6\\\\\\\"}, {\\\\\\\"drop\\\\\\\": null}]}}, {\\\\\\\"rule\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"chain\\\\\\\": \\\\\\\"forward\\\\\\\", \\\\\\\"handle\\\\\\\": 145, \\\\\\\"expr\\\\\\\": [{\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"meta\\\\\\\": {\\\\\\\"key\\\\\\\": \\\\\\\"oifname\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"fvmb0\\\\\\\"}}, {\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"meta\\\\\\\": {\\\\\\\"key\\\\\\\": \\\\\\\"nfproto\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"ipv6\\\\\\\"}}, {\\\\\\\"counter\\\\\\\": \\\\\\\"ctv6\\\\\\\"}, {\\\\\\\"drop\\\\\\\": null}]}}, {\\\\\\\"rule\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"chain\\\\\\\": \\\\\\\"input\\\\\\\", \\\\\\\"handle\\\\\\\": 146, \\\\\\\"expr\\\\\\\": [{\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"meta\\\\\\\": {\\\\\\\"key\\\\\\\": \\\\\\\"iifname\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"fvmb0\\\\\\\"}}, {\\\\\\\"counter\\\\\\\": \\\\\\\"ctin\\\\\\\"}, {\\\\\\\"drop\\\\\\\": null}]}}, {\\\\\\\"rule\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"chain\\\\\\\": \\\\\\\"input\\\\\\\", \\\\\\\"handle\\\\\\\": 147, \\\\\\\"expr\\\\\\\": [{\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"payload\\\\\\\": {\\\\\\\"protocol\\\\\\\": \\\\\\\"ip\\\\\\\", \\\\\\\"field\\\\\\\": \\\\\\\"saddr\\\\\\\"}}, \\\\\\\"right\\\\\\\": {\\\\\\\"prefix\\\\\\\": {\\\\\\\"addr\\\\\\\": \\\\\\\"100.64.0.0\\\\\\\", \\\\\\\"len\\\\\\\": 10}}}}, {\\\\\\\"counter\\\\\\\": \\\\\\\"ctin\\\\\\\"}, {\\\\\\\"drop\\\\\\\": null}]}}]}\\\\n\\\",\\\"nft_read_ok\\\":true,\\\"read_finished_at\\\":\\\"2026-10-31T15:13:07.878421007Z\\\",\\\"wait_notes\\\":{\\\"meter-wait-01a19285-7abc-777e-9bee-c7e34149a798\\\":\\\"{\\\\\\\"boot_id\\\\\\\":\\\\\\\"97c018d7-a925-4723-9127-83c097de1c8a\\\\\\\",\\\\\\\"identity\\\\\\\":\\\\\\\"d770e5a6-fa4d-455d-b8bb-c588d2e39569\\\\\\\",\\\\\\\"started\\\\\\\":\\\\\\\"2026-10-31T15:13:03.677696159Z\\\\\\\",\\\\\\\"deadline\\\\\\\":\\\\\\\"2026-10-31T15:13:33.677696159Z\\\\\\\"}\\\"}}\\n{\\\"at\\\":\\\"2026-10-31T15:13:08.284115244Z\\\",\\\"boot_id\\\":\\\"97c018d7-a925-4723-9127-83c097de1c8a\\\",\\\"checkpoint\\\":\\\"{\\\\\\\"closed_meter_epoch_id\\\\\\\":\\\\\\\"01a19284-fbe0-782a-acc7-9d329a96230e\\\\\\\",\\\\\\\"last_durable_event_seq\\\\\\\":\\\\\\\"0\\\\\\\",\\\\\\\"central_acked_through\\\\\\\":\\\\\\\"0\\\\\\\",\\\\\\\"new_meter_epoch_id\\\\\\\":\\\\\\\"\\\\\\\",\\\\\\\"barrier_id\\\\\\\":\\\\\\\"d770e5a6-fa4d-455d-b8bb-c588d2e39569\\\\\\\"}\\\",\\\"control_http_status\\\":\\\"200\\\",\\\"control_read_ok\\\":true,\\\"heartbeat\\\":\\\"v1\\\\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\\\\nmono_ns 43125638261393\\\\nwall_unix_ns 1793459588121890372\\\\npolicy_expires_mono_ns 0\\\\nbaseline_ok 1\\\\nserving 0\\\\ngeneration 1\\\\nreason meter_storage_failed\\\",\\\"latch\\\":\\\"d770e5a6-fa4d-455d-b8bb-c588d2e39569\\\",\\\"nft\\\":\\\"{\\\\\\\"nftables\\\\\\\": [{\\\\\\\"metainfo\\\\\\\": {\\\\\\\"version\\\\\\\": \\\\\\\"1.0.9\\\\\\\", \\\\\\\"release_name\\\\\\\": \\\\\\\"Old Doc Yak #3\\\\\\\", \\\\\\\"json_schema_version\\\\\\\": 1}}, {\\\\\\\"table\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"handle\\\\\\\": 3}}, {\\\\\\\"counter\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"ctbase\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"handle\\\\\\\": 1, \\\\\\\"packets\\\\\\\": 0, \\\\\\\"bytes\\\\\\\": 0}}, {\\\\\\\"counter\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"ctv6\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"handle\\\\\\\": 2, \\\\\\\"packets\\\\\\\": 0, \\\\\\\"bytes\\\\\\\": 0}}, {\\\\\\\"counter\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"ctin\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"handle\\\\\\\": 3, \\\\\\\"packets\\\\\\\": 0, \\\\\\\"bytes\\\\\\\": 0}}, {\\\\\\\"set\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"allowed_v4\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"type\\\\\\\": \\\\\\\"ipv4_addr\\\\\\\", \\\\\\\"handle\\\\\\\": 4, \\\\\\\"flags\\\\\\\": [\\\\\\\"timeout\\\\\\\"]}}, {\\\\\\\"chain\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"forward\\\\\\\", \\\\\\\"handle\\\\\\\": 170, \\\\\\\"type\\\\\\\": \\\\\\\"filter\\\\\\\", \\\\\\\"hook\\\\\\\": \\\\\\\"forward\\\\\\\", \\\\\\\"prio\\\\\\\": -150, \\\\\\\"policy\\\\\\\": \\\\\\\"drop\\\\\\\"}}, {\\\\\\\"chain\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"input\\\\\\\", \\\\\\\"handle\\\\\\\": 171, \\\\\\\"type\\\\\\\": \\\\\\\"filter\\\\\\\", \\\\\\\"hook\\\\\\\": \\\\\\\"input\\\\\\\", \\\\\\\"prio\\\\\\\": -150, \\\\\\\"policy\\\\\\\": \\\\\\\"accept\\\\\\\"}}, {\\\\\\\"chain\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"output\\\\\\\", \\\\\\\"handle\\\\\\\": 172, \\\\\\\"type\\\\\\\": \\\\\\\"filter\\\\\\\", \\\\\\\"hook\\\\\\\": \\\\\\\"output\\\\\\\", \\\\\\\"prio\\\\\\\": -150, \\\\\\\"policy\\\\\\\": \\\\\\\"accept\\\\\\\"}}, {\\\\\\\"chain\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"postrouting\\\\\\\", \\\\\\\"handle\\\\\\\": 173, \\\\\\\"type\\\\\\\": \\\\\\\"nat\\\\\\\", \\\\\\\"hook\\\\\\\": \\\\\\\"postrouting\\\\\\\", \\\\\\\"prio\\\\\\\": 100, \\\\\\\"policy\\\\\\\": \\\\\\\"accept\\\\\\\"}}, {\\\\\\\"rule\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"chain\\\\\\\": \\\\\\\"forward\\\\\\\", \\\\\\\"handle\\\\\\\": 174, \\\\\\\"comment\\\\\\\": \\\\\\\"fvpn_generation=0 fvpn_baseline=1 fvpn_metering=forward_admission_v1\\\\\\\", \\\\\\\"expr\\\\\\\": [{\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"payload\\\\\\\": {\\\\\\\"protocol\\\\\\\": \\\\\\\"ip\\\\\\\", \\\\\\\"field\\\\\\\": \\\\\\\"saddr\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"192.0.2.255\\\\\\\"}}, {\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"payload\\\\\\\": {\\\\\\\"protocol\\\\\\\": \\\\\\\"ip\\\\\\\", \\\\\\\"field\\\\\\\": \\\\\\\"daddr\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"192.0.2.255\\\\\\\"}}]}}, {\\\\\\\"rule\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"chain\\\\\\\": \\\\\\\"forward\\\\\\\", \\\\\\\"handle\\\\\\\": 175, \\\\\\\"expr\\\\\\\": [{\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"meta\\\\\\\": {\\\\\\\"key\\\\\\\": \\\\\\\"iifname\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"fvmb0\\\\\\\"}}, {\\\\\\\"counter\\\\\\\": \\\\\\\"ctbase\\\\\\\"}, {\\\\\\\"drop\\\\\\\": null}]}}, {\\\\\\\"rule\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"chain\\\\\\\": \\\\\\\"forward\\\\\\\", \\\\\\\"handle\\\\\\\": 176, \\\\\\\"expr\\\\\\\": [{\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"meta\\\\\\\": {\\\\\\\"key\\\\\\\": \\\\\\\"oifname\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"fvmb0\\\\\\\"}}, {\\\\\\\"counter\\\\\\\": \\\\\\\"ctbase\\\\\\\"}, {\\\\\\\"drop\\\\\\\": null}]}}, {\\\\\\\"rule\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"chain\\\\\\\": \\\\\\\"forward\\\\\\\", \\\\\\\"handle\\\\\\\": 177, \\\\\\\"expr\\\\\\\": [{\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"meta\\\\\\\": {\\\\\\\"key\\\\\\\": \\\\\\\"iifname\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"fvmb0\\\\\\\"}}, {\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"meta\\\\\\\": {\\\\\\\"key\\\\\\\": \\\\\\\"nfproto\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"ipv6\\\\\\\"}}, {\\\\\\\"counter\\\\\\\": \\\\\\\"ctv6\\\\\\\"}, {\\\\\\\"drop\\\\\\\": null}]}}, {\\\\\\\"rule\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"chain\\\\\\\": \\\\\\\"forward\\\\\\\", \\\\\\\"handle\\\\\\\": 178, \\\\\\\"expr\\\\\\\": [{\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"meta\\\\\\\": {\\\\\\\"key\\\\\\\": \\\\\\\"oifname\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"fvmb0\\\\\\\"}}, {\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"meta\\\\\\\": {\\\\\\\"key\\\\\\\": \\\\\\\"nfproto\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"ipv6\\\\\\\"}}, {\\\\\\\"counter\\\\\\\": \\\\\\\"ctv6\\\\\\\"}, {\\\\\\\"drop\\\\\\\": null}]}}, {\\\\\\\"rule\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"chain\\\\\\\": \\\\\\\"input\\\\\\\", \\\\\\\"handle\\\\\\\": 179, \\\\\\\"expr\\\\\\\": [{\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"meta\\\\\\\": {\\\\\\\"key\\\\\\\": \\\\\\\"iifname\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"fvmb0\\\\\\\"}}, {\\\\\\\"counter\\\\\\\": \\\\\\\"ctin\\\\\\\"}, {\\\\\\\"drop\\\\\\\": null}]}}, {\\\\\\\"rule\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"chain\\\\\\\": \\\\\\\"input\\\\\\\", \\\\\\\"handle\\\\\\\": 180, \\\\\\\"expr\\\\\\\": [{\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"payload\\\\\\\": {\\\\\\\"protocol\\\\\\\": \\\\\\\"ip\\\\\\\", \\\\\\\"field\\\\\\\": \\\\\\\"saddr\\\\\\\"}}, \\\\\\\"right\\\\\\\": {\\\\\\\"prefix\\\\\\\": {\\\\\\\"addr\\\\\\\": \\\\\\\"100.64.0.0\\\\\\\", \\\\\\\"len\\\\\\\": 10}}}}, {\\\\\\\"counter\\\\\\\": \\\\\\\"ctin\\\\\\\"}, {\\\\\\\"drop\\\\\\\": null}]}}]}\\\\n\\\",\\\"nft_read_ok\\\":true,\\\"read_finished_at\\\":\\\"2026-10-31T15:13:08.295829621Z\\\",\\\"wait_notes\\\":{}}\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "correlated_checkpoint",
+      "detail": "{\"barrier_id\":\"d770e5a6-fa4d-455d-b8bb-c588d2e39569\",\"central_acked_through\":\"0\",\"closed_meter_epoch_id\":\"01a19284-fbe0-782a-acc7-9d329a96230e\",\"last_durable_event_seq\":\"0\",\"new_meter_epoch_id\":\"\"}"
+    },
+    {
+      "name": "correlated_wait",
+      "detail": "{\"boot_id\":\"97c018d7-a925-4723-9127-83c097de1c8a\",\"identity\":\"d770e5a6-fa4d-455d-b8bb-c588d2e39569\",\"started\":\"2026-10-31T15:13:03.677696159Z\",\"deadline\":\"2026-10-31T15:13:33.677696159Z\"}"
+    },
+    {
+      "name": "usage_snapshot",
+      "detail": "{\"bytes\":\"110592\",\"sha256\":\"fe1a4dade7d8331c1319a2c7cef38716e662e9895409b91a2f5c04bec02f8005\"}"
+    },
+    {
+      "name": "finalized_epoch",
+      "detail": "{\"boot_id\":\"97c018d7-a925-4723-9127-83c097de1c8a\",\"close_reason\":\"final_sample\",\"closed_at\":\"2026-10-31T15:12:31.273503Z\",\"epoch_id\":\"01a19284-fbe0-782a-acc7-9d329a96230e\"}"
+    },
+    {
+      "name": "check_correlated",
+      "detail": "true"
+    },
+    {
+      "name": "status_after_apply",
+      "detail": "{\"command\":[\"/opt/vpn-node/current/fvpn-updater\",\"status\",\"--config\",\"/etc/vpn-node/updater.json\"],\"exit\":0,\"stdout\":\"{\\n  \\\"generation\\\": \\\"1\\\",\\n  \\\"job_id\\\": \\\"90c776ad-4f90-5918-b47d-45ecc2939a0c\\\",\\n  \\\"source\\\": \\\"installer\\\",\\n  \\\"requested_release_id\\\": \\\"01a19284-af01-7ebf-9e62-6c723ab70c25\\\",\\n  \\\"stage\\\": \\\"report\\\",\\n  \\\"state\\\": \\\"succeeded\\\",\\n  \\\"journal_stage\\\": \\\"locally_succeeded\\\",\\n  \\\"current_release_id\\\": \\\"01a19284-af01-7ebf-9e62-6c723ab70c25\\\",\\n  \\\"last_good_release_id\\\": \\\"01a19284-af01-7ebf-9e62-6c723ab70c25\\\",\\n  \\\"recovery_required\\\": false,\\n  \\\"last_result_state\\\": \\\"succeeded\\\",\\n  \\\"last_rejection\\\": null,\\n  \\\"health\\\": {\\n    \\\"dns_policy\\\": \\\"passed\\\",\\n    \\\"identity_and_state\\\": \\\"passed\\\",\\n    \\\"internet_only\\\": \\\"passed\\\",\\n    \\\"processes\\\": \\\"passed\\\",\\n    \\\"tunnel_probe\\\": \\\"passed\\\"\\n  },\\n  \\\"candidate_health_json\\\": {\\n    \\\"dns_policy\\\": \\\"passed\\\",\\n    \\\"identity_and_state\\\": \\\"passed\\\",\\n    \\\"internet_only\\\": \\\"passed\\\",\\n    \\\"processes\\\": \\\"passed\\\",\\n    \\\"tunnel_probe\\\": \\\"passed\\\"\\n  }\\n}\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "current_after_apply",
+      "detail": "\"releases/01a19284-af01-7ebf-9e62-6c723ab70c25\""
+    },
+    {
+      "name": "units_after_apply",
+      "detail": "{\"command\":[\"systemctl\",\"show\",\"fvpn-agent.service\",\"fvpn-watchdog.service\",\"-p\",\"Id\",\"-p\",\"ExecMainStartTimestampMonotonic\"],\"exit\":0,\"stdout\":\"ExecMainStartTimestampMonotonic=43125476726\\nId=fvpn-agent.service\\n\\nExecMainStartTimestampMonotonic=43125475103\\nId=fvpn-watchdog.service\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "running_executable",
+      "detail": "{\"command\":[\"sh\",\"-c\",\"p=$(systemctl show -p MainPID --value fvpn-agent.service); readlink /proc/$p/exe\"],\"exit\":0,\"stdout\":\"/opt/vpn-node/releases/01a19284-af01-7ebf-9e62-6c723ab70c25/fvpn-agent\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "check_restarts",
+      "detail": "true"
+    },
+    {
+      "name": "journal_snapshot",
+      "detail": "{\"bytes\":\"73728\",\"sha256\":\"32c43f8c999f2e0bfc2ec37951f86af1072dab3d15e0e01ec27976764d557fd5\"}"
+    },
+    {
+      "name": "check_apply",
+      "detail": "false"
+    },
+    {
+      "name": "journal_snapshot",
+      "detail": "{\"bytes\":\"73728\",\"sha256\":\"32c43f8c999f2e0bfc2ec37951f86af1072dab3d15e0e01ec27976764d557fd5\"}"
+    },
+    {
+      "name": "job_claim",
+      "detail": "{\"boot_id\":\"97c018d7-a925-4723-9127-83c097de1c8a\",\"intent\":{\"attempt\":1,\"authorization_valid_until\":\"0001-01-01T00:00:00Z\",\"batch_id\":null,\"generation\":\"1\",\"incarnation_id\":\"01a19284-ca59-7c69-acd9-5391ca1f3bbf\",\"issued_at\":\"2026-10-31T15:13:03.462517873Z\",\"job_id\":\"90c776ad-4f90-5918-b47d-45ecc2939a0c\",\"manifest_sha256\":\"af2c54fc2ba08945bd480eb0a7bafd4d469a990f26b0fcda985ac9e022f11173\",\"manifest_url\":\"\",\"node_id\":\"01a19284-c4b9-7416-bc2f-cee7023d825e\",\"publication_intent\":\"disabled\",\"release_id\":\"01a19284-af01-7ebf-9e62-6c723ab70c25\",\"target_id\":null},\"pending_path\":\"/var/lib/vpn-node/update-staging/pending-release.json\",\"pending_sha256\":\"8f78fa6a4fb7e0c6ac76c6f4aae706912be9ccd2b5bcad0d57e0cd81769b4093\",\"policy_generation\":\"0\",\"policy_known\":true,\"revoked\":[],\"serving\":[\"01a19284-8a86-777c-a7f7-89da56075118\"],\"source\":\"installer\",\"state_schema\":1}"
+    },
+    {
+      "name": "check_boot_kernel",
+      "detail": "false"
+    },
+    {
+      "name": "post_apply_check",
+      "detail": "{\"command\":[\"/usr/local/bin/fvpn-node-install\",\"check\",\"--json\"],\"exit\":0,\"stdout\":\"{\\n  \\\"status\\\": \\\"healthy\\\",\\n  \\\"baseline\\\": {\\n    \\\"status\\\": \\\"seeded\\\",\\n    \\\"manifest_path\\\": \\\"/var/lib/vpn-node/update-staging/01a19284-8a86-777c-a7f7-89da56075118.manifest.json\\\",\\n    \\\"tree_path\\\": \\\"/opt/vpn-node/releases/01a19284-8a86-777c-a7f7-89da56075118\\\",\\n    \\\"probe\\\": {\\n      \\\"exit_code\\\": 64,\\n      \\\"stderr\\\": \\\"Usage of seed:\\\\n  -config string\\\\n    \\\\tupdater config JSON (paths only, no keys)\\\\n  -manifest string\\\\n    \\\\tretained signed release envelope\\\\n  -pending string\\\\n    \\\\tinstaller pending-release.json to apply\\\\n  -tree string\\\\n    \\\\tresolved current release directory to verify\\\\n\\\"\\n    },\\n    \\\"seed\\\": {\\n      \\\"exit_code\\\": 0,\\n      \\\"stderr\\\": \\\"{\\\\\\\"time\\\\\\\":\\\\\\\"2026-10-31T15:12:29.128164773Z\\\\\\\",\\\\\\\"level\\\\\\\":\\\\\\\"INFO\\\\\\\",\\\\\\\"msg\\\\\\\":\\\\\\\"verified installer baseline seeded\\\\\\\",\\\\\\\"release_id\\\\\\\":\\\\\\\"01a19284-8a86-777c-a7f7-89da56075118\\\\\\\"}\\\\n\\\"\\n    }\\n  },\\n  \\\"os_id\\\": \\\"ubuntu\\\",\\n  \\\"os_version\\\": \\\"24.04\\\",\\n  \\\"arch\\\": \\\"amd64\\\",\\n  \\\"kernel\\\": \\\"Linux 7.0.0-38-generic\\\",\\n  \\\"release_id\\\": \\\"01a19284-af01-7ebf-9e62-6c723ab70c25\\\",\\n  \\\"release_source\\\": \\\"updater_journal\\\",\\n  \\\"install_record\\\": {\\n    \\\"release_id\\\": \\\"01a19284-8a86-777c-a7f7-89da56075118\\\",\\n    \\\"manifest_sha256\\\": \\\"a014925316acac2a9313b5b9f3bd833e0beb7f463c3b815e866c46bb6ffb2028\\\",\\n    \\\"release_sequence\\\": \\\"10\\\",\\n    \\\"product_version\\\": \\\"1.1.0\\\",\\n    \\\"arch\\\": \\\"amd64\\\",\\n    \\\"installed_at\\\": \\\"2026-10-31T15:12:18Z\\\",\\n    \\\"netbird_package_installed\\\": false\\n  },\\n  \\\"updater\\\": {\\n    \\\"current_release_id\\\": \\\"01a19284-af01-7ebf-9e62-6c723ab70c25\\\",\\n    \\\"state\\\": \\\"succeeded\\\",\\n    \\\"recovery_required\\\": false\\n  },\\n  \\\"units\\\": {\\n    \\\"fvpn-agent.service\\\": \\\"active\\\",\\n    \\\"fvpn-netbird.service\\\": \\\"active\\\",\\n    \\\"fvpn-node-netbird-up.service\\\": \\\"active\\\",\\n    \\\"fvpn-updater-recover.service\\\": \\\"active\\\",\\n    \\\"fvpn-updater.service\\\": \\\"inactive\\\",\\n    \\\"fvpn-updater.timer\\\": \\\"active\\\",\\n    \\\"fvpn-watchdog.service\\\": \\\"active\\\"\\n  },\\n  \\\"directories\\\": [\\n    {\\n      \\\"path\\\": \\\"/etc/vpn-node\\\",\\n      \\\"mode\\\": \\\"0755\\\",\\n      \\\"expected\\\": \\\"0755\\\",\\n      \\\"ok\\\": true\\n    },\\n    {\\n      \\\"path\\\": \\\"/var/lib/vpn-node\\\",\\n      \\\"mode\\\": \\\"0700\\\",\\n      \\\"expected\\\": \\\"0700\\\",\\n      \\\"ok\\\": true\\n    },\\n    {\\n      \\\"path\\\": \\\"/var/lib/vpn-node/identity\\\",\\n      \\\"mode\\\": \\\"0700\\\",\\n      \\\"expected\\\": \\\"0700\\\",\\n      \\\"ok\\\": true\\n    },\\n    {\\n      \\\"path\\\": \\\"/var/lib/vpn-node/state\\\",\\n      \\\"mode\\\": \\\"0700\\\",\\n      \\\"expected\\\": \\\"0700\\\",\\n      \\\"ok\\\": true\\n    },\\n    {\\n      \\\"path\\\": \\\"/var/lib/vpn-node/update-journal\\\",\\n      \\\"mode\\\": \\\"0700\\\",\\n      \\\"expected\\\": \\\"0700\\\",\\n      \\\"ok\\\": true\\n    },\\n    {\\n      \\\"path\\\": \\\"/var/lib/vpn-node/update-staging\\\",\\n      \\\"mode\\\": \\\"0700\\\",\\n      \\\"expected\\\": \\\"0700\\\",\\n      \\\"ok\\\": true\\n    },\\n    {\\n      \\\"path\\\": \\\"/var/lib/vpn-node/install\\\",\\n      \\\"mode\\\": \\\"0700\\\",\\n      \\\"expected\\\": \\\"0700\\\",\\n      \\\"ok\\\": true\\n    },\\n    {\\n      \\\"path\\\": \\\"/opt/vpn-node\\\",\\n      \\\"mode\\\": \\\"0755\\\",\\n      \\\"expected\\\": \\\"0755\\\",\\n      \\\"ok\\\": true\\n    },\\n    {\\n      \\\"path\\\": \\\"/opt/vpn-node/releases\\\",\\n      \\\"mode\\\": \\\"0755\\\",\\n      \\\"expected\\\": \\\"0755\\\",\\n      \\\"ok\\\": true\\n    },\\n    {\\n      \\\"path\\\": \\\"/run/vpn-node\\\",\\n      \\\"mode\\\": \\\"0755\\\",\\n      \\\"expected\\\": \\\"0755\\\",\\n      \\\"ok\\\": true\\n    }\\n  ],\\n  \\\"lock\\\": {\\n    \\\"held\\\": false,\\n    \\\"pid\\\": 2508,\\n    \\\"boot_id\\\": \\\"97c018d7-a925-4723-9127-83c097de1c8a\\\",\\n    \\\"start_time\\\": 4312096\\n  },\\n  \\\"identity\\\": {\\n    \\\"present\\\": true,\\n    \\\"incarnation_id\\\": \\\"01a19284-ca59-7c69-acd9-5391ca1f3bbf\\\",\\n    \\\"node_id\\\": \\\"01a19284-c4b9-7416-bc2f-cee7023d825e\\\"\\n  },\\n  \\\"usage_store_present\\\": true,\\n  \\\"netbird\\\": {\\n    \\\"version\\\": \\\"0.82.0\\\",\\n    \\\"daemon\\\": \\\"connected\\\"\\n  },\\n  \\\"installer_marker\\\": {\\n    \\\"table\\\": \\\"fvpn_install\\\",\\n    \\\"present\\\": true,\\n    \\\"legacy_owner\\\": false\\n  },\\n  \\\"drifts\\\": []\\n}\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "central_success_not_reached",
+      "detail": "true"
+    },
+    {
+      "name": "stage_tamper",
+      "detail": "{\"Exit\":0,\"Status\":\"staged\",\"Code\":\"\",\"Incarnation\":\"\",\"NodeID\":\"\",\"RetiredMode\":\"\",\"RetiredHashes\":{},\"BoundStateBefore\":null,\"RetiredBoundState\":null,\"Message\":\"staged; updater run completed; inspect fvpn-updater status for the apply result\",\"Before\":{},\"Hashes\":{},\"Services\":null}"
+    },
+    {
+      "name": "tamper_stimulus",
+      "detail": "{\"command\":[\"sh\",\"-c\",\"printf X | dd of=\\\"$1\\\" bs=1 seek=32 count=1 conv=notrunc status=none\",\"sh\",\"/var/lib/vpn-node/update-staging/193572e44b6d7d10750478db7ba4724999655f385dfb1f9a200cf02ebbc6dae2.tar.zst\"],\"exit\":0,\"stdout\":\"\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "apply_tampered",
+      "detail": "{\"command\":[\"/opt/vpn-node/current/fvpn-updater\",\"apply\",\"--config\",\"/etc/vpn-node/updater.json\",\"--pending\",\"/var/lib/vpn-node/update-staging/pending-release.json\"],\"exit\":2,\"stdout\":\"\",\"stderr\":\"fvpn-updater: updater: installer outcome=failed (HASH_MISMATCH): updater: member forwarding must stay blocked\"}"
+    },
+    {
+      "name": "check_tamper",
+      "detail": "false"
+    },
+    {
+      "name": "preserve_pending",
+      "detail": "{\"command\":[\"sh\",\"-c\",\"if [ -e \\\"$1\\\" ]; then mv \\\"$1\\\" \\\"${1%.json}.tamper.json\\\"; fi\",\"sh\",\"/var/lib/vpn-node/update-staging/pending-release.json\"],\"exit\":0,\"stdout\":\"\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "downgrade",
+      "detail": "{\"Exit\":1,\"Status\":\"\",\"Code\":\"DOWNGRADE\",\"Incarnation\":\"\",\"NodeID\":\"\",\"RetiredMode\":\"\",\"RetiredHashes\":{},\"BoundStateBefore\":null,\"RetiredBoundState\":null,\"Message\":\"DOWNGRADE: refusing to replace release 01a19284-af01-7ebf-9e62-6c723ab70c25 with 01a19284-8a86-777c-a7f7-89da56075118\",\"Before\":{},\"Hashes\":{},\"Services\":null}"
+    },
+    {
+      "name": "check_downgrade",
+      "detail": "true"
+    },
+    {
+      "name": "before_fixture_retirement_http",
+      "detail": "\"200\""
+    },
+    {
+      "name": "before_fixture_retirement_etag",
+      "detail": "\"\\\"9\\\"\""
+    },
+    {
+      "name": "before_fixture_retirement",
+      "detail": "{\"capacity\":null,\"checks\":[{\"error_code\":null,\"name\":\"dns_policy\",\"observed_at\":\"2026-10-31T15:12:31.244724073Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"internet_only\",\"observed_at\":\"2026-10-31T15:12:31.244724073Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"lease\",\"observed_at\":\"2026-10-31T15:12:31.244724073Z\",\"status\":\"not_run\"},{\"error_code\":null,\"name\":\"meter_path\",\"observed_at\":\"2026-10-31T15:12:31.244724073Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"policy_signature\",\"observed_at\":\"2026-10-31T15:12:31.244724073Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"qos\",\"observed_at\":\"2026-10-31T15:12:31.244724073Z\",\"status\":\"not_run\"},{\"error_code\":null,\"name\":\"release_supported\",\"observed_at\":\"2026-10-31T15:12:31.244724073Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"source_binding\",\"observed_at\":\"2026-10-31T15:12:31.244724073Z\",\"status\":\"not_run\"},{\"error_code\":null,\"name\":\"storage\",\"observed_at\":\"2026-10-31T15:12:31.244724073Z\",\"status\":\"passed\"},{\"detail\":\"Egress probe used no extra target.\",\"error_code\":null,\"name\":\"tunnel_probe\",\"observed_at\":\"2026-10-31T15:12:31.244724073Z\",\"status\":\"passed\"}],\"config_generation\":{\"applied\":\"1\",\"desired\":\"1\"},\"control_status\":\"online\",\"created_at\":\"2026-10-31T15:12:17.080989Z\",\"current_incarnation_id\":\"01a19284-ca59-7c69-acd9-5391ca1f3bbf\",\"data_health\":\"healthy\",\"dns_policy_evidence\":null,\"drift\":[],\"exit_id\":\"01a19284-c4b9-7417-9fdf-abef8c3e4e89\",\"group_ids\":[],\"identity_conflict\":{\"conflict_count\":0,\"last_conflict_at\":null,\"mapping_frozen\":false},\"last_seen_at\":\"2026-10-31T15:12:31.309664Z\",\"lifecycle_state\":\"registered\",\"member_forwarding_observed\":false,\"member_group_ids\":[],\"name\":\"TEST ONLY installer handoff\",\"netbird_peer_id\":\"dbj0an78k4c000e0th70\",\"node_id\":\"01a19284-c4b9-7416-bc2f-cee7023d825e\",\"notes\":null,\"observed_exit_ipv4\":null,\"observed_exit_ipv6\":null,\"platform\":{\"arch\":\"amd64\",\"os\":\"ubuntu\",\"os_version\":\"24.04\"},\"provisioning_state\":\"ready\",\"publication_intent\":\"unpublished\",\"publication_observed\":\"absent\",\"recent_errors\":[],\"region\":null,\"releases\":{\"current_release_id\":\"01a19284-af01-7ebf-9e62-6c723ab70c25\",\"desired_release_id\":null,\"last_good_release_id\":\"01a19284-af01-7ebf-9e62-6c723ab70c25\"},\"resource_version\":\"9\",\"retired_at\":null,\"safety_status\":\"passed\",\"update\":{\"batch_id\":null,\"generation\":\"1\",\"job_id\":\"90c776ad-4f90-5918-b47d-45ecc2939a0c\",\"last_error_code\":null,\"last_observed_at\":null,\"last_result_at\":\"2026-10-31T15:13:08.259965Z\",\"source\":\"installer\",\"state\":\"succeeded\"},\"usage_outbox\":{\"acked_archive_bytes\":\"0\",\"blocked_seq\":null,\"central_acked_through\":\"0\",\"last_durable_event_seq\":\"0\",\"ledger_epoch\":\"97172993-bf61-4fa9-85db-f2be6f9cd6ca\",\"meter_epoch_id\":null,\"observed_at\":\"2026-10-31T15:12:31.309664Z\",\"oldest_unacked_at\":null,\"unacked_event_count\":0,\"unacked_payload_bytes\":\"0\"}}"
+    },
+    {
+      "name": "fixture_retirement_http",
+      "detail": "\"202\""
+    },
+    {
+      "name": "fixture_retired_http",
+      "detail": "\"200\""
+    },
+    {
+      "name": "fixture_retired_etag",
+      "detail": "\"\\\"10\\\"\""
+    },
+    {
+      "name": "fixture_retired",
+      "detail": "{\"capacity\":null,\"checks\":[{\"error_code\":null,\"name\":\"dns_policy\",\"observed_at\":\"2026-10-31T15:12:31.244724073Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"internet_only\",\"observed_at\":\"2026-10-31T15:12:31.244724073Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"lease\",\"observed_at\":\"2026-10-31T15:12:31.244724073Z\",\"status\":\"not_run\"},{\"error_code\":null,\"name\":\"meter_path\",\"observed_at\":\"2026-10-31T15:12:31.244724073Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"policy_signature\",\"observed_at\":\"2026-10-31T15:12:31.244724073Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"qos\",\"observed_at\":\"2026-10-31T15:12:31.244724073Z\",\"status\":\"not_run\"},{\"error_code\":null,\"name\":\"release_supported\",\"observed_at\":\"2026-10-31T15:12:31.244724073Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"source_binding\",\"observed_at\":\"2026-10-31T15:12:31.244724073Z\",\"status\":\"not_run\"},{\"error_code\":null,\"name\":\"storage\",\"observed_at\":\"2026-10-31T15:12:31.244724073Z\",\"status\":\"passed\"},{\"detail\":\"Egress probe used no extra target.\",\"error_code\":null,\"name\":\"tunnel_probe\",\"observed_at\":\"2026-10-31T15:12:31.244724073Z\",\"status\":\"passed\"}],\"config_generation\":{\"applied\":\"1\",\"desired\":\"2\"},\"control_status\":\"online\",\"created_at\":\"2026-10-31T15:12:17.080989Z\",\"current_incarnation_id\":\"01a19284-ca59-7c69-acd9-5391ca1f3bbf\",\"data_health\":\"healthy\",\"dns_policy_evidence\":null,\"drift\":[],\"exit_id\":\"01a19284-c4b9-7417-9fdf-abef8c3e4e89\",\"group_ids\":[],\"identity_conflict\":{\"conflict_count\":0,\"last_conflict_at\":null,\"mapping_frozen\":false},\"last_seen_at\":\"2026-10-31T15:12:31.309664Z\",\"lifecycle_state\":\"retired\",\"member_forwarding_observed\":false,\"member_group_ids\":[],\"name\":\"TEST ONLY installer handoff\",\"netbird_peer_id\":\"dbj0an78k4c000e0th70\",\"node_id\":\"01a19284-c4b9-7416-bc2f-cee7023d825e\",\"notes\":null,\"observed_exit_ipv4\":null,\"observed_exit_ipv6\":null,\"platform\":{\"arch\":\"amd64\",\"os\":\"ubuntu\",\"os_version\":\"24.04\"},\"provisioning_state\":\"ready\",\"publication_intent\":\"disabled\",\"publication_observed\":\"absent\",\"recent_errors\":[],\"region\":null,\"releases\":{\"current_release_id\":\"01a19284-af01-7ebf-9e62-6c723ab70c25\",\"desired_release_id\":null,\"last_good_release_id\":\"01a19284-af01-7ebf-9e62-6c723ab70c25\"},\"resource_version\":\"10\",\"retired_at\":\"2026-10-31T15:13:09.371343Z\",\"safety_status\":\"passed\",\"update\":{\"batch_id\":null,\"generation\":\"1\",\"job_id\":\"90c776ad-4f90-5918-b47d-45ecc2939a0c\",\"last_error_code\":null,\"last_observed_at\":null,\"last_result_at\":\"2026-10-31T15:13:08.259965Z\",\"source\":\"installer\",\"state\":\"succeeded\"},\"usage_outbox\":{\"acked_archive_bytes\":\"0\",\"blocked_seq\":null,\"central_acked_through\":\"0\",\"last_durable_event_seq\":\"0\",\"ledger_epoch\":\"97172993-bf61-4fa9-85db-f2be6f9cd6ca\",\"meter_epoch_id\":null,\"observed_at\":\"2026-10-31T15:12:31.309664Z\",\"oldest_unacked_at\":null,\"unacked_event_count\":0,\"unacked_payload_bytes\":\"0\"}}"
+    }
+  ]
+}
