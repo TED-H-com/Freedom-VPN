@@ -1054,7 +1054,7 @@ func (x *isolationRun) deadline() {
 	// With a fixed 60-second node window, an early lease correctly expires
 	// before this finite grant. Wait for ordinary renewal to reach the member
 	// deadline while the node lease still extends beyond it. Never edit either.
-	wait, cancel := context.WithDeadline(x.ctx, end.Add(-25*time.Second))
+	wait, cancel := context.WithDeadline(x.ctx, end.Add(-5*time.Second))
 	samples := []map[string]any{}
 	leaseBound := waitUntil(wait, time.Second, func() bool {
 		e = conn.QueryRow(wait, `SELECT jsonb_build_object('lease_id',id,'issued_at',issued_at,'expires_at',expires_at,'generation',policy_generation::text,'members',envelope->'signed'->'members',
@@ -1067,7 +1067,7 @@ func (x *isolationRun) deadline() {
 		var receipt struct {
 			Accepted bool `json:"accepted_serving"`
 		}
-		if json.Unmarshal(lease, &receipt) != nil || !receipt.Accepted || !bound || !bounds.Expires.After(end) {
+		if json.Unmarshal(lease, &receipt) != nil || !receipt.Accepted || !bound || !bounds.Expires.After(end.Add(25*time.Second)) {
 			return false
 		}
 		for _, m := range bounds.Members {
@@ -1080,13 +1080,13 @@ func (x *isolationRun) deadline() {
 	cancel()
 	x.extra("finite-member-renewal-wait.json", map[string]any{"run_id": x.records["AT13"].RunID, "member_deadline": end, "samples": samples, "qualified": leaseBound})
 	c.Observations = append(c.Observations, iso.Observation{Name: "signed_lease_bounds", Detail: string(lease)}, iso.Observation{Name: "grant_deadline", Detail: end.Format(time.RFC3339)})
-	if !c.Positive.Valid() || e != nil || !leaseBound || !time.Now().Before(end.Add(-25*time.Second)) {
+	if !c.Positive.Valid() || e != nil || !leaseBound || !time.Now().Before(end.Add(-5*time.Second)) {
 		c.Status = iso.StatusBlocked
 		c.Actual = "counted finite flow, matching signed member deadline, or pre-expiry fault window unavailable"
 		x.add("AT13", c)
 		return
 	}
-	for time.Until(end) > 25*time.Second {
+	for time.Until(end) > 5*time.Second {
 		select {
 		case <-x.ctx.Done():
 			return
@@ -1122,7 +1122,11 @@ func (x *isolationRun) deadline() {
 	}
 	after, ok := r.admissionBytes()
 	c.Observations = append(c.Observations, iso.Observation{Name: "post_deadline_bytes_before", Detail: fmt.Sprint(frozen)}, iso.Observation{Name: "post_deadline_bytes_after", Detail: fmt.Sprint(after)})
-	c.Status = iso.NegativeStatus(c.Positive, available && ok && probesOK, denied && after == frozen)
+	// All five member-denial probes must finish while the original node lease
+	// is still valid, so whole-node expiry cannot supply this result.
+	nodeStillValid := time.Now().Before(bounds.Expires)
+	c.Observations = append(c.Observations, iso.Observation{Name: "node_lease_valid_through_last_probe", Detail: boolText(nodeStillValid) + "; completed=" + time.Now().UTC().Format(time.RFC3339Nano) + "; node_expires=" + bounds.Expires.UTC().Format(time.RFC3339Nano)})
+	c.Status = iso.NegativeStatus(c.Positive, available && ok && probesOK && nodeStillValid, denied && after == frozen)
 	c.Actual = "five new TCP requests after finite signed member deadline; control and worker stopped; admission bytes frozen=" + boolText(after == frozen) + "; route retained throughout=" + boolText(routed) + "; node lease has a later deadline"
 	x.observation(&c, r)
 	x.add("AT13", c)
