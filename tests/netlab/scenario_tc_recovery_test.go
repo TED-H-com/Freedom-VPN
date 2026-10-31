@@ -32,6 +32,7 @@ func TestISO_F6_01_ForeignRemovalNewGeneration(t *testing.T) {
 		Finished time.Time               `json:"finished_at"`
 		Exit     int                     `json:"exit"`
 		Evidence *api.TCReadbackEvidence `json:"tc_evidence"`
+		Timing   *enforce.TimingEvidence `json:"timing"`
 	}
 	trace := struct {
 		Scope       string `json:"scope"`
@@ -55,15 +56,22 @@ func TestISO_F6_01_ForeignRemovalNewGeneration(t *testing.T) {
 			Verified   bool                    `json:"verified"`
 			Evidence   enforce.ServingEvidence `json:"evidence"`
 			TCEvidence *api.TCReadbackEvidence `json:"tc_evidence"`
+			Timing     *enforce.TimingEvidence `json:"timing"`
 		}
 		if err := json.Unmarshal([]byte(out), &doc); err != nil {
 			t.Fatalf("%s: %v", stage, err)
 		}
 		ev := doc.TCEvidence
-		trace.Rows = append(trace.Rows, row{stage, started, finished, code, ev})
+		trace.Rows = append(trace.Rows, row{stage, started, finished, code, ev, doc.Timing})
 		persist()
 		if ev == nil || code != wantExit || ev.Verified != verified || ev.CandidateGeneration != decstr.U64(m.Generation) || ev.ReadAt.Before(started) || ev.ReadAt.After(finished) {
 			t.Fatalf("%s: code=%d stderr=%s evidence=%+v", stage, code, stderr, ev)
+		}
+		if doc.Timing == nil || doc.Timing.Operation != cmd || doc.Timing.CandidateGeneration != ev.CandidateGeneration || doc.Timing.Verified != verified || doc.Timing.End < doc.Timing.Start || doc.Timing.Start <= 0 {
+			t.Fatalf("%s: missing producer evidence: %+v", stage, doc.Timing)
+		}
+		if cmd == "apply" && verified {
+			requireApplyTiming(t, doc.Timing)
 		}
 		got, _ := ev.ErrorCode.Get()
 		if got != want || (want == "" && !ev.ErrorCode.IsNull()) {
@@ -107,6 +115,14 @@ func TestISO_F6_01_ForeignRemovalNewGeneration(t *testing.T) {
 	check("all foreign objects removed; baseline still installed", "verify", 3, api.ErrorCodeGENERATIONMISMATCH, false)
 	m.Generation = 32
 	m.QoS.Down.CeilBPS += 1_000_000
+	// Assembled recovery first verifies an empty admission candidate. A clean
+	// verifier and raised link alone must not be mistaken for member service.
+	populated := m
+	m.Bindings, m.Leases, m.QoS.Members = nil, nil, nil
+	check("clean generation 32 deny-all recovery Apply", "apply", 0, "", true)
+	reconcileLabMemberPath(t) // fixture-owned routes, explicitly not agent recovery
+	requireProbe(t, runProbe(t, []probeCase{{"deny-all-member", "fv-a1", "tcp", "203.0.113.10", 80, "", "deny", 300, "", "", "", "", 0}}))
+	m = populated
 	clean := check("clean newer generation 32 Apply", "apply", 0, "", true)
 	assertLabLink(t, "fv-fh", true)
 	assertLabLink(t, "fv-ih", true)
