@@ -252,8 +252,8 @@ func (e *Engine) resumeSampling() {
 		return
 	}
 	e.finalDone = false
+	e.meter.ResumeSampling()
 	if e.sampleOn {
-		e.meter.ResumeSampling()
 		return
 	}
 	e.sampleOn = true

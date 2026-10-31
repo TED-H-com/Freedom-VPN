@@ -177,9 +177,106 @@ func TestISO_F6_ApplyRejectionTimestampPrecedesRollback(t *testing.T) {
 	}
 }
 
-type barrierSource struct{ obs meter.Observation }
+type barrierSource struct {
+	obs meter.Observation
+	err error
+}
 
-func (s *barrierSource) Read(context.Context) (meter.Observation, error) { return s.obs, nil }
+func (s *barrierSource) Read(context.Context) (meter.Observation, error) { return s.obs, s.err }
+
+type admissionPlane struct {
+	Plane
+	admit func()
+}
+
+func (p admissionPlane) Apply(ctx context.Context, model enforce.Model, prev map[string]enforce.CounterValue) (enforce.ApplyResult, error) {
+	res, err := p.Plane.Apply(ctx, model, prev)
+	if err == nil {
+		p.admit()
+	}
+	return res, err
+}
+
+func TestMTR03_FirstBytesAfterFinalBarrierAreDurable(t *testing.T) {
+	for _, failRead := range []bool{false, true} {
+		t.Run(map[bool]string{false: "first_packet", true: "read_failure_then_recovery"}[failRead], func(t *testing.T) {
+			r := newRig(t)
+			alignControlClock(r)
+			serveBoundGeneration(t, r)
+			r.manualUsage(t)
+			r.eng.meter.Close()
+			name := meter.CounterName(r.eng.appliedModel.Bindings[0].DeviceID, meter.DirUpload)
+			src := &barrierSource{obs: meter.Observation{BootID: r.eng.bootID.String(), Bindings: r.eng.appliedModel.Bindings, Counters: map[string]enforce.CounterValue{name: {}}}}
+			var err error
+			r.eng.meter, err = meter.New(meter.Config{NodeID: r.eng.nodeID, IncarnationID: r.eng.incID, Store: r.eng.usage, Source: src})
+			if err != nil {
+				t.Fatal(err)
+			}
+			r.eng.withdraw(t.Context())
+			closed, err := r.eng.usage.ClosedCheckpoint(t.Context())
+			if err != nil || !r.eng.finalDone {
+				t.Fatal("missing real closing barrier", err)
+			}
+			admitted := 0
+			r.eng.plane = admissionPlane{Plane: r.plane, admit: func() {
+				head, err := r.eng.usage.Head(t.Context())
+				if err != nil || head.OpenEpoch == uuid.Nil || head.OpenEpoch.String() == closed.ClosedMeterEpochID {
+					t.Fatal("forwarding opened before the next epoch was durable", err)
+				}
+				if _, err := os.Stat(r.eng.cfg.MeterCheckpoint); !os.IsNotExist(err) {
+					t.Fatal("forwarding opened with a stale updater checkpoint", err)
+				}
+				// The very first bytes arrive inside Apply, before the sampler
+				// resumes. They must not become the next epoch's baseline.
+				admitted++
+				src.obs.Counters[name] = enforce.CounterValue{Packets: 1, Bytes: 4096}
+			}}
+			if failRead {
+				src.err = os.ErrPermission
+				if err := r.eng.enforce(t.Context(), Decide(r.eng.input())); err == nil {
+					t.Fatal("unreadable meter permitted admission")
+				}
+				if admitted != 0 || r.eng.serving {
+					t.Fatal("unreadable meter forwarded")
+				}
+				src.err = nil
+				// A successful closing retry clears the meter read failure.
+				r.eng.readMeter(t.Context())
+				if err := r.eng.enforce(t.Context(), Decide(r.eng.input())); err != nil {
+					t.Fatal(err)
+				}
+				r.eng.readMeter(t.Context())
+			}
+			if err := r.eng.enforce(t.Context(), Decide(r.eng.input())); err != nil {
+				t.Fatal(err)
+			}
+			if admitted != 1 || !r.eng.serving {
+				t.Fatalf("did not resume once: admitted=%d serving=%v reasons=%v", admitted, r.eng.serving, r.eng.decision.Reasons)
+			}
+			if err := r.eng.meter.Sample(t.Context()); err != nil {
+				t.Fatal(err)
+			}
+			head, _ := r.eng.usage.Head(t.Context())
+			var bytes uint64
+			for seq := uint64(closed.LastDurableEventSeq) + 1; seq < head.NextSeq; seq++ {
+				row, err := r.eng.usage.Event(t.Context(), seq)
+				if err != nil {
+					t.Fatal(err)
+				}
+				var event api.UsageEvent
+				if err := json.Unmarshal(row.Payload, &event); err != nil {
+					t.Fatal(err)
+				}
+				for _, rec := range event.Records {
+					bytes += uint64(rec.UploadBytes)
+				}
+			}
+			if bytes != 4096 {
+				t.Fatalf("first admitted bytes missing or duplicated: %d", bytes)
+			}
+		})
+	}
+}
 
 func TestMTR03_GenerationRejectionRetainsGapBeforeFinalSample(t *testing.T) {
 	r := newRig(t)

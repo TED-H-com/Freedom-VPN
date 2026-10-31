@@ -964,6 +964,16 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 		// Without a valid pre-Apply candidate the old expectation still applies.
 	}
 	wasServing := e.expectServing.Load()
+	if !closedRecovery && e.meter != nil && e.finalDone {
+		// A closed epoch must be replaced before Apply can admit the first
+		// packet. Keep the sampler paused across this real durable read.
+		e.finalDone = false
+		if err := e.meter.PrepareSampling(ctx); err != nil {
+			e.usagePersist = true
+			e.withdraw(ctx)
+			return err
+		}
+	}
 	timing := &applyReadTiming{now: e.clock.Wall}
 	res, err := e.plane.Apply(context.WithValue(ctx, applyReadKey{}, timing), model, prev)
 	if !timing.at.IsZero() {
