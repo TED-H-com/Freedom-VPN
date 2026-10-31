@@ -22,7 +22,9 @@ func TestLabISO_F6_RecoveryAndEvidence(t *testing.T) {
 	admin(t, "/release", "")
 	admin(t, "/service", `{"seconds":3600}`)
 	admin(t, "/bump", "") // Start at generation 2, matching the original latch proof.
-	startAgent(t)
+	// Keep the ordinary lab topology owner stopped: this case observes the
+	// retained-path hold and performs the deciding repair explicitly below.
+	startProc(t, "fvpn-agent", labDir+"/agent.pid", labDir+"/agent.log")
 	defer stopAgent()
 	if !waitProbe(t, "allow", 25*time.Second) {
 		t.Fatal("initial counted control failed", debugPlane(t))

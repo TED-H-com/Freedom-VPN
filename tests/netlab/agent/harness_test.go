@@ -66,6 +66,9 @@ func prepareLab() error {
 	if _, _, err := dockerExec("chmod", "700", labDir+"/journal"); err != nil {
 		return err
 	}
+	if _, _, err := dockerExec("python3", "/work/tests/netlab/agent/topology-owner.py", "capture"); err != nil {
+		return err
+	}
 	if err := dockerDetach("sh", "-c", "exec fvpn-labcontrol -dir "+labDir+" -admin 127.0.0.1:9091 >"+labDir+"/labcontrol.log 2>&1"); err != nil {
 		return err
 	}
@@ -368,6 +371,10 @@ func startProc(t *testing.T, bin, pidFile, logFile string) {
 
 func startAgent(t *testing.T) {
 	t.Helper()
+	_, _, _ = dockerExec("python3", "/work/tests/netlab/agent/topology-owner.py", "stop")
+	if err := dockerDetach("python3", "/work/tests/netlab/agent/topology-owner.py", "run"); err != nil {
+		t.Fatal(err)
+	}
 	startProc(t, "fvpn-agent", labDir+"/agent.pid", labDir+"/agent.log")
 }
 func startWatch(t *testing.T) {
@@ -387,7 +394,10 @@ assert p['serving']=='1' and p['baseline_ok']=='1' and 0 <= time.monotonic_ns()-
 	}
 	startProc(t, "fvpn-watchdog", labDir+"/watchdog.pid", labDir+"/watchdog.log")
 }
-func stopAgent() { stopProc("fvpn-agent", labDir+"/agent.pid") }
+func stopAgent() {
+	stopProc("fvpn-agent", labDir+"/agent.pid")
+	_, _, _ = dockerExec("python3", "/work/tests/netlab/agent/topology-owner.py", "stop")
+}
 func stopWatch() { stopProc("fvpn-watchdog", labDir+"/watchdog.pid") }
 
 func flushConntrack(t *testing.T) {
