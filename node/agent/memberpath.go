@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/node/enforce"
+	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 )
 
 var errMemberPath = errors.New("member_path_unconfigured")
@@ -18,11 +19,13 @@ var errMemberPath = errors.New("member_path_unconfigured")
 // MemberPath retains hashes of the working member interface's topology, not
 // traffic destinations. The model specifies peer addresses and interfaces,
 // but no local member-link address or next hop. Learn those from the existing
-// topology before serving; never replace that expectation while recovering.
+// topology before serving. D-100 permits replacement only after a clean,
+// verified Apply of a newer published generation.
 type MemberPath struct {
-	Interface string   `json:"interface"`
-	Addresses []string `json:"addresses"`
-	Routes    []string `json:"routes"`
+	Generation decstr.U64 `json:"generation"`
+	Interface  string     `json:"interface"`
+	Addresses  []string   `json:"addresses"`
+	Routes     []string   `json:"routes"`
 }
 
 func topologyHash(v any) string {
@@ -115,31 +118,49 @@ func (p SystemPlane) MemberPath(ctx context.Context, m enforce.Model, expected *
 	return got, ctx.Err()
 }
 
-func (e *Engine) checkMemberPath(ctx context.Context, model enforce.Model) bool {
+func (e *Engine) readMemberPath(ctx context.Context, model enforce.Model, expected *MemberPath) (MemberPath, bool) {
 	readCtx, cancel := context.WithTimeout(ctx, e.servingReadTimeout())
 	defer cancel()
-	path, err := e.plane.MemberPath(readCtx, model, e.memberPath)
+	path, err := e.plane.MemberPath(readCtx, model, expected)
 	if err == nil {
 		err = readCtx.Err()
 	}
-	if err == nil && e.memberPath == nil {
-		raw, _ := json.Marshal(path)
-		err = e.store.SetMeta(readCtx, "member_path", string(raw))
-		if err == nil {
-			e.memberPath = &path
-		} else {
-			e.storageOK = false
-		}
-	}
 	if err != nil {
-		e.memberPathPending = true
-		e.noteApply(errMemberPath)
-		e.applyError.Message = "member_path_unconfigured"
-		cleanup, done := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
-		defer done()
-		e.withdraw(cleanup)
-		e.decision = Decide(e.input())
-		e.lastObs = time.Time{}
+		e.rejectMemberPath(ctx)
+		return path, false
+	}
+	return path, true
+}
+
+func (e *Engine) rejectMemberPath(ctx context.Context) {
+	e.memberPathPending = true
+	e.noteApply(errMemberPath)
+	e.applyError.Message = "member_path_unconfigured"
+	cleanup, done := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
+	defer done()
+	e.withdraw(cleanup)
+	e.decision = Decide(e.input())
+	e.lastObs = time.Time{}
+}
+
+func (e *Engine) saveMemberPath(ctx context.Context, path MemberPath, gen uint64) bool {
+	path.Generation = decstr.U64(gen)
+	raw, _ := json.Marshal(path)
+	if err := e.store.SetMeta(ctx, "member_path", string(raw)); err != nil {
+		e.storageOK = false
+		e.rejectMemberPath(ctx)
+		return false
+	}
+	e.memberPath = &path
+	return true
+}
+
+func (e *Engine) checkMemberPath(ctx context.Context, model enforce.Model) bool {
+	path, ok := e.readMemberPath(ctx, model, e.memberPath)
+	if !ok {
+		return false
+	}
+	if e.memberPath == nil && !e.saveMemberPath(ctx, path, model.Generation) {
 		return false
 	}
 	e.memberPathPending = false

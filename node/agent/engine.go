@@ -437,6 +437,9 @@ func (e *Engine) Run(ctx context.Context) error {
 // Failed requests and replayed expired leases retry at the control cadence,
 // rather than spinning on an already elapsed deadline. Retry-After wins.
 func (e *Engine) nextStepDelay(interval time.Duration) time.Duration {
+	if e.serving && e.policyExpires > 0 {
+		interval = min(interval, max(0, e.policyExpires-e.clock.Mono()))
+	}
 	if !e.enrolled || e.revoked || !e.leaseGrantless() {
 		return interval
 	}
@@ -902,6 +905,24 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 	if e.memberPath == nil && !e.checkMemberPath(ctx, model) {
 		return nil
 	}
+	// Keep a candidate separate from the durable expectation. Capture before
+	// Apply: quarantine may itself remove routes and IPv6 addresses. A retry
+	// of the same generation can only restore the existing topology (D-100).
+	pathGen := uint64(e.memberPath.Generation)
+	if pathGen == 0 {
+		pathGen = e.appliedGen // upgrade from the pre-D-100 durable format
+	}
+	var candidate *MemberPath
+	if model.Generation > pathGen {
+		path, ok := e.readMemberPath(ctx, model, nil)
+		if ok {
+			candidate = &path
+		} else if !e.quarantinePending {
+			return nil
+		}
+		// If quarantine lowered the link, let Apply raise it for repair.
+		// Without a valid pre-Apply candidate the old expectation still applies.
+	}
 	wasServing := e.expectServing.Load()
 	res, err := e.plane.Apply(ctx, model, prev)
 	// A verified conntrack failure keeps serving. Only Failed stays pending.
@@ -934,7 +955,15 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 		e.rejectServing(ctx, model, res.Evidence, err)
 		return nil
 	}
-	if !e.checkMemberPath(ctx, model) {
+	if candidate != nil && err == nil && res.Verified {
+		// Recheck the pre-Apply candidate after full serving verification. A
+		// failed Apply, including a pending conntrack delete, cannot refresh it.
+		path, ok := e.readMemberPath(ctx, model, candidate)
+		if !ok || !e.saveMemberPath(ctx, path, model.Generation) {
+			return nil
+		}
+		e.memberPathPending = false
+	} else if !e.checkMemberPath(ctx, model) {
 		return nil
 	}
 	e.serving = true
