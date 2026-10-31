@@ -530,12 +530,6 @@ func (s *liveSuite) ackNodeGeneration(nodeID, incID uuid.UUID, nodeClient *http.
 	rep.ReportId = uuid.New()
 	rep.NodeId = nodeID
 	rep.NodeIncarnationId = incID
-	obsAt := time.Now().UTC()
-	if !obsAt.After(lastObsAt) {
-		obsAt = lastObsAt.UTC().Add(10 * time.Millisecond)
-		time.Sleep(15 * time.Millisecond)
-	}
-	rep.ObservedAt = obsAt
 	rep.SafetyStatus = api.SafetyStatusPassed
 	rep.DataHealth = api.DataHealthHealthy
 	rep.ProvisioningState = api.ProvisioningStateReady
@@ -546,11 +540,27 @@ func (s *liveSuite) ackNodeGeneration(nodeID, incID uuid.UUID, nodeClient *http.
 	rep.AppliedConfigGeneration.Set(decstr.U64(appliedGen))
 	rep.AppliedBindingRevision.Set(ds.BindingRevision)
 	rep.AppliedPolicyRefs.Set(ds.PolicyRefs)
-	for i := range rep.Checks {
-		rep.Checks[i].ObservedAt = obsAt
-	}
 
-	obsResp := s.agentCallWithClient(nodeClient, http.MethodPost, "/api/v1/agent/observations", rep, nil)
+	var obsResp httpResponse
+	var obsAt time.Time
+	for attempt := 0; attempt < 3; attempt++ {
+		obsAt = time.Now().UTC()
+		if !obsAt.After(lastObsAt) {
+			obsAt = lastObsAt.UTC().Add(10 * time.Millisecond)
+			time.Sleep(15 * time.Millisecond)
+		}
+		rep.ReportId = uuid.New()
+		rep.ObservedAt = obsAt
+		for i := range rep.Checks {
+			rep.Checks[i].ObservedAt = obsAt
+		}
+		lastObsAt = obsAt
+		obsResp = s.agentCallWithClient(nodeClient, http.MethodPost, "/api/v1/agent/observations", rep, nil)
+		if obsResp.status == http.StatusAccepted {
+			break
+		}
+		time.Sleep(1 * time.Second)
+	}
 	if obsResp.status != http.StatusAccepted {
 		s.t.Fatalf("ackNodeGeneration POST /observations for %s failed: HTTP %d %s", nodeID, obsResp.status, string(obsResp.body))
 	}
