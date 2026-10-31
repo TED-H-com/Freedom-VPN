@@ -8,8 +8,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
-	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 	"math/big"
 	"net/http"
 	"os"
@@ -20,6 +18,9 @@ import (
 
 	"github.com/TED-H-com/Freedom-VPN/internal/config"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
+	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
+	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 	"github.com/TED-H-com/Freedom-VPN/tests/e2e"
 	"github.com/google/uuid"
 )
@@ -36,11 +37,12 @@ type handoffEvent struct {
 }
 
 type handoffBatch struct {
-	Key       string          `json:"idempotency_key"`
-	Body      json.RawMessage `json:"request"`
-	Stored    json.RawMessage `json:"stored_response"`
-	Replayed  json.RawMessage `json:"replayed_response"`
-	ByteEqual bool            `json:"stored_response_byte_equal"`
+	Key            string          `json:"idempotency_key"`
+	Body           json.RawMessage `json:"request"`
+	Stored         json.RawMessage `json:"stored_response"`
+	Replayed       json.RawMessage `json:"replayed_response"`
+	ByteEqual      bool            `json:"stored_response_byte_equal"`
+	CanonicalEqual bool            `json:"stored_response_canonical_byte_equal"`
 }
 
 func (s *liveSuite) memberPeriodUsage(period string) api.MemberUsage {
@@ -635,12 +637,18 @@ func (s *liveSuite) evalAT20(t *testing.T) (rec Record) {
 		response := s.agentCallWithClient(presenter, http.MethodPost, "/api/v1/agent/usage-batches", []byte(b.Body), map[string]string{"Idempotency-Key": b.Key})
 		b.Replayed = response.body
 		b.ByteEqual = bytes.Equal(b.Stored, b.Replayed)
+		// Replay storage is JCS; the HTTP JSON encoder adds a newline. Compare
+		// complete canonical results, retaining the raw-byte comparison separately.
+		canonicalReplay, err := canonjson.Canonicalize(b.Replayed)
+		must(err)
+		b.CanonicalEqual = bytes.Equal(b.Stored, canonicalReplay)
 		var ack api.UsageBatchResult
 		must(json.Unmarshal(b.Stored, &ack))
-		if response.status != http.StatusOK || !b.ByteEqual || ack.NodeIncarnationId != origin || ack.NodeId != node {
+		batches = append(batches, b)
+		rec.Observations["agent_batches_and_stored_replays"] = batches
+		if response.status != http.StatusOK || !b.CanonicalEqual || ack.NodeIncarnationId != origin || ack.NodeId != node {
 			t.Fatalf("AT20 stored replay/ACK mismatch: HTTP %d", response.status)
 		}
-		batches = append(batches, b)
 	}
 	must(rows.Err())
 	must(rows.Close())
@@ -698,7 +706,7 @@ func (s *liveSuite) evalAT20(t *testing.T) (rec Record) {
 	for _, check := range []string{"BeforePlusHeldByteEquality", "OriginalPayloadAndHistoricalAttribution", "AgentSameKeyStoredResultReplay", "OriginACKAndIndependentCurrentACK", "D112ConfiguredIntervalWithinBound", "LiveLateEventRejectedAndAudited", "RetiredCertificateRefused"} {
 		s.addHandoffCheck(&rec, check, true, "Live assertion completed; deciding API, ledger and byte evidence retained in observations.")
 	}
-	rec.Actual = fmt.Sprintf("Same node %s reenrolled %s -> %s through ControlledReinstall. Member period %s: before %s + held %s = after %s bytes; %d original events retained once, %d agent batches replayed byte-identically, origin ACK %s, independent current ACK %s. Meter interval 10s <= central bound %ds. Live late event rejected/audited and retired certificate refused with 403 IDENTITY_REVOKED. Member API provides period totals; incarnation attribution is read through central samples and admin incarnation history.", node, origin, current, period, before.Totals.TotalBytes, decimalSum(up, down), after.Totals.TotalBytes, len(events), len(batches), oldACK, currentAfter, bound)
+	rec.Actual = fmt.Sprintf("Same node %s reenrolled %s -> %s through ControlledReinstall. Member period %s: before %s + held %s = after %s bytes; %d original events retained once, %d agent batches returned the identical stored canonical result, origin ACK %s, independent current ACK %s. Meter interval 10s <= central bound %ds. Live late event rejected/audited and retired certificate refused with 403 IDENTITY_REVOKED. Member API provides period totals; incarnation attribution is read through central samples and admin incarnation history.", node, origin, current, period, before.Totals.TotalBytes, decimalSum(up, down), after.Totals.TotalBytes, len(events), len(batches), oldACK, currentAfter, bound)
 	stage("complete")
 	return rec
 }
