@@ -120,6 +120,15 @@ func ensureTable(ctx context.Context, env *Env, j *Journal) (bool, error) {
 			return false, err
 		}
 	}
+	if !st.Present || st.LegacyOwner {
+		after, err := readMarker(ctx, env)
+		if err != nil {
+			return false, err
+		}
+		if !after.Present || after.LegacyOwner {
+			return false, errf(ExitFailed, "NFT_MARKER", "installer marker read-back mismatch")
+		}
+	}
 	return !st.Present || st.LegacyOwner, nil
 }
 

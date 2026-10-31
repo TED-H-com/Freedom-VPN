@@ -118,7 +118,16 @@ func removeMarker(ctx context.Context, env *Env) error {
 		return err
 	}
 	if st.Present {
-		return env.run(ctx, "nft", "delete", "table", "inet", st.Table)
+		if err := env.run(ctx, "nft", "delete", "table", "inet", st.Table); err != nil {
+			return err
+		}
+		after, err := readMarker(ctx, env)
+		if err != nil {
+			return err
+		}
+		if after.Present {
+			return errf(ExitFailed, "NFT_MARKER", "installer marker removal read-back mismatch")
+		}
 	}
 	return nil
 }

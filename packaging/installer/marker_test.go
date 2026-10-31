@@ -68,6 +68,10 @@ func TestAT07_D116MigrateOnRerunAndUpgrade(t *testing.T) {
 			if err := removeMarker(ctx, env); err != nil {
 				t.Fatal(err)
 			}
+			// Kernel ownership evidence is absent after reboot until rerun.
+			if rep, err := Check(ctx, env); err != nil || rep.Marker.Present {
+				t.Fatalf("absent runtime marker: %+v %v", rep, err)
+			}
 			legacy := true
 			command := env.Command
 			env.Command = func(ctx context.Context, name string, args ...string) ([]byte, error) {
