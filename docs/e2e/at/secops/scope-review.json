@@ -526,27 +526,27 @@
       },
       {
         "path": "docs/handover/README.md",
-        "sha256": "2fac93ec6142995b04ac1f6d340eaae5069055b325a3e9f1421dde81fbda5ce9"
+        "sha256": "aba19529bdef4fbd661513f30d7d2eb34dc8955f79033e477928d92139f6377a"
       },
       {
         "path": "docs/handover/deploy.md",
-        "sha256": "efcb76918e8e20a0f709119b1153cea930c7cb56bb52e897846de704f106b70e"
+        "sha256": "5f9b4563df9bf3fbe1d202a2a68013a4210a258b52de8865e2e4433ac0a0c7a5"
       },
       {
         "path": "docs/handover/calibration.md",
-        "sha256": "80eb5903ce7d67ce4d0068d0fa034470633fa74b540182221b6abfb33665137c"
+        "sha256": "fc81b280463854a7186f12430f8cee5dbdf0b96d83992f51b1fb471368e4c732"
       },
       {
         "path": "docs/handover/operator-guide.md",
-        "sha256": "01b8c7988b2141a71de16bcc71234c82e385a36a2a831fa0ea585c117eb02911"
+        "sha256": "b4e081cc7561b7d269b7b19316da9bd45de019e2959602c9e655db6282e21b8e"
       },
       {
         "path": "docs/handover/member-guide.md",
-        "sha256": "9a7ab006ce2969e7c9cfcefb965de95f96eb89c3e65b922eb37cc047742d536c"
+        "sha256": "be3f7d11723def97c47da154dae5cd720a62eeed6b4d1a3042ebfc50318643a2"
       },
       {
         "path": "docs/ops/README.md",
-        "sha256": "5d708f6261b319c479f4ee1a2513e665b5219b85140839170a9d48969d1934ee"
+        "sha256": "9b5f9030fe7465142ee37faa731643f1bd953d0fc198e5f1268344c8fa153636"
       }
     ],
     "doc15_handover_half": {
@@ -570,19 +570,19 @@
       },
       {
         "path": "docs/handover/member-guide.md",
-        "sha256": "9a7ab006ce2969e7c9cfcefb965de95f96eb89c3e65b922eb37cc047742d536c"
+        "sha256": "be3f7d11723def97c47da154dae5cd720a62eeed6b4d1a3042ebfc50318643a2"
       },
       {
         "path": "docs/handover/operator-guide.md",
-        "sha256": "01b8c7988b2141a71de16bcc71234c82e385a36a2a831fa0ea585c117eb02911"
+        "sha256": "b4e081cc7561b7d269b7b19316da9bd45de019e2959602c9e655db6282e21b8e"
       },
       {
         "path": "docs/handover/calibration.md",
-        "sha256": "80eb5903ce7d67ce4d0068d0fa034470633fa74b540182221b6abfb33665137c"
+        "sha256": "fc81b280463854a7186f12430f8cee5dbdf0b96d83992f51b1fb471368e4c732"
       },
       {
         "path": "docs/ops/README.md",
-        "sha256": "5d708f6261b319c479f4ee1a2513e665b5219b85140839170a9d48969d1934ee"
+        "sha256": "9b5f9030fe7465142ee37faa731643f1bd953d0fc198e5f1268344c8fa153636"
       },
       {
         "path": "apps/portal/src/i18n/en.ts",
@@ -711,6 +711,65 @@
     "new_requests": [
       "SECOPS-20",
       "SECOPS-21"
+    ]
+  },
+  "handover_follow_up_13": {
+    "reviewed_at": "2026-10-31T03:44:42.187567Z",
+    "base_main_commit": "d9e28f895a62aa3eb2c18ab9a647c7bdde27a348",
+    "scope": "D-077/D-081 restore re-authorization, SECOPS-19 projection and migration 00189, SECOPS-21 generation floor (#245), browser calibration (#233), usage-agent pure reads (#232), installer (#239), D-079, r14/r15 archives and dated acceptance evidence. No new live acceptance claimed.",
+    "reviewed_documents": [
+      {
+        "path": "docs/handover/00-index.md",
+        "sha256": "4a8b657e8c3c561b3ef3f9046377cdeb882097aeaa3a5273a2ae600548778757"
+      },
+      {
+        "path": "docs/handover/11-database-and-retention.md",
+        "sha256": "f8bd813a2f057897ee713661acb96c08b9ede7bf12c972f454721a04b8e86c1f"
+      },
+      {
+        "path": "docs/handover/README.md",
+        "sha256": "aba19529bdef4fbd661513f30d7d2eb34dc8955f79033e477928d92139f6377a"
+      },
+      {
+        "path": "docs/handover/calibration.md",
+        "sha256": "fc81b280463854a7186f12430f8cee5dbdf0b96d83992f51b1fb471368e4c732"
+      },
+      {
+        "path": "docs/handover/deploy.md",
+        "sha256": "5f9b4563df9bf3fbe1d202a2a68013a4210a258b52de8865e2e4433ac0a0c7a5"
+      },
+      {
+        "path": "docs/handover/member-guide.md",
+        "sha256": "be3f7d11723def97c47da154dae5cd720a62eeed6b4d1a3042ebfc50318643a2"
+      },
+      {
+        "path": "docs/handover/operator-guide.md",
+        "sha256": "b4e081cc7561b7d269b7b19316da9bd45de019e2959602c9e655db6282e21b8e"
+      },
+      {
+        "path": "docs/handover/restore-drill.md",
+        "sha256": "bd1b5c35796d735ed33d5ccd9ac78a7b0f006a365e24bdd5a04813308959deff"
+      },
+      {
+        "path": "docs/ops/README.md",
+        "sha256": "9b5f9030fe7465142ee37faa731643f1bd953d0fc198e5f1268344c8fa153636"
+      },
+      {
+        "path": "docs/reviews/README.md",
+        "sha256": "79d4597033c0d60412f641075d458cb216b19d94a7b7440ed5f5148a3ea83ff9"
+      },
+      {
+        "path": "docs/reviews/r13-r12-fixes-review.md",
+        "sha256": "7c7041cff51c69e90225bd3ae8222c73961ce35ee6d37135901df08c59e914e4"
+      },
+      {
+        "path": "docs/reviews/r14-d067-d070-review.md",
+        "sha256": "56a6fb8e36d0564accd73712ef1e49331402c3e1f9479955015bb18dd7493416"
+      },
+      {
+        "path": "docs/reviews/r15-d072-d075-review.md",
+        "sha256": "3fe32af21dec2258d899129fd3660c82f67064720a4be46e59cb2af444a79ad6"
+      }
     ]
   }
 }

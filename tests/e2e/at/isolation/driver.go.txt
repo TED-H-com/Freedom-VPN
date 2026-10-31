@@ -304,6 +304,7 @@ func (x *isolationRun) prepare() bool {
 		x.noteUnmeasured(c)
 		return false
 	}
+	x.noteRulesetReadback()
 	x.startConvergence()
 	return true
 }
@@ -321,13 +322,134 @@ func (x *isolationRun) noteServingGap(c *iso.Check) {
 			summary = foreignRulesetSummary(raw)
 		}
 	}
-	c.Observations = append(c.Observations, iso.Observation{Name: "foreign_ruleset", Detail: summary})
-	if dockerEmbeddedDNS(summary) {
+	c.Observations = append(c.Observations, iso.Observation{Name: "foreign_ruleset", Detail: summary}, iso.Observation{Name: "d079_classifier", Detail: d079Note()})
+	switch {
+	case dockerEmbeddedDNS(summary):
 		c.Owner = "w3-devstack-e2e: node netns table ip nat POSTROUTING xt SNAT for 127.0.0.11"
-		c.Actual = "serving publication fail-closed FLOWTABLE_BYPASS (#220 VerifyServing) on Docker embedded DNS NAT; " + summary + "; the harness did not write nft; devstack follow-up 14 must keep this postrouting xt SNAT out of the ruleset VerifyServing reads"
+		c.Actual = "serving publication fail-closed; Docker embedded DNS NAT is still in the node ruleset after follow-up 14; " + summary + "; the harness did not write nft"
+	case strings.Contains(summary, "127.0.0.") || strings.Contains(summary, "loopback"):
+		c.Owner = "w1-netlab: D-079 not merged; VerifyServing does not classify a loopback-scoped foreign rule"
+		c.Actual = "serving publication fail-closed on a loopback-looking foreign rule; " + summary + "; the harness did not write nft"
+	case strings.Contains(summary, "no foreign flowtable"):
+		c.Actual = "publication did not complete; no foreign flowtable, xt statement, or base chain outside inet fvpn; " + summary
+	default:
+		c.Owner = "w3-devstack-e2e: new foreign table in the lab node"
+		c.Actual = "serving publication fail-closed; foreign ruleset: " + summary + "; the harness did not write nft"
+	}
+}
+
+func (x *isolationRun) noteRulesetReadback() {
+	rec := x.records["AT10"]
+	if rec == nil || x.r == nil || x.r.lab == nil {
 		return
 	}
-	c.Actual = "publication did not complete; foreign ruleset: " + summary
+	rec.Observations = append(rec.Observations, iso.Observation{Name: "d079_classifier", Detail: d079Note()})
+	raw, err := x.r.lab.docker(x.r.lab.node, "nft", "-j", "list", "ruleset")
+	if err != nil {
+		rec.Observations = append(rec.Observations, iso.Observation{Name: "foreign_rules", Detail: "nft -j list ruleset failed: " + clipText(strings.TrimSpace(string(raw)+" "+err.Error()), 400)})
+	} else {
+		listing, dockerNAT := foreignRulesetListing(raw)
+		class := "no foreign rule; Docker embedded DNS NAT absent; loopback_scoped not emitted because D-079 is not in this tree"
+		if dockerNAT {
+			class = "Docker embedded DNS NAT is still present; D-079 is not in this tree so the observation report has no loopback_scoped classification"
+		} else if listing != "[]" {
+			class = "foreign rules are listed verbatim; none is Docker 127.0.0.11 NAT; D-079 is not in this tree so the observation report has no per-rule classification"
+		}
+		rec.Observations = append(rec.Observations,
+			iso.Observation{Name: "foreign_rules", Detail: listing},
+			iso.Observation{Name: "foreign_rule_classification", Detail: class},
+		)
+	}
+	conn, e := x.r.lab.db(x.ctx)
+	if e != nil {
+		return
+	}
+	defer conn.Close(x.ctx)
+	var payload []byte
+	if conn.QueryRow(x.ctx, `SELECT report_payload FROM node_observations WHERE node_id=$1 ORDER BY received_at DESC LIMIT 1`, x.r.nodeID).Scan(&payload) == nil {
+		rec.Observations = append(rec.Observations, iso.Observation{Name: "observation_report", Detail: string(payload)})
+	}
+}
+
+func moduleRoot() string {
+	// The overlay test runs with working directory tests/e2e.
+	for _, dir := range []string{".", "..", "../.."} {
+		if _, err := os.Stat(filepath.Join(dir, "node/enforce/verify_foreign.go")); err == nil {
+			abs, absErr := filepath.Abs(dir)
+			if absErr == nil {
+				return abs
+			}
+			return dir
+		}
+	}
+	return "."
+}
+
+func d079Note() string {
+	root := moduleRoot()
+	out, err := exec.Command("git", "-C", root, "log", "-1", "--format=%H %s", "--", "node/enforce/verify_foreign.go").CombinedOutput()
+	line := strings.TrimSpace(string(out))
+	if err != nil {
+		line = "git log failed: " + line
+	}
+	body, readErr := os.ReadFile(filepath.Join(root, "node/enforce/verify_foreign.go"))
+	present := readErr == nil && strings.Contains(string(body), "loopback_scoped")
+	return "verify_foreign.go " + line + "; loopback_scoped_in_source=" + boolText(present) + "; this main's observation report has no foreign-rule classification field"
+}
+
+func foreignRulesetListing(raw []byte) (string, bool) {
+	var doc struct {
+		Nftables []map[string]json.RawMessage `json:"nftables"`
+	}
+	if json.Unmarshal(raw, &doc) != nil {
+		return "nft json unreadable", false
+	}
+	var kept []string
+	dockerNAT := false
+	for _, obj := range doc.Nftables {
+		if _, ok := obj["metainfo"]; ok {
+			continue
+		}
+		fam, table := nftObjectIdentity(obj)
+		if table == "fvpn" && (fam == "inet" || fam == "") {
+			continue
+		}
+		encoded, err := json.Marshal(obj)
+		if err != nil {
+			continue
+		}
+		text := string(encoded)
+		if strings.Contains(text, "127.0.0.11") && strings.Contains(text, "DOCKER_") {
+			dockerNAT = true
+		}
+		kept = append(kept, text)
+	}
+	if len(kept) == 0 {
+		return "[]", dockerNAT
+	}
+	return "[" + strings.Join(kept, ",") + "]", dockerNAT
+}
+
+func nftObjectIdentity(obj map[string]json.RawMessage) (family, table string) {
+	for key, raw := range obj {
+		var id struct {
+			Family string `json:"family"`
+			Table  string `json:"table"`
+			Name   string `json:"name"`
+		}
+		if json.Unmarshal(raw, &id) != nil {
+			continue
+		}
+		// A table declaration stores its name in "name". Chains, rules and
+		// counters store the owning table in "table".
+		if key == "table" && id.Name != "" {
+			return id.Family, id.Name
+		}
+		if id.Family != "" || id.Table != "" {
+			return id.Family, id.Table
+		}
+	}
+	return "", ""
 }
 
 func (x *isolationRun) noteUnmeasured(serving iso.Check) {
@@ -581,6 +703,9 @@ func (x *isolationRun) intranet() {
 		x.add("AT10", iso.Check{Name: "controlled targets", Status: iso.StatusBlocked, Actual: string(out), Owner: "acceptance"})
 		return
 	}
+	defer func() {
+		_ = exec.Command("docker", "rm", "-f", target).Run()
+	}()
 	if !x.install(target) {
 		return
 	}
