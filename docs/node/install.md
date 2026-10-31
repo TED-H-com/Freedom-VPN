@@ -55,6 +55,52 @@ Order:
 
 The empty netns `fvpn` is a name reservation. `node/enforce` programs table `inet fvpn` in the host network namespace, so the data-plane interfaces stay there.
 
+### Authenticated updater reporting (F10-02, §13.6, §13.10.3)
+
+`--control-url` and `--server-ca` are required operator-provisioned inputs.
+The URL must be an HTTPS origin, for example `https://control.example.com:443`
+(an optional trailing `/` is normalized). Credentials, path prefixes, queries,
+fragments, invalid ports, metadata and forbidden literal addresses are refused.
+The CA must be a readable PEM certificate bundle. Enrollment authenticates that
+server with this CA before the installer writes the node's updater config.
+No production hostname or separate reporting host is invented.
+
+The generated `/etc/vpn-node/updater.json` contains:
+
+| Field | Authenticated/configured source |
+|---|---|
+| `result_url` | Validated control origin plus the contract route `/api/v1/agent/update-results` (`POST`). |
+| `mtls_ca` | `/etc/vpn-node/ca.pem`, copied from `--server-ca`, the same server trust as the agent. |
+| `mtls_cert`, `mtls_key` | Enrolled node files `/var/lib/vpn-node/identity/cert.pem` and `key.pem`; the key stays on the node. |
+| `allowed_artifact_origins` | Exactly the supplied control origin, including its port. The updater uses this existing field for both result delivery and artifacts. It permits private/CGNAT addresses only at this origin; it is not a subnet wildcard. |
+| `allow_loopback` | False by default. `install --allow-loopback` is **TEST ONLY** for an isolated HTTPS lab control. It uses the updater's existing test exception; do not enable it in production. |
+
+The enrollment response's `identity/ca.pem` is the **node certificate issuer**;
+it need not be the HTTPS server issuer and is not used as the result sink's
+server trust. Re-enrollment changes the client identity while preserving the
+reporting origin and server CA. Updater URL/dial checks and TLS hostname checks
+remain in force, including DNS-resolved-address checks and URL checks on redirects.
+Only the control origin is provisioned here: artifact mirrors needing other
+private origins require explicit operator configuration of the existing updater
+allowlist; the installer does not discover them from arbitrary URLs.
+
+Missing/invalid origin or CA input exits 64 before host changes. The installer
+never emits an empty result endpoint or chooses local-only reporting. A missing
+CA file at runtime prevents updater engine construction; the wrong CA fails TLS
+delivery and retains the durable result for retry. Local apply/seed success is
+not central acceptance. `fvpn-updater flush --config /etc/vpn-node/updater.json`
+sends pending results using the rendered configuration; only the received ACK
+records central acceptance. No endpoint/CA editing step is required.
+
+A same-release install rerun repairs pre-F10-02 reporting fields and server CA
+under the install journal/shared lock, including the `already_current` path.
+It restores the reporting allowlist to the supplied control origin and preserves
+unrelated updater fields, node identity, boot-fallback absence, usage and updater
+journal. Reapply any deliberately configured private artifact-mirror origins
+when reprovisioning with `install`. A second identical rerun leaves these public
+configuration files unchanged. [Follow-up 7](install-followup7-2026-10-31.md)
+records the actual generated-config mTLS delivery test and external acceptance.
+
 ### Re-run (§6.3, AT07)
 
 A second `install` of the same `release_id` and the same manifest digest, with matching units, directory modes, and `agent.json`, prints `already_current` and exits 0. It does not restart units or change identity or `usage.db`. It reconciles the hookless installer marker and removes the legacy empty `inet fvpn owner` chain, then repeats the baseline probe/seed; the updater must treat the same verified baseline as idempotent and refuse a journal with different content.
@@ -258,6 +304,17 @@ fvpn-node-install reenroll --json --token-file <path-mode-0600>
 
 Exit 0 and status `reenrolled` means the new `node.json` incarnation differs, `identity.retired/<utc>/` exists and is mode 0700, and `usage.db` was not deleted. The old certificate's rejection by central is still lab evidence (ENR-02).
 
-## Evidence limits after follow-up 6
+## Evidence limits after follow-up 7
 
-Still unclaimed here: a successful **serving-node** correlated upgrade on the combined source (devstack 19); central acceptance of this local upgrade receipt; D-105 old-incarnation backlog delivery; physical arm64 execution; production release signing/distribution and fleet rollout; boot-source provenance, physical cold boot/power-loss recovery and real-device kernel/throughput bounds; full AT07/AT09/AT25/AT26 or SECOPS-21 closure. arm64 is cross-built only. Devstack 18's native MTU and original high-generation restart questions also remain outside this installer evidence. ENR-05's scoped serving pass and the isolated local upgrade do not imply these claims.
+[Follow-up 7](install-followup7-2026-10-31.md) consumes devstack 19's successful
+serving-node correlated upgrade and candidate revoke/re-enrollment seed, and
+updates 10's installer → updater → production central receipt extension.
+The privileged installer test separately proves delivery through the unchanged
+rendered updater config to its mTLS test central. These are scoped observations,
+not blanket AT or fleet-rollout acceptance.
+
+Physical arm64 execution, cold boot, power-loss recovery, production signing /
+distribution / rollout and real-device kernel/throughput bounds remain 待實測.
+The 30 s checkpoint wait and 100 ms poll are engineering bounds, not measured
+SLOs. This lane does not close D-105 retired-stream delivery, full
+AT07/AT09/AT25/AT26, SECOPS-21, or the cross-lane network investigations.

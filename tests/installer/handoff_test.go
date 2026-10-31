@@ -195,6 +195,7 @@ func testPendingHandoff(t *testing.T, c string, baseline *installer.BaselineResu
 		t.Fatalf("candidate pointer did not switch: %s", got)
 	}
 	assertCorrelatedReceipt(t, c, view["job_id"].(string))
+	assertGeneratedReporting(t, c, view["job_id"].(string))
 	checked := mustCheck(t, c, 0)
 	if checked.ReleaseID != rel2.ReleaseID || checked.ReleaseSource != "updater_journal" || checked.InstallRecord.ReleaseID != rel1.ReleaseID {
 		t.Fatalf("post-switch check did not reconcile install record: %+v", checked)

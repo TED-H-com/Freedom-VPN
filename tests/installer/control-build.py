@@ -3,7 +3,7 @@
 
 A temporary harness module has a node/ import path, allowing Go's internal
 import. It uses the real root module through a local replace, with the same
-pinned dependencies. Only installer-owned main.go is copied. No node source or
+pinned dependencies. Only installer-owned fixture sources are copied. No node source or
 directory is written; all generated files live on disk in .agent/tmp.
 """
 
@@ -28,8 +28,8 @@ def main():
         manifest += f"\nrequire {module} v0.0.0\nreplace {module} => {json.dumps(str(root))}\n"
         (temp / "go.mod").write_text(manifest)
         (temp / "go.sum").write_bytes((root / "go.sum").read_bytes())
-        (temp / "main.go").write_bytes(
-            (root / "tests/installer/cmd/fvpn-w5-control/main.go").read_bytes())
+        for source in (root / "tests/installer/cmd/fvpn-w5-control").glob("*.go"):
+            (temp / source.name).write_bytes(source.read_bytes())
         env = dict(os.environ, TMPDIR=scratch, GOTMPDIR=scratch, GOWORK="off")
         package = "."
         go = env.get("INSTALLER_GO", "go")
