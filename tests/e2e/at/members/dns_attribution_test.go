@@ -54,9 +54,13 @@ func attributeCache(first, next labstack.FixtureProbeResult) map[string]any {
 		return out
 	}
 	out["assertion_scope"] = "same uniquely matched resolver"
+	ttl := first.AuthorityTTL
 	if len(first.TTLs) > 0 {
+		ttl = first.TTLs[0]
+	}
+	if ttl > 0 {
 		// A receipt TTL is whole seconds; completion of a slow query is not its start.
-		boundary := a.Completed.Add(time.Duration(first.TTLs[0])*time.Second - time.Second)
+		boundary := a.Completed.Add(time.Duration(ttl)*time.Second - time.Second)
 		out["subsecond_expiry_possible"] = !b.Completed.Before(boundary)
 		out["earliest_whole_second_expiry"] = boundary
 	}
@@ -69,7 +73,7 @@ func attributeCache(first, next labstack.FixtureProbeResult) map[string]any {
 		if !request.Start.Started.Before(b.Started) && !request.Start.Started.After(b.Completed) {
 			fetch = true
 		}
-		if request.Start.Started.Before(a.Completed) && request.Completion != nil && request.Completion.Completed.After(a.Completed) && !request.Completion.Completed.After(b.Completed) {
+		if request.Start.Started.Before(b.Started) && request.Completion != nil && request.Completion.Completed.After(a.Completed) && !request.Completion.Completed.After(b.Completed) {
 			late = append(late, request)
 		}
 	}
@@ -77,10 +81,12 @@ func attributeCache(first, next labstack.FixtureProbeResult) map[string]any {
 	out["fetch_in_next_query"] = fetch
 	same := reflect.DeepEqual(first.Classes, next.Classes)
 	switch {
-	case !same && len(late) > 0:
-		out["classification"] = "changed same-resolver answer with older outstanding completion (F9-INFLIGHT candidate); insertion order not directly observed"
+	case len(late) > 0:
+		out["classification"] = "same-resolver answer with older outstanding completion (F9-INFLIGHT candidate); insertion order not directly observed"
 	case fetch:
 		out["classification"] = "same-resolver miss/refetch; inspect F9-ROUND, eviction, invalidation and cache key; not fallback"
+	case same && len(first.Types) == 0:
+		out["classification"] = "negative response without new authority fetch; cache state remains unknown (local synthesis is separate)"
 	case same:
 		out["classification"] = "same-resolver inferred hit without new authority fetch (F9-HIT)"
 	default:

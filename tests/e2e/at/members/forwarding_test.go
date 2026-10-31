@@ -59,7 +59,11 @@ func (l *live) forwardingGate(r *record, devices ...uuid.UUID) bool {
 	}
 	var raw []byte
 	var joined json.RawMessage
+	stage := "central_readiness"
+	var readerError string
 	ready := l.wait(90*time.Second, func() bool {
+		stage = "central_readiness"
+		readerError = ""
 		err := l.pool.QueryRow(l.ctx, `SELECT jsonb_build_object('desired',n.desired_config_generation::text,'applied',n.applied_config_generation::text,'lease_id',s.id,'lease_generation',s.policy_generation::text,'member_count',jsonb_array_length(s.envelope->'signed'->'members'),'expires_at',s.expires_at,'observation',o.report_payload,'device_id',($2::uuid)::text)
  FROM nodes n JOIN LATERAL (SELECT * FROM node_observations WHERE node_id=n.id AND incarnation_id=n.current_incarnation_id ORDER BY received_at DESC LIMIT 1) o ON true
  JOIN serving_leases s ON s.id::text=o.report_payload->'lease'->>'lease_id' AND s.node_id=n.id AND s.incarnation_id=n.current_incarnation_id
@@ -76,9 +80,11 @@ func (l *live) forwardingGate(r *record, devices ...uuid.UUID) bool {
 			Generation  decstr.U64            `json:"applied"`
 			Observation api.ObservationReport `json:"observation"`
 		}
+		stage = "accepted_report_decode"
 		if json.Unmarshal(raw, &state) != nil {
 			return false
 		}
+		stage = "local_binding"
 		if device != uuid.Nil {
 			body, e := l.inside(l.nodeContainer(), "cat", "/var/lib/vpn-node/state/desired-state.json")
 			var desired struct {
@@ -101,18 +107,18 @@ func (l *live) forwardingGate(r *record, devices ...uuid.UUID) bool {
 			}
 		}
 		// F10-02 discipline: retain the exact producer row, not an inferred clock.
-		stack, e := l.hook.MemberTransportStack(l.name("member"), l.nodeContainer())
+		stage = "producer_stream_export"
+		trace, e := l.readEnforcementTiming()
+		readerError = ""
 		if e != nil {
+			readerError = "producer_stream_unavailable"
 			return false
 		}
-		trace, e := stack.EnforcementTiming(l.ctx)
-		if e != nil {
-			return false
-		}
+		stage = "producer_serving_join"
 		joined = servingProducer(trace, state.Observation.BootId, state.LeaseID, state.Generation)
 		return joined != nil
 	})
-	r.jsonCheck("populated-grant serving readiness", "fresh accepted serving observation; desired=applied=observed lease generation; unexpired populated lease, live intended binding and same-boot producer serving row", map[string]any{"ready": ready, "device_id": device, "accepted": json.RawMessage(raw), "producer_record": joined}, "read-only SQL + local desired state + EnforcementTiming; stop positive probe when unavailable", ready)
+	r.jsonCheck("populated-grant serving readiness", "fresh accepted serving observation; desired=applied=observed lease generation; unexpired populated lease, live intended binding and same-boot producer serving row", map[string]any{"ready": ready, "device_id": device, "accepted": json.RawMessage(raw), "producer_record": joined, "last_stage": stage, "reader_error": readerError}, "read-only SQL + local desired state + streamed ExportContainerFile; stop positive probe when unavailable", ready)
 	l.write(r)
 	return ready
 }

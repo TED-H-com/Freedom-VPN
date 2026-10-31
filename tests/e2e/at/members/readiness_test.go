@@ -10,9 +10,15 @@ import (
 )
 
 func servingProducer(trace []json.RawMessage, boot, lease uuid.UUID, generation decstr.U64) json.RawMessage {
+	if boot == uuid.Nil || lease == uuid.Nil || generation == 0 {
+		return nil
+	}
 	for i := len(trace) - 1; i >= 0; i-- {
 		var m agent.Measurement
 		if json.Unmarshal(trace[i], &m) != nil {
+			return nil
+		}
+		if m.BootID == boot && (m.Baseline != nil || (m.Timing != nil && !m.Timing.Succeeded)) {
 			return nil
 		}
 		if m.BootID != boot || m.Heartbeat == nil {
@@ -44,6 +50,12 @@ func TestAT02_F12ReadinessRejectsEmptyLeaseAndLaterWithdrawal(t *testing.T) {
 	withdrawn, _ := json.Marshal(m)
 	if servingProducer([]json.RawMessage{raw, withdrawn}, boot, lease, 10) != nil {
 		t.Fatal("later withdrawal hidden")
+	}
+	m.Heartbeat = nil
+	m.Baseline = &agent.MeasurementBaseline{Cause: "policy_missing", Start: 101, End: 110, Succeeded: true}
+	baseline, _ := json.Marshal(m)
+	if servingProducer([]json.RawMessage{raw, baseline}, boot, lease, 10) != nil {
+		t.Fatal("later baseline hidden")
 	}
 	if servingProducer([]json.RawMessage{raw}, boot, uuid.New(), 10) != nil {
 		t.Fatal("wrong lease joined")

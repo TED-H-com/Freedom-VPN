@@ -14,7 +14,7 @@ import (
 )
 
 func (l *live) recordCounterTiming(r *record) {
-	trace, err := l.hook.EnforcementTiming(l.ctx)
+	trace, err := l.readEnforcementTiming()
 	reads := []counterread.Result{}
 	for _, step := range r.Steps {
 		if !strings.HasPrefix(step.Name, "persistent withdrawal ") {
@@ -57,7 +57,7 @@ func (l *live) recordCounterTiming(r *record) {
 	if e := os.WriteFile(filepath.Join(l.root, "docs/e2e/at/members/AT02-enforcement-timing.json"), append(raw, '\n'), 0644); e != nil {
 		l.t.Fatal(e)
 	}
-	r.jsonCheck("counter reader enforcement attribution", "same-boot nonzero ordered read brackets; every before/after record joins gap-free original producer stream", map[string]any{"trace_file": "AT02-enforcement-timing.json", "trace_records": len(trace), "counter_samples": len(reads), "export_error": safeError(err), "join_error": safeError(joinErr)}, "EnableEnforcementTiming before enrollment; EnforcementTiming after AT02; command brackets, not kernel commit times", err == nil && joinErr == nil)
+	r.jsonCheck("counter reader enforcement attribution", "same-boot nonzero ordered read brackets; every before/after record joins gap-free original producer stream", map[string]any{"trace_file": "AT02-enforcement-timing.json", "trace_records": len(trace), "counter_samples": len(reads), "export_error": safeError(err), "join_error": safeError(joinErr)}, "EnableEnforcementTiming before enrollment; streamed ExportContainerFile after AT02; command brackets, not kernel commit times", err == nil && joinErr == nil)
 }
 
 func TestAT02_AT20_SharedDiagnosticSerialization(t *testing.T) {
