@@ -102,6 +102,7 @@ func (p *probe) prepareFreezeSource(node uuid.UUID) bool {
 		detail["step"] = "native_join"
 		return false
 	}
+	p.servingGroup, p.servingMember, p.servingDevice = group.GroupId, member, peer.DeviceID
 	until = time.Now().Add(120 * time.Second)
 	for time.Now().Before(until) && p.ctx.Err() == nil {
 		snap := p.freezeSnapshot(node)
@@ -247,6 +248,8 @@ func (p *probe) checkServingFreeze(node uuid.UUID, m *freezeMonitor) {
 	if first.ConflictAt != nil {
 		elapsed := first.End.Sub(*first.ConflictAt)
 		detail["withdrawal_upper_bound_ms"] = elapsed.Milliseconds()
+		detail["follow_up_7_baseline_ms"] = 227
+		detail["delta_from_follow_up_7_ms"] = elapsed.Milliseconds() - 227
 		bounded = elapsed >= 0 && elapsed <= m.heartbeat
 	}
 	// Replay the actual latest product report; no fabricated observation. The

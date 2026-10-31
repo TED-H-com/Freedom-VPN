@@ -42,8 +42,8 @@ MISSING = {
     "peer_uniqueness": "ENR-04 join cycle did not record EnrollmentPeerInventory; devstack follow-up 12 PR #204 exports JoinEnrolledIdentity",
     "distinct_first_boot": "ENR-07 MachineIdentityFingerprints was not read; devstack follow-up 12 PR #204 exports it",
     "machine_identity": "ENR-07 MachineIdentityFingerprints was not read; devstack follow-up 12 PR #204 exports it",
-    "counted_unacked_usage": "ENR-05: D-116 installer owner chain blocks serving; see docs/e2e/runs/2026-10-31/followup17/a7c41436-82b3-4665-b75c-e2887f2e1009/installer-owner-chain.md. D-105 revision 14 specifies the handoff; D-112 central acceptance and the node uploader are not merged. Current Reenroll preserves events unuploaded.",
-    "installer_rerun": "ENR-06: installer probe not reached. Installer #279 fixes the prior startup cause; devstack #294 exports RestoreInstallerServices; D-116 still blocks serving.",
+    "counted_unacked_usage": "ENR-05: live installer serving/counting prerequisite not reached; see installer_prerequisite for component and step.",
+    "installer_rerun": "ENR-06: installer probe not reached. D-116 is available; see installer_prerequisite for the measured component and step.",
     "identity_ledger_preserved": "ENR-05/ENR-06: requires a running installer-node with counted unACKed usage, retired mode 0700 and newest-first incarnation history. Not reached.",
     "controlled_reinstall": "ENR-06: ControlledReinstall on installer-node not reached; a successful initial install and documented service restoration are prerequisites.",
     "old_certificate_denied": "ENR-06: retired installer certificate unavailable until ControlledReinstall; desired-state and observation denial not reached.",
@@ -139,6 +139,8 @@ def digest_labels(value):
 
 def previous(docdir, at):
     path = docdir / (at + ".json")
+    if not path.exists():
+        path = docdir / "history/follow-up-7" / (at + ".json")
     if not path.exists():
         path = docdir / "history/follow-up-6" / (at + ".json")
     if not path.exists():
@@ -324,10 +326,11 @@ def persist(docdir, recs, archive):
                 f"Source: `{rec['source']['commit']}`; tree SHA-256 `{rec['source']['tree_sha256']}`.\n\n"
                 f"Images: {rec['image_evidence']}.\n\nRequirements: {', '.join(rec['requirements'])}.\n\n"
                 f"Prior checks retained: {len(rec['prior_checks'])}.\n\n"
-                "| Check | Status | Observation |\n|---|---|---|\n")
+                "| Check | Status | Owner | Evidence / observation |\n|---|---|---|---|\n")
         for c in rec["checks"]:
             detail = json.dumps(c["detail"], ensure_ascii=False) if not isinstance(c["detail"], str) else c["detail"]
-            text += f"| {c['name']} | {c['status']} | {detail.replace('|', '/')} |\n"
+            owner = c["detail"].get("owner", "enrollment") if isinstance(c["detail"], dict) else "enrollment"
+            text += f"| {c['name']} | {c['status']} | {owner} | [{at}.json](./{at}.json): {detail.replace('|', '/')} |\n"
         text += f"\nFull provenance and prior checks: [{at}.json]({at}.json). Requests: [requests.md](requests.md).\n"
         for directory in (docdir, archive):
             (directory / (at + ".json")).write_text(raw)
