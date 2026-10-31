@@ -1901,7 +1901,20 @@ func (x *isolationRun) archiveReceiver() {
 	if x.r == nil {
 		return
 	}
-	time.Sleep(150 * time.Millisecond)
+	// Quiesce only after all measurements; keep the container available for the
+	// shared stream exporter, then let the receiver finish its 100ms drain.
+	closure := []map[string]any{}
+	for _, container := range []string{x.r.lab.node, x.r.lab.prefix + "-node-clone"} {
+		start := time.Now()
+		out, err := exec.Command("docker", "exec", container, "agent-service.sh", "stop").CombinedOutput()
+		closure = append(closure, map[string]any{"container": container, "start": start.UTC().Format(time.RFC3339Nano), "end": time.Now().UTC().Format(time.RFC3339Nano), "ok": err == nil, "output": iso.Redact(string(out))})
+	}
+	time.Sleep(300 * time.Millisecond)
+	x.extra("receiver-closure.json", closure)
+	for _, name := range []string{"agent.log", "watchdog.log"} {
+		raw, _ := exec.Command("docker", "exec", x.r.lab.node, "cat", "/var/lib/vpn-node/e2e/"+name).Output()
+		_ = iso.WriteExtra(x.dir, name+".txt", iso.Redact(string(raw)))
+	}
 	// Stream the full private capture to task disk, outside diagnostic stdout.
 	scratch := filepath.Join(x.r.lab.root, ".agent", "tmp", "isolation-receiver.jsonl")
 	_, err := (&Stack{lab: x.r.lab}).ExportContainerFile(x.ctx, "node", "/var/lib/vpn-node/e2e/isolation-observations.jsonl", scratch)
