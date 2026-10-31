@@ -13,6 +13,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/enrollment"
 	"github.com/TED-H-com/Freedom-VPN/internal/fleetupdate"
+	"github.com/TED-H-com/Freedom-VPN/internal/leases"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes"
 	"github.com/TED-H-com/Freedom-VPN/internal/pki"
 	"github.com/TED-H-com/Freedom-VPN/internal/releases"
@@ -25,6 +26,8 @@ import (
 )
 
 type Runtime struct {
+	testOnlyGrantEligibility func(pgx.Tx) leases.EntitlementReader
+
 	ResolverDocuments nodes.ResolverDocumentSource
 	Pool              *pgxpool.Pool
 	PKI               *pki.Service
@@ -36,9 +39,22 @@ type Runtime struct {
 	Config            config.Nodes
 }
 
+// Option configures a Runtime at construction, before it serves requests.
+type Option func(*Runtime)
+
+// WithTestOnlyGrantEligibilityReaderFactory is TEST ONLY: override eligibility
+// for future serving leases, never desired-state compilation. The factory runs
+// once per renewal transaction and must return a non-nil reader whose eligibility
+// is stable throughout that renewal. It must not retain the transaction.
+// A nil factory keeps the production DB reader. Production composition roots
+// must not set this option; it has no configuration or HTTP control surface.
+func WithTestOnlyGrantEligibilityReaderFactory(factory func(pgx.Tx) leases.EntitlementReader) Option {
+	return func(r *Runtime) { r.testOnlyGrantEligibility = factory }
+}
+
 // Open builds services once from process-owned dependencies. It neither reads
 // environment nor opens a pool, and does not start background work (D-026).
-func Open(ctx context.Context, pool *pgxpool.Pool, c config.Nodes, log *slog.Logger) (*Runtime, error) {
+func Open(ctx context.Context, pool *pgxpool.Pool, c config.Nodes, log *slog.Logger, opts ...Option) (*Runtime, error) {
 	if e := c.Validate(); e != nil {
 		return nil, e
 	}
@@ -98,5 +114,8 @@ func Open(ctx context.Context, pool *pgxpool.Pool, c config.Nodes, log *slog.Log
 		}
 		return db.EnqueueOutbox(ctx, tx, db.OutboxEvent{AggregateID: report.NodeIncarnationId, AggregateType: "node-incarnation", AggregateVersion: "1", EventType: "node.peer.observe", SchemaVersion: 1, Payload: payload})
 	}))
+	for _, opt := range opts {
+		opt(r)
+	}
 	return r, nil
 }

@@ -1,0 +1,147 @@
+# D-087 lease grant eligibility seam — 2026-10-31
+
+`httpwire.Open` accepts the documented **TEST ONLY** option
+`httpwire.WithTestOnlyGrantEligibilityReaderFactory(func(pgx.Tx) leases.EntitlementReader)`.
+The real `POST /api/v1/agent/lease-renewals` handler calls the factory once in
+its renewal transaction, before constructing the lease service. A missing/nil
+factory uses the exact production `leases.DBEntitlementReader{}`; a factory
+returning a nil reader fails with 503 `DEPENDENCY_UNAVAILABLE` and commits no
+lease. Readers must remain stable throughout a renewal and must not retain
+the transaction. Configure the option before serving requests.
+
+The two entitlement interfaces have different jobs. The factory substitutes
+the **lease** reader, which already receives the transaction as its `q`
+argument. `CompileControlState` still explicitly uses
+`desiredstate.NewDBEntitlementReader(tx)`, and the background compiler is also
+unchanged. Substituting an empty desired-state reader would delete bindings and
+advance the generation, defeating D-087. No change to either compiler or to
+the HTTP/schema contracts is needed.
+
+`apps/control/wire_nodes.go` never sets the option. There is no production
+configuration, environment switch or HTTP endpoint for it. This is a
+documented constructor-only test seam, not a build-tagged product feature.
+
+## Devstack 20 wiring
+
+The helper `nodestest.NewMemberGrantEligibility()` initially enables production
+eligibility. Its concurrency-safe `SetMemberGrantsReady(false/true)` hook
+controls all nodes in the runtime using that instance. Use a dedicated test
+runtime and keep the switch private to the isolated harness.
+
+```go
+grants := nodestest.NewMemberGrantEligibility()
+runtime, err := httpwire.Open(ctx, pool, nodeConfig, logger,
+    httpwire.WithTestOnlyGrantEligibilityReaderFactory(grants.ReaderFactory))
+// Handle err before composing the test control server.
+// Use &httpwire.Handlers{Runtime: runtime}, runtime.PKI as Agents,
+// httpwire.RequestContext as middleware, and the ordinary HTTP command layer.
+
+// Connect the harness's existing SetMemberGrantsReady hook to this same instance:
+grants.SetMemberGrantsReady(false)
+// After the qualifying observation has actually been accepted:
+grants.SetMemberGrantsReady(true)
+```
+
+Supply this option in devstack's TEST ONLY composition of the real runtime;
+the normal control domain constructor intentionally offers no switch. Any
+harness-local `/member-grants` adapter belongs in the harness and must call
+this instance, not the separate fake-control fixture. Keep it out of the
+product API. Construction alone does not wire an already-running production
+control binary to the helper.
+
+Each renewal samples the flag once. False returns an empty, stable
+`leases.FakeEntitlementReader`; true returns the concrete production DB reader,
+preserving both database eligibility checks and the lease service's special
+`FOR SHARE` recheck/locking path. A flip while a renewal is in flight affects
+the next renewal that samples the switch. True does not manufacture members
+or bypass suspension, publication, readiness, identity or freeze checks.
+
+The switch changes only future member grants. It does not revoke existing
+leases, rewrite replay responses, alter entitlement sources, bump the desired
+generation, remove desired bindings, unpublish, change readiness, or freeze
+identity. The ready node retains its configured offline lease window; the
+switch does not invoke the 60-second not-ready/frozen lease backstop. Signed
+lease IDs/times and ordinary issuance/audit/endpoint timestamps still advance
+normally; literal equality applies to the desired document and the listed
+state invariants, not to every database row or a freshly issued lease.
+
+## Isolation 10 measurement
+
+Follow [agent-core 24's clean recipe](../node/followup24-isolation-2026-10-31.md)
+and [agent-core 27's fixed-generation predicate](../node/followup27-isolation-2026-10-31.md).
+Start with a fresh, unfrozen, published, ready node, desired device bindings,
+a passed baseline, a working meter and a passing real tunnel probe. Keep its
+interface/routes intact and capture all actual observation POSTs before arming
+false. Do not combine this with foreign-tc injection or clone detection.
+For a bounded run, configure the supported TEST ONLY offline lease window
+before issuing the baseline lease and keep it fixed throughout the transition.
+
+1. Record the desired envelope/ETag, bindings, generation, ready/passed state,
+   publication and freeze flag. Arm false and wait for ordinary renewal; an
+   already-issued populated lease remains valid. Retain the genuine signed
+   empty lease and its request/issuance/acceptance timing.
+2. Require an accepted report with `provisioning_state=ready`,
+   `safety_status=passed`, forwarding false, a non-null lease ID, exactly
+   `awaiting_member_grants`, and no `lease_expired`. The `lease`, `qos` and
+   `source_binding` checks carry `AWAITING_MEMBER_GRANTS`; exactly one error
+   has that code and `stage=lease`. Retained safety failures do not qualify.
+3. Only after that receipt, record the true flip and let the agent's scheduled
+   grant-less renewal obtain a populated lease. Require a distinct accepted
+   serving report, unchanged applied/desired generation and bindings, and
+   independent counted native forwarding with an increasing admission counter.
+4. Retain flip → renewal → lease acceptance → serving observation → counted
+   forwarding timings. Compare the invariant fields across the transition;
+   retain I/O, Retry-After and backoff evidence rather than assuming that a
+   scheduled request slot equals completed forwarding. Do not bump generation
+   or shorten an issued lease to accelerate the result.
+
+This supplies the missing central trigger identified in
+[devstack 19's response](../e2e/RESPONSES.md#isolation--agent-core--2026-10-31-follow-up-19).
+It does not itself close the assembled AT10 row, establish a latency bound, or
+replace the historical isolation observations.
+
+## Proof and scope
+
+`TestD087_AT10_ProductionConstructorAndHTTPFixedGenerationGrants` builds the
+actual production control domain and an opted-in runtime over the same dbtest
+database and ephemeral authority. It exercises mTLS identity authentication,
+HTTP validation/commands and the real signer/lease persistence, validates
+responses against the unchanged OpenAPI, and verifies both purpose signatures.
+The production domain still grants while the test runtime withholds. Across
+false → true, full desired-state response bytes/ETag and stored binding,
+generation, readiness, publication, freeze and entitlement snapshots remain
+identical. Keyed, new-key and unkeyed replays retain both originally populated
+and originally empty leases. Restored grants still respect real suspension.
+The immediate replay checks use larger TEST ONLY HTTP rate buckets; production
+rate defaults and the harness's ordinary-renewal cadence remain unchanged.
+
+`TestD087_AT29_HTTPNilGrantReaderFailsClosed` proves a broken factory cannot
+fall back to production grants or commit a partial lease; the exact request/key
+can subsequently succeed through the production runtime.
+`TestD087_GrantEligibilitySnapshotKeepsProductionLocking` pins the concrete DB
+reader and stable in-flight empty snapshot. Existing tests remain unchanged.
+
+Run focused proofs with disk TMPDIR/GOTMPDIR, after the shared-suite admission
+check (`pgrep -af 'gates.sh|mk/at-'`, waiting while two other suites are active):
+
+```sh
+go test -count=1 ./internal/nodes/nodestest -run TestD087 -v
+go test -count=1 -tags integration ./internal/nodes/httpwire -run TestD087 -v
+```
+
+Coverage supports §14.4/§16.3, ENT02/ISO02/SEC01 and AT29, and supplies the
+central prerequisite for §19 AT10 / ISO01/ISO02. These are central HTTP tests
+with seeded readiness, not a real agent/kernel/native-traffic measurement.
+The assembled report and packet proof remains with devstack 20 / isolation 10;
+physical arm64 remains 待實測. D093-12 option (ii), the explicit dev-tag-only
+`nodes.release_fetcher = fixture` selector, remains deferred design advice.
+
+### Requests to orchestrator
+
+1. **2026-10-31 — devstack 20 → isolation 10, D-087:** wire devstack's
+   `SetMemberGrantsReady(false/true)` to one
+   `nodestest.NewMemberGrantEligibility()` instance passed to the real test
+   runtime via `httpwire.WithTestOnlyGrantEligibilityReaderFactory(grants.ReaderFactory)`;
+   export the fixed-generation sequence and original wire evidence described
+   above for isolation 10's assembled AT10 measurement. Recipient lanes own their harness files and `requests.md` entries (D-102);
+   this dated hand-off does not edit either lane's requests/evidence.
