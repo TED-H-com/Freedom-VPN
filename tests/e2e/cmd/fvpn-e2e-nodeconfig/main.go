@@ -3,8 +3,10 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/counterread"
 	"github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/dnsrelay"
 	"net"
 	"os"
@@ -17,6 +19,15 @@ import (
 
 func main() {
 	run := prepare
+	if len(os.Args) == 3 && os.Args[1] == "device-counters" {
+		run = func() error {
+			id, e := uuid.Parse(os.Args[2])
+			if e != nil {
+				return e
+			}
+			return json.NewEncoder(os.Stdout).Encode(counterread.Read(context.Background(), id))
+		}
+	}
 	if len(os.Args) == 2 && os.Args[1] == "upgrade-observe" {
 		run = upgradeObserve
 	}
@@ -92,7 +103,7 @@ func prepare() error {
 		NodeID: identity.Node, IncarnationID: identity.Incarnation, BootID: bootID,
 		Platform:     updater.Platform{OSID: "ubuntu", OSVersion: "24.04", Architecture: runtime.GOARCH, UpdaterVersion: "1.0.0", ControlAPIMajor: 1, PolicySchema: 1, UsageSchema: 1, StateSchema: 1},
 		ReleaseTrust: "/etc/vpn-node/trust.json", DesiredTrust: "/etc/vpn-node/trust.json", DesiredState: "/var/lib/vpn-node/state/desired-state.json",
-		MeterCheckpoint: "/var/lib/vpn-node/e2e/meter.json",
+		MeterCheckpoint: "/var/lib/vpn-node/state/meter.checkpoint",
 		AgentConfig:     "/etc/vpn-node/agent-run.json",
 		StopCommand:     []string{"/usr/local/bin/agent-service.sh", "stop"}, StartCommand: []string{"/usr/local/bin/agent-service.sh", "start"},
 		ResultURL: "https://agent.example.invalid:9443/api/v1/agent/update-results", AllowedArtifactOrigins: []string{"https://agent.example.invalid:9443"},

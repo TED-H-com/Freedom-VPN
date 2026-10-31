@@ -244,6 +244,10 @@ func (r *runner) fixtureUnderlay(ctx context.Context, s *Stack) {
 	recPathNote(&rec)("scope", "peer UDP family availability is selected; TCP control retained; NetBird's chosen path is observed, not prescribed; IPv6 overlay and platform leak prevention are unclaimed")
 }
 func (r *runner) fixtureInputs(ctx context.Context, s *Stack) {
+	if os.Getenv("FVPN_E2E_FOLLOWUP20") == "1" {
+		r.captureMTU19(ctx, s, true)
+		return
+	}
 	rec := Record{ID: "native-matrix-inputs", Title: "Declared protocol, MTU and real-platform inputs", Spec: []string{"§8.3", "AT09", "AT11"}, Status: StatusPass}
 	defer func() { r.record(rec) }()
 	for _, platform := range []string{"linux", "android", "ios", "windows", "macos"} {
@@ -532,6 +536,9 @@ func (r *runner) fixtureFiniteGrant(ctx context.Context, s *Stack, admin Browser
 }
 
 func fixtureCampaignDirectory() string {
+	if os.Getenv("FVPN_E2E_FOLLOWUP20") == "1" {
+		return "followup20"
+	}
 	if os.Getenv("FVPN_E2E_FOLLOWUP19") == "1" {
 		return "followup19"
 	}

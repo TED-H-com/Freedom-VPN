@@ -31,7 +31,7 @@ prefix_owned() {
     _own_name=$2
     prefix_valid "$_own_short" || return 1
     _own_name=${_own_name%%:*}
-    _own_tokens='pgbackrest-repo|postgres|node-netns|node-clone|installer-node|node2|node3|state-reset|netbird|gateway|coredns|adguard|control|worker|payment|origin|member|restore|idp|node|pg|nb'
+    _own_tokens='pgbackrest-repo|postgres|node-netns|node-clone|installer-node|node2|node3|state-reset|netbird|gateway|coredns|authority-dns|adguard|control|worker|payment|origin|member|restore|idp|node|pg|nb'
     # shellcheck disable=SC2086
     printf '%s\n' "$_own_name" | grep -Eq "^(fvpn-${_own_short}-(${_own_tokens})(-[^:/]+)*|fvpn-${_own_short})$"
 }

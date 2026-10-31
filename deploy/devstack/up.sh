@@ -119,7 +119,12 @@ service_image() {
 service_image idp "$ROOT/.agent/e2e-build/fvpn-e2e-idp"
 service_image payment "$ROOT/.agent/e2e-build/fvpn-e2e-payment"
 service_image origin "$ROOT/.agent/e2e-build/fvpn-e2e-origin"
-service_image control "$ROOT/.agent/e2e-build/fvpn-control"
+if [ "${FVPN_E2E_GRANT_SEAM:-0}" = 1 ]; then
+    build_one ./tests/e2e/cmd/fvpn-e2e-control
+    service_image control "$ROOT/.agent/e2e-build/fvpn-e2e-control"
+else
+    service_image control "$ROOT/.agent/e2e-build/fvpn-control"
+fi
 service_image worker "$ROOT/.agent/e2e-build/fvpn-worker"
 
 ctx=$ROOT/.agent/e2e-build/ctx-node
@@ -146,7 +151,7 @@ cp -R "$portal_dist/." "$STATE/portal/"
 find "$STATE/portal" -type d -exec chmod 755 {} +
 find "$STATE/portal" -type f -exec chmod 644 {} +
 
-$COMPOSE up -d postgres idp payment origin origin-dns netbird gateway coredns
+$COMPOSE up -d postgres idp payment origin origin-dns netbird gateway coredns authority-dns
 
 wait_exec() {
     name=$1

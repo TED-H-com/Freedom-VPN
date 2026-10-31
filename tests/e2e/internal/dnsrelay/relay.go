@@ -25,6 +25,22 @@ func Serve(addr, upstream, allowedSource string) error {
 }
 
 func serve(tcp net.Listener, udp net.PacketConn, upstream, allowedSource string) error {
+	return serveObserved(tcp, udp, upstream, allowedSource, nil)
+}
+func ServeObserved(addr, upstream, allowedSource string, trace *Trace) error {
+	tcp, err := net.Listen("tcp4", addr)
+	if err != nil {
+		return err
+	}
+	defer tcp.Close()
+	udp, err := net.ListenPacket("udp4", addr)
+	if err != nil {
+		return err
+	}
+	defer udp.Close()
+	return serveObserved(tcp, udp, upstream, allowedSource, trace)
+}
+func serveObserved(tcp net.Listener, udp net.PacketConn, upstream, allowedSource string, trace *Trace) error {
 	allowed := func(peer net.Addr) bool {
 		if allowedSource == "" {
 			return true
@@ -48,8 +64,13 @@ func serve(tcp net.Listener, udp net.PacketConn, upstream, allowedSource string)
 			case slots <- struct{}{}:
 				go func() {
 					defer func() { <-slots }()
-					if response, err := Exchange("udp", upstream, packet); err == nil {
-						_, _ = udp.WriteTo(response, peer)
+					started := time.Now().UTC()
+					response, err := Exchange("udp", upstream, packet)
+					if err == nil {
+						_, err = udp.WriteTo(response, peer)
+					}
+					if trace != nil {
+						trace.Record(packet, response, peer, "udp", started, err)
 					}
 				}()
 			default:
@@ -83,7 +104,11 @@ func serve(tcp net.Listener, udp net.PacketConn, upstream, allowedSource string)
 				if _, err := io.ReadFull(conn, packet); err != nil {
 					return
 				}
+				started := time.Now().UTC()
 				response, err := Exchange("tcp", upstream, packet)
+				if trace != nil {
+					defer func() { trace.Record(packet, response, conn.RemoteAddr(), "tcp", started, err) }()
+				}
 				if err != nil {
 					return
 				}

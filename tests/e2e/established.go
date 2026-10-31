@@ -9,20 +9,15 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strings"
 	"time"
 
-	"github.com/TED-H-com/Freedom-VPN/node/enforce"
+	"github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/counterread"
 	"github.com/google/uuid"
 )
 
 // DeviceCounters is one device's admission byte counters. Present is false
 // when the named counters are not in the current ruleset.
-type DeviceCounters struct {
-	Upload   uint64 `json:"upload_bytes,string"`
-	Download uint64 `json:"download_bytes,string"`
-	Present  bool
-}
+type DeviceCounters = counterread.Result
 
 // EstablishedTransports is one persistent member TCP session and its
 // authenticated UDP echo. Stop closes both and removes the key file.
@@ -41,21 +36,26 @@ const (
 
 // DeviceByteCounters reads u_<device> and d_<device> from inet fvpn.
 func (s *Stack) DeviceByteCounters(ctx context.Context, device uuid.UUID) (DeviceCounters, error) {
-	raw, err := exec.CommandContext(ctx, "docker", "exec", s.lab.node, "nft", "-j", "list", "table", "inet", "fvpn").CombinedOutput()
+	out := DeviceCounters{}
+	started := time.Now().UTC()
+	raw, err := exec.CommandContext(ctx, "docker", "exec", s.lab.node, "/usr/local/bin/fvpn-e2e-nodeconfig", "device-counters", device.String()).Output()
 	if err != nil {
-		return DeviceCounters{}, err
+		out.Diagnostic.Started, out.Diagnostic.Completed = started, time.Now().UTC()
+		out.Diagnostic.Stage, out.Diagnostic.Category = "container_exec", "container_exec"
+		if ctx.Err() != nil {
+			out.Diagnostic.Category = "timeout_or_cancel"
+		}
+		return out, fmt.Errorf("counter read: %s", out.Diagnostic.Category)
 	}
-	st, err := enforce.ParseState(raw)
-	if err != nil {
-		return DeviceCounters{}, err
+	if json.Unmarshal(raw, &out) != nil {
+		out.Diagnostic.Stage = "helper_decode"
+		out.Diagnostic.Category = "parse"
+		return out, fmt.Errorf("counter helper parse")
 	}
-	suffix := strings.ReplaceAll(device.String(), "-", "")
-	up, upOK := st.Counters["u_"+suffix]
-	down, downOK := st.Counters["d_"+suffix]
-	if !upOK || !downOK {
-		return DeviceCounters{}, nil
+	if out.Diagnostic.Category != "none" {
+		return out, fmt.Errorf("counter %s: %s", out.Diagnostic.Stage, out.Diagnostic.Category)
 	}
-	return DeviceCounters{Upload: up.Bytes, Download: down.Bytes, Present: true}, nil
+	return out, nil
 }
 
 // CountedMemberTraffic is the counter read the member-traffic scenario uses

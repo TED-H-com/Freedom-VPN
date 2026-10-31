@@ -651,7 +651,7 @@ func (r *runner) oneUpdate(ctx context.Context, id, title string, spec []string,
 	}
 	_ = json.Unmarshal(result, &exit)
 	executable, _ := r.lab.docker(r.lab.node, "sh", "-c", `test -s /var/lib/vpn-node/e2e/agent.pid && readlink /proc/$(cat /var/lib/vpn-node/e2e/agent.pid)/exe`)
-	candidateRunning := strings.TrimSpace(string(executable)) == "/opt/vpn-node/releases/"+releaseID.String()+"/bin/fvpn-agent"
+	candidateRunning := strings.TrimSpace(string(executable)) == "/opt/vpn-node/releases/"+releaseID.String()+"/fvpn-agent"
 	rec.Observations = append(rec.Observations, Observation{Name: "running_candidate_executable", Detail: boolText(candidateRunning)})
 	journal := r.readJournal(releaseID.String())
 	outLog, outLogErr := r.lab.docker(r.lab.node, "cat", "/var/lib/vpn-node/e2e/updater.out")
@@ -877,7 +877,7 @@ func (r *runner) writeUpdaterConfig() error {
 		},
 		"release_trust": "/etc/vpn-node/trust.json", "desired_trust": "/etc/vpn-node/trust.json",
 		"desired_state":    "/var/lib/vpn-node/state/desired-state.json",
-		"meter_checkpoint": "/var/lib/vpn-node/e2e/meter.json",
+		"meter_checkpoint": "/var/lib/vpn-node/state/meter.checkpoint",
 		"agent_config":     "/etc/vpn-node/agent-run.json",
 		"stop_command":     []string{"/usr/local/bin/agent-service.sh", "stop"}, "start_command": []string{"/usr/local/bin/agent-service.sh", "start"},
 		"result_url":               r.lab.agent + "/api/v1/agent/update-results",

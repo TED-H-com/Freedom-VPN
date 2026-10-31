@@ -80,17 +80,26 @@ reap_agents() {
 # selected release all name the only live fvpn-agent run process.
 matching_owner() {
     _match_release=$1
+    _match_binary=$(release_binary "$_match_release") || return 1
     _match_one=$(each_agent one) || return 1
     [ -s "$base/agent.pid" ] || return 1
     [ "$(cat "$base/agent.pid")" = "$_match_one" ] || return 1
     _match_exe=$(readlink "/proc/$_match_one/exe" 2>/dev/null || true)
     case "$_match_exe" in
-        "$_match_release/bin/fvpn-agent"|"$_match_release/bin/fvpn-agent (deleted)") ;;
+        "$_match_binary"|"$_match_binary (deleted)") ;;
         *) return 1 ;;
     esac
     [ -s "$base/agent-selected" ] || return 1
     [ "$(cat "$base/agent-selected")" = "$_match_release" ] || return 1
     printf '%s\n' "$_match_one"
+}
+
+release_binary() {
+    case $1 in
+        /usr/local) printf '%s\n' /usr/local/bin/fvpn-agent ;;
+        /opt/vpn-node/releases/*) printf '%s\n' "$1/fvpn-agent" ;;
+        *) return 2 ;;
+    esac
 }
 
 release_config() {
@@ -107,12 +116,13 @@ supervise_stop() {
 
 supervise_start() {
     _sup_release=$1
+    _sup_binary=$(release_binary "$_sup_release") || return 2
     _sup_config=$(release_config "$_sup_release") || return 2
     if [ -f "$pause" ]; then
         reap_agents
         return 0
     fi
-    if ! [ -x "$_sup_release/bin/fvpn-agent" ] || ! [ -s "$_sup_config" ]; then
+    if ! [ -x "$_sup_binary" ] || ! [ -s "$_sup_config" ]; then
         return 1
     fi
     # D-053: an already-correct single process is not restarted.
@@ -124,7 +134,7 @@ supervise_start() {
         return 0
     fi
     printf '%s\n' "$_sup_release" > "$base/agent-selected"
-    nohup "$_sup_release/bin/fvpn-agent" run -config "$_sup_config" > "$base/agent.log" 2>&1 < /dev/null &
+    nohup "$_sup_binary" run -config "$_sup_config" > "$base/agent.log" 2>&1 < /dev/null &
     printf '%s\n' "$!" > "$base/agent.pid"
 }
 
@@ -152,8 +162,9 @@ public_stop() {
 public_start() {
     _pub_release=${1:-}
     [ -n "$_pub_release" ] || return 2
+    _pub_binary=$(release_binary "$_pub_release") || return 2
     _pub_config=$(release_config "$_pub_release") || return 2
-    [ -x "$_pub_release/bin/fvpn-agent" ] || return 2
+    [ -x "$_pub_binary" ] || return 2
     [ -s "$_pub_config" ] || return 2
     mkdir -p "$base"
     # Record the release before the marker disappears so the supervisor cannot
