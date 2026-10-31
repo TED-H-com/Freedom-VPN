@@ -110,8 +110,12 @@ func (l *live) finiteExpiry(r *record, id uuid.UUID, service string) {
 	restored := l.wait(60*time.Second, func() bool {
 		return l.count(`SELECT count(*) FROM member_devices WHERE member_id=$1 AND status='authorized'`, l.a.member) == 3 && l.count(`SELECT count(*) FROM member_devices WHERE member_id=$1 AND status='pending'`, l.a.member) == 0
 	})
-	operation := l.api(l.admin, "GET", "/api/v1/admin/operations/"+op.OperationId.String(), nil, nil)
-	r.check("finite expiry restored 3/0", "three authorized, zero pending; worker succeeded", fmt.Sprintf("restored=%t; operation=%s", restored, operation.body), "read devices and worker operation after production grant creation", restored && operation.status == 200 && bytes.Contains(operation.body, []byte(`"status":"succeeded"`)))
+	var operation response
+	completed := l.wait(60*time.Second, func() bool {
+		operation = l.api(l.admin, "GET", "/api/v1/admin/operations/"+op.OperationId.String(), nil, nil)
+		return operation.status == 200 && bytes.Contains(operation.body, []byte(`"status":"succeeded"`))
+	})
+	r.check("finite expiry restored 3/0", "three authorized, zero pending; worker succeeded", fmt.Sprintf("restored=%t; operation=%s", restored, operation.body), "read devices and worker operation after production grant creation", restored && completed)
 	l.forwardingGate(r)
 	l.traceForwarding(r, service, id)
 }
