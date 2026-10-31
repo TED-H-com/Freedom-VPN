@@ -106,6 +106,20 @@ clear the historical incomplete transfers. The old missing reverse-path packet
 is larger than this run's delivered response packets; the linked analysis
 states the MTU-boundary inference and its remaining limits.
 
+The DNS fixture campaign `5282829c`, source `5dc018ac`, is **15/0/1**, exit 1.
+Its [exact DNS matrix](5282829c-c11e-4f34-954a-5bc2a5bceca5/dns-negative.md)
+passes: CNAME/SVCB are RCODE 0, no answers, SOA TTL 5 over UDP and TCP;
+matching A/AAAA/HTTPS and alias/wildcard A are NXDOMAIN with TTL 5. Each
+synthetic lookup follows six seconds of cache expiry and takes 31–46 ms.
+The absent upstream name, positive cache expiry and rebinding controls remain
+distinct and pass, as do actual resolver fallback, finite downgrade and third
+identity mid-run boot. Its [matrix failure](5282829c-c11e-4f34-954a-5bc2a5bceca5/native-matrix-inputs.md)
+is another real MTU-1280 incomplete transfer: 12,012 validated bytes in 12,011 ms,
+12 complete lines, 12,075 stream bytes read, zero partial final-line bytes and
+a timeout. The client wrote all 64,108 request stream bytes. This broader
+fixture has the new member endpoint sample but no origin trace or matching
+pcaps; it is not represented as the fully instrumented reconnect capture.
+
 [D-093 reconciliation](../../../portal-d093-reconciliation-followup19-2026-10-31.md)
 retains all 15 row agreements, with 13 open and two retired within simulator
 scope. Cross-lane answers and the D-087 ownership-boundary request are only in

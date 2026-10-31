@@ -1,0 +1,46 @@
+{
+  "id": "native-dns-fallback",
+  "title": "System resolver fallback, both-down failure and recovery",
+  "spec": [
+    "§12.2",
+    "AT21"
+  ],
+  "status": "pass",
+  "observations": [
+    {
+      "name": "healthy",
+      "detail": "{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":-1,\"types\":[],\"ttls\":[],\"address_classes\":[\"other_ipv6\",\"other_ipv4\"],\"expected_answer\":true,\"connected\":false,\"bytes\":0,\"milliseconds\":2}"
+    },
+    {
+      "name": "primary_down_at",
+      "detail": "\"2026-10-31T14:24:13.710480998Z\""
+    },
+    {
+      "name": "automatic_secondary",
+      "detail": "{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":-1,\"types\":[],\"ttls\":[],\"address_classes\":[\"other_ipv4\"],\"expected_answer\":true,\"connected\":false,\"bytes\":0,\"milliseconds\":7502}"
+    },
+    {
+      "name": "secondary_block_policy",
+      "detail": "{\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":2502}"
+    },
+    {
+      "name": "both_down_fail_closed",
+      "detail": "{\"authority_ttl\":0,\"has_soa\":false,\"available\":false,\"rcode\":-1,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":12000,\"error\":\"lookup_unavailable\"}"
+    },
+    {
+      "name": "recovery",
+      "detail": "{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":-1,\"types\":[],\"ttls\":[],\"address_classes\":[\"other_ipv6\",\"other_ipv4\"],\"expected_answer\":true,\"connected\":false,\"bytes\":0,\"milliseconds\":1}"
+    },
+    {
+      "name": "recovery_ms",
+      "detail": "42"
+    },
+    {
+      "name": "expected",
+      "detail": "primary unavailable -\u003e same-policy secondary answers; both unavailable -\u003e resolution fails; recovery answers without public fallback"
+    }
+  ],
+  "at": "2026-10-31T14:24:36Z",
+  "run_id": "5282829c-c11e-4f34-954a-5bc2a5bceca5",
+  "source_commit": "5dc018aca482183cb5ca26889bbba54f8db036bc"
+}

@@ -461,6 +461,13 @@ lookup (plus one rounding second). Lookups taking five seconds cannot prove
 the TTL. NODATA is not NXDOMAIN. The absent authority name, positive cache
 expiry and rebinding controls keep their separate assertions.
 
+The combined-source [live DNS row](runs/2026-10-31/followup19/5282829c-c11e-4f34-954a-5bc2a5bceca5/dns-negative.md)
+passes on UDP and TCP: both exact NODATA rows have RCODE 0, zero answers and
+SOA TTL 5, and the matching NXDOMAIN rows have TTL 5. Synthetic lookup times
+are 31–46 ms after the explicit cache-expiry wait. The whole fixture campaign
+is 15/0/1 because its separate MTU-1280 transfer stalls at 12,012 bytes; that
+failure is retained and is not a DNS result.
+
 ## installer — 2026-10-31 (follow-up 19)
 
 > Installer 5 evidence scope
