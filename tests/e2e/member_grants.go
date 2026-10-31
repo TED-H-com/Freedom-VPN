@@ -56,6 +56,8 @@ func (s *Stack) MemberGrantInvariants(ctx context.Context, node uuid.UUID) (json
  'frozen',EXISTS(SELECT 1 FROM node_identity_endpoints WHERE incarnation_id=n.current_incarnation_id AND mapping_frozen),
  'envelope',(SELECT to_jsonb(s) FROM desired_state_envelopes s WHERE s.node_id=n.id),
  'bindings',(SELECT jsonb_agg(to_jsonb(b) ORDER BY b.device_id) FROM device_bindings b),
+ 'entitlements',(SELECT jsonb_agg(to_jsonb(t) ORDER BY t.member_id) FROM entitlements t),
+ 'device_projection',(SELECT jsonb_agg(jsonb_build_object('id',d.id,'status',d.status,'authorized_at',d.authorized_at) ORDER BY d.id) FROM member_devices d),
  'offline_seconds',(SELECT max_offline_lease_seconds FROM fleet_config LIMIT 1))
  FROM nodes n JOIN exits e ON e.node_id=n.id WHERE n.id=$1`, node).Scan(&raw)
 	return raw, err

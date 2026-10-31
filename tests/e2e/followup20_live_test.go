@@ -100,6 +100,30 @@ func (r *runner) memberGrants20(ctx context.Context, s *Stack) {
 	rec := Record{ID: "member-grants-fixed-generation", Title: "D-087 natural empty lease, accepted provisional report, restored grants and counted serving", Spec: []string{"AT10", "ISO01", "ISO02", "§16.3"}, Status: StatusFail}
 	defer func() { r.record(rec) }()
 	note := recPathNote(&rec)
+	// Let initial grant/FUP projection and its normal sweep settle before
+	// arming the seam. Nothing is frozen or rewritten to obtain stability.
+	stableSince := time.Now()
+	var last json.RawMessage
+	settling := []map[string]any{}
+	wait, cancel := context.WithTimeout(ctx, 3*time.Minute)
+	stable := waitUntil(wait, time.Second, func() bool {
+		v, e := s.MemberGrantInvariants(wait, r.nodeID)
+		if e != nil {
+			return false
+		}
+		if !bytes.Equal(v, last) {
+			last = v
+			stableSince = time.Now()
+			settling = append(settling, map[string]any{"at": time.Now().UTC(), "snapshot": v})
+		}
+		return time.Since(stableSince) >= 65*time.Second
+	})
+	cancel()
+	noteJSON(&rec, "baseline_settling", settling)
+	if !stable {
+		note("error", "initial projector outputs did not settle before arming")
+		return
+	}
 	baseline, err := s.MemberGrantInvariants(ctx, r.nodeID)
 	noteJSON(&rec, "before", baseline)
 	if err != nil {
@@ -183,7 +207,7 @@ func (r *runner) memberGrants20(ctx context.Context, s *Stack) {
 			Signed struct {
 				ID         uuid.UUID         `json:"lease_id"`
 				Generation string            `json:"config_generation"`
-				Grants     []json.RawMessage `json:"member_grants"`
+				Grants     []json.RawMessage `json:"members"`
 			} `json:"signed"`
 		}
 		if json.Unmarshal(v.Response, &lease) != nil {
