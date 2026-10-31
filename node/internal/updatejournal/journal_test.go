@@ -458,3 +458,34 @@ func TestJournalHealthStaysWithItsReasons(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestRecordJobLeavesAcceptedGeneration(t *testing.T) {
+	j, _ := openTest(t)
+	ctx := context.Background()
+	var version int
+	if err := j.db.QueryRow(`PRAGMA user_version`).Scan(&version); err != nil || version != schemaVersion {
+		t.Fatalf("user_version %d %v", version, err)
+	}
+	job := Job{
+		JobID: "installer-job", Attempt: 1, Generation: decstr.MustParse("1"),
+		ReleaseID: "rel", ManifestSHA256: "aa", IntentJSON: []byte(`{"source":"installer"}`),
+	}
+	stored, err := j.RecordJob(ctx, job)
+	if err != nil || stored.Phase != JobClaimed {
+		t.Fatalf("record %+v %v", stored.Phase, err)
+	}
+	if _, _, ok, err := j.AcceptedGeneration(ctx); err != nil || ok {
+		t.Fatalf("accepted generation moved ok=%v %v", ok, err)
+	}
+	again, err := j.RecordJob(ctx, job)
+	if err != nil || again.JobID != stored.JobID || again.Phase != JobClaimed {
+		t.Fatalf("idempotent %+v %v", again, err)
+	}
+	job.ReleaseID = "other"
+	if _, err := j.RecordJob(ctx, job); !errors.Is(err, ErrStaleGeneration) {
+		t.Fatal(err)
+	}
+	if err := j.db.QueryRow(`PRAGMA user_version`).Scan(&version); err != nil || version != schemaVersion {
+		t.Fatalf("user_version after record %d %v", version, err)
+	}
+}

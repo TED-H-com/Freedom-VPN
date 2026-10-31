@@ -23,6 +23,7 @@ type ApplyResult struct {
 	// and left installed. It is false when the baseline was installed or
 	// nothing was installed.
 	Verified bool
+	Evidence ServingEvidence
 }
 
 // ConntrackDeleteError means the serving ruleset was left installed and one
@@ -96,26 +97,12 @@ func Apply(ctx context.Context, ex Executor, m Model, previous map[string]Counte
 		_ = installBaseline(ctx, ex, m.Datapath, state)
 		return ApplyResult{}, err
 	}
-	// The whole ruleset. VerifyServing fails closed when another table can
-	// rewrite or drop member traffic. loadState stays `nft -j list table inet
-	// fvpn` so a missing table is still empty state.
-	raw, err := ex.Output(ctx, "nft", "-j", "list", "ruleset")
+	// VerifyServing reads live nft and tc state together. A foreign filter is
+	// the same serving-gate failure as a flowtable bypass.
+	evidence, err := VerifyServing(ctx, ex, m, plan.Assignments)
 	if err != nil {
 		_ = installBaseline(ctx, ex, m.Datapath, state)
-		return ApplyResult{}, err
-	}
-	if err := VerifyServing(raw, m, plan.Assignments); err != nil {
-		_ = installBaseline(ctx, ex, m.Datapath, state)
-		return ApplyResult{Plan: plan, Resets: resets}, err
-	}
-	qosJSON, err := readQoS(ctx, ex, m)
-	if err != nil {
-		_ = installBaseline(ctx, ex, m.Datapath, state)
-		return ApplyResult{}, err
-	}
-	if err := VerifyQoS(qosJSON, m, plan.Assignments); err != nil {
-		_ = installBaseline(ctx, ex, m.Datapath, state)
-		return ApplyResult{Plan: plan, Resets: resets}, err
+		return ApplyResult{Plan: plan, Resets: resets, Evidence: evidence}, err
 	}
 	// Admission already drops an address that left allowed_v4, before any
 	// established or related accept. A conntrack failure here must not
@@ -125,16 +112,12 @@ func Apply(ctx context.Context, ex Executor, m Model, previous map[string]Counte
 	// address is attempted. Failed lists the addresses whose conntrack -D
 	// did not succeed. The caller retries those addresses on the next
 	// Apply (§8.2).
-	verified := ApplyResult{Plan: plan, Resets: resets, Verified: true}
-	rs, err := ParseRuleset(raw)
+	verified := ApplyResult{Plan: plan, Resets: resets, Verified: true, Evidence: evidence}
+	samples, err := Samples(m, evidence.Counters)
 	if err != nil {
 		return ApplyResult{Verified: true}, err
 	}
-	samples, err := Samples(m, rs.Counters)
-	if err != nil {
-		return ApplyResult{Verified: true}, err
-	}
-	verified.Counters = rs.Counters
+	verified.Counters = evidence.Counters
 	verified.Samples = samples
 	var cmdErrs []error
 	var other error
@@ -265,22 +248,6 @@ func DetectMeterResets(previous map[string]CounterValue, state State) []Reset {
 		return externalMeterReset(previous, state.Counters)
 	}
 	return DetectResets(previous, state.Counters)
-}
-
-func readQoS(ctx context.Context, ex Executor, m Model) (map[string][2][]byte, error) {
-	out := map[string][2][]byte{}
-	for _, ifc := range []string{m.Datapath.Uplink, m.Datapath.MemberIngress} {
-		q, err := ex.Output(ctx, "tc", "-j", "qdisc", "show", "dev", ifc)
-		if err != nil {
-			return nil, err
-		}
-		c, err := ex.Output(ctx, "tc", "-j", "class", "show", "dev", ifc)
-		if err != nil {
-			return nil, err
-		}
-		out[ifc] = [2][]byte{q, c}
-	}
-	return out, nil
 }
 
 func deleteConntrack(ctx context.Context, ex Executor, addr netip.Addr) error {

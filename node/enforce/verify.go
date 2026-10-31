@@ -8,9 +8,9 @@ import (
 	"github.com/google/uuid"
 )
 
-// VerifyServing checks an nft -j listing against the model that was applied.
+// verifyServingRuleset checks the nft portion of the live read-back.
 // assignments come from the render that was just installed.
-func VerifyServing(raw []byte, m Model, assignments map[uuid.UUID]uint16) error {
+func verifyServingRuleset(raw []byte, m Model, assignments map[uuid.UUID]uint16) error {
 	rs, err := ParseRuleset(raw)
 	if err != nil {
 		return checkf(ReasonMeterPathInvalid, "cannot parse nft listing: %v", err)

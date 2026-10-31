@@ -31,7 +31,7 @@ func TestAT28_IngressCannotEvictOrExhaustPrincipalBuckets(t *testing.T) {
 	c := config.Defaults()
 	c.MaxRatePrincipals = 3
 	c.IngressRate = config.Bucket{PerSecond: 1000, Burst: 1000}
-	c.BrowserRate = config.Bucket{PerSecond: .0001, Burst: 1}
+	c.ReadRate = config.Bucket{PerSecond: .0001, Burst: 1}
 	p, other := principal(auth.Admin), principal(auth.Admin)
 	sets, _ := Compose()
 	h, e := New(sets, Options{Config: c, Sessions: auth.SessionAuthenticatorFunc(func(r *http.Request) (auth.Principal, error) {

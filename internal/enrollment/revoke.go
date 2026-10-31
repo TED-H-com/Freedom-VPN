@@ -397,7 +397,19 @@ func (s *Service) recordIdentityConflict(ctx context.Context, tx pgx.Tx, id pki.
 		return err
 	}
 	if tag.RowsAffected() > 0 || freezeTag.RowsAffected() > 0 {
-		if _, err = tx.Exec(ctx, `UPDATE nodes SET resource_version=resource_version+1 WHERE id=$1`, id.NodeID); err != nil {
+		// D-084: the detecting renewal must see a not-ready incarnation in
+		// this transaction, before the next observation arrives.
+		if _, err = tx.Exec(ctx, `UPDATE nodes SET provisioning_state='failed', safety_status='failed', resource_version=resource_version+1 WHERE id=$1`, id.NodeID); err != nil {
+			return err
+		}
+		// D-088: the row is the authoritative central deadline. Preserve the
+		// original signed envelope for replay; agent notification is separate.
+		if _, err = tx.Exec(ctx, `
+			UPDATE serving_leases
+			SET expires_at = least(expires_at, now() + interval '60 seconds')
+			WHERE node_id = $1 AND incarnation_id = $2
+			  AND expires_at > now() + interval '60 seconds'
+		`, id.NodeID, id.IncarnationID); err != nil {
 			return err
 		}
 	}

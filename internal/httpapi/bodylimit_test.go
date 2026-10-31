@@ -43,6 +43,7 @@ func wideRates(c config.Config) config.Config {
 	wide := config.Bucket{PerSecond: 1000, Burst: 1000}
 	c.IngressRate = wide
 	c.BrowserRate = wide
+	c.ReadRate = wide
 	c.AgentRate = wide
 	c.UsageRate = wide
 	c.AnonymousRate = wide

@@ -33,8 +33,8 @@ func TestReviewR12_Q4_IPv6Slash48ExhaustsSharedIngressTable(t *testing.T) {
 		h := fixtureConfig(t, adminP, false, nil, c)
 
 		// One request from each of MaxRatePrincipals/2 distinct /64s inside
-		// 2001:db8:abcd::/48. Each /64 takes one slot in the anonymous ingress
-		// table and one slot in the anonymous class table.
+		// 2001:db8:abcd::/48. D-083 admits only the first 64 into the two
+		// anonymous tables; the rest cannot occupy an authenticated table.
 		enrollBody := string(schemaEnroll())
 		for subnet := 0; subnet < c.MaxRatePrincipals/2; subnet++ {
 			r := httptest.NewRequest(http.MethodPost, "/api/v1/agent/enroll", strings.NewReader(enrollBody))

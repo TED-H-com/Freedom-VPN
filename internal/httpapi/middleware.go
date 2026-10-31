@@ -236,19 +236,20 @@ func (l *limiter) allow(key string, b config.Bucket) time.Duration {
 	return l.allowGrouped(key, "", b)
 }
 
-// allowGrouped is allow with an optional group reserve. An empty group is not
-// counted. A new key in a group that already holds keys is refused, without
-// eviction and without an insert, when only anonymousGroupReserve slots
-// remain. An existing key still spends a token.
+// allowGrouped is allow with an optional group cap. An empty group is not
+// counted. A new key in a group that already holds anonymousGroupCap keys
+// can replace an idle key in that same group; otherwise it is refused without
+// changing the table. An existing key still spends a token.
 func (l *limiter) allowGrouped(key, group string, b config.Bucket) time.Duration {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 	now := limiterNow()
 	e, ok := l.entries[key]
 	if !ok {
-		// A /48 that already holds keys leaves anonymousGroupReserve slots
-		// for other prefixes. Those slots are not taken by eviction.
-		if group != "" && l.groups[group] > 0 && l.max-len(l.entries) <= anonymousGroupReserve {
+		// D-083: one anonymous /48 holds at most min(max/2, 64) slots.
+		// Reclaim only this group's idle slots at its cap, even when the
+		// whole table is not full. Other groups cannot lose their slots.
+		if group != "" && l.groups[group] >= anonymousGroupCap(l.max) && !l.evictIdleGroup(now, group) {
 			return time.Second
 		}
 		if len(l.entries) >= l.max && !l.evictIdle(now) {
@@ -281,21 +282,41 @@ func (l *limiter) allowGrouped(key, group string, b config.Bucket) time.Duration
 	return 0
 }
 
-// anonymousGroupReserve is the number of principal slots one anonymous /48
-// must leave free. It is not a config key. A hosting /48 may hold every
-// other slot (max_rate_principals minus one, and at least one slot when the
-// cap is one). A new /64 in a /48 that already has keys is refused, without
-// eviction, once only this reserve remains. Another /48, or an IPv4 address,
-// can still take the reserve. Default reserve: 1.
-const anonymousGroupReserve = 1
+// anonymousGroupCapMax is the absolute cap on one anonymous /48 (D-083).
+// The group limit is min(max_rate_principals/2, anonymousGroupCapMax).
+// It is not a config key. Login stays per /64 on its own limiter, and the
+// agent listener stays keyed by the node URN.
+const anonymousGroupCapMax = 64
+
+// anonymousGroupCap is how many principal slots one anonymous /48 may hold
+// in a table of size max. Production max_rate_principals 10000 yields 64.
+// A table of 10 yields 5. Integer division rounds down; a table of 1
+// therefore admits no anonymous IPv6 principal.
+func anonymousGroupCap(max int) int {
+	half := max / 2
+	if half > anonymousGroupCapMax {
+		return anonymousGroupCapMax
+	}
+	return half
+}
 
 // evictIdle drops the first eligible bucket on the path from the tail toward
 // newer entries. Eligible means the bucket has refilled to its burst after
 // going idle, or it has been idle for more than an hour. The walk covers the
 // whole table so a run of depleted tail buckets cannot hide a full one.
 func (l *limiter) evictIdle(now time.Time) bool {
+	return l.evictIdleGroup(now, "")
+}
+
+// An empty group allows global eviction; a group cap only reclaims its own
+// idle entries, using the same eligibility and accounting as table eviction.
+func (l *limiter) evictIdleGroup(now time.Time, group string) bool {
 	e := l.tail
 	for e != nil {
+		if group != "" && e.group != group {
+			e = e.prev
+			continue
+		}
 		elapsed := now.Sub(e.at)
 		refilled := math.Min(e.burst, e.tokens+elapsed.Seconds()*e.perSecond)
 		fullIdle := e.burst > 0 && refilled >= e.burst && elapsed > 0
@@ -356,7 +377,7 @@ func (l *limiter) moveFront(e *bucketEntry) {
 
 // rateClasses are the D-060 route classes. Each class has its own ingress
 // table, so an anonymous sweep cannot fill a browser or agent table.
-var rateClasses = []string{"browser", "agent", "heartbeat", "lease", "usage", "anonymous"}
+var rateClasses = []string{"browser", "read", "agent", "heartbeat", "lease", "usage", "anonymous"}
 
 type Options struct {
 	Config        config.Config
@@ -545,7 +566,7 @@ func New(c *Composite, o Options) (http.Handler, error) {
 		if p.Role == "" {
 			// Enrollment and webhooks use this table, separate from every
 			// ingress table, so they cannot starve an authenticated class.
-			// The /48 budget sits beside the /64 key on this table too.
+			// The /48 cap (min(max/2, 64)) sits beside the /64 key on this table too.
 			group := ""
 			if class == "anonymous" {
 				group = anonymousGroup(peer)
@@ -557,7 +578,7 @@ func New(c *Composite, o Options) (http.Handler, error) {
 				apierr.Write(w, r, apierr.New(apierr.RateLimited, "Request rate exceeded.").WithRetryAfter(delay))
 				return
 			}
-		} else if delay := subjects.allow(class+":"+p.Scope(), bounds); delay > 0 {
+		} else if delay := subjects.allow(subjectRateKey(class, p), bounds); delay > 0 {
 			if o.RateLimited != nil {
 				o.RateLimited.WithLabelValues(class, "subject").Inc()
 			}
@@ -729,11 +750,24 @@ func classify(op *openapi3.Operation, c config.Config) (string, config.Bucket, i
 		return "anonymous", c.AnonymousRate, c.AgentBodyBytes
 	case "ReceiveProviderWebhook":
 		return "anonymous", c.AnonymousRate, c.WebhookBodyBytes
+	case "ListAuditEvents", "ListNodes", "ListNodeIncarnations", "ListMembers", "ListAdminDevices":
+		// D-078: admin list reads use the per-session read bucket. Node and
+		// member detail, and every other browser route, stay on BrowserRate.
+		return "read", c.ReadRate, c.BrowserBodyBytes
 	}
 	if op.Tags[0] == "agent" {
 		return "agent", c.AgentRate, c.AgentBodyBytes
 	}
 	return "browser", c.BrowserRate, c.BrowserBodyBytes
+}
+
+func subjectRateKey(class string, p auth.Principal) string {
+	if (class == "browser" || class == "read") && p.SessionID != uuid.Nil {
+		return class + ":session:" + p.SessionID.String()
+	}
+	// Custom authenticators without a durable session ID retain the bounded
+	// account bucket. Never derive a fresh key from an unverified cookie.
+	return class + ":" + p.Scope()
 }
 
 // checkLargeJSON walks a body above canonjson.MaxBytes. When the operation
@@ -813,7 +847,7 @@ func rateKeyFromIP(ip net.IP) (string, bool) {
 }
 
 // ipv6AggregatePrefixBits is the anonymous-table group beside the /64 key.
-// One /48 may hold every slot except anonymousGroupReserve.
+// One /48 may hold at most anonymousGroupCap slots (min(max/2, 64)).
 const ipv6AggregatePrefixBits = 48
 
 // anonymousGroup is the /48 of an IPv6 rate key. IPv4 keys are not grouped.

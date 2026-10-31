@@ -22,6 +22,11 @@ var middlewareOperationIDs = []string{
 	"EnrollNode",
 	"ReceiveProviderWebhook",
 	"ConsumeAgentBootstrap",
+	"ListAuditEvents",
+	"ListNodes",
+	"ListNodeIncarnations",
+	"ListMembers",
+	"ListAdminDevices",
 }
 
 func TestClassifyOperationIDsMatchLoadedSpec(t *testing.T) {
@@ -79,7 +84,8 @@ func TestClassifyOperationIDsMatchLoadedSpec(t *testing.T) {
 		{http.MethodPost, "/api/v1/agent/lease-renewals", "lease", c.LeaseRate, c.AgentBodyBytes},
 		{http.MethodPost, "/api/v1/agent/usage-batches", "usage", c.UsageRate, c.UsageBodyBytes},
 		{http.MethodGet, "/api/v1/agent/desired-state", "agent", c.AgentRate, c.AgentBodyBytes},
-		{http.MethodGet, "/api/v1/admin/nodes", "browser", c.BrowserRate, c.BrowserBodyBytes},
+		{http.MethodGet, "/api/v1/admin/nodes", "read", c.ReadRate, c.BrowserBodyBytes},
+		{http.MethodGet, "/api/v1/admin/members", "read", c.ReadRate, c.BrowserBodyBytes},
 	}
 	for _, tc := range cases {
 		req := httptest.NewRequest(tc.method, tc.path, nil)
