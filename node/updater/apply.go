@@ -508,10 +508,10 @@ func (e *Engine) seal(ctx context.Context, txn updatejournal.Txn) error {
 	if err := e.finishInstaller(ctx, c, job, string(state), string(code)); err != nil {
 		return err
 	}
-	if e.Sender != nil {
-		if err := e.Flush(ctx); err != nil {
-			e.log().Info("result not accepted yet", "err", errCode(err))
-		}
+	if e.Sender == nil {
+		e.log().Warn("update result pending", "reason", "result_url_missing")
+	} else if err := e.Flush(ctx); err != nil {
+		e.log().Info("result not accepted yet", "err", errCode(err))
 	}
 	_ = e.Retain(ctx)
 	e.cleanTxnNotes(ctx, txn.TxnID)

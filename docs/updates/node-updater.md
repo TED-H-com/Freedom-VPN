@@ -36,6 +36,12 @@ The forwarding latch is `forwarding.blocked` in the journal directory. The agent
 
 ## FileGate / FileMeter handshake — 2026-10-31 (follow-up 17, D-125)
 
+Acceptance update: [follow-up 18, 2026-10-31](node-followup18-2026-10-31.md)
+consumes devstack 19's serving rerun and updates 10's 23/23 installer extension.
+It records the measured 0 success / 1 sealed-failure apply / 2 blocked-recovery
+exits, the remaining live gaps, and the reporting fields installer 7 must render.
+The follow-up 17 hand-off expectations below are retained as history.
+
 The updater accepts a checkpoint only when its `barrier_id` is a valid UUID
 and **byte-equal** to the persisted `meter-wait-<txn>.identity` for the current
 block. UUID spelling is opaque: equivalent parsed UUIDs, case folding, UUID

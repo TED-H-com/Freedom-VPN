@@ -105,16 +105,16 @@ func TestUPD_ExtractRejectsRelativeSymlink(t *testing.T) {
 func TestUPD_ExtractExactInstalledSize(t *testing.T) {
 	root := t.TempDir()
 	tree := filepath.Join(root, "tree")
-	if err := os.MkdirAll(filepath.Join(tree, "bin"), 0o755); err != nil {
+	if err := os.MkdirAll(tree, 0o755); err != nil {
 		t.Fatal(err)
 	}
 	agent := bytes.Repeat([]byte("A"), 4000)
 	updater := bytes.Repeat([]byte("U"), 4000)
 	readme := []byte("Freedom VPN release notes\n")
-	if err := os.WriteFile(filepath.Join(tree, "bin", "fvpn-agent"), agent, 0o755); err != nil {
+	if err := os.WriteFile(filepath.Join(tree, "fvpn-agent"), agent, 0o755); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(filepath.Join(tree, "bin", "fvpn-updater"), updater, 0o755); err != nil {
+	if err := os.WriteFile(filepath.Join(tree, "fvpn-updater"), updater, 0o755); err != nil {
 		t.Fatal(err)
 	}
 	if err := os.WriteFile(filepath.Join(tree, "README"), readme, 0o644); err != nil {
@@ -133,7 +133,7 @@ func TestUPD_ExtractExactInstalledSize(t *testing.T) {
 	if err := ExtractArchive(bytes.NewReader(raw), dest, ExtractOptions{MaxBytes: installed}); err != nil {
 		t.Fatal(err)
 	}
-	if got := fileBytes(t, filepath.Join(dest, "bin", "fvpn-agent")); !bytes.Equal(got, agent) {
+	if got := fileBytes(t, filepath.Join(dest, "fvpn-agent")); !bytes.Equal(got, agent) {
 		t.Fatalf("agent bytes %d", len(got))
 	}
 }
