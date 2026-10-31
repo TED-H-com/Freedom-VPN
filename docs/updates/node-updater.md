@@ -100,6 +100,8 @@ Recovery at `prepared`/`blocked` retains the original deadline and rereads the
 current latch and checkpoint. It never republishes a missing handshake latch
 to hide withdrawal. A crash after writing the note but before publishing the
 latch conservatively fails. A missing legacy note or changed boot fails closed.
+A recovered `final_sampled` transaction is checked again before stop; a legacy
+checkpoint without handshake evidence is discarded from the failure receipt.
 Terminal cleanup removes the local wait note, leaving the sealed journal and
 outbox evidence intact. The successful stage-recovery tests below use injected
 `Meter` adapters; they do not prove acceptance of the uncorrelated agent format.

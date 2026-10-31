@@ -7,6 +7,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"syscall"
 	"testing"
 	"time"
 
@@ -291,4 +292,128 @@ func TestUPD02_MeterWaitConfiguration(t *testing.T) {
 			t.Fatalf("wait %d: %s %v", tc.ms, got, err)
 		}
 	}
+}
+
+func TestAT25_FileMeterSubprocessCrashAndSealedReplay(t *testing.T) {
+	w, idPath, usagePath, beforeID, beforeUsage, work := crashWorld(t, false)
+	m := FileMeter{Path: filepath.Join(w.layout.State, "meter.checkpoint"), Wait: 500 * time.Millisecond}
+	w.eng.Meter = m
+	baseline := mustPointer(t, w)
+	if err := fsutil.WriteFileAtomic(m.Path, agentBarrierBytes(t, w.node.BootID), 0600); err != nil {
+		t.Fatal(err)
+	}
+	if code, out := runChild(t, w, work, nil, string(updatejournal.StageBlocked)); code != 86 {
+		t.Fatalf("block crash exit %d: %s", code, out)
+	}
+	// Substitute a genuine completed close from a different boot while the
+	// updater process is gone. It must not reuse any prior freshness decision.
+	raw := agentBarrierBytes(t, uuid.New())
+	if err := fsutil.WriteFileAtomic(m.Path, raw, 0600); err != nil {
+		t.Fatal(err)
+	}
+	var seal []byte
+	for i := range 2 {
+		if code, out := runChild(t, w, work, nil, ""); code != 2 {
+			t.Fatalf("failed recovery exit %d: %s", code, out)
+		}
+		j := reopen(t, w.layout.Journal)
+		box, err := j.Outbox(t.Context())
+		txn, terr := j.LastTxn(t.Context())
+		mustClose(t, j)
+		if err != nil || terr != nil || len(box) != 1 || txn.Destructive || !meterWaitFailed(txn) {
+			t.Fatalf("restart failure: txn=%+v receipts=%d err=%v/%v", txn, len(box), err, terr)
+		}
+		if i == 0 {
+			seal = box[0].Payload
+		} else if !bytes.Equal(seal, box[0].Payload) {
+			t.Fatal("new process changed the sealed failure")
+		}
+		if got, _ := w.layout.currentID(); got != baseline {
+			t.Fatal("restart switched baseline")
+		}
+		assertSameBytes(t, idPath, beforeID)
+		assertSameBytes(t, usagePath, beforeUsage)
+		assertSameBytes(t, m.Path, raw)
+	}
+}
+
+func TestUPD03_FileMeterRejectsInvalidSnapshot(t *testing.T) {
+	raw := agentBarrierBytes(t, uuid.New())
+	for _, kind := range []string{"nil_epoch", "open_epoch", "missing_watermark", "ack_ahead", "unknown", "symlink", "fifo", "oversize"} {
+		t.Run(kind, func(t *testing.T) {
+			path := filepath.Join(t.TempDir(), "meter.checkpoint")
+			var fields map[string]any
+			if err := json.Unmarshal(raw, &fields); err != nil {
+				t.Fatal(err)
+			}
+			switch kind {
+			case "nil_epoch":
+				fields["closed_meter_epoch_id"] = uuid.Nil.String()
+			case "open_epoch":
+				fields["new_meter_epoch_id"] = uuid.NewString()
+			case "missing_watermark":
+				delete(fields, "last_durable_event_seq")
+			case "ack_ahead":
+				fields["central_acked_through"] = "99"
+			case "unknown":
+				fields["not_a_barrier"] = "TEST ONLY"
+			}
+			data, err := json.Marshal(fields)
+			if err != nil {
+				t.Fatal(err)
+			}
+			switch kind {
+			case "symlink":
+				if err := os.WriteFile(path+".target", raw, 0600); err != nil {
+					t.Fatal(err)
+				}
+				err = os.Symlink(path+".target", path)
+			case "fifo":
+				err = syscall.Mkfifo(path, 0600)
+			case "oversize":
+				err = os.WriteFile(path, bytes.Repeat([]byte(" "), 4097), 0600)
+			default:
+				err = os.WriteFile(path, data, 0600)
+			}
+			if err != nil {
+				t.Fatal(err)
+			}
+			if _, err := (FileMeter{Path: path}).FinalSample(t.Context()); err == nil {
+				t.Fatal("invalid checkpoint accepted")
+			}
+		})
+	}
+}
+
+func TestAT25_FileMeterDoesNotTrustLegacyFinalSampled(t *testing.T) {
+	w := newWorld(t)
+	t.Cleanup(func() { _ = w.eng.Close() })
+	old := w.makeRelease("baseline", 1, nil)
+	w.seed(old)
+	next := w.makeRelease("candidate", 1, nil)
+	path := stageInstaller(t, w, next)
+	w.eng.Gate = FileGate{Path: filepath.Join(w.layout.Journal, "forwarding.blocked")}
+	w.eng.Hooks.AfterStage = func(stage string) error {
+		if stage == string(updatejournal.StageFinalSampled) {
+			return ErrCrashed
+		}
+		return nil
+	}
+	if err := w.eng.ApplyPending(t.Context(), path); !errors.Is(err, ErrCrashed) {
+		t.Fatal(err)
+	}
+	txn, err := w.eng.Journal.ActiveTxn(t.Context())
+	if err != nil || len(txn.Checkpoint) == 0 {
+		t.Fatal("legacy fixture has no sampled checkpoint", err)
+	}
+	if err := w.eng.Close(); err != nil {
+		t.Fatal(err)
+	}
+	w.eng.Journal = openJournal(t, w.layout.Journal)
+	w.eng.Meter = FileMeter{Path: filepath.Join(w.layout.State, "meter.checkpoint"), Wait: time.Millisecond}
+	w.eng.Hooks = Hooks{}
+	if err := w.eng.Recover(t.Context()); !errors.Is(err, ErrMembersBlocked) {
+		t.Fatal(err)
+	}
+	assertMeterFailure(t, w, old.id, apierr.CheckpointFailed, "meter_wait_invalid")
 }

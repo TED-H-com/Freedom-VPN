@@ -170,7 +170,7 @@ func (e *Engine) waitMeter(ctx context.Context, txn updatejournal.Txn, m FileMet
 		!note.Deadline.After(note.Started) || note.Deadline.Sub(note.Started) > 5*time.Minute || time.Now().Before(note.Started) {
 		return fail("meter_wait_invalid")
 	}
-	// WithDeadline also bounds a running process with Go's monotonic clock.
+	// WithTimeout also bounds a running process with Go's monotonic clock.
 	// The persisted wall deadline prevents restart from renewing the budget.
 	ctx, cancel := context.WithTimeout(ctx, time.Until(note.Deadline))
 	defer cancel()
@@ -211,12 +211,19 @@ func (e *Engine) failMeterWait(ctx context.Context, txn updatejournal.Txn, err e
 	}
 	return e.advance(ctx, txn, updatejournal.StageRollingBack, updatejournal.StageUpdate{
 		ErrorCode: string(code), ErrorStage: string(api.UpdateStageFinalSample), ErrorDetail: detail,
-		Detail: detail,
+		Detail: detail, Checkpoint: json.RawMessage("null"),
 	})
 }
 
 func meterWaitFailed(txn updatejournal.Txn) bool {
-	return !txn.Destructive && txn.ErrorStage == string(api.UpdateStageFinalSample) &&
-		(txn.ErrorCode == string(apierr.CheckpointFailed) || txn.ErrorCode == string(apierr.StateConflict)) &&
-		len(txn.ErrorDetail) >= 6 && txn.ErrorDetail[:6] == "meter_"
+	if txn.Destructive || txn.ErrorStage != string(api.UpdateStageFinalSample) ||
+		(txn.ErrorCode != string(apierr.CheckpointFailed) && txn.ErrorCode != string(apierr.StateConflict)) {
+		return false
+	}
+	switch txn.ErrorDetail {
+	case "meter_gate_unavailable", "meter_wait_invalid", "meter_checkpoint_timeout", "meter_checkpoint_uncorrelated", "meter_barrier_withdrawn":
+		return true
+	default:
+		return false
+	}
 }

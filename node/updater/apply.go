@@ -19,7 +19,8 @@ import (
 // side effect, so a crash resumes that side effect.
 func (e *Engine) continueTxn(ctx context.Context, txn updatejournal.Txn) error {
 	_, fileMeter := e.fileMeter()
-	if txn.Stage != updatejournal.StagePrepared && !(fileMeter && txn.Stage == updatejournal.StageBlocked) && e.Gate != nil {
+	waiting := fileMeter && (txn.Stage == updatejournal.StageBlocked || txn.Stage == updatejournal.StageFinalSampled)
+	if txn.Stage != updatejournal.StagePrepared && !waiting && e.Gate != nil {
 		if err := e.Gate.Block(ctx); err != nil {
 			return transient(apierr.UpdateBusy, "re-block")
 		}
@@ -116,6 +117,13 @@ func schemaChange(txn updatejournal.Txn) bool {
 }
 
 func (e *Engine) stepStop(ctx context.Context, txn updatejournal.Txn) (updatejournal.Txn, error) {
+	if m, ok := e.fileMeter(); ok {
+		// Also fence legacy final_sampled transactions and a restart after a
+		// prior read. No cached checkpoint authorizes stopping services.
+		if _, err := e.waitMeter(ctx, txn, m); err != nil {
+			return e.failMeterWait(ctx, txn, err)
+		}
+	}
 	same, err := fsutil.SameFilesystem(e.Layout.Releases, filepath.Dir(e.Layout.Current))
 	if err != nil || !same {
 		return e.beginRollback(ctx, txn, apierr.StartFailed, api.UpdateStageStopServices, nil)
