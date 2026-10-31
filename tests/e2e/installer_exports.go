@@ -564,7 +564,8 @@ func (s *Stack) installerBoundHashes(ctx context.Context, dir string, retired bo
 		if err != nil {
 			return nil, err
 		}
-		result[name] = digest
+		key := strings.NewReplacer(".", "_", "-", "_").Replace(name) + "_sha256"
+		result[key] = digest
 	}
 	return result, nil
 }
