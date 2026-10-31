@@ -228,7 +228,7 @@ error and existing serving gates. No verifier was weakened.
 | `TCSummary.Phase` | `phase`: `load`, `pre_apply`, or `verify` |
 | Complete `verifyServing` result | `verified`: true only for the full verifier's nil error, not merely an empty foreign-filter scan |
 | Returned `CheckError.Reason` | `error_code`: the matching existing HTTP enum, including `TC_FOREIGN_FILTER`; null for success or an unknown non-CheckError, never raw error text |
-| `TCSummary.Reads`, `.Objects` | `reads_total`, `objects_total`: counts before row selection, capped at 2147483647 with `truncated=true` on saturation |
+| `TCSummary.Reads`, `.Objects` | `reads_total`, `objects_total`: attachment-row/object counts before row selection (not subprocess counts), capped at 2147483647 with `truncated=true` on saturation |
 | `TCSummary.Truncated` | `truncated`: any omitted rows/objects/actions, including siblings displaced by the deciding row |
 | `TCSummary.SHA256` | `sha256`: unchanged netlab canonical digest below |
 | Bounded `TC` | `attachments`: at most 16 retained attachment reads, populated/error rows before empty ones |
@@ -292,6 +292,21 @@ still rejects the foreign clsact; removing both yields a fresh
 Apply generation 32 verifies, clears the marker and raises the member link;
 a subsequent public `VerifyServing` also verifies. The dated retained trace is
 `G2-tc-evidence-2026-10-31/TestISO_F6_01_ForeignRemovalNewGeneration/trace.json`.
+Measured at **2026-10-31T08:35Z** on amd64, producer source `d14c469`:
+
+| Read | Actual UTC completion | Result |
+| --- | --- | --- |
+| Injected foreign state | 08:35:44.150004855Z | `TC_FOREIGN_FILTER`, verified=false |
+| All foreign objects removed, baseline retained | 08:35:44.374361011Z | `GENERATION_MISMATCH`, verified=false, rejected=null |
+| New generation 32 Apply | 08:35:44.505237943Z | verified=true, error_code/rejected=null |
+| Public live verification of 32 | 08:35:44.609097702Z | verified=true, error_code/rejected=null |
+
+Each clean read has 20 attachment rows / 6 objects before the 16-row reporting
+bound, so truncated=true is expected. Its digest is
+`710fc38cc7614c2c283545f89e47f67147fd40d5ce16f7fef7c4cfd3922697c8`.
+The baseline's clean tc has the same digest but verified=false: a matching
+TC digest alone never proves serving.
+
 The final member probe is measured **after explicit lab-owned veth route/IPv6
 reconciliation**. This is library mechanism evidence, not assembled agent
 serving or a claim that NetBird restored this lab veth.
@@ -323,15 +338,38 @@ Isolation follow-up 8 must assert all of the following before closing ISO-F6-01:
    generation stays non-serving, retains `TC_FOREIGN_FILTER`, and never deletes
    the foreign object as part of enforcement.
 
+## Follow-up 16 gate caveats
+
+The initial full privileged gate passed the new ISO-F6-01 recovery scenario and
+D-104 deadline scenario, but failed AT10 reload continuity (three stream
+TimeoutError rows) and a short probe's empty packet capture. Both failures are
+retained in the dated `gates.txt`; the complete initial suite took 198.292s.
+The capture harness now waits for this capture's readiness and uses tcpdump
+immediate mode so a short probe cannot be stopped with packets still buffered.
+The SNAT and packet assertions are unchanged.
+
+A fresh-topology control using the unchanged `e498225` enforcement/CLI binary
+and the final capture harness independently reproduced the **same AT10 stream
+timeout** in 13.411s. This is an existing continuity failure, not evidence that
+D-106 caches tc. The final full privileged gate passed in **214.635s**, including AT10 (17.78s),
+the corrected probe capture (14.06s), and the new recovery test (1.11s).
+That successful retry does not erase the demonstrated continuity intermittency. No
+continuity assertion or admission rule was relaxed to obtain a green gate.
+
 ## Running the campaign
 
 ```sh
-FVPN_LAB_PREFIX=fvpn-w1-netlab-real make -f mk/netlab.mk netlab-real-netbird
-FVPN_LAB_PREFIX=fvpn-w1-netlab-check bash tests/netlab/scripts/gates.sh lab
 make -f mk/netlab.mk netlab-lint netlab-unit netlab-integration netlab-build
+# Check the shared-host slot before starting: wait while two other suites run.
+pgrep -af 'gates.sh|mk/at-'
+FVPN_LAB_PREFIX=fvpn-w1-netlab-f16 make -f mk/netlab.mk netlab-test
+node contracts/ts/verify-vectors.ts
 ```
 
-Both launcher modes wait while two `gates.sh` campaigns are active,
-keeps privileged scratch in the container's disk overlay, and removes its
-container and images on exit. All Go test scratch is on disk. The build target
-cross-compiles the lab binary for arm64; this is not an arm64 hardware run.
+Follow-up 16 used the make harness teardown and Python-owned unique disk
+scratch under `.agent/tmp`, without shell cleanup traps. The make target alone
+does not acquire a shared-host slot. Its container and bridge are removed on
+completion; remove the task-tagged lab image after the final run. The earlier
+real-NetBird campaign is described above and was not repeated in follow-up 16.
+The build target cross-compiles the lab binary for arm64; this is not an arm64
+hardware run.
