@@ -18,6 +18,7 @@ import (
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/node/enforce"
+	"github.com/TED-H-com/Freedom-VPN/node/internal/timeanchor"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 )
 
@@ -32,8 +33,9 @@ type revocationPlane struct {
 }
 
 func (p *revocationPlane) Apply(ctx context.Context, m enforce.Model, prev map[string]enforce.CounterValue) (enforce.ApplyResult, error) {
-	p.ex.model = m
 	p.models = append(p.models, m)
+	m = kernelClockModel(m)
+	p.ex.model = m
 	p.baselinesAfterApply = 0
 	res, err := enforce.Apply(ctx, &p.ex, m, prev)
 	if p.unverified {
@@ -832,7 +834,8 @@ func TestD096_RealNetBird(t *testing.T) {
 		return string(b)
 	}
 	r := newRig(t)
-	alignControlClock(r)
+	r.eng.clock = timeanchor.System{}
+	r.srv.SetClock(r.eng.clock.Wall)
 	serveBoundGeneration(t, r)
 	r.manualUsage(t)
 	r.eng.cfg.Datapath.MemberIngress = "fvnb0"

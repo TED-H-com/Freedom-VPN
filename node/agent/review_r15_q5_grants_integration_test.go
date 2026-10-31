@@ -243,6 +243,7 @@ func provisionalReport(t *testing.T, gen decstr.U64, at time.Time) api.Observati
 	in := servingInput()
 	in.Now = at
 	ds := *in.Desired
+	ds.IssuedAt, ds.ExpiresAt = at.Add(-time.Minute), at.Add(time.Hour)
 	ds.ConfigGeneration = gen
 	ds.DeviceBindings = []api.DeviceBinding{oneBinding(at)}
 	in.Desired = &ds

@@ -149,7 +149,7 @@ func TestISO_F6_ApplyRejectionTimestampPrecedesRollback(t *testing.T) {
 	serveBoundGeneration(t, r)
 	r.manualUsage(t)
 	x := &evidenceClockExecutor{advance: r.clock.Advance}
-	x.model = *r.eng.appliedModel
+	x.model = kernelClockModel(*r.eng.appliedModel)
 	p := SystemPlane{Executor: x}
 	if _, err := p.Apply(t.Context(), x.model, nil); err != nil {
 		t.Fatal(err)

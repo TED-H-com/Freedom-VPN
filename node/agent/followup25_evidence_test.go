@@ -116,18 +116,7 @@ func TestD106_ProducerRetainsAuthoritativeSnapshot(t *testing.T) {
 	if rep := mustReport(t, r, t.Context()); !rep.TcEvidence.IsNull() {
 		t.Fatal("no read must be null")
 	}
-	m := *r.eng.appliedModel
-	// This executor emulates a kernel; translate the manual fixture's sample to
-	// the real CLOCK_MONOTONIC domain used by enforce's installation/verifier.
-	now, err := enforce.MonotonicNow()
-	if err != nil {
-		t.Fatal(err)
-	}
-	for i := range m.Leases {
-		d := now + *m.Leases[i].DeadlineMono - m.NowMono
-		m.Leases[i].DeadlineMono = &d
-	}
-	m.NowMono = now
+	m := kernelClockModel(*r.eng.appliedModel)
 	x := &renderedExecutor{}
 	x.model = m
 	plane := SystemPlane{Executor: x}
@@ -205,4 +194,23 @@ func TestD106_ProducerRetainsAuthoritativeSnapshot(t *testing.T) {
 		t.Fatal("no-read attempt erased actual read")
 	}
 	requireObservationSchema(t, clean)
+}
+
+// The emulated executor does not virtualize enforce's Linux clock. Map the
+// manual agent fixture's paired sample and absolute allowances together; this
+// prevents an expired one-hour-since-boot fixture from passing with no elements.
+func kernelClockModel(m enforce.Model) enforce.Model {
+	now, err := enforce.MonotonicNow()
+	if err != nil {
+		panic(err)
+	}
+	m.Leases = append([]enforce.MemberLease(nil), m.Leases...)
+	for i := range m.Leases {
+		if m.Leases[i].DeadlineMono != nil {
+			d := now + *m.Leases[i].DeadlineMono - m.NowMono
+			m.Leases[i].DeadlineMono = &d
+		}
+	}
+	m.NowMono = now
+	return m
 }

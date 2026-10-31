@@ -92,6 +92,13 @@ func TestD085_LiveReadNetlab(t *testing.T) {
 			t.Fatalf("lab %s: %v %s", name, err, out)
 		}
 	}
+	for _, args := range [][]string{{"uname", "-r"}, {"nft", "--version"}, {"tc", "-V"}} {
+		out, err := exec.CommandContext(t.Context(), args[0], args[1:]...).CombinedOutput()
+		if err != nil {
+			t.Fatal(err)
+		}
+		t.Logf("D104 platform %s: %s", args[0], strings.TrimSpace(string(out)))
+	}
 	for _, pair := range [][2]string{{"fv-fh", "fv-fa"}, {"fv-ih", "fv-ia"}} {
 		run("ip", "link", "add", pair[0], "type", "veth", "peer", "name", pair[1])
 		for _, iface := range pair {
