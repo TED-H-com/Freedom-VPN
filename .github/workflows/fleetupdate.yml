@@ -1,9 +1,9 @@
 name: Central fleet updates
 on:
   push:
-    paths: ['internal/releases/**', 'internal/fleetupdate/**', 'internal/installerjob/**', 'internal/nodes/update_view.go', 'db/migrations/**', 'contracts/**', 'pkg/**', 'go.*', 'mk/fleetupdate.mk', '.github/workflows/fleetupdate.yml']
+    paths: ['internal/releases/**', 'internal/fleetupdate/**', 'internal/installerjob/**', 'internal/nodes/update_view.go', 'node/updater/**', 'db/migrations/**', 'contracts/**', 'pkg/**', 'go.*', 'mk/fleetupdate.mk', '.github/workflows/fleetupdate.yml']
   pull_request:
-    paths: ['internal/releases/**', 'internal/fleetupdate/**', 'internal/installerjob/**', 'internal/nodes/update_view.go', 'db/migrations/**', 'contracts/**', 'pkg/**', 'go.*', 'mk/fleetupdate.mk', '.github/workflows/fleetupdate.yml']
+    paths: ['internal/releases/**', 'internal/fleetupdate/**', 'internal/installerjob/**', 'internal/nodes/update_view.go', 'node/updater/**', 'db/migrations/**', 'contracts/**', 'pkg/**', 'go.*', 'mk/fleetupdate.mk', '.github/workflows/fleetupdate.yml']
 permissions:
   contents: read
 jobs:
