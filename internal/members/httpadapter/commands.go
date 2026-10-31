@@ -95,6 +95,33 @@ func (h Handlers) grantResponse(ctx context.Context, id uuid.UUID) deferred {
 		return (gen.CreateMemberGrant202JSONResponse{OperationAcceptedJSONResponse: a}).VisitCreateMemberGrantResponse(w)
 	}}
 }
+func (h Handlers) RevokeMemberGrant(ctx context.Context, r gen.RevokeMemberGrantRequestObject) (gen.RevokeMemberGrantResponseObject, error) {
+	s, err := h.services(ctx)
+	if err != nil {
+		return nil, err
+	}
+	c, err := command(ctx, r.Params.IdempotencyKey)
+	if err != nil {
+		return nil, err
+	}
+	change, err := s.Members.RevokeMemberGrant(ctx, c, r.MemberId, r.GrantId, r.Body.Reason)
+	if err != nil {
+		return nil, domainError(err)
+	}
+	if err = result(ctx, api.ResourceTypeEntitlementGrant, change.ResourceID, change.OperationID, 202); err != nil {
+		return nil, err
+	}
+	return h.revokeGrantResponse(ctx, *change.OperationID), nil
+}
+func (h Handlers) revokeGrantResponse(ctx context.Context, id uuid.UUID) deferred {
+	return deferred{func(w http.ResponseWriter) error {
+		a, err := h.accepted(ctx, id)
+		if err != nil {
+			return err
+		}
+		return (gen.RevokeMemberGrant202JSONResponse{OperationAcceptedJSONResponse: a}).VisitRevokeMemberGrantResponse(w)
+	}}
+}
 func (h Handlers) AuthorizeMemberDevice(ctx context.Context, r gen.AuthorizeMemberDeviceRequestObject) (gen.AuthorizeMemberDeviceResponseObject, error) {
 	s, err := h.services(ctx)
 	if err != nil {
@@ -247,6 +274,8 @@ func (h Handlers) Replay(ctx context.Context, name string, r db.IdempotencyRecor
 	switch name {
 	case "CreateMemberGrant":
 		return h.grantResponse(ctx, *r.OperationID), nil
+	case "RevokeMemberGrant":
+		return h.revokeGrantResponse(ctx, *r.OperationID), nil
 	case "RevokeMemberDevice":
 		return h.revokeResponse(ctx, *r.OperationID), nil
 	case "AuthorizeMemberDevice":

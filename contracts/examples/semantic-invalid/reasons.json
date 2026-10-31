@@ -53,5 +53,10 @@
     "owner": "billing service",
     "rule": "return_url",
     "note": "TEST ONLY allowlist: https://portal.example.invalid; this host is absent (§16.2)."
+  },
+  "UsageBatchRequest.retired-window.json": {
+    "owner": "usage-central / usage-agent",
+    "rule": "D-105 retirement window",
+    "note": "The event has a valid immutable hash, but interval_end exceeds retired_at plus one sampling interval from vectors/usage-retired-handoff.json. Reject per event with VALIDATION_FAILED and audit; never advance its original stream ACK."
   }
 }

@@ -13,7 +13,7 @@
 INSTALLER_GO  ?= go
 INSTALLER_ENV := CGO_ENABLED=0 GOTOOLCHAIN=local
 INSTALLER_STATICCHECK := honnef.co/go/tools/cmd/staticcheck@v0.8.2
-INSTALLER_PREFIX ?= fvpn-w5-installer-
+INSTALLER_PREFIX ?= fvpn-w5-node-installer-
 
 BUILD_TARGETS  += installer-build
 TEST_TARGETS   += installer-unit

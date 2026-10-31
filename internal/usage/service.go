@@ -25,6 +25,10 @@ const (
 	// MaxBatchEvents is the contract limit on events per batch (§10.5).
 	MaxBatchEvents = 1000
 
+	// SamplingIntervalBound is the D-112 central bound for D-105 retired-stream
+	// hand-off. Nodes must sample at an interval no greater than this bound.
+	SamplingIntervalBound = 10 * time.Second
+
 	// ledgerStateSingletonID is the fixed UUID of the usage_ledger_state singleton row.
 	ledgerStateSingletonID = "00000000-0000-0000-0000-000000000130"
 
@@ -70,15 +74,19 @@ type Config struct {
 	Signer            Signer
 	LedgerEpochSigner Signer
 	Clock             func() time.Time
+	// SamplingIntervalBound overrides the D-112 central hand-off window bound.
+	// Zero selects the recommended 10-second default; negative values are invalid.
+	SamplingIntervalBound time.Duration
 }
 
 // Service implements the central usage ledger, checkpoints, projection,
 // adjustments, queries, and restore/replay workflows (§10, §15.4, §17.3).
 type Service struct {
-	pool              *pgxpool.Pool
-	signer            Signer
-	ledgerEpochSigner Signer
-	clock             func() time.Time
+	pool                  *pgxpool.Pool
+	signer                Signer
+	ledgerEpochSigner     Signer
+	clock                 func() time.Time
+	samplingIntervalBound time.Duration
 }
 
 // NewService constructs a central usage ledger Service.
@@ -86,15 +94,23 @@ func NewService(cfg Config) (*Service, error) {
 	if cfg.Pool == nil {
 		return nil, errors.New("usage: database pool is required")
 	}
+	bound := cfg.SamplingIntervalBound
+	if bound < 0 {
+		return nil, errors.New("usage: sampling interval bound must be positive")
+	}
+	if bound == 0 {
+		bound = SamplingIntervalBound
+	}
 	clock := cfg.Clock
 	if clock == nil {
 		clock = func() time.Time { return time.Now().UTC() }
 	}
 	return &Service{
-		pool:              cfg.Pool,
-		signer:            cfg.Signer,
-		ledgerEpochSigner: cfg.LedgerEpochSigner,
-		clock:             clock,
+		pool:                  cfg.Pool,
+		signer:                cfg.Signer,
+		ledgerEpochSigner:     cfg.LedgerEpochSigner,
+		clock:                 clock,
+		samplingIntervalBound: bound,
 	}, nil
 }
 

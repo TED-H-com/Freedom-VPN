@@ -1,0 +1,13 @@
+# fleet-midrun-boot
+
+Retained third identity resumes and becomes eligible mid-run
+
+Status: pass
+
+Run: a81785fa-77eb-428a-b846-fb33196a2dcf
+
+Source: ec84d71f45ce3622b11a8a7e55f67c9c1c432d29
+
+Spec: §6.2, AT24, AT26, D-089
+
+- snapshot: {"pending_request_id":"01a190b5-a243-75d2-a824-918ca30d15e2","key_sha256":"6055e3e74ee1102df02fc146e87220faf6b7de9eb1f7de63977a81c47864f8ff","offline_attempt_failed":true,"incarnation_unbound_at_snapshot":true,"local_stage":"enrolling_snapshot","before_lifecycle":"enrolling","node_id":"01a190b5-9e08-7e47-86bf-62b05bc269bb","incarnation_id":"01a190b5-a243-75d3-8862-07cc45fac4c8","retained_at":"2026-10-31T06:46:38.334635246Z","booted_at":"2026-10-31T06:50:30.217170485Z","eligible_at":"2026-10-31T06:51:06.144071494Z","before_state":"pending","after_state":"ready","same_identity":true,"eligibility":"first admin API observation of provisioning_state=ready with the retained incarnation; publication/update assignment is separate"}

@@ -101,3 +101,94 @@ Request 2: `ObserveDesignatedDNS` is exported through `labstack`. The prepared p
 Request 3: `member-ipv6` records the native member's IPv6 configuration and remains blocked. A dual-stack native fixture, IPv6 underlay route/capture matrix and per-platform leak measurements have not been provisioned. An interface address alone is never a pass. IPv4-only mode's `ctv6` mechanism tests in netlab do not substitute for AT11's client-platform evidence. Owner remains devstack/platform operators.
 
 Request 1 remains agent-core's provisional-grant observation window. Request 4's continuous crash/restart/reboot/update/platform campaign remains acceptance/operator work; the new established transport helpers can measure active TCP and UDP during those faults. The control-loss scenario now uses those helpers. The node entrypoint retains deletion of Docker's `ip nat`; it does not claim D-079 classifier evidence, which belongs to netlab.
+
+## Follow-up 7 requests — 2026-10-31
+
+Current run `041e9e48-79a6-45dd-a19d-8b5a63290655`, harness `d1a90ea`, product
+main `c6e3eca` through #272. AT10 blocked, AT11 blocked, AT12 pass, AT13 fail.
+This assisted run did not recover serving after the injected foreign tc case.
+[summary.md](summary.md) gives full timestamps; prior dated requests above are
+history and must not be read as the current result.
+
+1. **Netlab follow-up 14 + agent-core follow-up 23: ISO-F6-01 / D-096 recovery
+   remains blocked.** Injection at 06:29:29.204706725Z produced accepted
+   `TC_FOREIGN_FILTER` report `01a190a6-22f8-74d6-8178-96f3551b3f4c` at
+   06:29:29.490009445Z. Member-down was confirmed by 06:29:29.832949690Z;
+   uplink/control stayed up. After that read, 538 member probes produced zero
+   uplink packets. One unsnatted packet escaped at 06:29:29.305982538Z, before
+   quarantine; do not claim zero across the complete injection window.
+   Filter removal completed at 06:29:32.889058275Z; generation 32 arrived at
+   06:29:33.290828482Z. The harness restored the saved member paths at
+   06:29:39.259867752Z, and an extra API generation 33/restoration was accepted
+   at 06:31:25.419525174Z. Serving/counting did not recover before the clone
+   scenario. No `member_path_unconfigured` report was captured: the attempted
+   D-096 phase remained behind `TC_FOREIGN_FILTER` / `policy_missing`, so it
+   does not prove clean Apply followed by the member-path hold. Investigate
+   `node/agent/engine.go` apply/renewal decisions, `serving.go`, `quarantine.go`
+   and `memberpath.go` using `foreign-redirect.json`, the receiver stream and
+   `recovery-action.json`. Reproduce a clean newer-generation Apply, an actual
+   D-096 hold, then recovery after the harness or NetBird restores the path.
+   Preserve D-100; do not seed refreshed expected topology. The earlier ordinary
+   interface/generation change passed on this run, so the unexpected follow-up
+   6 rejection was not reproduced at that step.
+
+2. **Netlab follow-up 14 / agent-core: ISO-F6-02 is partially addressed.** The
+   same product observation now transports actual tc attachment objects and
+   initial/current/apply quarantine evidence through `errors` stages. The
+   read-back identifies flower/mirred and before/after administrative state.
+   Clean-serving `tc`/`serving_evidence` remains absent at the initial counted
+   control (`serving-readback-metadata.json`). Keep the clean and rejected
+   evidence surfaces distinct; decide whether the agreed read-back must expose
+   clean verifier evidence too. No contracts change is made in this lane.
+
+3. **Agent-core follow-up 23: ISO-F6-03 decisive continuous timing.** Node-held
+   generation-31 lease expires 06:29:02.925490361Z. The last successful member
+   SYN-ACK is at 06:29:02.696232187Z; the first failed SYN enters fvmb0 at
+   06:29:02.748690751Z with no fvup0 counterpart. Baseline read is bracketed at
+   06:29:04.228093040–06:29:04.250071427Z (+1.303–1.325 s); first expiry heartbeat
+   read is 06:29:10.466713660–06:29:10.496189725Z (+7.541–7.571 s). Near-deadline
+   counted forwarding passed, post-deadline bytes stayed 126231, but the
+   unchanged one-second-tick predicate failed. `whole-node-node-capture.txt`
+   has 2389 packets/zero drops; `whole-node-probes.json` retains every one of
+   251 timed attempts; both bracketed read files retain heartbeat wall/monotonic
+   fields. No successful connect occurred after expiry. Reconcile integer
+   kernel allowance/conservative anchor timing and delayed baseline/heartbeat
+   under control loss without changing the AT definition (§16.3).
+
+4. **Agent-core follow-up 23 + wire-nodes: D-087 recipe did not yield a qualifying
+   report; rate limiting/backlog needs review.** With heartbeat/poll/observations
+   all 1 s, the 100 ms receiver retained every POST, not a latest-state poll.
+   Zero ready/passed single-lease-error provisional reports qualified. Thirty
+   distinct bodies mention `awaiting_member_grants`, but the first two at
+   06:31:47.886903310Z / 06:31:47.979152646Z also fail tunnel/safety checks; later
+   bodies are frozen. These are not the provisional state. The stream includes
+   3031 HTTP 429 responses; report `01a190a8-1b90-7a45-95af-4cf4146ee529`, observed
+   at 06:31:38.640670555Z, was accepted only at 06:31:48.795212863Z. Investigate
+   failed-serving observation flush/retry scheduling and control rate budgets;
+   provide a reproducible safe transition if the recipe needs another trigger.
+   No new duration can be compared with historical 4767 / 5021 / 5025 ms.
+
+5. **Enrollment ENR-02/03 + agent-core: finish the live-grant freeze assertion.**
+   The real clone caused `identity_frozen: true` on source acceptance at
+   06:31:48.795212863Z. Renewal began 23.481 ms later, and a non-serving frozen
+   heartbeat was written 183.868 ms after acceptance. Later reports/renewals
+   omit generation ACKs. Source was already non-serving with empty grants,
+   so this proves latch consumption but not withdrawal of live grants within
+   one heartbeat or post-freeze restart persistence. Run that assertion from
+   a serving enrolled source; do not promote this partial proof.
+
+6. **Devstack / operator backlog.** The newly exported designated UDP/TCP DNS
+   path passes with counter attribution on this run, closing the prior missing
+   resolver-path blocker. AT11 still needs real dual-stack/member-platform
+   paths, and AT13 still needs the continuous crash/NetBird/reboot/updater and
+   physical-device matrix. The origin image has no tcpdump: the failed separate
+   origin capture is retained, while the node `any` trace covers both fvmb0 and
+   fvup0. The owned helper now makes its additional uplink capture explicit.
+
+7. **Handover / orchestrator: D-098 archive available.** Pin final follow-up 6
+   to `history/follow-up-6/`: 44 byte-identical files, final run
+   `bf671f3a-c6ac-4824-9107-425c4c5a5f02`. Follow-up 5 is unchanged, and its dated
+   claims test remains true without another handover edit. Current follow-up 7
+   results must not replace those dated claims silently. The lane's standalone
+   make target is not a `gates.sh` process; coordinating wrappers should count
+   it too (one other gate at launch; two other wrappers appeared later).

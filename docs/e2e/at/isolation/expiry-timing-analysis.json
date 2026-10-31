@@ -1,35 +1,1798 @@
 {
-  "run_id": "bf671f3a-c6ac-4824-9107-425c4c5a5f02",
-  "build": "e711ebd822eda2ea1b5ba10b187818fda6777a74",
-  "case": "AT13",
-  "check": "short whole-node lease expiry",
+  "run_id": "041e9e48-79a6-45dd-a19d-8b5a63290655",
   "status": "fail",
-  "signed_node_lease": {
-    "issued_at": "2026-10-31T05:00:28.561634193Z",
-    "expires_at": "2026-10-31T05:01:28.561634193Z",
-    "generation": "29",
-    "max_offline_seconds": 60,
-    "member_count": 2,
-    "source": "node-store"
+  "case_definition": "Unchanged: near-deadline counted forward, no early baseline, baseline within one configured tick, post-deadline ingress denied with flat counters.",
+  "signed_deadline": "2026-10-31T06:29:02.925490361Z",
+  "last_successful_connect": {
+    "end": "2026-10-31T06:29:02.696688147Z",
+    "result": "connected",
+    "start": "2026-10-31T06:29:02.696036141Z",
+    "start_minus_deadline_ms": -229.454,
+    "end_minus_deadline_ms": -228.802
   },
-  "observations": {
-    "forward_after_control_loss": "route=192.0.6.10 dev fvnb0 table netbird src 100.89.202.109 uid 0 \n    cache; wget_ok=true; bytes=47750->50370; body=ok",
-    "forward_near_deadline": "route=192.0.6.10 dev fvnb0 table netbird src 100.89.202.109 uid 0 \n    cache; wget_ok=false; bytes=50370->50370; body=",
-    "baseline_at": "2026-10-31T05:01:28.675726567Z",
-    "early_baseline_at": "2026-10-31T05:01:27.784897861Z",
-    "heartbeat_after_deadline": "v1\nboot_id 875c4234-3f2a-44b8-a6ff-80b6aed61dc1\nmono_ns 6418594617827\nwall_unix_ns 1793422881078247388\npolicy_expires_mono_ns 6426074094741\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving",
-    "post_deadline_forward": "result=timeout; route=192.0.6.10 dev fvnb0 table netbird src 100.89.202.109 uid 0 \n    cache; flat=true; bytes=50370->50370"
+  "first_failed_connect": {
+    "end": "2026-10-31T06:29:02.897114892Z",
+    "result": "timeout",
+    "start": "2026-10-31T06:29:02.746857075Z",
+    "start_minus_deadline_ms": -178.633,
+    "end_minus_deadline_ms": -28.376
   },
-  "derived": {
-    "early_baseline_label_before_signed_deadline_ms": 776.737,
-    "heartbeat_monotonic_deadline_as_wall_unix_ns": "1793422888557724302",
-    "formula": "wall_unix_ns + policy_expires_mono_ns - mono_ns"
+  "all_probes": [
+    {
+      "end": "2026-10-31T06:28:53.047737844Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:53.046556871Z",
+      "start_minus_deadline_ms": -9878.934,
+      "end_minus_deadline_ms": -9877.753
+    },
+    {
+      "end": "2026-10-31T06:28:53.09837414Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:53.097940673Z",
+      "start_minus_deadline_ms": -9827.55,
+      "end_minus_deadline_ms": -9827.116
+    },
+    {
+      "end": "2026-10-31T06:28:53.148961919Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:53.148527739Z",
+      "start_minus_deadline_ms": -9776.963,
+      "end_minus_deadline_ms": -9776.529
+    },
+    {
+      "end": "2026-10-31T06:28:53.199839993Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:53.1991601Z",
+      "start_minus_deadline_ms": -9726.33,
+      "end_minus_deadline_ms": -9725.651
+    },
+    {
+      "end": "2026-10-31T06:28:53.252590484Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:53.250013959Z",
+      "start_minus_deadline_ms": -9675.477,
+      "end_minus_deadline_ms": -9672.9
+    },
+    {
+      "end": "2026-10-31T06:28:53.30750107Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:53.305254101Z",
+      "start_minus_deadline_ms": -9620.236,
+      "end_minus_deadline_ms": -9617.989
+    },
+    {
+      "end": "2026-10-31T06:28:53.358336693Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:53.357756833Z",
+      "start_minus_deadline_ms": -9567.734,
+      "end_minus_deadline_ms": -9567.154
+    },
+    {
+      "end": "2026-10-31T06:28:53.409322057Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:53.408687013Z",
+      "start_minus_deadline_ms": -9516.803,
+      "end_minus_deadline_ms": -9516.168
+    },
+    {
+      "end": "2026-10-31T06:28:53.46104843Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:53.459617671Z",
+      "start_minus_deadline_ms": -9465.873,
+      "end_minus_deadline_ms": -9464.442
+    },
+    {
+      "end": "2026-10-31T06:28:53.513033107Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:53.511218475Z",
+      "start_minus_deadline_ms": -9414.272,
+      "end_minus_deadline_ms": -9412.457
+    },
+    {
+      "end": "2026-10-31T06:28:53.563701816Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:53.56320039Z",
+      "start_minus_deadline_ms": -9362.29,
+      "end_minus_deadline_ms": -9361.789
+    },
+    {
+      "end": "2026-10-31T06:28:53.614722054Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:53.613892077Z",
+      "start_minus_deadline_ms": -9311.598,
+      "end_minus_deadline_ms": -9310.768
+    },
+    {
+      "end": "2026-10-31T06:28:53.66592902Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:53.664885178Z",
+      "start_minus_deadline_ms": -9260.605,
+      "end_minus_deadline_ms": -9259.561
+    },
+    {
+      "end": "2026-10-31T06:28:53.71638345Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:53.716080503Z",
+      "start_minus_deadline_ms": -9209.41,
+      "end_minus_deadline_ms": -9209.107
+    },
+    {
+      "end": "2026-10-31T06:28:53.767172826Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:53.766571957Z",
+      "start_minus_deadline_ms": -9158.919,
+      "end_minus_deadline_ms": -9158.318
+    },
+    {
+      "end": "2026-10-31T06:28:53.819884234Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:53.817344393Z",
+      "start_minus_deadline_ms": -9108.146,
+      "end_minus_deadline_ms": -9105.606
+    },
+    {
+      "end": "2026-10-31T06:28:53.874864408Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:53.871946695Z",
+      "start_minus_deadline_ms": -9053.544,
+      "end_minus_deadline_ms": -9050.626
+    },
+    {
+      "end": "2026-10-31T06:28:53.926723282Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:53.925040354Z",
+      "start_minus_deadline_ms": -9000.45,
+      "end_minus_deadline_ms": -8998.767
+    },
+    {
+      "end": "2026-10-31T06:28:53.978972573Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:53.97691983Z",
+      "start_minus_deadline_ms": -8948.571,
+      "end_minus_deadline_ms": -8946.518
+    },
+    {
+      "end": "2026-10-31T06:28:54.02973902Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:54.029276596Z",
+      "start_minus_deadline_ms": -8896.214,
+      "end_minus_deadline_ms": -8895.751
+    },
+    {
+      "end": "2026-10-31T06:28:54.081844704Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:54.079862187Z",
+      "start_minus_deadline_ms": -8845.628,
+      "end_minus_deadline_ms": -8843.646
+    },
+    {
+      "end": "2026-10-31T06:28:54.1342042Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:54.132009394Z",
+      "start_minus_deadline_ms": -8793.481,
+      "end_minus_deadline_ms": -8791.286
+    },
+    {
+      "end": "2026-10-31T06:28:54.185751879Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:54.184375005Z",
+      "start_minus_deadline_ms": -8741.115,
+      "end_minus_deadline_ms": -8739.739
+    },
+    {
+      "end": "2026-10-31T06:28:54.236530766Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:54.23592197Z",
+      "start_minus_deadline_ms": -8689.569,
+      "end_minus_deadline_ms": -8688.96
+    },
+    {
+      "end": "2026-10-31T06:28:54.287255967Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:54.286711612Z",
+      "start_minus_deadline_ms": -8638.779,
+      "end_minus_deadline_ms": -8638.235
+    },
+    {
+      "end": "2026-10-31T06:28:54.339758955Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:54.337424226Z",
+      "start_minus_deadline_ms": -8588.066,
+      "end_minus_deadline_ms": -8585.732
+    },
+    {
+      "end": "2026-10-31T06:28:54.391230662Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:54.389918319Z",
+      "start_minus_deadline_ms": -8535.572,
+      "end_minus_deadline_ms": -8534.26
+    },
+    {
+      "end": "2026-10-31T06:28:54.442027832Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:54.441401602Z",
+      "start_minus_deadline_ms": -8484.089,
+      "end_minus_deadline_ms": -8483.463
+    },
+    {
+      "end": "2026-10-31T06:28:54.492686375Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:54.492199978Z",
+      "start_minus_deadline_ms": -8433.291,
+      "end_minus_deadline_ms": -8432.804
+    },
+    {
+      "end": "2026-10-31T06:28:54.543408222Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:54.542846944Z",
+      "start_minus_deadline_ms": -8382.644,
+      "end_minus_deadline_ms": -8382.082
+    },
+    {
+      "end": "2026-10-31T06:28:54.593914657Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:54.593577434Z",
+      "start_minus_deadline_ms": -8331.913,
+      "end_minus_deadline_ms": -8331.576
+    },
+    {
+      "end": "2026-10-31T06:28:54.644475577Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:54.64408253Z",
+      "start_minus_deadline_ms": -8281.408,
+      "end_minus_deadline_ms": -8281.015
+    },
+    {
+      "end": "2026-10-31T06:28:54.696283505Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:54.694641113Z",
+      "start_minus_deadline_ms": -8230.849,
+      "end_minus_deadline_ms": -8229.207
+    },
+    {
+      "end": "2026-10-31T06:28:54.747789381Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:54.746407508Z",
+      "start_minus_deadline_ms": -8179.083,
+      "end_minus_deadline_ms": -8177.701
+    },
+    {
+      "end": "2026-10-31T06:28:54.799836137Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:54.797966621Z",
+      "start_minus_deadline_ms": -8127.524,
+      "end_minus_deadline_ms": -8125.654
+    },
+    {
+      "end": "2026-10-31T06:28:54.851742504Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:54.850008411Z",
+      "start_minus_deadline_ms": -8075.482,
+      "end_minus_deadline_ms": -8073.748
+    },
+    {
+      "end": "2026-10-31T06:28:54.90232527Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:54.901908733Z",
+      "start_minus_deadline_ms": -8023.582,
+      "end_minus_deadline_ms": -8023.165
+    },
+    {
+      "end": "2026-10-31T06:28:54.952788819Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:54.952449973Z",
+      "start_minus_deadline_ms": -7973.041,
+      "end_minus_deadline_ms": -7972.702
+    },
+    {
+      "end": "2026-10-31T06:28:55.005079832Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:55.002970941Z",
+      "start_minus_deadline_ms": -7922.52,
+      "end_minus_deadline_ms": -7920.411
+    },
+    {
+      "end": "2026-10-31T06:28:55.057176464Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:55.055259589Z",
+      "start_minus_deadline_ms": -7870.231,
+      "end_minus_deadline_ms": -7868.314
+    },
+    {
+      "end": "2026-10-31T06:28:55.107691847Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:55.107347903Z",
+      "start_minus_deadline_ms": -7818.143,
+      "end_minus_deadline_ms": -7817.799
+    },
+    {
+      "end": "2026-10-31T06:28:55.15829768Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:55.157838725Z",
+      "start_minus_deadline_ms": -7767.652,
+      "end_minus_deadline_ms": -7767.193
+    },
+    {
+      "end": "2026-10-31T06:28:55.20897186Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:55.208473491Z",
+      "start_minus_deadline_ms": -7717.017,
+      "end_minus_deadline_ms": -7716.519
+    },
+    {
+      "end": "2026-10-31T06:28:55.259600844Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:55.259146412Z",
+      "start_minus_deadline_ms": -7666.344,
+      "end_minus_deadline_ms": -7665.89
+    },
+    {
+      "end": "2026-10-31T06:28:55.310560406Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:55.309779096Z",
+      "start_minus_deadline_ms": -7615.711,
+      "end_minus_deadline_ms": -7614.93
+    },
+    {
+      "end": "2026-10-31T06:28:55.362924407Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:55.360712535Z",
+      "start_minus_deadline_ms": -7564.778,
+      "end_minus_deadline_ms": -7562.566
+    },
+    {
+      "end": "2026-10-31T06:28:55.415013482Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:55.413108453Z",
+      "start_minus_deadline_ms": -7512.382,
+      "end_minus_deadline_ms": -7510.477
+    },
+    {
+      "end": "2026-10-31T06:28:55.465724845Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:55.465186216Z",
+      "start_minus_deadline_ms": -7460.304,
+      "end_minus_deadline_ms": -7459.766
+    },
+    {
+      "end": "2026-10-31T06:28:55.516160904Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:55.515886736Z",
+      "start_minus_deadline_ms": -7409.604,
+      "end_minus_deadline_ms": -7409.33
+    },
+    {
+      "end": "2026-10-31T06:28:55.571865019Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:55.566498748Z",
+      "start_minus_deadline_ms": -7358.992,
+      "end_minus_deadline_ms": -7353.625
+    },
+    {
+      "end": "2026-10-31T06:28:55.625884798Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:55.622052212Z",
+      "start_minus_deadline_ms": -7303.438,
+      "end_minus_deadline_ms": -7299.606
+    },
+    {
+      "end": "2026-10-31T06:28:55.678723146Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:55.676046627Z",
+      "start_minus_deadline_ms": -7249.444,
+      "end_minus_deadline_ms": -7246.767
+    },
+    {
+      "end": "2026-10-31T06:28:55.729992782Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:55.728985254Z",
+      "start_minus_deadline_ms": -7196.505,
+      "end_minus_deadline_ms": -7195.498
+    },
+    {
+      "end": "2026-10-31T06:28:55.780884343Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:55.780167315Z",
+      "start_minus_deadline_ms": -7145.323,
+      "end_minus_deadline_ms": -7144.606
+    },
+    {
+      "end": "2026-10-31T06:28:55.831925044Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:55.831024883Z",
+      "start_minus_deadline_ms": -7094.466,
+      "end_minus_deadline_ms": -7093.565
+    },
+    {
+      "end": "2026-10-31T06:28:55.882407755Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:55.882094322Z",
+      "start_minus_deadline_ms": -7043.396,
+      "end_minus_deadline_ms": -7043.083
+    },
+    {
+      "end": "2026-10-31T06:28:55.933749832Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:55.93276978Z",
+      "start_minus_deadline_ms": -6992.721,
+      "end_minus_deadline_ms": -6991.741
+    },
+    {
+      "end": "2026-10-31T06:28:55.986148552Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:55.983920022Z",
+      "start_minus_deadline_ms": -6941.57,
+      "end_minus_deadline_ms": -6939.342
+    },
+    {
+      "end": "2026-10-31T06:28:56.037922268Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:56.036312658Z",
+      "start_minus_deadline_ms": -6889.178,
+      "end_minus_deadline_ms": -6887.568
+    },
+    {
+      "end": "2026-10-31T06:28:56.088756735Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:56.088077988Z",
+      "start_minus_deadline_ms": -6837.413,
+      "end_minus_deadline_ms": -6836.734
+    },
+    {
+      "end": "2026-10-31T06:28:56.139471716Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:56.138938614Z",
+      "start_minus_deadline_ms": -6786.552,
+      "end_minus_deadline_ms": -6786.019
+    },
+    {
+      "end": "2026-10-31T06:28:56.190124736Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:56.189643006Z",
+      "start_minus_deadline_ms": -6735.847,
+      "end_minus_deadline_ms": -6735.366
+    },
+    {
+      "end": "2026-10-31T06:28:56.24144986Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:56.240289859Z",
+      "start_minus_deadline_ms": -6685.201,
+      "end_minus_deadline_ms": -6684.041
+    },
+    {
+      "end": "2026-10-31T06:28:56.295175112Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:56.291662307Z",
+      "start_minus_deadline_ms": -6633.828,
+      "end_minus_deadline_ms": -6630.315
+    },
+    {
+      "end": "2026-10-31T06:28:56.345693679Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:56.345358454Z",
+      "start_minus_deadline_ms": -6580.132,
+      "end_minus_deadline_ms": -6579.797
+    },
+    {
+      "end": "2026-10-31T06:28:56.396266766Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:56.395870635Z",
+      "start_minus_deadline_ms": -6529.62,
+      "end_minus_deadline_ms": -6529.224
+    },
+    {
+      "end": "2026-10-31T06:28:56.446808583Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:56.446430572Z",
+      "start_minus_deadline_ms": -6479.06,
+      "end_minus_deadline_ms": -6478.682
+    },
+    {
+      "end": "2026-10-31T06:28:56.497279648Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:56.49697485Z",
+      "start_minus_deadline_ms": -6428.516,
+      "end_minus_deadline_ms": -6428.211
+    },
+    {
+      "end": "2026-10-31T06:28:56.548122649Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:56.547442178Z",
+      "start_minus_deadline_ms": -6378.048,
+      "end_minus_deadline_ms": -6377.368
+    },
+    {
+      "end": "2026-10-31T06:28:56.599869409Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:56.598291134Z",
+      "start_minus_deadline_ms": -6327.199,
+      "end_minus_deadline_ms": -6325.621
+    },
+    {
+      "end": "2026-10-31T06:28:56.669685093Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:56.669350674Z",
+      "start_minus_deadline_ms": -6256.14,
+      "end_minus_deadline_ms": -6255.805
+    },
+    {
+      "end": "2026-10-31T06:28:56.720298908Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:56.719854849Z",
+      "start_minus_deadline_ms": -6205.636,
+      "end_minus_deadline_ms": -6205.192
+    },
+    {
+      "end": "2026-10-31T06:28:56.770964269Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:56.770492812Z",
+      "start_minus_deadline_ms": -6154.998,
+      "end_minus_deadline_ms": -6154.526
+    },
+    {
+      "end": "2026-10-31T06:28:56.82148597Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:56.82112309Z",
+      "start_minus_deadline_ms": -6104.367,
+      "end_minus_deadline_ms": -6104.005
+    },
+    {
+      "end": "2026-10-31T06:28:56.872016016Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:56.871644242Z",
+      "start_minus_deadline_ms": -6053.846,
+      "end_minus_deadline_ms": -6053.474
+    },
+    {
+      "end": "2026-10-31T06:28:56.924712833Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:56.92214401Z",
+      "start_minus_deadline_ms": -6003.346,
+      "end_minus_deadline_ms": -6000.778
+    },
+    {
+      "end": "2026-10-31T06:28:56.97559743Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:56.974863519Z",
+      "start_minus_deadline_ms": -5950.627,
+      "end_minus_deadline_ms": -5949.893
+    },
+    {
+      "end": "2026-10-31T06:28:57.026551393Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:57.025762825Z",
+      "start_minus_deadline_ms": -5899.728,
+      "end_minus_deadline_ms": -5898.939
+    },
+    {
+      "end": "2026-10-31T06:28:57.077303591Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:57.07676134Z",
+      "start_minus_deadline_ms": -5848.729,
+      "end_minus_deadline_ms": -5848.187
+    },
+    {
+      "end": "2026-10-31T06:28:57.127690573Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:57.127400047Z",
+      "start_minus_deadline_ms": -5798.09,
+      "end_minus_deadline_ms": -5797.8
+    },
+    {
+      "end": "2026-10-31T06:28:57.178221151Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:57.177860467Z",
+      "start_minus_deadline_ms": -5747.63,
+      "end_minus_deadline_ms": -5747.269
+    },
+    {
+      "end": "2026-10-31T06:28:57.229726223Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:57.228382455Z",
+      "start_minus_deadline_ms": -5697.108,
+      "end_minus_deadline_ms": -5695.764
+    },
+    {
+      "end": "2026-10-31T06:28:57.280215139Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:57.279900468Z",
+      "start_minus_deadline_ms": -5645.59,
+      "end_minus_deadline_ms": -5645.275
+    },
+    {
+      "end": "2026-10-31T06:28:57.331091276Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:57.330380865Z",
+      "start_minus_deadline_ms": -5595.11,
+      "end_minus_deadline_ms": -5594.399
+    },
+    {
+      "end": "2026-10-31T06:28:57.381980287Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:57.381263753Z",
+      "start_minus_deadline_ms": -5544.227,
+      "end_minus_deadline_ms": -5543.51
+    },
+    {
+      "end": "2026-10-31T06:28:57.432712255Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:57.432144882Z",
+      "start_minus_deadline_ms": -5493.346,
+      "end_minus_deadline_ms": -5492.778
+    },
+    {
+      "end": "2026-10-31T06:28:57.483569189Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:57.482889685Z",
+      "start_minus_deadline_ms": -5442.601,
+      "end_minus_deadline_ms": -5441.921
+    },
+    {
+      "end": "2026-10-31T06:28:57.536749724Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:57.533714097Z",
+      "start_minus_deadline_ms": -5391.776,
+      "end_minus_deadline_ms": -5388.741
+    },
+    {
+      "end": "2026-10-31T06:28:57.587326332Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:57.586925433Z",
+      "start_minus_deadline_ms": -5338.565,
+      "end_minus_deadline_ms": -5338.164
+    },
+    {
+      "end": "2026-10-31T06:28:57.638477722Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:57.637506048Z",
+      "start_minus_deadline_ms": -5287.984,
+      "end_minus_deadline_ms": -5287.013
+    },
+    {
+      "end": "2026-10-31T06:28:57.68975241Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:57.688898873Z",
+      "start_minus_deadline_ms": -5236.592,
+      "end_minus_deadline_ms": -5235.738
+    },
+    {
+      "end": "2026-10-31T06:28:57.740342917Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:57.739912715Z",
+      "start_minus_deadline_ms": -5185.578,
+      "end_minus_deadline_ms": -5185.148
+    },
+    {
+      "end": "2026-10-31T06:28:57.790954067Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:57.790504114Z",
+      "start_minus_deadline_ms": -5134.986,
+      "end_minus_deadline_ms": -5134.536
+    },
+    {
+      "end": "2026-10-31T06:28:57.843364069Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:57.841119356Z",
+      "start_minus_deadline_ms": -5084.371,
+      "end_minus_deadline_ms": -5082.126
+    },
+    {
+      "end": "2026-10-31T06:28:57.89380089Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:57.893528574Z",
+      "start_minus_deadline_ms": -5031.962,
+      "end_minus_deadline_ms": -5031.69
+    },
+    {
+      "end": "2026-10-31T06:28:57.944357912Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:57.94396993Z",
+      "start_minus_deadline_ms": -4981.521,
+      "end_minus_deadline_ms": -4981.133
+    },
+    {
+      "end": "2026-10-31T06:28:57.996008791Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:57.994529244Z",
+      "start_minus_deadline_ms": -4930.961,
+      "end_minus_deadline_ms": -4929.482
+    },
+    {
+      "end": "2026-10-31T06:28:58.046849818Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:58.046200753Z",
+      "start_minus_deadline_ms": -4879.29,
+      "end_minus_deadline_ms": -4878.641
+    },
+    {
+      "end": "2026-10-31T06:28:58.097497173Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:58.097015218Z",
+      "start_minus_deadline_ms": -4828.475,
+      "end_minus_deadline_ms": -4827.993
+    },
+    {
+      "end": "2026-10-31T06:28:58.15071587Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:58.147645442Z",
+      "start_minus_deadline_ms": -4777.845,
+      "end_minus_deadline_ms": -4774.775
+    },
+    {
+      "end": "2026-10-31T06:28:58.201309278Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:58.200879975Z",
+      "start_minus_deadline_ms": -4724.611,
+      "end_minus_deadline_ms": -4724.181
+    },
+    {
+      "end": "2026-10-31T06:28:58.252289026Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:58.25147232Z",
+      "start_minus_deadline_ms": -4674.018,
+      "end_minus_deadline_ms": -4673.201
+    },
+    {
+      "end": "2026-10-31T06:28:58.302800547Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:58.302460714Z",
+      "start_minus_deadline_ms": -4623.03,
+      "end_minus_deadline_ms": -4622.69
+    },
+    {
+      "end": "2026-10-31T06:28:58.354181851Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:58.352978542Z",
+      "start_minus_deadline_ms": -4572.512,
+      "end_minus_deadline_ms": -4571.309
+    },
+    {
+      "end": "2026-10-31T06:28:58.405422006Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:58.404370166Z",
+      "start_minus_deadline_ms": -4521.12,
+      "end_minus_deadline_ms": -4520.068
+    },
+    {
+      "end": "2026-10-31T06:28:58.45782105Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:58.455591869Z",
+      "start_minus_deadline_ms": -4469.899,
+      "end_minus_deadline_ms": -4467.669
+    },
+    {
+      "end": "2026-10-31T06:28:58.508361676Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:58.507984674Z",
+      "start_minus_deadline_ms": -4417.506,
+      "end_minus_deadline_ms": -4417.129
+    },
+    {
+      "end": "2026-10-31T06:28:58.559857092Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:58.558527286Z",
+      "start_minus_deadline_ms": -4366.963,
+      "end_minus_deadline_ms": -4365.633
+    },
+    {
+      "end": "2026-10-31T06:28:58.610532632Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:58.610024527Z",
+      "start_minus_deadline_ms": -4315.466,
+      "end_minus_deadline_ms": -4314.958
+    },
+    {
+      "end": "2026-10-31T06:28:58.661420773Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:58.660821172Z",
+      "start_minus_deadline_ms": -4264.669,
+      "end_minus_deadline_ms": -4264.07
+    },
+    {
+      "end": "2026-10-31T06:28:58.71271104Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:58.711539281Z",
+      "start_minus_deadline_ms": -4213.951,
+      "end_minus_deadline_ms": -4212.779
+    },
+    {
+      "end": "2026-10-31T06:28:58.765816616Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:58.76288623Z",
+      "start_minus_deadline_ms": -4162.604,
+      "end_minus_deadline_ms": -4159.674
+    },
+    {
+      "end": "2026-10-31T06:28:58.817033516Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:58.815980434Z",
+      "start_minus_deadline_ms": -4109.51,
+      "end_minus_deadline_ms": -4108.457
+    },
+    {
+      "end": "2026-10-31T06:28:58.867960328Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:58.867205312Z",
+      "start_minus_deadline_ms": -4058.285,
+      "end_minus_deadline_ms": -4057.53
+    },
+    {
+      "end": "2026-10-31T06:28:58.919203845Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:58.918124306Z",
+      "start_minus_deadline_ms": -4007.366,
+      "end_minus_deadline_ms": -4006.287
+    },
+    {
+      "end": "2026-10-31T06:28:58.970011948Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:58.969527556Z",
+      "start_minus_deadline_ms": -3955.963,
+      "end_minus_deadline_ms": -3955.479
+    },
+    {
+      "end": "2026-10-31T06:28:59.020739849Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:59.020192568Z",
+      "start_minus_deadline_ms": -3905.298,
+      "end_minus_deadline_ms": -3904.751
+    },
+    {
+      "end": "2026-10-31T06:28:59.071123726Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:59.07089775Z",
+      "start_minus_deadline_ms": -3854.593,
+      "end_minus_deadline_ms": -3854.367
+    },
+    {
+      "end": "2026-10-31T06:28:59.121725268Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:59.121298626Z",
+      "start_minus_deadline_ms": -3804.192,
+      "end_minus_deadline_ms": -3803.765
+    },
+    {
+      "end": "2026-10-31T06:28:59.172751648Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:59.171897091Z",
+      "start_minus_deadline_ms": -3753.593,
+      "end_minus_deadline_ms": -3752.739
+    },
+    {
+      "end": "2026-10-31T06:28:59.223445639Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:59.222925342Z",
+      "start_minus_deadline_ms": -3702.565,
+      "end_minus_deadline_ms": -3702.045
+    },
+    {
+      "end": "2026-10-31T06:28:59.275124524Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:59.273605231Z",
+      "start_minus_deadline_ms": -3651.885,
+      "end_minus_deadline_ms": -3650.366
+    },
+    {
+      "end": "2026-10-31T06:28:59.325660378Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:59.325290688Z",
+      "start_minus_deadline_ms": -3600.2,
+      "end_minus_deadline_ms": -3599.83
+    },
+    {
+      "end": "2026-10-31T06:28:59.376156147Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:59.375824192Z",
+      "start_minus_deadline_ms": -3549.666,
+      "end_minus_deadline_ms": -3549.334
+    },
+    {
+      "end": "2026-10-31T06:28:59.427980251Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:59.426329596Z",
+      "start_minus_deadline_ms": -3499.161,
+      "end_minus_deadline_ms": -3497.51
+    },
+    {
+      "end": "2026-10-31T06:28:59.478952918Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:59.478255538Z",
+      "start_minus_deadline_ms": -3447.235,
+      "end_minus_deadline_ms": -3446.538
+    },
+    {
+      "end": "2026-10-31T06:28:59.529509526Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:59.529121128Z",
+      "start_minus_deadline_ms": -3396.369,
+      "end_minus_deadline_ms": -3395.981
+    },
+    {
+      "end": "2026-10-31T06:28:59.580986687Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:59.579753565Z",
+      "start_minus_deadline_ms": -3345.737,
+      "end_minus_deadline_ms": -3344.504
+    },
+    {
+      "end": "2026-10-31T06:28:59.631831481Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:59.631281428Z",
+      "start_minus_deadline_ms": -3294.209,
+      "end_minus_deadline_ms": -3293.659
+    },
+    {
+      "end": "2026-10-31T06:28:59.682302579Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:59.682002992Z",
+      "start_minus_deadline_ms": -3243.488,
+      "end_minus_deadline_ms": -3243.188
+    },
+    {
+      "end": "2026-10-31T06:28:59.733340984Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:59.732607044Z",
+      "start_minus_deadline_ms": -3192.883,
+      "end_minus_deadline_ms": -3192.15
+    },
+    {
+      "end": "2026-10-31T06:28:59.784744785Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:59.783516679Z",
+      "start_minus_deadline_ms": -3141.974,
+      "end_minus_deadline_ms": -3140.746
+    },
+    {
+      "end": "2026-10-31T06:28:59.835378347Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:59.834910989Z",
+      "start_minus_deadline_ms": -3090.58,
+      "end_minus_deadline_ms": -3090.112
+    },
+    {
+      "end": "2026-10-31T06:28:59.886832586Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:59.885530111Z",
+      "start_minus_deadline_ms": -3039.96,
+      "end_minus_deadline_ms": -3038.658
+    },
+    {
+      "end": "2026-10-31T06:28:59.938973539Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:59.936999779Z",
+      "start_minus_deadline_ms": -2988.491,
+      "end_minus_deadline_ms": -2986.517
+    },
+    {
+      "end": "2026-10-31T06:28:59.98970103Z",
+      "result": "connected",
+      "start": "2026-10-31T06:28:59.989140078Z",
+      "start_minus_deadline_ms": -2936.35,
+      "end_minus_deadline_ms": -2935.789
+    },
+    {
+      "end": "2026-10-31T06:29:00.04090553Z",
+      "result": "connected",
+      "start": "2026-10-31T06:29:00.039819351Z",
+      "start_minus_deadline_ms": -2885.671,
+      "end_minus_deadline_ms": -2884.585
+    },
+    {
+      "end": "2026-10-31T06:29:00.091752122Z",
+      "result": "connected",
+      "start": "2026-10-31T06:29:00.091064278Z",
+      "start_minus_deadline_ms": -2834.426,
+      "end_minus_deadline_ms": -2833.738
+    },
+    {
+      "end": "2026-10-31T06:29:00.142934385Z",
+      "result": "connected",
+      "start": "2026-10-31T06:29:00.141910615Z",
+      "start_minus_deadline_ms": -2783.58,
+      "end_minus_deadline_ms": -2782.556
+    },
+    {
+      "end": "2026-10-31T06:29:00.193897145Z",
+      "result": "connected",
+      "start": "2026-10-31T06:29:00.19309894Z",
+      "start_minus_deadline_ms": -2732.392,
+      "end_minus_deadline_ms": -2731.593
+    },
+    {
+      "end": "2026-10-31T06:29:00.244831332Z",
+      "result": "connected",
+      "start": "2026-10-31T06:29:00.244169019Z",
+      "start_minus_deadline_ms": -2681.321,
+      "end_minus_deadline_ms": -2680.659
+    },
+    {
+      "end": "2026-10-31T06:29:00.295563872Z",
+      "result": "connected",
+      "start": "2026-10-31T06:29:00.294998501Z",
+      "start_minus_deadline_ms": -2630.492,
+      "end_minus_deadline_ms": -2629.927
+    },
+    {
+      "end": "2026-10-31T06:29:00.346712941Z",
+      "result": "connected",
+      "start": "2026-10-31T06:29:00.345983639Z",
+      "start_minus_deadline_ms": -2579.507,
+      "end_minus_deadline_ms": -2578.778
+    },
+    {
+      "end": "2026-10-31T06:29:00.397316121Z",
+      "result": "connected",
+      "start": "2026-10-31T06:29:00.396885656Z",
+      "start_minus_deadline_ms": -2528.605,
+      "end_minus_deadline_ms": -2528.174
+    },
+    {
+      "end": "2026-10-31T06:29:00.448434386Z",
+      "result": "connected",
+      "start": "2026-10-31T06:29:00.447499901Z",
+      "start_minus_deadline_ms": -2477.991,
+      "end_minus_deadline_ms": -2477.056
+    },
+    {
+      "end": "2026-10-31T06:29:00.500175332Z",
+      "result": "connected",
+      "start": "2026-10-31T06:29:00.498598161Z",
+      "start_minus_deadline_ms": -2426.892,
+      "end_minus_deadline_ms": -2425.315
+    },
+    {
+      "end": "2026-10-31T06:29:00.550750729Z",
+      "result": "connected",
+      "start": "2026-10-31T06:29:00.550357325Z",
+      "start_minus_deadline_ms": -2375.133,
+      "end_minus_deadline_ms": -2374.74
+    },
+    {
+      "end": "2026-10-31T06:29:00.601229143Z",
+      "result": "connected",
+      "start": "2026-10-31T06:29:00.600918775Z",
+      "start_minus_deadline_ms": -2324.572,
+      "end_minus_deadline_ms": -2324.261
+    },
+    {
+      "end": "2026-10-31T06:29:00.65190038Z",
+      "result": "connected",
+      "start": "2026-10-31T06:29:00.651393582Z",
+      "start_minus_deadline_ms": -2274.097,
+      "end_minus_deadline_ms": -2273.59
+    },
+    {
+      "end": "2026-10-31T06:29:00.702386119Z",
+      "result": "connected",
+      "start": "2026-10-31T06:29:00.702071237Z",
+      "start_minus_deadline_ms": -2223.419,
+      "end_minus_deadline_ms": -2223.104
+    },
+    {
+      "end": "2026-10-31T06:29:00.75292466Z",
+      "result": "connected",
+      "start": "2026-10-31T06:29:00.75256053Z",
+      "start_minus_deadline_ms": -2172.93,
+      "end_minus_deadline_ms": -2172.566
+    },
+    {
+      "end": "2026-10-31T06:29:00.804101371Z",
+      "result": "connected",
+      "start": "2026-10-31T06:29:00.803098947Z",
+      "start_minus_deadline_ms": -2122.392,
+      "end_minus_deadline_ms": -2121.389
+    },
+    {
+      "end": "2026-10-31T06:29:00.854601373Z",
+      "result": "connected",
+      "start": "2026-10-31T06:29:00.854279569Z",
+      "start_minus_deadline_ms": -2071.211,
+      "end_minus_deadline_ms": -2070.889
+    },
+    {
+      "end": "2026-10-31T06:29:00.906147895Z",
+      "result": "connected",
+      "start": "2026-10-31T06:29:00.904780515Z",
+      "start_minus_deadline_ms": -2020.71,
+      "end_minus_deadline_ms": -2019.343
+    },
+    {
+      "end": "2026-10-31T06:29:00.957706775Z",
+      "result": "connected",
+      "start": "2026-10-31T06:29:00.956328278Z",
+      "start_minus_deadline_ms": -1969.162,
+      "end_minus_deadline_ms": -1967.784
+    },
+    {
+      "end": "2026-10-31T06:29:01.008682575Z",
+      "result": "connected",
+      "start": "2026-10-31T06:29:01.00787391Z",
+      "start_minus_deadline_ms": -1917.617,
+      "end_minus_deadline_ms": -1916.808
+    },
+    {
+      "end": "2026-10-31T06:29:01.059139339Z",
+      "result": "connected",
+      "start": "2026-10-31T06:29:01.058858019Z",
+      "start_minus_deadline_ms": -1866.632,
+      "end_minus_deadline_ms": -1866.351
+    },
+    {
+      "end": "2026-10-31T06:29:01.110804351Z",
+      "result": "connected",
+      "start": "2026-10-31T06:29:01.109299231Z",
+      "start_minus_deadline_ms": -1816.191,
+      "end_minus_deadline_ms": -1814.686
+    },
+    {
+      "end": "2026-10-31T06:29:01.164225499Z",
+      "result": "connected",
+      "start": "2026-10-31T06:29:01.160977812Z",
+      "start_minus_deadline_ms": -1764.513,
+      "end_minus_deadline_ms": -1761.265
+    },
+    {
+      "end": "2026-10-31T06:29:01.215335289Z",
+      "result": "connected",
+      "start": "2026-10-31T06:29:01.214637258Z",
+      "start_minus_deadline_ms": -1710.853,
+      "end_minus_deadline_ms": -1710.155
+    },
+    {
+      "end": "2026-10-31T06:29:01.267001891Z",
+      "result": "connected",
+      "start": "2026-10-31T06:29:01.265634499Z",
+      "start_minus_deadline_ms": -1659.856,
+      "end_minus_deadline_ms": -1658.489
+    },
+    {
+      "end": "2026-10-31T06:29:01.317731203Z",
+      "result": "connected",
+      "start": "2026-10-31T06:29:01.317167139Z",
+      "start_minus_deadline_ms": -1608.323,
+      "end_minus_deadline_ms": -1607.759
+    },
+    {
+      "end": "2026-10-31T06:29:01.368523468Z",
+      "result": "connected",
+      "start": "2026-10-31T06:29:01.367890702Z",
+      "start_minus_deadline_ms": -1557.6,
+      "end_minus_deadline_ms": -1556.967
+    },
+    {
+      "end": "2026-10-31T06:29:01.420052973Z",
+      "result": "connected",
+      "start": "2026-10-31T06:29:01.418640059Z",
+      "start_minus_deadline_ms": -1506.85,
+      "end_minus_deadline_ms": -1505.438
+    },
+    {
+      "end": "2026-10-31T06:29:01.470895689Z",
+      "result": "connected",
+      "start": "2026-10-31T06:29:01.470369115Z",
+      "start_minus_deadline_ms": -1455.121,
+      "end_minus_deadline_ms": -1454.595
+    },
+    {
+      "end": "2026-10-31T06:29:01.521419313Z",
+      "result": "connected",
+      "start": "2026-10-31T06:29:01.521049404Z",
+      "start_minus_deadline_ms": -1404.441,
+      "end_minus_deadline_ms": -1404.071
+    },
+    {
+      "end": "2026-10-31T06:29:01.573533467Z",
+      "result": "connected",
+      "start": "2026-10-31T06:29:01.571560467Z",
+      "start_minus_deadline_ms": -1353.93,
+      "end_minus_deadline_ms": -1351.957
+    },
+    {
+      "end": "2026-10-31T06:29:01.624919926Z",
+      "result": "connected",
+      "start": "2026-10-31T06:29:01.623778078Z",
+      "start_minus_deadline_ms": -1301.712,
+      "end_minus_deadline_ms": -1300.571
+    },
+    {
+      "end": "2026-10-31T06:29:01.67639353Z",
+      "result": "connected",
+      "start": "2026-10-31T06:29:01.675098249Z",
+      "start_minus_deadline_ms": -1250.392,
+      "end_minus_deadline_ms": -1249.097
+    },
+    {
+      "end": "2026-10-31T06:29:01.728910212Z",
+      "result": "connected",
+      "start": "2026-10-31T06:29:01.726566293Z",
+      "start_minus_deadline_ms": -1198.924,
+      "end_minus_deadline_ms": -1196.58
+    },
+    {
+      "end": "2026-10-31T06:29:01.77967035Z",
+      "result": "connected",
+      "start": "2026-10-31T06:29:01.779102282Z",
+      "start_minus_deadline_ms": -1146.388,
+      "end_minus_deadline_ms": -1145.82
+    },
+    {
+      "end": "2026-10-31T06:29:01.830754549Z",
+      "result": "connected",
+      "start": "2026-10-31T06:29:01.829854953Z",
+      "start_minus_deadline_ms": -1095.636,
+      "end_minus_deadline_ms": -1094.736
+    },
+    {
+      "end": "2026-10-31T06:29:01.88233881Z",
+      "result": "connected",
+      "start": "2026-10-31T06:29:01.880923266Z",
+      "start_minus_deadline_ms": -1044.567,
+      "end_minus_deadline_ms": -1043.152
+    },
+    {
+      "end": "2026-10-31T06:29:01.933353044Z",
+      "result": "connected",
+      "start": "2026-10-31T06:29:01.932497603Z",
+      "start_minus_deadline_ms": -992.993,
+      "end_minus_deadline_ms": -992.137
+    },
+    {
+      "end": "2026-10-31T06:29:01.984024651Z",
+      "result": "connected",
+      "start": "2026-10-31T06:29:01.98350878Z",
+      "start_minus_deadline_ms": -941.982,
+      "end_minus_deadline_ms": -941.466
+    },
+    {
+      "end": "2026-10-31T06:29:02.034965788Z",
+      "result": "connected",
+      "start": "2026-10-31T06:29:02.034196607Z",
+      "start_minus_deadline_ms": -891.294,
+      "end_minus_deadline_ms": -890.525
+    },
+    {
+      "end": "2026-10-31T06:29:02.085804575Z",
+      "result": "connected",
+      "start": "2026-10-31T06:29:02.085135269Z",
+      "start_minus_deadline_ms": -840.355,
+      "end_minus_deadline_ms": -839.686
+    },
+    {
+      "end": "2026-10-31T06:29:02.136686663Z",
+      "result": "connected",
+      "start": "2026-10-31T06:29:02.135963222Z",
+      "start_minus_deadline_ms": -789.527,
+      "end_minus_deadline_ms": -788.804
+    },
+    {
+      "end": "2026-10-31T06:29:02.187241002Z",
+      "result": "connected",
+      "start": "2026-10-31T06:29:02.186851792Z",
+      "start_minus_deadline_ms": -738.639,
+      "end_minus_deadline_ms": -738.249
+    },
+    {
+      "end": "2026-10-31T06:29:02.237968074Z",
+      "result": "connected",
+      "start": "2026-10-31T06:29:02.237398618Z",
+      "start_minus_deadline_ms": -688.092,
+      "end_minus_deadline_ms": -687.522
+    },
+    {
+      "end": "2026-10-31T06:29:02.28855188Z",
+      "result": "connected",
+      "start": "2026-10-31T06:29:02.288126769Z",
+      "start_minus_deadline_ms": -637.364,
+      "end_minus_deadline_ms": -636.939
+    },
+    {
+      "end": "2026-10-31T06:29:02.339908784Z",
+      "result": "connected",
+      "start": "2026-10-31T06:29:02.338771405Z",
+      "start_minus_deadline_ms": -586.719,
+      "end_minus_deadline_ms": -585.582
+    },
+    {
+      "end": "2026-10-31T06:29:02.391922763Z",
+      "result": "connected",
+      "start": "2026-10-31T06:29:02.390307162Z",
+      "start_minus_deadline_ms": -535.183,
+      "end_minus_deadline_ms": -533.568
+    },
+    {
+      "end": "2026-10-31T06:29:02.44279598Z",
+      "result": "connected",
+      "start": "2026-10-31T06:29:02.442483634Z",
+      "start_minus_deadline_ms": -483.007,
+      "end_minus_deadline_ms": -482.695
+    },
+    {
+      "end": "2026-10-31T06:29:02.493534587Z",
+      "result": "connected",
+      "start": "2026-10-31T06:29:02.492975228Z",
+      "start_minus_deadline_ms": -432.515,
+      "end_minus_deadline_ms": -431.956
+    },
+    {
+      "end": "2026-10-31T06:29:02.54480606Z",
+      "result": "connected",
+      "start": "2026-10-31T06:29:02.543696677Z",
+      "start_minus_deadline_ms": -381.794,
+      "end_minus_deadline_ms": -380.684
+    },
+    {
+      "end": "2026-10-31T06:29:02.59525172Z",
+      "result": "connected",
+      "start": "2026-10-31T06:29:02.594970925Z",
+      "start_minus_deadline_ms": -330.52,
+      "end_minus_deadline_ms": -330.239
+    },
+    {
+      "end": "2026-10-31T06:29:02.645888312Z",
+      "result": "connected",
+      "start": "2026-10-31T06:29:02.645494957Z",
+      "start_minus_deadline_ms": -279.996,
+      "end_minus_deadline_ms": -279.602
+    },
+    {
+      "end": "2026-10-31T06:29:02.696688147Z",
+      "result": "connected",
+      "start": "2026-10-31T06:29:02.696036141Z",
+      "start_minus_deadline_ms": -229.454,
+      "end_minus_deadline_ms": -228.802
+    },
+    {
+      "end": "2026-10-31T06:29:02.897114892Z",
+      "result": "timeout",
+      "start": "2026-10-31T06:29:02.746857075Z",
+      "start_minus_deadline_ms": -178.633,
+      "end_minus_deadline_ms": -28.376
+    },
+    {
+      "end": "2026-10-31T06:29:03.097857672Z",
+      "result": "timeout",
+      "start": "2026-10-31T06:29:02.947283466Z",
+      "start_minus_deadline_ms": 21.793,
+      "end_minus_deadline_ms": 172.367
+    },
+    {
+      "end": "2026-10-31T06:29:03.298372043Z",
+      "result": "timeout",
+      "start": "2026-10-31T06:29:03.148016657Z",
+      "start_minus_deadline_ms": 222.526,
+      "end_minus_deadline_ms": 372.882
+    },
+    {
+      "end": "2026-10-31T06:29:03.498772197Z",
+      "result": "timeout",
+      "start": "2026-10-31T06:29:03.348527693Z",
+      "start_minus_deadline_ms": 423.037,
+      "end_minus_deadline_ms": 573.282
+    },
+    {
+      "end": "2026-10-31T06:29:03.69943591Z",
+      "result": "timeout",
+      "start": "2026-10-31T06:29:03.548932679Z",
+      "start_minus_deadline_ms": 623.442,
+      "end_minus_deadline_ms": 773.945
+    },
+    {
+      "end": "2026-10-31T06:29:03.90049778Z",
+      "result": "timeout",
+      "start": "2026-10-31T06:29:03.749775042Z",
+      "start_minus_deadline_ms": 824.285,
+      "end_minus_deadline_ms": 975.007
+    },
+    {
+      "end": "2026-10-31T06:29:04.101131541Z",
+      "result": "timeout",
+      "start": "2026-10-31T06:29:03.950760834Z",
+      "start_minus_deadline_ms": 1025.27,
+      "end_minus_deadline_ms": 1175.641
+    },
+    {
+      "end": "2026-10-31T06:29:04.301621273Z",
+      "result": "timeout",
+      "start": "2026-10-31T06:29:04.151280248Z",
+      "start_minus_deadline_ms": 1225.79,
+      "end_minus_deadline_ms": 1376.131
+    },
+    {
+      "end": "2026-10-31T06:29:04.502296098Z",
+      "result": "timeout",
+      "start": "2026-10-31T06:29:04.351913943Z",
+      "start_minus_deadline_ms": 1426.423,
+      "end_minus_deadline_ms": 1576.806
+    },
+    {
+      "end": "2026-10-31T06:29:04.702819826Z",
+      "result": "timeout",
+      "start": "2026-10-31T06:29:04.552428543Z",
+      "start_minus_deadline_ms": 1626.938,
+      "end_minus_deadline_ms": 1777.329
+    },
+    {
+      "end": "2026-10-31T06:29:04.903333Z",
+      "result": "timeout",
+      "start": "2026-10-31T06:29:04.752988182Z",
+      "start_minus_deadline_ms": 1827.498,
+      "end_minus_deadline_ms": 1977.843
+    },
+    {
+      "end": "2026-10-31T06:29:05.104100303Z",
+      "result": "timeout",
+      "start": "2026-10-31T06:29:04.953504871Z",
+      "start_minus_deadline_ms": 2028.014,
+      "end_minus_deadline_ms": 2178.61
+    },
+    {
+      "end": "2026-10-31T06:29:05.304593253Z",
+      "result": "timeout",
+      "start": "2026-10-31T06:29:05.15424651Z",
+      "start_minus_deadline_ms": 2228.756,
+      "end_minus_deadline_ms": 2379.103
+    },
+    {
+      "end": "2026-10-31T06:29:05.505033399Z",
+      "result": "timeout",
+      "start": "2026-10-31T06:29:05.354700596Z",
+      "start_minus_deadline_ms": 2429.21,
+      "end_minus_deadline_ms": 2579.543
+    },
+    {
+      "end": "2026-10-31T06:29:05.70555919Z",
+      "result": "timeout",
+      "start": "2026-10-31T06:29:05.55519616Z",
+      "start_minus_deadline_ms": 2629.706,
+      "end_minus_deadline_ms": 2780.069
+    },
+    {
+      "end": "2026-10-31T06:29:05.906226004Z",
+      "result": "timeout",
+      "start": "2026-10-31T06:29:05.75571174Z",
+      "start_minus_deadline_ms": 2830.221,
+      "end_minus_deadline_ms": 2980.736
+    },
+    {
+      "end": "2026-10-31T06:29:06.106761025Z",
+      "result": "timeout",
+      "start": "2026-10-31T06:29:05.956386153Z",
+      "start_minus_deadline_ms": 3030.896,
+      "end_minus_deadline_ms": 3181.271
+    },
+    {
+      "end": "2026-10-31T06:29:06.307276069Z",
+      "result": "timeout",
+      "start": "2026-10-31T06:29:06.15692938Z",
+      "start_minus_deadline_ms": 3231.439,
+      "end_minus_deadline_ms": 3381.786
+    },
+    {
+      "end": "2026-10-31T06:29:06.507759586Z",
+      "result": "timeout",
+      "start": "2026-10-31T06:29:06.357435967Z",
+      "start_minus_deadline_ms": 3431.945,
+      "end_minus_deadline_ms": 3582.269
+    },
+    {
+      "end": "2026-10-31T06:29:06.70821753Z",
+      "result": "timeout",
+      "start": "2026-10-31T06:29:06.557922891Z",
+      "start_minus_deadline_ms": 3632.432,
+      "end_minus_deadline_ms": 3782.727
+    },
+    {
+      "end": "2026-10-31T06:29:06.908688657Z",
+      "result": "timeout",
+      "start": "2026-10-31T06:29:06.758377211Z",
+      "start_minus_deadline_ms": 3832.887,
+      "end_minus_deadline_ms": 3983.198
+    },
+    {
+      "end": "2026-10-31T06:29:07.109121483Z",
+      "result": "timeout",
+      "start": "2026-10-31T06:29:06.958850109Z",
+      "start_minus_deadline_ms": 4033.36,
+      "end_minus_deadline_ms": 4183.631
+    },
+    {
+      "end": "2026-10-31T06:29:07.30964454Z",
+      "result": "timeout",
+      "start": "2026-10-31T06:29:07.159286221Z",
+      "start_minus_deadline_ms": 4233.796,
+      "end_minus_deadline_ms": 4384.154
+    },
+    {
+      "end": "2026-10-31T06:29:07.510142391Z",
+      "result": "timeout",
+      "start": "2026-10-31T06:29:07.35978624Z",
+      "start_minus_deadline_ms": 4434.296,
+      "end_minus_deadline_ms": 4584.652
+    },
+    {
+      "end": "2026-10-31T06:29:07.710673755Z",
+      "result": "timeout",
+      "start": "2026-10-31T06:29:07.560304202Z",
+      "start_minus_deadline_ms": 4634.814,
+      "end_minus_deadline_ms": 4785.183
+    },
+    {
+      "end": "2026-10-31T06:29:07.911229184Z",
+      "result": "timeout",
+      "start": "2026-10-31T06:29:07.760837697Z",
+      "start_minus_deadline_ms": 4835.347,
+      "end_minus_deadline_ms": 4985.739
+    },
+    {
+      "end": "2026-10-31T06:29:08.111753107Z",
+      "result": "timeout",
+      "start": "2026-10-31T06:29:07.961389765Z",
+      "start_minus_deadline_ms": 5035.899,
+      "end_minus_deadline_ms": 5186.263
+    },
+    {
+      "end": "2026-10-31T06:29:08.312320316Z",
+      "result": "timeout",
+      "start": "2026-10-31T06:29:08.161914239Z",
+      "start_minus_deadline_ms": 5236.424,
+      "end_minus_deadline_ms": 5386.83
+    },
+    {
+      "end": "2026-10-31T06:29:08.51275314Z",
+      "result": "timeout",
+      "start": "2026-10-31T06:29:08.362483759Z",
+      "start_minus_deadline_ms": 5436.993,
+      "end_minus_deadline_ms": 5587.263
+    },
+    {
+      "end": "2026-10-31T06:29:08.713278658Z",
+      "result": "timeout",
+      "start": "2026-10-31T06:29:08.562908927Z",
+      "start_minus_deadline_ms": 5637.418,
+      "end_minus_deadline_ms": 5787.788
+    },
+    {
+      "end": "2026-10-31T06:29:08.913938787Z",
+      "result": "timeout",
+      "start": "2026-10-31T06:29:08.76359696Z",
+      "start_minus_deadline_ms": 5838.106,
+      "end_minus_deadline_ms": 5988.448
+    },
+    {
+      "end": "2026-10-31T06:29:09.114712855Z",
+      "result": "timeout",
+      "start": "2026-10-31T06:29:08.964341651Z",
+      "start_minus_deadline_ms": 6038.851,
+      "end_minus_deadline_ms": 6189.222
+    },
+    {
+      "end": "2026-10-31T06:29:09.315373379Z",
+      "result": "timeout",
+      "start": "2026-10-31T06:29:09.164890521Z",
+      "start_minus_deadline_ms": 6239.4,
+      "end_minus_deadline_ms": 6389.883
+    },
+    {
+      "end": "2026-10-31T06:29:09.515764005Z",
+      "result": "timeout",
+      "start": "2026-10-31T06:29:09.365511074Z",
+      "start_minus_deadline_ms": 6440.021,
+      "end_minus_deadline_ms": 6590.274
+    },
+    {
+      "end": "2026-10-31T06:29:09.716303042Z",
+      "result": "timeout",
+      "start": "2026-10-31T06:29:09.565930603Z",
+      "start_minus_deadline_ms": 6640.44,
+      "end_minus_deadline_ms": 6790.813
+    },
+    {
+      "end": "2026-10-31T06:29:09.916775913Z",
+      "result": "timeout",
+      "start": "2026-10-31T06:29:09.766485117Z",
+      "start_minus_deadline_ms": 6840.995,
+      "end_minus_deadline_ms": 6991.285
+    },
+    {
+      "end": "2026-10-31T06:29:10.117277221Z",
+      "result": "timeout",
+      "start": "2026-10-31T06:29:09.966932157Z",
+      "start_minus_deadline_ms": 7041.442,
+      "end_minus_deadline_ms": 7191.787
+    },
+    {
+      "end": "2026-10-31T06:29:10.318150305Z",
+      "result": "timeout",
+      "start": "2026-10-31T06:29:10.167607753Z",
+      "start_minus_deadline_ms": 7242.117,
+      "end_minus_deadline_ms": 7392.66
+    },
+    {
+      "end": "2026-10-31T06:29:10.51871599Z",
+      "result": "timeout",
+      "start": "2026-10-31T06:29:10.368315665Z",
+      "start_minus_deadline_ms": 7442.825,
+      "end_minus_deadline_ms": 7593.225
+    },
+    {
+      "end": "2026-10-31T06:29:10.719719969Z",
+      "result": "timeout",
+      "start": "2026-10-31T06:29:10.569142247Z",
+      "start_minus_deadline_ms": 7643.652,
+      "end_minus_deadline_ms": 7794.229
+    },
+    {
+      "end": "2026-10-31T06:29:10.92025516Z",
+      "result": "timeout",
+      "start": "2026-10-31T06:29:10.76988474Z",
+      "start_minus_deadline_ms": 7844.394,
+      "end_minus_deadline_ms": 7994.765
+    },
+    {
+      "end": "2026-10-31T06:29:11.121757453Z",
+      "result": "timeout",
+      "start": "2026-10-31T06:29:10.971480833Z",
+      "start_minus_deadline_ms": 8045.99,
+      "end_minus_deadline_ms": 8196.267
+    },
+    {
+      "end": "2026-10-31T06:29:11.322578381Z",
+      "result": "timeout",
+      "start": "2026-10-31T06:29:11.171914065Z",
+      "start_minus_deadline_ms": 8246.424,
+      "end_minus_deadline_ms": 8397.088
+    },
+    {
+      "end": "2026-10-31T06:29:11.523067087Z",
+      "result": "timeout",
+      "start": "2026-10-31T06:29:11.372710116Z",
+      "start_minus_deadline_ms": 8447.22,
+      "end_minus_deadline_ms": 8597.577
+    },
+    {
+      "end": "2026-10-31T06:29:11.723816085Z",
+      "result": "timeout",
+      "start": "2026-10-31T06:29:11.573223589Z",
+      "start_minus_deadline_ms": 8647.733,
+      "end_minus_deadline_ms": 8798.326
+    },
+    {
+      "end": "2026-10-31T06:29:11.924363855Z",
+      "result": "timeout",
+      "start": "2026-10-31T06:29:11.773982067Z",
+      "start_minus_deadline_ms": 8848.492,
+      "end_minus_deadline_ms": 8998.873
+    },
+    {
+      "end": "2026-10-31T06:29:12.124938698Z",
+      "result": "timeout",
+      "start": "2026-10-31T06:29:11.974562658Z",
+      "start_minus_deadline_ms": 9049.072,
+      "end_minus_deadline_ms": 9199.448
+    },
+    {
+      "end": "2026-10-31T06:29:12.32546698Z",
+      "result": "timeout",
+      "start": "2026-10-31T06:29:12.175102365Z",
+      "start_minus_deadline_ms": 9249.612,
+      "end_minus_deadline_ms": 9399.976
+    },
+    {
+      "end": "2026-10-31T06:29:12.526137044Z",
+      "result": "timeout",
+      "start": "2026-10-31T06:29:12.375656134Z",
+      "start_minus_deadline_ms": 9450.166,
+      "end_minus_deadline_ms": 9600.647
+    },
+    {
+      "end": "2026-10-31T06:29:12.726706713Z",
+      "result": "timeout",
+      "start": "2026-10-31T06:29:12.576292867Z",
+      "start_minus_deadline_ms": 9650.802,
+      "end_minus_deadline_ms": 9801.216
+    },
+    {
+      "end": "2026-10-31T06:29:12.927332811Z",
+      "result": "timeout",
+      "start": "2026-10-31T06:29:12.776867654Z",
+      "start_minus_deadline_ms": 9851.377,
+      "end_minus_deadline_ms": 10001.842
+    },
+    {
+      "end": "2026-10-31T06:29:13.12775631Z",
+      "result": "timeout",
+      "start": "2026-10-31T06:29:12.977492658Z",
+      "start_minus_deadline_ms": 10052.002,
+      "end_minus_deadline_ms": 10202.266
+    },
+    {
+      "end": "2026-10-31T06:29:13.328281648Z",
+      "result": "timeout",
+      "start": "2026-10-31T06:29:13.177916342Z",
+      "start_minus_deadline_ms": 10252.426,
+      "end_minus_deadline_ms": 10402.791
+    },
+    {
+      "end": "2026-10-31T06:29:13.528989734Z",
+      "result": "timeout",
+      "start": "2026-10-31T06:29:13.378445951Z",
+      "start_minus_deadline_ms": 10452.955,
+      "end_minus_deadline_ms": 10603.499
+    },
+    {
+      "end": "2026-10-31T06:29:13.729509084Z",
+      "result": "timeout",
+      "start": "2026-10-31T06:29:13.579149985Z",
+      "start_minus_deadline_ms": 10653.659,
+      "end_minus_deadline_ms": 10804.019
+    },
+    {
+      "end": "2026-10-31T06:29:13.930043798Z",
+      "result": "timeout",
+      "start": "2026-10-31T06:29:13.779641072Z",
+      "start_minus_deadline_ms": 10854.151,
+      "end_minus_deadline_ms": 11004.553
+    },
+    {
+      "end": "2026-10-31T06:29:14.130577101Z",
+      "result": "timeout",
+      "start": "2026-10-31T06:29:13.980219298Z",
+      "start_minus_deadline_ms": 11054.729,
+      "end_minus_deadline_ms": 11205.087
+    },
+    {
+      "end": "2026-10-31T06:29:14.331163825Z",
+      "result": "timeout",
+      "start": "2026-10-31T06:29:14.180726976Z",
+      "start_minus_deadline_ms": 11255.236,
+      "end_minus_deadline_ms": 11405.673
+    },
+    {
+      "end": "2026-10-31T06:29:14.531757046Z",
+      "result": "timeout",
+      "start": "2026-10-31T06:29:14.38145124Z",
+      "start_minus_deadline_ms": 11455.961,
+      "end_minus_deadline_ms": 11606.267
+    },
+    {
+      "end": "2026-10-31T06:29:14.732277391Z",
+      "result": "timeout",
+      "start": "2026-10-31T06:29:14.581912193Z",
+      "start_minus_deadline_ms": 11656.422,
+      "end_minus_deadline_ms": 11806.787
+    },
+    {
+      "end": "2026-10-31T06:29:14.932943907Z",
+      "result": "timeout",
+      "start": "2026-10-31T06:29:14.782528119Z",
+      "start_minus_deadline_ms": 11857.038,
+      "end_minus_deadline_ms": 12007.453
+    },
+    {
+      "end": "2026-10-31T06:29:15.133462087Z",
+      "result": "timeout",
+      "start": "2026-10-31T06:29:14.983107759Z",
+      "start_minus_deadline_ms": 12057.617,
+      "end_minus_deadline_ms": 12207.972
+    }
+  ],
+  "first_baseline_bracket": {
+    "read_end": "2026-10-31T06:29:04.250071427Z",
+    "read_start": "2026-10-31T06:29:04.22809304Z",
+    "readback": "table inet fvpn {\n\tchain forward {\n\t\ttype filter hook forward priority mangle; policy drop;\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=0 fvpn_baseline=1 fvpn_metering=forward_admission_v1\"\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1909a-46bf-7b13-ae64-a126121d1f4b:94f4\"\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1909a-c40a-7e90-bc49-d6ea05474389:1ebd\"\n\t\tiifname \"fvmb0\" counter name \"ctbase\" drop\n\t\toifname \"fvmb0\" counter name \"ctbase\" drop\n\t\tiifname \"fvmb0\" meta nfproto ipv6 counter name \"ctv6\" drop\n\t\toifname \"fvmb0\" meta nfproto ipv6 counter name \"ctv6\" drop\n\t}\n}\nv1\nboot_id 2aa009dd-61cd-4ac2-9c58-3d287d201270\nmono_ns 11652812305964\nwall_unix_ns 1793428115295935274\npolicy_expires_mono_ns 11680437994339\nbaseline_ok 1\nserving 1\ngeneration 31\nreason serving\n"
   },
-  "limits": [
-    "The baseline label is sampled before forwardChain reads the kernel, and the read completion time was not retained. It is not an exact transition timestamp.",
-    "The near-deadline request started after waiting until expires_at minus 4 seconds, but its start/end timestamps and packet trace were not recorded.",
-    "The heartbeat is the last available local heartbeat; its wall timestamp precedes the signed deadline. It is not a fresh post-deadline heartbeat despite the observation name.",
-    "Control was stopped, so no central observation ID for the expiry transition exists in this record.",
-    "The signed deadline and conservative monotonic allowance must be reconciled before treating the early label as a product contract violation. No post-deadline forwarding was observed."
-  ]
+  "first_expiry_heartbeat_bracket": {
+    "read_end": "2026-10-31T06:29:10.496189725Z",
+    "read_start": "2026-10-31T06:29:10.46671366Z",
+    "readback": "table inet fvpn {\n\tchain forward {\n\t\ttype filter hook forward priority mangle; policy drop;\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=0 fvpn_baseline=1 fvpn_metering=forward_admission_v1\"\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1909a-46bf-7b13-ae64-a126121d1f4b:94f4\"\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1909a-c40a-7e90-bc49-d6ea05474389:1ebd\"\n\t\tiifname \"fvmb0\" counter name \"ctbase\" drop\n\t\toifname \"fvmb0\" counter name \"ctbase\" drop\n\t\tiifname \"fvmb0\" meta nfproto ipv6 counter name \"ctv6\" drop\n\t\toifname \"fvmb0\" meta nfproto ipv6 counter name \"ctv6\" drop\n\t}\n}\nv1\nboot_id 2aa009dd-61cd-4ac2-9c58-3d287d201270\nmono_ns 11687982978191\nwall_unix_ns 1793428150466607886\npolicy_expires_mono_ns 0\nbaseline_ok 1\nserving 0\ngeneration 31\nreason lease_expired\n"
+  },
+  "successes_after_deadline": [],
+  "interpretation_limit": "A connect timeout brackets a missing response; captures distinguish ingress from egress. Conservative monotonic expiry is permitted by \u00a716.3; the strict case result is retained without redefining its predicate.",
+  "last_successful_synack_packet": "1793428142.696232187 fvmb0 Out IP 192.0.6.10.443 > 100.83.178.123.46406: Flags [S.], seq 3443902578, ack 2154298297, win 65160, options [mss 1460,sackOK,TS val 4122573629 ecr 2979625539,nop,wscale 10], length 0",
+  "first_failed_connect_ingress_packets": [
+    "1793428142.748690751 fvmb0 In  IP 100.83.178.123.46408 > 192.0.6.10.443: Flags [S], seq 4002136293, win 64480, options [mss 1240,sackOK,TS val 2310897194 ecr 0,nop,wscale 10], length 0"
+  ],
+  "continuous_node_capture_valid": true,
+  "independent_origin_capture_valid": false,
+  "capture_scope": "Node any includes fvmb0 and fvup0 ingress/egress. Independent origin capture failed because its image lacks tcpdump; no target-capture claim."
 }

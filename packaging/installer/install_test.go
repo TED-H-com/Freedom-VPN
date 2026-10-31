@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -474,6 +475,10 @@ func baseEnv(t *testing.T, root string) *Env {
 		}
 		base := filepath.Base(name)
 		switch base {
+		case "fvpn-updater":
+			if len(args) > 0 && args[0] == "seed" {
+				return []byte("fvpn-updater: unknown command \"seed\"\n"), exec.Command("sh", "-c", "exit 64").Run()
+			}
 		case "nft":
 			if len(args) > 0 && args[0] == "list" {
 				return nil, errors.New("no such table")

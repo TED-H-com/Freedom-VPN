@@ -42,7 +42,7 @@ if [ "$RESET" = "1" ] || [ ! -f "$STATE/ready" ]; then
         rm -rf "$STATE"
     fi
     go build -o "$ROOT/.agent/e2e-build/fvpn-e2e-prepare" ./tests/e2e/cmd/fvpn-e2e-prepare
-    "$ROOT/.agent/e2e-build/fvpn-e2e-prepare" -state "$STATE" -reset -prefix "$SHORT" -port-base "$PORT_BASE" -grace-seconds "${FVPN_E2E_GRACE_SECONDS:-0}"
+    "$ROOT/.agent/e2e-build/fvpn-e2e-prepare" -state "$STATE" -reset -prefix "$SHORT" -port-base "$PORT_BASE" -grace-seconds "${FVPN_E2E_GRACE_SECONDS:-0}" -two-resolvers="${FVPN_E2E_TWO_RESOLVERS:-false}"
 fi
 if [ ! -f "$STATE/render/compose.env" ]; then
     echo "compose env is missing; set E2E_RESET=1" >&2
@@ -60,6 +60,9 @@ fi
 mkdir -p "$STATE/render/coredns" "$STATE/releases" "$STATE/node/var/e2e" "$STATE/member/var/e2e"
 cp "$ROOT/deploy/devstack/nginx.conf" "$STATE/render/nginx.conf"
 cp "$ROOT/deploy/devstack/coredns/Corefile" "$ROOT/deploy/devstack/coredns/example.invalid.zone" "$STATE/render/coredns/"
+
+# Render synthetic addresses for this slot, never another lab's service.
+sed -i "s/172[.]28[.]30[.]/$FVPN_E2E_LAB_PREFIX./g; s/192[.]0[.]3[.]/$FVPN_E2E_ORIGIN_PREFIX./g" "$STATE/render/coredns/example.invalid.zone"
 
 tag() {
     digest=$1
@@ -106,7 +109,9 @@ service_image() {
     mkdir -p "$ctx"
     cp "$bin" "$ctx/service"
     cp "$ROOT/deploy/devstack/Dockerfile.service" "$ctx/Dockerfile"
-    docker build --iidfile "$ctx/image.id" -t "$PREFIX-$name:run" "$ctx"
+    capture_packages=
+    if [ "$name" = origin ]; then capture_packages=tcpdump; fi
+    docker build --build-arg "CAPTURE_PACKAGES=$capture_packages" --iidfile "$ctx/image.id" -t "$PREFIX-$name:run" "$ctx"
     # Pin this run to the built image even if another worktree moves :local.
     image_var=FVPN_E2E_IMAGE_$(printf '%s' "$name" | tr '[:lower:]' '[:upper:]')
     export "$image_var=$(cat "$ctx/image.id")"

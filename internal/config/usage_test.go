@@ -74,3 +74,58 @@ func TestUsageConfig_LoadValidateAndRedact(t *testing.T) {
 		}
 	}
 }
+
+func TestD112_D115UsageSamplingIntervalBound(t *testing.T) {
+	const base = `{"signing_config_file":"secrets/signing.json","raw_usage_retention_days":60,"rollup_retention_months":24,"audit_retention_days":365,"projection_batch_size":512`
+	for _, tc := range []struct {
+		name, setting string
+		want          int
+	}{
+		{"omitted-default", "", 10},
+		{"override", `,"sampling_interval_bound_seconds":30`, 30},
+		{"zero", `,"sampling_interval_bound_seconds":0`, 0},
+		{"negative", `,"sampling_interval_bound_seconds":-1`, 0},
+		{"null", `,"sampling_interval_bound_seconds":null`, 0},
+		{"overflow", `,"sampling_interval_bound_seconds":9223372037`, 0},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			path := filepath.Join(t.TempDir(), "usage.json")
+			if err := os.WriteFile(path, []byte(base+tc.setting+"}"), 0600); err != nil {
+				t.Fatal(err)
+			}
+			got, err := LoadUsage(path)
+			if tc.want == 0 {
+				var se *SettingError
+				if !errors.As(err, &se) || se.Setting() != "sampling_interval_bound_seconds" {
+					t.Fatalf("expected named bound error, got %v", err)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatal(err)
+			}
+			if got.SamplingIntervalBoundSeconds == nil || *got.SamplingIntervalBoundSeconds != tc.want {
+				t.Fatal("bound did not default/override correctly")
+			}
+			if got.Effective()["sampling_interval_bound_seconds"] != float64(tc.want) {
+				t.Fatal("effective configuration omitted the active bound")
+			}
+			zero := 0
+			got.SamplingIntervalBoundSeconds = &zero
+			if err := got.Validate(); err == nil {
+				t.Fatal("programmatic explicit zero must fail validation")
+			}
+			got.SamplingIntervalBoundSeconds = nil
+			if err := got.Validate(); err != nil {
+				t.Fatalf("programmatic omission must retain the default: %v", err)
+			}
+			encoded, err := json.Marshal(got)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if strings.Contains(string(encoded), "sampling_interval_bound_seconds") {
+				t.Fatal("omitted programmatic bound serialized as an explicit invalid value")
+			}
+		})
+	}
+}

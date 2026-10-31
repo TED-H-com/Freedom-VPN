@@ -152,8 +152,19 @@ func PrepareServingBaselineWithOptions(ctx context.Context, client *http.Client,
 
 func (l *lab) buildRelease(ctx context.Context, dir, product, sequence, commit, build string, options ...ReleaseOptions) (uuid.UUID, []byte, error) {
 	pkg := filepath.Join(dir, "tree")
-	if err := os.MkdirAll(filepath.Join(pkg, "bin"), 0755); err != nil {
+	binDir := filepath.Join(pkg, "bin")
+	installerLayout := len(options) > 0 && options[0].InstallerLayout
+	if installerLayout {
+		binDir = pkg
+	}
+	if err := os.MkdirAll(binDir, 0755); err != nil {
 		return uuid.Nil, nil, err
+	}
+	if installerLayout {
+		units := filepath.Join(l.root, "deploy", "node", "systemd")
+		if err := os.CopyFS(filepath.Join(pkg, "lib", "systemd"), os.DirFS(units)); err != nil {
+			return uuid.Nil, nil, err
+		}
 	}
 	metadata, _ := json.Marshal(map[string]string{"product_version": product, "source_commit": commit, "purpose": "TEST ONLY acceptance"})
 	if err := os.WriteFile(filepath.Join(pkg, "release.json"), metadata, 0644); err != nil {
@@ -161,8 +172,12 @@ func (l *lab) buildRelease(ctx context.Context, dir, product, sequence, commit, 
 	}
 	installed := map[string]string{}
 	for _, arch := range []string{"amd64", "arm64"} {
-		for _, name := range []string{"agent", "watchdog", "updater"} {
-			cmd := exec.CommandContext(ctx, "go", "build", "-trimpath", "-o", filepath.Join(pkg, "bin", "fvpn-"+name), "./node/"+name+"/cmd/fvpn-"+name)
+		packages := map[string]string{"agent": "./node/agent/cmd/fvpn-agent", "watchdog": "./node/watchdog/cmd/fvpn-watchdog", "updater": "./node/updater/cmd/fvpn-updater"}
+		if installerLayout {
+			packages["node-install"] = "./packaging/installer/cmd/fvpn-node-install"
+		}
+		for name, path := range packages {
+			cmd := exec.CommandContext(ctx, "go", "build", "-trimpath", "-o", filepath.Join(binDir, "fvpn-"+name), path)
 			cmd.Dir = l.root
 			cmd.Env = append(os.Environ(), "GOOS=linux", "GOARCH="+arch, "CGO_ENABLED=0", "GOTOOLCHAIN=local")
 			if err := cmd.Run(); err != nil {

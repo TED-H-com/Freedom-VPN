@@ -86,6 +86,9 @@ func (f *quarantineExec) Output(_ context.Context, name string, args ...string) 
 		}
 		return []byte(`[{"ifname":"fv-fh","flags":[],"operstate":"DOWN"}]`), nil
 	}
+	if key == "nft list set inet fvpn allowed_v4" {
+		return []byte("table inet fvpn { set allowed_v4 { type ipv4_addr flags timeout } }"), nil
+	}
 	if name == "nft" {
 		if f.fault == "nft_read" {
 			return nil, fmt.Errorf("TEST ONLY: nft read failed")

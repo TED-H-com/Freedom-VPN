@@ -15,6 +15,7 @@ const conntrackDeleteDetail = "conntrack delete failed after the serving ruleset
 
 // ApplyResult is what the agent keeps after a render.
 type ApplyResult struct {
+	Deadline DeadlineEvidence
 	Plan     RenderPlan
 	Resets   []Reset
 	Counters map[string]CounterValue
@@ -64,7 +65,14 @@ func IsConntrackDeleteFailure(err error) bool {
 // baseline and returns the check error, so member forwarding does not stay
 // on a path we cannot account (§10.3, §8.2). Resets are reported and never
 // cleared by recreating counter objects (§10.7).
-func Apply(ctx context.Context, ex Executor, m Model, previous map[string]CounterValue) (ApplyResult, error) {
+func Apply(ctx context.Context, ex Executor, m Model, previous map[string]CounterValue) (result ApplyResult, err error) {
+	applyStart, err := MonotonicNow()
+	if err != nil {
+		return ApplyResult{}, err
+	}
+	timing := DeadlineEvidence{Granularity: DeadlineGranularity, InstallBound: DeadlineInstallBound, ApplyStart: applyStart}
+	defer func() { result.Deadline = timing }()
+
 	if err := validateDatapath(m.Datapath); err != nil {
 		return ApplyResult{}, err
 	}
@@ -83,10 +91,13 @@ func Apply(ctx context.Context, ex Executor, m Model, previous map[string]Counte
 			return ApplyResult{Quarantine: &q}, errors.Join(err, qerr)
 		}
 	}
-	tcState, err := loadTC(ctx, ex, []string{m.Datapath.Uplink, m.Datapath.MemberIngress})
+	tcState, loadReads, err := loadTC(ctx, ex, []string{m.Datapath.Uplink, m.Datapath.MemberIngress})
 	if err != nil {
+		evidence := ServingEvidence{TC: loadReads}
+		evidence.retainTC(m.Generation, "load", err)
 		q, qerr := Quarantine(ctx, ex, m)
-		return ApplyResult{Quarantine: &q, Evidence: ServingEvidence{Quarantined: q.Recorded, QuarantinedLinks: quarantinedLinksFor(m, q)}}, errors.Join(checkf(ReasonTCForeignFilter, "tc ownership read failed before Apply"), qerr)
+		evidence.Quarantined, evidence.QuarantinedLinks = q.Recorded, quarantinedLinksFor(m, q)
+		return ApplyResult{Quarantine: &q, Evidence: evidence}, errors.Join(err, qerr)
 	}
 	resets := DetectMeterResets(previous, state)
 	if len(m.QoS.Assignments) == 0 && len(state.Classes) > 0 {
@@ -121,8 +132,11 @@ func Apply(ctx context.Context, ex Executor, m Model, previous map[string]Counte
 		tcErr = verifyTCObjects(reads, ownershipModel, owned)
 	}
 	if tcErr != nil {
+		evidence := ServingEvidence{TC: reads}
+		evidence.retainTC(m.Generation, "pre_apply", tcErr)
 		q, qerr := Quarantine(ctx, ex, m)
-		return ApplyResult{Plan: plan, Resets: resets, Evidence: ServingEvidence{TC: reads, Quarantined: q.Recorded, QuarantinedLinks: quarantinedLinksFor(m, q)}, Quarantine: &q}, errors.Join(tcErr, qerr)
+		evidence.Quarantined, evidence.QuarantinedLinks = q.Recorded, quarantinedLinksFor(m, q)
+		return ApplyResult{Plan: plan, Resets: resets, Evidence: evidence, Quarantine: &q}, errors.Join(tcErr, qerr)
 	}
 	// Shape first, then open forwarding. A failed nft install still rolls
 	// back to the baseline, which removes the qdisc (§8.2, §11.5).
@@ -130,10 +144,55 @@ func Apply(ctx context.Context, ex Executor, m Model, previous map[string]Counte
 		_ = installBaseline(ctx, ex, m.Datapath, state)
 		return ApplyResult{}, err
 	}
-	if err := ex.NftBatch(ctx, plan.NFT); err != nil {
-		_ = installBaseline(ctx, ex, m.Datapath, state)
+	// Re-render after ownership reads and shaping. Absolute monotonic deadlines
+	// count down throughout Apply. Legacy wall snapshots advance only by elapsed
+	// monotonic time; no wall-clock resampling can extend their allowance.
+	timing.RenderStart, err = MonotonicNow()
+	if err != nil {
 		return ApplyResult{}, err
 	}
+	anchor := applyStart
+	if m.NowMono > 0 {
+		anchor = m.NowMono
+	}
+	if timing.RenderStart < anchor {
+		return ApplyResult{Deadline: timing}, checkf(ReasonIsolation, "monotonic render precedes model")
+	}
+	m.Now = m.Now.Add(timing.RenderStart - anchor)
+	m.NowMono = timing.RenderStart
+	m.timeoutReserve = DeadlineInstallBound
+	plan, err = Render(m, state, tcState)
+	if err != nil {
+		_ = installBaseline(ctx, ex, m.Datapath, state)
+		return ApplyResult{Deadline: timing}, err
+	}
+	// The guard and candidate are one transaction. A late commit stays closed,
+	// including if the agent dies before it observes the overrun.
+	installCtx, cancelInstall := context.WithTimeout(ctx, DeadlineInstallBound)
+	err = ex.NftBatch(installCtx, guardedNFT(plan.NFT, m))
+	cancelInstall()
+	if state.Chains == nil {
+		state.Chains = map[string]bool{}
+	}
+	state.Chains[deadlineGuard] = true
+	timing.InstalledBy, _ = MonotonicNow()
+	if err != nil || timing.InstalledBy < timing.RenderStart || timing.InstalledBy-timing.RenderStart > DeadlineInstallBound {
+		_ = installBaseline(ctx, ex, m.Datapath, state)
+		if err == nil {
+			err = checkf(ReasonIsolation, "deadline installation budget exceeded")
+		}
+		return ApplyResult{Plan: plan, Deadline: timing}, err
+	}
+	if err = releaseDeadlineGuard(ctx, ex); err != nil {
+		_ = installBaseline(ctx, ex, m.Datapath, state)
+		return ApplyResult{Plan: plan, Deadline: timing}, err
+	}
+	timing.GuardReleased = true
+	delete(state.Chains, deadlineGuard)
+	// Verification compares the actual remaining signed allowance, without
+	// deducting a second installation reserve.
+	m.timeoutReserve = 0
+
 	// VerifyServing reads live nft and tc state together. A foreign filter is
 	// the same serving-gate failure as a flowtable bypass.
 	evidence, err := verifyServing(ctx, ex, m, plan.Assignments, len(quarantined) > 0)
@@ -163,7 +222,7 @@ func Apply(ctx context.Context, ex Executor, m Model, previous map[string]Counte
 	// address is attempted. Failed lists the addresses whose conntrack -D
 	// did not succeed. The caller retries those addresses on the next
 	// Apply (§8.2).
-	verified := ApplyResult{Plan: plan, Resets: resets, Verified: true, Evidence: evidence}
+	verified := ApplyResult{Deadline: timing, Plan: plan, Resets: resets, Verified: true, Evidence: evidence}
 	samples, err := Samples(m, evidence.Counters)
 	if err != nil {
 		return ApplyResult{Verified: true}, err
@@ -281,37 +340,40 @@ func loadState(ctx context.Context, ex Executor) (State, error) {
 	return ParseState(raw)
 }
 
-func loadTC(ctx context.Context, ex Executor, ifaces []string) (TCState, error) {
+func loadTC(ctx context.Context, ex Executor, ifaces []string) (TCState, []TCReadEvidence, error) {
 	st := TCState{Devices: map[string]TCDev{}}
+	var reads []TCReadEvidence
+	failure := func(iface, attachment, status string) (TCState, []TCReadEvidence, error) {
+		r := TCReadEvidence{Interface: iface, Attachment: attachment, Error: status}
+		return st, append(reads, r), tcCheck(r, nil)
+	}
 	for _, ifc := range ifaces {
 		raw, err := ex.Output(ctx, "tc", "-j", "qdisc", "show", "dev", ifc)
 		if err != nil {
-			if missingQdisc(err) {
-				st.Devices[ifc] = TCDev{}
-				continue
-			}
-			return st, err
+			return failure(ifc, "qdisc", "read_failed")
 		}
+		objects, err := ParseTCObjects(raw)
+		if err != nil {
+			return failure(ifc, "qdisc", "invalid_json")
+		}
+		reads = append(reads, TCReadEvidence{Interface: ifc, Attachment: "qdisc", Objects: objects})
 		view, err := ParseQdiscJSON(raw)
 		if err != nil {
-			return st, err
+			return failure(ifc, "qdisc", "invalid_json")
 		}
 		classRaw, err := ex.Output(ctx, "tc", "-j", "class", "show", "dev", ifc)
 		if err != nil {
-			if !missingQdisc(err) {
-				return st, err
-			}
-			classRaw = nil
+			return failure(ifc, "class", "read_failed")
 		}
 		if len(strings.TrimSpace(string(classRaw))) > 0 {
 			view, err = ParseClassJSON(classRaw, view)
 			if err != nil {
-				return st, err
+				return failure(ifc, "class", "invalid_listing")
 			}
 		}
 		st.Devices[ifc] = TCDev{RootHTB: view.RootHTB, Leaves: view.Leaves, Classes: childClassMinors(view)}
 	}
-	return st, nil
+	return st, reads, nil
 }
 
 // DetectMeterResets is DetectResets, except when the table, the forward chain, or

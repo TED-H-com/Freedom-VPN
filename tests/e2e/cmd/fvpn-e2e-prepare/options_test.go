@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/TED-H-com/Freedom-VPN/internal/config"
@@ -39,5 +40,31 @@ func TestAT29_PrepareGraceAndExactGatewayTrust(t *testing.T) {
 		if err := run(filepath.Join(t.TempDir(), "state"), true, lay, invalid); err == nil {
 			t.Fatalf("accepted invalid grace %d", invalid)
 		}
+	}
+}
+
+func TestAT21_TwoResolversAreExplicitPreparedInputs(t *testing.T) {
+	lay, err := parseLayout("e2e", 18000)
+	if err != nil {
+		t.Fatal(err)
+	}
+	state := filepath.Join(t.TempDir(), "state")
+	if err = run(state, true, lay, 0, true); err != nil {
+		t.Fatal(err)
+	}
+	raw, err := os.ReadFile(filepath.Join(state, "config/nodes.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var nodes config.Nodes
+	if json.Unmarshal(raw, &nodes) != nil || len(nodes.DNSResolverIPv4) != 2 || nodes.DNSResolverIPv4[0] != "192.0.3.53" || nodes.DNSResolverIPv4[1] != "192.0.3.54" {
+		t.Fatal("two controlled resolver inputs missing")
+	}
+	raw, err = os.ReadFile(filepath.Join(state, "adguard/conf/AdGuardHome.yaml"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(raw), "aaaa_disabled: false") {
+		t.Fatal("RR matrix suppressed AAAA")
 	}
 }

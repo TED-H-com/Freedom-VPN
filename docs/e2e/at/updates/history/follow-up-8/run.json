@@ -1,0 +1,97 @@
+{
+  "run_id": "71f2aa37-b0b9-4568-abe0-2ba7665377e4",
+  "source_commit": "bc93ce430ebe8a50e5dfdaf4121352047fe89249",
+  "at": "2026-10-30T20:59:15Z",
+  "prefix": "w4-updates",
+  "port_base": 42000,
+  "harness_source": {
+    "differs_from_source_commit": false,
+    "files_sha256": {
+      "authority_test.go": "468d7d3c1dbfbdb40a3c781650cd8993fc55e93b9e6d28930c3d52189715de21",
+      "doc.go": "a43799934c9463e13de1e43c2e0f4373410be7c31421ceee8a3eb963717f6382",
+      "evidence.go": "5f77f6740ded1f0561fd8e7496b04ca3b240f501b7146cc684aaa6d033588e85",
+      "evidence_test.go": "eaa999300a284ba220deacae957eaab01f73fda21aab0d07481ccb958bd469cd",
+      "lab_test.go": "30fc113965a1b10d59fc5918fa340971c0f7f52f8c40db0e94780b9eff39e58b",
+      "live_test.go": "d132ac2e23f74c9f34c46280c46778737f2650e1343e57fd7d792b15e9a9aea0",
+      "preresult_test.go": "530332759bdecdde7924f3d5cf95def55682a11b13293410cd59e62a22f6bfdf",
+      "probe_test.go": "b214d46d2f8582457830cb485904ee85df176d53734b32731351f39c20b50d01",
+      "restated_test.go": "d35f27ea2c26e1d4e5e86ac6e9c7110678e5a7cc65373d08608e31331bd65aa8"
+    }
+  },
+  "main_commit": {
+    "commit": "52dc77026cb168df5684ae2ccd5cbcadb4dbaeff",
+    "committed_at": "2026-10-30T16:22:11-04:00",
+    "subject": "roadmap: w3-devstack-e2e follow-up 12 merged (#204)"
+  },
+  "roadmap_lines": [
+    "52dc770 roadmap: w3-devstack-e2e follow-up 12 merged (#204)",
+    "0559f7e e2e: harness exports — updater probe peer (F5-02), own-key enrollment join and peer inventory (ENR-04), cloned-identity fixture (ENR-07 setup), per-stream secret-scan results (SECOPS-16); three live defects fixed (follow-up 12) (#204)",
+    "357ddbc roadmap: w4-handover follow-up 7 merged (#190)",
+    "c5f3c65 fleetupdate: D-068 pre-result seeding fills only a null current_release_id and heartbeats attach to the current job only; unexpected-release audits bounded to 16 per job (follow-up 9) (#189)",
+    "cc04f32 at-updates: AT24/AT26/AT27 pass on fresh w4-updates stack — accepted-result authority (F6-02 resolved), offline catch-up + post-batch inheritance, stale-ACK 202 replay; AT23/AT25 retained for F5-02 (follow-up 7) (#186)",
+    "7ac4c14 roadmap: w3-devstack-e2e follow-up 11 merged (#170)",
+    "c8d4a00 roadmap: w2-fleet-update follow-up 8 merged (#167)"
+  ],
+  "make_target": "make -f mk/at-updates.mk at-updates",
+  "make_exit_code": 0,
+  "go_test_exit_code": 0,
+  "results": {
+    "AT23": "pass",
+    "AT24": "pass",
+    "AT25": "pass",
+    "AT26": "pass",
+    "AT27": "pass"
+  },
+  "record_provenance": {
+    "AT23": {
+      "run_id": "71f2aa37-b0b9-4568-abe0-2ba7665377e4",
+      "git": "bc93ce430ebe8a50e5dfdaf4121352047fe89249",
+      "at": "2026-10-30T20:59:15Z",
+      "status": "pass",
+      "executed_in_this_run": true
+    },
+    "AT24": {
+      "run_id": "71f2aa37-b0b9-4568-abe0-2ba7665377e4",
+      "git": "bc93ce430ebe8a50e5dfdaf4121352047fe89249",
+      "at": "2026-10-30T20:59:15Z",
+      "status": "pass",
+      "executed_in_this_run": true
+    },
+    "AT25": {
+      "run_id": "71f2aa37-b0b9-4568-abe0-2ba7665377e4",
+      "git": "bc93ce430ebe8a50e5dfdaf4121352047fe89249",
+      "at": "2026-10-30T20:59:15Z",
+      "status": "pass",
+      "executed_in_this_run": true
+    },
+    "AT26": {
+      "run_id": "71f2aa37-b0b9-4568-abe0-2ba7665377e4",
+      "git": "bc93ce430ebe8a50e5dfdaf4121352047fe89249",
+      "at": "2026-10-30T20:59:15Z",
+      "status": "pass",
+      "executed_in_this_run": true
+    },
+    "AT27": {
+      "run_id": "71f2aa37-b0b9-4568-abe0-2ba7665377e4",
+      "git": "bc93ce430ebe8a50e5dfdaf4121352047fe89249",
+      "at": "2026-10-30T20:59:15Z",
+      "status": "pass",
+      "executed_in_this_run": true
+    }
+  },
+  "manifest_and_artifact_digests": {
+    "artifact_sha256_0.1.0_amd64": "586bf7d03f9211fcf41305eeed9835aa4171e75be6f00796521d213245706dfe",
+    "artifact_sha256_0.1.0_arm64": "12c946256ceb42d3af17103ba10437cabc7a09279a9dc6a6499c75b0e44a4057",
+    "artifact_sha256_1.0.1_amd64": "523e92ded44062d86382705c0b742a446b43a33b086a9009ddacdb6ca7b29366",
+    "artifact_sha256_1.0.1_arm64": "fc389584f18015afb04e89562b3aa686c50d684e47d21540e33a0f06011541ba",
+    "artifact_sha256_1.0.2_amd64": "bd9d21f07c7b7daa8270f0334c292d71927697c37e9bd0ce1492470b75030b10",
+    "artifact_sha256_1.0.2_arm64": "b9e277eafa902a22e6662ec2dc8008f3797700dc9e652139e0bfbf10c520bbad",
+    "manifest_sha256_0.1.0": "0fa0a8125f578fa7596936cf68b2ec3a9d949a3835ba29e3489061b8e7a8aaf2",
+    "manifest_sha256_1.0.1": "9483cd6833ec1f3c885674aab7bec2adee0cce42ecffec5b1beebb05c110c7c4",
+    "manifest_sha256_1.0.2": "831dc34b3edaffb48020383fd560d749a77ca9d5ed1848dd8ea1ac792f9a95dd",
+    "signed_manifest_sha256_0.1.0": "631d07558f94610dc0e2e5eb1159254a7b95520339be487fad2179b961d112ba",
+    "signed_manifest_sha256_1.0.1": "dccfeb67067f35e9bdb7bfc413e9d3dad23038abcf2b74948501080c46feff46",
+    "signed_manifest_sha256_1.0.2": "06ccd7e7e16a8924a6ac154cefa0f154e4ae92e165e4f8d652cdcc25f1f500df"
+  },
+  "scope": "Follow-up 8 complete live run of AT23–AT27 with the exported probe peer (#204) and D-068 policy criteria (#189); not full original §19 acceptance or physical arm64 execution"
+}

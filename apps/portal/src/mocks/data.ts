@@ -767,6 +767,25 @@ export const INITIAL_FUP_POLICY = {
 
 export const INITIAL_DNS_POLICY = buildDnsPolicyViewModel(initialPolicies)!;
 
+// D-074 / D-107: a polling timeout leaves publication running with a pending gate.
+export const PUBLICATION_GATE_OPERATION: OperationResource = {
+  ...clone(CONTRACT_EXAMPLES_USED_BY_MOCKS.Operation),
+  status: 'running',
+  error: null,
+  completed_at: null,
+  steps: CONTRACT_EXAMPLES_USED_BY_MOCKS.Operation.steps.map((step) =>
+    step.name === 'data_path_probe'
+      ? {
+          ...step,
+          status: 'pending',
+          observed_at: null,
+          error_code: 'NODE_NOT_SERVICEABLE',
+          message: 'member_forwarding_unconfirmed (lease_unconfirmed)',
+        }
+      : clone(step),
+  ),
+};
+
 export interface MockState {
   persona: MockPersona;
   forceSession401: boolean;

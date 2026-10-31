@@ -47,7 +47,9 @@ if [ ! -s /etc/vpn-node/machine-id ]; then
     tr -d '-' < /proc/sys/kernel/random/uuid > /etc/vpn-node/machine-id
 fi
 cp /etc/vpn-node/machine-id /etc/machine-id
-cat /proc/sys/kernel/random/uuid > /etc/vpn-node/boot-id
+# Containers restart processes, not the kernel. Use the same boot identity as
+# the packaged updater; a process restart must not impersonate an OS reboot.
+cat /proc/sys/kernel/random/boot_id > /etc/vpn-node/boot-id
 epoch=$(cat /proc/sys/kernel/random/uuid)
 epoch2=$(cat /proc/sys/kernel/random/uuid)
 printf '{"closed_meter_epoch_id":"%s","last_durable_event_seq":"0","central_acked_through":"0","new_meter_epoch_id":"%s"}\n' "$epoch" "$epoch2" > /var/lib/vpn-node/e2e/meter.json
@@ -65,6 +67,13 @@ else
     while [ ! -s /var/lib/vpn-node/e2e/enrollment.token ]; do
         sleep 1
     done
+    # TEST ONLY: a retained snapshot may already contain a real pending key,
+    # CSR and incarnation after an offline CLI attempt. Keep the API-issued
+    # token unconsumed until its mid-run boot resumes that same request.
+    if [ -f /var/lib/vpn-node/e2e/hold-enrolling ]; then
+        printf '%s\n' '{"stage":"enrolling_snapshot"}' > /var/lib/vpn-node/e2e/status.json
+        while [ -f /var/lib/vpn-node/e2e/hold-enrolling ]; do sleep 1; done
+    fi
     printf '%s\n' '{"stage":"enrolling"}' > /var/lib/vpn-node/e2e/status.json
     if ! fvpn-agent enroll -config /etc/vpn-node/agent-enroll.json -token-file /var/lib/vpn-node/e2e/enrollment.token; then
         printf '%s\n' '{"stage":"enroll_failed"}' > /var/lib/vpn-node/e2e/status.json

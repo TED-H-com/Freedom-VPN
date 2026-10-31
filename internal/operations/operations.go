@@ -85,6 +85,23 @@ func IsBoundedFailureCause(cause string) bool {
 	return false
 }
 
+// PublicationGateMessage preserves both stored diagnostics in revision 13's
+// OperationStep.message. The gate vocabulary comes from nodes.PublicationDataPathFailure.
+// Both inputs must be bounded; their combined ASCII text fits maxLength 1000
+// without truncating either value or admitting arbitrary stored/provider text.
+func PublicationGateMessage(message, cause string) (string, bool) {
+	if !IsBoundedFailureCause(message) {
+		return "", false
+	}
+	switch cause {
+	case "stale_generation", "check_failed", "forwarding_disabled", "tunnel_not_passed",
+		"isolation_unconfirmed", "readiness_unconfirmed", "serving_checks_unconfirmed", "lease_unconfirmed":
+		return message + " (" + cause + ")", true
+	default:
+		return "", false
+	}
+}
+
 type Evidence struct {
 	Reference  string    `json:"reference"`
 	ObservedAt time.Time `json:"observed_at"`
@@ -157,6 +174,11 @@ func (s Store) Get(ctx context.Context, id uuid.UUID, p auth.Principal) (op api.
 				message = *v.ErrorMessage
 			}
 			step.Message.Set(message)
+		}
+		if p.Role == auth.Admin && op.Kind == api.OperationKindNodePublish && v.ErrorMessage != nil {
+			if message, ok := PublicationGateMessage(*v.ErrorMessage, v.Reason); ok {
+				step.Message.Set(message)
+			}
 		}
 		if (op.Status == "failed" || op.Status == "partially_succeeded") && v.ErrorCode != nil && op.Error.IsNull() {
 			op.Error.Set(struct {

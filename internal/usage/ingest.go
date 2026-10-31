@@ -29,8 +29,8 @@ type BatchResult struct {
 // IngestBatch validates and ingests a batch of usage events from an authenticated node (§10.6).
 //
 // Whole-batch preconditions (mTLS identity, node lifecycle, ledger freeze, ledger_epoch)
-// are checked before any database mutation. Each event in the batch is then processed
-// in its own atomic transaction so that a conflict or 422 rejection on one event never
+// are checked before any ledger mutation; failed identity/origin checks are audited.
+// Each event in the batch is then processed in its own atomic transaction so that a conflict or 422 rejection on one event never
 // rolls back or deletes other valid events in the batch.
 func (s *Service) IngestBatch(
 	ctx context.Context,
@@ -44,21 +44,11 @@ func (s *Service) IngestBatch(
 		return BatchResult{}, apierr.New(apierr.Unauthenticated, "missing authenticated node mTLS identity")
 	}
 
-	// Whole-batch mTLS identity check (§10.6, §14.4).
-	if batch.NodeId != nodeIdentity.NodeID || batch.NodeIncarnationId != nodeIdentity.NodeIncarnationID {
-		return BatchResult{}, apierr.New(apierr.IncarnationMismatch, "batch node_id or node_incarnation_id does not match mTLS certificate identity")
-	}
-	for i, ev := range batch.Events {
-		if ev.NodeId != nodeIdentity.NodeID || ev.NodeIncarnationId != nodeIdentity.NodeIncarnationID {
-			return BatchResult{}, apierr.Newf(apierr.IncarnationMismatch, "event[%d] node_id or node_incarnation_id does not match mTLS certificate identity", i)
-		}
-	}
-
 	if len(batch.Events) > MaxBatchEvents {
 		return BatchResult{}, apierr.Newf(apierr.PayloadTooLarge, "batch exceeds maximum of %d events", MaxBatchEvents)
 	}
-
-	if err := s.checkNodeIncarnation(ctx, nodeIdentity.NodeID, nodeIdentity.NodeIncarnationID); err != nil {
+	stream, err := s.selectBatchStream(ctx, nodeIdentity, batch)
+	if err != nil {
 		return BatchResult{}, err
 	}
 
@@ -87,14 +77,14 @@ func (s *Service) IngestBatch(
 			return BatchResult{}, apierr.New(apierr.StateConflict, "replay_unavailable is only accepted while ledger mode is reconciling").
 				WithDetail("ledger_mode", string(state.Mode))
 		}
-		if err := s.recordReplayUnavailable(ctx, nodeIdentity, state.LedgerEpoch, *batch.ReplayUnavailable, receivedAt); err != nil {
+		if err := s.recordReplayUnavailable(ctx, stream.identity, state.LedgerEpoch, *batch.ReplayUnavailable, receivedAt); err != nil {
 			return BatchResult{}, err
 		}
 	}
 
 	results := make([]api.UsageEventResult, len(batch.Events))
 	for i, ev := range batch.Events {
-		res, err := s.ingestSingleEvent(ctx, nodeIdentity, state, i, ev, receivedAt)
+		res, err := s.ingestSingleEvent(ctx, stream, state, i, ev, receivedAt)
 		if err != nil {
 			return BatchResult{}, err
 		}
@@ -107,15 +97,15 @@ func (s *Service) IngestBatch(
 		blockedSeq *decstr.U64
 	)
 	err = db.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
-		if _, err := ensureAndLockCheckpointInTx(ctx, tx, nodeIdentity.NodeID, nodeIdentity.NodeIncarnationID, state.LedgerEpoch, receivedAt); err != nil {
+		if _, err := ensureAndLockCheckpointInTx(ctx, tx, stream.identity.NodeID, stream.identity.NodeIncarnationID, state.LedgerEpoch, receivedAt); err != nil {
 			return err
 		}
-		cp, err := recomputeStreamWatermarkWithConflictsInTx(ctx, tx, nodeIdentity.NodeID, nodeIdentity.NodeIncarnationID, false, receivedAt)
+		cp, err := recomputeStreamWatermarkWithConflictsInTx(ctx, tx, stream.identity.NodeID, stream.identity.NodeIncarnationID, false, receivedAt)
 		if err != nil {
 			return err
 		}
 		finalCP = cp
-		bSeq, err := computeBlockedSeqInTx(ctx, tx, nodeIdentity.NodeID, nodeIdentity.NodeIncarnationID, cp.highestContiguous)
+		bSeq, err := computeBlockedSeqInTx(ctx, tx, stream.identity.NodeID, stream.identity.NodeIncarnationID, cp.highestContiguous)
 		if err != nil {
 			return err
 		}
@@ -128,8 +118,8 @@ func (s *Service) IngestBatch(
 
 	return BatchResult{
 		UsageBatchResult: api.UsageBatchResult{
-			NodeId:               nodeIdentity.NodeID,
-			NodeIncarnationId:    nodeIdentity.NodeIncarnationID,
+			NodeId:               stream.identity.NodeID,
+			NodeIncarnationId:    stream.identity.NodeIncarnationID,
 			LedgerEpoch:          state.LedgerEpoch,
 			HighestContiguousSeq: decstr.U64(finalCP.highestContiguous),
 			BlockedSeq:           presence.FromPointer(blockedSeq),
@@ -142,17 +132,38 @@ func (s *Service) IngestBatch(
 
 func (s *Service) ingestSingleEvent(
 	ctx context.Context,
-	nodeIdentity NodeIdentity,
+	stream batchStream,
 	initialState LedgerState,
 	eventIdx int,
 	ev api.UsageEvent,
 	receivedAt time.Time,
 ) (api.UsageEventResult, error) {
+	nodeIdentity := stream.identity
 	seq := uint64(ev.EventSeq)
 	fieldErrs, computedHash, computedHex, canonPayload := validateEventFields(eventIdx, ev)
 
 	var out api.UsageEventResult
-	err := db.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
+	err := db.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) (txErr error) {
+		// Keep rejection/conflict evidence in the event transaction. A failed
+		// audit write rolls it back and prevents a successful response (D-105).
+		reason := "event_validation"
+		defer func() {
+			if txErr != nil || stream.intervalEndLimit == nil ||
+				(out.Status != api.UsageEventResultStatusRejected && out.Status != api.UsageEventResultStatusConflict) {
+				return
+			}
+			if out.Status == api.UsageEventResultStatusConflict {
+				reason = "event_conflict"
+			}
+			eventError, err := out.Error.Get()
+			if err != nil {
+				txErr = err
+				return
+			}
+			txErr = auditIngestRejectionInTx(ctx, tx, stream.presenter, &nodeIdentity.NodeIncarnationID,
+				apierr.Code(eventError.Code), reason, &ev.EventSeq)
+		}()
+
 		preState, err := s.getLedgerStateInTx(ctx, tx)
 		if err != nil {
 			return err
@@ -183,6 +194,19 @@ func (s *Service) ingestSingleEvent(
 		if state.LedgerEpoch != initialState.LedgerEpoch {
 			return apierr.New(apierr.LedgerEpochMismatch, "ledger_epoch changed during batch ingestion").
 				WithDetail("current_ledger_epoch", state.LedgerEpoch.String())
+		}
+
+		// D-105/D-112: the bound applies to every handed-off event, including
+		// resends. Live streams have no extra clock-skew allowance.
+		if stream.intervalEndLimit != nil && ev.IntervalEnd.After(*stream.intervalEndLimit) {
+			if err := recordRejectionInTx(ctx, tx, nodeIdentity.NodeID, nodeIdentity.NodeIncarnationID,
+				seq, canonPayload, ev, string(apierr.ValidationFailed), []api.FieldError{}, state.LedgerEpoch, receivedAt); err != nil {
+				return err
+			}
+			reason = "retired_window"
+			out = makeErrorResult(ev.EventSeq, api.UsageEventResultStatusRejected, apierr.ValidationFailed,
+				"Event ends after the retired stream hand-off window.", nil)
+			return nil
 		}
 
 		// 1. If seq > 0, check whether (node_id, incarnation_id, event_seq) already exists in usage_events.

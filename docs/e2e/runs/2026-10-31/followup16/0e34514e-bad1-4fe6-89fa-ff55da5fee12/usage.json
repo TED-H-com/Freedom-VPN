@@ -1,0 +1,27 @@
+{
+  "id": "usage",
+  "title": "Agent samples after native admitted traffic",
+  "spec": [
+    "§10",
+    "§19 AT14",
+    "§19 AT15"
+  ],
+  "status": "blocked",
+  "observations": [
+    {
+      "name": "member_usage",
+      "detail": "200"
+    },
+    {
+      "name": "note",
+      "detail": "No positive counted flow; no synthetic sample is submitted."
+    },
+    {
+      "name": "owner",
+      "detail": "w2-agent-core / w1-netlab: compare named drop/admission counters and tunnel captures in member-traffic; lease generation alone is not the gate"
+    }
+  ],
+  "at": "2026-10-31T06:30:18Z",
+  "run_id": "0e34514e-bad1-4fe6-89fa-ff55da5fee12",
+  "source_commit": "59903b57c41115f02ccfb0b2bc1d56dc095b5a39"
+}

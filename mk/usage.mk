@@ -1,5 +1,5 @@
 # Standalone, private disk scratch; never use a tmpfs test basetemp.
-usage-with-disk-tmp = set -eu; mkdir -p .agent/tmp; task_tmp=$$(mktemp -d "$$(pwd)/.agent/tmp/usage.XXXXXX"); trap 'rm -rf "$$task_tmp"' EXIT; export TMPDIR="$$task_tmp" GOTMPDIR="$$task_tmp";
+usage-with-disk-tmp = set -eu; mkdir -p .agent/tmp; export TMPDIR="$$(pwd)/.agent/tmp" GOTMPDIR="$$(pwd)/.agent/tmp";
 
 BUILD_TARGETS += usage-build
 TEST_TARGETS += usage-test
@@ -18,12 +18,13 @@ usage-test:
 
 usage-test-integration:
 	@$(usage-with-disk-tmp) GOTOOLCHAIN=local CGO_ENABLED=0 go test -tags integration ./internal/usage/... ./internal/audit/...
+	@$(usage-with-disk-tmp) GOTOOLCHAIN=local CGO_ENABLED=0 go test -tags integration -run '^TestMTR03_D115Usage' ./internal/httpapi/
 
 usage-lint:
 	@test -z "$$(gofmt -l internal/usage internal/audit)" || { echo 'gofmt required in internal/usage or internal/audit'; exit 1; }
 	@$(usage-with-disk-tmp) GOTOOLCHAIN=local CGO_ENABLED=0 go vet ./internal/usage/... ./internal/audit/...
-	@$(usage-with-disk-tmp) GOTOOLCHAIN=local CGO_ENABLED=0 go vet -tags=integration ./internal/usage/... ./internal/audit/...
+	@$(usage-with-disk-tmp) GOTOOLCHAIN=local CGO_ENABLED=0 go vet -tags=integration ./internal/usage/... ./internal/audit/... ./internal/httpapi/
 	@$(usage-with-disk-tmp) GOTOOLCHAIN=local CGO_ENABLED=0 go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 ./internal/usage/... ./internal/audit/...
-	@$(usage-with-disk-tmp) GOTOOLCHAIN=local CGO_ENABLED=0 go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 -tags=integration ./internal/usage/... ./internal/audit/...
+	@$(usage-with-disk-tmp) GOTOOLCHAIN=local CGO_ENABLED=0 go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 -tags=integration ./internal/usage/... ./internal/audit/... ./internal/httpapi/
 
 usage-verify: usage-lint usage-build usage-test usage-test-integration
