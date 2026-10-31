@@ -106,7 +106,7 @@ def decode_ip(b, address):
     return out
 
 
-def decode(path, output, addresses):
+def decode(path, output, addresses, stable_addresses=False):
     raw = path.read_bytes()
     formats = {b'\xd4\xc3\xb2\xa1': ('<', 1000000), b'\xa1\xb2\xc3\xd4': ('>', 1000000),
                b'\x4d\x3c\xb2\xa1': ('<', 1000000000), b'\xa1\xb2\x3c\x4d': ('>', 1000000000)}
@@ -118,6 +118,8 @@ def decode(path, output, addresses):
     counts = collections.Counter()
     def address(b):
         key = str(ipaddress.ip_address(b))
+        if stable_addresses:
+            return 'addr-'+hashlib.sha256(key.encode()).hexdigest()[:16]
         if key not in addresses:
             addresses[key] = f'endpoint-{len(addresses)+1}'
         return addresses[key]
@@ -151,6 +153,9 @@ def decode(path, output, addresses):
                     raise ValueError('unsupported link type')
                 if proto in (0x800, 0x86dd):
                     row.update(decode_ip(b[offset:], address))
+                    size = row.get('ip_length', 0)
+                    if size and len(b)-offset >= size:
+                        row['ip_sha256'] = hashlib.sha256(b[offset:offset+size]).hexdigest()
                     counts[str(row.get('protocol', 'fragment'))] += 1
                 else:
                     row['non_ip_ethertype'] = proto
@@ -166,11 +171,12 @@ def decode(path, output, addresses):
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--out', type=Path, required=True)
+    p.add_argument('--stable-addresses', action='store_true', help='match native-observe address tokens')
     p.add_argument('captures', nargs='+', type=Path)
     args = p.parse_args(); args.out.mkdir(parents=True, exist_ok=True)
     addresses = {}; results = []
     for source in args.captures:
-        results.append(decode(source, args.out/(source.stem+'.headers.jsonl'), addresses))
+        results.append(decode(source, args.out/(source.stem+'.headers.jsonl'), addresses, args.stable_addresses))
     # Address map stays private; only headers with campaign-stable tokens escape.
     print(json.dumps(results, indent=2))
 

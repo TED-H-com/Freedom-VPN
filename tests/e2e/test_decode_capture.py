@@ -19,5 +19,14 @@ class HeaderOnly(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'short TCP options'):
             decode_ip(ip+tcp,lambda _: 'endpoint')
 
+    def test_ipv6_noninitial_fragment_and_ptb(self):
+        ip6=bytes([0x60,0,0,0])+struct.pack('!H',16)+bytes([44,64])+bytes(32)
+        fragment=bytes([17,0])+struct.pack('!H',1232)+struct.pack('!I',789)
+        got=decode_ip(ip6+fragment+b'PRIVATE!',lambda _: 'endpoint')
+        self.assertEqual(got['extensions'][0]['fragment_offset'],1232)
+        self.assertNotIn('udp',got)
+        ptb=bytes([0x60,0,0,0])+struct.pack('!H',8)+bytes([58,64])+bytes(32)+bytes([2,0,0,0])+struct.pack('!I',1280)
+        self.assertEqual(decode_ip(ptb,lambda _: 'endpoint')['icmp']['mtu'],1280)
+
 if __name__=='__main__':
     unittest.main()
