@@ -52,7 +52,7 @@ func observeProxy() {
 		}
 	}()
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != "POST" || (r.URL.Path != "/api/v1/agent/observations" && !strings.Contains(r.URL.Path, "lease")) {
+		if !((r.Method == "POST" && (r.URL.Path == "/api/v1/agent/observations" || strings.Contains(r.URL.Path, "lease"))) || (r.Method == "GET" && strings.Contains(r.URL.Path, "desired-state"))) {
 			proxy.ServeHTTP(w, r)
 			return
 		}
@@ -63,7 +63,10 @@ func observeProxy() {
 		}
 		r.Body.Close()
 		r.Body = io.NopCloser(bytes.NewReader(raw))
-		row := map[string]any{"received_at": time.Now().UTC().Format(time.RFC3339Nano), "path": r.URL.Path, "body": json.RawMessage(raw)}
+		row := map[string]any{"received_at": time.Now().UTC().Format(time.RFC3339Nano), "path": r.URL.Path}
+		if json.Valid(raw) {
+			row["body"] = json.RawMessage(raw)
+		}
 		capture := &captureResponse{ResponseWriter: w}
 		proxy.ServeHTTP(capture, r)
 		row["response_at"] = time.Now().UTC().Format(time.RFC3339Nano)

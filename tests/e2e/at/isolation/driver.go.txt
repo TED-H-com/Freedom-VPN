@@ -852,7 +852,24 @@ func (x *isolationRun) peers() {
 	if len(desired.Signed.DNS.Resolvers) > 0 {
 		resolver := desired.Signed.DNS.Resolvers[0]
 		route, _ := x.a1.lab.docker(x.a1.lab.member, "ip", "route", "get", resolver)
-		x.add("AT12", iso.Check{Name: "designated DNS exception", Status: iso.StatusBlocked, Positive: x.proof(x.a1), Actual: "resolver=" + resolver + "; route=" + strings.TrimSpace(string(route)) + "; no export places the designated resolver behind the exit, so the member route is still the Docker underlay", Owner: "w3-devstack-e2e: resolver on member underlay"})
+		c := iso.Check{Name: "designated DNS exception", Status: iso.StatusBlocked, Positive: x.proof(x.a1), Owner: "w3-devstack-e2e / node enforcement", Actual: "resolver=" + resolver + "; route=" + strings.TrimSpace(string(route))}
+		ok := strings.Contains(string(route), "dev fvnb0")
+		for _, tcp := range []bool{false, true} {
+			observed, err := (&Stack{lab: x.a1.lab}).ObserveDesignatedDNS(x.ctx, x.a1.usageDevice, tcp)
+			c.Observations = append(c.Observations, iso.Observation{Name: observed.Transport, Detail: mustJSON(observed)})
+			ok = ok && err == nil && observed.Reply == "rcode=0 answers=1" && observed.DNSUpload > 0 && observed.DNSDownload > 0 && observed.InternetUpload == 0 && observed.InternetDownload == 0
+			if err != nil {
+				c.Observations = append(c.Observations, iso.Observation{Name: "error", Detail: err.Error()})
+			}
+		}
+		if c.Positive.Valid() {
+			c.Status = iso.StatusFail
+			if ok {
+				c.Status = iso.StatusPass
+				c.Owner = ""
+			}
+		}
+		x.add("AT12", c)
 	}
 	x.spoofedSource()
 }
