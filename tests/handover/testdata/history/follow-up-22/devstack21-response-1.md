@@ -25,4 +25,3 @@ explain initial/same-release retained verified archives and distinguish the
 uncached fallback. No artifact-origin change is warranted by a rejection that
 did not occur; the supplied exact-origin/private-address interpretation is
 accepted. This answer does not claim private-mirror deployment coverage.
-

@@ -30,4 +30,3 @@ exchange deadline and AdGuard's live upstream timeout are distinct. No cache,
 timeout, policy or TTL assertion is changed, and no TTL-fix claim is made.
 `cce1a688`, the F10-03 historical failure and follow-ups 16–20 are untouched.
 The [114-file D-098 pin set](followup20-archive.sha256) was committed first.
-
