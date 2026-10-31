@@ -1,4 +1,4 @@
-# Follow-up 10 run procedure
+# Follow-up 11 run procedure
 
 Use branch `w4-at-updates`, prefix `w4-updates` and port base `42000`.
 Before starting the stack, run `pgrep -af 'gates.sh|mk/at-'` and wait while two
@@ -51,20 +51,50 @@ failure baseline and success promotion, exact keyed and new-key replay,
 modified replay conflict, wrong-job refusal, receipt cardinality and node
 resource versions. The D-127/r16 M-2 rollback correction is an explicitly
 labeled **TEST ONLY HTTP contract stimulus**, derived from the genuine success
-receipt. It does not claim a local rollback; regular AT26 measures that path.
+receipt. It does not claim a local rollback; regular AT26 measures that path and AT27 requires its same-run physical rollback witness.
 The receipt history must retain both payloads and both stored ACKs, and reject
 a third outcome. A separate higher staged artifact is byte-tampered; a lower
 sequence is refused before writing pending.
 
-The installer's generated result configuration is recorded before supplying
-the owned lab result URL, CA and exact allowed origins. This adapter does not
-claim that the installer configures reporting itself.
+The generated result URL, server CA, client cert/key paths and exact origin
+policy are read back and never rewritten. Compare the whole generated config
+hash before and after the extension. The shared install wrapper currently
+omits installer 7's loopback opt-in: record its exit 64, then invoke the shared
+`ProbeInstallerExit` with the same spec plus explicit **TEST ONLY**
+`--allow-loopback`. This is an installation input for the existing split-listener
+lab proxy, not a reporting-config adapter. F11-01 requests the wrapper fix.
+
+Before any curl contract stimulus, require product ACK history with a matching
+sealed hash, central immutable payload/ACK, exactly one local history row and
+an empty outbox; repeat product flush and require the admin view to remain
+unchanged. The supplementary [transport capture](installer-delivery-transport.json)
+counts central route logs through the extension's completion second. Only the
+installer can produce results then: the regular fixture has not enrolled.
+The 11 explicitly recorded curl requests are separated from the two automatic
+posts (one success and one stopped-producer failure). No repeated-flush POST
+may be inferred from database deduplication alone.
+
+For the separate [uncached origin probe](artifact-origin.json), after the
+extension retires the installer fixture but before whole-stack teardown,
+resolve current and read its retained signed manifest. Select the amd64
+artifact's SHA-256, record updater status and config/cache hashes, and move
+only `update-staging/<sha256>.tar.zst` to a held sibling. Invoke the exact `seed`
+command recorded in that JSON with the **generated** config and current tree.
+Restore the archive in Python `finally` and compare its bytes/hash, generated
+config and current. This run succeeded and added only a verified seeded
+baseline; it is neither a new apply nor central acceptance. Artifact hosting
+and generated origin policy stay unchanged. The shared release hostname maps
+to an owned non-private Docker origin; `allowed_artifact_origins` grants
+private/CGNAT exceptions rather than restricting all hosts. No private-mirror
+acceptance follows from this observation.
 
 ```sh
 mkdir -p .agent/tmp
 export TMPDIR="$PWD/.agent/tmp" GOTMPDIR="$PWD/.agent/tmp"
 make go-lint go-with-disk-tmp=
 go vet ./...
+go test -count=1 ./tests/e2e/at/updates/...
+GOOS=linux GOARCH=arm64 go build ./...
 go test ./...
 go test ./tests/e2e -run '^TestCommittedFixtureEvidence_ValidAndHygieneClean$' -count=1 -v
 git diff --check
@@ -74,6 +104,6 @@ The root lint override removes only its shell cleanup trap; its gofmt, vet and
 pinned staticcheck commands remain unchanged. These are engineering acceptance
 fixtures with generated TEST ONLY identities and signing material.
 
-Prior root records and the unchanged first run are pinned in the
-[follow-up 9 archive](history/follow-up-9/ARCHIVE.md) (D-098). Current claims
+All 39 prior root records are pinned in the
+[follow-up 10 archive](history/follow-up-10/ARCHIVE.md) (D-098/D-132). The older diagnostic archives remain unchanged. Current claims
 must name the new run ID; historical failures stay historical failures.

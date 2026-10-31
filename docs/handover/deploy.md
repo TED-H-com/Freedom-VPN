@@ -1,7 +1,27 @@
 # Production Deployment Runbook (`docs/handover/deploy.md`)
 
-**Current cut — [follow-up 19](follow-up-19.md) (2026-10-31 EDT):** Apply 00193 before ingestion resumes; equal stored endpoints prevent Down. #332 proves the correlated serving-node upgrade and candidate seed. Regular AT23 remains blocked on the shared fixture layout.
-Previous cut: [follow-up 18](follow-up-18.md), through #324.
+**Current cut — [follow-up 20](follow-up-20.md) (2026-10-31 EDT):** #341 generates authenticated updater reporting from the validated HTTPS control origin; loopback is TEST ONLY. #342 preserves pending receipts on missing reporting config. Apply 00193 before ingestion resumes; Down remains guarded.
+Previous cut: [follow-up 19](follow-up-19.md), through #337.
+
+Installer 7 reporting inputs are required: a validated HTTPS control origin
+(`--control-url`) and its readable server CA bundle (`--server-ca`). Generated
+`result_url` appends `/api/v1/agent/update-results`; `mtls_ca` uses enrollment
+server trust, and `mtls_cert` / `mtls_key` use the enrolled node identity.
+`allowed_artifact_origins` contains exactly the control origin. Invalid inputs
+fail before host changes; a same-release rerun repairs reporting fields and
+server CA while preserving unrelated settings and durable state.
+`install --allow-loopback` is **TEST ONLY**, for an isolated HTTPS lab; leave it
+disabled in production. The question of a distinct artifact host is an owner
+decision pending updates 11, not a defect at this cutoff.
+
+Updater 18 logs `result_url_missing` when sealing without reporting config and
+keeps the original receipt pending. Explicit flush fails `VALIDATION_FAILED`
+without a sink. After configuration repair, flush sends that identical receipt
+once; only the central ACK establishes delivery. Node process restarts may now
+adopt fully verified same-boot serving under the original valid lease and
+deadline; failed qualification or OS reboot still closes forwarding. Use the
+[operator reporting/restart procedure](operator-guide.md#reporting-and-restart-changes-at-344)
+and [installer input reference](../node/install.md#authenticated-updater-reporting-f10-02-136-13103).
 
 Historical follow-up 17 cutoff: [follow-up 17 operator evidence](follow-up-17.md). #313
 harness-proves the SECOPS-21 first-offer capture (2/0/0, delivery 4 > retained 3,

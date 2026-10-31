@@ -1,0 +1,191 @@
+{
+  "run_id": "695f977c-b587-4768-88f1-0514f3a4f1ac",
+  "source_commit": "0df8599dc84d4b85e48182f20aa4b0fc741bc72a",
+  "product_main": "fb5e002549f79e8ef61bebcf42cce1678ab65cb1",
+  "at": "2026-10-31T15:30:11Z",
+  "prefix": "w4-updates",
+  "port_base": 42000,
+  "status": "blocked",
+  "AT23": {
+    "actual_updater_config": {
+      "agent_config": "/etc/vpn-node/agent-run.json",
+      "desired_state": "/var/lib/vpn-node/state/desired-state.json",
+      "desired_trust": "/etc/vpn-node/trust.json",
+      "incarnation_id": "01a19292-a153-7be1-9eff-75a677291451",
+      "meter_checkpoint": "/var/lib/vpn-node/state/meter.checkpoint",
+      "mtls_ca": "/etc/vpn-node/ca.pem",
+      "mtls_cert": "/var/lib/vpn-node/identity/cert.pem",
+      "mtls_key": "/var/lib/vpn-node/identity/key.pem",
+      "node_id": "01a19292-a08a-74b8-ba4a-dae158692d4a",
+      "platform": {
+        "architecture": "amd64",
+        "control_api_major": 1,
+        "os_id": "ubuntu",
+        "os_version": "24.04",
+        "policy_schema": 1,
+        "state_schema": 1,
+        "updater_version": "1.0.0",
+        "usage_schema": 1
+      },
+      "probe_peer": {
+        "destinations": [
+          {
+            "addr_v4": "192.0.7.10/32",
+            "port": 4443,
+            "proto": "udp"
+          }
+        ],
+        "peer_id": "[redacted]",
+        "source_v4": "100.113.81.133/32"
+      },
+      "release_trust": "/etc/vpn-node/trust.json",
+      "result_url": "https://agent.example.invalid:9443/api/v1/agent/update-results",
+      "start_command": [
+        "/usr/local/bin/agent-service.sh",
+        "start"
+      ],
+      "stop_command": [
+        "/usr/local/bin/agent-service.sh",
+        "stop"
+      ]
+    },
+    "agent_config_exists": true,
+    "agent_config_path": "/etc/vpn-node/agent-run.json",
+    "agent_diagnostics": [],
+    "agent_handling": "Candidate probe exception and health response were not verified; no successful traversal is claimed",
+    "agent_log_readable": true,
+    "authority_source": "node/agent/probeexc.go:66-71,125-127: matching challenge and another lock holder required; no probe installs nothing",
+    "candidate_attestations": null,
+    "capture_method": "exported UpdaterProbe.Observe plus read-only docker exec stream inside the node (no host read of 0700 journal)",
+    "config_load_invalid_probe_peer": false,
+    "configurations_read_in_node": {
+      "/etc/vpn-node/updater-recover.json": {
+        "config": {
+          "agent_config": "/etc/vpn-node/agent-run.json",
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "desired_state": "/var/lib/vpn-node/state/desired-state.json",
+          "desired_trust": "/etc/vpn-node/trust.json",
+          "incarnation_id": "01a19292-a153-7be1-9eff-75a677291451",
+          "meter_checkpoint": "/var/lib/vpn-node/e2e/meter.json",
+          "mtls_ca": "/etc/vpn-node/ca.pem",
+          "mtls_cert": "/var/lib/vpn-node/identity/cert.pem",
+          "mtls_key": "/var/lib/vpn-node/identity/key.pem",
+          "node_id": "01a19292-a08a-74b8-ba4a-dae158692d4a",
+          "platform": {
+            "os_id": "ubuntu",
+            "os_version": "24.04",
+            "architecture": "amd64",
+            "updater_version": "1.0.0",
+            "control_api_major": 1,
+            "policy_schema": 1,
+            "usage_schema": 1,
+            "state_schema": 1
+          },
+          "release_trust": "/etc/vpn-node/trust.json",
+          "result_url": "https://agent.example.invalid:9443/api/v1/agent/update-results",
+          "start_command": [
+            "/usr/local/bin/agent-service.sh",
+            "start"
+          ],
+          "stop_command": [
+            "/usr/local/bin/agent-service.sh",
+            "stop"
+          ]
+        },
+        "readable": true
+      },
+      "/var/lib/vpn-node/e2e/updater.json": {
+        "readable": false
+      },
+      "/var/lib/vpn-node/e2e/updater.json.done": {
+        "config": {
+          "agent_config": "/etc/vpn-node/agent-run.json",
+          "desired_state": "/var/lib/vpn-node/state/desired-state.json",
+          "desired_trust": "/etc/vpn-node/trust.json",
+          "incarnation_id": "01a19292-a153-7be1-9eff-75a677291451",
+          "meter_checkpoint": "/var/lib/vpn-node/state/meter.checkpoint",
+          "mtls_ca": "/etc/vpn-node/ca.pem",
+          "mtls_cert": "/var/lib/vpn-node/identity/cert.pem",
+          "mtls_key": "/var/lib/vpn-node/identity/key.pem",
+          "node_id": "01a19292-a08a-74b8-ba4a-dae158692d4a",
+          "platform": {
+            "architecture": "amd64",
+            "control_api_major": 1,
+            "os_id": "ubuntu",
+            "os_version": "24.04",
+            "policy_schema": 1,
+            "state_schema": 1,
+            "updater_version": "1.0.0",
+            "usage_schema": 1
+          },
+          "probe_peer": {
+            "destinations": [
+              {
+                "addr_v4": "192.0.7.10/32",
+                "port": 4443,
+                "proto": "udp"
+              }
+            ],
+            "peer_id": "[redacted]",
+            "source_v4": "100.113.81.133/32"
+          },
+          "release_trust": "/etc/vpn-node/trust.json",
+          "result_url": "https://agent.example.invalid:9443/api/v1/agent/update-results",
+          "start_command": [
+            "/usr/local/bin/agent-service.sh",
+            "start"
+          ],
+          "stop_command": [
+            "/usr/local/bin/agent-service.sh",
+            "stop"
+          ]
+        },
+        "readable": true
+      }
+    },
+    "configured_probe_issued": false,
+    "finding": "Configured probe peer has no verified fresh challenge and traversal; inspect measured challenge, attestation and observer fields",
+    "fresh_challenges": [],
+    "has_probe_peer": true,
+    "observer_error": "",
+    "omission_logs": [],
+    "probe_observer": {
+      "verified": false,
+      "observations": [
+        {
+          "name": "probe_traffic",
+          "detail": "{\"attempts\":4474,\"authenticated_udp_replies\":0}"
+        },
+        {
+          "name": "probe_window",
+          "detail": "{\"samples\":4140,\"grant_samples\":0,\"source_elements\":0,\"destination_elements\":0,\"max_timeout_seconds\":0,\"probe_up_bytes\":0,\"probe_down_bytes\":0,\"member_bytes_before\":0,\"member_bytes_after\":0,\"elements_after\":0}"
+        },
+        {
+          "name": "probe_origin_receipt",
+          "detail": "{\"probe_id\":\"1757e605-aa47-4555-a06c-54c37af733b4\",\"requests\":0,\"source_address\":\"\"}"
+        },
+        {
+          "name": "probe_traversal_verified",
+          "detail": "false"
+        }
+      ]
+    },
+    "probe_setup_notes": [
+      {
+        "name": "probe_not_member",
+        "detail": "true"
+      },
+      {
+        "name": "probe_route_selected",
+        "detail": "true"
+      },
+      {
+        "name": "probe_config_scope",
+        "detail": "one dedicated setup-key peer /32; one isolated origin /32 UDP 4443; no member device or grant"
+      }
+    ],
+    "reader_error": "",
+    "stderr_readable": true
+  },
+  "AT25": "not reached: last-good prerequisite absent"
+}

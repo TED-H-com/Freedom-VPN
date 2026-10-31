@@ -76,6 +76,9 @@ jobs:
       - name: Pinned resolver response shape (AT20)
         run: make -f mk/dns.mk dns-response-shape
 
+      - name: Pinned resolver positive cache and TTL (AT20)
+        run: make -f mk/dns.mk dns-positive-cache
+
   integration:
     name: AdGuard Home Integration Suite
     if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'

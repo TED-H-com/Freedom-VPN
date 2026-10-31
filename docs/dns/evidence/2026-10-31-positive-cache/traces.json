@@ -1,0 +1,1180 @@
+[
+  {
+    "fixture_case": "steady",
+    "step": "initial",
+    "started": "2026-10-31T18:15:48.700484649Z",
+    "completed": "2026-10-31T18:15:48.70131032Z",
+    "responder": "primary",
+    "answer_class": "other_ipv4",
+    "rcode": 0,
+    "answer_ttl_remaining": [
+      10
+    ],
+    "milliseconds": 0,
+    "cache_state": "miss_authority_exchange_observed",
+    "resolver_events": [
+      {
+        "role": "primary",
+        "started": "2026-10-31T18:15:48.700484649Z",
+        "completed": "2026-10-31T18:15:48.70131032Z",
+        "outcome": "answered"
+      }
+    ],
+    "authority_events": [
+      {
+        "started": "2026-10-31T18:15:48.701038632Z",
+        "completed": "2026-10-31T18:15:48.701050305Z",
+        "source_role": "primary",
+        "fixture_case": "steady",
+        "protocol": "udp",
+        "rr_type": 1,
+        "answer_class": "other_ipv4",
+        "answer_ttl_remaining": [
+          10
+        ],
+        "snapshot_serial": 1001,
+        "outcome": "answered"
+      }
+    ],
+    "authority_serial_after_query": 1001,
+    "authority_read_at": "2026-10-31T18:15:48.702289919Z"
+  },
+  {
+    "fixture_case": "boundary",
+    "step": "initial",
+    "started": "2026-10-31T18:15:48.702301695Z",
+    "completed": "2026-10-31T18:15:48.702705548Z",
+    "responder": "primary",
+    "answer_class": "other_ipv4",
+    "rcode": 0,
+    "answer_ttl_remaining": [
+      10
+    ],
+    "milliseconds": 0,
+    "cache_state": "miss_authority_exchange_observed",
+    "resolver_events": [
+      {
+        "role": "primary",
+        "started": "2026-10-31T18:15:48.702301695Z",
+        "completed": "2026-10-31T18:15:48.702705548Z",
+        "outcome": "answered"
+      }
+    ],
+    "authority_events": [
+      {
+        "started": "2026-10-31T18:15:48.702490249Z",
+        "completed": "2026-10-31T18:15:48.702493099Z",
+        "source_role": "primary",
+        "fixture_case": "boundary",
+        "protocol": "udp",
+        "rr_type": 1,
+        "answer_class": "other_ipv4",
+        "answer_ttl_remaining": [
+          10
+        ],
+        "snapshot_serial": 1001,
+        "outcome": "answered"
+      }
+    ],
+    "authority_serial_after_query": 1001,
+    "authority_read_at": "2026-10-31T18:15:48.703184436Z"
+  },
+  {
+    "fixture_case": "steady",
+    "step": "inside_1s",
+    "started": "2026-10-31T18:15:49.701714759Z",
+    "completed": "2026-10-31T18:15:49.7020422Z",
+    "responder": "primary",
+    "answer_class": "other_ipv4",
+    "rcode": 0,
+    "answer_ttl_remaining": [
+      9
+    ],
+    "milliseconds": 0,
+    "cache_state": "inferred_hit_no_authority_exchange",
+    "resolver_events": [
+      {
+        "role": "primary",
+        "started": "2026-10-31T18:15:49.701714759Z",
+        "completed": "2026-10-31T18:15:49.7020422Z",
+        "outcome": "answered"
+      }
+    ],
+    "authority_events": [],
+    "authority_serial_after_query": 1002,
+    "authority_read_at": "2026-10-31T18:15:49.702582273Z"
+  },
+  {
+    "fixture_case": "steady",
+    "step": "other_resolver_fresh_fetch",
+    "started": "2026-10-31T18:15:49.70259322Z",
+    "completed": "2026-10-31T18:15:49.70292274Z",
+    "responder": "secondary",
+    "answer_class": "changed_ipv4",
+    "rcode": 0,
+    "answer_ttl_remaining": [
+      10
+    ],
+    "milliseconds": 0,
+    "cache_state": "miss_authority_exchange_observed",
+    "resolver_events": [
+      {
+        "role": "secondary",
+        "started": "2026-10-31T18:15:49.70259322Z",
+        "completed": "2026-10-31T18:15:49.70292274Z",
+        "outcome": "answered"
+      }
+    ],
+    "authority_events": [
+      {
+        "started": "2026-10-31T18:15:49.702839885Z",
+        "completed": "2026-10-31T18:15:49.702844231Z",
+        "source_role": "secondary",
+        "fixture_case": "steady",
+        "protocol": "udp",
+        "rr_type": 1,
+        "answer_class": "changed_ipv4",
+        "answer_ttl_remaining": [
+          10
+        ],
+        "snapshot_serial": 1002,
+        "outcome": "answered"
+      }
+    ],
+    "authority_serial_after_query": 1002,
+    "authority_read_at": "2026-10-31T18:15:49.703243124Z"
+  },
+  {
+    "fixture_case": "steady",
+    "step": "inside_2s",
+    "started": "2026-10-31T18:15:50.702301557Z",
+    "completed": "2026-10-31T18:15:50.702624922Z",
+    "responder": "primary",
+    "answer_class": "other_ipv4",
+    "rcode": 0,
+    "answer_ttl_remaining": [
+      8
+    ],
+    "milliseconds": 0,
+    "cache_state": "inferred_hit_no_authority_exchange",
+    "resolver_events": [
+      {
+        "role": "primary",
+        "started": "2026-10-31T18:15:50.702301557Z",
+        "completed": "2026-10-31T18:15:50.702624922Z",
+        "outcome": "answered"
+      }
+    ],
+    "authority_events": [],
+    "authority_serial_after_query": 1002,
+    "authority_read_at": "2026-10-31T18:15:50.703349722Z"
+  },
+  {
+    "fixture_case": "steady",
+    "step": "inside_3s",
+    "started": "2026-10-31T18:15:51.701482863Z",
+    "completed": "2026-10-31T18:15:51.701898291Z",
+    "responder": "primary",
+    "answer_class": "other_ipv4",
+    "rcode": 0,
+    "answer_ttl_remaining": [
+      7
+    ],
+    "milliseconds": 0,
+    "cache_state": "inferred_hit_no_authority_exchange",
+    "resolver_events": [
+      {
+        "role": "primary",
+        "started": "2026-10-31T18:15:51.701482863Z",
+        "completed": "2026-10-31T18:15:51.701898291Z",
+        "outcome": "answered"
+      }
+    ],
+    "authority_events": [],
+    "authority_serial_after_query": 1002,
+    "authority_read_at": "2026-10-31T18:15:51.702522545Z"
+  },
+  {
+    "fixture_case": "steady",
+    "step": "inside_4s",
+    "started": "2026-10-31T18:15:52.701882023Z",
+    "completed": "2026-10-31T18:15:52.702169968Z",
+    "responder": "primary",
+    "answer_class": "other_ipv4",
+    "rcode": 0,
+    "answer_ttl_remaining": [
+      6
+    ],
+    "milliseconds": 0,
+    "cache_state": "inferred_hit_no_authority_exchange",
+    "resolver_events": [
+      {
+        "role": "primary",
+        "started": "2026-10-31T18:15:52.701882023Z",
+        "completed": "2026-10-31T18:15:52.702169968Z",
+        "outcome": "answered"
+      }
+    ],
+    "authority_events": [],
+    "authority_serial_after_query": 1002,
+    "authority_read_at": "2026-10-31T18:15:52.702755488Z"
+  },
+  {
+    "fixture_case": "steady",
+    "step": "inside_5s",
+    "started": "2026-10-31T18:15:53.701695714Z",
+    "completed": "2026-10-31T18:15:53.7020172Z",
+    "responder": "primary",
+    "answer_class": "other_ipv4",
+    "rcode": 0,
+    "answer_ttl_remaining": [
+      5
+    ],
+    "milliseconds": 0,
+    "cache_state": "inferred_hit_no_authority_exchange",
+    "resolver_events": [
+      {
+        "role": "primary",
+        "started": "2026-10-31T18:15:53.701695714Z",
+        "completed": "2026-10-31T18:15:53.7020172Z",
+        "outcome": "answered"
+      }
+    ],
+    "authority_events": [],
+    "authority_serial_after_query": 1002,
+    "authority_read_at": "2026-10-31T18:15:53.702441042Z"
+  },
+  {
+    "fixture_case": "steady",
+    "step": "inside_6s",
+    "started": "2026-10-31T18:15:54.701733514Z",
+    "completed": "2026-10-31T18:15:54.702146378Z",
+    "responder": "primary",
+    "answer_class": "other_ipv4",
+    "rcode": 0,
+    "answer_ttl_remaining": [
+      4
+    ],
+    "milliseconds": 0,
+    "cache_state": "inferred_hit_no_authority_exchange",
+    "resolver_events": [
+      {
+        "role": "primary",
+        "started": "2026-10-31T18:15:54.701733514Z",
+        "completed": "2026-10-31T18:15:54.702146378Z",
+        "outcome": "answered"
+      }
+    ],
+    "authority_events": [],
+    "authority_serial_after_query": 1002,
+    "authority_read_at": "2026-10-31T18:15:54.702731373Z"
+  },
+  {
+    "fixture_case": "steady",
+    "step": "inside_7s",
+    "started": "2026-10-31T18:15:55.701660044Z",
+    "completed": "2026-10-31T18:15:55.702069335Z",
+    "responder": "primary",
+    "answer_class": "other_ipv4",
+    "rcode": 0,
+    "answer_ttl_remaining": [
+      3
+    ],
+    "milliseconds": 0,
+    "cache_state": "inferred_hit_no_authority_exchange",
+    "resolver_events": [
+      {
+        "role": "primary",
+        "started": "2026-10-31T18:15:55.701660044Z",
+        "completed": "2026-10-31T18:15:55.702069335Z",
+        "outcome": "answered"
+      }
+    ],
+    "authority_events": [],
+    "authority_serial_after_query": 1002,
+    "authority_read_at": "2026-10-31T18:15:55.702597255Z"
+  },
+  {
+    "fixture_case": "steady",
+    "step": "inside_8s",
+    "started": "2026-10-31T18:15:56.701918779Z",
+    "completed": "2026-10-31T18:15:56.702318945Z",
+    "responder": "primary",
+    "answer_class": "other_ipv4",
+    "rcode": 0,
+    "answer_ttl_remaining": [
+      2
+    ],
+    "milliseconds": 0,
+    "cache_state": "inferred_hit_no_authority_exchange",
+    "resolver_events": [
+      {
+        "role": "primary",
+        "started": "2026-10-31T18:15:56.701918779Z",
+        "completed": "2026-10-31T18:15:56.702318945Z",
+        "outcome": "answered"
+      }
+    ],
+    "authority_events": [],
+    "authority_serial_after_query": 1002,
+    "authority_read_at": "2026-10-31T18:15:56.70333822Z"
+  },
+  {
+    "fixture_case": "steady",
+    "step": "inside_9s",
+    "started": "2026-10-31T18:15:57.702008177Z",
+    "completed": "2026-10-31T18:15:57.702399997Z",
+    "responder": "primary",
+    "answer_class": "other_ipv4",
+    "rcode": 0,
+    "answer_ttl_remaining": [
+      1
+    ],
+    "milliseconds": 0,
+    "cache_state": "inferred_hit_no_authority_exchange",
+    "resolver_events": [
+      {
+        "role": "primary",
+        "started": "2026-10-31T18:15:57.702008177Z",
+        "completed": "2026-10-31T18:15:57.702399997Z",
+        "outcome": "answered"
+      }
+    ],
+    "authority_events": [],
+    "authority_serial_after_query": 1002,
+    "authority_read_at": "2026-10-31T18:15:57.703053549Z"
+  },
+  {
+    "fixture_case": "boundary",
+    "step": "whole_second_expiry",
+    "started": "2026-10-31T18:15:58.050508536Z",
+    "completed": "2026-10-31T18:15:58.051117469Z",
+    "responder": "primary",
+    "answer_class": "changed_ipv4",
+    "rcode": 0,
+    "answer_ttl_remaining": [
+      10
+    ],
+    "milliseconds": 0,
+    "cache_state": "miss_authority_exchange_observed",
+    "resolver_events": [
+      {
+        "role": "primary",
+        "started": "2026-10-31T18:15:58.050508536Z",
+        "completed": "2026-10-31T18:15:58.051117469Z",
+        "outcome": "answered"
+      }
+    ],
+    "authority_events": [
+      {
+        "started": "2026-10-31T18:15:58.050923463Z",
+        "completed": "2026-10-31T18:15:58.050927253Z",
+        "source_role": "primary",
+        "fixture_case": "boundary",
+        "protocol": "udp",
+        "rr_type": 1,
+        "answer_class": "changed_ipv4",
+        "answer_ttl_remaining": [
+          10
+        ],
+        "snapshot_serial": 1002,
+        "outcome": "answered"
+      }
+    ],
+    "authority_serial_after_query": 1002,
+    "authority_read_at": "2026-10-31T18:15:58.051734574Z"
+  },
+  {
+    "fixture_case": "steady",
+    "step": "after_ttl",
+    "started": "2026-10-31T18:15:58.801514772Z",
+    "completed": "2026-10-31T18:15:58.802098324Z",
+    "responder": "primary",
+    "answer_class": "changed_ipv4",
+    "rcode": 0,
+    "answer_ttl_remaining": [
+      10
+    ],
+    "milliseconds": 0,
+    "cache_state": "miss_authority_exchange_observed",
+    "resolver_events": [
+      {
+        "role": "primary",
+        "started": "2026-10-31T18:15:58.801514772Z",
+        "completed": "2026-10-31T18:15:58.802098324Z",
+        "outcome": "answered"
+      }
+    ],
+    "authority_events": [
+      {
+        "started": "2026-10-31T18:15:58.801897322Z",
+        "completed": "2026-10-31T18:15:58.801902193Z",
+        "source_role": "primary",
+        "fixture_case": "steady",
+        "protocol": "udp",
+        "rr_type": 1,
+        "answer_class": "changed_ipv4",
+        "answer_ttl_remaining": [
+          10
+        ],
+        "snapshot_serial": 1002,
+        "outcome": "answered"
+      }
+    ],
+    "authority_serial_after_query": 1002,
+    "authority_read_at": "2026-10-31T18:15:58.802791515Z"
+  },
+  {
+    "fixture_case": "slow",
+    "step": "first_fetch_delayed_2500ms",
+    "started": "2026-10-31T18:15:58.802799235Z",
+    "completed": "2026-10-31T18:16:01.305084971Z",
+    "responder": "primary",
+    "answer_class": "other_ipv4",
+    "rcode": 0,
+    "answer_ttl_remaining": [
+      10
+    ],
+    "milliseconds": 2502,
+    "cache_state": "miss_authority_exchange_observed",
+    "resolver_events": [
+      {
+        "role": "primary",
+        "started": "2026-10-31T18:15:58.802799235Z",
+        "completed": "2026-10-31T18:16:01.305084971Z",
+        "outcome": "answered"
+      }
+    ],
+    "authority_events": [
+      {
+        "started": "2026-10-31T18:15:58.803209372Z",
+        "completed": "2026-10-31T18:16:01.304676815Z",
+        "source_role": "primary",
+        "fixture_case": "slow",
+        "protocol": "udp",
+        "rr_type": 1,
+        "answer_class": "other_ipv4",
+        "answer_ttl_remaining": [
+          10
+        ],
+        "snapshot_serial": 1001,
+        "outcome": "answered"
+      }
+    ],
+    "authority_serial_after_query": 1001,
+    "authority_read_at": "2026-10-31T18:16:01.305507499Z"
+  },
+  {
+    "fixture_case": "slow",
+    "step": "inside_1s",
+    "started": "2026-10-31T18:16:02.305653309Z",
+    "completed": "2026-10-31T18:16:02.306230121Z",
+    "responder": "primary",
+    "answer_class": "other_ipv4",
+    "rcode": 0,
+    "answer_ttl_remaining": [
+      9
+    ],
+    "milliseconds": 0,
+    "cache_state": "inferred_hit_no_authority_exchange",
+    "resolver_events": [
+      {
+        "role": "primary",
+        "started": "2026-10-31T18:16:02.305653309Z",
+        "completed": "2026-10-31T18:16:02.306230121Z",
+        "outcome": "answered"
+      }
+    ],
+    "authority_events": [],
+    "authority_serial_after_query": 1002,
+    "authority_read_at": "2026-10-31T18:16:02.306613368Z"
+  },
+  {
+    "fixture_case": "slow",
+    "step": "inside_2s",
+    "started": "2026-10-31T18:16:03.30591329Z",
+    "completed": "2026-10-31T18:16:03.306165464Z",
+    "responder": "primary",
+    "answer_class": "other_ipv4",
+    "rcode": 0,
+    "answer_ttl_remaining": [
+      8
+    ],
+    "milliseconds": 0,
+    "cache_state": "inferred_hit_no_authority_exchange",
+    "resolver_events": [
+      {
+        "role": "primary",
+        "started": "2026-10-31T18:16:03.30591329Z",
+        "completed": "2026-10-31T18:16:03.306165464Z",
+        "outcome": "answered"
+      }
+    ],
+    "authority_events": [],
+    "authority_serial_after_query": 1002,
+    "authority_read_at": "2026-10-31T18:16:03.306588153Z"
+  },
+  {
+    "fixture_case": "slow",
+    "step": "inside_3s",
+    "started": "2026-10-31T18:16:04.305719278Z",
+    "completed": "2026-10-31T18:16:04.30600352Z",
+    "responder": "primary",
+    "answer_class": "other_ipv4",
+    "rcode": 0,
+    "answer_ttl_remaining": [
+      7
+    ],
+    "milliseconds": 0,
+    "cache_state": "inferred_hit_no_authority_exchange",
+    "resolver_events": [
+      {
+        "role": "primary",
+        "started": "2026-10-31T18:16:04.305719278Z",
+        "completed": "2026-10-31T18:16:04.30600352Z",
+        "outcome": "answered"
+      }
+    ],
+    "authority_events": [],
+    "authority_serial_after_query": 1002,
+    "authority_read_at": "2026-10-31T18:16:04.306456259Z"
+  },
+  {
+    "fixture_case": "slow",
+    "step": "inside_4s",
+    "started": "2026-10-31T18:16:05.305715372Z",
+    "completed": "2026-10-31T18:16:05.306012753Z",
+    "responder": "primary",
+    "answer_class": "other_ipv4",
+    "rcode": 0,
+    "answer_ttl_remaining": [
+      6
+    ],
+    "milliseconds": 0,
+    "cache_state": "inferred_hit_no_authority_exchange",
+    "resolver_events": [
+      {
+        "role": "primary",
+        "started": "2026-10-31T18:16:05.305715372Z",
+        "completed": "2026-10-31T18:16:05.306012753Z",
+        "outcome": "answered"
+      }
+    ],
+    "authority_events": [],
+    "authority_serial_after_query": 1002,
+    "authority_read_at": "2026-10-31T18:16:05.306462804Z"
+  },
+  {
+    "fixture_case": "slow",
+    "step": "inside_5s",
+    "started": "2026-10-31T18:16:06.30571323Z",
+    "completed": "2026-10-31T18:16:06.305997253Z",
+    "responder": "primary",
+    "answer_class": "other_ipv4",
+    "rcode": 0,
+    "answer_ttl_remaining": [
+      5
+    ],
+    "milliseconds": 0,
+    "cache_state": "inferred_hit_no_authority_exchange",
+    "resolver_events": [
+      {
+        "role": "primary",
+        "started": "2026-10-31T18:16:06.30571323Z",
+        "completed": "2026-10-31T18:16:06.305997253Z",
+        "outcome": "answered"
+      }
+    ],
+    "authority_events": [],
+    "authority_serial_after_query": 1002,
+    "authority_read_at": "2026-10-31T18:16:06.306439263Z"
+  },
+  {
+    "fixture_case": "slow",
+    "step": "inside_6s",
+    "started": "2026-10-31T18:16:07.30573072Z",
+    "completed": "2026-10-31T18:16:07.306022581Z",
+    "responder": "primary",
+    "answer_class": "other_ipv4",
+    "rcode": 0,
+    "answer_ttl_remaining": [
+      4
+    ],
+    "milliseconds": 0,
+    "cache_state": "inferred_hit_no_authority_exchange",
+    "resolver_events": [
+      {
+        "role": "primary",
+        "started": "2026-10-31T18:16:07.30573072Z",
+        "completed": "2026-10-31T18:16:07.306022581Z",
+        "outcome": "answered"
+      }
+    ],
+    "authority_events": [],
+    "authority_serial_after_query": 1002,
+    "authority_read_at": "2026-10-31T18:16:07.306459303Z"
+  },
+  {
+    "fixture_case": "slow",
+    "step": "inside_7s",
+    "started": "2026-10-31T18:16:08.305757483Z",
+    "completed": "2026-10-31T18:16:08.30609937Z",
+    "responder": "primary",
+    "answer_class": "other_ipv4",
+    "rcode": 0,
+    "answer_ttl_remaining": [
+      3
+    ],
+    "milliseconds": 0,
+    "cache_state": "inferred_hit_no_authority_exchange",
+    "resolver_events": [
+      {
+        "role": "primary",
+        "started": "2026-10-31T18:16:08.305757483Z",
+        "completed": "2026-10-31T18:16:08.30609937Z",
+        "outcome": "answered"
+      }
+    ],
+    "authority_events": [],
+    "authority_serial_after_query": 1002,
+    "authority_read_at": "2026-10-31T18:16:08.306681288Z"
+  },
+  {
+    "fixture_case": "slow",
+    "step": "inside_8s",
+    "started": "2026-10-31T18:16:09.30565689Z",
+    "completed": "2026-10-31T18:16:09.305948611Z",
+    "responder": "primary",
+    "answer_class": "other_ipv4",
+    "rcode": 0,
+    "answer_ttl_remaining": [
+      2
+    ],
+    "milliseconds": 0,
+    "cache_state": "inferred_hit_no_authority_exchange",
+    "resolver_events": [
+      {
+        "role": "primary",
+        "started": "2026-10-31T18:16:09.30565689Z",
+        "completed": "2026-10-31T18:16:09.305948611Z",
+        "outcome": "answered"
+      }
+    ],
+    "authority_events": [],
+    "authority_serial_after_query": 1002,
+    "authority_read_at": "2026-10-31T18:16:09.307110617Z"
+  },
+  {
+    "fixture_case": "slow",
+    "step": "inside_9s",
+    "started": "2026-10-31T18:16:10.305908194Z",
+    "completed": "2026-10-31T18:16:10.306416734Z",
+    "responder": "primary",
+    "answer_class": "other_ipv4",
+    "rcode": 0,
+    "answer_ttl_remaining": [
+      1
+    ],
+    "milliseconds": 0,
+    "cache_state": "inferred_hit_no_authority_exchange",
+    "resolver_events": [
+      {
+        "role": "primary",
+        "started": "2026-10-31T18:16:10.305908194Z",
+        "completed": "2026-10-31T18:16:10.306416734Z",
+        "outcome": "answered"
+      }
+    ],
+    "authority_events": [],
+    "authority_serial_after_query": 1002,
+    "authority_read_at": "2026-10-31T18:16:10.307442928Z"
+  },
+  {
+    "fixture_case": "slow",
+    "step": "after_ttl",
+    "started": "2026-10-31T18:16:11.405689342Z",
+    "completed": "2026-10-31T18:16:11.406481247Z",
+    "responder": "primary",
+    "answer_class": "changed_ipv4",
+    "rcode": 0,
+    "answer_ttl_remaining": [
+      10
+    ],
+    "milliseconds": 0,
+    "cache_state": "miss_authority_exchange_observed",
+    "resolver_events": [
+      {
+        "role": "primary",
+        "started": "2026-10-31T18:16:11.405689342Z",
+        "completed": "2026-10-31T18:16:11.406481247Z",
+        "outcome": "answered"
+      }
+    ],
+    "authority_events": [
+      {
+        "started": "2026-10-31T18:16:11.406186052Z",
+        "completed": "2026-10-31T18:16:11.406195693Z",
+        "source_role": "primary",
+        "fixture_case": "slow",
+        "protocol": "udp",
+        "rr_type": 1,
+        "answer_class": "changed_ipv4",
+        "answer_ttl_remaining": [
+          10
+        ],
+        "snapshot_serial": 1002,
+        "outcome": "answered"
+      }
+    ],
+    "authority_serial_after_query": 1002,
+    "authority_read_at": "2026-10-31T18:16:11.406911695Z"
+  },
+  {
+    "fixture_case": "retry",
+    "step": "first_packet_dropped",
+    "started": "2026-10-31T18:16:11.406928686Z",
+    "completed": "2026-10-31T18:16:21.408297389Z",
+    "responder": "primary",
+    "answer_class": "other_ipv4",
+    "rcode": 0,
+    "answer_ttl_remaining": [
+      10
+    ],
+    "milliseconds": 10001,
+    "cache_state": "miss_authority_exchange_observed",
+    "resolver_events": [
+      {
+        "role": "primary",
+        "started": "2026-10-31T18:16:11.406928686Z",
+        "completed": "2026-10-31T18:16:21.408297389Z",
+        "outcome": "answered"
+      }
+    ],
+    "authority_events": [
+      {
+        "started": "2026-10-31T18:16:11.40730418Z",
+        "completed": "2026-10-31T18:16:11.407304437Z",
+        "source_role": "primary",
+        "fixture_case": "retry",
+        "protocol": "udp",
+        "rr_type": 1,
+        "answer_class": "",
+        "answer_ttl_remaining": [],
+        "snapshot_serial": 1001,
+        "outcome": "dropped"
+      },
+      {
+        "started": "2026-10-31T18:16:21.40799936Z",
+        "completed": "2026-10-31T18:16:21.408003846Z",
+        "source_role": "primary",
+        "fixture_case": "retry",
+        "protocol": "udp",
+        "rr_type": 1,
+        "answer_class": "other_ipv4",
+        "answer_ttl_remaining": [
+          10
+        ],
+        "snapshot_serial": 1001,
+        "outcome": "answered"
+      }
+    ],
+    "authority_serial_after_query": 1001,
+    "authority_read_at": "2026-10-31T18:16:21.40903307Z"
+  },
+  {
+    "fixture_case": "retry",
+    "step": "after_authority_change",
+    "started": "2026-10-31T18:16:21.409335699Z",
+    "completed": "2026-10-31T18:16:21.409445533Z",
+    "responder": "primary",
+    "answer_class": "other_ipv4",
+    "rcode": 0,
+    "answer_ttl_remaining": [
+      10
+    ],
+    "milliseconds": 0,
+    "cache_state": "inferred_hit_no_authority_exchange",
+    "resolver_events": [
+      {
+        "role": "primary",
+        "started": "2026-10-31T18:16:21.409335699Z",
+        "completed": "2026-10-31T18:16:21.409445533Z",
+        "outcome": "answered"
+      }
+    ],
+    "authority_events": [],
+    "authority_serial_after_query": 1002,
+    "authority_read_at": "2026-10-31T18:16:21.409804946Z"
+  },
+  {
+    "fixture_case": "late",
+    "step": "timeout_then_retry",
+    "started": "2026-10-31T18:16:21.409837614Z",
+    "completed": "2026-10-31T18:16:31.411006352Z",
+    "responder": "primary",
+    "answer_class": "changed_ipv4",
+    "rcode": 0,
+    "answer_ttl_remaining": [
+      10
+    ],
+    "milliseconds": 10001,
+    "cache_state": "miss_authority_exchange_observed",
+    "resolver_events": [
+      {
+        "role": "primary",
+        "started": "2026-10-31T18:16:21.409837614Z",
+        "completed": "2026-10-31T18:16:31.411006352Z",
+        "outcome": "answered"
+      }
+    ],
+    "authority_events": [
+      {
+        "started": "2026-10-31T18:16:21.410226048Z",
+        "completed": "0001-01-01T00:00:00Z",
+        "source_role": "primary",
+        "fixture_case": "late",
+        "protocol": "udp",
+        "rr_type": 1,
+        "answer_class": "",
+        "answer_ttl_remaining": [],
+        "snapshot_serial": 1001,
+        "outcome": "pending"
+      },
+      {
+        "started": "2026-10-31T18:16:31.410811104Z",
+        "completed": "2026-10-31T18:16:31.410815175Z",
+        "source_role": "primary",
+        "fixture_case": "late",
+        "protocol": "udp",
+        "rr_type": 1,
+        "answer_class": "changed_ipv4",
+        "answer_ttl_remaining": [
+          10
+        ],
+        "snapshot_serial": 1002,
+        "outcome": "answered"
+      }
+    ],
+    "authority_serial_after_query": 1002,
+    "authority_read_at": "2026-10-31T18:16:31.411883474Z"
+  },
+  {
+    "fixture_case": "late",
+    "step": "after_discarded_late_old_reply",
+    "started": "2026-10-31T18:16:32.710779343Z",
+    "completed": "2026-10-31T18:16:32.711046905Z",
+    "responder": "primary",
+    "answer_class": "changed_ipv4",
+    "rcode": 0,
+    "answer_ttl_remaining": [
+      9
+    ],
+    "milliseconds": 0,
+    "cache_state": "inferred_hit_no_authority_exchange",
+    "resolver_events": [
+      {
+        "role": "primary",
+        "started": "2026-10-31T18:16:32.710779343Z",
+        "completed": "2026-10-31T18:16:32.711046905Z",
+        "outcome": "answered"
+      }
+    ],
+    "authority_events": [],
+    "authority_serial_after_query": 1002,
+    "authority_read_at": "2026-10-31T18:16:32.711842532Z"
+  },
+  {
+    "fixture_case": "failed",
+    "step": "both_upstream_attempts_dropped",
+    "started": "2026-10-31T18:16:32.711853907Z",
+    "completed": "2026-10-31T18:16:52.7132214Z",
+    "responder": "primary",
+    "answer_class": "",
+    "rcode": 2,
+    "answer_ttl_remaining": [],
+    "milliseconds": 20001,
+    "cache_state": "unknown",
+    "resolver_events": [
+      {
+        "role": "primary",
+        "started": "2026-10-31T18:16:32.711853907Z",
+        "completed": "2026-10-31T18:16:52.7132214Z",
+        "outcome": "answered"
+      }
+    ],
+    "authority_events": [
+      {
+        "started": "2026-10-31T18:16:32.712133027Z",
+        "completed": "2026-10-31T18:16:32.712133199Z",
+        "source_role": "primary",
+        "fixture_case": "failed",
+        "protocol": "udp",
+        "rr_type": 1,
+        "answer_class": "",
+        "answer_ttl_remaining": [],
+        "snapshot_serial": 1001,
+        "outcome": "dropped"
+      },
+      {
+        "started": "2026-10-31T18:16:42.712777802Z",
+        "completed": "2026-10-31T18:16:42.712778038Z",
+        "source_role": "primary",
+        "fixture_case": "failed",
+        "protocol": "udp",
+        "rr_type": 1,
+        "answer_class": "",
+        "answer_ttl_remaining": [],
+        "snapshot_serial": 1001,
+        "outcome": "dropped"
+      }
+    ],
+    "authority_serial_after_query": 1001,
+    "authority_read_at": "2026-10-31T18:16:52.714018801Z"
+  },
+  {
+    "fixture_case": "fallback",
+    "step": "client_2500ms_then_secondary",
+    "started": "2026-10-31T18:16:52.714026745Z",
+    "completed": "2026-10-31T18:16:55.215434489Z",
+    "responder": "secondary",
+    "answer_class": "other_ipv4",
+    "rcode": 0,
+    "answer_ttl_remaining": [
+      10
+    ],
+    "milliseconds": 2501,
+    "cache_state": "miss_authority_exchange_observed",
+    "resolver_events": [
+      {
+        "role": "primary",
+        "started": "2026-10-31T18:16:52.714026745Z",
+        "completed": "2026-10-31T18:16:55.214658402Z",
+        "outcome": "client_timeout"
+      },
+      {
+        "role": "secondary",
+        "started": "2026-10-31T18:16:55.214677631Z",
+        "completed": "2026-10-31T18:16:55.215434489Z",
+        "outcome": "answered"
+      }
+    ],
+    "authority_events": [
+      {
+        "started": "2026-10-31T18:16:52.714400126Z",
+        "completed": "2026-10-31T18:16:52.714400362Z",
+        "source_role": "primary",
+        "fixture_case": "fallback",
+        "protocol": "udp",
+        "rr_type": 1,
+        "answer_class": "",
+        "answer_ttl_remaining": [],
+        "snapshot_serial": 1001,
+        "outcome": "dropped"
+      },
+      {
+        "started": "2026-10-31T18:16:55.215280989Z",
+        "completed": "2026-10-31T18:16:55.215284747Z",
+        "source_role": "secondary",
+        "fixture_case": "fallback",
+        "protocol": "udp",
+        "rr_type": 1,
+        "answer_class": "other_ipv4",
+        "answer_ttl_remaining": [
+          10
+        ],
+        "snapshot_serial": 1001,
+        "outcome": "answered"
+      }
+    ],
+    "authority_serial_after_query": 1001,
+    "authority_read_at": "2026-10-31T18:16:55.21606549Z"
+  },
+  {
+    "fixture_case": "fallback",
+    "step": "primary_fresh_fetch_inside_secondary_ttl",
+    "started": "2026-10-31T18:16:55.21630723Z",
+    "completed": "2026-10-31T18:16:55.216772329Z",
+    "responder": "primary",
+    "answer_class": "changed_ipv4",
+    "rcode": 0,
+    "answer_ttl_remaining": [
+      10
+    ],
+    "milliseconds": 0,
+    "cache_state": "miss_authority_exchange_observed",
+    "resolver_events": [
+      {
+        "role": "primary",
+        "started": "2026-10-31T18:16:55.21630723Z",
+        "completed": "2026-10-31T18:16:55.216772329Z",
+        "outcome": "answered"
+      }
+    ],
+    "authority_events": [
+      {
+        "started": "2026-10-31T18:16:55.216684365Z",
+        "completed": "2026-10-31T18:16:55.216687889Z",
+        "source_role": "primary",
+        "fixture_case": "fallback",
+        "protocol": "udp",
+        "rr_type": 1,
+        "answer_class": "changed_ipv4",
+        "answer_ttl_remaining": [
+          10
+        ],
+        "snapshot_serial": 1002,
+        "outcome": "answered"
+      }
+    ],
+    "authority_serial_after_query": 1002,
+    "authority_read_at": "2026-10-31T18:16:55.217500609Z"
+  },
+  {
+    "fixture_case": "fallback",
+    "step": "secondary_keeps_old_entry",
+    "started": "2026-10-31T18:16:55.217511212Z",
+    "completed": "2026-10-31T18:16:55.217776355Z",
+    "responder": "secondary",
+    "answer_class": "other_ipv4",
+    "rcode": 0,
+    "answer_ttl_remaining": [
+      10
+    ],
+    "milliseconds": 0,
+    "cache_state": "inferred_hit_no_authority_exchange",
+    "resolver_events": [
+      {
+        "role": "secondary",
+        "started": "2026-10-31T18:16:55.217511212Z",
+        "completed": "2026-10-31T18:16:55.217776355Z",
+        "outcome": "answered"
+      }
+    ],
+    "authority_events": [],
+    "authority_serial_after_query": 1002,
+    "authority_read_at": "2026-10-31T18:16:55.218317858Z"
+  },
+  {
+    "fixture_case": "inflight",
+    "step": "client_timeout_then_secondary",
+    "started": "2026-10-31T18:17:03.015719191Z",
+    "completed": "2026-10-31T18:17:05.517603282Z",
+    "responder": "secondary",
+    "answer_class": "other_ipv4",
+    "rcode": 0,
+    "answer_ttl_remaining": [
+      10
+    ],
+    "milliseconds": 2501,
+    "cache_state": "miss_authority_exchange_observed",
+    "resolver_events": [
+      {
+        "role": "primary",
+        "started": "2026-10-31T18:17:03.015719191Z",
+        "completed": "2026-10-31T18:17:05.516789801Z",
+        "outcome": "client_timeout"
+      },
+      {
+        "role": "secondary",
+        "started": "2026-10-31T18:17:05.516805417Z",
+        "completed": "2026-10-31T18:17:05.517603282Z",
+        "outcome": "answered"
+      }
+    ],
+    "authority_events": [
+      {
+        "started": "2026-10-31T18:17:03.016270874Z",
+        "completed": "0001-01-01T00:00:00Z",
+        "source_role": "primary",
+        "fixture_case": "inflight",
+        "protocol": "udp",
+        "rr_type": 1,
+        "answer_class": "",
+        "answer_ttl_remaining": [],
+        "snapshot_serial": 1001,
+        "outcome": "pending"
+      },
+      {
+        "started": "2026-10-31T18:17:05.517510185Z",
+        "completed": "2026-10-31T18:17:05.517512841Z",
+        "source_role": "secondary",
+        "fixture_case": "inflight",
+        "protocol": "udp",
+        "rr_type": 1,
+        "answer_class": "other_ipv4",
+        "answer_ttl_remaining": [
+          10
+        ],
+        "snapshot_serial": 1001,
+        "outcome": "answered"
+      }
+    ],
+    "authority_serial_after_query": 1001,
+    "authority_read_at": "2026-10-31T18:17:05.518070929Z"
+  },
+  {
+    "fixture_case": "inflight",
+    "step": "primary_while_first_fetch_outstanding",
+    "started": "2026-10-31T18:17:05.518300702Z",
+    "completed": "2026-10-31T18:17:05.518637949Z",
+    "responder": "primary",
+    "answer_class": "changed_ipv4",
+    "rcode": 0,
+    "answer_ttl_remaining": [
+      10
+    ],
+    "milliseconds": 0,
+    "cache_state": "miss_authority_exchange_observed",
+    "resolver_events": [
+      {
+        "role": "primary",
+        "started": "2026-10-31T18:17:05.518300702Z",
+        "completed": "2026-10-31T18:17:05.518637949Z",
+        "outcome": "answered"
+      }
+    ],
+    "authority_events": [
+      {
+        "started": "2026-10-31T18:17:05.518521127Z",
+        "completed": "2026-10-31T18:17:05.518523078Z",
+        "source_role": "primary",
+        "fixture_case": "inflight",
+        "protocol": "udp",
+        "rr_type": 1,
+        "answer_class": "changed_ipv4",
+        "answer_ttl_remaining": [
+          10
+        ],
+        "snapshot_serial": 1002,
+        "outcome": "answered"
+      }
+    ],
+    "authority_serial_after_query": 1002,
+    "authority_read_at": "2026-10-31T18:17:05.519033554Z"
+  },
+  {
+    "fixture_case": "inflight",
+    "step": "primary_after_first_fetch_completed",
+    "started": "2026-10-31T18:17:06.816044583Z",
+    "completed": "2026-10-31T18:17:06.816611758Z",
+    "responder": "primary",
+    "answer_class": "other_ipv4",
+    "rcode": 0,
+    "answer_ttl_remaining": [
+      10
+    ],
+    "milliseconds": 0,
+    "cache_state": "inferred_hit_no_authority_exchange",
+    "resolver_events": [
+      {
+        "role": "primary",
+        "started": "2026-10-31T18:17:06.816044583Z",
+        "completed": "2026-10-31T18:17:06.816611758Z",
+        "outcome": "answered"
+      }
+    ],
+    "authority_events": [],
+    "authority_serial_after_query": 1002,
+    "authority_read_at": "2026-10-31T18:17:06.817419036Z"
+  }
+]

@@ -1,7 +1,7 @@
 # Freedom VPN
 
-**Current cut — [follow-up 19](docs/handover/follow-up-19.md) (2026-10-31 EDT):** ENR-07 and F9-01 closed; serving-node upgrade passes. ISO-F6-03 is an open AT13 product defect. Regular AT23–AT27 remain blocked; native F8-02 remains unattributed.
-Previous cut: [follow-up 18](docs/handover/follow-up-18.md), through #324.
+**Current cut — [follow-up 20](docs/handover/follow-up-20.md) (2026-10-31 EDT):** Through #344: generated updater reporting and the shared update fixture are fixed; the D-087 central seam is exported. ISO-F6-03 remains open. Regular AT23–AT27 and assembled AT10 re-measurements are pending.
+Previous cut: [follow-up 19](docs/handover/follow-up-19.md), through #337.
 
 Freedom VPN is a member-based, multi-region VPN platform for a small paid community, starting at about 20 members. Every exit node runs the same node package and joins one central control plane, whether it is a pre-installed box, a cloud Ubuntu VM or any other Ubuntu host.
 

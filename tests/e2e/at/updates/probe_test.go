@@ -70,7 +70,7 @@ func sanitizeUpdaterConfig(cfg updateDocument) updateDocument {
 	// Explicit allowlist: future secret-bearing config additions cannot leak,
 	// and raw peer_id is never published in public evidence.
 	safe := updateDocument{}
-	for _, key := range []string{"node_id", "incarnation_id", "boot_id", "platform", "probe_peer", "agent_config", "result_url", "desired_state", "meter_checkpoint", "stop_command", "start_command", "release_trust", "desired_trust", "mtls_cert", "mtls_key", "mtls_ca"} {
+	for _, key := range []string{"node_id", "incarnation_id", "boot_id", "platform", "probe_peer", "agent_config", "result_url", "allowed_artifact_origins", "allow_loopback", "desired_state", "meter_checkpoint", "stop_command", "start_command", "release_trust", "desired_trust", "mtls_cert", "mtls_key", "mtls_ca"} {
 		if value, ok := cfg[key]; ok {
 			if key == "probe_peer" {
 				value = redactProbePeer(value)
