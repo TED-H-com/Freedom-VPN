@@ -104,6 +104,13 @@ func NewUsageHandler(
 	pCfg config.PoliciesConfig,
 	signer usagepkg.Signer,
 ) (*UsageHandler, error) {
+	if err := uCfg.Validate(); err != nil {
+		return nil, err
+	}
+	seconds := int(usagepkg.SamplingIntervalBound / time.Second)
+	if uCfg.SamplingIntervalBoundSeconds != nil {
+		seconds = *uCfg.SamplingIntervalBoundSeconds
+	}
 	var epochSigner usagepkg.Signer
 	if signer == nil {
 		if strings.TrimSpace(uCfg.SigningConfigFile) == "" {
@@ -123,9 +130,10 @@ func NewUsageHandler(
 	if pool != nil {
 		var err error
 		svc, err = usagepkg.NewService(usagepkg.Config{
-			Pool:              pool,
-			Signer:            signer,
-			LedgerEpochSigner: epochSigner,
+			Pool:                  pool,
+			Signer:                signer,
+			LedgerEpochSigner:     epochSigner,
+			SamplingIntervalBound: time.Duration(seconds) * time.Second,
 		})
 		if err != nil {
 			return nil, err

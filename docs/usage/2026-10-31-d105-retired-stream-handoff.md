@@ -6,21 +6,15 @@ bound. This implements the revision 14 API shapes; the orchestrator's D-112
 supersedes revision 14's wording about historical sampling configuration, pending
 contracts revision 15. No migration or automatic central drain is introduced.
 
-## Runtime adoption status
+## HTTP adoption (D-115)
 
-The service implementation and its direct database scenarios are present. HTTP
-adoption is blocked by the existing recursive identity check in
-`internal/httpapi/middleware.go`: it requires nested event incarnation IDs to
-match the presenting certificate and returns 403 before invoking usage ingestion.
-The new HTTP acceptance/replay/audit tests expose this failure. The HTTP owner
-must delegate this operation's body identity checks to the usage service, or
-make them aware of original-stream identity, while retaining current mTLS
-validation and all JSON/schema/size checks. Other agent operations must retain
-their identity enforcement. This file is outside the usage-central lane.
-
-Until that change lands and the gates pass, the agent and AT lanes can exercise
-these rules directly against the service but cannot claim working HTTP hand-off.
-The results below describe the service contract and intended HTTP behavior.
+For `submitUsageBatch` with an explicit `origin_incarnation_id`, the middleware
+delegates body identity and origin decisions to the usage service so failures
+are audited. The batch still has to name the current authenticated presenter;
+only nested events may name the eligible retired stream. Authentication,
+JSON/schema/body-size validation, and idempotency remain enforced. Ordinary
+and streaming bodies follow the same rule. Batches without an origin and all
+other operations retain their existing recursive identity checks.
 
 ## Acceptance and ACK ownership
 
@@ -50,8 +44,12 @@ The bound is a **central parameter**, not reconstructed sampling history. The
 node meter must run with an interval **at most the central bound**. Deployments
 using a longer interval must raise the central bound before delivering those
 tails. The revision 14 vector's 30 seconds is a TEST ONLY service override.
-The production configuration-file knob is a request to the wiring lane; the
-current handler uses the 10-second service default.
+The optional `sampling_interval_bound_seconds` field in the usage configuration
+file defaults to 10 when omitted. Explicit zero, negative, null or values that
+would overflow a Go duration fail startup. `NewUsageHandler` passes the loaded
+seconds to `usage.Config.SamplingIntervalBound`. See
+[the configuration example](usage-config.example.json); other example settings
+are TEST ONLY and must match the deployment's signing/retention policy.
 
 ## Results and audit evidence
 
@@ -80,7 +78,7 @@ available. Reasons are `batch_identity`, `event_identity`, `presenter_inactive`,
 `origin_ineligible`, `retired_window`, `event_validation`, and `event_conflict`.
 No event body, certificate, secret or browsing information enters this audit.
 
-Whole-batch identity/origin failures commit their audit separately from the
+Hand-off whole-batch identity/origin failures commit their audit separately from the
 rejected HTTP command transaction. Handed-off per-event rejection/conflict audit
 shares the event evidence transaction. If audit persistence fails, the request
 returns 503; the event transaction rolls back. Accepted and duplicate events do

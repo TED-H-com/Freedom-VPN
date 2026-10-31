@@ -340,9 +340,24 @@ func TestMTR03_D105IneligibleAndMixedStreams(t *testing.T) {
 
 // newHandoffHTTP exercises the existing durable replay wiring, using a real PKI
 // authenticator when provided. The handler uses D-112's default 10-second bound.
-func newHandoffHTTP(t *testing.T, f *handoffFixture, agents auth.AgentAuthenticator) http.Handler {
+func newHandoffHTTP(t *testing.T, f *handoffFixture, agents auth.AgentAuthenticator, boundSeconds ...int) http.Handler {
 	t.Helper()
 	u, p := usagetest.New(t), policiestest.New(t)
+	if len(boundSeconds) > 0 {
+		u.Usage.SamplingIntervalBoundSeconds = &boundSeconds[0]
+		raw, err := json.Marshal(u.Usage)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(u.Path, raw, 0600); err != nil {
+			t.Fatal(err)
+		}
+		loaded, err := config.LoadUsage(u.Path)
+		if err != nil {
+			t.Fatal(err)
+		}
+		u.Usage = loaded
+	}
 	h, err := control.NewUsageHandler(f.pool, nil, u.Usage, p.Policies, nil)
 	if err != nil {
 		t.Fatal(err)
@@ -649,5 +664,33 @@ func TestMTR03_D105HTTPRejectionsPersistAudit(t *testing.T) {
 				t.Fatal("rejected HTTP hand-off changed ledger")
 			}
 		})
+	}
+}
+
+func TestMTR03_D112HTTPConfiguredSamplingBound(t *testing.T) {
+	f := newHandoffFixture(t, 0, time.Time{})
+	req := f.v.Cases[0].Request
+	req.Events[0].IntervalEnd = f.v.Context.RetiredAt.Add(20 * time.Second)
+	var err error
+	req.Events[0], err = usage.WithComputedHash(req.Events[0])
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, bound := range []int{10, 30} {
+		w := postHandoff(t, newHandoffHTTP(t, f, nil, bound), req, uuid.NewString(), nil)
+		if w.Code != http.StatusOK {
+			t.Fatalf("bound=%d HTTP status=%d body=%s", bound, w.Code, w.Body.String())
+		}
+		var result api.UsageBatchResult
+		if err := json.Unmarshal(w.Body.Bytes(), &result); err != nil {
+			t.Fatal(err)
+		}
+		want, ack := api.UsageEventResultStatusRejected, decstr.U64(1233)
+		if bound == 30 {
+			want, ack = api.UsageEventResultStatusAccepted, 1234
+		}
+		if result.Results[0].Status != want || result.HighestContiguousSeq != ack || result.NodeIncarnationId != *req.OriginIncarnationId {
+			t.Fatalf("loaded %d-second bound did not reach HTTP service: %+v", bound, result)
+		}
 	}
 }

@@ -681,7 +681,12 @@ func New(c *Composite, o Options) (http.Handler, error) {
 			apierr.Write(w, r, apierr.New(apierr.ValidationFailed, "Request does not match the API schema."))
 			return
 		}
-		if mtls && len(raw) > 0 && !identOK {
+		// D-105/D-115: an explicit usage origin selects a different nested
+		// stream. The usage service checks BOTH the presenting batch identity
+		// and original events, and durably audits failures. Keep authentication
+		// and all JSON/schema/size checks above, including the large-body path.
+		// Live usage and every other operation retain recursive identity checks.
+		if mtls && len(raw) > 0 && !identOK && !(op.OperationID == "SubmitUsageBatch" && usageOriginSelected(raw)) {
 			apierr.Write(w, r, apierr.New(apierr.IncarnationMismatch, "Request identity differs from the certificate."))
 			return
 		}
@@ -808,6 +813,16 @@ func identityFieldMatches(key, value string, isString bool, p auth.Principal) bo
 		expected = p.NodeID
 	}
 	return err == nil && id == expected
+}
+
+// usageOriginSelected is called only after JSON and schema validation, and only
+// on a usage identity mismatch. Decode the one envelope field without allocating
+// an event tree; do not treat a nested origin, absent value or null as a hand-off.
+func usageOriginSelected(raw []byte) bool {
+	var body struct {
+		Origin *uuid.UUID `json:"origin_incarnation_id"`
+	}
+	return json.Unmarshal(raw, &body) == nil && body.Origin != nil
 }
 
 // BrowserRoutes bounds login discovery/token work and session bootstrap. The key
