@@ -178,28 +178,49 @@ func TestISO_F6_ApplyRejectionTimestampPrecedesRollback(t *testing.T) {
 }
 
 type barrierSource struct {
-	obs meter.Observation
-	err error
+	obs      meter.Observation
+	err      error
+	bindings func() []enforce.Binding
 }
 
-func (s *barrierSource) Read(context.Context) (meter.Observation, error) { return s.obs, s.err }
+func (s *barrierSource) Read(context.Context) (meter.Observation, error) {
+	obs := s.obs
+	if s.bindings != nil {
+		obs.Bindings = s.bindings()
+	}
+	return obs, s.err
+}
 
 type admissionPlane struct {
 	Plane
-	admit func()
+	admit     func()
+	verifyErr error
+	applyErr  error
 }
 
 func (p admissionPlane) Apply(ctx context.Context, model enforce.Model, prev map[string]enforce.CounterValue) (enforce.ApplyResult, error) {
 	res, err := p.Plane.Apply(ctx, model, prev)
 	if err == nil {
 		p.admit()
+		if p.applyErr != nil {
+			res.Verified = false
+			res.Evidence.TCSummary.Phase = "verify"
+			return res, p.applyErr
+		}
 	}
 	return res, err
 }
 
+func (p admissionPlane) VerifyServing(ctx context.Context, model enforce.Model, assignments map[uuid.UUID]uint16) (enforce.ServingEvidence, error) {
+	if p.verifyErr != nil {
+		return enforce.ServingEvidence{}, p.verifyErr
+	}
+	return p.Plane.VerifyServing(ctx, model, assignments)
+}
+
 func TestMTR03_FirstBytesAfterFinalBarrierAreDurable(t *testing.T) {
-	for _, failRead := range []bool{false, true} {
-		t.Run(map[bool]string{false: "first_packet", true: "read_failure_then_recovery"}[failRead], func(t *testing.T) {
+	for _, scenario := range []string{"first_packet", "read_failure_then_recovery", "post_apply_verification_failure", "apply_verification_rollback"} {
+		t.Run(scenario, func(t *testing.T) {
 			r := newRig(t)
 			alignControlClock(r)
 			serveBoundGeneration(t, r)
@@ -217,8 +238,21 @@ func TestMTR03_FirstBytesAfterFinalBarrierAreDurable(t *testing.T) {
 			if err != nil || !r.eng.finalDone {
 				t.Fatal("missing real closing barrier", err)
 			}
+			// A restarted process has no prior in-memory attribution. Match
+			// the production source, which reads the engine's binding snapshot.
+			src.bindings = r.eng.meterBindings
+			r.eng.setMeterBindings(nil)
+			var verifyErr error
+			if scenario == "post_apply_verification_failure" {
+				verifyErr = os.ErrPermission
+			}
+			var applyErr error
+			if scenario == "apply_verification_rollback" {
+				applyErr = os.ErrPermission
+			}
+			wantServe := verifyErr == nil && applyErr == nil
 			admitted := 0
-			r.eng.plane = admissionPlane{Plane: r.plane, admit: func() {
+			r.eng.plane = admissionPlane{Plane: r.plane, verifyErr: verifyErr, applyErr: applyErr, admit: func() {
 				head, err := r.eng.usage.Head(t.Context())
 				if err != nil || head.OpenEpoch == uuid.Nil || head.OpenEpoch.String() == closed.ClosedMeterEpochID {
 					t.Fatal("forwarding opened before the next epoch was durable", err)
@@ -231,7 +265,7 @@ func TestMTR03_FirstBytesAfterFinalBarrierAreDurable(t *testing.T) {
 				admitted++
 				src.obs.Counters[name] = enforce.CounterValue{Packets: 1, Bytes: 4096}
 			}}
-			if failRead {
+			if scenario == "read_failure_then_recovery" {
 				src.err = os.ErrPermission
 				if err := r.eng.enforce(t.Context(), Decide(r.eng.input())); err == nil {
 					t.Fatal("unreadable meter permitted admission")
@@ -250,11 +284,15 @@ func TestMTR03_FirstBytesAfterFinalBarrierAreDurable(t *testing.T) {
 			if err := r.eng.enforce(t.Context(), Decide(r.eng.input())); err != nil {
 				t.Fatal(err)
 			}
-			if admitted != 1 || !r.eng.serving {
+			if admitted != 1 || r.eng.serving != wantServe {
 				t.Fatalf("did not resume once: admitted=%d serving=%v reasons=%v", admitted, r.eng.serving, r.eng.decision.Reasons)
 			}
-			if err := r.eng.meter.Sample(t.Context()); err != nil {
-				t.Fatal(err)
+			if wantServe {
+				if err := r.eng.meter.Sample(t.Context()); err != nil {
+					t.Fatal(err)
+				}
+			} else if !r.eng.finalDone || r.eng.appliedGen != 2 {
+				t.Fatal("verification failure did not finish its real closing barrier")
 			}
 			head, _ := r.eng.usage.Head(t.Context())
 			var bytes uint64

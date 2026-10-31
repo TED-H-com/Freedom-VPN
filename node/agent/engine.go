@@ -987,6 +987,12 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 	if res.Quarantine != nil {
 		e.recordApplyQuarantine(res, err)
 	}
+	if res.Verified || res.Evidence.TCSummary.Phase == "verify" {
+		// Apply reached its installed-rules verification. Even a rollback or
+		// later topology rejection must attribute bytes admitted before
+		// withdrawal, including on restart with no in-memory snapshot.
+		e.setMeterBindings(model.Bindings)
+	}
 	if err != nil && !verifiedDelete {
 		e.rejectServing(ctx, model, res.Evidence, err)
 		return nil
@@ -1079,7 +1085,6 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 	if err := e.store.SaveAddresses(ctx, stored); err != nil {
 		e.storageOK = false
 	}
-	e.setMeterBindings(model.Bindings)
 	post := res.Counters
 	if pending && post == nil {
 		post = prev
