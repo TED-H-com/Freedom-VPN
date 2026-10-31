@@ -15,6 +15,9 @@ import (
 
 func main() {
 	run := prepare
+	if len(os.Args) == 2 && os.Args[1] == "installer-proxy" {
+		run = installerProxy
+	}
 	if len(os.Args) >= 2 && os.Args[1] == "probe-client" {
 		run = probeClient
 	}

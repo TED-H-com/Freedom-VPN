@@ -8,6 +8,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -33,7 +34,7 @@ func TestE2E_Acceptance(t *testing.T) {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Minute)
 	defer cancel()
-	run := &runner{t: t, lab: lab, dir: filepath.Join(lab.root, "docs", "e2e", "runs", time.Now().UTC().Format("2006-01-02"))}
+	run := &runner{t: t, lab: lab, dir: filepath.Join(lab.root, "docs", "e2e", "runs", time.Now().UTC().Format("2006-01-02"), "followup15")}
 	run.runID = uuid.NewString()
 	commit, err := exec.Command("git", "rev-parse", "HEAD").Output()
 	if err != nil {
@@ -66,6 +67,10 @@ func TestE2E_Acceptance(t *testing.T) {
 	run.publish(ctx, admin, nodeID)
 	if nodeID != uuid.Nil {
 		run.member(ctx, admin)
+		run.establishedTransports(ctx)
+		run.forcedRelay(ctx)
+		run.exitDNS(ctx)
+		run.memberIPv6(ctx)
 		run.workerRestart(ctx)
 		run.deviceRevoke(ctx)
 		run.scaleHook(ctx, admin)
@@ -710,6 +715,20 @@ func (r *runner) controlStop(ctx context.Context) {
 		r.record(rec)
 		return
 	}
+	s := &Stack{lab: r.lab}
+	if _, err := s.StartEstablishedTransports(ctx, r.usageDevice); err != nil {
+		rec.Status = StatusFail
+		recPathNote(&rec)("transport_start", err.Error())
+		r.record(rec)
+		return
+	}
+	defer func() {
+		cleanup, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		_ = s.StopEstablishedTransports(cleanup)
+	}()
+	active, _ := s.EstablishedStatus(ctx)
+	recPathNote(&rec)("established_before", fmt.Sprintf("tcp=%d udp=%d running=%t", active.TCPEchoes, active.UDPReplies, active.Running))
 	before := r.lab.forwardChain()
 	recPathNote(&rec)("desired_before_stop", expiryView(r.desiredRaw()))
 	cmd := exec.Command("docker", "stop", "-t", "20", r.lab.control)
@@ -740,6 +759,21 @@ func (r *runner) controlStop(ctx context.Context) {
 	} else if after.MemberAccept == 0 {
 		rec.Status = StatusPass
 		rec.Observations = append(rec.Observations, Observation{Name: "note", Detail: "member accept rules were present and then gone"})
+	}
+	// Keep sending on the same sockets while measuring the closed path.
+	time.Sleep(3 * time.Second)
+	stopped, _ := s.EstablishedStatus(ctx)
+	bytesStopped, bytesErr := s.DeviceByteCounters(ctx, r.usageDevice)
+	time.Sleep(3 * time.Second)
+	later, statusErr := s.EstablishedStatus(ctx)
+	bytesLater, laterErr := s.DeviceByteCounters(ctx, r.usageDevice)
+	quiet := statusErr == nil && bytesErr == nil && laterErr == nil && later.Running && later.TCPAttempts > stopped.TCPAttempts && later.UDPAttempts > stopped.UDPAttempts && later.TCPEchoes == stopped.TCPEchoes && later.UDPReplies == stopped.UDPReplies && bytesStopped == bytesLater
+	recPathNote(&rec)("active_senders_after_cutoff", boolText(later.Running && later.TCPAttempts > stopped.TCPAttempts && later.UDPAttempts > stopped.UDPAttempts))
+	recPathNote(&rec)("established_replies_and_bytes_stopped", boolText(quiet))
+	recPathNote(&rec)("established_after", fmt.Sprintf("tcp=%d udp=%d attempts_tcp=%d attempts_udp=%d", later.TCPEchoes, later.UDPReplies, later.TCPAttempts, later.UDPAttempts))
+	if !quiet || after.MemberAccept > 0 {
+		rec.Status = StatusFail
+		recPathNote(&rec)("owner", "w2-agent-core / node enforcement: established traffic cutoff")
 	}
 	start := exec.Command("docker", "start", r.lab.control)
 	if err := start.Run(); err != nil {

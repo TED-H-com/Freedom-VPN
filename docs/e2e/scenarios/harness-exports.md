@@ -46,3 +46,13 @@ The hook copies a linux/amd64 `fvpn-netlab` into the node container, reads
 `nft -j list table inet fvpn`, and removes `fv-inj0` before it returns. It
 does not restore a revoked peer, group, or binding. The node container is
 already privileged, so this hook adds no capability.
+
+## Follow-up 15
+
+`EstablishedTransports`, `MemberTransportStatus`, `DeviceCounters`, `RelayPath`,
+`DNSPathObservation`, `UsageSnapshot`, `InstallerOutcome` and `InstallerHashes`
+are exported through `labstack`. See [RUN.md](../RUN.md) for invocations,
+cleanup and limitations. The exports suite includes established transports,
+forced relay, exit DNS, usage route hold/release, real usage backlog/restart,
+and the dedicated systemd installer wrappers. Its scenario outcomes retain
+actual product failures; wrapper presence does not imply an AT pass.

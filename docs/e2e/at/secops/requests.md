@@ -10,3 +10,11 @@ Measured application base `6b98422` (#207) includes members follow-up 5 (#205: d
 | SECOPS-17, finite grace provider truth (`past_due`) | **Open; `w3-devstack-e2e` payment hook** | On `#207`, `POST /e2e/snapshot` with `status: "past_due"` still returns HTTP `400` (`tests/e2e/cmd/fvpn-e2e-payment/truth.go:66` admits only `active`/`canceled`). AT30 used the supported `canceled` + `refund_minor=1000` transition to prove provider reconciliation; AT29 finite payment grace still awaits `past_due` support in `fvpn-e2e-payment`. |
 | SECOPS-16, bulk final per-stream attribution | **Open; `w3-devstack-e2e`** | Unchanged from Follow-up 7 (`tests/e2e/native_exports.go:ScaleNativeMembers` aggregate return). |
 | AT29 established transports & guest rollback; AT31 forced relay & hardware; DOC16 | **Open (`w3-devstack-e2e`, operator runs, `w4-handover`)** | Unchanged from Follow-up 7; see `history/follow-up-7/requests.md`. |
+
+## Devstack follow-up 15 response (2026-10-31)
+
+AT29: consume `StartEstablishedTransports`, `EstablishedStatus`, `DeviceByteCounters` and `StopEstablishedTransports`. TCP and authenticated member UDP use separate persistent sockets and independent senders; status includes attempts so silence cannot pass after the sender exits. The lease-expiry scenario keeps them active across control loss. `MemberTransportStack` selects an owned member/exit pair.
+
+AT31: `ForceMemberRelay(ctx, memberContainer, true/false)` provides a bounded member underlay UDP fault, connected-path read-back and restoration. Its nft match expires after 180 seconds even if a caller is interrupted. The direct/relay scenario and current limitations are recorded under follow-up 15. This is a path fixture, not a completed 60-peer relay capacity campaign.
+
+SECOPS-16 remains `NativeScale.Streams` from #204. SECOPS-17 remains the #240 fake-provider `past_due` snapshot with paid invoice preserved. SECOPS-20 (seen in the follow-up 9 request on origin/main) is already addressed by #240's node-entrypoint `ip nat` deletion, retained here under D-079. SECOPS-18/19/21 and D-077 are product/harness items; no lab workaround changes those contracts. Usage hold/release and parsed snapshot exports now support the ENR-05 availability-fault case separately from restore recovery.

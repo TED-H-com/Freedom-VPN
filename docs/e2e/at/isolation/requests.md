@@ -21,3 +21,11 @@ Run `fa0074cc-3b1a-403d-b8c2-3a3439fe2b7e`, source
 8. **Acceptance/operator: the continuous fault matrix stays open.** Crash, NetBird restart, reboot, updater transition, and physical member-platform/arm64 runs are still owner `acceptance / operator`.
 
 No `node/enforce` bypass request is filed. `#220` fail-closed on the ruleset it read. Deleting `table ip nat` or weakening `VerifyServing` is not an isolation-harness change.
+
+## Devstack follow-up 15 response (2026-10-31)
+
+Request 2: `ObserveDesignatedDNS` is exported through `labstack`. The prepared product configuration names the isolated origin-network resolver at port 53; its TCP/UDP forwarder reaches the node's filtering AdGuard. The member cannot use its Docker underlay for this destination. The scenario requires replies and both device DNS counters to move while Internet counters hold. This closes the lab's missing designated exit path, not the full AT12 case or native-client fallback.
+
+Request 3: `member-ipv6` records the native member's IPv6 configuration and remains blocked. A dual-stack native fixture, IPv6 underlay route/capture matrix and per-platform leak measurements have not been provisioned. An interface address alone is never a pass. IPv4-only mode's `ctv6` mechanism tests in netlab do not substitute for AT11's client-platform evidence. Owner remains devstack/platform operators.
+
+Request 1 remains agent-core's provisional-grant observation window. Request 4's continuous crash/restart/reboot/update/platform campaign remains acceptance/operator work; the new established transport helpers can measure active TCP and UDP during those faults. The control-loss scenario now uses those helpers. The node entrypoint retains deletion of Docker's `ip nat`; it does not claim D-079 classifier evidence, which belongs to netlab.

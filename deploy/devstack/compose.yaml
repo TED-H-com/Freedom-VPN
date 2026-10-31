@@ -162,6 +162,10 @@ services:
       - /secrets/origin.secret
       - -probe-udp-addr
       - :4443
+      - -member-tcp-addr
+      - :9446
+      - -member-udp-addr
+      - :9445
     ports:
       - "127.0.0.1:${FVPN_E2E_PORT_ORIGIN:-18445}:443"
     volumes:
@@ -177,6 +181,15 @@ services:
       interval: 5s
       timeout: 3s
       retries: 20
+    restart: "no"
+
+  origin-dns:
+    image: ${FVPN_E2E_IMAGE_ORIGIN:-fvpn-devstack-origin:local}
+    container_name: fvpn-${FVPN_E2E_PREFIX:-e2e}-origin-dns
+    command: ["-addr", ":53", "-dns-upstream", "${FVPN_E2E_ORIGIN_PREFIX:-192.0.3}.20:53"]
+    networks:
+      origin:
+        ipv4_address: ${FVPN_E2E_ORIGIN_PREFIX:-192.0.3}.53
     restart: "no"
 
   netbird:

@@ -68,6 +68,8 @@ func TestPrefixE2EDoesNotMatchE2EExports(t *testing.T) {
 		"fvpn-e2e-restore-verify",
 		"fvpn-e2e-postgres",
 		"fvpn-e2e-node-netns",
+		"fvpn-e2e-installer-node",
+		"fvpn-e2e-installer-node:24.04",
 	} {
 		if !owned("e2e", name) {
 			t.Errorf("prefix e2e rejected %s", name)

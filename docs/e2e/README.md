@@ -356,3 +356,17 @@ connection bucket. The agent mTLS listener remains direct, and nginx
 `worker_connections` is a separate resource limit. See the
 [gateway scenario](scenarios/gateway-principals.md) and
 [finite grace and telemetry hooks](RUN.md).
+
+## Follow-up 15 scenario additions
+
+| Scenario | Evidence required |
+|---|---|
+| [established-transports](scenarios/established-transports.md) | Persistent TCP + authenticated member UDP replies and per-device counters move, then stop on cleanup |
+| [forced-relay](scenarios/forced-relay.md) | Connected relay path and traffic, then direct restoration on the same sockets |
+| [exit-dns](scenarios/exit-dns.md) | TCP/UDP designated DNS traverses the exit and uses DNS-only counters |
+| [member-ipv6](scenarios/exit-dns.md) | Explicit blocked native/platform matrix; no address-only pass |
+| [harness exports](scenarios/harness-exports.md) | Usage hold/release and parsed snapshot, backlog/restart proof, real systemd installer wrappers |
+
+Follow-up 15 records go directly under the UTC day's `followup15/` directory.
+The earlier dated-root evidence is retained. Current hook contracts and open
+scope boundaries are in [RUN.md](RUN.md) and the dated harness request notes.

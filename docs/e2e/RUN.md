@@ -610,3 +610,97 @@ container logs and captures. Their final scan happens before deletion even when
 a join fails or the caller cancels; cleanup has a separate ten-second bound.
 Only counts/mode/result leave the scanner. Other stream inventories remain the
 security-ops harness's responsibility.
+
+## Follow-up 15 transport, usage and installer hooks
+
+Records are written directly to `docs/e2e/runs/<UTC day>/followup15/`;
+`TestE2E_HarnessExports` writes its independent fresh-stack run to `exports/`.
+Neither suite overwrites the dated historical root. Keep `FVPN_E2E_PREFIX=e2e`
+and `FVPN_E2E_PORT_BASE=18000` for this lane. `e2e-up` builds/tags only this
+prefix's images; upstream layers remain reusable Docker build cache.
+
+With `-tags e2e`, import `tests/e2e/internal/labstack`:
+
+```go
+stack, err := labstack.Open()
+// Use the default admitted member and primary node, or select an owned cohort:
+transport, err := stack.MemberTransportStack(memberContainer, "node2")
+session, err := transport.StartEstablishedTransports(ctx, deviceID)
+status, err := transport.EstablishedStatus(ctx)
+counters, err := transport.DeviceByteCounters(ctx, session.Device)
+err = transport.StopEstablishedTransports(ctx)
+```
+
+Check every returned error. One helper runs per member container. TCP/9446
+stays on its original connection; UDP/9445 uses an authenticated echo on its
+original socket. Each sender continues independently after a cutoff, so
+`Running` plus increasing `TCPAttempts` and `UDPAttempts` distinguishes a
+closed data path from an exited sender. Both reply counts must move before
+injecting a fault. `DeviceByteCounters` reads `u_<device>` and `d_<device>`
+from the selected exit; `Present=false` is not zero-byte evidence.
+`CountedMemberTraffic` is an alias of that read, not a traffic generator.
+The helper self-terminates after 20 minutes; explicitly stop it in cleanup.
+Stop waits for process exit and removes its PID, status and mode-0600 key.
+The origin removes a device's UDP registration when its TCP connection closes.
+Updater UDP/4443 and its exception counters remain separate.
+
+`ForceMemberRelay(ctx, memberContainer, true)` drops outer UDP on the owned
+member's `eth0`, with an nft set element that expires after 180 seconds.
+It waits at most 90 seconds for connected relay peers and zero connected
+direct peers. Call it with `false` in cleanup to delete the table and wait
+for direct-path restoration. The table is `inet e2e_relay` in the member;
+no rule in the exit's `inet fvpn` is modified. Read-back uses the pinned
+NetBird client's JSON status. The gateway must proxy `/relay` (including
+that exact path) with WebSocket upgrades; `/relay/` alone returns 404.
+The endpoint follows the [NetBird reverse-proxy contract](https://docs.netbird.io/selfhosted/external-reverse-proxy).
+
+`ObserveDesignatedDNS(ctx, deviceID, tcp)` sends one explicit query to the
+resolver read from the applied `resolver_v4` set. The resolver endpoint is
+on the isolated origin network, behind the exit, and forwards TCP/UDP 53
+to the primary node's product-managed AdGuard. The observation contains
+response metadata and per-device DNS/Internet counter deltas, never query
+names or packet contents. A pass needs replies and increases in `nu_` and
+`nd_` with unchanged `u_` and `d_`. This is not native-client automatic
+fallback: `DisableDNS` remains enabled. IPv6 native/platform evidence is
+still blocked and recorded explicitly by `member-ipv6`.
+
+`HoldUsageAcknowledgements(ctx, slot, true/false)` creates/removes a marker
+at the node's mTLS transport proxy. Slots are `node`, `node2`, `node-clone`.
+Only usage POSTs return retryable 503 without reaching control. Heartbeats,
+leases, sampling and local event production continue. This is a network-side
+availability fault; it does not simulate a response lost after control commits.
+It differs from control-side freeze/complete-recovery, which changes the ledger
+epoch. `UsageLedgerSnapshot(ctx, slot)` returns `UsageSnapshot` decoded from
+`fvpn-agent usage snapshot -config /etc/vpn-node/agent-run.json -json`.
+`UsageLedgerSnapshotBytes` returns exact stdout. Stop the agent briefly for
+byte-identical comparisons; while it runs, new events/ACKs may change the view.
+Sequences, epochs and byte totals retain the CLI's string/null types.
+The exports suite verifies held event production, repeated reads, restart hash
+and ACK preservation, and actual ACK catch-up after release.
+
+Installer hooks use **only** slot `installer-node`, not the regular lab node:
+
+1. `PrepareInstallerNode(ctx)` builds the dedicated Ubuntu 24.04 systemd image,
+   starts `fvpn-<prefix>-installer-node`, and stages two freshly signed real
+   binary archives. It uses the pinned real NetBird client and lab CA/control.
+2. Create an installer enrollment through the admin API, then
+   `StageInstallerToken(ctx, "installer-node", token)` writes it privately.
+3. `RerunInstaller(ctx, "installer-node")` executes the merged install CLI with
+   its manifest/artifact/trust/control/CA/trust-bundle/reserve/SNAT/management
+   arguments. It supplies `--token-file` only if `identity/node.json` is absent.
+4. `SelectInstallerRelease(ctx, "newer")` selects the second staged archive;
+   another `RerunInstaller` measures the identity/outbox and symlink changes.
+5. After API-authorized revocation and a fresh enrollment for the same Node,
+   `ControlledReinstall(ctx, "installer-node", token)` invokes `reenroll --json`.
+
+`InstallerOutcome` preserves the real exit and status, including `staged` with
+exit 1. Exit meanings are 0 success, 1 failure/rollback, 2 check drift, 3 busy,
+4 unsupported platform, 5 dependency/version, 64 usage. `ProbeInstallerExit`
+exposes other CLI invocations on that same owned container. `Before` and
+`Hashes` include key/cert/node.json, usage.db and optional WAL, machine-id,
+and the current symlink text; absent files are explicitly `absent` and do not
+prove retention. Agent/watchdog/updater services stop before hashing. The
+retired identity directory mode and new incarnation are returned separately.
+Product start/recovery failures remain failed evidence with their owner;
+these wrappers do not substitute fake enrollment or certify old-cert rejection.
+`e2e-down` removes the installer container/image and its private artifacts.
