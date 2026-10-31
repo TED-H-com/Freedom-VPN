@@ -1,0 +1,38 @@
+=== RUN   TestAT10_AT13_ReloadRevokeBaseline
+AT10 regen 1025 a1=2034 a2=0
+AT10 regen 1050 a1=3014 a2=0
+AT10 regen 1075 a1=4814 a2=0
+AT10 regen 1100 a1=6354 a2=0
+    scenario_at10_test.go:96: ISO-F6-03: 101 Apply/guard/verifier/precision producer snapshots match executor brackets
+    scenario_at10_test.go:96:
+        AT10 PASS under D-120
+        datagram | generation | bracket start ns | bracket end ns | upper ms | render-installed ms | classification | next datagram | failures
+        14 | 1023 | 1793475954905128053 | 1793475954935993380 | 30.865115 | 16.168293 | boundary | ok | none
+        33 | 1058 | 1793475960676027483 | 1793475960711393623 | 35.365315 | 19.390790 | boundary | ok | none
+
+AT10 after kill
+name                             ns       proto  dst                    port   expect   observed       ok
+a1-stays-revoked                 fv-a1    tcp    203.0.113.10           80     deny     timeout        true
+a2-stays-up                      fv-a2    tcp    203.0.113.10           80     allow    connected      true
+lan-stays-denied                 fv-a2    tcp    10.1.2.10              80     deny     timeout        true
+probes=3 failed=0
+AT10 baseline
+name                             ns       proto  dst                    port   expect   observed       ok
+baseline-a2                      fv-a2    tcp    203.0.113.10           80     deny     timeout        true
+baseline-a1                      fv-a1    tcp    203.0.113.10           80     deny     timeout        true
+probes=2 failed=0
+SUMMARY AT10 regens=100 revoke_stop=1.651s deny_loops=16 hits=0 baseline_forwarding=off
+--- PASS: TestAT10_AT13_ReloadRevokeBaseline (20.20s)
+=== RUN   TestD104_AT13_DeadlineContinuity
+    scenario_deadline_test.go:78: D104: granularity=1ms bound=100ms Apply->installed<=31.388658ms render->installed<=18.79879ms last_positive=-100.729554ms first_drop=-795µs positives=26 drops=7 precise_read=1.61059ms
+--- PASS: TestD104_AT13_DeadlineContinuity (3.77s)
+=== RUN   TestF21_AT02_RollbackSibling
+    scenario_f21_test.go:45: {"test_only": true, "deliberate_baseline_observation_hold_ms": 200, "ingresses": 397, "egresses": 224, "loss_count": 173, "losses_outside_completed_guards": 150, "windows": [{"failed_apply_index": 1, "baseline_command": {"kind": "baseline", "start": {"wall_ns": "1793475975962109660", "mono_ns": "59513478480633"}, "end": {"wall_ns": "1793475975973016404", "mono_ns": "59513489386988"}, "ok": true}, "recovery_release": {"kind": "guard_release", "start": {"wall_ns": "1793475976245067201", "mono_ns": "59513761438169"}, "end": {"wall_ns": "1793475976266924741", "mono_ns": "59513783295504"}, "ok": true}, "baseline_to_recovery_outer_ms": 304.815081, "definitely_closed_ms": 272.051181, "lost_ingresses": 56, "first_drop_wall_ns": "1793475975967432000", "last_drop_wall_ns": "1793475976242852000"}, {"failed_apply_index": 3, "baseline_command": {"kind": "baseline", "start": {"wall_ns": "1793475976565571487", "mono_ns": "59514081942424"}, "end": {"wall_ns": "1793475976579912737", "mono_ns": "59514096283481"}, "ok": true}, "recovery_release": {"kind": "guard_release", "start": {"wall_ns": "1793475976833134566", "mono_ns": "59514349505737"}, "end": {"wall_ns": "1793475976845966751", "mono_ns": "59514362337609"}, "ok": true}, "baseline_to_recovery_outer_ms": 280.395264, "definitely_closed_ms": 253.222256, "lost_ingresses": 54, "first_drop_wall_ns": "1793475976567575000", "last_drop_wall_ns": "1793475976832847000"}, {"failed_apply_index": 5, "baseline_command": {"kind": "baseline", "start": {"wall_ns": "1793475977147649621", "mono_ns": "59514664020522"}, "end": {"wall_ns": "1793475977164108886", "mono_ns": "59514680479154"}, "ok": true}, "recovery_release": {"kind": "guard_release", "start": {"wall_ns": "1793475977422080513", "mono_ns": "59514938451683"}, "end": {"wall_ns": "1793475977432946129", "mono_ns": "59514949316991"}, "ok": true}, "baseline_to_recovery_outer_ms": 285.296508, "definitely_closed_ms": 257.972529, "lost_ingresses": 55, "first_drop_wall_ns": "1793475977152716000", "last_drop_wall_ns": "1793475977422846000"}]}
+
+--- PASS: TestF21_AT02_RollbackSibling (2.71s)
+=== RUN   TestF21_AT09_IPv6Underlay
+    scenario_f21_test.go:59: {"attempts": 1, "rows": [{"role": "member", "read_bytes": 64387, "write_bytes": 64108, "complete_lines": 64, "partial_line_bytes": 0, "error": "none", "local_port": 33526, "elapsed_ms": 4.479, "validated_bytes": 64064, "attempt": 0, "member_underlay_mtu": 1500, "underlay_family": "ipv6", "overlay_family": "ipv4"}, {"role": "member", "read_bytes": 10063, "write_bytes": 64108, "complete_lines": 10, "partial_line_bytes": 0, "error": "TimeoutError", "local_port": 33530, "elapsed_ms": 12012.403, "validated_bytes": 10010, "attempt": 1, "member_underlay_mtu": 1280, "underlay_family": "ipv6", "overlay_family": "ipv4"}]}
+
+--- PASS: TestF21_AT09_IPv6Underlay (13.63s)
+PASS
+ok  	github.com/TED-H-com/Freedom-VPN/tests/netlab	40.317s
