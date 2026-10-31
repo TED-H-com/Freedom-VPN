@@ -183,17 +183,7 @@ func (s *liveSuite) evalAT16(t *testing.T) Record {
 
 	// 2. D-067 Cycle 2 (after an agent restart): measure provisional lease window (applying -> awaiting_member_grants -> ready -> populated lease)
 	s.d067Restart = s.measureD067ProvisionalWindow("agent_restart", "node", s.nodeID, s.incarnationID, s.agentClient, func() {
-		patchResp := s.nodeMutation(s.nodeID, http.MethodPatch, "", map[string]any{
-			"capacity": map[string]any{
-				"up_bps":              1000000000,
-				"down_bps":            1000000000,
-				"member_up_bps_cap":   30000000,
-				"member_down_bps_cap": 60000000,
-			},
-		})
-		if patchResp.status != http.StatusOK && patchResp.status != http.StatusAccepted {
-			t.Fatalf("AT16 D-067 Cycle 2 PATCH /api/v1/admin/nodes/%s failed: HTTP %d %s", s.nodeID, patchResp.status, string(patchResp.body))
-		}
+		_ = s.activateFairUseShadowRevision("TEST ONLY AT16 D-067 Cycle 2 shadow revision recompile")
 	}, false)
 	rec.Commands = append(rec.Commands, CommandRecord{
 		Command:  "D-067 Cycle 2 (agent_restart): restart fvpn-agent on node while provisioning_state=applying & measure provisional-lease recovery",

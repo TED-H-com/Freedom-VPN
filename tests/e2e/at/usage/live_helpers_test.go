@@ -1062,7 +1062,7 @@ func (s *liveSuite) measurePerIncarnationRetainedUsage() incarnationRetentionMea
 	}
 	_ = s.waitFor(10*time.Second, func() bool {
 		var pending int
-		_ = s.pool.QueryRow(s.ctx, `SELECT count(*) FROM outbox_events WHERE status = 'pending'`).Scan(&pending)
+		_ = s.pool.QueryRow(s.ctx, `SELECT count(*) FROM outbox_events WHERE delivered_at IS NULL AND dead_lettered_at IS NULL AND event_type NOT LIKE '%.reconcile' AND event_type <> 'devices.discover'`).Scan(&pending)
 		return pending == 0
 	})
 

@@ -486,6 +486,76 @@ func (s *liveSuite) createAndActivatePolicy(policyType string, code string, payl
 	return rev.DefinitionID, rev.RevisionID, createResp, actResp
 }
 
+func (s *liveSuite) activateFairUseShadowRevision(reason string) uuid.UUID {
+	effAt := time.Now().UTC().Add(-1 * time.Hour).Format(time.RFC3339)
+	shadowPayload := map[string]any{
+		"mode":             "shadow",
+		"effective_at":     effAt,
+		"effective_period": "immediate",
+		"accounting_basis": map[string]any{
+			"period_type":      "utc_calendar_month",
+			"metering_version": "forward_admission_v1",
+			"measure":          "total_bytes",
+		},
+		"minimum_rate": map[string]any{
+			"down_bps": 1000000,
+			"up_bps":   1000000,
+		},
+		"tiers": []map[string]any{
+			{
+				"threshold_bytes": "0",
+				"down_bps":        100000000,
+				"up_bps":          50000000,
+				"priority":        1,
+				"display_name":    map[string]any{"zh-TW": "TEST ONLY 標準速率", "en": "TEST ONLY Standard"},
+			},
+			{
+				"threshold_bytes": "2000",
+				"down_bps":        20000000,
+				"up_bps":          10000000,
+				"priority":        3,
+				"display_name":    map[string]any{"zh-TW": "TEST ONLY 降速一階", "en": "TEST ONLY Tier 1"},
+			},
+			{
+				"threshold_bytes": "6000",
+				"down_bps":        5000000,
+				"up_bps":          2000000,
+				"priority":        5,
+				"display_name":    map[string]any{"zh-TW": "TEST ONLY 降速二階", "en": "TEST ONLY Tier 2"},
+			},
+		},
+		"overrides": []map[string]any{},
+	}
+	createResp := s.apiCall(s.admin, http.MethodPost, "/api/v1/admin/policies", map[string]any{
+		"type":           "fair_use",
+		"schema_version": 1,
+		"definition_id":  s.fairUseShadowDefID.String(),
+		"reason":         reason,
+		"payload":        shadowPayload,
+	}, idemHeaders())
+	var rev struct {
+		RevisionID uuid.UUID `json:"revision_id"`
+	}
+	if createResp.status != http.StatusCreated || json.Unmarshal(createResp.body, &rev) != nil || rev.RevisionID == uuid.Nil {
+		s.t.Fatalf("activateFairUseShadowRevision create failed: HTTP %d %s", createResp.status, string(createResp.body))
+	}
+	var version string
+	if err := s.pool.QueryRow(s.ctx, `SELECT resource_version::text FROM policy_definitions WHERE id = $1`, s.fairUseShadowDefID).Scan(&version); err != nil {
+		s.t.Fatalf("activateFairUseShadowRevision query version: %v", err)
+	}
+	actHeaders := idemHeaders()
+	actHeaders["If-Match"] = `"` + version + `"`
+	actResp := s.apiCall(s.admin, http.MethodPost, "/api/v1/admin/policies/"+s.fairUseShadowDefID.String()+"/activate", map[string]any{
+		"revision_id": rev.RevisionID,
+		"reason":      reason,
+	}, actHeaders)
+	if actResp.status != http.StatusAccepted {
+		s.t.Fatalf("activateFairUseShadowRevision activate failed: HTTP %d %s", actResp.status, string(actResp.body))
+	}
+	s.fairUseShadowRevID = rev.RevisionID
+	return rev.RevisionID
+}
+
 func (s *liveSuite) nodeMutation(nodeID uuid.UUID, method, suffix string, body any) httpResponse {
 	basePath := "/api/v1/admin/nodes/" + nodeID.String()
 	var got httpResponse
@@ -534,7 +604,7 @@ func (s *liveSuite) ensureUnpublishedReadyBaseline(nodeService string, nodeID uu
 	_ = s.waitFor(20*time.Second, func() bool {
 		var pending int
 		var intent string
-		_ = s.pool.QueryRow(s.ctx, `SELECT count(*) FROM outbox_events WHERE status = 'pending'`).Scan(&pending)
+		_ = s.pool.QueryRow(s.ctx, `SELECT count(*) FROM outbox_events WHERE delivered_at IS NULL AND dead_lettered_at IS NULL AND event_type NOT LIKE '%.reconcile' AND event_type <> 'devices.discover'`).Scan(&pending)
 		_ = s.pool.QueryRow(s.ctx, `SELECT COALESCE(envelope->'signed'->>'publication_intent', '') FROM desired_state_envelopes WHERE node_id = $1 ORDER BY generation DESC LIMIT 1`, nodeID).Scan(&intent)
 		return pending == 0 && (intent == "unpublished" || intent == "disabled")
 	})
