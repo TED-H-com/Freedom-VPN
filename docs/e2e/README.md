@@ -428,7 +428,7 @@ a 3-to-2 downgrade, rejected expired input and restoration to three.
 ### Native underlay and protocol/platform inputs
 
 Call `PrepareNativeUnderlay(ctx)` on a fresh stack **before enrollment/apply**,
-then `InstallFixtureProbe(ctx)`. The former attaches a prefix-owned IPv6 bridge
+then `InstallFixtureProbe(ctx)` and `StartFixtureTargets(ctx)`. The former attaches a prefix-owned IPv6 bridge
 to the actual node and member, and creates private rebinding targets inside the
 node namespace. All host networking stays untouched. Adding interfaces to an
 already serving node is intentionally not a supported setup path because the
@@ -492,10 +492,15 @@ remain platform measurements.
 
 The controlled zone declares A, AAAA, CNAME, HTTPS/SVCB, label-boundary and absent
 name cases. The campaign activates block/allow rules through the product API and
-records expected versus actual RCODE/answer presence for TCP and UDP. Positive
+records expected versus actual RCODE/answer presence for TCP and UDP. For blocked
+direct CNAME/SVCB queries the pinned backend may return empty NODATA; A, AAAA,
+HTTPS and CNAME-chain A still require NXDOMAIN. No usable answer is accepted in
+either negative form. This does not imply all query types return the configured
+NXDOMAIN code. Positive
 controls prevent an absent authority record from passing a block assertion.
 `SetDNSFixturePhase("private")` changes only the owned authority: the cache record
-has TTL 10 seconds; the allowlisted rebinding A/AAAA have TTL 5 seconds. The
+has TTL 10 seconds; the allowlisted rebinding A/AAAA have TTL 5 seconds. Both the SOA RR TTL and its negative minimum are 5 seconds; a formerly absent
+record is added in the private phase to measure negative cache expiry. The
 positive cache must survive before expiry and change afterward. Private targets
 are behind the exit, outside the member's directly connected LAN. Listening
 positive controls plus failed member connections establish the selected mode's

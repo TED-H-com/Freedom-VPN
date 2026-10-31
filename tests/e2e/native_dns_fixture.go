@@ -50,6 +50,24 @@ func (s *Stack) InstallFixtureProbe(ctx context.Context) error {
 	return nil
 }
 
+// StartFixtureTargets starts only a private, content-free reachability listener
+// in the node namespace. It is independent of member-path success and removed
+// with the node container. Call after InstallFixtureProbe and before enrollment.
+func (s *Stack) StartFixtureTargets(ctx context.Context) error {
+	if err := exec.CommandContext(ctx, "docker", "exec", "-d", s.lab.node, fixtureProbe, "-mode", "listen", "-addr", ":9447").Run(); err != nil {
+		return fmt.Errorf("fixture target start: %w", err)
+	}
+	wait, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+	if !waitUntil(wait, 100*time.Millisecond, func() bool {
+		got, e := s.fixtureProbe(wait, s.lab.node, "-mode", "connect", "-addr", "127.0.0.1:9447")
+		return e == nil && got.Connected
+	}) {
+		return fmt.Errorf("fixture target listener unavailable")
+	}
+	return nil
+}
+
 // ProbeNativeDNS uses /etc/resolv.conf when resolver is empty, i.e. the native
 // client's local resolver. It exports metadata only, never query contents.
 func (s *Stack) ProbeNativeDNS(ctx context.Context, resolver, name string, rr uint16, tcp bool, expected string) (FixtureProbeResult, error) {
@@ -69,12 +87,14 @@ func (s *Stack) fixtureProbe(ctx context.Context, container string, args ...stri
 }
 
 type NativeDNSConfiguration struct {
-	Resolvers            []string  `json:"resolvers"`
-	NativeDNSEnabled     bool      `json:"native_dns_enabled"`
-	SystemUsesNativeStub bool      `json:"system_uses_native_stub"`
-	DocumentHashes       []string  `json:"document_hashes"`
-	SameAppliedDocument  bool      `json:"same_applied_document"`
-	ConfiguredAt         time.Time `json:"configured_at"`
+	ObservedNativeResolvers []string  `json:"observed_native_resolvers"`
+	NativeResolversMatch    bool      `json:"native_resolvers_match"`
+	Resolvers               []string  `json:"resolvers"`
+	NativeDNSEnabled        bool      `json:"native_dns_enabled"`
+	SystemUsesNativeStub    bool      `json:"system_uses_native_stub"`
+	DocumentHashes          []string  `json:"document_hashes"`
+	SameAppliedDocument     bool      `json:"same_applied_document"`
+	ConfiguredAt            time.Time `json:"configured_at"`
 }
 
 // ConfigureNativeDNS reads the product-issued resolver list and both nodes'
@@ -176,7 +196,30 @@ func (s *Stack) ConfigureNativeDNS(ctx context.Context, admin BrowserSession, de
 			}
 		}
 		out.SystemUsesNativeStub = out.SystemUsesNativeStub && nameservers == 1
-		return out.NativeDNSEnabled && out.SystemUsesNativeStub
+		raw, e = s.lab.docker(s.lab.member, "netbird", "status", "--json")
+		var status struct {
+			DNS []struct {
+				Servers []string `json:"servers"`
+				Enabled bool     `json:"enabled"`
+			} `json:"dnsServers"`
+		}
+		out.ObservedNativeResolvers = nil
+		if e == nil && json.Unmarshal(raw, &status) == nil {
+			for _, group := range status.DNS {
+				if group.Enabled {
+					out.ObservedNativeResolvers = append(out.ObservedNativeResolvers, group.Servers...)
+				}
+			}
+		}
+		out.NativeResolversMatch = len(out.ObservedNativeResolvers) == 2
+		for _, resolver := range out.Resolvers {
+			found := false
+			for _, got := range out.ObservedNativeResolvers {
+				found = found || got == resolver+":53"
+			}
+			out.NativeResolversMatch = out.NativeResolversMatch && found
+		}
+		return out.NativeDNSEnabled && out.SystemUsesNativeStub && out.NativeResolversMatch
 	}) {
 		return out, fmt.Errorf("native system resolver not installed")
 	}
