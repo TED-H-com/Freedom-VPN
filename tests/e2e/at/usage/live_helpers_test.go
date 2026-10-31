@@ -758,7 +758,13 @@ func (s *liveSuite) measureD067ProvisionalWindow(
 		_, _ = s.selectExitRoute("member-b", s.exitNetID, originIP)
 	}
 
-	tr := s.runCountedTransfer("member", nodeService, s.deviceA, 1)
+	// A serving heartbeat precedes asynchronous native route convergence. Keep
+	// the positive HTTP/origin/SNAT/counter assertion and wait for that evidence.
+	var tr transferResult
+	_ = s.waitFor(30*time.Second, func() bool {
+		tr = s.runCountedTransfer("member", nodeService, s.deviceA, 1)
+		return tr.Counted
+	})
 	var firstCountedByteAt time.Time
 	var readyToFirstByteMs int64
 	if tr.Counted {
