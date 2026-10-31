@@ -65,11 +65,11 @@ func testPendingHandoff(t *testing.T, c string, baseline *installer.BaselineResu
 	writeStdin(t, c, "/run/systemd/system/fvpn-updater.service.d/stage.conf", "[Service]\nExecCondition=/bin/false\n", "0644")
 	mustExec(t, c, "systemctl", "daemon-reload")
 	before := strings.TrimSpace(mustExec(t, c, "readlink", "/opt/vpn-node/current"))
-	stage := func() (installer.Result, string) {
+	stage := func(rel crel) (installer.Result, string) {
 		out, code := dexec(t, c, "/usr/local/bin/fvpn-node-install", "upgrade", "--json",
-			"--manifest", relIn("2", rel2.ReleaseID).Manifest,
-			"--artifact", relIn("2", rel2.ReleaseID).Artifact,
-			"--trust", relIn("2", rel2.ReleaseID).Trust)
+			"--manifest", rel.Manifest,
+			"--artifact", rel.Artifact,
+			"--trust", rel.Trust)
 		var res installer.Result
 		if err := decodeJSON(out, &res); err != nil || code != 0 || res.Status != "staged" {
 			t.Fatalf("upgrade %d %+v %v\n%s", code, res, err, out)
@@ -87,7 +87,7 @@ func testPendingHandoff(t *testing.T, c string, baseline *installer.BaselineResu
 		if id, err := uuid.Parse(record["request_id"]); err != nil || id == uuid.Nil || res.RequestID != record["request_id"] {
 			t.Fatalf("request id: %s", raw)
 		}
-		if res.ManifestPath != record["manifest_path"] || sha(t, c, res.ManifestPath) != sha(t, c, relIn("2", rel2.ReleaseID).Manifest) {
+		if res.ManifestPath != record["manifest_path"] || sha(t, c, res.ManifestPath) != sha(t, c, rel.Manifest) {
 			t.Fatal("retained envelope differs from verified input")
 		}
 		check := mustCheck(t, c, 0)
@@ -97,24 +97,25 @@ func testPendingHandoff(t *testing.T, c string, baseline *installer.BaselineResu
 		t.Logf("pending record: %s", raw)
 		return res, raw
 	}
-	status := func() map[string]any {
+	status := func(releaseID string) map[string]any {
 		raw := mustExec(t, c, updater, "status", "--config", config)
 		var view map[string]any
 		if err := json.Unmarshal([]byte(raw), &view); err != nil {
 			t.Fatal(err)
 		}
-		if view["source"] != "installer" || view["requested_release_id"] != rel2.ReleaseID || view["job_id"] == "" {
+		if view["source"] != "installer" || view["requested_release_id"] != releaseID || view["job_id"] == "" {
 			t.Fatalf("installer status: %s", raw)
 		}
 		t.Logf("updater status: %s", raw)
 		return view
 	}
-	first, raw := stage()
+	next := relIn("2", rel2.ReleaseID)
+	first, raw := stage(next)
 	if got := strings.TrimSpace(mustExec(t, c, "readlink", "/opt/vpn-node/current")); got != before {
 		t.Fatal("staging moved current")
 	}
 	applyOut, code := dexec(t, c, updater, "apply", "--config", config, "--pending", pendingPath)
-	view := status()
+	view := status(rel2.ReleaseID)
 	if baseline.Status != "seeded" {
 		t.Fatal("real seeded baseline required")
 	}
@@ -131,22 +132,27 @@ func testPendingHandoff(t *testing.T, c string, baseline *installer.BaselineResu
 	// Exact record replay remains the same terminal job.
 	writeStdin(t, c, pendingPath, raw, "0600")
 	mustExec(t, c, updater, "apply", "--config", config, "--pending", pendingPath)
-	if status()["job_id"] != firstJob {
+	if status(rel2.ReleaseID)["job_id"] != firstJob {
 		t.Fatal("identical replay became new work")
 	}
-	second, _ := stage()
+	second, _ := stage(next)
 	if second.RequestID == first.RequestID {
 		t.Fatal("second invocation reused request id")
 	}
-	_, _ = dexec(t, c, updater, "apply", "--config", config, "--pending", pendingPath)
-	if status()["job_id"] == firstJob {
-		t.Fatal("new request id did not create new work")
+	restageOut, restageCode := dexec(t, c, updater, "apply", "--config", config, "--pending", pendingPath)
+	if restageCode != 1 || !strings.Contains(restageOut, "VALIDATION_FAILED") {
+		t.Fatalf("changed record must be refused: %d %s", restageCode, restageOut)
 	}
+	if got := status(rel2.ReleaseID); got["job_id"] != firstJob || got["state"] != "succeeded" {
+		t.Fatal("new request id changed the terminal job")
+	}
+	t.Log("D-121: exact successful replay keeps job; changed request ID is refused without changing terminal success")
 	// Signature verification must fail before switching the current tree.
-	third, _ := stage()
+	// D-110/D-121: a distinct release/manifest gives tampering its own job.
+	third, _ := stage(relIn("3", rel3.ReleaseID))
 	current := strings.TrimSpace(mustExec(t, c, "readlink", "/opt/vpn-node/current"))
 	envelope := mustExec(t, c, "cat", third.ManifestPath)
-	tampered := strings.Replace(envelope, `"1.2.2"`, `"9.9.9"`, 1)
+	tampered := strings.Replace(envelope, `"1.2.3"`, `"9.9.9"`, 1)
 	if tampered == envelope {
 		t.Fatal("fixture product version not found")
 	}
@@ -155,7 +161,7 @@ func testPendingHandoff(t *testing.T, c string, baseline *installer.BaselineResu
 	if code != 1 || !strings.Contains(out, "HASH_MISMATCH") {
 		t.Fatalf("tampered envelope: %d\n%s", code, out)
 	}
-	if view := status(); view["state"] != "failed" || view["stage"] != "verify" {
+	if view := status(rel3.ReleaseID); view["state"] != "failed" || view["stage"] != "verify" {
 		t.Fatalf("tamper status: %+v", view)
 	}
 	if got := strings.TrimSpace(mustExec(t, c, "readlink", "/opt/vpn-node/current")); got != current {

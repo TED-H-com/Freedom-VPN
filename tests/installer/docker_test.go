@@ -36,6 +36,7 @@ var (
 	binDir  string
 	rel1    installer.ReleaseFixture
 	rel2    installer.ReleaseFixture
+	rel3    installer.ReleaseFixture
 )
 
 func TestMain(m *testing.M) { os.Exit(runSuite(m)) }
@@ -79,7 +80,12 @@ func runSuite(m *testing.M) int {
 		fmt.Fprintln(os.Stderr, err)
 		return 1
 	}
-	if err := trustBothReleases(); err != nil {
+	rel3, err = buildRel(binDir, "019a0000-0000-7000-8000-0000000000c3", "3")
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		return 1
+	}
+	if err := trustReleases(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return 1
 	}
@@ -130,14 +136,14 @@ func buildRel(dir, id, seq string) (installer.ReleaseFixture, error) {
 	return installer.BuildReleaseFixture(out, filepath.Join(rootDir, "deploy/node/systemd"), id, seq, bins)
 }
 
-// TEST ONLY: both independently generated signing keys are provisioned before
+// TEST ONLY: all independently generated signing keys are provisioned before
 // install. The production updater must not trust a key merely because an
 // upgrade command supplied it.
-func trustBothReleases() error {
+func trustReleases() error {
 	var combined struct {
 		Keys []json.RawMessage `json:"keys"`
 	}
-	for _, rel := range []installer.ReleaseFixture{rel1, rel2} {
+	for _, rel := range []installer.ReleaseFixture{rel1, rel2, rel3} {
 		raw, err := os.ReadFile(rel.Trust)
 		if err != nil {
 			return err
@@ -154,7 +160,7 @@ func trustBothReleases() error {
 	if err != nil {
 		return err
 	}
-	for _, rel := range []installer.ReleaseFixture{rel1, rel2} {
+	for _, rel := range []installer.ReleaseFixture{rel1, rel2, rel3} {
 		if err := os.WriteFile(rel.Trust, raw, 0o644); err != nil {
 			return err
 		}
@@ -287,12 +293,13 @@ func copyIn(t *testing.T, c, src, dest string) {
 
 func stage(t *testing.T, c string) {
 	t.Helper()
-	mustExec(t, c, "mkdir", "-p", "/usr/local/bin", "/var/tmp/w5/rel1", "/var/tmp/w5/rel2")
+	mustExec(t, c, "mkdir", "-p", "/usr/local/bin", "/var/tmp/w5/rel1", "/var/tmp/w5/rel2", "/var/tmp/w5/rel3")
 	copyIn(t, c, filepath.Join(binDir, "fvpn-node-install"), "/usr/local/bin/fvpn-node-install")
 	copyIn(t, c, filepath.Join(binDir, "fvpn-w5-control"), "/usr/local/bin/fvpn-w5-control")
 	mustExec(t, c, "chmod", "0755", "/usr/local/bin/fvpn-node-install", "/usr/local/bin/fvpn-w5-control")
 	copyIn(t, c, rel1.Dir+"/.", "/var/tmp/w5/rel1")
 	copyIn(t, c, rel2.Dir+"/.", "/var/tmp/w5/rel2")
+	copyIn(t, c, rel3.Dir+"/.", "/var/tmp/w5/rel3")
 }
 
 type crel struct{ Manifest, Artifact, Trust, ID string }

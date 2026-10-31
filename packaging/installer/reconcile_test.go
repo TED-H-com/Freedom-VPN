@@ -92,6 +92,16 @@ func TestD089_CheckAfterJournaledSwitch(t *testing.T) {
 	if hashFile(t, env.Layout.installedFile()) != installedHash {
 		t.Fatal("check rewrote install history")
 	}
+	// F9-05: install history still says sequence 1, but the active journaled
+	// release is sequence 2. A new signed sequence-1 release cannot be staged.
+	lower := mustRelease(t, root, uuid.NewString(), "1")
+	before := upgradeTrees(t, env.Layout)
+	if _, err := Upgrade(ctx, env, lower.Manifest, lower.Artifact, lower.Trust); err == nil || AsError(err).Code != "DOWNGRADE" {
+		t.Fatalf("post-switch downgrade: %v", err)
+	}
+	if upgradeTrees(t, env.Layout) != before {
+		t.Fatal("post-switch downgrade changed staging or releases")
+	}
 	// A stale current link remains drift even though installed.json matches it.
 	if err := fsutil.SwitchSymlink(env.Layout.CurrentLink, "releases/"+old.ReleaseID); err != nil {
 		t.Fatal(err)
