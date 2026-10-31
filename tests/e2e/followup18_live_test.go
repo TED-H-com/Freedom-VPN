@@ -386,7 +386,7 @@ func (r *runner) installerUsage18(ctx context.Context, s, selected *Stack) {
 		_, transportErr = selected.StartEstablishedTransports(ctx, r.usageDevice)
 	}
 	note("post_wrapper_transport_restored", boolText(restoreErr == nil && ready && transportErr == nil))
-	note("scope", "same-incarnation hold/release only; authorized old-incarnation backlog delivery remains unresolved")
+	note("scope", "same-incarnation hold/release only; retired-stream delivery is a separate usage AT assertion")
 	if produced && held.AckedThrough == initial.AckedThrough && counterErr == nil && before.Present && after.Present && after.Upload > before.Upload && after.Download > before.Download && wrapperErr == nil && again.Exit == 0 && again.Before == again.Hashes && e1 == nil && e2 == nil && bytes.Equal(first, second) && restoreErr == nil && caught && ready && transportErr == nil {
 		rec.Status = StatusPass
 	}
