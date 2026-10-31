@@ -27,6 +27,10 @@ def main():
     merged=subprocess.check_output(['git','show','2f1f939:docs/e2e/at/secops/history/follow-up-9/restore-reconcile.json'],cwd=ROOT)
     assert old.read_bytes()==merged,'D-098 follow-up 9 archive moved or changed'
     scope=json.loads((PUBLIC/'scope-review.json').read_text())
+    attempts=json.loads((PUBLIC/'followup12-attempts.json').read_text())
+    for attempt in attempts['attempts']:
+        for entry in attempt['files']:
+            assert hashlib.sha256((PUBLIC/entry['file']).read_bytes()).hexdigest()==entry['sha256'],entry['file']
     count=0
     for section,key in [('follow_up_12','records'),('follow_up_11','records'),('follow_up_10','records'),('handover_follow_up_6','reviewed_documents'),('follow_up_7','files'),('handover_follow_up_13','reviewed_documents')]:
         for entry in scope.get(section,{}).get(key,[]):

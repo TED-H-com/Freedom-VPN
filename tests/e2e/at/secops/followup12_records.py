@@ -48,7 +48,10 @@ def refresh_scope():
              'restore-reconcile.json','restore-reconcile.md','summary.md','README.md','RUN.md','requests.md',
              '2026-10-31-follow-up-12-handover.md','followup12-transports-live.json','followup12-transports-run.json',
              'followup12-restore-live.json','followup12-restore-run.json','followup12-verdict.json','validation.json',
-             'followup12-lab-preflight.json','history/index.json','history/README.md']
+             'followup12-lab-preflight.json','followup12-attempts.json',
+             'followup12-transports-attempt1-live.json','followup12-transports-attempt1-run.json',
+             'followup12-transports-attempt2-live.json','followup12-transports-attempt2-run.json',
+             'history/index.json','history/README.md']
     scope['follow_up_12'] = dict(reviewed_at=utc(), scope='Scoped established transports, bounded relay and restore regression; every changed live document pinned; archived snapshots immutable. scope-review.json excludes its own recursive hash.',
                                 records=[dict(path=str((PUBLIC/name).relative_to(ROOT)),sha256=digest(PUBLIC/name)) for name in names if (PUBLIC/name).exists()])
     write_json(path,scope)
@@ -136,6 +139,7 @@ def main():
             for window in ('relay_samples','direct_restored_samples'):
                 note+=f'| {k} / {window} | {attempts_and_replies(v,window)} |\n'
     note+='\nThe transport helper lifetime remains 20 minutes, relay match 180 seconds and each relay-path wait 90 seconds. Missing counters are not zero-byte proof. Per-sample counter presence and monotonic timing remain in the JSON evidence.\n'
+    note+='\n[Earlier transport attempts](followup12-attempts.json) remain separately preserved with hashes: attempt 1 omitted publication, and attempt 2 measured grant cutoff but hit the recovery timestamp precision check. Neither is silently replaced by the final run or reported as a complete transport pass.\n'
     probe=restore.get('first_http_probe_after_fresh_observation',{})
     note+=f'\nSECOPS-21: the separately labeled first HTTP **probe** returned generation `{probe.get("generation")}`; the first new stored compiler row was `{first.get("generation") if first else None}`; the retained node was `{retained}`. First-delivered agent response evidence is required for closure. The final local generation and central applied observations are recorded separately in [SECOPS-21.json](SECOPS-21.json).\n'
     note+='\n'+table

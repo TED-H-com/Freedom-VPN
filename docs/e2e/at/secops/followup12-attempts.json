@@ -16,6 +16,23 @@
           "sha256": "072f24242a51b459f0de5329b9b14a6ee3f270b332da673c8854c74dcc3dba0f"
         }
       ]
+    },
+    {
+      "phase": "transports",
+      "attempt": 2,
+      "status": "failed",
+      "finding": "Grant-expiry original-socket cutoff measured, but recovery grant projection timed out at 60 seconds; the helper compared an untruncated nanosecond deadline with the projected API time. The fatal helper prevented lease/revoke/relay cases. Raw row status passed covers cutoff, not completed recovery.",
+      "correction": "Truncate the recovery grant deadline to seconds like all initial grant deadlines, and isolate each case in a sequential Go subtest so failure cannot suppress later cases. Bounds unchanged.",
+      "files": [
+        {
+          "file": "followup12-transports-attempt2-live.json",
+          "sha256": "3d8b52d4ed99763738cdf0bdaefdfcec60f48b450a137c228f68c451f68b8cc3"
+        },
+        {
+          "file": "followup12-transports-attempt2-run.json",
+          "sha256": "7e06ae56ba0e33a1a2685f20200668691aa86a43e29a256f64f0d98bb7953323"
+        }
+      ]
     }
   ]
 }

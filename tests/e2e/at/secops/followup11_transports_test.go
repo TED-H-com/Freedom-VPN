@@ -87,9 +87,17 @@ func TestAT29_AT31_Followup11_Transports(t *testing.T) {
 	rows["manual_grant_withdrawal"] = map[string]any{"status": "blocked", "owner": "w3-wire-members / contracts", "missing_export": "The contract exposes finite createMemberGrant but no revokeMemberGrant HTTP operation; no source-row mutation or invented endpoint used. Finite grant expiration is measured separately."}
 	rows["guest_clock_rollback"] = map[string]any{"status": "blocked", "owner": "w3-devstack-e2e / operator", "missing_export": "Disposable guest with independently adjustable wall clock; containers share the development host clock."}
 	for _, kind := range []string{"grant_expiry", "lease_expiry", "device_revoke"} {
-		func() {
+		t.Run(kind, func(t *testing.T) {
+			parent := p.t
+			p.t = t
+			defer func() { p.t = parent }()
 			row := map[string]any{"status": "blocked", "owner": "w3-devstack-e2e", "transport_scope": "one original TCP/9446 connection and authenticated UDP/9445 socket; independent senders; helper limit 20 minutes"}
 			rows[kind] = row
+			defer func() {
+				if t.Failed() {
+					row["status"] = "failed"
+				}
+			}()
 			subject := "secops-deadline-grant"
 			if kind == "lease_expiry" {
 				subject = "secops-deadline-lease"
@@ -250,7 +258,7 @@ func TestAT29_AT31_Followup11_Transports(t *testing.T) {
 			}
 			if kind == "grant_expiry" {
 				admin = p.login("e2e-admin", "admin")
-				p.grantAt(admin, m, time.Now().UTC().Add(20*time.Minute), "followup11-recovery")
+				p.grantAt(admin, m, time.Now().UTC().Add(20*time.Minute).Truncate(time.Second), "followup11-recovery")
 			}
 			if kind != "device_revoke" {
 				row["recovery_flow"] = p.transportFlow11(peer, 120*time.Second)
@@ -261,7 +269,7 @@ func TestAT29_AT31_Followup11_Transports(t *testing.T) {
 				}
 			}
 			t.Logf("AT29 %s: %s", kind, row["status"])
-		}()
+		})
 	}
 }
 
