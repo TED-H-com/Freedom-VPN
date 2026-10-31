@@ -59,14 +59,15 @@ Historical status at main `c6e3eca`, superseded where stated by follow-up 15 bel
 
 The [follow-up 19 register](../../tests/handover/testdata/history/follow-up-20/register19.md) is frozen at #337.
 
-## Follow-up 20 decisions register (2026-10-31 EDT)
+## Follow-up 21 decisions register (2026-10-31 EDT)
 
-Verified against main `96ec0630` through #344. The [operator evidence](follow-up-20.md)
-and [acceptance snapshot](../ops/README.md#follow-up-20-acceptance-snapshot-2026-10-31-edt)
-pin all seven deliveries #338–#344. The [follow-up 19 register](../../tests/handover/testdata/history/follow-up-20/register19.md)
-retains its #337 cutoff, as [follow-up 18](follow-up-18.md) retains its own.
-`TestHandover_Followup20Claims` checks current dispositions separately.
-D-121, D-122, D-124 and D-133 remain process / test-acceptance decisions.
+Verified against main `6d1e320d` through #351. The [operator evidence](follow-up-21.md)
+and [acceptance snapshot](../ops/README.md#follow-up-21-acceptance-snapshot-2026-10-31-edt)
+pin all seven deliveries #345–#351. The [follow-up 20 register](../../tests/handover/testdata/history/follow-up-21/register20.md)
+retains its #344 cutoff; the earlier reports and source inventories stay frozen.
+`TestHandover_Followup21Claims` checks current dispositions separately.
+**No new decision: D-133 remains the latest.** D-121, D-122, D-124 and D-133
+remain process / test-acceptance decisions. No decision row changes this cut.
 
 | Decision | Operator meaning and delivery boundary |
 |---|---|
@@ -123,36 +124,43 @@ retired, D093-12 stays open because the harness still writes
 selector compiled only into a dev-tag worker. Design advice, not implemented;
 the SQL shortcut stays labelled.
 
-## Findings register at the follow-up 20 cutoff
+## Findings register at the follow-up 21 cutoff
 
-| Finding | Status at #344 | Evidence / next owner |
+| Finding | Status at #351 | Evidence / next owner |
 |---|---|---|
 | ENR-07 | CLOSED | D-130 #330/#331 plus enrollment #333: AT06 662/0/0, AT07 48/0/0, fresh gap ACK 1 then sequence 2 ACK 2, 908 bytes; planBaseline attribution corrected. |
-| Members F9-01 | CLOSED | #325 / #328 under D-126 / D-128; deliberate cumulative report accepted. Full AT09 stays blocked. |
-| Members F10-04 | CLOSED under D-129 | #328 desired/applied 29 → 29 qualifies; 30 is not a contract value. Members 11 complete AT09 row pending. |
+| Members F9-01 | CLOSED | #325 / #328 under D-126 / D-128; deliberate cumulative report accepted. Full AT09 fails in #348; provisional acceptance is a separate row. |
+| Members F10-04 | CLOSED under D-129 | #348 records the generation-29 qualification from #328; 30 is not a contract value. Fresh generation-30 recovery passes, but full AT09 fails on F8-02. |
 | Devstack 18 serving-node failure / candidate seed HASH_MISMATCH | CLOSED by combined-source rerun | #326 privileged 13/13; #332 serving 14/0/0 with candidate seed exit 0 and no tree repair. Historical extractor diagnosis retained; no open pre-#307 binary caveat. |
 | Members F10-01 pin path | CLOSED | Netlab #336 moves the AT09 link/pin and three isolation pins to byte-identical archives, digests unchanged. |
-| ISO-F6-03 | OPEN — real product defect | Historical writer still unattributed. #344 places all 955–961 operations inside process run 0b191fdd; Boot was not the initial writer and watchdog decision evidence was never retained. Isolation 10 re-measures on the new baseline/heartbeat and watchdog evidence contract; restart adoption does not close #334. |
+| ISO-F6-03 | OPEN — real product defect | #350 fresh D-104 passes, but historical 96 / 65 / 41 stays failed and its writer unattributed. #344 restart proofs do not identify that writer retrospectively. |
 | D-087 central seam | CLOSED | #343 TEST ONLY composed seam, two fixed-generation runs 7/0/0, 3,980 / 4,112 ms. |
-| D-087 assembled AT10 | OPEN | Isolation 10 pending at #344; the central prerequisite pass does not promote assembled AT10. |
-| Updates F10-01 shared side | CLOSED | #343 regular release-root artifacts + state/meter.checkpoint, switching 11/0/0. Updates 11 regular AT23–AT27 measurement and consumer assertions pending. |
-| Updates F10-02 | CLOSED | #341 validated generated reporting origin, server CA, mTLS identity and exact-origin allowlist; privileged 13/13. Distinct artifact-origin question remains an owner decision for updates 11, not a defect. |
-| Members F10-02 | OPEN | #343 247 every-read-success counter samples with same-boot brackets; historical unreadable sample not reproduced. Members 11 re-measurement pending. |
-| Members F10-03 | OPEN | #343 36 complete per-query traces; historical responder unrecoverable. Members 11 / dns-publish 9 re-measurement pending. |
-| F8-02 / native MTU 1280 | OPEN — unattributed | #343 instrumented failure 10,010 / 64,064 bytes, broader 15/0/1; no global MTU fix. Netlab 21; D-123 retains IPv6Block and native underlay failures. |
-| F18-01 | OPEN — classification confirmation | Devstack 21 confirms stopped-producer 1 / 1 / 2 as the intended D-125 negative; historical 13/0/1 remains failed. |
-| D-133 measured limits | OPEN — not defects of record | Two pre-D expiry drops (first ingress about D−63.3 ms; unchanged D-104 passes) and historical outer ceiling 52.596 ms (B1 57.92 ms). Netlab 21 enforcement-owner assessment with both distributions; no tolerance requested. |
-| Dependabot #22 | OPEN — dependency hygiene | Medium minimatch < 11.0.1, GHSA-g3hv-75wg-m249, apps/portal/package-lock.json. Portal owns reachability assessment; not a product defect until reported. [Frozen alert](../../tests/handover/testdata/history/follow-up-20/dependabot-22.json). |
+| D-087 assembled AT10 | CLOSED | #350 real transition, AT10 PASS 9 / 0 / 0; 962.448 ms, generation 13 and 297 wire hashes byte-identical. |
+| Updates F10-01 | CLOSED | #343 aligned shared fixture plus #346 regular AT23–AT27 5 / 5 measurement, including physical AT26 rollback witnessed by AT27. |
+| Updates F10-02 | CLOSED | #341 generated reporting, #346 no-adapter installer 27 / 27 and 13 result POSTs; #351 config-shape proof. No reporting-field divergence. |
+| Members F10-02 | HISTORICAL FAIL — unattributed | #348 new finite-expiry row passes 186 / 186; the unreadable historical sample stays failed in the follow-up 10 archive. Re-measurement delivered; no retrospective fix. |
+| Members F10-03 | HISTORICAL FAIL — unattributed | #348 new cache row passes, AT20 blocked 81 / 0 / 0 with 39 / 39 traces; #345 documents positive-cache semantics. Historical missing responder remains unrecoverable. |
+| F8-02 / native MTU 1280 | OPEN — unattributed | #348 recurring dual / 1280 failure: 13,013 / 64,064 bytes in 12,010 ms over direct P2P IPv6 underlay, distinct from #343 IPv4 capture. Both underlays → netlab 21; no global MTU fix or IPv6 service claim. |
+| F18-01 | OPEN — classification confirmation | #346 / #351 retain the intended D-125 stopped-producer 1 / 1 / 2 negative; devstack 21 confirmation remains pending. Historical failure stays failed. |
+| D-133 measured limits | OPEN — not defects of record | Literal zero pre-D loss and historical 52.596 ms outer ceiling remain unmet. #350 adds the independent 968-guard sample (outer max 52.93 ms) and one counted pre-D ingress loss. Netlab 21 assessment; no tolerance requested. Earlier failed Apply 712 (215.891 ms) → agent-core 29 under D-133. |
+| Dependabot #22 | OPEN — dependency hygiene | #349: minimatch < 11.0.1 / GHSA-g3hv-75wg-m249, development only, no production-bundle path. Audit fix changes nothing; 11.0.3 blanket override breaks jsx-a11y after clean npm ci. Dependency files byte-identical; owner disposition pending, not a product defect. |
+| Artifact-origin question | CLOSED by measurement | #346 no rejection; private / CGNAT exceptions only, measured non-private origin needs no exception. No policy or hosting change. |
+| Updates F11-02 | CLOSED | #351 corrects offline-install documentation: retained verified archive on initial / same-release installs; only absence downloads the signed URL. |
+| Updates F11-01 | OPEN — shared wrapper | #346 shared wrapper exits 64 without TEST ONLY --allow-loopback; explicit opt-in request → devstack 21. Separate from members F11-01. |
+| F9-INFLIGHT | OPEN — inherent backend finding, documented | #345 late upstream reply before the 10 s timeout replaces newer cache data. No exposed setting fixes insertion ordering; TTL is a maximum lifetime. |
+| Members F11-01 | OPEN — transport gap | #348 AT01 selected route carries five member packets, no node / origin receipt → devstack 21. |
+| Members F11-02 | OPEN — readiness gate | #348 D-077 positive probe starts at generation 10 with zero member grants / AWAITING → members harness readiness. |
+| Members F11-03 | OPEN — cause unattributed | #348 admitted sibling hits baseline during generation-13 failed Applies with HEALTH_CHECK_FAILED → agent-core 29 / devstack 21 / netlab 21. |
 
-AT11 real platform routes, AT13 full continuous fault matrix including physical
-arm64, AT29 / AT31 resources, OS reboot, power-loss and real platform clients
-remain open. The agent-core README restart request is closed by #344; agent-core 28 is on main. Updates 11, isolation 10, members 11 and dns-publish 9 have no results at this cutoff. Exact producer timing is delivered; the three new renewal losses
-remain counted without D-120, and the 17 historical losses remain unclassified.
-See [the full current evidence](follow-up-20.md). No earlier AT23–AT27 pass is
-carried forward.
+AT11 real platform routes, AT13 full fault matrix including physical arm64,
+AT29 / AT31 resources, OS reboot, power loss, real platform clients and
+QUIC / PMTU tooling remain open. Production blocked_response_ttl and commercial
+feed approval remain the owner's decisions. The two D-133 limits remain for
+netlab 21; no later lane's results enter this #351 cut. See
+[the full current evidence](follow-up-21.md).
 
 [r17](../reviews/r17-rev14-d104-d117-review.md) and
 [r16](../reviews/r16-rev13-d089-d099-review.md) remain byte-identical archives.
 [r17 M-1](../reviews/README.md#r17-disposition-at-the-follow-up-18-cutoff) is
-fixed by #322 under D-127; #337 supplies the scoped live extension and labeled
-HTTP correction, while regular physical rollback remains pending with updates 11.
+fixed by #322 under D-127; #337 supplies its scoped HTTP correction. #346 now
+supplies regular AT26 physical rollback with AT27's same-run witness.
