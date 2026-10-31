@@ -609,7 +609,7 @@
         "id": "DOC16",
         "owner": "w4-handover",
         "status": "resolved in w4-handover follow-up 8",
-        "resolved_in": "docs/handover/member-guide.md (Part I zh-TW §3.2 and Part II en §3.2); tests/handover/handover_test.go",
+        "resolved_in": "docs/handover/member-guide.md (Part I zh-TW \u00a73.2 and Part II en \u00a73.2); tests/handover/handover_test.go",
         "file": "docs/handover/member-guide.md",
         "section": "Measurement status, both languages",
         "reason": "#180/#188 cites mutable secops counted-flow/deadlines/capacity paths as Follow-up 5 evidence with fixed two-device numbers; those root records change each run. Pin the cited #165 values to history/follow-up-5/ (or the exact commit). Keep guest wall-clock rollback distinct from component clock tests."
@@ -636,6 +636,81 @@
         "section": "SyncDevice (lines 72-93) / members.reconcile",
         "reason": "After restoring central DB to T0, a device revoked in T0..T1 (peerM2D2) has member_devices.status='authorized' in T0 DB while NetBird N1 has withdrawn it from fvpn-paid-<group_id>. SyncDevice treats T0 status='authorized' as authoritative and calls SetAuthorization(peer, true), silently re-authorizing the revoked peer in NetBird and resuming counted member traffic."
       }
+    ]
+  },
+  "follow_up_9": {
+    "reviewed_at": "2026-10-31T01:46:57Z",
+    "application_base": "205633f",
+    "source_revision": "205633f0de8b3befbd563a092b856c0bc089e9c9",
+    "scope": "AT30 second half re-measured on #231 with D-076 restore authorization fence (#227), SECOPS-19 live UsageOutboxStatus in observations (#226), and read-only fvpn-agent usage snapshot (#225); AT30 passed. Scope review pins refreshed for own records only.",
+    "evidence": [
+      "restore-reconcile.json",
+      "restore-reconcile.md",
+      "AT30.json",
+      "AT30.md"
+    ],
+    "records": [
+      {
+        "path": "docs/e2e/at/secops/restore-reconcile.json",
+        "sha256": "7117abfb8f1625f610760495997fd425e3f9fd8e36d55efdc3d9efc012e9b662"
+      },
+      {
+        "path": "docs/e2e/at/secops/restore-reconcile.md",
+        "sha256": "9f410d8b3bc03dce836dc30cfaf1def53a371e2c25a748ed4fefaa391c20c427"
+      },
+      {
+        "path": "docs/e2e/at/secops/AT30.json",
+        "sha256": "9af4ca9da32cc616c23b0d843e7d72ecaf62027f611844f3f730b6b612821dd0"
+      },
+      {
+        "path": "docs/e2e/at/secops/AT30.md",
+        "sha256": "4b39bfcded5035a6a6c35c05d0dff0d21b59ecf7f17b5c94a13164fdb16fadbd"
+      },
+      {
+        "path": "docs/e2e/at/secops/followup9-live.json",
+        "sha256": "dcf634111def2bbc35f287e786c1bca312277debe3b84769fd13b9448cec6271"
+      },
+      {
+        "path": "docs/e2e/at/secops/followup9-run.json",
+        "sha256": "2ed5272633b342cddaeef691615b5b18072d12db7e662b0a08f446f0dc4fd06d"
+      },
+      {
+        "path": "docs/e2e/at/secops/followup9-verdict.json",
+        "sha256": "0b0b50c47c7f57c7f3b273514357e338954ed6354eda982ec6003b3406b8e37e"
+      },
+      {
+        "path": "docs/e2e/at/secops/live.json",
+        "sha256": "5bff2e9a3cf30bafe91b3efc0fcd43e422ae81c11a4b032bb78335f84dae4acb"
+      },
+      {
+        "path": "docs/e2e/at/secops/cleanup.json",
+        "sha256": "8b0ac3a1c20560a3ed4caefa875a06fd5a7caa69b7ecf52b48e529cfe327a960"
+      },
+      {
+        "path": "docs/e2e/at/secops/dependencies.json",
+        "sha256": "a4dfd4d73efbfc39f18290b6e30c71da30839ad2ec3439b45178a41a0d287f72"
+      },
+      {
+        "path": "docs/e2e/at/secops/requests.md",
+        "sha256": "aec880fd5764ce1353835b9230790c94dcfc66b5258f5b23efb991292ec8de3d"
+      },
+      {
+        "path": "docs/e2e/at/secops/summary.md",
+        "sha256": "6d4ea038205d63279e206d90d2df362896f38c2fff23fa52eea1fb333e2a04b5"
+      },
+      {
+        "path": "docs/e2e/at/secops/RUN.md",
+        "sha256": "80a76c1aabf35a9eb6029b080c51cb9230929333ede5665d6ea56f54ef8d845c"
+      }
+    ],
+    "closed_requests": [
+      "SECOPS-05",
+      "SECOPS-18",
+      "SECOPS-19"
+    ],
+    "new_requests": [
+      "SECOPS-20",
+      "SECOPS-21"
     ]
   }
 }
