@@ -1,0 +1,35 @@
+{
+  "run_id": "71f2aa37-b0b9-4568-abe0-2ba7665377e4",
+  "source_commit": "bc93ce430ebe8a50e5dfdaf4121352047fe89249",
+  "at": "2026-10-30T20:59:15Z",
+  "prefix": "w4-updates",
+  "port_base": 42000,
+  "harness_source": {
+    "differs_from_source_commit": false,
+    "files_sha256": {
+      "authority_test.go": "468d7d3c1dbfbdb40a3c781650cd8993fc55e93b9e6d28930c3d52189715de21",
+      "doc.go": "a43799934c9463e13de1e43c2e0f4373410be7c31421ceee8a3eb963717f6382",
+      "evidence.go": "5f77f6740ded1f0561fd8e7496b04ca3b240f501b7146cc684aaa6d033588e85",
+      "evidence_test.go": "eaa999300a284ba220deacae957eaab01f73fda21aab0d07481ccb958bd469cd",
+      "lab_test.go": "30fc113965a1b10d59fc5918fa340971c0f7f52f8c40db0e94780b9eff39e58b",
+      "live_test.go": "d132ac2e23f74c9f34c46280c46778737f2650e1343e57fd7d792b15e9a9aea0",
+      "preresult_test.go": "530332759bdecdde7924f3d5cf95def55682a11b13293410cd59e62a22f6bfdf",
+      "probe_test.go": "b214d46d2f8582457830cb485904ee85df176d53734b32731351f39c20b50d01",
+      "restated_test.go": "d35f27ea2c26e1d4e5e86ac6e9c7110678e5a7cc65373d08608e31331bd65aa8"
+    }
+  },
+  "main_commit": {
+    "commit": "52dc77026cb168df5684ae2ccd5cbcadb4dbaeff",
+    "committed_at": "2026-10-30T16:22:11-04:00",
+    "subject": "roadmap: w3-devstack-e2e follow-up 12 merged (#204)"
+  },
+  "roadmap_lines": [
+    "52dc770 roadmap: w3-devstack-e2e follow-up 12 merged (#204)",
+    "0559f7e e2e: harness exports — updater probe peer (F5-02), own-key enrollment join and peer inventory (ENR-04), cloned-identity fixture (ENR-07 setup), per-stream secret-scan results (SECOPS-16); three live defects fixed (follow-up 12) (#204)",
+    "357ddbc roadmap: w4-handover follow-up 7 merged (#190)",
+    "c5f3c65 fleetupdate: D-068 pre-result seeding fills only a null current_release_id and heartbeats attach to the current job only; unexpected-release audits bounded to 16 per job (follow-up 9) (#189)",
+    "cc04f32 at-updates: AT24/AT26/AT27 pass on fresh w4-updates stack — accepted-result authority (F6-02 resolved), offline catch-up + post-batch inheritance, stale-ACK 202 replay; AT23/AT25 retained for F5-02 (follow-up 7) (#186)",
+    "7ac4c14 roadmap: w3-devstack-e2e follow-up 11 merged (#170)",
+    "c8d4a00 roadmap: w2-fleet-update follow-up 8 merged (#167)"
+  ]
+}

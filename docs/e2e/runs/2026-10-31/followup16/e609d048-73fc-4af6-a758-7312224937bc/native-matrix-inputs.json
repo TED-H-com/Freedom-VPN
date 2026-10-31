@@ -1,0 +1,103 @@
+{
+  "id": "native-matrix-inputs",
+  "title": "Declared protocol, MTU and real-platform inputs",
+  "spec": [
+    "§8.3",
+    "AT09",
+    "AT11"
+  ],
+  "status": "fail",
+  "observations": [
+    {
+      "name": "linux_tcp",
+      "detail": "{\"input\":{\"underlay\":\"dual\",\"mtu\":1280,\"protocol\":\"tcp\",\"platform\":\"linux\"},\"available\":true,\"reason\":\"\"}"
+    },
+    {
+      "name": "linux_udp",
+      "detail": "{\"input\":{\"underlay\":\"dual\",\"mtu\":1280,\"protocol\":\"udp\",\"platform\":\"linux\"},\"available\":true,\"reason\":\"\"}"
+    },
+    {
+      "name": "linux_quic",
+      "detail": "{\"input\":{\"underlay\":\"dual\",\"mtu\":1280,\"protocol\":\"quic\",\"platform\":\"linux\"},\"available\":false,\"reason\":\"requires a pinned QUIC client/server at the controlled origin; UDP echo is not QUIC\"}"
+    },
+    {
+      "name": "android_tcp",
+      "detail": "{\"input\":{\"underlay\":\"dual\",\"mtu\":1280,\"protocol\":\"tcp\",\"platform\":\"android\"},\"available\":false,\"reason\":\"requires the named real platform and operator client; no emulation by the Linux container\"}"
+    },
+    {
+      "name": "android_udp",
+      "detail": "{\"input\":{\"underlay\":\"dual\",\"mtu\":1280,\"protocol\":\"udp\",\"platform\":\"android\"},\"available\":false,\"reason\":\"requires the named real platform and operator client; no emulation by the Linux container\"}"
+    },
+    {
+      "name": "android_quic",
+      "detail": "{\"input\":{\"underlay\":\"dual\",\"mtu\":1280,\"protocol\":\"quic\",\"platform\":\"android\"},\"available\":false,\"reason\":\"requires the named real platform and operator client; no emulation by the Linux container\"}"
+    },
+    {
+      "name": "ios_tcp",
+      "detail": "{\"input\":{\"underlay\":\"dual\",\"mtu\":1280,\"protocol\":\"tcp\",\"platform\":\"ios\"},\"available\":false,\"reason\":\"requires the named real platform and operator client; no emulation by the Linux container\"}"
+    },
+    {
+      "name": "ios_udp",
+      "detail": "{\"input\":{\"underlay\":\"dual\",\"mtu\":1280,\"protocol\":\"udp\",\"platform\":\"ios\"},\"available\":false,\"reason\":\"requires the named real platform and operator client; no emulation by the Linux container\"}"
+    },
+    {
+      "name": "ios_quic",
+      "detail": "{\"input\":{\"underlay\":\"dual\",\"mtu\":1280,\"protocol\":\"quic\",\"platform\":\"ios\"},\"available\":false,\"reason\":\"requires the named real platform and operator client; no emulation by the Linux container\"}"
+    },
+    {
+      "name": "windows_tcp",
+      "detail": "{\"input\":{\"underlay\":\"dual\",\"mtu\":1280,\"protocol\":\"tcp\",\"platform\":\"windows\"},\"available\":false,\"reason\":\"requires the named real platform and operator client; no emulation by the Linux container\"}"
+    },
+    {
+      "name": "windows_udp",
+      "detail": "{\"input\":{\"underlay\":\"dual\",\"mtu\":1280,\"protocol\":\"udp\",\"platform\":\"windows\"},\"available\":false,\"reason\":\"requires the named real platform and operator client; no emulation by the Linux container\"}"
+    },
+    {
+      "name": "windows_quic",
+      "detail": "{\"input\":{\"underlay\":\"dual\",\"mtu\":1280,\"protocol\":\"quic\",\"platform\":\"windows\"},\"available\":false,\"reason\":\"requires the named real platform and operator client; no emulation by the Linux container\"}"
+    },
+    {
+      "name": "macos_tcp",
+      "detail": "{\"input\":{\"underlay\":\"dual\",\"mtu\":1280,\"protocol\":\"tcp\",\"platform\":\"macos\"},\"available\":false,\"reason\":\"requires the named real platform and operator client; no emulation by the Linux container\"}"
+    },
+    {
+      "name": "macos_udp",
+      "detail": "{\"input\":{\"underlay\":\"dual\",\"mtu\":1280,\"protocol\":\"udp\",\"platform\":\"macos\"},\"available\":false,\"reason\":\"requires the named real platform and operator client; no emulation by the Linux container\"}"
+    },
+    {
+      "name": "macos_quic",
+      "detail": "{\"input\":{\"underlay\":\"dual\",\"mtu\":1280,\"protocol\":\"quic\",\"platform\":\"macos\"},\"available\":false,\"reason\":\"requires the named real platform and operator client; no emulation by the Linux container\"}"
+    },
+    {
+      "name": "mtu_1500_bulk",
+      "detail": "{\"available\":true,\"rcode\":-1,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":true,\"bytes\":64064,\"milliseconds\":2}"
+    },
+    {
+      "name": "mtu_1500_counters_before",
+      "detail": "{\"upload_bytes\":\"201637\",\"download_bytes\":\"200735\",\"Present\":true}"
+    },
+    {
+      "name": "mtu_1500_counters_after",
+      "detail": "{\"upload_bytes\":\"268561\",\"download_bytes\":\"266950\",\"Present\":true}"
+    },
+    {
+      "name": "mtu_1280_bulk",
+      "detail": "{\"available\":false,\"rcode\":-1,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":true,\"bytes\":10010,\"milliseconds\":12005}"
+    },
+    {
+      "name": "mtu_1280_counters_before",
+      "detail": "{\"upload_bytes\":\"268561\",\"download_bytes\":\"266950\",\"Present\":true}"
+    },
+    {
+      "name": "mtu_1280_counters_after",
+      "detail": "{\"upload_bytes\":\"334333\",\"download_bytes\":\"317209\",\"Present\":true}"
+    },
+    {
+      "name": "scope",
+      "detail": "selector contract plus bounded TCP transfer at two MTUs; QUIC and non-Linux platforms are explicitly unavailable, not acceptance passes; ICMP black-hole and physical second NAT remain operator inputs"
+    }
+  ],
+  "at": "2026-10-31T06:24:06Z",
+  "run_id": "e609d048-73fc-4af6-a758-7312224937bc",
+  "source_commit": "f771bdb79c0d42b7a3d47090fb52b0d79489d82b"
+}

@@ -1,0 +1,76 @@
+{
+  "batch_id": "01a18e96-24b6-797f-b18b-95bb4d295b7e",
+  "counts": {
+    "already_current": 0,
+    "applying": 0,
+    "cancelled": 0,
+    "checking": 0,
+    "downloading": 0,
+    "failed": 0,
+    "queued": 0,
+    "rolled_back": 1,
+    "succeeded": 0,
+    "superseded": 0,
+    "verifying": 0,
+    "waiting_online": 0
+  },
+  "created_at": "2026-10-30T20:52:46.901588Z",
+  "created_by": "01a18e93-f660-7bbb-81b5-9268b54fb412",
+  "next_cursor": null,
+  "operation_id": "01a18e96-24b6-7c71-adde-77f680e3fc5b",
+  "reason": "TEST ONLY updates follow-up 8",
+  "release_id": "01a18e93-fe44-711f-a01a-286d5565297d",
+  "requires_service_restart": true,
+  "state": "completed_with_exceptions",
+  "target_count": 1,
+  "targets": [
+    {
+      "attempts": 1,
+      "candidate_health": {
+        "dns_policy": "passed",
+        "identity_and_state": "passed",
+        "internet_only": "passed",
+        "processes": "passed",
+        "tunnel_probe": "failed"
+      },
+      "current_job": {
+        "attempt": 1,
+        "error_code": "HEALTH_CHECK_FAILED",
+        "finished_at": "2026-10-30T20:53:27.116444Z",
+        "job_id": "01a18e96-24b7-79d2-a6e6-018d65ecc727",
+        "recovery_required": false,
+        "stage": "report",
+        "started_at": "2026-10-30T20:53:27.116444Z",
+        "state": "rolled_back"
+      },
+      "current_release_id": "01a18e94-0630-7535-a302-8ebf65284d54",
+      "execution_incarnation_id": "01a18e94-2123-7ae8-9820-7a80fca3fe42",
+      "generation": "3",
+      "health": {
+        "dns_policy": "passed",
+        "identity_and_state": "passed",
+        "internet_only": "passed",
+        "processes": "passed",
+        "tunnel_probe": "passed"
+      },
+      "incarnation_at_snapshot": "01a18e94-2123-7ae8-9820-7a80fca3fe42",
+      "last_observed_at": "2026-10-30T20:53:57.416297Z",
+      "last_result_at": "2026-10-30T20:53:27.116444Z",
+      "needs_attention": true,
+      "node_id": "01a18e94-1ede-7e18-8340-2b6263173ea9",
+      "node_name": "TEST ONLY updates",
+      "online_at_snapshot": true,
+      "policy_generation": "9",
+      "policy_refs": [
+        "01a18e94-1301-7ee3-8f1b-8551b6b45301"
+      ],
+      "previous_release_id": "01a18e93-fe44-711f-a01a-286d5565297d",
+      "retryable": false,
+      "state": "rolled_back",
+      "target_id": "01a18e96-24b7-74b6-b7ab-32d58e5c3a7e",
+      "unconfirmed": false
+    }
+  ],
+  "targets_url": "/api/v1/admin/update-batches/01a18e96-24b6-797f-b18b-95bb4d295b7e",
+  "updated_at": "2026-10-30T20:53:27.117919Z"
+}
