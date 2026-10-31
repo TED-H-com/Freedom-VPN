@@ -178,7 +178,7 @@ func TestVerify_Probe(t *testing.T) {
 		t.Fatal(err)
 	}
 	raw := probeServingFixture(m, plan.Assignments, true)
-	if err := VerifyServing(raw, m, plan.Assignments); err != nil {
+	if err := verifyServingRuleset(raw, m, plan.Assignments); err != nil {
 		t.Fatal(err)
 	}
 	base := probeBaselineFixture(m, true)
@@ -193,7 +193,7 @@ func TestVerify_Probe(t *testing.T) {
 		t.Fatalf("extra accept: %v", err)
 	}
 	plain := smallModel()
-	if err := VerifyServing(raw, plain, plan.Assignments); err == nil {
+	if err := verifyServingRuleset(raw, plain, plan.Assignments); err == nil {
 		t.Fatal("probe rules matched a model with no probe")
 	}
 }
@@ -376,7 +376,7 @@ func TestVerify_ProbeDNSAcceptIsNarrow(t *testing.T) {
 		t.Fatal(err)
 	}
 	raw := probeServingFixture(m, plan.Assignments, true)
-	if err := VerifyServing(raw, m, plan.Assignments); err != nil {
+	if err := verifyServingRuleset(raw, m, plan.Assignments); err != nil {
 		t.Fatal(err)
 	}
 	in, ul := m.Datapath.MemberIngress, m.Datapath.Uplink
@@ -387,7 +387,7 @@ func TestVerify_ProbeDNSAcceptIsNarrow(t *testing.T) {
 		namedCounter(counterProbeUp),
 		map[string]any{"accept": nil},
 	))
-	err = VerifyServing(wide, m, plan.Assignments)
+	err = verifyServingRuleset(wide, m, plan.Assignments)
 	if ReasonCode(err) != ReasonIsolation || !strings.Contains(err.Error(), "wider than the DNS or tuple exception") {
 		t.Fatalf("serving wide accept: %v", err)
 	}
@@ -413,7 +413,7 @@ func TestVerify_ProbeDNSAcceptIsNarrow(t *testing.T) {
 		"table": "fvpn", "name": "resolver_v4",
 		"elem": []any{elemVal("203.0.113.53", nil)},
 	}})
-	err = VerifyServing(extra, m, plan.Assignments)
+	err = verifyServingRuleset(extra, m, plan.Assignments)
 	if ReasonCode(err) != ReasonIsolation || !strings.Contains(err.Error(), "resolver_v4 is not exactly the configured resolvers") || strings.Contains(err.Error(), "203.0.113.53") || strings.Contains(err.Error(), "198.51.100.53") {
 		t.Fatalf("extra resolver: %v", err)
 	}

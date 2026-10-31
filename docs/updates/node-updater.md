@@ -14,6 +14,7 @@ fvpn-updater recover -config updater.json
 fvpn-updater flush   -config updater.json
 fvpn-updater status  -config updater.json
 fvpn-updater status  -journal /var/lib/vpn-node/update-journal/journal.db
+fvpn-updater apply   -config updater.json -pending /var/lib/vpn-node/update-staging/pending-release.json
 fvpn-updater version
 ```
 
@@ -26,11 +27,48 @@ fvpn-updater version
 | 1 | Any other failure, including a config that does not load and `flush` without `result_url`. |
 | 64 | Usage, an unknown command, a bad flag, or a missing `-config`. |
 
-`run` calls `recover` first, then takes the current desired state. `flush` posts pending results and does not start an update. `flush` requires `result_url`. `Run`, `Recover`, `Flush` and `Retain` take the node lock at entry, before they supersede an older job, claim, download or install.
+`run` holds the node lock, calls `recover`, applies an installer pending release when that file exists, then takes the current desired state. `apply` holds the same lock, calls `recover`, and applies the `-pending` file. It does not also read desired state. `flush` posts pending results and does not start an update. `flush` requires `result_url`. `Run`, `ApplyPending`, `Recover`, `Flush` and `Retain` take the node lock at entry, before they supersede an older job, claim, download or install.
 
 The config file holds paths and ids. It does not hold the release private key. `allow_loopback` is TEST ONLY and must stay false on a node. `allowed_artifact_origins` is a list of `scheme://host[:port]` origins (D-046). An artifact, manifest or `result_url` whose origin matches an entry is exempt from the private and CGNAT address guard for that origin only, and the dial is pinned to the first address that host resolved to. Link-local, multicast, unspecified and metadata names stay refused. The default is empty, so the guard stands. `allow_loopback` does not allow private addresses. A compose dev stack sets the release and result origins explicitly. An entry has no user, path, query or fragment. An entry matches a URL when the scheme, host and effective port are equal. The effective port of a URL or entry without an explicit port is the scheme default: 443 for https and 80 for http. Stock health checks (`NodeChecks`) compare the release tree, the identity directory, and an immutable record of the pointers and the state-schema marker. They do not hash the mutable state directory. Isolation, DNS and the tunnel probe come from a challenge-bound attestation written by the candidate agent (D-053, §13.9). Without a valid attestation those three checks fail. A config field, an environment variable or a file that was already in the journal cannot mark them passed. The file contract is [`node-health-attestation.md`](node-health-attestation.md). An empty stop or start command fails closed. The updater does not guess systemd. `Config.Engine` installs a migrator that refuses a schema change, so a release that needs one fails before services stop when no real migrator was supplied.
 
 The forwarding latch is `forwarding.blocked` in the journal directory. The agent must not enable member forwarding while that file exists or while `BlocksForwarding` is true. The nftables gate itself belongs to the agent.
+
+## Installer hand-off
+
+`fvpn-node-install upgrade` verifies a release with `packaging/release`, extracts it under `/opt/vpn-node/releases/<release_id>`, copies the archive to `/var/lib/vpn-node/update-staging/<artifact-sha>.tar.zst`, writes `pending-release.json` there, releases `/var/lib/vpn-node/update.lock`, and starts `fvpn-updater.service`. The updater's `run` consumes that default record before reading desired state. The explicit equivalent is:
+
+```sh
+fvpn-updater apply --config /etc/vpn-node/updater.json \
+  --pending /var/lib/vpn-node/update-staging/pending-release.json
+```
+
+Both paths take the lock themselves, recover existing work, and use the existing switch, restart, health-check, rollback and result-outbox state machine (§13.5–§13.9, D-080). Contention reports `UPDATE_BUSY` (updater exit 1; the installer's own busy exit remains 3). A missing default pending file is no work. An explicit missing `--pending` file is an error, except when recovery just consumed that request.
+
+| Pending field | Treatment |
+|---|---|
+| `release_id` | Required nonzero UUID. |
+| `manifest_sha256` | Required SHA-256 of the canonical signed manifest envelope. |
+| `artifact_path` | Required regular archive file; symlinks are refused. |
+| `tree_path` | Installer's extracted tree; never trusted or installed from this field. |
+| `updater_command` | Informational; never executed. |
+| `manifest` | Optional inline signed envelope. |
+| `manifest_path` | Optional regular file containing that envelope; used when `manifest` is absent. |
+
+**Installer integration prerequisite:** the writer in PR #239 emits only the first five fields. It does not retain the envelope elsewhere. At least one optional manifest field must be supplied to reverify the release. Without it, a validly identified pending record seals a failed installer job at `verify` with wire error `ARTIFACT_INVALID`, is renamed to `.failed.json`, and leaves `current` unchanged. Malformed JSON or invalid identifiers leave the record in place and fail. No installer writer is changed by this updater delivery.
+
+The updater bounds JSON reads and refuses duplicate keys, symlinks and non-regular inputs. It verifies the manifest digest and trust root through `VerifyManifest` and `release.Verify`, copies the staged archive to a private updater snapshot, and verifies that snapshot with `release.CheckArtifact`. Extraction uses that verified copy, so replacing the original archive cannot change what is installed. An unrecorded candidate tree is discarded and re-extracted; a journaled tree must match its immutable hash. There is no artifact download or staging-command execution. Node and release revocations still apply.
+
+The live `current` pointer must match the updater journal. A pointer created by initial installation without updater metadata is refused with `CHECKPOINT_FAILED`; treating it as an empty node would bypass state-schema and rollback checks. The installer/bootstrap lane must establish verified current/last-good metadata before this path can upgrade that baseline. Merely copying an id or trusting its extracted tree is insufficient.
+
+The journal claim and read-only status carry `source: "installer"` and the requested release id. The standard result envelope is unchanged (it has no `source` field). A deterministic UUIDv5 binds the release id, manifest digest, canonical pending-record digest and node incarnation; attempt is 1. Replaying the same record does not reapply it. Correcting a record, such as supplying a missing envelope, creates a new local job. Local jobs use the accepted update generation, or 1 when none exists, without advancing the central generation fence. Policy generation is the already-applied generation, or 0 before any policy. Publication intent is preserved (disabled when none exists). Verified current/last-good releases may be rollback candidates, but **installer jobs always keep member forwarding blocked**, including after rollback; a valid desired state is required to authorize serving.
+
+The terminal job and a pending-file cleanup obligation commit in one SQLite transaction. Then the matching record is renamed to `pending-release.<state>.json` and the parent directory is fsynced. Recovery retries unfinished cleanup without reapplying the release or enqueueing another result. It compares the canonical record digest so finishing an old job cannot consume a different request staged after a crash. SQLite and filesystem rename are not one atomic transaction; the durable cleanup obligation closes that recovery window.
+
+Local outcomes remain available to status and heartbeat readers and use the normal result outbox. **Central integration prerequisite:** the current central `SubmitResult` requires an issued job and rejects these local job ids with `RESOURCE_NOT_FOUND`. Local success does not mean central acceptance. The fleet-update/contracts lane needs a D-080 registration or reporting contract; this updater does not fabricate central authorization.
+
+`boot_id` in `updater.json` is optional. The journal claim and lock holder use `/proc/sys/kernel/random/boot_id`; a missing or invalid kernel value uses the configured fallback, with one informational log line. With neither usable source, configuration fails. The installer lane can remove its `refresh-boot-id` pre-start and the `/etc/vpn-node` write permission that supported it.
+
+A missing desired-state file logs `desired-state file is absent` once per fresh-node oneshot and returns `ErrNoWork`. The oneshot exits 0, creates no error result, and does not change the forwarding latch. Malformed JSON, a dangling symlink, a permission error or any other unreadable file still fails closed through `GuardSource`.
 
 ## Synthetic health probe configuration (D-063)
 
@@ -76,9 +114,9 @@ The production challenge uses `issued_at = now` and `expires_at = issued_at + 45
 
 ## What the updater accepts
 
-Work comes from a desired-state envelope (§14.7). `FileSource` verifies it on every read with a `desired-state` purpose key. The window is half-open `[issued_at, expires_at)`. The node id and incarnation must match. An unverifiable or expired envelope blocks forwarding. A valid envelope with `update: null` is not a job (`ErrNoWork`) and does not by itself change the latch.
+Work comes from a desired-state envelope (§14.7). `FileSource` verifies it on every read with a `desired-state` purpose key. The window is half-open `[issued_at, expires_at)`. The node id and incarnation must match. An unverifiable or expired envelope blocks forwarding. A valid envelope with `update: null` is not a job (`ErrNoWork`) and does not by itself change the latch. A missing desired-state file is the same `ErrNoWork`: one info line, exit 0, and the forwarding latch stays as it was. An unreadable or malformed file still blocks forwarding.
 
-The desired-state document has `serving_release_ids`. A verified envelope may also carry signed `revoked_release_ids` (revision 3, D-034). An absent member means no additional revocations and does not change the persisted signed set. An empty array adds nothing and does not clear that set. `revoked_release_ids` in the updater config stays the unsigned release-support list copied by the agent. The effective set is the union of that list and the persisted signed set. The result's `policy_generation` is the desired-state `config_generation` actually applied when the result was produced (D-043, §13.10.3). It is not the update job generation and not a generation that was only downloaded. A result is not posted before that generation is known. `boot_id` on a result is the boot that claimed the job.
+The desired-state document has `serving_release_ids`. A verified envelope may also carry signed `revoked_release_ids` (revision 3, D-034). An absent member means no additional revocations and does not change the persisted signed set. An empty array adds nothing and does not clear that set. `revoked_release_ids` in the updater config stays the unsigned release-support list copied by the agent. The effective set is the union of that list and the persisted signed set. The result's `policy_generation` is the desired-state `config_generation` actually applied when the result was produced (D-043, §13.10.3). It is not the update job generation and not a generation that was only downloaded. A result is not posted before that generation is known. `boot_id` on a result is the boot that claimed the job. That boot id is `/proc/sys/kernel/random/boot_id` when the file is a UUID. `boot_id` in `updater.json` is only the fallback, and only when the kernel file is unreadable.
 
 A job is refused when the attempt is below 1, the node is revoked, the incarnation does not match, the release is revoked, the generation is older than the accepted one, or the authorization window has ended. Authorization is half-open: `now < authorization_valid_until`. Those refusals are recorded. A stale or revoked job is not claimed.
 
@@ -181,7 +219,7 @@ Contract 1.2.0 also covers rolled-back results already pending in a v2 journal. 
 
 Sidecar files next to the database (not inside it): `identity.snap` (identity tree hash) and `immutable.snap` / `immutable.record` (pointers and the state-schema marker). Both are taken after migration and before services start, and again for the pointers before rollback health runs against the selected tree. They are health-check snapshots, not completion markers; the terminal SQLite transaction records verified `last_good`. The mutable state directory is not in that record. `epoch-<txn>` is the new meter epoch for that transaction. It lives in the journal directory, not under state, and it is removed when the transaction completes. `FileMeter.OpenEpoch` does not write a sidecar. The check and rollback counters and `forwarding.blocked` are the other durable sidecars. `health-challenge.json` and `health-attest.json` are short-lived. The updater removes both after it records health. If the remove fails, it rewrites the challenge with `consumed: true`, which a later validation rejects. The next check overwrites the challenge with a new nonce.
 
-The single-updater lock is `/var/lib/vpn-node/update.lock`, a kernel `flock(LOCK_EX|LOCK_NB)` held by `node/internal/nodelock`. The descriptor stays open until `Release`. Holder metadata (`pid`, `boot_id`, `start_time`) is written only after the lock is held. `start_time` is field 22 of `/proc/<pid>/stat` (clock ticks since boot), counted after the last `)` of the command name. A stale pid, a different boot id, or the same pid with a different start time does not steal a lock the kernel still holds, and the file is not removed on contention. A live flock is `UPDATE_BUSY`. A held lock whose record is stale is also `UPDATE_BUSY`, and the error names the reason (`boot id`, `pid`, `process` or `start time`). The agent, the installer and the updater take that same lock.
+The single-updater lock is `/var/lib/vpn-node/update.lock`, a kernel `flock(LOCK_EX|LOCK_NB)` held by `node/nodelock`. `node/internal/nodelock` is a thin alias so existing `node/` callers keep compiling. `packaging/installer` can import `node/nodelock` and drop its copy. The descriptor stays open until `Release`. Holder metadata (`pid`, `boot_id`, `start_time`) is written only after the lock is held. `boot_id` in that record is `/proc/sys/kernel/random/boot_id`. `start_time` is field 22 of `/proc/<pid>/stat` (clock ticks since boot), counted after the last `)` of the command name. A stale pid, a different boot id, or the same pid with a different start time does not steal a lock the kernel still holds, and the file is not removed on contention. A live flock is `UPDATE_BUSY`. A held lock whose record is stale is also `UPDATE_BUSY`, and the error names the reason (`boot id`, `pid`, `process` or `start time`). The agent, the installer and the updater take that same lock.
 
 ## Read-only status and agent observations (D-062e)
 
@@ -246,7 +284,8 @@ Identity and the usage outbox are not rewritten by the update or the rollback (�
 
 ## Decisions
 
-- `boot_id` is the boot that claimed the job. Keep.
+- `boot_id` is the boot that claimed the job. It is read from `/proc/sys/kernel/random/boot_id`. `updater.json` supplies it only when that file is unreadable, and that fallback is logged. The installer's `refresh-boot-id` pre-start can be removed by the installer lane.
+- D-080. An installer-staged release is applied by `run` when `pending-release.json` is present, and by `apply -pending`. The updater verifies the signed envelope and the artifact again, then uses the existing state machine. The journal intent records `source` `installer`. The wire result does not. The pending cleanup obligation is committed with the terminal job, then renamed and retried by recovery if necessary. `tree_path` is ignored and `updater_command` is not executed. Installer outcomes keep member forwarding blocked. The installer job does not advance `accepted_generation`. A missing desired-state file is `ErrNoWork`.
 - Hostile archive paths, devices and symlink escapes stay `VALIDATION_FAILED` on the local operation. The UpdateResult reports those failures, and artifact hash, signature and size failures, as `ARTIFACT_INVALID`. That code is report-only: its catalog HTTP status is zero and it is not an HTTP status. Hash and size stay permanent after the bounded re-download. Signature and archive validation stay permanent. The local `OpError` and its retry bit are unchanged.
 - Refusing loopback, link-local and metadata names was the original bar, and pinning one resolved address was not required. D-034f supersedes the address check: private and CGNAT ranges are refused, and `DialContext` applies that check to every resolved address. D-046 exempts an origin listed in `allowed_artifact_origins` from the private and CGNAT checks and pins the dial to that host's first resolved address. Artifact fetches move behind the agent's mTLS client in Wave 3.
 - Update results are accepted on HTTP 202 only. The contract wins over the handover text.

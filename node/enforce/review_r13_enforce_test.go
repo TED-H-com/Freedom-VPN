@@ -30,7 +30,7 @@ func TestReviewR13_Q1_VerifierAcceptsOutOfModelRulesetsAndQoS(t *testing.T) {
 		t.Fatalf("Render: %v", err)
 	}
 	baseJSON := fixtureServing(m, plan.Assignments)
-	if err := VerifyServing(baseJSON, m, plan.Assignments); err != nil {
+	if err := verifyServingRuleset(baseJSON, m, plan.Assignments); err != nil {
 		t.Fatalf("baseline smallModel listing should pass VerifyServing: %v", err)
 	}
 
@@ -65,7 +65,7 @@ func TestReviewR13_Q1_VerifierAcceptsOutOfModelRulesetsAndQoS(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		requireCheck(t, VerifyServing(mutated, m, plan.Assignments), ReasonIsolation)
+		requireCheck(t, verifyServingRuleset(mutated, m, plan.Assignments), ReasonIsolation)
 	})
 
 	t.Run("vmap_verdict_map_before_drops", func(t *testing.T) {
@@ -92,7 +92,7 @@ func TestReviewR13_Q1_VerifierAcceptsOutOfModelRulesetsAndQoS(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		requireCheck(t, VerifyServing(mutated, m, plan.Assignments), ReasonIsolation)
+		requireCheck(t, verifyServingRuleset(mutated, m, plan.Assignments), ReasonIsolation)
 	})
 
 	t.Run("serving_accept_with_negated_dport_and_anonymous_set_or_wrong_prio", func(t *testing.T) {
@@ -148,7 +148,7 @@ func TestReviewR13_Q1_VerifierAcceptsOutOfModelRulesetsAndQoS(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		requireCheck(t, VerifyServing(mutated, m, plan.Assignments), ReasonIsolation)
+		requireCheck(t, verifyServingRuleset(mutated, m, plan.Assignments), ReasonIsolation)
 	})
 
 	t.Run("comments_and_line_continuations_in_parsed_tc_class_text", func(t *testing.T) {
@@ -210,7 +210,7 @@ func TestReviewR13_Q1_VerifierAcceptsOutOfModelRulesetsAndQoS(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		requireCheck(t, VerifyServing(mutated, m, plan.Assignments), ReasonIsolation)
+		requireCheck(t, verifyServingRuleset(mutated, m, plan.Assignments), ReasonIsolation)
 	})
 
 	t.Run("flow_add_offload_bypass_in_json_ruleset", func(t *testing.T) {
@@ -232,7 +232,7 @@ func TestReviewR13_Q1_VerifierAcceptsOutOfModelRulesetsAndQoS(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		requireCheck(t, VerifyServing(mutated, m, plan.Assignments), ReasonFlowtable)
+		requireCheck(t, verifyServingRuleset(mutated, m, plan.Assignments), ReasonFlowtable)
 	})
 
 	t.Run("meta_mark_match_disables_isolation_drop_rules", func(t *testing.T) {
@@ -271,7 +271,7 @@ func TestReviewR13_Q1_VerifierAcceptsOutOfModelRulesetsAndQoS(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		requireCheck(t, VerifyServing(mutated, m, plan.Assignments), ReasonIsolation)
+		requireCheck(t, verifyServingRuleset(mutated, m, plan.Assignments), ReasonIsolation)
 	})
 
 	t.Run("qos_wrong_fq_codel_parent_major", func(t *testing.T) {
@@ -317,7 +317,7 @@ func TestReviewR13_Q1_VerifierAcceptsOutOfModelRulesetsAndQoS(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		requireCheck(t, VerifyServing(mutated, m, plan.Assignments), ReasonQoS)
+		requireCheck(t, verifyServingRuleset(mutated, m, plan.Assignments), ReasonQoS)
 	})
 }
 

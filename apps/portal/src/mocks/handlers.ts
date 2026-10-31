@@ -33,6 +33,8 @@ import {
   buildPersonaSession,
   CONTRACT_EXAMPLES_USED_BY_MOCKS,
   createInitialMockState,
+  PRIMARY_DEVICE_ID,
+  PRIMARY_MEMBER_ID,
   type MockPersona,
   type MockState,
 } from './data';
@@ -75,6 +77,115 @@ export function setMockNodeIdentityConflict(
   } else {
     detail.identity_conflict = identityConflict;
   }
+}
+
+export const FENCED_PENDING_DEVICE_ID = '33333333-e7e8-4bd4-9f2c-a5836dd0d8eb';
+export const FRESH_PENDING_DEVICE_ID = '44444444-e7e8-4bd4-9f2c-a5836dd0d8ec';
+export const REVOKED_DEVICE_ID = '55555555-e7e8-4bd4-9f2c-a5836dd0d8ed';
+export const OVER_LIMIT_DEVICE_ID = '66666666-e7e8-4bd4-9f2c-a5836dd0d8ee';
+
+export function setMockDeviceStatesForRevision12(options?: {
+  omitAbsentOnFreshPending?: boolean;
+  deviceLimit?: number;
+}): void {
+  const omitAbsent = options?.omitAbsentOnFreshPending ?? false;
+  if (options?.deviceLimit !== undefined) {
+    state.memberDetail.entitlement.device_limit = options.deviceLimit;
+    state.memberDevices.device_limit = options.deviceLimit;
+  }
+  const authorizedDevice = {
+    device_id: PRIMARY_DEVICE_ID,
+    name: 'Phone',
+    platform: 'android' as const,
+    status: 'authorized' as const,
+    authorization_unconfirmed: false,
+    authorized_at: '2026-10-20T01:00:00Z',
+    revoked_at: null,
+    last_seen_at: '2026-10-28T14:00:00Z',
+    created_at: '2026-10-20T00:59:00Z',
+  };
+  const fencedPendingDevice = {
+    device_id: FENCED_PENDING_DEVICE_ID,
+    name: 'Restored Laptop',
+    platform: 'macos' as const,
+    status: 'pending' as const,
+    authorization_unconfirmed: true,
+    authorized_at: '2026-10-21T01:00:00Z',
+    revoked_at: null,
+    last_seen_at: '2026-10-29T10:00:00Z',
+    created_at: '2026-10-21T00:59:00Z',
+  };
+  const freshPendingDevice = {
+    device_id: FRESH_PENDING_DEVICE_ID,
+    name: 'Fresh Tablet',
+    platform: 'ios' as const,
+    status: 'pending' as const,
+    ...(omitAbsent ? {} : { authorization_unconfirmed: false }),
+    authorized_at: null,
+    revoked_at: null,
+    last_seen_at: null,
+    created_at: '2026-10-30T11:00:00Z',
+  };
+  const revokedDevice = {
+    device_id: REVOKED_DEVICE_ID,
+    name: 'Old Workstation',
+    platform: 'linux' as const,
+    status: 'revoked' as const,
+    authorization_unconfirmed: false,
+    authorized_at: '2026-10-15T01:00:00Z',
+    revoked_at: '2026-10-25T01:00:00Z',
+    last_seen_at: '2026-10-24T01:00:00Z',
+    created_at: '2026-10-15T00:59:00Z',
+  };
+  const overLimitDevice = {
+    device_id: OVER_LIMIT_DEVICE_ID,
+    name: 'Extra Desktop',
+    platform: 'windows' as const,
+    status: 'pending' as const,
+    authorization_unconfirmed: false,
+    authorized_at: null,
+    revoked_at: null,
+    last_seen_at: null,
+    created_at: '2026-10-30T12:00:00Z',
+  };
+
+  state.memberDevices.items = [
+    authorizedDevice,
+    fencedPendingDevice,
+    freshPendingDevice,
+    revokedDevice,
+    overLimitDevice,
+  ];
+  state.memberDevices.authorized_count = 1;
+
+  state.adminDevices = [
+    {
+      ...authorizedDevice,
+      member_id: PRIMARY_MEMBER_ID,
+      authorization_unconfirmed_since: null,
+    },
+    {
+      ...fencedPendingDevice,
+      member_id: PRIMARY_MEMBER_ID,
+      authorization_unconfirmed_since: '2026-10-30T08:30:00Z',
+    },
+    {
+      ...freshPendingDevice,
+      member_id: PRIMARY_MEMBER_ID,
+      authorization_unconfirmed: freshPendingDevice.authorization_unconfirmed ?? false,
+      authorization_unconfirmed_since: null,
+    },
+    {
+      ...revokedDevice,
+      member_id: PRIMARY_MEMBER_ID,
+      authorization_unconfirmed_since: null,
+    },
+    {
+      ...overLimitDevice,
+      member_id: PRIMARY_MEMBER_ID,
+      authorization_unconfirmed_since: null,
+    },
+  ];
 }
 
 export function setMockNodeLeaseState(
@@ -1139,6 +1250,156 @@ export const handlers = [
     ]);
     return HttpResponse.json(op, { status: 202 });
   }),
+
+  http.get('/api/v1/admin/devices', ({ request }) => {
+    const guard = checkSessionGuard(request, true);
+    if (guard) return guard;
+
+    const url = new URL(request.url);
+    const memberId = url.searchParams.get('member_id');
+    const authUnconfirmedParam = url.searchParams.get('authorization_unconfirmed');
+    const statusParam = url.searchParams.get('status');
+    const cursorParam = url.searchParams.get('cursor');
+    const limitParam = Number(url.searchParams.get('limit') ?? '50');
+    const limit = Number.isFinite(limitParam) && limitParam > 0 ? limitParam : 50;
+
+    let items = [...state.adminDevices].sort(
+      (a, b) =>
+        a.member_id.localeCompare(b.member_id) || a.device_id.localeCompare(b.device_id),
+    );
+    if (memberId) {
+      items = items.filter((d) => d.member_id === memberId);
+    }
+    if (authUnconfirmedParam === 'true') {
+      items = items.filter((d) => d.authorization_unconfirmed === true);
+    } else if (authUnconfirmedParam === 'false') {
+      items = items.filter((d) => !d.authorization_unconfirmed);
+    }
+    if (statusParam) {
+      items = items.filter((d) => d.status === statusParam);
+    }
+
+    let startIdx = 0;
+    if (cursorParam) {
+      const idx = items.findIndex((d) => d.device_id === cursorParam);
+      if (idx >= 0) {
+        startIdx = idx + 1;
+      }
+    }
+    const pageItems = items.slice(startIdx, startIdx + limit);
+    const hasMore = startIdx + limit < items.length;
+    const nextCursor =
+      hasMore && pageItems.length > 0
+        ? (pageItems[pageItems.length - 1]?.device_id ?? null)
+        : null;
+
+    return HttpResponse.json({
+      items: pageItems,
+      next_cursor: nextCursor,
+    });
+  }),
+
+  http.post(
+    '/api/v1/admin/members/:memberId/devices/:deviceId/authorize',
+    ({ request, params }) => {
+      const guard = checkSessionGuard(request, true);
+      if (guard) return guard;
+
+      const idemKey = request.headers.get('Idempotency-Key');
+      if (!idemKey) {
+        return makeErrorResponse(
+          400,
+          'MALFORMED_REQUEST',
+          'Idempotency-Key header is required.',
+        );
+      }
+
+      const recordKey = `authorize:${request.url}:${idemKey}`;
+      const existing = state.idempotencyRecords[recordKey];
+      if (existing)
+        return HttpResponse.json(existing.body as OperationResource, {
+          status: existing.status,
+        });
+
+      const memberId = String(params.memberId);
+      const deviceId = String(params.deviceId);
+      const adminDev = state.adminDevices.find(
+        (d) => d.device_id === deviceId && d.member_id === memberId,
+      );
+      if (!adminDev) {
+        return makeErrorResponse(404, 'RESOURCE_NOT_FOUND', 'device not found');
+      }
+
+      if (adminDev.status === 'revoked') {
+        return makeErrorResponse(
+          409,
+          'STATE_CONFLICT',
+          'revoked devices cannot be re-authorized',
+        );
+      }
+
+      const deviceLimit = state.memberDetail.entitlement.device_limit;
+      const currentAuthorizedCount = state.adminDevices.filter(
+        (d) =>
+          d.member_id === memberId &&
+          d.status === 'authorized' &&
+          !d.authorization_unconfirmed &&
+          d.device_id !== deviceId,
+      ).length;
+      if (deviceLimit != null && currentAuthorizedCount >= deviceLimit) {
+        return makeErrorResponse(
+          409,
+          'DEVICE_LIMIT_REACHED',
+          'member device limit reached',
+        );
+      }
+
+      state.adminDevices = state.adminDevices.map((d) =>
+        d.device_id === deviceId && d.member_id === memberId
+          ? {
+              ...d,
+              status: 'authorized',
+              authorization_unconfirmed: false,
+              authorization_unconfirmed_since: null,
+              authorized_at: '2026-10-28T15:05:00Z',
+            }
+          : d,
+      );
+
+      state.memberDevices.items = state.memberDevices.items.map((d) =>
+        d.device_id === deviceId
+          ? {
+              ...d,
+              status: 'authorized',
+              authorization_unconfirmed: false,
+              authorized_at: '2026-10-28T15:05:00Z',
+            }
+          : d,
+      );
+      state.memberDevices.authorized_count = state.memberDevices.items.filter(
+        (d) => d.status === 'authorized' && !d.authorization_unconfirmed,
+      ).length;
+
+      const op = createTrackedOperation(
+        'member.device_authorize',
+        'member_device',
+        deviceId,
+        [
+          {
+            name: 'policy_outbox_sync',
+            status: 'succeeded',
+            required: true,
+            observed_at: '2026-10-28T15:05:01Z',
+            error_code: null,
+            message: null,
+          },
+        ],
+      );
+      op.status = 'succeeded';
+      state.idempotencyRecords[recordKey] = { status: 202, body: op };
+      return HttpResponse.json(op, { status: 202 });
+    },
+  ),
 
   // --- Admin Policies (§11, §12, §14.2) ---
   http.get('/api/v1/admin/policies', ({ request }) => {

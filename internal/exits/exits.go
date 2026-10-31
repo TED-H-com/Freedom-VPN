@@ -732,6 +732,12 @@ func (s *Service) executePublish(ctx context.Context, opID uuid.UUID, nodeID uui
 		CurrentReleaseID:          currentReleaseID,
 		RequireOnlineAndACKForRun: true,
 	}); err != nil {
+		if appliedGen >= desiredGen && (nodeDetail.SafetyStatus == api.SafetyStatusFailed || nodeDetail.SafetyStatus == api.SafetyStatusExpired) {
+			// A current-generation safety failure is an observed failure, not
+			// a convergence wait. Preserve the normal non-gate retry behavior.
+			cause := "safety_" + string(nodeDetail.SafetyStatus)
+			return s.failPublishStep(ctx, opID, nodeID, nodes.StepAgentPolicy, string(apierr.NodeNotServiceable), cause, cause)
+		}
 		cause := "readiness_unconfirmed"
 		if appliedGen < desiredGen {
 			cause = "stale_generation"

@@ -213,6 +213,9 @@ func servingExec(m Model) *fakeExec {
 func conntrackHandler(m Model, f *fakeExec, onConntrack func(string) ([]byte, error)) func(string, []string) ([]byte, error) {
 	return func(name string, args []string) ([]byte, error) {
 		key := name + " " + strings.Join(args, " ")
+		if (name == "tc" && len(args) > 1 && args[0] == "-j" && args[1] == "filter") || name == "ip" {
+			return []byte(`[]`), nil
+		}
 		if name == "conntrack" {
 			return onConntrack(key)
 		}

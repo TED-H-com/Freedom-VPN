@@ -1096,4 +1096,310 @@ test.describe('Freedom VPN Portal Live Control Plane E2E Suite (§18, AT01–AT0
       }
     }
   });
+
+  test('TestD076_D077_D081_SECOPS19_MemberDeviceStates_AdminDevicesReauthorize_AndNodeUsageOutbox', async ({
+    page,
+    request,
+  }) => {
+    const setupRes = await request.post(`${BASE_URL}/__e2e/setup-revision12-devices`);
+    expect(setupRes.ok(), await setupRes.text()).toBeTruthy();
+    const setup = (await setupRes.json()) as {
+      member_id: string;
+      authorized_device_id: string;
+      fenced_device_id: string;
+      fresh_pending_device_id: string;
+      revoked_device_id: string;
+      live_node_id: string;
+      secondary_node_id: string;
+    };
+
+    // 1. Member devices page: three states (authorized, fresh pending, fenced pending with authorization_unconfirmed: true)
+    const memberDevicesGetPromise = page.waitForResponse(
+      (res) =>
+        res.url().includes('/api/v1/member/devices') && res.request().method() === 'GET',
+    );
+    await page.goto('/member/devices');
+    const memberDevicesGetRes = await memberDevicesGetPromise;
+    expect(memberDevicesGetRes.status()).toBe(200);
+    await expect(page.getByTestId('member-devices-page')).toBeVisible();
+
+    // (a) Authorized device
+    await expect(
+      page.getByTestId(`device-status-${setup.authorized_device_id}`),
+    ).toHaveText('authorized');
+    await expect(
+      page.getByTestId(`device-auth-unconfirmed-badge-${setup.authorized_device_id}`),
+    ).toHaveCount(0);
+    await expect(
+      page.getByTestId(`revoke-own-device-${setup.authorized_device_id}`),
+    ).toBeVisible();
+
+    // (b) Fenced pending device (authorization_unconfirmed: true)
+    await expect(page.getByTestId(`device-status-${setup.fenced_device_id}`)).toHaveText(
+      'pending',
+    );
+    await expect(
+      page.getByTestId(`device-auth-unconfirmed-badge-${setup.fenced_device_id}`),
+    ).toBeVisible();
+    await expect(
+      page.getByTestId(`device-auth-unconfirmed-note-${setup.fenced_device_id}`),
+    ).toContainText('服務還原後需由管理員重新確認此裝置授權');
+    await expect(
+      page.getByTestId(`device-pending-waiting-${setup.fenced_device_id}`),
+    ).toHaveCount(0);
+    await expect(
+      page.getByTestId(`revoke-own-device-${setup.fenced_device_id}`),
+    ).toHaveCount(0);
+
+    // (c) Fresh pending device (authorization_unconfirmed: false)
+    await expect(
+      page.getByTestId(`device-status-${setup.fresh_pending_device_id}`),
+    ).toHaveText('pending');
+    await expect(
+      page.getByTestId(`device-pending-waiting-${setup.fresh_pending_device_id}`),
+    ).toContainText('等待授權中');
+    await expect(
+      page.getByTestId(`device-auth-unconfirmed-badge-${setup.fresh_pending_device_id}`),
+    ).toHaveCount(0);
+    await expect(
+      page.getByTestId(`device-auth-unconfirmed-note-${setup.fresh_pending_device_id}`),
+    ).toHaveCount(0);
+
+    // 2. Operator devices list at /admin/devices?authorization_unconfirmed=true
+    const initialAdminDevicesGetPromise = page.waitForResponse(
+      (res) =>
+        res.url().includes('/api/v1/admin/devices?authorization_unconfirmed=true') &&
+        res.request().method() === 'GET',
+    );
+    await page.goto('/admin/devices?authorization_unconfirmed=true');
+    const initialAdminDevicesGetRes = await initialAdminDevicesGetPromise;
+    expect(initialAdminDevicesGetRes.status()).toBe(200);
+    await expect(page.getByTestId('admin-devices-list-page')).toBeVisible();
+    await expect(page.getByTestId('admin-devices-unconfirmed-filter')).toHaveValue(
+      'true',
+    );
+
+    await expect(
+      page.getByTestId(`admin-device-row-${setup.fenced_device_id}`),
+    ).toBeVisible();
+    await expect(
+      page.getByTestId(`admin-device-row-${setup.authorized_device_id}`),
+    ).toHaveCount(0);
+    await expect(
+      page.getByTestId(`admin-device-row-${setup.fresh_pending_device_id}`),
+    ).toHaveCount(0);
+    await expect(
+      page.getByTestId(`admin-device-member-link-${setup.fenced_device_id}`),
+    ).toHaveAttribute('href', `/admin/members/${setup.member_id}`);
+    await expect(
+      page.getByTestId(`admin-device-unconfirmed-since-${setup.fenced_device_id}`),
+    ).toContainText(/\d{4}-\d{2}-\d{2}T.*Z/);
+
+    // 3. Filter authorization_unconfirmed=false and test 409 STATE_CONFLICT on the revoked device
+    const filterFalseGetPromise = page.waitForResponse(
+      (res) =>
+        res.url().includes('/api/v1/admin/devices?authorization_unconfirmed=false') &&
+        res.request().method() === 'GET',
+    );
+    await page.getByTestId('admin-devices-unconfirmed-filter').selectOption('false');
+    const filterFalseGetRes = await filterFalseGetPromise;
+    expect(filterFalseGetRes.status()).toBe(200);
+
+    await expect(
+      page.getByTestId(`admin-device-row-${setup.fenced_device_id}`),
+    ).toHaveCount(0);
+    await expect(
+      page.getByTestId(`admin-device-row-${setup.authorized_device_id}`),
+    ).toBeVisible();
+    await expect(
+      page.getByTestId(`admin-device-row-${setup.revoked_device_id}`),
+    ).toBeVisible();
+
+    await page
+      .getByTestId(`admin-reauthorize-device-btn-${setup.revoked_device_id}`)
+      .click();
+    await expect(page.getByTestId('reauthorize-confirm-dialog')).toBeVisible();
+    await expect(page.getByTestId('cancel-reauthorize-btn')).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(page.getByTestId('reauthorize-confirm-dialog')).toHaveCount(0);
+    await expect(
+      page.getByTestId(`admin-reauthorize-device-btn-${setup.revoked_device_id}`),
+    ).toBeFocused();
+    await page
+      .getByTestId(`admin-reauthorize-device-btn-${setup.revoked_device_id}`)
+      .click();
+    const postRevoked409Promise = page.waitForResponse(
+      (res) =>
+        res
+          .url()
+          .includes(
+            `/api/v1/admin/members/${setup.member_id}/devices/${setup.revoked_device_id}/authorize`,
+          ) && res.request().method() === 'POST',
+    );
+    await page.getByTestId('confirm-reauthorize-btn').click();
+    const postRevoked409Res = await postRevoked409Promise;
+    expect(postRevoked409Res.status()).toBe(409);
+
+    const errorAlert = page.getByTestId('admin-device-authorize-error');
+    await expect(errorAlert).toBeVisible();
+    await expect(errorAlert).toContainText('STATE_CONFLICT');
+    await expect(errorAlert).toContainText(
+      '資源目前狀態不允許此操作，請重新載入最新狀態後再試。',
+    );
+
+    // 4. Filter back to authorization_unconfirmed=true and Re-authorize the fenced device end to end
+    const filterTrueGetPromise = page.waitForResponse(
+      (res) =>
+        res.url().includes('/api/v1/admin/devices?authorization_unconfirmed=true') &&
+        res.request().method() === 'GET',
+    );
+    await page.getByTestId('admin-devices-unconfirmed-filter').selectOption('true');
+    const filterTrueGetRes = await filterTrueGetPromise;
+    expect(filterTrueGetRes.status()).toBe(200);
+    await expect(
+      page.getByTestId(`admin-device-row-${setup.fenced_device_id}`),
+    ).toBeVisible();
+
+    await page
+      .getByTestId(`admin-reauthorize-device-btn-${setup.fenced_device_id}`)
+      .click();
+    await expect(page.getByTestId('reauthorize-confirm-dialog')).toBeVisible();
+
+    const postReauth202Promise = page.waitForResponse(
+      (res) =>
+        res
+          .url()
+          .includes(
+            `/api/v1/admin/members/${setup.member_id}/devices/${setup.fenced_device_id}/authorize`,
+          ) && res.request().method() === 'POST',
+    );
+    const postReauthRefetchPromise = page.waitForResponse(
+      (res) =>
+        res.url().includes('/api/v1/admin/devices?authorization_unconfirmed=true') &&
+        res.request().method() === 'GET',
+    );
+    await page.getByTestId('confirm-reauthorize-btn').click();
+    const postReauth202Res = await postReauth202Promise;
+    expect(postReauth202Res.status()).toBe(202);
+    const authorizeRequest = postReauth202Res.request();
+    expect(authorizeRequest.postData()).toBeNull();
+    expect(authorizeRequest.headers()['x-csrf-token']).toBeTruthy();
+    expect(authorizeRequest.headers()['idempotency-key']).toMatch(/^[0-9a-f-]{36}$/);
+    expect(authorizeRequest.headers()['idempotency-key']).not.toBe(
+      postRevoked409Res.request().headers()['idempotency-key'],
+    );
+    const postReauthRefetchRes = await postReauthRefetchPromise;
+    expect(postReauthRefetchRes.status()).toBe(200);
+
+    await expect(page.getByTestId('reauthorize-operation-receipt')).toBeVisible();
+    const receipt = await postReauth202Res.json();
+    expect(receipt.kind).toBe('member.device_authorize');
+    // Retrying the same action reuses its receipt rather than creating another grant.
+    const replayResponse = await request.post(postReauth202Res.url(), {
+      headers: {
+        'Idempotency-Key': authorizeRequest.headers()['idempotency-key']!,
+        'X-CSRF-Token': authorizeRequest.headers()['x-csrf-token']!,
+        Origin: BASE_URL,
+      },
+    });
+    expect(replayResponse.status()).toBe(202);
+    expect((await replayResponse.json()).operation_id).toBe(receipt.operation_id);
+    await expect(page.getByTestId('operation-banner').getByRole('link')).toHaveAttribute(
+      'href',
+      `/api/v1/admin/operations/${receipt.operation_id}`,
+    );
+    // The old operation may already have succeeded. Only device read-back proves the grant.
+    await expect(page.getByTestId('reauthorize-device-state')).toContainText(
+      '已確認裝置授權',
+      { timeout: 15_000 },
+    );
+
+    // Fenced device leaves the authorization_unconfirmed=true filtered list
+    await expect(
+      page.getByTestId(`admin-device-row-${setup.fenced_device_id}`),
+    ).toHaveCount(0);
+    await expect(page.getByTestId('admin-devices-empty-row')).toBeVisible();
+
+    // Switch filter to 'all' and wait for the worker re-grant read-back to show status: authorized
+    const filterAllGetPromise = page.waitForResponse(
+      (res) =>
+        res.url().includes('/api/v1/admin/devices') &&
+        !res.url().includes('authorization_unconfirmed=') &&
+        res.request().method() === 'GET',
+    );
+    await page.getByTestId('admin-devices-unconfirmed-filter').selectOption('all');
+    await filterAllGetPromise;
+
+    await expect(
+      page.getByTestId(`admin-device-status-${setup.fenced_device_id}`),
+    ).toHaveText('authorized', { timeout: 15_000 });
+    await expect(
+      page.getByTestId(`admin-device-unconfirmed-badge-${setup.fenced_device_id}`),
+    ).toHaveCount(0);
+
+    // 5. Verify fence copy is gone from the member devices page and device is now authorized
+    const memberReloadGetPromise = page.waitForResponse(
+      (res) =>
+        res.url().includes('/api/v1/member/devices') && res.request().method() === 'GET',
+    );
+    await page.goto('/member/devices');
+    await memberReloadGetPromise;
+    await expect(page.getByTestId(`device-status-${setup.fenced_device_id}`)).toHaveText(
+      'authorized',
+    );
+    await expect(
+      page.getByTestId(`device-auth-unconfirmed-badge-${setup.fenced_device_id}`),
+    ).toHaveCount(0);
+    await expect(
+      page.getByTestId(`device-auth-unconfirmed-note-${setup.fenced_device_id}`),
+    ).toHaveCount(0);
+
+    // 6. Node detail usage_outbox: null state on secondaryNode (jp-tyo-01) and object state on liveNode (tw-tpe-01)
+    const secondaryNodeGetPromise = page.waitForResponse(
+      (res) =>
+        res.url().includes(`/api/v1/admin/nodes/${setup.secondary_node_id}`) &&
+        res.request().method() === 'GET',
+    );
+    await page.goto(`/admin/nodes/${setup.secondary_node_id}`);
+    await secondaryNodeGetPromise;
+    await expect(page.getByTestId('admin-node-detail-page')).toBeVisible();
+    await expect(page.getByTestId('node-usage-outbox-section')).toBeVisible();
+    await expect(page.getByTestId('node-usage-outbox-null')).toContainText(
+      '尚無回報紀錄',
+    );
+
+    const liveNodeGetPromise = page.waitForResponse(
+      (res) =>
+        res.url().includes(`/api/v1/admin/nodes/${setup.live_node_id}`) &&
+        res.request().method() === 'GET',
+    );
+    await page.goto(`/admin/nodes/${setup.live_node_id}`);
+    const liveNodeResponse = await liveNodeGetPromise;
+    const { usage_outbox: usageOutbox } = await liveNodeResponse.json();
+    await expect(page.getByTestId('admin-node-detail-page')).toBeVisible();
+    await expect(page.getByTestId('node-usage-outbox-values')).toBeVisible();
+    await expect(page.getByTestId('node-usage-outbox-unacked')).toContainText(
+      '2 / 1840 B',
+    );
+    await expect(page.getByTestId('node-usage-outbox-acked-through')).toContainText(
+      '10 / 12',
+    );
+    const ageSeconds = Math.max(
+      0,
+      Math.floor(
+        (Date.parse(usageOutbox.observed_at) -
+          Date.parse(usageOutbox.oldest_unacked_at)) /
+          1000,
+      ),
+    );
+    await expect(page.getByTestId('node-usage-outbox-oldest-age')).toContainText(
+      `${ageSeconds} 秒`,
+    );
+    await expect(page.getByTestId('node-usage-outbox-archive-bytes')).toContainText(
+      '4096 B',
+    );
+    await expect(page.getByTestId('node-usage-outbox-observed-at')).toContainText(
+      usageOutbox.observed_at,
+    );
+  });
 });

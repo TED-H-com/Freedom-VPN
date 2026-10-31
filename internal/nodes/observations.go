@@ -155,6 +155,14 @@ func (s *Service) SubmitObservation(
 
 		// 3. Evaluate evidence in the report (fail-closed safety and metering checks, §5.1, §8, §10.3).
 		effectiveSafety, effectiveHealth, effectiveForwarding, effectiveErrors := evaluateObservationEvidence(report)
+		provisioning := report.ProvisioningState
+		// D-055 / D-084: retain the report as evidence, but every normalized
+		// observation of a frozen incarnation must carry the terminal override.
+		// Keep report_payload and its hash as the original agent claim.
+		if mappingFrozen {
+			provisioning = api.ProvisioningStateFailed
+			effectiveSafety, effectiveForwarding = api.SafetyStatusFailed, false
+		}
 
 		checksMap := make(map[string]any, len(report.Checks))
 		for _, ch := range report.Checks {
@@ -217,7 +225,7 @@ func (s *Service) SubmitObservation(
 			observedAt, receivedAt, appliedGenStr,
 			currentReleaseID,
 			checksObjJSON, string(effectiveHealth), string(effectiveSafety),
-			effectiveForwarding, string(report.ProvisioningState), reportPayloadJSON,
+			effectiveForwarding, string(provisioning), reportPayloadJSON,
 		); err != nil {
 			return err
 		}
@@ -230,7 +238,6 @@ func (s *Service) SubmitObservation(
 			currentReleaseID = nil
 			lastGoodReleaseID = nil
 		}
-		provisioning := report.ProvisioningState
 		var staleGenerationGrace bool
 		if provisioning == api.ProvisioningStateReady {
 			// §5.1 / §6.1: baseline readiness needs safety and a generation ACK,
@@ -266,12 +273,6 @@ func (s *Service) SubmitObservation(
 				provisioning = api.ProvisioningStateApplying
 				staleGenerationGrace = false
 			}
-		}
-		// D-055: an ambiguous management correlation is terminal for this
-		// incarnation. Heartbeats remain accepted but cannot clear its failure.
-		if mappingFrozen {
-			provisioning = api.ProvisioningStateFailed
-			effectiveSafety, effectiveForwarding = api.SafetyStatusFailed, false
 		}
 		// 4. Update node state. An older observed_at NEVER overrides newer observed state!
 		isNewerOrEqual := lastObservedAt == nil || !observedAt.Before(lastObservedAt.UTC())
@@ -892,6 +893,7 @@ func advanceNodeOperationsOnObservation(
 									FROM entitlement_grants eg_m
 									JOIN plan_revisions pr_m ON pr_m.id = eg_m.plan_revision_id
 									WHERE eg_m.member_id = m.id
+									  AND eg_m.revoked_at IS NULL
 									  AND eg2.group_id = ANY(pr_m.exit_group_ids)
 								)
 							)

@@ -24,6 +24,8 @@ const SnapshotTimeout = time.Second
 type SnapshotState struct {
 	Generation       *decstr.U64     `json:"generation"`
 	JobID            string          `json:"job_id"`
+	Source           string          `json:"source,omitempty"`
+	RequestedRelease string          `json:"requested_release_id,omitempty"`
 	Stage            string          `json:"stage"`
 	State            string          `json:"state"`
 	JournalStage     Stage           `json:"journal_stage,omitempty"`
@@ -102,11 +104,20 @@ func readSnapshot(ctx context.Context, tx *sql.Tx, version int) (SnapshotState, 
 		return s, err
 	}
 	s.RecoveryRequired = outcome == OutcomeRecoveryRequired
-	job, jobErr := scanJob(tx.QueryRowContext(ctx, jobSelect+` ORDER BY length(generation) DESC, generation DESC, attempt DESC, rowid DESC LIMIT 1`))
+	// Local installer requests reuse the accepted generation without claiming
+	// a central retry attempt. Within that generation, show the last claim.
+	job, jobErr := scanJob(tx.QueryRowContext(ctx, jobSelect+` ORDER BY length(generation) DESC, generation DESC, rowid DESC LIMIT 1`))
 	if jobErr != nil && !errors.Is(jobErr, ErrNotFound) {
 		return s, jobErr
 	}
 	if jobErr == nil {
+		var intent struct {
+			Source string `json:"source"`
+		}
+		if err := json.Unmarshal(job.IntentJSON, &intent); err != nil {
+			return s, err
+		}
+		s.Source, s.RequestedRelease = intent.Source, job.ReleaseID
 		s.Generation, s.JobID = &job.Generation, job.JobID
 		s.Stage, s.State = jobProgress(job)
 		selectTxn := txnSelect

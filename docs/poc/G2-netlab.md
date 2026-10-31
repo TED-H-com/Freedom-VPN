@@ -86,6 +86,8 @@ Serving forward rules name both interfaces. Upload matches `iifname` `fv-fh` and
 
 Classification does not write `skb->mark` or the conntrack mark. NetBird's mark range `0x1BD00–0x1BDFF` is left alone. No tc filter is installed (`cls_fw`, `cls_u32`, `cls_flower` and `cls_matchall` are not required). `skb->priority` is `(1<<16)|minor`. Minor 0 is HTB direct, so the host default leaf is minor `0xFFFE` (class `1:fffe`). A lab table `inet fvprobe` (not `inet fvpn`) set mark `0x1bd11` and conntrack mark `0x1bd22` and read them again after forward: `mark_pre=5 mark_post=5`.
 
+D-085: the serving gate fails closed with `TC_FOREIGN_FILTER` when live tc read-back finds a foreign qdisc, filter or action on either the member interface or uplink. The agent still installs no tc filter. See `TC serving read-back` below for the measured redirect and the limit of nft baseline rollback.
+
 There is no flowtable and no `flow add` offload (§10.3). GRO, GSO and TSO are off on the lab veths. The forward counter records the inner IPv4 total length, once, before the shaper. A later qdisc drop can already have been counted, so these counters are admission bytes, not delivered bytes (§11.7 uses the HTB class byte counter for rate).
 
 IPv6 mode is `block` (§8.3). Member IPv6 on the member-uplink pair is dropped and counted on `ctv6`. There is no IPv6 forward path and no `::/0` accept.
@@ -233,6 +235,24 @@ Production exit nodes must not run Docker, or any other NAT, for non-loopback tr
 
 The measured line is `SUMMARY LOOPBACK dns=1 serving=1 class=loopback_scoped postrouting_saddr=2 postrouting_daddr=1 ctunku=1 uplink=0`.
 
+## TC serving read-back
+
+`VerifyServing(ctx, executor, model, assignments)` reads live state on every call. Both `Apply` and `fvpn-netlab verify` use it. The nft-only checker is internal; a saved nft listing cannot establish serving. Read-back includes `tc -j qdisc show dev <iface>`, `tc -j class show dev <iface>` and `tc -j filter show dev <iface> ingress` / `egress` on the member interface and uplink. It also reads the root block and every listed qdisc and HTB class filter block, across all chains. The bare filter command only reads the root block; filters attached to an HTB class or fq_codel leaf need their own parent read.
+
+Only the rendered HTB root `1:` and the assigned member fq_codel leaves are owned. Kernel-default root qdiscs (`noqueue`, `pfifo_fast`, `fq_codel`, `fq`, `mq`, `cake`, handle `0:`) without filters are not foreign; this includes `mq`'s default queues under `:N`. Default mq classes and fq_codel flow classes are not parsed as HTB classes. The separate QoS check still requires the serving HTB classes. Every filter is foreign, including `matchall`, `flower`, `u32` and `bpf`, regardless of action. This covers redirect/mirror `mirred`, `pedit`, `nat`, `skbedit`, `bpf` and future filter kinds without an action allowlist. Empty `clsact` and `ingress` qdiscs also fail. Unreadable or malformed tc evidence fails closed.
+
+| Read-back code | Trigger | Result |
+|---|---|---|
+| `TC_FOREIGN_FILTER` | Foreign qdisc/filter/action, or an incomplete tc read | Serving verification fails; detail names interface, parent/handle and kind. `Apply` returns `Verified=false` and installs the nft baseline. |
+| `FLOWTABLE_BYPASS` | Flowtable/offload or unsafe foreign nft extension | Serving verification fails; `Apply` installs the nft baseline. |
+| `QOS_CLASS_MISSING` | Missing or mismatched serving HTB class/leaf | Serving verification fails; `Apply` installs the nft baseline. |
+
+`ApplyResult.Evidence` and the lab commands' JSON record tc attachment identities and action kinds, including evidence on rejection. `ip -j -4 rule show` and `ip -j -6 rule show` are recorded as family, rule count and scan status only. Rule selectors, destinations and action parameters are omitted. Policy rules and policy-scan failures are informational; the policy-routing control below still passes admission checks.
+
+`TestReviewR15_TcMirredAndPolicyRoutingBypass/tc_clsact_mirred` measured a `clsact`/`matchall`/`mirred egress redirect` from `fv-fh` to `fv-ih`. Before the fix, verify exited 0 while one non-admitted UDP packet reached the uplink and `ctunku` stayed zero. After the fix, the same trigger remains observable but verify and apply exit 3 with `TC_FOREIGN_FILTER`, naming `fv-fh`; apply records `verified=false` and the nft baseline is present. The held `ip_rule` subtest adds a source rule and route in table 100: verify exits 0, the rule scan is recorded, `ctunku` increases by one and the uplink capture is empty. `TestReviewR15_TCFilterAttachments` also rejects filters on root, HTB parent/host/member classes, fq_codel leaves and egress on both interfaces, including nonzero filter chain 7.
+
+This is a serving-gate check, not continuous surveillance. A privileged process can change tc after a read. The existing nft baseline cannot stop a retained ingress redirect that bypasses nft, and this change does not delete foreign `clsact` state. The agent-core owner must decide the re-verification cadence before a serving heartbeat and how to quarantine a path with a retained foreign redirect. Until then, the next serving apply detects it; no between-apply protection is claimed. The current agent observation maps the new reason to code `HEALTH_CHECK_FAILED` with message `TC_FOREIGN_FILTER` until the HTTP contract gains the enum.
+
 ## Decisions
 
 - D-019: usage is the inner IPv4 total length admitted at the forward hook (§10.2). Bytes later dropped by HTB are not subtracted. "Delivered bytes" is not a ledger rule. The lab counters are the meter definition for the node agent.
@@ -244,6 +264,8 @@ The measured line is `SUMMARY LOOPBACK dns=1 serving=1 class=loopback_scoped pos
 - §11.7 production windows remain a recommended starting point. The short window is what CI runs.
 
 ## 待實測
+
+The local `clsact` mirred bypass and its D-085 serving rejection are now measured, along with the held local policy-routing case, in `TestReviewR15_TcMirredAndPolicyRoutingBypass`. This does not establish real NetBird routing compatibility or continuous detection between applies.
 
 This lab does not claim any of the following:
 
