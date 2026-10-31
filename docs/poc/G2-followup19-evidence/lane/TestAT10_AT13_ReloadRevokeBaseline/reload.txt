@@ -1,0 +1,12 @@
+AT10 after kill
+name                             ns       proto  dst                    port   expect   observed       ok
+a1-stays-revoked                 fv-a1    tcp    203.0.113.10           80     deny     timeout        true
+a2-stays-up                      fv-a2    tcp    203.0.113.10           80     allow    connected      true
+lan-stays-denied                 fv-a2    tcp    10.1.2.10              80     deny     timeout        true
+probes=3 failed=0
+AT10 baseline
+name                             ns       proto  dst                    port   expect   observed       ok
+baseline-a2                      fv-a2    tcp    203.0.113.10           80     deny     timeout        true
+baseline-a1                      fv-a1    tcp    203.0.113.10           80     deny     timeout        true
+probes=2 failed=0
+regens=100 revoke_stop=1.663s deny_loops=15 a1_upload=7758

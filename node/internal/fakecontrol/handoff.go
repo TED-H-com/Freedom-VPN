@@ -1,8 +1,11 @@
 package fakecontrol
 
 import (
+	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"sync"
+
 	"github.com/google/uuid"
 )
 
@@ -20,13 +23,51 @@ func (s *Server) AddReenrollmentToken(token string, node uuid.UUID) {
 	s.reenrollTargets[hash] = node
 }
 
-// UsageBodies returns detached, accepted TEST ONLY usage requests, in order.
-func (s *Server) UsageBodies() [][]byte {
+// UsageAttempt records a processed TEST ONLY request. Accepted and Duplicates
+// count event receipts, so a retried POST is distinguishable from attribution.
+type UsageAttempt struct {
+	IdempotencyKey string
+	Body           []byte
+	Accepted       int
+	Duplicates     int
+}
+
+// UsageAttempts returns detached TEST ONLY request evidence in processing order.
+func (s *Server) UsageAttempts() []UsageAttempt {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	out := make([][]byte, len(s.usageBodies))
-	for i, b := range s.usageBodies {
-		out[i] = append([]byte(nil), b...)
+	out := append([]UsageAttempt(nil), s.usageAttempts...)
+	for i := range out {
+		out[i].Body = append([]byte(nil), out[i].Body...)
+	}
+	return out
+}
+
+// HoldNextUsageResponse pauses one TEST ONLY response after ledger acceptance.
+// accepted closes before any response is sent. The handler resumes on release
+// or request cancellation, without holding the server mutex. Release is safe
+// to call again during cleanup.
+func (s *Server) HoldNextUsageResponse() (accepted <-chan struct{}, release func()) {
+	ready, resume := make(chan struct{}), make(chan struct{})
+	s.mu.Lock()
+	s.usageResponseHold = func(ctx context.Context) {
+		close(ready)
+		select {
+		case <-resume:
+		case <-ctx.Done():
+		}
+	}
+	s.mu.Unlock()
+	return ready, sync.OnceFunc(func() { close(resume) })
+}
+
+// UsageBodies returns detached, processed TEST ONLY usage requests, in order.
+// This includes retries whose event receipts are all duplicates.
+func (s *Server) UsageBodies() [][]byte {
+	attempts := s.UsageAttempts()
+	out := make([][]byte, len(attempts))
+	for i, attempt := range attempts {
+		out[i] = attempt.Body
 	}
 	return out
 }

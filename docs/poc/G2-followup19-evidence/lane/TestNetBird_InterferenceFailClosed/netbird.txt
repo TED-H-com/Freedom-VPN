@@ -1,0 +1,18 @@
+netbird accept-all inner
+name                             ns       proto  dst                    port   expect   observed       ok
+nb-allow                         fv-a1    tcp    203.0.113.10           80     allow    connected      true
+nb-member                        fv-a1    tcp    100.64.1.2             8080   deny     timeout        true
+nb-lan                           fv-a1    tcp    10.1.2.10              80     deny     timeout        true
+nb-meta                          fv-a1    tcp    169.254.169.254        80     deny     timeout        true
+nb-rogue                         fv-rogue tcp    203.0.113.10           80     deny     timeout        true
+probes=5 failed=0
+netbird masquerade
+name                             ns       proto  dst                    port   expect   observed       ok
+masq-a1                          fv-a1    tcp    203.0.113.10           80     deny     timeout        true
+masq-b1                          fv-b1    icmp   203.0.113.10           0      deny     timeout        true
+probes=2 failed=0
+netbird off
+name                             ns       proto  dst                    port   expect   observed       ok
+restored                         fv-a1    tcp    203.0.113.10           80     allow    connected      true
+probes=1 failed=0
+mark_pre=5 mark_post=5 preserved=1

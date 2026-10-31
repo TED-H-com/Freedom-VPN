@@ -76,7 +76,8 @@ type Server struct {
 	tokens              map[string]*enrolled
 	reenrollTargets     map[string]uuid.UUID    // TEST ONLY token -> existing node
 	retiredIncarnations map[uuid.UUID]uuid.UUID // TEST ONLY origin -> node
-	usageBodies         [][]byte                // TEST ONLY accepted request bodies
+	usageAttempts       []UsageAttempt          // TEST ONLY processed requests, including retries
+	usageResponseHold   func(context.Context)   // TEST ONLY next processed response, after acceptance
 	revoked             map[uuid.UUID]bool
 	fixture             Fixture
 	genDelta            int64

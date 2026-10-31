@@ -30,18 +30,32 @@ func (s *Service) acceptInstallerResult(ctx context.Context, tx pgx.Tx, n node, 
 	if issued {
 		return ack, apierr.New(apierr.StateConflict, "Installer evidence cannot refer to a central job")
 	}
-	var oldHash string
-	var oldAck []byte
-	err := tx.QueryRow(ctx, `SELECT encode(payload_hash,'hex'),ack FROM installer_update_results WHERE node_id=$1 AND job_id=$2`, i.NodeID, r.JobId).Scan(&oldHash, &oldAck)
-	if err == nil {
-		if oldHash != r.PayloadHash {
-			return ack, apierr.New(apierr.AckConflict, "Installer job already has different evidence")
-		}
-		err = json.Unmarshal(oldAck, &ack)
+	rows, err := tx.Query(ctx, `SELECT outcome_sequence,encode(payload_hash,'hex'),payload,ack,received_at FROM installer_update_results WHERE node_id=$1 AND job_id=$2 ORDER BY outcome_sequence`, i.NodeID, r.JobId)
+	if err != nil {
 		return ack, err
 	}
-	if !errors.Is(err, pgx.ErrNoRows) {
+	receipts, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (installerReceipt, error) {
+		var old installerReceipt
+		err := row.Scan(&old.sequence, &old.hash, &old.result, &old.ack, &old.receivedAt)
+		return old, err
+	})
+	if err != nil {
 		return ack, err
+	}
+	// Replays of either immutable outcome retain their original ACK, even
+	// after a correction or a policy change. The fleet/node locks serialize
+	// correction admission and its projection with other result writers.
+	for _, old := range receipts {
+		if old.hash == r.PayloadHash {
+			return old.ack, nil
+		}
+	}
+	sequence := 1
+	if len(receipts) != 0 {
+		if len(receipts) != 1 || !installerCorrectionAllowed(receipts[0], r) {
+			return ack, apierr.New(apierr.AckConflict, "Installer job already has different evidence")
+		}
+		sequence = 2
 	}
 	if !r.BatchId.IsNull() || !r.TargetId.IsNull() || r.Attempt != 1 {
 		return ack, apierr.New(apierr.StateConflict, "Installer evidence requires attempt 1 without a batch or target")
@@ -59,6 +73,9 @@ func (s *Service) acceptInstallerResult(ctx context.Context, tx pgx.Tx, n node, 
 	if err != nil {
 		var ae *apierr.Error
 		if errors.As(err, &ae) && ae.Code == apierr.ReleaseNotApproved {
+			if sequence == 2 {
+				return ack, apierr.New(apierr.MinimumVersionViolation, "Installer correction release is no longer eligible")
+			}
 			return ack, apierr.New(apierr.StateConflict, "Installer release is not published or is revoked")
 		}
 		return ack, err
@@ -124,12 +141,18 @@ func (s *Service) acceptInstallerResult(ctx context.Context, tx pgx.Tx, n node, 
 		return ack, err
 	}
 	history := r.Generation < n.observedHighWater
-	ack = api.UpdateResultAck{ResultId: r.ResultId, Accepted: true, AcceptedAsHistory: history, AppliedToCurrentObservation: applied, ObservedUpdateGeneration: n.observedHighWater, ReceivedAt: time.Now().UTC().Truncate(time.Microsecond)}
+	receivedAt := time.Now().UTC().Truncate(time.Microsecond)
+	if sequence == 2 && !receivedAt.After(receipts[0].receivedAt) {
+		// The existing node summary orders by receipt time and job ID. Ensure
+		// the correction sorts after its first receipt even on a clock step.
+		receivedAt = receipts[0].receivedAt.Add(time.Microsecond)
+	}
+	ack = api.UpdateResultAck{ResultId: r.ResultId, Accepted: true, AcceptedAsHistory: history, AppliedToCurrentObservation: applied, ObservedUpdateGeneration: n.observedHighWater, ReceivedAt: receivedAt}
 	ackRaw, err := json.Marshal(ack)
 	if err != nil {
 		return api.UpdateResultAck{}, err
 	}
-	_, err = tx.Exec(ctx, `INSERT INTO installer_update_results(node_id,job_id,incarnation_id,release_id,state,payload,payload_hash,ack,received_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9)`, i.NodeID, r.JobId, i.IncarnationID, r.RequestedReleaseId, r.State, raw, digest, ackRaw, ack.ReceivedAt)
+	_, err = tx.Exec(ctx, `INSERT INTO installer_update_results(node_id,job_id,incarnation_id,release_id,state,payload,payload_hash,ack,received_at,outcome_sequence) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`, i.NodeID, r.JobId, i.IncarnationID, r.RequestedReleaseId, r.State, raw, digest, ackRaw, ack.ReceivedAt, sequence)
 	if err != nil {
 		return api.UpdateResultAck{}, err
 	}
@@ -153,4 +176,31 @@ func (s *Service) acceptInstallerResult(ctx context.Context, tx pgx.Tx, n node, 
 		err = audit.AppendEvent(ctx, tx, event)
 	}
 	return ack, err
+}
+
+type installerReceipt struct {
+	sequence   int
+	hash       string
+	result     api.UpdateResult
+	ack        api.UpdateResultAck
+	receivedAt time.Time
+}
+
+// D-127 permits one correction, not a new attempt stream. The applied ACK of
+// a pre-health failure proves that D-111 established a formerly null baseline.
+// Legacy job IDs remain replayable but cannot acquire new outcomes.
+func installerCorrectionAllowed(first installerReceipt, next api.UpdateResult) bool {
+	old := first.result
+	if first.sequence != 1 || old.ResultId == next.ResultId ||
+		next.JobId != installerjob.ID(old.RequestedReleaseId, old.ManifestSha256, old.IncarnationId) {
+		return false
+	}
+	if old.State == api.UpdateResultStateSucceeded && next.State == api.UpdateResultStateRolledBack {
+		return true
+	}
+	stage, _ := old.Stage.Get()
+	current, err := old.CurrentReleaseId.Get()
+	return old.State == api.UpdateResultStateFailed && next.State == api.UpdateResultStateSucceeded &&
+		first.ack.AppliedToCurrentObservation && beforeHealth(&stage) && old.Health.IsNull() &&
+		err == nil && current != old.RequestedReleaseId
 }

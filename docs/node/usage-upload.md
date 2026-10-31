@@ -134,3 +134,32 @@ independent ACKs and a current stream beginning at sequence 1, and proves that
 reopening the unchanged incarnation creates no additional retirement. This
 activates the package hand-off described above for ENR-05; real assembled
 reinstall evidence remains with enrollment follow-up 8 and usage AT follow-up 5.
+
+
+### D-125 updater barrier correlation
+
+2026-10-31 — Agent-core follow-up 26 adds the node-local optional `barrier_id`
+to `state_dir/meter.checkpoint`. It echoes the live updater latch's UUID spelling
+only after sampler withdrawal, verified member baseline and durable epoch close.
+A different identity repeats that barrier even for an already closed quiet epoch;
+it does not create usage or relabel an earlier checkpoint. Withdrawal removes
+and directory-fsyncs the file before admission. Restart under the same latch
+republishes the original bytes (including its earlier ACK snapshot); an absent
+or malformed latch publishes nothing, and malformed content blocks forwarding.
+See [the updater 17 hand-off](followup26-updater-2026-10-31.md) for comparison,
+legacy format, restart and inference limits. Updater 16 deliberately rejects the
+five-member format; this is producer evidence, not successful updater acceptance.
+
+2026-10-31 — Devstack 18 request 2 exposed a D-118 activation lock gap. The
+agent now holds `state_dir/usage.db.lock` from before opening the ledger until
+the final sample, cancellation/join of both sampler and uploader, and SQLite
+close have completed. A replacement process retries without opening or retiring
+that ledger while the lifetime lock is busy. Incarnation adoption additionally
+acquires the shared node lock around `RetirePreviousAt`; contention leaves
+retirement retryable and forwarding blocked. An unchanged incarnation can
+still open during the updater's locked candidate restart. The verified
+re-enrollment test now proves refusal while the node lock is held, then one
+retirement, original bytes/hashes, original-first upload and independent ACKs
+after release; `TestD118_LedgerOwnershipWaitsForPreviousLoops` proves ownership
+is not released until old-loop cleanup finishes. These are local mechanism
+proofs; real ENR-05 and physical arm64 acceptance remain with their assigned lanes.

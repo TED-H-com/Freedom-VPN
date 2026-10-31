@@ -4,6 +4,12 @@ Freedom VPN is a member-based, multi-region VPN platform for a small paid commun
 
 **Status:** early development. Nothing here is production-ready. Progress and remaining blockers are tracked in [docs/ROADMAP.md](docs/ROADMAP.md), the dev-stack run records and shared lab hooks in [docs/e2e/README.md](docs/e2e/README.md) and [docs/e2e/RUN.md](docs/e2e/RUN.md), and the acceptance matrix ([docs/e2e/at/enrollment/RUN.md](docs/e2e/at/enrollment/RUN.md), [docs/e2e/at/members/README.md](docs/e2e/at/members/README.md), [docs/e2e/at/isolation/README.md](docs/e2e/at/isolation/README.md), [docs/e2e/at/updates/summary.md](docs/e2e/at/updates/summary.md), [docs/e2e/at/secops/README.md](docs/e2e/at/secops/README.md)).
 
+Latest operator evidence: [follow-up 17](docs/handover/follow-up-17.md), through
+#313. AT10 passes under the D-120 test definition; D-123 retains IPv6Block.
+ENR-05 and the first-offer hook are harness-proved; serving updater, post-upgrade
+seed and native MTU failures remain recorded, with full acceptance limits in
+the linked cut.
+
 ## What it does
 
 Intended v1 capabilities (subject to the open acceptance items in [docs/e2e/at/enrollment/RUN.md](docs/e2e/at/enrollment/RUN.md), [docs/e2e/at/members/README.md](docs/e2e/at/members/README.md), [docs/e2e/at/isolation/README.md](docs/e2e/at/isolation/README.md), [docs/e2e/at/updates/summary.md](docs/e2e/at/updates/summary.md), and [docs/e2e/at/secops/README.md](docs/e2e/at/secops/README.md)):

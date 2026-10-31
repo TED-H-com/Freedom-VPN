@@ -36,3 +36,20 @@ New members and secops evidence uses run-ID copies; enrollment 7 and devstack
 17 already have immutable run directories. followup16-snapshots.json records
 the exact source and SHA-256 of each pin. D-114 and D-119 are explicitly pending
 or interpretive orchestrator decisions, not claimed merged implementations.
+
+## Follow-up 17 provenance
+
+`followup17-main.json` contains the ten #304–#313 roadmap rows at main
+`7e044c71ecf1d07f63e89721bd213db6611a6a47`. `followup17-snapshots.json`
+records source paths, that commit and SHA-256 for 59 immutable evidence inputs.
+Owner prose is copied into `history/follow-up-17/`; devstack measurements use
+their existing run-ID paths. No claims test reads a lane's current evidence.
+Source notes may describe an older product base: their original failures and
+pending work are historical, not silently updated to the handover cutoff.
+
+Follow-up 16 claim tests now read its frozen register/operator/review text.
+The register snapshot is a byte-identical contiguous excerpt beginning at its
+dated decisions heading, excluding unrelated catalogue text; the manifest
+records source byte offset, length, full-source digest and excerpt digest.
+All other snapshots are complete source files, byte-identical at the cutoff.
+Live document digests are separate in the owned secops scope-review manifest.

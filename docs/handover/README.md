@@ -53,41 +53,51 @@ Historical status at main `c6e3eca`, superseded where stated by follow-up 15 bel
 - D-095 is merged (#270); D-099 HTTP desired-state cache fix is **coming**, wire-nodes follow-up 29. SECOPS-21 remains open until the retained-node first offer is verified end to end.
 - Isolation follow-up 6 (#271) records assisted recovery and an AT13 failure; see the acceptance snapshot. Enrollment follow-up 5 (ENR-05/06, D-089) has no roadmap row at this snapshot; no acceptance result from it is claimed. Installer follow-up 3 owns ENR-06 and the systemd lifecycle rerun. r16 had not run at this cutoff; its delivered report and current dispositions are indexed below.
 
-## Follow-up 16 decisions register (2026-10-31 EDT)
+## Follow-up 17 decisions register (2026-10-31 EDT)
 
-Verified against main `982c209` through #303. Follow-up 15 (#292) reconciled
-#273–#290, including revision 14; its exact register and r16 dispositions are
-preserved in the handover testdata history/follow-up-15 snapshot. Follow-up 14
-stopped at #272. Historical acceptance tables retain their original cutoff.
-The [current acceptance snapshot](../ops/README.md#follow-up-16-acceptance-snapshot-2026-10-31-edt)
-and `TestHandover_Followup16Claims` pin the new merged boundary. Handover ran no
-new live acceptance. D-114 and D-119 below record the orchestrator's decisions;
-they do not assert a newly merged updater or scheduled plan-change feature.
+Verified against main `7e044c71` through #313. Follow-up 16 (#306) reconciled
+through #303 and left #304 for this cut; its register and r16 dispositions are
+preserved under handover testdata history/follow-up-16. Follow-up 15 (#292)
+covered #273–#290; follow-up 14 stopped at #272. Historical acceptance tables
+retain their original cutoff. The [current evidence and operator limits](follow-up-17.md),
+[acceptance snapshot](../ops/README.md#follow-up-17-acceptance-snapshot-2026-10-31-edt)
+and `TestHandover_Followup17Claims` pin #304–#313. Handover ran no new live
+acceptance. D-121 and D-122 below are orchestration-process decisions only.
+
+**2026-10-31 08:17 EDT resume:** security-ops follow-up 13 (#316) landed
+after this reconciliation through #313. Its SECOPS-21 closure and AT30
+measurements are reserved for reconciliation in handover follow-up 18; see
+the [dated owner handover](../e2e/at/secops/2026-10-31-follow-up-13-handover.md).
+The decision rows below retain their original #313 cutoff.
 
 | Decision | Operator meaning and delivery boundary |
 |---|---|
 | D-098 | Claims read byte-identical owner archives or run-ID-named snapshots, never current lane evidence; members follow-up 7, enrollment follow-up 6 and secops follow-up 11 now have final archives. Live document digests remain separate. |
-| D-099 | Do not close SECOPS-21 from the compiler tests alone. Merged #277; cache reuse is bounded by the ordinary proposal and restore-observation fence. SECOPS-21 remains open after the #301 live run: first delivery, local acceptance and the matching applied ACK still need capture. |
+| D-099 | Do not close SECOPS-21 from the compiler tests alone. Merged #277; #313 harness-proves first delivered 4 > retained 3, matching local digest/applied state and central 202 receipt. SECOPS-21 full restore remains open for secops 13. |
 | D-100 | Merged #276: changed topology expectations refresh only through a clean verified Apply of a newer published generation; no out-of-band override. |
 | D-101 | Merged #275: fixtures obtain real central serving leases and report the issued ID/expiry unchanged. Portal #293 displays the publication-gate cause; polling timeout leaves the operation running. |
 | D-102 | Only the owning lane writes its requests; devstack answers in `docs/e2e/RESPONSES.md`. Fixture delivery is not consuming-case acceptance. |
 | D-103 | Security-ops #301 ran two independent live runs under its existing `fvpn-w4-secops-*` namespace; full AT29/AT31 remain blocked. |
-| D-104 | Netlab #290 ships the 1 ms deadline quantum and 100 ms guarded-install bound. Agent-core follow-ups 24/25 consumption and isolation follow-up 8 acceptance remain pending; AT13 stays failed. |
-| D-105 | Central acceptance merged #296: current mTLS presenter, retired origin on the same node, presenter enrolled strictly after retirement, immutable event identity/hash, one origin per batch, ACK per original stream; the retired certificate is refused at mTLS. Node retention/upload merged #299 but is inactive until D-118; live ENR-05 and usage AT follow-up 5 remain pending. |
-| D-106 | Revision 14 defines optional nullable `ObservationReport.tc_evidence`; netlab #295 supplies `ServingEvidence.TCReadbackEvidence()` with actual read completion, candidate generation, full verifier result, bounded detached rows and contract-matching digest. Agent-core follow-up 25 wiring remains pending; absent evidence is not a clean read. |
+| D-104 | Netlab #290 ships the 1 ms quantum and 100 ms installation bound; agent-core #312 consumes absolute deadlines and measures guard-inclusive availability. D-120 leaves that installation bound unchanged. Assembled continuity / AT13 rerun remains open for isolation 8. |
+| D-105 | Central acceptance merged #296: current mTLS presenter, retired origin on the same node, presenter enrolled strictly after retirement, immutable event identity/hash, one origin per batch, ACK per original stream; the retired certificate is refused at mTLS. #299 retention/upload is active through #312. #313 ENR-05 proves same-incarnation installer preservation; retired-stream usage 5 / enrollment 8 acceptance remains open. |
+| D-106 | Revision 14 defines optional nullable `ObservationReport.tc_evidence`; #295 supplies `ServingEvidence.TCReadbackEvidence()`. #305 transports bounded revision 13 details; #312 retains the authoritative Apply/live/blocked snapshot with actual read time, candidate generation, full result and original digest. Null before any retained read; historical rejection rows survive recovery. |
 | D-107 | Merged #287, displayed by #293: `Operation.steps[].message` supplies the gate cause next to `error_code`; D-074 still holds publication running. |
 | D-108 | D-096 closes only the measured native IPv4 NetBird-owned path; installer transit, IPv6 and uninterrupted containment are not promoted by this mechanism proof. |
 | D-109 | Pin tokens only in handover-owned documents, D-098 archives, roadmap rows / PR numbers / contract versions, or Go test names on main; another lane's living prose is not a pin target. |
-| D-110 | Merged #300: `internal/installerjob` derives the deterministic UUIDv5 job ID from the claim namespace, manifest digest and authenticated incarnation; central recomputes it and rejects a new mismatch with `409 STATE_CONFLICT`, `job_id_mismatch`, bounding accepted rows to one per (incarnation, release). Accepted legacy receipts retain replay/conflict semantics; `nodes.resource_version` changes only for visible pointer/summary changes. Main's updater still mints the legacy whole-record ID until updater follow-up 15 merges. |
+| D-110 | Merged #300: `internal/installerjob` derives the deterministic UUIDv5 job ID from the claim namespace, manifest digest and authenticated incarnation; central recomputes it and rejects a new mismatch with `409 STATE_CONFLICT`, `job_id_mismatch`, bounding accepted rows to one per (incarnation, release). Accepted legacy receipts retain replay/conflict semantics; `nodes.resource_version` changes only for visible pointer/summary changes. Updater follow-up 15 (#307) now produces the same catalog-bound identity. |
 | D-111 | Merged #300: a null central baseline can be seeded from an eligible installer-reported release as `current_release_id = last_good_release_id = that release`; failure evidence remains stored without promoting the candidate or inventing health. Rollback restores both pointers, generation fences remain, and migration 00191 has a Down/Up round-trip proof. |
-| D-112 | Merged #296: the retirement window uses central `sampling_interval_bound_seconds`, default 10 s, with node sampling ≤ that bound; #299 pins the production meter's 10 s default, while activation and live hand-off remain pending under D-118. |
+| D-112 | Merged #296: the retirement window uses central `sampling_interval_bound_seconds`, default 10 s, with node sampling ≤ that bound; #299 pins the production meter's 10 s default, activation merged #312 under D-118; assembled retired-stream acceptance remains pending. |
 | D-113 | The one-file test-fixture ownership extension let fleet-update bind the nodes keyed-replay fixture to D-110 so the merge kept main green; #300 also records the second r16 replay fixture corrected after integration with #291, with production replay unchanged. |
-| D-114 | Pending updater follow-up 15: legacy unaccepted outbox receipts must be re-derived once or retired on 409, while accepted legacy receipts keep their stored replay semantics. |
+| D-114 | Merged #307: legacy unaccepted outbox receipts get one job_id_mismatch 409 and then a replacement; the mismatch is terminal and not resent. Accepted legacy receipts keep stored replay semantics. |
 | D-115 | Merged #296: middleware delegates body identity checks to the usage service only for `submitUsageBatch` with a schema-valid origin; mTLS, schema/body-size validation, idempotency, no-origin recursive checks and other operations remain enforced. |
-| D-116 | Merged #302: keep enforcement strict; the installer marker lives in hookless `inet fvpn_install`, rerun/upgrade migrates the exact legacy empty marker, and `inet fvpn` retains exactly four rendered chains. Netlab follow-up 17 scope tests and devstack follow-up 18 serving-fixture rerun remain pending. |
+| D-116 | Merged #302: keep enforcement strict; marker in hookless `inet fvpn_install`, exact legacy empty marker migrated, four rendered chains in `inet fvpn`. #304 proves verifier scope and serving with the marker before enrollment; #313 proves the real installer rerun and counted serving. |
 | D-117 | Merged #297: there are no open-ended grants; `valid_until` is NOT NULL with `isfinite` since migration 00001, and far-future finite grants use the real withdrawal route. |
-| D-118 | #299 is merged inactive: agent-core follow-up 25 owns the activation hook in `node/agent/usage.go`; retained-stream package tests are not a live reinstall hand-off. |
+| D-118 | Active in agent-core follow-up 25 (#312): activation hook in `node/agent/usage.go` sets RetirePreviousAt; genuine 4,096-byte final sample, retained stream first, independent ACKs and current sequence 1. Assembled retired-stream acceptance remains open. |
 | D-119 | No scheduled plan-change contract exists: a finite grant's deadline means expiry; a plan change at a boundary is a billing-issued replacement grant. |
+| D-120 | AT10 test-acceptance definition, not a product guarantee: loss must fall inside/boundary of exactly one verified outer guard bracket; both bracket upper bound and render → installed ≤ 100 ms; successful successor, zero TCP timeouts, ≤ 5 losses per 100 reloads, complete checked captures. #304 remains failed under the old rule; #308 passes under D-120. D-104's 100 ms installation bound unchanged. |
+| D-121 | Orchestration process only: one-follow-up ownership extension for updater 15 to align packaging/installer/handoff_test.go TestD089_RealUpdaterConsumesWriterRecord with D-110 failed-replay semantics, unchanged seal and cardinality (#307). Test-only; no operator guarantee. |
+| D-122 | Orchestration process only: node/enforce/review_r16_quarantine_test.go accepted as a test-only ownership exception for agent-core 24 (#305). No enforcement production change. No operator guarantee. |
+| D-123 | v1.0 overlay is IPv6Block by design: no IPv6 forwarding through the node, no end-to-end IPv6 MTU / PMTU acceptance row. IPv6 overlay support is separately scheduled work, never deletion of the guard rules. Native IPv6 underlay failures remain applicable. |
 
 Current contract is revision 14: OpenAPI `1.10.0`, `50` operations (#289).
 Wire-members follow-up 11 (#297) registers `revokeMemberGrant` at
@@ -103,18 +113,17 @@ and [portal's 15-entry D-093 audit](../portal/DEV.md): D093-06 / D093-10 are
 retired, D093-12 stays open because the harness still writes
 `release_verifications.state=verified` by SQL; the fixture-transport decision is pending.
 
-## Pending at the follow-up 16 cutoff
+## Pending at the follow-up 17 cutoff
 
 | Work | Remaining acceptance boundary |
 |---|---|
-| Agent-core follow-up 24 | r16 M-1 failed freeze persistence, ISO-F6-01 recovery latch, meter checkpoint and D-104 consumer; pending, no merge claimed. |
-| Agent-core follow-up 25; isolation follow-up 8 | Recovery and D-106 observation wiring, D-118 hand-off activation, members F8-01 same-generation restart; AT13 stays failed until assembled re-assertion. |
-| Updater follow-up 15 | D-110 producer switch and D-114 legacy outbox handling; full journaled installer upgrade remains red with the missing checkpoint. |
-| Netlab follow-up 17; devstack follow-up 18 | D-116 verifier-scope tests and installer serving rerun; #302 baseline verification alone does not prove serving. |
-| Devstack follow-up 18; wire-nodes follow-up 32 | SECOPS-21 first-delivered envelope, matching local acceptance and applied ACK capture. |
-| Usage AT follow-up 5; enrollment rerun | Live ENR-05 original-stream bytes/ACK assertions after activation; the five measured AT07 blockers are not retroactively passed. |
-| Devstack follow-up 18; netlab follow-up 18 | Members F8-02 incomplete dual-stack MTU-1280 transfer; AT09 remains failed. |
+| Isolation 8; members 9 | #305/#312 recovery and D-104/D-106 are merged; assembled AT13 / D-104 continuity and original F8-01 restart acceptance remain open. |
+| Updater 17 / agent-core 26; installer 6 | Serving checkpoint barrier correlation and post-upgrade seed HASH_MISMATCH remain failures in #313's measured runs; local #311 health pass does not close them. |
+| Security-ops 13 | #313 first-offer capture is harness-proved; SECOPS-21 full restore still open. |
+| Usage 5; enrollment 8 | Retired-stream bytes/ACK acceptance and the five AT07 rows still need consuming reruns after D-118 activation; #313 ENR-05 same-incarnation preservation passes. |
+| Netlab 19 / wire-nodes 32; members 9 | Native MTU 1280 failures in both underlay families remain unattributed; AT09 F8-02 stays open under D-123 overlay posture. |
+| Operator/device campaigns | AT31 hardware and AT29 guest-clock rows, real platform clients and physical arm64 remain unproved. |
 
 [r16 report](../reviews/r16-rev13-d089-d099-review.md) stays byte-identical;
-[current dispositions](../reviews/README.md#r16-dispositions-at-the-follow-up-16-cutoff)
-close H-1 with #291 and M-2/L-1 with #300, while M-1 stays pending.
+[current dispositions](../reviews/README.md#r16-dispositions-at-the-follow-up-17-cutoff)
+close H-1 with #291, M-1 with #305 and M-2/L-1 with #300 plus #307 producer adoption.

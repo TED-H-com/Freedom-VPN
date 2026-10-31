@@ -357,9 +357,10 @@ func TestMTR03_GenerationRejectionRetainsGapBeforeFinalSample(t *testing.T) {
 	if !gap || r.eng.serving || !r.eng.finalDone || after.OpenEpoch != uuid.Nil {
 		t.Fatal("withdrawal erased the real discontinuity or left the barrier incomplete")
 	}
-	if _, err := (updater.FileMeter{Path: r.eng.cfg.MeterCheckpoint}).FinalSample(t.Context()); err != nil {
+	if _, err := r.eng.usage.ClosedCheckpoint(t.Context()); err != nil {
 		t.Fatal(err)
 	}
+	noCheckpoint(t, r) // No updater latch: close only, no barrier publication.
 }
 
 func TestMTR03_UPD05_DurableFileMeterBarrier(t *testing.T) {
@@ -388,10 +389,17 @@ func TestMTR03_UPD05_DurableFileMeterBarrier(t *testing.T) {
 		t.Fatal("open epoch exposed checkpoint")
 	}
 	src.obs.Counters[name] = enforce.CounterValue{Packets: 1, Bytes: 4096}
+	id := uuid.NewString()
+	writeBarrier(t, r, id)
 	r.eng.handoff(t.Context())
-	cp, err := (updater.FileMeter{Path: r.eng.cfg.MeterCheckpoint}).FinalSample(t.Context())
-	if err != nil {
-		t.Fatal(err)
+	cp := readCheckpoint(t, r)
+	if cp.BarrierID != id {
+		t.Fatal("producer omitted latch identity")
+	}
+	// Updater 16 deliberately rejects the fifth member; this producer test
+	// does not claim updater 17 acceptance.
+	if _, err := (updater.FileMeter{Path: r.eng.cfg.MeterCheckpoint}).FinalSample(t.Context()); err == nil {
+		t.Fatal("updater 16 unexpectedly accepted correlated format")
 	}
 	after, err := r.eng.usage.Head(t.Context())
 	if err != nil {
