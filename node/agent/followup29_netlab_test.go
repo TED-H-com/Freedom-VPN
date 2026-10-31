@@ -3,6 +3,8 @@
 package agent
 
 import (
+	"bufio"
+	"bytes"
 	"encoding/json"
 	"os"
 	"os/exec"
@@ -88,6 +90,21 @@ func followup29Sibling(t *testing.T, r *rig, p *measuredSystemPlane) {
 			t.Fatal("missing two-source positive control", row)
 		}
 	}
+	capture := exec.CommandContext(t.Context(), "python3", "-u", "-c", followup29Continuous, filepath.Join(dir, "capture-stop.json"))
+	stdout, err := capture.StdoutPipe()
+	if err != nil {
+		t.Fatal(err)
+	}
+	var stderr bytes.Buffer
+	capture.Stderr = &stderr
+	if err := capture.Start(); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = capture.Process.Kill(); _ = capture.Wait() })
+	reader := bufio.NewReader(stdout)
+	if line, err := reader.ReadString('\n'); err != nil || line != "ready\n" {
+		t.Fatal("capture startup", line, err)
+	}
 	write("ready.json", map[string]bool{"two_sources_forwarded": true})
 	wait("load-ready.json")
 	r.srv.SetFixture(fixtureWithBindings(13, bindings[:1]))
@@ -133,9 +150,49 @@ func followup29Sibling(t *testing.T, r *rig, p *measuredSystemPlane) {
 	if rows[0].Egress == "0" || rows[1].Ingress == "0" || rows[1].Egress != "0" {
 		t.Fatal("sibling/revoked recovery controls", rows)
 	}
+	write("capture-stop.json", true)
+	var trace json.RawMessage
+	if err := json.NewDecoder(reader).Decode(&trace); err != nil {
+		t.Fatal(err, stderr.String())
+	}
+	if err := capture.Wait(); err != nil {
+		t.Fatal(err, stderr.String())
+	}
+	write("continuous.json", trace)
 	assertTCWire(t, r)
 	write("outcome.json", map[string]bool{"failed_install": found, "both_blocked_at_baseline": true, "sibling_recovered": true, "revoked_still_blocked": true})
 }
+
+const followup29Continuous = `import socket,struct,time,select,json,sys,os
+def mac(dev): return bytes.fromhex(open('/sys/class/net/'+dev+'/address').read().strip().replace(':',''))
+def checksum(b):
+ s=sum(struct.unpack('!%dH'%(len(b)//2),b));s=(s>>16)+(s&65535);s+=(s>>16);return (~s)&65535
+send=socket.socket(socket.AF_PACKET,socket.SOCK_RAW,socket.htons(3));send.bind(('fv-fa',0));reads=[]
+for dev in ['fv-fh','fv-ih']:
+ s=socket.socket(socket.AF_PACKET,socket.SOCK_RAW,socket.htons(3));s.bind((dev,0));s.setblocking(False);reads.append(s)
+header=mac('fv-fh')+mac('fv-fa')+b'\x08\x00';rows=[];start=time.monotonic_ns();target=start;stop=0
+print('ready',flush=True)
+while time.monotonic_ns()<start+150000000000:
+ now=time.monotonic_ns()
+ if not stop and os.path.exists(sys.argv[1]): stop=now
+ if stop and now>stop+500000000: break
+ if not stop and now>=target:
+  seq=len(rows);source='100.64.1.'+str(1+seq%2);payload=struct.pack('!I',seq)+b'TEST ONLY'
+  udp=struct.pack('!HHHH',40100,40101,len(payload)+8,0)+payload
+  ip=struct.pack('!BBHHHBBH4s4s',69,0,len(udp)+20,seq%65536,0,64,17,0,socket.inet_aton(source),socket.inet_aton('203.0.113.10'));ip=ip[:10]+struct.pack('!H',checksum(ip))+ip[12:]
+  rows.append(dict(source=source,sent_ns=time.monotonic_ns(),ingress_ns=0,egress_ns=0));send.send(header+ip+udp);target=now+20000000
+ ready,_,_=select.select(reads,[],[],0.005)
+ for s in ready:
+  while True:
+   try: packet=s.recv(65535)
+   except BlockingIOError: break
+   at=time.monotonic_ns()
+   if len(packet)>=46 and packet[12:14]==b'\x08\x00' and packet[23]==17 and packet[36:38]==struct.pack('!H',40101):
+    seq=struct.unpack('!I',packet[42:46])[0]
+    if seq<len(rows): rows[seq]['ingress_ns' if s==reads[0] else 'egress_ns']=at
+stats=[dict(zip(['packets','drops'],struct.unpack('II',s.getsockopt(263,6,8)))) for s in reads]
+print(json.dumps(dict(start_ns=str(start),end_ns=str(time.monotonic_ns()),capture_stats=stats,packets=[{k:str(v) for k,v in row.items()} for row in rows])))
+`
 
 const followup29Packets = `import socket,struct,time,select,json
 def mac(dev): return bytes.fromhex(open('/sys/class/net/'+dev+'/address').read().strip().replace(':',''))
