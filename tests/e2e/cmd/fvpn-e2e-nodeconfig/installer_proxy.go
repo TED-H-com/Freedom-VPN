@@ -51,7 +51,7 @@ func installerProxy() error {
 	}
 	agent := proxy("https://agent.example.invalid:9443", &tls.Config{MinVersion: tls.VersionTLS13, RootCAs: roots, GetClientCertificate: func(*tls.CertificateRequestInfo) (*tls.Certificate, error) { c, e := identity(); return &c, e }})
 	handler := installerProxyHandler(public, agent, identity, usageHoldMarker, "/var/lib/vpn-node/e2e/hold-first-poll")
-	srv := &http.Server{Addr: "127.0.0.1:9444", Handler: handler, ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 30 * time.Second, WriteTimeout: 30 * time.Second, TLSConfig: &tls.Config{MinVersion: tls.VersionTLS13, ClientAuth: tls.VerifyClientCertIfGiven, ClientCAs: clients}}
+	srv := &http.Server{Addr: "127.0.0.1:9444", Handler: newFirstOfferObserver().wrap(handler), ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 30 * time.Second, WriteTimeout: 30 * time.Second, TLSConfig: &tls.Config{MinVersion: tls.VersionTLS13, ClientAuth: tls.VerifyClientCertIfGiven, ClientCAs: clients}}
 	return srv.ListenAndServeTLS("/var/tmp/e2e-rel/fault-proxy.crt", "/var/tmp/e2e-rel/fault-proxy.key")
 }
 

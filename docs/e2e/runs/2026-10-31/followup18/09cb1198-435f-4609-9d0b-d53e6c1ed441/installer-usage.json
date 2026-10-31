@@ -1,0 +1,58 @@
+{
+  "id": "installer-usage",
+  "title": "ENR-05 same installer slot: counted traffic, held ACKs and CLI ledger",
+  "spec": [
+    "§10.5",
+    "ENR-05"
+  ],
+  "status": "pass",
+  "observations": [
+    {
+      "name": "counters_before",
+      "detail": "{\"upload_bytes\":\"1153\",\"download_bytes\":\"1519\",\"Present\":true}"
+    },
+    {
+      "name": "counters_after",
+      "detail": "{\"upload_bytes\":\"3010\",\"download_bytes\":\"2860\",\"Present\":true}"
+    },
+    {
+      "name": "initial",
+      "detail": "{\"schema_version\":1,\"node_id\":\"01a1917d-e899-7f0f-a666-35b7f0ddd137\",\"node_incarnation_id\":\"01a1917d-eedf-75ab-a77e-babbc7fb81dc\",\"ledger_epoch\":\"629370d2-858f-4740-be83-be70a3fbc16d\",\"meter_epochs\":[{\"meter_epoch_id\":\"01a1917d-efbb-78df-b1b9-67bc2dd60c34\",\"state\":\"closed\"},{\"meter_epoch_id\":\"01a1917d-f476-744f-b05b-7f8d3dc41e7b\",\"state\":\"closed\"},{\"meter_epoch_id\":\"01a1917d-fb2b-724d-9fb8-9e1d9f578333\",\"state\":\"closed\"},{\"meter_epoch_id\":\"01a1917d-fe38-76d6-82aa-7a35e86b2b26\",\"state\":\"closed\"},{\"meter_epoch_id\":\"01a1917e-123d-7966-9b08-e41ffa842006\",\"state\":\"closed\"},{\"meter_epoch_id\":\"01a1917e-2675-7f2a-a15c-4142d3d24682\",\"state\":\"closed\"},{\"meter_epoch_id\":\"01a1917e-3993-7268-a783-2cb02862cd76\",\"state\":\"closed\"},{\"meter_epoch_id\":\"01a1917e-6a41-711e-951f-20611c2e502e\",\"state\":\"closed\"},{\"meter_epoch_id\":\"01a1917e-7ea7-75b6-9e76-1127f6b5762b\",\"state\":\"current\"}],\"last_event_seq\":\"1\",\"acked_through\":\"1\",\"unacked_count\":0,\"unacked_payload_bytes\":\"0\",\"unacked_events\":[]}"
+    },
+    {
+      "name": "held",
+      "detail": "{\"schema_version\":1,\"node_id\":\"01a1917d-e899-7f0f-a666-35b7f0ddd137\",\"node_incarnation_id\":\"01a1917d-eedf-75ab-a77e-babbc7fb81dc\",\"ledger_epoch\":\"629370d2-858f-4740-be83-be70a3fbc16d\",\"meter_epochs\":[{\"meter_epoch_id\":\"01a1917d-efbb-78df-b1b9-67bc2dd60c34\",\"state\":\"closed\"},{\"meter_epoch_id\":\"01a1917d-f476-744f-b05b-7f8d3dc41e7b\",\"state\":\"closed\"},{\"meter_epoch_id\":\"01a1917d-fb2b-724d-9fb8-9e1d9f578333\",\"state\":\"closed\"},{\"meter_epoch_id\":\"01a1917d-fe38-76d6-82aa-7a35e86b2b26\",\"state\":\"closed\"},{\"meter_epoch_id\":\"01a1917e-123d-7966-9b08-e41ffa842006\",\"state\":\"closed\"},{\"meter_epoch_id\":\"01a1917e-2675-7f2a-a15c-4142d3d24682\",\"state\":\"closed\"},{\"meter_epoch_id\":\"01a1917e-3993-7268-a783-2cb02862cd76\",\"state\":\"closed\"},{\"meter_epoch_id\":\"01a1917e-6a41-711e-951f-20611c2e502e\",\"state\":\"closed\"},{\"meter_epoch_id\":\"01a1917e-7ea7-75b6-9e76-1127f6b5762b\",\"state\":\"current\"}],\"last_event_seq\":\"2\",\"acked_through\":\"1\",\"unacked_count\":1,\"unacked_payload_bytes\":\"654\",\"unacked_events\":[{\"event_seq\":\"2\",\"period_ids\":[\"2026-10\"],\"records\":[{\"member_id\":\"01a1917e-1662-7571-8a9a-60da4e86666d\",\"device_id\":\"01a1917e-2af0-7cda-883c-736214db2cc1\",\"binding_revision\":\"1\",\"period_id\":\"2026-10\",\"upload_bytes\":\"1376\",\"download_bytes\":\"1001\"}],\"payload_sha256\":\"b9100d50a4677426336c8eb36c587c19a769cb718ebea110fc024fa726902b29\"}]}"
+    },
+    {
+      "name": "serving_rerun",
+      "detail": "{\"Exit\":0,\"Status\":\"already_current\",\"Code\":\"baseline\",\"Incarnation\":\"01a1917d-eedf-75ab-a77e-babbc7fb81dc\",\"NodeID\":\"01a1917d-e899-7f0f-a666-35b7f0ddd137\",\"RetiredMode\":\"\",\"RetiredHashes\":{},\"BoundStateBefore\":null,\"RetiredBoundState\":null,\"Message\":\"already_current\",\"Before\":{\"key_sha256\":\"669eaca2922a922794cc66f21498dbb09bb98c2c6d5b42ec7e983818df0e74ed\",\"cert_sha256\":\"70bd5bfc06daf6b2bee486aab5ae422fef4ae68420e45105accb279d453986d4\",\"node_json_sha256\":\"c0843540cd6c7cf3e79175baadbf83d724e32863cbd528581670f52d3a79f788\",\"usage_db_sha256\":\"24220cccb86b348db9fceccd33c847d176d11fdcd7f72b8a9d57f490e4a2fe97\",\"usage_wal_sha256\":\"absent\",\"machine_id_sha256\":\"186cc62b3ea133e7b6da9685430b24e54bb999ea093280f231a8b358af70ce92\",\"current_target\":\"releases/01a1917d-cdde-777b-9e4c-6caa1495d8d8\"},\"Hashes\":{\"key_sha256\":\"669eaca2922a922794cc66f21498dbb09bb98c2c6d5b42ec7e983818df0e74ed\",\"cert_sha256\":\"70bd5bfc06daf6b2bee486aab5ae422fef4ae68420e45105accb279d453986d4\",\"node_json_sha256\":\"c0843540cd6c7cf3e79175baadbf83d724e32863cbd528581670f52d3a79f788\",\"usage_db_sha256\":\"24220cccb86b348db9fceccd33c847d176d11fdcd7f72b8a9d57f490e4a2fe97\",\"usage_wal_sha256\":\"absent\",\"machine_id_sha256\":\"186cc62b3ea133e7b6da9685430b24e54bb999ea093280f231a8b358af70ce92\",\"current_target\":\"releases/01a1917d-cdde-777b-9e4c-6caa1495d8d8\"},\"Services\":{\"fvpn-agent.service\":\"active\",\"fvpn-updater.service\":\"inactive\",\"fvpn-updater.timer\":\"active\",\"fvpn-watchdog.service\":\"active\"}}"
+    },
+    {
+      "name": "quiescent_snapshot_byte_equal",
+      "detail": "true"
+    },
+    {
+      "name": "services_restored",
+      "detail": "true"
+    },
+    {
+      "name": "released",
+      "detail": "{\"schema_version\":1,\"node_id\":\"01a1917d-e899-7f0f-a666-35b7f0ddd137\",\"node_incarnation_id\":\"01a1917d-eedf-75ab-a77e-babbc7fb81dc\",\"ledger_epoch\":\"629370d2-858f-4740-be83-be70a3fbc16d\",\"meter_epochs\":[{\"meter_epoch_id\":\"01a1917d-efbb-78df-b1b9-67bc2dd60c34\",\"state\":\"closed\"},{\"meter_epoch_id\":\"01a1917d-f476-744f-b05b-7f8d3dc41e7b\",\"state\":\"closed\"},{\"meter_epoch_id\":\"01a1917d-fb2b-724d-9fb8-9e1d9f578333\",\"state\":\"closed\"},{\"meter_epoch_id\":\"01a1917d-fe38-76d6-82aa-7a35e86b2b26\",\"state\":\"closed\"},{\"meter_epoch_id\":\"01a1917e-123d-7966-9b08-e41ffa842006\",\"state\":\"closed\"},{\"meter_epoch_id\":\"01a1917e-2675-7f2a-a15c-4142d3d24682\",\"state\":\"closed\"},{\"meter_epoch_id\":\"01a1917e-3993-7268-a783-2cb02862cd76\",\"state\":\"closed\"},{\"meter_epoch_id\":\"01a1917e-6a41-711e-951f-20611c2e502e\",\"state\":\"closed\"},{\"meter_epoch_id\":\"01a1917e-7ea7-75b6-9e76-1127f6b5762b\",\"state\":\"closed\"},{\"meter_epoch_id\":\"01a19180-5f83-7315-bc3e-9d2785649a80\",\"state\":\"current\"}],\"last_event_seq\":\"3\",\"acked_through\":\"3\",\"unacked_count\":0,\"unacked_payload_bytes\":\"0\",\"unacked_events\":[]}"
+    },
+    {
+      "name": "serving_after_restore",
+      "detail": "true"
+    },
+    {
+      "name": "post_wrapper_transport_restored",
+      "detail": "true"
+    },
+    {
+      "name": "scope",
+      "detail": "same-incarnation hold/release only; authorized old-incarnation backlog delivery remains unresolved"
+    }
+  ],
+  "at": "2026-10-31T10:27:55Z",
+  "run_id": "09cb1198-435f-4609-9d0b-d53e6c1ed441",
+  "source_commit": "84b6a342970ffc651aafda81d485451529902233"
+}

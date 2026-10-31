@@ -1,0 +1,26 @@
+{
+  "id": "first-desired-offer",
+  "title": "SECOPS-21 actual response, local accepted digest and applied receipt",
+  "spec": [
+    "SECOPS-21",
+    "§14.7"
+  ],
+  "status": "fail",
+  "observations": [
+    {
+      "name": "capture_id",
+      "detail": "\"cf83ab6f-dcd7-4ef1-8580-fe7896308bc0\""
+    },
+    {
+      "name": "capture",
+      "detail": "{\"capture_id\":\"cf83ab6f-dcd7-4ef1-8580-fe7896308bc0\",\"first\":{\"http_status\":304,\"generation\":\"\",\"body_sha256\":\"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\",\"bytes\":0,\"delivered_at\":\"2026-10-31T10:40:40.860231988Z\",\"write_complete\":true}}"
+    },
+    {
+      "name": "scope",
+      "detail": "live hold/release of retained state; full PostgreSQL restore and greater-than-retained assertion belong to secops"
+    }
+  ],
+  "at": "2026-10-31T10:41:21Z",
+  "run_id": "daf790fc-81f7-49a2-8a65-f3ec8faec656",
+  "source_commit": "fc570997ad08facaa963e32d2abb6fdabec8d9fa"
+}
