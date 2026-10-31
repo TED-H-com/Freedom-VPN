@@ -1,0 +1,147 @@
+{
+  "node_incarnations": {
+    "node": "01a19015-a781-7367-8d71-0f9389948963"
+  },
+  "complete": false,
+  "id": "AT04",
+  "title": "Expiry, cancellation, refunds and suspension",
+  "spec": [
+    "§19.1",
+    "§19 AT04",
+    "BILL02 ENT02 MEM03"
+  ],
+  "status": "blocked",
+  "observations": [
+    {
+      "name": "authoritative provider truth",
+      "detail": "pass; expected: 200; input to provider, not a central invoice fixture; actual: HTTP 200 ; command: POST authenticated lab payment /e2e/snapshot for actual checkout"
+    },
+    {
+      "name": "provider event customer.subscription.updated",
+      "detail": "pass; expected: 200 exact signed event bytes; actual: HTTP=200; signed_event_present=true; command: POST authenticated lab /e2e/event; keep payload and signature in memory"
+    },
+    {
+      "name": "cancel and partial refund event",
+      "detail": "pass; expected: 202 then reconciled; actual: HTTP 202 ; command: update provider truth; POST signed event"
+    },
+    {
+      "name": "reconciled cancel_at_period_end",
+      "detail": "pass; expected: one exact paid interval; state=cancel_at_period_end; refund=250; actual: {\"invoices\": 1, \"revision\": \"3\", \"anomalies\": [], \"paid_from\": \"2026-10-31T03:57:45+00:00\", \"entitlement\": \"cancel_at_period_end\", \"paid_through\": \"2026-10-31T04:58:44+00:00\", \"refund_total\": 250, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": true, \"effective_service_end\": \"2026-10-31T04:58:44+00:00\"}; command: poll real subscription, billing_records and entitlements projections"
+    },
+    {
+      "name": "blocked",
+      "detail": "Run in progress; this is an incremental record, not a full AT result."
+    },
+    {
+      "name": "provenance",
+      "detail": "source=fd7843de0d4d99d9c926d854a3db009bcd9271d6; applied generation=27; incarnation=01a19015-a781-7367-8d71-0f9389948963; image/binary digests in JSON"
+    }
+  ],
+  "at": "2026-10-31T04:02:15Z",
+  "run_id": "c8939ad8-ec4f-413a-aac3-1a4bf5d35b32",
+  "source_commit": "fd7843de0d4d99d9c926d854a3db009bcd9271d6",
+  "release_digests": {
+    "artifact_sha256_0.1.0_amd64": "9d2a51bfaa0499da9d049091c680381ecdf2f41c801523cd70413f832dcbe4ee",
+    "artifact_sha256_0.1.0_arm64": "f71fef94fa2e1572f7493bb70b5dafcdd452c89d4b23325e44f5e08db7b78779",
+    "manifest_sha256_0.1.0": "b08d9d4a656319b6e811762ea56833af164673fc4077124fd5068da5f9f40587",
+    "signed_manifest_sha256_0.1.0": "80555c6def62c501d649e425e483321bb9755b8abf873eaccd251b31b36fcc19"
+  },
+  "build": {
+    "test_binary_sha256": "2d75746be870d17cf5f08476f1fff49a8eb065c7c28efb156bc2aef612edc791",
+    "source_commit": "fd7843de0d4d99d9c926d854a3db009bcd9271d6",
+    "source_dirty": false,
+    "image_digests": {
+      "adguard": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
+      "control": "sha256:9128e434af00f6296b589af1ade1597464bc5ba8953fd269f186ccf08ba4f007",
+      "coredns": "sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97",
+      "gateway": "sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce",
+      "idp": "sha256:b381a1ed97dd8eb7a65012aa6ac1e9eb9496f074c29b23b3b8ea06d2b80bcc42",
+      "member": "sha256:901d15a5cc23d6fe0fea67b0e1fe170b84fbf5cf959b0dc76db185d706ae4715",
+      "netbird": "sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c",
+      "node": "sha256:901d15a5cc23d6fe0fea67b0e1fe170b84fbf5cf959b0dc76db185d706ae4715",
+      "node-netns": "sha256:901d15a5cc23d6fe0fea67b0e1fe170b84fbf5cf959b0dc76db185d706ae4715",
+      "origin": "sha256:745ced486febc677b8393d7ab6980b91f6f067a2fde89fda17099c9660d732a4",
+      "payment": "sha256:1c381ab37d7f48e159e7707efa6ca8a43afacbf8ee718eb53a5029328ee8bc5a",
+      "postgres": "sha256:53fed47b9554e12b510656e063a2b9143a3960655d6a817d8bfb5959bec65704",
+      "worker": "sha256:3bfcd6e8a53260b1f61ca729b762e69a2eb7218192291e3bb6d8f054928b9b32"
+    },
+    "binary_sha256": {
+      "fvpn-agent": "2f287c4b4ad4ac57c11aa0853f8cd363d894f8a4573eb543e7dfc5fe7b8fda5f",
+      "fvpn-control": "b95da7f7bba25ff758cdb2acbe85448c30f7123687515a925230d2ec894f3ff8",
+      "fvpn-updater": "05adf1ab6c505e2aef6bd57d828ac5699b31dc156ff2742b7d4c1c11042252ba",
+      "fvpn-worker": "fbc01dd9f99900a942867d575704bd9b5debdefa0dfddc769ad04c07cc7a8b5e"
+    },
+    "binary_vcs": {
+      "fvpn-agent": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "false",
+        "vcs.revision": "fd7843de0d4d99d9c926d854a3db009bcd9271d6",
+        "vcs.time": "2026-10-31T03:49:58Z"
+      },
+      "fvpn-control": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "false",
+        "vcs.revision": "fd7843de0d4d99d9c926d854a3db009bcd9271d6",
+        "vcs.time": "2026-10-31T03:49:58Z"
+      },
+      "fvpn-updater": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "false",
+        "vcs.revision": "fd7843de0d4d99d9c926d854a3db009bcd9271d6",
+        "vcs.time": "2026-10-31T03:49:58Z"
+      },
+      "fvpn-worker": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "false",
+        "vcs.revision": "fd7843de0d4d99d9c926d854a3db009bcd9271d6",
+        "vcs.time": "2026-10-31T03:49:58Z"
+      }
+    }
+  },
+  "policy_revision": "27",
+  "active_policy_revisions": {
+    "dns_profile": "01a19015-954e-7731-b37a-12de6a8d99c0",
+    "domain_rule_set": "01a19015-908f-73dd-9989-aeab4a371450",
+    "fair_use": "01a19015-8bce-72c0-82b7-e09abad3f336",
+    "plan": "01a1901b-9a93-793a-8a9e-9f9479323d38",
+    "release_support": "01a19015-8484-77eb-b01a-f62f9bf18637"
+  },
+  "node_incarnation": "01a19015-a781-7367-8d71-0f9389948963",
+  "steps": [
+    {
+      "name": "authoritative provider truth",
+      "status": "pass",
+      "expected": "200; input to provider, not a central invoice fixture",
+      "actual": "HTTP 200 ",
+      "command": "POST authenticated lab payment /e2e/snapshot for actual checkout",
+      "at": "2026-10-31T04:02:16Z"
+    },
+    {
+      "name": "provider event customer.subscription.updated",
+      "status": "pass",
+      "expected": "200 exact signed event bytes",
+      "actual": "HTTP=200; signed_event_present=true",
+      "command": "POST authenticated lab /e2e/event; keep payload and signature in memory",
+      "at": "2026-10-31T04:02:17Z"
+    },
+    {
+      "name": "cancel and partial refund event",
+      "status": "pass",
+      "expected": "202 then reconciled",
+      "actual": "HTTP 202 ",
+      "command": "update provider truth; POST signed event",
+      "at": "2026-10-31T04:02:20Z"
+    },
+    {
+      "name": "reconciled cancel_at_period_end",
+      "status": "pass",
+      "expected": "one exact paid interval; state=cancel_at_period_end; refund=250",
+      "actual": "{\"invoices\": 1, \"revision\": \"3\", \"anomalies\": [], \"paid_from\": \"2026-10-31T03:57:45+00:00\", \"entitlement\": \"cancel_at_period_end\", \"paid_through\": \"2026-10-31T04:58:44+00:00\", \"refund_total\": 250, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": true, \"effective_service_end\": \"2026-10-31T04:58:44+00:00\"}",
+      "command": "poll real subscription, billing_records and entitlements projections",
+      "at": "2026-10-31T04:02:20Z"
+    }
+  ],
+  "blockers": [
+    "Run in progress; this is an incremental record, not a full AT result."
+  ]
+}

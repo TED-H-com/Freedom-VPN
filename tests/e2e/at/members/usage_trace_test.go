@@ -4,10 +4,12 @@ package members
 
 import (
 	"bytes"
+	"context"
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/internal/usage"
@@ -18,8 +20,8 @@ import (
 )
 
 // AT02 diagnostic: a deliberately unknown device is only a negative control.
-// Then use the real projected device and a contained interval. This proves
-// receipt/binding validation only: the synthetic bytes are not metered traffic.
+// Replay a real accepted event instead of allocating the active meter's next
+// sequence. Only the rejected unknown-device negative is synthetic.
 func (l *live) usageTrace(r *record) {
 	cert, err := l.inside("node", "cat", "/var/lib/vpn-node/identity/cert.pem")
 	if err != nil {
@@ -39,6 +41,26 @@ func (l *live) usageTrace(r *record) {
 	transport := l.transport.Clone()
 	defer transport.CloseIdleConnections()
 	transport.TLSClientConfig.Certificates = []tls.Certificate{pair}
+	// This diagnostic follows all continuous-PID revoke/re-grant observations.
+	// Stop through the lab supervisor so the rejected negative cannot race a
+	// live meter upload. Resume the same selected release on every exit path.
+	selected, err := l.inside("node", "cat", "/var/lib/vpn-node/e2e/agent-selected")
+	release := strings.TrimSpace(string(selected))
+	if err != nil || (release != "/usr/local" && !strings.HasPrefix(release, "/opt/vpn-node/releases/")) {
+		r.block("usage diagnostic selected release unavailable")
+		return
+	}
+	err = l.hook.Service(l.ctx, "stop", "")
+	r.check("usage diagnostic supervisor stop", "agent reaped before rejected sequence probe", fmt.Sprintf("stopped=%t", err == nil), "Stack.Service(stop); after the continuous-agent traffic assertions", err == nil)
+	defer func() {
+		ctx, cancel := context.WithTimeout(context.WithoutCancel(l.ctx), 30*time.Second)
+		defer cancel()
+		resumed := l.hook.Service(ctx, "start", release)
+		r.check("usage diagnostic supervisor resume", "same selected release resumes", fmt.Sprintf("resumed=%t", resumed == nil), "Stack.Service(start, original selected release); no agent state/sequence changes", resumed == nil)
+	}()
+	if err != nil {
+		return
+	}
 	var seq decstr.U64
 	if l.pool.QueryRow(l.ctx, `SELECT (coalesce(max(event_seq),0)+1)::text FROM usage_events WHERE node_id=$1 AND incarnation_id=$2`, l.node, l.inc).Scan(&seq) != nil {
 		r.block("usage sequence read unavailable")
@@ -70,32 +92,24 @@ func (l *live) usageTrace(r *record) {
 		}
 	}
 	r.check("mTLS usage binding negative control", "binding_not_found; no made-up binding accepted", fmt.Sprintf("HTTP=%d; per_event_results=%d; binding_not_found=%t", got.status, len(body.Results), known), "POST /agent/usage-batches with real node mTLS and explicitly unknown device", got.status == 200 && known)
-	var device uuid.UUID
-	var revision decstr.U64
-	var from, until time.Time
-	err = l.pool.QueryRow(l.ctx, `SELECT b.device_id,b.binding_revision::text,b.valid_from,b.valid_until FROM device_bindings b JOIN member_devices d ON d.id=b.device_id WHERE b.member_id=$1 AND d.status='authorized' AND b.valid_until>clock_timestamp() ORDER BY b.valid_from LIMIT 1`, l.a.member).Scan(&device, &revision, &from, &until)
-	if err != nil {
-		r.block("Usage positive control: no product-projected member binding available.")
+	// The accepted payload is canonical JSON without its hash field. Rebuild
+	// that field exactly; no new event, meter epoch or sequence is fabricated.
+	var payload []byte
+	var storedHash string
+	var expectedSamples int
+	err = l.pool.QueryRow(l.ctx, `SELECT p.payload,encode(e.payload_hash,'hex'),e.record_count FROM usage_events e JOIN usage_event_payloads p ON p.event_id=e.id WHERE e.node_id=$1 AND e.incarnation_id=$2 AND e.record_count>0 AND EXISTS(SELECT 1 FROM usage_samples s WHERE s.event_id=e.id AND s.member_id=$3) ORDER BY e.event_seq DESC LIMIT 1`, l.node, l.inc, l.a.member).Scan(&payload, &storedHash, &expectedSamples)
+	if err != nil || json.Unmarshal(payload, &event) != nil {
+		r.block("Real metered usage payload unavailable for duplicate replay")
 		return
 	}
-	end := time.Now().UTC().Truncate(time.Second)
-	start := end.Add(-time.Second)
-	if start.Before(from) {
-		start = from
-	}
-	if !end.After(start) || end.After(until) {
-		r.block("Usage positive control has no elapsed interval within the binding")
-		return
-	}
-	event.EventSeq = seq
-	event.IntervalStart, event.IntervalEnd = start, end
-	event.Records[0].DeviceId = device
-	event.Records[0].BindingRevision = revision
 	event, err = usage.WithComputedHash(event)
 	if err != nil {
-		r.block("positive usage canonical hash unavailable")
+		r.block("Real metered usage hash unavailable")
 		return
 	}
+	seq = event.EventSeq
+	before := l.count(`SELECT count(*) FROM usage_samples s JOIN usage_events e ON e.id=s.event_id WHERE e.node_id=$1 AND e.incarnation_id=$2 AND e.event_seq=$3::numeric`, l.node, l.inc, seq.String())
+	r.check("real metered event receipt", "existing accepted event with exact hash and samples", fmt.Sprintf("sequence=%s; hash_matches=%t; samples=%d; record_count=%d", seq, event.PayloadSha256 == storedHash, before, expectedSamples), "read production usage receipt and canonical payload; no synthetic positive event", event.PayloadSha256 == storedHash && before == expectedSamples && before > 0)
 	batch := api.UsageBatchRequest{NodeId: l.node, NodeIncarnationId: l.inc, LedgerEpoch: presence.NewNullNullable[uuid.UUID](), Events: []api.UsageEvent{event}}
 	statuses := []string{}
 	for range 2 {
@@ -108,9 +122,9 @@ func (l *live) usageTrace(r *record) {
 		}
 		statuses = append(statuses, state)
 	}
-	r.check("real projected binding usage replay", "accepted then duplicate; one receipt and sample", fmt.Sprintf("first=%s; replay=%s; sequence=%s; device_revision=%s", statuses[0], statuses[1], seq.String(), revision.String()), "POST node-mTLS synthetic usage for real projected binding, interval inside [valid_from,valid_until), twice", statuses[0] == "accepted" && statuses[1] == "duplicate")
+	r.check("real metered usage replay", "duplicate twice; existing receipt is unchanged", fmt.Sprintf("first=%s; replay=%s; sequence=%s", statuses[0], statuses[1], seq.String()), "POST node-mTLS exact accepted canonical event twice", statuses[0] == "duplicate" && statuses[1] == "duplicate")
 	receipts := l.count(`SELECT count(*) FROM usage_events WHERE node_id=$1 AND incarnation_id=$2 AND event_seq=$3::numeric`, l.node, l.inc, seq.String())
 	samples := l.count(`SELECT count(*) FROM usage_samples s JOIN usage_events e ON e.id=s.event_id WHERE e.node_id=$1 AND e.incarnation_id=$2 AND e.event_seq=$3::numeric`, l.node, l.inc, seq.String())
-	r.check("positive control durable evidence", "one receipt, one sample", fmt.Sprintf("receipts=%d; samples=%d", receipts, samples), "SELECT usage_events and usage_samples after duplicate", receipts == 1 && samples == 1)
+	r.check("positive control durable evidence", "one receipt, unchanged sample count", fmt.Sprintf("receipts=%d; samples_before=%d; samples_after=%d", receipts, before, samples), "SELECT usage_events and usage_samples after duplicate", receipts == 1 && samples == before)
 
 }
