@@ -3,6 +3,8 @@ package granttrace
 
 import (
 	"bytes"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -15,15 +17,19 @@ import (
 const address = "127.0.0.1:19090"
 
 type Event struct {
-	Started    time.Time       `json:"started"`
-	Completed  time.Time       `json:"completed"`
-	Kind       string          `json:"kind"`
-	Ready      *bool           `json:"ready,omitempty"`
-	Status     int             `json:"http_status,omitempty"`
-	RetryAfter string          `json:"retry_after,omitempty"`
-	ETag       string          `json:"etag,omitempty"`
-	Request    json.RawMessage `json:"request,omitempty"`
-	Response   json.RawMessage `json:"response,omitempty"`
+	RequestWire    string          `json:"request_wire,omitempty"`
+	ResponseWire   string          `json:"response_wire,omitempty"`
+	RequestSHA256  string          `json:"request_sha256,omitempty"`
+	ResponseSHA256 string          `json:"response_sha256,omitempty"`
+	Started        time.Time       `json:"started"`
+	Completed      time.Time       `json:"completed"`
+	Kind           string          `json:"kind"`
+	Ready          *bool           `json:"ready,omitempty"`
+	Status         int             `json:"http_status,omitempty"`
+	RetryAfter     string          `json:"retry_after,omitempty"`
+	ETag           string          `json:"etag,omitempty"`
+	Request        json.RawMessage `json:"request,omitempty"`
+	Response       json.RawMessage `json:"response,omitempty"`
 }
 type Recorder struct {
 	mu     sync.Mutex
@@ -79,6 +85,9 @@ func (r *Recorder) Wrap(next http.Handler) http.Handler {
 			q.Body = io.NopCloser(bytes.NewReader(b))
 			if json.Valid(b) {
 				e.Request = b
+				e.RequestWire = string(b)
+				sum := sha256.Sum256(b)
+				e.RequestSHA256 = hex.EncodeToString(sum[:])
 			}
 		}
 		capture := &writer{ResponseWriter: w}
@@ -89,6 +98,9 @@ func (r *Recorder) Wrap(next http.Handler) http.Handler {
 		e.ETag = w.Header().Get("ETag")
 		if json.Valid(capture.body.Bytes()) {
 			e.Response = append([]byte(nil), capture.body.Bytes()...)
+			e.ResponseWire = capture.body.String()
+			sum := sha256.Sum256(capture.body.Bytes())
+			e.ResponseSHA256 = hex.EncodeToString(sum[:])
 		}
 		r.add(e)
 	})
