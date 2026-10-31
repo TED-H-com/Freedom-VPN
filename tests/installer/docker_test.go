@@ -357,6 +357,7 @@ func installArgs(rel crel, url, ca, bundle, token string, extra ...string) []str
 	args := []string{"/usr/local/bin/fvpn-node-install", "install", "--json",
 		"--manifest", rel.Manifest, "--artifact", rel.Artifact, "--trust", rel.Trust,
 		"--control-url", url, "--server-ca", ca, "--trust-bundle", bundle,
+		"--allow-loopback",
 		"--host-reserve-bps", reserveBPS, "--snat", "192.0.2.1",
 		"--netbird-management-url", "https://netbird.example.invalid"}
 	if token != "" {

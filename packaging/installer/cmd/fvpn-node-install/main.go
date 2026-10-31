@@ -92,6 +92,7 @@ func cmdInstall(args []string, stdout, stderr io.Writer) int {
 	desired := fs.String("desired-trust", "", "desired-state trust root (defaults to the release trust)")
 	token := fs.String("token-file", "", "enrollment token file, mode 0600")
 	control := fs.String("control-url", "", "https control URL")
+	loopback := fs.Bool("allow-loopback", false, "TEST ONLY: allow an HTTPS loopback control and updater delivery")
 	ca := fs.String("server-ca", "", "control server CA PEM")
 	bundle := fs.String("trust-bundle", "", "control trust bundle")
 	reserve := fs.Uint64("host-reserve-bps", 0, "host traffic reserve in bits per second (required, 待實測)")
@@ -111,6 +112,7 @@ func cmdInstall(args []string, stdout, stderr io.Writer) int {
 		ServerCA: *ca, TrustBundle: *bundle, HostReserveBPS: *reserve,
 		MemberIngress: *member, Uplink: *uplink, SNAT: *snat,
 		NetbirdManagementURL: *nb, FaultAfter: *fault,
+		AllowLoopback: *loopback,
 	})
 	if res != nil {
 		printResult(stdout, *asJSON, res)

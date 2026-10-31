@@ -195,6 +195,7 @@ func TestD089_RealUpdaterConsumesWriterRecord(t *testing.T) {
 	// TEST ONLY: no HTTP requests are made. The independently signed fixture
 	// is explicitly trusted, and fake enrollment certificates are not used.
 	cfg.MTLSCert, cfg.MTLSKey, cfg.MTLSCA = "", "", ""
+	cfg.ResultURL = "" // This no-network consumer test retains its receipts locally.
 	cfg.ReleaseTrust = next.Trust
 	cfg.StopCommand, cfg.StartCommand = nil, nil
 	engine, err := cfg.Engine()
