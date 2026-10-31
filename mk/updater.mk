@@ -5,6 +5,7 @@
 #
 #   updater-build   linux/amd64 and linux/arm64 binaries
 #   updater-test    journal, updater and release tests
+#   updater-integration  real central receipt interoperability (dbtest)
 #   updater-lint    gofmt, vet and the same staticcheck pin as mk/go.mk
 #   updater-verify  lint, test and build
 
@@ -18,7 +19,7 @@ TEST_TARGETS   += updater-test
 LINT_TARGETS   += updater-lint
 VERIFY_TARGETS += updater-verify
 
-.PHONY: updater-build updater-test updater-lint updater-verify
+.PHONY: updater-build updater-test updater-integration updater-lint updater-verify
 
 updater-build:
 	$(UPDATER_ENV) GOOS=linux GOARCH=amd64 $(UPDATER_GO) build -trimpath -o bin/linux_amd64/fvpn-updater ./node/updater/cmd/fvpn-updater
@@ -28,6 +29,9 @@ updater-build:
 
 updater-test:
 	$(UPDATER_ENV) $(UPDATER_GO) test $(UPDATER_PKGS)
+
+updater-integration:
+	$(UPDATER_ENV) $(UPDATER_GO) test -tags integration -count=1 ./node/updater/... ./internal/installerjob/...
 
 updater-lint:
 	@test -z "$$(gofmt -l node/updater node/nodelock node/internal/nodelock node/internal/updatejournal node/internal/healthattest packaging/release)" || { echo 'gofmt required'; exit 1; }

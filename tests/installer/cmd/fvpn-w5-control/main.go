@@ -1,9 +1,9 @@
-//go:build installer
+//go:build installerfixture
 
 // Command fvpn-w5-control is the installer lab's enrollment endpoint.
-// TEST ONLY. tests/installer cannot import node/internal/fakecontrol, so
-// this process issues a certificate for the node's CSR and returns one
-// bootstrap credential. It does not log the token or the setup key.
+// TEST ONLY. control-build.py builds this source in a temporary harness module
+// with a node/ import path so it can consume the unchanged internal fixture.
+// Enrollment-only mode retains the socket/marker suite's original boundary.
 package main
 
 import (
@@ -25,10 +25,12 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 	"time"
 
+	"github.com/TED-H-com/Freedom-VPN/node/internal/fakecontrol"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/envelope"
 	"github.com/google/uuid"
@@ -38,12 +40,90 @@ func main() {
 	dir := flag.String("dir", "", "directory for CA, trust and the listen URL")
 	tokenFile := flag.String("token-file", "", "file containing one enrollment token")
 	extra := flag.String("extra-token-file", "", "file containing a second enrollment token")
+	health := flag.Bool("upgrade-health", false, "TEST ONLY signed unpublished health fixture with a real TCP listener")
 	flag.Parse()
 	// serve blocks on success. A return is a setup failure. The message
 	// stays fixed so a token path is not copied into the log.
-	_ = serve(*dir, *tokenFile, *extra)
+	if *health {
+		_ = serveUpgrade(*dir, *tokenFile, *extra)
+	} else {
+		_ = serve(*dir, *tokenFile, *extra)
+	}
 	fmt.Fprintln(os.Stderr, "fvpn-w5-control: failed")
 	os.Exit(1)
+}
+
+func serveUpgrade(dir, tokenFile, extraFile string) error {
+	if dir == "" || tokenFile == "" {
+		return fmt.Errorf("dir and token file are required")
+	}
+	if err := os.MkdirAll(dir, 0700); err != nil {
+		return err
+	}
+	srv, err := fakecontrol.Start()
+	if err != nil {
+		return err
+	}
+	defer srv.Close()
+	for _, path := range []string{tokenFile, extraFile} {
+		if path == "" {
+			continue
+		}
+		raw, err := os.ReadFile(path)
+		if err != nil {
+			return err
+		}
+		token := strings.TrimSpace(string(raw))
+		if token == "" || strings.ContainsAny(token, "\r\n") {
+			return fmt.Errorf("token file is empty")
+		}
+		srv.AddToken(token)
+	}
+	probe, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		return err
+	}
+	defer probe.Close()
+	go func() {
+		for {
+			conn, err := probe.Accept()
+			if err != nil {
+				return
+			}
+			_ = conn.Close()
+		}
+	}()
+	srv.SetFixture(fakecontrol.UpgradeHealthFixture(
+		uuid.MustParse("019a0000-0000-7000-8000-0000000000c1"),
+		api.EgressProbeTarget{Address: "127.0.0.1", Port: probe.Addr().(*net.TCPAddr).Port, Protocol: api.EgressProbeTargetProtocolTcp},
+	))
+	// Local test control can stop only the probe listener. Signed control stays
+	// available so a stopped listener must fail the candidate's actual TCP check.
+	mux := http.NewServeMux()
+	mux.HandleFunc("POST /stop-probe", func(w http.ResponseWriter, _ *http.Request) {
+		_ = probe.Close()
+		w.WriteHeader(http.StatusNoContent)
+	})
+	admin, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		return err
+	}
+	defer admin.Close()
+	httpSrv := &http.Server{Handler: mux, ReadHeaderTimeout: 5 * time.Second}
+	go func() { _ = httpSrv.Serve(admin) }()
+	for name, body := range map[string][]byte{
+		"ca.pem": srv.CACertPEM(), "trust.json": srv.TrustJSON(),
+		"url": []byte(srv.URL + "\n"), "probe": []byte(probe.Addr().String() + "\n"),
+		"admin": []byte("http://" + admin.Addr().String() + "\n"),
+	} {
+		if err := os.WriteFile(filepath.Join(dir, name), body, 0644); err != nil {
+			return err
+		}
+	}
+	if err := os.WriteFile(filepath.Join(dir, "ready"), []byte("ok\n"), 0644); err != nil {
+		return err
+	}
+	select {}
 }
 
 type issued struct {

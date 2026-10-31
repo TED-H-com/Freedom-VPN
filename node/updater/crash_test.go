@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -32,14 +33,16 @@ func TestMain(m *testing.M) {
 }
 
 type crashScenario struct {
-	Layout   Layout    `json:"layout"`
-	Node     Node      `json:"node"`
-	Platform Platform  `json:"platform"`
-	Work     Work      `json:"work"`
-	Trust    []byte    `json:"trust"`
-	CertPEM  []byte    `json:"cert_pem"`
-	Now      time.Time `json:"now"`
-	Fail     []string  `json:"fail"`
+	Layout         Layout        `json:"layout"`
+	Node           Node          `json:"node"`
+	Platform       Platform      `json:"platform"`
+	Work           Work          `json:"work"`
+	Trust          []byte        `json:"trust"`
+	CertPEM        []byte        `json:"cert_pem"`
+	Now            time.Time     `json:"now"`
+	Fail           []string      `json:"fail"`
+	FileCheckpoint string        `json:"file_checkpoint,omitempty"`
+	MeterWait      time.Duration `json:"meter_wait,omitempty"`
 }
 
 func runCrashChild() int {
@@ -85,6 +88,10 @@ func runCrashChild() int {
 		AllowLoopback: true,
 	}
 	crash := os.Getenv("FVPN_UPDATER_CRASH")
+	if sc.FileCheckpoint != "" {
+		eng.Meter = FileMeter{Path: sc.FileCheckpoint, Wait: sc.MeterWait}
+		eng.Gate = FileGate{Path: filepath.Join(sc.Layout.Journal, "forwarding.blocked")}
+	}
 	eng.Hooks.AfterStage = func(stage string) error {
 		if crash == "" || stage != crash {
 			return nil
@@ -393,6 +400,9 @@ func runChild(t *testing.T, w *world, work Work, fail []string, crash string) (i
 	sc := crashScenario{
 		Layout: w.layout, Node: w.node, Platform: testPlatform(), Work: work,
 		Trust: trust, CertPEM: w.srv.CertPEM, Now: w.now, Fail: fail,
+	}
+	if m, ok := w.eng.fileMeter(); ok {
+		sc.FileCheckpoint, sc.MeterWait = m.Path, m.Wait
 	}
 	raw, err := json.Marshal(sc)
 	if err != nil {

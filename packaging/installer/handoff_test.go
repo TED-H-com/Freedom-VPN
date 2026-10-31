@@ -1,6 +1,7 @@
 package installer
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -13,6 +14,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/node/nodelock"
 	"github.com/TED-H-com/Freedom-VPN/node/updater"
 	"github.com/TED-H-com/Freedom-VPN/packaging/release"
+	"github.com/TED-H-com/Freedom-VPN/pkg/envelope"
 	"github.com/google/uuid"
 )
 
@@ -234,30 +236,64 @@ func TestD089_RealUpdaterConsumesWriterRecord(t *testing.T) {
 		return job.JobID
 	}
 	first := assertFailure("CHECKPOINT_FAILED", 1)
+	sealed, err := engine.Journal.Outbox(ctx)
+	if err != nil || len(sealed) != 1 {
+		t.Fatalf("original receipt: %v %v", sealed, err)
+	}
+	assertOriginalSeal := func(count int) {
+		t.Helper()
+		outbox, err := engine.Journal.Outbox(ctx)
+		if err != nil || len(outbox) != count {
+			t.Fatalf("receipt count=%d, want %d: %v", len(outbox), count, err)
+		}
+		if outbox[0].JobID != first || outbox[0].ResultID != sealed[0].ResultID ||
+			outbox[0].PayloadHash != sealed[0].PayloadHash || !bytes.Equal(outbox[0].Payload, sealed[0].Payload) {
+			t.Fatal("original job identity or sealed receipt changed")
+		}
+	}
 	if err := os.WriteFile(env.Layout.pendingUpgrade(), raw, 0o600); err != nil {
 		t.Fatal(err)
 	}
-	if err := engine.ApplyPending(ctx, env.Layout.pendingUpgrade()); err != nil {
+	if replay := assertFailure("updater: CHECKPOINT_FAILED: installer outcome=failed", 1); replay != first {
+		t.Fatal("failed replay changed job identity")
+	}
+	assertOriginalSeal(1)
+	second := stage()
+	if result.RequestID == second.RequestID || result.ReleaseID != second.ReleaseID || result.ManifestSHA256 != second.ManifestSHA256 {
+		t.Fatal("restaging must change the request ID only")
+	}
+	if restaged := assertFailure("VALIDATION_FAILED: pending record changed for an existing installer job", 1); restaged != first {
+		t.Fatal("changed restaging created another job")
+	}
+	assertOriginalSeal(1)
+	// D-110 permits new evidence for a different release/manifest, not for a
+	// fresh request ID alone. Give the independent tamper case its own release.
+	next = mustRelease(t, dir, uuid.NewString(), "3")
+	trust, err := os.ReadFile(next.Trust)
+	if err != nil {
 		t.Fatal(err)
 	}
-	if outbox, err := engine.Journal.Outbox(ctx); err != nil || len(outbox) != 1 {
-		t.Fatalf("replay: %v %v", outbox, err)
-	}
-	second := stage()
-	if result.RequestID == second.RequestID || assertFailure("CHECKPOINT_FAILED", 2) == first {
-		t.Fatal("second invocation did not create new work")
+	engine.ReleaseTrust, err = envelope.ParseNodeTrustStoreJSON(trust)
+	if err != nil {
+		t.Fatal(err)
 	}
 	third := stage()
+	if third.ReleaseID == result.ReleaseID || third.ManifestSHA256 == result.ManifestSHA256 {
+		t.Fatal("tamper case must have a distinct release and manifest")
+	}
 	envelope, err := os.ReadFile(third.ManifestPath)
 	if err != nil {
 		t.Fatal(err)
 	}
-	tampered := strings.Replace(string(envelope), `"1.2.2"`, `"9.9.9"`, 1)
+	tampered := strings.Replace(string(envelope), `"1.2.3"`, `"9.9.9"`, 1)
 	if tampered == string(envelope) {
 		t.Fatal("no tamper")
 	}
 	if err := os.WriteFile(third.ManifestPath, []byte(tampered), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	assertFailure("HASH_MISMATCH", 3)
+	if tamperedJob := assertFailure("HASH_MISMATCH", 2); tamperedJob == first {
+		t.Fatal("distinct release reused the original job")
+	}
+	assertOriginalSeal(2)
 }

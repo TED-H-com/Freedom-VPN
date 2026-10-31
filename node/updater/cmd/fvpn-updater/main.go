@@ -148,7 +148,7 @@ func command(name string, args []string, stderr io.Writer) int {
 	default:
 		runErr = eng.Flush(ctx)
 	}
-	if runErr != nil && !errors.Is(runErr, updater.ErrMembersBlocked) {
+	if runErr != nil && (name == "apply" || !errors.Is(runErr, updater.ErrMembersBlocked)) {
 		fmt.Fprintf(stderr, "fvpn-updater: %v\n", runErr)
 	}
 	return updater.ExitCode(runErr)

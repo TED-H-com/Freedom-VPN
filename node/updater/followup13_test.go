@@ -830,7 +830,7 @@ func TestUPD02_InstallerSnapshotDoesNotTrustReplacedArtifact(t *testing.T) {
 	}
 }
 
-func TestAT26_InstallerCorrectedRecordIsNewWork(t *testing.T) {
+func TestD110_InstallerCorrectedRecordCannotMintAnotherJob(t *testing.T) {
 	w := newWorld(t)
 	quietDesired(w)
 	rel := w.makeRelease("candidate", 1, []int{1})
@@ -841,12 +841,12 @@ func TestAT26_InstallerCorrectedRecordIsNewWork(t *testing.T) {
 		t.Fatal("missing manifest accepted")
 	}
 	writePendingFile(t, pending, rel, art, tree, cmd, "", rel.env, false)
-	if err := w.run(); err != nil {
-		t.Fatal(err)
+	if err := w.run(); err == nil || !strings.Contains(err.Error(), "pending record changed") {
+		t.Fatalf("changed local integrity accepted: %v", err)
 	}
-	w.mustCurrent(rel.id)
+	assertCurrentAbsent(t, w)
 	outcomes := w.outcomes()
-	if len(outcomes) != 2 || outcomes[0] != "failed" || outcomes[1] != "succeeded" {
+	if len(outcomes) != 1 || outcomes[0] != "failed" {
 		t.Fatal(outcomes)
 	}
 }

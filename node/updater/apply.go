@@ -18,7 +18,9 @@ import (
 // 5-14, §13.9). The hook fires after the stage is durable and before its
 // side effect, so a crash resumes that side effect.
 func (e *Engine) continueTxn(ctx context.Context, txn updatejournal.Txn) error {
-	if txn.Stage != updatejournal.StagePrepared && e.Gate != nil {
+	_, fileMeter := e.fileMeter()
+	waiting := fileMeter && (txn.Stage == updatejournal.StageBlocked || txn.Stage == updatejournal.StageFinalSampled)
+	if txn.Stage != updatejournal.StagePrepared && !waiting && e.Gate != nil {
 		if err := e.Gate.Block(ctx); err != nil {
 			return transient(apierr.UpdateBusy, "re-block")
 		}
@@ -70,6 +72,12 @@ func (e *Engine) perform(ctx context.Context, txn updatejournal.Txn) (updatejour
 }
 
 func (e *Engine) stepBlock(ctx context.Context, txn updatejournal.Txn) (updatejournal.Txn, error) {
+	if m, ok := e.fileMeter(); ok {
+		if err := e.prepareMeterWait(txn, m); err != nil {
+			return e.failMeterWait(ctx, txn, err)
+		}
+		return e.advance(ctx, txn, updatejournal.StageBlocked, updatejournal.StageUpdate{})
+	}
 	if e.Gate == nil {
 		return txn, errors.New("updater: no forwarding gate")
 	}
@@ -84,7 +92,16 @@ func (e *Engine) stepSample(ctx context.Context, txn updatejournal.Txn) (updatej
 	if e.Meter == nil {
 		return e.beginRollback(ctx, txn, apierr.CheckpointFailed, api.UpdateStageFinalSample, nil)
 	}
-	cp, err := e.Meter.FinalSample(ctx)
+	var cp UsageCheckpoint
+	var err error
+	if m, ok := e.fileMeter(); ok {
+		cp, err = e.waitMeter(ctx, txn, m)
+		if err != nil {
+			return e.failMeterWait(ctx, txn, err)
+		}
+	} else {
+		cp, err = e.Meter.FinalSample(ctx)
+	}
 	if err != nil {
 		return e.beginRollback(ctx, txn, apierr.CheckpointFailed, api.UpdateStageFinalSample, nil)
 	}
@@ -100,6 +117,13 @@ func schemaChange(txn updatejournal.Txn) bool {
 }
 
 func (e *Engine) stepStop(ctx context.Context, txn updatejournal.Txn) (updatejournal.Txn, error) {
+	if m, ok := e.fileMeter(); ok {
+		// Also fence legacy final_sampled transactions and a restart after a
+		// prior read. No cached checkpoint authorizes stopping services.
+		if _, err := e.waitMeter(ctx, txn, m); err != nil {
+			return e.failMeterWait(ctx, txn, err)
+		}
+	}
 	same, err := fsutil.SameFilesystem(e.Layout.Releases, filepath.Dir(e.Layout.Current))
 	if err != nil || !same {
 		return e.beginRollback(ctx, txn, apierr.StartFailed, api.UpdateStageStopServices, nil)
@@ -234,6 +258,11 @@ func (e *Engine) stepCheck(ctx context.Context, txn updatejournal.Txn) (updatejo
 }
 
 func (e *Engine) stepRollback(ctx context.Context, txn updatejournal.Txn, c claimed) (updatejournal.Txn, error) {
+	if meterWaitFailed(txn) {
+		// Nothing was stopped or switched. Preserve the baseline exactly;
+		// even a revoked baseline must not be restarted by a failed wait.
+		return e.advance(ctx, txn, updatejournal.StageRolledBack, updatejournal.StageUpdate{})
+	}
 	n, err := bumpCounter(filepath.Join(e.Layout.Journal, "rollback-"+txn.TxnID))
 	if err != nil {
 		return txn, err
@@ -493,6 +522,9 @@ func (e *Engine) seal(ctx context.Context, txn updatejournal.Txn) error {
 }
 
 func txnOutcome(txn updatejournal.Txn) string {
+	if meterWaitFailed(txn) {
+		return updatejournal.OutcomeFailed
+	}
 	switch txn.Stage {
 	case updatejournal.StageLocallySucceeded:
 		return updatejournal.OutcomeSucceeded
@@ -506,7 +538,7 @@ func txnOutcome(txn updatejournal.Txn) string {
 }
 
 func (e *Engine) cleanTxnNotes(ctx context.Context, txnID string) {
-	for _, prefix := range []string{"epoch-", "checks-", "rollback-"} {
+	for _, prefix := range []string{"epoch-", "checks-", "rollback-", meterWaitPrefix} {
 		_ = os.Remove(filepath.Join(e.Layout.Journal, prefix+txnID))
 	}
 	if e.Journal != nil {

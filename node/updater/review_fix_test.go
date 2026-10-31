@@ -30,7 +30,7 @@ import (
 
 // stockHealth uses NodeChecks for the two layers the updater can prove and
 // passes the three layers the agent owns. Persistent data must survive a
-// real FileMeter transaction (D-034c).
+// transaction using the real FileMeter.OpenEpoch implementation (D-034c).
 type stockHealth struct{}
 
 func (stockHealth) Processes(ctx context.Context, v ReleaseView) (api.HealthCheckStatus, error) {
@@ -182,16 +182,24 @@ func TestUPD_MinimumVersionViolationBlocksGate(t *testing.T) {
 	}
 }
 
-func TestUPD_PersistentDataSurvivesFileMeter(t *testing.T) {
+// TEST ONLY final-sample adapter. Keep the real FileMeter.OpenEpoch check:
+// its journal note must never mutate state. FileMeter checkpoint acceptance
+// itself is now fail-closed pending agent-core correlation (follow-up 16).
+type epochNoteMeter struct{ *fakeMeter }
+
+func (epochNoteMeter) OpenEpoch(ctx context.Context) (string, error) {
+	return (FileMeter{}).OpenEpoch(ctx)
+}
+
+func TestUPD_PersistentDataSurvivesMeterEpoch(t *testing.T) {
 	w := newWorld(t)
 	_, usagePath := touchPersistent(t, w.layout)
 	cp := filepath.Join(w.layout.State, "meter.json")
-	epoch := uuid.Must(uuid.NewV7()).String()
-	body := []byte(`{"closed_meter_epoch_id":"` + epoch + `","last_durable_event_seq":"4","central_acked_through":"3"}`)
+	body := agentBarrierBytes(t, w.node.BootID)
 	if err := os.WriteFile(cp, body, 0o600); err != nil {
 		t.Fatal(err)
 	}
-	w.eng.Meter = FileMeter{Path: cp}
+	w.eng.Meter = epochNoteMeter{w.meter}
 	w.eng.Health = stockHealth{}
 	var sawEpochNote bool
 	w.eng.Hooks.AfterStage = func(stage string) error {

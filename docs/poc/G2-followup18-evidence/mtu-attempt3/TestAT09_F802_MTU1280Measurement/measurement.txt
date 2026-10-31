@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "/opt/netlab/scripts/mtu_measure.py", line 275, in <module>
+    {'serve': serve, 'measure': measure, 'udp-seed': udp_seed}[mode]()
+  File "/opt/netlab/scripts/mtu_measure.py", line 262, in measure
+    raise RuntimeError('MTU capture count/drop check failed')
+RuntimeError: MTU capture count/drop check failed

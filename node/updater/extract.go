@@ -71,6 +71,16 @@ func ExtractArchive(r io.Reader, dest string, opt ExtractOptions) error {
 		}
 		return err
 	}
+	root, err := os.Lstat(dest)
+	if err != nil {
+		return err
+	}
+	if !root.IsDir() || root.Mode()&os.ModeSymlink != 0 {
+		return permanent(apierr.ValidationFailed, "extract destination is linked or not a directory")
+	}
+	if err := os.Chmod(dest, 0o755); err != nil {
+		return err
+	}
 	dec, err := zstd.NewReader(r)
 	if err != nil {
 		return permanent(apierr.HashMismatch, "artifact is not zstd")
@@ -178,6 +188,11 @@ func writeReg(tr *tar.Reader, dest, full string, hdr *tar.Header) error {
 		}
 		return err
 	}
+	// Creation modes are filtered by the caller's umask. Restore the verified
+	// archive mode explicitly before syncing or hashing the extracted tree.
+	if err := f.Chmod(mode); err != nil {
+		return err
+	}
 	if err := f.Sync(); err != nil {
 		return err
 	}
@@ -254,6 +269,9 @@ func mkdirSafe(dest, dir string, mode os.FileMode) error {
 				if fsutil.IsNoSpace(err) {
 					return transient(apierr.DiskSpaceLow, "extract")
 				}
+				return err
+			}
+			if err := os.Chmod(cur, mode); err != nil {
 				return err
 			}
 			continue
