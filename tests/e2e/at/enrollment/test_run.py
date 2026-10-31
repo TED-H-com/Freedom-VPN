@@ -112,6 +112,29 @@ class EvidenceTests(unittest.TestCase):
                 self.assertIn(rec["status"], ("pass", "blocked", "fail"))
                 self.assertTrue(rec["run_id"])
 
+    def test_d130_review_requires_separate_acks_and_exact_failure(self):
+        checks = self.passing() + [dict(at="AT07", name=n, status="pass") for n in (
+            "BeforePlusHeldByteEquality", "OriginalPayloadAndHistoricalAttribution",
+            "OriginACKAndIndependentCurrentACK", "AgentSameKeyStoredResultReplay")]
+        for c in checks:
+            if c["name"] in ("current_gap_ack_1", "current_counted_ack_2"):
+                c["detail"] = {"central_ack": "1" if c["name"] == "current_gap_ack_1" else "2"}
+        for run_id in (*run.D130_REVIEW_RUNS, run.EARLY_GAP_REVIEW_RUN):
+            step = ("autonomous origin upload with new presenter" if run_id == run.EARLY_GAP_REVIEW_RUN
+                    else "fresh current-incarnation serving traffic")
+            prior = dict(run_id=run_id, name="installer_prerequisite", status="fail",
+                         detail={"step": step})
+            self.assertTrue(run.review_covers("AT07", prior, checks))
+            self.assertFalse(run.review_covers("AT07", dict(prior, name="old_certificate_denied"), checks))
+            self.assertFalse(run.review_covers("AT07", dict(prior, detail={"step": "unrelated"}), checks))
+            for name in ("current_gap_ack_1", "current_counted_ack_2", "AgentSameKeyStoredResultReplay"):
+                self.assertFalse(run.review_covers("AT07", prior, [c for c in checks if c["name"] != name]))
+            bad = [dict(c, detail={"central_ack": "2"}) if c["name"] == "current_gap_ack_1" else c for c in checks]
+            self.assertFalse(run.review_covers("AT07", prior, bad))
+            recs = run.records(self.meta(), checks, {"AT06": [], "AT07": [prior]})
+            self.assertEqual(recs["AT07"]["status"], "pass")
+            self.assertEqual(recs["AT07"]["prior_checks"], [prior])
+
     def test_failed_prior_cannot_be_silently_superseded(self):
         checks = [dict(at=at, name=name, status="pass", detail="TEST ONLY")
                   for at, names in run.REQUIRED.items() for name in names]

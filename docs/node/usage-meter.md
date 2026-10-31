@@ -8,7 +8,7 @@ Usage is the inner IPv4 total length admitted at the forward hook, as exposed by
 
 `New` reads the counters once. A short restart keeps the open meter epoch only when the boot id is unchanged and `enforce.DetectResets` reports nothing. A missing counter, a counter that went backwards, or a wrap (which looks like a backwards counter) is `METER_EPOCH_CHANGE`: a new `meter_epoch_id`, and a gap on the old epoch. Negative deltas are never recorded and never offset a later sample.
 
-`Run` samples every 10 seconds by default (`DefaultSampleInterval`, 建議預設). The wait uses `Config.Mono` (default `time.Now`, so `Sub` follows the monotonic clock) and wakes earlier at the next UTC month boundary. A wall-clock step does not shorten or stretch that interval. Once the wall clock is already at or past the boundary, `Run` samples immediately so the interval can be stamped there (§10.9). `Config.Now` is the UTC timestamp stored on the event.
+`Run` samples every 10 seconds by default (`DefaultSampleInterval`, 建議預設). The wait uses `Config.Mono` (default `time.Now`, so `Sub` follows the monotonic clock) and wakes earlier at the next UTC month boundary. A wall-clock step does not shorten or stretch that interval. Once the wall clock is already at or past the boundary, `Run` samples immediately so the interval can be stamped there (§10.9). `Config.Now` supplies the wall-clock timestamp, normalized to UTC microseconds when an interval is minted as described below.
 
 `quality` is `complete`, `gap`, or `boundary_estimated`.
 
@@ -17,6 +17,57 @@ Usage is the inner IPv4 total length admitted at the forward hook, as exposed by
 - `boundary_estimated`: the sample interval crosses a UTC month because the boundary sample did not succeed. The node does not split the bytes. The central projector is the authority for the split (§10.9). A sample that lands within one sample interval after the boundary is stamped on the boundary and stays `complete`.
 
 A quiet interval updates the checkpoint time and does not invent an event. The first open with non-zero counters, or an open after a crash, emits a gap (`unknown`) and then baselines at the current readings. A clean `FinalSample` baselines the next process at the checkpointed readings and does not recount them (§13.6 step 11).
+
+## Interval precision and compatibility (D-130)
+
+2026-10-31 — ENR-07 measured a fresh incarnation blocked at ACK 0: its
+`planBaseline` unknown-continuity gap spanned
+`2026-10-31T14:01:15.198144331Z` to `2026-10-31T14:01:15.198144332Z`, exactly
+1 ns. Central validated the canonical nanosecond order, but PostgreSQL
+`TIMESTAMPTZ` persisted both endpoints as `14:01:15.198144`, violating
+`usage_events_interval_check`. The resulting 503 retried indefinitely, leaving
+the following 908 counted bytes at sequence 2 unable to receive a contiguous
+ACK. The evidence's `planSwitch` attribution is corrected here: the measured
+`unknown counter continuity` event comes from `planBaseline`.
+
+D-130 requires every newly minted event to have UTC whole-microsecond endpoints
+and `interval_end - interval_start >= 1 µs`. One helper, `eventInterval`, applies
+this rule to `planBaseline`, `planSample` (including a missing checkpoint),
+`planClockGap` and `planSwitch`, for complete and estimated intervals as well as
+gaps. It truncates both endpoints; without a prior checkpoint it uses the
+microsecond immediately before the truncated end. With a checkpoint it keeps
+the truncated start and advances an equal or earlier end to `start + 1 µs`.
+Thus a switch during clock rollback cannot move the stream backward. The clock
+sources, reads, monotonic schedule and month-boundary stamping stay unchanged.
+
+`SampledAt` and durable `LastSample` equal the minted end; the following sample
+starts there, including across meter-epoch switches. Quiet baselines and samples
+also checkpoint whole microseconds without inventing an event; a quiet reopen
+does not advance a checkpoint already at or ahead of its clock reading. Quiet
+intervals can still separate emitted events. On upgrade, the first new start
+uses the truncated legacy checkpoint: an old nanosecond endpoint cannot also be
+a whole-microsecond endpoint. Only that new start is projected; the old event
+and its hash remain untouched. Subsequent new intervals share exact endpoints.
+
+Uploader behavior is unchanged (§10.5–§10.6). HTTP 503 retains the canonical
+payload and ACK and retries with bounded backoff, which remains correct for real
+outages. An HTTP 422, including a per-event validation rejection described in
+its error body, logs the status/code, returns an error, retains the events and
+ACK, and retries; it does not apply per-event receipts from a 422 body. Per-event
+`rejected` results in an HTTP 200 response stop the current stream's contiguous
+ACK before the rejected event and retain its payload. Retired-stream final
+receipts keep their existing audit/retention behavior described in
+[Usage upload](usage-upload.md#re-enrollment-hand-off-d-105).
+
+Already sealed 1 ns events are never rewritten, re-minted or skipped. D-130's
+central migration permits equal projected endpoints while strict order remains
+validated on the canonical nanosecond values. Existing ENR-07 blocked streams
+recover on their next retry after that central fix and migration, with no
+node-side action. Canonical payload `schema_version: 1`, existing event hashes
+and contracts revision 14 are unchanged. Central acceptance, ACK progress through
+1 then 2, and attribution of the retained 550 upload + 358 download bytes remain
+assembled acceptance assertions for usage AT follow-up 6 and enrollment
+follow-up 9; local meter tests do not claim those central observations.
 
 ## Interfaces for the agent
 

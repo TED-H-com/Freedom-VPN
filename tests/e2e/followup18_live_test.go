@@ -33,7 +33,7 @@ func TestE2E_Followup18Installer(t *testing.T) {
 	defer cancel()
 	head, _ := exec.CommandContext(ctx, "git", "rev-parse", "HEAD").Output()
 	id := uuid.NewString()
-	r := &runner{t: t, lab: l, runID: id, sourceCommit: strings.TrimSpace(string(head)), dir: filepath.Join(l.root, "docs/e2e/runs", time.Now().UTC().Format("2006-01-02"), "followup18", id)}
+	r := &runner{t: t, lab: l, runID: id, sourceCommit: strings.TrimSpace(string(head)), dir: filepath.Join(l.root, "docs/e2e/runs", time.Now().UTC().Format("2006-01-02"), installerCampaignDirectory(), id)}
 	defer r.finish()
 	s := &Stack{lab: l}
 	admin := r.login(ctx, "e2e-admin", "admin")
@@ -130,7 +130,11 @@ func TestE2E_Followup18Installer(t *testing.T) {
 	r.installerUsage18(ctx, s, selected)
 	r.installerServing18(ctx, s)
 	r.installerCapture17(ctx, s)
-	r.installerUpgrade18(ctx, s, os.Getenv("FVPN_E2E_CANDIDATE18") == "1")
+	if os.Getenv("FVPN_E2E_FOLLOWUP19") == "1" {
+		r.installerUpgrade19(ctx, s, os.Getenv("FVPN_E2E_CANDIDATE18") == "1")
+	} else {
+		r.installerUpgrade18(ctx, s, os.Getenv("FVPN_E2E_CANDIDATE18") == "1")
+	}
 	r.installerReenroll17(ctx, s, b)
 	// Exercise the changed ordinary entrypoint with an enrolled agent, then a
 	// real process restart. Do this after installer measurements because the
@@ -382,7 +386,7 @@ func (r *runner) installerUsage18(ctx context.Context, s, selected *Stack) {
 		_, transportErr = selected.StartEstablishedTransports(ctx, r.usageDevice)
 	}
 	note("post_wrapper_transport_restored", boolText(restoreErr == nil && ready && transportErr == nil))
-	note("scope", "same-incarnation hold/release only; authorized old-incarnation backlog delivery remains unresolved")
+	note("scope", "same-incarnation hold/release only; retired-stream delivery is a separate usage AT assertion")
 	if produced && held.AckedThrough == initial.AckedThrough && counterErr == nil && before.Present && after.Present && after.Upload > before.Upload && after.Download > before.Download && wrapperErr == nil && again.Exit == 0 && again.Before == again.Hashes && e1 == nil && e2 == nil && bytes.Equal(first, second) && restoreErr == nil && caught && ready && transportErr == nil {
 		rec.Status = StatusPass
 	}

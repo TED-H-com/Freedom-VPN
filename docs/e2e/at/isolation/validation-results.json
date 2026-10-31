@@ -1,79 +1,71 @@
 {
-  "run_id": "7779d83c-2f78-4699-ac88-8fcc59e8cf87",
-  "results": [
+  "run_id": "2be2797b-7a28-4e9f-a1fe-5fffa4c1b047",
+  "live_build": "e496d826c04054bd718186de078b8f972353fb94",
+  "product_baseline": "fb5e0025",
+  "source_dirty": false,
+  "assembled_seconds": 953.07,
+  "gates": [
     {
       "command": "make -f mk/at-isolation.mk at-isolation-lint at-isolation-test at-isolation-build",
       "exit_code": 0,
-      "output_tail": [
-        "+ go vet ./tests/e2e/at/isolation/... ./tests/netlab/at/...",
-        "+ go vet -tags netlab ./tests/netlab/at/...",
-        "+ go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 ./tests/e2e/at/isolation/... ./tests/netlab/at/...",
-        "+ go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 -tags netlab ./tests/netlab/at/...",
-        "+ go vet tests/e2e/at/isolation/probe_main.go tests/e2e/at/isolation/observer_main.go",
-        "+ go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 tests/e2e/at/isolation/probe_main.go tests/e2e/at/isolation/observer_main.go",
-        "+ go test -count=1 ./tests/e2e/at/isolation/... ./tests/netlab/at/...",
-        "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/isolation\t0.163s",
-        "?   \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab/at\t[no test files]",
-        "+ python3 tests/e2e/at/isolation/driver.py build",
-        "+ sh -ec for arch in amd64 arm64; do GOOS=linux GOARCH=$arch go build -o \"$GOTMPDIR/probe-$arch\" tests/e2e/at/isolation/probe_main.go tests/e2e/at/isolation/observer_main.go; done"
-      ]
+      "output_tail": "+ go vet ./tests/e2e/at/isolation/... ./tests/netlab/at/...\n+ go vet -tags netlab ./tests/netlab/at/...\n+ go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 ./tests/e2e/at/isolation/... ./tests/netlab/at/...\n+ go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 -tags netlab ./tests/netlab/at/...\n+ go vet tests/e2e/at/isolation/probe_main.go tests/e2e/at/isolation/observer_main.go\n+ go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 tests/e2e/at/isolation/probe_main.go tests/e2e/at/isolation/observer_main.go\n+ go test -count=1 ./tests/e2e/at/isolation/... ./tests/netlab/at/...\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/isolation\t0.294s\n?   \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab/at\t[no test files]\n+ python3 tests/e2e/at/isolation/driver.py build\n+ sh -ec for arch in amd64 arm64; do GOOS=linux GOARCH=$arch go build -o \"$GOTMPDIR/probe-$arch\" tests/e2e/at/isolation/probe_main.go tests/e2e/at/isolation/observer_main.go; done"
     },
     {
       "command": "make -f mk/at-isolation.mk at-isolation",
       "exit_code": 2,
-      "output_tail": [
-        "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab\t22.307s",
-        "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab/at\t19.962s",
-        "--- FAIL: TestIsolationAssembled (950.65s)",
-        "FAIL\tgithub.com/TED-H-com/Freedom-VPN/tests/e2e\t950.661s",
-        "owned-prefix inventory: {\"containers\": [], \"images\": [], \"networks\": [], \"volumes\": []}",
-        "at-isolation lab=0 stack=1",
-        "make: *** [mk/at-isolation.mk:57: at-isolation] Error 2"
+      "output_tail": " Network fvpn-w4-isolation Resource is still in use \n Volume fvpn-w4-isolation-nb Removed \n Volume fvpn-w4-isolation-pg Removed \n Volume fvpn-w4-isolation-pgbackrest-repo Removed \ne2e stack is down\nowned-prefix inventory: {\"containers\": [], \"images\": [], \"networks\": [], \"volumes\": []}\nat-isolation lab=0 stack=1\nmake: *** [mk/at-isolation.mk:57: at-isolation] Error 2",
+      "verdict_lines": [
+        "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab\t22.488s",
+        "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab/at\t19.399s",
+        "    isolation_owned_test.go:194: AT10: blocked",
+        "    isolation_owned_test.go:194: AT11: blocked",
+        "    isolation_owned_test.go:194: AT13: fail",
+        "--- FAIL: TestIsolationAssembled (953.07s)"
       ]
     },
     {
-      "command": "go test -count=1 ./tests/handover/...",
+      "command": "go test -count=1 ./tests/handover/... through disk runner",
       "exit_code": 0,
-      "output_tail": [
-        "+ go test -count=1 ./tests/handover/...",
-        "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/handover\t0.278s"
-      ]
+      "output_tail": "+ go test -count=1 ./tests/handover/...\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/handover\t0.348s"
     },
     {
-      "command": "make go-lint",
+      "command": "make go-lint through disk runner, go-with-disk-tmp empty to avoid shell traps",
       "exit_code": 0,
-      "output_tail": [
-        "+ make go-lint"
-      ]
+      "output_tail": "+ make go-lint go-with-disk-tmp="
     },
     {
-      "command": "go test -count=1 -v -run ^TestCommittedEvidenceFiles_ValidAndHygieneClean$ ./tests/e2e/at/isolation",
+      "command": "producer/archives/committed-evidence regression tests",
       "exit_code": 0,
-      "output_tail": [
-        "+ go test -count=1 -v -run ^TestCommittedEvidenceFiles_ValidAndHygieneClean$ ./tests/e2e/at/isolation",
-        "=== RUN   TestCommittedEvidenceFiles_ValidAndHygieneClean",
-        "--- PASS: TestCommittedEvidenceFiles_ValidAndHygieneClean (0.18s)",
-        "PASS",
-        "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/isolation\t0.178s"
-      ]
+      "output_tail": "+ go test -count=1 -v -run TestISO_F6_03|TestD098|TestCommittedEvidenceFiles_ValidAndHygieneClean ./tests/e2e/at/isolation\n=== RUN   TestISO_F6_03_ProducerTimingCorrelation\n    producer_timing_test.go:18: test_both_recovery_verifiers_preserved (producer_timing_test.CorrelationTests.test_both_recovery_verifiers_preserved) ... ok\n        test_clock_namespace_mismatch_and_missing_ingress_rejected (producer_timing_test.CorrelationTests.test_clock_namespace_mismatch_and_missing_ingress_rejected) ... ok\n        test_failed_release_does_not_invent_guard_end (producer_timing_test.CorrelationTests.test_failed_release_does_not_invent_guard_end) ... ok\n        test_inside_and_outside_guard_remain_losses (producer_timing_test.CorrelationTests.test_inside_and_outside_guard_remain_losses) ... ok\n        test_partial_failure_before_verification_retained (producer_timing_test.CorrelationTests.test_partial_failure_before_verification_retained) ... ok\n        test_sequence_digest_and_bounds_rejected (producer_timing_test.CorrelationTests.test_sequence_digest_and_bounds_rejected) ... ok\n        \n        ----------------------------------------------------------------------\n        Ran 6 tests in 0.001s\n        \n        OK\n        \n--- PASS: TestISO_F6_03_ProducerTimingCorrelation (0.04s)\n=== RUN   TestD098_Followup8ArchivePins\n--- PASS: TestD098_Followup8ArchivePins (0.01s)\n=== RUN   TestCommittedEvidenceFiles_ValidAndHygieneClean\n--- PASS: TestCommittedEvidenceFiles_ValidAndHygieneClean (0.25s)\nPASS\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/isolation\t0.303s"
     },
     {
-      "command": "test -z \"$(gofmt -l $(git ls-files '*.go'))\"",
+      "command": "python3 -B tests/e2e/at/isolation/review_followup9.py",
       "exit_code": 0,
-      "output_tail": []
+      "output_tail": "      \"first_drop_mono_ns\": \"42827409724927\",\n      \"last_positive_offset_ns\": \"-99972452\",\n      \"first_drop_offset_ns\": \"-8098843780\",\n      \"positives\": 65,\n      \"drops\": 137,\n      \"errors\": [\n        \"later positive after first drop\"\n      ]\n    }\n  },\n  \"interpretation\": \"Outer bracket is install-start through release-end; inner is installed-by through release-start. Capture reads and command overlaps do not locate the kernel commit/drop instant. All loss counts remain unchanged.\"\n}"
     },
     {
-      "command": "git diff --check",
+      "command": "unchanged D-120 analyzer replay; output cmp identical",
       "exit_code": 0,
-      "output_tail": []
-    },
-    {
-      "command": "final handover + owned evidence tests after documentation",
-      "exit_code": 0,
-      "output_tail": [
-        "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/handover\t0.284s",
-        "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/isolation\t0.164s"
-      ]
+      "output_tail": "AT10 PASS under D-120\ndatagram | generation | bracket start ns | bracket end ns | upper ms | render-installed ms | classification | next datagram | failures\n12 | 1020 | 1793458402431275719 | 1793458402456886806 | 25.610760 | 9.737676 | boundary | ok | none"
     }
-  ]
+  ],
+  "checks": {
+    "gofmt_tracked_go": "pass",
+    "git_diff_check": "pass",
+    "committed_evidence_hygiene": "pass",
+    "D098_archive_hashes": {
+      "follow-up-6": "44/44",
+      "follow-up-7": "52/52",
+      "follow-up-8": "80/80"
+    },
+    "earlier_archives_unchanged": true
+  },
+  "inventory": {
+    "containers": [],
+    "images": [],
+    "networks": [],
+    "volumes": []
+  },
+  "collector_correction": "Initial inode-equality check rejected distinct Docker time namespaces. Retained boot IDs and exact zero offsets establish the common clock origin; live /proc read confirms source and node recorder share a namespace. Corrected offline comparison; no clock allowance, product binary replacement or assembled rerun.",
+  "live_vs_final_harness": "Live source was clean e496d826. Offline analyzer and automatic post-restart /proc reader were completed afterward; the equivalent read-only /proc collection was performed on the live source and retained. Final helper code cross-builds; no second live run claimed."
 }

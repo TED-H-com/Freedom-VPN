@@ -317,6 +317,12 @@ func (s *Service) ingestSingleEvent(
 			qualityFlags = []string{}
 		}
 
+		// D-130: TIMESTAMPTZ stores microseconds. Truncate only the row
+		// projection; validation, canonical bytes, binding checks and rollup
+		// splitting retain the original nanoseconds. Strictly ordered canonical
+		// endpoints can project to equality, hence the stored checks use <=.
+		storedStart := ev.IntervalStart.UTC().Truncate(time.Microsecond)
+		storedEnd := ev.IntervalEnd.UTC().Truncate(time.Microsecond)
 		_, err = tx.Exec(ctx, `
 			INSERT INTO usage_events (
 				id, node_id, incarnation_id, event_seq, schema_version,
@@ -342,8 +348,8 @@ func (s *Service) ingestSingleEvent(
 			ev.MeterEpochId,
 			string(ev.MeteringVersion),
 			string(ev.Quality),
-			ev.IntervalStart.UTC(),
-			ev.IntervalEnd.UTC(),
+			storedStart,
+			storedEnd,
 			state.LedgerEpoch,
 		)
 		if err != nil {
@@ -399,8 +405,8 @@ func (s *Service) ingestSingleEvent(
 				rec.DeviceId,
 				decstr.U64(bindRev).String(),
 				ev.MeterEpochId,
-				ev.IntervalStart.UTC(),
-				ev.IntervalEnd.UTC(),
+				storedStart,
+				storedEnd,
 				decstr.U64(upBytes).String(),
 				decstr.U64(downBytes).String(),
 				string(ev.MeteringVersion),
@@ -466,8 +472,8 @@ func (s *Service) ingestSingleEvent(
 				formatUint64(seq),
 				gapReason,
 				state.LedgerEpoch,
-				ev.IntervalStart.UTC(),
-				ev.IntervalEnd.UTC(),
+				storedStart,
+				storedEnd,
 				affectedPeriods,
 				eventID,
 				receivedAt,
@@ -516,6 +522,9 @@ func (s *Service) ingestSingleEvent(
 		if errors.As(err, &ae) {
 			return api.UsageEventResult{}, ae
 		}
+		// Unexpected SQL failures, including constraint violations, remain
+		// retryable dependency errors. Never acknowledge an uncommitted event
+		// or definitively reject an immutable payload because persistence failed.
 		return api.UsageEventResult{}, apierr.Wrap(err, apierr.DependencyUnavailable, "usage ledger database unavailable")
 	}
 	return out, nil
@@ -585,6 +594,7 @@ func validateEventFields(eventIdx int, ev api.UsageEvent) ([]api.FieldError, [32
 			Reason: "required",
 		})
 	}
+	// Validate the canonical nanosecond values before projecting stored times.
 	if !ev.IntervalStart.IsZero() && !ev.IntervalEnd.IsZero() && !ev.IntervalEnd.After(ev.IntervalStart) {
 		errs = append(errs, api.FieldError{
 			Field:  prefix + "/interval_end",

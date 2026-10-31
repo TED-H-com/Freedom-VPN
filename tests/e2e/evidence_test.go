@@ -74,7 +74,7 @@ func TestCommittedFixtureEvidence_ValidAndHygieneClean(t *testing.T) {
 			return err
 		}
 		if d.IsDir() {
-			if path != root && filepath.Dir(path) == root && d.Name() != "followup16" && d.Name() != "followup17" && d.Name() != "followup18" {
+			if path != root && filepath.Dir(path) == root && d.Name() != "followup16" && d.Name() != "followup17" && d.Name() != "followup18" && d.Name() != "followup19" {
 				return filepath.SkipDir
 			}
 			return nil

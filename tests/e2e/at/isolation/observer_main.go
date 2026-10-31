@@ -115,9 +115,56 @@ func configureObservation() {
 	for _, k := range []string{"heartbeat_seconds", "poll_seconds", "observation_seconds"} {
 		cfg[k] = 1
 	}
+	// Agent-core 27's opt-in, detached producer timing; no product wire change.
+	cfg["test_timing_path"] = "/var/lib/vpn-node/e2e/isolation-operations.jsonl"
+	if cfg["test_mode"] != true {
+		panic("producer timing requires the existing TEST ONLY node")
+	}
 	raw, e = json.MarshalIndent(cfg, "", "  ")
 	must(e)
 	must(os.WriteFile(p, raw, 0600))
+	raw, e = json.Marshal(clockIdentity())
+	must(e)
+	must(os.WriteFile("/var/lib/vpn-node/e2e/isolation-clock.json", raw, 0600))
+}
+
+func clockIdentity() map[string]string {
+	boot, e := os.ReadFile("/proc/sys/kernel/random/boot_id")
+	must(e)
+	offsets, e := os.ReadFile("/proc/self/timens_offsets")
+	must(e)
+	namespace, e := os.Readlink("/proc/self/ns/time")
+	must(e)
+	return map[string]string{"boot_id": strings.TrimSpace(string(boot)), "time_namespace": namespace, "offsets": string(offsets), "clock": "CLOCK_MONOTONIC"}
+}
+
+// Read the live agent's clock namespace after an ordinary container restart.
+func producerClock() {
+	row := clockIdentity()
+	row["sample_start"] = time.Now().UTC().Format(time.RFC3339Nano)
+	raw, e := exec.Command("pgrep", "-x", "fvpn-agent").Output()
+	must(e)
+	pid := strings.TrimSpace(string(raw))
+	_, e = strconv.Atoi(pid)
+	must(e)
+	row["agent_pid"] = pid
+	row["time_namespace"], e = os.Readlink("/proc/" + pid + "/ns/time")
+	must(e)
+	for name, file := range map[string]string{"offsets": "timens_offsets", "process_stat": "stat"} {
+		raw, e = os.ReadFile("/proc/" + pid + "/" + file)
+		must(e)
+		row[name] = strings.TrimSpace(string(raw))
+	}
+	raw, e = os.ReadFile("/var/lib/vpn-node/e2e/isolation-operations.jsonl")
+	must(e)
+	lines := bytes.Split(bytes.TrimSpace(raw), []byte("\n"))
+	var last map[string]any
+	must(json.Unmarshal(lines[len(lines)-1], &last))
+	row["measurement_run_id"], _ = last["run_id"].(string)
+	row["latest_sequence"], _ = last["sequence"].(string)
+	row["scope"] = "Read-only live source agent clock after ordinary container restart; no clock or namespace mutation."
+	row["sample_end"] = time.Now().UTC().Format(time.RFC3339Nano)
+	must(json.NewEncoder(os.Stdout).Encode(row))
 }
 
 // All timestamps use the host CLOCK_MONOTONIC shared by these containers.
@@ -130,6 +177,7 @@ func clockSample() map[string]string {
 	return map[string]string{"mono_ns": strconv.FormatInt(monoNS(), 10), "wall": time.Now().UTC().Format(time.RFC3339Nano)}
 }
 func deadlineProbes() {
+	identity := clockIdentity()
 	deadline, e := strconv.ParseInt(os.Args[3], 10, 64)
 	must(e)
 	f, e := os.Create(os.Args[4])
@@ -164,7 +212,7 @@ func deadlineProbes() {
 			port := 42000 + id
 			dst := &net.UDPAddr{IP: net.ParseIP(os.Args[2]), Port: 8080}
 			c, e := net.DialUDP("udp4", &net.UDPAddr{Port: port}, dst)
-			row := map[string]any{"packet_id": id, "source_port": port, "phase": s.phase, "scheduled_mono_ns": fmt.Sprint(s.at), "deadline_mono_ns": fmt.Sprint(deadline), "send": clockSample()}
+			row := map[string]any{"trace_clock": identity, "packet_id": id, "source_port": port, "phase": s.phase, "scheduled_mono_ns": fmt.Sprint(s.at), "deadline_mono_ns": fmt.Sprint(deadline), "send": clockSample()}
 			result := "socket_error"
 			if e == nil {
 				defer c.Close()
@@ -207,7 +255,7 @@ func packetClock() {
 	for _, it := range ifaces {
 		names[it.Index] = it.Name
 	}
-	_ = json.NewEncoder(f).Encode(map[string]any{"event": "ready", "clock": clockSample()})
+	_ = json.NewEncoder(f).Encode(map[string]any{"event": "ready", "clock": clockSample(), "trace_clock": clockIdentity()})
 	end := monoNS() + int64(seconds)*1000000000
 	b := make([]byte, 65536)
 	for monoNS() < end {
