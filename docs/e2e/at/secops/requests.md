@@ -66,12 +66,28 @@ follow-up 9 restore snapshot and handover claims test are unchanged.
 
 [Prepared commands, archive pins, all sub-case statuses and exact export limits](2026-10-31-follow-up-11-handover.md).
 
-# Requests to orchestrator — Follow-up 12 (2026-10-31 UTC, live work in progress)
+# Requests to orchestrator — Follow-up 12 (2026-10-31 UTC)
 
-At 08:01 UTC the AT30 restore run is ready but has been deferred by the required two-other-lanes guard since transport teardown at 07:40 UTC. Please reserve the next available lane slot if fleet coordination is needed; the secops harness continues five-minute retries without changing the rule. [Exact preflight checks](followup12-lab-preflight.json). The secops namespace is empty.
+SECOPS-21: **open**, owner `w3-wire-nodes` follow-up 29 / D-099. See [hold and first-offer evidence](SECOPS-21.json); no closure from compiler tests.
 
-Transport attempt 3 passed finite grant expiry, lease expiry with control loss and agent SIGKILL, device revoke, and bounded relay/direct restoration. Earlier failed harness attempts remain in [followup12-attempts.json](followup12-attempts.json). Root live summaries await the independent restore run.
+The first HTTP probe and first stored row were `16` / `16`, versus retained `15` (first stored row above retained: `True`). The first subsequent applied observation was `17`; applied ACK for the first stored row: `False`.
 
-D-102 dated devstack answers were read from later main `5ce76e9`; the installer handover was read from `63a4116`. Application base remains `510a4ab`; [read revisions and scope](followup12-prerequisites.json). New requests remain in this file.
+Request to `w3-devstack-e2e` + `w3-wire-nodes`: export the actual first response delivered to the retained agent, its matching accepted local store, and applied ACK, so closure can be measured without inferring delivery from compiler rows or a separate probe. Keep SECOPS-21 open until all guards hold.
 
-Update 2026-10-31 08:56 UTC: the restore run remains queued. Every five-minute preflight since transport teardown has found at least two other active lanes; the most recent check at 08:53:43 found two labs and two gate suites. No secops stack has been started during this interval. The scheduling request remains pending.
+D-102: the dated devstack answers in `docs/e2e/RESPONSES.md` were read from later main `5ce76e9` once published. They document members/update exports; no first-delivered desired-state response capture is documented. The installer handover was read from `63a4116` once published; it reports ENR-06 socket/runtime fixed, with the required full upgrade still failing at final_sample because state/meter.checkpoint is absent. Both documents were absent on the assigned application base at task start. The node D-099 handover was read before planning. [Read revisions and hashes](followup12-prerequisites.json). No external pin, packaged unit or measured application base changed.
+
+D-103 is resolved by this task: only `fvpn-w4-secops-*`, network `fvpn-w4-secops`, port base 30000. The two-run guard refers to the prepared independent transport and restore fresh-stack runs, each torn down before the next.
+
+The temporary lab scheduling request is resolved: the restore run started after the 09:04:09 UTC preflight admitted it. All earlier waits remain in [the preflight history](followup12-lab-preflight.json).
+
+| Sub-case / missing export | Status / owner | Limit |
+|---|---|---|
+| device_revoke | passed / w3-devstack-e2e | one original TCP/9446 connection and authenticated UDP/9445 socket; independent senders; helper limit 20 minutes |
+| forced_relay | passed / w4-at-security-ops | one member, one exit, established TCP and UDP; 180-second automatic fault expiry, 90-second path wait; not 60-peer relay capacity |
+| grant_expiry | passed / w3-devstack-e2e | one original TCP/9446 connection and authenticated UDP/9445 socket; independent senders; helper limit 20 minutes |
+| guest_clock_rollback | blocked / w3-devstack-e2e / operator | Disposable guest with independently adjustable wall clock; containers share the development host clock. |
+| lease_expiry | passed / w3-devstack-e2e | one original TCP/9446 connection and authenticated UDP/9445 socket; independent senders; helper limit 20 minutes |
+| manual_grant_withdrawal | blocked / w3-wire-members / contracts | The contract exposes finite createMemberGrant but no revokeMemberGrant HTTP operation; no source-row mutation or invented endpoint used. Finite grant expiration is measured separately. |
+| AT31 full capacity | blocked / operator + w4-at-security-ops | Needs chosen candidate hardware and 20-member/60-device mixed-load relay measurements; bounded single-member export is delivered. |
+
+[Dated handover and archive pins](2026-10-31-follow-up-12-handover.md).

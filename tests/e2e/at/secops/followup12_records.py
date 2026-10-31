@@ -6,7 +6,7 @@ from pathlib import Path
 
 from followup10_records import load, measurements
 from followup9_records import evaluate_at30, clean_inventory
-from run import ROOT, PUBLIC, write_json, utc, scan
+from run import ROOT, PUBLIC, write_json, utc, scan, REQUIREMENTS
 from followup11_records import protocol_cutoff, generation_status
 
 
@@ -45,7 +45,7 @@ def refresh_scope():
         for row in scope.get(section, {}).get(key, []):
             row['sha256'] = digest(ROOT/row['path'])
     names = ['AT29.json','AT29.md','AT30.json','AT30.md','AT31.json','AT31.md','SECOPS-21.json',
-             'restore-reconcile.json','restore-reconcile.md','summary.md','README.md','RUN.md','requests.md',
+             'restore-reconcile.json','restore-reconcile.md','summary.md','README.md','RUN.md','requests.md','live.json','cleanup.json',
              '2026-10-31-follow-up-12-handover.md','followup12-transports-live.json','followup12-transports-run.json',
              'followup12-restore-live.json','followup12-restore-run.json','followup12-verdict.json','validation.json',
              'followup12-lab-preflight.json','followup12-prerequisites.json','followup12-attempts.json',
@@ -116,7 +116,7 @@ def main():
     for at,names,gaps in [('AT29',['grant_expiry','lease_expiry','device_revoke','manual_grant_withdrawal','guest_clock_rollback'],remaining29),('AT31',['forced_relay'],remaining31)]:
         actual={name:subcases.get(name,{'status':'blocked','missing_export':'live case did not run'}) for name in names}
         full='failed' if any(row.get('status')=='failed' for row in actual.values()) else 'blocked'
-        write_json(PUBLIC/(at+'.json'),dict(schema_version=1,follow_up=12,id=at,status=full,run_id=transport.get('run_id'),application_base=trun.get('application_base'),source_revision=trun.get('source_revision'),actual=actual,blockers=gaps,evidence=['followup12-transports-live.json','followup12-transports-run.json']))
+        write_json(PUBLIC/(at+'.json'),dict(schema_version=1,follow_up=12,id=at,status=full,requirements=REQUIREMENTS[at],spec=['§19 '+at],run_id=transport.get('run_id'),application_base=trun.get('application_base'),source_revision=trun.get('source_revision'),actual=actual,blockers=gaps,evidence=['followup12-transports-live.json','followup12-transports-run.json']))
         text=f'# {at} — Follow-up 12\n\nFull status: **{full}**. Run `{transport.get("run_id")}`.\n\n| Sub-case | Status | TCP / UDP |\n|---|---|---|\n'
         for name,row in actual.items():
             verdicts=row.get('protocol_verdicts',{})
@@ -126,6 +126,17 @@ def main():
     cleanup=all(clean_inventory(r.get('inventory_after',{})) and r.get('state_cleanup',{}).get('removed') for r in (trun,rrun))
     verdict=dict(common,cases={'AT29':load(PUBLIC/'AT29.json')['status'],'AT30':at30,'AT31':load(PUBLIC/'AT31.json')['status']},subcases={k:v.get('status') for k,v in subcases.items()},requests={'SECOPS-21':status21},cleanup='passed' if cleanup else 'blocked')
     write_json(PUBLIC/'followup12-verdict.json',verdict)
+    phases = {phase:dict(run_id=live.get('run_id'),driver_run_id=run.get('driver_run_id'),
+                        source_revision=run.get('source_revision'),started_at=run.get('started_at'),finished_at=run.get('finished_at'),
+                        test_status=run.get('live',{}).get('status'),evidence=f'followup12-{phase}-live.json',driver=f'followup12-{phase}-run.json')
+              for phase,run,live in [('transports',trun,transport),('restore',rrun,restore)]}
+    write_json(PUBLIC/'live.json',dict(schema_version=1,follow_up=12,record_kind='two independent live phases',
+               application_base=rrun.get('application_base'),phases=phases,cases=verdict['cases'],
+               scope='Current scoped measurements; full AT29/AT31 remain blocked. Older full-stack captures are under history/follow-up-11/.'))
+    write_json(PUBLIC/'cleanup.json',dict(schema_version=1,follow_up=12,status=verdict['cleanup'],
+               namespace='fvpn-w4-secops',phases={phase:dict(run_id=phases[phase]['run_id'],down=run.get('down'),
+                   state_cleanup=run.get('state_cleanup'),inventory_after=run.get('inventory_after'))
+                   for phase,run in [('transports',trun),('restore',rrun)]}))
     public_scans=[dict(file=p.name,findings=scan(p.read_bytes())) for p in PUBLIC.iterdir() if p.is_file() and p.suffix in ('.json','.md')]
     write_json(PUBLIC/'validation.json',dict(common,status='passed' if cleanup and not any(r['findings'] for r in public_scans) and all(r.get('live',{}).get('status')=='passed' for r in (trun,rrun)) else 'blocked',live_runs=[trun,rrun],public_scan=public_scans,cleanup=verdict['cleanup'],scope='Driver/live execution and capture hygiene; full AT29/AT31 remain separate blocked cases.'))
     table='| Measurement | Archived follow-up 10 | Archived follow-up 11 (no new run) | Follow-up 12 |\n|---|---|---|---|\n'
@@ -149,16 +160,23 @@ def main():
     note+='\n[Earlier transport attempts](followup12-attempts.json) remain separately preserved with hashes: attempt 1 omitted publication, and attempt 2 measured grant cutoff but hit the recovery timestamp precision check. Neither is silently replaced by the final run or reported as a complete transport pass.\n'
     probe=restore.get('first_http_probe_after_fresh_observation',{})
     note+=f'\nSECOPS-21: the separately labeled first HTTP **probe** returned generation `{probe.get("generation")}`; the first new stored compiler row was `{first.get("generation") if first else None}`; the retained node was `{retained}`. First-delivered agent response evidence is required for closure. The final local generation and central applied observations are recorded separately in [SECOPS-21.json](SECOPS-21.json).\n'
+    applied_after = [v['applied'] for v in gen.get('observations',[]) if retained and int(v['applied'])>int(retained)]
+    note+=f'\nThe first subsequent applied observation was `{applied_after[0] if applied_after else None}`. Applied ACK for the first stored row: `{analysis["closure_guards"]["first_stored_row_applied_ack"]}`. First-delivered-response capture proved: `{analysis["closure_guards"]["first_delivered_http_response_proved"]}`; first-offer local acceptance proved: `{analysis["closure_guards"]["first_offer_local_store_accepted"]}`. The final snapshot shows local accepted/applied `{gen.get("final",{}).get("node_accepted_desired")}` / `{gen.get("final",{}).get("node_applied")}`, central applied `{gen.get("final",{}).get("applied")}`. These later values do not close missing first-offer guards. No generation repair was performed.\n'
     note+='\n'+table
     note+=f'\nCleanup: **{verdict["cleanup"]}**. Both run records include teardown exit status, state-directory removal and final container/network/volume/image counts. [Transport run](followup12-transports-run.json); [restore run](followup12-restore-run.json).\n'
+    note+='\nBoth final inventories are zero for containers, networks, volumes and images, with generated state removed. [Current cleanup record](cleanup.json). The lab scheduling wait ended at 09:04:09 UTC; [preflight history](followup12-lab-preflight.json) records the required retries.\n'
     note+='\nFollow-up 11 root records (105 files) are byte-identical to PR #274 under [history/follow-up-11/](history/follow-up-11/), with SHA-256 index entries. Its restore measurements are retained follow-up 10 values, not a new execution. No older snapshot was moved or rewritten.\n'
     note+='\nExact samples and export limits: [AT29](AT29.json), [AT31](AT31.json), [SECOPS-21](SECOPS-21.json). The existing handover test already reads the follow-up 9 archive; no further test repoint is needed.\n'
     (PUBLIC/'2026-10-31-follow-up-12-handover.md').write_text(note)
     requests=PUBLIC/'requests.md'; old=requests.read_text().split('\n# Requests to orchestrator — Follow-up 12')[0]
     old+='\n# Requests to orchestrator — Follow-up 12 (2026-10-31 UTC)\n\n'
     old+=f'SECOPS-21: **{status21}**, owner `w3-wire-nodes` follow-up 29 / D-099. See [hold and first-offer evidence](SECOPS-21.json); no closure from compiler tests.\n\n'
+    old+=f'The first HTTP probe and first stored row were `{probe.get("generation")}` / `{first.get("generation") if first else None}`, versus retained `{retained}` (first stored row above retained: `{analysis["first_new_stored_offer_is_above_retained"]}`). The first subsequent applied observation was `{applied_after[0] if applied_after else None}`; applied ACK for the first stored row: `{analysis["closure_guards"]["first_stored_row_applied_ack"]}`.\n\n'
+    if status21 != 'closed':
+        old+='Request to `w3-devstack-e2e` + `w3-wire-nodes`: export the actual first response delivered to the retained agent, its matching accepted local store, and applied ACK, so closure can be measured without inferring delivery from compiler rows or a separate probe. Keep SECOPS-21 open until all guards hold.\n\n'
     old+='D-102: the dated devstack answers in `docs/e2e/RESPONSES.md` were read from later main `5ce76e9` once published. They document members/update exports; no first-delivered desired-state response capture is documented. The installer handover was read from `63a4116` once published; it reports ENR-06 socket/runtime fixed, with the required full upgrade still failing at final_sample because state/meter.checkpoint is absent. Both documents were absent on the assigned application base at task start. The node D-099 handover was read before planning. [Read revisions and hashes](followup12-prerequisites.json). No external pin, packaged unit or measured application base changed.\n\n'
     old+='D-103 is resolved by this task: only `fvpn-w4-secops-*`, network `fvpn-w4-secops`, port base 30000. The two-run guard refers to the prepared independent transport and restore fresh-stack runs, each torn down before the next.\n\n'
+    old+='The temporary lab scheduling request is resolved: the restore run started after the 09:04:09 UTC preflight admitted it. All earlier waits remain in [the preflight history](followup12-lab-preflight.json).\n\n'
     old+='| Sub-case / missing export | Status / owner | Limit |\n|---|---|---|\n'
     for k,v in subcases.items(): old+=f'| {k} | {v.get("status")} / {v.get("owner","w4-at-security-ops")} | {v.get("missing_export",v.get("blocker",v.get("scope",v.get("transport_scope","See recorded samples"))))} |\n'
     old+='| AT31 full capacity | blocked / operator + w4-at-security-ops | Needs chosen candidate hardware and 20-member/60-device mixed-load relay measurements; bounded single-member export is delivered. |\n\n[Dated handover and archive pins](2026-10-31-follow-up-12-handover.md).\n'; requests.write_text(old)
