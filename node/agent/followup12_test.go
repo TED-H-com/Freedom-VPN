@@ -240,15 +240,22 @@ func TestLEASE01_RetryAfterPreservesFreshLeaseUntilDeadline(t *testing.T) {
 // renderedExecutor answers nft -j list with the table the installed scripts
 // leave behind. Each script is the one enforce.Render just handed to NftBatch,
 // so a later verifier change that still accepts Render keeps these tests green.
-// failVerify still returns an empty listing. Conntrack and tc stay on the
-// embedded executor.
+// failVerify still returns an empty listing. Conntrack and tc qdisc/class
+// listings stay on the embedded executor; filters and policy rules are explicit.
 type renderedExecutor struct {
 	revocationExecutor
-	folded int
-	table  listedTable
+	folded    int
+	table     listedTable
+	foreignTC bool
 }
 
 func (ex *renderedExecutor) Output(ctx context.Context, name string, args ...string) ([]byte, error) {
+	if (name == "tc" && len(args) > 1 && args[0] == "-j" && args[1] == "filter") || name == "ip" {
+		if ex.foreignTC && name == "tc" && strings.Join(args, " ") == "-j filter show dev "+ex.model.Datapath.MemberIngress+" ingress" {
+			return []byte(`[{"kind":"matchall","options":{"handle":1,"actions":[{"kind":"mirred"}]}}]`), nil
+		}
+		return []byte(`[]`), nil
+	}
 	if name == "nft" && ex.installed && !ex.failVerify {
 		if err := ex.fold(); err != nil {
 			return nil, err
@@ -256,6 +263,28 @@ func (ex *renderedExecutor) Output(ctx context.Context, name string, args ...str
 		return ex.table.listingJSON()
 	}
 	return ex.revocationExecutor.Output(ctx, name, args...)
+}
+
+func TestReviewR15_TCForeignFilterWithdrawsServingOnApply(t *testing.T) {
+	r := newRig(t)
+	serveBoundGeneration(t, r)
+	p := &revocationPlane{memPlane: r.plane}
+	r.eng.plane = p
+	stepOK(t, r)
+	if !r.eng.serving || !p.results[0].Verified || p.errors[0] != nil {
+		t.Fatalf("clean serving control failed: %v", p.errors)
+	}
+	p.ex.foreignTC = true
+	stepOK(t, r)
+	last := len(p.results) - 1
+	if r.eng.serving || p.results[last].Verified || p.errors[last] == nil || !strings.Contains(p.errors[last].Error(), "TC_FOREIGN_FILTER") || p.baselinesAfterApply == 0 {
+		t.Fatalf("foreign tc did not withdraw serving: serving=%v result=%+v errors=%v baselines=%d", r.eng.serving, p.results[last], p.errors, p.baselinesAfterApply)
+	}
+	// The contract does not yet contain the new reason enum. Preserve the
+	// specific reason in the message through the existing fallback code.
+	if r.eng.applyError == nil || r.eng.applyError.Code != api.ErrorCodeTCFOREIGNFILTER || r.eng.applyError.Message != "TC_FOREIGN_FILTER" {
+		t.Fatalf("lost tc failure: %+v", r.eng.applyError)
+	}
 }
 
 func (ex *renderedExecutor) fold() error {

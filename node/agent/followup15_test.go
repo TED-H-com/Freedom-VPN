@@ -73,7 +73,7 @@ func TestD067_ProvisionalWaitBounds(t *testing.T) {
 		t.Fatalf("10s heartbeat waits: %s %s %s %s %s", e.provisionalWait(1), e.provisionalWait(2), e.provisionalWait(3), e.provisionalWait(4), e.provisionalWait(5))
 	}
 	e.cfg.HeartbeatSeconds = 90
-	if e.provisionalWait(1) != 90*time.Second || e.provisionalWait(2) != 60*time.Second {
+	if e.provisionalWait(1) != 60*time.Second || e.provisionalWait(2) != 60*time.Second {
 		t.Fatalf("long heartbeat: first %s later %s", e.provisionalWait(1), e.provisionalWait(2))
 	}
 }
@@ -139,7 +139,7 @@ func TestD067_GrantlessRestartRenewsOnHeartbeatSchedule(t *testing.T) {
 	}
 }
 
-func TestD067_EmptyBindingsDoNotRenewProvisionally(t *testing.T) {
+func TestD067_EmptyBindingsRenewWithoutProvisionalFailure(t *testing.T) {
 	r := newRig(t)
 	alignControlClock(r)
 	serveBoundGeneration(t, r)
@@ -154,14 +154,14 @@ func TestD067_EmptyBindingsDoNotRenewProvisionally(t *testing.T) {
 	r.srv.SetFixture(empty)
 	count := r.srv.LeaseRenewals()
 	stepOK(t, r)
-	if len(r.eng.desired.DeviceBindings) != 0 || r.eng.provisionalStreak != 0 || r.eng.provisionalRetryAt != 0 {
-		t.Fatalf("schedule survived empty bindings: n=%d streak=%d retry=%s", len(r.eng.desired.DeviceBindings), r.eng.provisionalStreak, r.eng.provisionalRetryAt)
+	if len(r.eng.desired.DeviceBindings) != 0 || r.eng.provisionalStreak != 1 || r.eng.provisionalRetryAt == 0 {
+		t.Fatalf("empty lease lost its renewal schedule: n=%d streak=%d retry=%s", len(r.eng.desired.DeviceBindings), r.eng.provisionalStreak, r.eng.provisionalRetryAt)
 	}
 	for range 3 {
 		r.clock.Advance(30 * time.Second)
 		stepOK(t, r)
 	}
-	if r.srv.LeaseRenewals() != count {
+	if r.srv.LeaseRenewals() != count+2 {
 		t.Fatalf("empty bindings renewed %d times", r.srv.LeaseRenewals()-count)
 	}
 	if hasReason(r.eng.decision.Reasons, api.ForwardingBlockReasonAwaitingMemberGrants) || hasReason(r.eng.decision.Reasons, api.ForwardingBlockReasonLeaseExpired) {

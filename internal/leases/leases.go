@@ -312,6 +312,17 @@ func (s *Service) RenewTx(
 	}
 
 	var outEnv api.ServingLeaseEnvelope
+	// Lock fleet_config before nodes even for standalone Renew/RenewTx callers.
+	// check_node_lease later takes FOR SHARE on the same fleet row (§16.3).
+	maxOfflineSec := DefaultMaxOfflineLeaseSeconds
+	if err := tx.QueryRow(ctx, `SELECT max_offline_lease_seconds FROM fleet_config LIMIT 1 FOR SHARE`).Scan(&maxOfflineSec); err != nil && !errors.Is(err, pgx.ErrNoRows) {
+		return api.ServingLeaseEnvelope{}, err
+	}
+	if maxOfflineSec <= 0 {
+		maxOfflineSec = DefaultMaxOfflineLeaseSeconds
+	}
+	maxOfflineDur := time.Duration(maxOfflineSec) * time.Second
+
 	// 1. Verify node and incarnation identity and revocation status.
 	var (
 		lifecycleState       string
@@ -338,13 +349,15 @@ func (s *Service) RenewTx(
 	}
 
 	var (
-		incNodeID uuid.UUID
-		revokedAt *time.Time
+		incNodeID     uuid.UUID
+		revokedAt     *time.Time
+		mappingFrozen bool
 	)
 	err = tx.QueryRow(ctx, `
-		SELECT node_id, revoked_at
+		SELECT node_id, revoked_at,
+		       EXISTS(SELECT 1 FROM node_identity_endpoints WHERE incarnation_id=$1 AND mapping_frozen)
 		FROM node_incarnations
-		WHERE id = $1`, authIncarnationID).Scan(&incNodeID, &revokedAt)
+		WHERE id = $1`, authIncarnationID).Scan(&incNodeID, &revokedAt, &mappingFrozen)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return api.ServingLeaseEnvelope{}, apierr.New(apierr.IncarnationMismatch, "incarnation is not registered")
@@ -362,6 +375,8 @@ func (s *Service) RenewTx(
 	}
 
 	// 2. Check replay by (node_id, incarnation_id, renewal_request_id) (§16.3: replay never restarts TTL).
+	// D-088: preserve the original signature even after the stored expiry is
+	// clamped. Central validity checks use the row, not this replayed deadline.
 	var existingEnvBytes []byte
 	err = tx.QueryRow(ctx, `
 		SELECT envelope
@@ -377,16 +392,7 @@ func (s *Service) RenewTx(
 		return api.ServingLeaseEnvelope{}, err
 	}
 
-	// 3. Read max_offline_lease_seconds from fleet_config (default 86400s, §16.3).
-	maxOfflineSec := DefaultMaxOfflineLeaseSeconds
-	if err := tx.QueryRow(ctx, `SELECT max_offline_lease_seconds FROM fleet_config LIMIT 1`).Scan(&maxOfflineSec); err != nil && !errors.Is(err, pgx.ErrNoRows) {
-		return api.ServingLeaseEnvelope{}, err
-	}
-	if maxOfflineSec <= 0 {
-		maxOfflineSec = DefaultMaxOfflineLeaseSeconds
-	}
-	maxOfflineDur := time.Duration(maxOfflineSec) * time.Second
-
+	// 3. Bound the lease by the locked fleet offline maximum (§16.3).
 	issuedAt := s.now().UTC()
 	nodeLeaseEnd := issuedAt.Add(maxOfflineDur)
 
@@ -430,11 +436,11 @@ func (s *Service) RenewTx(
 
 	publishedAndRegistered := pubIntentStr == string(api.PublicationIntentPublished) &&
 		lifecycleState == string(api.LifecycleStateRegistered)
-	nodeReady := provisioningState == string(api.ProvisioningStateReady)
+	nodeReady := provisioningState == string(api.ProvisioningStateReady) && !mappingFrozen
 	includeMembers := publishedAndRegistered && nodeReady && len(groupIDs) > 0
 
 	// D-067 central backstop: when includeMembers is false on a published exit because
-	// provisioning_state is not ready, issue the grant-less lease with ExpiresAt 60s
+	// provisioning_state is not ready or mapping is frozen (D-084), issue the grant-less lease with ExpiresAt 60s
 	// after issued_at so an agent that waits for the renewal lead still renews promptly.
 	// Never shorten the lease of a ready node.
 	if publishedAndRegistered && !nodeReady {

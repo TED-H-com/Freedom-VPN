@@ -34,7 +34,7 @@ func TestReviewR12_Q1_VerifierAcceptsOutOfModelForwarding(t *testing.T) {
 		t.Fatalf("Render: %v", err)
 	}
 	baseJSON := fixtureServing(m, plan.Assignments)
-	if err := VerifyServing(baseJSON, m, plan.Assignments); err != nil {
+	if err := verifyServingRuleset(baseJSON, m, plan.Assignments); err != nil {
 		t.Fatalf("baseline smallModel listing should pass VerifyServing: %v", err)
 	}
 
@@ -183,7 +183,7 @@ func TestReviewR12_Q1_VerifierAcceptsOutOfModelForwarding(t *testing.T) {
 			if err != nil {
 				t.Fatalf("marshal mutated: %v", err)
 			}
-			if err := VerifyServing(mutated, m, plan.Assignments); err == nil {
+			if err := verifyServingRuleset(mutated, m, plan.Assignments); err == nil {
 				t.Fatalf("VerifyServing accepted out-of-model ruleset mutation %q", tc.name)
 			}
 		})
@@ -369,7 +369,7 @@ func TestFollowup7_ServingResolverNon53Drop(t *testing.T) {
 		t.Fatalf("serving resolver drop %d is not before the deny drop %d", dropAt, denyAt)
 	}
 	raw := fixtureServing(m, plan.Assignments)
-	if err := VerifyServing(raw, m, plan.Assignments); err != nil {
+	if err := verifyServingRuleset(raw, m, plan.Assignments); err != nil {
 		t.Fatal(err)
 	}
 	var doc map[string]any
@@ -383,7 +383,7 @@ func TestFollowup7_ServingResolverNon53Drop(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := VerifyServing(mutated, m, plan.Assignments); err == nil {
+	if err := verifyServingRuleset(mutated, m, plan.Assignments); err == nil {
 		t.Fatal("VerifyServing accepted a serving ruleset with no non-53 resolver drop")
 	}
 }

@@ -85,6 +85,7 @@ func renewFixture(applied, leaseGen uint64, monoNow, leaseMono time.Duration, is
 		leaseMono:  leaseMono,
 		appliedGen: applied,
 		lease: &api.ServingLease{
+			Members:          []api.MemberLease{{MemberId: uuid.New()}},
 			ConfigGeneration: decstr.U64(leaseGen),
 			IssuedAt:         issued,
 			ExpiresAt:        issued.Add(window),

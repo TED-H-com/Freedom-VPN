@@ -6,6 +6,15 @@ import { etagCache, idempotencyKeys } from '../api/client';
 import { resetMockState } from '../mocks/handlers';
 import { server } from '../mocks/server';
 
+// jsdom has no modal top layer; real focus/Escape behavior is covered by Playwright.
+HTMLDialogElement.prototype.showModal = function () {
+  this.setAttribute('open', '');
+};
+
+HTMLDialogElement.prototype.close = function () {
+  this.removeAttribute('open');
+};
+
 beforeAll(() => {
   server.listen({ onUnhandledRequest: 'error' });
 });

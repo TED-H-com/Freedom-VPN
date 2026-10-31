@@ -10,7 +10,6 @@ DefaultDependencies=no
 Type=oneshot
 RemainAfterExit=yes
 SuccessExitStatus=0 2
-ExecStartPre=/opt/vpn-node/current/fvpn-node-install refresh-boot-id
 ExecStart=/opt/vpn-node/current/fvpn-updater recover -config /etc/vpn-node/updater.json
 NoNewPrivileges=yes
 ProtectSystem=strict
@@ -18,8 +17,7 @@ ProtectHome=yes
 PrivateTmp=yes
 RuntimeDirectory=vpn-node
 UMask=0077
-# refresh-boot-id rewrites updater.json. /etc is read-only under ProtectSystem=strict.
-ReadWritePaths=/var/lib/vpn-node /opt/vpn-node /run/vpn-node /etc/vpn-node
+ReadWritePaths=/var/lib/vpn-node /opt/vpn-node /run/vpn-node
 CapabilityBoundingSet=
 
 [Install]

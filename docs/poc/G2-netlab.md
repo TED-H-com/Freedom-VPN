@@ -86,6 +86,8 @@ Serving forward rules name both interfaces. Upload matches `iifname` `fv-fh` and
 
 Classification does not write `skb->mark` or the conntrack mark. NetBird's mark range `0x1BD00–0x1BDFF` is left alone. No tc filter is installed (`cls_fw`, `cls_u32`, `cls_flower` and `cls_matchall` are not required). `skb->priority` is `(1<<16)|minor`. Minor 0 is HTB direct, so the host default leaf is minor `0xFFFE` (class `1:fffe`). A lab table `inet fvprobe` (not `inet fvpn`) set mark `0x1bd11` and conntrack mark `0x1bd22` and read them again after forward: `mark_pre=5 mark_post=5`.
 
+D-085: the serving gate fails closed with `TC_FOREIGN_FILTER` when live tc read-back finds a foreign qdisc, filter or action on either the member interface or uplink. The agent still installs no tc filter. D-090 quarantines the applied member-facing link and installs the nft baseline without deleting foreign tc state. See `TC serving read-back` below for the measured containment and recovery limits.
+
 There is no flowtable and no `flow add` offload (§10.3). GRO, GSO and TSO are off on the lab veths. The forward counter records the inner IPv4 total length, once, before the shaper. A later qdisc drop can already have been counted, so these counters are admission bytes, not delivered bytes (§11.7 uses the HTB class byte counter for rate).
 
 IPv6 mode is `block` (§8.3). Member IPv6 on the member-uplink pair is dropped and counted on `ctv6`. There is no IPv6 forward path and no `::/0` accept.
@@ -233,8 +235,56 @@ Production exit nodes must not run Docker, or any other NAT, for non-loopback tr
 
 The measured line is `SUMMARY LOOPBACK dns=1 serving=1 class=loopback_scoped postrouting_saddr=2 postrouting_daddr=1 ctunku=1 uplink=0`.
 
+## TC serving read-back
+
+`VerifyServing(ctx, executor, model, assignments)` reads live state on every call. Both `Apply` and `fvpn-netlab verify` use it. The nft-only checker is internal; a saved nft listing cannot establish serving. Read-back includes `tc -j qdisc show dev <iface>`, `tc -j class show dev <iface>` and `tc -j filter show dev <iface> ingress` / `egress` on the member interface and uplink. It also reads the root block and every listed qdisc and HTB class filter block, across all chains. The bare filter command only reads the root block; filters attached to an HTB class or fq_codel leaf need their own parent read.
+
+Only the rendered HTB root `1:` and the assigned member fq_codel leaves are owned. Kernel-default root qdiscs (`noqueue`, `pfifo_fast`, `fq_codel`, `fq`, `mq`, `cake`, handle `0:`) without filters are not foreign; this includes `mq`'s default queues under `:N`. Default mq classes and fq_codel flow classes are not parsed as HTB classes. The separate QoS check still requires the serving HTB classes. Every filter is foreign, including `matchall`, `flower`, `u32` and `bpf`, regardless of action. This covers redirect/mirror `mirred`, `pedit`, `nat`, `skbedit`, `bpf` and future filter kinds without an action allowlist. Empty `clsact` and `ingress` qdiscs also fail. Unreadable or malformed tc evidence fails closed.
+
+| Read-back code | Trigger | Result |
+|---|---|---|
+| `TC_FOREIGN_FILTER` | Foreign qdisc/filter/action, or an incomplete tc read | Serving verification fails; detail names interface, parent/handle and kind. `Apply` returns `Verified=false`, quarantines the member link, and installs the nft baseline; foreign tc objects remain. |
+| `FLOWTABLE_BYPASS` | Flowtable/offload or unsafe foreign nft extension | Serving verification fails; `Apply` installs the nft baseline. |
+| `QOS_CLASS_MISSING` | Missing or mismatched serving HTB class/leaf | Serving verification fails; `Apply` installs the nft baseline. |
+
+`ApplyResult.Evidence` and the lab commands' JSON record tc attachment identities and action kinds, including evidence on rejection. `ip -j -4 rule show` and `ip -j -6 rule show` are recorded as family, rule count and scan status only. Rule selectors, destinations and action parameters are omitted. Policy rules and policy-scan failures are informational; the policy-routing control below still passes admission checks.
+
+D-090 adds `Quarantine(ctx context.Context, ex Executor, m Model) (QuarantineEvidence, error)`. The agent passes its **retained applied model** and the executor for that model's network namespace. The present model has exactly one member-facing link, `Datapath.MemberIngress` (`fv-fh` in this lab); upload arrives and download leaves on that link. `Datapath.Uplink` must be distinct and carry the control path independently. Quarantine lowers only the member link and installs the no-probe nft baseline. It does not change the uplink, tc objects, routes or DNS. An empty `quarantine_<interface>` ifname set in `inet fvpn` retains recovery intent across processes and baseline refreshes. Baselines preserve class identities and do not remove roots carrying foreign filters.
+
+`QuarantineEvidence` reports the interface, prior and final administrative flags and operstate, marker read-back (`recorded`), and separate baseline `installed` / `verified` results. `quarantined=true` requires the member link read back down and the baseline verified. A command/read failure returns a non-nil error and partial evidence; link-down and baseline installation are attempted independently. Evidence includes fixed failure statuses, never raw command output or destination lists. `ServingEvidence.quarantined` instead means a recovery marker is retained; it is not evidence that another daemon has left the link down.
+
+`VerifyServing` scans tc even when the member link is down or the baseline is installed. A retained redirect still returns `TC_FOREIGN_FILTER`, with attachment/action evidence and `quarantined=true`. Only Apply releases quarantine: hold the link down, check tc ownership before mutation, install and fully verify serving nft/tc, raise the member link, verify again, then remove and read back the recovery marker. Failed recovery re-quarantines. A model naming a different member link cannot release a retained marker.
+
+The 2026-10-31 follow-up 13 run uses `FVPN_LAB_PREFIX=fvpn-w1-netlab-f13` and `make -f mk/netlab.mk netlab-lint netlab-unit netlab-build netlab-test`, with `GOMAXPROCS=4 GOFLAGS=-p=4` and disk scratch under `.agent/tmp`. The full suite passed in 207.520 seconds (make exit 0). The [recorded output](G2-D090-evidence.txt) contains these D-090 measurements from that run:
+
+| Sequence in `TestReviewR15_TcMirredAndPolicyRoutingBypass/tc_clsact_mirred` | Measured result |
+|---|---|
+| Verified Apply, then inject `clsact` + ingress `matchall action mirred egress redirect dev fv-ih`, then verify (no intervening Apply) | Verify exit **3**, `TC_FOREIGN_FILTER`, `fv-fh`, `mirred` evidence |
+| Send one non-admitted UDP packet before quarantine | Uplink capture **1** packet; `ctunku` delta **0** |
+| Quarantine with the retained model | `fv-fh` prior **UP**, final **DOWN**; marker recorded; nft baseline installed and verified; foreign filter and `clsact` retained |
+| Verify and send the same packet while quarantined | Verify exit **3**, `TC_FOREIGN_FILTER`, `quarantined=true`; uplink capture **0**; `ctunku` **0 → 0** |
+| Node-originated TCP transfer over `fv-ih` | **control-ok**; uplink administratively **UP** |
+| Repeat quarantine, then simulate another daemon raising the link and quarantine again | Both succeed; the member link is down again |
+| Apply while the foreign filter remains | Exit **3**, `verified=false`; member link stays down |
+| Test owner removes its injected `clsact`; clean Apply | Member and uplink links **UP**; verify **0**, `quarantined=false` |
+| Topology owner reconciles its removed member-path configuration | Two static routes and one IPv6 address restored; member TCP **passes** |
+| Reinstall the boot baseline and run the existing AT00 oracle | **5** WireGuard handshakes, forwarding **1**, baseline **1** |
+
+The deciding observation is `uplink=1, ctunku_delta=0` before quarantine versus `uplink=0, ctunku_delta=0, control=pass` after quarantine with the same foreign filter retained. The nft counter's unchanged value alone proves neither rejection nor containment; the uplink capture and link read-back establish the latter. The held `ip_rule` control still verifies successfully, increments `ctunku` by one, and leaves the uplink capture empty. `TestReviewR15_TCFilterAttachments` checks root, HTB parent/host/member classes, fq_codel leaves and egress on both interfaces, including nonzero chain 7.
+
+### Agent-core follow-up 22 call contract
+
+Retain the applied `Model` and `ApplyResult.Plan.Assignments` when Apply verifies. Add the namespace executor-backed Quarantine method to the plane boundary, calling `enforce.Quarantine(ctx, executor, retainedAppliedModel)` and returning its complete evidence/error. In `Engine.Step`, the check must run after Apply and before the observation/heartbeat advertises serving (the current heartbeat is deferred through `beat`). Use `VerifyServing(ctx, executor, retainedAppliedModel, appliedAssignments)` there. On `TC_FOREIGN_FILTER`, withdraw serving and quarantine **on every step while the failure persists**, including already-blocked branches. A baseline-only branch must not clear the retained applied model or skip quarantine. Serialize with Apply and the existing data-plane lock. Report the original reason, tc attachment/action evidence, marker status, prior/final link states, baseline installed/verified and any partial failure. Apply failures may already carry `ApplyResult.Quarantine`; report it too. Until the HTTP contract has the enum, preserve `TC_FOREIGN_FILTER` in the existing `HEALTH_CHECK_FAILED` message. Never report a failed quarantine as successful containment. Recovery uses a clean Apply, without an independent link-up command.
+
+### Containment and recovery limits
+
+A privileged process can alter tc after a read. Another interface manager, including NetBird, may raise the member link between steps; the agent must reapply quarantine every step while foreign state persists. The lab's explicit link raise measures retry behavior, not real NetBird behavior. A filter on the uplink itself is **outside containment**, because quarantine deliberately leaves the uplink and control path available. Detection, containment, and route connectivity remain separate facts.
+
+An additional measured Linux side effect matters for recovery: administrative link-down removes the lab's static routes through `fv-fh` and its IPv6 address. Clean Apply restores the link and verified nft/tc state, but the applied model has no route/address configuration to restore. The lab topology owner explicitly reinstalls only its two member routes and one address after Apply; it never raises the link itself. Member TCP recovery above includes that reconciliation. Production needs its route/address owner to reconcile the equivalent configuration and establish connectivity before claiming recovered service. Enforcement does not snapshot or rewrite host routes, the default route, or DNS. Real NetBird-managed quarantine/recovery, including route reconciliation and concurrent link raises, remains **待實測** for follow-up 22 and the NetBird lane.
+
 ## Decisions
 
+- D-090: quarantine the retained applied model's member-facing link and install the nft baseline; retain foreign tc, preserve the uplink/control path, retry each step, and release the link only through verified Apply. The lab also requires its topology owner to reconcile routes/address lost on link-down.
 - D-019: usage is the inner IPv4 total length admitted at the forward hook (§10.2). Bytes later dropped by HTB are not subtracted. "Delivered bytes" is not a ledger rule. The lab counters are the meter definition for the node agent.
 - Serving forward rules bind the member interface and the uplink. Upload uses `oifname` uplink. Download uses `iifname` uplink. The baseline drop does not.
 - A base chain outside `inet fvpn` that only accepts, continues, counts, or logs does not bypass the `fvpn` drop. A chain on a hook member traffic crosses that rewrites, marks, offloads, or drops fails `VerifyServing` closed. The agent still writes only `inet fvpn`. The measurement is `## Tables outside inet fvpn`.
@@ -244,6 +294,8 @@ The measured line is `SUMMARY LOOPBACK dns=1 serving=1 class=loopback_scoped pos
 - §11.7 production windows remain a recommended starting point. The short window is what CI runs.
 
 ## 待實測
+
+The local `clsact` mirred bypass, D-085 rejection, and D-090 member-link containment are measured in `TestReviewR15_TcMirredAndPolicyRoutingBypass`. Real NetBird-managed link reactivation and route/address reconciliation remain 待實測. This does not establish continuous protection between agent steps or containment of filters on the uplink.
 
 This lab does not claim any of the following:
 

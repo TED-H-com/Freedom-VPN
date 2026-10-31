@@ -198,3 +198,12 @@ func (l Layout) owns(path string) bool {
 	}
 	return false
 }
+
+// releaseManifest retains the verified envelope outside the immutable tree.
+func (l Layout) releaseManifest(id string) string {
+	return filepath.Join(l.StagingDir, id+".manifest.json")
+}
+
+func (l Layout) baselineFile() string {
+	return filepath.Join(l.InstallDir, "baseline.json")
+}

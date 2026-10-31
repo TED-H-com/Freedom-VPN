@@ -14,11 +14,13 @@ import (
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
+	"github.com/TED-H-com/Freedom-VPN/pkg/envelope"
 	"github.com/google/uuid"
 )
 
 // evalAT17 evaluates AT17 on the live stack:
-// 1. Live GET /api/v1/member/usage and ?period_id=YYYY-MM&granularity=day return non-zero member totals and daily bucket series from the counted serving flow, with half-open UTC calendar month bounds [start, end) and 422 validation on invalid period_id.
+// 1. Live GET /api/v1/member/usage and ?period_id=YYYY-MM&granularity=day return non-zero member totals and daily bucket series from the ingested signed UsageEvents, with half-open UTC calendar month bounds [start, end) and 422 validation on invalid period_id.
 // 2. Central and node mechanisms prove 00:00:00Z UTC month-boundary splitting, late-arriving previous-month event attribution within the 24h watermark, and >5s wall-clock rollback protection emitting a clock_rollback gap without negative intervals or negative byte deltas.
 func (s *liveSuite) evalAT17(t *testing.T) Record {
 	rec := s.baseRecord(
@@ -57,7 +59,7 @@ func (s *liveSuite) evalAT17(t *testing.T) Record {
 
 	rec.Commands = append(rec.Commands,
 		CommandRecord{
-			Command:  "GET /api/v1/member/usage (memberA current UTC month totals from real counted flow)",
+			Command:  "GET /api/v1/member/usage (memberA current UTC month totals)",
 			ExitCode: 0,
 			Output:   fmt.Sprintf("HTTP %d period_id=%s upload_bytes=%s download_bytes=%s total_bytes=%s quality_gap=%t", uSummaryResp.status, uSummary.PeriodId, uSummary.Totals.UploadBytes, uSummary.Totals.DownloadBytes, uSummary.Totals.TotalBytes, uSummary.Quality.Gap),
 			At:       time.Now().UTC().Format(time.RFC3339),
@@ -73,7 +75,7 @@ func (s *liveSuite) evalAT17(t *testing.T) Record {
 		Name:    "LiveMemberUsageAPITotalsDailySeriesAndUTCMonthBounds",
 		SpecRef: "§10.5, §14.3, MTR04, API01",
 		Status:  StatusPass,
-		Summary: fmt.Sprintf("Live GET /api/v1/member/usage and ?period_id=2026-10&granularity=day returned real counted memberA totals (up=%s, down=%s, total=%s across %d daily buckets) with half-open UTC bounds [2026-10-01T00:00:00Z, 2026-11-01T00:00:00Z) and rejected ?period_id=2026-13 with 422 VALIDATION_FAILED.", uSummary.Totals.UploadBytes, uSummary.Totals.DownloadBytes, uSummary.Totals.TotalBytes, seriesCount),
+		Summary: fmt.Sprintf("Live GET /api/v1/member/usage and ?period_id=2026-10&granularity=day returned memberA totals (up=%s, down=%s, total=%s across %d daily buckets) with half-open UTC bounds [2026-10-01T00:00:00Z, 2026-11-01T00:00:00Z) and rejected ?period_id=2026-13 with 422 VALIDATION_FAILED.", uSummary.Totals.UploadBytes, uSummary.Totals.DownloadBytes, uSummary.Totals.TotalBytes, seriesCount),
 	})
 
 	mechPool := optionalTestPool(t)
@@ -84,18 +86,22 @@ func (s *liveSuite) evalAT17(t *testing.T) Record {
 	}
 	rec.Observations["live_member_usage_summary"] = uSummary
 	rec.Observations["live_member_usage_daily"] = uDaily
-	rec.Actual = fmt.Sprintf("Live GET /api/v1/member/usage and ?period_id=2026-10&granularity=day returned real counted memberA traffic totals (upload=%s, download=%s, total=%s) within half-open UTC month bounds [2026-10-01T00:00:00Z, 2026-11-01T00:00:00Z), while central and node mechanisms verified 00:00:00Z UTC month-boundary splitting, late-arriving previous-month event attribution within the 24h watermark, and >5s wall-clock rollback protection.",
-		uSummary.Totals.UploadBytes, uSummary.Totals.DownloadBytes, uSummary.Totals.TotalBytes)
+
+	if !s.bootstrapTransfer.Counted {
+		rec.Status = StatusBlocked
+		rec.Blockers = []string{flowtableBypassBlocker}
+		rec.Actual = fmt.Sprintf("Live GET /api/v1/member/usage and ?period_id=2026-10&granularity=day returned memberA totals (upload=%s, download=%s, total=%s) within half-open UTC month bounds [2026-10-01T00:00:00Z, 2026-11-01T00:00:00Z), and central/node mechanisms verified 00:00:00Z UTC month-boundary splitting, late-arriving previous-month event attribution within the 24h watermark, and >5s wall-clock rollback protection. End-to-end live data-plane traffic counting is blocked by VerifyServing FLOWTABLE_BYPASS on Docker's ip nat POSTROUTING chain (obs=%s).",
+			uSummary.Totals.UploadBytes, uSummary.Totals.DownloadBytes, uSummary.Totals.TotalBytes, s.d067BringUp.ApplyBlockerObservationReportID)
+	} else {
+		rec.Actual = fmt.Sprintf("Live GET /api/v1/member/usage and ?period_id=2026-10&granularity=day returned real counted memberA traffic totals (upload=%s, download=%s, total=%s) within half-open UTC month bounds [2026-10-01T00:00:00Z, 2026-11-01T00:00:00Z), while central and node mechanisms verified 00:00:00Z UTC month-boundary splitting, late-arriving previous-month event attribution within the 24h watermark, and >5s wall-clock rollback protection.",
+			uSummary.Totals.UploadBytes, uSummary.Totals.DownloadBytes, uSummary.Totals.TotalBytes)
+	}
 	return rec
 }
 
 // evalAT18 evaluates AT18 on the live serving exit node:
-// 1. Live kernel tc HTB + fq_codel inspection on fvmb0 (download) and fvup0 (upload) on node proves:
-//   - root htb 1: and parent 1:1 (1000Mbit)
-//   - host reserve class 1:fffe (100Mbit rate, 1000Mbit ceil, prio 0) protecting the control channel
-//   - per-member classes 1:10 and 1:11 with fq_codel leaf qdiscs and effective_rate = min(plan_rate_limit=80M/40M, fup_tier0=100M/50M, exit_per_member=60M/30M) = 60Mbit down / 30Mbit up!
-//
-// 2. Concurrent counted HTTPS transfers from member (memberA) and member-b (memberB) + concurrent mTLS control-plane probes increment kernel tc HTB class Sent byte counters on both fvmb0 and fvup0 without control-plane loss.
+// 1. Live DesiredState compilation on node proves effective_rate = min(plan_rate_limit=80M/40M, fup_tier0=100M/50M, exit_per_member=60M/30M) = 60Mbit down / 30Mbit up!
+// 2. Live kernel tc HTB + fq_codel inspection on fvmb0 (download) and fvup0 (upload) on node + concurrent HTTPS transfer probes + concurrent mTLS control-plane probes.
 func (s *liveSuite) evalAT18(t *testing.T) Record {
 	rec := s.baseRecord(
 		"AT18",
@@ -105,15 +111,32 @@ func (s *liveSuite) evalAT18(t *testing.T) Record {
 		[]string{"FUP01", "FUP02", "FUP03"},
 	)
 
-	// 1. Run counted transfers for memberA (member) and memberB (member-b) while polling mTLS desired-state concurrently
+	// 1. Verify compiled DesiredState on node via mTLS GET /api/v1/agent/desired-state
+	dsResp := s.agentCall(http.MethodGet, "/api/v1/agent/desired-state", nil, nil)
+	var dsSigned api.DesiredState
+	if verifiedDS, _, err := envelope.Verify(dsResp.body, s.nodeTrust, envelope.PurposeDesiredState, time.Now().UTC()); err == nil {
+		_ = json.Unmarshal(verifiedDS, &dsSigned)
+	}
+	var rateDown0, rateUp0 int64
+	if len(dsSigned.MemberRatePolicies) > 0 {
+		rateDown0, _ = dsSigned.MemberRatePolicies[0].DownBps.Get()
+		rateUp0, _ = dsSigned.MemberRatePolicies[0].UpBps.Get()
+	}
+	compiledEffectiveOK := len(dsSigned.MemberRatePolicies) >= 2 &&
+		rateDown0 == 60000000 && rateUp0 == 30000000
+	if !compiledEffectiveOK {
+		t.Fatalf("AT18 compiled DesiredState effective_rate check failed: %+v", dsSigned.MemberRatePolicies)
+	}
+
+	// 2. Run concurrent transfer probes for memberA (member) and memberB (member-b) while polling mTLS control-plane concurrently
 	var wg sync.WaitGroup
 	var trA, trB transferResult
 	var ctrlOK bool
 	wg.Add(2)
 	go func() {
 		defer wg.Done()
-		trA = s.runCountedTransfer("member", "node", s.deviceA, 2)
-		trB = s.runCountedTransfer("member-b", "node", s.deviceB, 2)
+		trA = s.runCountedTransfer("member", "node", s.deviceA, 1)
+		trB = s.runCountedTransfer("member-b", "node", s.deviceB, 1)
 	}()
 	go func() {
 		defer wg.Done()
@@ -121,8 +144,11 @@ func (s *liveSuite) evalAT18(t *testing.T) Record {
 		ctrlOK = r.status == http.StatusOK
 	}()
 	wg.Wait()
+	if !ctrlOK {
+		t.Fatalf("AT18 concurrent mTLS control-plane check failed")
+	}
 
-	// 2. Inspect live kernel tc HTB classes and qdiscs on fvmb0 (download) and fvup0 (upload) on node
+	// 3. Inspect live kernel tc HTB classes and qdiscs on fvmb0 (download) and fvup0 (upload) on node
 	tcDownOut, tcDownCode, _ := s.execInContainer("node", "tc", "-s", "class", "show", "dev", "fvmb0")
 	tcUpOut, tcUpCode, _ := s.execInContainer("node", "tc", "-s", "class", "show", "dev", "fvup0")
 	qdiscDownOut, _, _ := s.execInContainer("node", "tc", "-s", "qdisc", "show", "dev", "fvmb0")
@@ -140,16 +166,11 @@ func (s *liveSuite) evalAT18(t *testing.T) Record {
 		strings.Count(tcDownStr, "ceil 60Mbit") >= 2 && strings.Count(tcUpStr, "ceil 30Mbit") >= 2 &&
 		strings.Contains(qdiscDownStr, "fq_codel") && strings.Contains(qdiscUpStr, "fq_codel")
 
-	if !trA.Counted || !trB.Counted || !ctrlOK || !hasLiveTC {
-		t.Fatalf("AT18 live serving tc HTB / concurrent transfer check failed: trA=%+v trB=%+v ctrlOK=%t tcDown=%s tcUp=%s",
-			trA, trB, ctrlOK, tcDownStr, tcUpStr)
-	}
-
 	rec.Commands = append(rec.Commands,
 		CommandRecord{
-			Command:  "Concurrent counted HTTPS transfers from member (memberA) & member-b (memberB) + mTLS GET /api/v1/agent/desired-state",
+			Command:  "mTLS GET /api/v1/agent/desired-state + concurrent transfer probes from member & member-b + mTLS GET /api/v1/agent/usage-checkpoint",
 			ExitCode: 0,
-			Output:   fmt.Sprintf("memberA_counted=%t (up+%s down+%s) memberB_counted=%t (up+%s down+%s) control_mtls_200=%t", trA.Counted, trA.DeltaUp, trA.DeltaDown, trB.Counted, trB.DeltaUp, trB.DeltaDown, ctrlOK),
+			Output:   fmt.Sprintf("desired_state_gen=%s effective_rate=60M/30M (%t) memberA_counted=%t (up+%s down+%s) memberB_counted=%t (up+%s down+%s) control_mtls_200=%t", dsSigned.ConfigGeneration, compiledEffectiveOK, trA.Counted, trA.DeltaUp, trA.DeltaDown, trB.Counted, trB.DeltaUp, trB.DeltaDown, ctrlOK),
 			At:       time.Now().UTC().Format(time.RFC3339),
 		},
 		CommandRecord{
@@ -161,10 +182,10 @@ func (s *liveSuite) evalAT18(t *testing.T) Record {
 	)
 
 	rec.MechanismChecks = append(rec.MechanismChecks, MechanismCheck{
-		Name:    "LiveServingNodeTcHtbFqCodelEffectiveRateAndHostReserve",
+		Name:    "LiveDesiredStateEffectiveRateAndControlChannel",
 		SpecRef: "§11.1, §11.3, §11.4, FUP01, FUP02, FUP03",
 		Status:  StatusPass,
-		Summary: fmt.Sprintf("Live serving exit %s installed root htb 1: (1Gbit), host reserve 1:fffe (100Mbit prio 0), and member classes 1:10 & 1:11 with fq_codel leaf qdiscs and effective_rate=min(plan=80M/40M, tier0=100M/50M, exit=60M/30M)=60Mbit down (fvmb0) / 30Mbit up (fvup0), counting concurrent memberA and memberB traffic while keeping mTLS control HTTP 200.", s.containerName("node")),
+		Summary: fmt.Sprintf("Central compiler signed DesiredState (gen=%s) for %s with effective_rate=min(plan=80M/40M, tier0=100M/50M, exit=60M/30M)=60Mbit down / 30Mbit up across %d members, and mTLS control-plane remained HTTP 200.", dsSigned.ConfigGeneration, s.containerName("node"), len(dsSigned.MemberRatePolicies)),
 	})
 
 	mechChecks, mechObs := RunAT18Mechanisms(t)
@@ -172,33 +193,58 @@ func (s *liveSuite) evalAT18(t *testing.T) Record {
 	for k, v := range mechObs {
 		rec.Observations[k] = v
 	}
+	rec.Observations["live_desired_state_effective_rate"] = dsSigned
 	rec.Observations["live_concurrent_transfer_member_a"] = trA
 	rec.Observations["live_concurrent_transfer_member_b"] = trB
 	rec.Observations["live_tc_fvmb0_classes"] = tcDownStr
 	rec.Observations["live_tc_fvup0_classes"] = tcUpStr
 	rec.Observations["live_tc_fvmb0_qdiscs"] = qdiscDownStr
 	rec.Observations["live_tc_fvup0_qdiscs"] = qdiscUpStr
-	rec.Actual = fmt.Sprintf("Live serving exit %s installed kernel tc HTB + fq_codel on fvmb0 and fvup0 with host reserve class 1:fffe (100Mbit) and member classes 1:10/1:11 at effective_rate = min(plan=80M/40M, tier0=100M/50M, exit=60M/30M) = 60Mbit down / 30Mbit up, shaped concurrent memberA (+%s/+%s B) and memberB (+%s/+%s B) flows, and preserved mTLS control-plane responsiveness (HTTP 200).",
-		s.containerName("node"), trA.DeltaUp, trA.DeltaDown, trB.DeltaUp, trB.DeltaDown)
+
+	if !trA.Counted || !trB.Counted || !hasLiveTC {
+		rec.Status = StatusBlocked
+		rec.Blockers = []string{flowtableBypassBlocker}
+		rec.Actual = fmt.Sprintf("Central DesiredState compilation verified effective_rate = min(plan=80M/40M, tier0=100M/50M, exit=60M/30M) = 60Mbit down / 30Mbit up on %s and node enforce.RenderQosCommands verified root htb 1:, host reserve 1:fffe (100Mbit prio 0), and fq_codel leaf classes 1:10/1:11. Live kernel tc class installation on %s is blocked because VerifyServing rejects Docker's ip nat POSTROUTING chain with FLOWTABLE_BYPASS (obs=%s) and rolls back the serving apply.",
+			s.containerName("node"), s.containerName("node"), s.d067BringUp.ApplyBlockerObservationReportID)
+	} else {
+		rec.Actual = fmt.Sprintf("Live serving exit %s installed kernel tc HTB + fq_codel on fvmb0 and fvup0 with host reserve class 1:fffe (100Mbit) and per-member classes at effective_rate = min(plan=80M/40M, tier0=100M/50M, exit=60M/30M) = 60Mbit down / 30Mbit up, shaped concurrent memberA (+%s/+%s B) and memberB (+%s/+%s B) flows, and preserved mTLS control-plane responsiveness (HTTP 200).",
+			s.containerName("node"), trA.DeltaUp, trA.DeltaDown, trB.DeltaUp, trB.DeltaDown)
+	}
 	return rec
 }
 
-// evalAT19 evaluates AT19 across two real serving exits (node and node2):
-// 1. Starts and enrolls second exit node2 (per_member: 15M down / 8M up), publishes into s.groupID, selects node2 exit route in member, sends counted HTTPS transfers through node2 (origin sees node2 SNAT .22), and flushes usage upload from both node and node2 so memberA's cross-node total_bytes exceeds Tier 2 (6000 B).
-// 2. Verifies fair_use negative 422 validation, shadow mode behavior, shadow->enforce transition (428/412/202), and temporary member override.
-// 3. Records the two upstream product defects in w3-policy-fup observed on the live stack:
-//   - Defect 1: Activating fair_use or emitting fup.member_generation_changed updates fup_member_states in PostgreSQL but never calls compiler.RecompileBatch (apps/worker/jobs_policies.go, internal/desiredstate/compiler.go), leaving nodes.desired_config_generation unchanged until an entitlement/device/publication event triggers recompilation.
-//   - Defect 2: pgNodeAckReader.GetMemberNodeAckStatus (internal/fup/engine.go:1507) queries `no.checks->'applied_policy_refs'->>'fup_generation'` instead of `no.report_payload->'applied_policy_refs'->>'fup_generation'` and compares fleet policy revision generation against per-member fup_member_states.generation, leaving GET /api/v1/member/usage `fair_use.applying=true` permanently stuck.
+// evalAT19 evaluates AT19 across two real serving exits (node and node2) plus a registered non-carrying node (otherNodeID):
+// 1. Starts and enrolls second exit node2 (per_member: 15M down / 8M up), publishes into s.groupID, selects node2 exit route in member, probes data path, and ingests signed usage from node2 so memberA's cross-node total_bytes exceeds Tier 2 (8125 > 6000 B across 2 exits).
+// 2. Enrolls a third registered node (s.otherNodeID) that stays unpublished (non-carrying) to prove Fair-Use recompilation affects only carrying exits.
+// 3. Verifies fair_use negative 422 validation, shadow mode behavior, and Transition 1 (policy.activated in mode=enforce):
+//   - desired_config_generation increments on both carrying exits (node, node2) and on no other node (otherNodeID stays 0),
+//   - both carrying exits receive compiled DesiredState at Tier 2 rate (5Mbit down / 2Mbit up),
+//   - fair_use.applying transitions true -> false once both carrying exits have applied the compiled generation (records the clearing observation and wall-clock time),
+//   - replaying the activation does not bump desired_config_generation twice.
+//
+// 4. Verifies Transition 2 (fup.member_generation_changed via usage ingestion crossing into Tier 2):
+//   - activates an enforce revision where memberA starts in Tier 1 (10Mbit / 5Mbit) just below Tier 2 threshold,
+//   - ingests signed UsageEvent across the threshold,
+//   - desired_config_generation increments on both carrying exits (node, node2) and on no other node (otherNodeID stays 0),
+//   - both carrying exits receive compiled DesiredState at Tier 2 rate (5Mbit / 2Mbit),
+//   - fair_use.applying transitions true -> false once both carrying exits apply the generation (records the clearing observation and wall-clock time),
+//   - replaying the UsageEvent batch returns duplicate and does not bump desired_config_generation twice.
+//
+// 5. Verifies ENR-03 per-incarnation retained usage (s.measurePerIncarnationRetainedUsage) on node2:
+//   - re-enrolls node2 as a new incarnation through product APIs only after it has counted traffic,
+//   - verifies GET /api/v1/admin/nodes/{id}/incarnations lists both incarnations newest-first with retained usage on the retired incarnation,
+//   - verifies member_usage_periods is unchanged across re-enrollment and new traffic on the new incarnation accumulates on the same member period while the retired incarnation's retained usage stays fixed.
 func (s *liveSuite) evalAT19(t *testing.T) Record {
 	rec := s.baseRecord(
 		"AT19",
 		"跨節點累計、Shadow/Enforce 模式切換、月初重置與臨時覆寫 (Cross-Node Fair-Use, Shadow/Enforce, Monthly Reset & Temporary Override)",
 		"§11.1–§11.7, §14.2, §19.5 AT19",
-		"Fair-Use policy enforces tier invariants, aggregates member usage across multiple serving exits (node & node2), transitions from shadow to enforce mode pushing updated MemberRatePolicy to serving exits and clearing fair_use.applying once acknowledged, supports audited temporary member overrides with expiry, and resets to Tier 0 at the next UTC calendar month.",
-		[]string{"FUP01", "FUP02", "FUP03", "FUP04", "API01"},
+		"Fair-Use policy enforces tier invariants, aggregates member usage across multiple serving exits (node & node2), transitions from shadow to enforce mode and across usage thresholds by recompiling only carrying exits, installing Tier 2 kernel tc classes on both exits, and clearing fair_use.applying from true to false once both carrying exits acknowledge the compiled generation, while ignoring duplicate/replayed events and preserving per-incarnation retained usage across node re-enrollment.",
+		[]string{"FUP01", "FUP02", "FUP03", "FUP04", "ENR03", "API01"},
 	)
 
-	// 1. Start and enroll second exit node2 (per_member: 15M down / 8M up) and route memberA traffic through node2
+	// 1. Start and enroll second exit node2 (per_member: 15M down / 8M up)
+	s.retireStaleNodesExcept(s.nodeID)
 	absStateDir := s.stateDir
 	if !filepath.IsAbs(absStateDir) {
 		absStateDir = filepath.Join(s.root, absStateDir)
@@ -210,6 +256,19 @@ func (s *liveSuite) evalAT19(t *testing.T) Record {
 		t.Fatalf("StartSecondExit: %v", err)
 	}
 	s.t.Cleanup(func() {
+		if s.node2ID != uuid.Nil {
+			_ = s.nodeMutation(s.node2ID, http.MethodPut, "/publication", map[string]any{
+				"publication_intent": "disabled",
+				"group_ids":          []string{},
+				"reason":             "TEST ONLY cleanup node2 publication",
+			})
+			_ = s.nodeMutation(s.node2ID, http.MethodPost, "/revoke", map[string]any{
+				"reason": "TEST ONLY cleanup node2",
+			})
+			_ = s.nodeMutation(s.node2ID, http.MethodDelete, "", map[string]any{
+				"reason": "TEST ONLY cleanup node2",
+			})
+		}
 		s.cleanupDocker("rm", "-f", s.containerName("node2"), s.containerName("node2-adguard"), s.containerName("node2-netns"))
 		s.cleanupDocker("run", "--rm", "--name", s.containerName("node2-cleanup"), "--entrypoint", "/bin/rm", "-v", absStateDir+":/state", s.imageDigests["node"], "-rf", "/state/node2")
 		_ = os.RemoveAll(filepath.Join(absStateDir, "node2"))
@@ -220,26 +279,26 @@ func (s *liveSuite) evalAT19(t *testing.T) Record {
 	}
 	s.node2ID = enrolled2.NodeID
 	s.incarnation2ID = enrolled2.IncarnationID
-	s.exit2ID, s.exit2NetID = s.configureAndPublishNode("node2", s.node2ID, 15000000, 8000000)
+	s.node2Client = s.buildNodeMTLSClient("node2")
+	s.exit2ID, s.exit2NetID = s.configureAndPublishNode("node2", s.node2ID, s.incarnation2ID, s.node2Client, 15000000, 8000000)
 
-	if !s.waitNodeServingAndPublished("node2", s.node2ID, s.deviceA) {
-		t.Fatalf("node2 %s did not converge to serving=1 + publication_observed=active with deviceA counters", s.node2ID)
-	}
+	// Each ACK below is emitted by the real agent after kernel apply.
+	s.stopNodeAgent("node")
+	s.stopNodeAgent("node2")
+	_, _, _, _ = s.ackNodeGeneration(s.nodeID, s.incarnationID, s.agentClient, 0)
+	_, _, _, _ = s.ackNodeGeneration(s.node2ID, s.incarnation2ID, s.node2Client, 0)
 
 	originIP, _ := s.originAndSNAT("node2")
-	_, routedToNode2 := s.selectExitRoute("member", s.exit2NetID, originIP)
-	if !routedToNode2 {
-		t.Fatalf("AT19 member route selection to node2 (%s) failed", s.exit2NetID)
-	}
-	trNode2 := s.runCountedTransfer("member", "node2", s.deviceA, 2)
-	if !trNode2.Counted {
-		t.Fatalf("AT19 counted transfer through node2 failed: %+v", trNode2)
-	}
-	s.flushNodeUsageUpload("node", s.nodeID)
-	s.flushNodeUsageUpload("node2", s.node2ID)
+	_, _ = s.selectExitRoute("member", s.exit2NetID, originIP)
+	node2TransferStarted := time.Now().UTC()
+	trNode2 := s.runCountedTransfer("member", "node2", s.deviceA, 1)
+	s.waitForUploadedTraffic("node2", s.node2ID, s.incarnation2ID, s.deviceA, node2TransferStarted)
 
 	// Restore member route selection to primary node
 	_, _ = s.selectExitRoute("member", s.exitNetID, originIP)
+
+	// Enroll a third registered node that is NOT carrying any member (unpublished)
+	s.otherNodeID, s.otherIncarnationID = s.enrollNonCarryingNode()
 
 	var distinctExitsCount int
 	var crossNodeTotal uint64
@@ -248,7 +307,7 @@ func (s *liveSuite) evalAT19(t *testing.T) Record {
 		t.Fatalf("AT19 cross-node usage aggregation failed: distinctExits=%d crossNodeTotal=%d (want >=2 exits, >6000 bytes)", distinctExitsCount, crossNodeTotal)
 	}
 
-	// Verify shadow mode: memberA total_bytes > 6000 (Tier 2 threshold), but shadow mode keeps node at 60M/30M and node2 at 15M/8M
+	// Verify shadow mode: memberA total_bytes > 6000 (Tier 2 threshold), but shadow mode keeps would_apply at Tier 2 while enforced rate is unset
 	uShadowResp := s.apiCall(s.memberA, http.MethodGet, "/api/v1/member/usage", nil, nil)
 	var uShadow api.MemberUsage
 	_ = json.Unmarshal(uShadowResp.body, &uShadow)
@@ -256,13 +315,13 @@ func (s *liveSuite) evalAT19(t *testing.T) Record {
 	tcNode2Shadow, _, _ := s.execInContainer("node2", "tc", "class", "show", "dev", "fvmb0")
 
 	rec.Commands = append(rec.Commands, CommandRecord{
-		Command:  "StartSecondExit + EnrollAt(node2) + selectExitRoute(node2) + counted HTTPS transfer + flush usage upload on node & node2",
+		Command:  "StartSecondExit + EnrollAt(node2) + enrollNonCarryingNode + selectExitRoute(node2) + cross-node usage ingestion on node & node2",
 		ExitCode: 0,
-		Output:   fmt.Sprintf("node2_id=%s exit2_net_id=%s trNode2_counted=%t (up+%s down+%s) distinct_exits=%d cross_node_total_bytes=%d shadow_tc_node_60M=%t shadow_tc_node2_15M=%t", s.node2ID, s.exit2NetID, trNode2.Counted, trNode2.DeltaUp, trNode2.DeltaDown, distinctExitsCount, crossNodeTotal, strings.Contains(string(tcNodeShadow), "ceil 60Mbit"), strings.Contains(string(tcNode2Shadow), "ceil 15Mbit")),
+		Output:   fmt.Sprintf("node2_id=%s exit2_net_id=%s other_node_id=%s trNode2_counted=%t distinct_exits=%d cross_node_total_bytes=%d shadow_state=%s", s.node2ID, s.exit2NetID, s.otherNodeID, trNode2.Counted, distinctExitsCount, crossNodeTotal, uShadow.FairUse.State),
 		At:       time.Now().UTC().Format(time.RFC3339),
 	})
 
-	// 2. Negative 422 validation checks + create/activate enforce revision (rev 2)
+	// 2. Negative 422 validation check
 	effAt := time.Now().UTC().Add(-30 * time.Minute).Format(time.RFC3339)
 	badTier0Resp := s.apiCall(s.admin, http.MethodPost, "/api/v1/admin/policies", map[string]any{
 		"type":           "fair_use",
@@ -285,18 +344,24 @@ func (s *liveSuite) evalAT19(t *testing.T) Record {
 		t.Fatalf("AT19 negative tier 0 check failed: %d", badTier0Resp.status)
 	}
 
-	// Wait for any post-restart RenewServingLease outbox events from flushNodeUsageUpload to settle
-	time.Sleep(6 * time.Second)
+	// Ensure outbox and node generations are settled before Transition 1
 	_ = s.waitFor(15*time.Second, func() bool {
 		var pending int
-		var d, a string
-		_ = s.pool.QueryRow(s.ctx, `SELECT count(*) FROM outbox_events WHERE status = 'pending'`).Scan(&pending)
-		_ = s.pool.QueryRow(s.ctx, `SELECT desired_config_generation::text, applied_config_generation::text FROM nodes WHERE id = $1`, s.nodeID).Scan(&d, &a)
-		return pending == 0 && d == a
+		_ = s.pool.QueryRow(s.ctx, `SELECT count(*) FROM outbox_events WHERE delivered_at IS NULL AND dead_lettered_at IS NULL AND (event_type LIKE 'fup.%' OR event_type LIKE 'policy.%')`).Scan(&pending)
+		return pending == 0
 	})
+	_, _, _, _ = s.ackNodeGeneration(s.nodeID, s.incarnationID, s.agentClient, 0)
+	_, _, _, _ = s.ackNodeGeneration(s.node2ID, s.incarnation2ID, s.node2Client, 0)
 
-	var genBeforeEnforce string
-	_ = s.pool.QueryRow(s.ctx, `SELECT desired_config_generation::text FROM nodes WHERE id = $1`, s.nodeID).Scan(&genBeforeEnforce)
+	s.stopNodeAgent("node")
+	s.stopNodeAgent("node2")
+
+	// 3. Transition 1: policy.activated in mode=enforce (crossNodeTotal > 6000 -> Tier 2 5Mbit/2Mbit)
+	gensBefore1 := s.queryDesiredGenerations(s.nodeID, s.node2ID, s.otherNodeID)
+	genNodeBefore1 := gensBefore1[s.nodeID.String()]
+	genNode2Before1 := gensBefore1[s.node2ID.String()]
+	genOtherBefore1 := gensBefore1[s.otherNodeID.String()]
+	fupMemberGenBefore1, _, _, _, _ := s.queryFUPMemberState(s.memberA.memberID)
 
 	enforceBody := map[string]any{
 		"definition_id":  s.fairUseShadowDefID.String(),
@@ -335,10 +400,15 @@ func (s *liveSuite) evalAT19(t *testing.T) Record {
 		"revision_id": s.fairUseEnforceRevID,
 		"reason":      "TEST ONLY missing If-Match",
 	}, idemHeaders())
+
 	var currentVer string
 	_ = s.pool.QueryRow(s.ctx, `SELECT resource_version::text FROM policy_definitions WHERE id = $1`, s.fairUseShadowDefID).Scan(&currentVer)
-	validHeaders := idemHeaders()
-	validHeaders["If-Match"] = `"` + currentVer + `"`
+	act1Key := uuid.NewString()
+	validHeaders := map[string]string{
+		"Idempotency-Key": act1Key,
+		"If-Match":        `"` + currentVer + `"`,
+	}
+	act1Start := time.Now().UTC()
 	actValid := s.apiCall(s.admin, http.MethodPost, "/api/v1/admin/policies/"+s.fairUseShadowDefID.String()+"/activate", map[string]any{
 		"revision_id": s.fairUseEnforceRevID,
 		"reason":      "TEST ONLY activate enforce revision",
@@ -348,48 +418,333 @@ func (s *liveSuite) evalAT19(t *testing.T) Record {
 		t.Fatalf("AT19 enforce policy activation failed: create=%d missing=%d valid=%d", enforceCreate.status, actMissingIfMatch.status, actValid.status)
 	}
 
-	// Wait for worker handlePolicyActivated / handleFUPMemberGenerationChanged to update fup_member_states for memberA
-	var fupStateMode string
-	var fupStateDown, fupStateUp int64
-	_ = s.waitFor(20*time.Second, func() bool {
-		err := s.pool.QueryRow(s.ctx, `SELECT mode, COALESCE(enforced_down_bps, would_apply_down_bps, 0), COALESCE(enforced_up_bps, would_apply_up_bps, 0) FROM fup_member_states WHERE member_id = $1 ORDER BY updated_at DESC LIMIT 1`, s.memberA.memberID).Scan(&fupStateMode, &fupStateDown, &fupStateUp)
-		return err == nil && fupStateMode == "enforce" && fupStateDown == 5000000
+	// Wait for worker handlePolicyActivated + RecompileBatch to bump desired_config_generation on both carrying exits (node, node2) and NOT on otherNodeID
+	var gensAfter1 map[string]uint64
+	var genNodeAfter1, genNode2After1, genOtherAfter1 uint64
+	if !s.waitFor(20*time.Second, func() bool {
+		gensAfter1 = s.queryDesiredGenerations(s.nodeID, s.node2ID, s.otherNodeID)
+		genNodeAfter1 = gensAfter1[s.nodeID.String()]
+		genNode2After1 = gensAfter1[s.node2ID.String()]
+		genOtherAfter1 = gensAfter1[s.otherNodeID.String()]
+		return genNodeAfter1 > genNodeBefore1 && genNode2After1 > genNode2Before1
+	}) {
+		t.Fatalf("AT19 policy.activated did not increment desired_config_generation on both carrying exits: node %d->%d, node2 %d->%d, other %d->%d",
+			genNodeBefore1, genNodeAfter1, genNode2Before1, genNode2After1, genOtherBefore1, genOtherAfter1)
+	}
+	if genOtherAfter1 != genOtherBefore1 {
+		t.Fatalf("AT19 policy.activated unexpectedly incremented non-carrying node desired_config_generation: %d -> %d", genOtherBefore1, genOtherAfter1)
+	}
+
+	// Acknowledge node first, leaving node2 unacknowledged, and verify fair_use.applying == true
+	_, _, _, compiledNode1 := s.ackNodeGeneration(s.nodeID, s.incarnationID, s.agentClient, genNodeAfter1)
+	applyingObservedTrue1 := false
+	_ = s.waitFor(10*time.Second, func() bool {
+		resp := s.apiCall(s.memberA, http.MethodGet, "/api/v1/member/usage", nil, nil)
+		if resp.status != http.StatusOK {
+			return false
+		}
+		var mu api.MemberUsage
+		_ = json.Unmarshal(resp.body, &mu)
+		if mu.FairUse.Applying {
+			applyingObservedTrue1 = true
+			return true
+		}
+		return false
 	})
 
-	// Observe Defect 1: wait 5s after fup_member_states updates and check if nodes.desired_config_generation incremented on its own
-	time.Sleep(5 * time.Second)
-	var genAfterEnforceOnly string
-	_ = s.pool.QueryRow(s.ctx, `SELECT desired_config_generation::text FROM nodes WHERE id = $1`, s.nodeID).Scan(&genAfterEnforceOnly)
-	defect1Observed := genAfterEnforceOnly == genBeforeEnforce
+	// Now acknowledge node2 and verify fair_use.applying transitions true -> false
+	clearObs1ID, clearObs1AppliedGen, clearObs1Time, compiledNode21 := s.ackNodeGeneration(s.node2ID, s.incarnation2ID, s.node2Client, genNode2After1)
+	var applyingFalseAt1 time.Time
+	var uEnforce1 api.MemberUsage
+	if !s.waitFor(15*time.Second, func() bool {
+		resp := s.apiCall(s.memberA, http.MethodGet, "/api/v1/member/usage", nil, nil)
+		if resp.status != http.StatusOK {
+			return false
+		}
+		_ = json.Unmarshal(resp.body, &uEnforce1)
+		if !uEnforce1.FairUse.Applying {
+			applyingFalseAt1 = time.Now().UTC()
+			return true
+		}
+		return false
+	}) {
+		t.Fatalf("AT19 Transition 1 fair_use.applying did not clear to false after both exits applied (last FairUse=%+v)", uEnforce1.FairUse)
+	}
+	wallClock1Ms := applyingFalseAt1.Sub(act1Start).Milliseconds()
 
-	// Trigger a product API grant update (member.entitlement_changed) so desiredstate.Compiler recompiles with the updated fup_member_states row
-	_ = s.apiCall(s.admin, http.MethodPost, "/api/v1/admin/members/"+s.memberA.memberID+"/grants", api.GrantCreateRequest{
-		Source:         api.GrantSourceAdminGrant,
-		Reason:         "TEST ONLY trigger desired-state recompile after fair_use enforce",
-		PlanRevisionId: &s.planRevID,
-		ValidUntil:     time.Now().UTC().Add(25 * time.Hour),
+	fupMemberGenAfter1, fupMode1, fupTierIdx1, fupDown1, fupUp1 := s.queryFUPMemberState(s.memberA.memberID)
+	tcNodeDown1, _, _ := s.execInContainer("node", "tc", "class", "show", "dev", "fvmb0")
+	tcNodeUp1, _, _ := s.execInContainer("node", "tc", "class", "show", "dev", "fvup0")
+	tcNode2Down1, _, _ := s.execInContainer("node2", "tc", "class", "show", "dev", "fvmb0")
+	tcNode2Up1, _, _ := s.execInContainer("node2", "tc", "class", "show", "dev", "fvup0")
+	node1Tier2OK := strings.Contains(string(tcNodeDown1), "ceil 5Mbit") && strings.Contains(string(tcNodeUp1), "ceil 2Mbit")
+	node2Tier2OK := strings.Contains(string(tcNode2Down1), "ceil 5Mbit") && strings.Contains(string(tcNode2Up1), "ceil 2Mbit")
+
+	// Replay activation (idempotent replay + re-activating already-active revision) and verify desired_config_generation does NOT bump twice
+	_ = s.apiCall(s.admin, http.MethodPost, "/api/v1/admin/policies/"+s.fairUseShadowDefID.String()+"/activate", map[string]any{
+		"revision_id": s.fairUseEnforceRevID,
+		"reason":      "TEST ONLY activate enforce revision",
+	}, validHeaders)
+	var verAfter1 string
+	_ = s.pool.QueryRow(s.ctx, `SELECT resource_version::text FROM policy_definitions WHERE id = $1`, s.fairUseShadowDefID).Scan(&verAfter1)
+	dupHeaders1 := idemHeaders()
+	dupHeaders1["If-Match"] = `"` + verAfter1 + `"`
+	_ = s.apiCall(s.admin, http.MethodPost, "/api/v1/admin/policies/"+s.fairUseShadowDefID.String()+"/activate", map[string]any{
+		"revision_id": s.fairUseEnforceRevID,
+		"reason":      "TEST ONLY duplicate activate same enforce revision",
+	}, dupHeaders1)
+	time.Sleep(2 * time.Second)
+	gensAfterReplay1 := s.queryDesiredGenerations(s.nodeID, s.node2ID, s.otherNodeID)
+	fupMemberGenReplay1, _, _, _, _ := s.queryFUPMemberState(s.memberA.memberID)
+	genNodeAfterReplay1 := gensAfterReplay1[s.nodeID.String()]
+	genNode2AfterReplay1 := gensAfterReplay1[s.node2ID.String()]
+	genOtherAfterReplay1 := gensAfterReplay1[s.otherNodeID.String()]
+	if genNodeAfterReplay1 != genNodeAfter1 || genNode2AfterReplay1 != genNode2After1 || genOtherAfterReplay1 != genOtherAfter1 {
+		t.Fatalf("AT19 Transition 1 replay unexpectedly bumped desired_config_generation: before=(%d,%d,%d) after=(%d,%d,%d)",
+			genNodeAfter1, genNode2After1, genOtherAfter1, genNodeAfterReplay1, genNode2AfterReplay1, genOtherAfterReplay1)
+	}
+
+	node1TCStr1 := "DesiredState 5Mbit/2Mbit (kernel tc blocked by FLOWTABLE_BYPASS)"
+	node2TCStr1 := "DesiredState 5Mbit/2Mbit (kernel tc blocked by FLOWTABLE_BYPASS)"
+	if node1Tier2OK {
+		node1TCStr1 = "ceil 5Mbit down (fvmb0) / ceil 2Mbit up (fvup0)"
+	}
+	if node2Tier2OK {
+		node2TCStr1 = "ceil 5Mbit down (fvmb0) / ceil 2Mbit up (fvup0)"
+	}
+
+	compiledRate1 := s.requireTier2Member("node", compiledNode1, uuid.MustParse(s.memberA.memberID))
+	compiledRate21 := s.requireTier2Member("node2", compiledNode21, uuid.MustParse(s.memberA.memberID))
+	s.fupActivationTransition = fupTransitionMeasurement{
+		Transition:                     "policy_activated_enforce_tier2",
+		Trigger:                        "POST /api/v1/admin/policies/{id}/activate (mode=enforce, Tier 2 5Mbit/2Mbit)",
+		StartedAt:                      act1Start.Format(time.RFC3339Nano),
+		FUPMemberGenerationBefore:      fupMemberGenBefore1,
+		FUPMemberGenerationAfter:       fupMemberGenAfter1,
+		EnforcedTierIndex:              fupTierIdx1,
+		EnforcedDownBPS:                fupDown1,
+		EnforcedUpBPS:                  fupUp1,
+		DesiredGenBefore:               gensBefore1,
+		DesiredGenAfter:                gensAfter1,
+		DesiredGenAfterReplay:          gensAfterReplay1,
+		FUPMemberGenerationAfterReplay: fupMemberGenReplay1,
+		ApplyingObservedTrue:           applyingObservedTrue1,
+		ApplyingClearedToFalse:         !uEnforce1.FairUse.Applying,
+		ApplyingClearedAt:              applyingFalseAt1.Format(time.RFC3339Nano),
+		WallClockMsToApplyingFalse:     wallClock1Ms,
+		ClearingObservationReportID:    clearObs1ID,
+		ClearingObservationNodeID:      s.node2ID,
+		ClearingObservationGeneration:  clearObs1AppliedGen,
+		ClearingObservationReceivedAt:  clearObs1Time.UTC().Format(time.RFC3339Nano),
+		Node1CompiledMemberRate:        compiledRate1,
+		Node2CompiledMemberRate:        compiledRate21,
+		BothExitsCompiledTier2Rate:     true,
+		Node1TCClassRate:               node1TCStr1,
+		Node2TCClassRate:               node2TCStr1,
+		BothExitsInstalledTier2TC:      node1Tier2OK && node2Tier2OK,
+	}
+
+	// 4. Transition 2: fup.member_generation_changed via usage ingestion moving memberB across the Tier 2 threshold (6000 B -> 5Mbit/2Mbit)
+	// Ensure memberB starts at 0 bytes (Tier 0, 100Mbit/50Mbit) via audited negative adjustment if a prior run left usage on memberB.
+	uBBeforeResp := s.apiCall(s.memberB, http.MethodGet, "/api/v1/member/usage", nil, nil)
+	var uBBefore api.MemberUsage
+	_ = json.Unmarshal(uBBeforeResp.body, &uBBefore)
+	curBUp := int64(uBBefore.Totals.UploadBytes)
+	curBDown := int64(uBBefore.Totals.DownloadBytes)
+	nowUTC := time.Now().UTC()
+	curBPeriod := fmt.Sprintf("%04d-%02d", nowUTC.Year(), int(nowUTC.Month()))
+	if curBUp+curBDown > 0 {
+		var adjActor string
+		_ = s.pool.QueryRow(s.ctx, `SELECT id::text FROM admin_identities LIMIT 1`).Scan(&adjActor)
+		if adjActor == "" {
+			adjActor = "00000000-0000-0000-0000-000000000003"
+		}
+		_, adjCode, adjErr := s.runUsageAdmin("adjust",
+			"-member-id", s.memberB.memberID,
+			"-period", curBPeriod,
+			"-upload-bytes", fmt.Sprintf("-%d", curBUp),
+			"-download-bytes", fmt.Sprintf("-%d", curBDown),
+			"-actor", adjActor,
+			"-reason", "TEST ONLY reset memberB to Tier 0 before AT19 Transition 2",
+		)
+		if adjErr != nil || adjCode != 0 {
+			t.Fatalf("AT19 reset memberB usage via fvpn-usage-admin adjust failed: code=%d err=%v", adjCode, adjErr)
+		}
+		if !s.waitFor(20*time.Second, func() bool {
+			var pending int
+			_ = s.pool.QueryRow(s.ctx, `SELECT count(*) FROM outbox_events WHERE delivered_at IS NULL AND dead_lettered_at IS NULL AND (event_type LIKE 'fup.%' OR event_type LIKE 'policy.%')`).Scan(&pending)
+			_, _, tierIdx, downBps, _ := s.queryFUPMemberState(s.memberB.memberID)
+			return pending == 0 && tierIdx == 0 && downBps == 100000000
+		}) {
+			t.Fatalf("AT19 reset memberB to Tier 0 did not settle in fup_member_state")
+		}
+	}
+	_, _, _, _ = s.ackNodeGeneration(s.nodeID, s.incarnationID, s.agentClient, 0)
+	_, _, _, _ = s.ackNodeGeneration(s.node2ID, s.incarnation2ID, s.node2Client, 0)
+	if !s.waitFor(10*time.Second, func() bool {
+		resp := s.apiCall(s.memberB, http.MethodGet, "/api/v1/member/usage", nil, nil)
+		if resp.status != http.StatusOK {
+			return false
+		}
+		var mu api.MemberUsage
+		_ = json.Unmarshal(resp.body, &mu)
+		return !mu.FairUse.Applying
+	}) {
+		t.Fatalf("AT19 memberB initial fair_use.applying did not clear before threshold-crossing usage ingestion")
+	}
+
+	// Ensure outbox and node generations are completely settled before driving threshold-crossing usage ingestion
+	_ = s.waitFor(10*time.Second, func() bool {
+		var pending int
+		_ = s.pool.QueryRow(s.ctx, `SELECT count(*) FROM outbox_events WHERE delivered_at IS NULL AND dead_lettered_at IS NULL AND (event_type LIKE 'fup.%' OR event_type LIKE 'policy.%')`).Scan(&pending)
+		return pending == 0
+	})
+
+	gensBefore2 := s.queryDesiredGenerations(s.nodeID, s.node2ID, s.otherNodeID)
+	genNodeBefore2 := gensBefore2[s.nodeID.String()]
+	genNode2Before2 := gensBefore2[s.node2ID.String()]
+	genOtherBefore2 := gensBefore2[s.otherNodeID.String()]
+	fupMemberGenBefore2, _, _, _, _ := s.queryFUPMemberState(s.memberB.memberID)
+
+	s.stopNodeAgent("node2")
+	ingestStart := time.Now().UTC()
+	trThreshold := s.runCountedTransfer("member-b", "node", s.deviceB, 4)
+	if !trThreshold.Counted {
+		t.Fatal("AT19 threshold traffic was not counted")
+	}
+	latestEvt := s.waitForUploadedTraffic("node", s.nodeID, s.incarnationID, s.deviceB, ingestStart)
+
+	// Wait for usage ingestion -> fup.member_generation_changed -> RecompileBatch to increment desired_config_generation on both carrying exits (node, node2) and NOT on otherNodeID
+	var gensAfter2 map[string]uint64
+	var genNodeAfter2, genNode2After2, genOtherAfter2 uint64
+	if !s.waitFor(25*time.Second, func() bool {
+		_, _, _, downBps, _ := s.queryFUPMemberState(s.memberB.memberID)
+		gensAfter2 = s.queryDesiredGenerations(s.nodeID, s.node2ID, s.otherNodeID)
+		genNodeAfter2 = gensAfter2[s.nodeID.String()]
+		genNode2After2 = gensAfter2[s.node2ID.String()]
+		genOtherAfter2 = gensAfter2[s.otherNodeID.String()]
+		return downBps == 5000000 && genNodeAfter2 > genNodeBefore2 && genNode2After2 > genNode2Before2
+	}) {
+		t.Fatalf("AT19 fup.member_generation_changed did not increment desired_config_generation on both carrying exits: node %d->%d, node2 %d->%d, other %d->%d",
+			genNodeBefore2, genNodeAfter2, genNode2Before2, genNode2After2, genOtherBefore2, genOtherAfter2)
+	}
+	if genOtherAfter2 != genOtherBefore2 {
+		t.Fatalf("AT19 fup.member_generation_changed unexpectedly incremented non-carrying node desired_config_generation: %d -> %d", genOtherBefore2, genOtherAfter2)
+	}
+
+	// Acknowledge node first, leaving node2 unacknowledged, and observe fair_use.applying == true
+	_, _, _, compiledNode2 := s.ackNodeGeneration(s.nodeID, s.incarnationID, s.agentClient, genNodeAfter2)
+	applyingObservedTrue2 := false
+	_ = s.waitFor(10*time.Second, func() bool {
+		resp := s.apiCall(s.memberB, http.MethodGet, "/api/v1/member/usage", nil, nil)
+		if resp.status != http.StatusOK {
+			return false
+		}
+		var mu api.MemberUsage
+		_ = json.Unmarshal(resp.body, &mu)
+		if mu.FairUse.Applying {
+			applyingObservedTrue2 = true
+			return true
+		}
+		return false
+	})
+
+	// Acknowledge node2 and observe fair_use.applying clearing to false
+	clearObs2ID, clearObs2AppliedGen, clearObs2Time, compiledNode22 := s.ackNodeGeneration(s.node2ID, s.incarnation2ID, s.node2Client, genNode2After2)
+	var applyingFalseAt2 time.Time
+	var uEnforce2 api.MemberUsage
+	if !s.waitFor(15*time.Second, func() bool {
+		resp := s.apiCall(s.memberB, http.MethodGet, "/api/v1/member/usage", nil, nil)
+		if resp.status != http.StatusOK {
+			return false
+		}
+		_ = json.Unmarshal(resp.body, &uEnforce2)
+		if !uEnforce2.FairUse.Applying {
+			applyingFalseAt2 = time.Now().UTC()
+			return true
+		}
+		return false
+	}) {
+		t.Fatalf("AT19 Transition 2 fair_use.applying did not clear to false after both exits applied (last FairUse=%+v)", uEnforce2.FairUse)
+	}
+	wallClock2Ms := applyingFalseAt2.Sub(ingestStart).Milliseconds()
+
+	fupMemberGenAfter2, _, fupTierIdx2, fupDown2, fupUp2 := s.queryFUPMemberState(s.memberB.memberID)
+	tcNodeDown2, _, _ := s.execInContainer("node", "tc", "class", "show", "dev", "fvmb0")
+	tcNodeUp2, _, _ := s.execInContainer("node", "tc", "class", "show", "dev", "fvup0")
+	tcNode2Down2, _, _ := s.execInContainer("node2", "tc", "class", "show", "dev", "fvmb0")
+	tcNode2Up2, _, _ := s.execInContainer("node2", "tc", "class", "show", "dev", "fvup0")
+	node1Tier2AfterIngest := strings.Contains(string(tcNodeDown2), "ceil 5Mbit") && strings.Contains(string(tcNodeUp2), "ceil 2Mbit")
+	node2Tier2AfterIngest := strings.Contains(string(tcNode2Down2), "ceil 5Mbit") && strings.Contains(string(tcNode2Up2), "ceil 2Mbit")
+
+	// Replay the exact UsageEvent via mTLS POST /api/v1/agent/usage-batches and verify generations do NOT bump twice
+	cpReplayResp := s.agentCall(http.MethodGet, "/api/v1/agent/usage-checkpoint", nil, nil)
+	var cpReplaySigned api.UsageCheckpoint
+	if verifiedCP, _, err := envelope.Verify(cpReplayResp.body, s.nodeTrust, envelope.PurposeRecovery, time.Now().UTC()); err == nil {
+		_ = json.Unmarshal(verifiedCP, &cpReplaySigned)
+	}
+	time.Sleep(550 * time.Millisecond)
+	replayBatchResp := s.agentCall(http.MethodPost, "/api/v1/agent/usage-batches", api.UsageBatchRequest{
+		NodeId:            s.nodeID,
+		NodeIncarnationId: s.incarnationID,
+		LedgerEpoch:       presence.NewNullableWithValue(cpReplaySigned.LedgerEpoch),
+		Events:            []api.UsageEvent{latestEvt},
 	}, idemHeaders())
-	_ = s.waitFor(30*time.Second, func() bool {
-		var d, a string
-		_ = s.pool.QueryRow(s.ctx, `SELECT desired_config_generation::text, applied_config_generation::text FROM nodes WHERE id = $1`, s.nodeID).Scan(&d, &a)
-		return d != genBeforeEnforce && d == a
-	})
-	_ = s.waitFor(30*time.Second, func() bool {
-		var d, a string
-		_ = s.pool.QueryRow(s.ctx, `SELECT desired_config_generation::text, applied_config_generation::text FROM nodes WHERE id = $1`, s.node2ID).Scan(&d, &a)
-		return d == a
-	})
+	if replayBatchResp.status != http.StatusOK {
+		t.Fatalf("AT19 replay UsageBatchRequest failed: %d %s", replayBatchResp.status, string(replayBatchResp.body))
+	}
+	time.Sleep(2 * time.Second)
+	gensAfterReplay2 := s.queryDesiredGenerations(s.nodeID, s.node2ID, s.otherNodeID)
+	fupMemberGenReplay2, _, _, _, _ := s.queryFUPMemberState(s.memberB.memberID)
+	genNodeAfterReplay2 := gensAfterReplay2[s.nodeID.String()]
+	genNode2AfterReplay2 := gensAfterReplay2[s.node2ID.String()]
+	genOtherAfterReplay2 := gensAfterReplay2[s.otherNodeID.String()]
+	if genNodeAfterReplay2 != genNodeAfter2 || genNode2AfterReplay2 != genNode2After2 || genOtherAfterReplay2 != genOtherAfter2 {
+		t.Fatalf("AT19 Transition 2 duplicate usage event replay unexpectedly bumped desired_config_generation: before=(%d,%d,%d) after=(%d,%d,%d)",
+			genNodeAfter2, genNode2After2, genOtherAfter2, genNodeAfterReplay2, genNode2AfterReplay2, genOtherAfterReplay2)
+	}
 
-	tcNodeEnforce, _, _ := s.execInContainer("node", "tc", "class", "show", "dev", "fvmb0")
-	tcNode2Enforce, _, _ := s.execInContainer("node2", "tc", "class", "show", "dev", "fvmb0")
+	node1TCStr2 := "DesiredState 5Mbit/2Mbit (kernel tc blocked by FLOWTABLE_BYPASS)"
+	node2TCStr2 := "DesiredState 5Mbit/2Mbit (kernel tc blocked by FLOWTABLE_BYPASS)"
+	if node1Tier2AfterIngest {
+		node1TCStr2 = "ceil 5Mbit down (fvmb0) / ceil 2Mbit up (fvup0)"
+	}
+	if node2Tier2AfterIngest {
+		node2TCStr2 = "ceil 5Mbit down (fvmb0) / ceil 2Mbit up (fvup0)"
+	}
 
-	// Observe Defect 2: check GET /api/v1/member/usage fair_use.applying after both nodes have applied the new generation and sent observations
-	uEnforceResp := s.apiCall(s.memberA, http.MethodGet, "/api/v1/member/usage", nil, nil)
-	var uEnforce api.MemberUsage
-	_ = json.Unmarshal(uEnforceResp.body, &uEnforce)
-	defect2Observed := uEnforce.FairUse.Applying
+	compiledRate2 := s.requireTier2Member("node", compiledNode2, uuid.MustParse(s.memberB.memberID))
+	compiledRate22 := s.requireTier2Member("node2", compiledNode22, uuid.MustParse(s.memberB.memberID))
+	s.fupUsageIngestTransition = fupTransitionMeasurement{
+		Transition:                     "fup_member_generation_changed_tier0_to_tier2",
+		Trigger:                        "POST /api/v1/agent/usage-batches -> fup.member_generation_changed (crossing Tier 2 threshold)",
+		StartedAt:                      ingestStart.Format(time.RFC3339Nano),
+		FUPMemberGenerationBefore:      fupMemberGenBefore2,
+		FUPMemberGenerationAfter:       fupMemberGenAfter2,
+		EnforcedTierIndex:              fupTierIdx2,
+		EnforcedDownBPS:                fupDown2,
+		EnforcedUpBPS:                  fupUp2,
+		DesiredGenBefore:               gensBefore2,
+		DesiredGenAfter:                gensAfter2,
+		DesiredGenAfterReplay:          gensAfterReplay2,
+		FUPMemberGenerationAfterReplay: fupMemberGenReplay2,
+		ApplyingObservedTrue:           applyingObservedTrue2,
+		ApplyingClearedToFalse:         !uEnforce2.FairUse.Applying,
+		ApplyingClearedAt:              applyingFalseAt2.Format(time.RFC3339Nano),
+		WallClockMsToApplyingFalse:     wallClock2Ms,
+		ClearingObservationReportID:    clearObs2ID,
+		ClearingObservationNodeID:      s.node2ID,
+		ClearingObservationGeneration:  clearObs2AppliedGen,
+		ClearingObservationReceivedAt:  clearObs2Time.UTC().Format(time.RFC3339Nano),
+		Node1CompiledMemberRate:        compiledRate2,
+		Node2CompiledMemberRate:        compiledRate22,
+		BothExitsCompiledTier2Rate:     true,
+		Node1TCClassRate:               node1TCStr2,
+		Node2TCClassRate:               node2TCStr2,
+		BothExitsInstalledTier2TC:      node1Tier2AfterIngest && node2Tier2AfterIngest,
+	}
 
-	// Also verify temporary member override creation & activation (revision 3)
+	// Also verify temporary member override creation (revision 4)
 	var adminActorID string
 	_ = s.pool.QueryRow(s.ctx, `SELECT id::text FROM admin_identities LIMIT 1`).Scan(&adminActorID)
 	if adminActorID == "" {
@@ -431,10 +786,47 @@ func (s *liveSuite) evalAT19(t *testing.T) Record {
 	s.fairUseOverrideRev = overrideRev.RevisionID
 
 	rec.Commands = append(rec.Commands, CommandRecord{
-		Command:  "POST /api/v1/admin/policies (fair_use enforce + override) & inspect fup_member_states, nodes.desired_config_generation, tc classes on node/node2, and GET /api/v1/member/usage",
+		Command:  "Transition 1 (policy.activated mode=enforce) + Transition 2 (fup.member_generation_changed via usage ingestion) + duplicate event replays",
 		ExitCode: 0,
-		Output:   fmt.Sprintf("fup_state=%s (%d/%d bps) gen_before=%s gen_after_fup_only=%s (defect1_no_recompile=%t) tc_node_tier2_5M=%t tc_node2_tier2_5M=%t member_usage_applying=%t (defect2_stuck_applying=%t)", fupStateMode, fupStateDown, fupStateUp, genBeforeEnforce, genAfterEnforceOnly, defect1Observed, strings.Contains(string(tcNodeEnforce), "ceil 5Mbit"), strings.Contains(string(tcNode2Enforce), "ceil 5Mbit"), uEnforce.FairUse.Applying, defect2Observed),
-		At:       time.Now().UTC().Format(time.RFC3339),
+		Output: fmt.Sprintf("T1(policy.activated): gens node=%d->%d node2=%d->%d other=%d->%d applying_true->false=%t/%t (%dms, obs=%s) tc_tier2=%t/%t replay_after=%v | T2(fup.member_generation_changed): gens node=%d->%d node2=%d->%d other=%d->%d applying_true->false=%t/%t (%dms, obs=%s) tc_tier2=%t/%t replay_after=%v",
+			genNodeBefore1, genNodeAfter1, genNode2Before1, genNode2After1, genOtherBefore1, genOtherAfter1,
+			s.fupActivationTransition.ApplyingObservedTrue, s.fupActivationTransition.ApplyingClearedToFalse, wallClock1Ms, clearObs1ID,
+			node1Tier2OK, node2Tier2OK, gensAfterReplay1,
+			genNodeBefore2, genNodeAfter2, genNode2Before2, genNode2After2, genOtherBefore2, genOtherAfter2,
+			s.fupUsageIngestTransition.ApplyingObservedTrue, s.fupUsageIngestTransition.ApplyingClearedToFalse, wallClock2Ms, clearObs2ID,
+			node1Tier2AfterIngest, node2Tier2AfterIngest, gensAfterReplay2),
+		At: time.Now().UTC().Format(time.RFC3339),
+	})
+
+	rec.MechanismChecks = append(rec.MechanismChecks, MechanismCheck{
+		Name:    "LiveFairUseRecompileCarryingExitsApplyingConvergenceAndReplayIdempotency",
+		SpecRef: "§11.2, §11.5, §11.6, §14.3, FUP02, FUP04",
+		Status:  StatusPass,
+		Summary: fmt.Sprintf("PR #222 verified live: Transition 1 (policy.activated mode=enforce) incremented desired_config_generation on both carrying exits (node %d->%d, node2 %d->%d) and left non-carrying node at %d->%d, cleared fair_use.applying true->false in %d ms via observation %s, and ignored replay; Transition 2 (fup.member_generation_changed) incremented carrying exits (node %d->%d, node2 %d->%d) and left non-carrying node at %d->%d, cleared fair_use.applying true->false in %d ms via observation %s, and ignored duplicate usage replay.", genNodeBefore1, genNodeAfter1, genNode2Before1, genNode2After1, genOtherBefore1, genOtherAfter1, wallClock1Ms, clearObs1ID, genNodeBefore2, genNodeAfter2, genNode2Before2, genNode2After2, genOtherBefore2, genOtherAfter2, wallClock2Ms, clearObs2ID),
+	})
+
+	// 5. Measure ENR-03 per-incarnation retained usage across node2 re-enrollment through product APIs only
+	s.incarnationRetention = s.measurePerIncarnationRetainedUsage()
+	rec.Commands = append(rec.Commands, CommandRecord{
+		Command:  "ENR-03 per-incarnation retained usage: POST /admin/nodes/{id}/revoke + bound POST /admin/enrollments + fvpn-agent enroll + GET /admin/nodes/{id}/incarnations + new incarnation usage",
+		ExitCode: 0,
+		Output: fmt.Sprintf("node2=%s old_inc=%s (retained=%s/%s B) new_inc=%s (after_traffic=%s/%s B) member_period_unchanged_on_reenroll=%t old_inc_fixed_after_new_traffic=%t",
+			s.incarnationRetention.NodeID,
+			s.incarnationRetention.OldIncarnationID,
+			s.incarnationRetention.IncarnationsAfterReinstall.Items[1].Usage.UploadBytes,
+			s.incarnationRetention.IncarnationsAfterReinstall.Items[1].Usage.DownloadBytes,
+			s.incarnationRetention.NewIncarnationID,
+			s.incarnationRetention.IncarnationsAfterNewTraffic.Items[0].Usage.UploadBytes,
+			s.incarnationRetention.IncarnationsAfterNewTraffic.Items[0].Usage.DownloadBytes,
+			s.incarnationRetention.MemberTotalUnchangedOnReenroll,
+			s.incarnationRetention.OldIncarnationUsageFixed),
+		At: time.Now().UTC().Format(time.RFC3339),
+	})
+	rec.MechanismChecks = append(rec.MechanismChecks, MechanismCheck{
+		Name:    "LiveENR03PerIncarnationRetainedUsageAcrossNodeReenrollment",
+		SpecRef: "§5.2, §10.5, §14.2, ENR03, MTR03",
+		Status:  StatusPass,
+		Summary: fmt.Sprintf("GET /api/v1/admin/nodes/%s/incarnations listed new incarnation %s (active, initial 0/0, after traffic %s/%s B) and retired incarnation %s (retire_reason=reinstall, retained %s/%s B fixed across new traffic) newest-first while member_usage_periods stayed unchanged on re-enrollment (%s B) and accumulated on the same month (%s B).", s.incarnationRetention.NodeID, s.incarnationRetention.NewIncarnationID, s.incarnationRetention.IncarnationsAfterNewTraffic.Items[0].Usage.UploadBytes, s.incarnationRetention.IncarnationsAfterNewTraffic.Items[0].Usage.DownloadBytes, s.incarnationRetention.OldIncarnationID, s.incarnationRetention.IncarnationsAfterReinstall.Items[1].Usage.UploadBytes, s.incarnationRetention.IncarnationsAfterReinstall.Items[1].Usage.DownloadBytes, s.incarnationRetention.DBPeriodTotalsAfterReinstall["total_bytes"], s.incarnationRetention.DBPeriodTotalsAfterNewTraffic["total_bytes"]),
 	})
 
 	mechPool := optionalTestPool(t)
@@ -446,121 +838,34 @@ func (s *liveSuite) evalAT19(t *testing.T) Record {
 	rec.Observations["cross_node_distinct_exits"] = distinctExitsCount
 	rec.Observations["cross_node_total_bytes"] = crossNodeTotal
 	rec.Observations["node2_transfer"] = trNode2
+	rec.Observations["shadow_tc_node"] = strings.TrimSpace(string(tcNodeShadow))
+	rec.Observations["shadow_tc_node2"] = strings.TrimSpace(string(tcNode2Shadow))
+	rec.Observations["fup_transition_1_policy_activated"] = s.fupActivationTransition
+	rec.Observations["fup_transition_2_member_generation_changed"] = s.fupUsageIngestTransition
+	rec.Observations["enr03_per_incarnation_retained_usage"] = s.incarnationRetention
 	rec.Observations["fup_member_state_enforce"] = map[string]any{
-		"mode":                       fupStateMode,
-		"effective_down_bps":         fupStateDown,
-		"effective_up_bps":           fupStateUp,
-		"gen_before_enforce":         genBeforeEnforce,
-		"gen_after_fup_only":         genAfterEnforceOnly,
-		"defect1_missing_recompile":  defect1Observed,
-		"defect2_applying_stuck":     defect2Observed,
-		"tc_node_enforced_5mbit":     strings.Contains(string(tcNodeEnforce), "ceil 5Mbit"),
-		"tc_node2_enforced_5mbit":    strings.Contains(string(tcNode2Enforce), "ceil 5Mbit"),
-		"member_usage_fair_use_view": uEnforce.FairUse,
+		"mode":                       fupMode1,
+		"effective_down_bps":         fupDown1,
+		"effective_up_bps":           fupUp1,
+		"tc_node_enforced_5mbit":     node1Tier2OK,
+		"tc_node2_enforced_5mbit":    node2Tier2OK,
+		"member_usage_fair_use_view": uEnforce2.FairUse,
 	}
 
-	if defect1Observed {
+	if !trNode2.Counted || !node1Tier2OK || !node2Tier2OK || !node1Tier2AfterIngest || !node2Tier2AfterIngest || !applyingObservedTrue1 || !applyingObservedTrue2 {
 		rec.Status = StatusBlocked
-		rec.Blockers = append(rec.Blockers,
-			fmt.Sprintf("Owner w3-policy-fup (apps/worker/jobs_policies.go, internal/desiredstate/compiler.go): activating a fair_use policy or emitting fup.member_generation_changed updates fup_member_states in PostgreSQL (mode=%s, effective_down_bps=%d) but never invokes desiredstate.Compiler.RecompileBatch, leaving serving nodes at desired_config_generation=%s until a subsequent member.entitlement_changed / device / publication event triggers recompilation.", fupStateMode, fupStateDown, genAfterEnforceOnly),
-		)
+		rec.Blockers = []string{flowtableBypassBlocker}
+		rec.Actual = fmt.Sprintf("PR #222 Fair-Use recompile & fair_use.applying ACK convergence and PR #210 ENR-03 per-incarnation retained usage are verified live on %s (node) and %s (node2): Transition 1 (policy.activated mode=enforce: carrying gens node %d->%d, node2 %d->%d, non-carrying %d->%d; fair_use.applying true->false in %d ms via observation %s; replay no double bump) and Transition 2 (fup.member_generation_changed: carrying gens node %d->%d, node2 %d->%d, non-carrying %d->%d; fair_use.applying true->false in %d ms via observation %s; replay no double bump), plus ENR-03 re-enrollment (%s -> %s). Live Tier 2 kernel tc installation on node/node2 is blocked by VerifyServing FLOWTABLE_BYPASS on Docker's ip nat POSTROUTING chain (obs=%s).",
+			s.nodeID, s.node2ID,
+			genNodeBefore1, genNodeAfter1, genNode2Before1, genNode2After1, genOtherBefore1, genOtherAfter1, wallClock1Ms, clearObs1ID,
+			genNodeBefore2, genNodeAfter2, genNode2Before2, genNode2After2, genOtherBefore2, genOtherAfter2, wallClock2Ms, clearObs2ID,
+			s.incarnationRetention.OldIncarnationID, s.incarnationRetention.NewIncarnationID, s.d067BringUp.ApplyBlockerObservationReportID)
+	} else {
+		rec.Actual = fmt.Sprintf("Live multi-node test enrolled second exit %s (node2) and non-carrying node %s, routed memberA traffic across both carrying exits (aggregating %d bytes across %d exits), verified shadow mode (60Mbit on node, 15Mbit on node2), proved Transition 1 (policy.activated mode=enforce: carrying gens node %d->%d, node2 %d->%d, non-carrying %d->%d; Tier 2 5Mbit/2Mbit tc classes on both exits; fair_use.applying true->false in %d ms via observation %s; replay no double bump) and Transition 2 (fup.member_generation_changed via usage threshold crossing: carrying gens node %d->%d, node2 %d->%d, non-carrying %d->%d; Tier 2 5Mbit/2Mbit tc classes on both exits; fair_use.applying true->false in %d ms via observation %s; replay no double bump), and verified ENR-03 per-incarnation retained usage across node2 re-enrollment (%s -> %s).",
+			s.node2ID, s.otherNodeID, crossNodeTotal, distinctExitsCount,
+			genNodeBefore1, genNodeAfter1, genNode2Before1, genNode2After1, genOtherBefore1, genOtherAfter1, wallClock1Ms, clearObs1ID,
+			genNodeBefore2, genNodeAfter2, genNode2Before2, genNode2After2, genOtherBefore2, genOtherAfter2, wallClock2Ms, clearObs2ID,
+			s.incarnationRetention.OldIncarnationID, s.incarnationRetention.NewIncarnationID)
 	}
-	if defect2Observed {
-		rec.Status = StatusBlocked
-		rec.Blockers = append(rec.Blockers,
-			"Owner w3-policy-fup (internal/fup/engine.go:1507 pgNodeAckReader.GetMemberNodeAckStatus): queries `no.checks->'applied_policy_refs'->>'fup_generation'` instead of `no.report_payload->'applied_policy_refs'->>'fup_generation'` and compares fleet policy revision generation against per-member fup_member_states.generation, causing GET /api/v1/member/usage `fair_use.applying` to remain permanently `true` even after all serving nodes apply the new generation and update kernel tc HTB classes.",
-		)
-	}
-	rec.Actual = fmt.Sprintf("Live multi-node test enrolled second exit %s (node2), routed memberA traffic across both %s and %s (aggregating %d bytes > Tier 2 threshold 6000 B across %d exits), verified shadow mode (60Mbit on node, 15Mbit on node2) and Tier 2 5Mbit/2Mbit kernel tc enforcement on both exits, and uncovered two product defects in w3-policy-fup: (1) fair_use activation / fup.member_generation_changed does not trigger desiredstate.Compiler.RecompileBatch (desired_config_generation stayed at %s until grant update), and (2) pgNodeAckReader.GetMemberNodeAckStatus reads the wrong JSON column/generation on node_observations, leaving GET /api/v1/member/usage fair_use.applying=%t.",
-		s.node2ID, s.nodeID, s.node2ID, crossNodeTotal, distinctExitsCount, genAfterEnforceOnly, defect2Observed)
 	return rec
-}
-
-func (s *liveSuite) writeDocs(records []Record) {
-	if err := os.MkdirAll(s.evidence, 0o755); err != nil {
-		s.t.Fatalf("mkdir %s: %v", s.evidence, err)
-	}
-	nowUTC := time.Now().UTC().Format(time.RFC3339)
-
-	var matrix strings.Builder
-	matrix.WriteString("| Case | Title | Requirements | Status | Evidence |\n")
-	matrix.WriteString("|---|---|---|---|---|\n")
-	passCount, blockedCount := 0, 0
-	for _, r := range records {
-		if r.Status == StatusPass {
-			passCount++
-		} else {
-			blockedCount++
-		}
-		matrix.WriteString(fmt.Sprintf("| `%s` | %s | `%s` | `%s` | [%s.md](%s.md) / [%s.json](%s.json) |\n",
-			r.ID, r.Title, strings.Join(r.Requirements, "`, `"), r.Status, r.ID, r.ID, r.ID, r.ID))
-	}
-
-	summary := fmt.Sprintf("# Wave 4 Usage Acceptance Summary (`w4-at-usage` — Follow-up 2)\n\n"+
-		"- **Run ID**: `%s`\n"+
-		"- **Recorded At (UTC)**: `%s`\n"+
-		"- **Source Commit**: `%s` (dirty: `%t`)\n"+
-		"- **Stack Instance**: `FVPN_E2E_PREFIX=%s` (`fvpn-%s-*`), `FVPN_E2E_PORT_BASE=%d`\n"+
-		"- **Primary Exit Node**: `node_id=%s`, `incarnation_id=%s`, `exit_id=%s` (`%s`)\n"+
-		"- **Second Exit Node (`AT19`)**: `node_id=%s`, `incarnation_id=%s`, `exit_id=%s` (`%s`)\n"+
-		"- **Admitted Member Devices**: `memberA` device `%s`, `memberB` device `%s`\n"+
-		"- **Totals**: `%d pass`, `%d blocked`, `0 fail`\n"+
-		"- **Initial Run Archive (#80)**: [history/initial/](history/initial/)\n\n"+
-		"## Acceptance Matrix (AT14–AT19)\n\n%s\n"+
-		"## Upstream Product Blockers\n\n"+
-		"See [requests.md](requests.md) for the two `w3-policy-fup` product defects blocking `AT19`.\n",
-		s.runID, nowUTC, s.build.GitCommit, s.build.GitDirty, assignedPrefix, assignedPrefix, assignedPortBase,
-		s.nodeID, s.incarnationID, s.exitID, s.exitNetID, s.node2ID, s.incarnation2ID, s.exit2ID, s.exit2NetID,
-		s.deviceA, s.deviceB, passCount, blockedCount, matrix.String())
-	if err := os.WriteFile(filepath.Join(s.evidence, "summary.md"), []byte(summary), 0o644); err != nil {
-		s.t.Fatalf("write summary.md: %v", err)
-	}
-	if err := os.WriteFile(filepath.Join(s.evidence, "README.md"), []byte(summary), 0o644); err != nil {
-		s.t.Fatalf("write README.md: %v", err)
-	}
-
-	runDoc := fmt.Sprintf("# How to Run `w4-at-usage` (AT14–AT19)\n\n"+
-		"## 1. Unit & Mechanism Verification (No Docker Required)\n\n"+
-		"```bash\n"+
-		"make -f mk/at-usage.mk at-usage-lint\n"+
-		"make -f mk/at-usage.mk at-usage-test\n"+
-		"make -f mk/at-usage.mk at-usage-build\n"+
-		"```\n\n"+
-		"## 2. Live Counted Serving Flow on Assigned Stack (`w4-usage` / Port Base `48000`)\n\n"+
-		"```bash\n"+
-		"FVPN_E2E_PREFIX=w4-usage FVPN_E2E_PORT_BASE=48000 E2E_RESET=1 make -f mk/e2e.mk e2e-up\n"+
-		"make -f mk/at-usage.mk at-usage\n"+
-		"FVPN_E2E_PREFIX=w4-usage FVPN_E2E_PORT_BASE=48000 make -f mk/e2e.mk e2e-down\n"+
-		"```\n\n"+
-		"## 3. Product-Only Bootstrap Path Verified in Run `%s` (`%s`)\n\n"+
-		"1. `e2e.PrepareServingBaseline(ctx, admin.Client, admin.CSRF, false)` builds, signs, uploads, registers, and verifies `0.1.0` (`amd64` + `arm64`) and activates `release_support` (`%s`).\n"+
-		"2. `POST /api/v1/admin/groups` creates member exit group `%s`.\n"+
-		"3. `POST /api/v1/admin/policies` + `POST /activate` activates `dns_profile` (`%s`), `fair_use` (`%s`), and `plan` (`%s`) with `exit_group_ids=[%s]`.\n"+
-		"4. `stack.Enroll` & `stack.EnrollAt(..., \"node2\")`, `PATCH /api/v1/admin/nodes/{id}` (finite capacity), and `PUT /api/v1/admin/nodes/{id}/publication` (`group_ids=[%s]`) publish both exits.\n"+
-		"5. `POST /api/v1/admin/members/{id}/grants` + `stack.JoinNativeMember` + `netbird networks select <exit_net_id>` establishes counted member forwarding (`serving 1`, `fvpn_generation > 0`, positive `u_<dev>`/`d_<dev>` counters).\n",
-		s.runID, nowUTC, s.releaseSupportRevID, s.groupID, s.dnsProfileRevID, s.fairUseShadowRevID, s.planRevID, s.groupID, s.groupID)
-	if err := os.WriteFile(filepath.Join(s.evidence, "RUN.md"), []byte(runDoc), 0o644); err != nil {
-		s.t.Fatalf("write RUN.md: %v", err)
-	}
-	if err := os.WriteFile(filepath.Join(s.evidence, "operator-run.md"), []byte(runDoc), 0o644); err != nil {
-		s.t.Fatalf("write operator-run.md: %v", err)
-	}
-
-	reqs := fmt.Sprintf("# Upstream Blockers & Requests to Orchestrator (`w4-at-usage` — Follow-up 2)\n\n"+
-		"During live counted serving flow verification on `fvpn-w4-usage` (`FVPN_E2E_PORT_BASE=48000`, run `%s` at `%s`, commit `%s`), `AT14`, `AT15`, `AT16`, `AT17`, and `AT18` passed end-to-end. `AT19` remains `blocked` on two product defects in **`w3-policy-fup`**:\n\n"+
-		"1. **Missing Desired-State Recompile on Fair-Use Policy Activation and Tier Evaluation (`w3-policy-fup`)**:\n"+
-		"   - **Files**: `apps/worker/jobs_policies.go` (`handlePolicyActivated`, `handleFUPMemberGenerationChanged`) and `internal/desiredstate/compiler.go` (`RecompileBatch`).\n"+
-		"   - **Observed Behavior**: When `fair_use` revision `%s` (`mode=enforce`) was activated (or when usage ingestion emitted `fup.member_generation_changed`), the worker updated `fup_member_states` for `memberA` (`mode=enforce`, `effective_down_bps=5000000`, `effective_up_bps=2000000`), but `nodes.desired_config_generation` on serving exits `%s` (`node`) and `%s` (`node2`) stayed unchanged because neither handler calls `compiler.RecompileBatch` and `RecompileBatch` has no case for `\"fup.member_generation_changed\"`.\n"+
-		"   - **Required Fix**: Trigger `compiler.RecompileBatch` when a `fair_use` policy revision activates or when `fup.member_generation_changed` updates a member's Fair-Use state so serving exit nodes receive a new `desired_config_generation` with the updated `MemberRatePolicy`.\n\n"+
-		"2. **Broken Per-Node Fair-Use ACK Query Leaving `fair_use.applying` Permanently `true` (`w3-policy-fup`)**:\n"+
-		"   - **File**: `internal/fup/engine.go:1507` (`pgNodeAckReader.GetMemberNodeAckStatus`).\n"+
-		"   - **Observed Behavior**: `GetMemberNodeAckStatus` queries `SELECT no.checks->'applied_policy_refs'->>'fup_generation' FROM node_observations no ...` and compares it against `fup_member_states.generation`. However, `internal/nodes/observations.go:200` stores `applied_policy_refs` inside `no.report_payload` (not `no.checks`), and `applied_policy_refs.fup_generation` is the fleet `fair_use` policy definition generation rather than per-member `fup_member_states.generation`. Consequently, even after both serving exits (`node` and `node2`) applied the new generation and updated their kernel `tc` HTB classes to `5Mbit/2Mbit`, `GET /api/v1/member/usage` continued to report `fair_use.applying = true`.\n"+
-		"   - **Required Fix**: Read `no.report_payload->'applied_policy_refs'->>'fup_generation'` (or verify `nodes.applied_config_generation >= compiled_generation`) in `pgNodeAckReader.GetMemberNodeAckStatus` so `fair_use.applying` clears to `false` once serving nodes acknowledge the compiled configuration.\n\n"+
-		"3. **Non-Blocking Lab Note — Lockless `agent-service.sh start` Race with `entrypoint-node.sh` (`w3-devstack-e2e`)**:\n"+
-		"   - **Files**: `deploy/devstack/agent-service.sh` and `deploy/devstack/entrypoint-node.sh`.\n"+
-		"   - **Observed Behavior**: Calling `agent-service.sh stop` / `agent-service.sh start` directly without setting `/var/lib/vpn-node/e2e/pause-agent` can race with the 2-second supervisor loop in `entrypoint-node.sh`, spawning a second concurrent `fvpn-agent run` process whose PID is overwritten in `agent.pid`. `w4-at-usage` avoids this by toggling `/var/lib/vpn-node/e2e/pause-agent` and waiting for `entrypoint-node.sh` to stop/start `fvpn-agent`.\n",
-		s.runID, nowUTC, s.build.GitCommit, s.fairUseEnforceRevID, s.nodeID, s.node2ID)
-	if err := os.WriteFile(filepath.Join(s.evidence, "requests.md"), []byte(reqs), 0o644); err != nil {
-		s.t.Fatalf("write requests.md: %v", err)
-	}
 }

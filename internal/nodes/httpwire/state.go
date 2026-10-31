@@ -173,22 +173,16 @@ func (h *Handlers) RenewServingLease(ctx context.Context, r gen.RenewServingLeas
 	p := principal(ctx)
 	svc := leases.NewService(h.Runtime.Pool, purposeSigner{h.Runtime.Provider, envelope.PurposeLease})
 	var out api.ServingLeaseEnvelope
-	var e error
-	if tx, err := httpapi.Transaction(ctx); err == nil {
-		if e = h.observeAgentEndpointTx(ctx, tx); e != nil {
-			return nil, e
-		}
-		out, e = svc.RenewTx(ctx, tx, p.NodeID, p.IncarnationID, *r.Body)
-	} else {
-		e = db.InTx(ctx, h.Runtime.Pool, db.TxOptions{}, func(tx pgx.Tx) error {
-			if err := h.observeAgentEndpointTx(ctx, tx); err != nil {
-				return err
-			}
-			var err error
-			out, err = svc.RenewTx(ctx, tx, p.NodeID, p.IncarnationID, *r.Body)
+	// Use the observation path's fleet-before-node lock order, including
+	// when the HTTP command middleware already owns the transaction.
+	e := commandtx.InTx(ctx, h.Runtime.Pool, db.TxOptions{}, func(tx pgx.Tx) error {
+		if err := h.observeAgentEndpointTx(ctx, tx); err != nil {
 			return err
-		})
-	}
+		}
+		var err error
+		out, err = svc.RenewTx(ctx, tx, p.NodeID, p.IncarnationID, *r.Body)
+		return err
+	})
 	if e != nil {
 		return nil, e
 	}

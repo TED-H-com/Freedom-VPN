@@ -39,6 +39,10 @@ type memPlane struct {
 	calls     []planeCall
 }
 
+func (m *memPlane) VerifyServing(ctx context.Context, _ enforce.Model, _ map[uuid.UUID]uint16) (enforce.ServingEvidence, error) {
+	return enforce.ServingEvidence{}, ctx.Err()
+}
+
 func (m *memPlane) Apply(_ context.Context, model enforce.Model, _ map[string]enforce.CounterValue) (enforce.ApplyResult, error) {
 	plan, err := enforce.Render(model, enforce.State{}, enforce.TCState{})
 	if err != nil {

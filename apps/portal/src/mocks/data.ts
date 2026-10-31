@@ -45,6 +45,7 @@ import updateResultRolledBackJson from '../../../../contracts/examples/valid/Upd
 
 import type { AuthSession } from '../api/auth';
 import type {
+  AdminDevice,
   ApiErrorEnvelope,
   AuditEventItem,
   AuditEventListResponse,
@@ -314,6 +315,18 @@ function buildInitialNodeDetails(): Record<string, NodeDetail> {
     conflict_count: 0,
     last_conflict_at: null,
   };
+  primary.usage_outbox = {
+    ledger_epoch: '0195f100-d077-7000-8000-000000000001',
+    meter_epoch_id: '7d13bd46-7512-40ca-a87a-ef4531b6e49b',
+    unacked_event_count: 2,
+    unacked_payload_bytes: '1840',
+    central_acked_through: '10',
+    last_durable_event_seq: '12',
+    oldest_unacked_at: '2026-10-28T14:06:00Z',
+    blocked_seq: null,
+    acked_archive_bytes: '4096',
+    observed_at: '2026-10-28T14:06:30Z',
+  };
 
   const safetyFailed = clone(CONTRACT_EXAMPLES_USED_BY_MOCKS.NodeDetail);
   safetyFailed.node_id = SAFETY_FAILED_NODE_ID;
@@ -332,6 +345,7 @@ function buildInitialNodeDetails(): Record<string, NodeDetail> {
     conflict_count: 2,
     last_conflict_at: '2026-10-30T18:00:00Z',
   };
+  safetyFailed.usage_outbox = null;
   safetyFailed.checks = [
     {
       name: 'internet_only',
@@ -373,6 +387,7 @@ function buildInitialNodeDetails(): Record<string, NodeDetail> {
   offlineNode.resource_version = '7';
   offlineNode.dns_policy_evidence = null;
   offlineNode.identity_conflict = null;
+  delete offlineNode.usage_outbox;
 
   return {
     [primary.node_id]: primary,
@@ -767,6 +782,7 @@ export interface MockState {
   auditEvents: AuditEventItem[];
   memberExits: MemberExitListResponse;
   memberDevices: MemberDeviceListResponse;
+  adminDevices: AdminDevice[];
   operations: Record<string, OperationResource>;
   operationPolls: Record<string, number>;
   idempotencyRecords: Record<string, { status: number; body: unknown }>;
@@ -804,6 +820,14 @@ export function createInitialMockState(persona: MockPersona = 'admin'): MockStat
     auditEvents: clone(CONTRACT_EXAMPLES_USED_BY_MOCKS.AuditEventList.items),
     memberExits: clone(CONTRACT_EXAMPLES_USED_BY_MOCKS.MemberExitList),
     memberDevices: clone(CONTRACT_EXAMPLES_USED_BY_MOCKS.MemberDeviceList),
+    adminDevices: clone(CONTRACT_EXAMPLES_USED_BY_MOCKS.MemberDeviceList).items.map(
+      (dev) => ({
+        ...dev,
+        member_id: PRIMARY_MEMBER_ID,
+        authorization_unconfirmed: dev.authorization_unconfirmed ?? false,
+        authorization_unconfirmed_since: null,
+      }),
+    ),
     operations: {
       [baseOp.operation_id]: baseOp,
     },

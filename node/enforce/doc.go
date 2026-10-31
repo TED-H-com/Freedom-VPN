@@ -12,6 +12,22 @@
 // that traffic crosses fails closed. A native match that restricts the
 // packet to 127.0.0.0/8 or to ::1 is classed loopback_scoped and does not
 // fail closed; an xt match does not prove that scope.
+// VerifyServing also reads tc qdiscs and every filter attachment on both
+// member-path interfaces. Foreign or unreadable tc state is TC_FOREIGN_FILTER;
+// Apply records the evidence and calls Quarantine (D-090): administratively
+// down the retained model's MemberIngress and install the no-probe nft baseline.
+// Quarantine never mutates tc or the uplink. The owned nft table holds an empty
+// quarantine_<interface> set as the recovery marker across processes; baseline
+// refreshes preserve it. VerifyServing still scans tc while the link is down
+// and reports both TC_FOREIGN_FILTER and quarantined evidence. Apply alone
+// verifies the staged serving rules before raising a quarantined link, verifies
+// again after raising it, then removes the marker. Failure re-quarantines.
+// Call Quarantine every step while foreign state persists, even when already
+// blocked, before the heartbeat: another daemon may raise the interface. Pass
+// the retained applied model and its namespace executor and serialize with all
+// other enforcement operations. Report QuarantineEvidence and any error;
+// a baseline or a successful command alone is not containment evidence.
+// A redirect on the uplink itself is outside this containment boundary.
 //
 // Metering is forward_admission_v1 (§10.1, §10.2): one named counter per
 // device per direction, incremented only after the lease and isolation checks,

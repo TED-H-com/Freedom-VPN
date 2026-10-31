@@ -22,6 +22,7 @@ import type {
   NodeDetail,
   NodeListResponse,
   NodeSummaryItem,
+  NodeUsageOutbox,
   PolicyDefinition,
   PolicyDefinitionListResponse,
   PolicyMode,
@@ -595,4 +596,74 @@ export function extractTargetRollbackHealth(
     candidateHealth,
     hasReceiptEvidence,
   };
+}
+
+/**
+ * Normalizes `MemberDevice.authorization_unconfirmed` so that an omitted/absent
+ * field on an older server renders identically to `false` (D-076, Revision 12).
+ */
+export function isDeviceAuthorizationUnconfirmed(device: {
+  authorization_unconfirmed?: boolean | null;
+}): boolean {
+  return device.authorization_unconfirmed === true;
+}
+
+export type NodeUsageOutboxViewState =
+  | { state: 'absent' }
+  | { state: 'null' }
+  | { state: 'object'; usageOutbox: NodeUsageOutbox };
+
+/**
+ * Classifies `NodeDetail.usage_outbox` into its three Revision 12 states (D-077, SECOPS-19):
+ * 1. `absent` — field omitted by a server that does not project it yet.
+ * 2. `null` — server projects the field, but no observation report with a usage block has been recorded yet.
+ * 3. `object` — non-null `NodeUsageOutbox` projection.
+ */
+export function getNodeUsageOutboxState(node: NodeDetail): NodeUsageOutboxViewState {
+  if (!('usage_outbox' in node) || node.usage_outbox === undefined) {
+    return { state: 'absent' };
+  }
+  if (node.usage_outbox === null) {
+    return { state: 'null' };
+  }
+  return { state: 'object', usageOutbox: node.usage_outbox };
+}
+
+/**
+ * Computes a relative age string for `oldest_unacked_at` measured against `observed_at`
+ * (D-077, SECOPS-19). Returns `'—'` when `oldest_unacked_at` is null/absent or timestamps are invalid.
+ */
+export function formatRelativeAgeFromObservedAt(
+  oldestUnackedAt: string | null | undefined,
+  observedAt: string | null | undefined,
+  locale: 'zh-TW' | 'en',
+): string {
+  if (!oldestUnackedAt || !observedAt) {
+    return '—';
+  }
+  const oldestMs = Date.parse(oldestUnackedAt);
+  const observedMs = Date.parse(observedAt);
+  if (Number.isNaN(oldestMs) || Number.isNaN(observedMs)) {
+    return '—';
+  }
+  const totalSeconds = Math.max(0, Math.floor((observedMs - oldestMs) / 1000));
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  if (locale === 'zh-TW') {
+    if (hours > 0) {
+      return `${hours} 小時 ${minutes} 分 ${seconds} 秒`;
+    }
+    if (minutes > 0) {
+      return `${minutes} 分 ${seconds} 秒`;
+    }
+    return `${seconds} 秒`;
+  }
+  if (hours > 0) {
+    return `${hours}h ${minutes}m ${seconds}s`;
+  }
+  if (minutes > 0) {
+    return `${minutes}m ${seconds}s`;
+  }
+  return `${seconds}s`;
 }

@@ -47,6 +47,7 @@ Order:
 8. Create `inet` table `fvpn` only when it is absent: an owner chain (comment `managed-by=fvpn-node-install`, no hook) and a `forward` chain with policy drop (AT13). Create an empty netns named `fvpn`. Create dummy links `fvmb0` and `fvup0` only when those names are absent. No addresses and no routes are added.
 9. Run `fvpn-agent enroll` when `/var/lib/vpn-node/identity/node.json` is absent.
 10. Release the lock, then start units in this order: `fvpn-updater-recover`, `fvpn-watchdog`, `fvpn-agent`, `fvpn-netbird`, `fvpn-node-netbird-up`, `fvpn-updater.timer`.
+11. Probe the installed release's `fvpn-updater seed --help` and record its exit code and stderr. When available, run `seed --config /etc/vpn-node/updater.json --manifest <retained envelope> --tree <current release tree>`; the updater re-verifies the baseline and writes current = last-good itself.
 
 `host_reserve_bps` is required and has no default (待實測, §8). `--snat` is a non-loopback IPv4 address. Member and uplink names must match `^fv[a-z0-9_-]{1,13}$` and must differ. Defaults are `fvmb0` and `fvup0`.
 
@@ -56,7 +57,7 @@ The empty netns `fvpn` is a name reservation. `node/enforce` programs table `ine
 
 ### Re-run (§6.3, AT07)
 
-A second `install` of the same `release_id` and the same manifest digest, with matching units, directory modes, and `agent.json`, prints `already_current` and exits 0. It does not restart units and does not touch identity, `usage.db`, the update journal, or last-good state.
+A second `install` of the same `release_id` and the same manifest digest, with matching units, directory modes, and `agent.json`, prints `already_current` and exits 0. It does not restart units or change identity or `usage.db`. It repeats the baseline probe/seed; the updater must treat the same verified baseline as idempotent and refuse a journal with different content.
 
 The same `release_id` with a different manifest digest is `IMMUTABLE` (exit 1). An equal or lower `release_sequence` with a different id is `DOWNGRADE` (exit 1). A higher sequence replaces binaries and units, moves `current`, and does not enroll again. A same-release run that finds a missing unit or a drifted directory mode prints `repaired`, restores those files and modes, and leaves identity bytes in place.
 
@@ -64,19 +65,27 @@ The same `release_id` with a different manifest digest is `IMMUTABLE` (exit 1). 
 
 `check` is read-only. It does not take the lock. `--json` prints one JSON object; without it, the same fields are text. Exit 0 is `healthy`. Exit 2 is `drifted`, with a single line and no stack trace.
 
-It reports OS and arch, the installed `release_id` and manifest digest, unit states, directory modes, the lock holder when the recorded pid is alive, whether identity exists and which incarnation `node.json` carries, whether `usage.db` exists (never its contents), the NetBird client version and whether `netbird status` contains `Management: Connected`, and the drift list.
+It reports OS and arch, the installed `release_id` and manifest digest, unit states, directory modes, the lock holder when the recorded pid is alive, whether identity exists and which incarnation `node.json` carries, whether `usage.db` exists (never its contents), the NetBird client version and whether `netbird status` contains `Management: Connected`, the pending record (including `manifest_path` and `request_id`), the recorded baseline result and probe exit code/stderr, and the drift list. The baseline result records the last installer attempt, not a fresh journal health check.
 
 A management disconnect is reported and is not, by itself, drift. The updater oneshot is inactive between timer fires; `failed` is drift. `fvpn-node-firstboot` is not required to be active after enrollment.
 
 ## upgrade
 
-`fvpn-updater` has no local-apply command (`run`, `recover`, `flush`, `status`, `version` only). `upgrade` does not fork that state machine.
+`upgrade` verifies the signed release, stages the archive and extracted tree, and writes `/var/lib/vpn-node/update-staging/pending-release.json` (mode 0600). The existing fields remain: `release_id`, `manifest_sha256`, `artifact_path`, `tree_path`, `updater_command`. It adds `manifest_path`, pointing to the verified signed envelope retained as `<release_id>.manifest.json` beside the archive, and `request_id`, a fresh UUID for every invocation (D-080, D-089).
 
-It verifies the archive, extracts it under `/opt/vpn-node/releases/<release_id>`, copies the archive to `/var/lib/vpn-node/update-staging/<sha256>.tar.zst`, and writes `/var/lib/vpn-node/update-staging/pending-release.json` (mode 0600). It does not move `current`. It releases the lock, then `systemctl start fvpn-updater.service`.
+The installer does not move `current`. It releases the shared lock and starts `fvpn-updater.service`. The updater consumes the record on its next `run`, or explicitly with:
 
-The running updater does not read `pending-release.json`. `fvpn-updater run` applies a desired-state file. On a node with no desired state, that run fails, `GuardSource` may write the forwarding latch, and `upgrade` still exits 1 with status `staged` and `updater_failed`. `current` stays where it was. A held lock exits 3 `busy` before staging.
+```sh
+/opt/vpn-node/current/fvpn-updater apply --config /etc/vpn-node/updater.json \
+  --pending /var/lib/vpn-node/update-staging/pending-release.json
+/opt/vpn-node/current/fvpn-updater status --config /etc/vpn-node/updater.json
+```
 
-To move `current` without the updater, run `install` again with the newer archive. That path replaces binaries and units and does not re-enroll.
+The updater re-verifies the envelope and its private snapshot of the archive, extracts the candidate itself, then uses its journaled verify/switch/restart/health/rollback path (§13.4–§13.7). `tree_path` and `updater_command` are informational, never authoritative inputs to installation. Replaying identical record bytes is idempotent. Running `upgrade` again creates a new installer job because `request_id` changes the canonical record identity. A missing desired-state file is no work and exits 0; an installer job alone never authorizes member forwarding.
+
+`staged` describes the installer hand-off, not completion. Inspect `fvpn-updater status` for the installer-sourced job and outcome; the automatic service run may already have consumed the pending file when `upgrade` returns. A held lock exits 3 `busy` before staging.
+
+Two integration items remain open. Updater follow-up 14 has not merged: the merged updater has no `seed` subcommand, so installation records **`baseline: not seeded (updater without seed)`** in its log and `check --json`. A live `current` pointer without verified journal evidence is refused with `CHECKPOINT_FAILED`; do not create journal rows manually. Once `seed` is available, install and reenroll invoke the installed binary with the retained envelope and current tree. A seed failure is an installer failure and is recorded, never reported as seeded. Central acceptance of installer-local results also awaits contracts revision 13 / fleet-update. Outcomes are visible locally now and will appear in the admin node view once central accepts them; a local success is not central acceptance.
 
 ## remove
 
@@ -92,7 +101,7 @@ fvpn-node-install reenroll --json --token-file /run/fvpn-token
 
 `--token-file` is required. The command stops the units, moves the identity files and the agent store (`agent.db`, its WAL and SHM, and `desired-state.json`) to `/var/lib/vpn-node/identity.retired/<utc>/`, sets that directory to mode 0700, and does not delete it. `fvpn-agent enroll` is a no-op while `agent.db` still records an identity, so those files have to move with the certificate. `usage.db` is not moved.
 
-It then enrolls with the new token, shreds the token file, refreshes `updater.json` with the new node id and incarnation, and starts the units again.
+It then enrolls with the new token, shreds the token file, refreshes `updater.json` with the new node id and incarnation, starts the units again, and probes/seeds the current release baseline through its own updater binary.
 
 `usagestore.Open` returns `ErrIdentity` when the file's node or incarnation does not match the process (§10.6). `usageupload` resends the stored canonical bytes and has no re-home path. After reenroll the new agent logs `usage store` and does not upload the old incarnation's outbox. Those rows stay in `usage.db` until an operator or a later agent change deals with them. Central rejects the old certificate (ENR-02, §6.2). This installer does not test that rejection.
 
@@ -112,8 +121,8 @@ Member units are disabled so a clone does not start `fvpn-node-netbird-up` befor
 | `/var/lib/vpn-node/identity.retired/<utc>` | 0700 | previous identity after `reenroll` |
 | `/var/lib/vpn-node/state` | 0700 | `agent.db`, `usage.db`, desired state |
 | `/var/lib/vpn-node/update-journal` | 0700 | updater journal |
-| `/var/lib/vpn-node/update-staging` | 0700 | staged archive and `pending-release.json` |
-| `/var/lib/vpn-node/install` | 0700 | installer journal and `owned.json` |
+| `/var/lib/vpn-node/update-staging` | 0700 | staged archive, signed manifest envelopes and `pending-release.json` |
+| `/var/lib/vpn-node/install` | 0700 | installer journal, `owned.json` and `baseline.json` |
 | `/var/lib/vpn-node/firstboot.token` | 0600 | first-boot token; not part of the image |
 | `/opt/vpn-node/releases/<release_id>` | 0755 | one extracted release |
 | `/opt/vpn-node/current` | link | relative link `releases/<release_id>` |
@@ -128,14 +137,14 @@ Templates are `deploy/node/systemd/`. They are ordered after `network-online.tar
 |---|---|---|
 | `fvpn-agent.service` | `CAP_NET_ADMIN`, `CAP_NET_RAW` (ambient too) | nftables, tc, ip, and raw sockets / conntrack. After NetBird and update recovery. Not `Requires=` on recovery. |
 | `fvpn-watchdog.service` | `CAP_NET_ADMIN` only | nftables and tc baseline. No `PartOf`, `BindsTo`, or `Requires` on the agent (§17.1, "Agent 卡住或退出"). |
-| `fvpn-updater.service` | none | Writes files and calls `systemctl`. `Type=oneshot`, `SuccessExitStatus=0 2`. `ExecStartPre` is `refresh-boot-id`. |
+| `fvpn-updater.service` | none | Writes files and calls `systemctl`. `Type=oneshot`, `SuccessExitStatus=0 2`. Reads the kernel boot id. |
 | `fvpn-updater.timer` | none | `OnBootSec=2min`, `OnUnitActiveSec=5min`. The interval is 待實測 (§13.6). |
 | `fvpn-updater-recover.service` | none | `fvpn-updater recover` before member services. Exit 2 means members stay blocked and is success (§13.5). |
 | `fvpn-netbird.service` | `CAP_NET_ADMIN`, `CAP_NET_RAW` | WireGuard device. `PrivateDevices=no` so `/dev/net/tun` stays visible. No setup key in the unit. |
 | `fvpn-node-netbird-up.service` | `CAP_NET_ADMIN`, `CAP_NET_RAW` | `netbird up --setup-key-file` plus `--disable-firewall`. The key is a path, never an argument value. |
 | `fvpn-node-firstboot.service` | none | One-shot enroll on a prepared image. |
 
-`refresh-boot-id` rewrites `boot_id` in `updater.json` from `/proc/sys/kernel/random/boot_id`. The updater pins that UUID in config and does not read a boot-id file, so the units list `/etc/vpn-node` in `ReadWritePaths`. Otherwise `ProtectSystem=strict` would make the rewrite fail.
+The updater uses `/proc/sys/kernel/random/boot_id` first; optional `boot_id` in `updater.json` is only a fallback if the kernel value is unavailable or invalid. New installer configurations omit it. Neither updater unit rewrites configuration or grants write access to `/etc/vpn-node`. The obsolete `refresh-boot-id` subcommand was removed; `check` does not need it.
 
 The watchdog is a separate service. Stopping or crashing the agent does not stop the watchdog.
 
@@ -177,7 +186,7 @@ These sentences are what a test or an operator can check.
 
 The lock file is `/var/lib/vpn-node/update.lock`. The installer, the agent, and the updater use `LOCK_EX|LOCK_NB` on that file. The holder record is JSON `{pid, boot_id, start_time}` written only after the flock succeeds. The file is not unlinked when the lock is busy. `start_time` is field 22 of `/proc/<pid>/stat`.
 
-`packaging/installer` cannot import `node/internal/nodelock`, so `lock.go` repeats that protocol. The agent takes the lock inside `node/agent/engine.go` while it applies a serving dataplane, and releases it at the end of that apply. The updater takes it for `run` and `recover`. The watchdog does not take it. The installer holds it across filesystem and nft changes and releases it before starting `fvpn-updater`.
+`packaging/installer` uses the exported `node/nodelock` package. Lock holders use the kernel boot id first and configured `boot_id` only as fallback. The agent takes the lock inside `node/agent/engine.go` while it applies a serving dataplane, and releases it at the end of that apply. The updater takes it for `run`, `apply`, `recover`, `flush` and retention. The watchdog does not take it. The installer holds it across filesystem and nft changes and releases it before starting `fvpn-updater`.
 
 ## Lab wrappers
 
@@ -192,7 +201,7 @@ fvpn-node-install install --json \
   --token-file <path-mode-0600>
 ```
 
-Omit `--token-file` on a re-run when identity already exists. Hash, before and after, with the agent stopped if the hash must be byte-stable: `identity/key.pem`, `identity/cert.pem`, `identity/node.json`, `state/usage.db` (and `usage.db-wal` when present), `/etc/machine-id`, and `readlink /opt/vpn-node/current`. `already_current` keeps those hashes. A newer archive changes only the `current` link.
+Omit `--token-file` on a re-run when identity already exists. Hash, before and after, with the agent stopped if the hash must be byte-stable: `identity/key.pem`, `identity/cert.pem`, `identity/node.json`, `state/usage.db` (and `usage.db-wal` when present), `/etc/machine-id`, and `readlink /opt/vpn-node/current`. `already_current` keeps those hashes. Use `upgrade` for the journaled apply path to a newer release.
 
 `ControlledReinstall` is:
 

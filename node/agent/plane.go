@@ -7,12 +7,16 @@ import (
 	"strings"
 
 	"github.com/TED-H-com/Freedom-VPN/node/enforce"
+	"github.com/google/uuid"
 )
 
 // Plane applies a verified model. Tests substitute a fake. Production uses
 // SystemPlane, which talks to nft and tc inside the node network namespace.
 type Plane interface {
 	Apply(ctx context.Context, m enforce.Model, prev map[string]enforce.CounterValue) (enforce.ApplyResult, error)
+	// VerifyServing reads live state against the last applied model, not a
+	// newly desired model. Implementations must honor ctx's read deadline.
+	VerifyServing(ctx context.Context, m enforce.Model, assignments map[uuid.UUID]uint16) (enforce.ServingEvidence, error)
 	// Baseline is the watchdog and steady fail-closed path. It has no probe.
 	Baseline(ctx context.Context, dp enforce.Datapath) error
 	// BaselineModel is ApplyBaselineModel. A non-nil Probe is the §13.9
@@ -85,6 +89,11 @@ func flushOneConntrack(ctx context.Context, ex enforce.Executor, addr netip.Addr
 // back to the baseline (§8.2, §10.3).
 func (p SystemPlane) Apply(ctx context.Context, m enforce.Model, prev map[string]enforce.CounterValue) (enforce.ApplyResult, error) {
 	return enforce.Apply(ctx, p.executor(), m, prev)
+}
+
+// VerifyServing checks live nft and tc state without changing networking.
+func (p SystemPlane) VerifyServing(ctx context.Context, m enforce.Model, assignments map[uuid.UUID]uint16) (enforce.ServingEvidence, error) {
+	return enforce.VerifyServing(ctx, p.executor(), m, assignments)
 }
 
 // Baseline installs the fail-closed boot ruleset. The probe exception is not

@@ -151,7 +151,7 @@ func TestAPI01_ConfigFileAndEnv(t *testing.T) {
 	}
 	t.Setenv("FVPN_SESSION_IDLE_SECONDS", "20")
 	c, e := Load(p)
-	if e != nil || c.SessionIdleSeconds != 20 || c.IdempotencySeconds != 604800 {
+	if e != nil || c.SessionIdleSeconds != 20 || c.IdempotencySeconds != 604800 || c.ReadRate != (Bucket{30, 60}) {
 		t.Fatal(c, e)
 	}
 	if e = os.WriteFile(p, []byte(`{"unknown":true}`), 0600); e != nil {
@@ -159,5 +159,29 @@ func TestAPI01_ConfigFileAndEnv(t *testing.T) {
 	}
 	if _, e = Load(p); e == nil {
 		t.Fatal("unknown setting accepted")
+	}
+}
+
+// The list bucket must be configurable, retain defaults for old files, and
+// reject zero bounds rather than silently disabling read throttling.
+func TestAT06_ReadRateConfiguration(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "config.json")
+	if err := os.WriteFile(path, []byte(`{"database_url_file":"database","read_rate":{"per_second":12,"burst":24}}`), 0600); err != nil {
+		t.Fatal(err)
+	}
+	c, err := Load(path)
+	if err != nil || c.ReadRate != (Bucket{12, 24}) || c.BrowserRate != (Bucket{10, 30}) {
+		t.Fatalf("file rates: read=%+v browser=%+v err=%v", c.ReadRate, c.BrowserRate, err)
+	}
+	t.Setenv("FVPN_READ_RATE", `{"per_second":15,"burst":25}`)
+	c, err = Load(path)
+	if err != nil || c.ReadRate != (Bucket{15, 25}) {
+		t.Fatalf("environment rate: %+v err=%v", c.ReadRate, err)
+	}
+	for _, rate := range []Bucket{{0, 25}, {15, 0}} {
+		c.ReadRate = rate
+		if err := c.Validate(); err == nil {
+			t.Fatalf("invalid read_rate accepted: %+v", rate)
+		}
 	}
 }
