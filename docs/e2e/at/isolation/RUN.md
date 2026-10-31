@@ -31,10 +31,10 @@ This rule never applies to the separate 80 ms diagnostic below.
 The owned stack wrapper sets `FVPN_E2E_GRANT_SEAM=1` while preparing a fresh
 runtime; the production control binary remains the normal default elsewhere.
 Before enrollment, configure the TEST ONLY offline window to 60 seconds and
-leave it fixed for the entire run. The first assembled scenario waits for
-65 seconds of identical `MemberGrantInvariants`, then requires clean ready /
-passed publication, applied=desired generation, bindings, no freeze and a
-native counted control. Baseline/meter/tunnel checks are retained from the real
+leave it fixed for the entire run. The first assembled scenario establishes a native counted control, then waits
+for 65 seconds of identical `MemberGrantInvariants` so ordinary initial FUP
+projection settles before the snapshot. It then requires clean ready / passed
+publication, applied=desired generation, bindings and no freeze. Baseline/meter/tunnel checks are retained from the real
 accepted observation.
 
 Capture the invariant snapshot and arm false using `SetMemberGrantsReady`.
@@ -154,3 +154,9 @@ generated root artifacts before a fresh run. The offline reviewer refuses to
 use packet files when the current whole-node check did not execute its window.
 Raw archived captures retain their terminal blank lines; four explicit archive
 attributes disable only Git's blank-at-EOF diagnostic for those files.
+
+The second attempt `5e9e4041` is independently pinned under
+`history/follow-up-10-attempt-2/` (98 files). Its initial counted flow incorrectly
+followed the stability wait and triggered ordinary projection before false; its
+AT10 failure remains evidence. The corrected sequence above precedes the third
+run. No product failure is erased by either later run.
