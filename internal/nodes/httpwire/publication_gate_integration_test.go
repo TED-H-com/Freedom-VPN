@@ -478,8 +478,8 @@ func TestD074_GatedNodePublishWaitsThenCompletesOrExhausts(t *testing.T) {
 			if st.Name == nodes.StepAgentPolicy {
 				code, cErr := st.ErrorCode.Get()
 				msg, mErr := st.Message.Get()
-				if st.Status != api.OperationStepStatusPending || cErr != nil || code != api.ErrorCodeNODENOTSERVICEABLE || mErr != nil || msg != "member_forwarding_unconfirmed" {
-					t.Fatalf("API agent_policy step = %+v, want pending with NODE_NOT_SERVICEABLE / member_forwarding_unconfirmed", st)
+				if st.Status != api.OperationStepStatusPending || cErr != nil || code != api.ErrorCodeNODENOTSERVICEABLE || mErr != nil || msg != "member_forwarding_unconfirmed (stale_generation)" {
+					t.Fatalf("API agent_policy step = %+v, want pending with NODE_NOT_SERVICEABLE / member_forwarding_unconfirmed (stale_generation)", st)
 				}
 			}
 			if st.Name == nodes.StepDataPathProbe && st.Status != api.OperationStepStatusPending {
@@ -583,8 +583,8 @@ func TestD074_GatedNodePublishWaitsThenCompletesOrExhausts(t *testing.T) {
 			if st.Name == nodes.StepAgentPolicy {
 				code, cErr := st.ErrorCode.Get()
 				msg, mErr := st.Message.Get()
-				if st.Status != api.OperationStepStatusFailed || cErr != nil || code != api.ErrorCodeNODENOTSERVICEABLE || mErr != nil || msg != "member_forwarding_unconfirmed" {
-					t.Fatalf("exhausted agent_policy step = %+v, want failed with NODE_NOT_SERVICEABLE / member_forwarding_unconfirmed", st)
+				if st.Status != api.OperationStepStatusFailed || cErr != nil || code != api.ErrorCodeNODENOTSERVICEABLE || mErr != nil || msg != "member_forwarding_unconfirmed (stale_generation)" {
+					t.Fatalf("exhausted agent_policy step = %+v, want failed with NODE_NOT_SERVICEABLE / member_forwarding_unconfirmed (stale_generation)", st)
 				}
 			}
 		}
