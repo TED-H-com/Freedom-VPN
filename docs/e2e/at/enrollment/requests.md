@@ -27,3 +27,20 @@ identity by this harness.
 Follow-up 6 root records were moved byte-identically before the new run to
 [history/follow-up-6](history/follow-up-6/README.md). The current run retains all
 prior check outcomes. No pin outside this lane is changed.
+
+## Follow-up 7 disposition — 2026-10-31
+
+Run `59ef4bf8-7d4a-490f-a74d-6b54394375e0`: AT06 **424/0/0**, AT07 **36/5/0**; both phases 0 HTTP 429.
+ENR-02/03 serving-source withdrawal and restart persistence are **closed** by
+new measurements: one lease member and six live accept rules before the fault,
+227 ms conservative withdrawal bound against a 5-second heartbeat, persisted
+latch and fresh non-serving restart evidence. Isolation's earlier partial proof
+is not promoted. The native lookup defect in the diagnostic attempt is resolved
+only by the current passing setup/freeze/process checks; its records remain.
+
+Devstack's same-slot hold/release, ledger snapshot, member-transport selection
+and service-restoration requests are **closed as exports**. The seven available
+installer subset assertions pass; nonzero installer usage is not observed.
+The two owner requests above remain: D-116 serving prerequisite, and D-105/D-112
+retired-stream delivery. No other request, missing enrollment response, or
+outside-owned pin change is needed. Request count: **2**.
