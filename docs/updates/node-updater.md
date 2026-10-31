@@ -23,7 +23,7 @@ fvpn-updater version
 
 | Exit | Meaning |
 |---|---|
-| 0 | The journal does not require forwarding to stay off. `help` and `version` also exit 0. `status` exits 0 when it reads successfully, including when the snapshot says recovery is required. `seed` exits 0 only after verifying and recording (or re-verifying) the baseline; it makes no serving or health claim. |
+| 0 | The command completed without an operation error; `apply` never uses 0 for a sealed failed job. This is not permission to forward member traffic. `help` and `version` also exit 0. `status` exits 0 when it reads successfully, including when the snapshot says recovery is required. `seed` exits 0 only after verifying and recording (or re-verifying) the baseline; it makes no serving or health claim. |
 | 2 | Only `ErrMembersBlocked`. Members must stay blocked. |
 | 1 | Any other failure, including a config that does not load and `flush` without `result_url`. |
 | 64 | Usage, an unknown command, a bad flag, or missing required flags. `seed -h` and `seed --help` print seed-specific flag help and exit 64. |
@@ -34,7 +34,79 @@ The config file holds paths and ids. It does not hold the release private key. `
 
 The forwarding latch is `forwarding.blocked` in the journal directory. The agent must not enable member forwarding while that file exists or while `BlocksForwarding` is true. The nftables gate itself belongs to the agent.
 
-## Installer hand-off (D-080, D-089)
+## FileGate / FileMeter handshake — 2026-10-31 (follow-up 16)
+
+**Fresh-checkpoint acceptance is blocked on agent-core follow-up 26.** The
+[agent-core 24 hand-off](../node/followup24-updater-2026-10-31.md) explicitly says
+its format has no transaction, boot or close-time correlation. The existing
+`closed_meter_epoch_id`, `last_durable_event_seq`, `central_acked_through` and
+empty `new_meter_epoch_id` describe a real completed durable close. They cannot
+prove that the close followed this update's block. An epoch can open before the
+block, a quiet close need not advance the sequence, and UUID ordering, file
+mtime, a new inode or a new watermark is not a block acknowledgement.
+
+This delivery implements the bounded wait, withdrawal and restart safeguards.
+It deliberately refuses **every uncorrelated FileMeter checkpoint**, including a
+newly published genuine one, rather than switch on ambiguous evidence. A
+successful FileMeter upgrade and the late-but-fresh success test remain deferred.
+No agent checkpoint member has been invented or added. Agent-core needs to
+agree and publish a `barrier_id` tied to the exact live updater block, after
+verified withdrawal and durable finalization, with boot/restart and withdrawal
+semantics. That proposed member is an owner request, not a supported field.
+
+The updater's `meter_checkpoint_wait_ms` config knob defaults to **30000 ms**
+when omitted or zero. Explicit values are integers from 1 through 300000 ms;
+negative or larger values fail configuration load. The default is 待實測, not a
+measured guarantee. For example, `"meter_checkpoint_wait_ms": 15000` selects
+15 seconds. `Config.Engine` passes the value to `FileMeter.Wait`; the poll
+interval is 100 ms. The earlier caller deadline, when present, also bounds the
+wait. No service stop, start, switch or new epoch occurs on handshake failure.
+
+Before publishing the latch, the updater atomically writes and fsyncs a private
+`meter-wait-<txn>` note in its journal directory with its boot ID, start, deadline
+and opaque latch identity. These are updater-local fields, not agent evidence.
+The latch remains a presence-only block for today's agent. `FileGate.Block`
+preserves an existing identity; `Unblock` removes the latch and fsyncs the
+parent. A later block has another identity. Missing, replaced or unreadable
+latches discard the pending sample, including an unblock/reblock between polls.
+The updater checks the latch before and after each checkpoint read.
+
+There is **one decision per checkpoint read**: the bytes from one bounded,
+regular-file descriptor form one snapshot. The bounded freshness wait may
+re-read the file; it never treats an earlier read as permission for a later
+sample. Symlinks, FIFOs, devices, oversized files, malformed/unknown fields,
+missing watermarks, a nil closed epoch, a nonempty new epoch and ACK above the
+durable sequence are refused. The updater never writes or deletes the agent's
+checkpoint, never fabricates sequence numbers and never repairs meter state.
+
+| Failure | Sealed receipt and local diagnostic |
+|---|---|
+| No readable valid checkpoint by the original deadline | `failed`, `final_sample`, `CHECKPOINT_FAILED`; `meter_checkpoint_timeout` |
+| Valid checkpoint observed, but no supported correlation | `failed`, `final_sample`, `CHECKPOINT_FAILED`; `meter_checkpoint_uncorrelated` |
+| Latch withdrawn or replaced before sampling completes | `failed`, `final_sample`, `STATE_CONFLICT`; `meter_barrier_withdrawn` |
+| Missing/corrupt wait note, changed boot or backward clock before the recorded start | `failed`, `final_sample`, `CHECKPOINT_FAILED`; `meter_wait_invalid` |
+
+Diagnostics are fixed strings in the existing journal error/event fields. The
+wire receipt uses only existing contract codes, has `usage_checkpoint: null`
+and reports forwarding disabled; `STATE_CONFLICT` at `final_sample` identifies
+the discarded withdrawal. Current/last-good and the baseline service are
+retained without restart. The local transaction finishes as nondestructive
+`rolled_back`, with job/result outcome `failed` and the durable gate blocked.
+A newly failed `apply` exits 1; subsequent recovery of the blocked failure exits
+2. Neither recovery nor a checkpoint arriving after the deadline reopens the
+sealed job or changes its receipt bytes.
+
+Recovery at `prepared`/`blocked` retains the original deadline and rereads the
+current latch and checkpoint. It never republishes a missing handshake latch
+to hide withdrawal. A crash after writing the note but before publishing the
+latch conservatively fails. A missing legacy note or changed boot fails closed.
+A recovered `final_sampled` transaction is checked again before stop; a legacy
+checkpoint without handshake evidence is discarded from the failure receipt.
+Terminal cleanup removes the local wait note, leaving the sealed journal and
+outbox evidence intact. The successful stage-recovery tests below use injected
+`Meter` adapters; they do not prove acceptance of the uncorrelated agent format.
+
+## Installer hand-off (D-080, D-089, D-110)
 
 Initial install and reenroll retain the exact verified signed envelope (`Verified.Raw`) as mode 0600 under update-staging. After releasing `/var/lib/vpn-node/update.lock`, the installer probes `<current>/fvpn-updater seed --help`, then invokes:
 
@@ -53,12 +125,14 @@ The verified release, current pointer, state-schema marker and baseline evidence
 
 Seed exit 0 means verified and recorded. The same canonical envelope and tree are re-verified on replay, preserving the original seed timestamp and boot id, with no second release or baseline row. An established journal with a different current release, manifest, tree or state schema is refused; open work is refused too. Exit 1 reports the reason and leaves existing journal evidence and the current pointer intact. Usage/unknown commands exit 64; `seed -h`/`--help` print `-manifest` and `-tree` help with exit 64. The installer recognizes an older unsupported updater only from exit 64 with `unknown command "seed"`; other probe/seed failures become installer exit 1 and check drift. Probe and seed exits/stderr are retained in `install/baseline.json` and `check --json`.
 
-Next, `fvpn-node-install upgrade` verifies a higher signed release, extracts it under releases, copies its archive into update-staging, retains `Verified.Raw` as mode 0600, and writes `pending-release.json` with a fresh per-invocation request UUID. It releases the shared lock and starts `fvpn-updater.service`. The updater's `run` consumes that record before desired state. The foreground equivalent is:
+Next, `fvpn-node-install upgrade` verifies a signed release, extracts it under releases, copies its archive into update-staging, retains `Verified.Raw` as mode 0600, and writes `pending-release.json` with a fresh per-invocation request UUID. It releases the shared lock and starts `fvpn-updater.service`. The updater's `run` consumes that record before desired state. The foreground equivalent is:
 
 ```sh
 fvpn-updater apply --config /etc/vpn-node/updater.json \
   --pending /var/lib/vpn-node/update-staging/pending-release.json
 ```
+
+`apply` reports a sealed `failed` job as nonzero with `outcome=failed` and its error code on stderr, including a failure sealed during recovery or replay. A new final-sample failure exits 1; recovery that still blocks forwarding retains exit 2. A healthy rollback remains the distinct `rolled_back` outcome. The meter checkpoint producer is an agent-core dependency; this exit correction does not manufacture a checkpoint.
 
 Both apply paths take the lock, recover existing work, and use the journaled verify, switch, restart, health-check, rollback and result-outbox state machine (§13.5–§13.9). Contention reports `UPDATE_BUSY` (updater exit 1; installer busy exit 3). A missing default pending file is no work. An explicit missing `--pending` is an error, except when recovery just consumed it.
 
@@ -70,16 +144,18 @@ Both apply paths take the lock, recover existing work, and use the journaled ver
 | `tree_path` | Informational extracted tree; apply extracts again from a verified private archive copy. |
 | `updater_command` | Informational; never executed. |
 | `manifest_path` | Merged writer's retained signed envelope; a bounded regular file, mode 0600. |
-| `request_id` | Merged writer's per-invocation UUID; included in canonical record identity. |
+| `request_id` | Merged writer's per-invocation UUID; included in the local integrity digest only. |
 | `manifest` | Optional inline signed envelope supported by the consumer; takes precedence over `manifest_path`. |
 
 The live current pointer must match journal evidence. An unseeded installer-created pointer still fails with `CHECKPOINT_FAILED`; it is never interpreted as an empty node. Missing verification material seals an identified request as `failed/verify/ARTIFACT_INVALID`; malformed or unidentifiable records remain in place.
 
-The journal claim, status and wire result carry `source: "installer"` (contract revision 13). UUIDv5 binds the release id, manifest hash, canonical pending-record hash (including `manifest_path`, `request_id` and unknown fields) and incarnation; attempt is 1. Identical replay does not reapply; a new installer invocation's `request_id` creates new work. Local jobs use the accepted update generation, or 1 when absent, without advancing the central fence. Policy generation is the already-applied generation, or 0 before policy. Publication intent is preserved (disabled when absent). Verified current/last-good releases may be rollback candidates, but installer outcomes keep member forwarding blocked until a valid desired state authorizes serving.
+The journal claim, status and wire result carry `source: "installer"` (contract revision 13). D-110 uses `internal/installerjob.ID(release_id, manifest_sha256, incarnation_id)`; attempt is 1. This UUIDv5 identity binds only the release, canonical manifest digest and authenticated incarnation. Paths and request IDs do not create additional jobs. The full canonical pending-record digest (including `manifest_path`, `request_id` and unknown fields) remains the local integrity and cleanup check. Identical replay does not reapply or reseal; changing a record for an existing identity is refused. Legacy local claims and acknowledged receipt history retain their original identities. Local jobs use the accepted update generation, or 1 when absent, without advancing the central fence. Policy generation is the already-applied generation, or 0 before policy. Publication intent is preserved (disabled when absent). Verified current/last-good releases may be rollback candidates, but installer outcomes keep member forwarding blocked until a valid desired state authorizes serving.
+
+The `upgrade` staging command is owned by `packaging/installer/upgrade.go`, dispatched by `packaging/installer/cmd/fvpn-node-install/main.go`. F9-05 requires that lane to compare installed and requested release sequences before writing staging files, returning `DOWNGRADE` / exit 1 for a lower sequence. The updater CLI has no `upgrade` subcommand.
 
 The terminal job and pending-file cleanup obligation commit together. Then the matching record is renamed to `pending-release.<state>.json` and its parent directory is fsynced. Recovery retries cleanup without another apply/result. The canonical record hash prevents an old completion from consuming a newly staged request.
 
-Local success remains distinct from central acceptance. Until fleet-update supports installer evidence, HTTP 404 `RESOURCE_NOT_FOUND` for a result with `source: installer` stays pending, preserving the exact payload/hash and journal. Each flush sends at most one attempt for that result and durably defers the next attempt with the existing exponential/jitter schedule (200 ms initial, 30 s cap by default). Retryable failure holds later results behind it; no payload is manufactured or rewritten. The log says `central not yet accepting installer evidence`. A 409 `ACK_CONFLICT` is terminal, logged and retained. Source-less/central 404s remain permanent rejections. Central-issued results keep the default central source. Central acceptance of installer results is a separate fleet-update deliverable.
+Local success remains distinct from central acceptance. Central accepts eligible installer evidence under D-110/D-111. Against an older deployment or before release registration, HTTP 404 `RESOURCE_NOT_FOUND` for a result with `source: installer` stays pending, preserving the exact payload/hash and journal. Each flush sends at most one attempt for that result and durably defers the next attempt with the existing exponential/jitter schedule (200 ms initial, 30 s cap by default). Retryable failure holds later results behind it; no payload is manufactured or rewritten. The log says `central not yet accepting installer evidence`. A 409 `ACK_CONFLICT` is terminal, logged and retained. Source-less/central 404s remain permanent rejections. Central-issued results keep the default central source. D-114 handles legacy unaccepted identities as described below.
 
 The lock holder, seed and job claim use the kernel boot id. Configured `boot_id` is only a logged fallback when the kernel value is unavailable; the installer now omits it. A missing desired-state file remains `ErrNoWork`; malformed or unreadable input still fails closed through `GuardSource`.
 
@@ -169,7 +245,7 @@ A currently installed release named by the persisted signed set is unhealthy. Th
 
 When no safe retained release can be restored, the `current` symlink stays where it is (the failed candidate, or the revoked release). Forwarding stays off. The symlink is not moved to an unverified tree.
 
-A failure before services are stopped (for example the metering barrier) is not destructive. The journal ends `rolled_back`, the result state is `failed`, and forwarding follows the publication rule because the old process is still the one that is running. A stop failure is reported as `START_FAILED` with stage `stop_services` (there is no `STOP_FAILED` code) and the rollback is destructive, so `last_good` is started again.
+A failure before services are stopped is not destructive. FileMeter handshake failures follow the stricter retained-baseline, blocked-gate rule above. For other failures, The journal ends `rolled_back`, the result state is `failed`, and forwarding follows the publication rule because the old process is still the one that is running. A stop failure is reported as `START_FAILED` with stage `stop_services` (there is no `STOP_FAILED` code) and the rollback is destructive, so `last_good` is started again.
 
 `Block` failing does not finish the transaction. The stage stays `prepared`, the error is `UPDATE_BUSY`, and the journal still reports forwarding blocked.
 
@@ -262,6 +338,36 @@ snapshot, err := updatejournal.Snapshot(ctx, journalPath)
 
 Generations are compared as unsigned decimal integers without floating point or signed SQLite casts. A newer open job takes precedence over an older terminal result; the older result state and rejection remain separately visible. Acknowledged history retains its result stage. The snapshot describes local durable evidence and never claims central completion.
 
+
+## Legacy installer outbox receipts (D-114)
+
+Before upload, an unaccepted `source: installer` receipt is compared with the
+D-110 derivation of its own release, manifest digest and incarnation. For the
+locally reproducible JSON/hash seal, the updater atomically queues a replacement
+with the derived job ID, corresponding deterministic result ID and new payload
+hash. Every other JSON member, including timestamps, health, checkpoint and
+null/absent distinctions, is preserved. The new result ID also avoids reusing an
+HTTP idempotency key previously sent with different bytes.
+
+The original outbox row remains byte-for-byte as retired diagnostic evidence
+(`status: rejected`, `last_error: installer_job_id_rederived`); an existing-journal
+metadata link records its replacement result ID. This is local retirement, not a
+central rejection or acceptance. Local job/transaction claims stay unchanged.
+Replacement insertion, retirement and the audit link commit together. Recovery
+still finds the original seal and cannot recreate it. The new pending seal is
+replayed identically across restart until ACK, then moves to history. Existing
+D-110 seals and acknowledged legacy history are never re-derived.
+
+An unknown JSON member may bind an external seal the updater cannot reproduce.
+That receipt keeps its original bytes for submission. Likewise, a legacy receipt
+cannot overwrite an already occupied D-110 identity. HTTP 409 `STATE_CONFLICT`
+with `details.reason: job_id_mismatch` is terminal: the updater retains the seal,
+HTTP/API/reason and attempt count as rejected evidence, removes it from the
+pending queue, and never retries it, including after restart. Ordinary 409
+`ACK_CONFLICT` remains terminal too. No server message or arbitrary detail is
+stored. Pending-file consumption remains the terminal job's durable cleanup
+obligation, separate from central acceptance. Corrupt local hashes fail closed.
+
 ## Download and verify (§13.4)
 
 The manifest hash is the SHA-256 of the canonical JSON of the whole envelope. The artifact hash is the raw file. `.partial.meta` is written when the `200` or `206` headers arrive, before the body, so an interrupted download still resumes with `If-Range`. A partial download resumes only when the content hash is unchanged and the server's range agrees with the bytes already stored. A `206` whose `ETag` differs from the ETag stored in `.partial.meta` is not appended: the partial is deleted and the attempt fetches the object again from byte zero. A `200` response to a `Range` request is the full representation (RFC 9110 §13.1.5, or a server that ignores `Range`): that body replaces the partial, the download does not fail with `ARTIFACT_INVALID`, and a body that still does not match costs at most one content retry. When `Content-Length` is known, the bytes written must equal it (`200`) or the prior offset plus it (`206`). A changed body deletes the partial and downloads the whole file again. One content retry is allowed. A second hash or signature failure is permanent and is not retried. Network errors use bounded backoff with full jitter. The default budget (待實測) is 5 attempts, 200 ms initial, 30 s cap, 60 s per attempt. Manifest downloads are capped at `canonjson.MaxBytes` (1 MiB).
@@ -269,6 +375,8 @@ The manifest hash is the SHA-256 of the canonical JSON of the whole envelope. Th
 Verification checks the release trust store, both Ubuntu 24.04 architectures (`amd64` and `arm64`, `tar.zst`), this node's artifact, size, SHA-256, control API major, policy schema, usage schema, state schema, minimum updater version and the disk reserve (`artifact + installed size + required_free_bytes` on the releases filesystem, and the artifact size on the staging filesystem). A duplicate matching platform entry is `VALIDATION_FAILED`. `product_version` is display only. `minimum_updater_version` is SemVer 2.0.0: three numeric components, no leading zeros, build metadata ignored, and a pre-release is older than the same core without one. `1.10.0` is newer than `1.9.0`. `1.0.0-alpha.1` is older than `1.0.0`.
 
 URLs must be `https`. Loopback, link-local, multicast, unspecified, private (RFC 1918 and IPv6 ULA), CGNAT (`100.64.0.0/10`) and the metadata host names are refused. `allow_loopback` is the test exception and permits loopback only. The same check runs on every address `DialContext` resolves, so a public name that answers with a private address is refused (D-034f). An entry in `allowed_artifact_origins` exempts a URL from the private and CGNAT checks only when the scheme, host and effective port are equal (D-046). The effective port of a URL or entry without an explicit port is the scheme default: 443 for https and 80 for http. The connection is pinned to the first resolved address of that host. Every other origin keeps the guard.
+
+F9-02 fixes extraction modes independently of process umask: the extraction root and nested directories are explicitly 0755; regular files explicitly receive the archive permission bits (zero retains the existing 0644 default). This includes implicitly created parent directories. Installer extraction and seed verification share this extractor, so umasks 022 and 077 produce the same tree and hash. Seed still rejects mode drift. Trees previously installed with umask-filtered permissions must be restored from the verified archive by the installer before seeding; seed does not silently rewrite or ignore their permissions.
 
 Extraction accepts regular files and directories only (D-047). It rejects absolute paths, `..`, NUL, backslash, device files, fifos, sockets, hard links, symlinks (including a relative symlink inside the tree), every other member type, setuid/setgid/sticky modes, more than 4096 members, and any path that overlaps identity, state or the journal. A directory entry that cleans to `.` (`./` from `tar -C dir -cf … .`) is the archive root. Any `.` or `..` segment other than that archive-root `./` is rejected, including a `..` that `path.Clean` would fold back inside the tree. `MaxBytes` caps the sum of extracted regular-file bytes (`installed_size_bytes`). The decompressed tar stream is capped separately at `MaxBytes + MaxEntries*8KiB + 2KiB + 1`: 8KiB per member covers a PAX header, the 512-byte ustar header and block padding, and 2KiB covers the two 512-byte end blocks, each with margin. `fvpn-release` rejects symlinks, hard links and devices at pack time, so that failure happens on the build machine. Overlap is symmetric and is checked before the release directory is removed. Nothing in the archive is executed. The updater's own `current` symlink stays outside the release tree.
 
@@ -306,7 +414,7 @@ Identity and the usage outbox are not rewritten by the update or the rollback (�
 - Signed `revoked_release_ids` on a verified desired-state envelope (revision 3) are persisted as a monotonic union in the journal. An id is never removed (§17.2). The member is accepted only when `config_generation` is not older than the last applied generation; an older generation is `STALE_GENERATION` and does not shrink the set or return a revoked release to service (§13.4, §15.3). An absent member does not update the signed set. An empty member adds nothing and does not clear it. The updater never installs a revoked release, never selects one as a rollback target, and does not let one pass the forwarding gate. A signed-revoked current release stops member forwarding immediately (`recovery_required`). An update job whose intent release is not revoked still downloads, verifies, installs and health-checks that release; serving resumes only after those checks. When there is no such job, or the intent release is itself revoked, the node rolls back to the newest retained release that is not revoked, or stays in `recovery_required` with forwarding blocked. A later job for a non-revoked release can still rescue it.
 - `policy_generation` is the desired-state `config_generation` actually applied when the result was produced (D-043, §13.10.3). It is not the update job generation and not a desired state that was only received. A result is not posted before that generation is known. A superseded job keeps the generation it applied, not a newer generation accepted for a later job.
 - When no safe retained release can be restored, `current` stays on the failed candidate or the revoked release, the symlink is never moved to an unverified tree, and members stay blocked. Confirmed.
-- A checkpoint failure before `stop_services` ends as `rolled_back`/`failed` without blocking members, because nothing destructive happened. Confirmed: §13.9 step 4 applies only after the destructive stage.
+- FileMeter handshake failure before `stop_services` retains the baseline without restarting it, seals `rolled_back`/`failed`, and keeps forwarding blocked (follow-up 16, §13.6 step 8).
 - Toolchain 1.27.3 arrives in a separate orchestrator task (decision D-014). Keep `GOTOOLCHAIN=local` and `go.mod` at 1.27.1.
 - D-034a. Release archives contain regular files and directories only. `ExtractArchive` rejects symlinks, hard links and every other member type. `fsutil.TreeHash` returns an error on a symlink. The `current` pointer stays a symlink outside the tree.
 - D-034b. Publication intent and the forwarding-blocked state are one journal record, written in the same step that changes them. `reapplyPublication` and `BlocksForwarding` read that record, not a stale `LastTxn`. `maybeAlreadyCurrent` does not short-circuit when `current` is not `last_good`, when forwarding is blocked, or when the last terminal outcome is `failed`, `rolled_back` or `recovery_required`. A manifest, compatibility or serving-list failure blocks the gate before it returns. Outcome `failed` is blocking. There is no `failed` stage.

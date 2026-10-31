@@ -171,6 +171,7 @@ func TestAT20_D054_LabFeedAllowAndWithdraw(t *testing.T) {
 
 func startResolver(t *testing.T, prefix, which, user, state, httpPort, dnsPort string) {
 	t.Helper()
+	waitIntegrationSlot(t)
 	docker(t, "run", "-d",
 		"--name", prefix+"-"+which,
 		"--network", prefix+"-net",

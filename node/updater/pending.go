@@ -7,12 +7,14 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
 	"strings"
 	"syscall"
 
+	"github.com/TED-H-com/Freedom-VPN/internal/installerjob"
 	"github.com/TED-H-com/Freedom-VPN/node/internal/updatejournal"
 	"github.com/TED-H-com/Freedom-VPN/node/updater/fsutil"
 	"github.com/TED-H-com/Freedom-VPN/packaging/release"
@@ -35,7 +37,7 @@ const SourceInstaller = "installer"
 // release_id, manifest_sha256, artifact_path, tree_path, updater_command,
 // manifest_path and a fresh request_id. The retained envelope is Verified.Raw,
 // mode 0600 under update-staging. Inline manifest remains supported. Unknown
-// fields, including request_id, participate in canonical request identity.
+// fields, including request_id, participate in the local integrity digest.
 // tree_path is not installed. updater_command is not executed.
 type PendingRelease struct {
 	ReleaseID      string          `json:"release_id,omitempty"`
@@ -65,13 +67,36 @@ func (e *Engine) ApplyPending(ctx context.Context, path string) error {
 	}
 	return e.withLock(ctx, func() error {
 		// Recovery may seal this very pending job and consume its record.
+		rec, readErr := readPending(path)
 		_, before := os.Lstat(path)
 		recovered := e.recoverLocked(ctx)
 		if recovered != nil && !errors.Is(recovered, ErrMembersBlocked) {
 			return recovered
 		}
-		if err := e.applyPendingLocked(ctx, path, before != nil); err != nil {
-			return err
+		applyErr := e.applyPendingLocked(ctx, path, before != nil)
+		// Recovery can finish and consume this record before apply sees it.
+		// Report that exact job's sealed failure, never an unrelated snapshot.
+		releaseID, parseErr := uuid.Parse(rec.ReleaseID)
+		if readErr == nil && parseErr == nil {
+			job, err := e.Journal.InstallerJob(ctx, releaseID.String(), rec.ManifestSHA256, e.Node.Incarnation.String())
+			if err != nil && !errors.Is(err, updatejournal.ErrNotFound) {
+				return err
+			}
+			if job.Phase == updatejournal.JobDone && job.Outcome == string(api.UpdateResultStateFailed) {
+				c, err := decodeClaimed(job.IntentJSON)
+				if err != nil {
+					return err
+				}
+				if c.PendingSHA256 == rec.digest && c.PendingPath == path {
+					if errors.Is(recovered, ErrMembersBlocked) {
+						return fmt.Errorf("updater: installer outcome=%s (%s): %w", job.Outcome, job.ErrorCode, ErrMembersBlocked)
+					}
+					return permanent(apierr.Code(job.ErrorCode), fmt.Sprintf("installer outcome=%s", job.Outcome))
+				}
+			}
+		}
+		if applyErr != nil {
+			return applyErr
 		}
 		if errors.Is(recovered, ErrMembersBlocked) {
 			blocked, _ := e.Journal.BlocksForwarding(ctx)
@@ -128,14 +153,13 @@ func (e *Engine) applyPendingBody(ctx context.Context, path string) (string, err
 		return "", err
 	}
 	c.PendingSHA256 = rec.digest
-	// Content changes (for example, supplying a previously missing manifest)
-	// are a new local request. Replays of the same record remain idempotent.
-	c.Intent.JobId = uuid.NewSHA1(c.Intent.JobId, []byte(rec.digest+"|"+e.Node.Incarnation.String()))
 	jobID := c.Intent.JobId.String()
 	// Reuse the original claim rather than a new generation or boot result.
 	// A retry must use the same intent and result bytes after a restart.
-	stored, err := e.Journal.GetJob(ctx, jobID, 1)
+	stored, err := e.Journal.InstallerJob(ctx, releaseID.String(), rec.ManifestSHA256, e.Node.Incarnation.String())
 	if err == nil {
+		// Keep legacy local claims and accepted history under their original ID.
+		jobID = stored.JobID
 		c, err = decodeClaimed(stored.IntentJSON)
 		if err != nil {
 			return jobID, err
@@ -273,7 +297,7 @@ func (e *Engine) installerClaim(ctx context.Context, path string, releaseID uuid
 			Intent: api.UpdateIntent{
 				Attempt:    1,
 				Generation: gen, IncarnationId: e.Node.Incarnation,
-				IssuedAt: now, JobId: installerJobID(releaseID.String(), manifestSHA),
+				IssuedAt: now, JobId: installerjob.ID(releaseID, manifestSHA, e.Node.Incarnation),
 				ManifestSha256: strings.ToLower(manifestSHA),
 				NodeId:         e.Node.ID, PublicationIntent: intent, ReleaseId: releaseID,
 				BatchId:  presence.NewNullNullable[uuid.UUID](),
@@ -289,11 +313,6 @@ func (e *Engine) installerClaim(ctx context.Context, path string, releaseID uuid
 		BootID: e.Node.BootID, StateSchema: e.Platform.StateSchema,
 		Source: SourceInstaller, PendingPath: path,
 	}, nil
-}
-
-func installerJobID(releaseID, manifestSHA string) uuid.UUID {
-	name := "fvpn-installer-apply|" + strings.ToLower(releaseID) + "|" + strings.ToLower(manifestSHA)
-	return uuid.NewSHA1(uuid.NameSpaceOID, []byte(name))
 }
 
 func (e *Engine) installerGeneration(ctx context.Context) (decstr.U64, error) {

@@ -12,6 +12,7 @@ import json
 from pathlib import Path
 import re
 import statistics
+import sys
 
 
 def json_rows(path):
@@ -64,16 +65,142 @@ def guards(rows):
     return out
 
 
+def matching_guards(at, windows):
+    if at is None:
+        return []
+    return [w for w in windows if int(w['install_start']['wall_ns']) - 2_000
+            <= at <= int(w['release_end']['wall_ns']) + 2_000]
+
+
 def position(at, windows):
     if at is None:
         return 'unobserved', None
-    for w in windows:
-        if int(w['install_end']['wall_ns']) + 2_000 <= at <= int(w['release_start']['wall_ns']) - 2_000:
-            return 'inside', w['generation']
-    for w in windows:
-        if int(w['install_start']['wall_ns']) - 2_000 <= at <= int(w['release_end']['wall_ns']) + 2_000:
-            return 'boundary', w['generation']
-    return 'outside', None
+    matches = matching_guards(at, windows)
+    if len(matches) > 1:
+        return 'ambiguous', None
+    if not matches:
+        return 'outside', None
+    w = matches[0]
+    inside = int(w['install_end']['wall_ns']) + 2_000 <= at <= int(w['release_start']['wall_ns']) - 2_000
+    return ('inside' if inside else 'boundary'), w['generation']
+
+
+def classify_d120(datagrams, windows, tcp_errors=(), evidence_errors=(), reloads=100):
+    """Pure D-120 verdict. No I/O, retries, inferred ingress or missing-data pass.
+
+    The harness separately proves complete sidecar/capture coverage and the
+    fixed 100-reload campaign. Per-loss failures include global (iv)/(v).
+    """
+    errors = list(evidence_errors)
+    if reloads != 100:
+        errors.append('campaign: requires 100 reloads')
+    if not datagrams:
+        errors.append('evidence: no datagrams')
+    if tcp_errors:
+        errors.append('(iv): TCP failure: ' + ', '.join(tcp_errors))
+    def success(d):
+        return bool(d.get('read') and d['read'].get('outcome') == 'ok'
+                    and d['read'].get('response_matches') is True)
+    losses = [d for d in datagrams if not success(d)]
+    if len(losses) > 5:
+        errors.append('(v): more than 5 UDP losses per 100 reloads')
+    rows = []
+    for idx, d in enumerate(datagrams):
+        if success(d):
+            continue
+        failures = []
+        ingress = d.get('stages', {}).get('node_ingress')
+        at = ingress['wall_ns'] if ingress else None
+        pos, _ = position(at, windows)
+        matches = matching_guards(at, windows)
+        w = matches[0] if len(matches) == 1 else None
+        if pos not in ('inside', 'boundary'):
+            failures.append('(i): ' + pos)
+        if not d.get('send') or not d.get('read'):
+            failures.append('evidence: missing sidecar send/read')
+        elif d['read'].get('outcome') != 'TimeoutError':
+            failures.append('UDP failure is not a lost echo (timeout)')
+        if w:
+            if w.get('verified') is not True:
+                failures.append('(i): Apply not verified')
+            if not 0 <= w['upper_ns'] <= 100_000_000:
+                failures.append('(ii): guard upper bound > 100 ms or invalid')
+            if not 0 <= w['render_to_installed_ns'] <= 100_000_000:
+                failures.append('(ii): render-to-installed > 100 ms or invalid')
+        next_d = datagrams[idx + 1] if idx + 1 < len(datagrams) else None
+        next_result = 'ok' if next_d and success(next_d) else ('missing' if next_d is None else 'failed')
+        if next_result != 'ok':
+            failures.append('(iii): next datagram ' + next_result)
+        if tcp_errors:
+            failures.append('(iv): TCP failure in run')
+        if len(losses) > 5:
+            failures.append('(v): more than 5 UDP losses per 100 reloads')
+        rows.append(dict(sequence=d['sequence'], generation=w['generation'] if w else None,
+                         bracket_start_ns=w['install_start']['wall_ns'] if w else None,
+                         bracket_end_ns=w['release_end']['wall_ns'] if w else None,
+                         upper_ns=w['upper_ns'] if w else None,
+                         render_to_installed_ns=w['render_to_installed_ns'] if w else None,
+                         classification=pos, next_datagram=next_result, failures=failures))
+    passed = not errors and not any(r['failures'] for r in rows)
+    return dict(passed=passed, verdict='AT10 PASS under D-120' if passed else 'AT10 FAIL',
+                reloads=reloads, udp_losses=len(losses), errors=errors, losses=rows)
+
+
+def acceptance_evidence(result, stream_log):
+    """Cross-check sidecar against the independently retained text verdicts."""
+    events, windows, ds = result['events'], result['windows'], result['datagrams']
+    errors, tcp_errors = [], []
+    ends = [e for e in events if e['event'] == 'trace_end']
+    if len(ends) != 1 or events[-1] != ends[0]:
+        errors.append('evidence: missing final sidecar boundary')
+    n = ends[0]['sequence'] if len(ends) == 1 else 0
+    logs = [line.split(' ', 1)[1] for line in stream_log.splitlines() if ' ' in line]
+    if not logs or logs[0] != 'up' or len(logs) - 1 < n:
+        errors.append('evidence: missing stream text verdicts')
+    if [w['generation'] for w in windows] != [str(g) for g in range(1000, 1101)]:
+        errors.append('evidence: requires initial Apply and generations 1001..1100')
+    if any(not w['verified'] for w in windows):
+        errors.append('evidence: unverified Apply')
+    expected = []
+    for seq in range(1, n + 1):
+        group = [e for e in events if e['sequence'] == seq and e['event'] != 'trace_end']
+        kinds = [e['event'] for e in group]
+        if kinds not in (['tcp_send', 'tcp_read', 'udp_send', 'udp_read'], ['tcp_send', 'tcp_read']):
+            errors.append(f'evidence: incomplete/duplicate sequence {seq}')
+            continue
+        tcp = group[1]
+        if tcp.get('outcome') or tcp.get('size', 0) <= 0:
+            reason = tcp.get('outcome', 'tcp-eof')
+            tcp_errors.append(f'{seq}:{reason}')
+            expected.append('fail ' + reason)
+        elif len(group) != 4:
+            errors.append(f'evidence: missing UDP record {seq}')
+        else:
+            read = group[3]
+            expected.append('ok' if read.get('outcome') == 'ok' else 'fail ' + read.get('outcome', 'missing'))
+    if any(e['sequence'] < 1 or e['sequence'] > n for e in events):
+        errors.append('evidence: sequence outside sidecar boundary')
+    if logs[1:n+1] != expected:
+        errors.append('evidence: text/sidecar verdict mismatch')
+    for d in ds:
+        if not d['stages']['node_ingress'] or not d['stages']['origin_egress']:
+            errors.append(f'evidence: missing trace record {d["sequence"]}')
+    if result['summary']['incomplete_udp_reads']:
+        errors.append('evidence: incomplete UDP reads')
+    return classify_d120(ds, windows, tcp_errors, errors)
+
+
+def verdict_table(verdict):
+    lines = [verdict['verdict'],
+             'datagram | generation | bracket start ns | bracket end ns | upper ms | render-installed ms | classification | next datagram | failures']
+    for r in verdict['losses']:
+        upper = f"{r['upper_ns']/1e6:.6f}" if r['upper_ns'] is not None else '-'
+        render = f"{r['render_to_installed_ns']/1e6:.6f}" if r['render_to_installed_ns'] is not None else '-'
+        lines.append(f"{r['sequence']} | {r['generation']} | {r['bracket_start_ns']} | {r['bracket_end_ns']} | {upper} | {render} | {r['classification']} | {r['next_datagram']} | {', '.join(r['failures']) or 'none'}")
+    if not verdict['losses']:
+        lines.append('(no UDP losses)')
+    lines.extend(verdict['errors'])
+    return '\n'.join(lines) + '\n'
 
 
 def distribution(values):
@@ -145,7 +272,7 @@ def analyze(stream, apply, trace_base):
                    max_wall_mono_elapsed_difference_ns=max(abs(
                        (int(w['apply_end']['wall_ns'])-int(w['apply_start']['wall_ns']))-
                        (int(w['apply_end']['mono_ns'])-int(w['apply_start']['mono_ns']))) for w in windows))
-    return dict(test_only=True, summary=summary, windows=windows, datagrams=datagrams)
+    return dict(test_only=True, summary=summary, windows=windows, datagrams=datagrams, events=events)
 
 
 if __name__ == '__main__':
@@ -154,7 +281,21 @@ if __name__ == '__main__':
     p.add_argument('--apply', type=Path, required=True)
     p.add_argument('--trace-base', type=Path, required=True)
     p.add_argument('--output', type=Path, required=True)
+    p.add_argument('--d120', action='store_true')
+    p.add_argument('--stream-log', type=Path)
     args = p.parse_args()
-    result = analyze(args.stream, args.apply, args.trace_base)
+    try:
+        result = analyze(args.stream, args.apply, args.trace_base)
+        if args.d120:
+            if args.stream_log is None:
+                raise ValueError('D-120 requires the stream text verdict log')
+            result['d120'] = acceptance_evidence(result, args.stream_log.read_text())
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        if not args.d120:
+            raise
+        result = dict(d120=classify_d120([], [], evidence_errors=[f'evidence: {exc}']))
     args.output.write_text(json.dumps(result, indent=2) + '\n')
+    if args.d120:
+        print(verdict_table(result['d120']), end='')
+        sys.exit(0 if result['d120']['passed'] else 1)
     print(json.dumps(result['summary'], indent=2))

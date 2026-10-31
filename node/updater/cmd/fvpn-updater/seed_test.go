@@ -29,6 +29,39 @@ func TestD089_SeedCLIAndStatus(t *testing.T) {
 			t.Fatalf("usage: %v code=%d %s", args, code, &stderr)
 		}
 	}
+	lay, cfg, tree, releaseID, args := seedCLIInputs(t)
+	for range 2 {
+		var out, stderr bytes.Buffer
+		if code := run(args, &out, &stderr); code != 0 {
+			t.Fatalf("seed: %d %s", code, &stderr)
+		}
+	}
+	var out, stderr bytes.Buffer
+	if code := run([]string{"status", "--config", cfg}, &out, &stderr); code != 0 {
+		t.Fatalf("status: %d %s", code, &stderr)
+	}
+	var snapshot updatejournal.SnapshotState
+	if err := json.Unmarshal(out.Bytes(), &snapshot); err != nil || snapshot.SeededBaseline == nil || snapshot.SeededBaseline.ReleaseID != releaseID || snapshot.JobID != "" || snapshot.LastGoodRelease != "" {
+		t.Fatalf("seed not visible: %s %v", &out, err)
+	}
+	boot, err := os.ReadFile("/proc/sys/kernel/random/boot_id")
+	if err != nil || snapshot.SeededBaseline.BootID != strings.TrimSpace(string(boot)) {
+		t.Fatalf("seed boot: %+v %v", snapshot.SeededBaseline, err)
+	}
+	if err := os.WriteFile(filepath.Join(tree, "extra"), []byte("extra"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if code := run(args, &out, &stderr); code != 1 || !strings.Contains(stderr.String(), "HASH_MISMATCH") {
+		t.Fatalf("unverified seed: %d %s", code, &stderr)
+	}
+	after, err := updatejournal.Snapshot(context.Background(), filepath.Join(lay.Journal, updatejournal.FileName))
+	if err != nil || *after.SeededBaseline != *snapshot.SeededBaseline {
+		t.Fatal("refusal replaced baseline", err)
+	}
+}
+
+func seedCLIInputs(t *testing.T) (updater.Layout, string, string, string, []string) {
+	t.Helper()
 	root := t.TempDir()
 	fx, err := installer.BuildReleaseFixture(root, "../../../../deploy/node/systemd", uuid.NewString(), "1", map[string][]byte{"fvpn-agent": []byte("TEST ONLY fixture")})
 	if err != nil {
@@ -80,32 +113,5 @@ func TestD089_SeedCLIAndStatus(t *testing.T) {
 	cfg := filepath.Join(root, "updater.json")
 	writeCLIConfig(t, cfg, lay, fx.Trust, filepath.Join(root, "desired.json"), uuid.Nil)
 	args := []string{"seed", "--config", cfg, "--manifest", fx.Manifest, "--tree", tree}
-	for range 2 {
-		var out, stderr bytes.Buffer
-		if code := run(args, &out, &stderr); code != 0 {
-			t.Fatalf("seed: %d %s", code, &stderr)
-		}
-	}
-	var out, stderr bytes.Buffer
-	if code := run([]string{"status", "--config", cfg}, &out, &stderr); code != 0 {
-		t.Fatalf("status: %d %s", code, &stderr)
-	}
-	var snapshot updatejournal.SnapshotState
-	if err := json.Unmarshal(out.Bytes(), &snapshot); err != nil || snapshot.SeededBaseline == nil || snapshot.SeededBaseline.ReleaseID != fx.ReleaseID || snapshot.JobID != "" || snapshot.LastGoodRelease != "" {
-		t.Fatalf("seed not visible: %s %v", &out, err)
-	}
-	boot, err := os.ReadFile("/proc/sys/kernel/random/boot_id")
-	if err != nil || snapshot.SeededBaseline.BootID != strings.TrimSpace(string(boot)) {
-		t.Fatalf("seed boot: %+v %v", snapshot.SeededBaseline, err)
-	}
-	if err := os.WriteFile(filepath.Join(tree, "extra"), []byte("extra"), 0o600); err != nil {
-		t.Fatal(err)
-	}
-	if code := run(args, &out, &stderr); code != 1 || !strings.Contains(stderr.String(), "HASH_MISMATCH") {
-		t.Fatalf("unverified seed: %d %s", code, &stderr)
-	}
-	after, err := updatejournal.Snapshot(context.Background(), filepath.Join(lay.Journal, updatejournal.FileName))
-	if err != nil || *after.SeededBaseline != *snapshot.SeededBaseline {
-		t.Fatal("refusal replaced baseline", err)
-	}
+	return lay, cfg, tree, fx.ReleaseID, args
 }

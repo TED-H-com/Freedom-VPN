@@ -1,0 +1,102 @@
+reconnect-v4-1500-v4
+ result: {"bytes": 64064, "connected": true, "elapsed_ms": 2.807, "error": "", "expected": 64064, "family": 4, "matches": true, "socket_mss": 1368}
+  member PMTU errors: none MSS: fv-wg0:In:S.=1460,fv-wg0:Out:S=1380
+  node PMTU errors: none MSS: fv-fh:In:S=1380,fv-fh:Out:S.=1460,fv-ih:In:S.=1460,fv-ih:Out:S=1380
+  origin PMTU errors: none MSS: fv-ii:In:S=1380,fv-ii:Out:S.=1460
+ nft delta: {"d_019a00000000700080000000000000a1": {"bytes": 66932, "packets": 55}, "u_019a00000000700080000000000000a1": {"bytes": 68388, "packets": 80}}
+ tc delta: {"fv-fh": {"1:1": {"bytes": 67744, "dropped": 0, "packets": 56}, "1:2f": {"bytes": 67702, "dropped": 0, "packets": 55}, "1:fffe": {"bytes": 42, "dropped": 0, "packets": 1}}, "fv-ih": {"1:1": {"bytes": 69550, "dropped": 0, "packets": 81}, "1:2f": {"bytes": 69508, "dropped": 0, "packets": 80}, "1:fffe": {"bytes": 42, "dropped": 0, "packets": 1}}}
+reconnect-v6-1500-v6
+ result: {"bytes": 0, "connected": false, "elapsed_ms": 12011.962, "error": "TimeoutError", "expected": 64064, "family": 6, "matches": true, "socket_mss": null}
+  member PMTU errors: none MSS: fv-wg0:Out:S=1360
+  node PMTU errors: none MSS: fv-fh:In:S=1360
+ nft delta: {"ctv6": {"bytes": 640, "packets": 8}}
+ tc delta: {"fv-fh": {}, "fv-ih": {"1:1": {"bytes": 42, "dropped": 0, "packets": 1}, "1:fffe": {"bytes": 42, "dropped": 0, "packets": 1}}}
+reconnect-dual-1500-v4
+ result: {"bytes": 64064, "connected": true, "elapsed_ms": 2.463, "error": "", "expected": 64064, "family": 4, "matches": true, "socket_mss": 1368}
+  member PMTU errors: none MSS: fv-wg0:In:S.=1460,fv-wg0:Out:S=1380
+  node PMTU errors: none MSS: fv-fh:In:S=1380,fv-fh:Out:S.=1460,fv-ih:In:S.=1460,fv-ih:Out:S=1380
+  origin PMTU errors: none MSS: fv-ii:In:S=1380,fv-ii:Out:S.=1460
+ nft delta: {"d_019a00000000700080000000000000a1": {"bytes": 67556, "packets": 67}, "u_019a00000000700080000000000000a1": {"bytes": 67400, "packets": 64}}
+ tc delta: {"fv-fh": {"1:1": {"bytes": 68494, "dropped": 0, "packets": 67}, "1:2f": {"bytes": 68494, "dropped": 0, "packets": 67}}, "fv-ih": {"1:1": {"bytes": 68296, "dropped": 0, "packets": 64}, "1:2f": {"bytes": 68296, "dropped": 0, "packets": 64}}}
+reconnect-dual-1500-v6
+ result: {"bytes": 0, "connected": false, "elapsed_ms": 12003.26, "error": "TimeoutError", "expected": 64064, "family": 6, "matches": true, "socket_mss": null}
+  member PMTU errors: none MSS: fv-wg0:Out:S=1360
+  node PMTU errors: none MSS: fv-fh:In:S=1360
+ nft delta: {"ctv6": {"bytes": 640, "packets": 8}}
+ tc delta: {"fv-fh": {}, "fv-ih": {}}
+reconnect-dual-1280-v4
+ result: {"bytes": 64064, "connected": true, "elapsed_ms": 2.899, "error": "", "expected": 64064, "family": 4, "matches": true, "socket_mss": 1228}
+  member PMTU errors: none MSS: fv-wg0:In:S.=1240,fv-wg0:Out:S=1380
+  node PMTU errors: none MSS: fv-fh:In:S=1380,fv-fh:Out:S.=1240,fv-ih:In:S.=1240,fv-ih:Out:S=1380
+  origin PMTU errors: none MSS: fv-ii:In:S=1380,fv-ii:Out:S.=1240
+ nft delta: {"d_019a00000000700080000000000000a1": {"bytes": 67348, "packets": 63}, "u_019a00000000700080000000000000a1": {"bytes": 67764, "packets": 71}}
+ tc delta: {"fv-fh": {"1:1": {"bytes": 68230, "dropped": 0, "packets": 63}, "1:2f": {"bytes": 68230, "dropped": 0, "packets": 63}}, "fv-ih": {"1:1": {"bytes": 68758, "dropped": 0, "packets": 71}, "1:2f": {"bytes": 68758, "dropped": 0, "packets": 71}}}
+reconnect-dual-1280-v6
+ result: {"bytes": 0, "connected": false, "elapsed_ms": 12012.262, "error": "TimeoutError", "expected": 64064, "family": 6, "matches": true, "socket_mss": null}
+  member PMTU errors: none MSS: fv-wg0:Out:S=1360
+  node PMTU errors: none MSS: fv-fh:In:S=1360
+ nft delta: {"ctv6": {"bytes": 640, "packets": 8}}
+ tc delta: {"fv-fh": {"1:1": {"bytes": 42, "dropped": 0, "packets": 1}, "1:fffe": {"bytes": 42, "dropped": 0, "packets": 1}}, "fv-ih": {}}
+steady-1280-v4
+ result: {"bytes": 64064, "connected": true, "elapsed_ms": 4.392, "error": "", "expected": 64064, "family": 4, "matches": true, "socket_mss": 1228}
+  member PMTU errors: none MSS: fv-wg0:In:S.=1240,fv-wg0:Out:S=1380
+  node PMTU errors: none MSS: fv-fh:In:S=1380,fv-fh:Out:S.=1240,fv-ih:In:S.=1240,fv-ih:Out:S=1380
+  origin PMTU errors: none MSS: fv-ii:In:S=1380,fv-ii:Out:S.=1240
+ nft delta: {"d_019a00000000700080000000000000a1": {"bytes": 67660, "packets": 69}, "u_019a00000000700080000000000000a1": {"bytes": 67348, "packets": 63}}
+ tc delta: {"fv-fh": {"1:1": {"bytes": 68626, "dropped": 0, "packets": 69}, "1:2f": {"bytes": 68626, "dropped": 0, "packets": 69}}, "fv-ih": {"1:1": {"bytes": 68230, "dropped": 0, "packets": 63}, "1:2f": {"bytes": 68230, "dropped": 0, "packets": 63}}}
+steady-1280-v6
+ result: {"bytes": 0, "connected": false, "elapsed_ms": 12012.298, "error": "TimeoutError", "expected": 64064, "family": 6, "matches": true, "socket_mss": null}
+  member PMTU errors: none MSS: fv-wg0:Out:S=1360
+  node PMTU errors: none MSS: fv-fh:In:S=1360
+ nft delta: {"ctv6": {"bytes": 640, "packets": 8}}
+ tc delta: {"fv-fh": {}, "fv-ih": {"1:1": {"bytes": 42, "dropped": 0, "packets": 1}, "1:fffe": {"bytes": 42, "dropped": 0, "packets": 1}}}
+pmtu-large-v4
+ result: PING 203.0.113.10 (203.0.113.10) 1360(1388) bytes of data. | From 192.0.2.33 icmp_seq=1 Frag needed and DF set (mtu = 1280) |  | --- 203.0.113.10 ping statistics --- | 1 packets transmitted, 0 received, +1 errors, 100% packet loss, time 0ms
+  member PMTU errors: fv-wg0:In MSS: none
+  node PMTU errors: fv-fh:Out MSS: none
+ nft delta: {}
+ tc delta: {"fv-fh": {"1:1": {"bytes": 590, "dropped": 0, "packets": 1}, "1:fffe": {"bytes": 590, "dropped": 0, "packets": 1}}, "fv-ih": {}}
+pmtu-small-v4
+ result: PING 203.0.113.10 (203.0.113.10) 1200(1228) bytes of data. | 1208 bytes from 203.0.113.10: icmp_seq=1 ttl=62 time=5.57 ms |  | --- 203.0.113.10 ping statistics --- | 1 packets transmitted, 1 received, 0% packet loss, time 0ms | rtt min/avg/max/mdev = 5.574/5.574/5.574/0.000 ms
+ nft delta: {"d_019a00000000700080000000000000a1": {"bytes": 1228, "packets": 1}, "u_019a00000000700080000000000000a1": {"bytes": 1228, "packets": 1}}
+ tc delta: {"fv-fh": {"1:1": {"bytes": 1242, "dropped": 0, "packets": 1}, "1:2f": {"bytes": 1242, "dropped": 0, "packets": 1}}, "fv-ih": {"1:1": {"bytes": 1242, "dropped": 0, "packets": 1}, "1:2f": {"bytes": 1242, "dropped": 0, "packets": 1}}}
+pmtu-large-v6
+ result: PING 2001:db8:203::10 (2001:db8:203::10) 1360 data bytes | From fd00:db8:ff::33 icmp_seq=1 Packet too big: mtu=1280 |  | --- 2001:db8:203::10 ping statistics --- | 1 packets transmitted, 0 received, +1 errors, 100% packet loss, time 0ms
+  member PMTU errors: fv-wg0:In MSS: none
+  node PMTU errors: fv-fh:Out MSS: none
+ nft delta: {}
+ tc delta: {"fv-fh": {"1:1": {"bytes": 1294, "dropped": 0, "packets": 1}, "1:fffe": {"bytes": 1294, "dropped": 0, "packets": 1}}, "fv-ih": {}}
+pmtu-small-v6
+ result: PING 2001:db8:203::10 (2001:db8:203::10) 1200 data bytes |  | --- 2001:db8:203::10 ping statistics --- | 1 packets transmitted, 0 received, 100% packet loss, time 0ms
+ nft delta: {"ctv6": {"bytes": 1248, "packets": 1}}
+ tc delta: {"fv-fh": {}, "fv-ih": {}}
+udp-seed-v4
+ result: controlled UDP exchange complete
+ nft delta: {"d_019a00000000700080000000000000a1": {"bytes": 60, "packets": 1}, "u_019a00000000700080000000000000a1": {"bytes": 60, "packets": 1}}
+ tc delta: {"fv-fh": {"1:1": {"bytes": 74, "dropped": 0, "packets": 1}, "1:2f": {"bytes": 74, "dropped": 0, "packets": 1}}, "fv-ih": {"1:1": {"bytes": 74, "dropped": 0, "packets": 1}, "1:2f": {"bytes": 74, "dropped": 0, "packets": 1}}}
+quoted-error-v4-to-member
+ result: {"advertised_mtu": 1280, "direction": "to-member", "family": 4, "injected": true}
+  member PMTU errors: fv-wg0:In MSS: none
+  node PMTU errors: fv-fh:Out,fv-ih:In MSS: none
+  origin PMTU errors: fv-ii:Out MSS: none
+ nft delta: {"d_019a00000000700080000000000000a1": {"bytes": 64, "packets": 1}}
+ tc delta: {"fv-fh": {"1:1": {"bytes": 78, "dropped": 0, "packets": 1}, "1:2f": {"bytes": 78, "dropped": 0, "packets": 1}}, "fv-ih": {}}
+quoted-error-v4-to-origin
+ result: {"advertised_mtu": 1280, "direction": "to-origin", "family": 4, "injected": true}
+  member PMTU errors: fv-wg0:Out MSS: none
+  node PMTU errors: fv-fh:In,fv-ih:Out MSS: none
+  origin PMTU errors: fv-ii:In MSS: none
+ nft delta: {"u_019a00000000700080000000000000a1": {"bytes": 64, "packets": 1}}
+ tc delta: {"fv-fh": {}, "fv-ih": {"1:1": {"bytes": 78, "dropped": 0, "packets": 1}, "1:2f": {"bytes": 78, "dropped": 0, "packets": 1}}}
+quoted-error-v6-to-member
+ result: {"advertised_mtu": 1280, "direction": "to-member", "family": 6, "injected": true}
+  node PMTU errors: fv-ih:In MSS: none
+  origin PMTU errors: fv-ii:Out MSS: none
+ nft delta: {"ctv6": {"bytes": 104, "packets": 1}}
+ tc delta: {"fv-fh": {}, "fv-ih": {"1:1": {"bytes": 86, "dropped": 0, "packets": 1}, "1:fffe": {"bytes": 86, "dropped": 0, "packets": 1}}}
+quoted-error-v6-to-origin
+ result: {"advertised_mtu": 1280, "direction": "to-origin", "family": 6, "injected": true}
+  member PMTU errors: fv-wg0:Out MSS: none
+  node PMTU errors: fv-fh:In MSS: none
+ nft delta: {"ctv6": {"bytes": 104, "packets": 1}}
+ tc delta: {"fv-fh": {}, "fv-ih": {}}

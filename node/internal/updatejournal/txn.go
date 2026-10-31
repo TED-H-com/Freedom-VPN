@@ -386,7 +386,8 @@ const (
 
 // OutboxEntry is a durable, not yet acknowledged update result (§13.6 step
 // 13). Payload is the exact canonical JSON sent on every retry after the
-// one-time PopulateCandidateHealth compatibility update, when needed.
+// one-time compatibility updates (candidate health and D-114 installer identity),
+// when needed. Replaced legacy seals are retained as retired evidence.
 type OutboxEntry struct {
 	Seq            int64
 	ResultID       string

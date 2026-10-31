@@ -1,0 +1,250 @@
+{
+  "node/fv-fh": {
+    "addresses": [
+      {
+        "ifindex": 14,
+        "link_index": 13,
+        "ifname": "fv-fh",
+        "flags": [
+          "BROADCAST",
+          "MULTICAST",
+          "UP",
+          "LOWER_UP"
+        ],
+        "mtu": 1500,
+        "qdisc": "htb",
+        "operstate": "UP",
+        "group": "default",
+        "txqlen": 1000,
+        "link_type": "ether",
+        "address": "b6:10:6d:a5:38:fe",
+        "broadcast": "ff:ff:ff:ff:ff:ff",
+        "link_netnsid": 2,
+        "addr_info": [
+          {
+            "family": "inet",
+            "local": "192.0.2.33",
+            "prefixlen": 30,
+            "scope": "global",
+            "label": "fv-fh",
+            "valid_life_time": 4294967295,
+            "preferred_life_time": 4294967295
+          },
+          {
+            "family": "inet6",
+            "local": "fd00:db8:ff::33",
+            "prefixlen": 64,
+            "scope": "global",
+            "nodad": true,
+            "valid_life_time": 4294967295,
+            "preferred_life_time": 4294967295
+          },
+          {
+            "family": "inet6",
+            "local": "fe80::b410:6dff:fea5:38fe",
+            "prefixlen": 64,
+            "scope": "link",
+            "valid_life_time": 4294967295,
+            "preferred_life_time": 4294967295
+          }
+        ]
+      }
+    ],
+    "neighbors": []
+  },
+  "fv-fwd/fv-ff": {
+    "addresses": [
+      {
+        "ifindex": 13,
+        "link_index": 14,
+        "ifname": "fv-ff",
+        "flags": [
+          "BROADCAST",
+          "MULTICAST",
+          "UP",
+          "LOWER_UP"
+        ],
+        "mtu": 1500,
+        "qdisc": "noqueue",
+        "operstate": "UP",
+        "group": "default",
+        "txqlen": 1000,
+        "link_type": "ether",
+        "address": "02:f0:4c:d1:f8:f8",
+        "broadcast": "ff:ff:ff:ff:ff:ff",
+        "link_netnsid": 5,
+        "addr_info": [
+          {
+            "family": "inet",
+            "local": "192.0.2.34",
+            "prefixlen": 30,
+            "scope": "global",
+            "label": "fv-ff",
+            "valid_life_time": 4294967295,
+            "preferred_life_time": 4294967295
+          },
+          {
+            "family": "inet6",
+            "local": "fd00:db8:ff::34",
+            "prefixlen": 64,
+            "scope": "global",
+            "nodad": true,
+            "valid_life_time": 4294967295,
+            "preferred_life_time": 4294967295
+          },
+          {
+            "family": "inet6",
+            "local": "fe80::f0:4cff:fed1:f8f8",
+            "prefixlen": 64,
+            "scope": "link",
+            "valid_life_time": 4294967295,
+            "preferred_life_time": 4294967295
+          }
+        ]
+      }
+    ],
+    "neighbors": []
+  },
+  "node/fv-ih": {
+    "addresses": [
+      {
+        "ifindex": 16,
+        "link_index": 15,
+        "ifname": "fv-ih",
+        "flags": [
+          "BROADCAST",
+          "MULTICAST",
+          "UP",
+          "LOWER_UP"
+        ],
+        "mtu": 1500,
+        "qdisc": "htb",
+        "operstate": "UP",
+        "group": "default",
+        "txqlen": 1000,
+        "link_type": "ether",
+        "address": "0a:97:2b:37:33:4e",
+        "broadcast": "ff:ff:ff:ff:ff:ff",
+        "link_netnsid": 7,
+        "addr_info": [
+          {
+            "family": "inet",
+            "local": "192.0.2.37",
+            "prefixlen": 30,
+            "scope": "global",
+            "label": "fv-ih",
+            "valid_life_time": 4294967295,
+            "preferred_life_time": 4294967295
+          },
+          {
+            "family": "inet6",
+            "local": "fd00:db8:17::37",
+            "prefixlen": 64,
+            "scope": "global",
+            "nodad": true,
+            "valid_life_time": 4294967295,
+            "preferred_life_time": 4294967295
+          },
+          {
+            "family": "inet6",
+            "local": "fe80::897:2bff:fe37:334e",
+            "prefixlen": 64,
+            "scope": "link",
+            "valid_life_time": 4294967295,
+            "preferred_life_time": 4294967295
+          }
+        ]
+      }
+    ],
+    "neighbors": []
+  },
+  "fv-inet/fv-ii": {
+    "addresses": [
+      {
+        "ifindex": 15,
+        "link_index": 16,
+        "ifname": "fv-ii",
+        "flags": [
+          "BROADCAST",
+          "MULTICAST",
+          "UP",
+          "LOWER_UP"
+        ],
+        "mtu": 1500,
+        "qdisc": "noqueue",
+        "operstate": "UP",
+        "group": "default",
+        "txqlen": 1000,
+        "link_type": "ether",
+        "address": "e2:b3:82:ae:a3:1d",
+        "broadcast": "ff:ff:ff:ff:ff:ff",
+        "link_netnsid": 0,
+        "addr_info": [
+          {
+            "family": "inet",
+            "local": "192.0.2.38",
+            "prefixlen": 30,
+            "scope": "global",
+            "label": "fv-ii",
+            "valid_life_time": 4294967295,
+            "preferred_life_time": 4294967295
+          },
+          {
+            "family": "inet",
+            "local": "203.0.113.10",
+            "prefixlen": 32,
+            "scope": "global",
+            "label": "fv-ii",
+            "valid_life_time": 4294967295,
+            "preferred_life_time": 4294967295
+          },
+          {
+            "family": "inet",
+            "local": "203.0.113.20",
+            "prefixlen": 32,
+            "scope": "global",
+            "label": "fv-ii",
+            "valid_life_time": 4294967295,
+            "preferred_life_time": 4294967295
+          },
+          {
+            "family": "inet",
+            "local": "198.51.100.53",
+            "prefixlen": 32,
+            "scope": "global",
+            "label": "fv-ii",
+            "valid_life_time": 4294967295,
+            "preferred_life_time": 4294967295
+          },
+          {
+            "family": "inet6",
+            "local": "2001:db8:203::10",
+            "prefixlen": 128,
+            "scope": "global",
+            "nodad": true,
+            "valid_life_time": 4294967295,
+            "preferred_life_time": 4294967295
+          },
+          {
+            "family": "inet6",
+            "local": "fd00:db8:17::38",
+            "prefixlen": 64,
+            "scope": "global",
+            "nodad": true,
+            "valid_life_time": 4294967295,
+            "preferred_life_time": 4294967295
+          },
+          {
+            "family": "inet6",
+            "local": "fe80::e0b3:82ff:feae:a31d",
+            "prefixlen": 64,
+            "scope": "link",
+            "valid_life_time": 4294967295,
+            "preferred_life_time": 4294967295
+          }
+        ]
+      }
+    ],
+    "neighbors": []
+  }
+}

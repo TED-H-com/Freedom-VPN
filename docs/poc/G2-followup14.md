@@ -395,3 +395,28 @@ completion; remove the task-tagged lab image after the final run. The earlier
 real-NetBird campaign is described above and was not repeated in follow-up 16.
 The build target cross-compiles the lab binary for arm64; this is not an arm64
 hardware run.
+
+## Follow-up 18
+
+D-120 changes only the AT10 reload-stream verdict. Once this PR is on `main`,
+isolation follow-up 8's assembled AT10 verdict follows the dated
+[D-120 acceptance rule](G2-at10-reload-stream-2026-10-31.md#d-120-acceptance-rule--2026-10-31).
+The **six ISO-F6-01 assertions above remain unchanged**. Assembled recovery,
+serving and packet evidence remain necessary; this lab verdict does not close
+the assembled run.
+
+Read each retained `d120-verdict.txt` row as one UDP loss: datagram ID maps to
+the JSONL sequence; generation identifies its sole verified Apply; bracket
+start/end are realtime nanoseconds from install-command start to release-command
+end; upper bound and render→installed are monotonic milliseconds. `inside`
+or `boundary`, both durations ≤100 ms, and `next datagram=ok` are required.
+Every loss also inherits the whole-run zero-TCP-timeout and ≤5-loss limits.
+`failures=none` passes that row; any evidence error fails the run. Captures,
+sidecar and Apply records are mandatory verdict inputs, never optional logs.
+
+The [follow-up 18 evidence](G2-followup18-evidence/) retains a full lane gate
+and a separate focused AT10 run. Follow-up 17's two failed runs retain their
+original failures. D-120 is an AT10 continuity rule, not a product guarantee
+and not a change to D-104's installation deadline. The separate
+[F8-02 MTU measurement](G2-f802-mtu1280-2026-10-31.md) distinguishes kernel lab
+paths from native NetBird underlay-family selection.

@@ -1,0 +1,114 @@
+{
+  "test_only": true,
+  "phases": 17,
+  "captures": {
+    "member": {
+      "parsed_headers": 576,
+      "captured": 576,
+      "dropped": 0,
+      "ok": true
+    },
+    "node": {
+      "parsed_headers": 1117,
+      "captured": 1117,
+      "dropped": 0,
+      "ok": true
+    },
+    "origin": {
+      "parsed_headers": 541,
+      "captured": 541,
+      "dropped": 0,
+      "ok": true
+    }
+  },
+  "transfers": [
+    {
+      "name": "reconnect-v4-1500-v4",
+      "family": 4,
+      "connected": true,
+      "bytes": 64064,
+      "expected": 64064,
+      "error": "",
+      "matches": true,
+      "elapsed_ms": 2.807,
+      "socket_mss": 1368
+    },
+    {
+      "name": "reconnect-v6-1500-v6",
+      "family": 6,
+      "connected": false,
+      "bytes": 0,
+      "expected": 64064,
+      "error": "TimeoutError",
+      "matches": true,
+      "elapsed_ms": 12011.962,
+      "socket_mss": null
+    },
+    {
+      "name": "reconnect-dual-1500-v4",
+      "family": 4,
+      "connected": true,
+      "bytes": 64064,
+      "expected": 64064,
+      "error": "",
+      "matches": true,
+      "elapsed_ms": 2.463,
+      "socket_mss": 1368
+    },
+    {
+      "name": "reconnect-dual-1500-v6",
+      "family": 6,
+      "connected": false,
+      "bytes": 0,
+      "expected": 64064,
+      "error": "TimeoutError",
+      "matches": true,
+      "elapsed_ms": 12003.26,
+      "socket_mss": null
+    },
+    {
+      "name": "reconnect-dual-1280-v4",
+      "family": 4,
+      "connected": true,
+      "bytes": 64064,
+      "expected": 64064,
+      "error": "",
+      "matches": true,
+      "elapsed_ms": 2.899,
+      "socket_mss": 1228
+    },
+    {
+      "name": "reconnect-dual-1280-v6",
+      "family": 6,
+      "connected": false,
+      "bytes": 0,
+      "expected": 64064,
+      "error": "TimeoutError",
+      "matches": true,
+      "elapsed_ms": 12012.262,
+      "socket_mss": null
+    },
+    {
+      "name": "steady-1280-v4",
+      "family": 4,
+      "connected": true,
+      "bytes": 64064,
+      "expected": 64064,
+      "error": "",
+      "matches": true,
+      "elapsed_ms": 4.392,
+      "socket_mss": 1228
+    },
+    {
+      "name": "steady-1280-v6",
+      "family": 6,
+      "connected": false,
+      "bytes": 0,
+      "expected": 64064,
+      "error": "TimeoutError",
+      "matches": true,
+      "elapsed_ms": 12012.298,
+      "socket_mss": null
+    }
+  ]
+}

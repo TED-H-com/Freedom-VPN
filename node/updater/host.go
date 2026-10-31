@@ -43,13 +43,15 @@ type Config struct {
 	DesiredState      string      `json:"desired_state"`
 	RevokedReleaseIDs []uuid.UUID `json:"revoked_release_ids"`
 	MeterCheckpoint   string      `json:"meter_checkpoint"`
-	StopCommand       []string    `json:"stop_command"`
-	StartCommand      []string    `json:"start_command"`
-	ResultURL         string      `json:"result_url"`
-	MTLSCert          string      `json:"mtls_cert"`
-	MTLSKey           string      `json:"mtls_key"`
-	MTLSCA            string      `json:"mtls_ca"`
-	AllowLoopback     bool        `json:"allow_loopback"`
+	// MeterCheckpointWaitMS bounds the final-sample handshake. Zero uses 30s.
+	MeterCheckpointWaitMS int      `json:"meter_checkpoint_wait_ms,omitempty"`
+	StopCommand           []string `json:"stop_command"`
+	StartCommand          []string `json:"start_command"`
+	ResultURL             string   `json:"result_url"`
+	MTLSCert              string   `json:"mtls_cert"`
+	MTLSKey               string   `json:"mtls_key"`
+	MTLSCA                string   `json:"mtls_ca"`
+	AllowLoopback         bool     `json:"allow_loopback"`
 	// AllowedArtifactOrigins exempts listed origins from the private and CGNAT
 	// guard (D-046). An entry matches a URL when the scheme, host and
 	// effective port are equal. The effective port of a URL or entry without
@@ -134,6 +136,9 @@ func loadConfigWithBootFile(path string, sources probeAddressSources, bootFile s
 	if c.ReleaseTrust == "" || c.DesiredTrust == "" || c.DesiredState == "" || c.MeterCheckpoint == "" {
 		return Config{}, errors.New("updater: release_trust, desired_trust, desired_state and meter_checkpoint are required")
 	}
+	if _, err := meterWaitDuration(c.MeterCheckpointWaitMS); err != nil {
+		return Config{}, err
+	}
 	if err := validateOrigins(c.AllowedArtifactOrigins); err != nil {
 		return Config{}, err
 	}
@@ -144,6 +149,10 @@ func loadConfigWithBootFile(path string, sources probeAddressSources, bootFile s
 // from a challenge-bound attestation in the journal directory (D-053, §13.9).
 // Service commands that are empty fail closed at stop.
 func (c Config) Engine() (*Engine, error) {
+	wait, err := meterWaitDuration(c.MeterCheckpointWaitMS)
+	if err != nil {
+		return nil, err
+	}
 	if err := c.probeEnvironment().validate(context.Background(), c.ProbePeer); err != nil {
 		return nil, err
 	}
@@ -183,7 +192,7 @@ func (c Config) Engine() (*Engine, error) {
 			Gate: gate,
 		},
 		HTTP:              client,
-		Meter:             FileMeter{Path: c.MeterCheckpoint},
+		Meter:             FileMeter{Path: c.MeterCheckpoint, Wait: wait},
 		Services:          CommandServices{StopCmd: c.StopCommand, StartCmd: c.StartCommand},
 		Health:            &NodeChecks{Journal: c.Layout.Journal, Node: node, rt: &checkRT{}},
 		Gate:              gate,
@@ -241,7 +250,9 @@ func ExitCode(err error) int {
 
 // FileGate is the stand-in forwarding latch the agent reads before it
 // enables member forwarding. The real nftables gate belongs to the agent.
-// Block writes a file; Unblock removes it. Both are idempotent.
+// Block preserves an existing latch; Unblock removes and fsyncs it. Both are
+// idempotent. A new latch gets an opaque identity for withdrawal detection.
+// The agent only consumes presence; this identity is NOT agent barrier evidence.
 type FileGate struct {
 	Path string
 }
@@ -253,7 +264,12 @@ func (g FileGate) Block(context.Context) error {
 	if err := os.MkdirAll(filepath.Dir(g.Path), 0o700); err != nil {
 		return err
 	}
-	return fsutil.WriteFileAtomic(g.Path, []byte("blocked\n"), 0o600)
+	if _, err := readMeterFile(g.Path); err == nil {
+		return nil
+	} else if !errors.Is(err, os.ErrNotExist) {
+		return err
+	}
+	return fsutil.WriteFileAtomic(g.Path, []byte(uuid.NewString()+"\n"), 0o600)
 }
 
 func (g FileGate) Unblock(context.Context) error {
@@ -264,7 +280,10 @@ func (g FileGate) Unblock(context.Context) error {
 	if errors.Is(err, os.ErrNotExist) {
 		return nil
 	}
-	return err
+	if err != nil {
+		return err
+	}
+	return fsutil.SyncDir(filepath.Dir(g.Path))
 }
 
 // Blocked reports whether the latch file is present.
@@ -291,29 +310,6 @@ func (e *Engine) migrationUnsupported() bool {
 	}
 	_, ok := e.Migrator.(noMigrator)
 	return ok
-}
-
-// FileMeter reads a metering barrier the meter process wrote. It does not
-// invent sequence numbers. OpenEpoch returns a new id and writes nothing:
-// the per-transaction journal note is the idempotency record, and it is
-// removed when the transaction completes (D-034c).
-type FileMeter struct {
-	Path string
-}
-
-func (m FileMeter) FinalSample(context.Context) (UsageCheckpoint, error) {
-	b, err := os.ReadFile(m.Path)
-	if err != nil {
-		return UsageCheckpoint{}, fmt.Errorf("updater: meter checkpoint: %w", err)
-	}
-	var c UsageCheckpoint
-	if err := json.Unmarshal(b, &c); err != nil {
-		return UsageCheckpoint{}, permanent(apierr.CheckpointFailed, "meter checkpoint")
-	}
-	if _, err := uuid.Parse(c.ClosedMeterEpochID); err != nil {
-		return UsageCheckpoint{}, permanent(apierr.CheckpointFailed, "meter checkpoint has no closed epoch")
-	}
-	return c, nil
 }
 
 func (m FileMeter) OpenEpoch(context.Context) (string, error) {
@@ -523,7 +519,7 @@ func (s HTTPSink) Submit(ctx context.Context, payload []byte) (Accepted, bool, e
 		}
 		return Accepted{AcceptedAsHistory: ack.AcceptedAsHistory, Raw: append([]byte(nil), body...)}, false, nil
 	case http.StatusConflict:
-		return Accepted{HTTPStatus: resp.StatusCode, APICode: apiCode}, true, nil
+		return Accepted{HTTPStatus: resp.StatusCode, APICode: apiCode, Reason: responseReason(body)}, true, nil
 	default:
 		code := apierr.Code(apiCode)
 		if code == "" || code == apierr.StoreUnavailable {
