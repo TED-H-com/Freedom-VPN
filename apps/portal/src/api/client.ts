@@ -20,6 +20,7 @@ import {
 } from './auth';
 import { ApiError, parseApiError } from './errors';
 import type {
+  AdminDeviceListResponse,
   AuditEventListResponse,
   BillingPortalSessionRequest,
   BillingPortalSessionResponse,
@@ -749,6 +750,29 @@ export class FreedomVpnApiClient {
       pathParams: { member_id: memberId },
       body,
       actionId,
+    });
+  }
+
+  listAdminDevices(
+    query?: operations['listAdminDevices']['parameters']['query'],
+  ): Promise<AdminDeviceListResponse> {
+    return this.callOperation({
+      method: 'get',
+      path: '/admin/devices',
+      query,
+    });
+  }
+
+  authorizeMemberDevice(
+    memberId: string,
+    deviceId: string,
+    actionId?: string,
+  ): Promise<OperationResource> {
+    return this.callOperation({
+      method: 'post',
+      path: '/admin/members/{member_id}/devices/{device_id}/authorize',
+      pathParams: { member_id: memberId, device_id: deviceId },
+      actionId: actionId ?? `authorize-device:${memberId}:${deviceId}:${createUuidV4()}`,
     });
   }
 

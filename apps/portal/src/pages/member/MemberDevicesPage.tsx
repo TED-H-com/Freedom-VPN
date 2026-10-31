@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { apiClient, type OperationResource } from '../../api';
+import {
+  apiClient,
+  isDeviceAuthorizationUnconfirmed,
+  type OperationResource,
+} from '../../api';
 import { ApiErrorAlert } from '../../components/common/ApiErrorAlert';
 import { OperationBanner } from '../../components/common/OperationBanner';
 import { useI18n } from '../../i18n';
@@ -119,9 +123,7 @@ export function MemberDevicesPage(): React.ReactElement {
                 >
                   <td>
                     <div style={{ fontWeight: 600 }}>{dev.name}</div>
-                    <div
-                      style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}
-                    >
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
                       {dev.platform ?? '-'}
                     </div>
                   </td>
@@ -129,14 +131,58 @@ export function MemberDevicesPage(): React.ReactElement {
                     <div>{dev.device_id}</div>
                   </td>
                   <td>
-                    <span
-                      className={`badge ${
-                        dev.status === 'authorized' ? 'badge-success' : 'badge-danger'
-                      }`}
-                      data-testid={`device-status-${dev.device_id}`}
+                    <div
+                      style={{
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        gap: '0.35rem',
+                        alignItems: 'center',
+                      }}
                     >
-                      {dev.status}
-                    </span>
+                      <span
+                        className={`badge ${
+                          dev.status === 'authorized'
+                            ? 'badge-success'
+                            : dev.status === 'pending'
+                              ? 'badge-warning'
+                              : 'badge-danger'
+                        }`}
+                        data-testid={`device-status-${dev.device_id}`}
+                      >
+                        {dev.status}
+                      </span>
+                      {isDeviceAuthorizationUnconfirmed(dev) && (
+                        <span
+                          className="badge badge-warning"
+                          data-testid={`device-auth-unconfirmed-badge-${dev.device_id}`}
+                        >
+                          {t('member.devices.status.authorizationUnconfirmedBadge')}
+                        </span>
+                      )}
+                    </div>
+                    {isDeviceAuthorizationUnconfirmed(dev) ? (
+                      <div
+                        data-testid={`device-auth-unconfirmed-note-${dev.device_id}`}
+                        style={{
+                          marginTop: '0.35rem',
+                          fontSize: '0.8rem',
+                          color: 'var(--text-muted)',
+                        }}
+                      >
+                        {t('member.devices.status.authorizationUnconfirmedNote')}
+                      </div>
+                    ) : dev.status === 'pending' ? (
+                      <div
+                        data-testid={`device-pending-waiting-${dev.device_id}`}
+                        style={{
+                          marginTop: '0.35rem',
+                          fontSize: '0.8rem',
+                          color: 'var(--text-muted)',
+                        }}
+                      >
+                        {t('member.devices.status.pendingWaiting')}
+                      </div>
+                    ) : null}
                   </td>
                   <td className="mono" style={{ fontSize: '0.75rem' }}>
                     <div>seen: {formatLocaleWithUtc(dev.last_seen_at, locale)}</div>

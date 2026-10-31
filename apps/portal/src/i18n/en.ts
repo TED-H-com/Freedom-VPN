@@ -723,4 +723,57 @@ export const en: Record<TranslationKey, string> = {
     'Last conflict at (last_conflict_at): {time}',
   'admin.nodeDetail.identityConflict.resolutionText':
     'Revoke this node and enrol it again; there is no automatic unfreeze',
+
+  // Revision 12: D-076, D-077, D-081, SECOPS-19
+  'member.devices.status.pendingWaiting': 'Waiting for authorization',
+  'member.devices.status.authorizationUnconfirmedBadge':
+    'Needs operator re-authorization',
+  'member.devices.status.authorizationUnconfirmedNote':
+    'An operator must re-authorize this device after a service restore. You cannot clear this state yourself; contact support.',
+  'nav.admin.devices': 'Member devices',
+  'admin.devices.title': 'Member devices',
+  'admin.devices.subtitle':
+    'Review device status and re-authorize devices awaiting confirmation after a service restore.',
+  'admin.devices.filter.authorizationUnconfirmed': 'Restore authorization',
+  'admin.devices.filter.unconfirmedAll': 'All',
+  'admin.devices.filter.unconfirmedTrue': 'Needs re-authorization',
+  'admin.devices.filter.unconfirmedFalse': 'No confirmation pending',
+  'admin.devices.filter.status': 'Device status',
+  'admin.devices.filter.memberId': 'Member ID',
+  'admin.devices.filter.apply': 'Apply member filter',
+  'admin.devices.filter.clearFilters': 'Clear filters',
+  'admin.devices.col.member': 'Member',
+  'admin.devices.col.device': 'Device name / ID / platform',
+  'admin.devices.col.status': 'Authorization status',
+  'admin.devices.col.unconfirmedSince': 'Unconfirmed since',
+  'admin.devices.col.actions': 'Actions',
+  'admin.devices.reauthorizeBtn': 'Re-authorize',
+  'admin.devices.confirmDialog.title': 'Confirm re-authorization',
+  'admin.devices.confirmDialog.description':
+    'Re-authorize {deviceName} ({deviceId}) for member {memberId}? The device remains pending until its authorization has been confirmed.',
+  'admin.devices.confirmDialog.confirmBtn': 'Confirm re-authorization',
+  'admin.devices.confirmDialog.cancelBtn': 'Cancel',
+  'admin.devices.operationReceiptLabel':
+    'Re-authorization accepted; this receipt does not confirm device authorization.',
+  'admin.devices.readbackPending': 'Waiting for device authorization to be confirmed.',
+  'admin.devices.readbackConfirmed':
+    'Device authorization confirmed; no confirmation is pending.',
+  'admin.devices.empty': 'No devices match the current filters.',
+  'admin.devices.loading': 'Loading devices…',
+  'admin.devices.loadFailed': 'Devices could not be loaded. See the error above.',
+  'admin.memberDetail.viewMemberDevicesLink': 'Manage this member’s devices',
+  'admin.memberDetail.viewUnconfirmedDevicesLink':
+    'View all devices needing re-authorization',
+  'admin.nodeDetail.usageOutbox.title': 'Usage outbox',
+  'admin.nodeDetail.usageOutbox.informationalNote':
+    'Local usage queue from the node’s latest report. These values do not determine node safety or serviceability.',
+  'admin.nodeDetail.usageOutbox.absent': 'Not projected by this server',
+  'admin.nodeDetail.usageOutbox.null': 'No report yet',
+  'admin.nodeDetail.usageOutbox.unackedLabel': 'Unacked events / bytes',
+  'admin.nodeDetail.usageOutbox.ackedThroughLabel':
+    'Acked-through / last durable sequence',
+  'admin.nodeDetail.usageOutbox.oldestUnackedAgeLabel':
+    'Oldest unacked age at observation',
+  'admin.nodeDetail.usageOutbox.archiveBytesLabel': 'Archive bytes',
+  'admin.nodeDetail.usageOutbox.observedAtLabel': 'Observed at',
 };

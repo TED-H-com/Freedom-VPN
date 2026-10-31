@@ -326,6 +326,20 @@ export function AdminMemberDetailPage(): React.ReactElement {
       {/* Member Entitlement Grants */}
       <section className="card">
         <h2>{t('admin.memberDetail.devicesSection')}</h2>
+        <div className="btn-row">
+          <Link
+            to={`/admin/devices?member_id=${encodeURIComponent(m.member_id)}`}
+            data-testid="member-detail-view-devices-link"
+          >
+            {t('admin.memberDetail.viewMemberDevicesLink')}
+          </Link>
+          <Link
+            to="/admin/devices?authorization_unconfirmed=true"
+            data-testid="member-detail-view-unconfirmed-devices-link"
+          >
+            {t('admin.memberDetail.viewUnconfirmedDevicesLink')}
+          </Link>
+        </div>
         <div className="table-wrapper" style={{ marginTop: '0.75rem' }}>
           <table className="data-table">
             <thead>
