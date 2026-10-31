@@ -96,3 +96,13 @@ locking in #320 and live usage acceptance in #324; pending assertions in the
 older claims tests are explicitly historical. The archive itself is unchanged.
 SECOPS-21 closed on the assembled restore harness in #316; the open status in
 the dated r16/follow-up 17 dispositions above is historical.
+
+## Follow-up 19 acceptance boundary
+
+At #337, r17 and r16 remain exact historical archives. D-127 now has the
+updates 10 installer extension (23/23) with a labeled TEST ONLY HTTP rollback
+correction. Regular AT23–AT27 are blocked; physical rollback is not inferred.
+The [current handover](../handover/follow-up-19.md) and
+[findings register](../handover/README.md#findings-register-at-the-follow-up-19-cutoff)
+record ENR-07 / F9-01 closure and ISO-F6-03 OPEN. Agent-core 28 is in flight,
+not on main at #337. D-129–D-132 do not change the archived review verdicts.

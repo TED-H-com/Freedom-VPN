@@ -1,6 +1,7 @@
 # Production Deployment Runbook (`docs/handover/deploy.md`)
 
-**Current cut — [follow-up 18](follow-up-18.md) (2026-10-31 EDT):** Deploy migration 00192 before the new control binary. Down refuses once installer corrections exist. #320/#323 provide checkpoint correlation; the devstack 19 serving-node rerun is not yet proved.
+**Current cut — [follow-up 19](follow-up-19.md) (2026-10-31 EDT):** Apply 00193 before ingestion resumes; equal stored endpoints prevent Down. #332 proves the correlated serving-node upgrade and candidate seed. Regular AT23 remains blocked on the shared fixture layout.
+Previous cut: [follow-up 18](follow-up-18.md), through #324.
 
 Historical follow-up 17 cutoff: [follow-up 17 operator evidence](follow-up-17.md). #313
 harness-proves the SECOPS-21 first-offer capture (2/0/0, delivery 4 > retained 3,
@@ -727,6 +728,8 @@ systemctl enable --now fvpn-updater-recover.service fvpn-agent.service fvpn-watc
 ```
 
 Create or verify the target member group via `POST /api/v1/admin/groups` (`CreateAdminGroup`, `201 MemberGroup`, audited as `group.create` on `member_group:<id>`, `D-057`, `D-059`) or `GET /api/v1/admin/groups` (`ListAdminGroups`). Once the node reports healthy observations (`provisioning_state: "ready"`, `control_status: "online"`, `safety_status: "passed"`, `data_health: "healthy"`, and `observation.checks` entries `internet_only`, `dns_policy`, and `tunnel_probe` with `status: "passed"`) in `GET /api/v1/admin/nodes/{node_id}`, publish the exit node via `PUT /api/v1/admin/nodes/{node_id}/publication` (`SetNodePublication` -> `exits.SetPublicationTx`, `docs/nodes/WIRING.md`) supplying `publication_intent: "published"`, `group_ids: ["<group_uuid>"]`, `If-Match: "<etag>"`, and `Idempotency-Key` (or pre-attach `member_group_ids` via `PATCH /api/v1/admin/nodes/{node_id}` and omit `group_ids` to preserve existing membership). Wait for the returned `202 Accepted` operation (`node.publish`) to reach `status: "succeeded"` with `publication_observed: "active"` and NetBird route read-back evidence (`netbird_route_readback`) before announcing the exit to members.
+
+Historical follow-up 15 cutoff; current dispositions are in [follow-up 19](follow-up-19.md).
 
 Installer ENR-06 (#266) historically failed first start because `/var/run/netbird.sock` was outside the packaged write allowlist and consumers could remove shared runtime state. Installer follow-up 3 (#279) fixes this: the daemon owns `/run/fvpn-netbird/netbird.sock` and shared `/run/vpn-node` survives consumer restarts. Offline seed and firstboot now pass with real daemons, but the required full journaled upgrade stays **red** at the absent meter checkpoint (`final_sample`, `CHECKPOINT_FAILED`, health null). Do not infer success from updater exit 0. See [installer follow-up 3](../node/install-followup3-2026-10-31.md). Devstack follow-up 15 remains historically `21 pass / 1 fail`; enrollment follow-up 6 (#288) now verifies ENR-06 startup on the fixed installer (AT06 376/0/0, AT07 26/5/0). Five AT07 rows remain blocked on installer-node exports and ENR-05; startup success does not close the full upgrade test. Updates follow-up 9 passed regular AT23–AT27 on `5575470`, while its separate installer extension remains blocked on measured F9-01…F9-05; [current dispositions](../ops/README.md#follow-up-15-acceptance-snapshot-2026-10-31-edt).
 
