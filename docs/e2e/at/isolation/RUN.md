@@ -80,6 +80,13 @@ nothing on the uplink, admission counters flat. After control answers,
 Both `fleet_config.update` audit events are recorded. No host clock is changed.
 No `fleet_config` row is written except through that API.
 
+After publication succeeds, the runner reads `nft -j list ruleset` and the
+latest `node_observations.report_payload` and stores both on the AT10 record.
+It does not write nft. `loopback_scoped` is recorded only when
+`node/enforce/verify_foreign.go` contains that classifier. On this tree it
+does not: D-079 has not merged, and `verify_foreign.go` is still the #220
+read-back.
+
 From publication until the first counted member byte, the runner samples
 desired and applied generations, lease grant counts, observation block reasons
 and the forward chain. The samples are `convergence-timeline.json`. Agent
