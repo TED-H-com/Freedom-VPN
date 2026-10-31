@@ -27,7 +27,6 @@ import (
 
 	"github.com/TED-H-com/Freedom-VPN/node/enforce"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
-	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
 	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 	"github.com/TED-H-com/Freedom-VPN/pkg/envelope"
@@ -65,6 +64,7 @@ type d067CycleMeasurement struct {
 	PopulatedLeaseMemberCount        int               `json:"populated_lease_member_count"`
 	PopulatedLeaseInForceAt          string            `json:"populated_lease_in_force_at"`
 	FirstCountedByteAt               string            `json:"first_counted_byte_at"`
+	ReadyToPopulatedLeaseIssuedMs    int64             `json:"ready_to_populated_lease_issued_ms"`
 	ReadyToPopulatedLeaseMs          int64             `json:"ready_to_populated_lease_ms"`
 	ReadyToFirstCountedByteMs        int64             `json:"ready_to_first_counted_byte_ms"`
 	MaxAllowedWindowMs               int64             `json:"max_allowed_window_ms"`
@@ -512,133 +512,29 @@ func (s *liveSuite) ackNodeGeneration(nodeID, incID uuid.UUID, nodeClient *http.
 		s.t.Fatalf("ackNodeGeneration unmarshal DesiredState for %s: %v", nodeID, err)
 	}
 
-	var lastObsAt time.Time
-	var templateRaw []byte
-	if err := s.pool.QueryRow(s.ctx, `
-		SELECT COALESCE(n.last_observed_at, '1970-01-01T00:00:00Z'::timestamptz),
-		       (SELECT report_payload FROM node_observations WHERE node_id = n.id AND incarnation_id = $2 AND safety_status = 'passed' ORDER BY received_at DESC LIMIT 1)
-		FROM nodes n
-		WHERE n.id = $1
-	`, nodeID, incID).Scan(&lastObsAt, &templateRaw); err != nil || len(templateRaw) == 0 {
-		s.t.Fatalf("ackNodeGeneration query template observation for %s: err=%v len=%d", nodeID, err, len(templateRaw))
+	service := "node"
+	if nodeID == s.node2ID {
+		service = "node2"
 	}
-
-	var rep api.ObservationReport
-	if err := json.Unmarshal(templateRaw, &rep); err != nil {
-		s.t.Fatalf("ackNodeGeneration unmarshal template report: %v", err)
-	}
-	rep.ReportId = uuid.New()
-	rep.NodeId = nodeID
-	rep.NodeIncarnationId = incID
-	rep.SafetyStatus = api.SafetyStatusPassed
-	rep.DataHealth = api.DataHealthHealthy
-	rep.ProvisioningState = api.ProvisioningStateReady
-	appliedGen := uint64(ds.ConfigGeneration)
-	if targetGen > appliedGen {
-		appliedGen = targetGen
-	}
-	rep.AppliedConfigGeneration.Set(decstr.U64(appliedGen))
-	rep.AppliedBindingRevision.Set(ds.BindingRevision)
-	rep.AppliedPolicyRefs.Set(ds.PolicyRefs)
-
-	var obsResp httpResponse
-	var obsAt time.Time
-	for attempt := 0; attempt < 3; attempt++ {
-		obsAt = time.Now().UTC()
-		if !obsAt.After(lastObsAt) {
-			obsAt = lastObsAt.UTC().Add(10 * time.Millisecond)
-			time.Sleep(15 * time.Millisecond)
-		}
-		rep.ReportId = uuid.New()
-		rep.ObservedAt = obsAt
-		for i := range rep.Checks {
-			rep.Checks[i].ObservedAt = obsAt
-		}
-		lastObsAt = obsAt
-		obsResp = s.agentCallWithClient(nodeClient, http.MethodPost, "/api/v1/agent/observations", rep, nil)
-		if obsResp.status == http.StatusAccepted {
-			break
-		}
-		time.Sleep(1 * time.Second)
-	}
-	if obsResp.status != http.StatusAccepted {
-		s.t.Fatalf("ackNodeGeneration POST /observations for %s failed: HTTP %d %s", nodeID, obsResp.status, string(obsResp.body))
-	}
+	s.startNodeAgent(service)
+	var reportID uuid.UUID
+	var appliedGen uint64
 	var receivedAt time.Time
-	_ = s.pool.QueryRow(s.ctx, `SELECT received_at FROM node_observations WHERE report_id = $1`, rep.ReportId).Scan(&receivedAt)
-	if receivedAt.IsZero() {
-		receivedAt = obsAt
+	if !s.waitFor(100*time.Second, func() bool {
+		err := s.pool.QueryRow(s.ctx, `
+			SELECT report_id, applied_generation::bigint, received_at
+			FROM node_observations
+			WHERE node_id=$1 AND incarnation_id=$2 AND applied_generation >= $3
+			  AND safety_status='passed' AND report_payload->>'member_forwarding_enabled'='true'
+			ORDER BY received_at DESC LIMIT 1
+		`, nodeID, incID, max(targetGen, uint64(ds.ConfigGeneration))).Scan(&reportID, &appliedGen, &receivedAt)
+		hb, code, _ := s.execInContainer(service, "cat", "/run/vpn-node/heartbeat")
+		_, _, gen, _, ok := s.deviceCounters(service, s.deviceA)
+		return err == nil && code == 0 && strings.Contains(string(hb), "serving 1") && ok && gen >= uint64(ds.ConfigGeneration)
+	}) {
+		s.t.Fatalf("real agent on %s did not apply serving generation >= %s", service, ds.ConfigGeneration)
 	}
-	return rep.ReportId, appliedGen, receivedAt, ds
-}
-
-func (s *liveSuite) ingestNodeUsageEvent(
-	nodeID, incID uuid.UUID,
-	nodeClient *http.Client,
-	memberID, deviceID uuid.UUID,
-	uploadBytes, downloadBytes uint64,
-) (api.UsageEvent, api.UsageBatchResult, uuid.UUID) {
-	cpResp := s.agentCallWithClient(nodeClient, http.MethodGet, "/api/v1/agent/usage-checkpoint", nil, nil)
-	if cpResp.status != http.StatusOK {
-		s.t.Fatalf("ingestNodeUsageEvent GET /usage-checkpoint for %s failed: HTTP %d %s", nodeID, cpResp.status, string(cpResp.body))
-	}
-	verifiedCP, _, err := envelope.Verify(cpResp.body, s.nodeTrust, envelope.PurposeRecovery, time.Now().UTC())
-	if err != nil {
-		s.t.Fatalf("ingestNodeUsageEvent Verify UsageCheckpoint for %s: %v", nodeID, err)
-	}
-	var cp api.UsageCheckpoint
-	if err := json.Unmarshal(verifiedCP, &cp); err != nil {
-		s.t.Fatalf("ingestNodeUsageEvent unmarshal UsageCheckpoint: %v", err)
-	}
-	nextSeq := uint64(cp.MaxSeenSeq) + 1
-
-	var bindingRev uint64 = 1
-	var validFrom time.Time
-	_ = s.pool.QueryRow(s.ctx, `
-		SELECT binding_revision::bigint, valid_from
-		FROM device_bindings
-		WHERE device_id = $1 AND member_id = $2
-		ORDER BY binding_revision DESC
-		LIMIT 1
-	`, deviceID, memberID).Scan(&bindingRev, &validFrom)
-
-	nowUTC := time.Now().UTC().Truncate(time.Second)
-	iStart := nowUTC.Add(-4 * time.Second)
-	if !validFrom.IsZero() && iStart.Before(validFrom.UTC().Add(1*time.Second)) {
-		iStart = validFrom.UTC().Truncate(time.Second).Add(1 * time.Second)
-	}
-	iEnd := iStart.Add(2 * time.Second)
-	if iEnd.After(nowUTC) {
-		time.Sleep(2 * time.Second)
-		nowUTC = time.Now().UTC().Truncate(time.Second)
-		iEnd = nowUTC
-		iStart = iEnd.Add(-1 * time.Second)
-	}
-	curPeriod := fmt.Sprintf("%04d-%02d", iStart.Year(), int(iStart.Month()))
-	epochUUID := uuid.Must(uuid.NewV7())
-
-	ev := makeSignedUsageEvent(s.t, nodeID, incID, epochUUID, nextSeq, iStart, iEnd, api.UsageQualityComplete, nil, []api.UsageRecord{
-		{
-			MemberId:        memberID,
-			DeviceId:        deviceID,
-			BindingRevision: decstr.U64(bindingRev),
-			PeriodId:        curPeriod,
-			UploadBytes:     decstr.U64(uploadBytes),
-			DownloadBytes:   decstr.U64(downloadBytes),
-		},
-	})
-	resp := s.agentCallWithClient(nodeClient, http.MethodPost, "/api/v1/agent/usage-batches", api.UsageBatchRequest{
-		NodeId:            nodeID,
-		NodeIncarnationId: incID,
-		LedgerEpoch:       presence.NewNullableWithValue(cp.LedgerEpoch),
-		Events:            []api.UsageEvent{ev},
-	}, idemHeaders())
-	var ack api.UsageBatchResult
-	_ = json.Unmarshal(resp.body, &ack)
-	if resp.status != http.StatusOK || len(ack.Results) != 1 || ack.Results[0].Status != api.UsageEventResultStatusAccepted {
-		s.t.Fatalf("ingestNodeUsageEvent POST /usage-batches for %s (seq %d) failed: HTTP %d %s", nodeID, nextSeq, resp.status, string(resp.body))
-	}
-	return ev, ack, cp.LedgerEpoch
+	return reportID, appliedGen, receivedAt, ds
 }
 
 func (s *liveSuite) measureD067ProvisionalWindow(
@@ -853,12 +749,22 @@ func (s *liveSuite) measureD067ProvisionalWindow(
 	}
 
 	if needSelectRoute {
+		if err := s.pool.QueryRow(s.ctx, `SELECT id FROM exits WHERE node_id=$1`, nodeID).Scan(&s.exitID); err != nil {
+			s.t.Fatalf("lookup published exit: %v", err)
+		}
+		s.exitNetID = exitNetworkID(s.exitID)
 		originIP, _ := s.originAndSNAT(nodeService)
 		_, _ = s.selectExitRoute("member", s.exitNetID, originIP)
 		_, _ = s.selectExitRoute("member-b", s.exitNetID, originIP)
 	}
 
-	tr := s.runCountedTransfer("member", nodeService, s.deviceA, 1)
+	// A serving heartbeat precedes asynchronous native route convergence. Keep
+	// the positive HTTP/origin/SNAT/counter assertion and wait for that evidence.
+	var tr transferResult
+	_ = s.waitFor(30*time.Second, func() bool {
+		tr = s.runCountedTransfer("member", nodeService, s.deviceA, 1)
+		return tr.Counted
+	})
 	var firstCountedByteAt time.Time
 	var readyToFirstByteMs int64
 	if tr.Counted {
@@ -928,6 +834,7 @@ func (s *liveSuite) measureD067ProvisionalWindow(
 		PopulatedLeaseMemberCount:        popLeaseMembers,
 		PopulatedLeaseInForceAt:          popInForceAt.UTC().Format(time.RFC3339Nano),
 		FirstCountedByteAt:               firstByteStr,
+		ReadyToPopulatedLeaseIssuedMs:    popLeaseIssued.Sub(readyObsReceived).Milliseconds(),
 		ReadyToPopulatedLeaseMs:          readyToPopMs,
 		ReadyToFirstCountedByteMs:        readyToFirstByteMs,
 		MaxAllowedWindowMs:               maxWindowMs,
@@ -1073,6 +980,9 @@ func (s *liveSuite) queryMemberUsagePeriodRow(memberID string) map[string]string
 }
 
 func (s *liveSuite) measurePerIncarnationRetainedUsage() incarnationRetentionMeasurement {
+	s.waitForUploadedTraffic("node2", s.node2ID, s.incarnation2ID, s.deviceA)
+	s.stopNodeAgent("node")
+	s.stopNodeAgent("node2")
 	oldInc2 := s.incarnation2ID
 
 	// 1. Snapshot GET /api/v1/admin/nodes/{node2_id}/incarnations and member usage before revoke/reinstall
@@ -1230,9 +1140,17 @@ func (s *liveSuite) measurePerIncarnationRetainedUsage() incarnationRetentionMea
 	s.exit2ID, s.exit2NetID = s.configureAndPublishNode("node2", s.node2ID, newInc2, s.node2Client, 15000000, 8000000)
 	origin2IP, _ := s.originAndSNAT("node2")
 	_, _ = s.selectExitRoute("member", s.exit2NetID, origin2IP)
-	trNew := s.runCountedTransfer("member", "node2", s.deviceA, 1)
+	newTrafficStarted := time.Now().UTC()
+	var trNew transferResult
+	if !s.waitFor(30*time.Second, func() bool {
+		trNew = s.runCountedTransfer("member", "node2", s.deviceA, 1)
+		return trNew.Counted
+	}) {
+		s.t.Fatalf("ENR-03 new incarnation did not complete a counted HTTPS probe: %+v", trNew)
+	}
 	_, _ = s.selectExitRoute("member", s.exitNetID, origin2IP)
-	_, _, _ = s.ingestNodeUsageEvent(s.node2ID, newInc2, s.node2Client, uuid.MustParse(s.memberA.memberID), s.deviceA, 900, 1100)
+	s.waitForUploadedTraffic("node2", s.node2ID, newInc2, s.deviceA, newTrafficStarted)
+	s.stopNodeAgent("node2")
 
 	incAfterTrafficResp := s.apiCall(s.admin, http.MethodGet, "/api/v1/admin/nodes/"+s.node2ID.String()+"/incarnations", nil, nil)
 	var incAfterTraffic api.NodeIncarnationList
