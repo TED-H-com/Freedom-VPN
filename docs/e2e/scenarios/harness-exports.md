@@ -15,14 +15,19 @@ enrollment, publication and grants. No projector-owned rows are written.
 | export-native-streams | Two independent native joins; bounded final per-stream inventories, mode 0600/root, one recognized device-flow key line, successful deletion; foreign container refused |
 | export-enrollment | Two harness keys race one code; one success/one rejection; successful response deliberately discarded; byte-identical replay completes one-time mTLS bootstrap and native join; complete correlated peer readback count one |
 | export-clone | Consistent stopped-source snapshot, clone created before boot, original resumed; all three public identity hashes equal; both real entrypoints run |
-| clone-conflict | Product conflict and mapping freeze actually observed; otherwise blocked with exact rows and owning domain |
+| clone-conflict | Admin `identity_conflict` is `{mapping_frozen: true, conflict_count ≥ 1}` after the clone presents from the second IPv4 /24; exactly one `node.identity.conflict` audit; provisioning `failed` and member forwarding off; revoke plus entrypoint re-enroll of the same node, with the clone stopped, yields `{mapping_frozen: false, conflict_count: 0, last_conflict_at: null}` once the new incarnation is observed |
 
 The clone fixture is a fault in disposable storage, not a new authorized exit.
 A successful clone setup does not prove AT07 safety. Complete incarnation
 history still needs the ENR-03 admin read surface. The enrollment protocol
 fixture uses a waiting node slot and does not fabricate agent SQLite state or
 claim node readiness; ordinary serving nodes continue to use `EnrollAt`.
-`clone-conflict` stays blocked: `ObserveEndpoint` has no production caller.
+`AttachClonePresentationNetwork` creates that second /24 and can pin the clone
+netns. `StartClonedIdentityFixture` calls it. Records for this follow-up are
+under `followup14/exports/`. `clone-conflict` reads the admin node and audit
+list. It does not insert conflict rows. A container restart that deletes the
+local agent database is the entrypoint enroll path for the replacement
+incarnation, not ENR-06.
 
 ## Member-ingress injection (follow-up 13)
 
