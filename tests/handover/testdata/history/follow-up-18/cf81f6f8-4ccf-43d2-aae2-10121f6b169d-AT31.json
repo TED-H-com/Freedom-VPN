@@ -1,0 +1,162 @@
+{
+  "schema_version": 1,
+  "follow_up": 13,
+  "id": "AT31",
+  "status": "blocked",
+  "requirements": [
+    "NFR01",
+    "NODE02",
+    "FUP04"
+  ],
+  "spec": [
+    "§19 AT31"
+  ],
+  "run_id": "cf81f6f8-4ccf-43d2-aae2-10121f6b169d",
+  "application_base": "510a4ab7f73bdcfc28aaef53f8d1d6deef97ad67",
+  "source_revision": "44eff52b47f891bc829900c51b320a2e01f64cde",
+  "actual": {
+    "forced_relay": {
+      "before_path": {
+        "Relayed": 0,
+        "Direct": 1,
+        "Forced": false
+      },
+      "cleanup_ok": true,
+      "cleanup_path": {
+        "Relayed": 0,
+        "Direct": 1,
+        "Forced": false
+      },
+      "direct_restored_samples": [
+        {
+          "utc": "2026-10-31T07:38:23.256873977Z",
+          "monotonic_elapsed_seconds": 32.275271982,
+          "status": {
+            "tcp_echoes": 62,
+            "udp_replies": 65,
+            "tcp_attempts": 68,
+            "udp_attempts": 74,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "14237",
+            "download_bytes": "12417",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:38:28.320268915Z",
+          "monotonic_elapsed_seconds": 37.338666919,
+          "status": {
+            "tcp_echoes": 72,
+            "udp_replies": 75,
+            "tcp_attempts": 78,
+            "udp_attempts": 84,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "16097",
+            "download_bytes": "13807",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        }
+      ],
+      "forced_after_seconds": 6.40928037,
+      "forced_path": {
+        "Relayed": 1,
+        "Direct": 0,
+        "Forced": true
+      },
+      "relay_samples": [
+        {
+          "utc": "2026-10-31T07:37:51.092844048Z",
+          "monotonic_elapsed_seconds": 0.111242263,
+          "status": {
+            "tcp_echoes": 9,
+            "udp_replies": 9,
+            "tcp_attempts": 10,
+            "udp_attempts": 9,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "4252",
+            "download_bytes": "4586",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:37:57.450116314Z",
+          "monotonic_elapsed_seconds": 6.468514424,
+          "status": {
+            "tcp_echoes": 10,
+            "udp_replies": 13,
+            "tcp_attempts": 16,
+            "udp_attempts": 22,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "4483",
+            "download_bytes": "4817",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:38:02.506553817Z",
+          "monotonic_elapsed_seconds": 11.524951885,
+          "status": {
+            "tcp_echoes": 20,
+            "udp_replies": 23,
+            "tcp_attempts": 26,
+            "udp_attempts": 32,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "6425",
+            "download_bytes": "6579",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        }
+      ],
+      "relay_window_end_path": {
+        "Relayed": 1,
+        "Direct": 0,
+        "Forced": false
+      },
+      "restore_after_seconds": 32.223808229,
+      "restored_path": {
+        "Relayed": 0,
+        "Direct": 1,
+        "Forced": false
+      },
+      "same_sockets_across_steps": true,
+      "scope": "one member, one exit, established TCP and UDP; 180-second automatic fault expiry, 90-second path wait; not 60-peer relay capacity",
+      "status": "passed"
+    }
+  },
+  "blockers": [
+    "One member/one exit bounded relay path only; no 60-peer mixed relay capacity or candidate-hardware campaign.",
+    "The 180-second forced-relay match and 20-minute transport helper are export limits, not capacity guarantees."
+  ],
+  "evidence": [
+    "history/follow-up-12/AT31.json",
+    "history/follow-up-12/followup12-transports-live.json",
+    "history/follow-up-12/followup12-transports-run.json"
+  ],
+  "record_kind": "carried forward; no transport rerun",
+  "current_restore_run_id": "5218b7d5-1415-4e1b-8618-48ea2d3cf03e"
+}

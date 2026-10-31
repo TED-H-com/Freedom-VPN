@@ -40,18 +40,22 @@ type check struct {
 }
 
 type probe struct {
-	ctx          context.Context
-	stack        *labstack.Stack
-	admin        labstack.BrowserSession
-	client       *http.Client
-	checks       []check
-	secrets      [][]byte
-	digests      [][]byte // lowercase token SHA-256; allowed in logs and admin reads
-	derived      [][]byte // other token-derived encodings; must be absent
-	reads        [][]byte // admin read and revoke bodies, never creation responses
-	resultPath   string
-	limited      []map[string]string
-	limitedCount int
+	ctx           context.Context
+	stack         *labstack.Stack
+	admin         labstack.BrowserSession
+	client        *http.Client
+	checks        []check
+	secrets       [][]byte
+	digests       [][]byte // lowercase token SHA-256; allowed in logs and admin reads
+	derived       [][]byte // other token-derived encodings; must be absent
+	reads         [][]byte // admin read and revoke bodies, never creation responses
+	resultPath    string
+	limited       []map[string]string
+	limitedCount  int
+	bootRelease   uuid.UUID
+	servingGroup  uuid.UUID
+	servingMember labstack.BrowserSession
+	servingDevice uuid.UUID
 }
 
 func (p *probe) note(at, name, status string, detail any) {
@@ -112,6 +116,7 @@ func TestAT06_AT07_Live(t *testing.T) {
 		p.note("AT06", "serving_baseline", "blocked", "signed serving baseline unavailable")
 		return
 	}
+	p.bootRelease = baseline.Boot
 	p.note("AT06", "serving_baseline", "pass", map[string]any{"release_digests": baseline.Digests, "support_revision": baseline.SupportRevision})
 	// "join" is a second fresh stack. JoinEnrolledIdentity needs node2 while it
 	// is still waiting; the acceptance stack uses that slot for EnrollAt.
@@ -939,7 +944,7 @@ func (p *probe) at07(t *testing.T) {
 	// The clone fixture stops and resumes node. node2 stays the clean second exit.
 	p.prepareFreezeSource(first.NodeID)
 	p.clonedIdentity(first.NodeID)
-	p.installerHooks()
+	p.installerHooks(t)
 }
 
 func hex64(s string) bool {

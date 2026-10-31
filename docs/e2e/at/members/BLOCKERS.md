@@ -1,4 +1,4 @@
-# Follow-up 9 external blockers
+# Follow-up 10 external blockers
 
 The full-case outcomes and failed checks are in [summary.md](summary.md). Fixture availability closes only the named missing fixture; it does not certify a consuming case or a physical platform. [requests.md](requests.md) retains owner actions.
 
@@ -13,10 +13,29 @@ The full-case outcomes and failed checks are in [summary.md](summary.md). Fixtur
 
 The separate worker RestartPolicy note is closed by #240 and fresh AT05 readback. D-050/D-081 now use exported ReplaceFiniteGrant (#284); the duplicate local production-service adapter is removed. Immediate 3/0→2/1 replacement and grant-only deadline expiry to 0/3 are separate measured transitions. D-119 (2026-10-31): retire the inherited “3/0 → 2/1 deadline transition” wording. Plan v1.0 has no scheduled plan-change contract: natural expiry yields 0/3 with no other grant; billing issues an immediate replacement through `ReplaceFiniteGrant` at the period boundary, producing 3/0 → 2/1 → 3/0 in the harness.
 
-F8-01 is closed by the original full mutation sequence: generation 30 → 30, serving at 15.729 s and first counted byte at 21.374 s, with the complete [90-second capture](AT09-restart.json). The native dual/1280 row returns all 64,064 bytes in 1 ms; the original F8-02 cause remains unattributed with devstack/native fixture investigation. AT09 still fails on **F9-01**, the mixed provisional/TC-rejection observation contract: two retained D-067 assertions fail. Agent-core/wire-nodes and orchestrator must settle check-code precedence; see [dated request](requests.md#f9-01--mixed-provisional-lease-and-tc-rejection-observation-2026-10-31). Identity-freeze behavior is not independently recertified by this lane.
+F8-01 remains closed by follow-up 9's original generation-30 evidence
+([immutable capture](history/follow-up-9/AT09-restart.json)). F9-01 closes under
+D-126 / D-128: agent-core 27 confirms deliberate composition, wire-nodes 32
+proves JSON-value preservation, and this lane replays the exact old sequence.
+The fresh run accepts the same mixed shape and recovers at unchanged **29**,
+so **F10-04 keeps exact generation-30 qualification open**. The full AT09 case
+remains blocked with 38 pass / 5 blocked / 0 fail checks. All four bulk rows
+pass; dual/1280 completes 64,064 bytes in 1 ms, with direct IPv4 selected.
+F8-02 stays unattributed per [netlab 19](../../../poc/G2-f802-native-attribution-2026-10-31.md);
+devstack 19 owns the exact-sequence decode/capture. A later pass is no fix proof.
+
+The fresh run also retains **F10-02 (AT02 unreadable withdrawal sample)** and
+**F10-03 (AT20 positive cache changed before TTL)** as failures. F10-01 requests
+the outside-owned netlab pin's immutable archive path. All four new items,
+exact captures and owners are in [requests.md](requests.md). Identity-freeze
+behavior is not independently recertified by this lane.
 
 [Follow-up 7 final evidence](history/follow-up-7/RUN.md) is preserved byte-identically for D-098. [Follow-up 8 diagnostic attempt 1](history/follow-up-8/attempt-1/RUN.md) preserves all initial failures and their harness corrections.
 
 F4-08 / F4-09: never defined; retired 2026-10-31. The follow-up 4 ledger is F4-01 … F4-07 and F4-10.
 
 D-098: [follow-up 8](history/follow-up-8/RUN.md) run `69f92f49` is archived byte-identically with [32-file checksums](history/follow-up-8/SHA256SUMS). Handover already asserts its own immutable followup16 snapshots; no external pin is changed.
+
+D-098: [follow-up 9](history/follow-up-9/RUN.md) run `11e305fe` has all 33 root
+files preserved byte-identically with [SHA256SUMS](history/follow-up-9/SHA256SUMS).
+All 13 follow-up 8 handover snapshots still match. No outside-owned file changed.

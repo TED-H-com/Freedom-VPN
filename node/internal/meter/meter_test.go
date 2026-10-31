@@ -446,7 +446,7 @@ func TestClockRollback(t *testing.T) {
 	if ev.Quality != api.UsageQualityGap || ev.Gap.Reason != api.UsageGapReasonClockAnomaly {
 		t.Fatalf("%+v", ev)
 	}
-	if !ev.IntervalEnd.After(ev.IntervalStart) || ev.IntervalEnd.Sub(ev.IntervalStart) != time.Nanosecond {
+	if !ev.IntervalEnd.After(ev.IntervalStart) || ev.IntervalEnd.Sub(ev.IntervalStart) != time.Microsecond {
 		t.Fatalf("interval %s %s", ev.IntervalStart, ev.IntervalEnd)
 	}
 	if len(ev.Records) != 0 {

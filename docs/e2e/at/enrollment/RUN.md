@@ -1,9 +1,10 @@
-# Enrollment follow-up 7 runbook
+# Enrollment follow-up 8 runbook
 
-Binding: w4-enroll / 12000. All fixtures and identifiers are TEST ONLY.
-First inspect `pgrep -af 'gates.sh|mk/at-'`; wait while two or more other
-suites are active. Use the foreground runner and its unconditional Python
-teardown. Disk scratch lives under `.agent/tmp`; no shell cleanup traps.
+Binding `w4-enroll` / `12000`; Docker objects `fvpn-w4-enroll-*`. All fixtures
+are TEST ONLY. Check `pgrep -af 'gates.sh|mk/at-'` before each start and wait
+while two or more other suites are active. The runner does this for both fresh
+phases and always tears down its own stack with Python/harness cleanup.
+TMPDIR/GOTMPDIR and SQLite copies use `.agent/tmp`; no shell cleanup traps.
 
 ```sh
 make -f mk/at-enrollment.mk at-enrollment-lint
@@ -14,53 +15,52 @@ python3 tests/e2e/at/enrollment/disktmp.py go test ./...
 git diff --check
 ```
 
-The live target intentionally remains nonzero while any required AT07 row is
-blocked. Root AT06/AT07 JSON files retain per-row observations, exact source,
-probe digest, UTC intervals, command exits and cleanup inventory. Immutable
-attempts remain in history. The follow-up-6 archive predates all new writes.
+## Measured result
 
-Independent installer checks compare each wrapper's quiescent before/after
-files, restore its captured services with the shared helper, and exercise the
-installer-node authenticated proxy hold/release plus exact ledger snapshots.
-The five composed serving/retired-stream rows retain D-116/D-105/D-112 blockers.
-The ordinary enrolled node supplies the separate populated-lease freeze source;
-it is never substituted for installer-node usage retention.
+Run `f27a81a0-183e-46b4-85a8-304b2f64b635`, UTC `2026-10-31T13:54:03Z`–`2026-10-31T14:07:16Z`.
+Source `569ef8d5cedc48d24bff4b1f67165aa702d269a6`, clean at invocation: `True`.
+Assignment baseline `6d0022d8` includes #302/#312/#324.
+Tree SHA-256 `858a0e271f91f331697616ecfc82a64686d1c80f79d3d52b62056302dce68a12`;
+probe SHA-256 `2b5ad5522bb634a1b16b41129c4a83a22e6c6782945fdd158bcec5776a69c386`.
+AT06 501 pass / 0 blocked / 1 fail; AT07 43 pass / 1 blocked / 2 fail. Live make exits 2: full probe 1,
+join probe 0, all three teardown commands 0. AT06's actual subtest passes;
+its aggregate failure is the shared process exit from AT07, not an inferred
+AT06 product failure. Final inventory: `{"containers": 0, "images": 0, "networks": 0, "volumes": 0}`.
 
-## Follow-up 7 measured result — 2026-10-31
+Before **908** + held **1816** = after **2724 bytes**. Two original events remain attributed once only to the retired incarnation. Origin ACK **3**, independent current ACK **0** through same-key replay; the new stream starts at sequence **1**.
 
-Run `59ef4bf8-7d4a-490f-a74d-6b54394375e0`, UTC `2026-10-31T08:58:59Z`–`2026-10-31T09:05:27Z`.
-AT06 424/0/0; AT07 36/5/0. Full and join rate-limit reviews each record 0 HTTP 429.
-Source `5412e257ee0735877239ae18543f6b81a98a2ae2` is clean at invocation.
-Tree SHA-256 `077fd665095300e9e51a99e32cae684a56638202262fe5de8e97c75244f95247`;
-probe SHA-256 `1795cb53d40d96c463b8abb93ffc666124458e1f56f26ef2ae090459ec35fab8`.
+Freeze withdrawal was **334 ms**, **+107 ms** against the 227 ms baseline, below the 5000 ms bound. Real receipt replay and durable latch/restart passed.
 
-Admission was checked before both starts: 08:59:00 UTC and 09:04:01 UTC,
-each with one other suite (members). The runner tears down the prior phase
-before any admission wait. All three teardown commands exit 0; the final
-inventory has zero containers, networks, volumes and images.
+## Sequence and evidence boundaries
 
-```text
-fresh_teardown: exit 0
-fresh: admitted with 1 other suite(s)
-fresh_startup: exit 0
-compile_probe: exit 0
-live_probe: exit 0
-join_teardown: exit 0
-join: admitted with 1 other suite(s)
-join_startup: exit 0
-live_probe_join: exit 0
-final_teardown: exit 0
-```
+PrepareInstallerNode/RegisterInstallerReleases, API token, first-poll hold and
+RerunInstaller create a real installed node. Configure the resolver backend,
+restore captured services, publish by API, select the native exit and require
+fresh serving, text marker read-back, TCP/UDP receipts and admission counters.
+Wait 90s for baseline sampling/upload (AT20's 10s + 60s allowance), hold usage,
+generate bytes and rerun through the shared wrapper. Preserve systemd limits
+by pacing restarts; compare each wrapper's stopped before/after files.
 
-The live make exit is 2 for AT07's five documented blockers. All current
-assertions pass. Prior failures are retained and explicitly reviewed: D-078
-and the diagnostic member-name lookup are resolved by the fresh observations.
-The initial follow-up-7 attempt stopped in join admission after a completed
-full phase and successful early teardown; [review](history/d83ac47d-0074-42d7-bb3b-65a2db536be5/REVIEW.md).
+Save services, stop updater timer/service, watchdog and agent in documented
+order. Require two byte-equal CLI snapshots. Retire by ETag/Idempotency-Key API,
+observe retired history and external route/identity cleanup, obtain a fresh
+same-node token and call ControlledReinstall. A stopped old agent cannot ACK
+withdrawal; successful external steps are not mislabeled full-operation success.
 
-The serving freeze bound is 227 ms from central conflict to completed live-rule
-read-back, before/including any receipt delivery latency; no exact receipt
-arrival time is invented. The agent's configured heartbeat is 5 seconds.
-After restart, SQLite identity_frozen=1, fresh heartbeat/report, zero rules and
-zero lease members establish persistence. No packet-throughput or OS reboot
-claim follows from these checks.
+Follow [AT20](../usage/AT20.md): preserve original canonical payload/hash/ACK,
+allow production D-118 adoption, restore services, release the hold and observe
+the origin stream first. Read coherent stopped DB/WAL copies, API totals/history,
+and central event/sample/checkpoint evidence. Replay the saved production batch
+under its same key/current certificate and compare canonical result, unchanged
+current ACK and unchanged totals. No SQL transition or synthetic event is used.
+
+Revoke disables publication. After accounting, re-publish through the API and
+prove fresh serving and counted traffic. The additional current-stream ACK
+wait exposes the [1 ns gap defect](current-stream-gap.md). Do not promote that
+row or rerun endlessly before its owners fix it. The final run's current CLI,
+batch bodies, central reads and constraint evidence are retained.
+
+[D-098 archive](history/follow-up-7/README.md) predates replacement writes.
+[Raw run](history/f27a81a0-183e-46b4-85a8-304b2f64b635/AT07.json) is unchanged. [Published assessment](history/f27a81a0-183e-46b4-85a8-304b2f64b635-assessment/README.md)
+only corrects owner/evidence wording for the reached-but-blocked reinstall row;
+all statuses, check names and prior results are identical. See [requests](requests.md).
