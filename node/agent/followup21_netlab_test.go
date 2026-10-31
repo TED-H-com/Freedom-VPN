@@ -186,6 +186,7 @@ while True:
 		t.Fatalf("real recovery failed: %+v", r.eng.decision.Errors)
 	}
 	t.Log("D096 clean Apply raised link but stayed non-serving until harness restored two routes and one IPv6 address; next full Apply + topology check restored serving")
+	followup23LiveProof(t, r)
 }
 
 // Same ingress injector as the netlab deciding observation. tcpdump readiness
