@@ -1,0 +1,92 @@
+{
+  "schema_version": 1,
+  "follow_up": 12,
+  "status": "passed",
+  "namespace": "fvpn-w4-secops",
+  "phases": {
+    "transports": {
+      "run_id": "cf81f6f8-4ccf-43d2-aae2-10121f6b169d",
+      "down": {
+        "command": [
+          "make",
+          "-f",
+          "mk/e2e.mk",
+          "e2e-down"
+        ],
+        "started_at": "2026-10-31T07:39:46Z",
+        "finished_at": "2026-10-31T07:40:29Z",
+        "elapsed_seconds": 42.69,
+        "exit_code": 0,
+        "scan": {
+          "stream": "followup12-transports-e2e-down",
+          "bytes": 3225,
+          "findings": []
+        }
+      },
+      "state_cleanup": {
+        "exit_code": 0,
+        "removed": true
+      },
+      "inventory_after": {
+        "containers": {
+          "exit_code": 0,
+          "count": 0
+        },
+        "networks": {
+          "exit_code": 0,
+          "count": 0
+        },
+        "volumes": {
+          "exit_code": 0,
+          "count": 0
+        },
+        "images": {
+          "exit_code": 0,
+          "count": 0
+        }
+      }
+    },
+    "restore": {
+      "run_id": "dd845a7f-2660-431c-a8e6-c513108cc07d",
+      "down": {
+        "command": [
+          "make",
+          "-f",
+          "mk/e2e.mk",
+          "e2e-down"
+        ],
+        "started_at": "2026-10-31T09:22:17Z",
+        "finished_at": "2026-10-31T09:23:04Z",
+        "elapsed_seconds": 46.824,
+        "exit_code": 0,
+        "scan": {
+          "stream": "followup12-restore-e2e-down",
+          "bytes": 3242,
+          "findings": []
+        }
+      },
+      "state_cleanup": {
+        "exit_code": 0,
+        "removed": true
+      },
+      "inventory_after": {
+        "containers": {
+          "exit_code": 0,
+          "count": 0
+        },
+        "networks": {
+          "exit_code": 0,
+          "count": 0
+        },
+        "volumes": {
+          "exit_code": 0,
+          "count": 0
+        },
+        "images": {
+          "exit_code": 0,
+          "count": 0
+        }
+      }
+    }
+  }
+}

@@ -823,8 +823,8 @@ func (p *liveProbe) finish() {
 	}
 	if phase := os.Getenv("FVPN_SECOPS_FOLLOWUP11"); phase == "restore" || phase == "transports" {
 		name = "followup11-" + phase + "-live.json"
-		if os.Getenv("FVPN_SECOPS_EVIDENCE_FOLLOWUP") == "12" {
-			name = "followup12-" + phase + "-live.json"
+		if followup := os.Getenv("FVPN_SECOPS_EVIDENCE_FOLLOWUP"); followup == "12" || followup == "13" {
+			name = "followup" + followup + "-" + phase + "-live.json"
 		}
 	}
 	if os.WriteFile(filepath.Join(p.root, "docs/e2e/at/secops", name), append(out, '\n'), 0644) != nil {

@@ -74,11 +74,11 @@ The first HTTP probe and first stored row were `16` / `16`, versus retained `15`
 
 Request to `w3-devstack-e2e` + `w3-wire-nodes`: export the actual first response delivered to the retained agent, its matching accepted local store, and applied ACK, so closure can be measured without inferring delivery from compiler rows or a separate probe. Keep SECOPS-21 open until all guards hold.
 
-D-102: the dated devstack answers in `docs/e2e/RESPONSES.md` were read from later main `5ce76e9` once published. They document members/update exports; no first-delivered desired-state response capture is documented. The installer handover was read from `63a4116` once published; it reports ENR-06 socket/runtime fixed, with the required full upgrade still failing at final_sample because state/meter.checkpoint is absent. Both documents were absent on the assigned application base at task start. The node D-099 handover was read before planning. [Read revisions and hashes](followup12-prerequisites.json). No external pin, packaged unit or measured application base changed.
+D-102: the dated devstack answers in `docs/e2e/RESPONSES.md` were read from later main `5ce76e9` once published. They document members/update exports; no first-delivered desired-state response capture is documented. The installer handover was read from `63a4116` once published; it reports ENR-06 socket/runtime fixed, with the required full upgrade still failing at final_sample because state/meter.checkpoint is absent. Both documents were absent on the assigned application base at task start. The node D-099 handover was read before planning. [Read revisions and hashes](history/follow-up-12/followup12-prerequisites.json). No external pin, packaged unit or measured application base changed.
 
 D-103 is resolved by this task: only `fvpn-w4-secops-*`, network `fvpn-w4-secops`, port base 30000. The two-run guard refers to the prepared independent transport and restore fresh-stack runs, each torn down before the next.
 
-The temporary lab scheduling request is resolved: the restore run started after the 09:04:09 UTC preflight admitted it. All earlier waits remain in [the preflight history](followup12-lab-preflight.json).
+The temporary lab scheduling request is resolved: the restore run started after the 09:04:09 UTC preflight admitted it. All earlier waits remain in [the preflight history](history/follow-up-12/followup12-lab-preflight.json).
 
 | Sub-case / missing export | Status / owner | Limit |
 |---|---|---|
@@ -90,4 +90,4 @@ The temporary lab scheduling request is resolved: the restore run started after 
 | manual_grant_withdrawal | blocked / w3-wire-members / contracts | The contract exposes finite createMemberGrant but no revokeMemberGrant HTTP operation; no source-row mutation or invented endpoint used. Finite grant expiration is measured separately. |
 | AT31 full capacity | blocked / operator + w4-at-security-ops | Needs chosen candidate hardware and 20-member/60-device mixed-load relay measurements; bounded single-member export is delivered. |
 
-[Dated handover and archive pins](2026-10-31-follow-up-12-handover.md).
+[Dated handover and archive pins](history/follow-up-12/2026-10-31-follow-up-12-handover.md).
