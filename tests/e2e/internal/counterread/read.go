@@ -2,7 +2,10 @@
 package counterread
 
 import (
+	"bufio"
+	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"os"
 	"os/exec"
@@ -21,13 +24,18 @@ type Heartbeat struct {
 	ReadOK     bool      `json:"read_ok"`
 }
 type Diagnostic struct {
-	Started   time.Time `json:"started"`
-	Completed time.Time `json:"completed"`
-	Stage     string    `json:"stage"`
-	Category  string    `json:"category"`
-	Exit      int       `json:"exit"`
-	Before    Heartbeat `json:"heartbeat_before"`
-	After     Heartbeat `json:"heartbeat_after"`
+	BootID       string         `json:"boot_id"`
+	MonoStart    time.Duration  `json:"read_start_mono_ns,string"`
+	MonoEnd      time.Duration  `json:"read_end_mono_ns,string"`
+	TimingBefore TimingSnapshot `json:"enforcement_before"`
+	TimingAfter  TimingSnapshot `json:"enforcement_after"`
+	Started      time.Time      `json:"started"`
+	Completed    time.Time      `json:"completed"`
+	Stage        string         `json:"stage"`
+	Category     string         `json:"category"`
+	Exit         int            `json:"exit"`
+	Before       Heartbeat      `json:"heartbeat_before"`
+	After        Heartbeat      `json:"heartbeat_after"`
 }
 type Result struct {
 	Upload     uint64 `json:"upload_bytes,string"`
@@ -79,8 +87,14 @@ func Read(ctx context.Context, id uuid.UUID) Result {
 	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
 	defer cancel()
 	out := Result{Diagnostic: Diagnostic{Started: time.Now().UTC(), Stage: "nft_read", Category: "none", Before: heartbeat()}}
+	boot, _ := os.ReadFile("/proc/sys/kernel/random/boot_id")
+	out.Diagnostic.BootID = strings.TrimSpace(string(boot))
+	out.Diagnostic.TimingBefore = latestTiming()
+	out.Diagnostic.MonoStart, _ = enforce.MonotonicNow()
 	raw, err := exec.CommandContext(ctx, "nft", "-j", "list", "table", "inet", "fvpn").CombinedOutput()
+	out.Diagnostic.MonoEnd, _ = enforce.MonotonicNow()
 	out.Diagnostic.Completed = time.Now().UTC()
+	out.Diagnostic.TimingAfter = latestTiming()
 	out.Diagnostic.After = heartbeat()
 	out.Diagnostic.Category = Category(ctx, err, string(raw))
 	if err != nil {
@@ -105,6 +119,41 @@ func Read(ctx context.Context, id uuid.UUID) Result {
 	if out.Present {
 		out.Upload = up.Bytes
 		out.Download = down.Bytes
+	}
+	return out
+}
+
+// The complete record is detached by the product after its operation. Keeping
+// both sides and the same CLOCK_MONOTONIC domain lets consumers join all
+// overlapping operations from the full exported trace without wall inference.
+type TimingSnapshot struct {
+	Available bool            `json:"available"`
+	Error     string          `json:"error,omitempty"`
+	Record    json.RawMessage `json:"record,omitempty"`
+}
+
+func latestTiming() TimingSnapshot {
+	raw, e := os.ReadFile("/var/lib/vpn-node/e2e/enforcement-timing.jsonl")
+	if e != nil {
+		return TimingSnapshot{Error: "timing_not_enabled_or_unreadable"}
+	}
+	out := TimingSnapshot{}
+	scan := bufio.NewScanner(bytes.NewReader(raw))
+	scan.Buffer(make([]byte, 4096), 1<<20)
+	for scan.Scan() {
+		var v struct {
+			Timing json.RawMessage `json:"timing"`
+		}
+		if json.Unmarshal(scan.Bytes(), &v) != nil {
+			return TimingSnapshot{Error: "timing_parse"}
+		}
+		if len(v.Timing) > 0 {
+			out.Record = append(json.RawMessage(nil), scan.Bytes()...)
+			out.Available = true
+		}
+	}
+	if scan.Err() != nil {
+		return TimingSnapshot{Error: "timing_read"}
 	}
 	return out
 }

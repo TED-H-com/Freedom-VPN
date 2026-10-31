@@ -51,6 +51,7 @@ func TestE2E_Followup20Grants(t *testing.T) {
 	if changed.Status != 200 {
 		t.Fatalf("fleet config HTTP %d", changed.Status)
 	}
+	must(s.EnableEnforcementTiming(ctx))
 	must(s.PrepareNativeUnderlay(ctx))
 	must(s.InstallFixtureProbe(ctx))
 	must(s.StartFixtureTargets(ctx))
@@ -195,6 +196,8 @@ func (r *runner) memberGrants20(ctx context.Context, s *Stack) {
 	transfer, te := s.fixtureProbe(ctx, r.lab.member, "-mode", "bulk", "-addr", r.lab.originIP+":9446", "-device", r.usageDevice.String())
 	afterCounter, ae := s.DeviceByteCounters(ctx, r.usageDevice)
 	noteJSON(&rec, "counted_forwarding", map[string]any{"before": beforeCounter, "after": afterCounter, "transfer": transfer})
+	timing, timingErr := s.EnforcementTiming(ctx)
+	noteJSON(&rec, "node_enforcement_and_lease_timing", timing)
 	events, wireErr := s.MemberGrantEvidence(ctx)
 	noteJSON(&rec, "original_wire", events)
 	// Join report lease IDs to genuine signed response bodies, never inferred slots.
@@ -220,7 +223,7 @@ func (r *runner) memberGrants20(ctx context.Context, s *Stack) {
 	}
 	same := middleErr == nil && afterErr == nil && bytes.Equal(baseline, middle) && bytes.Equal(baseline, after)
 	noteJSON(&rec, "proof", map[string]any{"invariants_byte_equal": same, "empty_lease_report_join": empty, "populated_lease_report_join": populated, "distinct_reports": provisional.ReportId != serving.ReportId, "true_to_serving_receipt_ms": servingEvent.Completed.Sub(trueFlip.Completed).Milliseconds()})
-	if same && empty && populated && servingOK && wireErr == nil && be == nil && te == nil && ae == nil && transfer.Available && transfer.Bytes == 64064 && afterCounter.Upload > beforeCounter.Upload && afterCounter.Download > beforeCounter.Download {
+	if same && empty && populated && servingOK && wireErr == nil && timingErr == nil && be == nil && te == nil && ae == nil && transfer.Available && transfer.Bytes == 64064 && afterCounter.Upload > beforeCounter.Upload && afterCounter.Download > beforeCounter.Download {
 		rec.Status = StatusPass
 	}
 }

@@ -74,7 +74,7 @@ func TestE2E_Followup20CounterExpiry(t *testing.T) {
 	all := true
 	load, _ := l.docker(l.node, "sh", "-c", "awk '{print $1,$2,$3}' /proc/loadavg")
 	recPathNote(&rec)("host_load_from_owned_namespace", strings.TrimSpace(string(load)))
-	for time.Now().Before(deadline.Add(6 * time.Second)) {
+	for time.Now().Before(deadline.Add(16 * time.Second)) {
 		status, se := s.EstablishedStatus(ctx)
 		counter, ce := s.DeviceByteCounters(ctx, device)
 		ticks = append(ticks, tick{time.Now().UTC(), status, counter, se == nil && ce == nil})
@@ -82,6 +82,8 @@ func TestE2E_Followup20CounterExpiry(t *testing.T) {
 		all = all && se == nil && ce == nil
 		time.Sleep(250 * time.Millisecond)
 	}
+	timing, timingErr := s.EnforcementTiming(ctx)
+	noteJSON(&rec, "full_enforcement_timing", timing)
 	noteJSON(&rec, "samples", ticks)
 	noteJSON(&rec, "counter_categories", categories)
 	noteJSON(&rec, "event_at", deadline)
@@ -105,7 +107,7 @@ func TestE2E_Followup20CounterExpiry(t *testing.T) {
 			break
 		}
 	}
-	if all && stable && final.Status.Running && final.Status.UDPAttempts > ticks[0].Status.UDPAttempts && !lastTCP.After(deadline.Add(12*time.Second)) && !lastUDP.After(deadline.Add(12*time.Second)) {
+	if all && timingErr == nil && stable && final.At.After(deadline.Add(12*time.Second)) && final.Status.Running && final.Status.UDPAttempts > ticks[0].Status.UDPAttempts && !lastTCP.After(deadline.Add(12*time.Second)) && !lastUDP.After(deadline.Add(12*time.Second)) {
 		rec.Status = StatusPass
 	}
 	// The recorded deadline is the product finite-grant deadline. Heartbeat is
