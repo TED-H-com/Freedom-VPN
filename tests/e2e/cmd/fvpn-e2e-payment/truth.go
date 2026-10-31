@@ -63,7 +63,10 @@ func (s *server) hook(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		_, currencyErr := billing.CurrencyDigits(v.Currency)
-		if v.Start <= 0 || v.End <= v.Start || v.Amount <= 0 || v.Amount > 1_000_000_000 || v.Refund < 0 || v.Refund > v.Amount || (v.Status != "active" && v.Status != "canceled") || currencyErr != nil || (!v.Paid && v.Refund != 0) {
+		// past_due keeps the original paid invoice (SECOPS-17). Clearing Paid
+		// is rejected below with the other immutable-invoice changes.
+		statusOK := v.Status == "active" || v.Status == "canceled" || (v.Status == "past_due" && v.Paid)
+		if v.Start <= 0 || v.End <= v.Start || v.Amount <= 0 || v.Amount > 1_000_000_000 || v.Refund < 0 || v.Refund > v.Amount || !statusOK || currencyErr != nil || (!v.Paid && v.Refund != 0) {
 			writeJSON(w, 400, map[string]string{"error": "snapshot values"})
 			return
 		}

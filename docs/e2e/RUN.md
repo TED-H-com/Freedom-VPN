@@ -89,6 +89,40 @@ masquerading; they are not documentation prefixes or public traffic targets.
 Each origin is `.10` in its listed subnet. This task starts only `e2e` / `18000`.
 The enrollment harness owner must replace its old `66000` binding with `12000`.
 
+## Container restart
+
+Every compose service was `restart: "no"`. Three now use `unless-stopped`:
+`worker`, `control`, and `netbird`. Management, signal, and relay are that one
+NetBird container, not three services. A process exit brings those three back.
+`docker stop` still leaves them down, which is what `lease-expiry` requires of
+control. The operator must restart every other service: `postgres`, `idp`,
+`payment`, `origin`, `gateway`, `coredns`, `adguard`, `node-netns`, `node`, and
+`member`. Gateway stays `restart: "no"`; it is the nginx proxy in front of
+NetBird, not the management process.
+
+Worker readiness is `http://127.0.0.1:9092/readyz` inside the worker container
+(`wget` is on that image). Port 9092 is not published. Control readiness remains
+`https://127.0.0.1:8443/readyz`. NetBird readiness remains TCP `127.0.0.1:8080`.
+Do not use `docker inspect` as the readiness signal.
+
+## Node embedded DNS
+
+Docker installs an `ip nat` table in the node network namespace so `127.0.0.11`
+can answer container DNS. Those rules use iptables `xt` targets. Whole-ruleset
+read-back treats an `xt` target reachable from postrouting as
+`FLOWTABLE_BYPASS`, so the node entrypoint deletes that table before the agent
+starts. `inet fvpn` is not that table. The primary node cannot use compose
+`extra_hosts`: that option conflicts with `network_mode: service:node-netns`.
+`fvpn-e2e-prepare` writes `/etc/vpn-node/lab-hosts`, and the entrypoint appends
+each name that is not already in the process container's `/etc/hosts`:
+`agent.example.invalid`, `netbird.example.invalid`, `portal.example.invalid`,
+`idp.example.invalid`, and `releases.example.invalid`. A name already present
+wins. Docker rejects `--add-host` on `--network container:` the same way, so
+`node2` and the clone do not pass that flag. They use the copied `lab-hosts`.
+The clone rewrites `agent.example.invalid` to the presentation control address
+before its process starts. AdGuard's bootstrap DNS is the CoreDNS address, not
+`127.0.0.11`.
+
 ## Gateway trust and client rate principals
 
 The public nginx location appends `X-Forwarded-For` with
@@ -123,9 +157,17 @@ reconciliation; changing a file alone does not update either process. No node
 restart is required for this setting; the node receives product-issued policy
 and lease updates. Existing grace projections are not rewritten by the lab.
 
+`POST /e2e/snapshot` accepts `status=past_due` only while `paid` stays true.
+That keeps the original paid invoice (same period, amount, and currency) and
+makes the provider subscription `past_due`, so a later reconciliation can
+project `grace_from = paid_through` and `grace_until = paid_through +
+grace_seconds`. Clearing `paid`, shrinking the refund, or changing the invoice
+identity is still rejected. This is the fake provider only. Product billing
+code is unchanged.
+
 A harness records the configured seconds/reason, control and worker start times,
 a paid provider snapshot and successful reconciliation, a positive counted
-member flow, then the unpaid provider snapshot/event and read-only projected
+member flow, then the `past_due` provider snapshot/event and read-only projected
 `grace_from`/`grace_until`, desired/lease generation, and before/after counters
 at the deadline. Do not infer payment or grace from webhook HTTP acceptance.
 Only inject control-loss/short-deadline faults after the positive flow. This
@@ -232,10 +274,25 @@ creates, activates with If-Match, and polls policy revisions. `Call` accepts
 product `/api/v1/` paths using the authenticated session. Never log session
 cookies, CSRF values, manifest signing keys or native user credentials.
 
-`Stack.Service(ctx, "start", releaseDirectory)` and `Service(ctx, "stop", "")`
-operate only on the stack node. `PauseAgent(ctx, true)` persists the pause marker
-so the entrypoint does not restart a stopped agent; pass false to resume. The
-boot agent's recovery config is `/etc/vpn-node/updater-recover.json`, created
+`pause-agent` (`/var/lib/vpn-node/e2e/pause-agent`) is the only agent stop path.
+The entrypoint supervisor is the only process that starts or stops `fvpn-agent`.
+It polls every 0.2 seconds: while the marker exists it reaps the agent, and
+while the marker is absent it keeps exactly one process of the release named in
+`agent-selected` (or `/usr/local`). A crash while paused stays stopped. A crash
+while running is respawned. Repeated start of the same release does not restart
+the process (D-053).
+
+`Stack.Service(ctx, "stop", "")` creates the marker and waits until the
+supervisor has reaped the agent. `Service(ctx, "start", releaseDirectory)` writes
+`agent-selected` and then clears the marker, and waits until the supervisor owns
+exactly one matching process. Both are idempotent. Each prints the PID the
+supervisor owns (`0` when stopped). They do not fork `fvpn-agent` themselves.
+`PauseAgent` still only creates or removes the marker and does not wait. Harnesses
+may keep toggling the file directly. Removing it does not wait; the next poll
+applies it. Call `agent-service.sh start` when the caller needs the supervisor's
+PID. Direct `stop`/`start` is safe to call while the loop is running.
+
+The boot agent's recovery config is `/etc/vpn-node/updater-recover.json`, created
 inside the node after enrollment from its real node/incarnation/boot IDs.
 The one-shot `/var/lib/vpn-node/e2e/updater.json` remains the updater-run trigger
 and is renamed after use. Recovery is never disabled or treated as success on
@@ -381,6 +438,36 @@ identity, state database or readiness row is copied. `Enroll` still targets
 `node`; `EnrollAt` accepts only `node` or `node2`. `e2e-down` removes both.
 The hook does not itself publish an exit or prove simultaneous multi-exit traffic.
 Boot-source variants, physical networks and physical arm64 remain operator runs.
+
+## Clone presentation network (D-072 / ENR-07)
+
+`StartClonedIdentityFixture(ctx, "node")` keeps that signature. Before the clone
+process starts it attaches a second IPv4 /24, `fvpn-<prefix>-node-clone-net`.
+The subnet is the lab prefix with the second octet increased by one
+(`172.28.30.0/24` becomes `172.29.30.0/24`). It is not an assigned port-slot lab.
+Control is connected at `.30`. The clone network namespace is connected at
+`.23`. The process container uses `--network container:` and therefore does not
+share the namespace's `/etc/hosts`. Docker rejects `--add-host` in that mode.
+`StartClonedIdentityFixture` rewrites the clone's copied `lab-hosts` so
+`agent.example.invalid` is the presentation control address. The entrypoint
+appends that file, and the resolver-proxy's mTLS dial sources from the other
+/24. The legitimate node stays on the lab /24. A clean `node2` is not attached
+and keeps the lab address in `lab-hosts`. Masquerade is off. `e2e-down` removes
+the network because its token is `node-clone`.
+
+```go
+presentation, err := stack.AttachClonePresentationNetwork(ctx, "")
+if err != nil { t.Fatal(err) }
+// presentation.Network, Subnet, Control, Clone.
+// Pass the clone netns to attach it. A process container on that namespace
+// must name agent.example.invalid as presentation.Control in its lab-hosts.
+// Do not pass --add-host; Docker rejects it with --network container:.
+presentation, err = stack.AttachClonePresentationNetwork(ctx, "fvpn-e2e-node-clone-netns")
+```
+
+An empty container only prepares the bridge and control. The fixture calls the
+same hook with the clone netns, rewrites `lab-hosts`, then starts the process.
+Same-lab /24 addresses do not conflict: compatibility domains are IPv4 /24.
 
 ## Dedicated updater probe (D-063/D-064)
 

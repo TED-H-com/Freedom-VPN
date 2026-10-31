@@ -132,6 +132,24 @@ func TestBIL01_ProviderTruthCheckoutRefundsAndCancellation(t *testing.T) {
 			t.Fatal("tampered event accepted")
 		}
 	}
+	past := snap
+	past.Status = "past_due"
+	if code, _ := call("/e2e/snapshot", hook, past); code != 200 {
+		t.Fatal("past_due snapshot")
+	}
+	sub, err := provider.FetchSubscription(ctx, "sub_"+checkout.ID)
+	if err != nil || sub.Status != "past_due" {
+		t.Fatalf("past_due subscription readback: %v", err)
+	}
+	invoices, err := provider.FetchInvoices(ctx, sub)
+	if err != nil || len(invoices) != 1 || invoices[0].AmountMinor != snap.Amount || invoices[0].Period.Start.Unix() != snap.Start || invoices[0].Period.End.Unix() != snap.End {
+		t.Fatal("past_due dropped the original paid invoice")
+	}
+	cleared := past
+	cleared.Paid = false
+	if code, _ := call("/e2e/snapshot", hook, cleared); code == 200 {
+		t.Fatal("past_due cleared the paid invoice")
+	}
 	snap.Refund = 1
 	if code, _ := call("/e2e/snapshot", hook, snap); code != 409 {
 		t.Fatal("refund regression accepted")

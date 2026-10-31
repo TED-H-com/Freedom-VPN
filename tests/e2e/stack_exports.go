@@ -156,8 +156,11 @@ func atomicHook(path string, raw []byte) error {
 	return os.Rename(path+".tmp", path)
 }
 
-// Service invokes the lab process supervisor. PauseAgent is required to keep a
-// deliberate stop in force; the entrypoint otherwise restarts the agent.
+// Service asks the node supervisor to stop or start the agent. stop sets
+// pause-agent and waits until the supervisor has reaped the process. start
+// records the release, clears the marker, and waits for the supervisor's
+// process. Neither command forks fvpn-agent itself. PauseAgent still only
+// creates or removes the marker and does not wait.
 func (s *Stack) Service(ctx context.Context, action, release string) error {
 	if action != "start" && action != "stop" {
 		return fmt.Errorf("unknown service action")
