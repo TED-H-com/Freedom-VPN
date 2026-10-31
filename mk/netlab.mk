@@ -9,8 +9,8 @@ FVPN_LAB_PREFIX ?= fvpn-netlab
 NETLAB_MK := $(lastword $(MAKEFILE_LIST))
 ROOT := $(abspath $(dir $(NETLAB_MK))/..)
 NETLAB_IMAGE := $(FVPN_LAB_PREFIX):lab
-NETLAB_SCRATCH := /tmp/$(FVPN_LAB_PREFIX)-scratch
-NETLAB_BIN := /tmp/$(FVPN_LAB_PREFIX)-fvpn-netlab
+NETLAB_SCRATCH := $(ROOT)/.agent/tmp/$(FVPN_LAB_PREFIX)-scratch
+NETLAB_BIN := $(ROOT)/.agent/tmp/$(FVPN_LAB_PREFIX)-fvpn-netlab
 # User-defined bridge. Docker installs embedded DNS NAT for 127.0.0.11 in
 # the container netns. topology.sh drops the default route that comes with it.
 NETLAB_DNS_NET := $(FVPN_LAB_PREFIX)-dns

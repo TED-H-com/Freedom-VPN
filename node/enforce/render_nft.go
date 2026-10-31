@@ -317,6 +317,15 @@ func RenderBaseline(m Model, state State) (string, error) {
 	if err := markerRule(&b, "forward", "fvpn_generation=0 fvpn_baseline=1 fvpn_metering="+MeteringVersion); err != nil {
 		return "", err
 	}
+	// Quarantine retains tc, so keep the class map needed to recover the same
+	// minors after the baseline (§11.4). Ordinary boot baselines have no map.
+	if len(quarantinedLinks(state.Sets)) > 0 {
+		for _, id := range sortedIDs(state.Classes) {
+			if err := markerRule(&b, "forward", fmt.Sprintf("fvpn_class=%s:%x", id, state.Classes[id])); err != nil {
+				return "", err
+			}
+		}
+	}
 	in := m.Datapath.MemberIngress
 	up := m.Datapath.Uplink
 	if m.Probe != nil {
