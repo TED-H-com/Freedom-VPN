@@ -63,6 +63,12 @@ func prepareLab() error {
 		return fmt.Errorf("container %s is not running", prefix())
 	}
 	_, _, _ = dockerExec("sh", "-c", "mkdir -p "+labDir+"/state "+labDir+"/identity "+labDir+"/journal")
+	if _, _, err := dockerExec("chmod", "700", labDir+"/journal"); err != nil {
+		return err
+	}
+	if _, _, err := dockerExec("python3", "/work/tests/netlab/agent/topology-owner.py", "capture"); err != nil {
+		return err
+	}
 	if err := dockerDetach("sh", "-c", "exec fvpn-labcontrol -dir "+labDir+" -admin 127.0.0.1:9091 >"+labDir+"/labcontrol.log 2>&1"); err != nil {
 		return err
 	}
@@ -396,13 +402,33 @@ func startProc(t *testing.T, bin, pidFile, logFile string) {
 
 func startAgent(t *testing.T) {
 	t.Helper()
+	_, _, _ = dockerExec("python3", "/work/tests/netlab/agent/topology-owner.py", "stop")
+	if err := dockerDetach("python3", "/work/tests/netlab/agent/topology-owner.py", "run"); err != nil {
+		t.Fatal(err)
+	}
 	startProc(t, "fvpn-agent", labDir+"/agent.pid", labDir+"/agent.log")
 }
 func startWatch(t *testing.T) {
 	t.Helper()
+	deadline := time.Now().Add(10 * time.Second)
+	for {
+		_, _, err := dockerExec("python3", "-c", `import time
+p=dict(line.split(' ',1) for line in open('/scratch/w2/heartbeat').read().splitlines()[1:])
+assert p['serving']=='1' and p['baseline_ok']=='1' and 0 <= time.monotonic_ns()-int(p['mono_ns']) < 1000000000`)
+		if err == nil {
+			break
+		}
+		if time.Now().After(deadline) {
+			t.Fatal("fresh serving heartbeat required before watchdog injection", debugPlane(t))
+		}
+		time.Sleep(100 * time.Millisecond)
+	}
 	startProc(t, "fvpn-watchdog", labDir+"/watchdog.pid", labDir+"/watchdog.log")
 }
-func stopAgent() { stopProc("fvpn-agent", labDir+"/agent.pid") }
+func stopAgent() {
+	stopProc("fvpn-agent", labDir+"/agent.pid")
+	_, _, _ = dockerExec("python3", "/work/tests/netlab/agent/topology-owner.py", "stop")
+}
 func stopWatch() { stopProc("fvpn-watchdog", labDir+"/watchdog.pid") }
 
 func flushConntrack(t *testing.T) {

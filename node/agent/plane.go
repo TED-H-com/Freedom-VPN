@@ -90,7 +90,11 @@ func flushOneConntrack(ctx context.Context, ex enforce.Executor, addr netip.Addr
 // Apply installs the model. On a verification failure enforce itself rolls
 // back to the baseline (§8.2, §10.3).
 func (p SystemPlane) Apply(ctx context.Context, m enforce.Model, prev map[string]enforce.CounterValue) (enforce.ApplyResult, error) {
-	return enforce.Apply(ctx, p.executor(), m, prev)
+	ex := p.executor()
+	if timing, ok := ctx.Value(applyReadKey{}).(*applyReadTiming); ok {
+		ex = timedApplyExecutor{ex, timing}
+	}
+	return enforce.Apply(ctx, ex, m, prev)
 }
 
 // VerifyServing checks live nft and tc state without changing networking.

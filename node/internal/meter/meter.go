@@ -203,6 +203,7 @@ func (m *Meter) sample(ctx context.Context, final bool) error {
 		return err
 	}
 	if final && head.OpenEpoch == uuid.Nil {
+		m.clearSource()
 		return ErrNoEpoch
 	}
 	p, err := planSample(head, obs, m.nowUTC(), m.interval, final)
@@ -334,7 +335,35 @@ func (m *Meter) FinalSample(ctx context.Context) error {
 	return m.sample(ctx, true)
 }
 
-// ResumeSampling clears a barrier that was not followed by FinalSample.
+// PrepareSampling durably opens the next epoch from a real counter read while
+// keeping the sampler paused. The caller must keep forwarding blocked until
+// this succeeds, then install its admission rules and call ResumeSampling.
+// Otherwise the first admitted bytes could become the new epoch's baseline.
+func (m *Meter) PrepareSampling(ctx context.Context) error {
+	if err := m.Barrier(ctx); err != nil {
+		return err
+	}
+	m.mu.Lock()
+	if m.closed {
+		m.mu.Unlock()
+		return ErrClosed
+	}
+	if m.sampling {
+		m.mu.Unlock()
+		return ErrBusy
+	}
+	m.sampling = true
+	m.mu.Unlock()
+	defer func() {
+		m.mu.Lock()
+		m.sampling = false
+		m.cond.Broadcast()
+		m.mu.Unlock()
+	}()
+	return m.reconcile(ctx)
+}
+
+// ResumeSampling clears a barrier after any required PrepareSampling.
 func (m *Meter) ResumeSampling() {
 	m.mu.Lock()
 	m.paused = false
