@@ -128,13 +128,21 @@ def main():
             'below_retained_generation': int(first['generation']) < int(retained or 0),
             'first_post_restore_observation': next(iter(generation.get('observations', [])), None),
             'interpretation': 'A lower first offer is stale by agentstore.AcceptDesired. The agent silently ignores ErrStaleGeneration, so rejection is inferred from the generation comparison, not claimed as a logged event.'}
+    prior_generation = load(PUBLIC / 'followup10-attempt1-live.json').get('SECOPS-21', {})
+    prior_stale = bool(prior_generation.get('offers') and
+        int(prior_generation['offers'][0]['generation']) < int(prior_generation.get('retained_at_t1', {}).get('applied', '0')))
+    if prior_stale:
+        generation['prior_attempt_first_offer'] = prior_generation['offers'][0]
+        generation['prior_attempt_retained_at_t1'] = prior_generation.get('retained_at_t1')
+        generation['prior_attempt_evidence'] = 'followup10-attempt1-live.json'
+        generation['repeat_pass_cannot_erase_startup_race'] = True
     findings = {}
     for number, ok, actual in [
         (17, grace_verdict(live.get('SECOPS-17', {})), live.get('SECOPS-17', {})),
         (18, evaluation.get('t0_t1_device_revocation_fenced_d076'), peers),
         (19, evaluation.get('secops19_visibility_and_zero_convergence'), s3.get('secops19_visibility', {})),
         (20, live.get('SECOPS-20', {}).get('passed') is True, live.get('SECOPS-20', {})),
-        (21, generation_verdict(live.get('SECOPS-21', {})), live.get('SECOPS-21', {})),
+        (21, generation_verdict(live.get('SECOPS-21', {})) and not prior_stale, live.get('SECOPS-21', {})),
     ]:
         name = f'SECOPS-{number}'
         findings[name] = 'closed' if ok else 'open'
@@ -190,7 +198,7 @@ def main():
                'SECOPS-20':'#240 lab NAT removal and #241 D-079 present; serving read-back and before history identify the observed cause.',
                'SECOPS-21':'#245 is present. Require first offer acceptance; if compilation precedes the first fresh retained-generation observation, the restored central applied value can still be stale. Review the timestamped first_offer_analysis and order restoration accordingly.'}
     for name in sorted(findings):notes+=f'| {name} | **{findings[name]}** | {reasons[name]} [{name}.json]({name}.json) |\n'
-    notes += f'| SECOPS-05 / AT30 | **{status}** | [Restore measurement table](restore-reconcile.md). |\n| D-077 | **{reg.get("passed",False)}** | [HTTP call table](D-077.json); member session 401, revoked device 409 STATE_CONFLICT, same-key replay, existing operation. |\n| AT29 established transports / AT31 forced relay | **Deferred** | Await devstack follow-up 15; no approximation or rerun. |\n'
+    notes += f'| SECOPS-05 / AT30 | **{status}** | [Restore measurement table](restore-reconcile.md). |\n| D-077 | **{"closed" if reg.get("passed") else "open"}** | [HTTP call table](D-077.json); member session 401, revoked device 409 STATE_CONFLICT, same-key replay, existing operation. |\n| AT29 established transports / AT31 forced relay | **Deferred** | Await devstack follow-up 15; no approximation or rerun. |\n'
     notes += '\nPrior request history is preserved byte-for-byte in [follow-up 9](history/follow-up-9/requests.md). No additional product/lab changes requested unless the recorded open findings require them.\n'
     md('requests.md',notes)
     md('RUN.md','''# Follow-up 10 run instructions
