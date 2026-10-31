@@ -1,61 +1,23 @@
-# Enrollment acceptance requests — follow-up 8
+# Enrollment acceptance requests — follow-up 9
 
-2026-10-31 — **1 request to orchestrator.**
+2026-10-31 — **0 requests to orchestrator.** ENR-07 is closed by the measured D-130 result; all five rows pass.
 
-## New current-stream gap precision defect — agent/meter and usage-central
+| Row | Status | Evidence |
+|---|---|---|
+| installer_rerun | pass | Same identity, stopped file equality, restored serving and counted traffic. |
+| controlled_reinstall | pass | Same Node, new incarnation, retired certificate denial, fresh serving, gap ACK 1 and counted event ACK 2. |
+| counted_unacked_usage | pass | Held CLI records plus persistent TCP/UDP receipts and admission counters. |
+| identity_ledger_preserved | pass | Original canonical payloads/hashes/ACK survive production adoption and original-stream upload. |
+| historical_usage_retained | pass | Four named AT20 assertions, once-only samples and distinct retired/current totals. |
 
-[Deciding evidence](current-stream-gap.md): current gap event 1 spans 1 ns;
-PostgreSQL stores both endpoints identically and rejects
-`usage_events_interval_check`. Repeated retryable uploads cannot advance current
-ACK beyond 0; counted event 2 retains 908 bytes. The earlier retired stream is
-successfully ACKed through 3 with correct historical attribution.
+Retired usage: **908 + 1816 = 2724 bytes**, original ACK **3**. The fresh stream independently advances **1 → 2**, attributing **550 upload + 358 download = 908 bytes** to its own incarnation, member, device and binding revision. Historical payloads, hashes, samples and totals remain unchanged.
 
-Route to the owners of `node/internal/meter/delta.go` and
-`internal/usage/ingest.go` / central timestamp persistence. Fix generation and
-handle already immutable blocked gaps without rewriting this lane's events or
-loosening accounting/isolation. Those paths are outside enrollment ownership;
-none was edited. Rerun the composed reinstall/current-ACK check after the fix.
-
-| Row | Status | Owner | Evidence |
-|---|---|---|---|
-| installer_rerun | pass | installer | Same identity and stopped file equality, restored serving and counted traffic; AT07 JSON and text rulesets. Devstack 18 installer-marker-migration / installer-wrappers corroborate. |
-| controlled_reinstall | blocked | agent/meter; usage-central | Wrapper, new identity, retained files, strict verifier, serving and fresh traffic pass. New current stream cannot ACK its 1 ns gap; [deciding evidence](current-stream-gap.md). This is not D-116. |
-| counted_unacked_usage | pass | agent / meter | Installer-node nonzero held upload/download, TCP/UDP receipts and counter increases; devstack 18 installer-usage corroborates. |
-| identity_ledger_preserved | pass | usage / agent | Original canonical payloads/hashes/ACK survive D-118 adoption; original stream delivered first using the current presenter. |
-| historical_usage_retained | pass | usage / control | AT20 named equality, historical samples, canonical same-key replay and independent ACKs all pass. |
-
+Run `891ee9b8-bf01-4583-a47a-9542c8b04c8a` re-asserts all four named [AT20 assertions](../usage/AT20.md). See [full JSON](AT07.json) and [resolution](current-stream-gap.md).
 
 ## D-102 answers consumed
 
-[Enrollment response](../../RESPONSES.md#enrollment--2026-10-31): installer-node
-hold/snapshot/transport exports, ConfigureInstallerServing and shared service
-restoration are exercised. Its old D-116 blocker wording is superseded by #302,
-[devstack 18](../../runs/2026-10-31/followup18/README.md) and this lane's live
-marker/serving evidence. Legacy-marker migration is cited from devstack's
-installer-marker-migration row; this lane never manually edits markers.
+The [enrollment and usage responses](../../RESPONSES.md) supply the installer-node hold, snapshot, transport and service wrappers, API retirement, same-node replacement, coherent stopped ledger export and original/current ACK selection. D-116/#302 and D-118/#312 remain measured prerequisites. No manual installer invocation, SQL transition or synthetic observation supplies this result.
 
-[Usage response](../../RESPONSES.md#usage--2026-10-31): systemd quiescence,
-API retirement and same-node token, ControlledReinstall, restore, release,
-coherent ledger copies and origin/current ACK separation are exercised. Its
-activation-hook gap was closed by agent-core 25/#312. No SQL retirement or
-manual hand-off supplies the result.
+## Known gaps
 
-Before **908** + held **1816** = after **2724 bytes**. Two original events remain attributed once only to the retired incarnation. Origin ACK **3**, independent current ACK **0** through same-key replay; the new stream starts at sequence **1**.
-
-The named [AT20 assertions](../usage/AT20.md) pass here:
-BeforePlusHeldByteEquality, OriginalPayloadAndHistoricalAttribution,
-AgentSameKeyStoredResultReplay, OriginACKAndIndependentCurrentACK. D-118 can
-change SQLite DB/WAL containers during replacement bootstrap; the required
-original canonical payloads, hashes and ACK are unchanged. Same-incarnation
-rerun still proves quiescent file equality. Empty new-stream event 1 is not
-credited as traffic; its subsequent central precision failure is retained above.
-
-Freeze withdrawal was **334 ms**, **+107 ms** against the 227 ms baseline, below the 5000 ms bound. Real receipt replay and durable latch/restart passed.
-
-## Known gaps outside these AT07 rows
-
-The separate post-upgrade seed HASH_MISMATCH remains with installer 6 / updater
-17 in [devstack 18](../../runs/2026-10-31/followup18/README.md#candidate-health-and-post-upgrade-reenrollment).
-This run does not perform an upgrade. Physical arm64 is unmeasured; compilation
-passes. Freeze restart is an agent process restart, not OS reboot. AT20's other
-three named assertions retain the usage lane's evidence; no rerun is claimed.
+Physical arm64 and OS reboot remain unmeasured; arm64 compilation and agent process restart are separate evidence. Post-upgrade seed behaviour belongs to **devstack 19 / installer 7 / updater 18** and is not re-measured here. The [historical devstack 18 seed failure](../../runs/2026-10-31/followup18/README.md#candidate-health-and-post-upgrade-reenrollment) and [updater diagnosis](../../../updates/node-updater.md#post-upgrade-seed-diagnosis--2026-10-31) remain references, not new enrollment acceptance. This run performs no upgrade.
