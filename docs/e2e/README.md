@@ -370,3 +370,170 @@ scope boundaries are in [RUN.md](RUN.md) and the dated harness request notes.
 The [2026-10-31 final run](runs/2026-10-31/followup15/README.md) records
 acceptance 32 passed / 1 blocked / 0 failed and exports 21 passed / 0 blocked /
 1 failed. IPv6 is blocked; real installer service startup is the failed case.
+
+## Follow-up 16 shared fixtures
+
+Answers to other lanes now live in [RESPONSES.md](RESPONSES.md) under D-102.
+Only a lane's owner edits its `docs/e2e/at/<lane>/requests.md`.
+
+The import surface is `tests/e2e/internal/labstack` with `-tags e2e`. Use the
+assigned prefix and port slot from [RUN.md](RUN.md). The devstack owner runs:
+
+```sh
+mkdir -p .agent/tmp
+export TMPDIR="$PWD/.agent/tmp" GOTMPDIR="$PWD/.agent/tmp"
+export CGO_ENABLED=0 GOTOOLCHAIN=local
+export FVPN_E2E_PREFIX=e2e FVPN_E2E_PORT_BASE=18000
+FVPN_E2E_TWO_RESOLVERS=true make -f mk/e2e.mk e2e-up E2E_RESET=1
+FVPN_E2E_FIXTURES16=1 go test -v -tags e2e -count=1 -timeout 35m \
+  -run '^TestE2E_Followup16Fixtures$' ./tests/e2e
+make -f mk/e2e.mk e2e-down
+```
+
+This is a fresh-stack campaign. It writes one directory per run UUID beneath
+`docs/e2e/runs/<UTC-date>/followup16/`, preserving failed attempts. It does not
+invoke the ENR-06 installer wrappers. Every record carries its run/source IDs;
+fixture success does not pass an entire AT or an unexecuted platform.
+
+### Finite plan-grant transition (members request 3)
+
+Create the lower plan through `Stack.ActivatePolicy`, then call:
+
+```go
+transition, err := stack.ReplaceFiniteGrant(ctx, admin, memberID, lowerPlanRevision,
+    time.Now().UTC().Add(time.Hour))
+// Always export transition, including on error: a partial transition is useful evidence.
+if err != nil { t.Fatal(err) }
+if !transition.Projected { t.Fatal("worker projection incomplete") }
+```
+
+`memberID` and `lowerPlanRevision` are UUIDs, and `admin` is the authenticated
+`BrowserSession`. The member must have a live finite grant and no primary
+subscription. The hook resolves the actor from that exact active admin session,
+reads the prepared members configuration, calls production
+`members.Service.RevokeGrant` for the live grants, then `POST
+/api/v1/admin/members/{id}/grants`. The public contract has no revoke route.
+It polls the returned operation to `succeeded` and reads the entitlement/device
+projection; it never writes projector-owned rows (D-050). Expired/excessive
+replacement deadlines and non-grant-only members are rejected before revocation.
+
+Exports include member/plan/operation IDs, revoked grant IDs, finite deadline,
+separate `accepted`/`projected` flags, idempotent revoke/create replay results, before/after decimal-string revisions,
+device limit, authorized/pending counts and observation time. An error after
+revocation leaves the partial result visible; it is not an atomic plan swap.
+The same hook restores the original higher plan. Reauthorization stays on the
+production HTTP route. The assembled scenario checks three real native peers,
+a 3-to-2 downgrade, rejected expired input and restoration to three.
+
+### Native underlay and protocol/platform inputs
+
+Call `PrepareNativeUnderlay(ctx)` on a fresh stack **before enrollment/apply**,
+then `InstallFixtureProbe(ctx)` and `StartFixtureTargets(ctx)`. The former attaches a prefix-owned IPv6 bridge
+to the actual node and member, and creates private rebinding targets inside the
+node namespace. All host networking stays untouched. Adding interfaces to an
+already serving node is intentionally not a supported setup path because the
+agent must detect topology drift.
+
+```go
+selection, err := stack.ApplyNativeInputs(ctx, labstack.NativeFixtureInputs{
+    Underlay: "ipv6", MTU: 1280, Protocol: "tcp", Platform: "linux",
+})
+if err != nil { t.Fatal(err) }
+if !selection.Available { t.Skip(selection.Reason) }
+observed, err := stack.ObserveNativeUnderlay(ctx)
+```
+
+| Input | Lab effect | Export / boundary |
+|---|---|---|
+| `Underlay: ipv4` | IPv6 peer UDP held on member underlay interfaces | Native direct/relay counts and candidate address-family counts; TCP control stays up |
+| `Underlay: ipv6` | IPv4 peer UDP held; native IPv6 link available | NetBird may choose IPv6 or relay; its choice is observed, never prescribed |
+| `Underlay: dual` | Both families available | Restores the family filter; no IPv6 overlay-forwarding claim |
+| `MTU: 1280..1500` | Sets both member underlay interface MTUs | The campaign sends 64,064 bytes on one TCP connection at 1500 and 1280 with device counters; no global production MTU recommendation |
+| `Protocol: tcp/udp` | Declares the workload used with existing member echo hooks | `ApplyNativeInputs` configures networking, not a workload generator; the campaign exercises TCP here, UDP uses `StartEstablishedTransports` |
+| `Protocol: quic` | Returns unavailable with a reason before any lab mutation | A pinned real QUIC client/server at the controlled origin is still required; UDP echo is never substituted |
+| `Platform: linux` | Uses the real Ubuntu amd64 native container | Actual runtime observation only |
+| `Platform: android/ios/windows/macos` | Returns unavailable before mutation | Requires the named real platform/client and the operator campaign; Linux never passes these rows |
+
+`SelectNativeFixture` is the side-effect-free validation/availability entry
+point. Unknown values and MTUs outside the range are errors. Family holds expire
+in 180 seconds if interrupted; selecting `dual` clears them immediately. Physical
+second NAT, roaming, ICMP black holes, QUIC performance, and per-platform IPv6
+leaks remain separate measurements. The pinned client's `--disable-ipv6` disables
+the **overlay**, not the IPv6 underlay used here.
+
+### Native two-resolver DNS and negative answers
+
+`FVPN_E2E_TWO_RESOLVERS=true` is a prepare-time input. It publishes two exact
+origin-network resolver addresses in production desired state and permits AAAA
+answers in this lab's AdGuard configuration. Each address transports DNS to a
+separate real node's product-managed filter. Call `StartSecondExit` / `EnrollAt`
+and wait for both applied policy documents before:
+
+```go
+configuration, err := stack.ConfigureNativeDNS(ctx, admin, nativeDeviceID,
+    []uuid.UUID{firstNodeID, secondNodeID})
+answer, err := stack.ProbeNativeDNS(ctx, "", "rr.example.invalid", 1, false, "")
+```
+
+The hook requires identical applied document hashes and reads the two resolver
+addresses from the issued desired state. It creates a TEST ONLY NetBird nameserver
+group restricted to the admitted member, turns native DNS on, and verifies the
+system uses the native stub. This is explicit lab distribution plumbing, not a
+claim that product automatic nameserver distribution is wired. It does not
+change admission, NetBird ACLs or AdGuard policy via a management write.
+
+An empty resolver argument queries the native stub in `/etc/resolv.conf`;
+an explicit `host:port` is a direct resolver probe. The fallback scenario uses
+normal Go system resolution, stops the primary transport, checks the secondary
+answer and block policy, stops both to require failure, then measures recovery.
+Per-query milliseconds and the fault/recovery observations are exported. Resolver
+content and query history are not logged. Android Private DNS and browser DoH
+remain platform measurements.
+
+The controlled zone declares A, AAAA, CNAME, HTTPS/SVCB, label-boundary and absent
+name cases. The campaign activates block/allow rules through the product API and
+records expected versus actual RCODE/answer presence for TCP and UDP. For blocked
+direct CNAME/SVCB queries the pinned backend may return empty NODATA; A, AAAA,
+HTTPS and CNAME-chain A still require NXDOMAIN. No usable answer is accepted in
+either negative form. This does not imply all query types return the configured
+NXDOMAIN code. Positive
+controls prevent an absent authority record from passing a block assertion.
+`SetDNSFixturePhase("private")` changes only the owned authority: the cache record
+has TTL 10 seconds; the allowlisted rebinding A/AAAA have TTL 5 seconds. Both the SOA RR TTL and its negative minimum are 5 seconds; a formerly absent
+record is added in the private phase to measure negative cache expiry. The
+positive cache must survive before expiry and change afterward. Private targets
+are behind the exit, outside the member's directly connected LAN. Listening
+positive controls plus failed member connections establish the selected mode's
+boundary. No private network is added to a DNS allow exception. The fixture
+exports RR types, TTLs, address classes, expected-answer booleans and timings,
+not queried names or browsing history. `SetDNSFixturePhase("initial")` restores
+the authority file; existing caches still expire naturally.
+
+### Retained third enrolling fleet target
+
+After `PrepareServingBaseline` but before the fleet operation:
+
+```go
+retained, err := stack.RetainEnrollingThirdNode(ctx, admin)
+// Run the fleet scenario while this real identity remains enrolling/offline.
+booted, err := stack.BootEnrollingThirdNode(ctx, admin)
+```
+
+The `node3` slot receives a real preinstalled enrollment through the admin API.
+The actual agent CLI runs once against a closed loopback port: it generates and
+persists its key, CSR, enrollment request and pending incarnation, then returns
+failure without consuming the token. The normal entrypoint remains held. The
+central node is genuinely `enrolling/pending` with no bound incarnation, so fleet
+snapshot consumers can exercise the enrolling-target branch. No database rows
+are fabricated or reset.
+
+The stopped directory snapshot retains those private files. Mid-run boot releases
+the marker and completes the original request against the real control URL. The
+export contains node ID, pending incarnation/request IDs, a key digest, central
+unbound-incarnation evidence, before/after states, retention/boot timestamps,
+and `eligible_at`: the first admin API observation of `ready` with the same key
+and the formerly pending incarnation now bound centrally. The prepared
+preinstalled-token deadline still applies; no expired token is bypassed.
+This is a durable directory snapshot, not a VM snapshot or ENR-06 installer.
+Publication, campaign membership and update assignment remain AT24/AT26/D-089
+consumer assertions. All `node3-*` objects are included in exact-prefix teardown.

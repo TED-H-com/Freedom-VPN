@@ -1,0 +1,13 @@
+# fixture-baseline
+
+API-created signed serving baseline
+
+Status: pass
+
+Run: e609d048-73fc-4af6-a758-7312224937bc
+
+Source: f771bdb79c0d42b7a3d47090fb52b0d79489d82b
+
+Spec: §13.2
+
+- baseline: {"Boot":"01a1909e-ea97-7108-9da8-58e2d94f1530","Good":"00000000-0000-0000-0000-000000000000","Bad":"00000000-0000-0000-0000-000000000000","SupportRevision":"01a1909e-ef01-7d04-b3c8-6e0cd8f067b3","Digests":{"artifact_sha256_0.1.0_amd64":"2a70c0b5c2ccc188a7738da273a561c33b25ff85be11a8078711ba91b0e7986a","artifact_sha256_0.1.0_arm64":"b8063eb59b825a71e7aa34200fd9061f0f5991686c3a552f57ae79e8c10a99d8","manifest_sha256_0.1.0":"befd01ee884ffa57b3741b624e608754187c1159cc403430286a208a514326f9","signed_manifest_sha256_0.1.0":"9813a96bcc964cfba4e55d72db98c672e7cb207dbd3854da92b516b977d361aa"}}

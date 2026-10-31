@@ -1,0 +1,63 @@
+{
+  "id": "native-underlay",
+  "title": "Real member/node IPv4, IPv6 and dual underlay selectors",
+  "spec": [
+    "§8.3",
+    "AT09",
+    "AT11"
+  ],
+  "status": "pass",
+  "observations": [
+    {
+      "name": "v4_reachable",
+      "detail": "{\"available\":true,\"rcode\":-1,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":true,\"bytes\":0,\"milliseconds\":0}"
+    },
+    {
+      "name": "v6_reachable",
+      "detail": "{\"available\":true,\"rcode\":-1,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":true,\"bytes\":0,\"milliseconds\":0}"
+    },
+    {
+      "name": "ipv4_input",
+      "detail": "{\"input\":{\"underlay\":\"ipv4\",\"mtu\":1500,\"protocol\":\"tcp\",\"platform\":\"linux\"},\"available\":true,\"reason\":\"\"}"
+    },
+    {
+      "name": "ipv4_transport",
+      "detail": "{\"path\":{\"Relayed\":1,\"Direct\":0,\"Forced\":false},\"candidate_families\":{}}"
+    },
+    {
+      "name": "ipv4_member_bulk",
+      "detail": "{\"available\":true,\"rcode\":-1,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":true,\"bytes\":64064,\"milliseconds\":3}"
+    },
+    {
+      "name": "ipv6_input",
+      "detail": "{\"input\":{\"underlay\":\"ipv6\",\"mtu\":1500,\"protocol\":\"tcp\",\"platform\":\"linux\"},\"available\":true,\"reason\":\"\"}"
+    },
+    {
+      "name": "ipv6_transport",
+      "detail": "{\"path\":{\"Relayed\":1,\"Direct\":0,\"Forced\":false},\"candidate_families\":{}}"
+    },
+    {
+      "name": "ipv6_member_bulk",
+      "detail": "{\"available\":true,\"rcode\":-1,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":true,\"bytes\":64064,\"milliseconds\":5}"
+    },
+    {
+      "name": "dual_input",
+      "detail": "{\"input\":{\"underlay\":\"dual\",\"mtu\":1500,\"protocol\":\"tcp\",\"platform\":\"linux\"},\"available\":true,\"reason\":\"\"}"
+    },
+    {
+      "name": "dual_transport",
+      "detail": "{\"path\":{\"Relayed\":1,\"Direct\":0,\"Forced\":false},\"candidate_families\":{}}"
+    },
+    {
+      "name": "dual_member_bulk",
+      "detail": "{\"available\":true,\"rcode\":-1,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":true,\"bytes\":64064,\"milliseconds\":4}"
+    },
+    {
+      "name": "scope",
+      "detail": "peer UDP family availability is selected; TCP control retained; NetBird's chosen path is observed, not prescribed; IPv6 overlay and platform leak prevention are unclaimed"
+    }
+  ],
+  "at": "2026-10-31T06:23:53Z",
+  "run_id": "e609d048-73fc-4af6-a758-7312224937bc",
+  "source_commit": "f771bdb79c0d42b7a3d47090fb52b0d79489d82b"
+}
