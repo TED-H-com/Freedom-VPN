@@ -542,15 +542,13 @@ func (s *liveSuite) evalAT19(t *testing.T) Record {
 
 	// 4. Transition 2: fup.member_generation_changed via usage ingestion moving memberB across the Tier 2 threshold (6000 B -> 5Mbit/2Mbit)
 	// Ensure memberB starts at 0 bytes (Tier 0, 100Mbit/50Mbit) via audited negative adjustment if a prior run left usage on memberB.
-	var curBUp, curBDown int64
-	var curBPeriod string
-	_ = s.pool.QueryRow(s.ctx, `
-		SELECT period, COALESCE(upload_bytes, 0)::bigint, COALESCE(download_bytes, 0)::bigint
-		FROM usage_rollups
-		WHERE member_id = $1 AND granularity = 'month'
-		ORDER BY period_start DESC, projection_generation DESC
-		LIMIT 1
-	`, s.memberB.memberID).Scan(&curBPeriod, &curBUp, &curBDown)
+	uBBeforeResp := s.apiCall(s.memberB, http.MethodGet, "/api/v1/member/usage", nil, nil)
+	var uBBefore api.MemberUsage
+	_ = json.Unmarshal(uBBeforeResp.body, &uBBefore)
+	curBUp := int64(uBBefore.Totals.UploadBytes)
+	curBDown := int64(uBBefore.Totals.DownloadBytes)
+	nowUTC := time.Now().UTC()
+	curBPeriod := fmt.Sprintf("%04d-%02d", nowUTC.Year(), int(nowUTC.Month()))
 	if curBUp+curBDown > 0 {
 		var adjActor string
 		_ = s.pool.QueryRow(s.ctx, `SELECT id::text FROM admin_identities LIMIT 1`).Scan(&adjActor)
@@ -568,12 +566,14 @@ func (s *liveSuite) evalAT19(t *testing.T) Record {
 		if adjErr != nil || adjCode != 0 {
 			t.Fatalf("AT19 reset memberB usage via fvpn-usage-admin adjust failed: code=%d err=%v", adjCode, adjErr)
 		}
-		_ = s.waitFor(20*time.Second, func() bool {
+		if !s.waitFor(20*time.Second, func() bool {
 			var pending int
 			_ = s.pool.QueryRow(s.ctx, `SELECT count(*) FROM outbox_events WHERE delivered_at IS NULL AND dead_lettered_at IS NULL AND event_type NOT LIKE '%.reconcile' AND event_type <> 'devices.discover'`).Scan(&pending)
 			_, _, tierIdx, downBps, _ := s.queryFUPMemberState(s.memberB.memberID)
 			return pending == 0 && tierIdx == 0 && downBps == 100000000
-		})
+		}) {
+			t.Fatalf("AT19 reset memberB to Tier 0 did not settle in fup_member_state")
+		}
 	}
 	_, _, _, _ = s.ackNodeGeneration(s.nodeID, s.incarnationID, s.agentClient, 0)
 	_, _, _, _ = s.ackNodeGeneration(s.node2ID, s.incarnation2ID, s.node2Client, 0)
@@ -688,7 +688,7 @@ func (s *liveSuite) evalAT19(t *testing.T) Record {
 	}
 	time.Sleep(2 * time.Second)
 	gensAfterReplay2 := s.queryDesiredGenerations(s.nodeID, s.node2ID, s.otherNodeID)
-	fupMemberGenReplay2, _, _, _, _ := s.queryFUPMemberState(s.memberA.memberID)
+	fupMemberGenReplay2, _, _, _, _ := s.queryFUPMemberState(s.memberB.memberID)
 	genNodeAfterReplay2 := gensAfterReplay2[s.nodeID.String()]
 	genNode2AfterReplay2 := gensAfterReplay2[s.node2ID.String()]
 	genOtherAfterReplay2 := gensAfterReplay2[s.otherNodeID.String()]
