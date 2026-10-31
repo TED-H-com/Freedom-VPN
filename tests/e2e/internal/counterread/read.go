@@ -33,6 +33,7 @@ type Result struct {
 	Upload     uint64 `json:"upload_bytes,string"`
 	Download   uint64 `json:"download_bytes,string"`
 	Present    bool
+	Generation string     `json:"kernel_generation"`
 	Diagnostic Diagnostic `json:"read_diagnostic"`
 }
 
@@ -96,6 +97,7 @@ func Read(ctx context.Context, id uuid.UUID) Result {
 		out.Diagnostic.Category = "parse"
 		return out
 	}
+	out.Generation = strconv.FormatUint(st.Generation, 10)
 	suffix := strings.ReplaceAll(id.String(), "-", "")
 	up, u := st.Counters["u_"+suffix]
 	down, d := st.Counters["d_"+suffix]

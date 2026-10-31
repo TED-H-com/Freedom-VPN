@@ -79,7 +79,7 @@ func (s *Stack) dnsQueryTrace(ctx context.Context, fixture string, rr uint16, st
 		if out.TraceComplete && len(result.Types) > 0 {
 			out.CacheState = "inferred_hit_no_authority_exchange"
 			for _, e := range out.AuthorityEvents {
-				if e.Source == matches[0].Role {
+				if !e.Started.Before(matches[0].Started) && !e.Started.After(matches[0].Completed) {
 					out.CacheState = "miss_authority_exchange_observed"
 				}
 			}

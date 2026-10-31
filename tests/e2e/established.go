@@ -146,6 +146,12 @@ func (s *Stack) MemberSessionStatus(ctx context.Context) (tcpEchoes, udpReplies 
 
 // MemberTransportStatus distinguishes an active sender from successful replies.
 type MemberTransportStatus struct {
+	ReadDiagnostic struct {
+		Started   time.Time `json:"started"`
+		Completed time.Time `json:"completed"`
+		Stage     string    `json:"stage"`
+		Category  string    `json:"category"`
+	} `json:"read_diagnostic"`
 	TCPEchoes   int    `json:"tcp_echoes"`
 	UDPReplies  int    `json:"udp_replies"`
 	TCPAttempts int    `json:"tcp_attempts"`
@@ -156,11 +162,25 @@ type MemberTransportStatus struct {
 
 func (s *Stack) EstablishedStatus(ctx context.Context) (MemberTransportStatus, error) {
 	var status MemberTransportStatus
+	started := time.Now().UTC()
 	raw, err := exec.CommandContext(ctx, "docker", "exec", s.lab.member, "cat", memberSessionStatus).Output()
-	if err != nil {
-		return status, err
+	if err == nil {
+		err = json.Unmarshal(raw, &status)
+		if err != nil {
+			status.ReadDiagnostic.Category = "parse"
+		}
+	} else {
+		status.ReadDiagnostic.Category = "container_read"
+		if ctx.Err() != nil {
+			status.ReadDiagnostic.Category = "timeout_or_cancel"
+		}
 	}
-	err = json.Unmarshal(raw, &status)
+	status.ReadDiagnostic.Started = started
+	status.ReadDiagnostic.Completed = time.Now().UTC()
+	status.ReadDiagnostic.Stage = "member_status_read"
+	if err == nil {
+		status.ReadDiagnostic.Category = "none"
+	}
 	return status, err
 }
 
