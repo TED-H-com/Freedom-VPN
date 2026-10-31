@@ -14,8 +14,8 @@
     "lint": "eslint .",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,css}\" \"e2e/**/*.{ts,mjs}\" index.html vite.config.ts playwright.config.ts eslint.config.js",
     "format": "prettier --write \"src/**/*.{ts,tsx,css}\" \"e2e/**/*.{ts,mjs}\" index.html vite.config.ts playwright.config.ts eslint.config.js",
-    "test": "vitest run",
-    "test:coverage": "vitest run --coverage",
+    "test": "node --test e2e/*.test.mjs && vitest run",
+    "test:coverage": "node --test e2e/*.test.mjs && vitest run --coverage",
     "e2e": "playwright test"
   },
   "dependencies": {
