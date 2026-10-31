@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"encoding/json"
-	"github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/streamstats"
 	"io"
 	"net"
 	"os"
@@ -12,6 +11,7 @@ import (
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/probeauth"
+	"github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/streamstats"
 	"github.com/google/uuid"
 )
 

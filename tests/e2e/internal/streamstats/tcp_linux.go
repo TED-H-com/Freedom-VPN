@@ -3,8 +3,9 @@
 package streamstats
 
 import (
-	"golang.org/x/sys/unix"
 	"net"
+
+	"golang.org/x/sys/unix"
 )
 
 func tcpInfo(c net.Conn) map[string]uint64 {

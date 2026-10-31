@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/streamstats"
 	"io"
 	"net"
 	"net/netip"
@@ -16,6 +15,7 @@ import (
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/internal/dnspolicy"
+	"github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/streamstats"
 	"golang.org/x/net/dns/dnsmessage"
 )
 
