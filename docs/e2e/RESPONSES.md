@@ -493,7 +493,7 @@ changing entitlements, editing projector rows or re-signing a stripped response
 would not be the requested clean fixed-generation trigger.
 
 This item stops at the ownership boundary. Requested owner change:
-`internal/nodes/httpwire/state.go` (and its runtime dependency wiring) needs a
+`internal/nodes/httpwire/state.go` and `internal/nodes/httpwire/runtime.go` need a
 TEST ONLY injectable grant-eligibility reader/factory, defaulting to the exact
 production reader, that can withhold future grants without changing desired
 bindings/generation or ready/published state. `leases.WithEntitlementReader`

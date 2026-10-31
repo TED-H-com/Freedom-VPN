@@ -145,3 +145,62 @@ For native capture use `TestE2E_Followup19Native` on another fresh stack.
 For DNS set `FVPN_E2E_TWO_RESOLVERS=true` during up and
 `FVPN_E2E_FIXTURES16=1 FVPN_E2E_FOLLOWUP19=1` during its focused runner.
 The final gate order and real exits are recorded in the worktree hand-off.
+
+## Live scenario table
+
+Each link retains raw observations and the exact source commit. Passes are
+scoped to the row, not a blanket acceptance-case verdict.
+
+| Campaign / scenario | Result | Requirement / scope |
+|---|---|---|
+| Serving [admin-login](d6aaa798-6c39-49f1-8fa9-5f84f696ac91/admin-login.md) | pass | §14.2 |
+| Serving [capture-and-boot](d6aaa798-6c39-49f1-8fa9-5f84f696ac91/capture-and-boot.md) | pass | AT23, ISO01, F9-06 |
+| Serving [enroll-bootstrap](d6aaa798-6c39-49f1-8fa9-5f84f696ac91/enroll-bootstrap.md) | pass | §6, §19 AT06 |
+| Serving [fixture-member-admission](d6aaa798-6c39-49f1-8fa9-5f84f696ac91/fixture-member-admission.md) | pass | §8, AT02, AT12 |
+| Serving [installer-journaled-upgrade](d6aaa798-6c39-49f1-8fa9-5f84f696ac91/installer-journaled-upgrade.md) | pass | UPD05, AT26, §13.5, D-125 |
+| Serving [installer-marker-migration](d6aaa798-6c39-49f1-8fa9-5f84f696ac91/installer-marker-migration.md) | pass | AT07, ENR-05, D-116 |
+| Serving [installer-reenroll](d6aaa798-6c39-49f1-8fa9-5f84f696ac91/installer-reenroll.md) | pass | ENR-06, AT07, §6.3 |
+| Serving [installer-serving-readback](d6aaa798-6c39-49f1-8fa9-5f84f696ac91/installer-serving-readback.md) | pass | ENR-05, D-116, AT07 |
+| Serving [installer-usage](d6aaa798-6c39-49f1-8fa9-5f84f696ac91/installer-usage.md) | pass | §10.5, ENR-05 |
+| Serving [installer-wrappers](d6aaa798-6c39-49f1-8fa9-5f84f696ac91/installer-wrappers.md) | pass | §6.3, ENR-06, AT07 |
+| Serving [node-restart](d6aaa798-6c39-49f1-8fa9-5f84f696ac91/node-restart.md) | pass | §5, §6, F2-05 |
+| Serving [publish](d6aaa798-6c39-49f1-8fa9-5f84f696ac91/publish.md) | pass | §5.2, §14.2 |
+| Serving [regular-kernel-boot](d6aaa798-6c39-49f1-8fa9-5f84f696ac91/regular-kernel-boot.md) | pass | AT23, F9-06 |
+| Serving [serving-catalogue](d6aaa798-6c39-49f1-8fa9-5f84f696ac91/serving-catalogue.md) | pass | §9, §14.2 |
+| Stopped agent [admin-login](04de29d3-e56b-4a32-b678-21462845ddb6/admin-login.md) | pass | §14.2 |
+| Stopped agent [capture-and-boot](04de29d3-e56b-4a32-b678-21462845ddb6/capture-and-boot.md) | pass | AT23, ISO01, F9-06 |
+| Stopped agent [enroll-bootstrap](04de29d3-e56b-4a32-b678-21462845ddb6/enroll-bootstrap.md) | pass | §6, §19 AT06 |
+| Stopped agent [fixture-member-admission](04de29d3-e56b-4a32-b678-21462845ddb6/fixture-member-admission.md) | pass | §8, AT02, AT12 |
+| Stopped agent [installer-marker-migration](04de29d3-e56b-4a32-b678-21462845ddb6/installer-marker-migration.md) | pass | AT07, ENR-05, D-116 |
+| Stopped agent [installer-quiescent-candidate](04de29d3-e56b-4a32-b678-21462845ddb6/installer-quiescent-candidate.md) | fail | UPD05, AT26, §13.5, D-125 |
+| Stopped agent [installer-reenroll](04de29d3-e56b-4a32-b678-21462845ddb6/installer-reenroll.md) | pass | ENR-06, AT07, §6.3 |
+| Stopped agent [installer-serving-readback](04de29d3-e56b-4a32-b678-21462845ddb6/installer-serving-readback.md) | pass | ENR-05, D-116, AT07 |
+| Stopped agent [installer-usage](04de29d3-e56b-4a32-b678-21462845ddb6/installer-usage.md) | pass | §10.5, ENR-05 |
+| Stopped agent [installer-wrappers](04de29d3-e56b-4a32-b678-21462845ddb6/installer-wrappers.md) | pass | §6.3, ENR-06, AT07 |
+| Stopped agent [node-restart](04de29d3-e56b-4a32-b678-21462845ddb6/node-restart.md) | pass | §5, §6, F2-05 |
+| Stopped agent [publish](04de29d3-e56b-4a32-b678-21462845ddb6/publish.md) | pass | §5.2, §14.2 |
+| Stopped agent [regular-kernel-boot](04de29d3-e56b-4a32-b678-21462845ddb6/regular-kernel-boot.md) | pass | AT23, F9-06 |
+| Stopped agent [serving-catalogue](04de29d3-e56b-4a32-b678-21462845ddb6/serving-catalogue.md) | pass | §9, §14.2 |
+| Native reconnect [admin-login](956c335d-0449-44ac-aa63-544154456397/admin-login.md) | pass | §14.2 |
+| Native reconnect [desired-state](956c335d-0449-44ac-aa63-544154456397/desired-state.md) | pass | §5, §8 |
+| Native reconnect [enroll-bootstrap](956c335d-0449-44ac-aa63-544154456397/enroll-bootstrap.md) | pass | §6, §19 AT06 |
+| Native reconnect [fixture-member-admission](956c335d-0449-44ac-aa63-544154456397/fixture-member-admission.md) | pass | §8, AT02, AT12 |
+| Native reconnect [native-mtu-comparison](956c335d-0449-44ac-aa63-544154456397/native-mtu-comparison.md) | pass | AT09, AT11, F8-02 |
+| Native reconnect [publish](956c335d-0449-44ac-aa63-544154456397/publish.md) | pass | §5.2, §14.2 |
+| Native reconnect [serving-catalogue](956c335d-0449-44ac-aa63-544154456397/serving-catalogue.md) | pass | §9, §14.2 |
+| DNS fixtures [admin-login](5282829c-c11e-4f34-954a-5bc2a5bceca5/admin-login.md) | pass | §14.2 |
+| DNS fixtures [desired-state](5282829c-c11e-4f34-954a-5bc2a5bceca5/desired-state.md) | pass | §5, §8 |
+| DNS fixtures [dns-negative](5282829c-c11e-4f34-954a-5bc2a5bceca5/dns-negative.md) | pass | §12.5, §12.8, AT20, ISO01, DNS02 |
+| DNS fixtures [enroll-bootstrap](5282829c-c11e-4f34-954a-5bc2a5bceca5/enroll-bootstrap.md) | pass | §6, §19 AT06 |
+| DNS fixtures [finite-grant-downgrade](5282829c-c11e-4f34-954a-5bc2a5bceca5/finite-grant-downgrade.md) | pass | §9.2, AT02, D-050, D-081 |
+| DNS fixtures [fixture-baseline](5282829c-c11e-4f34-954a-5bc2a5bceca5/fixture-baseline.md) | pass | §13.2 |
+| DNS fixtures [fixture-member-admission](5282829c-c11e-4f34-954a-5bc2a5bceca5/fixture-member-admission.md) | pass | §8, AT02, AT12 |
+| DNS fixtures [fleet-midrun-boot](5282829c-c11e-4f34-954a-5bc2a5bceca5/fleet-midrun-boot.md) | pass | §6.2, AT24, AT26, D-089 |
+| DNS fixtures [fleet-retained](5282829c-c11e-4f34-954a-5bc2a5bceca5/fleet-retained.md) | pass | §6.2, AT24, AT26, D-089 |
+| DNS fixtures [native-dns-config](5282829c-c11e-4f34-954a-5bc2a5bceca5/native-dns-config.md) | pass | §12.2, AT21 |
+| DNS fixtures [native-dns-fallback](5282829c-c11e-4f34-954a-5bc2a5bceca5/native-dns-fallback.md) | pass | §12.2, AT21 |
+| DNS fixtures [native-matrix-inputs](5282829c-c11e-4f34-954a-5bc2a5bceca5/native-matrix-inputs.md) | fail | §8.3, AT09, AT11 |
+| DNS fixtures [native-underlay](5282829c-c11e-4f34-954a-5bc2a5bceca5/native-underlay.md) | pass | §8.3, AT09, AT11 |
+| DNS fixtures [publish](5282829c-c11e-4f34-954a-5bc2a5bceca5/publish.md) | pass | §5.2, §14.2 |
+| DNS fixtures [second-resolver](5282829c-c11e-4f34-954a-5bc2a5bceca5/second-resolver.md) | pass | §12.2, AT21 |
+| DNS fixtures [serving-catalogue](5282829c-c11e-4f34-954a-5bc2a5bceca5/serving-catalogue.md) | pass | §9, §14.2 |
