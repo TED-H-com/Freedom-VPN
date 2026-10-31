@@ -33,6 +33,8 @@ make -f mk/portal.mk portal-dev-stack
 make -f mk/portal.mk portal-e2e
 ```
 
+On hosts where `/tmp` is tmpfs, set `TMPDIR` for the entire target (including Chromium) to a unique, short disk-backed directory beneath `$HOME/agent-work/tmp/`, and remove it with Python after the run. Long worktree paths can exceed Chromium's Unix socket path limit. Do not use `/dev/shm` or another tmpfs for test data.
+
 ### Product-Driven Seeding (`apps/portal/e2e/dev-stack.mjs`, D-050 / D-057 / D-058)
 `dev-stack.mjs` drives member groups, node enrollments, exit publication, and fleet update batches through the real control-plane and worker APIs:
 1. **Member groups (`POST /api/v1/admin/groups`):** Creates `standard-exits` and `default-members` via the admin API.
