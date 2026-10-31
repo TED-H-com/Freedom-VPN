@@ -255,6 +255,9 @@ func (h *handoffRun) resultAcceptance(node string, baseline, candidate e2e.Built
 		}
 	}
 	h.check("correction", corrected.status == 202 && pointers.text("current_release_id") == baseline.ID.String() && pointers.text("last_good_release_id") == baseline.ID.String() && document(view["update"]).text("state") == "rolled_back" && beforeReplay.text("resource_version") != view.text("resource_version") && view.text("resource_version") == final.text("resource_version") && sameAck(ack, replayFirst) && sameAck(corrected, replayCorrection) && sameAck(corrected, replayCorrectionFresh) && conflictHTTP(thirdAck) && sameJob == 2 && firstKept)
+	h.check("etag", h.etags["central_after_success"] != "" && h.etags["central_after_correction"] != "" &&
+		h.etags["central_after_success"] == h.etags["central_after_replay"] && h.etags["central_after_success"] == h.etags["central_after_wrong_job"] &&
+		h.etags["central_after_success"] != h.etags["central_after_correction"] && h.etags["central_after_correction"] == h.etags["central_after_correction_replays"])
 	h.note("receipt_cardinality", fmt.Sprintf("%d total receipts; %d outcomes for the success job", len(rows), sameJob))
 	h.run("flush_success", installedUpdater, "flush", "--config", installerConfig)
 }

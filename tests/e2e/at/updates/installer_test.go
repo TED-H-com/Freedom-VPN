@@ -37,6 +37,7 @@ type handoffRun struct {
 	stack  *e2e.Stack
 	rec    at.Record
 	checks map[string]bool
+	etags  map[string]string
 }
 
 func (h *handoffRun) note(name string, v any) {
@@ -90,6 +91,11 @@ func (h *handoffRun) central(name, node string) updateDocument {
 		return nil
 	}
 	doc := document(resp.Body)
+	if h.etags == nil {
+		h.etags = map[string]string{}
+	}
+	h.etags[name] = resp.Header.Get("ETag")
+	h.note(name+"_etag", h.etags[name])
 	h.note(name, doc)
 	return doc
 }
@@ -105,7 +111,7 @@ func (s *updatesFollowup) installerHandoff(stack *e2e.Stack, baseline e2e.Servin
 	h.rec.Actual = "Installer prerequisites not reached"
 	h.rec.Observations = nil
 	defer func() {
-		required := []string{"install", "seed", "fresh_no_work", "fresh_guard_clear", "boot_kernel", "legacy_boot_config", "checkpoint_failure", "failure_replay", "failure_baseline", "staged", "correlated", "apply", "restarts", "central", "job_id", "replay", "conflict", "wrong_job", "correction", "tamper", "downgrade"}
+		required := []string{"install", "seed", "fresh_no_work", "fresh_guard_clear", "boot_kernel", "legacy_boot_config", "checkpoint_failure", "failure_replay", "failure_baseline", "staged", "correlated", "apply", "restarts", "central", "job_id", "replay", "conflict", "wrong_job", "correction", "etag", "tamper", "downgrade"}
 		var failed []string
 		for _, k := range required {
 			if !h.checks[k] {
