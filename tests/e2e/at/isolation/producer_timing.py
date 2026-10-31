@@ -212,6 +212,16 @@ def correlate(packet, validated):
         result['last_completed_apply'] = max(prior, key=lambda a: ns(a['operation'],'end_ns')) if prior else None
     prior = [v for v in validated['verifiers'] if ns(v['timing'],'end_ns') <= ingress]
     result['last_completed_verifier'] = max(prior, key=lambda v: ns(v['timing'],'end_ns')) if prior else None
+    producers = validated.get('producer_rows', [])
+    baselines = [r for r in producers if r['source'] == 'baseline']
+    result['baseline_window_overlap'] = [r for r in baselines if overlap(*interval(r['baseline']))]
+    prior = [r for r in baselines if ns(r['baseline'], 'end_ns') <= ingress]
+    result['last_completed_baseline'] = max(prior, key=lambda r: ns(r['baseline'], 'end_ns')) if prior else None
+    # The anchor follows the actual heartbeat write; its mono sample alone
+    # would not prove that the write had completed before this packet read.
+    prior = [r for r in producers if r['source'] == 'heartbeat' and r['heartbeat']['written']
+             and ns(r['anchor'], 'mono_after_ns') <= ingress]
+    result['last_written_heartbeat'] = max(prior, key=lambda r: ns(r['anchor'], 'mono_after_ns')) if prior else None
     result['classification'] = ('guard-correlated; loss retained' if result['ingress_in_outer_guard']
                                 else 'outside completed guard brackets; unresolved')
     return result

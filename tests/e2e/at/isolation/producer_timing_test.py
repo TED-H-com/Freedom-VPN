@@ -92,6 +92,12 @@ class CorrelationTests(unittest.TestCase):
         self.assertEqual(valid['snapshots'],3)
         self.assertEqual(len(valid['producer_rows']),2)
         self.assertEqual(valid['source_counts'],{'apply':1,'baseline':1,'heartbeat':1})
+        loss=p.correlate(packet(260),valid)
+        self.assertEqual(loss['baseline_window_overlap'][0]['baseline']['cause'],'policy_deadline')
+        self.assertIsNone(loss['last_written_heartbeat'])
+        loss=p.correlate(packet(310),valid)
+        self.assertEqual(loss['last_completed_baseline']['sequence'],'2')
+        self.assertEqual(loss['last_written_heartbeat']['sequence'],'3')
         self.assertEqual(valid['brackets']['outer_guard']['p99_ns'],'30')
         self.assertEqual(valid['brackets']['completed_guard_install_command']['max_ns'],'15')
         for kind in ('baseline','heartbeat'):
