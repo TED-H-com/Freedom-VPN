@@ -225,7 +225,31 @@ def lookup_review_passed(checks):
     return True
 
 
+# Exact diagnostic deadline miss, retained unchanged. The production uploader
+# runs every 60s; AT20 allows 90s. No unrelated prior failure is covered.
+INSTALLER_REVIEW_RUN = "57b90cf6-d233-4209-a114-765ef15376f7"
+
+
+def installer_review_passed(checks):
+    required = [("AT07", n) for n in (
+        "installer_rerun", "controlled_reinstall", "counted_unacked_usage",
+        "identity_ledger_preserved", "historical_usage_retained",
+        "BeforePlusHeldByteEquality", "OriginalPayloadAndHistoricalAttribution",
+        "OriginACKAndIndependentCurrentACK", "old_certificate_denied", "probe_process")]
+    required.append(("AT06", "probe_process"))
+    for at, name in required:
+        hits = [c for c in checks if c.get("at") == at and c["name"] == name]
+        if not hits or any(c["status"] != "pass" for c in hits):
+            return False
+    return True
+
+
 def review_covers(at, prior, checks):
+    if prior.get("run_id") == INSTALLER_REVIEW_RUN:
+        covered = prior.get("name") == "probe_process" or (
+            at == "AT07" and prior.get("name") == "installer_prerequisite" and
+            prior.get("detail", {}).get("step") == "count baseline traffic and upload")
+        return covered and installer_review_passed(checks)
     if prior.get("run_id") == LOOKUP_REVIEW_RUN and prior.get("name") in LOOKUP_FAILURES.get(at, ()):
         return lookup_review_passed(checks)
     spec = REVIEWED.get(at)
@@ -305,6 +329,13 @@ def records(meta, observed, prior):
                 "disposition": "resolved" if lookup_review_passed(review_checks) else "unresolved",
                 "cause": "The primary member fixture names its NetBird peer fvpn-member-e2e; this harness mistakenly looked for the container name. The real member was already authorized and the ordinary node already had a populated serving lease. Only serving_freeze_source failed, propagating exit 1 to both AT process rows. Freeze withdrawal/restart and all seven installer subset checks passed in that attempt.",
                 "correction": "Pass the primary fixture's documented peer name to JoinNativeMember. Require current source, freeze withdrawal/restart and both process checks to pass before resolving these exact historical rows; retain every original result.",
+            }
+        if any(c.get("run_id") == INSTALLER_REVIEW_RUN and c["status"] == "fail" for c in prior[at]):
+            record["follow_up_8_deadline_review"] = {
+                "run_id": INSTALLER_REVIEW_RUN,
+                "disposition": "resolved" if installer_review_passed(review_checks) else "unresolved",
+                "cause": "Installer serving and counted traffic passed. The harness allowed only 45s for the production 60s upload cadence; AT20 waitForUploadedTraffic allows 90s. The timeout propagated to both process rows. These exact failures stay in prior_checks.",
+                "correction": "Use AT20's 90s baseline upload allowance and retain the CLI poll evidence. Require all five composed rows, all three named accounting assertions, retired-certificate denial and both successful processes. Also republish explicitly through the API before fresh post-reinstall traffic: revoke disables publication.",
             }
         result[at] = record
     return result

@@ -77,6 +77,17 @@ class EvidenceTests(unittest.TestCase):
             self.assertEqual([r["status"] for r in rows], ["fail", "pass"])
             self.assertEqual(rows[1]["run_id"], "followup6")
 
+    def test_installer_deadline_review_requires_all_five_rows_and_accounting(self):
+        checks = self.passing() + [dict(at="AT07", name=n, status="pass") for n in (
+            "BeforePlusHeldByteEquality", "OriginalPayloadAndHistoricalAttribution", "OriginACKAndIndependentCurrentACK")]
+        prior = dict(name="installer_prerequisite", status="fail", run_id=run.INSTALLER_REVIEW_RUN,
+                     detail={"step": "count baseline traffic and upload"})
+        self.assertTrue(run.review_covers("AT07", prior, checks))
+        for name in ("controlled_reinstall", "identity_ledger_preserved", "BeforePlusHeldByteEquality"):
+            self.assertFalse(run.review_covers("AT07", prior, [c for c in checks if c["name"] != name]))
+        self.assertFalse(run.review_covers("AT07", dict(prior, detail={"step": "unrelated failure"}), checks))
+        self.assertFalse(run.review_covers("AT07", dict(prior, name="old_certificate_denied"), checks))
+
     def test_committed_evidence_hygiene(self):
         # Scan all immutable attempts as well as the current publication.
         import re

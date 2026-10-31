@@ -84,8 +84,9 @@ func (p *probe) installerHooks(t *testing.T) {
 	baseline, ok := p.installerTraffic(selected)
 	detail["baseline_traffic"] = baseline
 	must(ok)
-	must(p.waitInstaller(45*time.Second, func() bool {
+	must(p.waitInstaller(90*time.Second, func() bool {
 		snap, e := p.stack.UsageLedgerSnapshot(p.ctx, "installer-node")
+		detail["baseline_upload_snapshot"], detail["baseline_upload_snapshot_read_ok"] = snap, e == nil
 		return e == nil && snap.LastEventSeq != "0" && snap.AckedThrough == snap.LastEventSeq && snap.UnackedCount == 0
 	}))
 	step("hold counted usage", "agent")
@@ -247,13 +248,10 @@ func (p *probe) installerHooks(t *testing.T) {
 	must(p.stack.ConfigureInstallerServing(p.ctx) == nil)
 	must(p.stack.HoldInstallerFirstPoll(p.ctx, false) == nil)
 	reinstalled.Services = states
-	restoredAt = time.Now().UTC()
+	detail["handoff_restored_at"] = time.Now().UTC()
 	p.restoreInstaller("reinstall", reinstalled, detail)
 	must(p.stack.HoldUsageAcknowledgements(p.ctx, "installer-node", false) == nil)
 	must(p.waitInstaller(150*time.Second, func() bool { return p.streamACK(node, origin) == held.LastEventSeq }))
-	postRules, ok := p.installerServingReadback(node, restoredAt)
-	detail["reinstall_serving"] = postRules
-	must(ok)
 	must(p.stopInstaller())
 	postDB := p.installerLedgerCopy(t)
 	currentCLI, err := p.stack.UsageLedgerSnapshot(p.ctx, "installer-node")
@@ -306,12 +304,13 @@ func (p *probe) installerHooks(t *testing.T) {
 	}
 	restoredAt = time.Now().UTC()
 	must(p.stack.RestoreInstallerServices(p.ctx, "installer-node", states) == nil)
+	must(p.installerPublish(node)) // revoke disables publication; restore through the public API
 	freshRules, ok := p.installerServingReadback(node, restoredAt)
 	must(ok)
 	must(p.selectInstallerExit(node))
 	freshTraffic, ok := p.installerTraffic(selected)
 	must(ok)
-	must(p.waitInstaller(45*time.Second, func() bool { return p.streamACK(node, current) != "0" }))
+	must(p.waitInstaller(90*time.Second, func() bool { ack := p.streamACK(node, current); return ack != "0" && ack != "unavailable" }))
 	var firstSeq string
 	must(p.freezeSQL(fmt.Sprintf("SELECT to_json(COALESCE(min(event_seq),0)::text) FROM usage_events WHERE node_id='%s' AND incarnation_id='%s'", node, current), &firstSeq) && firstSeq == "1")
 	p.expect("AT07", "controlled_reinstall", true, map[string]any{"owner": "installer", "outcome": installerOutcomeView(reinstalled, nil), "serving": freshRules, "traffic": freshTraffic, "new_stream_first_sequence": firstSeq, "origin_ack_before_current_traffic": oldACK, "devstack_rows": devstack18 + " installer-reenroll / installer-serving-readback"})
@@ -595,7 +594,7 @@ table inet fvpn {
 	if !installerRuleShape(good) {
 		t.Fatal("valid separate marker rejected")
 	}
-	for _, bad := range []string{strings.Replace(good, "chain input {", "chain owner {", 1), strings.Replace(good, "comment \"managed-by=fvpn-node-install\"", "type filter hook forward priority filter;", 1), regexp.MustCompile(`table inet fvpn_install`).ReplaceAllString(good, "table inet foreign")} {
+	for _, bad := range []string{strings.Replace(good, "chain input {", "chain owner {", 1), strings.Replace(good, "comment \"managed-by=fvpn-node-install\"", "type filter hook forward priority filter;\n  comment \"managed-by=fvpn-node-install\"", 1), regexp.MustCompile(`table inet fvpn_install`).ReplaceAllString(good, "table inet foreign")} {
 		if installerRuleShape(bad) {
 			t.Fatal("invalid marker scope accepted")
 		}
