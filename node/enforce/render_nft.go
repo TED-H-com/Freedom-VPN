@@ -317,6 +317,14 @@ func RenderBaseline(m Model, state State) (string, error) {
 	if err := markerRule(&b, "forward", "fvpn_generation=0 fvpn_baseline=1 fvpn_metering="+MeteringVersion); err != nil {
 		return "", err
 	}
+	// Retain class identities even if a foreign filter prevents safe removal
+	// of an HTB root. Recovery must not silently move a member (§11.4).
+	for _, id := range sortedIDs(state.Classes) {
+		if err := markerRule(&b, "forward", fmt.Sprintf("fvpn_class=%s:%x", id, state.Classes[id])); err != nil {
+			return "", err
+		}
+	}
+
 	in := m.Datapath.MemberIngress
 	up := m.Datapath.Uplink
 	if m.Probe != nil {

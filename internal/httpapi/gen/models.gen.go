@@ -239,6 +239,7 @@ type UpdateJobState = api.UpdateJobState
 type UpdateJobSummary = api.UpdateJobSummary
 type UpdateResult = api.UpdateResult
 type UpdateResultAck = api.UpdateResultAck
+type UpdateResultSource = api.UpdateResultSource
 type UpdateResultState = api.UpdateResultState
 type UpdateStage = api.UpdateStage
 type UpdateTarget = api.UpdateTarget

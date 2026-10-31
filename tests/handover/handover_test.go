@@ -1286,7 +1286,7 @@ func TestHandover_Followup8Claims(t *testing.T) {
 func TestHandover_Followup9Claims(t *testing.T) {
 	root := repoRoot(t)
 
-	// 1. Verify revision 11 schema elements still present after revision 12 advanced info.version to 1.8.0:
+	// 1. Verify revision 11 schema elements still present after revision 13 advanced info.version to 1.9.0:
 	// ErrorCode.AWAITING_MEMBER_GRANTS (D-071) and NodeDetail.identity_conflict / NodeIdentityConflict (D-072).
 	rawSpec, err := os.ReadFile(filepath.Join(root, "contracts", "openapi.yaml"))
 	if err != nil {
@@ -1309,8 +1309,8 @@ func TestHandover_Followup9Claims(t *testing.T) {
 	if err := yaml.Unmarshal(rawSpec, &spec); err != nil {
 		t.Fatalf("parse contracts/openapi.yaml: %v", err)
 	}
-	if spec.Info.Version != "1.8.0" {
-		t.Fatalf("contracts/openapi.yaml info.version = %q, want 1.8.0", spec.Info.Version)
+	if spec.Info.Version != "1.9.0" {
+		t.Fatalf("contracts/openapi.yaml info.version = %q, want 1.9.0", spec.Info.Version)
 	}
 	if !slices.Contains(spec.Components.Schemas["ErrorCode"].Enum, "AWAITING_MEMBER_GRANTS") {
 		t.Fatal("contracts/openapi.yaml ErrorCode enum missing AWAITING_MEMBER_GRANTS")
@@ -1348,7 +1348,7 @@ func TestHandover_Followup9Claims(t *testing.T) {
 	// worker contention (#205/#208), control follow-up 20 (#215), and acceptance cross-references (#204/#207/#210/#212/#214).
 	operatorGuide := readOwnedDoc(t, root, "docs/handover/operator-guide.md")
 	for _, token := range []string{
-		"OpenAPI `1.8.0`, revision 12",
+		"OpenAPI `1.9.0`, revision 13",
 		"#204", "#205", "#206", "#207", "#208", "#210", "#211", "#212", "#213", "#214", "#215", "#216",
 		"D-070", "D-071", "D-072",
 		// Provisional window (D-067, D-071, #206, #213, #216).

@@ -351,7 +351,17 @@ func TestVerifyServing_AndFailures(t *testing.T) {
 
 func TestVerifyBaseline(t *testing.T) {
 	dp := goldenModel().Datapath
-	raw := []byte(`{"nftables":[
+	raw := fixtureBaseline()
+	if err := VerifyBaseline(raw, Model{Datapath: dp}); err != nil {
+		t.Fatal(err)
+	}
+	if err := VerifyBaseline([]byte(`{"nftables":[{"chain":{"table":"fvpn","name":"forward","type":"filter","hook":"forward","prio":0,"policy":"accept"}}]}`), Model{Datapath: dp}); err == nil || !strings.Contains(err.Error(), string(ReasonIsolationBaselineMissing)) {
+		t.Fatalf("baseline: %v", err)
+	}
+}
+
+func fixtureBaseline() []byte {
+	return []byte(`{"nftables":[
 		{"chain":{"family":"inet","table":"fvpn","name":"forward","type":"filter","hook":"forward","prio":-150,"policy":"drop"}},
 		{"rule":{"family":"inet","table":"fvpn","chain":"forward","comment":"fvpn_generation=0 fvpn_baseline=1 fvpn_metering=forward_admission_v1","expr":[{"match":{"left":"never","right":"never"}}]}},
 		{"rule":{"family":"inet","table":"fvpn","chain":"forward","expr":[{"match":{"left":{"meta":{"key":"iifname"}},"right":"fv-fh"}},{"drop":null}]}},
@@ -359,12 +369,6 @@ func TestVerifyBaseline(t *testing.T) {
 		{"rule":{"family":"inet","table":"fvpn","chain":"input","expr":[{"match":{"left":{"meta":{"key":"iifname"}},"right":"fv-fh"}},{"drop":null}]}},
 		{"chain":{"family":"inet","table":"fvpn","name":"output","type":"filter","hook":"output","prio":-150,"policy":"accept"}}
 	]}`)
-	if err := VerifyBaseline(raw, Model{Datapath: dp}); err != nil {
-		t.Fatal(err)
-	}
-	if err := VerifyBaseline([]byte(`{"nftables":[{"chain":{"table":"fvpn","name":"forward","type":"filter","hook":"forward","prio":0,"policy":"accept"}}]}`), Model{Datapath: dp}); err == nil || !strings.Contains(err.Error(), string(ReasonIsolationBaselineMissing)) {
-		t.Fatalf("baseline: %v", err)
-	}
 }
 
 func TestApply_FailClosed(t *testing.T) {
@@ -380,7 +384,7 @@ func TestApply_FailClosed(t *testing.T) {
 			}
 			return []byte(`{"nftables":[{"table":{"family":"inet","name":"fvpn"}}]}`), nil
 		}
-		if strings.Contains(key, "tc -j qdisc show") || strings.Contains(key, "tc -j class show") {
+		if strings.Contains(key, "tc -j qdisc show") || strings.Contains(key, "tc -j class show") || strings.Contains(key, "tc -j filter show") {
 			return []byte(`[]`), nil
 		}
 		if strings.Contains(key, "qdisc del") {
@@ -532,7 +536,7 @@ func TestApply_ReusesKernelClass(t *testing.T) {
 		if strings.Contains(key, "nft -j list") {
 			return listing, nil
 		}
-		if strings.Contains(key, "tc -j qdisc") || strings.Contains(key, "tc -j class") {
+		if strings.Contains(key, "tc -j qdisc") || strings.Contains(key, "tc -j class") || strings.Contains(key, "tc -j filter") {
 			return []byte(`[]`), nil
 		}
 		if strings.Contains(key, "qdisc del") {
@@ -681,7 +685,7 @@ func TestApply_ExternalReset(t *testing.T) {
 					}
 					return []byte(`{"nftables":[{"table":{"family":"inet","name":"fvpn"}}]}`), nil
 				}
-				if strings.Contains(key, "tc -j qdisc") || strings.Contains(key, "tc -j class") {
+				if strings.Contains(key, "tc -j qdisc") || strings.Contains(key, "tc -j class") || strings.Contains(key, "tc -j filter") {
 					return []byte(`[]`), nil
 				}
 				if strings.Contains(key, "qdisc del") {
