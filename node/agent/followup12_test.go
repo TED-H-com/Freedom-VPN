@@ -967,7 +967,17 @@ while True:
 		if firstUp.IsZero() {
 			t.Fatal("NetBird did not raise link")
 		}
-		time.Sleep(100 * time.Millisecond)
+		// Interface creation precedes peer handshake readiness. Keep capture
+		// running throughout and require real ingress before evaluating this
+		// window; silence during reconnect cannot prove baseline containment.
+		trafficDeadline := time.Now().Add(10 * time.Second)
+		for readInput() <= inputBefore && time.Now().Before(trafficDeadline) {
+			time.Sleep(50 * time.Millisecond)
+		}
+		if readInput() <= inputBefore {
+			t.Fatal("real peer did not reconnect within traffic readiness bound")
+		}
+		trafficReady := time.Now()
 		_, pathErr := p.MemberPath(t.Context(), *r.eng.appliedModel, r.eng.memberPath)
 		// Read current VerifyServing too: a topology pass is not an admission pass.
 		_, serveErr := p.VerifyServing(t.Context(), *r.eng.appliedModel, r.eng.appliedAssignments)
@@ -986,7 +996,7 @@ while True:
 		frames := packets.Count() - packetStart
 		inputDrops := readInput() - inputBefore
 		raceWindows = append(raceWindows, p.lowerStarted.Sub(firstUp))
-		t.Logf("D096 reconnect_cycle=%d link_raise_window_lower_us=%d upper_us=%d d096_during_window=%v serving_verify=%v unmetered_frames=%d input_drop_packets=%d heartbeat_serving=%t quarantine_before_up=%t quarantine_after_up=%t", cycle+1, p.lowerStarted.Sub(firstUp).Microseconds(), end.Sub(lastDown).Microseconds(), pathErr, serveErr, frames, inputDrops, mustBeat(t, r).Serving, r.eng.containment.Quarantine.Links[0].Before.AdminUp, r.eng.containment.Quarantine.Links[0].After.AdminUp)
+		t.Logf("D096 reconnect_cycle=%d link_raise_window_lower_us=%d upper_us=%d link_up_to_traffic_ready_us=%d d096_during_window=%v serving_verify=%v unmetered_frames=%d input_drop_packets=%d heartbeat_serving=%t quarantine_before_up=%t quarantine_after_up=%t", cycle+1, p.lowerStarted.Sub(firstUp).Microseconds(), end.Sub(lastDown).Microseconds(), trafficReady.Sub(firstUp).Microseconds(), pathErr, serveErr, frames, inputDrops, mustBeat(t, r).Serving, r.eng.containment.Quarantine.Links[0].Before.AdminUp, r.eng.containment.Quarantine.Links[0].After.AdminUp)
 		if inputDrops == 0 {
 			t.Fatal("no real peer ingress during reconnect window")
 		}

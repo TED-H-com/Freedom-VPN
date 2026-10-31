@@ -5,11 +5,23 @@ cd "$(dirname "$0")/../../.."
 export GOMAXPROCS=4 GOFLAGS=-p=4 CGO_ENABLED=0 GOTOOLCHAIN=local
 prefix=${FVPN_LAB_PREFIX:-fvpn-w1-netlab-real}
 case "$prefix" in fvpn-w1-netlab-*) ;; *) echo 'requires fvpn-w1-netlab-* prefix' >&2; exit 1;; esac
-# The shared host permits at most two integration campaigns at once.
-while [ "$(pgrep -fc '^bash bin/gates[.]sh' || true)" -ge 2 ]; do
+# Stay visible as gates.sh while waiting/running. Count other foreground
+# launchers directly: a command substitution would briefly duplicate this
+# shell's argv and could falsely count a third campaign.
+mkdir -p .agent/tmp
+slot_file=$(mktemp "$PWD/.agent/tmp/netlab-slot.XXXXXX")
+trap 'rm -f "$slot_file"' EXIT
+while true; do
+    pgrep -af '^bash .*gates[.]sh' > "$slot_file" || true
+    active=0
+    while read -r pid command; do
+        if [ "$pid" != "$$" ]; then active=$((active + 1)); fi
+    done < "$slot_file"
+    if [ "$active" -lt 2 ]; then break; fi
     echo 'Two gates.sh campaigns are active; waiting for a lab slot.'
     sleep 30
 done
+rm -f "$slot_file"
 if [ "${1:-real-netbird}" = lab ]; then
     trap 'make -f mk/netlab.mk netlab-down FVPN_LAB_PREFIX="$prefix" >/dev/null 2>&1 || true; docker rmi "$prefix:lab" >/dev/null 2>&1 || true' EXIT
     make -f mk/netlab.mk netlab-test FVPN_LAB_PREFIX="$prefix"
