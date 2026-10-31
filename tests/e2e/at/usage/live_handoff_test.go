@@ -287,7 +287,7 @@ func (s *liveSuite) incarnationView(node uuid.UUID) api.NodeIncarnationList {
 }
 
 func (s *liveSuite) evalAT20(t *testing.T) (rec Record) {
-	rec = s.baseRecord("AT20", "ENR-05 retired-stream hand-off (usage lane extension)", "§6.2–§6.3, §10.5–§10.8; ENR-05, D-105, D-112, D-115, D-118",
+	rec = s.baseRecord("AT20", "ENR-05 retired-stream hand-off and D-130 fresh stream (usage lane extension)", "§6.2–§6.3, §10.5–§10.8; ENR-05, D-105, D-112, D-115, D-118, D-130",
 		"The current certificate delivers the surviving old stream unchanged and once only; member before + held equals after, origin ACK is independent, late events are audited and retired certificates refused.", []string{"ENR03", "MTR02", "MTR03", "MTR04", "API01", "DATA01"})
 	rec.Status = StatusFail
 	rec.Actual = "AT20 did not complete; completed steps and failure stage are retained below."
@@ -574,6 +574,16 @@ func (s *liveSuite) evalAT20(t *testing.T) (rec Record) {
 	}) {
 		t.Fatal("AT20 autonomous hand-off did not advance origin ACK")
 	}
+	// No current member traffic yet: observe the new unknown-continuity gap's
+	// own ACK before the next counted event can advance this stream to 2.
+	stage("D-130 autonomous fresh gap ACK 1")
+	if !s.waitFor(90*time.Second, func() bool {
+		var ack string
+		err := s.pool.QueryRow(s.ctx, `SELECT highest_contiguous_seq::text FROM usage_checkpoints WHERE node_id=$1 AND incarnation_id=$2`, node, current).Scan(&ack)
+		return err == nil && ack == "1"
+	}) {
+		t.Fatal("AT20 D-130 fresh gap did not reach ACK 1")
+	}
 	s.stopInstaller()
 	newCLI := s.originCLI("installer-node")
 	if newCLI.NodeIncarnationID != current.String() {
@@ -586,6 +596,10 @@ func (s *liveSuite) evalAT20(t *testing.T) (rec Record) {
 		t.Fatalf("AT20 retired local ACK %s/%s %s", oldACK, last, finalCode)
 	}
 	rec.Observations["current_cli_after_handoff"] = newCLI
+	if newCLI.AckedThrough != "1" || newCLI.LastEventSeq != "1" {
+		t.Fatalf("AT20 D-130 gap local ACK/last = %s/%s", newCLI.AckedThrough, newCLI.LastEventSeq)
+	}
+	s.verifyFreshGap(&rec, postDB, node, current)
 	rec.Observations["retired_local_stream"] = map[string]string{"node_incarnation_id": origin.String(), "acked_through": oldACK, "last_seq": last, "ledger_epoch": oldEpoch, "final_code": finalCode}
 	s.verifyHistoricalEvents(events)
 	rec.Observations["handed_off_events"] = events
@@ -702,11 +716,14 @@ func (s *liveSuite) evalAT20(t *testing.T) (rec Record) {
 	if acceptedLate != 0 || s.centralStreamACK(node, origin) != oldACK {
 		t.Fatal("AT20 rejected event mutated accepted ledger/ACK")
 	}
+	stage("D-130 fresh counted event ACK 2, exact attribution and stored replays")
+	freshSummary := s.verifyFreshCountedStream(&rec, node, current, origin, oldACK, period, states, presenter, after, afterInc)
 	rec.Status = StatusPass
-	for _, check := range []string{"BeforePlusHeldByteEquality", "OriginalPayloadAndHistoricalAttribution", "AgentSameKeyStoredResultReplay", "OriginACKAndIndependentCurrentACK", "D112ConfiguredIntervalWithinBound", "LiveLateEventRejectedAndAudited", "RetiredCertificateRefused"} {
+	for _, check := range []string{"BeforePlusHeldByteEquality", "OriginalPayloadAndHistoricalAttribution", "AgentSameKeyStoredResultReplay", "OriginACKAndIndependentCurrentACK", "D112ConfiguredIntervalWithinBound", "LiveLateEventRejectedAndAudited", "RetiredCertificateRefused", "D130FreshGapACK1", "D130CountedACK2ExactAttribution", "D130MicrosecondProjection", "D130SameKeyStoredACK1AndACK2Replay"} {
 		s.addHandoffCheck(&rec, check, true, "Live assertion completed; deciding API, ledger and byte evidence retained in observations.")
 	}
 	rec.Actual = fmt.Sprintf("Same node %s reenrolled %s -> %s through ControlledReinstall. Member period %s: before %s + held %s = after %s bytes; %d original events retained once, %d agent batches returned the identical stored canonical result, origin ACK %s, independent current ACK %s. Meter interval 10s <= central bound %ds. Live late event rejected/audited and retired certificate refused with 403 IDENTITY_REVOKED. Member API provides period totals; incarnation attribution is read through central samples and admin incarnation history.", node, origin, current, period, before.Totals.TotalBytes, decimalSum(up, down), after.Totals.TotalBytes, len(events), len(batches), oldACK, currentAfter, bound)
+	rec.Actual += " " + freshSummary
 	stage("complete")
 	return rec
 }
