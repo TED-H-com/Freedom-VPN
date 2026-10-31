@@ -1,0 +1,70 @@
+{
+  "scope": "TEST ONLY read-only same-stack diagnostic after failed run; no pass promotion or replay claim",
+  "origin_before_late_probe": {
+    "bound_at": "2026-10-31T15:47:59.964869Z",
+    "bound_public_key_sha256": "819638df97a01257cdc17fbbf417623526d5d04071454f9539391506a4700a9e",
+    "created_at": "2026-10-31T15:47:59.958992Z",
+    "current": false,
+    "enrollment_id": "01a192a5-71e5-72c3-afef-397a560552a1",
+    "incarnation_id": "01a192a5-774b-735b-95e4-ad4129a50217",
+    "retire_reason": "reinstall",
+    "retired_at": "2026-10-31T15:49:20.074832Z",
+    "state": "retired",
+    "usage": {
+      "download_bytes": "6062",
+      "through": "2026-10-31T15:49:33.734927Z",
+      "upload_bytes": "4304"
+    }
+  },
+  "origin_after_late_probe_and_current_traffic": {
+    "origin_ack": "2",
+    "upload_bytes": "4304",
+    "download_bytes": "6062",
+    "checkpoint_updated_at": "2026-10-31T15:49:37.350835+00:00",
+    "origin_incarnation_id": "01a192a5-774b-735b-95e4-ad4129a50217"
+  },
+  "query": "SELECT jsonb_build_object('origin_incarnation_id',c.incarnation_id,'origin_ack',c.highest_contiguous_seq::text,'checkpoint_updated_at',c.updated_at,'upload_bytes',coalesce(sum(s.upload_bytes),0)::text,'download_bytes',coalesce(sum(s.download_bytes),0)::text) FROM usage_checkpoints c JOIN usage_events e ON e.node_id=c.node_id AND e.incarnation_id=c.incarnation_id LEFT JOIN usage_samples s ON s.event_id=e.id WHERE c.incarnation_id='01a192a5-774b-735b-95e4-ad4129a50217' GROUP BY c.id",
+  "current_saved_results": [
+    {
+      "event_seqs": [
+        "1"
+      ],
+      "stored_result": {
+        "blocked_seq": null,
+        "highest_contiguous_seq": "1",
+        "ledger_epoch": "66dd59ed-0d1d-48e5-a771-bf8fa0e2c911",
+        "node_id": "01a192a5-71e5-72c4-b385-acdc7a44d593",
+        "node_incarnation_id": "01a192a6-c1d7-794d-b060-265be7a65256",
+        "received_at": "2026-10-31T15:49:33.720035304Z",
+        "results": [
+          {
+            "error": null,
+            "event_seq": "1",
+            "status": "accepted"
+          }
+        ]
+      }
+    },
+    {
+      "event_seqs": [
+        "2"
+      ],
+      "stored_result": {
+        "blocked_seq": null,
+        "highest_contiguous_seq": "2",
+        "ledger_epoch": "66dd59ed-0d1d-48e5-a771-bf8fa0e2c911",
+        "node_id": "01a192a5-71e5-72c4-b385-acdc7a44d593",
+        "node_incarnation_id": "01a192a6-c1d7-794d-b060-265be7a65256",
+        "received_at": "2026-10-31T15:52:38.85212383Z",
+        "results": [
+          {
+            "error": null,
+            "event_seq": "2",
+            "status": "accepted"
+          }
+        ]
+      }
+    }
+  ],
+  "through_source": "internal/nodes/incarnations.go selects usage_checkpoints.updated_at AS through"
+}
