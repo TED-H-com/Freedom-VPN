@@ -1,0 +1,139 @@
+{
+  "run_id": "daddad24-b6f7-4c32-ba8e-1c7d24f76ea2",
+  "source_commit": "3ac13f7e115edf22e2ec9d3a6450733ec1fb7b6a",
+  "at": "2026-10-31T18:19:22.085569+00:00",
+  "scope": "TEST ONLY same-run post-handoff uncached seed; installer fixture retired before this isolated probe; no new apply or central acceptance claim",
+  "artifact_url": "https://releases.example.invalid/r/01a1932d-955f-7044-ab34-dce890cf8870/amd64.tar.zst",
+  "config": {
+    "layout": {
+      "releases": "/opt/vpn-node/releases",
+      "current": "/opt/vpn-node/current",
+      "identity": "/var/lib/vpn-node/identity",
+      "state": "/var/lib/vpn-node/state",
+      "journal": "/var/lib/vpn-node/update-journal",
+      "lock": "/var/lib/vpn-node/update.lock",
+      "staging": "/var/lib/vpn-node/update-staging",
+      "trust": "/etc/vpn-node/release-trust.json"
+    },
+    "node_id": "01a1932d-c5ed-7b91-8c51-55a3bd649159",
+    "incarnation_id": "01a1932d-ce8c-7673-9ed2-fef594457134",
+    "revoked": false,
+    "platform": {
+      "os_id": "ubuntu",
+      "os_version": "24.04",
+      "architecture": "amd64",
+      "updater_version": "1.0.0",
+      "control_api_major": 1,
+      "policy_schema": 1,
+      "usage_schema": 1,
+      "state_schema": 1
+    },
+    "release_trust": "/etc/vpn-node/release-trust.json",
+    "desired_trust": "/etc/vpn-node/desired-trust.json",
+    "desired_state": "/var/lib/vpn-node/state/desired-state.json",
+    "revoked_release_ids": null,
+    "meter_checkpoint": "/var/lib/vpn-node/state/meter.checkpoint",
+    "stop_command": [
+      "systemctl",
+      "stop",
+      "fvpn-agent.service",
+      "fvpn-watchdog.service"
+    ],
+    "start_command": [
+      "/bin/sh",
+      "-c",
+      "exec systemctl start fvpn-watchdog.service fvpn-agent.service",
+      "fvpn-updater-start"
+    ],
+    "result_url": "https://127.0.0.1:9444/api/v1/agent/update-results",
+    "mtls_cert": "/var/lib/vpn-node/identity/cert.pem",
+    "mtls_key": "/var/lib/vpn-node/identity/key.pem",
+    "mtls_ca": "/etc/vpn-node/ca.pem",
+    "allow_loopback": true,
+    "allowed_artifact_origins": [
+      "https://127.0.0.1:9444"
+    ]
+  },
+  "cache_sha256_before": "57904a959f3f59e8be28341ae73f4e2331b39bc77fdc58abfaa2cb5fec9eb662",
+  "current_before": "/opt/vpn-node/releases/01a1932d-955f-7044-ab34-dce890cf8870",
+  "status_before": {
+    "generation": "1",
+    "job_id": "d9a042fb-651a-529e-ac9b-fa8a8ba431c2",
+    "source": "installer",
+    "requested_release_id": "01a1932d-bf27-7913-a35b-aca82b4cbdd6",
+    "stage": "verify",
+    "state": "failed",
+    "current_release_id": "01a1932d-955f-7044-ab34-dce890cf8870",
+    "last_good_release_id": "01a1932d-955f-7044-ab34-dce890cf8870",
+    "recovery_required": false,
+    "last_result_state": "failed",
+    "last_rejection": null,
+    "health": null,
+    "candidate_health_json": null
+  },
+  "seed_without_cache": {
+    "command": [
+      "/opt/vpn-node/current/fvpn-updater",
+      "seed",
+      "--config",
+      "/etc/vpn-node/updater.json",
+      "--manifest",
+      "/var/lib/vpn-node/update-staging/01a1932d-955f-7044-ab34-dce890cf8870.manifest.json",
+      "--tree",
+      "/opt/vpn-node/releases/01a1932d-955f-7044-ab34-dce890cf8870"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": "{\"time\":\"2026-10-31T18:19:22.37127253Z\",\"level\":\"INFO\",\"msg\":\"verified installer baseline seeded\",\"release_id\":\"01a1932d-955f-7044-ab34-dce890cf8870\"}"
+  },
+  "cache_restored_identical": true,
+  "generated_config_unchanged": true,
+  "status_after": {
+    "generation": "1",
+    "job_id": "d9a042fb-651a-529e-ac9b-fa8a8ba431c2",
+    "source": "installer",
+    "requested_release_id": "01a1932d-bf27-7913-a35b-aca82b4cbdd6",
+    "stage": "verify",
+    "state": "failed",
+    "current_release_id": "01a1932d-955f-7044-ab34-dce890cf8870",
+    "last_good_release_id": "01a1932d-955f-7044-ab34-dce890cf8870",
+    "seeded_baseline": {
+      "release_id": "01a1932d-955f-7044-ab34-dce890cf8870",
+      "manifest_sha256": "54c2413235e4876f16938f493babee1e6e536b5a431df25f5278923a1016a13e",
+      "tree_hash": "fc6f453a06470a29e11bcdb6571d64b25f79c80fb76cd2cb42ee6d12055ea9cf",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "seeded_at": "2026-10-31T18:19:22.368487718Z"
+    },
+    "recovery_required": false,
+    "last_result_state": "failed",
+    "last_rejection": null,
+    "health": null,
+    "candidate_health_json": null
+  },
+  "status_unchanged": false,
+  "current_unchanged": true,
+  "decision": "Neither rejection nor a hosting rewrite was needed: the controlled Docker origin resolves to a non-private IPv4 address; allowed_artifact_origins exempts only private/CGNAT origins, it is not a universal host allowlist. Uncached seed exited 0 with the generated config unchanged. It added a verified seeded_baseline for the current release after the main extension had finished; current/last-good, failed outcome, health and forwarding state were retained.",
+  "resolved_origin": {
+    "hostname": "releases.example.invalid",
+    "classification": "controlled Docker origin with non-private/non-CGNAT IPv4",
+    "is_rfc1918": false,
+    "is_cgnat": false,
+    "address_sha256": "861c0d22df07f908bd67dcc8fde3e947e6ecdb102f494a895ccb28d8ea67d033",
+    "source": "tests/e2e/installer_exports.go --add-host uses s.lab.originIP; deploy/devstack/compose.yaml owned origin network"
+  },
+  "changed_status_fields": [
+    "seeded_baseline"
+  ],
+  "status_except_seed_unchanged": true,
+  "stimulus": {
+    "cache_path": "/var/lib/vpn-node/update-staging/57904a959f3f59e8be28341ae73f4e2331b39bc77fdc58abfaa2cb5fec9eb662.tar.zst",
+    "held_path": "/var/lib/vpn-node/update-staging/57904a959f3f59e8be28341ae73f4e2331b39bc77fdc58abfaa2cb5fec9eb662.tar.zst.f11-origin-held",
+    "steps": [
+      "After the installer extension completes and retires its fixture, read current and its retained signed manifest; select the amd64 artifact.",
+      "Record config/cache SHA-256 and updater status. Move only that cached archive to the held sibling.",
+      "Run the recorded seed_without_cache command using the unmodified generated config and current tree.",
+      "In Python finally, restore the exact archive bytes; verify cache/config SHA-256 and current again."
+    ],
+    "cleanup": "cached archive restored byte-identically; shared live runner later removes the entire owned fixture"
+  }
+}
