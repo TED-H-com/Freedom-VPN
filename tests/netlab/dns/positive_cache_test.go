@@ -365,6 +365,34 @@ func TestAT20_PositiveCacheTTL(t *testing.T) {
 	// Drain the first primary attempt's retry so exported authority metadata is
 	// complete. It is a distinct outstanding query, not an inferred cache miss.
 	time.Sleep(time.Until(start.started.Add(10300 * time.Millisecond)))
+	// A reply may arrive after the client's deadline but before AdGuard's
+	// upstream deadline. Retain the outstanding request across query windows.
+	abandoned := exchangeCache(targets[0].DNSAddr, "inflight", dnsmessage.TypeA, 2500*time.Millisecond)
+	if abandoned.err == nil {
+		t.Fatal("inflight primary should exceed client deadline")
+	}
+	old := record("inflight", "client_timeout_then_secondary", roles[1], exchangeCache(targets[1].DNSAddr, "inflight", dnsmessage.TypeA, time.Second), []cacheReceipt{{roles[0], abandoned.started, abandoned.completed, "client_timeout"}})
+	check(old, "other_ipv4", 10, 2)
+	phase("inflight")
+	fresh := probe("inflight", "primary_while_first_fetch_outstanding", 0)
+	check(fresh, "changed_ipv4", 10, 1)
+	time.Sleep(time.Until(abandoned.started.Add(3800 * time.Millisecond)))
+	inflight := probe("inflight", "primary_after_first_fetch_completed", 0)
+	var oldCompleted time.Time
+	for _, ev := range events() {
+		if ev.Case == "inflight" && ev.Role == "primary" && ev.Type == 1 && ev.Serial == 1001 && ev.Outcome == "answered" {
+			if !ev.Started.Before(fresh.Started) || !ev.Completed.After(fresh.Completed) || !ev.Completed.Before(inflight.Started) {
+				t.Fatal("old outstanding fetch did not straddle the fresh response")
+			}
+			oldCompleted = ev.Completed
+		}
+	}
+	if oldCompleted.IsZero() {
+		t.Fatal("missing completion evidence for outstanding fetch")
+	}
+	// Pinned inherent behavior: the older in-flight reply overwrites the newer
+	// entry. A trace restricted to the last query would miss its provenance.
+	check(inflight, "other_ipv4", uint32(10-(inflight.Completed.Unix()-oldCompleted.Unix())), 0)
 	for _, target := range targets {
 		assertPrivacy(t, target.AdminURL, labCreds{})
 	}

@@ -23,6 +23,7 @@ type Event struct {
 	Protocol  string    `json:"protocol"`
 	Type      uint16    `json:"rr_type"`
 	Class     string    `json:"answer_class"`
+	TTLs      []uint32  `json:"answer_ttl_remaining"`
 	Serial    uint32    `json:"snapshot_serial"`
 	Outcome   string    `json:"outcome"`
 }
@@ -41,7 +42,7 @@ type Authority struct {
 
 func validCase(s string) bool {
 	switch s {
-	case "steady", "boundary", "slow", "retry", "late", "failed", "fallback", "smoke":
+	case "steady", "boundary", "slow", "retry", "late", "failed", "fallback", "inflight", "smoke":
 		return true
 	}
 	return false
@@ -100,7 +101,7 @@ func (a *Authority) answer(raw []byte, remote, proto string) []byte {
 	if question.Type == dnsmessage.TypeA {
 		a.counts[key]++
 	}
-	ev := Event{Started: time.Now().UTC(), Role: role, Case: label, Protocol: proto, Type: uint16(question.Type), Class: class, Serial: serial, Outcome: "pending"}
+	ev := Event{Started: time.Now().UTC(), Role: role, Case: label, Protocol: proto, Type: uint16(question.Type), TTLs: []uint32{}, Serial: serial, Outcome: "pending"}
 	index := len(a.events)
 	a.events = append(a.events, ev)
 	a.mu.Unlock()
@@ -108,6 +109,9 @@ func (a *Authority) answer(raw []byte, remote, proto string) []byte {
 	defer func() {
 		a.mu.Lock()
 		a.events[index].Completed, a.events[index].Outcome = time.Now().UTC(), outcome
+		if outcome == "answered" && question.Type == dnsmessage.TypeA {
+			a.events[index].Class, a.events[index].TTLs = class, []uint32{10}
+		}
 		a.mu.Unlock()
 	}()
 	if question.Type == dnsmessage.TypeA && role == "primary" {
@@ -120,6 +124,9 @@ func (a *Authority) answer(raw []byte, remote, proto string) []byte {
 		}
 		if first && label == "late" {
 			time.Sleep(11 * time.Second)
+		}
+		if first && label == "inflight" {
+			time.Sleep(3500 * time.Millisecond)
 		}
 	}
 	response := dnsmessage.Message{Header: dnsmessage.Header{ID: q.ID, Response: true, Authoritative: true, RecursionDesired: q.RecursionDesired}, Questions: q.Questions}
