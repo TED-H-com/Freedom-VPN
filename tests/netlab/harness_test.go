@@ -213,6 +213,9 @@ func applyPrev(t *testing.T, m enforce.Model, prevPath string) applyDoc {
 		t.Fatal(err)
 	}
 	args := []string{"fvpn-netlab", "apply"}
+	if t.Name() == "TestAT10_AT13_ReloadRevokeBaseline" {
+		args = append(args, "-trace", "/scratch/at10-apply.jsonl")
+	}
 	if prevPath != "" {
 		args = append(args, "-prev", prevPath)
 	}

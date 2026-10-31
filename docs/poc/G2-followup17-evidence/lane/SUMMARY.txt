@@ -1,0 +1,14 @@
+AT00 handshakes=5 forward=1 baseline=1
+D090 post-Apply injection verify=3 TC_FOREIGN_FILTER; pre-quarantine uplink=1 ctunku_delta=0; quarantined uplink=0 ctunku_delta=0 control=pass; repeated quarantine=pass; clean Apply links=up verify=0; topology routes reconciled=2 ipv6_address=1 member=pass AT00=pass
+AT00 handshakes=5 forward=1 baseline=1
+AT11 ctv6_delta=3 targets_empty=1 mode=block
+AT12 deny_diag=8 dns_upload=271 a1_upload=7650 admitted=3
+AT14 udp_up_dev=0.0000 udp_down_dev=0.0000 tcp_up_dev=0.0000 tcp_down_dev=0.0000 dns_separate=1 reset_reported=1
+AT18 qos windows passed R=20Mbit
+AT29 stop_after=8.804s resume=1
+DNS-ACCEPT tcp53=1 udp53=1 other_port=2 other_denied=5 sibling=1 expired=1 ruleset_narrow=1 capture=0
+FOREIGN accept_ctunku=1 accept_uplink=0 verdict=ISOLATION_POLICY_INVALID mangle_exit=3 table_kept=1 recovered=1
+LOOPBACK dns=1 serving=1 class=loopback_scoped postrouting_saddr=2 postrouting_daddr=1 ctunku=1 uplink=0
+NetBird inner_accept_blocked=1 masquerade_fail_closed=1 marks=mark_pre=5 mark_post=5 preserved=1
+PROBE snat=1 up=5 down=3 neg=4 expired=1 dns_only_53=1
+REVOKE-FLOW decision=ruleset-stops serving=4101 conntrack_kept=1 uplink=0 return=0 ctunku=4 ctunkd=4 injected=4 sport=51973 reply=51973
