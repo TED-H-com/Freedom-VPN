@@ -21,6 +21,7 @@ func TestLabISO_F6_RecoveryAndEvidence(t *testing.T) {
 	flushConntrack(t)
 	admin(t, "/release", "")
 	admin(t, "/service", `{"seconds":3600}`)
+	admin(t, "/bump", "") // Start at generation 2, matching the original latch proof.
 	startAgent(t)
 	defer stopAgent()
 	if !waitProbe(t, "allow", 25*time.Second) {
@@ -51,10 +52,38 @@ func TestLabISO_F6_RecoveryAndEvidence(t *testing.T) {
 	if err := json.Unmarshal([]byte(mustExec(t, "ip", "-j", "addr", "show", "dev", "fv-fh")), &addresses); err != nil {
 		t.Fatal(err)
 	}
-	var routes []struct{ Dst, Gateway string }
-	if err := json.Unmarshal([]byte(mustExec(t, "ip", "-j", "-6", "route", "show", "dev", "fv-fh")), &routes); err != nil {
-		t.Fatal(err)
+	type route struct{ Dst, Gateway string }
+	routes := map[string][]route{}
+	for _, family := range []string{"-4", "-6"} {
+		var rows []route
+		if err := json.Unmarshal([]byte(mustExec(t, "ip", "-j", family, "route", "show", "dev", "fv-fh")), &rows); err != nil {
+			t.Fatal(err)
+		}
+		routes[family] = rows
 	}
+	restore := func() {
+		for _, link := range addresses {
+			for _, a := range link.Info {
+				if a.Family == "inet6" && a.Scope == "global" {
+					mustExec(t, "ip", "-6", "addr", "replace", fmt.Sprintf("%s/%d", a.Local, a.PrefixLen), "dev", "fv-fh", "nodad")
+				}
+			}
+		}
+		for family, rows := range routes {
+			for _, route := range rows {
+				if route.Gateway != "" {
+					mustExec(t, "ip", family, "route", "replace", route.Dst, "via", route.Gateway, "dev", "fv-fh")
+				}
+			}
+		}
+	}
+	// A failed assertion must not leave this shared test topology broken for
+	// later cases. This is harness-owned veth state, never an agent repair.
+	t.Cleanup(func() {
+		stopAgent()
+		mustExec(t, "ip", "link", "set", "fv-fh", "up")
+		restore()
+	})
 	start := time.Now()
 	mustExec(t, "tc", "qdisc", "add", "dev", "fv-fh", "clsact")
 	mustExec(t, "tc", "filter", "add", "dev", "fv-fh", "ingress", "pref", "1", "matchall", "action", "mirred", "egress", "redirect", "dev", "fv-ih")
@@ -100,19 +129,11 @@ func TestLabISO_F6_RecoveryAndEvidence(t *testing.T) {
 		t.Fatal("served before expected IPv6 path was restored")
 	}
 	raised := time.Since(removed)
-	for _, link := range addresses {
-		for _, a := range link.Info {
-			if a.Family == "inet6" && a.Scope == "global" {
-				mustExec(t, "ip", "-6", "addr", "replace", fmt.Sprintf("%s/%d", a.Local, a.PrefixLen), "dev", "fv-fh", "nodad")
-			}
-		}
-	}
-	for _, route := range routes {
-		if route.Gateway != "" {
-			mustExec(t, "ip", "-6", "route", "replace", route.Dst, "via", route.Gateway, "dev", "fv-fh")
-		}
-	}
+	restore()
 	if !waitProbe(t, "allow", 15*time.Second) {
+		t.Logf("recovery observation: %+v", observation())
+		t.Log("member addresses", mustExec(t, "ip", "-j", "addr", "show", "dev", "fv-fh"))
+		t.Log("member routes", mustExec(t, "ip", "-j", "-6", "route", "show", "table", "all", "dev", "fv-fh"))
 		t.Fatal("counted forwarding did not recover", debugPlane(t))
 	}
 	deadline = time.Now().Add(5 * time.Second)

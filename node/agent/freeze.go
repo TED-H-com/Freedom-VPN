@@ -3,11 +3,12 @@ package agent
 import (
 	"context"
 	"errors"
-	"github.com/google/uuid"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 // A freeze is an incarnation latch, never cleared by an absent/false response

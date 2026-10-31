@@ -387,6 +387,41 @@ func TestD088_FailedFreezeAcceptanceStaysReplayable(t *testing.T) {
 	}
 }
 
+func TestD088_FreezeIntentRetainsIncarnationBeforeBoot(t *testing.T) {
+	r := newRig(t)
+	alignControlClock(r)
+	serveBoundGeneration(t, r)
+	r.manualUsage(t)
+	db, err := sql.Open("sqlite", "file:"+r.eng.cfg.DBPath())
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	if _, err := db.Exec(`CREATE TRIGGER fail_freeze BEFORE INSERT ON meta WHEN NEW.key = 'identity_frozen' BEGIN SELECT RAISE(FAIL, 'TEST ONLY freeze failure'); END`); err != nil {
+		t.Fatal(err)
+	}
+	r.eng.freezeIdentity(t.Context())
+	cfg, inc, boot := r.eng.cfg, r.eng.incID, r.eng.bootID
+	if err := r.eng.Close(); err != nil {
+		t.Fatal(err)
+	}
+	for range 2 {
+		e, err := Start(Options{Config: cfg, Clock: r.clock, Plane: r.plane, MeterSource: staticSource{boot: boot.String()}, Prober: passProbe{}})
+		if err != nil {
+			t.Fatal(err)
+		}
+		raw, readErr := os.ReadFile(filepath.Join(cfg.StateDir, "identity-freeze.intent"))
+		if !e.identityFrozen || e.freezeDurable || readErr != nil || strings.TrimSpace(string(raw)) != inc.String() {
+			_ = e.Close()
+			t.Fatal("startup replaced the failed-persist intent with another incarnation", readErr)
+		}
+		// Simulate another process exit before Boot can retry persistence.
+		if err := e.Close(); err != nil {
+			t.Fatal(err)
+		}
+	}
+}
+
 func TestD088_LostFreezeResponseBlocksRestartUntilReplay(t *testing.T) {
 	r := newRig(t)
 	alignControlClock(r)

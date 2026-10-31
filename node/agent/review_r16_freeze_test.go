@@ -96,7 +96,7 @@ func TestReviewR16_FailedFreezePersistIsLostOnRestart(t *testing.T) {
 	if !r.eng.identityFrozen || r.eng.storageOK {
 		t.Fatalf("in-process fail-closed missing: frozen=%v storageOK=%v", r.eng.identityFrozen, r.eng.storageOK)
 	}
-	// The memory latch makes a second call return before any write.
+	// Retry while the writer is still locked; the durable intent must survive.
 	r.eng.freezeIdentity(t.Context())
 	release()
 	v, ok, err := r.eng.store.Meta(t.Context(), "identity_frozen")

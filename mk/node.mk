@@ -19,6 +19,7 @@ NODE_ENV  := TMPDIR='$(NODE_TMPDIR)' GOTMPDIR='$(NODE_TMPDIR)' CGO_ENABLED=0 GOT
 NODE_PKGS := ./node/agent/... ./node/watchdog/... ./node/internal/agentstore/... ./node/internal/controlclient/... ./node/internal/timeanchor/... ./node/internal/fakecontrol/... ./node/internal/nodelock/... ./node/internal/usagestore/... ./node/internal/meter/...
 NODE_STATICCHECK := honnef.co/go/tools/cmd/staticcheck@v0.8.2
 NODE_LAB_PREFIX ?= fvpn-w2-agent-core-lab
+NODE_NETLAB_TEST_ARGS ?=
 NODE_NETLAB_MK := mk/netlab.mk
 
 BUILD_TARGETS  += node-build
@@ -72,7 +73,7 @@ node-test-netlab: node-temp
 	fi; \
 	if [ $$status -eq 0 ]; then \
 		FVPN_NETLAB=1 FVPN_LAB_PREFIX='$(NODE_LAB_PREFIX)' \
-			$(NODE_ENV) $(NODE_GO) test -tags netlab -count=1 -timeout 15m -p 1 -parallel 1 -v ./tests/netlab/agent || status=$$?; \
+			$(NODE_ENV) $(NODE_GO) test -tags netlab -count=1 -timeout 15m -p 1 -parallel 1 -v $(NODE_NETLAB_TEST_ARGS) ./tests/netlab/agent || status=$$?; \
 	fi; \
 	$(MAKE) -f $(NODE_NETLAB_MK) netlab-down FVPN_LAB_PREFIX='$(NODE_LAB_PREFIX)' || true; \
 	docker rmi $(NODE_LAB_PREFIX):lab >/dev/null 2>&1 || true; \

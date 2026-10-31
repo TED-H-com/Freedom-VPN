@@ -46,7 +46,7 @@ revision 13 surface; no `ObservationReport.tc_evidence` field was added.
 TLS fake control and real nft/tc. It checks the first counted observation's clean
 qos evidence, injects a foreign redirect, confirms member-down containment, holds
 the filter across a newer generation, removes it, observes the topology hold,
-lets the topology owner restore its saved IPv6 configuration, and requires
+lets the topology owner restore its saved IPv4/IPv6 routes and IPv6 address, and requires
 counted forwarding plus matching applied/lease generations and retained failure
 rows. This veth fixture's owner is the harness, not NetBird. Its timestamps are
 host monotonic durations including Docker commands and read completion, so they

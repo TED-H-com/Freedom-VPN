@@ -345,6 +345,15 @@ func (e *Engine) loadCert() error {
 }
 
 func (e *Engine) loadIdentity(ctx context.Context) error {
+	// A retry of the freeze-intent write must already know its incarnation,
+	// including when Start is interrupted before Boot/loadRuntime.
+	id, ok, err := e.store.Identity(ctx)
+	if err != nil {
+		return err
+	}
+	if ok {
+		e.nodeID, e.incID, e.enrolled = id.NodeID, id.IncarnationID, true
+	}
 	if err := e.loadFreeze(ctx); err != nil {
 		return err
 	}
@@ -358,16 +367,9 @@ func (e *Engine) loadIdentity(ctx context.Context) error {
 	} else if ok && v == "1" && !fileExists(e.cfg.setupKeyPath()) {
 		e.bootstrapLost = true
 	}
-	id, ok, err := e.store.Identity(ctx)
-	if err != nil {
-		return err
-	}
 	if !ok {
 		return nil
 	}
-	e.nodeID = id.NodeID
-	e.incID = id.IncarnationID
-	e.enrolled = true
 	if err := e.loadCert(); err != nil {
 		e.log.Warn("identity certificate is unavailable")
 	}
