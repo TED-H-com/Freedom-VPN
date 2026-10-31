@@ -28,12 +28,7 @@ func (l *live) restartLeaseReadback(r *record) {
 		r.block("Second-node identity unavailable")
 		return
 	}
-	if r.Status == "fail" {
-		r.PriorChecks = append(r.PriorChecks, r.Steps...)
-		r.Steps = nil
-		r.Status = "blocked"
-		r.block("F4-01: complete AT09 is blocked on the observed post-restart empty-member lease. Primary failed recovery assertion remains in prior_checks and the immutable attempt-2 archive; subsequent independent policy changes cannot make it a pass.")
-	}
+	// Preserve primary failures: later readback cannot demote fail to blocked.
 	leases, observations, ok := l.nodeLeaseTimeline(l.second.NodeID, r.At)
 	r.check("immutable restart lease and observation timeline", "retain grant counts, deadlines and observed forwarding without modifying projections", fmt.Sprintf("leases=%s; observations=%s", leases, observations), "SELECT serving_leases and contiguous node_observations for recorded second incarnation since AT09", ok)
 	restore := l.useSecond()

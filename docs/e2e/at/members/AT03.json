@@ -1,17 +1,18 @@
 {
   "node_incarnations": {
-    "node": "01a18ef8-e0eb-7940-a5c3-70512ec5c503"
+    "node": "01a19021-ff54-74ac-861f-2b37a4572991"
   },
   "complete": true,
   "forwarding": [
     {
       "node_container_role": "node",
-      "node_incarnation": "01a18ef8-e0eb-7940-a5c3-70512ec5c503",
+      "node_incarnation": "01a19021-ff54-74ac-861f-2b37a4572991",
+      "origin_verified": true,
       "origin_requests": 1,
       "origin_snat_matches": true,
-      "probe_sha256": "11625e257fda3efcea0204f19b8ae394eee2bafd38b4440177d425b28163c936",
-      "at": "2026-10-30T22:47:45Z",
-      "first_counted_byte_at": "2026-10-30T22:47:51.021529686Z",
+      "probe_sha256": "713a0465224f77cada6d0788de85076bed3df1e8a21e637b20493b2072753654",
+      "at": "2026-10-31T04:13:45Z",
+      "first_counted_byte_at": "2026-10-31T04:13:50.033933871Z",
       "member_container_role": "member-paid",
       "route_selected": true,
       "route_before": [
@@ -39,13 +40,13 @@
       },
       "node_before": {
         "available": true,
-        "generation": "21",
+        "generation": "30",
         "device_upload_bytes": "0",
         "device_download_bytes": "0",
         "member_accept_rules": 24,
         "diagnostic_bytes": {
           "ctbadns": "0",
-          "ctbase": "0",
+          "ctbase": "60",
           "ctdeny": "0",
           "cthost": "0",
           "ctin": "0",
@@ -54,27 +55,27 @@
           "ctunkd": "0",
           "ctunku": "29",
           "ctv6": "0",
-          "nd_01a18ef9ae937a1cb93420bed403bf2f": "0",
-          "nd_01a18efa99e875d79a6c47f05b5c55e9": "0",
-          "nd_01a18efb1e1f73bfa9079f26e5e79f82": "0",
-          "nd_01a18efbeac573d7a735189ab153860b": "0",
-          "nd_01a18eff67627068b123dcf6a76c67d7": "0",
-          "nu_01a18ef9ae937a1cb93420bed403bf2f": "0",
-          "nu_01a18efa99e875d79a6c47f05b5c55e9": "0",
-          "nu_01a18efb1e1f73bfa9079f26e5e79f82": "0",
-          "nu_01a18efbeac573d7a735189ab153860b": "0",
-          "nu_01a18eff67627068b123dcf6a76c67d7": "0"
+          "nd_01a19022b1167a3dbd79ad7909f80ee5": "0",
+          "nd_01a190239b377cd99dacd55dfe4511a1": "0",
+          "nd_01a1902559c27c3f8915335365b2cbe5": "0",
+          "nd_01a19026248b7053b6d1eb26f641028b": "0",
+          "nd_01a19029c8c878d0b72567ba532e4ab1": "0",
+          "nu_01a19022b1167a3dbd79ad7909f80ee5": "0",
+          "nu_01a190239b377cd99dacd55dfe4511a1": "0",
+          "nu_01a1902559c27c3f8915335365b2cbe5": "0",
+          "nu_01a19026248b7053b6d1eb26f641028b": "0",
+          "nu_01a19029c8c878d0b72567ba532e4ab1": "0"
         }
       },
       "node_after": {
         "available": true,
-        "generation": "21",
-        "device_upload_bytes": "2409",
-        "device_download_bytes": "2463",
+        "generation": "30",
+        "device_upload_bytes": "2317",
+        "device_download_bytes": "2411",
         "member_accept_rules": 24,
         "diagnostic_bytes": {
           "ctbadns": "0",
-          "ctbase": "0",
+          "ctbase": "60",
           "ctdeny": "0",
           "cthost": "0",
           "ctin": "0",
@@ -83,56 +84,467 @@
           "ctunkd": "0",
           "ctunku": "29",
           "ctv6": "0",
-          "nd_01a18ef9ae937a1cb93420bed403bf2f": "0",
-          "nd_01a18efa99e875d79a6c47f05b5c55e9": "0",
-          "nd_01a18efb1e1f73bfa9079f26e5e79f82": "0",
-          "nd_01a18efbeac573d7a735189ab153860b": "0",
-          "nd_01a18eff67627068b123dcf6a76c67d7": "0",
-          "nu_01a18ef9ae937a1cb93420bed403bf2f": "0",
-          "nu_01a18efa99e875d79a6c47f05b5c55e9": "0",
-          "nu_01a18efb1e1f73bfa9079f26e5e79f82": "0",
-          "nu_01a18efbeac573d7a735189ab153860b": "0",
-          "nu_01a18eff67627068b123dcf6a76c67d7": "0"
+          "nd_01a19022b1167a3dbd79ad7909f80ee5": "0",
+          "nd_01a190239b377cd99dacd55dfe4511a1": "0",
+          "nd_01a1902559c27c3f8915335365b2cbe5": "0",
+          "nd_01a19026248b7053b6d1eb26f641028b": "0",
+          "nd_01a19029c8c878d0b72567ba532e4ab1": "0",
+          "nu_01a19022b1167a3dbd79ad7909f80ee5": "0",
+          "nu_01a190239b377cd99dacd55dfe4511a1": "0",
+          "nu_01a1902559c27c3f8915335365b2cbe5": "0",
+          "nu_01a19026248b7053b6d1eb26f641028b": "0",
+          "nu_01a19029c8c878d0b72567ba532e4ab1": "0"
         }
       },
       "packet_observations": {
         "member-paid": {
           "available": true,
           "duration_seconds": 9,
-          "elapsed_ms": 9014,
+          "elapsed_ms": 9062,
           "filter": "controlled-origin TCP/443, fixed client port 38443",
           "interfaces": {
             "fvnb0": {
-              "from_origin": 9,
-              "to_origin": 11
+              "from_origin": 8,
+              "to_origin": 10
             }
           }
         },
         "node": {
           "available": true,
           "duration_seconds": 9,
-          "elapsed_ms": 9030,
+          "elapsed_ms": 9015,
           "filter": "controlled-origin TCP/443, fixed client port 38443",
           "interfaces": {
             "fvmb0": {
-              "from_origin": 8,
-              "to_origin": 12
+              "from_origin": 7,
+              "to_origin": 10
             },
             "fvup0": {
-              "from_origin": 8,
-              "to_origin": 12
+              "from_origin": 7,
+              "to_origin": 10
             }
           }
         },
         "origin": {
           "available": true,
           "duration_seconds": 9,
+          "elapsed_ms": 9076,
+          "filter": "controlled-origin TCP/443, fixed client port 38443",
+          "interfaces": {
+            "eth0": {
+              "from_origin": 7,
+              "to_origin": 10
+            }
+          }
+        }
+      },
+      "transfer": {
+        "body_bytes": 3,
+        "http_status": 200,
+        "origin_receipt": true
+      },
+      "counted": true,
+      "first_unconfirmed_hop": "none: origin HTTP response and both device admission counters increased"
+    },
+    {
+      "node_container_role": "node",
+      "node_incarnation": "01a19021-ff54-74ac-861f-2b37a4572991",
+      "origin_verified": true,
+      "origin_requests": 1,
+      "origin_snat_matches": true,
+      "probe_sha256": "713a0465224f77cada6d0788de85076bed3df1e8a21e637b20493b2072753654",
+      "at": "2026-10-31T04:13:58Z",
+      "first_counted_byte_at": "2026-10-31T04:14:03.5049555Z",
+      "member_container_role": "member-paid",
+      "route_selected": true,
+      "route_before": [
+        {
+          "cache": [],
+          "dev": "fvnb0",
+          "flags": [],
+          "table": "netbird",
+          "uid": 0
+        }
+      ],
+      "route_after": [
+        {
+          "cache": [],
+          "dev": "fvnb0",
+          "flags": [],
+          "table": "netbird",
+          "uid": 0
+        }
+      ],
+      "peer_status": {
+        "daemonStatus": "Connected",
+        "daemonVersion": "0.82.0",
+        "networks": null,
+        "usesKernelInterface": true
+      },
+      "node_before": {
+        "available": true,
+        "generation": "31",
+        "device_upload_bytes": "2317",
+        "device_download_bytes": "2411",
+        "member_accept_rules": 24,
+        "diagnostic_bytes": {
+          "ctbadns": "0",
+          "ctbase": "60",
+          "ctdeny": "0",
+          "cthost": "0",
+          "ctin": "0",
+          "ctinv": "0",
+          "ctnodn": "0",
+          "ctunkd": "0",
+          "ctunku": "29",
+          "ctv6": "0",
+          "nd_01a19022b1167a3dbd79ad7909f80ee5": "0",
+          "nd_01a190239b377cd99dacd55dfe4511a1": "0",
+          "nd_01a1902559c27c3f8915335365b2cbe5": "0",
+          "nd_01a19026248b7053b6d1eb26f641028b": "0",
+          "nd_01a19029c8c878d0b72567ba532e4ab1": "0",
+          "nu_01a19022b1167a3dbd79ad7909f80ee5": "0",
+          "nu_01a190239b377cd99dacd55dfe4511a1": "0",
+          "nu_01a1902559c27c3f8915335365b2cbe5": "0",
+          "nu_01a19026248b7053b6d1eb26f641028b": "0",
+          "nu_01a19029c8c878d0b72567ba532e4ab1": "0"
+        }
+      },
+      "node_after": {
+        "available": true,
+        "generation": "31",
+        "device_upload_bytes": "4622",
+        "device_download_bytes": "4823",
+        "member_accept_rules": 24,
+        "diagnostic_bytes": {
+          "ctbadns": "0",
+          "ctbase": "60",
+          "ctdeny": "0",
+          "cthost": "0",
+          "ctin": "0",
+          "ctinv": "0",
+          "ctnodn": "0",
+          "ctunkd": "0",
+          "ctunku": "29",
+          "ctv6": "0",
+          "nd_01a19022b1167a3dbd79ad7909f80ee5": "0",
+          "nd_01a190239b377cd99dacd55dfe4511a1": "0",
+          "nd_01a1902559c27c3f8915335365b2cbe5": "0",
+          "nd_01a19026248b7053b6d1eb26f641028b": "0",
+          "nd_01a19029c8c878d0b72567ba532e4ab1": "0",
+          "nu_01a19022b1167a3dbd79ad7909f80ee5": "0",
+          "nu_01a190239b377cd99dacd55dfe4511a1": "0",
+          "nu_01a1902559c27c3f8915335365b2cbe5": "0",
+          "nu_01a19026248b7053b6d1eb26f641028b": "0",
+          "nu_01a19029c8c878d0b72567ba532e4ab1": "0"
+        }
+      },
+      "packet_observations": {
+        "member-paid": {
+          "available": true,
+          "duration_seconds": 9,
+          "elapsed_ms": 9042,
+          "filter": "controlled-origin TCP/443, fixed client port 38443",
+          "interfaces": {
+            "fvnb0": {
+              "from_origin": 7,
+              "to_origin": 10
+            }
+          }
+        },
+        "node": {
+          "available": true,
+          "duration_seconds": 9,
+          "elapsed_ms": 9029,
+          "filter": "controlled-origin TCP/443, fixed client port 38443",
+          "interfaces": {
+            "fvmb0": {
+              "from_origin": 7,
+              "to_origin": 10
+            },
+            "fvup0": {
+              "from_origin": 7,
+              "to_origin": 10
+            }
+          }
+        },
+        "origin": {
+          "available": true,
+          "duration_seconds": 9,
+          "elapsed_ms": 9066,
+          "filter": "controlled-origin TCP/443, fixed client port 38443",
+          "interfaces": {
+            "eth0": {
+              "from_origin": 7,
+              "to_origin": 10
+            }
+          }
+        }
+      },
+      "transfer": {
+        "body_bytes": 3,
+        "http_status": 200,
+        "origin_receipt": true
+      },
+      "counted": true,
+      "first_unconfirmed_hop": "none: origin HTTP response and both device admission counters increased"
+    },
+    {
+      "node_container_role": "node",
+      "node_incarnation": "01a19021-ff54-74ac-861f-2b37a4572991",
+      "origin_verified": true,
+      "origin_requests": 0,
+      "origin_snat_matches": false,
+      "probe_sha256": "713a0465224f77cada6d0788de85076bed3df1e8a21e637b20493b2072753654",
+      "at": "2026-10-31T04:14:29Z",
+      "member_container_role": "member-paid",
+      "route_selected": false,
+      "route_before": [
+        {
+          "cache": [],
+          "dev": "eth0",
+          "flags": [],
+          "uid": 0
+        }
+      ],
+      "route_after": [
+        {
+          "cache": [],
+          "dev": "eth0",
+          "flags": [],
+          "uid": 0
+        }
+      ],
+      "peer_status": {
+        "daemonStatus": "Connected",
+        "daemonVersion": "0.82.0",
+        "networks": null,
+        "usesKernelInterface": true
+      },
+      "node_before": {
+        "available": true,
+        "generation": "31",
+        "device_upload_bytes": "4622",
+        "device_download_bytes": "4823",
+        "member_accept_rules": 24,
+        "diagnostic_bytes": {
+          "ctbadns": "0",
+          "ctbase": "60",
+          "ctdeny": "0",
+          "cthost": "0",
+          "ctin": "0",
+          "ctinv": "0",
+          "ctnodn": "0",
+          "ctunkd": "0",
+          "ctunku": "29",
+          "ctv6": "0",
+          "nd_01a19022b1167a3dbd79ad7909f80ee5": "0",
+          "nd_01a190239b377cd99dacd55dfe4511a1": "0",
+          "nd_01a1902559c27c3f8915335365b2cbe5": "0",
+          "nd_01a19026248b7053b6d1eb26f641028b": "0",
+          "nd_01a19029c8c878d0b72567ba532e4ab1": "0",
+          "nu_01a19022b1167a3dbd79ad7909f80ee5": "0",
+          "nu_01a190239b377cd99dacd55dfe4511a1": "0",
+          "nu_01a1902559c27c3f8915335365b2cbe5": "0",
+          "nu_01a19026248b7053b6d1eb26f641028b": "0",
+          "nu_01a19029c8c878d0b72567ba532e4ab1": "0"
+        }
+      },
+      "node_after": {
+        "available": true,
+        "generation": "31",
+        "device_upload_bytes": "4622",
+        "device_download_bytes": "4823",
+        "member_accept_rules": 24,
+        "diagnostic_bytes": {
+          "ctbadns": "0",
+          "ctbase": "60",
+          "ctdeny": "0",
+          "cthost": "0",
+          "ctin": "0",
+          "ctinv": "0",
+          "ctnodn": "0",
+          "ctunkd": "0",
+          "ctunku": "29",
+          "ctv6": "0",
+          "nd_01a19022b1167a3dbd79ad7909f80ee5": "0",
+          "nd_01a190239b377cd99dacd55dfe4511a1": "0",
+          "nd_01a1902559c27c3f8915335365b2cbe5": "0",
+          "nd_01a19026248b7053b6d1eb26f641028b": "0",
+          "nd_01a19029c8c878d0b72567ba532e4ab1": "0",
+          "nu_01a19022b1167a3dbd79ad7909f80ee5": "0",
+          "nu_01a190239b377cd99dacd55dfe4511a1": "0",
+          "nu_01a1902559c27c3f8915335365b2cbe5": "0",
+          "nu_01a19026248b7053b6d1eb26f641028b": "0",
+          "nu_01a19029c8c878d0b72567ba532e4ab1": "0"
+        }
+      },
+      "packet_observations": {
+        "member-paid": {
+          "available": true,
+          "duration_seconds": 9,
           "elapsed_ms": 9074,
           "filter": "controlled-origin TCP/443, fixed client port 38443",
           "interfaces": {
             "eth0": {
-              "from_origin": 8,
-              "to_origin": 12
+              "to_origin": 5
+            }
+          }
+        },
+        "node": {
+          "available": true,
+          "duration_seconds": 9,
+          "elapsed_ms": 9090,
+          "filter": "controlled-origin TCP/443, fixed client port 38443",
+          "interfaces": {}
+        },
+        "origin": {
+          "available": true,
+          "duration_seconds": 9,
+          "elapsed_ms": 9038,
+          "filter": "controlled-origin TCP/443, fixed client port 38443",
+          "interfaces": {}
+        }
+      },
+      "transfer": {
+        "body_bytes": 0,
+        "http_status": 0,
+        "origin_receipt": false
+      },
+      "counted": false,
+      "first_unconfirmed_hop": "member exit selection: controlled-origin route remains on underlay; no selected exit"
+    },
+    {
+      "node_container_role": "node",
+      "node_incarnation": "01a19021-ff54-74ac-861f-2b37a4572991",
+      "origin_verified": true,
+      "origin_requests": 1,
+      "origin_snat_matches": true,
+      "probe_sha256": "713a0465224f77cada6d0788de85076bed3df1e8a21e637b20493b2072753654",
+      "at": "2026-10-31T04:14:46Z",
+      "first_counted_byte_at": "2026-10-31T04:14:51.506181695Z",
+      "member_container_role": "member-paid",
+      "route_selected": true,
+      "route_before": [
+        {
+          "cache": [],
+          "dev": "fvnb0",
+          "flags": [],
+          "table": "netbird",
+          "uid": 0
+        }
+      ],
+      "route_after": [
+        {
+          "cache": [],
+          "dev": "fvnb0",
+          "flags": [],
+          "table": "netbird",
+          "uid": 0
+        }
+      ],
+      "peer_status": {
+        "daemonStatus": "Connected",
+        "daemonVersion": "0.82.0",
+        "networks": null,
+        "usesKernelInterface": true
+      },
+      "node_before": {
+        "available": true,
+        "generation": "32",
+        "device_upload_bytes": "4622",
+        "device_download_bytes": "4823",
+        "member_accept_rules": 24,
+        "diagnostic_bytes": {
+          "ctbadns": "0",
+          "ctbase": "60",
+          "ctdeny": "0",
+          "cthost": "0",
+          "ctin": "0",
+          "ctinv": "0",
+          "ctnodn": "0",
+          "ctunkd": "0",
+          "ctunku": "29",
+          "ctv6": "0",
+          "nd_01a19022b1167a3dbd79ad7909f80ee5": "0",
+          "nd_01a190239b377cd99dacd55dfe4511a1": "0",
+          "nd_01a1902559c27c3f8915335365b2cbe5": "0",
+          "nd_01a19026248b7053b6d1eb26f641028b": "0",
+          "nd_01a19029c8c878d0b72567ba532e4ab1": "0",
+          "nu_01a19022b1167a3dbd79ad7909f80ee5": "0",
+          "nu_01a190239b377cd99dacd55dfe4511a1": "0",
+          "nu_01a1902559c27c3f8915335365b2cbe5": "0",
+          "nu_01a19026248b7053b6d1eb26f641028b": "0",
+          "nu_01a19029c8c878d0b72567ba532e4ab1": "0"
+        }
+      },
+      "node_after": {
+        "available": true,
+        "generation": "32",
+        "device_upload_bytes": "6927",
+        "device_download_bytes": "7236",
+        "member_accept_rules": 24,
+        "diagnostic_bytes": {
+          "ctbadns": "0",
+          "ctbase": "60",
+          "ctdeny": "0",
+          "cthost": "0",
+          "ctin": "0",
+          "ctinv": "0",
+          "ctnodn": "0",
+          "ctunkd": "0",
+          "ctunku": "29",
+          "ctv6": "0",
+          "nd_01a19022b1167a3dbd79ad7909f80ee5": "0",
+          "nd_01a190239b377cd99dacd55dfe4511a1": "0",
+          "nd_01a1902559c27c3f8915335365b2cbe5": "0",
+          "nd_01a19026248b7053b6d1eb26f641028b": "0",
+          "nd_01a19029c8c878d0b72567ba532e4ab1": "0",
+          "nu_01a19022b1167a3dbd79ad7909f80ee5": "0",
+          "nu_01a190239b377cd99dacd55dfe4511a1": "0",
+          "nu_01a1902559c27c3f8915335365b2cbe5": "0",
+          "nu_01a19026248b7053b6d1eb26f641028b": "0",
+          "nu_01a19029c8c878d0b72567ba532e4ab1": "0"
+        }
+      },
+      "packet_observations": {
+        "member-paid": {
+          "available": true,
+          "duration_seconds": 9,
+          "elapsed_ms": 9010,
+          "filter": "controlled-origin TCP/443, fixed client port 38443",
+          "interfaces": {
+            "fvnb0": {
+              "from_origin": 7,
+              "to_origin": 10
+            }
+          }
+        },
+        "node": {
+          "available": true,
+          "duration_seconds": 9,
+          "elapsed_ms": 9054,
+          "filter": "controlled-origin TCP/443, fixed client port 38443",
+          "interfaces": {
+            "fvmb0": {
+              "from_origin": 7,
+              "to_origin": 10
+            },
+            "fvup0": {
+              "from_origin": 7,
+              "to_origin": 10
+            }
+          }
+        },
+        "origin": {
+          "available": true,
+          "duration_seconds": 9,
+          "elapsed_ms": 9082,
+          "filter": "controlled-origin TCP/443, fixed client port 38443",
+          "interfaces": {
+            "eth0": {
+              "from_origin": 7,
+              "to_origin": 10
             }
           }
         }
@@ -185,7 +597,7 @@
     },
     {
       "name": "reconciled active",
-      "detail": "pass; expected: one exact paid interval; state=active; refund=0; actual: {\"invoices\": 1, \"revision\": \"2\", \"anomalies\": [], \"paid_from\": \"2026-10-30T22:44:46+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-30T23:45:45+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-30T23:45:45+00:00\"}; command: poll real subscription, billing_records and entitlements projections"
+      "detail": "pass; expected: one exact paid interval; state=active; refund=0; actual: {\"invoices\": 1, \"revision\": \"2\", \"anomalies\": [], \"paid_from\": \"2026-10-31T04:10:44+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-31T05:11:43+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-31T05:11:43+00:00\"}; command: poll real subscription, billing_records and entitlements projections"
     },
     {
       "name": "paced paid replay",
@@ -229,7 +641,7 @@
     },
     {
       "name": "reconciled active",
-      "detail": "pass; expected: one exact paid interval; state=active; refund=0; actual: {\"invoices\": 1, \"revision\": \"2\", \"anomalies\": [], \"paid_from\": \"2026-10-30T22:44:46+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-30T23:45:45+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-30T23:45:45+00:00\"}; command: poll real subscription, billing_records and entitlements projections"
+      "detail": "pass; expected: one exact paid interval; state=active; refund=0; actual: {\"invoices\": 1, \"revision\": \"2\", \"anomalies\": [], \"paid_from\": \"2026-10-31T04:10:44+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-31T05:11:43+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-31T05:11:43+00:00\"}; command: poll real subscription, billing_records and entitlements projections"
     },
     {
       "name": "independent ordering identity",
@@ -257,7 +669,7 @@
     },
     {
       "name": "reconciled active",
-      "detail": "pass; expected: one exact paid interval; state=active; refund=0; actual: {\"invoices\": 1, \"revision\": \"2\", \"anomalies\": [], \"paid_from\": \"2026-10-30T22:45:13+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-30T23:46:12+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-30T23:46:12+00:00\"}; command: poll real subscription, billing_records and entitlements projections"
+      "detail": "pass; expected: one exact paid interval; state=active; refund=0; actual: {\"invoices\": 1, \"revision\": \"2\", \"anomalies\": [], \"paid_from\": \"2026-10-31T04:11:11+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-31T05:12:10+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-31T05:12:10+00:00\"}; command: poll real subscription, billing_records and entitlements projections"
     },
     {
       "name": "delivery order created/paid/failed",
@@ -289,7 +701,7 @@
     },
     {
       "name": "reconciled active",
-      "detail": "pass; expected: one exact paid interval; state=active; refund=0; actual: {\"invoices\": 1, \"revision\": \"2\", \"anomalies\": [], \"paid_from\": \"2026-10-30T22:45:26+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-30T23:46:25+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-30T23:46:25+00:00\"}; command: poll real subscription, billing_records and entitlements projections"
+      "detail": "pass; expected: one exact paid interval; state=active; refund=0; actual: {\"invoices\": 1, \"revision\": \"2\", \"anomalies\": [], \"paid_from\": \"2026-10-31T04:11:24+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-31T05:12:23+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-31T05:12:23+00:00\"}; command: poll real subscription, billing_records and entitlements projections"
     },
     {
       "name": "delivery order created/failed/paid",
@@ -321,7 +733,7 @@
     },
     {
       "name": "reconciled active",
-      "detail": "pass; expected: one exact paid interval; state=active; refund=0; actual: {\"invoices\": 1, \"revision\": \"1\", \"anomalies\": [], \"paid_from\": \"2026-10-30T22:45:40+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-30T23:46:38+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-30T23:46:38+00:00\"}; command: poll real subscription, billing_records and entitlements projections"
+      "detail": "pass; expected: one exact paid interval; state=active; refund=0; actual: {\"invoices\": 1, \"revision\": \"2\", \"anomalies\": [], \"paid_from\": \"2026-10-31T04:11:38+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-31T05:12:36+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-31T05:12:36+00:00\"}; command: poll real subscription, billing_records and entitlements projections"
     },
     {
       "name": "delivery order paid/created/failed",
@@ -353,7 +765,7 @@
     },
     {
       "name": "reconciled active",
-      "detail": "pass; expected: one exact paid interval; state=active; refund=0; actual: {\"invoices\": 1, \"revision\": \"1\", \"anomalies\": [], \"paid_from\": \"2026-10-30T22:45:53+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-30T23:46:52+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-30T23:46:52+00:00\"}; command: poll real subscription, billing_records and entitlements projections"
+      "detail": "pass; expected: one exact paid interval; state=active; refund=0; actual: {\"invoices\": 1, \"revision\": \"2\", \"anomalies\": [], \"paid_from\": \"2026-10-31T04:11:51+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-31T05:12:50+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-31T05:12:50+00:00\"}; command: poll real subscription, billing_records and entitlements projections"
     },
     {
       "name": "delivery order paid/failed/created",
@@ -385,7 +797,7 @@
     },
     {
       "name": "reconciled active",
-      "detail": "pass; expected: one exact paid interval; state=active; refund=0; actual: {\"invoices\": 1, \"revision\": \"1\", \"anomalies\": [], \"paid_from\": \"2026-10-30T22:46:06+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-30T23:47:05+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-30T23:47:05+00:00\"}; command: poll real subscription, billing_records and entitlements projections"
+      "detail": "pass; expected: one exact paid interval; state=active; refund=0; actual: {\"invoices\": 1, \"revision\": \"1\", \"anomalies\": [], \"paid_from\": \"2026-10-31T04:12:04+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-31T05:13:03+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-31T05:13:03+00:00\"}; command: poll real subscription, billing_records and entitlements projections"
     },
     {
       "name": "delivery order failed/created/paid",
@@ -417,7 +829,7 @@
     },
     {
       "name": "reconciled active",
-      "detail": "pass; expected: one exact paid interval; state=active; refund=0; actual: {\"invoices\": 1, \"revision\": \"1\", \"anomalies\": [], \"paid_from\": \"2026-10-30T22:46:20+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-30T23:47:19+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-30T23:47:19+00:00\"}; command: poll real subscription, billing_records and entitlements projections"
+      "detail": "pass; expected: one exact paid interval; state=active; refund=0; actual: {\"invoices\": 1, \"revision\": \"1\", \"anomalies\": [], \"paid_from\": \"2026-10-31T04:12:18+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-31T05:13:17+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-31T05:13:17+00:00\"}; command: poll real subscription, billing_records and entitlements projections"
     },
     {
       "name": "delivery order failed/paid/created",
@@ -437,150 +849,229 @@
     },
     {
       "name": "current-generation lease after desired change",
-      "detail": "pass; expected: uninterrupted agent: desired=applied=latest lease generation, unexpired; actual: {\"lease\": {\"issued_at\": \"2026-10-30T22:47:26.40983+00:00\", \"expires_at\": \"2026-10-31T22:47:26.40983+00:00\", \"generation\": \"20\", \"member_count\": 8}, \"applied\": \"20\", \"desired\": \"20\", \"observation\": {\"checks\": [{\"name\": \"dns_policy\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T22:47:26.434368017Z\"}, {\"name\": \"internet_only\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T22:47:26.434368017Z\"}, {\"name\": \"lease\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T22:47:26.434368017Z\"}, {\"name\": \"meter_path\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T22:47:26.434368017Z\"}, {\"name\": \"policy_signature\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T22:47:26.434368017Z\"}, {\"name\": \"qos\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T22:47:26.434368017Z\"}, {\"name\": \"release_supported\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T22:47:26.434368017Z\"}, {\"name\": \"source_binding\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T22:47:26.434368017Z\"}, {\"name\": \"storage\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T22:47:26.434368017Z\"}, {\"name\": \"tunnel_probe\", \"detail\": \"Egress probe used no extra target.\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T22:47:26.434368017Z\"}], \"forwarding_block_reasons\": [], \"member_forwarding_enabled\": true}}; command: poll nodes, latest serving_leases and accepted observation; no process restart or projection writes"
+      "detail": "pass; expected: uninterrupted agent: desired=applied=latest lease generation, unexpired; actual: {\"lease\": {\"issued_at\": \"2026-10-31T04:13:44.745083+00:00\", \"expires_at\": \"2026-11-01T04:13:44.745083+00:00\", \"generation\": \"30\", \"member_count\": 8}, \"applied\": \"30\", \"desired\": \"30\", \"observation\": {\"checks\": [{\"name\": \"dns_policy\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T04:13:44.770816771Z\"}, {\"name\": \"internet_only\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T04:13:44.770816771Z\"}, {\"name\": \"lease\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T04:13:44.770816771Z\"}, {\"name\": \"meter_path\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T04:13:44.770816771Z\"}, {\"name\": \"policy_signature\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T04:13:44.770816771Z\"}, {\"name\": \"qos\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T04:13:44.770816771Z\"}, {\"name\": \"release_supported\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T04:13:44.770816771Z\"}, {\"name\": \"source_binding\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T04:13:44.770816771Z\"}, {\"name\": \"storage\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T04:13:44.770816771Z\"}, {\"name\": \"tunnel_probe\", \"detail\": \"Egress probe used no extra target.\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T04:13:44.770816771Z\"}], \"forwarding_block_reasons\": [], \"member_forwarding_enabled\": true}}; command: poll nodes, latest serving_leases and accepted observation; no process restart or projection writes"
     },
     {
       "name": "bounded member transfer observation",
-      "detail": "pass; expected: record selected route, node counters, packet hops and origin receipt; actual: {\"node_container_role\":\"node\",\"node_incarnation\":\"01a18ef8-e0eb-7940-a5c3-70512ec5c503\",\"origin_requests\":1,\"origin_snat_matches\":true,\"probe_sha256\":\"11625e257fda3efcea0204f19b8ae394eee2bafd38b4440177d425b28163c936\",\"at\":\"2026-10-30T22:47:45Z\",\"first_counted_byte_at\":\"2026-10-30T22:47:51.021529686Z\",\"member_container_role\":\"member-paid\",\"route_selected\":true,\"route_before\":[{\"cache\":[],\"dev\":\"eth0\",\"flags\":[],\"uid\":0}],\"route_after\":[{\"cache\":[],\"dev\":\"fvnb0\",\"flags\":[],\"table\":\"netbird\",\"uid\":0}],\"peer_status\":{\"daemonStatus\":\"Connected\",\"daemonVersion\":\"0.82.0\",\"networks\":null,\"usesKernelInterface\":true},\"node_before\":{\"available\":true,\"generation\":\"21\",\"device_upload_bytes\":\"0\",\"device_download_bytes\":\"0\",\"member_accept_rules\":24,\"diagnostic_bytes\":{\"ctbadns\":\"0\",\"ctbase\":\"0\",\"ctdeny\":\"0\",\"cthost\":\"0\",\"ctin\":\"0\",\"ctinv\":\"0\",\"ctnodn\":\"0\",\"ctunkd\":\"0\",\"ctunku\":\"29\",\"ctv6\":\"0\",\"nd_01a18ef9ae937a1cb93420bed403bf2f\":\"0\",\"nd_01a18efa99e875d79a6c47f05b5c55e9\":\"0\",\"nd_01a18efb1e1f73bfa9079f26e5e79f82\":\"0\",\"nd_01a18efbeac573d7a735189ab153860b\":\"0\",\"nd_01a18eff67627068b123dcf6a76c67d7\":\"0\",\"nu_01a18ef9ae937a1cb93420bed403bf2f\":\"0\",\"nu_01a18efa99e875d79a6c47f05b5c55e9\":\"0\",\"nu_01a18efb1e1f73bfa9079f26e5e79f82\":\"0\",\"nu_01a18efbeac573d7a735189ab153860b\":\"0\",\"nu_01a18eff67627068b123dcf6a76c67d7\":\"0\"}},\"node_after\":{\"available\":true,\"generation\":\"21\",\"device_upload_bytes\":\"2409\",\"device_download_bytes\":\"2463\",\"member_accept_rules\":24,\"diagnostic_bytes\":{\"ctbadns\":\"0\",\"ctbase\":\"0\",\"ctdeny\":\"0\",\"cthost\":\"0\",\"ctin\":\"0\",\"ctinv\":\"0\",\"ctnodn\":\"0\",\"ctunkd\":\"0\",\"ctunku\":\"29\",\"ctv6\":\"0\",\"nd_01a18ef9ae937a1cb93420bed403bf2f\":\"0\",\"nd_01a18efa99e875d79a6c47f05b5c55e9\":\"0\",\"nd_01a18efb1e1f73bfa9079f26e5e79f82\":\"0\",\"nd_01a18efbeac573d7a735189ab153860b\":\"0\",\"nd_01a18eff67627068b123dcf6a76c67d7\":\"0\",\"nu_01a18ef9ae937a1cb93420bed403bf2f\":\"0\",\"nu_01a18efa99e875d79a6c47f05b5c55e9\":\"0\",\"nu_01a18efb1e1f73bfa9079f26e5e79f82\":\"0\",\"nu_01a18efbeac573d7a735189ab153860b\":\"0\",\"nu_01a18eff67627068b123dcf6a76c67d7\":\"0\"}},\"packet_observations\":{\"member-paid\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9014,\"filter\":\"controlled-origin TCP/443, fixed client port 38443\",\"interfaces\":{\"fvnb0\":{\"from_origin\":9,\"to_origin\":11}}},\"node\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9030,\"filter\":\"controlled-origin TCP/443, fixed client port 38443\",\"interfaces\":{\"fvmb0\":{\"from_origin\":8,\"to_origin\":12},\"fvup0\":{\"from_origin\":8,\"to_origin\":12}}},\"origin\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9074,\"filter\":\"controlled-origin TCP/443, fixed client port 38443\",\"interfaces\":{\"eth0\":{\"from_origin\":8,\"to_origin\":12}}}},\"transfer\":{\"body_bytes\":3,\"http_status\":200,\"origin_receipt\":true},\"counted\":true,\"first_unconfirmed_hop\":\"none: origin HTTP response and both device admission counters increased\"}; command: netbird routes select; ip -j route get controlled origin; concurrent 9-second AF_PACKET aggregate observers; bounded CA-verified HTTPS GET; nft counters before/after"
+      "detail": "pass; expected: record selected route, node counters, packet hops and origin receipt; actual: {\"node_container_role\":\"node\",\"node_incarnation\":\"01a19021-ff54-74ac-861f-2b37a4572991\",\"origin_verified\":true,\"origin_requests\":1,\"origin_snat_matches\":true,\"probe_sha256\":\"713a0465224f77cada6d0788de85076bed3df1e8a21e637b20493b2072753654\",\"at\":\"2026-10-31T04:13:45Z\",\"first_counted_byte_at\":\"2026-10-31T04:13:50.033933871Z\",\"member_container_role\":\"member-paid\",\"route_selected\":true,\"route_before\":[{\"cache\":[],\"dev\":\"eth0\",\"flags\":[],\"uid\":0}],\"route_after\":[{\"cache\":[],\"dev\":\"fvnb0\",\"flags\":[],\"table\":\"netbird\",\"uid\":0}],\"peer_status\":{\"daemonStatus\":\"Connected\",\"daemonVersion\":\"0.82.0\",\"networks\":null,\"usesKernelInterface\":true},\"node_before\":{\"available\":true,\"generation\":\"30\",\"device_upload_bytes\":\"0\",\"device_download_bytes\":\"0\",\"member_accept_rules\":24,\"diagnostic_bytes\":{\"ctbadns\":\"0\",\"ctbase\":\"60\",\"ctdeny\":\"0\",\"cthost\":\"0\",\"ctin\":\"0\",\"ctinv\":\"0\",\"ctnodn\":\"0\",\"ctunkd\":\"0\",\"ctunku\":\"29\",\"ctv6\":\"0\",\"nd_01a19022b1167a3dbd79ad7909f80ee5\":\"0\",\"nd_01a190239b377cd99dacd55dfe4511a1\":\"0\",\"nd_01a1902559c27c3f8915335365b2cbe5\":\"0\",\"nd_01a19026248b7053b6d1eb26f641028b\":\"0\",\"nd_01a19029c8c878d0b72567ba532e4ab1\":\"0\",\"nu_01a19022b1167a3dbd79ad7909f80ee5\":\"0\",\"nu_01a190239b377cd99dacd55dfe4511a1\":\"0\",\"nu_01a1902559c27c3f8915335365b2cbe5\":\"0\",\"nu_01a19026248b7053b6d1eb26f641028b\":\"0\",\"nu_01a19029c8c878d0b72567ba532e4ab1\":\"0\"}},\"node_after\":{\"available\":true,\"generation\":\"30\",\"device_upload_bytes\":\"2317\",\"device_download_bytes\":\"2411\",\"member_accept_rules\":24,\"diagnostic_bytes\":{\"ctbadns\":\"0\",\"ctbase\":\"60\",\"ctdeny\":\"0\",\"cthost\":\"0\",\"ctin\":\"0\",\"ctinv\":\"0\",\"ctnodn\":\"0\",\"ctunkd\":\"0\",\"ctunku\":\"29\",\"ctv6\":\"0\",\"nd_01a19022b1167a3dbd79ad7909f80ee5\":\"0\",\"nd_01a190239b377cd99dacd55dfe4511a1\":\"0\",\"nd_01a1902559c27c3f8915335365b2cbe5\":\"0\",\"nd_01a19026248b7053b6d1eb26f641028b\":\"0\",\"nd_01a19029c8c878d0b72567ba532e4ab1\":\"0\",\"nu_01a19022b1167a3dbd79ad7909f80ee5\":\"0\",\"nu_01a190239b377cd99dacd55dfe4511a1\":\"0\",\"nu_01a1902559c27c3f8915335365b2cbe5\":\"0\",\"nu_01a19026248b7053b6d1eb26f641028b\":\"0\",\"nu_01a19029c8c878d0b72567ba532e4ab1\":\"0\"}},\"packet_observations\":{\"member-paid\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9062,\"filter\":\"controlled-origin TCP/443, fixed client port 38443\",\"interfaces\":{\"fvnb0\":{\"from_origin\":8,\"to_origin\":10}}},\"node\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9015,\"filter\":\"controlled-origin TCP/443, fixed client port 38443\",\"interfaces\":{\"fvmb0\":{\"from_origin\":7,\"to_origin\":10},\"fvup0\":{\"from_origin\":7,\"to_origin\":10}}},\"origin\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9076,\"filter\":\"controlled-origin TCP/443, fixed client port 38443\",\"interfaces\":{\"eth0\":{\"from_origin\":7,\"to_origin\":10}}}},\"transfer\":{\"body_bytes\":3,\"http_status\":200,\"origin_receipt\":true},\"counted\":true,\"first_unconfirmed_hop\":\"none: origin HTTP response and both device admission counters increased\"}; command: netbird routes select; ip -j route get controlled origin; concurrent 9-second AF_PACKET aggregate observers; bounded CA-verified HTTPS GET; nft counters before/after"
+    },
+    {
+      "name": "current-generation lease after desired change",
+      "detail": "pass; expected: uninterrupted agent: desired=applied=latest lease generation, unexpired; actual: {\"lease\": {\"issued_at\": \"2026-10-31T04:13:44.745083+00:00\", \"expires_at\": \"2026-11-01T04:13:44.745083+00:00\", \"generation\": \"30\", \"member_count\": 8}, \"applied\": \"30\", \"desired\": \"30\", \"observation\": {\"checks\": [{\"name\": \"dns_policy\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T04:13:44.770816771Z\"}, {\"name\": \"internet_only\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T04:13:44.770816771Z\"}, {\"name\": \"lease\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T04:13:44.770816771Z\"}, {\"name\": \"meter_path\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T04:13:44.770816771Z\"}, {\"name\": \"policy_signature\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T04:13:44.770816771Z\"}, {\"name\": \"qos\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T04:13:44.770816771Z\"}, {\"name\": \"release_supported\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T04:13:44.770816771Z\"}, {\"name\": \"source_binding\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T04:13:44.770816771Z\"}, {\"name\": \"storage\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T04:13:44.770816771Z\"}, {\"name\": \"tunnel_probe\", \"detail\": \"Egress probe used no extra target.\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T04:13:44.770816771Z\"}], \"forwarding_block_reasons\": [], \"member_forwarding_enabled\": true}}; command: poll nodes, latest serving_leases and accepted observation; no process restart or projection writes"
+    },
+    {
+      "name": "bounded member transfer observation",
+      "detail": "pass; expected: record selected route, node counters, packet hops and origin receipt; actual: {\"node_container_role\":\"node\",\"node_incarnation\":\"01a19021-ff54-74ac-861f-2b37a4572991\",\"origin_verified\":true,\"origin_requests\":1,\"origin_snat_matches\":true,\"probe_sha256\":\"713a0465224f77cada6d0788de85076bed3df1e8a21e637b20493b2072753654\",\"at\":\"2026-10-31T04:13:58Z\",\"first_counted_byte_at\":\"2026-10-31T04:14:03.5049555Z\",\"member_container_role\":\"member-paid\",\"route_selected\":true,\"route_before\":[{\"cache\":[],\"dev\":\"fvnb0\",\"flags\":[],\"table\":\"netbird\",\"uid\":0}],\"route_after\":[{\"cache\":[],\"dev\":\"fvnb0\",\"flags\":[],\"table\":\"netbird\",\"uid\":0}],\"peer_status\":{\"daemonStatus\":\"Connected\",\"daemonVersion\":\"0.82.0\",\"networks\":null,\"usesKernelInterface\":true},\"node_before\":{\"available\":true,\"generation\":\"31\",\"device_upload_bytes\":\"2317\",\"device_download_bytes\":\"2411\",\"member_accept_rules\":24,\"diagnostic_bytes\":{\"ctbadns\":\"0\",\"ctbase\":\"60\",\"ctdeny\":\"0\",\"cthost\":\"0\",\"ctin\":\"0\",\"ctinv\":\"0\",\"ctnodn\":\"0\",\"ctunkd\":\"0\",\"ctunku\":\"29\",\"ctv6\":\"0\",\"nd_01a19022b1167a3dbd79ad7909f80ee5\":\"0\",\"nd_01a190239b377cd99dacd55dfe4511a1\":\"0\",\"nd_01a1902559c27c3f8915335365b2cbe5\":\"0\",\"nd_01a19026248b7053b6d1eb26f641028b\":\"0\",\"nd_01a19029c8c878d0b72567ba532e4ab1\":\"0\",\"nu_01a19022b1167a3dbd79ad7909f80ee5\":\"0\",\"nu_01a190239b377cd99dacd55dfe4511a1\":\"0\",\"nu_01a1902559c27c3f8915335365b2cbe5\":\"0\",\"nu_01a19026248b7053b6d1eb26f641028b\":\"0\",\"nu_01a19029c8c878d0b72567ba532e4ab1\":\"0\"}},\"node_after\":{\"available\":true,\"generation\":\"31\",\"device_upload_bytes\":\"4622\",\"device_download_bytes\":\"4823\",\"member_accept_rules\":24,\"diagnostic_bytes\":{\"ctbadns\":\"0\",\"ctbase\":\"60\",\"ctdeny\":\"0\",\"cthost\":\"0\",\"ctin\":\"0\",\"ctinv\":\"0\",\"ctnodn\":\"0\",\"ctunkd\":\"0\",\"ctunku\":\"29\",\"ctv6\":\"0\",\"nd_01a19022b1167a3dbd79ad7909f80ee5\":\"0\",\"nd_01a190239b377cd99dacd55dfe4511a1\":\"0\",\"nd_01a1902559c27c3f8915335365b2cbe5\":\"0\",\"nd_01a19026248b7053b6d1eb26f641028b\":\"0\",\"nd_01a19029c8c878d0b72567ba532e4ab1\":\"0\",\"nu_01a19022b1167a3dbd79ad7909f80ee5\":\"0\",\"nu_01a190239b377cd99dacd55dfe4511a1\":\"0\",\"nu_01a1902559c27c3f8915335365b2cbe5\":\"0\",\"nu_01a19026248b7053b6d1eb26f641028b\":\"0\",\"nu_01a19029c8c878d0b72567ba532e4ab1\":\"0\"}},\"packet_observations\":{\"member-paid\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9042,\"filter\":\"controlled-origin TCP/443, fixed client port 38443\",\"interfaces\":{\"fvnb0\":{\"from_origin\":7,\"to_origin\":10}}},\"node\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9029,\"filter\":\"controlled-origin TCP/443, fixed client port 38443\",\"interfaces\":{\"fvmb0\":{\"from_origin\":7,\"to_origin\":10},\"fvup0\":{\"from_origin\":7,\"to_origin\":10}}},\"origin\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9066,\"filter\":\"controlled-origin TCP/443, fixed client port 38443\",\"interfaces\":{\"eth0\":{\"from_origin\":7,\"to_origin\":10}}}},\"transfer\":{\"body_bytes\":3,\"http_status\":200,\"origin_receipt\":true},\"counted\":true,\"first_unconfirmed_hop\":\"none: origin HTTP response and both device admission counters increased\"}; command: netbird routes select; ip -j route get controlled origin; concurrent 9-second AF_PACKET aggregate observers; bounded CA-verified HTTPS GET; nft counters before/after"
+    },
+    {
+      "name": "D-077 admitted positive control",
+      "detail": "pass; expected: counted forwarding before fence; actual: device_id=01a19029-c8c8-78d0-b725-67ba532e4ab1; counted=true; command: same native device and controlled HTTPS origin"
+    },
+    {
+      "name": "D-077 restore fence input",
+      "detail": "pass; expected: 0 -\u003e 1 fence; no device/binding/observation edits; actual: device_id=01a19029-c8c8-78d0-b725-67ba532e4ab1; before=0; after=1; inserted=true; command: lab Postgres INSERT device_authorization_fences per migration 00188 / restore-drill §6.3"
+    },
+    {
+      "name": "D-077 worker withdrawal",
+      "detail": "pass; expected: fenced device observed withdrawn; actual: device_id=01a19029-c8c8-78d0-b725-67ba532e4ab1; withdrawn=true; fence_count=1; command: wait running worker sync; read observation only"
+    },
+    {
+      "name": "D-077 member list",
+      "detail": "pass; expected: HTTP 200 ; actual: {\"body\":{\"authorized_count\":1,\"device_limit\":3,\"items\":[{\"authorization_unconfirmed\":true,\"authorized_at\":\"2026-10-31T04:13:39.912577Z\",\"created_at\":\"2026-10-31T04:13:39.91115Z\",\"device_id\":\"01a19029-c8c8-78d0-b725-67ba532e4ab1\",\"last_seen_at\":\"2026-10-31T04:13:39.912577Z\",\"name\":\"fvpn-w4-members-member-paid\",\"platform\":\"unknown\",\"revoked_at\":null,\"status\":\"pending\"}],\"next_cursor\":null},\"error_code\":\"\",\"fence_after\":1,\"fence_before\":1,\"method\":\"GET\",\"operation_id\":\"00000000-0000-0000-0000-000000000000\",\"path\":\"/api/v1/member/devices\",\"status\":200}; command: GET /api/v1/member/devices; cookies/CSRF/idempotency key retained only in memory"
+    },
+    {
+      "name": "D-077 member flags always emitted",
+      "detail": "pass; expected: target status=pending, authorization_unconfirmed=true; siblings explicitly false; actual: {\"authorized_count\":1,\"device_limit\":3,\"items\":[{\"authorization_unconfirmed\":true,\"authorized_at\":\"2026-10-31T04:13:39.912577Z\",\"created_at\":\"2026-10-31T04:13:39.91115Z\",\"device_id\":\"01a19029-c8c8-78d0-b725-67ba532e4ab1\",\"last_seen_at\":\"2026-10-31T04:13:39.912577Z\",\"name\":\"fvpn-w4-members-member-paid\",\"platform\":\"unknown\",\"revoked_at\":null,\"status\":\"pending\"}],\"next_cursor\":null}\n; command: GET /member/devices; test field presence as well as value"
+    },
+    {
+      "name": "bounded member transfer observation",
+      "detail": "pass; expected: record selected route, node counters, packet hops and origin receipt; actual: {\"node_container_role\":\"node\",\"node_incarnation\":\"01a19021-ff54-74ac-861f-2b37a4572991\",\"origin_verified\":true,\"origin_requests\":0,\"origin_snat_matches\":false,\"probe_sha256\":\"713a0465224f77cada6d0788de85076bed3df1e8a21e637b20493b2072753654\",\"at\":\"2026-10-31T04:14:29Z\",\"member_container_role\":\"member-paid\",\"route_selected\":false,\"route_before\":[{\"cache\":[],\"dev\":\"eth0\",\"flags\":[],\"uid\":0}],\"route_after\":[{\"cache\":[],\"dev\":\"eth0\",\"flags\":[],\"uid\":0}],\"peer_status\":{\"daemonStatus\":\"Connected\",\"daemonVersion\":\"0.82.0\",\"networks\":null,\"usesKernelInterface\":true},\"node_before\":{\"available\":true,\"generation\":\"31\",\"device_upload_bytes\":\"4622\",\"device_download_bytes\":\"4823\",\"member_accept_rules\":24,\"diagnostic_bytes\":{\"ctbadns\":\"0\",\"ctbase\":\"60\",\"ctdeny\":\"0\",\"cthost\":\"0\",\"ctin\":\"0\",\"ctinv\":\"0\",\"ctnodn\":\"0\",\"ctunkd\":\"0\",\"ctunku\":\"29\",\"ctv6\":\"0\",\"nd_01a19022b1167a3dbd79ad7909f80ee5\":\"0\",\"nd_01a190239b377cd99dacd55dfe4511a1\":\"0\",\"nd_01a1902559c27c3f8915335365b2cbe5\":\"0\",\"nd_01a19026248b7053b6d1eb26f641028b\":\"0\",\"nd_01a19029c8c878d0b72567ba532e4ab1\":\"0\",\"nu_01a19022b1167a3dbd79ad7909f80ee5\":\"0\",\"nu_01a190239b377cd99dacd55dfe4511a1\":\"0\",\"nu_01a1902559c27c3f8915335365b2cbe5\":\"0\",\"nu_01a19026248b7053b6d1eb26f641028b\":\"0\",\"nu_01a19029c8c878d0b72567ba532e4ab1\":\"0\"}},\"node_after\":{\"available\":true,\"generation\":\"31\",\"device_upload_bytes\":\"4622\",\"device_download_bytes\":\"4823\",\"member_accept_rules\":24,\"diagnostic_bytes\":{\"ctbadns\":\"0\",\"ctbase\":\"60\",\"ctdeny\":\"0\",\"cthost\":\"0\",\"ctin\":\"0\",\"ctinv\":\"0\",\"ctnodn\":\"0\",\"ctunkd\":\"0\",\"ctunku\":\"29\",\"ctv6\":\"0\",\"nd_01a19022b1167a3dbd79ad7909f80ee5\":\"0\",\"nd_01a190239b377cd99dacd55dfe4511a1\":\"0\",\"nd_01a1902559c27c3f8915335365b2cbe5\":\"0\",\"nd_01a19026248b7053b6d1eb26f641028b\":\"0\",\"nd_01a19029c8c878d0b72567ba532e4ab1\":\"0\",\"nu_01a19022b1167a3dbd79ad7909f80ee5\":\"0\",\"nu_01a190239b377cd99dacd55dfe4511a1\":\"0\",\"nu_01a1902559c27c3f8915335365b2cbe5\":\"0\",\"nu_01a19026248b7053b6d1eb26f641028b\":\"0\",\"nu_01a19029c8c878d0b72567ba532e4ab1\":\"0\"}},\"packet_observations\":{\"member-paid\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9074,\"filter\":\"controlled-origin TCP/443, fixed client port 38443\",\"interfaces\":{\"eth0\":{\"to_origin\":5}}},\"node\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9090,\"filter\":\"controlled-origin TCP/443, fixed client port 38443\",\"interfaces\":{}},\"origin\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9038,\"filter\":\"controlled-origin TCP/443, fixed client port 38443\",\"interfaces\":{}}},\"transfer\":{\"body_bytes\":0,\"http_status\":0,\"origin_receipt\":false},\"counted\":false,\"first_unconfirmed_hop\":\"member exit selection: controlled-origin route remains on underlay; no selected exit\"}; command: netbird routes select; ip -j route get controlled origin; concurrent 9-second AF_PACKET aggregate observers; bounded CA-verified HTTPS GET; nft counters before/after"
+    },
+    {
+      "name": "unauthorized real transfer",
+      "detail": "pass; expected: no origin response; actual: origin_receipt=false; command: bounded HTTPS from native peer expected to have no authorized exit"
+    },
+    {
+      "name": "D-077 fenced forwarding",
+      "detail": "pass; expected: zero origin receipts and no counted HTTPS; wire-members owns any continued forwarding; actual: {\"node_container_role\":\"node\",\"node_incarnation\":\"01a19021-ff54-74ac-861f-2b37a4572991\",\"origin_verified\":true,\"origin_requests\":0,\"origin_snat_matches\":false,\"probe_sha256\":\"713a0465224f77cada6d0788de85076bed3df1e8a21e637b20493b2072753654\",\"at\":\"2026-10-31T04:14:29Z\",\"member_container_role\":\"member-paid\",\"route_selected\":false,\"route_before\":[{\"cache\":[],\"dev\":\"eth0\",\"flags\":[],\"uid\":0}],\"route_after\":[{\"cache\":[],\"dev\":\"eth0\",\"flags\":[],\"uid\":0}],\"peer_status\":{\"daemonStatus\":\"Connected\",\"daemonVersion\":\"0.82.0\",\"networks\":null,\"usesKernelInterface\":true},\"node_before\":{\"available\":true,\"generation\":\"31\",\"device_upload_bytes\":\"4622\",\"device_download_bytes\":\"4823\",\"member_accept_rules\":24,\"diagnostic_bytes\":{\"ctbadns\":\"0\",\"ctbase\":\"60\",\"ctdeny\":\"0\",\"cthost\":\"0\",\"ctin\":\"0\",\"ctinv\":\"0\",\"ctnodn\":\"0\",\"ctunkd\":\"0\",\"ctunku\":\"29\",\"ctv6\":\"0\",\"nd_01a19022b1167a3dbd79ad7909f80ee5\":\"0\",\"nd_01a190239b377cd99dacd55dfe4511a1\":\"0\",\"nd_01a1902559c27c3f8915335365b2cbe5\":\"0\",\"nd_01a19026248b7053b6d1eb26f641028b\":\"0\",\"nd_01a19029c8c878d0b72567ba532e4ab1\":\"0\",\"nu_01a19022b1167a3dbd79ad7909f80ee5\":\"0\",\"nu_01a190239b377cd99dacd55dfe4511a1\":\"0\",\"nu_01a1902559c27c3f8915335365b2cbe5\":\"0\",\"nu_01a19026248b7053b6d1eb26f641028b\":\"0\",\"nu_01a19029c8c878d0b72567ba532e4ab1\":\"0\"}},\"node_after\":{\"available\":true,\"generation\":\"31\",\"device_upload_bytes\":\"4622\",\"device_download_bytes\":\"4823\",\"member_accept_rules\":24,\"diagnostic_bytes\":{\"ctbadns\":\"0\",\"ctbase\":\"60\",\"ctdeny\":\"0\",\"cthost\":\"0\",\"ctin\":\"0\",\"ctinv\":\"0\",\"ctnodn\":\"0\",\"ctunkd\":\"0\",\"ctunku\":\"29\",\"ctv6\":\"0\",\"nd_01a19022b1167a3dbd79ad7909f80ee5\":\"0\",\"nd_01a190239b377cd99dacd55dfe4511a1\":\"0\",\"nd_01a1902559c27c3f8915335365b2cbe5\":\"0\",\"nd_01a19026248b7053b6d1eb26f641028b\":\"0\",\"nd_01a19029c8c878d0b72567ba532e4ab1\":\"0\",\"nu_01a19022b1167a3dbd79ad7909f80ee5\":\"0\",\"nu_01a190239b377cd99dacd55dfe4511a1\":\"0\",\"nu_01a1902559c27c3f8915335365b2cbe5\":\"0\",\"nu_01a19026248b7053b6d1eb26f641028b\":\"0\",\"nu_01a19029c8c878d0b72567ba532e4ab1\":\"0\"}},\"packet_observations\":{\"member-paid\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9074,\"filter\":\"controlled-origin TCP/443, fixed client port 38443\",\"interfaces\":{\"eth0\":{\"to_origin\":5}}},\"node\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9090,\"filter\":\"controlled-origin TCP/443, fixed client port 38443\",\"interfaces\":{}},\"origin\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9038,\"filter\":\"controlled-origin TCP/443, fixed client port 38443\",\"interfaces\":{}}},\"transfer\":{\"body_bytes\":0,\"http_status\":0,\"origin_receipt\":false},\"counted\":false,\"first_unconfirmed_hop\":\"member exit selection: controlled-origin route remains on underlay; no selected exit\"}; command: same native device HTTPS after worker withdrawal; inspect fvmb0 and device counters"
+    },
+    {
+      "name": "D-077 explicit admin authorize",
+      "detail": "pass; expected: HTTP 202 ; actual: {\"body\":{\"completed_at\":\"2026-10-31T04:13:44.818989Z\",\"created_at\":\"2026-10-31T04:13:39.91115Z\",\"desired_generation\":\"1\",\"error\":null,\"kind\":\"member.device_authorize\",\"observed_generation\":null,\"operation_id\":\"01a19029-c8c9-72ad-a9fa-0db4557619aa\",\"request_id\":\"01a19029-c8c2-7e79-8e8d-f564cc6137d5\",\"resource\":{\"id\":\"01a19029-c8c8-78d0-b725-67ba532e4ab1\",\"type\":\"member_device\"},\"resource_version\":null,\"status\":\"succeeded\",\"steps\":[{\"error_code\":null,\"message\":null,\"name\":\"netbird\",\"observed_at\":\"2026-10-31T04:13:39.951003Z\",\"required\":true,\"status\":\"succeeded\"},{\"error_code\":null,\"message\":null,\"name\":\"nodes\",\"observed_at\":\"2026-10-31T04:13:44.815399Z\",\"required\":true,\"status\":\"succeeded\"}],\"updated_at\":\"2026-10-31T04:13:44.819101Z\"},\"error_code\":\"\",\"fence_after\":0,\"fence_before\":1,\"method\":\"POST\",\"operation_id\":\"01a19029-c8c9-72ad-a9fa-0db4557619aa\",\"path\":\"/api/v1/admin/members/01a19021-c91c-70c4-a225-9f3bcc3676e9/devices/01a19029-c8c8-78d0-b725-67ba532e4ab1/authorize\",\"status\":202}; command: POST /api/v1/admin/members/01a19021-c91c-70c4-a225-9f3bcc3676e9/devices/01a19029-c8c8-78d0-b725-67ba532e4ab1/authorize; cookies/CSRF/idempotency key retained only in memory"
+    },
+    {
+      "name": "D-077 grant transaction and operation",
+      "detail": "pass; expected: member.device_authorize; fence gone; authorized restore reuses existing operation and pre-bump generation; actual: operation_id=01a19029-c8c9-72ad-a9fa-0db4557619aa; previous_id=01a19029-c8c9-72ad-a9fa-0db4557619aa; desired_generation=1; previous_generation=1; rows_before=1; rows_after=1; fence_after=0; command: POST authorize; read fence count and operation identity (never wait for a new operation)"
+    },
+    {
+      "name": "D-077 same-key replay",
+      "detail": "pass; expected: HTTP 202 ; actual: {\"body\":{\"completed_at\":\"2026-10-31T04:13:44.818989Z\",\"created_at\":\"2026-10-31T04:13:39.91115Z\",\"desired_generation\":\"1\",\"error\":null,\"kind\":\"member.device_authorize\",\"observed_generation\":null,\"operation_id\":\"01a19029-c8c9-72ad-a9fa-0db4557619aa\",\"request_id\":\"01a19029-c8c2-7e79-8e8d-f564cc6137d5\",\"resource\":{\"id\":\"01a19029-c8c8-78d0-b725-67ba532e4ab1\",\"type\":\"member_device\"},\"resource_version\":null,\"status\":\"succeeded\",\"steps\":[{\"error_code\":null,\"message\":null,\"name\":\"netbird\",\"observed_at\":\"2026-10-31T04:13:39.951003Z\",\"required\":true,\"status\":\"succeeded\"},{\"error_code\":null,\"message\":null,\"name\":\"nodes\",\"observed_at\":\"2026-10-31T04:13:44.815399Z\",\"required\":true,\"status\":\"succeeded\"}],\"updated_at\":\"2026-10-31T04:13:44.819101Z\"},\"error_code\":\"\",\"fence_after\":0,\"fence_before\":0,\"method\":\"POST\",\"operation_id\":\"01a19029-c8c9-72ad-a9fa-0db4557619aa\",\"path\":\"/api/v1/admin/members/01a19021-c91c-70c4-a225-9f3bcc3676e9/devices/01a19029-c8c8-78d0-b725-67ba532e4ab1/authorize\",\"status\":202}; command: POST /api/v1/admin/members/01a19021-c91c-70c4-a225-9f3bcc3676e9/devices/01a19029-c8c8-78d0-b725-67ba532e4ab1/authorize; cookies/CSRF/idempotency key retained only in memory"
+    },
+    {
+      "name": "D-077 replay has no second grant",
+      "detail": "pass; expected: same operation and device version; actual: operation_id=01a19029-c8c9-72ad-a9fa-0db4557619aa; version_before=2; version_after=2; command: replay identical Idempotency-Key; read device version"
+    },
+    {
+      "name": "D-077 worker re-grant confirmed from member list",
+      "detail": "pass; expected: authorized and explicit false after worker sync; actual: {\"authorized_count\":1,\"device_limit\":3,\"items\":[{\"authorization_unconfirmed\":false,\"authorized_at\":\"2026-10-31T04:13:39.912577Z\",\"created_at\":\"2026-10-31T04:13:39.91115Z\",\"device_id\":\"01a19029-c8c8-78d0-b725-67ba532e4ab1\",\"last_seen_at\":\"2026-10-31T04:13:39.912577Z\",\"name\":\"fvpn-w4-members-member-paid\",\"platform\":\"unknown\",\"revoked_at\":null,\"status\":\"authorized\"}],\"next_cursor\":null}\n; command: poll GET /member/devices; do not poll old operation step transitions"
+    },
+    {
+      "name": "D-077 member list",
+      "detail": "pass; expected: HTTP 200 ; actual: {\"body\":{\"authorized_count\":1,\"device_limit\":3,\"items\":[{\"authorization_unconfirmed\":false,\"authorized_at\":\"2026-10-31T04:13:39.912577Z\",\"created_at\":\"2026-10-31T04:13:39.91115Z\",\"device_id\":\"01a19029-c8c8-78d0-b725-67ba532e4ab1\",\"last_seen_at\":\"2026-10-31T04:13:39.912577Z\",\"name\":\"fvpn-w4-members-member-paid\",\"platform\":\"unknown\",\"revoked_at\":null,\"status\":\"authorized\"}],\"next_cursor\":null},\"error_code\":\"\",\"fence_after\":0,\"fence_before\":0,\"method\":\"GET\",\"operation_id\":\"00000000-0000-0000-0000-000000000000\",\"path\":\"/api/v1/member/devices\",\"status\":200}; command: GET /api/v1/member/devices; cookies/CSRF/idempotency key retained only in memory"
+    },
+    {
+      "name": "D-077 member flags always emitted",
+      "detail": "pass; expected: target status=authorized, authorization_unconfirmed=false; siblings explicitly false; actual: {\"authorized_count\":1,\"device_limit\":3,\"items\":[{\"authorization_unconfirmed\":false,\"authorized_at\":\"2026-10-31T04:13:39.912577Z\",\"created_at\":\"2026-10-31T04:13:39.91115Z\",\"device_id\":\"01a19029-c8c8-78d0-b725-67ba532e4ab1\",\"last_seen_at\":\"2026-10-31T04:13:39.912577Z\",\"name\":\"fvpn-w4-members-member-paid\",\"platform\":\"unknown\",\"revoked_at\":null,\"status\":\"authorized\"}],\"next_cursor\":null}\n; command: GET /member/devices; test field presence as well as value"
+    },
+    {
+      "name": "current-generation lease after desired change",
+      "detail": "pass; expected: uninterrupted agent: desired=applied=latest lease generation, unexpired; actual: {\"lease\": {\"issued_at\": \"2026-10-31T04:14:45.606085+00:00\", \"expires_at\": \"2026-11-01T04:14:45.606085+00:00\", \"generation\": \"32\", \"member_count\": 8}, \"applied\": \"32\", \"desired\": \"32\", \"observation\": {\"checks\": [{\"name\": \"dns_policy\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T04:14:45.631532355Z\"}, {\"name\": \"internet_only\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T04:14:45.631532355Z\"}, {\"name\": \"lease\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T04:14:45.631532355Z\"}, {\"name\": \"meter_path\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T04:14:45.631532355Z\"}, {\"name\": \"policy_signature\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T04:14:45.631532355Z\"}, {\"name\": \"qos\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T04:14:45.631532355Z\"}, {\"name\": \"release_supported\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T04:14:45.631532355Z\"}, {\"name\": \"source_binding\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T04:14:45.631532355Z\"}, {\"name\": \"storage\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T04:14:45.631532355Z\"}, {\"name\": \"tunnel_probe\", \"detail\": \"Egress probe used no extra target.\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T04:14:45.631532355Z\"}], \"forwarding_block_reasons\": [], \"member_forwarding_enabled\": true}}; command: poll nodes, latest serving_leases and accepted observation; no process restart or projection writes"
+    },
+    {
+      "name": "bounded member transfer observation",
+      "detail": "pass; expected: record selected route, node counters, packet hops and origin receipt; actual: {\"node_container_role\":\"node\",\"node_incarnation\":\"01a19021-ff54-74ac-861f-2b37a4572991\",\"origin_verified\":true,\"origin_requests\":1,\"origin_snat_matches\":true,\"probe_sha256\":\"713a0465224f77cada6d0788de85076bed3df1e8a21e637b20493b2072753654\",\"at\":\"2026-10-31T04:14:46Z\",\"first_counted_byte_at\":\"2026-10-31T04:14:51.506181695Z\",\"member_container_role\":\"member-paid\",\"route_selected\":true,\"route_before\":[{\"cache\":[],\"dev\":\"fvnb0\",\"flags\":[],\"table\":\"netbird\",\"uid\":0}],\"route_after\":[{\"cache\":[],\"dev\":\"fvnb0\",\"flags\":[],\"table\":\"netbird\",\"uid\":0}],\"peer_status\":{\"daemonStatus\":\"Connected\",\"daemonVersion\":\"0.82.0\",\"networks\":null,\"usesKernelInterface\":true},\"node_before\":{\"available\":true,\"generation\":\"32\",\"device_upload_bytes\":\"4622\",\"device_download_bytes\":\"4823\",\"member_accept_rules\":24,\"diagnostic_bytes\":{\"ctbadns\":\"0\",\"ctbase\":\"60\",\"ctdeny\":\"0\",\"cthost\":\"0\",\"ctin\":\"0\",\"ctinv\":\"0\",\"ctnodn\":\"0\",\"ctunkd\":\"0\",\"ctunku\":\"29\",\"ctv6\":\"0\",\"nd_01a19022b1167a3dbd79ad7909f80ee5\":\"0\",\"nd_01a190239b377cd99dacd55dfe4511a1\":\"0\",\"nd_01a1902559c27c3f8915335365b2cbe5\":\"0\",\"nd_01a19026248b7053b6d1eb26f641028b\":\"0\",\"nd_01a19029c8c878d0b72567ba532e4ab1\":\"0\",\"nu_01a19022b1167a3dbd79ad7909f80ee5\":\"0\",\"nu_01a190239b377cd99dacd55dfe4511a1\":\"0\",\"nu_01a1902559c27c3f8915335365b2cbe5\":\"0\",\"nu_01a19026248b7053b6d1eb26f641028b\":\"0\",\"nu_01a19029c8c878d0b72567ba532e4ab1\":\"0\"}},\"node_after\":{\"available\":true,\"generation\":\"32\",\"device_upload_bytes\":\"6927\",\"device_download_bytes\":\"7236\",\"member_accept_rules\":24,\"diagnostic_bytes\":{\"ctbadns\":\"0\",\"ctbase\":\"60\",\"ctdeny\":\"0\",\"cthost\":\"0\",\"ctin\":\"0\",\"ctinv\":\"0\",\"ctnodn\":\"0\",\"ctunkd\":\"0\",\"ctunku\":\"29\",\"ctv6\":\"0\",\"nd_01a19022b1167a3dbd79ad7909f80ee5\":\"0\",\"nd_01a190239b377cd99dacd55dfe4511a1\":\"0\",\"nd_01a1902559c27c3f8915335365b2cbe5\":\"0\",\"nd_01a19026248b7053b6d1eb26f641028b\":\"0\",\"nd_01a19029c8c878d0b72567ba532e4ab1\":\"0\",\"nu_01a19022b1167a3dbd79ad7909f80ee5\":\"0\",\"nu_01a190239b377cd99dacd55dfe4511a1\":\"0\",\"nu_01a1902559c27c3f8915335365b2cbe5\":\"0\",\"nu_01a19026248b7053b6d1eb26f641028b\":\"0\",\"nu_01a19029c8c878d0b72567ba532e4ab1\":\"0\"}},\"packet_observations\":{\"member-paid\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9010,\"filter\":\"controlled-origin TCP/443, fixed client port 38443\",\"interfaces\":{\"fvnb0\":{\"from_origin\":7,\"to_origin\":10}}},\"node\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9054,\"filter\":\"controlled-origin TCP/443, fixed client port 38443\",\"interfaces\":{\"fvmb0\":{\"from_origin\":7,\"to_origin\":10},\"fvup0\":{\"from_origin\":7,\"to_origin\":10}}},\"origin\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9082,\"filter\":\"controlled-origin TCP/443, fixed client port 38443\",\"interfaces\":{\"eth0\":{\"from_origin\":7,\"to_origin\":10}}}},\"transfer\":{\"body_bytes\":3,\"http_status\":200,\"origin_receipt\":true},\"counted\":true,\"first_unconfirmed_hop\":\"none: origin HTTP response and both device admission counters increased\"}; command: netbird routes select; ip -j route get controlled origin; concurrent 9-second AF_PACKET aggregate observers; bounded CA-verified HTTPS GET; nft counters before/after"
+    },
+    {
+      "name": "D-077 re-grant counted forwarding",
+      "detail": "pass; expected: origin HTTP receipt and both device counters increase; actual: device_id=01a19029-c8c8-78d0-b725-67ba532e4ab1; counted=true; command: CA-verified HTTPS through fvmb0 with named device counter attribution"
     },
     {
       "name": "post-revoke enforcement dependency and health",
-      "detail": "pass; expected: conntrack present; typed accepted observation retained; actual: conntrack_present=true; observation={\"checks\":[{\"name\":\"dns_policy\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-30T23:21:29.769745304Z\"},{\"name\":\"internet_only\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-30T23:21:29.769745304Z\"},{\"name\":\"lease\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-30T23:21:29.769745304Z\"},{\"name\":\"meter_path\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-30T23:21:29.769745304Z\"},{\"name\":\"policy_signature\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-30T23:21:29.769745304Z\"},{\"name\":\"qos\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-30T23:21:29.769745304Z\"},{\"name\":\"release_supported\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-30T23:21:29.769745304Z\"},{\"name\":\"source_binding\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-30T23:21:29.769745304Z\"},{\"name\":\"storage\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-30T23:21:29.769745304Z\"},{\"name\":\"tunnel_probe\",\"detail\":\"Egress probe used no extra target.\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-30T23:21:29.769745304Z\"}],\"errors\":[],\"forwarding\":true,\"reasons\":[]}; command: command -v conntrack; read latest accepted api.ObservationReport (generated enum)"
+      "detail": "pass; expected: conntrack present; typed accepted observation retained; actual: conntrack_present=true; observation={\"checks\":[{\"name\":\"dns_policy\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-31T04:28:19.756127781Z\"},{\"name\":\"internet_only\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-31T04:28:19.756127781Z\"},{\"name\":\"lease\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-31T04:28:19.756127781Z\"},{\"name\":\"meter_path\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-31T04:28:19.756127781Z\"},{\"name\":\"policy_signature\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-31T04:28:19.756127781Z\"},{\"name\":\"qos\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-31T04:28:19.756127781Z\"},{\"name\":\"release_supported\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-31T04:28:19.756127781Z\"},{\"name\":\"source_binding\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-31T04:28:19.756127781Z\"},{\"name\":\"storage\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-31T04:28:19.756127781Z\"},{\"name\":\"tunnel_probe\",\"detail\":\"Egress probe used no extra target.\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-31T04:28:19.756127781Z\"}],\"errors\":[],\"forwarding\":true,\"reasons\":[]}; command: command -v conntrack; read latest accepted api.ObservationReport (generated enum)"
     },
     {
       "name": "provenance",
-      "detail": "source=159d617b1450ade4a715924162ac4d4142071e25; applied generation=55; incarnation=01a18ef8-e0eb-7940-a5c3-70512ec5c503; image/binary digests in JSON"
+      "detail": "source=10a5f3891aa8fde2d3a2f158d97bfcb0a4c7670b; applied generation=62; incarnation=01a19021-ff54-74ac-861f-2b37a4572991; image/binary digests in JSON"
     }
   ],
-  "at": "2026-10-30T22:45:44Z",
-  "run_id": "80db103b-622c-42b1-946d-4628daaa213d",
-  "source_commit": "159d617b1450ade4a715924162ac4d4142071e25",
+  "at": "2026-10-31T04:11:42Z",
+  "run_id": "297faa31-2f90-4aab-8cf0-6818629f46c8",
+  "source_commit": "10a5f3891aa8fde2d3a2f158d97bfcb0a4c7670b",
   "release_digests": {
-    "artifact_sha256_0.1.0_amd64": "413c55ace7de6048767f2c42b5e402f8ac4daf763dd3e898ff5fb6c57d9aac6c",
-    "artifact_sha256_0.1.0_arm64": "dce7751817b846751f1caa20a12652b66799918286f79545eb5b391ec9d25490",
-    "manifest_sha256_0.1.0": "611e41aa9ff2dde2c5dff7e09d3fa7027b3a4ceeced6eb4c7233031baf551fe8",
-    "signed_manifest_sha256_0.1.0": "7cc8c2580d1d19cc02e4e116ef609cef98de048bf457c8a346b912bd602b8b4b"
+    "artifact_sha256_0.1.0_amd64": "0be779731cd54b54de311b90a0aa1ffe3950bb2f0e3eeaa446a8a2a1d0e0f936",
+    "artifact_sha256_0.1.0_arm64": "9a2c42d9f1922d2ebc3a3c650b32364b642cff04bf24d9184a3916957d63544a",
+    "manifest_sha256_0.1.0": "dd009324224652d87d96d80c93ff3988094e72802ad68f46f4ab3cc0769e50e1",
+    "signed_manifest_sha256_0.1.0": "046d9d1cdca6ec96e0b5abd594248a0bf7583d0a3ac747076592dc908b0b071b"
   },
   "followup_build": {
-    "test_binary_sha256": "88c78da47fbe2e0bc96501210f5c698bb3a0edeea9daf61c120dec15d8c40b11",
-    "source_commit": "159d617b1450ade4a715924162ac4d4142071e25",
+    "test_binary_sha256": "8b932f5da025f120a0cd70f92c90497ced4041f11c7ea06d94cfba1f4d6a54df",
+    "source_commit": "10a5f3891aa8fde2d3a2f158d97bfcb0a4c7670b",
     "source_dirty": true,
     "image_digests": {
       "adguard": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
-      "control": "sha256:51d0e4b79c577ba458cfb43945b6b8f2de443b74b5d6c9f8e021797b0232edf6",
+      "control": "sha256:ce2e4b56dd1a075b3aa1f510ca825a6a9fbdf9bb703e2c7c00cb9650e47f7171",
       "coredns": "sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97",
       "gateway": "sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce",
-      "idp": "sha256:16abf47d8f77f330b62e2ef84a89437ebe31282066d1ebd5263f012302947460",
-      "member": "sha256:c816a8fd6aac1ed9b6357f86cc6d2d89760adadb23c2f4c72ff218f7f128d233",
+      "idp": "sha256:feec90dbfb3d51655699575cfabc04b714bc6b3d5f309744068445401ebf58ce",
+      "member": "sha256:9a2803b7cec381ae88358e220014bfd8fbc8db42ba482d8e0aaaf433a8aa8cb9",
       "netbird": "sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c",
-      "node": "sha256:c816a8fd6aac1ed9b6357f86cc6d2d89760adadb23c2f4c72ff218f7f128d233",
-      "node-netns": "sha256:c816a8fd6aac1ed9b6357f86cc6d2d89760adadb23c2f4c72ff218f7f128d233",
-      "node2": "sha256:c816a8fd6aac1ed9b6357f86cc6d2d89760adadb23c2f4c72ff218f7f128d233",
+      "node": "sha256:9a2803b7cec381ae88358e220014bfd8fbc8db42ba482d8e0aaaf433a8aa8cb9",
+      "node-netns": "sha256:9a2803b7cec381ae88358e220014bfd8fbc8db42ba482d8e0aaaf433a8aa8cb9",
+      "node2": "sha256:9a2803b7cec381ae88358e220014bfd8fbc8db42ba482d8e0aaaf433a8aa8cb9",
       "node2-adguard": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
-      "node2-netns": "sha256:c816a8fd6aac1ed9b6357f86cc6d2d89760adadb23c2f4c72ff218f7f128d233",
-      "origin": "sha256:f780f09ae08dd7208086bdf679ad1d71bda3f9743e00d1a8a7d35a3c716cfd96",
-      "payment": "sha256:c02684617541f491aca152bfc579198a30704f0997226a194cf5d900c341ff13",
-      "postgres": "sha256:2bc86591890085d6dd7893f8925f1767694ebb06930c815561169cd9d46e6c38",
-      "worker": "sha256:b23477ef741151ed51198d5220c69cf9c035072805f8b06fbe0d3a57174c1555"
+      "node2-netns": "sha256:9a2803b7cec381ae88358e220014bfd8fbc8db42ba482d8e0aaaf433a8aa8cb9",
+      "origin": "sha256:2d81ce7be38bad574fcccb7dd00dbaa48c6a1215cb79bad8e017a511c04fde30",
+      "payment": "sha256:f877bedc616b21572eef06871f5e2a5b16ad7bb5a82e779782101c2c143cd80a",
+      "postgres": "sha256:d2889731d14717fdd01ea4820710d7c460d5c5ebe6e3b218feb7c0179c2aa562",
+      "worker": "sha256:4c2e25937a5ccd54d43d602e911c5f6d6a73a601b2b0e546452390f3e2f9ef72"
     },
     "binary_sha256": {
-      "fvpn-agent": "9bfd334e0ac1a73ea9ea952ff144c6a8e81919170df1c43a0d1cecb93acd2d9e",
-      "fvpn-control": "571203972c7644f7317430dd5fb25b75745e350b9c70d31510f205506481e7ad",
-      "fvpn-updater": "a7dc5e4640972d9c4678e2c19061862ead0f2533be0803b8369e7b33c2f19334",
-      "fvpn-worker": "0a43d328bf1599d94de92f4db7fa51accef6b8670f0e4da6afec046883e9e300"
+      "fvpn-agent": "c859eacb0640a77e9205c461ae3754989c0caa87c877d775d74de42658c31a14",
+      "fvpn-control": "9509a0f479a0230c6b74c85a933652e5b02701efe3b8876e2a8b2680c1d8c07f",
+      "fvpn-updater": "cee878a4a82ddf57e5aa97ab47837b8c833e4a92054211639d36d52ca668937b",
+      "fvpn-worker": "d73867567557ce45df40bb2417173daf2ae3780643fe8f705486641aba4e5b6c"
     },
     "binary_vcs": {
       "fvpn-agent": {
         "go_version": "go1.27.3",
         "vcs.modified": "false",
-        "vcs.revision": "159d617b1450ade4a715924162ac4d4142071e25",
-        "vcs.time": "2026-10-30T22:38:49Z"
+        "vcs.revision": "10a5f3891aa8fde2d3a2f158d97bfcb0a4c7670b",
+        "vcs.time": "2026-10-31T04:03:39Z"
       },
       "fvpn-control": {
         "go_version": "go1.27.3",
         "vcs.modified": "false",
-        "vcs.revision": "159d617b1450ade4a715924162ac4d4142071e25",
-        "vcs.time": "2026-10-30T22:38:49Z"
+        "vcs.revision": "10a5f3891aa8fde2d3a2f158d97bfcb0a4c7670b",
+        "vcs.time": "2026-10-31T04:03:39Z"
       },
       "fvpn-updater": {
         "go_version": "go1.27.3",
         "vcs.modified": "false",
-        "vcs.revision": "159d617b1450ade4a715924162ac4d4142071e25",
-        "vcs.time": "2026-10-30T22:38:49Z"
+        "vcs.revision": "10a5f3891aa8fde2d3a2f158d97bfcb0a4c7670b",
+        "vcs.time": "2026-10-31T04:03:39Z"
       },
       "fvpn-worker": {
         "go_version": "go1.27.3",
         "vcs.modified": "false",
-        "vcs.revision": "159d617b1450ade4a715924162ac4d4142071e25",
-        "vcs.time": "2026-10-30T22:38:49Z"
+        "vcs.revision": "10a5f3891aa8fde2d3a2f158d97bfcb0a4c7670b",
+        "vcs.time": "2026-10-31T04:03:39Z"
       }
     }
   },
   "build": {
-    "test_binary_sha256": "545ddf576f11415a8c1c1059d503d1aa1089076bc091e2fe2a0f3dcd9f56d369",
-    "source_commit": "159d617b1450ade4a715924162ac4d4142071e25",
+    "test_binary_sha256": "8b932f5da025f120a0cd70f92c90497ced4041f11c7ea06d94cfba1f4d6a54df",
+    "source_commit": "10a5f3891aa8fde2d3a2f158d97bfcb0a4c7670b",
     "source_dirty": false,
     "image_digests": {
       "adguard": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
-      "control": "sha256:51d0e4b79c577ba458cfb43945b6b8f2de443b74b5d6c9f8e021797b0232edf6",
+      "control": "sha256:ce2e4b56dd1a075b3aa1f510ca825a6a9fbdf9bb703e2c7c00cb9650e47f7171",
       "coredns": "sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97",
       "gateway": "sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce",
-      "idp": "sha256:16abf47d8f77f330b62e2ef84a89437ebe31282066d1ebd5263f012302947460",
-      "member": "sha256:c816a8fd6aac1ed9b6357f86cc6d2d89760adadb23c2f4c72ff218f7f128d233",
+      "idp": "sha256:feec90dbfb3d51655699575cfabc04b714bc6b3d5f309744068445401ebf58ce",
+      "member": "sha256:9a2803b7cec381ae88358e220014bfd8fbc8db42ba482d8e0aaaf433a8aa8cb9",
       "netbird": "sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c",
-      "node": "sha256:c816a8fd6aac1ed9b6357f86cc6d2d89760adadb23c2f4c72ff218f7f128d233",
-      "node-netns": "sha256:c816a8fd6aac1ed9b6357f86cc6d2d89760adadb23c2f4c72ff218f7f128d233",
-      "node2": "sha256:c816a8fd6aac1ed9b6357f86cc6d2d89760adadb23c2f4c72ff218f7f128d233",
+      "node": "sha256:9a2803b7cec381ae88358e220014bfd8fbc8db42ba482d8e0aaaf433a8aa8cb9",
+      "node-netns": "sha256:9a2803b7cec381ae88358e220014bfd8fbc8db42ba482d8e0aaaf433a8aa8cb9",
+      "node2": "sha256:9a2803b7cec381ae88358e220014bfd8fbc8db42ba482d8e0aaaf433a8aa8cb9",
       "node2-adguard": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
-      "node2-netns": "sha256:c816a8fd6aac1ed9b6357f86cc6d2d89760adadb23c2f4c72ff218f7f128d233",
-      "origin": "sha256:f780f09ae08dd7208086bdf679ad1d71bda3f9743e00d1a8a7d35a3c716cfd96",
-      "payment": "sha256:c02684617541f491aca152bfc579198a30704f0997226a194cf5d900c341ff13",
-      "postgres": "sha256:2bc86591890085d6dd7893f8925f1767694ebb06930c815561169cd9d46e6c38",
-      "worker": "sha256:b23477ef741151ed51198d5220c69cf9c035072805f8b06fbe0d3a57174c1555"
+      "node2-netns": "sha256:9a2803b7cec381ae88358e220014bfd8fbc8db42ba482d8e0aaaf433a8aa8cb9",
+      "origin": "sha256:2d81ce7be38bad574fcccb7dd00dbaa48c6a1215cb79bad8e017a511c04fde30",
+      "payment": "sha256:f877bedc616b21572eef06871f5e2a5b16ad7bb5a82e779782101c2c143cd80a",
+      "postgres": "sha256:d2889731d14717fdd01ea4820710d7c460d5c5ebe6e3b218feb7c0179c2aa562",
+      "worker": "sha256:4c2e25937a5ccd54d43d602e911c5f6d6a73a601b2b0e546452390f3e2f9ef72"
     },
     "binary_sha256": {
-      "fvpn-agent": "9bfd334e0ac1a73ea9ea952ff144c6a8e81919170df1c43a0d1cecb93acd2d9e",
-      "fvpn-control": "571203972c7644f7317430dd5fb25b75745e350b9c70d31510f205506481e7ad",
-      "fvpn-updater": "a7dc5e4640972d9c4678e2c19061862ead0f2533be0803b8369e7b33c2f19334",
-      "fvpn-worker": "0a43d328bf1599d94de92f4db7fa51accef6b8670f0e4da6afec046883e9e300"
+      "fvpn-agent": "c859eacb0640a77e9205c461ae3754989c0caa87c877d775d74de42658c31a14",
+      "fvpn-control": "9509a0f479a0230c6b74c85a933652e5b02701efe3b8876e2a8b2680c1d8c07f",
+      "fvpn-updater": "cee878a4a82ddf57e5aa97ab47837b8c833e4a92054211639d36d52ca668937b",
+      "fvpn-worker": "d73867567557ce45df40bb2417173daf2ae3780643fe8f705486641aba4e5b6c"
     },
     "binary_vcs": {
       "fvpn-agent": {
         "go_version": "go1.27.3",
         "vcs.modified": "false",
-        "vcs.revision": "159d617b1450ade4a715924162ac4d4142071e25",
-        "vcs.time": "2026-10-30T22:38:49Z"
+        "vcs.revision": "10a5f3891aa8fde2d3a2f158d97bfcb0a4c7670b",
+        "vcs.time": "2026-10-31T04:03:39Z"
       },
       "fvpn-control": {
         "go_version": "go1.27.3",
         "vcs.modified": "false",
-        "vcs.revision": "159d617b1450ade4a715924162ac4d4142071e25",
-        "vcs.time": "2026-10-30T22:38:49Z"
+        "vcs.revision": "10a5f3891aa8fde2d3a2f158d97bfcb0a4c7670b",
+        "vcs.time": "2026-10-31T04:03:39Z"
       },
       "fvpn-updater": {
         "go_version": "go1.27.3",
         "vcs.modified": "false",
-        "vcs.revision": "159d617b1450ade4a715924162ac4d4142071e25",
-        "vcs.time": "2026-10-30T22:38:49Z"
+        "vcs.revision": "10a5f3891aa8fde2d3a2f158d97bfcb0a4c7670b",
+        "vcs.time": "2026-10-31T04:03:39Z"
       },
       "fvpn-worker": {
         "go_version": "go1.27.3",
         "vcs.modified": "false",
-        "vcs.revision": "159d617b1450ade4a715924162ac4d4142071e25",
-        "vcs.time": "2026-10-30T22:38:49Z"
+        "vcs.revision": "10a5f3891aa8fde2d3a2f158d97bfcb0a4c7670b",
+        "vcs.time": "2026-10-31T04:03:39Z"
       }
     }
   },
-  "policy_revision": "55",
+  "policy_revision": "62",
   "active_policy_revisions": {
-    "dns_profile": "01a18f0c-fbd2-7b56-a014-46751e8e7377",
-    "domain_rule_set": "01a18ef8-c9c5-7582-953a-d31b468500a6",
-    "fair_use": "01a18ef8-c505-7016-b73c-58d994108784",
-    "plan": "01a18ef8-d807-7c58-862e-53aba18ee797",
-    "release_support": "01a18ef8-bcea-7985-8294-17ec7347429b",
-    "threat_feed": "01a18f0c-f308-7de8-8f40-84a5ab3773a1"
+    "dns_profile": "01a19037-12fd-75d3-8b2d-51ff8fd1b916",
+    "domain_rule_set": "01a19021-e90f-75c9-8d74-05ff4f611d71",
+    "fair_use": "01a19021-e450-7cee-978d-e50761f472cc",
+    "plan": "01a19027-7536-76c0-a042-43fd644181c2",
+    "release_support": "01a19021-dd01-77bb-88c9-11478774db2e"
   },
-  "node_incarnation": "01a18ef8-e0eb-7940-a5c3-70512ec5c503",
+  "node_incarnation": "01a19021-ff54-74ac-861f-2b37a4572991",
   "steps": [
     {
       "name": "real Portal billing return",
@@ -588,7 +1079,7 @@
       "expected": "built billing page renders, pending confirmation; no API error",
       "actual": "probe_ok=true; HTTP=200; page=true; pending=true; api_error=false",
       "command": "shared deploy/devstack/probe-portal.mjs; cookies via stdin, controlled origin only",
-      "at": "2026-10-30T22:45:45Z"
+      "at": "2026-10-31T04:11:43Z"
     },
     {
       "name": "checkout command replay",
@@ -596,7 +1087,7 @@
       "expected": "201 and same hosted session",
       "actual": "first=201; replay=201; same_session=true",
       "command": "POST /member/checkout-sessions twice with same Idempotency-Key",
-      "at": "2026-10-30T22:45:46Z"
+      "at": "2026-10-31T04:11:44Z"
     },
     {
       "name": "forged return before provider truth",
@@ -604,7 +1095,7 @@
       "expected": "200 built Portal; no subscription or live entitlement",
       "actual": "HTTP=200; subscriptions=0; state=pending_payment",
       "command": "GET forged return before snapshot; read product subscriptions and entitlement",
-      "at": "2026-10-30T22:45:47Z"
+      "at": "2026-10-31T04:11:45Z"
     },
     {
       "name": "authoritative provider truth",
@@ -612,7 +1103,7 @@
       "expected": "200; input to provider, not a central invoice fixture",
       "actual": "HTTP 200 ",
       "command": "POST authenticated lab payment /e2e/snapshot for actual checkout",
-      "at": "2026-10-30T22:45:47Z"
+      "at": "2026-10-31T04:11:45Z"
     },
     {
       "name": "provider event invoice.paid",
@@ -620,7 +1111,7 @@
       "expected": "200 exact signed event bytes",
       "actual": "HTTP=200; signed_event_present=true",
       "command": "POST authenticated lab /e2e/event; keep payload and signature in memory",
-      "at": "2026-10-30T22:45:48Z"
+      "at": "2026-10-31T04:11:46Z"
     },
     {
       "name": "invalid signature",
@@ -628,7 +1119,7 @@
       "expected": "401; no inbox row",
       "actual": "HTTP=401; inbox=0",
       "command": "POST provider's exact bytes with invalid signature",
-      "at": "2026-10-30T22:45:50Z"
+      "at": "2026-10-31T04:11:48Z"
     },
     {
       "name": "first paid event",
@@ -636,15 +1127,15 @@
       "expected": "202 then inbox succeeded",
       "actual": "HTTP=202; reconciled=true",
       "command": "POST exact provider event; poll processing_status",
-      "at": "2026-10-30T22:45:53Z"
+      "at": "2026-10-31T04:11:51Z"
     },
     {
       "name": "reconciled active",
       "status": "pass",
       "expected": "one exact paid interval; state=active; refund=0",
-      "actual": "{\"invoices\": 1, \"revision\": \"2\", \"anomalies\": [], \"paid_from\": \"2026-10-30T22:44:46+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-30T23:45:45+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-30T23:45:45+00:00\"}",
+      "actual": "{\"invoices\": 1, \"revision\": \"2\", \"anomalies\": [], \"paid_from\": \"2026-10-31T04:10:44+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-31T05:11:43+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-31T05:11:43+00:00\"}",
       "command": "poll real subscription, billing_records and entitlements projections",
-      "at": "2026-10-30T22:45:53Z"
+      "at": "2026-10-31T04:11:51Z"
     },
     {
       "name": "paced paid replay",
@@ -652,7 +1143,7 @@
       "expected": "202 once; no rate-limit retry",
       "actual": "HTTP 202 ",
       "command": "wait 2 seconds; POST identical provider bytes once",
-      "at": "2026-10-30T22:45:55Z"
+      "at": "2026-10-31T04:11:53Z"
     },
     {
       "name": "paced paid replay",
@@ -660,7 +1151,7 @@
       "expected": "202 once; no rate-limit retry",
       "actual": "HTTP 202 ",
       "command": "wait 2 seconds; POST identical provider bytes once",
-      "at": "2026-10-30T22:45:57Z"
+      "at": "2026-10-31T04:11:55Z"
     },
     {
       "name": "paced paid replay",
@@ -668,7 +1159,7 @@
       "expected": "202 once; no rate-limit retry",
       "actual": "HTTP 202 ",
       "command": "wait 2 seconds; POST identical provider bytes once",
-      "at": "2026-10-30T22:45:59Z"
+      "at": "2026-10-31T04:11:57Z"
     },
     {
       "name": "paced paid replay",
@@ -676,7 +1167,7 @@
       "expected": "202 once; no rate-limit retry",
       "actual": "HTTP 202 ",
       "command": "wait 2 seconds; POST identical provider bytes once",
-      "at": "2026-10-30T22:46:01Z"
+      "at": "2026-10-31T04:11:59Z"
     },
     {
       "name": "paced paid replay",
@@ -684,7 +1175,7 @@
       "expected": "202 once; no rate-limit retry",
       "actual": "HTTP 202 ",
       "command": "wait 2 seconds; POST identical provider bytes once",
-      "at": "2026-10-30T22:46:03Z"
+      "at": "2026-10-31T04:12:01Z"
     },
     {
       "name": "paced paid replay",
@@ -692,7 +1183,7 @@
       "expected": "202 once; no rate-limit retry",
       "actual": "HTTP 202 ",
       "command": "wait 2 seconds; POST identical provider bytes once",
-      "at": "2026-10-30T22:46:05Z"
+      "at": "2026-10-31T04:12:03Z"
     },
     {
       "name": "paced paid replay",
@@ -700,7 +1191,7 @@
       "expected": "202 once; no rate-limit retry",
       "actual": "HTTP 202 ",
       "command": "wait 2 seconds; POST identical provider bytes once",
-      "at": "2026-10-30T22:46:07Z"
+      "at": "2026-10-31T04:12:05Z"
     },
     {
       "name": "paced paid replay",
@@ -708,7 +1199,7 @@
       "expected": "202 once; no rate-limit retry",
       "actual": "HTTP 202 ",
       "command": "wait 2 seconds; POST identical provider bytes once",
-      "at": "2026-10-30T22:46:09Z"
+      "at": "2026-10-31T04:12:07Z"
     },
     {
       "name": "paced paid replay",
@@ -716,7 +1207,7 @@
       "expected": "202 once; no rate-limit retry",
       "actual": "HTTP 202 ",
       "command": "wait 2 seconds; POST identical provider bytes once",
-      "at": "2026-10-30T22:46:11Z"
+      "at": "2026-10-31T04:12:09Z"
     },
     {
       "name": "ten identical paid deliveries",
@@ -724,15 +1215,15 @@
       "expected": "one inbox/invoice; one revision change then stable",
       "actual": "accepted=10; inbox=1; invoices=1; before=1; paid=2; after=2",
       "command": "POST identical exact bytes 10 times; read keys, intervals and revisions",
-      "at": "2026-10-30T22:46:11Z"
+      "at": "2026-10-31T04:12:09Z"
     },
     {
       "name": "reconciled active",
       "status": "pass",
       "expected": "one exact paid interval; state=active; refund=0",
-      "actual": "{\"invoices\": 1, \"revision\": \"2\", \"anomalies\": [], \"paid_from\": \"2026-10-30T22:44:46+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-30T23:45:45+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-30T23:45:45+00:00\"}",
+      "actual": "{\"invoices\": 1, \"revision\": \"2\", \"anomalies\": [], \"paid_from\": \"2026-10-31T04:10:44+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-31T05:11:43+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-31T05:11:43+00:00\"}",
       "command": "poll real subscription, billing_records and entitlements projections",
-      "at": "2026-10-30T22:46:11Z"
+      "at": "2026-10-31T04:12:09Z"
     },
     {
       "name": "independent ordering identity",
@@ -740,7 +1231,7 @@
       "expected": "one new member per permutation",
       "actual": "unique=true",
       "command": "shared IdP login with short fixture key",
-      "at": "2026-10-30T22:46:12Z"
+      "at": "2026-10-31T04:12:10Z"
     },
     {
       "name": "checkout command replay",
@@ -748,7 +1239,7 @@
       "expected": "201 and same hosted session",
       "actual": "first=201; replay=201; same_session=true",
       "command": "POST /member/checkout-sessions twice with same Idempotency-Key",
-      "at": "2026-10-30T22:46:13Z"
+      "at": "2026-10-31T04:12:11Z"
     },
     {
       "name": "authoritative provider truth",
@@ -756,7 +1247,7 @@
       "expected": "200; input to provider, not a central invoice fixture",
       "actual": "HTTP 200 ",
       "command": "POST authenticated lab payment /e2e/snapshot for actual checkout",
-      "at": "2026-10-30T22:46:13Z"
+      "at": "2026-10-31T04:12:11Z"
     },
     {
       "name": "provider event invoice.paid",
@@ -764,7 +1255,7 @@
       "expected": "200 exact signed event bytes",
       "actual": "HTTP=200; signed_event_present=true",
       "command": "POST authenticated lab /e2e/event; keep payload and signature in memory",
-      "at": "2026-10-30T22:46:14Z"
+      "at": "2026-10-31T04:12:12Z"
     },
     {
       "name": "provider event customer.subscription.created",
@@ -772,7 +1263,7 @@
       "expected": "200 exact signed event bytes",
       "actual": "HTTP=200; signed_event_present=true",
       "command": "POST authenticated lab /e2e/event; keep payload and signature in memory",
-      "at": "2026-10-30T22:46:15Z"
+      "at": "2026-10-31T04:12:13Z"
     },
     {
       "name": "provider event invoice.payment_failed",
@@ -780,15 +1271,15 @@
       "expected": "200 exact signed event bytes",
       "actual": "HTTP=200; signed_event_present=true",
       "command": "POST authenticated lab /e2e/event; keep payload and signature in memory",
-      "at": "2026-10-30T22:46:15Z"
+      "at": "2026-10-31T04:12:13Z"
     },
     {
       "name": "reconciled active",
       "status": "pass",
       "expected": "one exact paid interval; state=active; refund=0",
-      "actual": "{\"invoices\": 1, \"revision\": \"2\", \"anomalies\": [], \"paid_from\": \"2026-10-30T22:45:13+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-30T23:46:12+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-30T23:46:12+00:00\"}",
+      "actual": "{\"invoices\": 1, \"revision\": \"2\", \"anomalies\": [], \"paid_from\": \"2026-10-31T04:11:11+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-31T05:12:10+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-31T05:12:10+00:00\"}",
       "command": "poll real subscription, billing_records and entitlements projections",
-      "at": "2026-10-30T22:46:24Z"
+      "at": "2026-10-31T04:12:22Z"
     },
     {
       "name": "delivery order created/paid/failed",
@@ -796,7 +1287,7 @@
       "expected": "each event processed against same authoritative paid truth; one exact interval",
       "actual": "delivered=3; processed=3; invoices=1; period_matches=true",
       "command": "fresh checkout/subject per order; authenticated provider hooks for all three event types; read paid interval",
-      "at": "2026-10-30T22:46:24Z"
+      "at": "2026-10-31T04:12:22Z"
     },
     {
       "name": "independent ordering identity",
@@ -804,7 +1295,7 @@
       "expected": "one new member per permutation",
       "actual": "unique=true",
       "command": "shared IdP login with short fixture key",
-      "at": "2026-10-30T22:46:25Z"
+      "at": "2026-10-31T04:12:23Z"
     },
     {
       "name": "checkout command replay",
@@ -812,7 +1303,7 @@
       "expected": "201 and same hosted session",
       "actual": "first=201; replay=201; same_session=true",
       "command": "POST /member/checkout-sessions twice with same Idempotency-Key",
-      "at": "2026-10-30T22:46:26Z"
+      "at": "2026-10-31T04:12:24Z"
     },
     {
       "name": "authoritative provider truth",
@@ -820,7 +1311,7 @@
       "expected": "200; input to provider, not a central invoice fixture",
       "actual": "HTTP 200 ",
       "command": "POST authenticated lab payment /e2e/snapshot for actual checkout",
-      "at": "2026-10-30T22:46:27Z"
+      "at": "2026-10-31T04:12:25Z"
     },
     {
       "name": "provider event invoice.paid",
@@ -828,7 +1319,7 @@
       "expected": "200 exact signed event bytes",
       "actual": "HTTP=200; signed_event_present=true",
       "command": "POST authenticated lab /e2e/event; keep payload and signature in memory",
-      "at": "2026-10-30T22:46:27Z"
+      "at": "2026-10-31T04:12:25Z"
     },
     {
       "name": "provider event customer.subscription.created",
@@ -836,7 +1327,7 @@
       "expected": "200 exact signed event bytes",
       "actual": "HTTP=200; signed_event_present=true",
       "command": "POST authenticated lab /e2e/event; keep payload and signature in memory",
-      "at": "2026-10-30T22:46:28Z"
+      "at": "2026-10-31T04:12:26Z"
     },
     {
       "name": "provider event invoice.payment_failed",
@@ -844,15 +1335,15 @@
       "expected": "200 exact signed event bytes",
       "actual": "HTTP=200; signed_event_present=true",
       "command": "POST authenticated lab /e2e/event; keep payload and signature in memory",
-      "at": "2026-10-30T22:46:29Z"
+      "at": "2026-10-31T04:12:27Z"
     },
     {
       "name": "reconciled active",
       "status": "pass",
       "expected": "one exact paid interval; state=active; refund=0",
-      "actual": "{\"invoices\": 1, \"revision\": \"2\", \"anomalies\": [], \"paid_from\": \"2026-10-30T22:45:26+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-30T23:46:25+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-30T23:46:25+00:00\"}",
+      "actual": "{\"invoices\": 1, \"revision\": \"2\", \"anomalies\": [], \"paid_from\": \"2026-10-31T04:11:24+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-31T05:12:23+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-31T05:12:23+00:00\"}",
       "command": "poll real subscription, billing_records and entitlements projections",
-      "at": "2026-10-30T22:46:38Z"
+      "at": "2026-10-31T04:12:36Z"
     },
     {
       "name": "delivery order created/failed/paid",
@@ -860,7 +1351,7 @@
       "expected": "each event processed against same authoritative paid truth; one exact interval",
       "actual": "delivered=3; processed=3; invoices=1; period_matches=true",
       "command": "fresh checkout/subject per order; authenticated provider hooks for all three event types; read paid interval",
-      "at": "2026-10-30T22:46:38Z"
+      "at": "2026-10-31T04:12:36Z"
     },
     {
       "name": "independent ordering identity",
@@ -868,7 +1359,7 @@
       "expected": "one new member per permutation",
       "actual": "unique=true",
       "command": "shared IdP login with short fixture key",
-      "at": "2026-10-30T22:46:38Z"
+      "at": "2026-10-31T04:12:36Z"
     },
     {
       "name": "checkout command replay",
@@ -876,7 +1367,7 @@
       "expected": "201 and same hosted session",
       "actual": "first=201; replay=201; same_session=true",
       "command": "POST /member/checkout-sessions twice with same Idempotency-Key",
-      "at": "2026-10-30T22:46:40Z"
+      "at": "2026-10-31T04:12:38Z"
     },
     {
       "name": "authoritative provider truth",
@@ -884,7 +1375,7 @@
       "expected": "200; input to provider, not a central invoice fixture",
       "actual": "HTTP 200 ",
       "command": "POST authenticated lab payment /e2e/snapshot for actual checkout",
-      "at": "2026-10-30T22:46:40Z"
+      "at": "2026-10-31T04:12:38Z"
     },
     {
       "name": "provider event invoice.paid",
@@ -892,7 +1383,7 @@
       "expected": "200 exact signed event bytes",
       "actual": "HTTP=200; signed_event_present=true",
       "command": "POST authenticated lab /e2e/event; keep payload and signature in memory",
-      "at": "2026-10-30T22:46:41Z"
+      "at": "2026-10-31T04:12:39Z"
     },
     {
       "name": "provider event customer.subscription.created",
@@ -900,7 +1391,7 @@
       "expected": "200 exact signed event bytes",
       "actual": "HTTP=200; signed_event_present=true",
       "command": "POST authenticated lab /e2e/event; keep payload and signature in memory",
-      "at": "2026-10-30T22:46:41Z"
+      "at": "2026-10-31T04:12:39Z"
     },
     {
       "name": "provider event invoice.payment_failed",
@@ -908,15 +1399,15 @@
       "expected": "200 exact signed event bytes",
       "actual": "HTTP=200; signed_event_present=true",
       "command": "POST authenticated lab /e2e/event; keep payload and signature in memory",
-      "at": "2026-10-30T22:46:42Z"
+      "at": "2026-10-31T04:12:40Z"
     },
     {
       "name": "reconciled active",
       "status": "pass",
       "expected": "one exact paid interval; state=active; refund=0",
-      "actual": "{\"invoices\": 1, \"revision\": \"1\", \"anomalies\": [], \"paid_from\": \"2026-10-30T22:45:40+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-30T23:46:38+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-30T23:46:38+00:00\"}",
+      "actual": "{\"invoices\": 1, \"revision\": \"2\", \"anomalies\": [], \"paid_from\": \"2026-10-31T04:11:38+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-31T05:12:36+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-31T05:12:36+00:00\"}",
       "command": "poll real subscription, billing_records and entitlements projections",
-      "at": "2026-10-30T22:46:51Z"
+      "at": "2026-10-31T04:12:49Z"
     },
     {
       "name": "delivery order paid/created/failed",
@@ -924,7 +1415,7 @@
       "expected": "each event processed against same authoritative paid truth; one exact interval",
       "actual": "delivered=3; processed=3; invoices=1; period_matches=true",
       "command": "fresh checkout/subject per order; authenticated provider hooks for all three event types; read paid interval",
-      "at": "2026-10-30T22:46:51Z"
+      "at": "2026-10-31T04:12:49Z"
     },
     {
       "name": "independent ordering identity",
@@ -932,7 +1423,7 @@
       "expected": "one new member per permutation",
       "actual": "unique=true",
       "command": "shared IdP login with short fixture key",
-      "at": "2026-10-30T22:46:52Z"
+      "at": "2026-10-31T04:12:50Z"
     },
     {
       "name": "checkout command replay",
@@ -940,7 +1431,7 @@
       "expected": "201 and same hosted session",
       "actual": "first=201; replay=201; same_session=true",
       "command": "POST /member/checkout-sessions twice with same Idempotency-Key",
-      "at": "2026-10-30T22:46:53Z"
+      "at": "2026-10-31T04:12:51Z"
     },
     {
       "name": "authoritative provider truth",
@@ -948,7 +1439,7 @@
       "expected": "200; input to provider, not a central invoice fixture",
       "actual": "HTTP 200 ",
       "command": "POST authenticated lab payment /e2e/snapshot for actual checkout",
-      "at": "2026-10-30T22:46:54Z"
+      "at": "2026-10-31T04:12:52Z"
     },
     {
       "name": "provider event invoice.paid",
@@ -956,7 +1447,7 @@
       "expected": "200 exact signed event bytes",
       "actual": "HTTP=200; signed_event_present=true",
       "command": "POST authenticated lab /e2e/event; keep payload and signature in memory",
-      "at": "2026-10-30T22:46:54Z"
+      "at": "2026-10-31T04:12:52Z"
     },
     {
       "name": "provider event customer.subscription.created",
@@ -964,7 +1455,7 @@
       "expected": "200 exact signed event bytes",
       "actual": "HTTP=200; signed_event_present=true",
       "command": "POST authenticated lab /e2e/event; keep payload and signature in memory",
-      "at": "2026-10-30T22:46:55Z"
+      "at": "2026-10-31T04:12:53Z"
     },
     {
       "name": "provider event invoice.payment_failed",
@@ -972,15 +1463,15 @@
       "expected": "200 exact signed event bytes",
       "actual": "HTTP=200; signed_event_present=true",
       "command": "POST authenticated lab /e2e/event; keep payload and signature in memory",
-      "at": "2026-10-30T22:46:55Z"
+      "at": "2026-10-31T04:12:53Z"
     },
     {
       "name": "reconciled active",
       "status": "pass",
       "expected": "one exact paid interval; state=active; refund=0",
-      "actual": "{\"invoices\": 1, \"revision\": \"1\", \"anomalies\": [], \"paid_from\": \"2026-10-30T22:45:53+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-30T23:46:52+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-30T23:46:52+00:00\"}",
+      "actual": "{\"invoices\": 1, \"revision\": \"2\", \"anomalies\": [], \"paid_from\": \"2026-10-31T04:11:51+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-31T05:12:50+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-31T05:12:50+00:00\"}",
       "command": "poll real subscription, billing_records and entitlements projections",
-      "at": "2026-10-30T22:47:04Z"
+      "at": "2026-10-31T04:13:02Z"
     },
     {
       "name": "delivery order paid/failed/created",
@@ -988,7 +1479,7 @@
       "expected": "each event processed against same authoritative paid truth; one exact interval",
       "actual": "delivered=3; processed=3; invoices=1; period_matches=true",
       "command": "fresh checkout/subject per order; authenticated provider hooks for all three event types; read paid interval",
-      "at": "2026-10-30T22:47:04Z"
+      "at": "2026-10-31T04:13:02Z"
     },
     {
       "name": "independent ordering identity",
@@ -996,7 +1487,7 @@
       "expected": "one new member per permutation",
       "actual": "unique=true",
       "command": "shared IdP login with short fixture key",
-      "at": "2026-10-30T22:47:05Z"
+      "at": "2026-10-31T04:13:03Z"
     },
     {
       "name": "checkout command replay",
@@ -1004,7 +1495,7 @@
       "expected": "201 and same hosted session",
       "actual": "first=201; replay=201; same_session=true",
       "command": "POST /member/checkout-sessions twice with same Idempotency-Key",
-      "at": "2026-10-30T22:47:06Z"
+      "at": "2026-10-31T04:13:04Z"
     },
     {
       "name": "authoritative provider truth",
@@ -1012,7 +1503,7 @@
       "expected": "200; input to provider, not a central invoice fixture",
       "actual": "HTTP 200 ",
       "command": "POST authenticated lab payment /e2e/snapshot for actual checkout",
-      "at": "2026-10-30T22:47:07Z"
+      "at": "2026-10-31T04:13:05Z"
     },
     {
       "name": "provider event invoice.paid",
@@ -1020,7 +1511,7 @@
       "expected": "200 exact signed event bytes",
       "actual": "HTTP=200; signed_event_present=true",
       "command": "POST authenticated lab /e2e/event; keep payload and signature in memory",
-      "at": "2026-10-30T22:47:08Z"
+      "at": "2026-10-31T04:13:06Z"
     },
     {
       "name": "provider event customer.subscription.created",
@@ -1028,7 +1519,7 @@
       "expected": "200 exact signed event bytes",
       "actual": "HTTP=200; signed_event_present=true",
       "command": "POST authenticated lab /e2e/event; keep payload and signature in memory",
-      "at": "2026-10-30T22:47:08Z"
+      "at": "2026-10-31T04:13:06Z"
     },
     {
       "name": "provider event invoice.payment_failed",
@@ -1036,15 +1527,15 @@
       "expected": "200 exact signed event bytes",
       "actual": "HTTP=200; signed_event_present=true",
       "command": "POST authenticated lab /e2e/event; keep payload and signature in memory",
-      "at": "2026-10-30T22:47:09Z"
+      "at": "2026-10-31T04:13:07Z"
     },
     {
       "name": "reconciled active",
       "status": "pass",
       "expected": "one exact paid interval; state=active; refund=0",
-      "actual": "{\"invoices\": 1, \"revision\": \"1\", \"anomalies\": [], \"paid_from\": \"2026-10-30T22:46:06+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-30T23:47:05+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-30T23:47:05+00:00\"}",
+      "actual": "{\"invoices\": 1, \"revision\": \"1\", \"anomalies\": [], \"paid_from\": \"2026-10-31T04:12:04+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-31T05:13:03+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-31T05:13:03+00:00\"}",
       "command": "poll real subscription, billing_records and entitlements projections",
-      "at": "2026-10-30T22:47:18Z"
+      "at": "2026-10-31T04:13:16Z"
     },
     {
       "name": "delivery order failed/created/paid",
@@ -1052,7 +1543,7 @@
       "expected": "each event processed against same authoritative paid truth; one exact interval",
       "actual": "delivered=3; processed=3; invoices=1; period_matches=true",
       "command": "fresh checkout/subject per order; authenticated provider hooks for all three event types; read paid interval",
-      "at": "2026-10-30T22:47:18Z"
+      "at": "2026-10-31T04:13:16Z"
     },
     {
       "name": "independent ordering identity",
@@ -1060,7 +1551,7 @@
       "expected": "one new member per permutation",
       "actual": "unique=true",
       "command": "shared IdP login with short fixture key",
-      "at": "2026-10-30T22:47:19Z"
+      "at": "2026-10-31T04:13:17Z"
     },
     {
       "name": "checkout command replay",
@@ -1068,7 +1559,7 @@
       "expected": "201 and same hosted session",
       "actual": "first=201; replay=201; same_session=true",
       "command": "POST /member/checkout-sessions twice with same Idempotency-Key",
-      "at": "2026-10-30T22:47:20Z"
+      "at": "2026-10-31T04:13:18Z"
     },
     {
       "name": "authoritative provider truth",
@@ -1076,7 +1567,7 @@
       "expected": "200; input to provider, not a central invoice fixture",
       "actual": "HTTP 200 ",
       "command": "POST authenticated lab payment /e2e/snapshot for actual checkout",
-      "at": "2026-10-30T22:47:20Z"
+      "at": "2026-10-31T04:13:18Z"
     },
     {
       "name": "provider event invoice.paid",
@@ -1084,7 +1575,7 @@
       "expected": "200 exact signed event bytes",
       "actual": "HTTP=200; signed_event_present=true",
       "command": "POST authenticated lab /e2e/event; keep payload and signature in memory",
-      "at": "2026-10-30T22:47:21Z"
+      "at": "2026-10-31T04:13:19Z"
     },
     {
       "name": "provider event customer.subscription.created",
@@ -1092,7 +1583,7 @@
       "expected": "200 exact signed event bytes",
       "actual": "HTTP=200; signed_event_present=true",
       "command": "POST authenticated lab /e2e/event; keep payload and signature in memory",
-      "at": "2026-10-30T22:47:22Z"
+      "at": "2026-10-31T04:13:20Z"
     },
     {
       "name": "provider event invoice.payment_failed",
@@ -1100,15 +1591,15 @@
       "expected": "200 exact signed event bytes",
       "actual": "HTTP=200; signed_event_present=true",
       "command": "POST authenticated lab /e2e/event; keep payload and signature in memory",
-      "at": "2026-10-30T22:47:22Z"
+      "at": "2026-10-31T04:13:20Z"
     },
     {
       "name": "reconciled active",
       "status": "pass",
       "expected": "one exact paid interval; state=active; refund=0",
-      "actual": "{\"invoices\": 1, \"revision\": \"1\", \"anomalies\": [], \"paid_from\": \"2026-10-30T22:46:20+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-30T23:47:19+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-30T23:47:19+00:00\"}",
+      "actual": "{\"invoices\": 1, \"revision\": \"1\", \"anomalies\": [], \"paid_from\": \"2026-10-31T04:12:18+00:00\", \"entitlement\": \"active\", \"paid_through\": \"2026-10-31T05:13:17+00:00\", \"refund_total\": 0, \"last_reconciled\": true, \"provider_status\": \"active\", \"cancel_at_period_end\": false, \"effective_service_end\": \"2026-10-31T05:13:17+00:00\"}",
       "command": "poll real subscription, billing_records and entitlements projections",
-      "at": "2026-10-30T22:47:31Z"
+      "at": "2026-10-31T04:13:29Z"
     },
     {
       "name": "delivery order failed/paid/created",
@@ -1116,7 +1607,7 @@
       "expected": "each event processed against same authoritative paid truth; one exact interval",
       "actual": "delivered=3; processed=3; invoices=1; period_matches=true",
       "command": "fresh checkout/subject per order; authenticated provider hooks for all three event types; read paid interval",
-      "at": "2026-10-30T22:47:31Z"
+      "at": "2026-10-31T04:13:29Z"
     },
     {
       "name": "member-paid shared issuer login",
@@ -1124,7 +1615,7 @@
       "expected": "shared helper completes native device flow",
       "actual": "HTTP=200; completed=true",
       "command": "touch user-auth; idplogin.Walk(Dex device URL, DeviceDone)",
-      "at": "2026-10-30T22:47:34Z"
+      "at": "2026-10-31T04:13:31Z"
     },
     {
       "name": "member-paid native peer",
@@ -1132,7 +1623,7 @@
       "expected": "new real peer belongs to the same public subject",
       "actual": "new_peer=true; same_subject=true",
       "command": "GET NetBird /api/peers; compare user_id to shared-login credential ID in memory",
-      "at": "2026-10-30T22:47:40Z"
+      "at": "2026-10-31T04:13:37Z"
     },
     {
       "name": "member-paid protected native log inventory",
@@ -1140,31 +1631,191 @@
       "expected": "mode 0600; values never retained",
       "actual": "{\"present\":true,\"bytes\":93,\"mode\":\"0:600\",\"device_flow_keys\":1}",
       "command": "Stack.ScanNativeJoinLog before transient log deletion",
-      "at": "2026-10-30T22:47:40Z"
+      "at": "2026-10-31T04:13:37Z"
     },
     {
       "name": "current-generation lease after desired change",
       "status": "pass",
       "expected": "uninterrupted agent: desired=applied=latest lease generation, unexpired",
-      "actual": "{\"lease\": {\"issued_at\": \"2026-10-30T22:47:26.40983+00:00\", \"expires_at\": \"2026-10-31T22:47:26.40983+00:00\", \"generation\": \"20\", \"member_count\": 8}, \"applied\": \"20\", \"desired\": \"20\", \"observation\": {\"checks\": [{\"name\": \"dns_policy\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T22:47:26.434368017Z\"}, {\"name\": \"internet_only\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T22:47:26.434368017Z\"}, {\"name\": \"lease\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T22:47:26.434368017Z\"}, {\"name\": \"meter_path\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T22:47:26.434368017Z\"}, {\"name\": \"policy_signature\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T22:47:26.434368017Z\"}, {\"name\": \"qos\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T22:47:26.434368017Z\"}, {\"name\": \"release_supported\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T22:47:26.434368017Z\"}, {\"name\": \"source_binding\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T22:47:26.434368017Z\"}, {\"name\": \"storage\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T22:47:26.434368017Z\"}, {\"name\": \"tunnel_probe\", \"detail\": \"Egress probe used no extra target.\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-30T22:47:26.434368017Z\"}], \"forwarding_block_reasons\": [], \"member_forwarding_enabled\": true}}",
+      "actual": "{\"lease\": {\"issued_at\": \"2026-10-31T04:13:44.745083+00:00\", \"expires_at\": \"2026-11-01T04:13:44.745083+00:00\", \"generation\": \"30\", \"member_count\": 8}, \"applied\": \"30\", \"desired\": \"30\", \"observation\": {\"checks\": [{\"name\": \"dns_policy\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T04:13:44.770816771Z\"}, {\"name\": \"internet_only\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T04:13:44.770816771Z\"}, {\"name\": \"lease\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T04:13:44.770816771Z\"}, {\"name\": \"meter_path\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T04:13:44.770816771Z\"}, {\"name\": \"policy_signature\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T04:13:44.770816771Z\"}, {\"name\": \"qos\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T04:13:44.770816771Z\"}, {\"name\": \"release_supported\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T04:13:44.770816771Z\"}, {\"name\": \"source_binding\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T04:13:44.770816771Z\"}, {\"name\": \"storage\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T04:13:44.770816771Z\"}, {\"name\": \"tunnel_probe\", \"detail\": \"Egress probe used no extra target.\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T04:13:44.770816771Z\"}], \"forwarding_block_reasons\": [], \"member_forwarding_enabled\": true}}",
       "command": "poll nodes, latest serving_leases and accepted observation; no process restart or projection writes",
-      "at": "2026-10-30T22:47:45Z"
+      "at": "2026-10-31T04:13:45Z"
     },
     {
       "name": "bounded member transfer observation",
       "status": "pass",
       "expected": "record selected route, node counters, packet hops and origin receipt",
-      "actual": "{\"node_container_role\":\"node\",\"node_incarnation\":\"01a18ef8-e0eb-7940-a5c3-70512ec5c503\",\"origin_requests\":1,\"origin_snat_matches\":true,\"probe_sha256\":\"11625e257fda3efcea0204f19b8ae394eee2bafd38b4440177d425b28163c936\",\"at\":\"2026-10-30T22:47:45Z\",\"first_counted_byte_at\":\"2026-10-30T22:47:51.021529686Z\",\"member_container_role\":\"member-paid\",\"route_selected\":true,\"route_before\":[{\"cache\":[],\"dev\":\"eth0\",\"flags\":[],\"uid\":0}],\"route_after\":[{\"cache\":[],\"dev\":\"fvnb0\",\"flags\":[],\"table\":\"netbird\",\"uid\":0}],\"peer_status\":{\"daemonStatus\":\"Connected\",\"daemonVersion\":\"0.82.0\",\"networks\":null,\"usesKernelInterface\":true},\"node_before\":{\"available\":true,\"generation\":\"21\",\"device_upload_bytes\":\"0\",\"device_download_bytes\":\"0\",\"member_accept_rules\":24,\"diagnostic_bytes\":{\"ctbadns\":\"0\",\"ctbase\":\"0\",\"ctdeny\":\"0\",\"cthost\":\"0\",\"ctin\":\"0\",\"ctinv\":\"0\",\"ctnodn\":\"0\",\"ctunkd\":\"0\",\"ctunku\":\"29\",\"ctv6\":\"0\",\"nd_01a18ef9ae937a1cb93420bed403bf2f\":\"0\",\"nd_01a18efa99e875d79a6c47f05b5c55e9\":\"0\",\"nd_01a18efb1e1f73bfa9079f26e5e79f82\":\"0\",\"nd_01a18efbeac573d7a735189ab153860b\":\"0\",\"nd_01a18eff67627068b123dcf6a76c67d7\":\"0\",\"nu_01a18ef9ae937a1cb93420bed403bf2f\":\"0\",\"nu_01a18efa99e875d79a6c47f05b5c55e9\":\"0\",\"nu_01a18efb1e1f73bfa9079f26e5e79f82\":\"0\",\"nu_01a18efbeac573d7a735189ab153860b\":\"0\",\"nu_01a18eff67627068b123dcf6a76c67d7\":\"0\"}},\"node_after\":{\"available\":true,\"generation\":\"21\",\"device_upload_bytes\":\"2409\",\"device_download_bytes\":\"2463\",\"member_accept_rules\":24,\"diagnostic_bytes\":{\"ctbadns\":\"0\",\"ctbase\":\"0\",\"ctdeny\":\"0\",\"cthost\":\"0\",\"ctin\":\"0\",\"ctinv\":\"0\",\"ctnodn\":\"0\",\"ctunkd\":\"0\",\"ctunku\":\"29\",\"ctv6\":\"0\",\"nd_01a18ef9ae937a1cb93420bed403bf2f\":\"0\",\"nd_01a18efa99e875d79a6c47f05b5c55e9\":\"0\",\"nd_01a18efb1e1f73bfa9079f26e5e79f82\":\"0\",\"nd_01a18efbeac573d7a735189ab153860b\":\"0\",\"nd_01a18eff67627068b123dcf6a76c67d7\":\"0\",\"nu_01a18ef9ae937a1cb93420bed403bf2f\":\"0\",\"nu_01a18efa99e875d79a6c47f05b5c55e9\":\"0\",\"nu_01a18efb1e1f73bfa9079f26e5e79f82\":\"0\",\"nu_01a18efbeac573d7a735189ab153860b\":\"0\",\"nu_01a18eff67627068b123dcf6a76c67d7\":\"0\"}},\"packet_observations\":{\"member-paid\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9014,\"filter\":\"controlled-origin TCP/443, fixed client port 38443\",\"interfaces\":{\"fvnb0\":{\"from_origin\":9,\"to_origin\":11}}},\"node\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9030,\"filter\":\"controlled-origin TCP/443, fixed client port 38443\",\"interfaces\":{\"fvmb0\":{\"from_origin\":8,\"to_origin\":12},\"fvup0\":{\"from_origin\":8,\"to_origin\":12}}},\"origin\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9074,\"filter\":\"controlled-origin TCP/443, fixed client port 38443\",\"interfaces\":{\"eth0\":{\"from_origin\":8,\"to_origin\":12}}}},\"transfer\":{\"body_bytes\":3,\"http_status\":200,\"origin_receipt\":true},\"counted\":true,\"first_unconfirmed_hop\":\"none: origin HTTP response and both device admission counters increased\"}",
+      "actual": "{\"node_container_role\":\"node\",\"node_incarnation\":\"01a19021-ff54-74ac-861f-2b37a4572991\",\"origin_verified\":true,\"origin_requests\":1,\"origin_snat_matches\":true,\"probe_sha256\":\"713a0465224f77cada6d0788de85076bed3df1e8a21e637b20493b2072753654\",\"at\":\"2026-10-31T04:13:45Z\",\"first_counted_byte_at\":\"2026-10-31T04:13:50.033933871Z\",\"member_container_role\":\"member-paid\",\"route_selected\":true,\"route_before\":[{\"cache\":[],\"dev\":\"eth0\",\"flags\":[],\"uid\":0}],\"route_after\":[{\"cache\":[],\"dev\":\"fvnb0\",\"flags\":[],\"table\":\"netbird\",\"uid\":0}],\"peer_status\":{\"daemonStatus\":\"Connected\",\"daemonVersion\":\"0.82.0\",\"networks\":null,\"usesKernelInterface\":true},\"node_before\":{\"available\":true,\"generation\":\"30\",\"device_upload_bytes\":\"0\",\"device_download_bytes\":\"0\",\"member_accept_rules\":24,\"diagnostic_bytes\":{\"ctbadns\":\"0\",\"ctbase\":\"60\",\"ctdeny\":\"0\",\"cthost\":\"0\",\"ctin\":\"0\",\"ctinv\":\"0\",\"ctnodn\":\"0\",\"ctunkd\":\"0\",\"ctunku\":\"29\",\"ctv6\":\"0\",\"nd_01a19022b1167a3dbd79ad7909f80ee5\":\"0\",\"nd_01a190239b377cd99dacd55dfe4511a1\":\"0\",\"nd_01a1902559c27c3f8915335365b2cbe5\":\"0\",\"nd_01a19026248b7053b6d1eb26f641028b\":\"0\",\"nd_01a19029c8c878d0b72567ba532e4ab1\":\"0\",\"nu_01a19022b1167a3dbd79ad7909f80ee5\":\"0\",\"nu_01a190239b377cd99dacd55dfe4511a1\":\"0\",\"nu_01a1902559c27c3f8915335365b2cbe5\":\"0\",\"nu_01a19026248b7053b6d1eb26f641028b\":\"0\",\"nu_01a19029c8c878d0b72567ba532e4ab1\":\"0\"}},\"node_after\":{\"available\":true,\"generation\":\"30\",\"device_upload_bytes\":\"2317\",\"device_download_bytes\":\"2411\",\"member_accept_rules\":24,\"diagnostic_bytes\":{\"ctbadns\":\"0\",\"ctbase\":\"60\",\"ctdeny\":\"0\",\"cthost\":\"0\",\"ctin\":\"0\",\"ctinv\":\"0\",\"ctnodn\":\"0\",\"ctunkd\":\"0\",\"ctunku\":\"29\",\"ctv6\":\"0\",\"nd_01a19022b1167a3dbd79ad7909f80ee5\":\"0\",\"nd_01a190239b377cd99dacd55dfe4511a1\":\"0\",\"nd_01a1902559c27c3f8915335365b2cbe5\":\"0\",\"nd_01a19026248b7053b6d1eb26f641028b\":\"0\",\"nd_01a19029c8c878d0b72567ba532e4ab1\":\"0\",\"nu_01a19022b1167a3dbd79ad7909f80ee5\":\"0\",\"nu_01a190239b377cd99dacd55dfe4511a1\":\"0\",\"nu_01a1902559c27c3f8915335365b2cbe5\":\"0\",\"nu_01a19026248b7053b6d1eb26f641028b\":\"0\",\"nu_01a19029c8c878d0b72567ba532e4ab1\":\"0\"}},\"packet_observations\":{\"member-paid\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9062,\"filter\":\"controlled-origin TCP/443, fixed client port 38443\",\"interfaces\":{\"fvnb0\":{\"from_origin\":8,\"to_origin\":10}}},\"node\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9015,\"filter\":\"controlled-origin TCP/443, fixed client port 38443\",\"interfaces\":{\"fvmb0\":{\"from_origin\":7,\"to_origin\":10},\"fvup0\":{\"from_origin\":7,\"to_origin\":10}}},\"origin\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9076,\"filter\":\"controlled-origin TCP/443, fixed client port 38443\",\"interfaces\":{\"eth0\":{\"from_origin\":7,\"to_origin\":10}}}},\"transfer\":{\"body_bytes\":3,\"http_status\":200,\"origin_receipt\":true},\"counted\":true,\"first_unconfirmed_hop\":\"none: origin HTTP response and both device admission counters increased\"}",
       "command": "netbird routes select; ip -j route get controlled origin; concurrent 9-second AF_PACKET aggregate observers; bounded CA-verified HTTPS GET; nft counters before/after",
-      "at": "2026-10-30T22:47:58Z"
+      "at": "2026-10-31T04:13:58Z"
+    },
+    {
+      "name": "current-generation lease after desired change",
+      "status": "pass",
+      "expected": "uninterrupted agent: desired=applied=latest lease generation, unexpired",
+      "actual": "{\"lease\": {\"issued_at\": \"2026-10-31T04:13:44.745083+00:00\", \"expires_at\": \"2026-11-01T04:13:44.745083+00:00\", \"generation\": \"30\", \"member_count\": 8}, \"applied\": \"30\", \"desired\": \"30\", \"observation\": {\"checks\": [{\"name\": \"dns_policy\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T04:13:44.770816771Z\"}, {\"name\": \"internet_only\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T04:13:44.770816771Z\"}, {\"name\": \"lease\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T04:13:44.770816771Z\"}, {\"name\": \"meter_path\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T04:13:44.770816771Z\"}, {\"name\": \"policy_signature\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T04:13:44.770816771Z\"}, {\"name\": \"qos\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T04:13:44.770816771Z\"}, {\"name\": \"release_supported\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T04:13:44.770816771Z\"}, {\"name\": \"source_binding\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T04:13:44.770816771Z\"}, {\"name\": \"storage\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T04:13:44.770816771Z\"}, {\"name\": \"tunnel_probe\", \"detail\": \"Egress probe used no extra target.\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T04:13:44.770816771Z\"}], \"forwarding_block_reasons\": [], \"member_forwarding_enabled\": true}}",
+      "command": "poll nodes, latest serving_leases and accepted observation; no process restart or projection writes",
+      "at": "2026-10-31T04:13:58Z"
+    },
+    {
+      "name": "bounded member transfer observation",
+      "status": "pass",
+      "expected": "record selected route, node counters, packet hops and origin receipt",
+      "actual": "{\"node_container_role\":\"node\",\"node_incarnation\":\"01a19021-ff54-74ac-861f-2b37a4572991\",\"origin_verified\":true,\"origin_requests\":1,\"origin_snat_matches\":true,\"probe_sha256\":\"713a0465224f77cada6d0788de85076bed3df1e8a21e637b20493b2072753654\",\"at\":\"2026-10-31T04:13:58Z\",\"first_counted_byte_at\":\"2026-10-31T04:14:03.5049555Z\",\"member_container_role\":\"member-paid\",\"route_selected\":true,\"route_before\":[{\"cache\":[],\"dev\":\"fvnb0\",\"flags\":[],\"table\":\"netbird\",\"uid\":0}],\"route_after\":[{\"cache\":[],\"dev\":\"fvnb0\",\"flags\":[],\"table\":\"netbird\",\"uid\":0}],\"peer_status\":{\"daemonStatus\":\"Connected\",\"daemonVersion\":\"0.82.0\",\"networks\":null,\"usesKernelInterface\":true},\"node_before\":{\"available\":true,\"generation\":\"31\",\"device_upload_bytes\":\"2317\",\"device_download_bytes\":\"2411\",\"member_accept_rules\":24,\"diagnostic_bytes\":{\"ctbadns\":\"0\",\"ctbase\":\"60\",\"ctdeny\":\"0\",\"cthost\":\"0\",\"ctin\":\"0\",\"ctinv\":\"0\",\"ctnodn\":\"0\",\"ctunkd\":\"0\",\"ctunku\":\"29\",\"ctv6\":\"0\",\"nd_01a19022b1167a3dbd79ad7909f80ee5\":\"0\",\"nd_01a190239b377cd99dacd55dfe4511a1\":\"0\",\"nd_01a1902559c27c3f8915335365b2cbe5\":\"0\",\"nd_01a19026248b7053b6d1eb26f641028b\":\"0\",\"nd_01a19029c8c878d0b72567ba532e4ab1\":\"0\",\"nu_01a19022b1167a3dbd79ad7909f80ee5\":\"0\",\"nu_01a190239b377cd99dacd55dfe4511a1\":\"0\",\"nu_01a1902559c27c3f8915335365b2cbe5\":\"0\",\"nu_01a19026248b7053b6d1eb26f641028b\":\"0\",\"nu_01a19029c8c878d0b72567ba532e4ab1\":\"0\"}},\"node_after\":{\"available\":true,\"generation\":\"31\",\"device_upload_bytes\":\"4622\",\"device_download_bytes\":\"4823\",\"member_accept_rules\":24,\"diagnostic_bytes\":{\"ctbadns\":\"0\",\"ctbase\":\"60\",\"ctdeny\":\"0\",\"cthost\":\"0\",\"ctin\":\"0\",\"ctinv\":\"0\",\"ctnodn\":\"0\",\"ctunkd\":\"0\",\"ctunku\":\"29\",\"ctv6\":\"0\",\"nd_01a19022b1167a3dbd79ad7909f80ee5\":\"0\",\"nd_01a190239b377cd99dacd55dfe4511a1\":\"0\",\"nd_01a1902559c27c3f8915335365b2cbe5\":\"0\",\"nd_01a19026248b7053b6d1eb26f641028b\":\"0\",\"nd_01a19029c8c878d0b72567ba532e4ab1\":\"0\",\"nu_01a19022b1167a3dbd79ad7909f80ee5\":\"0\",\"nu_01a190239b377cd99dacd55dfe4511a1\":\"0\",\"nu_01a1902559c27c3f8915335365b2cbe5\":\"0\",\"nu_01a19026248b7053b6d1eb26f641028b\":\"0\",\"nu_01a19029c8c878d0b72567ba532e4ab1\":\"0\"}},\"packet_observations\":{\"member-paid\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9042,\"filter\":\"controlled-origin TCP/443, fixed client port 38443\",\"interfaces\":{\"fvnb0\":{\"from_origin\":7,\"to_origin\":10}}},\"node\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9029,\"filter\":\"controlled-origin TCP/443, fixed client port 38443\",\"interfaces\":{\"fvmb0\":{\"from_origin\":7,\"to_origin\":10},\"fvup0\":{\"from_origin\":7,\"to_origin\":10}}},\"origin\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9066,\"filter\":\"controlled-origin TCP/443, fixed client port 38443\",\"interfaces\":{\"eth0\":{\"from_origin\":7,\"to_origin\":10}}}},\"transfer\":{\"body_bytes\":3,\"http_status\":200,\"origin_receipt\":true},\"counted\":true,\"first_unconfirmed_hop\":\"none: origin HTTP response and both device admission counters increased\"}",
+      "command": "netbird routes select; ip -j route get controlled origin; concurrent 9-second AF_PACKET aggregate observers; bounded CA-verified HTTPS GET; nft counters before/after",
+      "at": "2026-10-31T04:14:11Z"
+    },
+    {
+      "name": "D-077 admitted positive control",
+      "status": "pass",
+      "expected": "counted forwarding before fence",
+      "actual": "device_id=01a19029-c8c8-78d0-b725-67ba532e4ab1; counted=true",
+      "command": "same native device and controlled HTTPS origin",
+      "at": "2026-10-31T04:14:11Z"
+    },
+    {
+      "name": "D-077 restore fence input",
+      "status": "pass",
+      "expected": "0 -\u003e 1 fence; no device/binding/observation edits",
+      "actual": "device_id=01a19029-c8c8-78d0-b725-67ba532e4ab1; before=0; after=1; inserted=true",
+      "command": "lab Postgres INSERT device_authorization_fences per migration 00188 / restore-drill §6.3",
+      "at": "2026-10-31T04:14:12Z"
+    },
+    {
+      "name": "D-077 worker withdrawal",
+      "status": "pass",
+      "expected": "fenced device observed withdrawn",
+      "actual": "device_id=01a19029-c8c8-78d0-b725-67ba532e4ab1; withdrawn=true; fence_count=1",
+      "command": "wait running worker sync; read observation only",
+      "at": "2026-10-31T04:14:28Z"
+    },
+    {
+      "name": "D-077 member list",
+      "status": "pass",
+      "expected": "HTTP 200 ",
+      "actual": "{\"body\":{\"authorized_count\":1,\"device_limit\":3,\"items\":[{\"authorization_unconfirmed\":true,\"authorized_at\":\"2026-10-31T04:13:39.912577Z\",\"created_at\":\"2026-10-31T04:13:39.91115Z\",\"device_id\":\"01a19029-c8c8-78d0-b725-67ba532e4ab1\",\"last_seen_at\":\"2026-10-31T04:13:39.912577Z\",\"name\":\"fvpn-w4-members-member-paid\",\"platform\":\"unknown\",\"revoked_at\":null,\"status\":\"pending\"}],\"next_cursor\":null},\"error_code\":\"\",\"fence_after\":1,\"fence_before\":1,\"method\":\"GET\",\"operation_id\":\"00000000-0000-0000-0000-000000000000\",\"path\":\"/api/v1/member/devices\",\"status\":200}",
+      "command": "GET /api/v1/member/devices; cookies/CSRF/idempotency key retained only in memory",
+      "at": "2026-10-31T04:14:29Z"
+    },
+    {
+      "name": "D-077 member flags always emitted",
+      "status": "pass",
+      "expected": "target status=pending, authorization_unconfirmed=true; siblings explicitly false",
+      "actual": "{\"authorized_count\":1,\"device_limit\":3,\"items\":[{\"authorization_unconfirmed\":true,\"authorized_at\":\"2026-10-31T04:13:39.912577Z\",\"created_at\":\"2026-10-31T04:13:39.91115Z\",\"device_id\":\"01a19029-c8c8-78d0-b725-67ba532e4ab1\",\"last_seen_at\":\"2026-10-31T04:13:39.912577Z\",\"name\":\"fvpn-w4-members-member-paid\",\"platform\":\"unknown\",\"revoked_at\":null,\"status\":\"pending\"}],\"next_cursor\":null}\n",
+      "command": "GET /member/devices; test field presence as well as value",
+      "at": "2026-10-31T04:14:29Z"
+    },
+    {
+      "name": "bounded member transfer observation",
+      "status": "pass",
+      "expected": "record selected route, node counters, packet hops and origin receipt",
+      "actual": "{\"node_container_role\":\"node\",\"node_incarnation\":\"01a19021-ff54-74ac-861f-2b37a4572991\",\"origin_verified\":true,\"origin_requests\":0,\"origin_snat_matches\":false,\"probe_sha256\":\"713a0465224f77cada6d0788de85076bed3df1e8a21e637b20493b2072753654\",\"at\":\"2026-10-31T04:14:29Z\",\"member_container_role\":\"member-paid\",\"route_selected\":false,\"route_before\":[{\"cache\":[],\"dev\":\"eth0\",\"flags\":[],\"uid\":0}],\"route_after\":[{\"cache\":[],\"dev\":\"eth0\",\"flags\":[],\"uid\":0}],\"peer_status\":{\"daemonStatus\":\"Connected\",\"daemonVersion\":\"0.82.0\",\"networks\":null,\"usesKernelInterface\":true},\"node_before\":{\"available\":true,\"generation\":\"31\",\"device_upload_bytes\":\"4622\",\"device_download_bytes\":\"4823\",\"member_accept_rules\":24,\"diagnostic_bytes\":{\"ctbadns\":\"0\",\"ctbase\":\"60\",\"ctdeny\":\"0\",\"cthost\":\"0\",\"ctin\":\"0\",\"ctinv\":\"0\",\"ctnodn\":\"0\",\"ctunkd\":\"0\",\"ctunku\":\"29\",\"ctv6\":\"0\",\"nd_01a19022b1167a3dbd79ad7909f80ee5\":\"0\",\"nd_01a190239b377cd99dacd55dfe4511a1\":\"0\",\"nd_01a1902559c27c3f8915335365b2cbe5\":\"0\",\"nd_01a19026248b7053b6d1eb26f641028b\":\"0\",\"nd_01a19029c8c878d0b72567ba532e4ab1\":\"0\",\"nu_01a19022b1167a3dbd79ad7909f80ee5\":\"0\",\"nu_01a190239b377cd99dacd55dfe4511a1\":\"0\",\"nu_01a1902559c27c3f8915335365b2cbe5\":\"0\",\"nu_01a19026248b7053b6d1eb26f641028b\":\"0\",\"nu_01a19029c8c878d0b72567ba532e4ab1\":\"0\"}},\"node_after\":{\"available\":true,\"generation\":\"31\",\"device_upload_bytes\":\"4622\",\"device_download_bytes\":\"4823\",\"member_accept_rules\":24,\"diagnostic_bytes\":{\"ctbadns\":\"0\",\"ctbase\":\"60\",\"ctdeny\":\"0\",\"cthost\":\"0\",\"ctin\":\"0\",\"ctinv\":\"0\",\"ctnodn\":\"0\",\"ctunkd\":\"0\",\"ctunku\":\"29\",\"ctv6\":\"0\",\"nd_01a19022b1167a3dbd79ad7909f80ee5\":\"0\",\"nd_01a190239b377cd99dacd55dfe4511a1\":\"0\",\"nd_01a1902559c27c3f8915335365b2cbe5\":\"0\",\"nd_01a19026248b7053b6d1eb26f641028b\":\"0\",\"nd_01a19029c8c878d0b72567ba532e4ab1\":\"0\",\"nu_01a19022b1167a3dbd79ad7909f80ee5\":\"0\",\"nu_01a190239b377cd99dacd55dfe4511a1\":\"0\",\"nu_01a1902559c27c3f8915335365b2cbe5\":\"0\",\"nu_01a19026248b7053b6d1eb26f641028b\":\"0\",\"nu_01a19029c8c878d0b72567ba532e4ab1\":\"0\"}},\"packet_observations\":{\"member-paid\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9074,\"filter\":\"controlled-origin TCP/443, fixed client port 38443\",\"interfaces\":{\"eth0\":{\"to_origin\":5}}},\"node\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9090,\"filter\":\"controlled-origin TCP/443, fixed client port 38443\",\"interfaces\":{}},\"origin\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9038,\"filter\":\"controlled-origin TCP/443, fixed client port 38443\",\"interfaces\":{}}},\"transfer\":{\"body_bytes\":0,\"http_status\":0,\"origin_receipt\":false},\"counted\":false,\"first_unconfirmed_hop\":\"member exit selection: controlled-origin route remains on underlay; no selected exit\"}",
+      "command": "netbird routes select; ip -j route get controlled origin; concurrent 9-second AF_PACKET aggregate observers; bounded CA-verified HTTPS GET; nft counters before/after",
+      "at": "2026-10-31T04:14:42Z"
+    },
+    {
+      "name": "unauthorized real transfer",
+      "status": "pass",
+      "expected": "no origin response",
+      "actual": "origin_receipt=false",
+      "command": "bounded HTTPS from native peer expected to have no authorized exit",
+      "at": "2026-10-31T04:14:42Z"
+    },
+    {
+      "name": "D-077 fenced forwarding",
+      "status": "pass",
+      "expected": "zero origin receipts and no counted HTTPS; wire-members owns any continued forwarding",
+      "actual": "{\"node_container_role\":\"node\",\"node_incarnation\":\"01a19021-ff54-74ac-861f-2b37a4572991\",\"origin_verified\":true,\"origin_requests\":0,\"origin_snat_matches\":false,\"probe_sha256\":\"713a0465224f77cada6d0788de85076bed3df1e8a21e637b20493b2072753654\",\"at\":\"2026-10-31T04:14:29Z\",\"member_container_role\":\"member-paid\",\"route_selected\":false,\"route_before\":[{\"cache\":[],\"dev\":\"eth0\",\"flags\":[],\"uid\":0}],\"route_after\":[{\"cache\":[],\"dev\":\"eth0\",\"flags\":[],\"uid\":0}],\"peer_status\":{\"daemonStatus\":\"Connected\",\"daemonVersion\":\"0.82.0\",\"networks\":null,\"usesKernelInterface\":true},\"node_before\":{\"available\":true,\"generation\":\"31\",\"device_upload_bytes\":\"4622\",\"device_download_bytes\":\"4823\",\"member_accept_rules\":24,\"diagnostic_bytes\":{\"ctbadns\":\"0\",\"ctbase\":\"60\",\"ctdeny\":\"0\",\"cthost\":\"0\",\"ctin\":\"0\",\"ctinv\":\"0\",\"ctnodn\":\"0\",\"ctunkd\":\"0\",\"ctunku\":\"29\",\"ctv6\":\"0\",\"nd_01a19022b1167a3dbd79ad7909f80ee5\":\"0\",\"nd_01a190239b377cd99dacd55dfe4511a1\":\"0\",\"nd_01a1902559c27c3f8915335365b2cbe5\":\"0\",\"nd_01a19026248b7053b6d1eb26f641028b\":\"0\",\"nd_01a19029c8c878d0b72567ba532e4ab1\":\"0\",\"nu_01a19022b1167a3dbd79ad7909f80ee5\":\"0\",\"nu_01a190239b377cd99dacd55dfe4511a1\":\"0\",\"nu_01a1902559c27c3f8915335365b2cbe5\":\"0\",\"nu_01a19026248b7053b6d1eb26f641028b\":\"0\",\"nu_01a19029c8c878d0b72567ba532e4ab1\":\"0\"}},\"node_after\":{\"available\":true,\"generation\":\"31\",\"device_upload_bytes\":\"4622\",\"device_download_bytes\":\"4823\",\"member_accept_rules\":24,\"diagnostic_bytes\":{\"ctbadns\":\"0\",\"ctbase\":\"60\",\"ctdeny\":\"0\",\"cthost\":\"0\",\"ctin\":\"0\",\"ctinv\":\"0\",\"ctnodn\":\"0\",\"ctunkd\":\"0\",\"ctunku\":\"29\",\"ctv6\":\"0\",\"nd_01a19022b1167a3dbd79ad7909f80ee5\":\"0\",\"nd_01a190239b377cd99dacd55dfe4511a1\":\"0\",\"nd_01a1902559c27c3f8915335365b2cbe5\":\"0\",\"nd_01a19026248b7053b6d1eb26f641028b\":\"0\",\"nd_01a19029c8c878d0b72567ba532e4ab1\":\"0\",\"nu_01a19022b1167a3dbd79ad7909f80ee5\":\"0\",\"nu_01a190239b377cd99dacd55dfe4511a1\":\"0\",\"nu_01a1902559c27c3f8915335365b2cbe5\":\"0\",\"nu_01a19026248b7053b6d1eb26f641028b\":\"0\",\"nu_01a19029c8c878d0b72567ba532e4ab1\":\"0\"}},\"packet_observations\":{\"member-paid\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9074,\"filter\":\"controlled-origin TCP/443, fixed client port 38443\",\"interfaces\":{\"eth0\":{\"to_origin\":5}}},\"node\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9090,\"filter\":\"controlled-origin TCP/443, fixed client port 38443\",\"interfaces\":{}},\"origin\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9038,\"filter\":\"controlled-origin TCP/443, fixed client port 38443\",\"interfaces\":{}}},\"transfer\":{\"body_bytes\":0,\"http_status\":0,\"origin_receipt\":false},\"counted\":false,\"first_unconfirmed_hop\":\"member exit selection: controlled-origin route remains on underlay; no selected exit\"}",
+      "command": "same native device HTTPS after worker withdrawal; inspect fvmb0 and device counters",
+      "at": "2026-10-31T04:14:42Z"
+    },
+    {
+      "name": "D-077 explicit admin authorize",
+      "status": "pass",
+      "expected": "HTTP 202 ",
+      "actual": "{\"body\":{\"completed_at\":\"2026-10-31T04:13:44.818989Z\",\"created_at\":\"2026-10-31T04:13:39.91115Z\",\"desired_generation\":\"1\",\"error\":null,\"kind\":\"member.device_authorize\",\"observed_generation\":null,\"operation_id\":\"01a19029-c8c9-72ad-a9fa-0db4557619aa\",\"request_id\":\"01a19029-c8c2-7e79-8e8d-f564cc6137d5\",\"resource\":{\"id\":\"01a19029-c8c8-78d0-b725-67ba532e4ab1\",\"type\":\"member_device\"},\"resource_version\":null,\"status\":\"succeeded\",\"steps\":[{\"error_code\":null,\"message\":null,\"name\":\"netbird\",\"observed_at\":\"2026-10-31T04:13:39.951003Z\",\"required\":true,\"status\":\"succeeded\"},{\"error_code\":null,\"message\":null,\"name\":\"nodes\",\"observed_at\":\"2026-10-31T04:13:44.815399Z\",\"required\":true,\"status\":\"succeeded\"}],\"updated_at\":\"2026-10-31T04:13:44.819101Z\"},\"error_code\":\"\",\"fence_after\":0,\"fence_before\":1,\"method\":\"POST\",\"operation_id\":\"01a19029-c8c9-72ad-a9fa-0db4557619aa\",\"path\":\"/api/v1/admin/members/01a19021-c91c-70c4-a225-9f3bcc3676e9/devices/01a19029-c8c8-78d0-b725-67ba532e4ab1/authorize\",\"status\":202}",
+      "command": "POST /api/v1/admin/members/01a19021-c91c-70c4-a225-9f3bcc3676e9/devices/01a19029-c8c8-78d0-b725-67ba532e4ab1/authorize; cookies/CSRF/idempotency key retained only in memory",
+      "at": "2026-10-31T04:14:42Z"
+    },
+    {
+      "name": "D-077 grant transaction and operation",
+      "status": "pass",
+      "expected": "member.device_authorize; fence gone; authorized restore reuses existing operation and pre-bump generation",
+      "actual": "operation_id=01a19029-c8c9-72ad-a9fa-0db4557619aa; previous_id=01a19029-c8c9-72ad-a9fa-0db4557619aa; desired_generation=1; previous_generation=1; rows_before=1; rows_after=1; fence_after=0",
+      "command": "POST authorize; read fence count and operation identity (never wait for a new operation)",
+      "at": "2026-10-31T04:14:42Z"
+    },
+    {
+      "name": "D-077 same-key replay",
+      "status": "pass",
+      "expected": "HTTP 202 ",
+      "actual": "{\"body\":{\"completed_at\":\"2026-10-31T04:13:44.818989Z\",\"created_at\":\"2026-10-31T04:13:39.91115Z\",\"desired_generation\":\"1\",\"error\":null,\"kind\":\"member.device_authorize\",\"observed_generation\":null,\"operation_id\":\"01a19029-c8c9-72ad-a9fa-0db4557619aa\",\"request_id\":\"01a19029-c8c2-7e79-8e8d-f564cc6137d5\",\"resource\":{\"id\":\"01a19029-c8c8-78d0-b725-67ba532e4ab1\",\"type\":\"member_device\"},\"resource_version\":null,\"status\":\"succeeded\",\"steps\":[{\"error_code\":null,\"message\":null,\"name\":\"netbird\",\"observed_at\":\"2026-10-31T04:13:39.951003Z\",\"required\":true,\"status\":\"succeeded\"},{\"error_code\":null,\"message\":null,\"name\":\"nodes\",\"observed_at\":\"2026-10-31T04:13:44.815399Z\",\"required\":true,\"status\":\"succeeded\"}],\"updated_at\":\"2026-10-31T04:13:44.819101Z\"},\"error_code\":\"\",\"fence_after\":0,\"fence_before\":0,\"method\":\"POST\",\"operation_id\":\"01a19029-c8c9-72ad-a9fa-0db4557619aa\",\"path\":\"/api/v1/admin/members/01a19021-c91c-70c4-a225-9f3bcc3676e9/devices/01a19029-c8c8-78d0-b725-67ba532e4ab1/authorize\",\"status\":202}",
+      "command": "POST /api/v1/admin/members/01a19021-c91c-70c4-a225-9f3bcc3676e9/devices/01a19029-c8c8-78d0-b725-67ba532e4ab1/authorize; cookies/CSRF/idempotency key retained only in memory",
+      "at": "2026-10-31T04:14:43Z"
+    },
+    {
+      "name": "D-077 replay has no second grant",
+      "status": "pass",
+      "expected": "same operation and device version",
+      "actual": "operation_id=01a19029-c8c9-72ad-a9fa-0db4557619aa; version_before=2; version_after=2",
+      "command": "replay identical Idempotency-Key; read device version",
+      "at": "2026-10-31T04:14:43Z"
+    },
+    {
+      "name": "D-077 worker re-grant confirmed from member list",
+      "status": "pass",
+      "expected": "authorized and explicit false after worker sync",
+      "actual": "{\"authorized_count\":1,\"device_limit\":3,\"items\":[{\"authorization_unconfirmed\":false,\"authorized_at\":\"2026-10-31T04:13:39.912577Z\",\"created_at\":\"2026-10-31T04:13:39.91115Z\",\"device_id\":\"01a19029-c8c8-78d0-b725-67ba532e4ab1\",\"last_seen_at\":\"2026-10-31T04:13:39.912577Z\",\"name\":\"fvpn-w4-members-member-paid\",\"platform\":\"unknown\",\"revoked_at\":null,\"status\":\"authorized\"}],\"next_cursor\":null}\n",
+      "command": "poll GET /member/devices; do not poll old operation step transitions",
+      "at": "2026-10-31T04:14:43Z"
+    },
+    {
+      "name": "D-077 member list",
+      "status": "pass",
+      "expected": "HTTP 200 ",
+      "actual": "{\"body\":{\"authorized_count\":1,\"device_limit\":3,\"items\":[{\"authorization_unconfirmed\":false,\"authorized_at\":\"2026-10-31T04:13:39.912577Z\",\"created_at\":\"2026-10-31T04:13:39.91115Z\",\"device_id\":\"01a19029-c8c8-78d0-b725-67ba532e4ab1\",\"last_seen_at\":\"2026-10-31T04:13:39.912577Z\",\"name\":\"fvpn-w4-members-member-paid\",\"platform\":\"unknown\",\"revoked_at\":null,\"status\":\"authorized\"}],\"next_cursor\":null},\"error_code\":\"\",\"fence_after\":0,\"fence_before\":0,\"method\":\"GET\",\"operation_id\":\"00000000-0000-0000-0000-000000000000\",\"path\":\"/api/v1/member/devices\",\"status\":200}",
+      "command": "GET /api/v1/member/devices; cookies/CSRF/idempotency key retained only in memory",
+      "at": "2026-10-31T04:14:44Z"
+    },
+    {
+      "name": "D-077 member flags always emitted",
+      "status": "pass",
+      "expected": "target status=authorized, authorization_unconfirmed=false; siblings explicitly false",
+      "actual": "{\"authorized_count\":1,\"device_limit\":3,\"items\":[{\"authorization_unconfirmed\":false,\"authorized_at\":\"2026-10-31T04:13:39.912577Z\",\"created_at\":\"2026-10-31T04:13:39.91115Z\",\"device_id\":\"01a19029-c8c8-78d0-b725-67ba532e4ab1\",\"last_seen_at\":\"2026-10-31T04:13:39.912577Z\",\"name\":\"fvpn-w4-members-member-paid\",\"platform\":\"unknown\",\"revoked_at\":null,\"status\":\"authorized\"}],\"next_cursor\":null}\n",
+      "command": "GET /member/devices; test field presence as well as value",
+      "at": "2026-10-31T04:14:44Z"
+    },
+    {
+      "name": "current-generation lease after desired change",
+      "status": "pass",
+      "expected": "uninterrupted agent: desired=applied=latest lease generation, unexpired",
+      "actual": "{\"lease\": {\"issued_at\": \"2026-10-31T04:14:45.606085+00:00\", \"expires_at\": \"2026-11-01T04:14:45.606085+00:00\", \"generation\": \"32\", \"member_count\": 8}, \"applied\": \"32\", \"desired\": \"32\", \"observation\": {\"checks\": [{\"name\": \"dns_policy\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T04:14:45.631532355Z\"}, {\"name\": \"internet_only\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T04:14:45.631532355Z\"}, {\"name\": \"lease\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T04:14:45.631532355Z\"}, {\"name\": \"meter_path\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T04:14:45.631532355Z\"}, {\"name\": \"policy_signature\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T04:14:45.631532355Z\"}, {\"name\": \"qos\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T04:14:45.631532355Z\"}, {\"name\": \"release_supported\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T04:14:45.631532355Z\"}, {\"name\": \"source_binding\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T04:14:45.631532355Z\"}, {\"name\": \"storage\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T04:14:45.631532355Z\"}, {\"name\": \"tunnel_probe\", \"detail\": \"Egress probe used no extra target.\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T04:14:45.631532355Z\"}], \"forwarding_block_reasons\": [], \"member_forwarding_enabled\": true}}",
+      "command": "poll nodes, latest serving_leases and accepted observation; no process restart or projection writes",
+      "at": "2026-10-31T04:14:46Z"
+    },
+    {
+      "name": "bounded member transfer observation",
+      "status": "pass",
+      "expected": "record selected route, node counters, packet hops and origin receipt",
+      "actual": "{\"node_container_role\":\"node\",\"node_incarnation\":\"01a19021-ff54-74ac-861f-2b37a4572991\",\"origin_verified\":true,\"origin_requests\":1,\"origin_snat_matches\":true,\"probe_sha256\":\"713a0465224f77cada6d0788de85076bed3df1e8a21e637b20493b2072753654\",\"at\":\"2026-10-31T04:14:46Z\",\"first_counted_byte_at\":\"2026-10-31T04:14:51.506181695Z\",\"member_container_role\":\"member-paid\",\"route_selected\":true,\"route_before\":[{\"cache\":[],\"dev\":\"fvnb0\",\"flags\":[],\"table\":\"netbird\",\"uid\":0}],\"route_after\":[{\"cache\":[],\"dev\":\"fvnb0\",\"flags\":[],\"table\":\"netbird\",\"uid\":0}],\"peer_status\":{\"daemonStatus\":\"Connected\",\"daemonVersion\":\"0.82.0\",\"networks\":null,\"usesKernelInterface\":true},\"node_before\":{\"available\":true,\"generation\":\"32\",\"device_upload_bytes\":\"4622\",\"device_download_bytes\":\"4823\",\"member_accept_rules\":24,\"diagnostic_bytes\":{\"ctbadns\":\"0\",\"ctbase\":\"60\",\"ctdeny\":\"0\",\"cthost\":\"0\",\"ctin\":\"0\",\"ctinv\":\"0\",\"ctnodn\":\"0\",\"ctunkd\":\"0\",\"ctunku\":\"29\",\"ctv6\":\"0\",\"nd_01a19022b1167a3dbd79ad7909f80ee5\":\"0\",\"nd_01a190239b377cd99dacd55dfe4511a1\":\"0\",\"nd_01a1902559c27c3f8915335365b2cbe5\":\"0\",\"nd_01a19026248b7053b6d1eb26f641028b\":\"0\",\"nd_01a19029c8c878d0b72567ba532e4ab1\":\"0\",\"nu_01a19022b1167a3dbd79ad7909f80ee5\":\"0\",\"nu_01a190239b377cd99dacd55dfe4511a1\":\"0\",\"nu_01a1902559c27c3f8915335365b2cbe5\":\"0\",\"nu_01a19026248b7053b6d1eb26f641028b\":\"0\",\"nu_01a19029c8c878d0b72567ba532e4ab1\":\"0\"}},\"node_after\":{\"available\":true,\"generation\":\"32\",\"device_upload_bytes\":\"6927\",\"device_download_bytes\":\"7236\",\"member_accept_rules\":24,\"diagnostic_bytes\":{\"ctbadns\":\"0\",\"ctbase\":\"60\",\"ctdeny\":\"0\",\"cthost\":\"0\",\"ctin\":\"0\",\"ctinv\":\"0\",\"ctnodn\":\"0\",\"ctunkd\":\"0\",\"ctunku\":\"29\",\"ctv6\":\"0\",\"nd_01a19022b1167a3dbd79ad7909f80ee5\":\"0\",\"nd_01a190239b377cd99dacd55dfe4511a1\":\"0\",\"nd_01a1902559c27c3f8915335365b2cbe5\":\"0\",\"nd_01a19026248b7053b6d1eb26f641028b\":\"0\",\"nd_01a19029c8c878d0b72567ba532e4ab1\":\"0\",\"nu_01a19022b1167a3dbd79ad7909f80ee5\":\"0\",\"nu_01a190239b377cd99dacd55dfe4511a1\":\"0\",\"nu_01a1902559c27c3f8915335365b2cbe5\":\"0\",\"nu_01a19026248b7053b6d1eb26f641028b\":\"0\",\"nu_01a19029c8c878d0b72567ba532e4ab1\":\"0\"}},\"packet_observations\":{\"member-paid\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9010,\"filter\":\"controlled-origin TCP/443, fixed client port 38443\",\"interfaces\":{\"fvnb0\":{\"from_origin\":7,\"to_origin\":10}}},\"node\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9054,\"filter\":\"controlled-origin TCP/443, fixed client port 38443\",\"interfaces\":{\"fvmb0\":{\"from_origin\":7,\"to_origin\":10},\"fvup0\":{\"from_origin\":7,\"to_origin\":10}}},\"origin\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9082,\"filter\":\"controlled-origin TCP/443, fixed client port 38443\",\"interfaces\":{\"eth0\":{\"from_origin\":7,\"to_origin\":10}}}},\"transfer\":{\"body_bytes\":3,\"http_status\":200,\"origin_receipt\":true},\"counted\":true,\"first_unconfirmed_hop\":\"none: origin HTTP response and both device admission counters increased\"}",
+      "command": "netbird routes select; ip -j route get controlled origin; concurrent 9-second AF_PACKET aggregate observers; bounded CA-verified HTTPS GET; nft counters before/after",
+      "at": "2026-10-31T04:14:59Z"
+    },
+    {
+      "name": "D-077 re-grant counted forwarding",
+      "status": "pass",
+      "expected": "origin HTTP receipt and both device counters increase",
+      "actual": "device_id=01a19029-c8c8-78d0-b725-67ba532e4ab1; counted=true",
+      "command": "CA-verified HTTPS through fvmb0 with named device counter attribution",
+      "at": "2026-10-31T04:14:59Z"
     },
     {
       "name": "post-revoke enforcement dependency and health",
       "status": "pass",
       "expected": "conntrack present; typed accepted observation retained",
-      "actual": "conntrack_present=true; observation={\"checks\":[{\"name\":\"dns_policy\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-30T23:21:29.769745304Z\"},{\"name\":\"internet_only\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-30T23:21:29.769745304Z\"},{\"name\":\"lease\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-30T23:21:29.769745304Z\"},{\"name\":\"meter_path\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-30T23:21:29.769745304Z\"},{\"name\":\"policy_signature\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-30T23:21:29.769745304Z\"},{\"name\":\"qos\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-30T23:21:29.769745304Z\"},{\"name\":\"release_supported\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-30T23:21:29.769745304Z\"},{\"name\":\"source_binding\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-30T23:21:29.769745304Z\"},{\"name\":\"storage\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-30T23:21:29.769745304Z\"},{\"name\":\"tunnel_probe\",\"detail\":\"Egress probe used no extra target.\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-30T23:21:29.769745304Z\"}],\"errors\":[],\"forwarding\":true,\"reasons\":[]}",
+      "actual": "conntrack_present=true; observation={\"checks\":[{\"name\":\"dns_policy\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-31T04:28:19.756127781Z\"},{\"name\":\"internet_only\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-31T04:28:19.756127781Z\"},{\"name\":\"lease\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-31T04:28:19.756127781Z\"},{\"name\":\"meter_path\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-31T04:28:19.756127781Z\"},{\"name\":\"policy_signature\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-31T04:28:19.756127781Z\"},{\"name\":\"qos\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-31T04:28:19.756127781Z\"},{\"name\":\"release_supported\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-31T04:28:19.756127781Z\"},{\"name\":\"source_binding\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-31T04:28:19.756127781Z\"},{\"name\":\"storage\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-31T04:28:19.756127781Z\"},{\"name\":\"tunnel_probe\",\"detail\":\"Egress probe used no extra target.\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-10-31T04:28:19.756127781Z\"}],\"errors\":[],\"forwarding\":true,\"reasons\":[]}",
       "command": "command -v conntrack; read latest accepted api.ObservationReport (generated enum)",
-      "at": "2026-10-30T23:21:48Z"
+      "at": "2026-10-31T04:28:35Z"
     }
   ],
   "blockers": []

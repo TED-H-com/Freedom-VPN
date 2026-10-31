@@ -54,6 +54,11 @@ func (l *live) activate(rev uuid.UUID) response {
 	return l.api(l.admin, "POST", "/api/v1/admin/policies/"+id.String()+"/activate", map[string]any{"revision_id": rev, "reason": "TEST ONLY acceptance"}, h)
 }
 func (l *live) enrollment(r *record) {
+	for _, service := range []string{"worker", "control", "netbird"} {
+		raw, err := l.docker("inspect", "--format", "{{.HostConfig.RestartPolicy.Name}}", l.name(service))
+		policy := strings.TrimSpace(string(raw))
+		r.check("devstack f14 restart policy "+service, "unless-stopped", policy, "docker inspect own container HostConfig.RestartPolicy.Name", err == nil && policy == "unless-stopped")
+	}
 	if !l.prepare(r) {
 		return
 	}
