@@ -1746,19 +1746,12 @@ func (x *isolationRun) assertProvisional(samples []map[string]any) {
 			break
 		}
 	}
-	c := iso.Check{Name: "provisional lease reports AWAITING_MEMBER_GRANTS", Positive: positive, Owner: "w2-agent-core"}
+	c := iso.Check{Name: "provisional lease reports AWAITING_MEMBER_GRANTS", Positive: positive, Owner: "w3-wire-nodes follow-up 33, then w3-devstack-e2e follow-up 20"}
 	result := iso.EvaluateProvisional(samples)
 	raw, _ := json.Marshal(result)
 	c.Observations = append(c.Observations, iso.Observation{Name: "provisional_window", Detail: string(raw)})
-	c.Status = result.Status
-	c.Actual = result.Detail
-	if !positive.Valid() {
-		c.Status = iso.StatusBlocked
-		c.Actual += "; no counted member positive"
-	}
-	if c.Status == iso.StatusPass {
-		c.Owner = ""
-	}
+	c.Status = iso.StatusBlocked
+	c.Actual = "D-087 clean fixed-generation trigger blocked: real lease endpoint has no TEST ONLY grant-eligibility injection seam. No synthetic transition driven; incidental bootstrap samples do not qualify. " + result.Detail
 	x.add("AT10", c)
 }
 
@@ -1911,6 +1904,26 @@ func (x *isolationRun) archiveReceiver() {
 	}
 	time.Sleep(300 * time.Millisecond)
 	x.extra("receiver-closure.json", closure)
+	// Producer measurement is a detached sibling of D-106. Export every line
+	// after stopping the source; never silently discard a failed/partial record.
+	for _, item := range []struct{ source, name string }{
+		{"isolation-operations.jsonl", "producer-operations.jsonl"},
+		{"isolation-clock.json", "producer-clock.json"},
+	} {
+		path := filepath.Join(x.r.lab.root, ".agent", "tmp", item.name)
+		_, err := x.stack.ExportContainerFile(x.ctx, "node", "/var/lib/vpn-node/e2e/"+item.source, path)
+		if err != nil {
+			x.t.Errorf("producer export %s: %v", item.name, err)
+			continue
+		}
+		raw, err := os.ReadFile(path)
+		if err == nil {
+			err = iso.WriteExtra(x.dir, item.name, string(raw))
+		}
+		if err != nil {
+			x.t.Errorf("producer retention %s: %v", item.name, err)
+		}
+	}
 	for _, name := range []string{"agent.log", "watchdog.log"} {
 		raw, _ := exec.Command("docker", "exec", x.r.lab.node, "cat", "/var/lib/vpn-node/e2e/"+name).Output()
 		_ = iso.WriteExtra(x.dir, name+".txt", iso.Redact(string(raw)))
