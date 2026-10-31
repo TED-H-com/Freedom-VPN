@@ -208,13 +208,14 @@ def main():
     summary = f"# Follow-up 10 — restore and security/operations evidence\n\nAT30: **{status}**. Run `{live.get('run_id')}`; application base `d9e28f8` includes #240, #241, #244 and #245. {run.get('started_at')} → {run.get('finished_at')}. Shared development host, not candidate hardware.\n\n" + table
     summary += '\nD-077 uses an admin session, CSRF, Origin, a fresh UUID key and no body. A still-authorized fenced device returns its existing `member.device_authorize` operation with the original desired generation. Completion is read from `GET /admin/devices` after worker sync.\n\n' + call_table
     summary += '\n' + '; '.join(f'{k}: **{v}**' for k,v in sorted(findings.items())) + '.\n\n'
-    summary += 'SECOPS-20: the read-back shows whether `ip nat` remains; the product observation proves the populated serving verdict. #240 deletes the lab NAT before agent startup. #241 is present, but an empty `loopback_scoped` list does not exercise its exception. Follow-up 9’s before capture is unchanged in history.\n\n'
+    e20 = live.get('SECOPS-20', {})
+    summary += f"SECOPS-20: `ip_nat_present={e20.get('ip_nat_present')}`, `member_forwarding_enabled={e20.get('product_observation', {}).get('member_forwarding_enabled')}`, `loopback_scoped={len(e20.get('loopback_scoped', []))}` entries. #240 deletes the lab NAT before agent startup and explains this serving transition. #241 is present; the empty loopback-scoped list does not exercise its exception. Follow-up 9’s before capture is unchanged in history.\n\n"
     summary += 'SECOPS-21: compare all central offers and applied observations in [SECOPS-21.json](SECOPS-21.json). The agent silently ignores `ErrStaleGeneration`; zero matching log lines alone is insufficient. No harness generation adjustment is made.\n\n'
     if generation.get('first_offer_analysis'):
         g = generation['first_offer_analysis']
-        summary += f"First post-restore offer: `{g['generation']}` at `{g['signed_at']}`; retained node generation before restart: `{g['retained_generation_before_first_offer']}` (node applied `{g['node_applied_before_restart']}`, central T1 observation `{g['central_observed_at_t1']}`). Below retained: `{g['below_retained_generation']}`. When below retained, the remaining issue is startup ordering: compilation ran before fresh retained-generation observation. #245 can only use the applied generation already stored centrally.\n\n"
+        summary += f"First post-restore offer: `{g['generation']}` at `{g['signed_at']}`; retained node generation before central services resumed: `{g['retained_generation_before_first_offer']}` (node applied `{g['node_applied_before_restart']}`, central T1 observation `{g['central_observed_at_t1']}`). Below retained: `{g['below_retained_generation']}`. When below retained, the remaining issue is startup ordering: compilation ran before fresh retained-generation observation. #245 can only use the applied generation already stored centrally.\n\n"
     summary += 'AT29 established TCP/UDP and AT31 forced relay remain deferred to devstack follow-up 15. The bulk native run is only SECOPS-16 stream attribution. Physical arm64, candidate hardware and guest clock rollback remain operator work. Portal member/admin API state is measured for SECOPS-17; browser rendering is not exercised.\n\n'
-    summary += 'Full raw structured measurements: [restore-reconcile.json](restore-reconcile.json), [D-077.json](D-077.json), [secret-scan.json](secret-scan.json), [SECOPS-17.json](SECOPS-17.json).\n'
+    summary += 'Structured measurements: [restore-reconcile.json](restore-reconcile.json), [D-077.json](D-077.json), [secret-scan.json](secret-scan.json), [SECOPS-17.json](SECOPS-17.json).\n'
     if blockers: summary += '\nBlockers: ' + ' '.join(blockers) + '\n'
     md('summary.md',summary);md('restore-reconcile.md',summary);md('AT30.md',summary)
     md('README.md', f"# Wave 4 security and operations acceptance\n\n[Follow-up 10](summary.md) measures the local lab on application base `d9e28f8` (#240/#241/#244/#245), with live harness `{run.get('source_revision')}`. Shared development host; no candidate-hardware or production SLA claim.\n\n"
@@ -236,6 +237,10 @@ def main():
                'SECOPS-19':'Nonzero hold outbox then zero after replay in observation and CLI.',
                'SECOPS-20':'#240 lab NAT removal and #241 D-079 present; serving read-back and before history identify the observed cause.',
                'SECOPS-21':'#245 is present. Require first offer acceptance; if compilation precedes the first fresh retained-generation observation, the restored central applied value can still be stale. Review the timestamped first_offer_analysis and order restoration accordingly.'}
+    if generation.get('first_offer_analysis'):
+        first = generation['first_offer_analysis']
+        observed = first.get('first_post_restore_observation') or {}
+        reasons['SECOPS-21'] += f" Measured first offer {first['generation']} at {first['signed_at']}; retained node {first['retained_generation_before_first_offer']}; first central receipt of applied {observed.get('applied')} at {observed.get('received_at')}."
     for name in sorted(findings):notes+=f'| {name} | **{findings[name]}** | {reasons[name]} [{name}.json]({name}.json) |\n'
     notes += f'| SECOPS-05 / AT30 | **{status}** | [Restore measurement table](restore-reconcile.md). |\n| D-077 | **{"closed" if reg.get("passed") else "open"}** | [HTTP call table](D-077.json); member session 401, revoked device 409 STATE_CONFLICT, same-key replay, existing operation. |\n| AT29 established transports / AT31 forced relay | **Deferred** | Await devstack follow-up 15; no approximation or rerun. |\n'
     notes += '\nPrior request history is preserved byte-for-byte in [follow-up 9](history/follow-up-9/requests.md). No additional product/lab changes requested unless the recorded open findings require them.\n'
@@ -270,6 +275,11 @@ are deferred to devstack follow-up 15. The scan cohort does not claim capacity.
 ''')
     deps=load(PUBLIC/'dependencies.json')
     for name,state in findings.items():deps.setdefault('requests',{})[name]={'status':state,'detail':reasons[name],'evidence':name+'.json'}
+    deps['requests']['SECOPS-05'].update(status='closed' if status == 'passed' else 'open',
+        detail='AT30 re-measured in Follow-up 10 with the D-077 HTTP re-grant route.', evidence='restore-reconcile.json')
+    deps['requests']['D-077']={'status':'closed' if reg.get('passed') else 'open',
+        'detail':'Admin HTTP re-grant, same-key replay, member-session 401 and revoked-device 409 measured.',
+        'evidence':'D-077.json'}
     write('dependencies.json',deps)
     scope=load(PUBLIC/'scope-review.json')
     names=sorted(set(written+['followup10-live.json','followup10-run.json','followup10-attempts.json','followup10-attempt1-live.json','followup10-attempt1-run.json','followup10-attempt1-verdict.json','validation.json']))

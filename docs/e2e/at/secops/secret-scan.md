@@ -1,7 +1,5 @@
-# secret-scan — Follow-up 7
+# SECOPS-16 — Follow-up 10
 
-Status: **blocked** for the stated scope.
+Status: **passed**. 154 ordinary streams, 66 final protected-stream records (60 bulk), 104 public records and three driver captures. Ordinary: True; captures: True; protected lifecycle: True.
 
-D-066: zero canaries in ordinary logs/captures/readable files; protected transient credentials require owner/mode and deletion evidence
-
-[Exact measured records](secret-scan.json), [summary](summary.md), [remaining requests](requests.md).
+D-066: zero secrets or device-flow values in ordinary retained logs/captures/readable log files; root-owned 0600 transient login credentials are a separate class with final scan and deletion proof. [Per-stream counts and lifecycle evidence](secret-scan.json). No values or matched lines are published.
