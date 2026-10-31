@@ -70,7 +70,7 @@ func TestENR06InstallerProxyRequiresCurrentVerifiedIdentity(t *testing.T) {
 		status       int
 	}{
 		{"GET", "/api/v1/agent/desired-state", 503},
-		{"POST", "/api/v1/agent/netbird-bootstrap", 204},
+		{"POST", "/api/v1/agent/bootstrap", 204},
 		{"POST", "/api/v1/agent/usage-batches", 204},
 	} {
 		r.Method, r.URL.Path = tc.method, tc.path
