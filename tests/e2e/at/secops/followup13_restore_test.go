@@ -13,14 +13,29 @@ import (
 
 // The retained agent is stopped before arming. This capture belongs to the
 // clean protocol restore, after the separately recorded fail-safe negative.
-func (p *liveProbe) armRestoreOffer13(stack *labstack.Stack, node uuid.UUID) {
-	retained := p.generationState10(node)
+func (p *liveProbe) armRestoreOffer13(stack *labstack.Stack) {
+	// The negative restore has closed its disposable central DB. Read only the
+	// retained node here; the clean central connection does not exist yet.
+	hb := p.heartbeatView()
+	raw, readErr := p.docker("node", "cat", "/var/lib/vpn-node/state/desired-state.json")
+	var envelope struct {
+		Signed struct {
+			Generation string `json:"config_generation"`
+		} `json:"signed"`
+	}
+	if readErr != nil || json.Unmarshal(raw, &envelope) != nil || envelope.Signed.Generation == "" || hb["generation"] != envelope.Signed.Generation {
+		p.t.Fatal("retained local accepted/applied generations unavailable or unequal")
+	}
+	retained, err := json.Marshal(map[string]any{"node_accepted_desired": envelope.Signed.Generation, "node_applied": hb["generation"], "node_heartbeat": hb, "captured_at": time.Now().UTC()})
+	if err != nil {
+		p.t.Fatal("retained generation evidence", err)
+	}
 	id, err := stack.ArmFirstDesiredOffer(p.t.Context(), "node")
 	if err != nil {
 		p.t.Fatal("arm first desired offer", err)
 	}
 	p.metadata["first_desired_offer"] = map[string]any{
-		"capture_id": id, "armed_at": time.Now().UTC(), "retained_before_restore": retained,
+		"capture_id": id, "armed_at": time.Now().UTC(), "retained_before_restore": json.RawMessage(retained),
 		"arm_count": 1, "agent_stopped_before_arm": true,
 		"scope": "first actual agent response after clean restore and release; direct-control HTTP probes are separate",
 	}

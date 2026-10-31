@@ -1,0 +1,134 @@
+{
+  "driver_run_id": "a3e24f08-f42a-41b6-bc69-2797eb0c8dcb",
+  "source_revision": "4e313a3d1cdf91da14036b8ea681fbd1d2c58ec0",
+  "application_base": "7e044c71ecf1d07f63e89721bd213db6611a6a47",
+  "phase": "restore",
+  "started_at": "2026-10-31T11:13:23Z",
+  "d099_roadmap_present": true,
+  "prepare": {
+    "prefix": "w4-secops",
+    "port_base": "30000",
+    "reset": true,
+    "grace_seconds": 90
+  },
+  "follow_up": 13,
+  "inventory_before": {
+    "containers": {
+      "exit_code": 0,
+      "count": 0
+    },
+    "networks": {
+      "exit_code": 0,
+      "count": 0
+    },
+    "volumes": {
+      "exit_code": 0,
+      "count": 0
+    },
+    "images": {
+      "exit_code": 0,
+      "count": 0
+    }
+  },
+  "up": {
+    "command": [
+      "make",
+      "-f",
+      "mk/e2e.mk",
+      "e2e-up"
+    ],
+    "started_at": "2026-10-31T11:13:23Z",
+    "finished_at": "2026-10-31T11:13:55Z",
+    "elapsed_seconds": 32.146,
+    "exit_code": 0,
+    "scan": {
+      "stream": "followup13-restore-e2e-up",
+      "bytes": 19600,
+      "findings": []
+    }
+  },
+  "live": {
+    "command": [
+      "go",
+      "test",
+      "-json",
+      "-tags",
+      "e2e,integration",
+      "-p",
+      "1",
+      "-parallel",
+      "2",
+      "-count=1",
+      "-timeout",
+      "45m",
+      "-run",
+      "^TestAT30_Followup10_LiveRestoreReconcile$",
+      "./tests/e2e/at/secops"
+    ],
+    "started_at": "2026-10-31T11:13:55Z",
+    "finished_at": "2026-10-31T11:19:52Z",
+    "elapsed_seconds": 356.937,
+    "exit_code": 1,
+    "scan": {
+      "stream": "followup13-restore-live",
+      "bytes": 12542,
+      "findings": []
+    },
+    "status": "failed",
+    "required_tests": [
+      "TestAT30_Followup10_LiveRestoreReconcile"
+    ],
+    "missing": [],
+    "skipped": [],
+    "tests": [
+      {
+        "name": "TestAT30_Followup10_LiveRestoreReconcile",
+        "result": "fail",
+        "elapsed_seconds": 356.31
+      }
+    ],
+    "package_results": {
+      "github.com/TED-H-com/Freedom-VPN/tests/e2e/at/secops": "fail"
+    }
+  },
+  "down": {
+    "command": [
+      "make",
+      "-f",
+      "mk/e2e.mk",
+      "e2e-down"
+    ],
+    "started_at": "2026-10-31T11:19:54Z",
+    "finished_at": "2026-10-31T11:20:46Z",
+    "elapsed_seconds": 52.777,
+    "exit_code": 0,
+    "scan": {
+      "stream": "followup13-restore-e2e-down",
+      "bytes": 3225,
+      "findings": []
+    }
+  },
+  "state_cleanup": {
+    "exit_code": 0,
+    "removed": true
+  },
+  "inventory_after": {
+    "containers": {
+      "exit_code": 0,
+      "count": 0
+    },
+    "networks": {
+      "exit_code": 0,
+      "count": 0
+    },
+    "volumes": {
+      "exit_code": 0,
+      "count": 0
+    },
+    "images": {
+      "exit_code": 0,
+      "count": 0
+    }
+  },
+  "finished_at": "2026-10-31T11:20:47Z"
+}

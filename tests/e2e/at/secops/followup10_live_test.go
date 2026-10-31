@@ -389,7 +389,7 @@ func (p *liveProbe) runProductRestoreProtocol9(
 			p.t.Fatal("first-offer stack", err)
 		}
 		defer offerStack.Close()
-		p.armRestoreOffer13(offerStack, nodeID)
+		p.armRestoreOffer13(offerStack)
 		defer func() {
 			if err := offerStack.ReleaseDesiredOffer(context.Background(), "node"); err != nil {
 				p.t.Error("release first-offer hold during cleanup", err)

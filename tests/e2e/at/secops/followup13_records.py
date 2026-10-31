@@ -88,7 +88,7 @@ def refresh_scope():
              'restore-reconcile.json', 'restore-reconcile.md', 'summary.md', 'README.md', 'RUN.md', 'requests.md',
              'live.json', 'cleanup.json', 'validation.json', '2026-10-31-follow-up-13-handover.md',
              'followup13-restore-live.json', 'followup13-restore-run.json', 'followup13-verdict.json',
-             'followup13-lab-preflight.json', 'history/index.json', 'history/README.md', 'history/follow-up-12/archive-index.json']
+             'followup13-lab-preflight.json', 'followup13-restore-attempt1-run.json', 'followup13-restore-attempt1-failure.json', 'history/index.json', 'history/README.md', 'history/follow-up-12/archive-index.json']
     scope['follow_up_13'] = dict(reviewed_at=utc(), scope='Restore-only first-delivery proof; AT29/AT31 retained blocked; immutable Follow-up 12 archive.',
         records=[dict(path=str((PUBLIC / n).relative_to(ROOT)), sha256=digest(PUBLIC / n)) for n in names])
     write_json(PUBLIC / 'scope-review.json', scope)
@@ -176,7 +176,8 @@ def main():
     blocked = 'Full AT29 remains **blocked**: independently clocked disposable guest and manual grant-withdrawal export. Full AT31 remains **blocked**: candidate hardware and 20-member/60-device mixed relay campaign. Follow-up 12 transport sub-cases and bounded relay passes are retained without promotion or rerun. [AT29](AT29.json), [AT31](AT31.json), [unchanged resource references](history/follow-up-12/requests.md).\n\n'
     archive = '[Follow-up 12 archive](history/follow-up-12/archive-index.json): transport `cf81f6f8-4ccf-43d2-aae2-10121f6b169d`, restore `dd845a7f-2660-431c-a8e6-c513108cc07d`, byte-identical to PR #301 (`8b5e809b`) with SHA-256 pins. The follow-up 9 and 10 handover archives are unchanged.\n\n'
     harness = 'Devstack 18 [proof run](../../runs/2026-10-31/followup18/5f74d7c3-6404-461d-9f47-296bd69958c2/first-desired-offer.md) (2/0/0; first 4 > retained 3; HTTP 202 central receipt) validates the export only. This lane uses the separate restore run above for closure. [Export contract](../../RESPONSES.md).\n\n'
-    tail = f'Cleanup **{verdict["cleanup"]}**: [container/network/volume/image inventory and disk state removal](cleanup.json). [Run commands](RUN.md).\n'
+    attempt = '[Preparation failure](followup13-restore-attempt1-failure.json): the first attempt stopped before ArmFirstDesiredOffer because its negative-drill central connection had been closed. No delivery was captured or discarded. The local-only retained read fixes that harness error; [failed driver and zero cleanup](followup13-restore-attempt1-run.json) remain preserved.\n\n'
+    tail = attempt + f'Cleanup **{verdict["cleanup"]}**: [container/network/volume/image inventory and disk state removal](cleanup.json). [Run commands](RUN.md).\n'
     (PUBLIC / 'restore-reconcile.md').write_text('# AT30 restore — Follow-up 13\n\n' + intro + delta_text + table + '\n' + proof)
     (PUBLIC / 'AT30.md').write_text((PUBLIC / 'restore-reconcile.md').read_text())
     for name in ('summary.md','README.md'):
@@ -210,6 +211,9 @@ Wait while two other integration suites are active; record the preflight before
 starting. Use only fvpn-w4-secops objects, network fvpn-w4-secops and port base
 30000. Foreground runner, disk TMPDIR/GOTMPDIR under .agent/tmp, no shell traps.
 The runner cleans its objects and generated bind state even on test failure.
+
+The archived preparation failure preceded any capture arm; it is not a failed
+first-offer result. Never repeat a delivered first offer to obtain a pass.
 
 This target runs AT30 only, using its own freshly enrolled primary. It skips
 transport, grace and bulk-peer campaigns. Stop the retained agent, arm the shared

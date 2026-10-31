@@ -763,7 +763,13 @@ func (p *liveProbe) finish() {
 			scan(service+" file "+name, raw, er)
 		}
 	}
-	rows, err := p.db.Query(p.t.Context(), "SELECT row_to_json(a)::text FROM audit_events a")
+	// A failed restore may leave no central connection. Preserve the remaining
+	// diagnostics and record the unavailable audit stream rather than panic.
+	var rows pgx.Rows
+	err := errors.New("central database unavailable during diagnostic capture")
+	if p.db != nil {
+		rows, err = p.db.Query(p.t.Context(), "SELECT row_to_json(a)::text FROM audit_events a")
+	}
 	var audit bytes.Buffer
 	count := 0
 	if err == nil {
