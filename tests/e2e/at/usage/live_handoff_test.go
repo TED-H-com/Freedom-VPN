@@ -474,11 +474,25 @@ func (s *liveSuite) evalAT20(t *testing.T) (rec Record) {
 	var operation api.Operation
 	if !s.waitFor(45*time.Second, func() bool {
 		response := s.apiCall(s.admin, http.MethodGet, "/api/v1/admin/operations/"+accepted.OperationId.String(), nil, nil)
-		return response.status == http.StatusOK && json.Unmarshal(response.body, &operation) == nil && operation.Status == api.OperationStatusSucceeded
+		if response.status != http.StatusOK || json.Unmarshal(response.body, &operation) != nil {
+			return false
+		}
+		rec.Observations["revoke_operation_readback"] = operation
+		route, identity := false, false
+		for _, step := range operation.Steps {
+			if step.Name == "netbird_route_readback" {
+				route = step.Status == api.OperationStepStatusSucceeded
+			}
+			if step.Name == "netbird_identity_cleanup" {
+				identity = step.Status == api.OperationStepStatusSucceeded
+			}
+		}
+		return route && identity
 	}) {
-		t.Fatal("AT20 revocation operation did not succeed")
+		t.Fatal("AT20 revocation external worker effects did not succeed")
 	}
-	rec.Observations["revoke_operation_completed"] = operation
+	rec.Observations["revoke_operation_readback"] = operation
+	rec.Observations["revocation_scope"] = "Central origin retirement plus successful NetBird identity cleanup and route read-back. The overall operation may remain partially_succeeded because the deliberately quiesced old agent cannot send a withdrawal ACK; no full-operation completion is claimed."
 
 	must(s.hook.HoldInstallerFirstPoll(s.ctx, true))
 	replacement, err := s.hook.ControlledReinstall(s.ctx, "installer-node", s.installerToken(node))
