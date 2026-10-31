@@ -203,9 +203,6 @@ func (l *live) feedLastGood(r *record) {
 	r.check("controlled bad update", "204; no product projection modified", detail(bad), "PUT same origin object with comment-only content", bad.status == 204)
 	l.write(r)
 	observed := l.wait(390*time.Second, func() bool {
-		if out, inspectErr := l.docker("inspect", "-f", "{{.State.Running}}", l.name("worker")); inspectErr == nil && strings.TrimSpace(string(out)) != "true" {
-			_, _ = l.docker("start", l.name("worker"))
-		}
 		_ = read()
 		return reason != ""
 	})

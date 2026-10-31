@@ -31,6 +31,7 @@ type counterObservation struct {
 type forwardingObservation struct {
 	Node                string                     `json:"node_container_role"`
 	NodeIncarnation     string                     `json:"node_incarnation"`
+	OriginVerified      bool                       `json:"origin_verified"`
 	OriginRequests      int                        `json:"origin_requests"`
 	OriginSNATMatches   bool                       `json:"origin_snat_matches"`
 	SourceAT            string                     `json:"source_at,omitempty"`
@@ -108,6 +109,10 @@ func (l *live) counters(device uuid.UUID) counterObservation {
 // §19 AT01/02: route selection uses the pinned native client's API; observations
 // run only inside our existing containers, retaining no packets or credentials.
 func (l *live) traceForwarding(r *record, service string, device uuid.UUID) bool {
+	return l.traceForwardingExpected(r, service, device, device != uuid.Nil)
+}
+
+func (l *live) traceForwardingExpected(r *record, service string, device uuid.UUID, authorized bool) bool {
 	o := forwardingObservation{At: time.Now().UTC().Format(time.RFC3339), Member: service, Node: l.nodeContainer(), NodeIncarnation: l.inc.String(), Packets: map[string]json.RawMessage{}}
 	if !l.installProbe() {
 		r.block("Bounded forwarding probe build/copy unavailable")
@@ -146,7 +151,7 @@ func (l *live) traceForwarding(r *record, service string, device uuid.UUID) bool
 		}
 		return false
 	}
-	if device != uuid.Nil {
+	if authorized {
 		o.RouteSelected = l.wait(45*time.Second, selectRoute)
 	} else {
 		o.RouteSelected = selectRoute()
@@ -209,6 +214,7 @@ func (l *live) traceForwarding(r *record, service string, device uuid.UUID) bool
 	if l.nodeContainer() == "node2" {
 		expectedSNAT = "192.0.4.22"
 	}
+	o.OriginVerified = armed.status == 204 && received.status == 200 && origin.ID == probeID
 	o.OriginRequests = origin.Requests
 	o.OriginSNATMatches = armed.status == 204 && received.status == 200 && origin.ID == probeID && origin.Requests == 1 && origin.Source == expectedSNAT
 	var transfer struct {
@@ -229,8 +235,8 @@ func (l *live) traceForwarding(r *record, service string, device uuid.UUID) bool
 	r.Forwarding = append(r.Forwarding, o)
 	encoded, _ := json.Marshal(o)
 	r.check("bounded member transfer observation", "record selected route, node counters, packet hops and origin receipt", string(encoded), "netbird routes select; ip -j route get controlled origin; concurrent 9-second AF_PACKET aggregate observers; bounded CA-verified HTTPS GET; nft counters before/after", true)
-	if device == uuid.Nil {
-		r.check("unauthorized real transfer", "no origin response", fmt.Sprintf("origin_receipt=%t", transfer.Receipt), "bounded HTTPS from native peer expected to have no authorized exit", !transfer.Receipt && origin.Requests == 0)
+	if !authorized {
+		r.check("unauthorized real transfer", "no origin response", fmt.Sprintf("origin_receipt=%t", transfer.Receipt), "bounded HTTPS from native peer expected to have no authorized exit", o.OriginVerified && !transfer.Receipt && origin.Requests == 0)
 	} else if !o.Counted && o.After.Generation == 0 && o.After.Counters["ctbase"] > o.Before.Counters["ctbase"] {
 		r.block("F4-01: member packets reach generation-0 node baseline; inspect this run's accepted health and apply errors. Owner: w2-agent-core.")
 	} else if !o.Counted {
