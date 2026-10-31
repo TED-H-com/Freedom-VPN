@@ -11,6 +11,7 @@ import (
 
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/fleetupdate"
+	"github.com/TED-H-com/Freedom-VPN/internal/installerjob"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes"
 	"github.com/TED-H-com/Freedom-VPN/internal/releases"
 	"github.com/TED-H-com/Freedom-VPN/internal/releases/releasetest"
@@ -69,6 +70,7 @@ func TestReviewR16_InstallerResultReplayReturnsStoredAck(t *testing.T) {
 	if err = f.r.Pool.QueryRow(ctx, `SELECT encode(manifest_hash,'hex') FROM releases WHERE id=$1`, rf.Manifest.ReleaseId).Scan(&result.ManifestSha256); err != nil {
 		t.Fatal(err)
 	}
+	result.JobId = installerjob.ID(result.RequestedReleaseId, result.ManifestSha256, result.IncarnationId)
 	result.Generation = decstr.U64(0)
 	result.Attempt = 1
 	body, err := json.Marshal(result)
