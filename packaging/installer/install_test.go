@@ -289,7 +289,7 @@ func TestBusyLock(t *testing.T) {
 	if err := os.MkdirAll(filepath.Dir(env.Layout.LockPath), 0o700); err != nil {
 		t.Fatal(err)
 	}
-	lk, err := tryLock(env.Layout.LockPath)
+	lk, err := tryLock(context.Background(), env.Layout)
 	if err != nil {
 		t.Fatal(err)
 	}

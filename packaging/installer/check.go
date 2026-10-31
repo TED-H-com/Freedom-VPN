@@ -14,6 +14,8 @@ import (
 // presence bit only; its contents are never read (§6.3).
 type CheckReport struct {
 	Status         string            `json:"status"`
+	Baseline       *BaselineResult   `json:"baseline"`
+	PendingRelease *pendingRelease   `json:"pending_release,omitempty"`
 	OSID           string            `json:"os_id"`
 	OSVersion      string            `json:"os_version"`
 	Arch           string            `json:"arch"`
@@ -121,6 +123,20 @@ func Check(ctx context.Context, env *Env) (*CheckReport, error) {
 			rep.Drifts = append(rep.Drifts, "identity")
 		}
 	}
+	rep.Baseline = readBaseline(l)
+	if rep.Baseline.Status == "failed" || rep.Baseline.Status == "unreadable" {
+		rep.Drifts = append(rep.Drifts, "baseline")
+	}
+	if raw, err := os.ReadFile(l.pendingUpgrade()); err == nil {
+		var pending pendingRelease
+		if json.Unmarshal(raw, &pending) != nil {
+			rep.Drifts = append(rep.Drifts, "pending_release")
+		} else {
+			rep.PendingRelease = &pending
+		}
+	} else if !os.IsNotExist(err) {
+		rep.Drifts = append(rep.Drifts, "pending_release")
+	}
 	rep.Lock = readLock(l)
 	if n, nerr := readNode(l); nerr == nil && n.NodeIncarnationID != "" {
 		rep.Identity = IdentityStatus{Present: true, IncarnationID: n.NodeIncarnationID, NodeID: n.NodeID}
@@ -213,6 +229,12 @@ func (r *CheckReport) Text() string {
 	if r.ReleaseID != "" {
 		fmt.Fprintf(&b, "release_id: %s\n", r.ReleaseID)
 		fmt.Fprintf(&b, "manifest_sha256: %s\n", r.ManifestSHA256)
+	}
+	if r.Baseline != nil {
+		fmt.Fprintf(&b, "baseline: %s\n", r.Baseline.Status)
+	}
+	if r.PendingRelease != nil {
+		fmt.Fprintf(&b, "pending_manifest_path: %s\npending_request_id: %s\n", r.PendingRelease.ManifestPath, r.PendingRelease.RequestID)
 	}
 	fmt.Fprintf(&b, "identity: present=%t incarnation=%s\n", r.Identity.Present, r.Identity.IncarnationID)
 	fmt.Fprintf(&b, "usage_store_present: %t\n", r.UsageStore)

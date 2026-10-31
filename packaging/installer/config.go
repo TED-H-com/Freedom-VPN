@@ -38,12 +38,15 @@ type InstallRequest struct {
 
 // Result is the machine-readable outcome. Status already_current is exit 0.
 type Result struct {
-	Status         string `json:"status"`
-	ReleaseID      string `json:"release_id,omitempty"`
-	ManifestSHA256 string `json:"manifest_sha256,omitempty"`
-	IncarnationID  string `json:"incarnation_id,omitempty"`
-	Message        string `json:"message,omitempty"`
-	UpdaterCommand string `json:"updater_command,omitempty"`
+	Status         string          `json:"status"`
+	ReleaseID      string          `json:"release_id,omitempty"`
+	ManifestSHA256 string          `json:"manifest_sha256,omitempty"`
+	IncarnationID  string          `json:"incarnation_id,omitempty"`
+	Message        string          `json:"message,omitempty"`
+	UpdaterCommand string          `json:"updater_command,omitempty"`
+	ManifestPath   string          `json:"manifest_path,omitempty"`
+	RequestID      string          `json:"request_id,omitempty"`
+	Baseline       *BaselineResult `json:"baseline,omitempty"`
 }
 
 type installedState struct {
@@ -96,6 +99,15 @@ func (r *Result) Text() string {
 	if r.UpdaterCommand != "" {
 		b.WriteString("\nupdater_command: ")
 		b.WriteString(r.UpdaterCommand)
+	}
+	if r.ManifestPath != "" {
+		b.WriteString("\nmanifest_path: " + r.ManifestPath)
+	}
+	if r.RequestID != "" {
+		b.WriteString("\nrequest_id: " + r.RequestID)
+	}
+	if r.Baseline != nil {
+		b.WriteString("\nbaseline: " + r.Baseline.Status)
 	}
 	b.WriteString("\n")
 	return b.String()
@@ -169,7 +181,7 @@ func renderAgent(l Layout, req InstallRequest, manifest api.ReleaseManifest) ([]
 	return marshalIndent(cfg)
 }
 
-func renderUpdater(l Layout, p Platform, manifest api.ReleaseManifest, node nodeInfo, boot uuid.UUID) ([]byte, error) {
+func renderUpdater(l Layout, p Platform, manifest api.ReleaseManifest, node nodeInfo) ([]byte, error) {
 	nodeID, err := uuid.Parse(node.NodeID)
 	if err != nil {
 		return nil, errf(ExitFailed, "failed", "identity node_id is not a UUID")
@@ -198,7 +210,6 @@ func renderUpdater(l Layout, p Platform, manifest api.ReleaseManifest, node node
 		},
 		NodeID:        nodeID,
 		IncarnationID: inc,
-		BootID:        boot,
 		Platform: updater.Platform{
 			OSID:            p.OSID,
 			OSVersion:       p.OSVersion,
@@ -220,7 +231,12 @@ func renderUpdater(l Layout, p Platform, manifest api.ReleaseManifest, node node
 		MTLSCA:          l.IdentityDir + "/ca.pem",
 		AllowLoopback:   false,
 	}
-	return marshalIndent(cfg)
+	// UUID is an array, so encoding/json's omitempty does not omit a zero
+	// value. Shadow the field to genuinely omit the optional boot fallback.
+	return marshalIndent(struct {
+		updater.Config
+		BootID *uuid.UUID `json:"boot_id,omitempty"`
+	}{Config: cfg})
 }
 
 func readNode(l Layout) (nodeInfo, error) {
@@ -252,18 +268,6 @@ func readInstalled(l Layout) (installedState, bool) {
 	return st, true
 }
 
-func readBootID(l Layout) (uuid.UUID, error) {
-	raw, err := os.ReadFile(l.ProcBootID)
-	if err != nil {
-		return uuid.Nil, errf(ExitFailed, "failed", "cannot read boot id")
-	}
-	id, err := uuid.Parse(strings.TrimSpace(string(raw)))
-	if err != nil {
-		return uuid.Nil, errf(ExitFailed, "failed", "boot id is not a UUID")
-	}
-	return id, nil
-}
-
 func marshalIndent(v any) ([]byte, error) {
 	raw, err := json.MarshalIndent(v, "", "  ")
 	if err != nil {
@@ -277,11 +281,7 @@ func writeUpdater(j *Journal, env *Env, p Platform, manifest api.ReleaseManifest
 	if err != nil {
 		return err
 	}
-	boot, err := readBootID(env.layout())
-	if err != nil {
-		return err
-	}
-	raw, err := renderUpdater(env.layout(), p, manifest, node, boot)
+	raw, err := renderUpdater(env.layout(), p, manifest, node)
 	if err != nil {
 		return err
 	}

@@ -2,6 +2,7 @@ package installer
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"os"
 	"path/filepath"
@@ -41,7 +42,7 @@ func Reenroll(ctx context.Context, env *Env, tokenFile string) (*Result, error) 
 	if !identityPresent(l) {
 		return nil, errf(ExitFailed, "failed", "no enrolled identity to retire")
 	}
-	lk, err := tryLock(l.LockPath)
+	lk, err := tryLock(ctx, l)
 	if err != nil {
 		if errors.Is(err, errBusy) {
 			return nil, errf(ExitBusy, "busy", "update lock is held")
@@ -118,12 +119,16 @@ func Reenroll(ctx context.Context, env *Env, tokenFile string) (*Result, error) 
 			return nil, errf(ExitFailed, "failed", "starting %s failed", unit)
 		}
 	}
+	baseline, err := seedBaseline(ctx, env)
+	if err != nil {
+		return nil, err
+	}
 	node, err := readNode(l)
 	if err != nil {
 		return nil, err
 	}
 	return &Result{
-		Status: statusReenrolled, IncarnationID: node.NodeIncarnationID,
+		Status: statusReenrolled, IncarnationID: node.NodeIncarnationID, Baseline: baseline,
 		Message: "identity retired under identity.retired; usage store kept",
 	}, nil
 }
@@ -157,7 +162,7 @@ func moveTree(src, dst string, moved *[][2]string) error {
 }
 
 func refreshUpdaterIdentity(l Layout) error {
-	cfg, err := updater.LoadConfig(l.updaterConfig())
+	_, err := updater.LoadConfig(l.updaterConfig())
 	if err != nil {
 		return errf(ExitFailed, "failed", "updater config cannot be read")
 	}
@@ -173,13 +178,18 @@ func refreshUpdaterIdentity(l Layout) error {
 	if err != nil {
 		return errf(ExitFailed, "failed", "identity incarnation is not a UUID")
 	}
-	boot, err := readBootID(l)
+	// Preserve the configured fallback (including its absence). LoadConfig
+	// resolves the kernel boot id for runtime use, not for writing to disk.
+	original, err := os.ReadFile(l.updaterConfig())
 	if err != nil {
 		return err
 	}
-	cfg.NodeID = id
-	cfg.IncarnationID = inc
-	cfg.BootID = boot
+	var cfg map[string]json.RawMessage
+	if err := json.Unmarshal(original, &cfg); err != nil {
+		return err
+	}
+	cfg["node_id"], _ = json.Marshal(id)
+	cfg["incarnation_id"], _ = json.Marshal(inc)
 	raw, err := marshalIndent(cfg)
 	if err != nil {
 		return err

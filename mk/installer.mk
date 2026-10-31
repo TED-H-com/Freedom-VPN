@@ -41,4 +41,4 @@ installer-verify: installer-lint installer-unit installer-build
 # Privileged systemd-as-PID-1 suite. Local only. Names stay under
 # $(INSTALLER_PREFIX). Not run on GitHub-hosted runners.
 installer-test:
-	$(INSTALLER_ENV) $(INSTALLER_GO) test -tags installer -count=1 -timeout 40m -p 1 -parallel 1 ./tests/installer/
+	$(INSTALLER_ENV) $(INSTALLER_GO) test -v -tags installer -count=1 -timeout 40m -p 1 -parallel 1 ./tests/installer/

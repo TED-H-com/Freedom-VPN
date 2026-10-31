@@ -115,6 +115,7 @@ type liveSuite struct {
 	fupActivationTransition  fupTransitionMeasurement
 	fupUsageIngestTransition fupTransitionMeasurement
 	incarnationRetention     incarnationRetentionMeasurement
+	firstServing             map[string]any
 }
 
 func TestATUsage_Live(t *testing.T) {
@@ -151,12 +152,36 @@ func TestATUsage_Live(t *testing.T) {
 	// Cycle 1 (bring_up), AT16 sampler restart, D-067 Cycle 2 (agent_restart), and
 	// watchdog withdrawal before AT14/18/19/17/15 drive mTLS usage and observations.
 	evalMap := make(map[string]Record, 6)
+	t.Log("evaluating AT16")
 	evalMap["AT16"] = s.evalAT16(t)
+	if err := WriteEvidence(s.evidence, evalMap["AT16"], s.extraRedactions...); err != nil {
+		t.Fatal(err)
+	}
+	t.Log("evaluating AT14")
 	evalMap["AT14"] = s.evalAT14(t)
+	if err := WriteEvidence(s.evidence, evalMap["AT14"], s.extraRedactions...); err != nil {
+		t.Fatal(err)
+	}
+	t.Log("evaluating AT18")
 	evalMap["AT18"] = s.evalAT18(t)
+	if err := WriteEvidence(s.evidence, evalMap["AT18"], s.extraRedactions...); err != nil {
+		t.Fatal(err)
+	}
+	t.Log("evaluating AT19")
 	evalMap["AT19"] = s.evalAT19(t)
+	if err := WriteEvidence(s.evidence, evalMap["AT19"], s.extraRedactions...); err != nil {
+		t.Fatal(err)
+	}
+	t.Log("evaluating AT17")
 	evalMap["AT17"] = s.evalAT17(t)
+	if err := WriteEvidence(s.evidence, evalMap["AT17"], s.extraRedactions...); err != nil {
+		t.Fatal(err)
+	}
+	t.Log("evaluating AT15")
 	evalMap["AT15"] = s.evalAT15(t)
+	if err := WriteEvidence(s.evidence, evalMap["AT15"], s.extraRedactions...); err != nil {
+		t.Fatal(err)
+	}
 
 	orderedIDs := []string{"AT14", "AT15", "AT16", "AT17", "AT18", "AT19"}
 	records := make([]Record, 0, len(orderedIDs))
@@ -713,10 +738,6 @@ func (s *liveSuite) configureAndPublishNode(nodeService string, nodeID, incID uu
 		s.t.Fatalf("node %s (%s) published desired_state_envelope did not compile beyond %d", nodeID, nodeService, oldDesired)
 	}
 
-	// Let fvpn-agent on nodeService run for one heartbeat so it attempts VerifyServing (recording any FLOWTABLE_BYPASS observation),
-	// then pause fvpn-agent and acknowledge targetGen via nodeClient so carryingExitAckStatus starts from a clean ACKed baseline.
-	time.Sleep(6 * time.Second)
-	s.stopNodeAgent(nodeService)
 	_, _, _, _ = s.ackNodeGeneration(nodeID, incID, nodeClient, targetGen)
 
 	return exitID, exitNetworkID(exitID)
@@ -1002,6 +1023,7 @@ func (s *liveSuite) bootstrapCountedServingFlow() {
 	_ = s.pool.QueryRow(s.ctx, `SELECT id FROM exits WHERE node_id = $1`, s.nodeID).Scan(&s.exitID)
 	s.exitNetID = exitNetworkID(s.exitID)
 	s.bootstrapTransfer = s.d067BringUp.FirstCountedTransfer
+	s.captureFirstServing()
 	hbOut, _, _ := s.execInContainer("node", "cat", "/run/vpn-node/heartbeat")
 	s.sharedCmds = append(s.sharedCmds,
 		CommandRecord{
@@ -1159,6 +1181,7 @@ func (s *liveSuite) baseRecord(id, title, spec, expected string, reqs []string) 
 			"device_b_id":             s.deviceB.String(),
 			"active_policy_revisions": s.activePolicies,
 			"bootstrap_transfer":      s.bootstrapTransfer,
+			"first_serving_apply":     s.firstServing,
 		},
 		MechanismChecks: []MechanismCheck{},
 		Blockers:        []string{},
