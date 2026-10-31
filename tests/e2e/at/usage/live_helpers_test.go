@@ -1032,10 +1032,10 @@ func sameIncarnationUsage(a, b api.NodeIncarnationUsage) bool {
 func (s *liveSuite) queryMemberUsagePeriodRow(memberID string) map[string]string {
 	var periodID, up, down, total string
 	_ = s.pool.QueryRow(s.ctx, `
-		SELECT period_id, upload_bytes::text, download_bytes::text, total_bytes::text
-		FROM member_usage_periods
-		WHERE member_id = $1
-		ORDER BY period_start DESC
+		SELECT period, upload_bytes::text, download_bytes::text, total_bytes::text
+		FROM usage_rollups
+		WHERE member_id = $1 AND granularity = 'month'
+		ORDER BY period_start DESC, projection_generation DESC
 		LIMIT 1
 	`, memberID).Scan(&periodID, &up, &down, &total)
 	return map[string]string{

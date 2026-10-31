@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 	"sync"
 	"testing"
@@ -541,56 +540,12 @@ func (s *liveSuite) evalAT19(t *testing.T) Record {
 		BothExitsInstalledTier2TC:      node1Tier2OK && node2Tier2OK,
 	}
 
-	// 4. Transition 2: fup.member_generation_changed via usage ingestion crossing a threshold into Tier 2
-	// First activate an intermediate enforce policy where Tier 1 is 2000 B (10Mbit/5Mbit) and Tier 2 is (currentTotal + 1500 B) (5Mbit/2Mbit),
-	// so memberA starts in Tier 1 (10Mbit/5Mbit) and both exits acknowledge Tier 1 with fair_use.applying == false.
-	var curPeriodTotal uint64
-	_ = s.pool.QueryRow(s.ctx, `SELECT total_bytes::bigint FROM member_usage_periods WHERE member_id = $1 ORDER BY period_start DESC LIMIT 1`, s.memberA.memberID).Scan(&curPeriodTotal)
-	tier2ThresholdBytes := curPeriodTotal + 1500
-
-	prepTier1Create := s.apiCall(s.admin, http.MethodPost, "/api/v1/admin/policies", map[string]any{
-		"definition_id":  s.fairUseShadowDefID.String(),
-		"type":           "fair_use",
-		"schema_version": 1,
-		"reason":         "TEST ONLY stage memberA in Tier 1 before usage threshold crossing",
-		"payload": map[string]any{
-			"mode":             "enforce",
-			"effective_at":     effAt,
-			"effective_period": "immediate",
-			"accounting_basis": map[string]any{"period_type": "utc_calendar_month", "metering_version": "forward_admission_v1", "measure": "total_bytes"},
-			"minimum_rate":     map[string]any{"down_bps": 1000000, "up_bps": 1000000},
-			"tiers": []map[string]any{
-				{"threshold_bytes": "0", "down_bps": 100000000, "up_bps": 50000000, "priority": 1, "display_name": map[string]any{"zh-TW": "TEST ONLY 標準速率"}},
-				{"threshold_bytes": "2000", "down_bps": 10000000, "up_bps": 5000000, "priority": 3, "display_name": map[string]any{"zh-TW": "TEST ONLY 降速一階"}},
-				{"threshold_bytes": strconv.FormatUint(tier2ThresholdBytes, 10), "down_bps": 5000000, "up_bps": 2000000, "priority": 5, "display_name": map[string]any{"zh-TW": "TEST ONLY 降速二階"}},
-			},
-			"overrides": []map[string]any{},
-		},
-	}, idemHeaders())
-	var prepTier1Rev struct {
-		RevisionID uuid.UUID `json:"revision_id"`
-	}
-	_ = json.Unmarshal(prepTier1Create.body, &prepTier1Rev)
-	var verBeforePrep string
-	_ = s.pool.QueryRow(s.ctx, `SELECT resource_version::text FROM policy_definitions WHERE id = $1`, s.fairUseShadowDefID).Scan(&verBeforePrep)
-	prepHeaders := idemHeaders()
-	prepHeaders["If-Match"] = `"` + verBeforePrep + `"`
-	_ = s.apiCall(s.admin, http.MethodPost, "/api/v1/admin/policies/"+s.fairUseShadowDefID.String()+"/activate", map[string]any{
-		"revision_id": prepTier1Rev.RevisionID,
-		"reason":      "TEST ONLY activate Tier 1 staging revision",
-	}, prepHeaders)
-
-	if !s.waitFor(20*time.Second, func() bool {
-		_, _, _, downBps, _ := s.queryFUPMemberState(s.memberA.memberID)
-		gens := s.queryDesiredGenerations(s.nodeID, s.node2ID)
-		return downBps == 10000000 && gens[s.nodeID.String()] > genNodeAfter1 && gens[s.node2ID.String()] > genNode2After1
-	}) {
-		t.Fatalf("AT19 staging memberA in Tier 1 (10Mbit/5Mbit) before usage threshold crossing did not recompile carrying exits")
-	}
+	// 4. Transition 2: fup.member_generation_changed via usage ingestion moving memberB across the Tier 2 threshold (6000 B -> 5Mbit/2Mbit)
+	// Under the active mode=enforce policy, memberB starts in Tier 0 (0 B < 6000 B, 100Mbit/50Mbit, fair_use.applying == false).
 	_, _, _, _ = s.ackNodeGeneration(s.nodeID, s.incarnationID, s.agentClient, 0)
 	_, _, _, _ = s.ackNodeGeneration(s.node2ID, s.incarnation2ID, s.node2Client, 0)
 	if !s.waitFor(10*time.Second, func() bool {
-		resp := s.apiCall(s.memberA, http.MethodGet, "/api/v1/member/usage", nil, nil)
+		resp := s.apiCall(s.memberB, http.MethodGet, "/api/v1/member/usage", nil, nil)
 		if resp.status != http.StatusOK {
 			return false
 		}
@@ -598,7 +553,7 @@ func (s *liveSuite) evalAT19(t *testing.T) Record {
 		_ = json.Unmarshal(resp.body, &mu)
 		return !mu.FairUse.Applying
 	}) {
-		t.Fatalf("AT19 staging memberA in Tier 1 did not clear fair_use.applying")
+		t.Fatalf("AT19 memberB initial fair_use.applying did not clear before threshold-crossing usage ingestion")
 	}
 
 	// Ensure outbox and node generations are completely settled before driving threshold-crossing usage ingestion
@@ -612,18 +567,18 @@ func (s *liveSuite) evalAT19(t *testing.T) Record {
 	genNodeBefore2 := gensBefore2[s.nodeID.String()]
 	genNode2Before2 := gensBefore2[s.node2ID.String()]
 	genOtherBefore2 := gensBefore2[s.otherNodeID.String()]
-	fupMemberGenBefore2, _, _, _, _ := s.queryFUPMemberState(s.memberA.memberID)
+	fupMemberGenBefore2, _, _, _, _ := s.queryFUPMemberState(s.memberB.memberID)
 
-	trThreshold := s.runCountedTransfer("member", "node", s.deviceA, 1)
+	trThreshold := s.runCountedTransfer("member-b", "node", s.deviceB, 1)
 	ingestStart := time.Now().UTC()
-	latestEvt, _, _ := s.ingestNodeUsageEvent(s.nodeID, s.incarnationID, s.agentClient, uuid.MustParse(s.memberA.memberID), s.deviceA, 800, 1200)
+	latestEvt, _, _ := s.ingestNodeUsageEvent(s.nodeID, s.incarnationID, s.agentClient, uuid.MustParse(s.memberB.memberID), s.deviceB, 3500, 4000)
 	_ = trThreshold
 
 	// Wait for usage ingestion -> fup.member_generation_changed -> RecompileBatch to increment desired_config_generation on both carrying exits (node, node2) and NOT on otherNodeID
 	var gensAfter2 map[string]uint64
 	var genNodeAfter2, genNode2After2, genOtherAfter2 uint64
 	if !s.waitFor(25*time.Second, func() bool {
-		_, _, _, downBps, _ := s.queryFUPMemberState(s.memberA.memberID)
+		_, _, _, downBps, _ := s.queryFUPMemberState(s.memberB.memberID)
 		gensAfter2 = s.queryDesiredGenerations(s.nodeID, s.node2ID, s.otherNodeID)
 		genNodeAfter2 = gensAfter2[s.nodeID.String()]
 		genNode2After2 = gensAfter2[s.node2ID.String()]
@@ -641,7 +596,7 @@ func (s *liveSuite) evalAT19(t *testing.T) Record {
 	_, _, _, _ = s.ackNodeGeneration(s.nodeID, s.incarnationID, s.agentClient, genNodeAfter2)
 	applyingObservedTrue2 := false
 	_ = s.waitFor(10*time.Second, func() bool {
-		resp := s.apiCall(s.memberA, http.MethodGet, "/api/v1/member/usage", nil, nil)
+		resp := s.apiCall(s.memberB, http.MethodGet, "/api/v1/member/usage", nil, nil)
 		if resp.status != http.StatusOK {
 			return false
 		}
@@ -659,7 +614,7 @@ func (s *liveSuite) evalAT19(t *testing.T) Record {
 	var applyingFalseAt2 time.Time
 	var uEnforce2 api.MemberUsage
 	if !s.waitFor(15*time.Second, func() bool {
-		resp := s.apiCall(s.memberA, http.MethodGet, "/api/v1/member/usage", nil, nil)
+		resp := s.apiCall(s.memberB, http.MethodGet, "/api/v1/member/usage", nil, nil)
 		if resp.status != http.StatusOK {
 			return false
 		}
@@ -674,7 +629,7 @@ func (s *liveSuite) evalAT19(t *testing.T) Record {
 	}
 	wallClock2Ms := applyingFalseAt2.Sub(ingestStart).Milliseconds()
 
-	fupMemberGenAfter2, _, fupTierIdx2, fupDown2, fupUp2 := s.queryFUPMemberState(s.memberA.memberID)
+	fupMemberGenAfter2, _, fupTierIdx2, fupDown2, fupUp2 := s.queryFUPMemberState(s.memberB.memberID)
 	tcNodeDown2, _, _ := s.execInContainer("node", "tc", "class", "show", "dev", "fvmb0")
 	tcNodeUp2, _, _ := s.execInContainer("node", "tc", "class", "show", "dev", "fvup0")
 	tcNode2Down2, _, _ := s.execInContainer("node2", "tc", "class", "show", "dev", "fvmb0")
