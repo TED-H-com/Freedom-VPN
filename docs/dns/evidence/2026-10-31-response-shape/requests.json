@@ -1,0 +1,305 @@
+[
+  {
+    "method": "PUT",
+    "path": "/control/querylog/config/update",
+    "body": {
+      "anonymize_client_ip": true,
+      "enabled": false,
+      "file_enabled": false,
+      "ignored": [],
+      "interval": 86400000
+    }
+  },
+  {
+    "method": "PUT",
+    "path": "/control/stats/config/update",
+    "body": {
+      "enabled": false,
+      "ignored": [],
+      "interval": 86400000
+    }
+  },
+  {
+    "method": "PUT",
+    "path": "/control/safesearch/settings",
+    "body": {
+      "enabled": false,
+      "bing": false,
+      "duckduckgo": false,
+      "ecosia": false,
+      "google": false,
+      "pixabay": false,
+      "yandex": false,
+      "youtube": false
+    }
+  },
+  {
+    "method": "POST",
+    "path": "/control/filtering/config",
+    "body": {
+      "enabled": true,
+      "interval": 0
+    }
+  },
+  {
+    "method": "POST",
+    "path": "/control/dns_config",
+    "body": {
+      "blocked_response_ttl": 60,
+      "blocking_mode": "nxdomain",
+      "bootstrap_dns": [
+        "192.0.2.2:5353"
+      ],
+      "disable_ipv6": false,
+      "dnssec_enabled": false,
+      "edns_cs_enabled": false,
+      "fallback_dns": [],
+      "local_ptr_upstreams": [],
+      "protection_enabled": true,
+      "ratelimit": 0,
+      "upstream_dns": [
+        "192.0.2.2:5353"
+      ],
+      "use_private_ptr_resolvers": false
+    }
+  },
+  {
+    "method": "POST",
+    "path": "/control/filtering/set_rules",
+    "body": {
+      "rules": [
+        "! fvpn-bundle-version: 1",
+        "! fvpn-profile-id: response-shape",
+        "! fvpn-policy-generation: 1",
+        "! fvpn-bundle-sha256: 28ed98fded146bdd13adc6b1fdedb60fb41ba94b3abc81fb273f47a64f3a6d02"
+      ]
+    }
+  },
+  {
+    "method": "POST",
+    "path": "/control/cache_clear",
+    "body": {}
+  },
+  {
+    "method": "PUT",
+    "path": "/control/querylog/config/update",
+    "body": {
+      "anonymize_client_ip": true,
+      "enabled": false,
+      "file_enabled": false,
+      "ignored": [],
+      "interval": 86400000
+    }
+  },
+  {
+    "method": "PUT",
+    "path": "/control/stats/config/update",
+    "body": {
+      "enabled": false,
+      "ignored": [],
+      "interval": 86400000
+    }
+  },
+  {
+    "method": "PUT",
+    "path": "/control/safesearch/settings",
+    "body": {
+      "enabled": false,
+      "bing": false,
+      "duckduckgo": false,
+      "ecosia": false,
+      "google": false,
+      "pixabay": false,
+      "yandex": false,
+      "youtube": false
+    }
+  },
+  {
+    "method": "POST",
+    "path": "/control/filtering/config",
+    "body": {
+      "enabled": true,
+      "interval": 0
+    }
+  },
+  {
+    "method": "POST",
+    "path": "/control/dns_config",
+    "body": {
+      "blocked_response_ttl": 60,
+      "blocking_mode": "nxdomain",
+      "bootstrap_dns": [
+        "192.0.2.2:5353"
+      ],
+      "disable_ipv6": false,
+      "dnssec_enabled": false,
+      "edns_cs_enabled": false,
+      "fallback_dns": [],
+      "local_ptr_upstreams": [],
+      "protection_enabled": true,
+      "ratelimit": 0,
+      "upstream_dns": [
+        "192.0.2.2:5353"
+      ],
+      "use_private_ptr_resolvers": false
+    }
+  },
+  {
+    "method": "POST",
+    "path": "/control/filtering/set_rules",
+    "body": {
+      "rules": [
+        "! fvpn-bundle-version: 1",
+        "! fvpn-profile-id: response-shape",
+        "! fvpn-policy-generation: 2",
+        "! fvpn-bundle-sha256: 4dca9cb6e92559cfbe995dda542f187a3533eb0a2a023e284ddb4ae26fa2470f",
+        "! layer-1: admin_block",
+        "|blocked.example.com^$important",
+        "||wild.example.com^$important"
+      ]
+    }
+  },
+  {
+    "method": "POST",
+    "path": "/control/cache_clear",
+    "body": {}
+  },
+  {
+    "method": "POST",
+    "path": "/control/dns_config",
+    "body": {
+      "blocked_response_ttl": 60,
+      "blocking_mode": "default",
+      "bootstrap_dns": [
+        "192.0.2.2:5353"
+      ],
+      "disable_ipv6": false,
+      "dnssec_enabled": false,
+      "edns_cs_enabled": false,
+      "fallback_dns": [],
+      "local_ptr_upstreams": [],
+      "protection_enabled": true,
+      "ratelimit": 0,
+      "upstream_dns": [
+        "192.0.2.2:5353"
+      ],
+      "use_private_ptr_resolvers": false
+    }
+  },
+  {
+    "method": "POST",
+    "path": "/control/cache_clear",
+    "body": {}
+  },
+  {
+    "method": "POST",
+    "path": "/control/dns_config",
+    "body": {
+      "blocked_response_ttl": 60,
+      "blocking_mode": "null_ip",
+      "bootstrap_dns": [
+        "192.0.2.2:5353"
+      ],
+      "disable_ipv6": false,
+      "dnssec_enabled": false,
+      "edns_cs_enabled": false,
+      "fallback_dns": [],
+      "local_ptr_upstreams": [],
+      "protection_enabled": true,
+      "ratelimit": 0,
+      "upstream_dns": [
+        "192.0.2.2:5353"
+      ],
+      "use_private_ptr_resolvers": false
+    }
+  },
+  {
+    "method": "POST",
+    "path": "/control/cache_clear",
+    "body": {}
+  },
+  {
+    "method": "PUT",
+    "path": "/control/querylog/config/update",
+    "body": {
+      "anonymize_client_ip": true,
+      "enabled": false,
+      "file_enabled": false,
+      "ignored": [],
+      "interval": 86400000
+    }
+  },
+  {
+    "method": "PUT",
+    "path": "/control/stats/config/update",
+    "body": {
+      "enabled": false,
+      "ignored": [],
+      "interval": 86400000
+    }
+  },
+  {
+    "method": "PUT",
+    "path": "/control/safesearch/settings",
+    "body": {
+      "enabled": false,
+      "bing": false,
+      "duckduckgo": false,
+      "ecosia": false,
+      "google": false,
+      "pixabay": false,
+      "yandex": false,
+      "youtube": false
+    }
+  },
+  {
+    "method": "POST",
+    "path": "/control/filtering/config",
+    "body": {
+      "enabled": true,
+      "interval": 0
+    }
+  },
+  {
+    "method": "POST",
+    "path": "/control/dns_config",
+    "body": {
+      "blocked_response_ttl": 5,
+      "blocking_mode": "nxdomain",
+      "bootstrap_dns": [
+        "192.0.2.2:5353"
+      ],
+      "disable_ipv6": false,
+      "dnssec_enabled": false,
+      "edns_cs_enabled": false,
+      "fallback_dns": [],
+      "local_ptr_upstreams": [],
+      "protection_enabled": true,
+      "ratelimit": 0,
+      "upstream_dns": [
+        "192.0.2.2:5353"
+      ],
+      "use_private_ptr_resolvers": false
+    }
+  },
+  {
+    "method": "POST",
+    "path": "/control/filtering/set_rules",
+    "body": {
+      "rules": [
+        "! fvpn-bundle-version: 1",
+        "! fvpn-profile-id: response-shape",
+        "! fvpn-policy-generation: 3",
+        "! fvpn-bundle-sha256: f5276841c79188592b2ebe49883993543f6cf6a951c03e6d20eb43eecd26e62b",
+        "! layer-1: admin_block",
+        "|blocked.example.com^$important",
+        "||wild.example.com^$important"
+      ]
+    }
+  },
+  {
+    "method": "POST",
+    "path": "/control/cache_clear",
+    "body": {}
+  }
+]

@@ -1,0 +1,8 @@
+example.com:5353 {
+    file /etc/coredns/db.example.com
+}
+.:5353 {
+    template IN ANY {
+        rcode NXDOMAIN
+    }
+}

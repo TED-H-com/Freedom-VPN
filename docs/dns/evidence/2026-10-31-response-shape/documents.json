@@ -1,0 +1,102 @@
+[
+  {
+    "block_response": "nxdomain",
+    "blocked_ttl_seconds": 60,
+    "bootstrap_dns": [
+      "192.0.2.2:5353"
+    ],
+    "fallback_dns": [],
+    "feeds": [],
+    "kind": "resolver_document",
+    "privacy": {
+      "querylog_enabled": false,
+      "querylog_file_enabled": false,
+      "statistics_enabled": false
+    },
+    "profile_code": "response-shape",
+    "rules": [],
+    "safe_search": false,
+    "schema_version": 1,
+    "upstreams": [
+      "192.0.2.2:5353"
+    ]
+  },
+  {
+    "block_response": "nxdomain",
+    "blocked_ttl_seconds": 60,
+    "bootstrap_dns": [
+      "192.0.2.2:5353"
+    ],
+    "fallback_dns": [],
+    "feeds": [],
+    "kind": "resolver_document",
+    "privacy": {
+      "querylog_enabled": false,
+      "querylog_file_enabled": false,
+      "statistics_enabled": false
+    },
+    "profile_code": "response-shape",
+    "rules": [
+      {
+        "action": "block",
+        "domain": "blocked.example.com",
+        "include_subdomains": false,
+        "layer": "admin_block",
+        "reason": "admin_rule",
+        "rule_id": "01900000-0000-7000-8000-000000000001"
+      },
+      {
+        "action": "block",
+        "domain": "wild.example.com",
+        "include_subdomains": true,
+        "layer": "admin_block",
+        "reason": "admin_rule",
+        "rule_id": "01900000-0000-7000-8000-000000000002"
+      }
+    ],
+    "safe_search": false,
+    "schema_version": 1,
+    "upstreams": [
+      "192.0.2.2:5353"
+    ]
+  },
+  {
+    "block_response": "nxdomain",
+    "blocked_ttl_seconds": 5,
+    "bootstrap_dns": [
+      "192.0.2.2:5353"
+    ],
+    "fallback_dns": [],
+    "feeds": [],
+    "kind": "resolver_document",
+    "privacy": {
+      "querylog_enabled": false,
+      "querylog_file_enabled": false,
+      "statistics_enabled": false
+    },
+    "profile_code": "response-shape",
+    "rules": [
+      {
+        "action": "block",
+        "domain": "blocked.example.com",
+        "include_subdomains": false,
+        "layer": "admin_block",
+        "reason": "admin_rule",
+        "rule_id": "01900000-0000-7000-8000-000000000001"
+      },
+      {
+        "action": "block",
+        "domain": "wild.example.com",
+        "include_subdomains": true,
+        "layer": "admin_block",
+        "reason": "admin_rule",
+        "rule_id": "01900000-0000-7000-8000-000000000002"
+      }
+    ],
+    "safe_search": false,
+    "schema_version": 1,
+    "upstreams": [
+      "192.0.2.2:5353"
+    ]
+  }
+]
