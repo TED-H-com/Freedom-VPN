@@ -49,12 +49,15 @@ func (l *live) nativeMatrix(r *record) {
 		time.Sleep(3 * time.Second)
 		beforePath, pe := l.hook.ObserveNativeUnderlay(l.ctx)
 		chosenBefore, cbErr := l.selectedNativePath()
+		familyOK := func(p selectedPath) bool {
+			return (p.Family == "ipv4" || p.Family == "ipv6") && (row.family == "dual" || p.Family == row.family)
+		}
 		before, be := l.hook.DeviceByteCounters(l.ctx, id)
 		got, ge := l.fixture("member", "-mode", "bulk", "-addr", l.originIP()+":9446", "-device", id.String())
 		after, ae := l.hook.DeviceByteCounters(l.ctx, id)
 		afterPath, ape := l.hook.ObserveNativeUnderlay(l.ctx)
 		chosenAfter, caErr := l.selectedNativePath()
-		r.jsonCheck(label+" transfer", "64064 TCP bytes and upload/download counters increase; actual chosen family recorded", map[string]any{"selection": selection, "before_path": beforePath, "after_path": afterPath, "selected_exit_before": chosenBefore, "selected_exit_after": chosenAfter, "before_counters": before, "after_counters": after, "transfer": got}, "native down/up; ObserveNativeUnderlay; fixture bulk; DeviceByteCounters", cbErr == nil && caErr == nil && chosenBefore.Connected && chosenAfter.Connected && down == nil && up == nil && ready && pe == nil && be == nil && ge == nil && ae == nil && ape == nil && got.Available && got.Bytes == 64064 && before.Present && after.Present && after.Upload > before.Upload && after.Download > before.Download)
+		r.jsonCheck(label+" transfer", "64064 TCP bytes and upload/download counters increase; actual chosen family recorded", map[string]any{"selection": selection, "before_path": beforePath, "after_path": afterPath, "selected_exit_before": chosenBefore, "selected_exit_after": chosenAfter, "before_counters": before, "after_counters": after, "transfer": got}, "native down/up; ObserveNativeUnderlay; fixture bulk; DeviceByteCounters", familyOK(chosenBefore) && familyOK(chosenAfter) && cbErr == nil && caErr == nil && chosenBefore.Connected && chosenAfter.Connected && down == nil && up == nil && ready && pe == nil && be == nil && ge == nil && ae == nil && ape == nil && got.Available && got.Bytes == 64064 && before.Present && after.Present && after.Upload > before.Upload && after.Download > before.Download)
 	}
 	for _, row := range []struct{ platform, protocol string }{{"linux", "quic"}, {"android", "tcp"}, {"ios", "tcp"}, {"windows", "tcp"}, {"macos", "tcp"}} {
 		selection, e := labstack.SelectNativeFixture(labstack.NativeFixtureInputs{Underlay: "dual", MTU: 1280, Protocol: row.protocol, Platform: row.platform})
@@ -68,7 +71,11 @@ func (l *live) nativeMatrix(r *record) {
 	}
 	// Follow-up 15 supplies a real relay fault and member UDP, separately from QUIC.
 	// Its bounded hold controls eth0. Select IPv4 so eth1 cannot remain a direct IPv6 path.
-	_, _ = l.hook.ApplyNativeInputs(l.ctx, labstack.NativeFixtureInputs{Underlay: "ipv4", MTU: 1500, Protocol: "tcp", Platform: "linux"})
+	relayInput, relayErr := l.hook.ApplyNativeInputs(l.ctx, labstack.NativeFixtureInputs{Underlay: "ipv4", MTU: 1500, Protocol: "tcp", Platform: "linux"})
+	r.jsonCheck("relay IPv4 precondition", "available; IPv6 member UDP held", relayInput, "ApplyNativeInputs(ipv4) before eth0 relay hold", relayErr == nil && relayInput.Available)
+	if relayErr != nil {
+		return
+	}
 	before, _ := l.hook.ReadMemberPath(l.ctx, "")
 	forced, e := l.hook.ForceMemberRelay(l.ctx, "", true)
 	r.jsonCheck("forced native relay", "observed relay", map[string]any{"before": before, "forced": forced, "error": safeError(e)}, "ForceMemberRelay", e == nil && forced.Relayed > 0)
