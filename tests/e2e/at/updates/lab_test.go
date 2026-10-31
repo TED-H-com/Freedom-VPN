@@ -387,16 +387,8 @@ func (r *runner) enroll(ctx context.Context, admin *session) {
 	r.nodeID, r.incID = created.Enrollment.NodeId, identity.Incarnation
 }
 func (r *runner) writeUpdaterConfig() error {
-	boot, err := r.lab.docker(r.lab.node, "cat", "/etc/vpn-node/boot-id")
-	if err != nil {
-		return err
-	}
-	bootID, err := uuid.Parse(strings.TrimSpace(string(boot)))
-	if err != nil {
-		return err
-	}
 	cfg := map[string]any{
-		"node_id": r.nodeID.String(), "incarnation_id": r.incID.String(), "boot_id": bootID.String(),
+		"node_id": r.nodeID.String(), "incarnation_id": r.incID.String(),
 		"revoked": false,
 		"platform": map[string]any{
 			"os_id": "ubuntu", "os_version": "24.04", "architecture": "amd64", "updater_version": "1.0.0",
@@ -441,4 +433,20 @@ func (l *lab) nodeSlot() string {
 		return "node2"
 	}
 	return "node"
+}
+
+// D-080 reads the kernel boot id in updater. The devstack entrypoint still
+// fills this agent input with a random UUID; align it before enrollment so
+// challenges, attestations and observations refer to the same boot.
+func (l *lab) alignKernelBoot(slot string) error {
+	if slot != "node" && slot != "node2" {
+		return errors.New("unknown node slot")
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	if !waitUntil(ctx, time.Second, func() bool { return l.stage(l.prefix+"-"+slot, "/var/lib/vpn-node/e2e/status.json") == "waiting_token" }) {
+		return errors.New("node not waiting for enrollment")
+	}
+	_, err := l.docker(l.prefix+"-"+slot, "sh", "-c", `cat /proc/sys/kernel/random/boot_id > /etc/vpn-node/boot-id`)
+	return err
 }

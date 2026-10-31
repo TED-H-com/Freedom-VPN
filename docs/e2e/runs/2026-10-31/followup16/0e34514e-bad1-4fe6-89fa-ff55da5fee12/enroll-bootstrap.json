@@ -1,0 +1,50 @@
+{
+  "id": "enroll-bootstrap",
+  "title": "Installer token, one bootstrap, NetBird join",
+  "spec": [
+    "§6",
+    "§19 AT06"
+  ],
+  "status": "pass",
+  "observations": [
+    {
+      "name": "token_length",
+      "detail": "52"
+    },
+    {
+      "name": "secret_available",
+      "detail": "true"
+    },
+    {
+      "name": "node_id",
+      "detail": "01a190a5-a2cf-7899-a13d-290bf3ecd317"
+    },
+    {
+      "name": "setup_key_persisted",
+      "detail": "true"
+    },
+    {
+      "name": "bootstrap_again",
+      "detail": "BOOTSTRAP_CONSUMED"
+    },
+    {
+      "name": "signal_before",
+      "detail": "first run client: DeadlineExceeded dialing netbird.example.invalid with no port; failed to connect to the signalling server: dial context deadline exceeded"
+    },
+    {
+      "name": "signal_after",
+      "detail": "Connected"
+    },
+    {
+      "name": "peer_count",
+      "detail": "1"
+    },
+    {
+      "name": "setup_key_count",
+      "detail": "2"
+    }
+  ],
+  "at": "2026-10-31T06:29:02Z",
+  "run_id": "0e34514e-bad1-4fe6-89fa-ff55da5fee12",
+  "source_commit": "59903b57c41115f02ccfb0b2bc1d56dc095b5a39"
+}

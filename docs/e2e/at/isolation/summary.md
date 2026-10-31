@@ -1,89 +1,154 @@
-# Follow-up 6 — provisional window measured; tc rejection remains open
+# Follow-up 7 — assembled isolation evidence
 
-Final run `bf671f3a-c6ac-4824-9107-425c4c5a5f02`, harness `e711ebd822eda2ea1b5ba10b187818fda6777a74` (`source_dirty=false`). Images were built on origin/main baseline `5d1e5ce8727ca824fa24197ce2568bd513bac7f3` (through #256); the commits above that baseline change only this lane’s harness and evidence. Product UTC `2026-10-31T04:37:28Z`–`2026-10-31T05:01:32Z`. Node incarnation `01a1903f-a5db-7d5f-a305-f41a17c0e519`. Immutable image IDs are in each case JSON. Mechanism lab 18.549 s; assembled test 1444.38 s. The full make exited **2**, `lab=0 stack=1`, because blocked and failed acceptance cases remain. The final run required one additional real node restart after a tc rejection; that intervention is retained in `recovery-action.json`.
+Final full run **041e9e48-79a6-45dd-a19d-8b5a63290655**, started
+2026-10-31T06:16:20Z; final case records written at 06:31:52Z. Harness build
+`d1a90ea60abd853f404e1df571dd3a5871d89b5f`, clean at launch. Product baseline
+is current-main `c6e3eca` (includes #267/#272); immutable image IDs are in each
+AT JSON. No product code changed. The initial startup diagnostic was terminated
+before its AT matrix because its driver had started before the final observer
+update; none of its outcomes is used here.
 
-| Product case | Result | Passed / blocked / failed subchecks | Remaining blocked or failed checks |
+**This was an assisted run, not an unattended clean pass.** The scripted
+member-route restoration and the extra API generation in `recovery-action.json`
+did not restore serving before the clone test. All current pass claims below
+come from this one full run. Mechanism AT10–AT13 passed separately.
+
+| Case | Result | Checks: pass / blocked / fail | Deciding observation |
 |---|---|---|---|
-| [AT10 JSON](AT10.json) / [Markdown](AT10.md) | blocked | 7 / 1 / 0 | node interface and serving generation change |
-| [AT11 JSON](AT11.json) / [Markdown](AT11.md) | blocked | 2 / 1 / 0 | IPv6 platform matrix |
-| [AT12 JSON](AT12.json) / [Markdown](AT12.md) | blocked | 5 / 5 / 0 | same-member A1-to-A2; same-member A2-to-A1; cross-member A1-to-B1; cross-member B1-to-A1; designated DNS exception |
-| [AT13 JSON](AT13.json) / [Markdown](AT13.md) | fail | 5 / 1 / 1 | continuous crash/NetBird/reboot/updater transitions; short whole-node lease expiry |
+| AT10 / ISO01, ISO02 | blocked | 7 / 2 / 0 | Six protected destinations and the interface/generation transition passed. Foreign-tc containment withdrew serving, but clean Apply/D-096 recovery was not established. No qualifying provisional report. |
+| AT11 / ISO01, ISO03 | blocked | 2 / 1 / 0 | Metadata and deprecated-6to4 passed; real IPv6/platform paths remain unavailable. |
+| AT12 / ISO01, ISO04, DNS03 | pass | 10 / 0 / 0 | Four peer denies, three management-port denies, designated UDP/TCP DNS, forged-source attribution and group withdrawal passed with their counted controls. |
+| AT13 / ISO02, ENT02, SEC01 | fail | 5 / 1 / 1 | Whole-node expiry failed the unchanged baseline-within-one-tick predicate. Post-deadline denial passed; the full continuous crash/NetBird/reboot/updater matrix remains blocked. |
 
-Requirement mapping (spec §4 and §19): AT10 → ISO01/ISO02; AT11 → ISO01/ISO03; AT12 → ISO01/ISO04/DNS03; AT13 → ISO02/ENT02/SEC01. The offline-lease interpretation is §16.3.
+## Foreign ingress redirect and recovery
 
-## Provisional lease sampling — measured on genuine recovery
+All times below use the shared host UTC clock. `foreign-redirect.json` retains
+bracketed kernel reads and accepted product observations;
+`foreign-redirect-analysis.json` derives the intervals. The node `any` capture
+identifies **both fvmb0 ingress and fvup0 egress**. The member-side capture has
+553 packets and the node capture 12; both completed with zero kernel drops.
+The separate origin capture failed because that image has no tcpdump; it is
+retained as an error, never described as an empty target capture.
 
-[Agent-core #250](https://github.com/TED-H-com/Freedom-VPN/pull/250) states an approximately **5 s** lab window, beside usage follow-up 3’s **5021 / 5025 ms**. The read-only observer captured **19 qualifying samples** at a **250 ms** target cadence (in-window median **250.001 ms**, maximum **251.026 ms**). Ready-observed → populated lease was **4767 ms**. Ready-received → populated lease was **4760.713 ms** (**4760 ms** truncated), the comparable timestamp definition used by the usage helper.
+- Injection: **06:29:29.204706725–06:29:29.278990163Z**, clsact ingress flower
+  `pref 49152`, UDP/9 to the controlled origin, mirred redirect to fvup0.
+- An unsnatted packet left fvup0 at **06:29:29.305982538Z**, before quarantine.
+  This is a measured redirect bypass before withdrawal; there is no blanket
+  zero-packet claim for the entire injection window.
+- `TC_FOREIGN_FILTER` report `01a190a6-22f8-74d6-8178-96f3551b3f4c` was observed
+  at **06:29:29.464313239Z** and accepted at **06:29:29.490009445Z**. It includes
+  `tc_evidence`, `initial_quarantine`, `quarantine` and `apply_quarantine` errors,
+  with the actual flower/mirred attachment and retained link/baseline evidence.
+- First confirmed member-down read: **06:29:29.805935672–06:29:29.832949690Z**,
+  at most **628.243 ms** after injection began. fvmb0 is administratively down;
+  fvup0 and control eth0 stay up. Accepted observations continue. After this
+  read, **538 member probes and zero node-uplink packets** were recorded.
+- Filter removed and member routes deliberately withheld:
+  **06:29:32.865020378–06:29:32.889058275Z**. Capacity PATCH returned 202 and
+  signed generation 32 was received at **06:29:33.290828482Z**.
+- Harness restoration began **06:29:39.259867752Z**, **6,370.809 ms** after
+  removal completed. It restored the saved lab IPv4 address/route state; the
+  commands also reported already-existing objects. NetBird was running, but
+  **the harness performed the recorded restoration**.
+- No `member_path_unconfigured` report was observed. Reads instead retained
+  `TC_FOREIGN_FILTER`, `policy_missing` and non-serving state. Thus the phase
+  labeled “D-096 hold” is an attempted measurement, **not proof that a clean
+  Apply reached the D-096 check**. Recovery remains blocked.
+- Extra assist at **06:31:25.419525174Z**: API PATCH accepted generation 33,
+  plus another restoration of the saved member path. The foreign case's final
+  counted recovery control was false; no recovery pass is claimed.
 
-| Event | UTC timestamp | Evidence |
-|---|---|---|
-| Node ready observation | `2026-10-31T04:51:43.419446069Z` | report `01a1904c-a0bb-76dc-8cdd-f804c12b371a` |
-| Central acceptance of ready | `2026-10-31T04:51:43.426204Z` | observation `b09b4bb2-b018-478e-86ec-5c21d42b7c46` |
-| First qualifying poll | `2026-10-31T04:51:43.671715545Z` | generation `15`, bindings > 0, zero grants |
-| Last qualifying poll | `2026-10-31T04:51:48.172657421Z` | same provisional lease |
-| Populated lease issued | `2026-10-31T04:51:48.186917Z` | same generation |
-| Accepted and kernel forwarding admitted | `2026-10-31T04:51:48.422301658Z` | report forwarding true, live member accept present |
-| Counted member transfer confirmed | `2026-10-31T04:51:53.384928680Z` | AT12 node-management-22 heartbeat, generation 15, bytes 18545 → 21177 |
+D-100 is respected: neither expected topology hashes nor product state rows
+were edited. The ordinary earlier interface-change test passed on generation
+16; the follow-up 6 unexpected rejection did not recur at that point. The
+known injected attachment is separately identified in this run.
 
-Every qualifying sample has grant-less lease `9fd0e002-19b7-4365-acfc-cf1dfca754d4`, desired bindings, matching generation/observed lease, ready/passed status, exactly the lease/qos/source_binding checks with `AWAITING_MEMBER_GRANTS`, exactly one `errors[]` entry at stage `lease`, report forwarding false and no live member accept. [Full real report](provisional-ready-report.json), [samples and all 19 timestamps](provisional-recovery.json). The first and last live samples span **4500.942 ms**. These are repeated state polls inside one window, not 19 distinct agent reports. Database and kernel reads are sequential and separately timestamped.
+## D-087 provisional capture
 
-This window followed the extra recovery restart recorded in [recovery-action.json](recovery-action.json), after the tc rejection described below. The observer made no mutations and submitted no synthetic agent observation. Its source was `604f4596e29572c654e2e285acad301a199ca672`; stack images and the main driver remained `e711ebd822eda2ea1b5ba10b187818fda6777a74`. The explicit offline review checks same-run/build provenance and the counted control, then changes only the provisional check. The original main-driver AT10 record is preserved under [history/follow-up-6-bootstrap-only](history/follow-up-6-bootstrap-only/). The positive control’s own `at` is the start of its wait; correlation uses the post-transfer heartbeat above.
+The receiver was installed before enrollment/empty-lease issuance, with
+heartbeat/poll/observation intervals all **1 s** and a **100 ms** drain.
+`receiver-capture.json` retains **4,482 transactions**, including **3,629
+observation POST bodies** and 581 successful observation responses. The
+boot-indexed central snapshot has 581 source reports and 11 clone reports;
+**zero source report IDs are missing**. Clone requests use its own proxy and
+are not mislabeled as source receiver traffic. The receiver continued until
+the source stopped during teardown.
 
-The initial bootstrap remains separately recorded: **452** polls, median **249.992 ms**, maximum **281.919 ms**, **0** same-generation grant-less/bindings-positive samples, **0** accepted awaiting-grants reports. It changed from an empty generation-5 lease to a populated generation-6 lease; it did not traverse the qualifying state. [Timeline](convergence-timeline.json), [analysis](sampling-analysis.json), [issuance history](bootstrap-renewal-evidence.json). Those setup latencies are not substituted for the recovery measurement. The 55 s ready / 60 s request fake-clock proof in #250 uses a 90 s heartbeat and is distinct from this lab.
+The first export hit the shared driver's diagnostic output limit. The complete
+20 MB disk capture was recovered through a task-owned, network-disabled reader,
+then checked against the central report index. The reader container/image were
+removed. The owned exporter now bypasses that diagnostic limit for future runs.
 
-## Interface-change tc rejection and assisted recovery
+**Zero reports meet the provisional definition.** Thirty distinct reports
+mention `awaiting_member_grants`, but the pre-freeze candidates also have a
+failed tunnel probe/safety status, and later candidates have the identity latch;
+they are not the requested ready/passed single-error state. Rejected 429
+reports and mismatched/expired/empty-binding states are excluded. Therefore
+there is **no new ready-to-populated duration** to compare with follow-up 6's
+assisted **4,767 ms** or usage follow-up 3's **5,021 / 5,025 ms**. Those numbers
+remain historical comparators, not this run's measurements.
 
-AT10’s six destination controls passed. During the subsequent interface-change test, the agent emitted `HEALTH_CHECK_FAILED` / `TC_FOREIGN_FILTER` at `2026-10-31T04:40:51.80844254Z`. Observation `f2cfdff8-3e46-49e8-86f1-b38128ea6cd4` / report `01a19042-af78-79f0-8dd6-9d13ce85c2f2` shows safety failed and forwarding off. The interface loop made 3968 attempts over 60.026981429 s with zero delivered, but its after-control failed; AT10 continuity stays blocked. The four AT12 peer checks then lacked counted positive controls and also stay blocked. No foreign tc state was planted before this event.
+The stream also contains **3,031 HTTP 429 responses**. The rate-limited retry
+stream and observation backlog are retained for agent-core/wire-nodes; absence
+of a qualifying accepted report is not inferred from a latest-state snapshot.
 
-The concurrent capacity update was created at `04:40:52.423892Z`, after the error, so it is not identified as the trigger. [Chronological evidence](interface-change-evidence.json) includes the later read-only, post-rollback tc state, which cannot identify the rejected object. A real node restart at `04:51:02.744373Z`–`04:51:12.849221Z` recovered forwarding through the normal entrypoint. Later management, forged source, withdrawal and the disable/revoke/restart/finite-member AT13 controls passed; whole-node expiry failed its continuity assertion. These do not promote the earlier blocked checks. Netlab and agent-core own the required reproduction and rejected-state evidence; [requests](requests.md) gives exact locations.
+## ISO-F6-03 whole-node deadline
 
-## Serving gate and D-079 attribution
+Signed node deadline: **06:29:02.925490361Z**, generation 31, 60-second lease.
+The original case predicate was not changed. The near-deadline counted request
+succeeded (99,079 → 103,011 bytes), but the baseline was not seen within the
+configured **1 s** tick, so the check and AT13 remain **fail** (§16.3).
 
-`foreign_rules`, verbatim: `[]`.
+The continuous node capture has **2,389 packets, zero kernel drops**, tagged by
+fvmb0/fvup0 and direction. All **251 probes** have start/end timestamps; **189
+connected**, and none connected after the deadline. The independent origin
+capture failed (no tcpdump); node ingress and uplink evidence remains available.
 
-`foreign_rule_classification`, verbatim: `no foreign rule; Docker embedded DNS NAT absent; serving pass attributable to lab fix #240; D-079 #241 present but not exercised`.
+- Last successful SYN-ACK to the member: **06:29:02.696232187Z**, **229.258 ms
+  before** the signed deadline. Last successful connect completed at
+  **06:29:02.696688147Z**.
+- First failed connect: **06:29:02.746857075–06:29:02.897114892Z**. Its SYN was
+  captured on fvmb0 at **06:29:02.748690751Z**, **176.800 ms before** expiry,
+  with no corresponding fvup0 packet. The observed stop lies between that
+  failed ingress and the last successful response; it is not a post-deadline leak.
+- First baseline read bracket: **06:29:04.228093040–06:29:04.250071427Z**,
+  **1,302.603–1,324.581 ms after** expiry.
+- First expiry-heartbeat read bracket:
+  **06:29:10.466713660–06:29:10.496189725Z**, **7,541.223–7,570.699 ms after**
+  expiry. Earlier reads still held a serving heartbeat from 06:28:35.295935274Z.
+- Post-deadline ingress was denied and admission counters stayed
+  **126,231 → 126,231**. The fleet ceiling was restored to 86,400 through the
+  API; both audit records are in AT13.
 
-D-079 **#241** is built (`verify_foreign.go` commit `a4191fa`). There are no foreign rules or Docker NAT chains for it to classify and no `loopback_scoped` entries. The pass is attributable to the lab fix **#240**. Accepted serving report `01a19041-2044-7558-8ee1-2666e65e2711`, observation row `4a1dc037-c2c0-4955-90a5-c19a2928e998`, at `2026-10-31T04:39:09.636348464Z` is retained verbatim in AT10. The harness did not change foreign nft/tc state.
+Conservative monotonic expiry is required by §16.3. The roughly 177–229 ms early
+packet cutoff is evidence for calibration, not by itself a claim of a spec
+violation. The strict one-tick baseline result remains failed. Raw packet
+headers, probes and bracketed reads accompany `expiry-timing-analysis.json`.
 
-## tc section, verbatim
+## Identity-freeze consumer
 
-The **mechanism lab** returned this `VerifyServing` evidence on #256 (`lab-AT10-tc.json`); HTB/fq_codel objects are owned and every filter attachment is empty:
+The real clone fixture was reachable. It presents a copied enrolled identity
+and incarnation from a second lab network; clone detection remains ENR-02/03's
+ownership. Source acceptance of report `01a190a8-1b90-7a45-95af-4cf4146ee529`
+returned **`identity_frozen: true` at 06:31:48.795212863Z**. Its queued body had
+been observed at 06:31:38.640670555Z; acceptance timing is used for the latch.
 
-```json
-[{"interface":"fv-fh","attachment":"qdisc","objects":[{"kind":"htb","handle":"1:","root":true},{"kind":"fq_codel","handle":"30:","parent":"1:30"},{"kind":"fq_codel","handle":"2f:","parent":"1:2f"}]},{"interface":"fv-fh","attachment":"root","objects":[]},{"interface":"fv-fh","attachment":"ingress","objects":[]},{"interface":"fv-fh","attachment":"egress","objects":[]},{"interface":"fv-fh","attachment":"1:1","objects":[]},{"interface":"fv-fh","attachment":"1:2f","objects":[]},{"interface":"fv-fh","attachment":"1:30","objects":[]},{"interface":"fv-fh","attachment":"1:fffe","objects":[]},{"interface":"fv-fh","attachment":"2f:","objects":[]},{"interface":"fv-fh","attachment":"30:","objects":[]},{"interface":"fv-ih","attachment":"qdisc","objects":[{"kind":"htb","handle":"1:","root":true},{"kind":"fq_codel","handle":"30:","parent":"1:30"},{"kind":"fq_codel","handle":"2f:","parent":"1:2f"}]},{"interface":"fv-ih","attachment":"root","objects":[]},{"interface":"fv-ih","attachment":"ingress","objects":[]},{"interface":"fv-ih","attachment":"egress","objects":[]},{"interface":"fv-ih","attachment":"1:1","objects":[]},{"interface":"fv-ih","attachment":"1:2f","objects":[]},{"interface":"fv-ih","attachment":"1:30","objects":[]},{"interface":"fv-ih","attachment":"1:fffe","objects":[]},{"interface":"fv-ih","attachment":"2f:","objects":[]},{"interface":"fv-ih","attachment":"30:","objects":[]}]
-```
+Renewal started at **06:31:48.818693730Z**, **23.481 ms** later, with null
+`applied_config_generation`. The first captured frozen heartbeat has wall time
+**06:31:48.979081056Z**, **183.868 ms** after acceptance, `serving 0` and reason
+`identity_frozen`. Subsequent captured reports omit generation ACKs and report
+no forwarding. However, the source was already non-serving with empty grants
+before acceptance. **Withdrawal of live grants within one heartbeat is not
+proved by this run.** Restart persistence after the freeze was not tested here.
 
-The **assembled product observation** has no `tc` or `serving_evidence` section (`has_tc=false`, `has_serving_evidence=false`). [Metadata](serving-readback-metadata.json) identifies the observation above. This is routed to netlab with agent-core/contracts; the lab section is not relabeled as an assembled observation. No foreign tc fixture was planted.
+## Archives, checks and remaining scope
 
-## AT13 and the owned wait correction
+`history/follow-up-6/` contains all 44 former current files byte-identically;
+`history/follow-up-5/` is untouched. Handover follow-up 13 already reads the
+follow-up 5 archive, so no handover test edit was needed. Obsolete follow-up 6
+recovery artifacts were removed from the current root after archiving.
 
-- **disable published exit: pass.** result=timeout; route=192.0.6.10 via 172.28.33.1 dev eth0 src 172.28.33.128 uid 0      cache
-- **revoke established TCP and UDP: pass.** binding removed and new serving generation=true; sibling counted=true; native route withdrawal and kernel revoke are not independently attributed
-- **post-revoke kernel ingress attribution: pass.** revoked 100.89.119.208 ctunku+1 and zero forwarded=true; sibling u_01a19040ecc07e89a1b8e577f056f35c +1=true
-- **node restart with durable identity: pass.** container restart=fvpn-w4-isolation-node; recovered counted=true; continuous forbidden-flow coverage not established
-- **lease member expiry under control loss: pass.** five new TCP requests after finite signed member deadline; control and worker stopped; admission bytes frozen=true; route retained throughout=true; node lease has a later deadline
-- **short whole-node lease expiry: fail.** 60s lease held after control loss; near-deadline forward=false; baseline within one tick=false; ingress without uplink=true
-
-Finite-member deadline `2026-10-31T05:00:00Z`, control stopped `2026-10-31T04:59:35Z`; post-deadline bytes `2632` → `2632`. Whole-node lease, verbatim: `{"issued_at":"2026-10-31T05:00:28.561634193Z","expires_at":"2026-10-31T05:01:28.561634193Z","generation":"29","max_offline_seconds":60,"member_count":2,"source":"node-store"}`. Signed deadline `2026-10-31T05:01:28.561634193Z`, baseline at `2026-10-31T05:01:28.675726567Z`, tick `5s`.
-
-Fleet PUT evidence: `200 etag="3" body={"default_max_offline_lease_seconds":86400,"max_offline_lease_seconds":60,"resource_version":"3","updated_at":"2026-10-31T05:00:23.781625Z"}`; restore: `200 etag="4" body={"default_max_offline_lease_seconds":86400,"max_offline_lease_seconds":86400,"resource_version":"4","updated_at":"2026-10-31T05:01:32.451479Z"}`. Both `fleet_config.update` audit payloads are retained in AT13.
-
-Whole-node expiry remains **fail**: the near-deadline request did not count, and `early_baseline_at=2026-10-31T05:01:27.784897861Z` labels a read begun 776.736 ms before the signed deadline. The read completion was not recorded; the heartbeat was stale. [Timing analysis and limitations](expiry-timing-analysis.json) distinguish those observations from an exact transition or validated product defect. The negative after expiry passed with bytes frozen at 50370. Agent-core and acceptance must reconcile monotonic timing and retain finer probe/read timestamps; the strict case result is unchanged.
-
-Disable operation transitions on the corrected run:
-
-- `2026-10-31T04:54:37.600526439Z pending`
-- `2026-10-31T04:54:39.607503706Z partially_succeeded`
-- `2026-10-31T04:54:43.61813201Z succeeded`
-
-The first full run (`82eac082`, harness `5ddd112`) stopped its disable wait at `partially_succeeded`, before agent acknowledgment, and restored intent. The owned helper now waits for observation-driven completion. That diagnostic run is preserved under [history/follow-up-6-diagnostic](history/follow-up-6-diagnostic/); it is not the final acceptance run.
-
-The AT13 evaluator SHA256 remains `d4cd4dfd0957cace3ef9cd63168a4653c75ac1d0ba07d5c5ca1af00603f38d53`; `capture.go` and `capture_review_test.go` were not changed. IPv6/platform, designated-DNS and the continuous fault matrix retain follow-up 5’s blockers and owners. See [requests](requests.md).
-
-## Gates and teardown
-
-Area lint, root `make go-lint`, `go vet ./...`, owned tests and amd64/arm64 builds passed. `go test ./...` fails only in `tests/handover/TestHandover_Followup13Claims`: the dated `docs/ops/README.md` does not yet contain this run ID and its refreshed AT12/AT13 counts; it also requires a handover refresh when AT13 changes to fail. Those paths are outside this lane; the orchestrator must refresh the handover. The pre-refresh whole-module run passed, but that is not the final evidence gate. The live gate remains exit 2 for blocked and failed product cases. `git diff --check` and the committed-evidence hygiene test pass. arm64 cross-compilation is not a hardware run. [Command exits and actual output tails](validation-results.json) retain the exact final handover failures.
-
-Final inventory at `2026-10-31T05:02:34.039822Z`: **`{"containers":0,"networks":0,"volumes":0,"images":0}`**. [Full inventory](cleanup-inventory.json). The teardown fix from #246 leaves no task-prefixed object, including the target fixture and cache tags.
-
-Follow-up 5’s 33 records remain byte-identical under [history/follow-up-5](history/follow-up-5/). [RUN.md](RUN.md) documents reproduction and evidence boundaries.
+Final owned inventory is **0 / 0 / 0 / 0** (containers/networks/volumes/images).
+`validation-results.json` records actual command exits and output tails.
+No physical arm64 or member-platform run occurred; cross-build evidence is
+separate. No push, PR, main rewrite, product code or contract edit was made.

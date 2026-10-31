@@ -1,0 +1,13 @@
+# native-dns-config
+
+Native client uses the two issued controlled resolvers
+
+Status: pass
+
+Run: a81785fa-77eb-428a-b846-fb33196a2dcf
+
+Source: ec84d71f45ce3622b11a8a7e55f67c9c1c432d29
+
+Spec: §12.2, AT21
+
+- configuration: {"observed_native_resolvers":["192.0.3.53:53","192.0.3.54:53"],"native_resolvers_match":true,"resolvers":["192.0.3.53","192.0.3.54"],"native_dns_enabled":true,"system_uses_native_stub":true,"document_hashes":["dd1b8febe3a490da4ba7ec1f7e73f2a22250125cae23ce7d02e69e7e46c185da","dd1b8febe3a490da4ba7ec1f7e73f2a22250125cae23ce7d02e69e7e46c185da"],"same_applied_document":true,"configured_at":"2026-10-31T06:48:30.592901494Z"}

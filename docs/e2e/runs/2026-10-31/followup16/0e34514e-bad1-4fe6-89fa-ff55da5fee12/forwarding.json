@@ -1,0 +1,46 @@
+{
+  "id": "forwarding",
+  "title": "Member forwarding follows a serving lease",
+  "spec": [
+    "§5",
+    "§19 AT10"
+  ],
+  "status": "blocked",
+  "observations": [
+    {
+      "name": "nft_table_present",
+      "detail": "true"
+    },
+    {
+      "name": "forward_policy",
+      "detail": "drop"
+    },
+    {
+      "name": "forward_generation",
+      "detail": "5"
+    },
+    {
+      "name": "baseline_marker",
+      "detail": "false"
+    },
+    {
+      "name": "member_accept_rules",
+      "detail": "6"
+    },
+    {
+      "name": "forward_excerpt",
+      "detail": "type filter hook forward priority mangle; policy drop; | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=5 fvpn_metering=forward_admission_v1\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a190a6-49a7-70d8-937f-80b4210102a7:1e89\" | iifname \"fvmb0\" oifname \"fvup0\" meta nfproto ipv6 counter name \"ctv6\" drop | iifname \"fvup0\" oifname \"fvmb0\" meta nfproto ipv6 co"
+    },
+    {
+      "name": "note",
+      "detail": "forward chain policy is drop, generation 5, with 6 member accept rules; AT10 is not claimed"
+    },
+    {
+      "name": "owner",
+      "detail": "w2-agent-core / w1-netlab: compare named drop/admission counters and tunnel captures in member-traffic; lease generation alone is not the gate"
+    }
+  ],
+  "at": "2026-10-31T06:30:18Z",
+  "run_id": "0e34514e-bad1-4fe6-89fa-ff55da5fee12",
+  "source_commit": "59903b57c41115f02ccfb0b2bc1d56dc095b5a39"
+}

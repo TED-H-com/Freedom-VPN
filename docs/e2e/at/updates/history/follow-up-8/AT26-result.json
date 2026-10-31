@@ -1,0 +1,46 @@
+{
+  "stage": "report",
+  "state": "rolled_back",
+  "health": {
+    "processes": "passed",
+    "dns_policy": "passed",
+    "tunnel_probe": "passed",
+    "internet_only": "passed",
+    "identity_and_state": "passed"
+  },
+  "job_id": "01a18e96-24b7-79d2-a6e6-018d65ecc727",
+  "attempt": 1,
+  "boot_id": "fcae2b18-f3e0-47de-99ee-fb69eb891069",
+  "node_id": "01a18e94-1ede-7e18-8340-2b6263173ea9",
+  "batch_id": "01a18e96-24b6-797f-b18b-95bb4d295b7e",
+  "result_id": "e17f0500-e5c4-54fb-9c68-32d0da6db653",
+  "target_id": "01a18e96-24b7-74b6-b7ab-32d58e5c3a7e",
+  "error_code": "HEALTH_CHECK_FAILED",
+  "generation": "3",
+  "started_at": "2026-10-30T20:52:55Z",
+  "finished_at": "2026-10-30T20:53:27Z",
+  "payload_hash": "5b2c615236f59c9eef7ba65a4a26383f903adb82741629f6aacfd1ada4340da8",
+  "incarnation_id": "01a18e94-2123-7ae8-9820-7a80fca3fe42",
+  "manifest_sha256": "0fa0a8125f578fa7596936cf68b2ec3a9d949a3835ba29e3489061b8e7a8aaf2",
+  "candidate_health": {
+    "processes": "passed",
+    "dns_policy": "passed",
+    "tunnel_probe": "failed",
+    "internet_only": "passed",
+    "identity_and_state": "passed"
+  },
+  "usage_checkpoint": {
+    "new_meter_epoch_id": "01a18e96-4738-74e8-8b7e-d868d8433b2c",
+    "central_acked_through": "0",
+    "closed_meter_epoch_id": "32f531c3-1b15-478e-8259-ffad4019b8ef",
+    "last_durable_event_seq": "0"
+  },
+  "policy_generation": "9",
+  "recovery_required": false,
+  "current_release_id": "01a18e94-0630-7535-a302-8ebf65284d54",
+  "publication_intent": "unpublished",
+  "previous_release_id": "01a18e93-fe44-711f-a01a-286d5565297d",
+  "requested_release_id": "01a18e93-fe44-711f-a01a-286d5565297d",
+  "state_schema_version": 1,
+  "member_forwarding_enabled": false
+}

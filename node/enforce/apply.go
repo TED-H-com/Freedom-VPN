@@ -83,10 +83,13 @@ func Apply(ctx context.Context, ex Executor, m Model, previous map[string]Counte
 			return ApplyResult{Quarantine: &q}, errors.Join(err, qerr)
 		}
 	}
-	tcState, err := loadTC(ctx, ex, []string{m.Datapath.Uplink, m.Datapath.MemberIngress})
+	tcState, loadReads, err := loadTC(ctx, ex, []string{m.Datapath.Uplink, m.Datapath.MemberIngress})
 	if err != nil {
+		evidence := ServingEvidence{TC: loadReads}
+		evidence.retainTC(m.Generation, "load", err)
 		q, qerr := Quarantine(ctx, ex, m)
-		return ApplyResult{Quarantine: &q, Evidence: ServingEvidence{Quarantined: q.Recorded, QuarantinedLinks: quarantinedLinksFor(m, q)}}, errors.Join(checkf(ReasonTCForeignFilter, "tc ownership read failed before Apply"), qerr)
+		evidence.Quarantined, evidence.QuarantinedLinks = q.Recorded, quarantinedLinksFor(m, q)
+		return ApplyResult{Quarantine: &q, Evidence: evidence}, errors.Join(err, qerr)
 	}
 	resets := DetectMeterResets(previous, state)
 	if len(m.QoS.Assignments) == 0 && len(state.Classes) > 0 {
@@ -121,8 +124,11 @@ func Apply(ctx context.Context, ex Executor, m Model, previous map[string]Counte
 		tcErr = verifyTCObjects(reads, ownershipModel, owned)
 	}
 	if tcErr != nil {
+		evidence := ServingEvidence{TC: reads}
+		evidence.retainTC(m.Generation, "pre_apply", tcErr)
 		q, qerr := Quarantine(ctx, ex, m)
-		return ApplyResult{Plan: plan, Resets: resets, Evidence: ServingEvidence{TC: reads, Quarantined: q.Recorded, QuarantinedLinks: quarantinedLinksFor(m, q)}, Quarantine: &q}, errors.Join(tcErr, qerr)
+		evidence.Quarantined, evidence.QuarantinedLinks = q.Recorded, quarantinedLinksFor(m, q)
+		return ApplyResult{Plan: plan, Resets: resets, Evidence: evidence, Quarantine: &q}, errors.Join(tcErr, qerr)
 	}
 	// Shape first, then open forwarding. A failed nft install still rolls
 	// back to the baseline, which removes the qdisc (§8.2, §11.5).
@@ -281,37 +287,40 @@ func loadState(ctx context.Context, ex Executor) (State, error) {
 	return ParseState(raw)
 }
 
-func loadTC(ctx context.Context, ex Executor, ifaces []string) (TCState, error) {
+func loadTC(ctx context.Context, ex Executor, ifaces []string) (TCState, []TCReadEvidence, error) {
 	st := TCState{Devices: map[string]TCDev{}}
+	var reads []TCReadEvidence
+	failure := func(iface, attachment, status string) (TCState, []TCReadEvidence, error) {
+		r := TCReadEvidence{Interface: iface, Attachment: attachment, Error: status}
+		return st, append(reads, r), tcCheck(r, nil)
+	}
 	for _, ifc := range ifaces {
 		raw, err := ex.Output(ctx, "tc", "-j", "qdisc", "show", "dev", ifc)
 		if err != nil {
-			if missingQdisc(err) {
-				st.Devices[ifc] = TCDev{}
-				continue
-			}
-			return st, err
+			return failure(ifc, "qdisc", "read_failed")
 		}
+		objects, err := ParseTCObjects(raw)
+		if err != nil {
+			return failure(ifc, "qdisc", "invalid_json")
+		}
+		reads = append(reads, TCReadEvidence{Interface: ifc, Attachment: "qdisc", Objects: objects})
 		view, err := ParseQdiscJSON(raw)
 		if err != nil {
-			return st, err
+			return failure(ifc, "qdisc", "invalid_json")
 		}
 		classRaw, err := ex.Output(ctx, "tc", "-j", "class", "show", "dev", ifc)
 		if err != nil {
-			if !missingQdisc(err) {
-				return st, err
-			}
-			classRaw = nil
+			return failure(ifc, "class", "read_failed")
 		}
 		if len(strings.TrimSpace(string(classRaw))) > 0 {
 			view, err = ParseClassJSON(classRaw, view)
 			if err != nil {
-				return st, err
+				return failure(ifc, "class", "invalid_listing")
 			}
 		}
 		st.Devices[ifc] = TCDev{RootHTB: view.RootHTB, Leaves: view.Leaves, Classes: childClassMinors(view)}
 	}
-	return st, nil
+	return st, reads, nil
 }
 
 // DetectMeterResets is DetectResets, except when the table, the forward chain, or

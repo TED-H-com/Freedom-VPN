@@ -167,10 +167,16 @@ func (p *probe) callHeaders(method, path string, body any, headers map[string]st
 	return last, err
 }
 
-func classifyLimited(raw string) (class, path string) {
+func classifyLimited(method, raw string) (class, path string) {
 	path = raw
 	if u, err := url.Parse(raw); err == nil && u.Path != "" {
 		path = u.Path
+	}
+	// Control #252: five admin list operations moved from browser to read.
+	if method == http.MethodGet && (path == "/api/v1/admin/audit-events" ||
+		path == "/api/v1/admin/nodes" || path == "/api/v1/admin/members" ||
+		path == "/api/v1/admin/devices" || (strings.HasPrefix(path, "/api/v1/admin/nodes/") && strings.HasSuffix(path, "/incarnations"))) {
+		return "read", path
 	}
 	switch {
 	case strings.Contains(path, "/agent/enroll"):
@@ -195,15 +201,17 @@ func (p *probe) limitPhase() string {
 
 func (p *probe) sawLimited(method, raw, retryAfter string) int {
 	p.limitedCount++
-	class, path := classifyLimited(raw)
+	class, path := classifyLimited(method, raw)
 	if len(p.limited) >= 20 {
 		return -1
 	}
 	p.limited = append(p.limited, map[string]string{
 		"method": method, "class": class, "path": path,
-		"retry_after":     strconv.FormatBool(strings.TrimSpace(retryAfter) != ""),
-		"retry_succeeded": "false",
-		"phase":           p.limitPhase(),
+		"retry_after":       strconv.FormatBool(strings.TrimSpace(retryAfter) != ""),
+		"retry_succeeded":   "false",
+		"phase":             p.limitPhase(),
+		"retry_after_value": retryAfter,
+		"class_source":      "request method/path mapped to control #252 classify; no response class header",
 	})
 	return len(p.limited) - 1
 }
@@ -231,8 +239,8 @@ func (p *probe) rateReview() {
 		findings = append(findings, "429 samples were truncated")
 	}
 	for _, sample := range samples {
-		if sample["class"] != "browser" {
-			findings = append(findings, "non-browser class "+sample["class"])
+		if sample["class"] != "browser" && sample["class"] != "read" {
+			findings = append(findings, "unexpected class "+sample["class"])
 		}
 		if sample["retry_after"] != "true" {
 			findings = append(findings, "429 without Retry-After")
@@ -253,7 +261,15 @@ func (p *probe) rateReview() {
 	detail["phase"] = phase
 	detail["http_429"] = p.limitedCount
 	detail["samples"] = samples
-	detail["rule"] = "pass when every 429 carries Retry-After, the same request succeeds on the next attempt, every class is browser, and the join phase records 0; the count is informational"
+	detail["rule"] = "D-078 with control #252: every 429 carries Retry-After, the same request succeeds on the next attempt, each class is browser or read, and join records 0; the count is informational"
+	detail["calibration_prs"] = []int{233, 252}
+	detail["admin_list_class"] = "read"
+	detail["admin_list_bucket"] = "ReadRate"
+	detail["admin_list_per_second"] = 30
+	detail["admin_list_burst"] = 60
+	detail["ingress_per_second"] = 20
+	detail["ingress_burst"] = 60
+	detail["limits_source"] = "internal/config.Defaults and docs/control/AUTH.md; live retry behavior below, not a saturation calibration"
 	detail["limiter_class_for_prior_failures"] = "browser"
 	detail["bucket"] = "BrowserRate"
 	detail["per_second"] = 10
@@ -266,7 +282,7 @@ func (p *probe) rateReview() {
 	detail["rescored_header_value_recorded"] = false
 	detail["rescored_reasoning"] = "Follow-up 3 run 60a7102e recorded http_429 2, both class browser: GET /api/v1/admin/audit-events and GET /api/v1/admin/nodes/01a18f10-3f31-7ae7-890a-55354e77cec0/incarnations. The saved samples have no Retry-After value. callHeaders retried them with the same Idempotency-Key using Retry-After, audit_read and incarnation_history passed, and the join phase recorded http_429 0. D-078 scores that as the limiter working. The raw count stays in prior_checks."
 	detail["changed_commit"] = "286eb57b44c2e783257767918680a0e1f097f106"
-	detail["what_changed"] = "D-078 scores 429s by behaviour. Admin callHeaders and agent enroll post still retry HTTP 429 using Retry-After (1-30s, default 1s only when the header is absent) with the same Idempotency-Key. Admin attempts stop at 6 and agent enroll attempts stop at 4. A 429 without Retry-After, a retry that is still 429, or a non-browser class is a finding. The zero-count criterion is withdrawn."
+	detail["what_changed"] = "D-078 scores 429s by behaviour. Admin callHeaders and agent enroll post still retry HTTP 429 using Retry-After (1-30s, default 1s only when the header is absent) with the same Idempotency-Key. Admin attempts stop at 6 and agent enroll attempts stop at 4. A 429 without Retry-After, a retry that is still 429, or a class outside browser/read is a finding. Control #252 moved admin list reads to read; the zero-count criterion is withdrawn."
 	p.note("AT06", "rate_limit_review", status, detail)
 }
 
@@ -899,7 +915,7 @@ func (p *probe) at07(t *testing.T) {
 	// These live nodes are not reinstalled here. Retirement, retained usage and
 	// cursor behavior are measured on the AT06 node through the public
 	// revokeNode + node_id enrollment + agent enroll path. Counted usage and
-	// the installer wrappers stay blocked until devstack follow-up 15.
+	// the installer path is probed separately below.
 	p.expect("AT07", "incarnation_history", firstOne && secondOne, map[string]any{
 		"operation": "listNodeIncarnations", "node_ids": []uuid.UUID{first.NodeID, second.NodeID},
 		"each_count": 1, "retirement_measured_on": "AT06 incarnation_history",
@@ -919,11 +935,10 @@ func (p *probe) at07(t *testing.T) {
 	p.nodeAudit(first.NodeID)
 	p.nodeAudit(second.NodeID)
 	p.machineIdentity()
+	p.usageHoldScope()
 	// The clone fixture stops and resumes node. node2 stays the clean second exit.
 	p.clonedIdentity(first.NodeID)
-	// PauseAgent resumes durable identity. It is not an installer rerun or a
-	// usage-ACK hold. Follow-up 13 did not export those product hooks.
-	p.blockedProductHooks()
+	p.installerHooks()
 }
 
 func hex64(s string) bool {
@@ -1528,17 +1543,6 @@ func (p *probe) clonedIdentity(node uuid.UUID) {
 		return
 	}
 	p.note("AT07", "cloned_identity_conflict", "pass", detail)
-}
-
-func (p *probe) blockedProductHooks() {
-	const usage = "ENR-05 stays blocked, waiting on devstack f15. Expected exports: HoldUsageAcknowledgements(ctx, slot, hold), UsageLedgerSnapshot(ctx, slot), CountedMemberTraffic. fvpn-agent usage snapshot [-json] is merged and is not these hooks. Owner: w4-usage, then devstack. Not emulated."
-	const installer = "ENR-06 stays blocked, waiting on devstack f15. Expected exports: RerunInstaller(ctx, slot), ControlledReinstall(ctx, slot, enrollment). fvpn-node-install install --json and reenroll --json --token-file are not these wrappers. The clone-conflict entrypoint re-enroll is not ENR-06. Owner: packaging/installer, then devstack. Not emulated."
-	p.note("AT07", "counted_unacked_usage", "blocked", usage)
-	p.note("AT07", "installer_rerun", "blocked", installer)
-	p.note("AT07", "identity_ledger_preserved", "blocked", "ENR-05/ENR-06 stay blocked, waiting on devstack f15. Counted unacknowledged ledger and RerunInstaller(ctx, slot) are required. Not emulated.")
-	p.note("AT07", "controlled_reinstall", "blocked", installer)
-	p.note("AT07", "old_certificate_denied", "blocked", "ENR-06 stays blocked, waiting on devstack f15. Old-certificate mTLS rejection stays inside ControlledReinstall(ctx, slot, enrollment). Not emulated.")
-	p.note("AT07", "historical_usage_retained", "blocked", "ENR-05/ENR-06 stay blocked, waiting on devstack f15. Counted usage across RerunInstaller(ctx, slot) and ControlledReinstall(ctx, slot, enrollment) is not exported. listNodeIncarnations usage retention is measured separately. Not emulated.")
 }
 
 func (p *probe) peerUniqueness(t *testing.T) {

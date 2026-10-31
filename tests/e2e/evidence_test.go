@@ -1,6 +1,7 @@
 package e2e
 
 import (
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"strings"
@@ -58,5 +59,50 @@ func TestSEC02_WriteRedactsIdentitySubjects(t *testing.T) {
 		if strings.Contains(string(raw), "synthetic-private-subject") || !strings.Contains(string(raw), "same_subject") || !strings.Contains(string(raw), "test-run") {
 			t.Fatalf("unsafe or incomplete evidence: %s", raw)
 		}
+	}
+}
+
+// The follow-up campaign's archived failures are part of the public artifact.
+func TestCommittedFixtureEvidence_ValidAndHygieneClean(t *testing.T) {
+	root := "../../docs/e2e/runs/2026-10-31/followup16"
+	if _, err := os.Stat(root); os.IsNotExist(err) {
+		t.Skip("no committed follow-up 16 records")
+	}
+	records := 0
+	err := filepath.WalkDir(root, func(path string, d os.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if d.IsDir() {
+			return nil
+		}
+		raw, err := os.ReadFile(path)
+		if err != nil {
+			return err
+		}
+		if filepath.Ext(path) == ".json" {
+			var rec Record
+			if json.Unmarshal(raw, &rec) != nil || rec.ID == "" || rec.RunID == "" || len(rec.SourceCommit) != 40 {
+				t.Errorf("invalid fixture record: %s", path)
+			}
+			switch rec.Status {
+			case StatusPass, StatusBlocked, StatusFail:
+			default:
+				t.Errorf("invalid claim: %s", path)
+			}
+			records++
+		}
+		for _, bad := range []string{"/ho" + "me/", "BEGIN " + "EC PRIVATE KEY", "BEGIN " + "RSA PRIVATE KEY", "BEGIN " + "OPENSSH PRIVATE KEY", "sk_" + "live_", "gh" + "p_", "gh" + "o_", "user_code=", "\"password\":", "\"setup_key\":"} {
+			if strings.Contains(string(raw), bad) {
+				t.Errorf("unsafe committed evidence: %s", path)
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if records == 0 {
+		t.Fatal("no fixture records scanned")
 	}
 }
