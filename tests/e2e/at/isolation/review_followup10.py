@@ -82,9 +82,14 @@ write('expiry-failure-correlation.json',dict(run_id=r['run_id'],status='pass' if
 
 # Independently recheck original D-087 wire bytes and acceptance ordering.
 from grant_evidence import validate as validate_grants
-write('member-grants-audit.json', validate_grants(
-    json.loads((root/'member-grants-transition.json').read_text()),
-    json.loads((root/'member-grants-wire.json').read_text())))
+try:
+    grant_audit=validate_grants(json.loads((root/'member-grants-transition.json').read_text()),
+                               json.loads((root/'member-grants-wire.json').read_text()))
+except (AssertionError,KeyError,ValueError,IndexError) as error:
+    write('member-grants-audit.json',dict(run_id=r['run_id'],status='fail',error_kind=type(error).__name__,
+        reason='The captured transition does not qualify. Retain its AT10 failure, invariant snapshots and original wire; incidental reports cannot supply a fixed-generation transition.'))
+    raise SystemExit('D-087 captured transition failed independent replay')
+write('member-grants-audit.json',grant_audit)
 
 # Join original node acceptance records to both genuine response/report pairs.
 transition=json.loads((root/'member-grants-transition.json').read_text())
