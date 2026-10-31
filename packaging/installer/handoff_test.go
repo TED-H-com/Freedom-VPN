@@ -103,7 +103,8 @@ func TestD089_InstallAndReenrollSeedThroughInstalledBinary(t *testing.T) {
 				t.Fatalf("install error: %v", err)
 			}
 			rep, checkErr := Check(context.Background(), env)
-			if (checkErr != nil) != failed || rep.Baseline == nil {
+			// A mocked successful seed has no journal: check must report that gap.
+			if (checkErr != nil) != (failed || outcome == "supported") || rep.Baseline == nil {
 				t.Fatalf("check %+v %v", rep, checkErr)
 			}
 			if failed {

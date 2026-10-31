@@ -295,14 +295,16 @@ rewritten. Certificate renewal and grant correction create new evidence rows.
 13. Non-null revocation/closure/retirement timestamps and grant revocation reason cannot be cleared or changed. Historical subscriptions, grants, certificates, observations, inbox events, exits, bindings and incarnations reject DELETE/TRUNCATE. retention_config cannot be removed.
 14. Outbox enqueue rejects zero aggregate UUID or blank aggregate/event types; audit append requires nonblank actor/type/action/resource/result. Grants require nonblank reason/creator/revocation reason; grace periods require nonblank reason. Claims are returned ordered by availability and ID.
 15. Logical restore and future immutable backfills require their distinct owner-plus-SET LOCAL exemptions. The ordinary application role cannot activate them. Coordinate singleton and cyclic-pointer staging for data-only restore.
+16. Every migration above **00188** must have a `-- +goose Down` section with SQL that reverses its Up cleanly: `Up`, `DownTo(188)`, then `Up` must succeed. The base set at or below 00188 is exempt from this rule. The floor moves only together with `internal/nodes.TestSECOPS19_D077_NodeDetailUsageOutboxProjectionAndMigration`. Evidence tables created by these migrations are dropped on Down; an unreleased migration's Down may drop its own table. `db-lint` checks for a nonempty Down and the db integration test proves the round trip on one isolated database; both run in db CI.
 
 ## Migrations and compatibility
 
 SQL files are five-digit goose migrations embedded by `db/migrations`.
-The normal policy is forward-only. D-035 explicitly adds
+The production policy is forward-only; the Down/Up invariant above is checked
+on isolated test databases. D-035 explicitly adds
 `00006_purge_retained_audit_format.sql` with a Down that restores the previous
 function body; this is a narrow rollback exception, not permission to reverse
-domain data migrations. Migrations 00001–00005 were corrected
+production domain data migrations. Migrations 00001–00005 were corrected
 in place for F-01–F-16 and the CLI/retention audit follow-up while all databases are disposable development/test
 instances. **Migrations become append-only the moment the orchestrator announces
 the first deployed environment.** After that point, append a new migration;

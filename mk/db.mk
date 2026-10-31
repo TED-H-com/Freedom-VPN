@@ -27,5 +27,6 @@ db-test-sweep:
 # Match the whole-module go-lint gate, including its pinned staticcheck.
 db-lint:
 	@test -z "$$(gofmt -l $$(git ls-files --cached --others --exclude-standard 'internal/db/*.go' 'internal/db/**/*.go' 'db/**/*.go'))" || { echo 'gofmt required'; exit 1; }
+	@$(db-with-disk-tmp) GOTOOLCHAIN=local CGO_ENABLED=0 go test -count=1 ./internal/db -run '^Test15_5_MigrationDownLint'
 	@$(db-with-disk-tmp) GOTOOLCHAIN=local CGO_ENABLED=0 go vet ./internal/db/... ./db/...
 	@$(db-with-disk-tmp) GOTOOLCHAIN=local CGO_ENABLED=0 go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 ./internal/db/... ./db/...
