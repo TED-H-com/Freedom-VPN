@@ -1,8 +1,24 @@
 # Members requests and external blockers
 
-Current full-case status and evidence: [summary.md](summary.md). Historical
+Current full-case status and evidence: [summary.md](summary.md). Follow-up 9 run
+`11e305fe` is immutable in [follow-up 9](history/follow-up-9/RUN.md), with its
+[33-file checksum index](history/follow-up-9/SHA256SUMS) (D-098). Historical
 run `69f92f49` and its requests are immutable in [follow-up 8](history/follow-up-8/requests.md),
 with [32-file checksum index](history/follow-up-8/SHA256SUMS) (D-098).
+
+## Follow-up 10 — 2026-10-31 (D-102, D-126, D-128)
+
+Baseline `d3e9a0f1` includes agent-core 27 (#325), wire-nodes 32 (#321) and
+netlab 19 (#318). **F9-01 is closed as a predicate mismatch under D-126**;
+see the producer/central answers in its section below. The replay accepts the
+three original provisional observations, including the mixed safety report,
+and rejects unexplained safety codes. It does not rewrite the archived failed
+run or prove live recovery. The fresh full mutation sequence is recorded in
+[RUN.md](RUN.md); full-case status continues to include resource blockers.
+
+F8-02 stays unattributed. Netlab 19's answer and devstack 19's exact-sequence
+decode ownership are recorded below. The dated F4-03 / F4-04 / F4-05 / F4-06 /
+F4-07 / F4-10 resource requests and AT20–AT22 DNS expectations are unchanged.
 
 ## Follow-up 9 — 2026-10-31 (D-102)
 
@@ -34,14 +50,14 @@ generation-30 failure. This lane records the complete 90-second window,
 boot/final nft/tc, heartbeats, observations, agent log, generation equality,
 first fresh serving receipt and first counted byte without repair.
 
-**Fresh result:** desired/applied generation **30 → 30**; namespace restart
+**Follow-up 9 result (2026-10-31):** desired/applied generation **30 → 30**; namespace restart
 `2026-10-31T12:06:31.816656225Z`; first fresh serving receipt
 `12:06:47.545258Z` (**15.728602 s**); first counted byte
 `12:06:53.190469871Z` (**21.373814 s**). A new generation-30 lease at
 `12:06:47.408641Z` has seven member grants. The capture retains **88 heartbeat
 samples over 90.337054 s**, boot/final nft/tc, every central observation and the
 agent log, including the initial `TC_FOREIGN_FILTER`. No generation, topology
-or state repair occurred. [Complete capture](AT09-restart.json).
+or state repair occurred. [Complete historical capture](history/follow-up-9/AT09-restart.json).
 This closes the original non-recovery failure, not the full AT09 case.
 
 ### F8-02 — MTU 1280 bulk transfer incomplete
@@ -57,7 +73,7 @@ It cannot assign the exact loss/MSS/fragmentation or fixture read/echo cause.
 and proves IPv4 fragmentation-needed errors traverse nft/tc in both directions.
 Neither independent result attributes the original native failure.
 
-**Fresh result:** dual underlay / MTU 1280 completes **64,064 / 64,064 bytes in 1 ms**, with direct IPv4 selected before and after; device counters increase **67,652 upload / 68,139 download bytes**. All three preceding 1500 rows also complete. [NATIVE.md](NATIVE.md) and [AT09.json](AT09.json) retain every family/path and counter. This is a passing row in the full mutation sequence, not proof of a root-cause fix or an overall AT09 pass.
+**Follow-up 9 result (2026-10-31):** dual underlay / MTU 1280 completes **64,064 / 64,064 bytes in 1 ms**, with direct IPv4 selected before and after; device counters increase **67,652 upload / 68,139 download bytes**. All three preceding 1500 rows also complete. [NATIVE.md](NATIVE.md) and [AT09.json](AT09.json) retain every family/path and counter. This is a passing row in the full mutation sequence, not proof of a root-cause fix or an overall AT09 pass.
 
 **D-123 (2026-10-31): IPv6Block is the v1.0 overlay mode.** The rendered
 `ctv6` drops in both directions prove the netlab IPv6 no-leak control; no
@@ -67,7 +83,48 @@ Keep F8-02 unattributed between NetBird reconnect behavior and fixture echo/read
 behavior until the same row has SYN/MSS, ICMP errors, interface MTUs and
 application read counts sufficient to decide. Do not call it an IPv6 problem.
 
+**Netlab 19 answer (2026-10-31, #318):**
+[G2 F8-02 attribution](../../../poc/G2-f802-native-attribution-2026-10-31.md)
+finds no single transport cause: the failed and successful IPv4 captures have
+unchanged 1240/1460 SYN/SYN-ACK MSS, and published SYN-only summaries cannot
+resolve TCP retransmission, outer fragmentation or endpoint read/write stalls.
+No central/nft/tc cause or production workaround is established. **Devstack 19
+owns the exact-sequence decode/capture**: full payload-free TCP and outer
+headers, capture completeness and endpoint read/write/partial-line counts,
+with the original 12-second deadline and 64,064-byte requirement. The original
+11,011-byte failure remains failed; the follow-up 9 MTU-1280 pass is no fix proof.
+
 ### F9-01 — mixed provisional lease and tc-rejection observation, 2026-10-31
+
+**Closed 2026-10-31 under D-126 / D-128.**
+[Agent-core 27's hand-off](../../../node/followup27-members-2026-10-31.md)
+and [PR #325](https://github.com/TED-H-com/Freedom-VPN/pull/325) confirm the
+existing deliberate synchronous single-decision composition, **no reporter
+race and no producer fix**. `12:06:32.527615Z` is receiver time; the captured
+body's `observed_at` is `12:06:32.521093013Z`. Reasons accumulate; a retained
+enforcement failure overrides the three dependent checks, while the sole
+lease-stage error retains `AWAITING_MEMBER_GRANTS` and its provisional message.
+
+[Wire-nodes 32, PR #321](https://github.com/TED-H-com/Freedom-VPN/pull/321)
+proves acceptance, blocked publication, stored-ACK replay and value-unchanged
+storage/projection of this exact report (JSON-value equality, identical JCS
+and SHA-256). Under D-128, JSONB need not preserve whitespace/key order;
+`SubmitObservation` remains 202 Accepted. No schema or HTTP change is needed.
+
+The retained revision-11 predicate now permits each failed lease/qos/source_binding
+check to carry AWAITING, or the active enforcement safety code only with
+`safety_check_failed`, failed safety and matching apply/preflight stage evidence.
+Historical tc/quarantine rows alone cannot justify that override. Clean
+provisional checks still require AWAITING, including the lease detail; exactly
+one stage=lease error must retain the provisional cause; `lease_expired` stays
+rejected. The offline test replays the entire six-report captured sequence and
+its JCS values, accepts all three provisional rows, and rejects the mixed row
+without the safety reason as well as missing active-stage evidence, overwritten
+or duplicate lease causes, expiry and a passed dependent check. The captured tc
+rejection remains in the immutable archive and is never converted to safety
+success. Full AT09 acceptance remains separate from recovery or replay success.
+
+**Historical follow-up 9 failure/request (superseded by the answer above):**
 
 Owners: **w2-agent-core / w3-wire-nodes**, with orchestrator contract review.
 The complete restart capture contains three non-serving observations. At
