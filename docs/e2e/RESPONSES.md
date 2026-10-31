@@ -800,3 +800,107 @@ uses the genuine checkpoint and keeps the agent alive; only its two executable
 path assertions still need the release-root adoption. F10-02 generated installer
 reporting remains with its named packaging owner. No other lane's register was
 edited, and this worktree was not rebased onto those newly merged changes.
+
+## updates — 2026-10-31 (follow-up 21, F11-01, D-102)
+
+The shared `installerSpec` now supplies the explicit TEST ONLY loopback opt-in
+for its existing `https://127.0.0.1:9444` authenticated proxy. `installArgs`
+requires both that boolean and the exact local origin before adding
+`--allow-loopback`. Production defaults and generated reporting fields are
+unchanged. [Fresh shared-wrapper run 33b9621a](runs/2026-10-31/followup21/33b9621a-41d7-49fb-bc27-1c3f05e4ab44/installer-loopback-wrapper.md)
+passes 3/0/0: actual install exit **0**, status `installed`, generated
+`result_url=https://127.0.0.1:9444/api/v1/agent/update-results`. The generated
+configuration SHA-256 stays
+`14a8975a8a36df9558b9b957e07613476e43de351281eadaae4657e860f06164`.
+No-client-certificate POST returns **403**; the same deliberately invalid empty
+receipt with the generated identity/server CA reaches central validation (**400**).
+This verifies the authenticated endpoint and unchanged configuration, not a
+new successful receipt delivery. Updates 11 retains the real automatic-delivery
+proof. The [run overview](runs/2026-10-31/followup21/README.md) also preserves the
+initial setup failure from sharing a stack with the third-node fixture.
+
+F10-01 needs no further fixture change: updates 11 consumed the regular
+release-root correction and measured installer 27/27 and regular AT23–AT27
+5/5 without the former reporting adapter. Its F10-02 generated-reporting proof
+also stands. Updates F11-02's obsolete offline-install paragraph belongs in
+`docs/updates/node-updater.md`, outside this lane: updater/installer should
+explain initial/same-release retained verified archives and distinguish the
+uncached fallback. No artifact-origin change is warranted by a rejection that
+did not occur; the supplied exact-origin/private-address interpretation is
+accepted. This answer does not claim private-mirror deployment coverage.
+
+## dns-publish / members — 2026-10-31 (follow-up 21, F9-INFLIGHT, D-102)
+
+The shared trace now writes a request start before dispatch, retains outstanding
+requests and joins later completions by identity across the entire closed-case
+cache-change sequence. The [export contract](scenarios/harness-exports.md#follow-up-21--installer-input-and-dns-lifetime-correlation-test-only)
+defines cumulative history, three outstanding sets, receipt continuity and
+per-role snapshot bounds. Current-query `trace_complete` cannot rule out an
+earlier outstanding request. A reply between queries remains visible in the
+next snapshot even if the last query starts no fetch.
+
+[BACKEND §2.1.5](../dns/BACKEND.md#215-f10-03--positive-cache-and-ttl-measured-2026-10-31)
+is adopted: fetch alone is not fallback; different uniquely matched responders
+establish independent caches; failure/timeout plus secondary receipts establish
+fallback. Same-resolver changed class without a new fetch requires inspecting
+older outstanding requests **and their completion times**. Missing history
+keeps the cause ambiguous. Hit wording stays inferred, negative policy synthesis
+stays distinct, and post-query authority SOA is not a cached positive serial.
+The pin's F9-INFLIGHT replacement limitation remains a product finding.
+
+[Final DNS run cba88bbc](runs/2026-10-31/followup21/cba88bbc-a7bf-49f8-9dab-3182123d02aa/dns-history-integrity.md)
+passes **13/0/0**, with **36/36** complete query traces, **85** distinct authority
+requests and **70** identities retained across query snapshots. The positive
+sequence remains primary fetch / inferred primary hit (TTL 9) / post-expiry
+primary fetch. This validates the export; it does not reproduce F9-INFLIGHT.
+
+The fixture explicitly retains its historical **4 KiB (`4096`) cache** for
+comparability, not the pin's 4 MiB default. Both resolvers' actual cache/mode/
+timeout values are read before and after the focused run. The relay's 2-second
+exchange deadline and AdGuard's live upstream timeout are distinct. No cache,
+timeout, policy or TTL assertion is changed, and no TTL-fix claim is made.
+`cce1a688`, the F10-03 historical failure and follow-ups 16–20 are untouched.
+The [114-file D-098 pin set](followup20-archive.sha256) was committed first.
+
+## members / agent-core / netlab — 2026-10-31 (follow-up 21, F11-01–03, D-102)
+
+F11-01's [fixture analysis](scenarios/followup21-members.md#f11-01-the-first-unobserved-segment)
+places the first unobserved segment after member inner `fvnb0` egress and
+before node observable inner ingress. Five member packets, zero matching
+node/origin packets, generation-5 zero admission/diagnostic counters and no
+origin request are retained. The fixture's inner TCP filter cannot observe the
+encrypted outer path, handshake, relay or link drops; it cannot assign the
+missing transport sub-hop. This is not a generation-0 baseline or proven node
+enforcement drop. Netlab 21's transport ownership remains; AT01 stays blocked.
+
+F11-03's [original input/timing extract](followup21-members.json) and
+[health-check analysis](scenarios/followup21-members.md#f11-03-what-the-failed-health-result-actually-asserts)
+retain the exact two injection inputs and twelve generation-13 Applies for
+agent-core 29. All eight failed Applies have `install_ok=false`, 184–304 ms
+render/install brackets against the unchanged 100 ms bound, unreleased guard
+and no verification records. `HEALTH_CHECK_FAILED/stage=apply` is the sanitized
+Apply error, not an observed failed tunnel challenge. Capture/injection work
+can add load, but historical command error/exit, resource pressure and injection
+monotonic bounds were not retained; causation is not established. The fixture
+cannot recreate the original full model/transaction from a later stack. No
+health criterion, fixture timing or positive sibling assertion is changed;
+the correct revoked-source drop does not pass the failed sibling control.
+
+F11-02 is a members readiness prerequisite: a current-generation unexpired
+lease with zero grants and `AWAITING_MEMBER_GRANTS` is not serving. Future D-077
+positive probes must wait for an accepted serving report joined to a populated
+current-generation lease and the intended device's binding, then independently
+assert counted forwarding. Keep the original generation-10 failed transfer.
+The shared hooks do not manufacture grants or force generations. Members owns
+its `forwardingGate` in `tests/e2e/at/members/forwarding_test.go`; no recipient
+harness change or substitute passing rerun is made here. F10-02/F10-03 historical
+failures remain unattributed, while members 11's fresh diagnostics remain passes.
+
+## updater — 2026-10-31 (follow-up 21, F18-01, D-102)
+
+[The negative scenario contract](scenarios/updater-negative.md) adopts updater
+18's stopped-producer interpretation: apply/replay/recover **1/1/2**, sealed
+`CHECKPOINT_FAILED`, blocked forwarding, unchanged baseline/pointer and receipt,
+no candidate success. The old 13/0/1 campaign stays failed and archived. Future
+negative D-125 coverage must require those facts separately from the unchanged
+positive upgrade assertions. No updater behavior or assertion is relaxed.

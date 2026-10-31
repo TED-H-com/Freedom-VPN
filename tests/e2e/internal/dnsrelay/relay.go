@@ -65,12 +65,13 @@ func serveObserved(tcp net.Listener, udp net.PacketConn, upstream, allowedSource
 				go func() {
 					defer func() { <-slots }()
 					started := time.Now().UTC()
+					event := trace.Begin(packet, peer, "udp", started)
 					response, err := Exchange("udp", upstream, packet)
 					if err == nil {
 						_, err = udp.WriteTo(response, peer)
 					}
 					if trace != nil {
-						trace.Record(packet, response, peer, "udp", started, err)
+						trace.Complete(event, response, err)
 					}
 				}()
 			default:
@@ -105,15 +106,16 @@ func serveObserved(tcp net.Listener, udp net.PacketConn, upstream, allowedSource
 					return
 				}
 				started := time.Now().UTC()
+				event := trace.Begin(packet, conn.RemoteAddr(), "tcp", started)
 				response, err := Exchange("tcp", upstream, packet)
 				if trace != nil {
-					defer func() { trace.Record(packet, response, conn.RemoteAddr(), "tcp", started, err) }()
+					defer func() { trace.Complete(event, response, err) }()
 				}
 				if err != nil {
 					return
 				}
 				binary.BigEndian.PutUint16(size[:], uint16(len(response)))
-				_, _ = conn.Write(append(size[:], response...))
+				_, err = conn.Write(append(size[:], response...))
 			}()
 		default:
 			conn.Close()

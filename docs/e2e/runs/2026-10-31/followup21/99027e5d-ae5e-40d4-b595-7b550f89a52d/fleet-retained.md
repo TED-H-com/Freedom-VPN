@@ -1,0 +1,13 @@
+# fleet-retained
+
+Third pre-existing enrolling identity retained before bootstrap
+
+Status: pass
+
+Run: 99027e5d-ae5e-40d4-b595-7b550f89a52d
+
+Source: b27bb361ae1fee1c42579235b794cb09efe4ed3a
+
+Spec: §6.2, AT24, AT26, D-089
+
+- snapshot: {"pending_request_id":"01a1936e-0454-713c-8b39-5e2b60c91e0a","key_sha256":"35fe7ab829257ece60836c2f6a314132df9366ec660fe3ff3d887a214dd6c59b","offline_attempt_failed":true,"incarnation_unbound_at_snapshot":true,"local_stage":"enrolling_snapshot","before_lifecycle":"enrolling","node_id":"01a1936e-000e-7716-af3c-17f735da1077","incarnation_id":"01a1936e-0454-713e-9df1-d68fa0f3da61","retained_at":"2026-10-31T19:27:16.390666779Z","booted_at":"0001-01-01T00:00:00Z","eligible_at":"0001-01-01T00:00:00Z","before_state":"pending","after_state":"","same_identity":false,"eligibility":"first admin API observation of provisioning_state=ready with the retained incarnation; publication/update assignment is separate"}
