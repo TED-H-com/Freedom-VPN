@@ -447,6 +447,11 @@ Corrected above: D-118 executes during bootstrap, so DB/WAL equality is no
 longer required after adoption. Preserve canonical payloads and origin
 sequence/hash/ACK, separately from the replacement stream and its ACK.
 
+The two real reinstall runs retain [eight exact canonical origin events](runs/2026-10-31/followup19/usage-retention.md),
+with origin sequence/hash and ACK before/after adoption plus coherent snapshot
+SHA pins. The serving candidate run retains ACK 4; the stopped-agent run's
+origin ACK advances 3→4. Neither is inferred from the replacement stream.
+
 ## DNS-publish — 2026-10-31 (follow-up 19)
 
 > Devstack follow-up 16, request 1
