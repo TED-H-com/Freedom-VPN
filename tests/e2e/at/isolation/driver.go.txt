@@ -29,23 +29,24 @@ import (
 // This owned test is added to the shared driver package by a Go overlay. No
 // shared implementation is copied: countedFlow/selectExit/tracedFetch run here.
 type isolationRun struct {
-	t             *testing.T
-	ctx           context.Context
-	r             *runner
-	stack         *Stack
-	admin         *session
-	dir           string
-	records       map[string]*iso.Record
-	groupB, planB uuid.UUID
-	a, b          *session
-	a1, a2, b1    *runner
-	binary        string
-	convMu        sync.Mutex
-	convOnce      sync.Once
-	conv          []map[string]any
-	stopConv      chan struct{}
-	convStopped   chan struct{}
-	firstCounted  string
+	t              *testing.T
+	ctx            context.Context
+	r              *runner
+	stack          *Stack
+	admin          *session
+	dir            string
+	records        map[string]*iso.Record
+	groupB, planB  uuid.UUID
+	a, b           *session
+	a1, a2, b1     *runner
+	binary         string
+	convMu         sync.Mutex
+	convOnce       sync.Once
+	conv           []map[string]any
+	stopConv       chan struct{}
+	convStopped    chan struct{}
+	firstCounted   string
+	fleetRequestID string
 }
 
 func TestIsolationAssembled(t *testing.T) {
@@ -144,6 +145,7 @@ func TestIsolationAssembled(t *testing.T) {
 		_ = exec.Command("docker", "exec", "-d", r.lab.member, "/tmp/isolation-probe", "serve").Run()
 	}
 	x.t.Log("native members admitted; starting counted controls")
+	x.memberGrants()
 	x.intranet()
 	x.peers()
 	x.groups()
@@ -249,6 +251,14 @@ func (x *isolationRun) observation(c *iso.Check, r *runner) {
 }
 
 func (x *isolationRun) prepare() bool {
+	status, requestID, detail := x.putFleet(60, "TEST ONLY D-087 fixed offline window before enrollment")
+	x.fleetRequestID = requestID
+	x.extra("fleet-before-enrollment.json", map[string]any{"status": status, "request_id": requestID, "detail": detail, "offline_seconds": 60})
+	if status != 200 {
+		x.problem("w3-wire-nodes", "pre-enrollment fleet configuration failed")
+		return false
+	}
+
 	baseline, err := PrepareServingBaseline(x.ctx, x.admin.http, x.admin.csrf, false)
 	if err != nil {
 		x.problem("w3-devstack-e2e", "PrepareServingBaseline: "+err.Error())
@@ -1100,11 +1110,7 @@ func (x *isolationRun) deadline() {
 	}
 }
 
-const (
-	fleetShortReason   = "TEST ONLY: AT13 whole-node expiry (isolation follow-up 4)"
-	fleetRestoreReason = "TEST ONLY: restore AT13 whole-node expiry ceiling (isolation follow-up 4)"
-	forgedMemberSource = "100.64.7.7"
-)
+const forgedMemberSource = "100.64.7.7"
 
 type leaseSnap struct {
 	Issued       time.Time       `json:"issued_at"`
@@ -1123,20 +1129,18 @@ func (x *isolationRun) wholeNodeExpiry() {
 		return
 	}
 	c := iso.Check{Name: "short whole-node lease expiry", Status: iso.StatusBlocked, Owner: "w2-agent-core", Actual: "not measured"}
-	var stopped, changed bool
-	var shortID, restoreID string
+	var stopped bool
 	defer func() {
 		if stopped {
 			_ = exec.Command("docker", "start", x.r.lab.control, x.r.lab.prefix+"-worker").Run()
 		}
-		if changed {
-			restored := x.restoreFleetCeiling(&c, &restoreID)
-			auditsOK := restored && x.fleetAudits(&c, shortID, restoreID)
-			if c.Status == iso.StatusPass && (!restored || !auditsOK) {
-				c.Status = iso.StatusBlocked
-				c.Owner = "w3-wire-nodes"
-				c.Actual += "; fleet-config restore or audit incomplete"
-			}
+		if stopped && !x.waitControl() {
+			c.Status = iso.StatusBlocked
+			c.Actual += "; control restart incomplete"
+		}
+		if !x.fleetAudits(&c, x.fleetRequestID) {
+			c.Status = iso.StatusBlocked
+			c.Actual += "; pre-enrollment fleet audit missing"
 		}
 		x.add("AT13", c)
 	}()
@@ -1159,14 +1163,7 @@ func (x *isolationRun) wholeNodeExpiry() {
 			return
 		}
 	}
-	status, shortID, detail := x.putFleet(60, fleetShortReason)
-	c.Observations = append(c.Observations, iso.Observation{Name: "fleet_put_60", Detail: detail})
-	if status != 200 {
-		c.Actual = "PUT /admin/fleet-config 60 failed: " + detail
-		c.Owner = "w3-wire-nodes"
-		return
-	}
-	changed = true
+	c.Observations = append(c.Observations, iso.Observation{Name: "fixed_offline_window", Detail: "60 seconds configured before enrollment; unchanged for this entire run"})
 	putAt := time.Now().UTC().Add(-2 * time.Second)
 	nodePath := x.r.lab.public + "/api/v1/admin/nodes/" + x.r.nodeID.String()
 	get, getErr := x.admin.call(x.ctx, "GET", nodePath, nil, nil)
@@ -1309,17 +1306,6 @@ func (x *isolationRun) putFleet(seconds int, reason string) (int, string, string
 	}
 	put, err := x.admin.call(x.ctx, "PUT", path, map[string]any{"max_offline_lease_seconds": seconds, "reason": reason}, map[string]string{"If-Match": get.Header.Get("ETag"), "Idempotency-Key": uuid.NewString()})
 	return put.Status, put.Header.Get("X-Request-ID"), httpDetail(put, err) + " etag=" + put.Header.Get("ETag") + " body=" + clipText(string(put.Body), 500)
-}
-
-func (x *isolationRun) restoreFleetCeiling(c *iso.Check, requestID *string) bool {
-	if !x.waitControl() {
-		c.Observations = append(c.Observations, iso.Observation{Name: "fleet_restore", Detail: "control did not answer after restart"})
-		return false
-	}
-	status, id, detail := x.putFleet(86400, fleetRestoreReason)
-	*requestID = id
-	c.Observations = append(c.Observations, iso.Observation{Name: "fleet_put_86400", Detail: detail})
-	return status == 200
 }
 
 func (x *isolationRun) waitControl() bool {
@@ -1739,26 +1725,162 @@ func (x *isolationRun) writeConvergence() {
 		}
 	}
 	x.records["AT10"].Observations = append(x.records["AT10"].Observations, iso.Observation{Name: "destination_positive_controls", Detail: "with_positive=" + strings.Join(have, ",") + "; without_positive=" + strings.Join(miss, ",")})
-	if x.stopConv != nil {
-		x.assertProvisional(samples)
-	}
 }
 
-func (x *isolationRun) assertProvisional(samples []map[string]any) {
-	var positive iso.Positive
-	for _, check := range x.records["AT10"].Checks {
-		if check.Positive.Valid() {
-			positive = check.Positive
-			break
+// memberGrants runs before any disruption. The only mutation in this window
+// is the real control runtime's future-grant eligibility switch.
+func (x *isolationRun) memberGrants() {
+	c := iso.Check{Name: "provisional lease reports AWAITING_MEMBER_GRANTS", Status: iso.StatusFail, Owner: "w2-agent-core / w3-wire-nodes", Actual: "D-087 transition incomplete; see member-grants-transition.json"}
+	evidence := map[string]any{"run_id": x.records["AT10"].RunID, "recipe_executed": false, "historical_isolation_ms": []int{4767, 5021, 5025}, "devstack_ms": []int{3980, 4112}}
+	defer func() {
+		evidence["status"] = c.Status
+		x.extra("member-grants-transition.json", evidence)
+		x.add("AT10", c)
+	}()
+	var last json.RawMessage
+	stableSince := time.Now()
+	settling := []map[string]any{}
+	wait, cancel := context.WithTimeout(x.ctx, 4*time.Minute)
+	stable := waitUntil(wait, time.Second, func() bool {
+		v, e := x.stack.MemberGrantInvariants(wait, x.r.nodeID)
+		if e != nil {
+			stableSince = time.Now()
+			return false
+		}
+		if !bytes.Equal(v, last) {
+			last = v
+			stableSince = time.Now()
+			settling = append(settling, map[string]any{"at": time.Now().UTC(), "snapshot": v})
+		}
+		return time.Since(stableSince) >= 65*time.Second
+	})
+	cancel()
+	evidence["settling"] = settling
+	if !stable {
+		c.Actual = "D-087 initial invariants did not settle for 65 seconds"
+		return
+	}
+	before, e := x.stack.MemberGrantInvariants(x.ctx, x.r.nodeID)
+	evidence["before"] = before
+	var inv struct {
+		Node        []string          `json:"node"`
+		Publication []string          `json:"publication"`
+		Frozen      bool              `json:"frozen"`
+		Bindings    []json.RawMessage `json:"bindings"`
+		Offline     int               `json:"offline_seconds"`
+	}
+	if e != nil || json.Unmarshal(before, &inv) != nil || len(inv.Node) != 5 || inv.Node[1] != "ready" || inv.Node[2] != "passed" || inv.Node[3] != inv.Node[4] || inv.Frozen || len(inv.Bindings) == 0 || len(inv.Publication) != 2 || inv.Publication[0] != "published" || inv.Publication[1] != "active" || inv.Offline != 60 {
+		c.Actual = "D-087 clean fixed-generation baseline absent"
+		return
+	}
+	initial := x.proof(x.a1)
+	evidence["initial_counted_forwarding"] = initial
+	if !initial.Valid() {
+		c.Actual = "D-087 initial native counted forwarding unavailable"
+		return
+	}
+	// Include the real baseline/meter/tunnel results before changing eligibility.
+	x.observation(&c, x.a1)
+	falseFlip, e := x.stack.SetMemberGrantsReady(x.ctx, false)
+	evidence["false_flip"] = falseFlip
+	if e != nil {
+		c.Actual = "D-087 dedicated control seam unavailable"
+		return
+	}
+	evidence["recipe_executed"] = true
+	// Cleanup restores only eligibility after a failed measurement; it cannot
+	// supply a qualifying receipt or change a failed result.
+	defer func() { _, _ = x.stack.SetMemberGrantsReady(context.WithoutCancel(x.ctx), true) }()
+	var events []GrantWireEvent
+	var provisional, serving api.ObservationReport
+	var provisionalEvent, servingEvent GrantWireEvent
+	var emptyEvent, populatedEvent GrantWireEvent
+	await := func(after time.Time, want bool) bool {
+		wait, cancel := context.WithTimeout(x.ctx, 3*time.Minute)
+		defer cancel()
+		return waitUntil(wait, time.Second, func() bool {
+			var err error
+			events, err = x.stack.MemberGrantEvidence(wait)
+			if err != nil {
+				return false
+			}
+			for _, v := range events {
+				report, ok := qualifyingGrantReport(v, x.r.nodeID, after, want)
+				generation, genErr := report.AppliedConfigGeneration.Get()
+				if !ok || genErr != nil || fmt.Sprint(generation) != inv.Node[3] {
+					continue
+				}
+				id, _ := report.Lease.LeaseId.Get()
+				for _, l := range events {
+					if l.Kind != "lease" || l.Status != 200 || !l.Started.After(after) || l.Completed.After(v.Started) {
+						continue
+					}
+					var lease struct {
+						Signed struct {
+							ID         uuid.UUID         `json:"lease_id"`
+							Generation string            `json:"config_generation"`
+							Members    []json.RawMessage `json:"members"`
+						} `json:"signed"`
+						Signatures []json.RawMessage `json:"signatures"`
+					}
+					if json.Unmarshal(l.Response, &lease) != nil || lease.Signed.ID != id || lease.Signed.Generation != inv.Node[3] || len(lease.Signatures) == 0 || (len(lease.Signed.Members) == 0) != want {
+						continue
+					}
+					if want {
+						provisional, provisionalEvent, emptyEvent = report, v, l
+					} else {
+						serving, servingEvent, populatedEvent = report, v, l
+					}
+					return true
+				}
+			}
+			return false
+		})
+	}
+	defer func() { x.extra("member-grants-wire.json", events) }()
+	provisionalOK := await(falseFlip.Completed, true)
+	evidence["provisional_receipt"], evidence["empty_lease"] = provisionalEvent, emptyEvent
+	middle, middleErr := x.stack.MemberGrantInvariants(x.ctx, x.r.nodeID)
+	evidence["provisional_invariants"] = middle
+	if !provisionalOK {
+		c.Actual = "D-087 no accepted qualifying report joined to the natural empty lease"
+		return
+	}
+	trueFlip, e := x.stack.SetMemberGrantsReady(x.ctx, true)
+	evidence["true_flip"] = trueFlip
+	if e != nil {
+		c.Actual = "D-087 true flip failed"
+		return
+	}
+	servingOK := await(trueFlip.Completed, false)
+	evidence["serving_receipt"], evidence["populated_lease"] = servingEvent, populatedEvent
+	if servingOK {
+		c.Positive = x.proof(x.a1)
+	}
+	after, afterErr := x.stack.MemberGrantInvariants(x.ctx, x.r.nodeID)
+	evidence["after"], evidence["counted_forwarding"] = after, c.Positive
+	events, e = x.stack.MemberGrantEvidence(x.ctx)
+	same := middleErr == nil && afterErr == nil && bytes.Equal(before, middle) && bytes.Equal(before, after)
+	emptyID, _ := provisional.Lease.LeaseId.Get()
+	fullID, _ := serving.Lease.LeaseId.Get()
+	distinct := provisional.ReportId != serving.ReportId && emptyID != fullID
+	hashes, wireOK := 0, e == nil
+	for _, v := range events {
+		for _, pair := range [][2]string{{v.RequestWire, v.RequestSHA256}, {v.ResponseWire, v.ResponseSHA256}} {
+			if pair[0] != "" {
+				sum := sha256.Sum256([]byte(pair[0]))
+				hashes++
+				wireOK = wireOK && hex.EncodeToString(sum[:]) == pair[1]
+			}
 		}
 	}
-	c := iso.Check{Name: "provisional lease reports AWAITING_MEMBER_GRANTS", Positive: positive, Owner: "w3-wire-nodes follow-up 33, then w3-devstack-e2e follow-up 20"}
-	result := iso.EvaluateProvisional(samples)
-	raw, _ := json.Marshal(result)
-	c.Observations = append(c.Observations, iso.Observation{Name: "provisional_window", Detail: string(raw)})
-	c.Status = iso.StatusBlocked
-	c.Actual = "D-087 clean fixed-generation trigger blocked: real lease endpoint has no TEST ONLY grant-eligibility injection seam. No synthetic transition driven; incidental bootstrap samples do not qualify. " + result.Detail
-	x.add("AT10", c)
+	duration := servingEvent.Completed.Sub(trueFlip.Completed).Milliseconds()
+	evidence["proof"] = map[string]any{"invariants_byte_equal": same, "distinct_reports_and_leases": distinct, "empty_lease_report_join": provisionalOK, "populated_lease_report_join": servingOK, "wire_hashes": hashes, "wire_hashes_valid": wireOK, "true_to_serving_receipt_ms": duration, "generation": inv.Node[3]}
+	if same && distinct && wireOK && servingOK && c.Positive.Valid() {
+		c.Status = iso.StatusPass
+		c.Owner = ""
+		c.Actual = fmt.Sprintf("D-087 real false/true future-grant transition; accepted reports joined to empty/populated signed leases; fixed generation %s and byte-identical invariants; true to accepted serving %d ms; independent native admission counter increased", inv.Node[3], duration)
+	}
 }
 
 func (x *isolationRun) noteEvaluator() {

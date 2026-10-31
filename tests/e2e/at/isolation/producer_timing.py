@@ -7,6 +7,8 @@ bound kernel commits; neither an overlap nor a netlink receipt is a drop time.
 import json
 from pathlib import Path
 import statistics
+import math
+from collections import Counter
 import sys
 
 
@@ -46,12 +48,22 @@ def validate_operations(rows):
         if not row['anchor']['wall'].endswith('Z'):
             raise ValueError('non-UTC anchor')
         if 'timing' not in row:
-            if row['source'] != 'renewal':
+            kind = row['source']
+            if kind in ('renewal', 'baseline'):
+                start, end = interval(row[kind])
+                if end > a:
+                    raise ValueError(kind + ' exceeds anchor')
+                span(kind, start, end)
+                if kind == 'baseline' and (not row[kind]['cause'] or not isinstance(row[kind]['succeeded'], bool)):
+                    raise ValueError('incomplete baseline writer evidence')
+            elif kind == 'heartbeat':
+                h = row[kind]
+                if not 0 < ns(h, 'mono_ns') <= a or not isinstance(h['written'], bool):
+                    raise ValueError('invalid heartbeat evidence')
+                ns(h, 'policy_expires_mono_ns')
+                ns(h, 'generation')
+            else:
                 raise ValueError('missing producer timing')
-            start, end = interval(row['renewal'])
-            if end > a:
-                raise ValueError('renewal exceeds anchor')
-            span('renewal', start, end)
             continue
         t = row['timing']
         if t['version'] != 1 or t['clock'] != 'CLOCK_MONOTONIC':
@@ -111,12 +123,20 @@ def validate_operations(rows):
                     raise ValueError('released guard exceeded install bound')
                 span('outer_guard', install, released)
                 span('inner_guard', installed, release)
+                span('completed_guard_install_command', install, installed)
                 item['complete_guard'] = True
             applies.append(item)
     if not rows or not applies or not verifiers:
         raise ValueError('missing Apply/verifier evidence')
-    return dict(snapshots=len(rows), runs=[dict(run_id=r, boot_id=boots[r], snapshots=n) for r,n in seen.items()],
-                brackets={k: dict(count=len(v), median_ns=str(int(statistics.median(v))), worst_ns=str(max(v))) for k,v in spans.items()},
+    def distribution(values):
+        ordered = sorted(values)
+        return dict(count=len(values), median_ns=str(int(statistics.median(values))), worst_ns=str(max(values)),
+                    **{name+'_ns': str(ordered[math.ceil(q*len(ordered))-1]) for name,q in [('p50',.5),('p90',.9),('p99',.99),('max',1)]})
+    return dict(source_counts=dict(Counter(r['source'] for r in rows)),
+                producer_rows=[r for r in rows if r['source'] in ('baseline','heartbeat')],
+                failed_applies=[a for a in applies if not a['operation']['succeeded']],
+                snapshots=len(rows), runs=[dict(run_id=r, boot_id=boots[r], snapshots=n) for r,n in seen.items()],
+                brackets={k: distribution(v) for k,v in spans.items()},
                 applies=applies, verifiers=verifiers,
                 failed_operations=sum(not r['timing']['succeeded'] for r in rows if 'timing' in r),
                 recovery_double_verifiers=[identity(r) for r in rows if len(r.get('timing',{}).get('verifications',[])) == 2])
@@ -247,7 +267,8 @@ def analyze(root):
                                   limitation='No exact producer timestamps in that run; never retrospectively classified.',
                                   evidence='history/follow-up-8/continuity-analysis.json'),
                   clock=clock, snapshots=validated['snapshots'], runs=validated['runs'], brackets=validated['brackets'],
-                  clock_after_restart=after,
+                  clock_after_restart=after, source_counts=validated['source_counts'],
+                  producer_rows=validated['producer_rows'], failed_applies=validated['failed_applies'],
                   clock_basis='Same kernel boot, exact zero monotonic/boottime offsets to the initial namespace. Namespace inodes are retained, not assumed identical across Docker restarts or member containers.',
                   capture_scope='Source node timing retained across every process restart; clone wire bodies remain separate and do not supply source timing.',
                   failed_operations=validated['failed_operations'], recovery_double_verifiers=validated['recovery_double_verifiers'],
@@ -262,7 +283,7 @@ def analyze(root):
                               losses=expiry_losses),
                   interpretation='Outer bracket is install-start through release-end; inner is installed-by through release-start. Capture reads and command overlaps do not locate the kernel commit/drop instant. All loss counts remain unchanged.')
     (root/'producer-timing-analysis.json').write_text(json.dumps(result,indent=2)+'\n')
-    compact = dict(result, renewal={k:v for k,v in result['renewal'].items() if k not in ('losses','actual_renewals')},
+    compact = dict({k:v for k,v in result.items() if k not in ('producer_rows','failed_applies')}, renewal={k:v for k,v in result['renewal'].items() if k not in ('losses','actual_renewals')},
                    expiry={k:v for k,v in result['expiry'].items() if k not in ('losses','last_accepted_renewal')})
     print(json.dumps(compact,indent=2))
     return result
