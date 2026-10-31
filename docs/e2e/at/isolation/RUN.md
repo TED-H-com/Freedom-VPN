@@ -19,9 +19,12 @@ promote a blocked product result.
 
 `stack.py` calls the shared devstack lifecycle. A temporary Docker argument
 wrapper substitutes task-owned cache tags for its neutral `fvpn-devstack-*`
-tags. `down` removes those `fvpn-w4-isolation-cache-*` tags after the shared
-script returns. `prefix.sh` has no `cache` token, so the shared script leaves
-them, and the makefile leftover check would otherwise exit 1. All service
+tags. `down` removes the overlay's `fvpn-w4-isolation-isolation-target` container
+before the shared script, then removes the `fvpn-w4-isolation-cache-*` tags
+after it returns. The target is not a compose service. While it is attached,
+the shared script cannot delete `fvpn-w4-isolation-origin`, and the node cache
+tag stays referenced. `prefix.sh` has no `cache` token, so the shared script
+leaves those tags, and the makefile leftover check would otherwise exit 1. All service
 images retain their shared build definitions; the records contain the
 immutable IDs of the running images. Python uses only its standard library.
 The existing Ubuntu workflow already has the shared stack's Python dependency
@@ -83,9 +86,9 @@ No `fleet_config` row is written except through that API.
 After publication succeeds, the runner reads `nft -j list ruleset` and the
 latest `node_observations.report_payload` and stores both on the AT10 record.
 It does not write nft. `loopback_scoped` is recorded only when
-`node/enforce/verify_foreign.go` contains that classifier. On this tree it
-does not: D-079 has not merged, and `verify_foreign.go` is still the #220
-read-back.
+`node/enforce/verify_foreign.go` in the module root contains that classifier.
+The follow-up 5 run built `2473acf` (#220). D-079 (`a4191fa`, #241) is on
+later `origin/main` and is not an ancestor of that run.
 
 From publication until the first counted member byte, the runner samples
 desired and applied generations, lease grant counts, observation block reasons
@@ -124,10 +127,22 @@ Follow-up 4's assembled run is `fa0074cc-3b1a-403d-b8c2-3a3439fe2b7e`, source
 `2026-10-31T00:31:43Z`, on main `205633f`. Serving publication fail-closed
 `FLOWTABLE_BYPASS` on Docker's `ip nat` `POSTROUTING` `xt` SNAT for
 `127.0.0.11`. No counted byte, no convergence sample, and no fleet-config PUT
-were recorded. AT10–AT13 stay blocked. The aggregate exited 2. `summary.md`
-is the measured record. When publication fails, the runner reads
-`nft -j list ruleset` and stores the foreign chains on check `serving setup`.
-It does not write nft.
+were recorded. AT10–AT13 stay blocked. The aggregate exited 2. That record is
+archived under `history/follow-up-4/` and is not the current run. When
+publication fails, the runner reads `nft -j list ruleset` and stores the
+foreign chains on check `serving setup`. It does not write nft.
+
+Follow-up 5's assembled run is `c0106e5d-d8e8-400b-abe0-181d6428fc55`, source
+`7fa0443c532b1c9a395cd93620152fb6902584ae` (`source_dirty=false`), on main
+`9e493e8` (#240). Product UTC `2026-10-31T01:58:35Z` through
+`2026-10-31T02:13:10Z`. Publication operation
+`2d52a3de-5fc9-4dbb-b85e-b931e1ece186` (`node.publish`) succeeded. The node
+ruleset read-back has no Docker NAT. `verify_foreign.go` in that tree is
+`2473acf` (#220). `git log -1 origin/main -- node/enforce/verify_foreign.go`
+at record time is `a4191fa` (#241, D-079), which this run did not build.
+`summary.md` is the measured record. The live make exited 1 because
+`fvpn-w4-isolation-isolation-target` was still attached to
+`fvpn-w4-isolation-origin`. That fixture is removed on `down` after this run.
 
 `at-isolation-review-captures` rewrites the AT13 record in its review directory.
 Follow-up 3's root AT13 is the live measurement; do not pass it through that

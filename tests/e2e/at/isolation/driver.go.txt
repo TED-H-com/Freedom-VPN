@@ -371,13 +371,28 @@ func (x *isolationRun) noteRulesetReadback() {
 	}
 }
 
+func moduleRoot() string {
+	// The overlay test runs with working directory tests/e2e.
+	for _, dir := range []string{".", "..", "../.."} {
+		if _, err := os.Stat(filepath.Join(dir, "node/enforce/verify_foreign.go")); err == nil {
+			abs, absErr := filepath.Abs(dir)
+			if absErr == nil {
+				return abs
+			}
+			return dir
+		}
+	}
+	return "."
+}
+
 func d079Note() string {
-	out, err := exec.Command("git", "log", "-1", "--format=%H %s", "--", "node/enforce/verify_foreign.go").CombinedOutput()
+	root := moduleRoot()
+	out, err := exec.Command("git", "-C", root, "log", "-1", "--format=%H %s", "--", "node/enforce/verify_foreign.go").CombinedOutput()
 	line := strings.TrimSpace(string(out))
 	if err != nil {
 		line = "git log failed: " + line
 	}
-	body, readErr := os.ReadFile("node/enforce/verify_foreign.go")
+	body, readErr := os.ReadFile(filepath.Join(root, "node/enforce/verify_foreign.go"))
 	present := readErr == nil && strings.Contains(string(body), "loopback_scoped")
 	return "verify_foreign.go " + line + "; loopback_scoped_in_source=" + boolText(present) + "; this main's observation report has no foreign-rule classification field"
 }
@@ -416,12 +431,21 @@ func foreignRulesetListing(raw []byte) (string, bool) {
 }
 
 func nftObjectIdentity(obj map[string]json.RawMessage) (family, table string) {
-	for _, raw := range obj {
+	for key, raw := range obj {
 		var id struct {
 			Family string `json:"family"`
 			Table  string `json:"table"`
+			Name   string `json:"name"`
 		}
-		if json.Unmarshal(raw, &id) == nil && (id.Family != "" || id.Table != "") {
+		if json.Unmarshal(raw, &id) != nil {
+			continue
+		}
+		// A table declaration stores its name in "name". Chains, rules and
+		// counters store the owning table in "table".
+		if key == "table" && id.Name != "" {
+			return id.Family, id.Name
+		}
+		if id.Family != "" || id.Table != "" {
 			return id.Family, id.Table
 		}
 	}
@@ -679,6 +703,9 @@ func (x *isolationRun) intranet() {
 		x.add("AT10", iso.Check{Name: "controlled targets", Status: iso.StatusBlocked, Actual: string(out), Owner: "acceptance"})
 		return
 	}
+	defer func() {
+		_ = exec.Command("docker", "rm", "-f", target).Run()
+	}()
 	if !x.install(target) {
 		return
 	}
