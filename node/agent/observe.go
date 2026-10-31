@@ -2,9 +2,12 @@ package agent
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/binary"
 	"encoding/json"
 	"errors"
 	"os"
+	"slices"
 	"strings"
 	"time"
 
@@ -22,9 +25,21 @@ func (e *Engine) observe(ctx context.Context) error {
 	}
 	wall := e.clock.Wall()
 	interval := time.Duration(e.cfg.ObservationSeconds) * time.Second
-	due := e.lastObs.IsZero() || wall.Sub(e.lastObs) >= interval || e.serving != e.lastServing
+	state := observationState(e.decision, e.serving, e.appliedGen)
+	due := e.lastObs.IsZero() || wall.Sub(e.lastObs) >= interval || e.serving != e.lastServing || state != e.lastObservationState
 	if !due || e.outboxFull {
 		return nil
+	}
+	// Retain the first deciding body through backoff. Repeated copies of the
+	// same pending state add no evidence; transitions always get their own ID.
+	if state == e.lastObservationState {
+		items, err := e.store.Pending(ctx)
+		if err != nil {
+			return err
+		}
+		if len(items) > 0 {
+			return nil
+		}
 	}
 	rep, err := e.report(ctx, wall.UTC())
 	if err != nil {
@@ -40,6 +55,7 @@ func (e *Engine) observe(ctx context.Context) error {
 	}
 	e.lastObs = wall
 	e.lastServing = e.serving
+	e.lastObservationState = state
 	return nil
 }
 
@@ -51,7 +67,7 @@ func (e *Engine) report(ctx context.Context, at time.Time) (api.ObservationRepor
 	appliedGen := presence.NewNullNullable[decstr.U64]()
 	appliedBind := presence.NewNullNullable[decstr.U64]()
 	appliedPol := presence.NewNullNullable[api.PolicyRefs]()
-	if !e.identityFrozen && e.appliedGen > 0 && e.desired != nil {
+	if !e.identityFrozen && !e.freezeUncertain && e.appliedGen > 0 && e.desired != nil {
 		appliedGen = presence.NewNullableWithValue(decstr.U64(e.appliedGen))
 		appliedBind = presence.NewNullableWithValue(e.desired.BindingRevision)
 		appliedPol = presence.NewNullableWithValue(e.desired.PolicyRefs)
@@ -78,7 +94,7 @@ func (e *Engine) report(ctx context.Context, at time.Time) (api.ObservationRepor
 	if errs == nil {
 		errs = []api.NodeError{}
 	}
-	checks := e.decision.Checks
+	checks := slices.Clone(e.decision.Checks)
 	if checks == nil {
 		checks = []api.NodeCheck{}
 	}
@@ -114,6 +130,7 @@ func (e *Engine) report(ctx context.Context, at time.Time) (api.ObservationRepor
 	rep.Netbird.Backend = backend
 	rep.Netbird.PeerId = presence.NewNullNullable[string]()
 	rep.Netbird.Version = presence.NewNullNullable[string]()
+	e.attachServingRead(&rep)
 	e.attachContainment(&rep, at)
 	e.attachUsage(ctx, &rep)
 	e.attachUpdate(ctx, &rep)
@@ -211,6 +228,9 @@ func reportedHealth(h api.DataHealth) api.DataHealth {
 }
 
 func (e *Engine) flush(ctx context.Context) error {
+	if e.clock.Mono() < e.observationRetryAt {
+		return nil
+	}
 	items, err := e.store.Pending(ctx)
 	if err != nil {
 		e.storageOK = false
@@ -223,14 +243,24 @@ func (e *Engine) flush(ctx context.Context) error {
 			_ = e.store.MarkConflict(ctx, item.ReportID)
 			continue
 		}
-		if e.identityFrozen && (rep.MemberForwardingEnabled || !rep.AppliedConfigGeneration.IsNull()) {
+		if e.identityFrozen && e.freezeDurable && (rep.MemberForwardingEnabled || !rep.AppliedConfigGeneration.IsNull()) {
 			_ = e.store.MarkConflict(ctx, item.ReportID)
 			continue
 		}
+		// Persist uncertainty before sending. A process can die after central
+		// accepts a freeze but before the response reaches local storage.
+		if err := e.store.BumpAttempt(ctx, item.ReportID, "in_flight"); err != nil {
+			e.storageOK = false
+			return err
+		}
 		accepted, err := e.client.Observe(ctx, item.ReportID, rep)
 		if err == nil {
+			e.observationFailures, e.observationRetryAt = 0, 0
 			if accepted.IdentityFrozen != nil && *accepted.IdentityFrozen {
 				e.freezeIdentity(ctx)
+				if !e.freezeDurable {
+					return nil
+				}
 			}
 			if serr := e.store.MarkAccepted(ctx, item.ReportID, e.clock.Wall().UTC()); serr != nil {
 				e.storageOK = false
@@ -247,6 +277,58 @@ func (e *Engine) flush(ctx context.Context) error {
 			continue
 		}
 		_ = e.store.BumpAttempt(ctx, item.ReportID, safeErr(err))
+		e.observationFailures++
+		wait := time.Second
+		for i := 1; i < e.observationFailures && wait < 30*time.Second; i++ {
+			wait *= 2
+		}
+		wait = min(time.Minute, wait+observationJitter(wait))
+		if se != nil {
+			wait = max(wait, se.RetryAfter)
+		}
+		e.observationRetryAt = e.clock.Mono() + wait
+		return nil // One failed request per slot, even with a full outbox.
+	}
+	remaining, err := e.store.Pending(ctx)
+	if err != nil {
+		return err
+	}
+	e.freezeUncertain = false
+	for _, item := range remaining {
+		if item.Attempts > 0 {
+			e.freezeUncertain = true
+		}
 	}
 	return nil
+}
+
+func observationJitter(wait time.Duration) time.Duration {
+	span := wait / 10
+	if span <= 0 {
+		return 0
+	}
+	// Nanosecond ranges need more than 16 bits of entropy; otherwise every
+	// node retries within a few microseconds of the same lower bound.
+	var b [8]byte
+	if _, err := rand.Read(b[:]); err != nil {
+		return 0
+	}
+	return time.Duration(binary.LittleEndian.Uint64(b[:])%uint64(2*span+1)) - span
+}
+
+// Timestamps and read-at detail change every tick. The semantic transition
+// includes every check status/code and block reason, including provisional.
+func observationState(d Decision, serving bool, generation uint64) string {
+	type check struct {
+		Name   api.NodeCheckName
+		Status api.HealthCheckStatus
+		Code   string
+	}
+	cs := make([]check, 0, len(d.Checks))
+	for _, c := range d.Checks {
+		code, _ := c.ErrorCode.Get()
+		cs = append(cs, check{c.Name, c.Status, string(code)})
+	}
+	b, _ := json.Marshal([]any{serving, generation, d.Provisioning, d.Safety, d.Reasons, cs})
+	return string(b)
 }

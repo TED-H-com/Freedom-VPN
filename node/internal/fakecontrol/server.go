@@ -84,17 +84,20 @@ type Server struct {
 	// grantsReady is false while the node is not ready. Renewals then omit
 	// member grants the way RenewTx does when includeMembers is false.
 	// TEST ONLY. The default is ready.
-	identityFrozen *bool
-	grantsReady    bool
-	corrupt        bool
-	wrongNode      bool
-	wrongInc       bool
-	expire         bool
-	delay          time.Duration
-	failLeft       int
-	leaseFail      int
-	leaseRetryN    int
-	leaseRetryFor  time.Duration
+	identityFrozen      *bool
+	grantsReady         bool
+	corrupt             bool
+	wrongNode           bool
+	wrongInc            bool
+	expire              bool
+	delay               time.Duration
+	failLeft            int
+	leaseFail           int
+	leaseRetryN         int
+	leaseRetryFor       time.Duration
+	observationRetryN   int
+	observationRetryFor time.Duration
+	observationPosts    int
 	// leasePosts counts POST /lease-renewals, including a forced failure.
 	leasePosts int
 	// lastLeaseIssued keeps a new lease strictly after the previous one
@@ -334,6 +337,20 @@ func (s *Server) SetLeaseRetryAfter(n int, seconds int) {
 	defer s.mu.Unlock()
 	s.leaseRetryN = n
 	s.leaseRetryFor = time.Duration(seconds) * time.Second
+}
+
+// SetObservationRetryAfter injects 429 responses without accepting the body.
+// TEST ONLY: exercises the agent's cross-Step observation backoff.
+func (s *Server) SetObservationRetryAfter(n, seconds int) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.observationRetryN, s.observationRetryFor = n, time.Duration(seconds)*time.Second
+}
+
+func (s *Server) ObservationPosts() int {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.observationPosts
 }
 
 // LeaseRenewals is how many lease POSTs were attempted, including failures.
