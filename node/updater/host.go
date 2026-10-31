@@ -9,10 +9,12 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/node/internal/healthattest"
@@ -27,10 +29,13 @@ import (
 // bytes. The release private key is not a field: it lives only on the build
 // machine (§16.2). allow_loopback is TEST ONLY.
 type Config struct {
-	Layout            Layout      `json:"layout"`
-	NodeID            uuid.UUID   `json:"node_id"`
-	IncarnationID     uuid.UUID   `json:"incarnation_id"`
-	BootID            uuid.UUID   `json:"boot_id"`
+	Layout        Layout    `json:"layout"`
+	NodeID        uuid.UUID `json:"node_id"`
+	IncarnationID uuid.UUID `json:"incarnation_id"`
+	// BootID is optional. The kernel boot id is used when
+	// /proc/sys/kernel/random/boot_id is readable. This field is the fallback.
+	BootID            uuid.UUID `json:"boot_id,omitempty"`
+	bootIDFromConfig  bool
 	Revoked           bool        `json:"revoked"`
 	Platform          Platform    `json:"platform"`
 	ReleaseTrust      string      `json:"release_trust"`
@@ -68,6 +73,10 @@ func LoadConfig(path string) (Config, error) {
 }
 
 func loadConfig(path string, sources probeAddressSources) (Config, error) {
+	return loadConfigWithBootFile(path, sources, "/proc/sys/kernel/random/boot_id")
+}
+
+func loadConfigWithBootFile(path string, sources probeAddressSources, bootFile string) (Config, error) {
 	b, err := os.ReadFile(path)
 	if err != nil {
 		return Config{}, err
@@ -110,9 +119,15 @@ func loadConfig(path string, sources probeAddressSources) (Config, error) {
 	if c.Layout.Trust == "" {
 		c.Layout.Trust = d.Trust
 	}
-	if c.NodeID == uuid.Nil || c.IncarnationID == uuid.Nil || c.BootID == uuid.Nil {
-		return Config{}, errors.New("updater: node_id, incarnation_id and boot_id are required")
+	if c.NodeID == uuid.Nil || c.IncarnationID == uuid.Nil {
+		return Config{}, errors.New("updater: node_id and incarnation_id are required")
 	}
+	boot, fromConfig, err := resolveBootID(c.BootID, bootFile)
+	if err != nil {
+		return Config{}, err
+	}
+	c.BootID = boot
+	c.bootIDFromConfig = fromConfig
 	if c.Platform.OSID == "" || c.Platform.OSVersion == "" || c.Platform.Architecture == "" || c.Platform.UpdaterVersion == "" {
 		return Config{}, errors.New("updater: platform is incomplete")
 	}
@@ -167,19 +182,37 @@ func (c Config) Engine() (*Engine, error) {
 			},
 			Gate: gate,
 		},
-		HTTP:           client,
-		Meter:          FileMeter{Path: c.MeterCheckpoint},
-		Services:       CommandServices{StopCmd: c.StopCommand, StartCmd: c.StartCommand},
-		Health:         &NodeChecks{Journal: c.Layout.Journal, Node: node, rt: &checkRT{}},
-		Gate:           gate,
-		Migrator:       noMigrator{},
-		Sender:         sender,
-		Download:       DefaultDownload(),
-		AllowLoopback:  c.AllowLoopback,
-		AllowedOrigins: origins,
-		ProbePeer:      cloneProbePeer(c.ProbePeer),
-		probeEnv:       c.probeEnvironment(),
+		HTTP:              client,
+		Meter:             FileMeter{Path: c.MeterCheckpoint},
+		Services:          CommandServices{StopCmd: c.StopCommand, StartCmd: c.StartCommand},
+		Health:            &NodeChecks{Journal: c.Layout.Journal, Node: node, rt: &checkRT{}},
+		Gate:              gate,
+		Migrator:          noMigrator{},
+		Sender:            sender,
+		Download:          DefaultDownload(),
+		AllowLoopback:     c.AllowLoopback,
+		AllowedOrigins:    origins,
+		ProbePeer:         cloneProbePeer(c.ProbePeer),
+		probeEnv:          c.probeEnvironment(),
+		bootIDFromConfig:  c.bootIDFromConfig,
+		RevokedReleaseIDs: append([]uuid.UUID(nil), c.RevokedReleaseIDs...),
 	}, nil
+}
+
+// resolveBootID prefers the kernel boot id. configured is used only when that
+// file is missing or not a UUID. fromConfig is true in that fallback.
+func resolveBootID(configured uuid.UUID, path string) (id uuid.UUID, fromConfig bool, err error) {
+	b, rerr := os.ReadFile(path)
+	if rerr == nil {
+		parsed, perr := uuid.Parse(strings.TrimSpace(string(b)))
+		if perr == nil && parsed != uuid.Nil {
+			return parsed, false, nil
+		}
+	}
+	if configured == uuid.Nil {
+		return uuid.Nil, false, errors.New("updater: boot_id is required when the kernel boot id is unreadable")
+	}
+	return configured, true, nil
 }
 
 func readTrust(path string) (*envelope.TrustStore, error) {
@@ -334,11 +367,21 @@ type FileSource struct {
 	Node    Node
 	Revoked []uuid.UUID
 	Now     func() time.Time
+	Log     *slog.Logger
 }
 
 func (s FileSource) Current(context.Context) (Work, error) {
 	b, err := os.ReadFile(s.Path)
 	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			// A dangling symlink is an unreadable configured file, not a
+			// fresh layout with no desired state.
+			if _, statErr := os.Lstat(s.Path); !errors.Is(statErr, os.ErrNotExist) {
+				return Work{}, err
+			}
+			s.logger().Info("desired-state file is absent")
+			return Work{}, ErrNoWork
+		}
 		return Work{}, err
 	}
 	now := time.Now()
@@ -346,6 +389,13 @@ func (s FileSource) Current(context.Context) (Work, error) {
 		now = s.Now()
 	}
 	return WorkFromEnvelope(b, s.Trust, s.Node, now, s.Revoked)
+}
+
+func (s FileSource) logger() *slog.Logger {
+	if s.Log != nil {
+		return s.Log
+	}
+	return slog.Default()
 }
 
 // GuardSource turns member forwarding off when the desired state cannot be

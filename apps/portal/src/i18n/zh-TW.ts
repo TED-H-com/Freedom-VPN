@@ -682,6 +682,53 @@ export const zhTW = {
     '最近衝突時間 (last_conflict_at)：{time}',
   'admin.nodeDetail.identityConflict.resolutionText':
     '請撤銷此節點並重新註冊；系統不會自動解除凍結',
+
+  // Revision 12: D-076, D-077, D-081, SECOPS-19
+  'member.devices.status.pendingWaiting': '等待授權中',
+  'member.devices.status.authorizationUnconfirmedBadge': '待管理員重新授權',
+  'member.devices.status.authorizationUnconfirmedNote':
+    '服務還原後需由管理員重新確認此裝置授權。您無法自行解除此狀態，請聯繫客服支援。',
+  'nav.admin.devices': '裝置授權管理',
+  'admin.devices.title': '會員裝置',
+  'admin.devices.subtitle': '檢視裝置狀態，並重新授權服務還原後待確認的裝置。',
+  'admin.devices.filter.authorizationUnconfirmed': '還原後授權確認',
+  'admin.devices.filter.unconfirmedAll': '全部',
+  'admin.devices.filter.unconfirmedTrue': '待重新確認',
+  'admin.devices.filter.unconfirmedFalse': '無待確認狀態',
+  'admin.devices.filter.status': '裝置狀態',
+  'admin.devices.filter.memberId': '會員 ID',
+  'admin.devices.filter.apply': '套用會員篩選',
+  'admin.devices.filter.clearFilters': '清除篩選條件',
+  'admin.devices.col.member': '所屬會員',
+  'admin.devices.col.device': '裝置名稱／ID／平台',
+  'admin.devices.col.status': '授權狀態',
+  'admin.devices.col.unconfirmedSince': '待確認起算時間',
+  'admin.devices.col.actions': '操作',
+  'admin.devices.reauthorizeBtn': '重新授權',
+  'admin.devices.confirmDialog.title': '確認重新授權',
+  'admin.devices.confirmDialog.description':
+    '重新授權會員 {memberId} 的裝置 {deviceName}（{deviceId}）？系統將重新確認授權，裝置狀態更新前仍顯示等待中。',
+  'admin.devices.confirmDialog.confirmBtn': '確認重新授權',
+  'admin.devices.confirmDialog.cancelBtn': '取消',
+  'admin.devices.operationReceiptLabel':
+    '已受理重新授權；此操作紀錄不代表裝置已完成授權。',
+  'admin.devices.readbackPending': '等待裝置授權確認中。',
+  'admin.devices.readbackConfirmed': '已確認裝置授權，待確認狀態已解除。',
+  'admin.devices.empty': '目前篩選條件下無符合的裝置。',
+  'admin.devices.loading': '正在載入裝置…',
+  'admin.devices.loadFailed': '無法載入裝置，請參閱上方錯誤訊息。',
+  'admin.memberDetail.viewMemberDevicesLink': '管理此會員的裝置',
+  'admin.memberDetail.viewUnconfirmedDevicesLink': '檢視所有待重新授權裝置',
+  'admin.nodeDetail.usageOutbox.title': '用量匯出佇列',
+  'admin.nodeDetail.usageOutbox.informationalNote':
+    '節點最近回報的本機用量佇列資訊。此資料不影響節點安全狀態或服務資格。',
+  'admin.nodeDetail.usageOutbox.absent': '此伺服器尚未提供此欄位',
+  'admin.nodeDetail.usageOutbox.null': '尚無回報紀錄',
+  'admin.nodeDetail.usageOutbox.unackedLabel': '未確認事件數／位元組',
+  'admin.nodeDetail.usageOutbox.ackedThroughLabel': '中央已確認序號／本地最新序號',
+  'admin.nodeDetail.usageOutbox.oldestUnackedAgeLabel': '最舊未確認事件距觀測時間',
+  'admin.nodeDetail.usageOutbox.archiveBytesLabel': '已確認封存位元組',
+  'admin.nodeDetail.usageOutbox.observedAtLabel': '觀測回報時間',
 } as const;
 
 export type TranslationKey = keyof typeof zhTW;

@@ -1,0 +1,492 @@
+{
+  "id": "AT19",
+  "run_id": "e1f8c483",
+  "title": "跨節點累計、Shadow/Enforce 模式切換、月初重置與臨時覆寫 (Cross-Node Fair-Use, Shadow/Enforce, Monthly Reset \u0026 Temporary Override)",
+  "spec": "§11.1–§11.7, §14.2, §19.5 AT19",
+  "requirements": [
+    "FUP01",
+    "FUP02",
+    "FUP03",
+    "FUP04",
+    "ENR03",
+    "API01"
+  ],
+  "status": "blocked",
+  "at": "2026-10-31T02:35:02Z",
+  "build": {
+    "git_commit": "46081fb0e4011b91e9f9f93be23e04e0f223d42d",
+    "git_dirty": false,
+    "go_version": "go1.27.3",
+    "goos": "linux",
+    "goarch": "amd64",
+    "binaries": {
+      "fvpn-agent": "fdc1e2a60128574c52e10a31dea43c615508759a83db1619fa7c8f73a8f20b33",
+      "fvpn-control": "ece7082282d641233152204955e5a94810a592f6a7b84f45f2e029bab925ec40",
+      "fvpn-updater": "b0f9abb52c57e14c6c8ec1a23bc5e71b006d3787ae925da9c5a99e0e4c3814e9",
+      "fvpn-worker": "93ee7029f8f23aad242878007f3f0da5eb3e0ec606511438133fcbb1e2755023"
+    }
+  },
+  "image_digests": {
+    "adguard": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
+    "control": "sha256:01aaa75ca9d4ec6d029afafdcd931c510f5a3a7e2cae0cb89d6cdeebf7e121f4",
+    "coredns": "sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97",
+    "gateway": "sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce",
+    "idp": "sha256:07b5a3b70417572e6aa710220f4e9de021d187d9ec348e4f5614b60410f50531",
+    "member": "sha256:260c6d2ec53f7c61ed1b383e422b805654c6e0632ab12a970dc04c8bb41e0f53",
+    "netbird": "sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c",
+    "node": "sha256:260c6d2ec53f7c61ed1b383e422b805654c6e0632ab12a970dc04c8bb41e0f53",
+    "origin": "sha256:e953e19f606aef49df6dac836f85f70e31fe8746727a6ea4f4d45d84425ebe7e",
+    "payment": "sha256:92b46f6374a9010e884aeef770bafcb24712900f6e39664ad2c4865960b1c7d7",
+    "postgres": "sha256:4b220f2fb52725f7474da1635a6a2647bedfa32df2626a7834c4494d492904bc",
+    "worker": "sha256:8f420ee6ce862d92f880b45bb881506ad339ff87d2ee5363078bbaa4196acde8"
+  },
+  "policy_revision": "applied_config_generation=126; dns_profile=01a18fcc-3c13-77e2-b508-7fddd67f8178; domain_rule_set=01a18fcc-37ac-725b-ad8c-2e182b47813f; fair_use=01a18fce-9904-79ab-87e0-fbdfe54e7ccc; plan=01a18fcc-48d7-71bc-877f-48ce32716af6; release_support=01a18f2d-cfa5-7793-9c2f-deb612a82a89",
+  "node_incarnation": "01a18f2d-e830-7e38-84eb-493517bd4460",
+  "expected": "Fair-Use policy enforces tier invariants, aggregates member usage across multiple serving exits (node \u0026 node2), transitions from shadow to enforce mode and across usage thresholds by recompiling only carrying exits, installing Tier 2 kernel tc classes on both exits, and clearing fair_use.applying from true to false once both carrying exits acknowledge the compiled generation, while ignoring duplicate/replayed events and preserving per-incarnation retained usage across node re-enrollment.",
+  "actual": "PR #222 Fair-Use recompile \u0026 fair_use.applying ACK convergence and PR #210 ENR-03 per-incarnation retained usage are verified live on 01a18f2d-e7d6-770e-9b8c-edb2016a7db9 (node) and 01a18fd0-4188-77d3-9e94-5c5bdc8f8d29 (node2): Transition 1 (policy.activated mode=enforce: carrying gens node 126-\u003e127, node2 4-\u003e7, non-carrying 0-\u003e0; fair_use.applying true-\u003efalse in 5387 ms via observation 5a9a70e5-b7d2-4c4d-9175-fc7acba16c2b; replay no double bump) and Transition 2 (fup.member_generation_changed: carrying gens node 128-\u003e129, node2 8-\u003e9, non-carrying 0-\u003e0; fair_use.applying true-\u003efalse in 6151 ms via observation 922edc3f-c2b6-4f4d-a4aa-3bea02b6fa8d; replay no double bump), plus ENR-03 re-enrollment (01a18fd0-42b9-7e45-97db-c16ad22f59d0 -\u003e 01a18fd1-f3d3-7868-9373-487f724b9df7). Live Tier 2 kernel tc installation on node/node2 is blocked by VerifyServing FLOWTABLE_BYPASS on Docker's ip nat POSTROUTING chain (obs=01a18fce-194d-7c40-b1eb-246cda6a5222).",
+  "blockers": [
+    "w1-netlab / w3-devstack-e2e: PR #220 (2473acf, node/enforce/verify_foreign.go) added whole-ruleset foreign-chain verification to VerifyServing; in deploy/devstack, Docker Engine installs table ip nat (POSTROUTING -\u003e DOCKER_POSTROUTING -\u003e xt target SNAT for 127.0.0.11 loopback DNS) inside node-netns and node2-netns, causing VerifyServing to fail with FLOWTABLE_BYPASS (\"table nat family ip hook postrouting priority 100 chain POSTROUTING statement xt\") and roll back table inet fvpn to fvpn_generation=0 whenever d.Serve=true."
+  ],
+  "commands": [
+    {
+      "command": "e2e.PrepareServingBaseline(ctx, admin.Client, admin.CSRF, false)",
+      "exit_code": 0,
+      "output": "boot_release_id=01a18f2d-cb1f-7f04-bfc7-dba4eac76ca8 support_revision_id=01a18f2d-cfa5-7793-9c2f-deb612a82a89 digests=0",
+      "at": "2026-10-31T02:31:27Z"
+    },
+    {
+      "command": "POST /api/v1/admin/groups",
+      "exit_code": 0,
+      "output": "HTTP 201 group_id=01a18f2d-d1ff-71f9-8541-d8e4f3c71807",
+      "at": "2026-10-31T02:31:27Z"
+    },
+    {
+      "command": "POST /api/v1/admin/policies (dns_profile, fair_use shadow, plan with exit_group_ids) + POST /activate",
+      "exit_code": 0,
+      "output": "dns_rev=01a18fcc-3c13-77e2-b508-7fddd67f8178 fair_use_shadow_rev=01a18fcc-407a-7c93-8a38-7abd1369f444 plan_rev=01a18fcc-48d7-71bc-877f-48ce32716af6",
+      "at": "2026-10-31T02:31:32Z"
+    },
+    {
+      "command": "PATCH /api/v1/admin/nodes/{id} + JoinNativeMember(memberA, memberB) + PUT /publication + D-067 Cycle 1 (bring_up) provisional-lease window",
+      "exit_code": 0,
+      "output": "node_id=01a18f2d-e7d6-770e-9b8c-edb2016a7db9 exit_id=01a18f2d-e7d6-770f-9d32-b5397d190043 deviceA=01a18f5f-5980-785f-9cfd-0e6860b04f5b deviceB=01a18f5f-944b-7178-8130-c32a1397fa0b provisional_lease=db74de94-aa3e-4593-a1e1-596b5874bb79 (ttl=60s, members=0) ready_obs=01a18fcd-a1a4-7983-9fe3-aa16f11d129b (reasons=[awaiting_member_grants], checks=map[lease:AWAITING_MEMBER_GRANTS qos:AWAITING_MEMBER_GRANTS source_binding:AWAITING_MEMBER_GRANTS]) populated_lease=677c5ad3-b5a0-44dc-b77b-98dec868eb3b (members=2) ready_to_populated_ms=5021 apply_blocker=FLOWTABLE_BYPASS (01a18fce-194d-7c40-b1eb-246cda6a5222) heartbeat=\"v1\\nboot_id af4fdbee-51f1-4413-b813-0b7475104714\\nmono_ns 769070857585137\\nwall_unix_ns 1793414031660763733\\npolicy_expires_mono_ns 0\\nbaseline_ok 1\\nserving 0\\ngeneration 125\\nreason safety_check_failed\"",
+      "at": "2026-10-31T02:33:55Z"
+    },
+    {
+      "command": "Baseline HTTPS probe through exit node (member -\u003e fvnb0 -\u003e fvmb0 -\u003e fvup0 -\u003e origin)",
+      "exit_code": 0,
+      "output": "counted=false generation=0 delta_up=0 delta_down=0 origin_src=",
+      "at": "2026-10-31T02:33:55Z"
+    },
+    {
+      "command": "StartSecondExit + EnrollAt(node2) + enrollNonCarryingNode + selectExitRoute(node2) + cross-node usage ingestion on node \u0026 node2",
+      "exit_code": 0,
+      "output": "node2_id=01a18fd0-4188-77d3-9e94-5c5bdc8f8d29 exit2_net_id=fvpn-exit-cd7bd7ca8917d3f58c624b1b other_node_id=01a18fd1-3793-7120-9318-d306221ee728 trNode2_counted=false distinct_exits=14 cross_node_total_bytes=109929 shadow_state=normal",
+      "at": "2026-10-31T02:36:56Z"
+    },
+    {
+      "command": "Transition 1 (policy.activated mode=enforce) + Transition 2 (fup.member_generation_changed via usage ingestion) + duplicate event replays",
+      "exit_code": 0,
+      "output": "T1(policy.activated): gens node=126-\u003e127 node2=4-\u003e7 other=0-\u003e0 applying_true-\u003efalse=true/true (5387ms, obs=5a9a70e5-b7d2-4c4d-9175-fc7acba16c2b) tc_tier2=false/false replay_after=map[01a18f2d-e7d6-770e-9b8c-edb2016a7db9:127 01a18fd0-4188-77d3-9e94-5c5bdc8f8d29:7 01a18fd1-3793-7120-9318-d306221ee728:0] | T2(fup.member_generation_changed): gens node=128-\u003e129 node2=8-\u003e9 other=0-\u003e0 applying_true-\u003efalse=true/true (6151ms, obs=922edc3f-c2b6-4f4d-a4aa-3bea02b6fa8d) tc_tier2=false/false replay_after=map[01a18f2d-e7d6-770e-9b8c-edb2016a7db9:129 01a18fd0-4188-77d3-9e94-5c5bdc8f8d29:9 01a18fd1-3793-7120-9318-d306221ee728:0]",
+      "at": "2026-10-31T02:37:28Z"
+    },
+    {
+      "command": "ENR-03 per-incarnation retained usage: POST /admin/nodes/{id}/revoke + bound POST /admin/enrollments + fvpn-agent enroll + GET /admin/nodes/{id}/incarnations + new incarnation usage",
+      "exit_code": 0,
+      "output": "node2=01a18fd0-4188-77d3-9e94-5c5bdc8f8d29 old_inc=01a18fd0-42b9-7e45-97db-c16ad22f59d0 (retained=1500/2000 B) new_inc=01a18fd1-f3d3-7868-9373-487f724b9df7 (after_traffic=900/1100 B) member_period_unchanged_on_reenroll=true old_inc_fixed_after_new_traffic=true",
+      "at": "2026-10-31T02:38:59Z"
+    }
+  ],
+  "observations": {
+    "active_policy_revisions": {
+      "dns_profile": "01a18fcc-3c13-77e2-b508-7fddd67f8178",
+      "domain_rule_set": "01a18fcc-37ac-725b-ad8c-2e182b47813f",
+      "fair_use": "01a18fd1-4b1e-727e-9f23-103541dc588a",
+      "plan": "01a18fcc-48d7-71bc-877f-48ce32716af6",
+      "release_support": "01a18f2d-cfa5-7793-9c2f-deb612a82a89"
+    },
+    "bootstrap_transfer": {
+      "after_download_bytes": "0",
+      "after_upload_bytes": "0",
+      "before_download_bytes": "0",
+      "before_upload_bytes": "0",
+      "counted": false,
+      "delta_download_bytes": "0",
+      "delta_upload_bytes": "0",
+      "expected_snat": "198.51.100.20",
+      "generation": "0",
+      "http_200": false,
+      "member_fvnb0_rx_bytes_delta": 0,
+      "member_fvnb0_tx_bytes_delta": 0,
+      "member_service": "member",
+      "node_fvup0_l3_rx_bytes_delta": 0,
+      "node_fvup0_l3_tx_bytes_delta": 0,
+      "node_service": "node",
+      "origin_authenticated": true,
+      "origin_source": "",
+      "probe_id": "9cbe99f6-0058-44e6-9850-8276209f478e",
+      "requests": 0
+    },
+    "cross_node_combined_bytes": "115000000000",
+    "cross_node_distinct_exits": 14,
+    "cross_node_total_bytes": 109929,
+    "device_a_id": "01a18f5f-5980-785f-9cfd-0e6860b04f5b",
+    "device_b_id": "01a18f5f-944b-7178-8130-c32a1397fa0b",
+    "enforce_applied_tier": 1,
+    "enforce_generation": "1",
+    "enr03_per_incarnation_retained_usage": {
+      "active_reenroll_rejected_409_code": "NODE_INCARNATION_ACTIVE",
+      "db_period_totals_after_new_traffic": {
+        "download_bytes": "61079",
+        "period_id": "2026-10",
+        "total_bytes": "111929",
+        "upload_bytes": "50850"
+      },
+      "db_period_totals_after_reinstall": {
+        "download_bytes": "59979",
+        "period_id": "2026-10",
+        "total_bytes": "109929",
+        "upload_bytes": "49950"
+      },
+      "db_period_totals_before_reinstall": {
+        "download_bytes": "59979",
+        "period_id": "2026-10",
+        "total_bytes": "109929",
+        "upload_bytes": "49950"
+      },
+      "incarnations_after_new_traffic": {
+        "items": [
+          {
+            "bound_at": "2026-10-31T02:37:43.77704Z",
+            "bound_public_key_sha256": "0a2aa2fc3d6cd76bfda8b539f706552ebbe1119c415b8e2316629df5fd78adfe",
+            "created_at": "2026-10-31T02:37:43.77336Z",
+            "current": true,
+            "enrollment_id": "01a18fd1-f0f5-7109-884e-bd67d021c20c",
+            "incarnation_id": "01a18fd1-f3d3-7868-9373-487f724b9df7",
+            "retire_reason": null,
+            "retired_at": null,
+            "state": "active",
+            "usage": {
+              "download_bytes": "1100",
+              "through": "2026-10-31T02:38:58.343676Z",
+              "upload_bytes": "900"
+            }
+          },
+          {
+            "bound_at": "2026-10-31T02:35:52.90263Z",
+            "bound_public_key_sha256": "146e41236c1bc20da9be6fa175fec62676c01b5a4f4e3e48c4563e3bea49a14a",
+            "created_at": "2026-10-31T02:35:52.899606Z",
+            "current": false,
+            "enrollment_id": "01a18fd0-4188-77d2-91a2-6e39deb732cc",
+            "incarnation_id": "01a18fd0-42b9-7e45-97db-c16ad22f59d0",
+            "retire_reason": "reinstall",
+            "retired_at": "2026-10-31T02:37:31.000236Z",
+            "state": "retired",
+            "usage": {
+              "download_bytes": "2000",
+              "through": "2026-10-31T02:36:44.480795Z",
+              "upload_bytes": "1500"
+            }
+          }
+        ],
+        "next_cursor": null
+      },
+      "incarnations_after_reinstall": {
+        "items": [
+          {
+            "bound_at": "2026-10-31T02:37:43.77704Z",
+            "bound_public_key_sha256": "0a2aa2fc3d6cd76bfda8b539f706552ebbe1119c415b8e2316629df5fd78adfe",
+            "created_at": "2026-10-31T02:37:43.77336Z",
+            "current": true,
+            "enrollment_id": "01a18fd1-f0f5-7109-884e-bd67d021c20c",
+            "incarnation_id": "01a18fd1-f3d3-7868-9373-487f724b9df7",
+            "retire_reason": null,
+            "retired_at": null,
+            "state": "active",
+            "usage": {
+              "download_bytes": "0",
+              "through": null,
+              "upload_bytes": "0"
+            }
+          },
+          {
+            "bound_at": "2026-10-31T02:35:52.90263Z",
+            "bound_public_key_sha256": "146e41236c1bc20da9be6fa175fec62676c01b5a4f4e3e48c4563e3bea49a14a",
+            "created_at": "2026-10-31T02:35:52.899606Z",
+            "current": false,
+            "enrollment_id": "01a18fd0-4188-77d2-91a2-6e39deb732cc",
+            "incarnation_id": "01a18fd0-42b9-7e45-97db-c16ad22f59d0",
+            "retire_reason": "reinstall",
+            "retired_at": "2026-10-31T02:37:31.000236Z",
+            "state": "retired",
+            "usage": {
+              "download_bytes": "2000",
+              "through": "2026-10-31T02:36:44.480795Z",
+              "upload_bytes": "1500"
+            }
+          }
+        ],
+        "next_cursor": null
+      },
+      "incarnations_after_revoke": {
+        "items": [
+          {
+            "bound_at": "2026-10-31T02:35:52.90263Z",
+            "bound_public_key_sha256": "146e41236c1bc20da9be6fa175fec62676c01b5a4f4e3e48c4563e3bea49a14a",
+            "created_at": "2026-10-31T02:35:52.899606Z",
+            "current": true,
+            "enrollment_id": "01a18fd0-4188-77d2-91a2-6e39deb732cc",
+            "incarnation_id": "01a18fd0-42b9-7e45-97db-c16ad22f59d0",
+            "retire_reason": "revocation",
+            "retired_at": "2026-10-31T02:37:31.000236Z",
+            "state": "retired",
+            "usage": {
+              "download_bytes": "2000",
+              "through": "2026-10-31T02:36:44.480795Z",
+              "upload_bytes": "1500"
+            }
+          }
+        ],
+        "next_cursor": null
+      },
+      "incarnations_before_revoke": {
+        "items": [
+          {
+            "bound_at": "2026-10-31T02:35:52.90263Z",
+            "bound_public_key_sha256": "146e41236c1bc20da9be6fa175fec62676c01b5a4f4e3e48c4563e3bea49a14a",
+            "created_at": "2026-10-31T02:35:52.899606Z",
+            "current": true,
+            "enrollment_id": "01a18fd0-4188-77d2-91a2-6e39deb732cc",
+            "incarnation_id": "01a18fd0-42b9-7e45-97db-c16ad22f59d0",
+            "retire_reason": null,
+            "retired_at": null,
+            "state": "active",
+            "usage": {
+              "download_bytes": "2000",
+              "through": "2026-10-31T02:36:44.480795Z",
+              "upload_bytes": "1500"
+            }
+          }
+        ],
+        "next_cursor": null
+      },
+      "member_total_unchanged_on_reenroll": true,
+      "member_totals_after_new_traffic": {
+        "download_bytes": "61079",
+        "total_bytes": "111929",
+        "upload_bytes": "50850"
+      },
+      "member_totals_after_reinstall": {
+        "download_bytes": "59979",
+        "total_bytes": "109929",
+        "upload_bytes": "49950"
+      },
+      "member_totals_before_reinstall": {
+        "download_bytes": "59979",
+        "total_bytes": "109929",
+        "upload_bytes": "49950"
+      },
+      "new_incarnation_counted_transfer": {
+        "after_download_bytes": "0",
+        "after_upload_bytes": "0",
+        "before_download_bytes": "0",
+        "before_upload_bytes": "0",
+        "counted": false,
+        "delta_download_bytes": "0",
+        "delta_upload_bytes": "0",
+        "expected_snat": "198.51.100.22",
+        "generation": "0",
+        "http_200": false,
+        "member_fvnb0_rx_bytes_delta": 0,
+        "member_fvnb0_tx_bytes_delta": 0,
+        "member_service": "member",
+        "node_fvup0_l3_rx_bytes_delta": 0,
+        "node_fvup0_l3_tx_bytes_delta": 0,
+        "node_service": "node2",
+        "origin_authenticated": true,
+        "origin_source": "",
+        "probe_id": "74f304c2-0388-4d74-9f7e-6bbc46c7be13",
+        "requests": 0
+      },
+      "new_incarnation_id": "01a18fd1-f3d3-7868-9373-487f724b9df7",
+      "new_traffic_accumulated_same_month": true,
+      "node_id": "01a18fd0-4188-77d3-9e94-5c5bdc8f8d29",
+      "old_incarnation_id": "01a18fd0-42b9-7e45-97db-c16ad22f59d0",
+      "old_incarnation_usage_fixed": true
+    },
+    "exit_id": "01a18f2d-e7d6-770f-9d32-b5397d190043",
+    "exit_network_id": "fvpn-exit-1836ffa7f54af96f436bcb78",
+    "fup_member_state_enforce": {
+      "effective_down_bps": 5000000,
+      "effective_up_bps": 2000000,
+      "member_usage_fair_use_view": {
+        "applying": false,
+        "as_of": "2026-10-31T02:37:18.746065Z",
+        "rate": {
+          "down_bps": 5000000,
+          "up_bps": 2000000
+        },
+        "reason": "fair_use_tier",
+        "resets_at": "2026-11-01T00:00:00Z",
+        "state": "adjusted",
+        "tier_index": 2,
+        "tier_name": {
+          "zh-TW": "TEST ONLY 降速二階"
+        }
+      },
+      "mode": "enforce",
+      "tc_node2_enforced_5mbit": false,
+      "tc_node_enforced_5mbit": false
+    },
+    "fup_transition_1_policy_activated": {
+      "applying_cleared_at": "2026-10-31T02:37:07.086220476Z",
+      "applying_cleared_to_false": true,
+      "applying_observed_true": true,
+      "both_exits_compiled_tier2_rate": false,
+      "both_exits_installed_tier2_tc": false,
+      "clearing_observation_generation": 7,
+      "clearing_observation_node_id": "01a18fd0-4188-77d3-9e94-5c5bdc8f8d29",
+      "clearing_observation_received_at": "2026-10-31T02:37:06.496862Z",
+      "clearing_observation_report_id": "5a9a70e5-b7d2-4c4d-9175-fc7acba16c2b",
+      "desired_gen_after": {
+        "01a18f2d-e7d6-770e-9b8c-edb2016a7db9": 127,
+        "01a18fd0-4188-77d3-9e94-5c5bdc8f8d29": 7,
+        "01a18fd1-3793-7120-9318-d306221ee728": 0
+      },
+      "desired_gen_after_replay": {
+        "01a18f2d-e7d6-770e-9b8c-edb2016a7db9": 127,
+        "01a18fd0-4188-77d3-9e94-5c5bdc8f8d29": 7,
+        "01a18fd1-3793-7120-9318-d306221ee728": 0
+      },
+      "desired_gen_before": {
+        "01a18f2d-e7d6-770e-9b8c-edb2016a7db9": 126,
+        "01a18fd0-4188-77d3-9e94-5c5bdc8f8d29": 4,
+        "01a18fd1-3793-7120-9318-d306221ee728": 0
+      },
+      "enforced_down_bps": 5000000,
+      "enforced_tier_index": 2,
+      "enforced_up_bps": 2000000,
+      "fup_member_generation_after": 10,
+      "fup_member_generation_after_replay": 10,
+      "fup_member_generation_before": 9,
+      "node1_compiled_member_rate": "",
+      "node1_tc_class_rate": "DesiredState 5Mbit/2Mbit (kernel tc blocked by FLOWTABLE_BYPASS)",
+      "node2_compiled_member_rate": "",
+      "node2_tc_class_rate": "DesiredState 5Mbit/2Mbit (kernel tc blocked by FLOWTABLE_BYPASS)",
+      "started_at": "2026-10-31T02:37:01.698819005Z",
+      "transition": "policy_activated_enforce_tier2",
+      "trigger": "POST /api/v1/admin/policies/{id}/activate (mode=enforce, Tier 2 5Mbit/2Mbit)",
+      "wall_clock_ms_to_applying_false": 5387
+    },
+    "fup_transition_2_member_generation_changed": {
+      "applying_cleared_at": "2026-10-31T02:37:23.57754128Z",
+      "applying_cleared_to_false": true,
+      "applying_observed_true": true,
+      "both_exits_compiled_tier2_rate": false,
+      "both_exits_installed_tier2_tc": false,
+      "clearing_observation_generation": 9,
+      "clearing_observation_node_id": "01a18fd0-4188-77d3-9e94-5c5bdc8f8d29",
+      "clearing_observation_received_at": "2026-10-31T02:37:22.991386Z",
+      "clearing_observation_report_id": "922edc3f-c2b6-4f4d-a4aa-3bea02b6fa8d",
+      "desired_gen_after": {
+        "01a18f2d-e7d6-770e-9b8c-edb2016a7db9": 129,
+        "01a18fd0-4188-77d3-9e94-5c5bdc8f8d29": 9,
+        "01a18fd1-3793-7120-9318-d306221ee728": 0
+      },
+      "desired_gen_after_replay": {
+        "01a18f2d-e7d6-770e-9b8c-edb2016a7db9": 129,
+        "01a18fd0-4188-77d3-9e94-5c5bdc8f8d29": 9,
+        "01a18fd1-3793-7120-9318-d306221ee728": 0
+      },
+      "desired_gen_before": {
+        "01a18f2d-e7d6-770e-9b8c-edb2016a7db9": 128,
+        "01a18fd0-4188-77d3-9e94-5c5bdc8f8d29": 8,
+        "01a18fd1-3793-7120-9318-d306221ee728": 0
+      },
+      "enforced_down_bps": 5000000,
+      "enforced_tier_index": 2,
+      "enforced_up_bps": 2000000,
+      "fup_member_generation_after": 19,
+      "fup_member_generation_after_replay": 19,
+      "fup_member_generation_before": 18,
+      "node1_compiled_member_rate": "",
+      "node1_tc_class_rate": "DesiredState 5Mbit/2Mbit (kernel tc blocked by FLOWTABLE_BYPASS)",
+      "node2_compiled_member_rate": "",
+      "node2_tc_class_rate": "DesiredState 5Mbit/2Mbit (kernel tc blocked by FLOWTABLE_BYPASS)",
+      "started_at": "2026-10-31T02:37:17.42565203Z",
+      "transition": "fup_member_generation_changed_tier1_to_tier2",
+      "trigger": "POST /api/v1/agent/usage-batches -\u003e fup.member_generation_changed (crossing Tier 2 threshold)",
+      "wall_clock_ms_to_applying_false": 6151
+    },
+    "group_id": "01a18f2d-d1ff-71f9-8541-d8e4f3c71807",
+    "node1_effective_down_bps": "25000000",
+    "node2_effective_down_bps": "15000000",
+    "node2_transfer": {
+      "after_download_bytes": "0",
+      "after_upload_bytes": "0",
+      "before_download_bytes": "0",
+      "before_upload_bytes": "0",
+      "counted": false,
+      "delta_download_bytes": "0",
+      "delta_upload_bytes": "0",
+      "expected_snat": "198.51.100.22",
+      "generation": "0",
+      "http_200": false,
+      "member_fvnb0_rx_bytes_delta": 0,
+      "member_fvnb0_tx_bytes_delta": 0,
+      "member_service": "member",
+      "node_fvup0_l3_rx_bytes_delta": 0,
+      "node_fvup0_l3_tx_bytes_delta": 0,
+      "node_service": "node2",
+      "origin_authenticated": true,
+      "origin_source": "",
+      "probe_id": "fc391866-a723-4239-921c-2502b565a31e",
+      "requests": 0
+    },
+    "node_id": "01a18f2d-e7d6-770e-9b8c-edb2016a7db9",
+    "node_incarnation_id": "01a18f2d-e830-7e38-84eb-493517bd4460",
+    "november_reset_generation": "4",
+    "november_reset_state": "normal",
+    "override_generation": "2",
+    "port_base": 48000,
+    "post_override_generation": "3",
+    "run_id": "e1f8c483",
+    "shadow_generation": "0",
+    "shadow_tc_node": "",
+    "shadow_tc_node2": "",
+    "shadow_would_apply_tier": 1,
+    "stack_prefix": "fvpn-w4-usage"
+  },
+  "mechanism_checks": [
+    {
+      "name": "LiveFairUseRecompileCarryingExitsApplyingConvergenceAndReplayIdempotency",
+      "spec_ref": "§11.2, §11.5, §11.6, §14.3, FUP02, FUP04",
+      "status": "pass",
+      "summary": "PR #222 verified live: Transition 1 (policy.activated mode=enforce) incremented desired_config_generation on both carrying exits (node 126-\u003e127, node2 4-\u003e7) and left non-carrying node at 0-\u003e0, cleared fair_use.applying true-\u003efalse in 5387 ms via observation 5a9a70e5-b7d2-4c4d-9175-fc7acba16c2b, and ignored replay; Transition 2 (fup.member_generation_changed) incremented carrying exits (node 128-\u003e129, node2 8-\u003e9) and left non-carrying node at 0-\u003e0, cleared fair_use.applying true-\u003efalse in 6151 ms via observation 922edc3f-c2b6-4f4d-a4aa-3bea02b6fa8d, and ignored duplicate usage replay."
+    },
+    {
+      "name": "LiveENR03PerIncarnationRetainedUsageAcrossNodeReenrollment",
+      "spec_ref": "§5.2, §10.5, §14.2, ENR03, MTR03",
+      "status": "pass",
+      "summary": "GET /api/v1/admin/nodes/01a18fd0-4188-77d3-9e94-5c5bdc8f8d29/incarnations listed new incarnation 01a18fd1-f3d3-7868-9373-487f724b9df7 (active, initial 0/0, after traffic 900/1100 B) and retired incarnation 01a18fd0-42b9-7e45-97db-c16ad22f59d0 (retire_reason=reinstall, retained 1500/2000 B fixed across new traffic) newest-first while member_usage_periods stayed unchanged on re-enrollment (109929 B) and accumulated on the same month (111929 B)."
+    },
+    {
+      "name": "CrossNodeUsageAggregationAndPerExitRateScope",
+      "spec_ref": "§11.1, §11.2, §11.3, FUP01, FUP02",
+      "status": "pass",
+      "summary": "Usage from Exit Node 1 (60 GB) and Exit Node 2 (55 GB) merges into one 115 GB period total crossing Tier 1 (100 GB); each exit computes its own directional rate_scope effective rate (Node 1: 25 Mbps, Node 2: 15 Mbps)."
+    },
+    {
+      "name": "ShadowModeVsEnforceModeAndNodeAckSummary",
+      "spec_ref": "§11.2, §11.5, §11.6, FUP01, FUP02, FUP03",
+      "status": "pass",
+      "summary": "Shadow mode records would_apply_tier_index=1 with generation=0 and unthrottled node rates; switching to enforce mode increments generation=1 and applies Tier 1."
+    },
+    {
+      "name": "AdminOverrideExpiryAndNewMonthPeriodReset",
+      "spec_ref": "§11.2, §11.7, FUP04",
+      "status": "pass",
+      "summary": "SetOverride elevates member to 100 Mbps (state=override, gen=2) until valid_until, automatically restores Tier 1 (25 Mbps, gen=3) on expiry, and resets to Tier 0 (state=normal, gen=4) at 2026-11-01T00:00:00Z."
+    }
+  ]
+}

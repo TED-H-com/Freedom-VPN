@@ -8,6 +8,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"time"
 
+	"github.com/TED-H-com/Freedom-VPN/internal/devices"
 	"github.com/TED-H-com/Freedom-VPN/internal/httpapi"
 	"github.com/TED-H-com/Freedom-VPN/internal/httpapi/gen"
 	"github.com/TED-H-com/Freedom-VPN/internal/members"
@@ -242,13 +243,55 @@ func (h Handlers) ListMemberDevices(ctx context.Context, r gen.ListMemberDevices
 		out.DeviceLimit.Set(page.DeviceLimit)
 	}
 	for _, d := range page.Items {
-		status := api.DeviceStatus(d.Status)
-		if d.Status == "authorized" && !d.ObservedAuthorized {
-			status = api.DeviceStatusPending
-		}
-		out.Items = append(out.Items, api.MemberDevice{DeviceId: d.ID, Name: d.Name, Platform: api.MemberDevicePlatform(d.Platform), Status: status, CreatedAt: d.CreatedAt.UTC(), AuthorizedAt: nullableTime(d.AuthorizedAt), RevokedAt: nullableTime(d.RevokedAt), LastSeenAt: nullableTime(d.LastSeenAt)})
+		out.Items = append(out.Items, memberDevice(d))
 	}
 	return gen.ListMemberDevices200JSONResponse{Body: out}, nil
+}
+
+func (h Handlers) ListAdminDevices(ctx context.Context, r gen.ListAdminDevicesRequestObject) (gen.ListAdminDevicesResponseObject, error) {
+	s, err := h.services(ctx)
+	if err != nil {
+		return nil, err
+	}
+	page, err := s.Devices.ListAdmin(ctx, actor(ctx), devices.AdminQuery{Member: r.Params.MemberId, Unconfirmed: r.Params.AuthorizationUnconfirmed, Status: string(value(r.Params.Status)), Cursor: value(r.Params.Cursor), Limit: value(r.Params.Limit)})
+	if err != nil {
+		if errors.Is(err, entitlement.ErrInvalid) {
+			return nil, apierr.New(apierr.MalformedRequest, "Invalid device page.")
+		}
+		return nil, domainError(err)
+	}
+	body := api.AdminDeviceList{Items: []api.AdminDevice{}, NextCursor: nullableText(page.NextCursor)}
+	for _, d := range page.Items {
+		item := memberDevice(d)
+		body.Items = append(body.Items, api.AdminDevice{
+			AuthorizationUnconfirmed:      item.AuthorizationUnconfirmed,
+			AuthorizationUnconfirmedSince: nullableTime(d.FencedAt),
+			AuthorizedAt:                  item.AuthorizedAt,
+			CreatedAt:                     item.CreatedAt,
+			DeviceId:                      item.DeviceId,
+			LastSeenAt:                    item.LastSeenAt,
+			MemberId:                      pointer(d.MemberID),
+			Name:                          item.Name,
+			Platform:                      api.AdminDevicePlatform(d.Platform),
+			RevokedAt:                     item.RevokedAt,
+			Status:                        item.Status,
+		})
+	}
+	return gen.ListAdminDevices200JSONResponse{Body: body}, nil
+}
+
+func memberDevice(d devices.Device) api.MemberDevice {
+	return api.MemberDevice{
+		DeviceId:                 d.ID,
+		Name:                     d.Name,
+		Platform:                 api.MemberDevicePlatform(d.Platform),
+		Status:                   api.DeviceStatus(d.PublicStatus()),
+		AuthorizationUnconfirmed: pointer(d.AuthorizationUnconfirmed),
+		CreatedAt:                d.CreatedAt.UTC(),
+		AuthorizedAt:             nullableTime(d.AuthorizedAt),
+		RevokedAt:                nullableTime(d.RevokedAt),
+		LastSeenAt:               nullableTime(d.LastSeenAt),
+	}
 }
 
 func nullableTime(t *time.Time) presence.Nullable[time.Time] {

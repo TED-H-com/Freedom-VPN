@@ -3,6 +3,7 @@ package enforce
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"strconv"
 )
 
@@ -11,8 +12,10 @@ import (
 // forward. An accept in one base chain does not stop later base chains of
 // the same hook, so a chain that only matches, counts, logs, accepts, or
 // continues is tolerated at any priority. input and output are tolerated
-// because forwarded member traffic does not cross them. The agent still
-// does not write these chains.
+// because forwarded member traffic does not cross them. A rule whose native
+// match restricts the packet to loopback is loopback_scoped and is not a
+// bypass; jump and goto are still walked, so the target chain has to be
+// safe on its own. The agent still does not write these chains.
 func verifyForeign(rs Ruleset, m Model) error {
 	byKey := make(map[string]*ForeignChain, len(rs.Foreign))
 	for i := range rs.Foreign {
@@ -66,8 +69,16 @@ func walkForeign(base, ch *ForeignChain, byKey map[string]*ForeignChain, stack m
 	stack[id] = true
 	defer delete(stack, id)
 	for _, rule := range ch.Rules {
+		// A loopback-scoped rule cannot match forwarded member traffic, so
+		// its own statements are skipped. jump and goto are still walked:
+		// the target is tolerated only when every rule there is itself
+		// loopback-scoped or otherwise safe.
+		_, scoped := loopbackProof(rule)
 		for _, st := range rule.Stmts {
-			if err := foreignStmt(base, ch, st, byKey, stack); err != nil {
+			if scoped && st.Key != "jump" && st.Key != "goto" {
+				continue
+			}
+			if err := foreignStmt(base, ch, rule, st, byKey, stack); err != nil {
 				return err
 			}
 		}
@@ -75,32 +86,48 @@ func walkForeign(base, ch *ForeignChain, byKey map[string]*ForeignChain, stack m
 	return nil
 }
 
-func foreignStmt(base, ch *ForeignChain, st ForeignStmt, byKey map[string]*ForeignChain, stack map[string]bool) error {
+func foreignStmt(base, ch *ForeignChain, rule ForeignRule, st ForeignStmt, byKey map[string]*ForeignChain, stack map[string]bool) error {
 	switch st.Key {
 	case "match", "counter", "log", "accept", "continue":
 		return nil
 	case "jump", "goto":
 		if st.Target == "" {
-			return foreignVerdict(base.Table, base.Family, base.Hook, base.HasPrio, base.Prio, base.Name, st.Key, ReasonIsolation)
+			return foreignVerdictRule(base, rule, st.Key, ReasonIsolation)
 		}
 		tgt, ok := byKey[foreignID(ch.Family, ch.Table, st.Target)]
 		if !ok {
-			return foreignVerdict(base.Table, base.Family, base.Hook, base.HasPrio, base.Prio, base.Name, st.Key, ReasonIsolation)
+			return foreignVerdictRule(base, rule, st.Key, ReasonIsolation)
 		}
 		return walkForeign(base, tgt, byKey, stack)
 	case "mangle":
 		if mangleSetsMark(st.Body) {
-			return foreignVerdict(base.Table, base.Family, base.Hook, base.HasPrio, base.Prio, base.Name, "mark", ReasonMark)
+			return foreignVerdictRule(base, rule, "mark", ReasonMark)
 		}
-		return foreignVerdict(base.Table, base.Family, base.Hook, base.HasPrio, base.Prio, base.Name, "mangle", ReasonIsolation)
+		return foreignVerdictRule(base, rule, "mangle", ReasonIsolation)
 	case "flow", "xt":
-		return foreignVerdict(base.Table, base.Family, base.Hook, base.HasPrio, base.Prio, base.Name, st.Key, ReasonFlowtable)
+		return foreignVerdictRule(base, rule, st.Key, ReasonFlowtable)
 	default:
 		if st.Key == "" {
 			st.Key = "unparsed"
 		}
-		return foreignVerdict(base.Table, base.Family, base.Hook, base.HasPrio, base.Prio, base.Name, st.Key, ReasonIsolation)
+		return foreignVerdictRule(base, rule, st.Key, ReasonIsolation)
 	}
+}
+
+func foreignVerdictRule(base *ForeignChain, rule ForeignRule, statement string, reason Reason) error {
+	p := "missing"
+	if base.HasPrio {
+		p = strconv.FormatInt(base.Prio, 10)
+	}
+	hook := base.Hook
+	if hook == "" {
+		hook = "missing"
+	}
+	detail := fmt.Sprintf("table %s family %s hook %s priority %s chain %s statement %s", base.Table, base.Family, hook, p, base.Name, statement)
+	if rule.HasHandle {
+		detail += fmt.Sprintf(" handle %d", rule.Handle)
+	}
+	return checkf(reason, "%s", detail)
 }
 
 func foreignVerdict(table, family, hook string, hasPrio bool, prio int64, chain, statement string, reason Reason) error {

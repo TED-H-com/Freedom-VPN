@@ -186,7 +186,7 @@ The same counter records API 429 responses. An address or subject refusal uses
 the per-class concurrency gate uses `limiter="concurrency"` with that route
 class. The counter does not move for a body-size 413 or a JSON 400.
 
-API ingress is one table per class (`browser`, `agent`, `heartbeat`, `lease`,
+API ingress is one table per class (`browser`, `read`, `agent`, `heartbeat`, `lease`,
 `usage`, `anonymous`), each capped at `max_rate_principals` (default 10,000).
 Enrollment and webhooks also use a separate anonymous class table with the same
 cap. Authenticated subjects use another table, keyed by node or session. That
@@ -198,24 +198,32 @@ leaf, or the leaf fingerprint when that URN is absent, taken before
 `AuthenticateAgent`. A request without a verified client certificate occupies
 no slot. A failed authentication has spent the ingress token. IPv6 keying
 stays /64. The anonymous ingress table and the anonymous class table also
-keep a /48 group beside that /64 key. One /48 may hold every slot except a
-reserve of one (`anonymousGroupReserve`, not a config key). At the default
-cap of 10,000 that is 9,999 /64s. A cap of one still allows that single slot.
-A new /64 in a /48 that already has keys is HTTP 429 once only the reserve
-remains. It is not inserted and it does not evict another prefix. An existing
-key in that /48 still spends a token. Another /48, or an IPv4 address, can
-take the reserved slot. IPv4 is not grouped. The reserve is only on the
-anonymous class, so a /48 sweep inserts nothing into the browser, agent,
-heartbeat, lease, usage, or subject tables, and it cannot fill the anonymous
-tables so tightly that an unrelated address has no slot. There is no separate
-config key for the reserve. `max_rate_principals` (default 10,000) remains
-the cap. At capacity a new principal is admitted by walking from the tail
-and evicting the first bucket that is idle with a full token count, or has
+keep a /48 group beside that /64 key. One anonymous /48 holds at most
+`min(max_rate_principals / 2, 64)` principal slots of that class
+(`anonymousGroupCap`, not a config key). At the default cap of 10,000 that
+is 64 `/64`s. Division rounds down: a table of 10 admits 5, and a table
+of 1 admits no anonymous IPv6 principal. A new `/64` at the cap gets HTTP 429
+`RATE_LIMITED` with `Retry-After` of one second when no idle slot in that
+same group can be reclaimed. Another prefix is never evicted to satisfy
+the group cap. An existing key in that `/48` still spends a token.
+Another `/48`, or an IPv4 address, can still enter. IPv4 is not
+grouped. The cap is only on those two anonymous tables (`EnrollNode` and
+`ReceiveProviderWebhook`). Login stays per IPv6 `/64` on its own limiter.
+The agent listener stays keyed by the node URN. A `/48` sweep inserts
+nothing into the browser, read, agent, heartbeat, lease, usage, or subject
+tables. This is a resident-slot cap. At the group cap, the limiter may
+replace an entry in that same group only if it is idle-full or idle for
+over an hour.
+This lets new `/64`s enter after old ones go idle without exceeding the cap.
+Both group and whole-table eviction release the evicted group slot.
+`max_rate_principals` (default 10,000) remains the table cap. At capacity a
+new principal is admitted by walking from the tail and evicting the first
+bucket that is idle with a full token count, or has
 been idle for more than one hour. The walk stops at that bucket. It continues
 through a run of depleted tail buckets until it finds one or the table ends,
-so eight depleted buckets cannot hide a full one. The long walk happens only
-when the table is full and the tail is depleted, and it is bounded by
-`max_rate_principals`. A table that finds no eligible bucket returns HTTP 429
+so eight depleted buckets cannot hide a full one. Both the group-filtered
+walk and the whole-table walk are bounded by `max_rate_principals`.
+A table that finds no eligible bucket returns HTTP 429
 with `Retry-After` of one second and inserts nothing. Ingress tables and the
 anonymous class table each use one rate. The subject table mixes class rates.
 The full-table walk is what lets a full browser bucket leave ahead of any
@@ -224,41 +232,78 @@ number of slower heartbeat tails.
 ## Browser class calibration
 
 `classify` returns class `browser` and the `browser_rate` bucket for
-administrator and member routes. Heartbeat stays `SubmitObservation`, lease
-stays `RenewServingLease`, usage stays `SubmitUsageBatch`, anonymous stays
-`EnrollNode` and `ReceiveProviderWebhook`, and an agent-tagged operation stays
-agent. `browser_rate` in `internal/config.Defaults` is `per_second: 10`,
-`burst: 30`. One session is one subject key (`browser:` plus the session
-scope), so every browser route on that session shares the bucket. Pre-auth
-ingress for this class uses `ingress_rate` (`per_second: 20`, `burst: 60`)
-per connection principal. The subject budget is half that address budget on
-both axes (`10/20` and `30/60`). Two operator sessions on one address can
-each spend a full subject burst before the shared browser ingress table binds.
+administrator and member routes other than the admin list reads below.
+Heartbeat stays `SubmitObservation`, lease stays `RenewServingLease`, usage
+stays `SubmitUsageBatch`, anonymous stays `EnrollNode` and
+`ReceiveProviderWebhook`, and an agent-tagged operation stays agent.
+`browser_rate` in `internal/config.Defaults` is `per_second: 10`, `burst: 30`.
+One session is one subject key (`browser:session:` plus the authenticated
+session row UUID), so every browser route on that session shares that
+bucket. Pre-auth ingress for this
+class uses `ingress_rate` (`per_second: 20`, `burst: 60`) per connection
+principal. The subject budget is half that address budget on both axes
+(`10/20` and `30/60`). Two operator sessions on one address can each spend a
+full subject burst before the shared browser ingress table binds.
 
-Portal mount fan-out on this bucket is one GET per call (`apps/portal/src`).
-Node detail mounts `getNode` and `listAdminGroups` (2), and `getUpdateBatch`
-when `node.update.batch_id` is set (3). That page does not call
+Admin list reads use class `read` and `read_rate` (`per_second: 30`,
+`burst: 60`) per session. The subject key is `read:session:` plus the
+authenticated session row UUID.
+Both browser buckets use the session UUID loaded by the session store, so
+two sessions of the same administrator have independent budgets. Resource
+ownership still uses the account ID. Custom authenticators without a session
+UUID fall back to the account bucket; raw cookies never choose rate keys.
+The routes are `GET /admin/audit-events` (`ListAuditEvents`),
+`GET /admin/nodes` (`ListNodes`),
+`GET /admin/nodes/{node_id}/incarnations` (`ListNodeIncarnations`),
+`GET /admin/members` (`ListMembers`), and `GET /admin/devices`
+(`ListAdminDevices`). `Retry-After` on HTTP 429 is unchanged: any positive
+wait is rounded up to a whole second, and the body is `RATE_LIMITED`. One
+operator screen that pages three of these lists (five pages each,
+`limit=100`, within 2 seconds) stays inside the burst of 60. The next
+request past that burst without token refill is HTTP 429. Node detail,
+member detail, and
+`GET /admin/operations/{operation_id}` (`getAdminOperation`) stay on
+`browser_rate` (10/s, burst 30). The contract has no `GET /admin/operations`
+collection, so that single-resource poll is on `browser_rate`. Class `read`
+uses `browser_body_bytes` (1 MiB). Its ingress table is its own, so list
+paging does not spend the browser subject burst. The read ingress table
+still uses `ingress_rate` (20/s, burst 60) per connection principal, so
+traffic from one address can be ingress-limited before the session reaches
+30/s. The paging proof uses defaults; a separate burst proof uses two
+addresses on one session to distinguish the session rejection from ingress.
+These tests exercise HTTP middleware and generated pagination binding with
+fixture handlers; live AT06 harness verification remains separate.
+
+Portal mount fan-out (`apps/portal/src`) is one GET per call. Node detail
+mounts `getNode` and `listAdminGroups` (2), and `getUpdateBatch` when
+`node.update.batch_id` is set (3). That page does not call
 `listNodeIncarnations`; the route is one GET per cursor. Audit mounts one
 `listAuditEvents`. Each next page, previous page, or resource-type change is
 one more GET. The search box filters the page already loaded. Member detail
 mounts one `getMember`. Fleet updates mounts three at once (releases,
 release-support policies, and the node list). When that list names a batch,
 one `getUpdateBatch` follows and the node-list query stops, so the screen
-issues four GETs in sequence and three at once. Overview mounts two,
-plus the batch when a node carries `batch_id`. The node list, member list,
-settings, DNS, fair-use, enrollment detail, and groups screens each mount
-one. `GET /auth/session` uses the session login bucket, outside this class.
-An in-flight operation polls at 60 ms, then 120 ms, 240 ms, and doubles up to
-2 s. A node-detail write, its two invalidations, and those polls stay under
-ten browser requests in the first second.
+issues four GETs in sequence and three at once. Overview mounts two, plus
+the batch when a node carries `batch_id`. Settings, DNS, fair-use,
+enrollment detail, and groups each mount one. The node list and the member
+list are class `read`. `GET /admin/devices` is class `read`.
+`POST /admin/members/{member_id}/devices/{device_id}/authorize` stays class
+`browser`: an admin session, with CSRF and `Idempotency-Key` on the command.
+`GET /auth/session` uses the session login bucket, outside both classes.
+An in-flight operation polls `getAdminOperation` at 60 ms, then 120 ms,
+240 ms, and doubles up to 2 s, on `browser_rate`. A node-detail write, its
+two invalidations, and those polls stay under ten browser requests in the
+first second.
 
-Burst 30 admits the heaviest mount (3) ten times over, and admits a composed
-view of node detail with a batch, one incarnation page, and one audit page
-(5 GETs) six times over, in one instant. Sustained paging is one request per
-click against a 10/s refill. An empty burst returns to full in 3 seconds
-(`30/10`). Admin list reads stay in this class, beside the six ingress tables
-(`browser`, `agent`, `heartbeat`, `lease`, `usage`, `anonymous`). The per-node
-agent ingress key, the mTLS order, and the anonymous `/48` reserve are unchanged.
+Burst 30 on `browser_rate` admits the heaviest browser mount (3) ten times
+over. An empty browser burst returns to full in 3 seconds (`30/10`).
+Sustained detail and write traffic is one request per click against a 10/s
+refill. List paging uses `read_rate` (30/s, burst 60) and does not draw on
+that browser burst. An empty read burst returns to full in 2 seconds
+(`60/30`). Ingress tables are `browser`, `read`, `agent`, `heartbeat`,
+`lease`, `usage`, and `anonymous`. The per-node agent ingress key and the
+mTLS order are unchanged. The anonymous `/48` cap is
+`min(max_rate_principals / 2, 64)`, stated with the limiter tables above.
 
 ## Request body limits
 
@@ -267,7 +312,8 @@ cap from `classify`:
 
 | Class | Routes | Setting | Default |
 | --- | --- | --- | --- |
-| browser | browser-tagged operations | `browser_body_bytes` | 1 MiB |
+| browser | browser routes other than the admin list reads | `browser_body_bytes` | 1 MiB |
+| read | `ListAuditEvents`, `ListNodes`, `ListNodeIncarnations`, `ListMembers`, `ListAdminDevices` | `browser_body_bytes` | 1 MiB |
 | agent | agent-tagged operations other than the rows below | `agent_body_bytes` | 1 MiB |
 | heartbeat | `SubmitObservation` | `agent_body_bytes` | 1 MiB |
 | lease | `RenewServingLease` | `agent_body_bytes` | 1 MiB |

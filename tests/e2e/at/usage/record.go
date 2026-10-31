@@ -248,6 +248,11 @@ func WriteEvidence(dir string, r Record, extraSecrets ...string) error {
 	}
 
 	md := renderMarkdown(r)
+	lines := strings.Split(md, "\n")
+	for i := range lines {
+		lines[i] = strings.TrimRight(lines[i], " \t")
+	}
+	md = strings.TrimRight(strings.Join(lines, "\n"), "\n") + "\n"
 	return os.WriteFile(filepath.Join(dir, r.ID+".md"), []byte(md), 0o644)
 }
 

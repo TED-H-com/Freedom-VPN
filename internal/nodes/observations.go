@@ -68,7 +68,7 @@ func (s *Service) SubmitObservation(
 		return api.ObservationAccepted{}, err
 	}
 
-	canonBytes, err := canonjson.Marshal(report)
+	canonBytes, reportPayloadJSON, usageOutboxJSON, hasUsage, err := marshalObservationReport(report)
 	if err != nil {
 		return api.ObservationAccepted{}, apierr.Newf(apierr.MalformedRequest, "invalid observation payload for canonical hash: %v", err)
 	}
@@ -155,6 +155,14 @@ func (s *Service) SubmitObservation(
 
 		// 3. Evaluate evidence in the report (fail-closed safety and metering checks, §5.1, §8, §10.3).
 		effectiveSafety, effectiveHealth, effectiveForwarding, effectiveErrors := evaluateObservationEvidence(report)
+		provisioning := report.ProvisioningState
+		// D-055 / D-084: retain the report as evidence, but every normalized
+		// observation of a frozen incarnation must carry the terminal override.
+		// Keep report_payload and its hash as the original agent claim.
+		if mappingFrozen {
+			provisioning = api.ProvisioningStateFailed
+			effectiveSafety, effectiveForwarding = api.SafetyStatusFailed, false
+		}
 
 		checksMap := make(map[string]any, len(report.Checks))
 		for _, ch := range report.Checks {
@@ -179,10 +187,6 @@ func (s *Service) SubmitObservation(
 			return err
 		}
 		errorsArrayJSON, err := json.Marshal(effectiveErrors)
-		if err != nil {
-			return err
-		}
-		reportPayloadJSON, err := json.Marshal(report)
 		if err != nil {
 			return err
 		}
@@ -221,7 +225,7 @@ func (s *Service) SubmitObservation(
 			observedAt, receivedAt, appliedGenStr,
 			currentReleaseID,
 			checksObjJSON, string(effectiveHealth), string(effectiveSafety),
-			effectiveForwarding, string(report.ProvisioningState), reportPayloadJSON,
+			effectiveForwarding, string(provisioning), reportPayloadJSON,
 		); err != nil {
 			return err
 		}
@@ -234,7 +238,6 @@ func (s *Service) SubmitObservation(
 			currentReleaseID = nil
 			lastGoodReleaseID = nil
 		}
-		provisioning := report.ProvisioningState
 		var staleGenerationGrace bool
 		if provisioning == api.ProvisioningStateReady {
 			// §5.1 / §6.1: baseline readiness needs safety and a generation ACK,
@@ -270,12 +273,6 @@ func (s *Service) SubmitObservation(
 				provisioning = api.ProvisioningStateApplying
 				staleGenerationGrace = false
 			}
-		}
-		// D-055: an ambiguous management correlation is terminal for this
-		// incarnation. Heartbeats remain accepted but cannot clear its failure.
-		if mappingFrozen {
-			provisioning = api.ProvisioningStateFailed
-			effectiveSafety, effectiveForwarding = api.SafetyStatusFailed, false
 		}
 		// 4. Update node state. An older observed_at NEVER overrides newer observed state!
 		isNewerOrEqual := lastObservedAt == nil || !observedAt.Before(lastObservedAt.UTC())
@@ -324,6 +321,16 @@ func (s *Service) SubmitObservation(
 				  AND stale_generation_grace_at IS DISTINCT FROM $2
 			`, authIncarnationID, graceAt); err != nil {
 				return err
+			}
+			if hasUsage {
+				if _, err := tx.Exec(ctx, `
+					UPDATE node_incarnations
+					SET usage_outbox = $2::jsonb,
+					    usage_outbox_observed_at = $3
+					WHERE id = $1
+				`, authIncarnationID, usageOutboxJSON, receivedAt); err != nil {
+					return err
+				}
 			}
 
 			obsAuditID := uuid.Must(uuid.NewV7())
@@ -404,6 +411,75 @@ func (s *Service) SubmitObservation(
 		return api.ObservationAccepted{}, err
 	}
 	return accepted, nil
+}
+
+func hasUsageOutbox(u api.UsageOutboxStatus) bool {
+	return u.BlockedSeq.IsSpecified() ||
+		u.LedgerEpoch.IsSpecified() ||
+		u.MeterEpochId.IsSpecified() ||
+		u.OldestUnackedAt.IsSpecified() ||
+		u.AckedArchiveBytes != 0 ||
+		u.CentralAckedThrough != 0 ||
+		u.LastDurableEventSeq != 0 ||
+		u.UnackedEventCount != 0 ||
+		u.UnackedPayloadBytes != 0
+}
+
+func normalizeUsageOutbox(u api.UsageOutboxStatus) api.UsageOutboxStatus {
+	if !u.BlockedSeq.IsSpecified() {
+		u.BlockedSeq.SetNull()
+	}
+	if !u.LedgerEpoch.IsSpecified() {
+		u.LedgerEpoch.SetNull()
+	}
+	if !u.MeterEpochId.IsSpecified() {
+		u.MeterEpochId.SetNull()
+	}
+	if !u.OldestUnackedAt.IsSpecified() {
+		u.OldestUnackedAt.SetNull()
+	} else if ts, err := u.OldestUnackedAt.Get(); err == nil {
+		u.OldestUnackedAt.Set(ts.UTC())
+	}
+	return u
+}
+
+func marshalObservationReport(report api.ObservationReport) (canonBytes, reportPayloadJSON, usageOutboxJSON []byte, hasUsage bool, err error) {
+	hasUsage = hasUsageOutbox(report.Usage)
+	r := report
+	r.Usage = normalizeUsageOutbox(r.Usage)
+	if !hasUsage {
+		rawBytes, err := json.Marshal(r)
+		if err != nil {
+			return nil, nil, nil, false, err
+		}
+		var rawMap map[string]json.RawMessage
+		if err := json.Unmarshal(rawBytes, &rawMap); err != nil {
+			return nil, nil, nil, false, err
+		}
+		delete(rawMap, "usage")
+		canonBytes, err = canonjson.Marshal(rawMap)
+		if err != nil {
+			return nil, nil, nil, false, err
+		}
+		reportPayloadJSON, err = json.Marshal(rawMap)
+		if err != nil {
+			return nil, nil, nil, false, err
+		}
+		return canonBytes, reportPayloadJSON, nil, false, nil
+	}
+	canonBytes, err = canonjson.Marshal(r)
+	if err != nil {
+		return nil, nil, nil, false, err
+	}
+	reportPayloadJSON, err = json.Marshal(r)
+	if err != nil {
+		return nil, nil, nil, false, err
+	}
+	usageOutboxJSON, err = json.Marshal(r.Usage)
+	if err != nil {
+		return nil, nil, nil, false, err
+	}
+	return canonBytes, reportPayloadJSON, usageOutboxJSON, true, nil
 }
 
 // evaluateObservationEvidence enforces fail-closed validation on a node's reported checks (§5.1, §8, §10.3).
@@ -817,6 +893,7 @@ func advanceNodeOperationsOnObservation(
 									FROM entitlement_grants eg_m
 									JOIN plan_revisions pr_m ON pr_m.id = eg_m.plan_revision_id
 									WHERE eg_m.member_id = m.id
+									  AND eg_m.revoked_at IS NULL
 									  AND eg2.group_id = ANY(pr_m.exit_group_ids)
 								)
 							)

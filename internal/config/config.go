@@ -55,6 +55,7 @@ type Config struct {
 	LeaseRate               Bucket   `json:"lease_rate"`
 	UsageRate               Bucket   `json:"usage_rate"`
 	AnonymousRate           Bucket   `json:"anonymous_rate"`
+	ReadRate                Bucket   `json:"read_rate"`
 	LoginRate               Bucket   `json:"login_rate"`
 	LoginSubjectPerMinute   int      `json:"login_subject_per_minute"`
 	TrustedProxies          []string `json:"trusted_proxies"`
@@ -79,13 +80,11 @@ func Defaults() Config {
 		RecentAuthSeconds: 900, SessionIdleSeconds: 1800, SessionAbsoluteSeconds: 43200, LoginTTLSeconds: 300, IdempotencySeconds: 604800,
 		ReadTimeoutSeconds: 15, WriteTimeoutSeconds: 30, IdleTimeoutSeconds: 60, ShutdownSeconds: 30,
 		BrowserBodyBytes: 1 << 20, AgentBodyBytes: 1 << 20, UsageBodyBytes: 8 << 20, WebhookBodyBytes: 1 << 20, MaxConcurrent: 128, MaxRatePrincipals: 10000,
-		// BrowserRate (10/s, burst 30) is the subject bucket for class browser:
-		// administrator and member routes, including audit paging, incarnation
-		// history, and node and member detail. It is half of IngressRate
-		// (20/s, burst 60), so two operator sessions on one address can each
-		// spend a full subject budget before the shared browser ingress table
-		// binds. Calibration is in docs/control/AUTH.md.
-		IngressRate: Bucket{20, 60}, BrowserRate: Bucket{10, 30}, AgentRate: Bucket{5, 10}, HeartbeatRate: Bucket{1, 5}, LeaseRate: Bucket{1, 5}, UsageRate: Bucket{2, 10}, AnonymousRate: Bucket{2, 10},
+		// BrowserRate (10/s, burst 30) is the subject bucket for class browser.
+		// ReadRate (30/s, burst 60) is the per-session bucket for admin list
+		// reads (class read): audit events, nodes, incarnations, members, and
+		// devices. Calibration is in docs/control/AUTH.md (D-078, D-083).
+		IngressRate: Bucket{20, 60}, BrowserRate: Bucket{10, 30}, AgentRate: Bucket{5, 10}, HeartbeatRate: Bucket{1, 5}, LeaseRate: Bucket{1, 5}, UsageRate: Bucket{2, 10}, AnonymousRate: Bucket{2, 10}, ReadRate: Bucket{30, 60},
 		LoginRate: Bucket{1, 40}, LoginSubjectPerMinute: 10,
 		WorkerConcurrency: 4, WorkerLeaseSeconds: 60, WorkerJobSeconds: 40, WorkerPollSeconds: 1, WorkerAttempts: 10, WorkerBackoffSeconds: 1, WorkerBackoffMaxSeconds: 300,
 	}
@@ -162,7 +161,7 @@ func (c Config) Validate() error {
 			return fmt.Errorf("invalid positive bound: %s", t.Field(i).Tag.Get("json"))
 		}
 	}
-	for _, b := range []Bucket{c.IngressRate, c.BrowserRate, c.AgentRate, c.HeartbeatRate, c.LeaseRate, c.UsageRate, c.AnonymousRate, c.LoginRate} {
+	for _, b := range []Bucket{c.IngressRate, c.BrowserRate, c.AgentRate, c.HeartbeatRate, c.LeaseRate, c.UsageRate, c.AnonymousRate, c.ReadRate, c.LoginRate} {
 		if b.PerSecond <= 0 || b.PerSecond > 100000 || b.Burst < 1 || b.Burst > 100000 {
 			return errors.New("invalid rate bucket")
 		}

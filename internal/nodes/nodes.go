@@ -164,7 +164,9 @@ func getNodeWithQuerier(ctx context.Context, q Querier, nodeID uuid.UUID) (api.N
 			n.retired_at,
 			ie.mapping_frozen,
 			coalesce(ic.conflict_count, 0),
-			ic.last_conflict_at
+			ic.last_conflict_at,
+			inc.usage_outbox,
+			inc.usage_outbox_observed_at
 		FROM nodes n
 		LEFT JOIN exits e ON e.node_id = n.id
 		LEFT JOIN node_incarnations inc ON inc.id = n.current_incarnation_id
@@ -216,6 +218,8 @@ func getNodeWithQuerier(ctx context.Context, q Querier, nodeID uuid.UUID) (api.N
 		ieMappingFrozen          *bool
 		conflictCount            int
 		lastConflictAt           *time.Time
+		usageOutboxBytes         []byte
+		usageOutboxObservedAt    *time.Time
 	)
 
 	err := q.QueryRow(ctx, sqlQuery, nodeID).Scan(
@@ -255,6 +259,8 @@ func getNodeWithQuerier(ctx context.Context, q Querier, nodeID uuid.UUID) (api.N
 		&ieMappingFrozen,
 		&conflictCount,
 		&lastConflictAt,
+		&usageOutboxBytes,
+		&usageOutboxObservedAt,
 	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -276,6 +282,28 @@ func getNodeWithQuerier(ctx context.Context, q Querier, nodeID uuid.UUID) (api.N
 			MappingFrozen:  *ieMappingFrozen,
 			ConflictCount:  conflictCount,
 			LastConflictAt: presence.FromPointer(lastConflictAt),
+		})
+	}
+	detail.UsageOutbox.SetNull()
+	if currentIncarnationID != nil && len(usageOutboxBytes) > 0 && usageOutboxObservedAt != nil {
+		var u api.UsageOutboxStatus
+		if err := json.Unmarshal(usageOutboxBytes, &u); err != nil {
+			return api.NodeDetail{}, "", err
+		}
+		if ts, err := u.OldestUnackedAt.Get(); err == nil {
+			u.OldestUnackedAt.Set(ts.UTC())
+		}
+		detail.UsageOutbox.Set(api.NodeUsageOutbox{
+			AckedArchiveBytes:   u.AckedArchiveBytes,
+			BlockedSeq:          u.BlockedSeq,
+			CentralAckedThrough: u.CentralAckedThrough,
+			LastDurableEventSeq: u.LastDurableEventSeq,
+			LedgerEpoch:         u.LedgerEpoch,
+			MeterEpochId:        u.MeterEpochId,
+			ObservedAt:          usageOutboxObservedAt.UTC(),
+			OldestUnackedAt:     u.OldestUnackedAt,
+			UnackedEventCount:   u.UnackedEventCount,
+			UnackedPayloadBytes: u.UnackedPayloadBytes,
 		})
 	}
 	detail.Update, err = updateSummary(ctx, q, nodeID)

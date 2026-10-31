@@ -95,6 +95,36 @@ func (h Handlers) grantResponse(ctx context.Context, id uuid.UUID) deferred {
 		return (gen.CreateMemberGrant202JSONResponse{OperationAcceptedJSONResponse: a}).VisitCreateMemberGrantResponse(w)
 	}}
 }
+func (h Handlers) AuthorizeMemberDevice(ctx context.Context, r gen.AuthorizeMemberDeviceRequestObject) (gen.AuthorizeMemberDeviceResponseObject, error) {
+	s, err := h.services(ctx)
+	if err != nil {
+		return nil, err
+	}
+	c, err := command(ctx, r.Params.IdempotencyKey)
+	if err != nil {
+		return nil, err
+	}
+	change, err := s.Devices.AuthorizeMemberDevice(ctx, c, r.MemberId, r.DeviceId)
+	if err != nil {
+		return nil, domainError(err)
+	}
+	if change.OperationID == nil {
+		return nil, apierr.New(apierr.StateConflict, "Device has no authorization operation.")
+	}
+	if err = result(ctx, api.ResourceTypeMemberDevice, change.DeviceID, change.OperationID, 202); err != nil {
+		return nil, err
+	}
+	return h.authorizeDeviceResponse(ctx, *change.OperationID), nil
+}
+func (h Handlers) authorizeDeviceResponse(ctx context.Context, id uuid.UUID) deferred {
+	return deferred{func(w http.ResponseWriter) error {
+		a, e := h.accepted(ctx, id)
+		if e != nil {
+			return e
+		}
+		return (gen.AuthorizeMemberDevice202JSONResponse{OperationAcceptedJSONResponse: a}).VisitAuthorizeMemberDeviceResponse(w)
+	}}
+}
 func (h Handlers) RevokeMemberDevice(ctx context.Context, r gen.RevokeMemberDeviceRequestObject) (gen.RevokeMemberDeviceResponseObject, error) {
 	s, err := h.services(ctx)
 	if err != nil {
@@ -219,6 +249,8 @@ func (h Handlers) Replay(ctx context.Context, name string, r db.IdempotencyRecor
 		return h.grantResponse(ctx, *r.OperationID), nil
 	case "RevokeMemberDevice":
 		return h.revokeResponse(ctx, *r.OperationID), nil
+	case "AuthorizeMemberDevice":
+		return h.authorizeDeviceResponse(ctx, *r.OperationID), nil
 	case "CreateCheckoutSession":
 		return h.checkoutResponse(ctx, *r.ResourceID), nil
 	}

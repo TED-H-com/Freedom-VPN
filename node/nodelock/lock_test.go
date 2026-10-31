@@ -186,3 +186,27 @@ func TestPIDReuseWithoutHeldLockIsAcquired(t *testing.T) {
 		t.Fatalf("holder %+v ok %v", got, ok)
 	}
 }
+
+func TestUPD_KernelBootIDOverridesFallback(t *testing.T) {
+	dir := t.TempDir()
+	fallback := "00000000-0000-4000-8000-000000000001" // TEST ONLY identifier
+	for _, kernel := range []bool{true, false} {
+		bootPath := filepath.Join(dir, "missing")
+		want := fallback
+		if kernel {
+			bootPath = "/proc/sys/kernel/random/boot_id"
+			want = readBootID()
+		}
+		lk, err := tryAcquire(filepath.Join(dir, "lock"), fallback, bootPath)
+		if err != nil {
+			t.Fatal(err)
+		}
+		h, ok := readHolder(lk.f)
+		if !ok || h.BootID != want {
+			t.Fatalf("holder %+v, want %s", h, want)
+		}
+		if err := lk.Release(); err != nil {
+			t.Fatal(err)
+		}
+	}
+}
