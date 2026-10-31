@@ -17,7 +17,7 @@ TEST_TARGETS += dns-test
 LINT_TARGETS += dns-lint
 VERIFY_TARGETS += dns-verify
 
-.PHONY: dns-build dns-lint dns-verify dns-test dns-up dns-down dns-test-integration dns-test-publish dns-lab
+.PHONY: dns-build dns-lint dns-verify dns-test dns-up dns-down dns-test-integration dns-test-publish dns-lab dns-response-shape
 
 dns-build:
 	@$(dns-with-disk-tmp) go build $(DNS_PKGS) ./apps/worker/...
@@ -45,6 +45,11 @@ dns-test-publish:
 
 dns-lab:
 	@$(dns-with-disk-tmp) FVPN_NETLAB=1 FVPN_LAB_PREFIX=$${FVPN_LAB_PREFIX:-fvpn-w3-dns-publish} go test -count=1 -tags=netlab -timeout 10m ./tests/netlab/dns/...
+
+# Linux Docker bridge access; the Go harness owns teardown via t.Cleanup.
+dns-response-shape:
+	@mkdir -p .agent/tmp
+	@TMPDIR="$$(pwd)/.agent/tmp" GOTMPDIR="$$(pwd)/.agent/tmp" FVPN_NETLAB=1 FVPN_LAB_PREFIX=$${FVPN_LAB_PREFIX:-fvpn-w3-dns-publish} go test -count=1 -v -tags=netlab -timeout 10m ./tests/netlab/dns/... -run '^TestAT20_ResponseShape$$'
 
 dns-up:
 	FVPN_DNS_PREFIX=$(FVPN_DNS_PREFIX) bash $(DNS_COMPOSE_DIR)/bootstrap.sh
