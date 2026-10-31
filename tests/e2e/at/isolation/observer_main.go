@@ -138,6 +138,35 @@ func clockIdentity() map[string]string {
 	return map[string]string{"boot_id": strings.TrimSpace(string(boot)), "time_namespace": namespace, "offsets": string(offsets), "clock": "CLOCK_MONOTONIC"}
 }
 
+// Read the live agent's clock namespace after an ordinary container restart.
+func producerClock() {
+	row := clockIdentity()
+	row["sample_start"] = time.Now().UTC().Format(time.RFC3339Nano)
+	raw, e := exec.Command("pgrep", "-x", "fvpn-agent").Output()
+	must(e)
+	pid := strings.TrimSpace(string(raw))
+	_, e = strconv.Atoi(pid)
+	must(e)
+	row["agent_pid"] = pid
+	row["time_namespace"], e = os.Readlink("/proc/" + pid + "/ns/time")
+	must(e)
+	for name, file := range map[string]string{"offsets": "timens_offsets", "process_stat": "stat"} {
+		raw, e = os.ReadFile("/proc/" + pid + "/" + file)
+		must(e)
+		row[name] = strings.TrimSpace(string(raw))
+	}
+	raw, e = os.ReadFile("/var/lib/vpn-node/e2e/isolation-operations.jsonl")
+	must(e)
+	lines := bytes.Split(bytes.TrimSpace(raw), []byte("\n"))
+	var last map[string]any
+	must(json.Unmarshal(lines[len(lines)-1], &last))
+	row["measurement_run_id"], _ = last["run_id"].(string)
+	row["latest_sequence"], _ = last["sequence"].(string)
+	row["scope"] = "Read-only live source agent clock after ordinary container restart; no clock or namespace mutation."
+	row["sample_end"] = time.Now().UTC().Format(time.RFC3339Nano)
+	must(json.NewEncoder(os.Stdout).Encode(row))
+}
+
 // All timestamps use the host CLOCK_MONOTONIC shared by these containers.
 func monoNS() int64 {
 	var ts unix.Timespec

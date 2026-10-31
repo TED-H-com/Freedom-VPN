@@ -123,8 +123,19 @@ def validate_operations(rows):
 
 
 def validate_clock(actual, expected):
-    if actual != expected or actual['clock'] != 'CLOCK_MONOTONIC':
-        raise ValueError('packet/producer boot or time namespace mismatch')
+    # Namespace inodes differ between containers and across Docker restarts.
+    # Linux timens offsets are relative to the initial namespace and immutable
+    # once populated. Require exactly zero offsets in both clocks; do not add
+    # a time tolerance or infer equivalence merely from similar wall samples.
+    def offsets(row):
+        fields = [line.split() for line in row['offsets'].splitlines()]
+        if len(fields) != 2 or any(len(f) != 3 for f in fields):
+            raise ValueError('missing clock offsets')
+        return {f[0]: (int(f[1]), int(f[2])) for f in fields}
+    if (actual['boot_id'] != expected['boot_id'] or actual['clock'] != expected['clock'] or
+        actual['clock'] != 'CLOCK_MONOTONIC' or not actual['time_namespace'] or not expected['time_namespace'] or
+        offsets(actual) != {'monotonic': (0,0), 'boottime': (0,0)} or offsets(actual) != offsets(expected)):
+        raise ValueError('packet/producer boot or time offset mismatch')
 
 
 def packet_trace(probes, captures, clock):
@@ -190,10 +201,20 @@ def analyze(root):
     def read(name):
         return json.loads((root/name).read_text())
     rows = [json.loads(line) for line in (root/'producer-operations.jsonl').read_text().splitlines()]
+    if 'measurement unavailable' in (root/'agent.log.txt').read_text():
+        raise ValueError('producer reported a failed measurement write')
     validated = validate_operations(rows)
     clock = read('producer-clock.json')
     if {r['boot_id'] for r in rows} != {clock['boot_id']}:
         raise ValueError('producer changed boot')
+    after = read('producer-clock-after-restart.json')
+    validate_clock(dict(after, clock='CLOCK_MONOTONIC'), clock)
+    if after['measurement_run_id'] not in {r['run_id'] for r in rows}:
+        raise ValueError('live process clock has no producer run')
+    for name in ('renewal-packets.json', 'whole-node-packets.json'):
+        ready = [r for r in read(name) if r.get('event') == 'ready']
+        if len(ready) != 1 or ready[0]['trace_clock']['time_namespace'] != after['time_namespace']:
+            raise ValueError('node packet recorder differs from live agent namespace')
     renewal = packet_trace(read('renewal-probes.json'), read('renewal-packets.json'), clock)
     expiry_doc = read('whole-node-probes.json')
     expiry = packet_trace(expiry_doc['probes'], read('whole-node-packets.json'), clock)
@@ -203,6 +224,8 @@ def analyze(root):
     renewals = [r for r in rows if r.get('renewal',{}).get('new_lease') and lo <= ns(r['renewal'],'start_ns') <= hi]
     if len(renewals) < 2:
         raise ValueError('fewer than two actual signed renewals')
+    if {r['run_id'] for r in renewals} != {after['measurement_run_id']}:
+        raise ValueError('renewals outside sampled live producer process')
     before_expiry = [r for r in rows if r.get('renewal',{}).get('new_lease') and ns(r['renewal'],'end_ns') < min(ns(p,'sent_ns') for p in expiry)]
     if not before_expiry or ns(before_expiry[-1]['lease'],'node_deadline_ns') != deadline:
         raise ValueError('expiry differs from last accepted producer deadline')
@@ -224,6 +247,8 @@ def analyze(root):
                                   limitation='No exact producer timestamps in that run; never retrospectively classified.',
                                   evidence='history/follow-up-8/continuity-analysis.json'),
                   clock=clock, snapshots=validated['snapshots'], runs=validated['runs'], brackets=validated['brackets'],
+                  clock_after_restart=after,
+                  clock_basis='Same kernel boot, exact zero monotonic/boottime offsets to the initial namespace. Namespace inodes are retained, not assumed identical across Docker restarts or member containers.',
                   capture_scope='Source node timing retained across every process restart; clone wire bodies remain separate and do not supply source timing.',
                   failed_operations=validated['failed_operations'], recovery_double_verifiers=validated['recovery_double_verifiers'],
                   wire_digests=dict(reads=len(wire), recompute_ok=sum(r['digest_matches'] for r in wire), matched_producer_digest=len(valid_wire)),

@@ -49,9 +49,14 @@ Clone wire bodies remain separate from the source timing.
 
 The helper also retains boot ID, time-namespace identity and offsets for the
 producer node, packet recorder and every probe. Offline review rejects sequence
-gaps, mismatched clocks/digests, invalid timing order, missing ingress or capture
+gaps, mismatched boot IDs/clock offsets/digests, invalid timing order, missing ingress or capture
 drops. Nanoseconds remain decimal strings; comparisons use integer arithmetic.
-Failed or partial commands never establish a completed guard. Both verifiers
+Docker namespace inodes may differ; the comparison requires identical kernel boot
+and exactly zero monotonic/boottime offsets to the initial namespace, with
+namespace IDs retained. After restart, read the live agent's `/proc` clock namespace
+and offsets as well. Linux documents this offset basis in
+[time_namespaces(7)](https://man7.org/linux/man-pages/man7/time_namespaces.7.html).
+No timestamp allowance is introduced. Failed or partial commands never establish a completed guard. Both verifiers
 from quarantine recovery remain separate, including a non-serving deny-all read.
 
 The fleet API sets a TEST ONLY 60 s ceiling, then requests a capacity generation.

@@ -82,9 +82,11 @@ class CorrelationTests(unittest.TestCase):
         self.assertEqual(len(valid['recovery_double_verifiers']),1)
 
     def test_clock_namespace_mismatch_and_missing_ingress_rejected(self):
-        clock=dict(boot_id='boot',time_namespace='time:1',offsets='monotonic 0 0',clock='CLOCK_MONOTONIC')
+        clock=dict(boot_id='boot',time_namespace='time:1',offsets='monotonic 0 0\nboottime 0 0',clock='CLOCK_MONOTONIC')
         other=dict(clock,time_namespace='time:2')
-        with self.assertRaises(ValueError):p.validate_clock(other,clock)
+        p.validate_clock(other,clock)  # Distinct inode, exactly equal clock origin.
+        with self.assertRaises(ValueError):p.validate_clock(dict(other,boot_id='different'),clock)
+        with self.assertRaises(ValueError):p.validate_clock(dict(other,offsets='monotonic 1 0\nboottime 0 0'),clock)
         captures=[dict(event='ready',trace_clock=clock),dict(event='complete',statistics_available=True,drops=0)]
         probe=dict(packet_id=1,trace_clock=clock,result='timeout',send=dict(mono_ns='100'),read_completion=dict(mono_ns='180'))
         with self.assertRaises(ValueError):p.packet_trace([probe],captures,clock)

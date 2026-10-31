@@ -998,6 +998,12 @@ func (x *isolationRun) restart() {
 	c.Observations = append(c.Observations, iso.Observation{Name: "recovered_control", Detail: string(afterRaw)})
 	c.Status = iso.NegativeStatus(c.Positive, e == nil && ready && after.Valid(), true)
 	c.Actual = "container restart=" + strings.TrimSpace(string(out)) + "; recovered counted=" + boolText(after.Valid()) + "; continuous forbidden-flow coverage not established"
+	clockRaw, clockErr := x.r.lab.docker(x.r.lab.node, "/tmp/isolation-probe", "producer-clock")
+	if clockErr != nil || !json.Valid(clockRaw) {
+		x.t.Error("post-restart producer clock unavailable")
+	} else {
+		x.extra("producer-clock-after-restart.json", json.RawMessage(clockRaw))
+	}
 	x.observation(&c, x.a1)
 	x.add("AT13", c)
 	x.add("AT13", iso.Check{Name: "continuous crash/NetBird/reboot/updater transitions", Status: iso.StatusBlocked, Positive: after, Actual: "restart recovery measured; full continuous fault matrix remains unproved", Owner: "acceptance / operator"})
