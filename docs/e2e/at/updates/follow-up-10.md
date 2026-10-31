@@ -7,4 +7,4 @@ Run `695f977c-b587-4768-88f1-0514f3a4f1ac` is preserved byte-identically in
 All 39 root files have SHA-256 pins; the three earlier diagnostic archives
 remain unchanged. Product tests must use immutable history paths (D-132).
 
-Current measurements are in [follow-up 11](follow-up-11.md).
+Current measurements are in [follow-up 12](follow-up-12.md).

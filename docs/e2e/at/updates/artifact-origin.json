@@ -1,23 +1,22 @@
 {
-  "run_id": "daddad24-b6f7-4c32-ba8e-1c7d24f76ea2",
-  "source_commit": "3ac13f7e115edf22e2ec9d3a6450733ec1fb7b6a",
-  "at": "2026-10-31T18:19:22.085569+00:00",
-  "scope": "TEST ONLY same-run post-handoff uncached seed; installer fixture retired before this isolated probe; no new apply or central acceptance claim",
-  "artifact_url": "https://releases.example.invalid/r/01a1932d-955f-7044-ab34-dce890cf8870/amd64.tar.zst",
+  "run_id": "2babf9b6-86a3-489d-a678-0bd447f2f8b0",
+  "source_commit": "5b2ae0748bbbffb0d370d4842bb0623e74e844b7",
+  "at": "2026-10-31T22:15:50.561171+00:00",
+  "scope": "TEST ONLY post-handoff uncached seed of retired installer fixture; no apply or central acceptance claim",
+  "artifact_url": "https://releases.example.invalid/r/01a19401-10b3-7de8-beaf-ec4601beb6e6/amd64.tar.zst",
   "config": {
-    "layout": {
-      "releases": "/opt/vpn-node/releases",
-      "current": "/opt/vpn-node/current",
-      "identity": "/var/lib/vpn-node/identity",
-      "state": "/var/lib/vpn-node/state",
-      "journal": "/var/lib/vpn-node/update-journal",
-      "lock": "/var/lib/vpn-node/update.lock",
-      "staging": "/var/lib/vpn-node/update-staging",
-      "trust": "/etc/vpn-node/release-trust.json"
-    },
-    "node_id": "01a1932d-c5ed-7b91-8c51-55a3bd649159",
-    "incarnation_id": "01a1932d-ce8c-7673-9ed2-fef594457134",
-    "revoked": false,
+    "allow_loopback": true,
+    "allowed_artifact_origins": [
+      "https://127.0.0.1:9444"
+    ],
+    "desired_state": "/var/lib/vpn-node/state/desired-state.json",
+    "desired_trust": "/etc/vpn-node/desired-trust.json",
+    "incarnation_id": "01a19401-45a5-76f4-864b-9ff219d4fd3c",
+    "meter_checkpoint": "/var/lib/vpn-node/state/meter.checkpoint",
+    "mtls_ca": "/etc/vpn-node/ca.pem",
+    "mtls_cert": "/var/lib/vpn-node/identity/cert.pem",
+    "mtls_key": "/var/lib/vpn-node/identity/key.pem",
+    "node_id": "01a19401-3f46-7ba0-85f1-309fad2249b7",
     "platform": {
       "os_id": "ubuntu",
       "os_version": "24.04",
@@ -29,42 +28,32 @@
       "state_schema": 1
     },
     "release_trust": "/etc/vpn-node/release-trust.json",
-    "desired_trust": "/etc/vpn-node/desired-trust.json",
-    "desired_state": "/var/lib/vpn-node/state/desired-state.json",
-    "revoked_release_ids": null,
-    "meter_checkpoint": "/var/lib/vpn-node/state/meter.checkpoint",
-    "stop_command": [
-      "systemctl",
-      "stop",
-      "fvpn-agent.service",
-      "fvpn-watchdog.service"
-    ],
+    "result_url": "https://127.0.0.1:9444/api/v1/agent/update-results",
     "start_command": [
       "/bin/sh",
       "-c",
       "exec systemctl start fvpn-watchdog.service fvpn-agent.service",
       "fvpn-updater-start"
     ],
-    "result_url": "https://127.0.0.1:9444/api/v1/agent/update-results",
-    "mtls_cert": "/var/lib/vpn-node/identity/cert.pem",
-    "mtls_key": "/var/lib/vpn-node/identity/key.pem",
-    "mtls_ca": "/etc/vpn-node/ca.pem",
-    "allow_loopback": true,
-    "allowed_artifact_origins": [
-      "https://127.0.0.1:9444"
+    "stop_command": [
+      "systemctl",
+      "stop",
+      "fvpn-agent.service",
+      "fvpn-watchdog.service"
     ]
   },
-  "cache_sha256_before": "57904a959f3f59e8be28341ae73f4e2331b39bc77fdc58abfaa2cb5fec9eb662",
-  "current_before": "/opt/vpn-node/releases/01a1932d-955f-7044-ab34-dce890cf8870",
+  "cache_sha256_before": "66324699c3fae214be808e7e43f18b6acca7c7bbdaf52e09f6efad6214f6ee8b",
+  "current_before": "/opt/vpn-node/releases/01a19401-10b3-7de8-beaf-ec4601beb6e6",
+  "current_link_before": "releases/01a19401-10b3-7de8-beaf-ec4601beb6e6",
   "status_before": {
     "generation": "1",
-    "job_id": "d9a042fb-651a-529e-ac9b-fa8a8ba431c2",
+    "job_id": "bdcc8a39-32cc-53f9-bf76-7979da5d0528",
     "source": "installer",
-    "requested_release_id": "01a1932d-bf27-7913-a35b-aca82b4cbdd6",
+    "requested_release_id": "01a19401-3896-73d0-9ada-ae2a3857264e",
     "stage": "verify",
     "state": "failed",
-    "current_release_id": "01a1932d-955f-7044-ab34-dce890cf8870",
-    "last_good_release_id": "01a1932d-955f-7044-ab34-dce890cf8870",
+    "current_release_id": "01a19401-10b3-7de8-beaf-ec4601beb6e6",
+    "last_good_release_id": "01a19401-10b3-7de8-beaf-ec4601beb6e6",
     "recovery_required": false,
     "last_result_state": "failed",
     "last_rejection": null,
@@ -78,31 +67,31 @@
       "--config",
       "/etc/vpn-node/updater.json",
       "--manifest",
-      "/var/lib/vpn-node/update-staging/01a1932d-955f-7044-ab34-dce890cf8870.manifest.json",
+      "/var/lib/vpn-node/update-staging/01a19401-10b3-7de8-beaf-ec4601beb6e6.manifest.json",
       "--tree",
-      "/opt/vpn-node/releases/01a1932d-955f-7044-ab34-dce890cf8870"
+      "/opt/vpn-node/releases/01a19401-10b3-7de8-beaf-ec4601beb6e6"
     ],
     "exit": 0,
     "stdout": "",
-    "stderr": "{\"time\":\"2026-10-31T18:19:22.37127253Z\",\"level\":\"INFO\",\"msg\":\"verified installer baseline seeded\",\"release_id\":\"01a1932d-955f-7044-ab34-dce890cf8870\"}"
+    "stderr": "{\"time\":\"2026-10-31T22:15:50.298380689Z\",\"level\":\"INFO\",\"msg\":\"verified installer baseline seeded\",\"release_id\":\"01a19401-10b3-7de8-beaf-ec4601beb6e6\"}"
   },
   "cache_restored_identical": true,
   "generated_config_unchanged": true,
   "status_after": {
     "generation": "1",
-    "job_id": "d9a042fb-651a-529e-ac9b-fa8a8ba431c2",
+    "job_id": "bdcc8a39-32cc-53f9-bf76-7979da5d0528",
     "source": "installer",
-    "requested_release_id": "01a1932d-bf27-7913-a35b-aca82b4cbdd6",
+    "requested_release_id": "01a19401-3896-73d0-9ada-ae2a3857264e",
     "stage": "verify",
     "state": "failed",
-    "current_release_id": "01a1932d-955f-7044-ab34-dce890cf8870",
-    "last_good_release_id": "01a1932d-955f-7044-ab34-dce890cf8870",
+    "current_release_id": "01a19401-10b3-7de8-beaf-ec4601beb6e6",
+    "last_good_release_id": "01a19401-10b3-7de8-beaf-ec4601beb6e6",
     "seeded_baseline": {
-      "release_id": "01a1932d-955f-7044-ab34-dce890cf8870",
-      "manifest_sha256": "54c2413235e4876f16938f493babee1e6e536b5a431df25f5278923a1016a13e",
-      "tree_hash": "fc6f453a06470a29e11bcdb6571d64b25f79c80fb76cd2cb42ee6d12055ea9cf",
+      "release_id": "01a19401-10b3-7de8-beaf-ec4601beb6e6",
+      "manifest_sha256": "895f54f02192573b98a081d24221f4d2ff8e7f1ef991e3e84cbafb3ea41147e1",
+      "tree_hash": "c205e3bf66bb89c69be6ea5a3f57100730508e9f91f3bbb32efc67915e89743c",
       "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-      "seeded_at": "2026-10-31T18:19:22.368487718Z"
+      "seeded_at": "2026-10-31T22:15:50.29575526Z"
     },
     "recovery_required": false,
     "last_result_state": "failed",
@@ -112,28 +101,27 @@
   },
   "status_unchanged": false,
   "current_unchanged": true,
-  "decision": "Neither rejection nor a hosting rewrite was needed: the controlled Docker origin resolves to a non-private IPv4 address; allowed_artifact_origins exempts only private/CGNAT origins, it is not a universal host allowlist. Uncached seed exited 0 with the generated config unchanged. It added a verified seeded_baseline for the current release after the main extension had finished; current/last-good, failed outcome, health and forwarding state were retained.",
-  "resolved_origin": {
-    "hostname": "releases.example.invalid",
-    "classification": "controlled Docker origin with non-private/non-CGNAT IPv4",
-    "is_rfc1918": false,
-    "is_cgnat": false,
-    "address_sha256": "861c0d22df07f908bd67dcc8fde3e947e6ecdb102f494a895ccb28d8ea67d033",
-    "source": "tests/e2e/installer_exports.go --add-host uses s.lab.originIP; deploy/devstack/compose.yaml owned origin network"
-  },
   "changed_status_fields": [
     "seeded_baseline"
   ],
   "status_except_seed_unchanged": true,
+  "passed": true,
+  "resolved_origin": {
+    "hostname": "releases.example.invalid",
+    "is_rfc1918": false,
+    "is_cgnat": false,
+    "classification": "controlled Docker origin; address omitted",
+    "address_sha256": "861c0d22df07f908bd67dcc8fde3e947e6ecdb102f494a895ccb28d8ea67d033"
+  },
+  "decision": "No rejection and no new origin input: allowed_artifact_origins grants private/CGNAT exceptions, not a universal host restriction. Cache restored; only verified seeded_baseline added.",
   "stimulus": {
-    "cache_path": "/var/lib/vpn-node/update-staging/57904a959f3f59e8be28341ae73f4e2331b39bc77fdc58abfaa2cb5fec9eb662.tar.zst",
-    "held_path": "/var/lib/vpn-node/update-staging/57904a959f3f59e8be28341ae73f4e2331b39bc77fdc58abfaa2cb5fec9eb662.tar.zst.f11-origin-held",
+    "cache_path": "/var/lib/vpn-node/update-staging/66324699c3fae214be808e7e43f18b6acca7c7bbdaf52e09f6efad6214f6ee8b.tar.zst",
+    "held_path": "/var/lib/vpn-node/update-staging/66324699c3fae214be808e7e43f18b6acca7c7bbdaf52e09f6efad6214f6ee8b.tar.zst.f12-origin-held",
     "steps": [
-      "After the installer extension completes and retires its fixture, read current and its retained signed manifest; select the amd64 artifact.",
-      "Record config/cache SHA-256 and updater status. Move only that cached archive to the held sibling.",
-      "Run the recorded seed_without_cache command using the unmodified generated config and current tree.",
-      "In Python finally, restore the exact archive bytes; verify cache/config SHA-256 and current again."
+      "Read retained signed manifest for current and record status/config/cache hashes.",
+      "Move only the retained archive to a held sibling; run recorded seed with unchanged generated config.",
+      "Restore the archive in Python finally; compare hashes, pointer and transaction state."
     ],
-    "cleanup": "cached archive restored byte-identically; shared live runner later removes the entire owned fixture"
+    "cleanup": "Exact archive restored; runner subsequently tears down owned fixture."
   }
 }

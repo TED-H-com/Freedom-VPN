@@ -1,4 +1,4 @@
-# Follow-up 11 run procedure
+# Follow-up 12 run procedure
 
 Use branch `w4-at-updates`, prefix `w4-updates` and port base `42000`.
 Before starting the stack, run `pgrep -af 'gates.sh|mk/at-'` and wait while two
@@ -58,31 +58,37 @@ sequence is refused before writing pending.
 
 The generated result URL, server CA, client cert/key paths and exact origin
 policy are read back and never rewritten. Compare the whole generated config
-hash before and after the extension. The shared install wrapper currently
-omits installer 7's loopback opt-in: record its exit 64, then invoke the shared
-`ProbeInstallerExit` with the same spec plus explicit **TEST ONLY**
-`--allow-loopback`. This is an installation input for the existing split-listener
-lab proxy, not a reporting-config adapter. F11-01 requests the wrapper fix.
+hash before and after the extension. Devstack 21's shared `installerSpec`
+supplies `allow_loopback=true` and exact `control_url=https://127.0.0.1:9444`;
+its `installArgs` adds the explicit **TEST ONLY** `--allow-loopback` only for
+that pair. `RerunInstaller` is the sole install path. Record the shared spec,
+the diagnostic argument vector derived from it, and the actual wrapper outcome.
+A nonzero wrapper exit stops the installer item, records a devstack request,
+and never triggers a lane-local install fallback. `ProbeInstallerExit` remains
+only the existing upgrade-command exit diagnostic, never an install path.
 
 Before any curl contract stimulus, require product ACK history with a matching
 sealed hash, central immutable payload/ACK, exactly one local history row and
 an empty outbox; repeat product flush and require the admin view to remain
 unchanged. The supplementary [transport capture](installer-delivery-transport.json)
-counts central route logs through the extension's completion second. Only the
+counts central route logs through the extension's precise completion timestamp. Only the
 installer can produce results then: the regular fixture has not enrolled.
 The 11 explicitly recorded curl requests are separated from the two automatic
 posts (one success and one stopped-producer failure). No repeated-flush POST
-may be inferred from database deduplication alone.
+may be inferred from database deduplication alone. Separate route counts directly
+before and after the repeat flush must both equal one.
 
 For the separate [uncached origin probe](artifact-origin.json), after the
 extension retires the installer fixture but before whole-stack teardown,
-resolve current and read its retained signed manifest. Select the amd64
+resolve current with `readlink -f` (the shared installer may use a relative
+symlink) and read its retained signed manifest. Select the amd64
 artifact's SHA-256, record updater status and config/cache hashes, and move
 only `update-staging/<sha256>.tar.zst` to a held sibling. Invoke the exact `seed`
 command recorded in that JSON with the **generated** config and current tree.
-Restore the archive in Python `finally` and compare its bytes/hash, generated
-config and current. This run succeeded and added only a verified seeded
-baseline; it is neither a new apply nor central acceptance. Artifact hosting
+The runner invokes `supplemental.py` after the Go sequence, while the owned
+stack remains up. Restore the archive in Python `finally` and compare its bytes/hash, generated
+config and current. The required result is exit 0 with only a verified seeded
+baseline added; it is neither a new apply nor central acceptance. Artifact hosting
 and generated origin policy stay unchanged. The shared release hostname maps
 to an owned non-private Docker origin; `allowed_artifact_origins` grants
 private/CGNAT exceptions rather than restricting all hosts. No private-mirror
@@ -104,6 +110,26 @@ The root lint override removes only its shell cleanup trap; its gofmt, vet and
 pinned staticcheck commands remain unchanged. These are engineering acceptance
 fixtures with generated TEST ONLY identities and signing material.
 
-All 39 prior root records are pinned in the
-[follow-up 10 archive](history/follow-up-10/ARCHIVE.md) (D-098/D-132). The older diagnostic archives remain unchanged. Current claims
+All 43 prior root records are pinned in the
+[follow-up 11 archive](history/follow-up-11/ARCHIVE.md) (D-098/D-132). The older diagnostic archives remain unchanged. Current claims
 must name the new run ID; historical failures stay historical failures.
+
+Use the current `go env GOCACHE`; do not hard-code the cache location. All
+scratch stays under `.agent/tmp`. Recheck suite admission after startup. This
+run consumes updater 19 (#351), devstack 21 (#352), installer 8 (#353) and
+agent-core 29 (#356) on product main `45209609`. It is the first regular
+AT23–AT27 measurement on the tree containing agent-core 29's additive TEST ONLY
+Apply host samples. This is not a contention-cause or worst-case bound test.
+
+The [first follow-up 12 attempt](history/follow-up-12-first-attempt/ARCHIVE.md)
+is retained separately: all regular and installer checks passed, but the new
+supplemental probe incorrectly passed a relative symlink as `seed --tree`.
+Its make exit 2 is preserved. The corrected probe uses the resolved directory;
+final claims must come from a complete fresh run, with no rows carried over.
+
+The corrected measured invocation used two-stage admission: wait for fewer than
+two other suites, start the shared stack with `make -f mk/e2e.mk e2e-up E2E_RESET=1`
+using the same prefix/port/state bindings, recheck admission, then invoke
+`AT_UPDATES_REUSE=1 make -f mk/at-updates.mk at-updates`. This reuses only the
+fresh reset stack before its first enrollment, never the failed attempt's state.
+The live runner still performs all ATs, supplemental probes and final teardown.

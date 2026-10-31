@@ -44,3 +44,18 @@ The four `internal/` reference sites above remain unchanged; `node/` and
 `packaging/` still contain no literal `docs/e2e/at/` references. Documentation
 citations are not runtime reads. Any new digest-dependent consumer must use
 this archive, never a new living-root digest. No outside-owned file was edited.
+
+The follow-up 12 reference inventory has 1,064 matches under `internal node
+packaging tests`, still exactly four in product paths. Both fleetupdate-owned
+JSON copies were compared byte-for-byte with their follow-up 9 archives again.
+The new archive test reads only `history/follow-up-11/`; the supplemental
+capture reads this lane's just-written live evidence to assemble the same-run
+report, not as a product behavior fixture. Source metadata pins evidence only
+at `history/` paths. The raw inventory is retained in the ignored hand-off logs.
+
+The first follow-up 12 attempt's 17 directly measured files are additionally
+preserved byte-identically under
+[history/follow-up-12-first-attempt](history/follow-up-12-first-attempt/ARCHIVE.md)
+before the owned relative-symlink probe fix. Its make failure and the incorrect
+unconditional narrative are explicitly retained and explained. The later run
+must supply all current claims independently. No prior archive was rewritten.
