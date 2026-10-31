@@ -225,7 +225,7 @@ func renderUpdater(l Layout, p Platform, manifest api.ReleaseManifest, node node
 		DesiredState:    l.StateDir + "/desired-state.json",
 		MeterCheckpoint: l.StateDir + "/meter.checkpoint",
 		StopCommand:     []string{"systemctl", "stop", UnitAgent, UnitWatchdog},
-		StartCommand:    []string{"systemctl", "start", UnitWatchdog, UnitAgent},
+		StartCommand:    []string{"/bin/sh", "-c", "exec systemctl start " + UnitWatchdog + " " + UnitAgent, "fvpn-updater-start"},
 		MTLSCert:        l.IdentityDir + "/cert.pem",
 		MTLSKey:         l.IdentityDir + "/key.pem",
 		MTLSCA:          l.IdentityDir + "/ca.pem",

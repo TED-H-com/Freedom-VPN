@@ -65,7 +65,9 @@ The same `release_id` with a different manifest digest is `IMMUTABLE` (exit 1). 
 
 `check` is read-only. It does not take the lock. `--json` prints one JSON object; without it, the same fields are text. Exit 0 is `healthy`. Exit 2 is `drifted`, with a single line and no stack trace.
 
-It reports OS and arch, the installed `release_id` and manifest digest, unit states, directory modes, the lock holder when the recorded pid is alive, whether identity exists and which incarnation `node.json` carries, whether `usage.db` exists (never its contents), the NetBird client version and whether `netbird status` contains `Management: Connected`, the pending record (including `manifest_path` and `request_id`), the recorded baseline result and probe exit code/stderr, and the drift list. The baseline result records the last installer attempt, not a fresh journal health check.
+It reports OS and arch, the current `release_id` and its manifest digest when available, unit states, directory modes, the lock holder when the recorded pid is alive, whether identity exists and which incarnation `node.json` carries, whether `usage.db` exists (never its contents), the NetBird client version and whether `netbird status` contains `Management: Connected`, the pending record (including `manifest_path` and `request_id`), the recorded baseline result and probe exit code/stderr, and the drift list. The baseline result records the last installer attempt, not a fresh journal health check.
+
+`installed.json` is the install-time record, exposed as `install_record`. When a journal exists, `check` invokes the installed updater's read-only `status --journal` snapshot and uses `current_release_id` to check the live symlink and unit templates (`release_source: updater_journal`). A successful updater switch does not rewrite installation history or cause a false `current` mismatch. `manifest_sha256` is omitted when status cannot supply the current digest; the old digest remains only in `install_record`. Missing or unreadable seeded journals, invalid current IDs, a recovery-required latch, and an actual pointer mismatch remain drift. A pre-seed legacy install falls back to `installed.json`. A check during an update may observe temporary drift; retry after the updater's terminal result.
 
 A management disconnect is reported and is not, by itself, drift. The updater oneshot is inactive between timer fires; `failed` is drift. `fvpn-node-firstboot` is not required to be active after enrollment.
 
@@ -85,7 +87,11 @@ The updater re-verifies the envelope and its private snapshot of the archive, ex
 
 `staged` describes the installer hand-off, not completion. Inspect `fvpn-updater status` for the installer-sourced job and outcome; the automatic service run may already have consumed the pending file when `upgrade` returns. A held lock exits 3 `busy` before staging.
 
-Two integration items remain open. Updater follow-up 14 has not merged: the merged updater has no `seed` subcommand, so installation records **`baseline: not seeded (updater without seed)`** in its log and `check --json`. A live `current` pointer without verified journal evidence is refused with `CHECKPOINT_FAILED`; do not create journal rows manually. Once `seed` is available, install and reenroll invoke the installed binary with the retained envelope and current tree. A seed failure is an installer failure and is recorded, never reported as seeded. Central acceptance of installer-local results also awaits contracts revision 13 / fleet-update. Outcomes are visible locally now and will appear in the admin node view once central accepts them; a local success is not central acceptance.
+The merged updater supports `seed`. Install and reenroll invoke the installed binary with the retained signed envelope and resolved current tree. `install/baseline.json` records the command exit and stderr; `fvpn-updater status` independently exposes `seeded_baseline`. Seeding authenticates the archive and compares the entire live tree; it does not claim dataplane health or authorize forwarding. A seed refusal returns `baseline_failed` after the installation has completed: it does not roll back the installed tree or rewrite existing updater evidence. `check` reports the failed baseline and any live/journal mismatch. Use journaled `upgrade` for an established baseline.
+
+Initial install also retains the verified archive as `update-staging/<artifact-sha>.tar.zst`, mode 0600, using a streamed, synced, atomic copy with a second artifact check before publication. Re-runs reuse matching bytes. Together with the signed envelope, this permits offline seed and reenroll seed without reaching the artifact URL. Cost: one compressed archive per retained release, plus a temporary copy during initial staging; the updater also needs scratch space for its own archive snapshot and reference extraction. Keep the archive while offline reseeding is required.
+
+Installer-sourced results are supported centrally. Local `status` still does not prove central acceptance. The systemd suite's full upgrade currently reaches verification and then fails closed at `final_sample`: the generated configuration names `state/meter.checkpoint`, but the product agent does not produce that file. The updater leaves the previous current release in place. See the [dated follow-up evidence](install-followup3-2026-10-31.md) before treating this path as accepted.
 
 ## remove
 
@@ -107,9 +113,9 @@ It then enrolls with the new token, shreds the token file, refreshes `updater.js
 
 ## image-prepare (§6.3, ENR03)
 
-`image-prepare` refuses while `node.json` or `key.pem` exists unless `--i-am-building-an-image` is set (`identity_present`, exit 1). With the flag it deletes generated secrets: agent key, certificate, CSR, CA, setup key, and `node.json`; `agent.db` and `desired-state.json`; `usage.db` and its WAL; NetBird state under `/var/lib/netbird` and `/etc/netbird`; SSH host keys `ssh_host_*`. It truncates `/etc/machine-id` (and `/var/lib/dbus/machine-id` when that path is a regular file) so the id is regenerated on first boot. It does not delete binaries or unit files.
+`image-prepare` refuses while `node.json` or `key.pem` exists unless `--i-am-building-an-image` is set (`identity_present`, exit 1). With the flag it deletes generated secrets: agent key, certificate, CSR, CA, setup key, and `node.json`; `agent.db` and `desired-state.json`; `usage.db` and its WAL; NetBird state under `/var/lib/netbird` and `/etc/netbird`; SSH host keys `ssh_host_*`. It truncates `/etc/machine-id` (and `/var/lib/dbus/machine-id` when that path is a regular file) so the id is regenerated on first boot. It does not delete binaries, unit files, retained signed artifacts or the updater seed evidence. The journal is preserved; image preparation does not reset updater transactions or claim a new baseline.
 
-Member units are disabled so a clone does not start `fvpn-node-netbird-up` before a setup key exists. `fvpn-node-firstboot.service` stays enabled. It runs when `/var/lib/vpn-node/firstboot.token` exists and `node.json` does not. Place that token, mode 0600, before the first boot. The unit calls `fvpn-node-install firstboot`, which enrolls, enables the member units, and starts them. The token is not stored in the image.
+Member units are disabled so a clone does not start `fvpn-node-netbird-up` before a setup key exists. `fvpn-node-firstboot.service` stays enabled. It runs when `/var/lib/vpn-node/firstboot.token` exists and `node.json` does not. Place that token, mode 0600, before the first boot. The unit calls `fvpn-node-install firstboot`, which enrolls, enables the member units, and starts them. The token is not stored in the image. Firstboot refreshes the updater identity while retaining the original verified baseline. Its systemd oneshot starts the member units synchronously after enrollment, so it has no `Before=fvpn-agent` ordering that could deadlock those start jobs. Clones must receive distinct enrollment credentials and obtain distinct incarnations; seed evidence is release evidence, not node identity.
 
 ## Directories
 
@@ -126,7 +132,8 @@ Member units are disabled so a clone does not start `fvpn-node-netbird-up` befor
 | `/var/lib/vpn-node/firstboot.token` | 0600 | first-boot token; not part of the image |
 | `/opt/vpn-node/releases/<release_id>` | 0755 | one extracted release |
 | `/opt/vpn-node/current` | link | relative link `releases/<release_id>` |
-| `/run/vpn-node` | 0755 | runtime directory (`RuntimeDirectory=vpn-node`) |
+| `/run/vpn-node` | 0755 | shared heartbeat/runtime directory; preserved until reboot |
+| `/run/fvpn-netbird` | 0700 | NetBird daemon-owned socket directory |
 | `/var/lib/vpn-node/update.lock` | 0600 | exclusive flock (§13.5) |
 
 ## Units
@@ -145,6 +152,16 @@ Templates are `deploy/node/systemd/`. They are ordered after `network-online.tar
 | `fvpn-node-firstboot.service` | none | One-shot enroll on a prepared image. |
 
 The updater uses `/proc/sys/kernel/random/boot_id` first; optional `boot_id` in `updater.json` is only a fallback if the kernel value is unavailable or invalid. New installer configurations omit it. Neither updater unit rewrites configuration or grants write access to `/etc/vpn-node`. The obsolete `refresh-boot-id` subcommand was removed; `check` does not need it.
+
+ENR-06: NetBird serves `unix:///run/fvpn-netbird/netbird.sock`, inside its own `RuntimeDirectory=fvpn-netbird` with mode 0700. The daemon working directory is its already writable `/var/lib/netbird`, so relative update-result cleanup does not target `/`. Only `fvpn-netbird.service` creates/removes that directory; a stop or restart removes the old socket and the next start creates it again. This grants write access to one daemon-owned directory instead of broadening `/run` access. Installer `netbird-up` and `check` pass `--daemon-addr`; the agent unit sets `NB_DAEMON_ADDR` for its live `netbird status --json` probe. Manual diagnostics use:
+
+```sh
+netbird status --daemon-addr unix:///run/fvpn-netbird/netbird.sock
+```
+
+Every consumer declaring `RuntimeDirectory=vpn-node` sets `RuntimeDirectoryPreserve=yes` and mode 0755. Each may create the shared directory if absent, but none removes it on stop/restart, including the updater's oneshots. This keeps the agent's writable mount and heartbeat path valid while the independent watchdog is running. Reboot clears `/run`; the first starting consumer recreates it. Do not run `systemctl clean` on these runtime directories while consumers are active. These lifecycle semantics come from [systemd.exec](https://www.freedesktop.org/software/systemd/man/latest/systemd.exec.html#RuntimeDirectoryPreserve=); the socket flag and environment override are provided by the [pinned NetBird CLI](https://github.com/netbirdio/netbird/blob/v0.82.0/client/cmd/root.go).
+
+The generated updater start command uses a fixed shell command for the two service names. The updater adapter's appended release directory is an unused positional argument, not an additional systemd unit name. The journal owns the current-link switch.
 
 The watchdog is a separate service. Stopping or crashing the agent does not stop the watchdog.
 
