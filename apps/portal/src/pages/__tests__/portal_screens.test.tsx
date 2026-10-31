@@ -3,11 +3,14 @@ import { cleanup, render, screen, waitFor, within } from '@testing-library/react
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, it } from 'vitest';
+import { http, HttpResponse } from 'msw';
+import { server } from '../../mocks/server';
 import { AppRoutes } from '../../App';
 import { apiClient } from '../../api';
 import { SessionProvider } from '../../context/SessionContext';
 import { I18nProvider } from '../../i18n';
 import {
+  CONTRACT_EXAMPLES_USED_BY_MOCKS,
   OFFLINE_NODE_ID,
   PRIMARY_DEVICE_ID,
   PRIMARY_ENROLLMENT_ID,
@@ -19,6 +22,11 @@ import {
   SECONDARY_GROUP_ID,
 } from '../../mocks/data';
 import {
+  FENCED_PENDING_DEVICE_ID,
+  FRESH_PENDING_DEVICE_ID,
+  OVER_LIMIT_DEVICE_ID,
+  REVOKED_DEVICE_ID,
+  setMockDeviceStatesForRevision12,
   setMockNodeIdentityConflict,
   setMockNodeLeaseState,
   setMockPersona,
@@ -944,6 +952,400 @@ describe('Portal Screens & Acceptance Tests (§18, §19 AT02/AT03/AT28/AT32)', (
     );
     expect(screen.getByTestId('node-check-detail-lease')).toHaveTextContent(
       '節點服務租約 (serving lease) 已過期，已停止接受會員流量。',
+    );
+  });
+
+  it('TestD076_MemberDevices_AuthorizationUnconfirmedVsFreshPendingAndAuthorized', async () => {
+    const user = userEvent.setup();
+
+    // Seed 3 states: authorized, fenced pending (authorization_unconfirmed: true), fresh pending (authorization_unconfirmed: false)
+    setMockDeviceStatesForRevision12({ omitAbsentOnFreshPending: false });
+    const { container } = renderAt('/member/devices', 'member_active');
+    expect(await screen.findByTestId('member-devices-page')).toBeInTheDocument();
+
+    // 1. Authorized device
+    expect(screen.getByTestId(`device-status-${PRIMARY_DEVICE_ID}`)).toHaveTextContent(
+      'authorized',
+    );
+    expect(
+      screen.queryByTestId(`device-auth-unconfirmed-badge-${PRIMARY_DEVICE_ID}`),
+    ).toBeNull();
+    expect(
+      screen.getByTestId(`revoke-own-device-${PRIMARY_DEVICE_ID}`),
+    ).toBeInTheDocument();
+
+    // 2. Fenced pending device (authorization_unconfirmed: true)
+    expect(
+      screen.getByTestId(`device-status-${FENCED_PENDING_DEVICE_ID}`),
+    ).toHaveTextContent('pending');
+    expect(
+      screen.getByTestId(`device-auth-unconfirmed-badge-${FENCED_PENDING_DEVICE_ID}`),
+    ).toHaveTextContent('待管理員重新授權');
+    expect(
+      screen.getByTestId(`device-auth-unconfirmed-note-${FENCED_PENDING_DEVICE_ID}`),
+    ).toHaveTextContent('服務還原後需由管理員重新確認此裝置授權');
+    expect(
+      screen.queryByTestId(`device-pending-waiting-${FENCED_PENDING_DEVICE_ID}`),
+    ).toBeNull();
+    // No new member action on fenced pending device
+    expect(
+      screen.queryByTestId(`revoke-own-device-${FENCED_PENDING_DEVICE_ID}`),
+    ).toBeNull();
+
+    // 3. Fresh pending device (authorization_unconfirmed: false)
+    expect(
+      screen.getByTestId(`device-status-${FRESH_PENDING_DEVICE_ID}`),
+    ).toHaveTextContent('pending');
+    expect(
+      screen.queryByTestId(`device-auth-unconfirmed-badge-${FRESH_PENDING_DEVICE_ID}`),
+    ).toBeNull();
+    expect(
+      screen.queryByTestId(`device-auth-unconfirmed-note-${FRESH_PENDING_DEVICE_ID}`),
+    ).toBeNull();
+    expect(
+      screen.getByTestId(`device-pending-waiting-${FRESH_PENDING_DEVICE_ID}`),
+    ).toHaveTextContent('等待授權中');
+
+    // Switch to English and verify en copy
+    await user.selectOptions(screen.getByTestId('locale-switcher'), 'en');
+    expect(
+      screen.getByTestId(`device-auth-unconfirmed-badge-${FENCED_PENDING_DEVICE_ID}`),
+    ).toHaveTextContent('Needs operator re-authorization');
+    expect(
+      screen.getByTestId(`device-auth-unconfirmed-note-${FENCED_PENDING_DEVICE_ID}`),
+    ).toHaveTextContent(
+      'An operator must re-authorize this device after a service restore. You cannot clear this state yourself; contact support.',
+    );
+    expect(
+      screen.getByTestId(`device-pending-waiting-${FRESH_PENDING_DEVICE_ID}`),
+    ).toHaveTextContent('Waiting for authorization');
+    await assertAccessible(container);
+
+    // 4. Absent authorization_unconfirmed renders identically to false
+    setMockDeviceStatesForRevision12({ omitAbsentOnFreshPending: true });
+    renderAt('/member/devices', 'member_active');
+    expect(await screen.findByTestId('member-devices-page')).toBeInTheDocument();
+    expect(
+      screen.queryByTestId(`device-auth-unconfirmed-badge-${FRESH_PENDING_DEVICE_ID}`),
+    ).toBeNull();
+    expect(
+      screen.getByTestId(`device-pending-waiting-${FRESH_PENDING_DEVICE_ID}`),
+    ).toBeInTheDocument();
+  });
+
+  it('TestD077_D081_AdminDevicesList_FiltersReauthorizeAnd409Errors', async () => {
+    const user = userEvent.setup();
+    setMockDeviceStatesForRevision12({ deviceLimit: 2 });
+
+    // Open with ?authorization_unconfirmed=true (restore runbook link) -> filter defaults to 'true'
+    const { container } = renderAt(
+      '/admin/devices?authorization_unconfirmed=true',
+      'admin',
+    );
+    expect(await screen.findByTestId('admin-devices-list-page')).toBeInTheDocument();
+    const unconfirmedSelect = screen.getByTestId(
+      'admin-devices-unconfirmed-filter',
+    ) as HTMLSelectElement;
+    expect(unconfirmedSelect.value).toBe('true');
+
+    // Only the fenced device is shown when authorization_unconfirmed=true
+    expect(
+      await screen.findByTestId(`admin-device-row-${FENCED_PENDING_DEVICE_ID}`),
+    ).toBeInTheDocument();
+    expect(screen.queryByTestId(`admin-device-row-${PRIMARY_DEVICE_ID}`)).toBeNull();
+    expect(
+      screen.getByTestId(`admin-device-member-link-${FENCED_PENDING_DEVICE_ID}`),
+    ).toHaveAttribute('href', `/admin/members/${PRIMARY_MEMBER_ID}`);
+    expect(
+      screen.getByTestId(`admin-device-unconfirmed-since-${FENCED_PENDING_DEVICE_ID}`),
+    ).toHaveTextContent('2026-10-30T08:30:00Z');
+
+    // Re-authorize the fenced device via confirmation dialog -> 202 operation receipt -> leaves authorization_unconfirmed=true list
+    await user.click(
+      screen.getByTestId(`admin-reauthorize-device-btn-${FENCED_PENDING_DEVICE_ID}`),
+    );
+    expect(screen.getByTestId('reauthorize-confirm-dialog')).toBeInTheDocument();
+    await user.click(screen.getByTestId('confirm-reauthorize-btn'));
+
+    expect(
+      await screen.findByTestId('reauthorize-operation-receipt'),
+    ).toBeInTheDocument();
+    await waitFor(() => {
+      expect(
+        screen.queryByTestId(`admin-device-row-${FENCED_PENDING_DEVICE_ID}`),
+      ).toBeNull();
+    });
+    expect(screen.getByTestId('admin-devices-empty-row')).toBeInTheDocument();
+
+    // Switch filter to 'false' (or 'all') -> see authorized and revoked/over-limit devices
+    await user.selectOptions(unconfirmedSelect, 'all');
+    expect(
+      await screen.findByTestId(`admin-device-row-${FENCED_PENDING_DEVICE_ID}`),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByTestId(`admin-device-status-${FENCED_PENDING_DEVICE_ID}`),
+    ).toHaveTextContent('authorized');
+    expect(
+      screen.queryByTestId(`admin-device-unconfirmed-badge-${FENCED_PENDING_DEVICE_ID}`),
+    ).toBeNull();
+
+    // Attempt Re-authorize on a revoked device -> 409 STATE_CONFLICT inline error copy from errors.ts
+    await user.click(
+      screen.getByTestId(`admin-reauthorize-device-btn-${REVOKED_DEVICE_ID}`),
+    );
+    await user.click(screen.getByTestId('confirm-reauthorize-btn'));
+    const errorAlert = await screen.findByTestId('admin-device-authorize-error');
+    expect(errorAlert).toHaveTextContent('STATE_CONFLICT');
+    expect(errorAlert).toHaveTextContent(
+      '資源目前狀態不允許此操作，請重新載入最新狀態後再試。',
+    );
+
+    // Attempt Re-authorize on an over-limit device -> 409 DEVICE_LIMIT_REACHED inline error copy keyed on error.code (D-081)
+    await user.click(
+      screen.getByTestId(`admin-reauthorize-device-btn-${OVER_LIMIT_DEVICE_ID}`),
+    );
+    await user.click(screen.getByTestId('confirm-reauthorize-btn'));
+    const limitAlert = await screen.findByTestId('admin-device-authorize-error');
+    expect(limitAlert).toHaveTextContent('DEVICE_LIMIT_REACHED');
+    expect(limitAlert).toHaveTextContent(
+      '已達方案允許的裝置上限（預設 3 台），請先撤銷舊裝置後再重試。',
+    );
+
+    // Filter by status=revoked -> only revoked device appears
+    await user.selectOptions(
+      screen.getByTestId('admin-devices-status-filter'),
+      'revoked',
+    );
+    expect(
+      await screen.findByTestId(`admin-device-row-${REVOKED_DEVICE_ID}`),
+    ).toBeInTheDocument();
+    expect(screen.queryByTestId(`admin-device-row-${PRIMARY_DEVICE_ID}`)).toBeNull();
+
+    // Clear filters -> all devices restored
+    await user.click(screen.getByTestId('admin-devices-clear-filters-btn'));
+    expect(
+      await screen.findByTestId(`admin-device-row-${PRIMARY_DEVICE_ID}`),
+    ).toBeInTheDocument();
+
+    await assertAccessible(container);
+  });
+
+  it('TestD077_ReusedSuccessfulReceiptWaitsForDeviceReadbackOnALaterPage', async () => {
+    const user = userEvent.setup();
+    setMockDeviceStatesForRevision12();
+    const devices = await apiClient.listAdminDevices();
+    const fenced = devices.items.find((d) => d.device_id === FENCED_PENDING_DEVICE_ID)!;
+    const op = {
+      ...CONTRACT_EXAMPLES_USED_BY_MOCKS.Operation,
+      kind: 'member.device_authorize',
+      status: 'succeeded',
+    };
+    let phase = 0;
+    const observedPhases: number[] = [];
+    const cursors: Array<string | null> = [];
+    server.use(
+      http.post('/api/v1/admin/members/:memberId/devices/:deviceId/authorize', () =>
+        HttpResponse.json(op, { status: 202 }),
+      ),
+      http.get('/api/v1/admin/devices', ({ request }) => {
+        const params = new URL(request.url).searchParams;
+        if (params.get('member_id')) {
+          cursors.push(params.get('cursor'));
+          observedPhases.push(phase);
+          return HttpResponse.json(
+            params.has('cursor')
+              ? {
+                  items: [
+                    {
+                      ...fenced,
+                      status: phase === 2 ? 'authorized' : 'pending',
+                      authorization_unconfirmed: phase === 0,
+                    },
+                  ],
+                  next_cursor: null,
+                }
+              : { items: [devices.items[0]], next_cursor: 'second-page' },
+          );
+        }
+        return HttpResponse.json({ items: phase > 0 ? [] : [fenced], next_cursor: null });
+      }),
+    );
+    renderAt('/admin/devices?authorization_unconfirmed=true');
+    await user.click(
+      await screen.findByTestId(
+        `admin-reauthorize-device-btn-${FENCED_PENDING_DEVICE_ID}`,
+      ),
+    );
+    await user.click(screen.getByTestId('cancel-reauthorize-btn'));
+    expect(screen.queryByTestId('reauthorize-operation-receipt')).toBeNull();
+    await user.click(
+      screen.getByTestId(`admin-reauthorize-device-btn-${FENCED_PENDING_DEVICE_ID}`),
+    );
+    await user.click(screen.getByTestId('confirm-reauthorize-btn'));
+    const state = await screen.findByTestId('reauthorize-device-state');
+    expect(state).toHaveTextContent('等待裝置授權確認中');
+    expect(screen.getByTestId('operation-banner')).toHaveAttribute(
+      'data-operation-status',
+      'succeeded',
+    );
+    expect(screen.getByTestId('operation-status-headline')).toHaveTextContent(
+      '此操作紀錄不代表裝置已完成授權',
+    );
+    expect(
+      within(screen.getByTestId('operation-banner')).getByRole('link'),
+    ).toHaveAttribute('href', `/api/v1/admin/operations/${op.operation_id}`);
+    await waitFor(() => expect(cursors).toContain('second-page'));
+    // Even after the fence clears, pending status is insufficient evidence.
+    phase = 1;
+    await waitFor(() => expect(observedPhases).toContain(1), { timeout: 3000 });
+    expect(state).toHaveTextContent('等待裝置授權確認中');
+    phase = 2;
+    await waitFor(() => expect(state).toHaveTextContent('已確認裝置授權'), {
+      timeout: 4000,
+    });
+    await waitFor(() =>
+      expect(
+        screen.queryByTestId(`admin-device-row-${FENCED_PENDING_DEVICE_ID}`),
+      ).toBeNull(),
+    );
+  }, 10_000);
+
+  it('TestD077_AdminDevicesCursorResetStatusMemberFiltersAndNavigationLink', async () => {
+    const user = userEvent.setup();
+    setMockDeviceStatesForRevision12();
+    const devices = (await apiClient.listAdminDevices()).items;
+    const requests: URLSearchParams[] = [];
+    server.use(
+      http.get('/api/v1/admin/devices', ({ request }) => {
+        const params = new URL(request.url).searchParams;
+        requests.push(params);
+        const second = params.has('cursor');
+        return HttpResponse.json({
+          items: [devices[second ? 1 : 0]],
+          next_cursor: second ? null : 'opaque-filter-bound-cursor',
+        });
+      }),
+    );
+    renderAt('/admin/devices');
+    await user.click(await screen.findByTestId('admin-devices-next-page-btn'));
+    await waitFor(() =>
+      expect(requests.at(-1)?.get('cursor')).toBe('opaque-filter-bound-cursor'),
+    );
+    await user.click(screen.getByTestId('admin-devices-prev-page-btn'));
+    await waitFor(() => expect(requests.at(-1)?.has('cursor')).toBe(false));
+    await user.click(screen.getByTestId('admin-devices-next-page-btn'));
+    await waitFor(() => expect(requests.at(-1)?.has('cursor')).toBe(true));
+    await user.selectOptions(
+      screen.getByTestId('admin-devices-status-filter'),
+      'pending',
+    );
+    await waitFor(() => expect(requests.at(-1)?.get('status')).toBe('pending'));
+    expect(requests.at(-1)?.has('cursor')).toBe(false);
+    await user.type(screen.getByTestId('admin-devices-member-filter'), PRIMARY_MEMBER_ID);
+    expect(requests.at(-1)?.has('member_id')).toBe(false);
+    await user.click(screen.getByTestId('admin-devices-apply-member-filter'));
+    await waitFor(() =>
+      expect(requests.at(-1)?.get('member_id')).toBe(PRIMARY_MEMBER_ID),
+    );
+    expect(requests.at(-1)?.has('cursor')).toBe(false);
+    await user.selectOptions(
+      screen.getByTestId('admin-devices-unconfirmed-filter'),
+      'false',
+    );
+    await waitFor(() =>
+      expect(requests.at(-1)?.get('authorization_unconfirmed')).toBe('false'),
+    );
+    await user.click(screen.getByTestId('admin-devices-clear-filters-btn'));
+    await waitFor(() => expect(requests.at(-1)?.toString()).toBe(''));
+    renderAt(`/admin/members/${PRIMARY_MEMBER_ID}`);
+    expect(await screen.findByTestId('member-detail-view-devices-link')).toHaveAttribute(
+      'href',
+      `/admin/devices?member_id=${PRIMARY_MEMBER_ID}`,
+    );
+  });
+
+  it.each([409, 422])('TestD081_DeviceLimitCopyUsesCodeAtHTTP%s', async (status) => {
+    const user = userEvent.setup();
+    setMockDeviceStatesForRevision12();
+    server.use(
+      http.post('/api/v1/admin/members/:memberId/devices/:deviceId/authorize', () =>
+        HttpResponse.json(
+          {
+            error: {
+              code: 'DEVICE_LIMIT_REACHED',
+              message: 'TEST ONLY limit',
+              request_id: 'test-limit',
+              retryable: false,
+              details: {},
+            },
+          },
+          { status },
+        ),
+      ),
+    );
+    renderAt('/admin/devices?authorization_unconfirmed=true');
+    await user.click(
+      await screen.findByTestId(
+        `admin-reauthorize-device-btn-${FENCED_PENDING_DEVICE_ID}`,
+      ),
+    );
+    await user.click(screen.getByTestId('confirm-reauthorize-btn'));
+    expect(await screen.findByTestId('admin-device-authorize-error')).toHaveTextContent(
+      '已達方案允許的裝置上限',
+    );
+    expect(
+      screen.getByTestId(`admin-device-row-${FENCED_PENDING_DEVICE_ID}`),
+    ).toBeInTheDocument();
+    expect(screen.queryByTestId('reauthorize-operation-receipt')).toBeNull();
+  });
+
+  it('TestSECOPS19_D077_AdminNodeDetail_UsageOutboxThreeStatesInformationalOnly', async () => {
+    const user = userEvent.setup();
+
+    // State 1: Object (PRIMARY_NODE_ID) — values rendered, relative age from observed_at, no alarm classes
+    const { container } = renderAt(`/admin/nodes/${PRIMARY_NODE_ID}`, 'admin');
+    expect(await screen.findByTestId('admin-node-detail-page')).toBeInTheDocument();
+    const outboxSection = screen.getByTestId('node-usage-outbox-section');
+    expect(outboxSection).toBeInTheDocument();
+    expect(screen.getByTestId('node-usage-outbox-values')).toBeInTheDocument();
+    expect(screen.getByTestId('node-usage-outbox-unacked')).toHaveTextContent(
+      '2 / 1840 B',
+    );
+    expect(screen.getByTestId('node-usage-outbox-acked-through')).toHaveTextContent(
+      '10 / 12',
+    );
+    expect(screen.getByTestId('node-usage-outbox-oldest-age')).toHaveTextContent(
+      '30 秒 (2026-10-28T14:06:00Z)',
+    );
+    expect(screen.getByTestId('node-usage-outbox-archive-bytes')).toHaveTextContent(
+      '4096 B',
+    );
+    expect(screen.getByTestId('node-usage-outbox-observed-at')).toHaveTextContent(
+      '2026-10-28T14:06:30Z',
+    );
+    // Informational only: no danger badge or danger alert inside usage outbox section
+    expect(outboxSection.querySelector('.badge-danger')).toBeNull();
+    expect(outboxSection.querySelector('.alert-danger')).toBeNull();
+
+    // Switch to English and verify relative age formatting
+    await user.selectOptions(screen.getByTestId('locale-switcher'), 'en');
+    expect(screen.getByTestId('node-usage-outbox-oldest-age')).toHaveTextContent(
+      '30s (2026-10-28T14:06:00Z)',
+    );
+    await assertAccessible(container);
+
+    // State 2: null (SAFETY_FAILED_NODE_ID) — "no report yet"
+    renderAt(`/admin/nodes/${SAFETY_FAILED_NODE_ID}`, 'admin');
+    expect(await screen.findByTestId('admin-node-detail-page')).toBeInTheDocument();
+    expect(screen.getByTestId('node-usage-outbox-null')).toHaveTextContent(
+      'No report yet',
+    );
+
+    // State 3: field absent (OFFLINE_NODE_ID) — "not projected by this server"
+    renderAt(`/admin/nodes/${OFFLINE_NODE_ID}`, 'admin');
+    expect(await screen.findByTestId('admin-node-detail-page')).toBeInTheDocument();
+    expect(screen.getByTestId('node-usage-outbox-absent')).toHaveTextContent(
+      'Not projected by this server',
     );
   });
 });

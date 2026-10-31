@@ -319,22 +319,22 @@ func TestVerifyServing_AndFailures(t *testing.T) {
 		t.Fatal(err)
 	}
 	raw := fixtureServing(m, plan.Assignments)
-	if err := VerifyServing(raw, m, plan.Assignments); err != nil {
+	if err := verifyServingRuleset(raw, m, plan.Assignments); err != nil {
 		t.Fatal(err)
 	}
 	qos := fixtureQoS(m, plan.Assignments)
 	if err := VerifyQoS(qos, m, plan.Assignments); err != nil {
 		t.Fatal(err)
 	}
-	if err := VerifyServing([]byte(`{"nftables":[{"flowtable":{"name":"f"}}]}`), m, plan.Assignments); err == nil || !strings.Contains(err.Error(), string(ReasonFlowtable)) {
+	if err := verifyServingRuleset([]byte(`{"nftables":[{"flowtable":{"name":"f"}}]}`), m, plan.Assignments); err == nil || !strings.Contains(err.Error(), string(ReasonFlowtable)) {
 		t.Fatalf("flowtable: %v", err)
 	}
 	badOrder := bytesReplace(raw, []byte(`"drop":null`), []byte(`"accept":null`), 1)
-	if err := VerifyServing(badOrder, m, plan.Assignments); err == nil {
+	if err := verifyServingRuleset(badOrder, m, plan.Assignments); err == nil {
 		t.Fatal("accept without the allow-set drop was accepted")
 	}
 	marked := bytesReplace(raw, []byte(`"priority"`), []byte(`"mark"`), 1)
-	if err := VerifyServing(marked, m, plan.Assignments); err == nil || !strings.Contains(err.Error(), string(ReasonMark)) {
+	if err := verifyServingRuleset(marked, m, plan.Assignments); err == nil || !strings.Contains(err.Error(), string(ReasonMark)) {
 		t.Fatalf("mark: %v", err)
 	}
 	if err := EvaluateMeterPath(m.Bindings, []string{"192.0.2.34"}); err == nil || !strings.Contains(err.Error(), string(ReasonMeterPathInvalid)) {
@@ -344,7 +344,7 @@ func TestVerifyServing_AndFailures(t *testing.T) {
 		t.Fatal(err)
 	}
 	decoy := bytesReplace(raw, []byte(`"@allowed_v4"`), []byte(`"not-the-set"`), 1)
-	if err := VerifyServing(decoy, m, plan.Assignments); err == nil {
+	if err := verifyServingRuleset(decoy, m, plan.Assignments); err == nil {
 		t.Fatal("substring allowed_v4 was treated as the allow-set drop")
 	}
 }

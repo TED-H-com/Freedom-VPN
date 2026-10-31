@@ -12,6 +12,10 @@
 // that traffic crosses fails closed. A native match that restricts the
 // packet to 127.0.0.0/8 or to ::1 is classed loopback_scoped and does not
 // fail closed; an xt match does not prove that scope.
+// VerifyServing also reads tc qdiscs and every filter attachment on both
+// member-path interfaces. Foreign or unreadable tc state is TC_FOREIGN_FILTER;
+// Apply records the evidence and restores the nft baseline. No tc filters are
+// installed, and foreign clsact state is not removed by that baseline.
 //
 // Metering is forward_admission_v1 (§10.1, §10.2): one named counter per
 // device per direction, incremented only after the lease and isolation checks,

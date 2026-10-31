@@ -18,7 +18,7 @@ const dockerDNSListing = `{"nftables": [{"metainfo": {"version": "1.0.9", "relea
 func TestFollowup11_DockerDNSLoopbackScoped(t *testing.T) {
 	raw, m, assign := servingPlus(t, nil)
 	raw = appendRawRules(t, raw, []byte(dockerDNSListing))
-	if err := VerifyServing(raw, m, assign); err != nil {
+	if err := verifyServingRuleset(raw, m, assign); err != nil {
 		t.Fatalf("embedded DNS NAT rejected: %v", err)
 	}
 	ev := evidenceFrom(t, raw)
@@ -50,7 +50,7 @@ func TestFollowup11_DockerDNSLoopbackScoped(t *testing.T) {
 				xtTarget("DNAT"),
 			}),
 		))
-		if err := VerifyServing(raw, m, assign); err != nil {
+		if err := verifyServingRuleset(raw, m, assign); err != nil {
 			t.Fatalf("renamed chain rejected: %v", err)
 		}
 		ev := evidenceFrom(t, raw)
@@ -119,7 +119,7 @@ func TestFollowup11_JumpToScopedChain(t *testing.T) {
 			xtTarget("SNAT"),
 		}),
 	))
-	if err := VerifyServing(raw, m, assign); err != nil {
+	if err := verifyServingRuleset(raw, m, assign); err != nil {
 		t.Fatalf("jump into a loopback-scoped chain rejected: %v", err)
 	}
 	ev := evidenceFrom(t, raw)
@@ -177,7 +177,7 @@ func TestFollowup11_PrefixBoundaries(t *testing.T) {
 				}
 				return
 			}
-			if err := VerifyServing(raw, m, assign); err != nil {
+			if err := verifyServingRuleset(raw, m, assign); err != nil {
 				t.Fatalf("rejected: %v", err)
 			}
 			if len(ev) != 1 || ev[0].Class != LoopbackScopedClass || ev[0].Match != tc.want || ev[0].Hook != "postrouting" || ev[0].Family != tc.family {
@@ -212,7 +212,7 @@ func evidenceFrom(t *testing.T, raw []byte) []ForeignEvidence {
 
 func requireBypass(t *testing.T, raw []byte, m Model, assign map[uuid.UUID]uint16, parts ...string) string {
 	t.Helper()
-	err := VerifyServing(raw, m, assign)
+	err := verifyServingRuleset(raw, m, assign)
 	if ReasonCode(err) != ReasonFlowtable {
 		t.Fatalf("got %v, want FLOWTABLE_BYPASS", err)
 	}

@@ -5,6 +5,8 @@ import {
   apiClient,
   ApiError,
   deriveNodeSummaryPhrase,
+  formatRelativeAgeFromObservedAt,
+  getNodeUsageOutboxState,
   isNodeAwaitingMemberGrants,
   isNodeLeaseExpired,
   isProvisionalLeaseWaitingCheck,
@@ -16,7 +18,7 @@ import { ConflictDialog } from '../../components/common/ConflictDialog';
 import { OperationBanner } from '../../components/common/OperationBanner';
 import { useI18n, type TranslationKey } from '../../i18n';
 import { formatLocaleWithUtc } from '../../lib/datetime';
-import { formatBpsMbps } from '../../lib/decimal';
+import { formatBpsMbps, formatBytesDual } from '../../lib/decimal';
 
 export function AdminNodeDetailPage(): React.ReactElement {
   const { nodeId = '' } = useParams<{ nodeId: string }>();
@@ -314,6 +316,8 @@ export function AdminNodeDetailPage(): React.ReactElement {
   const nodeWithReasons = node as NodeDetailWithForwardingReasons;
   const awaitingMemberGrants = isNodeAwaitingMemberGrants(nodeWithReasons);
   const leaseExpired = isNodeLeaseExpired(nodeWithReasons);
+
+  const usageOutboxState = getNodeUsageOutboxState(node);
 
   return (
     <div data-testid="admin-node-detail-page">
@@ -1293,6 +1297,67 @@ export function AdminNodeDetailPage(): React.ReactElement {
               )}
             </div>
           </div>
+        )}
+      </section>
+
+      {/* Usage outbox is informational; the report does not determine safety. */}
+      <section className="card" data-testid="node-usage-outbox-section">
+        <h2>{t('admin.nodeDetail.usageOutbox.title')}</h2>
+        <p className="page-subtitle" data-testid="node-usage-outbox-note">
+          {t('admin.nodeDetail.usageOutbox.informationalNote')}
+        </p>
+        {usageOutboxState.state === 'absent' ? (
+          <p data-testid="node-usage-outbox-absent">
+            {t('admin.nodeDetail.usageOutbox.absent')}
+          </p>
+        ) : usageOutboxState.state === 'null' ? (
+          <p data-testid="node-usage-outbox-null">
+            {t('admin.nodeDetail.usageOutbox.null')}
+          </p>
+        ) : (
+          <dl className="usage-outbox-values" data-testid="node-usage-outbox-values">
+            <div>
+              <dt>{t('admin.nodeDetail.usageOutbox.unackedLabel')}</dt>
+              <dd data-testid="node-usage-outbox-unacked">
+                {usageOutboxState.usageOutbox.unacked_event_count} /{' '}
+                {usageOutboxState.usageOutbox.unacked_payload_bytes} B (
+                {formatBytesDual(usageOutboxState.usageOutbox.unacked_payload_bytes)})
+              </dd>
+            </div>
+            <div>
+              <dt>{t('admin.nodeDetail.usageOutbox.ackedThroughLabel')}</dt>
+              <dd data-testid="node-usage-outbox-acked-through">
+                {usageOutboxState.usageOutbox.central_acked_through} /{' '}
+                {usageOutboxState.usageOutbox.last_durable_event_seq}
+              </dd>
+            </div>
+            <div>
+              <dt>{t('admin.nodeDetail.usageOutbox.oldestUnackedAgeLabel')}</dt>
+              <dd data-testid="node-usage-outbox-oldest-age">
+                {formatRelativeAgeFromObservedAt(
+                  usageOutboxState.usageOutbox.oldest_unacked_at,
+                  usageOutboxState.usageOutbox.observed_at,
+                  locale,
+                )}
+                {usageOutboxState.usageOutbox.oldest_unacked_at
+                  ? ` (${usageOutboxState.usageOutbox.oldest_unacked_at})`
+                  : ''}
+              </dd>
+            </div>
+            <div>
+              <dt>{t('admin.nodeDetail.usageOutbox.archiveBytesLabel')}</dt>
+              <dd data-testid="node-usage-outbox-archive-bytes">
+                {usageOutboxState.usageOutbox.acked_archive_bytes} B (
+                {formatBytesDual(usageOutboxState.usageOutbox.acked_archive_bytes)})
+              </dd>
+            </div>
+            <div>
+              <dt>{t('admin.nodeDetail.usageOutbox.observedAtLabel')}</dt>
+              <dd data-testid="node-usage-outbox-observed-at">
+                {formatLocaleWithUtc(usageOutboxState.usageOutbox.observed_at, locale)}
+              </dd>
+            </div>
+          </dl>
         )}
       </section>
 
