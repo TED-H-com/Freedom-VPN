@@ -221,6 +221,45 @@ anonymous class table each use one rate. The subject table mixes class rates.
 The full-table walk is what lets a full browser bucket leave ahead of any
 number of slower heartbeat tails.
 
+## Browser class calibration
+
+`classify` returns class `browser` and the `browser_rate` bucket for
+administrator and member routes. Heartbeat stays `SubmitObservation`, lease
+stays `RenewServingLease`, usage stays `SubmitUsageBatch`, anonymous stays
+`EnrollNode` and `ReceiveProviderWebhook`, and an agent-tagged operation stays
+agent. `browser_rate` in `internal/config.Defaults` is `per_second: 10`,
+`burst: 30`. One session is one subject key (`browser:` plus the session
+scope), so every browser route on that session shares the bucket. Pre-auth
+ingress for this class uses `ingress_rate` (`per_second: 20`, `burst: 60`)
+per connection principal. The subject budget is half that address budget on
+both axes (`10/20` and `30/60`). Two operator sessions on one address can
+each spend a full subject burst before the shared browser ingress table binds.
+
+Portal mount fan-out on this bucket is one GET per call (`apps/portal/src`).
+Node detail mounts `getNode` and `listAdminGroups` (2), and `getUpdateBatch`
+when `node.update.batch_id` is set (3). That page does not call
+`listNodeIncarnations`; the route is one GET per cursor. Audit mounts one
+`listAuditEvents`. Each next page, previous page, or resource-type change is
+one more GET. The search box filters the page already loaded. Member detail
+mounts one `getMember`. Fleet updates mounts three at once (releases,
+release-support policies, and the node list). When that list names a batch,
+one `getUpdateBatch` follows and the node-list query stops, so the screen
+issues four GETs in sequence and three at once. Overview mounts two,
+plus the batch when a node carries `batch_id`. The node list, member list,
+settings, DNS, fair-use, enrollment detail, and groups screens each mount
+one. `GET /auth/session` uses the session login bucket, outside this class.
+An in-flight operation polls at 60 ms, then 120 ms, 240 ms, and doubles up to
+2 s. A node-detail write, its two invalidations, and those polls stay under
+ten browser requests in the first second.
+
+Burst 30 admits the heaviest mount (3) ten times over, and admits a composed
+view of node detail with a batch, one incarnation page, and one audit page
+(5 GETs) six times over, in one instant. Sustained paging is one request per
+click against a 10/s refill. An empty burst returns to full in 3 seconds
+(`30/10`). Admin list reads stay in this class, beside the six ingress tables
+(`browser`, `agent`, `heartbeat`, `lease`, `usage`, `anonymous`). The per-node
+agent ingress key, the mTLS order, and the anonymous `/48` reserve are unchanged.
+
 ## Request body limits
 
 The API handler reads each body through `http.MaxBytesReader` at the class

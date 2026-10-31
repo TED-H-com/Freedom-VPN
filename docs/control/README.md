@@ -137,7 +137,17 @@ Rate buckets and concurrency gates stay separate for browser, agent control,
 heartbeat, lease, and usage traffic. The loaded operation ids `EnrollNode`
 and `ReceiveProviderWebhook` use the anonymous class, `SubmitObservation`
 uses heartbeat, `RenewServingLease` uses lease, and `SubmitUsageBatch` uses
-usage. Body caps are separate from those rate buckets. Browser writes use
+usage. Class `browser` is every other route, including administrator audit
+paging, incarnation history, and node and member detail. Its subject bucket
+`browser_rate` defaults to 10/s burst 30, half of `ingress_rate` (20/s burst
+60), so two operator sessions on one address can each spend a full subject
+budget before the shared browser ingress table binds. One session shares that
+bucket across those reads. The portal's heaviest admin mount is three GETs
+at once (fleet updates issues a fourth after the node list returns). Burst 30
+admits that mount ten times over, and an empty burst refills in 3
+seconds. The calibration arithmetic is in [authentication](AUTH.md).
+
+Body caps are separate from those rate buckets. Browser writes use
 `browser_body_bytes` (default 1 MiB). Agent control, heartbeat, lease
 renewal, and anonymous enrollment use `agent_body_bytes` (default 1 MiB).
 Provider webhooks use `webhook_body_bytes` (default 1 MiB). Usage batches use
