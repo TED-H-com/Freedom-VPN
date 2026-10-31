@@ -118,9 +118,12 @@ func (r *runner) installerUpgrade19(ctx context.Context, s *Stack, quiescent boo
 				queryErr := usageDB.QueryRow("SELECT payload,payload_sha256,epoch_id,interval_end FROM events WHERE CAST(seq AS TEXT)=?", cp.Seq).Scan(&payload, &hash, &epoch, &ended)
 				if queryErr == nil {
 					sum, hashErr := canonjson.HashHex(payload, "payload_sha256")
-					finalEventOK = hashErr == nil && sum == hash && epoch == cp.Epoch
-					note("final_sample_canonical_event", string(payload))
-					note("final_sample_event_end", ended)
+					var closedAt, closeReason string
+					closedErr := usageDB.QueryRow("SELECT closed_at,close_reason FROM epochs WHERE epoch_id=?", cp.Epoch).Scan(&closedAt, &closeReason)
+					finalEventOK = hashErr == nil && sum == hash && closedErr == nil && closeReason == "final_sample"
+					noteJSON(&rec, "closed_epoch", map[string]string{"epoch_id": cp.Epoch, "closed_at": closedAt, "close_reason": closeReason, "watermark_event_epoch": epoch})
+					note("watermark_canonical_event", string(payload))
+					note("watermark_event_end", ended)
 					note("final_sample_event_verified", boolText(finalEventOK))
 				}
 			}
