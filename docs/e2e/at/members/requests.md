@@ -8,6 +8,65 @@ Current full-case status and evidence: [summary.md](summary.md). Follow-up 10 ru
 run `69f92f49` and its requests are immutable in [follow-up 8](history/follow-up-8/requests.md),
 with [32-file checksum index](history/follow-up-8/SHA256SUMS) (D-098).
 
+## Follow-up 12 — 2026-10-31 (D-098, D-134, D-135)
+
+Run 7edb263f is preserved byte-identically in [follow-up 11](history/follow-up-11/RUN.md),
+with [43-file SHA-256 index](history/follow-up-11/SHA256SUMS); attempt-1 stays.
+The original F11-02 and F11-03 failed rows retain their original expectations.
+
+**F11-02 readiness predicate:** before any positive forwarding probe, require
+an accepted report received within 15 seconds for the current incarnation,
+`member_forwarding_enabled=true`, no forwarding block reasons, and
+`desired = applied = observed = report's lease generation`. That exact lease
+must be unexpired and have populated signed member grants. The intended device
+must be authorized with a current binding and a live member grant in that lease;
+its binding must appear in the node's local desired state at the same generation.
+Join the report's boot ID and lease ID to an original producer serving heartbeat
+with the same generation and populated members; retain its run ID and sequence.
+A missing prerequisite stops the positive probe. Counted forwarding remains an
+independent assertion. No generation, grant or observation is manufactured.
+
+**F11-03 / D-135:** failed Apply installs node-wide generation-0 baseline,
+preserving revocation; no prior-generation restoration. Require revoked-source
+drop and bracket the admitted sibling outage from baseline command start/end
+to the next successful Apply end. Retain every loss and failure; continuous
+20 ms native UDP/40002 metadata and the separate UDP/9 ingress controls remain
+independent. Report first egress after recovery (one-second observation bound,
+not an outage ceiling). Missing verification, failed verification and later
+member-path withdrawal are separate. Missing failed Apply makes this row blocked.
+The producer stream retains `host.before_apply`, `host.after_apply`, command kind,
+optional exit/signal and original run/sequence. Only a failed install exceeding
+its recorded bound with valid ordered host samples, >1 runnable at both ends
+and zero aggregate idle delta receives the conservative “fail-closed install
+overrun with recorded host contention” label. All other observations remain
+explicit; **cause_status=unproven in every case**. The label never changes a
+verdict. [Agent-core 29](../../../node/followup29-install-contention-2026-10-31.md)
+did not reproduce the overrun under CPU contention; no historical cause is claimed.
+D-134's expiry window is [D−101 ms,D]; every pre-D and renewal loss remains counted,
+and no fixed outer-guard ceiling is inferred.
+
+**AT20 / dns-publish 9 request 2:** [BACKEND §2.1.5](../../../dns/BACKEND.md#215-f10-03--positive-cache-and-ttl-measured-2026-10-31)
+F9-HIT / F9-OTHER / F9-ROUND / F9-INFLIGHT govern attribution. Keep the actual
+responder, TTL, before/after settings, whole authority request history, outstanding
+sets and completion times. Different unique responders establish independent
+caches; fallback needs failure/timeout plus secondary receipts. Same-resolver
+fetch is not fallback; sub-second expiry and older outstanding completions must
+be considered. Missing lifecycle/invalidation evidence leaves cause unproven.
+The before-TTL assertion is unchanged. Run 2be2d32f and F10-03 stay failed/unattributed.
+
+**Owner answers consumed:** devstack 21 bounds F11-01 to after member inner egress
+and before observable node inner ingress; it identifies F11-03's failed install
+stage, not cause. Netlab 21 reproduced the receive-link MTU mechanism on IPv6
+(19 reverse 1,360-byte packets missing before member underlay ingress, no PTB)
+and measured real rollback sibling closure. **F11-01 and F8-02 wait for devstack
+22's route-selection exports/native captures; no AT01/AT09 re-observation here.**
+Their prior case records and failed measurements remain recorded. AT01 setup
+mutations required for AT02 run inside AT02; the remaining regular order is unchanged.
+
+Pre/post-startup admission is a hard stop at two other active suites (nested
+make/wrapper processes count as one suite). Run `assembled.py` through `disktmp.py`;
+it tears down the owned stack on all exits. The live make target also hard-checks.
+
 ## Follow-up 11 — 2026-10-31 (D-098, D-102, D-129, D-132)
 
 Run `7edb263f-1f6e-4f94-9e8e-26099f96a699`, harness `33abb2fd`, baseline
@@ -147,7 +206,7 @@ with **13 complete lines**, zero partial-line bytes, `bytes_acked=64109`,
 `notsent_bytes=0`, and `total_retrans=0` in the retained client TCP_INFO.
 Named device counters increase **66,216 upload / 38,241 download** bytes.
 All three MTU-1500 rows pass (64,064 bytes in 2 / 1 / 1 ms).
-[Exact failed row](F11-F8-02-mtu1280.json), [all rows](NATIVE.md).
+[Exact failed row](history/follow-up-11/F11-F8-02-mtu1280.json), [all rows](NATIVE.md).
 
 This new failed transfer remains assigned to **netlab 21** with F8-02. Its
 IPv6 underlay and 13,013-byte boundary are distinct from devstack 20's IPv4
@@ -423,7 +482,7 @@ transport hop if needed. Run `7edb263f-1f6e-4f94-9e8e-26099f96a699`, harness
 `33abb2fd`, leaves AT01 **blocked**, 16 pass / 0 blocked / 0 fail subchecks,
 plus its platform blockers. The existing forwarding gate retains F4-01's
 missing-path blocker; the sleep/wake analogue and second transfer are not
-executed after this prerequisite fails. [Complete capture](F11-01-forwarding.json).
+executed after this prerequisite fails. [Complete capture](history/follow-up-11/F11-01-forwarding.json).
 
 At `2026-10-31T18:27:29Z`, route selection changes from `eth0` to `fvnb0` in
 the native `netbird` table. The member daemon is connected. The bounded
@@ -442,8 +501,8 @@ not claim positive forwarding. The complete AT01 case remains blocked.
 ### F11-02 — D-077 transfer starts before populated-grant serving, 2026-10-31
 
 Owner: **members harness readiness**, with **wire-nodes** only if the observed
-empty-to-populated renewal schedule needs contract review. [Capture](F11-02-capture.json),
-[accepted observations](F11-AT02-observations.json), [producer stream](AT02-enforcement-timing.json).
+empty-to-populated renewal schedule needs contract review. [Capture](history/follow-up-11/F11-02-capture.json),
+[accepted observations](history/follow-up-11/F11-AT02-observations.json), [producer stream](history/follow-up-11/AT02-enforcement-timing.json).
 Run `7edb263f` fails `D-077 re-grant counted forwarding` at `18:29:53Z`.
 The prerequisite at `18:29:39Z` passes desired/applied/latest-lease generation
 **10**, but retains **zero member grants**, forwarding false and
@@ -464,8 +523,8 @@ and this failed run. No readiness change, retry or rerun is made here.
 ### F11-03 — admitted sibling control meets generation-13 rollback, 2026-10-31
 
 Owners: **agent-core / netlab**, with **devstack** for the shared
-`ObserveMemberIngress` fixture. [Complete failed check and producer window](F11-03-capture.json),
-[accepted observations](F11-AT02-observations.json). The strict ingress check at
+`ObserveMemberIngress` fixture. [Complete failed check and producer window](history/follow-up-11/F11-03-capture.json),
+[accepted observations](history/follow-up-11/F11-AT02-observations.json). The strict ingress check at
 `18:31:56Z` fails only its positive sibling control: the revoked source increments
 `ctunku` by **1 packet / 29 bytes** with unchanged device counters and empty
 uplink/origin captures. The admitted sibling instead increments `ctbase` by
