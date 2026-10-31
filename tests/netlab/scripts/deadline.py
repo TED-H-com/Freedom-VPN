@@ -56,6 +56,9 @@ for dev in ["fv-fh", "fv-ih"]:
 applied = json.loads(run("fvpn-netlab", "apply", "-deadline-window", "2900ms", input=json.dumps(model)))
 assert applied["verified"], applied
 D = int(applied["leases"][0]["deadline_mono_ns"])
+member_read_start = time.monotonic_ns()
+member_listing = run("nft", "list", "set", "inet", "fvpn", "allowed_v4")
+member_read_end = time.monotonic_ns()
 
 
 def checksum(b):
@@ -96,4 +99,5 @@ print(json.dumps({
     "nft_package": run("dpkg-query", "-W", "-f=${Version}", "nftables"),
     "precision": {"read_start_ns": str(precision_start), "read_end_ns": str(precision_end), "timeout_expires_ms": values, "text": text_listing, "json": json_listing},
     "deadline_ns": str(D), "apply": applied, "packets": rows,
+    "installed_member_read": {"start_ns": str(member_read_start), "end_ns": str(member_read_end), "text": member_listing},
 }, indent=2))

@@ -65,12 +65,13 @@ func IsConntrackDeleteFailure(err error) bool {
 // baseline and returns the check error, so member forwarding does not stay
 // on a path we cannot account (§10.3, §8.2). Resets are reported and never
 // cleared by recreating counter objects (§10.7).
-func Apply(ctx context.Context, ex Executor, m Model, previous map[string]CounterValue) (ApplyResult, error) {
+func Apply(ctx context.Context, ex Executor, m Model, previous map[string]CounterValue) (result ApplyResult, err error) {
 	applyStart, err := MonotonicNow()
 	if err != nil {
 		return ApplyResult{}, err
 	}
 	timing := DeadlineEvidence{Granularity: DeadlineGranularity, InstallBound: DeadlineInstallBound, ApplyStart: applyStart}
+	defer func() { result.Deadline = timing }()
 
 	if err := validateDatapath(m.Datapath); err != nil {
 		return ApplyResult{}, err

@@ -79,9 +79,13 @@ type delayedDeadlineExec struct {
 	*fakeExec
 	delay        time.Duration
 	guardRelease bool
+	failRollback bool
 }
 
 func (f *delayedDeadlineExec) NftBatch(ctx context.Context, script string) error {
+	if f.failRollback && strings.Contains(script, "fvpn_baseline=1") {
+		return fmt.Errorf("TEST ONLY: rollback unavailable")
+	}
 	if strings.Contains(script, "add chain inet fvpn "+deadlineGuard) {
 		// Deliberately ignore context cancellation: the safety property must
 		// survive a command that commits too late, even without a cleanup.
@@ -94,16 +98,23 @@ func (f *delayedDeadlineExec) NftBatch(ctx context.Context, script string) error
 }
 
 func TestD104_AT13_InstallOverrunNeverOpensGuard(t *testing.T) {
-	m := smallModel()
-	f := &delayedDeadlineExec{fakeExec: servingExec(m), delay: DeadlineInstallBound + 10*time.Millisecond}
-	res, err := Apply(t.Context(), f, m, nil)
-	if err == nil || res.Verified || f.guardRelease || res.Deadline.GuardReleased {
-		t.Fatalf("late install opened: %+v %v", res.Deadline, err)
-	}
-	if res.Deadline.InstalledBy-res.Deadline.RenderStart <= DeadlineInstallBound {
-		t.Fatal("fixture did not exceed bound")
-	}
-	if !strings.Contains(f.nft[0], "iifname \"fv-fh\" drop") || !strings.Contains(f.nft[0], "oifname \"fv-fh\" drop") {
-		t.Fatal("candidate was not atomically guarded in both directions")
+	for _, failRollback := range []bool{false, true} {
+		t.Run(fmt.Sprint("rollback_unavailable=", failRollback), func(t *testing.T) {
+			m := smallModel()
+			f := &delayedDeadlineExec{fakeExec: servingExec(m), delay: DeadlineInstallBound + 10*time.Millisecond, failRollback: failRollback}
+			res, err := Apply(t.Context(), f, m, nil)
+			if err == nil || res.Verified || f.guardRelease || res.Deadline.GuardReleased {
+				t.Fatalf("late install opened: %+v %v", res.Deadline, err)
+			}
+			if res.Deadline.InstalledBy-res.Deadline.RenderStart <= DeadlineInstallBound {
+				t.Fatal("fixture did not exceed bound")
+			}
+			if !strings.Contains(f.nft[0], "iifname \"fv-fh\" drop") || !strings.Contains(f.nft[0], "oifname \"fv-fh\" drop") {
+				t.Fatal("candidate was not atomically guarded in both directions")
+			}
+			if failRollback && len(f.nft) != 1 {
+				t.Fatal("failed rollback removed the guarded candidate")
+			}
+		})
 	}
 }
