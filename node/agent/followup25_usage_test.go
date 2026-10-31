@@ -2,10 +2,12 @@ package agent
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/node/enforce"
 	"github.com/TED-H-com/Freedom-VPN/node/internal/meter"
@@ -15,6 +17,18 @@ import (
 )
 
 func TestD118_ENR05_VerifiedReenrollmentHandsOffFinalSample(t *testing.T) {
+	for _, cancelACK := range []bool{false, true} {
+		name := "delivered_ACK"
+		if cancelACK {
+			name = "cancelled_ACK"
+		}
+		t.Run(name, func(t *testing.T) {
+			testVerifiedReenrollmentHandsOffFinalSample(t, cancelACK)
+		})
+	}
+}
+
+func testVerifiedReenrollmentHandsOffFinalSample(t *testing.T, cancelACK bool) {
 	r := newRig(t)
 	alignControlClock(r)
 	r.srv.SetUsageUnavailable(1000)
@@ -100,6 +114,13 @@ func TestD118_ENR05_VerifiedReenrollmentHandsOffFinalSample(t *testing.T) {
 	if err := next.Boot(t.Context()); err != nil {
 		t.Fatal(err)
 	}
+	// Holding the node lock must prevent retirement, even after verified
+	// identity installation. No meter/uploader for the new stream may start.
+	if next.usage != nil || next.usageOnce || next.loopCancel != nil {
+		t.Fatal("retirement escaped the node lock")
+	}
+	lock.Release()
+	next.ensureUsage(t.Context())
 	stopUsageLoops(t, r)
 	if next.usage == nil || next.usagePersist {
 		t.Fatal("production adoption hook failed")
@@ -137,14 +158,70 @@ func TestD118_ENR05_VerifiedReenrollmentHandsOffFinalSample(t *testing.T) {
 		t.Fatal(err)
 	}
 	r.eng = next
+	accepted, release := r.srv.HoldNextUsageResponse()
+	t.Cleanup(release)
 	if err := next.Boot(t.Context()); err != nil {
 		t.Fatal(err)
 	}
-	stopUsageLoops(t, r)
+	ctx, cancel := context.WithTimeout(t.Context(), 10*time.Second)
+	defer cancel()
+	select {
+	case <-accepted:
+	case <-ctx.Done():
+		t.Fatal("retired batch was not accepted", ctx.Err())
+	}
+	lastSeq := held[len(held)-1].Seq
+	var acked uint64
+	ackAdvances := 0
+	observeACK := func() uint64 {
+		t.Helper()
+		streams, err := next.usage.RetiredStreams(t.Context())
+		if err != nil || len(streams) != 1 || streams[0].IncarnationID != origin {
+			t.Fatal("origin ACK observation", streams, err)
+		}
+		got := streams[0].AckedThrough
+		if got != acked {
+			if acked != 0 || got != lastSeq {
+				t.Fatalf("unexpected origin ACK transition: %d -> %d", acked, got)
+			}
+			ackAdvances++
+			acked = got
+		}
+		return got
+	}
+	// Acceptance alone must not advance the local cursor. Synchronize with
+	// the handler, then either deliver the receipt or cancel the real loop
+	// before it can receive it. This makes the former scheduling race explicit.
+	if observeACK() != 0 {
+		t.Fatal("origin ACK advanced before its response")
+	}
+	if cancelACK {
+		stopUsageLoops(t, r)
+		if observeACK() != 0 {
+			t.Fatal("cancelled response advanced origin ACK")
+		}
+		release()
+	} else {
+		release()
+		ticker := time.NewTicker(time.Millisecond)
+		defer ticker.Stop()
+		for observeACK() != lastSeq {
+			select {
+			case <-ticker.C:
+			case <-ctx.Done():
+				t.Fatal("delivered response did not advance origin ACK", ctx.Err())
+			}
+		}
+		stopUsageLoops(t, r)
+	}
 	for range 3 {
 		if err := next.uploader.Once(t.Context()); err != nil {
 			t.Fatal(err)
 		}
+		observeACK()
+	}
+	if acked != lastSeq || ackAdvances != 1 {
+		t.Fatalf("origin ACK=%d, advances=%d", acked, ackAdvances)
 	}
 	bodies := r.srv.UsageBodies()
 	if len(bodies) < 2 {
@@ -184,8 +261,87 @@ func TestD118_ENR05_VerifiedReenrollmentHandsOffFinalSample(t *testing.T) {
 	if err != nil || head.AckedThrough != 2 {
 		t.Fatal("current ACK", head, err)
 	}
-	// Same verified incarnation has now reopened twice; neither retired itself
-	// nor rotated the prior stream again. The ledger file stayed in place.
+	retiredPosts, acceptedBatches, acceptedEvents := 0, 0, 0
+	key := ""
+	for _, attempt := range r.srv.UsageAttempts() {
+		var stream struct {
+			Origin string `json:"origin_incarnation_id"`
+		}
+		if err := json.Unmarshal(attempt.Body, &stream); err != nil {
+			t.Fatal(err)
+		}
+		if stream.Origin != origin.String() {
+			continue
+		}
+		retiredPosts++
+		if key == "" {
+			key = attempt.IdempotencyKey
+		}
+		if key == "" || attempt.IdempotencyKey != key || !bytes.Equal(attempt.Body, bodies[0]) {
+			t.Fatal("retired retry changed its idempotency key or body")
+		}
+		if attempt.Accepted != 0 {
+			acceptedBatches++
+			acceptedEvents += attempt.Accepted
+		} else if attempt.Duplicates != len(held) {
+			t.Fatal("retired retry did not receive duplicate receipts")
+		}
+	}
+	wantPosts := 1
+	if cancelACK {
+		wantPosts = 2
+	}
+	if retiredPosts != wantPosts || acceptedBatches != 1 || acceptedEvents != len(held) {
+		t.Fatalf("retired posts=%d, accepted batches=%d, accepted events=%d", retiredPosts, acceptedBatches, acceptedEvents)
+	}
+	foundOrigin := false
+	for _, stream := range r.srv.UsageReport().Nodes {
+		if stream.Key == node.String()+"|"+origin.String() {
+			foundOrigin = true
+			if stream.Events != len(held) || stream.Highest != lastSeq {
+				t.Fatal("central attributed the retired stream more than once", stream)
+			}
+		}
+	}
+	if !foundOrigin {
+		t.Fatal("central lost the retired stream")
+	}
+	// Reopen after the ACK with a busy lifetime lock. Retrying initialization
+	// must preserve the cursor and must never submit the retired tail again.
+	if err := next.Close(); err != nil {
+		t.Fatal(err)
+	}
+	owner, err := nodelock.Acquire(t.Context(), cfg.UsageDBPath()+".lock", 1, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer owner.Release()
+	next, err = Start(Options{Config: cfg, Clock: r.clock, Plane: r.plane, MeterSource: src, Prober: passProbe{}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	r.eng = next
+	if err := next.Boot(t.Context()); err != nil {
+		t.Fatal(err)
+	}
+	if next.usage != nil || next.usageOnce || next.loopCancel != nil {
+		t.Fatal("usage initialization escaped the lifetime lock")
+	}
+	owner.Release()
+	next.ensureUsage(t.Context())
+	stopUsageLoops(t, r)
+	for range 3 {
+		if err := next.uploader.Once(t.Context()); err != nil {
+			t.Fatal(err)
+		}
+		observeACK()
+	}
+	if ackAdvances != 1 || len(r.srv.UsageAttempts()) != len(bodies) {
+		t.Fatal("ACKed stream resubmitted or cursor changed after busy-lock reopen")
+	}
+	t.Logf("retired posts=%d distinct_keys=1 accepted_batches=%d accepted_events=%d ACK_advances=%d; no posts after ACK/reopen", retiredPosts, acceptedBatches, acceptedEvents, ackAdvances)
+	// The busy-lock retry neither retired the current incarnation nor rotated
+	// the prior stream again. The ledger file stayed in place.
 	if _, err := os.Stat(filepath.Join(cfg.StateDir, "usage.db")); err != nil {
 		t.Fatal(err)
 	}
