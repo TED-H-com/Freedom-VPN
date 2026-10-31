@@ -1,0 +1,427 @@
+{
+  "audit_rows_scanned": 58,
+  "checks": [
+    {
+      "actual_code": "",
+      "actual_status": 201,
+      "expected_code": "",
+      "expected_status": 201,
+      "name": "create member group input",
+      "passed": true,
+      "utc": "2026-10-31T06:52:15.87826736Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 201,
+      "expected_code": "",
+      "expected_status": 201,
+      "name": "create fair_use policy input",
+      "passed": true,
+      "utc": "2026-10-31T06:52:15.88432007Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 202,
+      "expected_code": "",
+      "expected_status": 202,
+      "name": "activate fair_use policy input",
+      "passed": true,
+      "utc": "2026-10-31T06:52:15.891588479Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 201,
+      "expected_code": "",
+      "expected_status": 201,
+      "name": "create domain_rule_set policy input",
+      "passed": true,
+      "utc": "2026-10-31T06:52:15.89813447Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 202,
+      "expected_code": "",
+      "expected_status": 202,
+      "name": "activate domain_rule_set policy input",
+      "passed": true,
+      "utc": "2026-10-31T06:52:15.904073828Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 201,
+      "expected_code": "",
+      "expected_status": 201,
+      "name": "create dns_profile policy input",
+      "passed": true,
+      "utc": "2026-10-31T06:52:15.90962858Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 202,
+      "expected_code": "",
+      "expected_status": 202,
+      "name": "activate dns_profile policy input",
+      "passed": true,
+      "utc": "2026-10-31T06:52:15.915227448Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 201,
+      "expected_code": "",
+      "expected_status": 201,
+      "name": "create plan policy input",
+      "passed": true,
+      "utc": "2026-10-31T06:52:15.921495544Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 202,
+      "expected_code": "",
+      "expected_status": 202,
+      "name": "activate plan policy input",
+      "passed": true,
+      "utc": "2026-10-31T06:52:15.927904863Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 201,
+      "expected_code": "",
+      "expected_status": 201,
+      "name": "create enrollment secops-agent",
+      "passed": true,
+      "utc": "2026-10-31T06:52:19.198217674Z"
+    },
+    {
+      "actual_code": "no-store",
+      "actual_status": 201,
+      "expected_code": "no-store",
+      "expected_status": 201,
+      "name": "enrollment secret no-store",
+      "passed": true,
+      "utc": "2026-10-31T06:52:19.198282624Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 201,
+      "expected_code": "",
+      "expected_status": 201,
+      "name": "enrollment duplicate",
+      "passed": true,
+      "utc": "2026-10-31T06:52:19.202880164Z"
+    },
+    {
+      "actual_code": "IDEMPOTENCY_CONFLICT",
+      "actual_status": 409,
+      "expected_code": "IDEMPOTENCY_CONFLICT",
+      "expected_status": 409,
+      "name": "enrollment idempotency conflict",
+      "passed": true,
+      "utc": "2026-10-31T06:52:19.206333618Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 202,
+      "expected_code": "",
+      "expected_status": 202,
+      "name": "finite capacity",
+      "passed": true,
+      "utc": "2026-10-31T06:52:56.366445082Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 202,
+      "expected_code": "",
+      "expected_status": 202,
+      "name": "PITR followup11-grant_expiry grant",
+      "passed": true,
+      "utc": "2026-10-31T06:53:08.682346316Z"
+    }
+  ],
+  "finished_at": "2026-10-31T06:54:59.944750938Z",
+  "follow_up": 12,
+  "go_test_failed": true,
+  "hardware": "shared development host; not candidate hardware",
+  "image_digests": [
+    {
+      "image_id": "sha256:a7c31ac46660760888b527f44ba01a181dc42b83307283d1790908b623cbc7c3",
+      "service": "postgres"
+    },
+    {
+      "image_id": "sha256:db08e222b2620cc6b8b19303171526d519ff02aa4cc7e01b1cb478464143ed5d",
+      "service": "idp"
+    },
+    {
+      "image_id": "sha256:de6b695c48be83b894ebcaf72768b255f086218e447b97bb404db725e2fa088b",
+      "service": "payment"
+    },
+    {
+      "image_id": "sha256:140136cd6cd9fbed56a3d4ffa49535e4cd6601e266d34f2fa63088373216db91",
+      "service": "origin"
+    },
+    {
+      "image_id": "sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c",
+      "service": "netbird"
+    },
+    {
+      "image_id": "sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce",
+      "service": "gateway"
+    },
+    {
+      "image_id": "sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97",
+      "service": "coredns"
+    },
+    {
+      "image_id": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
+      "service": "adguard"
+    },
+    {
+      "image_id": "sha256:0302b710166929f3157e1ef748f28ccf7900afce027e65bd1aa4123ffb299664",
+      "service": "control"
+    },
+    {
+      "image_id": "sha256:169bda0009b3debfb668c41bc325e515009980de56e612bbb29558de599de76e",
+      "service": "worker"
+    },
+    {
+      "image_id": "sha256:ec2d2d4e99a392cfcb6cd083d63a5b2f3878d3a0dc1dc78a9d51ccef6bb1cee4",
+      "service": "node-netns"
+    },
+    {
+      "image_id": "sha256:ec2d2d4e99a392cfcb6cd083d63a5b2f3878d3a0dc1dc78a9d51ccef6bb1cee4",
+      "service": "node"
+    },
+    {
+      "image_id": "sha256:ec2d2d4e99a392cfcb6cd083d63a5b2f3878d3a0dc1dc78a9d51ccef6bb1cee4",
+      "service": "member"
+    },
+    {
+      "image_id": "sha256:ec2d2d4e99a392cfcb6cd083d63a5b2f3878d3a0dc1dc78a9d51ccef6bb1cee4",
+      "service": "member-f11-grant-expiry"
+    }
+  ],
+  "known_secret_canaries": 26,
+  "policy_revision": "01a190ba-fcaf-7750-8fb5-7574c5154194",
+  "probe_source_sha256": "b3083f9f6ceb230c651b99ececdeb20597851f54acc0dae15c0007349fc726f5",
+  "projector_owned_rows_written": [],
+  "protected_native_streams": [
+    {
+      "post_delete_present": false,
+      "post_delete_scan_ok": true,
+      "pre_delete": {
+        "stream": "fvpn-w4-secops-member-f11-grant-expiry/protected-device-flow",
+        "result": "scanned",
+        "scan": {
+          "present": true,
+          "bytes": 103,
+          "mode": "0:600",
+          "device_flow_keys": 1
+        },
+        "deleted": true
+      }
+    }
+  ],
+  "run_id": "57507e1a-635f-4ecf-b9cd-a25529cb17cd",
+  "secret_scan": [
+    {
+      "bytes": 4434,
+      "device_flow_key_lines": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "postgres stdout/stderr"
+    },
+    {
+      "bytes": 0,
+      "device_flow_key_lines": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "idp stdout/stderr"
+    },
+    {
+      "bytes": 0,
+      "device_flow_key_lines": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "payment stdout/stderr"
+    },
+    {
+      "bytes": 0,
+      "device_flow_key_lines": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "origin stdout/stderr"
+    },
+    {
+      "bytes": 2210,
+      "device_flow_key_lines": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "netbird stdout/stderr"
+    },
+    {
+      "bytes": 19107,
+      "device_flow_key_lines": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "gateway stdout/stderr"
+    },
+    {
+      "bytes": 124,
+      "device_flow_key_lines": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "coredns stdout/stderr"
+    },
+    {
+      "bytes": 3424,
+      "device_flow_key_lines": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "adguard stdout/stderr"
+    },
+    {
+      "bytes": 34082,
+      "device_flow_key_lines": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "control stdout/stderr"
+    },
+    {
+      "bytes": 7381,
+      "device_flow_key_lines": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "worker stdout/stderr"
+    },
+    {
+      "bytes": 0,
+      "device_flow_key_lines": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "node-netns stdout/stderr"
+    },
+    {
+      "bytes": 130,
+      "device_flow_key_lines": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "node stdout/stderr"
+    },
+    {
+      "bytes": 0,
+      "device_flow_key_lines": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member stdout/stderr"
+    },
+    {
+      "bytes": 0,
+      "device_flow_key_lines": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-f11-grant-expiry stdout/stderr"
+    },
+    {
+      "bytes": 391,
+      "device_flow_key_lines": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "node file /var/lib/vpn-node/e2e/agent.log"
+    },
+    {
+      "bytes": 0,
+      "device_flow_key_lines": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "node file /var/lib/vpn-node/e2e/dns-relay.log"
+    },
+    {
+      "bytes": 1610,
+      "device_flow_key_lines": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "node file /var/lib/vpn-node/e2e/netbird-service.log"
+    },
+    {
+      "bytes": 0,
+      "device_flow_key_lines": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "node file /var/lib/vpn-node/e2e/watchdog.log"
+    },
+    {
+      "bytes": 10,
+      "device_flow_key_lines": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "node file /var/lib/vpn-node/e2e/netbird-up.log"
+    },
+    {
+      "bytes": 0,
+      "device_flow_key_lines": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "node file /var/lib/vpn-node/e2e/resolver-proxy.log"
+    },
+    {
+      "bytes": 249,
+      "device_flow_key_lines": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member file /var/lib/vpn-node/e2e/netbird-service.log"
+    },
+    {
+      "bytes": 642,
+      "device_flow_key_lines": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-f11-grant-expiry file /var/lib/vpn-node/e2e/netbird-service.log"
+    },
+    {
+      "bytes": 33930,
+      "device_flow_key_lines": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "audit_events"
+    },
+    {
+      "bytes": 4768,
+      "device_flow_key_lines": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "public evidence capture"
+    }
+  ],
+  "security_matrix_complete": false,
+  "serving_baseline": {
+    "Boot": "01a190bb-04da-7d7d-a28e-05e505c75395",
+    "Good": "00000000-0000-0000-0000-000000000000",
+    "Bad": "00000000-0000-0000-0000-000000000000",
+    "SupportRevision": "01a190bb-0953-74e8-9e29-75d509741250",
+    "Digests": {
+      "artifact_sha256_0.1.0_amd64": "9efcae1ab060b59d4471a57a2c2236a84c1cfc94dc0c6cd2e4800685386c8d7e",
+      "artifact_sha256_0.1.0_arm64": "c5d6f7fa6d696b2fa8a536ce171776eb3aea836125003a063d48fb3cb9496793",
+      "manifest_sha256_0.1.0": "fb5d37ef2dcedf3c33b330733d52aa7dcad13e9e06872c8f7c990e5d63a0ba00",
+      "signed_manifest_sha256_0.1.0": "07491daa0dd39b5622b23584c1f92cca65d0b899b39f6f48f098dd5499660e0f"
+    }
+  },
+  "source_revision": "9988f8262b0b00eb0b3eaecbe0fc04631c3dc59d",
+  "sql_input_fixtures": [],
+  "started_at": "2026-10-31T06:52:15.762535053Z",
+  "transport_cases": {
+    "grant_expiry": {
+      "owner": "w3-devstack-e2e",
+      "status": "blocked",
+      "transport_scope": "one original TCP/9446 connection and authenticated UDP/9445 socket; independent senders; helper limit 20 minutes"
+    },
+    "guest_clock_rollback": {
+      "missing_export": "Disposable guest with independently adjustable wall clock; containers share the development host clock.",
+      "owner": "w3-devstack-e2e / operator",
+      "status": "blocked"
+    },
+    "manual_grant_withdrawal": {
+      "missing_export": "The contract exposes finite createMemberGrant but no revokeMemberGrant HTTP operation; no source-row mutation or invented endpoint used. Finite grant expiration is measured separately.",
+      "owner": "w3-wire-members / contracts",
+      "status": "blocked"
+    }
+  }
+}

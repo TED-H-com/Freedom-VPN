@@ -1,148 +1,34 @@
 {
   "schema_version": 1,
-  "follow_up": 10,
+  "follow_up": 12,
+  "application_base": "510a4ab7f73bdcfc28aaef53f8d1d6deef97ad67",
+  "source_revision": "bf21d111f0b334368441144145abca8f5d0c060a",
+  "run_id": "dd845a7f-2660-431c-a8e6-c513108cc07d",
+  "driver_run_id": "c8498f5b-455e-41a9-9804-2067690aec23",
+  "started_at": "2026-10-31T09:04:16Z",
+  "finished_at": "2026-10-31T09:23:05Z",
+  "hardware": "shared development host; not candidate hardware",
+  "probe_source_sha256": "16ff60b0f2f39a827de3953ea0b24818d41be6f8537854d9d9a0e797e01af425",
+  "record_renderer_sha256": "fca01192bfe08cc5e48c441e513937dd681e53eb57b5bd9dcc57704778e8e753",
+  "previous_run": "history/follow-up-11/",
+  "projector_owned_rows_written": [],
   "status": "passed",
-  "source_revision": "319c5259344347e7eef50eb5becb2645785d1047",
-  "run_id": "0e8ff9a4-4fa1-4154-ae35-847a5be4d985",
-  "checked_at": "2026-10-31T04:27:39.571294Z",
-  "toolchain": "go1.27.3 linux/amd64",
-  "settings": {
-    "CGO_ENABLED": "0",
-    "GOTOOLCHAIN": "local",
-    "GOFLAGS": "-p=2",
-    "GOMAXPROCS": "2"
-  },
-  "checks": [
+  "live_runs": [
     {
-      "name": "area lint/test/build",
-      "command": [
-        "make",
-        "-f",
-        "mk/at-secops.mk",
-        "at-secops-lint",
-        "at-secops-test",
-        "at-secops-build"
-      ],
-      "exit_code": 0,
-      "output_bytes": 1020,
-      "output_sha256": "e03eedfec895ca6e4879184f9b557e9b959d61dcacdb43c357108e7d9cd12863",
-      "output_tail": [
-        "python3 tests/e2e/at/secops/diskexec.py go vet -tags e2e,integration ./tests/e2e/at/secops/...",
-        "python3 tests/e2e/at/secops/diskexec.py go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 -tags e2e,integration ./tests/e2e/at/secops/...",
-        "python3 tests/e2e/at/secops/diskexec.py go test -tags e2e -p 1 -parallel 2 ./tests/e2e/at/secops/...",
-        "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/secops\t3.276s",
-        "?   \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/secops/proxyprobe\t[no test files]",
-        "python3 tests/e2e/at/secops/diskexec.py python3 -m unittest discover -s tests/e2e/at/secops -p 'test_*.py'",
-        ".........................",
-        "----------------------------------------------------------------------",
-        "Ran 25 tests in 0.002s",
-        "",
-        "OK",
-        "GOOS=linux GOARCH=amd64 python3 tests/e2e/at/secops/diskexec.py go test -c -tags e2e,integration -o .agent/secops/build/amd64.test ./tests/e2e/at/secops",
-        "GOOS=linux GOARCH=arm64 python3 tests/e2e/at/secops/diskexec.py go test -c -tags e2e,integration -o .agent/secops/build/arm64.test ./tests/e2e/at/secops"
-      ]
-    },
-    {
-      "name": "whole-module pinned lint",
-      "command": [
-        "make",
-        "go-lint"
-      ],
-      "exit_code": 0,
-      "output_bytes": 0,
-      "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "output_tail": []
-    },
-    {
-      "name": "whole-module vet",
-      "command": [
-        "go",
-        "vet",
-        "./..."
-      ],
-      "exit_code": 0,
-      "output_bytes": 0,
-      "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "output_tail": []
-    },
-    {
-      "name": "whole-tree formatting",
-      "command": [
-        "gofmt",
-        "-l",
-        "."
-      ],
-      "exit_code": 0,
-      "output_bytes": 0,
-      "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "output_tail": []
-    },
-    {
-      "name": "history byte comparison",
-      "command": [
-        "history comparison against 9be7a54 and index SHA-256"
-      ],
-      "exit_code": 0,
-      "output_bytes": 84,
-      "output_sha256": "79770a1f096ebf3bfda390fa70575579919a4c8c8970a952442b73e0eac75199",
-      "output_tail": [
-        "PASS: 90 follow-up 9 records match the index and pre-takeover commit byte for byte."
-      ]
-    },
-    {
-      "name": "live Follow-up 10 target",
-      "command": [
-        "make",
-        "-f",
-        "mk/at-secops.mk",
-        "at-secops-followup10"
-      ],
-      "exit_code": 0,
-      "test": {
-        "command": [
-          "go",
-          "test",
-          "-json",
-          "-tags",
-          "e2e,integration",
-          "-p",
-          "1",
-          "-parallel",
-          "2",
-          "-count=1",
-          "-timeout",
-          "45m",
-          "-run",
-          "^TestAT30_Followup10_LiveRestoreReconcile$",
-          "./tests/e2e/at/secops"
-        ],
-        "started_at": "2026-10-31T04:01:07Z",
-        "finished_at": "2026-10-31T04:22:57Z",
-        "elapsed_seconds": 1310.416,
-        "exit_code": 0,
-        "scan": {
-          "stream": "followup10-live",
-          "bytes": 5164,
-          "findings": []
-        },
-        "status": "passed",
-        "required_tests": [
-          "TestAT30_Followup10_LiveRestoreReconcile"
-        ],
-        "missing": [],
-        "skipped": [],
-        "tests": [
-          {
-            "name": "TestAT30_Followup10_LiveRestoreReconcile",
-            "result": "pass",
-            "elapsed_seconds": 1309.82
-          }
-        ],
-        "package_results": {
-          "github.com/TED-H-com/Freedom-VPN/tests/e2e/at/secops": "pass"
-        }
+      "driver_run_id": "23515d78-ee35-45c1-81bd-70a454095424",
+      "source_revision": "44eff52b47f891bc829900c51b320a2e01f64cde",
+      "application_base": "510a4ab7f73bdcfc28aaef53f8d1d6deef97ad67",
+      "phase": "transports",
+      "started_at": "2026-10-31T07:30:16Z",
+      "d099_roadmap_present": true,
+      "prepare": {
+        "prefix": "w4-secops",
+        "port_base": "30000",
+        "reset": true,
+        "grace_seconds": 90
       },
-      "cleanup": {
+      "follow_up": 12,
+      "inventory_before": {
         "containers": {
           "exit_code": 0,
           "count": 0
@@ -160,23 +46,732 @@
           "count": 0
         }
       },
-      "disk_state_cleanup": {
+      "up": {
+        "command": [
+          "make",
+          "-f",
+          "mk/e2e.mk",
+          "e2e-up"
+        ],
+        "started_at": "2026-10-31T07:30:16Z",
+        "finished_at": "2026-10-31T07:30:50Z",
+        "elapsed_seconds": 34.12,
+        "exit_code": 0,
+        "scan": {
+          "stream": "followup12-transports-e2e-up",
+          "bytes": 19399,
+          "findings": []
+        }
+      },
+      "live": {
+        "command": [
+          "go",
+          "test",
+          "-json",
+          "-tags",
+          "e2e,integration",
+          "-p",
+          "1",
+          "-parallel",
+          "2",
+          "-count=1",
+          "-timeout",
+          "45m",
+          "-run",
+          "^TestAT29_AT31_Followup11_Transports$",
+          "./tests/e2e/at/secops"
+        ],
+        "started_at": "2026-10-31T07:30:50Z",
+        "finished_at": "2026-10-31T07:39:45Z",
+        "elapsed_seconds": 535.299,
+        "exit_code": 0,
+        "scan": {
+          "stream": "followup12-transports-live",
+          "bytes": 5488,
+          "findings": []
+        },
+        "status": "passed",
+        "required_tests": [
+          "TestAT29_AT31_Followup11_Transports"
+        ],
+        "missing": [],
+        "skipped": [],
+        "tests": [
+          {
+            "name": "TestAT29_AT31_Followup11_Transports",
+            "result": "pass",
+            "elapsed_seconds": 534.65
+          },
+          {
+            "name": "TestAT29_AT31_Followup11_Transports/device_revoke",
+            "result": "pass",
+            "elapsed_seconds": 143.84
+          },
+          {
+            "name": "TestAT29_AT31_Followup11_Transports/grant_expiry",
+            "result": "pass",
+            "elapsed_seconds": 204.39
+          },
+          {
+            "name": "TestAT29_AT31_Followup11_Transports/lease_expiry",
+            "result": "pass",
+            "elapsed_seconds": 132.33
+          }
+        ],
+        "package_results": {
+          "github.com/TED-H-com/Freedom-VPN/tests/e2e/at/secops": "pass"
+        }
+      },
+      "down": {
+        "command": [
+          "make",
+          "-f",
+          "mk/e2e.mk",
+          "e2e-down"
+        ],
+        "started_at": "2026-10-31T07:39:46Z",
+        "finished_at": "2026-10-31T07:40:29Z",
+        "elapsed_seconds": 42.69,
+        "exit_code": 0,
+        "scan": {
+          "stream": "followup12-transports-e2e-down",
+          "bytes": 3225,
+          "findings": []
+        }
+      },
+      "state_cleanup": {
         "exit_code": 0,
         "removed": true
-      }
+      },
+      "inventory_after": {
+        "containers": {
+          "exit_code": 0,
+          "count": 0
+        },
+        "networks": {
+          "exit_code": 0,
+          "count": 0
+        },
+        "volumes": {
+          "exit_code": 0,
+          "count": 0
+        },
+        "images": {
+          "exit_code": 0,
+          "count": 0
+        }
+      },
+      "finished_at": "2026-10-31T07:40:29Z"
     },
     {
-      "name": "working diff whitespace",
-      "command": [
-        "git",
-        "diff",
-        "--check"
-      ],
-      "exit_code": 0,
-      "output_bytes": 0
+      "driver_run_id": "c8498f5b-455e-41a9-9804-2067690aec23",
+      "source_revision": "bf21d111f0b334368441144145abca8f5d0c060a",
+      "application_base": "510a4ab7f73bdcfc28aaef53f8d1d6deef97ad67",
+      "phase": "restore",
+      "started_at": "2026-10-31T09:04:16Z",
+      "d099_roadmap_present": true,
+      "prepare": {
+        "prefix": "w4-secops",
+        "port_base": "30000",
+        "reset": true,
+        "grace_seconds": 90
+      },
+      "follow_up": 12,
+      "inventory_before": {
+        "containers": {
+          "exit_code": 0,
+          "count": 0
+        },
+        "networks": {
+          "exit_code": 0,
+          "count": 0
+        },
+        "volumes": {
+          "exit_code": 0,
+          "count": 0
+        },
+        "images": {
+          "exit_code": 0,
+          "count": 0
+        }
+      },
+      "up": {
+        "command": [
+          "make",
+          "-f",
+          "mk/e2e.mk",
+          "e2e-up"
+        ],
+        "started_at": "2026-10-31T09:04:17Z",
+        "finished_at": "2026-10-31T09:04:47Z",
+        "elapsed_seconds": 30.184,
+        "exit_code": 0,
+        "scan": {
+          "stream": "followup12-restore-e2e-up",
+          "bytes": 19344,
+          "findings": []
+        }
+      },
+      "live": {
+        "command": [
+          "go",
+          "test",
+          "-json",
+          "-tags",
+          "e2e,integration",
+          "-p",
+          "1",
+          "-parallel",
+          "2",
+          "-count=1",
+          "-timeout",
+          "45m",
+          "-run",
+          "^TestAT30_Followup10_LiveRestoreReconcile$",
+          "./tests/e2e/at/secops"
+        ],
+        "started_at": "2026-10-31T09:04:47Z",
+        "finished_at": "2026-10-31T09:22:17Z",
+        "elapsed_seconds": 1050.28,
+        "exit_code": 0,
+        "scan": {
+          "stream": "followup12-restore-live",
+          "bytes": 5505,
+          "findings": []
+        },
+        "status": "passed",
+        "required_tests": [
+          "TestAT30_Followup10_LiveRestoreReconcile"
+        ],
+        "missing": [],
+        "skipped": [],
+        "tests": [
+          {
+            "name": "TestAT30_Followup10_LiveRestoreReconcile",
+            "result": "pass",
+            "elapsed_seconds": 1049.76
+          }
+        ],
+        "package_results": {
+          "github.com/TED-H-com/Freedom-VPN/tests/e2e/at/secops": "pass"
+        }
+      },
+      "down": {
+        "command": [
+          "make",
+          "-f",
+          "mk/e2e.mk",
+          "e2e-down"
+        ],
+        "started_at": "2026-10-31T09:22:17Z",
+        "finished_at": "2026-10-31T09:23:04Z",
+        "elapsed_seconds": 46.824,
+        "exit_code": 0,
+        "scan": {
+          "stream": "followup12-restore-e2e-down",
+          "bytes": 3242,
+          "findings": []
+        }
+      },
+      "state_cleanup": {
+        "exit_code": 0,
+        "removed": true
+      },
+      "inventory_after": {
+        "containers": {
+          "exit_code": 0,
+          "count": 0
+        },
+        "networks": {
+          "exit_code": 0,
+          "count": 0
+        },
+        "volumes": {
+          "exit_code": 0,
+          "count": 0
+        },
+        "images": {
+          "exit_code": 0,
+          "count": 0
+        }
+      },
+      "finished_at": "2026-10-31T09:23:05Z"
     }
   ],
-  "probe_source_sha256": "d478487184650ec8b801b722d6db12c6ce2494223498d139134bb9fe1ed4eace",
-  "final_go_sources_match_measured_hash": true,
-  "qualification": "Gate success does not close SECOPS-21 or promote deferred AT29/AT31/physical-hardware cases. See current verdict and request records."
+  "public_scan": [
+    {
+      "file": "restore-reconcile.json",
+      "findings": []
+    },
+    {
+      "file": "cleanup.json",
+      "findings": []
+    },
+    {
+      "file": "load-profile.json",
+      "findings": []
+    },
+    {
+      "file": "followup4-limiter.json",
+      "findings": []
+    },
+    {
+      "file": "followup4-live.json",
+      "findings": []
+    },
+    {
+      "file": "AT32.md",
+      "findings": []
+    },
+    {
+      "file": "AT28.md",
+      "findings": []
+    },
+    {
+      "file": "followup8-run.json",
+      "findings": []
+    },
+    {
+      "file": "D-077.json",
+      "findings": []
+    },
+    {
+      "file": "AT29.md",
+      "findings": []
+    },
+    {
+      "file": "live.json",
+      "findings": []
+    },
+    {
+      "file": "2026-10-31-follow-up-12-handover.md",
+      "findings": []
+    },
+    {
+      "file": "native-scale.json",
+      "findings": []
+    },
+    {
+      "file": "followup10-attempts.json",
+      "findings": []
+    },
+    {
+      "file": "followup5-attempts.json",
+      "findings": []
+    },
+    {
+      "file": "AT28.json",
+      "findings": []
+    },
+    {
+      "file": "pitr.json",
+      "findings": []
+    },
+    {
+      "file": "summary.md",
+      "findings": []
+    },
+    {
+      "file": "AT32.json",
+      "findings": []
+    },
+    {
+      "file": "followup10-live.json",
+      "findings": []
+    },
+    {
+      "file": "followup12-transports-live.json",
+      "findings": []
+    },
+    {
+      "file": "post-revoke.json",
+      "findings": []
+    },
+    {
+      "file": "deadlines.json",
+      "findings": []
+    },
+    {
+      "file": "secret-scan.json",
+      "findings": []
+    },
+    {
+      "file": "followup12-transports-attempt2-live.json",
+      "findings": []
+    },
+    {
+      "file": "followup12-transports-attempt2-run.json",
+      "findings": []
+    },
+    {
+      "file": "followup4-scope-review.json",
+      "findings": []
+    },
+    {
+      "file": "validation.json",
+      "findings": []
+    },
+    {
+      "file": "followup6-run.json",
+      "findings": []
+    },
+    {
+      "file": "limiter.json",
+      "findings": []
+    },
+    {
+      "file": "capacity.json",
+      "findings": []
+    },
+    {
+      "file": "followup3-live.json",
+      "findings": []
+    },
+    {
+      "file": "native-diagnostics.json",
+      "findings": []
+    },
+    {
+      "file": "followup4-AT28.json",
+      "findings": []
+    },
+    {
+      "file": "followup4-attempts.json",
+      "findings": []
+    },
+    {
+      "file": "followup8-live.json",
+      "findings": []
+    },
+    {
+      "file": "followup10-attempt1-run.json",
+      "findings": []
+    },
+    {
+      "file": "followup6-helper-live.json",
+      "findings": []
+    },
+    {
+      "file": "followup6-verdict.json",
+      "findings": []
+    },
+    {
+      "file": "operator-runs.md",
+      "findings": []
+    },
+    {
+      "file": "requests.md",
+      "findings": []
+    },
+    {
+      "file": "followup12-verdict.json",
+      "findings": []
+    },
+    {
+      "file": "native-cohort.json",
+      "findings": []
+    },
+    {
+      "file": "followup4-publication.json",
+      "findings": []
+    },
+    {
+      "file": "node-telemetry.md",
+      "findings": []
+    },
+    {
+      "file": "followup4-AT31.json",
+      "findings": []
+    },
+    {
+      "file": "counted-flow.md",
+      "findings": []
+    },
+    {
+      "file": "followup12-restore-run.json",
+      "findings": []
+    },
+    {
+      "file": "native-scale-live.json",
+      "findings": []
+    },
+    {
+      "file": "followup10-verdict.json",
+      "findings": []
+    },
+    {
+      "file": "followup12-restore-live.json",
+      "findings": []
+    },
+    {
+      "file": "dev-host.json",
+      "findings": []
+    },
+    {
+      "file": "followup5-run.json",
+      "findings": []
+    },
+    {
+      "file": "capacity-history.json",
+      "findings": []
+    },
+    {
+      "file": "followup7-verdict.json",
+      "findings": []
+    },
+    {
+      "file": "followup12-lab-preflight.json",
+      "findings": []
+    },
+    {
+      "file": "SECOPS-19.json",
+      "findings": []
+    },
+    {
+      "file": "capacity.md",
+      "findings": []
+    },
+    {
+      "file": "secret-scan.md",
+      "findings": []
+    },
+    {
+      "file": "identity-observation.json",
+      "findings": []
+    },
+    {
+      "file": "scope-review.json",
+      "findings": []
+    },
+    {
+      "file": "pitr-compatibility.json",
+      "findings": []
+    },
+    {
+      "file": "README.md",
+      "findings": []
+    },
+    {
+      "file": "restore-reconcile.md",
+      "findings": []
+    },
+    {
+      "file": "gateway-inventory.json",
+      "findings": []
+    },
+    {
+      "file": "followup4-secret-scan.json",
+      "findings": []
+    },
+    {
+      "file": "followup12-transports-attempt1-run.json",
+      "findings": []
+    },
+    {
+      "file": "logical-followup1.json",
+      "findings": []
+    },
+    {
+      "file": "followup8-verdict.json",
+      "findings": []
+    },
+    {
+      "file": "SECOPS-18.json",
+      "findings": []
+    },
+    {
+      "file": "followup4-dependencies.json",
+      "findings": []
+    },
+    {
+      "file": "components.json",
+      "findings": []
+    },
+    {
+      "file": "followup3-publication.json",
+      "findings": []
+    },
+    {
+      "file": "dependencies.json",
+      "findings": []
+    },
+    {
+      "file": "AT29.json",
+      "findings": []
+    },
+    {
+      "file": "followup7-live.json",
+      "findings": []
+    },
+    {
+      "file": "followup12-transports-run.json",
+      "findings": []
+    },
+    {
+      "file": "runtime-settings.json",
+      "findings": []
+    },
+    {
+      "file": "followup4-validation.json",
+      "findings": []
+    },
+    {
+      "file": "followup10-attempt1-verdict.json",
+      "findings": []
+    },
+    {
+      "file": "followup1-login.json",
+      "findings": []
+    },
+    {
+      "file": "followup12-prerequisites.json",
+      "findings": []
+    },
+    {
+      "file": "SECOPS-21.json",
+      "findings": []
+    },
+    {
+      "file": "SECOPS-20.json",
+      "findings": []
+    },
+    {
+      "file": "followup3-dependencies.json",
+      "findings": []
+    },
+    {
+      "file": "followup10-run.json",
+      "findings": []
+    },
+    {
+      "file": "deadlines.md",
+      "findings": []
+    },
+    {
+      "file": "followup10-attempt1-live.json",
+      "findings": []
+    },
+    {
+      "file": "SECOPS-17.json",
+      "findings": []
+    },
+    {
+      "file": "pitr.md",
+      "findings": []
+    },
+    {
+      "file": "2026-10-31-follow-up-11-handover.md",
+      "findings": []
+    },
+    {
+      "file": "followup9-live.json",
+      "findings": []
+    },
+    {
+      "file": "counted-flow.json",
+      "findings": []
+    },
+    {
+      "file": "followup9-run.json",
+      "findings": []
+    },
+    {
+      "file": "node-telemetry.json",
+      "findings": []
+    },
+    {
+      "file": "followup4-native-scale.json",
+      "findings": []
+    },
+    {
+      "file": "AT31.md",
+      "findings": []
+    },
+    {
+      "file": "publication.md",
+      "findings": []
+    },
+    {
+      "file": "SECOPS-16.json",
+      "findings": []
+    },
+    {
+      "file": "fault-injection.json",
+      "findings": []
+    },
+    {
+      "file": "followup12-transports-attempt1-live.json",
+      "findings": []
+    },
+    {
+      "file": "followup4-AT32.json",
+      "findings": []
+    },
+    {
+      "file": "followup6-profile-live.json",
+      "findings": []
+    },
+    {
+      "file": "followup7-run.json",
+      "findings": []
+    },
+    {
+      "file": "RUN.md",
+      "findings": []
+    },
+    {
+      "file": "pitr-attempts.json",
+      "findings": []
+    },
+    {
+      "file": "followup4-AT29.json",
+      "findings": []
+    },
+    {
+      "file": "followup12-attempts.json",
+      "findings": []
+    },
+    {
+      "file": "post-revoke.md",
+      "findings": []
+    },
+    {
+      "file": "pitr-source.json",
+      "findings": []
+    },
+    {
+      "file": "followup3-limiter.json",
+      "findings": []
+    },
+    {
+      "file": "followup5-attempt1-live.json",
+      "findings": []
+    },
+    {
+      "file": "publication.json",
+      "findings": []
+    },
+    {
+      "file": "followup9-verdict.json",
+      "findings": []
+    },
+    {
+      "file": "limiter.md",
+      "findings": []
+    },
+    {
+      "file": "AT31.json",
+      "findings": []
+    },
+    {
+      "file": "AT30.json",
+      "findings": []
+    },
+    {
+      "file": "AT30.md",
+      "findings": []
+    }
+  ],
+  "cleanup": "passed",
+  "scope": "Driver/live execution and capture hygiene; full AT29/AT31 remain separate blocked cases."
 }

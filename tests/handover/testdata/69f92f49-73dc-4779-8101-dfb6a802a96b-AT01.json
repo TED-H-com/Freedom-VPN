@@ -1,0 +1,575 @@
+{
+  "node_incarnations": {
+    "node": "01a19123-e21c-7acd-993b-39ed0c25511b"
+  },
+  "complete": true,
+  "forwarding": [
+    {
+      "node_container_role": "node",
+      "node_incarnation": "01a19123-e21c-7acd-993b-39ed0c25511b",
+      "origin_verified": true,
+      "origin_requests": 1,
+      "origin_snat_matches": true,
+      "probe_sha256": "722c6577d2e20abb79d1ea447a9f1e082d9ba7a32eb4948e1ea95a91f9fd0333",
+      "at": "2026-10-31T08:48:06Z",
+      "first_counted_byte_at": "2026-10-31T08:48:11.406552647Z",
+      "member_container_role": "member",
+      "route_selected": true,
+      "route_before": [
+        {
+          "cache": [],
+          "dev": "eth0",
+          "flags": [],
+          "uid": 0
+        }
+      ],
+      "route_after": [
+        {
+          "cache": [],
+          "dev": "fvnb0",
+          "flags": [],
+          "table": "netbird",
+          "uid": 0
+        }
+      ],
+      "peer_status": {
+        "daemonStatus": "Connected",
+        "daemonVersion": "0.82.0",
+        "networks": null,
+        "usesKernelInterface": true
+      },
+      "node_before": {
+        "available": true,
+        "generation": "5",
+        "device_upload_bytes": "0",
+        "device_download_bytes": "0",
+        "member_accept_rules": 6,
+        "diagnostic_bytes": {
+          "ctbadns": "0",
+          "ctbase": "0",
+          "ctdeny": "0",
+          "cthost": "0",
+          "ctin": "0",
+          "ctinv": "0",
+          "ctnodn": "0",
+          "ctunkd": "0",
+          "ctunku": "0",
+          "ctv6": "0",
+          "nd_01a19124b4d376d58ded0f7dbbec4556": "0",
+          "nu_01a19124b4d376d58ded0f7dbbec4556": "0"
+        }
+      },
+      "node_after": {
+        "available": true,
+        "generation": "5",
+        "device_upload_bytes": "2357",
+        "device_download_bytes": "2463",
+        "member_accept_rules": 6,
+        "diagnostic_bytes": {
+          "ctbadns": "0",
+          "ctbase": "0",
+          "ctdeny": "0",
+          "cthost": "0",
+          "ctin": "0",
+          "ctinv": "0",
+          "ctnodn": "0",
+          "ctunkd": "0",
+          "ctunku": "0",
+          "ctv6": "0",
+          "nd_01a19124b4d376d58ded0f7dbbec4556": "0",
+          "nu_01a19124b4d376d58ded0f7dbbec4556": "0"
+        }
+      },
+      "packet_observations": {
+        "member": {
+          "available": true,
+          "duration_seconds": 9,
+          "elapsed_ms": 9014,
+          "filter": "controlled-origin TCP/443, client port 20001",
+          "interfaces": {
+            "fvnb0": {
+              "from_origin": 8,
+              "to_origin": 10
+            }
+          }
+        },
+        "node": {
+          "available": true,
+          "duration_seconds": 9,
+          "elapsed_ms": 9030,
+          "filter": "controlled-origin TCP/443, client port 20001",
+          "interfaces": {
+            "fvmb0": {
+              "from_origin": 8,
+              "to_origin": 11
+            },
+            "fvup0": {
+              "from_origin": 8,
+              "to_origin": 11
+            }
+          }
+        },
+        "origin": {
+          "available": true,
+          "duration_seconds": 9,
+          "elapsed_ms": 9097,
+          "filter": "controlled-origin TCP/443, client port 20001",
+          "interfaces": {
+            "eth0": {
+              "from_origin": 8,
+              "to_origin": 11
+            }
+          }
+        }
+      },
+      "transfer": {
+        "body_bytes": 3,
+        "http_status": 200,
+        "origin_receipt": true
+      },
+      "counted": true,
+      "first_unconfirmed_hop": "none: origin HTTP response and both device admission counters increased"
+    },
+    {
+      "node_container_role": "node",
+      "node_incarnation": "01a19123-e21c-7acd-993b-39ed0c25511b",
+      "origin_verified": true,
+      "origin_requests": 1,
+      "origin_snat_matches": true,
+      "probe_sha256": "722c6577d2e20abb79d1ea447a9f1e082d9ba7a32eb4948e1ea95a91f9fd0333",
+      "at": "2026-10-31T08:48:21Z",
+      "first_counted_byte_at": "2026-10-31T08:48:26.097658768Z",
+      "member_container_role": "member",
+      "route_selected": true,
+      "route_before": [
+        {
+          "cache": [],
+          "dev": "fvnb0",
+          "flags": [],
+          "table": "netbird",
+          "uid": 0
+        }
+      ],
+      "route_after": [
+        {
+          "cache": [],
+          "dev": "fvnb0",
+          "flags": [],
+          "table": "netbird",
+          "uid": 0
+        }
+      ],
+      "peer_status": {
+        "daemonStatus": "Connected",
+        "daemonVersion": "0.82.0",
+        "networks": null,
+        "usesKernelInterface": true
+      },
+      "node_before": {
+        "available": true,
+        "generation": "5",
+        "device_upload_bytes": "2357",
+        "device_download_bytes": "2463",
+        "member_accept_rules": 6,
+        "diagnostic_bytes": {
+          "ctbadns": "0",
+          "ctbase": "0",
+          "ctdeny": "0",
+          "cthost": "0",
+          "ctin": "0",
+          "ctinv": "0",
+          "ctnodn": "0",
+          "ctunkd": "0",
+          "ctunku": "0",
+          "ctv6": "0",
+          "nd_01a19124b4d376d58ded0f7dbbec4556": "0",
+          "nu_01a19124b4d376d58ded0f7dbbec4556": "0"
+        }
+      },
+      "node_after": {
+        "available": true,
+        "generation": "5",
+        "device_upload_bytes": "4714",
+        "device_download_bytes": "4924",
+        "member_accept_rules": 6,
+        "diagnostic_bytes": {
+          "ctbadns": "0",
+          "ctbase": "0",
+          "ctdeny": "0",
+          "cthost": "0",
+          "ctin": "0",
+          "ctinv": "0",
+          "ctnodn": "0",
+          "ctunkd": "0",
+          "ctunku": "0",
+          "ctv6": "0",
+          "nd_01a19124b4d376d58ded0f7dbbec4556": "0",
+          "nu_01a19124b4d376d58ded0f7dbbec4556": "0"
+        }
+      },
+      "packet_observations": {
+        "member": {
+          "available": true,
+          "duration_seconds": 9,
+          "elapsed_ms": 9099,
+          "filter": "controlled-origin TCP/443, client port 20002",
+          "interfaces": {
+            "fvnb0": {
+              "from_origin": 8,
+              "to_origin": 10
+            }
+          }
+        },
+        "node": {
+          "available": true,
+          "duration_seconds": 9,
+          "elapsed_ms": 9014,
+          "filter": "controlled-origin TCP/443, client port 20002",
+          "interfaces": {
+            "fvmb0": {
+              "from_origin": 8,
+              "to_origin": 11
+            },
+            "fvup0": {
+              "from_origin": 8,
+              "to_origin": 11
+            }
+          }
+        },
+        "origin": {
+          "available": true,
+          "duration_seconds": 9,
+          "elapsed_ms": 9087,
+          "filter": "controlled-origin TCP/443, client port 20002",
+          "interfaces": {
+            "eth0": {
+              "from_origin": 8,
+              "to_origin": 11
+            }
+          }
+        }
+      },
+      "transfer": {
+        "body_bytes": 3,
+        "http_status": 200,
+        "origin_receipt": true
+      },
+      "counted": true,
+      "first_unconfirmed_hop": "none: origin HTTP response and both device admission counters increased"
+    }
+  ],
+  "id": "AT01",
+  "title": "Identity and first use",
+  "spec": [
+    "§19.1",
+    "§19 AT01",
+    "APP01 ID01 MEM01"
+  ],
+  "status": "blocked",
+  "observations": [
+    {
+      "name": "same-client stable identity",
+      "detail": "pass; expected: same member UUID across browser sessions; actual: same_member=true; distinct_members=true; command: shared Dex password form; /auth/login?role=member; GET /auth/session"
+    },
+    {
+      "name": "finite capacity and classification",
+      "detail": "pass; expected: 200 or 202; actual: HTTP 202 ; command: PATCH node capacity: TEST ONLY 200 Mbps / 100 Mbps member caps"
+    },
+    {
+      "name": "publication command published",
+      "detail": "pass; expected: 202 pending, group_ids accepted; actual: HTTP 202 ; command: PUT /admin/nodes/{id}/publication with group_ids and If-Match"
+    },
+    {
+      "name": "publication progress published",
+      "detail": "pass; expected: record pending/partial versus fully observed states; actual: operation_id=4aea3b15-6954-4eff-98c0-924d54e72782; states={\"pending\":\"2026-10-31T08:47:28.568554687Z\",\"running\":\"2026-10-31T08:47:29.569590427Z\",\"succeeded\":\"2026-10-31T08:47:31.570978635Z\"}; command: poll same immutable operation identity until succeeded or bounded timeout"
+    },
+    {
+      "name": "publication operation published",
+      "detail": "pass; expected: record applied operation independently of intent; actual: status=succeeded; required=3; succeeded=3; intent=published; observed=active; command: poll operations.steps and required observations; read exits projection"
+    },
+    {
+      "name": "finite entitlement command",
+      "detail": "pass; expected: 202 accepted, not applied; actual: HTTP 202 ; command: POST /admin/members/{A}/grants"
+    },
+    {
+      "name": "member self read",
+      "detail": "pass; expected: 200; actual: HTTP 200 ; command: GET /member/me"
+    },
+    {
+      "name": "member shared issuer login",
+      "detail": "pass; expected: shared helper completes native device flow; actual: HTTP=200; completed=true; command: touch user-auth; idplogin.Walk(Dex device URL, DeviceDone)"
+    },
+    {
+      "name": "member native peer",
+      "detail": "pass; expected: new real peer belongs to the same public subject; actual: new_peer=true; same_subject=true; command: GET NetBird /api/peers; compare user_id to shared-login credential ID in memory"
+    },
+    {
+      "name": "member protected native log inventory",
+      "detail": "pass; expected: mode 0600; values never retained; actual: {\"present\":true,\"bytes\":103,\"mode\":\"0:600\",\"device_flow_keys\":1}; command: Stack.ScanNativeJoinLog before transient log deletion"
+    },
+    {
+      "name": "canonical shared issuer",
+      "detail": "pass; expected: one production canonical form; actual: canonicalized=true; command: issuer.Canonical"
+    },
+    {
+      "name": "cross-client production identity proof",
+      "detail": "pass; expected: dashboard/CLI share public subject; verified mapping and finite device binding; actual: verified_mappings=1; device_projected=true; live_bindings=1; command: shared idplogin helper; native CLI device flow; read product D-052 mapping and D-050 device projections"
+    },
+    {
+      "name": "browser sign-out",
+      "detail": "pass; expected: session unauthenticated; actual: logout=204; authenticated=false; command: POST /auth/logout; GET /auth/session"
+    },
+    {
+      "name": "native device precondition",
+      "detail": "pass; expected: observe real member device count; actual: member_A_devices=1; command: SELECT count(*) FROM member_devices WHERE member_id=A"
+    },
+    {
+      "name": "current-generation lease after desired change",
+      "detail": "pass; expected: uninterrupted agent: desired=applied=latest lease generation, unexpired; actual: {\"lease\": {\"issued_at\": \"2026-10-31T08:47:45.796746+00:00\", \"expires_at\": \"2026-11-01T08:47:45.796746+00:00\", \"generation\": \"5\", \"member_count\": 1}, \"applied\": \"5\", \"desired\": \"5\", \"observation\": {\"checks\": [{\"name\": \"dns_policy\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T08:48:05.701949342Z\"}, {\"name\": \"internet_only\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T08:48:05.701949342Z\"}, {\"name\": \"lease\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T08:48:05.701949342Z\"}, {\"name\": \"meter_path\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T08:48:05.701949342Z\"}, {\"name\": \"policy_signature\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T08:48:05.701949342Z\"}, {\"name\": \"qos\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T08:48:05.701949342Z\"}, {\"name\": \"release_supported\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T08:48:05.701949342Z\"}, {\"name\": \"source_binding\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T08:48:05.701949342Z\"}, {\"name\": \"storage\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T08:48:05.701949342Z\"}, {\"name\": \"tunnel_probe\", \"detail\": \"Egress probe used no extra target.\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T08:48:05.701949342Z\"}], \"forwarding_block_reasons\": [], \"member_forwarding_enabled\": true}}; command: poll nodes, latest serving_leases and accepted observation; no process restart or projection writes"
+    },
+    {
+      "name": "bounded member transfer observation",
+      "detail": "pass; expected: record selected route, node counters, packet hops and origin receipt; actual: {\"node_container_role\":\"node\",\"node_incarnation\":\"01a19123-e21c-7acd-993b-39ed0c25511b\",\"origin_verified\":true,\"origin_requests\":1,\"origin_snat_matches\":true,\"probe_sha256\":\"722c6577d2e20abb79d1ea447a9f1e082d9ba7a32eb4948e1ea95a91f9fd0333\",\"at\":\"2026-10-31T08:48:06Z\",\"first_counted_byte_at\":\"2026-10-31T08:48:11.406552647Z\",\"member_container_role\":\"member\",\"route_selected\":true,\"route_before\":[{\"cache\":[],\"dev\":\"eth0\",\"flags\":[],\"uid\":0}],\"route_after\":[{\"cache\":[],\"dev\":\"fvnb0\",\"flags\":[],\"table\":\"netbird\",\"uid\":0}],\"peer_status\":{\"daemonStatus\":\"Connected\",\"daemonVersion\":\"0.82.0\",\"networks\":null,\"usesKernelInterface\":true},\"node_before\":{\"available\":true,\"generation\":\"5\",\"device_upload_bytes\":\"0\",\"device_download_bytes\":\"0\",\"member_accept_rules\":6,\"diagnostic_bytes\":{\"ctbadns\":\"0\",\"ctbase\":\"0\",\"ctdeny\":\"0\",\"cthost\":\"0\",\"ctin\":\"0\",\"ctinv\":\"0\",\"ctnodn\":\"0\",\"ctunkd\":\"0\",\"ctunku\":\"0\",\"ctv6\":\"0\",\"nd_01a19124b4d376d58ded0f7dbbec4556\":\"0\",\"nu_01a19124b4d376d58ded0f7dbbec4556\":\"0\"}},\"node_after\":{\"available\":true,\"generation\":\"5\",\"device_upload_bytes\":\"2357\",\"device_download_bytes\":\"2463\",\"member_accept_rules\":6,\"diagnostic_bytes\":{\"ctbadns\":\"0\",\"ctbase\":\"0\",\"ctdeny\":\"0\",\"cthost\":\"0\",\"ctin\":\"0\",\"ctinv\":\"0\",\"ctnodn\":\"0\",\"ctunkd\":\"0\",\"ctunku\":\"0\",\"ctv6\":\"0\",\"nd_01a19124b4d376d58ded0f7dbbec4556\":\"0\",\"nu_01a19124b4d376d58ded0f7dbbec4556\":\"0\"}},\"packet_observations\":{\"member\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9014,\"filter\":\"controlled-origin TCP/443, client port 20001\",\"interfaces\":{\"fvnb0\":{\"from_origin\":8,\"to_origin\":10}}},\"node\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9030,\"filter\":\"controlled-origin TCP/443, client port 20001\",\"interfaces\":{\"fvmb0\":{\"from_origin\":8,\"to_origin\":11},\"fvup0\":{\"from_origin\":8,\"to_origin\":11}}},\"origin\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9097,\"filter\":\"controlled-origin TCP/443, client port 20001\",\"interfaces\":{\"eth0\":{\"from_origin\":8,\"to_origin\":11}}}},\"transfer\":{\"body_bytes\":3,\"http_status\":200,\"origin_receipt\":true},\"counted\":true,\"first_unconfirmed_hop\":\"none: origin HTTP response and both device admission counters increased\"}; command: netbird routes select; ip -j route get controlled origin; concurrent 9-second AF_PACKET aggregate observers; bounded CA-verified HTTPS GET; nft counters before/after"
+    },
+    {
+      "name": "Linux sleep wake analogue",
+      "detail": "pass; expected: pause/unpause succeeds; actual: pause=true; wake=true; command: docker pause/unpause assigned member container"
+    },
+    {
+      "name": "bounded member transfer observation",
+      "detail": "pass; expected: record selected route, node counters, packet hops and origin receipt; actual: {\"node_container_role\":\"node\",\"node_incarnation\":\"01a19123-e21c-7acd-993b-39ed0c25511b\",\"origin_verified\":true,\"origin_requests\":1,\"origin_snat_matches\":true,\"probe_sha256\":\"722c6577d2e20abb79d1ea447a9f1e082d9ba7a32eb4948e1ea95a91f9fd0333\",\"at\":\"2026-10-31T08:48:21Z\",\"first_counted_byte_at\":\"2026-10-31T08:48:26.097658768Z\",\"member_container_role\":\"member\",\"route_selected\":true,\"route_before\":[{\"cache\":[],\"dev\":\"fvnb0\",\"flags\":[],\"table\":\"netbird\",\"uid\":0}],\"route_after\":[{\"cache\":[],\"dev\":\"fvnb0\",\"flags\":[],\"table\":\"netbird\",\"uid\":0}],\"peer_status\":{\"daemonStatus\":\"Connected\",\"daemonVersion\":\"0.82.0\",\"networks\":null,\"usesKernelInterface\":true},\"node_before\":{\"available\":true,\"generation\":\"5\",\"device_upload_bytes\":\"2357\",\"device_download_bytes\":\"2463\",\"member_accept_rules\":6,\"diagnostic_bytes\":{\"ctbadns\":\"0\",\"ctbase\":\"0\",\"ctdeny\":\"0\",\"cthost\":\"0\",\"ctin\":\"0\",\"ctinv\":\"0\",\"ctnodn\":\"0\",\"ctunkd\":\"0\",\"ctunku\":\"0\",\"ctv6\":\"0\",\"nd_01a19124b4d376d58ded0f7dbbec4556\":\"0\",\"nu_01a19124b4d376d58ded0f7dbbec4556\":\"0\"}},\"node_after\":{\"available\":true,\"generation\":\"5\",\"device_upload_bytes\":\"4714\",\"device_download_bytes\":\"4924\",\"member_accept_rules\":6,\"diagnostic_bytes\":{\"ctbadns\":\"0\",\"ctbase\":\"0\",\"ctdeny\":\"0\",\"cthost\":\"0\",\"ctin\":\"0\",\"ctinv\":\"0\",\"ctnodn\":\"0\",\"ctunkd\":\"0\",\"ctunku\":\"0\",\"ctv6\":\"0\",\"nd_01a19124b4d376d58ded0f7dbbec4556\":\"0\",\"nu_01a19124b4d376d58ded0f7dbbec4556\":\"0\"}},\"packet_observations\":{\"member\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9099,\"filter\":\"controlled-origin TCP/443, client port 20002\",\"interfaces\":{\"fvnb0\":{\"from_origin\":8,\"to_origin\":10}}},\"node\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9014,\"filter\":\"controlled-origin TCP/443, client port 20002\",\"interfaces\":{\"fvmb0\":{\"from_origin\":8,\"to_origin\":11},\"fvup0\":{\"from_origin\":8,\"to_origin\":11}}},\"origin\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9087,\"filter\":\"controlled-origin TCP/443, client port 20002\",\"interfaces\":{\"eth0\":{\"from_origin\":8,\"to_origin\":11}}}},\"transfer\":{\"body_bytes\":3,\"http_status\":200,\"origin_receipt\":true},\"counted\":true,\"first_unconfirmed_hop\":\"none: origin HTTP response and both device admission counters increased\"}; command: netbird routes select; ip -j route get controlled origin; concurrent 9-second AF_PACKET aggregate observers; bounded CA-verified HTTPS GET; nft counters before/after"
+    },
+    {
+      "name": "blocked",
+      "detail": "AT01 platform sign-out/network change/sleep-wake scripts need operator run; Linux positive counted forwarding is recorded separately."
+    },
+    {
+      "name": "provenance",
+      "detail": "source=d79accd9c693aed83713072c925b3b5005b5684c; applied generation=5; incarnation=01a19123-e21c-7acd-993b-39ed0c25511b; image/binary digests in JSON"
+    },
+    {
+      "name": "operator",
+      "detail": "needs operator run; see OPERATORS.md"
+    }
+  ],
+  "at": "2026-10-31T08:46:52Z",
+  "run_id": "69f92f49-73dc-4779-8101-dfb6a802a96b",
+  "source_commit": "d79accd9c693aed83713072c925b3b5005b5684c",
+  "release_digests": {
+    "artifact_sha256_0.1.0_amd64": "b642eb4109f22bf92690971af31271c4c836122d3c26003c336bb899f31ad2c6",
+    "artifact_sha256_0.1.0_arm64": "7677825d45dd99eaf18d76b809140fd51c3c160f231f4293d3c2f4668bc057b9",
+    "manifest_sha256_0.1.0": "669851218b96cadace931aa135edf9f79ce74acba3b7e1a6db0140b7c13fb50f",
+    "signed_manifest_sha256_0.1.0": "8b447bdb47d95bfe6e530054cacf986ff774239797d7522c160f22902d9ba52b"
+  },
+  "build": {
+    "test_binary_sha256": "0918aef9d50e00a38218eec9cb1d521cfcde13c3d84f339780a2eb3aa00d2140",
+    "source_commit": "d79accd9c693aed83713072c925b3b5005b5684c",
+    "source_dirty": false,
+    "image_digests": {
+      "adguard": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
+      "control": "sha256:f88d1e171abdf8aa418f41a59aae5806792418094673c93aacc91382b121886e",
+      "coredns": "sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97",
+      "gateway": "sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce",
+      "idp": "sha256:372c819ccadcebce0c0e674c3cfd8fd4d35d9a90bc20a21be2661de540b13336",
+      "member": "sha256:93b18b8898b2c9839f5574ebec3e49d6d36d791d1ea13315816058159e08ab46",
+      "netbird": "sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c",
+      "node": "sha256:93b18b8898b2c9839f5574ebec3e49d6d36d791d1ea13315816058159e08ab46",
+      "node-netns": "sha256:93b18b8898b2c9839f5574ebec3e49d6d36d791d1ea13315816058159e08ab46",
+      "origin": "sha256:7c0f43fd5dbc5c619484662a412ec5521ae99e82eaceee33a03c42a08d6e6ffa",
+      "payment": "sha256:3ae0463a4d82c5dd0a2cebd036ecf5887e790c87986f8f9d1c5d4c0fbdc978e4",
+      "postgres": "sha256:6332ad9cb5685403609c5eb9849b80c766febfe30e15ccb85ebc18724f0f1b86",
+      "worker": "sha256:cb441c20fcbeb8fbf43f090264087412b385d1e24e3eeb3cc254046231de79e2"
+    },
+    "binary_sha256": {
+      "fvpn-agent": "4d9a467f3cc01f307ce3bd0e61fabde2d51b80bba760816822a04de672ef7194",
+      "fvpn-control": "345121ada6ade69e5e755a689245fb4ce542effda31b4dabae98dcd3a8e66793",
+      "fvpn-updater": "bd7e5eee5d279b7397e6403d7322b79bde7af9cde999708119eec293da04d2c8",
+      "fvpn-worker": "750e30b1a331acd862544c2d29e539bbced42f04a55a9070df642365e31f66d2"
+    },
+    "binary_vcs": {
+      "fvpn-agent": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "false",
+        "vcs.revision": "d79accd9c693aed83713072c925b3b5005b5684c",
+        "vcs.time": "2026-10-31T08:45:26Z"
+      },
+      "fvpn-control": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "false",
+        "vcs.revision": "d79accd9c693aed83713072c925b3b5005b5684c",
+        "vcs.time": "2026-10-31T08:45:26Z"
+      },
+      "fvpn-updater": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "false",
+        "vcs.revision": "d79accd9c693aed83713072c925b3b5005b5684c",
+        "vcs.time": "2026-10-31T08:45:26Z"
+      },
+      "fvpn-worker": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "false",
+        "vcs.revision": "d79accd9c693aed83713072c925b3b5005b5684c",
+        "vcs.time": "2026-10-31T08:45:26Z"
+      }
+    }
+  },
+  "policy_revision": "5",
+  "active_policy_revisions": {
+    "dns_profile": "01a19123-cf65-778e-aa23-eacfbd4960c1",
+    "domain_rule_set": "01a19123-caa8-731a-b924-ca274976ab54",
+    "fair_use": "01a19123-c5e8-7005-99d4-29e382ff2eda",
+    "plan": "01a19123-d8f5-7a1b-958c-d676342199ba",
+    "release_support": "01a19123-bea9-7690-b818-e2cc0ff06346"
+  },
+  "node_incarnation": "01a19123-e21c-7acd-993b-39ed0c25511b",
+  "steps": [
+    {
+      "name": "same-client stable identity",
+      "status": "pass",
+      "expected": "same member UUID across browser sessions",
+      "actual": "same_member=true; distinct_members=true",
+      "command": "shared Dex password form; /auth/login?role=member; GET /auth/session",
+      "at": "2026-10-31T08:46:54Z"
+    },
+    {
+      "name": "finite capacity and classification",
+      "status": "pass",
+      "expected": "200 or 202",
+      "actual": "HTTP 202 ",
+      "command": "PATCH node capacity: TEST ONLY 200 Mbps / 100 Mbps member caps",
+      "at": "2026-10-31T08:47:27Z"
+    },
+    {
+      "name": "publication command published",
+      "status": "pass",
+      "expected": "202 pending, group_ids accepted",
+      "actual": "HTTP 202 ",
+      "command": "PUT /admin/nodes/{id}/publication with group_ids and If-Match",
+      "at": "2026-10-31T08:47:28Z"
+    },
+    {
+      "name": "publication progress published",
+      "status": "pass",
+      "expected": "record pending/partial versus fully observed states",
+      "actual": "operation_id=4aea3b15-6954-4eff-98c0-924d54e72782; states={\"pending\":\"2026-10-31T08:47:28.568554687Z\",\"running\":\"2026-10-31T08:47:29.569590427Z\",\"succeeded\":\"2026-10-31T08:47:31.570978635Z\"}",
+      "command": "poll same immutable operation identity until succeeded or bounded timeout",
+      "at": "2026-10-31T08:47:31Z"
+    },
+    {
+      "name": "publication operation published",
+      "status": "pass",
+      "expected": "record applied operation independently of intent",
+      "actual": "status=succeeded; required=3; succeeded=3; intent=published; observed=active",
+      "command": "poll operations.steps and required observations; read exits projection",
+      "at": "2026-10-31T08:47:31Z"
+    },
+    {
+      "name": "finite entitlement command",
+      "status": "pass",
+      "expected": "202 accepted, not applied",
+      "actual": "HTTP 202 ",
+      "command": "POST /admin/members/{A}/grants",
+      "at": "2026-10-31T08:47:32Z"
+    },
+    {
+      "name": "member self read",
+      "status": "pass",
+      "expected": "200",
+      "actual": "HTTP 200 ",
+      "command": "GET /member/me",
+      "at": "2026-10-31T08:47:32Z"
+    },
+    {
+      "name": "member shared issuer login",
+      "status": "pass",
+      "expected": "shared helper completes native device flow",
+      "actual": "HTTP=200; completed=true",
+      "command": "touch user-auth; idplogin.Walk(Dex device URL, DeviceDone)",
+      "at": "2026-10-31T08:47:34Z"
+    },
+    {
+      "name": "member native peer",
+      "status": "pass",
+      "expected": "new real peer belongs to the same public subject",
+      "actual": "new_peer=true; same_subject=true",
+      "command": "GET NetBird /api/peers; compare user_id to shared-login credential ID in memory",
+      "at": "2026-10-31T08:47:40Z"
+    },
+    {
+      "name": "member protected native log inventory",
+      "status": "pass",
+      "expected": "mode 0600; values never retained",
+      "actual": "{\"present\":true,\"bytes\":103,\"mode\":\"0:600\",\"device_flow_keys\":1}",
+      "command": "Stack.ScanNativeJoinLog before transient log deletion",
+      "at": "2026-10-31T08:47:40Z"
+    },
+    {
+      "name": "canonical shared issuer",
+      "status": "pass",
+      "expected": "one production canonical form",
+      "actual": "canonicalized=true",
+      "command": "issuer.Canonical",
+      "at": "2026-10-31T08:47:45Z"
+    },
+    {
+      "name": "cross-client production identity proof",
+      "status": "pass",
+      "expected": "dashboard/CLI share public subject; verified mapping and finite device binding",
+      "actual": "verified_mappings=1; device_projected=true; live_bindings=1",
+      "command": "shared idplogin helper; native CLI device flow; read product D-052 mapping and D-050 device projections",
+      "at": "2026-10-31T08:47:45Z"
+    },
+    {
+      "name": "browser sign-out",
+      "status": "pass",
+      "expected": "session unauthenticated",
+      "actual": "logout=204; authenticated=false",
+      "command": "POST /auth/logout; GET /auth/session",
+      "at": "2026-10-31T08:47:46Z"
+    },
+    {
+      "name": "native device precondition",
+      "status": "pass",
+      "expected": "observe real member device count",
+      "actual": "member_A_devices=1",
+      "command": "SELECT count(*) FROM member_devices WHERE member_id=A",
+      "at": "2026-10-31T08:47:46Z"
+    },
+    {
+      "name": "current-generation lease after desired change",
+      "status": "pass",
+      "expected": "uninterrupted agent: desired=applied=latest lease generation, unexpired",
+      "actual": "{\"lease\": {\"issued_at\": \"2026-10-31T08:47:45.796746+00:00\", \"expires_at\": \"2026-11-01T08:47:45.796746+00:00\", \"generation\": \"5\", \"member_count\": 1}, \"applied\": \"5\", \"desired\": \"5\", \"observation\": {\"checks\": [{\"name\": \"dns_policy\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T08:48:05.701949342Z\"}, {\"name\": \"internet_only\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T08:48:05.701949342Z\"}, {\"name\": \"lease\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T08:48:05.701949342Z\"}, {\"name\": \"meter_path\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T08:48:05.701949342Z\"}, {\"name\": \"policy_signature\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T08:48:05.701949342Z\"}, {\"name\": \"qos\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T08:48:05.701949342Z\"}, {\"name\": \"release_supported\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T08:48:05.701949342Z\"}, {\"name\": \"source_binding\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T08:48:05.701949342Z\"}, {\"name\": \"storage\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T08:48:05.701949342Z\"}, {\"name\": \"tunnel_probe\", \"detail\": \"Egress probe used no extra target.\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T08:48:05.701949342Z\"}], \"forwarding_block_reasons\": [], \"member_forwarding_enabled\": true}}",
+      "command": "poll nodes, latest serving_leases and accepted observation; no process restart or projection writes",
+      "at": "2026-10-31T08:48:06Z"
+    },
+    {
+      "name": "bounded member transfer observation",
+      "status": "pass",
+      "expected": "record selected route, node counters, packet hops and origin receipt",
+      "actual": "{\"node_container_role\":\"node\",\"node_incarnation\":\"01a19123-e21c-7acd-993b-39ed0c25511b\",\"origin_verified\":true,\"origin_requests\":1,\"origin_snat_matches\":true,\"probe_sha256\":\"722c6577d2e20abb79d1ea447a9f1e082d9ba7a32eb4948e1ea95a91f9fd0333\",\"at\":\"2026-10-31T08:48:06Z\",\"first_counted_byte_at\":\"2026-10-31T08:48:11.406552647Z\",\"member_container_role\":\"member\",\"route_selected\":true,\"route_before\":[{\"cache\":[],\"dev\":\"eth0\",\"flags\":[],\"uid\":0}],\"route_after\":[{\"cache\":[],\"dev\":\"fvnb0\",\"flags\":[],\"table\":\"netbird\",\"uid\":0}],\"peer_status\":{\"daemonStatus\":\"Connected\",\"daemonVersion\":\"0.82.0\",\"networks\":null,\"usesKernelInterface\":true},\"node_before\":{\"available\":true,\"generation\":\"5\",\"device_upload_bytes\":\"0\",\"device_download_bytes\":\"0\",\"member_accept_rules\":6,\"diagnostic_bytes\":{\"ctbadns\":\"0\",\"ctbase\":\"0\",\"ctdeny\":\"0\",\"cthost\":\"0\",\"ctin\":\"0\",\"ctinv\":\"0\",\"ctnodn\":\"0\",\"ctunkd\":\"0\",\"ctunku\":\"0\",\"ctv6\":\"0\",\"nd_01a19124b4d376d58ded0f7dbbec4556\":\"0\",\"nu_01a19124b4d376d58ded0f7dbbec4556\":\"0\"}},\"node_after\":{\"available\":true,\"generation\":\"5\",\"device_upload_bytes\":\"2357\",\"device_download_bytes\":\"2463\",\"member_accept_rules\":6,\"diagnostic_bytes\":{\"ctbadns\":\"0\",\"ctbase\":\"0\",\"ctdeny\":\"0\",\"cthost\":\"0\",\"ctin\":\"0\",\"ctinv\":\"0\",\"ctnodn\":\"0\",\"ctunkd\":\"0\",\"ctunku\":\"0\",\"ctv6\":\"0\",\"nd_01a19124b4d376d58ded0f7dbbec4556\":\"0\",\"nu_01a19124b4d376d58ded0f7dbbec4556\":\"0\"}},\"packet_observations\":{\"member\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9014,\"filter\":\"controlled-origin TCP/443, client port 20001\",\"interfaces\":{\"fvnb0\":{\"from_origin\":8,\"to_origin\":10}}},\"node\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9030,\"filter\":\"controlled-origin TCP/443, client port 20001\",\"interfaces\":{\"fvmb0\":{\"from_origin\":8,\"to_origin\":11},\"fvup0\":{\"from_origin\":8,\"to_origin\":11}}},\"origin\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9097,\"filter\":\"controlled-origin TCP/443, client port 20001\",\"interfaces\":{\"eth0\":{\"from_origin\":8,\"to_origin\":11}}}},\"transfer\":{\"body_bytes\":3,\"http_status\":200,\"origin_receipt\":true},\"counted\":true,\"first_unconfirmed_hop\":\"none: origin HTTP response and both device admission counters increased\"}",
+      "command": "netbird routes select; ip -j route get controlled origin; concurrent 9-second AF_PACKET aggregate observers; bounded CA-verified HTTPS GET; nft counters before/after",
+      "at": "2026-10-31T08:48:19Z"
+    },
+    {
+      "name": "Linux sleep wake analogue",
+      "status": "pass",
+      "expected": "pause/unpause succeeds",
+      "actual": "pause=true; wake=true",
+      "command": "docker pause/unpause assigned member container",
+      "at": "2026-10-31T08:48:21Z"
+    },
+    {
+      "name": "bounded member transfer observation",
+      "status": "pass",
+      "expected": "record selected route, node counters, packet hops and origin receipt",
+      "actual": "{\"node_container_role\":\"node\",\"node_incarnation\":\"01a19123-e21c-7acd-993b-39ed0c25511b\",\"origin_verified\":true,\"origin_requests\":1,\"origin_snat_matches\":true,\"probe_sha256\":\"722c6577d2e20abb79d1ea447a9f1e082d9ba7a32eb4948e1ea95a91f9fd0333\",\"at\":\"2026-10-31T08:48:21Z\",\"first_counted_byte_at\":\"2026-10-31T08:48:26.097658768Z\",\"member_container_role\":\"member\",\"route_selected\":true,\"route_before\":[{\"cache\":[],\"dev\":\"fvnb0\",\"flags\":[],\"table\":\"netbird\",\"uid\":0}],\"route_after\":[{\"cache\":[],\"dev\":\"fvnb0\",\"flags\":[],\"table\":\"netbird\",\"uid\":0}],\"peer_status\":{\"daemonStatus\":\"Connected\",\"daemonVersion\":\"0.82.0\",\"networks\":null,\"usesKernelInterface\":true},\"node_before\":{\"available\":true,\"generation\":\"5\",\"device_upload_bytes\":\"2357\",\"device_download_bytes\":\"2463\",\"member_accept_rules\":6,\"diagnostic_bytes\":{\"ctbadns\":\"0\",\"ctbase\":\"0\",\"ctdeny\":\"0\",\"cthost\":\"0\",\"ctin\":\"0\",\"ctinv\":\"0\",\"ctnodn\":\"0\",\"ctunkd\":\"0\",\"ctunku\":\"0\",\"ctv6\":\"0\",\"nd_01a19124b4d376d58ded0f7dbbec4556\":\"0\",\"nu_01a19124b4d376d58ded0f7dbbec4556\":\"0\"}},\"node_after\":{\"available\":true,\"generation\":\"5\",\"device_upload_bytes\":\"4714\",\"device_download_bytes\":\"4924\",\"member_accept_rules\":6,\"diagnostic_bytes\":{\"ctbadns\":\"0\",\"ctbase\":\"0\",\"ctdeny\":\"0\",\"cthost\":\"0\",\"ctin\":\"0\",\"ctinv\":\"0\",\"ctnodn\":\"0\",\"ctunkd\":\"0\",\"ctunku\":\"0\",\"ctv6\":\"0\",\"nd_01a19124b4d376d58ded0f7dbbec4556\":\"0\",\"nu_01a19124b4d376d58ded0f7dbbec4556\":\"0\"}},\"packet_observations\":{\"member\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9099,\"filter\":\"controlled-origin TCP/443, client port 20002\",\"interfaces\":{\"fvnb0\":{\"from_origin\":8,\"to_origin\":10}}},\"node\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9014,\"filter\":\"controlled-origin TCP/443, client port 20002\",\"interfaces\":{\"fvmb0\":{\"from_origin\":8,\"to_origin\":11},\"fvup0\":{\"from_origin\":8,\"to_origin\":11}}},\"origin\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9087,\"filter\":\"controlled-origin TCP/443, client port 20002\",\"interfaces\":{\"eth0\":{\"from_origin\":8,\"to_origin\":11}}}},\"transfer\":{\"body_bytes\":3,\"http_status\":200,\"origin_receipt\":true},\"counted\":true,\"first_unconfirmed_hop\":\"none: origin HTTP response and both device admission counters increased\"}",
+      "command": "netbird routes select; ip -j route get controlled origin; concurrent 9-second AF_PACKET aggregate observers; bounded CA-verified HTTPS GET; nft counters before/after",
+      "at": "2026-10-31T08:48:34Z"
+    }
+  ],
+  "blockers": [
+    "AT01 platform sign-out/network change/sleep-wake scripts need operator run; Linux positive counted forwarding is recorded separately."
+  ],
+  "operator_status": "needs operator run"
+}

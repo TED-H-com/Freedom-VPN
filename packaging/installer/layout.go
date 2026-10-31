@@ -214,3 +214,5 @@ func (l Layout) baselineFile() string {
 func (l Layout) netbirdAddr() string {
 	return "unix://" + filepath.Join(l.NetbirdRunDir, "netbird.sock")
 }
+
+func (l Layout) markerTable() string { return l.NFTTable + "_install" }

@@ -1,401 +1,119 @@
 {
   "schema_version": 1,
-  "follow_up": 10,
-  "source_revision": "319c5259344347e7eef50eb5becb2645785d1047",
-  "application_base": "d9e28f8",
-  "run_id": "0e8ff9a4-4fa1-4154-ae35-847a5be4d985",
-  "driver_run_id": "a6be6802-cdc6-4990-9c66-149688d7221c",
-  "started_at": "2026-10-31T04:00:29Z",
-  "finished_at": "2026-10-31T04:23:47Z",
+  "follow_up": 12,
+  "application_base": "510a4ab7f73bdcfc28aaef53f8d1d6deef97ad67",
+  "source_revision": "bf21d111f0b334368441144145abca8f5d0c060a",
+  "run_id": "dd845a7f-2660-431c-a8e6-c513108cc07d",
+  "driver_run_id": "c8498f5b-455e-41a9-9804-2067690aec23",
+  "started_at": "2026-10-31T09:04:16Z",
+  "finished_at": "2026-10-31T09:23:05Z",
   "hardware": "shared development host; not candidate hardware",
-  "probe_source_sha256": "d478487184650ec8b801b722d6db12c6ce2494223498d139134bb9fe1ed4eace",
-  "record_renderer_sha256": "86cc329815fb8058644abfde06223a32965e08ebdcd73462bb012cbe592641f0",
-  "commands": [
-    [
-      "make",
-      "-f",
-      "mk/e2e.mk",
-      "e2e-up"
-    ],
-    [
-      "go",
-      "test",
-      "-json",
-      "-tags",
-      "e2e,integration",
-      "-p",
-      "1",
-      "-parallel",
-      "2",
-      "-count=1",
-      "-timeout",
-      "45m",
-      "-run",
-      "^TestAT30_Followup10_LiveRestoreReconcile$",
-      "./tests/e2e/at/secops"
-    ],
-    [
-      "make",
-      "-f",
-      "mk/e2e.mk",
-      "e2e-down"
-    ]
-  ],
-  "image_digests": [
-    {
-      "image_id": "sha256:76939669bdc24a1b812738e9728c318949960e1dd95f50bd295dd0e2cb67097e",
-      "service": "postgres"
-    },
-    {
-      "image_id": "sha256:ae7f55b9525a90540090ed6646dfd2b6d714762ce715abec68bbaf9cf0296cee",
-      "service": "idp"
-    },
-    {
-      "image_id": "sha256:49365eb5d9192947a051875662445260b10aebffec789196c2b6503a3dadffe2",
-      "service": "payment"
-    },
-    {
-      "image_id": "sha256:c27011f7c4d4855da081e4feadea305f9b40a7c6d265c6480fa00beb13ba2c68",
-      "service": "origin"
-    },
-    {
-      "image_id": "sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c",
-      "service": "netbird"
-    },
-    {
-      "image_id": "sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce",
-      "service": "gateway"
-    },
-    {
-      "image_id": "sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97",
-      "service": "coredns"
-    },
-    {
-      "image_id": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
-      "service": "adguard"
-    },
-    {
-      "image_id": "sha256:49b2570e2ce908352bb435cae9021c1df089c8cef31f085b41cb5568737e5a5f",
-      "service": "control"
-    },
-    {
-      "image_id": "sha256:2be0309c0165d0e651cc5c17f962b5d89995dda7a4aca5ac017c4cd70661cb9a",
-      "service": "worker"
-    },
-    {
-      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
-      "service": "node-netns"
-    },
-    {
-      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
-      "service": "node"
-    },
-    {
-      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
-      "service": "member"
-    },
-    {
-      "image_id": "sha256:bda61af4f65bce644ac2f538c21405291d29d90b5148c2081a2ec77c1d76ad3b",
-      "service": "restore-live"
-    },
-    {
-      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
-      "service": "member-secops10-u20-p1"
-    },
-    {
-      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
-      "service": "member-secops10-u20-p2"
-    },
-    {
-      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
-      "service": "member-secops10-u20-p3"
-    },
-    {
-      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
-      "service": "member-secops10-u19-p2"
-    },
-    {
-      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
-      "service": "member-secops10-u19-p3"
-    },
-    {
-      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
-      "service": "member-secops10-u19-p1"
-    },
-    {
-      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
-      "service": "member-secops10-u18-p1"
-    },
-    {
-      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
-      "service": "member-secops10-u18-p2"
-    },
-    {
-      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
-      "service": "member-secops10-u18-p3"
-    },
-    {
-      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
-      "service": "member-secops10-u17-p3"
-    },
-    {
-      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
-      "service": "member-secops10-u17-p2"
-    },
-    {
-      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
-      "service": "member-secops10-u17-p1"
-    },
-    {
-      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
-      "service": "member-secops10-u16-p1"
-    },
-    {
-      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
-      "service": "member-secops10-u16-p2"
-    },
-    {
-      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
-      "service": "member-secops10-u16-p3"
-    },
-    {
-      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
-      "service": "member-secops10-u15-p3"
-    },
-    {
-      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
-      "service": "member-secops10-u15-p1"
-    },
-    {
-      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
-      "service": "member-secops10-u15-p2"
-    },
-    {
-      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
-      "service": "member-secops10-u14-p2"
-    },
-    {
-      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
-      "service": "member-secops10-u14-p1"
-    },
-    {
-      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
-      "service": "member-secops10-u14-p3"
-    },
-    {
-      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
-      "service": "member-secops10-u13-p2"
-    },
-    {
-      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
-      "service": "member-secops10-u13-p3"
-    },
-    {
-      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
-      "service": "member-secops10-u13-p1"
-    },
-    {
-      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
-      "service": "member-secops10-u12-p2"
-    },
-    {
-      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
-      "service": "member-secops10-u12-p1"
-    },
-    {
-      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
-      "service": "member-secops10-u12-p3"
-    },
-    {
-      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
-      "service": "member-secops10-u11-p2"
-    },
-    {
-      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
-      "service": "member-secops10-u11-p1"
-    },
-    {
-      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
-      "service": "member-secops10-u11-p3"
-    },
-    {
-      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
-      "service": "member-secops10-u10-p1"
-    },
-    {
-      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
-      "service": "member-secops10-u10-p2"
-    },
-    {
-      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
-      "service": "member-secops10-u10-p3"
-    },
-    {
-      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
-      "service": "member-secops10-u09-p2"
-    },
-    {
-      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
-      "service": "member-secops10-u09-p1"
-    },
-    {
-      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
-      "service": "member-secops10-u09-p3"
-    },
-    {
-      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
-      "service": "member-secops10-u08-p2"
-    },
-    {
-      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
-      "service": "member-secops10-u08-p3"
-    },
-    {
-      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
-      "service": "member-secops10-u08-p1"
-    },
-    {
-      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
-      "service": "member-secops10-u07-p1"
-    },
-    {
-      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
-      "service": "member-secops10-u07-p3"
-    },
-    {
-      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
-      "service": "member-secops10-u07-p2"
-    },
-    {
-      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
-      "service": "member-secops10-u06-p3"
-    },
-    {
-      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
-      "service": "member-secops10-u06-p2"
-    },
-    {
-      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
-      "service": "member-secops10-u06-p1"
-    },
-    {
-      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
-      "service": "member-secops10-u05-p1"
-    },
-    {
-      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
-      "service": "member-secops10-u05-p3"
-    },
-    {
-      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
-      "service": "member-secops10-u05-p2"
-    },
-    {
-      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
-      "service": "member-secops10-u04-p2"
-    },
-    {
-      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
-      "service": "member-secops10-u04-p1"
-    },
-    {
-      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
-      "service": "member-secops10-u04-p3"
-    },
-    {
-      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
-      "service": "member-secops10-u03-p1"
-    },
-    {
-      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
-      "service": "member-secops10-u03-p2"
-    },
-    {
-      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
-      "service": "member-secops10-u03-p3"
-    },
-    {
-      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
-      "service": "member-secops10-u02-p3"
-    },
-    {
-      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
-      "service": "member-secops10-u02-p1"
-    },
-    {
-      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
-      "service": "member-secops10-u02-p2"
-    },
-    {
-      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
-      "service": "member-secops10-u01-p2"
-    },
-    {
-      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
-      "service": "member-secops10-u01-p1"
-    },
-    {
-      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
-      "service": "member-secops10-u01-p3"
-    },
-    {
-      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
-      "service": "member-secops10-grace"
-    },
-    {
-      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
-      "service": "member-at30-m2-d3-post-restore"
-    },
-    {
-      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
-      "service": "member-at30-m3-d1-t1"
-    },
-    {
-      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
-      "service": "member-at30-m2-d2"
-    },
-    {
-      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
-      "service": "member-at30-m2-d1"
-    },
-    {
-      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
-      "service": "member-at30-m1-d1"
-    }
-  ],
-  "build_digests": [
-    {
-      "name": "amd64.test",
-      "sha256": "bf6858441e6cefc330257a2d7edf0c100b2f11141a3581ef28b93fba25f09c88"
-    },
-    {
-      "name": "arm64.test",
-      "sha256": "7b75aac657090483b5c9c2af49dece0e6d0c7bac86090adfe38ce1a7dff9e549"
-    }
-  ],
-  "policy_revision": "01a1901e-4f39-7e04-960d-4c11f81e7984",
-  "agent_node_incarnation": "01a1901e-5d77-7da0-b0c8-9432b9f7287a",
-  "previous_run": "history/follow-up-9/",
+  "probe_source_sha256": "16ff60b0f2f39a827de3953ea0b24818d41be6f8537854d9d9a0e797e01af425",
+  "record_renderer_sha256": "fca01192bfe08cc5e48c441e513937dd681e53eb57b5bd9dcc57704778e8e753",
+  "previous_run": "history/follow-up-11/",
   "projector_owned_rows_written": [],
   "id": "SECOPS-21",
   "status": "blocked",
   "request_status": "open",
+  "d099_roadmap_present": true,
+  "hold": {
+    "after": {
+      "utc": "2026-10-31T09:11:03.992661+00:00",
+      "drift": [
+        {
+          "field": "desired_state_restore_observation",
+          "desired": "observation received after 2026-10-31T09:11:03.286406129Z",
+          "observed": "pending fresh observation after restore"
+        }
+      ],
+      "applied": "9",
+      "desired": "10",
+      "envelope_md5": "c591cdd587284f1a6207c47248441aef",
+      "stored_count": 9,
+      "hold_operations": [
+        {
+          "steps": {
+            "fresh_observation": {
+              "order": 1,
+              "reason": "pending fresh observation after restore",
+              "status": "pending",
+              "required": true,
+              "updated_at": "2026-10-31T09:11:03.286406+00:00"
+            }
+          },
+          "status": "pending",
+          "created_at": "2026-10-31T09:11:03.286406+00:00"
+        }
+      ]
+    },
+    "agent_stopped_for_pre_observation_probe": true,
+    "before": {
+      "utc": "2026-10-31T09:11:03.86169+00:00",
+      "drift": [
+        {
+          "field": "desired_state_restore_observation",
+          "desired": "observation received after 2026-10-31T09:11:03.286406129Z",
+          "observed": "pending fresh observation after restore"
+        }
+      ],
+      "applied": "9",
+      "desired": "10",
+      "envelope_md5": "c591cdd587284f1a6207c47248441aef",
+      "stored_count": 9,
+      "hold_operations": [
+        {
+          "steps": {
+            "fresh_observation": {
+              "order": 1,
+              "reason": "pending fresh observation after restore",
+              "status": "pending",
+              "required": true,
+              "updated_at": "2026-10-31T09:11:03.286406+00:00"
+            }
+          },
+          "status": "pending",
+          "created_at": "2026-10-31T09:11:03.286406+00:00"
+        }
+      ]
+    },
+    "freeze_before_services_start": true,
+    "node_drift": [
+      {
+        "desired": "observation received after 2026-10-31T09:11:03.286406129Z",
+        "field": "desired_state_restore_observation",
+        "observed": "pending fresh observation after restore"
+      }
+    ],
+    "node_get_status": 200,
+    "passed": true,
+    "response": {
+      "command_ok": false,
+      "decoded": true,
+      "error_code": "DEPENDENCY_UNAVAILABLE",
+      "generation": "",
+      "http_200": false,
+      "http_503": true,
+      "message": "pending fresh observation after restore",
+      "retryable": true,
+      "utc": "2026-10-31T09:11:03.907502646Z"
+    }
+  },
   "actual": {
     "final": {
-      "applied": "16",
-      "captured_at": "2026-10-31T04:10:19.768670148Z",
-      "desired": "17",
-      "max_stored": "17",
-      "node_accepted_desired": "17",
-      "node_applied": "17",
+      "applied": "19",
+      "captured_at": "2026-10-31T09:13:41.212038488Z",
+      "desired": "20",
+      "max_stored": "20",
+      "node_accepted_desired": "20",
+      "node_applied": "20",
       "node_heartbeat": {
         "baseline_ok": "1",
-        "generation": "17",
-        "mono_ns": "3352356661951",
-        "policy_expires_mono_ns": "10053513371608",
+        "generation": "20",
+        "mono_ns": "21557044633166",
+        "policy_expires_mono_ns": "28277512919301",
         "reason": "serving",
         "serving": "1",
-        "wall_unix_ns": "1793419814840291017"
+        "wall_unix_ns": "1793438019528262588"
       }
     },
     "fix": "#245 w3-wire-policies-usage follow-up 5",
@@ -404,73 +122,77 @@
     "observations": [
       {
         "errors": [],
-        "applied": "14",
-        "received_at": "2026-10-31T04:07:21.863973+00:00"
+        "applied": "15",
+        "received_at": "2026-10-31T09:11:04.363723+00:00"
       },
       {
         "errors": [],
-        "applied": "14",
-        "received_at": "2026-10-31T04:07:52.365246+00:00"
+        "applied": "17",
+        "received_at": "2026-10-31T09:11:09.427318+00:00"
       },
       {
         "errors": [],
-        "applied": "14",
-        "received_at": "2026-10-31T04:08:22.842795+00:00"
+        "applied": "17",
+        "received_at": "2026-10-31T09:11:39.434124+00:00"
       },
       {
         "errors": [],
-        "applied": "14",
-        "received_at": "2026-10-31T04:08:53.331886+00:00"
+        "applied": "17",
+        "received_at": "2026-10-31T09:12:09.459392+00:00"
       },
       {
         "errors": [],
-        "applied": "14",
-        "received_at": "2026-10-31T04:09:23.781723+00:00"
+        "applied": "17",
+        "received_at": "2026-10-31T09:12:39.714966+00:00"
       },
       {
         "errors": [],
-        "applied": "16",
-        "received_at": "2026-10-31T04:09:54.464671+00:00"
+        "applied": "19",
+        "received_at": "2026-10-31T09:13:14.493777+00:00"
       }
     ],
     "offers": [
       {
-        "signed_at": "2026-10-31T04:07:21.367362+00:00",
-        "generation": "11"
-      },
-      {
-        "signed_at": "2026-10-31T04:09:25.60479+00:00",
-        "generation": "15"
-      },
-      {
-        "signed_at": "2026-10-31T04:09:31.695558+00:00",
+        "signed_at": "2026-10-31T09:11:04.502381+00:00",
         "generation": "16"
       },
       {
-        "signed_at": "2026-10-31T04:10:12.132178+00:00",
+        "signed_at": "2026-10-31T09:11:06.861875+00:00",
         "generation": "17"
+      },
+      {
+        "signed_at": "2026-10-31T09:12:41.442278+00:00",
+        "generation": "18"
+      },
+      {
+        "signed_at": "2026-10-31T09:12:42.884255+00:00",
+        "generation": "19"
+      },
+      {
+        "signed_at": "2026-10-31T09:13:29.575561+00:00",
+        "generation": "20"
       }
     ],
     "restored_central": {
       "applied": "9",
-      "captured_at": "2026-10-31T04:07:20.683211955Z",
+      "captured_at": "2026-10-31T09:11:03.444523225Z",
       "desired": "10",
       "max_stored": "10",
-      "node_accepted_desired": "14",
-      "node_applied": "14",
+      "node_accepted_desired": "15",
+      "node_applied": "15",
       "node_heartbeat": {
         "baseline_ok": "1",
-        "generation": "14",
-        "mono_ns": "3163068257517",
-        "policy_expires_mono_ns": "10053514246846",
+        "generation": "15",
+        "mono_ns": "21390876086164",
+        "policy_expires_mono_ns": "28277513856895",
         "reason": "serving",
         "serving": "1",
-        "wall_unix_ns": "1793419625551886788"
+        "wall_unix_ns": "1793437853359715531"
       }
     },
     "retained_at_t1": {
       "applied": "12",
-      "captured_at": "2026-10-31T04:04:51.932977431Z",
+      "captured_at": "2026-10-31T09:08:45.814808505Z",
       "desired": "14",
       "max_stored": "14",
       "node_accepted_desired": "14",
@@ -478,40 +200,43 @@
       "node_heartbeat": {
         "baseline_ok": "1",
         "generation": "14",
-        "mono_ns": "3024452868745",
-        "policy_expires_mono_ns": "10053514246846",
+        "mono_ns": "21259429551345",
+        "policy_expires_mono_ns": "28277513827147",
         "reason": "serving",
         "serving": "1",
-        "wall_unix_ns": "1793419486936497918"
+        "wall_unix_ns": "1793437721913180587"
       }
     },
     "stale_generation_lines": [],
     "stale_generation_log_count": 0,
-    "window_start": "2026-10-31T04:07:20.683244666Z",
-    "first_offer_analysis": {
-      "generation": "11",
-      "signed_at": "2026-10-31T04:07:21.367362+00:00",
-      "retained_generation_before_first_offer": "14",
-      "node_applied_before_restart": "14",
-      "central_observed_at_t1": "12",
-      "below_retained_generation": true,
-      "first_post_restore_observation": {
-        "errors": [],
-        "applied": "14",
-        "received_at": "2026-10-31T04:07:21.863973+00:00"
-      },
-      "interpretation": "A lower first offer is stale by agentstore.AcceptDesired. The agent silently ignores ErrStaleGeneration, so rejection is inferred from the generation comparison, not claimed as a logged event."
+    "window_start": "2026-10-31T09:11:03.444552377Z"
+  },
+  "first_offer_analysis": {
+    "first_new_stored_offer": {
+      "signed_at": "2026-10-31T09:11:04.502381+00:00",
+      "generation": "16"
     },
-    "prior_attempt_first_offer": {
-      "signed_at": "2026-10-31T03:46:00.994048+00:00",
-      "generation": "11"
+    "retained_node_generation": "15",
+    "first_http_probe_after_fresh_observation": {
+      "command_ok": true,
+      "decoded": true,
+      "error_code": "",
+      "generation": "16",
+      "http_200": true,
+      "http_503": false,
+      "message": "",
+      "retryable": false,
+      "utc": "2026-10-31T09:11:04.521361985Z"
     },
-    "prior_attempt_retained_at_t1": {
-      "applied": "12",
-      "desired": "14",
-      "max_stored": "14"
-    },
-    "prior_attempt_evidence": "followup10-attempt1-live.json",
-    "repeat_pass_cannot_erase_startup_race": true
+    "first_new_stored_offer_is_above_retained": true,
+    "limitation": "Stored compiler rows and a timestamped HTTP probe are distinct. No response capture export proves the first envelope delivered to the running agent; no claim that absence of ErrStaleGeneration log lines proves acceptance.",
+    "closure_guards": {
+      "d099_on_measured_base": true,
+      "d095_hold_proved": true,
+      "first_stored_row_above_retained": true,
+      "first_delivered_http_response_proved": false,
+      "first_offer_local_store_accepted": false,
+      "first_stored_row_applied_ack": false
+    }
   }
 }

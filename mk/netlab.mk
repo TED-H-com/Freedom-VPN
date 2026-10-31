@@ -32,6 +32,7 @@ netlab-lint:
 
 netlab-unit:
 	@cd $(ROOT) && $(netlab-disk-env) go test ./node/enforce/... ./tests/netlab
+	@cd $(ROOT) && $(netlab-disk-env) python3 -B -m unittest discover -s tests/netlab/scripts -p "*_test.py"
 
 # Tagged harness compilation and unprivileged prerequisite/driver checks.
 # Live mechanisms remain in netlab-test and netlab-real-netbird.
@@ -112,3 +113,9 @@ netlab-test-full:
 	exit $$status
 
 TEST_TARGETS += netlab-unit
+
+# Foreground real Engine enrollment + 20 reloads; check the shared-host suite
+# limit before invoking. Uses the lab-only timing SystemPlane decorator.
+.PHONY: netlab-agent-measure
+netlab-agent-measure:
+	@cd $(ROOT) && FVPN_LAB_PREFIX='$(FVPN_LAB_PREFIX)' $(netlab-disk-env) python3 tests/netlab/scripts/agent_measure.py

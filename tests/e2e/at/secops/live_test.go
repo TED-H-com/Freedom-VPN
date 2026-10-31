@@ -673,6 +673,9 @@ func (p *liveProbe) revoke(admin, node *liveSession, b api.EnrollResponse) {
 	p.check("revoked certificate refuses desired state", p.call(node, "GET", liveAgent+"/api/v1/agent/desired-state", nil, nil), 403, "IDENTITY_REVOKED")
 }
 func (p *liveProbe) finish() {
+	if os.Getenv("FVPN_SECOPS_EVIDENCE_FOLLOWUP") == "12" {
+		p.metadata["follow_up"] = 12
+	}
 	for key := range p.metadata {
 		if strings.HasPrefix(key, "private_") {
 			delete(p.metadata, key)
@@ -820,6 +823,9 @@ func (p *liveProbe) finish() {
 	}
 	if phase := os.Getenv("FVPN_SECOPS_FOLLOWUP11"); phase == "restore" || phase == "transports" {
 		name = "followup11-" + phase + "-live.json"
+		if os.Getenv("FVPN_SECOPS_EVIDENCE_FOLLOWUP") == "12" {
+			name = "followup12-" + phase + "-live.json"
+		}
 	}
 	if os.WriteFile(filepath.Join(p.root, "docs/e2e/at/secops", name), append(out, '\n'), 0644) != nil {
 		p.t.Error("evidence write")

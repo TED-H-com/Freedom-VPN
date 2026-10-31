@@ -26,6 +26,8 @@ var releaseRE = regexp.MustCompile(`^[0-9A-Za-z][0-9A-Za-z.+_-]{0,63}$`)
 // a private key or a setup key.
 type Config struct {
 	StateDir                string         `json:"state_dir"`
+	MeterCheckpoint         string         `json:"meter_checkpoint,omitempty"`
+	CurrentReleasePath      string         `json:"current_release_path,omitempty"`
 	IdentityDir             string         `json:"identity_dir"`
 	JournalDir              string         `json:"journal_dir"`
 	LockPath                string         `json:"lock_path"`
@@ -100,6 +102,12 @@ func LoadConfig(path string) (Config, error) {
 func (c *Config) applyDefaults() {
 	if c.StateDir == "" {
 		c.StateDir = "/var/lib/vpn-node/state"
+	}
+	if c.MeterCheckpoint == "" {
+		c.MeterCheckpoint = filepath.Join(c.StateDir, "meter.checkpoint")
+	}
+	if c.CurrentReleasePath == "" {
+		c.CurrentReleasePath = "/opt/vpn-node/current"
 	}
 	if c.IdentityDir == "" {
 		c.IdentityDir = "/var/lib/vpn-node/identity"

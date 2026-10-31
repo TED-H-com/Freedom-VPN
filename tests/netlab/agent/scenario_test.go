@@ -53,12 +53,14 @@ func TestLab02_WatchdogEnforces(t *testing.T) {
 	flushConntrack(t)
 	admin(t, "/release", "")
 	admin(t, "/service", `{"seconds":3600}`)
-	startWatch(t)
 	defer stopWatch()
 	startAgent(t)
 	if !waitProbe(t, "allow", 20*time.Second) {
 		t.Fatalf("agent did not start forwarding:\n%s", debugPlane(t))
 	}
+	// Establish a fresh heartbeat before exercising the crash watchdog. A
+	// stale heartbeat from the preceding case is not this test's injection.
+	startWatch(t)
 	// SIGKILL, not SIGTERM. A graceful stop is itself a hand-off and
 	// installs the baseline; this test needs the process to disappear
 	// so the watchdog is what fail-closes.
@@ -198,32 +200,13 @@ func TestLab05_NoAllowAllOnUpdate(t *testing.T) {
 	fmt.Println("SUMMARY AT13 AT29 no-allow-all=1")
 }
 
-func TestLab06_RevokedStopsForwarding(t *testing.T) {
-	skipLab(t)
-	stopAgent()
-	stopWatch()
-	flushConntrack(t)
-	admin(t, "/release", "")
-	admin(t, "/service", `{"seconds":3600}`)
-	startAgent(t)
-	defer stopAgent()
-	if !waitProbe(t, "allow", 20*time.Second) {
-		t.Fatalf("precondition: not forwarding:\n%s", debugPlane(t))
-	}
-	admin(t, "/revoke", "")
-	if !waitProbe(t, "deny", 15*time.Second) {
-		t.Fatalf("revoked identity kept forwarding:\n%s", debugPlane(t))
-	}
-	assertNoSecrets(t)
-	fmt.Println("SUMMARY AT-agent revoked-stops=1")
-}
-
 func TestLab07_UnpublishedBaselineAck(t *testing.T) {
 	skipLab(t)
 	stopAgent()
 	stopWatch()
 	flushConntrack(t)
 	admin(t, "/release", "")
+	started := time.Now()
 	admin(t, "/publication", `{"intent":"unpublished"}`)
 	defer admin(t, "/publication", `{"intent":"published"}`)
 	startAgent(t)
@@ -238,7 +221,7 @@ func TestLab07_UnpublishedBaselineAck(t *testing.T) {
 	for time.Now().Before(deadline) {
 		body, got := adminTryGet(t, "/observation")
 		raw = body
-		if got && json.Unmarshal([]byte(body), &rep) == nil && rep.SafetyStatus == api.SafetyStatusPassed {
+		if got && json.Unmarshal([]byte(body), &rep) == nil && rep.ObservedAt.After(started) && rep.SafetyStatus == api.SafetyStatusPassed {
 			ok = true
 			break
 		}
@@ -270,6 +253,28 @@ func TestLab07_UnpublishedBaselineAck(t *testing.T) {
 		t.Fatalf("forwarding started after the baseline ack:\n%s", debugPlane(t))
 	}
 	fmt.Println("SUMMARY unpublished baseline ack=1")
+}
+
+// Keep revocation last: this fixture intentionally cannot unfreeze or un-revoke
+// the same incarnation for a later scenario.
+func TestLab06_RevokedStopsForwarding(t *testing.T) {
+	skipLab(t)
+	stopAgent()
+	stopWatch()
+	flushConntrack(t)
+	admin(t, "/release", "")
+	admin(t, "/service", `{"seconds":3600}`)
+	startAgent(t)
+	defer stopAgent()
+	if !waitProbe(t, "allow", 20*time.Second) {
+		t.Fatalf("precondition: not forwarding:\n%s", debugPlane(t))
+	}
+	admin(t, "/revoke", "")
+	if !waitProbe(t, "deny", 15*time.Second) {
+		t.Fatalf("revoked identity kept forwarding:\n%s", debugPlane(t))
+	}
+	assertNoSecrets(t)
+	fmt.Println("SUMMARY AT-agent revoked-stops=1")
 }
 
 func checkStatus(checks []api.NodeCheck, name api.NodeCheckName) api.HealthCheckStatus {

@@ -17,7 +17,7 @@ import (
 func TestAT10_AT13_ReloadRevokeBaseline(t *testing.T) {
 	skipLab(t)
 	flushConntrack(t)
-	_, _, _ = dockerExec("sh", "-c", "rm -f /scratch/denyloop.stop /scratch/deny-hits.log /scratch/stream-a1.log /scratch/hold.ready")
+	_, _, _ = dockerExec("sh", "-c", "rm -f /scratch/denyloop.stop /scratch/deny-hits.log /scratch/stream-a1.log /scratch/hold.ready /scratch/at10-apply.jsonl /scratch/stream-a1.log.jsonl")
 	_, _, _ = dockerExec("ip", "netns", "exec", "fv-fwd", "ip", "addr", "del", "100.64.7.7/32", "dev", "fv-ff")
 	mustExec(t, "ip", "netns", "exec", "fv-fwd", "ip", "addr", "add", "100.64.7.7/32", "dev", "fv-ff")
 	t.Cleanup(func() {
@@ -51,6 +51,7 @@ func TestAT10_AT13_ReloadRevokeBaseline(t *testing.T) {
 	if err := dockerDetach("python3", "/opt/netlab/scripts/denyloop.py", "/scratch/deny-cases.json"); err != nil {
 		t.Fatal(err)
 	}
+	startReloadTrace(t)
 	if err := dockerDetach("ip", "netns", "exec", "fv-a1", "python3", "/opt/netlab/scripts/stream.py", "203.0.113.10", "9001", "9000", "/scratch/stream-a1.log"); err != nil {
 		t.Fatal(err)
 	}
@@ -91,6 +92,7 @@ func TestAT10_AT13_ReloadRevokeBaseline(t *testing.T) {
 			fmt.Printf("AT10 regen %d a1=%d a2=%d\n", gen, a1, a2)
 		}
 	}
+	finishReloadTrace(t)
 	if !streamHealthy(t, "/scratch/stream-a1.log") {
 		save(t, "stream-during-regen.log", readScratch(t, "/scratch/stream-a1.log"))
 		t.Fatal("allowed flow failed during ruleset regeneration")

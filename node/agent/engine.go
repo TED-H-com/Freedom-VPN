@@ -103,59 +103,65 @@ type Engine struct {
 	mu      sync.Mutex
 	tlsCert *tls.Certificate
 
-	nodeID             uuid.UUID
-	incID              uuid.UUID
-	enrolled           bool
-	revoked            bool
-	identityFrozen     bool
-	bootstrapLost      bool
-	desired            *api.DesiredState
-	desiredETag        string
-	desiredOK          bool
-	desiredExpired     bool
-	lease              *api.ServingLease
-	leaseMono          time.Duration
-	leaseBoot          uuid.UUID
-	highestIssued      time.Time
-	leaseFresh         bool
-	anchor             timeanchor.Anchor
-	anchorOK           bool
-	baselineOK         bool
-	storageOK          bool
-	serving            bool
-	appliedModel       *enforce.Model
-	appliedAssignments map[uuid.UUID]uint16
-	appliedGen         uint64
-	planeLocked        bool
-	quarantinePending  bool
-	containment        *containmentEvidence
-	memberPath         *MemberPath
-	memberPathPending  bool
-	assignments        map[uuid.UUID]uint16
-	counters           map[string]enforce.CounterValue
-	addresses          []addrID
-	pendingRevoke      []addrID
-	conntrackAttempts  int
-	conntrackBlocked   bool
-	conntrackDetail    string
-	recoverBlocked     bool
-	recovered          bool
-	latchBlocked       bool
-	outboxFull         bool
-	meterFailed        bool
-	applyError         *api.NodeError
-	dependencyMissing  bool
-	leaseRetryAt       time.Duration
-	leaseAttempted     bool
-	leaseAttemptAt     time.Duration
-	provisionalStreak  int
-	provisionalRetryAt time.Duration
-	decision           Decision
-	policyExpires      time.Duration
-	lastObs            time.Time
-	lastServing        bool
-	prober             Prober
-	lastProbe          ProbeResult
+	nodeID               uuid.UUID
+	incID                uuid.UUID
+	enrolled             bool
+	revoked              bool
+	identityFrozen       bool
+	freezeDurable        bool
+	freezeUncertain      bool
+	bootstrapLost        bool
+	desired              *api.DesiredState
+	desiredETag          string
+	desiredOK            bool
+	desiredExpired       bool
+	lease                *api.ServingLease
+	leaseMono            time.Duration
+	leaseBoot            uuid.UUID
+	highestIssued        time.Time
+	leaseFresh           bool
+	anchor               timeanchor.Anchor
+	anchorOK             bool
+	baselineOK           bool
+	storageOK            bool
+	serving              bool
+	appliedModel         *enforce.Model
+	appliedAssignments   map[uuid.UUID]uint16
+	appliedGen           uint64
+	planeLocked          bool
+	quarantinePending    bool
+	containment          *containmentEvidence
+	memberPath           *MemberPath
+	memberPathPending    bool
+	assignments          map[uuid.UUID]uint16
+	counters             map[string]enforce.CounterValue
+	addresses            []addrID
+	pendingRevoke        []addrID
+	conntrackAttempts    int
+	conntrackBlocked     bool
+	conntrackDetail      string
+	recoverBlocked       bool
+	recovered            bool
+	latchBlocked         bool
+	outboxFull           bool
+	meterFailed          bool
+	applyError           *api.NodeError
+	servingRead          *servingRead
+	dependencyMissing    bool
+	leaseRetryAt         time.Duration
+	leaseAttempted       bool
+	leaseAttemptAt       time.Duration
+	provisionalStreak    int
+	provisionalRetryAt   time.Duration
+	decision             Decision
+	policyExpires        time.Duration
+	lastObs              time.Time
+	lastServing          bool
+	lastObservationState string
+	observationRetryAt   time.Duration
+	observationFailures  int
+	prober               Prober
+	lastProbe            ProbeResult
 	// probeAt is the trusted time of the last probe. An answer is written only
 	// when this is strictly after the challenge issued_at, so a cached probe
 	// cannot satisfy a challenge that did not exist yet.
@@ -267,6 +273,14 @@ func Start(opt Options) (*Engine, error) {
 		_ = e.Close()
 		return nil, err
 	}
+	executable, err := os.Executable()
+	if err == nil {
+		err = e.loadActiveRelease(context.Background(), executable)
+	}
+	if err != nil {
+		_ = e.Close()
+		return nil, errActiveRelease
+	}
 	if !e.dnsPinned {
 		e.reloadResolvers()
 	}
@@ -331,10 +345,17 @@ func (e *Engine) loadCert() error {
 }
 
 func (e *Engine) loadIdentity(ctx context.Context) error {
-	if v, _, err := e.store.Meta(ctx, "identity_frozen"); err != nil {
+	// A retry of the freeze-intent write must already know its incarnation,
+	// including when Start is interrupted before Boot/loadRuntime.
+	id, ok, err := e.store.Identity(ctx)
+	if err != nil {
 		return err
-	} else {
-		e.identityFrozen = v == "1"
+	}
+	if ok {
+		e.nodeID, e.incID, e.enrolled = id.NodeID, id.IncarnationID, true
+	}
+	if err := e.loadFreeze(ctx); err != nil {
+		return err
 	}
 	if v, ok, err := e.store.Meta(ctx, "revoked"); err != nil {
 		return err
@@ -346,16 +367,9 @@ func (e *Engine) loadIdentity(ctx context.Context) error {
 	} else if ok && v == "1" && !fileExists(e.cfg.setupKeyPath()) {
 		e.bootstrapLost = true
 	}
-	id, ok, err := e.store.Identity(ctx)
-	if err != nil {
-		return err
-	}
 	if !ok {
 		return nil
 	}
-	e.nodeID = id.NodeID
-	e.incID = id.IncarnationID
-	e.enrolled = true
 	if err := e.loadCert(); err != nil {
 		e.log.Warn("identity certificate is unavailable")
 	}
@@ -390,6 +404,9 @@ func (e *Engine) Boot(ctx context.Context) error {
 	e.serving = false
 	e.recoverOnce(ctx)
 	e.latch()
+	if e.identityFrozen && !e.freezeDurable {
+		e.persistFreeze(ctx)
+	}
 	e.ensureUsage(ctx)
 	e.decision = Decide(e.input())
 	e.beat()
@@ -469,6 +486,9 @@ func (e *Engine) Step(ctx context.Context) error {
 		return err
 	}
 	e.latch()
+	if e.identityFrozen && !e.freezeDurable {
+		e.persistFreeze(ctx)
+	}
 	if e.revoked {
 		e.withdraw(ctx)
 		e.evaluate(ctx)
@@ -551,6 +571,9 @@ func (e *Engine) Step(ctx context.Context) error {
 }
 
 func (e *Engine) loadRuntime(ctx context.Context) error {
+	if err := e.loadFreeze(ctx); err != nil {
+		return err
+	}
 	if raw, ok, err := e.store.Meta(ctx, "retained_applied"); err != nil {
 		return err
 	} else if ok {
@@ -678,7 +701,7 @@ func (e *Engine) input() Input {
 		TestMode: e.cfg.TestMode, ExemptV4: exempt, ExtraDenied: extra, HostV4: host,
 		IdentityFrozen: e.identityFrozen,
 		HostReserveBPS: e.cfg.HostReserveBPS, Revoked: e.revoked, Enrolled: e.enrolled,
-		BaselineOK: e.baselineOK, StorageOK: e.storageOK, BootstrapLost: e.bootstrapLost,
+		BaselineOK: e.baselineOK, StorageOK: e.storageOK && !e.freezeUncertain, BootstrapLost: e.bootstrapLost,
 		ApplyError: e.applyError, DependencyMissing: e.dependencyMissing, LeaseRetryPending: e.leaseRetryAt > 0,
 		RevocationPending: len(e.pendingRevoke) > 0, ConntrackBlocked: e.conntrackBlocked,
 		ConntrackDetail: e.conntrackDetail,
@@ -859,10 +882,17 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 	}
 	// A previous failure remains reportable while we retry. Only the candidate
 	// decision omits it; successful read-back below clears the evidence.
+	closedRecovery := false
 	if e.applyError != nil {
 		in := e.input()
 		in.ApplyError = nil
 		d = Decide(in)
+		if !d.Serve && (leaseGenerationStale(in) || grantsProvisional(in)) {
+			// Verify a deny-all candidate before ACK/renewal. There are no
+			// member grants in this model, so it cannot forward using an old
+			// generation's authorization. All other safety gates still apply.
+			d, closedRecovery = recoveryDecision(in)
+		}
 	}
 	if !d.Serve {
 		e.handoff(ctx)
@@ -893,6 +923,13 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 		return err
 	}
 	defer lock.Release()
+	if !closedRecovery {
+		if err := e.invalidateMeterCheckpoint(); err != nil {
+			e.usagePersist = true
+			e.withdraw(ctx)
+			return err
+		}
+	}
 	e.planeLocked = true
 	defer func() { e.planeLocked = false }()
 	model := d.Model
@@ -916,7 +953,7 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 		pathGen = e.appliedGen // upgrade from the pre-D-100 durable format
 	}
 	var candidate *MemberPath
-	if model.Generation > pathGen {
+	if model.Generation > pathGen && !closedRecovery {
 		path, ok := e.readMemberPath(ctx, model, nil)
 		if ok {
 			candidate = &path
@@ -927,7 +964,21 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 		// Without a valid pre-Apply candidate the old expectation still applies.
 	}
 	wasServing := e.expectServing.Load()
-	res, err := e.plane.Apply(ctx, model, prev)
+	if !closedRecovery && e.meter != nil && e.finalDone {
+		// A closed epoch must be replaced before Apply can admit the first
+		// packet. Keep the sampler paused across this real durable read.
+		e.finalDone = false
+		if err := e.meter.PrepareSampling(ctx); err != nil {
+			e.usagePersist = true
+			e.withdraw(ctx)
+			return err
+		}
+	}
+	timing := &applyReadTiming{now: e.clock.Wall}
+	res, err := e.plane.Apply(context.WithValue(ctx, applyReadKey{}, timing), model, prev)
+	if !timing.at.IsZero() {
+		e.retainServingRead(res.Evidence, model.Generation, timing.at, "apply", res.Verified)
+	}
 	// A verified conntrack failure keeps serving. Only Failed stays pending.
 	// An empty Failed list is a successful delete and resets the bound.
 	var ctErr *enforce.ConntrackDeleteError
@@ -935,6 +986,12 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 	pending := verifiedDelete && len(ctErr.Failed) > 0
 	if res.Quarantine != nil {
 		e.recordApplyQuarantine(res, err)
+	}
+	if res.Verified || res.Evidence.TCSummary.Phase == "verify" {
+		// Apply reached its installed-rules verification. Even a rollback or
+		// later topology rejection must attribute bytes admitted before
+		// withdrawal, including on restart with no in-memory snapshot.
+		e.setMeterBindings(model.Bindings)
 	}
 	if err != nil && !verifiedDelete {
 		e.rejectServing(ctx, model, res.Evidence, err)
@@ -969,12 +1026,14 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 	} else if !e.checkMemberPath(ctx, model) {
 		return nil
 	}
-	e.serving = true
+	e.serving = !closedRecovery
 	e.applyError = nil
-	e.containment = nil
-	e.expectServing.Store(true)
+	e.expectServing.Store(!closedRecovery)
 	e.baselineOK = true
 	e.policyExpires = d.PolicyExpires
+	if closedRecovery {
+		e.policyExpires = 0
+	}
 	e.ackApplied(ctx, model.Generation)
 	if pending {
 		e.conntrackAttempts++
@@ -1026,7 +1085,6 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 	if err := e.store.SaveAddresses(ctx, stored); err != nil {
 		e.storageOK = false
 	}
-	e.setMeterBindings(model.Bindings)
 	post := res.Counters
 	if pending && post == nil {
 		post = prev
@@ -1039,13 +1097,15 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 	} else {
 		e.noteResetsWithoutKernel(prev, res.Resets, post, wasServing)
 	}
-	e.resumeSampling()
-	e.switchEpoch(ctx)
+	if !closedRecovery {
+		e.resumeSampling()
+		e.switchEpoch(ctx)
+	}
 	return nil
 }
 
 func (e *Engine) ackApplied(ctx context.Context, gen uint64) {
-	if e.identityFrozen || gen == 0 || e.desired == nil || !e.desiredOK || e.applyError != nil || e.dependencyMissing {
+	if e.identityFrozen || e.freezeUncertain || gen == 0 || e.desired == nil || !e.desiredOK || e.applyError != nil || e.dependencyMissing {
 		return
 	}
 	if e.appliedGen == gen {

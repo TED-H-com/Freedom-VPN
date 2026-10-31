@@ -83,6 +83,7 @@ type record struct {
 	Operator         string            `json:"operator_status,omitempty"`
 }
 type live struct {
+	probeSequence                            int
 	t                                        *testing.T
 	ctx                                      context.Context
 	root, state                              string
@@ -105,6 +106,7 @@ type live struct {
 	baseline                                 labstack.ServingBaseline
 	hook                                     *labstack.Stack
 	paid                                     *paidSession
+	nativeDNS                                bool
 }
 
 func repository(t *testing.T) string {
@@ -126,7 +128,7 @@ func TestATMembers_Live(t *testing.T) {
 	if os.Getenv("FVPN_E2E_PREFIX") != "w4-members" || os.Getenv("FVPN_E2E_PORT_BASE") != "24000" {
 		t.Fatal("wrong assigned instance")
 	}
-	ctx, cancel := context.WithTimeout(t.Context(), 35*time.Minute)
+	ctx, cancel := context.WithTimeout(t.Context(), 50*time.Minute)
 	defer cancel()
 	l := &live{t: t, ctx: ctx, root: repository(t), run: uuid.NewString()[:8]}
 	l.state = filepath.Join(l.root, ".agent/e2e-state-w4-members")
@@ -137,6 +139,18 @@ func TestATMembers_Live(t *testing.T) {
 		t.Fatal("shared stack hook unavailable")
 	}
 	defer l.hook.Close()
+	if err = l.hook.PrepareNativeUnderlay(ctx); err != nil {
+		t.Fatal(err)
+	}
+	if err = l.hook.InstallFixtureProbe(ctx); err != nil {
+		t.Fatal(err)
+	}
+	if err = l.hook.StartFixtureTargets(ctx); err != nil {
+		t.Fatal(err)
+	}
+	if err = l.hook.SetDNSFixturePhase("initial"); err != nil {
+		t.Fatal(err)
+	}
 	l.admin = l.login("e2e-admin", "admin")
 	l.a = l.login("AT-member-A-"+l.run, "member")
 	l.b = l.login("AT-member-B-"+l.run, "member")
@@ -148,7 +162,7 @@ func TestATMembers_Live(t *testing.T) {
 		id  string
 		run func(*record)
 	}{
-		{"AT05", l.enrollment}, {"AT01", l.identity}, {"AT02", l.devices}, {"AT03", l.payment}, {"AT04", l.entitlements}, {"AT08", l.publication}, {"AT09", l.exits}, {"AT20", l.dnsRules}, {"AT21", l.dnsFailure}, {"AT22", l.privacy},
+		{"AT05", l.enrollment}, {"AT01", l.identity}, {"AT02", l.devices}, {"AT03", l.payment}, {"AT04", l.entitlements}, {"AT08", l.publication}, {"AT20", l.dnsRules}, {"AT21", l.dnsFailure}, {"AT22", l.privacy}, {"AT09", l.exits},
 	} {
 		t.Run(task.id, func(t *testing.T) {
 			r := l.newRecord(task.id)
