@@ -14,15 +14,18 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
-
-	"github.com/TED-H-com/Freedom-VPN/packaging/installer"
-	"github.com/google/uuid"
 )
 
 // InstallerHashes are the files a re-run must keep stable. Absent files are
 // "absent". Current is the readlink text of /opt/vpn-node/current, not a digest.
 type InstallerHashes struct {
-	Key, Cert, NodeJSON, UsageDB, UsageWAL, MachineID, Current string
+	Key       string `json:"key_sha256,omitempty"`
+	Cert      string `json:"cert_sha256,omitempty"`
+	NodeJSON  string `json:"node_json_sha256,omitempty"`
+	UsageDB   string `json:"usage_db_sha256,omitempty"`
+	UsageWAL  string `json:"usage_wal_sha256,omitempty"`
+	MachineID string `json:"machine_id_sha256,omitempty"`
+	Current   string `json:"current_target,omitempty"`
 }
 
 // InstallerOutcome is one fvpn-node-install invocation. Exit follows the
@@ -41,6 +44,9 @@ type InstallerOutcome struct {
 	Message           string
 	Before            InstallerHashes
 	Hashes            InstallerHashes
+	// Services is the state to pass to RestoreInstallerServices after sampling.
+	// It preserves active services from before and from the installer command.
+	Services InstallerServiceState
 }
 
 type installerSpec struct {
@@ -85,20 +91,23 @@ func (s *Stack) PrepareInstallerNode(ctx context.Context) error {
 	// Docker. A real exit does not. Delete it here for the same reason the
 	// node entrypoint does (D-079). inet fvpn belongs to the installer.
 	_ = exec.CommandContext(ctx, "docker", "exec", s.installerContainer(), "nft", "delete", "table", "ip", "nat").Run()
-	bins, err := s.buildInstallerBins(ctx)
+	_, err := s.buildInstallerBins(ctx)
 	if err != nil {
 		return err
 	}
 	base := filepath.Join(s.lab.root, ".agent", "tmp", "e2e-installer-rel")
+	// A new container needs new signed fixtures even after an interrupted setup.
+	if err = os.RemoveAll(base); err != nil {
+		return err
+	}
 	if err = os.MkdirAll(base, 0o755); err != nil {
 		return err
 	}
-	unitDir := filepath.Join(s.lab.root, "deploy", "node", "systemd")
-	older, err := installer.BuildReleaseFixture(filepath.Join(base, "older"), unitDir, uuid.NewString(), "1", bins)
+	older, err := s.BuildInstallerRelease(ctx, filepath.Join(base, "older"), "1.1.0", "10", "TEST-ONLY-installer-older", ReleaseOptions{})
 	if err != nil {
 		return err
 	}
-	newer, err := installer.BuildReleaseFixture(filepath.Join(base, "newer"), unitDir, uuid.NewString(), "2", bins)
+	newer, err := s.BuildInstallerRelease(ctx, filepath.Join(base, "newer"), "1.1.1", "11", "TEST-ONLY-installer-newer", ReleaseOptions{})
 	if err != nil {
 		return err
 	}
@@ -107,12 +116,12 @@ func (s *Stack) PrepareInstallerNode(ctx context.Context) error {
 		return fmt.Errorf("installer dirs: %s", clipText(string(out), 200))
 	}
 	copies := [][2]string{
-		{older.Manifest, c + ":/var/tmp/e2e-rel/older/manifest.json"},
-		{older.Artifact, c + ":/var/tmp/e2e-rel/older/artifact.tar.zst"},
-		{older.Trust, c + ":/var/tmp/e2e-rel/older/trust.json"},
-		{newer.Manifest, c + ":/var/tmp/e2e-rel/newer/manifest.json"},
-		{newer.Artifact, c + ":/var/tmp/e2e-rel/newer/artifact.tar.zst"},
-		{newer.Trust, c + ":/var/tmp/e2e-rel/newer/trust.json"},
+		{filepath.Join(older.Directory, "manifest.json"), c + ":/var/tmp/e2e-rel/older/manifest.json"},
+		{filepath.Join(older.Directory, "amd64.tar.zst"), c + ":/var/tmp/e2e-rel/older/artifact.tar.zst"},
+		{filepath.Join(s.lab.state, "node", "etc", "trust.json"), c + ":/var/tmp/e2e-rel/older/trust.json"},
+		{filepath.Join(newer.Directory, "manifest.json"), c + ":/var/tmp/e2e-rel/newer/manifest.json"},
+		{filepath.Join(newer.Directory, "amd64.tar.zst"), c + ":/var/tmp/e2e-rel/newer/artifact.tar.zst"},
+		{filepath.Join(s.lab.state, "node", "etc", "trust.json"), c + ":/var/tmp/e2e-rel/newer/trust.json"},
 		{filepath.Join(s.lab.state, "ca.pem"), c + ":/var/tmp/e2e-rel/ca.pem"},
 		{filepath.Join(s.lab.state, "node", "etc", "trust.json"), c + ":/var/tmp/e2e-rel/node-trust.json"},
 		{filepath.Join(s.lab.root, ".agent", "tmp", "e2e-installer-bins", "fvpn-node-install"), c + ":/usr/local/bin/fvpn-node-install"},
@@ -167,13 +176,17 @@ func (s *Stack) PrepareInstallerNode(ctx context.Context) error {
 	}) {
 		return fmt.Errorf("installer proxy not ready")
 	}
+	if err = s.prepareInstallerResolver(ctx); err != nil {
+		return err
+	}
 	return s.SelectInstallerRelease(ctx, "older")
 }
 
 // RerunInstaller runs install --json. --token-file is passed only when
 // identity/node.json is absent. The agent is stopped before the hash set so
-// the SQLite WAL is not mid-write.
-func (s *Stack) RerunInstaller(ctx context.Context, slot string) (InstallerOutcome, error) {
+// the SQLite WAL is not mid-write. Call RestoreInstallerServices with the
+// returned Services snapshot after comparing Before/Hashes or reading the CLI.
+func (s *Stack) RerunInstaller(ctx context.Context, slot string) (out InstallerOutcome, err error) {
 	if err := s.requireInstallerSlot(slot); err != nil {
 		return InstallerOutcome{}, err
 	}
@@ -186,6 +199,15 @@ func (s *Stack) RerunInstaller(ctx context.Context, slot string) (InstallerOutco
 	if s.installerAbsent(ctx, "/var/lib/vpn-node/identity/node.json") {
 		args = append(args, "--token-file", spec.TokenFile)
 	}
+	services, err := s.InstallerServices(ctx, slot)
+	if err != nil {
+		return out, err
+	}
+	defer func() {
+		if out.Services == nil {
+			out.Services = services
+		}
+	}()
 	if err := s.stopInstallerAgent(ctx); err != nil {
 		return InstallerOutcome{}, err
 	}
@@ -193,8 +215,11 @@ func (s *Stack) RerunInstaller(ctx context.Context, slot string) (InstallerOutco
 	if err != nil {
 		return InstallerOutcome{}, err
 	}
-	out := s.runInstaller(ctx, args)
+	out = s.runInstaller(ctx, args)
 	out.Before = before
+	if err = s.retainInstallerServices(ctx, &out, services); err != nil {
+		return out, err
+	}
 	if out.Exit < 0 {
 		return out, fmt.Errorf("%s", out.Message)
 	}
@@ -208,7 +233,7 @@ func (s *Stack) RerunInstaller(ctx context.Context, slot string) (InstallerOutco
 
 // ControlledReinstall runs reenroll --json --token-file. enrollment is the
 // token and is not logged. The previous identity moves under identity.retired.
-func (s *Stack) ControlledReinstall(ctx context.Context, slot, enrollment string) (InstallerOutcome, error) {
+func (s *Stack) ControlledReinstall(ctx context.Context, slot, enrollment string) (out InstallerOutcome, err error) {
 	if err := s.requireInstallerSlot(slot); err != nil {
 		return InstallerOutcome{}, err
 	}
@@ -220,6 +245,15 @@ func (s *Stack) ControlledReinstall(ctx context.Context, slot, enrollment string
 		return InstallerOutcome{}, err
 	}
 	enrollment = ""
+	services, err := s.InstallerServices(ctx, slot)
+	if err != nil {
+		return out, err
+	}
+	defer func() {
+		if out.Services == nil {
+			out.Services = services
+		}
+	}()
 	_ = exec.CommandContext(ctx, "docker", "exec", s.installerContainer(), "nft", "delete", "table", "ip", "nat").Run()
 	if err := s.stopInstallerAgent(ctx); err != nil {
 		return InstallerOutcome{}, err
@@ -232,10 +266,13 @@ func (s *Stack) ControlledReinstall(ctx context.Context, slot, enrollment string
 	if err != nil {
 		return InstallerOutcome{}, err
 	}
-	out := s.runInstaller(ctx, []string{"/usr/local/bin/fvpn-node-install", "reenroll", "--json", "--token-file", path})
+	out = s.runInstaller(ctx, []string{"/usr/local/bin/fvpn-node-install", "reenroll", "--json", "--token-file", path})
 	out.Before = before
 	out.BoundStateBefore = bound
 	_ = exec.CommandContext(ctx, "docker", "exec", s.installerContainer(), "rm", "-f", path).Run()
+	if err = s.retainInstallerServices(ctx, &out, services); err != nil {
+		return out, err
+	}
 	if out.Exit < 0 {
 		return out, fmt.Errorf("%s", out.Message)
 	}
@@ -530,7 +567,8 @@ func (s *Stack) installerBoundHashes(ctx context.Context, dir string, retired bo
 		if err != nil {
 			return nil, err
 		}
-		result[name] = digest
+		key := strings.NewReplacer(".", "_", "-", "_").Replace(name) + "_sha256"
+		result[key] = digest
 	}
 	return result, nil
 }

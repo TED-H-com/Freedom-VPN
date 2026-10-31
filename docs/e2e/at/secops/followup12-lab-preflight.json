@@ -1,0 +1,270 @@
+{
+  "namespace": "fvpn-w4-secops",
+  "port_base": 30000,
+  "checks": [
+    {
+      "checked_at": "2026-10-31T06:46:00Z",
+      "time_precision": "minute",
+      "other_gate_suites": 3,
+      "running_fvpn_w_containers": 0,
+      "action": "wait five minutes"
+    },
+    {
+      "checked_at": "2026-10-31T06:51:37Z",
+      "other_gate_suites": 1,
+      "running_fvpn_w_containers": 1,
+      "other_active_lanes": [
+        "w1-netlab"
+      ],
+      "action": "start transports"
+    },
+    {
+      "checked_at": "2026-10-31T06:56:34Z",
+      "other_gate_suites": 1,
+      "running_fvpn_w_containers": 0,
+      "other_active_lanes": [
+        "w4-at-isolation"
+      ],
+      "action": "start transport attempt 2"
+    },
+    {
+      "checked_at": "2026-10-31T07:03:56Z",
+      "other_gate_suites": 2,
+      "running_fvpn_w_containers": 0,
+      "other_active_lanes": [
+        "w4-at-updates",
+        "w4-at-isolation"
+      ],
+      "action": "wait five minutes"
+    },
+    {
+      "checked_at": "2026-10-31T07:09:00Z",
+      "other_gate_suites": 3,
+      "running_fvpn_w_containers": 0,
+      "other_active_lanes": [
+        "w4-at-isolation",
+        "w4-at-enrollment",
+        "w3-devstack-e2e"
+      ],
+      "action": "wait five minutes"
+    },
+    {
+      "checked_at": "2026-10-31T07:14:21Z",
+      "other_gate_suites": 3,
+      "running_fvpn_w_containers": 0,
+      "other_active_lanes": [
+        "w3-devstack-e2e",
+        "w3-wire-policies-usage",
+        "w4-at-updates"
+      ],
+      "action": "wait five minutes"
+    },
+    {
+      "checked_at": "2026-10-31T07:19:27Z",
+      "other_gate_suites": 2,
+      "running_fvpn_w_containers": 0,
+      "other_active_lanes": [
+        "w4-at-updates",
+        "w3-devstack-e2e"
+      ],
+      "action": "wait five minutes"
+    },
+    {
+      "checked_at": "2026-10-31T07:24:36Z",
+      "other_gate_suites": 2,
+      "running_fvpn_w_containers": 0,
+      "other_active_lanes": [
+        "w3-devstack-e2e",
+        "w1-netlab"
+      ],
+      "action": "wait five minutes"
+    },
+    {
+      "checked_at": "2026-10-31T07:30:08Z",
+      "other_gate_suites": 0,
+      "running_fvpn_w_containers": 17,
+      "other_active_lanes": [
+        "w4-enroll"
+      ],
+      "action": "start transport attempt 3"
+    },
+    {
+      "checked_at": "2026-10-31T07:40:31Z",
+      "other_gate_suites": 0,
+      "running_fvpn_w_containers": 15,
+      "other_active_lanes": [
+        "w1-netlab",
+        "w4-members"
+      ],
+      "action": "wait five minutes before restore"
+    },
+    {
+      "checked_at": "2026-10-31T07:45:44Z",
+      "other_gate_suites": 1,
+      "running_fvpn_w_containers": 18,
+      "other_active_lanes": [
+        "w4-at-enrollment",
+        "w4-members"
+      ],
+      "action": "wait five minutes before restore"
+    },
+    {
+      "checked_at": "2026-10-31T07:51:06Z",
+      "other_gate_suites": 2,
+      "running_fvpn_w_containers": 19,
+      "other_active_lanes": [
+        "w3-contracts-r13",
+        "w1-netlab",
+        "w4-members"
+      ],
+      "action": "wait five minutes before restore"
+    },
+    {
+      "checked_at": "2026-10-31T07:56:26Z",
+      "other_gate_suites": 1,
+      "running_fvpn_w_containers": 24,
+      "other_active_lanes": [
+        "w1-netlab",
+        "w4-members"
+      ],
+      "action": "wait five minutes before restore"
+    },
+    {
+      "checked_at": "2026-10-31T08:01:41Z",
+      "other_gate_suites": 1,
+      "running_fvpn_w_containers": 26,
+      "other_active_lanes": [
+        "w2-agent-core",
+        "w4-members"
+      ],
+      "unattributed_gate_suite": "followup17/gates.sh",
+      "action": "wait five minutes before restore"
+    },
+    {
+      "checked_at": "2026-10-31T08:07:06Z",
+      "other_gate_suites": 1,
+      "running_fvpn_w_containers": 27,
+      "other_active_lanes": [
+        "w3-wire-nodes",
+        "w4-members"
+      ],
+      "action": "wait five minutes before restore"
+    },
+    {
+      "checked_at": "2026-10-31T08:11:52Z",
+      "other_gate_suites": 1,
+      "running_fvpn_w_containers": 27,
+      "other_active_lanes": [
+        "w4-members"
+      ],
+      "unattributed_gate_suite": "followup17/gates.sh",
+      "action": "wait five minutes before restore; conservative unknown suite ownership"
+    },
+    {
+      "checked_at": "2026-10-31T08:17:12Z",
+      "other_gate_suites": 1,
+      "running_fvpn_w_containers": 28,
+      "other_active_lanes": [
+        "w4-members"
+      ],
+      "unattributed_gate_suite": "followup17/gates.sh",
+      "action": "wait five minutes before restore; conservative unknown suite ownership"
+    },
+    {
+      "checked_at": "2026-10-31T08:22:27Z",
+      "other_gate_suites": 1,
+      "running_fvpn_w_containers": 19,
+      "other_active_lanes": [
+        "w4-handover",
+        "w2-agent-core",
+        "w4-members"
+      ],
+      "action": "wait five minutes before restore"
+    },
+    {
+      "checked_at": "2026-10-31T08:27:54Z",
+      "other_gate_suites": 4,
+      "running_fvpn_w_containers": 0,
+      "other_active_lanes": [
+        "w3-portal-live",
+        "w3-devstack-e2e",
+        "w2-control",
+        "w2-fleet-update"
+      ],
+      "action": "wait five minutes before restore"
+    },
+    {
+      "checked_at": "2026-10-31T08:32:55Z",
+      "other_gate_suites": 3,
+      "running_fvpn_w_containers": 1,
+      "other_active_lanes": [
+        "w3-devstack-e2e",
+        "w2-fleet-update",
+        "w2-control",
+        "w1-netlab"
+      ],
+      "action": "wait five minutes before restore"
+    },
+    {
+      "checked_at": "2026-10-31T08:38:16Z",
+      "other_gate_suites": 1,
+      "running_fvpn_w_containers": 14,
+      "other_active_lanes": [
+        "w2-fleet-update",
+        "w4-members"
+      ],
+      "action": "wait five minutes before restore"
+    },
+    {
+      "checked_at": "2026-10-31T08:43:17Z",
+      "other_gate_suites": 1,
+      "running_fvpn_w_containers": 19,
+      "other_active_lanes": [
+        "w1-netlab",
+        "w4-members"
+      ],
+      "action": "wait five minutes before restore"
+    },
+    {
+      "checked_at": "2026-10-31T08:48:27Z",
+      "other_gate_suites": 0,
+      "running_fvpn_w_containers": 31,
+      "other_active_lanes": [
+        "w4-enroll",
+        "w4-members"
+      ],
+      "action": "wait five minutes before restore"
+    },
+    {
+      "checked_at": "2026-10-31T08:53:43Z",
+      "other_gate_suites": 2,
+      "running_fvpn_w_containers": 36,
+      "other_active_lanes": [
+        "w2-usage-central",
+        "w3-wire-members",
+        "w4-enroll",
+        "w4-members"
+      ],
+      "action": "wait five minutes before restore"
+    },
+    {
+      "checked_at": "2026-10-31T08:58:57Z",
+      "other_gate_suites": 0,
+      "running_fvpn_w_containers": 20,
+      "other_active_lanes": [
+        "w2-agent-core",
+        "w4-members"
+      ],
+      "action": "wait five minutes before restore"
+    },
+    {
+      "checked_at": "2026-10-31T09:04:09Z",
+      "other_gate_suites": 0,
+      "running_fvpn_w_containers": 24,
+      "other_active_lanes": [
+        "w4-members"
+      ],
+      "action": "start restore"
+    }
+  ]
+}

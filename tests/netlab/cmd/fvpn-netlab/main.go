@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/node/enforce"
+	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 )
 
 func main() {
@@ -26,6 +27,8 @@ func main() {
 	}
 	var err error
 	switch os.Args[1] {
+	case "agent-trace":
+		err = agentTraceCmd(os.Args[2:])
 	case "apply":
 		err = applyCmd(os.Args[2:])
 	case "baseline":
@@ -60,13 +63,15 @@ func main() {
 }
 
 func usage() {
-	fmt.Fprintf(os.Stderr, "usage: fvpn-netlab apply|baseline|quarantine|verify|counters|hold|render|meter-path|inject\n")
+	fmt.Fprintf(os.Stderr, "usage: fvpn-netlab agent-trace|apply|baseline|quarantine|verify|counters|hold|render|meter-path|inject\n")
 }
 
 func applyCmd(args []string) error {
 	fs := flag.NewFlagSet("apply", flag.ContinueOnError)
 	path := fs.String("f", "-", "model JSON path or - for stdin")
 	prevPath := fs.String("prev", "", "optional previous counter JSON (§10.7)")
+	tracePath := fs.String("trace", "", "TEST ONLY: append Apply/guard command brackets as JSONL")
+	deadlineWindow := fs.Duration("deadline-window", 0, "TEST ONLY: map member deadline onto CLOCK_MONOTONIC immediately before Apply")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
@@ -78,8 +83,29 @@ func applyCmd(args []string) error {
 	if err != nil {
 		return err
 	}
-	res, err := enforce.Apply(context.Background(), enforce.System{}, m, prev)
-	if printErr := writeResult(os.Stdout, m.Generation, res); printErr != nil && err == nil {
+	if *deadlineWindow > 0 {
+		m.Now = time.Now().UTC()
+		m.NowMono, err = enforce.MonotonicNow()
+		if err != nil {
+			return err
+		}
+		deadline := m.NowMono + *deadlineWindow
+		for i := range m.Leases {
+			m.Leases[i].DeadlineMono = &deadline
+		}
+	}
+	var res enforce.ApplyResult
+	if *tracePath != "" {
+		f, openErr := os.OpenFile(*tracePath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o600)
+		if openErr != nil {
+			return openErr
+		}
+		defer f.Close()
+		res, err = tracedApply(context.Background(), m, prev, f)
+	} else {
+		res, err = enforce.Apply(context.Background(), enforce.System{}, m, prev)
+	}
+	if printErr := writeResult(os.Stdout, m, res); printErr != nil && err == nil {
 		return printErr
 	}
 	return err
@@ -142,7 +168,11 @@ func verifyCmd(args []string) error {
 		return err
 	}
 	evidence, err := enforce.VerifyServing(ctx, enforce.System{}, m, plan.Assignments)
-	if printErr := json.NewEncoder(os.Stdout).Encode(evidence); err == nil {
+	doc := struct {
+		enforce.ServingEvidence
+		TCEvidence *api.TCReadbackEvidence `json:"tc_evidence"`
+	}{evidence, evidence.TCReadbackEvidence()}
+	if printErr := json.NewEncoder(os.Stdout).Encode(doc); err == nil {
 		return printErr
 	}
 	return err
@@ -192,10 +222,10 @@ func holdCmd(args []string) error {
 	}
 	res, err := enforce.Apply(context.Background(), enforce.System{}, m, nil)
 	if err != nil {
-		_ = writeResult(os.Stdout, m.Generation, res)
+		_ = writeResult(os.Stdout, m, res)
 		return err
 	}
-	if err := writeResult(os.Stdout, m.Generation, res); err != nil {
+	if err := writeResult(os.Stdout, m, res); err != nil {
 		return err
 	}
 	if err := os.WriteFile(*ready, []byte("ok\n"), 0o644); err != nil {
@@ -289,14 +319,17 @@ func loadModel(path string) (enforce.Model, error) {
 	return m, nil
 }
 
-func writeResult(w io.Writer, generation uint64, res enforce.ApplyResult) error {
+func writeResult(w io.Writer, m enforce.Model, res enforce.ApplyResult) error {
 	assign := map[string]string{}
 	for id, minor := range res.Plan.Assignments {
 		assign[id.String()] = fmt.Sprintf("%x", minor)
 	}
 	doc := struct {
+		Leases      []enforce.MemberLease       `json:"leases"`
+		Deadline    enforce.DeadlineEvidence    `json:"deadline"`
 		Verified    bool                        `json:"verified"`
 		Evidence    enforce.ServingEvidence     `json:"evidence"`
+		TCEvidence  *api.TCReadbackEvidence     `json:"tc_evidence"`
 		Quarantine  *enforce.QuarantineEvidence `json:"quarantine,omitempty"`
 		Generation  uint64                      `json:"generation"`
 		Admitted    int                         `json:"admitted"`
@@ -305,10 +338,13 @@ func writeResult(w io.Writer, generation uint64, res enforce.ApplyResult) error 
 		Samples     []enforce.Sample            `json:"samples"`
 		Assignments map[string]string           `json:"assignments"`
 	}{
+		Leases:      m.Leases,
+		Deadline:    res.Deadline,
 		Verified:    res.Verified,
 		Evidence:    res.Evidence,
+		TCEvidence:  res.Evidence.TCReadbackEvidence(),
 		Quarantine:  res.Quarantine,
-		Generation:  generation,
+		Generation:  m.Generation,
 		Admitted:    res.Plan.Admitted,
 		Resets:      res.Resets,
 		Finals:      res.Plan.Finals,

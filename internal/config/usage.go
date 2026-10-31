@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"os"
 	"strings"
+	"time"
 )
 
 // UsageConfig holds explicit bounded configuration for the usage ledger, checkpoint/epoch
@@ -19,13 +20,20 @@ type UsageConfig struct {
 	RollupRetentionMonths int    `json:"rollup_retention_months"`
 	AuditRetentionDays    int    `json:"audit_retention_days"`
 	ProjectionBatchSize   int    `json:"projection_batch_size"`
+	// Nil omits the D-112/D-115 setting and selects the 10-second default.
+	// A pointer distinguishes omission from an explicitly invalid zero value.
+	SamplingIntervalBoundSeconds *int `json:"sampling_interval_bound_seconds,omitempty"`
 }
 
+const defaultUsageSamplingIntervalBoundSeconds = 10
+
 // LoadUsage loads a strict JSON configuration file and validates all fields.
-// No environment variables or compiled defaults are used; missing or invalid files/fields
-// return a SettingError naming the offending setting.
+// The optional sampling interval bound defaults to 10 seconds (D-112/D-115).
+// Explicit zero, negative and null values are invalid. Other settings remain
+// required; missing or invalid files/fields return a SettingError.
 func LoadUsage(path string) (UsageConfig, error) {
-	var c UsageConfig
+	bound := defaultUsageSamplingIntervalBoundSeconds
+	c := UsageConfig{SamplingIntervalBoundSeconds: &bound}
 	if strings.TrimSpace(path) == "" {
 		return UsageConfig{}, &SettingError{Name: "usage_config_file", Err: errors.New("usage configuration file required")}
 	}
@@ -42,6 +50,9 @@ func LoadUsage(path string) (UsageConfig, error) {
 	var extra any
 	if d.Decode(&extra) != io.EOF {
 		return UsageConfig{}, &SettingError{Name: "usage_config_file", Err: errors.New("trailing usage configuration data")}
+	}
+	if c.SamplingIntervalBoundSeconds == nil {
+		return UsageConfig{}, &SettingError{Name: "sampling_interval_bound_seconds", Err: errors.New("sampling interval bound must not be null")}
 	}
 	return c, c.Validate()
 }
@@ -91,11 +102,21 @@ func (c UsageConfig) Validate() error {
 	if c.ProjectionBatchSize <= 0 || c.ProjectionBatchSize > 10000 {
 		return &SettingError{Name: "projection_batch_size", Err: errors.New("invalid positive bound: projection_batch_size")}
 	}
+	if c.SamplingIntervalBoundSeconds != nil {
+		seconds := *c.SamplingIntervalBoundSeconds
+		if seconds <= 0 || int64(seconds) > int64((1<<63-1)/time.Second) {
+			return &SettingError{Name: "sampling_interval_bound_seconds", Err: errors.New("sampling interval bound must be positive and fit a duration")}
+		}
+	}
 	return nil
 }
 
 // Effective never includes secret file paths.
 func (c UsageConfig) Effective() map[string]any {
+	if c.SamplingIntervalBoundSeconds == nil {
+		bound := defaultUsageSamplingIntervalBoundSeconds
+		c.SamplingIntervalBoundSeconds = &bound
+	}
 	b, _ := json.Marshal(c)
 	var m map[string]any
 	_ = json.Unmarshal(b, &m)

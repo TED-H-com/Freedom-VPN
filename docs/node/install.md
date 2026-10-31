@@ -44,10 +44,10 @@ Order:
 5. If `netbird` is absent, install `netbird=0.82.0` from `https://pkgs.netbird.io/debian` (`stable`, signed by that repository's public key) and record the package. If a different version is already installed, refuse with `NETBIRD_VERSION`. The upstream `install.sh` is not run.
 6. Take `/var/lib/vpn-node/update.lock` (LOCK_EX|LOCK_NB). A held lock exits 3 `busy` and changes nothing further (§13.5).
 7. Create the directories below, extract the archive to `/opt/vpn-node/releases/<release_id>`, point `current` at `releases/<release_id>`, install the units, and write config.
-8. Create `inet` table `fvpn` only when it is absent: an owner chain (comment `managed-by=fvpn-node-install`, no hook) and a `forward` chain with policy drop (AT13). Create an empty netns named `fvpn`. Create dummy links `fvmb0` and `fvup0` only when those names are absent. No addresses and no routes are added.
+8. Create `inet fvpn_install` with exactly one empty regular chain `owner` (comment `managed-by=fvpn-node-install`, no hook). The agent/watchdog alone render `inet fvpn`, including its fail-closed baseline (AT13). Create an empty netns named `fvpn`. Create dummy links `fvmb0` and `fvup0` only when those names are absent. No addresses and no routes are added.
 9. Run `fvpn-agent enroll` when `/var/lib/vpn-node/identity/node.json` is absent.
 10. Release the lock, then start units in this order: `fvpn-updater-recover`, `fvpn-watchdog`, `fvpn-agent`, `fvpn-netbird`, `fvpn-node-netbird-up`, `fvpn-updater.timer`.
-11. Probe the installed release's `fvpn-updater seed --help` and record its exit code and stderr. When available, run `seed --config /etc/vpn-node/updater.json --manifest <retained envelope> --tree <current release tree>`; the updater re-verifies the baseline and writes current = last-good itself.
+11. Probe the installed release's `fvpn-updater seed --help` and record its exit code and stderr. When available, run `seed --config /etc/vpn-node/updater.json --manifest <retained envelope> --tree <current release tree>`; the updater re-verifies the baseline and records the verified current baseline itself; seed alone does not advance last-good or prove health.
 
 `host_reserve_bps` is required and has no default (待實測, §8). `--snat` is a non-loopback IPv4 address. Member and uplink names must match `^fv[a-z0-9_-]{1,13}$` and must differ. Defaults are `fvmb0` and `fvup0`.
 
@@ -57,15 +57,23 @@ The empty netns `fvpn` is a name reservation. `node/enforce` programs table `ine
 
 ### Re-run (§6.3, AT07)
 
-A second `install` of the same `release_id` and the same manifest digest, with matching units, directory modes, and `agent.json`, prints `already_current` and exits 0. It does not restart units or change identity or `usage.db`. It repeats the baseline probe/seed; the updater must treat the same verified baseline as idempotent and refuse a journal with different content.
+A second `install` of the same `release_id` and the same manifest digest, with matching units, directory modes, and `agent.json`, prints `already_current` and exits 0. It does not restart units or change identity or `usage.db`. It reconciles the hookless installer marker and removes the legacy empty `inet fvpn owner` chain, then repeats the baseline probe/seed; the updater must treat the same verified baseline as idempotent and refuse a journal with different content.
 
 The same `release_id` with a different manifest digest is `IMMUTABLE` (exit 1). An equal or lower `release_sequence` with a different id is `DOWNGRADE` (exit 1). A higher sequence replaces binaries and units, moves `current`, and does not enroll again. A same-release run that finds a missing unit or a drifted directory mode prints `repaired`, restores those files and modes, and leaves identity bytes in place.
+
+### Ownership marker migration (D-116)
+
+`inet fvpn` belongs to `node/enforce`; its exact chain set is `forward`, `input`, `output`, and `postrouting`. The installer adds no objects there. The separate `inet fvpn_install` table contains only the empty, hookless `owner` chain. A regular chain outside `inet fvpn` does not intercept packets and is tolerated by the strict foreign-chain verifier.
+
+`install`, including `already_current`, and `upgrade` create the marker if absent and migrate follow-up 3 installations under the shared update lock. Migration deletes only the empty regular `inet fvpn owner` chain with the exact installer comment. An unexpected hook, comment, rule, or extra object in the marker table is refused with `NFT_MARKER`; the installer does not flush or repair unfamiliar objects. Subsequent runs keep the same single marker and leave all rendered rules intact. Migration is forward-only: rollback never recreates the incompatible fifth chain. Old journal records naming `inet fvpn` no longer authorize deleting that table.
+
+The marker is runtime ownership evidence, not a forwarding gate. Reboot clears kernel nft state; `check` reports an absent marker without classifying that alone as drift, and the next install/rerun or upgrade recreates it. The agent/watchdog recreate their own baseline independently. See [follow-up 4 evidence and devstack rerun instructions](install-followup4-2026-10-31.md).
 
 ## check
 
 `check` is read-only. It does not take the lock. `--json` prints one JSON object; without it, the same fields are text. Exit 0 is `healthy`. Exit 2 is `drifted`, with a single line and no stack trace.
 
-It reports OS and arch, the current `release_id` and its manifest digest when available, unit states, directory modes, the lock holder when the recorded pid is alive, whether identity exists and which incarnation `node.json` carries, whether `usage.db` exists (never its contents), the NetBird client version and whether `netbird status` contains `Management: Connected`, the pending record (including `manifest_path` and `request_id`), the recorded baseline result and probe exit code/stderr, and the drift list. The baseline result records the last installer attempt, not a fresh journal health check.
+It reports OS and arch, the current `release_id` and its manifest digest when available, unit states, directory modes, the lock holder when the recorded pid is alive, whether identity exists and which incarnation `node.json` carries, whether `usage.db` exists (never its contents), the NetBird client version and whether `netbird status` contains `Management: Connected`, the pending record (including `manifest_path` and `request_id`), the recorded baseline result and probe exit code/stderr, the marker table name/presence and legacy-owner presence (`installer_marker`), and the drift list. A legacy or malformed marker is drift. The baseline result records the last installer attempt, not a fresh journal health check.
 
 `installed.json` is the install-time record, exposed as `install_record`. When a journal exists, `check` invokes the installed updater's read-only `status --journal` snapshot and uses `current_release_id` to check the live symlink and unit templates (`release_source: updater_journal`). A successful updater switch does not rewrite installation history or cause a false `current` mismatch. `manifest_sha256` is omitted when status cannot supply the current digest; the old digest remains only in `install_record`. Missing or unreadable seeded journals, invalid current IDs, a recovery-required latch, and an actual pointer mismatch remain drift. A pre-seed legacy install falls back to `installed.json`. A check during an update may observe temporary drift; retry after the updater's terminal result.
 
@@ -93,9 +101,16 @@ Initial install also retains the verified archive as `update-staging/<artifact-s
 
 Installer-sourced results are supported centrally. Local `status` still does not prove central acceptance. The systemd suite's full upgrade currently reaches verification and then fails closed at `final_sample`: the generated configuration names `state/meter.checkpoint`, but the product agent does not produce that file. The updater leaves the previous current release in place. See the [dated follow-up evidence](install-followup3-2026-10-31.md) before treating this path as accepted.
 
+### Temporary updater contract (retire after follow-up 15 / agent-core follow-up 24)
+
+- **F9-02 — pending updater follow-up 15:** the packaged installer CLI sets `umask 077` before extraction and `fvpn-updater seed`; child processes inherit it. Packaged updater and recovery units also set `UMask=0077`. Standalone seed must match until extraction/tree comparison becomes independent of the caller's umask. Run `(umask 077; /opt/vpn-node/current/fvpn-updater seed --config /etc/vpn-node/updater.json --manifest <retained-envelope> --tree <current-release-tree>)`. Do not bypass a `HASH_MISMATCH` or change tree modes to suppress verification.
+- **F9-03 — pending updater follow-up 15:** both `fvpn-updater.service` (`run`) and `fvpn-updater-recover.service` (`recover`) treat numeric exits **0 and 2** as systemd success; other nonzero exits fail the oneshot. The timer starts the same updater service and defines no separate exit-code policy. Recovery exit 2 keeps members blocked. A first `apply` can currently exit 0 while sealing a failed job, and a later `run` returns 2. Successful process/service exit is therefore not update success. `check --json` exposes the updater's terminal `updater.state` (for example `failed`) and `recovery_required`; text check prints the same state. Check can remain `healthy` for a failed attempt that preserved a consistent current release. For the sealed result's `outcome`, error code/stage and health fields, inspect `fvpn-updater status --config /etc/vpn-node/updater.json`.
+- **F9-03 meter barrier — pending agent-core follow-up 24:** generated configuration names `/var/lib/vpn-node/state/meter.checkpoint`; the current packaged agent does not supply it. The genuine full upgrade fails at `final_sample` with `CHECKPOINT_FAILED`, leaving current unchanged. Do not fabricate a checkpoint or passing health result. Follow-up 5 reruns the full journaled upgrade after this and updater follow-up 15 reach main.
+- **F9-05 — pending updater follow-up 15:** `upgrade` can currently accept a lower sequence and return `staged`; this describes staging only. The `install` command's sequence refusal does not establish the same protection in `upgrade`. Select a strictly newer signed release and inspect the updater result until the owner fix lands.
+
 ## remove
 
-`remove` stops and disables the units, deletes the unit files, and deletes only the nft table, netns, and dummy links listed in `/var/lib/vpn-node/install/owned.json`. A table this installer did not create is left in place, including a pre-existing `inet fvpn`.
+`remove` stops and disables the units, deletes the unit files, removes the exact hookless `inet fvpn_install` marker after read-back validation, and deletes the netns and dummy links listed in `/var/lib/vpn-node/install/owned.json`. Both remove and purge leave `inet fvpn` to the agent; neither deletes its table or chains. Legacy `created_table` ownership records do not authorize deleting the agent's table. Unexpected contents in `fvpn_install` cause refusal instead of deletion.
 
 Without `--purge`, identity, `usage.db`, and `/var/lib/vpn-node/update-journal` stay. The message says they were kept. `--purge` deletes those trees and says `purge:`. Retired identity under `identity.retired/` is removed only with `--purge`.
 
@@ -153,7 +168,7 @@ Templates are `deploy/node/systemd/`. They are ordered after `network-online.tar
 
 The updater uses `/proc/sys/kernel/random/boot_id` first; optional `boot_id` in `updater.json` is only a fallback if the kernel value is unavailable or invalid. New installer configurations omit it. Neither updater unit rewrites configuration or grants write access to `/etc/vpn-node`. The obsolete `refresh-boot-id` subcommand was removed; `check` does not need it.
 
-ENR-06: NetBird serves `unix:///run/fvpn-netbird/netbird.sock`, inside its own `RuntimeDirectory=fvpn-netbird` with mode 0700. The daemon working directory is its already writable `/var/lib/netbird`, so relative update-result cleanup does not target `/`. Only `fvpn-netbird.service` creates/removes that directory; a stop or restart removes the old socket and the next start creates it again. This grants write access to one daemon-owned directory instead of broadening `/run` access. Installer `netbird-up` and `check` pass `--daemon-addr`; the agent unit sets `NB_DAEMON_ADDR` for its live `netbird status --json` probe. Manual diagnostics use:
+ENR-06: NetBird serves `unix:///run/fvpn-netbird/netbird.sock`, inside its own `RuntimeDirectory=fvpn-netbird` with mode 0700. The daemon working directory is its already writable `/var/lib/netbird`, so relative update-result cleanup does not target `/`. Only `fvpn-netbird.service` creates/removes that directory; a stop or restart removes the old socket and the next start creates it again. This grants write access to one daemon-owned directory instead of broadening `/run` access. Installer `netbird-up` and `check` pass `--daemon-addr`; the agent unit sets `NB_DAEMON_ADDR` for its live `netbird status --json` probe. Follow-up 4 confirmed that this #279 layout covers the exact F9-01 read-only socket failure in the privileged container suite; see the [dated confirmation](install-followup4-2026-10-31.md#f9-01-confirmation). Manual diagnostics use:
 
 ```sh
 netbird status --daemon-addr unix:///run/fvpn-netbird/netbird.sock
@@ -169,7 +184,7 @@ The watchdog is a separate service. Stopping or crashing the agent does not stop
 
 | Exit | Name | When |
 |---|---|---|
-| 0 | ok | `installed`, `already_current`, `repaired`, `healthy`, `staged` when the updater run itself succeeded, `removed`, `reenrolled`, `prepared`, `enrolled` |
+| 0 | ok | `installed`, `already_current`, `repaired`, `healthy`, `staged` when the updater service start was accepted, `removed`, `reenrolled`, `prepared`, `enrolled` |
 | 1 | failed | rollback, enrollment failure, `DOWNGRADE`, `IMMUTABLE`, `identity_present`, `updater_failed` |
 | 2 | drifted | `check` found drift |
 | 3 | busy | `/var/lib/vpn-node/update.lock` is held |
@@ -177,14 +192,14 @@ The watchdog is a separate service. Stopping or crashing the agent does not stop
 | 5 | dependency | `DEPENDENCY_UNAVAILABLE` or `NETBIRD_VERSION` |
 | 64 | usage | flags, a token on argv, a token file that is not mode 0600 |
 
-`upgrade` can print status `staged` and still exit 1 when `fvpn-updater run` fails. The JSON status is the staging result. The exit status is the updater result.
+`upgrade` can print status `staged` and still exit 1 when `fvpn-updater run` fails. The JSON status is the staging result. The exit status reflects service-start acceptance, including the unit’s accepted exit 2; inspect the journal for the sealed apply result.
 
 ## Host-safety checks (§6.3)
 
 These sentences are what a test or an operator can check.
 
 - The installer never runs `nft flush ruleset`.
-- It adds `inet fvpn` only when `nft list table inet fvpn` fails, and it deletes that table only when `owned.json` says this installer created it.
+- It creates only the hookless `inet fvpn_install` marker. Its sole mutation inside `inet fvpn` is deleting the exact empty legacy installer `owner` chain during migration; remove, purge and rollback preserve that table.
 - It never deletes an nft table it did not create. A foreign table survives install, rollback, and remove.
 - It never adds or replaces the host default route.
 - It never writes `/etc/resolv.conf` and never restarts systemd-resolved.

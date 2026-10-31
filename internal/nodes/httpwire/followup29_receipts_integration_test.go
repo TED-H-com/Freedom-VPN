@@ -13,6 +13,7 @@ import (
 
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/fleetupdate"
+	"github.com/TED-H-com/Freedom-VPN/internal/installerjob"
 	"github.com/TED-H-com/Freedom-VPN/internal/releases"
 	"github.com/TED-H-com/Freedom-VPN/internal/releases/releasetest"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
@@ -83,6 +84,7 @@ func TestD089_HTTPInstallerResultKeyedReplay(t *testing.T) {
 	if err = f.r.Pool.QueryRow(t.Context(), `SELECT encode(manifest_hash,'hex') FROM releases WHERE id=$1`, rf.Manifest.ReleaseId).Scan(&body.ManifestSha256); err != nil {
 		t.Fatal(err)
 	}
+	body.JobId = installerjob.ID(body.RequestedReleaseId, body.ManifestSha256, body.IncarnationId)
 	hash := func(body api.UpdateResult) api.UpdateResult {
 		t.Helper()
 		raw, err := json.Marshal(body)

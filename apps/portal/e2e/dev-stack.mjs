@@ -29,6 +29,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import pg from 'pg';
 import { createServingLeaseSession } from './serving-lease.mjs';
+import { createAppliedStateFixture } from './applied-state.mjs';
+import { publicationGateDiagnostics as pendingPublicationGates } from './publication-diagnostics.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -1068,11 +1070,13 @@ async function httpsRequest(urlStr, options = {}) {
         const chunks = [];
         res.on('data', (c) => chunks.push(c));
         res.on('end', () => {
-          const text = Buffer.concat(chunks).toString('utf8');
+          const bytes = Buffer.concat(chunks);
+          const text = bytes.toString('utf8');
           resolve({
             status: res.statusCode || 0,
             headers: res.headers,
             text,
+            bytes,
           });
         });
       },
@@ -1323,15 +1327,29 @@ async function enrollLiveNode(
       .digest('hex');
   }
 
-  async function submitObservation(fallbackGen = '1') {
+  const appliedState = createAppliedStateFixture({
+    fetchResolverDocument: async (documentId) => {
+      const res = await httpsRequest(
+        `${agentBaseUrl}/api/v1/agent/resolver-documents/${documentId}`,
+        { ca: caPem, cert: clientCertPem, key: nodeKeyPem },
+      );
+      if (res.status !== 200) {
+        throw new Error(`GET agent resolver document failed (${res.status})`);
+      }
+      return res.bytes;
+    },
+  });
+
+  async function submitObservation() {
     const desiredEnvelope = await fetchDesiredState();
-    const desired = desiredEnvelope?.signed ?? null;
-    await servingLease.ensure(desired);
-    const appliedGen = String(desired?.config_generation ?? fallbackGen);
+    const { desired: applied, dnsEvidence } = await appliedState.apply(
+      desiredEnvelope.signed,
+    );
+    await servingLease.ensure(applied);
     const nowMs = Math.max(Date.now(), lastObservedMs + 1);
     lastObservedMs = nowMs;
     const nowIso = new Date(nowMs).toISOString();
-    const leaseEvidence = servingLease.evidence(desired, nowIso);
+    const leaseEvidence = servingLease.evidence(applied, nowIso);
     const obsBody = {
       report_id: crypto.randomUUID(),
       node_id: nodeId,
@@ -1341,15 +1359,13 @@ async function enrollLiveNode(
       agent_version: '1.1.0',
       current_release_id: currentReleaseId,
       last_good_release_id: lastGoodReleaseId,
-      applied_config_generation: appliedGen,
+      applied_config_generation: applied.config_generation,
       applied_policy_refs: {
-        authorization_generation: String(
-          desired?.policy_refs?.authorization_generation ?? '1',
-        ),
-        fup_generation: String(desired?.policy_refs?.fup_generation ?? '1'),
-        dns_generation: String(desired?.policy_refs?.dns_generation ?? '1'),
+        authorization_generation: applied.policy_refs.authorization_generation,
+        fup_generation: applied.policy_refs.fup_generation,
+        dns_generation: applied.policy_refs.dns_generation,
       },
-      applied_binding_revision: String(desired?.binding_revision ?? '1'),
+      applied_binding_revision: applied.binding_revision,
       provisioning_state: 'ready',
       safety_status: 'passed',
       data_health: 'healthy',
@@ -1401,30 +1417,7 @@ async function enrollLiveNode(
         ...leaseEvidence.checks,
       ],
       errors: leaseEvidence.errors,
-      dns_policy_evidence: {
-        document_id:
-          desired?.dns?.resolver_document?.document_id ??
-          '01900000-0000-7000-8000-000000000056',
-        content_sha256:
-          desired?.dns?.resolver_document?.content_sha256 ??
-          '2bed2c3a6225090d221f86c8d597c2782a44149ad9bafa7f02783c4cbaf5f20d',
-        generation: String(
-          desired?.dns?.resolver_document?.generation ??
-            desired?.policy_refs?.dns_generation ??
-            '1',
-        ),
-        outcome: 'applied',
-        applied_at: nowIso,
-        feeds: [
-          {
-            feed_code: 'malware-domains-default',
-            content_sha256:
-              '7777777777777777777777777777777777777777777777777777777777777777',
-            rule_count: 1420,
-          },
-        ],
-        error_code: null,
-      },
+      dns_policy_evidence: dnsEvidence,
     };
     for (let attempt = 1; attempt <= 6; attempt += 1) {
       const attemptBody =
@@ -1612,8 +1605,9 @@ async function enrollLiveNode(
     clientCertPem,
     nodeKeyPem,
     submitObservation,
+    applyDesiredState: appliedState.apply,
     leaseRenewalDue: servingLease.renewalDue,
-    renewLease: async () => servingLease.ensure((await fetchDesiredState()).signed),
+    renewLease: async () => servingLease.ensure(appliedState.read().desired),
     fetchDesiredState,
     submitUpdateResult,
     submitRolledBackUpdateResult,
@@ -1881,7 +1875,7 @@ async function pollLiveNodeOnline(pool, liveNode, label = 'liveNodeOnline') {
       `SELECT
          desired_config_generation::text AS desired_config_generation,
          applied_config_generation::text AS applied_config_generation,
-         greatest(desired_config_generation, 1)::text AS target_gen,
+         desired_config_generation::text AS target_gen,
          provisioning_state,
          safety_status,
          control_status,
@@ -1908,7 +1902,7 @@ async function pollLiveNodeOnline(pool, liveNode, label = 'liveNodeOnline') {
     ) {
       return lastRow;
     }
-    const targetGen = lastRow?.target_gen || '1';
+    const targetGen = lastRow?.target_gen ?? null;
     const now = Date.now();
     if (
       !lastRow?.gen_caught_up ||
@@ -1916,7 +1910,7 @@ async function pollLiveNodeOnline(pool, liveNode, label = 'liveNodeOnline') {
       liveNode.leaseRenewalDue() ||
       (!lastRow?.has_pending_observe && now - lastSubmittedAt >= 1000)
     ) {
-      await liveNode.submitObservation(targetGen);
+      await liveNode.submitObservation();
       lastSubmittedGen = targetGen;
       lastSubmittedAt = Date.now();
     }
@@ -1942,7 +1936,7 @@ async function pollLiveNodeReady(
       `SELECT
          desired_config_generation::text AS desired_config_generation,
          applied_config_generation::text AS applied_config_generation,
-         greatest(desired_config_generation, 1)::text AS target_gen,
+         desired_config_generation::text AS target_gen,
          provisioning_state,
          safety_status,
          control_status,
@@ -1973,7 +1967,7 @@ async function pollLiveNodeReady(
     ) {
       return lastRow;
     }
-    const targetGen = lastRow?.target_gen || '1';
+    const targetGen = lastRow?.target_gen ?? null;
     const now = Date.now();
     if (
       !lastRow?.gen_caught_up ||
@@ -1983,7 +1977,7 @@ async function pollLiveNodeReady(
       liveNode.leaseRenewalDue() ||
       (!lastRow?.has_pending_observe && now - lastSubmittedAt >= 1000)
     ) {
-      await liveNode.submitObservation(targetGen);
+      await liveNode.submitObservation();
       lastSubmittedGen = targetGen;
       lastSubmittedAt = Date.now();
     }
@@ -2070,7 +2064,7 @@ async function publishLiveNodeExitViaApi(
       `SELECT
          n.desired_config_generation::text AS desired_config_generation,
          n.applied_config_generation::text AS applied_config_generation,
-         greatest(n.desired_config_generation, 1)::text AS target_gen,
+         n.desired_config_generation::text AS target_gen,
          (n.applied_config_generation >= n.desired_config_generation) AS gen_caught_up,
          e.publication_intent,
          e.publication_observed,
@@ -2095,7 +2089,7 @@ async function publishLiveNodeExitViaApi(
     ) {
       return lastRow;
     }
-    const targetGen = lastRow?.target_gen || '1';
+    const targetGen = lastRow?.target_gen ?? null;
     const now = Date.now();
     if (
       !lastRow?.gen_caught_up ||
@@ -2103,7 +2097,7 @@ async function publishLiveNodeExitViaApi(
       liveNode.leaseRenewalDue() ||
       (!lastRow?.has_pending_observe && now - lastSubmittedAt >= 1000)
     ) {
-      await liveNode.submitObservation(targetGen);
+      await liveNode.submitObservation();
       lastSubmittedGen = targetGen;
       lastSubmittedAt = Date.now();
     }
@@ -2138,8 +2132,13 @@ async function publicationGateDiagnostics(
         if (res.status !== 200) return { status: res.status };
         const body = JSON.parse(res.text);
         if (body.operation_id) {
-          // Preserve the API's step messages, including a gate cause if exposed.
-          return { status: body.status, steps: body.steps, error: body.error };
+          // D-074: diagnostics do not turn a pending gate into a terminal result.
+          return {
+            status: body.status,
+            pending_publication_gates: pendingPublicationGates(body),
+            steps: body.steps,
+            error: body.error,
+          };
         }
         return {
           publication_intent: body.publication_intent,
@@ -2678,8 +2677,11 @@ async function seedDatabase(
 
     // 1. Primary live node (tw-tpe-01) reports `succeeded` on RELEASE_110_ID
     const desiredEnvelope = await liveNode.fetchDesiredState();
-    const updateIntent = desiredEnvelope?.signed?.update;
-    const compiledConfigGen = String(desiredEnvelope?.signed?.config_generation ?? '1');
+    const { desired: appliedUpdate } = await liveNode.applyDesiredState(
+      desiredEnvelope.signed,
+    );
+    const updateIntent = appliedUpdate.update;
+    const compiledConfigGen = appliedUpdate.config_generation;
     if (!updateIntent || !updateIntent.job_id) {
       throw new Error(
         `Expected update intent from GET /api/v1/agent/desired-state on liveNode; got ${JSON.stringify(desiredEnvelope?.signed)}`,
@@ -2697,10 +2699,11 @@ async function seedDatabase(
 
     // 2. Rollback node (tw-tpe-02) reports `rolled_back` modeled on internal/fleetupdate/testdata/at26-direct-rollback.json
     const rbDesiredEnvelope = await rollbackNode.fetchDesiredState();
-    const rbUpdateIntent = rbDesiredEnvelope?.signed?.update;
-    const rbCompiledConfigGen = String(
-      rbDesiredEnvelope?.signed?.config_generation ?? '1',
+    const { desired: appliedRollback } = await rollbackNode.applyDesiredState(
+      rbDesiredEnvelope.signed,
     );
+    const rbUpdateIntent = appliedRollback.update;
+    const rbCompiledConfigGen = appliedRollback.config_generation;
     if (!rbUpdateIntent || !rbUpdateIntent.job_id) {
       throw new Error(
         `Expected update intent from GET /api/v1/agent/desired-state on rollbackNode; got ${JSON.stringify(rbDesiredEnvelope?.signed)}`,
@@ -3334,7 +3337,6 @@ async function main() {
         if (holdNodeObservations) return;
         const stateRes = await pool.query(
           `SELECT
-             greatest(n.desired_config_generation, 1)::text AS desired_gen,
              (n.applied_config_generation < n.desired_config_generation) AS gen_behind,
              (n.provisioning_state <> 'ready'
               OR n.control_status <> 'online'
@@ -3367,7 +3369,7 @@ async function main() {
           (row.gen_behind ||
             (!row.has_pending_observe && (row.state_not_ready || row.has_pending_op)))
         ) {
-          await liveNode.submitObservation(row.desired_gen || '1');
+          await liveNode.submitObservation();
         }
       } catch (err) {
         if (!cleanedUp)

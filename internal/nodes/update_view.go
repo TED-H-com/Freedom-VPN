@@ -13,6 +13,13 @@ import (
 )
 
 func updateSummary(ctx context.Context, q Querier, node uuid.UUID) (out presence.Nullable[api.NodeUpdateSummary], err error) {
+	return ReadUpdateSummary(ctx, q, node)
+}
+
+// ReadUpdateSummary reads the same projection used by node detail and list.
+// Writers use it in their transaction to advance the node ETag only when the
+// visible summary changes, including central-job precedence and incarnation.
+func ReadUpdateSummary(ctx context.Context, q Querier, node uuid.UUID) (out presence.Nullable[api.NodeUpdateSummary], err error) {
 	out.SetNull()
 	var v api.NodeUpdateSummary
 	var batch *uuid.UUID

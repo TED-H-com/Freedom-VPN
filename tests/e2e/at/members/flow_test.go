@@ -9,6 +9,8 @@ import (
 	"fmt"
 	"os/exec"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type flowTick struct {
@@ -17,11 +19,12 @@ type flowTick struct {
 	Reused  bool      `json:"reused_tcp"`
 }
 type flowMonitor struct {
-	service string
-	cancel  context.CancelFunc
-	ticks   chan flowTick
-	done    chan struct{}
-	first   flowTick
+	service    string
+	cancel     context.CancelFunc
+	ticks      chan flowTick
+	done       chan struct{}
+	first      flowTick
+	persistent *persistentFlow
 }
 
 func (l *live) startFlow(r *record, service string) *flowMonitor {
@@ -63,6 +66,13 @@ func (l *live) startFlow(r *record, service string) *flowMonitor {
 			}
 			if tick.Receipt {
 				f.first = tick
+				var id uuid.UUID
+				ip := l.overlayIPv4(service)
+				if l.pool.QueryRow(l.ctx, `SELECT device_id FROM device_bindings WHERE overlay_ip=$1::inet AND valid_until>clock_timestamp() ORDER BY valid_from DESC LIMIT 1`, ip).Scan(&id) == nil {
+					f.persistent = l.startPersistent(r, service, id)
+				} else {
+					r.block("F4-04: no live device binding for persistent UDP cohort " + service)
+				}
 				return f
 			}
 		case <-timer.C:
@@ -78,6 +88,7 @@ func (l *live) finishFlow(r *record, f *flowMonitor, event time.Time) {
 		return
 	}
 	defer f.cancel()
+	defer func() { l.finishPersistent(r, f.persistent, event, 60*time.Second) }()
 	ticks := []flowTick{f.first}
 	lastGood := f.first.At
 	var firstBad time.Time

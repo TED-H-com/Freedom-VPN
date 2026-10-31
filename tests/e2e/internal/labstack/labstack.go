@@ -58,6 +58,8 @@ type RelayPath = e2e.RelayPath
 type UsageSnapshot = e2e.UsageSnapshot
 type InstallerHashes = e2e.InstallerHashes
 type InstallerOutcome = e2e.InstallerOutcome
+type InstallerServiceState = e2e.InstallerServiceState
+type ContainerExport = e2e.ContainerExport
 
 type MemberTransportStatus = e2e.MemberTransportStatus
 type DNSPathObservation = e2e.DNSPathObservation

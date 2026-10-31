@@ -56,8 +56,8 @@ IdP and `/auth/login?role=member|admin`, never invented `/api/v1/auth` routes.
    unauthenticated and private endpoints denied. Record native tunnel behaviour
    separately; browser logout is not specified as device revocation. Sign out
    of the native client, then reconnect using SSO and verify ownership/quota.
-5. Move the member between the two owner-provided networks, retaining a cleanup
-   trap to restore its original network. Recheck selected exit, member/device
+5. Move the member between the two owner-provided networks, registering Go `t.Cleanup`
+   to restore its original network. Recheck selected exit, member/device
    identity, route, DNS and echo. Never change host routes.
 6. `docker pause fvpn-w4-members-member`, wait 10 seconds, then
    `docker unpause fvpn-w4-members-member`; install cleanup before pausing.
@@ -301,4 +301,32 @@ counts. Delete private test scratch after exit. No other task's stack is touched
 6. Produce a pending device through the real two-slot plan downgrade fixture, add its restore fence, and require **409 DEVICE_LIMIT_REACHED** with the fence retained (D-081). Restore the original finite grant; verify that alone does not clear the fence. Re-authorize through HTTP and confirm counted forwarding.
 7. Repeat the fence/withdraw/re-grant/traffic cycle on the paid member after authoritative billing reconciliation. Keep payment events, entitlement sources and device confirmation distinct.
 
-The fixture-only internal grant-retirement seam is documented in [requests.md](requests.md) for devstack follow-up 15. Full wire responses, operation identities and fence counts are indexed in [D077.md](D077.md). This is not a PITR drill or a rendered portal-state test. Preserve every failed attempt; never relabel a primary failure as blocked during later readback.
+The exported `ReplaceFiniteGrant` hook from devstack #284 retires live grants through the production domain command, creates/replays via HTTP, and waits for the worker. Full wire responses, operation identities and fence counts are indexed in [D077.md](D077.md). This is not a PITR drill or a rendered portal-state test. Preserve every failed attempt; never relabel a primary failure as blocked during later readback.
+
+
+## Follow-up 8 native fixtures
+
+Prepare with `FVPN_E2E_TWO_RESOLVERS=true`. Before enrollment, call
+`PrepareNativeUnderlay`, `InstallFixtureProbe`, and `StartFixtureTargets`.
+AT09 records bounded 64,064-byte transfers and both admission counters for
+IPv4, IPv6 and dual underlay, plus MTU 1500 and 1280. Chosen transport families
+are observations; IPv6 overlay is not inferred. QUIC and all four non-Linux
+selectors produce explicit blocked rows.
+
+AT02 uses `ReplaceFiniteGrant` for the immediate 3→2 plan transition and
+restoration, records credential-free HTTP bodies and operations, and verifies
+single audit events under same-key replay. A separate finite deadline expires
+without a fallback plan; its actual device counts are recorded. Persistent
+TCP/9446 and authenticated UDP/9445 remain active beyond the withdrawal target.
+Counter removal and frozen counters are distinguished. The sampling interval
+bounds observed reply time; it is not a packet-capture timestamp.
+
+AT20 uses `ConfigureNativeDNS` and `ProbeNativeDNS` for 28 TCP/UDP RR rows.
+The pinned convention is direct blocked CNAME/SVCB → empty NODATA and the other
+blocked queries → NXDOMAIN. Every row retains RCODE, answer types and SOA TTL.
+The DNS owners still need to confirm wording. Authority-only phase changes
+measure real positive/negative cache expiry; private A/AAAA connections require
+working node listeners and failing member controls. AT21 stops the primary
+resolver transport, then both, and measures normal system lookup and recovery.
+The exact resolver list comes from product desired state; the peer-restricted
+NetBird nameserver group is TEST ONLY distribution plumbing.

@@ -213,6 +213,9 @@ func applyPrev(t *testing.T, m enforce.Model, prevPath string) applyDoc {
 		t.Fatal(err)
 	}
 	args := []string{"fvpn-netlab", "apply"}
+	if t.Name() == "TestAT10_AT13_ReloadRevokeBaseline" {
+		args = append(args, "-trace", "/scratch/at10-apply.jsonl")
+	}
 	if prevPath != "" {
 		args = append(args, "-prev", prevPath)
 	}
@@ -477,13 +480,18 @@ func requireProbe(t *testing.T, results []probeResult) {
 
 func startCapture(t *testing.T, ns, iface, filter, path string) {
 	t.Helper()
+	// Readiness must belong to this capture, not an earlier use of the path.
+	mustExec(t, "rm", "-f", path, path+".err", path+".pid")
 	// Quote the filter. Parentheses are part of the tcpdump expression, and
 	// an unquoted "(" is a shell subshell, so the capture file is never created.
 	expr := ""
 	if strings.TrimSpace(filter) != "" {
 		expr = " " + strconv.Quote(filter)
 	}
-	script := fmt.Sprintf("echo $$ > %s.pid; exec tcpdump -n -l -s 96 -i %s%s > %s 2>%s.err", path, iface, expr, path, path)
+	// A short successful probe can finish before a buffered capture block is
+	// delivered. Immediate mode preserves those packets when the capture stops;
+	// line buffering alone only flushes packets already received by tcpdump.
+	script := fmt.Sprintf("echo $$ > %s.pid; exec tcpdump --immediate-mode -n -l -s 96 -i %s%s > %s 2>%s.err", path, iface, expr, path, path)
 	var err error
 	if ns == "" || ns == "root" {
 		err = dockerDetach("sh", "-c", script)
@@ -492,6 +500,17 @@ func startCapture(t *testing.T, ns, iface, filter, path string) {
 	}
 	if err != nil {
 		t.Fatal(err)
+	}
+	deadline := time.Now().Add(2 * time.Second)
+	for {
+		errText := execText("sh", "-c", "cat "+path+".err 2>/dev/null || true")
+		if strings.Contains(errText, "listening") {
+			return
+		}
+		if time.Now().After(deadline) {
+			t.Fatalf("capture %s did not become ready: %s", path, oneLine(errText))
+		}
+		time.Sleep(25 * time.Millisecond)
 	}
 }
 

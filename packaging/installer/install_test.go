@@ -448,6 +448,7 @@ func baseEnv(t *testing.T, root string) *Env {
 		t.Fatal(err)
 	}
 	calls := &[]string{}
+	markerPresent := false
 	env := &Env{
 		Layout:        l,
 		Arch:          "amd64",
@@ -480,6 +481,18 @@ func baseEnv(t *testing.T, root string) *Env {
 				return []byte("fvpn-updater: unknown command \"seed\"\n"), exec.Command("sh", "-c", "exit 64").Run()
 			}
 		case "nft":
+			switch strings.Join(args, " ") {
+			case "-j list ruleset":
+				if markerPresent {
+					return []byte(markerFixture), nil
+				}
+				return []byte(`{"nftables":[]}`), nil
+			case "delete table inet fvpn_install":
+				markerPresent = false
+			}
+			if len(args) > 0 && args[0] == "create" {
+				markerPresent = true
+			}
 			if len(args) > 0 && args[0] == "list" {
 				return nil, errors.New("no such table")
 			}

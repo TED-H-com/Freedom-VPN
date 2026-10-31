@@ -8,7 +8,8 @@ import (
 )
 
 // Remove stops and disables the product units and deletes only the nft
-// table, netns and interfaces this installer created (§6.3). Identity, the
+// marker table, netns and interfaces this installer created (§6.3). The
+// agent's inet fvpn is preserved even on purge (D-116). Identity, the
 // usage store and the update journal stay unless purge is set.
 func Remove(ctx context.Context, env *Env, purge bool) (*Result, error) {
 	if env == nil {
@@ -34,7 +35,9 @@ func Remove(ctx context.Context, env *Env, purge bool) (*Result, error) {
 		_ = os.Remove(filepath.Join(l.SystemdDir, unit))
 	}
 	_ = env.services().DaemonReload(ctx)
-	removeOwnedNetwork(ctx, env)
+	if err := removeOwnedNetwork(ctx, env); err != nil {
+		return nil, err
+	}
 	msg := "removed: units and owned network objects; identity, usage store and update journal kept"
 	if purge {
 		// Read owned before the install directory goes away.

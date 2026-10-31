@@ -14,6 +14,7 @@ func testENR06Runtime(t *testing.T, c string) {
 	t.Helper()
 	const socket = "/run/fvpn-netbird/netbird.sock"
 	mustExec(t, c, "test", "-S", socket)
+	mustExec(t, c, "test", "!", "-S", "/var/run/netbird.sock")
 	waitPath(t, c, "/run/vpn-node/heartbeat")
 	inode := mustExec(t, c, "stat", "-c", "%i", "/run/vpn-node")
 	for _, unit := range []string{"fvpn-agent", "fvpn-watchdog", "fvpn-updater", "fvpn-updater-recover", "fvpn-netbird"} {
@@ -44,6 +45,7 @@ func testENR06Runtime(t *testing.T, c string) {
 		t.Fatal("ENR-06 read-only-path diagnostic returned")
 	}
 	t.Log("ENR-06: real NetBird socket bound; enrollment -> services active -> check healthy; shared runtime survives all consumer stop/start cycles")
+	t.Log("F9-01: packaged ProtectSystem=strict unit binds /run/fvpn-netbird/netbird.sock; no /var/run/netbird.sock or bind: read-only file system failure")
 }
 
 func seededStatus(t *testing.T, c, releaseID string) string {

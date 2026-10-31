@@ -199,8 +199,13 @@ func (j *Journal) undo(ctx context.Context, rec Record) error {
 		}
 		return nil
 	case "nft-table":
-		_ = j.env.run(ctx, "nft", "delete", "table", "inet", rec.Data)
+		// Legacy journals named the agent's table. D-116 leaves it intact.
 		return nil
+	case "nft-marker-table":
+		if rec.Data != j.env.layout().markerTable() {
+			return errf(ExitFailed, "failed", "rollback refused an unknown nft table")
+		}
+		return removeMarker(ctx, j.env)
 	case "netns":
 		_ = j.env.run(ctx, "ip", "netns", "delete", rec.Data)
 		return nil

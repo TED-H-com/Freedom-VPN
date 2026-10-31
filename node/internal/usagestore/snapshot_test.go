@@ -97,7 +97,7 @@ func TestSnapshotFieldSetAndIdentical(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if first.SchemaVersion != schemaVersion || first.NodeID != testNode.String() || first.NodeIncarnationID != testInc.String() {
+	if first.SchemaVersion != 1 || first.NodeID != testNode.String() || first.NodeIncarnationID != testInc.String() {
 		t.Fatalf("identity %+v", first)
 	}
 	if first.LedgerEpoch != nil || first.LastEventSeq != "1" || first.AckedThrough != "0" || first.UnackedCount != 1 {

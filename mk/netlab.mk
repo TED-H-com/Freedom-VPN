@@ -15,28 +15,24 @@ NETLAB_BIN := $(ROOT)/.agent/tmp/$(FVPN_LAB_PREFIX)-fvpn-netlab
 # the container netns. topology.sh drops the default route that comes with it.
 NETLAB_DNS_NET := $(FVPN_LAB_PREFIX)-dns
 
-netlab-disk-env = set -eu; mkdir -p .agent/tmp; task_tmp=$$(mktemp -d "$$(pwd)/.agent/tmp/netlab.XXXXXX"); trap 'rm -rf "$$task_tmp"' EXIT; export TMPDIR="$$task_tmp" GOTMPDIR="$$task_tmp" CGO_ENABLED=0 GOTOOLCHAIN=local;
+netlab-disk-env = python3 tests/netlab/scripts/disktmp.py
 
 .PHONY: netlab-integration netlab-real-netbird netlab-unit netlab-lint netlab-build netlab-image netlab-wipe-scratch netlab-up netlab-down netlab-test netlab-test-full netlab-evidence
 
 # gofmt, vet, and staticcheck for the enforce library and the netlab harness.
 # The privileged suite is not part of this target.
 netlab-lint:
-	@set -eu; \
-	cd $(ROOT); \
-	files=$$(git ls-files --cached --others --exclude-standard 'node/enforce/*.go' 'tests/netlab/*.go' 'tests/netlab/cmd/fvpn-netlab/*.go' 'tests/netlab/at/*.go' 'tests/netlab/agent/*.go'); \
-	test -z "$$(gofmt -l $$files)" || { echo 'gofmt required'; gofmt -l $$files; exit 1; }; \
-	mkdir -p .agent/tmp; \
-	task_tmp=$$(mktemp -d "$$(pwd)/.agent/tmp/go.XXXXXX"); \
-	trap 'rm -rf "$$task_tmp"' EXIT; \
-	export TMPDIR="$$task_tmp" GOTMPDIR="$$task_tmp" CGO_ENABLED=0 GOTOOLCHAIN=local; \
+	@cd $(ROOT) && $(netlab-disk-env) sh -ec '\
+	files=$$(git ls-files --cached --others --exclude-standard "node/enforce/*.go" "tests/netlab/*.go" "tests/netlab/cmd/fvpn-netlab/*.go" "tests/netlab/at/*.go" "tests/netlab/agent/*.go"); \
+	test -z "$$(gofmt -l $$files)" || { echo "gofmt required"; gofmt -l $$files; exit 1; }; \
 	go vet ./node/enforce/...; \
 	go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 ./node/enforce/...; \
 	go vet -tags netlab ./tests/netlab ./tests/netlab/at ./tests/netlab/agent ./tests/netlab/cmd/fvpn-netlab; \
-	go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 -tags netlab ./tests/netlab ./tests/netlab/at ./tests/netlab/agent ./tests/netlab/cmd/fvpn-netlab
+	go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 -tags netlab ./tests/netlab ./tests/netlab/at ./tests/netlab/agent ./tests/netlab/cmd/fvpn-netlab'
 
 netlab-unit:
 	@cd $(ROOT) && $(netlab-disk-env) go test ./node/enforce/... ./tests/netlab
+	@cd $(ROOT) && $(netlab-disk-env) python3 -B -m unittest discover -s tests/netlab/scripts -p "*_test.py"
 
 # Tagged harness compilation and unprivileged prerequisite/driver checks.
 # Live mechanisms remain in netlab-test and netlab-real-netbird.
@@ -47,8 +43,8 @@ netlab-real-netbird:
 	cd $(ROOT) && FVPN_LAB_PREFIX='$(FVPN_LAB_PREFIX)' bash tests/netlab/scripts/gates.sh real-netbird
 
 netlab-build:
-	@cd $(ROOT) && $(netlab-disk-env) go build -o $(NETLAB_BIN) ./tests/netlab/cmd/fvpn-netlab; \
-	GOOS=linux GOARCH=arm64 go build -o "$$task_tmp/fvpn-netlab-arm64" ./tests/netlab/cmd/fvpn-netlab
+	@cd $(ROOT) && $(netlab-disk-env) sh -ec 'go build -o $(NETLAB_BIN) ./tests/netlab/cmd/fvpn-netlab; \
+	GOOS=linux GOARCH=arm64 go build -o "$$GOTMPDIR/fvpn-netlab-arm64" ./tests/netlab/cmd/fvpn-netlab'
 
 netlab-image:
 	docker build -t $(NETLAB_IMAGE) $(ROOT)/tests/netlab
@@ -85,7 +81,7 @@ netlab-test:
 	status=0; \
 	$(MAKE) -f $(NETLAB_MK) netlab-up FVPN_LAB_PREFIX='$(FVPN_LAB_PREFIX)' || status=$$?; \
 	if [ $$status -eq 0 ]; then \
-		cd $(ROOT) && $(netlab-disk-env) FVPN_NETLAB=1 FVPN_LAB_PREFIX='$(FVPN_LAB_PREFIX)' \
+		cd $(ROOT) && $(netlab-disk-env) env FVPN_NETLAB=1 FVPN_LAB_PREFIX='$(FVPN_LAB_PREFIX)' \
 			go test -tags netlab -count=1 -timeout 40m -p 1 -parallel 1 -v ./tests/netlab || status=$$?; \
 	fi; \
 	$(MAKE) -f $(NETLAB_MK) netlab-down FVPN_LAB_PREFIX='$(FVPN_LAB_PREFIX)' || true; \
@@ -98,7 +94,7 @@ netlab-evidence:
 	status=0; \
 	$(MAKE) -f $(NETLAB_MK) netlab-up FVPN_LAB_PREFIX='$(FVPN_LAB_PREFIX)' || status=$$?; \
 	if [ $$status -eq 0 ]; then \
-		cd $(ROOT) && $(netlab-disk-env) FVPN_NETLAB=1 FVPN_LAB_PREFIX='$(FVPN_LAB_PREFIX)' \
+		cd $(ROOT) && $(netlab-disk-env) env FVPN_NETLAB=1 FVPN_LAB_PREFIX='$(FVPN_LAB_PREFIX)' \
 			FVPN_NETLAB_EVIDENCE_DIR='docs/poc/G2-evidence' \
 			go test -tags netlab -count=1 -timeout 40m -p 1 -parallel 1 -v ./tests/netlab || status=$$?; \
 	fi; \
@@ -110,10 +106,16 @@ netlab-test-full:
 	status=0; \
 	$(MAKE) -f $(NETLAB_MK) netlab-up FVPN_LAB_PREFIX='$(FVPN_LAB_PREFIX)' || status=$$?; \
 	if [ $$status -eq 0 ]; then \
-		cd $(ROOT) && $(netlab-disk-env) FVPN_NETLAB=1 FVPN_NETLAB_FULL=1 FVPN_LAB_PREFIX='$(FVPN_LAB_PREFIX)' \
+		cd $(ROOT) && $(netlab-disk-env) env FVPN_NETLAB=1 FVPN_NETLAB_FULL=1 FVPN_LAB_PREFIX='$(FVPN_LAB_PREFIX)' \
 			go test -tags netlab -count=1 -timeout 100m -p 1 -parallel 1 -v ./tests/netlab || status=$$?; \
 	fi; \
 	$(MAKE) -f $(NETLAB_MK) netlab-down FVPN_LAB_PREFIX='$(FVPN_LAB_PREFIX)' || true; \
 	exit $$status
 
 TEST_TARGETS += netlab-unit
+
+# Foreground real Engine enrollment + 20 reloads; check the shared-host suite
+# limit before invoking. Uses the lab-only timing SystemPlane decorator.
+.PHONY: netlab-agent-measure
+netlab-agent-measure:
+	@cd $(ROOT) && FVPN_LAB_PREFIX='$(FVPN_LAB_PREFIX)' $(netlab-disk-env) python3 tests/netlab/scripts/agent_measure.py

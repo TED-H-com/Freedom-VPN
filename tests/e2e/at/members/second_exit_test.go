@@ -128,7 +128,7 @@ func (l *live) twoExits(r *record) {
 	l.resolverEvidence(r)
 	restore()
 	l.traceForwarding(r, "member", device)
-	r.block("F4-03: two real exits and selected-node SNAT/counts are measured. Direct/forced relay, UDP/QUIC and PMTU baseline fixtures, four native platforms and a physical second NAT still need operator runs; see OPERATORS.md. No fastest-exit claim.")
+	l.nativeMatrix(r)
 }
 
 func (l *live) adminNodeSummary() map[string]any {

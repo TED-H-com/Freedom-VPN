@@ -33,13 +33,15 @@ func TestAT08_PublicationWorkerEmptyBindingEvidence(t *testing.T) {
 		bindings bool
 		failed   bool
 		stale    bool
+		unleased bool
 		want     string
 	}{
-		{"empty_not_run", false, false, false, ""},
-		{"bound_not_run", true, false, false, "serving_checks_unconfirmed"},
-		{"empty_failed_lease", false, true, false, "check_failed"},
-		{"bound_failed_lease", true, true, false, "check_failed"},
-		{"older_generation", false, false, true, "stale_generation"},
+		{"empty_not_run", false, false, false, false, ""},
+		{"bound_not_run", true, false, false, false, "serving_checks_unconfirmed"},
+		{"bound_lease_unconfirmed", true, false, false, true, "lease_unconfirmed"},
+		{"empty_failed_lease", false, true, false, false, "check_failed"},
+		{"bound_failed_lease", true, true, false, false, "check_failed"},
+		{"older_generation", false, false, true, false, "stale_generation"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			r, enrolled, report := nodestest.BaselineObservation(t, "../../../contracts/examples/valid/ObservationReport.json")
@@ -73,7 +75,7 @@ func TestAT08_PublicationWorkerEmptyBindingEvidence(t *testing.T) {
 			report.MemberForwardingEnabled, report.DataHealth = true, api.DataHealthHealthy
 			for i := range report.Checks {
 				report.Checks[i].ObservedAt = report.ObservedAt
-				if report.Checks[i].Name == api.NodeCheckNameTunnelProbe {
+				if tc.unleased || report.Checks[i].Name == api.NodeCheckNameTunnelProbe {
 					report.Checks[i].Status = api.HealthCheckStatusPassed
 				}
 				if tc.failed && report.Checks[i].Name == api.NodeCheckNameLease {
@@ -130,13 +132,30 @@ func TestAT08_PublicationWorkerEmptyBindingEvidence(t *testing.T) {
 				if tc.stale {
 					stepKey = nodes.StepAgentPolicy
 				}
-				for _, step := range after.Steps {
-					if step.Name == stepKey {
+				// Both readers must retain the stored cause without inventing final
+				// failure or successful observation evidence (D-074 / D-107).
+				nodeRead, err := r.Nodes.GetOperation(t.Context(), op.OperationId)
+				if err != nil {
+					t.Fatal(err)
+				}
+				for name, read := range map[string]api.Operation{"admin HTTP": after, "nodes": nodeRead} {
+					if read.Status != api.OperationStatusRunning || !read.Error.IsNull() || !read.CompletedAt.IsNull() {
+						t.Fatalf("%s: held operation became terminal: %+v", name, read)
+					}
+					found := false
+					for _, step := range read.Steps {
+						if step.Name != stepKey {
+							continue
+						}
+						found = true
 						code, cErr := step.ErrorCode.Get()
 						msg, mErr := step.Message.Get()
-						if step.Status != api.OperationStepStatusPending || cErr != nil || code != api.ErrorCodeNODENOTSERVICEABLE || mErr != nil || msg != "member_forwarding_unconfirmed" {
-							t.Fatalf("gated step %s = %+v, want pending with NODE_NOT_SERVICEABLE / member_forwarding_unconfirmed", stepKey, step)
+						if step.Status != api.OperationStepStatusPending || !step.ObservedAt.IsNull() || cErr != nil || code != api.ErrorCodeNODENOTSERVICEABLE || mErr != nil || msg != "member_forwarding_unconfirmed ("+tc.want+")" {
+							t.Fatalf("%s: gated step %s = %+v, want pending with both diagnostics and null evidence", name, stepKey, step)
 						}
+					}
+					if !found {
+						t.Fatalf("%s: missing gated step %s", name, stepKey)
 					}
 				}
 				var reason, message string
