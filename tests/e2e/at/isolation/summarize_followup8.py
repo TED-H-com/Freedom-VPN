@@ -5,8 +5,9 @@ from datetime import datetime
 import json
 from pathlib import Path
 import re
+import sys
 
-root = Path('docs/e2e/at/isolation')
+root = Path(sys.argv[1] if len(sys.argv)>1 else 'docs/e2e/at/isolation')
 def read(name, default=None):
     p=root/name
     return json.loads(p.read_text()) if p.exists() else default

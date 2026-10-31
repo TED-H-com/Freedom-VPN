@@ -73,6 +73,8 @@ with tempfile.TemporaryDirectory(prefix='at-isolation.', dir=ROOT / '.agent/tmp'
         stack = call(['python3', 'tests/e2e/at/isolation/stack.py', 'up'], env)
         if stack == 0:
             stack = call(['python3', 'tests/e2e/at/isolation/driver.py', 'run'], env)
+            review = call(['python3', '-B', 'tests/e2e/at/isolation/review_followup9.py', evidence], env)
+            stack = stack or review
     finally:
         lab = call(['sh', 'tests/e2e/at/isolation/lab.sh', 'down'], env) or lab
         stack = call(['python3', 'tests/e2e/at/isolation/stack.py', 'down'], env) or stack

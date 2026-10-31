@@ -1,6 +1,6 @@
-# Installer text ruleset read-back — follow-up 8
+# Installer text ruleset read-back — follow-up 9
 
-Run `f27a81a0-183e-46b4-85a8-304b2f64b635`. Complete `nft list ruleset` text; nft 1.0.9 JSON omits comments.
+Run `891ee9b8-bf01-4583-a47a-9542c8b04c8a`. Full text read-back preserves ownership comments.
 
 ## Initial serving
 
@@ -51,26 +51,26 @@ table inet fvpn {
 		packets 0 bytes 0
 	}
 
-	counter d_01a1923f3cae7e15b547a08502760a66 {
+	counter d_01a1927f3566703fb6390260ae3de34e {
 		packets 0 bytes 0
 	}
 
-	counter nd_01a1923f3cae7e15b547a08502760a66 {
+	counter nd_01a1927f3566703fb6390260ae3de34e {
 		packets 0 bytes 0
 	}
 
-	counter nu_01a1923f3cae7e15b547a08502760a66 {
+	counter nu_01a1927f3566703fb6390260ae3de34e {
 		packets 0 bytes 0
 	}
 
-	counter u_01a1923f3cae7e15b547a08502760a66 {
+	counter u_01a1927f3566703fb6390260ae3de34e {
 		packets 0 bytes 0
 	}
 
 	set allowed_v4 {
 		type ipv4_addr
 		flags timeout
-		elements = { 100.116.84.27 timeout 9m59s840ms expires 9m58s162ms }
+		elements = { 100.102.180.216 timeout 9m59s838ms expires 9m58s104ms }
 	}
 
 	set denied_v4 {
@@ -101,23 +101,23 @@ table inet fvpn {
 	chain forward {
 		type filter hook forward priority mangle; policy drop;
 		ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment "fvpn_generation=3 fvpn_metering=forward_admission_v1"
-		ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment "fvpn_class=01a1923f-1faf-73ff-b026-9fb77ed6ab40:2d29"
+		ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment "fvpn_class=01a1927f-18e6-7941-929a-b43046014a22:df9a"
 		iifname "fvmb0" oifname "fvup0" meta nfproto ipv6 counter name "ctv6" drop
 		iifname "fvup0" oifname "fvmb0" meta nfproto ipv6 counter name "ctv6" drop
 		iifname "fvmb0" oifname "fvup0" ct state invalid counter name "ctinv" drop
 		iifname "fvup0" oifname "fvmb0" ct state invalid counter name "ctinv" drop
 		iifname "fvmb0" oifname "fvup0" ip saddr != @allowed_v4 counter name "ctunku" drop
-		iifname "fvmb0" oifname "fvup0" ip saddr 100.116.84.27 ip daddr @resolver_v4 tcp dport 53 counter name "nu_01a1923f3cae7e15b547a08502760a66" meta priority set 1:2d29 accept
-		iifname "fvmb0" oifname "fvup0" ip saddr 100.116.84.27 ip daddr @resolver_v4 udp dport 53 counter name "nu_01a1923f3cae7e15b547a08502760a66" meta priority set 1:2d29 accept
+		iifname "fvmb0" oifname "fvup0" ip saddr 100.102.180.216 ip daddr @resolver_v4 tcp dport 53 counter name "nu_01a1927f3566703fb6390260ae3de34e" meta priority set 1:df9a accept
+		iifname "fvmb0" oifname "fvup0" ip saddr 100.102.180.216 ip daddr @resolver_v4 udp dport 53 counter name "nu_01a1927f3566703fb6390260ae3de34e" meta priority set 1:df9a accept
 		iifname "fvmb0" oifname "fvup0" ip daddr @resolver_v4 counter name "ctbadns" drop
 		iifname "fvmb0" oifname "fvup0" ip daddr @denied_v4 counter name "ctdeny" drop
 		iifname "fvmb0" oifname "fvup0" ip daddr @host_v4 counter name "cthost" drop
-		iifname "fvmb0" oifname "fvup0" ip saddr 100.116.84.27 counter name "u_01a1923f3cae7e15b547a08502760a66" meta priority set 1:2d29 accept
+		iifname "fvmb0" oifname "fvup0" ip saddr 100.102.180.216 counter name "u_01a1927f3566703fb6390260ae3de34e" meta priority set 1:df9a accept
 		iifname "fvup0" oifname "fvmb0" ip daddr != @allowed_v4 counter name "ctunkd" drop
 		iifname "fvup0" oifname "fvmb0" ct state != { established, related } counter name "ctnodn" drop
-		iifname "fvup0" oifname "fvmb0" ip saddr @resolver_v4 ip daddr 100.116.84.27 tcp sport 53 counter name "nd_01a1923f3cae7e15b547a08502760a66" meta priority set 1:2d29 accept
-		iifname "fvup0" oifname "fvmb0" ip saddr @resolver_v4 ip daddr 100.116.84.27 udp sport 53 counter name "nd_01a1923f3cae7e15b547a08502760a66" meta priority set 1:2d29 accept
-		iifname "fvup0" oifname "fvmb0" ip daddr 100.116.84.27 counter name "d_01a1923f3cae7e15b547a08502760a66" meta priority set 1:2d29 accept
+		iifname "fvup0" oifname "fvmb0" ip saddr @resolver_v4 ip daddr 100.102.180.216 tcp sport 53 counter name "nd_01a1927f3566703fb6390260ae3de34e" meta priority set 1:df9a accept
+		iifname "fvup0" oifname "fvmb0" ip saddr @resolver_v4 ip daddr 100.102.180.216 udp sport 53 counter name "nd_01a1927f3566703fb6390260ae3de34e" meta priority set 1:df9a accept
+		iifname "fvup0" oifname "fvmb0" ip daddr 100.102.180.216 counter name "d_01a1927f3566703fb6390260ae3de34e" meta priority set 1:df9a accept
 	}
 
 	chain input {
@@ -140,16 +140,16 @@ table inet fvpn {
 ```text
 v1
 boot_id 97c018d7-a925-4723-9127-83c097de1c8a
-mono_ns 38622861345024
-wall_unix_ns 1793455085344973897
-policy_expires_mono_ns 39222690445274
+mono_ns 42815146974899
+wall_unix_ns 1793459277630603811
+policy_expires_mono_ns 43414960024440
 baseline_ok 1
 serving 1
 generation 3
 reason serving
 ```
 
-Agent active: `True`; four chains/hookless marker: `True`. Central forwarding: `True` at `2026-10-31T13:58:05.319085Z`.
+Agent active: `True`; four chains/hookless marker: `True`. Central forwarding: `True` at `2026-10-31T15:07:57.604594Z`.
 
 ## After rerun
 
@@ -200,26 +200,26 @@ table inet fvpn {
 		packets 0 bytes 0
 	}
 
-	counter d_01a1923f3cae7e15b547a08502760a66 {
+	counter d_01a1927f3566703fb6390260ae3de34e {
 		packets 12 bytes 716
 	}
 
-	counter nd_01a1923f3cae7e15b547a08502760a66 {
+	counter nd_01a1927f3566703fb6390260ae3de34e {
 		packets 0 bytes 0
 	}
 
-	counter nu_01a1923f3cae7e15b547a08502760a66 {
+	counter nu_01a1927f3566703fb6390260ae3de34e {
 		packets 0 bytes 0
 	}
 
-	counter u_01a1923f3cae7e15b547a08502760a66 {
+	counter u_01a1927f3566703fb6390260ae3de34e {
 		packets 18 bytes 1100
 	}
 
 	set allowed_v4 {
 		type ipv4_addr
 		flags timeout
-		elements = { 100.116.84.27 timeout 8m57s11ms expires 8m56s741ms }
+		elements = { 100.102.180.216 timeout 8m56s415ms expires 8m56s155ms }
 	}
 
 	set denied_v4 {
@@ -250,23 +250,23 @@ table inet fvpn {
 	chain forward {
 		type filter hook forward priority mangle; policy drop;
 		ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment "fvpn_generation=3 fvpn_metering=forward_admission_v1"
-		ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment "fvpn_class=01a1923f-1faf-73ff-b026-9fb77ed6ab40:2d29"
+		ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment "fvpn_class=01a1927f-18e6-7941-929a-b43046014a22:df9a"
 		iifname "fvmb0" oifname "fvup0" meta nfproto ipv6 counter name "ctv6" drop
 		iifname "fvup0" oifname "fvmb0" meta nfproto ipv6 counter name "ctv6" drop
 		iifname "fvmb0" oifname "fvup0" ct state invalid counter name "ctinv" drop
 		iifname "fvup0" oifname "fvmb0" ct state invalid counter name "ctinv" drop
 		iifname "fvmb0" oifname "fvup0" ip saddr != @allowed_v4 counter name "ctunku" drop
-		iifname "fvmb0" oifname "fvup0" ip saddr 100.116.84.27 ip daddr @resolver_v4 tcp dport 53 counter name "nu_01a1923f3cae7e15b547a08502760a66" meta priority set 1:2d29 accept
-		iifname "fvmb0" oifname "fvup0" ip saddr 100.116.84.27 ip daddr @resolver_v4 udp dport 53 counter name "nu_01a1923f3cae7e15b547a08502760a66" meta priority set 1:2d29 accept
+		iifname "fvmb0" oifname "fvup0" ip saddr 100.102.180.216 ip daddr @resolver_v4 tcp dport 53 counter name "nu_01a1927f3566703fb6390260ae3de34e" meta priority set 1:df9a accept
+		iifname "fvmb0" oifname "fvup0" ip saddr 100.102.180.216 ip daddr @resolver_v4 udp dport 53 counter name "nu_01a1927f3566703fb6390260ae3de34e" meta priority set 1:df9a accept
 		iifname "fvmb0" oifname "fvup0" ip daddr @resolver_v4 counter name "ctbadns" drop
 		iifname "fvmb0" oifname "fvup0" ip daddr @denied_v4 counter name "ctdeny" drop
 		iifname "fvmb0" oifname "fvup0" ip daddr @host_v4 counter name "cthost" drop
-		iifname "fvmb0" oifname "fvup0" ip saddr 100.116.84.27 counter name "u_01a1923f3cae7e15b547a08502760a66" meta priority set 1:2d29 accept
+		iifname "fvmb0" oifname "fvup0" ip saddr 100.102.180.216 counter name "u_01a1927f3566703fb6390260ae3de34e" meta priority set 1:df9a accept
 		iifname "fvup0" oifname "fvmb0" ip daddr != @allowed_v4 counter name "ctunkd" drop
 		iifname "fvup0" oifname "fvmb0" ct state != { established, related } counter name "ctnodn" drop
-		iifname "fvup0" oifname "fvmb0" ip saddr @resolver_v4 ip daddr 100.116.84.27 tcp sport 53 counter name "nd_01a1923f3cae7e15b547a08502760a66" meta priority set 1:2d29 accept
-		iifname "fvup0" oifname "fvmb0" ip saddr @resolver_v4 ip daddr 100.116.84.27 udp sport 53 counter name "nd_01a1923f3cae7e15b547a08502760a66" meta priority set 1:2d29 accept
-		iifname "fvup0" oifname "fvmb0" ip daddr 100.116.84.27 counter name "d_01a1923f3cae7e15b547a08502760a66" meta priority set 1:2d29 accept
+		iifname "fvup0" oifname "fvmb0" ip saddr @resolver_v4 ip daddr 100.102.180.216 tcp sport 53 counter name "nd_01a1927f3566703fb6390260ae3de34e" meta priority set 1:df9a accept
+		iifname "fvup0" oifname "fvmb0" ip saddr @resolver_v4 ip daddr 100.102.180.216 udp sport 53 counter name "nd_01a1927f3566703fb6390260ae3de34e" meta priority set 1:df9a accept
+		iifname "fvup0" oifname "fvmb0" ip daddr 100.102.180.216 counter name "d_01a1927f3566703fb6390260ae3de34e" meta priority set 1:df9a accept
 	}
 
 	chain input {
@@ -289,18 +289,18 @@ table inet fvpn {
 ```text
 v1
 boot_id 97c018d7-a925-4723-9127-83c097de1c8a
-mono_ns 38685693260715
-wall_unix_ns 1793455148176889560
-policy_expires_mono_ns 39222688627354
+mono_ns 42878562930204
+wall_unix_ns 1793459341046559145
+policy_expires_mono_ns 43414961024227
 baseline_ok 1
 serving 1
 generation 3
 reason serving
 ```
 
-Agent active: `True`; four chains/hookless marker: `True`. Central forwarding: `True` at `2026-10-31T13:59:08.152357Z`.
+Agent active: `True`; four chains/hookless marker: `True`. Central forwarding: `True` at `2026-10-31T15:09:01.023115Z`.
 
-## After controlled reinstall and API republication
+## After controlled reinstall
 
 ```nft
 table inet fvpn_install {
@@ -349,26 +349,26 @@ table inet fvpn {
 		packets 0 bytes 0
 	}
 
-	counter d_01a1923f3cae7e15b547a08502760a66 {
+	counter d_01a1927f3566703fb6390260ae3de34e {
 		packets 18 bytes 1074
 	}
 
-	counter nd_01a1923f3cae7e15b547a08502760a66 {
+	counter nd_01a1927f3566703fb6390260ae3de34e {
 		packets 0 bytes 0
 	}
 
-	counter nu_01a1923f3cae7e15b547a08502760a66 {
+	counter nu_01a1927f3566703fb6390260ae3de34e {
 		packets 0 bytes 0
 	}
 
-	counter u_01a1923f3cae7e15b547a08502760a66 {
+	counter u_01a1927f3566703fb6390260ae3de34e {
 		packets 27 bytes 1650
 	}
 
 	set allowed_v4 {
 		type ipv4_addr
 		flags timeout
-		elements = { 100.116.84.27 timeout 9m59s838ms expires 9m58s876ms }
+		elements = { 100.102.180.216 timeout 9m59s836ms expires 9m58s920ms }
 	}
 
 	set denied_v4 {
@@ -399,23 +399,23 @@ table inet fvpn {
 	chain forward {
 		type filter hook forward priority mangle; policy drop;
 		ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment "fvpn_generation=7 fvpn_metering=forward_admission_v1"
-		ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment "fvpn_class=01a1923f-1faf-73ff-b026-9fb77ed6ab40:2d29"
+		ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment "fvpn_class=01a1927f-18e6-7941-929a-b43046014a22:df9a"
 		iifname "fvmb0" oifname "fvup0" meta nfproto ipv6 counter name "ctv6" drop
 		iifname "fvup0" oifname "fvmb0" meta nfproto ipv6 counter name "ctv6" drop
 		iifname "fvmb0" oifname "fvup0" ct state invalid counter name "ctinv" drop
 		iifname "fvup0" oifname "fvmb0" ct state invalid counter name "ctinv" drop
 		iifname "fvmb0" oifname "fvup0" ip saddr != @allowed_v4 counter name "ctunku" drop
-		iifname "fvmb0" oifname "fvup0" ip saddr 100.116.84.27 ip daddr @resolver_v4 tcp dport 53 counter name "nu_01a1923f3cae7e15b547a08502760a66" meta priority set 1:2d29 accept
-		iifname "fvmb0" oifname "fvup0" ip saddr 100.116.84.27 ip daddr @resolver_v4 udp dport 53 counter name "nu_01a1923f3cae7e15b547a08502760a66" meta priority set 1:2d29 accept
+		iifname "fvmb0" oifname "fvup0" ip saddr 100.102.180.216 ip daddr @resolver_v4 tcp dport 53 counter name "nu_01a1927f3566703fb6390260ae3de34e" meta priority set 1:df9a accept
+		iifname "fvmb0" oifname "fvup0" ip saddr 100.102.180.216 ip daddr @resolver_v4 udp dport 53 counter name "nu_01a1927f3566703fb6390260ae3de34e" meta priority set 1:df9a accept
 		iifname "fvmb0" oifname "fvup0" ip daddr @resolver_v4 counter name "ctbadns" drop
 		iifname "fvmb0" oifname "fvup0" ip daddr @denied_v4 counter name "ctdeny" drop
 		iifname "fvmb0" oifname "fvup0" ip daddr @host_v4 counter name "cthost" drop
-		iifname "fvmb0" oifname "fvup0" ip saddr 100.116.84.27 counter name "u_01a1923f3cae7e15b547a08502760a66" meta priority set 1:2d29 accept
+		iifname "fvmb0" oifname "fvup0" ip saddr 100.102.180.216 counter name "u_01a1927f3566703fb6390260ae3de34e" meta priority set 1:df9a accept
 		iifname "fvup0" oifname "fvmb0" ip daddr != @allowed_v4 counter name "ctunkd" drop
 		iifname "fvup0" oifname "fvmb0" ct state != { established, related } counter name "ctnodn" drop
-		iifname "fvup0" oifname "fvmb0" ip saddr @resolver_v4 ip daddr 100.116.84.27 tcp sport 53 counter name "nd_01a1923f3cae7e15b547a08502760a66" meta priority set 1:2d29 accept
-		iifname "fvup0" oifname "fvmb0" ip saddr @resolver_v4 ip daddr 100.116.84.27 udp sport 53 counter name "nd_01a1923f3cae7e15b547a08502760a66" meta priority set 1:2d29 accept
-		iifname "fvup0" oifname "fvmb0" ip daddr 100.116.84.27 counter name "d_01a1923f3cae7e15b547a08502760a66" meta priority set 1:2d29 accept
+		iifname "fvup0" oifname "fvmb0" ip saddr @resolver_v4 ip daddr 100.102.180.216 tcp sport 53 counter name "nd_01a1927f3566703fb6390260ae3de34e" meta priority set 1:df9a accept
+		iifname "fvup0" oifname "fvmb0" ip saddr @resolver_v4 ip daddr 100.102.180.216 udp sport 53 counter name "nd_01a1927f3566703fb6390260ae3de34e" meta priority set 1:df9a accept
+		iifname "fvup0" oifname "fvmb0" ip daddr 100.102.180.216 counter name "d_01a1927f3566703fb6390260ae3de34e" meta priority set 1:df9a accept
 	}
 
 	chain input {
@@ -438,13 +438,13 @@ table inet fvpn {
 ```text
 v1
 boot_id 97c018d7-a925-4723-9127-83c097de1c8a
-mono_ns 38950697368199
-wall_unix_ns 1793455413180997064
-policy_expires_mono_ns 39550526195866
+mono_ns 43141544476131
+wall_unix_ns 1793459604028104990
+policy_expires_mono_ns 43741375072391
 baseline_ok 1
 serving 1
 generation 7
 reason serving
 ```
 
-Agent active: `True`; four chains/hookless marker: `True`. Central forwarding: `True` at `2026-10-31T14:03:33.157959Z`.
+Agent active: `True`; four chains/hookless marker: `True`. Central forwarding: `True` at `2026-10-31T15:13:24.00315Z`.
