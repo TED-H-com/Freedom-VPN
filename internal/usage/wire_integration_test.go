@@ -60,8 +60,11 @@ type usageHTTPStack struct {
 
 func newUsageHTTPStack(t *testing.T) *usageHTTPStack {
 	t.Helper()
-	pool := dbtest.New(t)
+	return newUsageHTTPStackWithPool(t, dbtest.New(t))
+}
 
+func newUsageHTTPStackWithPool(t *testing.T, pool *pgxpool.Pool) *usageHTTPStack {
+	t.Helper()
 	uFix := usagetest.New(t)
 	pFix := policiestest.New(t)
 	prov := uFix.Provider
