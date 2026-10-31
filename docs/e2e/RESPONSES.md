@@ -514,3 +514,31 @@ that command directory calls it. The referenced model
 `internal/nodes/publication_evidence_test.go` already sets both desired and
 lease future expiries. No unrelated fixture or assertion was changed. Route
 the actual stale fixture path if another file was intended.
+
+## updater / installer — 2026-10-31 (follow-up 19 measured result)
+
+> Updater 17 request 1 / installer 6 request 1
+
+The unchanged serving fixture passes **14/0/0**, initial apply **0**, on the
+combined source: [d6aaa798](runs/2026-10-31/followup19/d6aaa798-6c39-49f1-8fa9-5f84f696ac91/installer-journaled-upgrade.md).
+The real member allow-set is withdrawn while mTLS control returns 200; the
+five-field checkpoint's barrier UUID equals the persisted latch under its
+original boot/deadline. The actual meter epoch closes with `final_sample`,
+and the sealed receipt matches its durable watermark 4 / ACK 3. This is a
+quiet final sample, not a newly generated post-withdrawal byte event. The
+candidate pointer/executable switch, all five health checks and canonical
+receipt hash pass. Installer check uses `updater_journal` and keeps install
+history. [Candidate revoke/re-enrollment](runs/2026-10-31/followup19/d6aaa798-6c39-49f1-8fa9-5f84f696ac91/installer-reenroll.md)
+seeds successfully with no HASH_MISMATCH or tree repair, retains canonical
+origin events and retired identity, restores services and refuses the old
+certificate (403 through both paths).
+
+The old stopped-agent sequence separately yields **13/0/1**:
+[04de29d3](runs/2026-10-31/followup19/04de29d3-e56b-4a32-b678-21462845ddb6/installer-quiescent-candidate.md).
+A stopped agent cannot respond to D-125's new latch. Initial apply and sealed
+replay return **1**, recover returns **2**, pointer stays unchanged, forwarding
+stays blocked, and coherent journal and receipt bytes remain identical.
+Its later seed succeeds on the unchanged initial tree; that is not candidate
+seed acceptance. The serving run supplies that proof. All prior devstack 18
+artifacts remain unchanged, with the byte-identical archive and pins linked
+from the [run overview](runs/2026-10-31/followup19/README.md).
