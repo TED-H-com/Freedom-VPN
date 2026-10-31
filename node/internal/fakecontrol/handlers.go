@@ -486,6 +486,18 @@ func (s *Server) signLease(node, inc uuid.UUID) ([]byte, string, error) {
 }
 
 func (s *Server) observe(w http.ResponseWriter, r *http.Request) {
+	s.mu.Lock()
+	s.observationPosts++
+	retry := s.observationRetryN > 0
+	wait := s.observationRetryFor
+	if retry {
+		s.observationRetryN--
+	}
+	s.mu.Unlock()
+	if retry {
+		apierr.Write(w, r, apierr.New(apierr.RateLimited, "Observation is rate limited.").WithRetryAfter(wait))
+		return
+	}
 	if r.Method != http.MethodPost {
 		apierr.Write(w, r, apierr.New(apierr.MethodNotAllowed, "Method not allowed."))
 		return

@@ -87,7 +87,7 @@ func (e *Engine) rejectServing(ctx context.Context, model enforce.Model, evidenc
 		if e.containment.ReadAt.IsZero() {
 			e.containment.Generation = model.Generation
 			e.containment.ReadAt = e.applyError.ObservedAt
-			if r := e.servingRead; r != nil && r.Generation == model.Generation {
+			if r := e.servingRead; r != nil && !r.Verified && r.Generation == model.Generation {
 				e.containment.ReadAt = r.At
 			}
 		}

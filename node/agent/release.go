@@ -47,7 +47,7 @@ func (e *Engine) loadActiveRelease(ctx context.Context, executable string) error
 	if errors.Is(err, os.ErrNotExist) && id == e.cfg.ReleaseUUID() {
 		return nil
 	} // initial install, before seed
-	if err != nil || snap.RecoveryRequired || snap.CurrentRelease != id.String() {
+	if err != nil || snap.CurrentRelease != id.String() {
 		return errActiveRelease
 	}
 	// Installed releases are immutable records of the updater's verified

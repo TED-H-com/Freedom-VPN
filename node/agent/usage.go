@@ -6,6 +6,7 @@ import (
 	"errors"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 	"time"
@@ -136,6 +137,10 @@ func (e *Engine) ensureUsage(ctx context.Context) {
 	}
 	e.usage = st
 	e.usageStatus = st
+	if err := e.invalidateMeterCheckpoint(); err != nil {
+		e.usagePersist = true
+		return
+	}
 	src := e.meterSource
 	if src == nil {
 		ks := &kernelSource{
@@ -304,7 +309,15 @@ func (e *Engine) invalidateMeterCheckpoint() error {
 	if errors.Is(err, os.ErrNotExist) {
 		return nil
 	}
-	return err
+	if err != nil {
+		return err
+	}
+	dir, err := os.Open(filepath.Dir(e.cfg.MeterCheckpoint))
+	if err != nil {
+		return err
+	}
+	defer dir.Close()
+	return dir.Sync()
 }
 
 // shutdownUsage is the process stop sequence: the same hand-off as a

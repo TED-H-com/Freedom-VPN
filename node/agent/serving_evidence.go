@@ -36,7 +36,10 @@ func (e *Engine) attachServingRead(rep *api.ObservationReport) {
 		// Copying the checks in report prevents mutation of the actual decision.
 		// Status/error still come from Decide, including after withdrawal.
 		detail := fmt.Sprintf("read_at=%s source=%s candidate=%d verified=%t %s", r.At.Format(time.RFC3339Nano), r.Source, r.Generation, r.Verified, r.Evidence.ReportDetail())
-		c.Detail = sanitizeDetail(clipMsg(detail))
+		// ReportDetail already bounds and sanitizes kernel tokens. Generic
+		// detail redaction would mistake read timestamps for IPv6 addresses.
+		detail = clipMsg(detail)
+		c.Detail = &detail
 	}
 }
 
@@ -64,6 +67,8 @@ func (x timedApplyExecutor) NftBatch(ctx context.Context, script string) error {
 	// rollback mutation; the library has already retained the rejected rows.
 	if strings.Contains(script, "fvpn_baseline=1") {
 		x.timing.stopped = true
+	} else if strings.Contains(script, "fvpn_generation=") {
+		x.timing.stopped = false
 	}
 	return x.Executor.NftBatch(ctx, script)
 }
