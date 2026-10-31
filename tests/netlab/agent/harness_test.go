@@ -83,6 +83,37 @@ func prepareLab() error {
 	if err := writeAgentConfig(strings.TrimSpace(urlBytes), 3, 1); err != nil {
 		return err
 	}
+	if os.Getenv("FVPN_D116_MARKER") == "1" {
+		// D-116 marker exists before ordinary enrollment/Boot, not planted
+		// after a successful serving verdict. All commands stay in our lab.
+		marker := []byte(`add table inet fvpn_install
+add chain inet fvpn_install owner { comment "managed-by=fvpn-node-install"; }
+`)
+		if _, errOut, err := dockerExecStdin([]string{"nft", "-f", "-"}, marker); err != nil {
+			return fmt.Errorf("D-116 fixture: %v %s", err, errOut)
+		}
+		// nft add-table on an existing table is not a reliable metadata update.
+		// Recreate this TEST ONLY baseline in one transaction, preserving its
+		// exact rules, with a comment on the newly created table object.
+		baseline, errOut, err := dockerExec("nft", "list", "table", "inet", "fvpn")
+		if err != nil {
+			return fmt.Errorf("D-116 baseline read: %v %s", err, errOut)
+		}
+		baseline = strings.Replace(baseline, "table inet fvpn {", "table inet fvpn {\n comment \"managed-by=fvpn-node-install\"", 1)
+		if _, errOut, err := dockerExecStdin([]string{"nft", "-f", "-"}, []byte("delete table inet fvpn\n"+baseline)); err != nil {
+			return fmt.Errorf("D-116 commented baseline: %v %s", err, errOut)
+		}
+		text, errOut, err := dockerExec("nft", "list", "table", "inet", "fvpn")
+		if err != nil || !strings.Contains(text, `comment "managed-by=fvpn-node-install"`) {
+			return fmt.Errorf("D-116 table comment prerequisite absent: %v %s", err, errOut)
+		}
+		if _, errOut, err := dockerExecStdin([]string{"tee", labDir + "/before-enrollment.txt"}, []byte(text)); err != nil {
+			return fmt.Errorf("D-116 comment retention: %v %s", err, errOut)
+		}
+		if _, errOut, err := dockerExec("sh", "-c", "nft -j list ruleset >"+labDir+"/before-enrollment.json"); err != nil {
+			return fmt.Errorf("D-116 pre-enrollment read: %v %s", err, errOut)
+		}
+	}
 	if out, errOut, err := dockerExec("fvpn-agent", "enroll", "-config", labDir+"/agent.json", "-token-file", labDir+"/token"); err != nil {
 		return fmt.Errorf("enroll: %v\n%s%s", err, redact(out), redact(errOut))
 	}

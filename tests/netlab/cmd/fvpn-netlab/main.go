@@ -27,6 +27,8 @@ func main() {
 	}
 	var err error
 	switch os.Args[1] {
+	case "agent-trace":
+		err = agentTraceCmd(os.Args[2:])
 	case "apply":
 		err = applyCmd(os.Args[2:])
 	case "baseline":
@@ -61,13 +63,14 @@ func main() {
 }
 
 func usage() {
-	fmt.Fprintf(os.Stderr, "usage: fvpn-netlab apply|baseline|quarantine|verify|counters|hold|render|meter-path|inject\n")
+	fmt.Fprintf(os.Stderr, "usage: fvpn-netlab agent-trace|apply|baseline|quarantine|verify|counters|hold|render|meter-path|inject\n")
 }
 
 func applyCmd(args []string) error {
 	fs := flag.NewFlagSet("apply", flag.ContinueOnError)
 	path := fs.String("f", "-", "model JSON path or - for stdin")
 	prevPath := fs.String("prev", "", "optional previous counter JSON (§10.7)")
+	tracePath := fs.String("trace", "", "TEST ONLY: append Apply/guard command brackets as JSONL")
 	deadlineWindow := fs.Duration("deadline-window", 0, "TEST ONLY: map member deadline onto CLOCK_MONOTONIC immediately before Apply")
 	if err := fs.Parse(args); err != nil {
 		return err
@@ -91,7 +94,17 @@ func applyCmd(args []string) error {
 			m.Leases[i].DeadlineMono = &deadline
 		}
 	}
-	res, err := enforce.Apply(context.Background(), enforce.System{}, m, prev)
+	var res enforce.ApplyResult
+	if *tracePath != "" {
+		f, openErr := os.OpenFile(*tracePath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o600)
+		if openErr != nil {
+			return openErr
+		}
+		defer f.Close()
+		res, err = tracedApply(context.Background(), m, prev, f)
+	} else {
+		res, err = enforce.Apply(context.Background(), enforce.System{}, m, prev)
+	}
 	if printErr := writeResult(os.Stdout, m, res); printErr != nil && err == nil {
 		return printErr
 	}

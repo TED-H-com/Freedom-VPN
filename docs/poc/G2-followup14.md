@@ -356,6 +356,28 @@ the corrected probe capture (14.06s), and the new recovery test (1.11s).
 That successful retry does not erase the demonstrated continuity intermittency. No
 continuity assertion or admission rule was relaxed to obtain a green gate.
 
+## Follow-up 17: installer marker scope and AT10 measurement
+
+D-116 keeps the strict four-chain `inet fvpn` verifier. A separate unhooked
+`inet fvpn_install/owner` is outside that chain set and leaves both success
+and broken-owned-ruleset verdicts unchanged. A hooked drop in that table is
+still rejected; an `owner` inside `inet fvpn` remains `HOOK_PRIORITY_MISMATCH`.
+The real agent reaches serving with the separate marker present before
+enrollment. A table-level comment on `inet fvpn` also survives Apply and is
+tolerated; nft 1.0.9 requires text read-back to see that metadata. See the
+[dated scope proof](G2-installer-marker-2026-10-31.md). The separate table
+remains the installer default. These facts do not weaken or replace any of
+the six ISO-F6-01 recovery assertions above.
+
+The [dated AT10 timing report](G2-at10-reload-stream-2026-10-31.md) retains the
+full gate's two UDP timeouts and the final focused rerun's one, all with node
+ingress during guard-command brackets and no node egress, plus a complete
+20-generation real-agent campaign.
+Those packet/Apply observations establish correlation, with command-boundary
+uncertainty; they do not prove a precise kernel drop instant. The 1.5 s echo
+timeout and all acceptance criteria remain unchanged. The full gate still
+fails AT10; a passing separate agent measurement is not acceptance promotion.
+
 ## Running the campaign
 
 ```sh
