@@ -1762,6 +1762,14 @@ func (x *isolationRun) memberGrants() {
 		x.extra("member-grants-transition.json", evidence)
 		x.add("AT10", c)
 	}()
+	// The first counted flow drives ordinary initial FUP projection. It must
+	// precede the stability window, or the flow itself can invalidate it.
+	initial := x.proof(x.a1)
+	evidence["initial_counted_forwarding"] = initial
+	if !initial.Valid() {
+		c.Actual = "D-087 initial native counted forwarding unavailable"
+		return
+	}
 	var last json.RawMessage
 	stableSince := time.Now()
 	settling := []map[string]any{}
@@ -1796,12 +1804,6 @@ func (x *isolationRun) memberGrants() {
 	}
 	if e != nil || json.Unmarshal(before, &inv) != nil || len(inv.Node) != 5 || inv.Node[1] != "ready" || inv.Node[2] != "passed" || inv.Node[3] != inv.Node[4] || inv.Frozen || len(inv.Bindings) == 0 || len(inv.Publication) != 2 || inv.Publication[0] != "published" || inv.Publication[1] != "active" || inv.Offline != 60 {
 		c.Actual = "D-087 clean fixed-generation baseline absent"
-		return
-	}
-	initial := x.proof(x.a1)
-	evidence["initial_counted_forwarding"] = initial
-	if !initial.Valid() {
-		c.Actual = "D-087 initial native counted forwarding unavailable"
 		return
 	}
 	// Include the real baseline/meter/tunnel results before changing eligibility.
