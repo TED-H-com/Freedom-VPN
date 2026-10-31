@@ -37,6 +37,9 @@ func TestE2E_Followup16Fixtures(t *testing.T) {
 	r := &runner{t: t, lab: l, runID: runID, sourceCommit: strings.TrimSpace(string(head)), dir: filepath.Join(l.root, "docs/e2e/runs", time.Now().UTC().Format("2006-01-02"), "followup16", runID)}
 	defer r.finish()
 	s := &Stack{lab: l}
+	if err = s.SetDNSFixturePhase("initial"); err != nil {
+		t.Fatal(err)
+	}
 	admin := r.login(ctx, "e2e-admin", "admin")
 	if admin == nil {
 		return
@@ -49,7 +52,7 @@ func TestE2E_Followup16Fixtures(t *testing.T) {
 		t.Fatal(err)
 	}
 	rules := []any{}
-	for _, in := range []struct{ name, action string }{{"feed-01.example.invalid", "block"}, {"rebind.example.invalid", "allow"}} {
+	for _, in := range []struct{ name, action string }{{"feed-01.example.invalid", "block"}, {"blocked-cname.example.invalid", "block"}, {"rebind.example.invalid", "allow"}} {
 		rules = append(rules, map[string]any{"rule_id": uuid.New(), "domain": in.name, "include_subdomains": true, "action": in.action, "profile_id": nil, "reason": "admin_rule", "revision": "1"})
 	}
 	rev, _, err := s.ActivatePolicy(ctx, b, "domain_rule_set", "fixture-negative-rules", map[string]any{"rules": rules})
@@ -316,12 +319,21 @@ func (r *runner) fixtureDNSNegative(ctx context.Context, s *Stack) {
 			answer bool
 		}{
 			{"rr.example.invalid", 1, 0, true}, {"rr.example.invalid", 28, 0, true}, {"alias.example.invalid", 5, 0, true}, {"service.example.invalid", 64, 0, true}, {"service.example.invalid", 65, 0, true},
-			{"feed-01.example.invalid", 1, 3, false}, {"feed-01.example.invalid", 28, 3, false}, {"feed-01.example.invalid", 5, 3, false}, {"feed-01.example.invalid", 64, 3, false}, {"feed-01.example.invalid", 65, 3, false},
+			{"feed-01.example.invalid", 1, 3, false}, {"feed-01.example.invalid", 28, 3, false}, {"blocked-cname.example.invalid", 5, 3, false}, {"feed-01.example.invalid", 64, 3, false}, {"feed-01.example.invalid", 65, 3, false},
 			{"blocked-alias.example.invalid", 1, 3, false}, {"sub.feed-01.example.invalid", 1, 3, false}, {"notfeed-01.example.invalid", 1, 0, true}, {"absent.example.invalid", 1, 3, false},
 		} {
+			// Every blocked fixture except the intentionally absent name exists at
+			// the owned authority. An absent upstream answer cannot pass a rule.
+			if !tc.answer && tc.name != "absent.example.invalid" {
+				control, e := s.fixtureProbe(ctx, s.lab.node, "-mode", "dns", "-addr", s.lab.labPrefix+".54:53", "-name", tc.name, "-type", fmt.Sprint(tc.typ))
+				noteJSON(&rec, fmt.Sprintf("authority_%d_%t", len(rec.Observations), proto), control)
+				if e != nil || control.RCode != 0 || len(control.Types) == 0 {
+					rec.Status = StatusFail
+				}
+			}
 			got, e := s.ProbeNativeDNS(ctx, "", tc.name, tc.typ, proto, "")
 			key := fmt.Sprintf("case_%d_%t", len(rec.Observations), proto)
-			noteJSON(&rec, key, map[string]any{"rr_type": tc.typ, "tcp": proto, "expected_rcode": tc.rcode, "expected_answer": tc.answer, "actual": got})
+			noteJSON(&rec, key, map[string]any{"case": strings.Split(tc.name, ".")[0], "rr_type": tc.typ, "tcp": proto, "expected_rcode": tc.rcode, "expected_answer": tc.answer, "actual": got})
 			if e != nil || !got.Available || got.RCode != tc.rcode || tc.answer && len(got.Types) == 0 || !tc.answer && len(got.Types) != 0 {
 				rec.Status = StatusFail
 			}
@@ -338,12 +350,33 @@ func (r *runner) fixtureDNSNegative(ctx context.Context, s *Stack) {
 		rec.Status = StatusFail
 		return
 	}
+	wait, cancel := context.WithTimeout(ctx, 4*time.Second)
+	var authority FixtureProbeResult
+	changedAuthority := waitUntil(wait, 200*time.Millisecond, func() bool {
+		authority, e = s.fixtureProbe(wait, s.lab.node, "-mode", "dns", "-addr", s.lab.labPrefix+".54:53", "-name", "cache.example.invalid", "-expect", "10.203.0.30")
+		return e == nil && authority.ExpectedAnswer
+	})
+	cancel()
+	noteJSON(&rec, "changed_authority", authority)
+	if !changedAuthority {
+		rec.Status = StatusFail
+	}
+	negative, e := s.ProbeNativeDNS(ctx, "", "absent.example.invalid", 1, false, "")
+	noteJSON(&rec, "negative_cache_before_ttl", negative)
+	if e != nil || negative.RCode != 3 {
+		rec.Status = StatusFail
+	}
 	cached, e := s.ProbeNativeDNS(ctx, "", "cache.example.invalid", 1, false, s.lab.originIP)
 	noteJSON(&rec, "cache_before_ttl", cached)
 	if e != nil || !cached.ExpectedAnswer {
 		rec.Status = StatusFail
 	}
 	time.Sleep(12 * time.Second)
+	negative, e = s.ProbeNativeDNS(ctx, "", "absent.example.invalid", 1, false, s.lab.originIP)
+	noteJSON(&rec, "negative_cache_after_ttl", negative)
+	if e != nil || !negative.ExpectedAnswer {
+		rec.Status = StatusFail
+	}
 	changed, e := s.ProbeNativeDNS(ctx, "", "cache.example.invalid", 1, false, "10.203.0.30")
 	noteJSON(&rec, "cache_after_ttl", changed)
 	if e != nil || !changed.ExpectedAnswer {

@@ -1,5 +1,5 @@
 $ORIGIN example.invalid.
-@   3600 IN SOA ns.example.invalid. hostmaster.example.invalid. 1 3600 600 86400 60
+@   3600 IN SOA ns.example.invalid. hostmaster.example.invalid. 1001 3600 600 86400 5
 @   3600 IN NS  ns.example.invalid.
 ns  3600 IN A   172.28.30.54
 lab 3600 IN A   172.28.30.53
@@ -20,3 +20,4 @@ notfeed-01 5 IN A 192.0.3.10
 cache 10 IN A 192.0.3.10
 rebind 5 IN A 192.0.3.10
 rebind 5 IN AAAA 2001:db8:30::10
+blocked-cname 5 IN CNAME rr.example.invalid.

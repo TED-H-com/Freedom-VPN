@@ -20,6 +20,8 @@ import (
 const fixtureProbe = "/usr/local/bin/fvpn-e2e-fixture-probe"
 
 type FixtureProbeResult struct {
+	AuthorityTTL   uint32   `json:"authority_ttl"`
+	HasSOA         bool     `json:"has_soa"`
 	Available      bool     `json:"available"`
 	RCode          int      `json:"rcode"`
 	Types          []uint16 `json:"types"`
@@ -196,7 +198,8 @@ func (s *Stack) SetDNSFixturePhase(phase string) error {
 	prefix := s.lab.originIP[:strings.LastIndex(s.lab.originIP, ".")]
 	text = strings.ReplaceAll(text, "192.0.3.", prefix+".")
 	if phase == "private" {
-		text = strings.Replace(text, ". 1 3600 600 86400 60", ". 2 3600 600 86400 60", 1)
+		text = strings.Replace(text, ". 1001 3600 600 86400 5", ". 1002 3600 600 86400 5", 1)
+		text += "absent 5 IN A " + s.lab.originIP + "\n"
 		text = strings.Replace(text, "cache 10 IN A "+s.lab.originIP, "cache 10 IN A 10.203.0.30", 1)
 		text = strings.Replace(text, "rebind 5 IN A "+s.lab.originIP, "rebind 5 IN A 10.203.0.30", 1)
 		text = strings.Replace(text, "rebind 5 IN AAAA 2001:db8:30::10", "rebind 5 IN AAAA fd00::30", 1)

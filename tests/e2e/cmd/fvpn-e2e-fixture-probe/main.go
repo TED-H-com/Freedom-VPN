@@ -19,6 +19,8 @@ import (
 )
 
 type result struct {
+	AuthorityTTL   uint32   `json:"authority_ttl"`
+	HasSOA         bool     `json:"has_soa"`
 	Available      bool     `json:"available"`
 	RCode          int      `json:"rcode"`
 	Types          []uint16 `json:"types"`
@@ -99,6 +101,8 @@ func main() {
 		}
 		out.Available = true
 		out.RCode = int(response.RCode)
+		out.AuthorityTTL = response.AuthorityTTL
+		out.HasSOA = response.HasSOA
 		for _, a := range response.Answers {
 			out.Types = append(out.Types, uint16(a.Type))
 			out.TTLs = append(out.TTLs, a.TTL)
