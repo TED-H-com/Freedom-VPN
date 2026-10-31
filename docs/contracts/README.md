@@ -255,6 +255,38 @@ does not grant a role. The task's proposed `/api/v1/auth/*` aliases do not exist
 on main; adding them would violate the fixed endpoint count. No aliases are
 introduced by this revision.
 
+## Revision 13
+
+API version **1.9.0**. The endpoint count remains **49**.
+
+revision 13 (2026-10-31): `ObservationAccepted.identity_frozen` (D-088); `source: installer` on update results (D-089); error code `TC_FOREIGN_FILTER` (D-085).
+
+`ObservationAccepted.identity_frozen` is an optional, non-nullable boolean. When
+true, the reporting incarnation is frozen by the clone detector (D-072 / D-084):
+the agent must drop every member grant immediately and renew its lease at once.
+Absent or false means no change; the three existing required fields are unchanged.
+
+`UpdateResult.source` is optional, non-nullable, and accepts `central` or
+`installer`, defaulting to `central`. An installer result uses a node-minted
+UUIDv5 job ID over the release ID, manifest hash, canonical pending record and
+incarnation, with attempt 1. Central stores it as installer-applied node evidence,
+never as a batch result. Unknown central job IDs without `source: installer`
+remain `404 RESOURCE_NOT_FOUND`; `submitUpdateResult` documents that response.
+The read-back schemas `NodeUpdateSummary`, `UpdateJobSummary` and `UpdateTarget`
+carry the same optional source enum and default. Batch evidence remains
+central-issued. All four properties reference `UpdateResultSource`, keeping the
+default on the shared enum so TypeScript generation preserves optionality.
+`contracts/ts/revision13.typecheck.ts` checks omission and rejects invalid values.
+Hash validation covers `source` when present; omission remains
+omission in generated models so existing payload hashes are preserved.
+
+`TC_FOREIGN_FILTER` means serving verification found a tc filter on the member
+path (D-085); the node withdrew serving and installed the baseline. It is shared
+by observation `errors[].code` and `checks[].error_code`, with the same HTTP
+mapping as `HEALTH_CHECK_FAILED` (500, non-retryable, node-local) in `pkg/apierr`
+and zh-TW/English portal messages. Runtime producers and consumers are separate
+owner follow-ups; this revision changes the contract only.
+
 ## Revision 12
 
 API version **1.8.0**. The endpoint count is **49**. No new `ErrorCode`. Audit actions stay free strings.
