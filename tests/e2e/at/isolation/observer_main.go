@@ -270,6 +270,9 @@ func nftClock() {
 			continue
 		}
 		entries, _ := doc["nftables"].([]any)
+		if len(entries) == 0 {
+			entries = []any{doc}
+		}
 		for _, entry := range entries {
 			actions, _ := entry.(map[string]any)
 			for action, obj := range actions {
