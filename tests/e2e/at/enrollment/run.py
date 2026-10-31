@@ -39,29 +39,56 @@ MISSING = {
     "peer_uniqueness": "ENR-04 join cycle did not record EnrollmentPeerInventory; devstack follow-up 12 PR #204 exports JoinEnrolledIdentity",
     "distinct_first_boot": "ENR-07 MachineIdentityFingerprints was not read; devstack follow-up 12 PR #204 exports it",
     "machine_identity": "ENR-07 MachineIdentityFingerprints was not read; devstack follow-up 12 PR #204 exports it",
-    "counted_unacked_usage": "ENR-05 stays blocked after devstack follow-up 13 (#219). HoldUsageAcknowledgements, UsageLedgerSnapshot and CountedMemberTraffic are not exported. Owner: w4-usage, then devstack. Not emulated.",
-    "installer_rerun": "ENR-06 stays blocked after devstack follow-up 13 (#219). RerunInstaller is not exported. Owner: packaging/installer, then devstack. Not emulated.",
-    "identity_ledger_preserved": "ENR-05/ENR-06: counted unacknowledged ledger and installer rerun required. Not emulated.",
-    "controlled_reinstall": "ENR-06 stays blocked after devstack follow-up 13 (#219). ControlledReinstall is not exported. Owner: packaging/installer, then devstack. Not emulated.",
-    "old_certificate_denied": "ENR-06: old-certificate mTLS rejection stays inside ControlledReinstall. Not emulated.",
-    "historical_usage_retained": "ENR-05/ENR-06: counted usage across reinstall is not exported. listNodeIncarnations usage retention is measured separately. Not emulated.",
-    "cloned_identity_conflict": "ENR-07 / devstack follow-up 14: StartClonedIdentityFixture was not observed on a second /24. The export has no network argument.",
+    "counted_unacked_usage": "ENR-05 stays blocked, waiting on devstack f15. Expected exports: HoldUsageAcknowledgements(ctx, slot, hold), UsageLedgerSnapshot(ctx, slot), CountedMemberTraffic. Not emulated.",
+    "installer_rerun": "ENR-06 stays blocked, waiting on devstack f15. Expected export: RerunInstaller(ctx, slot). Not emulated.",
+    "identity_ledger_preserved": "ENR-05/ENR-06 stay blocked, waiting on devstack f15. Counted unacknowledged ledger and installer rerun required. Not emulated.",
+    "controlled_reinstall": "ENR-06 stays blocked, waiting on devstack f15. Expected export: ControlledReinstall(ctx, slot, enrollment). Not emulated.",
+    "old_certificate_denied": "ENR-06 stays blocked, waiting on devstack f15. Old-certificate mTLS rejection stays inside ControlledReinstall(ctx, slot, enrollment). Not emulated.",
+    "historical_usage_retained": "ENR-05/ENR-06 stay blocked, waiting on devstack f15. Counted usage across RerunInstaller and ControlledReinstall is not exported. Not emulated.",
+    "cloned_identity_conflict": "ENR-07: StartClonedIdentityFixture was not observed on fvpn-<prefix>-node-clone-net.",
 }
 
-# Orchestrator review of the bebfe230 harness burst. A prior fail stays in
-# prior_checks. It stops blocking only when this run's rate_limit_review passes
-# with http_429 0 and the named checks pass. Any other prior fail still blocks.
+# D-078. A prior fail stays in prior_checks. It stops blocking only when this
+# run's rate_limit_review passes the behaviour rule and the named checks pass.
+# http_429 count is evidence, not the pass condition. Any other prior fail
+# still blocks.
 REVIEWED = {
     "AT06": {
         "commit": "286eb57b44c2e783257767918680a0e1f097f106",
-        "what_changed": "Harness Retry-After retries for HTTP 429 RATE_LIMITED landed in 286eb57 (#210). The four bebfe230 failures were a burst against browser BrowserRate 10/s burst 30. Run 35e542f8 recorded two retried browser 429s and then failed the Go process on that review signal; those two rows are the same signal, not a new product failure.",
-        "sentence": "Prior run bebfe230 429 RATE_LIMITED failures on audit_read, issue_reinstall, incarnation_history and probe_process are reviewed as resolved: harness Retry-After retries landed in 286eb57b44c2e783257767918680a0e1f097f106 (#210); this run recorded http_429 0 and those checks passed. Limiter class was browser BrowserRate 10/s burst 30. Run 35e542f8 probe_process and rate_limit_review stay in prior_checks and stop blocking on the same zero-429 evidence.",
+        "what_changed": "D-078 scores rate_limit_review by behaviour. A 429 that carries Retry-After and whose retry of the same request succeeds is the browser limiter working. The criterion that the review resolves only when a later run records http_429 0 is withdrawn. Harness Retry-After retries remain 286eb57 (#210).",
+        "sentence": "Prior run bebfe230 429 RATE_LIMITED failures on audit_read, issue_reinstall, incarnation_history and probe_process are reviewed as resolved under D-078. Harness Retry-After retries landed in 286eb57b44c2e783257767918680a0e1f097f106 (#210). Run 60a7102e is re-scored in this record: raw http_429 2, both class browser, named checks passed, join phase http_429 0. The saved samples do not include a Retry-After value. Run 35e542f8 probe_process and rate_limit_review stay in prior_checks and stop blocking on that behaviour evidence. Run 1d5c02a4 probe_process was the clone-present parser (wget dropped the 403 body); it stops blocking when this probe exits 0. Limiter class was browser BrowserRate 10/s burst 30.",
         "evidence_names": ("audit_read", "issue_reinstall", "incarnation_history", "probe_process"),
+        "rate_limit": True,
         "runs": (
             {"run_id": "bebfe230-26d4-4e3d-b052-81d258d04e07",
              "names": ("audit_read", "issue_reinstall", "incarnation_history", "probe_process")},
             {"run_id": "35e542f8-730e-4be0-8214-e4a9dd818c40",
              "names": ("probe_process", "rate_limit_review")},
+            {"run_id": "1d5c02a4-b254-4a9b-b687-b1535428fb3f",
+             "names": ("probe_process",)},
+        ),
+        "rescored_follow_up_3": {
+            "run_id": "60a7102e-b824-4927-a576-62033f458157",
+            "raw_status": "blocked",
+            "http_429": 2,
+            "join_http_429": 0,
+            "header_value_recorded": False,
+            "samples": [
+                {"class": "browser", "method": "GET", "path": "/api/v1/admin/audit-events"},
+                {"class": "browser", "method": "GET", "path": "/api/v1/admin/nodes/01a18f10-3f31-7ae7-890a-55354e77cec0/incarnations"},
+            ],
+            "named_checks_passed": ["audit_read", "issue_reinstall", "incarnation_history"],
+            "reasoning": "D-078 re-score of follow-up 3 run 60a7102e. The raw rate_limit_review stayed blocked with http_429 2 and those two paths; that count and the samples stay in prior_checks. Both samples are limiter class browser. The saved samples do not include a Retry-After header value, so none is invented here. On that run callHeaders retried each 429 with the same Idempotency-Key using the Retry-After header (1-30s; the 1s default applies only when the header is absent). The product emits Retry-After on RATE_LIMITED. audit_read, issue_reinstall and incarnation_history passed, which is the evidence those retried requests succeeded inside the window. The join-phase rate_limit_review on that run recorded http_429 0. Under D-078 that is the limiter working. A 429 without Retry-After, a retry that is still 429, a non-browser class on this browser-table review, or any join-phase 429 remains a finding. The zero-count resolution criterion is withdrawn.",
+        },
+    },
+    "AT07": {
+        "commit": "harness wget --content-on-error",
+        "what_changed": "Run 1d5c02a4 observed the second /24, one frozen conflict, one audit, a stable count, revoke 202, a new incarnation, and identity_conflict {mapping_frozen:false, conflict_count:0, last_conflict_at:null}. The clone's desired-state request returned HTTP 403. wget omitted --content-on-error, so the body was empty and the error code was not parsed. That process exit is the same parser miss. It is not a product conflict failure.",
+        "sentence": "Run 1d5c02a4 cloned_identity_conflict and probe_process failed because wget dropped the HTTP 403 body. The conflict, freeze, audit, revoke, and re-enroll observations in that record stay. This run reads the error code with --content-on-error.",
+        "evidence_names": ("cloned_identity_conflict", "probe_process"),
+        "runs": (
+            {"run_id": "1d5c02a4-b254-4a9b-b687-b1535428fb3f",
+             "names": ("cloned_identity_conflict", "probe_process")},
         ),
     },
 }
@@ -105,10 +132,33 @@ def observation(detail):
     return str(detail)
 
 
-def http_429(detail):
-    if isinstance(detail, dict) and detail.get("http_429") == 0:
-        return 0
-    return 1
+def flag(value):
+    return value is True or value == "true"
+
+
+def behaviour_ok(detail):
+    """D-078. A zero count still passes. A positive count passes only when every
+    sample is browser class, carried Retry-After, and the next attempt succeeded.
+    The join phase must stay at 0. The count itself is not the pass condition.
+    """
+    if not isinstance(detail, dict) or detail.get("behaviour") == "fail":
+        return False
+    count = detail.get("http_429")
+    if detail.get("phase") == "join":
+        return count == 0 and detail.get("behaviour", "pass") == "pass"
+    if count == 0:
+        return detail.get("behaviour", "pass") == "pass"
+    if detail.get("behaviour") != "pass" or not isinstance(count, int):
+        return False
+    samples = detail.get("samples")
+    if not isinstance(samples, list) or len(samples) != count:
+        return False
+    for sample in samples:
+        if not isinstance(sample, dict) or sample.get("class") != "browser":
+            return False
+        if not flag(sample.get("retry_after")) or not flag(sample.get("retry_succeeded")):
+            return False
+    return True
 
 
 def review_evidence(at, checks):
@@ -126,8 +176,10 @@ def review_evidence(at, checks):
             continue
         if not hits or any(hit["status"] != "pass" for hit in hits):
             return False
+    if not spec.get("rate_limit"):
+        return True
     reviews = by_name.get("rate_limit_review", [])
-    return bool(reviews) and all(hit["status"] == "pass" and http_429(hit["detail"]) == 0 for hit in reviews)
+    return bool(reviews) and all(hit["status"] == "pass" and behaviour_ok(hit["detail"]) for hit in reviews)
 
 
 def review_covers(at, prior, checks):
@@ -170,11 +222,12 @@ def records(meta, observed, prior):
                       checks=checks, prior_checks=prior[at])
         if at in REVIEWED:
             disposition = "not_applied"
-            if review_evidence(at, checks) and status == "pass":
+            uncovered = any(c["status"] == "fail" and not review_covers(at, c, checks) for c in prior[at])
+            if review_evidence(at, checks) and not uncovered:
                 disposition = "resolved"
-            elif any(c["name"] == "rate_limit_review" and (c["status"] != "pass" or http_429(c["detail"]) != 0) for c in checks):
+            elif any(c["name"] == "rate_limit_review" and (c["status"] != "pass" or not behaviour_ok(c["detail"])) for c in checks):
                 disposition = "recurs"
-            record["prior_failure_review"] = {
+            review = {
                 "disposition": disposition,
                 "run_id": REVIEWED[at]["runs"][0]["run_id"],
                 "names": list(REVIEWED[at]["runs"][0]["names"]),
@@ -182,12 +235,19 @@ def records(meta, observed, prior):
                                 for group in REVIEWED[at]["runs"][1:]],
                 "commit": REVIEWED[at]["commit"],
                 "what_changed": REVIEWED[at]["what_changed"],
-                "limiter_class": "browser",
-                "bucket": "BrowserRate",
-                "per_second": 10,
-                "burst": 30,
-                "owner_if_recurs": "control",
             }
+            if REVIEWED[at].get("rate_limit"):
+                review.update({
+                    "limiter_class": "browser",
+                    "bucket": "BrowserRate",
+                    "per_second": 10,
+                    "burst": 30,
+                    "owner_if_recurs": "control",
+                    "rule": "D-078: pass when every 429 carried Retry-After, the same request succeeded on the next attempt, every sample class is browser, and the join phase recorded http_429 0. The count is informational.",
+                })
+            if "rescored_follow_up_3" in REVIEWED[at]:
+                review["rescored_follow_up_3"] = REVIEWED[at]["rescored_follow_up_3"]
+            record["prior_failure_review"] = review
         result[at] = record
     return result
 
@@ -319,8 +379,9 @@ def main():
                 meta["image_digests"] = digests()
                 meta["image_evidence"] = "immutable running container image IDs"
                 if compile_probe() == 0:
-                    code = run("live_probe", [str(binary), "-test.v", "-test.run=^TestAT06_AT07_Live$", "-test.timeout=30m"],
-                               {"FVPN_E2E": "1", "FVPN_AT_ENROLLMENT_PHASE": "full", "FVPN_AT_ENROLLMENT_PROBE": str(probe_path)})
+                    code = run("live_probe", [str(binary), "-test.v", "-test.run=^TestAT06_AT07_Live$", "-test.timeout=45m"],
+                               {"FVPN_E2E": "1", "FVPN_AT_ENROLLMENT_PHASE": "full", "FVPN_AT_ENROLLMENT_PROBE": str(probe_path)},
+                               timeout=2700)
                     if code:
                         for at in REQUIRED:
                             note(at, "probe_process", "fail", "Live probe process returned nonzero; completed checks retained")

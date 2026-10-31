@@ -379,3 +379,45 @@ records: docs/e2e/at/enrollment; run 60a7102e-b824-4927-a576-62033f458157
 ```
 
 Runner exit 1. `make -f mk/at-enrollment.mk at-enrollment` exit 2. Final inventory `{containers:0,networks:0,volumes:0,images:0}`.
+
+## Follow-up 4 — D-078 and the clone-presentation network
+
+HEAD at measurement was `9e493e8` (devstack follow-up 14, `#240`). The harness was dirty: D-078 scoring and the ENR-07 recovery path were uncommitted. The JSON `source.dirty` field stays true. Tree SHA-256 excludes `docs/e2e/at/enrollment/`.
+
+`StartClonedIdentityFixture(ctx, "node")` is unchanged. `AttachClonePresentationNetwork` is called through `tests/e2e/internal/labstack`. On base 12000 the presentation network was `fvpn-w4-enroll-node-clone-net`, `172.29.38.0/24`, control `172.29.38.30`, clone netns `172.29.38.23`. The process container rewrote `lab-hosts` and did not pass `--add-host`. `same_lab_slash24` and `same_origin_slash24` stayed true because the clone netns remains on `172.28.38.0/24` (`172.28.38.129`) and `192.0.11.0/24` (`192.0.11.23`). The agent dials `agent.example.invalid`, which `lab-hosts` resolves to the presentation control address, so the compatibility domain is `172.29.38.0/24`.
+
+ENR-05 and ENR-06 stay blocked, waiting on devstack f15. Expected exports: `HoldUsageAcknowledgements(ctx, slot, hold)`, `UsageLedgerSnapshot(ctx, slot)`, `CountedMemberTraffic`, `RerunInstaller(ctx, slot)`, `ControlledReinstall(ctx, slot, enrollment)`. `fvpn-agent usage snapshot [-json]` is merged and is not the usage-hold hooks. `fvpn-node-install` is on main (`#239`) and is not the installer wrappers. The entrypoint re-enroll used for the clone conflict is not ENR-06. The harness did not emulate those hooks.
+
+Attempt `1d5c02a4-b254-4a9b-b687-b1535428fb3f` is retained. Its probe exited 1 because wget omitted `--content-on-error` and the 403 body was empty. The conflict observations in that directory stay. The `IDENTITY_REVOKED` pass is claimed from `ec2e6279` only.
+
+Run: `ec2e6279-0649-4d47-b31a-cf13aeba7303`, UTC
+`2026-10-31T02:18:00Z`–`2026-10-31T02:23:47Z`.
+Source: `9e493e8f6407dd7f091963fb7e133a11123305c3` (dirty), tree SHA-256
+`d57359f925f2860a4efab951ed1c6d10025bfe916d3ff4474b4a57203437d2d5`.
+Live test-binary SHA-256:
+`93b735ac8059ca086f429e560d32d20cf9f07e1798de2ca8a47944fc9ab0f6f7`.
+
+| Cycle | control | worker | node |
+|---|---|---|---|
+| acceptance | `sha256:223129268f08d40ebc5b8dfa252b0ce750923b88fd7f5921f5ff18acefef56ed` | `sha256:52aaf09e25f23bd7c6c991e835a07ecba5f8c20477fc39fd01b4080bd0447dd7` | `sha256:3eb87e3696629ddffe62cb9922cfdf3b3f6d2cb42095dad62ae4bfbea28c4e0a` |
+| join | `sha256:43187b2434a362aa814145215dc7f4e0790206ab3336686b91aea8648ba8e7b0` | `sha256:bd3a46c7c33796db1828b0f5b0972c5f859475856d1a36844a7c5eae1c590c37` | `sha256:a82e73d0d00a964035f29e07bc09fcdded9294f79ee764b9321c795887b46642` |
+
+Full-phase `rate_limit_review`: `behaviour` pass, `http_429` 2, both class `browser`, `retry_after` true, `retry_succeeded` true. Join-phase `rate_limit_review`: `behaviour` pass, `http_429` 0, `samples` empty. Follow-up 3 run `60a7102e` is re-scored in `prior_failure_review.rescored_follow_up_3` with `header_value_recorded` false. AT06 disposition `resolved`. Counts: AT06 305 passing / 0 blocked / 0 failed; AT07 16 passing / 6 blocked / 0 failed.
+
+`cloned_identity_conflict` passed. `Observe` frozen and stable: `conflicts` 1, `mapping_frozen` true, `endpoint_rows` 1, one `node.identity.conflict` audit before and after the 8s wait. `projection_frozen`: HTTP 200, object, `conflict_count` 1, `last_conflict_at` present, `provisioning_state` `failed`, `member_forwarding_observed` false, `safety_status` `failed`. Revoke HTTP 202. Replacement incarnation `01a18fc3-386b-716e-960f-fa63faeb507a` (old `01a18fc1-4a36-76d7-b0de-b274b6d4486c`). Projection after re-enroll and after the clone presented again: object `{mapping_frozen: false, conflict_count: 0, last_conflict_at: null}`, `provisioning_state` `applying`. Clone desired-state: HTTP 403 `IDENTITY_REVOKED`, `clone_denied` true. `Observe` after re-enroll on the old incarnation: `conflicts` 1, `mapping_frozen` true, `same_identity` false.
+
+```text
+fresh_teardown: exit 0
+fresh_startup: exit 0
+compile_probe: exit 0
+live_probe: exit 0
+join_teardown: exit 0
+join_startup: exit 0
+live_probe_join: exit 0
+final_teardown: exit 0
+AT06: pass
+AT07: blocked: ENR-05 stays blocked, waiting on devstack f15.
+records: docs/e2e/at/enrollment; run ec2e6279-0649-4d47-b31a-cf13aeba7303
+```
+
+Runner exit 1 because AT07 is blocked. `make -f mk/at-enrollment.mk at-enrollment` exit 2 by design. Final inventory `{containers:0,networks:0,volumes:0,images:0}`.

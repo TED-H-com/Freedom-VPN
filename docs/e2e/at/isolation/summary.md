@@ -1,33 +1,60 @@
-# Follow-up 4 — serving blocked before ingress measurement
+# Follow-up 5 — publication served; three cases stay blocked
 
-AT10, AT11, AT12 and AT13 stay **blocked**. No counted member byte was recorded. The aggregate run exits **2** after writing every product record. A Go failure here is the records-first gate. The four mechanism controls pass and do not promote a product AT.
+AT10, AT11, AT12 and AT13 stay **blocked**. Each blocked AT has a subset that passed and one case that stayed blocked. The aggregate Go test fails after writing every product record. Mechanism passes do not promote a blocked product result.
 
-Live run: `fa0074cc-3b1a-403d-b8c2-3a3439fe2b7e`, source
-`491a307dd505e33b14dc0e993aa7e86b28e82f68` (`source_dirty=false`; main baseline `205633f`, which includes #216 agent follow-up 18, #219 devstack follow-up 13, #220 whole-ruleset `VerifyServing`, and #231 members follow-up 6).
-Product UTC window: `2026-10-31T00:27:07Z`–`2026-10-31T00:31:43Z`.
-Node incarnation `01a18f5a-7265-77d1-b36b-b40cff08d76d`.
-Image IDs are in each JSON record. Mechanism lab `ok` in 18.198 s; `TestIsolationAssembled` 276.10 s.
-`convergence-timeline.json` has no samples. The sampler starts only after publication succeeds.
+Live run: `c0106e5d-d8e8-400b-abe0-181d6428fc55`, source
+`7fa0443c532b1c9a395cd93620152fb6902584ae` (`source_dirty=false`).
+Main baseline of that commit is `9e493e8` (`roadmap: w3-devstack-e2e follow-up 14 merged (#240)`).
+`node/enforce/verify_foreign.go` in the built tree is `2473acf` (#220).
+`git log -1 origin/main -- node/enforce/verify_foreign.go` at record time is
+`a4191fa` (`enforce: tolerate loopback-scoped foreign nft rules (D-079)`, #241).
+That commit is not an ancestor of this run.
+Product UTC window: `2026-10-31T01:58:35Z`–`2026-10-31T02:13:10Z`.
+Node incarnation `01a18fae-3353-7c1d-8c83-28a8fba176fd`.
+Image IDs are in each JSON record. Mechanism lab `ok` in 18.262 s; `TestIsolationAssembled` 875.17 s.
+`make -f mk/at-isolation.mk at-isolation` exited 1 at the prefix leftover check.
+The Go test had already written the records. `fvpn-w4-isolation-isolation-target` was still attached to `fvpn-w4-isolation-origin`, so `fvpn-w4-isolation-cache-node:local` could not be removed.
 
 | Product AT | Status / evidence | Counted positive control in the same record | Deciding observation |
 |---|---|---|---|
-| AT10 | blocked — [JSON](AT10.json), [Markdown](AT10.md) | none; publication never served | `serving setup` blocked. Owner `w3-devstack-e2e: node netns table ip nat POSTROUTING xt SNAT for 127.0.0.11`. Accepted observation at `2026-10-31T00:31:16.688055275Z`: lease, qos and source_binding `failed` / `FLOWTABLE_BYPASS`; reasons `["safety_check_failed"]`. `provisional lease reports AWAITING_MEMBER_GRANTS` blocked: agent follow-up 18 is on this main and the grant-less window was not sampled. |
-| AT11 | blocked — [JSON](AT11.json), [Markdown](AT11.md) | none | `IPv6 platform matrix` stays blocked. Owner `w3-devstack-e2e: real IPv6 and platform paths are devstack backlog`. `harness-exports.md` exposes only `InjectMemberIngress` and `ObserveMemberIngress`. |
-| AT12 | blocked — [JSON](AT12.json), [Markdown](AT12.md) | none | `designated DNS exception` blocked, owner `w3-devstack-e2e: resolver on member underlay`. `unknown/spoofed member source` blocked: `ObserveMemberIngress` was not called because serving setup failed. |
-| AT13 | blocked — [JSON](AT13.json), [Markdown](AT13.md) | none | `post-revoke kernel ingress attribution`, `short whole-node lease expiry` and `lease member expiry` were not measured. The fleet-config PUT was not issued. `continuous crash/NetBird/reboot/updater transitions` stays owner `acceptance / operator`. |
+| AT10 | blocked — subset passed, case blocked — [JSON](AT10.json), [Markdown](AT10.md) | six destination cases and the interface change, device `01a18faf-79c7-795e-ae29-a7941d760977`, bytes `0`→`2633` at `2026-10-31T02:00:37Z` | Destination cases passed (`destination_positive_controls` `without_positive=` empty). `provisional lease reports AWAITING_MEMBER_GRANTS` blocked: `windows=0`, `codes=` empty. Owner `w2-agent-core`. |
+| AT11 | blocked — subset passed, case blocked — [JSON](AT11.json), [Markdown](AT11.md) | metadata and deprecated-6to4, same counted device | `IPv6 platform matrix` stays blocked. Owner `w3-devstack-e2e: real IPv6 and platform paths are devstack backlog`. |
+| AT12 | blocked — subset passed, case blocked — [JSON](AT12.json), [Markdown](AT12.md) | peer, management, forged source, and publication-withdrawal checks | `designated DNS exception` blocked. Resolver `172.28.33.40` still routes `dev eth0`. Owner `w3-devstack-e2e: resolver on member underlay`. Forged `100.64.7.7` passed: `ctunku` +1 and zero forwarded bytes; admitted `u_01a18faf79c7795eae29a7941d760977` +1. |
+| AT13 | blocked — subset passed, case blocked — [JSON](AT13.json), [Markdown](AT13.md) | disable, revoke, post-revoke ingress, restart, finite-member expiry, whole-node expiry | `continuous crash/NetBird/reboot/updater transitions` stays blocked. Owner `acceptance / operator`. Post-revoke: revoked `100.93.66.239` moved only `ctunku` by 1 packet / 29 bytes; sibling `u_01a18faf79c7795eae29a7941d760977` +1 and `d_01a18faf79c7795eae29a7941d760977` +1. Whole-node expiry passed at ceiling 60, then restored 86400. |
 
-## Why serving stopped
+## What let publication succeed
 
-Before the publication PUT the node was healthy: provisioning `ready`, safety `passed`, desired and applied generation 1, lease `not_run` (`support/publish.md`, `2026-10-31T00:27:42.469995034Z`). Shared `runner.publish` returned 202 for operation `22ecf90f-847a-481d-a58c-8fcd45cb32b7` (`node.publish`) and that operation was still `running` after the poll, step `pending NODE_NOT_SERVICEABLE member_forwarding_unconfirmed`. The isolation publication PUT then returned `422 NODE_NOT_SERVICEABLE` with failed checks `provisioning_state=applying` and `safety_status=failed`.
+Devstack follow-up 14 (PR #240, base `9e493e8`) is the change that let this run pass the serving gate. The node entrypoint deletes `table ip nat` before the agent starts. Publication `2d52a3de-5fc9-4dbb-b85e-b931e1ece186` (`node.publish`) succeeded at `2026-10-31T01:59:18Z`. The accepted read-back at `2026-10-31T01:59:47.09586838Z` (`report_id` `01a18faf-3697-7d4b-8bd9-7ea44b5ae7e5`) has `safety_status=passed`, `provisioning_state=ready`, `member_forwarding_enabled=true`, `forwarding_block_reasons=[]`, and lease/qos/source_binding `not_run`. No check carries `FLOWTABLE_BYPASS`.
 
-`nft -j list ruleset` inside `fvpn-w4-isolation-node` at that moment, read only, showed Docker's embedded DNS NAT and no other foreign flowtable:
+D-079 was not in the binary. `loopback_scoped` does not appear in the observation report or in `verify_foreign.go` at `2473acf`. The AT10 observation `d079_classifier` is the string the run stored:
 
-- `chain ip nat OUTPUT hook output prio -100 policy accept` jumps to `DOCKER_OUTPUT`, whose `xt` target is `DNAT` for `127.0.0.11`.
-- `chain ip nat POSTROUTING hook postrouting prio 100 policy accept` jumps to `DOCKER_POSTROUTING`, whose `xt` target is `SNAT` for `127.0.0.11`.
+`verify_foreign.go ; loopback_scoped_in_source=false; this main's observation report has no foreign-rule classification field`
 
-`#220` `VerifyServing` reads the whole ruleset. A foreign `postrouting` chain that jumps to an `xt` statement fail-closes as `FLOWTABLE_BYPASS`. The agent log line is only that code; the table name is the `foreign_ruleset` observation on `serving setup`. The harness did not write `inet fvpn`, did not call `wg`, and did not delete the Docker table. Devstack run `4c97ebef` is not this result.
+The git subject in that string is empty because `d079Note` ran `git log` and `ReadFile` from the test working directory `tests/e2e`. The `loopback_scoped_in_source=false` half matches the tree that was built. The classifier state of the run is `2473acf`. The later origin/main tip `a4191fa` was not built.
 
-Follow-up 3's measured AT10 pass, expiry passes and convergence timeline stay under [history/follow-up-3](history/follow-up-3/). They were taken on `dde4aa6`, before `#220`.
+## Ruleset read-back
+
+`foreign_rules` on AT10, verbatim:
+
+```json
+[{"table":{"family":"inet","name":"fvpn","handle":2}}]
+```
+
+`foreign_rule_classification`, verbatim:
+
+`foreign rules are listed verbatim; none is Docker 127.0.0.11 NAT; D-079 is not in this tree so the observation report has no per-rule classification`
+
+The single listed object is the product's own `inet fvpn` table declaration. The helper reads JSON field `table`, and a table object stores its name in `name`, so the declaration was kept. `lab-AT10-ruleset.nft` contains one table, `table inet fvpn`, including that table's own postrouting SNAT. It contains no `DOCKER_` chain and no `127.0.0.11`. The full `node_observations.report_payload` is AT10 observation `observation_report`. The harness did not write nft.
+
+## Measured subchecks
+
+Convergence: 12 samples in [convergence-timeline.json](convergence-timeline.json), from `2026-10-31T01:59:48.48183166Z` until the first counted byte at `2026-10-31T02:00:37Z` (`0`→`2633` on `01a18faf-79c7-795e-ae29-a7941d760977`). Early samples have `lease_members=0` and `desired_bindings=0`, with lease check `not_run` and `error_code` null. At `2026-10-31T01:59:52.509632594Z` `lease_members` is already 1. No sample has `desired_bindings>0`, `lease_members=0`, and `lease_generation` equal to `desired_generation` together, so the provisional assertion recorded `windows=0`.
+
+Finite-member expiry ran first, while `lease_max_offline_seconds` was still 86400. Control stopped at `2026-10-31T02:11:12Z`, grant deadline `2026-10-31T02:11:36Z`. Five post-deadline TCP attempts timed out, each captured on `fvmb0` and absent from `fvup0`. Admission bytes stayed `2692`.
+
+Whole-node expiry then `PUT` `/api/v1/admin/fleet-config` to 60 (`200`, etag `"3"`, `2026-10-31T02:11:59.302654Z`). The renewed lease is generation 28, `max_offline_seconds=60`, `member_count=2`, `expires_at=2026-10-31T02:13:04.059177147Z`. Forwarding still counted near that deadline. Baseline returned at `2026-10-31T02:13:07.082353801Z` (agent tick 5s; `early_baseline_at` is zero). Post-deadline ingress was on `fvmb0`, nothing on the uplink, admission bytes flat at `63560`. The ceiling was restored to 86400 (`200`, etag `"4"`, `2026-10-31T02:13:10.733645Z`). Both audits are `fleet_config.update` / `succeeded`: `01a18fba-62c5-7967-bccd-a7deede7af0d` (86400→60) and `01a18fbb-79cc-79ac-a845-149d6efe7c8d` (60→86400).
+
+Post-revoke inject used `tun-mirred` on `fvmb0`, link type 65534, UDP/9. The revoked source's counter delta is only `ctunku` +1. The admitted sibling's `u_` counter moved by 1 and its `d_` counter moved by 1.
 
 ## AT13 evaluator
 
@@ -41,5 +68,6 @@ The live AT13 record repeats `SHA256(concatenated capture.go, capture_review_tes
 | [lab-AT13](lab-AT13.json) | pass | conntrack revocation and baseline/crash mechanisms; does not replace assembled ingress or expiry |
 
 See [requests](requests.md) for owners and [RUN.md](RUN.md) for reproduction.
-Follow-up 3 records are under [history/follow-up-3](history/follow-up-3/).
+Follow-up 4's fail-closed records are under [history/follow-up-4](history/follow-up-4/).
+Follow-up 3's measured passes stay under [history/follow-up-3](history/follow-up-3/).
 No enforcement bypass is claimed.

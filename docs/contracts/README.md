@@ -259,6 +259,8 @@ introduced by this revision.
 
 API version **1.8.0**. The endpoint count is **49**. No new `ErrorCode`. Audit actions stay free strings.
 
+revision 12 erratum (2026-10-30): the `authorizeMemberDevice` limit response is `409` `DEVICE_LIMIT_REACHED`; description only, no schema change.
+
 ### D-077 `MemberDevice.authorization_unconfirmed`
 
 `MemberDevice` gains optional read-only `authorization_unconfirmed` (`boolean`, not nullable). It is `true` while a `device_authorization_fences` row exists for the device and `false` otherwise. `DeviceStatus` is unchanged: a fenced device reads `status: pending` with `authorization_unconfirmed: true`. The member cannot clear it. It clears when an operator re-authorizes the device (`authorizeMemberDevice`) or the device is revoked. A device-limit rejection never sets it (§17.4, D-076). Absent means the server does not project it yet (before wire-members follow-up 10); a server that projects it always emits it, `false` included. `AdminDevice` inherits the property through `allOf`. `authorization_unconfirmed_since` stays required and nullable: the admin list is new and is served only once follow-up 10 lands.
@@ -267,7 +269,7 @@ API version **1.8.0**. The endpoint count is **49**. No new `ErrorCode`. Audit a
 
 `AdminDevice` is `allOf` `MemberDevice` plus required `member_id` (uuid) and `authorization_unconfirmed_since` (nullable UTC date-time: the fence row's creation time, `null` when not fenced).
 
-`POST /admin/members/{member_id}/devices/{device_id}/authorize` (`authorizeMemberDevice`) takes `MemberId`, `DeviceId` and `IdempotencyKey` and no request body. `202` is `OperationAccepted` with kind `member.device_authorize`. `404` when the device does not belong to the member. `409` `STATE_CONFLICT` when the device is `revoked`. `422` `DEVICE_LIMIT_REACHED` when authorizing would exceed the member's device allowance. This is the only path that re-grants a fenced device (D-076), and it is also the ordinary admin authorization of a `pending` device.
+`POST /admin/members/{member_id}/devices/{device_id}/authorize` (`authorizeMemberDevice`) takes `MemberId`, `DeviceId` and `IdempotencyKey` and no request body. `202` is `OperationAccepted` with kind `member.device_authorize`. `404` when the device does not belong to the member. `409` `STATE_CONFLICT` when the device is `revoked`. `409` `DEVICE_LIMIT_REACHED` when authorizing would exceed the member's device allowance. This is the only path that re-grants a fenced device (D-076), and it is also the ordinary admin authorization of a `pending` device.
 
 Both operations cite `§14.2, §17.4, §9.4` and requirements `MEM03` and `DATA01` (the restore vocabulary: backup and restore can be reconciled, AT30). `x-fvpn-spec` keeps the `§14.` prefix the operation-id test requires; `§17.4, §9.4` follow it. Auth matches `/admin/members`: session on the list, session plus CSRF on the command.
 
