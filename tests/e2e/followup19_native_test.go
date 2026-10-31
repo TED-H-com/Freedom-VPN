@@ -112,13 +112,13 @@ func (r *runner) nativeMTU19(ctx context.Context, s *Stack) {
 			}
 			stats, _ := r.lab.docker(c, "cat", "/var/lib/vpn-node/e2e/mtu-capture.log")
 			recPathNote(&rec)(fmt.Sprintf("%s_capture_%d_stats", row.name, i), string(stats))
-			// TCP SYN metadata contains MSS; ICMP summaries contain advertised MTU.
+			// Full TCP headers only; all outer headers are decoded from the pinned private pcap.
 			metadata, e := r.lab.docker(c, "tcpdump", "-nn", "-S", "-tt", "-v", "-r", "/var/lib/vpn-node/e2e/mtu.pcap", "tcp port 9446")
 			recPathNote(&rec)(fmt.Sprintf("%s_capture_%d_headers", row.name, i), string(metadata))
 			if e != nil {
 				rec.Status = StatusFail
 			}
-			readback, _ := r.lab.docker(c, "sh", "-c", `ip -j link; ip -j route; ip -j -6 route; ss -tin`)
+			readback, _ := r.lab.docker(c, "sh", "-c", `for d in /sys/class/net/*; do basename "$d"; cat "$d/ifindex" "$d/mtu"; done; ip -j link; ip -j route; ip -j -6 route; ss -tin`)
 			recPathNote(&rec)(fmt.Sprintf("%s_path_%d", row.name, i), string(readback))
 			slot := "node"
 			if i == 0 {
