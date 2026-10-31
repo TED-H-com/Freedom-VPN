@@ -65,7 +65,7 @@ func Quarantine(ctx context.Context, ex Executor, m Model) (ev QuarantineEvidenc
 	}
 	iface := m.Datapath.MemberIngress
 	// Record before link-down so a process exit cannot lose the recovery intent.
-	marker := fmt.Sprintf("add table inet fvpn\nadd set inet fvpn %q { type ifname; }\n", quarantinePrefix+iface)
+	marker := fmt.Sprintf("add table inet fvpn\nadd set inet fvpn %s { type ifname; }\n", quarantinePrefix+iface)
 	markerErr := ex.NftBatch(ctx, marker)
 	link, linkErr := lowerMemberLink(ctx, ex, iface)
 	ev.Links = []QuarantineLink{link}
@@ -174,7 +174,7 @@ func releaseQuarantine(ctx context.Context, ex Executor, m Model, assignments ma
 	if err != nil {
 		return ev, err
 	}
-	if err := ex.NftBatch(ctx, fmt.Sprintf("delete set inet fvpn %q\n", quarantinePrefix+iface)); err != nil {
+	if err := ex.NftBatch(ctx, fmt.Sprintf("delete set inet fvpn %s\n", quarantinePrefix+iface)); err != nil {
 		return ev, checkf(ReasonIsolation, "quarantine marker clear failed")
 	}
 	// Confirm the marker deletion; a successful command alone is not evidence.

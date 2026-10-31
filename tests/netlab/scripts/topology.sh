@@ -52,12 +52,14 @@ fi
 WG=/usr/local/bin/wg
 
 log "forwarding off before any path exists"
-sysctl -w net.ipv4.ip_forward=0 net.ipv6.conf.all.forwarding=0 net.ipv6.conf.default.forwarding=0 >/dev/null
+# All IPv6 addresses/routes are static. Do not let delayed router
+# solicitations contaminate the AT11 target capture after link recovery.
+sysctl -w net.ipv4.ip_forward=0 net.ipv6.conf.all.forwarding=0 net.ipv6.conf.default.forwarding=0 net.ipv6.conf.default.router_solicitations=0 >/dev/null
 
 for ns in fv-fwd fv-a1 fv-a2 fv-b1 fv-rogue fv-probe fv-inet fv-lan; do
 	ip netns add "$ns"
 	ip netns exec "$ns" ip link set lo up
-	ip netns exec "$ns" sysctl -w net.ipv4.ip_forward=0 net.ipv6.conf.all.forwarding=0 >/dev/null
+	ip netns exec "$ns" sysctl -w net.ipv4.ip_forward=0 net.ipv6.conf.all.forwarding=0 net.ipv6.conf.default.router_solicitations=0 >/dev/null
 done
 
 log "underlay and transit links"

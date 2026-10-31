@@ -85,7 +85,8 @@ func Apply(ctx context.Context, ex Executor, m Model, previous map[string]Counte
 	}
 	tcState, err := loadTC(ctx, ex, []string{m.Datapath.Uplink, m.Datapath.MemberIngress})
 	if err != nil {
-		return ApplyResult{}, err
+		q, qerr := Quarantine(ctx, ex, m)
+		return ApplyResult{Quarantine: &q, Evidence: ServingEvidence{Quarantined: q.Recorded, QuarantinedLinks: quarantinedLinksFor(m, q)}}, errors.Join(checkf(ReasonTCForeignFilter, "tc ownership read failed before Apply"), qerr)
 	}
 	resets := DetectMeterResets(previous, state)
 	if len(m.QoS.Assignments) == 0 && len(state.Classes) > 0 {
@@ -150,6 +151,7 @@ func Apply(ctx context.Context, ex Executor, m Model, previous map[string]Counte
 		evidence, err = releaseQuarantine(ctx, ex, m, plan.Assignments)
 		if err != nil {
 			q, qerr := Quarantine(ctx, ex, m)
+			evidence.Quarantined, evidence.QuarantinedLinks = q.Recorded, quarantinedLinksFor(m, q)
 			return ApplyResult{Plan: plan, Resets: resets, Evidence: evidence, Quarantine: &q}, errors.Join(err, qerr)
 		}
 	}
@@ -194,7 +196,8 @@ func Apply(ctx context.Context, ex Executor, m Model, previous map[string]Counte
 	return verified, nil
 }
 
-// ApplyBaseline installs the fail-closed ruleset and removes our HTB roots.
+// ApplyBaseline installs the fail-closed ruleset and removes our HTB roots
+// only when live reads establish they carry no foreign filters.
 // The probe exception is not included. ApplyBaselineModel carries one.
 func ApplyBaseline(ctx context.Context, ex Executor, dp Datapath) error {
 	return ApplyBaselineModel(ctx, ex, Model{Datapath: dp})
@@ -237,7 +240,28 @@ func installBaselineModel(ctx context.Context, ex Executor, m Model, state State
 	if len(quarantinedLinks(state.Sets)) > 0 {
 		return nil
 	}
+	// Never delete a root that carries foreign filters (including class/leaf
+	// attachments), or an unowned root. A baseline can be verified without
+	// removing tc; only Quarantine contains a retained ingress redirect.
+	_, reads, readErr := readServingTC(ctx, ex, m)
+	if readErr != nil {
+		return nil
+	}
+	ownedRoots := map[string]bool{}
+	for _, read := range reads {
+		if read.Attachment != "qdisc" && len(read.Objects) > 0 {
+			return nil
+		}
+		for _, obj := range read.Objects {
+			if obj.Root && obj.Kind == "htb" && obj.Handle == "1:" {
+				ownedRoots[read.Interface] = true
+			}
+		}
+	}
 	for _, ifc := range []string{m.Datapath.Uplink, m.Datapath.MemberIngress} {
+		if !ownedRoots[ifc] {
+			continue
+		}
 		_, err := ex.Output(ctx, "tc", "qdisc", "del", "dev", ifc, "root")
 		if err != nil && !missingQdisc(err) {
 			return err

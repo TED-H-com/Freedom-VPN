@@ -109,6 +109,9 @@ func (f *quarantineExec) Output(_ context.Context, name string, args ...string) 
 		}
 		return raw, nil
 	}
+	if name == "tc" && f.fault == "tc_read" {
+		return nil, fmt.Errorf("TEST ONLY: unavailable tc")
+	}
 	if name == "tc" && len(args) > 1 && args[0] == "-j" {
 		if args[1] == "filter" {
 			if f.foreign && key == "tc -j filter show dev fv-fh ingress" {
@@ -231,5 +234,42 @@ func TestD090_QuarantineRejectsUplinkAlias(t *testing.T) {
 	f.m.Datapath.MemberIngress = f.m.Datapath.Uplink
 	if _, err := Quarantine(context.Background(), f, f.m); err == nil || len(f.ops) != 0 {
 		t.Fatal("mutated ambiguous member/uplink")
+	}
+}
+
+func TestD090_BaselineRetainsForeignRootAttachments(t *testing.T) {
+	f := newQuarantineExec(t)
+	// No quarantine marker yet: even an ordinary baseline must not delete
+	// a foreign filter by deleting its parent root/class.
+	if err := ApplyBaseline(context.Background(), f, f.m.Datapath); err != nil {
+		t.Fatal(err)
+	}
+	for _, op := range f.ops {
+		if strings.Contains(op, "qdisc del") || strings.Contains(op, "filter del") {
+			t.Fatalf("deleted a foreign attachment: %s", op)
+		}
+	}
+}
+
+func TestD090_PublicVerificationCannotReleaseMarker(t *testing.T) {
+	f := newQuarantineExec(t)
+	f.marker, f.foreign = true, false
+	ev, err := VerifyServing(context.Background(), f, f.m, f.plan.Assignments)
+	if err == nil || !ev.Quarantined || !f.marker {
+		t.Fatalf("verification released quarantine: %+v %v", ev, err)
+	}
+	for _, op := range f.ops {
+		if strings.Contains(op, "link set") || op == "clear" {
+			t.Fatalf("verification mutated state: %s", op)
+		}
+	}
+}
+
+func TestD090_ApplyTCReadFailureQuarantines(t *testing.T) {
+	f := newQuarantineExec(t)
+	f.fault = "tc_read"
+	res, err := Apply(context.Background(), f, f.m, nil)
+	if ReasonCode(err) != ReasonTCForeignFilter || res.Verified || f.up || res.Quarantine == nil || !res.Quarantine.Quarantined {
+		t.Fatalf("unreadable tc remained serving: verified=%v up=%v err=%v", res.Verified, f.up, err)
 	}
 }
