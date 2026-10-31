@@ -1,0 +1,1834 @@
+{
+  "run_id": "2be2d32f-bfd9-46f5-bf29-afaa6617ae94",
+  "source_commit": "731be5a7af7657660d96c240695747a23a3f5c96",
+  "capture_status": "pass",
+  "at09_status": "blocked",
+  "scope": "Full mutation sequence; observed generation 29 -> 29. D-126 composition and recovery pass, but exact generation-30 reproduction remains unqualified (F10-04); full AT09 remains blocked.",
+  "capture": {
+    "node_id": "01a19230-b571-762f-ad34-184dcc6f21cf",
+    "slot": "node2",
+    "started_at": "2026-10-31T14:00:14.473094656Z",
+    "finished_at": "2026-10-31T14:01:44.827048057Z",
+    "generation_before": "29",
+    "generation_after": "29",
+    "boot_readback": "2026-10-31T14:00:14Z\nError: No such file or directory\nlist table inet fvpn\n                ^^^^\nCannot find device \"fvmb0\"\nCannot find device \"fvmb0\"\nCannot find device \"fvmb0\"\n[{\"kind\":\"noqueue\",\"handle\":\"0:\",\"root\":true,\"refcnt\":2,\"options\":{}}]\n[]\n",
+    "end_readback": "2026-10-31T14:01:44Z\n{\"nftables\": [{\"metainfo\": {\"version\": \"1.0.9\", \"release_name\": \"Old Doc Yak #3\", \"json_schema_version\": 1}}, {\"table\": {\"family\": \"inet\", \"name\": \"fvpn\", \"handle\": 2}}, {\"counter\": {\"family\": \"inet\", \"name\": \"ctbase\", \"table\": \"fvpn\", \"handle\": 1, \"packets\": 0, \"bytes\": 0}}, {\"counter\": {\"family\": \"inet\", \"name\": \"ctv6\", \"table\": \"fvpn\", \"handle\": 2, \"packets\": 0, \"bytes\": 0}}, {\"counter\": {\"family\": \"inet\", \"name\": \"ctin\", \"table\": \"fvpn\", \"handle\": 3, \"packets\": 0, \"bytes\": 0}}, {\"counter\": {\"family\": \"inet\", \"name\": \"ctbadns\", \"table\": \"fvpn\", \"handle\": 61, \"packets\": 0, \"bytes\": 0}}, {\"counter\": {\"family\": \"inet\", \"name\": \"ctdeny\", \"table\": \"fvpn\", \"handle\": 62, \"packets\": 0, \"bytes\": 0}}, {\"counter\": {\"family\": \"inet\", \"name\": \"cthost\", \"table\": \"fvpn\", \"handle\": 63, \"packets\": 0, \"bytes\": 0}}, {\"counter\": {\"family\": \"inet\", \"name\": \"ctinv\", \"table\": \"fvpn\", \"handle\": 64, \"packets\": 0, \"bytes\": 0}}, {\"counter\": {\"family\": \"inet\", \"name\": \"ctnodn\", \"table\": \"fvpn\", \"handle\": 65, \"packets\": 0, \"bytes\": 0}}, {\"counter\": {\"family\": \"inet\", \"name\": \"ctunkd\", \"table\": \"fvpn\", \"handle\": 66, \"packets\": 0, \"bytes\": 0}}, {\"counter\": {\"family\": \"inet\", \"name\": \"ctunku\", \"table\": \"fvpn\", \"handle\": 67, \"packets\": 0, \"bytes\": 0}}, {\"counter\": {\"family\": \"inet\", \"name\": \"d_01a19226c9a0791aba07dd0fc19ccb4e\", \"table\": \"fvpn\", \"handle\": 104, \"packets\": 7, \"bytes\": 2411}}, {\"counter\": {\"family\": \"inet\", \"name\": \"d_01a192290556783a97fc4914e3b76a34\", \"table\": \"fvpn\", \"handle\": 105, \"packets\": 0, \"bytes\": 0}}, {\"counter\": {\"family\": \"inet\", \"name\": \"d_01a19229d26d7241ab2f34a586716968\", \"table\": \"fvpn\", \"handle\": 106, \"packets\": 0, \"bytes\": 0}}, {\"counter\": {\"family\": \"inet\", \"name\": \"nd_01a19226c9a0791aba07dd0fc19ccb4e\", \"table\": \"fvpn\", \"handle\": 107, \"packets\": 0, \"bytes\": 0}}, {\"counter\": {\"family\": \"inet\", \"name\": \"nd_01a192290556783a97fc4914e3b76a34\", \"table\": \"fvpn\", \"handle\": 108, \"packets\": 0, \"bytes\": 0}}, {\"counter\": {\"family\": \"inet\", \"name\": \"nd_01a19229d26d7241ab2f34a586716968\", \"table\": \"fvpn\", \"handle\": 109, \"packets\": 0, \"bytes\": 0}}, {\"counter\": {\"family\": \"inet\", \"name\": \"nu_01a19226c9a0791aba07dd0fc19ccb4e\", \"table\": \"fvpn\", \"handle\": 110, \"packets\": 0, \"bytes\": 0}}, {\"counter\": {\"family\": \"inet\", \"name\": \"nu_01a192290556783a97fc4914e3b76a34\", \"table\": \"fvpn\", \"handle\": 111, \"packets\": 0, \"bytes\": 0}}, {\"counter\": {\"family\": \"inet\", \"name\": \"nu_01a19229d26d7241ab2f34a586716968\", \"table\": \"fvpn\", \"handle\": 112, \"packets\": 0, \"bytes\": 0}}, {\"counter\": {\"family\": \"inet\", \"name\": \"u_01a19226c9a0791aba07dd0fc19ccb4e\", \"table\": \"fvpn\", \"handle\": 113, \"packets\": 10, \"bytes\": 2305}}, {\"counter\": {\"family\": \"inet\", \"name\": \"u_01a192290556783a97fc4914e3b76a34\", \"table\": \"fvpn\", \"handle\": 114, \"packets\": 0, \"bytes\": 0}}, {\"counter\": {\"family\": \"inet\", \"name\": \"u_01a19229d26d7241ab2f34a586716968\", \"table\": \"fvpn\", \"handle\": 115, \"packets\": 0, \"bytes\": 0}}, {\"set\": {\"family\": \"inet\", \"name\": \"allowed_v4\", \"table\": \"fvpn\", \"type\": \"ipv4_addr\", \"handle\": 4, \"flags\": [\"timeout\"], \"elem\": [{\"elem\": {\"val\": \"100.104.173.72\", \"timeout\": 475, \"expires\": 470}}, {\"elem\": {\"val\": \"100.104.208.63\", \"timeout\": 475, \"expires\": 470}}, {\"elem\": {\"val\": \"100.104.211.35\", \"timeout\": 475, \"expires\": 470}}]}}, {\"set\": {\"family\": \"inet\", \"name\": \"denied_v4\", \"table\": \"fvpn\", \"type\": \"ipv4_addr\", \"handle\": 68, \"flags\": [\"interval\"], \"elem\": [{\"prefix\": {\"addr\": \"0.0.0.0\", \"len\": 8}}, {\"prefix\": {\"addr\": \"10.0.0.0\", \"len\": 8}}, {\"prefix\": {\"addr\": \"100.64.0.0\", \"len\": 10}}, {\"prefix\": {\"addr\": \"127.0.0.0\", \"len\": 8}}, {\"prefix\": {\"addr\": \"169.254.0.0\", \"len\": 16}}, {\"prefix\": {\"addr\": \"172.16.0.0\", \"len\": 12}}, {\"prefix\": {\"addr\": \"192.0.0.0\", \"len\": 24}}, {\"prefix\": {\"addr\": \"192.0.2.0\", \"len\": 24}}, {\"prefix\": {\"addr\": \"192.88.99.0\", \"len\": 24}}, {\"prefix\": {\"addr\": \"192.168.0.0\", \"len\": 16}}, {\"prefix\": {\"addr\": \"198.18.0.0\", \"len\": 15}}, {\"prefix\": {\"addr\": \"198.51.100.0\", \"len\": 24}}, {\"prefix\": {\"addr\": \"203.0.113.0\", \"len\": 24}}, {\"prefix\": {\"addr\": \"224.0.0.0\", \"len\": 3}}]}}, {\"set\": {\"family\": \"inet\", \"name\": \"host_v4\", \"table\": \"fvpn\", \"type\": \"ipv4_addr\", \"handle\": 69, \"flags\": [\"interval\"], \"elem\": [\"192.0.4.22\"]}}, {\"set\": {\"family\": \"inet\", \"name\": \"resolver_v4\", \"table\": \"fvpn\", \"type\": \"ipv4_addr\", \"handle\": 70, \"elem\": [\"192.0.4.53\", \"192.0.4.54\"]}}, {\"chain\": {\"family\": \"inet\", \"table\": \"fvpn\", \"name\": \"forward\", \"handle\": 690, \"type\": \"filter\", \"hook\": \"forward\", \"prio\": -150, \"policy\": \"drop\"}}, {\"chain\": {\"family\": \"inet\", \"table\": \"fvpn\", \"name\": \"input\", \"handle\": 691, \"type\": \"filter\", \"hook\": \"input\", \"prio\": -150, \"policy\": \"accept\"}}, {\"chain\": {\"family\": \"inet\", \"table\": \"fvpn\", \"name\": \"output\", \"handle\": 692, \"type\": \"filter\", \"hook\": \"output\", \"prio\": -150, \"policy\": \"accept\"}}, {\"chain\": {\"family\": \"inet\", \"table\": \"fvpn\", \"name\": \"postrouting\", \"handle\": 693, \"type\": \"nat\", \"hook\": \"postrouting\", \"prio\": 100, \"policy\": \"accept\"}}, {\"rule\": {\"family\": \"inet\", \"table\": \"fvpn\", \"chain\": \"forward\", \"handle\": 694, \"comment\": \"fvpn_generation=29 fvpn_metering=forward_admission_v1\", \"expr\": [{\"match\": {\"op\": \"==\", \"left\": {\"payload\": {\"protocol\": \"ip\", \"field\": \"saddr\"}}, \"right\": \"192.0.2.255\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"payload\": {\"protocol\": \"ip\", \"field\": \"daddr\"}}, \"right\": \"192.0.2.255\"}}]}}, {\"rule\": {\"family\": \"inet\", \"table\": \"fvpn\", \"chain\": \"forward\", \"handle\": 695, \"comment\": \"fvpn_class=01a19225-e664-76b7-a85c-6fc7abbbff89:d361\", \"expr\": [{\"match\": {\"op\": \"==\", \"left\": {\"payload\": {\"protocol\": \"ip\", \"field\": \"saddr\"}}, \"right\": \"192.0.2.255\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"payload\": {\"protocol\": \"ip\", \"field\": \"daddr\"}}, \"right\": \"192.0.2.255\"}}]}}, {\"rule\": {\"family\": \"inet\", \"table\": \"fvpn\", \"chain\": \"forward\", \"handle\": 696, \"expr\": [{\"match\": {\"op\": \"==\", \"left\": {\"meta\": {\"key\": \"iifname\"}}, \"right\": \"fvmb0\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"meta\": {\"key\": \"oifname\"}}, \"right\": \"fvup0\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"meta\": {\"key\": \"nfproto\"}}, \"right\": \"ipv6\"}}, {\"counter\": \"ctv6\"}, {\"drop\": null}]}}, {\"rule\": {\"family\": \"inet\", \"table\": \"fvpn\", \"chain\": \"forward\", \"handle\": 697, \"expr\": [{\"match\": {\"op\": \"==\", \"left\": {\"meta\": {\"key\": \"iifname\"}}, \"right\": \"fvup0\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"meta\": {\"key\": \"oifname\"}}, \"right\": \"fvmb0\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"meta\": {\"key\": \"nfproto\"}}, \"right\": \"ipv6\"}}, {\"counter\": \"ctv6\"}, {\"drop\": null}]}}, {\"rule\": {\"family\": \"inet\", \"table\": \"fvpn\", \"chain\": \"forward\", \"handle\": 698, \"expr\": [{\"match\": {\"op\": \"==\", \"left\": {\"meta\": {\"key\": \"iifname\"}}, \"right\": \"fvmb0\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"meta\": {\"key\": \"oifname\"}}, \"right\": \"fvup0\"}}, {\"match\": {\"op\": \"in\", \"left\": {\"ct\": {\"key\": \"state\"}}, \"right\": \"invalid\"}}, {\"counter\": \"ctinv\"}, {\"drop\": null}]}}, {\"rule\": {\"family\": \"inet\", \"table\": \"fvpn\", \"chain\": \"forward\", \"handle\": 699, \"expr\": [{\"match\": {\"op\": \"==\", \"left\": {\"meta\": {\"key\": \"iifname\"}}, \"right\": \"fvup0\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"meta\": {\"key\": \"oifname\"}}, \"right\": \"fvmb0\"}}, {\"match\": {\"op\": \"in\", \"left\": {\"ct\": {\"key\": \"state\"}}, \"right\": \"invalid\"}}, {\"counter\": \"ctinv\"}, {\"drop\": null}]}}, {\"rule\": {\"family\": \"inet\", \"table\": \"fvpn\", \"chain\": \"forward\", \"handle\": 700, \"expr\": [{\"match\": {\"op\": \"==\", \"left\": {\"meta\": {\"key\": \"iifname\"}}, \"right\": \"fvmb0\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"meta\": {\"key\": \"oifname\"}}, \"right\": \"fvup0\"}}, {\"match\": {\"op\": \"!=\", \"left\": {\"payload\": {\"protocol\": \"ip\", \"field\": \"saddr\"}}, \"right\": \"@allowed_v4\"}}, {\"counter\": \"ctunku\"}, {\"drop\": null}]}}, {\"rule\": {\"family\": \"inet\", \"table\": \"fvpn\", \"chain\": \"forward\", \"handle\": 701, \"expr\": [{\"match\": {\"op\": \"==\", \"left\": {\"meta\": {\"key\": \"iifname\"}}, \"right\": \"fvmb0\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"meta\": {\"key\": \"oifname\"}}, \"right\": \"fvup0\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"payload\": {\"protocol\": \"ip\", \"field\": \"saddr\"}}, \"right\": \"100.104.211.35\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"payload\": {\"protocol\": \"ip\", \"field\": \"daddr\"}}, \"right\": \"@resolver_v4\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"payload\": {\"protocol\": \"tcp\", \"field\": \"dport\"}}, \"right\": 53}}, {\"counter\": \"nu_01a19226c9a0791aba07dd0fc19ccb4e\"}, {\"mangle\": {\"key\": {\"meta\": {\"key\": \"priority\"}}, \"value\": \"1:d361\"}}, {\"accept\": null}]}}, {\"rule\": {\"family\": \"inet\", \"table\": \"fvpn\", \"chain\": \"forward\", \"handle\": 702, \"expr\": [{\"match\": {\"op\": \"==\", \"left\": {\"meta\": {\"key\": \"iifname\"}}, \"right\": \"fvmb0\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"meta\": {\"key\": \"oifname\"}}, \"right\": \"fvup0\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"payload\": {\"protocol\": \"ip\", \"field\": \"saddr\"}}, \"right\": \"100.104.211.35\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"payload\": {\"protocol\": \"ip\", \"field\": \"daddr\"}}, \"right\": \"@resolver_v4\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"payload\": {\"protocol\": \"udp\", \"field\": \"dport\"}}, \"right\": 53}}, {\"counter\": \"nu_01a19226c9a0791aba07dd0fc19ccb4e\"}, {\"mangle\": {\"key\": {\"meta\": {\"key\": \"priority\"}}, \"value\": \"1:d361\"}}, {\"accept\": null}]}}, {\"rule\": {\"family\": \"inet\", \"table\": \"fvpn\", \"chain\": \"forward\", \"handle\": 703, \"expr\": [{\"match\": {\"op\": \"==\", \"left\": {\"meta\": {\"key\": \"iifname\"}}, \"right\": \"fvmb0\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"meta\": {\"key\": \"oifname\"}}, \"right\": \"fvup0\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"payload\": {\"protocol\": \"ip\", \"field\": \"saddr\"}}, \"right\": \"100.104.208.63\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"payload\": {\"protocol\": \"ip\", \"field\": \"daddr\"}}, \"right\": \"@resolver_v4\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"payload\": {\"protocol\": \"tcp\", \"field\": \"dport\"}}, \"right\": 53}}, {\"counter\": \"nu_01a192290556783a97fc4914e3b76a34\"}, {\"mangle\": {\"key\": {\"meta\": {\"key\": \"priority\"}}, \"value\": \"1:d361\"}}, {\"accept\": null}]}}, {\"rule\": {\"family\": \"inet\", \"table\": \"fvpn\", \"chain\": \"forward\", \"handle\": 704, \"expr\": [{\"match\": {\"op\": \"==\", \"left\": {\"meta\": {\"key\": \"iifname\"}}, \"right\": \"fvmb0\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"meta\": {\"key\": \"oifname\"}}, \"right\": \"fvup0\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"payload\": {\"protocol\": \"ip\", \"field\": \"saddr\"}}, \"right\": \"100.104.208.63\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"payload\": {\"protocol\": \"ip\", \"field\": \"daddr\"}}, \"right\": \"@resolver_v4\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"payload\": {\"protocol\": \"udp\", \"field\": \"dport\"}}, \"right\": 53}}, {\"counter\": \"nu_01a192290556783a97fc4914e3b76a34\"}, {\"mangle\": {\"key\": {\"meta\": {\"key\": \"priority\"}}, \"value\": \"1:d361\"}}, {\"accept\": null}]}}, {\"rule\": {\"family\": \"inet\", \"table\": \"fvpn\", \"chain\": \"forward\", \"handle\": 705, \"expr\": [{\"match\": {\"op\": \"==\", \"left\": {\"meta\": {\"key\": \"iifname\"}}, \"right\": \"fvmb0\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"meta\": {\"key\": \"oifname\"}}, \"right\": \"fvup0\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"payload\": {\"protocol\": \"ip\", \"field\": \"saddr\"}}, \"right\": \"100.104.173.72\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"payload\": {\"protocol\": \"ip\", \"field\": \"daddr\"}}, \"right\": \"@resolver_v4\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"payload\": {\"protocol\": \"tcp\", \"field\": \"dport\"}}, \"right\": 53}}, {\"counter\": \"nu_01a19229d26d7241ab2f34a586716968\"}, {\"mangle\": {\"key\": {\"meta\": {\"key\": \"priority\"}}, \"value\": \"1:d361\"}}, {\"accept\": null}]}}, {\"rule\": {\"family\": \"inet\", \"table\": \"fvpn\", \"chain\": \"forward\", \"handle\": 706, \"expr\": [{\"match\": {\"op\": \"==\", \"left\": {\"meta\": {\"key\": \"iifname\"}}, \"right\": \"fvmb0\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"meta\": {\"key\": \"oifname\"}}, \"right\": \"fvup0\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"payload\": {\"protocol\": \"ip\", \"field\": \"saddr\"}}, \"right\": \"100.104.173.72\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"payload\": {\"protocol\": \"ip\", \"field\": \"daddr\"}}, \"right\": \"@resolver_v4\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"payload\": {\"protocol\": \"udp\", \"field\": \"dport\"}}, \"right\": 53}}, {\"counter\": \"nu_01a19229d26d7241ab2f34a586716968\"}, {\"mangle\": {\"key\": {\"meta\": {\"key\": \"priority\"}}, \"value\": \"1:d361\"}}, {\"accept\": null}]}}, {\"rule\": {\"family\": \"inet\", \"table\": \"fvpn\", \"chain\": \"forward\", \"handle\": 707, \"expr\": [{\"match\": {\"op\": \"==\", \"left\": {\"meta\": {\"key\": \"iifname\"}}, \"right\": \"fvmb0\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"meta\": {\"key\": \"oifname\"}}, \"right\": \"fvup0\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"payload\": {\"protocol\": \"ip\", \"field\": \"daddr\"}}, \"right\": \"@resolver_v4\"}}, {\"counter\": \"ctbadns\"}, {\"drop\": null}]}}, {\"rule\": {\"family\": \"inet\", \"table\": \"fvpn\", \"chain\": \"forward\", \"handle\": 708, \"expr\": [{\"match\": {\"op\": \"==\", \"left\": {\"meta\": {\"key\": \"iifname\"}}, \"right\": \"fvmb0\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"meta\": {\"key\": \"oifname\"}}, \"right\": \"fvup0\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"payload\": {\"protocol\": \"ip\", \"field\": \"daddr\"}}, \"right\": \"@denied_v4\"}}, {\"counter\": \"ctdeny\"}, {\"drop\": null}]}}, {\"rule\": {\"family\": \"inet\", \"table\": \"fvpn\", \"chain\": \"forward\", \"handle\": 709, \"expr\": [{\"match\": {\"op\": \"==\", \"left\": {\"meta\": {\"key\": \"iifname\"}}, \"right\": \"fvmb0\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"meta\": {\"key\": \"oifname\"}}, \"right\": \"fvup0\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"payload\": {\"protocol\": \"ip\", \"field\": \"daddr\"}}, \"right\": \"@host_v4\"}}, {\"counter\": \"cthost\"}, {\"drop\": null}]}}, {\"rule\": {\"family\": \"inet\", \"table\": \"fvpn\", \"chain\": \"forward\", \"handle\": 710, \"expr\": [{\"match\": {\"op\": \"==\", \"left\": {\"meta\": {\"key\": \"iifname\"}}, \"right\": \"fvmb0\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"meta\": {\"key\": \"oifname\"}}, \"right\": \"fvup0\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"payload\": {\"protocol\": \"ip\", \"field\": \"saddr\"}}, \"right\": \"100.104.211.35\"}}, {\"counter\": \"u_01a19226c9a0791aba07dd0fc19ccb4e\"}, {\"mangle\": {\"key\": {\"meta\": {\"key\": \"priority\"}}, \"value\": \"1:d361\"}}, {\"accept\": null}]}}, {\"rule\": {\"family\": \"inet\", \"table\": \"fvpn\", \"chain\": \"forward\", \"handle\": 711, \"expr\": [{\"match\": {\"op\": \"==\", \"left\": {\"meta\": {\"key\": \"iifname\"}}, \"right\": \"fvmb0\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"meta\": {\"key\": \"oifname\"}}, \"right\": \"fvup0\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"payload\": {\"protocol\": \"ip\", \"field\": \"saddr\"}}, \"right\": \"100.104.208.63\"}}, {\"counter\": \"u_01a192290556783a97fc4914e3b76a34\"}, {\"mangle\": {\"key\": {\"meta\": {\"key\": \"priority\"}}, \"value\": \"1:d361\"}}, {\"accept\": null}]}}, {\"rule\": {\"family\": \"inet\", \"table\": \"fvpn\", \"chain\": \"forward\", \"handle\": 712, \"expr\": [{\"match\": {\"op\": \"==\", \"left\": {\"meta\": {\"key\": \"iifname\"}}, \"right\": \"fvmb0\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"meta\": {\"key\": \"oifname\"}}, \"right\": \"fvup0\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"payload\": {\"protocol\": \"ip\", \"field\": \"saddr\"}}, \"right\": \"100.104.173.72\"}}, {\"counter\": \"u_01a19229d26d7241ab2f34a586716968\"}, {\"mangle\": {\"key\": {\"meta\": {\"key\": \"priority\"}}, \"value\": \"1:d361\"}}, {\"accept\": null}]}}, {\"rule\": {\"family\": \"inet\", \"table\": \"fvpn\", \"chain\": \"forward\", \"handle\": 713, \"expr\": [{\"match\": {\"op\": \"==\", \"left\": {\"meta\": {\"key\": \"iifname\"}}, \"right\": \"fvup0\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"meta\": {\"key\": \"oifname\"}}, \"right\": \"fvmb0\"}}, {\"match\": {\"op\": \"!=\", \"left\": {\"payload\": {\"protocol\": \"ip\", \"field\": \"daddr\"}}, \"right\": \"@allowed_v4\"}}, {\"counter\": \"ctunkd\"}, {\"drop\": null}]}}, {\"rule\": {\"family\": \"inet\", \"table\": \"fvpn\", \"chain\": \"forward\", \"handle\": 715, \"expr\": [{\"match\": {\"op\": \"==\", \"left\": {\"meta\": {\"key\": \"iifname\"}}, \"right\": \"fvup0\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"meta\": {\"key\": \"oifname\"}}, \"right\": \"fvmb0\"}}, {\"match\": {\"op\": \"!=\", \"left\": {\"ct\": {\"key\": \"state\"}}, \"right\": {\"set\": [\"established\", \"related\"]}}}, {\"counter\": \"ctnodn\"}, {\"drop\": null}]}}, {\"rule\": {\"family\": \"inet\", \"table\": \"fvpn\", \"chain\": \"forward\", \"handle\": 716, \"expr\": [{\"match\": {\"op\": \"==\", \"left\": {\"meta\": {\"key\": \"iifname\"}}, \"right\": \"fvup0\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"meta\": {\"key\": \"oifname\"}}, \"right\": \"fvmb0\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"payload\": {\"protocol\": \"ip\", \"field\": \"saddr\"}}, \"right\": \"@resolver_v4\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"payload\": {\"protocol\": \"ip\", \"field\": \"daddr\"}}, \"right\": \"100.104.211.35\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"payload\": {\"protocol\": \"tcp\", \"field\": \"sport\"}}, \"right\": 53}}, {\"counter\": \"nd_01a19226c9a0791aba07dd0fc19ccb4e\"}, {\"mangle\": {\"key\": {\"meta\": {\"key\": \"priority\"}}, \"value\": \"1:d361\"}}, {\"accept\": null}]}}, {\"rule\": {\"family\": \"inet\", \"table\": \"fvpn\", \"chain\": \"forward\", \"handle\": 717, \"expr\": [{\"match\": {\"op\": \"==\", \"left\": {\"meta\": {\"key\": \"iifname\"}}, \"right\": \"fvup0\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"meta\": {\"key\": \"oifname\"}}, \"right\": \"fvmb0\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"payload\": {\"protocol\": \"ip\", \"field\": \"saddr\"}}, \"right\": \"@resolver_v4\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"payload\": {\"protocol\": \"ip\", \"field\": \"daddr\"}}, \"right\": \"100.104.211.35\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"payload\": {\"protocol\": \"udp\", \"field\": \"sport\"}}, \"right\": 53}}, {\"counter\": \"nd_01a19226c9a0791aba07dd0fc19ccb4e\"}, {\"mangle\": {\"key\": {\"meta\": {\"key\": \"priority\"}}, \"value\": \"1:d361\"}}, {\"accept\": null}]}}, {\"rule\": {\"family\": \"inet\", \"table\": \"fvpn\", \"chain\": \"forward\", \"handle\": 718, \"expr\": [{\"match\": {\"op\": \"==\", \"left\": {\"meta\": {\"key\": \"iifname\"}}, \"right\": \"fvup0\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"meta\": {\"key\": \"oifname\"}}, \"right\": \"fvmb0\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"payload\": {\"protocol\": \"ip\", \"field\": \"daddr\"}}, \"right\": \"100.104.211.35\"}}, {\"counter\": \"d_01a19226c9a0791aba07dd0fc19ccb4e\"}, {\"mangle\": {\"key\": {\"meta\": {\"key\": \"priority\"}}, \"value\": \"1:d361\"}}, {\"accept\": null}]}}, {\"rule\": {\"family\": \"inet\", \"table\": \"fvpn\", \"chain\": \"forward\", \"handle\": 719, \"expr\": [{\"match\": {\"op\": \"==\", \"left\": {\"meta\": {\"key\": \"iifname\"}}, \"right\": \"fvup0\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"meta\": {\"key\": \"oifname\"}}, \"right\": \"fvmb0\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"payload\": {\"protocol\": \"ip\", \"field\": \"saddr\"}}, \"right\": \"@resolver_v4\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"payload\": {\"protocol\": \"ip\", \"field\": \"daddr\"}}, \"right\": \"100.104.208.63\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"payload\": {\"protocol\": \"tcp\", \"field\": \"sport\"}}, \"right\": 53}}, {\"counter\": \"nd_01a192290556783a97fc4914e3b76a34\"}, {\"mangle\": {\"key\": {\"meta\": {\"key\": \"priority\"}}, \"value\": \"1:d361\"}}, {\"accept\": null}]}}, {\"rule\": {\"family\": \"inet\", \"table\": \"fvpn\", \"chain\": \"forward\", \"handle\": 720, \"expr\": [{\"match\": {\"op\": \"==\", \"left\": {\"meta\": {\"key\": \"iifname\"}}, \"right\": \"fvup0\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"meta\": {\"key\": \"oifname\"}}, \"right\": \"fvmb0\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"payload\": {\"protocol\": \"ip\", \"field\": \"saddr\"}}, \"right\": \"@resolver_v4\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"payload\": {\"protocol\": \"ip\", \"field\": \"daddr\"}}, \"right\": \"100.104.208.63\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"payload\": {\"protocol\": \"udp\", \"field\": \"sport\"}}, \"right\": 53}}, {\"counter\": \"nd_01a192290556783a97fc4914e3b76a34\"}, {\"mangle\": {\"key\": {\"meta\": {\"key\": \"priority\"}}, \"value\": \"1:d361\"}}, {\"accept\": null}]}}, {\"rule\": {\"family\": \"inet\", \"table\": \"fvpn\", \"chain\": \"forward\", \"handle\": 721, \"expr\": [{\"match\": {\"op\": \"==\", \"left\": {\"meta\": {\"key\": \"iifname\"}}, \"right\": \"fvup0\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"meta\": {\"key\": \"oifname\"}}, \"right\": \"fvmb0\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"payload\": {\"protocol\": \"ip\", \"field\": \"daddr\"}}, \"right\": \"100.104.208.63\"}}, {\"counter\": \"d_01a192290556783a97fc4914e3b76a34\"}, {\"mangle\": {\"key\": {\"meta\": {\"key\": \"priority\"}}, \"value\": \"1:d361\"}}, {\"accept\": null}]}}, {\"rule\": {\"family\": \"inet\", \"table\": \"fvpn\", \"chain\": \"forward\", \"handle\": 722, \"expr\": [{\"match\": {\"op\": \"==\", \"left\": {\"meta\": {\"key\": \"iifname\"}}, \"right\": \"fvup0\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"meta\": {\"key\": \"oifname\"}}, \"right\": \"fvmb0\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"payload\": {\"protocol\": \"ip\", \"field\": \"saddr\"}}, \"right\": \"@resolver_v4\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"payload\": {\"protocol\": \"ip\", \"field\": \"daddr\"}}, \"right\": \"100.104.173.72\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"payload\": {\"protocol\": \"tcp\", \"field\": \"sport\"}}, \"right\": 53}}, {\"counter\": \"nd_01a19229d26d7241ab2f34a586716968\"}, {\"mangle\": {\"key\": {\"meta\": {\"key\": \"priority\"}}, \"value\": \"1:d361\"}}, {\"accept\": null}]}}, {\"rule\": {\"family\": \"inet\", \"table\": \"fvpn\", \"chain\": \"forward\", \"handle\": 723, \"expr\": [{\"match\": {\"op\": \"==\", \"left\": {\"meta\": {\"key\": \"iifname\"}}, \"right\": \"fvup0\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"meta\": {\"key\": \"oifname\"}}, \"right\": \"fvmb0\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"payload\": {\"protocol\": \"ip\", \"field\": \"saddr\"}}, \"right\": \"@resolver_v4\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"payload\": {\"protocol\": \"ip\", \"field\": \"daddr\"}}, \"right\": \"100.104.173.72\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"payload\": {\"protocol\": \"udp\", \"field\": \"sport\"}}, \"right\": 53}}, {\"counter\": \"nd_01a19229d26d7241ab2f34a586716968\"}, {\"mangle\": {\"key\": {\"meta\": {\"key\": \"priority\"}}, \"value\": \"1:d361\"}}, {\"accept\": null}]}}, {\"rule\": {\"family\": \"inet\", \"table\": \"fvpn\", \"chain\": \"forward\", \"handle\": 724, \"expr\": [{\"match\": {\"op\": \"==\", \"left\": {\"meta\": {\"key\": \"iifname\"}}, \"right\": \"fvup0\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"meta\": {\"key\": \"oifname\"}}, \"right\": \"fvmb0\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"payload\": {\"protocol\": \"ip\", \"field\": \"daddr\"}}, \"right\": \"100.104.173.72\"}}, {\"counter\": \"d_01a19229d26d7241ab2f34a586716968\"}, {\"mangle\": {\"key\": {\"meta\": {\"key\": \"priority\"}}, \"value\": \"1:d361\"}}, {\"accept\": null}]}}, {\"rule\": {\"family\": \"inet\", \"table\": \"fvpn\", \"chain\": \"input\", \"handle\": 725, \"expr\": [{\"match\": {\"op\": \"==\", \"left\": {\"meta\": {\"key\": \"iifname\"}}, \"right\": \"fvmb0\"}}, {\"counter\": \"ctin\"}, {\"drop\": null}]}}, {\"rule\": {\"family\": \"inet\", \"table\": \"fvpn\", \"chain\": \"input\", \"handle\": 726, \"expr\": [{\"match\": {\"op\": \"==\", \"left\": {\"payload\": {\"protocol\": \"ip\", \"field\": \"saddr\"}}, \"right\": {\"prefix\": {\"addr\": \"100.64.0.0\", \"len\": 10}}}}, {\"counter\": \"ctin\"}, {\"drop\": null}]}}, {\"rule\": {\"family\": \"inet\", \"table\": \"fvpn\", \"chain\": \"postrouting\", \"handle\": 727, \"expr\": [{\"match\": {\"op\": \"==\", \"left\": {\"meta\": {\"key\": \"oifname\"}}, \"right\": \"fvup0\"}}, {\"match\": {\"op\": \"==\", \"left\": {\"payload\": {\"protocol\": \"ip\", \"field\": \"saddr\"}}, \"right\": \"@allowed_v4\"}}, {\"snat\": {\"family\": \"ip\", \"addr\": \"192.0.4.22\"}}]}}]}\n[{\"kind\":\"htb\",\"handle\":\"1:\",\"root\":true,\"refcnt\":2,\"options\":{\"r2q\":10,\"default\":\"0xfffe\",\"direct_packets_stat\":0,\"direct_qlen\":1000}},{\"kind\":\"fq_codel\",\"handle\":\"d361:\",\"parent\":\"1:d361\",\"options\":{\"limit\":10240,\"flows\":1024,\"quantum\":1514,\"target\":4999,\"interval\":99999,\"memory_limit\":33554432,\"ecn\":true,\"drop_batch\":64}}]\nclass htb 1:d361 parent 1:1 leaf d361: prio 1 rate 100Mbit ceil 100Mbit burst 125000b cburst 125000b \nclass htb 1:fffe parent 1:1 prio 0 rate 1Mbit ceil 200Mbit burst 250000b cburst 250000b \nclass htb 1:1 root rate 200Mbit ceil 200Mbit burst 250000b cburst 250000b \nclass fq_codel d361:2de parent d361: \n[]\n[{\"kind\":\"htb\",\"handle\":\"1:\",\"root\":true,\"refcnt\":25,\"options\":{\"r2q\":10,\"default\":\"0xfffe\",\"direct_packets_stat\":0,\"direct_qlen\":1000}},{\"kind\":\"fq_codel\",\"handle\":\"d361:\",\"parent\":\"1:d361\",\"options\":{\"limit\":10240,\"flows\":1024,\"quantum\":1514,\"target\":4999,\"interval\":99999,\"memory_limit\":33554432,\"ecn\":true,\"drop_batch\":64}}]\nclass htb 1:d361 parent 1:1 leaf d361: prio 1 rate 100Mbit ceil 100Mbit burst 125000b cburst 125000b \nclass htb 1:fffe parent 1:1 prio 0 rate 1Mbit ceil 200Mbit burst 250000b cburst 250000b \nclass htb 1:1 root rate 200Mbit ceil 200Mbit burst 250000b cburst 250000b \nclass fq_codel d361:116 parent d361: \n[]\n",
+    "samples": [
+      {
+        "at": "2026-10-31T14:00:14.834595739Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38743321243604\nwall_unix_ns 1793455205804872630\npolicy_expires_mono_ns 0\nbaseline_ok 1\nserving 0\ngeneration 29\nreason safety_check_failed\n"
+      },
+      {
+        "at": "2026-10-31T14:00:15.85852674Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38752710788783\nwall_unix_ns 1793455215194417773\npolicy_expires_mono_ns 0\nbaseline_ok 1\nserving 0\ngeneration 29\nreason safety_check_failed\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:00:16.881468137Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38752710788783\nwall_unix_ns 1793455215194417773\npolicy_expires_mono_ns 0\nbaseline_ok 1\nserving 0\ngeneration 29\nreason safety_check_failed\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:00:17.904389533Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38752710788783\nwall_unix_ns 1793455215194417773\npolicy_expires_mono_ns 0\nbaseline_ok 1\nserving 0\ngeneration 29\nreason safety_check_failed\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:00:18.927492352Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38752710788783\nwall_unix_ns 1793455215194417773\npolicy_expires_mono_ns 0\nbaseline_ok 1\nserving 0\ngeneration 29\nreason safety_check_failed\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:00:19.950801705Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38752710788783\nwall_unix_ns 1793455215194417773\npolicy_expires_mono_ns 0\nbaseline_ok 1\nserving 0\ngeneration 29\nreason safety_check_failed\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:00:20.97258175Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38757822577426\nwall_unix_ns 1793455220306206428\npolicy_expires_mono_ns 0\nbaseline_ok 1\nserving 0\ngeneration 29\nreason awaiting_member_grants\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:00:21.995491999Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38757822577426\nwall_unix_ns 1793455220306206428\npolicy_expires_mono_ns 0\nbaseline_ok 1\nserving 0\ngeneration 29\nreason awaiting_member_grants\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:00:23.018636635Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38757822577426\nwall_unix_ns 1793455220306206428\npolicy_expires_mono_ns 0\nbaseline_ok 1\nserving 0\ngeneration 29\nreason awaiting_member_grants\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:00:24.041900339Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38757822577426\nwall_unix_ns 1793455220306206428\npolicy_expires_mono_ns 0\nbaseline_ok 1\nserving 0\ngeneration 29\nreason awaiting_member_grants\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:00:25.065679293Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38757822577426\nwall_unix_ns 1793455220306206428\npolicy_expires_mono_ns 0\nbaseline_ok 1\nserving 0\ngeneration 29\nreason awaiting_member_grants\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:00:26.088349589Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38762664218796\nwall_unix_ns 1793455225147847763\npolicy_expires_mono_ns 0\nbaseline_ok 1\nserving 0\ngeneration 29\nreason awaiting_member_grants\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:00:27.109041275Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38762664218796\nwall_unix_ns 1793455225147847763\npolicy_expires_mono_ns 0\nbaseline_ok 1\nserving 0\ngeneration 29\nreason awaiting_member_grants\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:00:28.130752689Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38762664218796\nwall_unix_ns 1793455225147847763\npolicy_expires_mono_ns 0\nbaseline_ok 1\nserving 0\ngeneration 29\nreason awaiting_member_grants\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:00:29.151999254Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38762664218796\nwall_unix_ns 1793455225147847763\npolicy_expires_mono_ns 0\nbaseline_ok 1\nserving 0\ngeneration 29\nreason awaiting_member_grants\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:00:30.176064413Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38762664218796\nwall_unix_ns 1793455225147847763\npolicy_expires_mono_ns 0\nbaseline_ok 1\nserving 0\ngeneration 29\nreason awaiting_member_grants\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:00:31.198359941Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38767762209967\nwall_unix_ns 1793455230245838933\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:00:32.220952741Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38767762209967\nwall_unix_ns 1793455230245838933\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:00:33.241662338Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38767762209967\nwall_unix_ns 1793455230245838933\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:00:34.264424741Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38767762209967\nwall_unix_ns 1793455230245838933\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:00:35.286216526Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38772789572625\nwall_unix_ns 1793455235273201503\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:00:36.307544898Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38772789572625\nwall_unix_ns 1793455235273201503\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:00:37.330661126Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38772789572625\nwall_unix_ns 1793455235273201503\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:00:38.353351315Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38772789572625\nwall_unix_ns 1793455235273201503\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:00:39.379370401Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38772789572625\nwall_unix_ns 1793455235273201503\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:00:40.405216859Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38777774519412\nwall_unix_ns 1793455240258148383\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:00:41.428093327Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38777774519412\nwall_unix_ns 1793455240258148383\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:00:42.44999077Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38777774519412\nwall_unix_ns 1793455240258148383\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:00:43.473454785Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38777774519412\nwall_unix_ns 1793455240258148383\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:00:44.500259668Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38777774519412\nwall_unix_ns 1793455240258148383\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:00:45.523035811Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38782778123870\nwall_unix_ns 1793455245261752711\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:00:46.546174511Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38782778123870\nwall_unix_ns 1793455245261752711\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:00:47.567269086Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38782778123870\nwall_unix_ns 1793455245261752711\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:00:48.589773509Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38782778123870\nwall_unix_ns 1793455245261752711\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:00:49.614034951Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38782778123870\nwall_unix_ns 1793455245261752711\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:00:50.640305924Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38787800585991\nwall_unix_ns 1793455250284214859\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:00:51.663122983Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38787800585991\nwall_unix_ns 1793455250284214859\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:00:52.685454427Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38787800585991\nwall_unix_ns 1793455250284214859\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:00:53.709106116Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38787800585991\nwall_unix_ns 1793455250284214859\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:00:54.732610055Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38787800585991\nwall_unix_ns 1793455250284214859\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:00:55.755418686Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38792772773607\nwall_unix_ns 1793455255256402464\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:00:56.778465006Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38792772773607\nwall_unix_ns 1793455255256402464\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:00:57.800070928Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38792772773607\nwall_unix_ns 1793455255256402464\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:00:58.821820034Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38792772773607\nwall_unix_ns 1793455255256402464\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:00:59.843982303Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38792772773607\nwall_unix_ns 1793455255256402464\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:01:00.868099882Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38797791437670\nwall_unix_ns 1793455260275066628\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:01:01.891281507Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38797791437670\nwall_unix_ns 1793455260275066628\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:01:02.913136999Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38797791437670\nwall_unix_ns 1793455260275066628\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:01:03.934699461Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38797791437670\nwall_unix_ns 1793455260275066628\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:01:04.957024459Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38797791437670\nwall_unix_ns 1793455260275066628\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:01:05.978957623Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38802788240118\nwall_unix_ns 1793455265271869011\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:01:07.001013704Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38802788240118\nwall_unix_ns 1793455265271869011\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:01:08.023909294Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38802788240118\nwall_unix_ns 1793455265271869011\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:01:09.044469794Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38802788240118\nwall_unix_ns 1793455265271869011\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:01:10.065650108Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38802788240118\nwall_unix_ns 1793455265271869011\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:01:11.086057952Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38807806434126\nwall_unix_ns 1793455270290062980\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:01:12.110131973Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38807806434126\nwall_unix_ns 1793455270290062980\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:01:13.133157507Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38807806434126\nwall_unix_ns 1793455270290062980\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:01:14.155171344Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38807806434126\nwall_unix_ns 1793455270290062980\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:01:15.178329015Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38807806434126\nwall_unix_ns 1793455270290062980\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:01:16.199852885Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38812799577421\nwall_unix_ns 1793455275283206349\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:01:17.223559909Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38812799577421\nwall_unix_ns 1793455275283206349\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:01:18.245664683Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38812799577421\nwall_unix_ns 1793455275283206349\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:01:19.269599872Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38812799577421\nwall_unix_ns 1793455275283206349\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:01:20.291651782Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38817792380154\nwall_unix_ns 1793455280276009113\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:01:21.313699092Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38817792380154\nwall_unix_ns 1793455280276009113\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:01:22.332476648Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38817792380154\nwall_unix_ns 1793455280276009113\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:01:23.356396054Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38817792380154\nwall_unix_ns 1793455280276009113\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:01:24.379281032Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38817792380154\nwall_unix_ns 1793455280276009113\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:01:25.402130587Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38822796094458\nwall_unix_ns 1793455285279723375\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:01:26.422375561Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38822796094458\nwall_unix_ns 1793455285279723375\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:01:27.444014521Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38822796094458\nwall_unix_ns 1793455285279723375\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:01:28.468492126Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38822796094458\nwall_unix_ns 1793455285279723375\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:01:29.491464578Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38822796094458\nwall_unix_ns 1793455285279723375\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:01:30.513993545Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38827801497856\nwall_unix_ns 1793455290285126841\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:01:31.537069474Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38827801497856\nwall_unix_ns 1793455290285126841\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:01:32.560933751Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38827801497856\nwall_unix_ns 1793455290285126841\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:01:33.586524513Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38827801497856\nwall_unix_ns 1793455290285126841\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:01:34.609419358Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38827801497856\nwall_unix_ns 1793455290285126841\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:01:35.632145163Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38832811333286\nwall_unix_ns 1793455295294962120\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:01:36.654374638Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38832811333286\nwall_unix_ns 1793455295294962120\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:01:37.681420755Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38832811333286\nwall_unix_ns 1793455295294962120\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:01:38.704713523Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38832811333286\nwall_unix_ns 1793455295294962120\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:01:39.729360878Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38832811333286\nwall_unix_ns 1793455295294962120\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:01:40.750922744Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38837806473517\nwall_unix_ns 1793455300290102368\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:01:41.774004266Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38837806473517\nwall_unix_ns 1793455300290102368\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:01:42.797428287Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38837806473517\nwall_unix_ns 1793455300290102368\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      },
+      {
+        "at": "2026-10-31T14:01:43.827011149Z",
+        "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 38837806473517\nwall_unix_ns 1793455300290102368\npolicy_expires_mono_ns 39313182562178\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving\nevidence {\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"initial_quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}],\"quarantine\":{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}},\"error\":\"quarantine_incomplete\"}\n"
+      }
+    ],
+    "observations": [
+      {
+        "report": {
+          "lease": {
+            "lease_id": "6d1297de-e3f8-44b5-9be0-583c06693db5",
+            "expires_at": "2026-10-31T14:01:15.090683346Z"
+          },
+          "usage": {
+            "blocked_seq": "6",
+            "ledger_epoch": "6868cbbd-fa82-4370-86c5-a4ba837967e2",
+            "meter_epoch_id": null,
+            "oldest_unacked_at": "2026-10-31T13:41:28.717415728Z",
+            "acked_archive_bytes": "3268",
+            "unacked_event_count": 16,
+            "central_acked_through": "5",
+            "unacked_payload_bytes": "10472",
+            "last_durable_event_seq": "21"
+          },
+          "checks": [
+            {
+              "name": "dns_policy",
+              "status": "passed",
+              "error_code": null,
+              "observed_at": "2026-10-31T14:00:15.11539939Z"
+            },
+            {
+              "name": "internet_only",
+              "status": "passed",
+              "error_code": null,
+              "observed_at": "2026-10-31T14:00:15.11539939Z"
+            },
+            {
+              "name": "lease",
+              "detail": "Serving lease has no member grants yet.",
+              "status": "failed",
+              "error_code": "AWAITING_MEMBER_GRANTS",
+              "observed_at": "2026-10-31T14:00:15.11539939Z"
+            },
+            {
+              "name": "meter_path",
+              "status": "passed",
+              "error_code": null,
+              "observed_at": "2026-10-31T14:00:15.11539939Z"
+            },
+            {
+              "name": "policy_signature",
+              "status": "passed",
+              "error_code": null,
+              "observed_at": "2026-10-31T14:00:15.11539939Z"
+            },
+            {
+              "name": "qos",
+              "detail": "Rate policy could not be applied.",
+              "status": "failed",
+              "error_code": "AWAITING_MEMBER_GRANTS",
+              "observed_at": "2026-10-31T14:00:15.11539939Z"
+            },
+            {
+              "name": "release_supported",
+              "status": "passed",
+              "error_code": null,
+              "observed_at": "2026-10-31T14:00:15.11539939Z"
+            },
+            {
+              "name": "source_binding",
+              "detail": "No member binding was admitted.",
+              "status": "failed",
+              "error_code": "AWAITING_MEMBER_GRANTS",
+              "observed_at": "2026-10-31T14:00:15.11539939Z"
+            },
+            {
+              "name": "storage",
+              "status": "passed",
+              "error_code": null,
+              "observed_at": "2026-10-31T14:00:15.11539939Z"
+            },
+            {
+              "name": "tunnel_probe",
+              "detail": "Egress probe used no extra target.",
+              "status": "failed",
+              "error_code": "HEALTH_CHECK_FAILED",
+              "observed_at": "2026-10-31T14:00:15.11539939Z"
+            }
+          ],
+          "errors": [
+            {
+              "code": "AWAITING_MEMBER_GRANTS",
+              "stage": "lease",
+              "message": "Serving lease has no member grants yet.",
+              "observed_at": "2026-10-31T14:00:15.11539939Z"
+            },
+            {
+              "code": "HEALTH_CHECK_FAILED",
+              "stage": "probe",
+              "message": "tunnel_probe",
+              "observed_at": "2026-10-31T14:00:15.11539939Z"
+            }
+          ],
+          "update": {
+            "stage": null,
+            "state": null,
+            "job_id": null,
+            "generation": null
+          },
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "netbird": {
+            "backend": "kernel",
+            "peer_id": null,
+            "version": null
+          },
+          "node_id": "01a19230-b571-762f-ad34-184dcc6f21cf",
+          "report_id": "01a19242-d234-78cf-ac67-a11007389200",
+          "data_health": "failed",
+          "observed_at": "2026-10-31T14:00:15.15655181Z",
+          "tc_evidence": null,
+          "agent_version": "0.1.0",
+          "safety_status": "failed",
+          "current_release_id": "01a19225-fa0c-71e3-963b-b6205c535548",
+          "provisioning_state": "ready",
+          "applied_policy_refs": {
+            "dns_generation": "5",
+            "fup_generation": "1",
+            "authorization_generation": "1"
+          },
+          "dns_policy_evidence": {
+            "feeds": [
+              {
+                "feed_code": "at-members-02d848bf",
+                "rule_count": 2,
+                "content_sha256": "08523819bcfee0e9ca2527e9702c57024c98c8c7f72fb1b430f5aee45eff6423"
+              }
+            ],
+            "outcome": "applied",
+            "applied_at": "2026-10-31T14:00:15.113704179Z",
+            "error_code": null,
+            "generation": "5",
+            "document_id": "01a1923c-c0a0-7c80-adf6-4bb905fd3a1e",
+            "content_sha256": "f6db6f2841381acaf4fe7c40c51b343387c53c7173d86879536c3658418e51c0"
+          },
+          "node_incarnation_id": "01a19230-b6bc-7b92-ab31-9bc5af217935",
+          "last_good_release_id": "01a19225-fa0c-71e3-963b-b6205c535548",
+          "applied_binding_revision": "5",
+          "forwarding_block_reasons": [
+            "awaiting_member_grants",
+            "safety_check_failed"
+          ],
+          "applied_config_generation": "29",
+          "member_forwarding_enabled": false
+        },
+        "received_at": "2026-10-31T14:00:15.162603+00:00"
+      },
+      {
+        "report": {
+          "lease": {
+            "lease_id": "6d1297de-e3f8-44b5-9be0-583c06693db5",
+            "expires_at": "2026-10-31T14:01:15.090683346Z"
+          },
+          "usage": {
+            "blocked_seq": "6",
+            "ledger_epoch": "6868cbbd-fa82-4370-86c5-a4ba837967e2",
+            "meter_epoch_id": null,
+            "oldest_unacked_at": "2026-10-31T13:41:28.717415728Z",
+            "acked_archive_bytes": "3268",
+            "unacked_event_count": 16,
+            "central_acked_through": "5",
+            "unacked_payload_bytes": "10472",
+            "last_durable_event_seq": "21"
+          },
+          "checks": [
+            {
+              "name": "dns_policy",
+              "status": "passed",
+              "error_code": null,
+              "observed_at": "2026-10-31T14:00:15.196063311Z"
+            },
+            {
+              "name": "internet_only",
+              "status": "passed",
+              "error_code": null,
+              "observed_at": "2026-10-31T14:00:15.196063311Z"
+            },
+            {
+              "name": "lease",
+              "status": "failed",
+              "error_code": "TC_FOREIGN_FILTER",
+              "observed_at": "2026-10-31T14:00:15.196063311Z"
+            },
+            {
+              "name": "meter_path",
+              "status": "passed",
+              "error_code": null,
+              "observed_at": "2026-10-31T14:00:15.196063311Z"
+            },
+            {
+              "name": "policy_signature",
+              "status": "passed",
+              "error_code": null,
+              "observed_at": "2026-10-31T14:00:15.196063311Z"
+            },
+            {
+              "name": "qos",
+              "status": "failed",
+              "error_code": "TC_FOREIGN_FILTER",
+              "observed_at": "2026-10-31T14:00:15.196063311Z"
+            },
+            {
+              "name": "release_supported",
+              "status": "passed",
+              "error_code": null,
+              "observed_at": "2026-10-31T14:00:15.196063311Z"
+            },
+            {
+              "name": "source_binding",
+              "status": "failed",
+              "error_code": "TC_FOREIGN_FILTER",
+              "observed_at": "2026-10-31T14:00:15.196063311Z"
+            },
+            {
+              "name": "storage",
+              "status": "passed",
+              "error_code": null,
+              "observed_at": "2026-10-31T14:00:15.196063311Z"
+            },
+            {
+              "name": "tunnel_probe",
+              "detail": "Egress probe used no extra target.",
+              "status": "failed",
+              "error_code": "HEALTH_CHECK_FAILED",
+              "observed_at": "2026-10-31T14:00:15.196063311Z"
+            }
+          ],
+          "errors": [
+            {
+              "code": "AWAITING_MEMBER_GRANTS",
+              "stage": "lease",
+              "message": "Serving lease has no member grants yet.",
+              "observed_at": "2026-10-31T14:00:15.196063311Z"
+            },
+            {
+              "code": "HEALTH_CHECK_FAILED",
+              "stage": "probe",
+              "message": "tunnel_probe",
+              "observed_at": "2026-10-31T14:00:15.196063311Z"
+            },
+            {
+              "code": "TC_FOREIGN_FILTER",
+              "stage": "apply",
+              "message": "TC_FOREIGN_FILTER",
+              "observed_at": "2026-10-31T14:00:15.172900388Z"
+            },
+            {
+              "code": "TC_FOREIGN_FILTER",
+              "stage": "tc_evidence",
+              "message": "{\"candidate_generation\":\"29\",\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"source\":\"rejected\"}",
+              "observed_at": "2026-10-31T14:00:15.172936123Z"
+            },
+            {
+              "code": "TC_FOREIGN_FILTER",
+              "stage": "tc_evidence",
+              "message": "{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}",
+              "observed_at": "2026-10-31T14:00:15.172936123Z"
+            },
+            {
+              "code": "TC_FOREIGN_FILTER",
+              "stage": "initial_quarantine",
+              "message": "{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}}",
+              "observed_at": "2026-10-31T14:00:15.196473737Z"
+            },
+            {
+              "code": "TC_FOREIGN_FILTER",
+              "stage": "quarantine",
+              "message": "{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}}",
+              "observed_at": "2026-10-31T14:00:15.196473737Z"
+            },
+            {
+              "code": "TC_FOREIGN_FILTER",
+              "stage": "quarantine",
+              "message": "\"quarantine_incomplete\"",
+              "observed_at": "2026-10-31T14:00:15.196473737Z"
+            }
+          ],
+          "update": {
+            "stage": null,
+            "state": null,
+            "job_id": null,
+            "generation": null
+          },
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "netbird": {
+            "backend": "kernel",
+            "peer_id": null,
+            "version": null
+          },
+          "node_id": "01a19230-b571-762f-ad34-184dcc6f21cf",
+          "report_id": "01a19242-d25c-7761-933e-a3b5bac4b49f",
+          "data_health": "failed",
+          "observed_at": "2026-10-31T14:00:15.196473737Z",
+          "tc_evidence": {
+            "phase": "verify",
+            "sha256": "012466f480280825f4be68bd43bc0c963476a3f5a54ee486910edc7d1e9b4aed",
+            "read_at": "2026-10-31T14:00:15.172848596Z",
+            "rejected": {
+              "error": "read_failed",
+              "objects": [],
+              "interface": "fvmb0",
+              "attachment": "qdisc"
+            },
+            "verified": false,
+            "truncated": false,
+            "error_code": "TC_FOREIGN_FILTER",
+            "attachments": [
+              {
+                "error": "read_failed",
+                "objects": [],
+                "interface": "fvmb0",
+                "attachment": "qdisc"
+              }
+            ],
+            "reads_total": 1,
+            "objects_total": 0,
+            "candidate_generation": "29"
+          },
+          "agent_version": "0.1.0",
+          "safety_status": "failed",
+          "current_release_id": "01a19225-fa0c-71e3-963b-b6205c535548",
+          "provisioning_state": "applying",
+          "applied_policy_refs": {
+            "dns_generation": "5",
+            "fup_generation": "1",
+            "authorization_generation": "1"
+          },
+          "dns_policy_evidence": {
+            "feeds": [
+              {
+                "feed_code": "at-members-02d848bf",
+                "rule_count": 2,
+                "content_sha256": "08523819bcfee0e9ca2527e9702c57024c98c8c7f72fb1b430f5aee45eff6423"
+              }
+            ],
+            "outcome": "applied",
+            "applied_at": "2026-10-31T14:00:15.113704179Z",
+            "error_code": null,
+            "generation": "5",
+            "document_id": "01a1923c-c0a0-7c80-adf6-4bb905fd3a1e",
+            "content_sha256": "f6db6f2841381acaf4fe7c40c51b343387c53c7173d86879536c3658418e51c0"
+          },
+          "node_incarnation_id": "01a19230-b6bc-7b92-ab31-9bc5af217935",
+          "last_good_release_id": "01a19225-fa0c-71e3-963b-b6205c535548",
+          "applied_binding_revision": "5",
+          "forwarding_block_reasons": [
+            "safety_check_failed",
+            "awaiting_member_grants"
+          ],
+          "applied_config_generation": "29",
+          "member_forwarding_enabled": false
+        },
+        "received_at": "2026-10-31T14:00:15.201584+00:00"
+      },
+      {
+        "report": {
+          "lease": {
+            "lease_id": "fe81f9f0-7c66-4aa7-8500-a7246fc9e7ef",
+            "expires_at": "2026-10-31T14:01:20.093449776Z"
+          },
+          "usage": {
+            "blocked_seq": "6",
+            "ledger_epoch": "6868cbbd-fa82-4370-86c5-a4ba837967e2",
+            "meter_epoch_id": null,
+            "oldest_unacked_at": "2026-10-31T13:41:28.717415728Z",
+            "acked_archive_bytes": "3268",
+            "unacked_event_count": 16,
+            "central_acked_through": "5",
+            "unacked_payload_bytes": "10472",
+            "last_durable_event_seq": "21"
+          },
+          "checks": [
+            {
+              "name": "dns_policy",
+              "status": "passed",
+              "error_code": null,
+              "observed_at": "2026-10-31T14:00:20.285611241Z"
+            },
+            {
+              "name": "internet_only",
+              "status": "passed",
+              "error_code": null,
+              "observed_at": "2026-10-31T14:00:20.285611241Z"
+            },
+            {
+              "name": "lease",
+              "detail": "Serving lease has no member grants yet.",
+              "status": "failed",
+              "error_code": "AWAITING_MEMBER_GRANTS",
+              "observed_at": "2026-10-31T14:00:20.285611241Z"
+            },
+            {
+              "name": "meter_path",
+              "status": "passed",
+              "error_code": null,
+              "observed_at": "2026-10-31T14:00:20.285611241Z"
+            },
+            {
+              "name": "policy_signature",
+              "status": "passed",
+              "error_code": null,
+              "observed_at": "2026-10-31T14:00:20.285611241Z"
+            },
+            {
+              "name": "qos",
+              "detail": "read_at=2026-10-31T14:00:20.273635754Z source=live candidate=29 verified=true {\"generation\":\"29\",\"phase\":\"verify\",\"reads\":12,\"objects\":2,\"truncated\":false,\"sha256\":\"3a3d8b4f222d3a5f23c5249a3a552551c782e099092c5756c25e5e5a537e340e\"}",
+              "status": "failed",
+              "error_code": "AWAITING_MEMBER_GRANTS",
+              "observed_at": "2026-10-31T14:00:20.285611241Z"
+            },
+            {
+              "name": "release_supported",
+              "status": "passed",
+              "error_code": null,
+              "observed_at": "2026-10-31T14:00:20.285611241Z"
+            },
+            {
+              "name": "source_binding",
+              "detail": "No member binding was admitted.",
+              "status": "failed",
+              "error_code": "AWAITING_MEMBER_GRANTS",
+              "observed_at": "2026-10-31T14:00:20.285611241Z"
+            },
+            {
+              "name": "storage",
+              "status": "passed",
+              "error_code": null,
+              "observed_at": "2026-10-31T14:00:20.285611241Z"
+            },
+            {
+              "name": "tunnel_probe",
+              "detail": "Egress probe used no extra target.",
+              "status": "passed",
+              "error_code": null,
+              "observed_at": "2026-10-31T14:00:20.285611241Z"
+            }
+          ],
+          "errors": [
+            {
+              "code": "AWAITING_MEMBER_GRANTS",
+              "stage": "lease",
+              "message": "Serving lease has no member grants yet.",
+              "observed_at": "2026-10-31T14:00:20.285611241Z"
+            },
+            {
+              "code": "METER_EPOCH_CHANGE",
+              "stage": "meter",
+              "message": "ruleset was reset outside the agent",
+              "observed_at": "2026-10-31T14:00:20.281967813Z"
+            },
+            {
+              "code": "TC_FOREIGN_FILTER",
+              "stage": "tc_evidence",
+              "message": "{\"candidate_generation\":\"29\",\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"source\":\"rejected\"}",
+              "observed_at": "2026-10-31T14:00:15.172936123Z"
+            },
+            {
+              "code": "TC_FOREIGN_FILTER",
+              "stage": "tc_evidence",
+              "message": "{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}",
+              "observed_at": "2026-10-31T14:00:15.172936123Z"
+            },
+            {
+              "code": "TC_FOREIGN_FILTER",
+              "stage": "initial_quarantine",
+              "message": "{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}}",
+              "observed_at": "2026-10-31T14:00:20.281968312Z"
+            },
+            {
+              "code": "TC_FOREIGN_FILTER",
+              "stage": "quarantine",
+              "message": "{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}}",
+              "observed_at": "2026-10-31T14:00:20.281968312Z"
+            },
+            {
+              "code": "TC_FOREIGN_FILTER",
+              "stage": "quarantine",
+              "message": "\"quarantine_incomplete\"",
+              "observed_at": "2026-10-31T14:00:20.281968312Z"
+            }
+          ],
+          "update": {
+            "stage": null,
+            "state": null,
+            "job_id": null,
+            "generation": null
+          },
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "netbird": {
+            "backend": "kernel",
+            "peer_id": null,
+            "version": null
+          },
+          "node_id": "01a19230-b571-762f-ad34-184dcc6f21cf",
+          "report_id": "01a19242-e639-7eee-9f8c-3ea06c63111b",
+          "data_health": "healthy",
+          "observed_at": "2026-10-31T14:00:20.281968312Z",
+          "tc_evidence": {
+            "phase": "verify",
+            "sha256": "3a3d8b4f222d3a5f23c5249a3a552551c782e099092c5756c25e5e5a537e340e",
+            "read_at": "2026-10-31T14:00:20.273578257Z",
+            "rejected": null,
+            "verified": true,
+            "truncated": false,
+            "error_code": null,
+            "attachments": [
+              {
+                "objects": [
+                  {
+                    "kind": "htb",
+                    "root": true,
+                    "handle": "1:"
+                  }
+                ],
+                "interface": "fvmb0",
+                "attachment": "qdisc"
+              },
+              {
+                "objects": [
+                  {
+                    "kind": "htb",
+                    "root": true,
+                    "handle": "1:"
+                  }
+                ],
+                "interface": "fvup0",
+                "attachment": "qdisc"
+              },
+              {
+                "objects": [],
+                "interface": "fvmb0",
+                "attachment": "1:1"
+              },
+              {
+                "objects": [],
+                "interface": "fvmb0",
+                "attachment": "1:fffe"
+              },
+              {
+                "objects": [],
+                "interface": "fvmb0",
+                "attachment": "egress"
+              },
+              {
+                "objects": [],
+                "interface": "fvmb0",
+                "attachment": "ingress"
+              },
+              {
+                "objects": [],
+                "interface": "fvmb0",
+                "attachment": "root"
+              },
+              {
+                "objects": [],
+                "interface": "fvup0",
+                "attachment": "1:1"
+              },
+              {
+                "objects": [],
+                "interface": "fvup0",
+                "attachment": "1:fffe"
+              },
+              {
+                "objects": [],
+                "interface": "fvup0",
+                "attachment": "egress"
+              },
+              {
+                "objects": [],
+                "interface": "fvup0",
+                "attachment": "ingress"
+              },
+              {
+                "objects": [],
+                "interface": "fvup0",
+                "attachment": "root"
+              }
+            ],
+            "reads_total": 12,
+            "objects_total": 2,
+            "candidate_generation": "29"
+          },
+          "agent_version": "0.1.0",
+          "safety_status": "passed",
+          "current_release_id": "01a19225-fa0c-71e3-963b-b6205c535548",
+          "provisioning_state": "ready",
+          "applied_policy_refs": {
+            "dns_generation": "5",
+            "fup_generation": "1",
+            "authorization_generation": "1"
+          },
+          "dns_policy_evidence": {
+            "feeds": [
+              {
+                "feed_code": "at-members-02d848bf",
+                "rule_count": 2,
+                "content_sha256": "08523819bcfee0e9ca2527e9702c57024c98c8c7f72fb1b430f5aee45eff6423"
+              }
+            ],
+            "outcome": "applied",
+            "applied_at": "2026-10-31T14:00:20.115226602Z",
+            "error_code": null,
+            "generation": "5",
+            "document_id": "01a1923c-c0a0-7c80-adf6-4bb905fd3a1e",
+            "content_sha256": "f6db6f2841381acaf4fe7c40c51b343387c53c7173d86879536c3658418e51c0"
+          },
+          "node_incarnation_id": "01a19230-b6bc-7b92-ab31-9bc5af217935",
+          "last_good_release_id": "01a19225-fa0c-71e3-963b-b6205c535548",
+          "applied_binding_revision": "5",
+          "forwarding_block_reasons": [
+            "awaiting_member_grants"
+          ],
+          "applied_config_generation": "29",
+          "member_forwarding_enabled": false
+        },
+        "received_at": "2026-10-31T14:00:20.287755+00:00"
+      },
+      {
+        "report": {
+          "lease": {
+            "lease_id": "bac59f2c-f21d-4b4f-9c1c-ab768a1cd39f",
+            "expires_at": "2026-11-01T14:00:30.094235623Z"
+          },
+          "usage": {
+            "blocked_seq": "6",
+            "ledger_epoch": "6868cbbd-fa82-4370-86c5-a4ba837967e2",
+            "meter_epoch_id": "01a19243-0ca7-7064-b830-2b70bd2541e8",
+            "oldest_unacked_at": "2026-10-31T13:41:28.717415728Z",
+            "acked_archive_bytes": "3268",
+            "unacked_event_count": 16,
+            "central_acked_through": "5",
+            "unacked_payload_bytes": "10472",
+            "last_durable_event_seq": "21"
+          },
+          "checks": [
+            {
+              "name": "dns_policy",
+              "status": "passed",
+              "error_code": null,
+              "observed_at": "2026-10-31T14:00:30.11674334Z"
+            },
+            {
+              "name": "internet_only",
+              "status": "passed",
+              "error_code": null,
+              "observed_at": "2026-10-31T14:00:30.11674334Z"
+            },
+            {
+              "name": "lease",
+              "status": "passed",
+              "error_code": null,
+              "observed_at": "2026-10-31T14:00:30.11674334Z"
+            },
+            {
+              "name": "meter_path",
+              "status": "passed",
+              "error_code": null,
+              "observed_at": "2026-10-31T14:00:30.11674334Z"
+            },
+            {
+              "name": "policy_signature",
+              "status": "passed",
+              "error_code": null,
+              "observed_at": "2026-10-31T14:00:30.11674334Z"
+            },
+            {
+              "name": "qos",
+              "detail": "read_at=2026-10-31T14:00:30.207884657Z source=live candidate=29 verified=true {\"generation\":\"29\",\"phase\":\"verify\",\"reads\":16,\"objects\":4,\"truncated\":false,\"sha256\":\"8079270a5bb5a29badaefcaaa1474fa5cafc97a3cf1ed798595e1002f7859c92\"}",
+              "status": "passed",
+              "error_code": null,
+              "observed_at": "2026-10-31T14:00:30.11674334Z"
+            },
+            {
+              "name": "release_supported",
+              "status": "passed",
+              "error_code": null,
+              "observed_at": "2026-10-31T14:00:30.11674334Z"
+            },
+            {
+              "name": "source_binding",
+              "status": "passed",
+              "error_code": null,
+              "observed_at": "2026-10-31T14:00:30.11674334Z"
+            },
+            {
+              "name": "storage",
+              "status": "passed",
+              "error_code": null,
+              "observed_at": "2026-10-31T14:00:30.11674334Z"
+            },
+            {
+              "name": "tunnel_probe",
+              "detail": "Egress probe used no extra target.",
+              "status": "passed",
+              "error_code": null,
+              "observed_at": "2026-10-31T14:00:30.11674334Z"
+            }
+          ],
+          "errors": [
+            {
+              "code": "TC_FOREIGN_FILTER",
+              "stage": "tc_evidence",
+              "message": "{\"candidate_generation\":\"29\",\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"source\":\"rejected\"}",
+              "observed_at": "2026-10-31T14:00:15.172936123Z"
+            },
+            {
+              "code": "TC_FOREIGN_FILTER",
+              "stage": "tc_evidence",
+              "message": "{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}",
+              "observed_at": "2026-10-31T14:00:15.172936123Z"
+            },
+            {
+              "code": "TC_FOREIGN_FILTER",
+              "stage": "initial_quarantine",
+              "message": "{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}}",
+              "observed_at": "2026-10-31T14:00:30.218302239Z"
+            },
+            {
+              "code": "TC_FOREIGN_FILTER",
+              "stage": "quarantine",
+              "message": "{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}}",
+              "observed_at": "2026-10-31T14:00:30.218302239Z"
+            },
+            {
+              "code": "TC_FOREIGN_FILTER",
+              "stage": "quarantine",
+              "message": "\"quarantine_incomplete\"",
+              "observed_at": "2026-10-31T14:00:30.218302239Z"
+            }
+          ],
+          "update": {
+            "stage": null,
+            "state": null,
+            "job_id": null,
+            "generation": null
+          },
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "netbird": {
+            "backend": "kernel",
+            "peer_id": null,
+            "version": null
+          },
+          "node_id": "01a19230-b571-762f-ad34-184dcc6f21cf",
+          "report_id": "01a19243-0d0a-74c1-8c2a-f2832c746a4f",
+          "data_health": "healthy",
+          "observed_at": "2026-10-31T14:00:30.218302239Z",
+          "tc_evidence": {
+            "phase": "verify",
+            "sha256": "8079270a5bb5a29badaefcaaa1474fa5cafc97a3cf1ed798595e1002f7859c92",
+            "read_at": "2026-10-31T14:00:30.207821267Z",
+            "rejected": null,
+            "verified": true,
+            "truncated": false,
+            "error_code": null,
+            "attachments": [
+              {
+                "objects": [
+                  {
+                    "kind": "fq_codel",
+                    "handle": "d361:",
+                    "parent": "1:d361"
+                  },
+                  {
+                    "kind": "htb",
+                    "root": true,
+                    "handle": "1:"
+                  }
+                ],
+                "interface": "fvmb0",
+                "attachment": "qdisc"
+              },
+              {
+                "objects": [
+                  {
+                    "kind": "fq_codel",
+                    "handle": "d361:",
+                    "parent": "1:d361"
+                  },
+                  {
+                    "kind": "htb",
+                    "root": true,
+                    "handle": "1:"
+                  }
+                ],
+                "interface": "fvup0",
+                "attachment": "qdisc"
+              },
+              {
+                "objects": [],
+                "interface": "fvmb0",
+                "attachment": "1:1"
+              },
+              {
+                "objects": [],
+                "interface": "fvmb0",
+                "attachment": "1:d361"
+              },
+              {
+                "objects": [],
+                "interface": "fvmb0",
+                "attachment": "1:fffe"
+              },
+              {
+                "objects": [],
+                "interface": "fvmb0",
+                "attachment": "d361:"
+              },
+              {
+                "objects": [],
+                "interface": "fvmb0",
+                "attachment": "egress"
+              },
+              {
+                "objects": [],
+                "interface": "fvmb0",
+                "attachment": "ingress"
+              },
+              {
+                "objects": [],
+                "interface": "fvmb0",
+                "attachment": "root"
+              },
+              {
+                "objects": [],
+                "interface": "fvup0",
+                "attachment": "1:1"
+              },
+              {
+                "objects": [],
+                "interface": "fvup0",
+                "attachment": "1:d361"
+              },
+              {
+                "objects": [],
+                "interface": "fvup0",
+                "attachment": "1:fffe"
+              },
+              {
+                "objects": [],
+                "interface": "fvup0",
+                "attachment": "d361:"
+              },
+              {
+                "objects": [],
+                "interface": "fvup0",
+                "attachment": "egress"
+              },
+              {
+                "objects": [],
+                "interface": "fvup0",
+                "attachment": "ingress"
+              },
+              {
+                "objects": [],
+                "interface": "fvup0",
+                "attachment": "root"
+              }
+            ],
+            "reads_total": 16,
+            "objects_total": 4,
+            "candidate_generation": "29"
+          },
+          "agent_version": "0.1.0",
+          "safety_status": "passed",
+          "current_release_id": "01a19225-fa0c-71e3-963b-b6205c535548",
+          "provisioning_state": "ready",
+          "applied_policy_refs": {
+            "dns_generation": "5",
+            "fup_generation": "1",
+            "authorization_generation": "1"
+          },
+          "dns_policy_evidence": {
+            "feeds": [
+              {
+                "feed_code": "at-members-02d848bf",
+                "rule_count": 2,
+                "content_sha256": "08523819bcfee0e9ca2527e9702c57024c98c8c7f72fb1b430f5aee45eff6423"
+              }
+            ],
+            "outcome": "applied",
+            "applied_at": "2026-10-31T14:00:30.115739623Z",
+            "error_code": null,
+            "generation": "5",
+            "document_id": "01a1923c-c0a0-7c80-adf6-4bb905fd3a1e",
+            "content_sha256": "f6db6f2841381acaf4fe7c40c51b343387c53c7173d86879536c3658418e51c0"
+          },
+          "node_incarnation_id": "01a19230-b6bc-7b92-ab31-9bc5af217935",
+          "last_good_release_id": "01a19225-fa0c-71e3-963b-b6205c535548",
+          "applied_binding_revision": "5",
+          "forwarding_block_reasons": [],
+          "applied_config_generation": "29",
+          "member_forwarding_enabled": true
+        },
+        "received_at": "2026-10-31T14:00:30.224689+00:00"
+      },
+      {
+        "report": {
+          "lease": {
+            "lease_id": "bac59f2c-f21d-4b4f-9c1c-ab768a1cd39f",
+            "expires_at": "2026-11-01T14:00:30.094235623Z"
+          },
+          "usage": {
+            "blocked_seq": "6",
+            "ledger_epoch": "6868cbbd-fa82-4370-86c5-a4ba837967e2",
+            "meter_epoch_id": "01a19243-0ca7-7064-b830-2b70bd2541e8",
+            "oldest_unacked_at": "2026-10-31T13:41:28.717415728Z",
+            "acked_archive_bytes": "3268",
+            "unacked_event_count": 17,
+            "central_acked_through": "5",
+            "unacked_payload_bytes": "11127",
+            "last_durable_event_seq": "22"
+          },
+          "checks": [
+            {
+              "name": "dns_policy",
+              "status": "passed",
+              "error_code": null,
+              "observed_at": "2026-10-31T14:01:00.143864859Z"
+            },
+            {
+              "name": "internet_only",
+              "status": "passed",
+              "error_code": null,
+              "observed_at": "2026-10-31T14:01:00.143864859Z"
+            },
+            {
+              "name": "lease",
+              "status": "passed",
+              "error_code": null,
+              "observed_at": "2026-10-31T14:01:00.143864859Z"
+            },
+            {
+              "name": "meter_path",
+              "status": "passed",
+              "error_code": null,
+              "observed_at": "2026-10-31T14:01:00.143864859Z"
+            },
+            {
+              "name": "policy_signature",
+              "status": "passed",
+              "error_code": null,
+              "observed_at": "2026-10-31T14:01:00.143864859Z"
+            },
+            {
+              "name": "qos",
+              "detail": "read_at=2026-10-31T14:01:00.236727531Z source=live candidate=29 verified=true {\"generation\":\"29\",\"phase\":\"verify\",\"reads\":16,\"objects\":4,\"truncated\":false,\"sha256\":\"8079270a5bb5a29badaefcaaa1474fa5cafc97a3cf1ed798595e1002f7859c92\"}",
+              "status": "passed",
+              "error_code": null,
+              "observed_at": "2026-10-31T14:01:00.143864859Z"
+            },
+            {
+              "name": "release_supported",
+              "status": "passed",
+              "error_code": null,
+              "observed_at": "2026-10-31T14:01:00.143864859Z"
+            },
+            {
+              "name": "source_binding",
+              "status": "passed",
+              "error_code": null,
+              "observed_at": "2026-10-31T14:01:00.143864859Z"
+            },
+            {
+              "name": "storage",
+              "status": "passed",
+              "error_code": null,
+              "observed_at": "2026-10-31T14:01:00.143864859Z"
+            },
+            {
+              "name": "tunnel_probe",
+              "detail": "Egress probe used no extra target.",
+              "status": "passed",
+              "error_code": null,
+              "observed_at": "2026-10-31T14:01:00.143864859Z"
+            }
+          ],
+          "errors": [
+            {
+              "code": "TC_FOREIGN_FILTER",
+              "stage": "tc_evidence",
+              "message": "{\"candidate_generation\":\"29\",\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"source\":\"rejected\"}",
+              "observed_at": "2026-10-31T14:00:15.172936123Z"
+            },
+            {
+              "code": "TC_FOREIGN_FILTER",
+              "stage": "tc_evidence",
+              "message": "{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}",
+              "observed_at": "2026-10-31T14:00:15.172936123Z"
+            },
+            {
+              "code": "TC_FOREIGN_FILTER",
+              "stage": "initial_quarantine",
+              "message": "{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}}",
+              "observed_at": "2026-10-31T14:01:00.247637275Z"
+            },
+            {
+              "code": "TC_FOREIGN_FILTER",
+              "stage": "quarantine",
+              "message": "{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}}",
+              "observed_at": "2026-10-31T14:01:00.247637275Z"
+            },
+            {
+              "code": "TC_FOREIGN_FILTER",
+              "stage": "quarantine",
+              "message": "\"quarantine_incomplete\"",
+              "observed_at": "2026-10-31T14:01:00.247637275Z"
+            }
+          ],
+          "update": {
+            "stage": null,
+            "state": null,
+            "job_id": null,
+            "generation": null
+          },
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "netbird": {
+            "backend": "kernel",
+            "peer_id": null,
+            "version": null
+          },
+          "node_id": "01a19230-b571-762f-ad34-184dcc6f21cf",
+          "report_id": "01a19243-8257-7b1f-87a3-bcf0436463b3",
+          "data_health": "healthy",
+          "observed_at": "2026-10-31T14:01:00.247637275Z",
+          "tc_evidence": {
+            "phase": "verify",
+            "sha256": "8079270a5bb5a29badaefcaaa1474fa5cafc97a3cf1ed798595e1002f7859c92",
+            "read_at": "2026-10-31T14:01:00.236670826Z",
+            "rejected": null,
+            "verified": true,
+            "truncated": false,
+            "error_code": null,
+            "attachments": [
+              {
+                "objects": [
+                  {
+                    "kind": "fq_codel",
+                    "handle": "d361:",
+                    "parent": "1:d361"
+                  },
+                  {
+                    "kind": "htb",
+                    "root": true,
+                    "handle": "1:"
+                  }
+                ],
+                "interface": "fvmb0",
+                "attachment": "qdisc"
+              },
+              {
+                "objects": [
+                  {
+                    "kind": "fq_codel",
+                    "handle": "d361:",
+                    "parent": "1:d361"
+                  },
+                  {
+                    "kind": "htb",
+                    "root": true,
+                    "handle": "1:"
+                  }
+                ],
+                "interface": "fvup0",
+                "attachment": "qdisc"
+              },
+              {
+                "objects": [],
+                "interface": "fvmb0",
+                "attachment": "1:1"
+              },
+              {
+                "objects": [],
+                "interface": "fvmb0",
+                "attachment": "1:d361"
+              },
+              {
+                "objects": [],
+                "interface": "fvmb0",
+                "attachment": "1:fffe"
+              },
+              {
+                "objects": [],
+                "interface": "fvmb0",
+                "attachment": "d361:"
+              },
+              {
+                "objects": [],
+                "interface": "fvmb0",
+                "attachment": "egress"
+              },
+              {
+                "objects": [],
+                "interface": "fvmb0",
+                "attachment": "ingress"
+              },
+              {
+                "objects": [],
+                "interface": "fvmb0",
+                "attachment": "root"
+              },
+              {
+                "objects": [],
+                "interface": "fvup0",
+                "attachment": "1:1"
+              },
+              {
+                "objects": [],
+                "interface": "fvup0",
+                "attachment": "1:d361"
+              },
+              {
+                "objects": [],
+                "interface": "fvup0",
+                "attachment": "1:fffe"
+              },
+              {
+                "objects": [],
+                "interface": "fvup0",
+                "attachment": "d361:"
+              },
+              {
+                "objects": [],
+                "interface": "fvup0",
+                "attachment": "egress"
+              },
+              {
+                "objects": [],
+                "interface": "fvup0",
+                "attachment": "ingress"
+              },
+              {
+                "objects": [],
+                "interface": "fvup0",
+                "attachment": "root"
+              }
+            ],
+            "reads_total": 16,
+            "objects_total": 4,
+            "candidate_generation": "29"
+          },
+          "agent_version": "0.1.0",
+          "safety_status": "passed",
+          "current_release_id": "01a19225-fa0c-71e3-963b-b6205c535548",
+          "provisioning_state": "ready",
+          "applied_policy_refs": {
+            "dns_generation": "5",
+            "fup_generation": "1",
+            "authorization_generation": "1"
+          },
+          "dns_policy_evidence": {
+            "feeds": [
+              {
+                "feed_code": "at-members-02d848bf",
+                "rule_count": 2,
+                "content_sha256": "08523819bcfee0e9ca2527e9702c57024c98c8c7f72fb1b430f5aee45eff6423"
+              }
+            ],
+            "outcome": "applied",
+            "applied_at": "2026-10-31T14:01:00.142855074Z",
+            "error_code": null,
+            "generation": "5",
+            "document_id": "01a1923c-c0a0-7c80-adf6-4bb905fd3a1e",
+            "content_sha256": "f6db6f2841381acaf4fe7c40c51b343387c53c7173d86879536c3658418e51c0"
+          },
+          "node_incarnation_id": "01a19230-b6bc-7b92-ab31-9bc5af217935",
+          "last_good_release_id": "01a19225-fa0c-71e3-963b-b6205c535548",
+          "applied_binding_revision": "5",
+          "forwarding_block_reasons": [],
+          "applied_config_generation": "29",
+          "member_forwarding_enabled": true
+        },
+        "received_at": "2026-10-31T14:01:00.252394+00:00"
+      },
+      {
+        "report": {
+          "lease": {
+            "lease_id": "bac59f2c-f21d-4b4f-9c1c-ab768a1cd39f",
+            "expires_at": "2026-11-01T14:00:30.094235623Z"
+          },
+          "usage": {
+            "blocked_seq": "6",
+            "ledger_epoch": "6868cbbd-fa82-4370-86c5-a4ba837967e2",
+            "meter_epoch_id": "01a19243-0ca7-7064-b830-2b70bd2541e8",
+            "oldest_unacked_at": "2026-10-31T13:41:28.717415728Z",
+            "acked_archive_bytes": "3268",
+            "unacked_event_count": 17,
+            "central_acked_through": "5",
+            "unacked_payload_bytes": "11127",
+            "last_durable_event_seq": "22"
+          },
+          "checks": [
+            {
+              "name": "dns_policy",
+              "status": "passed",
+              "error_code": null,
+              "observed_at": "2026-10-31T14:01:30.162534828Z"
+            },
+            {
+              "name": "internet_only",
+              "status": "passed",
+              "error_code": null,
+              "observed_at": "2026-10-31T14:01:30.162534828Z"
+            },
+            {
+              "name": "lease",
+              "status": "passed",
+              "error_code": null,
+              "observed_at": "2026-10-31T14:01:30.162534828Z"
+            },
+            {
+              "name": "meter_path",
+              "status": "passed",
+              "error_code": null,
+              "observed_at": "2026-10-31T14:01:30.162534828Z"
+            },
+            {
+              "name": "policy_signature",
+              "status": "passed",
+              "error_code": null,
+              "observed_at": "2026-10-31T14:01:30.162534828Z"
+            },
+            {
+              "name": "qos",
+              "detail": "read_at=2026-10-31T14:01:30.243299039Z source=live candidate=29 verified=true {\"generation\":\"29\",\"phase\":\"verify\",\"reads\":16,\"objects\":4,\"truncated\":false,\"sha256\":\"8079270a5bb5a29badaefcaaa1474fa5cafc97a3cf1ed798595e1002f7859c92\"}",
+              "status": "passed",
+              "error_code": null,
+              "observed_at": "2026-10-31T14:01:30.162534828Z"
+            },
+            {
+              "name": "release_supported",
+              "status": "passed",
+              "error_code": null,
+              "observed_at": "2026-10-31T14:01:30.162534828Z"
+            },
+            {
+              "name": "source_binding",
+              "status": "passed",
+              "error_code": null,
+              "observed_at": "2026-10-31T14:01:30.162534828Z"
+            },
+            {
+              "name": "storage",
+              "status": "passed",
+              "error_code": null,
+              "observed_at": "2026-10-31T14:01:30.162534828Z"
+            },
+            {
+              "name": "tunnel_probe",
+              "detail": "Egress probe used no extra target.",
+              "status": "passed",
+              "error_code": null,
+              "observed_at": "2026-10-31T14:01:30.162534828Z"
+            }
+          ],
+          "errors": [
+            {
+              "code": "TC_FOREIGN_FILTER",
+              "stage": "tc_evidence",
+              "message": "{\"candidate_generation\":\"29\",\"read_at\":\"2026-10-31T14:00:15.172936123Z\",\"source\":\"rejected\"}",
+              "observed_at": "2026-10-31T14:00:15.172936123Z"
+            },
+            {
+              "code": "TC_FOREIGN_FILTER",
+              "stage": "tc_evidence",
+              "message": "{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}",
+              "observed_at": "2026-10-31T14:00:15.172936123Z"
+            },
+            {
+              "code": "TC_FOREIGN_FILTER",
+              "stage": "initial_quarantine",
+              "message": "{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}}",
+              "observed_at": "2026-10-31T14:01:30.255086788Z"
+            },
+            {
+              "code": "TC_FOREIGN_FILTER",
+              "stage": "quarantine",
+              "message": "{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}}",
+              "observed_at": "2026-10-31T14:01:30.255086788Z"
+            },
+            {
+              "code": "TC_FOREIGN_FILTER",
+              "stage": "quarantine",
+              "message": "\"quarantine_incomplete\"",
+              "observed_at": "2026-10-31T14:01:30.255086788Z"
+            }
+          ],
+          "update": {
+            "stage": null,
+            "state": null,
+            "job_id": null,
+            "generation": null
+          },
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "netbird": {
+            "backend": "kernel",
+            "peer_id": null,
+            "version": null
+          },
+          "node_id": "01a19230-b571-762f-ad34-184dcc6f21cf",
+          "report_id": "01a19243-f78f-731b-ac34-c7ac8ee0a2dd",
+          "data_health": "healthy",
+          "observed_at": "2026-10-31T14:01:30.255086788Z",
+          "tc_evidence": {
+            "phase": "verify",
+            "sha256": "8079270a5bb5a29badaefcaaa1474fa5cafc97a3cf1ed798595e1002f7859c92",
+            "read_at": "2026-10-31T14:01:30.243219957Z",
+            "rejected": null,
+            "verified": true,
+            "truncated": false,
+            "error_code": null,
+            "attachments": [
+              {
+                "objects": [
+                  {
+                    "kind": "fq_codel",
+                    "handle": "d361:",
+                    "parent": "1:d361"
+                  },
+                  {
+                    "kind": "htb",
+                    "root": true,
+                    "handle": "1:"
+                  }
+                ],
+                "interface": "fvmb0",
+                "attachment": "qdisc"
+              },
+              {
+                "objects": [
+                  {
+                    "kind": "fq_codel",
+                    "handle": "d361:",
+                    "parent": "1:d361"
+                  },
+                  {
+                    "kind": "htb",
+                    "root": true,
+                    "handle": "1:"
+                  }
+                ],
+                "interface": "fvup0",
+                "attachment": "qdisc"
+              },
+              {
+                "objects": [],
+                "interface": "fvmb0",
+                "attachment": "1:1"
+              },
+              {
+                "objects": [],
+                "interface": "fvmb0",
+                "attachment": "1:d361"
+              },
+              {
+                "objects": [],
+                "interface": "fvmb0",
+                "attachment": "1:fffe"
+              },
+              {
+                "objects": [],
+                "interface": "fvmb0",
+                "attachment": "d361:"
+              },
+              {
+                "objects": [],
+                "interface": "fvmb0",
+                "attachment": "egress"
+              },
+              {
+                "objects": [],
+                "interface": "fvmb0",
+                "attachment": "ingress"
+              },
+              {
+                "objects": [],
+                "interface": "fvmb0",
+                "attachment": "root"
+              },
+              {
+                "objects": [],
+                "interface": "fvup0",
+                "attachment": "1:1"
+              },
+              {
+                "objects": [],
+                "interface": "fvup0",
+                "attachment": "1:d361"
+              },
+              {
+                "objects": [],
+                "interface": "fvup0",
+                "attachment": "1:fffe"
+              },
+              {
+                "objects": [],
+                "interface": "fvup0",
+                "attachment": "d361:"
+              },
+              {
+                "objects": [],
+                "interface": "fvup0",
+                "attachment": "egress"
+              },
+              {
+                "objects": [],
+                "interface": "fvup0",
+                "attachment": "ingress"
+              },
+              {
+                "objects": [],
+                "interface": "fvup0",
+                "attachment": "root"
+              }
+            ],
+            "reads_total": 16,
+            "objects_total": 4,
+            "candidate_generation": "29"
+          },
+          "agent_version": "0.1.0",
+          "safety_status": "passed",
+          "current_release_id": "01a19225-fa0c-71e3-963b-b6205c535548",
+          "provisioning_state": "ready",
+          "applied_policy_refs": {
+            "dns_generation": "5",
+            "fup_generation": "1",
+            "authorization_generation": "1"
+          },
+          "dns_policy_evidence": {
+            "feeds": [
+              {
+                "feed_code": "at-members-02d848bf",
+                "rule_count": 2,
+                "content_sha256": "08523819bcfee0e9ca2527e9702c57024c98c8c7f72fb1b430f5aee45eff6423"
+              }
+            ],
+            "outcome": "applied",
+            "applied_at": "2026-10-31T14:01:30.161534742Z",
+            "error_code": null,
+            "generation": "5",
+            "document_id": "01a1923c-c0a0-7c80-adf6-4bb905fd3a1e",
+            "content_sha256": "f6db6f2841381acaf4fe7c40c51b343387c53c7173d86879536c3658418e51c0"
+          },
+          "node_incarnation_id": "01a19230-b6bc-7b92-ab31-9bc5af217935",
+          "last_good_release_id": "01a19225-fa0c-71e3-963b-b6205c535548",
+          "applied_binding_revision": "5",
+          "forwarding_block_reasons": [],
+          "applied_config_generation": "29",
+          "member_forwarding_enabled": true
+        },
+        "received_at": "2026-10-31T14:01:30.261042+00:00"
+      }
+    ],
+    "agent_log": "time=2026-10-31T14:00:15.071Z level=INFO msg=\"meter epoch opened\" epoch_id=01a19242-d1de-72f2-9e91-243f1d9526f5 reason=after_final_sample boot_id=97c018d7-a925-4723-9127-83c097de1c8a event_seq=0\ntime=2026-10-31T14:00:15.080Z level=INFO msg=\"usage checkpoint applied\"\ntime=2026-10-31T14:00:15.123Z level=INFO msg=\"usage batch acknowledged\" highest_contiguous_seq=5\ntime=2026-10-31T14:00:15.137Z level=INFO msg=\"meter epoch closed\" epoch_id=01a19242-d1de-72f2-9e91-243f1d9526f5 reason=final_sample event_seq=0\ntime=2026-10-31T14:00:15.156Z level=INFO msg=\"usage status available\"\ntime=2026-10-31T14:00:15.172Z level=WARN msg=apply err=TC_FOREIGN_FILTER\ntime=2026-10-31T14:00:30.120Z level=INFO msg=\"meter epoch opened\" epoch_id=01a19243-0ca7-7064-b830-2b70bd2541e8 reason=after_final_sample boot_id=97c018d7-a925-4723-9127-83c097de1c8a event_seq=0\ntime=2026-10-31T14:01:15.154Z level=INFO msg=\"usage batch acknowledged\" highest_contiguous_seq=5\n",
+    "serving_at": "2026-10-31T14:00:30.224689Z"
+  },
+  "error": "",
+  "requested_generation": "30",
+  "requested_generation_reproduced": false,
+  "exact_generation_30_qualification": "blocked"
+}
