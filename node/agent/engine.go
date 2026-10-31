@@ -295,8 +295,8 @@ func Start(opt Options) (*Engine, error) {
 	return e, nil
 }
 
-// Close finishes the usage hand-off, then closes the client and, when
-// Start opened it, the agent store.
+// Close checkpoints a healthy same-boot restart or finishes the withdrawal
+// hand-off, then closes the client and, when Start opened it, the agent store.
 func (e *Engine) Close() error {
 	if e == nil {
 		return nil
@@ -498,6 +498,7 @@ func (e *Engine) Step(ctx context.Context) error {
 	// threshold before the next heartbeat (ISO-F6-03).
 	ioCtx, cancelIO := context.WithTimeout(ctx, e.controlPassTimeout())
 	defer cancelIO()
+	ctx = context.WithValue(ctx, controlBudgetKey{}, ioCtx)
 	previousDesired, previousLease := e.desired, e.lease
 	e.leaseAttempted = false
 	if err := ctx.Err(); err != nil {
@@ -511,8 +512,8 @@ func (e *Engine) Step(ctx context.Context) error {
 		e.withdraw(ctx)
 		e.evaluate(ctx)
 		e.publishMeterEpoch()
-		_ = e.observe(ioCtx)
-		_ = e.flush(ioCtx)
+		_ = e.observe(ctx)
+		_ = e.flush(ctx)
 		e.answerHealth(ctx)
 		return nil
 	}
@@ -523,8 +524,8 @@ func (e *Engine) Step(ctx context.Context) error {
 	// A valid same-generation mismatch is repaired immediately after retaining
 	// the rejected read. Other failures still withdraw before a later Apply.
 	if !e.verifyCurrentServing(ctx) {
-		_ = e.observe(ioCtx)
-		_ = e.flush(ioCtx)
+		_ = e.observe(ctx)
+		_ = e.flush(ctx)
 		return nil
 	}
 	// Refresh the anchor before any 304. A wall jump must be visible to the
@@ -533,7 +534,7 @@ func (e *Engine) Step(ctx context.Context) error {
 	// A due grant-less renewal must not wait behind observation retries or
 	// desired-state HTTP work. Generation changes are still handled below.
 	if e.leaseGrantless() {
-		if err := e.syncLease(ioCtx); err != nil && ctx.Err() != nil {
+		if err := e.syncLease(ctx); err != nil && ctx.Err() != nil {
 			return err
 		}
 		if e.revoked {
@@ -541,8 +542,8 @@ func (e *Engine) Step(ctx context.Context) error {
 			return nil
 		}
 	}
-	_ = e.flush(ioCtx)
-	if err := e.syncDesired(ioCtx); err != nil && ctx.Err() != nil {
+	_ = e.flush(ctx)
+	if err := e.syncDesired(ctx); err != nil && ctx.Err() != nil {
 		return err
 	}
 	if e.revoked {
@@ -554,7 +555,7 @@ func (e *Engine) Step(ctx context.Context) error {
 	// stored desired state is loaded with desiredOK still false, and the
 	// provisional schedule is armed in the same step that accepts the lease.
 	e.refreshDesired()
-	if err := e.syncLease(ioCtx); err != nil && ctx.Err() != nil {
+	if err := e.syncLease(ctx); err != nil && ctx.Err() != nil {
 		return err
 	}
 	if e.revoked {
@@ -562,12 +563,12 @@ func (e *Engine) Step(ctx context.Context) error {
 		e.answerHealth(ctx)
 		return nil
 	}
-	_ = e.syncCert(ioCtx)
-	_ = e.syncBootstrap(ioCtx)
+	_ = e.syncCert(ctx)
+	_ = e.syncBootstrap(ctx)
 	e.refreshDesired()
 	e.ensureUsage(ctx)
 	if e.uploader != nil && e.uploader.NeedsRestore() {
-		e.restoreUsage(ioCtx)
+		e.restoreUsage(ctx)
 	}
 	e.readMeter(ctx)
 	if pending, err := e.store.Pending(ctx); err == nil {
@@ -590,12 +591,12 @@ func (e *Engine) Step(ctx context.Context) error {
 	}
 	// The generation this step just applied is visible only after enforce.
 	// The matching lease is requested before heartbeat and observation.
-	if err := e.renewAppliedLease(ioCtx); err != nil && ctx.Err() != nil {
+	if err := e.renewAppliedLease(ctx); err != nil && ctx.Err() != nil {
 		return err
 	}
 	e.publishMeterEpoch()
-	_ = e.observe(ioCtx)
-	_ = e.flush(ioCtx)
+	_ = e.observe(ctx)
+	_ = e.flush(ctx)
 	e.answerHealth(ctx)
 	return nil
 }

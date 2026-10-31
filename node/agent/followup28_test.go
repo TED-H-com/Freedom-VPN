@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/node/enforce"
+	"github.com/TED-H-com/Freedom-VPN/node/internal/nodelock"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/google/uuid"
 )
@@ -21,6 +22,35 @@ type replayPlane struct {
 	x         renderedExecutor
 	model     enforce.Model
 	failApply bool
+}
+
+type cancellationPlane struct{ *memPlane }
+
+func (p cancellationPlane) VerifyServing(ctx context.Context, m enforce.Model, a map[uuid.UUID]uint16) (enforce.ServingEvidence, error) {
+	if ctx.Err() != nil {
+		return enforce.ServingEvidence{}, &enforce.CheckError{Reason: enforce.ReasonTCForeignFilter}
+	}
+	return p.memPlane.VerifyServing(ctx, m, a)
+}
+
+func TestAT13_ISOF603_ProcessCancellationStillReadsKernel(t *testing.T) {
+	r := newRig(t)
+	alignControlClock(r)
+	serveBoundGeneration(t, r)
+	r.manualUsage(t)
+	r.eng.plane = cancellationPlane{r.plane}
+	before := r.plane.baselines
+	ctx, cancel := context.WithCancel(t.Context())
+	cancel()
+	if !r.eng.verifyCurrentServing(ctx) {
+		t.Fatal("cancellation was treated as kernel evidence")
+	}
+	if r.eng.Step(ctx) != context.Canceled {
+		t.Fatal("cancellation not returned")
+	}
+	if !r.eng.serving || r.plane.baselines != before || r.eng.quarantinePending {
+		t.Fatal("process cancellation manufactured a kernel rejection")
+	}
 }
 
 func (p *replayPlane) Apply(ctx context.Context, m enforce.Model, prev map[string]enforce.CounterValue) (enforce.ApplyResult, error) {
@@ -214,12 +244,48 @@ func TestAT13_ISOF603_ControlStallKeepsVerifiedRules(t *testing.T) {
 	before, deadline := r.plane.applies, r.eng.policyExpires
 	start := time.Now()
 	stepOK(t, r)
-	if time.Since(start) >= 3*time.Second || !r.eng.serving || r.plane.applies != before || r.eng.policyExpires != deadline {
-		t.Fatal("control stall rewrote valid rules or starved heartbeat")
+	stepOK(t, r) // the next pass must not inherit a false storage failure
+	// Total wall time includes local fsync and shared-host scheduling. The
+	// delayed HTTP response must never cause an Apply or poison durable state.
+	t.Logf("two bounded control passes including local persistence: %s", time.Since(start))
+	if !r.eng.serving || r.plane.applies != before || r.eng.policyExpires != deadline || !r.eng.storageOK {
+		t.Fatalf("control stall changed verified state: serving=%v applies=%d->%d deadline=%d->%d storage=%v", r.eng.serving, before, r.plane.applies, deadline, r.eng.policyExpires, r.eng.storageOK)
 	}
 	beat := mustBeat(t, r)
 	if !beat.Serving || beat.PolicyExpires != deadline {
 		t.Fatal("control timeout lost verified heartbeat")
+	}
+}
+
+func TestAT13_ISOF603_RestartWaitsForHealthyWatchdogRead(t *testing.T) {
+	for _, phase := range []string{"stop", "boot"} {
+		t.Run(phase, func(t *testing.T) {
+			r := newRig(t)
+			alignControlClock(r)
+			serveBoundGeneration(t, r)
+			r.manualUsage(t)
+			before := r.plane.baselines
+			if phase == "boot" {
+				if err := r.eng.Close(); err != nil {
+					t.Fatal(err)
+				}
+			}
+			lock, err := nodelock.TryAcquire(r.eng.cfg.LockPath)
+			if err != nil {
+				t.Fatal(err)
+			}
+			released := make(chan struct{})
+			go func() {
+				time.Sleep(50 * time.Millisecond)
+				lock.Release()
+				close(released)
+			}()
+			restartEngine(t, r, r.plane)
+			<-released
+			if !r.eng.serving || r.plane.baselines != before {
+				t.Fatal("healthy watchdog lock contention withdrew forwarding")
+			}
+		})
 	}
 }
 

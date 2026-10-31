@@ -115,6 +115,31 @@ func TestLabD087_D104_GrantRenewalExpiryCorrelation(t *testing.T) {
 
 	startWatch(t)
 	defer stopWatch()
+	outDir := os.Getenv("FVPN_AGENT_EVIDENCE_DIR")
+	if outDir == "" {
+		outDir = filepath.Join("..", "..", "..", ".agent", "f27-evidence")
+	}
+	outDir, err = filepath.Abs(outDir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	outDir = filepath.Join(outDir, "assembled")
+	if err := os.MkdirAll(outDir, 0700); err != nil {
+		t.Fatal(err)
+	}
+	capture := func() {
+		for _, name := range []string{"operations.jsonl", "renewal.json", "expiry.json", "expiry.json.restart.json", "agent.log", "watchdog.log"} {
+			body, err := exec.Command("docker", "exec", prefix(), "cat", labDir+"/"+name).Output()
+			if err != nil {
+				t.Logf("artifact unavailable: %s", name)
+				continue
+			}
+			if err := os.WriteFile(filepath.Join(outDir, name), body, 0600); err != nil {
+				t.Error(err)
+			}
+		}
+	}
+	defer capture() // retain writer evidence even if the packet collector fails
 	// The foreground collector includes all ordinary one-second guarded
 	// Applies and at least two natural renewals; 80ms deadlines never use D-120.
 	mustExec(t, "python3", "/work/tests/netlab/agent/timing-probes.py", "trace", "renewal", "0", labDir+"/renewal.json")
@@ -134,23 +159,7 @@ print(int(r[1])+round((b-a).total_seconds()*1000000000))`)
 	}
 	mustExec(t, "python3", "/work/tests/netlab/agent/timing-probes.py", "trace", "expiry_restart", fmt.Sprint(mono), labDir+"/expiry.json")
 	stopAgent()
-	outDir := os.Getenv("FVPN_AGENT_EVIDENCE_DIR")
-	if outDir == "" {
-		outDir = filepath.Join("..", "..", "..", ".agent", "f27-evidence")
-	}
-	outDir, err = filepath.Abs(outDir)
-	if err != nil {
-		t.Fatal(err)
-	}
-	outDir = filepath.Join(outDir, "assembled")
-	if err := os.MkdirAll(outDir, 0700); err != nil {
-		t.Fatal(err)
-	}
-	for _, name := range []string{"operations.jsonl", "renewal.json", "expiry.json", "expiry.json.restart.json", "agent.log", "watchdog.log"} {
-		if err := os.WriteFile(filepath.Join(outDir, name), []byte(readScratch(t, labDir+"/"+name)), 0600); err != nil {
-			t.Fatal(err)
-		}
-	}
+	capture()
 	reports, err := json.MarshalIndent(allReports()[before:], "", "  ")
 	if err != nil {
 		t.Fatal(err)

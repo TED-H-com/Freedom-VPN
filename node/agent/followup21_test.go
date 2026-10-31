@@ -174,7 +174,8 @@ func TestD085_ReadTimeoutAndCanceledStep(t *testing.T) {
 			message := "serving verification timed out"
 			if canceled {
 				cancel()
-				message = "serving verification canceled"
+				// Process cancellation still permits an independent bounded
+				// kernel read. This deliberately stalled read times out.
 			}
 			started := time.Now()
 			err := r.eng.Step(ctx)

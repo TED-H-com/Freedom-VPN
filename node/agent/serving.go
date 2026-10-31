@@ -28,7 +28,10 @@ func (e *Engine) servingReadTimeout() time.Duration {
 }
 
 func (e *Engine) verifyServingModel(ctx context.Context, model enforce.Model, assignments map[uuid.UUID]uint16) bool {
-	readCtx, cancel := context.WithTimeout(ctx, e.servingReadTimeout())
+	// Liveness cancellation may stop control work, but cannot itself prove a
+	// kernel defect. This independent bounded read still fails on real drift
+	// or its own timeout, including when shutdown interrupts a Step read.
+	readCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), e.servingReadTimeout())
 	defer cancel()
 	evidence, err := e.plane.VerifyServing(readCtx, model, assignments)
 	// Even an executor that returns success at the deadline cannot supply
@@ -156,6 +159,10 @@ func (e *Engine) rejectServing(ctx context.Context, model enforce.Model, evidenc
 // and a busy apply lock. Write the heartbeat immediately after the live read;
 // a failure also queues and delivers a corrected observation on this step.
 func (e *Engine) finishServingStep(ctx context.Context) {
+	// SIGTERM can interrupt control I/O mid-Step. A canceled command is not
+	// a kernel observation: perform the bounded final read independently so
+	// normal process replacement cannot manufacture a foreign-tc quarantine.
+	ctx = context.WithoutCancel(ctx)
 	ok := e.verifyCurrentServing(ctx)
 	if !e.serving {
 		e.auditBlocked(ctx)
@@ -202,7 +209,8 @@ func (e *Engine) auditBlocked(ctx context.Context) {
 	}
 }
 
-// Retained solely for containment auditing; never used as desired state.
+// Retained for containment auditing and the original installation time sample
+// during verified same-boot adoption; never used as desired authorization.
 type retainedApplied struct {
 	Model       enforce.Model        `json:"model"`
 	Assignments map[uuid.UUID]uint16 `json:"assignments"`
@@ -215,4 +223,15 @@ func (e *Engine) controlPassTimeout() time.Duration {
 		stale = 30 * time.Second
 	}
 	return min(5*time.Second, stale/3)
+}
+
+// The budget constrains network requests only. Local persistence and cleanup
+// use the caller context, so a control outage is not reported as disk failure.
+type controlBudgetKey struct{}
+
+func controlContext(ctx context.Context) context.Context {
+	if budget, ok := ctx.Value(controlBudgetKey{}).(context.Context); ok {
+		return budget
+	}
+	return ctx
 }

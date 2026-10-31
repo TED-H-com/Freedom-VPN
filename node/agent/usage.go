@@ -32,11 +32,11 @@ func (t usageTransport) PostUsageBatch(ctx context.Context, key string, body []b
 	hdr := make(http.Header)
 	hdr.Set("Content-Type", "application/json")
 	hdr.Set("Idempotency-Key", key)
-	return t.client.Exchange(ctx, controlclient.ClassUsage, http.MethodPost, "/api/v1/agent/usage-batches", hdr, body)
+	return t.client.Exchange(controlContext(ctx), controlclient.ClassUsage, http.MethodPost, "/api/v1/agent/usage-batches", hdr, body)
 }
 
 func (t usageTransport) GetUsageCheckpoint(ctx context.Context) (int, []byte, error) {
-	status, body, _, err := t.client.Exchange(ctx, controlclient.ClassUsage, http.MethodGet, "/api/v1/agent/usage-checkpoint", nil, nil)
+	status, body, _, err := t.client.Exchange(controlContext(ctx), controlclient.ClassUsage, http.MethodGet, "/api/v1/agent/usage-checkpoint", nil, nil)
 	return status, body, err
 }
 
@@ -406,8 +406,9 @@ func (e *Engine) invalidateMeterCheckpoint() error {
 	return dir.Sync()
 }
 
-// shutdownUsage is the process stop sequence: the same hand-off as a
-// forwarding withdrawal, then the uploader and the store are closed.
+// shutdownUsage checkpoints a healthy restart without closing its epoch;
+// blocked/stale nodes still take the withdrawal hand-off. Both loops and the
+// store close before another process can own the ledger.
 func (e *Engine) shutdownUsage() {
 	if e.shutUsage {
 		return

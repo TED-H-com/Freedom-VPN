@@ -30,10 +30,13 @@ func (e *Engine) adoptStoredServing(ctx context.Context) bool {
 	// adopting, and every candidate is verified against the live kernel.
 	in := e.input()
 	in.ProbeRan, in.ProbeCheck = true, api.HealthCheckStatusPassed
+	in.DNSFailed = false // applyResolver below supplies this process's fresh result
 	if !Decide(in).Serve {
 		return false
 	}
-	lock, err := nodelock.TryAcquire(e.cfg.LockPath)
+	// A healthy watchdog briefly holds this same lock for its presence read.
+	// Contention alone must not turn a process replacement into withdrawal.
+	lock, err := nodelock.Acquire(ctx, e.cfg.LockPath, 201, 10*time.Millisecond)
 	if err != nil {
 		return false
 	}
@@ -46,6 +49,17 @@ func (e *Engine) adoptStoredServing(ctx context.Context) bool {
 	}
 	e.evaluate(ctx)
 	d := e.decision
+	// nft retains both the initial timeout and the decreasing expires value.
+	// Verify the former against the actual installation sample, while the
+	// latter is still checked at the live read against the signed deadlines.
+	// Rebuild all authorization fields above; only reuse the sample, and only
+	// when it belongs to this same-boot lease anchor.
+	installed := e.appliedModel
+	if installed.NowMono < e.leaseMono || installed.NowMono > now ||
+		!installed.Now.Equal(e.lease.IssuedAt.Add(installed.NowMono-e.leaseMono)) {
+		return false
+	}
+	d.Model.Now, d.Model.NowMono = installed.Now, installed.NowMono
 	if !d.Serve || !e.verifyServingModel(ctx, d.Model, e.appliedAssignments) {
 		return false
 	}
@@ -79,11 +93,13 @@ func (e *Engine) preserveServingOnStop(ctx context.Context) bool {
 	if !e.serving || e.meter == nil || e.leaseBoot != e.bootID {
 		return false
 	}
-	lock, err := nodelock.TryAcquire(e.cfg.LockPath)
+	lock, err := nodelock.Acquire(ctx, e.cfg.LockPath, 201, 10*time.Millisecond)
 	if err != nil {
 		return false
 	}
 	defer lock.Release()
+	e.planeLocked = true
+	defer func() { e.planeLocked = false }()
 	e.latch()
 	e.refreshDesired()
 	if !Decide(e.input()).Serve || !e.verifyCurrentServing(ctx) {

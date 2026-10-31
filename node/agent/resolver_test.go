@@ -295,6 +295,7 @@ func TestResolver_StaleDocumentID(t *testing.T) {
 
 func TestResolver_RestartUsesCache(t *testing.T) {
 	r := newRig(t)
+	alignControlClock(r)
 	good := []byte(exampleResolverBody)
 	ref := exampleRef(good)
 	dnsApply := successDNS(ref)
@@ -320,7 +321,7 @@ func TestResolver_RestartUsesCache(t *testing.T) {
 	}
 	t.Cleanup(func() { _ = store.Close() })
 	eng, err := Start(Options{
-		Config: cfg, Store: store, Clock: r.clock, Plane: &memPlane{},
+		Config: cfg, Store: store, Clock: r.clock, Plane: r.plane,
 		Log: slog.New(slog.DiscardHandler), MeterSource: staticSource{boot: strings.TrimSpace(string(boot))},
 		Prober: passProbe{}, DNS: dnsApply,
 	})
@@ -331,16 +332,20 @@ func TestResolver_RestartUsesCache(t *testing.T) {
 	if err := eng.Boot(context.Background()); err != nil {
 		t.Fatal(err)
 	}
+	// Same-boot adoption validates the cached DNS document before serving.
+	if !eng.serving || dnsApply.calls != 2 {
+		t.Fatalf("restart adoption: serving %v DNS calls %d", eng.serving, dnsApply.calls)
+	}
 	if err := eng.Step(context.Background()); err != nil {
 		t.Fatal(err)
 	}
 	if r.srv.ResolverFetches() != 1 {
 		t.Fatalf("restart refetched: %d", r.srv.ResolverFetches())
 	}
-	if dnsApply.calls != 2 {
+	if dnsApply.calls != 3 {
 		t.Fatalf("apply calls %d", dnsApply.calls)
 	}
-	if len(dnsApply.docs) != 2 || len(dnsApply.docs[1].Upstreams) != 1 || dnsApply.docs[1].Upstreams[0] != "192.0.2.53" {
+	if len(dnsApply.docs) != 3 || len(dnsApply.docs[1].Upstreams) != 1 || dnsApply.docs[1].Upstreams[0] != "192.0.2.53" || len(dnsApply.docs[2].Upstreams) != 1 || dnsApply.docs[2].Upstreams[0] != "192.0.2.53" {
 		t.Fatalf("cached document %+v", dnsApply.docs)
 	}
 	rep, ok := r.srv.LastObservation()
