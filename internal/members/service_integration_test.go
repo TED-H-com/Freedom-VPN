@@ -179,14 +179,14 @@ func TestAT04_FiniteFutureGrantActivationRevokeAndAudit(t *testing.T) {
 		t.Fatal(page, err)
 	}
 	for _, event := range page.Items {
-		if event.Action == "member.grant" || event.Action == "grant.revoke" {
+		if event.Action == "member.grant" || event.Action == "member.grant_revoke" {
 			if event.Resource.Type != api.ResourceTypeEntitlementGrant || event.Resource.Id != change.ResourceID {
 				t.Fatal(event)
 			}
 		}
 	}
 	var n int
-	if err = pool.QueryRow(ctx, `SELECT count(*) FROM audit_events WHERE action IN ('member.grant','grant.revoke')`).Scan(&n); err != nil || n != 2 {
+	if err = pool.QueryRow(ctx, `SELECT count(*) FROM audit_events WHERE action IN ('member.grant','member.grant_revoke')`).Scan(&n); err != nil || n != 2 {
 		t.Fatal(n, err)
 	}
 }

@@ -55,7 +55,7 @@ func members() Domain {
 // disposable development databases to the observable unknown-event path.
 func MemberJobs() Registry {
 	r := Registry{}
-	for _, name := range []string{"member.entitlement_changed", "member.suspended", "device.authorized", "device.revoked", "netbird.device_sync", "billing.inbox_received", "billing.reconcile", "members.reconcile", "devices.discover"} {
+	for _, name := range []string{"member.entitlement_changed", "member.grant_revoked", "member.suspended", "device.authorized", "device.revoked", "netbird.device_sync", "billing.inbox_received", "billing.reconcile", "members.reconcile", "devices.discover"} {
 		r.Register(name, memberJob)
 	}
 	return r
@@ -99,7 +99,7 @@ func memberJob(ctx context.Context, event db.ClaimedEvent) (string, error) {
 		if event.EventType == "netbird.device_sync" {
 			return "device_observation:" + p.DeviceID.String(), nil
 		}
-	case "member.entitlement_changed", "member.suspended":
+	case "member.entitlement_changed", "member.grant_revoked", "member.suspended":
 		var p entitlement.Projection
 		if json.Unmarshal(event.Payload, &p) != nil || p.MemberID != event.AggregateID || p.Revision.String() != event.AggregateVersion {
 			return "", errors.New("invalid entitlement event")
@@ -111,6 +111,10 @@ func memberJob(ctx context.Context, event db.ClaimedEvent) (string, error) {
 		if !current {
 			return "", errors.New("future entitlement event")
 		}
+		// Grant withdrawal uses this same path, including when a future grant's
+		// removal leaves the projection unchanged. SyncMember observes the
+		// member.grant_revoke netbird step only after every device read-back;
+		// compilation below leaves the nodes step for actual enforcement ACKs.
 		if e := s.HTTP.Devices.SyncMember(ctx, p.MemberID); e != nil {
 			return "", e
 		}
@@ -192,7 +196,13 @@ func memberJob(ctx context.Context, event db.ClaimedEvent) (string, error) {
 	if compiler == nil {
 		return "", errors.New("member desired-state compiler required")
 	}
-	compiled, e := compiler.RecompileBatch(ctx, []db.ClaimedEvent{event})
+	policyEvent := event
+	if event.EventType == "member.grant_revoked" {
+		// The projection did not change, but the new withdrawal receipt still
+		// needs the ordinary policy/read-back path for this member and its groups.
+		policyEvent.EventType = "member.entitlement_changed"
+	}
+	compiled, e := compiler.RecompileBatch(ctx, []db.ClaimedEvent{policyEvent})
 	if e != nil {
 		return "", e
 	}

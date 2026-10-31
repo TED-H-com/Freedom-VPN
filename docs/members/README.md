@@ -1,6 +1,6 @@
 # Member and billing HTTP/worker integration
 
-The member area implements ten strict operations and nine durable worker event
+The member area implements thirteen strict operations and ten durable worker event
 handlers. It uses the real control authentication/CSRF/idempotency boundary,
 PostgreSQL transactions, payment inbox and NetBird adapter (§9, §14.3–§14.5,
 §15.2, §15.4, §16.1). Integration tests run signed OIDC login through the actual
@@ -16,7 +16,7 @@ the common transport on both API listeners. It retains the original bounded
 `Stripe-Signature`; `httpapi.RawBody(ctx)` supplies the original request bytes.
 There is no post-construction server wrapper or per-domain call in `main`.
 
-The worker domain returns the nine job handlers, a `WithMembers` context decorator
+The worker domain returns the ten job handlers, a `WithMembers` context decorator
 and a supervised `RunMemberSchedule` runner. Both binaries require valid
 `members_config_file` settings and readable dependencies at startup; missing
 configuration no longer leaves a serving process with 503 member routes.
@@ -52,6 +52,7 @@ The node/desired-state/lease owners must adopt these helpers in their follow-ups
 | `GetMember` | `GET /admin/members/{member_id}` | Admin detail, finite grants, subscription reconciliation and strong ETag. |
 | `UpdateMember` | `PATCH /admin/members/{member_id}` | If-Match under the member lock; metadata 200, changed service rights 202. |
 | `CreateMemberGrant` | `POST /admin/members/{member_id}/grants` | Explicit finite, reasoned grant; 202 operation. |
+| `RevokeMemberGrant` | `POST /admin/members/{member_id}/grants/{grant_id}/revoke` | Admin session, CSRF, required reason and `Idempotency-Key`; 202 `member.grant_revoke` receipt. |
 | `ListAdminDevices` | `GET /admin/devices` | Admin page of every member device. Opaque cursor, stable ascending (`member_id`, `device_id`), limit default 50 maximum 100. Optional `member_id`, `authorization_unconfirmed`, and `status` select the page and do not change the order. |
 | `AuthorizeMemberDevice` | `POST /admin/members/{member_id}/devices/{device_id}/authorize` | Admin session, CSRF, `Idempotency-Key`, no body. 202 `member.device_authorize`. Re-grants a fenced device and authorizes an ordinary pending device. |
 | `GetMemberSelf` | `GET /member/me` | Principal-owned account, entitlement, subscription, limits and next actions. |
@@ -61,7 +62,7 @@ The node/desired-state/lease owners must adopt these helpers in their follow-ups
 | `CreateBillingPortalSession` | `POST /member/billing-portal-sessions` | Commit intent first, then provider I/O, then 201 hosted URL. |
 | `ReceiveProviderWebhook` | `POST /webhooks/{provider}` | Signature over original bytes, transactional encrypted inbox plus dispatch intent, then 202. |
 
-There are **twelve** operation IDs in this table: six Admin operations, five Member
+There are **thirteen** operation IDs in this table: seven Admin operations, five Member
 operations and one webhook. Operation polling itself remains owned by the control
 framework. Member exits and detailed usage routes remain owned by the node and
 usage areas; no additional subscription, device-create or hosted-session GET
@@ -169,7 +170,49 @@ unknown identities use the fleet-configuration singleton instead of inventing a
 member or retaining the external subject. Denials create no operation. Accepted
 commands carry their actual operation UUID in the formal audit correlation field.
 Member metadata audit records contain changed-field booleans, IDs and state;
-notes, display names and free-text reasons are excluded.
+notes and display names are excluded. Grant withdrawal records its required
+reason as specified by revision 14; other member metadata reasons stay excluded.
+
+### Explicit grant withdrawal (revision 14, AT29)
+
+An administrator calls
+`POST /api/v1/admin/members/{member_id}/grants/{grant_id}/revoke` with the admin
+session cookie, CSRF token, Origin, a UUID `Idempotency-Key` and
+`{"reason":"Operator's withdrawal reason"}`. Members cannot call this route.
+There is no grant ETag or If-Match requirement. Missing members, missing grants
+and grants belonging to another member return `404 RESOURCE_NOT_FOUND`.
+A new command for an already revoked grant or one whose deadline has arrived
+returns `409 STATE_CONFLICT`. A same-key, same-payload retry returns the original
+operation ID and its current persisted state; a changed payload returns
+`409 IDEMPOTENCY_CONFLICT`.
+
+The transaction sets `revoked_at` and `revocation_reason`, recomputes entitlement
+using only grants with `revoked_at IS NULL`, and commits the operation, audit and
+outbox work together (§9.2, §9.4, §14.5, §15.2). The audit action is
+`member.grant_revoke`, resource `entitlement_grant:<grant_id>`, with the admin,
+request and operation IDs. Its before/after diff records `revoked_at`, member ID,
+grant ID and the supplied reason. Do not put credentials in the reason.
+
+The response is `202` with kind `member.grant_revoke`, resource
+`entitlement_grant:<grant_id>` and a Location for the admin operation reader.
+Acceptance is not completion. The existing member worker confirms NetBird
+withdrawal, then compiles affected node policies; the `nodes` step still needs
+node enforcement evidence. Revoking a future grant also queues this read-back
+when today's entitlement projection does not change. Devices losing service
+move to pending through D-050 / D-081; finite expiry remains a separate AT29
+case. Live heartbeat/forwarding timing requires the acceptance lab.
+
+Revision 14 also specifies withdrawal of open-ended grants, but this base's
+database requires a non-null, finite `valid_until`; the grant read schema and
+creation API are finite too. That vector's runtime coverage is pending an
+orchestrator-defined representation and schema migration. This handler does
+not introduce open-ended creation or a synthetic production deadline.
+
+Grant withdrawal and entitlement restoration preserve an existing
+`authorization_unconfirmed` fence; neither re-authorizes that device. Pending
+**w3-wire-nodes follow-up 31** (absent on this base), such a device will also be
+neither bound in desired state nor leased. That r16 H-1 fix belongs to
+`internal/desiredstate` / `internal/leases`; the fence behavior here remains D-077.
 
 `devices.NetBirdAdapter` implements the existing narrow `devices.Adapter`.
 `EnsureMemberDevice` verifies the actual user, including service/blocked/unsafe
@@ -313,6 +356,7 @@ not claim/discard unrelated rows.
 |---|---|
 | `billing.inbox_received` | Process exactly `inbox_id`; fetch authoritative provider state, append evidence and recompute rights. |
 | `member.entitlement_changed` | Sync every member device from current state, then compile nodes in previous ∪ current exit groups. |
+| `member.grant_revoked` | Observe and compile a grant withdrawal whose entitlement projection did not change; keeps its receipt live after an earlier event for that revision was delivered. |
 | `member.suspended` | Idempotently sync current member state and compile affected node policies. |
 | `device.authorized`, `device.revoked` | Sync current device state, then compile affected node policies. |
 | `netbird.device_sync` | Independently reconcile the referenced device and persist version-fenced observation. |
