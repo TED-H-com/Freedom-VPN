@@ -44,6 +44,18 @@ type traceBatch struct {
 type traceExecutor struct {
 	enforce.System
 	Batches []traceBatch
+	// TEST ONLY: fail one real verifier read after a completed release. The
+	// candidate, guard and rollback still execute in the real kernel.
+	FailVerificationRead bool
+	FaultInjected        bool
+}
+
+func (e *traceExecutor) Output(ctx context.Context, name string, args ...string) ([]byte, error) {
+	if e.FailVerificationRead && !e.FaultInjected && name == "nft" && len(e.Batches) > 0 && e.Batches[len(e.Batches)-1].Kind == "guard_release" {
+		e.FaultInjected = true
+		return nil, errors.New("TEST ONLY injected post-release verification read failure")
+	}
+	return e.System.Output(ctx, name, args...)
 }
 
 func (e *traceExecutor) NftBatch(ctx context.Context, script string) error {
@@ -54,13 +66,19 @@ func (e *traceExecutor) NftBatch(ctx context.Context, script string) error {
 	if strings.TrimSpace(script) == "delete chain inet fvpn fv_deadline_guard" {
 		kind = "guard_release"
 	}
+	if strings.Contains(script, "fvpn_generation=0") {
+		kind = "baseline"
+	}
 	start := traceNow()
 	err := e.System.NftBatch(ctx, script)
 	e.Batches = append(e.Batches, traceBatch{Kind: kind, Start: start, End: traceNow(), OK: err == nil})
 	return err
 }
 func tracedApply(ctx context.Context, m enforce.Model, prev map[string]enforce.CounterValue, dst io.Writer) (enforce.ApplyResult, error) {
-	ex := &traceExecutor{}
+	return tracedApplyExecutor(ctx, &traceExecutor{}, m, prev, dst)
+}
+
+func tracedApplyExecutor(ctx context.Context, ex *traceExecutor, m enforce.Model, prev map[string]enforce.CounterValue, dst io.Writer) (enforce.ApplyResult, error) {
 	start := traceNow()
 	res, err := enforce.Apply(ctx, ex, m, prev)
 	end := traceNow()
@@ -70,16 +88,17 @@ func tracedApply(ctx context.Context, m enforce.Model, prev map[string]enforce.C
 		reason = check.Reason
 	}
 	row := struct {
-		Event      string                   `json:"event"`
-		Generation uint64                   `json:"generation,string"`
-		Start      traceStamp               `json:"start"`
-		End        traceStamp               `json:"end"`
-		Verified   bool                     `json:"verified"`
-		Error      enforce.Reason           `json:"error,omitempty"`
-		Deadline   enforce.DeadlineEvidence `json:"deadline"`
-		Batches    []traceBatch             `json:"batches"`
-		Timing     *enforce.TimingEvidence  `json:"timing"`
-	}{"apply", m.Generation, start, end, res.Verified, reason, res.Deadline, ex.Batches, res.Evidence.TimingEvidence()}
+		Event         string                   `json:"event"`
+		Generation    uint64                   `json:"generation,string"`
+		Start         traceStamp               `json:"start"`
+		End           traceStamp               `json:"end"`
+		Verified      bool                     `json:"verified"`
+		Error         enforce.Reason           `json:"error,omitempty"`
+		Deadline      enforce.DeadlineEvidence `json:"deadline"`
+		Batches       []traceBatch             `json:"batches"`
+		Timing        *enforce.TimingEvidence  `json:"timing"`
+		FaultInjected bool                     `json:"test_read_fault_injected,omitempty"`
+	}{"apply", m.Generation, start, end, res.Verified, reason, res.Deadline, ex.Batches, res.Evidence.TimingEvidence(), ex.FaultInjected}
 	if logErr := json.NewEncoder(dst).Encode(row); err == nil && logErr != nil {
 		return res, logErr
 	}
