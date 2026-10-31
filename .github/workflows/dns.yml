@@ -73,6 +73,9 @@ jobs:
       - name: Unit Tests
         run: make -f mk/dns.mk dns-test
 
+      - name: Pinned resolver response shape (AT20)
+        run: make -f mk/dns.mk dns-response-shape
+
   integration:
     name: AdGuard Home Integration Suite
     if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
