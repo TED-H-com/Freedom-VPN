@@ -79,7 +79,7 @@ class EvidenceTests(unittest.TestCase):
 
     def test_installer_deadline_review_requires_all_five_rows_and_accounting(self):
         checks = self.passing() + [dict(at="AT07", name=n, status="pass") for n in (
-            "BeforePlusHeldByteEquality", "OriginalPayloadAndHistoricalAttribution", "OriginACKAndIndependentCurrentACK")]
+            "BeforePlusHeldByteEquality", "OriginalPayloadAndHistoricalAttribution", "OriginACKAndIndependentCurrentACK", "AgentSameKeyStoredResultReplay")]
         prior = dict(name="installer_prerequisite", status="fail", run_id=run.INSTALLER_REVIEW_RUN,
                      detail={"step": "count baseline traffic and upload"})
         self.assertTrue(run.review_covers("AT07", prior, checks))
@@ -87,6 +87,15 @@ class EvidenceTests(unittest.TestCase):
             self.assertFalse(run.review_covers("AT07", prior, [c for c in checks if c["name"] != name]))
         self.assertFalse(run.review_covers("AT07", dict(prior, detail={"step": "unrelated failure"}), checks))
         self.assertFalse(run.review_covers("AT07", dict(prior, name="old_certificate_denied"), checks))
+
+    def test_cursor_review_rejects_unrelated_failure(self):
+        checks = self.passing() + [dict(at="AT07", name=n, status="pass") for n in (
+            "BeforePlusHeldByteEquality", "OriginalPayloadAndHistoricalAttribution",
+            "OriginACKAndIndependentCurrentACK", "AgentSameKeyStoredResultReplay")]
+        prior = dict(run_id=run.CURSOR_REVIEW_RUN, name="OriginACKAndIndependentCurrentACK", status="fail")
+        self.assertTrue(run.review_covers("AT07", prior, checks))
+        self.assertFalse(run.review_covers("AT07", dict(prior, name="old_certificate_denied"), checks))
+        self.assertFalse(run.review_covers("AT07", prior, [c for c in checks if c["name"] != "AgentSameKeyStoredResultReplay"]))
 
     def test_committed_evidence_hygiene(self):
         # Scan all immutable attempts as well as the current publication.

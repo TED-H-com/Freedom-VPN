@@ -228,6 +228,7 @@ def lookup_review_passed(checks):
 # Exact diagnostic deadline miss, retained unchanged. The production uploader
 # runs every 60s; AT20 allows 90s. No unrelated prior failure is covered.
 INSTALLER_REVIEW_RUN = "57b90cf6-d233-4209-a114-765ef15376f7"
+CURSOR_REVIEW_RUN = "805ba242-f343-44ab-9221-d250d81b95b9"
 
 
 def installer_review_passed(checks):
@@ -235,7 +236,7 @@ def installer_review_passed(checks):
         "installer_rerun", "controlled_reinstall", "counted_unacked_usage",
         "identity_ledger_preserved", "historical_usage_retained",
         "BeforePlusHeldByteEquality", "OriginalPayloadAndHistoricalAttribution",
-        "OriginACKAndIndependentCurrentACK", "old_certificate_denied", "probe_process")]
+        "OriginACKAndIndependentCurrentACK", "AgentSameKeyStoredResultReplay", "old_certificate_denied", "probe_process")]
     required.append(("AT06", "probe_process"))
     for at, name in required:
         hits = [c for c in checks if c.get("at") == at and c["name"] == name]
@@ -245,6 +246,12 @@ def installer_review_passed(checks):
 
 
 def review_covers(at, prior, checks):
+    if prior.get("run_id") == CURSOR_REVIEW_RUN:
+        covered = prior.get("name") == "probe_process" or (at == "AT07" and (
+            prior.get("name") == "OriginACKAndIndependentCurrentACK" or (
+            prior.get("name") == "installer_prerequisite" and
+            prior.get("detail", {}).get("step") == "autonomous origin upload with new presenter")))
+        return covered and installer_review_passed(checks)
     if prior.get("run_id") == INSTALLER_REVIEW_RUN:
         covered = prior.get("name") == "probe_process" or (
             at == "AT07" and prior.get("name") == "installer_prerequisite" and
@@ -336,6 +343,13 @@ def records(meta, observed, prior):
                 "disposition": "resolved" if installer_review_passed(review_checks) else "unresolved",
                 "cause": "Installer serving and counted traffic passed. The harness allowed only 45s for the production 60s upload cadence; AT20 waitForUploadedTraffic allows 90s. The timeout propagated to both process rows. These exact failures stay in prior_checks.",
                 "correction": "Use AT20's 90s baseline upload allowance and retain the CLI poll evidence. Require all five composed rows, all three named accounting assertions, retired-certificate denial and both successful processes. Also republish explicitly through the API before fresh post-reinstall traffic: revoke disables publication.",
+            }
+        if any(c.get("run_id") == CURSOR_REVIEW_RUN and c["status"] == "fail" for c in prior[at]):
+            record["follow_up_8_cursor_review"] = {
+                "run_id": CURSOR_REVIEW_RUN,
+                "disposition": "resolved" if installer_review_passed(review_checks) else "unresolved",
+                "cause": "Origin ACK reached 3 with unchanged payloads and independent current ACK 0. The new stream already held an empty seq-1 event. The harness incorrectly required last_seq 0, a condition absent from AT20's assertion. Actual failure rows remain unchanged.",
+                "correction": "Apply AT20's origin-selected ACK and same-key canonical replay assertions, unchanged current ACK and totals, plus the new stream's first sequence 1. Record last/next sequence separately; an empty initial event is not counted traffic. Require actual fresh counted usage and its ACK after API republication.",
             }
         result[at] = record
     return result

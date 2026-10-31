@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
 	"github.com/TED-H-com/Freedom-VPN/tests/e2e"
 	"github.com/google/uuid"
 )
@@ -258,10 +259,13 @@ func (p *probe) installerHooks(t *testing.T) {
 	must(err == nil && currentCLI.NodeIncarnationID == current.String())
 	var oldACK, last, epoch, finalCode string
 	must(postDB.QueryRow("SELECT CAST(acked_through AS TEXT),CAST(last_seq AS TEXT),ledger_epoch,final_code FROM retired_streams WHERE incarnation_id=?", origin.String()).Scan(&oldACK, &last, &epoch, &finalCode) == nil)
-	independent := oldACK == held.LastEventSeq && last == held.LastEventSeq && finalCode == "" && held.LedgerEpoch != nil && epoch == *held.LedgerEpoch && p.streamACK(node, current) == "0" && currentCLI.AckedThrough == "0" && currentCLI.LastEventSeq == "0"
+	var currentStart string
+	must(postDB.QueryRow("SELECT CAST(COALESCE((SELECT min(seq) FROM events),(SELECT next_seq FROM meta WHERE id=1)) AS TEXT)").Scan(&currentStart) == nil)
+	independent := oldACK == held.LastEventSeq && last == held.LastEventSeq && finalCode == "" && held.LedgerEpoch != nil && epoch == *held.LedgerEpoch && p.streamACK(node, current) == "0" && currentCLI.AckedThrough == "0" && currentStart == "1"
 	detail["current_cli_after_handoff"], detail["retired_local_stream"] = currentCLI, map[string]string{"incarnation_id": origin.String(), "acked_through": oldACK, "last_seq": last, "ledger_epoch": epoch, "final_code": finalCode}
-	detail["current_next_sequence"] = "1"
-	p.expect("AT07", "OriginACKAndIndependentCurrentACK", independent, map[string]any{"assertion_source": usageAT20, "origin_ack": oldACK, "current_ack": currentCLI.AckedThrough, "current_last_seq": currentCLI.LastEventSeq, "current_next_seq": "1"})
+	detail["current_first_sequence"] = currentStart
+	detail["current_next_sequence"] = decimalSum(currentCLI.LastEventSeq, "1")
+
 	must(independent)
 	originalOK := p.historicalEvents(events)
 	after, ok := p.memberUsage(period)
@@ -277,27 +281,38 @@ func (p *probe) installerHooks(t *testing.T) {
 	p.expect("AT07", "OriginalPayloadAndHistoricalAttribution", originalOK && attributed, map[string]any{"assertion_source": usageAT20, "events": events, "before": installerHistoryView(beforeInc), "after": installerHistoryView(afterInc)})
 	must(equality && originalOK && attributed)
 	// Saved production batches must present the new certificate identity while
-	// selecting the original stream. The current stream has not issued seq 1 yet.
-	rows, err := postDB.Query("SELECT body FROM upload_batches ORDER BY created_at")
+	// selecting the original stream. The current stream has not ACKed any events.
+	currentBefore := p.streamACK(node, current)
+	rows, err := postDB.Query("SELECT idempotency_key,body FROM upload_batches ORDER BY created_at")
 	must(err == nil)
-	var batches []api.UsageBatchRequest
+	var batches []map[string]any
 	for rows.Next() {
 		var raw []byte
-		must(rows.Scan(&raw) == nil)
+		var key string
+		must(rows.Scan(&key, &raw) == nil)
 		var b api.UsageBatchRequest
 		must(json.Unmarshal(raw, &b) == nil)
 		if b.OriginIncarnationId != nil {
-			must(*b.OriginIncarnationId == origin && b.NodeIncarnationId == current)
-			batches = append(batches, b)
+			must(*b.OriginIncarnationId == origin && b.NodeIncarnationId == current && b.NodeId == node)
+			replay, ok := p.replayOriginBatch(key, raw, node, origin)
+			batches = append(batches, replay)
+			must(ok)
 		}
 	}
 	must(rows.Err() == nil)
 	_ = rows.Close()
 	must(len(batches) > 0)
 	detail["agent_origin_batches"] = batches
+	currentAfter := p.streamACK(node, current)
+	replayUsage, ok := p.memberUsage(period)
+	must(ok)
+	replayStable := currentBefore == currentAfter && replayUsage.Totals == after.Totals && p.historicalEvents(events)
+	p.expect("AT07", "AgentSameKeyStoredResultReplay", replayStable, map[string]any{"assertion_source": usageAT20, "batches": batches, "totals_unchanged": replayUsage.Totals == after.Totals})
+	p.expect("AT07", "OriginACKAndIndependentCurrentACK", independent && replayStable, map[string]any{"assertion_source": usageAT20, "origin_ack": oldACK, "current_ack_before_replay": currentBefore, "current_ack_after_replay": currentAfter, "current_last_seq": currentCLI.LastEventSeq, "current_first_seq": currentStart, "current_next_seq": decimalSum(currentCLI.LastEventSeq, "1")})
+	must(replayStable)
 	p.expect("AT07", "identity_ledger_preserved", true, detail)
 	p.expect("AT07", "historical_usage_retained", true, map[string]any{"owner": "usage", "assertion_source": usageAT20, "assertions": []string{"BeforePlusHeldByteEquality", "OriginalPayloadAndHistoricalAttribution", "OriginACKAndIndependentCurrentACK"}, "evidence": detail})
-	// Prove the actual fresh stream starts at 1 after the retired stream is ACKed.
+	// Prove the current stream starts at 1, then ACK fresh counted usage after the origin.
 	step("fresh current-incarnation serving traffic", "agent")
 	for i := 0; i < 121; i++ {
 		must(waitRetry(p.ctx, "1"))
@@ -310,10 +325,15 @@ func (p *probe) installerHooks(t *testing.T) {
 	must(p.selectInstallerExit(node))
 	freshTraffic, ok := p.installerTraffic(selected)
 	must(ok)
-	must(p.waitInstaller(90*time.Second, func() bool { ack := p.streamACK(node, current); return ack != "0" && ack != "unavailable" }))
-	var firstSeq string
-	must(p.freezeSQL(fmt.Sprintf("SELECT to_json(COALESCE(min(event_seq),0)::text) FROM usage_events WHERE node_id='%s' AND incarnation_id='%s'", node, current), &firstSeq) && firstSeq == "1")
-	p.expect("AT07", "controlled_reinstall", true, map[string]any{"owner": "installer", "outcome": installerOutcomeView(reinstalled, nil), "serving": freshRules, "traffic": freshTraffic, "new_stream_first_sequence": firstSeq, "origin_ack_before_current_traffic": oldACK, "devstack_rows": devstack18 + " installer-reenroll / installer-serving-readback"})
+	var firstSeq, firstCounted string
+	must(p.waitInstaller(90*time.Second, func() bool {
+		firstOK := p.freezeSQL(fmt.Sprintf("SELECT to_json(COALESCE(min(event_seq),0)::text) FROM usage_events WHERE node_id='%s' AND incarnation_id='%s'", node, current), &firstSeq)
+		countedOK := p.freezeSQL(fmt.Sprintf("SELECT to_json(COALESCE(min(e.event_seq),0)::text) FROM usage_events e JOIN usage_samples s ON s.event_id=e.id WHERE e.node_id='%s' AND e.incarnation_id='%s' AND s.upload_bytes>0 AND s.download_bytes>0", node, current), &firstCounted)
+		ack, aOK := new(big.Int).SetString(p.streamACK(node, current), 10)
+		seq, sOK := new(big.Int).SetString(firstCounted, 10)
+		return firstOK && countedOK && firstSeq == "1" && firstCounted != "0" && aOK && sOK && ack.Cmp(seq) >= 0
+	}))
+	p.expect("AT07", "controlled_reinstall", true, map[string]any{"owner": "installer", "outcome": installerOutcomeView(reinstalled, nil), "serving": freshRules, "traffic": freshTraffic, "new_stream_first_sequence": firstSeq, "new_stream_first_counted_sequence": firstCounted, "origin_ack_before_current_traffic": oldACK, "devstack_rows": devstack18 + " installer-reenroll / installer-serving-readback"})
 }
 
 func (p *probe) waitInstaller(d time.Duration, f func() bool) bool {
@@ -460,6 +480,36 @@ func (p *probe) installerServingReadback(node uuid.UUID, since time.Time) (map[s
 	})
 	return d, ok
 }
+
+// Replay the exact production batch under its saved key and current mTLS
+// identity, as AT20 AgentSameKeyStoredResultReplay does. Compare JCS results;
+// the HTTP response's trailing newline is not a semantic difference.
+func (p *probe) replayOriginBatch(key string, body []byte, node, origin uuid.UUID) (map[string]any, bool) {
+	d := map[string]any{"idempotency_key": key, "request": json.RawMessage(body)}
+	var storedHex string
+	query := fmt.Sprintf("SELECT to_json(encode(b.response_body,'hex')) FROM usage_batch_replays b JOIN idempotency_requests i ON i.id=b.id WHERE i.key_hash=decode('%s','hex')", hash([]byte(key)))
+	if !p.freezeSQL(query, &storedHex) {
+		return d, false
+	}
+	stored, err := hex.DecodeString(storedHex)
+	if err != nil {
+		return d, false
+	}
+	cmd := exec.CommandContext(p.ctx, "docker", "exec", "-i", installerContainer, "curl", "--silent", "--show-error", "--max-time", "15", "--cacert", "/var/tmp/e2e-rel/ca.pem", "--cert", "/var/lib/vpn-node/identity/cert.pem", "--key", "/var/lib/vpn-node/identity/key.pem", "-H", "Content-Type: application/json", "-H", "Idempotency-Key: "+key, "--data-binary", "@-", "-w", "\n%{http_code}", "https://127.0.0.1:9444/api/v1/agent/usage-batches")
+	cmd.Stdin = bytes.NewReader(body)
+	raw, err := cmd.Output()
+	i := bytes.LastIndexByte(raw, '\n')
+	if err != nil || i < 0 {
+		return d, false
+	}
+	canonical, err := canonjson.Canonicalize(raw[:i])
+	var ack api.UsageBatchResult
+	decoded := json.Unmarshal(raw[:i], &ack) == nil
+	d["http_status"], d["stored_response"], d["replayed_response"] = string(raw[i+1:]), json.RawMessage(stored), ack
+	d["stored_response_canonical_byte_equal"], d["stored_response_byte_equal"] = err == nil && bytes.Equal(stored, canonical), bytes.Equal(stored, raw[:i])
+	return d, string(raw[i+1:]) == "200" && err == nil && bytes.Equal(stored, canonical) && decoded && ack.NodeId == node && ack.NodeIncarnationId == origin
+}
+
 func decimalSum(a, b string) string {
 	x, ok := new(big.Int).SetString(a, 10)
 	if !ok {
