@@ -109,6 +109,10 @@ func TestD104_AT13_InstallOverrunNeverOpensGuard(t *testing.T) {
 			if res.Deadline.InstalledBy-res.Deadline.RenderStart <= DeadlineInstallBound {
 				t.Fatal("fixture did not exceed bound")
 			}
+			ev := res.Evidence.TimingEvidence()
+			if ev == nil || ev.Succeeded || ev.Verified || !ev.Deadline.InstallOK || ev.Deadline.ReleaseStart != 0 || ev.Deadline.ReleaseEnd != 0 || ev.End < ev.Deadline.InstalledBy || len(ev.Verifications) != 0 {
+				t.Fatalf("overrun evidence lost or invented a release: %+v", ev)
+			}
 			if !strings.Contains(f.nft[0], "iifname \"fv-fh\" drop") || !strings.Contains(f.nft[0], "oifname \"fv-fh\" drop") {
 				t.Fatal("candidate was not atomically guarded in both directions")
 			}

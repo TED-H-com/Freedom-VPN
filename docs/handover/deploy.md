@@ -1,5 +1,10 @@
 # Production Deployment Runbook (`docs/handover/deploy.md`)
 
+Latest cutoff: [follow-up 17 operator evidence](follow-up-17.md). #313
+harness-proves the SECOPS-21 first-offer capture (2/0/0, delivery 4 > retained 3,
+matching local digest and central 202); full restore remains open for secops 13.
+Earlier restore measurements below retain their original cutoff.
+
 This runbook guides operators through transitioning Freedom VPN from the local development and E2E lab stack (`deploy/devstack`) to production hosts (`§3`, `§5`–`§8`, `§10`–`§13`, `§15`–`§18`, `§21`).
 
 Every command in this runbook is labeled either `[Verified on dev/test stack]` (executed and verified during the Wave 4 hand-over verification run) or `[production only]` (requires privileged host access, external DNS/TLS certificates, or live third-party provider accounts).

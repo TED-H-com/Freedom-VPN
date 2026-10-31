@@ -52,6 +52,9 @@ type Config struct {
 	Source        Source
 	Interval      time.Duration
 	Now           func() time.Time
+	// PreserveClosedEpoch keeps a completed final_sample closed at blocked
+	// startup. PrepareSampling must open the next epoch before admission.
+	PreserveClosedEpoch bool
 	// Mono is the monotonic clock used to space samples (§10.5). Nil means
 	// time.Now, whose Sub uses the monotonic reading. Timestamps stored on
 	// events still come from Now.
@@ -122,6 +125,12 @@ func New(cfg Config) (*Meter, error) {
 		wake: make(chan struct{}, 1),
 	}
 	m.cond = sync.NewCond(&m.mu)
+	if cfg.PreserveClosedEpoch {
+		if _, err := m.store.ClosedCheckpoint(context.Background()); err == nil {
+			m.paused = true
+			return m, nil
+		}
+	}
 	if err := m.reconcile(context.Background()); err != nil {
 		return nil, err
 	}

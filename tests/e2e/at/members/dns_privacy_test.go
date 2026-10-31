@@ -165,12 +165,12 @@ func (l *live) dnsSyncFault(r *record) {
 	l.resolverEvidence(r)
 }
 func (l *live) privacy(r *record) {
-	sentinel := "privacy-" + l.run + ".example.invalid"
+	sentinel := "privacy-" + l.run + ".lab.example.invalid"
 	answer, nativeErr := l.hook.ProbeNativeDNS(l.ctx, "", sentinel, 1, false, "")
 	responseRaw, _ := json.Marshal(answer)
 	response := string(responseRaw)
 	r.check("privacy native stub in use", "native two-resolver configuration available", fmt.Sprintf("native_configured=%t; probe_ok=%t", l.nativeDNS, nativeErr == nil), "AT20 native DNS configuration and member OS stub", l.nativeDNS && nativeErr == nil)
-	r.check("privacy sentinel query", "controlled resolver responds", response, "native member OS stub unique TEST ONLY sentinel through issued resolver pair", strings.Contains(response, `"available":true`))
+	r.check("privacy sentinel query", "F8-A scope W / F8-TTL5: RCODE 3, zero answers, SOA TTL 5", response, "native OS stub sentinel under explicit lab block; docs/dns/BACKEND.md §2.1.4", nativeErr == nil && blockedDNS5(answer))
 	for _, path := range []string{"/control/querylog/config", "/control/stats/config"} {
 		raw, err := l.resolver(path)
 		var v struct {

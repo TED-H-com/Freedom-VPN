@@ -233,21 +233,21 @@ func (s *Server) usage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	s.mu.Lock()
-	defer s.mu.Unlock()
 	current := s.currentEpochLocked()
 	if present && epoch != current {
+		s.mu.Unlock()
 		apierr.Write(w, r, apierr.New(apierr.LedgerEpochMismatch, "Ledger epoch does not match.").WithDetail("current_ledger_epoch", current.String()))
 		return
 	}
 	if batch.OriginIncarnationID != nil {
 		origin := *batch.OriginIncarnationID
 		if origin == inc || s.retiredIncarnations[origin] != node {
+			s.mu.Unlock()
 			apierr.Write(w, r, apierr.New(apierr.StateConflict, "Origin is not retired for this node."))
 			return
 		}
 		inc = origin
 	}
-	s.usageBodies = append(s.usageBodies, append([]byte(nil), body...))
 	key := streamKey(node, inc)
 	led := s.usageNodes[key]
 	if led == nil {
@@ -256,6 +256,22 @@ func (s *Server) usage(w http.ResponseWriter, r *http.Request) {
 	work := led.clone()
 	results := work.accept(parsed)
 	s.usageNodes[key] = work
+	attempt := UsageAttempt{IdempotencyKey: r.Header.Get("Idempotency-Key"), Body: append([]byte(nil), body...)}
+	for _, result := range results {
+		switch result.status {
+		case string(api.UsageEventResultStatusAccepted):
+			attempt.Accepted++
+		case string(api.UsageEventResultStatusDuplicate):
+			attempt.Duplicates++
+		}
+	}
+	s.usageAttempts = append(s.usageAttempts, attempt)
+	hold := s.usageResponseHold
+	s.usageResponseHold = nil
+	s.mu.Unlock()
+	if hold != nil {
+		hold(r.Context())
+	}
 	writeUsageResult(w, node, inc, current, work.highest, results)
 }
 

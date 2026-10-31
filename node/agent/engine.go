@@ -71,22 +71,24 @@ type Engine struct {
 	meterSource meter.Source
 	ownStore    bool
 
-	usage         *usagestore.Store
-	meter         *meter.Meter
-	kernel        *kernelSource
-	expectServing atomic.Bool
-	uploader      *usageupload.Uploader
-	usageOnce     bool
-	sampleOn      bool
-	finalDone     bool
-	shutUsage     bool
-	meterSnap     []enforce.Binding
-	usageOutbox   bool
-	usageDisk     bool
-	usagePersist  bool
-	loopCtx       context.Context
-	loopCancel    context.CancelFunc
-	loops         sync.WaitGroup
+	usage          *usagestore.Store
+	meter          *meter.Meter
+	kernel         *kernelSource
+	expectServing  atomic.Bool
+	uploader       *usageupload.Uploader
+	usageOnce      bool
+	sampleOn       bool
+	finalDone      bool
+	finalBarrierID string
+	usageLock      *nodelock.Lock
+	shutUsage      bool
+	meterSnap      []enforce.Binding
+	usageOutbox    bool
+	usageDisk      bool
+	usagePersist   bool
+	loopCtx        context.Context
+	loopCancel     context.CancelFunc
+	loops          sync.WaitGroup
 
 	// usageStatus is the open store, read when an observation is built.
 	// Nil before the store opens and after it closes. usageStatusBound
@@ -798,7 +800,13 @@ func (e *Engine) refreshDesired() {
 }
 
 func (e *Engine) latch() {
-	e.latchBlocked = ForwardingBlocked(e.cfg.JournalDir)
+	id, blocked := meterBarrierIdentity(e.cfg.JournalDir)
+	e.latchBlocked = blocked
+	if id == "" {
+		if err := e.invalidateMeterCheckpoint(); err != nil {
+			e.usagePersist = true
+		}
+	}
 }
 
 func (e *Engine) recoverOnce(ctx context.Context) {
@@ -924,6 +932,14 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 		return err
 	}
 	defer lock.Release()
+	// The updater may have published its block since this step's decision.
+	// Re-read under the node lock before invalidating evidence or admitting.
+	e.latch()
+	if e.latchBlocked {
+		e.decision = Decide(e.input())
+		e.withdraw(ctx)
+		return nil
+	}
 	if !closedRecovery {
 		if err := e.invalidateMeterCheckpoint(); err != nil {
 			e.usagePersist = true

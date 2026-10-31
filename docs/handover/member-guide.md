@@ -205,7 +205,7 @@ Freedom VPN v1 設計採用官方 **NetBird 客戶端** 搭配 **Freedom VPN 會
   - NetBird 會將本服務配置的受控 AdGuard Home 解析器位址（例如文件示例位址 `100.64.0.53` 與 `100.64.0.54`；實際位址依部署環境設定而定，`AGENTS.md §8`）下發給已授權的會員裝置（`§12.2`）。
   - 在出口節點資料平面（`inet fvpn` forward chain）中，規則僅精確放行已授權會員位址（`@allowed_v4`）連往受控解析器集合（`@resolver_v4`）的 **`UDP/53` 與 `TCP/53`** 查詢（計入獨立的 `dns_service_v1` 計數器，不計入會員上網流量），並**強制丟棄**連往解析器位址的所有非 53 埠流量（如管理埠 `8080` 或 SSH，`§8.1`、`DNS03`、`AT12`）。
   - **無全域 Port-53 DNAT 強制劫持**：出口節點 `inet fvpn` **並未**實作將任意外部 `UDP/53` 或 `TCP/53` 流量透過 DNAT 透明改寫至內部解析器的機制。會員裝置若手動指定外部 Port-53 DNS，其封包是否被阻擋或依政策處理，取決於環境所選定的外部 DNS 政策（`§12.6` 標記為 `待決策`，各平台實際行為 **尚未實測 / not yet measured**，列入 `AT21`）。
-  - 受控解析器針對命中的惡意軟體、釣魚或管理員封鎖網域回傳 `NXDOMAIN`；當單台受控解析器故障時，僅能切換至另一台套用相同政策的受控解析器，**絕不會**靜默退回未過濾的公共 DNS（`§12.2`、`§12.5`、`AT21`）。
+  - 受控解析器針對命中的惡意軟體、釣魚或管理員封鎖網域，A／AAAA／HTTPS 回傳 `NXDOMAIN`，CNAME／SVCB／TXT／MX／NS 回傳 `NODATA`（RCODE 0、零筆答案、authority 含 SOA）；當單台受控解析器故障時，僅能切換至另一台套用相同政策的受控解析器，**絕不會**靜默退回未過濾的公共 DNS（`§12.2`、`§12.5`、`AT21`）。
 - **資料最小化與無完整查詢日誌（`SEC02`、`§12.7`、`§16.4`、`AT22`）**：
   - 受控 AdGuard Home 解析器在組態上關閉查詢日誌與統計功能（`querylog.enabled: false`、`querylog.file_enabled: false`、`statistics.enabled: false`），且一般服務日誌、指標（metrics）與中央資料庫**不記錄**您查詢過的完整網域名稱（qname）、造訪的完整網址（URL）或封包內容（`§12.7`）。
   - **誠實揭露（`§16.4`）**：本服務**不宣稱完全無日誌（not a complete no-log service）**——系統仍會保存必要的會員資格、裝置授權狀態、匿名化流量計量（`usage_events` / `usage_rollups`）與管理/安全稽核紀錄（`audit_events`）。
@@ -435,7 +435,7 @@ The Member Portal's `/member/dns-protection` page explains filtering scope, limi
   - NetBird distributes the deployment's configured AdGuard Home resolver addresses (for example, documentation addresses `100.64.0.53` and `100.64.0.54` per `AGENTS.md §8`; actual addresses depend on `nodes.json:dns_resolver_ipv4`) to authorized member clients (`§12.2`).
   - In the exit node's `inet fvpn` forward chain (`node/enforce/render_nft.go`), `Render` permits `UDP/53` and `TCP/53` from authorized member addresses (`@allowed_v4`) to the configured resolver set (`@resolver_v4`, counted under `dns_service_v1`) and **drops** all non-port-53 traffic to `@resolver_v4` (`counterBadDNS`, blocking access to the resolver's admin UI or SSH, `§8.1`, `DNS03`, `AT12`).
   - **No Universal Port-53 DNAT Interception**: `inet fvpn` **does not** perform universal DNAT redirection of arbitrary external port-53 traffic. How manual external port-53 DNS queries from a client are handled depends on the deployment's selected external-DNS policy (`§12.6`, marked `待決策` / pending decision, and **not yet measured** under `AT21`).
-  - Configured resolvers return `NXDOMAIN` for blocked malware, phishing, and admin-denied domains. If one controlled resolver becomes unavailable, failover uses only the other controlled resolver with the same policy—never an unfiltered public DNS resolver (`§12.2`, `§12.5`, `AT21`).
+  - Configured resolvers return `NXDOMAIN` for blocked A/AAAA/HTTPS queries and `NODATA` (RCODE 0, zero answers, SOA authority) for blocked CNAME/SVCB/TXT/MX/NS queries. This is fail-closed for answers, not uniform NXDOMAIN. If one controlled resolver becomes unavailable, failover uses only the other controlled resolver with the same policy—never an unfiltered public DNS resolver (`§12.2`, `§12.5`, `AT21`).
 - **Data Minimization and No Query History Logging (`SEC02`, `§12.7`, `§16.4`, `AT22`)**:
   - AdGuard Home query logs and statistics are disabled in the candidate configuration (`querylog.enabled: false`, `querylog.file_enabled: false`, `statistics.enabled: false`). Service logs, metrics, and the central database never record full queried domain names (qnames), full URLs, or packet payloads (`§12.7`).
   - **Honest Scope (`§16.4`)**: Freedom VPN **does not claim to be a complete no-log service**—the platform retains necessary entitlement records, device authorization state, anonymized usage accounting (`usage_events` / `usage_rollups`), and administrative/security audit trails (`audit_events`).
@@ -470,3 +470,29 @@ The Member Portal's `/member/dns-protection` page explains filtering scope, limi
 無成員授權的租約仍持續排程續租，包括尚無 desired bindings 的情況。首次請求時段為一個 heartbeat 後（上限 60 秒），之後倍增至最多每 60 秒，且遵守租約提前續租時間。這是請求排程，不是 I/O 完成保證；取得有成員授權的租約還需要已發布且有合格綁定的 generation、已接受的 readiness，以及可回應的控制服務。`identity_frozen` 沒有會員可見欄位；會員只會看到裝置不再提供服務及 Fair-Use 摘要。
 
 D-087 (#250): every accepted grant-less lease has a renewal schedule, even before desired bindings arrive. The first request slot is one heartbeat after the empty lease (capped at 60 s), then doubling, never more than 60 s of local waiting between requests; the lease renewal lead can bring a slot forward. A populated lease additionally needs a published generation with eligible member bindings, accepted readiness, and a responsive control service. A scheduled request slot is not completed I/O: ongoing work, request latency and server `Retry-After` can delay completion. Empty bindings do not stop renewal. `identity_frozen` has no member-visible surface; members see the device become non-serving and the Fair-Use summary. See the [dated acceptance snapshot](../ops/README.md#follow-up-14-acceptance-snapshot-2026-10-31-edt) for usage #257 and members #268. The members run did not exercise portal rendering of D-077.
+
+### Follow-up 17 DNS and IPv6 scope / DNS 與 IPv6 範圍
+
+Pinned AdGuard Home with `blocking_mode: nxdomain` follows the per-type replies
+above (#309). Synthetic SOA TTL honours `blocked_response_ttl`: 60 s in the
+production-body measurement (configurable starting default, production choice
+pending), 5 s in fixtures. An unblocked earlier CNAME hop may still be returned;
+its blocked next hop cannot complete to an address. See
+[measured answers](../dns/BACKEND.md#211-expected-responses--measured-2026-10-31)
+and [follow-up 17 limits](follow-up-17.md).
+
+固定版本的 AdGuard Home 依查詢型別回覆；封鎖時不提供可繞過政策的答案，
+不保證一律 NXDOMAIN。SOA TTL 遵循設定：正式請求內容量測為 60 秒
+（可設定起始預設，正式值仍待決策），測試設定為 5 秒。未封鎖的前段 CNAME
+仍可能回傳，但查詢被封鎖的下一跳無法完成位址解析。
+
+D-123 keeps the v1.0 overlay in IPv6Block mode: no IPv6 forwarding through
+the node, no end-to-end IPv6 MTU / PMTU acceptance row. Future IPv6 overlay
+support requires separate work; do not remove the guard rules. This does not
+erase the native MTU-1280 failures in either underlay family. AT09 and real
+platform-device acceptance remain open.
+
+D-123 明定 v1.0 overlay 採 IPv6Block：不經節點轉發 IPv6，也沒有端對端
+IPv6 MTU／PMTU 驗收項目。支援 IPv6 overlay 須另行排程，不能刪除阻擋規則
+來取得測試通過。原生客戶端兩種 underlay 的 MTU 1280 失敗仍保留，
+AT09 與真實平台裝置驗收仍未完成。

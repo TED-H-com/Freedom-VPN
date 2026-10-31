@@ -35,7 +35,7 @@ func TestCommittedEvidenceHygiene(t *testing.T) {
 				Source string `json:"source_commit"`
 				Status string `json:"status"`
 			}
-			strict := filepath.Dir(path) == root || filepath.Dir(path) == filepath.Join(root, "history/follow-up-7")
+			strict := filepath.Dir(path) == root || filepath.Dir(path) == filepath.Join(root, "history/follow-up-7") || filepath.Dir(path) == filepath.Join(root, "history/follow-up-8")
 			if json.Unmarshal(raw, &rec) != nil || (strict && (rec.RunID == "" || len(rec.Source) != 40)) {
 				t.Errorf("missing provenance %s", path)
 			}
@@ -55,12 +55,25 @@ func TestCommittedEvidenceHygiene(t *testing.T) {
 	t.Logf("scanned %d acceptance JSON records plus documentation", records)
 }
 func TestD098_Followup7Archive(t *testing.T) {
-	root := filepath.Join("../../../..", "docs/e2e/at/members/history/follow-up-7")
+	verifyArchive(t, "follow-up-7", "297faa31-2f90-4aab-8cf0-6818629f46c8", 31)
+}
+
+func TestD098_Followup8Archive(t *testing.T) {
+	verifyArchive(t, "follow-up-8", "69f92f49-73dc-4779-8101-dfb6a802a96b", 32)
+}
+
+func verifyArchive(t *testing.T, followup, run string, count int) {
+	t.Helper()
+	root := filepath.Join("../../../..", "docs/e2e/at/members/history", followup)
 	sums, err := os.ReadFile(filepath.Join(root, "SHA256SUMS"))
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, line := range strings.Split(strings.TrimSpace(string(sums)), "\n") {
+	lines := strings.Split(strings.TrimSpace(string(sums)), "\n")
+	if len(lines) != count {
+		t.Fatalf("archive inventory: got %d, want %d", len(lines), count)
+	}
+	for _, line := range lines {
 		fields := strings.Fields(line)
 		if len(fields) != 2 {
 			t.Fatal("invalid checksum manifest")
@@ -77,7 +90,7 @@ func TestD098_Followup7Archive(t *testing.T) {
 			var rec struct {
 				RunID string `json:"run_id"`
 			}
-			if json.Unmarshal(raw, &rec) != nil || rec.RunID != "297faa31-2f90-4aab-8cf0-6818629f46c8" {
+			if json.Unmarshal(raw, &rec) != nil || rec.RunID != run {
 				t.Errorf("wrong archive run: %s", fields[1])
 			}
 		}
