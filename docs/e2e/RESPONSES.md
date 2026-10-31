@@ -688,10 +688,14 @@ tampered-artifact rejection, and restart without enrollment. This is the
 regular shared fixture rerun; updates retains ownership of full AT23–AT27.
 
 Updates 11 must consume this layout in its own `tests/e2e/at/updates/live_test.go`
-(candidate-running and tampered-artifact absence checks still name `bin/`) and
-`tests/e2e/at/updates/lab_test.go` (its config still names `e2e/meter.json`).
-Those recipient-owned adapters were not edited here. D-102 keeps this answer
-in RESPONSES.md and their request/evidence registers with that lane.
+(candidate-running and tampered-artifact absence checks still name `bin/`),
+then run the complete AT23–AT27 sequence. The initial checkout's recipient
+`lab_test.go` also had the legacy checkpoint, but updates 10 has since corrected
+it on main; no duplicate request is made for that file. Recipient adapters were
+not edited here. D-102 keeps this answer in RESPONSES.md and their registers
+with that lane. Updates 10's separate F10-02 generated `result_url` request is
+installer-owned (`packaging/installer/config.go`); this regular-fixture pass
+does not close it, and no packaging file is changed here.
 
 ## security-ops / enrollment / usage — 2026-10-31 (follow-up 20, D-102)
 
@@ -784,3 +788,15 @@ failed and unattributed: this passing run cannot recover its missing responder
 identity or prove a product TTL fix. Members 11 can retain these fields through
 the existing shared result serialization, keeping its before-TTL assertion
 unchanged. No recipient harness, request register or historical row was edited.
+
+## usage / updates — 2026-10-31 (follow-up 20, newly merged registers, D-102)
+
+Read-only reconciliation against main `838e8eb2`: usage 6 explicitly closes
+its prior canonical-event retention request and reports no new requests. Its
+fresh D-130 gap and counted-event result is its own acceptance, not a new
+shared fixture measurement. Updates 10's newly merged register is answered by
+the F10-01 layout/result section above. Its actual apply configuration already
+uses the genuine checkpoint and keeps the agent alive; only its two executable
+path assertions still need the release-root adoption. F10-02 generated installer
+reporting remains with its named packaging owner. No other lane's register was
+edited, and this worktree was not rebased onto those newly merged changes.

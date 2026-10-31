@@ -91,8 +91,9 @@ is rejected; the [node restart](d6b01926-de6f-47e4-803b-ae3ea5c603df/node-restar
 resumes without enrollment, preserves identity and enrollment rows, and passes
 DNS/readback checks. Product executable/journal verification is unchanged.
 This supplies updates 11's regular-fixture prerequisite, not full AT23–AT27
-qualification. Its recipient-owned `live_test.go` root-path assertions and
-`lab_test.go` legacy checkpoint configuration still need adoption by that lane.
+qualification. Its recipient-owned `live_test.go` root-path assertions still need adoption.
+Updates 10 has already corrected its own `lab_test.go` checkpoint on newly
+advanced main; that file needs no duplicate request.
 
 ## F10-03: two-resolver query attribution
 
@@ -147,3 +148,33 @@ captured counts; filter/capture differences remain explicit. The exact
 kernel/virtual-link drop reason is not established. No MTU/MSS workaround is
 made. Per-I/O tracing can change segmentation, but does not always eliminate
 this failure; historical 11,011/12,012/22,022-byte failures remain unchanged.
+
+## Running and verification
+
+[Every scenario](scenarios.md) retains its original status, source and requirement
+markers. The [command ledger](gates.md) includes all startup, live, teardown and
+final checks, including nonzero exits.
+
+Use disk TMPDIR/GOTMPDIR under `.agent/tmp`, `CGO_ENABLED=0`, `GOTOOLCHAIN=local`.
+Check `pgrep -af 'gates.sh|mk/at-'` before each stack/live campaign and wait while
+two other suites are active. Start each independent campaign with
+`make -f mk/e2e.mk e2e-up E2E_RESET=1`, run its focused test in the foreground,
+and finish with `make -f mk/e2e.mk e2e-down`.
+
+- D-087: set `FVPN_E2E_GRANT_SEAM=1` for up, then `FVPN_E2E_FOLLOWUP20=1`
+  and `go test -tags e2e -count=1 -v -timeout 20m ./tests/e2e -run '^TestE2E_Followup20Grants$'`.
+  On that retained stack, set `FVPN_E2E_COUNTER20=1` and run
+  `go test -tags e2e -count=1 -v -timeout 10m ./tests/e2e -run '^TestE2E_Followup20CounterExpiry$'`.
+- Regular release: ordinary up; set `FVPN_E2E_FOLLOWUP20=1` and run
+  `go test -tags e2e -count=1 -v -timeout 25m ./tests/e2e -run '^TestE2E_Followup20Regular$'`.
+- Broader fixture: set `FVPN_E2E_TWO_RESOLVERS=true` for up, then
+  `FVPN_E2E_FOLLOWUP20=1 FVPN_E2E_FIXTURES16=1` and
+  `go test -tags e2e -count=1 -v -timeout 35m ./tests/e2e -run '^TestE2E_Followup16Fixtures$'`.
+
+All required final offline checks pass, including tagged/untagged tests,
+committed-evidence hygiene, handover, root lint and amd64/arm64 builds. Unit
+negative controls reject dirty/expired/unaccepted grant reports and classify
+reader failures; metadata tests retain exact wire bytes and reject DNS content
+leaks. Physical arm64, non-Linux platforms, assembled AT10 and complete
+AT23–AT27 remain with their acceptance owners. The historical F10-02/F10-03
+failures cannot be reconstructed from evidence that was never retained.
