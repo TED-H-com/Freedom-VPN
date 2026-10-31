@@ -1,0 +1,20 @@
+# Freedom VPN 會員使用手冊 / Member Guide (`docs/handover/member-guide.md`)
+
+**Current cut — [follow-up 21](follow-up-21.md) (2026-10-31 EDT):** DNS 快取限制與安裝保留封存檔已釐清；開發相依套件警示仍待處置。DNS cache limits and retained install archives are documented; the development dependency alert remains open.
+Previous cut: [follow-up 20](follow-up-20.md), through #344.
+
+**2026-10-31 服務通知（#351 截止）：** DNS 的 TTL 是快取最長有效時間，
+不保證期間內每次查詢答案相同；較早送出的上游請求若較晚完成，可能覆蓋較新的
+快取答案。封鎖回應 TTL 的正式數值仍由營運負責人決定。節點安裝會保留已驗證
+封存檔；檔案存在時，更新基準驗證不需重新下載，但不代表可以離線註冊。
+入口網站的開發工具相依套件警示仍待負責人處置；目前未發現它進入正式版網頁
+程式。會員不需因此重裝客戶端或改動安全設定。
+
+**Service notice (2026-10-31, cutoff #351):** DNS TTL is a maximum cache
+lifetime; answers can change sooner, including when an older outstanding
+upstream reply replaces newer cache data. The production blocked-response TTL
+remains the operator owner's decision. Node installs retain a verified archive,
+so baseline verification can use it without downloading again; this does not
+provide offline enrollment. A portal development-tool dependency alert remains
+open for owner disposition; no path into the production bundle was found.
+Members do not need to reinstall clients or change security settings.

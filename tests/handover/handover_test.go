@@ -4359,7 +4359,8 @@ func TestHandover_Followup21Claims(t *testing.T) {
 	const fixture = "tests/handover/testdata/"
 	const archive = fixture + "history/follow-up-21/"
 	const doc = "docs/handover/follow-up-21.md"
-	const register = "docs/handover/README.md"
+	const frozen = fixture + "history/follow-up-22/"
+	const register = frozen + "register21.md"
 	readJSON := func(t *testing.T, path string, dst any) {
 		t.Helper()
 		if err := json.Unmarshal([]byte(readOwnedDoc(t, root, path)), dst); err != nil {
@@ -4476,11 +4477,12 @@ func TestHandover_Followup21Claims(t *testing.T) {
 			t.Fatalf("wrong merged PRs: %v", seen)
 		}
 		for pr := 345; pr <= 351; pr++ {
-			requireHandoverClaimTokens(t, root, "docs/ops/README.md", fmt.Sprintf("#%d", pr))
+			requireHandoverClaimTokens(t, root, frozen+"entrypoint-docs_ops_README.md.txt", fmt.Sprintf("#%d", pr))
 		}
 		requireHandoverClaimTokens(t, root, doc, cut, "Handover ran no new live acceptance", "D-098 / D-109 / D-132", "netlab 21 and agent-core 29 were not on main", "results are excluded")
 		for _, path := range []string{"README.md", "docs/handover/00-index.md", "docs/handover/deploy.md", "docs/handover/operator-guide.md", "docs/handover/member-guide.md", "docs/handover/restore-drill.md", "docs/ops/README.md"} {
-			lines := strings.Split(readOwnedDoc(t, root, path), "\n")
+			snapshot := frozen + "entrypoint-" + strings.ReplaceAll(path, "/", "_") + ".txt"
+			lines := strings.Split(readOwnedDoc(t, root, snapshot), "\n")
 			if len(lines) < 4 || !strings.Contains(lines[2], "Current cut") || !strings.Contains(lines[2], "follow-up-21.md") || !strings.Contains(lines[3], "#344") {
 				t.Errorf("stale current entrypoint: %s", path)
 			}
@@ -4502,9 +4504,9 @@ func TestHandover_Followup21Claims(t *testing.T) {
 		}
 	})
 	t.Run("operator_changes_and_bilingual_notice", func(t *testing.T) {
-		requireHandoverClaimTokens(t, root, "docs/handover/operator-guide.md", "Operator changes at #351", "F9-INFLIGHT", "10 s upstream timeout", "TTL is a maximum lifetime", "blocked_response_ttl", "owner's decision", "initial and same-release installs retain the verified archive", "Only an absent archive chooses the guarded signed-URL download", "corrupt or\nunreadable archive fails closed", "not offline\nenrollment", "Dependabot #22", "no production-bundle path", "11.0.3 override breaks", "dependency-hygiene item, not a product defect", "no\nrejection")
-		requireHandoverClaimTokens(t, root, "docs/handover/deploy.md", "private / CGNAT exceptions only", "no rejection occurred", "Initial and same-release installs retain the verified archive", "only absence chooses the guarded", "Corrupt archives fail closed", "Dependabot #22")
-		requireHandoverClaimTokens(t, root, "docs/handover/member-guide.md", "#351 截止", "TTL 是快取最長有效時間", "可能覆蓋較新的", "數值仍由營運負責人決定", "保留已驗證", "不代表可以離線註冊", "開發工具相依套件警示仍待負責人處置", "Members do not need to reinstall clients or change security settings", "DNS TTL is a maximum cache", "older outstanding", "Node installs retain a verified archive", "does not\nprovide offline enrollment", "no path into the production bundle was found")
+		requireHandoverClaimTokens(t, root, frozen+"entrypoint-docs_handover_operator-guide.md.txt", "Operator changes at #351", "F9-INFLIGHT", "10 s upstream timeout", "TTL is a maximum lifetime", "blocked_response_ttl", "owner's decision", "initial and same-release installs retain the verified archive", "Only an absent archive chooses the guarded signed-URL download", "corrupt or\nunreadable archive fails closed", "not offline\nenrollment", "Dependabot #22", "no production-bundle path", "11.0.3 override breaks", "dependency-hygiene item, not a product defect", "no\nrejection")
+		requireHandoverClaimTokens(t, root, frozen+"entrypoint-docs_handover_deploy.md.txt", "private / CGNAT exceptions only", "no rejection occurred", "Initial and same-release installs retain the verified archive", "only absence chooses the guarded", "Corrupt archives fail closed", "Dependabot #22")
+		requireHandoverClaimTokens(t, root, frozen+"entrypoint-docs_handover_member-guide.md.txt", "#351 截止", "TTL 是快取最長有效時間", "可能覆蓋較新的", "數值仍由營運負責人決定", "保留已驗證", "不代表可以離線註冊", "開發工具相依套件警示仍待負責人處置", "Members do not need to reinstall clients or change security settings", "DNS TTL is a maximum cache", "older outstanding", "Node installs retain a verified archive", "does not\nprovide offline enrollment", "no path into the production bundle was found")
 	})
 	t.Run("owner_archives_byte_identical", func(t *testing.T) {
 		check := func(path, want string) {
@@ -4662,4 +4664,367 @@ func TestHandover_Followup21Claims(t *testing.T) {
 			t.Fatalf("follow-up 20 cases: %d", len(groups)+len(subtests))
 		}
 	})
+}
+
+// TestHandover_Followup22Claims fixes #352–#356. D-098 / D-109 / D-132
+// permit dated prose snapshots, roadmap rows and archived/run-ID evidence only.
+func TestHandover_Followup22Claims(t *testing.T) {
+	root := repoRoot(t)
+	const cut = "45209609d33d567c5f04d49441799cdd3efac59b"
+	const fixture = "tests/handover/testdata/"
+	const archive = fixture + "history/follow-up-22/"
+	const mainPin = fixture + "followup22-main.json"
+	const doc = "docs/handover/follow-up-22.md"
+	const register = "docs/handover/README.md"
+	readJSON := func(t *testing.T, path string, dst any) {
+		t.Helper()
+		if err := json.Unmarshal([]byte(readOwnedDoc(t, root, path)), dst); err != nil {
+			t.Fatalf("decode %s: %v", path, err)
+		}
+	}
+	type claim struct {
+		path   string
+		tokens []string
+	}
+	for _, tc := range []struct {
+		name   string
+		claims []claim
+	}{
+		{"devstack21_loopback_fix_and_measurement", []claim{
+			{mainPin, []string{"installerSpec.AllowLoopback", "exact local `ControlURL` gate", "TEST ONLY, default false elsewhere", "33b9621a 3 / 0 / 0", "certificate-free POST 403", "authenticated invalid body 400"}},
+			{archive + "devstack21-response-1.md", []string{"requires both that boolean and the exact local origin", "unchanged configuration, not a", "installer 27/27", "5/5 without the former reporting adapter"}},
+			{"tests/e2e/installer_loopback_test.go", []string{"TestENR02_InstallerFixtureLoopbackOptInScope"}},
+			{"tests/e2e/followup21_live_test.go", []string{"TestE2E_Followup21Installer"}},
+			{doc, []string{"Updates F11-01 fixed", "installerSpec.AllowLoopback", "exact local `ControlURL`", "default false elsewhere", "33b9621a", "3 / 0 / 0", "exit **0**", "unchanged", "**403**", "**400**", "**27 / 27**", ".24 collision"}},
+		}},
+		{"devstack21_dns_lifecycle_not_inflight_reproduction", []claim{
+			{mainPin, []string{"start before dispatch", "outstanding requests", "joins late completions by identity", "cba88bbc 13 / 0 / 0", "36 / 36 complete query traces", "85 distinct authority requests", "70 identities", "4 KiB", "4 MiB"}},
+			{archive + "devstack21-response-2.md", []string{"BACKEND §2.1.5", "completion times", "does not reproduce F9-INFLIGHT", "Missing history", "Hit wording stays inferred"}},
+			{"tests/e2e/followup21_live_test.go", []string{"TestE2E_Followup21DNS"}},
+			{"tests/e2e/dns_trace_test.go", []string{"TestAT20_EarlierAuthorityCompletionAcrossQueries"}},
+			{"tests/e2e/internal/dnsrelay/trace_test.go", []string{"TestAT20_OutstandingLifecycleAndMissingReceipts", "TestAT20_RestartRetainsStreamsAndPendingRequest"}},
+			{doc, []string{"start before\ndispatch", "late completions by identity", "BACKEND §2.1.5", "**4 KiB**", "**4 MiB**", "**13 / 0 / 0**", "**36 / 36**", "**85**", "**70**", "does not reproduce F9-INFLIGHT"}},
+		}},
+		{"devstack21_historical_stage_and_D102_answers", []claim{
+			{archive + "devstack21-members.md", []string{"twelve generation-13", "install_ok=false", "Verification records", "neither\nresource exhaustion nor injection causality is established", "184.488440", "304.391743", "AT01 stays blocked"}},
+			{archive + "devstack21-response-3.md", []string{"before node observable inner ingress", "All eight failed Applies", "causation is not established", "forwardingGate", "zero grants", "Keep the original generation-10 failed transfer"}},
+			{archive + "devstack21-response-4.md", []string{"1/1/2", "CHECKPOINT_FAILED", "old 13/0/1 campaign stays failed", "D-125"}},
+			{archive + "devstack21.md", []string{"origin slot `.24`", "first DNS run 99027e5d", "intentional fallback restarts incomplete"}},
+			{doc, []string{"D-102", "members 11 / updates 11 / dns-publish 9", "after inner member egress and before observable inner node ingress", "all eight failures", "100 ms", "install_ok=false", "no verification", "failure stage, not its cause", "D-125 negative\n1 / 1 / 2"}},
+		}},
+		{"installer8_reconciliation_and_unchanged_gaps", []claim{
+			{archive + "installer8.md", []string{"No installer behavior changed", "All rows agree", "literal JSON keys", "No test reads living acceptance evidence", "per distinct retained archive", "Offline installation paragraph", "F10-01 is **CLOSED**", "Distinct-endpoint CA and private-mirror", "Physical arm64", "power loss", "production signing/distribution/rollout"}},
+			{mainPin, []string{"Privileged suite 13 / 13", "#342", "#351", "renderUpdater", "same-release reporting repair"}},
+			{"packaging/installer/followup8_test.go", []string{"TestUPD05_RenderedReportingConfigShape"}},
+			{"node/updater/followup19_test.go", []string{"TestUPD05_InstallerReportingConfigShape"}},
+			{doc, []string{"no installer behaviour change", "Field-by-field", "#342", "#351", "literal JSON", "reads no living AT evidence", "per distinct retained archive", "F10-01 CLOSED", "#343", "#346", "13 / 13", "Distinct-endpoint CA / private-mirror", "physical arm64, power loss", "production rollout remain unmeasured"}},
+		}},
+		{"handover21_inventory_and_cut_frozen", []claim{
+			{mainPin, []string{"21 subtests / 7 exact roadmap rows", "13 immutable owned snapshots", "350 owner-archive files", "done (#354)"}},
+			{"tests/handover/handover_test.go", []string{"TestHandover_Followup21Claims"}},
+			{doc, []string{"#345–#351", "6d1e320d", "21 subtests / 7 pinned\nrows / 13 immutable snapshots / 350 owner-archive files", "earlier redirected reads remain unchanged"}},
+		}},
+		{"netlab21_ipv6_mechanism_and_native_boundary", []claim{
+			{mainPin, []string{"10,010 / 64,064 bytes in 12,012.403 ms", "19 reverse outer IPv6 packets of 1,360 bytes", "36 × 1,152-byte, one 928-byte and eleven 144-byte", "zero kernel drops in all four captures", "no ICMPv6 PTB", "4.479 ms", "one mechanism explains both underlays"}},
+			{archive + "netlab21.md", []string{"receive-link rejection a\nsupported inference", "no kernel drop-reason trace", "No per-datagram capture exists for that members row", "after tunnel-endpoint underlay egress, before member", "no NetBird ICE negotiation"}},
+			{"tests/netlab/scenario_f21_test.go", []string{"TestF21_AT09_IPv6Underlay"}},
+			{doc, []string{"10,010 / 64,064 bytes in 12,012.403 ms", "**19**", "1,360 bytes", "36 × 1,152", "one 928", "eleven 144", "zero kernel\ndrops", "no ICMPv6 PTB", "4.479 ms", "One mechanism explains both underlays", "1,340-byte", "20 extra header bytes", "supported inference", "devstack 22", "No global MTU / MSS fix"}},
+		}},
+		{"netlab21_expiry_and_full_guard_distributions", []claim{
+			{mainPin, []string{"[D−101 ms, D]", "26 / 7", "D−100.730 ms", "161 / 41", "101 completed reload guards", "32.480 / 41.400 / 45.396 / 52.675", "16.698 / 21.783 / 28.473 / 30.818", "historical 52.596 ms maximum is not a ceiling"}},
+			{archive + "netlab21.md", []string{"100 ms expiry reserve is intentional", "1 ms truncation", "never calls release", "closed transaction", "No tolerance, D-120 extension or new acceptance pass"}},
+			{doc, []string{"100 ms", "1 ms", "[D−101 ms, D]", "literal zero pre-D loss is\nfalse", "26 / 7", "D−100.730 ms", "161 / 41", "101 completed guards", "32.480 | 41.400 | 45.396 | 52.675", "16.698 | 21.783 | 28.473 | 30.818", "52.596 ms", "never opens the guard", "D-104 / D-120 / AT13 / AT29 predicates are unchanged"}},
+		}},
+		{"netlab21_real_rollback_and_unconfirmed_route", []claim{
+			{mainPin, []string{"200 ms hold", "304.815 / 280.395 / 285.297 ms", "34.4 / 28.3 / 24.0 ms", "397 ingresses / 224 egresses / 173 losses", "150 outside", "native AT01 route is outside this fixture"}},
+			{archive + "netlab21.md", []string{"one post-release verifier read failure per trial", "200 ms explicit baseline observation hold", "no automatic 100 ms or one-guard recovery ceiling", "independent monotonic bracket", "not the assertion that every loss fits a successful guard"}},
+			{"tests/netlab/scenario_f21_test.go", []string{"TestF21_AT02_RollbackSibling"}},
+			{doc, []string{"200 ms hold", "304.815 / 280.395 / 285.297 ms", "34.4 / 28.3 / 24.0 ms", "397 ingresses / 224 egresses / 173\nlosses", "150 outside", "not historical F11-03 outage durations", "member tunnel egress →\nnode ingress", "native AT01 route is outside this fixture"}},
+		}},
+		{"agent29_negative_contention_reproduction", []claim{
+			{mainPin, []string{"Controlled CPU contention does NOT reproduce", "quiet / loaded / quiet / loaded", "384 on 24 logical CPUs at 0 % idle", "40 loaded Applies per intervention", "53.133 ms", "184.078 ms outer guard", "not** a causal conclusion", "loaded meter / restart / expiry failures are retained, not diagnosed"}},
+			{archive + "agent29.md", []string{"negative reproductions, not passing tests", "All six failed", "historical\ncause", "S4", "53.133468", "L2", "TestLabExternalMeterReset", "TestLab04_RestartKeepsVerifiedLease"}},
+			{doc, []string{"do NOT reproduce the install overrun", "384 on 24 logical CPUs at 0 % idle", "40 loaded\nApplies per intervention", "53.133 ms", "negative reproductions, not passing tests", "184.078 ms outer guard", "152 ms", "49 failed installs", "not a causal conclusion", "Loaded meter / restart / expiry failures remain failed and undiagnosed"}},
+		}},
+		{"agent29_opt_in_host_context_preserves_contract", []claim{
+			{mainPin, []string{"1,874 Apply host brackets", "outside the measured Apply operation", "every existing row / sequence rule / D-106 digest input unchanged"}},
+			{archive + "agent29.md", []string{"test_mode=true", "test_timing_path", "host.before_apply", "host.after_apply", "ok=false", "outside enforcement's measured operation", "Missing exit fields are unknown", "D-106\ncanonical digest rules are preserved"}},
+			{"node/agent/measurement_host_test.go", []string{"TestF29_HostSampleAccountingAndUnavailable", "TestF29_ApplyHostContextIsOptInAndDoesNotChangeTiming"}},
+			{doc, []string{"TEST ONLY host context", "sanitized returned command\nstatus", "outside the measured Apply operation", "D-106 digest inputs are unchanged", "1,874 Apply host brackets"}},
+		}},
+		{"agent29_baseline_semantics_and_S2_counterexample", []claim{
+			{mainPin, []string{"Rollback is the node-wide baseline by design, not the previous generation", "repeated failures keep the baseline indefinitely", "100 ms bound is an install budget, not an outage ceiling", "successful Apply AND successful live verifier", "member_path_unconfigured", "not every `verification_HEALTH_CHECK_FAILED` baseline", "AT02's admitted positive control stays failed"}},
+			{archive + "agent29.md", []string{"It does **not** restore the old generation", "authorization that this generation is revoking", "both dropped at baseline", "not F11-03 install rollback", "AT02 remains failed"}},
+			{doc, []string{"node-wide generation-0 baseline by design, not the previous\ngeneration", "next successful Apply", "indefinitely", "100 ms bound is an install budget, not an outage ceiling", "member_path_unconfigured", "verification_HEALTH_CHECK_FAILED", "S2 is not the historical F11-03", "AT02's admitted positive control stays failed at this cutoff"}},
+		}},
+		{"agent29_no_D133_trigger_and_routed_requests", []claim{
+			{mainPin, []string{"No D-133 A/B invoked", "no Apply / rollback ordering, timeout, policy or production forwarding change", "four Sources links", "history/follow-up-9/", "netlab 22", "members 12 / isolation 11"}},
+			{archive + "agent29.md", []string{"command runtime from runnable delay/cancellation", "failure_stage", "host_context", "cause_status", "four follow-up 28 source links", "byte-identical follow-up 9"}},
+			{doc, []string{"No **D-133 A/B** was invoked", "no Apply / rollback ordering, timeout, policy or", "production forwarding change", "four Sources links", "history/follow-up-9/", "executor command-lifecycle evidence → netlab 22", "→ D-135", "members 12 / isolation 11"}},
+		}},
+		{"D134_D135_decisions_and_operator_scope", []claim{
+			{register, []string{"| D-134 | Decided 16:0x EDT", "| D-135 | 17:2x EDT", "provisional — pending the owner's confirmation", "no previous-generation restoration", "revocation always preserved", "baseline→recovery ending at the next successful Apply", "every loss counted", "reported, never waived", "separate enforcement design under D-133"}},
+			{"docs/handover/operator-guide.md", []string{"Operator changes at #356", "[D−101 ms, D]", "never extra authorization after D", "Count every\npre-D and renewal loss", "52.596 ms", "provisional, pending the owner's confirmation", "Apply closes every member on that node until the next successful Apply", "100 ms bound is an install budget, not an outage", "never waive it", "Historical AT02\nremains failed"}},
+			{doc, []string{"D-134 (16:0x EDT)", "D-135 (17:2x EDT, provisional — pending the\nowner's confirmation)", "reported, never waived", "Owner decision — confirm provisional D-135", "no historical failed result becomes a pass"}},
+		}},
+		{"findings_and_remaining_owner_decisions", []claim{
+			{register, []string{"| Updates F11-01 | CLOSED — fix + measurement |", "| Updates F10-01 | CLOSED |", "| F8-02 / native MTU 1280 | OPEN — common mechanism established |", "| Members F11-01 | OPEN — bounded transport gap |", "| Members F11-03 | OPEN — stage established, cause unproven |", "| Install-overrun cause | OPEN — unproven |", "| F9-INFLIGHT | OPEN", "| Members F11-02 | OPEN — readiness gate |", "| F18-01 | INTENDED D-125 NEGATIVE |", "| ISO-F6-03 | OPEN", "writer unattributed", "| Dependabot #22 | OPEN", "blocked_response_ttl", "D-135 confirmation is an explicit\nowner decision"}},
+			{doc, []string{"expectation rewrite under provisional D-135 pending members 12", "F18-01** intended D-125 negative", "Every historical failure stays\nfailed and unattributed", "Physical arm64, power loss, production rollout", "not expanded §19 acceptance"}},
+		}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			for _, c := range tc.claims {
+				requireHandoverClaimTokens(t, root, c.path, c.tokens...)
+			}
+		})
+	}
+	t.Run("fixed_cutoff_and_current_entrypoints", func(t *testing.T) {
+		var pin struct {
+			Commit string
+			Cutoff int `json:"cutoff_pr"`
+			Rows   []string
+		}
+		readJSON(t, mainPin, &pin)
+		if pin.Commit != cut || pin.Cutoff != 356 || len(pin.Rows) != 5 {
+			t.Fatalf("wrong cutoff: %+v", pin)
+		}
+		seen := map[int]bool{}
+		for _, row := range pin.Rows {
+			requireHandoverClaimTokens(t, root, "docs/ROADMAP.md", row)
+			for pr := 352; pr <= 356; pr++ {
+				if strings.HasSuffix(row, fmt.Sprintf("| done (#%d) |", pr)) {
+					if seen[pr] {
+						t.Fatalf("duplicate PR #%d", pr)
+					}
+					seen[pr] = true
+				}
+			}
+		}
+		if len(seen) != 5 {
+			t.Fatalf("wrong PRs: %v", seen)
+		}
+		for _, path := range []string{"README.md", "docs/handover/00-index.md", "docs/handover/deploy.md", "docs/handover/operator-guide.md", "docs/handover/member-guide.md", "docs/handover/restore-drill.md", "docs/ops/README.md"} {
+			lines := strings.Split(readOwnedDoc(t, root, path), "\n")
+			if len(lines) < 4 || !strings.Contains(lines[2], "Current cut") || !strings.Contains(lines[2], "follow-up-22.md") || !strings.Contains(lines[2], "#356") || !strings.Contains(lines[3], "#351") {
+				t.Errorf("stale entrypoint: %s", path)
+			}
+		}
+		requireHandoverClaimTokens(t, root, doc, cut, "Handover ran no new live acceptance", "D-098 / D-109 / D-132", "Devstack 22,", "members 12, isolation 11, updates 12 and netlab 22 were not merged", "results are excluded")
+		for pr := 352; pr <= 356; pr++ {
+			requireHandoverClaimTokens(t, root, "docs/ops/README.md", fmt.Sprintf("#%d", pr))
+		}
+	})
+	t.Run("owner_archives_114_and_82_byte_identical", func(t *testing.T) {
+		check := func(path, want string) {
+			t.Helper()
+			sum := sha256.Sum256([]byte(readOwnedDoc(t, root, path)))
+			if hex.EncodeToString(sum[:]) != want {
+				t.Errorf("archive changed: %s", path)
+			}
+		}
+		const base = "docs/e2e/runs/2026-10-31/followup20/"
+		prose := map[string]string{"README.md": "devstack20-overview.md", "capture-cce1a688/README.md": "devstack20-capture-overview.md", "gates.md": "devstack20-gates.md", "scenarios.md": "devstack20-scenarios.md"}
+		lines := strings.Split(strings.TrimSpace(readOwnedDoc(t, root, archive+"devstack20-archive.sha256")), "\n")
+		if len(lines) != 114 {
+			t.Fatalf("devstack inventory %d", len(lines))
+		}
+		seen := map[string]bool{}
+		for _, line := range lines {
+			fields := strings.Fields(line)
+			if len(fields) != 2 || !filepath.IsLocal(fields[1]) || !strings.HasPrefix(fields[1], base) || seen[fields[1]] {
+				t.Fatalf("invalid archive entry: %q", line)
+			}
+			path := fields[1]
+			seen[path] = true
+			if frozen, ok := prose[strings.TrimPrefix(path, base)]; ok {
+				path = archive + frozen
+			} else if !regexp.MustCompile(`[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}`).MatchString(path) {
+				t.Fatalf("unscoped run file: %s", path)
+			}
+			check(path, fields[0])
+		}
+		const netlab = "docs/poc/G2-followup20-evidence/"
+		var manifest struct {
+			Files []struct {
+				Path, SHA256 string
+				Bytes        int
+			}
+		}
+		readJSON(t, netlab+"archive.json", &manifest)
+		if len(manifest.Files) != 82 {
+			t.Fatalf("netlab inventory %d", len(manifest.Files))
+		}
+		seen = map[string]bool{}
+		for _, p := range manifest.Files {
+			if !filepath.IsLocal(p.Path) || seen[p.Path] {
+				t.Fatalf("invalid netlab archive entry: %s", p.Path)
+			}
+			seen[p.Path] = true
+			check(netlab+p.Path, p.SHA256)
+			if len(readOwnedDoc(t, root, netlab+p.Path)) != p.Bytes {
+				t.Errorf("archive length: %s", p.Path)
+			}
+		}
+	})
+	t.Run("UUID_scoped_installer_and_dns_records", func(t *testing.T) {
+		type record struct {
+			RunID        string `json:"run_id"`
+			Status       string
+			Observations []struct{ Name, Detail string }
+		}
+		load := func(path, id string) map[string]string {
+			t.Helper()
+			var r record
+			readJSON(t, path, &r)
+			if r.RunID != id || r.Status != "pass" {
+				t.Fatalf("wrong run/status: %+v", r)
+			}
+			m := map[string]string{}
+			for _, o := range r.Observations {
+				if _, ok := m[o.Name]; ok {
+					t.Fatalf("duplicate observation %s", o.Name)
+				}
+				m[o.Name] = o.Detail
+			}
+			return m
+		}
+		const base = "docs/e2e/runs/2026-10-31/followup21/"
+		const installer = "33b9621a-41d7-49fb-bc27-1c3f05e4ab44"
+		m := load(base+installer+"/installer-loopback-wrapper.json", installer)
+		var install struct {
+			Exit   int
+			Status string
+		}
+		if err := json.Unmarshal([]byte(m["install"]), &install); err != nil {
+			t.Fatal(err)
+		}
+		if install.Exit != 0 || install.Status != "installed" {
+			t.Fatalf("install %+v", install)
+		}
+		var config struct {
+			URL      string   `json:"result_url"`
+			Origins  []string `json:"allowed_artifact_origins"`
+			Loopback bool     `json:"allow_loopback"`
+		}
+		if err := json.Unmarshal([]byte(m["generated_reporting"]), &config); err != nil {
+			t.Fatal(err)
+		}
+		if config.URL != "https://127.0.0.1:9444/api/v1/agent/update-results" || !config.Loopback || !slices.Equal(config.Origins, []string{"https://127.0.0.1:9444"}) {
+			t.Fatalf("reporting shape %+v", config)
+		}
+		if m["config_sha256_before"] != "14a8975a8a36df9558b9b957e07613476e43de351281eadaae4657e860f06164" || m["config_sha256_after"] != m["config_sha256_before"] {
+			t.Fatal("config changed across endpoint probes")
+		}
+		var auth map[string]string
+		if err := json.Unmarshal([]byte(m["endpoint_authentication"]), &auth); err != nil {
+			t.Fatal(err)
+		}
+		if auth["without_client_certificate"] != "403" || auth["with_client_certificate_invalid_body"] != "400" {
+			t.Fatalf("endpoint authentication %+v", auth)
+		}
+		const dns = "cba88bbc-a7bf-49f8-9dab-3182123d02aa"
+		m = load(base+dns+"/dns-history-integrity.json", dns)
+		var counts map[string]int
+		if err := json.Unmarshal([]byte(m["diagnostic_counts"]), &counts); err != nil {
+			t.Fatal(err)
+		}
+		for k, want := range map[string]int{"complete": 36, "queries": 36, "distinct_authority_requests": 85, "requests_retained_across_queries": 70} {
+			if counts[k] != want {
+				t.Errorf("%s=%d want %d", k, counts[k], want)
+			}
+		}
+	})
+	t.Run("D098_D109_D132_snapshot_integrity_and_rejected_roots", func(t *testing.T) {
+		var pins []struct {
+			Path, Source, SHA256 string
+			Commit               string `json:"source_commit"`
+			SourceSHA            string `json:"source_sha256"`
+			Offset, Length       int
+		}
+		readJSON(t, fixture+"followup22-snapshots.json", &pins)
+		if len(pins) != 22 {
+			t.Fatalf("snapshot inventory %d", len(pins))
+		}
+		seen := map[string]bool{}
+		for _, p := range pins {
+			if seen[p.Path] || !strings.HasPrefix(p.Path, archive) || !filepath.IsLocal(p.Path) || p.Commit != cut || len(p.SourceSHA) != 64 || p.Offset < 0 {
+				t.Fatalf("invalid snapshot: %+v", p)
+			}
+			seen[p.Path] = true
+			if strings.HasPrefix(p.Source, "docs/e2e/at/") || strings.HasPrefix(p.Source, "docs/poc/G2-followup21-evidence/") || strings.HasSuffix(p.Source, ".json") {
+				t.Fatalf("living evidence source: %s", p.Source)
+			}
+			raw := readOwnedDoc(t, root, p.Path)
+			sum := sha256.Sum256([]byte(raw))
+			if hex.EncodeToString(sum[:]) != p.SHA256 || len(raw) != p.Length {
+				t.Errorf("snapshot changed: %s", p.Path)
+			}
+		}
+		for _, path := range []string{"docs/e2e/at/members/F11-01-forwarding.json", "docs/e2e/at/members/F11-03-capture.json", "docs/e2e/at/isolation/summary.md", "docs/poc/G2-followup21-evidence/analysis.json", "docs/node/followup29-install-contention-2026-10-31.json", "docs/node/followup29-install-contention-2026-10-31.md"} {
+			if claimTokenAllowed(path, "living source prose") {
+				t.Errorf("mutable token pin permitted: %s", path)
+			}
+		}
+	})
+	t.Run("followup21_original_assertions_and_decisions_frozen", func(t *testing.T) {
+		for path, want := range map[string]string{
+			"docs/handover/follow-up-21.md":                     "5985ca5618e973fcb3c862c084f59ef6e5dd414db9f51148322636aefbb206bd",
+			"tests/handover/testdata/followup21-main.json":      "0057dbe122876a1c18c5a47aa61b5a306f200ffbf8274c8e6e7076b011201d33",
+			"tests/handover/testdata/followup21-snapshots.json": "d6009c26bfbccc3d63d7113abe9753d3bb7e6d13f44a57654143cf0010c7a777",
+		} {
+			sum := sha256.Sum256([]byte(readOwnedDoc(t, root, path)))
+			if hex.EncodeToString(sum[:]) != want {
+				t.Errorf("prior cut changed: %s", path)
+			}
+		}
+		source := readOwnedDoc(t, root, "tests/handover/handover_test.go")
+		start := strings.Index(source, "func TestHandover_Followup21Claims(")
+		end := strings.Index(source, "// TestHandover_Followup22Claims fixes")
+		if start < 0 || end <= start {
+			t.Fatal("missing claim function boundary")
+		}
+		prior := source[start:end]
+		// Reverse only the permitted frozen-input redirects, then compare the
+		// entire original function. Assertions, subtests and older redirects
+		// must remain byte-identical to the #356 starting main.
+		prior = strings.ReplaceAll(prior, "\tconst frozen = fixture + \"history/follow-up-22/\"\n", "")
+		prior = strings.ReplaceAll(prior, "const register = frozen + \"register21.md\"", "const register = \"docs/handover/README.md\"")
+		prior = strings.ReplaceAll(prior, "root, frozen+\"entrypoint-docs_ops_README.md.txt\", fmt.Sprintf", "root, \"docs/ops/README.md\", fmt.Sprintf")
+		prior = strings.ReplaceAll(prior, "snapshot := frozen + \"entrypoint-\" + strings.ReplaceAll(path, \"/\", \"_\") + \".txt\"\n\t\t\tlines := strings.Split(readOwnedDoc(t, root, snapshot), \"\\n\")", "lines := strings.Split(readOwnedDoc(t, root, path), \"\\n\")")
+		for _, name := range []string{"operator-guide", "deploy", "member-guide"} {
+			prior = strings.ReplaceAll(prior, "root, frozen+\"entrypoint-docs_handover_"+name+".md.txt\",", "root, \"docs/handover/"+name+".md\",")
+		}
+		sum := sha256.Sum256([]byte(strings.TrimSpace(prior)))
+		if hex.EncodeToString(sum[:]) != "0c940b5ff321f1abb6b025677949a26cf5a1594a99d0877bba1d061146ae1f43" {
+			t.Fatal("follow-up 21 assertions changed beyond frozen-input redirects")
+		}
+		rows := regexp.MustCompile(`(?m)^\| D-[0-9]{3} \|.*$`)
+		old := rows.FindAllString(readOwnedDoc(t, root, archive+"register21.md"), -1)
+		current := rows.FindAllString(readOwnedDoc(t, root, register), -1)
+		if len(current) != len(old)+2 || !slices.Equal(current[:len(old)], old) {
+			t.Fatal("earlier decisions changed; only D-134 / D-135 may be added")
+		}
+	})
+}
+
+// Current document integrity is deliberately separate from immutable claims.
+func TestHandover_Followup22LiveDocumentIntegrity(t *testing.T) {
+	root := repoRoot(t)
+	var manifest struct {
+		Followup struct {
+			Documents []struct{ Path, SHA256 string } `json:"reviewed_documents"`
+		} `json:"handover_follow_up_22"`
+	}
+	if err := json.Unmarshal([]byte(readOwnedDoc(t, root, "docs/e2e/at/secops/scope-review.json")), &manifest); err != nil {
+		t.Fatal(err)
+	}
+	if len(manifest.Followup.Documents) != 14 {
+		t.Fatalf("live document inventory %d", len(manifest.Followup.Documents))
+	}
+	for _, p := range manifest.Followup.Documents {
+		sum := sha256.Sum256([]byte(readOwnedDoc(t, root, p.Path)))
+		if hex.EncodeToString(sum[:]) != p.SHA256 {
+			t.Errorf("stale live digest: %s", p.Path)
+		}
+	}
 }

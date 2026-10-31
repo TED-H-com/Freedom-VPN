@@ -1,7 +1,30 @@
 # Operator Guide (`docs/handover/operator-guide.md`)
 
-**Current cut — [follow-up 21](follow-up-21.md) (2026-10-31 EDT):** Through #351: positive-cache limits, retained verified install archives and Dependabot #22 status are documented. Regular AT23–AT27 and assembled D-087 AT10 pass; historical failures remain frozen.
-Previous cut: [follow-up 20](follow-up-20.md), through #344.
+**Current cut — [follow-up 22](follow-up-22.md) (2026-10-31 EDT):** Through #356: shared installer loopback fixed; F8-02 mechanism captured on both underlays; install-overrun cause unproven. D-134 expiry semantics and provisional D-135 node-wide rollback are recorded; historical failures stay failed.
+Previous cut: [follow-up 21](follow-up-21.md), through #351.
+
+## Operator changes at #356
+
+**D-134 expiry window:** the absolute deadline D includes an intentional
+100 ms installation reserve plus 1 ms truncation. The conservative transition
+window is **[D−101 ms, D]**, never extra authorization after D. Count every
+pre-D and renewal loss; literal zero pre-D loss is not established. Report the
+full completed outer-guard distribution per run. The historical 52.596 ms
+maximum is a measurement, not a guaranteed ceiling. An install overrun never
+opens the guard; the closed generation-0 baseline replaces it atomically.
+D-104 / D-120 / AT13 / AT29 predicates are unchanged.
+
+**D-135 rollback — provisional, pending the owner's confirmation:** a failed
+Apply closes every member on that node until the next successful Apply.
+Rollback installs the node-wide generation-0 baseline, preserving revocation;
+it does not restore the previous generation. Repeated failures can keep that
+baseline indefinitely. The 100 ms bound is an install budget, not an outage
+ceiling. Retain the admitted sibling's baseline→recovery bracket and every
+lost packet; report the bracket, never waive it. A stronger availability
+guarantee requires a separate enforcement design under D-133. Historical AT02
+remains failed. [Evidence and owner boundary](follow-up-22.md).
+
+The earlier operator changes below retain their dated scope.
 
 ## Operator changes at #351
 

@@ -1,7 +1,7 @@
 # Freedom VPN 會員使用手冊 / Member Guide (`docs/handover/member-guide.md`)
 
-**Current cut — [follow-up 21](follow-up-21.md) (2026-10-31 EDT):** DNS 快取限制與安裝保留封存檔已釐清；開發相依套件警示仍待處置。DNS cache limits and retained install archives are documented; the development dependency alert remains open.
-Previous cut: [follow-up 20](follow-up-20.md), through #344.
+**Current cut — [follow-up 22](follow-up-22.md) (2026-10-31 EDT):** Through #356: shared installer loopback fixed; F8-02 mechanism captured on both underlays; install-overrun cause unproven. D-134 expiry semantics and provisional D-135 node-wide rollback are recorded; historical failures stay failed.
+Previous cut: [follow-up 21](follow-up-21.md), through #351.
 
 **2026-10-31 服務通知（#351 截止）：** DNS 的 TTL 是快取最長有效時間，
 不保證期間內每次查詢答案相同；較早送出的上游請求若較晚完成，可能覆蓋較新的
