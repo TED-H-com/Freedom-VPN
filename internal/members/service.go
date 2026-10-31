@@ -493,29 +493,45 @@ func (s *Service) Grant(ctx context.Context, c entitlement.Command, id uuid.UUID
 	return result, err
 }
 
-// RevokeGrant is an internal admin API; no extra HTTP endpoint is introduced.
+// RevokeGrant preserves the standalone caller API. HTTP callers also need the
+// durable command receipt returned by RevokeMemberGrant.
 func (s *Service) RevokeGrant(ctx context.Context, c entitlement.Command, member, grant uuid.UUID, reason string) error {
+	_, err := s.RevokeMemberGrant(ctx, c, member, grant, reason)
+	return err
+}
+
+func (s *Service) RevokeMemberGrant(ctx context.Context, c entitlement.Command, member, grant uuid.UUID, reason string) (Change, error) {
+	result := Change{ResourceID: grant}
 	if err := c.Actor.Admin(); err != nil {
-		return err
+		return result, err
 	}
 	if !entitlement.Reason(reason, 500) {
-		return entitlement.ErrInvalid
+		return result, entitlement.ErrInvalid
 	}
-	return c.InTx(ctx, s.Pool, func(tx pgx.Tx) error {
+	err := c.InTx(ctx, s.Pool, func(tx pgx.Tx) error {
 		record, err := c.Begin(ctx, tx, "POST", "grant.revoke/"+grant.String(), map[string]any{"member_id": member, "reason": reason})
-		if err != nil || !record.New {
+		if err != nil {
 			return err
+		}
+		if !record.New {
+			result.OperationID = record.OperationID
+			result.Replayed = true
+			return nil
 		}
 		var status string
 		if err = tx.QueryRow(ctx, `SELECT status FROM members WHERE id=$1 FOR UPDATE`, member).Scan(&status); err != nil {
 			return db.MapError(err)
 		}
-		tag, err := tx.Exec(ctx, `UPDATE entitlement_grants SET revoked_at=coalesce(revoked_at,$3),revocation_reason=coalesce(revocation_reason,$4) WHERE id=$1 AND member_id=$2`, grant, member, s.Entitlements.Time(), reason)
-		if err != nil {
-			return err
+		now := s.Entitlements.Time()
+		var revoked, expired bool
+		if err = tx.QueryRow(ctx, `SELECT revoked_at IS NOT NULL,coalesce(valid_until<=$3,false) FROM entitlement_grants WHERE id=$1 AND member_id=$2 FOR UPDATE`, grant, member, now).Scan(&revoked, &expired); err != nil {
+			return db.MapError(err)
 		}
-		if tag.RowsAffected() == 0 {
-			return db.ErrNotFound
+		if revoked || expired {
+			return entitlement.ErrConflict
+		}
+		if _, err = tx.Exec(ctx, `UPDATE entitlement_grants SET revoked_at=$3,revocation_reason=$4 WHERE id=$1 AND member_id=$2`, grant, member, now, reason); err != nil {
+			return err
 		}
 		if _, err = tx.Exec(ctx, `UPDATE operations SET status='superseded' WHERE id=(SELECT operation_id FROM entitlement_grants WHERE id=$1) AND status IN ('pending','running')`, grant); err != nil {
 			return err
@@ -528,9 +544,24 @@ func (s *Service) RevokeGrant(ctx context.Context, c entitlement.Command, member
 		if err != nil {
 			return err
 		}
-		if err = entitlement.Audit(ctx, tx, c.Actor, "grant.revoke", api.ResourceTypeEntitlementGrant, grant, nil, map[string]any{"grant_id": grant}, &op); err != nil {
+		if err = entitlement.Audit(ctx, tx, c.Actor, "member.grant_revoke", api.ResourceTypeEntitlementGrant, grant, map[string]any{"revoked_at": nil}, map[string]any{"revoked_at": now, "member_id": member, "grant_id": grant, "reason": reason}, &op); err != nil {
 			return err
 		}
+		// A future grant can be withdrawn without changing today's projection.
+		// It still needs fresh authorization/policy read-back for its new receipt.
+		if !p.Changed {
+			payload, err := canonjson.Marshal(p)
+			if err != nil {
+				return err
+			}
+			// entitlement_changed is unique per revision, possibly already delivered.
+			if err = db.EnqueueOutbox(ctx, tx, db.OutboxEvent{AggregateID: member, AggregateType: "member", AggregateVersion: p.Revision.String(), EventType: "member.grant_revoked", SchemaVersion: 1, Payload: payload}); err != nil {
+				return err
+			}
+		}
+		result.OperationID = &op
+		result.Revision = p.Revision
 		return entitlement.Complete(ctx, tx, record, api.ResourceTypeEntitlementGrant, grant, &op, 202)
 	})
+	return result, err
 }

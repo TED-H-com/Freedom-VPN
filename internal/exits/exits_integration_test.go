@@ -219,8 +219,8 @@ func TestAT08_PublishHappyPathAndFailureRetryNoDuplicateRoute(t *testing.T) {
 		if st.Name == nodes.StepAgentPolicy {
 			code, cErr := st.ErrorCode.Get()
 			msg, mErr := st.Message.Get()
-			if st.Status != api.OperationStepStatusPending || cErr != nil || code != api.ErrorCodeNODENOTSERVICEABLE || mErr != nil || msg != "member_forwarding_unconfirmed" {
-				t.Fatalf("agent_policy step = %+v, want pending with NODE_NOT_SERVICEABLE / member_forwarding_unconfirmed", st)
+			if st.Status != api.OperationStepStatusPending || cErr != nil || code != api.ErrorCodeNODENOTSERVICEABLE || mErr != nil || msg != "member_forwarding_unconfirmed (stale_generation)" {
+				t.Fatalf("agent_policy step = %+v, want pending with NODE_NOT_SERVICEABLE / member_forwarding_unconfirmed (stale_generation)", st)
 			}
 		}
 	}

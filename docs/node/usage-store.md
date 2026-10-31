@@ -2,7 +2,7 @@
 
 `node/internal/usagestore` is the node's append-only usage ledger (§10.5, §10.8, §13.7, §17.3). It is a SQLite database in WAL mode with `synchronous=FULL`. The default path is `/var/lib/vpn-node/state/usage.db` (`usagestore.DefaultPath`). Tests and the agent pass another path.
 
-One database belongs to one node incarnation. Opening it as a different node or incarnation returns `ErrIdentity`. The stream is not reset and the file is not deleted.
+One database belongs to one node, with one current incarnation and retained retired streams. Opening it as another node always returns `ErrIdentity`. An incarnation change also returns `ErrIdentity` unless the caller explicitly supplies `Options.RetirePreviousAt` after verified re-enrollment (D-105). The file is retained.
 
 ## Transaction
 
@@ -24,6 +24,11 @@ The stored payload is the RFC 8785 event, including `payload_sha256`. The hash i
 | `ledger_epochs` | Verified recovery checkpoints. Superseded rows stay |
 | `replay_unavailable` | Inclusive ranges this node can no longer replay |
 | `upload_batches` | Exact request body and its `Idempotency-Key` |
+| `retired_streams` | Original incarnation, locally observed retirement time, ACK, last sequence, verified ledger epoch, blocker, purge watermark and whole-origin final code |
+| `retired_events` | Original payloads and hashes, archive state and final per-event receipts, keyed by incarnation and sequence |
+| `retired_replay_unavailable` | Original stream's retained recovery gap ranges |
+| `retired_history` | Original meter epochs, gaps and verified checkpoint evidence retained at rotation |
+| `handoff_rejections` | One local audit entry per original incarnation/sequence; sequence zero identifies a whole-origin refusal |
 
 ## ACK
 
@@ -33,7 +38,7 @@ Archived payloads stay for at least 72 hours after the local ACK (`DefaultArchiv
 
 ## Caps
 
-`EvaluateGate` implements §10.8. `Health.ForwardingAllowed` is false when any cap is hot:
+`EvaluateGate` implements §10.8 across the current and retired streams, including retained final rejections. `OutboxStatus` and the CLI snapshot describe only the current stream. `Health.ForwardingAllowed` is false when any cap is hot:
 
 | Reason | Stop | Resume |
 |---|---|---|
@@ -84,8 +89,8 @@ The text form is an operator table. `-json` is one compact JSON object and a tra
 
 | Field | Meaning |
 |---|---|
-| `schema_version` | SQLite `user_version` of this ledger. This agent reads version 1 only. |
-| `node_id`, `node_incarnation_id` | The stream this file belongs to (§10.6). |
+| `schema_version` | Snapshot format version, still 1. The reader accepts SQLite schema 1 and 2 without migrating either. |
+| `node_id`, `node_incarnation_id` | The current stream in this file (§10.6). |
 | `ledger_epoch` | Central ledger generation the watermark belongs to (§17.3). JSON `null` (text `none`) until a verified checkpoint is applied. A batch ACK does not set it. |
 | `meter_epochs` | Counter generations in open order. `current` is the open epoch. `closed` epochs stay so a reinstall can show the id did not reset (§10.7). |
 | `last_event_seq` | Highest sequence this incarnation has assigned (`next_seq - 1`), as a decimal string. It does not reset on restart, counter rebuild or meter-epoch change. A purged archive row can leave this above the highest row still on disk. |
@@ -96,7 +101,7 @@ The text form is an operator table. `-json` is one compact JSON object and a tra
 
 Each unacknowledged event has `event_seq`, `period_ids` (first-seen order), `records` and `payload_sha256`. Each record copies `member_id`, `device_id`, `binding_revision`, `period_id`, `upload_bytes` and `download_bytes` from the stored payload. `payload_sha256` is the immutable hash: SHA-256 of the canonical payload with that field removed, checked against the stored column and against the exact bytes the uploader resends. A gap with no device records has an empty `records` array. In the text table that row uses `-` for the record columns.
 
-An installer re-run that keeps this file should show the same hashes, the same sequences, the same meter-epoch ids and the same watermark after `fvpn-agent run` starts again. The watermark in that snapshot is the one the store had persisted, not a value reconstructed from memory (§10.6, §10.8).
+An installer re-run that keeps this file and incarnation should show the same hashes, the same sequences, the same meter-epoch ids and the same watermark after `fvpn-agent run` starts again. The watermark in that snapshot is the one the store had persisted, not a value reconstructed from memory (§10.6, §10.8).
 
 ### Consistency
 
@@ -139,3 +144,51 @@ The devstack harness diffs that byte string. It must not edit or delete outbox r
 | `records[]` | `{member_id, device_id, binding_revision, period_id, upload_bytes, download_bytes}`, all strings |
 
 Decimal strings match `^(0|[1-9][0-9]*)$`. `payload_sha256` is 64 lowercase hex digits. The object key order is the order in this table.
+
+
+## Retired-stream hand-off (D-105, ENR-05)
+
+`Open(path, nodeID, newIncarnationID, Options{RetirePreviousAt: observedAt})`
+atomically moves the previous stream into the retired tables and starts the new
+incarnation at sequence 1, ACK 0, with no meter baseline or verified ledger epoch.
+The previous meter and uploader must be stopped and the caller must hold the
+node lock. `observedAt` is the local observation of retirement/re-enrollment;
+central uses its own `revoked_at`, so this timestamp never authorizes a window.
+A repeated open of the new incarnation is a no-op. A foreign node or reuse of an
+already retired incarnation fails closed. SQLite schema 1 migrates to 2 in place.
+
+The old incarnation, highest ACK, meter epoch IDs, canonical payload bytes and
+hashes remain available without its certificate. `RetiredStreams`,
+`RetiredUnacked` and `HandoffRejections` expose the durable evidence. The new
+meter never inherits the retired counter baseline. Rotation and ACK writes have
+before/after-commit crash hooks (`retire.before_commit`, `retire.after_commit`,
+`ack.before_commit`, `ack.after_commit`). Reopening after either crash neither
+loses the tail nor creates a second retired stream.
+
+`ApplyRetiredACK` changes only the named original stream. A final per-event
+rejection and its audit commit together. The audit stores origin, current
+presenter, sequence, allowlisted error code and local timestamp; it stores no
+remote error message, certificate or event body. Whole-origin refusals are also
+recorded once. Rejected payloads remain unacknowledged; accepted payloads behind
+a rejected sequence remain stored without falsely advancing the contiguous ACK.
+They continue to count against the unacknowledged capacity/age caps. Purging
+removes only retained archived prefixes after the normal retention window and
+keeps each original stream's ACK and purge watermark.
+
+Production adoption needs the enrollment owner to add
+`RetirePreviousAt: e.clock.Wall()` to the `usagestore.Options` passed by
+`Engine.ensureUsage` in `node/agent/usage.go`, after a verified new identity and
+with the old loops stopped. Until that hook lands, production still rejects an
+incarnation mismatch. This usage lane does not edit that file.
+
+The enrollment AT lane can capture `UsageLedgerSnapshot` before re-enrollment
+and sum its held records by original incarnation, member, device, binding
+revision, period and direction using decimal integers. After hand-off, central's
+attributed total must equal its committed **before + held** total exactly once,
+including retries and values above 2^53. Compare original sequences, hashes and
+historical attribution against the captured payloads. The post-enrollment CLI
+snapshot describes the new stream; its zero/new ACK is not the retired ACK.
+Use `RetiredStreams` or the original-stream central result for the latter. A
+window rejection is an audited unresolved original event, not accepted held
+bytes. These are package/HTTP assertions; real ENR-05 reinstall/network evidence
+remains the enrollment AT lane's work after the adoption hook.

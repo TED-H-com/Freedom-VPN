@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
   apiClient,
+  buildOperationStepViewModel,
   getApiBaseUrl,
   hasOfflineRouteWithdrawnWarning,
   isTerminalOperationStatus,
@@ -183,7 +184,7 @@ export function OperationBanner({
       </div>
 
       <ul className="step-list" aria-label="Operation steps">
-        {current.steps.map((step) => {
+        {current.steps.map(buildOperationStepViewModel).map((step) => {
           const labelKey = STEP_NAME_KEYS[step.name];
           const stepTitle = labelKey ? t(labelKey) : step.name;
           return (
@@ -194,10 +195,8 @@ export function OperationBanner({
             >
               <span className={stepBadgeClass(step.status)}>{step.status}</span>
               <span>{stepTitle}</span>
-              {step.message && (
-                <span style={{ fontSize: '0.82rem', color: 'var(--color-text-muted)' }}>
-                  ({step.message})
-                </span>
+              {step.diagnostic && (
+                <span className="step-diagnostic">{step.diagnostic}</span>
               )}
             </li>
           );

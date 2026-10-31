@@ -1,0 +1,122 @@
+{
+  "id": "publish",
+  "title": "Publish the enrolled exit",
+  "spec": [
+    "§5.2",
+    "§14.2"
+  ],
+  "status": "blocked",
+  "observations": [
+    {
+      "name": "agent_baseline_observed",
+      "detail": "false"
+    },
+    {
+      "name": "stored_rows",
+      "detail": "{\"node\": {\"peer_id\": \"dbiq0nn8k4c000cbromg\", \"data_health\": \"healthy\", \"safety_status\": \"failed\", \"provisioning_state\": \"applying\", \"applied_config_generation\": \"1\", \"desired_config_generation\": \"1\"}, \"observation\": {\"checks\": [{\"name\": \"dns_policy\", \"detail\": \"Resolver policy was not applied.\", \"status\": \"failed\", \"error_code\": \"VALIDATION_FAILED\", \"observed_at\": \"2026-10-31T08:03:04.19501779Z\"}, {\"name\": \"internet_only\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T08:03:04.19501779Z\"}, {\"name\": \"lease\", \"status\": \"not_run\", \"error_code\": null, \"observed_at\": \"2026-10-31T08:03:04.19501779Z\"}, {\"name\": \"meter_path\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T08:03:04.19501779Z\"}, {\"name\": \"policy_signature\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T08:03:04.19501779Z\"}, {\"name\": \"qos\", \"status\": \"not_run\", \"error_code\": null, \"observed_at\": \"2026-10-31T08:03:04.19501779Z\"}, {\"name\": \"release_supported\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T08:03:04.19501779Z\"}, {\"name\": \"source_binding\", \"status\": \"not_run\", \"error_code\": null, \"observed_at\": \"2026-10-31T08:03:04.19501779Z\"}, {\"name\": \"storage\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T08:03:04.19501779Z\"}, {\"name\": \"tunnel_probe\", \"detail\": \"Egress probe used no extra target.\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T08:03:04.19501779Z\"}], \"peer_id\": null, \"data_health\": \"healthy\", \"safety_status\": \"failed\", \"provisioning_state\": \"ready\", \"applied_config_generation\": \"1\"}, \"exit_group_count\": 0, \"peer_observe_events\": 14}"
+    },
+    {
+      "name": "control_status",
+      "detail": "online"
+    },
+    {
+      "name": "safety_status",
+      "detail": "failed"
+    },
+    {
+      "name": "data_health",
+      "detail": "healthy"
+    },
+    {
+      "name": "provisioning_state",
+      "detail": "applying"
+    },
+    {
+      "name": "lifecycle_state",
+      "detail": "registered"
+    },
+    {
+      "name": "publication_intent",
+      "detail": "unpublished"
+    },
+    {
+      "name": "publication_observed",
+      "detail": "absent"
+    },
+    {
+      "name": "config_desired",
+      "detail": "1"
+    },
+    {
+      "name": "config_applied",
+      "detail": "1"
+    },
+    {
+      "name": "check_dns_policy",
+      "detail": "failed"
+    },
+    {
+      "name": "check_internet_only",
+      "detail": "passed"
+    },
+    {
+      "name": "check_lease",
+      "detail": "not_run"
+    },
+    {
+      "name": "check_meter_path",
+      "detail": "passed"
+    },
+    {
+      "name": "check_policy_signature",
+      "detail": "passed"
+    },
+    {
+      "name": "check_qos",
+      "detail": "not_run"
+    },
+    {
+      "name": "check_release_supported",
+      "detail": "passed"
+    },
+    {
+      "name": "check_source_binding",
+      "detail": "not_run"
+    },
+    {
+      "name": "check_storage",
+      "detail": "passed"
+    },
+    {
+      "name": "check_tunnel_probe",
+      "detail": "passed"
+    },
+    {
+      "name": "capacity_patch",
+      "detail": "202"
+    },
+    {
+      "name": "capacity_input",
+      "detail": "TEST ONLY 200 Mbps parent / 100 Mbps member caps through PATCH; required by the agent QoS model"
+    },
+    {
+      "name": "request",
+      "detail": "{\"publication_intent\":\"published\",\"group_ids\":[\"01a190fa-4477-7ded-ab14-685c7264af20\"],\"reason\":\"e2e acceptance publish\"}; If-Match=\"19\""
+    },
+    {
+      "name": "put",
+      "detail": "422 NODE_NOT_SERVICEABLE"
+    },
+    {
+      "name": "put_error",
+      "detail": "NODE_NOT_SERVICEABLE node does not satisfy serving baseline requirements {\"failed_checks\":[\"provisioning_state=applying (want ready)\",\"safety_status=failed\"]}"
+    },
+    {
+      "name": "owner",
+      "detail": "w3-wire-nodes: publication operation and production peer projection"
+    }
+  ],
+  "at": "2026-10-31T08:03:09Z",
+  "run_id": "f1a17b4e-c671-4186-9a6e-b5b7f0033d37",
+  "source_commit": "6e3667f57a55c2757644b2840d4a6763435f5009"
+}

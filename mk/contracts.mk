@@ -42,7 +42,7 @@ contracts-verify:
 	@$(MAKE) --no-print-directory -f mk/contracts.mk contracts-lint contracts-build contracts-drift contracts-typecheck contracts-test contracts-cover
 
 contracts-drift:
-	@set -e; mkdir -p .agent/tmp; tmp=$$(mktemp -d "$$(pwd)/.agent/tmp/drift.XXXXXX"); trap 'python3 -c "import shutil,sys; shutil.rmtree(sys.argv[1])" "$$tmp"' EXIT; \
+	@$(CONTRACTS_ENV) bash -ec 'tmp="$$TMPDIR"; \
 	echo "contracts: checking generated schemas, vectors and examples"; \
 	$(CONTRACTS_ENV) $(CONTRACTS_GO) run ./contracts/internal/cmd/contractsgen -check; \
 	echo "contracts: checking pkg/api drift"; \
@@ -52,7 +52,7 @@ contracts-drift:
 	echo "contracts: checking contracts/ts drift"; \
 	$(CONTRACTS_NPX) $(CONTRACTS_OPENAPI_TS) contracts/openapi.yaml -o "$$tmp/openapi.d.ts" >/dev/null; \
 	diff -u contracts/ts/openapi.d.ts "$$tmp/openapi.d.ts"; \
-	echo "contracts: generated files are up to date"
+	echo "contracts: generated files are up to date"'
 
 contracts-lint:
 	$(CONTRACTS_NPX) $(CONTRACTS_REDOCLY) lint contracts/openapi.yaml --config contracts/redocly.yaml --max-problems 1000
@@ -62,7 +62,7 @@ contracts-lint:
 	$(CONTRACTS_ENV) $(CONTRACTS_GO) run $(CONTRACTS_STATICCHECK) $(CONTRACTS_GO_PKGS)
 
 contracts-typecheck:
-	$(CONTRACTS_NPX) -p $(CONTRACTS_TYPESCRIPT) tsc --noEmit --strict contracts/ts/openapi.d.ts contracts/ts/schema.d.ts contracts/ts/revision13.typecheck.ts
+	$(CONTRACTS_NPX) -p $(CONTRACTS_TYPESCRIPT) tsc --noEmit --strict contracts/ts/openapi.d.ts contracts/ts/schema.d.ts contracts/ts/revision13.typecheck.ts contracts/ts/revision14.typecheck.ts
 	$(CONTRACTS_NPX) -p $(CONTRACTS_TYPESCRIPT) tsc --noEmit --strict --target es2022 contracts/ts/strict-json.ts
 
 contracts-test:

@@ -14,6 +14,7 @@ import (
 
 	"github.com/TED-H-com/Freedom-VPN/internal/audit"
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
+	"github.com/TED-H-com/Freedom-VPN/internal/installerjob"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
@@ -42,10 +43,10 @@ func installerResult(t *testing.T, l *lab, i Identity) api.UpdateResult {
 	r.CurrentReleaseId.Set(l.new)
 	r.PreviousReleaseId.Set(l.old)
 	r.ResultId = uuid.New()
-	r.JobId = uuid.NewSHA1(uuid.NameSpaceOID, []byte(l.new.String()+i.IncarnationID.String()))
 	if err = l.s.pool.QueryRow(l.ctx, `SELECT encode(manifest_hash,'hex') FROM releases WHERE id=$1`, l.new).Scan(&r.ManifestSha256); err != nil {
 		t.Fatal(err)
 	}
+	r.JobId = installerjob.ID(r.RequestedReleaseId, r.ManifestSha256, i.IncarnationID)
 	if err = l.f.Validator.ValidateBody("UpdateResult", payload(t, r)); err != nil {
 		t.Fatal(err)
 	}

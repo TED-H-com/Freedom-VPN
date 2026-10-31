@@ -42,8 +42,8 @@ func TestAPI01_D088ObservationAcceptedFreezeSignal(t *testing.T) {
 
 func TestUPD05_D089InstallerSourceAndPayloadHash(t *testing.T) {
 	doc := loadDoc(t)
-	if doc.Info.Version != "1.9.0" || len(operations(t)) != 49 {
-		t.Fatal("revision 13 must be API 1.9.0 with 49 operations")
+	if doc.Info.Version != "1.10.0" || len(operations(t)) != 50 {
+		t.Fatal("revision 14 must be API 1.10.0 with 50 operations")
 	}
 	post := doc.Paths.Value("/agent/update-results").Post
 	if post.RequestBody.Value.Content["application/json"].Schema.Ref != "#/components/schemas/UpdateResult" || post.Responses.Value("404") == nil {

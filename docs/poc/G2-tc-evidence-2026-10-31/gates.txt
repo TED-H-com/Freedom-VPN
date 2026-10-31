@@ -1,0 +1,144 @@
+TEST ONLY - mechanism campaign; not assembled acceptance.
+Producer source: d14c469; base: e498225.
+Initial full privileged gate: exit 2 (make), tests exit 1.
+
+    scenario_at10_test.go:96: allowed flow failed during ruleset regeneration
+--- FAIL: TestAT10_AT13_ReloadRevokeBaseline (13.20s)
+--- PASS: TestD104_AT13_DeadlineContinuity (3.79s)
+    scenario_probe_test.go:56: probe was not SNATed to 192.0.2.37:
+--- FAIL: TestProbe_BaselineException (1.66s)
+    scenario_tc_recovery_test.go:122: 31 rejected 2026-10-31T08:22:16.68016717Z -> foreign removed: GENERATION_MISMATCH -> Apply 32 verified 2026-10-31T08:22:17.048006458Z; TC_FOREIGN_FILTER absent, marker cleared, member probe passed after lab route reconciliation
+--- PASS: TestISO_F6_01_ForeignRemovalNewGeneration (1.13s)
+FAIL	github.com/TED-H-com/Freedom-VPN/tests/netlab	198.292s
+
+Initial AT10 stream (all rows; three timeouts):
+1793434747.611 up
+1793434747.612 ok
+1793434747.813 ok
+1793434748.014 ok
+1793434748.215 ok
+1793434748.416 ok
+1793434749.029 ok
+1793434749.231 ok
+1793434749.432 ok
+1793434749.633 ok
+1793434749.837 ok
+1793434750.038 ok
+1793434751.739 fail TimeoutError
+1793434753.440 fail TimeoutError
+1793434753.640 ok
+1793434753.842 ok
+1793434754.043 ok
+1793434754.243 ok
+1793434754.444 ok
+1793434754.645 ok
+1793434754.845 ok
+1793434755.046 ok
+1793434755.247 ok
+1793434755.447 ok
+1793434755.648 ok
+1793434755.849 ok
+1793434756.049 ok
+1793434756.254 ok
+1793434757.956 fail TimeoutError
+1793434758.156 ok
+1793434758.359 ok
+1793434758.559 ok
+1793434758.760 ok
+1793434758.961 ok
+
+
+Producer contract-vector/unit output:
+=== RUN   TestD106_ContractVectorsAndObservationRoundTrip
+=== RUN   TestD106_ContractVectorsAndObservationRoundTrip/verified
+    evidence_contract_test.go:127: netlab = contract = observation verified sha256=058a980c795256f70ca7fe4490730c9b7fb6cd05a7e99d0f37e3cb34200ebcb2
+=== RUN   TestD106_ContractVectorsAndObservationRoundTrip/rejected
+    evidence_contract_test.go:127: netlab = contract = observation rejected sha256=c57355cb80736e4023b422916bb7c002e1bb771dd134042dbcc1e9b1bc0862bf
+=== RUN   TestD106_ContractVectorsAndObservationRoundTrip/truncated
+    evidence_contract_test.go:127: netlab = contract = observation truncated sha256=a41f0ebfd4d2ee92f8e250d99adae9f6d449cec76cadb420605ce121f31cc017
+--- PASS: TestD106_ContractVectorsAndObservationRoundTrip (0.09s)
+    --- PASS: TestD106_ContractVectorsAndObservationRoundTrip/verified (0.03s)
+    --- PASS: TestD106_ContractVectorsAndObservationRoundTrip/rejected (0.03s)
+    --- PASS: TestD106_ContractVectorsAndObservationRoundTrip/truncated (0.03s)
+=== RUN   TestD106_ReadTimeCompleteOutcomeAndImmutableSnapshot
+--- PASS: TestD106_ReadTimeCompleteOutcomeAndImmutableSnapshot (0.08s)
+=== RUN   TestD106_BoundsRedactionAndFailurePhases
+--- PASS: TestD106_BoundsRedactionAndFailurePhases (0.11s)
+=== RUN   TestISO_F6_01_CleanNewGenerationRereadsTC
+    evidence_contract_test.go:257: generation 31 foreign -> removed, blocked audit=HOOK_PRIORITY_MISMATCH -> Apply 32 verified, ingress reads=3
+--- PASS: TestISO_F6_01_CleanNewGenerationRereadsTC (0.00s)
+PASS
+ok  	github.com/TED-H-com/Freedom-VPN/node/enforce	0.290s
+
+
+Agent-core retained-failure diagnostic (no agent source changes):
+=== RUN   TestISO_F6_RetainedFailureBlocksNewGeneration
+    followup12_test.go:1152: ISO-F6-01 recovery latch: foreign tc removed; desired=3 applied=2 lease=2; 5 steps / 5s; new Apply calls=0 renewals=0 needRenew=false; retained TC_FOREIGN_FILTER + policy_missing
+--- PASS: TestISO_F6_RetainedFailureBlocksNewGeneration (0.35s)
+PASS
+ok  	github.com/TED-H-com/Freedom-VPN/node/agent	0.358s
+
+Fresh-topology reference control: enforcement/CLI binary built from unchanged
+base e498225, final harness with immediate capture delivery/readiness, count=1.
+This reproduces the same AT10 failure independently of the D-106 producer.
+=== RUN   TestAT10_AT13_ReloadRevokeBaseline
+AT10 regen 1025 a1=921 a2=0
+AT10 regen 1050 a1=2175 a2=0
+AT10 regen 1075 a1=4555 a2=0
+AT10 regen 1100 a1=5375 a2=0
+    scenario_at10_test.go:96: allowed flow failed during ruleset regeneration
+--- FAIL: TestAT10_AT13_ReloadRevokeBaseline (13.41s)
+FAIL
+FAIL	github.com/TED-H-com/Freedom-VPN/tests/netlab	13.411s
+FAIL
+
+Fresh-base AT10 stream:
+1793435497.141 up
+1793435497.141 ok
+1793435497.344 ok
+1793435497.545 ok
+1793435497.950 ok
+1793435499.653 fail TimeoutError
+1793435499.854 ok
+1793435500.472 ok
+1793435500.674 ok
+1793435500.875 ok
+1793435501.078 ok
+1793435501.694 ok
+1793435501.895 ok
+1793435502.096 ok
+1793435502.300 ok
+1793435502.501 ok
+1793435502.702 ok
+1793435502.903 ok
+1793435503.105 ok
+1793435503.307 ok
+1793435503.510 ok
+1793435503.711 ok
+1793435503.913 ok
+1793435504.116 ok
+1793435504.318 ok
+1793435504.520 ok
+1793435504.720 ok
+1793435504.922 ok
+1793435505.943 ok
+1793435506.144 ok
+1793435506.345 ok
+1793435506.547 ok
+1793435506.749 ok
+1793435506.951 ok
+1793435507.154 ok
+1793435508.856 fail TimeoutError
+1793435509.263 ok
+1793435509.464 ok
+1793435509.666 ok
+
+Final full privileged gate after capture readiness/immediate-mode correction:
+--- PASS: TestAT10_AT13_ReloadRevokeBaseline (17.78s)
+--- PASS: TestD104_AT13_DeadlineContinuity (3.80s)
+--- PASS: TestProbe_BaselineException (14.06s)
+    scenario_tc_recovery_test.go:122: 31 rejected 2026-10-31T08:35:44.150004855Z -> foreign removed: GENERATION_MISMATCH -> Apply 32 verified 2026-10-31T08:35:44.505237943Z; TC_FOREIGN_FILTER absent, marker cleared, member probe passed after lab route reconciliation
+--- PASS: TestISO_F6_01_ForeignRemovalNewGeneration (1.11s)
+PASS
+ok  	github.com/TED-H-com/Freedom-VPN/tests/netlab	214.635s
+make exit: 0

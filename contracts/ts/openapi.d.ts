@@ -305,6 +305,39 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/admin/members/{member_id}/grants/{grant_id}/revoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Withdraw a member grant
+         * @description Explicit manual withdrawal of a finite or open-ended member grant
+         *     (§9.2, §9.4, §15.2, AT29). The grant must belong to member_id; an unknown
+         *     member or grant, or a grant belonging to another member, is 404
+         *     RESOURCE_NOT_FOUND. An already revoked or expired grant is 409
+         *     STATE_CONFLICT for a new command. Same-key, same-payload retries return
+         *     the original operation, including after withdrawal.
+         *     Accepts a required reason and returns 202 with kind member.grant_revoke
+         *     and resource entitlement_grant:<grant_id>. The withdrawal intent,
+         *     operation and audit action member.grant_revoke are committed together;
+         *     the audit records the reason and grant/member IDs. The devices it
+         *     authorized move to pending through D-050 / D-081 within one heartbeat.
+         *     Completion requires the existing policy and authorization read-back;
+         *     202 is only acceptance. Finite-grant expiry remains a separate case.
+         *     This command does not permit creation of open-ended grants.
+         */
+        post: operations["revokeMemberGrant"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/admin/members/{member_id}/devices/{device_id}/authorize": {
         parameters: {
             query?: never;
@@ -858,7 +891,35 @@ export interface paths {
          *     * Invalid format, integer or mapping: `rejected` with VALIDATION_FAILED or
          *       METER_PATH_INVALID (the §10.6 HTTP 422 outcome, per event).
          *
-         *     `highest_contiguous_seq` counts only committed events of this incarnation
+         *     D-105 retired-stream hand-off (ENR-05): the batch node_id and
+         *     node_incarnation_id MUST equal the verified current mTLS identity.
+         *     Absent origin_incarnation_id means that current stream. When present,
+         *     origin_incarnation_id MUST identify a retired incarnation of the same
+         *     node_id, and the presenting incarnation MUST be current and have been
+         *     enrolled strictly after that origin was retired. Every event MUST keep
+         *     its original node_id, node_incarnation_id, event_seq and payload_sha256;
+         *     its node_incarnation_id MUST equal origin_incarnation_id. Mixed streams
+         *     are forbidden. The retired certificate itself is never accepted (§6.2).
+         *     Ineligible origins (including unknown, other-node, active, or enrollment
+         *     not after retirement) are 409 STATE_CONFLICT for the whole batch, with
+         *     no ledger change. Event/batch identity mismatches remain 403
+         *     INCARNATION_MISMATCH. Both failures MUST be audited.
+         *     Every handed-off event's interval_end MUST be <= the retirement time
+         *     plus one configured sampling interval in force for the retired stream.
+         *     Later events are rejected per event with VALIDATION_FAILED and audited;
+         *     they never advance ACK. Valid events retain the same dedup key and hash
+         *     rules above, including duplicate on replay and conflict on changed digest.
+         *     Central MUST NOT automatically drain a retired stream. Only the agent's
+         *     explicit hand-off at re-enrolment, once when its ledger survived, starts
+         *     delivery; retries of that hand-off are allowed until ACK. Events MUST
+         *     NOT be re-minted or attributed to the presenting incarnation.
+         *
+         *     The response node_incarnation_id identifies the selected ORIGINAL stream
+         *     (origin_incarnation_id when supplied, otherwise the presenting incarnation).
+         *     This is a per-stream ACK: highest_contiguous_seq, blocked_seq, results
+         *     and replay_unavailable all refer only to that stream. The current stream's
+         *     ACK never advances from a retired-stream hand-off.
+         *     `highest_contiguous_seq` counts only committed events of the selected
          *     stream, never "largest seen"; `blocked_seq` names the lowest sequence that
          *     stops ACK progress. Whole-request outcomes: 403 for an mTLS identity
          *     mismatch (no ledger change), 409 LEDGER_EPOCH_MISMATCH when the batch
@@ -3361,6 +3422,65 @@ export interface components {
          * @enum {string}
          */
         ForwardingBlockReason: "not_published" | "identity_invalid" | "provisioning_incomplete" | "policy_missing" | "policy_expired" | "lease_expired" | "awaiting_member_grants" | "clock_untrusted" | "safety_check_failed" | "meter_path_invalid" | "meter_storage_failed" | "outbox_full" | "disk_low" | "release_not_supported" | "update_in_progress" | "recovery_required";
+        /** @description Producer-redacted bounded ASCII token; never a raw match, parameter or command output. */
+        TCToken: string;
+        TCReadObject: {
+            kind: components["schemas"]["TCToken"];
+            handle?: components["schemas"]["TCToken"];
+            parent?: components["schemas"]["TCToken"];
+            root?: boolean;
+            actions?: components["schemas"]["TCToken"][];
+        };
+        /** @description Bounded attachment read; error is a fixed status, never raw stderr. */
+        TCReadAttachment: {
+            interface: components["schemas"]["TCToken"];
+            attachment: components["schemas"]["TCToken"];
+            objects: components["schemas"]["TCReadObject"][];
+            /** @enum {string} */
+            error?: "read_failed" | "invalid_json" | "invalid_listing";
+        };
+        /** @description Bounded attachment read containing at most one deciding object; error is a fixed status, never raw stderr. */
+        TCRejectedAttachment: {
+            interface: components["schemas"]["TCToken"];
+            attachment: components["schemas"]["TCToken"];
+            objects: components["schemas"]["TCReadObject"][];
+            /** @enum {string} */
+            error?: "read_failed" | "invalid_json" | "invalid_listing";
+        };
+        /**
+         * @description D-106 retained actual TC read, linked by the parent observation report_id.
+         *     No raw matches, action parameters, stderr, routes, destinations or packet
+         *     payloads. Successful reads are retained too. verified is the complete
+         *     serving-verifier outcome, not just a clean TC scan. candidate_generation
+         *     is the generation under verification, never an applied-generation ACK.
+         *     read_at is the actual verifier read time; never refresh an old snapshot's
+         *     timestamp or substitute rollback evidence for the rejected read.
+         */
+        TCReadbackEvidence: {
+            /** @description Exact uint64 decimal string, at most 18446744073709551615; not an ACK. */
+            candidate_generation: string;
+            /** Format: date-time */
+            read_at: string;
+            /** @enum {string} */
+            phase: "load" | "pre_apply" | "verify";
+            /** @description Actual complete serving-verifier outcome. */
+            verified: boolean;
+            error_code: (string & components["schemas"]["ErrorCode"]) | null;
+            reads_total: number;
+            objects_total: number;
+            /** @description True if any rows, objects or actions were omitted from the retained read. */
+            truncated: boolean;
+            /**
+             * @description RFC 8785 SHA-256 of retained bounded rows and counts, matching the
+             *     netlab read-back projection: {"reads": reads_total, "objects":
+             *     objects_total, "truncated": truncated, "tc": attachments}. Array
+             *     order and optional object-member presence are retained exactly.
+             */
+            sha256: string;
+            attachments: components["schemas"]["TCReadAttachment"][];
+            /** @description Deciding attachment with at most one object; null when none. A verified read has rejected null. */
+            rejected: components["schemas"]["TCRejectedAttachment"] | null;
+        };
         /**
          * @description Heartbeat and observations (§14.4, §15.3 node_observations). Node times are observed_at;
          *     the center stores its own received_at.
@@ -3382,6 +3502,8 @@ export interface components {
          *     `STALE_GENERATION`; an empty desired `device_bindings` list carries neither reason nor this code.
          */
         ObservationReport: {
+            /** @description D-106 retained actual read. Absent or null means no retained read, never an empty successful scan. Existing errors[stage=tc_evidence] rows remain unchanged. */
+            tc_evidence?: components["schemas"]["TCReadbackEvidence"] | null;
             /**
              * Format: uuid
              * @description Idempotency key of the report.
@@ -3589,15 +3711,30 @@ export interface components {
             /** @enum {string} */
             reason: "retention_expired" | "local_data_lost";
         };
-        /** @description A batch of usage events of one incarnation stream (§10.5). Batch limits are central parameters; the contract maximum is 1000 events. */
+        /**
+         * @description A batch of usage events of one incarnation stream (§10.5, D-105).
+         *     Batch identity always names the presenting current incarnation; optional
+         *     origin_incarnation_id selects one retired stream under submitUsageBatch's
+         *     eligibility and interval rules. Events and replay_unavailable refer to
+         *     that selected stream only. Batch limits are central parameters; the
+         *     contract maximum is 1000 events.
+         */
         UsageBatchRequest: {
             /**
              * Format: uuid
              * @description Must equal the certificate identity; never overrides it.
              */
             node_id: string;
-            /** Format: uuid */
+            /**
+             * Format: uuid
+             * @description Must equal the presenting current certificate incarnation, including during hand-off.
+             */
             node_incarnation_id: string;
+            /**
+             * Format: uuid
+             * @description Eligible retired stream (D-105). Omit for the presenting current stream; null is invalid. Never part of an event hash.
+             */
+            origin_incarnation_id?: string;
             /**
              * Format: uuid
              * @description Ledger epoch the node is synchronized with; null before the first checkpoint.
@@ -3627,12 +3764,18 @@ export interface components {
          *     durably stored ("0" when event 1 is missing). It never goes backwards
          *     within one ledger_epoch. blocked_seq is the lowest sequence above
          *     highest_contiguous_seq that is in conflict or rejected and therefore stops
-         *     ACK progress, or null.
+         *     ACK progress, or null. D-105: node_incarnation_id is the selected original
+         *     stream, equal to request.origin_incarnation_id when supplied, otherwise
+         *     request.node_incarnation_id. All ACK fields and event results belong to
+         *     this stream only, never implicitly to the presenting incarnation.
          */
         UsageBatchResult: {
             /** Format: uuid */
             node_id: string;
-            /** Format: uuid */
+            /**
+             * Format: uuid
+             * @description Original stream being acknowledged, including a retired origin in D-105.
+             */
             node_incarnation_id: string;
             /** Format: uuid */
             ledger_epoch: string;
@@ -4209,6 +4352,8 @@ export interface components {
         IfNoneMatch: string;
         NodeId: string;
         EnrollmentId: string;
+        /** @description Member entitlement grant ID. */
+        GrantId: string;
         MemberId: string;
         /** @description Policy definition ID. */
         DefinitionId: string;
@@ -4825,6 +4970,44 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["GrantCreateRequest"];
+            };
+        };
+        responses: {
+            202: components["responses"]["OperationAccepted"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["UnprocessableEntity"];
+            429: components["responses"]["RateLimited"];
+            500: components["responses"]["InternalError"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    revokeMemberGrant: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Client-generated UUID (§14.5). Scope: principal, HTTP method, normalized
+                 *     route and key. Same key and same validated payload return the same resource
+                 *     or operation; same key and a different payload return 409
+                 *     IDEMPOTENCY_CONFLICT. Kept at least 7 days (recommended default). Missing
+                 *     header: 400 MALFORMED_REQUEST.
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                member_id: components["parameters"]["MemberId"];
+                /** @description Member entitlement grant ID. */
+                grant_id: components["parameters"]["GrantId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReasonRequest"];
             };
         };
         responses: {

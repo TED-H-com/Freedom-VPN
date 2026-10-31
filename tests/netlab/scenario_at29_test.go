@@ -54,10 +54,10 @@ func TestAT29_LeaseTimeout(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if strings.Contains(plan.NFT, "timeout 7200s") || strings.Contains(plan.NFT, "timeout 3600s") {
+		if strings.Contains(plan.NFT, "timeout 7200000ms") || strings.Contains(plan.NFT, "timeout 3600000ms") {
 			t.Fatal("backward clock extended the kernel timeout")
 		}
-		if !strings.Contains(plan.NFT, "timeout 45s") {
+		if !strings.Contains(plan.NFT, "timeout 45000ms") {
 			t.Fatalf("ceil was not applied:\n%s", plan.NFT)
 		}
 	})

@@ -72,7 +72,7 @@ func TestRender_Golden(t *testing.T) {
 	if !(allowDrop < dnsAt && dnsAt < denyAt && denyAt < usageAt) {
 		t.Fatalf("rule order allow-drop=%d dns=%d deny=%d usage=%d", allowDrop, dnsAt, denyAt, usageAt)
 	}
-	if !strings.Contains(plan.NFT, "timeout 3600s") {
+	if !strings.Contains(plan.NFT, "timeout 3600000ms") {
 		t.Fatal("expected 3600s element timeout")
 	}
 	base, err := RenderBaseline(Model{Datapath: goldenModel().Datapath}, State{})
@@ -136,7 +136,7 @@ func TestRender_TimeoutCeilAndExpiry(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if strings.Contains(plan.NFT, "timeout 3600s") || !strings.Contains(plan.NFT, "timeout 30s") {
+	if strings.Contains(plan.NFT, "timeout 3600000ms") || !strings.Contains(plan.NFT, "timeout 30000ms") {
 		t.Fatal("ceil did not cap the kernel timeout")
 	}
 	// A wall clock stepped backwards must not lengthen the capped timeout.
@@ -149,7 +149,7 @@ func TestRender_TimeoutCeilAndExpiry(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if strings.Contains(plan.NFT, "timeout 7200s") || strings.Contains(plan.NFT, "timeout 3600s") || !strings.Contains(plan.NFT, "timeout 30s") {
+	if strings.Contains(plan.NFT, "timeout 7200000ms") || strings.Contains(plan.NFT, "timeout 3600000ms") || !strings.Contains(plan.NFT, "timeout 30000ms") {
 		t.Fatal("clock step lengthened the kernel timeout")
 	}
 	m = goldenModel()
@@ -567,7 +567,7 @@ func TestDeadline_Earliest(t *testing.T) {
 		t.Fatalf("deadline %s ok %v", got, ok)
 	}
 	sec, admit := elementTimeout(Binding{ValidUntil: now.Add(10 * time.Minute)}, lease, now)
-	if !admit || sec != 600 {
+	if !admit || sec != 600*time.Second {
 		t.Fatalf("binding cap %d admit %v", sec, admit)
 	}
 	lease.SignedServerTime = time.Time{}
@@ -733,6 +733,9 @@ func (f *fakeExec) TCBatch(_ context.Context, script string) error {
 }
 
 func (f *fakeExec) Output(_ context.Context, name string, args ...string) ([]byte, error) {
+	if name == "nft" && strings.Join(args, " ") == "list set inet fvpn allowed_v4" {
+		return []byte("table inet fvpn { set allowed_v4 { type ipv4_addr flags timeout } }"), nil
+	}
 	return f.handler(name, args)
 }
 
