@@ -16,3 +16,15 @@ The complete forward inventory is `db/migrations/*.sql`, embedded by the migrato
 The outbox summary is informational and independent of audit retention; it does not alter readiness, leases, or publication. See [operator guide §2.3](operator-guide.md) and [database retention policy](../db/README.md). Historical usage remains attributed to its original node incarnation after reinstall; do not move its ledger to a replacement identity.
 
 Db follow-up 2 (#280), invariant 16: every migration above 00188 must have a working Down. `db-lint` rejects missing/comment-only/empty Down sections; `Test15_5_MigrationsRoundTrip` proves Up → DownTo(188) → Up. This test-time reversibility requirement does not authorize production rollback of evidence tables.
+
+## D-130 interval projection rollout — #331 / #333
+
+Apply `00193_usage_events_interval_precision.sql` through the normal migration
+runner before ingestion resumes, including after restoring a pre-00193 schema.
+The stored checks on usage_events, usage_samples and usage_ledger_gaps use <=
+at microsecond precision; strict order still applies to the canonical
+nanosecond interval (`interval_order`). Constraints are never bypassed.
+Unexpected constraint errors stay retryable 503 with no ACK; a valid sealed
+1 ns event recovers on the next retry after deployment without spool edits,
+event skipping or re-enrollment. Down refuses equal-endpoint rows atomically;
+never delete evidence to downgrade. [Current operator evidence](follow-up-19.md).
