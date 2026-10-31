@@ -581,3 +581,10 @@ a global MTU/MSS change. Both dual rows require IPv6 refusal without uplink
 probe leakage plus IPv4 completion; underlay family is not overlay IPv6
 service. There is no separate bottleneck router in this topology. No product
 or NetBird MTU, MSS or policy was changed.
+
+The intervening DNS fixture campaign also retains a genuine 12,012-byte
+MTU-1280 timeout with 12 complete echoes and no partial final line. One
+[additional captured reconnect attempt](runs/2026-10-31/followup19/capture-repeat/README.md)
+again completes all four transfers. No instrumented failure was captured;
+per-I/O tracing can affect scheduling/segmentation. These controls do not
+erase the failures or establish the exact kernel drop reason.

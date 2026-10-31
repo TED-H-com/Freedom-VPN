@@ -120,6 +120,14 @@ a timeout. The client wrote all 64,108 request stream bytes. This broader
 fixture has the new member endpoint sample but no origin trace or matching
 pcaps; it is not represented as the fully instrumented reconnect capture.
 
+One [additional fresh capture attempt](capture-repeat/README.md), `4e1997a8`,
+also passes **7/0/0**, exit 0. It retains 12 more complete header decodes and
+endpoint/control evidence. Both instrumented campaigns pass, while the
+intervening broader matrix fails; no instrumented failure was captured.
+Per-I/O instrumentation can alter scheduling/segmentation, despite unchanged
+application writes and deadlines. F8-02 remains open, with the old packet loss
+and the new 12,012-byte endpoint failure preserved.
+
 [D-093 reconciliation](../../../portal-d093-reconciliation-followup19-2026-10-31.md)
 retains all 15 row agreements, with 13 open and two retired within simulator
 scope. Cross-lane answers and the D-087 ownership-boundary request are only in
@@ -188,6 +196,13 @@ scoped to the row, not a blanket acceptance-case verdict.
 | Native reconnect [native-mtu-comparison](956c335d-0449-44ac-aa63-544154456397/native-mtu-comparison.md) | pass | AT09, AT11, F8-02 |
 | Native reconnect [publish](956c335d-0449-44ac-aa63-544154456397/publish.md) | pass | §5.2, §14.2 |
 | Native reconnect [serving-catalogue](956c335d-0449-44ac-aa63-544154456397/serving-catalogue.md) | pass | §9, §14.2 |
+| Native repeat [admin-login](4e1997a8-d3ea-4291-b2f6-c100992b4fda/admin-login.md) | pass | §14.2 |
+| Native repeat [desired-state](4e1997a8-d3ea-4291-b2f6-c100992b4fda/desired-state.md) | pass | §5, §8 |
+| Native repeat [enroll-bootstrap](4e1997a8-d3ea-4291-b2f6-c100992b4fda/enroll-bootstrap.md) | pass | §6, §19 AT06 |
+| Native repeat [fixture-member-admission](4e1997a8-d3ea-4291-b2f6-c100992b4fda/fixture-member-admission.md) | pass | §8, AT02, AT12 |
+| Native repeat [native-mtu-comparison](4e1997a8-d3ea-4291-b2f6-c100992b4fda/native-mtu-comparison.md) | pass | AT09, AT11, F8-02 |
+| Native repeat [publish](4e1997a8-d3ea-4291-b2f6-c100992b4fda/publish.md) | pass | §5.2, §14.2 |
+| Native repeat [serving-catalogue](4e1997a8-d3ea-4291-b2f6-c100992b4fda/serving-catalogue.md) | pass | §9, §14.2 |
 | DNS fixtures [admin-login](5282829c-c11e-4f34-954a-5bc2a5bceca5/admin-login.md) | pass | §14.2 |
 | DNS fixtures [desired-state](5282829c-c11e-4f34-954a-5bc2a5bceca5/desired-state.md) | pass | §5, §8 |
 | DNS fixtures [dns-negative](5282829c-c11e-4f34-954a-5bc2a5bceca5/dns-negative.md) | pass | §12.5, §12.8, AT20, ISO01, DNS02 |
