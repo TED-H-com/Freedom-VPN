@@ -50,7 +50,11 @@ func TestLabUsageLedger(t *testing.T) {
 		t.Fatalf("udp burst did not move admission counters (%d -> %d)\n%s", before, moved, debugPlane(t))
 	}
 
+	// An updater hand-off explicitly withdraws and closes the epoch. An
+	// ordinary process restart now checkpoints the still-open epoch.
+	writeScratch(t, labDir+"/journal/forwarding.blocked", []byte("019a0000-0000-7000-8000-0000000000f1\n")) // TEST ONLY barrier
 	stopAgentGraceful(t)
+	mustExec(t, "rm", "-f", labDir+"/journal/forwarding.blocked")
 	snap := readUsage(t)
 	nftAfter := nftUsageBytes(t)
 	if snap.Bytes == 0 || snap.Bytes != nftAfter {

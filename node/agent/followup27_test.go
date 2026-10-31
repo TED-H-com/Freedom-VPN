@@ -206,13 +206,15 @@ func TestD104_TimingMeasurementLiveAndBlockedSnapshots(t *testing.T) {
 		if err := json.Unmarshal(line, &row); err != nil {
 			t.Fatal(err)
 		}
-		rows = append(rows, row)
+		if row.Timing != nil {
+			rows = append(rows, row)
+		}
 	}
 	if len(rows) != 4 {
 		t.Fatalf("snapshots=%d want Apply + 2 live + blocked", len(rows))
 	}
 	for i, row := range rows {
-		if uint64(row.Sequence) != uint64(i+1) || row.BootID != r.eng.bootID || row.RunID != rows[0].RunID || row.Timing == nil || len(row.Timing.Verifications) != 1 || row.TC != row.Timing.Verifications[0].SHA256 {
+		if (i > 0 && row.Sequence <= rows[i-1].Sequence) || row.BootID != r.eng.bootID || row.RunID != rows[0].RunID || row.Timing == nil || len(row.Timing.Verifications) != 1 || row.TC != row.Timing.Verifications[0].SHA256 {
 			t.Fatalf("snapshot lost provenance: %+v", row)
 		}
 		if row.Timing.Succeeded != (i < 2) {

@@ -59,9 +59,10 @@ func (e *Engine) attachServingRead(rep *api.ObservationReport) {
 
 type applyReadKey struct{}
 type applyReadTiming struct {
-	now     func() time.Time
-	at      time.Time
-	stopped bool
+	now       func() time.Time
+	at        time.Time
+	stopped   bool
+	baselines []MeasurementBaseline
 }
 type timedApplyExecutor struct {
 	enforce.Executor
@@ -81,6 +82,13 @@ func (x timedApplyExecutor) NftBatch(ctx context.Context, script string) error {
 	// rollback mutation; the library has already retained the rejected rows.
 	if strings.Contains(script, "fvpn_baseline=1") {
 		x.timing.stopped = true
+		// Memory only inside Apply; serialize after the enclosing operation
+		// returns, outside every install/release guard bracket.
+		start, _ := enforce.MonotonicNow()
+		err := x.Executor.NftBatch(ctx, script)
+		end, _ := enforce.MonotonicNow()
+		x.timing.baselines = append(x.timing.baselines, MeasurementBaseline{Start: start, End: end, Succeeded: err == nil})
+		return err
 	} else if strings.Contains(script, "fvpn_generation=") {
 		x.timing.stopped = false
 	}

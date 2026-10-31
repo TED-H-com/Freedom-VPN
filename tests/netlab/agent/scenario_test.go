@@ -118,7 +118,7 @@ func crashProc(name, pidFile string) {
 	))
 }
 
-func TestLab04_RestartWaitsForLease(t *testing.T) {
+func TestLab04_RestartKeepsVerifiedLease(t *testing.T) {
 	skipLab(t)
 	stopAgent()
 	stopWatch()
@@ -135,15 +135,15 @@ func TestLab04_RestartWaitsForLease(t *testing.T) {
 	defer admin(t, "/release", "")
 	startAgent(t)
 	defer stopAgent()
-	// The new process installs the baseline before it accepts a lease.
-	if !waitProbe(t, "deny", 12*time.Second) {
-		t.Fatalf("restart forwarded before a lease:\n%s", debugPlane(t))
+	// Same-boot process replacement retains the signed original deadline.
+	if !waitProbe(t, "allow", 12*time.Second) {
+		t.Fatalf("restart lost the valid stored lease:\n%s", debugPlane(t))
 	}
 	admin(t, "/release", "")
 	if !waitProbe(t, "allow", 20*time.Second) {
 		t.Fatalf("restart did not forward after the new lease:\n%s", debugPlane(t))
 	}
-	fmt.Println("SUMMARY AT-agent restart-waits=1")
+	fmt.Println("SUMMARY AT-agent restart-keeps-verified-lease=1")
 }
 
 func TestLab05_NoAllowAllOnUpdate(t *testing.T) {

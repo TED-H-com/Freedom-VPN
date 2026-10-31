@@ -3,6 +3,7 @@ package agent
 import (
 	"encoding/json"
 	"errors"
+	"log/slog"
 	"os"
 	"syscall"
 	"time"
@@ -19,15 +20,75 @@ import (
 // Consumers must reject missing/unordered samples and sequence gaps. Nothing is
 // written or called back inside an enforcement operation or guard bracket.
 type Measurement struct {
-	RunID    uuid.UUID               `json:"run_id"`
-	BootID   uuid.UUID               `json:"boot_id"`
-	Sequence decstr.U64              `json:"sequence"`
-	Source   string                  `json:"source"`
-	Anchor   MeasurementAnchor       `json:"anchor"`
-	Timing   *enforce.TimingEvidence `json:"timing,omitempty"`
-	TC       string                  `json:"tc_sha256,omitempty"`
-	Lease    *MeasurementLease       `json:"lease,omitempty"`
-	Renewal  *MeasurementRenewal     `json:"renewal,omitempty"`
+	RunID     uuid.UUID               `json:"run_id"`
+	BootID    uuid.UUID               `json:"boot_id"`
+	Sequence  decstr.U64              `json:"sequence"`
+	Source    string                  `json:"source"`
+	Anchor    MeasurementAnchor       `json:"anchor"`
+	Timing    *enforce.TimingEvidence `json:"timing,omitempty"`
+	TC        string                  `json:"tc_sha256,omitempty"`
+	Lease     *MeasurementLease       `json:"lease,omitempty"`
+	Renewal   *MeasurementRenewal     `json:"renewal,omitempty"`
+	Baseline  *MeasurementBaseline    `json:"baseline,omitempty"`
+	Heartbeat *MeasurementHeartbeat   `json:"heartbeat,omitempty"`
+}
+
+// Baseline brackets the actual writer call, including failed calls. Cause is
+// fixed vocabulary, never an executor error, selector, or signed document.
+type MeasurementBaseline struct {
+	Cause     string        `json:"cause"`
+	Start     time.Duration `json:"start_ns,string"`
+	End       time.Duration `json:"end_ns,string"`
+	Succeeded bool          `json:"succeeded"`
+}
+
+type MeasurementHeartbeat struct {
+	Mono          time.Duration `json:"mono_ns,string"`
+	PolicyExpires time.Duration `json:"policy_expires_mono_ns,string"`
+	Generation    decstr.U64    `json:"generation"`
+	BaselineOK    bool          `json:"baseline_ok"`
+	Serving       bool          `json:"serving"`
+	Reason        string        `json:"reason"`
+	Written       bool          `json:"written"`
+}
+
+func (e *Engine) baselineCall(cause string, call func() error) error {
+	start, _ := timeanchor.Mono()
+	log := e.log
+	if log == nil {
+		log = slog.New(slog.DiscardHandler)
+	}
+	log.Info("baseline write", "writer", "agent", "cause", cause, "phase", "begin", "mono_ns", int64(start), "generation", e.appliedGen)
+	err := call()
+	end, _ := timeanchor.Mono()
+	log.Info("baseline write", "writer", "agent", "cause", cause, "phase", "end", "mono_ns", int64(end), "succeeded", err == nil)
+	e.writeMeasurement(Measurement{Source: "baseline", Baseline: &MeasurementBaseline{cause, start, end, err == nil}})
+	return err
+}
+
+func (e *Engine) baselineReason() string {
+	switch {
+	case e.identityFrozen:
+		return "identity_frozen"
+	case e.revoked:
+		return "identity_revoked"
+	case e.latchBlocked:
+		return "updater_barrier"
+	case e.recoverBlocked:
+		return "updater_recovery"
+	case e.applyError != nil:
+		return "verification_" + string(e.applyError.Code)
+	case e.conntrackBlocked:
+		return "conntrack_blocked"
+	case e.shutUsage:
+		return "shutdown"
+	case e.policyExpires > 0 && e.clock.Mono() >= e.policyExpires:
+		return "policy_deadline"
+	case len(e.decision.Reasons) > 0:
+		return string(e.decision.Reasons[0])
+	default:
+		return "non_serving"
+	}
 }
 
 type MeasurementAnchor struct {

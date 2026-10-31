@@ -27,7 +27,7 @@ func (e *Engine) syncDesired(ctx context.Context) error {
 	if e.desired != nil {
 		match = e.desiredETag
 	}
-	body, etag, err := e.client.DesiredState(ctx, match)
+	body, etag, err := e.client.DesiredState(controlContext(ctx), match)
 	if errors.Is(err, controlclient.ErrNotModified) {
 		// A 304 is not a new document and does not move the lease (§14.7).
 		e.noteDesiredSync()
@@ -113,6 +113,7 @@ func (e *Engine) syncLease(ctx context.Context) error {
 	if e.lease != nil && e.lease.LeaseId != uuid.Nil {
 		req.CurrentLeaseId = presence.NewNullableWithValue(e.lease.LeaseId)
 	}
+	e.leaseRefreshPending = false
 	e.leaseAttempted = true
 	e.leaseAttemptAt = mono
 	// The local measurement records the actual request and resulting accepted
@@ -120,7 +121,7 @@ func (e *Engine) syncLease(ctx context.Context) error {
 	if e.measurementEnabled() {
 		defer func() { e.measureLease(reqID, mono, wall) }()
 	}
-	raw, err := e.client.RenewLeaseOnce(ctx, reqID, req)
+	raw, err := e.client.RenewLeaseOnce(controlContext(ctx), reqID, req)
 	if isRevoked(err) {
 		e.markRevoked(ctx)
 		return nil
@@ -146,7 +147,7 @@ func (e *Engine) syncLease(ctx context.Context) error {
 }
 
 func (e *Engine) needRenew() bool {
-	if e.leaseRetryAt > 0 || !e.leaseFresh || e.lease == nil || e.leaseMono <= 0 || !e.anchorOK || (!e.identityFrozen && ((e.applyError == nil && e.leaseBehindApplied()) || (e.applyError != nil && e.leaseBehindDesired()))) {
+	if e.leaseRefreshPending || e.leaseRetryAt > 0 || !e.leaseFresh || e.lease == nil || e.leaseMono <= 0 || !e.anchorOK || (!e.identityFrozen && ((e.applyError == nil && e.leaseBehindApplied()) || (e.applyError != nil && e.leaseBehindDesired()))) {
 		return true
 	}
 	// D-067 bounds every grant-less renewal, including an empty lease
@@ -348,7 +349,7 @@ func (e *Engine) syncCert(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	resp, err := e.client.RenewCertificate(ctx, reqID, api.CertificateRenewRequest{
+	resp, err := e.client.RenewCertificate(controlContext(ctx), reqID, api.CertificateRenewRequest{
 		CsrPem: csr, NodeId: e.nodeID, NodeIncarnationId: e.incID, RenewalRequestId: reqID,
 	})
 	if isRevoked(err) {
@@ -433,7 +434,7 @@ func (e *Engine) syncBootstrap(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	resp, err := e.client.Bootstrap(ctx, reqID)
+	resp, err := e.client.Bootstrap(controlContext(ctx), reqID)
 	if err != nil {
 		var se *controlclient.StatusError
 		if errors.As(err, &se) {

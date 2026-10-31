@@ -25,9 +25,16 @@ import (
 
 type measuredSystemPlane struct {
 	SystemPlane
-	reads   []time.Duration
-	paths   []time.Duration
-	applies []enforce.ApplyResult
+	reads      []time.Duration
+	paths      []time.Duration
+	applies    []enforce.ApplyResult
+	readErrors []error
+	baselines  int
+}
+
+func (p *measuredSystemPlane) Baseline(ctx context.Context, dp enforce.Datapath) error {
+	p.baselines++
+	return p.SystemPlane.Baseline(ctx, dp)
 }
 
 func (p *measuredSystemPlane) Apply(ctx context.Context, model enforce.Model, counters map[string]enforce.CounterValue) (enforce.ApplyResult, error) {
@@ -40,6 +47,9 @@ func (p *measuredSystemPlane) VerifyServing(ctx context.Context, model enforce.M
 	start := time.Now()
 	ev, err := p.SystemPlane.VerifyServing(ctx, model, assignments)
 	p.reads = append(p.reads, time.Since(start))
+	if err != nil {
+		p.readErrors = append(p.readErrors, err)
+	}
 	return ev, err
 }
 
@@ -169,6 +179,7 @@ while True:
 		pathTotal += d
 	}
 	t.Logf("D096 topology reads: count=%d mean=%s added_per_step=%s; follow-up 21 live-read reference=52.6ms; combined_verification_per_step=%s", len(p.paths), pathTotal/time.Duration(len(p.paths)), pathTotal/steps, (pathTotal+total)/steps)
+	followup28LiveRestart(t, r, p)
 
 	run("tc", "qdisc", "add", "dev", "fv-fh", "clsact")
 	run("tc", "filter", "add", "dev", "fv-fh", "ingress", "pref", "1", "matchall", "action", "mirred", "egress", "redirect", "dev", "fv-ih")

@@ -7,6 +7,7 @@ import json
 import os
 from pathlib import Path
 import select
+import signal
 import socket
 import struct
 import subprocess
@@ -86,12 +87,15 @@ def trace(mode, deadline, output):
         reads.append(s)
     server = subprocess.Popen(['ip', 'netns', 'exec', 'fv-inet', sys.executable, '-u', __file__, 'serve'], stdout=subprocess.PIPE)
     client_path = output + '.client.json'
+    restart = None
     try:
         if server.stdout.readline() != b'ready\n':
             raise RuntimeError('echo server did not start')
         proc = subprocess.Popen(['ip', 'netns', 'exec', 'fv-a1', sys.executable, __file__,
                                  'client', mode, str(deadline), client_path])
         while proc.poll() is None:
+            if mode == 'expiry_restart' and restart is None and time.monotonic_ns() >= deadline-3_000_000_000:
+                restart = subprocess.Popen([sys.executable, __file__, 'restart', output+'.restart.json'])
             ready, _, _ = select.select(reads, [], [], .01)
             for s in ready:
                 while True:
@@ -105,6 +109,9 @@ def trace(mode, deadline, output):
                         packets.setdefault(seq, {})['ingress_ns' if s == reads[0] else 'egress_ns'] = str(at)
         if proc.wait() != 0:
             raise RuntimeError('probe process failed')
+        if mode == 'expiry_restart':
+            if restart is None or restart.wait() != 0:
+                raise RuntimeError('restart did not complete')
         rows = json.loads(Path(client_path).read_text())
         for row in rows:
             row.update(packets.get(row['packet_id'], {}))
@@ -125,8 +132,36 @@ def trace(mode, deadline, output):
             s.close()
 
 
+def restart_agent(output):
+    # Only the harness-owned process in this lab container; topology is intact.
+    if not Path('/.dockerenv').exists():
+        raise RuntimeError('lab container required')
+    pidfile = Path('/scratch/w2/agent.pid')
+    pid = int(pidfile.read_text())
+    evidence = dict(start_ns=str(time.monotonic_ns()))
+    os.kill(pid, signal.SIGTERM)
+    until = time.monotonic()+2
+    while time.monotonic() < until:
+        try:
+            if Path(f'/proc/{pid}/stat').read_text().split()[2] == 'Z':
+                break
+        except FileNotFoundError:
+            break
+        time.sleep(.005)
+    else:
+        raise RuntimeError('agent failed to stop gracefully')
+    evidence['stopped_ns'] = str(time.monotonic_ns())
+    with open('/scratch/w2/agent.log','ab') as log:
+        child = subprocess.Popen(['fvpn-agent','run','-config','/scratch/w2/agent.json'],stdout=log,stderr=log,start_new_session=True)
+    pidfile.write_text(str(child.pid)+'\n')
+    evidence['started_ns'] = str(time.monotonic_ns())
+    Path(output).write_text(json.dumps(evidence,indent=2)+'\n')
+
+
 if __name__ == '__main__':
-    if sys.argv[1] == 'serve':
+    if sys.argv[1] == 'restart':
+        restart_agent(sys.argv[2])
+    elif sys.argv[1] == 'serve':
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s.bind(('203.0.113.10', PORT))
         print('ready', flush=True)

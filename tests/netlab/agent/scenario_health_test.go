@@ -4,6 +4,7 @@ package agentlab
 
 import (
 	"encoding/json"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -31,6 +32,26 @@ func TestLab08_HealthAttestationUnpublished(t *testing.T) {
 		admin(t, "/publication", `{"intent":"published"}`)
 	}()
 	defer stopAgent()
+	// Deliver the new intent before issuing the candidate challenge. A
+	// healthy same-boot restart may correctly attest its still-valid stored
+	// publication before the first control round trip.
+	started := time.Now()
+	startAgent(t)
+	applied := false
+	for until := time.Now().Add(20 * time.Second); time.Now().Before(until); {
+		body, ok := adminTryGet(t, "/observation")
+		var report api.ObservationReport
+		if ok && json.Unmarshal([]byte(body), &report) == nil && report.ObservedAt.After(started) &&
+			!report.MemberForwardingEnabled && slices.Contains(report.ForwardingBlockReasons, api.ForwardingBlockReasonNotPublished) {
+			applied = true
+			break
+		}
+		time.Sleep(100 * time.Millisecond)
+	}
+	if !applied {
+		t.Fatal("unpublished intent did not reach the agent before the challenge")
+	}
+	stopAgent()
 
 	nodeID, incID := labIdentity(t)
 	bootID := strings.ToLower(strings.TrimSpace(mustExec(t, "cat", "/proc/sys/kernel/random/boot_id")))

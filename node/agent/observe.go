@@ -238,6 +238,9 @@ func (e *Engine) flush(ctx context.Context) error {
 	}
 	e.outboxFull = len(items) >= 32
 	for _, item := range items {
+		if err := controlContext(ctx).Err(); err != nil {
+			return err
+		}
 		var rep api.ObservationReport
 		if err := json.Unmarshal(item.Payload, &rep); err != nil {
 			_ = e.store.MarkConflict(ctx, item.ReportID)
@@ -253,7 +256,7 @@ func (e *Engine) flush(ctx context.Context) error {
 			e.storageOK = false
 			return err
 		}
-		accepted, err := e.client.Observe(ctx, item.ReportID, rep)
+		accepted, err := e.client.Observe(controlContext(ctx), item.ReportID, rep)
 		if err == nil {
 			e.observationFailures, e.observationRetryAt = 0, 0
 			if accepted.IdentityFrozen != nil && *accepted.IdentityFrozen {

@@ -33,6 +33,16 @@ def analyze(operations, renewal, expiry):
         a = row['anchor']
         bracket(ns(a, 'mono_before_ns'), ns(a, 'mono_after_ns'))
         assert a['wall'].endswith('Z')
+        if row['source'] == 'baseline':
+            b = row['baseline']
+            assert b['cause']
+            span('baseline', ns(b, 'start_ns'), ns(b, 'end_ns'))
+            continue
+        if row['source'] == 'heartbeat':
+            h = row['heartbeat']
+            assert h['written'] and ns(h, 'mono_ns') > 0
+            assert not h['serving'] or ns(h, 'policy_expires_mono_ns') > ns(h, 'mono_ns')
+            continue
         if 'timing' not in row:
             assert row['source'] == 'renewal'
             bracket(ns(row['renewal'], 'start_ns'), ns(row['renewal'], 'end_ns'))

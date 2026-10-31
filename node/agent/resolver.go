@@ -126,7 +126,7 @@ func (e *Engine) loadResolverBytes(ctx context.Context, ref api.ResolverDocument
 	if e.client == nil {
 		return nil, &resolverErr{code: api.ErrorCodeDEPENDENCYUNAVAILABLE, detail: "Resolver document could not be fetched."}
 	}
-	body, err := e.client.ResolverDocument(ctx, ref.DocumentId)
+	body, err := e.client.ResolverDocument(controlContext(ctx), ref.DocumentId)
 	if err != nil {
 		var se *controlclient.StatusError
 		if errors.As(err, &se) && (se.Status == http.StatusNotFound || se.Code == string(api.ErrorCodeNOTFOUND)) {
