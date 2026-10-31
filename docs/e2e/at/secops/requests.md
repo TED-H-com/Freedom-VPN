@@ -73,3 +73,5 @@ At 08:01 UTC the AT30 restore run is ready but has been deferred by the required
 Transport attempt 3 passed finite grant expiry, lease expiry with control loss and agent SIGKILL, device revoke, and bounded relay/direct restoration. Earlier failed harness attempts remain in [followup12-attempts.json](followup12-attempts.json). Root live summaries await the independent restore run.
 
 D-102 dated devstack answers were read from later main `5ce76e9`; the installer handover was read from `63a4116`. Application base remains `510a4ab`; [read revisions and scope](followup12-prerequisites.json). New requests remain in this file.
+
+Update 2026-10-31 08:56 UTC: the restore run remains queued. Every five-minute preflight since transport teardown has found at least two other active lanes; the most recent check at 08:53:43 found two labs and two gate suites. No secops stack has been started during this interval. The scheduling request remains pending.
