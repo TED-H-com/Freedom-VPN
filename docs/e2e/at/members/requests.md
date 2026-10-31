@@ -24,7 +24,9 @@ its binding must appear in the node's local desired state at the same generation
 Join the report's boot ID and lease ID to an original producer serving heartbeat
 with the same generation and populated members; retain its run ID and sequence.
 A missing prerequisite stops the positive probe. Counted forwarding remains an
-independent assertion. No generation, grant or observation is manufactured.
+independent assertion. **F11-02 fresh result:** both D-077 re-grants pass at
+generations 10 and 21 with one populated member grant, joined to producer run
+`3065df99` sequences 219 and 602. [Exact rows](F12-F11-02-readiness.json). No generation, grant or observation is manufactured.
 
 **F11-03 / D-135:** failed Apply installs node-wide generation-0 baseline,
 preserving revocation; no prior-generation restoration. Require revoked-source
@@ -66,6 +68,86 @@ mutations required for AT02 run inside AT02; the remaining regular order is unch
 Pre/post-startup admission is a hard stop at two other active suites (nested
 make/wrapper processes count as one suite). Run `assembled.py` through `disktmp.py`;
 it tears down the owned stack on all exits. The live make target also hard-checks.
+
+**Current request count: twelve groups** — six carried (F8-02; F4-03; F4-04;
+F4-10; F4-05/F4-07; F4-06), F11-01, F11-03 and F12-01–F12-04.
+F11-02 is closed by the fresh measurement; the old failure stays recorded.
+This run has eight fresh cases, 468 passed and 14 failed checks, four full cases
+blocked and four failed. AT01/AT09 remain historical and are excluded from that total.
+
+### F12-01 — admitted sibling loss during policy_missing transition, 2026-10-31
+
+Owners: **agent-core / netlab**, with devstack if transition-input exports are
+needed. Run `b98b78ee` has zero failed Applies, so F11-03 stays blocked. The
+continuous admitted sibling stream has 21 losses, all retained; 13 ingress
+timestamps are in completed guards and eight outside. All eight outside-guard
+losses are within the separate baseline-362 → successful-Apply-366 command
+bracket: **236.970251 ms**, with nine total losses (one also in the guard).
+Original same-boot producer run `3065df99` records three successful
+`policy_missing` baseline calls 362–364 while retaining the generation-11 lease,
+then a populated generation-13 renewal 365 and successful verified Apply 366.
+[Exact records and packets](F12-01-policy-missing.json), [all 21 losses](F12-AT02-recovery.json).
+Please interpret the missing-policy transition and its sibling availability
+contract from these records. This is neither an install overrun nor a failed
+verification or failed-Apply rollback. Underlying cause remains unproven; no
+configuration change, traffic retry, waiver or new outside-owned edit is made.
+
+### F12-02 — producer export capacity, 2026-10-31
+
+Owner: **members consumer**, corrected within this lane; **orchestrator** for a
+future assembled qualification. The single run `b98b78ee` is retained unchanged.
+AT03's positive probe stops at readiness. The cumulative original timing stream
+first crosses the shared `lab.docker` 1 MiB diagnostic limit at `22:03:37.574134738Z`,
+producer run `6a7edc0d`, sequence 187. The failed gate is at `22:05:34Z`.
+A read-only call to the same `EnforcementTiming` export returns its explicit
+1 MiB error; the existing `ExportContainerFile` returns 1,591,639 bytes successfully.
+[Failed row, original producer window and export diagnosis](F12-02-stream-limit.json).
+The serving report and producer heartbeat are present; the failure is not proof
+of a product forwarding failure. The old gate did not retain every poll's stage,
+so the export limit is a sufficient blocker, not proof that every other predicate
+succeeded at every instant.
+
+AT04 retains six readiness failures and a seventh failed withdrawal control:
+the secondary 85-second monitor ended at `22:07:43.568861416Z`, before refund
+input `22:09:19.760245577Z` after the primary readiness waits. Its missing first
+failure is not a product withdrawal latency; the generated negative sentinel
+is not interpreted as a duration. [Original failed rows](F12-AT04-failures.json).
+
+The owned consumer now streams to disk using that existing exported hook,
+rejects partial JSONL records and keeps original decimal strings/fields. A
+>1 MiB regression and partial-tail negative pass. Future failures include their
+last prerequisite stage and sanitized reader error. No shared harness edit or
+larger diagnostic-buffer limit is requested. **No live rerun is made:** this
+single run's affected failures remain failures; the corrected consumer has
+read-only export and offline coverage, awaiting the next authorized assembled run.
+
+### F12-03 — negative cache window, 2026-10-31
+
+Owners: **members / dns-publish**, with **devstack** for any isolated fixture
+needed. The unchanged combined before-TTL row fails on its negative half;
+positive primary TTL 10→8 is an inferred hit. Initial negative SOA TTL is 2;
+same-primary positive refetch follows 1.228672687 seconds later, within the
+whole-second expiry uncertainty. The older NXDOMAIN authority completion was
+already about 3.49 seconds before that initial negative receipt. No outstanding
+completion or resolver switch is present. [Exact row and history](F12-03-negative-cache.json).
+Please settle a repeatable quiet negative-cache setup/window using actual
+remaining TTL and the measured precision; keep this failure. No current assertion,
+cache setting or historical verdict is changed. Any shared fixture expansion
+belongs to devstack (`tests/e2e/native_dns_fixture.go` and the matching
+`tests/e2e/internal/dnsrelay/trace.go` case mapping), outside this lane.
+
+### F12-04 — native SERVFAIL with positive resolver receipts, 2026-10-31
+
+Owner: **devstack / native integration** (`tests/e2e/native_dns_fixture.go`,
+`tests/e2e/dns_trace.go`), with netlab for packet interpretation if required.
+UDP RR case 01 returns client RCODE 2 after 5,001 ms despite RCODE 0 / TTL 5
+receipts from primary and secondary, each completed in less than 2 ms.
+The complete trace has **no unique matching responder** for the observed error.
+[Original failed row and exchanges](F12-04-native-servfail.json). Please locate
+the unobserved reply-delivery/client-processing segment using native exports;
+this lane makes no cache, AdGuard SERVFAIL or transport-cause claim and no
+repeat query intended to replace the failed row. Both resolver contacts are
+recorded; successful fallback is not established. `cause_status=unproven`.
 
 ## Follow-up 11 — 2026-10-31 (D-098, D-102, D-129, D-132)
 
