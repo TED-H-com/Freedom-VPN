@@ -436,7 +436,7 @@ func (s *liveSuite) evalAT19(t *testing.T) Record {
 	}
 
 	// Acknowledge node first, leaving node2 unacknowledged, and verify fair_use.applying == true
-	_, _, _, _ = s.ackNodeGeneration(s.nodeID, s.incarnationID, s.agentClient, genNodeAfter1)
+	_, _, _, compiledNode1 := s.ackNodeGeneration(s.nodeID, s.incarnationID, s.agentClient, genNodeAfter1)
 	applyingObservedTrue1 := false
 	_ = s.waitFor(10*time.Second, func() bool {
 		resp := s.apiCall(s.memberA, http.MethodGet, "/api/v1/member/usage", nil, nil)
@@ -453,7 +453,7 @@ func (s *liveSuite) evalAT19(t *testing.T) Record {
 	})
 
 	// Now acknowledge node2 and verify fair_use.applying transitions true -> false
-	clearObs1ID, clearObs1AppliedGen, clearObs1Time, _ := s.ackNodeGeneration(s.node2ID, s.incarnation2ID, s.node2Client, genNode2After1)
+	clearObs1ID, clearObs1AppliedGen, clearObs1Time, compiledNode21 := s.ackNodeGeneration(s.node2ID, s.incarnation2ID, s.node2Client, genNode2After1)
 	var applyingFalseAt1 time.Time
 	var uEnforce1 api.MemberUsage
 	if !s.waitFor(15*time.Second, func() bool {
@@ -513,6 +513,8 @@ func (s *liveSuite) evalAT19(t *testing.T) Record {
 		node2TCStr1 = "ceil 5Mbit down (fvmb0) / ceil 2Mbit up (fvup0)"
 	}
 
+	compiledRate1 := s.requireTier2Member("node", compiledNode1, uuid.MustParse(s.memberA.memberID))
+	compiledRate21 := s.requireTier2Member("node2", compiledNode21, uuid.MustParse(s.memberA.memberID))
 	s.fupActivationTransition = fupTransitionMeasurement{
 		Transition:                     "policy_activated_enforce_tier2",
 		Trigger:                        "POST /api/v1/admin/policies/{id}/activate (mode=enforce, Tier 2 5Mbit/2Mbit)",
@@ -534,6 +536,9 @@ func (s *liveSuite) evalAT19(t *testing.T) Record {
 		ClearingObservationNodeID:      s.node2ID,
 		ClearingObservationGeneration:  clearObs1AppliedGen,
 		ClearingObservationReceivedAt:  clearObs1Time.UTC().Format(time.RFC3339Nano),
+		Node1CompiledMemberRate:        compiledRate1,
+		Node2CompiledMemberRate:        compiledRate21,
+		BothExitsCompiledTier2Rate:     true,
 		Node1TCClassRate:               node1TCStr1,
 		Node2TCClassRate:               node2TCStr1,
 		BothExitsInstalledTier2TC:      node1Tier2OK && node2Tier2OK,
@@ -628,7 +633,7 @@ func (s *liveSuite) evalAT19(t *testing.T) Record {
 	}
 
 	// Acknowledge node first, leaving node2 unacknowledged, and observe fair_use.applying == true
-	_, _, _, _ = s.ackNodeGeneration(s.nodeID, s.incarnationID, s.agentClient, genNodeAfter2)
+	_, _, _, compiledNode2 := s.ackNodeGeneration(s.nodeID, s.incarnationID, s.agentClient, genNodeAfter2)
 	applyingObservedTrue2 := false
 	_ = s.waitFor(10*time.Second, func() bool {
 		resp := s.apiCall(s.memberB, http.MethodGet, "/api/v1/member/usage", nil, nil)
@@ -645,7 +650,7 @@ func (s *liveSuite) evalAT19(t *testing.T) Record {
 	})
 
 	// Acknowledge node2 and observe fair_use.applying clearing to false
-	clearObs2ID, clearObs2AppliedGen, clearObs2Time, _ := s.ackNodeGeneration(s.node2ID, s.incarnation2ID, s.node2Client, genNode2After2)
+	clearObs2ID, clearObs2AppliedGen, clearObs2Time, compiledNode22 := s.ackNodeGeneration(s.node2ID, s.incarnation2ID, s.node2Client, genNode2After2)
 	var applyingFalseAt2 time.Time
 	var uEnforce2 api.MemberUsage
 	if !s.waitFor(15*time.Second, func() bool {
@@ -708,8 +713,10 @@ func (s *liveSuite) evalAT19(t *testing.T) Record {
 		node2TCStr2 = "ceil 5Mbit down (fvmb0) / ceil 2Mbit up (fvup0)"
 	}
 
+	compiledRate2 := s.requireTier2Member("node", compiledNode2, uuid.MustParse(s.memberB.memberID))
+	compiledRate22 := s.requireTier2Member("node2", compiledNode22, uuid.MustParse(s.memberB.memberID))
 	s.fupUsageIngestTransition = fupTransitionMeasurement{
-		Transition:                     "fup_member_generation_changed_tier1_to_tier2",
+		Transition:                     "fup_member_generation_changed_tier0_to_tier2",
 		Trigger:                        "POST /api/v1/agent/usage-batches -> fup.member_generation_changed (crossing Tier 2 threshold)",
 		StartedAt:                      ingestStart.Format(time.RFC3339Nano),
 		FUPMemberGenerationBefore:      fupMemberGenBefore2,
@@ -729,6 +736,9 @@ func (s *liveSuite) evalAT19(t *testing.T) Record {
 		ClearingObservationNodeID:      s.node2ID,
 		ClearingObservationGeneration:  clearObs2AppliedGen,
 		ClearingObservationReceivedAt:  clearObs2Time.UTC().Format(time.RFC3339Nano),
+		Node1CompiledMemberRate:        compiledRate2,
+		Node2CompiledMemberRate:        compiledRate22,
+		BothExitsCompiledTier2Rate:     true,
 		Node1TCClassRate:               node1TCStr2,
 		Node2TCClassRate:               node2TCStr2,
 		BothExitsInstalledTier2TC:      node1Tier2AfterIngest && node2Tier2AfterIngest,

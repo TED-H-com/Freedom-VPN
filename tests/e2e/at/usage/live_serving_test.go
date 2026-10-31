@@ -103,3 +103,42 @@ func (s *liveSuite) captureFirstServing() {
 	}
 	s.t.Logf("first serving report=%v; %s; counted=%t", report["report_id"], classification, s.bootstrapTransfer.Counted)
 }
+
+// Check the target member, so an already-throttled sibling cannot satisfy the
+// second transition's tc assertion. The nft read-back supplies the actual class.
+func (s *liveSuite) requireTier2Member(service string, ds api.DesiredState, member uuid.UUID) string {
+	var down, up int64
+	for _, rate := range ds.MemberRatePolicies {
+		if rate.MemberId == member {
+			down, _ = rate.DownBps.Get()
+			up, _ = rate.UpBps.Get()
+		}
+	}
+	if down != 5000000 || up != 2000000 {
+		s.t.Fatalf("%s compiled member %s rate = %d/%d, want Tier 2", service, member, down, up)
+	}
+	raw, code, err := s.execInContainer(service, "nft", "-j", "list", "table", "inet", "fvpn")
+	if err != nil || code != 0 {
+		s.t.Fatalf("%s class map read-back: %v", service, err)
+	}
+	rs, err := enforce.ParseRuleset(raw)
+	minor, ok := rs.Classes[member]
+	if err != nil || !ok {
+		s.t.Fatalf("%s missing class for member %s: %v", service, member, err)
+	}
+	handle := fmt.Sprintf("1:%x", minor)
+	for _, direction := range []struct {
+		iface string
+		ceil  uint64
+	}{{"fvmb0", 5000000}, {"fvup0", 2000000}} {
+		raw, code, err := s.execInContainer(service, "tc", "-j", "class", "show", "dev", direction.iface)
+		if err != nil || code != 0 {
+			s.t.Fatalf("%s tc read-back: %v", service, err)
+		}
+		view, err := enforce.ParseClassJSON(raw, enforce.QdiscView{})
+		if err != nil || !view.Classes[handle].Found || view.Classes[handle].CeilBPS != direction.ceil {
+			s.t.Fatalf("%s %s class %s does not have Tier 2 ceiling: %+v (%v)", service, direction.iface, handle, view.Classes[handle], err)
+		}
+	}
+	return fmt.Sprintf("member=%s generation=%s down=%d up=%d class=%s", member, ds.ConfigGeneration, down, up, handle)
+}

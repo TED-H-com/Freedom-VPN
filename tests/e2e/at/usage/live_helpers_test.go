@@ -1141,7 +1141,13 @@ func (s *liveSuite) measurePerIncarnationRetainedUsage() incarnationRetentionMea
 	origin2IP, _ := s.originAndSNAT("node2")
 	_, _ = s.selectExitRoute("member", s.exit2NetID, origin2IP)
 	newTrafficStarted := time.Now().UTC()
-	trNew := s.runCountedTransfer("member", "node2", s.deviceA, 1)
+	var trNew transferResult
+	if !s.waitFor(30*time.Second, func() bool {
+		trNew = s.runCountedTransfer("member", "node2", s.deviceA, 1)
+		return trNew.Counted
+	}) {
+		s.t.Fatalf("ENR-03 new incarnation did not complete a counted HTTPS probe: %+v", trNew)
+	}
 	_, _ = s.selectExitRoute("member", s.exitNetID, origin2IP)
 	s.waitForUploadedTraffic("node2", s.node2ID, newInc2, s.deviceA, newTrafficStarted)
 	s.stopNodeAgent("node2")
