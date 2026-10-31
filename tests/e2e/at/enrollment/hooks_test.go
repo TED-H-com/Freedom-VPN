@@ -114,12 +114,20 @@ func (p *probe) usageRoute(post bool) (status int, code string, retryable, ok bo
 	return status, body.Error.Code, body.Error.Retryable, status != 0 && decode == nil
 }
 
+func installerHashesView(h e2e.InstallerHashes) map[string]string {
+	return map[string]string{
+		"key_sha256": h.Key, "cert_sha256": h.Cert, "node_json_sha256": h.NodeJSON,
+		"usage_db_sha256": h.UsageDB, "usage_wal_sha256": h.UsageWAL,
+		"machine_id_sha256": h.MachineID, "current": h.Current,
+	}
+}
+
 func installerOutcomeView(out e2e.InstallerOutcome, err error) map[string]any {
 	// Never publish Message, stderr, certificates or token-file contents.
 	return map[string]any{
 		"exit": out.Exit, "status": out.Status, "code": out.Code, "wrapper_error": err != nil,
 		"node_id": out.NodeID, "incarnation_id": out.Incarnation,
-		"before": out.Before, "after": out.Hashes,
+		"before": installerHashesView(out.Before), "after": installerHashesView(out.Hashes),
 	}
 }
 

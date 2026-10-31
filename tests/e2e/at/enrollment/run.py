@@ -120,13 +120,27 @@ def source():
             "tree_hash_scope": "sorted tracked and nonignored files, excluding generated enrollment evidence"}
 
 
+def digest_labels(value):
+    """Relabel copied prior evidence; immutable history files remain byte-identical."""
+    names = {"Key": "key_sha256", "Cert": "cert_sha256", "NodeJSON": "node_json_sha256",
+             "UsageDB": "usage_db_sha256", "UsageWAL": "usage_wal_sha256",
+             "MachineID": "machine_id_sha256", "Current": "current"}
+    if isinstance(value, list):
+        return [digest_labels(item) for item in value]
+    if isinstance(value, dict):
+        if set(value) == set(names):
+            return {names[key]: item for key, item in value.items()}
+        return {key: digest_labels(item) for key, item in value.items()}
+    return value
+
+
 def previous(docdir, at):
     path = docdir / (at + ".json")
     if not path.exists():
         return []
     old = json.loads(path.read_text())
     # Retain every previous check, including failures and blocked prerequisites.
-    return old.get("prior_checks", []) + [dict(c, run_id=old["run_id"]) for c in old["checks"]]
+    return digest_labels(old.get("prior_checks", []) + [dict(c, run_id=old["run_id"]) for c in old["checks"]])
 
 
 def observation(detail):
