@@ -1115,3 +1115,150 @@ func TestENR03_ListNodeIncarnationsHTTPReadModelAndRetainedUsage(t *testing.T) {
 		t.Fatalf("overflow sum status = %d %s, want 500 INTERNAL_ERROR", wOverflow.Code, wOverflow.Body.String())
 	}
 }
+
+func TestSECOPS19_D077_HTTPNodeDetailUsageOutboxETagAndDomainColumn(t *testing.T) {
+	f := setup(t)
+	ctx := context.Background()
+	enr1 := f.create(nil)
+	_, enrolled1, cert1 := f.enroll(enr1)
+	nodeID := enrolled1.NodeId
+	inc1 := enrolled1.NodeIncarnationId
+	nodePath := "/api/v1/admin/nodes/" + nodeID.String()
+
+	// 1. Initial GET before any observation returns usage_outbox: null (never absent) and strong ETag.
+	w0 := f.call("GET", nodePath, nil, nil, nil)
+	if w0.Code != 200 {
+		t.Fatalf("GET initial node: %d %s", w0.Code, w0.Body.String())
+	}
+	etag0 := w0.Header().Get("ETag")
+	if etag0 == "" {
+		t.Fatal("expected non-empty ETag header on initial GET")
+	}
+	var raw0 map[string]json.RawMessage
+	if err := json.Unmarshal(w0.Body.Bytes(), &raw0); err != nil {
+		t.Fatalf("unmarshal initial raw JSON: %v", err)
+	}
+	if val, ok := raw0["usage_outbox"]; !ok || string(val) != "null" {
+		t.Fatalf("initial usage_outbox raw JSON = (%v, %s), want (true, null)", ok, string(val))
+	}
+	// If-None-Match with etag0 returns 304 Not Modified.
+	w304 := f.call("GET", nodePath, nil, nil, map[string]string{"If-None-Match": etag0})
+	if w304.Code != http.StatusNotModified || w304.Header().Get("ETag") != etag0 {
+		t.Fatalf("If-None-Match initial = %d (ETag=%s), want 304 (ETag=%s)", w304.Code, w304.Header().Get("ETag"), etag0)
+	}
+
+	// 2. Load valid observation example and submit with a populated usage block over mTLS HTTP.
+	rawExample, err := os.ReadFile("../../../contracts/examples/valid/ObservationReport.json")
+	if err != nil {
+		t.Fatalf("read ObservationReport.json: %v", err)
+	}
+	var rep1 api.ObservationReport
+	if err := json.Unmarshal(rawExample, &rep1); err != nil {
+		t.Fatalf("unmarshal ObservationReport.json: %v", err)
+	}
+	rep1.NodeId = nodeID
+	rep1.NodeIncarnationId = inc1
+	rep1.ReportId = uuid.New()
+	rep1.ObservedAt = time.Now().UTC().Truncate(time.Microsecond)
+	rep1.CurrentReleaseId.SetNull()
+	rep1.LastGoodReleaseId.SetNull()
+	for i := range rep1.Checks {
+		rep1.Checks[i].ObservedAt = rep1.ObservedAt
+	}
+	blockedSeq := decstr.U64(12059)
+	rep1.Usage.BlockedSeq.Set(blockedSeq)
+
+	wObs1 := f.call("POST", "/api/v1/agent/observations", rep1, cert1, nil)
+	ack1 := decode[api.ObservationAccepted](t, wObs1, http.StatusAccepted)
+
+	// Old ETag now misses (200 OK) and returns new ETag + populated usage_outbox.
+	w1 := f.call("GET", nodePath, nil, nil, map[string]string{"If-None-Match": etag0})
+	if w1.Code != http.StatusOK {
+		t.Fatalf("GET after rep1 with old ETag = %d %s, want 200", w1.Code, w1.Body.String())
+	}
+	etag1 := w1.Header().Get("ETag")
+	if etag1 == "" || etag1 == etag0 {
+		t.Fatalf("ETag after rep1 = %q, want distinct from %q", etag1, etag0)
+	}
+	detail1 := decode[api.NodeDetail](t, w1, http.StatusOK)
+	u1, err := detail1.UsageOutbox.Get()
+	if err != nil {
+		t.Fatalf("detail1.UsageOutbox.Get(): %v", err)
+	}
+	if !u1.ObservedAt.Equal(ack1.ReceivedAt) {
+		t.Fatalf("u1.ObservedAt = %v, want ack1.ReceivedAt %v", u1.ObservedAt, ack1.ReceivedAt)
+	}
+	if gotBlocked, err := u1.BlockedSeq.Get(); err != nil || gotBlocked != blockedSeq {
+		t.Fatalf("u1.BlockedSeq = (%v, %v), want %v", gotBlocked, err, blockedSeq)
+	}
+	if u1.LastDurableEventSeq != rep1.Usage.LastDurableEventSeq ||
+		u1.CentralAckedThrough != rep1.Usage.CentralAckedThrough ||
+		u1.UnackedEventCount != rep1.Usage.UnackedEventCount ||
+		u1.UnackedPayloadBytes != rep1.Usage.UnackedPayloadBytes ||
+		u1.AckedArchiveBytes != rep1.Usage.AckedArchiveBytes {
+		t.Fatalf("u1 = %+v, want matching rep1.Usage %+v", u1, rep1.Usage)
+	}
+
+	// If-None-Match with etag1 returns 304 Not Modified.
+	if w := f.call("GET", nodePath, nil, nil, map[string]string{"If-None-Match": etag1}); w.Code != http.StatusNotModified {
+		t.Fatalf("If-None-Match etag1 = %d, want 304", w.Code)
+	}
+
+	// 3. Submit a later observation without a usage block over HTTP so the latest
+	// node_observations.report_payload has no "usage" key, and purge audit_events for this node.
+	// Verifies both (b) report without a usage block leaves the previous projection intact and
+	// (D-075) GET /admin/nodes/{id} reads from node_incarnations rather than audit_events or
+	// the latest node_observations.report_payload.
+	rep2 := rep1
+	rep2.ReportId = uuid.New()
+	rep2.ObservedAt = rep1.ObservedAt.Add(5 * time.Second)
+	for i := range rep2.Checks {
+		rep2.Checks[i].ObservedAt = rep2.ObservedAt
+	}
+	rep2Bytes, err := json.Marshal(rep2)
+	if err != nil {
+		t.Fatalf("marshal rep2: %v", err)
+	}
+	var rep2Map map[string]json.RawMessage
+	if err := json.Unmarshal(rep2Bytes, &rep2Map); err != nil {
+		t.Fatalf("unmarshal rep2Map: %v", err)
+	}
+	delete(rep2Map, "usage")
+	var rep2NoUsage api.ObservationReport
+	if err := json.Unmarshal(func() []byte { b, _ := json.Marshal(rep2Map); return b }(), &rep2NoUsage); err != nil {
+		t.Fatalf("unmarshal rep2NoUsage: %v", err)
+	}
+	if _, err := f.r.Nodes.SubmitObservation(ctx, nodeID, inc1, rep2NoUsage); err != nil {
+		t.Fatalf("SubmitObservation rep2NoUsage: %v", err)
+	}
+
+	var latestHasUsage bool
+	if err := f.r.Pool.QueryRow(ctx, `SELECT report_payload ? 'usage' FROM node_observations WHERE report_id = $1`, rep2.ReportId).Scan(&latestHasUsage); err != nil || latestHasUsage {
+		t.Fatalf("latest observation report_payload ? 'usage' = (%v, %v), want (false, nil)", latestHasUsage, err)
+	}
+
+	if err := db.InTx(ctx, f.r.Pool, db.TxOptions{}, func(tx pgx.Tx) error {
+		if _, err := tx.Exec(ctx, `SET LOCAL fvpn.retention_purge = 'on'`); err != nil {
+			return err
+		}
+		if _, err := tx.Exec(ctx, `DELETE FROM audit_events WHERE resource = $1`, "node:"+nodeID.String()); err != nil {
+			return err
+		}
+		return nil
+	}); err != nil {
+		t.Fatalf("purge audit_events: %v", err)
+	}
+
+	w2 := f.call("GET", nodePath, nil, nil, map[string]string{"If-None-Match": etag1})
+	if w2.Code != http.StatusOK {
+		t.Fatalf("GET after rep2NoUsage with etag1 = %d %s, want 200", w2.Code, w2.Body.String())
+	}
+	if etag2 := w2.Header().Get("ETag"); etag2 == "" || etag2 == etag1 {
+		t.Fatalf("ETag after rep2NoUsage = %q, want distinct from %q", etag2, etag1)
+	}
+	detailAfterPurge := decode[api.NodeDetail](t, w2, http.StatusOK)
+	uAfterPurge, err := detailAfterPurge.UsageOutbox.Get()
+	if err != nil || !uAfterPurge.ObservedAt.Equal(ack1.ReceivedAt) || uAfterPurge.LastDurableEventSeq != rep1.Usage.LastDurableEventSeq {
+		t.Fatalf("after rep2NoUsage and purging audit_events, UsageOutbox = (%+v, %v), want preserved domain projection from rep1", uAfterPurge, err)
+	}
+}

@@ -7,9 +7,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/netip"
+	"os"
+	"strings"
 	"testing"
 	"time"
 
+	"github.com/TED-H-com/Freedom-VPN/db/migrations"
 	"github.com/TED-H-com/Freedom-VPN/internal/audit"
 	"github.com/TED-H-com/Freedom-VPN/internal/auth"
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
@@ -31,6 +34,8 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/stdlib"
+	"github.com/pressly/goose/v3"
 )
 
 func buildAgentObservationReport(
@@ -1007,7 +1012,7 @@ func TestD067_AwaitingMemberGrantsReadModelAndOperationProjection(t *testing.T) 
 	r, _, report := nodestest.BaselineObservation(t, "../../contracts/examples/valid/ObservationReport.awaiting-member-grants.json")
 	ctx := t.Context()
 
-	// Restore the awaiting_member_grants example posture on the enrolled node's baseline report.
+	// Restore the awaiting_member_grants example posture (D-067, D-071) on the enrolled node's baseline report.
 	leaseID := uuid.New()
 	report.ProvisioningState = api.ProvisioningStateReady
 	report.SafetyStatus = api.SafetyStatusPassed
@@ -1016,23 +1021,48 @@ func TestD067_AwaitingMemberGrantsReadModelAndOperationProjection(t *testing.T) 
 	report.ForwardingBlockReasons = []api.ForwardingBlockReason{api.ForwardingBlockReasonAwaitingMemberGrants}
 	report.Lease.LeaseId.Set(leaseID)
 	report.Lease.ExpiresAt.Set(report.ObservedAt.Add(3 * time.Minute))
-	report.Checks = nil
-	for _, name := range []api.NodeCheckName{
-		api.NodeCheckNameInternetOnly,
-		api.NodeCheckNameMeterPath,
-		api.NodeCheckNameTunnelProbe,
-		api.NodeCheckNameLease,
-		api.NodeCheckNameQos,
-		api.NodeCheckNameSourceBinding,
-	} {
-		status := api.HealthCheckStatusNotRun
-		if name == api.NodeCheckNameInternetOnly || name == api.NodeCheckNameLease {
-			status = api.HealthCheckStatusPassed
-		}
-		ch := api.NodeCheck{Name: name, Status: status, ObservedAt: report.ObservedAt}
-		ch.ErrorCode.SetNull()
-		report.Checks = append(report.Checks, ch)
+	internetOnlyCheck := api.NodeCheck{
+		Name:       api.NodeCheckNameInternetOnly,
+		Status:     api.HealthCheckStatusPassed,
+		ObservedAt: report.ObservedAt,
 	}
+	internetOnlyCheck.ErrorCode.SetNull()
+	leaseDetail := "Serving lease has no member grants yet."
+	leaseCheck := api.NodeCheck{
+		Name:       api.NodeCheckNameLease,
+		Status:     api.HealthCheckStatusFailed,
+		ObservedAt: report.ObservedAt,
+		Detail:     &leaseDetail,
+	}
+	leaseCheck.ErrorCode.Set(api.ErrorCodeAWAITINGMEMBERGRANTS)
+	qosDetail := "Rate policy could not be applied."
+	qosCheck := api.NodeCheck{
+		Name:       api.NodeCheckNameQos,
+		Status:     api.HealthCheckStatusFailed,
+		ObservedAt: report.ObservedAt,
+		Detail:     &qosDetail,
+	}
+	qosCheck.ErrorCode.Set(api.ErrorCodeAWAITINGMEMBERGRANTS)
+	sourceBindingDetail := "No member binding was admitted."
+	sourceBindingCheck := api.NodeCheck{
+		Name:       api.NodeCheckNameSourceBinding,
+		Status:     api.HealthCheckStatusFailed,
+		ObservedAt: report.ObservedAt,
+		Detail:     &sourceBindingDetail,
+	}
+	sourceBindingCheck.ErrorCode.Set(api.ErrorCodeAWAITINGMEMBERGRANTS)
+	report.Checks = []api.NodeCheck{
+		internetOnlyCheck,
+		leaseCheck,
+		qosCheck,
+		sourceBindingCheck,
+	}
+	report.Errors = []api.NodeError{{
+		Code:       api.ErrorCodeAWAITINGMEMBERGRANTS,
+		Stage:      "lease",
+		Message:    leaseDetail,
+		ObservedAt: report.ObservedAt,
+	}}
 
 	// 1. Unknown block reason fails closed with 422 VALIDATION_FAILED.
 	badReport := report
@@ -1067,6 +1097,9 @@ func TestD067_AwaitingMemberGrantsReadModelAndOperationProjection(t *testing.T) 
 	}
 	if detail.PublicationIntent != api.PublicationIntentUnpublished || detail.PublicationObserved != api.PublicationObservedAbsent {
 		t.Fatalf("publication = (%q, %q), want (unpublished, absent)", detail.PublicationIntent, detail.PublicationObserved)
+	}
+	if len(detail.RecentErrors) != 1 || detail.RecentErrors[0].Code != api.ErrorCodeAWAITINGMEMBERGRANTS || detail.RecentErrors[0].Stage != "lease" {
+		t.Fatalf("RecentErrors = %+v, want one AWAITING_MEMBER_GRANTS entry at stage lease", detail.RecentErrors)
 	}
 
 	list, err := r.Nodes.ListNodes(ctx, nodes.ListNodesParams{})
@@ -1722,4 +1755,230 @@ func TestReviewR14_RepeatedStalePassedReportKeepsReady(t *testing.T) {
 			t.Fatalf("expected stale_generation_grace_at cleared to NULL after downgrade to applying, got %v", graceAt)
 		}
 	})
+}
+
+func TestSECOPS19_D077_NodeDetailUsageOutboxProjectionAndMigration(t *testing.T) {
+	r, _, baseReport := nodestest.BaselineObservation(t, "../../contracts/examples/valid/ObservationReport.json")
+	ctx := t.Context()
+
+	// Freshly enrolled incarnation before any observation has usage_outbox = null (specified, never absent).
+	detail0, etag0, err := r.Nodes.GetNode(ctx, baseReport.NodeId)
+	if err != nil {
+		t.Fatalf("GetNode initial: %v", err)
+	}
+	if !detail0.UsageOutbox.IsSpecified() || !detail0.UsageOutbox.IsNull() {
+		t.Fatalf("initial UsageOutbox: specified=%v null=%v, want specified=true null=true", detail0.UsageOutbox.IsSpecified(), detail0.UsageOutbox.IsNull())
+	}
+
+	// (a) Report with a usage block -> GET shows the object with the block's numbers and observed_at equal to received_at.
+	ledgerEpoch := uuid.MustParse("7612b7d9-1e70-4390-b86b-7c3456e4df27")
+	meterEpoch := uuid.MustParse("909f68b7-a5b4-44da-afd5-e1683e42c6fd")
+	blockedSeq := decstr.U64(12059)
+	oldestUnacked := time.Date(2026, 10, 30, 18, 0, 10, 0, time.UTC)
+
+	rep1 := baseReport
+	rep1.ReportId = uuid.New()
+	rep1.ObservedAt = time.Now().UTC().Truncate(time.Microsecond)
+	rep1.Usage = api.UsageOutboxStatus{
+		LedgerEpoch:         presence.NewNullableWithValue(ledgerEpoch),
+		MeterEpochId:        presence.NewNullableWithValue(meterEpoch),
+		LastDurableEventSeq: decstr.U64(12060),
+		CentralAckedThrough: decstr.U64(12058),
+		BlockedSeq:          presence.NewNullableWithValue(blockedSeq),
+		UnackedEventCount:   2,
+		UnackedPayloadBytes: decstr.U64(1840),
+		OldestUnackedAt:     presence.NewNullableWithValue(oldestUnacked),
+		AckedArchiveBytes:   decstr.U64(7340032),
+	}
+	ack1, err := r.Nodes.SubmitObservation(ctx, rep1.NodeId, rep1.NodeIncarnationId, rep1)
+	if err != nil {
+		t.Fatalf("SubmitObservation rep1 (with usage): %v", err)
+	}
+
+	detail1, etag1, err := r.Nodes.GetNode(ctx, baseReport.NodeId)
+	if err != nil {
+		t.Fatalf("GetNode after rep1: %v", err)
+	}
+	if etag1 == etag0 || detail1.ResourceVersion <= detail0.ResourceVersion {
+		t.Fatalf("expected resource_version/ETag to advance on rep1: before=(%s,%s) after=(%s,%s)", detail0.ResourceVersion, etag0, detail1.ResourceVersion, etag1)
+	}
+	u1, err := detail1.UsageOutbox.Get()
+	if err != nil {
+		t.Fatalf("detail1.UsageOutbox.Get(): %v", err)
+	}
+	if !u1.ObservedAt.Equal(ack1.ReceivedAt) {
+		t.Fatalf("u1.ObservedAt = %v, want ack1.ReceivedAt %v", u1.ObservedAt, ack1.ReceivedAt)
+	}
+	if got, err := u1.LedgerEpoch.Get(); err != nil || got != ledgerEpoch {
+		t.Fatalf("u1.LedgerEpoch = (%v, %v), want %v", got, err, ledgerEpoch)
+	}
+	if got, err := u1.MeterEpochId.Get(); err != nil || got != meterEpoch {
+		t.Fatalf("u1.MeterEpochId = (%v, %v), want %v", got, err, meterEpoch)
+	}
+	if got, err := u1.BlockedSeq.Get(); err != nil || got != blockedSeq {
+		t.Fatalf("u1.BlockedSeq = (%v, %v), want %v", got, err, blockedSeq)
+	}
+	if got, err := u1.OldestUnackedAt.Get(); err != nil || !got.Equal(oldestUnacked) {
+		t.Fatalf("u1.OldestUnackedAt = (%v, %v), want %v", got, err, oldestUnacked)
+	}
+	if u1.LastDurableEventSeq != 12060 || u1.CentralAckedThrough != 12058 || u1.UnackedEventCount != 2 || u1.UnackedPayloadBytes != 1840 || u1.AckedArchiveBytes != 7340032 {
+		t.Fatalf("u1 counts = %+v, want seq=12060 acked=12058 count=2 payload=1840 archive=7340032", u1)
+	}
+	// Informational-only invariant (SECOPS-19): blocked_seq / unacked backlog never degrades safety_status or provisioning_state.
+	if detail1.SafetyStatus != api.SafetyStatusPassed || detail1.ProvisioningState != api.ProvisioningStateReady {
+		t.Fatalf("informational usage_outbox must not affect safety/readiness: safety=%s provisioning=%s", detail1.SafetyStatus, detail1.ProvisioningState)
+	}
+
+	// (b) Later report without a usage block leaves the previous usage_outbox and observed_at intact.
+	rep2 := rep1
+	rep2.ReportId = uuid.New()
+	rep2.ObservedAt = rep1.ObservedAt.Add(5 * time.Second)
+	for i := range rep2.Checks {
+		rep2.Checks[i].ObservedAt = rep2.ObservedAt
+	}
+	rep2.Usage = api.UsageOutboxStatus{}
+	ack2, err := r.Nodes.SubmitObservation(ctx, rep2.NodeId, rep2.NodeIncarnationId, rep2)
+	if err != nil {
+		t.Fatalf("SubmitObservation rep2 (without usage block): %v", err)
+	}
+	_ = ack2
+
+	detail2, etag2, err := r.Nodes.GetNode(ctx, baseReport.NodeId)
+	if err != nil {
+		t.Fatalf("GetNode after rep2: %v", err)
+	}
+	if etag2 == etag1 || detail2.ResourceVersion <= detail1.ResourceVersion {
+		t.Fatalf("expected resource_version/ETag to advance on rep2: before=(%s,%s) after=(%s,%s)", detail1.ResourceVersion, etag1, detail2.ResourceVersion, etag2)
+	}
+	u2, err := detail2.UsageOutbox.Get()
+	if err != nil {
+		t.Fatalf("detail2.UsageOutbox.Get(): %v", err)
+	}
+	if !u2.ObservedAt.Equal(ack1.ReceivedAt) || u2.LastDurableEventSeq != 12060 || u2.UnackedEventCount != 2 {
+		t.Fatalf("report without usage block must preserve previous usage_outbox; got %+v (want observed_at=%v)", u2, ack1.ReceivedAt)
+	}
+
+	// (d) Zero shape (store unavailable) is projected as zeros with updated observed_at, not null.
+	rep3 := rep2
+	rep3.ReportId = uuid.New()
+	rep3.ObservedAt = rep2.ObservedAt.Add(5 * time.Second)
+	for i := range rep3.Checks {
+		rep3.Checks[i].ObservedAt = rep3.ObservedAt
+	}
+	rep3.Usage = api.UsageOutboxStatus{
+		LedgerEpoch:         presence.NewNullNullable[uuid.UUID](),
+		MeterEpochId:        presence.NewNullNullable[uuid.UUID](),
+		LastDurableEventSeq: 0,
+		CentralAckedThrough: 0,
+		BlockedSeq:          presence.NewNullNullable[decstr.U64](),
+		UnackedEventCount:   0,
+		UnackedPayloadBytes: 0,
+		OldestUnackedAt:     presence.NewNullNullable[time.Time](),
+		AckedArchiveBytes:   0,
+	}
+	ack3, err := r.Nodes.SubmitObservation(ctx, rep3.NodeId, rep3.NodeIncarnationId, rep3)
+	if err != nil {
+		t.Fatalf("SubmitObservation rep3 (zero shape): %v", err)
+	}
+	detail3, etag3, err := r.Nodes.GetNode(ctx, baseReport.NodeId)
+	if err != nil {
+		t.Fatalf("GetNode after rep3: %v", err)
+	}
+	if etag3 == etag2 || detail3.ResourceVersion <= detail2.ResourceVersion {
+		t.Fatalf("expected resource_version/ETag to advance on rep3: before=(%s,%s) after=(%s,%s)", detail2.ResourceVersion, etag2, detail3.ResourceVersion, etag3)
+	}
+	if !detail3.UsageOutbox.IsSpecified() || detail3.UsageOutbox.IsNull() {
+		t.Fatalf("zero shape must project as object, not null: specified=%v null=%v", detail3.UsageOutbox.IsSpecified(), detail3.UsageOutbox.IsNull())
+	}
+	u3, err := detail3.UsageOutbox.Get()
+	if err != nil {
+		t.Fatalf("detail3.UsageOutbox.Get(): %v", err)
+	}
+	if !u3.ObservedAt.Equal(ack3.ReceivedAt) {
+		t.Fatalf("u3.ObservedAt = %v, want ack3.ReceivedAt %v", u3.ObservedAt, ack3.ReceivedAt)
+	}
+	if !u3.LedgerEpoch.IsNull() || !u3.MeterEpochId.IsNull() || !u3.BlockedSeq.IsNull() || !u3.OldestUnackedAt.IsNull() {
+		t.Fatalf("zero shape nullable fields must be null: %+v", u3)
+	}
+	if u3.LastDurableEventSeq != 0 || u3.CentralAckedThrough != 0 || u3.UnackedEventCount != 0 || u3.UnackedPayloadBytes != 0 || u3.AckedArchiveBytes != 0 {
+		t.Fatalf("zero shape numeric fields must be 0: %+v", u3)
+	}
+
+	// (c) Re-enrolment (new incarnation) starts at null, while old incarnation row retains its projection.
+	targetNode := baseReport.NodeId
+	expectedVer := detail3.ResourceVersion
+	if _, err := r.Enrollment.RevokeNode(ctx, enrollment.Command{Principal: "admin:" + uuid.NewString(), Key: uuid.New()}, targetNode, &expectedVer, "TEST ONLY revoke before reinstall"); err != nil {
+		t.Fatalf("RevokeNode before reinstall: %v", err)
+	}
+	adminCmd := enrollment.Command{Principal: "admin:" + uuid.NewString(), Key: uuid.New()}
+	reCreated, err := r.Enrollment.CreateEnrollment(ctx, adminCmd, api.EnrollmentCreateRequest{
+		Delivery: api.EnrollmentDeliveryInstaller,
+		NodeId:   &targetNode,
+	})
+	if err != nil {
+		t.Fatalf("CreateEnrollment reinstall: %v", err)
+	}
+	reToken, err := reCreated.Token.Get()
+	if err != nil {
+		t.Fatalf("reCreated.Token.Get: %v", err)
+	}
+	reReq, _ := pkitest.Request(t)
+	reEnrolled, err := r.Enrollment.Enroll(ctx, reToken, reReq)
+	if err != nil {
+		t.Fatalf("Enroll reinstall: %v", err)
+	}
+	if reEnrolled.Response.NodeIncarnationId == baseReport.NodeIncarnationId {
+		t.Fatal("expected new incarnation ID on reinstall")
+	}
+
+	detail4, etag4, err := r.Nodes.GetNode(ctx, baseReport.NodeId)
+	if err != nil {
+		t.Fatalf("GetNode after reinstall: %v", err)
+	}
+	if etag4 == etag3 || detail4.ResourceVersion <= detail3.ResourceVersion {
+		t.Fatalf("expected resource_version/ETag to advance on reinstall: before=(%s,%s) after=(%s,%s)", detail3.ResourceVersion, etag3, detail4.ResourceVersion, etag4)
+	}
+	if !detail4.UsageOutbox.IsSpecified() || !detail4.UsageOutbox.IsNull() {
+		t.Fatalf("new incarnation must start with usage_outbox=null: specified=%v null=%v", detail4.UsageOutbox.IsSpecified(), detail4.UsageOutbox.IsNull())
+	}
+
+	// (f) Goose Down / Up round-trip for 00189_node_incarnation_usage_outbox.sql.
+	rawMig, err := os.ReadFile("../../db/migrations/00189_node_incarnation_usage_outbox.sql")
+	if err != nil {
+		t.Fatalf("read migration 00189: %v", err)
+	}
+	if !strings.Contains(string(rawMig), "-- +goose Up") || !strings.Contains(string(rawMig), "-- +goose Down") {
+		t.Fatal("expected -- +goose Up and -- +goose Down in 00189_node_incarnation_usage_outbox.sql")
+	}
+	sqlDB := stdlib.OpenDBFromPool(r.Pool)
+	defer sqlDB.Close()
+	provider, err := goose.NewProvider(goose.DialectPostgres, sqlDB, migrations.FS)
+	if err != nil {
+		t.Fatalf("goose.NewProvider: %v", err)
+	}
+	if _, err := provider.DownTo(ctx, 188); err != nil {
+		t.Fatalf("goose DownTo(188): %v", err)
+	}
+	var colCount int
+	if err := r.Pool.QueryRow(ctx, `
+		SELECT count(*)
+		FROM information_schema.columns
+		WHERE table_schema = 'public'
+		  AND table_name = 'node_incarnations'
+		  AND column_name IN ('usage_outbox', 'usage_outbox_observed_at')
+	`).Scan(&colCount); err != nil || colCount != 0 {
+		t.Fatalf("after DownTo(188) expected 0 usage_outbox columns on node_incarnations, got %d (err=%v)", colCount, err)
+	}
+	if _, err := provider.Up(ctx); err != nil {
+		t.Fatalf("goose Up(): %v", err)
+	}
+	if err := r.Pool.QueryRow(ctx, `
+		SELECT count(*)
+		FROM information_schema.columns
+		WHERE table_schema = 'public'
+		  AND table_name = 'node_incarnations'
+		  AND column_name IN ('usage_outbox', 'usage_outbox_observed_at')
+	`).Scan(&colCount); err != nil || colCount != 2 {
+		t.Fatalf("after Up() expected 2 usage_outbox columns on node_incarnations, got %d (err=%v)", colCount, err)
+	}
 }
