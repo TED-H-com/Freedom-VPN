@@ -19,10 +19,13 @@ promote a blocked product result.
 
 `stack.py` calls the shared devstack lifecycle. A temporary Docker argument
 wrapper substitutes task-owned cache tags for its neutral `fvpn-devstack-*`
-tags. All service images retain their shared build definitions; the records
-contain the immutable IDs of the running images. Python uses only its standard
-library. The existing Ubuntu workflow already has the shared stack's Python
-dependency and remains unchanged.
+tags. `down` removes those `fvpn-w4-isolation-cache-*` tags after the shared
+script returns. `prefix.sh` has no `cache` token, so the shared script leaves
+them, and the makefile leftover check would otherwise exit 1. All service
+images retain their shared build definitions; the records contain the
+immutable IDs of the running images. Python uses only its standard library.
+The existing Ubuntu workflow already has the shared stack's Python dependency
+and remains unchanged.
 
 `driver.py` uses a Go overlay to add `driver.go.txt` to the shared `tests/e2e`
 test package. This executes the original private `countedFlow`, `selectExit`
@@ -106,10 +109,18 @@ Follow-up 3's assembled run is `49799a38-1980-4c0f-a527-725646230eee`, source
 `4d84f0a651e60ae84f168a8a33248503a50cc94a`, UTC `2026-10-30T19:43:32Z` through
 `2026-10-30T19:57:57Z`. AT10 passed, including a positive for every destination
 case. Short whole-node expiry passed through the fleet-config API, and
-finite-member expiry was re-measured in the same stack. AT11, AT12 and AT13
-stay blocked on the designed gaps in `requests.md`. The aggregate exited 2.
-`summary.md` is the measured record. The follow-up 2 node snapshots were not
-rewritten by this runner; they remain only under `history/follow-up-2/`.
+finite-member expiry was re-measured in the same stack. That record is archived
+under `history/follow-up-3/` and is not the current run.
+
+Follow-up 4's assembled run is `fa0074cc-3b1a-403d-b8c2-3a3439fe2b7e`, source
+`491a307dd505e33b14dc0e993aa7e86b28e82f68`, UTC `2026-10-31T00:27:07Z` through
+`2026-10-31T00:31:43Z`, on main `205633f`. Serving publication fail-closed
+`FLOWTABLE_BYPASS` on Docker's `ip nat` `POSTROUTING` `xt` SNAT for
+`127.0.0.11`. No counted byte, no convergence sample, and no fleet-config PUT
+were recorded. AT10–AT13 stay blocked. The aggregate exited 2. `summary.md`
+is the measured record. When publication fails, the runner reads
+`nft -j list ruleset` and stores the foreign chains on check `serving setup`.
+It does not write nft.
 
 `at-isolation-review-captures` rewrites the AT13 record in its review directory.
 Follow-up 3's root AT13 is the live measurement; do not pass it through that
