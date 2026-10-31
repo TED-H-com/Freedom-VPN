@@ -44,7 +44,7 @@ func projectSamplesInTx(
 	genStr := formatUint64(generation)
 	for _, smp := range samples {
 		for _, gran := range []Granularity{GranularityMonth, GranularityDay} {
-			segments, err := Split(smp.IntervalStart, smp.IntervalEnd, smp.UploadBytes, smp.DownloadBytes, gran)
+			segments, err := splitProjectionInterval(smp.IntervalStart, smp.IntervalEnd, smp.UploadBytes, smp.DownloadBytes, gran)
 			if err != nil {
 				return fmt.Errorf("usage: split sample %s (%s): %w", smp.SampleID, gran, err)
 			}
@@ -198,6 +198,12 @@ func markGapOnRollupsInTx(
 	receivedAt time.Time,
 ) error {
 	genStr := formatUint64(generation)
+	queryEnd := intervalEnd
+	if intervalStart.Equal(intervalEnd) {
+		// A collapsed stored interval occupies this microsecond bucket. Use
+		// its upper bound for overlap lookup, including at a UTC boundary.
+		queryEnd = intervalStart.Add(time.Microsecond)
+	}
 
 	rows, err := tx.Query(ctx, `
 		SELECT DISTINCT member_id FROM (
@@ -219,7 +225,7 @@ func markGapOnRollupsInTx(
 			FROM usage_samples s
 			WHERE s.event_id = $5
 		) m
-	`, genStr, nodeID, intervalStart.UTC(), intervalEnd.UTC(), eventID)
+	`, genStr, nodeID, intervalStart.UTC(), queryEnd.UTC(), eventID)
 	if err != nil {
 		return fmt.Errorf("usage: query members for gap event: %w", err)
 	}
@@ -238,7 +244,7 @@ func markGapOnRollupsInTx(
 	}
 
 	for _, gran := range []Granularity{GranularityMonth, GranularityDay} {
-		segments, err := Split(intervalStart, intervalEnd, 0, 0, gran)
+		segments, err := splitProjectionInterval(intervalStart, intervalEnd, 0, 0, gran)
 		if err != nil {
 			return fmt.Errorf("usage: split gap interval (%s): %w", gran, err)
 		}
@@ -295,6 +301,18 @@ type RebuildProjectionResult struct {
 	NewGeneration      uint64    `json:"new_generation"`
 	ProjectedSamples   int       `json:"projected_samples"`
 	VerifiedAt         time.Time `json:"verified_at"`
+}
+
+// splitProjectionInterval also handles D-130's equal stored endpoints on rebuild,
+// including after raw payload retention expires. Both canonical endpoints were in
+// the same microsecond, hence the same UTC day/month: all bytes belong to that
+// bucket without estimation. No timestamp or canonical payload is rewritten.
+// Ingest validates strict nanosecond order before calling the projector.
+func splitProjectionInterval(start, end time.Time, upload, download uint64, g Granularity) ([]Segment, error) {
+	if start.Equal(end) {
+		return []Segment{{Period: PeriodOf(g, start), Upload: upload, Download: download}}, nil
+	}
+	return Split(start, end, upload, download, g)
 }
 
 // RebuildProjection writes a fresh projection_generation from committed usage_samples
