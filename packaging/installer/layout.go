@@ -26,6 +26,7 @@ type Layout struct {
 	MachineID     string
 	DBusMachineID string
 	SSHDir        string
+	NetbirdRunDir string
 	NetbirdLib    string
 	NetbirdEtc    string
 	OSRelease     string
@@ -56,6 +57,7 @@ func DefaultLayout() Layout {
 		MachineID:     "/etc/machine-id",
 		DBusMachineID: "/var/lib/dbus/machine-id",
 		SSHDir:        "/etc/ssh",
+		NetbirdRunDir: "/run/fvpn-netbird",
 		NetbirdLib:    "/var/lib/netbird",
 		NetbirdEtc:    "/etc/netbird",
 		OSRelease:     "/etc/os-release",
@@ -91,6 +93,7 @@ func (l Layout) WithRoot(root string) Layout {
 	l.MachineID = joinRoot(root, l.MachineID)
 	l.DBusMachineID = joinRoot(root, l.DBusMachineID)
 	l.SSHDir = joinRoot(root, l.SSHDir)
+	l.NetbirdRunDir = joinRoot(root, l.NetbirdRunDir)
 	l.NetbirdLib = joinRoot(root, l.NetbirdLib)
 	l.NetbirdEtc = joinRoot(root, l.NetbirdEtc)
 	l.OSRelease = joinRoot(root, l.OSRelease)
@@ -206,4 +209,8 @@ func (l Layout) releaseManifest(id string) string {
 
 func (l Layout) baselineFile() string {
 	return filepath.Join(l.InstallDir, "baseline.json")
+}
+
+func (l Layout) netbirdAddr() string {
+	return "unix://" + filepath.Join(l.NetbirdRunDir, "netbird.sock")
 }

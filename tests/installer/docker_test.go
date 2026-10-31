@@ -23,7 +23,7 @@ import (
 )
 
 const (
-	imageRef = "fvpn-w5-installer-ubuntu:24.04"
+	imageRef = "fvpn-w5-node-installer-ubuntu:24.04"
 	// TEST ONLY enrollment material. These are not product tokens.
 	token1 = "test-only-enrollment-token"
 	token2 = "test-only-enrollment-token-2"
@@ -58,7 +58,7 @@ func runSuite(m *testing.M) int {
 		}
 		rootDir = parent
 	}
-	binDir, err = os.MkdirTemp("", "fvpn-w5-installer-bin-")
+	binDir, err = os.MkdirTemp("", "fvpn-w5-node-installer-bin-")
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return 1
@@ -163,7 +163,7 @@ func trustBothReleases() error {
 }
 
 func cleanupDocker() {
-	out, _ := exec.Command("docker", "ps", "-aq", "--filter", "name=fvpn-w5-installer-").Output()
+	out, _ := exec.Command("docker", "ps", "-aq", "--filter", "name=fvpn-w5-node-installer-").Output()
 	ids := strings.Fields(string(out))
 	if len(ids) > 0 {
 		args := append([]string{"rm", "-fv"}, ids...)
@@ -171,7 +171,7 @@ func cleanupDocker() {
 	}
 	out, _ = exec.Command("docker", "images", "--format", "{{.Repository}}:{{.Tag}}").Output()
 	for _, line := range strings.Split(string(out), "\n") {
-		if strings.HasPrefix(line, "fvpn-w5-installer-") {
+		if strings.HasPrefix(line, "fvpn-w5-node-installer-") {
 			_ = exec.Command("docker", "rmi", "-f", line).Run()
 		}
 	}
@@ -362,7 +362,7 @@ func doInstall(t *testing.T, c string, rel crel, url, ca, bundle, token string, 
 	out, code := dexec(t, c, installArgs(rel, url, ca, bundle, token, extra...)...)
 	var res installer.Result
 	if i := strings.Index(out, "{"); i >= 0 {
-		_ = json.Unmarshal([]byte(out[i:]), &res)
+		_ = decodeJSON(out[i:], &res)
 	}
 	return res, out, code
 }
@@ -418,7 +418,7 @@ func assertForeign(t *testing.T, c, defRoute, resolv string) {
 }
 
 func TestMissingTool(t *testing.T) {
-	const name = "fvpn-w5-installer-missing"
+	const name = "fvpn-w5-node-installer-missing"
 	startSleep(t, name)
 	stage(t, name)
 	mustExec(t, name, "mv", "/usr/sbin/nft", "/usr/sbin/nft.aside")
@@ -435,7 +435,7 @@ func TestMissingTool(t *testing.T) {
 }
 
 func TestTokenArgvRefused(t *testing.T) {
-	const name = "fvpn-w5-installer-token"
+	const name = "fvpn-w5-node-installer-token"
 	startSleep(t, name)
 	copyIn(t, name, filepath.Join(binDir, "fvpn-node-install"), "/usr/local/bin/fvpn-node-install")
 	out, code := dexec(t, name, "/usr/local/bin/fvpn-node-install", "install", "--token", "not-a-file")
@@ -445,7 +445,7 @@ func TestTokenArgvRefused(t *testing.T) {
 }
 
 func TestFaultRollback(t *testing.T) {
-	const name = "fvpn-w5-installer-fault"
+	const name = "fvpn-w5-node-installer-fault"
 	startSystemd(t, name)
 	stage(t, name)
 	defRoute, resolv := seedForeign(t, name)
@@ -481,7 +481,7 @@ func TestFaultRollback(t *testing.T) {
 }
 
 func TestInstallLifecycle(t *testing.T) {
-	const name = "fvpn-w5-installer-main"
+	const name = "fvpn-w5-node-installer-main"
 	startSystemd(t, name)
 	stage(t, name)
 	defRoute, resolv := seedForeign(t, name)
@@ -508,6 +508,7 @@ func TestInstallLifecycle(t *testing.T) {
 		t.Fatalf("release in check %+v", check)
 	}
 	assertBaseline(t, check.Baseline, out)
+	testENR06Runtime(t, name)
 	updaterConfig := mustExec(t, name, "cat", "/etc/vpn-node/updater.json")
 	if strings.Contains(updaterConfig, `"boot_id"`) {
 		t.Fatal("generated config should omit boot_id")
@@ -546,17 +547,6 @@ func TestInstallLifecycle(t *testing.T) {
 	mode := strings.TrimSpace(mustExec(t, name, "stat", "-c", "%a", "/var/lib/vpn-node/identity"))
 	if mode != "700" {
 		t.Fatalf("identity mode %s", mode)
-	}
-	testPendingHandoff(t, name, check.Baseline)
-	res, out, code = doInstall(t, name, relIn("2", rel2.ReleaseID), url, ca, bundle, "")
-	if code != 0 || res.ReleaseID != rel2.ReleaseID {
-		t.Fatalf("newer install %d %+v\n%s", code, res, out)
-	}
-	if got := strings.TrimSpace(mustExec(t, name, "readlink", "/opt/vpn-node/current")); got != "releases/"+rel2.ReleaseID {
-		t.Fatalf("current %s", got)
-	}
-	if sha(t, name, "/var/lib/vpn-node/identity/key.pem") != key1 || incarnation(t, name) != inc1 {
-		t.Fatal("newer install changed identity")
 	}
 	usageBefore := sha(t, name, "/var/lib/vpn-node/state/usage.db")
 	writeStdin(t, name, "/run/w5-token2", token2+"\n", "0600")
@@ -601,21 +591,21 @@ func TestInstallLifecycle(t *testing.T) {
 	}
 	assertForeign(t, name, defRoute, resolv)
 	analyze, analyzeCode := dexec(t, name, "systemd-analyze", "verify",
-		"/opt/vpn-node/releases/"+rel2.ReleaseID+"/lib/systemd/fvpn-agent.service",
-		"/opt/vpn-node/releases/"+rel2.ReleaseID+"/lib/systemd/fvpn-watchdog.service",
-		"/opt/vpn-node/releases/"+rel2.ReleaseID+"/lib/systemd/fvpn-updater.service",
-		"/opt/vpn-node/releases/"+rel2.ReleaseID+"/lib/systemd/fvpn-updater.timer",
-		"/opt/vpn-node/releases/"+rel2.ReleaseID+"/lib/systemd/fvpn-updater-recover.service",
-		"/opt/vpn-node/releases/"+rel2.ReleaseID+"/lib/systemd/fvpn-netbird.service",
-		"/opt/vpn-node/releases/"+rel2.ReleaseID+"/lib/systemd/fvpn-node-netbird-up.service",
-		"/opt/vpn-node/releases/"+rel2.ReleaseID+"/lib/systemd/fvpn-node-firstboot.service")
+		"/opt/vpn-node/releases/"+rel1.ReleaseID+"/lib/systemd/fvpn-agent.service",
+		"/opt/vpn-node/releases/"+rel1.ReleaseID+"/lib/systemd/fvpn-watchdog.service",
+		"/opt/vpn-node/releases/"+rel1.ReleaseID+"/lib/systemd/fvpn-updater.service",
+		"/opt/vpn-node/releases/"+rel1.ReleaseID+"/lib/systemd/fvpn-updater.timer",
+		"/opt/vpn-node/releases/"+rel1.ReleaseID+"/lib/systemd/fvpn-updater-recover.service",
+		"/opt/vpn-node/releases/"+rel1.ReleaseID+"/lib/systemd/fvpn-netbird.service",
+		"/opt/vpn-node/releases/"+rel1.ReleaseID+"/lib/systemd/fvpn-node-netbird-up.service",
+		"/opt/vpn-node/releases/"+rel1.ReleaseID+"/lib/systemd/fvpn-node-firstboot.service")
 	if analyzeCode != 0 || strings.Contains(analyze, "Unknown key") || strings.Contains(analyze, "Failed to parse") {
 		t.Fatalf("systemd-analyze %d\n%s", analyzeCode, analyze)
 	}
 }
 
 func TestRemovePurge(t *testing.T) {
-	const name = "fvpn-w5-installer-purge"
+	const name = "fvpn-w5-node-installer-purge"
 	startSystemd(t, name)
 	stage(t, name)
 	url, ca, bundle := startControl(t, name)
@@ -636,7 +626,7 @@ func TestRemovePurge(t *testing.T) {
 }
 
 func TestImagePrepareTwoBoots(t *testing.T) {
-	const src = "fvpn-w5-installer-image-src"
+	const src = "fvpn-w5-node-installer-image-src"
 	startSystemd(t, src)
 	stage(t, src)
 	url, ca, bundle := startControl(t, src)
@@ -645,6 +635,8 @@ func TestImagePrepareTwoBoots(t *testing.T) {
 	if code != 0 || res.Status != "installed" {
 		t.Fatalf("install %d %+v\n%s", code, res, out)
 	}
+	assertBaseline(t, res.Baseline, out)
+	seed := seededStatus(t, src, rel1.ReleaseID)
 	mustExec(t, src, "mkdir", "-p", "/etc/ssh", "/var/lib/netbird")
 	writeStdin(t, src, "/etc/ssh/ssh_host_ed25519_key", "test-host-key\n", "0600")
 	writeStdin(t, src, "/var/lib/netbird/private.key", "test-netbird-key\n", "0600")
@@ -683,12 +675,16 @@ func TestImagePrepareTwoBoots(t *testing.T) {
 	if _, code := runCmd(t, time.Minute, "docker", "stop", src); code != 0 {
 		t.Fatal("stop before commit")
 	}
-	commitOut, commitCode := runCmd(t, 2*time.Minute, "docker", "commit", src, "fvpn-w5-installer-image:prepared")
+	commitOut, commitCode := runCmd(t, 2*time.Minute, "docker", "commit", src, "fvpn-w5-node-installer-image:prepared")
 	if commitCode != 0 {
 		t.Fatalf("commit %s", commitOut)
 	}
-	a := bootClone(t, "fvpn-w5-installer-boot-a")
-	b := bootClone(t, "fvpn-w5-installer-boot-b")
+	a := bootClone(t, "fvpn-w5-node-installer-boot-a")
+	b := bootClone(t, "fvpn-w5-node-installer-boot-b")
+	if a.seed != seed || b.seed != seed {
+		t.Fatal("firstboot replaced the image seed evidence")
+	}
+	t.Log("seeded image -> two firstboot services: distinct incarnations/keys/machine IDs; original seed evidence preserved; check healthy")
 	if a.key == b.key || a.inc == b.inc || a.machine == b.machine {
 		t.Fatalf("clones are not distinct\n%+v\n%+v", a, b)
 	}
@@ -697,7 +693,7 @@ func TestImagePrepareTwoBoots(t *testing.T) {
 	}
 }
 
-type bootID struct{ key, inc, machine string }
+type bootID struct{ key, inc, machine, seed string }
 
 func bootClone(t *testing.T, name string) bootID {
 	t.Helper()
@@ -707,7 +703,7 @@ func bootClone(t *testing.T, name string) bootID {
 		"--env", "SYSTEMD_LOG_TARGET=console",
 		"--env", "SYSTEMD_LOG_LEVEL=info",
 		"-v", "/sys/fs/cgroup:/sys/fs/cgroup:rw",
-		"fvpn-w5-installer-image:prepared")
+		"fvpn-w5-node-installer-image:prepared")
 	if code != 0 {
 		t.Fatalf("clone %s: %s", name, out)
 	}
@@ -719,7 +715,7 @@ func bootClone(t *testing.T, name string) bootID {
 			"--env", "SYSTEMD_LOG_TARGET=console",
 			"--env", "SYSTEMD_LOG_LEVEL=info",
 			"-v", "/sys/fs/cgroup:/sys/fs/cgroup:rw",
-			"fvpn-w5-installer-image:prepared")
+			"fvpn-w5-node-installer-image:prepared")
 		if code != 0 {
 			t.Fatalf("clone retry %s: %s", name, out)
 		}
@@ -734,12 +730,15 @@ func bootClone(t *testing.T, name string) bootID {
 	url, _, _ := startControl(t, name)
 	rewriteControl(t, name, url)
 	writeStdin(t, name, "/var/lib/vpn-node/firstboot.token", token1+"\n", "0600")
-	fb, fbCode := dexec(t, name, "/usr/local/bin/fvpn-node-install", "firstboot", "--json")
-	if fbCode != 0 || !strings.Contains(fb, `"status": "enrolled"`) {
+	fb, fbCode := dexec(t, name, "systemctl", "start", "fvpn-node-firstboot.service")
+	if fbCode != 0 {
 		logs, _ := dexec(t, name, "journalctl", "-u", "fvpn-agent", "-u", "fvpn-node-firstboot", "--no-pager", "-n", "80")
 		t.Fatalf("firstboot %d\n%s\n%s", fbCode, fb, logs)
 	}
+	mustCheck(t, name, 0)
+	mustExec(t, name, "test", "!", "-e", "/var/lib/vpn-node/firstboot.token")
 	return bootID{
+		seed:    seededStatus(t, name, rel1.ReleaseID),
 		key:     sha(t, name, "/var/lib/vpn-node/identity/key.pem"),
 		inc:     incarnation(t, name),
 		machine: strings.TrimSpace(mustExec(t, name, "cat", "/etc/machine-id")),

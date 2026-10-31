@@ -12,14 +12,10 @@ import (
 )
 
 func TestD089_MergedUpdaterSeedProbe(t *testing.T) {
-	const name = "fvpn-w5-installer-seed-probe"
+	const name = "fvpn-w5-node-installer-seed-probe"
 	startSleep(t, name)
 	stage(t, name)
 	out, code := dexec(t, name, "/var/tmp/w5/rel1/tree-1/fvpn-updater", "seed", "--help")
-	if code == 64 && strings.Contains(out, `unknown command "seed"`) {
-		t.Logf("baseline: not seeded (updater without seed); probe exit=%d stderr=%q", code, out)
-		return
-	}
 	if (code != 0 && code != 64) || !strings.Contains(out, "-manifest") || !strings.Contains(out, "-tree") {
 		t.Fatalf("seed probe: exit=%d stderr=%q", code, out)
 	}
@@ -36,14 +32,26 @@ func assertBaseline(t *testing.T, baseline *installer.BaselineResult, log string
 		if baseline.Seed == nil || baseline.Seed.ExitCode != 0 {
 			t.Fatalf("seeded without command evidence: %+v", baseline)
 		}
-	case "not seeded (updater without seed)":
-		if baseline.Probe.ExitCode != 64 || !strings.Contains(baseline.Probe.Stderr, `unknown command "seed"`) || baseline.Seed != nil {
-			t.Fatalf("missing seed without probe evidence: %+v", baseline)
-		}
 	default:
 		t.Fatalf("baseline: %+v", baseline)
 	}
 	t.Logf("baseline: %s; probe exit=%d stderr=%q", baseline.Status, baseline.Probe.ExitCode, baseline.Probe.Stderr)
+}
+
+// This is deliberately a separate required scenario: a failure must not hide
+// reenrollment, removal or image lifecycle evidence.
+func TestD089_RealSeedThenJournaledUpgrade(t *testing.T) {
+	const c = "fvpn-w5-node-installer-upgrade"
+	startSystemd(t, c)
+	stage(t, c)
+	url, ca, bundle := startControl(t, c)
+	writeStdin(t, c, "/run/w5-token", token1+"\n", "0600")
+	r, out, code := doInstall(t, c, relIn("1", rel1.ReleaseID), url, ca, bundle, "/run/w5-token")
+	if code != 0 {
+		t.Fatalf("install: %d %s", code, out)
+	}
+	assertBaseline(t, r.Baseline, out)
+	testPendingHandoff(t, c, r.Baseline)
 }
 
 func testPendingHandoff(t *testing.T, c string, baseline *installer.BaselineResult) {
@@ -53,7 +61,6 @@ func testPendingHandoff(t *testing.T, c string, baseline *installer.BaselineResu
 	const config = "/etc/vpn-node/updater.json"
 	// TEST ONLY: keep the hand-off observable before explicit apply. The
 	// installed updater binary, configuration and journal remain real.
-	mustExec(t, c, "systemctl", "stop", "fvpn-updater.timer")
 	mustExec(t, c, "mkdir", "-p", "/run/systemd/system/fvpn-updater.service.d")
 	writeStdin(t, c, "/run/systemd/system/fvpn-updater.service.d/stage.conf", "[Service]\nExecCondition=/bin/false\n", "0644")
 	mustExec(t, c, "systemctl", "daemon-reload")
@@ -108,16 +115,18 @@ func testPendingHandoff(t *testing.T, c string, baseline *installer.BaselineResu
 	}
 	applyOut, code := dexec(t, c, updater, "apply", "--config", config, "--pending", pendingPath)
 	view := status()
-	if baseline.Status == "seeded" {
-		if code != 0 || view["state"] != "succeeded" || view["current_release_id"] != rel2.ReleaseID {
-			t.Fatalf("verified baseline must apply: exit=%d status=%+v\n%s", code, view, applyOut)
-		}
-	} else {
-		if code != 1 || !strings.Contains(applyOut, "CHECKPOINT_FAILED") || view["state"] != "failed" || view["stage"] != "verify" {
-			t.Fatalf("unseeded baseline must fail closed: exit=%d status=%+v\n%s", code, view, applyOut)
-		}
-		t.Log("BLOCKED: merged updater has no seed; verify/switch/restart/health success needs updater follow-up 14. No journal evidence was fabricated.")
+	if baseline.Status != "seeded" {
+		t.Fatal("real seeded baseline required")
 	}
+	if code != 0 || view["state"] != "succeeded" || view["current_release_id"] != rel2.ReleaseID {
+		_, checkpointCode := dexec(t, c, "test", "-f", "/var/lib/vpn-node/state/meter.checkpoint")
+		t.Fatalf("verified baseline must apply: exit=%d state=%v stage=%v current=%v meter_checkpoint_present=%t\n%s", code, view["state"], view["stage"], view["current_release_id"], checkpointCode == 0, applyOut)
+	}
+	checked := mustCheck(t, c, 0)
+	if checked.ReleaseID != rel2.ReleaseID || checked.ReleaseSource != "updater_journal" || checked.InstallRecord.ReleaseID != rel1.ReleaseID {
+		t.Fatalf("post-switch check did not reconcile install record: %+v", checked)
+	}
+	t.Log("real seeded upgrade: verify/switch/restart/health succeeded; post-switch check healthy; install-time record retained")
 	firstJob := view["job_id"]
 	// Exact record replay remains the same terminal job.
 	writeStdin(t, c, pendingPath, raw, "0600")
@@ -133,8 +142,7 @@ func testPendingHandoff(t *testing.T, c string, baseline *installer.BaselineResu
 	if status()["job_id"] == firstJob {
 		t.Fatal("new request id did not create new work")
 	}
-	// Verification fails before the baseline checkpoint even on the merged
-	// updater without seed. The current tree must remain unchanged.
+	// Signature verification must fail before switching the current tree.
 	third, _ := stage()
 	current := strings.TrimSpace(mustExec(t, c, "readlink", "/opt/vpn-node/current"))
 	envelope := mustExec(t, c, "cat", third.ManifestPath)

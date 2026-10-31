@@ -11,6 +11,8 @@ StartLimitBurst=5
 
 [Service]
 Type=simple
+# The agent invokes netbird status for its live tunnel probe.
+Environment=NB_DAEMON_ADDR=unix:///run/fvpn-netbird/netbird.sock
 ExecStart=/opt/vpn-node/current/fvpn-agent run -config /etc/vpn-node/agent.json
 Restart=on-failure
 RestartSec=2s
@@ -21,6 +23,9 @@ ProtectSystem=strict
 ProtectHome=yes
 PrivateTmp=yes
 RuntimeDirectory=vpn-node
+RuntimeDirectoryMode=0755
+# Shared heartbeat/health paths must survive every consumer's stop/restart.
+RuntimeDirectoryPreserve=yes
 UMask=0077
 ReadWritePaths=/var/lib/vpn-node /run/vpn-node
 CapabilityBoundingSet=CAP_NET_ADMIN CAP_NET_RAW

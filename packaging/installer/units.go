@@ -20,6 +20,7 @@ func rewriteUnit(content string, l Layout) string {
 		{d.StagingDir, l.StagingDir},
 		{d.CurrentLink, l.CurrentLink},
 		{d.ReleasesDir, l.ReleasesDir},
+		{d.NetbirdRunDir, l.NetbirdRunDir},
 		{d.NetbirdLib, l.NetbirdLib},
 		{d.NetbirdEtc, l.NetbirdEtc},
 		{d.EtcDir, l.EtcDir},
