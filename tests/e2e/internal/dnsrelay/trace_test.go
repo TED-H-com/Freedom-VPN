@@ -69,3 +69,18 @@ func TestAT20_OutstandingLifecycleAndMissingReceipts(t *testing.T) {
 		}
 	}
 }
+
+func TestAT20_RestartRetainsStreamsAndPendingRequest(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "trace.jsonl")
+	q := dnsmessage.Message{Questions: []dnsmessage.Question{{Name: dnsmessage.MustNewName("cache.example.invalid."), Type: dnsmessage.TypeA, Class: dnsmessage.ClassINET}}}
+	wire, _ := q.Pack()
+	first := Trace{Role: "authority", Path: path}
+	pending := first.Begin(wire, &net.UDPAddr{}, "udp", time.Now().UTC())
+	second := Trace{Role: "authority", Path: path}
+	second.Complete(second.Begin(wire, &net.UDPAddr{}, "udp", time.Now().UTC()), nil, os.ErrDeadlineExceeded)
+	raw, _ := os.ReadFile(path)
+	history, ok := History(raw)
+	if !ok || len(history) != 2 || history[0].Start.RequestID != pending.RequestID || history[0].Completion != nil || history[1].Completion == nil || history[0].Start.StreamID == history[1].Start.StreamID {
+		t.Fatal("restart erased an unresolved request or stream boundary")
+	}
+}

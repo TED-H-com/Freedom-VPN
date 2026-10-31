@@ -114,3 +114,73 @@ func TestE2E_Followup21Installer(t *testing.T) {
 		rec.Status = StatusPass
 	}
 }
+
+// Check the delivered diagnostic separately from the unchanged DNS assertions.
+// Fallback deliberately stops a relay; only the subsequent full matrix requires
+// all three lifecycle files. Failed/incomplete first-attempt artifacts survive.
+func (r *runner) verifyDNSHistory21() {
+	rec := Record{ID: "dns-history-integrity", Title: "Whole-sequence authority lifecycle and explicit relay streams", Spec: []string{"DNS02", "AT20", "D-102"}, Status: StatusFail}
+	defer func() { r.record(rec) }()
+	raw, err := os.ReadFile(filepath.Join(r.dir, "dns-negative.json"))
+	if err != nil {
+		recPathNote(&rec)("error", err.Error())
+		return
+	}
+	var source Record
+	if json.Unmarshal(raw, &source) != nil {
+		return
+	}
+	count, complete := 0, 0
+	joins := map[string]int{}
+	var walk func(any)
+	walk = func(value any) {
+		switch value := value.(type) {
+		case map[string]any:
+			if trace, ok := value["dns_trace"].(map[string]any); ok {
+				count++
+				if trace["trace_complete"] == true {
+					complete++
+				}
+				if history, ok := trace["authority_history"].([]any); ok {
+					for _, item := range history {
+						request, ok := item.(map[string]any)
+						if !ok {
+							continue
+						}
+						start, ok := request["start"].(map[string]any)
+						if !ok {
+							continue
+						}
+						id, _ := start["request_id"].(string)
+						if id != "" {
+							joins[id]++
+						}
+					}
+				}
+			}
+			for _, v := range value {
+				walk(v)
+			}
+		case []any:
+			for _, v := range value {
+				walk(v)
+			}
+		}
+	}
+	for _, observation := range source.Observations {
+		var value any
+		if json.Unmarshal([]byte(observation.Detail), &value) == nil {
+			walk(value)
+		}
+	}
+	repeated := 0
+	for _, n := range joins {
+		if n > 1 {
+			repeated++
+		}
+	}
+	noteJSON(&rec, "diagnostic_counts", map[string]int{"queries": count, "complete": complete, "distinct_authority_requests": len(joins), "requests_retained_across_queries": repeated})
+	if count == 36 && complete == count && repeated > 0 {
+		rec.Status = StatusPass
+	}
+}

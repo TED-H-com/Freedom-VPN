@@ -16,12 +16,12 @@ type Request struct {
 
 // History reads the entire append-only stream, including other closed cases
 // when checking sequence continuity. Missing starts, partial writes, duplicate
-// completions and stream restarts make the snapshot incomplete, not a cache hit.
+// completions make the snapshot incomplete, not a cache hit. Each process stream
+// starts at sequence one; retained stream IDs expose deliberate relay restarts.
 func History(raw []byte) ([]Request, bool) {
 	requests := []Request{}
 	indexes := map[string]int{}
-	var stream string
-	var seq uint64
+	sequences := map[string]uint64{}
 	complete := len(raw) == 0 || raw[len(raw)-1] == '\n'
 	scan := bufio.NewScanner(bytes.NewReader(raw))
 	for scan.Scan() {
@@ -30,13 +30,10 @@ func History(raw []byte) ([]Request, bool) {
 			complete = false
 			continue
 		}
-		if stream == "" {
-			stream = e.StreamID
-		}
-		if e.StreamID != stream || e.Sequence != seq+1 {
+		if e.Sequence != sequences[e.StreamID]+1 {
 			complete = false
 		}
-		seq = e.Sequence
+		sequences[e.StreamID] = e.Sequence
 		switch e.Phase {
 		case "started":
 			if _, exists := indexes[e.RequestID]; exists || !e.Completed.IsZero() {

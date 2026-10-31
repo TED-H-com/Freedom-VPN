@@ -136,6 +136,9 @@ func runFixtureCampaign(t *testing.T, dnsOnly bool) {
 	if dnsErr == nil {
 		r.fixtureFallback(ctx, s)
 		r.fixtureDNSNegative(ctx, s)
+		if dnsOnly {
+			r.verifyDNSHistory21()
+		}
 	} else {
 		for _, id := range []string{"native-dns-fallback", "dns-negative"} {
 			r.record(Record{ID: id, Title: id, Spec: []string{"AT20", "AT21"}, Status: StatusBlocked, Observations: []Observation{{Name: "prerequisite", Detail: "native DNS configuration failed"}}})

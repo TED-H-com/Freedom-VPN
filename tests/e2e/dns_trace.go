@@ -5,16 +5,18 @@ package e2e
 import (
 	"context"
 	"reflect"
+	"slices"
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/dnsrelay"
 )
 
 type DNSQueryTrace struct {
-	Started    time.Time `json:"started"`
-	Completed  time.Time `json:"completed"`
-	Responder  string    `json:"responder"`
-	CacheState string    `json:"cache_state"`
+	Streams    map[string][]string `json:"trace_streams"`
+	Started    time.Time           `json:"started"`
+	Completed  time.Time           `json:"completed"`
+	Responder  string              `json:"responder"`
+	CacheState string              `json:"cache_state"`
 	// TraceComplete describes readable, contiguous lifecycle receipts, not the
 	// absence of in-flight requests or proof of an internal AdGuard cache state.
 	TraceComplete           bool                 `json:"trace_complete"`
@@ -31,7 +33,7 @@ type DNSQueryTrace struct {
 }
 
 func (s *Stack) dnsQueryTrace(ctx context.Context, fixture string, rr uint16, started, completed time.Time, result FixtureProbeResult) *DNSQueryTrace {
-	out := &DNSQueryTrace{Started: started, Completed: completed, Responder: "unattributed", CacheState: "unknown", TraceComplete: fixture != "", ResolverEvents: []dnsrelay.Event{}, AuthorityEvents: []dnsrelay.Event{}, AuthorityHistory: []dnsrelay.Request{}, OutstandingAtStart: []string{}, OutstandingAtCompletion: []string{}, OutstandingAtRead: []string{}, TraceReadAt: map[string]time.Time{}, TTLRemaining: result.TTLs}
+	out := &DNSQueryTrace{Started: started, Completed: completed, Responder: "unattributed", CacheState: "unknown", TraceComplete: fixture != "", ResolverEvents: []dnsrelay.Event{}, AuthorityEvents: []dnsrelay.Event{}, AuthorityHistory: []dnsrelay.Request{}, OutstandingAtStart: []string{}, OutstandingAtCompletion: []string{}, OutstandingAtRead: []string{}, TraceReadAt: map[string]time.Time{}, Streams: map[string][]string{}, TTLRemaining: result.TTLs}
 	for _, role := range []string{"primary", "secondary", "authority"} {
 		name := s.lab.prefix + "-origin-dns"
 		if role == "secondary" {
@@ -47,6 +49,11 @@ func (s *Stack) dnsQueryTrace(ctx context.Context, fixture string, rr uint16, st
 			continue
 		}
 		history, complete := dnsrelay.History(raw)
+		for _, request := range history {
+			if !slices.Contains(out.Streams[role], request.Start.StreamID) {
+				out.Streams[role] = append(out.Streams[role], request.Start.StreamID)
+			}
+		}
 		out.TraceComplete = out.TraceComplete && complete
 		out.addHistory(role, fixture, rr, history)
 	}
