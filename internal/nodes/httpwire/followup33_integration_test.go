@@ -12,10 +12,12 @@ import (
 
 	"github.com/TED-H-com/Freedom-VPN/apps/control"
 	"github.com/TED-H-com/Freedom-VPN/internal/config"
+	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/db/dbtest"
 	"github.com/TED-H-com/Freedom-VPN/internal/leases"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes/httpwire"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes/nodestest"
+	"github.com/TED-H-com/Freedom-VPN/internal/releases/releasetest"
 	"github.com/TED-H-com/Freedom-VPN/internal/signing"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
@@ -53,6 +55,18 @@ func grantEligibilityFixture(t *testing.T) (*fixture, config.Nodes, api.EnrollRe
 		}
 	}
 	f := setupRuntime(t, runtime)
+	release := releasetest.New(t)
+	runtime.Releases.Validator = release.Validator
+	if _, err := runtime.Releases.Register(t.Context(), releasetest.Command(), release.Request(t, release.Manifest)); err != nil {
+		t.Fatal(err)
+	}
+	support := api.ReleaseSupportPayload{ApprovedReleaseIds: []uuid.UUID{release.Manifest.ReleaseId}, RevokedReleaseIds: []uuid.UUID{}}
+	support.MinimumServingVersion.ServingReleaseIds = support.ApprovedReleaseIds
+	if err := db.InTx(t.Context(), pool, db.TxOptions{}, func(tx pgx.Tx) error {
+		return runtime.Releases.ApplySupportTx(t.Context(), tx, f.p.ID, support, "TEST ONLY grant eligibility")
+	}); err != nil {
+		t.Fatal(err)
+	}
 	_, enrolled, cert := f.enroll(f.create(nil))
 	f.sql(`UPDATE nodes SET provisioning_state='ready',control_status='online',data_health='healthy',safety_status='passed',capacity='{"down_bps":1000000000,"up_bps":1000000000,"member_down_bps_cap":60000000,"member_up_bps_cap":30000000}',resource_version=resource_version+1 WHERE id=$1`, enrolled.NodeId)
 	f.sql(`UPDATE exits SET publication_intent='published',resource_version=resource_version+1 WHERE node_id=$1`, enrolled.NodeId)
@@ -132,8 +146,8 @@ func TestD087_AT10_ProductionConstructorAndHTTPFixedGenerationGrants(t *testing.
 		t.Helper()
 		var raw []byte
 		if err := runtime.Pool.QueryRow(t.Context(), `SELECT jsonb_build_object(
-			'node',jsonb_build_array(n.lifecycle_state,n.provisioning_state,n.safety_status,n.control_status,n.data_health,n.desired_config_generation::text,n.applied_config_generation::text,n.resource_version::text),
-			'publication',jsonb_build_array(e.publication_intent,e.resource_version::text),
+			'node',jsonb_build_array(n.lifecycle_state,n.provisioning_state,n.safety_status,n.control_status,n.data_health,n.member_forwarding_observed,n.desired_config_generation::text,n.applied_config_generation::text,n.resource_version::text),
+			'publication',jsonb_build_array(e.publication_intent,e.publication_observed,e.resource_version::text),
 			'frozen',EXISTS(SELECT 1 FROM node_identity_endpoints WHERE incarnation_id=n.current_incarnation_id AND mapping_frozen),
 			'compiled',(SELECT jsonb_agg(to_jsonb(d) ORDER BY d.generation) FROM desired_states d WHERE d.node_id=n.id),
 			'envelope',(SELECT to_jsonb(s) FROM desired_state_envelopes s WHERE s.node_id=n.id),
