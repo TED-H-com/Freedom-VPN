@@ -3,6 +3,7 @@ package agent
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"regexp"
 	"time"
 
@@ -12,11 +13,12 @@ import (
 )
 
 type containmentEvidence struct {
-	Code            api.ErrorCode               `json:"code"`
-	TC              []enforce.TCReadEvidence    `json:"tc,omitempty"`
-	Quarantine      *enforce.QuarantineEvidence `json:"quarantine,omitempty"`
-	ApplyQuarantine *enforce.QuarantineEvidence `json:"apply_quarantine,omitempty"`
-	Error           string                      `json:"error,omitempty"`
+	InitialQuarantine *enforce.QuarantineEvidence `json:"initial_quarantine,omitempty"`
+	Code              api.ErrorCode               `json:"code"`
+	TC                []enforce.TCReadEvidence    `json:"tc,omitempty"`
+	Quarantine        *enforce.QuarantineEvidence `json:"quarantine,omitempty"`
+	ApplyQuarantine   *enforce.QuarantineEvidence `json:"apply_quarantine,omitempty"`
+	Error             string                      `json:"error,omitempty"`
 }
 
 func (e *Engine) recordForeign(ev enforce.ServingEvidence) {
@@ -31,7 +33,7 @@ func (e *Engine) recordForeign(ev enforce.ServingEvidence) {
 		if len(reads) == 16 {
 			break
 		}
-		if r.Attachment == "qdisc" || (len(r.Objects) == 0 && r.Error == "") {
+		if len(r.Objects) == 0 && r.Error == "" {
 			continue
 		}
 		v := enforce.TCReadEvidence{Interface: evidenceToken(r.Interface), Attachment: evidenceToken(r.Attachment), Error: evidenceToken(r.Error)}
@@ -86,8 +88,17 @@ func cleanQuarantine(q enforce.QuarantineEvidence) *enforce.QuarantineEvidence {
 	return &q
 }
 
-func (e *Engine) recordApplyQuarantine(res enforce.ApplyResult) {
+func (e *Engine) recordApplyQuarantine(res enforce.ApplyResult, err error) {
+	hadEvidence := e.containment != nil
 	e.recordForeign(res.Evidence)
+	if !hadEvidence {
+		code := api.ErrorCodeHEALTHCHECKFAILED
+		var check *enforce.CheckError
+		if errors.As(err, &check) && api.ErrorCode(check.Reason).Valid() {
+			code = api.ErrorCode(check.Reason)
+		}
+		e.containment.Code = code
+	}
 	e.containment.ApplyQuarantine = cleanQuarantine(*res.Quarantine)
 	e.quarantinePending, e.memberPathPending = true, true
 }
@@ -99,12 +110,14 @@ func (e *Engine) quarantine(ctx context.Context) {
 		e.containment = &containmentEvidence{Code: api.ErrorCodeTCFOREIGNFILTER}
 	}
 	if e.appliedModel == nil {
+		e.containment.Quarantine = nil
 		e.containment.Error = "retained_model_unavailable"
 		return // Apply's own quarantine evidence is still reported.
 	}
 	if !e.planeLocked {
 		lock, err := nodelock.Acquire(ctx, e.cfg.LockPath, 3, 50*time.Millisecond)
 		if err != nil {
+			e.containment.Quarantine = nil
 			e.containment.Error = "lock_unavailable"
 			return
 		}
@@ -112,6 +125,9 @@ func (e *Engine) quarantine(ctx context.Context) {
 	}
 	q, err := e.plane.Quarantine(ctx, *e.appliedModel)
 	e.containment.Quarantine = cleanQuarantine(q)
+	if e.containment.InitialQuarantine == nil {
+		e.containment.InitialQuarantine = cleanQuarantine(q)
+	}
 	e.containment.Error = ""
 	if err != nil {
 		e.containment.Error = "quarantine_incomplete"
@@ -136,7 +152,7 @@ func (e *Engine) attachContainment(rep *api.ObservationReport, at time.Time) {
 	// no HTTP contract extension is necessary.
 	add := func(stage string, value any) {
 		b, _ := json.Marshal(value)
-		rep.Errors = append(rep.Errors, api.NodeError{Code: e.containment.Code, Stage: stage, Message: string(b), ObservedAt: at})
+		rep.Errors = append(rep.Errors, api.NodeError{Code: e.containment.Code, Stage: stage, Message: clipMsg(string(b)), ObservedAt: at})
 	}
 	for _, r := range e.containment.TC {
 		if len(r.Objects) == 0 {
@@ -148,6 +164,9 @@ func (e *Engine) attachContainment(rep *api.ObservationReport, at time.Time) {
 			part.Objects = []enforce.TCObject{obj}
 			add("tc_evidence", part)
 		}
+	}
+	if e.containment.InitialQuarantine != nil {
+		add("initial_quarantine", e.containment.InitialQuarantine)
 	}
 	if e.containment.Quarantine != nil {
 		add("quarantine", e.containment.Quarantine)

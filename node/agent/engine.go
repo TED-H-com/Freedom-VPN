@@ -896,6 +896,12 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 	for name, c := range e.counters {
 		prev[name] = c
 	}
+	// Capture the initial topology before Apply can itself quarantine a
+	// foreign attachment and discard routes/IPv6 addresses. A failed capture
+	// leaves forwarding off until the existing topology is configured.
+	if e.memberPath == nil && !e.checkMemberPath(ctx, model) {
+		return nil
+	}
 	wasServing := e.expectServing.Load()
 	res, err := e.plane.Apply(ctx, model, prev)
 	// A verified conntrack failure keeps serving. Only Failed stays pending.
@@ -904,7 +910,7 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 	verifiedDelete := err != nil && res.Verified && errors.As(err, &ctErr)
 	pending := verifiedDelete && len(ctErr.Failed) > 0
 	if res.Quarantine != nil {
-		e.recordApplyQuarantine(res)
+		e.recordApplyQuarantine(res, err)
 	}
 	if err != nil && !verifiedDelete {
 		e.rejectServing(ctx, model, res.Evidence, err)

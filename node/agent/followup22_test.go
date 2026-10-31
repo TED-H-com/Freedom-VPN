@@ -199,6 +199,9 @@ func TestD090_QuarantineRetainedModelEveryStepAndD096Recovery(t *testing.T) {
 	r.srv.SetFixture(generationFixture(3, oneBinding(r.clock.Wall())))
 	stepOK(t, r)
 	assertTCWire(t, r)
+	if r.eng.containment.InitialQuarantine == nil || !r.eng.containment.InitialQuarantine.Links[0].Before.AdminUp {
+		t.Fatal("initial containment evidence lost")
+	}
 	if r.eng.appliedModel == nil || !reflect.DeepEqual(*r.eng.appliedModel, old) || len(p.quarantines) == 0 {
 		t.Fatal("baseline cleared retained applied model")
 	}
@@ -265,4 +268,55 @@ func TestD090_ApplyQuarantineEvidenceTLS(t *testing.T) {
 	if !found || r.eng.containment.ApplyQuarantine == nil {
 		t.Fatal("ApplyResult.Quarantine not reported")
 	}
+}
+
+func TestD090_AlreadyBlockedAndRestartRetainContainmentModel(t *testing.T) {
+	r := newRig(t)
+	alignControlClock(r)
+	serveBoundGeneration(t, r)
+	old := *r.eng.appliedModel
+	p := &quarantinePlane{livePlane: &livePlane{memPlane: r.plane}, configured: true}
+	r.eng.plane = p
+	r.eng.withdraw(t.Context())
+	if r.eng.quarantinePending {
+		t.Fatal("setup already quarantined")
+	}
+	p.foreign = true
+	// A revoked early branch still audits its retained model after baseline.
+	r.eng.revoked = true
+	stepOK(t, r)
+	if len(p.quarantines) == 0 || !reflect.DeepEqual(p.quarantines[0], old) {
+		t.Fatal("already-blocked branch missed foreign state")
+	}
+	before := len(p.quarantines)
+	restartEngine(t, r, p)
+	stepOK(t, r)
+	if len(p.quarantines) <= before || !sameModelJSON(p.quarantines[len(p.quarantines)-1], old) || mustBeat(t, r).Serving {
+		t.Fatal("restart lost containment model")
+	}
+	assertTCWire(t, r)
+}
+
+func TestD088_FreezeBypassesAlreadyUsedRenewalSlot(t *testing.T) {
+	r := newRig(t)
+	alignControlClock(r)
+	serveBoundGeneration(t, r)
+	r.srv.StickyLease(false)
+	advanceToRenewal(r)
+	// Keep the first control request ahead of the observation. The final
+	// observation freezes after this step already used its ordinary lease slot.
+	flag := true
+	r.srv.SetIdentityFrozen(&flag)
+	r.eng.lastObs = time.Time{}
+	before := r.srv.LeaseRenewals()
+	stepOK(t, r)
+	if r.srv.LeaseRenewals() != before+2 || !r.eng.identityFrozen || mustBeat(t, r).Serving {
+		t.Fatalf("freeze did not override consumed slot: renewals=%d", r.srv.LeaseRenewals()-before)
+	}
+}
+
+func sameModelJSON(a, b enforce.Model) bool {
+	left, _ := json.Marshal(a)
+	right, _ := json.Marshal(b)
+	return string(left) == string(right)
 }
