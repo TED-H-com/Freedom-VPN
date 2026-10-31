@@ -12,6 +12,7 @@ import (
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"database/sql"
+	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
 	"encoding/pem"
@@ -28,6 +29,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/node/enforce"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
+	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 	"github.com/TED-H-com/Freedom-VPN/pkg/envelope"
 	"github.com/TED-H-com/Freedom-VPN/tests/e2e"
@@ -934,30 +936,62 @@ func (s *liveSuite) enrollNonCarryingNode() (uuid.UUID, uuid.UUID) {
 		s.t.Fatalf("generate P-256 key: %v", err)
 	}
 	csrDER, err := x509.CreateCertificateRequest(rand.Reader, &x509.CertificateRequest{
-		Subject: pkix.Name{CommonName: incID.String()},
+		Subject:            pkix.Name{CommonName: incID.String()},
+		SignatureAlgorithm: x509.ECDSAWithSHA256,
 	}, priv)
 	if err != nil {
 		s.t.Fatalf("create CSR: %v", err)
 	}
 	csrPEM := string(pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE REQUEST", Bytes: csrDER}))
-	enrollReq := map[string]any{
-		"csr_pem":               csrPEM,
-		"enrollment_request_id": uuid.Must(uuid.NewV7()),
-		"node_incarnation_id":   incID,
-		"platform": map[string]any{
-			"agent_version": "0.1.0",
-			"arch":          "amd64",
-			"kernel":        "6.8.0",
-			"os":            "ubuntu-24.04",
-		},
+	cfgRaw, _, _ := s.execInContainer("node", "cat", "/etc/vpn-node/agent-enroll.json")
+	var enrollCfg struct {
+		Release string `json:"agent_release"`
 	}
-	enrollResp := s.doHTTP(nil, http.MethodPost, "https://agent.example.invalid:9443/api/v1/agent/enroll", enrollReq, map[string]string{
-		"Authorization": "Bearer " + token,
+	_ = json.Unmarshal(cfgRaw, &enrollCfg)
+	if enrollCfg.Release == "" {
+		enrollCfg.Release = "0.0.0-e2e"
+	}
+	enrollReq := api.EnrollRequest{
+		EnrollmentRequestId: uuid.Must(uuid.NewV7()),
+		NodeIncarnationId:   incID,
+		CsrPem:              csrPEM,
+		Platform: api.NodePlatform{
+			Arch:      api.ArchitectureAmd64,
+			Os:        api.NodePlatformOsUbuntu,
+			OsVersion: "24.04",
+		},
+		AgentRelease: enrollCfg.Release,
+	}
+	proofRaw, err := canonjson.Marshal(struct {
+		RequestID     uuid.UUID        `json:"enrollment_request_id"`
+		IncarnationID uuid.UUID        `json:"node_incarnation_id"`
+		CSR           string           `json:"csr_pem"`
+		Platform      api.NodePlatform `json:"platform"`
+		Release       string           `json:"agent_release"`
+	}{enrollReq.EnrollmentRequestId, enrollReq.NodeIncarnationId, enrollReq.CsrPem, enrollReq.Platform, enrollReq.AgentRelease})
+	if err != nil {
+		s.t.Fatalf("canonjson marshal enroll proof: %v", err)
+	}
+	proofSum := sha256.Sum256(proofRaw)
+	proofSig, err := ecdsa.SignASN1(rand.Reader, priv, proofSum[:])
+	if err != nil {
+		s.t.Fatalf("sign enroll proof: %v", err)
+	}
+	enrollReq.Proof = base64.StdEncoding.EncodeToString(proofSig)
+
+	enrollResp := s.doHTTP(nil, http.MethodPost, "https://portal.example.invalid:8443/api/v1/agent/enroll", enrollReq, map[string]string{
+		"Authorization":   "Enrollment " + token,
+		"Idempotency-Key": enrollReq.EnrollmentRequestId.String(),
 	})
-	if enrollResp.status != http.StatusOK {
+	if enrollResp.status != http.StatusOK && enrollResp.status != http.StatusCreated {
 		s.t.Fatalf("POST /api/v1/agent/enroll for non-carrying node failed: HTTP %d %s", enrollResp.status, string(enrollResp.body))
 	}
 	nodeID := created.Enrollment.NodeId
+	_ = s.waitFor(15*time.Second, func() bool {
+		var gen uint64
+		err := s.pool.QueryRow(s.ctx, `SELECT desired_config_generation::bigint FROM nodes WHERE id = $1`, nodeID).Scan(&gen)
+		return err == nil && gen >= 1
+	})
 	s.t.Cleanup(func() {
 		_ = s.nodeMutation(nodeID, http.MethodDelete, "", map[string]any{"reason": "TEST ONLY cleanup non-carrying node"})
 	})
