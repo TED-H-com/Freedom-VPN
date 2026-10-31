@@ -45,7 +45,14 @@ func (h *handoffRun) receipt(name string) updateDocument {
 	var payload []byte
 	var hash string
 	if db.QueryRow(`SELECT payload,payload_hash FROM result_outbox ORDER BY seq DESC LIMIT 1`).Scan(&payload, &hash) != nil {
-		return nil
+		// Apply may flush immediately. The local ACK history pins the accepted
+		// seal hash; recover its immutable body from central and verify that pin.
+		var resultID, jobID string
+		if db.QueryRow(`SELECT result_id,job_id,payload_hash FROM result_history ORDER BY acked_at DESC LIMIT 1`).Scan(&resultID, &jobID, &hash) != nil {
+			return nil
+		}
+		payload = h.s.readJSON(`SELECT payload FROM installer_update_results WHERE node_id=$1 AND job_id=$2 AND payload->>'result_id'=$3`, uuid.MustParse(h.nodeID), uuid.MustParse(jobID), resultID)
+		h.note(name+"_source", "central immutable payload matched to local acknowledged result_id/job_id/hash")
 	}
 	sum, err := canonjson.HashHex(payload, "payload_hash")
 	if err != nil || sum != hash {
@@ -182,10 +189,10 @@ func sameAck(a, b installerHTTP) bool {
 func conflictHTTP(a installerHTTP) bool {
 	return a.status == 409 && document(a.body["error"]).text("code") == "ACK_CONFLICT"
 }
-func (h *handoffRun) resultAcceptance(node string, baseline, candidate e2e.BuiltRelease, result updateDocument) {
+func (h *handoffRun) resultAcceptance(node string, candidate e2e.BuiltRelease, result updateDocument) (installerHTTP, string) {
 	if result == nil || result.text("state") != "succeeded" {
 		h.note("central_success_not_reached", true)
-		return
+		return installerHTTP{}, ""
 	}
 	// Independently reproduce D-110's documented UUIDv5 formula, not its helper.
 	namespace := uuid.NewSHA1(uuid.NameSpaceOID, []byte("fvpn-installer-apply|"+candidate.ID.String()+"|"+candidate.ManifestSHA256))
@@ -213,6 +220,14 @@ func (h *handoffRun) resultAcceptance(node string, baseline, candidate e2e.Built
 	errDoc := document(wrongAck.body["error"])
 	afterWrong := h.central("central_after_wrong_job", node)
 	h.check("wrong_job", wrongAck.status == 409 && errDoc.text("code") == "STATE_CONFLICT" && document(errDoc["details"]).text("reason") == "job_id_mismatch" && beforeReplay.text("resource_version") == afterWrong.text("resource_version"))
+	return ack, key
+}
+
+func (h *handoffRun) resultCorrection(node string, baseline, candidate e2e.BuiltRelease, result updateDocument, ack installerHTTP, key string) {
+	if result == nil || ack.status != 202 {
+		return
+	}
+	beforeReplay := h.central("central_before_correction", node)
 	// D-127/r16 M-2 HTTP contract stimulus. This explicit synthetic rollback
 	// is derived from a real receipt; it is not evidence of a physical rollback.
 	// The regular AT26 independently proves the real updater rollback.

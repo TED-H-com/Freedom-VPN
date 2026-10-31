@@ -27,12 +27,13 @@ there is no interactive container repair, product edit or journal write.
 The initial no-work observation holds only the authenticated desired-state
 poll. Bootstrap is allowed to finish so the real NetBird daemon can join through
 `/run/fvpn-netbird/netbird.sock`. Seed verifies the same material under the
-process default umask and 077. The first stopped-agent attempt establishes a
-real final-sample failure and exercises D-111's null-central-baseline receipt.
+process default umask and 077. The initial successful apply exercises D-111 with a null central baseline.
+A later negative stops the producer and withdraws its genuine checkpoint, then
+requires a sealed final-sample failure without promoting the failed candidate.
 Its exact pending bytes are restored to the original path for sealed replay;
 changing the pending path or request UUID is not a valid replay test.
 
-The next higher release runs with the real agent active. The shared observer
+The higher release runs with the real agent active. The shared observer
 records the updater's persisted wait, boot and latch identity and the agent's
 five-field checkpoint. A pass requires byte-equal UUIDs within the original
 window, matching receipt accounting, apply exit 0, a real pointer/executable
@@ -40,6 +41,10 @@ switch, unit restarts and all five health checks. The run uses a quiet,
 unpublished fixture. The serving withdrawal and nonzero durable watermark
 measurement is consumed from [devstack 19](../../runs/2026-10-31/followup19/README.md)
 and its [D-102 response](../../RESPONSES.md#updater--installer--2026-10-31-follow-up-19-measured-result).
+
+Acknowledged receipts are recovered from central only when their result/job
+IDs and canonical hash match the local journal ACK history. This preserves
+evidence when the product sender has already drained the outbox.
 
 Central checks use real mTLS HTTP: recomputed D-110 UUIDv5 identity, accepted
 failure baseline and success promotion, exact keyed and new-key replay,

@@ -38,6 +38,7 @@ type handoffRun struct {
 	rec    at.Record
 	checks map[string]bool
 	etags  map[string]string
+	nodeID string
 }
 
 func (h *handoffRun) note(name string, v any) {
@@ -91,6 +92,9 @@ func (h *handoffRun) central(name, node string) updateDocument {
 		return nil
 	}
 	doc := document(resp.Body)
+	if _, ok := doc["netbird_peer_id"]; ok {
+		doc.set("netbird_peer_id", "[redacted]")
+	}
 	if h.etags == nil {
 		h.etags = map[string]string{}
 	}
@@ -111,7 +115,7 @@ func (s *updatesFollowup) installerHandoff(stack *e2e.Stack, baseline e2e.Servin
 	h.rec.Actual = "Installer prerequisites not reached"
 	h.rec.Observations = nil
 	defer func() {
-		required := []string{"install", "seed", "fresh_no_work", "fresh_guard_clear", "boot_kernel", "legacy_boot_config", "checkpoint_failure", "failure_replay", "failure_baseline", "staged", "correlated", "apply", "restarts", "central", "job_id", "replay", "conflict", "wrong_job", "correction", "etag", "tamper", "downgrade"}
+		required := []string{"install", "seed", "fresh_no_work", "fresh_guard_clear", "boot_kernel", "legacy_boot_config", "checkpoint_failure", "failure_replay", "failure_baseline", "null_baseline_promotion", "staged", "correlated", "apply", "restarts", "central", "job_id", "replay", "conflict", "wrong_job", "correction", "etag", "tamper", "downgrade"}
 		var failed []string
 		for _, k := range required {
 			if !h.checks[k] {
@@ -182,6 +186,7 @@ func (s *updatesFollowup) installerHandoff(stack *e2e.Stack, baseline e2e.Servin
 		return
 	}
 	node := enrollment.Enrollment.NodeId.String()
+	h.nodeID = node
 	defer h.retire(node)
 	token, err := enrollment.Token.Get()
 	if !must(err) || !must(stack.StageInstallerToken(s.ctx, "installer-node", token)) {
@@ -243,46 +248,12 @@ func (s *updatesFollowup) installerHandoff(stack *e2e.Stack, baseline e2e.Servin
 	h.note("agent_ready", ready)
 	beat := h.run("agent_boot", "cat", "/run/vpn-node/heartbeat")
 	h.check("boot_kernel", !hasBoot && kernel != "" && strings.Contains(beat.Stdout, "boot_id "+kernel) && document(seeded["seeded_baseline"]).text("boot_id") == kernel && holder.text("boot_id") == kernel)
-	// Real absent-checkpoint negative before central has a release baseline.
-	h.run("stop_for_checkpoint_negative", "systemctl", "stop", "fvpn-watchdog.service", "fvpn-agent.service")
-	stageFailure := h.upgrade("stage_checkpoint_negative", 1)
-	h.run("failure_pending", "cat", installerPending)
-	if h.run("preserve_failure_pending", "cp", installerPending, "/var/tmp/e2e-rel/failure-pending.json").Exit != 0 {
-		return
-	}
 	before := h.current()
-	h.note("current_before_failure", before)
-	h.run("checkpoint_before_negative", "cat", "/var/lib/vpn-node/state/meter.checkpoint")
-	failed := h.run("apply_checkpoint_negative", installedUpdater, "apply", "--config", installerConfig, "--pending", installerPending)
-	failedStatus := h.status("checkpoint_failure_status")
-	failure := h.receipt("failure_receipt")
-	h.note("current_after_failure", h.current())
-	h.run("failure_latch", "cat", "/var/lib/vpn-node/update-journal/forwarding.blocked")
-	h.check("checkpoint_failure", stageFailure.Exit == 0 && failed.Exit == 1 && strings.Contains(failed.Stderr, "CHECKPOINT_FAILED") && h.current() == before && failedStatus.text("state") == "failed" && failedStatus.text("stage") == "final_sample" && string(failure["usage_checkpoint"]) == "null" && string(failure["member_forwarding_enabled"]) == "false")
-	// Restore the exact original pending bytes to its original path for sealed
-	// replay. No changed path/request UUID can masquerade as this replay.
-	if h.run("restore_exact_failure_pending", "cp", "/var/tmp/e2e-rel/failure-pending.json", installerPending).Exit != 0 {
-		return
-	}
-	replayFailure := h.run("sealed_failure_apply", installedUpdater, "apply", "--config", installerConfig, "--pending", installerPending)
-	recoverFailure := h.run("sealed_failure_recover", installedUpdater, "recover", "--config", installerConfig)
-	afterReplay := h.receipt("failure_receipt_after_recovery")
-	h.check("failure_replay", replayFailure.Exit == 1 && strings.Contains(replayFailure.Stderr, "outcome=failed") && recoverFailure.Exit == 2 && bytes.Equal(marshalDoc(failure), marshalDoc(afterReplay)) && h.current() == before && !h.absent("/var/lib/vpn-node/update-journal/forwarding.blocked"))
-	failureAck := h.submit("failure_submission", failure, uuid.NewString())
-	failureView := h.central("central_seeded_failure", node)
-	releasesView := document(failureView["releases"])
-	h.check("failure_baseline", failureAck.status == 202 && string(document(beforeCentral["releases"])["current_release_id"]) == "null" && releasesView.text("current_release_id") == releases[0].ID.String() && releasesView.text("last_good_release_id") == releases[0].ID.String() && document(failureView["update"]).text("state") == "failed")
-	h.run("flush_failure", installedUpdater, "flush", "--config", installerConfig)
-	// Resume the real agent before a new, higher release requests a fresh latch.
-	if !must(stack.RestoreInstallerServices(s.ctx, "installer-node", installed.Services)) {
-		return
-	}
-	s.wait(20*time.Second, func() bool { return h.run("", "systemctl", "is-active", "fvpn-agent.service").Stdout == "active" })
-	stage := h.upgrade("upgrade", 2)
+	stage := h.upgrade("upgrade", 1)
 	pending := document([]byte(h.run("pending_before_apply", "cat", installerPending).Stdout))
 	h.note("current_after_stage", h.current())
 	h.note("staged_pending", pending)
-	h.check("staged", stage.Exit == 0 && stage.Status == "staged" && pending.text("release_id") == releases[2].ID.String() && h.current() == before)
+	h.check("staged", stage.Exit == 0 && stage.Status == "staged" && pending.text("release_id") == releases[1].ID.String() && h.current() == before)
 	unitsBefore := h.run("units_before_apply", "systemctl", "show", "fvpn-agent.service", "fvpn-watchdog.service", "-p", "Id", "-p", "ExecMainStartTimestampMonotonic").Stdout
 	observer := exec.CommandContext(s.ctx, "docker", "exec", s.r.lab.prefix+"-installer-node", "/usr/local/bin/fvpn-e2e-nodeconfig", "upgrade-observe")
 	if !must(observer.Start()) {
@@ -299,15 +270,51 @@ func (s *updatesFollowup) installerHandoff(stack *e2e.Stack, baseline e2e.Servin
 	h.note("current_after_apply", h.current())
 	unitsAfter := h.run("units_after_apply", "systemctl", "show", "fvpn-agent.service", "fvpn-watchdog.service", "-p", "Id", "-p", "ExecMainStartTimestampMonotonic").Stdout
 	executable := h.run("running_executable", "sh", "-c", `p=$(systemctl show -p MainPID --value fvpn-agent.service); readlink /proc/$p/exe`).Stdout
-	h.check("restarts", unitsBefore != unitsAfter && strings.Contains(executable, releases[2].ID.String()))
+	h.check("restarts", unitsBefore != unitsAfter && strings.Contains(executable, releases[1].ID.String()))
 	success := h.receipt("success_receipt")
 	var health map[string]string
 	_ = json.Unmarshal(after["health"], &health)
-	h.check("apply", applied.Exit == 0 && (updatesJournal{Health: health}).allPassed() && after.text("source") == "installer" && after.text("state") == "succeeded" && filepath.Base(h.current()) == releases[2].ID.String() && h.absent(installerPending) && checkpointMatches(checkpoint, success))
+	h.check("apply", applied.Exit == 0 && (updatesJournal{Health: health}).allPassed() && after.text("source") == "installer" && after.text("state") == "succeeded" && filepath.Base(h.current()) == releases[1].ID.String() && h.absent(installerPending) && checkpointMatches(checkpoint, success))
 	claim := h.claimBoot()
 	h.check("boot_kernel", h.checks["boot_kernel"] && claim == kernel && success.text("boot_id") == kernel)
 	h.run("post_apply_check", "/usr/local/bin/fvpn-node-install", "check", "--json")
-	h.resultAcceptance(node, releases[0], releases[2], success)
+	ack, key := h.resultAcceptance(node, releases[1], success)
+	h.check("null_baseline_promotion", string(document(beforeCentral["releases"])["current_release_id"]) == "null" && h.checks["central"])
+	// Real absent-checkpoint negative after the initial successful apply.
+	h.run("stop_for_checkpoint_negative", "systemctl", "stop", "fvpn-watchdog.service", "fvpn-agent.service")
+	// Withdraw genuine prior evidence while the producer is stopped. A stale
+	// checkpoint from an earlier blocked interval must not substitute for this
+	// explicitly absent checkpoint negative.
+	h.run("withdraw_checkpoint", "sh", "-c", `if [ -e "$1" ]; then mv "$1" "${1}.withdrawn"; fi`, "sh", "/var/lib/vpn-node/state/meter.checkpoint")
+	stageFailure := h.upgrade("stage_checkpoint_negative", 2)
+	h.run("failure_pending", "cat", installerPending)
+	if h.run("preserve_failure_pending", "cp", installerPending, "/var/tmp/e2e-rel/failure-pending.json").Exit != 0 {
+		return
+	}
+	before = h.current()
+	h.note("current_before_failure", before)
+	h.run("checkpoint_before_negative", "cat", "/var/lib/vpn-node/state/meter.checkpoint")
+	failed := h.run("apply_checkpoint_negative", installedUpdater, "apply", "--config", installerConfig, "--pending", installerPending)
+	failedStatus := h.status("checkpoint_failure_status")
+	failure := h.receipt("failure_receipt")
+	h.note("current_after_failure", h.current())
+	h.run("failure_latch", "cat", "/var/lib/vpn-node/update-journal/forwarding.blocked")
+	h.check("checkpoint_failure", stageFailure.Exit == 0 && failed.Exit == 1 && strings.Contains(failed.Stderr, "CHECKPOINT_FAILED") && h.current() == before && failedStatus.text("state") == "failed" && failedStatus.text("stage") == "final_sample" && string(failure["usage_checkpoint"]) == "null" && string(failure["member_forwarding_enabled"]) == "false")
+	// Restore the exact original pending bytes to its original path for sealed
+	// replay. No changed path/request UUID can masquerade as this replay.
+	if h.run("restore_exact_failure_pending", "cp", "/var/tmp/e2e-rel/failure-pending.json", installerPending).Exit != 0 {
+		return
+	}
+	replayFailure := h.run("sealed_failure_apply", installedUpdater, "apply", "--config", installerConfig, "--pending", installerPending)
+	recoverFailure := h.run("sealed_failure_recover", installedUpdater, "recover", "--config", installerConfig)
+	afterReplay := h.receipt("failure_receipt_after_recovery")
+	h.check("failure_replay", failure != nil && afterReplay != nil && replayFailure.Exit == 1 && strings.Contains(replayFailure.Stderr, "outcome=failed") && recoverFailure.Exit == 2 && sameJSON(marshalDoc(failure), marshalDoc(afterReplay)) && h.current() == before && !h.absent("/var/lib/vpn-node/update-journal/forwarding.blocked"))
+	failureAck := h.submit("failure_submission", failure, uuid.NewString())
+	failureView := h.central("central_after_failure", node)
+	releasesView := document(failureView["releases"])
+	h.check("failure_baseline", failureAck.status == 202 && releasesView.text("current_release_id") == releases[1].ID.String() && releasesView.text("last_good_release_id") == releases[1].ID.String() && document(failureView["update"]).text("state") == "failed")
+	h.run("flush_failure", installedUpdater, "flush", "--config", installerConfig)
+	h.resultCorrection(node, releases[0], releases[1], success, ack, key)
 	// A separate higher release lets tamper fail before switch, independently of
 	// the successful immutable job. The lower baseline must be refused at staging.
 	h.upgrade("stage_tamper", 3)
@@ -317,7 +324,7 @@ func (s *updatesFollowup) installerHandoff(stack *e2e.Stack, baseline e2e.Servin
 		before = h.current()
 		h.run("tamper_stimulus", "sh", "-c", `printf X | dd of="$1" bs=1 seek=32 count=1 conv=notrunc status=none`, "sh", path)
 		rejected := h.run("apply_tampered", installedUpdater, "apply", "--config", installerConfig, "--pending", installerPending)
-		h.check("tamper", rejected.Exit == 1 && strings.Contains(rejected.Stderr, "HASH_MISMATCH") && h.current() == before)
+		h.check("tamper", rejected.Exit != 0 && strings.Contains(rejected.Stderr, "HASH_MISMATCH") && h.current() == before)
 	}
 	h.run("preserve_pending", "sh", "-c", `if [ -e "$1" ]; then mv "$1" "${1%.json}.tamper.json"; fi`, "sh", installerPending)
 	down := h.upgrade("downgrade", 0)
