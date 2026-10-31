@@ -129,18 +129,19 @@ curl -fsS "https://vpn.example.com:8443/api/v1/admin/audit-events?resource=node:
 
 ### 2.3 OpenAPI Contract Inventory (`50` Operations) (`D-065`, `D-067`, `D-071`, `D-072`, `D-075`, `D-076`, `D-077`, `D-081`, `#164`, `#176`, `#179`, `#191`, `#195`, `#200`, `#206`, `#211`, `#213`, `#216`, `#217`, `#223`, `#238`, `#243`, `#244`, `docs/contracts/README.md`, `docs/nodes/WIRING.md`, `docs/portal/README.md`, `pkg/apierr/apierr.go`)
 
-`contracts/openapi.yaml` (OpenAPI `1.10.0`, revision 14) defines **50 HTTP operations** across `/api/v1`. The existing 49 are wired in `apps/control` on `main` (wire-nodes follow-up 17 `#179` wired `getFleetConfig` and `updateFleetConfig` at `GET`/`PUT /api/v1/admin/fleet-config` in `internal/nodes/httpwire/fleet_config.go`, `D-065`; wire-nodes follow-up 19 `#200` wired `listNodeIncarnations` at `GET /api/v1/admin/nodes/{node_id}/incarnations` in `internal/nodes/httpwire/handlers.go` and `internal/nodes/incarnations.go`, `ENR-03`; and wire-members follow-up 10 `#244` wired `listAdminDevices` at `GET /api/v1/admin/devices` and `authorizeMemberDevice` at `POST /api/v1/admin/members/{member_id}/devices/{device_id}/authorize` in `internal/members/httpadapter/reads.go` and `internal/members/httpadapter/commands.go`, `D-077`, `D-081`; see §3.1, §3.5, §3.6, §6.1, and §7.1 below):
+`contracts/openapi.yaml` (OpenAPI `1.10.0`, revision 14) defines **50 HTTP operations** across `/api/v1`. All 50 are wired in `apps/control` on `main` (wire-nodes follow-up 17 `#179` wired `getFleetConfig` and `updateFleetConfig` at `GET`/`PUT /api/v1/admin/fleet-config` in `internal/nodes/httpwire/fleet_config.go`, `D-065`; wire-nodes follow-up 19 `#200` wired `listNodeIncarnations` at `GET /api/v1/admin/nodes/{node_id}/incarnations` in `internal/nodes/httpwire/handlers.go` and `internal/nodes/incarnations.go`, `ENR-03`; and wire-members follow-up 10 `#244` wired `listAdminDevices` at `GET /api/v1/admin/devices` and `authorizeMemberDevice` at `POST /api/v1/admin/members/{member_id}/devices/{device_id}/authorize` in `internal/members/httpadapter/reads.go` and `internal/members/httpadapter/commands.go`, `D-077`, `D-081`; see §3.1, §3.5, §3.6, §6.1, and §7.1 below):
 
-Revision 14 declares `revokeMemberGrant` with a `501 NOT_IMPLEMENTED` composition
-fallback until wire-members follow-up 11. D-105 adds explicit retired-stream
-usage hand-off: current mTLS identity, same node, enrollment after retirement,
-interval end at most retirement plus one sampling interval, unchanged event
-identity/hash, and an ACK naming the original stream. Usage-central and
-usage-agent implement it before ENR-05/usage acceptance. D-106 adds optional
-nullable `ObservationReport.tc_evidence` with bounded redacted read-back,
-actual read time, candidate generation (not an ACK), and the complete verifier
-outcome; agent-core follow-up 25 emits and wire-nodes follow-up 31 stores/projects
-it. Absent/null means no retained read. Existing error rows remain unchanged.
+Wire-members follow-up 11 (#297) registers `revokeMemberGrant`; the generated
+fallback is retired for the configured application. D-105 central acceptance
+merged #296: the current mTLS identity presents one retired same-node origin,
+with enrollment strictly after retirement and interval end ≤ retirement plus
+central `sampling_interval_bound_seconds` (D-112, default 10 s). Original event
+identity/hash and the per-stream ACK are preserved. Node retention/upload
+merged #299 but is inactive pending agent-core follow-up 25's D-118 hook;
+usage AT follow-up 5 still owns live hand-off assertions. D-106's optional
+nullable `ObservationReport.tc_evidence` has its producer helper in #295;
+agent-core follow-up 25 still wires the observation. Absent/null means no
+retained read. Existing error rows remain unchanged.
 Publication-gate cause stays in `Operation.steps[].message`, including
 `member_forwarding_unconfirmed (lease_unconfirmed)`.
 
@@ -593,7 +594,7 @@ Use this sequence whenever central PostgreSQL is restored from backup or when in
 
 - **Inspecting a node's local SQLite usage ledger (`fvpn-agent usage snapshot`, `#225`, `#232`) and `ObservationReport.usage` / `NodeDetail.usage_outbox` (`SECOPS-19`, `#226`, `#232`, `#238`, `#243`, `db/migrations/00189_node_incarnation_usage_outbox.sql`)**:
   When a node's usage watermark in `usage_checkpoints` lags central or before/after an installer re-run (`AT06`, `ENR-05`), run `/opt/vpn-node/current/fvpn-agent usage snapshot -config /etc/vpn-node/agent-run.json [-json]` (`#225`, `#232`, [`docs/node/usage-store.md`](../node/usage-store.md), [`docs/node/usage-upload.md`](../node/usage-upload.md)) on the node to read `state_dir/usage.db` (`mode=ro`, `query_only`, `1 s` `SnapshotBusyTimeout`, no update lock; see §3.1 for all fields, exit codes `0`/`1`/`2`/`3`/`4`/`5`/`64`, the `ApplyACK` single-transaction non-torn invariant, the `#232` pure-read rule that `gate_stopped` is evaluated only by `meter.Health` -> `EvaluateGate` on the run loop, and the `#232` rule that `ledger_epoch` stays `null` / `none` until a verified recovery checkpoint `ApplyCheckpoint` is accepted even when `central_acked_through > 0`). Central also stores each heartbeat's live `ObservationReport.usage` (`UsageOutboxStatus`, `#226`, `SECOPS-19`: `last_durable_event_seq`, `central_acked_through`, `blocked_seq`, `unacked_event_count`, `unacked_payload_bytes`, `oldest_unacked_at`, `acked_archive_bytes`, `ledger_epoch`, `meter_epoch_id`) inside `node_observations.report_payload` and, on `main` (`#238`, `#243`, migration `db/migrations/00189_node_incarnation_usage_outbox.sql`), projects **`NodeDetail.usage_outbox`** (`UsageOutboxStatus` fields + `observed_at`) on `GET /api/v1/admin/nodes/{node_id}` participating in the strong node `ETag` (`"<resource_version>"`, `304 Not Modified` on `If-None-Match`; see §2.3 and §3.3 item 6).
-**Latest measurement — AT30 passed again (#265), run `0e8ff9a4-4fa1-4154-ae35-847a5be4d985` (`0e8ff9a4`), product `d9e28f8`, on the shared development host:** pre-replay database RPO **95.507504 s**, post-replay service usage RPO **0 s**, protocol RTO **93.532554563 s**, total outage RTO **106.868537734 s**. These are shared-host measurements, not production objectives. Historical #242 and #221 measurements remain separately dated below. SECOPS-16/17 closed against #240 (`past_due` admitted only while `paid` stays true); SECOPS-20 closed against #241 (D-079); SECOPS-18/19 revalidated, SECOPS-05 retained, D-077 proved through HTTP. SECOPS-21 stays open. AT29/AT31 were deferred to devstack follow-up 15 exports; those exports do not by themselves promote the full AT cases. Source: [AT30 Follow-up 10 archive](../e2e/at/secops/history/follow-up-10/AT30.md) and [exact JSON](../e2e/at/secops/history/follow-up-10/restore-reconcile.json). Security-ops follow-up 11 (#274) archived all 104 files byte-identical under D-098; its live AT29 / AT31 / AT30 runs were not executed. D-103 assigns the existing `fvpn-w4-secops-*` namespace to follow-up 12.
+**Historical follow-up 10 measurement — AT30 passed again (#265), run `0e8ff9a4-4fa1-4154-ae35-847a5be4d985` (`0e8ff9a4`), product `d9e28f8`, on the shared development host:** pre-replay database RPO **95.507504 s**, post-replay service usage RPO **0 s**, protocol RTO **93.532554563 s**, total outage RTO **106.868537734 s**. These are shared-host measurements, not production objectives. Historical #242 and #221 measurements remain separately dated below. SECOPS-16/17 closed against #240 (`past_due` admitted only while `paid` stays true); SECOPS-20 closed against #241 (D-079); SECOPS-18/19 revalidated, SECOPS-05 retained, D-077 proved through HTTP. SECOPS-21 stays open. AT29/AT31 were deferred to devstack follow-up 15 exports; those exports do not by themselves promote the full AT cases. Source: [AT30 Follow-up 10 archive](../e2e/at/secops/history/follow-up-10/AT30.md) and [exact JSON](../e2e/at/secops/history/follow-up-10/restore-reconcile.json). Security-ops follow-up 11 (#274) archived all 104 files byte-identical under D-098; its live AT29 / AT31 / AT30 runs were not executed. D-103 assigns the existing `fvpn-w4-secops-*` namespace to follow-up 12.
 
 Portal follow-up 16 (#255) supplies `/admin/devices` with authorization-unconfirmed, status and member filters, filter-bound cursors, a confirmed Re-authorize action, a neutral receipt for an existing operation, and a separate paginated read-back until the grant is visible. The node detail also has the usage-outbox block. Operators may use the portal page or the API above; a 202 receipt alone is not a completed grant.
 
@@ -677,7 +678,7 @@ curl -fsS -X POST "https://vpn.example.com:8443/api/v1/admin/members/${MEMBER_ID
     "reason": "7-day courtesy access while billing issue is resolved"
   }'
 ```
-*(Grant creation returns `202 Accepted` with a `member.grant` operation on `entitlement_grant:<grant_id>`. Revision 14 adds `POST /api/v1/admin/members/{member_id}/grants/{grant_id}/revoke` with `ReasonRequest`, admin session + CSRF and `Idempotency-Key`; `202` carries `member.grant_revoke` and the same audit action. Devices it authorized move to pending within one heartbeat through D-050 / D-081. A missing/wrong-member grant returns `404 RESOURCE_NOT_FOUND`; a new command for an already revoked or expired grant returns `409 STATE_CONFLICT`; same-key replay returns the original operation. This covers finite and existing open-ended grants. Finite expiry via `members.reconcile` remains separate. The generated handler currently returns `501 NOT_IMPLEMENTED`; wire-members follow-up 11 implements it.)*
+*(Grant creation returns `202 Accepted` with a `member.grant` operation on `entitlement_grant:<grant_id>`. Revision 14 adds `POST /api/v1/admin/members/{member_id}/grants/{grant_id}/revoke` with `ReasonRequest`, admin session + CSRF and `Idempotency-Key`; `202` carries `member.grant_revoke` and the same audit action. Devices it authorized move to pending within one heartbeat through D-050 / D-081. A missing/wrong-member grant returns `404 RESOURCE_NOT_FOUND`; a new command for an already revoked or expired grant returns `409 STATE_CONFLICT`; same-key replay returns the original operation. Wire-members follow-up 11 (#297) implements this route. D-117: all grants are finite (`valid_until` NOT NULL + `isfinite` since migration 00001); far-future grants can be withdrawn too. Worker `member.grant_revoked` joins the fence batch from #291. Finite expiry via `members.reconcile` remains separate. D-119: a finite grant's deadline means expiry; a plan change at a boundary is a billing-issued replacement grant, with no scheduled plan-change contract.)*
 
 - **Fair-Use Enforcement Reach and `fair_use.applying` Convergence (`#222`, `§11.4`–`§11.8`, [`docs/policies/README.md`](../policies/README.md), [`docs/usage/README.md`](../usage/README.md), `internal/desiredstate/compiler.go`, `internal/usage/queries.go`)**:
   - **What triggers desired-state recompilation on serving exits:** Activating a `fair_use` policy revision (`policy.activated` with `domain = "fair_use"`) and a member's Fair-Use tier change (`fup.member_generation_changed`, emitted by `usage.evaluate_fup` when `fup_member_states.generation` advances) both enqueue a `nodes.compile_desired_state` outbox event and invoke `Compiler.RecompileBatch` (`internal/desiredstate/compiler.go`), compiling a fresh signed desired-state envelope (`member_rate_policies` carrying `member_id`, `tier_key`, `down_kbps`, `up_kbps`, `generation`, and `reason`) for every **published** exit carrying an affected member (or every published exit on a `fair_use` policy activation).
@@ -732,7 +733,7 @@ Current limiter calibration (#252, D-083 / D-078): browser `10/s`, burst `30` **
   1. **Size (`http.MaxBytesReader`):** A body above the class cap returns `413 PAYLOAD_TOO_LARGE` (`"Request body exceeds the configured limit."`).
   2. **JSON well-formedness (`checkJSONDocument`, skipped for webhooks, `#161`, `#169`, `#190`):** Bodies up to `canonjson.MaxBytes` (`1 MiB`, the signed-document bound) pass `canonjson.Canonicalize` and a single streaming walk, and larger bodies in `(1 MiB, class cap]` (`SubmitUsageBatch` above `1 MiB` up to `8 MiB`) pass `checkLargeJSONDocument` (`internal/httpapi/jsondoc.go`, `#169`, `#190`), a streaming token/syntax walk enforcing the `canonjson` ruleset (valid UTF-8, no UTF-8 BOM, no unescaped ASCII control characters or NUL bytes, no lone UTF-16 surrogates, no duplicate object keys at any nesting level after unescaping, max depth `256`, integers within `±(2^53-1)` with no fraction, exponent, leading zero, or `-0`, and no trailing data); invalid JSON returns `400 MALFORMED_REQUEST` (`"Invalid JSON document."`).
   3. **Schema (`openapi3filter.ValidateRequest` or streaming schema check, skipped for webhooks, `#190`):** Returns `422 VALIDATION_FAILED`. Under `#190`, a body above `1 MiB` with a streamable schema (`SubmitUsageBatch`) is schema-checked during the single streaming walk and sets `ExcludeRequestBody` (`openapi3filter.ExcludeRequestBody()`) so `openapi3filter` does not `json.Unmarshal` the body.
-  4. **Identity (`matchingIdentity` from the single streaming walk for agent mTLS, `#169`, `#190`):** Identity (`node_id`, `node_incarnation_id`, `incarnation_id`, including nested usage events) is read during the single streaming walk (no `json.Unmarshal` of the body) and returns `403 INCARNATION_MISMATCH` on mismatch; a body above `1 MiB` with a streamable schema sets `ExcludeRequestBody`; an operation with no owner returns `501 NOT_IMPLEMENTED` without a third decode; and the check order for a large body is `400 MALFORMED_REQUEST` syntax, `422 VALIDATION_FAILED` schema, `403 INCARNATION_MISMATCH` identity (`#190`). (`fvpn_control_rate_limited_total` counts `429` only, not `413` or `400`.)
+  4. **Identity (`matchingIdentity` from the single streaming walk for agent mTLS, `#169`, `#190`):** Identity (`node_id`, `node_incarnation_id`, `incarnation_id`, including nested usage events) is read during the single streaming walk (no `json.Unmarshal` of the body) and returns `403 INCARNATION_MISMATCH` on mismatch; a body above `1 MiB` with a streamable schema sets `ExcludeRequestBody`; an operation with no owner returns `501 NOT_IMPLEMENTED` without a third decode; and the check order for a large body is `400 MALFORMED_REQUEST` syntax, `422 VALIDATION_FAILED` schema, `403 INCARNATION_MISMATCH` identity (`#190`). (`fvpn_control_rate_limited_total` counts `429` only, not `413` or `400`.) D-115 (#296) delegates body identity checks only for `submitUsageBatch` with a schema-valid top-level `origin_incarnation_id` to the usage service, which validates and audits the origin; authentication and validation remain enforced, and no-origin batches and all other operations retain recursive identity checks.
 - **Live measurements, 60-peer admission figures, gateway notes, and secops follow-up 7 verdicts (`#152`, `#161`, `#165`, `#170`, `#178`, `#182`, `#203`, [`docs/e2e/at/secops/summary.md`](../e2e/at/secops/summary.md), [`docs/e2e/at/secops/limiter.md`](../e2e/at/secops/limiter.md), [`docs/e2e/at/secops/limiter.json`](../e2e/at/secops/limiter.json), [`docs/e2e/at/secops/capacity.json`](../e2e/at/secops/capacity.json), [`docs/e2e/at/secops/deadlines.json`](../e2e/at/secops/deadlines.json), [`docs/e2e/at/secops/node-telemetry.json`](../e2e/at/secops/node-telemetry.json), [`docs/e2e/at/secops/gateway-inventory.json`](../e2e/at/secops/gateway-inventory.json), [`docs/e2e/at/secops/secret-scan.json`](../e2e/at/secops/secret-scan.json), [`docs/e2e/at/secops/requests.md`](../e2e/at/secops/requests.md), [`docs/e2e/scenarios/gateway-principals.md`](../e2e/scenarios/gateway-principals.md), [`docs/e2e/RUN.md`](../e2e/RUN.md)):**
   - **Rate limiters and body bounds (`#152`, `#161`, `#165`, `#178`, `#203`, `AT28`, `SECOPS-14`, `SECOPS-15`):** `heartbeat` (`SubmitObservation`, burst `5`) and `lease` (`RenewServingLease`, burst `5`) refused at request `6` with `429 RATE_LIMITED` and `Retry-After: 1`; `usage` (`SubmitUsageBatch`, burst `10`), `enrollment` (`EnrollNode`, burst `10`), `webhook` (`ReceiveProviderWebhook`, burst `10`), and `anonymous_shared` (`EnrollNode` + `ReceiveProviderWebhook` from one address) refused at request `11` with `Retry-After: 1`; 20/20 concurrent browser logins from one address completed with `HTTP 200` on `/` (`SECOPS-14` resolved); in security-ops follow-up 6 (`#178`) and follow-up 7 (`#203`, run `ab96acac-8713-485a-9c29-88f20110e2e5`, `docs/e2e/at/secops/limiter.json`), `120` anonymous `POST /api/v1/webhooks/payment/stripe` requests from one client produced `10 × 400` + `110 × 429` (`Retry-After: 1`) while concurrent authenticated admin `GET /api/v1/admin/nodes` and mTLS `RenewServingLease` requests returned `200` (`cross_class_isolation_verified = true` after `#169`); and `SubmitUsageBatch` accepted valid payloads at `1,048,576` B (`1 MiB`), `2,097,152` B (`2 MiB`), `8,388,607` B (`8 MiB - 1`), and `8,388,608` B (`8 MiB`) with `HTTP 200`, rejected `8,388,609` B (`8 MiB + 1`) with `413 PAYLOAD_TOO_LARGE`, rejected malformed JSON with `400 MALFORMED_REQUEST`, and rejected `SubmitObservation` at `1,048,577` B (`1 MiB + 1`) with `413 PAYLOAD_TOO_LARGE` (`SECOPS-15` closed).
   - **`SECOPS-10` 60-peer native admission and counted-traffic figures (`#170`, `#178`, `#203`, `docs/e2e/at/secops/summary.md`, `docs/e2e/at/secops/capacity.json`, `docs/e2e/at/secops/node-telemetry.json`, `docs/e2e/at/secops/gateway-inventory.json` — shared development host, not candidate hardware):** After devstack follow-up 10 (`#170`) raised lab nginx to `worker_processes 2` × `worker_connections 4096` with a `.128/25` dynamic member address pool, security-ops follow-up 6 (`#178`) and follow-up 7 (`#203`, run `ab96acac-8713-485a-9c29-88f20110e2e5`) measured `20` users × `3` devices = `60` real native NetBird peers (`60/60` `authorized`, `60/60` distinct `/32` `overlay_ipv4`, `0` failed operations) on fresh stacks (`w4-secops` / `30000`) **on the shared development host, not candidate hardware**:
@@ -744,7 +745,7 @@ Current limiter calibration (#252, D-083 / D-078): browser `10/s`, burst `30` **
   - **Security-ops follow-up 7, follow-up 8, and follow-up 9 case verdicts (`#203`, run `ab96acac-8713-485a-9c29-88f20110e2e5`; `#221`, run `0f5fb60d-f6a7-45c6-8ebe-175e0a480bd8`; `#242`, run `42396951-2d9a-49f4-95c3-45f33d9519d5`, [`docs/e2e/at/secops/summary.md`](../e2e/at/secops/summary.md), [`docs/e2e/at/secops/AT30.md`](../e2e/at/secops/AT30.md), [`docs/e2e/at/secops/restore-reconcile.md`](../e2e/at/secops/restore-reconcile.md), [`docs/e2e/at/secops/requests.md`](../e2e/at/secops/requests.md)):** In **security-ops follow-up 9 (`#242`, run `42396951-2d9a-49f4-95c3-45f33d9519d5`)**, **`AT30` is `passed` live** (`1 pass / 4 blocked / 0 fail` across `AT28`–`AT32`, closing `SECOPS-18`, `SECOPS-19`, and `SECOPS-05`), while `AT28`, `AT29`, `AT31`, and `AT32` remain **`blocked`** with passed subsets:
     - **`AT28`:** subset passed, case blocked on remaining items in [`docs/e2e/at/secops/AT28.md`](../e2e/at/secops/AT28.md) and `SECOPS-20` (trusted-proxy principal isolation, per-class rate limiters, `8 MiB` `SubmitUsageBatch` body boundary, and secret-scan checks passed; follow-up 8 `#221` also verified `#205` unmapped-peer discovery-denial audit deduplication across two worker cycles with `audit_events` count `= 1` on `fleet_config:00000000-0000-0000-0000-000000000001`).
     - **`AT29`:** subset passed, case blocked on `w3-devstack-e2e` `past_due` payment truth (`SECOPS-17`, closed in devstack follow-up 14 `#240`), established TCP/UDP member transports, and `needs operator run` guest clock rollback (`clock_settime`) — `D-065` fleet API (`GET`/`PUT /api/v1/admin/fleet-config` with `428`/`412`/idempotent replay/`fleet_config.update` audit and `max_offline_lease_seconds: 60`, restored to `86400`), finite grace (`FVPN_E2E_GRACE_SECONDS=90`), paid/grant/lease cutoff (`495/869` -> `0/0` bytes at expiry) and recovery (`0 -> 1320/2316` bytes), and watchdog/component clock checks passed in `deadlines.json`.
-    - **Latest live `AT30` (`#242`, run `42396951-2d9a-49f4-95c3-45f33d9519d5`, 2026-10-30 EDT): passed.** Isolated restore `7.17 s` with `6/6` checklist sections; `120.12 s` fail-safe negative without epoch rotation; retained replay `3/3` hashes with zero loss/duplicates/gaps; pre-replay DB RPO `90.301 s`, service RPO `0 s` / `0 B`, protocol RTO `112.35 s`, total outage RTO `121.88 s`. D-076 fenced the T0..T1 revoked device, an old idempotency replay kept the fence, fresh re-grant restored counted forwarding, and both the centrally revoked and newly enrolled negatives behaved correctly (SECOPS-18). During the hold, `node_observations.report_payload.usage` and `fvpn-agent usage snapshot` showed three unacked events / `2352` payload bytes, then zero after replay (SECOPS-19). The run predates the admin HTTP route and `NodeDetail.usage_outbox`; it exercised service-level re-authorization. See [restore drill §2.6](restore-drill.md#26-latest-measurement--at30-passed-242) and [`docs/e2e/at/secops/AT30.md`](../e2e/at/secops/AT30.md) for the evidence and the separate historical #221 values.
+    - **Historical live `AT30` (`#242`, run `42396951-2d9a-49f4-95c3-45f33d9519d5`, 2026-10-30 EDT): passed.** Isolated restore `7.17 s` with `6/6` checklist sections; `120.12 s` fail-safe negative without epoch rotation; retained replay `3/3` hashes with zero loss/duplicates/gaps; pre-replay DB RPO `90.301 s`, service RPO `0 s` / `0 B`, protocol RTO `112.35 s`, total outage RTO `121.88 s`. D-076 fenced the T0..T1 revoked device, an old idempotency replay kept the fence, fresh re-grant restored counted forwarding, and both the centrally revoked and newly enrolled negatives behaved correctly (SECOPS-18). During the hold, `node_observations.report_payload.usage` and `fvpn-agent usage snapshot` showed three unacked events / `2352` payload bytes, then zero after replay (SECOPS-19). The run predates the admin HTTP route and `NodeDetail.usage_outbox`; it exercised service-level re-authorization. See [restore drill §2.6](restore-drill.md#26-latest-measurement--at30-passed-242) and [`docs/e2e/at/secops/AT30.md`](../e2e/at/secops/AT30.md) for the evidence and the separate historical #221 values.
     - **`AT31`:** subset passed, case blocked on forced-relay control and candidate hardware (`60/60` counted peers, `5,960/5,960` HTTP `200` device reads with `0` wrong-member responses, `82` node telemetry samples at `5 s` cadence with `0` errors, and two-exit traffic passed in `capacity.json` and `node-telemetry.json`).
     - **`AT32`:** subset passed, case blocked on bulk final per-stream attribution in `w3-devstack-e2e` follow-up 12 and physical origins/platforms (`SECOPS-16` ordinary log scan and protected artifact lifecycle under `D-066`, plus `scope-review.json`, passed).
 
@@ -801,8 +802,8 @@ The separate recovery latch after `TC_FOREIGN_FILTER` plus a newer generation
 is reproduced and assigned to agent-core follow-up 24. The original ISO-F6-01
 tc object's creator is still unknown. D-106 requires clean serving read-back
 on the observation. Revision 14 (#289) supplies optional nullable
-`ObservationReport.tc_evidence`; agent-core follow-ups 24/25 and netlab
-follow-up 16 still own transport and clean read-back integration. Never turn
+`ObservationReport.tc_evidence`; netlab follow-up 16 (#295) supplies the detached typed read-back helper, while
+agent-core follow-ups 24/25 still own recovery and observation wiring. Never turn
 absent evidence into a passing check.
 
 D-104 requires deadlines at the renderer's true precision, without a
@@ -822,3 +823,93 @@ AT11 remain blocked and AT13 fails. Its results do not replace the pinned
 follow-up 5 or final follow-up 6 claims. See the [dated acceptance
 snapshot](../ops/README.md#follow-up-15-acceptance-snapshot-2026-10-31-edt) and
 [agent-core note](../node/followup23-2026-10-31.md).
+
+### Follow-up 16 operator actions and limits (2026-10-31 EDT)
+
+At main `982c209` through #303, an `authorization_unconfirmed` device is
+neither bound nor leased (r16 H-1, #291). Both initial and locked lease queries
+exclude open fences, and the worker recompiles current signed envelopes still
+binding a fenced device before acknowledging its detecting sync job. Explicit
+re-authorization remains required; unfenced siblings remain eligible. This is
+central proof, not a measured live propagation deadline. r16 M-1 failed freeze
+persistence remains pending agent-core follow-up 24.
+
+For installer receipts, #300 closes r16 M-2 / L-1: accepted rollback restores
+current and last-good release pointers. D-110 uses `internal/installerjob` to
+derive the UUIDv5 identity from claim namespace, verified manifest digest and
+authenticated incarnation. Central rejects a new mismatched ID with
+`409 STATE_CONFLICT`, reason `job_id_mismatch`; accepted legacy replay remains
+valid. Main's updater still mints the legacy whole-record ID until updater
+follow-up 15 merges. New receipts from that producer cannot be treated as
+accepted. D-114's one-time re-derivation or retirement of unaccepted legacy
+outbox receipts is pending that updater change. D-111 seeds a null baseline
+only from an eligible release, retains failure evidence without candidate
+promotion, and never invents health. Migration 00191's Down/Up round trip is
+proved; it does not authorize production schema rollback. See the
+[installer result rules](../updates/2026-10-31-installer-results-d110-d111.md).
+
+D-105 central acceptance is merged (#296). Use a separate batch for each
+origin; the outer identity is the authenticated current presenter and nested
+events keep the retired identity, sequence and digest. A mixed batch is
+rejected before ledger/checkpoint mutation. ACKs belong to the original stream,
+so a retired-tail ACK cannot advance the current cursor. Origin retirement and
+presenter enrollment come from central; retired certificates are refused at
+mTLS. D-112 bounds each interval end by retirement plus
+`sampling_interval_bound_seconds` (default 10 s); node sampling must stay ≤
+that bound. #299 pins the meter's 10 s default and implements retained-stream
+upload, but the production hook in `node/agent/usage.go` is inactive pending
+agent-core follow-up 25 (D-118). Usage AT follow-up 5 and the enrollment rerun
+must prove counted hand-off after activation. The revision 14 sampling-history
+wording is superseded by D-112, not an instruction to infer a historical interval.
+
+The devstack follow-up 17 run (#294) remains **8 pass / 1 blocked / 3 fail**.
+Its [owner-chain proof](../e2e/runs/2026-10-31/followup17/a7c41436-82b3-4665-b75c-e2887f2e1009/installer-owner-chain.md)
+shows the legacy fifth chain causing `HOOK_PRIORITY_MISMATCH`. Installer
+follow-up 4 (#302) implements D-116: the exact empty legacy marker is migrated
+on rerun/upgrade into hookless `inet fvpn_install`; `inet fvpn` keeps exactly
+four rendered chains. Enforcement stays strict. F9-01 is confirmed with the
+real pinned daemon and packaged unit. The installer suite is **10 pass / 1 fail**;
+the full journaled upgrade stays **red** at `final_sample` / `CHECKPOINT_FAILED`
+with no genuine meter checkpoint, pending updater follow-up 15 / agent-core
+follow-up 24. A process exit 0 is not terminal success. Baseline-verifier proof
+on the installer node does not claim serving: netlab follow-up 17 scope tests
+and devstack follow-up 18's serving fixture rerun remain pending.
+
+Netlab follow-up 16 (#295) locates the ISO-F6-01 latch in `node/agent`, not the
+verifier: `noteApply` retains `applyError`; `needRenew`, `ackApplied` and
+`renewAppliedLease` stop; `leaseGenerationStale` leaves `policy_missing`, and
+`verifyCurrentServing` returns early while non-serving. The library recovers
+when all injected foreign objects are removed and a clean newer generation
+is applied; an empty filter block with a foreign clsact still present remains
+rejected. Agent-core follow-ups 24/25 must fix recovery and wire D-106
+`tc_evidence`. **AT13 stays failed** until isolation follow-up 8 re-asserts
+assembled continuity and denial. The original foreign object's creator is
+still unproven; this call path explains the subsequent latch.
+
+Portal follow-up 18 (#293) displays the publication-gate cause beside the
+pending step's `error_code`, including timeout diagnostics. D-074 remains:
+a held publication stays `running`; a polling timeout is not a failure.
+The [D-093 audit table](../portal/DEV.md) has 15 entries, 13 open;
+D093-06 / D093-10 are retired. D093-12 remains open: the harness still writes
+`release_verifications.state=verified` by SQL, and the release-verification
+fixture transport decision is pending. A fixture result is not real agent
+kernel or updater evidence.
+
+Latest AT30 measurement (#301), run `dd845a7f-2660-431c-a8e6-c513108cc07d`:
+**passed**, pre-replay database RPO **106.45 s**, post-replay service usage RPO
+**0 s**, protocol RTO **66.90 s**, total outage RTO **74.53 s**, replay
+**5 events / 5 hashes / 0 lost / 0 duplicate / 0 gaps**. D-095 gives the exact
+retryable 503 `DEPENDENCY_UNAVAILABLE`, pending fresh observation and drift
+field; desired 10 and stored count 9 remain unchanged while the agent is
+stopped. SECOPS-21 remains open: first probe/stored generation 16 exceeds
+retained 15, but first-offer delivery / local acceptance / ACK are unproven.
+Devstack follow-up 18 / wire-nodes follow-up 32 must capture them. AT29
+transport sub-cases and AT31 bounded relay pass, while full AT29 / AT31 stay
+blocked on the guest-clock/manual-withdrawal rows and candidate hardware /
+60-peer mixed relay. See the [dated acceptance snapshot](../ops/README.md#follow-up-16-acceptance-snapshot-2026-10-31-edt).
+
+Lane protocol: before a suite starts a stack or database, check
+`pgrep -af 'gates.sh|mk/at-'` and wait while two or more other suites are active.
+The competing-suite hold applies only to those suites; read-only
+`git diff --check` needs no wait. Use unique disk scratch under `.agent/tmp`
+for TMPDIR/GOTMPDIR and clean it without shell cleanup traps.

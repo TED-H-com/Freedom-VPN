@@ -21,7 +21,7 @@
 | `r13-r12-fixes-review` | [`r13-r12-fixes-review.md`](r13-r12-fixes-review.md) | 2026-10-30 | `agy/gemini-4-argon-high` (commit `12496fd` trailer) | `r12` remediation verification across node enforcement verifier & QoS (`node/enforce`), revocation conntrack & sample filtering (`node/agent`, `node/enforce`), control rate limiters, `trusted_proxies`, & large-body validation (`internal/httpapi`, `internal/config`), `D-063` probe omission & recovery sealing (`node/updater`, `node/agent`), and pre-result heartbeat seeding & retry confirmation (`internal/fleetupdate`) | 12 (4 High, 5 Medium, 3 Low) — all closed in `#189`, `#190`, `#192`, `#193`, `#194`, `#196` | [`node/enforce/review_r13_enforce_test.go`](../../node/enforce/review_r13_enforce_test.go), [`internal/httpapi/review_r13_limits_test.go`](../../internal/httpapi/review_r13_limits_test.go), [`internal/fleetupdate/review_r13_seeding_integration_test.go`](../../internal/fleetupdate/review_r13_seeding_integration_test.go), [`node/agent/review_r13_agent_test.go`](../../node/agent/review_r13_agent_test.go), [`node/updater/review_r13_updater_test.go`](../../node/updater/review_r13_updater_test.go) |
 | `r14-d067-d070-review` | [`r14-d067-d070-review.md`](r14-d067-d070-review.md) | 2026-10-30 | `grok/grok-4.7` (commit `70efbde` trailer) | D-067/D-068/D-070 and r13 fixes: revoke fence, migrated addresses, stale readiness, foreign nft rules, node ingress, eviction and anonymous cap | 7 (1 High, 4 Medium, 2 Low); closed #215/#216/#217/#220 | `internal/nodes/observation_readiness_integration_test.go`, `node/agent/review_r14_m1_test.go`, `node/agent/followup15_test.go`, `node/enforce/followup10_review_test.go`, `tests/netlab/scenario_foreign_test.go`, `internal/httpapi/followup20_review_test.go` |
 | `r15-d072-d075-review` | [`r15-d072-d075-review.md`](r15-d072-d075-review.md) | 2026-10-30 | `grok/grok-4.7` (commit `dfafae0` trailer) | D-072–D-075 clone detection, lock order, revoke fence, gated publication, Fair-Use ACK, tc bypass and anonymous reserve | 8 (1 High, 6 Medium, 1 Low) — owner fixes adopted in #254/#259/#263/#256/#262/#252; packet-stop and agent quarantine integration remain qualified | [Adopted main proofs](r15-d072-d075-review.md#adopted-proof-files-on-main) |
-| `r16-rev13-d089-d099-review` | [`r16-rev13-d089-d099-review.md`](r16-rev13-d089-d099-review.md) | 2026-10-31 | `grok/grok-4.7` | Revision 13, D-089 / D-097 installer results, D-088 freeze, D-090 / D-096 containment, D-095 / D-099 restore hold; base `5575470` | 4 (1 High, 2 Medium, 1 Low), owner follow-ups pending; two known HTTP defects fixed after review base in #277 | Owners adopt `TestReviewR16_*`; only the report is archived here. |
+| `r16-rev13-d089-d099-review` | [`r16-rev13-d089-d099-review.md`](r16-rev13-d089-d099-review.md) | 2026-10-31 | `grok/grok-4.7` | Revision 13, D-089 / D-097 installer results, D-088 freeze, D-090 / D-096 containment, D-095 / D-099 restore hold; base `5575470` | 4 (1 High, 2 Medium, 1 Low); H-1 fixed #291, M-2/L-1 fixed #300, M-1 pending; two known HTTP defects fixed #277 | Owners adopt `TestReviewR16_*`; only the report is archived here. |
 
 ## What Held Across the Reviews
 
@@ -50,9 +50,9 @@ Every individual finding (High, Medium, and Low) is tabulated in full in its res
 | High | `r14-d067-d070-review`: `ObserveRevokedDeviceCutoffTx` in `internal/nodes/observations.go` scanned every non-revoked/non-decommissioned node without scoping to serving exit groups or bounding by heartbeat freshness (`DefaultStaleTimeout = 90 s`), allowing a single stale, offline, or ungrouped node with a pending `ISOLATION_POLICY_INVALID` apply error to hold `member.revoke` and `member_device.revoke` `"nodes"` steps `pending` indefinitely (`TestReviewR14_Q1_UnrelatedOfflineNodeHoldsRevokePendingIndefinitely`). | closed | #217 |
 | High | `r15-d072-d075-review` H-1: the renewal that freezes a cloned incarnation can still issue a member-grant lease at the fleet offline cap; the next failed observation does not shorten that lease. | closed | #254 / #259; server clamp only, see packet-stop limits |
 
-Status checked on main `b79ee23`, 2026-10-31 EDT: r15 owner fixes and proofs adopted; see its archive for the server-clamp and quarantine limits. r16 delivered; dispositions below.
+Status checked on main `982c209`, 2026-10-31 EDT: r15 owner fixes and proofs adopted; see its archive for the server-clamp and quarantine limits. r16 delivered; dispositions below.
 
-## r16 dispositions at the follow-up 15 cutoff
+## r16 dispositions at the follow-up 16 cutoff
 
 The report is byte-identical to `.agent/REVIEW.md` on
 `origin/r16-rev13-d089-d099-review`, commit
@@ -63,13 +63,13 @@ orchestrator's current routing is below; no proof files were adopted here.
 
 | Finding | Current disposition |
 |---|---|
-| H-1: fenced device still bound and leased | Open → wire-nodes follow-up 31 with the desired-state owner. |
+| H-1: fenced device still bound and leased | Fixed by wire-nodes follow-up 31 with the desired-state owner (#291): fenced devices excluded from signed bindings and lease device lists; worker recompiles affected signed envelopes before acknowledging the detecting sync job. Live propagation timing remains unmeasured. |
 | M-1: failed identity-freeze persist | Open → agent-core follow-up 24. Successful latch tests do not close failed-persistence recovery. |
-| M-2: installer rollback version write | Open → fleet-update follow-up 11. |
-| L-1: installer row cardinality / ETag churn | Open → fleet-update follow-up 11, D-110. |
+| M-2: installer rollback version write | Fixed by fleet-update follow-up 11 (#300): accepted installer rollback restores current and last-good versions. |
+| L-1: installer row cardinality / ETag churn | Fixed by fleet-update follow-up 11 (#300), D-110 deterministic job identity and visible-change-only ETag updates; updater follow-up 15 adoption remains pending. |
 | Known, reconfirmed: generation-only cache advance | Fixed after the review base by wire-nodes follow-up 29 (#277), [state_cache.go](../../internal/nodes/httpwire/state_cache.go) and its runtime eligibility fence. Accepted D-099 ordinary-proposal semantics apply; live SECOPS-21 remains open. |
 | Known, reconfirmed: keyed installer replay 500 | Fixed after the review base by #277, [replay.go](../../internal/nodes/httpwire/replay.go), `TestD089_HTTPInstallerResultKeyedReplay`. |
 
 D-110 / D-111 and their delivery boundaries are in the [operator decisions
-register](../handover/README.md#follow-up-15-decisions-register-2026-10-31-edt).
+register](../handover/README.md#follow-up-16-decisions-register-2026-10-31-edt).
 Owners adopt the `TestReviewR16_*` proofs in their follow-ups.

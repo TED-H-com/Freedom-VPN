@@ -239,6 +239,18 @@ func (k *kernelSource) nudgePending() bool {
 	return k.nudge
 }
 
+// A live generation rejection is external-reset evidence even if the sampler
+// has not run yet. FinalSample consumes the existing discontinuity mechanism
+// after withdrawal. Idle counters still do not invent a gap or a bill.
+func (k *kernelSource) rejectedGeneration() {
+	k.mu.Lock()
+	defer k.mu.Unlock()
+	if !liveUsage(k.prev) || k.switched {
+		return
+	}
+	k.nudge, k.switched, k.pending, k.external = true, true, true, true
+}
+
 // rearm asks the next sample to switch again after a sample read the nudge
 // and then failed to commit it.
 func (k *kernelSource) rearm() {

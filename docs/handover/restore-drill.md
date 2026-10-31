@@ -170,9 +170,9 @@ In security-ops follow-up 8 (`#221`, `2026-10-30`, run `0f5fb60d-f6a7-45c6-8ebe-
   4. **`fvpn-usage-admin complete-recovery --recovery-id 130fd33b-5da0-4051-9bd9-5d2859a49c2f`**: marked recovery `completed`, cleared `reconciliation_in_progress`, and returned `usage_ledger_state.mode` to `'normal'` (`0.09 s`).
   5. **Post-recovery readiness checks and external provider / NetBird reconciliation**: `/healthz = 200`, `/readyz = 200`, worker `/readyz = 200`, node `control_status = online` and `safety_status = passed`; `billing.reconcile` converged `m1` from restored `T0` `active` to `subscriptions.status = 'canceled'`, `refund_rows = 1`, and `entitlement.state = 'expired'` (`member.access.withdrawn` audited, peers removed from `fvpn-paid-*`). Measured protocol RTO (`T2 - T3`) was **`105.94 s`** (within the `15 min` target) and total outage RTO (`T1 - T3`) was **`111.51 s`**.
 
-### 2.6 Latest measurement — `AT30` passed (`#265`)
+### 2.6 Historical follow-up 10 measurement — `AT30` passed (`#265`)
 
-**Latest measurement — AT30 passed again (#265), run `0e8ff9a4-4fa1-4154-ae35-847a5be4d985` (`0e8ff9a4`), product `d9e28f8`, on the shared development host:** pre-replay database RPO **95.507504 s**, post-replay service usage RPO **0 s**, protocol RTO **93.532554563 s**, total outage RTO **106.868537734 s**. These are shared-host measurements, not production objectives. Historical #242 and #221 measurements remain separately dated below. SECOPS-16/17 closed against #240 (`past_due` admitted only while `paid` stays true); SECOPS-20 closed against #241 (D-079); SECOPS-18/19 revalidated, SECOPS-05 retained, D-077 proved through HTTP. SECOPS-21 stays open. AT29/AT31 were deferred to devstack follow-up 15 exports; those exports do not by themselves promote the full AT cases. Source: [AT30 Follow-up 10 archive](../e2e/at/secops/history/follow-up-10/AT30.md) and [exact JSON](../e2e/at/secops/history/follow-up-10/restore-reconcile.json). Security-ops follow-up 11 (#274) archived all 104 files byte-identical under D-098; its live AT29 / AT31 / AT30 runs were not executed. D-103 assigns the existing `fvpn-w4-secops-*` namespace to follow-up 12.
+**Historical follow-up 10 measurement — AT30 passed again (#265), run `0e8ff9a4-4fa1-4154-ae35-847a5be4d985` (`0e8ff9a4`), product `d9e28f8`, on the shared development host:** pre-replay database RPO **95.507504 s**, post-replay service usage RPO **0 s**, protocol RTO **93.532554563 s**, total outage RTO **106.868537734 s**. These are shared-host measurements, not production objectives. Historical #242 and #221 measurements remain separately dated below. SECOPS-16/17 closed against #240 (`past_due` admitted only while `paid` stays true); SECOPS-20 closed against #241 (D-079); SECOPS-18/19 revalidated, SECOPS-05 retained, D-077 proved through HTTP. SECOPS-21 stays open. AT29/AT31 were deferred to devstack follow-up 15 exports; those exports do not by themselves promote the full AT cases. Source: [AT30 Follow-up 10 archive](../e2e/at/secops/history/follow-up-10/AT30.md) and [exact JSON](../e2e/at/secops/history/follow-up-10/restore-reconcile.json). Security-ops follow-up 11 (#274) archived all 104 files byte-identical under D-098; its live AT29 / AT31 / AT30 runs were not executed. D-103 assigns the existing `fvpn-w4-secops-*` namespace to follow-up 12.
 
 #### Historical follow-up 9 (#242)
 
@@ -390,3 +390,16 @@ make -f mk/backup.mk backup-drill-clean
 Do not run `backup-drill-clean` while a drill is still using a `fvpn-w4-ops-backups-*` prefix. The test never calls that target.
 
 Evidence is written only with `FVPN_BACKUP_DRILL_RECORD=1`; normal integration runs do not change `docs/`. CI exposes this only as the manual `workflow_dispatch.record_evidence` input. Archive ages and local command durations are reported separately; service RTO remains unmeasured.
+
+### Follow-up 16 restore evidence (2026-10-31 EDT)
+
+Security-ops follow-up 12 (#301), run `dd845a7f-2660-431c-a8e6-c513108cc07d`,
+passes AT30 on the shared development host: pre-replay database RPO **106.45 s**,
+post-replay service usage RPO **0 s**, protocol RTO **66.90 s**, total outage RTO
+**74.53 s**, replay **5 events / 5 hashes / 0 lost / 0 duplicate / 0 gaps**.
+D-095's exact fresh-observation hold is proved. SECOPS-21 remains open: the
+first probe/stored generation 16 exceeds retained 15, but first delivery,
+matching local acceptance and the applied ACK remain unproven; capture is
+pending devstack follow-up 18 / wire-nodes follow-up 32. Earlier measurements
+remain historical, and no candidate-hardware guarantee follows. See the
+[current acceptance snapshot](../ops/README.md#follow-up-16-acceptance-snapshot-2026-10-31-edt).

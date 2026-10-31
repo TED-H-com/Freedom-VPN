@@ -33,11 +33,11 @@ func TestLabExternalMeterReset(t *testing.T) {
 		stopWatch()
 	}()
 
-	startWatch(t)
 	startAgent(t)
 	if !waitProbe(t, "allow", 25*time.Second) {
 		t.Fatalf("agent did not forward:\n%s", debugPlane(t))
 	}
+	startWatch(t)
 	if !waitLog(t, 0, "meter epoch opened", 15*time.Second) {
 		t.Fatalf("meter did not open:\n%s", tailLog())
 	}

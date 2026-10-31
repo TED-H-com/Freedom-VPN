@@ -2,8 +2,11 @@ package agent
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 	"time"
@@ -134,6 +137,10 @@ func (e *Engine) ensureUsage(ctx context.Context) {
 	}
 	e.usage = st
 	e.usageStatus = st
+	if err := e.invalidateMeterCheckpoint(); err != nil {
+		e.usagePersist = true
+		return
+	}
 	src := e.meterSource
 	if src == nil {
 		ks := &kernelSource{
@@ -245,8 +252,8 @@ func (e *Engine) resumeSampling() {
 		return
 	}
 	e.finalDone = false
+	e.meter.ResumeSampling()
 	if e.sampleOn {
-		e.meter.ResumeSampling()
 		return
 	}
 	e.sampleOn = true
@@ -263,17 +270,54 @@ func (e *Engine) resumeSampling() {
 // A clean final sample checkpoints the counters so the next epoch does
 // not recount them (step 11).
 func (e *Engine) handoff(ctx context.Context) {
-	if e.meter == nil || !e.sampleOn || e.finalDone {
+	if e.meter == nil || e.finalDone {
 		return
 	}
-	_ = e.meter.Barrier(ctx)
-	_ = e.baseline(ctx)
+	if err := e.meter.Barrier(ctx); err != nil {
+		e.usagePersist = true
+		return
+	}
+	if err := e.baseline(ctx); err != nil {
+		return
+	}
 	err := e.meter.FinalSample(ctx)
-	if err != nil && ctx.Err() == nil && !errors.Is(err, meter.ErrNoEpoch) && !errors.Is(err, meter.ErrHold) {
+	if err != nil && !errors.Is(err, meter.ErrNoEpoch) {
 		e.log.Warn("final sample", "err", err.Error())
+		e.usagePersist = true
+		return
+	}
+	cp, err := e.usage.ClosedCheckpoint(ctx)
+	if err == nil {
+		var raw []byte
+		raw, err = json.Marshal(cp)
+		if err == nil {
+			err = writeAtomic(e.cfg.MeterCheckpoint, append(raw, '\n'), 0o600)
+		}
+	}
+	if err != nil {
+		e.usagePersist = true
+		return
 	}
 	e.finalDone = true
 	e.serving = false
+}
+
+// Remove old barrier evidence before any new forwarding can start. FileMeter
+// must never accept a closed epoch while the agent is sampling a later one.
+func (e *Engine) invalidateMeterCheckpoint() error {
+	err := os.Remove(e.cfg.MeterCheckpoint)
+	if errors.Is(err, os.ErrNotExist) {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+	dir, err := os.Open(filepath.Dir(e.cfg.MeterCheckpoint))
+	if err != nil {
+		return err
+	}
+	defer dir.Close()
+	return dir.Sync()
 }
 
 // shutdownUsage is the process stop sequence: the same hand-off as a
@@ -285,7 +329,9 @@ func (e *Engine) shutdownUsage() {
 	e.shutUsage = true
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
-	e.handoff(ctx)
+	if e.sampleOn {
+		e.handoff(ctx)
+	}
 	if e.loopCancel != nil {
 		e.loopCancel()
 	}

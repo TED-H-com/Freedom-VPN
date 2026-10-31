@@ -34,6 +34,7 @@ func (e *Engine) verifyServingModel(ctx context.Context, model enforce.Model, as
 	// Even an executor that returns success at the deadline cannot supply
 	// fresh evidence. Keep a specific CheckError when one accompanied it.
 	err = errors.Join(err, readCtx.Err())
+	e.retainServingRead(evidence, model.Generation, e.clock.Wall(), "live", err == nil)
 	if err == nil {
 		return true
 	}
@@ -73,16 +74,28 @@ func (e *Engine) expireServing(ctx context.Context) bool {
 
 // rejectServing is the common withdrawal point for Apply and live reads.
 // Quarantine precedes withdrawal and always uses the retained applied model.
-func (e *Engine) rejectServing(ctx context.Context, _ enforce.Model, evidence enforce.ServingEvidence, err error) {
+func (e *Engine) rejectServing(ctx context.Context, model enforce.Model, evidence enforce.ServingEvidence, err error) {
 	e.noteApply(err)
+	var check *enforce.CheckError
+	if e.kernel != nil && e.expectServing.Load() && errors.As(err, &check) && check.Reason == enforce.ReasonGenerationMismatch {
+		// The real live read found a replaced/cleared ruleset. Retain that
+		// incident before our planned baseline disables reset detection.
+		e.kernel.rejectedGeneration()
+	}
 	// A failed/canceled read must still be able to install the baseline.
 	cleanupCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
 	defer cancel()
-	var check *enforce.CheckError
 	if errors.As(err, &check) && check.Reason == enforce.ReasonTCForeignFilter {
 		e.quarantinePending = true
 		e.memberPathPending = true
 		e.recordForeign(evidence)
+		if e.containment.ReadAt.IsZero() {
+			e.containment.Generation = model.Generation
+			e.containment.ReadAt = e.applyError.ObservedAt
+			if r := e.servingRead; r != nil && !r.Verified && r.Generation == model.Generation {
+				e.containment.ReadAt = r.At
+			}
+		}
 	}
 	if e.quarantinePending {
 		e.quarantine(cleanupCtx)
@@ -128,7 +141,11 @@ func (e *Engine) auditBlocked(ctx context.Context) {
 	var check *enforce.CheckError
 	if errors.As(err, &check) && check.Reason == enforce.ReasonTCForeignFilter {
 		e.noteApply(err)
-		e.recordForeign(ev)
+		if e.containment == nil || len(e.containment.TC) == 0 {
+			e.recordForeign(ev)
+			e.containment.Generation = e.appliedModel.Generation
+			e.containment.ReadAt = e.clock.Wall().UTC()
+		}
 		e.quarantinePending, e.memberPathPending = true, true
 	}
 	if ev.Quarantined {
