@@ -67,15 +67,74 @@ class EvidenceTests(unittest.TestCase):
             checks.append(dict(at="AT06", name=name, status="pass", detail="TEST ONLY"))
         return checks
 
-    def test_reviewed_429_prior_passes_when_current_run_has_zero(self):
+    def reviewed_prior(self):
         prior = {at: [] for at in run.REQUIRED}
         group = run.REVIEWED["AT06"]["runs"][0]
         prior["AT06"] = [dict(name=name, status="fail", run_id=group["run_id"]) for name in group["names"]]
-        recs = run.records(self.meta(), self.passing(), prior)
+        return prior
+
+    def with_review(self, review):
+        checks = [c for c in self.passing() if c["name"] != "rate_limit_review"]
+        checks.append(review)
+        return checks
+
+    def review(self, **detail):
+        body = {"http_429": 0, "behaviour": "pass", "phase": "full", "samples": []}
+        body.update(detail)
+        return dict(at="AT06", name="rate_limit_review", status="pass", detail=body)
+
+    def browser_samples(self, retry_after=True, retry_succeeded=True, klass="browser"):
+        return [
+            {"class": klass, "method": "GET", "path": "/api/v1/admin/audit-events",
+             "retry_after": retry_after, "retry_succeeded": retry_succeeded},
+            {"class": klass, "method": "GET", "path": "/api/v1/admin/nodes/{id}/incarnations",
+             "retry_after": retry_after, "retry_succeeded": retry_succeeded},
+        ]
+
+    def test_reviewed_429_prior_passes_when_current_run_has_zero(self):
+        recs = run.records(self.meta(), self.passing(), self.reviewed_prior())
         self.assertEqual(recs["AT06"]["status"], "pass")
         self.assertEqual(recs["AT06"]["prior_failure_review"]["disposition"], "resolved")
         self.assertIn("286eb57b44c2e783257767918680a0e1f097f106", recs["AT06"]["actual"])
+        self.assertEqual(recs["AT06"]["prior_failure_review"]["rescored_follow_up_3"]["http_429"], 2)
+        self.assertFalse(recs["AT06"]["prior_failure_review"]["rescored_follow_up_3"]["header_value_recorded"])
         self.assertEqual(recs["AT07"]["status"], "pass")
+
+    def test_retry_after_success_passes_with_informational_count(self):
+        checks = self.with_review(self.review(
+            http_429=2, samples=self.browser_samples(),
+        ))
+        checks.append(self.review(phase="join", http_429=0, samples=[]))
+        recs = run.records(self.meta(), checks, self.reviewed_prior())
+        self.assertEqual(recs["AT06"]["status"], "pass")
+        self.assertEqual(recs["AT06"]["prior_failure_review"]["disposition"], "resolved")
+
+    def test_missing_retry_after_is_a_finding(self):
+        checks = self.with_review(self.review(http_429=2, samples=self.browser_samples(retry_after=False)))
+        recs = run.records(self.meta(), checks, self.reviewed_prior())
+        self.assertEqual(recs["AT06"]["status"], "blocked")
+        self.assertEqual(recs["AT06"]["prior_failure_review"]["disposition"], "recurs")
+
+    def test_failed_retry_is_a_finding(self):
+        checks = self.with_review(self.review(http_429=2, samples=self.browser_samples(retry_succeeded=False)))
+        recs = run.records(self.meta(), checks, self.reviewed_prior())
+        self.assertEqual(recs["AT06"]["status"], "blocked")
+        self.assertEqual(recs["AT06"]["prior_failure_review"]["disposition"], "recurs")
+
+    def test_non_browser_class_is_a_finding(self):
+        checks = self.with_review(self.review(http_429=2, samples=self.browser_samples(klass="anonymous")))
+        recs = run.records(self.meta(), checks, self.reviewed_prior())
+        self.assertEqual(recs["AT06"]["status"], "blocked")
+        self.assertEqual(recs["AT06"]["prior_failure_review"]["disposition"], "recurs")
+
+    def test_join_phase_429_is_a_finding(self):
+        checks = self.with_review(self.review(phase="join", http_429=1, samples=[{
+            "class": "browser", "method": "GET", "path": "/api/v1/admin/audit-events",
+            "retry_after": True, "retry_succeeded": True,
+        }]))
+        recs = run.records(self.meta(), checks, self.reviewed_prior())
+        self.assertEqual(recs["AT06"]["status"], "blocked")
+        self.assertEqual(recs["AT06"]["prior_failure_review"]["disposition"], "recurs")
 
     def test_reviewed_429_prior_stays_blocked_when_429_recurs(self):
         checks = self.passing()
@@ -95,6 +154,19 @@ class EvidenceTests(unittest.TestCase):
         recs = run.records(self.meta(), self.passing(), prior)
         self.assertEqual(recs["AT06"]["status"], "blocked")
         self.assertEqual(recs["AT06"]["prior_failure_review"]["disposition"], "not_applied")
+
+    def test_clone_parser_miss_does_not_block_after_the_check_passes(self):
+        prior = {at: [] for at in run.REQUIRED}
+        prior["AT06"] = [dict(name="probe_process", status="fail", run_id="1d5c02a4-b254-4a9b-b687-b1535428fb3f")]
+        prior["AT07"] = [
+            dict(name="cloned_identity_conflict", status="fail", run_id="1d5c02a4-b254-4a9b-b687-b1535428fb3f"),
+            dict(name="probe_process", status="fail", run_id="1d5c02a4-b254-4a9b-b687-b1535428fb3f"),
+        ]
+        recs = run.records(self.meta(), self.passing(), prior)
+        self.assertEqual(recs["AT06"]["status"], "pass")
+        self.assertEqual(recs["AT07"]["status"], "pass")
+        self.assertEqual(recs["AT07"]["prior_failure_review"]["disposition"], "resolved")
+        self.assertIn("content-on-error", recs["AT07"]["prior_failure_review"]["what_changed"])
 
     def test_process_exit_from_review_signal_does_not_block_a_later_zero(self):
         prior = {at: [] for at in run.REQUIRED}

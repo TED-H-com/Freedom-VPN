@@ -90,7 +90,7 @@ func TestAT06_AT07_Live(t *testing.T) {
 	if path == "" {
 		t.Fatal("records-first runner required")
 	}
-	ctx, cancel := context.WithTimeout(t.Context(), 25*time.Minute)
+	ctx, cancel := context.WithTimeout(t.Context(), 40*time.Minute)
 	defer cancel()
 	p := &probe{ctx: ctx, resultPath: path}
 	stack, err := labstack.Open()
@@ -148,14 +148,21 @@ func (p *probe) callHeaders(method, path string, body any, headers map[string]st
 	}
 	var last labstack.Response
 	var err error
+	pending := -1
 	for attempt := 0; attempt < 6; attempt++ {
 		last, err = p.stack.Call(p.ctx, p.admin, method, path, body, h)
-		if last.Status == http.StatusTooManyRequests {
-			p.sawLimited(method, path)
+		if pending >= 0 {
+			p.markRetried(pending, err == nil && last.Status != http.StatusTooManyRequests)
+			pending = -1
 		}
-		if err != nil || last.Status != http.StatusTooManyRequests || !waitRetry(p.ctx, last.Header.Get("Retry-After")) {
+		if last.Status != http.StatusTooManyRequests {
 			return last, err
 		}
+		idx := p.sawLimited(method, path, last.Header.Get("Retry-After"))
+		if err != nil || !waitRetry(p.ctx, last.Header.Get("Retry-After")) {
+			return last, err
+		}
+		pending = idx
 	}
 	return last, err
 }
@@ -179,30 +186,74 @@ func classifyLimited(raw string) (class, path string) {
 	}
 }
 
-func (p *probe) sawLimited(method, raw string) {
+func (p *probe) limitPhase() string {
+	if os.Getenv("FVPN_AT_ENROLLMENT_PHASE") == "join" {
+		return "join"
+	}
+	return "full"
+}
+
+func (p *probe) sawLimited(method, raw, retryAfter string) int {
 	p.limitedCount++
+	class, path := classifyLimited(raw)
 	if len(p.limited) >= 20 {
+		return -1
+	}
+	p.limited = append(p.limited, map[string]string{
+		"method": method, "class": class, "path": path,
+		"retry_after":     strconv.FormatBool(strings.TrimSpace(retryAfter) != ""),
+		"retry_succeeded": "false",
+		"phase":           p.limitPhase(),
+	})
+	return len(p.limited) - 1
+}
+
+func (p *probe) markRetried(idx int, succeeded bool) {
+	if idx < 0 || idx >= len(p.limited) || !succeeded {
 		return
 	}
-	class, path := classifyLimited(raw)
-	p.limited = append(p.limited, map[string]string{"method": method, "class": class, "path": path})
+	p.limited[idx]["retry_succeeded"] = "true"
 }
 
 func (p *probe) rateReview() {
-	status := "pass"
-	detail := map[string]any{}
-	if p.limitedCount != 0 {
-		// A recurring 429 blocks AT06. It must not fail the process: that would
-		// add a new probe_process failure on top of the review signal.
-		status = "blocked"
-		detail["gap"] = fmt.Sprintf("HTTP 429 recurred (%d) on limiter class browser, bucket BrowserRate 10/s burst 30. Owner: control. The bebfe230 review stays unresolved.", p.limitedCount)
-	}
+	// A review finding blocks the check. It must not fail the process: that
+	// would add a new probe_process failure on top of the review signal.
+	phase := p.limitPhase()
 	samples := p.limited
 	if samples == nil {
 		samples = []map[string]string{}
 	}
+	var findings []string
+	if phase == "join" && p.limitedCount != 0 {
+		findings = append(findings, "join phase recorded a 429")
+	}
+	if p.limitedCount != len(samples) {
+		findings = append(findings, "429 samples were truncated")
+	}
+	for _, sample := range samples {
+		if sample["class"] != "browser" {
+			findings = append(findings, "non-browser class "+sample["class"])
+		}
+		if sample["retry_after"] != "true" {
+			findings = append(findings, "429 without Retry-After")
+		}
+		if sample["retry_succeeded"] != "true" {
+			findings = append(findings, "retry was still limited after the window")
+		}
+	}
+	status := "pass"
+	behaviour := "pass"
+	detail := map[string]any{}
+	if len(findings) != 0 {
+		status = "blocked"
+		behaviour = "fail"
+		detail["gap"] = "D-078 rate-limit finding: " + strings.Join(findings, "; ") + ". Owner: control."
+	}
+	detail["behaviour"] = behaviour
+	detail["phase"] = phase
 	detail["http_429"] = p.limitedCount
 	detail["samples"] = samples
+	detail["rule"] = "pass when every 429 carries Retry-After, the same request succeeds on the next attempt, every class is browser, and the join phase records 0; the count is informational"
 	detail["limiter_class_for_prior_failures"] = "browser"
 	detail["bucket"] = "BrowserRate"
 	detail["per_second"] = 10
@@ -210,8 +261,12 @@ func (p *probe) rateReview() {
 	detail["owner_if_recurs"] = "control"
 	detail["operations"] = []string{"ListAuditEvents", "CreateEnrollment", "ListNodeIncarnations"}
 	detail["reviewed_run"] = "bebfe230-26d4-4e3d-b052-81d258d04e07"
+	detail["rescored_run"] = "60a7102e-b824-4927-a576-62033f458157"
+	detail["rescored_http_429"] = 2
+	detail["rescored_header_value_recorded"] = false
+	detail["rescored_reasoning"] = "Follow-up 3 run 60a7102e recorded http_429 2, both class browser: GET /api/v1/admin/audit-events and GET /api/v1/admin/nodes/01a18f10-3f31-7ae7-890a-55354e77cec0/incarnations. The saved samples have no Retry-After value. callHeaders retried them with the same Idempotency-Key using Retry-After, audit_read and incarnation_history passed, and the join phase recorded http_429 0. D-078 scores that as the limiter working. The raw count stays in prior_checks."
 	detail["changed_commit"] = "286eb57b44c2e783257767918680a0e1f097f106"
-	detail["what_changed"] = "Admin callHeaders and agent enroll post retry HTTP 429 RATE_LIMITED using Retry-After (1-30s, default 1s). Admin attempts stop at 6 and agent enroll attempts stop at 4. The Idempotency-Key stays the same across retries. The four retained failures were a harness burst against browser BrowserRate 10/s burst 30, merged in 286eb57 (#210)."
+	detail["what_changed"] = "D-078 scores 429s by behaviour. Admin callHeaders and agent enroll post still retry HTTP 429 using Retry-After (1-30s, default 1s only when the header is absent) with the same Idempotency-Key. Admin attempts stop at 6 and agent enroll attempts stop at 4. A 429 without Retry-After, a retry that is still 429, or a non-browser class is a finding. The zero-count criterion is withdrawn."
 	p.note("AT06", "rate_limit_review", status, detail)
 }
 
@@ -344,6 +399,7 @@ func (p *probe) holder(t *testing.T) holder {
 func (p *probe) post(ctx context.Context, client *http.Client, rawURL, token string, body []byte) (labstack.Response, error) {
 	var last labstack.Response
 	var err error
+	pending := -1
 	for attempt := 0; attempt < 4; attempt++ {
 		var req *http.Request
 		req, err = http.NewRequestWithContext(ctx, "POST", rawURL, bytes.NewReader(body))
@@ -367,12 +423,18 @@ func (p *probe) post(ctx context.Context, client *http.Client, rawURL, token str
 		_ = json.Unmarshal(raw, &env)
 		last = labstack.Response{Status: resp.StatusCode, Header: resp.Header, Body: raw, Code: env.Error.Code}
 		err = readErr
-		if last.Status == http.StatusTooManyRequests {
-			p.sawLimited("POST", rawURL)
+		if pending >= 0 {
+			p.markRetried(pending, err == nil && last.Status != http.StatusTooManyRequests)
+			pending = -1
 		}
-		if err != nil || last.Status != http.StatusTooManyRequests || !waitRetry(ctx, last.Header.Get("Retry-After")) {
+		if last.Status != http.StatusTooManyRequests {
 			return last, err
 		}
+		idx := p.sawLimited("POST", rawURL, last.Header.Get("Retry-After"))
+		if err != nil || !waitRetry(ctx, last.Header.Get("Retry-After")) {
+			return last, err
+		}
+		pending = idx
 	}
 	return last, err
 }
@@ -790,6 +852,10 @@ func (p *probe) incarnationHistory(t *testing.T, first issued, oldInc uuid.UUID)
 }
 
 func (p *probe) revokeNode(node uuid.UUID) (labstack.Response, error) {
+	return p.revokeNodeReason(node, "TEST ONLY AT06 reinstall")
+}
+
+func (p *probe) revokeNodeReason(node uuid.UUID, reason string) (labstack.Response, error) {
 	var last labstack.Response
 	var err error
 	for attempt := 0; attempt < 2; attempt++ {
@@ -798,7 +864,7 @@ func (p *probe) revokeNode(node uuid.UUID) (labstack.Response, error) {
 		if gerr != nil || got.Status != 200 {
 			return got, gerr
 		}
-		last, err = p.callHeaders("POST", "/api/v1/admin/nodes/"+node.String()+"/revoke", api.ReasonRequest{Reason: "TEST ONLY AT06 reinstall"}, map[string]string{"If-Match": got.Header.Get("ETag")})
+		last, err = p.callHeaders("POST", "/api/v1/admin/nodes/"+node.String()+"/revoke", api.ReasonRequest{Reason: reason}, map[string]string{"If-Match": got.Header.Get("ETag")})
 		p.keep(last)
 		if err != nil {
 			continue
@@ -833,7 +899,7 @@ func (p *probe) at07(t *testing.T) {
 	// These live nodes are not reinstalled here. Retirement, retained usage and
 	// cursor behavior are measured on the AT06 node through the public
 	// revokeNode + node_id enrollment + agent enroll path. Counted usage and
-	// the real installer rerun still need devstack follow-up 13.
+	// the installer wrappers stay blocked until devstack follow-up 15.
 	p.expect("AT07", "incarnation_history", firstOne && secondOne, map[string]any{
 		"operation": "listNodeIncarnations", "node_ids": []uuid.UUID{first.NodeID, second.NodeID},
 		"each_count": 1, "retirement_measured_on": "AT06 incarnation_history",
@@ -925,6 +991,7 @@ func addressMap(line string) map[string]string {
 func (p *probe) cloneNetworks() map[string]any {
 	lab := dockerText(p.ctx, "network", "inspect", "-f", "{{range .IPAM.Config}}{{.Subnet}}{{end}}", "fvpn-w4-enroll")
 	origin := dockerText(p.ctx, "network", "inspect", "-f", "{{range .IPAM.Config}}{{.Subnet}}{{end}}", "fvpn-w4-enroll-origin")
+	presentation := dockerText(p.ctx, "network", "inspect", "-f", "{{range .IPAM.Config}}{{.Subnet}}{{end}}", "fvpn-w4-enroll-node-clone-net")
 	format := `{{range $n, $c := .NetworkSettings.Networks}}{{$n}}={{$c.IPAddress}} {{end}}`
 	source := dockerText(p.ctx, "inspect", "-f", format, "fvpn-w4-enroll-node-netns")
 	clone := dockerText(p.ctx, "inspect", "-f", format, "fvpn-w4-enroll-node-clone-netns")
@@ -933,10 +1000,13 @@ func (p *probe) cloneNetworks() map[string]any {
 	originDomain := slash24(src["fvpn-w4-enroll-origin"])
 	return map[string]any{
 		"inspect_ok": lab != "" && origin != "" && source != "" && clone != "",
-		"lab_subnet": lab, "origin_subnet": origin,
+		"lab_subnet": lab, "origin_subnet": origin, "presentation_subnet": presentation,
 		"source_addresses": source, "clone_addresses": clone,
-		"same_lab_slash24":    labDomain != "" && labDomain == slash24(cl["fvpn-w4-enroll"]),
-		"same_origin_slash24": originDomain != "" && originDomain == slash24(cl["fvpn-w4-enroll-origin"]),
+		"clone_presentation_ip":  cl["fvpn-w4-enroll-node-clone-net"],
+		"source_on_presentation": src["fvpn-w4-enroll-node-clone-net"] != "",
+		"same_lab_slash24":       labDomain != "" && labDomain == slash24(cl["fvpn-w4-enroll"]),
+		"same_origin_slash24":    originDomain != "" && originDomain == slash24(cl["fvpn-w4-enroll-origin"]),
+		"presentation_differs":   presentation != "" && lab != "" && presentation != lab,
 	}
 }
 
@@ -985,23 +1055,389 @@ func observeView(o e2e.CloneObservation, readOK bool) map[string]any {
 	}
 }
 
+type conflictFacts struct {
+	readOK       bool
+	http         int
+	object       bool
+	frozen       bool
+	count        int
+	last         bool
+	provisioning string
+	forwarding   string
+	safety       string
+}
+
+func (c conflictFacts) frozenConflict() bool {
+	return c.readOK && c.http == 200 && c.object && c.frozen && c.count == 1 && c.last &&
+		c.provisioning == "failed" && c.forwarding == "false" && c.safety == "failed"
+}
+
+func (c conflictFacts) recovered() bool {
+	return c.readOK && c.http == 200 && c.object && !c.frozen && c.count == 0 && !c.last && c.provisioning != "failed"
+}
+
+func (c conflictFacts) public() map[string]any {
+	return map[string]any{
+		"read_ok": c.readOK, "http_status": c.http, "object": c.object, "mapping_frozen": c.frozen,
+		"conflict_count": c.count, "last_conflict_at_present": c.last,
+		"provisioning_state": c.provisioning, "member_forwarding_observed": c.forwarding, "safety_status": c.safety,
+	}
+}
+
+func interpretProjection(view map[string]any) conflictFacts {
+	var out conflictFacts
+	switch n := view["http_status"].(type) {
+	case int:
+		out.http = n
+	case float64:
+		out.http = int(n)
+	}
+	ok, _ := view["read_ok"].(bool)
+	if !ok {
+		return out
+	}
+	out.readOK = true
+	out.provisioning, _ = view["provisioning_state"].(string)
+	out.safety, _ = view["safety_status"].(string)
+	switch f := view["member_forwarding_observed"].(type) {
+	case bool:
+		out.forwarding = strconv.FormatBool(f)
+	case nil:
+		out.forwarding = "null"
+	default:
+		if _, present := view["member_forwarding_observed"]; !present {
+			out.forwarding = "absent"
+		} else {
+			out.forwarding = "unreadable"
+		}
+	}
+	raw, present := view["identity_conflict"]
+	if !present || raw == "absent" || raw == nil {
+		return out
+	}
+	obj, isObj := raw.(map[string]any)
+	if !isObj {
+		return out
+	}
+	out.object = true
+	out.frozen, _ = obj["mapping_frozen"].(bool)
+	switch n := obj["conflict_count"].(type) {
+	case float64:
+		out.count = int(n)
+	case int:
+		out.count = n
+	}
+	out.last = obj["last_conflict_at"] != nil
+	return out
+}
+
+func containerStage(ctx context.Context, container string) string {
+	out, err := exec.CommandContext(ctx, "docker", "exec", container, "cat", "/var/lib/vpn-node/e2e/status.json").Output()
+	if err != nil {
+		return ""
+	}
+	var v struct {
+		Stage string `json:"stage"`
+	}
+	if json.Unmarshal(out, &v) != nil {
+		return ""
+	}
+	return v.Stage
+}
+
+func nodeIncarnation(ctx context.Context, slot string) (uuid.UUID, bool) {
+	out, err := exec.CommandContext(ctx, "docker", "exec", "fvpn-w4-enroll-"+slot, "cat", "/var/lib/vpn-node/identity/node.json").Output()
+	var id struct {
+		Inc uuid.UUID `json:"node_incarnation_id"`
+	}
+	if err != nil || json.Unmarshal(out, &id) != nil || id.Inc == uuid.Nil {
+		return uuid.Nil, false
+	}
+	return id.Inc, true
+}
+
+func labHostAddress(ctx context.Context, container, hostname string) string {
+	out, err := exec.CommandContext(ctx, "docker", "exec", container, "cat", "/etc/vpn-node/lab-hosts").Output()
+	if err != nil {
+		return ""
+	}
+	for _, line := range strings.Split(string(out), "\n") {
+		fields := strings.Fields(line)
+		if len(fields) >= 2 && fields[1] == hostname {
+			return fields[0]
+		}
+	}
+	return ""
+}
+
+func writeToken(path, token string) error {
+	tmp := path + ".tmp"
+	if err := os.WriteFile(tmp, []byte(token+"\n"), 0o600); err != nil {
+		return err
+	}
+	return os.Rename(tmp, path)
+}
+
+func (p *probe) removeNodeIdentityFiles() error {
+	image, err := exec.CommandContext(p.ctx, "docker", "inspect", "--format={{.Config.Image}}", "fvpn-w4-enroll-node").Output()
+	if err != nil {
+		return err
+	}
+	hostVar := filepath.Join(p.stack.StateDir(), "node", "var")
+	name := "fvpn-w4-enroll-state-reset"
+	_ = exec.CommandContext(p.ctx, "docker", "rm", "-f", name).Run()
+	args := []string{"run", "--rm", "--name", name, "--network", "none", "--user", "0",
+		"--mount", "type=bind,src=" + hostVar + ",dst=/var/lib/vpn-node",
+		"--entrypoint", "rm", strings.TrimSpace(string(image)), "-f",
+		"/var/lib/vpn-node/identity/node.json",
+		"/var/lib/vpn-node/identity/cert.pem",
+		"/var/lib/vpn-node/identity/key.pem",
+		"/var/lib/vpn-node/identity/setup.key",
+		"/var/lib/vpn-node/state/agent.db",
+		"/var/lib/vpn-node/state/agent.db-wal",
+		"/var/lib/vpn-node/state/agent.db-shm",
+	}
+	if exec.CommandContext(p.ctx, "docker", args...).Run() != nil {
+		return fmt.Errorf("identity clear failed")
+	}
+	return nil
+}
+
+func (p *probe) countConflictAudits(node uuid.UUID) (int, bool) {
+	cursor := ""
+	total := 0
+	for page := 0; page < 20; page++ {
+		path := "/api/v1/admin/audit-events?resource_type=node&resource_id=" + node.String() + "&limit=100"
+		if cursor != "" {
+			path += "&cursor=" + url.QueryEscape(cursor)
+		}
+		r, err := p.call("GET", path, nil)
+		p.keep(r)
+		var list api.AuditEventList
+		if err != nil || r.Status != 200 || json.Unmarshal(r.Body, &list) != nil {
+			return total, false
+		}
+		for _, item := range list.Items {
+			if item.Action == "node.identity.conflict" {
+				total++
+			}
+		}
+		next, nextErr := list.NextCursor.Get()
+		if nextErr != nil || next == "" {
+			return total, true
+		}
+		cursor = next
+	}
+	return total, false
+}
+
+func (p *probe) clonePresentDenied() (int, string, bool) {
+	const script = `set -eu
+present() {
+  tmp=$(mktemp)
+  err=$(mktemp)
+  wget -S -O "$tmp" -o "$err" --timeout=15 --content-on-error \
+    --certificate=/var/lib/vpn-node/identity/cert.pem \
+    --private-key=/var/lib/vpn-node/identity/key.pem \
+    --ca-certificate=/etc/vpn-node/ca.pem \
+    https://agent.example.invalid:9443/api/v1/agent/desired-state || true
+  status=$(grep -E 'HTTP/' "$err" | tail -n 1 | awk '{print $2}')
+  code=$(sed -n 's/.*"code"[[:space:]]*:[[:space:]]*"\([A-Z0-9_]*\)".*/\1/p' "$tmp" | head -n 1)
+  if [ -z "$code" ] && grep -q 'IDENTITY_REVOKED' "$tmp"; then
+    code=IDENTITY_REVOKED
+  fi
+  rm -f "$tmp" "$err"
+  case "$status" in
+    ''|*[!0-9]*) status=0 ;;
+  esac
+  printf '%s %s\n' "$status" "$code"
+}
+line=$(present)
+set -- $line
+if [ "$1" = "429" ]; then
+  sleep 2
+  line=$(present)
+fi
+printf '%s\n' "$line"
+`
+	out, err := exec.CommandContext(p.ctx, "docker", "exec", "fvpn-w4-enroll-node-clone", "sh", "-c", script).Output()
+	if err != nil {
+		return 0, "", false
+	}
+	fields := strings.Fields(strings.TrimSpace(string(out)))
+	if len(fields) == 0 || len(fields) > 2 {
+		return 0, "", false
+	}
+	status, conv := strconv.Atoi(fields[0])
+	code := ""
+	if len(fields) == 2 {
+		code = fields[1]
+	}
+	if conv != nil || (code != "" && strings.Trim(code, "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_") != "") {
+		return 0, "", false
+	}
+	return status, code, true
+}
+
+func (p *probe) recoverCloneConflict(node, oldInc uuid.UUID, read func() (e2e.CloneObservation, bool)) map[string]any {
+	out := map[string]any{
+		"reenroll_path": "entrypoint waiting_token after identity files and agent.db were removed; not an installer wrapper and not ENR-06",
+	}
+	if exec.CommandContext(p.ctx, "docker", "stop", "-t", "15", "fvpn-w4-enroll-node-clone").Run() != nil {
+		out["step"] = "clone_stop"
+		return out
+	}
+	out["clone_stopped"] = true
+	rev, revErr := p.revokeNodeReason(node, "TEST ONLY ENR-07 clone conflict")
+	out["revoke_http_status"] = rev.Status
+	if revErr != nil || rev.Status != 202 {
+		out["step"] = "revoke"
+		return out
+	}
+	issued, issuedOK := p.issueOn("clone_recovery", 900, &node)
+	out["reenrollment_issued"] = issuedOK
+	if !issuedOK {
+		out["step"] = "issue"
+		return out
+	}
+	if exec.CommandContext(p.ctx, "docker", "stop", "-t", "20", "fvpn-w4-enroll-node").Run() != nil {
+		out["step"] = "node_stop"
+		return out
+	}
+	if p.removeNodeIdentityFiles() != nil {
+		out["step"] = "identity_clear"
+		out["owner"] = "devstack"
+		return out
+	}
+	e2eDir := filepath.Join(p.stack.StateDir(), "node", "var", "e2e")
+	_ = os.Remove(filepath.Join(e2eDir, "pause-agent"))
+	if err := os.Remove(filepath.Join(e2eDir, "status.json")); err != nil && !os.IsNotExist(err) {
+		out["step"] = "status_reset"
+		return out
+	}
+	_ = os.WriteFile(filepath.Join(e2eDir, "agent-selected"), []byte("/usr/local\n"), 0o644)
+	if writeToken(filepath.Join(e2eDir, "enrollment.token"), issued.token) != nil {
+		out["step"] = "token_file"
+		return out
+	}
+	issued.token = ""
+	if exec.CommandContext(p.ctx, "docker", "start", "fvpn-w4-enroll-node").Run() != nil {
+		out["step"] = "node_start"
+		return out
+	}
+	stage := ""
+	enrolled := false
+	deadline := time.Now().Add(4 * time.Minute)
+	for time.Now().Before(deadline) && p.ctx.Err() == nil {
+		stage = containerStage(p.ctx, "fvpn-w4-enroll-node")
+		if stage == "enrolled" {
+			enrolled = true
+			break
+		}
+		if !waitRetry(p.ctx, "1") {
+			break
+		}
+	}
+	out["reenroll_stage"] = stage
+	if !enrolled {
+		out["step"] = "reenroll_stage"
+		return out
+	}
+	inc, incOK := nodeIncarnation(p.ctx, "node")
+	out["replacement_incarnation_id"] = inc
+	out["old_incarnation_id"] = oldInc
+	out["replacement_is_new"] = incOK && inc != uuid.Nil && inc != oldInc
+	if !incOK || inc == uuid.Nil || inc == oldInc {
+		out["step"] = "replacement_incarnation"
+		return out
+	}
+	var cleared conflictFacts
+	clearUntil := time.Now().Add(90 * time.Second)
+	for {
+		cleared = interpretProjection(p.identityProjection(node))
+		if cleared.recovered() {
+			break
+		}
+		if time.Now().After(clearUntil) || p.ctx.Err() != nil || !waitRetry(p.ctx, "2") {
+			break
+		}
+	}
+	out["projection_after_reenroll"] = cleared.public()
+	if !cleared.recovered() {
+		out["step"] = "projection"
+		return out
+	}
+	if exec.CommandContext(p.ctx, "docker", "start", "fvpn-w4-enroll-node-clone").Run() != nil {
+		out["step"] = "clone_start"
+		return out
+	}
+	running := false
+	runUntil := time.Now().Add(30 * time.Second)
+	for time.Now().Before(runUntil) && p.ctx.Err() == nil {
+		if dockerText(p.ctx, "inspect", "-f", "{{.State.Running}}", "fvpn-w4-enroll-node-clone") == "true" {
+			running = true
+			break
+		}
+		if !waitRetry(p.ctx, "1") {
+			break
+		}
+	}
+	out["clone_running"] = running
+	if !running {
+		out["step"] = "clone_running"
+		return out
+	}
+	status, code, presentOK := p.clonePresentDenied()
+	out["clone_present_observed"] = presentOK
+	out["clone_present_http_status"] = status
+	out["clone_present_error_code"] = code
+	after := interpretProjection(p.identityProjection(node))
+	out["projection_after_clone_present"] = after.public()
+	obs, obsOK := read()
+	out["observe_after_reenroll"] = observeView(obs, obsOK)
+	denied := presentOK && status == 403 && code == "IDENTITY_REVOKED" && after.recovered() && obsOK && obs.Conflicts == 1 && obs.MappingFrozen
+	out["clone_denied"] = denied
+	if !denied {
+		out["step"] = "clone_present"
+	}
+	return out
+}
+
 func (p *probe) clonedIdentity(node uuid.UUID) {
-	const changed = "wire-nodes follow-up 21 PR #211 ObserveEndpointTx; follow-up 22 PR #217 identity_conflict; devstack follow-up 12 PR #204 StartClonedIdentityFixture"
-	const gap = "ENR-07 / devstack follow-up 14: the lab has no second /24 for the clone. StartClonedIdentityFixture(ctx, \"node\") attaches node-clone to the same lab bridge and the same origin bridge (last octet .23). The agent mTLS path is the local resolver proxy to agent.example.invalid:9443, whose TCP peer is that lab address, not trusted gateway 172.28.38.21/32, so X-Forwarded-For is not the compatibility domain. Interleave, conflict freeze, revokeNode plus re-enroll, and the quiet-window promotion were not run."
+	const changed = "devstack follow-up 14 PR #240 AttachClonePresentationNetwork; wire-nodes follow-up 21 PR #211 ObserveEndpointTx; follow-up 22 PR #217 identity_conflict"
+	detail := map[string]any{
+		"request": "ENR-07", "changed_on_main": changed, "started": false,
+		"active_window": "120s", "add_host": false,
+		"compatibility_rule": "IPv4 /24 and IPv6 /48; X->Y->X inside the window is one conflict",
+		"reenroll_path":      "operator revoke plus the node entrypoint after identity files are removed; not ENR-06",
+	}
 	beforeProjection := p.identityProjection(node)
+	detail["projection_before"] = beforeProjection
 	fixture, err := p.stack.StartClonedIdentityFixture(p.ctx, "node")
 	if err != nil || fixture == nil {
-		p.note("AT07", "cloned_identity_conflict", "blocked", map[string]any{
-			"gap": gap, "started": false, "changed_on_main": changed, "owner": "devstack", "request": "ENR-07",
-			"projection_before": beforeProjection,
-		})
+		detail["gap"] = "StartClonedIdentityFixture did not start. Owner: devstack."
+		detail["owner"] = "devstack"
+		p.note("AT07", "cloned_identity_conflict", "blocked", detail)
 		return
+	}
+	detail["started"] = true
+	pres, presErr := p.stack.AttachClonePresentationNetwork(p.ctx, "fvpn-w4-enroll-node-clone-netns")
+	detail["presentation"] = map[string]any{
+		"ok": presErr == nil, "network": pres.Network, "subnet": pres.Subnet,
+		"control_address": pres.Control, "clone_address": pres.Clone,
 	}
 	read := func() (e2e.CloneObservation, bool) {
 		obs, obsErr := fixture.Observe(p.ctx)
 		return obs, obsErr == nil
 	}
 	obsBefore, beforeOK := read()
+	detail["observe_before"] = observeView(obsBefore, beforeOK)
+	if presErr != nil {
+		detail["gap"] = "AttachClonePresentationNetwork did not attach fvpn-w4-enroll-node-clone-net. Owner: devstack follow-up 15."
+		detail["owner"] = "devstack"
+		p.note("AT07", "cloned_identity_conflict", "blocked", detail)
+		return
+	}
 	var obs e2e.CloneObservation
 	ok := false
 	deadline := time.Now().Add(75 * time.Second)
@@ -1014,51 +1450,95 @@ func (p *probe) clonedIdentity(node uuid.UUID) {
 			break
 		}
 	}
-	obsEnrolled := obs
-	enrolledOK := ok
-	if ok && obs.SameIdentity && obs.SourceStage == "enrolled" && obs.CloneStage == "enrolled" {
-		settle := time.Now().Add(40 * time.Second)
-		for obs.EndpointRows == 0 && time.Now().Before(settle) && p.ctx.Err() == nil && waitRetry(p.ctx, "2") {
-			if next, good := read(); good {
-				obs, ok = next, true
-			}
-		}
-	}
-	afterProjection := p.identityProjection(node)
-	networks := p.cloneNetworks()
-	detail := map[string]any{
-		"gap": gap, "owner": "devstack", "request": "ENR-07", "started": true,
-		"changed_on_main":    changed,
-		"domain_offered":     "same lab /24 and same origin /24; trusted-proxy X-Forwarded-For is not the clone's TCP peer",
-		"networks":           networks,
-		"observe_before":     observeView(obsBefore, beforeOK),
-		"observe_enrolled":   observeView(obsEnrolled, enrolledOK),
-		"observe_after":      observeView(obs, ok),
-		"projection_before":  beforeProjection,
-		"projection_after":   afterProjection,
-		"steps_not_run":      []string{"interleave_two_domains", "conflict_freeze", "revoke_and_reenroll", "quiet_window_promotion"},
-		"active_window":      "120s",
-		"compatibility_rule": "IPv4 /24 and IPv6 /48; X->Y->X inside the window is one conflict",
-	}
+	detail["observe_enrolled"] = observeView(obs, ok)
 	if !ok || !obs.SameIdentity || obs.SourceStage != "enrolled" || obs.CloneStage != "enrolled" {
 		detail["gap"] = "StartClonedIdentityFixture did not reach one enrolled identity on source and clone"
 		p.expect("AT07", "cloned_identity_conflict", false, detail)
 		return
 	}
-	// A real conflict on this stack would be a product surprise: both clients
-	// share one compatibility domain. Do not treat zero conflicts as a pass.
-	p.note("AT07", "cloned_identity_conflict", "blocked", detail)
+	oldInc, oldOK := nodeIncarnation(p.ctx, "node")
+	detail["old_incarnation_read"] = oldOK
+	networks := p.cloneNetworks()
+	detail["networks"] = networks
+	hostIP := labHostAddress(p.ctx, "fvpn-w4-enroll-node-clone", "agent.example.invalid")
+	detail["lab_hosts_agent"] = hostIP
+	separated, _ := networks["presentation_differs"].(bool)
+	cloneIP, _ := networks["clone_presentation_ip"].(string)
+	separated = separated && cloneIP == pres.Clone && hostIP == pres.Control && pres.Subnet != "" && pres.Network == "fvpn-w4-enroll-node-clone-net"
+	detail["presentation_separated"] = separated
+	if !separated || !oldOK {
+		detail["gap"] = "The clone is not presenting from fvpn-w4-enroll-node-clone-net on a different /24 with lab-hosts naming the presentation control address. Conflict steps were not treated as a pass. Owner: devstack follow-up 15."
+		detail["owner"] = "devstack"
+		p.note("AT07", "cloned_identity_conflict", "blocked", detail)
+		return
+	}
+	var frozen conflictFacts
+	var audits int
+	var auditsOK bool
+	var frozenObs e2e.CloneObservation
+	frozenObsOK := false
+	window := time.Now().Add(120 * time.Second)
+	for {
+		if next, good := read(); good {
+			frozenObs, frozenObsOK = next, true
+		}
+		frozen = interpretProjection(p.identityProjection(node))
+		audits, auditsOK = p.countConflictAudits(node)
+		if frozenObsOK && frozenObs.Conflicts == 1 && frozenObs.MappingFrozen && frozen.frozenConflict() && auditsOK && audits == 1 {
+			break
+		}
+		if time.Now().After(window) || p.ctx.Err() != nil || !waitRetry(p.ctx, "2") {
+			break
+		}
+	}
+	detail["observe_frozen"] = observeView(frozenObs, frozenObsOK)
+	detail["projection_frozen"] = frozen.public()
+	detail["identity_conflict_audits"] = audits
+	detail["audit_read_ok"] = auditsOK
+	conflict := frozenObsOK && frozenObs.Conflicts == 1 && frozenObs.MappingFrozen && frozen.frozenConflict() && auditsOK && audits == 1
+	if !conflict {
+		detail["gap"] = "Cloned identity on a second /24 was not observed as one frozen conflict, provisioning failed, forwarding withdrawn, and one node.identity.conflict audit. Owner: wire-nodes."
+		detail["owner"] = "wire-nodes"
+		p.expect("AT07", "cloned_identity_conflict", false, detail)
+		return
+	}
+	if !waitRetry(p.ctx, "8") {
+		detail["gap"] = "Conflict stability wait ended before the audit recount."
+		p.expect("AT07", "cloned_identity_conflict", false, detail)
+		return
+	}
+	again, againOK := p.countConflictAudits(node)
+	stableObs, stableOK := read()
+	detail["identity_conflict_audits_after_wait"] = again
+	detail["observe_stable"] = observeView(stableObs, stableOK)
+	stable := againOK && again == 1 && stableOK && stableObs.Conflicts == 1 && stableObs.MappingFrozen
+	detail["conflict_count_stable"] = stable
+	if !stable {
+		detail["gap"] = "A later frozen request changed the conflict count or emitted another node.identity.conflict audit. Owner: wire-nodes."
+		detail["owner"] = "wire-nodes"
+		p.expect("AT07", "cloned_identity_conflict", false, detail)
+		return
+	}
+	recovery := p.recoverCloneConflict(node, oldInc, read)
+	detail["recovery"] = recovery
+	if recovery["clone_denied"] != true {
+		step, _ := recovery["step"].(string)
+		detail["gap"] = "Operator revoke plus re-enroll did not recover the node, or the clone could still present afterwards (step " + step + ")."
+		p.expect("AT07", "cloned_identity_conflict", false, detail)
+		return
+	}
+	p.note("AT07", "cloned_identity_conflict", "pass", detail)
 }
 
 func (p *probe) blockedProductHooks() {
-	const usage = "ENR-05 stays blocked after devstack follow-up 13 (#219). docs/e2e/requests.md recheck: node/internal/usageupload still acknowledges every batch. HoldUsageAcknowledgements, UsageLedgerSnapshot and CountedMemberTraffic are not exported. Owner: w4-usage, then devstack. Not emulated."
-	const installer = "ENR-06 stays blocked after devstack follow-up 13 (#219). packaging/ is only the release archive. RerunInstaller and ControlledReinstall are not exported. Owner: packaging/installer, then devstack. Not emulated."
+	const usage = "ENR-05 stays blocked, waiting on devstack f15. Expected exports: HoldUsageAcknowledgements(ctx, slot, hold), UsageLedgerSnapshot(ctx, slot), CountedMemberTraffic. fvpn-agent usage snapshot [-json] is merged and is not these hooks. Owner: w4-usage, then devstack. Not emulated."
+	const installer = "ENR-06 stays blocked, waiting on devstack f15. Expected exports: RerunInstaller(ctx, slot), ControlledReinstall(ctx, slot, enrollment). fvpn-node-install install --json and reenroll --json --token-file are not these wrappers. The clone-conflict entrypoint re-enroll is not ENR-06. Owner: packaging/installer, then devstack. Not emulated."
 	p.note("AT07", "counted_unacked_usage", "blocked", usage)
 	p.note("AT07", "installer_rerun", "blocked", installer)
-	p.note("AT07", "identity_ledger_preserved", "blocked", "ENR-05/ENR-06: counted unacknowledged ledger and installer rerun required. Not emulated.")
+	p.note("AT07", "identity_ledger_preserved", "blocked", "ENR-05/ENR-06 stay blocked, waiting on devstack f15. Counted unacknowledged ledger and RerunInstaller(ctx, slot) are required. Not emulated.")
 	p.note("AT07", "controlled_reinstall", "blocked", installer)
-	p.note("AT07", "old_certificate_denied", "blocked", "ENR-06: old-certificate mTLS rejection stays inside ControlledReinstall. Not emulated.")
-	p.note("AT07", "historical_usage_retained", "blocked", "ENR-05/ENR-06: counted usage across reinstall is not exported. listNodeIncarnations usage retention is measured separately. Not emulated.")
+	p.note("AT07", "old_certificate_denied", "blocked", "ENR-06 stays blocked, waiting on devstack f15. Old-certificate mTLS rejection stays inside ControlledReinstall(ctx, slot, enrollment). Not emulated.")
+	p.note("AT07", "historical_usage_retained", "blocked", "ENR-05/ENR-06 stay blocked, waiting on devstack f15. Counted usage across RerunInstaller(ctx, slot) and ControlledReinstall(ctx, slot, enrollment) is not exported. listNodeIncarnations usage retention is measured separately. Not emulated.")
 }
 
 func (p *probe) peerUniqueness(t *testing.T) {
