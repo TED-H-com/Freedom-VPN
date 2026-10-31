@@ -1858,7 +1858,8 @@ func TestHandover_Followup13Claims(t *testing.T) {
 				TotalRTO    float64 `json:"total_outage_rto_seconds"`
 			} `json:"rpo_rto_comparison"`
 		}
-		if err := json.Unmarshal([]byte(readOwnedDoc(t, root, "docs/e2e/at/secops/restore-reconcile.json")), &evidence); err != nil {
+		// D-098 — the current file now carries follow-up 10's run, which handover follow-up 14 adopts.
+		if err := json.Unmarshal([]byte(readOwnedDoc(t, root, "docs/e2e/at/secops/history/follow-up-9/restore-reconcile.json")), &evidence); err != nil {
 			t.Fatal(err)
 		}
 		if evidence.Status != "passed" {
