@@ -5,6 +5,7 @@ package agent
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"encoding/json"
 	"os"
 	"os/exec"
@@ -90,7 +91,11 @@ func followup29Sibling(t *testing.T, r *rig, p *measuredSystemPlane) {
 			t.Fatal("missing two-source positive control", row)
 		}
 	}
-	capture := exec.CommandContext(t.Context(), "python3", "-u", "-c", followup29Continuous, filepath.Join(dir, "capture-stop.json"))
+	// testing cancels t.Context before cleanups. Keep this bounded child alive
+	// until failure cleanup can drain its evidence, then always stop it.
+	captureCtx, cancelCapture := context.WithTimeout(context.WithoutCancel(t.Context()), 150*time.Second)
+	t.Cleanup(cancelCapture)
+	capture := exec.CommandContext(captureCtx, "python3", "-u", "-c", followup29Continuous, filepath.Join(dir, "capture-stop.json"))
 	stdout, err := capture.StdoutPipe()
 	if err != nil {
 		t.Fatal(err)
@@ -105,6 +110,25 @@ func followup29Sibling(t *testing.T, r *rig, p *measuredSystemPlane) {
 	if line, err := reader.ReadString('\n'); err != nil || line != "ready\n" {
 		t.Fatal("capture startup", line, err)
 	}
+	captureFinished := false
+	finishCapture := func() {
+		if captureFinished {
+			return
+		}
+		captureFinished = true
+		write("capture-stop.json", true)
+		var trace json.RawMessage
+		if err := json.NewDecoder(reader).Decode(&trace); err != nil {
+			t.Fatal(err, stderr.String())
+		}
+		if err := capture.Wait(); err != nil {
+			t.Fatal(err, stderr.String())
+		}
+		write("continuous.json", trace)
+	}
+	// Negative reproductions retain their packet losses too. This cleanup runs
+	// before the child-kill cleanup registered above.
+	t.Cleanup(finishCapture)
 	write("ready.json", map[string]bool{"two_sources_forwarded": true})
 	wait("load-ready.json")
 	r.srv.SetFixture(fixtureWithBindings(13, bindings[:1]))
@@ -150,16 +174,13 @@ func followup29Sibling(t *testing.T, r *rig, p *measuredSystemPlane) {
 	if rows[0].Egress == "0" || rows[1].Ingress == "0" || rows[1].Egress != "0" {
 		t.Fatal("sibling/revoked recovery controls", rows)
 	}
-	write("capture-stop.json", true)
-	var trace json.RawMessage
-	if err := json.NewDecoder(reader).Decode(&trace); err != nil {
-		t.Fatal(err, stderr.String())
+	finishCapture()
+	rep := mustReport(t, r, t.Context())
+	tc, err := rep.TcEvidence.Get()
+	if err != nil || !tc.Verified || uint64(tc.CandidateGeneration) != 13 {
+		t.Fatal("recovery lacks current D106", tc, err)
 	}
-	if err := capture.Wait(); err != nil {
-		t.Fatal(err, stderr.String())
-	}
-	write("continuous.json", trace)
-	assertTCWire(t, r)
+	assertTCContract(t, tc)
 	write("outcome.json", map[string]bool{"failed_install": found, "both_blocked_at_baseline": true, "sibling_recovered": true, "revoked_still_blocked": true})
 }
 
