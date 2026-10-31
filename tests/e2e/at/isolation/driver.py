@@ -32,7 +32,8 @@ with tempfile.TemporaryDirectory(prefix="isolation-driver.", dir=root / ".agent/
         commands = [["go", "test", "-c", "-tags", "e2e", "-o", temporary+"/driver.test", "./tests/e2e"]]
     else:
         env.update(FVPN_E2E="1", FVPN_E2E_PREFIX="w4-isolation", FVPN_E2E_PORT_BASE="36000", FVPN_E2E_STATE=str(root/".agent/e2e-state-w4-isolation"))
-        commands = [["go", "test", "-tags", "e2e", "-count=1", "-timeout=55m", "-run=^TestIsolationAssembled$", "-v", "./tests/e2e"]]
+        test = "TestIsolationRecoverySampling" if mode == "sample-recovery" else "TestIsolationAssembled"
+        commands = [["go", "test", "-tags", "e2e", "-count=1", "-timeout=55m", "-run=^" + test + "$", "-v", "./tests/e2e"]]
     for command in commands:
         result = subprocess.run(command, env=env)
         if result.returncode:

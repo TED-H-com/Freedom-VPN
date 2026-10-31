@@ -1721,3 +1721,86 @@ func mustJSON(v any) string {
 	}
 	return string(raw)
 }
+
+// TestIsolationRecoverySampling observes the already-running assigned stack.
+// It performs no lifecycle, API, nft or tc mutation. The assembled scenario
+// supplies its ordinary restart; this observer retains a real provisional
+// recovery window if that product transition occurs.
+func TestIsolationRecoverySampling(t *testing.T) {
+	if os.Getenv("FVPN_E2E") != "1" || os.Getenv("FVPN_E2E_PREFIX") != "w4-isolation" || os.Getenv("FVPN_E2E_PORT_BASE") != "36000" {
+		t.Skip("requires the assigned running assembled stack")
+	}
+	ctx, cancel := context.WithTimeout(t.Context(), 40*time.Minute)
+	defer cancel()
+	lab, err := openLab()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer lab.transport.CloseIdleConnections()
+	dir := filepath.Join(moduleRoot(), "docs/e2e/at/isolation")
+	raw, err := os.ReadFile(filepath.Join(dir, "AT10.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var rec iso.Record
+	if err := json.Unmarshal(raw, &rec); err != nil {
+		t.Fatal(err)
+	}
+	var nodeID uuid.UUID
+	for _, o := range rec.Observations {
+		if o.Name == "observation_report" {
+			var report struct {
+				NodeID uuid.UUID `json:"node_id"`
+			}
+			if json.Unmarshal([]byte(o.Detail), &report) == nil {
+				nodeID = report.NodeID
+			}
+		}
+	}
+	if nodeID == uuid.Nil {
+		t.Fatal("no node identity in this run's serving observation")
+	}
+	x := &isolationRun{t: t, ctx: ctx, r: &runner{t: t, lab: lab, nodeID: nodeID}}
+	tick := time.NewTicker(250 * time.Millisecond)
+	defer tick.Stop()
+	seen := false
+	admittedAt := ""
+	totalSamples := 0
+	for ctx.Err() == nil {
+		x.takeSample()
+		totalSamples++
+		if !seen && len(x.conv) > 240 {
+			x.conv = append([]map[string]any(nil), x.conv[len(x.conv)-120:]...)
+		}
+		row := x.conv[len(x.conv)-1]
+		if c, ok := row["lease_check"].(map[string]any); ok && c["error_code"] == "AWAITING_MEMBER_GRANTS" {
+			seen = true
+		}
+		if seen && row["forwarding"] == true {
+			if n, ok := row["forward_member_accept"].(int); ok && n > 0 {
+				if result := iso.EvaluateProvisional(x.conv); result.Status == iso.StatusPass && row["lease_generation"] == result.Generation {
+					admittedAt, _ = row["at"].(string)
+					break
+				}
+			}
+		}
+		select {
+		case <-ctx.Done():
+		case <-tick.C:
+		}
+	}
+	build, _ := exec.Command("git", "rev-parse", "HEAD").Output()
+	result := iso.EvaluateProvisional(x.conv)
+	doc := map[string]any{"run_id": rec.RunID, "image_build": rec.Build, "sampler_build": strings.TrimSpace(string(build)), "read_only": true, "sample_cadence_ms": 250, "total_samples": totalSamples, "samples": x.conv, "result": result, "forwarding_admitted_at": admittedAt, "positive_reference": "AT13 node restart with durable identity in the same assembled run"}
+	body, err := json.MarshalIndent(doc, "", "  ")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := iso.WriteExtra(dir, "provisional-recovery.json", string(body)+"\n"); err != nil {
+		t.Fatal(err)
+	}
+	if result.Status != iso.StatusPass || admittedAt == "" {
+		t.Fatalf("recovery window: %+v", result)
+	}
+	t.Logf("recovery provisional samples=%d ready_to_populated_ms=%d admitted_at=%s", len(result.SampleTimes), result.ReadyToPopulatedMS, admittedAt)
+}
