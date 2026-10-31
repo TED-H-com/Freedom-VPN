@@ -21,7 +21,8 @@ import (
 )
 
 // §15.2, §15.4, §17.2–17.4, §19 AT30 (DATA01 / BILL01 / MTR03):
-// Follow-up 10 re-measurement of AT30 second half on the fixed baseline (#227 D-076
+// Follow-up 10 re-measurement uses #240/#241 serving fixes, #244 D-077 HTTP,
+// #245 generation floor, and the prior #227 D-076
 // restore authorization fence, #226 SECOPS-19 live UsageOutboxStatus in node
 // observations, #225 read-only `fvpn-agent usage snapshot`).
 func TestAT30_Followup10_LiveRestoreReconcile(t *testing.T) {
@@ -213,7 +214,7 @@ func TestAT30_Followup10_LiveRestoreReconcile(t *testing.T) {
 	protocolResult, secops19Visibility := p.runProductRestoreProtocol9(restoreImg, t0Time, nodeID, n0Seq, n1Seq, m1, m2, peerM2D1, peerM2D2)
 
 	// Step 4: Observe reconciliation across usage replay (L2), provider truth (P1),
-	// D-076 fence on peerM2D2, re-grant via AuthorizeDevice, and the two negatives.
+	// D-076 fence on peerM2D2, D-077 HTTP re-grant, and the two negatives.
 	t.Log("AT30 Step 4: observing post-restore reconciliation, D-076 fence, re-grant, and two negatives")
 	reconcileResult := p.observeReconciliation9(
 		stack, nodeID, n0Seq, n1Seq, t0Time, t1Time,
@@ -221,6 +222,8 @@ func TestAT30_Followup10_LiveRestoreReconcile(t *testing.T) {
 		peerM1D1, peerM2D1, peerM2D2, peerM3D1,
 		l0, l1, nodeStoreT0, nodeStoreT1, p0, p1, n0Peers, n1Peers,
 	)
+
+	p.metadata["SECOPS-21"] = p.restoreGenerations10(nodeID, p.metadata["private_generation_window_start"].(time.Time), p.metadata["private_restored_generations"].(json.RawMessage))
 
 	nodeExposureNote := map[string]any{
 		"http_or_cli_exposed": true,
@@ -605,7 +608,8 @@ func (p *liveProbe) runProductRestoreProtocol9(
 		"converged_to_zero_unacked": convergedObsOK && convergedSnapOK,
 	}
 
-	p.metadata["SECOPS-21"] = p.restoreGenerations10(nodeID, servicesStart, restoredGenerations)
+	p.metadata["private_generation_window_start"] = servicesStart
+	p.metadata["private_restored_generations"] = restoredGenerations
 	return protocolMap, secops19Map
 }
 

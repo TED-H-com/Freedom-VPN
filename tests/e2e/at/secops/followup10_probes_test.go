@@ -208,6 +208,7 @@ func (p *liveProbe) recordNativeStream10(stack *labstack.Stack, stream labstack.
 	p.metadata["protected_native_streams"] = rows
 }
 func (p *liveProbe) bulkProtectedStreams10(stack *labstack.Stack) {
+	p.t.Log("SECOPS-16: starting 60-peer final stream attribution")
 	admin := p.login("e2e-admin", "admin")
 	started := time.Now()
 	result, err := stack.ScaleNativeMembers(p.t.Context(), labstack.BrowserSession{Client: admin.client, CSRF: admin.csrf}, p.planRevision, "secops10", 20, 3, func(ctx context.Context) (labstack.BrowserSession, error) {
@@ -218,6 +219,7 @@ func (p *liveProbe) bulkProtectedStreams10(stack *labstack.Stack) {
 		p.recordNativeStream10(stack, stream, container)
 	}
 	p.metadata["bulk_native_streams"] = map[string]any{"counts": result, "error": err != nil, "elapsed_seconds": time.Since(started).Seconds(), "purpose": "D-066 final per-stream attribution only; not AT31 relay or capacity acceptance"}
+	p.t.Logf("SECOPS-16: final streams=%d authorized=%d error=%t", len(result.Streams), result.Authorized, err != nil)
 	if err != nil {
 		p.t.Error("SECOPS-16 bulk final stream run incomplete")
 	}
@@ -252,6 +254,7 @@ func (p *liveProbe) entitlementRead10(m *liveSession) map[string]any {
 	return row
 }
 func (p *liveProbe) pastDue10(stack *labstack.Stack, node uuid.UUID) {
+	p.t.Log("SECOPS-17: starting paid to past_due finite-grace measurement")
 	m := p.login("secops10-grace", "member")
 	end := time.Now().UTC().Add(150 * time.Second).Truncate(time.Second)
 	if !p.paidInput(m, end) {
@@ -285,6 +288,7 @@ func (p *liveProbe) pastDue10(stack *labstack.Stack, node uuid.UUID) {
 	ad := p.call(admin, "GET", "/api/v1/admin/members/"+m.member, nil, nil)
 	graceFlow := p.waitCountedFlow(peer, 20*time.Second)
 	until := end.Add(90 * time.Second)
+	p.t.Logf("SECOPS-17: grace state=%v; deadline=%s", grace["state"], until.Format(time.RFC3339))
 	for time.Now().Before(until.Add(2 * time.Second)) {
 		time.Sleep(time.Second)
 	}
@@ -307,6 +311,7 @@ func (p *liveProbe) pastDue10(stack *labstack.Stack, node uuid.UUID) {
 	}
 	row := map[string]any{"passed": passed, "configured_grace_seconds": 90, "snapshot_status": status, "event_status": eventStatus, "webhook_status": webhook.status, "paid_end": end, "expected_grace_until": until, "before_counted_flow": before, "grace_projection": grace, "grace_counted_flow": graceFlow, "member_me_grace_status": me.status, "member_me_grace": json.RawMessage(me.body), "admin_member_grace_status": ad.status, "admin_member_grace": json.RawMessage(ad.body), "expired_projection": expired, "member_me_expired_status": meExpired.status, "member_me_expired": json.RawMessage(meExpired.body), "admin_member_expired_status": adExpired.status, "admin_member_expired": json.RawMessage(adExpired.body), "after_deadline_samples": samples, "same_snapshot_replay_status": statusReplay, "after_reconcile_projection": final, "after_reconcile_flow": finalFlow, "node_observation": p.publicationObservation(node), "portal_scope": "Portal backing member/me and admin/members APIs measured; browser rendering not exercised; established transports deferred"}
 	p.metadata["SECOPS-17"] = row
+	p.t.Logf("SECOPS-17: expired=%v replay_state=%v passed=%t", expired["state"], final["state"], passed)
 	if !passed {
 		p.t.Error("SECOPS-17 finite grace evidence failed")
 	}

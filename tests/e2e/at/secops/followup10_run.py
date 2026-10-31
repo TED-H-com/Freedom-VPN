@@ -70,6 +70,24 @@ def cleanup_extra_restore_objects(env: dict) -> None:
     )
 
 
+def cleanup_disk_state(env: dict) -> dict:
+    """Delete only this run's generated bind-mount state, including root-owned AdGuard files."""
+    state = ROOT / ".agent/e2e-state-w4-secops"
+    if not state.exists():
+        return {"exit_code": 0, "removed": True}
+    if state.is_symlink():
+        raise RuntimeError("refusing symlinked task state")
+    result = subprocess.run([
+        "docker", "run", "--rm", "--network", "none", "--name", "fvpn-w4-secops-state-cleanup",
+        "--mount", "type=bind,src=" + str(state) + ",dst=/state", "--entrypoint", "/bin/sh",
+        "ubuntu:24.04@sha256:fe81560990fae86dc4743202b2cb4d3df98d0bcf949173cecef15ce1127ef852",
+        "-c", "find /state -mindepth 1 -delete"], cwd=ROOT, env=env,
+        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=60, check=False)
+    if result.returncode == 0:
+        state.rmdir()
+    return {"exit_code": result.returncode, "removed": not state.exists()}
+
+
 def main() -> int:
     PRIVATE.mkdir(parents=True, exist_ok=True)
     (ROOT / ".agent/tmp").mkdir(parents=True, exist_ok=True)
@@ -174,6 +192,7 @@ def main() -> int:
                 300,
             )
             cleanup_extra_restore_objects(env)
+            record["state_cleanup"] = cleanup_disk_state(env)
             record["inventory_after"] = inventory(env)
             record["finished_at"] = utc()
             write_json(PUBLIC / "followup10-run.json", record)
@@ -188,6 +207,7 @@ def main() -> int:
         0
         if verdict["cases"].get("AT30") == "passed"
         and verdict.get("cleanup") == "passed"
+        and all(verdict.get("requests", {}).get(k) == "closed" for k in ("SECOPS-16", "SECOPS-17", "SECOPS-20"))
         else 2
     )
 

@@ -5,7 +5,7 @@ import hashlib
 import json
 from pathlib import Path
 
-from followup9_records import evaluate_at30, clean_inventory, _checkpoint_of, _ledger_counts
+from followup9_records import evaluate_at30, clean_inventory, _ledger_counts
 from run import ROOT, PUBLIC, PRIVATE, scan, write_json
 
 
@@ -118,6 +118,16 @@ def main():
     reg = live.get('D-077', {})
     calls = reg.get('calls', []) + [peers.get('negative_central_revoke_not_fenced', {}).get('admin_authorize_revoked', {})]
     write('D-077.json', dict(common, id='D-077', status='passed' if evaluation.get('regrant_authorize_device_clears_fence') else 'blocked', actual=reg, call_table=calls))
+    generation = live.get('SECOPS-21', {})
+    if generation.get('offers'):
+        first = generation['offers'][0]
+        retained = generation.get('retained_at_t1', {}).get('applied')
+        generation['first_offer_analysis'] = {
+            'generation': first['generation'], 'signed_at': first['signed_at'],
+            'retained_applied_at_t1': retained,
+            'below_retained_generation': int(first['generation']) < int(retained or 0),
+            'first_post_restore_observation': next(iter(generation.get('observations', [])), None),
+            'interpretation': 'A lower first offer is stale by agentstore.AcceptDesired. The agent silently ignores ErrStaleGeneration, so rejection is inferred from the generation comparison, not claimed as a logged event.'}
     findings = {}
     for number, ok, actual in [
         (17, grace_verdict(live.get('SECOPS-17', {})), live.get('SECOPS-17', {})),
@@ -147,8 +157,8 @@ def main():
                        ordinary_passed=ordinary_ok, captures_passed=capture_ok, protected_lifecycle_passed=lifecycle_ok,
                        limitation='Covers this measured stack, retained log files and evidence captures. Configuration/key stores are intended credential stores, not ordinary logs. No claim about every possible logging path; no matched values published.')
     write('SECOPS-16.json', scan_record); write('secret-scan.json', scan_record)
-    cleanup_ok = clean_inventory(run.get('inventory_after', {}))
-    write('cleanup.json', dict(common, status='passed' if cleanup_ok else 'blocked', inventory=run.get('inventory_after', {})))
+    cleanup_ok = clean_inventory(run.get('inventory_after', {})) and run.get('state_cleanup', {}).get('removed') is True
+    write('cleanup.json', dict(common, status='passed' if cleanup_ok else 'blocked', inventory=run.get('inventory_after', {}), state_cleanup=run.get('state_cleanup', {})))
     cases = {k: 'blocked' for k in ['AT28','AT29','AT30','AT31','AT32']};cases['AT30']=status
     write('followup10-verdict.json', dict(common, cases=cases, at30_evaluation=evaluation, requests=findings, cleanup='passed' if cleanup_ok else 'blocked'))
     write('live.json', dict(common, status=status, evidence='followup10-live.json', cases=cases))
@@ -164,6 +174,9 @@ def main():
     summary += '\n' + '; '.join(f'{k}: **{v}**' for k,v in sorted(findings.items())) + '.\n\n'
     summary += 'SECOPS-20: the read-back shows whether `ip nat` remains; the product observation proves the populated serving verdict. #240 deletes the lab NAT before agent startup. #241 is present, but an empty `loopback_scoped` list does not exercise its exception. Follow-up 9’s before capture is unchanged in history.\n\n'
     summary += 'SECOPS-21: compare all central offers and applied observations in [SECOPS-21.json](SECOPS-21.json). The agent silently ignores `ErrStaleGeneration`; zero matching log lines alone is insufficient. No harness generation adjustment is made.\n\n'
+    if generation.get('first_offer_analysis'):
+        g = generation['first_offer_analysis']
+        summary += f"First post-restore offer: `{g['generation']}` at `{g['signed_at']}`; retained T1 applied: `{g['retained_applied_at_t1']}`. Below retained: `{g['below_retained_generation']}`. When below retained, the remaining issue is startup ordering: compilation ran before fresh retained-generation observation. #245 can only use the applied generation already stored centrally.\n\n"
     summary += 'AT29 established TCP/UDP and AT31 forced relay remain deferred to devstack follow-up 15. The bulk native run is only SECOPS-16 stream attribution. Physical arm64, candidate hardware and guest clock rollback remain operator work. Portal member/admin API state is measured for SECOPS-17; browser rendering is not exercised.\n\n'
     summary += 'Full raw structured measurements: [restore-reconcile.json](restore-reconcile.json), [D-077.json](D-077.json), [secret-scan.json](secret-scan.json), [SECOPS-17.json](SECOPS-17.json).\n'
     if blockers: summary += '\nBlockers: ' + ' '.join(blockers) + '\n'
@@ -175,7 +188,7 @@ def main():
                'SECOPS-18':'D-076 fence, log/counter/audit, withdrawn peer and two negatives re-observed.',
                'SECOPS-19':'Nonzero hold outbox then zero after replay in observation and CLI.',
                'SECOPS-20':'#240 lab NAT removal and #241 D-079 present; serving read-back and before history identify the observed cause.',
-               'SECOPS-21':'#245 compiler includes applied generation; first offer and applied observation required for closure.'}
+               'SECOPS-21':'#245 is present. Require first offer acceptance; if compilation precedes the first fresh retained-generation observation, the restored central applied value can still be stale. Review the timestamped first_offer_analysis and order restoration accordingly.'}
     for name in sorted(findings):notes+=f'| {name} | **{findings[name]}** | {reasons[name]} [{name}.json]({name}.json) |\n'
     notes += f'| SECOPS-05 / AT30 | **{status}** | [Restore measurement table](restore-reconcile.md). |\n| D-077 | **{reg.get("passed",False)}** | [HTTP call table](D-077.json); member session 401, revoked device 409 STATE_CONFLICT, same-key replay, existing operation. |\n| AT29 established transports / AT31 forced relay | **Deferred** | Await devstack follow-up 15; no approximation or rerun. |\n'
     notes += '\nPrior request history is preserved byte-for-byte in [follow-up 9](history/follow-up-9/requests.md). No additional product/lab changes requested unless the recorded open findings require them.\n'
