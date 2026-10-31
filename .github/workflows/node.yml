@@ -10,6 +10,20 @@ jobs:
     env:
       GOTOOLCHAIN: local
       CGO_ENABLED: "0"
+      # TEST ONLY - NOT A SECRET. Ephemeral CI service credentials.
+      FVPN_TEST_DATABASE_URL: postgres://fvpn_test:test-only-not-a-secret@localhost:5432/postgres?sslmode=disable
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: fvpn_test
+          POSTGRES_PASSWORD: test-only-not-a-secret # TEST ONLY - NOT A SECRET
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U fvpn_test -d postgres"
+          --health-interval 2s --health-timeout 3s --health-retries 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
@@ -18,4 +32,5 @@ jobs:
           cache: true
       - run: make node-lint
       - run: make node-test
+      - run: make node-test-integration
       - run: make node-build

@@ -143,6 +143,26 @@ type CompiledDesiredState struct {
 	OmittedMembers []OmittedMember
 }
 
+// nextConfigGeneration is one greater than every generation central already
+// has for this incarnation and the generation the node has applied.
+// desired is nodes.desired_config_generation. applied is
+// nodes.applied_config_generation, the value the current incarnation reported
+// (observations write it on this row and refuse a superseded incarnation
+// first). maxStored is max(desired_states.generation) for the incarnation.
+// After a central restore the node can hold a generation this database has
+// never stored. The next offer has to be strictly newer than that value or
+// fvpn-agent rejects it.
+func nextConfigGeneration(desired, applied, maxStored uint64) uint64 {
+	base := desired
+	if maxStored > base {
+		base = maxStored
+	}
+	if applied > base {
+		base = applied
+	}
+	return base + 1
+}
+
 // Compile compiles a new monotonically increasing config_generation for nodeID,
 // signs the DesiredState with the desired-state key purpose, and persists it (§5, §14.7).
 func (c *Compiler) Compile(ctx context.Context, nodeID uuid.UUID) (CompiledDesiredState, error) {
@@ -165,6 +185,7 @@ func (c *Compiler) CompileTx(ctx context.Context, tx pgx.Tx, nodeID uuid.UUID) (
 		lifecycleState       string
 		currentIncarnationID *uuid.UUID
 		currentGenStr        string
+		appliedGenStr        string
 		desiredReleaseUUID   *uuid.UUID
 		capacityBytes        []byte
 	)
@@ -173,6 +194,7 @@ func (c *Compiler) CompileTx(ctx context.Context, tx pgx.Tx, nodeID uuid.UUID) (
 			lifecycle_state,
 			current_incarnation_id,
 			desired_config_generation::text,
+			applied_config_generation::text,
 			desired_release_id,
 			capacity
 		FROM nodes
@@ -181,6 +203,7 @@ func (c *Compiler) CompileTx(ctx context.Context, tx pgx.Tx, nodeID uuid.UUID) (
 		&lifecycleState,
 		&currentIncarnationID,
 		&currentGenStr,
+		&appliedGenStr,
 		&desiredReleaseUUID,
 		&capacityBytes,
 	)
@@ -196,6 +219,7 @@ func (c *Compiler) CompileTx(ctx context.Context, tx pgx.Tx, nodeID uuid.UUID) (
 	incarnationID := *currentIncarnationID
 
 	currentGen, _ := strconv.ParseUint(currentGenStr, 10, 64)
+	appliedGen, _ := strconv.ParseUint(appliedGenStr, 10, 64)
 	var maxStoredGenStr string
 	if err := tx.QueryRow(ctx, `
 		SELECT coalesce(max(generation), 0)::text
@@ -204,11 +228,7 @@ func (c *Compiler) CompileTx(ctx context.Context, tx pgx.Tx, nodeID uuid.UUID) (
 		return CompiledDesiredState{}, err
 	}
 	maxStoredGen, _ := strconv.ParseUint(maxStoredGenStr, 10, 64)
-	baseGen := currentGen
-	if maxStoredGen > baseGen {
-		baseGen = maxStoredGen
-	}
-	nextGen := baseGen + 1
+	nextGen := nextConfigGeneration(currentGen, appliedGen, maxStoredGen)
 
 	// Read exit publication_intent and exit_groups (§15.3).
 	var (

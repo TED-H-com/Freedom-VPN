@@ -321,7 +321,7 @@ export interface paths {
          *     an operation of kind `member.device_authorize`. No request body. `404`
          *     when the device does not belong to the member. `409` `STATE_CONFLICT`
          *     when the device is `revoked` (the server returns its conflict error).
-         *     `422` `DEVICE_LIMIT_REACHED` when authorizing would exceed the member's
+         *     `409` `DEVICE_LIMIT_REACHED` when authorizing would exceed the member's
          *     device allowance. The member cannot call this operation.
          */
         post: operations["authorizeMemberDevice"];

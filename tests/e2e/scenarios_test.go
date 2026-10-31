@@ -55,6 +55,9 @@ func TestE2E_Acceptance(t *testing.T) {
 	run.billing(ctx, admin)
 	good, bad := run.releases(ctx, admin)
 	nodeID := run.enroll(ctx, admin)
+	if nodeID != uuid.Nil {
+		run.agentSupervisor(ctx)
+	}
 	run.desired(ctx)
 	if nodeID != uuid.Nil {
 		run.threatFeedNode(ctx, admin)
@@ -63,6 +66,7 @@ func TestE2E_Acceptance(t *testing.T) {
 	run.publish(ctx, admin, nodeID)
 	if nodeID != uuid.Nil {
 		run.member(ctx, admin)
+		run.workerRestart(ctx)
 		run.deviceRevoke(ctx)
 		run.scaleHook(ctx, admin)
 		run.gatewayPrivacy(ctx)
@@ -361,10 +365,22 @@ func (r *runner) forwarding(view forwardView) {
 }
 
 func (r *runner) member(ctx context.Context, admin *session) {
-	defer func() { r.forwarding(r.lab.forwardChain()) }()
+	// Sample forwarding as soon as a counted flow exists. The usage poll below
+	// can outlive that chain: on run 4c97ebef the end-of-function sample saw
+	// the generation-0 baseline after member-traffic had already passed.
+	forwardingSampled := false
+	defer func() {
+		if !forwardingSampled {
+			r.forwarding(r.lab.forwardChain())
+		}
+	}()
 	rec := Record{ID: "member-traffic", Title: "Member device and exit traffic", Spec: []string{"§8", "§19 AT12"}, Status: StatusBlocked}
 	finishTelemetry := r.recordTelemetry(ctx, &rec)
-	defer func() { finishTelemetry(); r.record(rec) }()
+	defer func() {
+		r.noteReadyLeaseDelay(ctx, &rec)
+		finishTelemetry()
+		r.record(rec)
+	}()
 	member, err := r.lab.login(ctx, "e2e-member", "member")
 	if err != nil {
 		rec.Status = StatusFail
@@ -405,6 +421,8 @@ func (r *runner) member(ctx context.Context, admin *session) {
 		r.flowCounted = r.countedFlow(ctx, recPathNote(&rec))
 		if r.flowCounted {
 			rec.Status = StatusPass
+			r.forwarding(r.lab.forwardChain())
+			forwardingSampled = true
 		}
 	}
 	r.noteAdmissionGate(ctx, admin, &rec)

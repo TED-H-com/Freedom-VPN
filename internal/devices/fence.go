@@ -184,6 +184,13 @@ func (s *Service) announceFence(ctx context.Context, id, member uuid.UUID, peer,
 	s.logger().InfoContext(ctx, "device authorization unconfirmed", "device_id", id, "member_id", member, "peer_id", peer, "ledger_mode", mode)
 }
 
+// deleteAuthorizationFence removes the fence without touching the read-back.
+// Revocation uses this. Re-authorization also refreshes the observation.
+func deleteAuthorizationFence(ctx context.Context, tx pgx.Tx, device uuid.UUID) error {
+	_, err := tx.Exec(ctx, `DELETE FROM device_authorization_fences WHERE device_id=$1`, device)
+	return err
+}
+
 // clearAuthorizationFence drops the fence and marks the stored read-back
 // unconfirmed so the next sync grants instead of fencing again. cleared is
 // false when the device was not fenced.

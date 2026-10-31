@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/TED-H-com/Freedom-VPN/node/agent"
@@ -37,5 +38,27 @@ func TestD061_OnlyRuntimeConfigHasHostLocalResolver(t *testing.T) {
 	}
 	if info.Mode().Perm() != 0600 {
 		t.Fatal("credential permissions")
+	}
+}
+
+func TestLabHostsPinsControlPlaneNames(t *testing.T) {
+	state := t.TempDir()
+	if err := writeLabHosts(state, "172.28.30", "192.0.3.10"); err != nil {
+		t.Fatal(err)
+	}
+	raw, err := os.ReadFile(filepath.Join(state, "node", "etc", "lab-hosts"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := "172.28.30.30 agent.example.invalid\n" +
+		"172.28.30.21 netbird.example.invalid\n" +
+		"172.28.30.21 portal.example.invalid\n" +
+		"172.28.30.11 idp.example.invalid\n" +
+		"192.0.3.10 releases.example.invalid\n"
+	if string(raw) != want {
+		t.Fatalf("lab-hosts:\n%s", raw)
+	}
+	if strings.Contains(string(raw), "127.0.0.11") {
+		t.Fatal("lab-hosts must not point at embedded DNS")
 	}
 }

@@ -68,7 +68,7 @@ func (s *Service) SubmitObservation(
 		return api.ObservationAccepted{}, err
 	}
 
-	canonBytes, err := canonjson.Marshal(report)
+	canonBytes, reportPayloadJSON, usageOutboxJSON, hasUsage, err := marshalObservationReport(report)
 	if err != nil {
 		return api.ObservationAccepted{}, apierr.Newf(apierr.MalformedRequest, "invalid observation payload for canonical hash: %v", err)
 	}
@@ -179,10 +179,6 @@ func (s *Service) SubmitObservation(
 			return err
 		}
 		errorsArrayJSON, err := json.Marshal(effectiveErrors)
-		if err != nil {
-			return err
-		}
-		reportPayloadJSON, err := json.Marshal(report)
 		if err != nil {
 			return err
 		}
@@ -325,6 +321,16 @@ func (s *Service) SubmitObservation(
 			`, authIncarnationID, graceAt); err != nil {
 				return err
 			}
+			if hasUsage {
+				if _, err := tx.Exec(ctx, `
+					UPDATE node_incarnations
+					SET usage_outbox = $2::jsonb,
+					    usage_outbox_observed_at = $3
+					WHERE id = $1
+				`, authIncarnationID, usageOutboxJSON, receivedAt); err != nil {
+					return err
+				}
+			}
 
 			obsAuditID := uuid.Must(uuid.NewV7())
 			afterObsMap := map[string]any{
@@ -404,6 +410,75 @@ func (s *Service) SubmitObservation(
 		return api.ObservationAccepted{}, err
 	}
 	return accepted, nil
+}
+
+func hasUsageOutbox(u api.UsageOutboxStatus) bool {
+	return u.BlockedSeq.IsSpecified() ||
+		u.LedgerEpoch.IsSpecified() ||
+		u.MeterEpochId.IsSpecified() ||
+		u.OldestUnackedAt.IsSpecified() ||
+		u.AckedArchiveBytes != 0 ||
+		u.CentralAckedThrough != 0 ||
+		u.LastDurableEventSeq != 0 ||
+		u.UnackedEventCount != 0 ||
+		u.UnackedPayloadBytes != 0
+}
+
+func normalizeUsageOutbox(u api.UsageOutboxStatus) api.UsageOutboxStatus {
+	if !u.BlockedSeq.IsSpecified() {
+		u.BlockedSeq.SetNull()
+	}
+	if !u.LedgerEpoch.IsSpecified() {
+		u.LedgerEpoch.SetNull()
+	}
+	if !u.MeterEpochId.IsSpecified() {
+		u.MeterEpochId.SetNull()
+	}
+	if !u.OldestUnackedAt.IsSpecified() {
+		u.OldestUnackedAt.SetNull()
+	} else if ts, err := u.OldestUnackedAt.Get(); err == nil {
+		u.OldestUnackedAt.Set(ts.UTC())
+	}
+	return u
+}
+
+func marshalObservationReport(report api.ObservationReport) (canonBytes, reportPayloadJSON, usageOutboxJSON []byte, hasUsage bool, err error) {
+	hasUsage = hasUsageOutbox(report.Usage)
+	r := report
+	r.Usage = normalizeUsageOutbox(r.Usage)
+	if !hasUsage {
+		rawBytes, err := json.Marshal(r)
+		if err != nil {
+			return nil, nil, nil, false, err
+		}
+		var rawMap map[string]json.RawMessage
+		if err := json.Unmarshal(rawBytes, &rawMap); err != nil {
+			return nil, nil, nil, false, err
+		}
+		delete(rawMap, "usage")
+		canonBytes, err = canonjson.Marshal(rawMap)
+		if err != nil {
+			return nil, nil, nil, false, err
+		}
+		reportPayloadJSON, err = json.Marshal(rawMap)
+		if err != nil {
+			return nil, nil, nil, false, err
+		}
+		return canonBytes, reportPayloadJSON, nil, false, nil
+	}
+	canonBytes, err = canonjson.Marshal(r)
+	if err != nil {
+		return nil, nil, nil, false, err
+	}
+	reportPayloadJSON, err = json.Marshal(r)
+	if err != nil {
+		return nil, nil, nil, false, err
+	}
+	usageOutboxJSON, err = json.Marshal(r.Usage)
+	if err != nil {
+		return nil, nil, nil, false, err
+	}
+	return canonBytes, reportPayloadJSON, usageOutboxJSON, true, nil
 }
 
 // evaluateObservationEvidence enforces fail-closed validation on a node's reported checks (§5.1, §8, §10.3).

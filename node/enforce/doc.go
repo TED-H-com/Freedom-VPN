@@ -9,7 +9,9 @@
 // inet fvpn is part of those bytes. Accept, continue, counter, and log are
 // tolerated, because an accept does not stop a later base chain. A statement
 // that can rewrite, mark, offload, queue, or drop member traffic on a hook
-// that traffic crosses fails closed.
+// that traffic crosses fails closed. A native match that restricts the
+// packet to 127.0.0.0/8 or to ::1 is classed loopback_scoped and does not
+// fail closed; an xt match does not prove that scope.
 //
 // Metering is forward_admission_v1 (§10.1, §10.2): one named counter per
 // device per direction, incremented only after the lease and isolation checks,
