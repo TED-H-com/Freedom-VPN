@@ -28,7 +28,7 @@ type Conn struct {
 	sample Sample
 }
 
-func Wrap(c net.Conn) *Conn { return &Conn{Conn: c} }
+func Wrap(c net.Conn) *Conn { return &Conn{Conn: c, sample: Sample{Error: "none"}} }
 func Category(e error) string {
 	if e == nil {
 		return "none"
@@ -69,6 +69,9 @@ func (c *Conn) Line(length int, complete bool, e error) {
 		c.sample.Lines++
 	} else {
 		c.sample.Partial = length
+		if e == nil {
+			c.sample.Error = "line_mismatch"
+		}
 	}
 	if e != nil {
 		c.sample.Error = Category(e)
