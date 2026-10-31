@@ -584,10 +584,16 @@ transferring:
 	noteJSON(&rec, "transfer", map[string]any{"before": before, "after": after, "http": got})
 	arrival, oe := r.originProbe(ctx, "GET", probe)
 	recPathNote(&rec)("origin_arrival", arrival)
+	var receipt struct {
+		ID       string `json:"probe_id"`
+		Requests int    `json:"requests"`
+		Source   string `json:"source_address"`
+	}
+	arrived := json.Unmarshal([]byte(arrival), &receipt) == nil && receipt.ID == probe && receipt.Requests == 1 && receipt.Source == r.nodeSNAT()
 	if c.Sample(ctx, "after-first-transfer") != nil {
 		return
 	}
-	if selected && be == nil && ae == nil && ge == nil && ce == nil && oe == nil && got.Available && after.Upload > before.Upload && after.Download > before.Download {
+	if selected && arrived && be == nil && ae == nil && ge == nil && ce == nil && oe == nil && got.Available && after.Upload > before.Upload && after.Download > before.Download {
 		rec.Status = StatusPass
 	}
 }
