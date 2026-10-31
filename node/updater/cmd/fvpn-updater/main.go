@@ -12,6 +12,7 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/TED-H-com/Freedom-VPN/node/internal/updatejournal"
 	"github.com/TED-H-com/Freedom-VPN/node/updater"
@@ -23,7 +24,7 @@ func main() {
 
 func run(args []string, stdout, stderr io.Writer) int {
 	if len(args) == 0 {
-		fmt.Fprintln(stderr, "usage: fvpn-updater <run|recover|flush|status|version>")
+		fmt.Fprintln(stderr, "usage: fvpn-updater <run|recover|flush|status|apply|version>")
 		return 64
 	}
 	switch args[0] {
@@ -32,9 +33,9 @@ func run(args []string, stdout, stderr io.Writer) int {
 			fmt.Fprintln(stdout, updater.Version)
 			return 0
 		}
-		fmt.Fprintln(stderr, "usage: fvpn-updater <run|recover|flush|status|version>")
+		fmt.Fprintln(stderr, "usage: fvpn-updater <run|recover|flush|status|apply|version>")
 		return 0
-	case "run", "recover", "flush":
+	case "run", "recover", "flush", "apply":
 		return command(args[0], args[1:], stderr)
 	case "status":
 		return status(args[1:], stdout, stderr)
@@ -92,11 +93,20 @@ func command(name string, args []string, stderr io.Writer) int {
 	fs := flag.NewFlagSet(name, flag.ContinueOnError)
 	fs.SetOutput(stderr)
 	cfgPath := fs.String("config", "", "updater config JSON (paths only, no keys)")
+	pending := fs.String("pending", "", "installer pending-release.json to apply")
 	if err := fs.Parse(args); err != nil {
 		return 64
 	}
 	if *cfgPath == "" {
 		fmt.Fprintln(stderr, "fvpn-updater: -config is required")
+		return 64
+	}
+	if name == "apply" && (strings.TrimSpace(*pending) == "" || fs.NArg() != 0) {
+		fmt.Fprintln(stderr, "fvpn-updater: apply requires -config and -pending")
+		return 64
+	}
+	if fs.NArg() != 0 || (name != "apply" && *pending != "") {
+		fmt.Fprintln(stderr, "fvpn-updater: unexpected arguments")
 		return 64
 	}
 	cfg, err := updater.LoadConfig(*cfgPath)
@@ -114,7 +124,7 @@ func command(name string, args []string, stderr io.Writer) int {
 		return 1
 	}
 	defer eng.Close()
-	eng.Log = slog.New(slog.NewJSONHandler(stderr, nil))
+	eng.UseLog(slog.New(slog.NewJSONHandler(stderr, nil)))
 	ctx := context.Background()
 	var runErr error
 	switch name {
@@ -122,6 +132,8 @@ func command(name string, args []string, stderr io.Writer) int {
 		runErr = eng.Run(ctx)
 	case "recover":
 		runErr = eng.Recover(ctx)
+	case "apply":
+		runErr = eng.ApplyPending(ctx, *pending)
 	default:
 		runErr = eng.Flush(ctx)
 	}
