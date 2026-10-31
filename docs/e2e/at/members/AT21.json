@@ -1,7 +1,7 @@
 {
   "node_incarnations": {
-    "node": "01a19226-211d-782f-b2fa-38c8ae17be57",
-    "node2": "01a19230-b6bc-7b92-ab31-9bc5af217935"
+    "node": "01a19336-c7b7-7cad-bb7c-6f5a09fb904c",
+    "node2": "01a19341-5fbc-7d9a-a709-c07b0e8b001e"
   },
   "complete": true,
   "id": "AT21",
@@ -15,19 +15,19 @@
   "observations": [
     {
       "name": "native DNS healthy",
-      "detail": "pass; expected: normal system resolution matches availability; bounded at 13 seconds; actual: {\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":-1,\"types\":[],\"ttls\":[],\"address_classes\":[\"other_ipv4\",\"other_ipv6\"],\"expected_answer\":true,\"connected\":false,\"bytes\":0,\"milliseconds\":1}; command: fixture lookup uses OS stub, no explicit resolver"
+      "detail": "pass; expected: normal system resolution matches availability; bounded at 13 seconds; actual: {\"authority_serial\":0,\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":-1,\"types\":[],\"ttls\":[],\"address_classes\":[\"other_ipv4\",\"other_ipv6\"],\"expected_answer\":true,\"connected\":false,\"bytes\":0,\"milliseconds\":1}; command: fixture lookup uses OS stub, no explicit resolver"
     },
     {
       "name": "primary resolver transport down",
-      "detail": "pass; expected: stopped; actual: {\"at\":\"2026-10-31T13:52:50.034990891Z\",\"stopped\":true}; command: docker stop owned origin-dns transport; node policy health stays up"
+      "detail": "pass; expected: stopped; actual: {\"at\":\"2026-10-31T18:51:11.082927977Z\",\"stopped\":true}; command: docker stop owned origin-dns transport; node policy health stays up"
     },
     {
       "name": "automatic secondary fallback",
-      "detail": "pass; expected: normal system resolution matches availability; bounded at 13 seconds; actual: {\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":-1,\"types\":[],\"ttls\":[],\"address_classes\":[\"other_ipv4\"],\"expected_answer\":true,\"connected\":false,\"bytes\":0,\"milliseconds\":2503}; command: fixture lookup uses OS stub, no explicit resolver"
+      "detail": "pass; expected: normal system resolution matches availability; bounded at 13 seconds; actual: {\"authority_serial\":0,\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":-1,\"types\":[],\"ttls\":[],\"address_classes\":[\"other_ipv4\"],\"expected_answer\":true,\"connected\":false,\"bytes\":0,\"milliseconds\":2503}; command: fixture lookup uses OS stub, no explicit resolver"
     },
     {
       "name": "fallback block policy",
-      "detail": "pass; expected: F8-A / F8-TTL5: RCODE 3, zero answers, SOA TTL 5 from remaining resolver; actual: {\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":2502}; command: ProbeNativeDNS with primary transport down; docs/dns/BACKEND.md §2.1.4"
+      "detail": "pass; expected: F8-A / F8-TTL5: RCODE 3, zero answers, SOA TTL 5 from remaining resolver; actual: {\"authority_serial\":0,\"dns_trace\":{\"started\":\"2026-10-31T18:51:14.840310194Z\",\"completed\":\"2026-10-31T18:51:17.381560972Z\",\"responder\":\"secondary\",\"cache_state\":\"unknown\",\"trace_complete\":false,\"resolver_events\":[{\"started\":\"2026-10-31T18:51:17.378194333Z\",\"completed\":\"2026-10-31T18:51:17.378595778Z\",\"role\":\"secondary\",\"source_role\":\"native\",\"fixture_case\":\"feed-01\",\"rr_type\":1,\"protocol\":\"udp\",\"rcode\":3,\"ttls\":[],\"address_classes\":[],\"authority_serial\":100500,\"success\":true}],\"authority_events\":[],\"authority_serial_after_query\":1001,\"authority_read_at\":\"2026-10-31T18:51:17.496659067Z\",\"answer_ttl_remaining\":[]},\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":2501}; command: ProbeNativeDNS with primary transport down; docs/dns/BACKEND.md §2.1.4"
     },
     {
       "name": "both resolver transports down",
@@ -35,11 +35,11 @@
     },
     {
       "name": "both down bounded failure",
-      "detail": "pass; expected: normal system resolution matches availability; bounded at 13 seconds; actual: {\"authority_ttl\":0,\"has_soa\":false,\"available\":false,\"rcode\":-1,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":12001,\"error\":\"lookup_unavailable\"}; command: fixture lookup uses OS stub, no explicit resolver"
+      "detail": "pass; expected: normal system resolution matches availability; bounded at 13 seconds; actual: {\"authority_serial\":0,\"authority_ttl\":0,\"has_soa\":false,\"available\":false,\"rcode\":-1,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":12000,\"error\":\"lookup_unavailable\"}; command: fixture lookup uses OS stub, no explicit resolver"
     },
     {
       "name": "native DNS recovery",
-      "detail": "pass; expected: system resolution resumes within bounded recovery; actual: {\"recovery_ms\":40,\"result\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":-1,\"types\":[],\"ttls\":[],\"address_classes\":[\"other_ipv4\",\"other_ipv6\"],\"expected_answer\":true,\"connected\":false,\"bytes\":0,\"milliseconds\":1}}; command: restart only owned resolver transports; native system lookup"
+      "detail": "pass; expected: system resolution resumes within bounded recovery; actual: {\"recovery_ms\":42,\"result\":{\"authority_serial\":0,\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":-1,\"types\":[],\"ttls\":[],\"address_classes\":[\"other_ipv4\",\"other_ipv6\"],\"expected_answer\":true,\"connected\":false,\"bytes\":0,\"milliseconds\":1}}; command: restart only owned resolver transports; native system lookup"
     },
     {
       "name": "sync fault activation",
@@ -67,118 +67,118 @@
     },
     {
       "name": "provenance",
-      "detail": "source=731be5a7af7657660d96c240695747a23a3f5c96; applied generation=62; incarnation=01a19226-211d-782f-b2fa-38c8ae17be57; image/binary digests in JSON"
+      "detail": "source=33abb2fd2c2fc95826c6e69eb434045522d6f7ef; applied generation=66; incarnation=01a19336-c7b7-7cad-bb7c-6f5a09fb904c; image/binary digests in JSON"
     },
     {
       "name": "operator",
       "detail": "needs operator run; see OPERATORS.md"
     }
   ],
-  "at": "2026-10-31T13:52:49Z",
-  "run_id": "2be2d32f-bfd9-46f5-bf29-afaa6617ae94",
-  "source_commit": "731be5a7af7657660d96c240695747a23a3f5c96",
+  "at": "2026-10-31T18:51:10Z",
+  "run_id": "7edb263f-1f6e-4f94-9e8e-26099f96a699",
+  "source_commit": "33abb2fd2c2fc95826c6e69eb434045522d6f7ef",
   "release_digests": {
-    "artifact_sha256_0.1.0_amd64": "0552f3af4b42940998428af2507e7c44e84fc71015374c5529173f45fde632e4",
-    "artifact_sha256_0.1.0_arm64": "2fa294d0ca5e9dbf66bca1a5133806965ee8498f8f05b5d719251dc2b7061799",
-    "manifest_sha256_0.1.0": "a149455caf608b8609e655781f4b7799bdf6af945a42986ab91ebddfecf5e63e",
-    "signed_manifest_sha256_0.1.0": "f5fd859522cbc407c742c96f80ec79bfeb681dc2d0902aa23f89662a87e4b92d"
+    "artifact_sha256_0.1.0_amd64": "9bfad1435402519d2f5a1c158f301a22a400726d824edd40036824a0b3b00276",
+    "artifact_sha256_0.1.0_arm64": "00a6c5dc2e0f82314172e9e6632873d6ac762f649b2cd27cb92adb09583b1726",
+    "manifest_sha256_0.1.0": "a6cc8fbec2998aad1a565e166749e9ebf3bcce86ed6b2d10a273edcb730fc3a3",
+    "signed_manifest_sha256_0.1.0": "3a73110eecc25aa253db08f448abc6129104e332b390ab250f6f0465bc092185"
   },
   "build": {
-    "test_binary_sha256": "21f99fe98ecb74c58e7daf98e265f017381d1db0a9451e366130f98c859b585c",
-    "source_commit": "731be5a7af7657660d96c240695747a23a3f5c96",
+    "test_binary_sha256": "9336fdf1f613f4c3bf539e58859a30b325e456aa3d7cd77f18054fd45536df85",
+    "source_commit": "33abb2fd2c2fc95826c6e69eb434045522d6f7ef",
     "source_dirty": false,
     "image_digests": {
       "adguard": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
-      "control": "sha256:f7752530002c5c0d5fbf08eb7f151e19046b852e5eb9d8a938fc97865df72b60",
+      "control": "sha256:02011b19f7f7a3cb26e0d94376860e00facc7ce1adb5317b461d9a3c089e971d",
       "coredns": "sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97",
       "gateway": "sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce",
-      "idp": "sha256:5c8cba0f167b8eea071d2df7aa06d634ddeb666960b3e8bf2d26e55707079e65",
-      "member": "sha256:6bd05d00596f31cef446e7a75b327dc7c3388a099395908d6740633e12d3ffb4",
+      "idp": "sha256:67038a431b331c020e84c862141499dda943e8bc129f8b41e3147f0fcdb52c09",
+      "member": "sha256:2c315e2508b58aae0b10d4dc40147c627b08c01c98168790834e768a11fb274f",
       "netbird": "sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c",
-      "node": "sha256:6bd05d00596f31cef446e7a75b327dc7c3388a099395908d6740633e12d3ffb4",
-      "node-netns": "sha256:6bd05d00596f31cef446e7a75b327dc7c3388a099395908d6740633e12d3ffb4",
-      "node2": "sha256:6bd05d00596f31cef446e7a75b327dc7c3388a099395908d6740633e12d3ffb4",
+      "node": "sha256:2c315e2508b58aae0b10d4dc40147c627b08c01c98168790834e768a11fb274f",
+      "node-netns": "sha256:2c315e2508b58aae0b10d4dc40147c627b08c01c98168790834e768a11fb274f",
+      "node2": "sha256:2c315e2508b58aae0b10d4dc40147c627b08c01c98168790834e768a11fb274f",
       "node2-adguard": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
-      "node2-netns": "sha256:6bd05d00596f31cef446e7a75b327dc7c3388a099395908d6740633e12d3ffb4",
-      "origin": "sha256:a84506106a710038eead02248e360e7dd233a3ea52b4a53533741cd8640c1f3f",
-      "payment": "sha256:391a9ea1f6a53d8ea3fb5f8e43ab745bc5922feea052dcfe33f8433974748c0f",
-      "postgres": "sha256:ab14cbac9d51d613554cb688dc57fd78e49b3a949512bcac611602a78166faa7",
-      "worker": "sha256:9936f4020220a165815746944e42024f4dcad3b67f42bbeb1c81a0b23b634728"
+      "node2-netns": "sha256:2c315e2508b58aae0b10d4dc40147c627b08c01c98168790834e768a11fb274f",
+      "origin": "sha256:4dededd6f6030519398edb1c92a153b31a264f83c569a72d586479079448beec",
+      "payment": "sha256:9e93d011fc860696bdcf344a2c0cca567bd2c73da17d12679401c2e755f572ae",
+      "postgres": "sha256:486ef7dfe5042c86a85a3d9a12d8d416ba1c7591d58ab76ffccc6beb3cdef4e8",
+      "worker": "sha256:2150cf1acfe97b1c40de9381daaa799c1d32a15e132c7528843479d5dbc9fa83"
     },
     "binary_sha256": {
-      "fvpn-agent": "63af369a9da81abfc59bf4c34eeff1a1b15bd693995a786396fb07c94e9f7df8",
-      "fvpn-control": "5863b7c3244d4cd56f8ffefea54312fa20d97baed8c3847074f7f6e3eff4f1d2",
-      "fvpn-updater": "be302e7acf27ac9823adfeff1cba7de35cb0db4892880de61a4b14d83e8489d5",
-      "fvpn-worker": "952fc1a19dfb32f0a888a8c2cd91fedd75f544c745dfe7d0fc175655f7e83be1"
+      "fvpn-agent": "243f080c1fc6f9fd5479b295dcca237997b6bd907d48f81302015f415f049047",
+      "fvpn-control": "ce72443db0420e2174121a3e16f4e5189da8c78d2bc48c2bdccafa51fdd3dbaf",
+      "fvpn-updater": "eedb3450744a7c3d6dc074b2b1c16e2a7228da48cdd0856f0da62fee37d3f832",
+      "fvpn-worker": "10c05c21770513f322e05e8560c5a42bae6cee854ec11913df3a9237251f695a"
     },
     "binary_vcs": {
       "fvpn-agent": {
         "go_version": "go1.27.3",
         "vcs.modified": "false",
-        "vcs.revision": "731be5a7af7657660d96c240695747a23a3f5c96",
-        "vcs.time": "2026-10-31T13:27:01Z"
+        "vcs.revision": "33abb2fd2c2fc95826c6e69eb434045522d6f7ef",
+        "vcs.time": "2026-10-31T18:18:12Z"
       },
       "fvpn-control": {
         "go_version": "go1.27.3",
         "vcs.modified": "false",
-        "vcs.revision": "731be5a7af7657660d96c240695747a23a3f5c96",
-        "vcs.time": "2026-10-31T13:27:01Z"
+        "vcs.revision": "33abb2fd2c2fc95826c6e69eb434045522d6f7ef",
+        "vcs.time": "2026-10-31T18:18:12Z"
       },
       "fvpn-updater": {
         "go_version": "go1.27.3",
         "vcs.modified": "false",
-        "vcs.revision": "731be5a7af7657660d96c240695747a23a3f5c96",
-        "vcs.time": "2026-10-31T13:27:01Z"
+        "vcs.revision": "33abb2fd2c2fc95826c6e69eb434045522d6f7ef",
+        "vcs.time": "2026-10-31T18:18:12Z"
       },
       "fvpn-worker": {
         "go_version": "go1.27.3",
         "vcs.modified": "false",
-        "vcs.revision": "731be5a7af7657660d96c240695747a23a3f5c96",
-        "vcs.time": "2026-10-31T13:27:01Z"
+        "vcs.revision": "33abb2fd2c2fc95826c6e69eb434045522d6f7ef",
+        "vcs.time": "2026-10-31T18:18:12Z"
       }
     }
   },
-  "policy_revision": "62",
+  "policy_revision": "66",
   "active_policy_revisions": {
-    "dns_profile": "01a1923c-4eb6-788b-a7cc-ba56be8969bc",
-    "domain_rule_set": "01a19226-0aca-7a99-8f99-55a4c7de8078",
-    "fair_use": "01a19226-0602-792e-aae2-daa9ce91bca1",
-    "plan": "01a1922b-2356-79ee-8ba8-d0af864785ce",
-    "release_support": "01a19225-feaf-7241-801f-13480f60a0a9"
+    "dns_profile": "01a1934d-7eeb-79c9-87f2-6487e3c3f2d5",
+    "domain_rule_set": "01a19336-b081-7c31-a516-f5b52060bbe0",
+    "fair_use": "01a19336-abc3-70aa-bcb6-ecf283be564e",
+    "plan": "01a1933b-fece-7008-9509-cb3bad017aad",
+    "release_support": "01a19336-a46d-711b-8fdc-b05ab5137033"
   },
-  "node_incarnation": "01a19226-211d-782f-b2fa-38c8ae17be57",
+  "node_incarnation": "01a19336-c7b7-7cad-bb7c-6f5a09fb904c",
   "steps": [
     {
       "name": "native DNS healthy",
       "status": "pass",
       "expected": "normal system resolution matches availability; bounded at 13 seconds",
-      "actual": "{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":-1,\"types\":[],\"ttls\":[],\"address_classes\":[\"other_ipv4\",\"other_ipv6\"],\"expected_answer\":true,\"connected\":false,\"bytes\":0,\"milliseconds\":1}",
+      "actual": "{\"authority_serial\":0,\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":-1,\"types\":[],\"ttls\":[],\"address_classes\":[\"other_ipv4\",\"other_ipv6\"],\"expected_answer\":true,\"connected\":false,\"bytes\":0,\"milliseconds\":1}",
       "command": "fixture lookup uses OS stub, no explicit resolver",
-      "at": "2026-10-31T13:52:50Z"
+      "at": "2026-10-31T18:51:11Z"
     },
     {
       "name": "primary resolver transport down",
       "status": "pass",
       "expected": "stopped",
-      "actual": "{\"at\":\"2026-10-31T13:52:50.034990891Z\",\"stopped\":true}",
+      "actual": "{\"at\":\"2026-10-31T18:51:11.082927977Z\",\"stopped\":true}",
       "command": "docker stop owned origin-dns transport; node policy health stays up",
-      "at": "2026-10-31T13:52:50Z"
+      "at": "2026-10-31T18:51:12Z"
     },
     {
       "name": "automatic secondary fallback",
       "status": "pass",
       "expected": "normal system resolution matches availability; bounded at 13 seconds",
-      "actual": "{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":-1,\"types\":[],\"ttls\":[],\"address_classes\":[\"other_ipv4\"],\"expected_answer\":true,\"connected\":false,\"bytes\":0,\"milliseconds\":2503}",
+      "actual": "{\"authority_serial\":0,\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":-1,\"types\":[],\"ttls\":[],\"address_classes\":[\"other_ipv4\"],\"expected_answer\":true,\"connected\":false,\"bytes\":0,\"milliseconds\":2503}",
       "command": "fixture lookup uses OS stub, no explicit resolver",
-      "at": "2026-10-31T13:52:52Z"
+      "at": "2026-10-31T18:51:14Z"
     },
     {
       "name": "fallback block policy",
       "status": "pass",
       "expected": "F8-A / F8-TTL5: RCODE 3, zero answers, SOA TTL 5 from remaining resolver",
-      "actual": "{\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":2502}",
+      "actual": "{\"authority_serial\":0,\"dns_trace\":{\"started\":\"2026-10-31T18:51:14.840310194Z\",\"completed\":\"2026-10-31T18:51:17.381560972Z\",\"responder\":\"secondary\",\"cache_state\":\"unknown\",\"trace_complete\":false,\"resolver_events\":[{\"started\":\"2026-10-31T18:51:17.378194333Z\",\"completed\":\"2026-10-31T18:51:17.378595778Z\",\"role\":\"secondary\",\"source_role\":\"native\",\"fixture_case\":\"feed-01\",\"rr_type\":1,\"protocol\":\"udp\",\"rcode\":3,\"ttls\":[],\"address_classes\":[],\"authority_serial\":100500,\"success\":true}],\"authority_events\":[],\"authority_serial_after_query\":1001,\"authority_read_at\":\"2026-10-31T18:51:17.496659067Z\",\"answer_ttl_remaining\":[]},\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":2501}",
       "command": "ProbeNativeDNS with primary transport down; docs/dns/BACKEND.md §2.1.4",
-      "at": "2026-10-31T13:52:55Z"
+      "at": "2026-10-31T18:51:17Z"
     },
     {
       "name": "both resolver transports down",
@@ -186,23 +186,23 @@
       "expected": "stopped",
       "actual": "",
       "command": "docker stop owned secondary transport",
-      "at": "2026-10-31T13:52:55Z"
+      "at": "2026-10-31T18:51:18Z"
     },
     {
       "name": "both down bounded failure",
       "status": "pass",
       "expected": "normal system resolution matches availability; bounded at 13 seconds",
-      "actual": "{\"authority_ttl\":0,\"has_soa\":false,\"available\":false,\"rcode\":-1,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":12001,\"error\":\"lookup_unavailable\"}",
+      "actual": "{\"authority_serial\":0,\"authority_ttl\":0,\"has_soa\":false,\"available\":false,\"rcode\":-1,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":12000,\"error\":\"lookup_unavailable\"}",
       "command": "fixture lookup uses OS stub, no explicit resolver",
-      "at": "2026-10-31T13:53:07Z"
+      "at": "2026-10-31T18:51:30Z"
     },
     {
       "name": "native DNS recovery",
       "status": "pass",
       "expected": "system resolution resumes within bounded recovery",
-      "actual": "{\"recovery_ms\":40,\"result\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":-1,\"types\":[],\"ttls\":[],\"address_classes\":[\"other_ipv4\",\"other_ipv6\"],\"expected_answer\":true,\"connected\":false,\"bytes\":0,\"milliseconds\":1}}",
+      "actual": "{\"recovery_ms\":42,\"result\":{\"authority_serial\":0,\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":-1,\"types\":[],\"ttls\":[],\"address_classes\":[\"other_ipv4\",\"other_ipv6\"],\"expected_answer\":true,\"connected\":false,\"bytes\":0,\"milliseconds\":1}}",
       "command": "restart only owned resolver transports; native system lookup",
-      "at": "2026-10-31T13:53:07Z"
+      "at": "2026-10-31T18:51:31Z"
     },
     {
       "name": "sync fault activation",
@@ -210,7 +210,7 @@
       "expected": "202",
       "actual": "HTTP 202 ",
       "command": "activate normal profile while shared byte-corruption hook armed",
-      "at": "2026-10-31T13:53:08Z"
+      "at": "2026-10-31T18:51:32Z"
     },
     {
       "name": "resolver synchronization corruption",
@@ -218,7 +218,7 @@
       "expected": "failed HASH_MISMATCH; last-good synthetic rule still blocks",
       "actual": "observed=true; outcome=failed; error=HASH_MISMATCH; last_good={\"answers\":0,\"authority_ttl\":5,\"available\":true,\"has_soa\":true,\"rcode\":3,\"ttl\":5,\"types\":[]}",
       "command": "shared node loopback mTLS corruption hook; typed NodeDetail evidence and DNS query",
-      "at": "2026-10-31T13:53:09Z"
+      "at": "2026-10-31T18:51:38Z"
     },
     {
       "name": "typed DNS evidence",
@@ -226,7 +226,7 @@
       "expected": "record exact issued-document application, or explicit null",
       "actual": "HTTP=200; decoded=true; specified=true; null=false; present=true; outcome=applied; error_code=; issued_document_matches=true",
       "command": "GET NodeDetail.dns_policy_evidence using generated 1.2.0 type; read issued document",
-      "at": "2026-10-31T13:53:15Z"
+      "at": "2026-10-31T18:51:43Z"
     },
     {
       "name": "issued resolver document mTLS fetch",
@@ -234,7 +234,7 @@
       "expected": "200 canonical bytes match node evidence digest",
       "actual": "HTTP=200; hash_matches=true; bytes=1220",
       "command": "GET /agent/resolver-documents/{issued_id} using actual node mTLS; hash in memory",
-      "at": "2026-10-31T13:53:17Z"
+      "at": "2026-10-31T18:51:45Z"
     },
     {
       "name": "current desired-state DNS selection",
@@ -242,7 +242,7 @@
       "expected": "record response independently of previously issued document",
       "actual": "HTTP=200; code=; ambiguous_active_profiles=false",
       "command": "GET /agent/desired-state via actual mTLS; retain only allowlisted error",
-      "at": "2026-10-31T13:53:19Z"
+      "at": "2026-10-31T18:51:47Z"
     }
   ],
   "blockers": [
