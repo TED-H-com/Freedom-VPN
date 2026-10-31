@@ -106,6 +106,7 @@ type ServingEvidence struct {
 	Quarantined      bool                    `json:"quarantined"`
 	QuarantinedLinks []string                `json:"quarantined_links,omitempty"`
 	TC               []TCReadEvidence        `json:"tc"`
+	TCSummary        TCSummary               `json:"tc_summary"`
 	PolicyRules      []PolicyRuleEvidence    `json:"policy_rules"`
 	Counters         map[string]CounterValue `json:"-"`
 }
@@ -122,6 +123,7 @@ func VerifyServing(ctx context.Context, ex Executor, m Model, assignments map[uu
 // Apply alone may verify the staged serving rules while the quarantine marker
 // is retained. Public verification always rejects that marker.
 func verifyServing(ctx context.Context, ex Executor, m Model, assignments map[uuid.UUID]uint16, recovering bool) (ev ServingEvidence, err error) {
+	defer func() { ev.retainTC(m.Generation, "verify", err) }()
 	defer func() { ev.PolicyRules = readPolicyRules(ctx, ex) }()
 	raw, nftErr := ex.Output(ctx, "nft", "-j", "list", "ruleset")
 	if nftErr == nil {
@@ -168,7 +170,7 @@ func readServingTC(ctx context.Context, ex Executor, m Model) (map[string][2][]b
 		}
 		reads = append(reads, r)
 		if err != nil {
-			return nil, nil, checkf(ReasonTCForeignFilter, "interface %s parent %s kind unreadable: %s", iface, attachment, r.Error)
+			return nil, nil, tcCheck(r, nil)
 		}
 		return r.Objects, raw, nil
 	}
@@ -190,7 +192,8 @@ func readServingTC(ctx context.Context, ex Executor, m Model) (map[string][2][]b
 		}
 		c, err := ex.Output(ctx, "tc", "-j", "class", "show", "dev", iface)
 		if err != nil {
-			return qos, reads, checkf(ReasonTCForeignFilter, "interface %s parent class kind unreadable: read_failed", iface)
+			r := TCReadEvidence{Interface: iface, Attachment: "class", Error: "read_failed"}
+			return qos, append(reads, r), tcCheck(r, nil)
 		}
 		parents := map[string]bool{}
 		htb := false
@@ -206,7 +209,8 @@ func readServingTC(ctx context.Context, ex Executor, m Model) (map[string][2][]b
 		if htb {
 			view, err := ParseClassJSON(c, QdiscView{})
 			if err != nil {
-				return qos, reads, checkf(ReasonTCForeignFilter, "interface %s parent class kind unreadable: invalid_listing", iface)
+				r := TCReadEvidence{Interface: iface, Attachment: "class", Error: "invalid_listing"}
+				return qos, append(reads, r), tcCheck(r, nil)
 			}
 			for handle := range view.Classes {
 				parents[handle] = true
@@ -267,7 +271,7 @@ func verifyTCObjects(reads []TCReadEvidence, m Model, assignments map[uuid.UUID]
 					continue
 				}
 			}
-			return checkf(ReasonTCForeignFilter, "interface %s parent %s handle %s kind %s", read.Interface, tcParent(read.Attachment, obj), obj.Handle, obj.Kind)
+			return tcCheck(read, &obj)
 		}
 	}
 	return nil
