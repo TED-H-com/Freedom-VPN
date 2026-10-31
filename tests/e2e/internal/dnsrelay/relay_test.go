@@ -1,10 +1,11 @@
-package main
+package dnsrelay
 
 import (
 	"encoding/binary"
 	"io"
 	"net"
 	"testing"
+	"time"
 )
 
 func TestAT12DNSRelayPreservesTCPAndUDPPayloads(t *testing.T) {
@@ -49,10 +50,39 @@ func TestAT12DNSRelayPreservesTCPAndUDPPayloads(t *testing.T) {
 					}
 				}()
 			}
-			got, err := relayDNS(network, addr, payload)
+			got, err := Exchange(network, addr, payload)
 			if err != nil || string(got) != string(payload) {
 				t.Fatalf("relay %x: %v", got, err)
 			}
 		})
+	}
+}
+
+func TestAT12DNSRelayRefusesOtherSources(t *testing.T) {
+	tcp, err := net.Listen("tcp4", "127.0.0.1:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	udp, err := net.ListenPacket("udp4", "127.0.0.1:0")
+	if err != nil {
+		tcp.Close()
+		t.Fatal(err)
+	}
+	done := make(chan struct{})
+	go func() { _ = serve(tcp, udp, "127.0.0.1:1", "192.0.2.53"); close(done) }()
+	defer func() { tcp.Close(); udp.Close(); <-done }()
+	for _, tc := range []struct{ network, addr string }{{"tcp", tcp.Addr().String()}, {"udp", udp.LocalAddr().String()}} {
+		c, err := net.DialTimeout(tc.network, tc.addr, time.Second)
+		if err != nil {
+			t.Fatal(err)
+		}
+		_ = c.SetDeadline(time.Now().Add(100 * time.Millisecond))
+		_, _ = c.Write([]byte{0, 1, 0})
+		var b [16]byte
+		n, err := c.Read(b[:])
+		c.Close()
+		if err == nil || n != 0 {
+			t.Fatalf("%s unauthorized response", tc.network)
+		}
 	}
 }

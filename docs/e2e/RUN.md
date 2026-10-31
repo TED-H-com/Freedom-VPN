@@ -657,7 +657,10 @@ The endpoint follows the [NetBird reverse-proxy contract](https://docs.netbird.i
 `ObserveDesignatedDNS(ctx, deviceID, tcp)` sends one explicit query to the
 resolver read from the applied `resolver_v4` set. The resolver endpoint is
 on the isolated origin network, behind the exit, and forwards TCP/UDP 53
-to the primary node's product-managed AdGuard. The observation contains
+through a node-side relay to the primary node's product-managed AdGuard.
+The node relay binds only the origin-facing address and admits only the
+origin DNS forwarder's exact address. Its upstream is loopback, as required
+by the signed resolver client-access list; that list is not overridden. The observation contains
 response metadata and per-device DNS/Internet counter deltas, never query
 names or packet contents. A pass needs replies and increases in `nu_` and
 `nd_` with unchanged `u_` and `d_`. This is not native-client automatic

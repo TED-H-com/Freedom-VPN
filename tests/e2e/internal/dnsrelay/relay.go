@@ -1,4 +1,5 @@
-package main
+// Package dnsrelay supplies bounded, content-free TEST ONLY DNS transport.
+package dnsrelay
 
 import (
 	"encoding/binary"
@@ -7,9 +8,9 @@ import (
 	"time"
 )
 
-// serveDNSRelay is TEST ONLY plumbing from the isolated origin network to the
+// Serve is TEST ONLY plumbing from the isolated origin network to the
 // product-managed filtering resolver. No query names or packet data are logged.
-func serveDNSRelay(addr, upstream string) error {
+func Serve(addr, upstream, allowedSource string) error {
 	tcp, err := net.Listen("tcp4", addr)
 	if err != nil {
 		return err
@@ -20,6 +21,17 @@ func serveDNSRelay(addr, upstream string) error {
 		return err
 	}
 	defer udp.Close()
+	return serve(tcp, udp, upstream, allowedSource)
+}
+
+func serve(tcp net.Listener, udp net.PacketConn, upstream, allowedSource string) error {
+	allowed := func(peer net.Addr) bool {
+		if allowedSource == "" {
+			return true
+		}
+		host, _, err := net.SplitHostPort(peer.String())
+		return err == nil && host == allowedSource
+	}
 	slots := make(chan struct{}, 64)
 	go func() {
 		buf := make([]byte, 4096)
@@ -28,12 +40,15 @@ func serveDNSRelay(addr, upstream string) error {
 			if err != nil {
 				return
 			}
+			if !allowed(peer) {
+				continue
+			}
 			packet := append([]byte(nil), buf[:n]...)
 			select {
 			case slots <- struct{}{}:
 				go func() {
 					defer func() { <-slots }()
-					if response, err := relayDNS("udp", upstream, packet); err == nil {
+					if response, err := Exchange("udp", upstream, packet); err == nil {
 						_, _ = udp.WriteTo(response, peer)
 					}
 				}()
@@ -45,6 +60,10 @@ func serveDNSRelay(addr, upstream string) error {
 		conn, err := tcp.Accept()
 		if err != nil {
 			return err
+		}
+		if !allowed(conn.RemoteAddr()) {
+			conn.Close()
+			continue
 		}
 		select {
 		case slots <- struct{}{}:
@@ -64,7 +83,7 @@ func serveDNSRelay(addr, upstream string) error {
 				if _, err := io.ReadFull(conn, packet); err != nil {
 					return
 				}
-				response, err := relayDNS("tcp", upstream, packet)
+				response, err := Exchange("tcp", upstream, packet)
 				if err != nil {
 					return
 				}
@@ -76,7 +95,7 @@ func serveDNSRelay(addr, upstream string) error {
 		}
 	}
 }
-func relayDNS(network, upstream string, packet []byte) ([]byte, error) {
+func Exchange(network, upstream string, packet []byte) ([]byte, error) {
 	conn, err := net.DialTimeout(network, upstream, 2*time.Second)
 	if err != nil {
 		return nil, err

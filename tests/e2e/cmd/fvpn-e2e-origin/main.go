@@ -8,6 +8,7 @@ import (
 	"crypto/tls"
 	"flag"
 	"fmt"
+	"github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/dnsrelay"
 	"io"
 	"net"
 	"net/http"
@@ -29,7 +30,7 @@ func main() {
 	secretFile := flag.String("secret-file", "", "upload secret")
 	flag.Parse()
 	if *dnsUpstream != "" {
-		if err := serveDNSRelay(*addr, *dnsUpstream); err != nil {
+		if err := dnsrelay.Serve(*addr, *dnsUpstream, ""); err != nil {
 			fmt.Fprintln(os.Stderr, "DNS relay failed")
 			os.Exit(1)
 		}

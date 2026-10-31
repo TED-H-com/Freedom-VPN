@@ -183,7 +183,7 @@ func (r *runner) exitDNS(ctx context.Context) {
 }
 
 func (r *runner) memberIPv6(ctx context.Context) {
-	rec := Record{ID: "member-ipv6", Title: "Member IPv6 path", Spec: []string{"§8", "AT20"}, Status: StatusBlocked}
+	rec := Record{ID: "member-ipv6", Title: "Member IPv6 path", Spec: []string{"§8.3", "ISO03", "AT11"}, Status: StatusBlocked}
 	note := recPathNote(&rec)
 	defer func() { r.record(rec) }()
 	addr, err := r.lab.docker(r.lab.member, "ip", "-6", "addr", "show", "dev", "fvnb0")
