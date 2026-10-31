@@ -517,3 +517,137 @@ staticcheck and linux/amd64 plus linux/arm64 compilation. Live execution was
 amd64; physical arm64 remains unmeasured. No dependencies changed.
 All fresh/join/final teardowns exited 0 and the final owned-prefix inventory
 was `{containers:0, networks:0, volumes:0, images:0}`.
+
+## Follow-up 6 — fixed installer, missing same-slot response
+
+Base `945eff8` includes installer PR #279. Read its PR body and
+`docs/node/install-followup3-2026-10-31.md` before invoking the wrappers.
+`docs/e2e/RESPONSES.md` is absent on this tree. The follow-up 15 documentation
+and implementations still reject `installer-node` for
+`HoldUsageAcknowledgements`, `UsageLedgerSnapshot[Bytes]` and
+`MemberTransportStack`. `Service` targets the regular supervised node and has
+no installer-slot parameter. No undocumented service-restoration command is
+used. Missing same-slot traffic and serving evidence stays blocked.
+
+The installer probe uses `PrepareInstallerNode` → API enrollment token →
+`StageInstallerToken` → initial `RerunInstaller`. If installation succeeds,
+it calls the same-release `RerunInstaller`, then API revocation and a fresh
+same-Node enrollment before `ControlledReinstall`. It records wrapper
+exit/status/code, timestamps, identity IDs, before/after SHA-256 digests,
+retired mode/digests and API incarnation-history/usage projections. A
+successful invocation does not satisfy the missing serving/usage prerequisite.
+Only both direct mTLS `403 IDENTITY_REVOKED` responses, after successful
+reenrollment, can close the separate old-certificate row.
+
+Each reached installer phase captures journal, service status and socket-path
+observations before teardown. Raw diagnostic messages stay private under the
+run's `.agent/at-enrollment/` directory; public evidence uses selected fields.
+The fixed socket `/run/fvpn-netbird/netbird.sock`, old socket absence and mode
+of `/run/fvpn-netbird` are observed independently of the CLI exit. No service
+overrides, copied identity state, hand-run installer or fabricated meter
+checkpoint is used. The journaled higher-release upgrade is not invoked; its
+known `final_sample` integration gap remains outside AT07.
+
+Digest fields are `key_sha256`, `cert_sha256`, `node_json_sha256`,
+`usage_db_sha256`, `usage_wal_sha256`, `machine_id_sha256`, and `current`.
+The `absent` sentinel is retained. Historical files are unchanged; prior rows
+copied into the current root records get only these field-name substitutions.
+[Follow-up 5 archive](history/follow-up-5/README.md) preserves all eight root
+files byte-for-byte and records their SHA-256 checksums (D-098).
+
+The area lint target now uses Python `TemporaryDirectory` on disk. The root
+lint helper can be overridden without editing `mk/go.mk`:
+
+```sh
+make -f mk/at-enrollment.mk at-enrollment-lint
+make -f mk/at-enrollment.mk at-enrollment
+make go-lint 'go-with-disk-tmp=python3 tests/e2e/at/enrollment/disktmp.py'
+python3 tests/e2e/at/enrollment/disktmp.py go vet ./...
+python3 tests/e2e/at/enrollment/disktmp.py go test ./...
+git diff --check
+```
+
+Before the live run, checked `pgrep -af gates.sh | grep -v grep` and
+`docker ps --format '{{.Names}}' | grep -c '^fvpn-w'`. Waited through busy
+checks at 07:17:36 and 07:22:43 UTC. At 07:27:51 UTC only one other gate was
+active and the container count was zero; the enrollment run then started.
+
+### Follow-up 6 measured result — `1af27741-cbd9-4fdb-aa1c-7d02790e7a46`
+
+UTC **2026-10-31T07:28:01Z–2026-10-31T07:34:14Z**. Source
+`3f604e2c2d0fd89ee7e2d91014ab31ff46aed7a8`, clean at invocation. Tree SHA-256
+`a7e7159e3f9652344ec56461abd2242de6c1f64cc0425af715a7f84b2aa143e8`; binary SHA-256
+`e8b2b9a297b2b98392a9633449ffe090969e731a32da31b311fdfe6cb942c67a`. Final changes after measurement are records only.
+
+AT06 **376 / 0 / 0**; AT07 **26 / 5 / 0** (pass / blocked / fail).
+The AT06 increase from 344 is exactly 32 additional evidence-file scan rows:
+nine follow-up-5 archive files plus seven new attempt files in both phases.
+All previous assertion names/counts remain represented. Both phases record
+`http_429: 0`, `behaviour: pass`. Both historical review dispositions are
+`resolved`; original failures are preserved.
+
+| Installer measurement | Result |
+|---|---|
+| Initial invocation | `2026-10-31T07:31:09.346675341Z`–`2026-10-31T07:31:11.930606746Z`; exit 0, status `installed` |
+| Same-release rerun | Exit 0, status `already_current`; initial-after = rerun-before = rerun-after across all seven hash/link fields |
+| API authorization | Node revoke 202; fresh `node_id`-bound enrollment; token delivered only to ControlledReinstall |
+| Controlled reinstall | `2026-10-31T07:31:13.707442342Z`–`2026-10-31T07:31:27.749790797Z`; exit 0, status `reenrolled` |
+| Stable Node | `01a190de-9766-70be-b3a3-f1a4e64c7a10` |
+| Old incarnation | `01a190de-9d5f-7615-a589-5ad0f19271ec` |
+| New incarnation | `01a190de-b351-76b9-9c0f-8300d9496d3a` |
+| Retention | Retired mode `700`; key/cert/node.json hashes match; all four bound-state observations match; usage.db unchanged and usage WAL `absent` before/after |
+| API history | Two newest-first rows: new active/current, previous retired with reason `reinstall`; old upload/download `"0"`/`"0"` and checkpoint time unchanged; new usage `"0"`/`"0"`, through null |
+| Old certificate | Direct mTLS desired-state GET and observations POST each 403 `IDENTITY_REVOKED` |
+| Socket | `/run/fvpn-netbird/netbird.sock` present, parent mode `700`; `/var/run/netbird.sock` absent after all three invocations |
+| Prior startup errors | NetBird socket and agent heartbeat read-only diagnostics both false in each journal sample |
+| After every wrapper | NetBird active/running; agent, watchdog, updater service and updater timer inactive/dead, result success |
+| API serving projection | Applying; safety unknown; member forwarding null both after initial install and after reenroll |
+| Same-slot exports | Hold, snapshot and member transport all report `unknown node slot`; no documented service-restoration export |
+
+The wrapper's `code` field is `baseline` on each successful invocation;
+`exit: 0`, success status and `failing_step: none` are retained separately.
+It is not a failure code in this observation. The lifecycle commands complete,
+but their wrapper cleanup leaves no observed serving baseline. No counted
+traffic, held nonzero event set, historical nonzero attribution, once-only
+backlog delivery or full journaled upgrade is claimed.
+
+Remaining blocked rows: `counted_unacked_usage`, `installer_rerun`,
+`identity_ledger_preserved`, `controlled_reinstall`, `historical_usage_retained`.
+The `old_certificate_denied` row now passes independently on both runtime paths.
+Owners and required exports are in the dated D-102 requests section.
+
+Actual live gate output (exit 2, result description lines omitted here; full
+strings remain in AT JSON and the private command log):
+
+```text
+fresh_teardown: exit 0
+fresh_startup: exit 0
+compile_probe: exit 0
+live_probe: exit 0
+join_teardown: exit 0
+join_startup: exit 0
+live_probe_join: exit 0
+final_teardown: exit 0
+records: docs/e2e/at/enrollment; run 1af27741-cbd9-4fdb-aa1c-7d02790e7a46
+make: *** [mk/at-enrollment.mk:12: at-enrollment] Error 1
+```
+
+Actual area lint tail (exit 0):
+
+```text
+ok  	github.com/TED-H-com/Freedom-VPN/tests/e2e/at/enrollment	0.008s
+...................
+----------------------------------------------------------------------
+Ran 19 tests in 0.004s
+
+OK
+at-enrollment-lint: gofmt, vet, pinned staticcheck, offline checks and amd64/arm64 compilation passed
+```
+
+Root `make go-lint` with the disk-scratch helper override and `go vet ./...`
+each exited 0 with empty output. Untagged `go test ./...` exited 0.
+The area gate includes tagged offline tests, pinned staticcheck and both
+linux/amd64 and linux/arm64 compilation. Live hardware is amd64; real arm64
+execution is not claimed. No dependency changes or tmpfs test scratch.
+Final teardown exited 0 and inventory was
+`{"containers":0,"networks":0,"volumes":0,"images":0}`.

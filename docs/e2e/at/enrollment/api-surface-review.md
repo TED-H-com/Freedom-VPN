@@ -136,3 +136,12 @@ restoration. PR #279 changes the packaged daemon socket/runtime lifecycle,
 not those devstack exports. The run calls only the shipped installer wrappers
 and uses API revocation plus a fresh same-Node enrollment for reenrollment.
 Historical unACKed-event delivery is still not defined by the HTTP contract.
+
+Run `1af27741-cbd9-4fdb-aa1c-7d02790e7a46` confirmed the unchanged runtime authorization boundary:
+the actual installer-retired certificate received 403 `IDENTITY_REVOKED` from
+both GET desired-state and POST observations through direct mTLS. The same
+Node's incarnation list returned the new active/current row then the old
+retired/reinstall row with zero-byte usage and unchanged old checkpoint time.
+The node projection stayed applying / safety unknown / forwarding null after
+wrapper hash sampling. These are observations, not a serving or nonzero-usage
+proof. No API contract or product source was edited.
