@@ -298,11 +298,13 @@ func (l *lab) docker(container string, args ...string) ([]byte, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 	cmd := exec.CommandContext(ctx, "docker", append([]string{"exec", container}, args...)...)
-	out, err := cmd.CombinedOutput()
-	if len(out) > 1<<20 {
-		out = out[:1<<20]
+	var out diagnosticBuffer
+	cmd.Stdout, cmd.Stderr = &out, &out
+	err := cmd.Run()
+	if out.overflow {
+		return nil, fmt.Errorf("docker diagnostic exceeds 1 MiB; use ExportContainerFile to stream evidence to disk")
 	}
-	return out, err
+	return out.Bytes(), err
 }
 
 func (l *lab) stage(container, path string) string {

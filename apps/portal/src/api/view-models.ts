@@ -23,6 +23,7 @@ import type {
   NodeListResponse,
   NodeSummaryItem,
   NodeUsageOutbox,
+  OperationStep,
   PolicyDefinition,
   PolicyDefinitionListResponse,
   PolicyMode,
@@ -34,6 +35,16 @@ import type {
   UpdateResult,
   UpdateTarget,
 } from './types';
+
+export function buildOperationStepViewModel(step: OperationStep): OperationStep & {
+  diagnostic: string;
+} {
+  return {
+    ...step,
+    // A free-text diagnostic never changes the observed step status (D-074).
+    diagnostic: [step.error_code, step.message].filter(Boolean).join(': '),
+  };
+}
 
 export type NodeDetailWithForwardingReasons = NodeDetail & {
   forwarding_block_reasons?: ForwardingBlockReason[] | null;
