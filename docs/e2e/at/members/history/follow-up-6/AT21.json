@@ -1,0 +1,276 @@
+{
+  "node_incarnations": {
+    "node": "01a18ef8-e0eb-7940-a5c3-70512ec5c503",
+    "node2": "01a18eff-b044-7031-9a7c-5025329d8cff"
+  },
+  "complete": true,
+  "id": "AT21",
+  "title": "DNS failure and encrypted DNS boundary",
+  "spec": [
+    "\u00a719.1",
+    "\u00a719 AT21",
+    "DNS03 DNS04 APP01"
+  ],
+  "status": "blocked",
+  "observations": [
+    {
+      "name": "native DNS configuration",
+      "detail": "pass; expected: record actual persisted client DNS setting; actual: read_ok=true; DisableDNS=true; command: read /var/lib/netbird/default.json in memory; emit DisableDNS boolean only"
+    },
+    {
+      "name": "adguard isolated failure",
+      "detail": "pass; expected: paused filter unavailable; other filter still blocks synthetic domain; actual: before={\"answers\":0,\"available\":true,\"rcode\":3,\"ttl\":5}\n; paused={\"available\":false}\n; other={\"answers\":0,\"available\":true,\"rcode\":3,\"ttl\":5}\n; command: pause exactly one filtering resolver; query both node loopbacks; unpause (explicit probes, not native client failover)"
+    },
+    {
+      "name": "node2-adguard isolated failure",
+      "detail": "pass; expected: paused filter unavailable; other filter still blocks synthetic domain; actual: before={\"answers\":0,\"available\":true,\"rcode\":3,\"ttl\":5}\n; paused={\"available\":false}\n; other={\"answers\":0,\"available\":true,\"rcode\":3,\"ttl\":5}\n; command: pause exactly one filtering resolver; query both node loopbacks; unpause (explicit probes, not native client failover)"
+    },
+    {
+      "name": "typed DNS evidence",
+      "detail": "pass; expected: record exact issued-document application, or explicit null; actual: HTTP=200; decoded=true; specified=true; null=false; present=true; outcome=applied; error_code=; issued_document_matches=true; command: GET NodeDetail.dns_policy_evidence using generated 1.2.0 type; read issued document"
+    },
+    {
+      "name": "issued resolver document mTLS fetch",
+      "detail": "pass; expected: 200 canonical bytes match node evidence digest; actual: HTTP=200; hash_matches=true; bytes=867; command: GET /agent/resolver-documents/{issued_id} using actual node mTLS; hash in memory"
+    },
+    {
+      "name": "current desired-state DNS selection",
+      "detail": "pass; expected: record response independently of previously issued document; actual: HTTP=200; code=; ambiguous_active_profiles=false; command: GET /agent/desired-state via actual mTLS; retain only allowlisted error"
+    },
+    {
+      "name": "typed DNS evidence",
+      "detail": "pass; expected: record exact issued-document application, or explicit null; actual: HTTP=200; decoded=true; specified=true; null=false; present=true; outcome=applied; error_code=; issued_document_matches=true; command: GET NodeDetail.dns_policy_evidence using generated 1.2.0 type; read issued document"
+    },
+    {
+      "name": "issued resolver document mTLS fetch",
+      "detail": "pass; expected: 200 canonical bytes match node evidence digest; actual: HTTP=200; hash_matches=true; bytes=867; command: GET /agent/resolver-documents/{issued_id} using actual node mTLS; hash in memory"
+    },
+    {
+      "name": "current desired-state DNS selection",
+      "detail": "pass; expected: record response independently of previously issued document; actual: HTTP=200; code=; ambiguous_active_profiles=false; command: GET /agent/desired-state via actual mTLS; retain only allowlisted error"
+    },
+    {
+      "name": "sync fault activation",
+      "detail": "pass; expected: 202; actual: HTTP 202 ; command: activate normal profile while shared byte-corruption hook armed"
+    },
+    {
+      "name": "resolver synchronization corruption",
+      "detail": "pass; expected: failed HASH_MISMATCH; last-good synthetic rule still blocks; actual: observed=true; outcome=failed; error=HASH_MISMATCH; last_good={\"answers\":0,\"available\":true,\"rcode\":3,\"ttl\":5}; command: shared node loopback mTLS corruption hook; typed NodeDetail evidence and DNS query"
+    },
+    {
+      "name": "typed DNS evidence",
+      "detail": "pass; expected: record exact issued-document application, or explicit null; actual: HTTP=200; decoded=true; specified=true; null=false; present=true; outcome=applied; error_code=; issued_document_matches=true; command: GET NodeDetail.dns_policy_evidence using generated 1.2.0 type; read issued document"
+    },
+    {
+      "name": "issued resolver document mTLS fetch",
+      "detail": "pass; expected: 200 canonical bytes match node evidence digest; actual: HTTP=200; hash_matches=true; bytes=870; command: GET /agent/resolver-documents/{issued_id} using actual node mTLS; hash in memory"
+    },
+    {
+      "name": "current desired-state DNS selection",
+      "detail": "pass; expected: record response independently of previously issued document; actual: HTTP=200; code=; ambiguous_active_profiles=false; command: GET /agent/desired-state via actual mTLS; retain only allowlisted error"
+    },
+    {
+      "name": "blocked",
+      "detail": "F4-05: two independent filtering resolvers survive alternating faults, but the native member entrypoint still uses --disable-dns. No product-distributed two-resolver client configuration/fallback is available; loopback probes do not prove automatic member failover or public-DNS exclusion. Owner: w3-devstack-e2e deploy/devstack/entrypoint-member.sh and native DNS fixture. Android Private DNS/browser DoH remain needs operator run; guidance in OPERATORS.md."
+    },
+    {
+      "name": "provenance",
+      "detail": "source=159d617b1450ade4a715924162ac4d4142071e25; applied generation=51; incarnation=01a18ef8-e0eb-7940-a5c3-70512ec5c503; image/binary digests in JSON"
+    },
+    {
+      "name": "operator",
+      "detail": "needs operator run; see OPERATORS.md"
+    }
+  ],
+  "at": "2026-10-30T23:01:27Z",
+  "run_id": "80db103b-622c-42b1-946d-4628daaa213d",
+  "source_commit": "159d617b1450ade4a715924162ac4d4142071e25",
+  "release_digests": {
+    "artifact_sha256_0.1.0_amd64": "413c55ace7de6048767f2c42b5e402f8ac4daf763dd3e898ff5fb6c57d9aac6c",
+    "artifact_sha256_0.1.0_arm64": "dce7751817b846751f1caa20a12652b66799918286f79545eb5b391ec9d25490",
+    "manifest_sha256_0.1.0": "611e41aa9ff2dde2c5dff7e09d3fa7027b3a4ceeced6eb4c7233031baf551fe8",
+    "signed_manifest_sha256_0.1.0": "7cc8c2580d1d19cc02e4e116ef609cef98de048bf457c8a346b912bd602b8b4b"
+  },
+  "build": {
+    "test_binary_sha256": "545ddf576f11415a8c1c1059d503d1aa1089076bc091e2fe2a0f3dcd9f56d369",
+    "source_commit": "159d617b1450ade4a715924162ac4d4142071e25",
+    "source_dirty": false,
+    "image_digests": {
+      "adguard": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
+      "control": "sha256:51d0e4b79c577ba458cfb43945b6b8f2de443b74b5d6c9f8e021797b0232edf6",
+      "coredns": "sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97",
+      "gateway": "sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce",
+      "idp": "sha256:16abf47d8f77f330b62e2ef84a89437ebe31282066d1ebd5263f012302947460",
+      "member": "sha256:c816a8fd6aac1ed9b6357f86cc6d2d89760adadb23c2f4c72ff218f7f128d233",
+      "netbird": "sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c",
+      "node": "sha256:c816a8fd6aac1ed9b6357f86cc6d2d89760adadb23c2f4c72ff218f7f128d233",
+      "node-netns": "sha256:c816a8fd6aac1ed9b6357f86cc6d2d89760adadb23c2f4c72ff218f7f128d233",
+      "node2": "sha256:c816a8fd6aac1ed9b6357f86cc6d2d89760adadb23c2f4c72ff218f7f128d233",
+      "node2-adguard": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
+      "node2-netns": "sha256:c816a8fd6aac1ed9b6357f86cc6d2d89760adadb23c2f4c72ff218f7f128d233",
+      "origin": "sha256:f780f09ae08dd7208086bdf679ad1d71bda3f9743e00d1a8a7d35a3c716cfd96",
+      "payment": "sha256:c02684617541f491aca152bfc579198a30704f0997226a194cf5d900c341ff13",
+      "postgres": "sha256:2bc86591890085d6dd7893f8925f1767694ebb06930c815561169cd9d46e6c38",
+      "worker": "sha256:b23477ef741151ed51198d5220c69cf9c035072805f8b06fbe0d3a57174c1555"
+    },
+    "binary_sha256": {
+      "fvpn-agent": "9bfd334e0ac1a73ea9ea952ff144c6a8e81919170df1c43a0d1cecb93acd2d9e",
+      "fvpn-control": "571203972c7644f7317430dd5fb25b75745e350b9c70d31510f205506481e7ad",
+      "fvpn-updater": "a7dc5e4640972d9c4678e2c19061862ead0f2533be0803b8369e7b33c2f19334",
+      "fvpn-worker": "0a43d328bf1599d94de92f4db7fa51accef6b8670f0e4da6afec046883e9e300"
+    },
+    "binary_vcs": {
+      "fvpn-agent": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "false",
+        "vcs.revision": "159d617b1450ade4a715924162ac4d4142071e25",
+        "vcs.time": "2026-10-30T22:38:49Z"
+      },
+      "fvpn-control": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "false",
+        "vcs.revision": "159d617b1450ade4a715924162ac4d4142071e25",
+        "vcs.time": "2026-10-30T22:38:49Z"
+      },
+      "fvpn-updater": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "false",
+        "vcs.revision": "159d617b1450ade4a715924162ac4d4142071e25",
+        "vcs.time": "2026-10-30T22:38:49Z"
+      },
+      "fvpn-worker": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "false",
+        "vcs.revision": "159d617b1450ade4a715924162ac4d4142071e25",
+        "vcs.time": "2026-10-30T22:38:49Z"
+      }
+    }
+  },
+  "policy_revision": "51",
+  "active_policy_revisions": {
+    "dns_profile": "01a18f0c-4579-7ceb-bf4c-8f1f974e27e2",
+    "domain_rule_set": "01a18ef8-c9c5-7582-953a-d31b468500a6",
+    "fair_use": "01a18ef8-c505-7016-b73c-58d994108784",
+    "plan": "01a18ef8-d807-7c58-862e-53aba18ee797",
+    "release_support": "01a18ef8-bcea-7985-8294-17ec7347429b"
+  },
+  "node_incarnation": "01a18ef8-e0eb-7940-a5c3-70512ec5c503",
+  "steps": [
+    {
+      "name": "native DNS configuration",
+      "status": "pass",
+      "expected": "record actual persisted client DNS setting",
+      "actual": "read_ok=true; DisableDNS=true",
+      "command": "read /var/lib/netbird/default.json in memory; emit DisableDNS boolean only",
+      "at": "2026-10-30T23:01:28Z"
+    },
+    {
+      "name": "adguard isolated failure",
+      "status": "pass",
+      "expected": "paused filter unavailable; other filter still blocks synthetic domain",
+      "actual": "before={\"answers\":0,\"available\":true,\"rcode\":3,\"ttl\":5}\n; paused={\"available\":false}\n; other={\"answers\":0,\"available\":true,\"rcode\":3,\"ttl\":5}\n",
+      "command": "pause exactly one filtering resolver; query both node loopbacks; unpause (explicit probes, not native client failover)",
+      "at": "2026-10-30T23:01:30Z"
+    },
+    {
+      "name": "node2-adguard isolated failure",
+      "status": "pass",
+      "expected": "paused filter unavailable; other filter still blocks synthetic domain",
+      "actual": "before={\"answers\":0,\"available\":true,\"rcode\":3,\"ttl\":5}\n; paused={\"available\":false}\n; other={\"answers\":0,\"available\":true,\"rcode\":3,\"ttl\":5}\n",
+      "command": "pause exactly one filtering resolver; query both node loopbacks; unpause (explicit probes, not native client failover)",
+      "at": "2026-10-30T23:01:32Z"
+    },
+    {
+      "name": "typed DNS evidence",
+      "status": "pass",
+      "expected": "record exact issued-document application, or explicit null",
+      "actual": "HTTP=200; decoded=true; specified=true; null=false; present=true; outcome=applied; error_code=; issued_document_matches=true",
+      "command": "GET NodeDetail.dns_policy_evidence using generated 1.2.0 type; read issued document",
+      "at": "2026-10-30T23:01:33Z"
+    },
+    {
+      "name": "issued resolver document mTLS fetch",
+      "status": "pass",
+      "expected": "200 canonical bytes match node evidence digest",
+      "actual": "HTTP=200; hash_matches=true; bytes=867",
+      "command": "GET /agent/resolver-documents/{issued_id} using actual node mTLS; hash in memory",
+      "at": "2026-10-30T23:01:35Z"
+    },
+    {
+      "name": "current desired-state DNS selection",
+      "status": "pass",
+      "expected": "record response independently of previously issued document",
+      "actual": "HTTP=200; code=; ambiguous_active_profiles=false",
+      "command": "GET /agent/desired-state via actual mTLS; retain only allowlisted error",
+      "at": "2026-10-30T23:01:37Z"
+    },
+    {
+      "name": "typed DNS evidence",
+      "status": "pass",
+      "expected": "record exact issued-document application, or explicit null",
+      "actual": "HTTP=200; decoded=true; specified=true; null=false; present=true; outcome=applied; error_code=; issued_document_matches=true",
+      "command": "GET NodeDetail.dns_policy_evidence using generated 1.2.0 type; read issued document",
+      "at": "2026-10-30T23:01:43Z"
+    },
+    {
+      "name": "issued resolver document mTLS fetch",
+      "status": "pass",
+      "expected": "200 canonical bytes match node evidence digest",
+      "actual": "HTTP=200; hash_matches=true; bytes=867",
+      "command": "GET /agent/resolver-documents/{issued_id} using actual node mTLS; hash in memory",
+      "at": "2026-10-30T23:01:45Z"
+    },
+    {
+      "name": "current desired-state DNS selection",
+      "status": "pass",
+      "expected": "record response independently of previously issued document",
+      "actual": "HTTP=200; code=; ambiguous_active_profiles=false",
+      "command": "GET /agent/desired-state via actual mTLS; retain only allowlisted error",
+      "at": "2026-10-30T23:01:47Z"
+    },
+    {
+      "name": "sync fault activation",
+      "status": "pass",
+      "expected": "202",
+      "actual": "HTTP 202 ",
+      "command": "activate normal profile while shared byte-corruption hook armed",
+      "at": "2026-10-30T23:01:49Z"
+    },
+    {
+      "name": "resolver synchronization corruption",
+      "status": "pass",
+      "expected": "failed HASH_MISMATCH; last-good synthetic rule still blocks",
+      "actual": "observed=true; outcome=failed; error=HASH_MISMATCH; last_good={\"answers\":0,\"available\":true,\"rcode\":3,\"ttl\":5}",
+      "command": "shared node loopback mTLS corruption hook; typed NodeDetail evidence and DNS query",
+      "at": "2026-10-30T23:01:53Z"
+    },
+    {
+      "name": "typed DNS evidence",
+      "status": "pass",
+      "expected": "record exact issued-document application, or explicit null",
+      "actual": "HTTP=200; decoded=true; specified=true; null=false; present=true; outcome=applied; error_code=; issued_document_matches=true",
+      "command": "GET NodeDetail.dns_policy_evidence using generated 1.2.0 type; read issued document",
+      "at": "2026-10-30T23:01:59Z"
+    },
+    {
+      "name": "issued resolver document mTLS fetch",
+      "status": "pass",
+      "expected": "200 canonical bytes match node evidence digest",
+      "actual": "HTTP=200; hash_matches=true; bytes=870",
+      "command": "GET /agent/resolver-documents/{issued_id} using actual node mTLS; hash in memory",
+      "at": "2026-10-30T23:02:01Z"
+    },
+    {
+      "name": "current desired-state DNS selection",
+      "status": "pass",
+      "expected": "record response independently of previously issued document",
+      "actual": "HTTP=200; code=; ambiguous_active_profiles=false",
+      "command": "GET /agent/desired-state via actual mTLS; retain only allowlisted error",
+      "at": "2026-10-30T23:02:03Z"
+    }
+  ],
+  "blockers": [
+    "F4-05: two independent filtering resolvers survive alternating faults, but the native member entrypoint still uses --disable-dns. No product-distributed two-resolver client configuration/fallback is available; loopback probes do not prove automatic member failover or public-DNS exclusion. Owner: w3-devstack-e2e deploy/devstack/entrypoint-member.sh and native DNS fixture. Android Private DNS/browser DoH remain needs operator run; guidance in OPERATORS.md."
+  ],
+  "operator_status": "needs operator run"
+}

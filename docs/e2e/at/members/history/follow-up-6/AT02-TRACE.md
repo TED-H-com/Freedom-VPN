@@ -1,0 +1,66 @@
+# AT02 device-to-usage binding trace — Follow-up 6
+
+The native admission gap is resolved in this run. [AT01](AT01.json) proves the
+shared issuer mapping; [AT02](AT02.json) proves the quota transaction, ownership
+gates, slot reuse, strict post-withdrawal `fvmb0` ingress drop and receipt validation. The current result is in [AT02.json](AT02.json); the historical Follow-up 5, Follow-up 4 and Follow-up 3 records remain in [history/follow-up-5](history/follow-up-5/AT02.json), [history/follow-up-4](history/follow-up-4/AT02.json) and [history/follow-up-3](history/follow-up-3/AT02.json). The fresh image includes conntrack and the harness requires coherent post-revoke serving plus direct kernel `fvmb0` ingress injection evidence (`ObserveMemberIngress`). A and the final-slot winner have real counted forwarding; the loser
+has no selected exit and no origin response, and injected frames from the revoked member source increment `ctunku` by `+1` packet with `0` forwarded bytes. Database authorization alone is
+not forwarding.
+
+| Stage | Product path | Live evidence |
+|---|---|---|
+| Two OAuth clients | Shared `tests/e2e/internal/idplogin`; embedded Dex `netbird-dashboard` and `netbird-cli` | Portal login and real CLI device flow compare equal public subjects in memory. No token/subject is published. |
+| Identity discovery | `apps/worker/jobs_members.go: memberJob`, `devices.discover` → `internal/devices/netbird_adapter.go: Discover` → `identity.go: bindUser` | Production `netbird_user_bindings` writer creates `shared_issuer_public_subject:<issuer>` proof. No email linkage or seeded proof. |
+| Member admission | `internal/devices/service.go: ObserveAndAuthorize`, `AuthorizeDevice` | Re-observes actual native peer; verifies mapping and finite entitlement; locks member; commits device, binding, operation, audit and outbox together. |
+| Last-slot race | Two real contenders in reused lab member images; own worker paused only during the barrier | A has two of three devices. Two goroutines start together: one commits, one returns `ErrLimit`; count becomes three. Loser has no device row or paid group. |
+| Cross-owner access | HTTP list/delete and `devices.Service.Get` | A's list omits B's existing device; deleting it returns 404 without identifiers; service read is not found with an empty result. B remains authorized. |
+| Slot reuse | Member DELETE, then real-adapter admission | Count changes 3 → 2 → 3; former loser is admitted. No projection is hand-written. |
+| External authorization | `internal/devices/worker.go: SyncDevice` | Worker resumes and observations are read separately. Desired node generation advances, and desired/applied generations are recorded with current-generation leases; post-revoke health must agree with counted sibling/replacement traffic. |
+| Strict post-withdrawal `fvmb0` ingress | `tests/e2e/internal/labstack: Stack.ObserveMemberIngress` (`tun-mirred`, link type `65534`, source port `40000`, destination `192.0.4.10:9`) | Revoked `member-a2` (`100.104.160.29`) moves `ctunku` `0 -> 1` packet (`0 -> 29` bytes) with `0` forwarded bytes (`uplink_empty: true`, `origin_empty: true`) and steady device counters; admitted sibling `member` (`100.104.242.187`) moves `u_01a18ef9ae937a1cb93420bed403bf2f` `31 -> 32` packets (`6967 -> 6996` bytes) and `d_01a18ef9ae937a1cb93420bed403bf2f` `22 -> 23` packets (`7283 -> 7340` bytes on ICMP reply), appears on `fvup0` and `origin`, and leaves `ctunku` and all other device counters unchanged. |
+| Node identity | `apps/worker/jobs_nodes.go`, `node.peer.observe` | This node identity path is separate from the native member identity/device writer; never substitute a node peer for a member device. |
+| Usage negative control | Actual node mTLS, deliberately unknown device | Per-event `VALIDATION_FAILED / binding_not_found`. This remains the correct rejection. |
+| Usage positive control | Actual projected device/revision and interval wholly inside its binding | `accepted`, then `duplicate`; exactly one receipt and one sample. Synthetic bytes test ingest, not metering. |
+
+The primary runner reuses the lab's shared `StartNativePeer` hook, immutable running-node image and `user-auth`
+entrypoint for A1, A2, A3, A4 and B1. Extra clients have only the member image's
+NET_ADMIN/NET_RAW capabilities and tun device, no host ports or new network.
+All names use `fvpn-w4-members-*`; cleanup removes every extra client.
+
+Read-only trace commands run against this task's isolated lab database:
+
+```sql
+SELECT count(*) FROM netbird_user_bindings n
+JOIN identity_bindings i ON i.id=n.identity_binding_id
+WHERE n.external_user_id=i.subject
+  AND n.mapping_proof='shared_issuer_public_subject:'||i.issuer;
+SELECT status,count(*) FROM member_devices GROUP BY status;
+SELECT count(*) FROM device_bindings
+WHERE valid_from<=clock_timestamp() AND valid_until>clock_timestamp();
+SELECT desired_config_generation,applied_config_generation FROM nodes
+WHERE current_incarnation_id IS NOT NULL;
+SELECT count(*) FROM usage_events;
+SELECT count(*) FROM usage_samples;
+```
+
+Use `docker exec fvpn-w4-members-postgres psql -U fvpn -d fvpn -X` only.
+Never migrate or query the shared admin database for these checks. The
+positive/negative packet path is in [forwarding-observation.md](forwarding-observation.md).
+The missing-conntrack finding is retired by the fresh image and live post-revoke
+proof. Earlier failed observations remain in the archived attempts.
+
+## Complete-case assertion boundary (§19 AT02)
+
+The race loser must lack a paid group/device and receive no origin response.
+After the member DELETE and production-adapter admission of that former loser,
+the harness waits for a newer real generation without the old binding and with
+the replacement. It requires counted sibling/replacement transfers, no origin
+receipt from the revoked peer, empty revoked-source conntrack, a continuous
+agent PID, forwarding health without block reasons, and direct post-withdrawal
+`fvmb0` ingress injection (`ObserveMemberIngress` from PR #219) proving that
+frames from the revoked member source hit `ctunku` (`+1` packet, `0` forwarded
+bytes, empty `fvup0` and `origin` captures) while an admitted sibling's frame
+moves only its own `u_<hex>` (`+1` packet) and reaches `fvup0` and `origin`.
+
+No stale route is restored, no `inet fvpn` table or `wg` state is modified, and
+no agent restart, state clearing or projection repair is used to make this case
+pass. The dedicated updater probe does not appear in any of these member-device
+counts.

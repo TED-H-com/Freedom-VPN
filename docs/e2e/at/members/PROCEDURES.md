@@ -290,3 +290,15 @@ Restore every injected container/network fault before final teardown. Execute
 the assigned `e2e-down` even after a partial startup. Check exact prefix names
 for containers, networks, volumes and images; evidence contains only remaining
 counts. Delete private test scratch after exit. No other task's stack is touched.
+
+## Follow-up 7: D-077 / D-081 restore re-authorization
+
+1. Admit two native devices for a finite-grant member and establish counted HTTPS. Insert exactly one migration-00188 `device_authorization_fences` row through the assigned lab Postgres; wait for the running worker to observe withdrawal.
+2. Record the full member list with explicit `true` on the fenced device and `false` on siblings. Traverse the admin list twice with limit 1 and its opaque cursor, checking stable ascending `(member_id, device_id)`, `member_id`, explicit flags and `authorization_unconfirmed_since` timestamp/null. Reusing a cursor with different filters must return 400 `MALFORMED_REQUEST`.
+3. Probe the same native HTTPS path while fenced and record route, `fvmb0` arrival, named counters and authenticated origin receipts. A response or counted transfer is a wire-members finding; do not call a missing origin-control response a successful denial.
+4. Exercise admin POST with member-only session (401 `UNAUTHENTICATED`), omitted CSRF (403), wrong member (404 `RESOURCE_NOT_FOUND`) and revoked device (409 `STATE_CONFLICT`). Use no request body, the normal Origin and a fresh UUID idempotency key for each independent call. Preserve the fence on denied mutations.
+5. Explicit admin authorization must return 202 `member.device_authorize` and remove the fence in the transaction. For an already-authorized fenced device, compare with its existing operation and pre-bump generation; poll the device list after worker sync, never a new operation row. Require `authorized`, explicit `false`, and fresh counted traffic. Replay the same key and require unchanged operation/device version.
+6. Produce a pending device through the real two-slot plan downgrade fixture, add its restore fence, and require **409 DEVICE_LIMIT_REACHED** with the fence retained (D-081). Restore the original finite grant; verify that alone does not clear the fence. Re-authorize through HTTP and confirm counted forwarding.
+7. Repeat the fence/withdraw/re-grant/traffic cycle on the paid member after authoritative billing reconciliation. Keep payment events, entitlement sources and device confirmation distinct.
+
+The fixture-only internal grant-retirement seam is documented in [requests.md](requests.md) for devstack follow-up 15. Full wire responses, operation identities and fence counts are indexed in [D077.md](D077.md). This is not a PITR drill or a rendered portal-state test. Preserve every failed attempt; never relabel a primary failure as blocked during later readback.
