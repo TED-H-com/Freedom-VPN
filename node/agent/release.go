@@ -47,7 +47,7 @@ func (e *Engine) loadActiveRelease(ctx context.Context, executable string) error
 	if errors.Is(err, os.ErrNotExist) && id == e.cfg.ReleaseUUID() {
 		return nil
 	} // initial install, before seed
-	if err != nil || snap.CurrentRelease != id.String() {
+	if err != nil {
 		return errActiveRelease
 	}
 	// Installed releases are immutable records of the updater's verified
@@ -58,6 +58,23 @@ func (e *Engine) loadActiveRelease(ctx context.Context, executable string) error
 		return errActiveRelease
 	}
 	defer db.Close()
+	if snap.CurrentRelease == "" && snap.LastGoodRelease == "" && snap.Generation == nil && snap.JobID == "" && !snap.RecoveryRequired && snap.SeededBaseline == nil && snap.LastResultState == "" && snap.LastRejection == nil && id == e.cfg.ReleaseUUID() {
+		// The packaged recover service initializes an empty journal before
+		// bootstrap. Installer seed waits for that bootstrap's setup key.
+		// Only the configured initial executable may cross this boundary;
+		// any durable update history requires a real current-release record.
+		var history int
+		if err := db.QueryRowContext(ctx, `SELECT
+			(SELECT count(*) FROM releases) + (SELECT count(*) FROM jobs) +
+			(SELECT count(*) FROM txns) + (SELECT count(*) FROM result_outbox) +
+			(SELECT count(*) FROM result_history)`).Scan(&history); err == nil && history == 0 {
+			return nil
+		}
+		return errActiveRelease
+	}
+	if snap.CurrentRelease != id.String() {
+		return errActiveRelease
+	}
 	var raw []byte
 	var digest string
 	if err := db.QueryRowContext(ctx, `SELECT manifest_envelope, manifest_sha256 FROM releases WHERE release_id = ?`, id.String()).Scan(&raw, &digest); err != nil {

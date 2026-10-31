@@ -427,6 +427,53 @@ func TestMTR03_UPD05_DurableFileMeterBarrier(t *testing.T) {
 	}
 }
 
+func TestUPD05_InitialReleaseBeforeJournalSeed(t *testing.T) {
+	r := newRig(t)
+	id := r.eng.cfg.ReleaseUUID()
+	root := t.TempDir()
+	dir := filepath.Join(root, id.String())
+	if err := os.Mkdir(dir, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	executable := filepath.Join(dir, "fvpn-agent")
+	if err := os.WriteFile(executable, []byte("TEST ONLY initial executable identity"), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	r.eng.cfg.CurrentReleasePath = filepath.Join(root, "current")
+	if err := os.Symlink(dir, r.eng.cfg.CurrentReleasePath); err != nil {
+		t.Fatal(err)
+	}
+	if err := r.eng.loadActiveRelease(t.Context(), executable); err != nil {
+		t.Fatal("initial install before updater initialization", err)
+	}
+	// The packaged recover service creates the schema before agent bootstrap;
+	// installer seed runs only after bootstrap has supplied the setup key.
+	journal, err := updatejournal.Open(r.eng.cfg.JournalDir, updatejournal.Options{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer journal.Close()
+	if err := r.eng.loadActiveRelease(t.Context(), executable); err != nil {
+		t.Fatal("initialized unseeded journal blocked initial bootstrap", err)
+	}
+	r.eng.cfg.ReleaseID = uuid.NewString()
+	if r.eng.loadActiveRelease(t.Context(), executable) == nil {
+		t.Fatal("unseeded journal adopted a different configured release")
+	}
+	r.eng.cfg.ReleaseID = id.String()
+	raw, err := json.Marshal(map[string]any{"signed": map[string]any{"release_id": id.String(), "components": map[string]string{"node_agent": "1.0.0-test"}}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	hash, _ := canonjson.HashHex(raw)
+	if err := journal.PutRelease(t.Context(), updatejournal.Release{ReleaseID: id.String(), ManifestEnvelope: raw, ManifestSHA256: hash, StateSchemaTo: 1}); err != nil {
+		t.Fatal(err)
+	}
+	if r.eng.loadActiveRelease(t.Context(), executable) == nil {
+		t.Fatal("journal with installed history but missing current used initial fallback")
+	}
+}
+
 func TestUPD05_CandidateIdentityAndHealth(t *testing.T) {
 	r := newRig(t)
 	alignControlClock(r)
