@@ -1,6 +1,6 @@
 # Evidence history
 
-`follow-up-5/`, `follow-up-6/`, `follow-up-7/`, `follow-up-8/` `follow-up-9/` and `follow-up-10/` are byte-identical snapshots of
+`follow-up-5/`, `follow-up-6/`, `follow-up-7/`, `follow-up-8/` and `follow-up-9/` are byte-identical snapshots of
 all JSON and Markdown records present before Follow-up 6, Follow-up 7, Follow-up 8, Follow-up 9 and Follow-up 10
 respectively. `follow-up-10/` is the exact merged PR #265 snapshot (commit
 `2f1f939`, run `0e8ff9a4-4fa1-4154-ae35-847a5be4d985`), captured before
