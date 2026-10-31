@@ -17,6 +17,9 @@ import (
 
 func main() {
 	run := prepare
+	if len(os.Args) == 2 && os.Args[1] == "journal-copy" {
+		run = journalCopy
+	}
 	if len(os.Args) == 2 && os.Args[1] == "dns-relay" {
 		run = nodeDNSRelay
 	}

@@ -1,0 +1,58 @@
+{
+  "id": "installer-usage",
+  "title": "ENR-05 same installer slot: counted traffic, held ACKs and CLI ledger",
+  "spec": [
+    "§10.5",
+    "ENR-05"
+  ],
+  "status": "pass",
+  "observations": [
+    {
+      "name": "counters_before",
+      "detail": "{\"upload_bytes\":\"1153\",\"download_bytes\":\"1519\",\"Present\":true}"
+    },
+    {
+      "name": "counters_after",
+      "detail": "{\"upload_bytes\":\"3087\",\"download_bytes\":\"2937\",\"Present\":true}"
+    },
+    {
+      "name": "initial",
+      "detail": "{\"schema_version\":1,\"node_id\":\"01a19192-cabd-7a26-8cdc-3049aeda33fa\",\"node_incarnation_id\":\"01a19192-d10b-7c18-b918-36b9b6fb6a04\",\"ledger_epoch\":\"1a30cd6d-9482-4ed0-9c19-a5e7cd193c81\",\"meter_epochs\":[{\"meter_epoch_id\":\"01a19192-d1a7-7b57-9f8a-f58739848b80\",\"state\":\"closed\"},{\"meter_epoch_id\":\"01a19192-fd49-71b8-a2da-8b8a86966248\",\"state\":\"closed\"},{\"meter_epoch_id\":\"01a19193-03af-7df9-b16e-29c01eaf3835\",\"state\":\"closed\"},{\"meter_epoch_id\":\"01a19193-065a-770f-bce0-1d2236c5b693\",\"state\":\"closed\"},{\"meter_epoch_id\":\"01a19193-1a29-7878-ad4d-479e1527544e\",\"state\":\"closed\"},{\"meter_epoch_id\":\"01a19193-2f59-7c5b-97aa-a01c3dba4f09\",\"state\":\"closed\"},{\"meter_epoch_id\":\"01a19193-4278-7776-b1b7-9503ee01ade2\",\"state\":\"closed\"},{\"meter_epoch_id\":\"01a19193-5541-779e-8fcb-3d1ad0e609cd\",\"state\":\"closed\"},{\"meter_epoch_id\":\"01a19193-87df-76c0-81b1-99883cb6f370\",\"state\":\"closed\"},{\"meter_epoch_id\":\"01a19193-9c3b-7dd8-a090-1177bb9ff3c0\",\"state\":\"current\"}],\"last_event_seq\":\"1\",\"acked_through\":\"1\",\"unacked_count\":0,\"unacked_payload_bytes\":\"0\",\"unacked_events\":[]}"
+    },
+    {
+      "name": "held",
+      "detail": "{\"schema_version\":1,\"node_id\":\"01a19192-cabd-7a26-8cdc-3049aeda33fa\",\"node_incarnation_id\":\"01a19192-d10b-7c18-b918-36b9b6fb6a04\",\"ledger_epoch\":\"1a30cd6d-9482-4ed0-9c19-a5e7cd193c81\",\"meter_epochs\":[{\"meter_epoch_id\":\"01a19192-d1a7-7b57-9f8a-f58739848b80\",\"state\":\"closed\"},{\"meter_epoch_id\":\"01a19192-fd49-71b8-a2da-8b8a86966248\",\"state\":\"closed\"},{\"meter_epoch_id\":\"01a19193-03af-7df9-b16e-29c01eaf3835\",\"state\":\"closed\"},{\"meter_epoch_id\":\"01a19193-065a-770f-bce0-1d2236c5b693\",\"state\":\"closed\"},{\"meter_epoch_id\":\"01a19193-1a29-7878-ad4d-479e1527544e\",\"state\":\"closed\"},{\"meter_epoch_id\":\"01a19193-2f59-7c5b-97aa-a01c3dba4f09\",\"state\":\"closed\"},{\"meter_epoch_id\":\"01a19193-4278-7776-b1b7-9503ee01ade2\",\"state\":\"closed\"},{\"meter_epoch_id\":\"01a19193-5541-779e-8fcb-3d1ad0e609cd\",\"state\":\"closed\"},{\"meter_epoch_id\":\"01a19193-87df-76c0-81b1-99883cb6f370\",\"state\":\"closed\"},{\"meter_epoch_id\":\"01a19193-9c3b-7dd8-a090-1177bb9ff3c0\",\"state\":\"current\"}],\"last_event_seq\":\"2\",\"acked_through\":\"1\",\"unacked_count\":1,\"unacked_payload_bytes\":\"654\",\"unacked_events\":[{\"event_seq\":\"2\",\"period_ids\":[\"2026-10\"],\"records\":[{\"member_id\":\"01a19193-2b52-7583-bcc1-3a52bfcd3219\",\"device_id\":\"01a19193-4a2e-7d33-88c9-67effa3ab59e\",\"binding_revision\":\"1\",\"period_id\":\"2026-10\",\"upload_bytes\":\"1562\",\"download_bytes\":\"1140\"}],\"payload_sha256\":\"080a7f083bd7f58691e74bac1d6f395324d6fd6b8ab5011033ee5597b86ef99f\"}]}"
+    },
+    {
+      "name": "serving_rerun",
+      "detail": "{\"Exit\":0,\"Status\":\"already_current\",\"Code\":\"baseline\",\"Incarnation\":\"01a19192-d10b-7c18-b918-36b9b6fb6a04\",\"NodeID\":\"01a19192-cabd-7a26-8cdc-3049aeda33fa\",\"RetiredMode\":\"\",\"RetiredHashes\":{},\"BoundStateBefore\":null,\"RetiredBoundState\":null,\"Message\":\"already_current\",\"Before\":{\"key_sha256\":\"f6928dc6476e1646f20090580acc9e4256071e794e1275c91a77f9ecb9eb6e7c\",\"cert_sha256\":\"3e338a0721f4a6c03ae98aa18e761946cfe2d978757c0fba46d14115f09d2c8a\",\"node_json_sha256\":\"249ee2d4b60c59191244473e4e0669ab005ad0f89a715e4a8732446295700dd8\",\"usage_db_sha256\":\"b23a5f1bafd58a1497ec6d0418d2937ca27521e336594b2a6b8564135347954c\",\"usage_wal_sha256\":\"absent\",\"machine_id_sha256\":\"186cc62b3ea133e7b6da9685430b24e54bb999ea093280f231a8b358af70ce92\",\"current_target\":\"releases/01a19192-ad63-7d61-b846-929be061b789\"},\"Hashes\":{\"key_sha256\":\"f6928dc6476e1646f20090580acc9e4256071e794e1275c91a77f9ecb9eb6e7c\",\"cert_sha256\":\"3e338a0721f4a6c03ae98aa18e761946cfe2d978757c0fba46d14115f09d2c8a\",\"node_json_sha256\":\"249ee2d4b60c59191244473e4e0669ab005ad0f89a715e4a8732446295700dd8\",\"usage_db_sha256\":\"b23a5f1bafd58a1497ec6d0418d2937ca27521e336594b2a6b8564135347954c\",\"usage_wal_sha256\":\"absent\",\"machine_id_sha256\":\"186cc62b3ea133e7b6da9685430b24e54bb999ea093280f231a8b358af70ce92\",\"current_target\":\"releases/01a19192-ad63-7d61-b846-929be061b789\"},\"Services\":{\"fvpn-agent.service\":\"active\",\"fvpn-updater.service\":\"inactive\",\"fvpn-updater.timer\":\"active\",\"fvpn-watchdog.service\":\"active\"}}"
+    },
+    {
+      "name": "quiescent_snapshot_byte_equal",
+      "detail": "true"
+    },
+    {
+      "name": "services_restored",
+      "detail": "true"
+    },
+    {
+      "name": "released",
+      "detail": "{\"schema_version\":1,\"node_id\":\"01a19192-cabd-7a26-8cdc-3049aeda33fa\",\"node_incarnation_id\":\"01a19192-d10b-7c18-b918-36b9b6fb6a04\",\"ledger_epoch\":\"1a30cd6d-9482-4ed0-9c19-a5e7cd193c81\",\"meter_epochs\":[{\"meter_epoch_id\":\"01a19192-d1a7-7b57-9f8a-f58739848b80\",\"state\":\"closed\"},{\"meter_epoch_id\":\"01a19192-fd49-71b8-a2da-8b8a86966248\",\"state\":\"closed\"},{\"meter_epoch_id\":\"01a19193-03af-7df9-b16e-29c01eaf3835\",\"state\":\"closed\"},{\"meter_epoch_id\":\"01a19193-065a-770f-bce0-1d2236c5b693\",\"state\":\"closed\"},{\"meter_epoch_id\":\"01a19193-1a29-7878-ad4d-479e1527544e\",\"state\":\"closed\"},{\"meter_epoch_id\":\"01a19193-2f59-7c5b-97aa-a01c3dba4f09\",\"state\":\"closed\"},{\"meter_epoch_id\":\"01a19193-4278-7776-b1b7-9503ee01ade2\",\"state\":\"closed\"},{\"meter_epoch_id\":\"01a19193-5541-779e-8fcb-3d1ad0e609cd\",\"state\":\"closed\"},{\"meter_epoch_id\":\"01a19193-87df-76c0-81b1-99883cb6f370\",\"state\":\"closed\"},{\"meter_epoch_id\":\"01a19193-9c3b-7dd8-a090-1177bb9ff3c0\",\"state\":\"closed\"},{\"meter_epoch_id\":\"01a19195-7e5b-7e0e-bc47-af1b43d6871c\",\"state\":\"current\"}],\"last_event_seq\":\"3\",\"acked_through\":\"3\",\"unacked_count\":0,\"unacked_payload_bytes\":\"0\",\"unacked_events\":[]}"
+    },
+    {
+      "name": "serving_after_restore",
+      "detail": "true"
+    },
+    {
+      "name": "post_wrapper_transport_restored",
+      "detail": "true"
+    },
+    {
+      "name": "scope",
+      "detail": "same-incarnation hold/release only; authorized old-incarnation backlog delivery remains unresolved"
+    }
+  ],
+  "at": "2026-10-31T10:50:59Z",
+  "run_id": "8a1124a1-8653-4f8c-bd1b-2eb3ae5c3179",
+  "source_commit": "a0089b8386c749100d9bd19b8002dd4d666d065c"
+}
