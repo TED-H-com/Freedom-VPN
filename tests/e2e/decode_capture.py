@@ -32,7 +32,7 @@ def decode_ip(b, address):
         size, frag, proto = u16(b, 2), u16(b, 6), b[9]
         out.update(src=address(b[12:16]), dst=address(b[16:20]), ip_length=size,
                    ip_header_length=h, ttl=b[8], identification=u16(b, 4),
-                   df=bool(frag & 0x4000), mf=bool(frag & 0x2000), fragment_offset=(frag & 8191)*8)
+                   df=bool(frag & 0x4000), mf=bool(frag & 0x2000), fragment_offset=(frag & 8191)*8, protocol=proto)
         if frag & 8191:
             return out
     elif version == 6:
@@ -49,7 +49,7 @@ def decode_ip(b, address):
             ext = dict(type=kind, length=length)
             if kind == 44:
                 frag = u16(b, h+2)
-                ext.update(fragment_offset=frag & 0xfff8, mf=bool(frag & 1), identification=u32(b, h+4))
+                ext.update(fragment_offset=frag & 0xfff8, mf=bool(frag & 1), identification=u32(b, h+4), next_header=proto)
             out['extensions'].append(ext)
             h += length
             if kind == 44 and frag & 0xfff8:

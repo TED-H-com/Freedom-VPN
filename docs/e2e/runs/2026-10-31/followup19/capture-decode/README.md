@@ -29,9 +29,8 @@ are capture observations, not proof of on-wire oversized packets.
     "first": "1793442772.722932",
     "last": "1793442784.930122",
     "protocol_records": {
-      "17": 153,
-      "6": 60,
-      "fragment": 52
+      "17": 205,
+      "6": 60
     }
   },
   {
@@ -48,9 +47,8 @@ are capture observations, not proof of on-wire oversized packets.
     "first": "1793442772.722943",
     "last": "1793442784.930114",
     "protocol_records": {
-      "17": 168,
+      "17": 220,
       "6": 186,
-      "fragment": 52,
       "58": 1
     }
   },
@@ -68,9 +66,8 @@ are capture observations, not proof of on-wire oversized packets.
     "first": "1793443233.909154",
     "last": "1793443234.029177",
     "protocol_records": {
-      "17": 165,
-      "6": 117,
-      "fragment": 52
+      "17": 217,
+      "6": 117
     }
   },
   {
@@ -87,9 +84,8 @@ are capture observations, not proof of on-wire oversized packets.
     "first": "1793443234.027446",
     "last": "1793443234.365069",
     "protocol_records": {
-      "17": 165,
+      "17": 217,
       "6": 290,
-      "fragment": 52,
       "58": 2
     }
   }
