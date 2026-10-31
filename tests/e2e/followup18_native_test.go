@@ -65,7 +65,7 @@ func TestE2E_Followup18Native(t *testing.T) {
 	} else {
 		r.record(Record{ID: "native-mtu-comparison", Title: "MTU comparison requires counted path", Status: StatusBlocked})
 	}
-	r.firstOffer18(ctx, s)
+	r.firstOffer18(ctx, s, admin)
 	// Reproduce members F8-01 on a second exit without the primary's
 	// deliberately added private-target dummy interface.
 	must(s.StartSecondExit(ctx))
@@ -96,7 +96,37 @@ func TestE2E_Followup18Native(t *testing.T) {
 	r.record(rec)
 }
 
-func (r *runner) firstOffer18(ctx context.Context, s *Stack) {
+// This supplement uses the retained primary from the native campaign. It does
+// not enroll another identity or replace its store to manufacture acceptance.
+func TestE2E_Followup18FirstOffer(t *testing.T) {
+	if os.Getenv("FVPN_E2E_FIRST_OFFER18") != "1" {
+		t.Skip("set FVPN_E2E_FIRST_OFFER18=1 after the native campaign")
+	}
+	l, err := openLab()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer l.transport.CloseIdleConnections()
+	ctx, cancel := context.WithTimeout(t.Context(), 3*time.Minute)
+	defer cancel()
+	head, _ := exec.CommandContext(ctx, "git", "rev-parse", "HEAD").Output()
+	id := uuid.NewString()
+	r := &runner{t: t, lab: l, runID: id, sourceCommit: strings.TrimSpace(string(head)), dir: filepath.Join(l.root, "docs/e2e/runs", time.Now().UTC().Format("2006-01-02"), "followup18", id)}
+	defer r.finish()
+	raw, err := l.docker(l.node, "cat", "/var/lib/vpn-node/identity/node.json")
+	var identity struct {
+		NodeID uuid.UUID `json:"node_id"`
+	}
+	if err != nil || json.Unmarshal(raw, &identity) != nil || identity.NodeID == uuid.Nil {
+		t.Fatal("retained primary identity unavailable")
+	}
+	r.nodeID = identity.NodeID
+	if admin := r.login(ctx, "e2e-admin", "admin"); admin != nil {
+		r.firstOffer18(ctx, &Stack{lab: l}, admin)
+	}
+}
+
+func (r *runner) firstOffer18(ctx context.Context, s *Stack, admin *session) {
 	rec := Record{ID: "first-desired-offer", Title: "SECOPS-21 actual response, local accepted digest and applied receipt", Spec: []string{"SECOPS-21", "§14.7"}, Status: StatusFail}
 	defer func() { r.record(rec) }()
 	selected, err := r.lab.docker(r.lab.node, "cat", "/var/lib/vpn-node/e2e/agent-selected")
@@ -119,6 +149,38 @@ func (r *runner) firstOffer18(ctx context.Context, s *Stack) {
 	noteJSON(&rec, "capture_id", id)
 	if err != nil {
 		recPathNote(&rec)("arm_error", err.Error())
+		return
+	}
+	// Advance desired state through the real command path while the retained
+	// agent is stopped and held. An unchanged ETag correctly returns only 304.
+	db, err := r.lab.db(ctx)
+	if err != nil {
+		return
+	}
+	defer db.Close(ctx)
+	var retained string
+	if db.QueryRow(ctx, `SELECT generation::text FROM desired_state_envelopes WHERE node_id=$1`, r.nodeID).Scan(&retained) != nil {
+		return
+	}
+	detail, err := admin.call(ctx, "GET", r.lab.public+"/api/v1/admin/nodes/"+r.nodeID.String(), nil, nil)
+	if err != nil || detail.Status != 200 {
+		return
+	}
+	capacity := map[string]any{"capacity": map[string]any{"down_bps": 210000000, "up_bps": 210000000, "member_down_bps_cap": 100000000, "member_up_bps_cap": 100000000}}
+	patched, err := admin.call(ctx, "PATCH", r.lab.public+"/api/v1/admin/nodes/"+r.nodeID.String(), capacity, map[string]string{"If-Match": detail.Header.Get("ETag"), "Idempotency-Key": uuid.NewString()})
+	recPathNote(&rec)("configuration_command", httpDetail(patched, err))
+	recPathNote(&rec)("retained_generation", retained)
+	if err != nil || (patched.Status != 200 && patched.Status != 202) {
+		return
+	}
+	compiled, stopCompiled := context.WithTimeout(ctx, 30*time.Second)
+	ready := waitUntil(compiled, time.Second, func() bool {
+		var advanced bool
+		return db.QueryRow(compiled, `SELECT generation > $2::numeric FROM desired_state_envelopes WHERE node_id=$1`, r.nodeID, retained).Scan(&advanced) == nil && advanced
+	})
+	stopCompiled()
+	if !ready {
+		recPathNote(&rec)("compiler", "new desired envelope unavailable")
 		return
 	}
 	if err = s.Service(ctx, "start", release); err != nil {
