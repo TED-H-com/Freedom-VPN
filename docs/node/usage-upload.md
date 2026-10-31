@@ -33,3 +33,56 @@ The checkpoint body is the raw recovery envelope. `ApplyCheckpoint` verifies it 
 ## Reading the local ledger
 
 `fvpn-agent usage snapshot` is the read-only view of this outbox and its watermark. The field list, exit codes and the lab contract `UsageLedgerSnapshot` (this command's `-json`) are in `docs/node/usage-store.md`. The command does not upload and does not apply an ACK. A 503 from the center leaves the snapshot byte-identical, including `payload_sha256` of the bytes this package resends.
+
+
+## Re-enrollment hand-off (D-105)
+
+After the explicit store transition, `Once` chooses the oldest locally retired
+stream with pending events, in original sequence order and subject to the same
+batch limits. It then sends the current stream. Each request selects one stream:
+`node_id` and `node_incarnation_id` always name the current mTLS presenter;
+`origin_incarnation_id` is present only for a retired stream. The nested events
+are the retained canonical bytes. No event, sequence, meter epoch, attribution
+or hash is rebuilt. The same current transport sends both streams, and the
+retired certificate is never loaded.
+
+`UsageBatchResult.node_incarnation_id` must equal the selected original stream
+(and `node_id` must match); a mismatched ACK changes neither stream. Original
+ACKs and receipts are stored separately. An ACK drains the retired tail and
+stops sending it. An ambiguous/lost response retries the saved body with the
+same `Idempotency-Key`, including after reopening `usage.db`. Local fixtures
+use `usage-retired-handoff.json` and both `UsageBatchRequest.handoff-*` examples,
+including the original sequence 1234 and bytes above 2^53.
+
+Whole-request `409 STATE_CONFLICT` (foreign, active or pre-retirement origin)
+and `403 INCARNATION_MISMATCH` are final for that origin. Per-event `rejected`
+or `conflict` receipts are final for that original event. Each is audited once
+in `handoff_rejections` and never retried indefinitely, even after restart.
+The local transaction retains the rejected payload and blocked sequence. Later
+valid events are delivered once without pretending the blocker was ACKed; the
+current stream continues independently. A local audit/receipt commit failure
+keeps the event pending and retries it.
+
+Network errors, 429, 503, a revoked presenter certificate and ledger-epoch
+mismatches retain the payload and use capped exponential backoff. Each failed
+retired attempt allows a current-stream attempt before retrying the origin,
+so a recovery problem cannot starve live uploads. There is no arbitrary attempt
+count that silently discards usage. The uploader bounds delay (default 1 second
+to 5 minutes), respects `Retry-After`, and stops retrying final receipts.
+
+The retired stream carries its own verified `ledger_epoch` and retained
+`replay_unavailable` ranges. A current checkpoint cannot lower its ACK or replace
+its epoch. The present checkpoint GET has no origin selector: if central rotates
+the ledger while an old tail is pending, origin-specific signed recovery still
+needs a transport contract. The agent retains that tail and backs off on the
+epoch mismatch while current-stream recovery/upload continues. A range without
+any retained event also needs recovery transport support: revision 14 requires
+at least one event in a batch. Neither condition is converted to a final rejection
+or a fabricated ACK.
+
+D-112's window is a central bound, default 10 seconds, checked against each
+original event's interval end. The uploader sends whatever the ledger retained
+up to its last sample; it does not trim intervals, discard over-window bytes or
+substitute the locally observed retirement time. Central's over-window
+`rejected` / `VALIDATION_FAILED` receipt is recorded as final for that event.
+The vector's 30-second bound is a TEST ONLY override, not the production default.

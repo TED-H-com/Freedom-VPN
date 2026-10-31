@@ -13,7 +13,8 @@ import (
 )
 
 // validateCompletionEvidence applies the same terminal evidence rules to
-// central work and installer evidence. The baseline must be centrally known.
+// central work and installer evidence. The baseline is centrally known or an
+// eligible installer seed verified by the caller (D-111).
 func validateCompletionEvidence(r api.UpdateResult, release uuid.UUID, baseline *uuid.UUID) error {
 	var currentReleaseID *uuid.UUID
 	if value, err := r.CurrentReleaseId.Get(); err == nil {

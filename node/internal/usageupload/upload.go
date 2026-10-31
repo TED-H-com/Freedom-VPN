@@ -1,6 +1,7 @@
 package usageupload
 
 import (
+	"bytes"
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
@@ -92,8 +93,9 @@ type Uploader struct {
 	cap    time.Duration
 	factor int
 
-	bo       time.Duration
-	lastSend time.Time
+	bo         time.Duration
+	lastSend   time.Time
+	tryCurrent bool // one live-stream turn after a failed retired attempt
 
 	mu    sync.Mutex
 	needs bool
@@ -138,6 +140,9 @@ func New(cfg Config) (*Uploader, error) {
 	if u.maxEv <= 0 {
 		u.maxEv = DefaultMaxEvents
 	}
+	if u.maxEv > 1000 {
+		u.maxEv = 1000
+	}
 	if u.maxBytes <= 0 {
 		u.maxBytes = DefaultMaxBytes
 	}
@@ -178,103 +183,162 @@ func New(cfg Config) (*Uploader, error) {
 // is pending. It applies the ACK only after a 200 whose ledger epoch matches
 // the verified checkpoint.
 func (u *Uploader) Once(ctx context.Context) error {
-	body, key, events, err := u.prepare(ctx)
-	if err != nil || body == nil {
+	batch, err := u.prepare(ctx)
+	if err != nil || batch.body == nil {
 		return err
 	}
 	if err := u.hookStep(StepPost); err != nil {
 		return err
 	}
-	status, resp, retryAfter, err := u.tr.PostUsageBatch(ctx, key, body)
-	if err != nil {
-		u.log.Warn("usage batch post failed", "err", err.Error())
-		return err
+	status, resp, retryAfter, err := u.tr.PostUsageBatch(ctx, batch.key, batch.body)
+	if err == nil {
+		err = u.handle(ctx, status, resp, retryAfter, batch)
 	}
-	return u.handle(ctx, status, resp, retryAfter, events)
+	// Transient origin/recovery failures cannot starve the current stream.
+	// No event is discarded or made final merely by exhausting an attempt.
+	if batch.origin != nil && err != nil {
+		u.tryCurrent = true
+	}
+	return err
 }
 
-func (u *Uploader) prepare(ctx context.Context) (body []byte, key string, events []usagestore.StoredEvent, err error) {
+type preparedBatch struct {
+	body   []byte
+	key    string
+	events []usagestore.StoredEvent
+	origin *uuid.UUID
+}
+
+func (u *Uploader) prepare(ctx context.Context) (preparedBatch, error) {
 	head, err := u.store.Head(ctx)
 	if err != nil {
-		return nil, "", nil, err
+		return preparedBatch{}, err
 	}
-	events, err = u.store.Unacked(ctx, head.AckedThrough, u.maxEv, u.maxBytes)
-	if err != nil {
-		return nil, "", nil, err
+	var batch preparedBatch
+	var ranges []api.ReplayUnavailableRange
+	ledger := head.LedgerEpoch
+	skipRetired := u.tryCurrent
+	u.tryCurrent = false
+	if !skipRetired {
+		streams, err := u.store.RetiredStreams(ctx)
+		if err != nil {
+			return batch, err
+		}
+		for _, stream := range streams {
+			if stream.FinalCode != "" || stream.Pending == 0 {
+				continue
+			}
+			batch.events, err = u.store.RetiredUnacked(ctx, stream.IncarnationID, u.maxEv, u.maxBytes)
+			if err != nil {
+				return batch, err
+			}
+			if len(batch.events) > 0 {
+				id := stream.IncarnationID
+				batch.origin = &id
+				ledger = stream.LedgerEpoch
+				ranges, err = u.store.RetiredReplayUnavailable(ctx, id)
+				if err != nil {
+					return batch, err
+				}
+				break
+			}
+		}
 	}
-	ranges, err := u.store.ReplayUnavailable(ctx)
-	if err != nil {
-		return nil, "", nil, err
+	if batch.origin == nil {
+		batch.events, err = u.store.Unacked(ctx, head.AckedThrough, u.maxEv, u.maxBytes)
+		if err != nil {
+			return batch, err
+		}
+		ranges, err = u.store.ReplayUnavailable(ctx)
+		if err != nil {
+			return batch, err
+		}
 	}
-	if len(events) == 0 && len(ranges) == 0 {
-		return nil, "", nil, nil
+	if len(batch.events) == 0 && len(ranges) == 0 {
+		if skipRetired {
+			return u.prepare(ctx)
+		}
+		return batch, nil
 	}
 	epoch := json.RawMessage("null")
-	if head.LedgerEpoch != uuid.Nil {
-		raw, err := json.Marshal(head.LedgerEpoch)
+	if ledger != uuid.Nil {
+		epoch, err = json.Marshal(ledger)
 		if err != nil {
-			return nil, "", nil, err
+			return batch, err
 		}
-		epoch = raw
 	}
 	node, inc := u.store.Identity()
 	wire := wireBatch{
-		Events:            make([]json.RawMessage, len(events)),
-		LedgerEpoch:       epoch,
-		NodeID:            node,
-		NodeIncarnationID: inc,
+		Events: make([]json.RawMessage, len(batch.events)), LedgerEpoch: epoch,
+		NodeID: node, NodeIncarnationID: inc, OriginIncarnationID: batch.origin,
+		Replay: ranges,
 	}
-	for i, ev := range events {
+	for i, ev := range batch.events {
 		wire.Events[i] = json.RawMessage(ev.Payload)
 	}
-	if len(ranges) > 0 {
-		wire.Replay = ranges
+	var encoded bytes.Buffer
+	enc := json.NewEncoder(&encoded)
+	enc.SetEscapeHTML(false) // Preserve the canonical RawMessage event bytes.
+	if err := enc.Encode(wire); err != nil {
+		return batch, err
 	}
-	built, err := json.Marshal(wire)
-	if err != nil {
-		return nil, "", nil, err
-	}
+	batch.body = bytes.TrimSuffix(encoded.Bytes(), []byte("\n"))
 	if err := u.hookStep(StepBuild); err != nil {
-		return nil, "", nil, err
+		return batch, err
 	}
-	sum := sha256.Sum256(built)
+	sum := sha256.Sum256(batch.body)
 	sha := hex.EncodeToString(sum[:])
 	savedKey, savedBody, ok, err := u.store.LookupBatch(ctx, sha)
 	if err != nil {
-		return nil, "", nil, err
+		return batch, err
 	}
 	if ok {
-		return savedBody, savedKey, events, nil
+		batch.body, batch.key = savedBody, savedKey
+		return batch, nil
 	}
 	id, err := uuid.NewV7()
 	if err != nil {
-		return nil, "", nil, fmt.Errorf("usageupload: idempotency key: %w", err)
+		return batch, fmt.Errorf("usageupload: idempotency key: %w", err)
 	}
+	batch.key = id.String()
 	var first, last uint64
-	if len(events) > 0 {
-		first = events[0].Seq
-		last = events[len(events)-1].Seq
+	if len(batch.events) > 0 {
+		first, last = batch.events[0].Seq, batch.events[len(batch.events)-1].Seq
 	}
-	if err := u.store.RememberBatch(ctx, sha, id.String(), built, first, last); err != nil {
-		return nil, "", nil, err
-	}
-	return built, id.String(), events, nil
+	err = u.store.RememberBatch(ctx, sha, batch.key, batch.body, first, last)
+	return batch, err
 }
 
 type wireBatch struct {
-	Events            []json.RawMessage            `json:"events"`
-	LedgerEpoch       json.RawMessage              `json:"ledger_epoch"`
-	NodeID            uuid.UUID                    `json:"node_id"`
-	NodeIncarnationID uuid.UUID                    `json:"node_incarnation_id"`
-	Replay            []api.ReplayUnavailableRange `json:"replay_unavailable,omitempty"`
+	OriginIncarnationID *uuid.UUID                   `json:"origin_incarnation_id,omitempty"`
+	Events              []json.RawMessage            `json:"events"`
+	LedgerEpoch         json.RawMessage              `json:"ledger_epoch"`
+	NodeID              uuid.UUID                    `json:"node_id"`
+	NodeIncarnationID   uuid.UUID                    `json:"node_incarnation_id"`
+	Replay              []api.ReplayUnavailableRange `json:"replay_unavailable,omitempty"`
 }
 
-func (u *Uploader) handle(ctx context.Context, status int, resp []byte, retryAfter time.Duration, events []usagestore.StoredEvent) error {
+func (u *Uploader) handle(ctx context.Context, status int, resp []byte, retryAfter time.Duration, batch preparedBatch) error {
+	if batch.origin != nil && ((status == 409 && errorCode(resp) == "STATE_CONFLICT") || (status == 403 && errorCode(resp) == "INCARNATION_MISMATCH")) {
+		if err := u.hookStep(StepApply); err != nil {
+			return err
+		}
+		return u.store.RejectRetired(ctx, *batch.origin, errorCode(resp))
+	}
 	switch status {
 	case 200:
-		return u.on200(ctx, resp)
+		return u.on200(ctx, resp, batch)
 	case 409:
-		return u.on409(ctx, resp, events)
+		if batch.origin != nil && errorCode(resp) == "USAGE_EVENT_CONFLICT" {
+			return fmt.Errorf("usageupload: retired conflict requires per-event receipt")
+		}
+		if batch.origin != nil && errorCode(resp) == "LEDGER_EPOCH_MISMATCH" {
+			if err := u.fetchCheckpoint(ctx); err != nil {
+				return err
+			}
+			return usagestore.ErrLedgerEpoch
+		}
+		return u.on409(ctx, resp, batch.events)
 	case 429:
 		d := retryAfter
 		if d < 0 {
@@ -304,10 +368,35 @@ func (u *Uploader) handle(ctx context.Context, status int, resp []byte, retryAft
 	}
 }
 
-func (u *Uploader) on200(ctx context.Context, resp []byte) error {
+func (u *Uploader) on200(ctx context.Context, resp []byte, batch preparedBatch) error {
 	var res api.UsageBatchResult
 	if err := json.Unmarshal(resp, &res); err != nil {
 		return fmt.Errorf("usageupload: batch result: %w", err)
+	}
+	node, stream := u.store.Identity()
+	if batch.origin != nil {
+		stream = *batch.origin
+	}
+	if res.NodeId != node || res.NodeIncarnationId != stream {
+		return fmt.Errorf("usageupload: ACK identity does not match requested stream")
+	}
+	if batch.origin != nil {
+		if res.LedgerEpoch == uuid.Nil {
+			return fmt.Errorf("usageupload: missing hand-off ledger epoch")
+		}
+		sent := make(map[uint64]bool, len(batch.events))
+		for _, ev := range batch.events {
+			sent[ev.Seq] = true
+		}
+		for _, r := range res.Results {
+			if !sent[uint64(r.EventSeq)] {
+				return fmt.Errorf("usageupload: unexpected hand-off receipt")
+			}
+			delete(sent, uint64(r.EventSeq))
+		}
+		if len(sent) != 0 {
+			return fmt.Errorf("usageupload: incomplete hand-off receipts")
+		}
 	}
 	ack := usagestore.BatchACK{
 		LedgerEpoch: res.LedgerEpoch,
@@ -323,20 +412,48 @@ func (u *Uploader) on200(ctx context.Context, resp []byte) error {
 		ack.Blocked = &n
 	}
 	for _, r := range res.Results {
+		code := ""
+		if r.Error.IsSpecified() && !r.Error.IsNull() {
+			detail, err := r.Error.Get()
+			if err != nil {
+				return err
+			}
+			code = string(detail.Code)
+		}
 		ack.Results = append(ack.Results, usagestore.EventResult{
-			Seq: uint64(r.EventSeq), Status: string(r.Status),
+			Seq: uint64(r.EventSeq), Status: string(r.Status), Code: code,
 		})
 	}
 	if err := u.hookStep(StepApply); err != nil {
 		return err
 	}
-	err := u.store.ApplyACK(ctx, ack)
+	var err error
+	if batch.origin != nil {
+		err = u.store.ApplyRetiredACK(ctx, *batch.origin, ack)
+	} else {
+		err = u.store.ApplyACK(ctx, ack)
+	}
 	if errors.Is(err, usagestore.ErrLedgerEpoch) {
 		u.log.Warn("usage batch ledger epoch mismatch")
-		return u.fetchCheckpoint(ctx)
+		if err := u.fetchCheckpoint(ctx); err != nil {
+			return err
+		}
+		if batch.origin != nil {
+			return usagestore.ErrLedgerEpoch
+		}
+		return nil
 	}
 	if err != nil {
 		return err
+	}
+	if batch.origin != nil {
+		remaining, err := u.store.RetiredUnacked(ctx, *batch.origin, 1, 1)
+		if err != nil {
+			return err
+		}
+		if len(remaining) > 0 && remaining[0].Seq <= batch.events[len(batch.events)-1].Seq {
+			return fmt.Errorf("usageupload: original stream still awaiting contiguous ACK")
+		}
 	}
 	u.log.Info("usage batch acknowledged", "highest_contiguous_seq", ack.Highest)
 	return nil
@@ -463,7 +580,7 @@ func (u *Uploader) Run(ctx context.Context) error {
 			wait = 0
 		} else if !u.lastSend.IsZero() {
 			remain := u.interval - u.now().Sub(u.lastSend)
-			if remain < wait {
+			if remain > 0 && remain < wait {
 				wait = remain
 			}
 		}
@@ -477,6 +594,9 @@ func (u *Uploader) Run(ctx context.Context) error {
 }
 
 func (u *Uploader) due(ctx context.Context) (bool, error) {
+	if pending, err := u.retiredPending(ctx); err != nil || pending {
+		return pending, err
+	}
 	if u.lastSend.IsZero() || u.now().Sub(u.lastSend) >= u.interval {
 		head, err := u.store.Head(ctx)
 		if err != nil {
@@ -499,6 +619,9 @@ func (u *Uploader) due(ctx context.Context) (bool, error) {
 }
 
 func (u *Uploader) overThreshold(ctx context.Context) (bool, error) {
+	if pending, err := u.retiredPending(ctx); err != nil || pending {
+		return pending, err
+	}
 	st, err := u.store.OutboxStatus(ctx)
 	if err != nil {
 		return false, err
@@ -534,4 +657,17 @@ func (u *Uploader) nextBackoff() time.Duration {
 		d = u.cap
 	}
 	return d
+}
+
+func (u *Uploader) retiredPending(ctx context.Context) (bool, error) {
+	streams, err := u.store.RetiredStreams(ctx)
+	if err != nil {
+		return false, err
+	}
+	for _, stream := range streams {
+		if stream.FinalCode == "" && stream.Pending > 0 {
+			return true, nil
+		}
+	}
+	return false, nil
 }

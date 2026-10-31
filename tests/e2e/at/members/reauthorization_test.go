@@ -3,16 +3,12 @@
 package members
 
 import (
-	"crypto/sha256"
 	"encoding/json"
 	"fmt"
 	"net/url"
 	"strings"
 	"time"
 
-	"github.com/TED-H-com/Freedom-VPN/internal/auth"
-	"github.com/TED-H-com/Freedom-VPN/internal/entitlement"
-	memberdomain "github.com/TED-H-com/Freedom-VPN/internal/members"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/google/uuid"
 )
@@ -227,62 +223,6 @@ func (l *live) reauthorization(r *record, b *browser, id uuid.UUID, service stri
 	l.fenceGrant(r, b, id, service, true)
 }
 
-// There is no HTTP grant-revoke endpoint or shared plan-downgrade export. Use
-// the production domain transaction for fixture setup only; every D-077 call
-// still goes through the running HTTP API. Never edit entitlement/device rows.
-func (l *live) replaceFixtureGrant(r *record, b *browser, rev uuid.UUID) bool {
-	svc, err := l.admission()
-	if err != nil {
-		return false
-	}
-	// Bootstrap admin credentials deliberately have no public-subject ID.
-	// Resolve the actor from this authenticated admin session, never from a
-	// NetBird credential or an arbitrary administrator row.
-	var actor uuid.UUID
-	origin, _ := url.Parse("https://portal.example.invalid:8443")
-	for _, cookie := range l.admin.client.Jar.Cookies(origin) {
-		if cookie.Name != auth.AdminSessionCookie {
-			continue
-		}
-		hash := sha256.Sum256([]byte(cookie.Value))
-		err = l.pool.QueryRow(l.ctx, `SELECT admin_id FROM admin_sessions WHERE token_hash=$1 AND absolute_expires_at>clock_timestamp()`, hash[:]).Scan(&actor)
-		break
-	}
-	r.check("D-081 fixture administrator", "actor resolved from current admin session", fmt.Sprintf("resolved=%t", actor != uuid.Nil && err == nil), "hash own cookie in memory; read matching unexpired admin_sessions row; no token emitted", actor != uuid.Nil && err == nil)
-	if actor == uuid.Nil || err != nil {
-		return false
-	}
-	rows, err := l.pool.Query(l.ctx, `SELECT id FROM entitlement_grants WHERE member_id=$1 AND revoked_at IS NULL`, b.member)
-	if err != nil {
-		return false
-	}
-	var ids []uuid.UUID
-	for rows.Next() {
-		var id uuid.UUID
-		if rows.Scan(&id) != nil {
-			rows.Close()
-			return false
-		}
-		ids = append(ids, id)
-	}
-	err = rows.Err()
-	rows.Close()
-	if err != nil {
-		return false
-	}
-	domain := memberdomain.Service{Pool: l.pool, Entitlements: svc.Entitlements}
-	for _, id := range ids {
-		cmd := entitlement.Command{Actor: entitlement.Actor{ID: actor, Role: "admin", RequestID: uuid.New()}, Key: uuid.New()}
-		err = domain.RevokeGrant(l.ctx, cmd, uuid.MustParse(b.member), id, "TEST ONLY D-081 plan transition")
-		r.check("D-081 fixture grant withdrawal", "production RevokeGrant succeeds", fmt.Sprintf("grant_id=%s; succeeded=%t", id, err == nil), "members.Service.RevokeGrant; shared export requested from devstack follow-up 15", err == nil)
-		if err != nil {
-			return false
-		}
-	}
-	got := l.api(l.admin, "POST", "/api/v1/admin/members/"+b.member+"/grants", api.GrantCreateRequest{PlanRevisionId: &rev, Source: api.GrantSourceAdminGrant, Reason: "TEST ONLY D-081 plan transition", ValidUntil: time.Now().UTC().Add(time.Hour)}, commandHeaders())
-	r.check("D-081 fixture grant creation", "202 through production API", string(got.body), "POST /admin/members/{id}/grants", got.status == 202)
-	return got.status == 202
-}
 func (l *live) reauthorizationLimit(r *record, id, revoked uuid.UUID, service string) {
 	l.admin = l.login("e2e-admin", "admin")
 	l.fenceCall(r, "revoked device", l.admin, "POST", authorizePath(l.a.member, revoked), commandHeaders(), revoked, 409, "STATE_CONFLICT")
@@ -302,20 +242,28 @@ func (l *live) reauthorizationLimit(r *record, id, revoked uuid.UUID, service st
 		r.block("D-081 lower plan unavailable")
 		return
 	}
-	if !l.replaceFixtureGrant(r, l.a, lower) {
+	l.invalidFiniteGrant(r, l.a, lower)
+	l.forwardingGate(r)
+	l.traceForwarding(r, service, id)
+	flow := l.startPersistent(r, service, id)
+	transitionAt := time.Now().UTC()
+	if !l.replaceFiniteGrant(r, l.a, lower, time.Now().UTC().Add(time.Hour)) {
 		r.check("D-081 setup", "real plan downgrade", "failed", "production grant transition", false)
 		return
 	}
+	l.finishPersistent(r, flow, transitionAt, l.memberHeartbeat(r))
 	pending := l.wait(60*time.Second, func() bool {
 		return l.count(`SELECT count(*) FROM member_devices WHERE id=$1 AND status='pending'`, id) == 1 && l.count(`SELECT count(*) FROM member_devices WHERE member_id=$1 AND status='authorized'`, l.a.member) == 2
 	})
 	r.check("D-081 limit precondition", "two authorized of limit two; replacement pending", fmt.Sprintf("ready=%t", pending), "real plan downgrade -> entitlement worker reconciliation; no row fixtures", pending)
+	l.traceForwarding(r, "member", l.awaitDevice(l.nativePeer))
 	if !l.fenceInsert(r, id) {
 		return
 	}
 	l.fenceCall(r, "device limit", l.admin, "POST", authorizePath(l.a.member, id), commandHeaders(), id, 409, "DEVICE_LIMIT_REACHED")
 	r.check("D-081 limit denial retains fence", "one fence", fmt.Sprint(l.fenceCount(id)), "read fence count after HTTP 409", l.fenceCount(id) == 1)
-	restored := l.replaceFixtureGrant(r, l.a, l.planRev)
+	restored := l.replaceFiniteGrant(r, l.a, l.planRev, time.Now().UTC().Add(time.Hour))
 	r.check("D-077 entitlement restoration retains fence", "original plan restored; fence stays", fmt.Sprintf("restored=%t; fence=%d", restored, l.fenceCount(id)), "production grant transition, then explicit re-authorization", restored && l.fenceCount(id) == 1)
 	l.fenceGrant(r, l.a, id, service, false)
+	l.finiteExpiry(r, id, service)
 }

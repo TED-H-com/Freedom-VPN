@@ -109,6 +109,9 @@ func Install(ctx context.Context, env *Env, req InstallRequest) (*Result, error)
 	}
 	same := has && cur.ReleaseID == id && cur.ManifestSHA256 == verified.SHA
 	if same && unitsMatch(l, id) && modesMatch(l) && agentConfigMatch(l, req, verified) {
+		if err := reconcileMarker(ctx, env); err != nil {
+			return nil, err
+		}
 		if err := retainArchive(l, nil, req.ArtifactPath, p.Arch, verified); err != nil {
 			return nil, err
 		}

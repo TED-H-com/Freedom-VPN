@@ -19,13 +19,17 @@ def main(phase=None):
         raise SystemExit('assigned w4-secops/30000 binding only')
     PRIVATE.mkdir(parents=True, exist_ok=True)
     (ROOT/'.agent/tmp').mkdir(parents=True, exist_ok=True)
-    main_revision = subprocess.check_output(['git','merge-base','HEAD','origin/main'],cwd=ROOT,text=True).strip()
+    main_revision = subprocess.check_output(['git','merge-base','HEAD','main'],cwd=ROOT,text=True).strip()
     log = subprocess.check_output(['git','log','--format=%s',main_revision],cwd=ROOT,text=True)
     d099 = any(line.startswith('roadmap: w3-wire-nodes follow-up 29 merged') for line in log.splitlines())
     record = dict(driver_run_id=str(uuid.uuid4()),source_revision=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),
                   application_base=main_revision, phase=phase, started_at=utc(), d099_roadmap_present=d099,
                   prepare=dict(prefix=PREFIX,port_base=PORT_BASE,reset=True,grace_seconds=90))
-    label = 'followup11-'+phase
+    followup = os.environ.get('FVPN_SECOPS_EVIDENCE_FOLLOWUP', '11')
+    if followup not in ('11', '12'):
+        raise SystemExit('unsupported evidence follow-up')
+    record['follow_up'] = int(followup)
+    label = 'followup'+followup+'-'+phase
     with tempfile.TemporaryDirectory(prefix=label+'.',dir=ROOT/'.agent/tmp') as scratch:
         env=dict(os.environ, PATH=str(Path.home()/'.local/go/bin')+':'+os.getenv('PATH',''),
                  GOTOOLCHAIN='local',CGO_ENABLED='0',PYTHONDONTWRITEBYTECODE='1',TMPDIR=scratch,GOTMPDIR=scratch,

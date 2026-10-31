@@ -1,0 +1,38 @@
+{
+  "attempts": [
+    {
+      "phase": "transports",
+      "attempt": 1,
+      "status": "failed",
+      "finding": "Counted flow was unavailable after 90 seconds; the prepared transport harness omitted the publication/serving API precondition used by AT30. Its fatal helper aborted the other sub-cases. No fault injected, no transport pass claimed.",
+      "correction": "Publish through the existing servingGate10 API helper after admission. Preserve the 90-second flow bound and retain a failed flow sample without aborting independent sub-cases.",
+      "files": [
+        {
+          "file": "followup12-transports-attempt1-live.json",
+          "sha256": "6b1abf18047295fa14b5d66b0ad6abb46a0417a611e6624f1bbae866f0d916e7"
+        },
+        {
+          "file": "followup12-transports-attempt1-run.json",
+          "sha256": "072f24242a51b459f0de5329b9b14a6ee3f270b332da673c8854c74dcc3dba0f"
+        }
+      ]
+    },
+    {
+      "phase": "transports",
+      "attempt": 2,
+      "status": "failed",
+      "finding": "Grant-expiry original-socket cutoff measured, but recovery grant projection timed out at 60 seconds; the helper compared an untruncated nanosecond deadline with the projected API time. The fatal helper prevented lease/revoke/relay cases. Raw row status passed covers cutoff, not completed recovery.",
+      "correction": "Truncate the recovery grant deadline to seconds like all initial grant deadlines, and isolate each case in a sequential Go subtest so failure cannot suppress later cases. Bounds unchanged.",
+      "files": [
+        {
+          "file": "followup12-transports-attempt2-live.json",
+          "sha256": "3d8b52d4ed99763738cdf0bdaefdfcec60f48b450a137c228f68c451f68b8cc3"
+        },
+        {
+          "file": "followup12-transports-attempt2-run.json",
+          "sha256": "7e06ae56ba0e33a1a2685f20200668691aa86a43e29a256f64f0d98bb7953323"
+        }
+      ]
+    }
+  ]
+}

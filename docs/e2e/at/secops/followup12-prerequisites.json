@@ -1,0 +1,31 @@
+{
+  "application_base": "510a4ab",
+  "read_documents": [
+    {
+      "revision": "510a4ab",
+      "path": "docs/nodes/2026-10-31-secops-21-handover.md",
+      "sha256": "f7378711523bca5afa8db767cb5b8d7d729fdb4f1ce1da176f5e60496e282451",
+      "read_method": "git show; no source checkout or pin change"
+    },
+    {
+      "revision": "63a4116",
+      "path": "docs/node/install-followup3-2026-10-31.md",
+      "sha256": "6e8751924c6bae8e9a6c9e6b0355666a4764338915498bb2c00434e4ce016c4d",
+      "read_method": "git show; no source checkout or pin change"
+    },
+    {
+      "revision": "5ce76e9",
+      "path": "docs/e2e/RESPONSES.md",
+      "sha256": "045607fed89bebe4cdd6ade00feec4f419f0d963d1b18821a9da32b193d81940",
+      "read_method": "git show; read dated answers before new requests; measured base unchanged"
+    }
+  ],
+  "devstack_responses": {
+    "path": "docs/e2e/RESPONSES.md",
+    "status": "read after becoming available on later main 5ce76e9",
+    "read_at": "2026-10-31T07:40:00Z",
+    "time_precision": "minute",
+    "scope": "Dated members and updates answers; finite-grant replacement is distinct from an HTTP manual-withdrawal export. No SECOPS-21 first-delivery capture export is documented."
+  },
+  "installer_scope": "ENR-06 socket/runtime fixed in #279; full upgrade remains failed at final_sample for absent state/meter.checkpoint. Not a measured secops upgrade or production acceptance."
+}

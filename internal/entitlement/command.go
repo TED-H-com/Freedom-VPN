@@ -86,8 +86,9 @@ func Complete(ctx context.Context, tx pgx.Tx, record db.IdempotencyRecord, resou
 	return db.CompleteIdempotent(ctx, tx, record.ID, db.IdempotencyResult{ResourceType: string(resourceType), ResourceID: &id, OperationID: operation, ResponseStatus: status})
 }
 
-// Audit admits only reviewed domain fields. Free-text member metadata, reasons,
-// external identifiers and provider bodies never enter the audit stream (D-029).
+// Audit admits only reviewed domain fields. Free-text member metadata, external
+// identifiers and provider bodies are excluded (D-029). Revision 14 explicitly
+// requires the bounded admin grant-withdrawal reason; other reasons are codes.
 func Audit(ctx context.Context, tx pgx.Tx, actor Actor, action string, resource api.ResourceType, id uuid.UUID, before, after map[string]any, operation ...*uuid.UUID) error {
 	return AuditResult(ctx, tx, actor, action, resource, id, api.AuditEventResultSucceeded, before, after, operation...)
 }
@@ -102,6 +103,8 @@ func AuditResult(ctx context.Context, tx pgx.Tx, actor Actor, action string, res
 		fields = []string{"grant_id", "source", "valid_until"}
 	case "grant.revoke":
 		fields = []string{"grant_id"}
+	case "member.grant_revoke":
+		fields = []string{"revoked_at", "member_id", "grant_id", "reason"}
 	case "member.entitlement_changed":
 		fields = []string{"revision", "state"}
 	case "device.authorize", "device.revoke":

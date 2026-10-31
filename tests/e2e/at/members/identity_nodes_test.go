@@ -22,13 +22,28 @@ func (l *live) grant(b *browser, until time.Time) response {
 	}
 	return l.api(l.admin, "POST", "/api/v1/admin/members/"+b.member+"/grants", api.GrantCreateRequest{PlanRevisionId: &rev, Source: api.GrantSourceAdminGrant, Reason: "TEST ONLY acceptance finite grant", ValidUntil: until}, commandHeaders())
 }
-func (l *live) patchMember(b *browser, body any) response {
+func (l *live) patchMember(r *record, b *browser, body any) response {
+	l.admin = l.login("e2e-admin", "admin")
 	path := "/api/v1/admin/members/" + b.member
-	old := l.api(l.admin, "GET", path, nil, nil)
-	h := commandHeaders()
-	h["If-Match"] = old.headers.Get("ETag")
-	return l.api(l.admin, "PATCH", path, body, h)
+	var got response
+	var attempts []map[string]any
+	for range 3 {
+		old := l.api(l.admin, "GET", path, nil, nil)
+		if old.status != 200 {
+			return old
+		}
+		h := commandHeaders()
+		h["If-Match"] = old.headers.Get("ETag")
+		got = l.api(l.admin, "PATCH", path, body, h)
+		attempts = append(attempts, map[string]any{"if_match": h["If-Match"], "status": got.status, "error_code": got.code, "body": json.RawMessage(got.body)})
+		if got.status != 412 {
+			break
+		}
+	}
+	r.jsonCheck("conditional suspension update", "fresh If-Match; at most three attempts on 412 only; final 202", attempts, "GET member version; PATCH; a 412 cannot mutate and is reissued with a fresh ETag/key", got.status == 202)
+	return got
 }
+
 func (l *live) policy(kind string, payload any) (response, uuid.UUID) {
 	code := "at-" + l.run + "-" + uuid.NewString()[:8]
 	// Revise the one lab DNS profile; the D-056 hook has no per-node profile selector.

@@ -19,11 +19,10 @@ import (
 	"github.com/google/uuid"
 )
 
-const usageInstallerGap = "ENR-05: #266 HoldUsageAcknowledgements, UsageLedgerSnapshot and MemberTransportStack accept node/node2/node-clone, while ControlledReinstall accepts only installer-node. Owner devstack: export the hold, snapshot and counted member transport on that same installer slot, including its proxy/config paths and service restoration. Owner usage/installer: supply an authorized old-incarnation backlog delivery protocol; packaging/installer/reenroll.go explicitly leaves retained old events unuploaded. No central-once or cross-reinstall usage claim."
-
-const installerStartupGap = "ENR-06: initial installer prerequisite did not complete; see actual exit, failing step, journal, unit and socket observations. Owner installer/devstack. PR #279 fixes the prior socket permissions; this run does not assume the result."
-
-const installerRestoreGap = "ENR-06: RerunInstaller and ControlledReinstall stop agent/watchdog/updater for hash sampling; docs/e2e/RESPONSES.md is absent and no installer-slot service-restoration export is documented. Owner devstack: restore prior service state and export the installer-slot serving baseline. Invocation/digest observations alone cannot pass the serving lifecycle row."
+const installerOwnerProof = "docs/e2e/runs/2026-10-31/followup17/a7c41436-82b3-4665-b75c-e2887f2e1009/installer-owner-chain.md"
+const installerServingGap = "D-116 / ENR-06: installer inet fvpn owner marker fails verifyChainSet with HOOK_PRIORITY_MISMATCH; serving rerun/reinstall and nonzero same-slot usage remain blocked. Proof: " + installerOwnerProof
+const usageInstallerGap = "D-105 / D-112 / ENR-05: contracts revision 14 defines the retired-stream handoff; central acceptance and node uploader are not merged on this source. Before+held-byte equality and historical attribution remain blocked. Contract proof: contracts/openapi.yaml submitUsageBatch and docs/contracts/README.md revision 14. Implementation boundary: packaging/installer/reenroll.go retains events without upload. Serving prerequisite also blocked by D-116. Proof: " + installerOwnerProof
+const installerStartupGap = "ENR-06: initial installer prerequisite did not complete; see actual exit, failing step, journal, unit and socket observations."
 
 // This is a narrow availability/snapshot proof on the regular node. It must
 // never satisfy counted_unacked_usage: the installer uses a different slot.
@@ -124,7 +123,7 @@ func installerHashesView(h e2e.InstallerHashes) map[string]string {
 	return map[string]string{
 		"key_sha256": h.Key, "cert_sha256": h.Cert, "node_json_sha256": h.NodeJSON,
 		"usage_db_sha256": h.UsageDB, "usage_wal_sha256": h.UsageWAL,
-		"machine_id_sha256": h.MachineID, "current": h.Current,
+		"machine_id_sha256": h.MachineID, "current_target": h.Current,
 	}
 }
 
@@ -136,40 +135,31 @@ func installerOutcomeView(out e2e.InstallerOutcome, err error) map[string]any {
 		"failing_step": installerFailingStep(out),
 		"retired_mode": out.RetiredMode, "retired": installerHashesView(out.RetiredHashes),
 		"bound_state_before_sha256": out.BoundStateBefore, "retired_bound_state_sha256": out.RetiredBoundState,
-		"before": installerHashesView(out.Before), "after": installerHashesView(out.Hashes),
+		"before": installerHashesView(out.Before), "after": installerHashesView(out.Hashes), "services_to_restore": out.Services,
 	}
 }
 
 func (p *probe) installerHooks() {
 	gap := installerStartupGap
 	oldCertificateDenied := false
-	detail := map[string]any{"source_pr": 266, "installer_fix_pr": 279, "slot": "installer-node", "container": "fvpn-w4-enroll-installer-node",
-		"response_file_present": false, "service_restoration_export": "missing", "serving_baseline_measured": false}
+	detail := map[string]any{"source_pr": 294, "installer_fix_pr": 279, "slot": "installer-node", "container": "fvpn-w4-enroll-installer-node",
+		"response_file_present": true, "service_restoration_export": "RestoreInstallerServices", "serving_baseline_measured": false,
+		"serving_blocker_proof": installerOwnerProof, "retired_stream_decisions": []string{"D-105", "D-112"}}
 	defer func() {
-		p.note("AT07", "counted_unacked_usage", "blocked", map[string]any{"gap": usageInstallerGap, "slot_probe": detail["slot_probe"], "counted_traffic_started": false, "controlled_reinstall_run": detail["controlled_reinstall"] != nil})
+		p.note("AT07", "counted_unacked_usage", "blocked", map[string]any{"gap": installerServingGap, "counted_traffic_started": false, "controlled_reinstall_run": detail["controlled_reinstall"] != nil})
 		for _, name := range []string{"installer_rerun", "identity_ledger_preserved", "controlled_reinstall", "old_certificate_denied", "historical_usage_retained"} {
 			if name == "old_certificate_denied" && oldCertificateDenied {
 				p.note("AT07", name, "pass", map[string]any{"prerequisite": detail,
 					"scope": "retired installer certificate denied on direct mTLS desired-state and observations; no serving or usage claim"})
 				continue
 			}
-			p.note("AT07", name, "blocked", map[string]any{"gap": gap, "prerequisite": detail,
-				"usage_gap": usageInstallerGap, "check": name})
+			rowGap := gap
+			if name == "identity_ledger_preserved" || name == "historical_usage_retained" {
+				rowGap = usageInstallerGap
+			}
+			p.note("AT07", name, "blocked", map[string]any{"gap": rowGap, "prerequisite": detail, "check": name})
 		}
 	}()
-	// These exports reject the slot before any mutation or command. A common
-	// name on Stack does not make the two fixture families composable.
-	holdErr := p.stack.HoldUsageAcknowledgements(p.ctx, "installer-node", true)
-	_, snapErr := p.stack.UsageLedgerSnapshot(p.ctx, "installer-node")
-	_, transportErr := p.stack.MemberTransportStack("fvpn-w4-enroll-member", "installer-node")
-	detail["slot_probe"] = map[string]any{
-		"hold_unknown_node_slot":      holdErr != nil && holdErr.Error() == "unknown node slot",
-		"snapshot_unknown_node_slot":  snapErr != nil && snapErr.Error() == "unknown node slot",
-		"transport_unknown_node_slot": transportErr != nil && transportErr.Error() == "unknown node slot",
-	}
-	if holdErr == nil {
-		_ = p.stack.HoldUsageAcknowledgements(p.ctx, "installer-node", false)
-	}
 	if err := p.stack.PrepareInstallerNode(p.ctx); err != nil {
 		gap = "ENR-06: PrepareInstallerNode failed before invocation. Owner devstack: restore the dedicated systemd fixture; diagnostic content withheld."
 		return
@@ -196,18 +186,25 @@ func (p *probe) installerHooks() {
 		}
 	}
 	if err != nil || installed.Exit != 0 || installed.Status != "installed" {
+		p.restoreInstaller("initial-error", installed, detail)
 		return
 	}
-	// Measure the available wrappers even though the missing restoration/usage
-	// exports keep the composed acceptance rows blocked. Never start services
-	// manually and never select a newer archive (journaled upgrade is separate).
-	gap = installerRestoreGap
+	p.restoreInstaller("initial", installed, detail)
+	gap = installerServingGap
+	// Each invocation's own before/after snapshot is quiescent. Agent writes
+	// between restored calls are legitimate and are not hash-equality failures.
 	again, err := p.stack.RerunInstaller(p.ctx, "installer-node")
 	detail["rerun"] = installerOutcomeView(again, err)
 	detail["after_rerun"] = p.installerDiagnostics("rerun", again)
-	detail["rerun_hashes_unchanged"] = installed.Hashes == again.Before && again.Before == again.Hashes
+	stable := err == nil && again.Exit == 0 && again.Status == "already_current" && again.Before == again.Hashes
+	detail["rerun_hashes_unchanged"] = stable
+	p.expect("AT07", "installer_stopped_hash_equality", stable, installerOutcomeView(again, err))
+	p.expect("AT07", "installer_rerun_identity", stable && installed.NodeID == again.NodeID && installed.Incarnation == again.Incarnation,
+		map[string]any{"initial_node": installed.NodeID, "initial_incarnation": installed.Incarnation, "rerun": installerOutcomeView(again, err)})
+	p.installerUsageHold()
+	p.restoreInstaller("rerun", again, detail)
 	if err != nil || again.Exit != 0 || again.Status != "already_current" {
-		gap = "ENR-06: idempotent RerunInstaller did not complete; see actual outcome and diagnostics. Owner installer/devstack."
+		gap = "ENR-06: idempotent RerunInstaller did not complete; see actual outcome and diagnostics."
 		return
 	}
 	node, nodeErr := uuid.Parse(installed.NodeID)
@@ -247,7 +244,19 @@ func (p *probe) installerHooks() {
 	detail["projection_after_reinstall"] = p.identityProjection(node)
 	detail["same_node_new_incarnation"] = reinstalled.NodeID == node.String() && reinstalled.Incarnation != "" && reinstalled.Incarnation != oldInc.String()
 	// A retained empty ledger is not the required counted backlog proof.
-	detail["retired_identity_hashes_match"] = reinstalled.RetiredMode == "700" && reinstalled.RetiredHashes.Key == again.Hashes.Key && reinstalled.RetiredHashes.Cert == again.Hashes.Cert && reinstalled.RetiredHashes.NodeJSON == again.Hashes.NodeJSON
+	detail["retired_identity_hashes_match"] = reinstalled.RetiredMode == "700" && reinstalled.RetiredHashes.Key == reinstalled.Before.Key && reinstalled.RetiredHashes.Cert == reinstalled.Before.Cert && reinstalled.RetiredHashes.NodeJSON == reinstalled.Before.NodeJSON
+	retained := reinstalled.RetiredMode == "700" && reinstalled.RetiredHashes.Key == reinstalled.Before.Key &&
+		reinstalled.RetiredHashes.Cert == reinstalled.Before.Cert && reinstalled.RetiredHashes.NodeJSON == reinstalled.Before.NodeJSON &&
+		len(reinstalled.BoundStateBefore) == 4 && sameStrings(reinstalled.BoundStateBefore, reinstalled.RetiredBoundState) &&
+		reinstalled.Before.UsageDB == reinstalled.Hashes.UsageDB && reinstalled.Before.UsageWAL == reinstalled.Hashes.UsageWAL
+	history := readErr == nil && resp.Status == 200 && len(page.Items) == 2 &&
+		page.Items[0].IncarnationId.String() == reinstalled.Incarnation && page.Items[0].Current &&
+		page.Items[1].IncarnationId == oldInc && !page.Items[1].Current && page.Items[1].State == "retired"
+	p.expect("AT07", "installer_reinstall_identity", reinstallErr == nil && reinstalled.Exit == 0 && reinstalled.Status == "reenrolled" &&
+		detail["same_node_new_incarnation"] == true && retained && history,
+		map[string]any{"outcome": installerOutcomeView(reinstalled, reinstallErr), "history": installerHistoryView(page),
+			"retained_files_match": retained, "newest_first_history": history, "scope": "stopped files and identity only; nonzero retained usage is blocked"})
+	p.restoreInstaller("reinstall", reinstalled, detail)
 	if reinstallErr != nil || reinstalled.Exit != 0 || reinstalled.Status != "reenrolled" {
 		gap = "ENR-06: ControlledReinstall did not complete; see actual outcome and diagnostics. Owner installer/devstack."
 		return
@@ -368,4 +377,93 @@ exec curl --silent --show-error --max-time 15 --cacert /var/tmp/e2e-rel/ca.pem -
 			"denied": denied}
 	}
 	return result, allDenied
+}
+
+func sameStrings(a, b map[string]string) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for k, v := range a {
+		if b[k] != v {
+			return false
+		}
+	}
+	return true
+}
+
+func (p *probe) restoreInstaller(phase string, out e2e.InstallerOutcome, detail map[string]any) {
+	ctx, cancel := context.WithTimeout(context.WithoutCancel(p.ctx), 30*time.Second)
+	defer cancel()
+	err := p.stack.RestoreInstallerServices(ctx, "installer-node", out.Services)
+	got, readErr := p.stack.InstallerServices(ctx, "installer-node")
+	ok := err == nil && readErr == nil && len(got) == 4
+	for unit, want := range out.Services {
+		if want == "activating" {
+			want = "active"
+		}
+		if got[unit] != want {
+			ok = false
+		}
+	}
+	observation := map[string]any{"phase": phase, "expected": out.Services, "observed": got, "restore_ok": err == nil, "read_ok": readErr == nil}
+	detail["services_after_"+phase] = observation
+	p.expect("AT07", "installer_service_restoration", ok, observation)
+}
+
+// The installer consumers are stopped by RerunInstaller. The authenticated
+// proxy remains live; malformed POSTs test route scope without fabricating usage.
+func (p *probe) installerUsageHold() {
+	detail := map[string]any{"slot": "installer-node", "scope": "non-serving endpoint scope and quiescent ledger; no counted member usage"}
+	ok := false
+	defer func() {
+		ctx, cancel := context.WithTimeout(context.WithoutCancel(p.ctx), 20*time.Second)
+		defer cancel()
+		released := p.stack.HoldUsageAcknowledgements(ctx, "installer-node", false) == nil
+		detail["cleanup_released"] = released
+		p.expect("AT07", "installer_usage_hold_release", ok && released, detail)
+	}()
+	before, e1 := p.stack.UsageLedgerSnapshotBytes(p.ctx, "installer-node")
+	var snapshot e2e.UsageSnapshot
+	decoded := json.Unmarshal(before, &snapshot) == nil
+	detail["snapshot_before"], detail["snapshot_read_ok"] = snapshot, e1 == nil && decoded
+	_, transportErr := p.stack.MemberTransportStack("fvpn-w4-enroll-member", "installer-node")
+	detail["member_transport_export_available"] = transportErr == nil
+	if p.stack.HoldUsageAcknowledgements(p.ctx, "installer-node", true) != nil {
+		return
+	}
+	hs, hc, hr, hok := p.installerRoute("usage-batches")
+	ds, _, _, dok := p.installerRoute("desired-state")
+	held, e2 := p.stack.UsageLedgerSnapshotBytes(p.ctx, "installer-node")
+	if p.stack.HoldUsageAcknowledgements(p.ctx, "installer-node", false) != nil {
+		return
+	}
+	rs, rc, _, rok := p.installerRoute("usage-batches")
+	after, e3 := p.stack.UsageLedgerSnapshotBytes(p.ctx, "installer-node")
+	stable := e1 == nil && e2 == nil && e3 == nil && bytes.Equal(before, held) && bytes.Equal(before, after)
+	detail["held_http_status"], detail["held_code"], detail["held_retryable"] = hs, hc, hr
+	detail["other_route_status"], detail["released_http_status"], detail["released_code"] = ds, rs, rc
+	detail["snapshot_bytes_equal"], detail["snapshot_sha256"] = stable, hash(before)
+	ok = stable && decoded && transportErr == nil && hok && hs == 503 && hc == "DEPENDENCY_UNAVAILABLE" && hr && dok && ds == 200 && rok && rs == 422 && rc == "VALIDATION_FAILED"
+}
+
+func (p *probe) installerRoute(route string) (int, string, bool, bool) {
+	args := []string{"exec", "fvpn-w4-enroll-installer-node", "curl", "--silent", "--show-error", "--max-time", "15",
+		"--cacert", "/var/tmp/e2e-rel/ca.pem", "--cert", "/var/lib/vpn-node/identity/cert.pem", "--key", "/var/lib/vpn-node/identity/key.pem", "-w", "\n%{http_code}"}
+	if route == "usage-batches" {
+		args = append(args, "-H", "Content-Type: application/json", "--data", "{}")
+	}
+	raw, err := exec.CommandContext(p.ctx, "docker", append(args, "https://127.0.0.1:9444/api/v1/agent/"+route)...).Output()
+	i := bytes.LastIndexByte(raw, '\n')
+	if i < 0 {
+		return 0, "", false, false
+	}
+	status, _ := strconv.Atoi(string(raw[i+1:]))
+	var body struct {
+		Error struct {
+			Code      string `json:"code"`
+			Retryable bool   `json:"retryable"`
+		} `json:"error"`
+	}
+	decoded := json.Unmarshal(raw[:i], &body) == nil
+	return status, body.Error.Code, body.Error.Retryable, err == nil && decoded
 }
