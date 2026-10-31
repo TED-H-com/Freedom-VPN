@@ -64,6 +64,12 @@ retain their original cutoff. The [current evidence and operator limits](follow-
 and `TestHandover_Followup17Claims` pin #304–#313. Handover ran no new live
 acceptance. D-121 and D-122 below are orchestration-process decisions only.
 
+**2026-10-31 08:17 EDT resume:** security-ops follow-up 13 (#316) landed
+after this reconciliation through #313. Its SECOPS-21 closure and AT30
+measurements are reserved for reconciliation in handover follow-up 18; see
+the [dated owner handover](../e2e/at/secops/2026-10-31-follow-up-13-handover.md).
+The decision rows below retain their original #313 cutoff.
+
 | Decision | Operator meaning and delivery boundary |
 |---|---|
 | D-098 | Claims read byte-identical owner archives or run-ID-named snapshots, never current lane evidence; members follow-up 7, enrollment follow-up 6 and secops follow-up 11 now have final archives. Live document digests remain separate. |

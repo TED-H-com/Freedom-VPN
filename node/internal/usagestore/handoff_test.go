@@ -261,6 +261,13 @@ func TestD105_RecoveryRangesBelongToOrigin(t *testing.T) {
 	if err != nil || len(ranges) != 1 || ranges[0].StartSeq != 1 || ranges[0].EndSeq != 2 {
 		t.Fatalf("ranges %+v %v", ranges, err)
 	}
+	var history string
+	if err := st.db.QueryRow(`SELECT body FROM retired_history WHERE incarnation_id = ? AND kind = 'replay_unavailable'`, testInc.String()).Scan(&history); err != nil {
+		t.Fatal(err)
+	}
+	if history != `[{"start_seq":"1","end_seq":"2","reason":"retention_expired"}]` {
+		t.Fatal("missing retirement-time gap evidence", history)
+	}
 	if err := st.ApplyRetiredACK(ctx, testInc, BatchACK{Highest: 3, Results: []EventResult{{Seq: 3, Status: StatusAccepted}}}); err != nil {
 		t.Fatal(err)
 	}
@@ -272,6 +279,22 @@ func TestD105_RecoveryRangesBelongToOrigin(t *testing.T) {
 	ranges, _ = st.RetiredReplayUnavailable(ctx, testInc)
 	if len(ranges) != 0 {
 		t.Fatal("ACKed gap remained pending")
+	}
+	if err := st.Close(); err != nil {
+		t.Fatal(err)
+	}
+	st, err = Open(path, testNode, nextInc, Options{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer st.Close()
+	var after string
+	if err := st.db.QueryRow(`SELECT body FROM retired_history WHERE incarnation_id = ? AND kind = 'replay_unavailable'`, testInc.String()).Scan(&after); err != nil || after != history {
+		t.Fatal("ACK/restart lost gap audit evidence", after, err)
+	}
+	ranges, err = st.RetiredReplayUnavailable(ctx, testInc)
+	if err != nil || len(ranges) != 0 {
+		t.Fatal("restart recreated reported gaps", ranges, err)
 	}
 }
 

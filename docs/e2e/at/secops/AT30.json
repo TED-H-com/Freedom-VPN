@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
-  "follow_up": 12,
-  "application_base": "510a4ab7f73bdcfc28aaef53f8d1d6deef97ad67",
-  "source_revision": "bf21d111f0b334368441144145abca8f5d0c060a",
-  "run_id": "dd845a7f-2660-431c-a8e6-c513108cc07d",
-  "driver_run_id": "c8498f5b-455e-41a9-9804-2067690aec23",
-  "started_at": "2026-10-31T09:04:16Z",
-  "finished_at": "2026-10-31T09:23:05Z",
+  "follow_up": 13,
+  "application_base": "7e044c71ecf1d07f63e89721bd213db6611a6a47",
+  "source_revision": "c5d66ccccdbf0ca1c0f0f1120cb704d760c4ddac",
+  "run_id": "5218b7d5-1415-4e1b-8618-48ea2d3cf03e",
+  "driver_run_id": "47e4fdfc-7ba0-437d-b3c2-2fafe50c036b",
+  "started_at": "2026-10-31T11:49:34Z",
+  "finished_at": "2026-10-31T11:59:13Z",
   "hardware": "shared development host; not candidate hardware",
-  "probe_source_sha256": "16ff60b0f2f39a827de3953ea0b24818d41be6f8537854d9d9a0e797e01af425",
-  "record_renderer_sha256": "fca01192bfe08cc5e48c441e513937dd681e53eb57b5bd9dcc57704778e8e753",
-  "previous_run": "history/follow-up-11/",
+  "probe_source_sha256": "4f01f0939ec526d6395cfc473f4d3b05fadd90dce40754fd40455577bbaf5135",
+  "record_renderer_sha256": "46f491ab16489a5dd170ea344e1fa6c3bf23bda4a82fe4f55c0be4f59a9c043d",
+  "previous_run": "history/follow-up-12/",
   "projector_owned_rows_written": [],
   "id": "AT30",
   "status": "passed",
@@ -38,9 +38,21 @@
     "negative_post_restore_fresh_enroll_not_fenced": true
   },
   "blockers": [],
+  "development_host_deltas": {
+    "Pre-replay database RPO (s)": {
+      "follow_up_12_baseline_seconds": 106.45,
+      "follow_up_13_seconds": 92.163101,
+      "delta_seconds": -14.286899
+    },
+    "Total outage RTO (s)": {
+      "follow_up_12_baseline_seconds": 74.53,
+      "follow_up_13_seconds": 81.016113709,
+      "delta_seconds": 6.486113709
+    }
+  },
   "evidence": [
     "restore-reconcile.json",
-    "followup12-restore-live.json",
+    "followup13-restore-live.json",
     "SECOPS-21.json"
   ]
 }

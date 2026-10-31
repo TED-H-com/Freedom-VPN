@@ -3003,6 +3003,12 @@ func TestHandover_Followup17Claims(t *testing.T) {
 		require("packaging/installer/handoff_test.go", "TestD089_RealUpdaterConsumesWriterRecord")
 		require("node/enforce/review_r16_quarantine_test.go", "TestReviewR16_QuarantineNeverLowersUplink")
 	})
+	t.Run("post_cutoff_secops_notice", func(t *testing.T) {
+		for _, path := range []string{doc, register} {
+			require(path, "2026-10-31 08:17 EDT resume", "security-ops follow-up 13 (#316) landed", "after this reconciliation through #313", "SECOPS-21 closure and AT30", "reserved for reconciliation in handover follow-up 18", "original #313 cutoff")
+		}
+		require("docs/ROADMAP.md", "| w4-at-security-ops follow-up 13 |", "done (#316)")
+	})
 	t.Run("D116_and_pre_D120_failure", func(t *testing.T) {
 		require("node/enforce/verify_installer_test.go", "TestD116_InstallerMarkerScope")
 		require("tests/netlab/agent/scenario_d116_test.go", "TestD116_AT10_InstallerMarkerEnrollment")

@@ -1,0 +1,21 @@
+{
+  "source": "protected gateway stdout/stderr from the isolated admission recheck",
+  "evidence": "native-scale.json",
+  "owner": "w3-devstack-e2e",
+  "configuration": "deploy/devstack/nginx.conf:1–3: worker_processes 1; worker_connections 256",
+  "connection_budget": {
+    "matching_lines": 603,
+    "first_utc": "2026-10-30T07:29:44Z",
+    "last_utc": "2026-10-30T07:35:52Z",
+    "fixed_message": "256 worker_connections are not enough",
+    "configuration_changed": false
+  },
+  "auth_query_logging": {
+    "status": "failed",
+    "matching_lines": 1,
+    "query_key": "user_code",
+    "query_values_published": false,
+    "scope": "Native device-flow query appears in gateway error diagnostics during upstream connection exhaustion; known-secret canary checks alone do not cover this value."
+  },
+  "infrastructure_addresses_and_account_ids_published": false
+}

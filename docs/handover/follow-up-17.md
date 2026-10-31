@@ -7,6 +7,12 @@ Handover follow-up 16 (#306) stopped at #303, recorded D-112–D-119, and left
 `TestHandover_Followup17Claims` pins the roadmap rows, owner snapshots and
 run-ID records under D-098 / D-109. Handover ran no new live acceptance.
 
+**2026-10-31 08:17 EDT resume:** security-ops follow-up 13 (#316) landed
+after this reconciliation through #313. Its SECOPS-21 closure and AT30
+measurements are reserved for reconciliation in handover follow-up 18; see
+the [dated owner handover](../e2e/at/secops/2026-10-31-follow-up-13-handover.md).
+The claims below retain their original #313 cutoff.
+
 ## Installer scope and isolation recovery (§6.3, §8.2, ISO01, AT07, AT10, AT13)
 
 Netlab follow-up 17 (#304) proves D-116: a hookless `inet fvpn_install` is
