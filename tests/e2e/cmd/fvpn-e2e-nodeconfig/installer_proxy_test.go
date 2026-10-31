@@ -5,6 +5,8 @@ import (
 	"crypto/x509"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"path/filepath"
 	"testing"
 )
 
@@ -12,7 +14,11 @@ func TestENR06InstallerProxyRequiresCurrentVerifiedIdentity(t *testing.T) {
 	leaf := []byte("TEST ONLY unit leaf bytes")
 	public := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { w.WriteHeader(201) })
 	agent := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { w.WriteHeader(204) })
-	handler := installerProxyHandler(public, agent, func() (tls.Certificate, error) { return tls.Certificate{Certificate: [][]byte{leaf}}, nil })
+	marker := filepath.Join(t.TempDir(), "hold-usage")
+	if err := os.WriteFile(marker, nil, 0600); err != nil {
+		t.Fatal(err)
+	}
+	handler := installerProxyHandler(public, agent, func() (tls.Certificate, error) { return tls.Certificate{Certificate: [][]byte{leaf}}, nil }, marker)
 	for _, tc := range []struct {
 		name, method, path string
 		verified           bool
@@ -25,6 +31,8 @@ func TestENR06InstallerProxyRequiresCurrentVerifiedIdentity(t *testing.T) {
 		{"unverified cert", "GET", "/api/v1/agent/desired-state", false, leaf, 403},
 		{"different cert", "GET", "/api/v1/agent/desired-state", true, []byte("retired unit leaf"), 403},
 		{"current identity", "GET", "/api/v1/agent/desired-state", true, leaf, 204},
+		{"held current usage", "POST", "/api/v1/agent/usage-batches", true, leaf, 503},
+		{"held retired usage", "POST", "/api/v1/agent/usage-batches", true, []byte("retired unit leaf"), 403},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			r := httptest.NewRequest(tc.method, tc.path, nil)
@@ -41,5 +49,16 @@ func TestENR06InstallerProxyRequiresCurrentVerifiedIdentity(t *testing.T) {
 				t.Fatalf("got %d want %d", w.Code, tc.want)
 			}
 		})
+	}
+	if err := os.Remove(marker); err != nil {
+		t.Fatal(err)
+	}
+	r := httptest.NewRequest("POST", "/api/v1/agent/usage-batches", nil)
+	cert := &x509.Certificate{Raw: leaf}
+	r.TLS = &tls.ConnectionState{PeerCertificates: []*x509.Certificate{cert}, VerifiedChains: [][]*x509.Certificate{{cert}}}
+	w := httptest.NewRecorder()
+	handler.ServeHTTP(w, r)
+	if w.Code != 204 {
+		t.Fatalf("released usage: %d", w.Code)
 	}
 }

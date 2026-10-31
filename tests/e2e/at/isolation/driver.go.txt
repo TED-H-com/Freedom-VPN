@@ -975,7 +975,9 @@ func (x *isolationRun) restart() {
 	wait, cancel := context.WithTimeout(x.ctx, 90*time.Second)
 	ready := waitUntil(wait, 2*time.Second, func() bool {
 		raw, _ := x.r.lab.docker(x.r.lab.node, "cat", "/run/vpn-node/heartbeat")
-		return len(boot) == 2 && !strings.Contains(string(raw), "boot_id "+boot[1]) && strings.Contains(string(raw), "\nserving 1\n") && x.r.lab.forwardChain().MemberAccept > 0
+		// A container process restart retains the kernel boot ID. Require a
+		// fresh heartbeat as well as serving read-back; this is not OS reboot evidence.
+		return len(boot) == 2 && strings.Contains(string(raw), "boot_id "+boot[1]) && !bytes.Equal(raw, before) && strings.Contains(string(raw), "\nserving 1\n") && x.r.lab.forwardChain().MemberAccept > 0
 	})
 	cancel()
 	after := x.proof(x.a1)
@@ -1870,8 +1872,14 @@ func (x *isolationRun) archiveReceiver() {
 		return
 	}
 	time.Sleep(150 * time.Millisecond)
-	// This stream exceeds the shared lab.docker 2 MiB diagnostic limit.
-	raw, err := exec.CommandContext(x.ctx, "docker", "exec", x.r.lab.node, "cat", "/var/lib/vpn-node/e2e/isolation-observations.jsonl").Output()
+	// Stream the full private capture to task disk, outside diagnostic stdout.
+	scratch := filepath.Join(x.r.lab.root, ".agent", "tmp", "isolation-receiver.jsonl")
+	_, err := (&Stack{lab: x.r.lab}).ExportContainerFile(x.ctx, "node", "/var/lib/vpn-node/e2e/isolation-observations.jsonl", scratch)
+	if err != nil {
+		x.extra("receiver-capture.json", map[string]any{"error": "capture export failed"})
+		return
+	}
+	raw, err := os.ReadFile(scratch)
 	if err != nil {
 		x.extra("receiver-capture.json", map[string]any{"error": "capture unavailable"})
 		return

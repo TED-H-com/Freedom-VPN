@@ -59,7 +59,20 @@ func (r *runner) selectExit(ctx context.Context, note func(string, string)) bool
 
 func (r *runner) originIP() string {
 	// Derive the isolated origin address from the prepared node uplink config.
-	raw, _ := r.lab.docker(r.lab.node, "cat", "/etc/vpn-node/agent-run.json")
+	snat := r.nodeSNAT()
+	i := strings.LastIndex(snat, ".")
+	if i < 0 {
+		return ""
+	}
+	return snat[:i] + ".10"
+}
+
+func (r *runner) nodeSNAT() string {
+	config := "/etc/vpn-node/agent-run.json"
+	if r.lab.node == r.lab.prefix+"-installer-node" {
+		config = "/etc/vpn-node/agent.json"
+	}
+	raw, _ := r.lab.docker(r.lab.node, "cat", config)
 	var cfg struct {
 		Datapath struct {
 			SNAT string `json:"snat"`
@@ -68,11 +81,7 @@ func (r *runner) originIP() string {
 	if json.Unmarshal(raw, &cfg) != nil {
 		return ""
 	}
-	i := strings.LastIndex(cfg.Datapath.SNAT, ".")
-	if i < 0 {
-		return ""
-	}
-	return cfg.Datapath.SNAT[:i] + ".10"
+	return cfg.Datapath.SNAT
 }
 
 func (r *runner) originProbe(ctx context.Context, method, id string) (string, error) {
@@ -221,7 +230,7 @@ func (r *runner) tracedFetch(ctx context.Context, note func(string, string)) boo
 		Requests int    `json:"requests"`
 		Source   string `json:"source_address"`
 	}
-	arrived := json.Unmarshal([]byte(origin), &arrival) == nil && arrival.ID == id && arrival.Requests > 0 && arrival.Source == strings.TrimSuffix(r.originIP(), ".10")+".20"
+	arrived := json.Unmarshal([]byte(origin), &arrival) == nil && arrival.ID == id && arrival.Requests > 0 && arrival.Source == r.nodeSNAT()
 	success := arrived && err == nil && strings.TrimSpace(string(body)) == "ok" && available && ok && after > before && e == nil
 	note("controlled_origin_http_200_and_counted", boolText(success))
 	note("admission_bytes_before", fmt.Sprint(before))
