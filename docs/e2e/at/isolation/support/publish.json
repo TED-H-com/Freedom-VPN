@@ -5,7 +5,7 @@
     "§5.2",
     "§14.2"
   ],
-  "status": "blocked",
+  "status": "pass",
   "observations": [
     {
       "name": "agent_baseline_observed",
@@ -13,7 +13,7 @@
     },
     {
       "name": "stored_rows",
-      "detail": "{\"node\": {\"peer_id\": \"dbijbpf8k4c0008rh8t0\", \"data_health\": \"healthy\", \"safety_status\": \"passed\", \"provisioning_state\": \"ready\", \"applied_config_generation\": \"1\", \"desired_config_generation\": \"1\"}, \"observation\": {\"checks\": [{\"name\": \"dns_policy\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T00:27:42.469995034Z\"}, {\"name\": \"internet_only\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T00:27:42.469995034Z\"}, {\"name\": \"lease\", \"status\": \"not_run\", \"error_code\": null, \"observed_at\": \"2026-10-31T00:27:42.469995034Z\"}, {\"name\": \"meter_path\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T00:27:42.469995034Z\"}, {\"name\": \"policy_signature\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T00:27:42.469995034Z\"}, {\"name\": \"qos\", \"status\": \"not_run\", \"error_code\": null, \"observed_at\": \"2026-10-31T00:27:42.469995034Z\"}, {\"name\": \"release_supported\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T00:27:42.469995034Z\"}, {\"name\": \"source_binding\", \"status\": \"not_run\", \"error_code\": null, \"observed_at\": \"2026-10-31T00:27:42.469995034Z\"}, {\"name\": \"storage\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T00:27:42.469995034Z\"}, {\"name\": \"tunnel_probe\", \"detail\": \"Egress probe used no extra target.\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T00:27:42.469995034Z\"}], \"peer_id\": null, \"data_health\": \"healthy\", \"safety_status\": \"passed\", \"provisioning_state\": \"ready\", \"applied_config_generation\": \"1\"}, \"exit_group_count\": 0, \"peer_observe_events\": 2}"
+      "detail": "{\"node\": {\"peer_id\": \"dbikmln8k4c000c3cidg\", \"data_health\": \"healthy\", \"safety_status\": \"passed\", \"provisioning_state\": \"ready\", \"applied_config_generation\": \"1\", \"desired_config_generation\": \"1\"}, \"observation\": {\"checks\": [{\"name\": \"dns_policy\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T01:59:11.43466696Z\"}, {\"name\": \"internet_only\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T01:59:11.43466696Z\"}, {\"name\": \"lease\", \"status\": \"not_run\", \"error_code\": null, \"observed_at\": \"2026-10-31T01:59:11.43466696Z\"}, {\"name\": \"meter_path\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T01:59:11.43466696Z\"}, {\"name\": \"policy_signature\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T01:59:11.43466696Z\"}, {\"name\": \"qos\", \"status\": \"not_run\", \"error_code\": null, \"observed_at\": \"2026-10-31T01:59:11.43466696Z\"}, {\"name\": \"release_supported\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T01:59:11.43466696Z\"}, {\"name\": \"source_binding\", \"status\": \"not_run\", \"error_code\": null, \"observed_at\": \"2026-10-31T01:59:11.43466696Z\"}, {\"name\": \"storage\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T01:59:11.43466696Z\"}, {\"name\": \"tunnel_probe\", \"detail\": \"Egress probe used no extra target.\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T01:59:11.43466696Z\"}], \"peer_id\": null, \"data_health\": \"healthy\", \"safety_status\": \"passed\", \"provisioning_state\": \"ready\", \"applied_config_generation\": \"1\"}, \"exit_group_count\": 0, \"peer_observe_events\": 2}"
     },
     {
       "name": "control_status",
@@ -101,7 +101,7 @@
     },
     {
       "name": "request",
-      "detail": "{\"publication_intent\":\"published\",\"group_ids\":[\"01a18f5a-700a-7c96-8188-5bb197462d8e\"],\"reason\":\"e2e acceptance publish\"}; If-Match=\"8\""
+      "detail": "{\"publication_intent\":\"published\",\"group_ids\":[\"01a18fae-2f82-7ac3-b4dd-523d91259048\"],\"reason\":\"e2e acceptance publish\"}; If-Match=\"8\""
     },
     {
       "name": "put",
@@ -109,11 +109,11 @@
     },
     {
       "name": "operation_id",
-      "detail": "22ecf90f-847a-481d-a58c-8fcd45cb32b7"
+      "detail": "2d52a3de-5fc9-4dbb-b85e-b931e1ece186"
     },
     {
       "name": "operation_status",
-      "detail": "running"
+      "detail": "succeeded"
     },
     {
       "name": "operation_kind",
@@ -121,15 +121,15 @@
     },
     {
       "name": "step_agent_policy",
-      "detail": "pending NODE_NOT_SERVICEABLE member_forwarding_unconfirmed"
+      "detail": "succeeded"
     },
     {
       "name": "step_data_path_probe",
-      "detail": "pending"
+      "detail": "succeeded"
     },
     {
       "name": "step_netbird_route_readback",
-      "detail": "pending"
+      "detail": "succeeded"
     },
     {
       "name": "node_after",
@@ -141,7 +141,7 @@
     },
     {
       "name": "safety_status",
-      "detail": "failed"
+      "detail": "passed"
     },
     {
       "name": "data_health",
@@ -149,7 +149,7 @@
     },
     {
       "name": "provisioning_state",
-      "detail": "applying"
+      "detail": "ready"
     },
     {
       "name": "lifecycle_state",
@@ -161,7 +161,7 @@
     },
     {
       "name": "publication_observed",
-      "detail": "absent"
+      "detail": "active"
     },
     {
       "name": "config_desired",
@@ -181,7 +181,7 @@
     },
     {
       "name": "check_lease",
-      "detail": "failed"
+      "detail": "not_run"
     },
     {
       "name": "check_meter_path",
@@ -193,7 +193,7 @@
     },
     {
       "name": "check_qos",
-      "detail": "failed"
+      "detail": "not_run"
     },
     {
       "name": "check_release_supported",
@@ -201,7 +201,7 @@
     },
     {
       "name": "check_source_binding",
-      "detail": "failed"
+      "detail": "not_run"
     },
     {
       "name": "check_storage",
@@ -229,7 +229,7 @@
     },
     {
       "name": "forward_generation",
-      "detail": "0"
+      "detail": "3"
     },
     {
       "name": "member_accept_rules",
@@ -237,14 +237,10 @@
     },
     {
       "name": "note",
-      "detail": "publication did not reach succeeded within the poll bound"
-    },
-    {
-      "name": "owner",
-      "detail": "w3-wire-nodes: publication operation and production peer projection"
+      "detail": "node.publish succeeded and publication_observed is active"
     }
   ],
-  "at": "2026-10-31T00:31:43Z",
-  "run_id": "fa0074cc-3b1a-403d-b8c2-3a3439fe2b7e",
-  "source_commit": "491a307dd505e33b14dc0e993aa7e86b28e82f68"
+  "at": "2026-10-31T01:59:18Z",
+  "run_id": "c0106e5d-d8e8-400b-abe0-181d6428fc55",
+  "source_commit": "7fa0443c532b1c9a395cd93620152fb6902584ae"
 }

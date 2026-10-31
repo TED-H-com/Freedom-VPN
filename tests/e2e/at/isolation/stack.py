@@ -22,6 +22,11 @@ env = dict(os.environ, FVPN_E2E_PREFIX="w4-isolation", FVPN_E2E_PORT_BASE="36000
 for service, tag in [("nginx", "1.30.0"), ("coredns", "1.12.0"), ("adguard", "v0.107.59"), ("netbird", "0.82.0")]:
     env["FVPN_E2E_IMAGE_" + service.upper()] = "fvpn-w4-isolation-cache-" + service + ":" + tag
 (root / ".agent/tmp").mkdir(parents=True, exist_ok=True)
+if sys.argv[1:] == ["down"]:
+    # The overlay starts this destination fixture outside compose. The shared
+    # down script cannot delete the origin network while the container is
+    # attached, and the node cache tag then stays referenced.
+    subprocess.run(["docker", "rm", "-f", "fvpn-w4-isolation-isolation-target"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 with tempfile.TemporaryDirectory(prefix="isolation-docker.", dir=root / ".agent/tmp") as temporary:
     docker = shutil.which("docker")
     shim = Path(temporary) / "docker"
