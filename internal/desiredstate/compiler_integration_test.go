@@ -10,6 +10,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"strconv"
 	"testing"
 	"time"
 
@@ -1094,4 +1095,124 @@ func TestCompiler_ThreeFUPTiersAndNodeCapacityMatchesFUPBuilder(t *testing.T) {
 		t.Fatalf("unpublished node produced %d rate policies and %d bindings, want 0 and 0",
 			len(unpubRes.Envelope.Signed.MemberRatePolicies), len(unpubRes.Envelope.Signed.DeviceBindings))
 	}
+}
+
+// agentAcceptsDesired is the generation rule in node/internal/agentstore/state.go:257.
+// AcceptDesired returns ErrStaleGeneration and writes nothing when the node has
+// already accepted a generation strictly greater than the one offered. An equal
+// generation replaces the envelope. agentstore is not imported here.
+func agentAcceptsDesired(accepted uint64, hasAccepted bool, offered uint64) bool {
+	return !hasAccepted || accepted <= offered
+}
+
+func setNodeGenerationHistory(t *testing.T, ctx context.Context, pool *pgxpool.Pool, nodeID, incID uuid.UUID, desired, applied uint64, stored ...uint64) {
+	t.Helper()
+	if _, err := pool.Exec(ctx, `
+		UPDATE nodes
+		SET desired_config_generation = $2::numeric,
+		    applied_config_generation = $3::numeric,
+		    resource_version = resource_version + 1
+		WHERE id = $1`, nodeID, strconv.FormatUint(desired, 10), strconv.FormatUint(applied, 10)); err != nil {
+		t.Fatalf("set generations: %v", err)
+	}
+	for _, generation := range stored {
+		hash := sha256.Sum256([]byte("stored-generation-" + strconv.FormatUint(generation, 10)))
+		if _, err := pool.Exec(ctx, `
+			INSERT INTO desired_states (
+				node_id, incarnation_id, generation, policy_refs,
+				binding_revision, config_hash, schema_version, signed_at
+			) VALUES (
+				$1, $2, $3::numeric, '{}',
+				0, $4, 1, $5
+			)`, nodeID, incID, strconv.FormatUint(generation, 10), hash[:], time.Date(2026, 10, 30, 21, 0, 0, 0, time.UTC)); err != nil {
+			t.Fatalf("insert desired_states generation %d: %v", generation, err)
+		}
+	}
+}
+
+func TestCompiler_RestoreAppliedGenerationAdvancesPastNode(t *testing.T) {
+	pool := dbtest.New(t)
+	ctx := context.Background()
+	now := time.Date(2026, 10, 30, 22, 2, 0, 0, time.UTC)
+	signer, _ := testDesiredStateSignerAndTrustStore(t, now)
+	compiler := NewCompiler(
+		pool,
+		signer,
+		WithEntitlementReader(NewFakeEntitlementReader()),
+		WithPolicyReader(NewFakePolicyReader(PolicySnapshot{})),
+		WithClock(func() time.Time { return now }),
+	)
+
+	// The node has applied 14, so its accepted generation is 14. Offers 12 and
+	// 13 are the stale generations the pre-fix compiler emitted (state.go:257).
+	for _, stale := range []uint64{12, 13} {
+		if agentAcceptsDesired(14, true, stale) {
+			t.Fatalf("generation %d would be stored; ErrStaleGeneration rejects an offer older than applied 14 (node/internal/agentstore/state.go:257)", stale)
+		}
+	}
+
+	t.Run("desired 11 stored 13 applied 14", func(t *testing.T) {
+		nodeID, incID, _, _ := seedCompilerTestNode(t, ctx, pool, uuid.Nil, api.PublicationIntentUnpublished, nil)
+		setNodeGenerationHistory(t, ctx, pool, nodeID, incID, 11, 14, 12, 13)
+
+		res, err := compiler.Compile(ctx, nodeID)
+		if err != nil {
+			t.Fatalf("Compile: %v", err)
+		}
+		if res.Generation != 15 || uint64(res.Envelope.Signed.ConfigGeneration) != 15 {
+			t.Fatalf("generation = %d signed %s, want 15", res.Generation, res.Envelope.Signed.ConfigGeneration)
+		}
+		// state.go:257 accepts this offer because 14 is not greater than 15.
+		if res.Generation <= 14 || !agentAcceptsDesired(14, true, res.Generation) {
+			t.Fatalf("compiled generation %d is not accepted when the node has applied 14 (node/internal/agentstore/state.go:257)", res.Generation)
+		}
+		if res.Envelope.Signed.NodeId != nodeID || res.Envelope.Signed.NodeIncarnationId != incID {
+			t.Fatalf("signed identity = (%s, %s), want (%s, %s)", res.Envelope.Signed.NodeId, res.Envelope.Signed.NodeIncarnationId, nodeID, incID)
+		}
+		if res.Envelope.Signed.PublicationIntent != api.PublicationIntentUnpublished {
+			t.Fatalf("PublicationIntent = %s, want unpublished", res.Envelope.Signed.PublicationIntent)
+		}
+		if len(res.Envelope.Signed.DeviceBindings) != 0 || len(res.Envelope.Signed.MemberRatePolicies) != 0 {
+			t.Fatalf("restore compile changed document contents: %d bindings, %d rate policies", len(res.Envelope.Signed.DeviceBindings), len(res.Envelope.Signed.MemberRatePolicies))
+		}
+		var desired, applied string
+		if err := pool.QueryRow(ctx, `SELECT desired_config_generation::text, applied_config_generation::text FROM nodes WHERE id = $1`, nodeID).Scan(&desired, &applied); err != nil {
+			t.Fatalf("read node: %v", err)
+		}
+		if desired != "15" || applied != "14" {
+			t.Fatalf("node generations desired=%s applied=%s, want desired 15 and applied 14", desired, applied)
+		}
+
+		again, err := compiler.Compile(ctx, nodeID)
+		if err != nil {
+			t.Fatalf("Compile #2: %v", err)
+		}
+		if again.Generation != 16 {
+			t.Fatalf("second generation = %d, want 16", again.Generation)
+		}
+	})
+
+	t.Run("normal applied does not raise the base", func(t *testing.T) {
+		nodeID, incID, _, _ := seedCompilerTestNode(t, ctx, pool, uuid.Nil, api.PublicationIntentUnpublished, nil)
+		// max(desired 11, stored 13)+1 stays 14 when applied is 10.
+		setNodeGenerationHistory(t, ctx, pool, nodeID, incID, 11, 10, 12, 13)
+
+		res, err := compiler.Compile(ctx, nodeID)
+		if err != nil {
+			t.Fatalf("Compile: %v", err)
+		}
+		if res.Generation != 14 || uint64(res.Envelope.Signed.ConfigGeneration) != 14 {
+			t.Fatalf("generation = %d signed %s, want 14", res.Generation, res.Envelope.Signed.ConfigGeneration)
+		}
+		if res.Generation <= 10 || !agentAcceptsDesired(10, true, res.Generation) {
+			t.Fatalf("compiled generation %d is not accepted when the node has applied 10 (node/internal/agentstore/state.go:257)", res.Generation)
+		}
+		var desired, applied string
+		if err := pool.QueryRow(ctx, `SELECT desired_config_generation::text, applied_config_generation::text FROM nodes WHERE id = $1`, nodeID).Scan(&desired, &applied); err != nil {
+			t.Fatalf("read node: %v", err)
+		}
+		if desired != "14" || applied != "10" {
+			t.Fatalf("node generations desired=%s applied=%s, want desired 14 and applied 10", desired, applied)
+		}
+	})
 }
