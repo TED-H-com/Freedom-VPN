@@ -34,25 +34,31 @@ The config file holds paths and ids. It does not hold the release private key. `
 
 The forwarding latch is `forwarding.blocked` in the journal directory. The agent must not enable member forwarding while that file exists or while `BlocksForwarding` is true. The nftables gate itself belongs to the agent.
 
-## FileGate / FileMeter handshake — 2026-10-31 (follow-up 16)
+## FileGate / FileMeter handshake — 2026-10-31 (follow-up 17, D-125)
 
-**Fresh-checkpoint acceptance is blocked on agent-core follow-up 26.** The
-[agent-core 24 hand-off](../node/followup24-updater-2026-10-31.md) explicitly says
-its format has no transaction, boot or close-time correlation. The existing
-`closed_meter_epoch_id`, `last_durable_event_seq`, `central_acked_through` and
-empty `new_meter_epoch_id` describe a real completed durable close. They cannot
-prove that the close followed this update's block. An epoch can open before the
-block, a quiet close need not advance the sequence, and UUID ordering, file
-mtime, a new inode or a new watermark is not a block acknowledgement.
+The updater accepts a checkpoint only when its `barrier_id` is a valid UUID
+and **byte-equal** to the persisted `meter-wait-<txn>.identity` for the current
+block. UUID spelling is opaque: equivalent parsed UUIDs, case folding, UUID
+ordering, mtime, inode replacement or larger watermarks cannot establish this
+match. The [agent-core 26 hand-off](../node/followup26-updater-2026-10-31.md)
+defines publication after verified member withdrawal and durable finalization
+for that exact identity. It repeats that work for each new identity, even when
+a quiet epoch and its watermarks are unchanged. The control channel stays up.
 
-This delivery implements the bounded wait, withdrawal and restart safeguards.
-It deliberately refuses **every uncorrelated FileMeter checkpoint**, including a
-newly published genuine one, rather than switch on ambiguous evidence. A
-successful FileMeter upgrade and the late-but-fresh success test remain deferred.
-No agent checkpoint member has been invented or added. Agent-core needs to
-agree and publish a `barrier_id` tied to the exact live updater block, after
-verified withdrawal and durable finalization, with boot/restart and withdrawal
-semantics. That proposed member is an owner request, not a supported field.
+A legacy four-member checkpoint (`closed_meter_epoch_id`,
+`last_durable_event_seq`, `central_acked_through`, empty `new_meter_epoch_id`)
+is uncorrelated and cannot authorize an update, even when freshly published.
+`barrier_id` is local evidence, not a new receipt or HTTP contract field. It
+attests neither to candidate health nor to central acceptance or permission
+to forward. Successful apply carries the genuine closed epoch and watermarks
+into its existing usage receipt, with the updater's journaled new-epoch note.
+
+History, 2026-10-31: follow-up 16 / PR #310 implemented the bounded wait and
+fail-closed safeguards while the [agent-core 24 format](../node/followup24-updater-2026-10-31.md)
+lacked correlation. Its full freshness handshake was **not complete**, and
+fresh/late success was deferred. Agent-core 26 / PR #320 and this follow-up
+complete that local protocol and its component success tests. Live acceptance
+still requires the consuming runs below.
 
 The updater's `meter_checkpoint_wait_ms` config knob defaults to **30000 ms**
 when omitted or zero. Explicit values are integers from 1 through 300000 ms;
@@ -64,9 +70,8 @@ wait. No service stop, start, switch or new epoch occurs on handshake failure.
 
 Before publishing the latch, the updater atomically writes and fsyncs a private
 `meter-wait-<txn>` note in its journal directory with its boot ID, start, deadline
-and opaque latch identity. These are updater-local fields, not agent evidence.
-The latch remains a presence-only block for today's agent. `FileGate.Block`
-preserves an existing identity; `Unblock` removes the latch and fsyncs the
+and opaque latch identity. The agent echoes this identity only after its barrier
+completes. `FileGate.Block` preserves an existing identity; `Unblock` removes the latch and fsyncs the
 parent. A later block has another identity. Missing, replaced or unreadable
 latches discard the pending sample, including an unblock/reblock between polls.
 The updater checks the latch before and after each checkpoint read.
@@ -76,13 +81,17 @@ regular-file descriptor form one snapshot. The bounded freshness wait may
 re-read the file; it never treats an earlier read as permission for a later
 sample. Symlinks, FIFOs, devices, oversized files, malformed/unknown fields,
 missing watermarks, a nil closed epoch, a nonempty new epoch and ACK above the
-durable sequence are refused. The updater never writes or deletes the agent's
+durable sequence are refused. Deadline checks surround each read as well.
+The standalone `FileMeter.FinalSample` remains a legacy decoder without a
+persisted identity and refuses the correlated format. Engine uses the same
+single-read decoder with its validated wait identity; calling the standalone
+method cannot substitute for the journaled handshake. The updater never writes or deletes the agent's
 checkpoint, never fabricates sequence numbers and never repairs meter state.
 
 | Failure | Sealed receipt and local diagnostic |
 |---|---|
 | No readable valid checkpoint by the original deadline | `failed`, `final_sample`, `CHECKPOINT_FAILED`; `meter_checkpoint_timeout` |
-| Valid checkpoint observed, but no supported correlation | `failed`, `final_sample`, `CHECKPOINT_FAILED`; `meter_checkpoint_uncorrelated` |
+| Missing, malformed or foreign `barrier_id` on an otherwise valid snapshot | `failed`, `final_sample`, `CHECKPOINT_FAILED`; `meter_checkpoint_uncorrelated` |
 | Latch withdrawn or replaced before sampling completes | `failed`, `final_sample`, `STATE_CONFLICT`; `meter_barrier_withdrawn` |
 | Missing/corrupt wait note, changed boot or backward clock before the recorded start | `failed`, `final_sample`, `CHECKPOINT_FAILED`; `meter_wait_invalid` |
 
@@ -92,8 +101,9 @@ and reports forwarding disabled; `STATE_CONFLICT` at `final_sample` identifies
 the discarded withdrawal. Current/last-good and the baseline service are
 retained without restart. The local transaction finishes as nondestructive
 `rolled_back`, with job/result outcome `failed` and the durable gate blocked.
-A newly failed `apply` exits 1; subsequent recovery of the blocked failure exits
-2. Neither recovery nor a checkpoint arriving after the deadline reopens the
+Both initial `apply` and replay of this sealed pre-stop failure exit 1 with
+`outcome=failed` and the error code on stderr; `recover` of the blocked failure
+exits 2. Destructive recovery-required failures retain exit 2. Neither recovery nor a checkpoint arriving after the deadline reopens the
 sealed job or changes its receipt bytes.
 
 Recovery at `prepared`/`blocked` retains the original deadline and rereads the
@@ -102,9 +112,41 @@ to hide withdrawal. A crash after writing the note but before publishing the
 latch conservatively fails. A missing legacy note or changed boot fails closed.
 A recovered `final_sampled` transaction is checked again before stop; a legacy
 checkpoint without handshake evidence is discarded from the failure receipt.
-Terminal cleanup removes the local wait note, leaving the sealed journal and
-outbox evidence intact. The successful stage-recovery tests below use injected
-`Meter` adapters; they do not prove acceptance of the uncorrelated agent format.
+For the same identity, an agent restart repeats withdrawal/finalization and
+republishes the original bytes; the updater rereads them under the original
+boot/deadline and makes the same decision without duplicating accounting.
+Another host boot fails even if the checkpoint identity matches. On withdrawal,
+the agent invalidates checkpoint evidence before forwarding can resume; the
+updater discards any checkpoint arriving after that withdrawal. Terminal cleanup
+removes the local wait note, leaving the sealed journal and outbox intact.
+
+The D-125 component tests use the real `usagestore.MeterCheckpoint`, real
+meter/store finalization after the block, and file fsync/atomic rename/directory
+fsync. Fresh and late-within-bound checkpoints reach successful apply receipts;
+after-bound, foreign/malformed/legacy, withdrawal and changed-boot cases fail
+closed. Restart at `blocked` and `final_sampled`, identical republication and
+one-event accounting are covered. Kernel reads, service management and candidate
+health remain test adapters; these tests do not close live upgrade acceptance.
+
+### Serving-node rerun hand-off
+
+Devstack 18's [serving run `09cb1198`](../e2e/runs/2026-10-31/followup18/09cb1198-435f-4609-9d0b-d53e6c1ed441/installer-journaled-upgrade.md)
+used source `84b6a342`, which does not contain PR #307 (`4d9cf9b1`) or
+PR #310 (`a25ace18`): both `git merge-base --is-ancestor <fix> 84b6a342`
+checks exit 1. Its exit 0 with `failed/final_sample/rolled_back`, null health,
+no checkpoint and no switch remains valid historical failure evidence.
+`TestF903_Devstack18SealedServingFailureCLI` feeds a journal sealed in that
+shape to apply/recover/status and proves exits 1/2/0, the failure diagnostic,
+unchanged current, blocked gate and unchanged receipt bytes.
+
+**Devstack 19 owns the serving-node rerun** on main containing #307, #310,
+#320 and this follow-up. It must start from a genuinely serving node, prove
+verified member withdrawal, obtain the matching durable correlated checkpoint
+within the bound, then prove the candidate switch and all candidate health
+checks before claiming success. Preserve failure attempts and genuine accounting
+and status evidence. Installer 6 separately consumes this follow-up in its
+journaled upgrade run, including post-upgrade seed/re-enrollment. Neither the
+isolated quiescent candidate run nor these component tests replace those runs.
 
 ## Installer hand-off (D-080, D-089, D-110)
 
@@ -124,6 +166,35 @@ Initial install and reenroll retain the exact verified signed envelope (`Verifie
 The verified release, current pointer, state-schema marker and baseline evidence commit in one SQLite transaction, with no schema migration. `status` exposes `seeded_baseline` for the current release: `release_id`, `manifest_sha256`, `tree_hash`, `boot_id`, `seeded_at`. A baseline is installation evidence; it does not assert health, create an update job/result, promote `last_good`, or change publication/forwarding authorization. Seed performs no switch, service restart or rollback.
 
 Seed exit 0 means verified and recorded. The same canonical envelope and tree are re-verified on replay, preserving the original seed timestamp and boot id, with no second release or baseline row. An established journal with a different current release, manifest, tree or state schema is refused; open work is refused too. Exit 1 reports the reason and leaves existing journal evidence and the current pointer intact. Usage/unknown commands exit 64; `seed -h`/`--help` print `-manifest` and `-tree` help with exit 64. The installer recognizes an older unsupported updater only from exit 64 with `unknown command "seed"`; other probe/seed failures become installer exit 1 and check drift. Probe and seed exits/stderr are retained in `install/baseline.json` and `check --json`.
+
+### Post-upgrade seed diagnosis — 2026-10-31
+
+Devstack 18's [read-only diagnostic](../e2e/runs/2026-10-31/followup18/8a1124a1-8653-4f8c-bd1b-2eb3ae5c3179/post-upgrade-reenroll-diagnostic.md)
+uses the resolved candidate tree and its matching retained manifest. Installer
+`baseline.go` delegates verification to updater `seed`; it has no separate tree
+hash algorithm. Seed and apply use `ExtractArchive` and `fsutil.TreeHash`: a
+sorted relative-path inventory of regular-file bytes and permission bits plus
+directory modes. The release-root entry itself is excluded. The `current`
+symlink is resolved/validated but not hashed; the retained previous release and
+state sidecars are outside this subtree. Directory enumeration order therefore
+cannot explain the mismatch.
+
+The source `a0089b8` predates #307. Its extractor used umask-filtered creation
+modes without explicit chmod. Installer `main` sets umask 077, inherited by its
+seed subprocess; the campaign calls updater `apply` directly. With apply 022
+and seed 077, a 0644 file / 0755 subdirectory in the candidate becomes 0600 /
+0700 in the privately extracted reference. The reverse caller masks also differ.
+This is the concrete updater-side divergence reproduced by
+`TestF902_SeedUpgradedTreeAcrossCallerUmasks`: it fails with the exact diagnostic
+using `a0089b8`'s extractor and passes both directions with #307's explicit modes,
+after a successful candidate switch with the previous release retained.
+
+The captured run contains no per-entry mode inventory or direct apply umask,
+so attribution of its individual mismatching entry remains an inference, not a
+measurement. No additional installer `baseline.go` fix is established. The
+existing F9-02 fix is retained; seed still rejects drift and never repairs a
+live tree. Installer 6/devstack 19 must consume the fixed code in a fresh run
+and retain an inventory if a mismatch persists.
 
 Next, `fvpn-node-install upgrade` verifies a signed release, extracts it under releases, copies its archive into update-staging, retains `Verified.Raw` as mode 0600, and writes `pending-release.json` with a fresh per-invocation request UUID. It releases the shared lock and starts `fvpn-updater.service`. The updater's `run` consumes that record before desired state. The foreground equivalent is:
 
