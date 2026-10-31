@@ -1,0 +1,148 @@
+{
+  "schema_version": 1,
+  "follow_up": 9,
+  "checked_at": "2026-10-31T01:46:57Z",
+  "application_base": "205633f",
+  "harness_revision": "205633f0de8b3befbd563a092b856c0bc089e9c9",
+  "roadmap": [
+    "fb3ea32 roadmap: w2-agent-core follow-up 15 merged (#195)",
+    "5bf13e1 contracts: revision 10 (API 1.6.0, 47 operations) \u2014 Enrollment.token_sha256, GET /admin/nodes/{node_id}/incarnations, awaiting_member_grants (ENR-02, ENR-03, D-067) (#191)",
+    "222e6ee roadmap: w4-at-enrollment follow-up 1 merged (#187)",
+    "1c1fd7d at-enrollment: corrected slot w4-enroll/12000, fresh AT06/AT07 live run (95 subchecks pass, 0 fail), ENR-02/ENR-03 narrowed to exact API questions (follow-up 1) (#187)",
+    "ef60493 roadmap: w4-at-updates follow-up 7 merged (#186)",
+    "cc04f32 at-updates: accepted-result authority restated (F6-02) \u2014 AT24 offline catch-up and inheritance, AT26 rollback, AT27 post-acceptance claims pass; AT23/AT25 retained blocked on the probe-peer export (follow-up 7) (#186)",
+    "50482b4 roadmap: w3-portal-live follow-up 11 merged (#185)",
+    "b8d9a77 portal: operator settings view for the fleet configuration resource (D-065); dev-stack seed paces observations and honours Retry-After (portal follow-up 11) (#185)",
+    "cecec34 roadmap: w4-at-isolation follow-up 2 merged (#184)",
+    "6c49c1c at-isolation: counted positive controls across the assembled AT10\u2013AT13 runner on the real release baseline (follow-up 2) (#184)",
+    "42f4f34 roadmap: w4-at-members follow-up 4 merged (#183)",
+    "167247a at-members: second exit adopted, AT02/AT03/AT08 pass, AT09 restart finds an empty same-generation lease (F4-01) (follow-up 4) (#183)",
+    "8eaafcb roadmap: w3-devstack-e2e follow-up 11 merged (#182)",
+    "f7fb3f6 e2e: gateway X-Forwarded-For with exact proxy trust, finite-grace prepare option, stale-client revocation case, node telemetry, port slots 12000/6000 (devstack follow-up 11) (#182)",
+    "74f5962 roadmap: w2-agent-core follow-up 14 merged (#181)",
+    "6a42f3e agent: synchronize meter review sampling and verify busy ticks; probe-exception test pins the lease clock (follow-up 14) (#181)",
+    "f8287c3 roadmap: w4-handover follow-up 6 merged (#180)",
+    "305ac80 handover: docs catch up with #164\u2013#174 (contracts 8/9, secops 5, agent 12/13, fleet-update 8, updater 11, control 17/18, devstack 10, netlab 7); DOC15 resolved; adversarial review r12 archived (follow-up 6) (#180)",
+    "9c0e969 roadmap: w3-wire-nodes follow-up 17 merged (#179)",
+    "302b669 control: fleet configuration admin resource \u2014 GET/PUT /admin/fleet-config with If-Match, idempotency and audit (wire-nodes follow-up 17, D-065) (#179)",
+    "f57779b roadmap: w4-at-security-ops follow-up 6 merged (#178)",
+    "3a4e19d at-secops: 60-peer admission on two fresh phases, limiter isolation after #169, run observer and renderer (follow-up 6) (#178)",
+    "8a203b9 roadmap: w4-at-updates follow-up 6 merged (#177)",
+    "47cd905 at-updates: re-run on #170 \u2014 AT26 passes, fresh pre-result case (c) passes (F5-01 resolved); AT23/AT25 wait for the probe-peer lab export, AT24/AT27 wait for expectations aligned with accepted-result authority (follow-up 6) (#177)",
+    "be2976c roadmap: w3-contracts-r11 merged (#176)",
+    "6bf6363 contracts: revision 9 (API 1.5.0) \u2014 fleet configuration admin resource: max_offline_lease_seconds get/put with If-Match and audit (D-065) (#176)",
+    "729ef25 roadmap: w3-portal-live follow-up 10 merged (#175)",
+    "6546512 portal: post-operation assertions retry instead of reading a count once (follow-up 10) (#175)",
+    "5555772 roadmap: w2-control-core follow-up 18 merged (#174)",
+    "625b8f8 control: connection principals honour X-Forwarded-For only from configured trusted proxies; mTLS keys and the agent listener unchanged (follow-up 18) (#174)",
+    "cd2eb7b roadmap: w4-at-enrollment merged (#173)",
+    "6849677 at-enrollment: records-first AT06/AT07 acceptance harness; both cases blocked on the lab binding (initial) (#173)",
+    "ff04c72 roadmap: w1-netlab follow-up 7 merged (#172)",
+    "93da87b enforce: verifier accepts only the rendered model (accepts, chain set, set flags, resolver drop); samples skip unbound devices; counters survive conntrack failures (follow-up 7) (#172)",
+    "00e1d0c roadmap: w2-agent-core follow-up 13 merged (#171)",
+    "631f6d4 roadmap: w2-agent-core follow-up 10 merged (#171)",
+    "c0dac95 agent: the tunnel check reports an omitted synthetic probe as a bounded probe_omitted detail; attestation keeps the fixed reason vocabulary (follow-up 13) (#171)",
+    "e0a84fb roadmap: w3-devstack-e2e follow-up 10 merged (#170)",
+    "fb8b777 e2e: real device revocation and replacement, a dedicated updater probe peer with a read-only exception observer, a second real exit hook, 60-peer native admission, value-free gateway diagnostics and a separate dynamic address pool (follow-up 10) (#170)",
+    "ea5e3e7 roadmap: w2-control-core follow-up 17 merged (#169)",
+    "054e04e control: bodies above 1 MiB keep canonjson strictness; limiter tables are per class and never filled by unauthenticated peers; concurrency 429s are counted (follow-up 17) (#169)",
+    "cbb9430 roadmap: w2-updater follow-up 11 merged (#168)"
+  ],
+  "merged": {
+    "control_followup_18": 174,
+    "contracts_revision_9": 176,
+    "wire_nodes_followup_17": 179,
+    "devstack_followup_11": 182,
+    "agent_followup_14": 181,
+    "secops_followup_6": 178,
+    "secops_followup_7": 203,
+    "members_followup_5": 205,
+    "secops_followup_8": 221,
+    "usage_agent_followup_1": 225,
+    "node_agent_followup_19": 226,
+    "wire_members_followup_9_d076": 227
+  },
+  "absent_on_measured_main": [
+    "devstack follow-up 12 per-stream bulk scanner results"
+  ],
+  "backup_files_changed_since_165": [],
+  "source_pinning": "Application base fixed at launch; no merge or product changes during run. Harness digests in live record.",
+  "commands": [
+    "git fetch origin",
+    "gh pr list --state merged --limit 15 --json number,title,mergedAt",
+    "git log --oneline origin/main -20",
+    "git diff 5ee3a05..8eaafcb --name-only -- deploy/backup docs/handover/restore-drill.md docs/ops/backups.md"
+  ],
+  "history": "history/follow-up-8/dependencies.json",
+  "requests": {
+    "SECOPS-04": {
+      "status": "resolved input APIs/configuration",
+      "prs": [
+        176,
+        179,
+        182
+      ],
+      "detail": "Fleet maximum via D-065, finite-grace prepare option. Runtime grace requires provider truth support, tracked separately."
+    },
+    "SECOPS-10": {
+      "status": "resolved admission facility",
+      "prs": [
+        170,
+        178
+      ],
+      "evidence": "native-scale.json"
+    },
+    "SECOPS-16": {
+      "status": "open for bulk final per-stream attribution",
+      "owner": "w3-devstack-e2e follow-up 12",
+      "decision": "D-066 separates protected credential artifacts",
+      "evidence": "secret-scan.json"
+    },
+    "SECOPS-05": {
+      "status": "closed (AT30 passed in follow-up 9)",
+      "prs": [
+        165,
+        205,
+        225,
+        226,
+        227
+      ],
+      "evidence": "restore-reconcile.json"
+    },
+    "trusted_proxy": {
+      "status": "live measured after #174/#182",
+      "evidence": "limiter.json"
+    },
+    "SECOPS-18": {
+      "status": "closed",
+      "owner": "w2-members (internal/devices)",
+      "prs": [
+        227
+      ],
+      "detail": "D-076 restore authorization fence verified in live AT30 restore (fence row, worker log, worker counter, external_withdrawal audit, pending status, withdrawn data plane, re-grant via AuthorizeDevice, and two negatives)",
+      "evidence": "restore-reconcile.json"
+    },
+    "SECOPS-19": {
+      "status": "closed",
+      "owner": "w1-node-agent (node/agent/observe.go, node/agent/usage_snapshot.go)",
+      "prs": [
+        225,
+        226
+      ],
+      "detail": "Live UsageOutboxStatus in node_observations and read-only fvpn-agent usage snapshot verified during restore hold (non-zero unacked) and post-replay convergence (zero unacked)",
+      "evidence": "restore-reconcile.json"
+    },
+    "SECOPS-20": {
+      "status": "open",
+      "owner": "w3-devstack-e2e (deploy/devstack/entrypoint-node.sh) / w1-enforce-nft (node/enforce/verify_foreign.go)",
+      "detail": "Docker attaches two networks (lab and origin) to node-netns and populates table ip nat POSTROUTING -> DOCKER_POSTROUTING (xt target SNAT for 127.0.0.11), causing VerifyServing (#220 whole-ruleset read-back) to fail closed with FLOWTABLE_BYPASS on unmodified devstack node containers when >=1 member grant is compiled",
+      "evidence": "restore-reconcile.json"
+    },
+    "SECOPS-21": {
+      "status": "open",
+      "owner": "w2-policy (internal/desiredstate/compiler.go:198-211) / w3-wire-nodes (internal/nodes/observations.go:289)",
+      "detail": "After central DB restore to T0 while node retains T1 applied_config_generation, desiredstate.Compiler.Compile computes baseGen from desired_config_generation and max(desired_states.generation) without including nodes.applied_config_generation, emitting stale generations rejected by fvpn-agent with ErrStaleGeneration",
+      "evidence": "restore-reconcile.json"
+    }
+  }
+}

@@ -112,6 +112,9 @@ func (p *liveProbe) joinFlowPeer(stack *labstack.Stack, m *liveSession, subject,
 		return flowPeer{}, false
 	}
 	r, err := stack.JoinNativeMember(p.t.Context(), labstack.BrowserSession{Client: m.client, CSRF: m.csrf, MemberID: m.member}, subject, c, c)
+	if os.Getenv("FVPN_SECOPS_FOLLOWUP10") == "1" {
+		p.recordNativeStream10(stack, r.Stream, c)
+	}
 	if err != nil || !r.Authorized || !r.IdentityMatched {
 		p.metadata["native_join_blocker"] = "native join or identity/read-back failed"
 		return flowPeer{}, false

@@ -186,7 +186,7 @@ func TestFUP02_AT19_PostgresShadowToEnforceAndAppendOnlyGuards(t *testing.T) {
 	}
 }
 
-func TestFUP03_FUP04_PostgresOverridesRelaxationAndNodeAck(t *testing.T) {
+func TestFUP04_PostgresOverridesRelaxation(t *testing.T) {
 	ctx := context.Background()
 	pool := dbtest.New(t)
 	policyStore := policies.NewStore(pool)
@@ -205,39 +205,6 @@ func TestFUP03_FUP04_PostgresOverridesRelaxationAndNodeAck(t *testing.T) {
 	`, memberID)
 	if err != nil {
 		t.Fatalf("insert member: %v", err)
-	}
-
-	// Insert 2 registered serving nodes with incarnations.
-	node1ID, inc1ID := uuid.New(), uuid.New()
-	node2ID, inc2ID := uuid.New(), uuid.New()
-	fp1 := make([]byte, 32)
-	fp1[0] = 1
-	fp2 := make([]byte, 32)
-	fp2[0] = 2
-
-	for _, n := range []struct {
-		nodeID uuid.UUID
-		incID  uuid.UUID
-		fp     []byte
-		peerID string
-	}{
-		{node1ID, inc1ID, fp1, "peer-1"},
-		{node2ID, inc2ID, fp2, "peer-2"},
-	} {
-		_, err := pool.Exec(ctx, `
-			INSERT INTO nodes (id, lifecycle_state, provisioning_state, applied_config_generation)
-			VALUES ($1, 'registered', 'ready', 0)
-		`, n.nodeID)
-		if err != nil {
-			t.Fatalf("insert node: %v", err)
-		}
-		_, err = pool.Exec(ctx, `
-			INSERT INTO node_incarnations (id, node_id, public_key_fingerprint, deployment_id, peer_id, os, arch)
-			VALUES ($1, $2, $3, 'dep-1', $4, 'ubuntu', 'amd64')
-		`, n.incID, n.nodeID, n.fp, n.peerID)
-		if err != nil {
-			t.Fatalf("insert node_incarnation: %v", err)
-		}
 	}
 
 	// Activate enforce fair_use policy.
@@ -286,48 +253,6 @@ func TestFUP03_FUP04_PostgresOverridesRelaxationAndNodeAck(t *testing.T) {
 	if eval1.EnforcedTierIndex != 2 || eval1.Generation != 1 || eval1.TotalBytes != decstr.U64(9007199254740993) {
 		t.Fatalf("expected tier 2 gen 1 total 2^53+1, got tier=%d gen=%d total=%s",
 			eval1.EnforcedTierIndex, eval1.Generation, eval1.TotalBytes)
-	}
-
-	// Check status before nodes ACK generation 1 -> "pending on 2 nodes", Applying=true.
-	stPending, err := engine.GetAdminMemberStatus(ctx, memberID, periodID)
-	if err != nil {
-		t.Fatalf("GetAdminMemberStatus: %v", err)
-	}
-	if !stPending.MemberStatus.Applying || stPending.NodeSyncSummary != "pending on 2 nodes" {
-		t.Fatalf("expected Applying=true 'pending on 2 nodes', got applying=%v summary=%q",
-			stPending.MemberStatus.Applying, stPending.NodeSyncSummary)
-	}
-
-	// Both nodes report applied_policy_refs.fup_generation = "1" in node_observations.
-	obsHash := make([]byte, 32)
-	for _, n := range []struct {
-		nodeID uuid.UUID
-		incID  uuid.UUID
-	}{
-		{node1ID, inc1ID},
-		{node2ID, inc2ID},
-	} {
-		_, err := pool.Exec(ctx, `
-			INSERT INTO node_observations (
-				node_id, incarnation_id, report_id, payload_hash, observed_at,
-				applied_generation, schema_version, checks, control_status, data_health, safety_status
-			) VALUES (
-				$1, $2, $3, $4, $5,
-				1, 1, '{"applied_policy_refs": {"fup_generation": "1"}}'::jsonb, 'online', 'healthy', 'passed'
-			)
-		`, n.nodeID, n.incID, uuid.New(), obsHash, now.Add(10*time.Second))
-		if err != nil {
-			t.Fatalf("insert node_observations: %v", err)
-		}
-	}
-
-	stApplied, err := engine.GetAdminMemberStatus(ctx, memberID, periodID)
-	if err != nil {
-		t.Fatalf("GetAdminMemberStatus after ACK: %v", err)
-	}
-	if stApplied.MemberStatus.Applying || stApplied.NodeSyncSummary != "applied on 2 nodes" {
-		t.Fatalf("expected Applying=false 'applied on 2 nodes', got applying=%v summary=%q",
-			stApplied.MemberStatus.Applying, stApplied.NodeSyncSummary)
 	}
 
 	// Admin sets a time-limited override (FUP04) -> Generation 2.

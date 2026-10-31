@@ -154,6 +154,7 @@ func (l *live) devices(r *record) {
 	denied := l.api(l.a, "DELETE", "/api/v1/member/devices/"+bd.String(), nil, commandHeaders())
 	leaked := strings.Contains(string(list.body), bd.String()) || strings.Contains(string(denied.body), bd.String()) || strings.Contains(string(denied.body), l.b.member)
 	r.check("cross-owner existing device delete/list", "403/404; B device absent from A list and unchanged", fmt.Sprintf("list_HTTP=%d; delete_HTTP=%d; field_leak=%t; B_authorized=%d", list.status, denied.status, leaked, l.count(`SELECT count(*) FROM member_devices WHERE id=$1 AND status='authorized'`, bd)), "GET A /member/devices; DELETE B existing UUID as A; read projection", list.status == 200 && (denied.status == 403 || denied.status == 404) && !leaked && l.count(`SELECT count(*) FROM member_devices WHERE id=$1 AND status='authorized'`, bd) == 1)
+	l.reauthorization(r, l.a, first, "member", true, true)
 	svc, err := l.admission()
 	if err != nil {
 		r.block("Production admission service configuration unavailable")
@@ -277,6 +278,7 @@ func (l *live) devices(r *record) {
 		entries := strings.Count(string(raw), "src=")
 		r.check("revoked source conntrack", "no entries for revoked overlay source", fmt.Sprintf("read_ok=%t; tuple_fields=%d", e == nil, entries), "conntrack -L scoped to former peer source; emit count only", e == nil && entries == 0)
 	}
+	l.reauthorizationLimit(r, replacement, second, loserService)
 	r.check("AT02 assertion boundary", "quota, owner isolation, strict post-withdrawal fvmb0 ingress drop (ctunku +1, zero forwarded bytes), sibling/replacement counted flows, empty revoked conntrack and continuous agent PID", "ObserveMemberIngress proves revoked source increments ctunku by 1 with empty fvup0/origin captures and frozen device counters while sibling injection increments u_<hex> by 1 and reaches fvup0/origin", "Stack.ObserveMemberIngress through tests/e2e/internal/labstack; §19 AT02", true)
 }
 
