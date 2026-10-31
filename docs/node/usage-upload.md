@@ -16,13 +16,13 @@ Each event in the batch is the stored canonical payload, embedded unchanged. The
 
 A 200 applies `ApplyACK`: contiguous `accepted` and `duplicate` results move into the archive, `blocked_seq` and `conflict` or `rejected` stop the prefix, and a later sequence is not archived while an earlier one is unconfirmed. A 503, including a frozen ledger, does not move the ACK. A 429 waits at least `Retry-After` (delta-seconds or HTTP-date) and does not move the ACK. A 422 or 403 keeps the events.
 
-A 409 `LEDGER_EPOCH_MISMATCH`, or a 200 whose `ledger_epoch` is not the verified one, fetches the checkpoint and does not apply that batch's ACK. A 409 `USAGE_EVENT_CONFLICT` sets `blocked_seq` to the first sequence in the batch and keeps the payload. The contract path for a hash conflict is the per-event `conflict` status on 200 (`USAGE_EVENT_CONFLICT`). Fake control's default is that 200 form. `SetUsageConflict` keeps the whole-request 409 path for the regression test. The uploader accepts both.
+For the current stream, a 409 `LEDGER_EPOCH_MISMATCH`, or a 200 whose `ledger_epoch` is not the verified one, fetches the checkpoint and does not apply that batch's ACK. Retired streams follow the hand-off rules below. A 409 `USAGE_EVENT_CONFLICT` sets `blocked_seq` to the first sequence in the batch and keeps the payload. The contract path for a hash conflict is the per-event `conflict` status on 200 (`USAGE_EVENT_CONFLICT`). Fake control's default is that 200 form. `SetUsageConflict` keeps the whole-request 409 path for the regression test. The uploader accepts both.
 
 Failures back off from 1 second, doubling, capped at 5 minutes, with ±20% jitter when `Config.Rand` is set. Those timings are engineering defaults; the spec does not set them.
 
 ## Restore
 
-The checkpoint body is the raw recovery envelope. `ApplyCheckpoint` verifies it with the node trust store (`recovery` purpose). A new signed ledger epoch may lower the watermark and puts the original events back on the outbox. The same epoch never accepts a lower ACK. Ranges this node cannot replay are sent as `replay_unavailable` on the next batch.
+Restore applies to the current incarnation. The checkpoint body is the raw recovery envelope. `ApplyCheckpoint` verifies it with the node trust store (`recovery` purpose). A new signed ledger epoch may lower the watermark and puts the original events back on the outbox. The same epoch never accepts a lower ACK. Ranges this node cannot replay are sent as `replay_unavailable` on the next batch.
 
 `Restore` is that fetch plus `ApplyCheckpoint`. The agent calls it at startup and again whenever `NeedsRestore` is true. `NeedsRestore` is set when the fetch fails or the body is not applied, and it is cleared after a successful apply or HTTP 404. A 404 means the center has not published a checkpoint; the ledger epoch stays null and forwarding is not failed for that reason. `Once` still fetches the checkpoint itself when a batch returns `LEDGER_EPOCH_MISMATCH` or the store reports that the batch epoch is not the verified one. The agent does not reimplement the signature check.
 
@@ -37,7 +37,9 @@ The checkpoint body is the raw recovery envelope. `ApplyCheckpoint` verifies it 
 
 ## Re-enrollment hand-off (D-105)
 
-After the explicit store transition, `Once` chooses the oldest locally retired
+The production hand-off is active as of 2026-10-31; see agent-core follow-up 25's
+[D-118 activation evidence](#d-118-activation) below. After that store transition,
+`Once` chooses the oldest locally retired
 stream with pending events, in original sequence order and subject to the same
 batch limits. It then sends the current stream. Each request selects one stream:
 `node_id` and `node_incarnation_id` always name the current mTLS presenter;
@@ -70,15 +72,43 @@ so a recovery problem cannot starve live uploads. There is no arbitrary attempt
 count that silently discards usage. The uploader bounds delay (default 1 second
 to 5 minutes), respects `Retry-After`, and stops retrying final receipts.
 
-The retired stream carries its own verified `ledger_epoch` and retained
-`replay_unavailable` ranges. A current checkpoint cannot lower its ACK or replace
-its epoch. The present checkpoint GET has no origin selector: if central rotates
-the ledger while an old tail is pending, origin-specific signed recovery still
-needs a transport contract. The agent retains that tail and backs off on the
-epoch mismatch while current-stream recovery/upload continues. A range without
-any retained event also needs recovery transport support: revision 14 requires
-at least one event in a batch. Neither condition is converted to a final rejection
-or a fabricated ACK.
+### Retained recovery gaps
+
+2026-10-31 — V1 semantics (§10.8, §17.3) are **reported, never re-fetched**.
+The new incarnation reports the
+retired origin's retained `replay_unavailable` ranges once with its hand-off,
+under that origin's verified `ledger_epoch`. "Once" means one hand-off lifecycle:
+lost responses retry the same saved body and `Idempotency-Key` until ACK. Only
+the origin's contiguous ACK can clear covered ranges; subsequent batches and
+restarts do not report those acknowledged ranges again. Retirement also keeps a
+copy in `retired_history` as local audit evidence. No gap or event is re-minted
+in the current stream. Central records these unavailable ranges as gaps during
+reconciliation; this does not recover the missing bytes.
+
+The agent never fetches a restore checkpoint for retired ranges. The checkpoint
+GET has no origin selector and binds the current incarnation, so a current
+checkpoint cannot lower the origin's ACK, replace its epoch or recreate its
+cleared pending ranges. Neither a retired-stream 409 `LEDGER_EPOCH_MISMATCH` nor
+a 200 with a different epoch starts a GET or sets `NeedsRestore`. The tail and
+unconfirmed ranges remain local, with bounded upload backoff; current-stream
+restore/upload continues independently. This also applies after reopening.
+
+Revision 14 requires at least one event in a batch. A retired range with no
+pending event therefore stays local and does not schedule an upload or restore;
+it is not claimed as reported. A final origin/event rejection likewise retains
+unconfirmed evidence without inventing an ACK. Cross-epoch retired recovery and
+range-only reporting require a future transport contract. No contract, schema
+or migration is changed by this v1 decision.
+
+`TestD105_RetiredGapsReportedNeverRefetched` proves original bytes/hashes,
+retired-first ordering, a new cursor at 1, independent ACKs, lost-ACK retry and
+no re-report or GET after restart. `TestD105_RetiredEpochMismatchNeverFetchesCheckpoint`
+and `TestD105_RetiredRangeWithoutEventsStaysLocal` cover the failure/unsupported
+paths. These package tests complement the D-118 agent test below; assembled
+ENR-05 reinstall and real arm64 evidence belong to usage AT follow-up 5 and
+enrollment follow-up 8.
+
+### Retirement window bound (D-112)
 
 D-112's window is a central bound, default 10 seconds, checked against each
 original event's interval end. The uploader sends whatever the ledger retained
@@ -86,7 +116,12 @@ up to its last sample; it does not trim intervals, discard over-window bytes or
 substitute the locally observed retirement time. Central's over-window
 `rejected` / `VALIDATION_FAILED` receipt is recorded as final for that event.
 The vector's 30-second bound is a TEST ONLY override, not the production default.
+`TestD112_ProductionSamplingInterval` pins the production 10-second meter default.
+To increase it, raise central `sampling_interval_bound_seconds` first, then the
+meter interval, keeping the interval at or below the bound.
 
+
+### D-118 activation
 
 2026-10-31 — D-118 activation: `Engine.ensureUsage` now supplies
 `RetirePreviousAt: e.clock.Wall()` when opening the ledger for the verified

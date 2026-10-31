@@ -12,6 +12,8 @@ import (
 
 // D-112: this guards the actual production construction site, so adding an
 // interval override there requires consciously revisiting the central bound.
+// Deployment order: raise central sampling_interval_bound_seconds first,
+// then raise the meter interval, keeping it at or below that bound.
 func TestD112_ProductionSamplingInterval(t *testing.T) {
 	if DefaultSampleInterval != 10*time.Second {
 		t.Fatalf("production default %s exceeds or changes D-112's 10s contract", DefaultSampleInterval)

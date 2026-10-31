@@ -116,7 +116,7 @@ func (u *Uploader) noteRestore(needed bool) {
 	u.mu.Unlock()
 }
 
-// Restore fetches the signed usage checkpoint and applies it. The agent
+// Restore fetches the current incarnation's signed checkpoint and applies it. The agent
 // calls this at startup and whenever NeedsRestore is true. A 404 means the
 // center has not published a checkpoint; the ledger epoch stays null.
 func (u *Uploader) Restore(ctx context.Context) error {
@@ -333,9 +333,8 @@ func (u *Uploader) handle(ctx context.Context, status int, resp []byte, retryAft
 			return fmt.Errorf("usageupload: retired conflict requires per-event receipt")
 		}
 		if batch.origin != nil && errorCode(resp) == "LEDGER_EPOCH_MISMATCH" {
-			if err := u.fetchCheckpoint(ctx); err != nil {
-				return err
-			}
+			// The checkpoint endpoint binds only the current incarnation.
+			// Retired gaps are reported with the hand-off, never re-fetched.
 			return usagestore.ErrLedgerEpoch
 		}
 		return u.on409(ctx, resp, batch.events)
@@ -435,13 +434,10 @@ func (u *Uploader) on200(ctx context.Context, resp []byte, batch preparedBatch) 
 	}
 	if errors.Is(err, usagestore.ErrLedgerEpoch) {
 		u.log.Warn("usage batch ledger epoch mismatch")
-		if err := u.fetchCheckpoint(ctx); err != nil {
-			return err
-		}
 		if batch.origin != nil {
 			return usagestore.ErrLedgerEpoch
 		}
-		return nil
+		return u.fetchCheckpoint(ctx)
 	}
 	if err != nil {
 		return err

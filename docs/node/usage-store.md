@@ -175,11 +175,18 @@ They continue to count against the unacknowledged capacity/age caps. Purging
 removes only retained archived prefixes after the normal retention window and
 keeps each original stream's ACK and purge watermark.
 
-Production adoption needs the enrollment owner to add
-`RetirePreviousAt: e.clock.Wall()` to the `usagestore.Options` passed by
-`Engine.ensureUsage` in `node/agent/usage.go`, after a verified new identity and
-with the old loops stopped. Until that hook lands, production still rejects an
-incarnation mismatch. This usage lane does not edit that file.
+Production adoption is active as of 2026-10-31: agent-core follow-up 25 added
+`RetirePreviousAt: e.clock.Wall()` to `Engine.ensureUsage` for the verified current
+identity. See its [D-118 activation evidence](usage-upload.md#d-118-activation).
+The normal final meter barrier and stopped old loops precede adoption; reopening
+the unchanged incarnation does not retire it again.
+
+Retained recovery gaps follow the v1 [reported, never re-fetched rule](usage-upload.md#retained-recovery-gaps).
+`retired_replay_unavailable` holds pending origin ranges until that origin's
+contiguous ACK covers them; `retired_history` retains the retirement-time copy
+afterward. Applying a current-incarnation checkpoint never modifies either.
+An origin with only gaps and no pending event stays local because revision 14
+requires a non-empty events array; no payload or ACK is fabricated.
 
 The enrollment AT lane can capture `UsageLedgerSnapshot` before re-enrollment
 and sum its held records by original incarnation, member, device, binding
@@ -191,4 +198,5 @@ snapshot describes the new stream; its zero/new ACK is not the retired ACK.
 Use `RetiredStreams` or the original-stream central result for the latter. A
 window rejection is an audited unresolved original event, not accepted held
 bytes. These are package/HTTP assertions; real ENR-05 reinstall/network evidence
-remains the enrollment AT lane's work after the adoption hook.
+remains with enrollment follow-up 8 and usage AT follow-up 5, as do real arm64
+runs. Package tests and cross-compilation do not replace that evidence.

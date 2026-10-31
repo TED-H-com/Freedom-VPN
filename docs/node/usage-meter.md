@@ -52,8 +52,9 @@ so `meter.New` resolves it to `DefaultSampleInterval = 10 * time.Second`.
 `TestD112_ProductionSamplingInterval` pins the actual production construction
 site and the resolved default. A production interval must be at most central's
 `usage.SamplingIntervalBound`, whose default is 10 seconds. A deployment that
-needs a longer interval must raise central's configured bound before adopting
-that interval or delivering such tails. Revision 14's historical-interval
+needs a longer interval must first raise central `sampling_interval_bound_seconds`,
+then raise the meter interval, keeping it at or below the new bound. This ordering
+is also recorded at the pin test. Revision 14's historical-interval
 wording is superseded by D-112; central does not reconstruct sampling history.
 
 Before a controlled retirement the enrollment owner stops forwarding and the
