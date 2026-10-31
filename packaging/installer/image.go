@@ -167,7 +167,7 @@ func NetbirdUp(ctx context.Context, env *Env) error {
 		case <-time.After(200 * time.Millisecond):
 		}
 	}
-	return env.run(ctx, "netbird", "up",
+	return env.run(ctx, "netbird", "up", "--daemon-addr", l.netbirdAddr(),
 		"--setup-key-file", key,
 		"--management-url", cfg.ManagementURL,
 		"--interface-name", cfg.InterfaceName,
