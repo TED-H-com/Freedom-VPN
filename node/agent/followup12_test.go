@@ -282,7 +282,7 @@ func TestReviewR15_TCForeignFilterWithdrawsServingOnApply(t *testing.T) {
 	}
 	// The contract does not yet contain the new reason enum. Preserve the
 	// specific reason in the message through the existing fallback code.
-	if r.eng.applyError == nil || r.eng.applyError.Code != api.ErrorCodeHEALTHCHECKFAILED || r.eng.applyError.Message != "TC_FOREIGN_FILTER" {
+	if r.eng.applyError == nil || r.eng.applyError.Code != api.ErrorCodeTCFOREIGNFILTER || r.eng.applyError.Message != "TC_FOREIGN_FILTER" {
 		t.Fatalf("lost tc failure: %+v", r.eng.applyError)
 	}
 }
