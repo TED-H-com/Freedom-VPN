@@ -6,6 +6,7 @@ import (
 	"crypto/x509"
 	"errors"
 	"log/slog"
+	"maps"
 	"net/netip"
 	"os"
 	"os/exec"
@@ -120,6 +121,8 @@ type Engine struct {
 	baselineOK         bool
 	storageOK          bool
 	serving            bool
+	appliedModel       *enforce.Model
+	appliedAssignments map[uuid.UUID]uint16
 	appliedGen         uint64
 	assignments        map[uuid.UUID]uint16
 	counters           map[string]enforce.CounterValue
@@ -390,27 +393,21 @@ func (e *Engine) Run(ctx context.Context) error {
 	if err := e.Boot(ctx); err != nil {
 		return err
 	}
-	interval := time.Duration(e.cfg.HeartbeatSeconds) * time.Second
-	poll := time.Duration(e.cfg.PollSeconds) * time.Second
-	if poll > 0 && poll < interval {
-		interval = poll
-	}
-	if interval <= 0 {
-		interval = time.Second
-	}
+	interval := e.stepInterval()
 	// SIGHUP reloads resolver credentials between steps. It does not stop
 	// the process. SIGINT and SIGTERM still cancel ctx.
 	hup := make(chan os.Signal, 1)
 	signal.Notify(hup, syscall.SIGHUP)
 	defer signal.Stop(hup)
 	for {
+		started := e.clock.Mono()
 		if err := e.Step(ctx); err != nil && ctx.Err() != nil {
 			return ctx.Err()
 		}
 		if signaled(hup) {
 			e.reloadResolvers()
 		}
-		timer := time.NewTimer(e.nextStepDelay(interval))
+		timer := time.NewTimer(min(e.nextStepDelay(interval), e.remainingStepDelay(started, interval)))
 		select {
 		case <-ctx.Done():
 			timer.Stop()
@@ -451,7 +448,7 @@ func signaled(ch <-chan os.Signal) bool {
 // Step is one control pass. A 304 does not move the lease (§14.7). Member
 // forwarding stays off unless every gate in Decide passes.
 func (e *Engine) Step(ctx context.Context) error {
-	defer e.beat()
+	defer e.finishServingStep(ctx)
 	e.leaseAttempted = false
 	if err := ctx.Err(); err != nil {
 		return err
@@ -467,6 +464,13 @@ func (e *Engine) Step(ctx context.Context) error {
 		return nil
 	}
 	if !e.enrolled {
+		return nil
+	}
+	// Check the retained model before Apply can overwrite evidence of drift.
+	// This step only withdraws; a later step must perform a clean full Apply.
+	if !e.verifyCurrentServing(ctx) {
+		_ = e.observe(ctx)
+		_ = e.flush(ctx)
 		return nil
 	}
 	// Refresh the anchor before any 304. A wall jump must be visible to the
@@ -765,6 +769,8 @@ func (e *Engine) baseline(ctx context.Context) error {
 	// A planned baseline is not an external meter reset. Clear this before
 	// FinalSample reads the counters.
 	e.expectServing.Store(false)
+	e.appliedModel = nil
+	e.appliedAssignments = nil
 	dp, err := e.cfg.DatapathValue()
 	if err != nil {
 		return err
@@ -865,13 +871,16 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 	verifiedDelete := err != nil && res.Verified && errors.As(err, &ctErr)
 	pending := verifiedDelete && len(ctErr.Failed) > 0
 	if err != nil && !verifiedDelete {
-		e.handoff(ctx)
-		e.serving = false
-		e.policyExpires = 0
-		e.noteApply(err)
-		_ = e.baseline(ctx)
+		e.rejectServing(ctx, model, res.Evidence, err)
 		return nil
 	}
+	// Apply's evidence can already be stale by its return (for example a
+	// filter inserted during conntrack deletion). Read before acknowledging.
+	if !e.verifyServingModel(ctx, model, res.Plan.Assignments) {
+		return nil
+	}
+	e.appliedModel = &model
+	e.appliedAssignments = maps.Clone(res.Plan.Assignments)
 	e.serving = true
 	e.applyError = nil
 	e.expectServing.Store(true)
@@ -965,6 +974,11 @@ func (e *Engine) noteApply(err error) {
 	var ce *enforce.CheckError
 	code := api.ErrorCodeHEALTHCHECKFAILED
 	msg := "apply failed"
+	if errors.Is(err, context.DeadlineExceeded) {
+		msg = "serving verification timed out"
+	} else if errors.Is(err, context.Canceled) {
+		msg = "serving verification canceled"
+	}
 	if errors.As(err, &ce) {
 		msg = string(ce.Reason)
 		if api.ErrorCode(ce.Reason).Valid() {

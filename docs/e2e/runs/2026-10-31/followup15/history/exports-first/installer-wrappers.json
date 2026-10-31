@@ -1,0 +1,46 @@
+{
+  "id": "installer-wrappers",
+  "title": "RerunInstaller and ControlledReinstall on the systemd installer node",
+  "spec": [
+    "§6.3",
+    "ENR-06"
+  ],
+  "status": "fail",
+  "observations": [
+    {
+      "name": "container",
+      "detail": "fvpn-e2e-installer-node"
+    },
+    {
+      "name": "regular_node",
+      "detail": "unchanged"
+    },
+    {
+      "name": "exit_64_argv",
+      "detail": "64"
+    },
+    {
+      "name": "exit_64_mode",
+      "detail": "64"
+    },
+    {
+      "name": "install_exit",
+      "detail": "1"
+    },
+    {
+      "name": "install_status",
+      "detail": "-"
+    },
+    {
+      "name": "install_incarnation",
+      "detail": "-"
+    },
+    {
+      "name": "install_message",
+      "detail": "Created symlink /etc/systemd/system/multi-user.target.wants/fvpn-watchdog.service → /etc/systemd/system/fvpn-watchdog.service.\nCreated symlink /etc/systemd/system/multi-user.target.wants/fvpn-agent.service → /etc/systemd/system/fvpn-age"
+    }
+  ],
+  "at": "2026-10-31T03:46:19Z",
+  "run_id": "926791b9-36ef-4051-9d44-cd7eafdc8792",
+  "source_commit": "9e493e8f6407dd7f091963fb7e133a11123305c3"
+}

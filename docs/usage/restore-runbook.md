@@ -19,11 +19,14 @@ If PostgreSQL is restored from a backup or point-in-time snapshot taken at $T_{\
 ## 2. Step-by-Step Restore & Replay Procedure (`§17.3`, `AT30`)
 
 ### Step 1: Freeze Ingest (`FreezeIngest`)
-Before or immediately upon bringing up the restored database, freeze usage ingestion so nodes receive `503 SERVICE_UNAVAILABLE` (`retryable: true`) and do not advance watermarks or prune local spools:
+Keep control and worker services stopped while restoring PostgreSQL. Run **freeze-ingest on the restored database before starting either service** (the operator CLI subcommand is `freeze`). Verify that the command succeeds, then start control/worker and proceed to Step 2. D-095 requires this ordering: the restore marker must exist before any compiler can offer a generation based only on restored observations. Frozen usage ingestion returns `503 DEPENDENCY_UNAVAILABLE` (`retryable: true`), preventing nodes from advancing watermarks or pruning local spools:
 ```go
-err := usageSvc.FreezeIngest(ctx)
+err := usageSvc.FreezeIngest(ctx, actorUUID, "planned snapshot restore")
 ```
 - Sets `usage_ledger_state.mode = 'frozen'` and appends a `usage_ledger.freeze` audit event on `fleet_config:00000000-0000-0000-0000-000000000001` with `usage_ledger_id = "00000000-0000-0000-0000-000000000130"` in `changes.after` (Decision D-051).
+- Atomically records per-node freeze cutoffs and pending `fresh_observation` steps in `node.update` operations with principal `system:restore-observation` (D-095). These operations retain the boundary after recovery completes; audit retention cannot release an unreported node. Repeating `freeze` while already frozen preserves the original cutoff.
+
+**What operators see (D-095):** `GET /api/v1/admin/nodes/{node_id}` includes a `drift` entry with field `desired_state_restore_observation` and observed status **`pending fresh observation after restore`**; the corresponding operation's `fresh_observation` step has the same message. Compilation returns retryable `503 DEPENDENCY_UNAVAILABLE` with this status and node/incarnation IDs, leaving the last issued envelope and generation unchanged. The hold clears on the next successful compile after central receives an observation from the node's current incarnation strictly after the freeze time. `complete-recovery` alone does not clear it, including for a node never compiled during recovery. Receipt time, not the node's `observed_at`, determines freshness; replaying a deduplicated old report cannot release the hold. A completed `fresh_observation` step confirms receipt only, not policy application.
 
 ### Step 2: Enter Recovery Mode & Rotate `ledger_epoch` (`BeginRecovery`)
 Invoke `BeginRecovery` with the operator reason and actor ID:
@@ -87,6 +90,16 @@ err := usageSvc.CompleteRecovery(ctx, actorUUID)
 ```
 - Clears `reconciliation_in_progress = FALSE` on `usage_rollups` while preserving `gap = TRUE` on any periods affected by `replay_unavailable` or event gaps.
 - Sets `usage_ledger_state.mode = 'normal'`, records `completed_at` on `usage_ledger_epochs`, and appends a `usage_ledger.complete_recovery` audit event on `fleet_config:00000000-0000-0000-0000-000000000001` with `usage_ledger_id = "00000000-0000-0000-0000-000000000130"` and `recovery_id` in `changes.after` (Decision D-051).
+
+### Step 6: Review devices fenced during the restore (D-076 / D-077)
+
+While `usage_ledger_state.mode` is `frozen` or `reconciling`, each device that `SyncDevice` newly fences is logged once as `device authorization unconfirmed during ledger restore`, with `device_id`, `member_id`, `peer_id`, and `ledger_mode`, and counted in `fvpn_device_restore_fence_decisions_total` on the worker registry. These devices require an explicit operator decision before the peer is granted again. Restored `member_devices.status=authorized` and `device_authorization_observations.observed_authorized=true` rows do not re-grant the peer, and restoring entitlement does not clear the fence. Never delete `device_authorization_fences` in the restore transaction.
+
+After `complete-recovery`, review the affected devices using the revision 12 API in [`contracts/openapi.yaml`](../../contracts/openapi.yaml):
+
+1. List fenced devices with `GET /api/v1/admin/devices?authorization_unconfirmed=true` (`listAdminDevices`), following pagination. `MemberDevice.authorization_unconfirmed` identifies the fence; `AdminDevice.authorization_unconfirmed_since` gives its creation time. For a specific device, inspect `GET /api/v1/admin/audit-events?resource_type=member_device&resource_id=<device_id>` (`listAuditEvents`) for `device.authorization.external_withdrawal` events.
+2. Confirm the member is entitled and review any central revocation. A device central itself revoked (`status` is `revoked` or `closed`, or a newer `member.device_revoke` / `device.revoke` explains the withdrawal) is not re-authorized.
+3. Where re-authorization is appropriate, submit `POST /api/v1/admin/members/{member_id}/devices/{device_id}/authorize` (`authorizeMemberDevice`) with an admin session, CSRF token and `Idempotency-Key`; no request body is required. It returns `202` with an operation of kind `member.device_authorize`. This is acceptance only: verify operation completion and device read-back before treating the peer as granted. A revoked device returns `409 STATE_CONFLICT`; reaching the member's device limit returns `409 DEVICE_LIMIT_REACHED` (D-081).
 
 ### Operator CLI (`fvpn-usage-admin`)
 All five operator recovery and drill-down workflows can be invoked from the CLI against the central configuration file:

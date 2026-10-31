@@ -1,32 +1,17 @@
 # Wave 4 security and operations acceptance
 
-[Follow-up 6 summary](summary.md) records main `00e1d0c`, devstack #170 and
-control #169. Two fresh `w4-secops` / 30000 instances each admitted **20 users
-and 60 devices**, with 60 simultaneous current bindings. Both 600-read windows
-returned HTTP 200 with no foreign devices; read p95 was **16.413 / 47.604 ms**.
-These are admission and control diagnostics on a shared dev host.
+[Follow-up 10](summary.md) measures the local lab on application base `d9e28f8` (#240/#241/#244/#245), with live harness `319c5259344347e7eef50eb5becb2645785d1047`. Shared development host; no candidate-hardware or production SLA claim.
 
-| Case | Full status | Current result / remaining gate |
+| Case | Full status | Scope |
 |---|---|---|
-| [AT28](AT28.json) | blocked | Anonymous saturation leaves admin/lease 200; usage boundary 200/200/413, one duplicate-safe ledger row. SECOPS-16 stays open for positive protected transient key counts; full resource matrix and later trusted-proxy row remain. |
-| [AT29](AT29.json) | blocked | Historical paid/grant cutoff subsets retained. Finite-grace prepare option, D-065 short fleet lease setter, established TCP/UDP and guest rollback remain. |
-| [AT30](AT30.json) | blocked | Unchanged; backups did not change since #165. Real retained-node replay and independent provider/peer reconciliation remain. |
-| [AT31](AT31.json) | blocked | SECOPS-10 admission resolved. Counted flow per peer, node process/cgroup telemetry, concurrent mixed/relay load and candidate hardware remain. |
-| [AT32](AT32.json) | blocked | Historical scope review retained; DOC15 fixed by #163. Physical origins and platforms need operator runs. |
+| [AT30](AT30.json) | **passed** | Physical T0 restore, retained-node replay, provider/device reconciliation, D-077 HTTP re-grant and measured RPO/RTO. |
+| [AT28](AT28.json) | blocked | D-066 scan measured; full ownership matrix beyond this run. |
+| [AT29](AT29.json) | blocked | Finite past_due grace measured; established transports await devstack follow-up 15, guest clock rollback remains an operator run. |
+| [AT31](AT31.json) | blocked | The bulk cohort proves final stream attribution; forced relay awaits devstack follow-up 15 and candidate hardware remains unmeasured. |
+| [AT32](AT32.json) | blocked | Physical origins, arm64 and member platforms remain operator work. |
 
-[SECOPS-16 records](secret-scan.json) cover 135 retained streams per phase and
-protected transient streams. Retained streams have zero known-canary and
-device-flow-key matches. The sequential profile has 60 exact pre-delete scans,
-each with one device-flow key line. The helper reports 60 protected pre-delete
-streams; an independent watcher observed a key in each, while the helper does
-not return per-stream final key totals. No values or matched lines are public.
-The earlier gateway finding is not retired under the requested all-stream-zero
-criterion; current gateway diagnostics alone contain zero key/exhaustion lines.
+[SECOPS-16](SECOPS-16.json) applies D-066: ordinary logs, captures and readable log files must be clean; root-owned 0600 pre-delete login credentials are a separate class with final scan and deletion proof. Protected key-name counts alone are not leaks under this criterion.
 
-Use [RUN.md](RUN.md), [requests.md](requests.md), [dependencies.json](dependencies.json)
-and [validation.json](validation.json). The run target exits 2 for full-case
-gates while both live probes pass. Both instances were torn down. Prior
-counted-traffic, deadline, revocation and PITR measurements remain attributed
-under [history/follow-up-5](history/README.md); they are not new 60-peer traffic
-measurements. [Gateway inventory](gateway-inventory.json) qualifies the initial
-unavailable worker count and preserves socket/FD samples without addresses.
+[SECOPS-20](SECOPS-20.json) records the fresh serving gate and NAT read-back. [SECOPS-21](SECOPS-21.json) records the first post-restore generation, node-local retained state, observations and any remaining startup ordering issue. Prior failed observations are retained.
+
+Use [RUN.md](RUN.md), [requests.md](requests.md), [validation.json](validation.json) and [scope-review.json](scope-review.json). The current target requires AT30, SECOPS-16/17/20 and cleanup; SECOPS-21 remains explicitly open when its first-offer proof fails. [Follow-up 9 history](history/follow-up-9/archive-index.json) is byte-identical; [diagnostic attempt](followup10-attempts.json) records the finalized-run preparation.

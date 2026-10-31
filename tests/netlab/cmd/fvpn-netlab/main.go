@@ -30,6 +30,8 @@ func main() {
 		err = applyCmd(os.Args[2:])
 	case "baseline":
 		err = baselineCmd(os.Args[2:])
+	case "quarantine":
+		err = quarantineCmd(os.Args[2:])
 	case "verify":
 		err = verifyCmd(os.Args[2:])
 	case "counters":
@@ -58,7 +60,7 @@ func main() {
 }
 
 func usage() {
-	fmt.Fprintf(os.Stderr, "usage: fvpn-netlab apply|baseline|verify|counters|hold|render|meter-path|inject\n")
+	fmt.Fprintf(os.Stderr, "usage: fvpn-netlab apply|baseline|quarantine|verify|counters|hold|render|meter-path|inject\n")
 }
 
 func applyCmd(args []string) error {
@@ -105,6 +107,23 @@ func baselineCmd(args []string) error {
 	}
 	dp := enforce.Datapath{MemberIngress: *ingress, Uplink: *uplink, SNAT: addr}
 	return enforce.ApplyBaseline(context.Background(), enforce.System{}, dp)
+}
+
+func quarantineCmd(args []string) error {
+	fs := flag.NewFlagSet("quarantine", flag.ContinueOnError)
+	path := fs.String("f", "-", "retained applied model JSON path or - for stdin")
+	if err := fs.Parse(args); err != nil {
+		return err
+	}
+	m, err := loadModel(*path)
+	if err != nil {
+		return err
+	}
+	evidence, err := enforce.Quarantine(context.Background(), enforce.System{}, m)
+	if printErr := json.NewEncoder(os.Stdout).Encode(evidence); err == nil {
+		return printErr
+	}
+	return err
 }
 
 func verifyCmd(args []string) error {
@@ -276,17 +295,19 @@ func writeResult(w io.Writer, generation uint64, res enforce.ApplyResult) error 
 		assign[id.String()] = fmt.Sprintf("%x", minor)
 	}
 	doc := struct {
-		Verified    bool                    `json:"verified"`
-		Evidence    enforce.ServingEvidence `json:"evidence"`
-		Generation  uint64                  `json:"generation"`
-		Admitted    int                     `json:"admitted"`
-		Resets      []enforce.Reset         `json:"resets"`
-		Finals      []enforce.Sample        `json:"finals"`
-		Samples     []enforce.Sample        `json:"samples"`
-		Assignments map[string]string       `json:"assignments"`
+		Verified    bool                        `json:"verified"`
+		Evidence    enforce.ServingEvidence     `json:"evidence"`
+		Quarantine  *enforce.QuarantineEvidence `json:"quarantine,omitempty"`
+		Generation  uint64                      `json:"generation"`
+		Admitted    int                         `json:"admitted"`
+		Resets      []enforce.Reset             `json:"resets"`
+		Finals      []enforce.Sample            `json:"finals"`
+		Samples     []enforce.Sample            `json:"samples"`
+		Assignments map[string]string           `json:"assignments"`
 	}{
 		Verified:    res.Verified,
 		Evidence:    res.Evidence,
+		Quarantine:  res.Quarantine,
 		Generation:  generation,
 		Admitted:    res.Plan.Admitted,
 		Resets:      res.Resets,

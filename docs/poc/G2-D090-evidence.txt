@@ -1,0 +1,30 @@
+D-090 / follow-up 13: measured output from the final foreground full lab run
+Date: 2026-10-31
+Go: go1.27.3 linux/amd64
+Prefix: fvpn-w1-netlab-f13
+Command: make -f mk/netlab.mk netlab-lint netlab-unit netlab-build netlab-test
+Environment: GOMAXPROCS=4 GOFLAGS=-p=4 CGO_ENABLED=0 GOTOOLCHAIN=local
+Disk temporary directory: worktree .agent/tmp
+
+Recovery distinction: Apply restores administrative link state and verified nft/tc.
+The topology owner then restores two static member routes and one IPv6 address
+that Linux removed on link-down. Member TCP recovery includes that reconciliation.
+Real NetBird-managed recovery remains 待實測; uplink redirects are outside containment.
+
+    review_r15_q8_bypass_test.go:66: D090 before quarantine: verify_exit=3 reason=TC_FOREIGN_FILTER uplink_packets=1 ctunku_delta=0
+    review_r15_q8_bypass_test.go:74: D090 quarantine: {"quarantined":true,"recorded":true,"links":[{"interface":"fv-fh","before":{"admin_up":true,"operstate":"UP"},"after":{"admin_up":false,"operstate":"DOWN"}}],"baseline":{"installed":true,"verified":true}}
+    review_r15_q8_bypass_test.go:94: D090 contained: verify_exit=3 reason=TC_FOREIGN_FILTER quarantined=true uplink_packets=0 ctunku_before=0 ctunku_after=0 control=control-ok
+    review_r15_q8_bypass_test.go:119: D090 clean Apply: member_admin_up=true uplink_admin_up=true verify_exit=0 quarantined=false
+SUMMARY AT00 handshakes=5 forward=1 baseline=1
+SUMMARY D090 post-Apply injection verify=3 TC_FOREIGN_FILTER; pre-quarantine uplink=1 ctunku_delta=0; quarantined uplink=0 ctunku_delta=0 control=pass; repeated quarantine=pass; clean Apply links=up verify=0; topology routes reconciled=2 ipv6_address=1 member=pass AT00=pass
+--- PASS: TestReviewR15_TcMirredAndPolicyRoutingBypass (5.71s)
+    --- PASS: TestReviewR15_TcMirredAndPolicyRoutingBypass/tc_clsact_mirred (3.87s)
+    --- PASS: TestReviewR15_TcMirredAndPolicyRoutingBypass/ip_rule (1.39s)
+SUMMARY AT00 handshakes=5 forward=1 baseline=1
+SUMMARY AT11 ctv6_delta=3 targets_empty=1 mode=block
+SUMMARY AT12 deny_diag=8 dns_upload=271 a1_upload=8637 admitted=3
+SUMMARY AT14 udp_up_dev=0.0000 udp_down_dev=0.0000 tcp_up_dev=0.0000 tcp_down_dev=0.0000 dns_separate=1 reset_reported=1
+SUMMARY AT18 qos windows passed R=20Mbit
+PASS
+ok  	github.com/TED-H-com/Freedom-VPN/tests/netlab	207.520s
+make_exit=0

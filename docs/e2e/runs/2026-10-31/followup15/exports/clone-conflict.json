@@ -1,0 +1,83 @@
+{
+  "id": "clone-conflict",
+  "title": "Cloned identity conflict and automatic-mapping freeze",
+  "spec": [
+    "§6.2",
+    "AT07",
+    "D-072"
+  ],
+  "status": "pass",
+  "observations": [
+    {
+      "name": "presentation_subnet",
+      "detail": "172.29.30.0/24"
+    },
+    {
+      "name": "presentation_network",
+      "detail": "fvpn-e2e-node-clone-net"
+    },
+    {
+      "name": "mapping_frozen",
+      "detail": "true"
+    },
+    {
+      "name": "conflict_count",
+      "detail": "1"
+    },
+    {
+      "name": "last_conflict_at_present",
+      "detail": "true"
+    },
+    {
+      "name": "provisioning_state",
+      "detail": "failed"
+    },
+    {
+      "name": "member_forwarding_observed",
+      "detail": "false"
+    },
+    {
+      "name": "identity_conflict_audits",
+      "detail": "1"
+    },
+    {
+      "name": "audit_read",
+      "detail": "true"
+    },
+    {
+      "name": "identity_conflict_audits_after_wait",
+      "detail": "1"
+    },
+    {
+      "name": "revoke",
+      "detail": "202"
+    },
+    {
+      "name": "reenroll_path",
+      "detail": "entrypoint waiting_token after identity files and agent.db were removed; not an installer wrapper"
+    },
+    {
+      "name": "reenroll_stage",
+      "detail": "enrolled"
+    },
+    {
+      "name": "reconciled_mapping_frozen",
+      "detail": "false"
+    },
+    {
+      "name": "reconciled_conflict_count",
+      "detail": "0"
+    },
+    {
+      "name": "reconciled_last_conflict_null",
+      "detail": "true"
+    },
+    {
+      "name": "note",
+      "detail": "second /24 presentation; admin identity_conflict; revoke and entrypoint re-enroll of the same node"
+    }
+  ],
+  "at": "2026-10-31T04:30:11Z",
+  "run_id": "12d10041-9d33-4fbb-a4b0-9d2a21bce785",
+  "source_commit": "4fb5fa88ac400605ac08ee42c8eac99e936ec2a3"
+}

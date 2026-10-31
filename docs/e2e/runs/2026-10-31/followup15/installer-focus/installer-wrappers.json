@@ -1,0 +1,46 @@
+{
+  "id": "installer-wrappers",
+  "title": "RerunInstaller and ControlledReinstall on the systemd installer node",
+  "spec": [
+    "§6.3",
+    "ENR-06"
+  ],
+  "status": "fail",
+  "observations": [
+    {
+      "name": "container",
+      "detail": "fvpn-e2e-installer-node"
+    },
+    {
+      "name": "regular_node",
+      "detail": "unchanged"
+    },
+    {
+      "name": "exit_64_argv",
+      "detail": "64"
+    },
+    {
+      "name": "exit_64_mode",
+      "detail": "64"
+    },
+    {
+      "name": "install_exit",
+      "detail": "1"
+    },
+    {
+      "name": "install_status",
+      "detail": "-"
+    },
+    {
+      "name": "install_incarnation",
+      "detail": "01a19012-d25f-75c8-b452-fcefa52dfe43"
+    },
+    {
+      "name": "install_message",
+      "detail": "failed: starting fvpn-node-netbird-up.service failed: p from the setup key file... 2026-10-31T03:48:46.893Z WARN client/internal/profilemanager/profilemanager.go:122: failed to get config directory: neither $XDG_CONFIG_HOME nor $HOME are de"
+    }
+  ],
+  "at": "2026-10-31T03:48:57Z",
+  "run_id": "299afccc-d98b-4bde-821e-6930bdbbfa69",
+  "source_commit": "9e493e8f6407dd7f091963fb7e133a11123305c3"
+}

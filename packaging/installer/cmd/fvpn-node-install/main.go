@@ -26,7 +26,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 		return installer.ExitUsage
 	}
 	if len(args) == 0 {
-		fmt.Fprintln(stderr, "usage: fvpn-node-install <install|check|upgrade|remove|reenroll|image-prepare|firstboot|verify-archive|refresh-boot-id|netbird-up|version>")
+		fmt.Fprintln(stderr, "usage: fvpn-node-install <install|check|upgrade|remove|reenroll|image-prepare|firstboot|verify-archive|netbird-up|version>")
 		return installer.ExitUsage
 	}
 	switch args[0] {
@@ -49,8 +49,6 @@ func run(args []string, stdout, stderr io.Writer) int {
 		return cmdFirst(args[1:], stdout, stderr)
 	case "verify-archive":
 		return cmdVerify(args[1:], stdout, stderr)
-	case "refresh-boot-id":
-		return cmdBoot(args[1:], stderr)
 	case "netbird-up":
 		return cmdNetbird(args[1:], stderr)
 	default:
@@ -257,18 +255,6 @@ func cmdVerify(args []string, stdout, stderr io.Writer) int {
 	}
 	res := &installer.Result{Status: "verified", ReleaseID: v.Manifest.ReleaseId.String(), ManifestSHA256: v.SHA}
 	printResult(stdout, *asJSON, res)
-	return installer.ExitOK
-}
-
-func cmdBoot(args []string, stderr io.Writer) int {
-	fs := flag.NewFlagSet("refresh-boot-id", flag.ContinueOnError)
-	fs.SetOutput(stderr)
-	if err := fs.Parse(args); err != nil {
-		return installer.ExitUsage
-	}
-	if err := installer.RefreshBootID(envOf(nil, stderr)); err != nil {
-		return fail(stderr, err)
-	}
 	return installer.ExitOK
 }
 

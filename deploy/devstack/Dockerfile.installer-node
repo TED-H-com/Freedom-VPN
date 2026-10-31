@@ -1,0 +1,42 @@
+# Privileged systemd lab for fvpn-node-install. TEST ONLY. Not a product image.
+# systemd is PID 1 so the installer can enable and start the real units (§6.3).
+FROM netbirdio/netbird:0.82.0@sha256:eca5b274c635bfbb04ec6724a0712d1146190dd450eea199eeb83916fdd94965 AS nb
+FROM ubuntu:24.04@sha256:fe81560990fae86dc4743202b2cb4d3df98d0bcf949173cecef15ce1127ef852
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV container=docker
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        systemd \
+        systemd-sysv \
+        nftables \
+        iproute2 \
+        conntrack \
+        ca-certificates \
+        curl \
+        zstd \
+        tar \
+        gpg \
+        dbus \
+        procps \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* \
+    && truncate -s 0 /etc/machine-id \
+    && systemctl mask \
+        systemd-resolved.service \
+        systemd-networkd-wait-online.service \
+        apt-daily.service \
+        apt-daily.timer \
+        apt-daily-upgrade.service \
+        apt-daily-upgrade.timer \
+        unattended-upgrades.service \
+        fstrim.service \
+        fstrim.timer \
+    && systemctl set-default multi-user.target
+
+# Real pinned client; enrollment and service start use the lab management.
+COPY --from=nb /usr/local/bin/netbird /usr/bin/netbird
+
+STOPSIGNAL SIGRTMIN+3
+CMD ["/sbin/init"]

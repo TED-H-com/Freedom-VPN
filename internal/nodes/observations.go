@@ -41,6 +41,7 @@ func (s *Service) SubmitObservationTx(ctx context.Context, tx pgx.Tx, nodeID, in
 //   - Authenticated mTLS identity (authNodeID, authIncarnationID) must match the report body and active incarnation.
 //   - Revoked or retired identities are rejected with 403 IDENTITY_REVOKED.
 //   - Reports are deduplicated by (node_id, incarnation_id, report_id): same payload hash returns 202 with original received_at; different payload hash returns 409 ACK_CONFLICT.
+//   - identity_frozen is a live annotation of the current incarnation, including on a stored receipt replay; it is never false.
 //   - received_at (central time) is stored separately from observed_at (node time).
 //   - An older observed_at never overwrites newer observed state on the node.
 //   - safety_status and operation step progress require concrete evidence; a 202 observation alone never completes an operation step.
@@ -147,6 +148,9 @@ func (s *Service) SubmitObservation(
 				Accepted:   api.ObservationAcceptedAcceptedTrue,
 				ReportId:   report.ReportId,
 				ReceivedAt: existingReceivedAt.UTC(),
+			}
+			if mappingFrozen {
+				accepted.IdentityFrozen = &mappingFrozen
 			}
 			return nil
 		} else if !errors.Is(err, pgx.ErrNoRows) {
@@ -404,6 +408,9 @@ func (s *Service) SubmitObservation(
 			Accepted:   api.ObservationAcceptedAcceptedTrue,
 			ReportId:   report.ReportId,
 			ReceivedAt: receivedAt,
+		}
+		if mappingFrozen {
+			accepted.IdentityFrozen = &mappingFrozen
 		}
 		return nil
 	})

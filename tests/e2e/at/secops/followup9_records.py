@@ -46,7 +46,7 @@ def clean_inventory(inv: dict) -> bool:
     )
 
 
-def evaluate_at30(restore_case: dict) -> tuple[str, list[str], dict]:
+def evaluate_at30(restore_case: dict, *, http_regrant: bool = False) -> tuple[str, list[str], dict]:
     """Evaluate AT30 pass criteria from Follow-up 9 live restore, D-076 fence & SECOPS-19 visibility."""
     blockers = []
     step3 = restore_case.get("step3_restore_central_to_t0", {})
@@ -231,6 +231,21 @@ def evaluate_at30(restore_case: dict) -> tuple[str, list[str], dict]:
         and regrant.get("member_devices_api_status") == "authorized"
         and regrant.get("counted_flow_after_regrant", {}).get("counted") is True
     )
+    if http_regrant:
+        regrant_ok = bool(
+            regrant.get("passed") is True
+            and regrant.get("existing_operation_returned") is True
+            and regrant.get("operation_kind") == "member.device_authorize"
+            and regrant.get("same_key_replay_same_operation") is True
+            and regrant.get("replay_resource_version_unchanged") is True
+            and regrant.get("replay_outbox_count_unchanged") is True
+            and regrant.get("fence_rows_after_fresh_regrant") == 0
+            and regrant.get("observed_authorized_after_sync") is True
+            and regrant.get("member_devices_api_status") == "authorized"
+            and regrant.get("counted_flow_after_regrant", {}).get("counted") is True
+            and neg_central.get("admin_authorize_revoked", {}).get("status") == 409
+            and neg_central.get("admin_authorize_revoked", {}).get("error") == "STATE_CONFLICT"
+        )
     if not regrant_ok:
         blockers.append(
             "D-076 re-grant via AuthorizeDevice (member.device_authorize) did not clear the fence row and restore single NetBird grant and counted data-plane flow."

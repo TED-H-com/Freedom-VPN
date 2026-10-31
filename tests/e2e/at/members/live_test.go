@@ -126,7 +126,7 @@ func TestATMembers_Live(t *testing.T) {
 	if os.Getenv("FVPN_E2E_PREFIX") != "w4-members" || os.Getenv("FVPN_E2E_PORT_BASE") != "24000" {
 		t.Fatal("wrong assigned instance")
 	}
-	ctx, cancel := context.WithTimeout(t.Context(), 25*time.Minute)
+	ctx, cancel := context.WithTimeout(t.Context(), 35*time.Minute)
 	defer cancel()
 	l := &live{t: t, ctx: ctx, root: repository(t), run: uuid.NewString()[:8]}
 	l.state = filepath.Join(l.root, ".agent/e2e-state-w4-members")

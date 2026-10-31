@@ -1,0 +1,38 @@
+{
+  "id": "forced-relay",
+  "title": "Member forced onto the relay path and restored to direct",
+  "spec": [
+    "§8",
+    "AT31"
+  ],
+  "status": "fail",
+  "observations": [
+    {
+      "name": "relayed_before",
+      "detail": "0"
+    },
+    {
+      "name": "direct_before",
+      "detail": "1"
+    },
+    {
+      "name": "relayed_forced",
+      "detail": "0"
+    },
+    {
+      "name": "direct_forced",
+      "detail": "0"
+    },
+    {
+      "name": "force",
+      "detail": "member path relayed=0 direct=0"
+    },
+    {
+      "name": "owner",
+      "detail": "w3-devstack-e2e: member was not observed on the relay path"
+    }
+  ],
+  "at": "2026-10-31T03:43:46Z",
+  "run_id": "926791b9-36ef-4051-9d44-cd7eafdc8792",
+  "source_commit": "9e493e8f6407dd7f091963fb7e133a11123305c3"
+}

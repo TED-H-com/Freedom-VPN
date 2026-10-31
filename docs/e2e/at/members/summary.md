@@ -1,43 +1,25 @@
-# Follow-up 6 acceptance results
+# Follow-up 7 acceptance results
 
-Current run: `80db103b-622c-42b1-946d-4628daaa213d` on `w4-members / 24000`, product base `99ab668` (includes #193 D-067, #213 revision 11, #216 agent follow-up 18, #219 devstack follow-up 13), harness base `159d617`.
-**Three complete cases passed; seven are blocked.** Every executed subcheck in this run passed (384 passing subchecks, 0 failed subchecks, 0 retained failed prior checks).
+Run `297faa31-2f90-4aab-8cf0-6818629f46c8` on `w4-members / 24000`, product baseline `d9e28f8` (includes #240, #244 and D-081 erratum #247), harness `10a5f3891aa8fde2d3a2f158d97bfcb0a4c7670b`.
+**3 complete cases passed; 7 blocked; 0 failed.** Executed subchecks: 471 pass / 0 fail. These claims use only this final run; the interrupted [fixture failure](history/follow-up-7/attempt-1/RUN.md) and [meter-sequence collision](history/follow-up-7/attempt-2/RUN.md) are retained separately.
 
-- **AT02 strict post-withdrawal ingress is proved with the devstack follow-up 13 export (#219):** after real member DELETE of `member-a2` (`01a18efa-99e8-75d7-9a6c-47f05b5c55e9`, `100.104.160.29`) and convergence to generation `11`, `labstack.Stack.ObserveMemberIngress` on `fvmb0` (`tun-mirred`, link type `65534`, source port `40000`, dest port `9` -> `192.0.4.10`) proves that the revoked source increments `ctunku` by `+1` packet (`+29` bytes) with `0` forwarded bytes, `0` device counter changes (`u_01a18efa99e875d79a6c47f05b5c55e9` stays at `10` packets / `2317` bytes), and empty `fvup0` and `origin` packet captures, while the admitted sibling (`member`, `01a18ef9-ae93-7a1c-b934-20bed403bf2f`, `100.104.242.187`) increments `u_01a18ef9ae937a1cb93420bed403bf2f` by `+1` packet (`+29` bytes, `31 -> 32`), `ctunku` by `+0`, reaches `fvup0` and `origin`, and increments `d_01a18ef9ae937a1cb93420bed403bf2f` by `+1` packet (`+57` bytes, `22 -> 23`) on the origin's ICMP response while all other device counters hold steady.
-- **AT09 is re-recorded in D-067 / revision 11 terms (#193, #213, #216):** during the `node2` cold-restart provisional window on unchanged desired generation `23`, provisional zero-grant leases (`1`-minute TTL) are reported with `forwarding_block_reasons` containing `"awaiting_member_grants"` (never `"lease_expired"`), `lease`, `qos` and `source_binding` checks carry `error_code: "AWAITING_MEMBER_GRANTS"`, and `errors[]` carries `stage: "lease"`, `code: "AWAITING_MEMBER_GRANTS"` with exact `stage=lease` count `1`. Serving readiness is restored on generation `23` in **`36.976 s`** and the first counted member byte arrives in **`41.695 s`** with no policy change or admin action. AT09 remains `blocked` only on F4-03 (forced relay/QUIC/PMTU and physical second NAT).
+| Case | Requirements | Status | Subchecks pass / fail | Deciding observation |
+|---|---|---|---:|---|
+| [AT01](AT01.json) | APP01 ID01 MEM01 | subchecks pass / blocked on F4-03 | 18 / 0 | Portal/native identity and Linux counted forwarding before/after pause; four native platforms and network moves remain. |
+| [AT02](AT02.json) | MEM01 MEM02 MEM03 SEC01 DATA01 | pass | 106 / 0 | One final-slot winner; 3→2→3 slot reuse; revoked fvmb0 injection hits ctunku while sibling is counted. D-077 fence/list/cursor/re-grant/replay and D-081 limit denial are recorded separately. |
+| [AT03](AT03.json) | BILL01 BILL03 ENT01 DATA01 | pass | 93 / 0 | Ten identical paid deliveries and six event orders preserve one exact paid interval; paid native device is counted before fencing and after explicit HTTP re-grant. |
+| [AT04](AT04.json) | BILL02 ENT02 MEM03 | subchecks pass / blocked on F4-03/04 | 86 / 0 | Refund, real expiry and suspension terminate persistent TCP on both exits and deny new flows; member UDP and rendered suspended/expired states remain. |
+| [AT05](AT05.json) | NODE01 NODE04 ENR01 ENR04 PKG01 | subchecks pass / blocked on F4-10 | 30 / 0 | Installer enrollment/replay and signed architecture artifacts pass; preinstalled/cloud-init boot sources and physical arm64 remain. |
+| [AT08](AT08.json) | NODE02 NODE03 EXIT01 EXIT03 | pass | 39 / 0 | A/B group isolation, disabled restart and republish carry operation readback and actual traffic evidence. |
+| [AT09](AT09.json) | EXIT02 APP01 NFR01 | subchecks pass / blocked on F4-03 | 27 / 0 | D-067 same-generation restart: 36.997 s to serving-ready, 41.729 s to first counted byte; forced relay/QUIC/PMTU and physical second NAT remain. |
+| [AT20](AT20.json) | DNS01 DNS02 ISO04 | subchecks pass / blocked on F4-05/07 | 26 / 0 | Typed resolver delivery and controlled rule answers pass; native DNS configuration and complete RR/cache/rebinding fixtures remain. |
+| [AT21](AT21.json) | DNS03 DNS04 APP01 | subchecks pass / blocked on F4-05 | 14 / 0 | Resolver corruption/last-good recovery and two explicit filtering resolver endpoints pass; native automatic fallback and Private DNS/DoH require operator coverage. |
+| [AT22](AT22.json) | SEC02 DNS01 DNS04 | subchecks pass / blocked on F4-06 | 32 / 0 | Privacy scans, guarded audit retention and scheduled feed last-good subsets pass; remaining retention/file/backup/URL surfaces and commercial-feed approval remain. |
 
-| AT | Status | Deciding observation | Evidence |
-|---|---|---|---|
-| AT01 | blocked | Counted Linux forwarding before/after pause; four native platforms and network-change scripts remain. | [AT01.json](AT01.json), [AT01.md](AT01.md) |
-| AT02 | passed | One race winner; 3→2→3 slots; strict `fvmb0` ingress injection proves revoked source hits `ctunku` (+1 pkt, 0 forwarded bytes) while sibling hits `u_<hex>` (+1 pkt) and reaches `fvup0`/`origin`; sibling/replacement counted HTTPS flows continue. | [AT02.json](AT02.json), [AT02.md](AT02.md) |
-| AT03 | passed | Ten identical deliveries and six orders preserve one exact paid period; paid native device carries counted traffic. | [AT03.json](AT03.json), [AT03.md](AT03.md) |
-| AT04 | blocked | TCP refund/expiry/suspension stops on both exits; member UDP and rendered suspended/expired screens remain unproved. | [AT04.json](AT04.json), [AT04.md](AT04.md) |
-| AT05 | blocked | Two installer runtimes do not prove preinstalled/cloud-init boot or physical arm64. | [AT05.json](AT05.json), [AT05.md](AT05.md) |
-| AT08 | passed | A/B forwarding isolation and post-restart disable hold; operation polling observes final node ACK. | [AT08.json](AT08.json), [AT08.md](AT08.md) |
-| AT09 | blocked | Cold restart reports revision 11 `awaiting_member_grants` + `AWAITING_MEMBER_GRANTS` (`stage=lease` count 1, never `lease_expired`) and restores generation-`23` 7-grant lease and counted `fvmb0` TCP in 41.695 s; relay/QUIC/PMTU and physical NAT remain (F4-03). | [AT09.json](AT09.json), [AT09.md](AT09.md) |
-| AT20 | blocked | Typed resolver delivery applies; native DNS and full RR/cache/rebinding matrix remain unproved. | [AT20.json](AT20.json), [AT20.md](AT20.md) |
-| AT21 | blocked | Two filtering resolvers and corruption/last-good recovery work; native DisableDNS prevents an automatic fallback claim. | [AT21.json](AT21.json), [AT21.md](AT21.md) |
-| AT22 | blocked | Privacy/audit/feed subsets pass; complete URL/file/raw-usage/backup retention and commercial-source approval remain. | [AT22.json](AT22.json), [AT22.md](AT22.md) |
+[D-077](D077.md) records every HTTP status, operation identity, fence count and wire body location. Successful 202 responses are confirmed by worker device-list readback and counted forwarding. The fence input is explicit SQL in the isolated lab database, matching migration 00188; other business state is produced through the product.
 
-AT01/AT05/AT09/AT21's Windows, macOS, iOS, Android, physical arm64, second NAT
-and Private DNS/DoH rows remain **needs operator run** in
-[OPERATORS.md](OPERATORS.md). Linux observations and cross-builds do not pass them.
+AT09's `serving_ready_at` is `2026-10-31T04:27:04.060261733Z`: **36.997 s**, versus follow-up 6's **36.976 s** (+0.021 s). The first counted byte is at `2026-10-31T04:27:08.792505245Z` (41.729 s). Desired generation remains `24`. The provisional observation check records `awaiting_member_grants`, one lease-stage `AWAITING_MEMBER_GRANTS`, and absence of `lease_expired`. Full AT09 remains blocked on F4-03; this measured lab recovery is not a transport or hardware guarantee.
 
-Previous Follow-up 5 records are archived under
-[history/follow-up-5](history/follow-up-5/RUN.md), Follow-up 4 under
-[history/follow-up-4](history/follow-up-4/RUN.md), and Follow-up 3 under
-[history/follow-up-3](history/follow-up-3/RUN.md). [Requests](requests.md) give each
-resolved and open owner/location.
+The worker RestartPolicy note is closed: this run observes `unless-stopped` for worker/control/NetBird and no longer manually starts the worker during scheduled feed refresh. F4-03/04/05/06/07/10 remain external blockers. See [requests.md](requests.md), [BLOCKERS.md](BLOCKERS.md), [RUN.md](RUN.md) and [OPERATORS.md](OPERATORS.md).
 
-TCP stop latencies (seconds after the actual rights change/deadline):
-
-| Event | First exit | Second exit |
-|---|---:|---:|
-| Full refund | 5.512 | 5.722 |
-| Real paid expiry | 1.529 | 1.374 |
-| Manual suspension | 3.965 | 4.006 |
-
-Every monitor first received an origin response and reused its TCP connection.
-A later successful paid event did not clear suspension. New-connection denial
-was measured after each event. The 60-second comparison is the acceptance test
-target; this is not an unmeasured performance guarantee.
+Follow-up 6 is preserved under [history/follow-up-6](history/follow-up-6/RUN.md). Native platform, physical arm64 and second-NAT rows remain **needs operator run**.

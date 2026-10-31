@@ -267,6 +267,10 @@ const ERROR_CODE_MESSAGES: Record<ApiErrorCode, Record<'zh-TW' | 'en', string>> 
     'zh-TW': '探測例外集合元素缺少核心逾時設定，可能超過健康檢查期間。',
     en: 'A synthetic-probe set element has no kernel timeout and would outlive the health check.',
   },
+  TC_FOREIGN_FILTER: {
+    'zh-TW': '服務驗證發現會員流量路徑上有 tc 篩選器；節點已停止服務並套用基線。',
+    en: 'Serving verification found a tc filter on the member path; the node withdrew serving and installed the baseline.',
+  },
   DEVICE_LIMIT_REACHED: {
     'zh-TW': '已達方案允許的裝置上限（預設 3 台），請先撤銷舊裝置後再重試。',
     en: 'Device limit reached for your plan (default 3). Revoke an existing device first.',

@@ -101,7 +101,7 @@ func FirstBoot(ctx context.Context, env *Env) (*Result, error) {
 	if err := checkTokenFile(token); err != nil {
 		return nil, err
 	}
-	lk, err := tryLock(l.LockPath)
+	lk, err := tryLock(ctx, l)
 	if err != nil {
 		if errors.Is(err, errBusy) {
 			return nil, errf(ExitBusy, "busy", "update lock is held")
@@ -135,20 +135,6 @@ func FirstBoot(ctx context.Context, env *Env) (*Result, error) {
 		return nil, err
 	}
 	return &Result{Status: statusEnrolled, IncarnationID: node.NodeIncarnationID}, nil
-}
-
-// RefreshBootID rewrites updater.json's boot_id from the kernel boot id.
-// The updater pins boot_id in its config; a reboot would otherwise leave a
-// stale UUID. The updater does not read a boot-id file today.
-func RefreshBootID(env *Env) error {
-	if env == nil {
-		env = &Env{}
-	}
-	l := env.layout()
-	if _, err := os.Stat(l.updaterConfig()); err != nil {
-		return errf(ExitFailed, "failed", "updater config is missing")
-	}
-	return refreshUpdaterIdentity(l)
 }
 
 // NetbirdUp waits for the setup key file and execs `netbird up` with that

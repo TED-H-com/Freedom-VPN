@@ -22,8 +22,9 @@ type ApplyResult struct {
 	// Verified is true only when the serving ruleset and QoS were verified
 	// and left installed. It is false when the baseline was installed or
 	// nothing was installed.
-	Verified bool
-	Evidence ServingEvidence
+	Verified   bool
+	Evidence   ServingEvidence
+	Quarantine *QuarantineEvidence
 }
 
 // ConntrackDeleteError means the serving ruleset was left installed and one
@@ -64,13 +65,28 @@ func IsConntrackDeleteFailure(err error) bool {
 // on a path we cannot account (§10.3, §8.2). Resets are reported and never
 // cleared by recreating counter objects (§10.7).
 func Apply(ctx context.Context, ex Executor, m Model, previous map[string]CounterValue) (ApplyResult, error) {
+	if err := validateDatapath(m.Datapath); err != nil {
+		return ApplyResult{}, err
+	}
 	state, err := loadState(ctx, ex)
 	if err != nil {
 		return ApplyResult{}, err
 	}
+	quarantined := quarantinedLinks(state.Sets)
+	if len(quarantined) > 0 {
+		// A changed desired model cannot authorize raising a retired link.
+		if len(quarantined) != 1 || quarantined[0] != m.Datapath.MemberIngress {
+			return ApplyResult{}, checkf(ReasonIsolation, "quarantined member path differs from applied model")
+		}
+		if _, err := lowerMemberLink(ctx, ex, m.Datapath.MemberIngress); err != nil {
+			q, qerr := Quarantine(ctx, ex, m)
+			return ApplyResult{Quarantine: &q}, errors.Join(err, qerr)
+		}
+	}
 	tcState, err := loadTC(ctx, ex, []string{m.Datapath.Uplink, m.Datapath.MemberIngress})
 	if err != nil {
-		return ApplyResult{}, err
+		q, qerr := Quarantine(ctx, ex, m)
+		return ApplyResult{Quarantine: &q, Evidence: ServingEvidence{Quarantined: q.Recorded, QuarantinedLinks: quarantinedLinksFor(m, q)}}, errors.Join(checkf(ReasonTCForeignFilter, "tc ownership read failed before Apply"), qerr)
 	}
 	resets := DetectMeterResets(previous, state)
 	if len(m.QoS.Assignments) == 0 && len(state.Classes) > 0 {
@@ -87,6 +103,27 @@ func Apply(ctx context.Context, ex Executor, m Model, previous map[string]Counte
 	if err != nil {
 		return ApplyResult{}, err
 	}
+	// Check before any class/qdisc mutation so a stale class deletion cannot
+	// delete a foreign attached filter. Existing classes may belong to the
+	// previous generation; admit their handles for this ownership-only scan.
+	_, reads, tcErr := readServingTC(ctx, ex, m)
+	owned := make(map[uuid.UUID]uint16)
+	ownershipModel := m
+	ownershipModel.QoS.Members = nil
+	for _, dev := range tcState.Devices {
+		for minor := range dev.Classes {
+			id := kernelClassPlaceholder(minor)
+			owned[id] = minor
+			ownershipModel.QoS.Members = append(ownershipModel.QoS.Members, MemberQoS{MemberID: id})
+		}
+	}
+	if tcErr == nil {
+		tcErr = verifyTCObjects(reads, ownershipModel, owned)
+	}
+	if tcErr != nil {
+		q, qerr := Quarantine(ctx, ex, m)
+		return ApplyResult{Plan: plan, Resets: resets, Evidence: ServingEvidence{TC: reads, Quarantined: q.Recorded, QuarantinedLinks: quarantinedLinksFor(m, q)}, Quarantine: &q}, errors.Join(tcErr, qerr)
+	}
 	// Shape first, then open forwarding. A failed nft install still rolls
 	// back to the baseline, which removes the qdisc (§8.2, §11.5).
 	if err := ex.TCBatch(ctx, plan.TC); err != nil {
@@ -99,10 +136,24 @@ func Apply(ctx context.Context, ex Executor, m Model, previous map[string]Counte
 	}
 	// VerifyServing reads live nft and tc state together. A foreign filter is
 	// the same serving-gate failure as a flowtable bypass.
-	evidence, err := VerifyServing(ctx, ex, m, plan.Assignments)
+	evidence, err := verifyServing(ctx, ex, m, plan.Assignments, len(quarantined) > 0)
 	if err != nil {
+		var check *CheckError
+		if (errors.As(err, &check) && check.Reason == ReasonTCForeignFilter) || len(quarantined) > 0 {
+			q, qerr := Quarantine(ctx, ex, m)
+			evidence.Quarantined, evidence.QuarantinedLinks = q.Recorded, quarantinedLinksFor(m, q)
+			return ApplyResult{Plan: plan, Resets: resets, Evidence: evidence, Quarantine: &q}, errors.Join(err, qerr)
+		}
 		_ = installBaseline(ctx, ex, m.Datapath, state)
 		return ApplyResult{Plan: plan, Resets: resets, Evidence: evidence}, err
+	}
+	if len(quarantined) > 0 {
+		evidence, err = releaseQuarantine(ctx, ex, m, plan.Assignments)
+		if err != nil {
+			q, qerr := Quarantine(ctx, ex, m)
+			evidence.Quarantined, evidence.QuarantinedLinks = q.Recorded, quarantinedLinksFor(m, q)
+			return ApplyResult{Plan: plan, Resets: resets, Evidence: evidence, Quarantine: &q}, errors.Join(err, qerr)
+		}
 	}
 	// Admission already drops an address that left allowed_v4, before any
 	// established or related accept. A conntrack failure here must not
@@ -145,7 +196,8 @@ func Apply(ctx context.Context, ex Executor, m Model, previous map[string]Counte
 	return verified, nil
 }
 
-// ApplyBaseline installs the fail-closed ruleset and removes our HTB roots.
+// ApplyBaseline installs the fail-closed ruleset and removes our HTB roots
+// only when live reads establish they carry no foreign filters.
 // The probe exception is not included. ApplyBaselineModel carries one.
 func ApplyBaseline(ctx context.Context, ex Executor, dp Datapath) error {
 	return ApplyBaselineModel(ctx, ex, Model{Datapath: dp})
@@ -183,7 +235,33 @@ func installBaselineModel(ctx context.Context, ex Executor, m Model, state State
 	if err := ex.NftBatch(ctx, script); err != nil {
 		return err
 	}
+	// A baseline refresh during quarantine must retain foreign filters even
+	// when they are attached to our root/classes. Quarantine owns no tc state.
+	if len(quarantinedLinks(state.Sets)) > 0 {
+		return nil
+	}
+	// Never delete a root that carries foreign filters (including class/leaf
+	// attachments), or an unowned root. A baseline can be verified without
+	// removing tc; only Quarantine contains a retained ingress redirect.
+	_, reads, readErr := readServingTC(ctx, ex, m)
+	if readErr != nil {
+		return nil
+	}
+	ownedRoots := map[string]bool{}
+	for _, read := range reads {
+		if read.Attachment != "qdisc" && len(read.Objects) > 0 {
+			return nil
+		}
+		for _, obj := range read.Objects {
+			if obj.Root && obj.Kind == "htb" && obj.Handle == "1:" {
+				ownedRoots[read.Interface] = true
+			}
+		}
+	}
 	for _, ifc := range []string{m.Datapath.Uplink, m.Datapath.MemberIngress} {
+		if !ownedRoots[ifc] {
+			continue
+		}
 		_, err := ex.Output(ctx, "tc", "qdisc", "del", "dev", ifc, "root")
 		if err != nil && !missingQdisc(err) {
 			return err

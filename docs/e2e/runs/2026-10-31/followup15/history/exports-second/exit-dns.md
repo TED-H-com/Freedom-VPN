@@ -1,0 +1,176 @@
+# exit-dns
+
+Designated TCP and UDP DNS traverse the selected exit
+
+Status: pass
+
+Run: 630b9f07-62d2-4db1-9737-9060732db1f1
+
+Source: 3c25ce9daa081874988c9b09bc8c26e66d3c1b46
+
+Spec: §8.2, §10.3, AT12, AT20
+
+- member_route_before_selection: 192.0.3.10 dev fvnb0 table netbird src 100.68.156.235 uid 0
+    cache
+- netbird_networks_before_selection: Available Networks:
+
+  - ID: fvpn-exit-ee0251c1e884a659c42425cd
+    Network: 0.0.0.0/0
+    Status: Selected
+- exit_discovery_seconds: 0.000
+- exit_selection: Networks selected successfully.
+- netbird_networks_after_selection: Available Networks:
+
+  - ID: fvpn-exit-ee0251c1e884a659c42425cd
+    Network: 0.0.0.0/0
+    Status: Selected
+- before_member_route: 192.0.3.10 dev fvnb0 table netbird src 100.68.156.235 uid 0
+    cache
+- before_member_tunnel_address: 3: fvnb0    inet 100.68.156.235/16 brd 100.68.255.255 scope global fvnb0\       valid_lft forever preferred_lft forever
+- before_member_routes: default dev fvnb0 table netbird
+default via 172.28.30.1 dev eth0
+100.68.0.0/16 dev fvnb0 proto kernel scope link src 100.68.156.235
+172.28.30.0/24 dev eth0 proto kernel scope link src 172.28.30.41
+local 100.68.156.235 dev fvnb0 table local proto kernel scope host src 100.68.156.235
+broadcast 100.68.255.255 dev fvnb0 table local proto kernel scope link src 100.68.156.235
+local 127.0.0.0/8 dev lo table local proto kernel scope host src 127.0.0.1
+local 127.0.0.1 dev lo table local proto kernel scope host src 127.0.0.1
+broadcast 127.255.255.255 dev lo table local proto kernel scope link src 127.0.0.1
+local 172.28.30.41 dev eth0 table local proto kernel scope host src 172.28.30.41
+broadcast 172.28.30.255 dev eth0 table local proto kernel scope link src 172.28.30.41
+- before_node_nft: [{"counter":{"family":"inet","name":"ctbase","table":"fvpn","handle":1,"packets":0,"bytes":0}},{"counter":{"family":"inet","name":"ctv6","table":"fvpn","handle":2,"packets":0,"bytes":0}},{"counter":{"family":"inet","name":"ctin","table":"fvpn","handle":3,"packets":0,"bytes":0}},{"counter":{"family":"inet","name":"ctbadns","table":"fvpn","handle":115,"packets":0,"bytes":0}},{"counter":{"family":"inet","name":"ctdeny","table":"fvpn","handle":116,"packets":0,"bytes":0}},{"counter":{"family":"inet","name":"cthost","table":"fvpn","handle":117,"packets":0,"bytes":0}},{"counter":{"family":"inet","name":"ctinv","table":"fvpn","handle":118,"packets":0,"bytes":0}},{"counter":{"family":"inet","name":"ctnodn","table":"fvpn","handle":119,"packets":0,"bytes":0}},{"counter":{"family":"inet","name":"ctunkd","table":"fvpn","handle":120,"packets":0,"bytes":0}},{"counter":{"family":"inet","name":"ctunku","table":"fvpn","handle":121,"packets":0,"bytes":0}},{"counter":{"family":"inet","name":"d_01a1901dd4407ce28a64973d9eacd480","table":"fvpn","handle":248,"packets":128,"bytes":10703}},{"counter":{"family":"inet","name":"nd_01a1901dd4407ce28a64973d9eacd480","table":"fvpn","handle":249,"packets":0,"bytes":0}},{"counter":{"family":"inet","name":"nu_01a1901dd4407ce28a64973d9eacd480","table":"fvpn","handle":250,"packets":0,"bytes":0}},{"counter":{"family":"inet","name":"u_01a1901dd4407ce28a64973d9eacd480","table":"fvpn","handle":251,"packets":188,"bytes":12840}},{"set":{"family":"inet","name":"allowed_v4","table":"fvpn","type":"ipv4_addr","handle":4,"flags":["timeout"],"elem":[{"elem":{"val":"100.68.156.235","timeout":3473,"expires":3471}}]}},{"rule":{"family":"inet","table":"fvpn","chain":"forward","handle":861,"comment":"fvpn_generation=7 fvpn_metering=forward_admission_v1","expr":[{"match":{"op":"==","left":{"payload":{"protocol":"ip","field":"saddr"}},"right":"192.0.2.255"}},{"match":{"op":"==","left":{"payload":{"protocol":"ip","field":"daddr"}},"right":"192.0.2.255"}}]}},{"rule":{"family":"inet","table":"fvpn","chain":"forward","handle":862,"comment":"fvpn_class=01a1901d-b2e6-792c-ada7-db6717cb69e7:629e","expr":[{"match":{"op":"==","left":{"payload":{"protocol":"ip","field":"saddr"}},"right":"192.0.2.255"}},{"match":{"op":"==","left":{"payload":{"protocol":"ip","field":"daddr"}},"right":"192.0.2.255"}}]}},{"rule":{"family":"inet","table":"fvpn","chain":"forward","handle":863,"expr":[{"match":{"op":"==","left":{"meta":{"key":"iifname"}},"right":"fvmb0"}},{"match":{"op":"==","left":{"meta":{"key":"oifname"}},"right":"fvup0"}},{"match":{"op":"==","left":{"meta":{"key":"nfproto"}},"right":"ipv6"}},{"counter":"ctv6"},{"drop":null}]}},{"rule":{"family":"inet","table":"fvpn","chain":"forward","handle":864,"expr":[{"match":{"op":"==","left":{"meta":{"key":"iifname"}},"right":"fvup0"}},{"match":{"op":"==","left":{"meta":{"key":"oifname"}},"right":"fvmb0"}},{"match":{"op":"==","left":{"meta":{"key":"nfproto"}},"right":"ipv6"}},{"counter":"ctv6"},{"drop":null}]}},{"rule":{"family":"inet","table":"fvpn","chain":"forward","handle":865,"expr":[{"match":{"op":"==","left":{"meta":{"key":"iifname"}},"right":"fvmb0"}},{"match":{"op":"==","left":{"meta":{"key":"oifname"}},"right":"fvup0"}},{"match":{"op":"in","left":{"ct":{"key":"state"}},"right":"invalid"}},{"counter":"ctinv"},{"drop":null}]}},{"rule":{"family":"inet","table":"fvpn","chain":"forward","handle":866,"expr":[{"match":{"op":"==","left":{"meta":{"key":"iifname"}},"right":"fvup0"}},{"match":{"op":"==","left":{"meta":{"key":"oifname"}},"right":"fvmb0"}},{"match":{"op":"in","left":{"ct":{"key":"state"}},"right":"invalid"}},{"counter":"ctinv"},{"drop":null}]}},{"rule":{"family":"inet","table":"fvpn","chain":"forward","handle":867,"expr":[{"match":{"op":"==","left":{"meta":{"key":"iifname"}},"right":"fvmb0"}},{"match":{"op":"==","left":{"meta":{"key":"oifname"}},"right":"fvup0"}},{"match":{"op":"!=","left":{"payload":{"protocol":"ip","field":"saddr"}},"right":"@allowed_v4"}},{"counter":"ctunku"},{"drop":null}]}},{"rule":{"family":"inet","table":"fvpn","chain":"forward","handle":868,"expr":[{"match":{"op":"==","left":{"meta":{"key":"iifname"}},"right":"fvmb0"}},{"match":{"op":"==","left":{"meta":{"key":"oifname"}},"right":"fvup0"}},{"match":{"op":"==","left":{"payload":{"protocol":"ip","field":"saddr"}},"right":"100.68.156.235"}},{"match":{"op":"==","left":{"payload":{"protocol":"ip","field":"daddr"}},"right":"@resolver_v4"}},{"match":{"op":"==","left":{"payload":{"protocol":"tcp","field":"dport"}},"right":53}},{"counter":"nu_01a1901dd4407ce28a64973d9eacd480"},{"mangle":{"key":{"meta":{"key":"priority"}},"value":"1:629e"}},{"accept":null}]}},{"rule":{"family":"inet","table":"fvpn","chain":"forward","handle":869,"expr":[{"match":{"op":"==","left":{"meta":{"key":"iifname"}},"right":"fvmb0"}},{"match":{"op":"==","left":{"meta":{"key":"oifname"}},"right":"fvup0"}},{"match":{"op":"==","left":{"payload":{"protocol":"ip","field":"saddr"}},"right":"100.68.156.235"}},{"match":{"op":"==","left":{"payload":{"protocol":"ip","field":"daddr"}},"right":"@resolver_v4"}},{"match":{"op":"==","left":{"payload":{"protocol":"udp","field":"dport"}},"right":53}},{"counter":"nu_01a1901dd4407ce28a64973d9eacd480"},{"mangle":{"key":{"meta":{"key":"priority"}},"value":"1:629e"}},{"accept":null}]}},{"rule":{"family":"inet","table":"fvpn","chain":"forward","handle":870,"expr":[{"match":{"op":"==","left":{"meta":{"key":"iifname"}},"right":"fvmb0"}},{"match":{"op":"==","left":{"meta":{"key":"oifname"}},"right":"fvup0"}},{"match":{"op":"==","left":{"payload":{"protocol":"ip","field":"daddr"}},"right":"@resolver_v4"}},{"counter":"ctbadns"},{"drop":null}]}},{"rule":{"family":"inet","table":"fvpn","chain":"forward","handle":871,"expr":[{"match":{"op":"==","left":{"meta":{"key":"iifname"}},"right":"fvmb0"}},{"match":{"op":"==","left":{"meta":{"key":"oifname"}},"right":"fvup0"}},{"match":{"op":"==","left":{"payload":{"protocol":"ip","field":"daddr"}},"right":"@denied_v4"}},{"counter":"ctdeny"},{"drop":null}]}},{"rule":{"family":"inet","table":"fvpn","chain":"forward","handle":872,"expr":[{"match":{"op":"==","left":{"meta":{"key":"iifname"}},"right":"fvmb0"}},{"match":{"op":"==","left":{"meta":{"key":"oifname"}},"right":"fvup0"}},{"match":{"op":"==","left":{"payload":{"protocol":"ip","field":"daddr"}},"right":"@host_v4"}},{"counter":"cthost"},{"drop":null}]}},{"rule":{"family":"inet","table":"fvpn","chain":"forward","handle":873,"expr":[{"match":{"op":"==","left":{"meta":{"key":"iifname"}},"right":"fvmb0"}},{"match":{"op":"==","left":{"meta":{"key":"oifname"}},"right":"fvup0"}},{"match":{"op":"==","left":{"payload":{"protocol":"ip","field":"saddr"}},"right":"100.68.156.235"}},{"counter":"u_01a1901dd4407ce28a64973d9eacd480"},{"mangle":{"key":{"meta":{"key":"priority"}},"value":"1:629e"}},{"accept":null}]}},{"rule":{"family":"inet","table":"fvpn","chain":"forward","handle":874,"expr":[{"match":{"op":"==","left":{"meta":{"key":"iifname"}},"right":"fvup0"}},{"match":{"op":"==","left":{"meta":{"key":"oifname"}},"right":"fvmb0"}},{"match":{"op":"!=","left":{"payload":{"protocol":"ip","field":"daddr"}},"right":"@allowed_v4"}},{"counter":"ctunkd"},{"drop":null}]}},{"rule":{"family":"inet","table":"fvpn","chain":"forward","handle":876,"expr":[{"match":{"op":"==","left":{"meta":{"key":"iifname"}},"right":"fvup0"}},{"match":{"op":"==","left":{"meta":{"key":"oifname"}},"right":"fvmb0"}},{"match":{"op":"!=","left":{"ct":{"key":"state"}},"right":{"set":["established","related"]}}},{"counter":"ctnodn"},{"drop":null}]}},{"rule":{"family":"inet","table":"fvpn","chain":"forward","handle":877,"expr":[{"match":{"op":"==","left":{"meta":{"key":"iifname"}},"right":"fvup0"}},{"match":{"op":"==","left":{"meta":{"key":"oifname"}},"right":"fvmb0"}},{"match":{"op":"==","left":{"payload":{"protocol":"ip","field":"saddr"}},"right":"@resolver_v4"}},{"match":{"op":"==","left":{"payload":{"protocol":"ip","field":"daddr"}},"right":"100.68.156.235"}},{"match":{"op":"==","left":{"payload":{"protocol":"tcp","field":"sport"}},"right":53}},{"counter":"nd_01a1901dd4407ce28a64973d9eacd480"},{"mangle":{"key":{"meta":{"key":"priority"}},"value":"1:629e"}},{"accept":null}]}},{"rule":{"family":"inet","table":"fvpn","chain":"forward","handle":878,"expr":[{"match":{"op":"==","left":{"meta":{"key":"iifname"}},"right":"fvup0"}},{"match":{"op":"==","left":{"meta":{"key":"oifname"}},"right":"fvmb0"}},{"match":{"op":"==","left":{"payload":{"protocol":"ip","field":"saddr"}},"right":"@resolver_v4"}},{"match":{"op":"==","left":{"payload":{"protocol":"ip","field":"daddr"}},"right":"100.68.156.235"}},{"match":{"op":"==","left":{"payload":{"protocol":"udp","field":"sport"}},"right":53}},{"counter":"nd_01a1901dd4407ce28a64973d9eacd480"},{"mangle":{"key":{"meta":{"key":"priority"}},"value":"1:629e"}},{"accept":null}]}},{"rule":{"family":"inet","table":"fvpn","chain":"forward","handle":879,"expr":[{"match":{"op":"==","left":{"meta":{"key":"iifname"}},"right":"fvup0"}},{"match":{"op":"==","left":{"meta":{"key":"oifname"}},"right":"fvmb0"}},{"match":{"op":"==","left":{"payload":{"protocol":"ip","field":"daddr"}},"right":"100.68.156.235"}},{"counter":"d_01a1901dd4407ce28a64973d9eacd480"},{"mangle":{"key":{"meta":{"key":"priority"}},"value":"1:629e"}},{"accept":null}]}},{"rule":{"family":"inet","table":"fvpn","chain":"postrouting","handle":882,"expr":[{"match":{"op":"==","left":{"meta":{"key":"oifname"}},"right":"fvup0"}},{"match":{"op":"==","left":{"payload":{"protocol":"ip","field":"saddr"}},"right":"@allowed_v4"}},{"snat":{"family":"ip","addr":"192.0.3.20"}}]}}]
+- before_conntrack: conntrack v1.4.8 (conntrack-tools): 3 flow entries have been shown.
+ipv4     2 udp      17 119 src=100.68.156.235 dst=192.0.3.10 sport=47456 dport=9445 src=192.0.3.10 dst=192.0.3.20 sport=9445 dport=47456 [ASSURED] mark=0 use=1
+ipv4     2 tcp      6 119 TIME_WAIT src=100.68.156.235 dst=192.0.3.10 sport=34810 dport=9446 src=192.0.3.10 dst=192.0.3.20 sport=9446 dport=34810 [ASSURED] mark=0 use=1
+ipv4     2 tcp      6 76 TIME_WAIT src=100.68.156.235 dst=192.0.3.10 sport=47818 dport=9446 src=192.0.3.10 dst=192.0.3.20 sport=9446 dport=47818 [ASSURED] mark=0 use=1
+- before_member_tunnel: rx_packets=131
+rx_bytes=15452
+tx_packets=188
+tx_bytes=20244
+- before_node_tunnel: rx_packets=188
+rx_bytes=20244
+tx_packets=133
+tx_bytes=15632
+- before_node_uplink: rx_packets=168
+rx_bytes=16741
+tx_packets=202
+tx_bytes=16934
+- capture_member: tcpdump: verbose output suppressed, use -v[v]... for full protocol decode
+listening on fvnb0, link-type RAW (Raw IP), snapshot length 96 bytes
+17 packets captured
+17 packets received by filter
+0 packets dropped by kernel
+04:02:37.017839 IP 100.68.156.235.42524 > 192.0.3.10.443: tcp 0
+04:02:37.018245 IP 192.0.3.10.443 > 100.68.156.235.42524: tcp 0
+04:02:37.018259 IP 100.68.156.235.42524 > 192.0.3.10.443: tcp 0
+04:02:37.018461 IP 100.68.156.235.42524 > 192.0.3.10.443: tcp 418
+04:02:37.018507 IP 192.0.3.10.443 > 100.68.156.235.42524: tcp 0
+04:02:37.019098 IP 192.0.3.10.443 > 100.68.156.235.42524: tcp 929
+04:02:37.019107 IP 100.68.156.235.42524 > 192.0.3.10.443: tcp 0
+04:02:37.019589 IP 100.68.156.235.42524 > 192.0.3.10.443: tcp 64
+04:02:37.060128 IP 192.0.3.10.443 > 100.68.156.235.42524: tcp 0
+04:02:37.060149 IP 100.68.156.235.42524 > 192.0.3.10.443: tcp 219
+04:02:37.060408 IP 192.0.3.10.443 > 100.68.156.235.42524: tcp 0
+04:02:37.060870 IP 192.0.3.10.443 > 100.68.156.235.42524: tcp 141
+04:02:37.061596 IP 100.68.156.235.42524 > 192.0.3.10.443: tcp 0
+04:02:37.061891 IP 192.0.3.10.443 > 100.68.156.235.42524: tcp 24
+04:02:37.061909 IP 100.68.156.235.42524 > 192.0.3.10.443: tcp 0
+04:02:37.061912 IP 192.0.3.10.443 > 100.68.156.235.42524: tcp 0
+04:02:37.061916 IP 100.68.156.235.42524 > 192.0.3.10.443: tcp 0
+- capture_node_ingress: tcpdump: verbose output suppressed, use -v[v]... for full protocol decode
+listening on fvmb0, link-type RAW (Raw IP), snapshot length 96 bytes
+04:02:37.018016 IP 100.68.156.235.42524 > 192.0.3.10.443: tcp 0
+04:02:37.018092 IP 192.0.3.10.443 > 100.68.156.235.42524: tcp 0
+04:02:37.018449 IP 100.68.156.235.42524 > 192.0.3.10.443: tcp 0
+04:02:37.018482 IP 100.68.156.235.42524 > 192.0.3.10.443: tcp 418
+04:02:37.018490 IP 192.0.3.10.443 > 100.68.156.235.42524: tcp 0
+04:02:37.018870 IP 192.0.3.10.443 > 100.68.156.235.42524: tcp 929
+04:02:37.019329 IP 100.68.156.235.42524 > 192.0.3.10.443: tcp 0
+04:02:37.019615 IP 100.68.156.235.42524 > 192.0.3.10.443: tcp 64
+04:02:37.059939 IP 192.0.3.10.443 > 100.68.156.235.42524: tcp 0
+04:02:37.060361 IP 100.68.156.235.42524 > 192.0.3.10.443: tcp 219
+04:02:37.060385 IP 192.0.3.10.443 > 100.68.156.235.42524: tcp 0
+04:02:37.060622 IP 192.0.3.10.443 > 100.68.156.235.42524: tcp 141
+04:02:37.061626 IP 100.68.156.235.42524 > 192.0.3.10.443: tcp 0
+04:02:37.061859 IP 192.0.3.10.443 > 100.68.156.235.42524: tcp 24
+04:02:37.061873 IP 192.0.3.10.443 > 100.68.156.235.42524: tcp 0
+04:02:37.062056 IP 100.68.156.235.42524 > 192.0.3.10.443: tcp 0
+04:02:37.062056 IP 100.68.156.235.42524 > 192.0.3.10.443: tcp 0
+
+17 packets captured
+17 packets received by filter
+0 packets dropped by kernel
+- capture_node_uplink: tcpdump: verbose output suppressed, use -v[v]... for full protocol decode
+listening on fvup0, link-type EN10MB (Ethernet), snapshot length 96 bytes
+04:02:37.018054 IP 192.0.3.20.42524 > 192.0.3.10.443: tcp 0
+04:02:37.018087 IP 192.0.3.10.443 > 192.0.3.20.42524: tcp 0
+04:02:37.018458 IP 192.0.3.20.42524 > 192.0.3.10.443: tcp 0
+04:02:37.018484 IP 192.0.3.20.42524 > 192.0.3.10.443: tcp 418
+04:02:37.018488 IP 192.0.3.10.443 > 192.0.3.20.42524: tcp 0
+04:02:37.018864 IP 192.0.3.10.443 > 192.0.3.20.42524: tcp 929
+04:02:37.019338 IP 192.0.3.20.42524 > 192.0.3.10.443: tcp 0
+04:02:37.019617 IP 192.0.3.20.42524 > 192.0.3.10.443: tcp 64
+04:02:37.059891 IP 192.0.3.10.443 > 192.0.3.20.42524: tcp 0
+04:02:37.060372 IP 192.0.3.20.42524 > 192.0.3.10.443: tcp 219
+04:02:37.060382 IP 192.0.3.10.443 > 192.0.3.20.42524: tcp 0
+04:02:37.060614 IP 192.0.3.10.443 > 192.0.3.20.42524: tcp 141
+04:02:37.061639 IP 192.0.3.20.42524 > 192.0.3.10.443: tcp 0
+04:02:37.061852 IP 192.0.3.10.443 > 192.0.3.20.42524: tcp 24
+04:02:37.061871 IP 192.0.3.10.443 > 192.0.3.20.42524: tcp 0
+04:02:37.062066 IP 192.0.3.20.42524 > 192.0.3.10.443: tcp 0
+04:02:37.062068 IP 192.0.3.20.42524 > 192.0.3.10.443: tcp 0
+
+17 packets captured
+17 packets received by filter
+0 packets dropped by kernel
+- after_member_route: 192.0.3.10 dev fvnb0 table netbird src 100.68.156.235 uid 0
+    cache
+- after_member_tunnel_address: 3: fvnb0    inet 100.68.156.235/16 brd 100.68.255.255 scope global fvnb0\       valid_lft forever preferred_lft forever
+- after_member_routes: default dev fvnb0 table netbird
+default via 172.28.30.1 dev eth0
+100.68.0.0/16 dev fvnb0 proto kernel scope link src 100.68.156.235
+172.28.30.0/24 dev eth0 proto kernel scope link src 172.28.30.41
+local 100.68.156.235 dev fvnb0 table local proto kernel scope host src 100.68.156.235
+broadcast 100.68.255.255 dev fvnb0 table local proto kernel scope link src 100.68.156.235
+local 127.0.0.0/8 dev lo table local proto kernel scope host src 127.0.0.1
+local 127.0.0.1 dev lo table local proto kernel scope host src 127.0.0.1
+broadcast 127.255.255.255 dev lo table local proto kernel scope link src 127.0.0.1
+local 172.28.30.41 dev eth0 table local proto kernel scope host src 172.28.30.41
+broadcast 172.28.30.255 dev eth0 table local proto kernel scope link src 172.28.30.41
+- after_node_nft: [{"counter":{"family":"inet","name":"ctbase","table":"fvpn","handle":1,"packets":0,"bytes":0}},{"counter":{"family":"inet","name":"ctv6","table":"fvpn","handle":2,"packets":0,"bytes":0}},{"counter":{"family":"inet","name":"ctin","table":"fvpn","handle":3,"packets":0,"bytes":0}},{"counter":{"family":"inet","name":"ctbadns","table":"fvpn","handle":115,"packets":0,"bytes":0}},{"counter":{"family":"inet","name":"ctdeny","table":"fvpn","handle":116,"packets":0,"bytes":0}},{"counter":{"family":"inet","name":"cthost","table":"fvpn","handle":117,"packets":0,"bytes":0}},{"counter":{"family":"inet","name":"ctinv","table":"fvpn","handle":118,"packets":0,"bytes":0}},{"counter":{"family":"inet","name":"ctnodn","table":"fvpn","handle":119,"packets":0,"bytes":0}},{"counter":{"family":"inet","name":"ctunkd","table":"fvpn","handle":120,"packets":0,"bytes":0}},{"counter":{"family":"inet","name":"ctunku","table":"fvpn","handle":121,"packets":0,"bytes":0}},{"counter":{"family":"inet","name":"d_01a1901dd4407ce28a64973d9eacd480","table":"fvpn","handle":248,"packets":136,"bytes":12221}},{"counter":{"family":"inet","name":"nd_01a1901dd4407ce28a64973d9eacd480","table":"fvpn","handle":249,"packets":0,"bytes":0}},{"counter":{"family":"inet","name":"nu_01a1901dd4407ce28a64973d9eacd480","table":"fvpn","handle":250,"packets":0,"bytes":0}},{"counter":{"family":"inet","name":"u_01a1901dd4407ce28a64973d9eacd480","table":"fvpn","handle":251,"packets":197,"bytes":13993}},{"set":{"family":"inet","name":"allowed_v4","table":"fvpn","type":"ipv4_addr","handle":4,"flags":["timeout"],"elem":[{"elem":{"val":"100.68.156.235","timeout":3468,"expires":3463}}]}},{"rule":{"family":"inet","table":"fvpn","chain":"forward","handle":887,"comment":"fvpn_generation=7 fvpn_metering=forward_admission_v1","expr":[{"match":{"op":"==","left":{"payload":{"protocol":"ip","field":"saddr"}},"right":"192.0.2.255"}},{"match":{"op":"==","left":{"payload":{"protocol":"ip","field":"daddr"}},"right":"192.0.2.255"}}]}},{"rule":{"family":"inet","table":"fvpn","chain":"forward","handle":888,"comment":"fvpn_class=01a1901d-b2e6-792c-ada7-db6717cb69e7:629e","expr":[{"match":{"op":"==","left":{"payload":{"protocol":"ip","field":"saddr"}},"right":"192.0.2.255"}},{"match":{"op":"==","left":{"payload":{"protocol":"ip","field":"daddr"}},"right":"192.0.2.255"}}]}},{"rule":{"family":"inet","table":"fvpn","chain":"forward","handle":889,"expr":[{"match":{"op":"==","left":{"meta":{"key":"iifname"}},"right":"fvmb0"}},{"match":{"op":"==","left":{"meta":{"key":"oifname"}},"right":"fvup0"}},{"match":{"op":"==","left":{"meta":{"key":"nfproto"}},"right":"ipv6"}},{"counter":"ctv6"},{"drop":null}]}},{"rule":{"family":"inet","table":"fvpn","chain":"forward","handle":890,"expr":[{"match":{"op":"==","left":{"meta":{"key":"iifname"}},"right":"fvup0"}},{"match":{"op":"==","left":{"meta":{"key":"oifname"}},"right":"fvmb0"}},{"match":{"op":"==","left":{"meta":{"key":"nfproto"}},"right":"ipv6"}},{"counter":"ctv6"},{"drop":null}]}},{"rule":{"family":"inet","table":"fvpn","chain":"forward","handle":891,"expr":[{"match":{"op":"==","left":{"meta":{"key":"iifname"}},"right":"fvmb0"}},{"match":{"op":"==","left":{"meta":{"key":"oifname"}},"right":"fvup0"}},{"match":{"op":"in","left":{"ct":{"key":"state"}},"right":"invalid"}},{"counter":"ctinv"},{"drop":null}]}},{"rule":{"family":"inet","table":"fvpn","chain":"forward","handle":892,"expr":[{"match":{"op":"==","left":{"meta":{"key":"iifname"}},"right":"fvup0"}},{"match":{"op":"==","left":{"meta":{"key":"oifname"}},"right":"fvmb0"}},{"match":{"op":"in","left":{"ct":{"key":"state"}},"right":"invalid"}},{"counter":"ctinv"},{"drop":null}]}},{"rule":{"family":"inet","table":"fvpn","chain":"forward","handle":893,"expr":[{"match":{"op":"==","left":{"meta":{"key":"iifname"}},"right":"fvmb0"}},{"match":{"op":"==","left":{"meta":{"key":"oifname"}},"right":"fvup0"}},{"match":{"op":"!=","left":{"payload":{"protocol":"ip","field":"saddr"}},"right":"@allowed_v4"}},{"counter":"ctunku"},{"drop":null}]}},{"rule":{"family":"inet","table":"fvpn","chain":"forward","handle":894,"expr":[{"match":{"op":"==","left":{"meta":{"key":"iifname"}},"right":"fvmb0"}},{"match":{"op":"==","left":{"meta":{"key":"oifname"}},"right":"fvup0"}},{"match":{"op":"==","left":{"payload":{"protocol":"ip","field":"saddr"}},"right":"100.68.156.235"}},{"match":{"op":"==","left":{"payload":{"protocol":"ip","field":"daddr"}},"right":"@resolver_v4"}},{"match":{"op":"==","left":{"payload":{"protocol":"tcp","field":"dport"}},"right":53}},{"counter":"nu_01a1901dd4407ce28a64973d9eacd480"},{"mangle":{"key":{"meta":{"key":"priority"}},"value":"1:629e"}},{"accept":null}]}},{"rule":{"family":"inet","table":"fvpn","chain":"forward","handle":895,"expr":[{"match":{"op":"==","left":{"meta":{"key":"iifname"}},"right":"fvmb0"}},{"match":{"op":"==","left":{"meta":{"key":"oifname"}},"right":"fvup0"}},{"match":{"op":"==","left":{"payload":{"protocol":"ip","field":"saddr"}},"right":"100.68.156.235"}},{"match":{"op":"==","left":{"payload":{"protocol":"ip","field":"daddr"}},"right":"@resolver_v4"}},{"match":{"op":"==","left":{"payload":{"protocol":"udp","field":"dport"}},"right":53}},{"counter":"nu_01a1901dd4407ce28a64973d9eacd480"},{"mangle":{"key":{"meta":{"key":"priority"}},"value":"1:629e"}},{"accept":null}]}},{"rule":{"family":"inet","table":"fvpn","chain":"forward","handle":896,"expr":[{"match":{"op":"==","left":{"meta":{"key":"iifname"}},"right":"fvmb0"}},{"match":{"op":"==","left":{"meta":{"key":"oifname"}},"right":"fvup0"}},{"match":{"op":"==","left":{"payload":{"protocol":"ip","field":"daddr"}},"right":"@resolver_v4"}},{"counter":"ctbadns"},{"drop":null}]}},{"rule":{"family":"inet","table":"fvpn","chain":"forward","handle":897,"expr":[{"match":{"op":"==","left":{"meta":{"key":"iifname"}},"right":"fvmb0"}},{"match":{"op":"==","left":{"meta":{"key":"oifname"}},"right":"fvup0"}},{"match":{"op":"==","left":{"payload":{"protocol":"ip","field":"daddr"}},"right":"@denied_v4"}},{"counter":"ctdeny"},{"drop":null}]}},{"rule":{"family":"inet","table":"fvpn","chain":"forward","handle":898,"expr":[{"match":{"op":"==","left":{"meta":{"key":"iifname"}},"right":"fvmb0"}},{"match":{"op":"==","left":{"meta":{"key":"oifname"}},"right":"fvup0"}},{"match":{"op":"==","left":{"payload":{"protocol":"ip","field":"daddr"}},"right":"@host_v4"}},{"counter":"cthost"},{"drop":null}]}},{"rule":{"family":"inet","table":"fvpn","chain":"forward","handle":899,"expr":[{"match":{"op":"==","left":{"meta":{"key":"iifname"}},"right":"fvmb0"}},{"match":{"op":"==","left":{"meta":{"key":"oifname"}},"right":"fvup0"}},{"match":{"op":"==","left":{"payload":{"protocol":"ip","field":"saddr"}},"right":"100.68.156.235"}},{"counter":"u_01a1901dd4407ce28a64973d9eacd480"},{"mangle":{"key":{"meta":{"key":"priority"}},"value":"1:629e"}},{"accept":null}]}},{"rule":{"family":"inet","table":"fvpn","chain":"forward","handle":900,"expr":[{"match":{"op":"==","left":{"meta":{"key":"iifname"}},"right":"fvup0"}},{"match":{"op":"==","left":{"meta":{"key":"oifname"}},"right":"fvmb0"}},{"match":{"op":"!=","left":{"payload":{"protocol":"ip","field":"daddr"}},"right":"@allowed_v4"}},{"counter":"ctunkd"},{"drop":null}]}},{"rule":{"family":"inet","table":"fvpn","chain":"forward","handle":902,"expr":[{"match":{"op":"==","left":{"meta":{"key":"iifname"}},"right":"fvup0"}},{"match":{"op":"==","left":{"meta":{"key":"oifname"}},"right":"fvmb0"}},{"match":{"op":"!=","left":{"ct":{"key":"state"}},"right":{"set":["established","related"]}}},{"counter":"ctnodn"},{"drop":null}]}},{"rule":{"family":"inet","table":"fvpn","chain":"forward","handle":903,"expr":[{"match":{"op":"==","left":{"meta":{"key":"iifname"}},"right":"fvup0"}},{"match":{"op":"==","left":{"meta":{"key":"oifname"}},"right":"fvmb0"}},{"match":{"op":"==","left":{"payload":{"protocol":"ip","field":"saddr"}},"right":"@resolver_v4"}},{"match":{"op":"==","left":{"payload":{"protocol":"ip","field":"daddr"}},"right":"100.68.156.235"}},{"match":{"op":"==","left":{"payload":{"protocol":"tcp","field":"sport"}},"right":53}},{"counter":"nd_01a1901dd4407ce28a64973d9eacd480"},{"mangle":{"key":{"meta":{"key":"priority"}},"value":"1:629e"}},{"accept":null}]}},{"rule":{"family":"inet","table":"fvpn","chain":"forward","handle":904,"expr":[{"match":{"op":"==","left":{"meta":{"key":"iifname"}},"right":"fvup0"}},{"match":{"op":"==","left":{"meta":{"key":"oifname"}},"right":"fvmb0"}},{"match":{"op":"==","left":{"payload":{"protocol":"ip","field":"saddr"}},"right":"@resolver_v4"}},{"match":{"op":"==","left":{"payload":{"protocol":"ip","field":"daddr"}},"right":"100.68.156.235"}},{"match":{"op":"==","left":{"payload":{"protocol":"udp","field":"sport"}},"right":53}},{"counter":"nd_01a1901dd4407ce28a64973d9eacd480"},{"mangle":{"key":{"meta":{"key":"priority"}},"value":"1:629e"}},{"accept":null}]}},{"rule":{"family":"inet","table":"fvpn","chain":"forward","handle":905,"expr":[{"match":{"op":"==","left":{"meta":{"key":"iifname"}},"right":"fvup0"}},{"match":{"op":"==","left":{"meta":{"key":"oifname"}},"right":"fvmb0"}},{"match":{"op":"==","left":{"payload":{"protocol":"ip","field":"daddr"}},"right":"100.68.156.235"}},{"counter":"d_01a1901dd4407ce28a64973d9eacd480"},{"mangle":{"key":{"meta":{"key":"priority"}},"value":"1:629e"}},{"accept":null}]}},{"rule":{"family":"inet","table":"fvpn","chain":"postrouting","handle":908,"expr":[{"match":{"op":"==","left":{"meta":{"key":"oifname"}},"right":"fvup0"}},{"match":{"op":"==","left":{"payload":{"protocol":"ip","field":"saddr"}},"right":"@allowed_v4"}},{"snat":{"family":"ip","addr":"192.0.3.20"}}]}}]
+- after_conntrack: conntrack v1.4.8 (conntrack-tools): 4 flow entries have been shown.
+ipv4     2 udp      17 110 src=100.68.156.235 dst=192.0.3.10 sport=47456 dport=9445 src=192.0.3.10 dst=192.0.3.20 sport=9445 dport=47456 [ASSURED] mark=0 use=1
+ipv4     2 tcp      6 110 TIME_WAIT src=100.68.156.235 dst=192.0.3.10 sport=34810 dport=9446 src=192.0.3.10 dst=192.0.3.20 sport=9446 dport=34810 [ASSURED] mark=0 use=1
+ipv4     2 tcp      6 2 CLOSE src=100.68.156.235 dst=192.0.3.10 sport=42524 dport=443 src=192.0.3.10 dst=192.0.3.20 sport=443 dport=42524 [ASSURED] mark=0 use=1
+ipv4     2 tcp      6 67 TIME_WAIT src=100.68.156.235 dst=192.0.3.10 sport=47818 dport=9446 src=192.0.3.10 dst=192.0.3.20 sport=9446 dport=47818 [ASSURED] mark=0 use=1
+- after_member_tunnel: rx_packets=139
+rx_bytes=17308
+tx_packets=197
+tx_bytes=21764
+- after_node_tunnel: rx_packets=197
+rx_bytes=21764
+tx_packets=141
+tx_bytes=17488
+- after_node_uplink: rx_packets=176
+rx_bytes=18371
+tx_packets=211
+tx_bytes=18213
+- origin_arrival: {"probe_id":"be132e1b-9d07-4500-a14b-5adcf9568d13","requests":1,"source_address":"192.0.3.20"}
+- snat_counter_limit: product postrouting SNAT rule has no counter expression; uplink capture, conntrack reply tuple and authenticated origin source provide translation evidence
+- controlled_origin_http_200_and_counted: true
+- admission_bytes_before: 23543
+- admission_bytes_after: 26214
+- first_stopped_hop: none after explicit NetBird exit selection
+- heartbeat: v1
+boot_id c08a27f2-bb2d-4d14-92e5-b1a13608b2dc
+mono_ns 2897226989057
+wall_unix_ns 1793419359710618039
+policy_expires_mono_ns 6365401015308
+baseline_ok 1
+serving 1
+generation 7
+reason serving
+- udp: {"Transport":"udp","Reply":"rcode=0 answers=1","dns_upload_bytes":"65","dns_download_bytes":"98","internet_upload_bytes":"0","internet_download_bytes":"0"}
+- tcp: {"Transport":"tcp","Reply":"rcode=0 answers=1","dns_upload_bytes":"307","dns_download_bytes":"340","internet_upload_bytes":"0","internet_download_bytes":"0"}
+- path: origin-network DNS relay -> node filtering resolver; both nu_ and nd_ increased, u_ and d_ held
+- native_fallback: not claimed; explicit resolver queries

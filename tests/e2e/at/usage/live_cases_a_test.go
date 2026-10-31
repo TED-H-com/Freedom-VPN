@@ -33,8 +33,25 @@ func (s *liveSuite) evalAT14(t *testing.T) Record {
 
 	// 1. Live transfer probe and exclusion probes on node
 	bUp0, bDown0, _, _, _ := s.deviceCounters("node", s.deviceB)
-	tr := s.runCountedTransfer("member", "node", s.deviceA, 2)
+	transferStarted := time.Now().UTC()
+	tr := s.runCountedTransfer("member", "node", s.deviceA, 8)
 	bUp1, bDown1, _, allAfter, _ := s.deviceCounters("node", s.deviceB)
+	// The lab routes only its origin subnet over fvup0. Give this denied
+	// probe a temporary /32 route to that interface so it reaches ctdeny;
+	// otherwise the forward chain's default drop excludes it on eth1.
+	if out, code, err := s.execInContainer("node", "ip", "route", "add", "10.254.254.1/32", "dev", "fvup0"); err != nil || code != 0 {
+		t.Fatalf("AT14 private probe route: %v (%d): %s", err, code, out)
+	}
+	removeProbeRoute := func() {
+		if out, code, err := s.execInContainer("node", "ip", "route", "del", "10.254.254.1/32", "dev", "fvup0"); err != nil || code != 0 {
+			t.Errorf("AT14 private probe route cleanup: %v (%d): %s", err, code, out)
+		}
+	}
+	defer func() {
+		if removeProbeRoute != nil {
+			removeProbeRoute()
+		}
+	}()
 
 	uBeforeRFC, dBeforeRFC, _, cBeforeRFC, _ := s.deviceCounters("node", s.deviceA)
 	fvmbRxBefore, _ := s.ifaceBytes("node", "fvmb0")
@@ -44,10 +61,28 @@ wget --timeout=1 --tries=1 -qO- http://10.254.254.1:80/ >/dev/null 2>&1 || true
 ip route del 10.254.254.1/32 dev fvnb0 2>/dev/null || true
 `
 	_, _, _ = s.execInContainer("member", "sh", "-c", rfcScript)
+	_, _, _, nativeAfterRFC, _ := s.deviceCounters("node", s.deviceA)
+	nativeRFCDenyDelta := nativeAfterRFC["ctdeny"] - cBeforeRFC["ctdeny"]
+	// Native ACLs can reject the private destination before the fvpn forward
+	// hook. Prove that hook with the shared ingress injector as well.
+	memberAddr, _, _ := s.execInContainer("member", "ip", "-o", "-4", "addr", "show", "fvnb0")
+	memberIP := ""
+	for _, field := range strings.Fields(string(memberAddr)) {
+		if strings.HasPrefix(field, "100.") && strings.Contains(field, "/") {
+			memberIP = strings.Split(field, "/")[0]
+			break
+		}
+	}
+	rfcIngress, injectErr := s.hook.InjectMemberIngress(s.ctx, "fvmb0", memberIP, "10.254.254.1", 80)
+	if injectErr != nil {
+		t.Fatalf("AT14 shared private-destination ingress probe: %v", injectErr)
+	}
 	uAfterRFC, dAfterRFC, _, cAfterRFC, _ := s.deviceCounters("node", s.deviceA)
 	fvmbRxAfter, _ := s.ifaceBytes("node", "fvmb0")
 	rfcIngressBytes := fvmbRxAfter - fvmbRxBefore
 	rfcDenyDelta := cAfterRFC["ctdeny"] - cBeforeRFC["ctdeny"]
+	removeProbeRoute()
+	removeProbeRoute = nil
 
 	nodeTunnelOut, _, _ := s.execInContainer("node", "ip", "-o", "-4", "addr", "show", "fvmb0")
 	nodeOverlayIP := ""
@@ -64,6 +99,10 @@ ip route del 10.254.254.1/32 dev fvnb0 2>/dev/null || true
 	}
 	uAfterDNS, dAfterDNS, _, cAfterDNS, _ := s.deviceCounters("node", s.deviceA)
 	dnsInDelta := cAfterDNS["ctin"] - cBeforeDNS["ctin"]
+	if rfcIngress.Deltas["ctdeny"].Packets == 0 || uAfterRFC != uBeforeRFC || dAfterRFC != dBeforeRFC ||
+		dnsInDelta == 0 || uAfterDNS != uBeforeDNS || dAfterDNS != dBeforeDNS {
+		t.Fatalf("AT14 exclusion proof failed: private deny=%d bytes=%d/%d DNS input=%d bytes=%d/%d", rfcIngress.Deltas["ctdeny"].Packets, uAfterRFC-uBeforeRFC, dAfterRFC-dBeforeRFC, dnsInDelta, uAfterDNS-uBeforeDNS, dAfterDNS-dBeforeDNS)
+	}
 
 	rec.Commands = append(rec.Commands,
 		CommandRecord{
@@ -73,7 +112,7 @@ ip route del 10.254.254.1/32 dev fvnb0 2>/dev/null || true
 			At:       time.Now().UTC().Format(time.RFC3339),
 		},
 		CommandRecord{
-			Command:  "Live RFC1918 (10.254.254.1) & node-local (:53) exclusion probes from member",
+			Command:  "Native RFC1918 + shared InjectMemberIngress(fvmb0, admitted source, private destination) & node-local (:53) exclusion probes",
 			ExitCode: 0,
 			Output:   fmt.Sprintf("rfc1918: fvmb0_rx_delta=%d ctdeny_delta=%d member_counter_delta=%d/%d; node_input_53: ctin_delta=%d member_counter_delta=%d/%d", rfcIngressBytes, rfcDenyDelta, uAfterRFC-uBeforeRFC, dAfterRFC-dBeforeRFC, dnsInDelta, uAfterDNS-uBeforeDNS, dAfterDNS-dBeforeDNS),
 			At:       time.Now().UTC().Format(time.RFC3339),
@@ -81,8 +120,7 @@ ip route del 10.254.254.1/32 dev fvnb0 2>/dev/null || true
 	)
 
 	// 2. Ingest signed UsageEvent from node (s.nodeID / s.incarnationID) for memberA / s.deviceA and verify central ledger + GET /api/v1/member/usage
-	memAUUID := uuid.MustParse(s.memberA.memberID)
-	_, _, _ = s.ingestNodeUsageEvent(s.nodeID, s.incarnationID, s.agentClient, memAUUID, s.deviceA, 2214, 2411)
+	s.waitForUploadedTraffic("node", s.nodeID, s.incarnationID, s.deviceA, transferStarted)
 	sqlSnap := s.inspectNodeUsageSQLite("node", s.deviceA)
 
 	var pgSamplesUp, pgSamplesDown string
@@ -121,6 +159,9 @@ ip route del 10.254.254.1/32 dev fvnb0 2>/dev/null || true
 	}
 	rec.Observations["live_counted_transfer"] = tr
 	rec.Observations["live_exclusions"] = map[string]any{
+		"private_probe_route":                "temporary node-netns 10.254.254.1/32 dev fvup0, removed after probe; no default route change",
+		"native_rfc1918_ctdeny_delta_bytes":  nativeRFCDenyDelta,
+		"shared_rfc1918_ingress_probe":       rfcIngress,
 		"rfc1918_fvmb0_ingress_delta_bytes":  rfcIngressBytes,
 		"rfc1918_ctdeny_delta_bytes":         rfcDenyDelta,
 		"rfc1918_member_counter_delta_bytes": uAfterRFC - uBeforeRFC + dAfterRFC - dBeforeRFC,
@@ -223,7 +264,7 @@ func (s *liveSuite) evalAT16(t *testing.T) Record {
 		At:       time.Now().UTC().Format(time.RFC3339),
 	})
 
-	// Keep node agent paused and acknowledge current desired_config_generation so subsequent evaluations start from a clean ACKed baseline
+	// Resume the real agent after watchdog withdrawal and wait for its serving ACK.
 	_, _, _, _ = s.ackNodeGeneration(s.nodeID, s.incarnationID, s.agentClient, 0)
 
 	rec.MechanismChecks = append(rec.MechanismChecks,
@@ -272,6 +313,7 @@ func (s *liveSuite) evalAT16(t *testing.T) Record {
 // 2. Exercises out-of-order upload (seq s1, s3 -> missing s2), Idempotency-Key batch replay, duplicate event retry, gap fill (seq s2 -> contiguous ACK s3), conflicting payload_sha256 audit (USAGE_EVENT_CONFLICT), rejected event blocked_seq (with >2^53 decimal string upload_bytes) and unblock, and 409/403 whole-request error guards.
 // 3. Exercises the live §17.3 operator recovery CLI (`fvpn-usage-admin freeze`, `begin-recovery`, `complete-recovery`, `drill-down`) and `replay_unavailable` tombstone recording on the new ledger_epoch.
 func (s *liveSuite) evalAT15(t *testing.T) Record {
+	s.stopNodeAgent("node")
 	rec := s.baseRecord(
 		"AT15",
 		"用量批次冪等、亂序缺口、衝突稽核與簽章檢查點恢復 (Idempotent Usage Ingest, Contiguous ACK, Conflict Audit & Signed Checkpoint Recovery)",

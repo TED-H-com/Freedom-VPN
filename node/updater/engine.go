@@ -33,8 +33,7 @@ type claimed struct {
 	BootID      uuid.UUID `json:"boot_id"`
 	StateSchema int       `json:"state_schema"`
 	// Source is "installer" for a pending-release apply. Empty is a
-	// desired-state job. It stays in the journal intent. The wire result
-	// has no source member.
+	// desired-state job. Installer results carry the same source (D-089).
 	Source string `json:"source,omitempty"`
 	// PendingPath is the installer record consumed when this job finishes.
 	PendingPath   string `json:"pending_path,omitempty"`

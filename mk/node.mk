@@ -9,6 +9,7 @@
 #   node-lint         gofmt, vet and the same staticcheck pin as mk/go.mk
 #   node-verify       lint, test and build
 #   node-test-netlab  privileged lab; not part of node-test or TEST_TARGETS
+#   node-test-live-netlab  foreground live-read latency/injection regression
 
 NODE_GO   ?= go
 NODE_ENV  := CGO_ENABLED=0 GOTOOLCHAIN=local
@@ -23,6 +24,10 @@ LINT_TARGETS   += node-lint
 VERIFY_TARGETS += node-verify
 
 .PHONY: node-build node-test node-test-integration node-lint node-verify node-test-netlab
+.PHONY: node-test-live-netlab
+
+node-test-live-netlab:
+	bash tests/netlab/agent/run-live.sh
 
 node-build:
 	$(NODE_ENV) GOOS=linux GOARCH=amd64 $(NODE_GO) build -trimpath -o bin/linux_amd64/fvpn-agent ./node/agent/cmd/fvpn-agent
@@ -39,9 +44,9 @@ node-test-integration:
 node-lint:
 	@test -z "$$(gofmt -l node/agent node/watchdog node/internal/agentstore node/internal/controlclient node/internal/timeanchor node/internal/fakecontrol node/internal/nodelock tests/netlab/agent)" || { echo 'gofmt required'; exit 1; }
 	$(NODE_ENV) $(NODE_GO) vet $(NODE_PKGS)
-	$(NODE_ENV) $(NODE_GO) vet -tags netlab ./tests/netlab/agent/...
+	$(NODE_ENV) $(NODE_GO) vet -tags netlab ./node/agent/... ./tests/netlab/agent/...
 	$(NODE_ENV) $(NODE_GO) run $(NODE_STATICCHECK) $(NODE_PKGS)
-	$(NODE_ENV) $(NODE_GO) run $(NODE_STATICCHECK) -tags netlab ./tests/netlab/agent/...
+	$(NODE_ENV) $(NODE_GO) run $(NODE_STATICCHECK) -tags netlab ./node/agent/... ./tests/netlab/agent/...
 
 node-verify: node-lint node-test node-build
 

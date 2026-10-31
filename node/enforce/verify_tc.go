@@ -103,28 +103,38 @@ type PolicyRuleEvidence struct {
 // ServingEvidence is the live read-back retained even when verification fails.
 // Counters are for Apply's samples and are not duplicated in JSON evidence.
 type ServingEvidence struct {
-	TC          []TCReadEvidence        `json:"tc"`
-	PolicyRules []PolicyRuleEvidence    `json:"policy_rules"`
-	Counters    map[string]CounterValue `json:"-"`
+	Quarantined      bool                    `json:"quarantined"`
+	QuarantinedLinks []string                `json:"quarantined_links,omitempty"`
+	TC               []TCReadEvidence        `json:"tc"`
+	PolicyRules      []PolicyRuleEvidence    `json:"policy_rules"`
+	Counters         map[string]CounterValue `json:"-"`
 }
 
 // VerifyServing reads live nft, tc and policy-routing state on every call.
 // A caller cannot establish serving from a saved nft listing alone. It does
-// not mutate networking; Apply installs the baseline on a rejected read-back.
-func VerifyServing(ctx context.Context, ex Executor, m Model, assignments map[uuid.UUID]uint16) (ev ServingEvidence, err error) {
+// not mutate networking; the caller must Quarantine on foreign tc failure.
+// Quarantined reports a retained recovery marker, not current containment;
+// use Quarantine evidence for the link-down and baseline read-back.
+func VerifyServing(ctx context.Context, ex Executor, m Model, assignments map[uuid.UUID]uint16) (ServingEvidence, error) {
+	return verifyServing(ctx, ex, m, assignments, false)
+}
+
+// Apply alone may verify the staged serving rules while the quarantine marker
+// is retained. Public verification always rejects that marker.
+func verifyServing(ctx context.Context, ex Executor, m Model, assignments map[uuid.UUID]uint16, recovering bool) (ev ServingEvidence, err error) {
 	defer func() { ev.PolicyRules = readPolicyRules(ctx, ex) }()
-	raw, err := ex.Output(ctx, "nft", "-j", "list", "ruleset")
-	if err != nil {
-		return ev, err
+	raw, nftErr := ex.Output(ctx, "nft", "-j", "list", "ruleset")
+	if nftErr == nil {
+		rs, parseErr := ParseRuleset(raw)
+		if parseErr == nil {
+			ev.Counters = rs.Counters
+			ev.QuarantinedLinks = quarantinedLinks(rs.Sets)
+			ev.Quarantined = len(ev.QuarantinedLinks) > 0
+		}
+		nftErr = verifyServingRuleset(raw, m, assignments)
 	}
-	if err := verifyServingRuleset(raw, m, assignments); err != nil {
-		return ev, err
-	}
-	rs, err := ParseRuleset(raw)
-	if err != nil {
-		return ev, err
-	}
-	ev.Counters = rs.Counters
+	// Scan tc even with the link down or nft baseline installed: neither may
+	// hide the retained redirect or change its specific failure reason.
 	qos, reads, err := readServingTC(ctx, ex, m)
 	ev.TC = reads
 	if err != nil {
@@ -132,6 +142,12 @@ func VerifyServing(ctx context.Context, ex Executor, m Model, assignments map[uu
 	}
 	if err := verifyTCObjects(reads, m, assignments); err != nil {
 		return ev, err
+	}
+	if nftErr != nil {
+		return ev, nftErr
+	}
+	if ev.Quarantined && !recovering {
+		return ev, checkf(ReasonIsolation, "member path quarantined; verified Apply required")
 	}
 	return ev, VerifyQoS(qos, m, assignments)
 }
