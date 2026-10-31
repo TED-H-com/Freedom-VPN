@@ -46,6 +46,7 @@ func assertGeneratedReporting(t *testing.T, c, job string) {
 	if status != "401" {
 		t.Fatalf("unauthenticated result: HTTP %s", status)
 	}
+	mustExec(t, c, "touch", "/run/w5-control/accept-results")
 	mustExec(t, c, updater, "flush", "--config", config)
 	received := mustExec(t, c, "cat", accepted+".json")
 	if strings.TrimSpace(received) != strings.TrimSpace(sealed) {

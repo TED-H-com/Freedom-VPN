@@ -9,6 +9,7 @@ import (
 	"crypto/rand"
 	"crypto/tls"
 	"crypto/x509"
+	"crypto/x509/pkix"
 	"encoding/json"
 	"encoding/pem"
 	"fmt"
@@ -39,6 +40,7 @@ func reportingControl(dir string, control *fakecontrol.Server) (string, []byte, 
 		return "", nil, nil, err
 	}
 	cert := &x509.Certificate{
+		Subject:      pkix.Name{CommonName: "TEST ONLY control.example.invalid"},
 		SerialNumber: big.NewInt(1), NotBefore: time.Now().Add(-time.Hour), NotAfter: time.Now().Add(24 * time.Hour),
 		IsCA: true, BasicConstraintsValid: true, KeyUsage: x509.KeyUsageCertSign | x509.KeyUsageDigitalSignature,
 		ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth}, IPAddresses: []net.IP{net.ParseIP("127.0.0.1")},
@@ -106,6 +108,12 @@ func (s *resultReceiver) accept(w http.ResponseWriter, r *http.Request) {
 	hash, err := canonjson.HashHex(raw, "payload_hash")
 	if err != nil || hash != result.PayloadHash || result.Source == nil || *result.Source != api.UpdateResultSourceInstaller || result.JobId != installerjob.ID(result.RequestedReleaseId, result.ManifestSha256, result.IncarnationId) || r.Header.Get("Idempotency-Key") != result.ResultId.String() {
 		http.Error(w, "receipt integrity", http.StatusConflict)
+		return
+	}
+	// Hold acceptance until the test has inspected the actual durable seal.
+	// Apply automatically flushes; a 503 must retain the original outbox bytes.
+	if _, err := os.Stat(filepath.Join(filepath.Dir(s.dir), "accept-results")); err != nil {
+		http.Error(w, "TEST ONLY result acceptance hold", http.StatusServiceUnavailable)
 		return
 	}
 	s.mu.Lock()

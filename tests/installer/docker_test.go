@@ -431,8 +431,9 @@ func TestMissingTool(t *testing.T) {
 	const name = "fvpn-w5-node-installer-missing"
 	startSleep(t, name)
 	stage(t, name)
+	url, ca, bundle := startControl(t, name)
 	mustExec(t, name, "mv", "/usr/sbin/nft", "/usr/sbin/nft.aside")
-	_, out, code := doInstall(t, name, relIn("1", rel1.ReleaseID), "https://control.example.invalid", "/no/ca", "/no/bundle", "/no/token")
+	_, out, code := doInstall(t, name, relIn("1", rel1.ReleaseID), url, ca, bundle, "/no/token")
 	if code != installer.ExitDependency {
 		t.Fatalf("exit %d\n%s", code, out)
 	}
@@ -458,10 +459,11 @@ func TestFaultRollback(t *testing.T) {
 	const name = "fvpn-w5-node-installer-fault"
 	startSystemd(t, name)
 	stage(t, name)
+	url, ca, bundle := startControl(t, name)
 	defRoute, resolv := seedForeign(t, name)
 	writeStdin(t, name, "/run/w5-token", token1+"\n", "0600")
 	res, out, code := doInstall(t, name, relIn("1", rel1.ReleaseID),
-		"https://control.example.invalid", "/no/ca", "/no/bundle", "/run/w5-token",
+		url, ca, bundle, "/run/w5-token",
 		"--fault-after", "directories")
 	if code != installer.ExitFailed || res.Status != "" && !strings.Contains(out, "rolled_back") {
 		t.Fatalf("exit %d status %s\n%s", code, res.Status, out)
