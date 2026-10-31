@@ -21,6 +21,9 @@ ProtectHome=yes
 PrivateTmp=yes
 PrivateDevices=no
 RuntimeDirectory=vpn-node
+RuntimeDirectoryMode=0755
+# Shared heartbeat/health paths must survive every consumer's stop/restart.
+RuntimeDirectoryPreserve=yes
 UMask=0077
 ReadWritePaths=-/var/lib/netbird -/etc/netbird /var/lib/vpn-node /run/vpn-node
 CapabilityBoundingSet=CAP_NET_ADMIN CAP_NET_RAW

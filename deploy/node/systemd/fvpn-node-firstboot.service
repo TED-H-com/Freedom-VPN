@@ -5,7 +5,8 @@ Description=Freedom VPN first-boot enrollment
 ConditionPathExists=/var/lib/vpn-node/firstboot.token
 ConditionPathExists=!/var/lib/vpn-node/identity/node.json
 After=network-online.target
-Before=fvpn-agent.service
+# Firstboot starts the member units synchronously after enrollment.
+# Do not order this oneshot before those jobs: that would deadlock its start.
 Wants=network-online.target
 
 [Service]
@@ -17,6 +18,9 @@ ProtectSystem=strict
 ProtectHome=yes
 PrivateTmp=yes
 RuntimeDirectory=vpn-node
+RuntimeDirectoryMode=0755
+# Shared heartbeat/health paths must survive every consumer's stop/restart.
+RuntimeDirectoryPreserve=yes
 UMask=0077
 ReadWritePaths=/var/lib/vpn-node /etc/vpn-node /run/vpn-node /etc/machine-id -/var/lib/dbus/machine-id
 CapabilityBoundingSet=

@@ -590,7 +590,7 @@ func (s *Service) Enroll(ctx context.Context, token string, r api.EnrollRequest)
 		if e = tx.QueryRow(ctx, `SELECT publication_intent FROM exits WHERE node_id=$1`, nodeID).Scan(&publication); e != nil {
 			return e
 		}
-		out.Response = api.EnrollResponse{NodeId: nodeID, NodeIncarnationId: r.NodeIncarnationId, LifecycleState: api.LifecycleStateRegistered, PublicationIntent: publication, CertificatePem: string(pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: cert.Raw})), CaChainPem: s.ca.ChainPEM(), CertificateSerial: cert.SerialNumber.Text(16), CertificateNotAfter: cert.NotAfter.UTC(), Next: "/api/v1/agent/bootstrap"}
+		out.Response = api.EnrollResponse{NodeId: nodeID, NodeIncarnationId: r.NodeIncarnationId, LifecycleState: api.LifecycleStateRegistered, PublicationIntent: publication, CertificatePem: string(pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: cert.Raw})), CaChainPem: s.ca.ChainPEM(), CertificateSerial: cert.SerialNumber.Text(16), CertificateNotAfter: cert.NotAfter.UTC(), Next: api.EnrollResponseNextApiv1agentdesiredState}
 		return nil
 	})
 	if err != nil {

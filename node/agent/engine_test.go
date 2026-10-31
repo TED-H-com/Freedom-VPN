@@ -58,7 +58,7 @@ func (m *memPlane) Apply(_ context.Context, model enforce.Model, _ map[string]en
 	m.applies++
 	m.last = model
 	m.calls = append(m.calls, planeCall{kind: "apply", model: model})
-	res := enforce.ApplyResult{Plan: plan}
+	res := enforce.ApplyResult{Plan: plan, Verified: true}
 	if model.Probe != nil {
 		// The real apply returns these diagnostic counters. The agent must
 		// not copy them into member usage.

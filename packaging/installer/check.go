@@ -5,8 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
+	"time"
 
+	"github.com/google/uuid"
 	"golang.org/x/sys/unix"
 )
 
@@ -22,6 +25,9 @@ type CheckReport struct {
 	Kernel         string            `json:"kernel"`
 	ReleaseID      string            `json:"release_id,omitempty"`
 	ManifestSHA256 string            `json:"manifest_sha256,omitempty"`
+	ReleaseSource  string            `json:"release_source,omitempty"`
+	InstallRecord  *installedState   `json:"install_record,omitempty"`
+	Updater        *UpdaterStatus    `json:"updater,omitempty"`
 	Units          map[string]string `json:"units"`
 	Directories    []DirStatus       `json:"directories"`
 	Lock           LockStatus        `json:"lock"`
@@ -29,6 +35,18 @@ type CheckReport struct {
 	UsageStore     bool              `json:"usage_store_present"`
 	Netbird        NetbirdStatus     `json:"netbird"`
 	Drifts         []string          `json:"drifts"`
+}
+
+// UpdaterStatus is the read-only journal snapshot's relevant subset. A failed
+// attempt need not change current; recovery_required is always drift.
+type UpdaterStatus struct {
+	CurrentReleaseID string `json:"current_release_id"`
+	State            string `json:"state"`
+	RecoveryRequired bool   `json:"recovery_required"`
+	SeededBaseline   *struct {
+		ReleaseID      string `json:"release_id"`
+		ManifestSHA256 string `json:"manifest_sha256"`
+	} `json:"seeded_baseline,omitempty"`
 }
 
 // DirStatus is one directory mode check.
@@ -78,11 +96,36 @@ func Check(ctx context.Context, env *Env) (*CheckReport, error) {
 		rep.Drifts = append(rep.Drifts, "platform")
 	}
 	inst, has := readInstalled(l)
+	rep.Baseline = readBaseline(l)
 	if has {
+		rep.InstallRecord = &inst
+		rep.ReleaseSource = "installed.json"
 		rep.ReleaseID = inst.ReleaseID
 		rep.ManifestSHA256 = inst.ManifestSHA256
 	} else {
 		rep.Drifts = append(rep.Drifts, "not_installed")
+	}
+	if st, err := readUpdaterStatus(ctx, env, rep.Baseline.Status == "seeded"); err != nil {
+		rep.Drifts = append(rep.Drifts, "updater_journal")
+	} else if st != nil {
+		rep.Updater = st
+		if st.RecoveryRequired {
+			rep.Drifts = append(rep.Drifts, "updater_recovery_required")
+		}
+		if st.CurrentReleaseID != "" {
+			rep.ReleaseSource = "updater_journal"
+			rep.ReleaseID = st.CurrentReleaseID
+			if rep.ReleaseID != inst.ReleaseID {
+				// status does not expose every release's manifest digest. Keep
+				// the old digest solely in install_record, never label it current.
+				rep.ManifestSHA256 = ""
+			}
+			if seed := st.SeededBaseline; seed != nil && seed.ReleaseID == rep.ReleaseID {
+				rep.ManifestSHA256 = seed.ManifestSHA256
+			}
+		} else if rep.Baseline.Status == "seeded" {
+			rep.Drifts = append(rep.Drifts, "updater_journal")
+		}
 	}
 	for _, d := range dirModes(l) {
 		st, sterr := os.Stat(d.path)
@@ -100,11 +143,11 @@ func Check(ctx context.Context, env *Env) (*CheckReport, error) {
 		rep.Directories = append(rep.Directories, ds)
 	}
 	if has {
-		if !unitsMatch(l, inst.ReleaseID) {
+		if !unitsMatch(l, rep.ReleaseID) {
 			rep.Drifts = append(rep.Drifts, "units")
 		}
-		target, _ := os.Readlink(l.CurrentLink)
-		if target != "releases/"+inst.ReleaseID {
+		target, err := filepath.EvalSymlinks(l.CurrentLink)
+		if err != nil || target != l.releaseDir(rep.ReleaseID) {
 			rep.Drifts = append(rep.Drifts, "current")
 		}
 		for _, unit := range expectActive {
@@ -123,7 +166,6 @@ func Check(ctx context.Context, env *Env) (*CheckReport, error) {
 			rep.Drifts = append(rep.Drifts, "identity")
 		}
 	}
-	rep.Baseline = readBaseline(l)
 	if rep.Baseline.Status == "failed" || rep.Baseline.Status == "unreadable" {
 		rep.Drifts = append(rep.Drifts, "baseline")
 	}
@@ -162,6 +204,33 @@ func Check(ctx context.Context, env *Env) (*CheckReport, error) {
 	return rep, errf(ExitDrifted, "drifted", "%s", strings.Join(rep.Drifts, ", "))
 }
 
+func readUpdaterStatus(ctx context.Context, env *Env, seeded bool) (*UpdaterStatus, error) {
+	path := filepath.Join(env.layout().UpdateJournal, "journal.db")
+	if _, err := os.Lstat(path); err != nil {
+		if os.IsNotExist(err) && !seeded {
+			return nil, nil // Older updater without a seeded baseline.
+		}
+		return nil, err
+	}
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+	raw, err := env.output(ctx, env.layout().updaterBin(), "status", "--journal", path)
+	if err != nil {
+		return nil, err
+	}
+	var st UpdaterStatus
+	if err := json.Unmarshal(raw, &st); err != nil {
+		return nil, err
+	}
+	if st.CurrentReleaseID != "" {
+		id, err := uuid.Parse(st.CurrentReleaseID)
+		if err != nil || id == uuid.Nil || id.String() != st.CurrentReleaseID {
+			return nil, fmt.Errorf("invalid current release in updater status")
+		}
+	}
+	return &st, nil
+}
+
 func formatMode(m os.FileMode) string {
 	return fmt.Sprintf("%04o", m.Perm())
 }
@@ -196,7 +265,7 @@ func readNetbird(ctx context.Context, env *Env) NetbirdStatus {
 	if err == nil {
 		st.Version = strings.TrimSpace(string(out))
 	}
-	status, serr := env.output(ctx, "netbird", "status")
+	status, serr := env.output(ctx, "netbird", "status", "--daemon-addr", env.layout().netbirdAddr())
 	if serr != nil {
 		state, _ := env.services().Active(ctx, UnitNetbird)
 		st.Daemon = state
@@ -228,7 +297,13 @@ func (r *CheckReport) Text() string {
 	fmt.Fprintf(&b, "kernel: %s\n", r.Kernel)
 	if r.ReleaseID != "" {
 		fmt.Fprintf(&b, "release_id: %s\n", r.ReleaseID)
-		fmt.Fprintf(&b, "manifest_sha256: %s\n", r.ManifestSHA256)
+		fmt.Fprintf(&b, "release_source: %s\n", r.ReleaseSource)
+		if r.ManifestSHA256 != "" {
+			fmt.Fprintf(&b, "manifest_sha256: %s\n", r.ManifestSHA256)
+		}
+	}
+	if r.InstallRecord != nil {
+		fmt.Fprintf(&b, "install_record: release=%s manifest_sha256=%s\n", r.InstallRecord.ReleaseID, r.InstallRecord.ManifestSHA256)
 	}
 	if r.Baseline != nil {
 		fmt.Fprintf(&b, "baseline: %s\n", r.Baseline.Status)

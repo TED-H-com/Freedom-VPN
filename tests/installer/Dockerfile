@@ -34,8 +34,20 @@ RUN apt-get update \
         fstrim.timer \
     && systemctl set-default multi-user.target
 
-# TEST ONLY stand-in for the pinned NetBird client. The real package is
-# installed only when this binary is absent (see packaging/installer/netbird.go).
+# Exercise the real pinned daemon and its Unix socket under the product unit.
+# Only `up` is intercepted: this suite has a fake enrollment control and no
+# NetBird management server. Full peer enrollment belongs to the devstack lab.
+RUN curl -fsSL https://pkgs.netbird.io/debian/public.key -o /tmp/netbird.asc \
+    && gpg --batch --dearmor -o /usr/share/keyrings/netbird.gpg /tmp/netbird.asc \
+    && echo 'deb [signed-by=/usr/share/keyrings/netbird.gpg] https://pkgs.netbird.io/debian stable main' > /etc/apt/sources.list.d/netbird.list \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends netbird=0.82.0 \
+    && systemctl disable netbird.service \
+    && systemctl mask netbird.service \
+    && mkdir -p /usr/lib/fvpn-tests \
+    && mv /usr/bin/netbird /usr/lib/fvpn-tests/netbird \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* /tmp/netbird.asc
 COPY netbird-stub.sh /usr/bin/netbird
 RUN chmod 0755 /usr/bin/netbird
 
