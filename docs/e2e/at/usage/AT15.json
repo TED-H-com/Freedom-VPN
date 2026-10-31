@@ -1,6 +1,6 @@
 {
   "id": "AT15",
-  "run_id": "eb79863a",
+  "run_id": "e1f8c483",
   "title": "用量批次冪等、亂序缺口、衝突稽核與簽章檢查點恢復 (Idempotent Usage Ingest, Contiguous ACK, Conflict Audit \u0026 Signed Checkpoint Recovery)",
   "spec": "§10.4–§10.8, §17.3, §19.5 AT15",
   "requirements": [
@@ -11,9 +11,9 @@
     "DATA01"
   ],
   "status": "blocked",
-  "at": "2026-10-31T02:28:46Z",
+  "at": "2026-10-31T02:39:01Z",
   "build": {
-    "git_commit": "ebfdb644d877961dbf5f8e1e5d6872ede7f27a34",
+    "git_commit": "46081fb0e4011b91e9f9f93be23e04e0f223d42d",
     "git_dirty": false,
     "go_version": "go1.27.3",
     "goos": "linux",
@@ -39,10 +39,10 @@
     "postgres": "sha256:4b220f2fb52725f7474da1635a6a2647bedfa32df2626a7834c4494d492904bc",
     "worker": "sha256:8f420ee6ce862d92f880b45bb881506ad339ff87d2ee5363078bbaa4196acde8"
   },
-  "policy_revision": "applied_config_generation=120; dns_profile=01a18fc3-7d70-719f-af74-2ae6bd8d7d38; domain_rule_set=01a18f95-01ff-7e78-8b73-868a778277ae; fair_use=01a18fc7-eaf5-7144-8083-caea72750ba9; plan=01a18fc3-8a7e-75df-b322-bde7ce4a0557; release_support=01a18f2d-cfa5-7793-9c2f-deb612a82a89",
+  "policy_revision": "applied_config_generation=129; plan=01a18fcc-48d7-71bc-877f-48ce32716af6; release_support=01a18f2d-cfa5-7793-9c2f-deb612a82a89; dns_profile=01a18fcc-3c13-77e2-b508-7fddd67f8178; domain_rule_set=01a18fcc-37ac-725b-ad8c-2e182b47813f; fair_use=01a18fd1-4b1e-727e-9f23-103541dc588a",
   "node_incarnation": "01a18f2d-e830-7e38-84eb-493517bd4460",
   "expected": "POST /api/v1/agent/usage-batches enforces idempotent batch replay, per-event duplicate/conflict/rejected status, contiguous ACK watermark (highest_contiguous_seq \u0026 blocked_seq), \u003e2^53 decimal string precision, and Ed25519-signed GET /api/v1/agent/usage-checkpoint recovery with fvpn-usage-admin freeze/begin-recovery/complete-recovery.",
-  "actual": "Live mTLS /api/v1/agent/usage-checkpoint and /api/v1/agent/usage-batches on node 01a18f2d-e7d6-770e-9b8c-edb2016a7db9 (incarnation 01a18f2d-e830-7e38-84eb-493517bd4460) verified Ed25519 recovery signature, out-of-order seq {18,20} -\u003e gap fill seq 19 advancing highest_contiguous_seq to 20, batch replay and duplicate retry with zero double-counted bytes, payload_sha256 conflict audit (usage_event_conflicts=1), rejected seq 22 (\u003e2^53 decimal string 9007199254740993) reporting blocked_seq=22 then advancing to 23, 409/403 error guards, and live fvpn-usage-admin freeze/begin-recovery/complete-recovery rotating ledger_epoch b158fb28-cb19-4390-9a01-2d9ef412fdd5 -\u003e 01a18fc9-e3b5-7485-8f3e-e4977cf1fa9a with replay_unavailable reconciliation to seq 24; live kernel data-plane serving precondition is blocked by .",
+  "actual": "Live mTLS /api/v1/agent/usage-checkpoint and /api/v1/agent/usage-batches on node 01a18f2d-e7d6-770e-9b8c-edb2016a7db9 (incarnation 01a18f2d-e830-7e38-84eb-493517bd4460) verified Ed25519 recovery signature, out-of-order seq {27,29} -\u003e gap fill seq 28 advancing highest_contiguous_seq to 29, batch replay and duplicate retry with zero double-counted bytes, payload_sha256 conflict audit (usage_event_conflicts=2), rejected seq 31 (\u003e2^53 decimal string 9007199254740993) reporting blocked_seq=31 then advancing to 32, 409/403 error guards, and live fvpn-usage-admin freeze/begin-recovery/complete-recovery rotating ledger_epoch 01a18fc9-e3b5-7485-8f3e-e4977cf1fa9a -\u003e 01a18fd3-4759-7694-a5e6-75b53cc9ec5d with replay_unavailable reconciliation to seq 33; live kernel data-plane serving precondition is blocked by FLOWTABLE_BYPASS.",
   "blockers": [
     "w1-netlab / w3-devstack-e2e: PR #220 (2473acf, node/enforce/verify_foreign.go) added whole-ruleset foreign-chain verification to VerifyServing; in deploy/devstack, Docker Engine installs table ip nat (POSTROUTING -\u003e DOCKER_POSTROUTING -\u003e xt target SNAT for 127.0.0.11 loopback DNS) inside node-netns and node2-netns, causing VerifyServing to fail with FLOWTABLE_BYPASS (\"table nat family ip hook postrouting priority 100 chain POSTROUTING statement xt\") and roll back table inet fvpn to fvpn_generation=0 whenever d.Serve=true."
   ],
@@ -51,57 +51,57 @@
       "command": "e2e.PrepareServingBaseline(ctx, admin.Client, admin.CSRF, false)",
       "exit_code": 0,
       "output": "boot_release_id=01a18f2d-cb1f-7f04-bfc7-dba4eac76ca8 support_revision_id=01a18f2d-cfa5-7793-9c2f-deb612a82a89 digests=0",
-      "at": "2026-10-31T02:21:54Z"
+      "at": "2026-10-31T02:31:27Z"
     },
     {
       "command": "POST /api/v1/admin/groups",
       "exit_code": 0,
       "output": "HTTP 201 group_id=01a18f2d-d1ff-71f9-8541-d8e4f3c71807",
-      "at": "2026-10-31T02:21:54Z"
+      "at": "2026-10-31T02:31:27Z"
     },
     {
       "command": "POST /api/v1/admin/policies (dns_profile, fair_use shadow, plan with exit_group_ids) + POST /activate",
       "exit_code": 0,
-      "output": "dns_rev=01a18fc3-7d70-719f-af74-2ae6bd8d7d38 fair_use_shadow_rev=01a18fc3-820a-7965-b320-9cc40232b055 plan_rev=01a18fc3-8a7e-75df-b322-bde7ce4a0557",
-      "at": "2026-10-31T02:21:59Z"
+      "output": "dns_rev=01a18fcc-3c13-77e2-b508-7fddd67f8178 fair_use_shadow_rev=01a18fcc-407a-7c93-8a38-7abd1369f444 plan_rev=01a18fcc-48d7-71bc-877f-48ce32716af6",
+      "at": "2026-10-31T02:31:32Z"
     },
     {
       "command": "PATCH /api/v1/admin/nodes/{id} + JoinNativeMember(memberA, memberB) + PUT /publication + D-067 Cycle 1 (bring_up) provisional-lease window",
       "exit_code": 0,
-      "output": "node_id=01a18f2d-e7d6-770e-9b8c-edb2016a7db9 exit_id=01a18f2d-e7d6-770f-9d32-b5397d190043 deviceA=01a18f5f-5980-785f-9cfd-0e6860b04f5b deviceB=01a18f5f-944b-7178-8130-c32a1397fa0b provisional_lease=a8f54c6a-163f-4ab2-8de3-977e18b22741 (ttl=60s, members=0) ready_obs=01a18fc4-bea8-78fa-9e94-b33b845f3eaa (reasons=[awaiting_member_grants], checks=map[lease:AWAITING_MEMBER_GRANTS qos:AWAITING_MEMBER_GRANTS source_binding:AWAITING_MEMBER_GRANTS]) populated_lease=c85de877-f661-41b7-8b66-d2bcac1288d3 (members=2) ready_to_populated_ms=5019 apply_blocker= (00000000-0000-0000-0000-000000000000) heartbeat=\"v1\\nboot_id af4fdbee-51f1-4413-b813-0b7475104714\\nmono_ns 768478323523784\\nwall_unix_ns 1793413439126702397\\npolicy_expires_mono_ns 0\\nbaseline_ok 1\\nserving 0\\ngeneration 116\\nreason safety_check_failed\"",
-      "at": "2026-10-31T02:24:02Z"
+      "output": "node_id=01a18f2d-e7d6-770e-9b8c-edb2016a7db9 exit_id=01a18f2d-e7d6-770f-9d32-b5397d190043 deviceA=01a18f5f-5980-785f-9cfd-0e6860b04f5b deviceB=01a18f5f-944b-7178-8130-c32a1397fa0b provisional_lease=db74de94-aa3e-4593-a1e1-596b5874bb79 (ttl=60s, members=0) ready_obs=01a18fcd-a1a4-7983-9fe3-aa16f11d129b (reasons=[awaiting_member_grants], checks=map[lease:AWAITING_MEMBER_GRANTS qos:AWAITING_MEMBER_GRANTS source_binding:AWAITING_MEMBER_GRANTS]) populated_lease=677c5ad3-b5a0-44dc-b77b-98dec868eb3b (members=2) ready_to_populated_ms=5021 apply_blocker=FLOWTABLE_BYPASS (01a18fce-194d-7c40-b1eb-246cda6a5222) heartbeat=\"v1\\nboot_id af4fdbee-51f1-4413-b813-0b7475104714\\nmono_ns 769070857585137\\nwall_unix_ns 1793414031660763733\\npolicy_expires_mono_ns 0\\nbaseline_ok 1\\nserving 0\\ngeneration 125\\nreason safety_check_failed\"",
+      "at": "2026-10-31T02:33:55Z"
     },
     {
       "command": "Baseline HTTPS probe through exit node (member -\u003e fvnb0 -\u003e fvmb0 -\u003e fvup0 -\u003e origin)",
       "exit_code": 0,
       "output": "counted=false generation=0 delta_up=0 delta_down=0 origin_src=",
-      "at": "2026-10-31T02:24:02Z"
+      "at": "2026-10-31T02:33:55Z"
     },
     {
       "command": "mTLS GET https://agent.example.invalid:9443/api/v1/agent/usage-checkpoint",
       "exit_code": 0,
-      "output": "HTTP 200 highest_contiguous_seq=17 ledger_epoch=b158fb28-cb19-4390-9a01-2d9ef412fdd5 recovery_record_null=true sig_verified=true",
-      "at": "2026-10-31T02:28:47Z"
+      "output": "HTTP 200 highest_contiguous_seq=26 ledger_epoch=01a18fc9-e3b5-7485-8f3e-e4977cf1fa9a recovery_record_null=false sig_verified=true",
+      "at": "2026-10-31T02:39:02Z"
     },
     {
-      "command": "mTLS POST /api/v1/agent/usage-batches (out-of-order {18,20}, replay, duplicate, fill 19, conflict 20, blocked_seq 22 -\u003e unblock 23, 409/403)",
+      "command": "mTLS POST /api/v1/agent/usage-batches (out-of-order {27,29}, replay, duplicate, fill 28, conflict 29, blocked_seq 31 -\u003e unblock 32, 409/403)",
       "exit_code": 0,
-      "output": "b1_hcs=18-\u003eb2_hcs=20 conflict_rows=1 blocked_seq=22-\u003eunblocked_hcs=23 errors=(409=LEDGER_EPOCH_MISMATCH,403=INCARNATION_MISMATCH,409=STATE_CONFLICT)",
-      "at": "2026-10-31T02:28:56Z"
+      "output": "b1_hcs=27-\u003eb2_hcs=29 conflict_rows=2 blocked_seq=31-\u003eunblocked_hcs=32 errors=(409=LEDGER_EPOCH_MISMATCH,403=INCARNATION_MISMATCH,409=STATE_CONFLICT)",
+      "at": "2026-10-31T02:39:12Z"
     },
     {
       "command": "fvpn-usage-admin freeze / begin-recovery / complete-recovery + mTLS replay_unavailable reconciliation",
       "exit_code": 0,
-      "output": "freeze={\n  \"actor\": \"01a18f2d-c1e3-7ba0-9ce1-44849c96aedc\",\n  \"reason\": \"TEST ONLY AT15 freeze\",\n  \"status\": \"frozen\"\n}; frozen_ingest=HTTP 503; begin={\n  \"recovery_id\": \"01a18fc9-e3b5-7484-ace7-ee12fa3e7d9b\",\n  \"previous_ledger_epoch\": \"b158fb28-cb19-4390-9a01-2d9ef412fdd5\",\n  \"new_ledger_epoch\": \"01a18fc9-e3b5-7485-8f3e-e4977cf1fa9a\",\n  \"mode\": \"reconciling\",\n  \"reason\": \"TEST ONLY AT15 begin recovery\",\n  \"actor\": \"01a18f2d-c1e3-7ba0-9ce1-44849c96aedc\",\n  \"signed_record\": {\n    \"signed\": {\n      \"actor\": \"01a18f2d-c1e3-7ba0-9ce1-44849c96aedc\",\n      \"affected_since\": \"2026-10-01T00:00:00Z\",\n      \"created_at\": \"2026-10-31T02:28:55.349291535Z\",\n      \"new_ledger_epoch\": \"01a18fc9-e3b5-7485-8f3e-e4977cf1fa9a\",\n      \"previous_ledger_epoch\": \"b158fb28-cb19-4390-9a01-2d9ef412fdd5\",\n      \"reason\": \"TEST ONLY AT15 begin recovery\",\n      \"recovery_id\": \"01a18fc9-e3b5-7484-ace7-ee12fa3e7d9b\",\n      \"restored_to\": \"2026-10-31T02:28:55.349291535Z\",\n      \"stream_count\": 16\n    },\n    \"signatures\": [\n      {\n        \"key_id\": \"01a18f2c-a16c-75db-b66b-ac4bcdd8fe47\",\n        \"algorithm\": \"ed25519\",\n        \"signature_b64\": \"LKX4RAw3JCte6ktlAp8kq7XQ5R4JAPnwubIWpMxefeyVoTccJ7L2jaq9eXpv8TZp7EdRE81WAIsCITq8rPYtAg==\"\n      }\n    ]\n  },\n  \"recomputed_streams\": 16,\n  \"created_at\": \"2026-10-31T02:28:55.349291535Z\"\n}; new_epoch=01a18fc9-e3b5-7485-8f3e-e4977cf1fa9a; reconcile_hcs=24; complete={\n  \"actor\": \"01a18f2d-c1e3-7ba0-9ce1-44849c96aedc\",\n  \"status\": \"normal\"\n}",
-      "at": "2026-10-31T02:28:56Z"
+      "output": "freeze={\n  \"actor\": \"01a18f2d-c1e3-7ba0-9ce1-44849c96aedc\",\n  \"reason\": \"TEST ONLY AT15 freeze\",\n  \"status\": \"frozen\"\n}; frozen_ingest=HTTP 503; begin={\n  \"recovery_id\": \"01a18fd3-4759-7693-8d55-39403214aa15\",\n  \"previous_ledger_epoch\": \"01a18fc9-e3b5-7485-8f3e-e4977cf1fa9a\",\n  \"new_ledger_epoch\": \"01a18fd3-4759-7694-a5e6-75b53cc9ec5d\",\n  \"mode\": \"reconciling\",\n  \"reason\": \"TEST ONLY AT15 begin recovery\",\n  \"actor\": \"01a18f2d-c1e3-7ba0-9ce1-44849c96aedc\",\n  \"signed_record\": {\n    \"signed\": {\n      \"actor\": \"01a18f2d-c1e3-7ba0-9ce1-44849c96aedc\",\n      \"affected_since\": \"2026-10-01T00:00:00Z\",\n      \"created_at\": \"2026-10-31T02:39:10.681426352Z\",\n      \"new_ledger_epoch\": \"01a18fd3-4759-7694-a5e6-75b53cc9ec5d\",\n      \"previous_ledger_epoch\": \"01a18fc9-e3b5-7485-8f3e-e4977cf1fa9a\",\n      \"reason\": \"TEST ONLY AT15 begin recovery\",\n      \"recovery_id\": \"01a18fd3-4759-7693-8d55-39403214aa15\",\n      \"restored_to\": \"2026-10-31T02:39:10.681426352Z\",\n      \"stream_count\": 18\n    },\n    \"signatures\": [\n      {\n        \"key_id\": \"01a18f2c-a16c-75db-b66b-ac4bcdd8fe47\",\n        \"algorithm\": \"ed25519\",\n        \"signature_b64\": \"oAFErJhDQAPsAjAlbg1jbBfwjbAJvoj1xtchwCjVPngCTxES8IH770yCUcxwv+gfHfjlR0DzKIVK1Krx7SJaAQ==\"\n      }\n    ]\n  },\n  \"recomputed_streams\": 18,\n  \"created_at\": \"2026-10-31T02:39:10.681426352Z\"\n}; new_epoch=01a18fd3-4759-7694-a5e6-75b53cc9ec5d; reconcile_hcs=33; complete={\n  \"actor\": \"01a18f2d-c1e3-7ba0-9ce1-44849c96aedc\",\n  \"status\": \"normal\"\n}",
+      "at": "2026-10-31T02:39:12Z"
     }
   ],
   "observations": {
     "active_policy_revisions": {
-      "dns_profile": "01a18fc3-7d70-719f-af74-2ae6bd8d7d38",
-      "domain_rule_set": "01a18f95-01ff-7e78-8b73-868a778277ae",
-      "fair_use": "01a18fc7-eaf5-7144-8083-caea72750ba9",
-      "plan": "01a18fc3-8a7e-75df-b322-bde7ce4a0557",
+      "dns_profile": "01a18fcc-3c13-77e2-b508-7fddd67f8178",
+      "domain_rule_set": "01a18fcc-37ac-725b-ad8c-2e182b47813f",
+      "fair_use": "01a18fd1-4b1e-727e-9f23-103541dc588a",
+      "plan": "01a18fcc-48d7-71bc-877f-48ce32716af6",
       "release_support": "01a18f2d-cfa5-7793-9c2f-deb612a82a89"
     },
     "blocked_seq_on_rejection": "6",
@@ -124,7 +124,7 @@
       "node_service": "node",
       "origin_authenticated": true,
       "origin_source": "",
-      "probe_id": "78dc6179-d857-49fa-af49-d0f2c9e370e5",
+      "probe_id": "9cbe99f6-0058-44e6-9850-8276209f478e",
       "requests": 0
     },
     "device_a_id": "01a18f5f-5980-785f-9cfd-0e6860b04f5b",
@@ -134,11 +134,11 @@
     "group_id": "01a18f2d-d1ff-71f9-8541-d8e4f3c71807",
     "large_download_bytes": "9007199254740995",
     "large_upload_bytes": "9007199254740993",
-    "live_conflict_audit_rows": 1,
-    "live_initial_checkpoint_seq": 17,
-    "live_post_recovery_hcs": 24,
-    "live_recovery_new_epoch": "01a18fc9-e3b5-7485-8f3e-e4977cf1fa9a",
-    "live_recovery_old_epoch": "b158fb28-cb19-4390-9a01-2d9ef412fdd5",
+    "live_conflict_audit_rows": 2,
+    "live_initial_checkpoint_seq": 26,
+    "live_post_recovery_hcs": 33,
+    "live_recovery_new_epoch": "01a18fd3-4759-7694-a5e6-75b53cc9ec5d",
+    "live_recovery_old_epoch": "01a18fc9-e3b5-7485-8f3e-e4977cf1fa9a",
     "member_usage_total_bytes": "18014398509491988",
     "node_id": "01a18f2d-e7d6-770e-9b8c-edb2016a7db9",
     "node_incarnation_id": "01a18f2d-e830-7e38-84eb-493517bd4460",
@@ -146,9 +146,9 @@
     "out_of_order_hcs_before_seq2": "1",
     "port_base": 48000,
     "post_recovery_hcs": "7",
-    "recovery_new_epoch": "01a18fc9-eace-783b-9b9a-af4b875bcc3b",
-    "recovery_previous_epoch": "7635a9c3-4fa0-459b-8337-ad4a42bbea46",
-    "run_id": "eb79863a",
+    "recovery_new_epoch": "01a18fd3-4e5e-7e28-92cc-7766ce9d54b3",
+    "recovery_previous_epoch": "990ff0ad-db9a-45b4-8614-94fd567a62f7",
+    "run_id": "e1f8c483",
     "stack_prefix": "fvpn-w4-usage"
   },
   "mechanism_checks": [
@@ -156,7 +156,7 @@
       "name": "LiveMTLSUsageBatchesContiguousAckConflictBlockedSeqAndRecoveryCLI",
       "spec_ref": "§10.4–§10.8, §14.6, §17.3, MTR02, MTR03, MTR04, API01, DATA01",
       "status": "pass",
-      "summary": "Live mTLS /api/v1/agent/usage-batches \u0026 /api/v1/agent/usage-checkpoint on node 01a18f2d-e7d6-770e-9b8c-edb2016a7db9 proved out-of-order {18,20}-\u003e19 contiguous ACK, Idempotency-Key batch replay, duplicate event retry, payload_sha256 conflict audit (1 rows), \u003e2^53 decimal string blocked_seq=22-\u003e23, 409/403 guards, and fvpn-usage-admin freeze/begin-recovery/complete-recovery epoch rotation (b158fb28-cb19-4390-9a01-2d9ef412fdd5-\u003e01a18fc9-e3b5-7485-8f3e-e4977cf1fa9a)."
+      "summary": "Live mTLS /api/v1/agent/usage-batches \u0026 /api/v1/agent/usage-checkpoint on node 01a18f2d-e7d6-770e-9b8c-edb2016a7db9 proved out-of-order {27,29}-\u003e28 contiguous ACK, Idempotency-Key batch replay, duplicate event retry, payload_sha256 conflict audit (2 rows), \u003e2^53 decimal string blocked_seq=31-\u003e32, 409/403 guards, and fvpn-usage-admin freeze/begin-recovery/complete-recovery epoch rotation (01a18fc9-e3b5-7485-8f3e-e4977cf1fa9a-\u003e01a18fd3-4759-7694-a5e6-75b53cc9ec5d)."
     },
     {
       "name": "ContiguousAckAndDecimalStringPrecisionAbove2Pow53",

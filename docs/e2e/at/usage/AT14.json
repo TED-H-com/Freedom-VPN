@@ -1,6 +1,6 @@
 {
   "id": "AT14",
-  "run_id": "eb79863a",
+  "run_id": "e1f8c483",
   "title": "轉發許可流量計量正確性與排除項 (Forward-Admission Traffic Metering \u0026 Exclusions)",
   "spec": "§10.1, §10.2, §19.5 AT14",
   "requirements": [
@@ -10,9 +10,9 @@
     "DATA01"
   ],
   "status": "blocked",
-  "at": "2026-10-31T02:24:45Z",
+  "at": "2026-10-31T02:34:48Z",
   "build": {
-    "git_commit": "ebfdb644d877961dbf5f8e1e5d6872ede7f27a34",
+    "git_commit": "46081fb0e4011b91e9f9f93be23e04e0f223d42d",
     "git_dirty": false,
     "go_version": "go1.27.3",
     "goos": "linux",
@@ -38,10 +38,10 @@
     "postgres": "sha256:4b220f2fb52725f7474da1635a6a2647bedfa32df2626a7834c4494d492904bc",
     "worker": "sha256:8f420ee6ce862d92f880b45bb881506ad339ff87d2ee5363078bbaa4196acde8"
   },
-  "policy_revision": "applied_config_generation=117; dns_profile=01a18fc3-7d70-719f-af74-2ae6bd8d7d38; domain_rule_set=01a18f95-01ff-7e78-8b73-868a778277ae; fair_use=01a18fc5-8cb0-7a68-baff-83e78a2e56f0; plan=01a18fc3-8a7e-75df-b322-bde7ce4a0557; release_support=01a18f2d-cfa5-7793-9c2f-deb612a82a89",
+  "policy_revision": "applied_config_generation=126; release_support=01a18f2d-cfa5-7793-9c2f-deb612a82a89; dns_profile=01a18fcc-3c13-77e2-b508-7fddd67f8178; domain_rule_set=01a18fcc-37ac-725b-ad8c-2e182b47813f; fair_use=01a18fce-9904-79ab-87e0-fbdfe54e7ccc; plan=01a18fcc-48d7-71bc-877f-48ce32716af6",
   "node_incarnation": "01a18f2d-e830-7e38-84eb-493517bd4460",
   "expected": "Admitted member forwarding traffic across fvmb0 \u003c-\u003e fvup0 is metered within ±1% under forward_admission_v1; WireGuard handshakes, blocked RFC1918/ULA packets, and node-local DNS queries to :53 are excluded from member usage counters, and fvpn-agent uploads the sampled kernel counters to the central ledger.",
-  "actual": "Live node 01a18f2d-e7d6-770e-9b8c-edb2016a7db9 verified RFC1918 exclusion (fvmb0 ingress +0 B, ctdeny +0 B, member delta 0), node-local :53 input exclusion (ctin +0 B, member delta 0), and central ledger projection (GET /api/v1/member/usage total_bytes=94000), while in-container netns fv_at14 proved ±1% kernel counter accuracy; live serving apply on the default node netns is blocked by  (observation 00000000-0000-0000-0000-000000000000).",
+  "actual": "Live node 01a18f2d-e7d6-770e-9b8c-edb2016a7db9 verified RFC1918 exclusion (fvmb0 ingress +0 B, ctdeny +0 B, member delta 0), node-local :53 input exclusion (ctin +0 B, member delta 0), and central ledger projection (GET /api/v1/member/usage total_bytes=106429), while in-container netns fv_at14 proved ±1% kernel counter accuracy; live serving apply on the default node netns is blocked by FLOWTABLE_BYPASS (observation 01a18fce-194d-7c40-b1eb-246cda6a5222).",
   "blockers": [
     "w1-netlab / w3-devstack-e2e: PR #220 (2473acf, node/enforce/verify_foreign.go) added whole-ruleset foreign-chain verification to VerifyServing; in deploy/devstack, Docker Engine installs table ip nat (POSTROUTING -\u003e DOCKER_POSTROUTING -\u003e xt target SNAT for 127.0.0.11 loopback DNS) inside node-netns and node2-netns, causing VerifyServing to fail with FLOWTABLE_BYPASS (\"table nat family ip hook postrouting priority 100 chain POSTROUTING statement xt\") and roll back table inet fvpn to fvpn_generation=0 whenever d.Serve=true."
   ],
@@ -50,57 +50,57 @@
       "command": "e2e.PrepareServingBaseline(ctx, admin.Client, admin.CSRF, false)",
       "exit_code": 0,
       "output": "boot_release_id=01a18f2d-cb1f-7f04-bfc7-dba4eac76ca8 support_revision_id=01a18f2d-cfa5-7793-9c2f-deb612a82a89 digests=0",
-      "at": "2026-10-31T02:21:54Z"
+      "at": "2026-10-31T02:31:27Z"
     },
     {
       "command": "POST /api/v1/admin/groups",
       "exit_code": 0,
       "output": "HTTP 201 group_id=01a18f2d-d1ff-71f9-8541-d8e4f3c71807",
-      "at": "2026-10-31T02:21:54Z"
+      "at": "2026-10-31T02:31:27Z"
     },
     {
       "command": "POST /api/v1/admin/policies (dns_profile, fair_use shadow, plan with exit_group_ids) + POST /activate",
       "exit_code": 0,
-      "output": "dns_rev=01a18fc3-7d70-719f-af74-2ae6bd8d7d38 fair_use_shadow_rev=01a18fc3-820a-7965-b320-9cc40232b055 plan_rev=01a18fc3-8a7e-75df-b322-bde7ce4a0557",
-      "at": "2026-10-31T02:21:59Z"
+      "output": "dns_rev=01a18fcc-3c13-77e2-b508-7fddd67f8178 fair_use_shadow_rev=01a18fcc-407a-7c93-8a38-7abd1369f444 plan_rev=01a18fcc-48d7-71bc-877f-48ce32716af6",
+      "at": "2026-10-31T02:31:32Z"
     },
     {
       "command": "PATCH /api/v1/admin/nodes/{id} + JoinNativeMember(memberA, memberB) + PUT /publication + D-067 Cycle 1 (bring_up) provisional-lease window",
       "exit_code": 0,
-      "output": "node_id=01a18f2d-e7d6-770e-9b8c-edb2016a7db9 exit_id=01a18f2d-e7d6-770f-9d32-b5397d190043 deviceA=01a18f5f-5980-785f-9cfd-0e6860b04f5b deviceB=01a18f5f-944b-7178-8130-c32a1397fa0b provisional_lease=a8f54c6a-163f-4ab2-8de3-977e18b22741 (ttl=60s, members=0) ready_obs=01a18fc4-bea8-78fa-9e94-b33b845f3eaa (reasons=[awaiting_member_grants], checks=map[lease:AWAITING_MEMBER_GRANTS qos:AWAITING_MEMBER_GRANTS source_binding:AWAITING_MEMBER_GRANTS]) populated_lease=c85de877-f661-41b7-8b66-d2bcac1288d3 (members=2) ready_to_populated_ms=5019 apply_blocker= (00000000-0000-0000-0000-000000000000) heartbeat=\"v1\\nboot_id af4fdbee-51f1-4413-b813-0b7475104714\\nmono_ns 768478323523784\\nwall_unix_ns 1793413439126702397\\npolicy_expires_mono_ns 0\\nbaseline_ok 1\\nserving 0\\ngeneration 116\\nreason safety_check_failed\"",
-      "at": "2026-10-31T02:24:02Z"
+      "output": "node_id=01a18f2d-e7d6-770e-9b8c-edb2016a7db9 exit_id=01a18f2d-e7d6-770f-9d32-b5397d190043 deviceA=01a18f5f-5980-785f-9cfd-0e6860b04f5b deviceB=01a18f5f-944b-7178-8130-c32a1397fa0b provisional_lease=db74de94-aa3e-4593-a1e1-596b5874bb79 (ttl=60s, members=0) ready_obs=01a18fcd-a1a4-7983-9fe3-aa16f11d129b (reasons=[awaiting_member_grants], checks=map[lease:AWAITING_MEMBER_GRANTS qos:AWAITING_MEMBER_GRANTS source_binding:AWAITING_MEMBER_GRANTS]) populated_lease=677c5ad3-b5a0-44dc-b77b-98dec868eb3b (members=2) ready_to_populated_ms=5021 apply_blocker=FLOWTABLE_BYPASS (01a18fce-194d-7c40-b1eb-246cda6a5222) heartbeat=\"v1\\nboot_id af4fdbee-51f1-4413-b813-0b7475104714\\nmono_ns 769070857585137\\nwall_unix_ns 1793414031660763733\\npolicy_expires_mono_ns 0\\nbaseline_ok 1\\nserving 0\\ngeneration 125\\nreason safety_check_failed\"",
+      "at": "2026-10-31T02:33:55Z"
     },
     {
       "command": "Baseline HTTPS probe through exit node (member -\u003e fvnb0 -\u003e fvmb0 -\u003e fvup0 -\u003e origin)",
       "exit_code": 0,
       "output": "counted=false generation=0 delta_up=0 delta_down=0 origin_src=",
-      "at": "2026-10-31T02:24:02Z"
+      "at": "2026-10-31T02:33:55Z"
     },
     {
       "command": "Live HTTPS probe from member through node to origin + nft -j list table inet fvpn",
       "exit_code": 0,
-      "output": "counted=false generation=0 delta_up=0 delta_down=0 memberB_delta=0/0 apply_blocker= (00000000-0000-0000-0000-000000000000)",
-      "at": "2026-10-31T02:24:52Z"
+      "output": "counted=false generation=0 delta_up=0 delta_down=0 memberB_delta=0/0 apply_blocker=FLOWTABLE_BYPASS (01a18fce-194d-7c40-b1eb-246cda6a5222)",
+      "at": "2026-10-31T02:34:55Z"
     },
     {
       "command": "Live RFC1918 (10.254.254.1) \u0026 node-local (:53) exclusion probes from member",
       "exit_code": 0,
       "output": "rfc1918: fvmb0_rx_delta=0 ctdeny_delta=0 member_counter_delta=0/0; node_input_53: ctin_delta=0 member_counter_delta=0/0",
-      "at": "2026-10-31T02:24:52Z"
+      "at": "2026-10-31T02:34:55Z"
     },
     {
       "command": "mTLS POST /api/v1/agent/usage-batches + GET /api/v1/member/usage + inspect usage.db \u0026 PostgreSQL usage_samples/usage_rollups",
       "exit_code": 0,
-      "output": "pg_samples=43068/50932 member_usage_total=94000 pg_events=16 sqlite_events=0 acked_through=15",
-      "at": "2026-10-31T02:24:53Z"
+      "output": "pg_samples=48450/57979 member_usage_total=106429 pg_events=25 sqlite_events=0 acked_through=24",
+      "at": "2026-10-31T02:34:57Z"
     }
   ],
   "observations": {
     "active_policy_revisions": {
-      "dns_profile": "01a18fc3-7d70-719f-af74-2ae6bd8d7d38",
-      "domain_rule_set": "01a18f95-01ff-7e78-8b73-868a778277ae",
-      "fair_use": "01a18fc7-eaf5-7144-8083-caea72750ba9",
-      "plan": "01a18fc3-8a7e-75df-b322-bde7ce4a0557",
+      "dns_profile": "01a18fcc-3c13-77e2-b508-7fddd67f8178",
+      "domain_rule_set": "01a18fcc-37ac-725b-ad8c-2e182b47813f",
+      "fair_use": "01a18fd1-4b1e-727e-9f23-103541dc588a",
+      "plan": "01a18fcc-48d7-71bc-877f-48ce32716af6",
       "release_support": "01a18f2d-cfa5-7793-9c2f-deb612a82a89"
     },
     "bootstrap_transfer": {
@@ -122,11 +122,14 @@
       "node_service": "node",
       "origin_authenticated": true,
       "origin_source": "",
-      "probe_id": "78dc6179-d857-49fa-af49-d0f2c9e370e5",
+      "probe_id": "9cbe99f6-0058-44e6-9850-8276209f478e",
       "requests": 0
     },
     "d067_provisional_lease_bring_up": {
-      "apply_blocker_observation_report_id": "00000000-0000-0000-0000-000000000000",
+      "apply_blocker_detail": "table nat family ip hook postrouting priority 100 chain POSTROUTING statement xt",
+      "apply_blocker_error_code": "FLOWTABLE_BYPASS",
+      "apply_blocker_observation_at": "2026-10-31T02:33:31.219611Z",
+      "apply_blocker_observation_report_id": "01a18fce-194d-7c40-b1eb-246cda6a5222",
       "check_error_codes": {
         "lease": "AWAITING_MEMBER_GRANTS",
         "qos": "AWAITING_MEMBER_GRANTS",
@@ -137,7 +140,7 @@
         {
           "code": "AWAITING_MEMBER_GRANTS",
           "message": "Serving lease has no member grants yet.",
-          "observed_at": "2026-10-31T02:23:18.160463785Z",
+          "observed_at": "2026-10-31T02:33:00.552240949Z",
           "stage": "lease"
         }
       ],
@@ -161,7 +164,7 @@
         "node_service": "node",
         "origin_authenticated": true,
         "origin_source": "",
-        "probe_id": "78dc6179-d857-49fa-af49-d0f2c9e370e5",
+        "probe_id": "9cbe99f6-0058-44e6-9850-8276209f478e",
         "requests": 0
       },
       "forwarding_block_reasons": [
@@ -171,25 +174,25 @@
       "lease_expired_reported_during_window": false,
       "max_allowed_window_ms": 65000,
       "node_id": "01a18f2d-e7d6-770e-9b8c-edb2016a7db9",
-      "old_applied_generation": 114,
-      "populated_lease_expires_at": "2026-11-01T02:23:23.210452Z",
-      "populated_lease_generation": 116,
-      "populated_lease_id": "c85de877-f661-41b7-8b66-d2bcac1288d3",
-      "populated_lease_in_force_at": "2026-10-31T02:23:23.210452Z",
-      "populated_lease_issued_at": "2026-10-31T02:23:23.210452Z",
+      "old_applied_generation": 123,
+      "populated_lease_expires_at": "2026-11-01T02:33:05.605449Z",
+      "populated_lease_generation": 125,
+      "populated_lease_id": "677c5ad3-b5a0-44dc-b77b-98dec868eb3b",
+      "populated_lease_in_force_at": "2026-10-31T02:33:05.605449Z",
+      "populated_lease_issued_at": "2026-10-31T02:33:05.605449Z",
       "populated_lease_member_count": 2,
       "populated_lease_ttl_seconds": 86400,
-      "provisional_lease_expires_at": "2026-10-31T02:24:18.136071Z",
-      "provisional_lease_generation": 116,
-      "provisional_lease_id": "a8f54c6a-163f-4ab2-8de3-977e18b22741",
-      "provisional_lease_issued_at": "2026-10-31T02:23:18.136071Z",
+      "provisional_lease_expires_at": "2026-10-31T02:34:00.527933Z",
+      "provisional_lease_generation": 125,
+      "provisional_lease_id": "db74de94-aa3e-4593-a1e1-596b5874bb79",
+      "provisional_lease_issued_at": "2026-10-31T02:33:00.527933Z",
       "provisional_lease_member_count": 0,
       "provisional_lease_ttl_seconds": 60,
-      "ready_observation_received_at": "2026-10-31T02:23:18.190635Z",
-      "ready_observation_report_id": "01a18fc4-bea8-78fa-9e94-b33b845f3eaa",
+      "ready_observation_received_at": "2026-10-31T02:33:00.584324Z",
+      "ready_observation_report_id": "01a18fcd-a1a4-7983-9fe3-aa16f11d129b",
       "ready_to_first_counted_byte_ms": 0,
-      "ready_to_populated_lease_ms": 5019,
-      "target_desired_generation": 115
+      "ready_to_populated_lease_ms": 5021,
+      "target_desired_generation": 124
     },
     "device_a_id": "01a18f5f-5980-785f-9cfd-0e6860b04f5b",
     "device_b_id": "01a18f5f-944b-7178-8130-c32a1397fa0b",
@@ -217,7 +220,7 @@
       "node_service": "node",
       "origin_authenticated": true,
       "origin_source": "",
-      "probe_id": "3db3cafe-3f54-4d72-8b56-4058ff4a47f0",
+      "probe_id": "d889d6ba-2716-4ca9-baf3-a4d56245f23a",
       "requests": 0
     },
     "live_exclusions": {
@@ -250,11 +253,11 @@
     "member_a_total_bytes": "44105728",
     "member_b_total_bytes": "3145728",
     "member_usage_api": {
-      "aggregate_as_of": "2026-10-31T02:24:53.397163Z",
+      "aggregate_as_of": "2026-10-31T02:34:56.765283Z",
       "days": [],
       "fair_use": {
         "applying": false,
-        "as_of": "2026-10-31T02:24:53.397163Z",
+        "as_of": "2026-10-31T02:34:56.765283Z",
         "rate": null,
         "reason": null,
         "resets_at": "2026-11-01T00:00:00Z",
@@ -263,20 +266,20 @@
         "tier_name": null
       },
       "granularity": "month",
-      "last_observed_at": "2026-10-31T02:24:50Z",
+      "last_observed_at": "2026-10-31T02:34:54Z",
       "metering_version": "forward_admission_v1",
       "period_end": "2026-11-01T00:00:00Z",
       "period_id": "2026-10",
       "period_start": "2026-10-01T00:00:00Z",
       "quality": {
         "estimated": false,
-        "gap": false,
+        "gap": true,
         "reconciliation_in_progress": false
       },
       "totals": {
-        "download_bytes": "50932",
-        "total_bytes": "94000",
-        "upload_bytes": "43068"
+        "download_bytes": "57979",
+        "total_bytes": "106429",
+        "upload_bytes": "48450"
       }
     },
     "metering_version": "forward_admission_v1",
@@ -284,9 +287,9 @@
     "node_incarnation_id": "01a18f2d-e830-7e38-84eb-493517bd4460",
     "payload_sha256": "eaefe7150a9daa88e05857aa5e323b41dcd6c4b11b6ce8dd781e156b4daa86cd",
     "port_base": 48000,
-    "run_id": "eb79863a",
+    "run_id": "e1f8c483",
     "sqlite_usage_db": {
-      "acked_through": 15,
+      "acked_through": 24,
       "archived_count": 0,
       "counters_count": 0,
       "events_count": 0,
@@ -294,8 +297,8 @@
       "gate_reason": "",
       "gate_stopped": 0,
       "last_close_reason": "",
-      "ledger_epoch": "b158fb28-cb19-4390-9a01-2d9ef412fdd5",
-      "next_seq": 16,
+      "ledger_epoch": "01a18fc9-e3b5-7485-8f3e-e4977cf1fa9a",
+      "next_seq": 25,
       "open_epoch": "01a18f2d-e887-79e0-8563-c537b02cea96",
       "open_reason": "baseline",
       "outbox_count": 0
@@ -307,7 +310,7 @@
       "name": "LiveNodeExclusionsAndCentralUsageProjection",
       "spec_ref": "§10.1, §10.2, MTR01, MTR05, API01, DATA01",
       "status": "pass",
-      "summary": "Live node fvpn-w4-usage-node excluded blocked RFC1918 (fvmb0 ingress +0 B, ctdeny +0 B, member delta 0) and node-local input (:53 ctin +0 B, member delta 0), and committed signed UsageEvents to PostgreSQL with GET /api/v1/member/usage reporting exact total_bytes=94000."
+      "summary": "Live node fvpn-w4-usage-node excluded blocked RFC1918 (fvmb0 ingress +0 B, ctdeny +0 B, member delta 0) and node-local input (:53 ctin +0 B, member delta 0), and committed signed UsageEvents to PostgreSQL with GET /api/v1/member/usage reporting exact total_bytes=106429."
     },
     {
       "name": "ForwardAdmissionRuleOrderAndExclusions",

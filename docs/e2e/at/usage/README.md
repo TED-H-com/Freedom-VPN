@@ -1,12 +1,12 @@
 # Wave 4 Usage Acceptance Summary (`w4-at-usage` — Follow-up 3)
 
-- **Run ID**: `eb79863a`
-- **Recorded At (UTC)**: `2026-10-31T02:28:57Z`
-- **Source Commit**: `ebfdb644d877961dbf5f8e1e5d6872ede7f27a34` (dirty: `false`)
+- **Run ID**: `e1f8c483`
+- **Recorded At (UTC)**: `2026-10-31T02:39:12Z`
+- **Source Commit**: `46081fb0e4011b91e9f9f93be23e04e0f223d42d` (dirty: `false`)
 - **Stack Instance**: `FVPN_E2E_PREFIX=w4-usage` (`fvpn-w4-usage-*`), `FVPN_E2E_PORT_BASE=48000`
 - **Primary Exit Node**: `node_id=01a18f2d-e7d6-770e-9b8c-edb2016a7db9`, `incarnation_id=01a18f2d-e830-7e38-84eb-493517bd4460`, `exit_id=01a18f2d-e7d6-770f-9d32-b5397d190043` (`fvpn-exit-1836ffa7f54af96f436bcb78`)
-- **Second Exit Node (`AT19` & `ENR-03`)**: `node_id=01a18fc6-fb50-793b-b824-718838f20496`, `incarnation_id=01a18fc8-90a6-781b-ab46-c0a6531d96ed` (initial: `01a18fc6-fc7d-73f6-bf0c-6d8abb6fd46b`), `exit_id=01a18fc6-fb50-793c-bff4-6d42db93bf9d` (`fvpn-exit-c862913a5eb3813c005357c0`)
-- **Non-Carrying Registered Node (`AT19`)**: `node_id=01a18fc7-d74c-70f9-9fa0-d48d9f112449`, `incarnation_id=01a18fc7-d74f-7b21-8712-cfcadebddc63` (`desired_config_generation=0 -> 0`)
+- **Second Exit Node (`AT19` & `ENR-03`)**: `node_id=01a18fd0-4188-77d3-9e94-5c5bdc8f8d29`, `incarnation_id=01a18fd1-f3d3-7868-9373-487f724b9df7` (initial: `01a18fd0-42b9-7e45-97db-c16ad22f59d0`), `exit_id=01a18fd0-4188-77d4-a466-c66dc72ab9d4` (`fvpn-exit-cd7bd7ca8917d3f58c624b1b`)
+- **Non-Carrying Registered Node (`AT19`)**: `node_id=01a18fd1-3793-7120-9318-d306221ee728`, `incarnation_id=01a18fd1-3795-7559-b3ab-ff42bafcc873` (`desired_config_generation=0 -> 0`)
 - **Admitted Member Devices**: `memberA` device `01a18f5f-5980-785f-9cfd-0e6860b04f5b`, `memberB` device `01a18f5f-944b-7178-8130-c32a1397fa0b`
 - **Totals**: `0 pass`, `6 blocked`, `0 fail`
 - **Run Archives**: [history/initial/](history/initial/) (#80), [history/followup2/](history/followup2/) (#214)
@@ -28,22 +28,22 @@
 
 | Transition | Carrying `node` Gen | Carrying `node2` Gen | Non-Carrying `other` Gen | Clearing Observation | Wall-Clock (`ms`) | Tier 2 Rate (`5Mbit`/`2Mbit`) | Replay Gen After |
 |---|---|---|---|---|---|---|---|
-| `policy.activated` (`mode=enforce`) | `117 -> 119` | `4 -> 7` | `0 -> 0` | `139ab64b-59a5-4b60-84d7-73c8eddfbe9b` (`gen=7`, `2026-10-31T02:26:52.060175Z`) | `5384 ms` | `DesiredState 5Mbit/2Mbit (kernel tc blocked by FLOWTABLE_BYPASS)` | `119 / 7 / 0` |
-| `fup.member_generation_changed` (usage threshold) | `119 -> 120` | `7 -> 8` | `0 -> 0` | `c14761e0-9137-49ef-9b15-f4d920babbe7` (`gen=8`, `2026-10-31T02:27:07.475006Z`) | `6141 ms` | `DesiredState 5Mbit/2Mbit (kernel tc blocked by FLOWTABLE_BYPASS)` | `120 / 8 / 0` |
+| `policy.activated` (`mode=enforce`) | `126 -> 127` | `4 -> 7` | `0 -> 0` | `5a9a70e5-b7d2-4c4d-9175-fc7acba16c2b` (`gen=7`, `2026-10-31T02:37:06.496862Z`) | `5387 ms` | `DesiredState 5Mbit/2Mbit (kernel tc blocked by FLOWTABLE_BYPASS)` | `127 / 7 / 0` |
+| `fup.member_generation_changed` (usage threshold) | `128 -> 129` | `8 -> 9` | `0 -> 0` | `922edc3f-c2b6-4f4d-a4aa-3bea02b6fa8d` (`gen=9`, `2026-10-31T02:37:22.991386Z`) | `6151 ms` | `DesiredState 5Mbit/2Mbit (kernel tc blocked by FLOWTABLE_BYPASS)` | `129 / 9 / 0` |
 
 ### 2. D-067 Provisional-Lease Timing (`awaiting_member_grants` -> Populated Lease)
 
 | Cycle | Ready Observation (`t_ready`) | Populated Lease (`t_lease`) | Apply Blocker After Populated Lease | Ready -> Lease (`ms`) | Max Allowed (`ms`) | Checks (`lease`/`qos`/`source_binding`) | `errors[]` (`stage=lease`, zero `LEASE_EXPIRED`) |
 |---|---|---|---|---|---|---|---|
-| `bring_up` | `01a18fc4-bea8-78fa-9e94-b33b845f3eaa` (`2026-10-31T02:23:18.190635Z`) | `c85de877-f661-41b7-8b66-d2bcac1288d3` (`members=2`, `2026-10-31T02:23:23.210452Z`) | `` (`obs=00000000-0000-0000-0000-000000000000`) | `5019 ms` | `65000 ms` | `AWAITING_MEMBER_GRANTS` / `AWAITING_MEMBER_GRANTS` / `AWAITING_MEMBER_GRANTS` | `count=1` (`AWAITING_MEMBER_GRANTS`), `expired=false` |
-| `agent_restart` | `01a18fc5-99dc-72da-bd1f-8fe1d954859e` (`2026-10-31T02:24:14.305677Z`) | `6e38985a-51ac-4098-81d6-88e685e60f64` (`members=2`, `2026-10-31T02:24:19.330482Z`) | `` (`obs=00000000-0000-0000-0000-000000000000`) | `5024 ms` | `65000 ms` | `AWAITING_MEMBER_GRANTS` / `AWAITING_MEMBER_GRANTS` / `AWAITING_MEMBER_GRANTS` | `count=1` (`AWAITING_MEMBER_GRANTS`), `expired=false` |
+| `bring_up` | `01a18fcd-a1a4-7983-9fe3-aa16f11d129b` (`2026-10-31T02:33:00.584324Z`) | `677c5ad3-b5a0-44dc-b77b-98dec868eb3b` (`members=2`, `2026-10-31T02:33:05.605449Z`) | `FLOWTABLE_BYPASS` (`obs=01a18fce-194d-7c40-b1eb-246cda6a5222`) | `5021 ms` | `65000 ms` | `AWAITING_MEMBER_GRANTS` / `AWAITING_MEMBER_GRANTS` / `AWAITING_MEMBER_GRANTS` | `count=1` (`AWAITING_MEMBER_GRANTS`), `expired=false` |
+| `agent_restart` | `01a18fce-aba1-7b56-bd5e-6dbdccd14664` (`2026-10-31T02:34:08.679543Z`) | `27108c64-ac6e-42b0-828f-8a8b6e1dd982` (`members=2`, `2026-10-31T02:34:13.70479Z`) | `FLOWTABLE_BYPASS` (`obs=01a18fcf-23b7-7718-9eb5-7655c3aae811`) | `5025 ms` | `65000 ms` | `AWAITING_MEMBER_GRANTS` / `AWAITING_MEMBER_GRANTS` / `AWAITING_MEMBER_GRANTS` | `count=1` (`AWAITING_MEMBER_GRANTS`), `expired=false` |
 
 ### 3. `ENR-03` Per-Incarnation Retained Usage (`GET /api/v1/admin/nodes/{id}/incarnations`, PR #210 Verified)
 
-- **Node ID**: `01a18fc6-fb50-793b-b824-718838f20496` (409 while active: `NODE_INCARNATION_ACTIVE`)
-- **Retired Incarnation (`old`)**: `01a18fc6-fc7d-73f6-bf0c-6d8abb6fd46b` (`state=retired`, `retire_reason=reinstall`, retained `upload_bytes=1500`, `download_bytes=2000`, unchanged after new traffic: `true`)
-- **Active Incarnation (`new`)**: `01a18fc8-90a6-781b-ab46-c0a6531d96ed` (`state=active`, initial `0/0`, after new traffic `upload_bytes=900`, `download_bytes=1100`)
-- **Member Period Continuity (`member_usage_periods`)**: before re-enroll `total_bytes=97500`, after re-enroll `total_bytes=97500` (`unchanged=true`), after new traffic `total_bytes=99500` (`accumulated=true`)
+- **Node ID**: `01a18fd0-4188-77d3-9e94-5c5bdc8f8d29` (409 while active: `NODE_INCARNATION_ACTIVE`)
+- **Retired Incarnation (`old`)**: `01a18fd0-42b9-7e45-97db-c16ad22f59d0` (`state=retired`, `retire_reason=reinstall`, retained `upload_bytes=1500`, `download_bytes=2000`, unchanged after new traffic: `true`)
+- **Active Incarnation (`new`)**: `01a18fd1-f3d3-7868-9373-487f724b9df7` (`state=active`, initial `0/0`, after new traffic `upload_bytes=900`, `download_bytes=1100`)
+- **Member Period Continuity (`usage_rollups` / `GET /api/v1/member/usage`)**: before re-enroll `total_bytes=109929`, after re-enroll `total_bytes=109929` (`unchanged=true`), after new traffic `total_bytes=111929` (`accumulated=true`)
 
 ## Upstream Product Blockers
 
