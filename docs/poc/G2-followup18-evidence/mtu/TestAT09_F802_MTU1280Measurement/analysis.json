@@ -1,0 +1,1603 @@
+{
+  "test_only": true,
+  "phases": [
+    {
+      "name": "reconnect-v4-1500-v4",
+      "result": {
+        "family": 4,
+        "connected": true,
+        "bytes": 64064,
+        "expected": 64064,
+        "error": "",
+        "matches": true,
+        "elapsed_ms": 2.807,
+        "socket_mss": 1368
+      },
+      "errors": [],
+      "mss": [
+        {
+          "role": "member",
+          "wall_ns": "1793441036496600000",
+          "interface": "fv-wg0",
+          "direction": "Out",
+          "family": 4,
+          "mss": 1380,
+          "flags": "S"
+        },
+        {
+          "role": "member",
+          "wall_ns": "1793441036497874000",
+          "interface": "fv-wg0",
+          "direction": "In",
+          "family": 4,
+          "mss": 1460,
+          "flags": "S."
+        },
+        {
+          "role": "node",
+          "wall_ns": "1793441036497502000",
+          "interface": "fv-fh",
+          "direction": "In",
+          "family": 4,
+          "mss": 1380,
+          "flags": "S"
+        },
+        {
+          "role": "node",
+          "wall_ns": "1793441036497539000",
+          "interface": "fv-ih",
+          "direction": "Out",
+          "family": 4,
+          "mss": 1380,
+          "flags": "S"
+        },
+        {
+          "role": "node",
+          "wall_ns": "1793441036497550000",
+          "interface": "fv-ih",
+          "direction": "In",
+          "family": 4,
+          "mss": 1460,
+          "flags": "S."
+        },
+        {
+          "role": "node",
+          "wall_ns": "1793441036497560000",
+          "interface": "fv-fh",
+          "direction": "Out",
+          "family": 4,
+          "mss": 1460,
+          "flags": "S."
+        },
+        {
+          "role": "origin",
+          "wall_ns": "1793441036497540000",
+          "interface": "fv-ii",
+          "direction": "In",
+          "family": 4,
+          "mss": 1380,
+          "flags": "S"
+        },
+        {
+          "role": "origin",
+          "wall_ns": "1793441036497549000",
+          "interface": "fv-ii",
+          "direction": "Out",
+          "family": 4,
+          "mss": 1460,
+          "flags": "S."
+        }
+      ],
+      "nft_delta": {
+        "d_019a00000000700080000000000000a1": {
+          "packets": 55,
+          "bytes": 66932
+        },
+        "u_019a00000000700080000000000000a1": {
+          "packets": 80,
+          "bytes": 68388
+        }
+      },
+      "tc_delta": {
+        "fv-fh": {
+          "1:1": {
+            "bytes": 67744,
+            "packets": 56,
+            "dropped": 0
+          },
+          "1:fffe": {
+            "bytes": 42,
+            "packets": 1,
+            "dropped": 0
+          },
+          "1:2f": {
+            "bytes": 67702,
+            "packets": 55,
+            "dropped": 0
+          }
+        },
+        "fv-ih": {
+          "1:1": {
+            "bytes": 69550,
+            "packets": 81,
+            "dropped": 0
+          },
+          "1:fffe": {
+            "bytes": 42,
+            "packets": 1,
+            "dropped": 0
+          },
+          "1:2f": {
+            "bytes": 69508,
+            "packets": 80,
+            "dropped": 0
+          }
+        }
+      }
+    },
+    {
+      "name": "reconnect-v6-1500-v6",
+      "result": {
+        "family": 6,
+        "connected": false,
+        "bytes": 0,
+        "expected": 64064,
+        "error": "TimeoutError",
+        "matches": true,
+        "elapsed_ms": 12011.962,
+        "socket_mss": null
+      },
+      "errors": [],
+      "mss": [
+        {
+          "role": "member",
+          "wall_ns": "1793441036612990000",
+          "interface": "fv-wg0",
+          "direction": "Out",
+          "family": 6,
+          "mss": 1360,
+          "flags": "S"
+        },
+        {
+          "role": "member",
+          "wall_ns": "1793441037620656000",
+          "interface": "fv-wg0",
+          "direction": "Out",
+          "family": 6,
+          "mss": 1360,
+          "flags": "S"
+        },
+        {
+          "role": "member",
+          "wall_ns": "1793441038644794000",
+          "interface": "fv-wg0",
+          "direction": "Out",
+          "family": 6,
+          "mss": 1360,
+          "flags": "S"
+        },
+        {
+          "role": "member",
+          "wall_ns": "1793441039668730000",
+          "interface": "fv-wg0",
+          "direction": "Out",
+          "family": 6,
+          "mss": 1360,
+          "flags": "S"
+        },
+        {
+          "role": "member",
+          "wall_ns": "1793441040692796000",
+          "interface": "fv-wg0",
+          "direction": "Out",
+          "family": 6,
+          "mss": 1360,
+          "flags": "S"
+        },
+        {
+          "role": "member",
+          "wall_ns": "1793441041716788000",
+          "interface": "fv-wg0",
+          "direction": "Out",
+          "family": 6,
+          "mss": 1360,
+          "flags": "S"
+        },
+        {
+          "role": "member",
+          "wall_ns": "1793441043764833000",
+          "interface": "fv-wg0",
+          "direction": "Out",
+          "family": 6,
+          "mss": 1360,
+          "flags": "S"
+        },
+        {
+          "role": "member",
+          "wall_ns": "1793441047796796000",
+          "interface": "fv-wg0",
+          "direction": "Out",
+          "family": 6,
+          "mss": 1360,
+          "flags": "S"
+        },
+        {
+          "role": "node",
+          "wall_ns": "1793441036613880000",
+          "interface": "fv-fh",
+          "direction": "In",
+          "family": 6,
+          "mss": 1360,
+          "flags": "S"
+        },
+        {
+          "role": "node",
+          "wall_ns": "1793441037621091000",
+          "interface": "fv-fh",
+          "direction": "In",
+          "family": 6,
+          "mss": 1360,
+          "flags": "S"
+        },
+        {
+          "role": "node",
+          "wall_ns": "1793441038645335000",
+          "interface": "fv-fh",
+          "direction": "In",
+          "family": 6,
+          "mss": 1360,
+          "flags": "S"
+        },
+        {
+          "role": "node",
+          "wall_ns": "1793441039669297000",
+          "interface": "fv-fh",
+          "direction": "In",
+          "family": 6,
+          "mss": 1360,
+          "flags": "S"
+        },
+        {
+          "role": "node",
+          "wall_ns": "1793441040693308000",
+          "interface": "fv-fh",
+          "direction": "In",
+          "family": 6,
+          "mss": 1360,
+          "flags": "S"
+        },
+        {
+          "role": "node",
+          "wall_ns": "1793441041717198000",
+          "interface": "fv-fh",
+          "direction": "In",
+          "family": 6,
+          "mss": 1360,
+          "flags": "S"
+        },
+        {
+          "role": "node",
+          "wall_ns": "1793441043765188000",
+          "interface": "fv-fh",
+          "direction": "In",
+          "family": 6,
+          "mss": 1360,
+          "flags": "S"
+        },
+        {
+          "role": "node",
+          "wall_ns": "1793441047797263000",
+          "interface": "fv-fh",
+          "direction": "In",
+          "family": 6,
+          "mss": 1360,
+          "flags": "S"
+        }
+      ],
+      "nft_delta": {
+        "ctv6": {
+          "packets": 8,
+          "bytes": 640
+        }
+      },
+      "tc_delta": {
+        "fv-fh": {},
+        "fv-ih": {
+          "1:1": {
+            "bytes": 42,
+            "packets": 1,
+            "dropped": 0
+          },
+          "1:fffe": {
+            "bytes": 42,
+            "packets": 1,
+            "dropped": 0
+          }
+        }
+      }
+    },
+    {
+      "name": "reconnect-dual-1500-v4",
+      "result": {
+        "family": 4,
+        "connected": true,
+        "bytes": 64064,
+        "expected": 64064,
+        "error": "",
+        "matches": true,
+        "elapsed_ms": 2.463,
+        "socket_mss": 1368
+      },
+      "errors": [],
+      "mss": [
+        {
+          "role": "member",
+          "wall_ns": "1793441048741179000",
+          "interface": "fv-wg0",
+          "direction": "Out",
+          "family": 4,
+          "mss": 1380,
+          "flags": "S"
+        },
+        {
+          "role": "member",
+          "wall_ns": "1793441048742323000",
+          "interface": "fv-wg0",
+          "direction": "In",
+          "family": 4,
+          "mss": 1460,
+          "flags": "S."
+        },
+        {
+          "role": "node",
+          "wall_ns": "1793441048742002000",
+          "interface": "fv-fh",
+          "direction": "In",
+          "family": 4,
+          "mss": 1380,
+          "flags": "S"
+        },
+        {
+          "role": "node",
+          "wall_ns": "1793441048742025000",
+          "interface": "fv-ih",
+          "direction": "Out",
+          "family": 4,
+          "mss": 1380,
+          "flags": "S"
+        },
+        {
+          "role": "node",
+          "wall_ns": "1793441048742042000",
+          "interface": "fv-ih",
+          "direction": "In",
+          "family": 4,
+          "mss": 1460,
+          "flags": "S."
+        },
+        {
+          "role": "node",
+          "wall_ns": "1793441048742047000",
+          "interface": "fv-fh",
+          "direction": "Out",
+          "family": 4,
+          "mss": 1460,
+          "flags": "S."
+        },
+        {
+          "role": "origin",
+          "wall_ns": "1793441048742027000",
+          "interface": "fv-ii",
+          "direction": "In",
+          "family": 4,
+          "mss": 1380,
+          "flags": "S"
+        },
+        {
+          "role": "origin",
+          "wall_ns": "1793441048742041000",
+          "interface": "fv-ii",
+          "direction": "Out",
+          "family": 4,
+          "mss": 1460,
+          "flags": "S."
+        }
+      ],
+      "nft_delta": {
+        "d_019a00000000700080000000000000a1": {
+          "packets": 67,
+          "bytes": 67556
+        },
+        "u_019a00000000700080000000000000a1": {
+          "packets": 64,
+          "bytes": 67400
+        }
+      },
+      "tc_delta": {
+        "fv-fh": {
+          "1:1": {
+            "bytes": 68494,
+            "packets": 67,
+            "dropped": 0
+          },
+          "1:2f": {
+            "bytes": 68494,
+            "packets": 67,
+            "dropped": 0
+          }
+        },
+        "fv-ih": {
+          "1:1": {
+            "bytes": 68296,
+            "packets": 64,
+            "dropped": 0
+          },
+          "1:2f": {
+            "bytes": 68296,
+            "packets": 64,
+            "dropped": 0
+          }
+        }
+      }
+    },
+    {
+      "name": "reconnect-dual-1500-v6",
+      "result": {
+        "family": 6,
+        "connected": false,
+        "bytes": 0,
+        "expected": 64064,
+        "error": "TimeoutError",
+        "matches": true,
+        "elapsed_ms": 12003.26,
+        "socket_mss": null
+      },
+      "errors": [],
+      "mss": [
+        {
+          "role": "member",
+          "wall_ns": "1793441048838322000",
+          "interface": "fv-wg0",
+          "direction": "Out",
+          "family": 6,
+          "mss": 1360,
+          "flags": "S"
+        },
+        {
+          "role": "member",
+          "wall_ns": "1793441049844761000",
+          "interface": "fv-wg0",
+          "direction": "Out",
+          "family": 6,
+          "mss": 1360,
+          "flags": "S"
+        },
+        {
+          "role": "member",
+          "wall_ns": "1793441050868801000",
+          "interface": "fv-wg0",
+          "direction": "Out",
+          "family": 6,
+          "mss": 1360,
+          "flags": "S"
+        },
+        {
+          "role": "member",
+          "wall_ns": "1793441051893656000",
+          "interface": "fv-wg0",
+          "direction": "Out",
+          "family": 6,
+          "mss": 1360,
+          "flags": "S"
+        },
+        {
+          "role": "member",
+          "wall_ns": "1793441052916838000",
+          "interface": "fv-wg0",
+          "direction": "Out",
+          "family": 6,
+          "mss": 1360,
+          "flags": "S"
+        },
+        {
+          "role": "member",
+          "wall_ns": "1793441053940793000",
+          "interface": "fv-wg0",
+          "direction": "Out",
+          "family": 6,
+          "mss": 1360,
+          "flags": "S"
+        },
+        {
+          "role": "member",
+          "wall_ns": "1793441055988838000",
+          "interface": "fv-wg0",
+          "direction": "Out",
+          "family": 6,
+          "mss": 1360,
+          "flags": "S"
+        },
+        {
+          "role": "member",
+          "wall_ns": "1793441060021798000",
+          "interface": "fv-wg0",
+          "direction": "Out",
+          "family": 6,
+          "mss": 1360,
+          "flags": "S"
+        },
+        {
+          "role": "node",
+          "wall_ns": "1793441048838978000",
+          "interface": "fv-fh",
+          "direction": "In",
+          "family": 6,
+          "mss": 1360,
+          "flags": "S"
+        },
+        {
+          "role": "node",
+          "wall_ns": "1793441049845347000",
+          "interface": "fv-fh",
+          "direction": "In",
+          "family": 6,
+          "mss": 1360,
+          "flags": "S"
+        },
+        {
+          "role": "node",
+          "wall_ns": "1793441050869207000",
+          "interface": "fv-fh",
+          "direction": "In",
+          "family": 6,
+          "mss": 1360,
+          "flags": "S"
+        },
+        {
+          "role": "node",
+          "wall_ns": "1793441051893923000",
+          "interface": "fv-fh",
+          "direction": "In",
+          "family": 6,
+          "mss": 1360,
+          "flags": "S"
+        },
+        {
+          "role": "node",
+          "wall_ns": "1793441052917221000",
+          "interface": "fv-fh",
+          "direction": "In",
+          "family": 6,
+          "mss": 1360,
+          "flags": "S"
+        },
+        {
+          "role": "node",
+          "wall_ns": "1793441053941428000",
+          "interface": "fv-fh",
+          "direction": "In",
+          "family": 6,
+          "mss": 1360,
+          "flags": "S"
+        },
+        {
+          "role": "node",
+          "wall_ns": "1793441055989220000",
+          "interface": "fv-fh",
+          "direction": "In",
+          "family": 6,
+          "mss": 1360,
+          "flags": "S"
+        },
+        {
+          "role": "node",
+          "wall_ns": "1793441060022180000",
+          "interface": "fv-fh",
+          "direction": "In",
+          "family": 6,
+          "mss": 1360,
+          "flags": "S"
+        }
+      ],
+      "nft_delta": {
+        "ctv6": {
+          "packets": 8,
+          "bytes": 640
+        }
+      },
+      "tc_delta": {
+        "fv-fh": {},
+        "fv-ih": {}
+      }
+    },
+    {
+      "name": "reconnect-dual-1280-v4",
+      "result": {
+        "family": 4,
+        "connected": true,
+        "bytes": 64064,
+        "expected": 64064,
+        "error": "",
+        "matches": true,
+        "elapsed_ms": 2.899,
+        "socket_mss": 1228
+      },
+      "errors": [],
+      "mss": [
+        {
+          "role": "member",
+          "wall_ns": "1793441060960889000",
+          "interface": "fv-wg0",
+          "direction": "Out",
+          "family": 4,
+          "mss": 1380,
+          "flags": "S"
+        },
+        {
+          "role": "member",
+          "wall_ns": "1793441060962138000",
+          "interface": "fv-wg0",
+          "direction": "In",
+          "family": 4,
+          "mss": 1240,
+          "flags": "S."
+        },
+        {
+          "role": "node",
+          "wall_ns": "1793441060961777000",
+          "interface": "fv-fh",
+          "direction": "In",
+          "family": 4,
+          "mss": 1380,
+          "flags": "S"
+        },
+        {
+          "role": "node",
+          "wall_ns": "1793441060961802000",
+          "interface": "fv-ih",
+          "direction": "Out",
+          "family": 4,
+          "mss": 1380,
+          "flags": "S"
+        },
+        {
+          "role": "node",
+          "wall_ns": "1793441060961819000",
+          "interface": "fv-ih",
+          "direction": "In",
+          "family": 4,
+          "mss": 1240,
+          "flags": "S."
+        },
+        {
+          "role": "node",
+          "wall_ns": "1793441060961824000",
+          "interface": "fv-fh",
+          "direction": "Out",
+          "family": 4,
+          "mss": 1240,
+          "flags": "S."
+        },
+        {
+          "role": "origin",
+          "wall_ns": "1793441060961804000",
+          "interface": "fv-ii",
+          "direction": "In",
+          "family": 4,
+          "mss": 1380,
+          "flags": "S"
+        },
+        {
+          "role": "origin",
+          "wall_ns": "1793441060961818000",
+          "interface": "fv-ii",
+          "direction": "Out",
+          "family": 4,
+          "mss": 1240,
+          "flags": "S."
+        }
+      ],
+      "nft_delta": {
+        "d_019a00000000700080000000000000a1": {
+          "packets": 63,
+          "bytes": 67348
+        },
+        "u_019a00000000700080000000000000a1": {
+          "packets": 71,
+          "bytes": 67764
+        }
+      },
+      "tc_delta": {
+        "fv-fh": {
+          "1:1": {
+            "bytes": 68230,
+            "packets": 63,
+            "dropped": 0
+          },
+          "1:2f": {
+            "bytes": 68230,
+            "packets": 63,
+            "dropped": 0
+          }
+        },
+        "fv-ih": {
+          "1:1": {
+            "bytes": 68758,
+            "packets": 71,
+            "dropped": 0
+          },
+          "1:2f": {
+            "bytes": 68758,
+            "packets": 71,
+            "dropped": 0
+          }
+        }
+      }
+    },
+    {
+      "name": "reconnect-dual-1280-v6",
+      "result": {
+        "family": 6,
+        "connected": false,
+        "bytes": 0,
+        "expected": 64064,
+        "error": "TimeoutError",
+        "matches": true,
+        "elapsed_ms": 12012.262,
+        "socket_mss": null
+      },
+      "errors": [],
+      "mss": [
+        {
+          "role": "member",
+          "wall_ns": "1793441061065058000",
+          "interface": "fv-wg0",
+          "direction": "Out",
+          "family": 6,
+          "mss": 1360,
+          "flags": "S"
+        },
+        {
+          "role": "member",
+          "wall_ns": "1793441062068732000",
+          "interface": "fv-wg0",
+          "direction": "Out",
+          "family": 6,
+          "mss": 1360,
+          "flags": "S"
+        },
+        {
+          "role": "member",
+          "wall_ns": "1793441063093853000",
+          "interface": "fv-wg0",
+          "direction": "Out",
+          "family": 6,
+          "mss": 1360,
+          "flags": "S"
+        },
+        {
+          "role": "member",
+          "wall_ns": "1793441064116806000",
+          "interface": "fv-wg0",
+          "direction": "Out",
+          "family": 6,
+          "mss": 1360,
+          "flags": "S"
+        },
+        {
+          "role": "member",
+          "wall_ns": "1793441065140655000",
+          "interface": "fv-wg0",
+          "direction": "Out",
+          "family": 6,
+          "mss": 1360,
+          "flags": "S"
+        },
+        {
+          "role": "member",
+          "wall_ns": "1793441066164653000",
+          "interface": "fv-wg0",
+          "direction": "Out",
+          "family": 6,
+          "mss": 1360,
+          "flags": "S"
+        },
+        {
+          "role": "member",
+          "wall_ns": "1793441068212649000",
+          "interface": "fv-wg0",
+          "direction": "Out",
+          "family": 6,
+          "mss": 1360,
+          "flags": "S"
+        },
+        {
+          "role": "member",
+          "wall_ns": "1793441072244672000",
+          "interface": "fv-wg0",
+          "direction": "Out",
+          "family": 6,
+          "mss": 1360,
+          "flags": "S"
+        },
+        {
+          "role": "node",
+          "wall_ns": "1793441061065940000",
+          "interface": "fv-fh",
+          "direction": "In",
+          "family": 6,
+          "mss": 1360,
+          "flags": "S"
+        },
+        {
+          "role": "node",
+          "wall_ns": "1793441062069072000",
+          "interface": "fv-fh",
+          "direction": "In",
+          "family": 6,
+          "mss": 1360,
+          "flags": "S"
+        },
+        {
+          "role": "node",
+          "wall_ns": "1793441063094396000",
+          "interface": "fv-fh",
+          "direction": "In",
+          "family": 6,
+          "mss": 1360,
+          "flags": "S"
+        },
+        {
+          "role": "node",
+          "wall_ns": "1793441064117255000",
+          "interface": "fv-fh",
+          "direction": "In",
+          "family": 6,
+          "mss": 1360,
+          "flags": "S"
+        },
+        {
+          "role": "node",
+          "wall_ns": "1793441065140811000",
+          "interface": "fv-fh",
+          "direction": "In",
+          "family": 6,
+          "mss": 1360,
+          "flags": "S"
+        },
+        {
+          "role": "node",
+          "wall_ns": "1793441066164717000",
+          "interface": "fv-fh",
+          "direction": "In",
+          "family": 6,
+          "mss": 1360,
+          "flags": "S"
+        },
+        {
+          "role": "node",
+          "wall_ns": "1793441068213176000",
+          "interface": "fv-fh",
+          "direction": "In",
+          "family": 6,
+          "mss": 1360,
+          "flags": "S"
+        },
+        {
+          "role": "node",
+          "wall_ns": "1793441072245064000",
+          "interface": "fv-fh",
+          "direction": "In",
+          "family": 6,
+          "mss": 1360,
+          "flags": "S"
+        }
+      ],
+      "nft_delta": {
+        "ctv6": {
+          "packets": 8,
+          "bytes": 640
+        }
+      },
+      "tc_delta": {
+        "fv-fh": {
+          "1:1": {
+            "bytes": 42,
+            "packets": 1,
+            "dropped": 0
+          },
+          "1:fffe": {
+            "bytes": 42,
+            "packets": 1,
+            "dropped": 0
+          }
+        },
+        "fv-ih": {}
+      }
+    },
+    {
+      "name": "steady-1280-v4",
+      "result": {
+        "family": 4,
+        "connected": true,
+        "bytes": 64064,
+        "expected": 64064,
+        "error": "",
+        "matches": true,
+        "elapsed_ms": 4.392,
+        "socket_mss": 1228
+      },
+      "errors": [],
+      "mss": [
+        {
+          "role": "member",
+          "wall_ns": "1793441073119411000",
+          "interface": "fv-wg0",
+          "direction": "Out",
+          "family": 4,
+          "mss": 1380,
+          "flags": "S"
+        },
+        {
+          "role": "member",
+          "wall_ns": "1793441073120077000",
+          "interface": "fv-wg0",
+          "direction": "In",
+          "family": 4,
+          "mss": 1240,
+          "flags": "S."
+        },
+        {
+          "role": "node",
+          "wall_ns": "1793441073119699000",
+          "interface": "fv-fh",
+          "direction": "In",
+          "family": 4,
+          "mss": 1380,
+          "flags": "S"
+        },
+        {
+          "role": "node",
+          "wall_ns": "1793441073119736000",
+          "interface": "fv-ih",
+          "direction": "Out",
+          "family": 4,
+          "mss": 1380,
+          "flags": "S"
+        },
+        {
+          "role": "node",
+          "wall_ns": "1793441073119757000",
+          "interface": "fv-ih",
+          "direction": "In",
+          "family": 4,
+          "mss": 1240,
+          "flags": "S."
+        },
+        {
+          "role": "node",
+          "wall_ns": "1793441073119766000",
+          "interface": "fv-fh",
+          "direction": "Out",
+          "family": 4,
+          "mss": 1240,
+          "flags": "S."
+        },
+        {
+          "role": "origin",
+          "wall_ns": "1793441073119739000",
+          "interface": "fv-ii",
+          "direction": "In",
+          "family": 4,
+          "mss": 1380,
+          "flags": "S"
+        },
+        {
+          "role": "origin",
+          "wall_ns": "1793441073119755000",
+          "interface": "fv-ii",
+          "direction": "Out",
+          "family": 4,
+          "mss": 1240,
+          "flags": "S."
+        }
+      ],
+      "nft_delta": {
+        "d_019a00000000700080000000000000a1": {
+          "packets": 69,
+          "bytes": 67660
+        },
+        "u_019a00000000700080000000000000a1": {
+          "packets": 63,
+          "bytes": 67348
+        }
+      },
+      "tc_delta": {
+        "fv-fh": {
+          "1:1": {
+            "bytes": 68626,
+            "packets": 69,
+            "dropped": 0
+          },
+          "1:2f": {
+            "bytes": 68626,
+            "packets": 69,
+            "dropped": 0
+          }
+        },
+        "fv-ih": {
+          "1:1": {
+            "bytes": 68230,
+            "packets": 63,
+            "dropped": 0
+          },
+          "1:2f": {
+            "bytes": 68230,
+            "packets": 63,
+            "dropped": 0
+          }
+        }
+      }
+    },
+    {
+      "name": "steady-1280-v6",
+      "result": {
+        "family": 6,
+        "connected": false,
+        "bytes": 0,
+        "expected": 64064,
+        "error": "TimeoutError",
+        "matches": true,
+        "elapsed_ms": 12012.298,
+        "socket_mss": null
+      },
+      "errors": [],
+      "mss": [
+        {
+          "role": "member",
+          "wall_ns": "1793441073161927000",
+          "interface": "fv-wg0",
+          "direction": "Out",
+          "family": 6,
+          "mss": 1360,
+          "flags": "S"
+        },
+        {
+          "role": "member",
+          "wall_ns": "1793441074164765000",
+          "interface": "fv-wg0",
+          "direction": "Out",
+          "family": 6,
+          "mss": 1360,
+          "flags": "S"
+        },
+        {
+          "role": "member",
+          "wall_ns": "1793441075188648000",
+          "interface": "fv-wg0",
+          "direction": "Out",
+          "family": 6,
+          "mss": 1360,
+          "flags": "S"
+        },
+        {
+          "role": "member",
+          "wall_ns": "1793441076212650000",
+          "interface": "fv-wg0",
+          "direction": "Out",
+          "family": 6,
+          "mss": 1360,
+          "flags": "S"
+        },
+        {
+          "role": "member",
+          "wall_ns": "1793441077236762000",
+          "interface": "fv-wg0",
+          "direction": "Out",
+          "family": 6,
+          "mss": 1360,
+          "flags": "S"
+        },
+        {
+          "role": "member",
+          "wall_ns": "1793441078260816000",
+          "interface": "fv-wg0",
+          "direction": "Out",
+          "family": 6,
+          "mss": 1360,
+          "flags": "S"
+        },
+        {
+          "role": "member",
+          "wall_ns": "1793441080308654000",
+          "interface": "fv-wg0",
+          "direction": "Out",
+          "family": 6,
+          "mss": 1360,
+          "flags": "S"
+        },
+        {
+          "role": "member",
+          "wall_ns": "1793441084340745000",
+          "interface": "fv-wg0",
+          "direction": "Out",
+          "family": 6,
+          "mss": 1360,
+          "flags": "S"
+        },
+        {
+          "role": "node",
+          "wall_ns": "1793441073162165000",
+          "interface": "fv-fh",
+          "direction": "In",
+          "family": 6,
+          "mss": 1360,
+          "flags": "S"
+        },
+        {
+          "role": "node",
+          "wall_ns": "1793441074165182000",
+          "interface": "fv-fh",
+          "direction": "In",
+          "family": 6,
+          "mss": 1360,
+          "flags": "S"
+        },
+        {
+          "role": "node",
+          "wall_ns": "1793441075189037000",
+          "interface": "fv-fh",
+          "direction": "In",
+          "family": 6,
+          "mss": 1360,
+          "flags": "S"
+        },
+        {
+          "role": "node",
+          "wall_ns": "1793441076213155000",
+          "interface": "fv-fh",
+          "direction": "In",
+          "family": 6,
+          "mss": 1360,
+          "flags": "S"
+        },
+        {
+          "role": "node",
+          "wall_ns": "1793441077237297000",
+          "interface": "fv-fh",
+          "direction": "In",
+          "family": 6,
+          "mss": 1360,
+          "flags": "S"
+        },
+        {
+          "role": "node",
+          "wall_ns": "1793441078261397000",
+          "interface": "fv-fh",
+          "direction": "In",
+          "family": 6,
+          "mss": 1360,
+          "flags": "S"
+        },
+        {
+          "role": "node",
+          "wall_ns": "1793441080309142000",
+          "interface": "fv-fh",
+          "direction": "In",
+          "family": 6,
+          "mss": 1360,
+          "flags": "S"
+        },
+        {
+          "role": "node",
+          "wall_ns": "1793441084341257000",
+          "interface": "fv-fh",
+          "direction": "In",
+          "family": 6,
+          "mss": 1360,
+          "flags": "S"
+        }
+      ],
+      "nft_delta": {
+        "ctv6": {
+          "packets": 8,
+          "bytes": 640
+        }
+      },
+      "tc_delta": {
+        "fv-fh": {},
+        "fv-ih": {
+          "1:1": {
+            "bytes": 42,
+            "packets": 1,
+            "dropped": 0
+          },
+          "1:fffe": {
+            "bytes": 42,
+            "packets": 1,
+            "dropped": 0
+          }
+        }
+      }
+    },
+    {
+      "name": "pmtu-large-v4",
+      "result": "PING 203.0.113.10 (203.0.113.10) 1360(1388) bytes of data.\nFrom 192.0.2.33 icmp_seq=1 Frag needed and DF set (mtu = 1280)\n\n--- 203.0.113.10 ping statistics ---\n1 packets transmitted, 0 received, +1 errors, 100% packet loss, time 0ms\n\n",
+      "errors": [
+        {
+          "role": "member",
+          "wall_ns": "1793441085196511000",
+          "interface": "fv-wg0",
+          "direction": "In",
+          "family": 4
+        },
+        {
+          "role": "node",
+          "wall_ns": "1793441085196199000",
+          "interface": "fv-fh",
+          "direction": "Out",
+          "family": 4
+        }
+      ],
+      "mss": [],
+      "nft_delta": {},
+      "tc_delta": {
+        "fv-fh": {
+          "1:1": {
+            "bytes": 590,
+            "packets": 1,
+            "dropped": 0
+          },
+          "1:fffe": {
+            "bytes": 590,
+            "packets": 1,
+            "dropped": 0
+          }
+        },
+        "fv-ih": {}
+      }
+    },
+    {
+      "name": "pmtu-small-v4",
+      "result": "PING 203.0.113.10 (203.0.113.10) 1200(1228) bytes of data.\n1208 bytes from 203.0.113.10: icmp_seq=1 ttl=62 time=5.57 ms\n\n--- 203.0.113.10 ping statistics ---\n1 packets transmitted, 1 received, 0% packet loss, time 0ms\nrtt min/avg/max/mdev = 5.574/5.574/5.574/0.000 ms\n",
+      "errors": [],
+      "mss": [],
+      "nft_delta": {
+        "d_019a00000000700080000000000000a1": {
+          "packets": 1,
+          "bytes": 1228
+        },
+        "u_019a00000000700080000000000000a1": {
+          "packets": 1,
+          "bytes": 1228
+        }
+      },
+      "tc_delta": {
+        "fv-fh": {
+          "1:1": {
+            "bytes": 1242,
+            "packets": 1,
+            "dropped": 0
+          },
+          "1:2f": {
+            "bytes": 1242,
+            "packets": 1,
+            "dropped": 0
+          }
+        },
+        "fv-ih": {
+          "1:1": {
+            "bytes": 1242,
+            "packets": 1,
+            "dropped": 0
+          },
+          "1:2f": {
+            "bytes": 1242,
+            "packets": 1,
+            "dropped": 0
+          }
+        }
+      }
+    },
+    {
+      "name": "pmtu-large-v6",
+      "result": "PING 2001:db8:203::10 (2001:db8:203::10) 1360 data bytes\nFrom fd00:db8:ff::33 icmp_seq=1 Packet too big: mtu=1280\n\n--- 2001:db8:203::10 ping statistics ---\n1 packets transmitted, 0 received, +1 errors, 100% packet loss, time 0ms\n\n",
+      "errors": [
+        {
+          "role": "member",
+          "wall_ns": "1793441085236307000",
+          "interface": "fv-wg0",
+          "direction": "In",
+          "family": 6
+        },
+        {
+          "role": "node",
+          "wall_ns": "1793441085236263000",
+          "interface": "fv-fh",
+          "direction": "Out",
+          "family": 6
+        }
+      ],
+      "mss": [],
+      "nft_delta": {},
+      "tc_delta": {
+        "fv-fh": {
+          "1:1": {
+            "bytes": 1294,
+            "packets": 1,
+            "dropped": 0
+          },
+          "1:fffe": {
+            "bytes": 1294,
+            "packets": 1,
+            "dropped": 0
+          }
+        },
+        "fv-ih": {}
+      }
+    },
+    {
+      "name": "pmtu-small-v6",
+      "result": "PING 2001:db8:203::10 (2001:db8:203::10) 1200 data bytes\n\n--- 2001:db8:203::10 ping statistics ---\n1 packets transmitted, 0 received, 100% packet loss, time 0ms\n\n",
+      "errors": [],
+      "mss": [],
+      "nft_delta": {
+        "ctv6": {
+          "packets": 1,
+          "bytes": 1248
+        }
+      },
+      "tc_delta": {
+        "fv-fh": {},
+        "fv-ih": {}
+      }
+    },
+    {
+      "name": "udp-seed-v4",
+      "result": "controlled UDP exchange complete\n",
+      "errors": [],
+      "mss": [],
+      "nft_delta": {
+        "d_019a00000000700080000000000000a1": {
+          "packets": 1,
+          "bytes": 60
+        },
+        "u_019a00000000700080000000000000a1": {
+          "packets": 1,
+          "bytes": 60
+        }
+      },
+      "tc_delta": {
+        "fv-fh": {
+          "1:1": {
+            "bytes": 74,
+            "packets": 1,
+            "dropped": 0
+          },
+          "1:2f": {
+            "bytes": 74,
+            "packets": 1,
+            "dropped": 0
+          }
+        },
+        "fv-ih": {
+          "1:1": {
+            "bytes": 74,
+            "packets": 1,
+            "dropped": 0
+          },
+          "1:2f": {
+            "bytes": 74,
+            "packets": 1,
+            "dropped": 0
+          }
+        }
+      }
+    },
+    {
+      "name": "quoted-error-v4-to-member",
+      "result": {
+        "family": 4,
+        "direction": "to-member",
+        "advertised_mtu": 1280,
+        "injected": true
+      },
+      "errors": [
+        {
+          "role": "member",
+          "wall_ns": "1793441087328770000",
+          "interface": "fv-wg0",
+          "direction": "In",
+          "family": 4
+        },
+        {
+          "role": "node",
+          "wall_ns": "1793441087328546000",
+          "interface": "fv-ih",
+          "direction": "In",
+          "family": 4
+        },
+        {
+          "role": "node",
+          "wall_ns": "1793441087328559000",
+          "interface": "fv-fh",
+          "direction": "Out",
+          "family": 4
+        },
+        {
+          "role": "origin",
+          "wall_ns": "1793441087328541000",
+          "interface": "fv-ii",
+          "direction": "Out",
+          "family": 4
+        }
+      ],
+      "mss": [],
+      "nft_delta": {
+        "d_019a00000000700080000000000000a1": {
+          "packets": 1,
+          "bytes": 64
+        }
+      },
+      "tc_delta": {
+        "fv-fh": {
+          "1:1": {
+            "bytes": 78,
+            "packets": 1,
+            "dropped": 0
+          },
+          "1:2f": {
+            "bytes": 78,
+            "packets": 1,
+            "dropped": 0
+          }
+        },
+        "fv-ih": {}
+      }
+    },
+    {
+      "name": "quoted-error-v4-to-origin",
+      "result": {
+        "family": 4,
+        "direction": "to-origin",
+        "advertised_mtu": 1280,
+        "injected": true
+      },
+      "errors": [
+        {
+          "role": "member",
+          "wall_ns": "1793441087364056000",
+          "interface": "fv-wg0",
+          "direction": "Out",
+          "family": 4
+        },
+        {
+          "role": "node",
+          "wall_ns": "1793441087364402000",
+          "interface": "fv-fh",
+          "direction": "In",
+          "family": 4
+        },
+        {
+          "role": "node",
+          "wall_ns": "1793441087364423000",
+          "interface": "fv-ih",
+          "direction": "Out",
+          "family": 4
+        },
+        {
+          "role": "origin",
+          "wall_ns": "1793441087364426000",
+          "interface": "fv-ii",
+          "direction": "In",
+          "family": 4
+        }
+      ],
+      "mss": [],
+      "nft_delta": {
+        "u_019a00000000700080000000000000a1": {
+          "packets": 1,
+          "bytes": 64
+        }
+      },
+      "tc_delta": {
+        "fv-fh": {},
+        "fv-ih": {
+          "1:1": {
+            "bytes": 78,
+            "packets": 1,
+            "dropped": 0
+          },
+          "1:2f": {
+            "bytes": 78,
+            "packets": 1,
+            "dropped": 0
+          }
+        }
+      }
+    },
+    {
+      "name": "quoted-error-v6-to-member",
+      "result": {
+        "family": 6,
+        "direction": "to-member",
+        "advertised_mtu": 1280,
+        "injected": true
+      },
+      "errors": [
+        {
+          "role": "node",
+          "wall_ns": "1793441087398517000",
+          "interface": "fv-ih",
+          "direction": "In",
+          "family": 6
+        },
+        {
+          "role": "origin",
+          "wall_ns": "1793441087398517000",
+          "interface": "fv-ii",
+          "direction": "Out",
+          "family": 6
+        }
+      ],
+      "mss": [],
+      "nft_delta": {
+        "ctv6": {
+          "packets": 1,
+          "bytes": 104
+        }
+      },
+      "tc_delta": {
+        "fv-fh": {},
+        "fv-ih": {
+          "1:1": {
+            "bytes": 86,
+            "packets": 1,
+            "dropped": 0
+          },
+          "1:fffe": {
+            "bytes": 86,
+            "packets": 1,
+            "dropped": 0
+          }
+        }
+      }
+    },
+    {
+      "name": "quoted-error-v6-to-origin",
+      "result": {
+        "family": 6,
+        "direction": "to-origin",
+        "advertised_mtu": 1280,
+        "injected": true
+      },
+      "errors": [
+        {
+          "role": "member",
+          "wall_ns": "1793441087432600000",
+          "interface": "fv-wg0",
+          "direction": "Out",
+          "family": 6
+        },
+        {
+          "role": "node",
+          "wall_ns": "1793441087433064000",
+          "interface": "fv-fh",
+          "direction": "In",
+          "family": 6
+        }
+      ],
+      "mss": [],
+      "nft_delta": {
+        "ctv6": {
+          "packets": 1,
+          "bytes": 104
+        }
+      },
+      "tc_delta": {
+        "fv-fh": {},
+        "fv-ih": {}
+      }
+    }
+  ]
+}

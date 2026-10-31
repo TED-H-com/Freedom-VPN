@@ -49,6 +49,7 @@ def main() -> None:
         if recording and os.path.exists(path + ".trace-stop"):
             # The preceding read is complete. Keep the acceptance stream
             # running for revoke tests, but end this measurement sidecar.
+            event("trace_end")
             recording = False
             with open(path + ".trace-done", "w", encoding="utf-8") as done:
                 done.write("ok\n")

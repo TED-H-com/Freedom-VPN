@@ -1,0 +1,15 @@
+TEST ONLY follow-up 18 evidence.
+
+Text retention normalizes trailing whitespace and terminal blank lines only.
+Packet headers, counts, timing values, sidecar events and original verdicts are unchanged.
+The AT12 counters Go struct dump is retained as counters.txt; it is not JSON.
+The initial hygiene check rejected its inherited counters.json filename.
+
+D-120: lane and focused are fresh independent 100-reload runs.
+MTU: attempts 1 and 2 failed before traffic (tc JSON collector assumption).
+MTU: attempt 3 failed its original capture count check (multicast headers omitted);
+it also exposed neighbor-discovery input blocking in this fixture.
+MTU: final collection includes multicast headers and documented static transit neighbors;
+only this final run is the completed measurement. IPv6 transfer remains unavailable.
+
+No follow-up 17 artifact or verdict was modified.

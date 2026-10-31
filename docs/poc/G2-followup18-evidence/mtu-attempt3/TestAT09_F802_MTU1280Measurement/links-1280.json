@@ -1,0 +1,48 @@
+{
+  "node": [
+    {
+      "ifindex": 16,
+      "link_index": 15,
+      "ifname": "fv-ih",
+      "flags": [
+        "BROADCAST",
+        "MULTICAST",
+        "UP",
+        "LOWER_UP"
+      ],
+      "mtu": 1280,
+      "qdisc": "htb",
+      "operstate": "UP",
+      "linkmode": "DEFAULT",
+      "group": "default",
+      "txqlen": 1000,
+      "link_type": "ether",
+      "address": "ce:e2:82:90:3a:09",
+      "broadcast": "ff:ff:ff:ff:ff:ff",
+      "link_netnsid": 7
+    }
+  ],
+  "origin": [
+    {
+      "ifindex": 15,
+      "link_index": 16,
+      "ifname": "fv-ii",
+      "flags": [
+        "BROADCAST",
+        "MULTICAST",
+        "UP",
+        "LOWER_UP"
+      ],
+      "mtu": 1280,
+      "qdisc": "noqueue",
+      "operstate": "UP",
+      "linkmode": "DEFAULT",
+      "group": "default",
+      "txqlen": 1000,
+      "link_type": "ether",
+      "address": "4a:7d:3b:5b:93:8e",
+      "broadcast": "ff:ff:ff:ff:ff:ff",
+      "link_netnsid": 0
+    }
+  ]
+}

@@ -35,3 +35,21 @@ func finishReloadTrace(t *testing.T) {
 		}
 	}
 }
+
+// Mandatory acceptance input: a missing trace, sidecar, or verified Apply
+// cannot silently fall back to the legacy stream-only verdict.
+func requireD120(t *testing.T) {
+	t.Helper()
+	out, errOut, err := dockerExec("python3", "/opt/netlab/scripts/reload_analysis.py",
+		"--stream", "/scratch/stream-a1.log.jsonl", "--stream-log", "/scratch/stream-a1.log",
+		"--apply", "/scratch/at10-apply.jsonl", "--trace-base", "/scratch/at10",
+		"--output", "/scratch/at10-analysis.json", "--d120")
+	save(t, "d120-verdict.txt", out+errOut)
+	if scratchExists("/scratch/at10-analysis.json") {
+		save(t, "at10-analysis.json", readScratch(t, "/scratch/at10-analysis.json"))
+	}
+	t.Log("\n" + out)
+	if err != nil {
+		t.Fatalf("AT10 FAIL: D-120 verdict or evidence check: %v %s", err, errOut)
+	}
+}
