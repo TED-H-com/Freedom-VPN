@@ -1,48 +1,36 @@
-# Follow-up 6 run ledger
+# Follow-up 7 run ledger
 
 Assigned instance: `FVPN_E2E_PREFIX=w4-members FVPN_E2E_PORT_BASE=24000`.
-Product tree: `9c37a38` (merged #219 `device-revoke` `ObserveMemberIngress` export, #213 & #216 contract revision 11 `awaiting_member_grants` / `AWAITING_MEMBER_GRANTS`, #193 D-067 provisional grant-less leases).
-Harness commit: `159d6171739a07c645a4c1cb6e208cf1797e8234`; the primary suite
-ran with a clean tree (`source_dirty=false`, `vcs.modified=false`), and the
-scheduled readback target recorded `followup_build` (`source_dirty=true` only
-because the primary suite had just written the new `docs/e2e/at/members/AT*.json`
-evidence files and updated the readback worker check). Every JSON retains source, exact image/release/binary hashes
-and the test executable hash. No product, contract, migration or shared lab
-source changed. The workflow is unchanged; no dependency changed.
+Task assigned 2026-10-30 EDT; final execution took place on 2026-10-31 UTC/EDT.
+Product baseline: `d9e28f8`, including devstack #240, wire-members #244 and the D-081 contract erratum #247. Harness source: `10a5f3891aa8fde2d3a2f158d97bfcb0a4c7670b`.
+The primary suite started from a clean committed tree (`build.source_dirty=false`). The same-stack readback records its own `followup_build`; generated acceptance records account for the dirty tree at that point. Every JSON retains exact source, test executable, container image, release and binary hashes.
 
 | Execution | Run UUID | Duration / exit | Result |
 |---|---|---|---|
-| Fresh complete suite (`at-members`) | `80db103b-622c-42b1-946d-4628daaa213d` | 1305.124 s; Go 1 / make 2 | 3 pass (`AT02`, `AT03`, `AT08`), 7 blocked (`AT01`, `AT04`, `AT05`, `AT09`, `AT20`, `AT21`, `AT22`), 0 failed subchecks (384 passing subchecks across suite + readback) |
-| Scheduled partial readback (`at-members-readback`) | same stack | 379.384 s; exit 0 | Feed last-good (`AT22`), second-exit privacy (`AT22`), and immutable restart lease/observation timeline (`AT09`); full cases remain as classified |
+| Fresh complete suite (`at-members`) | `297faa31-2f90-4aab-8cf0-6818629f46c8` | 1416.798 s; Go 1 / make 2 | 3 passed / 7 blocked / 0 failed complete cases |
+| Scheduled partial readback (`at-members-readback`) | same stack/run | 380.125 s; exit 0 | 471 passing / 0 failed subchecks across primary + readback; original complete-case classifications retained |
 
-Startup (`e2e-up`) succeeded on the first call and teardown (`e2e-down`) exited
-0. Previous Follow-up 5 records are preserved under
-[history/follow-up-5](history/follow-up-5/RUN.md), Follow-up 4 under
-[history/follow-up-4](history/follow-up-4/RUN.md), and Follow-up 3 under
-[history/follow-up-3](history/follow-up-3/RUN.md).
+The full target deliberately exits nonzero while complete cases remain blocked. Current results are in [summary.md](summary.md), with the remaining F4-03/04/05/06/07/10 resources in [BLOCKERS.md](BLOCKERS.md).
 
-Current status is **three passed / seven blocked**, with **zero failed
-subchecks**.
-- **AT02 strict post-withdrawal ingress (#219):** after real member DELETE of `member-a2` (`01a18efa-99e8-75d7-9a6c-47f05b5c55e9`, `100.104.160.29`) and `SyncDevice` convergence on generation `8`, `ObserveMemberIngress` on `fvmb0` (`tun-mirred`, link type `65534`, source port `40000`, destination `192.0.4.10:9`) proves that an injected frame from the revoked member source increments `ctunku` from `{packets: 0, bytes: 0}` to `{packets: 1, bytes: 29}` (`+1` packet, `+29` bytes) with `0` forwarded bytes (`uplink_empty: true`, `origin_empty: true`) and leaves all device counters unchanged, while an injected frame from the admitted sibling `member` (`01a18ef9-ae93-7a1c-b934-20bed403bf2f`, `100.104.242.187`) increments `u_01a18ef9ae937a1cb93420bed403bf2f` from `{packets: 31, bytes: 6967}` to `{packets: 32, bytes: 6996}` (`+1` packet, `+29` bytes) and `d_01a18ef9ae937a1cb93420bed403bf2f` from `{packets: 22, bytes: 7283}` to `{packets: 23, bytes: 7340}` (`+1` packet, `+57` bytes on origin ICMP reply), appears on both `fvup0` and `origin`, and leaves `ctunku` and all other device counters unchanged.
-- **AT09 in D-067 / revision 11 terms (#193, #213, #216):** after stopping and
-  starting `node2`, `node2-adguard` and `node2-netns` at
-  `2026-10-30T23:00:03.796010637Z`, central issues three provisional zero-grant
-  leases with 1-minute TTL on unchanged desired generation `23` (`23:00:04.349901+00:00`,
-  `23:00:09.419186+00:00`, `23:00:19.549439+00:00`) while `node2` is not yet
-  `ready`, during which observations (`23:00:04.375940436Z` and `23:00:34.753993516Z`)
-  report `forwarding_block_reasons: ["awaiting_member_grants"]` (plus `safety_check_failed`
-  initially; `saw_lease_expired: false`), `error_code: "AWAITING_MEMBER_GRANTS"` on
-  `lease`, `qos`, and `source_binding` checks, and `lease_stage_errors_count: 1`,
-  and then issues a 7-grant lease on generation `23` at `23:00:39.805556+00:00`
-  once `safety_status: "passed"` at `23:00:34.753993516Z` transitions `node2` to
-  `ready`. Serving readiness (`18` kernel `member_accept_rules` and accepted
-  `forwarding: true` observation) is restored in **`36.976 s`**
-  (`23:00:40.771707223Z`), and the first counted member byte arrives in
-  **`41.695 s`** (`23:00:45.491347556Z`, `device_upload_bytes: "0" -> "2305"`,
-  `device_download_bytes: "0" -> "2461"`, `fvmb0` `11 to_origin / 7 from_origin`)
-  on the same desired generation `23` with no policy change or admin action. See
-  [summary](summary.md), [forwarding](forwarding-observation.md) and
-  [requests](requests.md).
+## D-077 / D-081
+
+[D077.md](D077.md) indexes every recorded response, status, operation ID and fence count. The normal path and all specified negatives are executed on the running production HTTP API. A restore-style fence insert is 0→1; denied mutations retain it; an explicit successful re-grant is 1→0. The original authorized-device grant returns the existing operation, confirmed by unchanged operation identity/pre-bump generation. Worker device-list readback and fresh counted HTTPS establish completion. Same-key replay preserves the operation and device version. The device-limit response is 409 `DEVICE_LIMIT_REACHED`, matching D-081 and #247.
+
+Fenced native HTTPS has no authenticated origin receipt, no fvmb0 arrival and no device counter increase after route withdrawal. This is separate from AT02's explicit revoked-source ingress injection and counted sibling control. Neither an old succeeded operation nor a 202 alone supplies forwarding evidence.
+
+## AT09 / D-067
+
+Same-generation restart serving readiness is `2026-10-31T04:27:04.060261733Z`, **36.997 seconds** after start, compared with follow-up 6's **36.976 seconds** (+0.021 seconds). First counted byte: `2026-10-31T04:27:08.792505245Z` (**41.729 seconds**). Desired generation remains `24`. AT09.json retains the immutable lease/observation timeline, provisional zero-grant leases, `awaiting_member_grants`, one lease-stage `AWAITING_MEMBER_GRANTS`, and no `lease_expired`.
+
+This is measured lab recovery; full AT09 remains blocked on F4-03. It does not establish physical second-NAT or forced relay/QUIC/PMTU coverage.
+
+## Retained attempts and fixture corrections
+
+- [Follow-up 6](history/follow-up-6/RUN.md) is preserved verbatim. Its 36.976-second result is used only as a comparison, never as current pass evidence.
+- [Attempt 1](history/follow-up-7/attempt-1/RUN.md), `63a07f95-6a73-4f6c-95d9-f10a5a22de8c`, stopped at a harness bootstrap-admin ID lookup failure. The fixture now resolves the actor from the current authenticated admin session without publishing credentials.
+- [Attempt 2](history/follow-up-7/attempt-2/RUN.md), `c8939ad8-ec4f-413a-aac3-1a4bf5d35b32`, exposed an inherited synthetic positive usage event racing the live meter sequence. The server correctly rejected the collision. Positive replay now uses an actual accepted payload and asserts unchanged receipts, samples and conflict count. The synthetic unknown-device negative runs during a bounded supervisor stop and the same release resumes afterward.
+
+Both interrupted attempts were torn down and reset. Their records are historical; every current pass comes from the final run. Readback now preserves primary failures instead of demoting them to blocked.
 
 ## Commands
 
@@ -51,98 +39,103 @@ FVPN_E2E_PREFIX=w4-members FVPN_E2E_PORT_BASE=24000 E2E_RESET=1 make -f mk/e2e.m
 make -f mk/at-members.mk at-members
 make -f mk/at-members.mk at-members-readback
 FVPN_E2E_PREFIX=w4-members FVPN_E2E_PORT_BASE=24000 make -f mk/e2e.mk e2e-down
+make -f mk/at-members.mk at-members-lint at-members-build at-members-test
+make go-lint
+mkdir -p .agent/tmp
+TMPDIR="$PWD/.agent/tmp" GOTMPDIR="$PWD/.agent/tmp" CGO_ENABLED=0 GOTOOLCHAIN=local go vet ./...
+make go-test
 ```
 
-The full target is deliberately non-green for blocked complete cases. Per-AT
-Markdown pages are concise summaries of the final JSON; raw assertions and
-timelines remain in `AT*.json`.
+The area targets create and remove unique disk-backed scratch under ignored `.agent/tmp`. The primary timeout is 40 minutes (internal context 35 minutes); the assigned-stack CI job is 60 minutes. No application, contract, migration, dependency or shared lab source changed.
 
 ## Actual output tails
 
-Startup (`e2e-up`), exit 0:
+Fresh startup, exit 0:
 
 ```text
- Container fvpn-w4-members-adguard Started
- Container fvpn-w4-members-control Waiting
+ Container fvpn-w4-members-member Starting
+ Container fvpn-w4-members-member Started
  Container fvpn-w4-members-control Healthy
  Container fvpn-w4-members-node Starting
  Container fvpn-w4-members-node Started
 e2e stack is up
 ```
 
-Complete suite (`make -f mk/at-members.mk at-members`), make exit 2 (3 passed, 7 blocked, 0 failed subchecks):
+Complete live target, make exit 2:
 
 ```text
-    live_test.go:167: AT21: blocked; see docs/e2e/at/members/AT21.json
+=== RUN   TestATMembers_Live/AT20
+    live_test.go:161: AT20: blocked; see docs/e2e/at/members/AT20.json
+=== RUN   TestATMembers_Live/AT21
+    live_test.go:161: AT21: blocked; see docs/e2e/at/members/AT21.json
 === RUN   TestATMembers_Live/AT22
-    live_test.go:167: AT22: blocked; see docs/e2e/at/members/AT22.json
---- FAIL: TestATMembers_Live (1305.11s)
-    --- FAIL: TestATMembers_Live/AT05 (16.29s)
-    --- FAIL: TestATMembers_Live/AT01 (96.08s)
-    --- PASS: TestATMembers_Live/AT02 (193.54s)
-    --- PASS: TestATMembers_Live/AT03 (143.19s)
-    --- FAIL: TestATMembers_Live/AT04 (511.23s)
-    --- PASS: TestATMembers_Live/AT08 (126.15s)
-    --- FAIL: TestATMembers_Live/AT09 (167.21s)
-    --- FAIL: TestATMembers_Live/AT20 (18.21s)
-    --- FAIL: TestATMembers_Live/AT21 (31.89s)
-    --- FAIL: TestATMembers_Live/AT22 (1.32s)
+    live_test.go:161: AT22: blocked; see docs/e2e/at/members/AT22.json
+--- FAIL: TestATMembers_Live (1416.79s)
+    --- FAIL: TestATMembers_Live/AT05 (15.38s)
+    --- FAIL: TestATMembers_Live/AT01 (92.35s)
+    --- PASS: TestATMembers_Live/AT02 (297.67s)
+    --- PASS: TestATMembers_Live/AT03 (197.39s)
+    --- FAIL: TestATMembers_Live/AT04 (471.02s)
+    --- PASS: TestATMembers_Live/AT08 (141.83s)
+    --- FAIL: TestATMembers_Live/AT09 (143.08s)
+    --- FAIL: TestATMembers_Live/AT20 (14.11s)
+    --- FAIL: TestATMembers_Live/AT21 (35.81s)
+    --- FAIL: TestATMembers_Live/AT22 (1.25s)
 === RUN   TestATMembers_AssignedStackGate
     preflight_test.go:27: corrected layout accepted: w4-members / 24000
 --- PASS: TestATMembers_AssignedStackGate (0.00s)
 FAIL
-FAIL	github.com/TED-H-com/Freedom-VPN/tests/e2e/at/members	1305.124s
+FAIL	github.com/TED-H-com/Freedom-VPN/tests/e2e/at/members	1416.798s
 === RUN   TestAT02PacketObserverScope
 --- PASS: TestAT02PacketObserverScope (0.00s)
 PASS
-ok  	github.com/TED-H-com/Freedom-VPN/tests/e2e/at/members/cmd/probe	0.003s
+ok  	github.com/TED-H-com/Freedom-VPN/tests/e2e/at/members/cmd/probe	0.001s
 FAIL
 make: *** [mk/at-members.mk:13: at-members] Error 1
 ```
 
-Scheduled partial readback (`make -f mk/at-members.mk at-members-readback`), exit 0:
+Scheduled readback, exit 0:
 
 ```text
 === RUN   TestATMembers_FollowupReadback
---- PASS: TestATMembers_FollowupReadback (379.38s)
+--- PASS: TestATMembers_FollowupReadback (380.12s)
 PASS
-ok  	github.com/TED-H-com/Freedom-VPN/tests/e2e/at/members	379.384s
+ok  	github.com/TED-H-com/Freedom-VPN/tests/e2e/at/members	380.125s
 ```
 
-`make -f mk/at-members.mk at-members-lint at-members-build at-members-test`
-exits 0 (gofmt, tagged vet, pinned staticcheck v0.8.2; linux/amd64 and arm64
-probe builds; offline test):
+Area lint, amd64/arm64 probe builds and offline tests, exit 0:
 
 ```text
 ?   	github.com/TED-H-com/Freedom-VPN/tests/e2e/at/members	[no test files]
 ok  	github.com/TED-H-com/Freedom-VPN/tests/e2e/at/members/cmd/probe	(cached)
 ```
 
-`make go-lint` and `go vet -tags e2e ./tests/...` both exit 0 with empty stdout.
-There are no application/frontend/dependency changes. The shared startup builds
-the actual Portal, and AT03 uses its existing browser probe.
-
-Teardown (`e2e-down`), exit 0:
+Whole-module `make go-lint` and `go vet ./...` each exited 0 with empty stdout. `make go-test` exited 0:
 
 ```text
- Network fvpn-w4-members Removing
+ok  	github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-prepare	0.172s
+ok  	github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/idplogin	0.004s
+ok  	github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/labtls	(cached)
+ok  	github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/probeauth	(cached)
+ok  	github.com/TED-H-com/Freedom-VPN/tests/handover	0.169s
+ok  	github.com/TED-H-com/Freedom-VPN/tests/netlab	(cached)
+?   	github.com/TED-H-com/Freedom-VPN/tests/netlab/at	[no test files]
+?   	github.com/TED-H-com/Freedom-VPN/tests/netlab/cmd/fvpn-netlab	[no test files]
+```
+
+Teardown, exit 0:
+
+```text
+ Volume fvpn-w4-members-nb Removing
+ Volume fvpn-w4-members-pgbackrest-repo Removing
  Network fvpn-w4-members-origin Removing
+ Network fvpn-w4-members Removing
  Network fvpn-w4-members Resource is still in use
  Network fvpn-w4-members-origin Resource is still in use
  Volume fvpn-w4-members-pg Removed
- Volume fvpn-w4-members-nb Removed
  Volume fvpn-w4-members-pgbackrest-repo Removed
+ Volume fvpn-w4-members-nb Removed
 e2e stack is down
 ```
 
-Compose initially reports its bridges in use by the hook-created second exit and
-extra native peers; the same shared teardown then removes all extra prefix
-objects. Final verified inventory (after a network-disabled own-prefix container
-removes private root-owned generated state):
-
-```json
-{"containers": 0, "networks": 0, "volumes": 0, "images": 0}
-```
-
-Neutral shared build caches are retained. No host networking, other prefix,
-shared admin database, push, PR or merge was touched.
+Compose can first report bridges still in use by extra native peers/second exit; the shared teardown subsequently removes those assigned-prefix objects. Final inventory verifies zero assigned-prefix containers, networks, volumes and images. Generated secret-bearing state and scratch were removed using only the assigned worktree and an assigned-prefix, network-disabled cleanup container where needed. Neutral shared build caches and the shared test database were left intact. No push, PR, main rewrite or host networking change was performed.
