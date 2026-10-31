@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -95,8 +96,34 @@ func TestD089_HTTPInstallerResultKeyedReplay(t *testing.T) {
 		return body
 	}
 	body = hash(body)
+	// UUID text is case-insensitive. Preserve an uppercase result_id in the
+	// original payload to prove receipt binding uses UUID identity, not text.
+	raw, err = json.Marshal(body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var wire map[string]json.RawMessage
+	if err = json.Unmarshal(raw, &wire); err != nil {
+		t.Fatal(err)
+	}
+	wire["result_id"], err = json.Marshal(strings.ToUpper(body.ResultId.String()))
+	if err != nil {
+		t.Fatal(err)
+	}
+	raw, err = json.Marshal(wire)
+	if err != nil {
+		t.Fatal(err)
+	}
+	body.PayloadHash, err = canonjson.HashHex(raw, "payload_hash")
+	if err != nil {
+		t.Fatal(err)
+	}
+	wire["payload_hash"], err = json.Marshal(body.PayloadHash)
+	if err != nil {
+		t.Fatal(err)
+	}
 	headers := map[string]string{"Idempotency-Key": uuid.NewString()}
-	first := f.call("POST", "/api/v1/agent/update-results", body, cert, headers)
+	first := f.call("POST", "/api/v1/agent/update-results", wire, cert, headers)
 	ack := decode[api.UpdateResultAck](t, first, http.StatusAccepted)
 	if !ack.Accepted || ack.ResultId != body.ResultId || !ack.AppliedToCurrentObservation {
 		t.Fatalf("installer ACK = %+v", ack)
@@ -112,7 +139,7 @@ func TestD089_HTTPInstallerResultKeyedReplay(t *testing.T) {
 	f = setupRuntime(t, f.r)
 	validateFollowup28Responses(t, f)
 	for _, key := range []map[string]string{headers, {"Idempotency-Key": uuid.NewString()}} {
-		replay := f.call("POST", "/api/v1/agent/update-results", body, cert, key)
+		replay := f.call("POST", "/api/v1/agent/update-results", wire, cert, key)
 		decode[api.UpdateResultAck](t, replay, http.StatusAccepted)
 		if !bytes.Equal(first.Body.Bytes(), replay.Body.Bytes()) {
 			t.Fatal("installer replay changed original ACK")

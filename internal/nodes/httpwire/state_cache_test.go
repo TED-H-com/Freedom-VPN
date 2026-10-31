@@ -37,6 +37,9 @@ func TestD099_StateCacheGenerationComparison(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			now := time.Now().UTC()
 			previous := api.DesiredState{ConfigGeneration: tc.cached, IssuedAt: now, ExpiresAt: now.Add(time.Hour), PublicationIntent: api.PublicationIntentUnpublished}
+			previous.DesiredReleaseId.SetNull()
+			previous.NodeCapacity.SetNull()
+			previous.Update.SetNull()
 			candidate := previous
 			candidate.ConfigGeneration = tc.candidate
 			candidate.IssuedAt, candidate.ExpiresAt = now.Add(time.Minute), now.Add(2*time.Hour)

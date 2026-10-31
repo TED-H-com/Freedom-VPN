@@ -58,8 +58,8 @@ func (h *Handlers) replayAgentReceipt(ctx context.Context, name string, ref db.I
 			// replay must not select different evidence for the same node.
 			e = h.Runtime.Pool.QueryRow(ctx, `SELECT ack FROM installer_update_results
 				WHERE node_id=$1 AND incarnation_id=$2 AND job_id=$3
-				AND payload->>'result_id'=$4 AND payload_hash=decode($5,'hex')`,
-				p.NodeID, p.IncarnationID, body.JobId, body.ResultId.String(), body.PayloadHash).Scan(&raw)
+				AND (payload->>'result_id')::uuid=$4 AND payload_hash=decode($5,'hex')`,
+				p.NodeID, p.IncarnationID, body.JobId, body.ResultId, body.PayloadHash).Scan(&raw)
 		} else {
 			e = h.Runtime.Pool.QueryRow(ctx, `SELECT ack FROM update_results WHERE node_id=$1 AND incarnation_id=$2 AND result_id=$3`, p.NodeID, p.IncarnationID, body.ResultId).Scan(&raw)
 		}
