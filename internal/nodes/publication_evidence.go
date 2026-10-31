@@ -11,8 +11,9 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-// PublicationForwardingEvidence checks the armed member path (§5.2, §16.3,
-// SECOPS-11); without an issued desired state it cannot grant the empty-binding exception.
+// PublicationForwardingEvidence checks the reported armed member path (§5.2,
+// §16.3, SECOPS-11). Central decisions must use PublicationDataPathFailure to
+// also check the stored lease deadline; this helper only validates observations.
 func PublicationForwardingEvidence(report api.ObservationReport, now time.Time) bool {
 	return publicationForwardingFailure(report, now, false) == ""
 }
@@ -47,7 +48,24 @@ func PublicationDataPathFailure(ctx context.Context, q Querier, report api.Obser
 	if applied < desired {
 		return "stale_generation", nil
 	}
-	return publicationForwardingFailure(report, now, empty), nil
+	if cause := publicationForwardingFailure(report, now, empty); cause != "" {
+		return cause, nil
+	}
+	if !empty {
+		// D-088: an agent may still report the original signed expiry after
+		// a central clamp. Its claim cannot extend the stored lease deadline.
+		leaseID, _ := report.Lease.LeaseId.Get()
+		var valid bool
+		if err := q.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM serving_leases
+			WHERE id=$1 AND node_id=$2 AND incarnation_id=$3
+			AND issued_at <= $4 AND expires_at > $4)`, leaseID, report.NodeId, report.NodeIncarnationId, now).Scan(&valid); err != nil {
+			return "", err
+		}
+		if !valid {
+			return "lease_unconfirmed", nil
+		}
+	}
+	return "", nil
 }
 
 func publicationForwardingFailure(report api.ObservationReport, now time.Time, emptyBindings bool) string {
