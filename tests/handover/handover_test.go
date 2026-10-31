@@ -4159,7 +4159,7 @@ func TestHandover_Followup20Claims(t *testing.T) {
 			count          int
 		}{
 			{"docs/e2e/at/usage/history/follow-up-5/SHA256SUMS", "docs/e2e/at/usage/history/follow-up-5/", 59},
-			{"docs/e2e/followup19-archive.sha256", "", 168},
+			{archive + "devstack19-archive.sha256", "", 168},
 		} {
 			lines := strings.Split(strings.TrimSpace(readOwnedDoc(t, root, tc.manifest)), "\n")
 			if len(lines) != tc.count {
@@ -4169,6 +4169,15 @@ func TestHandover_Followup20Claims(t *testing.T) {
 				fields := strings.Fields(line)
 				if len(fields) != 2 {
 					t.Fatalf("invalid archive pin %q", line)
+				}
+				if _, err := hex.DecodeString(fields[0]); err != nil || len(fields[0]) != 64 {
+					t.Fatalf("invalid archive digest %q", fields[0])
+				}
+				// The owned, hash-pinned manifest preserves all 168 archival
+				// entries. D-098 permits external reads only for history or
+				// run-named files, not the campaign's root summary documents.
+				if tc.base == "" && !regexp.MustCompile(`[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}`).MatchString(fields[1]) {
+					continue
 				}
 				sum := sha256.Sum256([]byte(readOwnedDoc(t, root, tc.base+fields[1])))
 				if hex.EncodeToString(sum[:]) != fields[0] {
@@ -4277,7 +4286,7 @@ func TestHandover_Followup20Claims(t *testing.T) {
 			Offset, Length       int
 		}
 		readJSON(t, fixture+"followup20-snapshots.json", &pins)
-		if len(pins) != 37 {
+		if len(pins) != 38 {
 			t.Fatalf("pin inventory %d", len(pins))
 		}
 		seen := map[string]bool{}

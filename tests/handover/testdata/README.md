@@ -94,7 +94,7 @@ these historical evidence hashes.
 ## Follow-up 20 — #344 cutoff
 
 `followup20-main.json` pins main 96ec0630 and seven roadmap rows (#338–#344).
-`followup20-snapshots.json` records 37 immutable inputs: 26 byte-identical source
+`followup20-snapshots.json` records 38 immutable inputs: 27 byte-identical source
 files, nine exact file excerpts, one merged-PR D-133 excerpt with byte offsets
 and full-message hash, and one dated, selected-field Dependabot #22 API capture.
 The alert is external status; the main-cut lockfile excerpt is separate.

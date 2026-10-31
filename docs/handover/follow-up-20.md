@@ -3,7 +3,7 @@
 Verified against main `96ec0630e4834e13a3a14d65553ba8108bb5da55` on 2026-10-31,
 through agent-core 28 (#344). Handover ran no new live acceptance. The
 [seven roadmap rows](../../tests/handover/testdata/followup20-main.json) and
-[37 immutable inputs](../../tests/handover/testdata/followup20-snapshots.json)
+[38 immutable inputs](../../tests/handover/testdata/followup20-snapshots.json)
 pin this cut under D-098 / D-109 / D-132. Counts are pass / blocked / fail unless
 stated otherwise. The [decision and findings register](README.md#follow-up-20-decisions-register-2026-10-31-edt)
 records current dispositions. Updates 11, isolation 10, members 11 and
