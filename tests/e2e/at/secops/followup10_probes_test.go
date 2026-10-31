@@ -63,6 +63,27 @@ func (p *liveProbe) generationState10(node uuid.UUID) json.RawMessage {
 	if err != nil {
 		p.t.Fatal("generation snapshot", err)
 	}
+	var state map[string]any
+	if json.Unmarshal(raw, &state) != nil {
+		p.t.Fatal("central generation decode")
+	}
+	// Central observations may lag. Read the node's own applied heartbeat and
+	// last accepted signed file without opening or writing its live SQLite DB.
+	hb := p.heartbeatView()
+	state["node_applied"] = hb["generation"]
+	state["node_heartbeat"] = hb
+	accepted, readErr := p.docker("node", "cat", "/var/lib/vpn-node/state/desired-state.json")
+	var envelope struct {
+		Signed struct {
+			Generation string `json:"config_generation"`
+		} `json:"signed"`
+	}
+	if readErr != nil || json.Unmarshal(accepted, &envelope) != nil || envelope.Signed.Generation == "" || hb["generation"] == "" {
+		p.t.Fatal("node generation read-back unavailable")
+	}
+	state["node_accepted_desired"] = envelope.Signed.Generation
+	state["captured_at"] = time.Now().UTC()
+	raw, _ = json.Marshal(state)
 	return json.RawMessage(raw)
 }
 

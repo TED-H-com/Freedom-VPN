@@ -1,0 +1,19 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "source_revision": "bf56e5a7664a47f90db25c0f1114abf6332814be",
+      "run_id": "cd9f060e-d9bb-47e1-a03c-60faa67423aa",
+      "driver_run_id": "e6f9d2c6-750b-4494-bfea-ca773ca8014c",
+      "live_test_exit_code": 0,
+      "driver_exit_code": 2,
+      "evidence": [
+        "followup10-attempt1-live.json",
+        "followup10-attempt1-run.json",
+        "followup10-attempt1-verdict.json"
+      ],
+      "reason_for_repeat": "Live test passed. Finalized harness extends generation capture through regrant, reads node-local heartbeat/accepted generation instead of relying on lagging central observations, scans public captures against known secrets, and deletes generated disk state. The diagnostic driver lacked the later-required state_cleanup record, so its aggregate target exited 2 despite zero Docker objects. SECOPS-21 first stale offer is retained and cannot be erased by a later pass.",
+      "go_source_hash_matches_commit": true
+    }
+  ]
+}

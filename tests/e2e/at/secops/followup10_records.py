@@ -20,7 +20,7 @@ def digest(path):
 def generation_verdict(row):
     offers = row.get('offers', [])
     observations = row.get('observations', [])
-    retained = int(row.get('retained_at_t1', {}).get('applied', '0'))
+    retained = int(row.get('restored_central', {}).get('node_accepted_desired') or row.get('retained_at_t1', {}).get('node_applied') or row.get('retained_at_t1', {}).get('applied', '0'))
     first = int(offers[0]['generation']) if offers else 0
     return bool(retained and first > retained and any(int(v['applied']) == first for v in observations)
                 and row.get('manual_generation_adjustment') is False
@@ -121,10 +121,12 @@ def main():
     generation = live.get('SECOPS-21', {})
     if generation.get('offers'):
         first = generation['offers'][0]
-        retained = generation.get('retained_at_t1', {}).get('applied')
+        retained = (generation.get('restored_central', {}).get('node_accepted_desired') or generation.get('retained_at_t1', {}).get('node_applied') or generation.get('retained_at_t1', {}).get('applied'))
         generation['first_offer_analysis'] = {
             'generation': first['generation'], 'signed_at': first['signed_at'],
-            'retained_applied_at_t1': retained,
+            'retained_generation_before_first_offer': retained,
+            'node_applied_before_restart': generation.get('restored_central', {}).get('node_applied'),
+            'central_observed_at_t1': generation.get('retained_at_t1', {}).get('applied'),
             'below_retained_generation': int(first['generation']) < int(retained or 0),
             'first_post_restore_observation': next(iter(generation.get('observations', [])), None),
             'interpretation': 'A lower first offer is stale by agentstore.AcceptDesired. The agent silently ignores ErrStaleGeneration, so rejection is inferred from the generation comparison, not claimed as a logged event.'}
@@ -184,7 +186,7 @@ def main():
     summary += 'SECOPS-21: compare all central offers and applied observations in [SECOPS-21.json](SECOPS-21.json). The agent silently ignores `ErrStaleGeneration`; zero matching log lines alone is insufficient. No harness generation adjustment is made.\n\n'
     if generation.get('first_offer_analysis'):
         g = generation['first_offer_analysis']
-        summary += f"First post-restore offer: `{g['generation']}` at `{g['signed_at']}`; retained T1 applied: `{g['retained_applied_at_t1']}`. Below retained: `{g['below_retained_generation']}`. When below retained, the remaining issue is startup ordering: compilation ran before fresh retained-generation observation. #245 can only use the applied generation already stored centrally.\n\n"
+        summary += f"First post-restore offer: `{g['generation']}` at `{g['signed_at']}`; retained node generation before restart: `{g['retained_generation_before_first_offer']}` (node applied `{g['node_applied_before_restart']}`, central T1 observation `{g['central_observed_at_t1']}`). Below retained: `{g['below_retained_generation']}`. When below retained, the remaining issue is startup ordering: compilation ran before fresh retained-generation observation. #245 can only use the applied generation already stored centrally.\n\n"
     summary += 'AT29 established TCP/UDP and AT31 forced relay remain deferred to devstack follow-up 15. The bulk native run is only SECOPS-16 stream attribution. Physical arm64, candidate hardware and guest clock rollback remain operator work. Portal member/admin API state is measured for SECOPS-17; browser rendering is not exercised.\n\n'
     summary += 'Full raw structured measurements: [restore-reconcile.json](restore-reconcile.json), [D-077.json](D-077.json), [secret-scan.json](secret-scan.json), [SECOPS-17.json](SECOPS-17.json).\n'
     if blockers: summary += '\nBlockers: ' + ' '.join(blockers) + '\n'
@@ -233,7 +235,7 @@ are deferred to devstack follow-up 15. The scan cohort does not claim capacity.
     for name,state in findings.items():deps.setdefault('requests',{})[name]={'status':state,'detail':reasons[name],'evidence':name+'.json'}
     write('dependencies.json',deps)
     scope=load(PUBLIC/'scope-review.json')
-    names=sorted(set(written+['followup10-live.json','followup10-run.json']))
+    names=sorted(set(written+['followup10-live.json','followup10-run.json','followup10-attempts.json','followup10-attempt1-live.json','followup10-attempt1-run.json','followup10-attempt1-verdict.json']))
     scope['follow_up_10']={'reviewed_at':run.get('finished_at'),'source_revision':run.get('source_revision'),
         'scope':'Own Follow-up 10 records only; historical pins remain tied to their historical records. No broader AT or hardware promotion.',
         'records':[{'path':'docs/e2e/at/secops/'+name,'sha256':digest(PUBLIC/name)} for name in names if (PUBLIC/name).is_file()],
