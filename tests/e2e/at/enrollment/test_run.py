@@ -46,6 +46,16 @@ class EvidenceTests(unittest.TestCase):
             self.assertNotIn("Key", labels)
             self.assertNotIn("Cert", labels)
 
+    def test_admission_deduplicates_suites_and_excludes_self(self):
+        processes = """1 bash bin/gates.sh w4-at-members
+2 make -f mk/at-members.mk at-members
+3 python runner.py make -f mk/at-members.mk at-members
+4 bash bin/gates.sh w1-netlab
+5 make -f mk/at-enrollment.mk at-enrollment
+6 pgrep -af gates.sh|mk/at-
+"""
+        self.assertEqual(run.active_other_suites(processes), ["members", "netlab"])
+
     def test_archived_followup6_retains_prior_failures(self):
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp)

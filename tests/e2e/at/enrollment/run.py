@@ -9,6 +9,7 @@ import re
 import signal
 import subprocess
 import tempfile
+import time
 from datetime import datetime, timezone
 import uuid
 
@@ -328,6 +329,21 @@ def inventory():
     return counts
 
 
+def active_other_suites(processes):
+    suites = set()
+    for line in processes.splitlines():
+        if "pgrep -af" in line:
+            continue
+        gate = re.search(r"(?:^|/)gates\.sh\s+([a-z0-9-]+)", line)
+        area = re.search(r"\bmk/at-([a-z0-9-]+)\.mk\b", line)
+        for match in (gate, area):
+            if match:
+                name = re.sub(r"^w[0-9]+-", "", match[1]).removeprefix("at-")
+                if name != "enrollment":
+                    suites.add(name)
+    return sorted(suites)
+
+
 def main():
     run_id = str(uuid.uuid4())
     private = ROOT / ".agent/at-enrollment" / run_id
@@ -381,6 +397,20 @@ def main():
             return built
 
         def bring_up(label):
+            # Recheck before both fresh phases; admission can change during the
+            # first probe. Parent/child make processes count as one suite.
+            while True:
+                check = subprocess.run(["pgrep", "-af", "gates.sh|mk/at-"],
+                                       cwd=ROOT, text=True, capture_output=True, check=False)
+                if check.returncode not in (0, 1):
+                    return False, "Shared-host admission inspection failed"
+                suites = active_other_suites(check.stdout)
+                meta.setdefault("admission_checks", []).append(dict(at=now(), phase=label, other_suites=suites))
+                if len(suites) < 2:
+                    print(f"{label}: admitted with {len(suites)} other suite(s)", flush=True)
+                    break
+                print(f"{label}: waiting for admission; other suites: {', '.join(suites)}", flush=True)
+                time.sleep(30)
             down = run(label + "_teardown", ["make", "-f", "mk/e2e.mk", "e2e-down"])
             if down or any(inventory().values()):
                 return False, "Owned-prefix fresh teardown did not complete"
