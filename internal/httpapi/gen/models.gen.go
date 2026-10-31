@@ -4,6 +4,9 @@ package gen
 import api "github.com/TED-H-com/Freedom-VPN/pkg/api"
 
 type AccountingPeriod = api.AccountingPeriod
+type AdminDevice = api.AdminDevice
+type AdminDevicePlatform = api.AdminDevicePlatform
+type AdminDeviceList = api.AdminDeviceList
 type AgentBootstrap = api.AgentBootstrap
 type Architecture = api.Architecture
 type AuditEvent = api.AuditEvent
@@ -143,6 +146,7 @@ type NodePlatformOs = api.NodePlatformOs
 type NodeReleases = api.NodeReleases
 type NodeSummary = api.NodeSummary
 type NodeUpdateSummary = api.NodeUpdateSummary
+type NodeUsageOutbox = api.NodeUsageOutbox
 type ObservationAccepted = api.ObservationAccepted
 type ObservationAcceptedAccepted = api.ObservationAcceptedAccepted
 type ObservationReport = api.ObservationReport
@@ -286,6 +290,7 @@ type ServiceUnavailable = api.ServiceUnavailable
 type Unauthenticated = api.Unauthenticated
 type UnprocessableEntity = api.UnprocessableEntity
 type ListAuditEventsParams = api.ListAuditEventsParams
+type ListAdminDevicesParams = api.ListAdminDevicesParams
 type CreateEnrollmentParams = api.CreateEnrollmentParams
 type RevokeEnrollmentParams = api.RevokeEnrollmentParams
 type UpdateFleetConfigParams = api.UpdateFleetConfigParams
@@ -293,6 +298,7 @@ type ListAdminGroupsParams = api.ListAdminGroupsParams
 type CreateAdminGroupParams = api.CreateAdminGroupParams
 type ListMembersParams = api.ListMembersParams
 type UpdateMemberParams = api.UpdateMemberParams
+type AuthorizeMemberDeviceParams = api.AuthorizeMemberDeviceParams
 type CreateMemberGrantParams = api.CreateMemberGrantParams
 type ListNodesParams = api.ListNodesParams
 type RetireNodeParams = api.RetireNodeParams

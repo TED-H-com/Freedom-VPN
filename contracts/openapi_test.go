@@ -15,7 +15,7 @@ import (
 
 // specEndpoints is the endpoint table of §14.2 to §14.4, relative to /api/v1.
 var specEndpoints = []string{
-	// §14.2 Admin (28, including D-057, D-065 and ENR-03)
+	// §14.2 Admin (30, including D-057, D-065, ENR-03 and D-077)
 	"GET /admin/fleet-config",
 	"PUT /admin/fleet-config",
 	"GET /admin/groups",
@@ -30,10 +30,12 @@ var specEndpoints = []string{
 	"PUT /admin/nodes/{node_id}/publication",
 	"POST /admin/nodes/{node_id}/revoke",
 	"DELETE /admin/nodes/{node_id}",
+	"GET /admin/devices",
 	"GET /admin/members",
 	"GET /admin/members/{member_id}",
 	"PATCH /admin/members/{member_id}",
 	"POST /admin/members/{member_id}/grants",
+	"POST /admin/members/{member_id}/devices/{device_id}/authorize",
 	"GET /admin/policies",
 	"POST /admin/policies",
 	"POST /admin/policies/{definition_id}/activate",
@@ -75,9 +77,12 @@ var specStatuses = map[string][]string{
 	"POST /admin/enrollments/{enrollment_id}/revoke": {"200"}, "GET /admin/nodes/{node_id}": {"200"},
 	"GET /admin/nodes/{node_id}/incarnations": {"200"},
 	"PATCH /admin/nodes/{node_id}":            {"200", "202"}, "PUT /admin/nodes/{node_id}/publication": {"202"},
-	"POST /admin/nodes/{node_id}/revoke": {"202"}, "DELETE /admin/nodes/{node_id}": {"202"}, "GET /admin/members": {"200"},
+	"POST /admin/nodes/{node_id}/revoke": {"202"}, "DELETE /admin/nodes/{node_id}": {"202"},
+	"GET /admin/devices": {"200"}, "GET /admin/members": {"200"},
 	"GET /admin/members/{member_id}": {"200"}, "PATCH /admin/members/{member_id}": {"200", "202"},
-	"POST /admin/members/{member_id}/grants": {"202"}, "GET /admin/policies": {"200"}, "POST /admin/policies": {"201"},
+	"POST /admin/members/{member_id}/grants":                        {"202"},
+	"POST /admin/members/{member_id}/devices/{device_id}/authorize": {"202"},
+	"GET /admin/policies":                                           {"200"}, "POST /admin/policies": {"201"},
 	"POST /admin/policies/{definition_id}/activate": {"202"}, "GET /admin/releases": {"200"}, "POST /admin/releases": {"201", "202"},
 	"POST /admin/update-batches": {"202"}, "GET /admin/update-batches/{batch_id}": {"200"},
 	"POST /admin/update-batches/{batch_id}/retry": {"202"}, "GET /admin/operations/{operation_id}": {"200"},
@@ -110,12 +115,12 @@ func operations(t *testing.T) []opInfo {
 	return ops
 }
 
-func TestAPI01_EndpointCountIs47(t *testing.T) {
+func TestAPI01_EndpointCountIs49(t *testing.T) {
 	ops := operations(t)
-	if len(ops) != 47 {
-		t.Fatalf("got %d operations, want 47 (§14.1, D-015/D-056/D-057/D-065, ENR-03)", len(ops))
+	if len(ops) != 49 {
+		t.Fatalf("got %d operations, want 49 (§14.1, D-015/D-056/D-057/D-065, ENR-03, D-077)", len(ops))
 	}
-	if len(specEndpoints) != 47 {
+	if len(specEndpoints) != 49 {
 		t.Fatalf("spec table has %d entries", len(specEndpoints))
 	}
 	var got []string
@@ -582,7 +587,7 @@ func TestAPI01_OptionalNullableFields(t *testing.T) {
 					(v.path == "ObservationReport#" && name == "dns_policy_evidence") ||
 					(v.path == "DesiredState#" && name == "egress_probe") ||
 					(v.path == "PolicyDefinition#" && name == "threat_feed_status") ||
-					(v.path == "NodeDetail#/allOf/1" && (name == "dns_policy_evidence" || name == "identity_conflict")) ||
+					(v.path == "NodeDetail#/allOf/1" && (name == "dns_policy_evidence" || name == "identity_conflict" || name == "usage_outbox")) ||
 					(v.path == "UpdateResult#" && name == "candidate_health") {
 					continue
 				}
