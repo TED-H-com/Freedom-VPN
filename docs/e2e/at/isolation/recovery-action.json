@@ -1,10 +1,37 @@
 {
-  "run_id": "bf671f3a-c6ac-4824-9107-425c4c5a5f02",
-  "image_build": "e711ebd822eda2ea1b5ba10b187818fda6777a74",
-  "action": "docker restart fvpn-w4-isolation-node",
-  "reason": "Recover the observed latched TC_FOREIGN_FILTER through the real node entrypoint; preserve the interface-change failure and sample the genuine recovery lease. No observations or grants synthesized.",
-  "started_at": "2026-10-31T04:51:02.744373Z",
-  "completed_at": "2026-10-31T04:51:12.849221Z",
-  "exit_code": 0,
-  "stdout": "fvpn-w4-isolation-node"
+  "action": "Extra clean capacity generation (208000000) after recovery stalled; restore saved lab member addresses/routes again. No row or observation edits.",
+  "api_ok": true,
+  "assisted": true,
+  "at": "2026-10-31T06:31:25.419525174Z",
+  "completed_at": "2026-10-31T06:31:25.447254495Z",
+  "http_status": 202,
+  "response": {
+    "completed_at": null,
+    "created_at": "2026-10-31T06:31:25.423094Z",
+    "desired_generation": "33",
+    "error": null,
+    "kind": "node.update",
+    "observed_generation": null,
+    "operation_id": "413aff36-1af4-426e-a2bc-3611ea34e638",
+    "request_id": "01a190a7-e7ec-7302-8845-bc9d3210f59b",
+    "resource": {
+      "id": "01a1909a-2998-74d3-98bd-b6999435882e",
+      "type": "node"
+    },
+    "resource_version": "999",
+    "status": "pending",
+    "steps": [
+      {
+        "error_code": null,
+        "message": null,
+        "name": "agent_policy",
+        "observed_at": null,
+        "required": true,
+        "status": "pending"
+      }
+    ],
+    "updated_at": "2026-10-31T06:31:25.423094Z"
+  },
+  "restore_ok": true,
+  "restore_output": "Error: ipv4: Address already assigned.\nRTNETLINK answers: File exists\nRTNETLINK answers: File exists\nRTNETLINK answers: File exists\n"
 }
