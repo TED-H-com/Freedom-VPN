@@ -913,7 +913,7 @@ func TestHandover_Followup7Claims(t *testing.T) {
 	root := repoRoot(t)
 
 	// 1. Parse contracts/openapi.yaml for the live operation count and FleetConfigUpdate max_offline_lease_seconds bounds (60..86400).
-	// Revision 12 advanced the count from 47 to 49 (listAdminDevices, authorizeMemberDevice). This test still pins follow-up 7's fleet-config decisions.
+	// Revision 14 advances the count to 50 (revokeMemberGrant). This test still pins follow-up 7's fleet-config decisions.
 	rawSpec, err := os.ReadFile(filepath.Join(root, "contracts", "openapi.yaml"))
 	if err != nil {
 		t.Fatalf("read contracts/openapi.yaml: %v", err)
@@ -940,8 +940,8 @@ func TestHandover_Followup7Claims(t *testing.T) {
 			}
 		}
 	}
-	if opCount != 49 {
-		t.Fatalf("contracts/openapi.yaml operation count = %d, want 49", opCount)
+	if opCount != 50 {
+		t.Fatalf("contracts/openapi.yaml operation count = %d, want 50", opCount)
 	}
 	if _, ok := spec.Paths["/admin/fleet-config"]; !ok {
 		t.Fatal("contracts/openapi.yaml missing /admin/fleet-config path")
@@ -954,7 +954,7 @@ func TestHandover_Followup7Claims(t *testing.T) {
 	// 2. Verify operator-guide.md fleet-config section, the wired-operation claim, and PR #173..#182 catch-up claims.
 	operatorGuide := readOwnedDoc(t, root, "docs/handover/operator-guide.md")
 	for _, token := range []string{
-		"All 49 are wired in `apps/control` on `main`",
+		"The existing 49 are wired in `apps/control` on `main`",
 		"#173", "#174", "#175", "#176", "#177", "#178", "#179", "#181", "#182",
 		"D-065",
 		"/api/v1/admin/fleet-config",
@@ -1114,7 +1114,7 @@ func TestHandover_Followup8Claims(t *testing.T) {
 	// 3. Verify operator-guide.md pins for control follow-up 19/20 (#190/#215), revision 11 (#191/#195/#200/#213),
 	// D-067 (#193/#198/#201/#202/#206/#216), D-068 (#189), updater follow-up 12 (#192), and secops follow-up 7 (#203).
 	for _, token := range []string{
-		"All 49 are wired in `apps/control` on `main`",
+		"The existing 49 are wired in `apps/control` on `main`",
 		"#186", "#187", "#189", "#190", "#191", "#192", "#193", "#194", "#195", "#196", "#197", "#198", "#199", "#200", "#201", "#202", "#203",
 		// Control follow-up 19/20 (#190, #215): parse rule, certificate-key, LRU tail walk, /48 reserve-of-one budget, single-walk body identity.
 		"bracketed input",
@@ -1229,7 +1229,7 @@ func TestHandover_Followup8Claims(t *testing.T) {
 func TestHandover_Followup9Claims(t *testing.T) {
 	root := repoRoot(t)
 
-	// 1. Verify revision 11 schema elements still present after revision 13 advanced info.version to 1.9.0:
+	// 1. Verify revision 11 schema elements still present after revision 14 advanced info.version to 1.10.0:
 	// ErrorCode.AWAITING_MEMBER_GRANTS (D-071) and NodeDetail.identity_conflict / NodeIdentityConflict (D-072).
 	rawSpec, err := os.ReadFile(filepath.Join(root, "contracts", "openapi.yaml"))
 	if err != nil {
@@ -1252,8 +1252,8 @@ func TestHandover_Followup9Claims(t *testing.T) {
 	if err := yaml.Unmarshal(rawSpec, &spec); err != nil {
 		t.Fatalf("parse contracts/openapi.yaml: %v", err)
 	}
-	if spec.Info.Version != "1.9.0" {
-		t.Fatalf("contracts/openapi.yaml info.version = %q, want 1.9.0", spec.Info.Version)
+	if spec.Info.Version != "1.10.0" {
+		t.Fatalf("contracts/openapi.yaml info.version = %q, want 1.10.0", spec.Info.Version)
 	}
 	if !slices.Contains(spec.Components.Schemas["ErrorCode"].Enum, "AWAITING_MEMBER_GRANTS") {
 		t.Fatal("contracts/openapi.yaml ErrorCode enum missing AWAITING_MEMBER_GRANTS")
@@ -1291,7 +1291,7 @@ func TestHandover_Followup9Claims(t *testing.T) {
 	// worker contention (#205/#208), control follow-up 20 (#215), and acceptance cross-references (#204/#207/#210/#212/#214).
 	operatorGuide := readOwnedDoc(t, root, "docs/handover/operator-guide.md")
 	for _, token := range []string{
-		"OpenAPI `1.9.0`, revision 13",
+		"OpenAPI `1.10.0`, revision 14",
 		"#204", "#205", "#206", "#207", "#208", "#210", "#211", "#212", "#213", "#214", "#215", "#216",
 		"D-070", "D-071", "D-072",
 		// Provisional window (D-067, D-071, #206, #213, #216).

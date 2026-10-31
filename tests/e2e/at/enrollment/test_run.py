@@ -25,6 +25,27 @@ class EvidenceTests(unittest.TestCase):
                 self.assertTrue((path / "history/test-run" / (at + ".json")).exists())
                 self.assertEqual({c["name"] for c in record["checks"]}, set(run.REQUIRED[at]))
 
+    def test_digest_relabel_preserves_prior_status_and_archive(self):
+        hashes = dict(Key="a" * 64, Cert="b" * 64, NodeJSON="c" * 64,
+                      UsageDB="d" * 64, UsageWAL="absent", MachineID="e" * 64,
+                      Current="/opt/vpn-node/releases/test-only")
+        original = json.dumps(dict(run_id="prior-run", checks=[dict(
+            name="installer_rerun", status="blocked", detail={"after": hashes})]))
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp)
+            record = path / "AT07.json"
+            record.write_text(original)
+            copied = run.previous(path, "AT07")
+            self.assertEqual(record.read_text(), original)
+            self.assertEqual(copied[0]["status"], "blocked")
+            self.assertEqual(copied[0]["run_id"], "prior-run")
+            labels = copied[0]["detail"]["after"]
+            self.assertEqual(labels["key_sha256"], hashes["Key"])
+            self.assertEqual(labels["usage_wal_sha256"], "absent")
+            self.assertEqual(labels["current"], hashes["Current"])
+            self.assertNotIn("Key", labels)
+            self.assertNotIn("Cert", labels)
+
     def test_failed_prior_cannot_be_silently_superseded(self):
         checks = [dict(at=at, name=name, status="pass", detail="TEST ONLY")
                   for at, names in run.REQUIRED.items() for name in names]

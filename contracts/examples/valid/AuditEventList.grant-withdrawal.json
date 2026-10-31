@@ -1,0 +1,32 @@
+{
+  "items": [
+    {
+      "audit_event_id": "e65aa0a1-1ddb-4445-b7d9-464896af5f03",
+      "occurred_at": "2026-10-28T15:00:00Z",
+      "actor": {
+        "type": "admin",
+        "id": "6a7d5389-5347-41a4-9cd7-768e07072254"
+      },
+      "action": "member.grant_revoke",
+      "resource": {
+        "type": "entitlement_grant",
+        "id": "01000000-0000-4000-8000-000000000029"
+      },
+      "request_id": "a12d4141-4f3e-487b-b638-e1488be3d4ee",
+      "operation_id": "8089f821-cd9b-4c3f-a526-20ee33e68ad5",
+      "result": "succeeded",
+      "changes": {
+        "before": {
+          "revoked_at": null
+        },
+        "after": {
+          "revoked_at": "2026-10-28T15:00:00Z",
+          "member_id": "dc01a74b-9e6f-41ac-81cd-03291d0a88c0",
+          "grant_id": "01000000-0000-4000-8000-000000000029",
+          "reason": "TEST ONLY manual withdrawal."
+        }
+      }
+    }
+  ],
+  "next_cursor": null
+}

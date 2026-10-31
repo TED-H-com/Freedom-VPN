@@ -15,6 +15,7 @@ const conntrackDeleteDetail = "conntrack delete failed after the serving ruleset
 
 // ApplyResult is what the agent keeps after a render.
 type ApplyResult struct {
+	Deadline DeadlineEvidence
 	Plan     RenderPlan
 	Resets   []Reset
 	Counters map[string]CounterValue
@@ -64,7 +65,14 @@ func IsConntrackDeleteFailure(err error) bool {
 // baseline and returns the check error, so member forwarding does not stay
 // on a path we cannot account (§10.3, §8.2). Resets are reported and never
 // cleared by recreating counter objects (§10.7).
-func Apply(ctx context.Context, ex Executor, m Model, previous map[string]CounterValue) (ApplyResult, error) {
+func Apply(ctx context.Context, ex Executor, m Model, previous map[string]CounterValue) (result ApplyResult, err error) {
+	applyStart, err := MonotonicNow()
+	if err != nil {
+		return ApplyResult{}, err
+	}
+	timing := DeadlineEvidence{Granularity: DeadlineGranularity, InstallBound: DeadlineInstallBound, ApplyStart: applyStart}
+	defer func() { result.Deadline = timing }()
+
 	if err := validateDatapath(m.Datapath); err != nil {
 		return ApplyResult{}, err
 	}
@@ -136,10 +144,55 @@ func Apply(ctx context.Context, ex Executor, m Model, previous map[string]Counte
 		_ = installBaseline(ctx, ex, m.Datapath, state)
 		return ApplyResult{}, err
 	}
-	if err := ex.NftBatch(ctx, plan.NFT); err != nil {
-		_ = installBaseline(ctx, ex, m.Datapath, state)
+	// Re-render after ownership reads and shaping. Absolute monotonic deadlines
+	// count down throughout Apply. Legacy wall snapshots advance only by elapsed
+	// monotonic time; no wall-clock resampling can extend their allowance.
+	timing.RenderStart, err = MonotonicNow()
+	if err != nil {
 		return ApplyResult{}, err
 	}
+	anchor := applyStart
+	if m.NowMono > 0 {
+		anchor = m.NowMono
+	}
+	if timing.RenderStart < anchor {
+		return ApplyResult{Deadline: timing}, checkf(ReasonIsolation, "monotonic render precedes model")
+	}
+	m.Now = m.Now.Add(timing.RenderStart - anchor)
+	m.NowMono = timing.RenderStart
+	m.timeoutReserve = DeadlineInstallBound
+	plan, err = Render(m, state, tcState)
+	if err != nil {
+		_ = installBaseline(ctx, ex, m.Datapath, state)
+		return ApplyResult{Deadline: timing}, err
+	}
+	// The guard and candidate are one transaction. A late commit stays closed,
+	// including if the agent dies before it observes the overrun.
+	installCtx, cancelInstall := context.WithTimeout(ctx, DeadlineInstallBound)
+	err = ex.NftBatch(installCtx, guardedNFT(plan.NFT, m))
+	cancelInstall()
+	if state.Chains == nil {
+		state.Chains = map[string]bool{}
+	}
+	state.Chains[deadlineGuard] = true
+	timing.InstalledBy, _ = MonotonicNow()
+	if err != nil || timing.InstalledBy < timing.RenderStart || timing.InstalledBy-timing.RenderStart > DeadlineInstallBound {
+		_ = installBaseline(ctx, ex, m.Datapath, state)
+		if err == nil {
+			err = checkf(ReasonIsolation, "deadline installation budget exceeded")
+		}
+		return ApplyResult{Plan: plan, Deadline: timing}, err
+	}
+	if err = releaseDeadlineGuard(ctx, ex); err != nil {
+		_ = installBaseline(ctx, ex, m.Datapath, state)
+		return ApplyResult{Plan: plan, Deadline: timing}, err
+	}
+	timing.GuardReleased = true
+	delete(state.Chains, deadlineGuard)
+	// Verification compares the actual remaining signed allowance, without
+	// deducting a second installation reserve.
+	m.timeoutReserve = 0
+
 	// VerifyServing reads live nft and tc state together. A foreign filter is
 	// the same serving-gate failure as a flowtable bypass.
 	evidence, err := verifyServing(ctx, ex, m, plan.Assignments, len(quarantined) > 0)
@@ -169,7 +222,7 @@ func Apply(ctx context.Context, ex Executor, m Model, previous map[string]Counte
 	// address is attempted. Failed lists the addresses whose conntrack -D
 	// did not succeed. The caller retries those addresses on the next
 	// Apply (§8.2).
-	verified := ApplyResult{Plan: plan, Resets: resets, Verified: true, Evidence: evidence}
+	verified := ApplyResult{Deadline: timing, Plan: plan, Resets: resets, Verified: true, Evidence: evidence}
 	samples, err := Samples(m, evidence.Counters)
 	if err != nil {
 		return ApplyResult{Verified: true}, err
