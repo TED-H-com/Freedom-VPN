@@ -28,6 +28,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import pg from 'pg';
+import { createServingLeaseSession } from './serving-lease.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -60,6 +61,7 @@ const AT26_DIRECT_ROLLBACK = JSON.parse(
 const PLAN_ID = 'b4fe029a-ecbf-4b1a-9ee7-de399791ae6e';
 const RELEASE_100_ID = 'cdb25ffa-5395-400c-ad3e-b32899f14bb8';
 const RELEASE_110_ID = RELEASE_VECTOR.envelope.signed.release_id; // 6d2797d0-b9a5-4724-96af-9b3039d351b1
+const HEARTBEAT_MS = 250;
 
 function canonicalizeJson(val) {
   if (val === null || typeof val !== 'object') {
@@ -1284,7 +1286,25 @@ async function enrollLiveNode(
   const bootId = crypto.randomUUID();
   const ledgerEpoch = crypto.randomUUID();
   const meterEpochId = crypto.randomUUID();
-  const leaseId = crypto.randomUUID();
+  const servingLease = createServingLeaseSession({
+    nodeId,
+    incarnationId,
+    heartbeatMs: HEARTBEAT_MS,
+    request: async (options) => {
+      const res = await httpsRequest(`${agentBaseUrl}/api/v1/agent/lease-renewals`, {
+        ...options,
+        ca: caPem,
+        cert: clientCertPem,
+        key: nodeKeyPem,
+      });
+      if (res.status !== 200) {
+        throw new Error(
+          `POST /api/v1/agent/lease-renewals failed (${res.status}): ${res.text}`,
+        );
+      }
+      return JSON.parse(res.text);
+    },
+  });
   let lastObservedMs = 0;
   let currentReleaseId = RELEASE_100_ID;
   let lastGoodReleaseId = RELEASE_100_ID;
@@ -1306,11 +1326,12 @@ async function enrollLiveNode(
   async function submitObservation(fallbackGen = '1') {
     const desiredEnvelope = await fetchDesiredState();
     const desired = desiredEnvelope?.signed ?? null;
+    await servingLease.ensure(desired);
     const appliedGen = String(desired?.config_generation ?? fallbackGen);
     const nowMs = Math.max(Date.now(), lastObservedMs + 1);
     lastObservedMs = nowMs;
     const nowIso = new Date(nowMs).toISOString();
-    const leaseExpiresIso = new Date(nowMs + 3600_000).toISOString();
+    const leaseEvidence = servingLease.evidence(desired, nowIso);
     const obsBody = {
       report_id: crypto.randomUUID(),
       node_id: nodeId,
@@ -1332,12 +1353,10 @@ async function enrollLiveNode(
       provisioning_state: 'ready',
       safety_status: 'passed',
       data_health: 'healthy',
-      member_forwarding_enabled: memberForwardingEnabled,
-      forwarding_block_reasons: [],
-      lease: {
-        lease_id: leaseId,
-        expires_at: leaseExpiresIso,
-      },
+      member_forwarding_enabled:
+        memberForwardingEnabled && leaseEvidence.member_forwarding_enabled,
+      forwarding_block_reasons: leaseEvidence.forwarding_block_reasons,
+      lease: leaseEvidence.lease,
       netbird: {
         peer_id: peerId,
         version: '0.76.2',
@@ -1379,29 +1398,9 @@ async function enrollLiveNode(
           error_code: null,
           detail: 'NetBird WireGuard peer handshake verified',
         },
-        {
-          name: 'lease',
-          status: 'passed',
-          observed_at: nowIso,
-          error_code: null,
-          detail: 'serving lease valid and unexpired',
-        },
-        {
-          name: 'qos',
-          status: 'passed',
-          observed_at: nowIso,
-          error_code: null,
-          detail: 'tc HTB + fq_codel classes installed',
-        },
-        {
-          name: 'source_binding',
-          status: 'passed',
-          observed_at: nowIso,
-          error_code: null,
-          detail: 'member peer source IP binding verified',
-        },
+        ...leaseEvidence.checks,
       ],
-      errors: [],
+      errors: leaseEvidence.errors,
       dns_policy_evidence: {
         document_id:
           desired?.dns?.resolver_document?.document_id ??
@@ -1613,6 +1612,8 @@ async function enrollLiveNode(
     clientCertPem,
     nodeKeyPem,
     submitObservation,
+    leaseRenewalDue: servingLease.renewalDue,
+    renewLease: async () => servingLease.ensure((await fetchDesiredState()).signed),
     fetchDesiredState,
     submitUpdateResult,
     submitRolledBackUpdateResult,
@@ -1634,7 +1635,9 @@ async function runSeedStep(stepName, fn) {
         `Injected failure for diagnostics verification at step "${stepName}"`,
       );
     }
-    return await fn();
+    const result = await fn();
+    console.log(`[seed step "${stepName}"] passed`);
+    return result;
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     throw new Error(`[seed step "${stepName}"] ${msg}`, { cause: err });
@@ -1910,6 +1913,7 @@ async function pollLiveNodeOnline(pool, liveNode, label = 'liveNodeOnline') {
     if (
       !lastRow?.gen_caught_up ||
       lastSubmittedGen !== targetGen ||
+      liveNode.leaseRenewalDue() ||
       (!lastRow?.has_pending_observe && now - lastSubmittedAt >= 1000)
     ) {
       await liveNode.submitObservation(targetGen);
@@ -1976,6 +1980,7 @@ async function pollLiveNodeReady(
       lastRow?.current_release_id !== expectedReleaseId ||
       lastRow?.last_good_release_id !== expectedReleaseId ||
       lastSubmittedGen !== targetGen ||
+      liveNode.leaseRenewalDue() ||
       (!lastRow?.has_pending_observe && now - lastSubmittedAt >= 1000)
     ) {
       await liveNode.submitObservation(targetGen);
@@ -2095,6 +2100,7 @@ async function publishLiveNodeExitViaApi(
     if (
       !lastRow?.gen_caught_up ||
       lastSubmittedGen !== targetGen ||
+      liveNode.leaseRenewalDue() ||
       (!lastRow?.has_pending_observe && now - lastSubmittedAt >= 1000)
     ) {
       await liveNode.submitObservation(targetGen);
@@ -2103,9 +2109,54 @@ async function publishLiveNodeExitViaApi(
     }
     await new Promise((r) => setTimeout(r, 100));
   }
-  throw new Error(
-    `Timed out waiting for live node exit publication active on ${liveNode.nodeId}; last=${JSON.stringify(lastRow)}`,
+  const diagnostics = await publicationGateDiagnostics(
+    controlBaseUrl,
+    adminAuth,
+    caPem,
+    liveNode.nodeId,
+    op.operation_id,
   );
+  throw new Error(
+    `Timed out waiting for live node exit publication active on ${liveNode.nodeId}; last=${JSON.stringify(lastRow)}; admin_api=${JSON.stringify(diagnostics)}`,
+  );
+}
+
+async function publicationGateDiagnostics(
+  controlBaseUrl,
+  adminAuth,
+  caPem,
+  nodeId,
+  operationId,
+) {
+  const results = await Promise.allSettled(
+    [`/api/v1/admin/operations/${operationId}`, `/api/v1/admin/nodes/${nodeId}`].map(
+      async (route) => {
+        const res = await httpsRequest(`${controlBaseUrl}${route}`, {
+          headers: { Cookie: adminAuth.sessionCookie, Accept: 'application/json' },
+          ca: caPem,
+        });
+        if (res.status !== 200) return { status: res.status };
+        const body = JSON.parse(res.text);
+        if (body.operation_id) {
+          // Preserve the API's step messages, including a gate cause if exposed.
+          return { status: body.status, steps: body.steps, error: body.error };
+        }
+        return {
+          publication_intent: body.publication_intent,
+          publication_observed: body.publication_observed,
+          member_forwarding_observed: body.member_forwarding_observed,
+          config_generation: body.config_generation,
+          checks: body.checks,
+          recent_errors: body.recent_errors,
+          drift: body.drift,
+        };
+      },
+    ),
+  );
+  const [operation, node] = results.map((r) =>
+    r.status === 'fulfilled' ? r.value : { unavailable: true },
+  );
+  return { operation, node };
 }
 
 async function seedDatabase(
@@ -3271,9 +3322,16 @@ async function main() {
 
     let holdNodeObservations = false;
     heartbeatTimer = setInterval(async () => {
-      if (heartbeatInFlight || holdNodeObservations) return;
+      if (heartbeatInFlight) return;
       heartbeatInFlight = true;
       try {
+        // D-101: renewal also runs while a test holds observations. The same
+        // owned timer is stopped and drained by cleanup before central exits.
+        if (liveNode.leaseRenewalDue()) {
+          if (holdNodeObservations) await liveNode.renewLease();
+          else await liveNode.submitObservation();
+        }
+        if (holdNodeObservations) return;
         const stateRes = await pool.query(
           `SELECT
              greatest(n.desired_config_generation, 1)::text AS desired_gen,
@@ -3311,12 +3369,13 @@ async function main() {
         ) {
           await liveNode.submitObservation(row.desired_gen || '1');
         }
-      } catch {
-        // Ignore transient errors during shutdown
+      } catch (err) {
+        if (!cleanedUp)
+          console.error(`Live node heartbeat/lease renewal failed: ${err.message}`);
       } finally {
         heartbeatInFlight = false;
       }
-    }, 250);
+    }, HEARTBEAT_MS);
 
     const roleSessions = {
       admin: adminAuth,

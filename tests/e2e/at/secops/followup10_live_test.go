@@ -39,6 +39,9 @@ func TestAT30_Followup10_LiveRestoreReconcile(t *testing.T) {
 		state:    filepath.Join(root, ".agent/e2e-state-w4-secops"),
 		metadata: map[string]any{"started_at": time.Now().UTC(), "follow_up": 10, "run_id": uuid.New(), "hardware": "shared development host; not candidate hardware"},
 	}
+	if os.Getenv("FVPN_SECOPS_FOLLOWUP11") == "restore" {
+		p.metadata["follow_up"] = 11
+	}
 	p.open()
 	defer func() {
 		p.finish()
@@ -364,6 +367,15 @@ func (p *liveProbe) runProductRestoreProtocol9(
 ) (map[string]any, map[string]any) {
 	ctx := p.t.Context()
 	outageStart := time.Now()
+	var resumeAgent func()
+	if os.Getenv("FVPN_SECOPS_FOLLOWUP11") == "restore" {
+		resumeAgent = p.stopRestoreAgent11()
+		defer func() {
+			if resumeAgent != nil {
+				resumeAgent()
+			}
+		}()
+	}
 	restoreInfo := p.restoreAndAttachLivePostgres(image, t0Time, restoreCleanCopy, restoreCleanLive, restoreCleanVol)
 
 	p.setFastWorkerReconcileCadence()
@@ -374,7 +386,10 @@ func (p *liveProbe) runProductRestoreProtocol9(
 	// Start protocol RTO clock at Step 1 (freeze).
 	protocolStart := time.Now()
 
-	// Step 1: freeze
+	// Step 1: freeze, with both central services still stopped (D-095).
+	if os.Getenv("FVPN_SECOPS_FOLLOWUP11") == "restore" && !p.centralStopped11() {
+		p.t.Fatal("freeze must precede service startup")
+	}
 	step1Cmd, _ := p.runUsageAdmin(cfgPath, "freeze", "--actor", actor, "--reason", "TEST ONLY AT30 Follow-up 10 snapshot restore to T0")
 	var modeAfterFreeze string
 	if err := p.db.QueryRow(ctx, `SELECT mode FROM usage_ledger_state WHERE id='00000000-0000-0000-0000-000000000130'`).Scan(&modeAfterFreeze); err != nil {
@@ -405,6 +420,13 @@ func (p *liveProbe) runProductRestoreProtocol9(
 	}
 	if !p.waitControlReady(30 * time.Second) {
 		p.t.Fatal("restore protocol: control did not become ready")
+	}
+
+	if resumeAgent != nil {
+		p.verifyRestoreHold11(nodeID)
+		resumeAgent()
+		resumeAgent = nil
+		p.sampleFirstHTTPAfterObservation11(nodeID, servicesStart)
 	}
 
 	replayStart := time.Now()

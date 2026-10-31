@@ -45,11 +45,30 @@ func (e *Engine) verifyCurrentServing(ctx context.Context) bool {
 	if !e.serving {
 		return true
 	}
+	if e.expireServing(ctx) {
+		return false
+	}
 	if e.appliedModel == nil {
 		e.rejectServing(ctx, enforce.Model{}, enforce.ServingEvidence{}, errors.New("missing applied model"))
 		return false
 	}
-	return e.verifyServingModel(ctx, *e.appliedModel, e.appliedAssignments)
+	if !e.verifyServingModel(ctx, *e.appliedModel, e.appliedAssignments) {
+		return false
+	}
+	// The live read may straddle expiry. It proves rules, not a renewed lease.
+	return !e.expireServing(ctx)
+}
+
+func (e *Engine) expireServing(ctx context.Context) bool {
+	if !e.serving || (e.policyExpires > 0 && e.clock.Mono() < e.policyExpires) {
+		return false
+	}
+	cleanup, cancel := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
+	defer cancel()
+	e.withdraw(cleanup)
+	e.decision = Decide(e.input())
+	e.lastObs = time.Time{}
+	return true
 }
 
 // rejectServing is the common withdrawal point for Apply and live reads.

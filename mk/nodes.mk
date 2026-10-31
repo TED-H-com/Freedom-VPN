@@ -9,7 +9,7 @@ TEST_TARGETS += nodes-test
 LINT_TARGETS += nodes-lint
 VERIFY_TARGETS += nodes-verify
 
-.PHONY: nodes-build nodes-test nodes-lint nodes-verify
+.PHONY: nodes-build nodes-test nodes-integration nodes-lint nodes-verify
 
 nodes-build:
 	@$(nodes-with-disk-tmp) for arch in amd64 arm64; do \
@@ -17,11 +17,14 @@ nodes-build:
 	done
 
 nodes-test:
-	@$(nodes-with-disk-tmp) GOTOOLCHAIN=local CGO_ENABLED=0 go test -tags integration $(NODES_PKGS)
+	@$(nodes-with-disk-tmp) GOTOOLCHAIN=local CGO_ENABLED=0 go test -count=1 $(NODES_PKGS)
+
+nodes-integration:
+	@$(nodes-with-disk-tmp) GOTOOLCHAIN=local CGO_ENABLED=0 go test -count=1 -tags integration $(NODES_PKGS)
 
 nodes-lint:
 	@test -z "$$(gofmt -l $(NODES_GO_FILES))" || { echo 'gofmt required in nodes packages'; exit 1; }
 	@$(nodes-with-disk-tmp) GOTOOLCHAIN=local CGO_ENABLED=0 go vet $(NODES_PKGS)
 	@$(nodes-with-disk-tmp) GOTOOLCHAIN=local CGO_ENABLED=0 go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 $(NODES_PKGS)
 
-nodes-verify: nodes-lint nodes-test nodes-build
+nodes-verify: nodes-lint nodes-test nodes-integration nodes-build
