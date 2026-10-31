@@ -197,9 +197,10 @@ func (e *Engine) NoteAck(ctx context.Context, resultID, payloadHash string, acce
 // Flush sends pending results in order. Permanent HTTP rejections are retained
 // for diagnosis and do not block later results. Retry-After defers the queue.
 // Local success is not changed into acceptance here (§13.6 step 13).
+// An unconfigured sink is an error, including when there is no queued work.
 func (e *Engine) Flush(ctx context.Context) error {
 	if e.Sender == nil {
-		return nil
+		return permanent(apierr.ValidationFailed, "result_url is required for result delivery")
 	}
 	if err := e.open(ctx); err != nil {
 		return err

@@ -1,11 +1,15 @@
 package installer
 
 import (
+	"bytes"
+	"context"
+	"crypto/x509"
 	"encoding/json"
 	"net"
 	"net/url"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/TED-H-com/Freedom-VPN/node/agent"
@@ -32,6 +36,8 @@ type InstallRequest struct {
 	Uplink               string
 	SNAT                 string
 	NetbirdManagementURL string
+	// AllowLoopback is TEST ONLY, for an HTTPS control on loopback.
+	AllowLoopback bool
 	// FaultAfter is TEST ONLY. The only accepted value is "directories".
 	FaultAfter string
 }
@@ -129,9 +135,14 @@ func validateInstall(req *InstallRequest) error {
 	if req.HostReserveBPS == 0 {
 		return errf(ExitUsage, "usage", "host_reserve_bps is required and must be greater than zero")
 	}
-	u, err := url.Parse(req.ControlURL)
-	if err != nil || u.Scheme != "https" || u.Host == "" {
-		return errf(ExitUsage, "usage", "control URL must be https")
+	origin, err := controlOrigin(req.ControlURL, req.AllowLoopback)
+	if err != nil {
+		return err
+	}
+	req.ControlURL = origin
+	ca, err := os.ReadFile(req.ServerCA)
+	if err != nil || !x509.NewCertPool().AppendCertsFromPEM(ca) {
+		return errf(ExitUsage, "usage", "server CA must be a readable PEM certificate bundle")
 	}
 	if req.NetbirdManagementURL == "" {
 		return errf(ExitUsage, "usage", "netbird management URL is required")
@@ -151,6 +162,35 @@ func validateInstall(req *InstallRequest) error {
 		return errf(ExitUsage, "usage", "fault-after must be directories")
 	}
 	return nil
+}
+
+// The explicit install origin is also the authenticated enrollment origin.
+// Never infer a hostname from the manifest or from the node's issuer CA.
+func controlOrigin(raw string, allowLoopback bool) (string, error) {
+	u, err := url.Parse(raw)
+	bad := func() (string, error) {
+		return "", errf(ExitUsage, "usage", "control URL must be an HTTPS origin without credentials, path, query or fragment; loopback requires TEST ONLY --allow-loopback")
+	}
+	if err != nil || u.Scheme != "https" || u.Hostname() == "" || u.User != nil || (u.Path != "" && u.Path != "/") || u.RawPath != "" || strings.ContainsAny(raw, "?#") {
+		return bad()
+	}
+	if strings.HasSuffix(u.Host, ":") {
+		return bad()
+	}
+	if port := u.Port(); port != "" {
+		n, err := strconv.Atoi(port)
+		if err != nil || n < 1 || n > 65535 {
+			return bad()
+		}
+	}
+	host := strings.ToLower(u.Hostname())
+	if host == "metadata.google.internal" || host == "metadata.internal" || (!allowLoopback && (host == "localhost" || strings.HasSuffix(host, ".localhost"))) {
+		return bad()
+	}
+	if ip := net.ParseIP(host); ip != nil && ((!allowLoopback && ip.IsLoopback()) || ip.IsLinkLocalUnicast() || ip.IsLinkLocalMulticast() || ip.IsMulticast() || ip.IsUnspecified()) {
+		return bad()
+	}
+	return "https://" + u.Host, nil
 }
 
 func renderAgent(l Layout, req InstallRequest, manifest api.ReleaseManifest) ([]byte, error) {
@@ -181,7 +221,11 @@ func renderAgent(l Layout, req InstallRequest, manifest api.ReleaseManifest) ([]
 	return marshalIndent(cfg)
 }
 
-func renderUpdater(l Layout, p Platform, manifest api.ReleaseManifest, node nodeInfo) ([]byte, error) {
+func renderUpdater(l Layout, p Platform, manifest api.ReleaseManifest, node nodeInfo, req InstallRequest) ([]byte, error) {
+	origin, err := controlOrigin(req.ControlURL, req.AllowLoopback)
+	if err != nil {
+		return nil, err
+	}
 	nodeID, err := uuid.Parse(node.NodeID)
 	if err != nil {
 		return nil, errf(ExitFailed, "failed", "identity node_id is not a UUID")
@@ -220,16 +264,18 @@ func renderUpdater(l Layout, p Platform, manifest api.ReleaseManifest, node node
 			UsageSchema:     usage,
 			StateSchema:     manifest.Compatibility.StateSchemaTo,
 		},
-		ReleaseTrust:    l.releaseTrust(),
-		DesiredTrust:    l.desiredTrust(),
-		DesiredState:    l.StateDir + "/desired-state.json",
-		MeterCheckpoint: l.StateDir + "/meter.checkpoint",
-		StopCommand:     []string{"systemctl", "stop", UnitAgent, UnitWatchdog},
-		StartCommand:    []string{"/bin/sh", "-c", "exec systemctl start " + UnitWatchdog + " " + UnitAgent, "fvpn-updater-start"},
-		MTLSCert:        l.IdentityDir + "/cert.pem",
-		MTLSKey:         l.IdentityDir + "/key.pem",
-		MTLSCA:          l.IdentityDir + "/ca.pem",
-		AllowLoopback:   false,
+		ReleaseTrust:           l.releaseTrust(),
+		DesiredTrust:           l.desiredTrust(),
+		DesiredState:           l.StateDir + "/desired-state.json",
+		MeterCheckpoint:        l.StateDir + "/meter.checkpoint",
+		StopCommand:            []string{"systemctl", "stop", UnitAgent, UnitWatchdog},
+		StartCommand:           []string{"/bin/sh", "-c", "exec systemctl start " + UnitWatchdog + " " + UnitAgent, "fvpn-updater-start"},
+		MTLSCert:               l.IdentityDir + "/cert.pem",
+		MTLSKey:                l.IdentityDir + "/key.pem",
+		MTLSCA:                 l.serverCA(),
+		ResultURL:              origin + "/api/v1/agent/update-results",
+		AllowLoopback:          req.AllowLoopback,
+		AllowedArtifactOrigins: []string{origin},
 	}
 	// UUID is an array, so encoding/json's omitempty does not omit a zero
 	// value. Shadow the field to genuinely omit the optional boot fallback.
@@ -276,14 +322,72 @@ func marshalIndent(v any) ([]byte, error) {
 	return append(raw, '\n'), nil
 }
 
-func writeUpdater(j *Journal, env *Env, p Platform, manifest api.ReleaseManifest) error {
+func writeUpdater(j *Journal, env *Env, p Platform, manifest api.ReleaseManifest, req InstallRequest) error {
 	node, err := readNode(env.layout())
 	if err != nil {
 		return err
 	}
-	raw, err := renderUpdater(env.layout(), p, manifest, node)
+	raw, err := renderUpdater(env.layout(), p, manifest, node, req)
 	if err != nil {
 		return err
 	}
 	return j.WriteFile(env.layout().updaterConfig(), raw, 0o644)
+}
+
+// Repair pre-F10-02 installs even on the already_current path. Preserve all
+// unrelated updater settings and the absence of a configured boot fallback.
+// The caller holds the shared lock; both public files use the install journal.
+func repairUpdaterReporting(ctx context.Context, env *Env, req InstallRequest) error {
+	l := env.layout()
+	raw, err := os.ReadFile(l.updaterConfig())
+	if err != nil {
+		return err
+	}
+	var fields map[string]json.RawMessage
+	if json.Unmarshal(raw, &fields) != nil || fields == nil {
+		return errf(ExitFailed, "failed", "updater config cannot be read")
+	}
+	origin, err := controlOrigin(req.ControlURL, req.AllowLoopback)
+	if err != nil {
+		return err
+	}
+	changed := false
+	for name, value := range map[string]any{
+		"result_url": origin + "/api/v1/agent/update-results",
+		"mtls_ca":    l.serverCA(), "allow_loopback": req.AllowLoopback,
+		"allowed_artifact_origins": []string{origin},
+	} {
+		want, _ := json.Marshal(value)
+		var compact bytes.Buffer
+		_ = json.Compact(&compact, fields[name])
+		if !bytes.Equal(compact.Bytes(), want) {
+			fields[name], changed = want, true
+		}
+	}
+	ca, err := os.ReadFile(req.ServerCA)
+	if err != nil {
+		return err
+	}
+	installedCA, _ := os.ReadFile(l.serverCA())
+	if !changed && bytes.Equal(ca, installedCA) {
+		return nil
+	}
+	raw, err = marshalIndent(fields)
+	if err != nil {
+		return err
+	}
+	j, err := openJournal(env)
+	if err != nil {
+		return err
+	}
+	if err = j.WriteFile(l.serverCA(), ca, 0o644); err == nil {
+		err = j.WriteFile(l.updaterConfig(), raw, 0o644)
+	}
+	if err == nil {
+		err = j.Finish()
+	}
+	if err != nil {
+		_ = j.Rollback(ctx)
+	}
+	return err
 }

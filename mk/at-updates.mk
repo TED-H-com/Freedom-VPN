@@ -13,10 +13,9 @@ AT_UPDATES_PORT_BASE := 42000
 # Reuse a healthy, freshly prepared owned stack (before its first enrollment).
 AT_UPDATES_REUSE ?= 0
 
-at-updates-disk-tmp = set -eu; cd $(AT_UPDATES_ROOT); mkdir -p .agent/tmp; task_tmp=$$(mktemp -d "$$(pwd)/.agent/tmp/at-updates.XXXXXX"); export TMPDIR="$$task_tmp" GOTMPDIR="$$task_tmp";
-
 export GOTOOLCHAIN := local
 export CGO_ENABLED := 0
+export AT_UPDATES_REUSE
 
 LINT_TARGETS += at-updates-lint
 
@@ -24,21 +23,9 @@ LINT_TARGETS += at-updates-lint
 
 at-updates-lint:
 	@test -z "$$(gofmt -l tests/e2e/at/updates)" || { echo 'gofmt required'; exit 1; }
-	@$(at-updates-disk-tmp) trap 'rm -rf "$$task_tmp"' EXIT; \
-	go vet ./tests/e2e/at/updates; \
-	go vet -tags e2e ./tests/e2e/at/updates; \
-	go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 ./tests/e2e/at/updates; \
-	go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 -tags e2e ./tests/e2e/at/updates; \
-	go test -tags e2e ./tests/e2e/at/updates -run '^TestUpdatesFollowupEvidence$$'; \
-	echo 'at-updates-lint: gofmt, vet and staticcheck (offline + e2e) passed'
+	@python3 tests/e2e/at/updates/run.py lint
 
-# Records first; every assigned AT must pass. Tear down even on failure.
+# Check shared-host admission before invoking this foreground target.
+# Records precede the gate; Python owns teardown even when a check fails.
 at-updates:
-	@$(at-updates-disk-tmp) \
-	export FVPN_E2E_PREFIX=$(AT_UPDATES_PREFIX) FVPN_E2E_PORT_BASE=$(AT_UPDATES_PORT_BASE); \
-	trap 'status=$$?; trap - EXIT; $(MAKE) -f $(AT_UPDATES_ROOT)/mk/e2e.mk e2e-down || status=$$?; rm -rf "$$task_tmp"; exit $$status' EXIT; \
-	if [ "$(AT_UPDATES_REUSE)" != 1 ]; then \
-		$(MAKE) -f $(AT_UPDATES_ROOT)/mk/e2e.mk e2e-down; \
-		E2E_RESET=1 $(MAKE) -f $(AT_UPDATES_ROOT)/mk/e2e.mk e2e-up; \
-	fi; \
-	FVPN_E2E=1 go test -tags e2e -count=1 -v -timeout 45m -p 1 ./tests/e2e/at/updates -run '^TestUpdatesFollowup$$'
+	@python3 tests/e2e/at/updates/run.py live

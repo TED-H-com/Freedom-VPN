@@ -574,7 +574,7 @@ func mustReq(t *testing.T, dir string, fx ReleaseFixture) InstallRequest {
 	token := filepath.Join(dir, "token-"+fx.Sequence)
 	writeToken(t, token)
 	ca := filepath.Join(dir, "ca-"+fx.Sequence+".pem")
-	if err := os.WriteFile(ca, []byte("-----BEGIN CERTIFICATE-----\nTEST\n-----END CERTIFICATE-----\n"), 0o644); err != nil {
+	if err := os.WriteFile(ca, testServerCA(t), 0o644); err != nil {
 		t.Fatal(err)
 	}
 	return InstallRequest{

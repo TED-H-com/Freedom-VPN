@@ -1,6 +1,7 @@
 # Operations Runbooks Index (`docs/ops/`)
 
-**Current cut — [follow-up 18](../handover/follow-up-18.md) (2026-10-31 EDT):** Current acceptance is follow-up 18 through #324; the dated tables below retain their own cutoffs.
+**Current cut — [follow-up 19](../handover/follow-up-19.md) (2026-10-31 EDT):** Current acceptance is follow-up 19 through #337. ISO-F6-03 is OPEN; ENR-07 and F9-01 are CLOSED. Dated tables below retain their own cutoffs.
+Previous cut: [follow-up 18](../handover/follow-up-18.md), through #324.
 
 Historical follow-up 17 reconciliation: [follow-up 17](#follow-up-17-acceptance-snapshot-2026-10-31-edt),
 main `7e044c71` through #313. Earlier tables retain the verdicts at their own cutoffs.
@@ -166,3 +167,28 @@ Still open: AT09 F9-01; F8-02 attribution; the three devstack 18 historical
 live failures (pre-#307 serving handshake, post-upgrade seed HASH_MISMATCH,
 native MTU 1280 in both families); five AT07 rows; isolation's 17 renewal losses;
 AT29 / AT31 resources; real clients; physical arm64 and power-loss qualification.
+
+## Follow-up 19 acceptance snapshot (2026-10-31 EDT)
+
+Verified against main `57a8cc9f` through #337. [Evidence and immutable pins](../handover/follow-up-19.md).
+Counts are pass / blocked / fail. No new live run was performed by handover.
+
+| Delivery | Verified disposition |
+|---|---|
+| Agent-core 27 (#325) | D-126 deliberate single composition, no reporter race; D-087 producer already emits qualifying evidence; TimingEvidence after Apply/live/audit. |
+| Installer 6 (#326) | ENR-05 consumed; 13/13 privileged tests, correlated FileMeter and post-switch seed without tree repair. |
+| Handover 18 (#327) | Through #324, r17 exact archive, D-124–D-128; 12 subtests / 26 snapshots retained. |
+| Members 10 (#328) | F9-01 CLOSED; AT09 38/5/0 at 29 → 29, D-129 removes exact-30 requirement. F10-02 AT02 and F10-03 AT20 remain failed; native 4/4 does not attribute F8-02. |
+| Enrollment 8 (#329) | Historical AT06 501/0/1, AT07 43/1/2; ENR-07 precision defect. Minting attribution corrected to planBaseline in #333. |
+| Usage-agent 5 / usage-central 5 (#330 / #331) | D-130 whole-microsecond minting and stored projection; migration 00193, canonical strict order, automatic sealed-event retry. |
+| Devstack 19 (#332) | Serving 14/0/0 closes prior serving/seed failures; stopped-agent 13/0/1 retained. Native 7/0/0 twice, DNS 15/0/1 with 12,012-byte MTU-1280 failure. |
+| Enrollment 9 (#333) | ENR-07 CLOSED; AT06 662/0/0, AT07 48/0/0, fresh ACK 1 → 2 and 908 bytes; retired 2,724 / ACK 3 preserved. |
+| Isolation 9 (#334) | AT12 10/0/0, AT10 8/1/0, AT11 2/1/0, AT13 5/1/1 FAIL. ISO-F6-03 OPEN: 96 early drops, 95 outside guards. Agent-core 28 not on main at cutoff. |
+| Wire-nodes 33 (#335) | D-131 lease-only TEST ONLY factory; no production control surface. Devstack 20 → isolation 10 consumption still pending. |
+| Netlab 20 (#336) | Members/isolation archive pin correction; 200/200 pins, 20 regression cases; no runtime acceptance promotion. |
+| Updates 10 (#337) | Installer extension 23/23; regular AT23 blocked on binary layout, AT24–AT27 blocked. Empty result_url remains F10-02. D-132 pins two fleet-update tests to immutable history. |
+
+Current open findings and owners are in the [findings register](../handover/README.md#findings-register-at-the-follow-up-19-cutoff).
+ENR-07, F9-01 and the devstack 18 serving/seed failures are no longer open.
+ISO-F6-03 is a real product defect; physical arm64, OS reboot, power-loss,
+real platform routes/clients, full AT13 faults and AT29/AT31 resources remain open.

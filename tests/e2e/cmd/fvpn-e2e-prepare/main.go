@@ -263,7 +263,7 @@ func run(state string, reset bool, lay layout, graceSeconds int, twoResolvers ..
 	if err := members.Validate(); err != nil {
 		return err
 	}
-	dnsCfg := config.DNS{FeedUpdateCadenceSeconds: 300, Upstreams: []string{lay.CoreDNSIP + ":53"}, BootstrapDNS: []string{lay.CoreDNSIP + ":53"}}
+	dnsCfg := config.DNS{FeedUpdateCadenceSeconds: 300, Upstreams: []string{lay.LabPrefix + ".55:53"}, BootstrapDNS: []string{lay.CoreDNSIP + ":53"}}
 	if err := dnsCfg.Validate(); err != nil {
 		return err
 	}

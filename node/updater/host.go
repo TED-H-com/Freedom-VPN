@@ -47,14 +47,16 @@ type Config struct {
 	MeterCheckpointWaitMS int      `json:"meter_checkpoint_wait_ms,omitempty"`
 	StopCommand           []string `json:"stop_command"`
 	StartCommand          []string `json:"start_command"`
-	ResultURL             string   `json:"result_url"`
-	MTLSCert              string   `json:"mtls_cert"`
-	MTLSKey               string   `json:"mtls_key"`
-	MTLSCA                string   `json:"mtls_ca"`
-	AllowLoopback         bool     `json:"allow_loopback"`
-	// AllowedArtifactOrigins exempts listed origins from the private and CGNAT
-	// guard (D-046). An entry matches a URL when the scheme, host and
-	// effective port are equal. The effective port of a URL or entry without
+	// ResultURL is the central /api/v1/agent/update-results endpoint. Empty
+	// permits local work but leaves receipts pending; explicit Flush fails.
+	ResultURL     string `json:"result_url"`
+	MTLSCert      string `json:"mtls_cert"`
+	MTLSKey       string `json:"mtls_key"`
+	MTLSCA        string `json:"mtls_ca"`
+	AllowLoopback bool   `json:"allow_loopback"`
+	// AllowedArtifactOrigins exempts listed artifact, manifest and result
+	// origins from the private and CGNAT guard (D-046). An entry matches a URL
+	// when the scheme, host and effective port are equal. The effective port without
 	// an explicit port is the scheme default: 443 for https and 80 for http.
 	// Empty keeps the guard. The dev stack sets this explicitly. It does not
 	// allow every private address.

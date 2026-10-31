@@ -109,6 +109,9 @@ func Install(ctx context.Context, env *Env, req InstallRequest) (*Result, error)
 	}
 	same := has && cur.ReleaseID == id && cur.ManifestSHA256 == verified.SHA
 	if same && unitsMatch(l, id) && modesMatch(l) && agentConfigMatch(l, req, verified) {
+		if err := repairUpdaterReporting(ctx, env, req); err != nil {
+			return nil, err
+		}
 		if err := reconcileMarker(ctx, env); err != nil {
 			return nil, err
 		}
@@ -224,7 +227,7 @@ func Install(ctx context.Context, env *Env, req InstallRequest) (*Result, error)
 			_ = shredFile(req.TokenFile)
 		}
 	}
-	if err := writeUpdater(j, env, p, verified.Manifest); err != nil {
+	if err := writeUpdater(j, env, p, verified.Manifest, req); err != nil {
 		return fail(err)
 	}
 	st := installedState{

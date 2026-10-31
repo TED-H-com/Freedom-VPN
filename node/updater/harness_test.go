@@ -188,10 +188,10 @@ func (m *fakeMig) Migrate(context.Context, int, int, string, string) error {
 
 func writeMarker(t *testing.T, dir, text string) {
 	t.Helper()
-	if err := os.MkdirAll(filepath.Join(dir, "bin"), 0o755); err != nil {
+	if err := os.MkdirAll(dir, 0o755); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(filepath.Join(dir, "bin", "fvpn-agent"), []byte(text), 0o755); err != nil {
+	if err := os.WriteFile(filepath.Join(dir, "fvpn-agent"), []byte(text), 0o755); err != nil {
 		t.Fatal(err)
 	}
 	if err := os.WriteFile(filepath.Join(dir, "README"), []byte(text+"\n"), 0o644); err != nil {

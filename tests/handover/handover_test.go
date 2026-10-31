@@ -38,6 +38,7 @@ var ownedDocs = []string{
 	"docs/handover/member-guide.md",
 	"docs/handover/follow-up-17.md",
 	"docs/handover/follow-up-18.md",
+	"docs/handover/follow-up-19.md",
 	"docs/ops/README.md",
 	"docs/reviews/README.md",
 	"docs/reviews/r3-d055-review.md",
@@ -2019,6 +2020,26 @@ func TestHandover_ScopeReviewPins(t *testing.T) {
 			}
 		}
 	})
+	t.Run("followup19_live_document_hashes", func(t *testing.T) {
+		var manifest struct {
+			Followup struct {
+				Documents []struct{ Path, SHA256 string } `json:"reviewed_documents"`
+			} `json:"handover_follow_up_19"`
+		}
+		if err := json.Unmarshal([]byte(readOwnedDoc(t, root, "docs/e2e/at/secops/scope-review.json")), &manifest); err != nil {
+			t.Fatal(err)
+		}
+		if len(manifest.Followup.Documents) != 12 {
+			t.Fatalf("follow-up 19 live inventory %d", len(manifest.Followup.Documents))
+		}
+		for _, pin := range manifest.Followup.Documents {
+			sum := sha256.Sum256([]byte(readOwnedDoc(t, root, pin.Path)))
+			if hex.EncodeToString(sum[:]) != pin.SHA256 {
+				t.Errorf("live hash stale: %s", pin.Path)
+			}
+		}
+	})
+
 }
 
 // TestHandover_Followup14Claims checks the dated main boundary, implemented
@@ -3265,7 +3286,8 @@ func TestHandover_Followup18Claims(t *testing.T) {
 	const archive = fixture + "history/follow-up-18/"
 	const mainPin = fixture + "followup18-main.json"
 	const doc = "docs/handover/follow-up-18.md"
-	const register = "docs/handover/README.md"
+	// The original register is frozen; Followup19Claims checks current dispositions.
+	const register = fixture + "history/follow-up-19/register18.md"
 	const restore = fixture + "5218b7d5-1415-4e1b-8618-48ea2d3cf03e-"
 	require := func(path string, tokens ...string) {
 		t.Helper()
@@ -3313,9 +3335,8 @@ func TestHandover_Followup18Claims(t *testing.T) {
 			require("docs/ops/README.md", fmt.Sprintf("#%d", pr))
 		}
 		require(doc, cut, "including updater 17 (#323)", "Handover ran no new live acceptance")
-		for _, path := range []string{"README.md", "docs/handover/00-index.md", "docs/handover/deploy.md", "docs/handover/operator-guide.md", "docs/handover/member-guide.md", "docs/handover/restore-drill.md", "docs/ops/README.md"} {
-			require(path, "Current cut", "follow-up-18.md")
-		}
+		// Current entrypoints move with the latest cut; this cut's evidence stays frozen.
+		require(register, "Follow-up 18 decisions register", "through #324")
 	})
 	t.Run("SECOPS21_first_delivered_restore_and_AT30", func(t *testing.T) {
 		p := restore + "SECOPS-21.json"
@@ -3610,6 +3631,307 @@ func TestHandover_Followup18Claims(t *testing.T) {
 		for _, path := range []string{"docs/e2e/at/usage/AT20.json", "docs/e2e/at/members/AT09.json", "docs/poc/G2-f802-native-attribution-2026-10-31.md", "docs/node/followup26-updater-2026-10-31.md"} {
 			if claimTokenAllowed(path, "some prose") {
 				t.Errorf("D-109 accepts living source %s", path)
+			}
+		}
+	})
+}
+
+// TestHandover_Followup19Claims preserves the #337 cutoff. D-098 measurements
+// read immutable snapshots; D-109 implementation pins name existing Go tests.
+func TestHandover_Followup19Claims(t *testing.T) {
+	root := repoRoot(t)
+	const cut = "57a8cc9fc2ddb8178d3166642536dad6a1c3b95b"
+	const fixture = "tests/handover/testdata/"
+	const archive = fixture + "history/follow-up-19/"
+	const doc = "docs/handover/follow-up-19.md"
+	const register = "docs/handover/README.md"
+	readJSON := func(t *testing.T, path string, dst any) {
+		t.Helper()
+		if err := json.Unmarshal([]byte(readOwnedDoc(t, root, path)), dst); err != nil {
+			t.Fatalf("decode %s: %v", path, err)
+		}
+	}
+	type claim struct {
+		path   string
+		tokens []string
+	}
+	for _, tc := range []struct {
+		name   string
+		claims []claim
+	}{
+		{"agent27_composition_and_timing", []claim{
+			{archive + "agent27-members.md", []string{"single synchronous decision", "no HTTP contract", "sole stage=lease error", "TC_FOREIGN_FILTER", "A later clean read cannot rewrite the queued report"}},
+			{archive + "agent27-isolation.md", []string{"already emits the qualifying observation", "Every actual Engine Apply", "live VerifyServing and blocked audit", "ServingEvidence.TimingEvidence()", "including errors", "12 losses", "10 loss windows", "32.271094", "51.114216", "physical arm64"}},
+			{"node/agent/followup27_test.go", []string{"TestD126_AT09_CapturedProvisionalSafetyComposition", "TestD087_AT10_FixedGenerationProvisionalToGranted"}},
+			{doc, []string{"deliberate single-decision composition", "no reporter race", "safety failure > provisional / awaiting > ok", "no producer fix was needed", "12/1,518", "32.271/51.114 ms", "17 older losses"}},
+		}},
+		{"installer6_correlated_success", []claim{
+			{archive + "installer6.md", []string{"ENR-05 serving acceptance", "pre-#307 extractor", "exact", "inference", "FileMeter", "barrier_id", "13/13", "No live-tree repair"}},
+			{"tests/installer/handoff_test.go", []string{"TestD089_RealSeedThenJournaledUpgrade"}},
+			{doc, []string{"13/13 privileged tests", "post-switch revocation", "without tree repair", "exact mismatching entry"}},
+		}},
+		{"handover18_preserved_cut", []claim{
+			{fixture + "followup19-main.json", []string{"done (#327)", "12 subtests, 26 snapshots", "exact r17 archive", "D-124 to D-128"}},
+			{archive + "register18.md", []string{"through #324", "Follow-up 18 decisions register", "| D-124 |", "| D-128 |"}},
+			{doc, []string{"Handover 18 (#327)", "12 subtests / 26 snapshots", "D-124–D-128 stay"}},
+		}},
+		{"members10_D129_and_remaining_failures", []claim{
+			{archive + "members10.md", []string{"F9-01 is closed", "29 → 29", "38 / 5 / 0", "121 / 0 / 1", "80 / 0 / 1", "one unreadable withdrawal sample", "changed positive answer before", "F8-02 remains unattributed"}},
+			{archive + "members10-requests.md", []string{"### F10-01", "### F10-02", "### F10-03", "234 samples", "read_ok=false", "TTL 10"}},
+			{archive + "D129-PR328.txt", []string{"D-129", "desired == applied", "whatever generation the unchanged sequence yields", "30 is not a contract value"}},
+			{doc, []string{"38/5/0", "29 → 29", "30 is not a contract value", "test-acceptance definition", "4/4", "121/0/1", "80/0/1", "dns-publish 9 / devstack 20"}},
+		}},
+		{"enrollment8_to_9_ENR07_closed", []claim{
+			{"docs/e2e/at/enrollment/history/follow-up-8/summary.md", []string{"501", "43", "controlled_reinstall"}},
+			{archive + "enrollment9.md", []string{"662 pass / 0 blocked / 0 failed", "48 pass / 0 blocked / 0 failed", "All five", "2724 bytes", "ACK **3**", "Physical arm64 and OS reboot remain unmeasured"}},
+			{archive + "enrollment9-gap.md", []string{"planBaseline", "planSwitch", "15:11:08.150045Z", "15:11:08.150046Z", "BeforePlusHeldByteEquality", "OriginalPayloadAndHistoricalAttribution", "AgentSameKeyStoredResultReplay", "OriginACKAndIndependentCurrentACK", "ACK 1", "ACK 2"}},
+			{fixture + "followup19-main.json", []string{"freeze withdrawal 187 ms", "51 byte-identical files"}},
+			{doc, []string{"501/0/1", "43/1/2", "shared", "AT07 process exit", "planBaseline", "ENR-07", "662/0/0", "48/0/0", "550 + 358 = 908 bytes", "1 µs stored interval", "2,724 bytes / ACK 3", "187 ms", "51-file"}},
+		}},
+		{"D130_both_halves_and_safe_rollout", []claim{
+			{archive + "usage-agent5.md", []string{"UTC whole-microsecond endpoints", "eventInterval", "planBaseline", "planSample", "planClockGap", "planSwitch", "Already sealed 1 ns events are never rewritten"}},
+			{archive + "usage-central5.md", []string{"interval_order", "UTC().Truncate(time.Microsecond)", "usage_events_interval_check", "usage_samples_check", "usage_ledger_gaps_check1", "<=", "No", "constraint is disabled or bypassed", "Down fails atomically", "retryable `503 DEPENDENCY_UNAVAILABLE`", "next normal retry accepts the same sealed"}},
+			{"node/internal/meter/precision_test.go", []string{"TestD130_AllIntervalPaths", "TestENR07_FirstGapSurvivesMicrosecondPersistence", "TestD130_LegacySealedGapUnchanged"}},
+			{"internal/usage/interval_precision_integration_test.go", []string{"TestMTR03_ENR07_D130MigrationRetryACKAndStoredReplay", "TestMTR04_D130NanosecondSamplesAndRebuild", "TestMTR03_D130CanonicalIntervalOrderStillStrict"}},
+			{doc, []string{"width ≥ 1 µs", "all four former 1 ns sites", "strict", "interval_order", "00193_usage_events_interval_precision.sql", "never bypassed", "Down refuses equal-endpoint", "503 DEPENDENCY_UNAVAILABLE", "without operator action"}},
+			{"docs/handover/11-database-and-retention.md", []string{"00193_usage_events_interval_precision.sql", "before ingestion resumes", "Down refuses equal-endpoint rows", "canonical", "spool edits"}},
+		}},
+		{"devstack19_closures_and_retained_failures", []claim{
+			{archive + "devstack19.md", []string{"14 / 0 / 0", "Run d6aaa798", "barrier_id", "13 / 0 / 1", "7/0/0", "15/0/1", "12,012", "RCODE 0", "SOA TTL 5", "all 15 row agreements", "no", "`agent.Decide` call", "central lease dependency seam"}},
+			{archive + "devstack19-retention.md", []string{"All eight canonical payloads", "retained byte-for-byte"}},
+			{doc, []string{"14/0/0", "pre-#307 binary caveat", "13/0/1", "7/0/0", "15/0/1", "12,012 bytes", "8/8", "15 agreements", "process fact, not a product claim"}},
+		}},
+		{"isolation9_open_product_defect", []claim{
+			{archive + "isolation9.md", []string{"8 / 1 / 0", "2 / 1 / 0", "10 / 0 / 0", "5 / 1 / 1", "562 observation POSTs", "zero qualifying accepted reports", "4,767 / 5,021 / 5,025 ms", "Apply 955", "956", "957", "958", "GENERATION_MISMATCH", "generation-0 baseline", "Apply 961", "log is empty", "3,289 snapshots", "80/80", "557/557", "six assertions", "namespace"}},
+			{doc, []string{"ISO-F6-03 OPEN", "AT13 5/1/1 FAIL", "real open product defect, not a harness limitation", "8.1 s before the deadline", "96 early drops / 65 positives / 41 final drops", "95 early drops outside", "writer is not identified", "not on main at #337", "3 losses / 1,396 probes", "54/294/1315", "36.090627", "50.196105", "no D-120 tolerance", "clock-namespace proof"}},
+		}},
+		{"wire_nodes33_D131_boundary", []claim{
+			{archive + "wire-nodes33.md", []string{"httpwire.Open", "WithTestOnlyGrantEligibilityReaderFactory(func(pgx.Tx) leases.EntitlementReader)", "once in", "nil reader fails", "leases.DBEntitlementReader", "desiredstate.NewDBEntitlementReader(tx)", "no production", "configuration, environment switch or HTTP endpoint", "Each renewal samples the flag once", "does not revoke existing", "devstack 20 / isolation 10"}},
+			{"internal/nodes/httpwire/followup33_integration_test.go", []string{"TestD087_AT10_ProductionConstructorAndHTTPFixedGenerationGrants", "TestD087_AT29_HTTPNilGrantReaderFailsClosed"}},
+			{doc, []string{"D-131", "sampled once per renewal transaction", "nil reader fails closed", "no config / environment / HTTP surface", "bindings and generation never move", "devstack 20 → isolation 10 is not on main at #337"}},
+		}},
+		{"netlab20_immutable_external_pins", []claim{
+			{archive + "netlab20.md", []string{"200 retained-file pins", "history/<snapshot>/", "under `docs/e2e/runs/`", "three archive findings are resolved", "unchanged digests", "no", "exceptions"}},
+			{fixture + "followup19-main.json", []string{"200 / 200", "20 in-memory regression cases"}},
+			{"tests/netlab/evidence_test.go", []string{"TestD098_EvidencePinValidation", "TestCommittedEvidenceFiles_ValidAndHygieneClean"}},
+			{doc, []string{"200/200 pins", "20 regression cases", "history/<snapshot>/", "UUID run directory under docs/e2e/runs/", "unchanged digests"}},
+		}},
+		{"updates10_D132_and_blocked_regular_AT", []claim{
+			{archive + "updates10.md", []string{"all 23 checks", "D-110", "D-111", "D-125", "D-127", "active release identity is inconsistent", "bin/fvpn-agent", "result_url", "TEST ONLY HTTP stimulus", "HASH_MISMATCH", "DOWNGRADE", "409", "supplies current pass claims"}},
+			{archive + "D132-PR337.txt", []string{"D-132", "one-file exception", "internal/fleetupdate/d062_integration_test.go", "living", "history/follow-up-9/", "D062a/D062c", "f13 items"}},
+			{"node/agent/followup24_test.go", []string{"TestUPD05_CandidateIdentityAndHealth"}},
+			{fixture + "followup17-main.json", []string{"candidate release identity matches the running executable", "done (#305)"}},
+			{"internal/fleetupdate/d062_integration_test.go", []string{"TestD062a_PrecheckFailureHarnessDelivery", "TestD062c_RollbackHarnessRequiresRestoredHealthEmptyAllowlist"}},
+			{doc, []string{"23/23", "Regular AT23 is blocked", "#305", "#283", "no earlier pass is carried forward", "F10-01 → devstack 20", "F10-02 → installer 7", "result_url", "docs/e2e/at/<lane>/history/<follow-up>/", "fleet-update", "13 owns the follow-up"}},
+		}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			for _, c := range tc.claims {
+				requireHandoverClaimTokens(t, root, c.path, c.tokens...)
+			}
+		})
+	}
+	t.Run("cutoff_rows_and_current_entrypoints", func(t *testing.T) {
+		var pin struct {
+			Commit string
+			Cutoff int `json:"cutoff_pr"`
+			Rows   []string
+		}
+		readJSON(t, fixture+"followup19-main.json", &pin)
+		if pin.Commit != cut || pin.Cutoff != 337 || len(pin.Rows) != 13 {
+			t.Fatalf("wrong cutoff/inventory: %+v", pin)
+		}
+		for _, row := range pin.Rows {
+			requireHandoverClaimTokens(t, root, "docs/ROADMAP.md", row)
+		}
+		for pr := 325; pr <= 337; pr++ {
+			requireHandoverClaimTokens(t, root, fixture+"followup19-main.json", fmt.Sprintf("done (#%d)", pr))
+			requireHandoverClaimTokens(t, root, "docs/ops/README.md", fmt.Sprintf("#%d", pr))
+		}
+		requireHandoverClaimTokens(t, root, doc, cut, "Handover ran no new live acceptance")
+		for _, path := range []string{"README.md", "docs/handover/00-index.md", "docs/handover/deploy.md", "docs/handover/operator-guide.md", "docs/handover/member-guide.md", "docs/handover/restore-drill.md", "docs/ops/README.md"} {
+			lines := strings.Split(readOwnedDoc(t, root, path), "\n")
+			if len(lines) < 3 || !strings.Contains(lines[2], "Current cut") || !strings.Contains(lines[2], "follow-up-19.md") {
+				t.Errorf("stale entrypoint: %s", path)
+			}
+		}
+	})
+	t.Run("frozen_acceptance_counts_and_no_promotion", func(t *testing.T) {
+		for _, tc := range []struct {
+			path, run, status   string
+			pass, blocked, fail int
+		}{
+			{"docs/e2e/at/enrollment/history/follow-up-8/AT06.json", "f27a81a0-183e-46b4-85a8-304b2f64b635", "blocked", 501, 0, 1},
+			{"docs/e2e/at/enrollment/history/follow-up-8/AT07.json", "f27a81a0-183e-46b4-85a8-304b2f64b635", "blocked", 43, 1, 2},
+			{"docs/e2e/at/enrollment/history/891ee9b8-bf01-4583-a47a-9542c8b04c8a/AT06.json", "891ee9b8-bf01-4583-a47a-9542c8b04c8a", "pass", 662, 0, 0},
+			{"docs/e2e/at/enrollment/history/891ee9b8-bf01-4583-a47a-9542c8b04c8a/AT07.json", "891ee9b8-bf01-4583-a47a-9542c8b04c8a", "pass", 48, 0, 0},
+			{archive + "isolation9-AT13.json", "2be2797b-7a28-4e9f-a1fe-5fffa4c1b047", "fail", 5, 1, 1},
+		} {
+			checkHandoverRecord(t, root, tc.path, tc.run, tc.status, tc.pass, tc.blocked, tc.fail)
+		}
+		checkHandoverRecord(t, root, archive+"members10-AT09.json", "2be2d32f-bfd9-46f5-bf29-afaa6617ae94", "blocked", -1, 0, 0)
+		var members struct {
+			Steps []struct{ Name, Status, Actual string }
+		}
+		readJSON(t, archive+"members10-AT09.json", &members)
+		counts := map[string]int{}
+		restartRows := 0
+		for _, step := range members.Steps {
+			counts[step.Status]++
+			if step.Name == "same-generation D-067 restart recovery and lease sequence" {
+				restartRows++
+				var values map[string]json.RawMessage
+				if err := json.Unmarshal([]byte(step.Actual), &values); err != nil {
+					t.Fatal(err)
+				}
+				for _, key := range []string{"desired_before", "desired_after", "applied_before", "applied_after"} {
+					if string(values[key]) != `"29"` {
+						t.Errorf("restart %s = %s", key, values[key])
+					}
+				}
+			}
+		}
+		if restartRows != 1 {
+			t.Fatalf("restart rows %d", restartRows)
+		}
+		if counts["pass"] != 38 || counts["blocked"] != 5 || counts["fail"] != 0 || len(members.Steps) != 43 {
+			t.Fatal(counts)
+		}
+		for n := 23; n <= 27; n++ {
+			checkHandoverRecord(t, root, fmt.Sprintf("%supdates10-AT%d.json", archive, n), "695f977c-b587-4768-88f1-0514f3a4f1ac", "blocked", -1, 0, 0)
+		}
+		checkHandoverRecord(t, root, archive+"updates10-installer.json", "695f977c-b587-4768-88f1-0514f3a4f1ac", "pass", -1, 0, 0)
+		var installer struct {
+			Observations []struct{ Name, Detail string }
+		}
+		readJSON(t, archive+"updates10-installer.json", &installer)
+		passed := map[string]bool{}
+		for _, o := range installer.Observations {
+			if strings.HasPrefix(o.Name, "check_") {
+				passed[o.Name] = true
+				if o.Detail != "true" {
+					t.Errorf("failed installer check %s: %s", o.Name, o.Detail)
+				}
+			}
+		}
+		if len(passed) != 23 {
+			t.Fatalf("installer checks = %d", len(passed))
+		}
+	})
+	t.Run("ISO_F603_exact_failure_and_renewal_counts", func(t *testing.T) {
+		var expiry struct {
+			Status string
+			Early  struct {
+				Count   int
+				Outside int    `json:"outside_guard"`
+				First   string `json:"first_ingress_offset_ns"`
+			} `json:"early_dropout"`
+			Final struct {
+				Count     int
+				Positives int `json:"post_deadline_positives"`
+			} `json:"final_expiry_drops"`
+		}
+		readJSON(t, archive+"isolation9-expiry.json", &expiry)
+		if expiry.Status != "fail" || expiry.Early.Count != 96 || expiry.Early.Outside != 95 || expiry.Early.First != "-8098843780" || expiry.Final.Count != 41 || expiry.Final.Positives != 0 {
+			t.Fatalf("expiry changed: %+v", expiry)
+		}
+		var deadline struct {
+			Passed           bool
+			Positives, Drops int
+			Errors           []string
+		}
+		readJSON(t, archive+"isolation9-deadline.json", &deadline)
+		if deadline.Passed || deadline.Positives != 65 || deadline.Drops != 137 || !slices.Contains(deadline.Errors, "later positive after first drop") {
+			t.Fatalf("deadline promoted: %+v", deadline)
+		}
+		var renewal struct {
+			Probes, Delivered int
+			LossCount         int `json:"loss_count"`
+			Install           int `json:"loss_windows_overlapping_install"`
+			Guard             int `json:"ingress_in_outer_guard"`
+			Losses            []struct {
+				Packet struct {
+					ID int `json:"packet_id"`
+				}
+			}
+		}
+		readJSON(t, archive+"isolation9-continuity.json", &renewal)
+		if renewal.Probes != 1396 || renewal.Delivered != 1393 || renewal.LossCount != 3 || renewal.Install != 3 || renewal.Guard != 3 || len(renewal.Losses) != 3 {
+			t.Fatalf("renewal changed: %+v", renewal)
+		}
+		for i, id := range []int{54, 294, 1315} {
+			if renewal.Losses[i].Packet.ID != id {
+				t.Fatalf("loss ID changed: %+v", renewal.Losses)
+			}
+		}
+	})
+	t.Run("current_decisions_and_findings", func(t *testing.T) {
+		s := readOwnedDoc(t, root, register)
+		previous := -1
+		for n := 98; n <= 132; n++ {
+			pos := strings.Index(s, fmt.Sprintf("| D-%03d |", n))
+			if pos <= previous {
+				t.Fatalf("missing/out-of-order D-%03d", n)
+			}
+			previous = pos
+		}
+		requireHandoverClaimTokens(t, root, register, "| ENR-07 | CLOSED |", "| Members F9-01 | CLOSED |", "| ISO-F6-03 | OPEN — real product defect |", "| Updates F10-01 | OPEN |", "| Updates F10-02 | OPEN |", "| Members F10-02 | OPEN |", "| Members F10-03 | OPEN |", "| F8-02 / native MTU 1280 | OPEN — unattributed |", "AT29 / AT31 resources", "OS reboot, power-loss", "Agent-core 28 in flight, not on main at #337")
+		for _, line := range strings.Split(s, "\n") {
+			if strings.HasPrefix(line, "| D-124 |") && (!strings.Contains(line, "Orchestration process only") || !strings.Contains(line, "No operator guarantee")) {
+				t.Fatal("D-124 promoted")
+			}
+		}
+	})
+	t.Run("D098_D109_provenance_and_external_pin_policy", func(t *testing.T) {
+		var pins []struct {
+			Path, Source, SHA256 string
+			Commit               string `json:"source_commit"`
+			SourceSHA            string `json:"source_sha256"`
+			Offset, Length       int
+		}
+		readJSON(t, fixture+"followup19-snapshots.json", &pins)
+		if len(pins) != 37 {
+			t.Fatalf("pin inventory %d", len(pins))
+		}
+		seen := map[string]bool{}
+		for _, pin := range pins {
+			if seen[pin.Path] || !strings.Contains(pin.Path, "/history/") || pin.Source == "" {
+				t.Fatalf("mutable or duplicate pin: %+v", pin)
+			}
+			seen[pin.Path] = true
+			raw := readOwnedDoc(t, root, pin.Path)
+			sum := sha256.Sum256([]byte(raw))
+			if hex.EncodeToString(sum[:]) != pin.SHA256 {
+				t.Errorf("snapshot changed: %s", pin.Path)
+			}
+			if pin.Source == "commit-message" {
+				if pin.Length != len(raw) || pin.Offset <= 0 || len(pin.SourceSHA) != 64 || !slices.Contains([]string{"609ea71559375abdbb2546f47ff8a09cc41b2195", "fe816a8922a255772d5e88a9df9390ade303dc4f"}, pin.Commit) {
+					t.Errorf("invalid merged PR excerpt: %+v", pin)
+				}
+			} else if pin.Commit != cut {
+				t.Errorf("wrong source cut: %+v", pin)
+			}
+		}
+		// The frozen source manifest must never point back to another lane's root.
+		var sources struct {
+			Files []struct{ Path, SHA256 string }
+		}
+		readJSON(t, archive+"netlab20-pins.json", &sources)
+		if len(sources.Files) != 6 {
+			t.Fatalf("source pin count %d", len(sources.Files))
+		}
+		for _, pin := range sources.Files {
+			if !strings.Contains(pin.Path, "/history/") && !regexp.MustCompile(`^docs/e2e/runs/.*/[0-9a-f]{8}-[0-9a-f-]{27}/`).MatchString(pin.Path) {
+				t.Errorf("mutable external pin: %s", pin.Path)
+			}
+			sum := sha256.Sum256([]byte(readOwnedDoc(t, root, pin.Path)))
+			if hex.EncodeToString(sum[:]) != pin.SHA256 {
+				t.Errorf("external archive changed: %s", pin.Path)
+			}
+		}
+		for _, path := range []string{"docs/e2e/at/members/AT09.json", "docs/e2e/at/isolation/AT13.json", "docs/e2e/at/updates/AT23.json", "docs/node/followup27-isolation-2026-10-31.md", "docs/nodes/followup33-d087-seam-2026-10-31.md"} {
+			if claimTokenAllowed(path, "some prose") {
+				t.Errorf("D-109 permits mutable prose: %s", path)
 			}
 		}
 	})

@@ -21,7 +21,8 @@ import (
 // The harness records are redacted partial payloads. Keep their state, stage,
 // error and health verbatim; bind IDs, hashes and times to real authorized jobs.
 func TestD062a_PrecheckFailureHarnessDelivery(t *testing.T) {
-	raw, err := os.ReadFile("../../docs/e2e/at/updates/result-delivery.json")
+	// D-132 source: docs/e2e/at/updates/history/follow-up-9/result-delivery.json; SHA-256 df19c0968d3e60e420fef36754f4b9c946f771279846fce29ec33450240f7d55.
+	raw, err := os.ReadFile("testdata/d062-harness-result-delivery.json")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -30,6 +31,9 @@ func TestD062a_PrecheckFailureHarnessDelivery(t *testing.T) {
 	}
 	if err = json.Unmarshal(raw, &fixture); err != nil {
 		t.Fatal(err)
+	}
+	if len(fixture.Results) == 0 {
+		t.Fatal("missing harness precheck result")
 	}
 	recorded := fixture.Results[0]
 	if recorded.State != "failed" || !recorded.Health.IsNull() {
@@ -66,7 +70,8 @@ func TestD062a_PrecheckFailureHarnessDelivery(t *testing.T) {
 }
 
 func TestD062c_RollbackHarnessRequiresRestoredHealthEmptyAllowlist(t *testing.T) {
-	raw, err := os.ReadFile("../../docs/e2e/at/updates/rollback-delivery-finding.json")
+	// D-132 source: docs/e2e/at/updates/history/follow-up-9/rollback-delivery-finding.json; SHA-256 c67f2d85cd75e494310e64a1f135cc1d67781fd4e97876190937bda428e1485c.
+	raw, err := os.ReadFile("testdata/d062-harness-rollback-delivery-finding.json")
 	if err != nil {
 		t.Fatal(err)
 	}

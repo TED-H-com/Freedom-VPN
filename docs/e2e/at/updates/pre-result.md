@@ -1,5 +1,5 @@
-# Follow-up 9: pre-result
+# Follow-up 10 pre-result
 
-Run `89fc6769-0a09-403d-ae88-84f736ee1dce`, product main `5575470587a4e3014bd515e624ba2ad0aacbd140`, harness `5d98ea8f613fc415897b0a42940f0af6834ee2ae`.
+Run `695f977c-b587-4768-88f1-0514f3a4f1ac`. Pre-result stimuli ran, but the complete AT24 and AT27 cases remain blocked.
 
-This is current-run evidence extracted from [AT24](AT24.md), [AT27](AT27.md). See [raw observations](pre-result.json) and [the summary](summary.md).
+See the [current extracted evidence](pre-result.json), [full records](summary.md) and [deciding observations](follow-up-10.md). The previous derivative is [archived](history/follow-up-9/pre-result.json).

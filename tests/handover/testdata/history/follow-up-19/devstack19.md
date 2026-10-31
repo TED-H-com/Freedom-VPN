@@ -1,0 +1,237 @@
+# Follow-up 19 — combined-source acceptance (TEST ONLY)
+
+The unchanged real installer-node serving campaign passes **14 / 0 / 0**
+(pass / blocked / fail) on source `a9ad1c47`, based on main `33034048` with
+#307, #310, #320, #323 and #326. Product source is unchanged in this lane.
+The initial real `apply` exits **0**; the candidate pointer and running agent
+executable both switch; all five health checks pass. The real central revoke
+and candidate re-enrollment pass, with **no HASH_MISMATCH and no tree repair**.
+
+## Serving upgrade and candidate seed
+
+[Run d6aaa798](d6aaa798-6c39-49f1-8fa9-5f84f696ac91/installer-journaled-upgrade.md)
+retains the before/after checkpoint, complete read-only handshake trace,
+durable status, coherent journal receipt, actual agent/updater log, staged
+pointer, current pointer, running executable and installer check.
+
+- Verified staging leaves the original pointer unchanged.
+- At 14:07:30.999575825Z, the member allow-set is populated and control returns
+  HTTP 200. The persisted latch is `b455cf8d-3a77-4909-a8a7-c60f9ed89be2`;
+  its original window is 14:07:31.266673717Z–14:08:01.266673717Z on boot
+  `97c018d7-a925-4723-9127-83c097de1c8a`.
+- At 14:07:34.708073795Z, the real five-field checkpoint has that byte-equal
+  `barrier_id`, the member allow-set is empty, and authenticated control still
+  returns 200. No checkpoint is supplied by the test. The heartbeat sampled
+  at that instant is older than the nft withdrawal; both raw observations are
+  retained instead of treating the stale heartbeat as the forwarding state.
+- The real epoch closes with `close_reason=final_sample` at
+  14:07:34.685593870Z. The final sample is quiet: it creates no new usage event.
+  The canonical last durable event remains sequence 4, ACK 3, in that epoch.
+  `final_sample_event_verified` in the raw record means verified epoch closure
+  plus a hash-verified canonical watermark event; it does not assert new bytes
+  after withdrawal. The sealed receipt carries those exact sequence/ACK/closed
+  epoch values and a distinct new epoch, with its canonical payload hash checked.
+- The receipt is `succeeded`, health is 5/5, and the initial process exits 0.
+  Publication remains disabled and forwarding blocked as recorded in the receipt;
+  successful local application does not assert republication.
+- The post-switch installer check reads `release_source=updater_journal` and
+  retains the initial install record. The candidate [re-enrollment record](d6aaa798-6c39-49f1-8fa9-5f84f696ac91/installer-reenroll.md)
+  shows successful seed verification of that candidate, retired identity and
+  bound state, byte-identical canonical origin events after D-118 adoption,
+  restored services, and old-certificate refusal (403 direct and proxy).
+  Its deliberate quiescent seed check reports inactive-unit drift; the actual
+  seed subprocess exits 0, followed by the recorded successful restoration.
+
+The coherent updater journal is retained privately as
+`.agent/tmp/followup19/d6aaa798-6c39-49f1-8fa9-5f84f696ac91-installer-journal.db`,
+81,920 bytes, SHA-256
+`7ae263bdb423ad4bdd18a34129f49769e8c14dc9c4871f0703bfd081f1c5dce4`.
+SQLite integrity is `ok`; the sealed receipt hash is
+`10f1cda9ce46c7d3e9a1a99fc7d2f1dcff0b8988ca587daf438a53b27fc9d6e7`.
+Binary journals, usage stores and packet payloads are not public artifacts.
+
+## Stopped-agent replay of the former isolated sequence
+
+[Run 04de29d3](04de29d3-e56b-4a32-b678-21462845ddb6/installer-quiescent-candidate.md)
+is **13 / 0 / 1**, exit **1**, on source `fb5b8fce`. The old sequence stops the
+real agent before apply. Under D-125 it cannot answer the new latch: there is
+no checkpoint before or after the 30-second wait. Apply seals
+`failed / final_sample / CHECKPOINT_FAILED`, with null health/usage and
+`recovery_required=false`; it never switches the candidate pointer.
+Initial apply and actual sealed replay both exit **1**, and blocked recovery
+exits **2**. The forwarding latch remains. This is the measured nondestructive
+pre-stop failure; destructive recovery-required injection is not claimed here.
+
+The coherent journals before and after replay/recovery are both 81,920 bytes,
+SHA-256 `1dd765f0d7a2e8aaa29836acb229089235b8950d7bb62fa99f7ec51ec50948e1`.
+The sealed receipt payload is also compared byte-for-byte. The private files
+are `.agent/tmp/followup19/04de29d3-e56b-4a32-b678-21462845ddb6-installer-journal.db`
+and the same run's `-after-recovery.db`.
+
+The following [re-enrollment](04de29d3-e56b-4a32-b678-21462845ddb6/installer-reenroll.md)
+passes, retaining canonical origin events, retired identity and old-certificate
+refusal, with seed exit 0 and services restored. No HASH_MISMATCH recurs, but
+this verifies the **unchanged initial tree**, because the candidate never
+switched. The serving run above supplies the real candidate seed acceptance.
+The isolated failure is retained as failed rather than converted into success
+by starting an agent early or supplying a checkpoint.
+
+## Evidence preservation and limits
+
+Before any new publication, all 138 files in follow-up 18 were copied
+byte-identically to `.agent/tmp/followup19/archive-followup18` and pinned by
+[followup18-archive.sha256](../../../followup18-archive.sha256).
+The follow-up 16, 17 and 18 committed roots remain unchanged. The original raw
+pcaps were copied to the follow-up 19 private directory before new capture;
+new captures use run-specific names. Original serving and stopped-node journals
+remain in place. Historical failures are not relabeled by this success.
+
+Two setup-only attempts were stopped for shared-host admission before apply:
+`5e9fb189` (three setup rows) and `4e59a2c4` (six setup rows). Their partial
+records remain in this directory; neither is a completed acceptance campaign.
+Subsequent heavy commands run behind a visible foreground `gates.sh` marker.
+
+[Retained F8-02 capture decode](capture-decode/README.md) includes every packet
+header at the four exact requested size/SHA receipts and distinguishes the
+available 22,022-byte failure from the absent original 11,011-byte capture.
+No product or NetBird MTU/MSS adjustment is made.
+
+The [fresh native reconnect campaign](capture-fresh/README.md), `956c335d`,
+passes **7/0/0**, exit 0: IPv4 / IPv6 / dual at 1500, then dual at 1280,
+with all four IPv4 overlay transfers complete. Both dual rows separately
+require IPv6 refusal and no probe egress on the uplink. All 12 member/node/origin
+pcaps have exact size/SHA pins, complete decoded headers, process bounds,
+tcpdump statistics and endpoint samples. These successful controls do not
+clear the historical incomplete transfers. The old missing reverse-path packet
+is larger than this run's delivered response packets; the linked analysis
+states the MTU-boundary inference and its remaining limits.
+
+The DNS fixture campaign `5282829c`, source `5dc018ac`, is **15/0/1**, exit 1.
+Its [exact DNS matrix](5282829c-c11e-4f34-954a-5bc2a5bceca5/dns-negative.md)
+passes: CNAME/SVCB are RCODE 0, no answers, SOA TTL 5 over UDP and TCP;
+matching A/AAAA/HTTPS and alias/wildcard A are NXDOMAIN with TTL 5. Each
+synthetic lookup follows six seconds of cache expiry and takes 31–46 ms.
+The absent upstream name, positive cache expiry and rebinding controls remain
+distinct and pass, as do actual resolver fallback, finite downgrade and third
+identity mid-run boot. Its [matrix failure](5282829c-c11e-4f34-954a-5bc2a5bceca5/native-matrix-inputs.md)
+is another real MTU-1280 incomplete transfer: 12,012 validated bytes in 12,011 ms,
+12 complete lines, 12,075 stream bytes read, zero partial final-line bytes and
+a timeout. The client wrote all 64,108 request stream bytes. This broader
+fixture has the new member endpoint sample but no origin trace or matching
+pcaps; it is not represented as the fully instrumented reconnect capture.
+
+One [additional fresh capture attempt](capture-repeat/README.md), `4e1997a8`,
+also passes **7/0/0**, exit 0. It retains 12 more complete header decodes and
+endpoint/control evidence. Both instrumented campaigns pass, while the
+intervening broader matrix fails; no instrumented failure was captured.
+Per-I/O instrumentation can alter scheduling/segmentation, despite unchanged
+application writes and deadlines. F8-02 remains open, with the old packet loss
+and the new 12,012-byte endpoint failure preserved.
+
+[D-093 reconciliation](../../../portal-d093-reconciliation-followup19-2026-10-31.md)
+retains all 15 row agreements, with 13 open and two retired within simulator
+scope. Cross-lane answers and the D-087 ownership-boundary request are only in
+[RESPONSES.md](../../../RESPONSES.md). D-124's named fixture contains no
+`agent.Decide` call on this base; its existing tests pass unchanged.
+
+## Reproduction
+
+Set `FVPN_E2E_PREFIX=e2e`, `FVPN_E2E_PORT_BASE=18000`, `CGO_ENABLED=0`,
+`GOTOOLCHAIN=local`, and disk `TMPDIR`/`GOTMPDIR` under `.agent/tmp`.
+Check `pgrep -af 'gates.sh|mk/at-'` before heavy runs; wait while two other
+suites are active. Each campaign uses a separate fresh stack:
+
+```sh
+make -f mk/e2e.mk e2e-up E2E_RESET=1
+FVPN_E2E_FOLLOWUP19=1 go test -tags e2e -count=1 -v -timeout 30m ./tests/e2e -run '^TestE2E_Followup19Installer$'
+make -f mk/e2e.mk e2e-down
+```
+
+Add `FVPN_E2E_CANDIDATE18=1` only for the separate stopped-agent sequence;
+it cannot answer a fresh D-125 latch while stopped and must retain that failure.
+For native capture use `TestE2E_Followup19Native` on another fresh stack.
+For DNS set `FVPN_E2E_TWO_RESOLVERS=true` during up and
+`FVPN_E2E_FIXTURES16=1 FVPN_E2E_FOLLOWUP19=1` during its focused runner.
+The final gate order and real exits are recorded in the worktree hand-off.
+
+## Verification and outstanding items
+
+The [gate ledger](gates.md) retains every real exit. Final E2E lint, untagged
+and tagged E2E tests, committed-evidence hygiene, handover tests, root go-lint,
+linux/amd64 and linux/arm64 builds, and diff checks all pass. Real execution
+here is amd64; arm64 hardware acceptance is not claimed. Final owned Docker
+inventory is zero. All 138 archived files verify byte-identically, and the
+follow-up 16/17/18 roots are unchanged. The [origin retention detail](usage-retention.md)
+pins all eight canonical events and both origin ACKs across D-118 adoption.
+
+Two orchestrator items remain: D-087 needs the central lease dependency seam
+outside this lane before an honest assembled fixed-generation grant hook can
+be exported; D-124 needs the actual stale fixture path because the named file
+has no Decide call on this base. F8-02 remains an observed intermittent loss
+with a narrowed packet boundary, not a proven kernel cause or product fix.
+
+## Live scenario table
+
+Each link retains raw observations and the exact source commit. Passes are
+scoped to the row, not a blanket acceptance-case verdict.
+
+| Campaign / scenario | Result | Requirement / scope |
+|---|---|---|
+| Serving [admin-login](d6aaa798-6c39-49f1-8fa9-5f84f696ac91/admin-login.md) | pass | §14.2 |
+| Serving [capture-and-boot](d6aaa798-6c39-49f1-8fa9-5f84f696ac91/capture-and-boot.md) | pass | AT23, ISO01, F9-06 |
+| Serving [enroll-bootstrap](d6aaa798-6c39-49f1-8fa9-5f84f696ac91/enroll-bootstrap.md) | pass | §6, §19 AT06 |
+| Serving [fixture-member-admission](d6aaa798-6c39-49f1-8fa9-5f84f696ac91/fixture-member-admission.md) | pass | §8, AT02, AT12 |
+| Serving [installer-journaled-upgrade](d6aaa798-6c39-49f1-8fa9-5f84f696ac91/installer-journaled-upgrade.md) | pass | UPD05, AT26, §13.5, D-125 |
+| Serving [installer-marker-migration](d6aaa798-6c39-49f1-8fa9-5f84f696ac91/installer-marker-migration.md) | pass | AT07, ENR-05, D-116 |
+| Serving [installer-reenroll](d6aaa798-6c39-49f1-8fa9-5f84f696ac91/installer-reenroll.md) | pass | ENR-06, AT07, §6.3 |
+| Serving [installer-serving-readback](d6aaa798-6c39-49f1-8fa9-5f84f696ac91/installer-serving-readback.md) | pass | ENR-05, D-116, AT07 |
+| Serving [installer-usage](d6aaa798-6c39-49f1-8fa9-5f84f696ac91/installer-usage.md) | pass | §10.5, ENR-05 |
+| Serving [installer-wrappers](d6aaa798-6c39-49f1-8fa9-5f84f696ac91/installer-wrappers.md) | pass | §6.3, ENR-06, AT07 |
+| Serving [node-restart](d6aaa798-6c39-49f1-8fa9-5f84f696ac91/node-restart.md) | pass | §5, §6, F2-05 |
+| Serving [publish](d6aaa798-6c39-49f1-8fa9-5f84f696ac91/publish.md) | pass | §5.2, §14.2 |
+| Serving [regular-kernel-boot](d6aaa798-6c39-49f1-8fa9-5f84f696ac91/regular-kernel-boot.md) | pass | AT23, F9-06 |
+| Serving [serving-catalogue](d6aaa798-6c39-49f1-8fa9-5f84f696ac91/serving-catalogue.md) | pass | §9, §14.2 |
+| Stopped agent [admin-login](04de29d3-e56b-4a32-b678-21462845ddb6/admin-login.md) | pass | §14.2 |
+| Stopped agent [capture-and-boot](04de29d3-e56b-4a32-b678-21462845ddb6/capture-and-boot.md) | pass | AT23, ISO01, F9-06 |
+| Stopped agent [enroll-bootstrap](04de29d3-e56b-4a32-b678-21462845ddb6/enroll-bootstrap.md) | pass | §6, §19 AT06 |
+| Stopped agent [fixture-member-admission](04de29d3-e56b-4a32-b678-21462845ddb6/fixture-member-admission.md) | pass | §8, AT02, AT12 |
+| Stopped agent [installer-marker-migration](04de29d3-e56b-4a32-b678-21462845ddb6/installer-marker-migration.md) | pass | AT07, ENR-05, D-116 |
+| Stopped agent [installer-quiescent-candidate](04de29d3-e56b-4a32-b678-21462845ddb6/installer-quiescent-candidate.md) | fail | UPD05, AT26, §13.5, D-125 |
+| Stopped agent [installer-reenroll](04de29d3-e56b-4a32-b678-21462845ddb6/installer-reenroll.md) | pass | ENR-06, AT07, §6.3 |
+| Stopped agent [installer-serving-readback](04de29d3-e56b-4a32-b678-21462845ddb6/installer-serving-readback.md) | pass | ENR-05, D-116, AT07 |
+| Stopped agent [installer-usage](04de29d3-e56b-4a32-b678-21462845ddb6/installer-usage.md) | pass | §10.5, ENR-05 |
+| Stopped agent [installer-wrappers](04de29d3-e56b-4a32-b678-21462845ddb6/installer-wrappers.md) | pass | §6.3, ENR-06, AT07 |
+| Stopped agent [node-restart](04de29d3-e56b-4a32-b678-21462845ddb6/node-restart.md) | pass | §5, §6, F2-05 |
+| Stopped agent [publish](04de29d3-e56b-4a32-b678-21462845ddb6/publish.md) | pass | §5.2, §14.2 |
+| Stopped agent [regular-kernel-boot](04de29d3-e56b-4a32-b678-21462845ddb6/regular-kernel-boot.md) | pass | AT23, F9-06 |
+| Stopped agent [serving-catalogue](04de29d3-e56b-4a32-b678-21462845ddb6/serving-catalogue.md) | pass | §9, §14.2 |
+| Native reconnect [admin-login](956c335d-0449-44ac-aa63-544154456397/admin-login.md) | pass | §14.2 |
+| Native reconnect [desired-state](956c335d-0449-44ac-aa63-544154456397/desired-state.md) | pass | §5, §8 |
+| Native reconnect [enroll-bootstrap](956c335d-0449-44ac-aa63-544154456397/enroll-bootstrap.md) | pass | §6, §19 AT06 |
+| Native reconnect [fixture-member-admission](956c335d-0449-44ac-aa63-544154456397/fixture-member-admission.md) | pass | §8, AT02, AT12 |
+| Native reconnect [native-mtu-comparison](956c335d-0449-44ac-aa63-544154456397/native-mtu-comparison.md) | pass | AT09, AT11, F8-02 |
+| Native reconnect [publish](956c335d-0449-44ac-aa63-544154456397/publish.md) | pass | §5.2, §14.2 |
+| Native reconnect [serving-catalogue](956c335d-0449-44ac-aa63-544154456397/serving-catalogue.md) | pass | §9, §14.2 |
+| Native repeat [admin-login](4e1997a8-d3ea-4291-b2f6-c100992b4fda/admin-login.md) | pass | §14.2 |
+| Native repeat [desired-state](4e1997a8-d3ea-4291-b2f6-c100992b4fda/desired-state.md) | pass | §5, §8 |
+| Native repeat [enroll-bootstrap](4e1997a8-d3ea-4291-b2f6-c100992b4fda/enroll-bootstrap.md) | pass | §6, §19 AT06 |
+| Native repeat [fixture-member-admission](4e1997a8-d3ea-4291-b2f6-c100992b4fda/fixture-member-admission.md) | pass | §8, AT02, AT12 |
+| Native repeat [native-mtu-comparison](4e1997a8-d3ea-4291-b2f6-c100992b4fda/native-mtu-comparison.md) | pass | AT09, AT11, F8-02 |
+| Native repeat [publish](4e1997a8-d3ea-4291-b2f6-c100992b4fda/publish.md) | pass | §5.2, §14.2 |
+| Native repeat [serving-catalogue](4e1997a8-d3ea-4291-b2f6-c100992b4fda/serving-catalogue.md) | pass | §9, §14.2 |
+| DNS fixtures [admin-login](5282829c-c11e-4f34-954a-5bc2a5bceca5/admin-login.md) | pass | §14.2 |
+| DNS fixtures [desired-state](5282829c-c11e-4f34-954a-5bc2a5bceca5/desired-state.md) | pass | §5, §8 |
+| DNS fixtures [dns-negative](5282829c-c11e-4f34-954a-5bc2a5bceca5/dns-negative.md) | pass | §12.5, §12.8, AT20, ISO01, DNS02 |
+| DNS fixtures [enroll-bootstrap](5282829c-c11e-4f34-954a-5bc2a5bceca5/enroll-bootstrap.md) | pass | §6, §19 AT06 |
+| DNS fixtures [finite-grant-downgrade](5282829c-c11e-4f34-954a-5bc2a5bceca5/finite-grant-downgrade.md) | pass | §9.2, AT02, D-050, D-081 |
+| DNS fixtures [fixture-baseline](5282829c-c11e-4f34-954a-5bc2a5bceca5/fixture-baseline.md) | pass | §13.2 |
+| DNS fixtures [fixture-member-admission](5282829c-c11e-4f34-954a-5bc2a5bceca5/fixture-member-admission.md) | pass | §8, AT02, AT12 |
+| DNS fixtures [fleet-midrun-boot](5282829c-c11e-4f34-954a-5bc2a5bceca5/fleet-midrun-boot.md) | pass | §6.2, AT24, AT26, D-089 |
+| DNS fixtures [fleet-retained](5282829c-c11e-4f34-954a-5bc2a5bceca5/fleet-retained.md) | pass | §6.2, AT24, AT26, D-089 |
+| DNS fixtures [native-dns-config](5282829c-c11e-4f34-954a-5bc2a5bceca5/native-dns-config.md) | pass | §12.2, AT21 |
+| DNS fixtures [native-dns-fallback](5282829c-c11e-4f34-954a-5bc2a5bceca5/native-dns-fallback.md) | pass | §12.2, AT21 |
+| DNS fixtures [native-matrix-inputs](5282829c-c11e-4f34-954a-5bc2a5bceca5/native-matrix-inputs.md) | fail | §8.3, AT09, AT11 |
+| DNS fixtures [native-underlay](5282829c-c11e-4f34-954a-5bc2a5bceca5/native-underlay.md) | pass | §8.3, AT09, AT11 |
+| DNS fixtures [publish](5282829c-c11e-4f34-954a-5bc2a5bceca5/publish.md) | pass | §5.2, §14.2 |
+| DNS fixtures [second-resolver](5282829c-c11e-4f34-954a-5bc2a5bceca5/second-resolver.md) | pass | §12.2, AT21 |
+| DNS fixtures [serving-catalogue](5282829c-c11e-4f34-954a-5bc2a5bceca5/serving-catalogue.md) | pass | §9, §14.2 |

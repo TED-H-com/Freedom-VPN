@@ -152,11 +152,8 @@ func PrepareServingBaselineWithOptions(ctx context.Context, client *http.Client,
 
 func (l *lab) buildRelease(ctx context.Context, dir, product, sequence, commit, build string, options ...ReleaseOptions) (uuid.UUID, []byte, error) {
 	pkg := filepath.Join(dir, "tree")
-	binDir := filepath.Join(pkg, "bin")
+	binDir := pkg
 	installerLayout := len(options) > 0 && options[0].InstallerLayout
-	if installerLayout {
-		binDir = pkg
-	}
 	if err := os.MkdirAll(binDir, 0755); err != nil {
 		return uuid.Nil, nil, err
 	}

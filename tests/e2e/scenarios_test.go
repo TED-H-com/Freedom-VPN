@@ -616,14 +616,8 @@ func (r *runner) oneUpdate(ctx context.Context, id, title string, spec []string,
 			finishProbe()
 		}
 	}()
-	pause := filepath.Join(r.lab.state, "node", "var", "e2e", "pause-agent")
-	if err := os.WriteFile(pause, []byte("1\n"), 0o644); err != nil {
-		rec.Status = StatusFail
-		r.record(rec)
-		return
-	}
-	defer os.Remove(pause)
-	time.Sleep(4 * time.Second)
+	// D-125 requires the running agent to answer the fresh withdrawal latch.
+	// The real updater owns stop/start after it verifies that checkpoint.
 	_ = os.Remove(filepath.Join(r.lab.state, "node", "var", "e2e", "updater-result.json"))
 	if err := r.writeUpdaterConfig(); err != nil {
 		rec.Observations = append(rec.Observations, Observation{Name: "updater_config", Detail: "write failed"})
@@ -639,7 +633,6 @@ func (r *runner) oneUpdate(ctx context.Context, id, title string, spec []string,
 		}
 		return r.lab.fileNonEmpty(r.lab.node, "/var/lib/vpn-node/e2e/updater-result.json")
 	})
-	_ = os.Remove(filepath.Join(r.lab.state, "node", "var", "e2e", "pause-agent"))
 	if !finished {
 		rec.Observations = append(rec.Observations, Observation{Name: "updater", Detail: "timed out"})
 		r.record(rec)
@@ -651,7 +644,7 @@ func (r *runner) oneUpdate(ctx context.Context, id, title string, spec []string,
 	}
 	_ = json.Unmarshal(result, &exit)
 	executable, _ := r.lab.docker(r.lab.node, "sh", "-c", `test -s /var/lib/vpn-node/e2e/agent.pid && readlink /proc/$(cat /var/lib/vpn-node/e2e/agent.pid)/exe`)
-	candidateRunning := strings.TrimSpace(string(executable)) == "/opt/vpn-node/releases/"+releaseID.String()+"/bin/fvpn-agent"
+	candidateRunning := strings.TrimSpace(string(executable)) == "/opt/vpn-node/releases/"+releaseID.String()+"/fvpn-agent"
 	rec.Observations = append(rec.Observations, Observation{Name: "running_candidate_executable", Detail: boolText(candidateRunning)})
 	journal := r.readJournal(releaseID.String())
 	outLog, outLogErr := r.lab.docker(r.lab.node, "cat", "/var/lib/vpn-node/e2e/updater.out")
@@ -688,6 +681,9 @@ func (r *runner) oneUpdate(ctx context.Context, id, title string, spec []string,
 		finishProbe = nil
 	}
 	switch {
+	case !wantHash && words["locally_succeeded"] && !candidateRunning:
+		rec.Status = StatusFail
+		recPathNote(&rec)("candidate_identity", "journal success without the exact release-root executable")
 	case !wantHash && words["locally_succeeded"] && !issued:
 		rec.Status = StatusFail
 		recPathNote(&rec)("probe_gate", "terminal success without the configured probe in a fresh challenge")
@@ -767,7 +763,7 @@ func (r *runner) controlStop(ctx context.Context) {
 	time.Sleep(3 * time.Second)
 	later, statusErr := s.EstablishedStatus(ctx)
 	bytesLater, laterErr := s.DeviceByteCounters(ctx, r.usageDevice)
-	quiet := statusErr == nil && bytesErr == nil && laterErr == nil && bytesStopped.Present && bytesLater.Present && later.Running && later.TCPAttempts > stopped.TCPAttempts && later.UDPAttempts > stopped.UDPAttempts && later.TCPEchoes == stopped.TCPEchoes && later.UDPReplies == stopped.UDPReplies && bytesStopped == bytesLater
+	quiet := statusErr == nil && bytesErr == nil && laterErr == nil && bytesStopped.Present && bytesLater.Present && later.Running && later.TCPAttempts > stopped.TCPAttempts && later.UDPAttempts > stopped.UDPAttempts && later.TCPEchoes == stopped.TCPEchoes && later.UDPReplies == stopped.UDPReplies && bytesStopped.Upload == bytesLater.Upload && bytesStopped.Download == bytesLater.Download
 	recPathNote(&rec)("active_senders_after_cutoff", boolText(later.Running && later.TCPAttempts > stopped.TCPAttempts && later.UDPAttempts > stopped.UDPAttempts))
 	recPathNote(&rec)("established_replies_and_bytes_stopped", boolText(quiet))
 	recPathNote(&rec)("established_after", fmt.Sprintf("tcp=%d udp=%d attempts_tcp=%d attempts_udp=%d", later.TCPEchoes, later.UDPReplies, later.TCPAttempts, later.UDPAttempts))
@@ -877,7 +873,7 @@ func (r *runner) writeUpdaterConfig() error {
 		},
 		"release_trust": "/etc/vpn-node/trust.json", "desired_trust": "/etc/vpn-node/trust.json",
 		"desired_state":    "/var/lib/vpn-node/state/desired-state.json",
-		"meter_checkpoint": "/var/lib/vpn-node/e2e/meter.json",
+		"meter_checkpoint": "/var/lib/vpn-node/state/meter.checkpoint",
 		"agent_config":     "/etc/vpn-node/agent-run.json",
 		"stop_command":     []string{"/usr/local/bin/agent-service.sh", "stop"}, "start_command": []string{"/usr/local/bin/agent-service.sh", "start"},
 		"result_url":               r.lab.agent + "/api/v1/agent/update-results",

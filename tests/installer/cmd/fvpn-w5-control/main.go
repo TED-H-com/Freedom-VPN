@@ -94,6 +94,11 @@ func serveUpgrade(dir, tokenFile, extraFile string) error {
 		return err
 	}
 	defer srv.Close()
+	resultURL, serverCA, closeReporting, err := reportingControl(dir, srv)
+	if err != nil {
+		return err
+	}
+	defer closeReporting()
 	for _, path := range []string{tokenFile, extraFile} {
 		if path == "" {
 			continue
@@ -148,8 +153,8 @@ func serveUpgrade(dir, tokenFile, extraFile string) error {
 	httpSrv := &http.Server{Handler: mux, ReadHeaderTimeout: 5 * time.Second}
 	go func() { _ = httpSrv.Serve(admin) }()
 	for name, body := range map[string][]byte{
-		"ca.pem": srv.CACertPEM(), "trust.json": srv.TrustJSON(),
-		"url": []byte(srv.URL + "\n"), "probe": []byte(probe.Addr().String() + "\n"),
+		"ca.pem": serverCA, "trust.json": srv.TrustJSON(),
+		"url": []byte(resultURL + "\n"), "probe": []byte(probe.Addr().String() + "\n"),
 		"admin": []byte("http://" + admin.Addr().String() + "\n"),
 	} {
 		if err := os.WriteFile(filepath.Join(dir, name), body, 0644); err != nil {

@@ -186,7 +186,7 @@ services:
   origin-dns:
     image: ${FVPN_E2E_IMAGE_ORIGIN:-fvpn-devstack-origin:local}
     container_name: fvpn-${FVPN_E2E_PREFIX:-e2e}-origin-dns
-    command: ["-addr", ":53", "-dns-upstream", "${FVPN_E2E_ORIGIN_PREFIX:-192.0.3}.20:5353"]
+    command: ["-addr", ":53", "-dns-upstream", "${FVPN_E2E_ORIGIN_PREFIX:-192.0.3}.20:5353", "-dns-trace-role", "primary"]
     networks:
       origin:
         ipv4_address: ${FVPN_E2E_ORIGIN_PREFIX:-192.0.3}.53
@@ -250,6 +250,15 @@ services:
     networks:
       lab:
         ipv4_address: ${FVPN_E2E_LAB_PREFIX:-172.28.30}.54
+    restart: "no"
+
+  authority-dns:
+    image: ${FVPN_E2E_IMAGE_ORIGIN:-fvpn-devstack-origin:local}
+    container_name: fvpn-${FVPN_E2E_PREFIX:-e2e}-authority-dns
+    command: ["-addr", ":53", "-dns-upstream", "${FVPN_E2E_LAB_PREFIX:-172.28.30}.54:53", "-dns-trace-role", "authority"]
+    networks:
+      lab:
+        ipv4_address: ${FVPN_E2E_LAB_PREFIX:-172.28.30}.55
     restart: "no"
 
   adguard:

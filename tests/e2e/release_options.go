@@ -6,7 +6,8 @@ import "github.com/google/uuid"
 // serving support policy. Empty means no additional restriction (D-034e).
 type ReleaseOptions struct {
 	AllowedReleaseIDs []uuid.UUID
-	// InstallerLayout packages root binaries and the unmodified systemd units.
+	// All releases use root binaries. InstallerLayout also includes the installer
+	// binary and unmodified systemd units.
 	InstallerLayout bool
 }
 

@@ -73,3 +73,21 @@ links at the manifest's original source location and commit. These fixtures
 are test inputs, not additional operator runbooks. No claims test reads a
 lane's current acceptance file. Living document-integrity digests remain in
 `docs/e2e/at/secops/scope-review.json` and are checked separately.
+
+## Follow-up 19 — #337 cutoff
+
+`followup19-main.json` pins main 57a8cc9f and thirteen roadmap rows (#325–#337).
+`followup19-snapshots.json` records 37 immutable inputs: thirty byte-identical
+file copies under `history/follow-up-19/`, five existing enrollment owner
+archives, and two exact merged-PR message paragraphs (D-129 from #328 and
+D-132 from #337). Message excerpts include the source commit, complete-message
+SHA-256, byte offset/length and excerpt SHA-256; no author metadata is copied.
+File snapshots are exact `git show <source_commit>:<source>` bytes. Their
+original relative links remain historical; operator links resolve from the
+current handover page. `register18.md` freezes the prior register before its
+current decision/findings update. Tests never read a living lane AT record.
+
+`TestHandover_Followup19Claims` keeps ENR-07 / F9-01 closure, ISO-F6-03 OPEN,
+regular AT23–AT27 blocked and unmeasured platforms distinct from local/harness
+proofs. Live document hashes in scope-review.json are checked separately from
+these historical evidence hashes.
