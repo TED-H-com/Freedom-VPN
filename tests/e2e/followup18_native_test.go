@@ -65,8 +65,25 @@ func TestE2E_Followup18Native(t *testing.T) {
 		r.record(Record{ID: "native-mtu-comparison", Title: "MTU comparison requires counted path", Status: StatusBlocked})
 	}
 	r.firstOffer18(ctx, s)
+	// Reproduce members F8-01 on a second exit without the primary's
+	// deliberately added private-target dummy interface.
+	must(s.StartSecondExit(ctx))
+	second, err := s.EnrollAt(ctx, b, "TEST ONLY F8-01 second exit", "node2")
+	must(err)
+	selected, err := s.MemberTransportStack(l.member, "node2")
+	must(err)
+	r.lab, r.nodeID, r.incID = selected.lab, second.NodeID, second.IncarnationID
+	originalDir := r.dir
+	r.dir = filepath.Join(originalDir, "node2")
+	r.publish(ctx, admin, second.NodeID)
+	r.dir = originalDir
+	pre := Record{ID: "second-exit-counted", Title: "Serving second exit before namespace fault", Spec: []string{"AT09", "F8-01"}, Status: StatusFail}
+	if r.countedFlow(ctx, recPathNote(&pre)) {
+		pre.Status = StatusPass
+	}
+	r.record(pre)
 	rec := Record{ID: "namespace-restart-90", Title: "F8-01 unchanged-generation namespace restart, full first 90 seconds", Spec: []string{"AT08", "AT09", "F8-01"}, Status: StatusFail}
-	got, err := s.RestartNodeNamespace90(ctx, "node", r.nodeID)
+	got, err := s.RestartNodeNamespace90(ctx, "node2", r.nodeID)
 	noteJSON(&rec, "restart", got)
 	if err != nil {
 		recPathNote(&rec)("error", err.Error())
@@ -74,7 +91,7 @@ func TestE2E_Followup18Native(t *testing.T) {
 	if err == nil && got.GenerationBefore == got.GenerationAfter && got.ServingAt != nil {
 		rec.Status = StatusPass
 	}
-	recPathNote(&rec)("owner", "agent-core follow-up 25; primary namespace reproduction, export also supports node2")
+	recPathNote(&rec)("owner", "agent-core follow-up 25; second-exit namespace reproduction; no generation change or repair")
 	r.record(rec)
 }
 
