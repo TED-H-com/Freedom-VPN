@@ -53,7 +53,7 @@ def main():
     for path in PUBLIC.iterdir():
         if path.suffix in ('.json','.md'): assert not scan(path.read_bytes()), path.name
     # Scan each committed evidence blob, including archives newly added by this lane.
-    paths = subprocess.check_output(['git','diff','--name-only','--diff-filter=AM','main','--','docs/e2e/at/secops'], cwd=ROOT, text=True).splitlines()
+    paths = subprocess.check_output(['git','diff','--name-only','--diff-filter=AM','main...HEAD','--','docs/e2e/at/secops'], cwd=ROOT, text=True).splitlines()
     for name in paths:
         raw = (ROOT/name).read_bytes()
         assert not scan(raw), name
