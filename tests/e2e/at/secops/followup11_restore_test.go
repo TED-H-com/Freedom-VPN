@@ -16,7 +16,10 @@ import (
 // Read the real HTTP compiler with the node's own mTLS identity. The private
 // key remains inside the enrolled node. Record only bounded response metadata.
 func (p *liveProbe) desiredHTTP11() map[string]any {
-	raw, err := p.docker("node", "wget", "--server-response", "--content-on-error", "--timeout=10", "--tries=1", "--ca-certificate=/etc/vpn-node/ca.pem", "--certificate=/var/lib/vpn-node/identity/cert.pem", "--private-key=/var/lib/vpn-node/identity/key.pem", "-O", "-", "https://agent.example.invalid:9443/api/v1/agent/desired-state")
+	var headers bytes.Buffer
+	cmd := exec.CommandContext(p.t.Context(), "docker", "exec", livePrefix+"node", "wget", "--server-response", "--content-on-error", "--timeout=10", "--tries=1", "--ca-certificate=/etc/vpn-node/ca.pem", "--certificate=/var/lib/vpn-node/identity/cert.pem", "--private-key=/var/lib/vpn-node/identity/key.pem", "-O", "-", "https://agent.example.invalid:9443/api/v1/agent/desired-state")
+	cmd.Stderr = &headers
+	raw, err := cmd.Output()
 	var body struct {
 		Signed struct {
 			Generation string `json:"config_generation"`
@@ -29,7 +32,7 @@ func (p *liveProbe) desiredHTTP11() map[string]any {
 	}
 	i := bytes.IndexByte(raw, '{')
 	decoded := i >= 0 && json.Unmarshal(bytes.TrimSpace(raw[i:]), &body) == nil
-	return map[string]any{"utc": time.Now().UTC(), "http_200": bytes.Contains(raw, []byte("HTTP/1.1 200")), "http_503": bytes.Contains(raw, []byte("HTTP/1.1 503")), "command_ok": err == nil, "decoded": decoded, "generation": body.Signed.Generation, "error_code": body.Error.Code, "message": body.Error.Message, "retryable": body.Error.Retryable}
+	return map[string]any{"utc": time.Now().UTC(), "http_200": bytes.Contains(headers.Bytes(), []byte("HTTP/1.1 200")), "http_503": bytes.Contains(headers.Bytes(), []byte("HTTP/1.1 503")), "command_ok": err == nil, "decoded": decoded, "generation": body.Signed.Generation, "error_code": body.Error.Code, "message": body.Error.Message, "retryable": body.Error.Retryable}
 }
 func (p *liveProbe) restoreHoldSnapshot11(node uuid.UUID) json.RawMessage {
 	var raw []byte
