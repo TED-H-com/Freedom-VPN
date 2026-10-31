@@ -50,6 +50,7 @@ const (
 type CheckError struct {
 	Reason Reason
 	Detail string
+	tc     *TCReadEvidence // deciding read, retained before cleanup
 }
 
 func (e *CheckError) Error() string {
