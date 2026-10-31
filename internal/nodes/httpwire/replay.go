@@ -10,6 +10,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/internal/httpapi/gen"
 	"github.com/TED-H-com/Freedom-VPN/internal/leases"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+	"github.com/jackc/pgx/v5"
 )
 
 // HTTP replay reads the original immutable receipt; it never re-runs a domain
@@ -26,7 +27,22 @@ func (h *Handlers) replayAgentReceipt(ctx context.Context, name string, ref db.I
 			return nil, e
 		}
 		out := api.ObservationAccepted{Accepted: api.ObservationAcceptedAcceptedTrue, ReportId: body.ReportId}
-		e := h.Runtime.Pool.QueryRow(ctx, `SELECT received_at FROM node_observations WHERE node_id=$1 AND incarnation_id=$2 AND report_id=$3`, p.NodeID, p.IncarnationID, body.ReportId).Scan(&out.ReceivedAt)
+		// D-088: replay the immutable receipt with the live freeze annotation.
+		// Read both in one transaction/snapshot; never replay endpoint effects.
+		e := db.InTx(ctx, h.Runtime.Pool, db.TxOptions{AccessMode: pgx.ReadOnly}, func(tx pgx.Tx) error {
+			var frozen bool
+			if err := tx.QueryRow(ctx, `SELECT o.received_at, coalesce(e.mapping_frozen,false)
+				FROM node_observations o JOIN nodes n ON n.id=o.node_id
+				LEFT JOIN node_identity_endpoints e ON e.incarnation_id=o.incarnation_id AND e.incarnation_id=n.current_incarnation_id
+				WHERE o.node_id=$1 AND o.incarnation_id=$2 AND o.report_id=$3`, p.NodeID, p.IncarnationID, body.ReportId).Scan(&out.ReceivedAt, &frozen); err != nil {
+				return err
+			}
+			out.IdentityFrozen = nil
+			if frozen {
+				out.IdentityFrozen = &frozen
+			}
+			return nil
+		})
 		out.ReceivedAt = out.ReceivedAt.UTC()
 		return gen.SubmitObservation202JSONResponse{Body: out}, e
 	case "SubmitUpdateResult":
