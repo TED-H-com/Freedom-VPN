@@ -14,6 +14,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/internal/config"
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/db/dbtest"
+	"github.com/TED-H-com/Freedom-VPN/internal/httpapi"
 	"github.com/TED-H-com/Freedom-VPN/internal/leases"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes/httpwire"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes/nodestest"
@@ -26,6 +27,28 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
+
+func grantEligibilityHTTP(t *testing.T, runtime *httpwire.Runtime) *fixture {
+	t.Helper()
+	f := setupRuntime(t, runtime)
+	handlers, err := httpapi.Compose(&httpwire.Handlers{Runtime: runtime})
+	if err != nil {
+		t.Fatal(err)
+	}
+	cfg := config.Defaults()
+	// TEST ONLY: exercise all replay variants immediately. Production rate
+	// limits and the harness's ordinary-renewal cadence remain unchanged.
+	cfg.LeaseRate = config.Bucket{PerSecond: 1000, Burst: 1000}
+	cfg.AgentRate, cfg.IngressRate = cfg.LeaseRate, cfg.LeaseRate
+	h, err := httpapi.New(handlers, httpapi.Options{Config: cfg, Agents: runtime.PKI, AgentListener: true,
+		Commands: &httpapi.Commands{Pool: runtime.Pool, Retention: time.Hour}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	f.agent = httpapi.Transport(nil, httpwire.RequestContext(h))
+	validateFollowup28Responses(t, f)
+	return f
+}
 
 // TEST ONLY database seed. Both HTTP runtimes subsequently share the same real
 // enrollment, authorities and DB inputs; toggling grants never edits this seed.
@@ -54,7 +77,7 @@ func grantEligibilityFixture(t *testing.T) (*fixture, config.Nodes, api.EnrollRe
 			t.Fatal(err)
 		}
 	}
-	f := setupRuntime(t, runtime)
+	f := grantEligibilityHTTP(t, runtime)
 	release := releasetest.New(t)
 	runtime.Releases.Validator = release.Validator
 	if _, err := runtime.Releases.Register(t.Context(), releasetest.Command(), release.Request(t, release.Manifest)); err != nil {
@@ -81,7 +104,6 @@ func grantEligibilityFixture(t *testing.T) (*fixture, config.Nodes, api.EnrollRe
 	f.sql(`INSERT INTO member_devices(id,member_id,deployment_id,peer_id,status,authorized_at) VALUES($1,$2,'TEST ONLY','TEST ONLY peer','authorized',$3)`, device, member, now.Add(-time.Hour))
 	f.sql(`INSERT INTO device_bindings(device_id,member_id,overlay_scope,overlay_ip,binding_revision,valid_from,valid_until,peer_ref) VALUES($1,$2,'TEST ONLY','100.64.0.10',1,$3,$4,'TEST ONLY peer')`, device, member, now.Add(-time.Hour), now.Add(12*time.Hour))
 	f.activate("release_support", uuid.Nil, 1, `{}`)
-	validateFollowup28Responses(t, f)
 	return f, cfg.Nodes, enrolled, cert, member
 }
 
@@ -100,8 +122,7 @@ func TestD087_AT10_ProductionConstructorAndHTTPFixedGenerationGrants(t *testing.
 	if err != nil {
 		t.Fatal(err)
 	}
-	injected := setupRuntime(t, runtime)
-	validateFollowup28Responses(t, injected)
+	injected := grantEligibilityHTTP(t, runtime)
 	trust, err := runtime.Provider.TrustBundle(t.Context())
 	if err != nil {
 		t.Fatal(err)
@@ -213,8 +234,7 @@ func TestD087_AT29_HTTPNilGrantReaderFailsClosed(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	broken := setupRuntime(t, runtime)
-	validateFollowup28Responses(t, broken)
+	broken := grantEligibilityHTTP(t, runtime)
 	req := api.LeaseRenewalRequest{RenewalRequestId: uuid.New(), NodeId: enrolled.NodeId, NodeIncarnationId: enrolled.NodeIncarnationId,
 		CurrentLeaseId: presence.NewNullNullable[uuid.UUID](), AppliedConfigGeneration: presence.NewNullNullable[decstr.U64]()}
 	key := map[string]string{"Idempotency-Key": uuid.NewString()}
