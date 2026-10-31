@@ -176,3 +176,62 @@ retained explicitly as pre-fix evidence, not silently replaced.
 The orchestrator and isolation follow-up 8 must decide how these measured
 brief forwarding denials relate to normal-Internet continuity. No threshold,
 pass criterion, retry behavior, production guard or verifier is changed here.
+
+## D-120 acceptance rule — 2026-10-31
+
+The orchestrator's decision at 05:55 EDT applies to new AT10 acceptance runs.
+The preceding follow-up 17 measurements and their retained verdict files stay
+**failed under the old rule**; this section does not reclassify them.
+
+The rule verbatim:
+
+> a reload-stream **UDP echo loss is tolerated only when all five hold** — (i) the follow-up 17 analyzer classifies its node ingress as `inside` or `boundary` of exactly one verified Apply's outer guard bracket (install-command start → release-command end, 2 µs timestamp margin); `outside` and `unobserved` losses fail; (ii) that bracket's upper bound ≤ 100 ms **and** that Apply's render→installed ≤ 100 ms (an AT10 continuity bound, distinct from D-104's installation bound — say so in the docs); (iii) the next datagram succeeds (no two consecutive losses); (iv) zero TCP timeouts in the whole run; (v) at most 5 UDP losses per 100 reloads.
+
+**Unchanged:** the 1.5 s echo timeout, the one-outstanding-datagram pattern,
+the 200 ms inter-iteration sleep, the 100 reloads, and AT13's revoke assertions.
+
+Follow-up 17 measured three UDP timeouts over two 100-reload runs, all with
+node ingress overlapping the outer guard-install bracket of a verified Apply,
+zero outside any bracket, zero unobserved, every guard upper bound below
+55 ms and render→installed below 30 ms. The guard is fail-closed by design,
+so a one-outstanding-datagram echo stream has a nonzero hit probability per
+Apply; AT10 as written can never be green against a correct D-104 guard.
+D-120 therefore redefines the AT10 verdict, and nothing else. In particular,
+a lucky zero-loss run never established that guard-related loss was impossible.
+
+This is **not a product guarantee** or a change to **D-104's 100 ms installation
+bound**. D-120 adds an AT10 continuity condition on the outer guard bracket;
+D-104 still measures final-render-start → installed-by. A `boundary` loss is
+tolerated by the decision without claiming the exact kernel drop instant.
+
+Acceptance now always enables the sidecar, node/origin/responder captures,
+and Apply/guard decorator. The analyzer checks zero kernel capture drops and
+parsed-count equality, complete sidecar send/read sequences and a final
+boundary, agreement with the original text stream verdicts, and all 101
+verified Apply records (initial generation 1000 plus 1001–1100). Missing loss
+records, missing node ingress, ambiguous packet correlation or two matching
+guard brackets fail. A terminal loss without an observed successful next
+datagram fails; there is no implied success after capture shutdown. Errors
+other than a lost UDP echo and mismatched echo content also fail.
+
+`reload_analysis.py --d120 --stream-log <stream-a1.txt>` adds the pure
+`classify_d120` verdict to the existing analysis output and exits nonzero on
+failure. Its per-loss table records datagram sequence, generation, outer
+bracket start/end (Unix realtime nanoseconds), monotonic upper bound and
+render→installed duration, ingress classification, next-datagram result and
+all failing conditions. `none` means that loss satisfies all five conditions;
+run-wide evidence failures still fail the verdict even if individual rows pass.
+Synthetic regressions cover inside/boundary, inclusive 100 ms / five-loss
+limits, and every rejection branch including missing and ambiguous evidence.
+
+Follow-up 18 results and raw inputs are retained in
+[G2-followup18-evidence](G2-followup18-evidence/); the lane and focused datasets
+are independent fresh-topology 100-reload runs. Recompute a retained verdict:
+
+```sh
+python3 tests/netlab/scripts/reload_analysis.py \
+  --stream <directory>/stream-a1.log.jsonl \
+  --stream-log <directory>/stream-a1.txt \
+  --apply <directory>/at10-apply.jsonl --trace-base <directory>/at10 \
+  --output .agent/tmp/at10-analysis.json --d120
+```
