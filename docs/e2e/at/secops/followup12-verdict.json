@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "follow_up": 12,
+  "application_base": "510a4ab7f73bdcfc28aaef53f8d1d6deef97ad67",
+  "source_revision": "bf21d111f0b334368441144145abca8f5d0c060a",
+  "run_id": "dd845a7f-2660-431c-a8e6-c513108cc07d",
+  "driver_run_id": "c8498f5b-455e-41a9-9804-2067690aec23",
+  "started_at": "2026-10-31T09:04:16Z",
+  "finished_at": "2026-10-31T09:23:05Z",
+  "hardware": "shared development host; not candidate hardware",
+  "probe_source_sha256": "16ff60b0f2f39a827de3953ea0b24818d41be6f8537854d9d9a0e797e01af425",
+  "record_renderer_sha256": "fca01192bfe08cc5e48c441e513937dd681e53eb57b5bd9dcc57704778e8e753",
+  "previous_run": "history/follow-up-11/",
+  "projector_owned_rows_written": [],
+  "cases": {
+    "AT29": "blocked",
+    "AT30": "passed",
+    "AT31": "blocked"
+  },
+  "subcases": {
+    "device_revoke": "passed",
+    "forced_relay": "passed",
+    "grant_expiry": "passed",
+    "guest_clock_rollback": "blocked",
+    "lease_expiry": "passed",
+    "manual_grant_withdrawal": "blocked"
+  },
+  "requests": {
+    "SECOPS-21": "open"
+  },
+  "cleanup": "passed"
+}

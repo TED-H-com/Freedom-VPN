@@ -44,6 +44,21 @@ func quietTransport11(a, b transportSample11) bool {
 		b.Status.TCPEchoes == a.Status.TCPEchoes && b.Status.UDPReplies == a.Status.UDPReplies
 }
 
+func (p *liveProbe) transportFlow11(peer flowPeer, timeout time.Duration) map[string]any {
+	var last map[string]any
+	for deadline := time.Now().Add(timeout); time.Now().Before(deadline); {
+		last = p.selectedFlow(peer)
+		if last["counted"] == true {
+			return last
+		}
+		time.Sleep(2 * time.Second)
+	}
+	// Retain the failed sample and continue independent transport cases. The
+	// bound and the positive-flow prerequisite are identical to waitCountedFlow.
+	p.t.Errorf("peer %s did not produce a counted flow within %s", peer.Service, timeout)
+	return last
+}
+
 func TestAT29_AT31_Followup11_Transports(t *testing.T) {
 	if os.Getenv("FVPN_SECOPS_FOLLOWUP11") != "transports" {
 		t.Skip("requires assigned fresh transport stack")
@@ -72,9 +87,18 @@ func TestAT29_AT31_Followup11_Transports(t *testing.T) {
 	rows["manual_grant_withdrawal"] = map[string]any{"status": "blocked", "owner": "w3-wire-members / contracts", "missing_export": "The contract exposes finite createMemberGrant but no revokeMemberGrant HTTP operation; no source-row mutation or invented endpoint used. Finite grant expiration is measured separately."}
 	rows["guest_clock_rollback"] = map[string]any{"status": "blocked", "owner": "w3-devstack-e2e / operator", "missing_export": "Disposable guest with independently adjustable wall clock; containers share the development host clock."}
 	for _, kind := range []string{"grant_expiry", "lease_expiry", "device_revoke"} {
-		func() {
+		t.Run(kind, func(t *testing.T) {
+			parent := p.t
+			p.t = t
+			defer func() { p.t = parent }()
 			row := map[string]any{"status": "blocked", "owner": "w3-devstack-e2e", "transport_scope": "one original TCP/9446 connection and authenticated UDP/9445 socket; independent senders; helper limit 20 minutes"}
 			rows[kind] = row
+			complete := false
+			defer func() {
+				if t.Failed() && !complete {
+					row["status"] = "failed"
+				}
+			}()
 			subject := "secops-deadline-grant"
 			if kind == "lease_expiry" {
 				subject = "secops-deadline-lease"
@@ -94,7 +118,12 @@ func TestAT29_AT31_Followup11_Transports(t *testing.T) {
 				row["blocker"] = "native admission unavailable"
 				return
 			}
-			flow := p.waitCountedFlow(peer, 90*time.Second)
+			if kind == "grant_expiry" {
+				// Enrollment and capacity do not publish an exit. Use the same
+				// API/read-back precondition as the restore drill after admission.
+				row["serving_precondition"] = p.servingGate10(admin, node)
+			}
+			flow := p.transportFlow11(peer, 90*time.Second)
 			row["before_counted_flow"] = flow
 			if flow["counted"] != true {
 				row["blocker"] = "no selected counted serving flow"
@@ -230,18 +259,19 @@ func TestAT29_AT31_Followup11_Transports(t *testing.T) {
 			}
 			if kind == "grant_expiry" {
 				admin = p.login("e2e-admin", "admin")
-				p.grantAt(admin, m, time.Now().UTC().Add(20*time.Minute), "followup11-recovery")
+				p.grantAt(admin, m, time.Now().UTC().Add(20*time.Minute).Truncate(time.Second), "followup11-recovery")
 			}
 			if kind != "device_revoke" {
-				row["recovery_flow"] = p.waitCountedFlow(peer, 120*time.Second)
+				row["recovery_flow"] = p.transportFlow11(peer, 120*time.Second)
 				row["recovery_ack"] = p.publicationObservation(node)
 				if row["recovery_flow"].(map[string]any)["counted"] != true {
 					row["status"] = "failed"
 					t.Error(kind, "authorized recovery failed")
 				}
 			}
+			complete = true
 			t.Logf("AT29 %s: %s", kind, row["status"])
-		}()
+		})
 	}
 }
 
@@ -267,6 +297,9 @@ func (p *liveProbe) forcedRelay11(stack, transport *labstack.Stack, peer flowPee
 	row["forced_after_seconds"] = time.Since(start).Seconds()
 	if err != nil {
 		row["blocker"] = "bounded ForceMemberRelay did not observe relay with zero direct peers"
+		row["status"] = "failed"
+		row["force_error"] = err.Error()
+		p.t.Error("forced relay did not satisfy the existing bounded export")
 		return
 	}
 	b := sampleTransport11(ctx, transport, peer.Device, start)
