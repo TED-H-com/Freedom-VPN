@@ -1,50 +1,44 @@
-# Wave 4 Usage Acceptance Summary (`w4-at-usage` — Follow-up 3)
+# Usage acceptance — Follow-up 4
 
-- **Run ID**: `e1f8c483`
-- **Recorded At (UTC)**: `2026-10-31T02:39:12Z`
-- **Source Commit**: `46081fb0e4011b91e9f9f93be23e04e0f223d42d` (dirty: `false`)
-- **Stack Instance**: `FVPN_E2E_PREFIX=w4-usage` (`fvpn-w4-usage-*`), `FVPN_E2E_PORT_BASE=48000`
-- **Primary Exit Node**: `node_id=01a18f2d-e7d6-770e-9b8c-edb2016a7db9`, `incarnation_id=01a18f2d-e830-7e38-84eb-493517bd4460`, `exit_id=01a18f2d-e7d6-770f-9d32-b5397d190043` (`fvpn-exit-1836ffa7f54af96f436bcb78`)
-- **Second Exit Node (`AT19` & `ENR-03`)**: `node_id=01a18fd0-4188-77d3-9e94-5c5bdc8f8d29`, `incarnation_id=01a18fd1-f3d3-7868-9373-487f724b9df7` (initial: `01a18fd0-42b9-7e45-97db-c16ad22f59d0`), `exit_id=01a18fd0-4188-77d4-a466-c66dc72ab9d4` (`fvpn-exit-cd7bd7ca8917d3f58c624b1b`)
-- **Non-Carrying Registered Node (`AT19`)**: `node_id=01a18fd1-3793-7120-9318-d306221ee728`, `incarnation_id=01a18fd1-3795-7559-b3ab-ff42bafcc873` (`desired_config_generation=0 -> 0`)
-- **Admitted Member Devices**: `memberA` device `01a18f5f-5980-785f-9cfd-0e6860b04f5b`, `memberB` device `01a18f5f-944b-7178-8130-c32a1397fa0b`
-- **Totals**: `0 pass`, `6 blocked`, `0 fail`
-- **Run Archives**: [history/initial/](history/initial/) (#80), [history/followup2/](history/followup2/) (#214)
+Run `351d59aa`; harness `463ec28805449e4cd71e66589e2ecac51d21b241` (dirty `false`); image build `3d2576dbf20617169723323c526f3700868406e3`; origin/main product source `e8a5e046d3617e1f914a02629ecad940ee7fc1ef`. Stack `fvpn-w4-usage-*`, port base `48000`.
 
-## Acceptance Matrix (AT14–AT19)
+| Case | Status | Evidence | Live result |
+|---|---|---|---|
+| AT14 | pass | [AT14.json](AT14.json) / [AT14.md](AT14.md) | Live serving exit 01a1902a-a422-7ac1-9163-a0eaac36d1af (incarnation 01a1902a-a4e5-7069-8c48-199ea651549a, exit 01a1902a-a422-7ac2-8236-e3615867fe5f) metered admitted HTTPS traffic for memberA device 01a1902b-2740-71d9-8526-2f83f7a4ee27 and uploaded 3 UsageEvents to PostgreSQL with GET /api/v1/member/usage reporting exact total_bytes=23260. |
+| AT15 | pass | [AT15.json](AT15.json) / [AT15.md](AT15.md) | Live mTLS /api/v1/agent/usage-checkpoint and /api/v1/agent/usage-batches on serving node 01a1902a-a422-7ac1-9163-a0eaac36d1af (incarnation 01a1902a-a4e5-7069-8c48-199ea651549a, initial real agent seq=5) verified Ed25519 recovery signature, out-of-order seq {6,8} -> gap fill seq 7 advancing highest_contiguous_seq to 8, batch replay and duplicate retry with zero double-counted bytes, payload_sha256 conflict audit (usage_event_conflicts=1), rejected seq 10 (>2^53 decimal string 9007199254740993) reporting blocked_seq=10 then advancing to 11, 409/403 error guards, and live fvpn-usage-admin freeze/begin-recovery/complete-recovery rotating ledger_epoch 313800c1-c690-425c-a7d6-d87606ebb62a -> 01a19031-4298-7aa0-9813-9eb352e475ac with replay_unavailable reconciliation to seq 12. |
+| AT16 | pass | [AT16.json](AT16.json) / [AT16.md](AT16.md) | Live node fvpn-w4-usage-node verified sampler restart continuity (event_seq 1->2), D-067 provisional-lease recovery across bring_up (5848ms/6837ms) and agent_restart (5819ms/6135ms), and live fail-closed withdrawal via fvpn-watchdog. |
+| AT17 | pass | [AT17.json](AT17.json) / [AT17.md](AT17.md) | Live GET /api/v1/member/usage and ?period_id=2026-10&granularity=day returned real counted memberA traffic totals (upload=12872, download=18168, total=31040) within half-open UTC month bounds [2026-10-01T00:00:00Z, 2026-11-01T00:00:00Z), while central and node mechanisms verified 00:00:00Z UTC month-boundary splitting, late-arriving previous-month event attribution within the 24h watermark, and >5s wall-clock rollback protection. |
+| AT18 | pass | [AT18.json](AT18.json) / [AT18.md](AT18.md) | Live serving exit fvpn-w4-usage-node installed kernel tc HTB + fq_codel on fvmb0 and fvup0 with host reserve class 1:fffe (100Mbit) and per-member classes at effective_rate = min(plan=80M/40M, tier0=100M/50M, exit=60M/30M) = 60Mbit down / 30Mbit up, shaped concurrent memberA (+1106/+1514 B) and memberB (+1106/+1515 B) flows, and preserved mTLS control-plane responsiveness (HTTP 200). |
+| AT19 | pass | [AT19.json](AT19.json) / [AT19.md](AT19.md) | Live multi-node test enrolled second exit 01a1902c-df9f-7494-bfd3-5c4f56f6f07e (node2) and non-carrying node 01a1902e-3aa3-7393-8619-91be8b750813, routed memberA traffic across both carrying exits (aggregating 28459 bytes across 2 exits), verified shadow mode (60Mbit on node, 15Mbit on node2), proved Transition 1 (policy.activated mode=enforce: carrying gens node 8->10, node2 4->5, non-carrying 0->0; Tier 2 5Mbit/2Mbit tc classes on both exits; fair_use.applying true->false in 7032 ms via observation 01a1902e-934f-7e82-a9fd-0a3bc7dd6693; replay no double bump) and Transition 2 (fup.member_generation_changed via usage threshold crossing: carrying gens node 11->12, node2 6->7, non-carrying 0->0; Tier 2 5Mbit/2Mbit tc classes on both exits; fair_use.applying true->false in 29864 ms via observation 01a1902f-8382-7102-898d-c247a2cb5b37; replay no double bump), and verified ENR-03 per-incarnation retained usage across node2 re-enrollment (01a1902c-e118-7aea-a535-b182bd653cb9 -> 01a1902f-c18b-7863-b1e9-4e63bbad5a9e). |
 
-| Case | Title | Requirements | Status | Evidence |
-|---|---|---|---|---|
-| `AT14` | 轉發許可流量計量正確性與排除項 (Forward-Admission Traffic Metering & Exclusions) | `MTR01`, `MTR05`, `API01`, `DATA01` | `blocked` | [AT14.md](AT14.md) / [AT14.json](AT14.json) |
-| `AT15` | 用量批次冪等、亂序缺口、衝突稽核與簽章檢查點恢復 (Idempotent Usage Ingest, Contiguous ACK, Conflict Audit & Signed Checkpoint Recovery) | `MTR02`, `MTR03`, `MTR04`, `API01`, `DATA01` | `blocked` | [AT15.md](AT15.md) / [AT15.json](AT15.json) |
-| `AT16` | 節點計量器重啟、計數器重置、Outbox 佇列上限與安全停轉發 (Node Sampler Restart, Counter Reset, Outbox Caps & Safety Fail-Closed) | `MTR01`, `MTR02`, `MTR03`, `MTR04`, `UPD03` | `blocked` | [AT16.md](AT16.md) / [AT16.json](AT16.json) |
-| `AT17` | UTC 自然月切分、延遲事件歸屬與時鐘回撥保護 (UTC Month Boundary, Late-Arriving Events & Clock Rollback Protection) | `MTR01`, `MTR02`, `MTR04`, `API01`, `DATA01` | `blocked` | [AT17.md](AT17.md) / [AT17.json](AT17.json) |
-| `AT18` | 多階層速率整形、有效速率計算與宿主保底頻寬 (Multi-Tier Rate Shaping, Effective Rate & Host Reserve) | `FUP01`, `FUP02`, `FUP03` | `blocked` | [AT18.md](AT18.md) / [AT18.json](AT18.json) |
-| `AT19` | 跨節點累計、Shadow/Enforce 模式切換、月初重置與臨時覆寫 (Cross-Node Fair-Use, Shadow/Enforce, Monthly Reset & Temporary Override) | `FUP01`, `FUP02`, `FUP03`, `FUP04`, `ENR03`, `API01` | `blocked` | [AT19.md](AT19.md) / [AT19.json](AT19.json) |
+## D-067 comparison
 
-## Follow-up 3 Measured Timelines
+The previous blocked run measured lease issuance because serving never applied. This run records issuance and serving read-back separately; the original <=65000 ms bound remains on serving read-back. Agent-core follow-up 20 was not in the image source. Devstack #240 measured **80622 ms** on its separate path.
 
-### 1. AT19 Fair-Use Recompile & `fair_use.applying` Convergence (PR #222 Verified)
+| Cycle | Follow-up 3 ready → lease issued | This run ready → lease issued | Ready → serving read-back | Ready → counted flow | Ready observation | Populated lease |
+|---|---|---|---|---|---|---|
+| bring_up | 5021 ms | 5021 ms | 5848 ms | 6837 ms | `01a1902b-8337-7ca0-84e9-c6f100fd21e1` at `2026-10-31T04:15:33.180264Z` | `bdec5e45-20fd-446a-bbe0-9b44736baba0` at `2026-10-31T04:15:38.201795Z` |
+| agent_restart | 5025 ms | 5022 ms | 5819 ms | 6135 ms | `01a1902b-bb9a-70fe-bc4d-2127f9d72170` at `2026-10-31T04:15:47.614206Z` | `84f3c278-81d8-4452-a768-b8062b2e3b4b` at `2026-10-31T04:15:52.636805Z` |
 
-| Transition | Carrying `node` Gen | Carrying `node2` Gen | Non-Carrying `other` Gen | Clearing Observation | Wall-Clock (`ms`) | Tier 2 Rate (`5Mbit`/`2Mbit`) | Replay Gen After |
-|---|---|---|---|---|---|---|---|
-| `policy.activated` (`mode=enforce`) | `126 -> 127` | `4 -> 7` | `0 -> 0` | `5a9a70e5-b7d2-4c4d-9175-fc7acba16c2b` (`gen=7`, `2026-10-31T02:37:06.496862Z`) | `5387 ms` | `DesiredState 5Mbit/2Mbit (kernel tc blocked by FLOWTABLE_BYPASS)` | `127 / 7 / 0` |
-| `fup.member_generation_changed` (usage threshold) | `128 -> 129` | `8 -> 9` | `0 -> 0` | `922edc3f-c2b6-4f4d-a4aa-3bea02b6fa8d` (`gen=9`, `2026-10-31T02:37:22.991386Z`) | `6151 ms` | `DesiredState 5Mbit/2Mbit (kernel tc blocked by FLOWTABLE_BYPASS)` | `129 / 9 / 0` |
+Both provisional observations require `AWAITING_MEMBER_GRANTS` on `lease`, `qos`, and `source_binding`, exactly one `errors[]` entry (`stage=lease`), and zero `LEASE_EXPIRED`. Full lease/observation IDs and checks are in [AT16.json](AT16.json).
 
-### 2. D-067 Provisional-Lease Timing (`awaiting_member_grants` -> Populated Lease)
+## Fair-Use convergence
 
-| Cycle | Ready Observation (`t_ready`) | Populated Lease (`t_lease`) | Apply Blocker After Populated Lease | Ready -> Lease (`ms`) | Max Allowed (`ms`) | Checks (`lease`/`qos`/`source_binding`) | `errors[]` (`stage=lease`, zero `LEASE_EXPIRED`) |
-|---|---|---|---|---|---|---|---|
-| `bring_up` | `01a18fcd-a1a4-7983-9fe3-aa16f11d129b` (`2026-10-31T02:33:00.584324Z`) | `677c5ad3-b5a0-44dc-b77b-98dec868eb3b` (`members=2`, `2026-10-31T02:33:05.605449Z`) | `FLOWTABLE_BYPASS` (`obs=01a18fce-194d-7c40-b1eb-246cda6a5222`) | `5021 ms` | `65000 ms` | `AWAITING_MEMBER_GRANTS` / `AWAITING_MEMBER_GRANTS` / `AWAITING_MEMBER_GRANTS` | `count=1` (`AWAITING_MEMBER_GRANTS`), `expired=false` |
-| `agent_restart` | `01a18fce-aba1-7b56-bd5e-6dbdccd14664` (`2026-10-31T02:34:08.679543Z`) | `27108c64-ac6e-42b0-828f-8a8b6e1dd982` (`members=2`, `2026-10-31T02:34:13.70479Z`) | `FLOWTABLE_BYPASS` (`obs=01a18fcf-23b7-7718-9eb5-7655c3aae811`) | `5025 ms` | `65000 ms` | `AWAITING_MEMBER_GRANTS` / `AWAITING_MEMBER_GRANTS` / `AWAITING_MEMBER_GRANTS` | `count=1` (`AWAITING_MEMBER_GRANTS`), `expired=false` |
+| Trigger | Clearing observation | Trigger → applying false | Tier 2 installed on both exits |
+|---|---|---|---|
+| policy_activated_enforce_tier2 | `01a1902e-934f-7e82-a9fd-0a3bc7dd6693` | 7032 ms | true |
+| fup_member_generation_changed_tier0_to_tier2 | `01a1902f-8382-7102-898d-c247a2cb5b37` | 29864 ms | true |
 
-### 3. `ENR-03` Per-Incarnation Retained Usage (`GET /api/v1/admin/nodes/{id}/incarnations`, PR #210 Verified)
+The usage-threshold timer starts with real traffic and includes the normal sample/upload cadence; the activation timer starts with policy activation. Follow-up 3 used synthetic batch/ACK fixtures (5387 / 6151 ms), so those timings are not identical paths.
 
-- **Node ID**: `01a18fd0-4188-77d3-9e94-5c5bdc8f8d29` (409 while active: `NODE_INCARNATION_ACTIVE`)
-- **Retired Incarnation (`old`)**: `01a18fd0-42b9-7e45-97db-c16ad22f59d0` (`state=retired`, `retire_reason=reinstall`, retained `upload_bytes=1500`, `download_bytes=2000`, unchanged after new traffic: `true`)
-- **Active Incarnation (`new`)**: `01a18fd1-f3d3-7868-9373-487f724b9df7` (`state=active`, initial `0/0`, after new traffic `upload_bytes=900`, `download_bytes=1100`)
-- **Member Period Continuity (`usage_rollups` / `GET /api/v1/member/usage`)**: before re-enroll `total_bytes=109929`, after re-enroll `total_bytes=109929` (`unchanged=true`), after new traffic `total_bytes=111929` (`accumulated=true`)
+## ENR-03 and UTC boundary
 
-## Upstream Product Blockers
+Node `01a1902c-df9f-7494-bfd3-5c4f56f6f07e`: retired incarnation `01a1902c-e118-7aea-a535-b182bd653cb9`, new incarnation `01a1902f-c18b-7863-b1e9-4e63bbad5a9e`; old usage fixed `true`; member total unchanged at reinstall `true`; new traffic accumulated `true`. Member totals: `28459` → `28459` → `31040` bytes. Detailed per-incarnation bytes and timestamps are in [AT19.json](AT19.json). [AT17.json](AT17.json) re-runs the UTC split (1001/2003 bytes → October 500/1001 and November 501/1002), late events and clock rollback.
 
-- **Owner `w1-netlab` / `w3-devstack-e2e` (regression introduced in PR #220 `2473acf`)**: `VerifyServing` (`node/enforce/verify_foreign.go:107`) rejects Docker Engine's built-in `table ip nat` `POSTROUTING -> DOCKER_POSTROUTING -> xt target "SNAT"` rule inside `node-netns` and `node2-netns` with `FLOWTABLE_BYPASS` (`"table nat family ip hook postrouting priority 100 chain POSTROUTING statement xt"`) whenever `Serve=true` (populated lease). See [requests.md](requests.md) for full root cause and exact lines.
+Prior runs: [Follow-up 3](history/followup3/summary.md), [Follow-up 2](history/followup2/summary.md), [initial](history/initial/).
+
+## Post-run verification
+
+Live run `351d59aa` passed all six cases (`TestATUsage_Live` 461.12 s; package 467.921 s). Area lint/test/build, root `make go-lint`, `go vet ./...`, formatting, whitespace and committed-evidence hygiene checks passed. Linux amd64 and arm64 test binaries cross-compiled; no physical arm64 run is claimed.
+
+The shared driver tore the stack down. Final `fvpn-w4-usage-*` inventory: **0 containers, 0 networks, 0 volumes, 0 image tags**. No push or PR.
