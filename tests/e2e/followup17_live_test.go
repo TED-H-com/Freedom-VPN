@@ -124,6 +124,7 @@ func TestE2E_Followup17Installer(t *testing.T) {
 	// real process restart. Do this after installer measurements because the
 	// baseline helper activates its own serving support policy.
 	r.lab = l
+	r.nodeID, r.incID, r.enrolledID = uuid.Nil, uuid.Nil, uuid.Nil
 	baseline, err := PrepareServingBaseline(ctx, admin.http, admin.csrf, false)
 	must(err)
 	rec = Record{ID: "regular-kernel-boot", Title: "Enrolled ordinary agent and updater share kernel boot identity", Spec: []string{"AT23", "F9-06"}, Status: StatusFail}
