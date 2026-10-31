@@ -1,16 +1,20 @@
-# Current full-case blockers
+# Follow-up 8 external blockers
 
-The authoritative outcomes are [summary.md](summary.md) and the per-AT JSON. All listed resource blockers remain external; passed subsets do not pass a complete case.
+The full-case outcomes and failed checks are in [summary.md](summary.md). Fixture availability closes only the named missing fixture; it does not certify a consuming case or a physical platform. [requests.md](requests.md) retains owner actions.
 
-| Request | Cases | Remaining condition |
+| Request | Landed change / fresh recheck | Remaining boundary and owner |
 |---|---|---|
-| F4-03 | AT01, AT04, AT09 | Four native platforms/network moves; forced relay, member UDP/QUIC/PMTU and physical second NAT |
-| F4-04 | AT04 | Member UDP withdrawal on both exits and rendered suspended/expired screens |
-| F4-05 | AT20, AT21 | Native DNS configuration and automatic fallback between the authorized filters |
-| F4-06 | AT22 | Remaining raw-usage/rollup/file/backup/URL privacy and retention surfaces; commercial feed approval |
-| F4-07 | AT20 | Complete controlled RR/cache-expiry/rebinding fixtures |
-| F4-10 | AT05 | Preinstalled/cloud-init boot sources and physical arm64 |
+| F4-03 | #266 exports member persistent TCP/UDP and forced relay; #284 exports native IPv4/IPv6/dual and MTU 1500/1280. AT01/AT04/AT09 consume them. | QUIC and Android/iOS/Windows/macOS explicitly unavailable; physical second NAT, roaming and ICMP-black-hole PMTU remain. Devstack and platform/operator campaign. |
+| F4-04 | #266 closes missing member UDP fixture; AT04 measures refund, real paid expiry and suspension on both exits, including persistent senders. | Rendered suspended/expired member screens remain portal/devstack work. Fresh API state is not rendered UI evidence. |
+| F4-05 | #284 supplies exact issued two-resolver list, enabled native DNS, OS stub, primary-down fallback, both-down failure and recovery. AT20/AT21 record every result. | Nameserver distribution is TEST ONLY. Production automatic distribution and Private DNS/browser DoH platform coverage remain devstack/native integration/operator work. |
+| F4-06 | AT22 rechecks native sentinel privacy, both resolver configurations, logs, metrics, audit/dump surfaces, guarded audit retention and real scheduled feed last-good. #266/#284 probes export metadata only. | Representative raw-usage/rollup/file/backup retention and URL privacy inputs remain devstack/usage/database/backup work. Commercial feed approval remains a business decision. |
+| F4-07 | #284 supplies the RR, TTL/cache authority phases and private A/AAAA rebinding controls; AT20 consumes them through the native stub. | DNS/netlab owners must confirm direct blocked CNAME/SVCB NODATA wording. Positive IDNA wire fixture remains absent. |
+| F4-08 | No definition found in member request/blocker files or their tracked history. | Orchestrator must supply the original definition and owner. No fabricated closure. |
+| F4-09 | No definition found in member request/blocker files or their tracked history. | Orchestrator must supply the original definition and owner. No fabricated closure. |
+| F4-10 | #279 installer startup/seed lifecycle and #282 enrollment evidence are on the baseline; AT05 repeats reservation, replay and actual installer enrollment. | Preinstalled/cloud-init boot provenance and physical arm64 remain packaging/devstack/operator work. Cross-build is separate. |
 
-The worker restart-policy note is closed by #240 and fresh Docker readback. AT02 strict revoked-source ingress and D-067 same-generation recovery remain measured separately in this run. Request owners, reproductions and the shared downgrade-fixture export request are in [requests.md](requests.md).
+The separate worker RestartPolicy note is closed by #240 and fresh AT05 readback. D-050/D-081 now use exported ReplaceFiniteGrant (#284); the duplicate local production-service adapter is removed. Immediate 3/0→2/1 replacement and grant-only deadline expiry to 0/3 are separate measured transitions. A scheduled lower-plan transition is not invented.
 
-Previous records: [follow-up 6](history/follow-up-6/RUN.md). Interrupted attempts: [bootstrap fixture](history/follow-up-7/attempt-1/RUN.md) and [meter sequence collision](history/follow-up-7/attempt-2/RUN.md).
+The diagnostic namespace restart failure is tracked as F8-01 with agent-core/devstack/wire-nodes. The final AT09 result reproduces it at generation 30. F8-02 records a separate incomplete MTU-1280 transfer; both remain failures with their owners. Identity-freeze behavior is not independently recertified by this lane.
+
+[Follow-up 7 final evidence](history/follow-up-7/RUN.md) is preserved byte-identically for D-098. [Follow-up 8 diagnostic attempt 1](history/follow-up-8/attempt-1/RUN.md) preserves all initial failures and their harness corrections.

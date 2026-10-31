@@ -1,7 +1,7 @@
 # Member acceptance
 
 Assigned instance: `FVPN_E2E_PREFIX=w4-members FVPN_E2E_PORT_BASE=24000`.
-Current outcomes: [summary.md](summary.md), [run ledger](RUN.md), and the ten current AT JSON/Markdown pairs. The full target exits nonzero while a complete case is blocked. [D077.md](D077.md) indexes the production device re-authorization calls, bodies, operation IDs and fence counts.
+Current outcomes: [summary.md](summary.md), [native transport and DNS rows](NATIVE.md), [run ledger](RUN.md), and the ten current AT JSON/Markdown pairs. The full target exits nonzero while a complete case is blocked. [D077.md](D077.md) indexes the production device re-authorization calls, bodies, operation IDs and fence counts.
 
 ```sh
 FVPN_E2E_PREFIX=w4-members FVPN_E2E_PORT_BASE=24000 FVPN_E2E_TWO_RESOLVERS=true E2E_RESET=1 make -f mk/e2e.mk e2e-up

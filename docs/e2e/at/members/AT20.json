@@ -1,7 +1,7 @@
 {
   "node_incarnations": {
-    "node": "01a190e6-1daa-7072-9d94-7fdb67c73423",
-    "node2": "01a190f2-4868-7dea-ba46-ec120637939b"
+    "node": "01a19123-e21c-7acd-993b-39ed0c25511b",
+    "node2": "01a19130-3acc-72d2-9f41-059363fed5f4"
   },
   "complete": true,
   "id": "AT20",
@@ -11,7 +11,7 @@
     "§19 AT20",
     "DNS01 DNS02 ISO04"
   ],
-  "status": "fail",
+  "status": "blocked",
   "observations": [
     {
       "name": "reject noncanonical EXAMPLE.COM",
@@ -127,7 +127,11 @@
     },
     {
       "name": "native two-resolver configuration",
-      "detail": "pass; expected: exact issued pair, native enabled, one OS stub, identical applied documents; actual: {\"configuration\":{\"observed_native_resolvers\":[\"192.0.4.53:53\",\"192.0.4.54:53\"],\"native_resolvers_match\":true,\"resolvers\":[\"192.0.4.53\",\"192.0.4.54\"],\"native_dns_enabled\":true,\"system_uses_native_stub\":true,\"document_hashes\":[\"cef9ba202217a3c1cd4db702610148d43144f2c2f8764c04891f5918513efbdc\",\"cef9ba202217a3c1cd4db702610148d43144f2c2f8764c04891f5918513efbdc\"],\"same_applied_document\":true,\"configured_at\":\"2026-10-31T08:13:37.980238616Z\"},\"error\":\"\"}; command: ConfigureNativeDNS; TEST ONLY peer-restricted distribution of production-issued addresses"
+      "detail": "pass; expected: exact issued pair, native enabled, one OS stub, identical applied documents; actual: {\"configuration\":{\"observed_native_resolvers\":[\"192.0.4.53:53\",\"192.0.4.54:53\"],\"native_resolvers_match\":true,\"resolvers\":[\"192.0.4.53\",\"192.0.4.54\"],\"native_dns_enabled\":true,\"system_uses_native_stub\":true,\"document_hashes\":[\"7d05afc58ccfacd4d087ca8e3aed9cb868ce80c488522d8388bd51660ea61e2b\",\"7d05afc58ccfacd4d087ca8e3aed9cb868ce80c488522d8388bd51660ea61e2b\"],\"same_applied_document\":true,\"configured_at\":\"2026-10-31T09:13:45.526259012Z\"},\"error\":\"\"}; command: ConfigureNativeDNS; TEST ONLY peer-restricted distribution of production-issued addresses"
+    },
+    {
+      "name": "native DNS forwarding readiness",
+      "detail": "pass; expected: bounded positive lookup after native down/up; preserve startup attempts; actual: {\"attempts\":[{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[1],\"ttls\":[5],\"address_classes\":[\"other_ipv4\"],\"expected_answer\":true,\"connected\":false,\"bytes\":0,\"milliseconds\":106}],\"elapsed_ms\":148}; command: ProbeNativeDNS startup readiness before one-shot RR matrix"
     },
     {
       "name": "private fixture listeners",
@@ -135,7 +139,7 @@
     },
     {
       "name": "RR case 01 TCP=false",
-      "detail": "fail; expected: recorded RCODE/answer convention; actual: {\"actual\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":2,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":5001},\"case\":\"rr\",\"expected_answer\":true,\"expected_rcode\":0,\"rr_type\":1,\"tcp\":false}; command: ProbeNativeDNS through native OS stub"
+      "detail": "pass; expected: recorded RCODE/answer convention; actual: {\"actual\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[1],\"ttls\":[5],\"address_classes\":[\"other_ipv4\"],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"case\":\"rr\",\"expected_answer\":true,\"expected_rcode\":0,\"rr_type\":1,\"tcp\":false}; command: ProbeNativeDNS through native OS stub"
     },
     {
       "name": "RR case 02 TCP=false",
@@ -199,7 +203,7 @@
     },
     {
       "name": "RR case 11 TCP=false",
-      "detail": "pass; expected: recorded RCODE/answer convention; actual: {\"actual\":{\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"case\":\"blocked-alias\",\"expected_answer\":false,\"expected_rcode\":3,\"rr_type\":1,\"tcp\":false}; command: ProbeNativeDNS through native OS stub"
+      "detail": "pass; expected: recorded RCODE/answer convention; actual: {\"actual\":{\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":2},\"case\":\"blocked-alias\",\"expected_answer\":false,\"expected_rcode\":3,\"rr_type\":1,\"tcp\":false}; command: ProbeNativeDNS through native OS stub"
     },
     {
       "name": "RR case 12 TCP=false authority control",
@@ -211,31 +215,31 @@
     },
     {
       "name": "RR case 13 TCP=false",
-      "detail": "pass; expected: recorded RCODE/answer convention; actual: {\"actual\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[1],\"ttls\":[5],\"address_classes\":[\"other_ipv4\"],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":2},\"case\":\"notfeed-01\",\"expected_answer\":true,\"expected_rcode\":0,\"rr_type\":1,\"tcp\":false}; command: ProbeNativeDNS through native OS stub"
+      "detail": "pass; expected: recorded RCODE/answer convention; actual: {\"actual\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[1],\"ttls\":[5],\"address_classes\":[\"other_ipv4\"],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"case\":\"notfeed-01\",\"expected_answer\":true,\"expected_rcode\":0,\"rr_type\":1,\"tcp\":false}; command: ProbeNativeDNS through native OS stub"
     },
     {
       "name": "RR case 14 TCP=false",
-      "detail": "pass; expected: recorded RCODE/answer convention; actual: {\"actual\":{\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":2},\"case\":\"absent\",\"expected_answer\":false,\"expected_rcode\":3,\"rr_type\":1,\"tcp\":false}; command: ProbeNativeDNS through native OS stub"
+      "detail": "pass; expected: recorded RCODE/answer convention; actual: {\"actual\":{\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":5},\"case\":\"absent\",\"expected_answer\":false,\"expected_rcode\":3,\"rr_type\":1,\"tcp\":false}; command: ProbeNativeDNS through native OS stub"
     },
     {
       "name": "RR case 01 TCP=true",
-      "detail": "pass; expected: recorded RCODE/answer convention; actual: {\"actual\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[1],\"ttls\":[5],\"address_classes\":[\"other_ipv4\"],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"case\":\"rr\",\"expected_answer\":true,\"expected_rcode\":0,\"rr_type\":1,\"tcp\":true}; command: ProbeNativeDNS through native OS stub"
+      "detail": "pass; expected: recorded RCODE/answer convention; actual: {\"actual\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[1],\"ttls\":[4],\"address_classes\":[\"other_ipv4\"],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"case\":\"rr\",\"expected_answer\":true,\"expected_rcode\":0,\"rr_type\":1,\"tcp\":true}; command: ProbeNativeDNS through native OS stub"
     },
     {
       "name": "RR case 02 TCP=true",
-      "detail": "pass; expected: recorded RCODE/answer convention; actual: {\"actual\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[28],\"ttls\":[5],\"address_classes\":[\"other_ipv6\"],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":3},\"case\":\"rr\",\"expected_answer\":true,\"expected_rcode\":0,\"rr_type\":28,\"tcp\":true}; command: ProbeNativeDNS through native OS stub"
+      "detail": "pass; expected: recorded RCODE/answer convention; actual: {\"actual\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[28],\"ttls\":[4],\"address_classes\":[\"other_ipv6\"],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":8},\"case\":\"rr\",\"expected_answer\":true,\"expected_rcode\":0,\"rr_type\":28,\"tcp\":true}; command: ProbeNativeDNS through native OS stub"
     },
     {
       "name": "RR case 03 TCP=true",
-      "detail": "pass; expected: recorded RCODE/answer convention; actual: {\"actual\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[5],\"ttls\":[5],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"case\":\"alias\",\"expected_answer\":true,\"expected_rcode\":0,\"rr_type\":5,\"tcp\":true}; command: ProbeNativeDNS through native OS stub"
+      "detail": "pass; expected: recorded RCODE/answer convention; actual: {\"actual\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[5],\"ttls\":[4],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"case\":\"alias\",\"expected_answer\":true,\"expected_rcode\":0,\"rr_type\":5,\"tcp\":true}; command: ProbeNativeDNS through native OS stub"
     },
     {
       "name": "RR case 04 TCP=true",
-      "detail": "pass; expected: recorded RCODE/answer convention; actual: {\"actual\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[64],\"ttls\":[5],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"case\":\"service\",\"expected_answer\":true,\"expected_rcode\":0,\"rr_type\":64,\"tcp\":true}; command: ProbeNativeDNS through native OS stub"
+      "detail": "pass; expected: recorded RCODE/answer convention; actual: {\"actual\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[64],\"ttls\":[4],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"case\":\"service\",\"expected_answer\":true,\"expected_rcode\":0,\"rr_type\":64,\"tcp\":true}; command: ProbeNativeDNS through native OS stub"
     },
     {
       "name": "RR case 05 TCP=true",
-      "detail": "pass; expected: recorded RCODE/answer convention; actual: {\"actual\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[65],\"ttls\":[4],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":2},\"case\":\"service\",\"expected_answer\":true,\"expected_rcode\":0,\"rr_type\":65,\"tcp\":true}; command: ProbeNativeDNS through native OS stub"
+      "detail": "pass; expected: recorded RCODE/answer convention; actual: {\"actual\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[65],\"ttls\":[4],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"case\":\"service\",\"expected_answer\":true,\"expected_rcode\":0,\"rr_type\":65,\"tcp\":true}; command: ProbeNativeDNS through native OS stub"
     },
     {
       "name": "RR case 06 TCP=true authority control",
@@ -243,7 +247,7 @@
     },
     {
       "name": "RR case 06 TCP=true",
-      "detail": "pass; expected: recorded RCODE/answer convention; actual: {\"actual\":{\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"case\":\"feed-01\",\"expected_answer\":false,\"expected_rcode\":3,\"rr_type\":1,\"tcp\":true}; command: ProbeNativeDNS through native OS stub"
+      "detail": "pass; expected: recorded RCODE/answer convention; actual: {\"actual\":{\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":4},\"case\":\"feed-01\",\"expected_answer\":false,\"expected_rcode\":3,\"rr_type\":1,\"tcp\":true}; command: ProbeNativeDNS through native OS stub"
     },
     {
       "name": "RR case 07 TCP=true authority control",
@@ -251,7 +255,7 @@
     },
     {
       "name": "RR case 07 TCP=true",
-      "detail": "pass; expected: recorded RCODE/answer convention; actual: {\"actual\":{\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":2},\"case\":\"feed-01\",\"expected_answer\":false,\"expected_rcode\":3,\"rr_type\":28,\"tcp\":true}; command: ProbeNativeDNS through native OS stub"
+      "detail": "pass; expected: recorded RCODE/answer convention; actual: {\"actual\":{\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"case\":\"feed-01\",\"expected_answer\":false,\"expected_rcode\":3,\"rr_type\":28,\"tcp\":true}; command: ProbeNativeDNS through native OS stub"
     },
     {
       "name": "RR case 08 TCP=true authority control",
@@ -267,7 +271,7 @@
     },
     {
       "name": "RR case 09 TCP=true",
-      "detail": "pass; expected: recorded RCODE/answer convention; actual: {\"actual\":{\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":0,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"case\":\"feed-01\",\"expected_answer\":false,\"expected_rcode\":0,\"rr_type\":64,\"tcp\":true}; command: ProbeNativeDNS through native OS stub"
+      "detail": "pass; expected: recorded RCODE/answer convention; actual: {\"actual\":{\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":0,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":3},\"case\":\"feed-01\",\"expected_answer\":false,\"expected_rcode\":0,\"rr_type\":64,\"tcp\":true}; command: ProbeNativeDNS through native OS stub"
     },
     {
       "name": "RR case 10 TCP=true authority control",
@@ -275,7 +279,7 @@
     },
     {
       "name": "RR case 10 TCP=true",
-      "detail": "pass; expected: recorded RCODE/answer convention; actual: {\"actual\":{\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":3},\"case\":\"feed-01\",\"expected_answer\":false,\"expected_rcode\":3,\"rr_type\":65,\"tcp\":true}; command: ProbeNativeDNS through native OS stub"
+      "detail": "pass; expected: recorded RCODE/answer convention; actual: {\"actual\":{\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"case\":\"feed-01\",\"expected_answer\":false,\"expected_rcode\":3,\"rr_type\":65,\"tcp\":true}; command: ProbeNativeDNS through native OS stub"
     },
     {
       "name": "RR case 11 TCP=true authority control",
@@ -283,7 +287,7 @@
     },
     {
       "name": "RR case 11 TCP=true",
-      "detail": "pass; expected: recorded RCODE/answer convention; actual: {\"actual\":{\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"case\":\"blocked-alias\",\"expected_answer\":false,\"expected_rcode\":3,\"rr_type\":1,\"tcp\":true}; command: ProbeNativeDNS through native OS stub"
+      "detail": "pass; expected: recorded RCODE/answer convention; actual: {\"actual\":{\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":5},\"case\":\"blocked-alias\",\"expected_answer\":false,\"expected_rcode\":3,\"rr_type\":1,\"tcp\":true}; command: ProbeNativeDNS through native OS stub"
     },
     {
       "name": "RR case 12 TCP=true authority control",
@@ -291,11 +295,11 @@
     },
     {
       "name": "RR case 12 TCP=true",
-      "detail": "pass; expected: recorded RCODE/answer convention; actual: {\"actual\":{\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"case\":\"sub\",\"expected_answer\":false,\"expected_rcode\":3,\"rr_type\":1,\"tcp\":true}; command: ProbeNativeDNS through native OS stub"
+      "detail": "pass; expected: recorded RCODE/answer convention; actual: {\"actual\":{\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":2},\"case\":\"sub\",\"expected_answer\":false,\"expected_rcode\":3,\"rr_type\":1,\"tcp\":true}; command: ProbeNativeDNS through native OS stub"
     },
     {
       "name": "RR case 13 TCP=true",
-      "detail": "pass; expected: recorded RCODE/answer convention; actual: {\"actual\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[1],\"ttls\":[4],\"address_classes\":[\"other_ipv4\"],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":2},\"case\":\"notfeed-01\",\"expected_answer\":true,\"expected_rcode\":0,\"rr_type\":1,\"tcp\":true}; command: ProbeNativeDNS through native OS stub"
+      "detail": "pass; expected: recorded RCODE/answer convention; actual: {\"actual\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[1],\"ttls\":[4],\"address_classes\":[\"other_ipv4\"],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"case\":\"notfeed-01\",\"expected_answer\":true,\"expected_rcode\":0,\"rr_type\":1,\"tcp\":true}; command: ProbeNativeDNS through native OS stub"
     },
     {
       "name": "RR case 14 TCP=true",
@@ -307,27 +311,27 @@
     },
     {
       "name": "native case/dot normalization",
-      "detail": "pass; expected: NXDOMAIN, no answer; actual: {\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1}; command: ProbeNativeDNS mixed case/trailing dot synthetic blocked name"
+      "detail": "pass; expected: NXDOMAIN, no answer; actual: {\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":2}; command: ProbeNativeDNS mixed case/trailing dot synthetic blocked name"
     },
     {
       "name": "cache initial",
-      "detail": "pass; expected: positive TTL \u003c=10, negative SOA TTL \u003c=5; actual: {\"negative\":{\"authority_ttl\":4,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"positive\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[1],\"ttls\":[10],\"address_classes\":[\"other_ipv4\"],\"expected_answer\":true,\"connected\":false,\"bytes\":0,\"milliseconds\":1}}; command: native DNS before authority-only change"
+      "detail": "pass; expected: positive TTL \u003c=10, negative SOA TTL \u003c=5; actual: {\"negative\":{\"authority_ttl\":4,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":3},\"positive\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[1],\"ttls\":[10],\"address_classes\":[\"other_ipv4\"],\"expected_answer\":true,\"connected\":false,\"bytes\":0,\"milliseconds\":1}}; command: native DNS before authority-only change"
     },
     {
       "name": "changed authority",
-      "detail": "pass; expected: new answer while caches untouched; actual: {\"authority\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[1],\"ttls\":[10],\"address_classes\":[\"private_ipv4\"],\"expected_answer\":true,\"connected\":false,\"bytes\":0,\"milliseconds\":0},\"changed_at\":\"2026-10-31T08:13:44.755059524Z\"}; command: SetDNSFixturePhase(private); query authority until new serial visible"
+      "detail": "pass; expected: new answer while caches untouched; actual: {\"authority\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[1],\"ttls\":[10],\"address_classes\":[\"private_ipv4\"],\"expected_answer\":true,\"connected\":false,\"bytes\":0,\"milliseconds\":0},\"changed_at\":\"2026-10-31T09:13:47.453506563Z\"}; command: SetDNSFixturePhase(private); query authority until new serial visible"
     },
     {
       "name": "positive/negative cache before TTL",
-      "detail": "pass; expected: old positive and NXDOMAIN persist with remaining TTL; actual: {\"negative\":{\"authority_ttl\":3,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"observed_at\":\"2026-10-31T08:13:45.894615977Z\",\"positive\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[1],\"ttls\":[9],\"address_classes\":[\"other_ipv4\"],\"expected_answer\":true,\"connected\":false,\"bytes\":0,\"milliseconds\":1}}; command: ProbeNativeDNS without flushing either cache"
+      "detail": "pass; expected: old positive and NXDOMAIN persist with remaining TTL; actual: {\"negative\":{\"authority_ttl\":3,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"observed_at\":\"2026-10-31T09:13:48.592018339Z\",\"positive\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[1],\"ttls\":[9],\"address_classes\":[\"other_ipv4\"],\"expected_answer\":true,\"connected\":false,\"bytes\":0,\"milliseconds\":4}}; command: ProbeNativeDNS without flushing either cache"
     },
     {
       "name": "positive/negative cache after TTL",
-      "detail": "pass; expected: both new authority answers visible; actual: {\"formerly_negative\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[1],\"ttls\":[5],\"address_classes\":[\"other_ipv4\"],\"expected_answer\":true,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"observed_at\":\"2026-10-31T08:13:57.992747615Z\",\"positive\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[1],\"ttls\":[10],\"address_classes\":[\"private_ipv4\"],\"expected_answer\":true,\"connected\":false,\"bytes\":0,\"milliseconds\":1}}; command: ProbeNativeDNS after real TTL elapses"
+      "detail": "pass; expected: both new authority answers visible; actual: {\"formerly_negative\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[1],\"ttls\":[5],\"address_classes\":[\"other_ipv4\"],\"expected_answer\":true,\"connected\":false,\"bytes\":0,\"milliseconds\":4},\"observed_at\":\"2026-10-31T09:14:00.694111788Z\",\"positive\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[1],\"ttls\":[10],\"address_classes\":[\"private_ipv4\"],\"expected_answer\":true,\"connected\":false,\"bytes\":0,\"milliseconds\":3}}; command: ProbeNativeDNS after real TTL elapses"
     },
     {
       "name": "allowlisted private rebinding type 1",
-      "detail": "pass; expected: private DNS answer; node listener works; member connection fails; actual: {\"answer\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[1],\"ttls\":[1],\"address_classes\":[\"private_ipv4\"],\"expected_answer\":true,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"member\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":-1,\"types\":[],\"ttls\":[],\"address_classes\":[\"private_ipv4\",\"private_ipv6\"],\"expected_answer\":true,\"connected\":false,\"bytes\":0,\"milliseconds\":12011},\"node_control\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":-1,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":true,\"bytes\":0,\"milliseconds\":0}}; command: native DNS private phase; independent node listener and member connection"
+      "detail": "pass; expected: private DNS answer; node listener works; member connection fails; actual: {\"answer\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[1],\"ttls\":[2],\"address_classes\":[\"private_ipv4\"],\"expected_answer\":true,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"member\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":-1,\"types\":[],\"ttls\":[],\"address_classes\":[\"private_ipv4\",\"private_ipv6\"],\"expected_answer\":true,\"connected\":false,\"bytes\":0,\"milliseconds\":12006},\"node_control\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":-1,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":true,\"bytes\":0,\"milliseconds\":0}}; command: native DNS private phase; independent node listener and member connection"
     },
     {
       "name": "allowlisted private rebinding type 28",
@@ -339,82 +343,82 @@
     },
     {
       "name": "provenance",
-      "detail": "source=2259947de0a1d14aef8e3e389834d99847aaf026; applied generation=65; incarnation=01a190e6-1daa-7072-9d94-7fdb67c73423; image/binary digests in JSON"
+      "detail": "source=d79accd9c693aed83713072c925b3b5005b5684c; applied generation=64; incarnation=01a19123-e21c-7acd-993b-39ed0c25511b; image/binary digests in JSON"
     }
   ],
-  "at": "2026-10-31T08:13:12Z",
-  "run_id": "942624c2-babc-4610-aa43-9560a9e70683",
-  "source_commit": "2259947de0a1d14aef8e3e389834d99847aaf026",
+  "at": "2026-10-31T09:12:58Z",
+  "run_id": "69f92f49-73dc-4779-8101-dfb6a802a96b",
+  "source_commit": "d79accd9c693aed83713072c925b3b5005b5684c",
   "release_digests": {
-    "artifact_sha256_0.1.0_amd64": "cc01fb87bbf87c44ed9a613417f655dceac69954e238ce9a7ea44f8e381a3ed9",
-    "artifact_sha256_0.1.0_arm64": "85e0a1a466a12ed6982c84661c34b03a143e28f53534a6ca53986a0c2d4f0278",
-    "manifest_sha256_0.1.0": "deb9010431c4de24da7ca822f03a260b74b4349344a9f2c1138da592f7fef424",
-    "signed_manifest_sha256_0.1.0": "a738051e7dc4dd735d317be7c97381371d3f4f91f80b4a6e54f6e6e15b57d533"
+    "artifact_sha256_0.1.0_amd64": "b642eb4109f22bf92690971af31271c4c836122d3c26003c336bb899f31ad2c6",
+    "artifact_sha256_0.1.0_arm64": "7677825d45dd99eaf18d76b809140fd51c3c160f231f4293d3c2f4668bc057b9",
+    "manifest_sha256_0.1.0": "669851218b96cadace931aa135edf9f79ce74acba3b7e1a6db0140b7c13fb50f",
+    "signed_manifest_sha256_0.1.0": "8b447bdb47d95bfe6e530054cacf986ff774239797d7522c160f22902d9ba52b"
   },
   "build": {
-    "test_binary_sha256": "a416f6e6a40bc645bdc25eb9255f16891deca89e82d7f4c0300d67b8bc3ac0d2",
-    "source_commit": "2259947de0a1d14aef8e3e389834d99847aaf026",
+    "test_binary_sha256": "0918aef9d50e00a38218eec9cb1d521cfcde13c3d84f339780a2eb3aa00d2140",
+    "source_commit": "d79accd9c693aed83713072c925b3b5005b5684c",
     "source_dirty": false,
     "image_digests": {
       "adguard": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
-      "control": "sha256:36434b7c67d2a37361dc9fd45b03b8d197f65cf43afcfd343d3447781cd97cf3",
+      "control": "sha256:f88d1e171abdf8aa418f41a59aae5806792418094673c93aacc91382b121886e",
       "coredns": "sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97",
       "gateway": "sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce",
-      "idp": "sha256:e71a7ef133d09a4eefbfe6b2400a6b168ecfeb5a4f99d2761e6de56018ae746e",
-      "member": "sha256:a765374a54be4515a0934d11f0783341d2323a66f0ad8ac3f7e8fd58ffdf0629",
+      "idp": "sha256:372c819ccadcebce0c0e674c3cfd8fd4d35d9a90bc20a21be2661de540b13336",
+      "member": "sha256:93b18b8898b2c9839f5574ebec3e49d6d36d791d1ea13315816058159e08ab46",
       "netbird": "sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c",
-      "node": "sha256:a765374a54be4515a0934d11f0783341d2323a66f0ad8ac3f7e8fd58ffdf0629",
-      "node-netns": "sha256:a765374a54be4515a0934d11f0783341d2323a66f0ad8ac3f7e8fd58ffdf0629",
-      "node2": "sha256:a765374a54be4515a0934d11f0783341d2323a66f0ad8ac3f7e8fd58ffdf0629",
+      "node": "sha256:93b18b8898b2c9839f5574ebec3e49d6d36d791d1ea13315816058159e08ab46",
+      "node-netns": "sha256:93b18b8898b2c9839f5574ebec3e49d6d36d791d1ea13315816058159e08ab46",
+      "node2": "sha256:93b18b8898b2c9839f5574ebec3e49d6d36d791d1ea13315816058159e08ab46",
       "node2-adguard": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
-      "node2-netns": "sha256:a765374a54be4515a0934d11f0783341d2323a66f0ad8ac3f7e8fd58ffdf0629",
-      "origin": "sha256:a496ff196c401ef2f1073b85bf4632c9ef7b68c8dc1f7c1f768e39baaa158cb1",
-      "payment": "sha256:985f8be65017d01b5c7442fa2cf9d0b3e4ee199495a95f402eb6497000bc0901",
-      "postgres": "sha256:3e7ccb4e9421f3bc5df0f2ae21949d744780b66f753a58179c474e4f077eb649",
-      "worker": "sha256:19f213c8aaf3cfe85a496b19e158a9d8b593597028f412a4fe03051fb40964d4"
+      "node2-netns": "sha256:93b18b8898b2c9839f5574ebec3e49d6d36d791d1ea13315816058159e08ab46",
+      "origin": "sha256:7c0f43fd5dbc5c619484662a412ec5521ae99e82eaceee33a03c42a08d6e6ffa",
+      "payment": "sha256:3ae0463a4d82c5dd0a2cebd036ecf5887e790c87986f8f9d1c5d4c0fbdc978e4",
+      "postgres": "sha256:6332ad9cb5685403609c5eb9849b80c766febfe30e15ccb85ebc18724f0f1b86",
+      "worker": "sha256:cb441c20fcbeb8fbf43f090264087412b385d1e24e3eeb3cc254046231de79e2"
     },
     "binary_sha256": {
-      "fvpn-agent": "32913838576c90af4fcd38d67edd2d1984343eae215a8799e9e34de2b02e379b",
-      "fvpn-control": "ddccf72967d54fa55fca9775631aaf52cac509f3e08d8a08916b159987475dda",
-      "fvpn-updater": "8c73a3e389915e601190d2eb102f479e231eace7f9104cea2f0db49f3f9becdd",
-      "fvpn-worker": "76b8d9efd3a5d3919846b9551cbf00c57ea86d2374ea8ebe3835595786e8aede"
+      "fvpn-agent": "4d9a467f3cc01f307ce3bd0e61fabde2d51b80bba760816822a04de672ef7194",
+      "fvpn-control": "345121ada6ade69e5e755a689245fb4ce542effda31b4dabae98dcd3a8e66793",
+      "fvpn-updater": "bd7e5eee5d279b7397e6403d7322b79bde7af9cde999708119eec293da04d2c8",
+      "fvpn-worker": "750e30b1a331acd862544c2d29e539bbced42f04a55a9070df642365e31f66d2"
     },
     "binary_vcs": {
       "fvpn-agent": {
         "go_version": "go1.27.3",
         "vcs.modified": "false",
-        "vcs.revision": "2259947de0a1d14aef8e3e389834d99847aaf026",
-        "vcs.time": "2026-10-31T07:38:27Z"
+        "vcs.revision": "d79accd9c693aed83713072c925b3b5005b5684c",
+        "vcs.time": "2026-10-31T08:45:26Z"
       },
       "fvpn-control": {
         "go_version": "go1.27.3",
         "vcs.modified": "false",
-        "vcs.revision": "2259947de0a1d14aef8e3e389834d99847aaf026",
-        "vcs.time": "2026-10-31T07:38:27Z"
+        "vcs.revision": "d79accd9c693aed83713072c925b3b5005b5684c",
+        "vcs.time": "2026-10-31T08:45:26Z"
       },
       "fvpn-updater": {
         "go_version": "go1.27.3",
         "vcs.modified": "false",
-        "vcs.revision": "2259947de0a1d14aef8e3e389834d99847aaf026",
-        "vcs.time": "2026-10-31T07:38:27Z"
+        "vcs.revision": "d79accd9c693aed83713072c925b3b5005b5684c",
+        "vcs.time": "2026-10-31T08:45:26Z"
       },
       "fvpn-worker": {
         "go_version": "go1.27.3",
         "vcs.modified": "false",
-        "vcs.revision": "2259947de0a1d14aef8e3e389834d99847aaf026",
-        "vcs.time": "2026-10-31T07:38:27Z"
+        "vcs.revision": "d79accd9c693aed83713072c925b3b5005b5684c",
+        "vcs.time": "2026-10-31T08:45:26Z"
       }
     }
   },
-  "policy_revision": "65",
+  "policy_revision": "64",
   "active_policy_revisions": {
-    "dns_profile": "01a19105-2e89-7773-9172-b47d05eeeedf",
-    "domain_rule_set": "01a190e6-0758-77e5-ad13-32ab8bfee326",
-    "fair_use": "01a190e6-0299-75b1-bfbe-eaca238eec1e",
-    "plan": "01a190eb-bc96-77c5-88fc-a32048a94584",
-    "release_support": "01a190e5-fb55-7e43-9c54-bd89dff0b23c"
+    "dns_profile": "01a1913b-e70c-77a7-b100-0717907a72d8",
+    "domain_rule_set": "01a19123-caa8-731a-b924-ca274976ab54",
+    "fair_use": "01a19123-c5e8-7005-99d4-29e382ff2eda",
+    "plan": "01a19129-7fde-7e03-9275-5c8a9a776b72",
+    "release_support": "01a19123-bea9-7690-b818-e2cc0ff06346"
   },
-  "node_incarnation": "01a190e6-1daa-7072-9d94-7fdb67c73423",
+  "node_incarnation": "01a19123-e21c-7acd-993b-39ed0c25511b",
   "steps": [
     {
       "name": "reject noncanonical EXAMPLE.COM",
@@ -422,7 +426,7 @@
       "expected": "422 (contract canonical ASCII)",
       "actual": "HTTP 422 VALIDATION_FAILED",
       "command": "POST /admin/policies domain_rule_set",
-      "at": "2026-10-31T08:13:14Z"
+      "at": "2026-10-31T09:13:00Z"
     },
     {
       "name": "reject noncanonical example.com.",
@@ -430,7 +434,7 @@
       "expected": "422 (contract canonical ASCII)",
       "actual": "HTTP 422 VALIDATION_FAILED",
       "command": "POST /admin/policies domain_rule_set",
-      "at": "2026-10-31T08:13:14Z"
+      "at": "2026-10-31T09:13:00Z"
     },
     {
       "name": "reject noncanonical bücher.example.com",
@@ -438,7 +442,7 @@
       "expected": "422 (contract canonical ASCII)",
       "actual": "HTTP 422 VALIDATION_FAILED",
       "command": "POST /admin/policies domain_rule_set",
-      "at": "2026-10-31T08:13:15Z"
+      "at": "2026-10-31T09:13:01Z"
     },
     {
       "name": "reject noncanonical https://example.com/path",
@@ -446,7 +450,7 @@
       "expected": "422 (contract canonical ASCII)",
       "actual": "HTTP 422 VALIDATION_FAILED",
       "command": "POST /admin/policies domain_rule_set",
-      "at": "2026-10-31T08:13:15Z"
+      "at": "2026-10-31T09:13:02Z"
     },
     {
       "name": "canonical rules",
@@ -454,7 +458,7 @@
       "expected": "201, immutable canonical payload",
       "actual": "HTTP 201 ",
       "command": "POST canonical A-label, include_subdomains and allow rules",
-      "at": "2026-10-31T08:13:16Z"
+      "at": "2026-10-31T09:13:02Z"
     },
     {
       "name": "duplicate and conflict rejection",
@@ -462,7 +466,7 @@
       "expected": "both 409 conflict",
       "actual": "duplicate=409; conflict=409",
       "command": "POST duplicate/conflicting rules",
-      "at": "2026-10-31T08:13:17Z"
+      "at": "2026-10-31T09:13:03Z"
     },
     {
       "name": "DNS profile",
@@ -470,7 +474,7 @@
       "expected": "201 with TEST ONLY 5-second TTL",
       "actual": "HTTP 201 ",
       "command": "POST /admin/policies dns_profile",
-      "at": "2026-10-31T08:13:18Z"
+      "at": "2026-10-31T09:13:04Z"
     },
     {
       "name": "DNS activation",
@@ -478,7 +482,7 @@
       "expected": "202 pending external apply",
       "actual": "HTTP 202 ",
       "command": "POST /admin/policies/{id}/activate",
-      "at": "2026-10-31T08:13:18Z"
+      "at": "2026-10-31T09:13:05Z"
     },
     {
       "name": "compiled DNS documents",
@@ -486,7 +490,7 @@
       "expected": "observe central publication separately from resolver apply",
       "actual": "stored_documents=1",
       "command": "SELECT count dns_resolver_documents",
-      "at": "2026-10-31T08:13:18Z"
+      "at": "2026-10-31T09:13:05Z"
     },
     {
       "name": "policy operation versus resolver",
@@ -494,7 +498,7 @@
       "expected": "record compilation operation separately from application",
       "actual": "latest_policy_operation=succeeded",
       "command": "SELECT operations.status for policy.activate",
-      "at": "2026-10-31T08:13:20Z"
+      "at": "2026-10-31T09:13:08Z"
     },
     {
       "name": "actual resolver readback",
@@ -502,7 +506,7 @@
       "expected": "record applied-rule presence",
       "actual": "API_ok=true; user_rules=11; requested_block_present=true",
       "command": "AdGuard GET /control/filtering/status",
-      "at": "2026-10-31T08:13:20Z"
+      "at": "2026-10-31T09:13:08Z"
     },
     {
       "name": "wire DNS lab.example.invalid type 1",
@@ -510,7 +514,7 @@
       "expected": "record actual controlled resolver answer (management path)",
       "actual": "{\"answers\":0,\"available\":true,\"rcode\":3,\"ttl\":5}",
       "command": "docker exec member probe dns controlled-resolver",
-      "at": "2026-10-31T08:13:20Z"
+      "at": "2026-10-31T09:13:08Z"
     },
     {
       "name": "wire DNS LAB.example.invalid. type 1",
@@ -518,7 +522,7 @@
       "expected": "record actual controlled resolver answer (management path)",
       "actual": "{\"answers\":0,\"available\":true,\"rcode\":3,\"ttl\":5}",
       "command": "docker exec member probe dns controlled-resolver",
-      "at": "2026-10-31T08:13:20Z"
+      "at": "2026-10-31T09:13:08Z"
     },
     {
       "name": "wire DNS sub.lab.example.invalid type 1",
@@ -526,7 +530,7 @@
       "expected": "record actual controlled resolver answer (management path)",
       "actual": "{\"answers\":0,\"available\":true,\"rcode\":3,\"ttl\":5}",
       "command": "docker exec member probe dns controlled-resolver",
-      "at": "2026-10-31T08:13:20Z"
+      "at": "2026-10-31T09:13:08Z"
     },
     {
       "name": "wire DNS notexample.com type 1",
@@ -534,7 +538,7 @@
       "expected": "record actual controlled resolver answer (management path)",
       "actual": "{\"answers\":0,\"available\":true,\"rcode\":3,\"ttl\":0}",
       "command": "docker exec member probe dns controlled-resolver",
-      "at": "2026-10-31T08:13:20Z"
+      "at": "2026-10-31T09:13:08Z"
     },
     {
       "name": "wire DNS lab.example.invalid type 5",
@@ -542,7 +546,7 @@
       "expected": "record actual controlled resolver answer (management path)",
       "actual": "{\"answers\":0,\"available\":true,\"rcode\":0,\"ttl\":5}",
       "command": "docker exec member probe dns controlled-resolver",
-      "at": "2026-10-31T08:13:20Z"
+      "at": "2026-10-31T09:13:08Z"
     },
     {
       "name": "wire DNS lab.example.invalid type 28",
@@ -550,7 +554,7 @@
       "expected": "record actual controlled resolver answer (management path)",
       "actual": "{\"answers\":0,\"available\":true,\"rcode\":3,\"ttl\":5}",
       "command": "docker exec member probe dns controlled-resolver",
-      "at": "2026-10-31T08:13:20Z"
+      "at": "2026-10-31T09:13:08Z"
     },
     {
       "name": "wire DNS lab.example.invalid type 65",
@@ -558,7 +562,7 @@
       "expected": "record actual controlled resolver answer (management path)",
       "actual": "{\"answers\":0,\"available\":true,\"rcode\":3,\"ttl\":5}",
       "command": "docker exec member probe dns controlled-resolver",
-      "at": "2026-10-31T08:13:20Z"
+      "at": "2026-10-31T09:13:08Z"
     },
     {
       "name": "wire DNS lab.example.invalid type 64",
@@ -566,7 +570,7 @@
       "expected": "record actual controlled resolver answer (management path)",
       "actual": "{\"answers\":0,\"available\":true,\"rcode\":0,\"ttl\":5}",
       "command": "docker exec member probe dns controlled-resolver",
-      "at": "2026-10-31T08:13:20Z"
+      "at": "2026-10-31T09:13:08Z"
     },
     {
       "name": "typed DNS evidence",
@@ -574,7 +578,7 @@
       "expected": "record exact issued-document application, or explicit null",
       "actual": "HTTP=200; decoded=true; specified=true; null=false; present=true; outcome=applied; error_code=; issued_document_matches=true",
       "command": "GET NodeDetail.dns_policy_evidence using generated 1.2.0 type; read issued document",
-      "at": "2026-10-31T08:13:21Z"
+      "at": "2026-10-31T09:13:29Z"
     },
     {
       "name": "issued resolver document mTLS fetch",
@@ -582,7 +586,7 @@
       "expected": "200 canonical bytes match node evidence digest",
       "actual": "HTTP=200; hash_matches=true; bytes=1217",
       "command": "GET /agent/resolver-documents/{issued_id} using actual node mTLS; hash in memory",
-      "at": "2026-10-31T08:13:23Z"
+      "at": "2026-10-31T09:13:31Z"
     },
     {
       "name": "current desired-state DNS selection",
@@ -590,7 +594,7 @@
       "expected": "record response independently of previously issued document",
       "actual": "HTTP=200; code=; ambiguous_active_profiles=false",
       "command": "GET /agent/desired-state via actual mTLS; retain only allowlisted error",
-      "at": "2026-10-31T08:13:25Z"
+      "at": "2026-10-31T09:13:33Z"
     },
     {
       "name": "typed DNS evidence",
@@ -598,7 +602,7 @@
       "expected": "record exact issued-document application, or explicit null",
       "actual": "HTTP=200; decoded=true; specified=true; null=false; present=true; outcome=applied; error_code=; issued_document_matches=true",
       "command": "GET NodeDetail.dns_policy_evidence using generated 1.2.0 type; read issued document",
-      "at": "2026-10-31T08:13:26Z"
+      "at": "2026-10-31T09:13:34Z"
     },
     {
       "name": "issued resolver document mTLS fetch",
@@ -606,7 +610,7 @@
       "expected": "200 canonical bytes match node evidence digest",
       "actual": "HTTP=200; hash_matches=true; bytes=1217",
       "command": "GET /agent/resolver-documents/{issued_id} using actual node mTLS; hash in memory",
-      "at": "2026-10-31T08:13:28Z"
+      "at": "2026-10-31T09:13:36Z"
     },
     {
       "name": "current desired-state DNS selection",
@@ -614,7 +618,7 @@
       "expected": "record response independently of previously issued document",
       "actual": "HTTP=200; code=; ambiguous_active_profiles=false",
       "command": "GET /agent/desired-state via actual mTLS; retain only allowlisted error",
-      "at": "2026-10-31T08:13:30Z"
+      "at": "2026-10-31T09:13:38Z"
     },
     {
       "name": "typed DNS evidence",
@@ -622,7 +626,7 @@
       "expected": "record exact issued-document application, or explicit null",
       "actual": "HTTP=200; decoded=true; specified=true; null=false; present=true; outcome=applied; error_code=; issued_document_matches=true",
       "command": "GET NodeDetail.dns_policy_evidence using generated 1.2.0 type; read issued document",
-      "at": "2026-10-31T08:13:32Z"
+      "at": "2026-10-31T09:13:39Z"
     },
     {
       "name": "issued resolver document mTLS fetch",
@@ -630,7 +634,7 @@
       "expected": "200 canonical bytes match node evidence digest",
       "actual": "HTTP=200; hash_matches=true; bytes=1217",
       "command": "GET /agent/resolver-documents/{issued_id} using actual node mTLS; hash in memory",
-      "at": "2026-10-31T08:13:34Z"
+      "at": "2026-10-31T09:13:41Z"
     },
     {
       "name": "current desired-state DNS selection",
@@ -638,15 +642,23 @@
       "expected": "record response independently of previously issued document",
       "actual": "HTTP=200; code=; ambiguous_active_profiles=false",
       "command": "GET /agent/desired-state via actual mTLS; retain only allowlisted error",
-      "at": "2026-10-31T08:13:36Z"
+      "at": "2026-10-31T09:13:43Z"
     },
     {
       "name": "native two-resolver configuration",
       "status": "pass",
       "expected": "exact issued pair, native enabled, one OS stub, identical applied documents",
-      "actual": "{\"configuration\":{\"observed_native_resolvers\":[\"192.0.4.53:53\",\"192.0.4.54:53\"],\"native_resolvers_match\":true,\"resolvers\":[\"192.0.4.53\",\"192.0.4.54\"],\"native_dns_enabled\":true,\"system_uses_native_stub\":true,\"document_hashes\":[\"cef9ba202217a3c1cd4db702610148d43144f2c2f8764c04891f5918513efbdc\",\"cef9ba202217a3c1cd4db702610148d43144f2c2f8764c04891f5918513efbdc\"],\"same_applied_document\":true,\"configured_at\":\"2026-10-31T08:13:37.980238616Z\"},\"error\":\"\"}",
+      "actual": "{\"configuration\":{\"observed_native_resolvers\":[\"192.0.4.53:53\",\"192.0.4.54:53\"],\"native_resolvers_match\":true,\"resolvers\":[\"192.0.4.53\",\"192.0.4.54\"],\"native_dns_enabled\":true,\"system_uses_native_stub\":true,\"document_hashes\":[\"7d05afc58ccfacd4d087ca8e3aed9cb868ce80c488522d8388bd51660ea61e2b\",\"7d05afc58ccfacd4d087ca8e3aed9cb868ce80c488522d8388bd51660ea61e2b\"],\"same_applied_document\":true,\"configured_at\":\"2026-10-31T09:13:45.526259012Z\"},\"error\":\"\"}",
       "command": "ConfigureNativeDNS; TEST ONLY peer-restricted distribution of production-issued addresses",
-      "at": "2026-10-31T08:13:37Z"
+      "at": "2026-10-31T09:13:45Z"
+    },
+    {
+      "name": "native DNS forwarding readiness",
+      "status": "pass",
+      "expected": "bounded positive lookup after native down/up; preserve startup attempts",
+      "actual": "{\"attempts\":[{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[1],\"ttls\":[5],\"address_classes\":[\"other_ipv4\"],\"expected_answer\":true,\"connected\":false,\"bytes\":0,\"milliseconds\":106}],\"elapsed_ms\":148}",
+      "command": "ProbeNativeDNS startup readiness before one-shot RR matrix",
+      "at": "2026-10-31T09:13:45Z"
     },
     {
       "name": "private fixture listeners",
@@ -654,15 +666,15 @@
       "expected": "ready",
       "actual": "",
       "command": "StartFixtureTargets in owned node namespace",
-      "at": "2026-10-31T08:13:38Z"
+      "at": "2026-10-31T09:13:45Z"
     },
     {
       "name": "RR case 01 TCP=false",
-      "status": "fail",
+      "status": "pass",
       "expected": "recorded RCODE/answer convention",
-      "actual": "{\"actual\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":2,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":5001},\"case\":\"rr\",\"expected_answer\":true,\"expected_rcode\":0,\"rr_type\":1,\"tcp\":false}",
+      "actual": "{\"actual\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[1],\"ttls\":[5],\"address_classes\":[\"other_ipv4\"],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"case\":\"rr\",\"expected_answer\":true,\"expected_rcode\":0,\"rr_type\":1,\"tcp\":false}",
       "command": "ProbeNativeDNS through native OS stub",
-      "at": "2026-10-31T08:13:43Z"
+      "at": "2026-10-31T09:13:45Z"
     },
     {
       "name": "RR case 02 TCP=false",
@@ -670,7 +682,7 @@
       "expected": "recorded RCODE/answer convention",
       "actual": "{\"actual\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[28],\"ttls\":[5],\"address_classes\":[\"other_ipv6\"],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"case\":\"rr\",\"expected_answer\":true,\"expected_rcode\":0,\"rr_type\":28,\"tcp\":false}",
       "command": "ProbeNativeDNS through native OS stub",
-      "at": "2026-10-31T08:13:43Z"
+      "at": "2026-10-31T09:13:45Z"
     },
     {
       "name": "RR case 03 TCP=false",
@@ -678,7 +690,7 @@
       "expected": "recorded RCODE/answer convention",
       "actual": "{\"actual\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[5],\"ttls\":[5],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"case\":\"alias\",\"expected_answer\":true,\"expected_rcode\":0,\"rr_type\":5,\"tcp\":false}",
       "command": "ProbeNativeDNS through native OS stub",
-      "at": "2026-10-31T08:13:43Z"
+      "at": "2026-10-31T09:13:45Z"
     },
     {
       "name": "RR case 04 TCP=false",
@@ -686,7 +698,7 @@
       "expected": "recorded RCODE/answer convention",
       "actual": "{\"actual\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[64],\"ttls\":[5],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"case\":\"service\",\"expected_answer\":true,\"expected_rcode\":0,\"rr_type\":64,\"tcp\":false}",
       "command": "ProbeNativeDNS through native OS stub",
-      "at": "2026-10-31T08:13:43Z"
+      "at": "2026-10-31T09:13:45Z"
     },
     {
       "name": "RR case 05 TCP=false",
@@ -694,7 +706,7 @@
       "expected": "recorded RCODE/answer convention",
       "actual": "{\"actual\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[65],\"ttls\":[5],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"case\":\"service\",\"expected_answer\":true,\"expected_rcode\":0,\"rr_type\":65,\"tcp\":false}",
       "command": "ProbeNativeDNS through native OS stub",
-      "at": "2026-10-31T08:13:43Z"
+      "at": "2026-10-31T09:13:45Z"
     },
     {
       "name": "RR case 06 TCP=false authority control",
@@ -702,7 +714,7 @@
       "expected": "existing upstream RR",
       "actual": "{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[1],\"ttls\":[60],\"address_classes\":[\"other_ipv4\"],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":0}",
       "command": "direct owned authority positive control; no query contents exported",
-      "at": "2026-10-31T08:13:43Z"
+      "at": "2026-10-31T09:13:45Z"
     },
     {
       "name": "RR case 06 TCP=false",
@@ -710,7 +722,7 @@
       "expected": "recorded RCODE/answer convention",
       "actual": "{\"actual\":{\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"case\":\"feed-01\",\"expected_answer\":false,\"expected_rcode\":3,\"rr_type\":1,\"tcp\":false}",
       "command": "ProbeNativeDNS through native OS stub",
-      "at": "2026-10-31T08:13:43Z"
+      "at": "2026-10-31T09:13:46Z"
     },
     {
       "name": "RR case 07 TCP=false authority control",
@@ -718,7 +730,7 @@
       "expected": "existing upstream RR",
       "actual": "{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[28],\"ttls\":[5],\"address_classes\":[\"other_ipv6\"],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":0}",
       "command": "direct owned authority positive control; no query contents exported",
-      "at": "2026-10-31T08:13:43Z"
+      "at": "2026-10-31T09:13:46Z"
     },
     {
       "name": "RR case 07 TCP=false",
@@ -726,7 +738,7 @@
       "expected": "recorded RCODE/answer convention",
       "actual": "{\"actual\":{\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"case\":\"feed-01\",\"expected_answer\":false,\"expected_rcode\":3,\"rr_type\":28,\"tcp\":false}",
       "command": "ProbeNativeDNS through native OS stub",
-      "at": "2026-10-31T08:13:43Z"
+      "at": "2026-10-31T09:13:46Z"
     },
     {
       "name": "RR case 08 TCP=false authority control",
@@ -734,7 +746,7 @@
       "expected": "existing upstream RR",
       "actual": "{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[5],\"ttls\":[5],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":0}",
       "command": "direct owned authority positive control; no query contents exported",
-      "at": "2026-10-31T08:13:43Z"
+      "at": "2026-10-31T09:13:46Z"
     },
     {
       "name": "RR case 08 TCP=false",
@@ -742,7 +754,7 @@
       "expected": "recorded RCODE/answer convention",
       "actual": "{\"actual\":{\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":0,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"case\":\"blocked-cname\",\"expected_answer\":false,\"expected_rcode\":0,\"rr_type\":5,\"tcp\":false}",
       "command": "ProbeNativeDNS through native OS stub",
-      "at": "2026-10-31T08:13:43Z"
+      "at": "2026-10-31T09:13:46Z"
     },
     {
       "name": "RR case 09 TCP=false authority control",
@@ -750,7 +762,7 @@
       "expected": "existing upstream RR",
       "actual": "{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[64],\"ttls\":[5],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":0}",
       "command": "direct owned authority positive control; no query contents exported",
-      "at": "2026-10-31T08:13:43Z"
+      "at": "2026-10-31T09:13:46Z"
     },
     {
       "name": "RR case 09 TCP=false",
@@ -758,7 +770,7 @@
       "expected": "recorded RCODE/answer convention",
       "actual": "{\"actual\":{\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":0,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"case\":\"feed-01\",\"expected_answer\":false,\"expected_rcode\":0,\"rr_type\":64,\"tcp\":false}",
       "command": "ProbeNativeDNS through native OS stub",
-      "at": "2026-10-31T08:13:43Z"
+      "at": "2026-10-31T09:13:46Z"
     },
     {
       "name": "RR case 10 TCP=false authority control",
@@ -766,7 +778,7 @@
       "expected": "existing upstream RR",
       "actual": "{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[65],\"ttls\":[5],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":0}",
       "command": "direct owned authority positive control; no query contents exported",
-      "at": "2026-10-31T08:13:43Z"
+      "at": "2026-10-31T09:13:46Z"
     },
     {
       "name": "RR case 10 TCP=false",
@@ -774,7 +786,7 @@
       "expected": "recorded RCODE/answer convention",
       "actual": "{\"actual\":{\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"case\":\"feed-01\",\"expected_answer\":false,\"expected_rcode\":3,\"rr_type\":65,\"tcp\":false}",
       "command": "ProbeNativeDNS through native OS stub",
-      "at": "2026-10-31T08:13:43Z"
+      "at": "2026-10-31T09:13:46Z"
     },
     {
       "name": "RR case 11 TCP=false authority control",
@@ -782,15 +794,15 @@
       "expected": "existing upstream RR",
       "actual": "{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[5,1],\"ttls\":[5,60],\"address_classes\":[\"other_ipv4\"],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":0}",
       "command": "direct owned authority positive control; no query contents exported",
-      "at": "2026-10-31T08:13:43Z"
+      "at": "2026-10-31T09:13:46Z"
     },
     {
       "name": "RR case 11 TCP=false",
       "status": "pass",
       "expected": "recorded RCODE/answer convention",
-      "actual": "{\"actual\":{\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"case\":\"blocked-alias\",\"expected_answer\":false,\"expected_rcode\":3,\"rr_type\":1,\"tcp\":false}",
+      "actual": "{\"actual\":{\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":2},\"case\":\"blocked-alias\",\"expected_answer\":false,\"expected_rcode\":3,\"rr_type\":1,\"tcp\":false}",
       "command": "ProbeNativeDNS through native OS stub",
-      "at": "2026-10-31T08:13:43Z"
+      "at": "2026-10-31T09:13:46Z"
     },
     {
       "name": "RR case 12 TCP=false authority control",
@@ -798,7 +810,7 @@
       "expected": "existing upstream RR",
       "actual": "{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[1],\"ttls\":[5],\"address_classes\":[\"other_ipv4\"],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":0}",
       "command": "direct owned authority positive control; no query contents exported",
-      "at": "2026-10-31T08:13:43Z"
+      "at": "2026-10-31T09:13:46Z"
     },
     {
       "name": "RR case 12 TCP=false",
@@ -806,63 +818,63 @@
       "expected": "recorded RCODE/answer convention",
       "actual": "{\"actual\":{\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"case\":\"sub\",\"expected_answer\":false,\"expected_rcode\":3,\"rr_type\":1,\"tcp\":false}",
       "command": "ProbeNativeDNS through native OS stub",
-      "at": "2026-10-31T08:13:43Z"
+      "at": "2026-10-31T09:13:46Z"
     },
     {
       "name": "RR case 13 TCP=false",
       "status": "pass",
       "expected": "recorded RCODE/answer convention",
-      "actual": "{\"actual\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[1],\"ttls\":[5],\"address_classes\":[\"other_ipv4\"],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":2},\"case\":\"notfeed-01\",\"expected_answer\":true,\"expected_rcode\":0,\"rr_type\":1,\"tcp\":false}",
+      "actual": "{\"actual\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[1],\"ttls\":[5],\"address_classes\":[\"other_ipv4\"],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"case\":\"notfeed-01\",\"expected_answer\":true,\"expected_rcode\":0,\"rr_type\":1,\"tcp\":false}",
       "command": "ProbeNativeDNS through native OS stub",
-      "at": "2026-10-31T08:13:43Z"
+      "at": "2026-10-31T09:13:46Z"
     },
     {
       "name": "RR case 14 TCP=false",
       "status": "pass",
       "expected": "recorded RCODE/answer convention",
-      "actual": "{\"actual\":{\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":2},\"case\":\"absent\",\"expected_answer\":false,\"expected_rcode\":3,\"rr_type\":1,\"tcp\":false}",
+      "actual": "{\"actual\":{\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":5},\"case\":\"absent\",\"expected_answer\":false,\"expected_rcode\":3,\"rr_type\":1,\"tcp\":false}",
       "command": "ProbeNativeDNS through native OS stub",
-      "at": "2026-10-31T08:13:43Z"
+      "at": "2026-10-31T09:13:46Z"
     },
     {
       "name": "RR case 01 TCP=true",
       "status": "pass",
       "expected": "recorded RCODE/answer convention",
-      "actual": "{\"actual\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[1],\"ttls\":[5],\"address_classes\":[\"other_ipv4\"],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"case\":\"rr\",\"expected_answer\":true,\"expected_rcode\":0,\"rr_type\":1,\"tcp\":true}",
+      "actual": "{\"actual\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[1],\"ttls\":[4],\"address_classes\":[\"other_ipv4\"],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"case\":\"rr\",\"expected_answer\":true,\"expected_rcode\":0,\"rr_type\":1,\"tcp\":true}",
       "command": "ProbeNativeDNS through native OS stub",
-      "at": "2026-10-31T08:13:43Z"
+      "at": "2026-10-31T09:13:46Z"
     },
     {
       "name": "RR case 02 TCP=true",
       "status": "pass",
       "expected": "recorded RCODE/answer convention",
-      "actual": "{\"actual\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[28],\"ttls\":[5],\"address_classes\":[\"other_ipv6\"],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":3},\"case\":\"rr\",\"expected_answer\":true,\"expected_rcode\":0,\"rr_type\":28,\"tcp\":true}",
+      "actual": "{\"actual\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[28],\"ttls\":[4],\"address_classes\":[\"other_ipv6\"],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":8},\"case\":\"rr\",\"expected_answer\":true,\"expected_rcode\":0,\"rr_type\":28,\"tcp\":true}",
       "command": "ProbeNativeDNS through native OS stub",
-      "at": "2026-10-31T08:13:43Z"
+      "at": "2026-10-31T09:13:46Z"
     },
     {
       "name": "RR case 03 TCP=true",
       "status": "pass",
       "expected": "recorded RCODE/answer convention",
-      "actual": "{\"actual\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[5],\"ttls\":[5],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"case\":\"alias\",\"expected_answer\":true,\"expected_rcode\":0,\"rr_type\":5,\"tcp\":true}",
+      "actual": "{\"actual\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[5],\"ttls\":[4],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"case\":\"alias\",\"expected_answer\":true,\"expected_rcode\":0,\"rr_type\":5,\"tcp\":true}",
       "command": "ProbeNativeDNS through native OS stub",
-      "at": "2026-10-31T08:13:43Z"
+      "at": "2026-10-31T09:13:46Z"
     },
     {
       "name": "RR case 04 TCP=true",
       "status": "pass",
       "expected": "recorded RCODE/answer convention",
-      "actual": "{\"actual\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[64],\"ttls\":[5],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"case\":\"service\",\"expected_answer\":true,\"expected_rcode\":0,\"rr_type\":64,\"tcp\":true}",
+      "actual": "{\"actual\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[64],\"ttls\":[4],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"case\":\"service\",\"expected_answer\":true,\"expected_rcode\":0,\"rr_type\":64,\"tcp\":true}",
       "command": "ProbeNativeDNS through native OS stub",
-      "at": "2026-10-31T08:13:43Z"
+      "at": "2026-10-31T09:13:46Z"
     },
     {
       "name": "RR case 05 TCP=true",
       "status": "pass",
       "expected": "recorded RCODE/answer convention",
-      "actual": "{\"actual\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[65],\"ttls\":[4],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":2},\"case\":\"service\",\"expected_answer\":true,\"expected_rcode\":0,\"rr_type\":65,\"tcp\":true}",
+      "actual": "{\"actual\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[65],\"ttls\":[4],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"case\":\"service\",\"expected_answer\":true,\"expected_rcode\":0,\"rr_type\":65,\"tcp\":true}",
       "command": "ProbeNativeDNS through native OS stub",
-      "at": "2026-10-31T08:13:44Z"
+      "at": "2026-10-31T09:13:46Z"
     },
     {
       "name": "RR case 06 TCP=true authority control",
@@ -870,15 +882,15 @@
       "expected": "existing upstream RR",
       "actual": "{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[1],\"ttls\":[60],\"address_classes\":[\"other_ipv4\"],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":0}",
       "command": "direct owned authority positive control; no query contents exported",
-      "at": "2026-10-31T08:13:44Z"
+      "at": "2026-10-31T09:13:46Z"
     },
     {
       "name": "RR case 06 TCP=true",
       "status": "pass",
       "expected": "recorded RCODE/answer convention",
-      "actual": "{\"actual\":{\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"case\":\"feed-01\",\"expected_answer\":false,\"expected_rcode\":3,\"rr_type\":1,\"tcp\":true}",
+      "actual": "{\"actual\":{\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":4},\"case\":\"feed-01\",\"expected_answer\":false,\"expected_rcode\":3,\"rr_type\":1,\"tcp\":true}",
       "command": "ProbeNativeDNS through native OS stub",
-      "at": "2026-10-31T08:13:44Z"
+      "at": "2026-10-31T09:13:46Z"
     },
     {
       "name": "RR case 07 TCP=true authority control",
@@ -886,15 +898,15 @@
       "expected": "existing upstream RR",
       "actual": "{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[28],\"ttls\":[5],\"address_classes\":[\"other_ipv6\"],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":0}",
       "command": "direct owned authority positive control; no query contents exported",
-      "at": "2026-10-31T08:13:44Z"
+      "at": "2026-10-31T09:13:46Z"
     },
     {
       "name": "RR case 07 TCP=true",
       "status": "pass",
       "expected": "recorded RCODE/answer convention",
-      "actual": "{\"actual\":{\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":2},\"case\":\"feed-01\",\"expected_answer\":false,\"expected_rcode\":3,\"rr_type\":28,\"tcp\":true}",
+      "actual": "{\"actual\":{\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"case\":\"feed-01\",\"expected_answer\":false,\"expected_rcode\":3,\"rr_type\":28,\"tcp\":true}",
       "command": "ProbeNativeDNS through native OS stub",
-      "at": "2026-10-31T08:13:44Z"
+      "at": "2026-10-31T09:13:46Z"
     },
     {
       "name": "RR case 08 TCP=true authority control",
@@ -902,7 +914,7 @@
       "expected": "existing upstream RR",
       "actual": "{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[5],\"ttls\":[5],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":0}",
       "command": "direct owned authority positive control; no query contents exported",
-      "at": "2026-10-31T08:13:44Z"
+      "at": "2026-10-31T09:13:46Z"
     },
     {
       "name": "RR case 08 TCP=true",
@@ -910,7 +922,7 @@
       "expected": "recorded RCODE/answer convention",
       "actual": "{\"actual\":{\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":0,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"case\":\"blocked-cname\",\"expected_answer\":false,\"expected_rcode\":0,\"rr_type\":5,\"tcp\":true}",
       "command": "ProbeNativeDNS through native OS stub",
-      "at": "2026-10-31T08:13:44Z"
+      "at": "2026-10-31T09:13:46Z"
     },
     {
       "name": "RR case 09 TCP=true authority control",
@@ -918,15 +930,15 @@
       "expected": "existing upstream RR",
       "actual": "{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[64],\"ttls\":[5],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":0}",
       "command": "direct owned authority positive control; no query contents exported",
-      "at": "2026-10-31T08:13:44Z"
+      "at": "2026-10-31T09:13:46Z"
     },
     {
       "name": "RR case 09 TCP=true",
       "status": "pass",
       "expected": "recorded RCODE/answer convention",
-      "actual": "{\"actual\":{\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":0,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"case\":\"feed-01\",\"expected_answer\":false,\"expected_rcode\":0,\"rr_type\":64,\"tcp\":true}",
+      "actual": "{\"actual\":{\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":0,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":3},\"case\":\"feed-01\",\"expected_answer\":false,\"expected_rcode\":0,\"rr_type\":64,\"tcp\":true}",
       "command": "ProbeNativeDNS through native OS stub",
-      "at": "2026-10-31T08:13:44Z"
+      "at": "2026-10-31T09:13:46Z"
     },
     {
       "name": "RR case 10 TCP=true authority control",
@@ -934,15 +946,15 @@
       "expected": "existing upstream RR",
       "actual": "{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[65],\"ttls\":[5],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":0}",
       "command": "direct owned authority positive control; no query contents exported",
-      "at": "2026-10-31T08:13:44Z"
+      "at": "2026-10-31T09:13:47Z"
     },
     {
       "name": "RR case 10 TCP=true",
       "status": "pass",
       "expected": "recorded RCODE/answer convention",
-      "actual": "{\"actual\":{\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":3},\"case\":\"feed-01\",\"expected_answer\":false,\"expected_rcode\":3,\"rr_type\":65,\"tcp\":true}",
+      "actual": "{\"actual\":{\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"case\":\"feed-01\",\"expected_answer\":false,\"expected_rcode\":3,\"rr_type\":65,\"tcp\":true}",
       "command": "ProbeNativeDNS through native OS stub",
-      "at": "2026-10-31T08:13:44Z"
+      "at": "2026-10-31T09:13:47Z"
     },
     {
       "name": "RR case 11 TCP=true authority control",
@@ -950,15 +962,15 @@
       "expected": "existing upstream RR",
       "actual": "{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[5,1],\"ttls\":[5,60],\"address_classes\":[\"other_ipv4\"],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":0}",
       "command": "direct owned authority positive control; no query contents exported",
-      "at": "2026-10-31T08:13:44Z"
+      "at": "2026-10-31T09:13:47Z"
     },
     {
       "name": "RR case 11 TCP=true",
       "status": "pass",
       "expected": "recorded RCODE/answer convention",
-      "actual": "{\"actual\":{\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"case\":\"blocked-alias\",\"expected_answer\":false,\"expected_rcode\":3,\"rr_type\":1,\"tcp\":true}",
+      "actual": "{\"actual\":{\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":5},\"case\":\"blocked-alias\",\"expected_answer\":false,\"expected_rcode\":3,\"rr_type\":1,\"tcp\":true}",
       "command": "ProbeNativeDNS through native OS stub",
-      "at": "2026-10-31T08:13:44Z"
+      "at": "2026-10-31T09:13:47Z"
     },
     {
       "name": "RR case 12 TCP=true authority control",
@@ -966,23 +978,23 @@
       "expected": "existing upstream RR",
       "actual": "{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[1],\"ttls\":[5],\"address_classes\":[\"other_ipv4\"],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":0}",
       "command": "direct owned authority positive control; no query contents exported",
-      "at": "2026-10-31T08:13:44Z"
+      "at": "2026-10-31T09:13:47Z"
     },
     {
       "name": "RR case 12 TCP=true",
       "status": "pass",
       "expected": "recorded RCODE/answer convention",
-      "actual": "{\"actual\":{\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"case\":\"sub\",\"expected_answer\":false,\"expected_rcode\":3,\"rr_type\":1,\"tcp\":true}",
+      "actual": "{\"actual\":{\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":2},\"case\":\"sub\",\"expected_answer\":false,\"expected_rcode\":3,\"rr_type\":1,\"tcp\":true}",
       "command": "ProbeNativeDNS through native OS stub",
-      "at": "2026-10-31T08:13:44Z"
+      "at": "2026-10-31T09:13:47Z"
     },
     {
       "name": "RR case 13 TCP=true",
       "status": "pass",
       "expected": "recorded RCODE/answer convention",
-      "actual": "{\"actual\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[1],\"ttls\":[4],\"address_classes\":[\"other_ipv4\"],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":2},\"case\":\"notfeed-01\",\"expected_answer\":true,\"expected_rcode\":0,\"rr_type\":1,\"tcp\":true}",
+      "actual": "{\"actual\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[1],\"ttls\":[4],\"address_classes\":[\"other_ipv4\"],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"case\":\"notfeed-01\",\"expected_answer\":true,\"expected_rcode\":0,\"rr_type\":1,\"tcp\":true}",
       "command": "ProbeNativeDNS through native OS stub",
-      "at": "2026-10-31T08:13:44Z"
+      "at": "2026-10-31T09:13:47Z"
     },
     {
       "name": "RR case 14 TCP=true",
@@ -990,7 +1002,7 @@
       "expected": "recorded RCODE/answer convention",
       "actual": "{\"actual\":{\"authority_ttl\":4,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"case\":\"absent\",\"expected_answer\":false,\"expected_rcode\":3,\"rr_type\":1,\"tcp\":true}",
       "command": "ProbeNativeDNS through native OS stub",
-      "at": "2026-10-31T08:13:44Z"
+      "at": "2026-10-31T09:13:47Z"
     },
     {
       "name": "native case/dot normalization",
@@ -998,55 +1010,55 @@
       "expected": "NXDOMAIN, no answer",
       "actual": "{\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1}",
       "command": "ProbeNativeDNS mixed case/trailing dot synthetic blocked name",
-      "at": "2026-10-31T08:13:44Z"
+      "at": "2026-10-31T09:13:47Z"
     },
     {
       "name": "native case/dot normalization",
       "status": "pass",
       "expected": "NXDOMAIN, no answer",
-      "actual": "{\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1}",
+      "actual": "{\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":2}",
       "command": "ProbeNativeDNS mixed case/trailing dot synthetic blocked name",
-      "at": "2026-10-31T08:13:44Z"
+      "at": "2026-10-31T09:13:47Z"
     },
     {
       "name": "cache initial",
       "status": "pass",
       "expected": "positive TTL \u003c=10, negative SOA TTL \u003c=5",
-      "actual": "{\"negative\":{\"authority_ttl\":4,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"positive\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[1],\"ttls\":[10],\"address_classes\":[\"other_ipv4\"],\"expected_answer\":true,\"connected\":false,\"bytes\":0,\"milliseconds\":1}}",
+      "actual": "{\"negative\":{\"authority_ttl\":4,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":3},\"positive\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[1],\"ttls\":[10],\"address_classes\":[\"other_ipv4\"],\"expected_answer\":true,\"connected\":false,\"bytes\":0,\"milliseconds\":1}}",
       "command": "native DNS before authority-only change",
-      "at": "2026-10-31T08:13:44Z"
+      "at": "2026-10-31T09:13:47Z"
     },
     {
       "name": "changed authority",
       "status": "pass",
       "expected": "new answer while caches untouched",
-      "actual": "{\"authority\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[1],\"ttls\":[10],\"address_classes\":[\"private_ipv4\"],\"expected_answer\":true,\"connected\":false,\"bytes\":0,\"milliseconds\":0},\"changed_at\":\"2026-10-31T08:13:44.755059524Z\"}",
+      "actual": "{\"authority\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[1],\"ttls\":[10],\"address_classes\":[\"private_ipv4\"],\"expected_answer\":true,\"connected\":false,\"bytes\":0,\"milliseconds\":0},\"changed_at\":\"2026-10-31T09:13:47.453506563Z\"}",
       "command": "SetDNSFixturePhase(private); query authority until new serial visible",
-      "at": "2026-10-31T08:13:45Z"
+      "at": "2026-10-31T09:13:48Z"
     },
     {
       "name": "positive/negative cache before TTL",
       "status": "pass",
       "expected": "old positive and NXDOMAIN persist with remaining TTL",
-      "actual": "{\"negative\":{\"authority_ttl\":3,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"observed_at\":\"2026-10-31T08:13:45.894615977Z\",\"positive\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[1],\"ttls\":[9],\"address_classes\":[\"other_ipv4\"],\"expected_answer\":true,\"connected\":false,\"bytes\":0,\"milliseconds\":1}}",
+      "actual": "{\"negative\":{\"authority_ttl\":3,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"observed_at\":\"2026-10-31T09:13:48.592018339Z\",\"positive\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[1],\"ttls\":[9],\"address_classes\":[\"other_ipv4\"],\"expected_answer\":true,\"connected\":false,\"bytes\":0,\"milliseconds\":4}}",
       "command": "ProbeNativeDNS without flushing either cache",
-      "at": "2026-10-31T08:13:45Z"
+      "at": "2026-10-31T09:13:48Z"
     },
     {
       "name": "positive/negative cache after TTL",
       "status": "pass",
       "expected": "both new authority answers visible",
-      "actual": "{\"formerly_negative\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[1],\"ttls\":[5],\"address_classes\":[\"other_ipv4\"],\"expected_answer\":true,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"observed_at\":\"2026-10-31T08:13:57.992747615Z\",\"positive\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[1],\"ttls\":[10],\"address_classes\":[\"private_ipv4\"],\"expected_answer\":true,\"connected\":false,\"bytes\":0,\"milliseconds\":1}}",
+      "actual": "{\"formerly_negative\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[1],\"ttls\":[5],\"address_classes\":[\"other_ipv4\"],\"expected_answer\":true,\"connected\":false,\"bytes\":0,\"milliseconds\":4},\"observed_at\":\"2026-10-31T09:14:00.694111788Z\",\"positive\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[1],\"ttls\":[10],\"address_classes\":[\"private_ipv4\"],\"expected_answer\":true,\"connected\":false,\"bytes\":0,\"milliseconds\":3}}",
       "command": "ProbeNativeDNS after real TTL elapses",
-      "at": "2026-10-31T08:13:57Z"
+      "at": "2026-10-31T09:14:00Z"
     },
     {
       "name": "allowlisted private rebinding type 1",
       "status": "pass",
       "expected": "private DNS answer; node listener works; member connection fails",
-      "actual": "{\"answer\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[1],\"ttls\":[1],\"address_classes\":[\"private_ipv4\"],\"expected_answer\":true,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"member\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":-1,\"types\":[],\"ttls\":[],\"address_classes\":[\"private_ipv4\",\"private_ipv6\"],\"expected_answer\":true,\"connected\":false,\"bytes\":0,\"milliseconds\":12011},\"node_control\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":-1,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":true,\"bytes\":0,\"milliseconds\":0}}",
+      "actual": "{\"answer\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[1],\"ttls\":[2],\"address_classes\":[\"private_ipv4\"],\"expected_answer\":true,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"member\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":-1,\"types\":[],\"ttls\":[],\"address_classes\":[\"private_ipv4\",\"private_ipv6\"],\"expected_answer\":true,\"connected\":false,\"bytes\":0,\"milliseconds\":12006},\"node_control\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":-1,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":true,\"bytes\":0,\"milliseconds\":0}}",
       "command": "native DNS private phase; independent node listener and member connection",
-      "at": "2026-10-31T08:14:22Z"
+      "at": "2026-10-31T09:14:24Z"
     },
     {
       "name": "allowlisted private rebinding type 28",
@@ -1054,7 +1066,7 @@
       "expected": "private DNS answer; node listener works; member connection fails",
       "actual": "{\"answer\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[28],\"ttls\":[5],\"address_classes\":[\"private_ipv6\"],\"expected_answer\":true,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"member\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":false,\"rcode\":-1,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":0,\"error\":\"connect_unavailable\"},\"node_control\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":-1,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":true,\"bytes\":0,\"milliseconds\":0}}",
       "command": "native DNS private phase; independent node listener and member connection",
-      "at": "2026-10-31T08:14:22Z"
+      "at": "2026-10-31T09:14:24Z"
     }
   ],
   "blockers": [

@@ -1,25 +1,24 @@
-# Follow-up 7 acceptance results
+# Follow-up 8 acceptance results
 
-Run `297faa31-2f90-4aab-8cf0-6818629f46c8` on `w4-members / 24000`, product baseline `d9e28f8` (includes #240, #244 and D-081 erratum #247), harness `10a5f3891aa8fde2d3a2f158d97bfcb0a4c7670b`.
-**3 complete cases passed; 7 blocked; 0 failed.** Executed subchecks: 471 pass / 0 fail. These claims use only this final run; the interrupted [fixture failure](history/follow-up-7/attempt-1/RUN.md) and [meter-sequence collision](history/follow-up-7/attempt-2/RUN.md) are retained separately.
+Run `69f92f49-73dc-4779-8101-dfb6a802a96b`, harness `d79accd9c693aed83713072c925b3b5005b5684c`, product baseline `6848add` (#284), assigned `w4-members / 24000`. **3 complete cases passed; 6 blocked; 1 failed.** Subchecks: 558 pass / 5 blocked / 4 fail. Each complete-case status retains its failures and external blockers.
 
-| Case | Requirements | Status | Subchecks pass / fail | Deciding observation |
-|---|---|---|---:|---|
-| [AT01](AT01.json) | APP01 ID01 MEM01 | subchecks pass / blocked on F4-03 | 18 / 0 | Portal/native identity and Linux counted forwarding before/after pause; four native platforms and network moves remain. |
-| [AT02](AT02.json) | MEM01 MEM02 MEM03 SEC01 DATA01 | pass | 106 / 0 | One final-slot winner; 3→2→3 slot reuse; revoked fvmb0 injection hits ctunku while sibling is counted. D-077 fence/list/cursor/re-grant/replay and D-081 limit denial are recorded separately. |
-| [AT03](AT03.json) | BILL01 BILL03 ENT01 DATA01 | pass | 93 / 0 | Ten identical paid deliveries and six event orders preserve one exact paid interval; paid native device is counted before fencing and after explicit HTTP re-grant. |
-| [AT04](AT04.json) | BILL02 ENT02 MEM03 | subchecks pass / blocked on F4-03/04 | 86 / 0 | Refund, real expiry and suspension terminate persistent TCP on both exits and deny new flows; member UDP and rendered suspended/expired states remain. |
-| [AT05](AT05.json) | NODE01 NODE04 ENR01 ENR04 PKG01 | subchecks pass / blocked on F4-10 | 30 / 0 | Installer enrollment/replay and signed architecture artifacts pass; preinstalled/cloud-init boot sources and physical arm64 remain. |
-| [AT08](AT08.json) | NODE02 NODE03 EXIT01 EXIT03 | pass | 39 / 0 | A/B group isolation, disabled restart and republish carry operation readback and actual traffic evidence. |
-| [AT09](AT09.json) | EXIT02 APP01 NFR01 | subchecks pass / blocked on F4-03 | 27 / 0 | D-067 same-generation restart: 36.997 s to serving-ready, 41.729 s to first counted byte; forced relay/QUIC/PMTU and physical second NAT remain. |
-| [AT20](AT20.json) | DNS01 DNS02 ISO04 | subchecks pass / blocked on F4-05/07 | 26 / 0 | Typed resolver delivery and controlled rule answers pass; native DNS configuration and complete RR/cache/rebinding fixtures remain. |
-| [AT21](AT21.json) | DNS03 DNS04 APP01 | subchecks pass / blocked on F4-05 | 14 / 0 | Resolver corruption/last-good recovery and two explicit filtering resolver endpoints pass; native automatic fallback and Private DNS/DoH require operator coverage. |
-| [AT22](AT22.json) | SEC02 DNS01 DNS04 | subchecks pass / blocked on F4-06 | 32 / 0 | Privacy scans, guarded audit retention and scheduled feed last-good subsets pass; remaining retention/file/backup/URL surfaces and commercial-feed approval remain. |
+| Case | Requirements / spec | Status | Subchecks pass / blocked / fail |
+|---|---|---|---:|
+| [AT01](AT01.json) | §19.1; §19 AT01; APP01 ID01 MEM01 | blocked | 18 / 0 / 0 |
+| [AT02](AT02.json) | §19.1; §19 AT02; MEM01 MEM02 MEM03 SEC01 | pass | 122 / 0 / 0 |
+| [AT03](AT03.json) | §19.1; §19 AT03; BILL01 BILL03 ENT01 | pass | 92 / 0 / 0 |
+| [AT04](AT04.json) | §19.1; §19 AT04; BILL02 ENT02 MEM03 | blocked | 99 / 0 / 0 |
+| [AT05](AT05.json) | §19.1; §19 AT05; NODE01 NODE04 ENR01 ENR04 PKG01 | blocked | 30 / 0 / 0 |
+| [AT08](AT08.json) | §19.1; §19 AT08; NODE02 NODE03 EXIT01 EXIT03 | pass | 31 / 0 / 0 |
+| [AT09](AT09.json) | §19.1; §19 AT09; EXIT02 APP01 NFR01 | fail | 34 / 5 / 4 |
+| [AT20](AT20.json) | §19.1; §19 AT20; DNS01 DNS02 ISO04 | blocked | 81 / 0 / 0 |
+| [AT21](AT21.json) | §19.1; §19 AT21; DNS03 DNS04 APP01 | blocked | 12 / 0 / 0 |
+| [AT22](AT22.json) | §19.1; §19 AT22; SEC02 DNS01 DNS04 | blocked | 39 / 0 / 0 |
 
-[D-077](D077.md) records every HTTP status, operation identity, fence count and wire body location. Successful 202 responses are confirmed by worker device-list readback and counted forwarding. The fence input is explicit SQL in the isolated lab database, matching migration 00188; other business state is produced through the product.
+The finite grant hook performs an immediate 3/0 → 2/1 downgrade and a 3/0 restoration. Genuine deadline expiry is a separate measured transition to 0/3 because this member has no fallback entitlement. [AT02-TRACE.md](AT02-TRACE.md) indexes the evidence; the scheduled 3→2 interpretation remains a spec question.
 
-AT09's `serving_ready_at` is `2026-10-31T04:27:04.060261733Z`: **36.997 s**, versus follow-up 6's **36.976 s** (+0.021 s). The first counted byte is at `2026-10-31T04:27:08.792505245Z` (41.729 s). Desired generation remains `24`. The provisional observation check records `awaiting_member_grants`, one lease-stage `AWAITING_MEMBER_GRANTS`, and absence of `lease_expired`. Full AT09 remains blocked on F4-03; this measured lab recovery is not a transport or hardware guarantee.
+AT09 records the selected exit family before and after each 64,064-byte transfer, upload/download counters, MTU 1500/1280, and explicit unavailable declarations for QUIC and four non-Linux platforms. AT20–AT22 use the native OS stub and exact two-resolver list, with TEST ONLY distribution. Direct blocked CNAME/SVCB are empty NODATA; other blocked types are NXDOMAIN. Every RR case retains RCODE, SOA TTL and answer types.
 
-The worker RestartPolicy note is closed: this run observes `unless-stopped` for worker/control/NetBird and no longer manually starts the worker during scheduled feed refresh. F4-03/04/05/06/07/10 remain external blockers. See [requests.md](requests.md), [BLOCKERS.md](BLOCKERS.md), [RUN.md](RUN.md) and [OPERATORS.md](OPERATORS.md).
+**AT09 failures:** second exit fresh serving after restart; D-067 revision 11 provisional lease observation; same-generation D-067 restart recovery and lease sequence; native dual MTU 1280 transfer.
 
-Follow-up 6 is preserved under [history/follow-up-6](history/follow-up-6/RUN.md). Native platform, physical arm64 and second-NAT rows remain **needs operator run**.
+[BLOCKERS.md](BLOCKERS.md) rechecks F4-03 through F4-10 against landed PRs. [requests.md](requests.md) records owner actions and unresolved definitions. [RUN.md](RUN.md) contains actual gate exits and output tails. Follow-up 7 final run `297faa31` is [archived byte-identically](history/follow-up-7/RUN.md), with [SHA256SUMS](history/follow-up-7/SHA256SUMS). [Diagnostic attempt 1](history/follow-up-8/attempt-1/RUN.md) is preserved separately and supplies no current pass claim.

@@ -84,3 +84,38 @@ preserves fail-closed containment and eventually regains serving after the
 native link is ready. No state clearing, fabricated ACK, forced generation or
 agent repair was used in this member case. The final rerun retains the same
 assertion; its result is authoritative for reproducibility.
+
+### Final run result — F8-01 reproduced
+
+Authoritative run `69f92f49-73dc-4779-8101-dfb6a802a96b`, harness
+`d79accd9c693aed83713072c925b3b5005b5684c`, same product baseline `6848add`.
+The second namespace restarted at `2026-10-31T09:21:57.624783604Z`; desired and
+applied generation stayed `30`, but serving did not return within 90 seconds
+and there was no first counted byte. `TC_FOREIGN_FILTER`,
+`AWAITING_MEMBER_GRANTS` and `HEALTH_CHECK_FAILED` recur in the retained
+observations. AT08's primary node-only restart passed. Three AT09 restart
+assertions fail; they are not demoted to blocked. The namespace fault ran after
+AT20–AT22, whose executed checks all passed.
+
+### F8-02 — MTU 1280 bulk transfer incomplete
+
+Owners: **w3-devstack-e2e and native transport/netlab**, with **w3-wire-nodes**
+for enforcement-path diagnosis. In the same final run, `ApplyNativeInputs`
+accepted dual underlay / MTU 1280; the member was taken down/up and its selected
+exit was connected via direct IPv4 before and after the bounded transfer.
+The fixture received only **11,011 / 64,064 bytes** after **12,011 ms**, with
+`bulk_echo_incomplete`. Device upload/download increased by **66,296 / 45,963
+bytes**. The earlier three 1500 rows returned all 64,064 bytes (IPv4 → IPv4,
+IPv6 → IPv6 and dual → IPv6). Exact input, path and counters are in AT09.json
+and [NATIVE.md](NATIVE.md).
+
+Please determine the MTU/MSS/echo-path cause and provide a repeatable supported
+fixture. A completed transfer in the diagnostic attempt or devstack's own run
+does not pass this failed row. No retry, counter reset or product change was used to turn this row into a
+pass. The combined members matrix reconnects NetBird before each family/MTU
+row; devstack's standalone MTU scenario retains the existing native session.
+This difference and the observed IPv6-to-IPv4 path choice are reproduction
+inputs, not a proven root cause. The following independent relay row restores
+MTU 1500 first. Forced relay (two relayed, zero
+direct peers), direct restoration (zero relayed, two direct peers), and TCP/UDP
+continuity on the same sockets subsequently passed.
