@@ -775,6 +775,12 @@ func (p *liveProbe) finish() {
 		rows.Close()
 	}
 	scan("audit_events", audit.Bytes(), err)
+	if os.Getenv("FVPN_SECOPS_FOLLOWUP10") == "1" {
+		// Public evidence captures (including API bodies and nft read-back) are
+		// ordinary artifacts under D-066. Never emit their contents on failure.
+		captured, captureErr := json.Marshal(p.metadata)
+		scan("public evidence capture", captured, captureErr)
+	}
 	p.metadata["audit_rows_scanned"] = count
 	p.metadata["secret_scan"] = streams
 	p.metadata["known_secret_canaries"] = len(p.secrets)
