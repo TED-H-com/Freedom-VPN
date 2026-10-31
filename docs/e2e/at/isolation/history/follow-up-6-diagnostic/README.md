@@ -5,3 +5,5 @@ Run `82eac082-27a1-4526-b1a4-ae05246824b2`, harness `5ddd1126ff1ea72799384b9543f
 501 convergence samples, median spacing 250.013 ms, maximum 1448.474 ms. Zero desired-bindings-positive / same-generation / grant-less samples, zero accepted AWAITING_MEMBER_GRANTS bootstrap reports. Product observation tc is absent; the mechanism tc section is preserved verbatim.
 
 The disable helper stopped at `partially_succeeded` and restored publication before agent withdrawal confirmation. Operation `1315dee2-57f7-4c75-a019-703b484ef80c`: central route withdrawal succeeded but agent policy was unconfirmed. `disable-operation-evidence.json` retains the steps and related observation IDs. The owned wait now lets observation-driven completion arrive before restoring the intent. A sampler evaluation edge case was also tightened so repeated populated samples cannot multiply two provisional reads into three. Current root records come from the subsequent full run; these diagnostic records were not reclassified.
+
+The convergence timeline is whitespace-normalized to one sample per line; every captured JSON value is unchanged.

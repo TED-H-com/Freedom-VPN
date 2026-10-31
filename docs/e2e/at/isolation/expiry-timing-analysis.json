@@ -1,0 +1,35 @@
+{
+  "run_id": "bf671f3a-c6ac-4824-9107-425c4c5a5f02",
+  "build": "e711ebd822eda2ea1b5ba10b187818fda6777a74",
+  "case": "AT13",
+  "check": "short whole-node lease expiry",
+  "status": "fail",
+  "signed_node_lease": {
+    "issued_at": "2026-10-31T05:00:28.561634193Z",
+    "expires_at": "2026-10-31T05:01:28.561634193Z",
+    "generation": "29",
+    "max_offline_seconds": 60,
+    "member_count": 2,
+    "source": "node-store"
+  },
+  "observations": {
+    "forward_after_control_loss": "route=192.0.6.10 dev fvnb0 table netbird src 100.89.202.109 uid 0 \n    cache; wget_ok=true; bytes=47750->50370; body=ok",
+    "forward_near_deadline": "route=192.0.6.10 dev fvnb0 table netbird src 100.89.202.109 uid 0 \n    cache; wget_ok=false; bytes=50370->50370; body=",
+    "baseline_at": "2026-10-31T05:01:28.675726567Z",
+    "early_baseline_at": "2026-10-31T05:01:27.784897861Z",
+    "heartbeat_after_deadline": "v1\nboot_id 875c4234-3f2a-44b8-a6ff-80b6aed61dc1\nmono_ns 6418594617827\nwall_unix_ns 1793422881078247388\npolicy_expires_mono_ns 6426074094741\nbaseline_ok 1\nserving 1\ngeneration 29\nreason serving",
+    "post_deadline_forward": "result=timeout; route=192.0.6.10 dev fvnb0 table netbird src 100.89.202.109 uid 0 \n    cache; flat=true; bytes=50370->50370"
+  },
+  "derived": {
+    "early_baseline_label_before_signed_deadline_ms": 776.737,
+    "heartbeat_monotonic_deadline_as_wall_unix_ns": "1793422888557724302",
+    "formula": "wall_unix_ns + policy_expires_mono_ns - mono_ns"
+  },
+  "limits": [
+    "The baseline label is sampled before forwardChain reads the kernel, and the read completion time was not retained. It is not an exact transition timestamp.",
+    "The near-deadline request started after waiting until expires_at minus 4 seconds, but its start/end timestamps and packet trace were not recorded.",
+    "The heartbeat is the last available local heartbeat; its wall timestamp precedes the signed deadline. It is not a fresh post-deadline heartbeat despite the observation name.",
+    "Control was stopped, so no central observation ID for the expiry transition exists in this record.",
+    "The signed deadline and conservative monotonic allowance must be reconciled before treating the early label as a product contract violation. No post-deadline forwarding was observed."
+  ]
+}

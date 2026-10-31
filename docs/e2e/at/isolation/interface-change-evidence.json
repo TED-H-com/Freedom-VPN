@@ -1,0 +1,262 @@
+{
+  "run_id": "bf671f3a-c6ac-4824-9107-425c4c5a5f02",
+  "build": "e711ebd822eda2ea1b5ba10b187818fda6777a74",
+  "heartbeat": "v1\nboot_id 93928128-8d4e-43a5-a441-9e414f400f88\nmono_ns 5411809209980\nwall_unix_ns 1793421874292839538\npolicy_expires_mono_ns 0\nbaseline_ok 1\nserving 0\ngeneration 12\nreason safety_check_failed\n",
+  "reports": [
+    {
+      "errors": [],
+      "safety": "passed",
+      "reasons": [],
+      "report_id": "01a19042-1003-7c5a-947e-25e9d12d2a3e",
+      "forwarding": true,
+      "generation": "12",
+      "observed_at": "2026-10-31T04:40:11.011806586Z",
+      "provisioning": "ready",
+      "observation_id": "ba8de18a-4c23-4d6b-8151-75d5efdd2853"
+    },
+    {
+      "errors": [],
+      "safety": "passed",
+      "reasons": [],
+      "report_id": "01a19042-8769-7b69-a8d6-5f5699307d3a",
+      "forwarding": true,
+      "generation": "12",
+      "observed_at": "2026-10-31T04:40:41.57774568Z",
+      "provisioning": "ready",
+      "observation_id": "266f39d4-7e14-4b21-89cf-c090c72ca546"
+    },
+    {
+      "errors": [
+        {
+          "code": "HEALTH_CHECK_FAILED",
+          "stage": "apply",
+          "message": "TC_FOREIGN_FILTER",
+          "observed_at": "2026-10-31T04:40:51.80844254Z"
+        }
+      ],
+      "safety": "failed",
+      "reasons": [
+        "safety_check_failed"
+      ],
+      "report_id": "01a19042-af78-79f0-8dd6-9d13ce85c2f2",
+      "forwarding": false,
+      "generation": "12",
+      "observed_at": "2026-10-31T04:40:51.832647585Z",
+      "provisioning": "applying",
+      "observation_id": "f2cfdff8-3e46-49e8-86f1-b38128ea6cd4"
+    },
+    {
+      "errors": [
+        {
+          "code": "HEALTH_CHECK_FAILED",
+          "stage": "apply",
+          "message": "TC_FOREIGN_FILTER",
+          "observed_at": "2026-10-31T04:40:51.80844254Z"
+        }
+      ],
+      "safety": "failed",
+      "reasons": [
+        "safety_check_failed",
+        "policy_missing"
+      ],
+      "report_id": "01a19043-25f8-7200-b8c4-6b80269fb486",
+      "forwarding": false,
+      "generation": "12",
+      "observed_at": "2026-10-31T04:41:22.168128929Z",
+      "provisioning": "applying",
+      "observation_id": "420acb5a-fdd6-49fd-9952-2087a78a859a"
+    },
+    {
+      "errors": [
+        {
+          "code": "HEALTH_CHECK_FAILED",
+          "stage": "apply",
+          "message": "TC_FOREIGN_FILTER",
+          "observed_at": "2026-10-31T04:40:51.80844254Z"
+        }
+      ],
+      "safety": "failed",
+      "reasons": [
+        "safety_check_failed",
+        "policy_missing"
+      ],
+      "report_id": "01a19043-9c72-7742-adb0-655b63d9636a",
+      "forwarding": false,
+      "generation": "12",
+      "observed_at": "2026-10-31T04:41:52.498472278Z",
+      "provisioning": "applying",
+      "observation_id": "303c803e-6fe3-4b81-9e3f-303e4401c802"
+    },
+    {
+      "errors": [
+        {
+          "code": "HEALTH_CHECK_FAILED",
+          "stage": "apply",
+          "message": "TC_FOREIGN_FILTER",
+          "observed_at": "2026-10-31T04:40:51.80844254Z"
+        }
+      ],
+      "safety": "failed",
+      "reasons": [
+        "safety_check_failed",
+        "policy_missing"
+      ],
+      "report_id": "01a19044-12e2-74f8-b4ec-23358dd0ec72",
+      "forwarding": false,
+      "generation": "12",
+      "observed_at": "2026-10-31T04:42:22.818317208Z",
+      "provisioning": "applying",
+      "observation_id": "b0b7759b-4bdf-4276-95cc-4ccb36d5385a"
+    },
+    {
+      "errors": [
+        {
+          "code": "HEALTH_CHECK_FAILED",
+          "stage": "apply",
+          "message": "TC_FOREIGN_FILTER",
+          "observed_at": "2026-10-31T04:40:51.80844254Z"
+        }
+      ],
+      "safety": "failed",
+      "reasons": [
+        "safety_check_failed",
+        "policy_missing"
+      ],
+      "report_id": "01a19044-897f-705e-8d1d-e6f5426adb46",
+      "forwarding": false,
+      "generation": "12",
+      "observed_at": "2026-10-31T04:42:53.183019964Z",
+      "provisioning": "applying",
+      "observation_id": "a5d252ad-86cf-4a1f-86de-e223a466626a"
+    },
+    {
+      "errors": [
+        {
+          "code": "HEALTH_CHECK_FAILED",
+          "stage": "apply",
+          "message": "TC_FOREIGN_FILTER",
+          "observed_at": "2026-10-31T04:40:51.80844254Z"
+        }
+      ],
+      "safety": "failed",
+      "reasons": [
+        "safety_check_failed",
+        "policy_missing"
+      ],
+      "report_id": "01a19044-ffe0-784b-812d-42ce16290fbd",
+      "forwarding": false,
+      "generation": "12",
+      "observed_at": "2026-10-31T04:43:23.488540747Z",
+      "provisioning": "applying",
+      "observation_id": "a1418b5b-120c-4144-9194-c7705a238755"
+    },
+    {
+      "errors": [
+        {
+          "code": "HEALTH_CHECK_FAILED",
+          "stage": "apply",
+          "message": "TC_FOREIGN_FILTER",
+          "observed_at": "2026-10-31T04:40:51.80844254Z"
+        }
+      ],
+      "safety": "failed",
+      "reasons": [
+        "safety_check_failed",
+        "policy_missing"
+      ],
+      "report_id": "01a19045-765b-7c97-b33a-7bf4db32a065",
+      "forwarding": false,
+      "generation": "12",
+      "observed_at": "2026-10-31T04:43:53.819821119Z",
+      "provisioning": "applying",
+      "observation_id": "a7397285-02d3-4db8-8faf-763150ce0f37"
+    },
+    {
+      "errors": [
+        {
+          "code": "HEALTH_CHECK_FAILED",
+          "stage": "apply",
+          "message": "TC_FOREIGN_FILTER",
+          "observed_at": "2026-10-31T04:40:51.80844254Z"
+        }
+      ],
+      "safety": "failed",
+      "reasons": [
+        "safety_check_failed",
+        "policy_missing"
+      ],
+      "report_id": "01a19045-ece1-73eb-afe8-6bdbe1a22f0d",
+      "forwarding": false,
+      "generation": "12",
+      "observed_at": "2026-10-31T04:44:24.161254475Z",
+      "provisioning": "applying",
+      "observation_id": "a4e339d7-48d2-41ea-b5aa-576d256622b5"
+    }
+  ],
+  "tc_after_rollback": {
+    "at": "2026-10-31T04:50:03.033154Z",
+    "scope": "Read-only post-failure state, not the unavailable rejected VerifyServing snapshot. No tc state planted.",
+    "reads": [
+      {
+        "command": "tc -j qdisc show dev fvmb0",
+        "stdout_verbatim": "[{\"kind\":\"noqueue\",\"handle\":\"0:\",\"root\":true,\"refcnt\":2,\"options\":{}}]\n"
+      },
+      {
+        "command": "tc -j class show dev fvmb0",
+        "stdout_verbatim": ""
+      },
+      {
+        "command": "tc -j filter show dev fvmb0",
+        "stdout_verbatim": "[]\n"
+      },
+      {
+        "command": "tc -j filter show dev fvmb0 ingress",
+        "stdout_verbatim": "[]\n"
+      },
+      {
+        "command": "tc -j filter show dev fvmb0 egress",
+        "stdout_verbatim": "[]\n"
+      },
+      {
+        "command": "tc -j qdisc show dev fvup0",
+        "stdout_verbatim": "[{\"kind\":\"noqueue\",\"handle\":\"0:\",\"root\":true,\"refcnt\":2,\"options\":{}}]\n"
+      },
+      {
+        "command": "tc -j class show dev fvup0",
+        "stdout_verbatim": ""
+      },
+      {
+        "command": "tc -j filter show dev fvup0",
+        "stdout_verbatim": "[]\n"
+      },
+      {
+        "command": "tc -j filter show dev fvup0 ingress",
+        "stdout_verbatim": "[]\n"
+      },
+      {
+        "command": "tc -j filter show dev fvup0 egress",
+        "stdout_verbatim": "[]\n"
+      }
+    ]
+  },
+  "concurrent_operations": [
+    {
+      "kind": "node.update",
+      "steps": {
+        "agent_policy": {
+          "order": 1,
+          "status": "succeeded",
+          "required": true,
+          "updated_at": "2026-10-31T04:51:43.426204Z",
+          "observed_at": "2026-10-31T04:51:43.426204Z",
+          "observed_ref": "agent_policy"
+        }
+      },
+      "status": "succeeded",
+      "created_at": "2026-10-31T04:40:52.423892Z",
+      "operation_id": "970a2e74-d690-4c70-b359-26c793ce80d7",
+      "desired_generation": "13",
+      "observed_generation": "15"
+    }
+  ]
+}
