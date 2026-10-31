@@ -96,6 +96,15 @@ nsdo fv-lan ip addr add 192.0.2.200/32 dev fv-ll
 nsdo fv-lan ip -6 addr add 2001:db8::10/128 dev fv-ll nodad
 
 log "routes"
+# A user-defined network installs a default route via eth0 and Docker's
+# embedded DNS NAT for 127.0.0.11. The NAT rules stay. The default route is
+# not a lab path.
+while ip route show default | grep -q .; do
+	ip route del default
+done
+while ip -6 route show default | grep -q .; do
+	ip -6 route del default
+done
 ip route add 100.64.0.0/10 via 192.0.2.34 dev fv-fh
 ip route add 203.0.113.0/24 via 192.0.2.38 dev fv-ih
 ip route add 198.51.100.53/32 via 192.0.2.38 dev fv-ih
