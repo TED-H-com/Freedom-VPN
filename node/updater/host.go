@@ -523,7 +523,7 @@ func (s HTTPSink) Submit(ctx context.Context, payload []byte) (Accepted, bool, e
 		}
 		return Accepted{AcceptedAsHistory: ack.AcceptedAsHistory, Raw: append([]byte(nil), body...)}, false, nil
 	case http.StatusConflict:
-		return Accepted{HTTPStatus: resp.StatusCode, APICode: apiCode}, true, nil
+		return Accepted{HTTPStatus: resp.StatusCode, APICode: apiCode, Reason: responseReason(body)}, true, nil
 	default:
 		code := apierr.Code(apiCode)
 		if code == "" || code == apierr.StoreUnavailable {

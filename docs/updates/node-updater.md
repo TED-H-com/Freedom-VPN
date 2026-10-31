@@ -53,12 +53,14 @@ The verified release, current pointer, state-schema marker and baseline evidence
 
 Seed exit 0 means verified and recorded. The same canonical envelope and tree are re-verified on replay, preserving the original seed timestamp and boot id, with no second release or baseline row. An established journal with a different current release, manifest, tree or state schema is refused; open work is refused too. Exit 1 reports the reason and leaves existing journal evidence and the current pointer intact. Usage/unknown commands exit 64; `seed -h`/`--help` print `-manifest` and `-tree` help with exit 64. The installer recognizes an older unsupported updater only from exit 64 with `unknown command "seed"`; other probe/seed failures become installer exit 1 and check drift. Probe and seed exits/stderr are retained in `install/baseline.json` and `check --json`.
 
-Next, `fvpn-node-install upgrade` verifies a higher signed release, extracts it under releases, copies its archive into update-staging, retains `Verified.Raw` as mode 0600, and writes `pending-release.json` with a fresh per-invocation request UUID. It releases the shared lock and starts `fvpn-updater.service`. The updater's `run` consumes that record before desired state. The foreground equivalent is:
+Next, `fvpn-node-install upgrade` verifies a signed release, extracts it under releases, copies its archive into update-staging, retains `Verified.Raw` as mode 0600, and writes `pending-release.json` with a fresh per-invocation request UUID. It releases the shared lock and starts `fvpn-updater.service`. The updater's `run` consumes that record before desired state. The foreground equivalent is:
 
 ```sh
 fvpn-updater apply --config /etc/vpn-node/updater.json \
   --pending /var/lib/vpn-node/update-staging/pending-release.json
 ```
+
+`apply` reports a sealed `failed` job as nonzero with `outcome=failed` and its error code on stderr, including a failure sealed during recovery or replay. A new final-sample failure exits 1; recovery that still blocks forwarding retains exit 2. A healthy rollback remains the distinct `rolled_back` outcome. The meter checkpoint producer is an agent-core dependency; this exit correction does not manufacture a checkpoint.
 
 Both apply paths take the lock, recover existing work, and use the journaled verify, switch, restart, health-check, rollback and result-outbox state machine (§13.5–§13.9). Contention reports `UPDATE_BUSY` (updater exit 1; installer busy exit 3). A missing default pending file is no work. An explicit missing `--pending` is an error, except when recovery just consumed it.
 
@@ -75,7 +77,9 @@ Both apply paths take the lock, recover existing work, and use the journaled ver
 
 The live current pointer must match journal evidence. An unseeded installer-created pointer still fails with `CHECKPOINT_FAILED`; it is never interpreted as an empty node. Missing verification material seals an identified request as `failed/verify/ARTIFACT_INVALID`; malformed or unidentifiable records remain in place.
 
-The journal claim, status and wire result carry `source: "installer"` (contract revision 13). UUIDv5 binds the release id, manifest hash, canonical pending-record hash (including `manifest_path`, `request_id` and unknown fields) and incarnation; attempt is 1. Identical replay does not reapply; a new installer invocation's `request_id` creates new work. Local jobs use the accepted update generation, or 1 when absent, without advancing the central fence. Policy generation is the already-applied generation, or 0 before policy. Publication intent is preserved (disabled when absent). Verified current/last-good releases may be rollback candidates, but installer outcomes keep member forwarding blocked until a valid desired state authorizes serving.
+The journal claim, status and wire result carry `source: "installer"` (contract revision 13). D-110 uses `internal/installerjob.ID(release_id, manifest_sha256, incarnation_id)`; attempt is 1. This UUIDv5 identity binds only the release, canonical manifest digest and authenticated incarnation. Paths and request IDs do not create additional jobs. The full canonical pending-record digest (including `manifest_path`, `request_id` and unknown fields) remains the local integrity and cleanup check. Identical replay does not reapply or reseal; changing a record for an existing identity is refused. Legacy local claims and acknowledged receipt history retain their original identities. Local jobs use the accepted update generation, or 1 when absent, without advancing the central fence. Policy generation is the already-applied generation, or 0 before policy. Publication intent is preserved (disabled when absent). Verified current/last-good releases may be rollback candidates, but installer outcomes keep member forwarding blocked until a valid desired state authorizes serving.
+
+The `upgrade` staging command is owned by `packaging/installer/upgrade.go`, dispatched by `packaging/installer/cmd/fvpn-node-install/main.go`. F9-05 requires that lane to compare installed and requested release sequences before writing staging files, returning `DOWNGRADE` / exit 1 for a lower sequence. The updater CLI has no `upgrade` subcommand.
 
 The terminal job and pending-file cleanup obligation commit together. Then the matching record is renamed to `pending-release.<state>.json` and its parent directory is fsynced. Recovery retries cleanup without another apply/result. The canonical record hash prevents an old completion from consuming a newly staged request.
 
@@ -262,6 +266,36 @@ snapshot, err := updatejournal.Snapshot(ctx, journalPath)
 
 Generations are compared as unsigned decimal integers without floating point or signed SQLite casts. A newer open job takes precedence over an older terminal result; the older result state and rejection remain separately visible. Acknowledged history retains its result stage. The snapshot describes local durable evidence and never claims central completion.
 
+
+## Legacy installer outbox receipts (D-114)
+
+Before upload, an unaccepted `source: installer` receipt is compared with the
+D-110 derivation of its own release, manifest digest and incarnation. For the
+locally reproducible JSON/hash seal, the updater atomically queues a replacement
+with the derived job ID, corresponding deterministic result ID and new payload
+hash. Every other JSON member, including timestamps, health, checkpoint and
+null/absent distinctions, is preserved. The new result ID also avoids reusing an
+HTTP idempotency key previously sent with different bytes.
+
+The original outbox row remains byte-for-byte as retired diagnostic evidence
+(`status: rejected`, `last_error: installer_job_id_rederived`); an existing-journal
+metadata link records its replacement result ID. This is local retirement, not a
+central rejection or acceptance. Local job/transaction claims stay unchanged.
+Replacement insertion, retirement and the audit link commit together. Recovery
+still finds the original seal and cannot recreate it. The new pending seal is
+replayed identically across restart until ACK, then moves to history. Existing
+D-110 seals and acknowledged legacy history are never re-derived.
+
+An unknown JSON member may bind an external seal the updater cannot reproduce.
+That receipt keeps its original bytes for submission. Likewise, a legacy receipt
+cannot overwrite an already occupied D-110 identity. HTTP 409 `STATE_CONFLICT`
+with `details.reason: job_id_mismatch` is terminal: the updater retains the seal,
+HTTP/API/reason and attempt count as rejected evidence, removes it from the
+pending queue, and never retries it, including after restart. Ordinary 409
+`ACK_CONFLICT` remains terminal too. No server message or arbitrary detail is
+stored. Pending-file consumption remains the terminal job's durable cleanup
+obligation, separate from central acceptance. Corrupt local hashes fail closed.
+
 ## Download and verify (§13.4)
 
 The manifest hash is the SHA-256 of the canonical JSON of the whole envelope. The artifact hash is the raw file. `.partial.meta` is written when the `200` or `206` headers arrive, before the body, so an interrupted download still resumes with `If-Range`. A partial download resumes only when the content hash is unchanged and the server's range agrees with the bytes already stored. A `206` whose `ETag` differs from the ETag stored in `.partial.meta` is not appended: the partial is deleted and the attempt fetches the object again from byte zero. A `200` response to a `Range` request is the full representation (RFC 9110 §13.1.5, or a server that ignores `Range`): that body replaces the partial, the download does not fail with `ARTIFACT_INVALID`, and a body that still does not match costs at most one content retry. When `Content-Length` is known, the bytes written must equal it (`200`) or the prior offset plus it (`206`). A changed body deletes the partial and downloads the whole file again. One content retry is allowed. A second hash or signature failure is permanent and is not retried. Network errors use bounded backoff with full jitter. The default budget (待實測) is 5 attempts, 200 ms initial, 30 s cap, 60 s per attempt. Manifest downloads are capped at `canonjson.MaxBytes` (1 MiB).
@@ -269,6 +303,8 @@ The manifest hash is the SHA-256 of the canonical JSON of the whole envelope. Th
 Verification checks the release trust store, both Ubuntu 24.04 architectures (`amd64` and `arm64`, `tar.zst`), this node's artifact, size, SHA-256, control API major, policy schema, usage schema, state schema, minimum updater version and the disk reserve (`artifact + installed size + required_free_bytes` on the releases filesystem, and the artifact size on the staging filesystem). A duplicate matching platform entry is `VALIDATION_FAILED`. `product_version` is display only. `minimum_updater_version` is SemVer 2.0.0: three numeric components, no leading zeros, build metadata ignored, and a pre-release is older than the same core without one. `1.10.0` is newer than `1.9.0`. `1.0.0-alpha.1` is older than `1.0.0`.
 
 URLs must be `https`. Loopback, link-local, multicast, unspecified, private (RFC 1918 and IPv6 ULA), CGNAT (`100.64.0.0/10`) and the metadata host names are refused. `allow_loopback` is the test exception and permits loopback only. The same check runs on every address `DialContext` resolves, so a public name that answers with a private address is refused (D-034f). An entry in `allowed_artifact_origins` exempts a URL from the private and CGNAT checks only when the scheme, host and effective port are equal (D-046). The effective port of a URL or entry without an explicit port is the scheme default: 443 for https and 80 for http. The connection is pinned to the first resolved address of that host. Every other origin keeps the guard.
+
+F9-02 fixes extraction modes independently of process umask: the extraction root and nested directories are explicitly 0755; regular files explicitly receive the archive permission bits (zero retains the existing 0644 default). This includes implicitly created parent directories. Installer extraction and seed verification share this extractor, so umasks 022 and 077 produce the same tree and hash. Seed still rejects mode drift. Trees previously installed with umask-filtered permissions must be restored from the verified archive by the installer before seeding; seed does not silently rewrite or ignore their permissions.
 
 Extraction accepts regular files and directories only (D-047). It rejects absolute paths, `..`, NUL, backslash, device files, fifos, sockets, hard links, symlinks (including a relative symlink inside the tree), every other member type, setuid/setgid/sticky modes, more than 4096 members, and any path that overlaps identity, state or the journal. A directory entry that cleans to `.` (`./` from `tar -C dir -cf … .`) is the archive root. Any `.` or `..` segment other than that archive-root `./` is rejected, including a `..` that `path.Clean` would fold back inside the tree. `MaxBytes` caps the sum of extracted regular-file bytes (`installed_size_bytes`). The decompressed tar stream is capped separately at `MaxBytes + MaxEntries*8KiB + 2KiB + 1`: 8KiB per member covers a PAX header, the 512-byte ustar header and block padding, and 2KiB covers the two 512-byte end blocks, each with margin. `fvpn-release` rejects symlinks, hard links and devices at pack time, so that failure happens on the build machine. Overlap is symmetric and is checked before the release directory is removed. Nothing in the archive is executed. The updater's own `current` symlink stays outside the release tree.
 

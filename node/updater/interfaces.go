@@ -132,6 +132,7 @@ type HealthChecks interface {
 type Accepted struct {
 	HTTPStatus        int
 	APICode           string
+	Reason            string // allowlisted rejection reason only
 	AcceptedAsHistory bool
 	Raw               json.RawMessage
 }

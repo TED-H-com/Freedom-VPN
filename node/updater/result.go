@@ -220,20 +220,28 @@ func (e *Engine) flushLocked(ctx context.Context) error {
 			return &DeliveryError{HTTPStatus: ent.LastHTTPStatus, APICode: ent.LastAPICode,
 				RetryAt: ent.RetryNotBefore, Op: transient(code, detail)}
 		}
-		if ent.State == string(api.UpdateResultStateRolledBack) {
+		if ent.State == string(api.UpdateResultStateRolledBack) && locallyRecreatableResult(ent.Payload) {
 			ent, err = e.Journal.PopulateCandidateHealth(ctx, ent.ResultID)
 			if err != nil {
 				return err
 			}
 		}
+		ent, err = e.prepareInstallerResult(ctx, ent)
+		if err != nil {
+			return err
+		}
 		ack, conflict, err := e.Sender.Submit(ctx, ent.Payload)
 		if conflict {
+			status, code := updatejournal.OutboxConflict, string(apierr.AckConflict)
+			if ack.HTTPStatus == 409 && ack.APICode == string(apierr.StateConflict) && ack.Reason == "job_id_mismatch" {
+				status, code = updatejournal.OutboxRejected, ack.Reason
+			}
 			if err := e.Journal.RecordDeliveryFailure(ctx, ent.ResultID, updatejournal.DeliveryFailure{
-				Status: updatejournal.OutboxConflict, HTTPStatus: ack.HTTPStatus, APICode: ack.APICode, ErrorCode: string(apierr.AckConflict),
+				Status: status, HTTPStatus: ack.HTTPStatus, APICode: ack.APICode, ErrorCode: code,
 			}); err != nil {
 				return err
 			}
-			e.log().Warn("update result conflict", "http_status", ack.HTTPStatus, "api_code", ack.APICode)
+			e.log().Warn("update result conflict", "http_status", ack.HTTPStatus, "api_code", ack.APICode, "reason", ack.Reason)
 			continue
 		}
 		if err != nil {
