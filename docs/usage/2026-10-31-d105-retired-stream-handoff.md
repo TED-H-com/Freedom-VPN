@@ -6,6 +6,22 @@ bound. This implements the revision 14 API shapes; the orchestrator's D-112
 supersedes revision 14's wording about historical sampling configuration, pending
 contracts revision 15. No migration or automatic central drain is introduced.
 
+## Runtime adoption status
+
+The service implementation and its direct database scenarios are present. HTTP
+adoption is blocked by the existing recursive identity check in
+`internal/httpapi/middleware.go`: it requires nested event incarnation IDs to
+match the presenting certificate and returns 403 before invoking usage ingestion.
+The new HTTP acceptance/replay/audit tests expose this failure. The HTTP owner
+must delegate this operation's body identity checks to the usage service, or
+make them aware of original-stream identity, while retaining current mTLS
+validation and all JSON/schema/size checks. Other agent operations must retain
+their identity enforcement. This file is outside the usage-central lane.
+
+Until that change lands and the gates pass, the agent and AT lanes can exercise
+these rules directly against the service but cannot claim working HTTP hand-off.
+The results below describe the service contract and intended HTTP behavior.
+
 ## Acceptance and ACK ownership
 
 The batch `node_id` and `node_incarnation_id` must match the verified current
