@@ -1,25 +1,22 @@
-# Forwarding observations — Follow-up 10
+# Forwarding observations — Follow-up 11
 
-Run `2be2d32f-bfd9-46f5-bf29-afaa6617ae94`, harness `731be5a7af7657660d96c240695747a23a3f5c96`, product baseline `d3e9a0f1` (agent-core 27 #325, wire-nodes 32 #321, netlab 19 #318; devstack 18 and dns-publish 8 retained), assigned `w4-members / 24000`.
+Run `7edb263f-1f6e-4f94-9e8e-26099f96a699`, harness `33abb2fd2c2fc95826c6e69eb434045522d6f7ef`, product baseline `96ec0630e4834e13a3a14d65553ba8108bb5da55` (devstack 20 #343, agent-core 28 #344, netlab 20 #336; dns-publish 8 #309). Assigned `w4-members / 24000`, two resolvers. The full mutation order is unchanged.
 
-Counted HTTPS requires the controlled origin receipt, selected-exit SNAT and device upload/download increases. All snapshots remain in the AT JSON records.
+Counted HTTPS requires an origin receipt, selected-exit SNAT and both named device-counter increases. Captured attempts remain separate from successful forwarding.
 
-| AT | Persistent cohort | Event UTC | Last TCP / UDP reply delta (s) | Bound (s) | Result |
-|---|---|---|---:|---:|---|
-| AT02 | member-a3 | 2026-10-31T13:34:37.640762923Z | 0.312 / 0.312 | 5 | pass |
-| AT02 | member-a3 | 2026-10-31T13:36:39Z | -0.012 / -0.012 | 5 | fail |
-| AT04 | member-paid | 2026-10-31T13:41:22.330573086Z | 3.401 / 3.401 | 60 | pass |
-| AT04 | member-paid2 | 2026-10-31T13:41:22.330573086Z | 3.597 / 3.597 | 60 | pass |
-| AT04 | member-expiry1 | 2026-10-31T13:45:25Z | 0.065 / 0.065 | 60 | pass |
-| AT04 | member-expiry2 | 2026-10-31T13:45:25Z | -0.265 / -0.265 | 60 | pass |
-| AT04 | member-suspend1 | 2026-10-31T13:48:11.413681234Z | 2.034 / 2.034 | 60 | pass |
-| AT04 | member-suspend2 | 2026-10-31T13:48:11.413681234Z | 1.867 / 1.867 | 60 | pass |
+| AT | Persistent cohort | Event UTC | Last TCP / UDP reply delta (s) | Bound (s) | Reads / failed | Result |
+|---|---|---|---:|---:|---:|---|
+| AT02 | member-a4 | 2026-10-31T18:32:39.672151678Z | 0.974625849 / 0.974625849 | 5 | 28 / 0 | pass |
+| AT02 | member-a4 | 2026-10-31T18:34:37Z | -0.408006282 / -0.408006282 | 5 | 186 / 0 | pass |
+| AT04 | member-paid | 2026-10-31T18:39:28.40922031Z | 3.589907078 / 3.589907078 | 60 | 197 / 0 | pass |
+| AT04 | member-paid2 | 2026-10-31T18:39:28.40922031Z | 3.376495706 / 3.376495706 | 60 | 252 / 0 | pass |
+| AT04 | member-expiry1 | 2026-10-31T18:43:32Z | -0.019940244 / -0.019940244 | 60 | 345 / 0 | pass |
+| AT04 | member-expiry2 | 2026-10-31T18:43:32Z | -0.132194045 / -0.132194045 | 60 | 360 / 0 | pass |
+| AT04 | member-suspend1 | 2026-10-31T18:46:28.478325244Z | 2.489762799 / 2.489762799 | 60 | 194 / 0 | pass |
+| AT04 | member-suspend2 | 2026-10-31T18:46:28.478325244Z | 2.597296362 / 2.597296362 | 60 | 205 / 0 | pass |
 
-TCP and UDP keep their established sockets. Post-bound samples prove senders remain active while replies/counters stop or policy removes counters. Poll timestamps bound observations, not wire delivery. AT04 exercises both exits.
+The established TCP/UDP sockets and active senders persist through each cutoff. Poll timestamps bound observations, not wire delivery; the nominal 250 ms cadence also includes reader execution time. AT02 retains reader categories and validates all same-boot before/after producer joins against its full stream. AT04 exercises both exits; no node2 timing-completeness claim is added.
 
-AT09 transfer counters and selected-family observations are indexed in [NATIVE.md](NATIVE.md). Under D-123 those family selectors describe the underlay; the payload is IPv4. No QUIC, physical roaming, second NAT, full PMTU or IPv6 overlay forwarding claim follows. The separate revoked-source ingress test uses positive controls and never restores a withdrawn production route to manufacture denial.
+AT01's initial path lacks node/origin receipt (F11-01). AT02's early D-077 positive probe runs during an empty-grant lease (F11-02). The strict revoked-source injection succeeds, but its admitted sibling control hits baseline during recorded generation-13 failed applies (F11-03). [Captures and dated owners](requests.md). No later passing transfer replaces those rows, and no withdrawn route is restored to manufacture denial.
 
-F10-02 remains failed because the finite-expiry `member-a3` window contains
-one unreadable sample, despite pre-deadline last replies and stable final
-counters. The table's failed row is not a post-expiry leakage claim and is not
-promoted by the other passing withdrawal rows. [Capture](F10-02-withdrawal.json).
+[NATIVE.md](NATIVE.md) retains AT09 bulk results and selected families. D-123 limits these to IPv4 payload over the selected underlay; no QUIC, physical roaming, second NAT, complete PMTU or IPv6 overlay claim follows. Historical F10-02's unreadable finite-expiry sample remains failed and unattributed in [follow-up 10](history/follow-up-10/F10-02-withdrawal.json); this run's successful reader measurement is a separate row.

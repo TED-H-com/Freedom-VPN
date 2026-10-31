@@ -1,32 +1,16 @@
-# AT02 finite grant and device-to-usage trace — Follow-up 10
+# AT02 finite grant and device-to-usage trace — Follow-up 11
 
-Run `2be2d32f-bfd9-46f5-bf29-afaa6617ae94`, harness `731be5a7af7657660d96c240695747a23a3f5c96`, product baseline `d3e9a0f1` (agent-core 27 #325, wire-nodes 32 #321, netlab 19 #318; devstack 18 and dns-publish 8 retained), assigned `w4-members / 24000`.
+Run `7edb263f-1f6e-4f94-9e8e-26099f96a699`, harness `33abb2fd2c2fc95826c6e69eb434045522d6f7ef`, product baseline `96ec0630e4834e13a3a14d65553ba8108bb5da55` (devstack 20 #343, agent-core 28 #344, netlab 20 #336; dns-publish 8 #309). Assigned `w4-members / 24000`, two resolvers. The full mutation order is unchanged.
 
-All safe HTTP bodies, audit rows, operation IDs and transport samples remain in [AT02.json](AT02.json).
+Safe HTTP bodies, audits, operation IDs and original device-to-usage steps remain in [AT02.json](AT02.json).
 
-| Transition | Authorized / pending before → after | Revision before → after | Deadline | Worker operation | Result |
-|---|---|---|---|---|---|
-| ReplaceFiniteGrant | 3/0 → 2/1 | 2 → 4 | 2026-10-31T14:34:37.640762951Z | 01a1922b-5c65-7034-ba3c-05dc2c13cc25 | pass |
-| ReplaceFiniteGrant | 2/1 → 3/0 | 4 → 6 | 2026-10-31T14:35:00.828316625Z | 01a1922b-b6f6-7ee5-b899-c7989fc9cb19 | pass |
-| ReplaceFiniteGrant | 3/0 → 3/0 | 6 → 8 | 2026-10-31T13:36:39Z | 01a1922c-11bd-78f7-b08e-19e8356d5eed | pass |
+| Withdrawal event | Last TCP increment | Last UDP increment | Samples | Failed reads | Result |
+|---|---|---|---:|---:|---|
+| 2026-10-31T18:32:39.672151678Z | 2026-10-31T18:32:40.646777527Z | 2026-10-31T18:32:40.646777527Z | 28 | 0 | pass |
+| 2026-10-31T18:34:37Z | 2026-10-31T18:34:36.591993718Z | 2026-10-31T18:34:36.591993718Z | 186 | 0 | pass |
 
-D-119 (2026-10-31) retires the inherited scheduled-deadline downgrade interpretation. Plan v1.0 has no scheduled plan-change contract. Billing replaces a grant at the period boundary; natural expiry with no other grant yields 0/3. The harness measures both independently and fabricates no fallback.
+The finite-expiry row has 186 successful reads, both reader categories `none`, last TCP/UDP increments 408.006282 ms before deadline, active senders and stable/removed counters. Across both withdrawal rows, all 214 reads and 428 producer snapshots join the 798-record complete stream. [Counter diagnostics](F11-AT02-withdrawal.json), [producer records](AT02-enforcement-timing.json). These are command bounds, not exact kernel commit times. No failed read is retried or omitted.
 
-Revoke audit replay: **pass**; `member.grant_revoke` operation `01a1922b-5c5c-721a-8915-62194f01213e` at `2026-10-31T13:34:37.651379+00:00`.
+Natural expiry still yields 0/3, with three audit rows and 3/0 restoration. D-119 keeps this separate from immediate 3/0 → 2/1 → 3/0 replacement through `ReplaceFiniteGrant`; Plan v1.0 has no scheduled plan-change contract. Worker completion requires the succeeded parent operation. The current revoke action is `member.grant_revoke`; one audit per grant remains required.
 
-Revoke audit replay: **pass**; `member.grant_revoke` operation `01a1922b-b6ee-7731-8af8-357c6903a84e` at `2026-10-31T13:35:00.839457+00:00`.
-
-Revoke audit replay: **pass**; `member.grant_revoke` operation `01a1922c-11b4-7901-9e29-07d03f52406c` at `2026-10-31T13:35:24.07469+00:00`.
-
-Natural expiry: deadline `2026-10-31T13:36:39Z`, observed `2026-10-31T13:36:53.082712748Z`, authorized/pending **0/3**, result **pass**.
-
-Expiry restoration: operation `01a1922d-7837-7583-8130-6a142831d0c6`; the separate completion check requires a succeeded parent operation, 3/0 and fresh counted forwarding.
-
-The interrupted [attempt 1](history/follow-up-9/attempt-1/RUN.md) retained the stale `grant.revoke` query failures. The current selector is `member.grant_revoke`, matching the production service and its integration contract; exactly one audit per revoked grant remains mandatory.
-
-Persistent senders retain the same TCP/UDP sockets through cutoff; [forwarding-observation.md](forwarding-observation.md) records timestamps and bounds. No identity, entitlement, binding, device or observation projection is repaired.
-
-**F10-02:** this run's complete AT02 result is fail (121/0/1): one of the
-234 finite-expiry persistent samples has `read_ok=false`. Reply cutoff, 0/3
-expiry and 3/0 restoration pass; the missing read is retained as a failure.
-[Full failed-check capture](F10-02-withdrawal.json).
+Full AT02 remains **fail, 121 pass / 0 blocked / 2 fail**, due to the D-077 readiness and admitted-sibling ingress controls (F11-02/F11-03). Their accepted-report extract is [retained](F11-AT02-observations.json). Historical F10-02 remains failed and unattributed in the [follow-up 10 capture](history/follow-up-10/F10-02-withdrawal.json). A successful finite-expiry reader measurement does not repair that sample or pass other failed assertions.

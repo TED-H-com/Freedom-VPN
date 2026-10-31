@@ -4,12 +4,12 @@ Assigned instance: `FVPN_E2E_PREFIX=w4-members FVPN_E2E_PORT_BASE=24000`.
 Current outcomes: [summary.md](summary.md), [native transport and DNS rows](NATIVE.md), [run ledger](RUN.md), and the ten current AT JSON/Markdown pairs. The full target exits nonzero while a complete case is blocked. [D077.md](D077.md) indexes the production device re-authorization calls, bodies, operation IDs and fence counts.
 
 ```sh
-FVPN_E2E_PREFIX=w4-members FVPN_E2E_PORT_BASE=24000 FVPN_E2E_TWO_RESOLVERS=true E2E_RESET=1 make -f mk/e2e.mk e2e-up
 make -f mk/at-members.mk at-members-lint
+FVPN_E2E_PREFIX=w4-members FVPN_E2E_PORT_BASE=24000 FVPN_E2E_TWO_RESOLVERS=true E2E_RESET=1 make -f mk/e2e.mk e2e-up
 make -f mk/at-members.mk at-members
 FVPN_E2E_PREFIX=w4-members FVPN_E2E_PORT_BASE=24000 make -f mk/e2e.mk e2e-down
 make -f mk/at-members.mk at-members-test
-make go-lint
+python3 tests/e2e/at/members/disktmp.py make go-lint
 mkdir -p .agent/tmp
 TMPDIR="$PWD/.agent/tmp" GOTMPDIR="$PWD/.agent/tmp" CGO_ENABLED=0 GOTOOLCHAIN=local go vet ./...
 make -f mk/at-members.mk at-members-build
@@ -24,3 +24,26 @@ Forwarding requires a controlled origin receipt and the named device counters; [
 [BLOCKERS.md](BLOCKERS.md) and [requests.md](requests.md) retain F4-03/04/05/06/07/10. [OPERATORS.md](OPERATORS.md) retains exact **needs operator run** procedures for Windows/macOS/iOS/Android, physical arm64 and second NAT. The complete matrix is in [PROCEDURES.md](PROCEDURES.md).
 
 [Follow-up 7 final run](history/follow-up-7/RUN.md) is byte-identical under D-098, with [checksums](history/follow-up-7/SHA256SUMS). [Follow-up 6](history/follow-up-6/RUN.md) and the [interrupted fixture](history/follow-up-7/attempt-1/RUN.md) and [meter-collision](history/follow-up-7/attempt-2/RUN.md) attempts remain archived. Current pass claims come only from the final run.
+
+Follow-up 11 enables the detached TEST ONLY enforcement observer **before
+enrollment**. Every AT02 persistent sample retains the independent counter and
+transport-status `read_diagnostic`, including failed reads, plus same-boot
+CLOCK_MONOTONIC brackets and both completed producer records. The complete
+[producer stream](AT02-enforcement-timing.json) is checked for sequence gaps,
+missing records and zero/unordered clocks. No failed read is retried or removed;
+`finishPersistent` retains its original every-read-success condition.
+
+Native DNS results retain the shared `dns_trace` unchanged. Unique metadata
+matches identify a responder; multiple matches stay ambiguous. Observed
+authority exchanges prove misses, while absence supports only an inferred
+positive hit. Negative policy cache state remains unknown unless independently
+attributable. Authority serial sampled after a query is not a cached A record's
+serial, and native probe milliseconds are distinct from the wrapper bounds.
+
+D-129 closes F10-04 at the unchanged sequence's product-issued generation;
+full AT09 still needs all selector rows. F10-02/F10-03 remain historically
+failed and unattributed. [Follow-up 10](history/follow-up-10/RUN.md) is
+byte-identical with [35-file checksums](history/follow-up-10/SHA256SUMS).
+D-132 permits product pins only into `history/`; the root is living evidence.
+The [interrupted admission attempt](history/follow-up-11/attempt-1/RUN.md)
+stopped in AT05 setup before AT02/AT20 and is retained separately.

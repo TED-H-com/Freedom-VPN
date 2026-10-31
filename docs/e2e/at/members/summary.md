@@ -1,50 +1,53 @@
-# Follow-up 10 acceptance results
+# Follow-up 11 acceptance results
 
-Run `2be2d32f-bfd9-46f5-bf29-afaa6617ae94`, harness `731be5a7af7657660d96c240695747a23a3f5c96`, product baseline `d3e9a0f1` (agent-core 27 #325, wire-nodes 32 #321, netlab 19 #318; devstack 18 and dns-publish 8 retained), assigned `w4-members / 24000`.
+Run `7edb263f-1f6e-4f94-9e8e-26099f96a699`, harness `33abb2fd2c2fc95826c6e69eb434045522d6f7ef`, product baseline `96ec0630e4834e13a3a14d65553ba8108bb5da55` (devstack 20 #343, agent-core 28 #344, netlab 20 #336; dns-publish 8 #309). Assigned `w4-members / 24000`, two resolvers. The full mutation order is unchanged.
 
-**2 complete cases passed; 6 blocked; 2 failed.** Subchecks: 560 pass / 5 blocked / 2 fail.
+**2 complete cases pass / 6 blocked / 2 fail; 558 pass / 5 blocked / 3 fail subchecks.**
 
-**AT09:** all 38 executed checks pass, including the D-126 mixed-report predicate;
-five platform/QUIC selectors and the wider platform matrix remain blocked.
-The complete original mutation order yielded **desired/applied 29 → 29**:
-serving in **15.752 s**, first counted byte in **21.357 s**, 88 heartbeat samples
-over **90.354 s**, and the initial `TC_FOREIGN_FILTER` retained. **F10-04: this
-is not exact generation-30 qualification**; no extra mutation forced that number.
-The original generation-30 capture remains in follow-up 9 and is replayed offline.
-The MTU-1280 IPv4 row passes (64,064 bytes / 1 ms); F8-02 remains unattributed.
+The new **finite-expiry withdrawal row passes**: 186 successful reads,
+both reader categories `none`, last reply increments 408.006282 ms before
+deadline. Across both AT02 withdrawals, 214 samples / 428 producer snapshots
+join 798 original records without gaps. Full AT02 still fails D-077 readiness
+and the admitted-sibling ingress control (F11-02/F11-03).
 
-**New failures remain failed:** F10-02 is AT02's one unreadable withdrawal sample
-among 234; replies stopped before expiry and counters stabilized, but the
-all-reads-valid predicate fails. F10-03 is AT20's changed positive answer before
-TTL; the negative and after-TTL controls pass. Full captures and dated ownership
-are in [requests.md](requests.md). No failed assertion was retried or relaxed.
+The new **AT20 before-TTL row passes**, with 39/39 complete traces. Primary
+returns the old positive class with TTL 9 and no authority exchange (inferred
+hit only), then the changed class after TTL with an observed exchange. Negative
+cache state stays unknown; the authority serial after a query is separate.
 
-| Case / evidence | Requirements | Status | Pass / blocked / fail | Owner / boundary |
-|---|---|---|---:|---|
-| [AT01](AT01.json) | §19.1; §19 AT01; APP01 ID01 MEM01 | blocked | 18 / 0 / 0 | Operator/platform resources; OPERATORS.md |
-| [AT02](AT02.json) | §19.1; §19 AT02; MEM01 MEM02 MEM03 SEC01 | fail | 121 / 0 / 1 | F10-02 unreadable withdrawal sample; members/devstack |
-| [AT03](AT03.json) | §19.1; §19 AT03; BILL01 BILL03 ENT01 | pass | 92 / 0 / 0 | Members; billing evidence |
-| [AT04](AT04.json) | §19.1; §19 AT04; BILL02 ENT02 MEM03 | blocked | 99 / 0 / 0 | Portal/devstack/operator: rendered screens |
-| [AT05](AT05.json) | §19.1; §19 AT05; NODE01 NODE04 ENR01 ENR04 PKG01 | blocked | 30 / 0 / 0 | Packaging/devstack/operator: boot sources, physical arm64 |
-| [AT08](AT08.json) | §19.1; §19 AT08; NODE02 NODE03 EXIT01 EXIT03 | pass | 31 / 0 / 0 | Members; publication/readback |
-| [AT09](AT09.json) | §19.1; §19 AT09; EXIT02 APP01 NFR01 | blocked | 38 / 5 / 0 | F9-01 closed; F10-04 exact-generation gap; F8-02 and platform resources |
-| [AT20](AT20.json) | §19.1; §19 AT20; DNS01 DNS02 ISO04 | fail | 80 / 0 / 1 | F10-03 before-TTL cache failure; IDNA/distribution/platform resources |
-| [AT21](AT21.json) | §19.1; §19 AT21; DNS03 DNS04 APP01 | blocked | 12 / 0 / 0 | Native integration/operator: production distribution, Private DNS/DoH |
-| [AT22](AT22.json) | §19.1; §19 AT22; SEC02 DNS01 DNS04 | blocked | 39 / 0 / 0 | Devstack/usage/database/backup: retention/URL; business feed approval |
+**Full AT09 fails** its dual/1280 bulk row: 13,013/64,064 bytes in 12,010 ms,
+selected direct IPv6 underlay before/after. All three MTU-1500 controls pass.
+F8-02 remains with netlab 21. AT01 also retains a new first-hop blocker
+(F11-01); later passing traffic does not replace it. There are nine pending
+request groups in [requests.md](requests.md).
 
-D-119 (2026-10-31): retire the inherited “3/0 → 2/1 deadline transition” wording. Natural finite-grant expiry is 0/3 with no other covering grant. Billing calls `ReplaceFiniteGrant` at a period boundary; the harness retains immediate 3/0 → 2/1 → 3/0 replacement and separately measures genuine expiry/restoration. Plan v1.0 has no scheduled plan-change contract.
+| Case / evidence | Requirements | Full status | Pass / blocked / fail |
+|---|---|---|---:|
+| [AT01](AT01.json) | §19.1 §19 AT01 APP01 ID01 MEM01 | blocked | 16 / 0 / 0 |
+| [AT02](AT02.json) | §19.1 §19 AT02 MEM01 MEM02 MEM03 SEC01 | fail | 121 / 0 / 2 |
+| [AT03](AT03.json) | §19.1 §19 AT03 BILL01 BILL03 ENT01 | pass | 92 / 0 / 0 |
+| [AT04](AT04.json) | §19.1 §19 AT04 BILL02 ENT02 MEM03 | blocked | 99 / 0 / 0 |
+| [AT05](AT05.json) | §19.1 §19 AT05 NODE01 NODE04 ENR01 ENR04 PKG01 | blocked | 30 / 0 / 0 |
+| [AT08](AT08.json) | §19.1 §19 AT08 NODE02 NODE03 EXIT01 EXIT03 | pass | 31 / 0 / 0 |
+| [AT09](AT09.json) | §19.1 §19 AT09 EXIT02 APP01 NFR01 | fail | 37 / 5 / 1 |
+| [AT20](AT20.json) | §19.1 §19 AT20 DNS01 DNS02 ISO04 | blocked | 81 / 0 / 0 |
+| [AT21](AT21.json) | §19.1 §19 AT21 DNS03 DNS04 APP01 | blocked | 12 / 0 / 0 |
+| [AT22](AT22.json) | §19.1 §19 AT22 SEC02 DNS01 DNS04 | blocked | 39 / 0 / 0 |
 
-D-123: all native bulk payloads use IPv4; IPv4/IPv6/dual labels select **underlay** availability. V1.0's IPv6Block policy drops forwarded IPv6. [Netlab 18](../../../poc/G2-f802-mtu1280-2026-10-31.md) supplies the independent no-leak control and IPv4 fragmentation-needed traversal measurements. There is no end-to-end IPv6 MTU/PMTU row or claim. A standalone pass cannot close the combined native AT09 matrix.
+Desired/applied **30 → 30 / 30 → 30**; serving in **6.032389860 s**, first counted byte in **11.399224550 s**. Recovery row: **pass**.
 
-DNS wording retired 2026-10-31 by [dns-publish follow-up 8's measured table](../../../dns/BACKEND.md): blocked A/AAAA/HTTPS are NXDOMAIN; direct CNAME/SVCB are NODATA. F8-TTL5 requires SOA TTL 5 for this profile. [NATIVE.md](NATIVE.md) links each fresh native row to observed RCODE, answer types and SOA TTL. Positive/upstream/cache controls remain separate. IDNA, distribution, platform and retention gaps are unchanged.
+D-129 closes F10-04: follow-up 10's unchanged full sequence recovered at generation 29 (serving 15.751594344 s, first counted byte 21.357052110 s, three provisional reports under D-126). Generation 30 is not a contract value. The original generation-30 F8-01 closure stays in [follow-up 9](history/follow-up-9/RUN.md). No forced generation or state/topology repair is used.
 
-F4-08 / F4-09: never defined; retired 2026-10-31. The follow-up 4 ledger is F4-01 … F4-07 and F4-10. [requests.md](requests.md) records dated owner actions; [BLOCKERS.md](BLOCKERS.md) retains platform/operator references.
+F10-02 and F10-03 remain historically failed and unattributed in the [35-file follow-up 10 archive](history/follow-up-10/SHA256SUMS). A new pass is a separate measurement, not a repair of the unreadable sample or missing DNS responder. Follow-up 8/9 archives, handover snapshots and external provenance remain unchanged.
 
-D-098: follow-up 8 run `69f92f49` remains [byte-identical](history/follow-up-8/RUN.md), with [32-file SHA256SUMS](history/follow-up-8/SHA256SUMS). Its failed measurements are historical and unchanged. [RUN.md](RUN.md) contains current gate exits.
+The complete AT09 case requires every selector row. QUIC and Android/iOS/Windows/macOS remain resource-dependent; no passing recovery or bulk subset certifies them. [requests.md](requests.md) retains exact owner boundaries. D-123 measures IPv4 payload over selected underlays, with IPv6Block; no IPv6 service/PMTU claim is added.
 
-Failed checks retained:
+DNS assertions retain [BACKEND.md §2.1.1–§2.1.4](../../../dns/BACKEND.md): blocked A/AAAA/HTTPS are NXDOMAIN, direct CNAME/SVCB are NODATA, with SOA TTL 5 for the filtering profile. IDNA, distribution, Private DNS/DoH, rendered screens, physical arm64, privacy/retention and commercial feed approval remain separate resource gaps. D-119 keeps immediate replacement separate from natural finite expiry to 0/3.
 
-- AT02: persistent withdrawal member-a3
-- AT20: positive/negative cache before TTL
+Failed checks in this run:
 
-D-126 / D-128: [agent-core 27](../../../node/followup27-members-2026-10-31.md) confirms deliberate cumulative composition, no reporter race or producer fix. [Wire-nodes 32](https://github.com/TED-H-com/Freedom-VPN/pull/321) preserves the exact JSON value/JCS/digest with the existing 202 receipt. F9-01 is closed by the focused predicate/replay; recovery alone never passes full AT09. Follow-up 9 remains [byte-identical](history/follow-up-9/RUN.md), with [33-file SHA256SUMS](history/follow-up-9/SHA256SUMS).
+- AT02: D-077 re-grant counted forwarding
+- AT02: strict post-withdrawal fvmb0 ingress injection
+- AT09: native dual MTU 1280 transfer
+
+[Native and DNS evidence](NATIVE.md), [run ledger and gates](RUN.md).
