@@ -110,7 +110,7 @@ service_image() {
     cp "$bin" "$ctx/service"
     cp "$ROOT/deploy/devstack/Dockerfile.service" "$ctx/Dockerfile"
     capture_packages=
-    if [ "$name" = origin ]; then capture_packages=tcpdump; fi
+    if [ "$name" = origin ]; then capture_packages="tcpdump iproute2"; fi
     docker build --build-arg "CAPTURE_PACKAGES=$capture_packages" --iidfile "$ctx/image.id" -t "$PREFIX-$name:run" "$ctx"
     # Pin this run to the built image even if another worktree moves :local.
     image_var=FVPN_E2E_IMAGE_$(printf '%s' "$name" | tr '[:lower:]' '[:upper:]')

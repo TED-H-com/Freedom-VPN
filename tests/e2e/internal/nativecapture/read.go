@@ -51,8 +51,9 @@ func Token(ip string) string {
 
 // Status is deliberately a narrow decoder. Omitted native keys never escape.
 type Status struct {
-	IP    string `json:"netbirdIp"`
-	Peers struct {
+	UsesKernelInterface bool   `json:"usesKernelInterface"`
+	IP                  string `json:"netbirdIp"`
+	Peers               struct {
 		Details []Peer `json:"details"`
 	} `json:"peers"`
 }
@@ -101,6 +102,9 @@ type Link struct {
 	Index int    `json:"ifindex"`
 	Name  string `json:"ifname"`
 	MTU   int    `json:"mtu"`
+	Info  struct {
+		Kind string `json:"info_kind"`
+	} `json:"linkinfo"`
 }
 type Route struct {
 	Destination string           `json:"dst"`
@@ -116,18 +120,19 @@ type Command struct {
 	OK    bool  `json:"ok"`
 }
 type Snapshot struct {
-	Start          Clock              `json:"start"`
-	End            Clock              `json:"end"`
-	Commands       map[string]Command `json:"commands"`
-	Links          []Link             `json:"links"`
-	Routes         map[string][]Route `json:"routes"`
-	PeerPresent    bool               `json:"peer_present"`
-	PeerConnected  bool               `json:"peer_connected"`
-	ConnectionType string             `json:"connection_type"`
-	Overlay        string             `json:"overlay"`
-	Local          Endpoint           `json:"local"`
-	Remote         Endpoint           `json:"remote"`
-	WireGuard      Endpoint           `json:"wireguard_endpoint"`
+	UsesKernelInterface bool               `json:"uses_kernel_interface"`
+	Start               Clock              `json:"start"`
+	End                 Clock              `json:"end"`
+	Commands            map[string]Command `json:"commands"`
+	Links               []Link             `json:"links"`
+	Routes              map[string][]Route `json:"routes"`
+	PeerPresent         bool               `json:"peer_present"`
+	PeerConnected       bool               `json:"peer_connected"`
+	ConnectionType      string             `json:"connection_type"`
+	Overlay             string             `json:"overlay"`
+	Local               Endpoint           `json:"local"`
+	Remote              Endpoint           `json:"remote"`
+	WireGuard           Endpoint           `json:"wireguard_endpoint"`
 }
 
 func Read(ctx context.Context, target, origin string) (Snapshot, error) {
@@ -168,7 +173,11 @@ func Read(ctx context.Context, target, origin string) (Snapshot, error) {
 	}
 	route("origin_route", origin)
 	if target != "" {
-		p, e := Select(run("peer_status", "netbird", "status", "--json"), target)
+		rawStatus := run("peer_status", "netbird", "status", "--json")
+		var status Status
+		_ = json.Unmarshal(rawStatus, &status)
+		out.UsesKernelInterface = status.UsesKernelInterface
+		p, e := Select(rawStatus, target)
 		if e == nil {
 			out.PeerPresent = true
 			out.PeerConnected = strings.EqualFold(p.Status, "Connected")
@@ -182,7 +191,11 @@ func Read(ctx context.Context, target, origin string) (Snapshot, error) {
 			// Query public allowed-IP/endpoint views only; never `wg show ... dump`
 			// (which includes the private key). Match the selected overlay /32.
 			var key string
-			allowed := run("wg_allowed_ips", "wg", "show", "fvnb0", "allowed-ips")
+			tunnel := "fvnb0"
+			if routes := out.Routes["overlay_route"]; len(routes) == 1 {
+				tunnel = routes[0].Device
+			}
+			allowed := run("wg_allowed_ips", "wg", "show", tunnel, "allowed-ips")
 			for _, line := range strings.Split(string(allowed), "\n") {
 				f := strings.Fields(line)
 				if len(f) < 2 {
@@ -194,7 +207,7 @@ func Read(ctx context.Context, target, origin string) (Snapshot, error) {
 					}
 				}
 			}
-			endpoints := run("wg_endpoints", "wg", "show", "fvnb0", "endpoints")
+			endpoints := run("wg_endpoints", "wg", "show", tunnel, "endpoints")
 			for _, line := range strings.Split(string(endpoints), "\n") {
 				f := strings.Fields(line)
 				if len(f) == 2 && key != "" && f[0] == key {

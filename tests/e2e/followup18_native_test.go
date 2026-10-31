@@ -398,6 +398,8 @@ func (r *runner) nativeMTU22(ctx context.Context, s *Stack) {
 		{"matrix1280", "dual", 1280, true, false},
 		{"ipv6-asymmetric", "ipv6", 1280, true, false},
 		{"ipv6-explicit1280", "ipv6", 1280, false, true},
+		{"ipv6-explicit-repeat1", "ipv6", 1280, false, true},
+		{"ipv6-explicit-repeat2", "ipv6", 1280, false, true},
 	} {
 		rec := Record{ID: row.name, Title: "F8-02 native endpoint captures: " + row.name, Spec: []string{"AT09", "AT11", "F8-02"}, Status: StatusFail}
 		func() {
@@ -553,7 +555,31 @@ selecting:
 	before, be := s.DeviceByteCounters(ctx, r.usageDevice)
 	probe := uuid.NewString()
 	_, ae := r.originProbe(ctx, "PUT", probe)
-	got, ge := s.fixtureProbe(ctx, r.lab.member, "-mode", "http", "-addr", r.lab.originIP+":443", "-device", probe)
+	type reply struct {
+		got FixtureProbeResult
+		err error
+	}
+	replies := make(chan reply, 1)
+	go func() {
+		got, e := s.fixtureProbe(ctx, r.lab.member, "-mode", "http", "-addr", r.lab.originIP+":443", "-device", probe)
+		replies <- reply{got, e}
+	}()
+	var got FixtureProbeResult
+	var ge error
+transferring:
+	for i := 0; ; i++ {
+		if e = c.Sample(ctx, fmt.Sprintf("first-transfer-%d", i)); e != nil {
+			return
+		}
+		select {
+		case v := <-replies:
+			got, ge = v.got, v.err
+			break transferring
+		case <-ctx.Done():
+			return
+		case <-time.After(200 * time.Millisecond):
+		}
+	}
 	after, ce := s.DeviceByteCounters(ctx, r.usageDevice)
 	noteJSON(&rec, "transfer", map[string]any{"before": before, "after": after, "http": got})
 	arrival, oe := r.originProbe(ctx, "GET", probe)
