@@ -41,9 +41,9 @@ To prevent documentation drift, the handover, operations, and review-archive Mar
 
 [Database and retention index](11-database-and-retention.md) / [numbered index](00-index.md) cover the `00189_node_incarnation_usage_outbox.sql` addition. See the [dated acceptance table](../ops/README.md#follow-up-13-acceptance-snapshot-2026-10-30-edt) for isolation #237/#246, usage re-run status, devstack #240, and AT30 #242.
 
-## Follow-up 14 decisions and coming work (2026-10-31 EDT)
+## Follow-up 14 historical cutoff (2026-10-31 EDT)
 
-Verified at main `c6e3eca`; [acceptance numbers and limits](../ops/README.md#follow-up-14-acceptance-snapshot-2026-10-31-edt) are pinned in `TestHandover_Followup14Claims`.
+Historical status at main `c6e3eca`, superseded where stated by follow-up 15 below; [acceptance numbers and limits](../ops/README.md#follow-up-14-acceptance-snapshot-2026-10-31-edt) are pinned in `TestHandover_Followup14Claims`.
 
 - D-093: a shared error-code enum change changes behavior for lanes looking codes up dynamically; `TC_FOREIGN_FILTER` is the real code after #261/#264.
 - D-098: claims tests read a pinned history snapshot or a file named by run id, never a lane's current evidence file. Live documentation hash checks are maintained separately.
@@ -51,4 +51,59 @@ Verified at main `c6e3eca`; [acceptance numbers and limits](../ops/README.md#fol
 - D-089 **coming**, fleet-update follow-up 10 central acceptance; the retained envelope (#258) and verified seed (#269) are merged. Keyed HTTP replay is wire-nodes follow-up 29.
 - D-088 / D-090 merged, agent-core follow-up 22 (#272): consumes the #267 freeze annotation with a durable latch and quarantine integration. D-096 member-route/address recovery measurement is netlab follow-up 14; D-100 requires topology expectations to refresh only through a clean verified Apply of a newer published generation, with no out-of-band override. The agent check is merged; recovery measurement and uninterrupted containment remain unclaimed.
 - D-095 is merged (#270); D-099 HTTP desired-state cache fix is **coming**, wire-nodes follow-up 29. SECOPS-21 remains open until the retained-node first offer is verified end to end.
-- Isolation follow-up 6 (#271) records assisted recovery and an AT13 failure; see the acceptance snapshot. Enrollment follow-up 5 (ENR-05/06, D-089) has no roadmap row at this snapshot; no acceptance result from it is claimed. Installer follow-up 3 owns ENR-06 and the systemd lifecycle rerun. r16 has not run.
+- Isolation follow-up 6 (#271) records assisted recovery and an AT13 failure; see the acceptance snapshot. Enrollment follow-up 5 (ENR-05/06, D-089) has no roadmap row at this snapshot; no acceptance result from it is claimed. Installer follow-up 3 owns ENR-06 and the systemd lifecycle rerun. r16 had not run at this cutoff; its delivered report and current dispositions are indexed below.
+
+## Follow-up 15 decisions register (2026-10-31 EDT)
+
+Verified against main `5ce76e9` (through #287). Follow-up 14 stopped at #272;
+#273–#277 are all additions here, along with #279–#287. The [dated acceptance
+snapshot](../ops/README.md#follow-up-15-acceptance-snapshot-2026-10-31-edt) and
+`TestHandover_Followup15Claims` pin this cutoff. No new live acceptance run was
+performed by handover. Pending design below comes from the orchestrator's
+follow-up 15 decisions; a design approval is not an implementation claim.
+
+| Decision | Operator meaning and delivery boundary |
+|---|---|
+| D-098 | A dated claim reads a byte-identical archive or a run-ID-named snapshot. Isolation follow-up 6 now uses its final 44-file archive; follow-up 5 is unchanged. Secops follow-up 10 uses its 104-file archive. Follow-up 7 isolation is a new dated claim set. Live document hashes are a separate check. |
+| D-099, clarified | Merged #277; regression promoted by #286. `CompileTx` always proposes `max(desired, applied, stored)+1`. The cache may reuse the cached generation or its ordinary one-step proposal only when no higher applied/stored generation exists and no restore observation is outstanding. A required advance must be signed and replace the cache. Strict proposal equality would disable ordinary cache hits. Do not close SECOPS-21 from the compiler tests alone. HTTP fixture ACKs are simulated; live delivery, matching node-local store and a separate real applied ACK remain required. |
+| D-100 | Merged #276: changed topology expectations can refresh only through a clean verified Apply of a newer published generation. Same-generation retries, failed Apply/read-back, restarts and legacy state cannot authorize recapture. No out-of-band override. |
+| D-101 | Merged #275 closes Portal CI red since #259. The dev stack's live node obtains a real serving lease through `POST /api/v1/agent/lease-renewals` using mTLS and reports the issued ID/expiry unchanged. Fixtures never fabricate lease evidence. |
+| D-102 | A lane's `requests.md` is written only by its owner. Devstack answers in `docs/e2e/RESPONSES.md`; route new cross-lane requests through the orchestrator. Fixture delivery #284 does not pass the consuming AT cases. |
+| D-103 | Security-ops uses its existing harness namespace `fvpn-w4-secops-*` (network `fvpn-w4-secops`), prefix `w4-secops`, port base `30000`. Follow-up 11 prepared but did not run live AT29 / AT31 / AT30; follow-up 12 is coming. |
+| D-104 | Deadlines must be enforced at the renderer's true precision, with no whole-second floor. Netlab follow-up 15 defines the sub-second contract, agent-core follow-up 24 consumes it, then isolation re-asserts continuity and post-deadline denial. AT13 stays failed until that chain passes; the diagnostic lab's exit 0 is not acceptance. |
+| D-105 | Design decision, pending contracts revision 14: the current incarnation may deliver the un-ACKed tail of a retired incarnation's stream unchanged. Central accepts only the same node, with the presenting incarnation enrolled after retirement, and intervals ending within one sampling interval of retirement. The retired certificate is never accepted. This is the ENR-05 hand-off design, not shipped retired-stream acceptance. |
+| D-106 | Clean serving evidence belongs on the observation, with actual read time, candidate generation and verifier outcome. Failed reads retain their rejected snapshot before rollback; an old snapshot is not fresh evidence. Agent-core follow-up 24 owns transport; optional `tc_evidence` is pending contracts revision 14. Absence is not a successful scan. |
+| D-107 | Merged #287: wire-nodes follow-up 30 owns publication-gate cause projection through revision 13's `Operation.steps[].message` for admin and node readers. Format: `<stored message> (<cause>)`, e.g. `member_forwarding_unconfirmed (lease_unconfirmed)`. D-074 still holds publication `running`; a polling timeout is not a failure. |
+| D-108 | D-096 is closed only for the measured pinned native IPv4 member interface owned by NetBird 0.82.0. NetBird remains the route/address owner and the agent waits for verified restoration. No agent route writer, no D-100 override. Installer-owned transit and IPv6 configurations are outside this closure. |
+| D-109 | Handover token pins belong only in owned documents, D-098 byte-identical archives, roadmap rows / PR numbers / contract version strings, or Go test names present on main. Never pin prose in another lane's living document. |
+| D-110 | Coming, fleet-update follow-up 11: central recomputes the installer job ID with `uuid.NewSHA1(<claim namespace>, manifest digest + "\|" + incarnation)` and rejects mismatch with `409 STATE_CONFLICT`, `details.reason = "job_id_mismatch"`. This bounds `installer_update_results` to one row per (incarnation, release); replay rules stay unchanged. `nodes.resource_version` moves only when recorded versions or the latest installer summary change. Planned shared helper: internal/installerjob; updater switches in follow-up 15. |
+| D-111 | Coming, fleet-update follow-up 11: when `current_release_id` is null, an installer-sourced result for an eligible release establishes `current_release_id = last_good_release_id = that release` from D-089's verified seeded baseline. Store failure evidence without promoting the candidate. The endpoint stays `POST /api/v1/agent/update-results`. |
+
+D-089 / D-097 are now merged in fleet-update follow-up 10 (#273): eligible
+installer results are accepted independently of fleet jobs; the current
+incarnation's latest accepted result projects `source: installer`,
+`batch_id: null`, and a current central job's projection wins. Migration
+`00191_installer_update_results.sql` includes Down; deploy it before the new
+control binary. Keyed HTTP replay is fixed in #277. This does not close the
+required red installer upgrade test or the AT07 rerun.
+
+## Coming at the follow-up 15 cutoff
+
+None of these lanes has a merged roadmap row at `5ce76e9`; no result is claimed.
+Wire-nodes follow-up 30 is already merged (#287), so it is in the register above.
+
+| Work | Decision / acceptance boundary |
+|---|---|
+| Security-ops follow-up 12 | D-103 / D-099: live SECOPS-21 first delivery, node-local store and applied ACK; live AT29 / AT31. |
+| Netlab follow-up 15 | D-104: sub-second renderer deadline contract; isolation must rerun after the agent consumes it. |
+| Enrollment follow-up 6 | D-105 / D-089: AT07 rerun on the fixed installer; ENR-05 same-slot exports and retired tail still need evidence. |
+| Agent-core follow-up 24 | D-104 / D-106 / D-108 / D-089: recovery latch after `TC_FOREIGN_FILTER` plus newer generation, ISO-F6-02 transport, meter checkpoint; r16 M-1 failed freeze persistence. |
+| Members follow-up 8 | D-102: consume the new fixtures; existing blocked member/platform cases are not promoted. |
+| Devstack follow-up 17 | D-102 / D-089: kernel boot identity and reusable installer fixtures; answers stay in its own response log. |
+| Contracts revision 14 | D-105 / D-106: retired stream hand-off and `tc_evidence`; also the missing `revokeMemberGrant` operation. Current contract is revision 13. |
+| Wire-nodes follow-up 31 with the desired-state owner | D-076: r16 H-1, fenced device still bound and leased. |
+| Fleet-update follow-up 11; updater follow-up 15 | D-110 / D-111: r16 M-2 rollback version recording and L-1 cardinality; null-baseline installer failure acceptance; updater adopts the job-ID helper. |
+
+[r16 is archived byte-identical](../reviews/r16-rev13-d089-d099-review.md),
+with [current owner dispositions](../reviews/README.md#r16-dispositions-at-the-follow-up-15-cutoff).
+Owners adopt its proofs; handover archives only the report.
