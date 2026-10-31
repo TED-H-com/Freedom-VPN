@@ -8,9 +8,12 @@ from grant_evidence import validate
 
 class GrantEvidenceTests(unittest.TestCase):
     def test_D087_accepted_receipts_and_failure_boundaries(self):
-        root=Path(__file__).resolve().parents[4]/'docs/e2e/at/isolation'
+        # Immutable positive witness; current live acceptance is audited separately
+        # by review_followup10.py and never inferred from this regression test.
+        root=Path(__file__).resolve().parents[4]/'docs/e2e/at/isolation/history/follow-up-10-attempt-1'
         transition=json.loads((root/'member-grants-transition.json').read_text())
         events=json.loads((root/'member-grants-wire.json').read_text())
+        self.assertEqual(transition['run_id'],'17c14696-3eb1-469d-8aab-f947f6f425e4')
         self.assertEqual(validate(transition,events)['status'],'pass')
         for failure in ('not_accepted','expired','wrong_lease','generation','early_true','counter','invariants','wire_digest'):
             with self.subTest(failure=failure):
