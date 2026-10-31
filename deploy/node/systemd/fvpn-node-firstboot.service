@@ -1,0 +1,25 @@
+[Unit]
+Description=Freedom VPN first-boot enrollment
+# A prepared image has no identity (§6.3, ENR03). The token file is placed
+# by the operator at first boot and is not in the image.
+ConditionPathExists=/var/lib/vpn-node/firstboot.token
+ConditionPathExists=!/var/lib/vpn-node/identity/node.json
+After=network-online.target
+Before=fvpn-agent.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/opt/vpn-node/current/fvpn-node-install firstboot
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+RuntimeDirectory=vpn-node
+UMask=0077
+ReadWritePaths=/var/lib/vpn-node /etc/vpn-node /run/vpn-node /etc/machine-id -/var/lib/dbus/machine-id
+CapabilityBoundingSet=
+
+[Install]
+WantedBy=multi-user.target

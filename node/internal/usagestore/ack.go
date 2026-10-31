@@ -417,7 +417,10 @@ func (s *Store) EvaluateGate(ctx context.Context) (Health, error) {
 	return s.evaluateGate(ctx)
 }
 
-func (s *Store) evaluateGate(ctx context.Context) (Health, error) {
+// streamView reads the counters OutboxStatus and EvaluateGate share.
+// It does not stat the disk, does not change persistFailed, and does not
+// write the gate.
+func (s *Store) streamView(ctx context.Context) (Health, error) {
 	h := Health{ForwardingAllowed: true, PersistFailed: s.persistFailed}
 	head, err := s.head(ctx)
 	if err != nil {
@@ -456,6 +459,14 @@ func (s *Store) evaluateGate(ctx context.Context) (Health, error) {
 	}
 	if arch.Valid && arch.Int64 > 0 {
 		h.ArchiveBytes = uint64(arch.Int64)
+	}
+	return h, nil
+}
+
+func (s *Store) evaluateGate(ctx context.Context) (Health, error) {
+	h, err := s.streamView(ctx)
+	if err != nil {
+		return Health{}, err
 	}
 	if s.diskFoot != nil {
 		n, err := s.diskFoot(s.path)
@@ -602,17 +613,34 @@ func under80(used, limit uint64) bool {
 	return used*resumeDen < limit*resumeNum
 }
 
-// OutboxStatus is the contract view of the local stream (§10.5, §10.8).
+// OutboxStatus is the contract view of the local stream (§10.5, §10.6, §10.8).
+// It only reads. It does not evaluate the forwarding gate and it does not
+// write gate_stopped. The agent run loop persists that flag through
+// meter.Health, which calls EvaluateGate.
+//
+// LedgerEpoch is the central generation adopted by ApplyCheckpoint. It stays
+// null until that verified checkpoint, including after batch ACKs have
+// advanced CentralAckedThrough. A batch result names an epoch but is not a
+// signed checkpoint, so it does not become the epoch this node is
+// synchronized with (§17.3). Null means no verified generation has been
+// accepted. The contiguous watermark can still be non-zero.
 func (s *Store) OutboxStatus(ctx context.Context) (api.UsageOutboxStatus, error) {
-	h, err := s.EvaluateGate(ctx)
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	h, err := s.streamView(ctx)
 	if err != nil {
 		return api.UsageOutboxStatus{}, err
 	}
+	return statusFromHealth(h), nil
+}
+
+func statusFromHealth(h Health) api.UsageOutboxStatus {
 	st := api.UsageOutboxStatus{
 		AckedArchiveBytes:   decstr.U64(h.ArchiveBytes),
 		BlockedSeq:          presence.NewNullNullable[decstr.U64](),
 		CentralAckedThrough: decstr.U64(h.AckedThrough),
 		LastDurableEventSeq: decstr.U64(h.LastSeq),
+		// Null until ApplyCheckpoint. The epoch on a batch ACK is not stored.
 		LedgerEpoch:         presence.NewNullNullable[uuid.UUID](),
 		MeterEpochId:        presence.NewNullNullable[uuid.UUID](),
 		OldestUnackedAt:     presence.NewNullNullable[time.Time](),
@@ -631,5 +659,5 @@ func (s *Store) OutboxStatus(ctx context.Context) (api.UsageOutboxStatus, error)
 	if !h.OldestUnacked.IsZero() {
 		st.OldestUnackedAt = presence.NewNullableWithValue(h.OldestUnacked.UTC())
 	}
-	return st, nil
+	return st
 }

@@ -137,9 +137,28 @@ func (s *Stack) startSecondExit(ctx context.Context, clone bool) error {
 	}
 	// A clean second exit keeps an empty directory off the client's state path.
 	// The clone bind-mounts the copied profile where the client reads it.
+	// --network container: shares interfaces, not /etc/hosts, and Docker
+	// rejects --add-host in that mode. The entrypoint appends lab-hosts.
+	// The copied file already names the lab /24. The clone rewrites
+	// agent.example.invalid to the presentation control address first.
 	netbirdDest := "/etc/netbird"
+	args := []string{"run", "-d", "--name", name, "--privileged", "--network", "container:" + ns}
 	if clone {
 		netbirdDest = "/var/lib/netbird"
+		pres, attachErr := s.AttachClonePresentationNetwork(ctx, ns)
+		if attachErr != nil {
+			return attachErr
+		}
+		if err := rewriteLabHost(filepath.Join(base, "etc", "lab-hosts"), "agent.example.invalid", pres.Control); err != nil {
+			return err
+		}
 	}
-	return run("run", "-d", "--name", name, "--privileged", "--network", "container:"+ns, "--mount", "type=bind,src="+filepath.Join(base, "etc")+",dst=/etc/vpn-node", "--mount", "type=bind,src="+filepath.Join(base, "var")+",dst=/var/lib/vpn-node", "--mount", "type=bind,src="+filepath.Join(base, "netbird")+",dst="+netbirdDest, "--mount", "type=bind,src="+filepath.Join(base, "opt")+",dst=/opt/vpn-node", strings.TrimSpace(string(image)))
+	args = append(args,
+		"--mount", "type=bind,src="+filepath.Join(base, "etc")+",dst=/etc/vpn-node",
+		"--mount", "type=bind,src="+filepath.Join(base, "var")+",dst=/var/lib/vpn-node",
+		"--mount", "type=bind,src="+filepath.Join(base, "netbird")+",dst="+netbirdDest,
+		"--mount", "type=bind,src="+filepath.Join(base, "opt")+",dst=/opt/vpn-node",
+		strings.TrimSpace(string(image)),
+	)
+	return run(args...)
 }

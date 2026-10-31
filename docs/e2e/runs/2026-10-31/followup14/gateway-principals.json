@@ -1,0 +1,71 @@
+{
+  "id": "gateway-principals",
+  "title": "Gateway preserves independent client rate principals",
+  "spec": [
+    "§14.2",
+    "§19 AT28",
+    "§19 AT31"
+  ],
+  "status": "pass",
+  "observations": [
+    {
+      "name": "trusted_proxies",
+      "detail": "[\"172.28.30.21/32\"]"
+    },
+    {
+      "name": "rates",
+      "detail": "unchanged defaults: browser 10/s burst 30; ingress 20/s burst 60"
+    },
+    {
+      "name": "distinct_members",
+      "detail": "true"
+    },
+    {
+      "name": "client_source_addresses",
+      "detail": "[\"172.28.30.128\",\"172.28.30.129\"]"
+    },
+    {
+      "name": "forged_header_scope",
+      "detail": "rotating TEST ONLY documentation IPv4 values; source sockets unchanged"
+    },
+    {
+      "name": "member_a_gateway",
+      "detail": "{\"status_counts\":{\"200\":30,\"429\":90},\"rate_limited_codes\":90,\"retry_after_present\":90,\"address_refusals\":58,\"subject_refusals\":32,\"elapsed_seconds\":0.143080985}"
+    },
+    {
+      "name": "member_a_forged_gateway",
+      "detail": "{\"status_counts\":{\"200\":2,\"429\":118},\"rate_limited_codes\":118,\"retry_after_present\":118,\"address_refusals\":117,\"subject_refusals\":1,\"elapsed_seconds\":0.086598731}"
+    },
+    {
+      "name": "member_b_gateway",
+      "detail": "{\"status_counts\":{\"200\":1},\"rate_limited_codes\":0,\"retry_after_present\":0,\"address_refusals\":0,\"subject_refusals\":0,\"elapsed_seconds\":0.004379542}"
+    },
+    {
+      "name": "metrics_before",
+      "detail": "{\"address\":0,\"subject\":0}"
+    },
+    {
+      "name": "metrics_after_gateway",
+      "detail": "{\"address\":175,\"subject\":33}"
+    },
+    {
+      "name": "member_a_forged_direct",
+      "detail": "{\"status_counts\":{\"200\":2,\"429\":118},\"rate_limited_codes\":118,\"retry_after_present\":118,\"address_refusals\":117,\"subject_refusals\":1,\"elapsed_seconds\":0.011854845}"
+    },
+    {
+      "name": "metrics_after_direct",
+      "detail": "{\"address\":292,\"subject\":34}"
+    },
+    {
+      "name": "member_b_forged_direct",
+      "detail": "{\"status_counts\":{\"200\":1},\"rate_limited_codes\":0,\"retry_after_present\":0,\"address_refusals\":0,\"subject_refusals\":0,\"elapsed_seconds\":0.002752293}"
+    },
+    {
+      "name": "limiter_state_reads",
+      "detail": "none; responses and public control metric counters only"
+    }
+  ],
+  "at": "2026-10-31T00:42:11Z",
+  "run_id": "4e3e9487-fe0f-4d88-a396-d5d5fa4a8e1d",
+  "source_commit": "7029dbe631b8344ccd0db3991fac81e773a26ed5"
+}

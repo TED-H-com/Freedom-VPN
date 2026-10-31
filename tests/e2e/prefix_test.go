@@ -60,6 +60,7 @@ func TestPrefixE2EDoesNotMatchE2EExports(t *testing.T) {
 		"fvpn-e2e-node2-netns",
 		"fvpn-e2e-node2-adguard",
 		"fvpn-e2e-node-clone",
+		"fvpn-e2e-node-clone-net",
 		"fvpn-e2e-node-clone-copy",
 		"fvpn-e2e-node-probe",
 		"fvpn-e2e-state-reset",
@@ -82,6 +83,9 @@ func TestPrefixE2EDoesNotMatchE2EExports(t *testing.T) {
 		if !owned("e2e-exports", name) {
 			t.Errorf("prefix e2e-exports rejected %s", name)
 		}
+	}
+	if owned("e2e", "fvpn-e2e-clone") || owned("e2e", "fvpn-e2e-clone-net") {
+		t.Fatal("prefix e2e matched a network whose token is not node-clone")
 	}
 	if owned("e2e", "fvpn-devstack-node:local") || owned("e2e", "fvpn-pg") {
 		t.Fatal("prefix e2e matched a shared image or the shared database")

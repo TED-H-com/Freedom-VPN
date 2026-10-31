@@ -52,9 +52,12 @@ type ForeignChain struct {
 	Rules   []ForeignRule
 }
 
-// ForeignRule is one rule. Stmts are the nft JSON statement keys in order.
+// ForeignRule is one rule outside inet fvpn. Stmts are the nft JSON
+// statement keys in order. Handle is set when the listing carried a handle.
 type ForeignRule struct {
-	Stmts []ForeignStmt
+	Stmts     []ForeignStmt
+	Handle    uint64
+	HasHandle bool
 }
 
 // ForeignStmt is one nft statement. Target is set for jump and goto.
@@ -419,6 +422,7 @@ func noteRule(rs *Ruleset, foreign *foreignBuild, raw json.RawMessage) error {
 		Table   string          `json:"table"`
 		Chain   string          `json:"chain"`
 		Comment string          `json:"comment"`
+		Handle  *uint64         `json:"handle"`
 		Expr    json.RawMessage `json:"expr"`
 	}
 	if err := json.Unmarshal(raw, &head); err != nil {
@@ -434,7 +438,12 @@ func noteRule(rs *Ruleset, foreign *foreignBuild, raw json.RawMessage) error {
 	}
 	if fam != TableFamily || table != TableName {
 		ch := foreign.get(fam, table, head.Chain)
-		ch.Rules = append(ch.Rules, ForeignRule{Stmts: foreignStmts(head.Expr)})
+		rule := ForeignRule{Stmts: foreignStmts(head.Expr)}
+		if head.Handle != nil {
+			rule.Handle = *head.Handle
+			rule.HasHandle = true
+		}
+		ch.Rules = append(ch.Rules, rule)
 		return nil
 	}
 	rv := RuleView{Comment: head.Comment, Raw: string(head.Expr)}
