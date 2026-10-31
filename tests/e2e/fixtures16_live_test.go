@@ -348,7 +348,7 @@ func (r *runner) fixtureDNSNegative(ctx context.Context, s *Stack) {
 	for _, tc := range []struct {
 		typ      uint16
 		expected string
-	}{{1, s.lab.labPrefix + ".30"}, {28, "fd00::30"}} {
+	}{{1, "10.203.0.30"}, {28, "fd00::30"}} {
 		got, e := s.ProbeNativeDNS(ctx, "", "rebind.example.invalid", tc.typ, false, tc.expected)
 		noteJSON(&rec, fmt.Sprintf("rebind_rr_%d", tc.typ), got)
 		if e != nil || !got.ExpectedAnswer {

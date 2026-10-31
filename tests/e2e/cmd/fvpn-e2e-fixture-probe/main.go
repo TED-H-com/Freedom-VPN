@@ -156,10 +156,11 @@ func main() {
 			break
 		}
 		payload := strings.Repeat("x", 1000) + "\n"
+		if _, e = io.WriteString(c, strings.Repeat(payload, 64)); e != nil {
+			out.Error = "bulk_write"
+			break
+		}
 		for i := 0; i < 64; i++ {
-			if _, e = io.WriteString(c, payload); e != nil {
-				break
-			}
 			line, readErr := reader.ReadString('\n')
 			if readErr != nil || line != "ECHO "+payload {
 				e = fmt.Errorf("echo mismatch")
