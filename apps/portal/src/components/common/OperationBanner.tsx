@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
   apiClient,
+  getApiBaseUrl,
   hasOfflineRouteWithdrawnWarning,
   isTerminalOperationStatus,
   type OperationResource,
@@ -12,6 +13,8 @@ interface OperationBannerProps {
   operation: OperationResource | null;
   scope?: 'admin' | 'member';
   isPolling?: boolean;
+  /** A reused operation is a receipt, not evidence that a new device grant applied. */
+  receiptOnly?: boolean;
   onDismiss?: () => void;
   onTerminal?: (op: OperationResource) => void;
 }
@@ -44,6 +47,7 @@ export function OperationBanner({
   operation,
   scope = 'admin',
   isPolling = false,
+  receiptOnly = false,
   onDismiss,
   onTerminal,
 }: OperationBannerProps): React.ReactElement | null {
@@ -103,13 +107,14 @@ export function OperationBanner({
   const isSuperseded = current.status === 'superseded';
   const isSucceeded = current.status === 'succeeded' && !isPolling;
 
-  const alertClass = isRunningOrPending
-    ? 'alert alert-info'
-    : isSucceeded
-      ? 'alert alert-success'
-      : isPartial || isSuperseded
-        ? 'alert alert-warning'
-        : 'alert alert-danger';
+  const alertClass =
+    receiptOnly || isRunningOrPending
+      ? 'alert alert-info'
+      : isSucceeded
+        ? 'alert alert-success'
+        : isPartial || isSuperseded
+          ? 'alert alert-warning'
+          : 'alert alert-danger';
 
   return (
     <section
@@ -130,15 +135,17 @@ export function OperationBanner({
       >
         <div>
           <strong data-testid="operation-status-headline">
-            {isRunningOrPending
-              ? `${t('op.savedPendingApply')} — ${t('op.acceptedPending')}`
-              : isSucceeded
-                ? t('op.completedApplied')
-                : isPartial
-                  ? t('op.partiallySucceeded')
-                  : isSuperseded
-                    ? t('op.superseded')
-                    : t('op.failed')}
+            {receiptOnly
+              ? t('admin.devices.operationReceiptLabel')
+              : isRunningOrPending
+                ? `${t('op.savedPendingApply')} — ${t('op.acceptedPending')}`
+                : isSucceeded
+                  ? t('op.completedApplied')
+                  : isPartial
+                    ? t('op.partiallySucceeded')
+                    : isSuperseded
+                      ? t('op.superseded')
+                      : t('op.failed')}
           </strong>
           {hasOfflineRouteWithdrawnWarning(current) && (
             <p
@@ -150,7 +157,10 @@ export function OperationBanner({
           )}
           <div style={{ fontSize: '0.82rem', marginTop: '4px' }}>
             <span>
-              {t('op.idLabel')}: <code>{current.operation_id}</code>
+              {t('op.idLabel')}:{' '}
+              <a href={`${getApiBaseUrl()}/${scope}/operations/${current.operation_id}`}>
+                <code>{current.operation_id}</code>
+              </a>
             </span>
             <span style={{ marginLeft: '12px' }}>
               {t('op.requestIdLabel')}: <code>{current.request_id}</code>

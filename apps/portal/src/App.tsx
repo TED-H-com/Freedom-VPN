@@ -6,6 +6,7 @@ import { RoleGuard } from './components/layout/RoleGuard';
 import { useSession } from './context/SessionContext';
 import { AdminAddNodePage } from './pages/admin/AdminAddNodePage';
 import { AdminAuditPage } from './pages/admin/AdminAuditPage';
+import { AdminDevicesListPage } from './pages/admin/AdminDevicesListPage';
 import { AdminDnsPolicyPage } from './pages/admin/AdminDnsPolicyPage';
 import { AdminEnrollmentDetailPage } from './pages/admin/AdminEnrollmentDetailPage';
 import { AdminFleetUpdatesPage } from './pages/admin/AdminFleetUpdatesPage';
@@ -118,6 +119,14 @@ export function AppRoutes(): React.ReactElement {
             element={
               <RoleGuard requiredRole="admin">
                 <AdminMemberDetailPage />
+              </RoleGuard>
+            }
+          />
+          <Route
+            path="admin/devices"
+            element={
+              <RoleGuard requiredRole="admin">
+                <AdminDevicesListPage />
               </RoleGuard>
             }
           />
