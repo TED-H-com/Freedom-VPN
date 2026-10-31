@@ -1,0 +1,175 @@
+{
+  "run_id": "1f2b57de-de94-470b-a88c-b462b676b710",
+  "prefix": "w4-updates",
+  "port_base": 42000,
+  "scope": "Follow-up 12 regular-lab requested scenario; not complete original §19 acceptance or physical arm64 proof",
+  "id": "AT25",
+  "title": "Tampered archive never executes",
+  "spec": [
+    "UPD01",
+    "UPD02",
+    "§13.4",
+    "§13.9",
+    "§13.10",
+    "§13.12"
+  ],
+  "status": "pass",
+  "at": "2026-10-31T21:52:22Z",
+  "expected": "Tampered archive never executes",
+  "actual": "Byte-tampered archive produced HASH_MISMATCH at preflight before any transaction, candidate executable, or health challenge; null-health failed result accepted; probe scope does not apply to an archive that never passes preflight",
+  "git": "c80701f25bc37a6686a455a72c83e35750fa1396",
+  "node_incarnation": "01a193ec-99f0-7274-9e9c-3cbeb5b6afbd",
+  "commands": [
+    "make -f mk/at-updates.mk at-updates"
+  ],
+  "observations": [
+    {
+      "name": "harness_source",
+      "detail": "{\"differs_from_source_commit\":false,\"files_sha256\":{\"archive_test.go\":\"b389ec02292d56e46dd7c640520a84e5b83344bd9a0a70eb264bde50e0c00120\",\"authority_test.go\":\"64c1e1bbb6994589f6d1fbc236e020fd085c57cbb1751c71566f26743bc97ddc\",\"doc.go\":\"a43799934c9463e13de1e43c2e0f4373410be7c31421ceee8a3eb963717f6382\",\"evidence.go\":\"5f77f6740ded1f0561fd8e7496b04ca3b240f501b7146cc684aaa6d033588e85\",\"evidence_test.go\":\"eaa999300a284ba220deacae957eaab01f73fda21aab0d07481ccb958bd469cd\",\"installer_receipts_test.go\":\"d394145432282963364f92d40fc95d238a329810f01b73a00c92b606f72ee749\",\"installer_test.go\":\"1787d1d40c9f6b58d734c4108519f40145259283b7525f64ced660e5efbef64f\",\"lab_test.go\":\"fc7c87390b17b118879dfd5da57a20901f081f8c14e22b45e40d2aa8e844ade5\",\"live_test.go\":\"5cf2d38886d7f2ec3dc9054a72cffff485d1e181dc260cefc785a8e29c885b57\",\"preresult_test.go\":\"530332759bdecdde7924f3d5cf95def55682a11b13293410cd59e62a22f6bfdf\",\"probe_test.go\":\"12efbb020d4d241cd5a3738e58173988b851fb80091b404e11067c3f940d2214\",\"restated_test.go\":\"11c962259a120e5dce1045265fabdfbc87a96bae83e91ed92a2c4ef0d0b63679\"}}"
+    },
+    {
+      "name": "manifest_and_artifact_digests",
+      "detail": "{\"artifact_sha256_0.1.0_amd64\":\"cd51a2a94d7a500bdfdf2788c19210f0b54be608c27664ae2e5793b3f782dab9\",\"artifact_sha256_0.1.0_arm64\":\"837a397d43f5953b8b689fa59c662ed8f257613f3d5b4eabf77304b3d0957f24\",\"artifact_sha256_1.0.1_amd64\":\"f814cf272a5152c79bc0833c5089232d44e9a66f2a4c628f6ff5d3c55b298653\",\"artifact_sha256_1.0.1_arm64\":\"186b0808b65e160b70977213380022baed625ff86730a4294058db0183ab115b\",\"artifact_sha256_1.0.2_amd64\":\"5587e4f0bc433a880843fe7f994ddd9f1e726dd6a251c74df4eaacb5fe59a3fd\",\"artifact_sha256_1.0.2_arm64\":\"7946b8774d4b14f987ed55dd1493a91d2aea0805005cc49ee5bc15c21e244197\",\"manifest_sha256_0.1.0\":\"b88a6c5dd85f896860bb7dc54921c0df2265bb1c8317e9c0403cb8dabbe26762\",\"manifest_sha256_1.0.1\":\"94e0dbc7b7ea4bb55bb79578243c9c6ef2201bc95e532cfd5a7d311e625df4e9\",\"manifest_sha256_1.0.2\":\"a4b670cf2d2783089c9929411ed76933c6cda1aa8b0fb41df031c29944b70a55\",\"signed_manifest_sha256_0.1.0\":\"947bef6bc8093a67ef931defac8217cd21d28f803987cc78ae27cd9501e1a3f7\",\"signed_manifest_sha256_1.0.1\":\"e0dbb053213aa2a9456f857a901293c2726f1d45248049b97f3fccd9bb4996b0\",\"signed_manifest_sha256_1.0.2\":\"14ed0f1d8bcb5dbaf46dfb8283fd6d6faf26d227a293c801e85be18d4610c19f\"}"
+    },
+    {
+      "name": "support_policy_revision",
+      "detail": "\"01a193eb-886a-7e52-8ebb-095ed0aa45e9\""
+    },
+    {
+      "name": "unrelated_release",
+      "detail": "{\"digests\":{\"artifact_sha256_1.0.3_amd64\":\"571e4020446423886f1305605e7bc61e2f0748c7e85331e21e155af81c7757a1\",\"artifact_sha256_1.0.3_arm64\":\"0681a419c5b5b66e2cd475903aee17eb8659f3ad130676f1d233408980044a4a\",\"manifest_sha256_1.0.3\":\"56bb745b0752d9ea2998f49f31cdd1f5d21e3e3116c0a8eb092afb6fc1b448e4\",\"signed_manifest_sha256_1.0.3\":\"d32cffdc60b092603364c86d91c3261e2dbf2acf7f5dffbbc5ce909736aeb4f0\"},\"purpose\":\"TEST ONLY registered, never installed or made fleet default\",\"release_id\":\"01a193ec-9433-72a8-9262-385d2d2e4bf3\",\"version\":\"1.0.3\"}"
+    },
+    {
+      "name": "kernel_boot_verified",
+      "detail": "\"Read-only comparison: devstack agent boot-id input equals kernel boot_id before enrollment; updater config omits boot_id (F9-06)\""
+    },
+    {
+      "name": "accepted_unpublished_baseline",
+      "detail": "true"
+    },
+    {
+      "name": "netbird_manifest_version",
+      "detail": "\"0.82.0\""
+    },
+    {
+      "name": "release_ids",
+      "detail": "{\"boot\":\"01a193eb-7358-7378-810f-07ff3f97d3cb\",\"good\":\"01a193eb-7ba1-7042-ac75-b3a9405275ec\",\"negative\":\"01a193eb-83cd-70b6-888a-0b853f848bd5\"}"
+    },
+    {
+      "name": "probe_setup_notes",
+      "detail": "[{\"name\":\"probe_not_member\",\"detail\":\"true\"},{\"name\":\"probe_route_selected\",\"detail\":\"true\"},{\"name\":\"probe_config_scope\",\"detail\":\"one dedicated setup-key peer /32; one isolated origin /32 UDP 4443; no member device or grant\"}]"
+    },
+    {
+      "name": "batch_response",
+      "detail": "\"202\""
+    },
+    {
+      "name": "batch_id",
+      "detail": "\"01a193ed-acd7-7442-8eaa-5ebf8f66ad8c\""
+    },
+    {
+      "name": "generation",
+      "detail": "\"4\""
+    },
+    {
+      "name": "signed_intent_for_this_batch",
+      "detail": "true"
+    },
+    {
+      "name": "probe_issuance",
+      "detail": "{\"actual_updater_config\":{\"agent_config\":\"/etc/vpn-node/agent-run.json\",\"allowed_artifact_origins\":[\"https://agent.example.invalid:9443\"],\"desired_state\":\"/var/lib/vpn-node/state/desired-state.json\",\"desired_trust\":\"/etc/vpn-node/trust.json\",\"incarnation_id\":\"01a193ec-99f0-7274-9e9c-3cbeb5b6afbd\",\"meter_checkpoint\":\"/var/lib/vpn-node/state/meter.checkpoint\",\"mtls_ca\":\"/etc/vpn-node/ca.pem\",\"mtls_cert\":\"/var/lib/vpn-node/identity/cert.pem\",\"mtls_key\":\"/var/lib/vpn-node/identity/key.pem\",\"node_id\":\"01a193ec-98b6-791a-8739-3b3f6192abb1\",\"platform\":{\"architecture\":\"amd64\",\"control_api_major\":1,\"os_id\":\"ubuntu\",\"os_version\":\"24.04\",\"policy_schema\":1,\"state_schema\":1,\"updater_version\":\"1.0.0\",\"usage_schema\":1},\"probe_peer\":{\"destinations\":[{\"addr_v4\":\"192.0.7.10/32\",\"port\":4443,\"proto\":\"udp\"}],\"peer_id\":\"[redacted]\",\"source_v4\":\"100.113.125.17/32\"},\"release_trust\":\"/etc/vpn-node/trust.json\",\"result_url\":\"https://agent.example.invalid:9443/api/v1/agent/update-results\",\"start_command\":[\"/usr/local/bin/agent-service.sh\",\"start\"],\"stop_command\":[\"/usr/local/bin/agent-service.sh\",\"stop\"]},\"agent_config_exists\":true,\"agent_config_path\":\"/etc/vpn-node/agent-run.json\",\"agent_diagnostics\":[],\"agent_handling\":\"Tampered archive rejected at preflight before stageCheck; no challenge issued and D-064 probe exception window stayed closed (grant_samples=0, elements_after=0)\",\"agent_log_readable\":true,\"authority_source\":\"node/agent/probeexc.go:66-71,125-127: matching challenge and another lock holder required; no probe installs nothing\",\"candidate_attestations\":null,\"capture_method\":\"exported UpdaterProbe.Observe plus read-only docker exec stream inside the node (no host read of 0700 journal)\",\"challenge_observation\":\"no fresh challenge during pre-health tampered-archive rejection; probe scope does not apply to an archive that never passes preflight\",\"config_load_invalid_probe_peer\":false,\"configurations_read_in_node\":{\"/etc/vpn-node/updater-recover.json\":{\"config\":{\"agent_config\":\"/etc/vpn-node/agent-run.json\",\"allow_loopback\":false,\"allowed_artifact_origins\":[\"https://agent.example.invalid:9443\"],\"boot_id\":\"97c018d7-a925-4723-9127-83c097de1c8a\",\"desired_state\":\"/var/lib/vpn-node/state/desired-state.json\",\"desired_trust\":\"/etc/vpn-node/trust.json\",\"incarnation_id\":\"01a193ec-99f0-7274-9e9c-3cbeb5b6afbd\",\"meter_checkpoint\":\"/var/lib/vpn-node/state/meter.checkpoint\",\"mtls_ca\":\"/etc/vpn-node/ca.pem\",\"mtls_cert\":\"/var/lib/vpn-node/identity/cert.pem\",\"mtls_key\":\"/var/lib/vpn-node/identity/key.pem\",\"node_id\":\"01a193ec-98b6-791a-8739-3b3f6192abb1\",\"platform\":{\"os_id\":\"ubuntu\",\"os_version\":\"24.04\",\"architecture\":\"amd64\",\"updater_version\":\"1.0.0\",\"control_api_major\":1,\"policy_schema\":1,\"usage_schema\":1,\"state_schema\":1},\"release_trust\":\"/etc/vpn-node/trust.json\",\"result_url\":\"https://agent.example.invalid:9443/api/v1/agent/update-results\",\"start_command\":[\"/usr/local/bin/agent-service.sh\",\"start\"],\"stop_command\":[\"/usr/local/bin/agent-service.sh\",\"stop\"]},\"readable\":true},\"/var/lib/vpn-node/e2e/updater.json\":{\"readable\":false},\"/var/lib/vpn-node/e2e/updater.json.done\":{\"config\":{\"agent_config\":\"/etc/vpn-node/agent-run.json\",\"allowed_artifact_origins\":[\"https://agent.example.invalid:9443\"],\"desired_state\":\"/var/lib/vpn-node/state/desired-state.json\",\"desired_trust\":\"/etc/vpn-node/trust.json\",\"incarnation_id\":\"01a193ec-99f0-7274-9e9c-3cbeb5b6afbd\",\"meter_checkpoint\":\"/var/lib/vpn-node/state/meter.checkpoint\",\"mtls_ca\":\"/etc/vpn-node/ca.pem\",\"mtls_cert\":\"/var/lib/vpn-node/identity/cert.pem\",\"mtls_key\":\"/var/lib/vpn-node/identity/key.pem\",\"node_id\":\"01a193ec-98b6-791a-8739-3b3f6192abb1\",\"platform\":{\"architecture\":\"amd64\",\"control_api_major\":1,\"os_id\":\"ubuntu\",\"os_version\":\"24.04\",\"policy_schema\":1,\"state_schema\":1,\"updater_version\":\"1.0.0\",\"usage_schema\":1},\"probe_peer\":{\"destinations\":[{\"addr_v4\":\"192.0.7.10/32\",\"port\":4443,\"proto\":\"udp\"}],\"peer_id\":\"[redacted]\",\"source_v4\":\"100.113.125.17/32\"},\"release_trust\":\"/etc/vpn-node/trust.json\",\"result_url\":\"https://agent.example.invalid:9443/api/v1/agent/update-results\",\"start_command\":[\"/usr/local/bin/agent-service.sh\",\"start\"],\"stop_command\":[\"/usr/local/bin/agent-service.sh\",\"stop\"]},\"readable\":true}},\"configured_probe_issued\":false,\"finding\":\"tampered archive rejected at preflight (HASH_MISMATCH) before health check; probe scope does not apply to an archive that never passes preflight\",\"fresh_challenges\":[],\"has_probe_peer\":true,\"observer_error\":\"\",\"omission_logs\":[],\"probe_observer\":{\"verified\":false,\"observations\":[{\"name\":\"probe_traffic\",\"detail\":\"{\\\"attempts\\\":328,\\\"authenticated_udp_replies\\\":0}\"},{\"name\":\"probe_window\",\"detail\":\"{\\\"samples\\\":290,\\\"grant_samples\\\":0,\\\"source_elements\\\":0,\\\"destination_elements\\\":0,\\\"max_timeout_seconds\\\":0,\\\"probe_up_bytes\\\":2156,\\\"probe_down_bytes\\\":2156,\\\"member_bytes_before\\\":0,\\\"member_bytes_after\\\":0,\\\"elements_after\\\":0}\"},{\"name\":\"probe_origin_receipt\",\"detail\":\"{\\\"probe_id\\\":\\\"09a89113-f718-467a-a83f-d93ea4880ad6\\\",\\\"requests\\\":0,\\\"source_address\\\":\\\"\\\"}\"},{\"name\":\"probe_traversal_verified\",\"detail\":\"false\"}]},\"probe_setup_notes\":[{\"name\":\"probe_not_member\",\"detail\":\"true\"},{\"name\":\"probe_route_selected\",\"detail\":\"true\"},{\"name\":\"probe_config_scope\",\"detail\":\"one dedicated setup-key peer /32; one isolated origin /32 UDP 4443; no member device or grant\"}],\"reader_error\":\"\",\"stderr_readable\":true}"
+    },
+    {
+      "name": "probe_observer",
+      "detail": "{\"verified\":false,\"observations\":[{\"name\":\"probe_traffic\",\"detail\":\"{\\\"attempts\\\":328,\\\"authenticated_udp_replies\\\":0}\"},{\"name\":\"probe_window\",\"detail\":\"{\\\"samples\\\":290,\\\"grant_samples\\\":0,\\\"source_elements\\\":0,\\\"destination_elements\\\":0,\\\"max_timeout_seconds\\\":0,\\\"probe_up_bytes\\\":2156,\\\"probe_down_bytes\\\":2156,\\\"member_bytes_before\\\":0,\\\"member_bytes_after\\\":0,\\\"elements_after\\\":0}\"},{\"name\":\"probe_origin_receipt\",\"detail\":\"{\\\"probe_id\\\":\\\"09a89113-f718-467a-a83f-d93ea4880ad6\\\",\\\"requests\\\":0,\\\"source_address\\\":\\\"\\\"}\"},{\"name\":\"probe_traversal_verified\",\"detail\":\"false\"}]}"
+    },
+    {
+      "name": "check_lab_probe_peer",
+      "detail": "true"
+    },
+    {
+      "name": "check_probe_inspection",
+      "detail": "true"
+    },
+    {
+      "name": "updater_finished",
+      "detail": "true"
+    },
+    {
+      "name": "process_updater.out",
+      "detail": "\"fvpn-updater: updater: HASH_MISMATCH: artifact\\n\""
+    },
+    {
+      "name": "process_agent.log",
+      "detail": "\"time=2026-10-31T21:46:18.630Z level=ERROR msg=\\\"updater recover\\\" err=\\\"forwarding stays blocked\\\"\\ntime=2026-10-31T21:46:18.630Z level=INFO msg=\\\"baseline write\\\" writer=agent cause=boot_unverified phase=begin mono_ns=66716146587926 generation=4\\ntime=2026-10-31T21:46:18.661Z level=INFO msg=\\\"baseline write\\\" writer=agent cause=boot_unverified phase=end mono_ns=66716177526753 succeeded=true\\ntime=2026-10-31T21:46:18.677Z level=INFO msg=\\\"usage checkpoint applied\\\"\\ntime=2026-10-31T21:46:18.677Z level=INFO msg=\\\"baseline write\\\" writer=agent cause=updater_barrier phase=begin mono_ns=66716193845888 generation=4\\ntime=2026-10-31T21:46:18.702Z level=INFO msg=\\\"baseline write\\\" writer=agent cause=updater_barrier phase=end mono_ns=66716219066802 succeeded=true\\ntime=2026-10-31T21:46:18.740Z level=INFO msg=\\\"baseline write\\\" writer=agent cause=updater_barrier phase=begin mono_ns=66716256375113 generation=4\\ntime=2026-10-31T21:46:18.762Z level=INFO msg=\\\"baseline write\\\" writer=agent cause=updater_barrier phase=end mono_ns=66716279111387 succeeded=true\\ntime=2026-10-31T21:46:18.764Z level=INFO msg=\\\"usage status available\\\"\\ntime=2026-10-31T21:46:23.730Z level=INFO msg=\\\"baseline write\\\" writer=agent cause=probe_install phase=begin mono_ns=66721246391396 generation=5\\ntime=2026-10-31T21:46:23.757Z level=INFO msg=\\\"baseline write\\\" writer=agent cause=probe_install phase=end mono_ns=66721273768919 succeeded=true\\ntime=2026-10-31T21:46:23.768Z level=INFO msg=\\\"baseline write\\\" writer=agent cause=probe_clear phase=begin mono_ns=66721285108356 generation=5\\ntime=2026-10-31T21:46:23.799Z level=INFO msg=\\\"baseline write\\\" writer=agent cause=probe_clear phase=end mono_ns=66721315952191 succeeded=true\\ntime=2026-10-31T21:46:23.801Z level=INFO msg=\\\"baseline write\\\" writer=agent cause=updater_barrier phase=begin mono_ns=66721317543712 generation=5\\ntime=2026-10-31T21:46:23.834Z level=INFO msg=\\\"baseline write\\\" writer=agent cause=updater_barrier phase=end mono_ns=66721350865146 succeeded=true\\ntime=2026-10-31T21:46:28.743Z level=INFO msg=\\\"baseline write\\\" writer=agent cause=updater_barrier phase=begin mono_ns=66726259915530 generation=6\\ntime=2026-10-31T21:46:28.769Z level=INFO msg=\\\"baseline write\\\" writer=agent cause=updater_barrier phase=end mono_ns=66726285661077 succeeded=true\\ntime=2026-10-31T21:46:28.789Z level=INFO msg=\\\"baseline write\\\" writer=agent cause=updater_barrier phase=begin mono_ns=66726306150574 generation=7\\ntime=2026-10-31T21:46:28.815Z level=INFO msg=\\\"baseline write\\\" writer=agent cause=updater_barrier phase=end mono_ns=66726331656098 succeeded=true\\ntime=2026-10-31T21:46:33.751Z level=INFO msg=\\\"baseline write\\\" writer=agent cause=updater_barrier phase=begin mono_ns=66731267868131 generation=7\\ntime=2026-10-31T21:46:33.781Z level=INFO msg=\\\"baseline write\\\" writer=agent cause=updater_barrier phase=end mono_ns=66731297827092 succeeded=true\\ntime=2026-10-31T21:46:33.803Z level=INFO msg=\\\"baseline write\\\" writer=agent cause=updater_barrier phase=begin mono_ns=66731319729796 generation=8\\ntime=2026-10-31T21:46:33.834Z level=INFO msg=\\\"baseline write\\\" writer=agent cause=updater_barrier phase=end mono_ns=66731351196419 succeeded=true\\ntime=2026-10-31T21:46:38.750Z level=INFO msg=\\\"baseline write\\\" writer=agent cause=updater_barrier phase=begin mono_ns=66736267117365 generation=8\\ntime=2026-10-31T21:46:38.784Z level=INFO msg=\\\"baseline write\\\" writer=agent cause=updater_barrier phase=end mono_ns=66736300859273 succeeded=true\\ntime=2026-10-31T21:46:38.805Z level=INFO msg=\\\"baseline write\\\" writer=agent cause=updater_barrier phase=begin mono_ns=66736321406279 generation=9\\ntime=2026-10-31T21:46:38.831Z level=INFO msg=\\\"baseline write\\\" writer=agent cause=updater_barrier phase=end mono_ns=66736347876114 succeeded=true\\n\""
+    },
+    {
+      "name": "process_watchdog.log",
+      "detail": "\"{\\\"time\\\":\\\"2026-10-31T21:45:19.126153856Z\\\",\\\"level\\\":\\\"INFO\\\",\\\"msg\\\":\\\"baseline decision\\\",\\\"writer\\\":\\\"watchdog\\\",\\\"cause\\\":\\\"heartbeat_unreadable\\\",\\\"boot_id\\\":\\\"97c018d7-a925-4723-9127-83c097de1c8a\\\",\\\"mono_ns\\\":66656642511831,\\\"heartbeat_mono_ns\\\":0,\\\"policy_expires_mono_ns\\\":0,\\\"generation\\\":0,\\\"serving\\\":false,\\\"baseline_ok\\\":false}\\n{\\\"time\\\":\\\"2026-10-31T21:45:19.126214946Z\\\",\\\"level\\\":\\\"INFO\\\",\\\"msg\\\":\\\"baseline write\\\",\\\"writer\\\":\\\"watchdog\\\",\\\"phase\\\":\\\"begin\\\",\\\"cause\\\":\\\"heartbeat_unreadable\\\",\\\"mono_ns\\\":66656642584884,\\\"heartbeat_mono_ns\\\":0,\\\"policy_expires_mono_ns\\\":0,\\\"generation\\\":0}\\n{\\\"time\\\":\\\"2026-10-31T21:45:19.135572909Z\\\",\\\"level\\\":\\\"INFO\\\",\\\"msg\\\":\\\"baseline write\\\",\\\"writer\\\":\\\"watchdog\\\",\\\"phase\\\":\\\"end\\\",\\\"cause\\\":\\\"heartbeat_unreadable\\\",\\\"mono_ns\\\":66656651940415,\\\"succeeded\\\":true}\\n\""
+    },
+    {
+      "name": "executable_layout",
+      "detail": "{\"both_paths_present\":false,\"output\":\"ls: cannot access '/opt/vpn-node/current/bin/fvpn-agent': No such file or directory\\n-rwxr-xr-x 1 root root 20636105 Oct 31 21:46 /opt/vpn-node/current/fvpn-agent\\n\"}"
+    },
+    {
+      "name": "product_outbox_flush_success",
+      "detail": "true"
+    },
+    {
+      "name": "product_outbox_flush_output",
+      "detail": "\"\""
+    },
+    {
+      "name": "result_delivery_http",
+      "detail": "{\"at\":\"2026-10-31T21:46:42.136093759Z\",\"status\":202}"
+    },
+    {
+      "name": "journal",
+      "detail": "{\"txn_id\":\"\",\"stage\":\"\",\"error\":\"\",\"error_stage\":\"\",\"events\":null,\"job_error\":\"HASH_MISMATCH\",\"current\":\"01a193eb-7ba1-7042-ac75-b3a9405275ec\",\"last_good\":\"01a193eb-7ba1-7042-ac75-b3a9405275ec\",\"health\":null,\"candidate_health\":null,\"attestations\":null,\"outbox_state\":\"\",\"outbox_status\":\"\",\"outbox_error\":\"\"}"
+    },
+    {
+      "name": "candidate_executable_absent",
+      "detail": "true"
+    },
+    {
+      "name": "central",
+      "detail": "{\"state\":\"failed\",\"unconfirmed\":false,\"needs_attention\":true,\"current_release\":\"01a193eb-7ba1-7042-ac75-b3a9405275ec\",\"error_code\":\"ARTIFACT_INVALID\"}"
+    },
+    {
+      "name": "batch_api_response",
+      "detail": "{\"batch_id\":\"01a193ed-acd7-7442-8eaa-5ebf8f66ad8c\",\"counts\":{\"already_current\":0,\"applying\":0,\"cancelled\":0,\"checking\":0,\"downloading\":0,\"failed\":1,\"queued\":0,\"rolled_back\":0,\"succeeded\":0,\"superseded\":0,\"verifying\":0,\"waiting_online\":0},\"created_at\":\"2026-10-31T21:46:29.462222Z\",\"created_by\":\"01a193eb-69e0-72dd-ab55-69d0ec8b8b9b\",\"next_cursor\":null,\"operation_id\":\"01a193ed-acd7-7735-95ab-5573768db5e3\",\"reason\":\"TEST ONLY updates follow-up 12\",\"release_id\":\"01a193eb-83cd-70b6-888a-0b853f848bd5\",\"requires_service_restart\":true,\"state\":\"completed_with_exceptions\",\"target_count\":1,\"targets\":[{\"attempts\":1,\"candidate_health\":null,\"current_job\":{\"attempt\":1,\"error_code\":\"ARTIFACT_INVALID\",\"finished_at\":\"2026-10-31T21:46:42.131956Z\",\"job_id\":\"01a193ed-acd8-75e8-ad39-4fc46bd34eec\",\"recovery_required\":false,\"stage\":\"download\",\"started_at\":\"2026-10-31T21:46:42.131956Z\",\"state\":\"failed\"},\"current_release_id\":\"01a193eb-7ba1-7042-ac75-b3a9405275ec\",\"execution_incarnation_id\":\"01a193ec-99f0-7274-9e9c-3cbeb5b6afbd\",\"generation\":\"2\",\"health\":null,\"incarnation_at_snapshot\":\"01a193ec-99f0-7274-9e9c-3cbeb5b6afbd\",\"last_observed_at\":\"2026-10-31T21:46:43.827265Z\",\"last_result_at\":\"2026-10-31T21:46:42.131956Z\",\"needs_attention\":true,\"node_id\":\"01a193ec-98b6-791a-8739-3b3f6192abb1\",\"node_name\":\"TEST ONLY updates\",\"online_at_snapshot\":true,\"policy_generation\":\"9\",\"policy_refs\":[\"01a193eb-886a-7e52-8ebb-095ed0aa45e9\",\"01a193eb-e00e-7e8a-83dc-30ae12e051af\"],\"previous_release_id\":\"01a193eb-7ba1-7042-ac75-b3a9405275ec\",\"retryable\":false,\"state\":\"failed\",\"target_id\":\"01a193ed-acd7-7e35-9513-af1e7a0b2801\",\"unconfirmed\":false}],\"targets_url\":\"/api/v1/admin/update-batches/01a193ed-acd7-7442-8eaa-5ebf8f66ad8c\",\"updated_at\":\"2026-10-31T21:46:42.134416Z\"}"
+    },
+    {
+      "name": "central_result_receipts",
+      "detail": "[{\"payload\":{\"stage\":\"download\",\"state\":\"failed\",\"health\":null,\"job_id\":\"01a193ed-acd8-75e8-ad39-4fc46bd34eec\",\"attempt\":1,\"boot_id\":\"97c018d7-a925-4723-9127-83c097de1c8a\",\"node_id\":\"01a193ec-98b6-791a-8739-3b3f6192abb1\",\"batch_id\":\"01a193ed-acd7-7442-8eaa-5ebf8f66ad8c\",\"result_id\":\"1a74c75a-45fd-5635-9ff0-21be8e63e2bc\",\"target_id\":\"01a193ed-acd7-7e35-9513-af1e7a0b2801\",\"error_code\":\"ARTIFACT_INVALID\",\"generation\":\"2\",\"started_at\":\"2026-10-31T21:46:40Z\",\"finished_at\":\"2026-10-31T21:46:40Z\",\"payload_hash\":\"efc472163c3588527a3b43d535bb2a3487b1ed219c3d923621e23d050ba83d4a\",\"incarnation_id\":\"01a193ec-99f0-7274-9e9c-3cbeb5b6afbd\",\"manifest_sha256\":\"a4b670cf2d2783089c9929411ed76933c6cda1aa8b0fb41df031c29944b70a55\",\"usage_checkpoint\":null,\"policy_generation\":\"9\",\"recovery_required\":false,\"current_release_id\":\"01a193eb-7ba1-7042-ac75-b3a9405275ec\",\"publication_intent\":\"unpublished\",\"previous_release_id\":\"01a193eb-7ba1-7042-ac75-b3a9405275ec\",\"requested_release_id\":\"01a193eb-83cd-70b6-888a-0b853f848bd5\",\"state_schema_version\":1,\"member_forwarding_enabled\":false},\"response\":{\"accepted\":true,\"result_id\":\"1a74c75a-45fd-5635-9ff0-21be8e63e2bc\",\"received_at\":\"2026-10-31T21:46:42.132970924Z\",\"accepted_as_history\":false,\"observed_update_generation\":\"2\",\"applied_to_current_observation\":true},\"payload_sha256\":\"efc472163c3588527a3b43d535bb2a3487b1ed219c3d923621e23d050ba83d4a\"}]"
+    },
+    {
+      "name": "product_journal_snapshot",
+      "detail": "{\"generation\":\"2\",\"job_id\":\"01a193ed-acd8-75e8-ad39-4fc46bd34eec\",\"requested_release_id\":\"01a193eb-83cd-70b6-888a-0b853f848bd5\",\"stage\":\"download\",\"state\":\"failed\",\"current_release_id\":\"01a193eb-7ba1-7042-ac75-b3a9405275ec\",\"last_good_release_id\":\"01a193eb-7ba1-7042-ac75-b3a9405275ec\",\"recovery_required\":false,\"last_result_state\":\"failed\",\"last_rejection\":null,\"health\":null,\"candidate_health_json\":null}"
+    },
+    {
+      "name": "batch_response",
+      "detail": "\"202\""
+    },
+    {
+      "name": "batch_id",
+      "detail": "\"01a193ef-0f66-7e02-8157-500a3314b3fe\""
+    },
+    {
+      "name": "generation",
+      "detail": "\"6\""
+    },
+    {
+      "name": "signed_intent_for_this_batch",
+      "detail": "true"
+    },
+    {
+      "name": "failed_without_cause",
+      "detail": "{\"batch_api_response\":{\"batch_id\":\"01a193ef-0f66-7e02-8157-500a3314b3fe\",\"counts\":{\"already_current\":0,\"applying\":0,\"cancelled\":0,\"checking\":0,\"downloading\":0,\"failed\":0,\"queued\":1,\"rolled_back\":0,\"succeeded\":0,\"superseded\":0,\"verifying\":0,\"waiting_online\":0},\"created_at\":\"2026-10-31T21:48:00.229675Z\",\"created_by\":\"01a193eb-69e0-72dd-ab55-69d0ec8b8b9b\",\"next_cursor\":null,\"operation_id\":\"01a193ef-0f67-720b-aed5-825c3132668c\",\"reason\":\"TEST ONLY updates follow-up 12\",\"release_id\":\"01a193eb-7ba1-7042-ac75-b3a9405275ec\",\"requires_service_restart\":true,\"state\":\"running\",\"target_count\":1,\"targets\":[{\"attempts\":1,\"candidate_health\":null,\"current_job\":{\"attempt\":1,\"error_code\":null,\"finished_at\":null,\"job_id\":\"01a193ef-0f68-7364-ae13-a04c97bde84d\",\"recovery_required\":false,\"stage\":null,\"started_at\":null,\"state\":\"queued\"},\"current_release_id\":\"01a193eb-7ba1-7042-ac75-b3a9405275ec\",\"execution_incarnation_id\":\"01a193ec-99f0-7274-9e9c-3cbeb5b6afbd\",\"generation\":\"4\",\"health\":null,\"incarnation_at_snapshot\":\"01a193ec-99f0-7274-9e9c-3cbeb5b6afbd\",\"last_observed_at\":\"2026-10-31T21:47:49.707016Z\",\"last_result_at\":null,\"needs_attention\":false,\"node_id\":\"01a193ec-98b6-791a-8739-3b3f6192abb1\",\"node_name\":\"TEST ONLY updates\",\"online_at_snapshot\":true,\"policy_generation\":null,\"policy_refs\":null,\"previous_release_id\":null,\"retryable\":false,\"state\":\"queued\",\"target_id\":\"01a193ef-0f67-7be2-ad6e-708583745778\",\"unconfirmed\":true}],\"targets_url\":\"/api/v1/admin/update-batches/01a193ef-0f66-7e02-8157-500a3314b3fe\",\"updated_at\":\"2026-10-31T21:48:00.234362Z\"},\"http_status\":422,\"request\":{\"attempt\":1,\"batch_id\":\"01a193ef-0f66-7e02-8157-500a3314b3fe\",\"boot_id\":\"97c018d7-a925-4723-9127-83c097de1c8a\",\"candidate_health\":null,\"current_release_id\":\"01a193eb-7ba1-7042-ac75-b3a9405275ec\",\"error_code\":null,\"finished_at\":\"2026-10-31T21:48:06.352186108Z\",\"generation\":\"4\",\"health\":{\"processes\":\"passed\",\"dns_policy\":\"passed\",\"tunnel_probe\":\"passed\",\"internet_only\":\"passed\",\"identity_and_state\":\"passed\"},\"incarnation_id\":\"01a193ec-99f0-7274-9e9c-3cbeb5b6afbd\",\"job_id\":\"01a193ef-0f68-7364-ae13-a04c97bde84d\",\"manifest_sha256\":\"94e0dbc7b7ea4bb55bb79578243c9c6ef2201bc95e532cfd5a7d311e625df4e9\",\"member_forwarding_enabled\":false,\"node_id\":\"01a193ec-98b6-791a-8739-3b3f6192abb1\",\"payload_hash\":\"555c611a48b6e6a536b2fe47d5c950b7f76ccfb63160ca196017d4c1d0a40811\",\"policy_generation\":\"12\",\"previous_release_id\":null,\"publication_intent\":\"unpublished\",\"recovery_required\":false,\"requested_release_id\":\"01a193eb-7ba1-7042-ac75-b3a9405275ec\",\"result_id\":\"e3af6cdb-c75c-4bc5-9e71-57174e65fe94\",\"stage\":\"check\",\"started_at\":\"2026-10-31T21:48:06.352182882Z\",\"state\":\"failed\",\"state_schema_version\":1,\"target_id\":\"01a193ef-0f67-7be2-ad6e-708583745778\",\"usage_checkpoint\":{\"new_meter_epoch_id\":\"01a193ee-2430-7347-a533-9456a51dabc7\",\"central_acked_through\":\"0\",\"closed_meter_epoch_id\":\"01a193ed-6a67-7db1-86ec-12632debbd41\",\"last_durable_event_seq\":\"0\"}},\"response\":{\"error\":{\"code\":\"VALIDATION_FAILED\",\"message\":\"Failed result requires an error code\",\"request_id\":\"01a193ef-2f44-701d-b90d-99b5c17c8dba\",\"retryable\":false,\"details\":{}}}}"
+    },
+    {
+      "name": "check_failed_requires_cause",
+      "detail": "true"
+    }
+  ]
+}
