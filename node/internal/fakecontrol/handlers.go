@@ -529,6 +529,7 @@ func (s *Server) observe(w http.ResponseWriter, r *http.Request) {
 	}
 	s.obs[rep.ReportId.String()] = acc
 	s.lastObs = rep
+	s.observationReports = append(s.observationReports, rep)
 	s.hasObs = true
 	writeJSON(w, http.StatusAccepted, acc)
 }
