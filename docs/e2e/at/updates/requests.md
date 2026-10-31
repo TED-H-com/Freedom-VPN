@@ -1,23 +1,45 @@
-# Updates requests — follow-up 10, 2026-10-31
+# Updates requests — follow-up 11, 2026-10-31
 
-Measured on product main `fb5e002549f79e8ef61bebcf42cce1678ab65cb1`, harness `0df8599dc84d4b85e48182f20aa4b0fc741bc72a`, run `695f977c-b587-4768-88f1-0514f3a4f1ac`. Installer extension passes; the regular live gate fails. Original F9 observations remain [byte-identically archived](history/follow-up-9/requests.md).
+Run `daddad24-b6f7-4c32-ba8e-1c7d24f76ea2`, product main
+`96ec0630e4834e13a3a14d65553ba8108bb5da55`, measured harness
+`3ac13f7e115edf22e2ec9d3a6450733ec1fb7b6a`. The generated-reporting
+extension passes without editing the generated configuration. Prior requests
+remain [archived with follow-up 10](history/follow-up-10/requests.md).
 
 ### Requests to orchestrator
 
-| ID | Owner | Deciding observation | Requested change outside this lane |
-|---|---|---|---|
-| F10-01 | Devstack; agent-core consult | [AT23](AT23.json): candidate logs `agent: active release identity is inconsistent`; `executable_layout` shows `<current>/fvpn-agent` absent and `<current>/bin/fvpn-agent` present. Journal ends `recovery_required`, `ROLLBACK_FAILED`, no last-good and no candidate attestation. Thus AT24–AT27 cannot run their later scenarios. | Align the shared regular release layout and supervisor with the active-release contract. `tests/e2e/serving.go` builds `bin/` unless InstallerLayout; `deploy/devstack/agent-service.sh` and shared assertions expect `bin/`; `node/agent/release.go` verifies root `fvpn-agent`. Keep executable/journal identity validation. Also update shared recovery FileMeter configuration in `tests/e2e/cmd/fvpn-e2e-nodeconfig/main.go` and `tests/e2e/scenarios_test.go`: they still name the legacy four-member `e2e/meter.json`; this lane's actual apply config uses genuine `state/meter.checkpoint` and keeps the agent active through final sampling. Publish the answer in `docs/e2e/RESPONSES.md` (D-102), then request the complete AT23–AT27 rerun. |
-| F10-02 | Installer | [installer hand-off](installer-handoff.json), `generated_config`: `result_url` is empty. Real product delivery and central acceptance pass only after this harness explicitly configures the owned endpoint/CA/origins. | In `packaging/installer/config.go` (`renderUpdater` and its caller), derive/require the authenticated central result endpoint and its trust configuration, with a real generated-config delivery test. F9-04's central 422 is resolved, but the reporting configuration part remains open. No production endpoint is invented here. |
+| ID / date | Owner | Deciding observation | Requested change outside this lane |
+| --- | --- | --- | --- |
+| F11-01 / 2026-10-31 | Devstack | [Installer hand-off](installer-handoff.json), `install_wrapper`: exit **64**, `usage`, explicit loopback-opt-in diagnostic; before/after key, cert, identity, usage and current remain absent. The shared spec uses `https://127.0.0.1:9444`. Repeating the same install through `ProbeInstallerExit` with **TEST ONLY `--allow-loopback`** succeeds, exit **0**. | In `tests/e2e/installer_exports.go`, let `installArgs`/the installer spec supply the explicit TEST ONLY loopback opt-in for its existing local proxy. Do not change production defaults or generated reporting fields. Publish the D-102 answer in `docs/e2e/RESPONSES.md`. This lane supplies the documented input only in its own harness; no shared file was edited. |
+| F11-02 / 2026-10-31 | Updater, installer consult | Initial install/seed succeeds using the retained archive. `packaging/installer/install.go` calls `retainArchive` on initial and same-release installs. The [uncached probe](artifact-origin.json), run after deliberately withholding that cache, succeeds and adds a verified current baseline while preserving transaction state. | Correct the **Offline installation** paragraph in `docs/updates/node-updater.md`, which still says initial install retains only the envelope and needs a reachable artifact URL unless already staged. Describe the current installer's retained verified archive and the distinct missing-cache fallback. This is a documentation mismatch, not an updater failure. |
 
-### F9 closure by measured observation
+### F10 closure and artifact-origin decision
 
-| Prior request | Follow-up 10 deciding evidence |
-|---|---|
-| F9-01 | Install exit 0; real NetBird and agent active; new daemon socket exists. |
-| F9-02 | Default-umask and 077 seed both exit 0 with the same baseline hash/timestamp. |
-| F9-03 / D-125 | Genuine checkpoint UUID equals persisted latch; finalized epoch; apply 0, current switch, unit restarts and five health checks. Withdrawn-evidence failure and sealed replay exit 1; blocked recovery exits 2. |
-| F9-04 / D-110 / D-111 / D-127 | Real success accepted from null central baseline; installer summary/batch null; exact ACK replay, conflicts, wrong-job refusal, bounded correction, preserved history and ETags pass. Generated reporting remains F10-02. |
-| F9-05 | Downgrade exit 1 DOWNGRADE; pending absent. |
-| F9-06 / D-080 | Agent, seed, job, result and lock holder agree with the kernel boot identity. |
+F10-01's shared layout correction is consumed from devstack 20 / #343 and
+its [D-102 answer](../../RESPONSES.md#updates--2026-10-31-follow-up-20-f10-01-d-102).
+The two owned executable checks now use the release root. See the current
+[AT table](follow-up-11.md) for this lane's independent sequence.
 
-The extension's quiet local apply and HTTP acceptance are separate from devstack 19's [serving measurement](../../runs/2026-10-31/followup19/README.md). D-127's rolled_back input is an explicit TEST ONLY HTTP contract stimulus; no physical rollback pass is inferred. Scope limits are listed once in [follow-up-10.md](follow-up-10.md#evidence-and-limits).
+F10-02 closes within the measured installer extension: generated URL/server
+CA/client identity/exact origin policy, unchanged config hash, real sealed
+receipt and matching local/central ACK, `NodeUpdateSummary.source=installer`,
+D-110 recomputation, and [one automatic POST per receipt](installer-delivery-transport.json).
+The existing lab enrollment proxy forwards authenticated requests to the real
+central; no endpoint/CA/origin reporting adapter remains.
+
+The anticipated artifact-origin rejection **did not occur**. Normal hand-off
+uses verified staged archives; the separate uncached probe also exits **0**.
+The shared release hostname resolves to an owned **non-private** Docker origin.
+`allowed_artifact_origins` grants private/CGNAT exceptions; it is not an exclusive
+list of every downloadable host. This matches `node/updater/verify.go` and the
+D-046 paragraphs in `docs/updates/node-updater.md`. Release-process documentation
+permits immutable separate HTTPS artifact URLs. Neither hosting nor generated
+policy was changed, and no artifact-origin installer input is requested on an
+unobserved rejection. Private mirror deployment remains outside this result.
+
+F18-01 is retained as an intended negative: stopped producer apply/replay/recover
+**1/1/2**, `CHECKPOINT_FAILED`, original sealed failure and blocked forwarding;
+it is never reported as a passing upgrade. The old failure row is unchanged.
+
+Request count: **2**, neither blocks the measured acceptance sequence. The
+wrapper request has an explicit owned-harness input; the other is documentation.
