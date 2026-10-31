@@ -34,10 +34,10 @@ install-time record, exposed as `install_record`. A stale pointer, unreadable
 journal or recovery-required latch is still drift. The old manifest digest is
 not presented as the new release's digest when status cannot supply one.
 
-Initial install retains the authenticated archive under
-`update-staging/<artifact-sha>.tar.zst`, mode 0600. The streaming atomic copy is
-reverified before publication. This costs one compressed archive per retained
-release and allows seed/reenroll seed without accessing the artifact URL.
+Initial and same-release installs retain the authenticated archive before seed;
+see the updater's [Offline installation paragraph](../updates/node-updater.md#installer-hand-off-d-080-d-089-d-110).
+Storage costs the compressed size of each distinct retained archive, plus
+temporary staging/repair and updater verification scratch.
 
 ## Validation and outstanding integration
 
