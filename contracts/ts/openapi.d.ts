@@ -915,6 +915,10 @@ export interface paths {
          *     ACK_CONFLICT with evidence kept. Results for an older generation are
          *     accepted as history and never become the current observation (§13.8).
          *     Terminal states require version, digest and health evidence.
+         *     With `source: installer`, the node minted the job_id for a release staged
+         *     locally by the installer (D-089). Central stores the result as installer-applied
+         *     evidence on the node, never as a batch result. A job_id central did not issue
+         *     without `source: installer` remains 404 RESOURCE_NOT_FOUND.
          */
         post: operations["submitUpdateResult"];
         delete?: never;
@@ -1133,10 +1137,11 @@ export interface components {
          *     MARK_SEMANTICS_VIOLATED: a rule writes skb mark or conntrack mark. NetBird owns 0x1BD00-0x1BDFF (§11.4).
          *     ISOLATION_POLICY_INVALID: the allow/deny policy itself does not match.
          *     PROBE_UNBOUNDED: a synthetic-probe set element has no kernel timeout, so the exception would outlive the health check (§13.9).
+         *     TC_FOREIGN_FILTER: serving verification found a tc filter on the member path (D-085); the node withdrew serving and installed the baseline.
          *     AWAITING_MEMBER_GRANTS: The node lease for this generation is inside its anchored deadline and `config_generation` equals the desired generation, but `lease.members` is empty while desired `device_bindings` is non-empty. The agent renews on the D-067 schedule (one heartbeat, then doubling, capped at 60 seconds). This is not a deadline failure and not a malformed policy.
          * @enum {string}
          */
-        ErrorCode: "MALFORMED_REQUEST" | "UNAUTHENTICATED" | "FORBIDDEN" | "CSRF_TOKEN_INVALID" | "RESOURCE_NOT_FOUND" | "NOT_FOUND" | "METHOD_NOT_ALLOWED" | "IDEMPOTENCY_CONFLICT" | "STATE_CONFLICT" | "RESOURCE_VERSION_CONFLICT" | "PAYLOAD_TOO_LARGE" | "UNSUPPORTED_MEDIA_TYPE" | "VALIDATION_FAILED" | "NODE_NOT_SERVICEABLE" | "PRECONDITION_REQUIRED" | "RATE_LIMITED" | "INTERNAL_ERROR" | "NOT_IMPLEMENTED" | "DEPENDENCY_UNAVAILABLE" | "RELEASE_NOT_APPROVED" | "UNSUPPORTED_PLATFORM" | "CONTROL_API_INCOMPATIBLE" | "SCHEMA_INCOMPATIBLE" | "SIGNATURE_INVALID" | "KEY_UNTRUSTED" | "HASH_MISMATCH" | "SIZE_MISMATCH" | "ARTIFACT_INVALID" | "DISK_SPACE_LOW" | "DOWNLOAD_TIMEOUT" | "STORE_UNAVAILABLE" | "UPDATE_BUSY" | "AUTHORIZATION_EXPIRED" | "STALE_GENERATION" | "IDENTITY_REVOKED" | "INCARNATION_MISMATCH" | "CHECKPOINT_FAILED" | "MIGRATION_FAILED" | "START_FAILED" | "HEALTH_CHECK_FAILED" | "MINIMUM_VERSION_VIOLATION" | "ROLLBACK_FAILED" | "ACK_CONFLICT" | "USAGE_EVENT_CONFLICT" | "LEDGER_EPOCH_MISMATCH" | "REPLAY_UNAVAILABLE" | "METER_PATH_INVALID" | "ISOLATION_BASELINE_MISSING" | "METER_EPOCH_CHANGE" | "ISOLATION_POLICY_INVALID" | "GENERATION_MISMATCH" | "HOOK_PRIORITY_MISMATCH" | "COUNTER_ORDER_INVALID" | "FLOWTABLE_BYPASS" | "DEVICE_CLASS_MISSING" | "QOS_CLASS_MISSING" | "MARK_SEMANTICS_VIOLATED" | "PROBE_UNBOUNDED" | "DEVICE_LIMIT_REACHED" | "ENROLLMENT_TOKEN_INVALID" | "ENROLLMENT_TOKEN_EXPIRED" | "ENROLLMENT_TOKEN_REVOKED" | "ENROLLMENT_KEY_MISMATCH" | "LEASE_EXPIRED" | "AWAITING_MEMBER_GRANTS" | "WEBHOOK_SIGNATURE_INVALID" | "BOOTSTRAP_CONSUMED" | "BOOTSTRAP_NOT_READY" | "BOOTSTRAP_EXPIRED" | "NODE_INCARNATION_ACTIVE" | "NODE_RETIRED";
+        ErrorCode: "MALFORMED_REQUEST" | "UNAUTHENTICATED" | "FORBIDDEN" | "CSRF_TOKEN_INVALID" | "RESOURCE_NOT_FOUND" | "NOT_FOUND" | "METHOD_NOT_ALLOWED" | "IDEMPOTENCY_CONFLICT" | "STATE_CONFLICT" | "RESOURCE_VERSION_CONFLICT" | "PAYLOAD_TOO_LARGE" | "UNSUPPORTED_MEDIA_TYPE" | "VALIDATION_FAILED" | "NODE_NOT_SERVICEABLE" | "PRECONDITION_REQUIRED" | "RATE_LIMITED" | "INTERNAL_ERROR" | "NOT_IMPLEMENTED" | "DEPENDENCY_UNAVAILABLE" | "RELEASE_NOT_APPROVED" | "UNSUPPORTED_PLATFORM" | "CONTROL_API_INCOMPATIBLE" | "SCHEMA_INCOMPATIBLE" | "SIGNATURE_INVALID" | "KEY_UNTRUSTED" | "HASH_MISMATCH" | "SIZE_MISMATCH" | "ARTIFACT_INVALID" | "DISK_SPACE_LOW" | "DOWNLOAD_TIMEOUT" | "STORE_UNAVAILABLE" | "UPDATE_BUSY" | "AUTHORIZATION_EXPIRED" | "STALE_GENERATION" | "IDENTITY_REVOKED" | "INCARNATION_MISMATCH" | "CHECKPOINT_FAILED" | "MIGRATION_FAILED" | "START_FAILED" | "HEALTH_CHECK_FAILED" | "MINIMUM_VERSION_VIOLATION" | "ROLLBACK_FAILED" | "ACK_CONFLICT" | "USAGE_EVENT_CONFLICT" | "LEDGER_EPOCH_MISMATCH" | "REPLAY_UNAVAILABLE" | "METER_PATH_INVALID" | "ISOLATION_BASELINE_MISSING" | "METER_EPOCH_CHANGE" | "ISOLATION_POLICY_INVALID" | "GENERATION_MISMATCH" | "HOOK_PRIORITY_MISMATCH" | "COUNTER_ORDER_INVALID" | "FLOWTABLE_BYPASS" | "DEVICE_CLASS_MISSING" | "QOS_CLASS_MISSING" | "MARK_SEMANTICS_VIOLATED" | "PROBE_UNBOUNDED" | "TC_FOREIGN_FILTER" | "DEVICE_LIMIT_REACHED" | "ENROLLMENT_TOKEN_INVALID" | "ENROLLMENT_TOKEN_EXPIRED" | "ENROLLMENT_TOKEN_REVOKED" | "ENROLLMENT_KEY_MISMATCH" | "LEASE_EXPIRED" | "AWAITING_MEMBER_GRANTS" | "WEBHOOK_SIGNATURE_INVALID" | "BOOTSTRAP_CONSUMED" | "BOOTSTRAP_NOT_READY" | "BOOTSTRAP_EXPIRED" | "NODE_INCARNATION_ACTIVE" | "NODE_RETIRED";
         /** @description Accounting period ID generated by the central service. V1 uses the UTC calendar month `YYYY-MM` (§10.4, pending business decision on the period type). */
         PeriodId: string;
         /** @description User-facing text. zh-TW is the default UI language; English is second. */
@@ -1376,6 +1381,7 @@ export interface components {
         };
         /** @description The node's current update job, if any (§13.12). */
         NodeUpdateSummary: {
+            source?: components["schemas"]["UpdateResultSource"];
             /**
              * Format: uuid
              * @description Null for a fleet-default sync job that is not part of a batch (§13.1 step 5).
@@ -2730,6 +2736,7 @@ export interface components {
         };
         /** @description One node of the batch snapshot (§15.4 update_targets). incarnation_at_snapshot is immutable; execution_incarnation_id binds once. */
         UpdateTarget: {
+            source?: components["schemas"]["UpdateResultSource"];
             /** Format: uuid */
             target_id: string;
             /** Format: uuid */
@@ -2794,6 +2801,7 @@ export interface components {
             unconfirmed: boolean;
         };
         UpdateJobSummary: {
+            source?: components["schemas"]["UpdateResultSource"];
             /** Format: uuid */
             job_id: string;
             attempt: number;
@@ -3494,6 +3502,8 @@ export interface components {
         };
         /** @description The report was durably accepted. Not a claim that it was cross-verified (§14.4). */
         ObservationAccepted: {
+            /** @description true when the reporting incarnation is frozen by the clone detector (D-072 / D-084); the agent must drop every member grant immediately and renew its lease at once; absent or false means no change. */
+            identity_frozen?: boolean;
             /** Format: uuid */
             report_id: string;
             /** @enum {boolean} */
@@ -3686,6 +3696,19 @@ export interface components {
             tunnel_probe: components["schemas"]["HealthCheckStatus"];
         };
         /**
+         * @description Origin of the reported update job or result (D-089). With installer,
+         *     the job_id was minted by the node for a release the installer staged
+         *     locally (UUIDv5 over release id, manifest hash, canonical pending record
+         *     and incarnation; attempt 1). Central stores such a result as
+         *     installer-applied evidence on the node and never as a batch result.
+         *     A job_id central did not issue and that carries no source: installer
+         *     stays 404 RESOURCE_NOT_FOUND. Absent means central. Batch target and
+         *     current-job evidence remain central-issued.
+         * @default central
+         * @enum {string}
+         */
+        UpdateResultSource: "central" | "installer";
+        /**
          * @description Update job progress or result (§13.10.3, D-062). `payload_hash` is the lowercase
          *     hex SHA-256 of the RFC 8785 canonical JSON of this object without the
          *     `payload_hash` member (`canonjson.HashHex(result, "payload_hash")`).
@@ -3702,6 +3725,7 @@ export interface components {
          *     recovery_required=true means member forwarding stays off until recovery.
          */
         UpdateResult: {
+            source?: components["schemas"]["UpdateResultSource"];
             /** Format: uuid */
             result_id: string;
             /** Format: uuid */
@@ -5825,6 +5849,7 @@ export interface operations {
             400: components["responses"]["BadRequest"];
             401: components["responses"]["Unauthenticated"];
             403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
             413: components["responses"]["PayloadTooLarge"];
             422: components["responses"]["UnprocessableEntity"];

@@ -94,6 +94,7 @@ const (
 	QosClassMissing          Code = "QOS_CLASS_MISSING"
 	MarkSemanticsViolated    Code = "MARK_SEMANTICS_VIOLATED"
 	ProbeUnbounded           Code = "PROBE_UNBOUNDED"
+	TCForeignFilter          Code = "TC_FOREIGN_FILTER"
 	DeviceLimitReached       Code = "DEVICE_LIMIT_REACHED"
 	EnrollmentTokenInvalid   Code = "ENROLLMENT_TOKEN_INVALID"
 	EnrollmentTokenExpired   Code = "ENROLLMENT_TOKEN_EXPIRED"
@@ -175,6 +176,7 @@ var specs = []Spec{
 	{QosClassMissing, 0, false, "§11.4, §11.5", true, "The HTB parent or a member class is missing or wrong; node report only."},
 	{MarkSemanticsViolated, 0, false, "§11.4", true, "A rule writes skb mark or conntrack mark. NetBird owns 0x1BD00-0x1BDFF; node report only."},
 	{ProbeUnbounded, 0, false, "§13.9", true, "A synthetic-probe set element has no kernel timeout, so the exception would outlive the health check; node report only."},
+	{TCForeignFilter, http.StatusInternalServerError, false, "§13.11, D-085", true, "Serving verification found a tc filter on the member path (D-085); the node withdrew serving and installed the baseline."},
 	{DeviceLimitReached, http.StatusConflict, false, "§9.4, MEM02", false, "Authorizing another device would exceed the plan device limit."},
 	{EnrollmentTokenInvalid, http.StatusUnauthorized, false, "§6.1, ENR02", false, "Enrollment token is unknown or malformed."},
 	{EnrollmentTokenExpired, http.StatusUnauthorized, false, "§6.4, ENR02", false, "Enrollment token has expired."},

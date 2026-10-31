@@ -563,6 +563,7 @@ const (
 	ErrorCodeSTARTFAILED              ErrorCode = "START_FAILED"
 	ErrorCodeSTATECONFLICT            ErrorCode = "STATE_CONFLICT"
 	ErrorCodeSTOREUNAVAILABLE         ErrorCode = "STORE_UNAVAILABLE"
+	ErrorCodeTCFOREIGNFILTER          ErrorCode = "TC_FOREIGN_FILTER"
 	ErrorCodeUNAUTHENTICATED          ErrorCode = "UNAUTHENTICATED"
 	ErrorCodeUNSUPPORTEDMEDIATYPE     ErrorCode = "UNSUPPORTED_MEDIA_TYPE"
 	ErrorCodeUNSUPPORTEDPLATFORM      ErrorCode = "UNSUPPORTED_PLATFORM"
@@ -702,6 +703,8 @@ func (e ErrorCode) Valid() bool {
 	case ErrorCodeSTATECONFLICT:
 		return true
 	case ErrorCodeSTOREUNAVAILABLE:
+		return true
+	case ErrorCodeTCFOREIGNFILTER:
 		return true
 	case ErrorCodeUNAUTHENTICATED:
 		return true
@@ -2222,6 +2225,24 @@ func (e UpdateJobState) Valid() bool {
 	}
 }
 
+// Defines values for UpdateResultSource.
+const (
+	UpdateResultSourceCentral   UpdateResultSource = "central"
+	UpdateResultSourceInstaller UpdateResultSource = "installer"
+)
+
+// Valid indicates whether the value is a known member of the UpdateResultSource enum.
+func (e UpdateResultSource) Valid() bool {
+	switch e {
+	case UpdateResultSourceCentral:
+		return true
+	case UpdateResultSourceInstaller:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for UpdateResultState.
 const (
 	UpdateResultStateAlreadyCurrent UpdateResultState = "already_current"
@@ -3136,6 +3157,7 @@ type ErrorBody struct {
 	// MARK_SEMANTICS_VIOLATED: a rule writes skb mark or conntrack mark. NetBird owns 0x1BD00-0x1BDFF (§11.4).
 	// ISOLATION_POLICY_INVALID: the allow/deny policy itself does not match.
 	// PROBE_UNBOUNDED: a synthetic-probe set element has no kernel timeout, so the exception would outlive the health check (§13.9).
+	// TC_FOREIGN_FILTER: serving verification found a tc filter on the member path (D-085); the node withdrew serving and installed the baseline.
 	// AWAITING_MEMBER_GRANTS: The node lease for this generation is inside its anchored deadline and `config_generation` equals the desired generation, but `lease.members` is empty while desired `device_bindings` is non-empty. The agent renews on the D-067 schedule (one heartbeat, then doubling, capped at 60 seconds). This is not a deadline failure and not a malformed policy.
 	Code ErrorCode `json:"code"`
 
@@ -3182,6 +3204,7 @@ type ErrorBody struct {
 // MARK_SEMANTICS_VIOLATED: a rule writes skb mark or conntrack mark. NetBird owns 0x1BD00-0x1BDFF (§11.4).
 // ISOLATION_POLICY_INVALID: the allow/deny policy itself does not match.
 // PROBE_UNBOUNDED: a synthetic-probe set element has no kernel timeout, so the exception would outlive the health check (§13.9).
+// TC_FOREIGN_FILTER: serving verification found a tc filter on the member path (D-085); the node withdrew serving and installed the baseline.
 // AWAITING_MEMBER_GRANTS: The node lease for this generation is inside its anchored deadline and `config_generation` equals the desired generation, but `lease.members` is empty while desired `device_bindings` is non-empty. The agent renews on the D-067 schedule (one heartbeat, then doubling, capped at 60 seconds). This is not a deadline failure and not a malformed policy.
 type ErrorCode string
 
@@ -3977,6 +4000,7 @@ type NodeError struct {
 	// MARK_SEMANTICS_VIOLATED: a rule writes skb mark or conntrack mark. NetBird owns 0x1BD00-0x1BDFF (§11.4).
 	// ISOLATION_POLICY_INVALID: the allow/deny policy itself does not match.
 	// PROBE_UNBOUNDED: a synthetic-probe set element has no kernel timeout, so the exception would outlive the health check (§13.9).
+	// TC_FOREIGN_FILTER: serving verification found a tc filter on the member path (D-085); the node withdrew serving and installed the baseline.
 	// AWAITING_MEMBER_GRANTS: The node lease for this generation is inside its anchored deadline and `config_generation` equals the desired generation, but `lease.members` is empty while desired `device_bindings` is non-empty. The agent renews on the D-067 schedule (one heartbeat, then doubling, capped at 60 seconds). This is not a deadline failure and not a malformed policy.
 	Code ErrorCode `json:"code"`
 
@@ -4200,6 +4224,16 @@ type NodeUpdateSummary struct {
 	LastObservedAt nullable.Nullable[time.Time]          `json:"last_observed_at"`
 	LastResultAt   nullable.Nullable[time.Time]          `json:"last_result_at"`
 
+	// Source Origin of the reported update job or result (D-089). With installer,
+	// the job_id was minted by the node for a release the installer staged
+	// locally (UUIDv5 over release id, manifest hash, canonical pending record
+	// and incarnation; attempt 1). Central stores such a result as
+	// installer-applied evidence on the node and never as a batch result.
+	// A job_id central did not issue and that carries no source: installer
+	// stays 404 RESOURCE_NOT_FOUND. Absent means central. Batch target and
+	// current-job evidence remain central-issued.
+	Source *UpdateResultSource `json:"source,omitempty"`
+
 	// State State of one update job (§5, §13.2, §13.8). The §5 states plus
 	// `already_current` (verified no-op success, §13.6), `superseded_incarnation`
 	// (old incarnation's job after reinstall), `cancelled_revoked` and
@@ -4240,9 +4274,12 @@ type NodeUsageOutbox struct {
 
 // ObservationAccepted The report was durably accepted. Not a claim that it was cross-verified (§14.4).
 type ObservationAccepted struct {
-	Accepted   ObservationAcceptedAccepted `json:"accepted"`
-	ReceivedAt time.Time                   `json:"received_at"`
-	ReportId   openapi_types.UUID          `json:"report_id"`
+	Accepted ObservationAcceptedAccepted `json:"accepted"`
+
+	// IdentityFrozen true when the reporting incarnation is frozen by the clone detector (D-072 / D-084); the agent must drop every member grant immediately and renew its lease at once; absent or false means no change.
+	IdentityFrozen *bool              `json:"identity_frozen,omitempty"`
+	ReceivedAt     time.Time          `json:"received_at"`
+	ReportId       openapi_types.UUID `json:"report_id"`
 }
 
 // ObservationAcceptedAccepted defines model for ObservationAccepted.Accepted.
@@ -4365,6 +4402,7 @@ type Operation struct {
 		// MARK_SEMANTICS_VIOLATED: a rule writes skb mark or conntrack mark. NetBird owns 0x1BD00-0x1BDFF (§11.4).
 		// ISOLATION_POLICY_INVALID: the allow/deny policy itself does not match.
 		// PROBE_UNBOUNDED: a synthetic-probe set element has no kernel timeout, so the exception would outlive the health check (§13.9).
+		// TC_FOREIGN_FILTER: serving verification found a tc filter on the member path (D-085); the node withdrew serving and installed the baseline.
 		// AWAITING_MEMBER_GRANTS: The node lease for this generation is inside its anchored deadline and `config_generation` equals the desired generation, but `lease.members` is empty while desired `device_bindings` is non-empty. The agent renews on the D-067 schedule (one heartbeat, then doubling, capped at 60 seconds). This is not a deadline failure and not a malformed policy.
 		Code    ErrorCode `json:"code"`
 		Message string    `json:"message"`
@@ -5208,13 +5246,23 @@ type UpdateJobState string
 
 // UpdateJobSummary defines model for UpdateJobSummary.
 type UpdateJobSummary struct {
-	Attempt          int                            `json:"attempt"`
-	ErrorCode        nullable.Nullable[ErrorCode]   `json:"error_code"`
-	FinishedAt       nullable.Nullable[time.Time]   `json:"finished_at"`
-	JobId            openapi_types.UUID             `json:"job_id"`
-	RecoveryRequired nullable.Required[bool]        `json:"recovery_required"`
-	Stage            nullable.Nullable[UpdateStage] `json:"stage"`
-	StartedAt        nullable.Nullable[time.Time]   `json:"started_at"`
+	Attempt          int                          `json:"attempt"`
+	ErrorCode        nullable.Nullable[ErrorCode] `json:"error_code"`
+	FinishedAt       nullable.Nullable[time.Time] `json:"finished_at"`
+	JobId            openapi_types.UUID           `json:"job_id"`
+	RecoveryRequired nullable.Required[bool]      `json:"recovery_required"`
+
+	// Source Origin of the reported update job or result (D-089). With installer,
+	// the job_id was minted by the node for a release the installer staged
+	// locally (UUIDv5 over release id, manifest hash, canonical pending record
+	// and incarnation; attempt 1). Central stores such a result as
+	// installer-applied evidence on the node and never as a batch result.
+	// A job_id central did not issue and that carries no source: installer
+	// stays 404 RESOURCE_NOT_FOUND. Absent means central. Batch target and
+	// current-job evidence remain central-issued.
+	Source    *UpdateResultSource            `json:"source,omitempty"`
+	Stage     nullable.Nullable[UpdateStage] `json:"stage"`
+	StartedAt nullable.Nullable[time.Time]   `json:"started_at"`
 
 	// State State of one update job (§5, §13.2, §13.8). The §5 states plus
 	// `already_current` (verified no-op success, §13.6), `superseded_incarnation`
@@ -5276,12 +5324,22 @@ type UpdateResult struct {
 	PreviousReleaseId nullable.Nullable[openapi_types.UUID] `json:"previous_release_id"`
 
 	// PublicationIntent The administrator's desired publication state (§5). Health, updates and reconnects never change it.
-	PublicationIntent  PublicationIntent              `json:"publication_intent"`
-	RecoveryRequired   nullable.Required[bool]        `json:"recovery_required"`
-	RequestedReleaseId openapi_types.UUID             `json:"requested_release_id"`
-	ResultId           openapi_types.UUID             `json:"result_id"`
-	Stage              nullable.Nullable[UpdateStage] `json:"stage"`
-	StartedAt          time.Time                      `json:"started_at"`
+	PublicationIntent  PublicationIntent       `json:"publication_intent"`
+	RecoveryRequired   nullable.Required[bool] `json:"recovery_required"`
+	RequestedReleaseId openapi_types.UUID      `json:"requested_release_id"`
+	ResultId           openapi_types.UUID      `json:"result_id"`
+
+	// Source Origin of the reported update job or result (D-089). With installer,
+	// the job_id was minted by the node for a release the installer staged
+	// locally (UUIDv5 over release id, manifest hash, canonical pending record
+	// and incarnation; attempt 1). Central stores such a result as
+	// installer-applied evidence on the node and never as a batch result.
+	// A job_id central did not issue and that carries no source: installer
+	// stays 404 RESOURCE_NOT_FOUND. Absent means central. Batch target and
+	// current-job evidence remain central-issued.
+	Source    *UpdateResultSource            `json:"source,omitempty"`
+	Stage     nullable.Nullable[UpdateStage] `json:"stage"`
+	StartedAt time.Time                      `json:"started_at"`
 
 	// State States an agent may report in an update result (§13.10.3). Terminal:
 	// succeeded, already_current, failed, rolled_back, superseded. `rolled_back`
@@ -5304,6 +5362,16 @@ type UpdateResultAck struct {
 	ReceivedAt                  time.Time          `json:"received_at"`
 	ResultId                    openapi_types.UUID `json:"result_id"`
 }
+
+// UpdateResultSource Origin of the reported update job or result (D-089). With installer,
+// the job_id was minted by the node for a release the installer staged
+// locally (UUIDv5 over release id, manifest hash, canonical pending record
+// and incarnation; attempt 1). Central stores such a result as
+// installer-applied evidence on the node and never as a batch result.
+// A job_id central did not issue and that carries no source: installer
+// stays 404 RESOURCE_NOT_FOUND. Absent means central. Batch target and
+// current-job evidence remain central-issued.
+type UpdateResultSource string
 
 // UpdateResultState States an agent may report in an update result (§13.10.3). Terminal:
 // succeeded, already_current, failed, rolled_back, superseded. `rolled_back`
@@ -5363,6 +5431,16 @@ type UpdateTarget struct {
 	// candidate release (D-062).
 	PreviousReleaseId nullable.Nullable[openapi_types.UUID] `json:"previous_release_id,omitzero"`
 	Retryable         bool                                  `json:"retryable"`
+
+	// Source Origin of the reported update job or result (D-089). With installer,
+	// the job_id was minted by the node for a release the installer staged
+	// locally (UUIDv5 over release id, manifest hash, canonical pending record
+	// and incarnation; attempt 1). Central stores such a result as
+	// installer-applied evidence on the node and never as a batch result.
+	// A job_id central did not issue and that carries no source: installer
+	// stays 404 RESOURCE_NOT_FOUND. Absent means central. Batch target and
+	// current-job evidence remain central-issued.
+	Source *UpdateResultSource `json:"source,omitempty"`
 
 	// State State of one update job (§5, §13.2, §13.8). The §5 states plus
 	// `already_current` (verified no-op success, §13.6), `superseded_incarnation`
@@ -5523,6 +5601,7 @@ type UsageEventResult struct {
 		// MARK_SEMANTICS_VIOLATED: a rule writes skb mark or conntrack mark. NetBird owns 0x1BD00-0x1BDFF (§11.4).
 		// ISOLATION_POLICY_INVALID: the allow/deny policy itself does not match.
 		// PROBE_UNBOUNDED: a synthetic-probe set element has no kernel timeout, so the exception would outlive the health check (§13.9).
+		// TC_FOREIGN_FILTER: serving verification found a tc filter on the member path (D-085); the node withdrew serving and installed the baseline.
 		// AWAITING_MEMBER_GRANTS: The node lease for this generation is inside its anchored deadline and `config_generation` equals the desired generation, but `lease.members` is empty while desired `device_bindings` is non-empty. The agent renews on the D-067 schedule (one heartbeat, then doubling, capped at 60 seconds). This is not a deadline failure and not a malformed policy.
 		Code    ErrorCode    `json:"code"`
 		Fields  []FieldError `json:"fields"`
