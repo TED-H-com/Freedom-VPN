@@ -1870,7 +1870,8 @@ func (x *isolationRun) archiveReceiver() {
 		return
 	}
 	time.Sleep(150 * time.Millisecond)
-	raw, err := x.r.lab.docker(x.r.lab.node, "cat", "/var/lib/vpn-node/e2e/isolation-observations.jsonl")
+	// This stream exceeds the shared lab.docker 2 MiB diagnostic limit.
+	raw, err := exec.CommandContext(x.ctx, "docker", "exec", x.r.lab.node, "cat", "/var/lib/vpn-node/e2e/isolation-observations.jsonl").Output()
 	if err != nil {
 		x.extra("receiver-capture.json", map[string]any{"error": "capture unavailable"})
 		return
@@ -1918,7 +1919,7 @@ func (x *isolationRun) finishCapture(c *isolationCapture) {
 }
 func (x *isolationRun) startContinuousExpiry(deadline time.Time) func() {
 	filter := "host " + x.a1.originIP() + " and tcp port 443"
-	caps := []*isolationCapture{x.continuousCapture(x.r.lab.node, "any", filter, "whole-node-node-capture.txt", 25), x.continuousCapture(x.r.lab.prefix+"-origin", "any", "tcp port 443", "whole-node-origin-capture.txt", 25)}
+	caps := []*isolationCapture{x.continuousCapture(x.r.lab.node, "any", filter, "whole-node-node-capture.txt", 25), x.continuousCapture(x.r.lab.node, "fvup0", filter, "whole-node-uplink-capture.txt", 25)}
 	_ = exec.Command("docker", "exec", "-d", x.a1.lab.member, "/tmp/isolation-probe", "timed", x.a1.originIP(), "443", "22", "/tmp/isolation-expiry-timed.jsonl").Run()
 	stop, done := make(chan struct{}), make(chan struct{})
 	go func() {
@@ -1990,7 +1991,7 @@ func (x *isolationRun) foreignRedirect() {
 	var rows []map[string]any
 	rows = append(rows, x.networkSnapshot("before injection"))
 	_, _ = x.r.lab.docker(x.r.lab.node, "sh", "-c", "ip -4 address save dev fvmb0 > /tmp/isolation-member-addresses; ip -4 route save table all dev fvmb0 > /tmp/isolation-member-routes")
-	caps := []*isolationCapture{x.continuousCapture(x.a1.lab.member, "fvnb0", "udp port 9", "redirect-member-capture.txt", 30), x.continuousCapture(x.r.lab.node, "any", "udp port 9", "redirect-node-capture.txt", 30), x.continuousCapture(x.r.lab.prefix+"-origin", "any", "udp port 9", "redirect-origin-capture.txt", 30)}
+	caps := []*isolationCapture{x.continuousCapture(x.a1.lab.member, "fvnb0", "udp port 9", "redirect-member-capture.txt", 30), x.continuousCapture(x.r.lab.node, "any", "udp port 9", "redirect-node-capture.txt", 30), x.continuousCapture(x.r.lab.node, "fvup0", "udp port 9", "redirect-uplink-capture.txt", 30)}
 	defer func() {
 		for _, cap := range caps {
 			x.finishCapture(cap)

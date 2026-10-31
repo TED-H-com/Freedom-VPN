@@ -95,3 +95,106 @@ if frozen:
           'later_forwarding_reports': [r['body']['report_id'] for r in following if r['body'].get('member_forwarding_enabled')],
           'later_generation_acks': [r['body']['report_id'] for r in following if r['body'].get('applied_config_generation') is not None]})
 print(json.dumps({'run_id': receiver.get('run_id'), 'observation_posts': len(observations), 'qualifying_provisional_reports': len(candidates), 'frozen_acceptances': len(frozen)}))
+
+# The clone uses another boot ID and its built-in proxy. Audit source receiver
+# completeness against the boot-indexed central read, not all clone reports.
+if (root / 'accepted-report-index.json').exists():
+    source_boots = {r['body']['boot_id'] for r in observations}
+    central = read('accepted-report-index.json')
+    source = [r for r in central if r['boot_id'] in source_boots]
+    analysis = read('provisional-receiver-analysis.json')
+    analysis['source_central_reports_missing_from_receiver'] = [r for r in source if r['report_id'] not in accepted]
+    analysis['central_source_reports_in_index'] = len(source)
+    analysis['central_clone_reports_in_index'] = len(central) - len(source)
+    analysis['completeness_scope'] = 'Central read is a bounded snapshot during teardown. Source boot IDs are instrumented; clone acceptance bodies are outside this receiver. Later source POSTs remain retained.'
+    analysis['http_outcomes'] = {str(status): sum(r['status'] == status for r in transactions) for status in sorted({r['status'] for r in transactions})}
+    write('provisional-receiver-analysis.json', analysis)
+
+from decimal import Decimal
+import re
+
+def epoch(s):
+    return Decimal(str(time(s).timestamp()))
+def packets(name):
+    text = (root / name).read_text()
+    return [line for line in text.splitlines() if re.match(r'^\d+\.\d+ ', line)]
+def packet_time(line):
+    return Decimal(line.split()[0])
+def capture_valid(name):
+    text = (root / name).read_text()
+    return 'listening on' in text and '0 packets dropped by kernel' in text and 'pcap_loop:' not in text
+
+if (root / 'foreign-redirect.json').exists():
+    data = read('foreign-redirect.json'); rows = data['rows']
+    injected = next(r for r in rows if r['label'] == 'inject clsact mirred')
+    removed = next(r for r in rows if r['label'] == 'remove filter and hold missing member routes')
+    restored = next(r for r in rows if r['label'] == 'harness restores member path')
+    state = []
+    for r in rows:
+        body = r.get('readback', '')
+        if not body:
+            continue
+        links = json.loads(body.splitlines()[0])
+        flags = {x['ifname']: 'UP' in x['flags'] for x in links}
+        state.append({'at': r['read_end'], 'read_start': r['read_start'], 'phase': r['label'], 'admin_up': flags,
+                      'serving': '\nserving 1\n' in body,
+                      'report_id': r.get('observation', {}).get('report_id'),
+                      'errors': r.get('observation', {}).get('errors', [])})
+    down = next(r for r in state if r['admin_up'].get('fvmb0') is False)
+    node_packets = packets('redirect-node-capture.txt')
+    redirected = [p for p in node_packets if 'fvup0 Out IP 100.' in p]
+    after = [p for p in node_packets if 'fvup0 Out' in p and packet_time(p) >= epoch(down['at'])]
+    path_errors = [r['report_id'] for r in state if any(e.get('message') == 'member_path_unconfigured' for e in r['errors'])]
+    source_after = [p for p in packets('redirect-member-capture.txt') if packet_time(p) >= epoch(down['at'])]
+    write('foreign-redirect-analysis.json', {
+        'run_id': receiver.get('run_id'), 'status': 'blocked', 'injection': injected,
+        'first_down_bracket': down, 'injection_start_to_down_read_end_ms': ms(down['at'], injected['start']),
+        'removal': removed, 'restoration': restored,
+        'removal_end_to_restoration_start_ms': ms(restored['start'], removed['end']),
+        'member_probes_after_confirmed_down': len(source_after), 'uplink_packets_after_confirmed_down': after,
+        'pre_quarantine_unsnat_redirect_packets': redirected,
+        'continuous_capture_valid': {n: capture_valid(n) for n in ['redirect-node-capture.txt','redirect-member-capture.txt','redirect-origin-capture.txt']},
+        'd096_member_path_error_report_ids': path_errors, 'states': state,
+        'interpretation': 'Member and uplink boundaries are both present in the node any capture. No uplink packets after confirmed quarantine; one unsnatted redirect escaped before it. The separate origin image has no tcpdump, so that failed capture is not an empty target capture. Full clean Apply and D-096 recovery were not established; phase labels alone do not prove the hold.'})
+
+if (root / 'expiry-timing-analysis.json').exists():
+    analysis = read('expiry-timing-analysis.json')
+    p = packets('whole-node-node-capture.txt')
+    replies = [line for line in p if 'fvmb0 Out' in line and '.443 >' in line and 'Flags [S.]' in line]
+    first = analysis['first_failed_connect']
+    syns = [line for line in p if first and 'fvmb0 In' in line and '.443:' in line and 'Flags [S]' in line and epoch(first['start']) <= packet_time(line) <= epoch(first['end'])]
+    analysis['last_successful_synack_packet'] = replies[-1] if replies else None
+    analysis['first_failed_connect_ingress_packets'] = syns
+    analysis['continuous_node_capture_valid'] = capture_valid('whole-node-node-capture.txt')
+    analysis['independent_origin_capture_valid'] = capture_valid('whole-node-origin-capture.txt')
+    analysis['capture_scope'] = 'Node any includes fvmb0 and fvup0 ingress/egress. Independent origin capture failed because its image lacks tcpdump; no target-capture claim.'
+    write('expiry-timing-analysis.json', analysis)
+
+if (root / 'identity-freeze.json').exists() and frozen:
+    analysis = read('freeze-receiver-analysis.json')
+    beats = []
+    for row in read('identity-freeze.json').get('rows', []):
+        body = row.get('readback', '')
+        match = re.search(r'(?m)^wall_unix_ns (\d+)$', body)
+        if match and '\nreason identity_frozen' in body:
+            beats.append(int(match.group(1)))
+    if beats:
+        ns = min(beats)
+        from datetime import timezone
+        stamp = datetime.fromtimestamp(ns // 1000000000, timezone.utc).strftime('%Y-%m-%dT%H:%M:%S') + '.' + str(ns % 1000000000).zfill(9) + 'Z'
+        analysis['freeze_heartbeat_wall_time'] = stamp
+        analysis['acceptance_to_freeze_heartbeat_ms'] = ms(stamp, frozen[0]['response_at'])
+    analysis.update(status='partial', live_grant_withdrawal='blocked: source already non-serving with empty grants before frozen acceptance', restart_persistence='not exercised after freeze')
+    write('freeze-receiver-analysis.json', analysis)
+
+analysis = read('provisional-receiver-analysis.json')
+excluded = {}
+for r in observations:
+    b = r['body']
+    if 'awaiting_member_grants' not in b.get('forwarding_block_reasons', []):
+        continue
+    excluded[b['report_id']] = {'report_id': b['report_id'], 'observed_at': b['observed_at'],
+                               'last_http_status': r['status'], 'safety_status': b['safety_status'],
+                               'reasons': b['forwarding_block_reasons'], 'errors': b.get('errors', [])}
+analysis['awaiting_reports_for_review'] = list(excluded.values())
+write('provisional-receiver-analysis.json', analysis)
