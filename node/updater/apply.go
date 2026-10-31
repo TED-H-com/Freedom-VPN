@@ -476,7 +476,7 @@ func (e *Engine) seal(ctx context.Context, txn updatejournal.Txn) error {
 			return err
 		}
 	}
-	if err := e.finish(ctx, job, string(state), string(code)); err != nil {
+	if err := e.finishInstaller(ctx, c, job, string(state), string(code)); err != nil {
 		return err
 	}
 	if e.Sender != nil {

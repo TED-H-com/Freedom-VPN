@@ -16,10 +16,11 @@ make -f mk/at-usage.mk at-usage
 FVPN_E2E_PREFIX=w4-usage FVPN_E2E_PORT_BASE=48000 make -f mk/e2e.mk e2e-down
 ```
 
-## 3. Product-Only Bootstrap Path Verified in Run `9d561888` (`2026-10-30T21:31:58Z`)
+## 3. Product-Only Bootstrap & Follow-up 3 Verification Path (Run `e1f8c483`, `2026-10-31T02:39:12Z`)
 
-1. `e2e.PrepareServingBaseline(ctx, admin.Client, admin.CSRF, false)` builds, signs, uploads, registers, and verifies `0.1.0` (`amd64` + `arm64`) and activates `release_support` (`01a18e52-a293-7e1b-b22e-ed9f7341ab29`).
-2. `POST /api/v1/admin/groups` creates member exit group `01a18e52-a4e3-7981-983d-bcb37866f801`.
-3. `POST /api/v1/admin/policies` + `POST /activate` activates `dns_profile` (`01a18eb6-339e-7a3b-ba55-2f765bcc4ed4`), `fair_use` (`01a18eb6-3807-7351-848f-452c32f360a3`), and `plan` (`01a18eb6-4060-7b2d-ba8b-0d73f503e881`) with `exit_group_ids=[01a18e52-a4e3-7981-983d-bcb37866f801]`.
-4. `stack.Enroll` & `stack.EnrollAt(..., "node2")`, `PATCH /api/v1/admin/nodes/{id}` (finite capacity), and `PUT /api/v1/admin/nodes/{id}/publication` (`group_ids=[01a18e52-a4e3-7981-983d-bcb37866f801]`) publish both exits.
-5. `POST /api/v1/admin/members/{id}/grants` + `stack.JoinNativeMember` + `netbird networks select <exit_net_id>` establishes counted member forwarding (`serving 1`, `fvpn_generation > 0`, positive `u_<dev>`/`d_<dev>` counters).
+1. `e2e.PrepareServingBaseline(ctx, admin.Client, admin.CSRF, false)` builds, signs, uploads, registers, and verifies `0.1.0` (`amd64` + `arm64`) and activates `release_support` (`01a18f2d-cfa5-7793-9c2f-deb612a82a89`).
+2. `POST /api/v1/admin/groups` creates member exit group `01a18f2d-d1ff-71f9-8541-d8e4f3c71807`.
+3. `POST /api/v1/admin/policies` + `POST /activate` activates `dns_profile` (`01a18fcc-3c13-77e2-b508-7fddd67f8178`), `fair_use` (`01a18fce-9904-79ab-87e0-fbdfe54e7ccc`), and `plan` (`01a18fcc-48d7-71bc-877f-48ce32716af6`) with `exit_group_ids=[01a18f2d-d1ff-71f9-8541-d8e4f3c71807]`.
+4. `POST /api/v1/admin/members/{id}/grants` + `stack.JoinNativeMember` admits `memberA` and `memberB`.
+5. `stack.Enroll` & `stack.EnrollAt(..., "node2")`, `PATCH /api/v1/admin/nodes/{id}` (finite capacity), and `PUT /api/v1/admin/nodes/{id}/publication` (`group_ids=[01a18f2d-d1ff-71f9-8541-d8e4f3c71807]`) publish both carrying exits while measuring D-067 Cycle 1 (`bring_up`).
+6. `AT14–AT19` measure D-067 Cycle 2 (`agent_restart`), Fair-Use recompile & `fair_use.applying` clearing across both `policy.activated` and `fup.member_generation_changed`, and `ENR-03` per-incarnation retained usage across node re-enrollment (`GET /api/v1/admin/nodes/{id}/incarnations`).

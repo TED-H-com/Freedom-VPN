@@ -18,6 +18,14 @@
   "session_idle_seconds": 1800,
   "session_absolute_seconds": 43200,
   "idempotency_seconds": 604800,
+  "browser_rate": {
+    "per_second": 10,
+    "burst": 30
+  },
+  "read_rate": {
+    "per_second": 30,
+    "burst": 60
+  },
   "login_rate": {
     "per_second": 1,
     "burst": 40

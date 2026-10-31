@@ -1,6 +1,6 @@
 {
   "id": "AT18",
-  "run_id": "9d561888",
+  "run_id": "e1f8c483",
   "title": "多階層速率整形、有效速率計算與宿主保底頻寬 (Multi-Tier Rate Shaping, Effective Rate \u0026 Host Reserve)",
   "spec": "§11.1, §11.3, §11.4, §19.5 AT18",
   "requirements": [
@@ -8,184 +8,289 @@
     "FUP02",
     "FUP03"
   ],
-  "status": "pass",
-  "at": "2026-10-30T21:29:37Z",
+  "status": "blocked",
+  "at": "2026-10-31T02:34:57Z",
   "build": {
-    "git_commit": "3caa49cb3337bfc8fe69a9d3234e863dc0ed7765",
+    "git_commit": "46081fb0e4011b91e9f9f93be23e04e0f223d42d",
     "git_dirty": false,
     "go_version": "go1.27.3",
     "goos": "linux",
     "goarch": "amd64",
     "binaries": {
-      "fvpn-agent": "94c577cf210c0d57f0abf99118caa7b0f4d72a1fd154cc3aa8c09fc0efddfe23",
-      "fvpn-control": "d7f6a624bf20047bbe050b33ddee1d8e699024777c8b8934d4f060bed1a2d121",
-      "fvpn-updater": "151872564ffe24a88409fb7995cd7708e68543402f07a5e6034a8d337279df8e",
-      "fvpn-worker": "5c8039331a53fcc57f63f8fe8c4431f0b1d9636be8df2da50e7dc44c0923c0d8"
+      "fvpn-agent": "fdc1e2a60128574c52e10a31dea43c615508759a83db1619fa7c8f73a8f20b33",
+      "fvpn-control": "ece7082282d641233152204955e5a94810a592f6a7b84f45f2e029bab925ec40",
+      "fvpn-updater": "b0f9abb52c57e14c6c8ec1a23bc5e71b006d3787ae925da9c5a99e0e4c3814e9",
+      "fvpn-worker": "93ee7029f8f23aad242878007f3f0da5eb3e0ec606511438133fcbb1e2755023"
     }
   },
   "image_digests": {
     "adguard": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
-    "control": "sha256:bebb90905c8a462136b453f0c8960feb23cb4700d745639068c4b2d089200b7e",
+    "control": "sha256:01aaa75ca9d4ec6d029afafdcd931c510f5a3a7e2cae0cb89d6cdeebf7e121f4",
     "coredns": "sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97",
     "gateway": "sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce",
-    "idp": "sha256:e8bb30032eb9c3840405d85687fc9b5482f6bccfe10ad8c2a056f410f9a37020",
-    "member": "sha256:25f7762c209878d7e2d4948125c4b693d933454c78a477e9105ba011b34baa06",
+    "idp": "sha256:07b5a3b70417572e6aa710220f4e9de021d187d9ec348e4f5614b60410f50531",
+    "member": "sha256:260c6d2ec53f7c61ed1b383e422b805654c6e0632ab12a970dc04c8bb41e0f53",
     "netbird": "sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c",
-    "node": "sha256:25f7762c209878d7e2d4948125c4b693d933454c78a477e9105ba011b34baa06",
-    "origin": "sha256:2349300c08227c7544af63629f864d428412eaf37154ea361358e06cd6061f19",
-    "payment": "sha256:071f609f2b474c67d683241c4e645f964a4d593d6066142e7cd13daeccca4740",
-    "postgres": "sha256:3469398b2ad99e12de8e3a2c92152b917902a8cb8579cd7f9469c58123c7d6cd",
-    "worker": "sha256:0a3c52020423a5050081e29f67907c6b67a585709c79175cccb3baf73e9bbb29"
+    "node": "sha256:260c6d2ec53f7c61ed1b383e422b805654c6e0632ab12a970dc04c8bb41e0f53",
+    "origin": "sha256:e953e19f606aef49df6dac836f85f70e31fe8746727a6ea4f4d45d84425ebe7e",
+    "payment": "sha256:92b46f6374a9010e884aeef770bafcb24712900f6e39664ad2c4865960b1c7d7",
+    "postgres": "sha256:4b220f2fb52725f7474da1635a6a2647bedfa32df2626a7834c4494d492904bc",
+    "worker": "sha256:8f420ee6ce862d92f880b45bb881506ad339ff87d2ee5363078bbaa4196acde8"
   },
-  "policy_revision": "applied_config_generation=67; dns_profile=01a18eb6-339e-7a3b-ba55-2f765bcc4ed4; domain_rule_set=01a18e99-7dd9-7bc4-89c0-de95b9188cb6; fair_use=01a18eb6-3807-7351-848f-452c32f360a3; plan=01a18e58-fc23-739d-9d4e-7a511818aea4; release_support=01a18e52-a293-7e1b-b22e-ed9f7341ab29",
-  "node_incarnation": "01a18e52-b696-70ca-8f8c-c9cb0c48342c",
+  "policy_revision": "applied_config_generation=126; fair_use=01a18fce-9904-79ab-87e0-fbdfe54e7ccc; plan=01a18fcc-48d7-71bc-877f-48ce32716af6; release_support=01a18f2d-cfa5-7793-9c2f-deb612a82a89; dns_profile=01a18fcc-3c13-77e2-b508-7fddd67f8178; domain_rule_set=01a18fcc-37ac-725b-ad8c-2e182b47813f",
+  "node_incarnation": "01a18f2d-e830-7e38-84eb-493517bd4460",
   "expected": "Effective rate is min(plan_rate_limit, fup_tier_rate, exit_per_member_limit) per direction, never below minimum_rate when forwarding is allowed; node installs tc HTB + fq_codel on fvmb0 (download) and fvup0 (upload) with host reserve class 1:fffe protecting the control channel.",
-  "actual": "Live serving exit fvpn-w4-usage-node installed kernel tc HTB + fq_codel on fvmb0 and fvup0 with host reserve class 1:fffe (100Mbit) and member classes 1:10/1:11 at effective_rate = min(plan=80M/40M, tier0=100M/50M, exit=60M/30M) = 60Mbit down / 30Mbit up, shaped concurrent memberA (+2172/+3029 B) and memberB (+2132/+3029 B) flows, and preserved mTLS control-plane responsiveness (HTTP 200).",
+  "actual": "Central DesiredState compilation verified effective_rate = min(plan=80M/40M, tier0=100M/50M, exit=60M/30M) = 60Mbit down / 30Mbit up on fvpn-w4-usage-node and node enforce.RenderQosCommands verified root htb 1:, host reserve 1:fffe (100Mbit prio 0), and fq_codel leaf classes 1:10/1:11. Live kernel tc class installation on fvpn-w4-usage-node is blocked because VerifyServing rejects Docker's ip nat POSTROUTING chain with FLOWTABLE_BYPASS (obs=01a18fce-194d-7c40-b1eb-246cda6a5222) and rolls back the serving apply.",
+  "blockers": [
+    "w1-netlab / w3-devstack-e2e: PR #220 (2473acf, node/enforce/verify_foreign.go) added whole-ruleset foreign-chain verification to VerifyServing; in deploy/devstack, Docker Engine installs table ip nat (POSTROUTING -\u003e DOCKER_POSTROUTING -\u003e xt target SNAT for 127.0.0.11 loopback DNS) inside node-netns and node2-netns, causing VerifyServing to fail with FLOWTABLE_BYPASS (\"table nat family ip hook postrouting priority 100 chain POSTROUTING statement xt\") and roll back table inet fvpn to fvpn_generation=0 whenever d.Serve=true."
+  ],
   "commands": [
     {
       "command": "e2e.PrepareServingBaseline(ctx, admin.Client, admin.CSRF, false)",
       "exit_code": 0,
-      "output": "boot_release_id=01a18e52-9e0b-7931-a7c2-33cf5959fce2 support_revision_id=01a18e52-a293-7e1b-b22e-ed9f7341ab29 digests=0",
-      "at": "2026-10-30T21:27:46Z"
+      "output": "boot_release_id=01a18f2d-cb1f-7f04-bfc7-dba4eac76ca8 support_revision_id=01a18f2d-cfa5-7793-9c2f-deb612a82a89 digests=0",
+      "at": "2026-10-31T02:31:27Z"
     },
     {
       "command": "POST /api/v1/admin/groups",
       "exit_code": 0,
-      "output": "HTTP 201 group_id=01a18e52-a4e3-7981-983d-bcb37866f801",
-      "at": "2026-10-30T21:27:46Z"
+      "output": "HTTP 201 group_id=01a18f2d-d1ff-71f9-8541-d8e4f3c71807",
+      "at": "2026-10-31T02:31:27Z"
     },
     {
       "command": "POST /api/v1/admin/policies (dns_profile, fair_use shadow, plan with exit_group_ids) + POST /activate",
       "exit_code": 0,
-      "output": "dns_rev=01a18eb6-339e-7a3b-ba55-2f765bcc4ed4 fair_use_shadow_rev=01a18eb6-3807-7351-848f-452c32f360a3 plan_rev=01a18eb6-4060-7b2d-ba8b-0d73f503e881",
-      "at": "2026-10-30T21:27:51Z"
+      "output": "dns_rev=01a18fcc-3c13-77e2-b508-7fddd67f8178 fair_use_shadow_rev=01a18fcc-407a-7c93-8a38-7abd1369f444 plan_rev=01a18fcc-48d7-71bc-877f-48ce32716af6",
+      "at": "2026-10-31T02:31:32Z"
     },
     {
-      "command": "PATCH /api/v1/admin/nodes/{id} + PUT /publication + JoinNativeMember(memberA, memberB) + netbird networks select fvpn-exit-3b8c7fda8e7fc29ea530aef8",
+      "command": "PATCH /api/v1/admin/nodes/{id} + JoinNativeMember(memberA, memberB) + PUT /publication + D-067 Cycle 1 (bring_up) provisional-lease window",
       "exit_code": 0,
-      "output": "node_id=01a18e52-b663-70aa-858c-12d0cd359d20 exit_id=01a18e52-b663-70ab-aac1-f1979b9a59f4 exit_net_id=fvpn-exit-3b8c7fda8e7fc29ea530aef8 deviceA=01a18e53-b028-7001-8905-4d739aee9610 deviceB=01a18e5f-5ae3-71c9-9ffe-67613fefcdf3 routedA=true routedB=true heartbeat=\"v1\\nboot_id 8ff08acd-e3cb-4ba4-afc6-43f4fb01a723\\nmono_ns 750725531469496\\nwall_unix_ns 1793395686334648342\\npolicy_expires_mono_ns 830627769642324\\nbaseline_ok 1\\nserving 1\\ngeneration 67\\nreason serving\"",
-      "at": "2026-10-30T21:28:08Z"
+      "output": "node_id=01a18f2d-e7d6-770e-9b8c-edb2016a7db9 exit_id=01a18f2d-e7d6-770f-9d32-b5397d190043 deviceA=01a18f5f-5980-785f-9cfd-0e6860b04f5b deviceB=01a18f5f-944b-7178-8130-c32a1397fa0b provisional_lease=db74de94-aa3e-4593-a1e1-596b5874bb79 (ttl=60s, members=0) ready_obs=01a18fcd-a1a4-7983-9fe3-aa16f11d129b (reasons=[awaiting_member_grants], checks=map[lease:AWAITING_MEMBER_GRANTS qos:AWAITING_MEMBER_GRANTS source_binding:AWAITING_MEMBER_GRANTS]) populated_lease=677c5ad3-b5a0-44dc-b77b-98dec868eb3b (members=2) ready_to_populated_ms=5021 apply_blocker=FLOWTABLE_BYPASS (01a18fce-194d-7c40-b1eb-246cda6a5222) heartbeat=\"v1\\nboot_id af4fdbee-51f1-4413-b813-0b7475104714\\nmono_ns 769070857585137\\nwall_unix_ns 1793414031660763733\\npolicy_expires_mono_ns 0\\nbaseline_ok 1\\nserving 0\\ngeneration 125\\nreason safety_check_failed\"",
+      "at": "2026-10-31T02:33:55Z"
     },
     {
-      "command": "Baseline counted HTTPS probe through exit node (member -\u003e fvnb0 -\u003e fvmb0 -\u003e fvup0 -\u003e origin)",
+      "command": "Baseline HTTPS probe through exit node (member -\u003e fvnb0 -\u003e fvmb0 -\u003e fvup0 -\u003e origin)",
       "exit_code": 0,
-      "output": "counted=true generation=67 delta_up=1066 delta_down=1516 origin_src=198.51.100.20",
-      "at": "2026-10-30T21:28:08Z"
+      "output": "counted=false generation=0 delta_up=0 delta_down=0 origin_src=",
+      "at": "2026-10-31T02:33:55Z"
     },
     {
-      "command": "Concurrent counted HTTPS transfers from member (memberA) \u0026 member-b (memberB) + mTLS GET /api/v1/agent/desired-state",
+      "command": "mTLS GET /api/v1/agent/desired-state + concurrent transfer probes from member \u0026 member-b + mTLS GET /api/v1/agent/usage-checkpoint",
       "exit_code": 0,
-      "output": "memberA_counted=true (up+2172 down+3029) memberB_counted=true (up+2132 down+3029) control_mtls_200=true",
-      "at": "2026-10-30T21:29:38Z"
+      "output": "desired_state_gen=126 effective_rate=60M/30M (true) memberA_counted=false (up+0 down+0) memberB_counted=false (up+0 down+0) control_mtls_200=true",
+      "at": "2026-10-31T02:35:02Z"
     },
     {
       "command": "docker exec fvpn-w4-usage-node tc -s class/qdisc show dev fvmb0 \u0026 fvup0",
       "exit_code": 0,
-      "output": "=== fvmb0 classes ===\nclass htb 1:1 root rate 1Gbit ceil 1Gbit burst 256Kb cburst 256Kb \n Sent 7573 bytes 40 pkt (dropped 0, overlimits 0 requeues 0) \n backlog 0b 0p requeues 0\n lended: 0 borrowed: 0 giants: 0\n tokens: 32761 ctokens: 32761\n\nclass htb 1:fffe parent 1:1 prio 0 rate 1Mbit ceil 1Gbit burst 256Kb cburst 256Kb \n Sent 0 bytes 0 pkt (dropped 0, overlimits 0 requeues 0) \n backlog 0b 0p requeues 0\n lended: 0 borrowed: 0 giants: 0\n tokens: 32768000 ctokens: 32768\n\nclass htb 1:8936 parent 1:1 leaf 8936: prio 1 rate 60Mbit ceil 60Mbit burst 75000b cburst 75000b \n Sent 4544 bytes 24 pkt (dropped 0, overlimits 0 requeues 0) \n backlog 0b 0p requeues 0\n lended: 24 borrowed: 0 giants: 0\n tokens: 156141 ctokens: 156141\n\nclass htb 1:110f parent 1:1 leaf 110f: prio 1 rate 60Mbit ceil 60Mbit burst 75000b cburst 75000b \n Sent 3029 bytes 16 pkt (dropped 0, overlimits 0 requeues 0) \n backlog 0b 0p requeues 0\n lended: 16 borrowed: 0 giants: 0\n tokens: 156141 ctokens: 156141\n\nclass fq_codel 8936:11c parent 8936: \n (dropped 0, overlimits 0 requeues 0) \n backlog 0b 0p requeues 0\n  deficit -1 count 0 lastcount 0 ldelay 0us\nclass fq_codel 8936:146 parent 8936: \n (dropped 0, overlimits 0 requeues 0) \n backlog 0b 0p requeues 0\n  deficit 1513 count 0 lastcount 0 ldelay 0us\nclass fq_codel 8936:1fb parent 8936: \n (dropped 0, overlimits 0 requeues 0) \n backlog 0b 0p requeues 0\n  deficit 1514 count 0 lastcount 0 ldelay 0us\nclass fq_codel 110f:165 parent 110f: \n (dropped 0, overlimits 0 requeues 0) \n backlog 0b 0p requeues 0\n  deficit -1 count 0 lastcount 0 ldelay 0us\nclass fq_codel 110f:1c3 parent 110f: \n (dropped 0, overlimits 0 requeues 0) \n backlog 0b 0p requeues 0\n  deficit 1514 count 0 lastcount 0 ldelay 0us\n=== fvup0 classes ===\nclass htb 1:1 root rate 1Gbit ceil 1Gbit burst 256Kb cburst 256Kb \n Sent 5944 bytes 41 pkt (dropped 0, overlimits 0 requeues 0) \n backlog 0b 0p requeues 0\n lended: 0 borrowed: 0 giants: 0\n tokens: 32761 ctokens: 32761\n\nclass htb 1:fffe parent 1:1 prio 0 rate 1Mbit ceil 1Gbit burst 256Kb cburst 256Kb \n Sent 0 bytes 0 pkt (dropped 0, overlimits 0 requeues 0) \n backlog 0b 0p requeues 0\n lended: 0 borrowed: 0 giants: 0\n tokens: 32768000 ctokens: 32768\n\nclass htb 1:8936 parent 1:1 leaf 8936: prio 1 rate 30Mbit ceil 30Mbit burst 37500b cburst 37500b \n Sent 3588 bytes 25 pkt (dropped 0, overlimits 0 requeues 0) \n backlog 0b 0p requeues 0\n lended: 25 borrowed: 0 giants: 0\n tokens: 156025 ctokens: 156025\n\nclass htb 1:110f parent 1:1 leaf 110f: prio 1 rate 30Mbit ceil 30Mbit burst 37500b cburst 37500b \n Sent 2356 bytes 16 pkt (dropped 0, overlimits 0 requeues 0) \n backlog 0b 0p requeues 0\n lended: 16 borrowed: 0 giants: 0\n tokens: 156025 ctokens: 156025\n\nclass fq_codel 8936:28a parent 8936: \n (dropped 0, overlimits 0 requeues 0) \n backlog 0b 0p requeues 0\n  deficit 282 count 0 lastcount 0 ldelay 0us\nclass fq_codel 110f:3e8 parent 110f: \n (dropped 0, overlimits 0 requeues 0) \n backlog 0b 0p requeues 0\n  deficit 336 count 0 lastcount 0 ldelay 1us\n=== fvmb0 qdiscs ===\nqdisc htb 1: root refcnt 2 r2q 10 default 0xfffe direct_packets_stat 0 direct_qlen 1000\n Sent 7573 bytes 40 pkt (dropped 0, overlimits 0 requeues 0) \n backlog 0b 0p requeues 0\nqdisc fq_codel 8936: parent 1:8936 limit 10240p flows 1024 quantum 1514 target 5ms interval 100ms memory_limit 32Mb ecn drop_batch 64 \n Sent 4544 bytes 24 pkt (dropped 0, overlimits 0 requeues 0) \n backlog 0b 0p requeues 0\n  maxpacket 978 drop_overlimit 0 new_flow_count 3 ecn_mark 0\n  new_flows_len 1 old_flows_len 2\nqdisc fq_codel 110f: parent 1:110f limit 10240p flows 1024 quantum 1514 target 5ms interval 100ms memory_limit 32Mb ecn drop_batch 64 \n Sent 3029 bytes 16 pkt (dropped 0, overlimits 0 requeues 0) \n backlog 0b 0p requeues 0\n  maxpacket 978 drop_overlimit 0 new_flow_count 2 ecn_mark 0\n  new_flows_len 1 old_flows_len 1",
-      "at": "2026-10-30T21:29:38Z"
+      "output": "=== fvmb0 classes ===\n\n=== fvup0 classes ===\n\n=== fvmb0 qdiscs ===\nqdisc noqueue 0: root refcnt 2 \n Sent 0 bytes 0 pkt (dropped 0, overlimits 0 requeues 0) \n backlog 0b 0p requeues 0",
+      "at": "2026-10-31T02:35:02Z"
     }
   ],
   "observations": {
     "active_policy_revisions": {
-      "dns_profile": "01a18eb6-339e-7a3b-ba55-2f765bcc4ed4",
-      "domain_rule_set": "01a18eb6-2f38-7cef-867b-b76516973103",
-      "fair_use": "01a18e58-f7c4-76f8-b879-9bd03fbaea55",
-      "plan": "01a18eb6-4060-7b2d-ba8b-0d73f503e881",
-      "release_support": "01a18e52-a293-7e1b-b22e-ed9f7341ab29"
+      "dns_profile": "01a18fcc-3c13-77e2-b508-7fddd67f8178",
+      "domain_rule_set": "01a18fcc-37ac-725b-ad8c-2e182b47813f",
+      "fair_use": "01a18fd1-4b1e-727e-9f23-103541dc588a",
+      "plan": "01a18fcc-48d7-71bc-877f-48ce32716af6",
+      "release_support": "01a18f2d-cfa5-7793-9c2f-deb612a82a89"
     },
     "bootstrap_transfer": {
-      "after_download_bytes": "15149",
-      "after_upload_bytes": "10900",
-      "before_download_bytes": "13633",
-      "before_upload_bytes": "9834",
-      "counted": true,
-      "delta_download_bytes": "1516",
-      "delta_upload_bytes": "1066",
-      "expected_snat": "198.51.100.20",
-      "generation": "67",
-      "http_200": true,
-      "member_fvnb0_rx_bytes_delta": 1856,
-      "member_fvnb0_tx_bytes_delta": 1408,
-      "member_service": "member",
-      "node_fvup0_l3_rx_bytes_delta": 1544,
-      "node_fvup0_l3_tx_bytes_delta": 1094,
-      "node_service": "node",
-      "origin_authenticated": true,
-      "origin_source": "198.51.100.20",
-      "probe_id": "34738aad-6021-45ad-969c-b930c09842eb",
-      "requests": 1
-    },
-    "device_a_id": "01a18e53-b028-7001-8905-4d739aee9610",
-    "device_b_id": "01a18e5f-5ae3-71c9-9ffe-67613fefcdf3",
-    "effective_download_bps": "15000000",
-    "effective_upload_bps": "20000000",
-    "exit_id": "01a18e52-b663-70ab-aac1-f1979b9a59f4",
-    "exit_network_id": "fvpn-exit-3b8c7fda8e7fc29ea530aef8",
-    "group_id": "01a18e52-a4e3-7981-983d-bcb37866f801",
-    "live_concurrent_transfer_member_a": {
-      "after_download_bytes": "4544",
-      "after_upload_bytes": "3238",
-      "before_download_bytes": "1515",
-      "before_upload_bytes": "1066",
-      "counted": true,
-      "delta_download_bytes": "3029",
-      "delta_upload_bytes": "2172",
-      "expected_snat": "198.51.100.20",
-      "generation": "67",
-      "http_200": true,
-      "member_fvnb0_rx_bytes_delta": 3712,
-      "member_fvnb0_tx_bytes_delta": 2896,
-      "member_service": "member",
-      "node_fvup0_l3_rx_bytes_delta": 3029,
-      "node_fvup0_l3_tx_bytes_delta": 2172,
-      "node_service": "node",
-      "origin_authenticated": true,
-      "origin_source": "198.51.100.20",
-      "probe_id": "34c02a8c-8eaf-4817-b001-cb7c4a3d0542",
-      "requests": 2
-    },
-    "live_concurrent_transfer_member_b": {
-      "after_download_bytes": "3029",
-      "after_upload_bytes": "2132",
+      "after_download_bytes": "0",
+      "after_upload_bytes": "0",
       "before_download_bytes": "0",
       "before_upload_bytes": "0",
-      "counted": true,
-      "delta_download_bytes": "3029",
-      "delta_upload_bytes": "2132",
+      "counted": false,
+      "delta_download_bytes": "0",
+      "delta_upload_bytes": "0",
       "expected_snat": "198.51.100.20",
-      "generation": "67",
-      "http_200": true,
-      "member_fvnb0_rx_bytes_delta": 3712,
-      "member_fvnb0_tx_bytes_delta": 2816,
-      "member_service": "member-b",
-      "node_fvup0_l3_rx_bytes_delta": 3029,
-      "node_fvup0_l3_tx_bytes_delta": 2132,
+      "generation": "0",
+      "http_200": false,
+      "member_fvnb0_rx_bytes_delta": 0,
+      "member_fvnb0_tx_bytes_delta": 0,
+      "member_service": "member",
+      "node_fvup0_l3_rx_bytes_delta": 0,
+      "node_fvup0_l3_tx_bytes_delta": 0,
       "node_service": "node",
       "origin_authenticated": true,
-      "origin_source": "198.51.100.20",
-      "probe_id": "15a4c700-a861-4513-af89-a1df863da737",
-      "requests": 2
+      "origin_source": "",
+      "probe_id": "9cbe99f6-0058-44e6-9850-8276209f478e",
+      "requests": 0
     },
-    "live_tc_fvmb0_classes": "class htb 1:1 root rate 1Gbit ceil 1Gbit burst 256Kb cburst 256Kb \n Sent 7573 bytes 40 pkt (dropped 0, overlimits 0 requeues 0) \n backlog 0b 0p requeues 0\n lended: 0 borrowed: 0 giants: 0\n tokens: 32761 ctokens: 32761\n\nclass htb 1:fffe parent 1:1 prio 0 rate 1Mbit ceil 1Gbit burst 256Kb cburst 256Kb \n Sent 0 bytes 0 pkt (dropped 0, overlimits 0 requeues 0) \n backlog 0b 0p requeues 0\n lended: 0 borrowed: 0 giants: 0\n tokens: 32768000 ctokens: 32768\n\nclass htb 1:8936 parent 1:1 leaf 8936: prio 1 rate 60Mbit ceil 60Mbit burst 75000b cburst 75000b \n Sent 4544 bytes 24 pkt (dropped 0, overlimits 0 requeues 0) \n backlog 0b 0p requeues 0\n lended: 24 borrowed: 0 giants: 0\n tokens: 156141 ctokens: 156141\n\nclass htb 1:110f parent 1:1 leaf 110f: prio 1 rate 60Mbit ceil 60Mbit burst 75000b cburst 75000b \n Sent 3029 bytes 16 pkt (dropped 0, overlimits 0 requeues 0) \n backlog 0b 0p requeues 0\n lended: 16 borrowed: 0 giants: 0\n tokens: 156141 ctokens: 156141\n\nclass fq_codel 8936:11c parent 8936: \n (dropped 0, overlimits 0 requeues 0) \n backlog 0b 0p requeues 0\n  deficit -1 count 0 lastcount 0 ldelay 0us\nclass fq_codel 8936:146 parent 8936: \n (dropped 0, overlimits 0 requeues 0) \n backlog 0b 0p requeues 0\n  deficit 1513 count 0 lastcount 0 ldelay 0us\nclass fq_codel 8936:1fb parent 8936: \n (dropped 0, overlimits 0 requeues 0) \n backlog 0b 0p requeues 0\n  deficit 1514 count 0 lastcount 0 ldelay 0us\nclass fq_codel 110f:165 parent 110f: \n (dropped 0, overlimits 0 requeues 0) \n backlog 0b 0p requeues 0\n  deficit -1 count 0 lastcount 0 ldelay 0us\nclass fq_codel 110f:1c3 parent 110f: \n (dropped 0, overlimits 0 requeues 0) \n backlog 0b 0p requeues 0\n  deficit 1514 count 0 lastcount 0 ldelay 0us",
-    "live_tc_fvmb0_qdiscs": "qdisc htb 1: root refcnt 2 r2q 10 default 0xfffe direct_packets_stat 0 direct_qlen 1000\n Sent 7573 bytes 40 pkt (dropped 0, overlimits 0 requeues 0) \n backlog 0b 0p requeues 0\nqdisc fq_codel 8936: parent 1:8936 limit 10240p flows 1024 quantum 1514 target 5ms interval 100ms memory_limit 32Mb ecn drop_batch 64 \n Sent 4544 bytes 24 pkt (dropped 0, overlimits 0 requeues 0) \n backlog 0b 0p requeues 0\n  maxpacket 978 drop_overlimit 0 new_flow_count 3 ecn_mark 0\n  new_flows_len 1 old_flows_len 2\nqdisc fq_codel 110f: parent 1:110f limit 10240p flows 1024 quantum 1514 target 5ms interval 100ms memory_limit 32Mb ecn drop_batch 64 \n Sent 3029 bytes 16 pkt (dropped 0, overlimits 0 requeues 0) \n backlog 0b 0p requeues 0\n  maxpacket 978 drop_overlimit 0 new_flow_count 2 ecn_mark 0\n  new_flows_len 1 old_flows_len 1",
-    "live_tc_fvup0_classes": "class htb 1:1 root rate 1Gbit ceil 1Gbit burst 256Kb cburst 256Kb \n Sent 5944 bytes 41 pkt (dropped 0, overlimits 0 requeues 0) \n backlog 0b 0p requeues 0\n lended: 0 borrowed: 0 giants: 0\n tokens: 32761 ctokens: 32761\n\nclass htb 1:fffe parent 1:1 prio 0 rate 1Mbit ceil 1Gbit burst 256Kb cburst 256Kb \n Sent 0 bytes 0 pkt (dropped 0, overlimits 0 requeues 0) \n backlog 0b 0p requeues 0\n lended: 0 borrowed: 0 giants: 0\n tokens: 32768000 ctokens: 32768\n\nclass htb 1:8936 parent 1:1 leaf 8936: prio 1 rate 30Mbit ceil 30Mbit burst 37500b cburst 37500b \n Sent 3588 bytes 25 pkt (dropped 0, overlimits 0 requeues 0) \n backlog 0b 0p requeues 0\n lended: 25 borrowed: 0 giants: 0\n tokens: 156025 ctokens: 156025\n\nclass htb 1:110f parent 1:1 leaf 110f: prio 1 rate 30Mbit ceil 30Mbit burst 37500b cburst 37500b \n Sent 2356 bytes 16 pkt (dropped 0, overlimits 0 requeues 0) \n backlog 0b 0p requeues 0\n lended: 16 borrowed: 0 giants: 0\n tokens: 156025 ctokens: 156025\n\nclass fq_codel 8936:28a parent 8936: \n (dropped 0, overlimits 0 requeues 0) \n backlog 0b 0p requeues 0\n  deficit 282 count 0 lastcount 0 ldelay 0us\nclass fq_codel 110f:3e8 parent 110f: \n (dropped 0, overlimits 0 requeues 0) \n backlog 0b 0p requeues 0\n  deficit 336 count 0 lastcount 0 ldelay 1us",
-    "live_tc_fvup0_qdiscs": "qdisc htb 1: root refcnt 25 r2q 10 default 0xfffe direct_packets_stat 0 direct_qlen 1000\n Sent 5944 bytes 41 pkt (dropped 0, overlimits 0 requeues 0) \n backlog 0b 0p requeues 0\nqdisc fq_codel 8936: parent 1:8936 limit 10240p flows 1024 quantum 1514 target 5ms interval 100ms memory_limit 32Mb ecn drop_batch 64 \n Sent 3588 bytes 25 pkt (dropped 0, overlimits 0 requeues 0) \n backlog 0b 0p requeues 0\n  maxpacket 451 drop_overlimit 0 new_flow_count 3 ecn_mark 0\n  new_flows_len 1 old_flows_len 0\nqdisc fq_codel 110f: parent 1:110f limit 10240p flows 1024 quantum 1514 target 5ms interval 100ms memory_limit 32Mb ecn drop_batch 64 \n Sent 2356 bytes 16 pkt (dropped 0, overlimits 0 requeues 0) \n backlog 0b 0p requeues 0\n  maxpacket 451 drop_overlimit 0 new_flow_count 2 ecn_mark 0\n  new_flows_len 1 old_flows_len 0",
+    "device_a_id": "01a18f5f-5980-785f-9cfd-0e6860b04f5b",
+    "device_b_id": "01a18f5f-944b-7178-8130-c32a1397fa0b",
+    "effective_download_bps": "15000000",
+    "effective_upload_bps": "20000000",
+    "exit_id": "01a18f2d-e7d6-770f-9d32-b5397d190043",
+    "exit_network_id": "fvpn-exit-1836ffa7f54af96f436bcb78",
+    "group_id": "01a18f2d-d1ff-71f9-8541-d8e4f3c71807",
+    "live_concurrent_transfer_member_a": {
+      "after_download_bytes": "0",
+      "after_upload_bytes": "0",
+      "before_download_bytes": "0",
+      "before_upload_bytes": "0",
+      "counted": false,
+      "delta_download_bytes": "0",
+      "delta_upload_bytes": "0",
+      "expected_snat": "198.51.100.20",
+      "generation": "0",
+      "http_200": false,
+      "member_fvnb0_rx_bytes_delta": 0,
+      "member_fvnb0_tx_bytes_delta": 0,
+      "member_service": "member",
+      "node_fvup0_l3_rx_bytes_delta": 0,
+      "node_fvup0_l3_tx_bytes_delta": 0,
+      "node_service": "node",
+      "origin_authenticated": true,
+      "origin_source": "",
+      "probe_id": "67754d40-9dc3-44d1-932b-8676dc04c646",
+      "requests": 0
+    },
+    "live_concurrent_transfer_member_b": {
+      "after_download_bytes": "0",
+      "after_upload_bytes": "0",
+      "before_download_bytes": "0",
+      "before_upload_bytes": "0",
+      "counted": false,
+      "delta_download_bytes": "0",
+      "delta_upload_bytes": "0",
+      "expected_snat": "198.51.100.20",
+      "generation": "0",
+      "http_200": false,
+      "member_fvnb0_rx_bytes_delta": 0,
+      "member_fvnb0_tx_bytes_delta": 0,
+      "member_service": "member-b",
+      "node_fvup0_l3_rx_bytes_delta": 0,
+      "node_fvup0_l3_tx_bytes_delta": 0,
+      "node_service": "node",
+      "origin_authenticated": true,
+      "origin_source": "",
+      "probe_id": "01c7b1a5-1153-4c4e-a3cd-08efae05d0b5",
+      "requests": 0
+    },
+    "live_desired_state_effective_rate": {
+      "accounting_period": {
+        "period_end": "2026-11-01T00:00:00Z",
+        "period_id": "2026-10",
+        "period_start": "2026-10-01T00:00:00Z"
+      },
+      "binding_revision": "1",
+      "config_generation": "126",
+      "desired_release_id": null,
+      "device_bindings": [
+        {
+          "allowed_ipv4": [
+            "100.119.219.120"
+          ],
+          "allowed_ipv6": [],
+          "binding_revision": "1",
+          "device_id": "01a18f5f-5980-785f-9cfd-0e6860b04f5b",
+          "member_id": "01a18f2d-c253-7d12-bd41-c7fdfc51d95e",
+          "peer_id": "dbije6f8k4c000b74t9g",
+          "valid_from": "2026-10-31T00:32:33.152548Z",
+          "valid_until": "2026-11-01T00:32:16.903819Z"
+        },
+        {
+          "allowed_ipv4": [
+            "100.119.125.1"
+          ],
+          "allowed_ipv6": [],
+          "binding_revision": "1",
+          "device_id": "01a18f5f-944b-7178-8130-c32a1397fa0b",
+          "member_id": "01a18f2d-c2c0-7991-8872-46ed3e43ff0f",
+          "peer_id": "dbije9v8k4c000b74uqg",
+          "valid_from": "2026-10-31T00:32:48.203096Z",
+          "valid_until": "2026-11-01T00:32:18.605206Z"
+        }
+      ],
+      "dns": {
+        "resolver_document": {
+          "content_sha256": "1277f43f58657ba47e8ef9435ee0985e319d37092e3552342826fad71d48a99d",
+          "document_id": "01a18fcc-408a-7bc8-af00-1231d93387cf",
+          "generation": "16",
+          "profile_revision_id": "01a18fcc-3c13-77e2-b508-7fddd67f8178",
+          "size_bytes": 532
+        },
+        "resolver_ipv4": [
+          "192.0.2.40"
+        ],
+        "resolver_ipv6": []
+      },
+      "egress_probe": null,
+      "expires_at": "2026-10-31T02:44:05.045574308Z",
+      "issued_at": "2026-10-31T02:34:05.045574308Z",
+      "lease_renewal_endpoint": "/api/v1/agent/lease-renewals",
+      "member_rate_policies": [
+        {
+          "down_bps": 60000000,
+          "generation": "9",
+          "member_id": "01a18f2d-c253-7d12-bd41-c7fdfc51d95e",
+          "mode": "shadow",
+          "period_id": "2026-10",
+          "priority": 0,
+          "reason": "normal",
+          "tier_index": 0,
+          "up_bps": 30000000,
+          "valid_from": "2026-10-31T00:32:17.464732Z",
+          "valid_until": "2026-11-01T00:32:16.903819Z"
+        },
+        {
+          "down_bps": 60000000,
+          "generation": "16",
+          "member_id": "01a18f2d-c2c0-7991-8872-46ed3e43ff0f",
+          "mode": "shadow",
+          "period_id": "2026-10",
+          "priority": 0,
+          "reason": "normal",
+          "tier_index": 0,
+          "up_bps": 30000000,
+          "valid_from": "2026-10-31T00:32:19.158669Z",
+          "valid_until": "2026-11-01T00:32:18.605206Z"
+        }
+      ],
+      "node_capacity": {
+        "down_bps": 1000000000,
+        "member_down_bps_cap": 60000000,
+        "member_up_bps_cap": 30000000,
+        "up_bps": 1000000000
+      },
+      "node_id": "01a18f2d-e7d6-770e-9b8c-edb2016a7db9",
+      "node_incarnation_id": "01a18f2d-e830-7e38-84eb-493517bd4460",
+      "policy_refs": {
+        "authorization_generation": "1",
+        "dns_generation": "16",
+        "fup_generation": "42"
+      },
+      "publication_intent": "published",
+      "safety_profile": "internet-only-v1",
+      "schema_version": 1,
+      "serving_release_ids": [
+        "01a18f2d-cb1f-7f04-bfc7-dba4eac76ca8"
+      ],
+      "supported_release_policy_id": "01a18f2d-cfa5-7793-9c2f-deb612a82a89",
+      "update": null
+    },
+    "live_tc_fvmb0_classes": "",
+    "live_tc_fvmb0_qdiscs": "qdisc noqueue 0: root refcnt 2 \n Sent 0 bytes 0 pkt (dropped 0, overlimits 0 requeues 0) \n backlog 0b 0p requeues 0",
+    "live_tc_fvup0_classes": "",
+    "live_tc_fvup0_qdiscs": "qdisc noqueue 0: root refcnt 2 \n Sent 0 bytes 0 pkt (dropped 0, overlimits 0 requeues 0) \n backlog 0b 0p requeues 0",
     "member_a_htb_class": "1:e2ae",
     "member_b_htb_class": "1:e2cf",
-    "node_id": "01a18e52-b663-70aa-858c-12d0cd359d20",
-    "node_incarnation_id": "01a18e52-b696-70ca-8f8c-c9cb0c48342c",
+    "node_id": "01a18f2d-e7d6-770e-9b8c-edb2016a7db9",
+    "node_incarnation_id": "01a18f2d-e830-7e38-84eb-493517bd4460",
     "port_base": 48000,
-    "run_id": "9d561888",
+    "run_id": "e1f8c483",
     "stack_prefix": "fvpn-w4-usage",
     "touches_fwmark": false,
     "uses_meta_priority": true
   },
   "mechanism_checks": [
     {
-      "name": "LiveServingNodeTcHtbFqCodelEffectiveRateAndHostReserve",
+      "name": "LiveDesiredStateEffectiveRateAndControlChannel",
       "spec_ref": "§11.1, §11.3, §11.4, FUP01, FUP02, FUP03",
       "status": "pass",
-      "summary": "Live serving exit fvpn-w4-usage-node installed root htb 1: (1Gbit), host reserve 1:fffe (100Mbit prio 0), and member classes 1:10 \u0026 1:11 with fq_codel leaf qdiscs and effective_rate=min(plan=80M/40M, tier0=100M/50M, exit=60M/30M)=60Mbit down (fvmb0) / 30Mbit up (fvup0), counting concurrent memberA and memberB traffic while keeping mTLS control HTTP 200."
+      "summary": "Central compiler signed DesiredState (gen=126) for fvpn-w4-usage-node with effective_rate=min(plan=80M/40M, tier0=100M/50M, exit=60M/30M)=60Mbit down / 30Mbit up across 2 members, and mTLS control-plane remained HTTP 200."
     },
     {
       "name": "EffectiveRateMinFormula",

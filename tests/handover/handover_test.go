@@ -18,14 +18,19 @@ import (
 	"testing"
 
 	"gopkg.in/yaml.v3"
+
+	"github.com/TED-H-com/Freedom-VPN/internal/config"
+	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 )
 
 // ownedDocs lists the handover, ops, and root Markdown files owned by
-// w4-handover. Note: docs/handover/restore-drill.md and docs/ops/backups.md
-// are owned by the backups task and excluded from edits this round.
+// w4-handover. The follow-up 13 brief includes the restore drill and indexes.
 var ownedDocs = []string{
 	"README.md",
 	"docs/handover/README.md",
+	"docs/handover/00-index.md",
+	"docs/handover/11-database-and-retention.md",
+	"docs/handover/restore-drill.md",
 	"docs/handover/deploy.md",
 	"docs/handover/calibration.md",
 	"docs/handover/operator-guide.md",
@@ -43,6 +48,8 @@ var ownedDocs = []string{
 	"docs/reviews/r11-d064-review.md",
 	"docs/reviews/r12-enforce-limits-review.md",
 	"docs/reviews/r13-r12-fixes-review.md",
+	"docs/reviews/r14-d067-d070-review.md",
+	"docs/reviews/r15-d072-d075-review.md",
 }
 
 var repoPathPrefixes = []string{
@@ -354,6 +361,10 @@ func TestHandover_FVPnBinaries(t *testing.T) {
 	// Non-binary fvpn-* identifiers used in the specification and configuration,
 	// classified explicitly so nothing is skipped silently.
 	nonBinaryClassification := map[string]string{
+		"fvpn-paid":                   "netbird-paid-group-prefix",
+		"fvpn-logical":                "logical-backup-file-prefix",
+		"fvpn-w4-ops-backups-gha":     "historical-backup-CI-container-prefix",
+		"fvpn-pg":                     "historical-shared-test-postgres-name",
 		"fvpn-admin":                  "admin-session-cookie (__Host-fvpn-admin)",
 		"fvpn-member":                 "member-session-cookie (__Host-fvpn-member)",
 		"fvpn-enrollment-v1":          "protocol-domain-separation-label",
@@ -441,7 +452,7 @@ func auditMigrationInventoryClaims(doc, content string, wantIDs []string) (liter
 	wantFirst := wantIDs[0]
 	wantLast := wantIDs[len(wantIDs)-1]
 
-	countRE := regexp.MustCompile("(?i)(?:`?([0-9]+)`?\\s+(?:forward\\s+)?migrations(?:\\s+applied)?|migration\\s+count\\s+`?([0-9]+)`?|count\\s+`?([0-9]+)`?)")
+	countRE := regexp.MustCompile("(?i)(?:`?([0-9]+)`?\\s+(?:forward\\s+)?migrations(?:\\s+applied)?|migration\\s+count\\s+`?([0-9]+)`?)")
 	rangeRE := regexp.MustCompile("`(00[0-9]{3})`\\s*[–-]\\s*`(00[0-9]{3})`")
 	lastIDRE := regexp.MustCompile("(?i)(?:last(?:-migration)?\\s+ID\\s+`(00[0-9]{3})`|through\\s+`(00[0-9]{3})(?:_[a-z0-9_]+\\.sql)?`)")
 
@@ -449,9 +460,6 @@ func auditMigrationInventoryClaims(doc, content string, wantIDs []string) (liter
 		numStr := m[1]
 		if numStr == "" {
 			numStr = m[2]
-		}
-		if numStr == "" {
-			numStr = m[3]
 		}
 		literalClaims = append(literalClaims, fmt.Sprintf("%s: literal migration count %q", doc, m[0]))
 		gotCount, err := strconv.Atoi(numStr)
@@ -672,6 +680,8 @@ func TestHandover_ReviewsArchive(t *testing.T) {
 		"r11-d064-review.md",
 		"r12-enforce-limits-review.md",
 		"r13-r12-fixes-review.md",
+		"r14-d067-d070-review.md",
+		"r15-d072-d075-review.md",
 	}
 
 	var gotFiles []string
@@ -967,7 +977,7 @@ func TestHandover_Followup7Claims(t *testing.T) {
 	// 2. Verify operator-guide.md fleet-config section, the wired-operation claim, and PR #173..#182 catch-up claims.
 	operatorGuide := readOwnedDoc(t, root, "docs/handover/operator-guide.md")
 	for _, token := range []string{
-		"All 47 are wired in `apps/control` on `main`",
+		"All 49 are wired in `apps/control` on `main`",
 		"#173", "#174", "#175", "#176", "#177", "#178", "#179", "#181", "#182",
 		"D-065",
 		"/api/v1/admin/fleet-config",
@@ -1127,7 +1137,7 @@ func TestHandover_Followup8Claims(t *testing.T) {
 	// 3. Verify operator-guide.md pins for control follow-up 19/20 (#190/#215), revision 11 (#191/#195/#200/#213),
 	// D-067 (#193/#198/#201/#202/#206/#216), D-068 (#189), updater follow-up 12 (#192), and secops follow-up 7 (#203).
 	for _, token := range []string{
-		"All 47 are wired in `apps/control` on `main`",
+		"All 49 are wired in `apps/control` on `main`",
 		"#186", "#187", "#189", "#190", "#191", "#192", "#193", "#194", "#195", "#196", "#197", "#198", "#199", "#200", "#201", "#202", "#203",
 		// Control follow-up 19/20 (#190, #215): parse rule, certificate-key, LRU tail walk, /48 reserve-of-one budget, single-walk body identity.
 		"bracketed input",
@@ -1320,8 +1330,11 @@ func TestHandover_Followup9Claims(t *testing.T) {
 		}
 	}
 
-	// 2. Verify no owned Markdown file still contains "revision 10" or "1.6.0".
+	// 2. Current runbooks must not advertise superseded contracts. Archives retain historical scope.
 	for _, rel := range ownedDocs {
+		if strings.HasPrefix(rel, "docs/reviews/") {
+			continue
+		}
 		doc := readOwnedDoc(t, root, rel)
 		for _, stale := range []string{"revision 10", "Revision 10", "1.6.0"} {
 			if strings.Contains(doc, stale) {
@@ -1388,8 +1401,8 @@ func TestHandover_Followup9Claims(t *testing.T) {
 		"In each `anonymous` table (`ingress[anonymous]` and `anonClass`), one `/48` may hold every slot except a reserve of one (`max_rate_principals` defaults to `10000`, so `9999` `/64`s; a cap of one still allows that slot). A new `/64` in a `/48` that already has keys returns `429 RATE_LIMITED` with `Retry-After: 1` once only that reserve remains, without inserting or evicting, and another `/48` or an IPv4 address can take the reserve. On the agent mTLS listener, no verified chain is `401 UNAUTHENTICATED` before the limiter; a verified leaf keys ingress by its `urn:fvpn:node:<uuid>` URI SAN (`node:<uuid>`), so every still-usable serial of a node shares one burst during renewal overlap, and `sha256(leaf.Raw)` is the key only for a verified leaf without that SAN (`gates[class]` is taken before `AuthenticateAgent`, and a failed authentication has spent the token). When the table is full, eviction walks from the tail to the first bucket idle at full tokens or idle for more than an hour, bounded by `max_rate_principals`; a table with no eligible bucket returns `429`.",
 		// Acceptance cross-references (#204, #207, #210, #212, #214).
 		"c359fa37-61e0-4469-9f73-5a1e60949c3b",
-		"passes `AT10` with counted positives on every destination case",
-		"**subset passed, case blocked** on designed gaps with owners",
+		"AT10 `7 pass / 1 blocked / 0 fail`",
+		"**subset passed, case blocked** for every full AT",
 		"`AT13` `60 s` whole-node expiry",
 		"finite-member expiry under control loss pass",
 		"105/105",
@@ -1422,9 +1435,9 @@ func TestHandover_Followup9Claims(t *testing.T) {
 	for _, token := range []string{
 		"#204", "#205", "#206", "#207", "#208", "#210", "#211", "#212", "#213", "#214", "#215", "#216",
 		"c359fa37-61e0-4469-9f73-5a1e60949c3b",
-		"passes `AT10` with counted positives on every destination case",
-		"**subset passed, case blocked** on designed gaps with owners",
-		"`AT13` `60 s` whole-node expiry through `PUT /api/v1/admin/fleet-config` and finite-member expiry under control loss pass",
+		"AT10 `7 pass / 1 blocked / 0 fail`",
+		"**subset passed, case blocked** for every full AT",
+		"finite-member expiry, and whole-node `60 s` expiry passed",
 		"105/105",
 		"d50da75fd14fc72c",
 		"2393df75-6261-42bc-99b4-df3c57c4b741",
@@ -1469,9 +1482,8 @@ func TestHandover_Followup10Claims(t *testing.T) {
 		// Whole-ruleset nftables read-back (#220).
 		"node/enforce/verify_foreign.go",
 		"nft -j list ruleset",
-		"table <t> family <f> hook <h> priority <p> chain <c> statement <s>",
-		"ufw",
-		"firewalld",
+		"table <t> family <f> hook <h> priority <p> chain <c> handle <n> statement <s>",
+		"Production exit nodes must not run Docker or any other NAT for non-loopback traffic",
 		// Fair-Use enforcement reach (#222).
 		"Fair-Use Enforcement Reach and `fair_use.applying` Convergence",
 		"fup.member_generation_changed",
@@ -1514,9 +1526,8 @@ func TestHandover_Followup10Claims(t *testing.T) {
 		"~4.3–8.5 minutes",
 		"node/enforce/verify_foreign.go",
 		"nft -j list ruleset",
-		"table <t> family <f> hook <h> priority <p> chain <c> statement <s>",
-		"ufw",
-		"firewalld",
+		"table <t> family <f> hook <h> priority <p> chain <c> handle <n> statement <s>",
+		"Production exit nodes must not run Docker or any other NAT for non-loopback traffic",
 	} {
 		if !strings.Contains(calibrationGuide, token) {
 			t.Errorf("docs/handover/calibration.md missing expected follow-up 10 token %q", token)
@@ -1549,10 +1560,6 @@ func TestHandover_Followup10Claims(t *testing.T) {
 		"#220", "#221",
 		"node/enforce/verify_foreign.go",
 		"nft -j list ruleset",
-		"0f5fb60d-f6a7-45c6-8ebe-175e0a480bd8",
-		"105.94 s",
-		"111.51 s",
-		"116.651 s",
 		"120.12 s",
 		"SECOPS-18",
 		"D-076",
@@ -1619,7 +1626,7 @@ func TestHandover_Followup11Claims(t *testing.T) {
 		// D-078 & acceptance cross-references (#229, #231).
 		"D-078",
 		"a `429` that carries `Retry-After` and whose retry succeeds is the limiter working as specified; harnesses report the counts as evidence, and calibration stays with `control`",
-		"control follow-up 21 reviews `browser_rate`",
+		"TestFollowup21_BrowserClassCalibration",
 		"60a7102e-b824-4927-a576-62033f458157",
 		"254 pass / 1 blocked / 0 fail",
 		"rate_limit_review",
@@ -1699,7 +1706,7 @@ func TestHandover_Followup11Claims(t *testing.T) {
 		"`browser_rate` (`10/s`, burst `30`",
 		"`agent_rate` (`5/s`, burst `10`)",
 		"a `429` that carries `Retry-After` and whose retry succeeds is the limiter working as specified; harnesses report the counts as evidence, and calibration stays with `control`",
-		"control follow-up 21 reviews `browser_rate`",
+		"TestFollowup21_BrowserClassCalibration",
 	} {
 		if !strings.Contains(calibrationGuide, token) {
 			t.Errorf("docs/handover/calibration.md missing expected follow-up 11 token %q", token)
@@ -1764,4 +1771,189 @@ func TestHandover_Followup12Claims(t *testing.T) {
 	if !strings.Contains(operatorGuide, "-- [mechanical-check: mutating-maintenance-sql]") {
 		t.Error("docs/handover/operator-guide.md missing -- [mechanical-check: mutating-maintenance-sql] marker on purge_retained SQL fence")
 	}
+}
+
+// TestHandover_Followup13Claims ties the operator statements to contract,
+// configuration and owner evidence. OpenAPI version/count remain derived by
+// TestHandover_OpenAPIClaims, rather than a second hardcoded contract inventory.
+func TestHandover_Followup13Claims(t *testing.T) {
+	root := repoRoot(t)
+	require := func(path string, tokens ...string) {
+		t.Helper()
+		content := readOwnedDoc(t, root, path)
+		for _, token := range tokens {
+			if !strings.Contains(content, token) {
+				t.Errorf("%s missing follow-up 13 claim %q", path, token)
+			}
+		}
+	}
+	t.Run("restore_authorization_contract_and_implementation", func(t *testing.T) {
+		for _, path := range []string{"docs/handover/operator-guide.md", "docs/handover/deploy.md", "docs/handover/restore-drill.md"} {
+			require(path, "GET /api/v1/admin/devices?authorization_unconfirmed=true", "POST /api/v1/admin/members/{member_id}/devices/{device_id}/authorize", "authorization_unconfirmed_since", "Idempotency-Key", "CSRF", "member.device_authorize", "409 STATE_CONFLICT", "409 DEVICE_LIMIT_REACHED", "authorization_unconfirmed: false")
+		}
+		require("docs/handover/operator-guide.md", "existing `member.device_authorize` operation", "after the worker sync", "device.authorization.external_withdrawal", "device.authorize", "only path that re-grants", "always", "optional in the contract", "no request body", "#247")
+		require("docs/handover/member-guide.md", "需營運人員重新授權", "needs operator re-authorization", "authorization_unconfirmed: true", "always emits", "absent means the server does not project it yet")
+		require("internal/members/httpadapter/reads.go", "func (h Handlers) ListAdminDevices")
+		require("internal/members/httpadapter/commands.go", "func (h Handlers) AuthorizeMemberDevice")
+		require("internal/members/httpadapter/admin_devices_integration_test.go", "func TestD077_AdminDeviceListAndReauthorize", "member device omitted authorization_unconfirmed", "re-authorization did not restore the paid group")
+		if got := apierr.DeviceLimitReached.HTTPStatus(); got != 409 {
+			t.Fatalf("D-081 HTTP status = %d, want 409", got)
+		}
+		var contract struct {
+			Paths map[string]map[string]struct {
+				OperationID string               `yaml:"operationId"`
+				Responses   map[string]yaml.Node `yaml:"responses"`
+			} `yaml:"paths"`
+		}
+		if err := yaml.Unmarshal([]byte(readOwnedDoc(t, root, "contracts/openapi.yaml")), &contract); err != nil {
+			t.Fatal(err)
+		}
+		for _, tc := range []struct{ path, method, id, status string }{
+			{"/admin/devices", "get", "listAdminDevices", "200"},
+			{"/admin/members/{member_id}/devices/{device_id}/authorize", "post", "authorizeMemberDevice", "202"},
+		} {
+			op := contract.Paths[tc.path][tc.method]
+			if op.OperationID != tc.id {
+				t.Errorf("%s operation = %q, want %q", tc.path, op.OperationID, tc.id)
+			}
+			if _, ok := op.Responses[tc.status]; !ok {
+				t.Errorf("%s missing response %s", tc.path, tc.status)
+			}
+		}
+	})
+	t.Run("usage_projection_and_migration", func(t *testing.T) {
+		const migration = "00189_node_incarnation_usage_outbox.sql"
+		require("db/migrations/"+migration, "ADD COLUMN usage_outbox JSONB", "ADD COLUMN usage_outbox_observed_at TIMESTAMPTZ")
+		for _, path := range []string{"docs/handover/00-index.md", "docs/handover/11-database-and-retention.md", "docs/handover/operator-guide.md"} {
+			require(path, migration)
+		}
+		require("docs/handover/operator-guide.md", "usage_outbox: null", "never absent", "ETag", "informational", "meter.Health", "EvaluateGate", "pure reads", "until a verified recovery checkpoint", "ApplyCheckpoint", "central_acked_through")
+		require("internal/nodes/httpwire/handlers_integration_test.go", "func TestSECOPS19_D077_HTTPNodeDetailUsageOutboxETagAndDomainColumn")
+		require("internal/nodes/observation_readiness_integration_test.go", "func TestSECOPS19_D077_NodeDetailUsageOutboxProjectionAndMigration")
+		require("node/internal/usagestore/status_test.go", "func TestOutboxStatusIsPure")
+		require("docs/node/usage-upload.md", "A batch response never changes the ledger epoch", "meter.Health")
+		// Guard against the old regex interpreting fence/audit counts as migrations.
+		claims, errs := auditMigrationInventoryClaims("restore-evidence", "fence count `1`; audit count `1`", repoMigrationIDs(t, root))
+		if len(claims)+len(errs) != 0 {
+			t.Fatalf("non-migration counters mistaken for inventory: %v %v", claims, errs)
+		}
+	})
+	t.Run("browser_calibration", func(t *testing.T) {
+		c := config.Defaults()
+		if c.BrowserRate != (config.Bucket{PerSecond: 10, Burst: 30}) || c.AgentRate != (config.Bucket{PerSecond: 5, Burst: 10}) || c.IngressRate != (config.Bucket{PerSecond: 20, Burst: 60}) {
+			t.Fatalf("calibration defaults changed: browser=%+v agent=%+v ingress=%+v", c.BrowserRate, c.AgentRate, c.IngressRate)
+		}
+		require("docs/handover/calibration.md", "#233", "#browser-class-calibration", "TestFollowup21_BrowserClassCalibration", "internal/httpapi/middleware_browser_rate_test.go", "half the `20/s` burst `60`", "`3` GETs", "`5` GETs")
+		require("internal/httpapi/middleware_browser_rate_test.go", "func TestFollowup21_BrowserClassCalibration")
+	})
+	t.Run("AT30_measured_JSON_and_generation_floor", func(t *testing.T) {
+		var evidence struct {
+			Status     string          `json:"status"`
+			RunID      string          `json:"run_id"`
+			Evaluation map[string]bool `json:"evaluation"`
+			Comparison map[string]struct {
+				RPO         float64 `json:"pre_replay_db_rpo_seconds"`
+				ServiceRPO  float64 `json:"post_replay_service_rpo_seconds"`
+				ProtocolRTO float64 `json:"protocol_rto_seconds"`
+				TotalRTO    float64 `json:"total_outage_rto_seconds"`
+			} `json:"rpo_rto_comparison"`
+		}
+		if err := json.Unmarshal([]byte(readOwnedDoc(t, root, "docs/e2e/at/secops/restore-reconcile.json")), &evidence); err != nil {
+			t.Fatal(err)
+		}
+		if evidence.Status != "passed" {
+			t.Fatalf("AT30 status %q", evidence.Status)
+		}
+		for _, name := range []string{"t0_t1_device_revocation_fenced_d076", "regrant_authorize_device_clears_fence", "negative_central_revoke_not_fenced", "negative_post_restore_fresh_enroll_not_fenced", "secops19_visibility_and_zero_convergence", "retained_node_usage_replay", "provider_reconciliation"} {
+			if !evidence.Evaluation[name] {
+				t.Errorf("AT30 evidence %s is not passed", name)
+			}
+		}
+		m := evidence.Comparison["followup_9_current"]
+		if m.ServiceRPO != 0 {
+			t.Fatalf("service RPO = %v", m.ServiceRPO)
+		}
+		for _, path := range []string{"docs/handover/restore-drill.md", "docs/handover/deploy.md", "docs/handover/operator-guide.md"} {
+			require(path, evidence.RunID, fmt.Sprintf("%.2f s", m.ProtocolRTO), fmt.Sprintf("%.2f s", m.TotalRTO), fmt.Sprintf("%.3f s", m.RPO), "0 B", "SECOPS-18", "SECOPS-19", "SECOPS-21", "#245", "ErrStaleGeneration", "config_generation.desired", "nodes.applied_config_generation")
+		}
+		require("docs/handover/restore-drill.md", "7.17 s", "3/3", "unacked_count = 3", "unacked_event_count = 3", "2352", "ErrAckRegress` log count `0`", "service-level `AuthorizeDevice`", "peerM2D2", "peerM2D3", "peerM2D1", "6.2a Verify post-restore generation")
+		require("internal/desiredstate/compiler_test.go", "func TestNextConfigGenerationIncludesApplied")
+		require("internal/desiredstate/compiler_integration_test.go", "func TestCompiler_RestoreAppliedGenerationAdvancesPastNode")
+	})
+	t.Run("installer_and_foreign_rules", func(t *testing.T) {
+		require("docs/handover/operator-guide.md", "docs/node/install.md", "already_current", "check --json", "update-staging/pending-release.json", "does not move `current`", "reenroll --token-file", "identity.retired/<utc>/", "keeps `usage.db`", "image-prepare", "firstboot", "`--token` on argv", "exit `64`", "`latest` is refused", "journal-first", "`0` success, `1` failed, `2` drifted, `3` busy, `4` unsupported platform, `5` dependency, `64` usage", "hardware clone boot", "ENR-02", "D-080", "no merged roadmap row")
+		require("docs/node/install.md", "update-staging/pending-release.json", "already_current", "## Exit codes")
+		for _, path := range []string{"docs/handover/calibration.md", "docs/handover/deploy.md"} {
+			require(path, "D-079", "loopback_scoped", "127.0.0.0/8", "::1", "`xt` matches", "names prove nothing", "handle <n>", "Production exit nodes must not run Docker or any other NAT for non-loopback traffic")
+		}
+		require("docs/handover/calibration.md", "not a production topology")
+		require("node/enforce/followup11_loopback_test.go", "func TestFollowup11_DockerDNSLoopbackScoped", "func TestFollowup11_NonLoopbackMasquerade", "func TestFollowup11_XTMatchDoesNotProve")
+	})
+	t.Run("acceptance_counts_keep_case_blockers", func(t *testing.T) {
+		for _, id := range []string{"AT10", "AT11", "AT12", "AT13"} {
+			var record struct {
+				RunID  string `json:"run_id"`
+				Status string `json:"status"`
+				Checks []struct {
+					Status string `json:"status"`
+				} `json:"checks"`
+			}
+			if err := json.Unmarshal([]byte(readOwnedDoc(t, root, "docs/e2e/at/isolation/"+id+".json")), &record); err != nil {
+				t.Fatal(err)
+			}
+			counts := map[string]int{}
+			for _, check := range record.Checks {
+				counts[check.Status]++
+			}
+			if record.Status != "blocked" {
+				t.Errorf("%s status changed to %s; refresh dated handover", id, record.Status)
+			}
+			require("docs/ops/README.md", record.RunID, fmt.Sprintf("%s `%d pass / %d blocked / %d fail`", id, counts["pass"], counts["blocked"], counts["fail"]))
+		}
+		require("docs/ops/README.md", "#237", "#246", "**subset passed, case blocked**", "Usage follow-up 3 re-run in progress as of 2026-10-30 EDT", "29 pass / 0 blocked / 0 fail", "16 pass / 0 blocked / 0 fail", "121.88 s")
+		require("docs/e2e/runs/2026-10-31/followup14/run.md", "pass=29 blocked=0 fail=0", "pass=16 blocked=0 fail=0")
+	})
+	t.Run("review_provenance_and_finding_identity", func(t *testing.T) {
+		require("docs/reviews/r14-d067-d070-review.md", "70efbde6c94fb8d87f2cb88334703cfff4afe004", "96a379e53b8744f71b51322d36ec4f098a96feb2e6e2d9dd29c5e03484b82b60", "**M-1** (agent): A v2", "**M-4** (control): One node with two", "**L-1** (control): Eight depleted", "**L-2** (control): One anonymous", "#215", "#216", "#217", "#220")
+		for _, path := range []string{"internal/httpapi/followup20_review_test.go", "node/agent/review_r14_m1_test.go", "node/agent/followup15_test.go", "internal/nodes/observation_readiness_integration_test.go", "node/enforce/followup10_review_test.go", "tests/netlab/scenario_foreign_test.go"} {
+			require("docs/reviews/r14-d067-d070-review.md", path)
+			if _, err := os.Stat(filepath.Join(root, path)); err != nil {
+				t.Fatal(err)
+			}
+		}
+		require("docs/reviews/r15-d072-d075-review.md", "dfafae0f985a5209ccf380afb9c615987f2bd775", "3929d4ca5ec00703e1d2dd9ae6306f9acf5aa3b445f288be31d4ee50acffbbbb", "grok/grok-4.7", "Routing in progress — 2026-10-30 EDT", "**H-1**", "**M-6**", "**L-1**", "not yet adopted on main")
+		require("docs/reviews/README.md", "r14-d067-d070-review.md", "r15-d072-d075-review.md", "8 (1 High, 6 Medium, 1 Low)")
+	})
+	t.Run("reviewed_document_hashes", func(t *testing.T) {
+		var review struct {
+			Followup struct {
+				Documents []struct {
+					Path   string `json:"path"`
+					SHA256 string `json:"sha256"`
+				} `json:"reviewed_documents"`
+			} `json:"handover_follow_up_13"`
+		}
+		if err := json.Unmarshal([]byte(readOwnedDoc(t, root, "docs/e2e/at/secops/scope-review.json")), &review); err != nil {
+			t.Fatal(err)
+		}
+		if len(review.Followup.Documents) < 13 {
+			t.Fatal("follow-up 13 document pins incomplete")
+		}
+		for _, doc := range review.Followup.Documents {
+			sum := sha256.Sum256([]byte(readOwnedDoc(t, root, doc.Path)))
+			if hex.EncodeToString(sum[:]) != doc.SHA256 {
+				t.Errorf("%s SHA-256 pin is stale", doc.Path)
+			}
+		}
+	})
+	t.Run("no_obsolete_followup13_claims", func(t *testing.T) {
+		for _, path := range []string{"docs/handover/README.md", "docs/ops/README.md", "docs/handover/operator-guide.md", "docs/handover/deploy.md", "docs/handover/restore-drill.md"} {
+			text := readOwnedDoc(t, root, path)
+			for _, stale := range []string{"until wire-members follow-up 10", "all 47 wired", "422 DEVICE_LIMIT_REACHED", "contract revision 12 `D-077`),", "update-journal/pending-release.json", "install/pending-release.json", "follow-up 5 in flight"} {
+				if strings.Contains(text, stale) {
+					t.Errorf("%s has stale follow-up 13 text %q", path, stale)
+				}
+			}
+		}
+	})
 }

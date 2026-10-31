@@ -648,6 +648,42 @@ func (j *Journal) ClaimJob(ctx context.Context, job Job) (stored Job, created bo
 	return stored, true, tx.Commit()
 }
 
+// RecordJob inserts a local job without moving the accepted generation.
+// An installer apply is not a desired-state generation (§13.4). The same
+// job id and attempt with the same release, generation and manifest is
+// idempotent. Different content is ErrStaleGeneration.
+func (j *Journal) RecordJob(ctx context.Context, job Job) (Job, error) {
+	tx, err := j.db.BeginTx(ctx, nil)
+	if err != nil {
+		return Job{}, err
+	}
+	defer func() { _ = tx.Rollback() }()
+	existing, err := scanJob(tx.QueryRowContext(ctx, jobSelect+` WHERE job_id = ? AND attempt = ?`, job.JobID, job.Attempt))
+	if err == nil {
+		if existing.Generation != job.Generation || existing.ReleaseID != job.ReleaseID || existing.ManifestSHA256 != job.ManifestSHA256 {
+			return Job{}, fmt.Errorf("%w: job %s attempt %d already claimed with different content", ErrStaleGeneration, job.JobID, job.Attempt)
+		}
+		return existing, tx.Commit()
+	}
+	if !errors.Is(err, ErrNotFound) {
+		return Job{}, err
+	}
+	if job.Phase == "" {
+		job.Phase = JobClaimed
+	}
+	now := j.ts()
+	if _, err := tx.ExecContext(ctx, `INSERT INTO jobs(job_id, attempt, generation, release_id, manifest_sha256, intent_json, phase, claimed_at, updated_at)
+		VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		job.JobID, job.Attempt, job.Generation.String(), job.ReleaseID, job.ManifestSHA256, string(job.IntentJSON), string(job.Phase), now, now); err != nil {
+		return Job{}, err
+	}
+	stored, err := scanJob(tx.QueryRowContext(ctx, jobSelect+` WHERE job_id = ? AND attempt = ?`, job.JobID, job.Attempt))
+	if err != nil {
+		return Job{}, err
+	}
+	return stored, tx.Commit()
+}
+
 func mustParse(s string) decstr.U64 {
 	v, err := decstr.Parse(s)
 	if err != nil {

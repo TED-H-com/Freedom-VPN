@@ -16,8 +16,8 @@ import (
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/node/internal/healthattest"
-	"github.com/TED-H-com/Freedom-VPN/node/internal/nodelock"
 	"github.com/TED-H-com/Freedom-VPN/node/internal/updatejournal"
+	"github.com/TED-H-com/Freedom-VPN/node/nodelock"
 	"github.com/TED-H-com/Freedom-VPN/node/updater/fsutil"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
@@ -32,6 +32,13 @@ type claimed struct {
 	Work
 	BootID      uuid.UUID `json:"boot_id"`
 	StateSchema int       `json:"state_schema"`
+	// Source is "installer" for a pending-release apply. Empty is a
+	// desired-state job. It stays in the journal intent. The wire result
+	// has no source member.
+	Source string `json:"source,omitempty"`
+	// PendingPath is the installer record consumed when this job finishes.
+	PendingPath   string `json:"pending_path,omitempty"`
+	PendingSHA256 string `json:"pending_sha256,omitempty"`
 }
 
 // Engine runs one node's update transactions (§13.4 to §13.9).
@@ -41,17 +48,20 @@ type Engine struct {
 	Platform     Platform
 	ReleaseTrust *envelope.TrustStore
 	DesiredTrust *envelope.TrustStore
-	Source       Source
-	HTTP         *http.Client
-	Meter        Meter
-	Services     ServiceManager
-	Health       HealthChecks
-	Gate         Gate
-	Migrator     Migrator
-	Sender       ResultSink
-	Journal      *updatejournal.Journal
-	Download     DownloadConfig
-	ProbePeer    *healthattest.ChallengeProbe
+	// RevokedReleaseIDs is the unsigned release-support list from node config.
+	// Installer requests also union the journal's persisted signed revocations.
+	RevokedReleaseIDs []uuid.UUID
+	Source            Source
+	HTTP              *http.Client
+	Meter             Meter
+	Services          ServiceManager
+	Health            HealthChecks
+	Gate              Gate
+	Migrator          Migrator
+	Sender            ResultSink
+	Journal           *updatejournal.Journal
+	Download          DownloadConfig
+	ProbePeer         *healthattest.ChallengeProbe
 	// Attest is the challenge window for isolation, DNS and the tunnel probe
 	// (D-053). Zero values use HealthAttestWait, HealthAttestPoll and
 	// HealthChallengeTTL. The updater config cannot set it.
@@ -74,6 +84,10 @@ type Engine struct {
 	// lockHeld is true while this process already owns the update lock.
 	// Flush and Retain run from inside Run and must not take it again.
 	lockHeld bool
+	// bootIDFromConfig is true when the kernel boot id file was unreadable
+	// and Node.BootID came from updater.json. It is logged once.
+	bootIDFromConfig bool
+	bootNoted        bool
 	// Probe validation runs afresh under the updater lock for each issuance.
 	probeEnv      probeEnvironment
 	probeRefusals map[probeRefusal]bool
@@ -102,6 +116,9 @@ func (e *Engine) Run(ctx context.Context) error {
 			}
 			blocked = true
 		}
+		if err := e.applyPendingLocked(ctx, e.pendingRecordPath(), false); err != nil {
+			return err
+		}
 		for i := 0; i < 8; i++ {
 			again, err := e.runOnce(ctx)
 			if err != nil {
@@ -126,9 +143,10 @@ func (e *Engine) Run(ctx context.Context) error {
 // Flush during seal, runs fn directly (D-034d).
 func (e *Engine) withLock(ctx context.Context, fn func() error) error {
 	if e.lockHeld {
+		e.noteBootFallback()
 		return fn()
 	}
-	lk, err := nodelock.Acquire(ctx, e.Layout.Lock, 5, 20*time.Millisecond)
+	lk, err := nodelock.AcquireWithBootID(ctx, e.Layout.Lock, 5, 20*time.Millisecond, e.Node.BootID.String())
 	if err != nil {
 		if errors.Is(err, nodelock.ErrBusy) {
 			return transient(apierr.UpdateBusy, lockBusyDetail(err))
@@ -138,7 +156,38 @@ func (e *Engine) withLock(ctx context.Context, fn func() error) error {
 	defer lk.Release()
 	e.lockHeld = true
 	defer func() { e.lockHeld = false }()
+	e.noteBootFallback()
 	return fn()
+}
+
+// UseLog sets the engine log and the desired-state reader's log.
+func (e *Engine) UseLog(l *slog.Logger) {
+	if e == nil {
+		return
+	}
+	if l == nil {
+		l = slog.New(slog.NewTextHandler(io.Discard, nil))
+	}
+	e.Log = l
+	g, ok := e.Source.(GuardSource)
+	if !ok {
+		return
+	}
+	f, ok := g.Inner.(FileSource)
+	if !ok {
+		return
+	}
+	f.Log = l
+	g.Inner = f
+	e.Source = g
+}
+
+func (e *Engine) noteBootFallback() {
+	if e == nil || !e.bootIDFromConfig || e.bootNoted {
+		return
+	}
+	e.bootNoted = true
+	e.log().Info("kernel boot id unreadable; using boot_id from updater config")
 }
 
 // Recover finishes an applying or checking transaction before member
@@ -151,6 +200,12 @@ func (e *Engine) Recover(ctx context.Context) error {
 }
 
 func (e *Engine) recoverLocked(ctx context.Context) error {
+	if err := e.cleanInstallerSnapshots(); err != nil {
+		return err
+	}
+	if err := e.consumeFinishedInstallerJobs(ctx); err != nil {
+		return err
+	}
 	txn, err := e.Journal.ActiveTxn(ctx)
 	if err == nil {
 		if err := e.continueTxn(ctx, txn); err != nil {
@@ -452,7 +507,7 @@ func (e *Engine) maybeAlreadyCurrent(ctx context.Context, c claimed, job updatej
 	if err := e.enqueueResult(ctx, in); err != nil {
 		return true, err
 	}
-	if err := e.finish(ctx, job, string(api.UpdateResultStateAlreadyCurrent), ""); err != nil {
+	if err := e.finishInstaller(ctx, c, job, string(api.UpdateResultStateAlreadyCurrent), ""); err != nil {
 		return true, err
 	}
 	return true, nil
@@ -695,6 +750,15 @@ func (e *Engine) failJob(ctx context.Context, job updatejournal.Job, c claimed, 
 		}
 		c = decoded
 	}
+	if c.Source == SourceInstaller {
+		recorded, err := e.Journal.HasResult(ctx, resultID(job.JobID, job.Attempt, api.UpdateResultStateFailed).String())
+		if err != nil {
+			return err
+		}
+		if recorded {
+			return e.finishInstaller(ctx, c, job, string(api.UpdateResultStateFailed), string(code))
+		}
+	}
 	p, _ := e.Journal.Pointers(ctx)
 	schema, _ := e.Journal.StateSchema(ctx)
 	started := job.ClaimedAt
@@ -709,7 +773,7 @@ func (e *Engine) failJob(ctx context.Context, job updatejournal.Job, c claimed, 
 	if err := e.enqueueResult(ctx, in); err != nil {
 		return err
 	}
-	return e.finish(ctx, job, string(api.UpdateResultStateFailed), string(code))
+	return e.finishInstaller(ctx, c, job, string(api.UpdateResultStateFailed), string(code))
 }
 
 func (e *Engine) reportUnclaimed(ctx context.Context, c claimed, state api.UpdateResultState, stage api.UpdateStage, code apierr.Code) error {
@@ -756,7 +820,7 @@ func (e *Engine) finishSupersede(ctx context.Context, job updatejournal.Job, c c
 	if err := e.enqueueResult(ctx, in); err != nil {
 		return false, err
 	}
-	if err := e.finish(ctx, job, string(api.UpdateResultStateSuperseded), string(apierr.StaleGeneration)); err != nil {
+	if err := e.finishInstaller(ctx, c, job, string(api.UpdateResultStateSuperseded), string(apierr.StaleGeneration)); err != nil {
 		return false, err
 	}
 	return true, nil
@@ -841,7 +905,7 @@ func (e *Engine) enforce(ctx context.Context, releaseID string, c claimed, outco
 	id, _ := uuid.Parse(releaseID)
 	// A signed revocation is persisted in the journal. The claim's unsigned
 	// list alone must not let that release pass the gate (§13.4).
-	allow := c.Intent.PublicationIntent == api.PublicationIntentPublished &&
+	allow := c.Source != SourceInstaller && c.Intent.PublicationIntent == api.PublicationIntentPublished &&
 		releaseID != "" && containsID(c.Serving, id) && !containsID(c.Revoked, id) && !containsID(signed, id)
 	if err := e.Journal.SetGate(ctx, updatejournal.GateRecord{
 		PublicationIntent: string(c.Intent.PublicationIntent),

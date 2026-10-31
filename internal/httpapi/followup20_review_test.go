@@ -188,16 +188,16 @@ func TestReviewR14_EvictIdleWindowOfEight(t *testing.T) {
 	})
 }
 
-// TestReviewR14_Anonymous48HalfBudget is the hosting-/48 reserve. One /48
-// may fill every principal slot except anonymousGroupReserve. It is not
-// refused while more than that reserve remains. The next /64 after the
-// reserve is all that is left is refused without filling the table, and
-// another /48 can take the reserved slot.
+// TestReviewR14_Anonymous48HalfBudget is the hosting-/48 cap after D-083.
+// At max 10 the cap is min(10/2, 64) = 5. The next /64 in that /48 is
+// refused without an insert, and another /48 still enters.
 func TestReviewR14_Anonymous48HalfBudget(t *testing.T) {
 	const maxPrincipals = 10
-	if anonymousGroupReserve != 1 {
-		t.Fatalf("anonymous reserve is %d, this proof is written for 1", anonymousGroupReserve)
+	if anonymousGroupCap(maxPrincipals) != 5 {
+		t.Fatalf("cap(%d) = %d, want 5", maxPrincipals, anonymousGroupCap(maxPrincipals))
 	}
+	now := time.Date(2026, 10, 30, 22, 26, 0, 0, time.UTC)
+	setLimiterClock(t, func() time.Time { return now })
 	l := newLimiter(maxPrincipals)
 	b := config.Bucket{PerSecond: 1, Burst: 1}
 	admitted := 0
@@ -216,31 +216,15 @@ func TestReviewR14_Anonymous48HalfBudget(t *testing.T) {
 			admitted++
 		}
 	}
-	if admitted != 8 {
-		t.Fatalf("/48 %s admitted %d of the first 8 keys; half of %d is no longer the cap", group, admitted, maxPrincipals)
-	}
-	if len(l.entries) >= l.max {
-		t.Fatalf("table filled (%d/%d) before the reserve", len(l.entries), l.max)
-	}
-	next, ok := rateKeyFromIP(net.ParseIP("2001:db8:0:9::"))
-	if !ok {
-		t.Fatal("next key")
-	}
-	if d := l.allowGrouped(next, anonymousGroup(next), b); d != 0 {
-		t.Fatalf("/64 %s inside hosting /48 %s was refused (%s) with %d/%d principal slots free", next, group, d, len(l.entries), l.max)
-	}
-	if len(l.entries) != maxPrincipals-anonymousGroupReserve {
-		t.Fatalf("hosting /48 holds %d, want %d", len(l.entries), maxPrincipals-anonymousGroupReserve)
+	if admitted != 5 || len(l.entries) != 5 {
+		t.Fatalf("/48 %s admitted %d of the first 8 keys (%d entries); cap is 5", group, admitted, len(l.entries))
 	}
 	past, ok := rateKeyFromIP(net.ParseIP("2001:db8:0:a::"))
 	if !ok {
 		t.Fatal("past key")
 	}
-	if d := l.allowGrouped(past, anonymousGroup(past), b); d == 0 {
-		t.Fatal("hosting /48 took the reserved slot")
-	}
-	if len(l.entries) != maxPrincipals-anonymousGroupReserve {
-		t.Fatalf("refusal inserted or evicted: %d entries", len(l.entries))
+	if d := l.allowGrouped(past, anonymousGroup(past), b); d == 0 || len(l.entries) != 5 {
+		t.Fatalf("hosting /48 passed the cap: wait %s entries %d", d, len(l.entries))
 	}
 	other, ok := rateKeyFromIP(net.ParseIP("2001:db8:1::"))
 	if !ok {
@@ -250,7 +234,7 @@ func TestReviewR14_Anonymous48HalfBudget(t *testing.T) {
 		t.Fatal("other prefix collapsed into the hosting /48")
 	}
 	if d := l.allowGrouped(other, anonymousGroup(other), b); d != 0 {
-		t.Fatalf("other /48 could not take the reserve: %s", d)
+		t.Fatalf("other /48 refused: %s", d)
 	}
 }
 
