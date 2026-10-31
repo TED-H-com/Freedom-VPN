@@ -50,6 +50,7 @@ type InstallerOutcome struct {
 }
 
 type installerSpec struct {
+	AllowLoopback        bool   `json:"allow_loopback"` // TEST ONLY local authenticated proxy.
 	Manifest             string `json:"manifest"`
 	Artifact             string `json:"artifact"`
 	Trust                string `json:"trust"`
@@ -150,7 +151,8 @@ func (s *Stack) PrepareInstallerNode(ctx context.Context) error {
 		return err
 	}
 	common := installerSpec{
-		ControlURL: "https://127.0.0.1:9444", ServerCA: "/var/tmp/e2e-rel/ca.pem",
+		AllowLoopback: true,
+		ControlURL:    "https://127.0.0.1:9444", ServerCA: "/var/tmp/e2e-rel/ca.pem",
 		TrustBundle: "/var/tmp/e2e-rel/node-trust.json", HostReserveBPS: "1000000", SNAT: snat,
 		NetbirdManagementURL: "https://netbird.example.invalid", TokenFile: "/var/tmp/e2e-rel/token",
 	}
@@ -437,11 +439,17 @@ func (s *Stack) buildInstallerBins(ctx context.Context) (map[string][]byte, erro
 }
 
 func (s *Stack) installArgs(spec installerSpec) []string {
-	return []string{"/usr/local/bin/fvpn-node-install", "install", "--json",
+	args := []string{"/usr/local/bin/fvpn-node-install", "install", "--json",
 		"--manifest", spec.Manifest, "--artifact", spec.Artifact, "--trust", spec.Trust,
 		"--control-url", spec.ControlURL, "--server-ca", spec.ServerCA, "--trust-bundle", spec.TrustBundle,
 		"--host-reserve-bps", spec.HostReserveBPS, "--snat", spec.SNAT,
 		"--netbird-management-url", spec.NetbirdManagementURL}
+	// This opt-in belongs only to the shared fixture's exact local proxy.
+	// A changed control origin must use the installer's normal URL policy.
+	if spec.AllowLoopback && spec.ControlURL == "https://127.0.0.1:9444" {
+		args = append(args, "--allow-loopback")
+	}
+	return args
 }
 
 func (s *Stack) runInstaller(ctx context.Context, args []string) InstallerOutcome {

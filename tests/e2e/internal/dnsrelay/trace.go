@@ -4,6 +4,7 @@ package dnsrelay
 // query names, addresses, packet bodies or resolver history are retained.
 import (
 	"encoding/json"
+	"github.com/google/uuid"
 	"golang.org/x/net/dns/dnsmessage"
 	"net"
 	"net/netip"
@@ -14,6 +15,10 @@ import (
 )
 
 type Event struct {
+	RequestID       string    `json:"request_id"`
+	StreamID        string    `json:"stream_id"`
+	Sequence        uint64    `json:"sequence,string"`
+	Phase           string    `json:"phase"`
 	Started         time.Time `json:"started"`
 	Completed       time.Time `json:"completed"`
 	Role            string    `json:"role"`
@@ -30,6 +35,8 @@ type Event struct {
 type Trace struct {
 	Role, Path string
 	mu         sync.Mutex
+	stream     string
+	sequence   uint64
 }
 
 func FixtureCase(name string) string {
@@ -44,16 +51,22 @@ func FixtureCase(name string) string {
 	}
 	return ""
 }
-func (t *Trace) Record(request, response []byte, peer net.Addr, proto string, started time.Time, err error) {
-	var q, a dnsmessage.Message
+
+// Begin writes before dispatch, so an abandoned client cannot hide a fetch.
+// The returned metadata carries a random identity, never a wire ID or qname.
+func (t *Trace) Begin(request []byte, peer net.Addr, proto string, started time.Time) Event {
+	if t == nil {
+		return Event{}
+	}
+	var q dnsmessage.Message
 	if q.Unpack(request) != nil || len(q.Questions) != 1 {
-		return
+		return Event{}
 	}
 	fixture := FixtureCase(q.Questions[0].Name.String())
 	if fixture == "" {
-		return
+		return Event{}
 	}
-	e := Event{Started: started, Completed: time.Now().UTC(), Role: t.Role, Source: "native", Case: fixture, Type: uint16(q.Questions[0].Type), Protocol: proto, RCode: -1, TTLs: []uint32{}, Classes: []string{}}
+	e := Event{RequestID: uuid.NewString(), Phase: "started", Started: started, Role: t.Role, Source: "native", Case: fixture, Type: uint16(q.Questions[0].Type), Protocol: proto, RCode: -1, TTLs: []uint32{}, Classes: []string{}}
 	if t.Role == "authority" {
 		host, _, _ := net.SplitHostPort(peer.String())
 		e.Source = "other_fixture"
@@ -64,6 +77,16 @@ func (t *Trace) Record(request, response []byte, peer net.Addr, proto string, st
 			e.Source = "secondary"
 		}
 	}
+	return t.append(e)
+}
+
+// Complete joins the reply (or transport failure) to its original start.
+func (t *Trace) Complete(e Event, response []byte, err error) {
+	if t == nil || e.RequestID == "" {
+		return
+	}
+	e.Phase, e.Completed = "completed", time.Now().UTC()
+	var a dnsmessage.Message
 	if err == nil && a.Unpack(response) == nil {
 		e.Success = true
 		e.RCode = int(a.RCode)
@@ -97,12 +120,22 @@ func (t *Trace) Record(request, response []byte, peer net.Addr, proto string, st
 			}
 		}
 	}
+	t.append(e)
+}
+
+func (t *Trace) append(e Event) Event {
 	t.mu.Lock()
 	defer t.mu.Unlock()
+	if t.stream == "" {
+		t.stream = uuid.NewString()
+	}
+	t.sequence++
+	e.StreamID, e.Sequence = t.stream, t.sequence
 	f, openErr := os.OpenFile(t.Path, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0600)
 	if openErr != nil {
-		return
+		return e
 	}
 	defer f.Close()
 	_ = json.NewEncoder(f).Encode(e)
+	return e
 }

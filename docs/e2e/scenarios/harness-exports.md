@@ -134,7 +134,8 @@ are not recorded. AdGuard query logging/statistics remain disabled. No cache is
 flushed, resolver chosen by the harness, or query assertion relaxed.
 A unique metadata match identifies the responding relay. Multiple matching
 responses remain explicitly ambiguous. An observed upstream exchange proves a
-miss; no exchange supports only a labeled cache-hit inference. No upstream
+fetch; no exchange supports only a labeled cache-hit inference, subject to
+the whole-sequence outstanding-request rules below. No upstream
 receipt can mean native-stub caching or an unobserved path; it is not labeled
 an AdGuard cache hit. The authority SOA is sampled after the native response,
 not retroactively attached to a positive cached answer that contains no SOA.
@@ -149,3 +150,72 @@ recovery configs use `/var/lib/vpn-node/state/meter.checkpoint`, created by the
 real agent's D-125 barrier. The regular update scenario leaves the agent alive
 to answer that barrier; the updater owns subsequent stop/start. The fixture
 no longer creates the unused legacy four-field checkpoint.
+
+## Follow-up 21 — installer input and DNS lifetime correlation (TEST ONLY)
+
+The shared installer spec explicitly sets `allow_loopback=true` only for its
+existing authenticated `https://127.0.0.1:9444` proxy. `installArgs` passes
+`--allow-loopback` only when that boolean and that exact origin agree. An unset
+boolean or another origin adds no flag. Production installer defaults and all
+installer-generated reporting fields are untouched. Consume `RerunInstaller`
+normally; no `ProbeInstallerExit` reporting workaround is required.
+
+`dns_trace.authority_history` is cumulative for the closed fixture case / RR
+type across the whole cache-change sequence, including requests that started
+before the current query. Each relay appends `started` before dispatch and
+`completed` after response/error, joined by random `request_id`; `stream_id`
+and decimal-string `sequence` detect discontinuities. Later snapshots join late
+completions to the same original start. `authority_events` now includes **all**
+completed matching requests in that stream, not only starts inside this query.
+Do not discard earlier events when comparing snapshots.
+
+The three `authority_outstanding_at_*` arrays identify requests outstanding at
+query start, query completion, and trace read. `trace_read_at` bounds each file
+snapshot separately; the snapshots are not simultaneous. A request may still
+complete after the final snapshot. `trace_complete=true` means the inspected
+lifecycle stream is readable and contiguous, **not** that all requests have
+finished or no older request can update the cache. Missing/partial records,
+orphan completions, duplicate completions or unreadable stopped relays
+make attribution incomplete. `trace_streams` retains every process stream ID
+for each role, including deliberate restarts during fallback setup. Continuity
+is checked from sequence one within each stream; a new stream is never
+silently merged with an old one. Completeness does not assert no restart or
+cache clear: compare stream IDs and policy state across the query sequence. The old completion-only `cce1a688` records remain
+unchanged; their `trace_complete` cannot retroactively establish start history.
+
+Adopt [BACKEND §2.1.5](../../dns/BACKEND.md#215-f10-03--positive-cache-and-ttl-measured-2026-10-31):
+
+- An authority request proves a fetch, not fallback or which response supplied
+  the current answer. `fetch_authority_request_observed` replaces the older
+  overly strong miss label. Source role must match the responding resolver.
+- A uniquely different responder establishes different independent caches.
+  Call it fallback only with primary failure/timeout and secondary receipts.
+- Same responder, old class, decreasing TTL and no new or overlapping fetch
+  supports `inferred_hit_no_authority_exchange`; this is no private cache flag.
+- An earlier fetch still outstanding during the response yields
+  `unknown_earlier_authority_request_inflight`. A completion between queries is
+  retained in the next history even if the final query starts no fetch.
+  F9-INFLIGHT shows why changed class inside retained TTL cannot be assigned to
+  fallback or declared an unexplained cache defect without that full history.
+- Missing history/responder, cache-key or policy stability leaves cause
+  ambiguous. Policy-generated negative answers can remain `unknown`; separately
+  sampled authority SOA never becomes a positive cached A record's serial.
+
+The fixture deliberately retains **4096 bytes (4 KiB)**, its historical override,
+for comparability; it is not the pin's 4194304-byte (4 MiB) default. No silent
+alignment was made and no eviction cause is inferred. The focused runner retains
+both resolvers' live `GET /control/dns_info` before/after: size, TTL overrides,
+optimistic caching, upstream mode, timeout, fallback count, blocking mode/TTL.
+The pin's empty API upstream mode means load balancing. The fixture relays
+also retain their existing 2-second exchange deadline; the backend's 10-second
+upstream timeout is a separate limit. These traces do not reproduce the
+backend's deliberately delayed 3.5-second experiment or observe its private
+cache insertion. A successful send is relay completion, not an AdGuard cache
+write receipt. No TTL override, cache clear, timeout change or assertion
+relaxation masks the product's F9-INFLIGHT limitation.
+
+TTL is a maximum lifetime, not a minimum retention guarantee. The historical
+F10-03 and the later passing follow-up 20 run retain their verdicts; no product
+TTL fix is claimed. The [members fixture analysis](followup21-members.md)
+separately identifies F11-01's unobserved transport segment and F11-03's original
+guarded installation failures without changing either acceptance row.

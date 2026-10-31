@@ -1,0 +1,17 @@
+# installer-loopback-wrapper
+
+TEST ONLY shared install wrapper and generated authenticated reporting
+
+Status: pass
+
+Run: 33b9621a-41d7-49fb-bc27-1c3f05e4ab44
+
+Source: 5bc416660913b06cabfab680a24b32c9b541fed2
+
+Spec: ENR02, UPD05, AT07, D-102
+
+- install: {"Exit":0,"Status":"installed","Code":"baseline","Incarnation":"01a19378-3df8-70d0-8ae3-46b663c7cfdd","NodeID":"01a19378-37cb-76b6-a7ad-f348594b8ff1","RetiredMode":"","RetiredHashes":{},"BoundStateBefore":null,"RetiredBoundState":null,"Message":"","Before":{"key_sha256":"absent","cert_sha256":"absent","node_json_sha256":"absent","usage_db_sha256":"absent","usage_wal_sha256":"absent","machine_id_sha256":"a3429df058d5e9d77dccddf77c1e3af699ff2479a3da6bccf795cdf54f320212","current_target":"absent"},"Hashes":{"key_sha256":"0459265a5ae8d634bbd49814e69e0d1462bac5bec80960cf6314b58b10f78dd4","cert_sha256":"913fcb4261d970c319a5d7a1e5c492001d232669f70867a971fb4c4251293350","node_json_sha256":"9ed25fb475f0b5045e62957f77e1affea49b6814db11ef2b3da028e0faa3d230","usage_db_sha256":"3b97a0c0190d15e84acbec1c1996fb2796b7f89d7c2a4b7059df8f80a78e9c7e","usage_wal_sha256":"absent","machine_id_sha256":"a3429df058d5e9d77dccddf77c1e3af699ff2479a3da6bccf795cdf54f320212","current_target":"releases/01a19378-1bd5-7ecb-b648-a6b99c7ac5e5"},"Services":{"fvpn-agent.service":"active","fvpn-updater.service":"inactive","fvpn-updater.timer":"active","fvpn-watchdog.service":"active"}}
+- generated_reporting: {"result_url":"https://127.0.0.1:9444/api/v1/agent/update-results","allowed_artifact_origins":["https://127.0.0.1:9444"],"allow_loopback":true,"mtls_cert":"/var/lib/vpn-node/identity/cert.pem","mtls_key":"/var/lib/vpn-node/identity/key.pem","mtls_ca":"/etc/vpn-node/ca.pem"}
+- config_sha256_before: 14a8975a8a36df9558b9b957e07613476e43de351281eadaae4657e860f06164
+- endpoint_authentication: {"invalid_body":"empty object; no receipt created","with_client_certificate_invalid_body":"400","without_client_certificate":"403"}
+- config_sha256_after: 14a8975a8a36df9558b9b957e07613476e43de351281eadaae4657e860f06164

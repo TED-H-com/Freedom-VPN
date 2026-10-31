@@ -19,6 +19,9 @@ import (
 
 func main() {
 	run := prepare
+	if len(os.Args) == 2 && os.Args[1] == "dns-readback" {
+		run = dnsReadback
+	}
 	if len(os.Args) == 3 && os.Args[1] == "device-counters" {
 		run = func() error {
 			id, e := uuid.Parse(os.Args[2])
