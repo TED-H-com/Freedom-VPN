@@ -99,7 +99,8 @@ func (s *Service) observeTx(ctx context.Context, tx pgx.Tx, i Identity, o Observ
 	// D-062 / r9: heartbeat seeding ends at the first accepted result for this
 	// incarnation. Thereafter only results can change serving version/recovery.
 	var accepted, recovery bool
-	if e = tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM update_results WHERE node_id=$1 AND incarnation_id=$2 AND ack->>'accepted'='true'),
+	if e = tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM update_results WHERE node_id=$1 AND incarnation_id=$2 AND ack->>'accepted'='true')
+ OR EXISTS(SELECT 1 FROM installer_update_results WHERE node_id=$1 AND incarnation_id=$2),
  coalesce($3::uuid=ANY(revoked_release_ids),false) FROM fleet_config`, i.NodeID, i.IncarnationID, n.lastGood).Scan(&accepted, &recovery); e != nil {
 		return e
 	}

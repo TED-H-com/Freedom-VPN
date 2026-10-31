@@ -50,3 +50,18 @@ Dated 2026-10-31 UTC (2026-10-30 brief). Source includes #240/#241/#244/#245; ow
 | AT29 established transports / AT31 forced relay | **Deferred** | Await devstack follow-up 15; no approximation or rerun. |
 
 Prior request history is preserved byte-for-byte in [follow-up 9](history/follow-up-9/requests.md). No additional product/lab changes requested unless the recorded open findings require them.
+
+# Requests to orchestrator — Follow-up 11 (2026-10-31 UTC; live execution pending)
+
+D-098 is delivered in [history/follow-up-10/](history/follow-up-10/); the existing
+follow-up 9 restore snapshot and handover claims test are unchanged.
+
+| Item | Status / owner | Required clarification or export |
+|---|---|---|
+| Live AT29 / AT31 / AT30 | blocked, not run / orchestrator | The assigned w4-secops stack creates fvpn-w4-secops objects, but the brief allows only fvpn-w4-at-security-ops objects. Confirm the assigned existing namespace before Docker mutations. |
+| Explicit manual grant withdrawal | blocked / contracts + w3-wire-members | Revision 13 exposes finite createMemberGrant but no revokeMemberGrant HTTP operation. Finite grant expiration is a separate prepared case. |
+| AT29 guest clock rollback | blocked / w3-devstack-e2e + operator | Independently clocked disposable guest; containers share the host clock. |
+| AT31 full mixed relay capacity | blocked / operator + acceptance lane | Candidate hardware and a 60-peer mixed-load campaign; the delivered bounded relay export supplies one path fixture. |
+| SECOPS-21 | open — D-099 pending / w3-wire-nodes follow-up 29 | D-095 is merged, but no D-099 roadmap row exists on base c6e3eca. No new first-offer generations observed because the live run has not started. |
+
+[Prepared commands, archive pins, all sub-case statuses and exact export limits](2026-10-31-follow-up-11-handover.md).
