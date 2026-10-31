@@ -571,6 +571,55 @@ func (s *liveSuite) nodeMutation(nodeID uuid.UUID, method, suffix string, body a
 	return got
 }
 
+func (s *liveSuite) retireStaleNodesExcept(keepIDs ...uuid.UUID) {
+	rows, err := s.pool.Query(s.ctx, `
+		SELECT id
+		FROM nodes
+		WHERE id <> ALL($1::uuid[])
+		  AND (lifecycle_state = 'registered' OR current_incarnation_id IS NOT NULL)
+	`, keepIDs)
+	if err != nil {
+		return
+	}
+	var staleIDs []uuid.UUID
+	for rows.Next() {
+		var id uuid.UUID
+		if rows.Scan(&id) == nil {
+			staleIDs = append(staleIDs, id)
+		}
+	}
+	rows.Close()
+	if len(staleIDs) == 0 {
+		return
+	}
+	for _, id := range staleIDs {
+		_ = s.nodeMutation(id, http.MethodPut, "/publication", map[string]any{
+			"publication_intent": "disabled",
+			"group_ids":          []string{},
+			"reason":             "TEST ONLY retire stale node publication",
+		})
+		_ = s.nodeMutation(id, http.MethodPost, "/revoke", map[string]any{
+			"reason": "TEST ONLY retire stale node incarnation",
+		})
+		_ = s.nodeMutation(id, http.MethodDelete, "", map[string]any{
+			"reason": "TEST ONLY retire stale node",
+		})
+	}
+	_ = s.waitFor(15*time.Second, func() bool {
+		var count int
+		_ = s.pool.QueryRow(s.ctx, `
+			SELECT count(*)
+			FROM nodes n
+			LEFT JOIN exits e ON e.node_id = n.id
+			WHERE n.id <> ALL($1::uuid[])
+			  AND n.lifecycle_state = 'registered'
+			  AND n.current_incarnation_id IS NOT NULL
+			  AND COALESCE(e.publication_intent, '') = 'published'
+		`, keepIDs).Scan(&count)
+		return count == 0
+	})
+}
+
 func (s *liveSuite) ensureUnpublishedReadyBaseline(nodeService string, nodeID uuid.UUID, perMemDownBPS, perMemUpBPS int64) {
 	// Stop fvpn-agent first so any in-memory e.applyError from a previous serving attempt is cleared on restart.
 	s.stopNodeAgent(nodeService)
@@ -858,6 +907,7 @@ func (s *liveSuite) bootstrapCountedServingFlow() {
 		s.incarnationID = enrolled.IncarnationID
 	}
 	s.agentClient = s.buildNodeMTLSClient("node")
+	s.retireStaleNodesExcept(s.nodeID)
 
 	trustRaw, codeTrust, errTrust := s.execInContainer("node", "cat", "/etc/vpn-node/trust.json")
 	if errTrust != nil || codeTrust != 0 {

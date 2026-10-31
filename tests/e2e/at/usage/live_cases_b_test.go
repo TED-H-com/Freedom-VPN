@@ -245,6 +245,7 @@ func (s *liveSuite) evalAT19(t *testing.T) Record {
 	)
 
 	// 1. Start and enroll second exit node2 (per_member: 15M down / 8M up)
+	s.retireStaleNodesExcept(s.nodeID)
 	absStateDir := s.stateDir
 	if !filepath.IsAbs(absStateDir) {
 		absStateDir = filepath.Join(s.root, absStateDir)
@@ -256,6 +257,19 @@ func (s *liveSuite) evalAT19(t *testing.T) Record {
 		t.Fatalf("StartSecondExit: %v", err)
 	}
 	s.t.Cleanup(func() {
+		if s.node2ID != uuid.Nil {
+			_ = s.nodeMutation(s.node2ID, http.MethodPut, "/publication", map[string]any{
+				"publication_intent": "disabled",
+				"group_ids":          []string{},
+				"reason":             "TEST ONLY cleanup node2 publication",
+			})
+			_ = s.nodeMutation(s.node2ID, http.MethodPost, "/revoke", map[string]any{
+				"reason": "TEST ONLY cleanup node2",
+			})
+			_ = s.nodeMutation(s.node2ID, http.MethodDelete, "", map[string]any{
+				"reason": "TEST ONLY cleanup node2",
+			})
+		}
 		s.cleanupDocker("rm", "-f", s.containerName("node2"), s.containerName("node2-adguard"), s.containerName("node2-netns"))
 		s.cleanupDocker("run", "--rm", "--name", s.containerName("node2-cleanup"), "--entrypoint", "/bin/rm", "-v", absStateDir+":/state", s.imageDigests["node"], "-rf", "/state/node2")
 		_ = os.RemoveAll(filepath.Join(absStateDir, "node2"))

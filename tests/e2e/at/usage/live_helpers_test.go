@@ -985,11 +985,6 @@ func (s *liveSuite) enrollNonCarryingNode() (uuid.UUID, uuid.UUID) {
 		s.t.Fatalf("POST /api/v1/agent/enroll for non-carrying node failed: HTTP %d %s", enrollResp.status, string(enrollResp.body))
 	}
 	nodeID := created.Enrollment.NodeId
-	_ = s.waitFor(15*time.Second, func() bool {
-		var gen uint64
-		err := s.pool.QueryRow(s.ctx, `SELECT desired_config_generation::bigint FROM nodes WHERE id = $1`, nodeID).Scan(&gen)
-		return err == nil && gen >= 1
-	})
 	s.t.Cleanup(func() {
 		_ = s.nodeMutation(nodeID, http.MethodDelete, "", map[string]any{"reason": "TEST ONLY cleanup non-carrying node"})
 	})
