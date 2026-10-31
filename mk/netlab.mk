@@ -11,6 +11,9 @@ ROOT := $(abspath $(dir $(NETLAB_MK))/..)
 NETLAB_IMAGE := $(FVPN_LAB_PREFIX):lab
 NETLAB_SCRATCH := /tmp/$(FVPN_LAB_PREFIX)-scratch
 NETLAB_BIN := /tmp/$(FVPN_LAB_PREFIX)-fvpn-netlab
+# User-defined bridge. Docker installs embedded DNS NAT for 127.0.0.11 in
+# the container netns. topology.sh drops the default route that comes with it.
+NETLAB_DNS_NET := $(FVPN_LAB_PREFIX)-dns
 
 .PHONY: netlab-unit netlab-lint netlab-build netlab-image netlab-wipe-scratch netlab-up netlab-down netlab-test netlab-test-full netlab-evidence
 
@@ -43,13 +46,16 @@ netlab-image:
 # The host user cannot unlink them. Wipe through a root container.
 netlab-wipe-scratch:
 	mkdir -p $(NETLAB_SCRATCH)
-	docker run --rm --network none -v $(NETLAB_SCRATCH):/scratch $(NETLAB_IMAGE) \
+	docker rm -f $(FVPN_LAB_PREFIX)-wipe >/dev/null 2>&1 || true
+	docker run --rm --name $(FVPN_LAB_PREFIX)-wipe --network none \
+		-v $(NETLAB_SCRATCH):/scratch $(NETLAB_IMAGE) \
 		find /scratch -mindepth 1 -delete
 
 netlab-up: netlab-build netlab-image
 	docker rm -f $(FVPN_LAB_PREFIX) >/dev/null 2>&1 || true
 	$(MAKE) -f $(NETLAB_MK) netlab-wipe-scratch FVPN_LAB_PREFIX='$(FVPN_LAB_PREFIX)'
-	docker run -d --name $(FVPN_LAB_PREFIX) --privileged --network none \
+	docker network inspect $(NETLAB_DNS_NET) >/dev/null 2>&1 || docker network create $(NETLAB_DNS_NET)
+	docker run -d --name $(FVPN_LAB_PREFIX) --privileged --network $(NETLAB_DNS_NET) \
 		--cap-add NET_ADMIN --cap-add SYS_TIME \
 		-v $(ROOT):/work:ro \
 		-v $(NETLAB_SCRATCH):/scratch \
@@ -59,6 +65,7 @@ netlab-up: netlab-build netlab-image
 
 netlab-down:
 	docker rm -f $(FVPN_LAB_PREFIX) >/dev/null 2>&1 || true
+	docker network rm $(NETLAB_DNS_NET) >/dev/null 2>&1 || true
 	$(MAKE) -f $(NETLAB_MK) netlab-wipe-scratch FVPN_LAB_PREFIX='$(FVPN_LAB_PREFIX)'
 	rmdir $(NETLAB_SCRATCH) 2>/dev/null || true
 
