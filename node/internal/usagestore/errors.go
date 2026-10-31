@@ -49,12 +49,14 @@ var (
 // Fault steps. A hook that returns an error aborts the surrounding
 // operation at that boundary (§10.5 crash consistency, AT16).
 const (
-	StepInsert          = "commit.insert"
-	StepCheckpoint      = "commit.checkpoint"
-	StepBeforeCommit    = "commit.before_commit"
-	StepAfterCommit     = "commit.after_commit"
-	StepACKBeforeCommit = "ack.before_commit"
-	StepACKAfterCommit  = "ack.after_commit"
+	StepRetireBeforeCommit = "retire.before_commit"
+	StepRetireAfterCommit  = "retire.after_commit"
+	StepInsert             = "commit.insert"
+	StepCheckpoint         = "commit.checkpoint"
+	StepBeforeCommit       = "commit.before_commit"
+	StepAfterCommit        = "commit.after_commit"
+	StepACKBeforeCommit    = "ack.before_commit"
+	StepACKAfterCommit     = "ack.after_commit"
 )
 
 // Hook is a test fault injector. Production leaves it nil.
