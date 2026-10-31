@@ -66,7 +66,9 @@ func (r *runner) nativeMTU19(ctx context.Context, s *Stack) {
 			ipv6Control, _ = s.fixtureProbe(ctx, r.lab.node, "-mode", "connect", "-addr", "[fd00::30]:9447")
 		}
 		paths := []string{r.lab.member, r.lab.node, r.lab.prefix + "-origin"}
-		for _, c := range paths {
+		captureStarted := make([]time.Time, len(paths))
+		for i, c := range paths {
+			captureStarted[i] = time.Now().UTC()
 			script := `echo $$ > /var/lib/vpn-node/e2e/mtu-capture.pid; exec tcpdump --immediate-mode -U -nn -s 128 -i any -w /var/lib/vpn-node/e2e/mtu.pcap 'icmp or icmp6 or tcp port 9446 or tcp port 9447 or udp' 2>/var/lib/vpn-node/e2e/mtu-capture.log`
 			e := exec.CommandContext(ctx, "docker", "exec", "-d", c, "sh", "-c", script).Run()
 			if e != nil {
@@ -93,13 +95,18 @@ func (r *runner) nativeMTU19(ctx context.Context, s *Stack) {
 			}
 		}
 		for i, c := range paths {
+			stopRequested := time.Now().UTC()
 			_, _ = r.lab.docker(c, "sh", "-c", `kill -INT "$(cat /var/lib/vpn-node/e2e/mtu-capture.pid)"`)
 			flush, stop := context.WithTimeout(ctx, 3*time.Second)
-			_ = waitUntil(flush, 100*time.Millisecond, func() bool {
+			stopped := waitUntil(flush, 100*time.Millisecond, func() bool {
 				_, e := r.lab.docker(c, "sh", "-c", `kill -0 "$(cat /var/lib/vpn-node/e2e/mtu-capture.pid)"`)
 				return e != nil
 			})
 			stop()
+			noteJSON(&rec, fmt.Sprintf("%s_capture_%d_window", row.name, i), map[string]any{"launch_requested_at": captureStarted[i], "stop_requested_at": stopRequested, "stop_observed_at": time.Now().UTC(), "process_stopped": stopped, "scope": "process bounds; exact first/last packet timestamps and record counts come from the pinned pcap decode"})
+			if !stopped {
+				rec.Status = StatusFail
+			}
 			if row.family == "dual" && i == 1 {
 				index, indexErr := r.lab.docker(c, "cat", "/sys/class/net/fvup0/ifindex")
 				filter := "ip6 and tcp port 9447 and outbound and ifindex " + strings.TrimSpace(string(index))
