@@ -118,6 +118,31 @@ func TestE2E_Followup17Installer(t *testing.T) {
 	r.installerCapture17(ctx, s)
 	r.installerReenroll17(ctx, s, b)
 	r.installerUpgrade17(ctx, s)
+	// Exercise the changed ordinary entrypoint with an enrolled agent, then a
+	// real process restart. Do this after installer measurements because the
+	// baseline helper activates its own serving support policy.
+	r.lab = l
+	baseline, err := PrepareServingBaseline(ctx, admin.http, admin.csrf, false)
+	must(err)
+	rec = Record{ID: "regular-kernel-boot", Title: "Enrolled ordinary agent and updater share kernel boot identity", Spec: []string{"AT23", "F9-06"}, Status: StatusFail}
+	noteJSON(&rec, "baseline_release_id", baseline.Boot)
+	if r.enroll(ctx, admin) == uuid.Nil {
+		r.record(rec)
+		return
+	}
+	boot, bootErr := l.docker(l.node, "cat", "/proc/sys/kernel/random/boot_id")
+	beat, beatErr := l.docker(l.node, "cat", "/run/vpn-node/heartbeat")
+	holder, holderErr := l.docker(l.node, "cat", "/var/lib/vpn-node/update.lock")
+	var claim struct {
+		BootID string `json:"boot_id"`
+	}
+	aligned := bootErr == nil && beatErr == nil && holderErr == nil && json.Unmarshal(holder, &claim) == nil && claim.BootID == strings.TrimSpace(string(boot)) && strings.Contains(string(beat), "boot_id "+claim.BootID)
+	recPathNote(&rec)("agent_heartbeat_and_updater_lock_match_kernel", boolText(aligned))
+	if aligned {
+		rec.Status = StatusPass
+	}
+	r.record(rec)
+	r.restartNode(ctx)
 }
 
 func (r *runner) installerUsage17(ctx context.Context, s, selected *Stack) {
