@@ -46,11 +46,14 @@ type Config struct {
 	PollSeconds             int            `json:"poll_seconds"`
 	ObservationSeconds      int            `json:"observation_seconds"`
 	TestMode                bool           `json:"test_mode"`
-	TestExemptV4            []string       `json:"test_exempt_v4"`
-	ExtraDeniedV4           []string       `json:"extra_denied_v4"`
-	HostV4                  []string       `json:"host_v4"`
-	HostReserveBPS          uint64         `json:"host_reserve_bps"`
-	NetbirdBackend          string         `json:"netbird_backend"`
+	// TestTimingPath appends local diagnostic JSONL after each operation.
+	// TEST ONLY: no HTTP field, disabled by default; the harness owns retention.
+	TestTimingPath string   `json:"test_timing_path,omitempty"`
+	TestExemptV4   []string `json:"test_exempt_v4"`
+	ExtraDeniedV4  []string `json:"extra_denied_v4"`
+	HostV4         []string `json:"host_v4"`
+	HostReserveBPS uint64   `json:"host_reserve_bps"`
+	NetbirdBackend string   `json:"netbird_backend"`
 	// NetbirdStatusFile, when set, is a NetBird `status --json` document
 	// the probe reads instead of running the CLI. Production leaves this
 	// empty. The lab container has no NetBird daemon and points it at a
@@ -168,6 +171,9 @@ func ExitStatus(err error) int {
 }
 
 func (c Config) validate() error {
+	if c.TestTimingPath != "" && (!c.TestMode || !filepath.IsAbs(c.TestTimingPath)) {
+		return errors.New("agent: test_timing_path requires test_mode and an absolute path")
+	}
 	if c.HostReserveBPS == 0 {
 		return ErrHostReserve
 	}

@@ -31,6 +31,7 @@ func (e *Engine) verifyServingModel(ctx context.Context, model enforce.Model, as
 	readCtx, cancel := context.WithTimeout(ctx, e.servingReadTimeout())
 	defer cancel()
 	evidence, err := e.plane.VerifyServing(readCtx, model, assignments)
+	e.measureTiming(evidence, "live")
 	// Even an executor that returns success at the deadline cannot supply
 	// fresh evidence. Keep a specific CheckError when one accompanied it.
 	err = errors.Join(err, readCtx.Err())
@@ -138,6 +139,7 @@ func (e *Engine) auditBlocked(ctx context.Context) {
 	readCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), e.servingReadTimeout())
 	defer cancel()
 	ev, err := e.plane.VerifyServing(readCtx, *e.appliedModel, e.appliedAssignments)
+	e.measureTiming(ev, "blocked_audit")
 	e.retainTCReadback(ev)
 	var check *enforce.CheckError
 	if errors.As(err, &check) && check.Reason == enforce.ReasonTCForeignFilter {

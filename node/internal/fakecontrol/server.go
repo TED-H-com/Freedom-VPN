@@ -111,25 +111,26 @@ type Server struct {
 	nowFn           func() time.Time
 	hold            chan struct{}
 	// bootMode is ready, notready or expired. consumed is remembered after 200.
-	bootMode     string
-	bootKey      string
-	bootExt      string
-	bootExp      time.Time
-	bootConsumed bool
-	obs          map[string]api.ObservationAccepted
-	lastObs      api.ObservationReport
-	hasObs       bool
-	enrollCount  int
-	lastHash     string
-	serviceFor   time.Duration
-	maxOffline   int
-	certTTL      time.Duration
-	bump         uint64
-	serial       int64
-	renewed      map[string]api.CertificateRenewResponse
-	sticky       bool
-	stickyRaw    []byte
-	stickyETag   string
+	bootMode           string
+	bootKey            string
+	bootExt            string
+	bootExp            time.Time
+	bootConsumed       bool
+	obs                map[string]api.ObservationAccepted
+	lastObs            api.ObservationReport
+	observationReports []api.ObservationReport
+	hasObs             bool
+	enrollCount        int
+	lastHash           string
+	serviceFor         time.Duration
+	maxOffline         int
+	certTTL            time.Duration
+	bump               uint64
+	serial             int64
+	renewed            map[string]api.CertificateRenewResponse
+	sticky             bool
+	stickyRaw          []byte
+	stickyETag         string
 
 	// Resolver documents. TEST ONLY. A missing id is 404 NOT_FOUND.
 	docs       map[uuid.UUID][]byte

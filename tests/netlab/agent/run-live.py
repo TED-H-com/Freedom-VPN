@@ -8,9 +8,12 @@ import tempfile
 def main():
     scratch = Path.cwd() / ".agent" / "tmp"
     scratch.mkdir(parents=True, exist_ok=True)
-    name = f"fvpn-w2-agent-core-lab-live-{os.getpid()}"
+    prefix = os.environ.get("FVPN_LAB_PREFIX", "fvpn-w2-agent-core-lab")
+    if not prefix.startswith("fvpn-w2-agent-core-"):
+        raise ValueError("lane-owned Docker prefix required")
+    name = f"{prefix}-live-{os.getpid()}"
     image = name + ":lab"
-    evidence = Path.cwd() / ".agent" / "f25-live-evidence"
+    evidence = Path(os.environ.get("FVPN_AGENT_EVIDENCE_DIR", str(Path.cwd() / ".agent" / "f27-live-evidence"))).resolve()
     evidence.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(dir=scratch, prefix="live-") as temporary:
         env = dict(os.environ, GOMAXPROCS="4", GOFLAGS="-p=4", CGO_ENABLED="0",

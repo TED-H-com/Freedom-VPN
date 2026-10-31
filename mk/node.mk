@@ -18,7 +18,7 @@ NODE_TMPDIR := $(CURDIR)/.agent/tmp
 NODE_ENV  := TMPDIR='$(NODE_TMPDIR)' GOTMPDIR='$(NODE_TMPDIR)' CGO_ENABLED=0 GOTOOLCHAIN=local
 NODE_PKGS := ./node/agent/... ./node/watchdog/... ./node/internal/agentstore/... ./node/internal/controlclient/... ./node/internal/timeanchor/... ./node/internal/fakecontrol/... ./node/internal/nodelock/... ./node/internal/usagestore/... ./node/internal/meter/...
 NODE_STATICCHECK := honnef.co/go/tools/cmd/staticcheck@v0.8.2
-NODE_LAB_PREFIX ?= fvpn-w2-agent-core-lab
+NODE_LAB_PREFIX ?= $(if $(FVPN_LAB_PREFIX),$(FVPN_LAB_PREFIX),fvpn-w2-agent-core-lab)
 NODE_NETLAB_TEST_ARGS ?=
 NODE_NETLAB_MK := mk/netlab.mk
 

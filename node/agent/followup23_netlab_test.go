@@ -5,7 +5,9 @@ package agent
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 	"os/exec"
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -70,6 +72,11 @@ func followup23LiveProof(t *testing.T, r *rig) {
 	raw, err := cmd.CombinedOutput()
 	if err != nil {
 		t.Fatalf("packet trace: %v %s", err, raw)
+	}
+	if dir := os.Getenv("FVPN_AGENT_EVIDENCE_DIR"); dir != "" {
+		if err := os.WriteFile(filepath.Join(dir, "d104-expiry.json"), raw, 0600); err != nil {
+			t.Fatal(err)
+		}
 	}
 	var trace struct {
 		Deadline int64 `json:"deadline_ns"`

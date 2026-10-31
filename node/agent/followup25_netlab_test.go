@@ -12,6 +12,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/TED-H-com/Freedom-VPN/node/enforce"
 	"github.com/TED-H-com/Freedom-VPN/node/internal/timeanchor"
 )
 
@@ -123,7 +124,6 @@ func followup25Renewals(t *testing.T, r *rig) {
 	before := r.srv.LeaseRenewals()
 	p := r.eng.plane.(*measuredSystemPlane)
 	first := len(p.applies)
-	guardFirst := len(p.guards)
 	for i := range 75 {
 		time.Sleep(max(0, time.Until(start.Add(time.Duration(i+1)*time.Second))))
 		stepOK(t, r)
@@ -153,7 +153,11 @@ func followup25Renewals(t *testing.T, r *rig) {
 		}
 	}
 	if dir := os.Getenv("FVPN_AGENT_EVIDENCE_DIR"); dir != "" {
-		raw, err := json.MarshalIndent(map[string]any{"trace": trace, "applies": p.applies[first:], "guard_commands": p.guards[guardFirst:]}, "", "  ")
+		timings := make([]*enforce.TimingEvidence, 0, len(p.applies)-first)
+		for _, res := range p.applies[first:] {
+			timings = append(timings, res.Evidence.TimingEvidence())
+		}
+		raw, err := json.MarshalIndent(map[string]any{"trace": trace, "timings": timings, "operations_file": "operations.jsonl"}, "", "  ")
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -161,7 +165,7 @@ func followup25Renewals(t *testing.T, r *rig) {
 			t.Fatal(err)
 		}
 	}
-	t.Logf("D104 guarded nft command brackets retained: commands=%d clock=CLOCK_MONOTONIC", len(p.guards)-guardFirst)
+	t.Log("D104 all Apply/live/blocked snapshots and lease transactions retained in operations.jsonl with run/boot anchors")
 	renewals := r.srv.LeaseRenewals() - before
 	if renewals < 2 || positive < 50000 {
 		t.Fatalf("missing renewal/traffic: renewals=%d positive=%d", renewals, positive)
