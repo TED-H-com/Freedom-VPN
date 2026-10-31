@@ -1888,7 +1888,7 @@ func (x *isolationRun) archiveReceiver() {
 	}
 	defer conn.Close(x.ctx)
 	var history []byte
-	if conn.QueryRow(x.ctx, `SELECT jsonb_build_object('leases', (SELECT jsonb_agg(jsonb_build_object('id',id,'issued_at',issued_at,'envelope',envelope) ORDER BY issued_at) FROM serving_leases WHERE node_id=$1),'desired', (SELECT envelope FROM desired_state_envelopes WHERE node_id=$1))`, x.r.nodeID).Scan(&history) == nil {
+	if conn.QueryRow(x.ctx, `SELECT jsonb_build_object('accepted_report_ids', (SELECT jsonb_agg(report_id) FROM node_observations WHERE node_id=$1), 'leases', (SELECT jsonb_agg(jsonb_build_object('id',id,'issued_at',issued_at,'envelope',envelope) ORDER BY issued_at) FROM serving_leases WHERE node_id=$1),'desired', (SELECT envelope FROM desired_state_envelopes WHERE node_id=$1))`, x.r.nodeID).Scan(&history) == nil {
 		x.extra("lease-history.json", json.RawMessage(history))
 	}
 }
