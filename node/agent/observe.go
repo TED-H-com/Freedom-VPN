@@ -2,6 +2,8 @@ package agent
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/binary"
 	"encoding/json"
 	"errors"
 	"os"
@@ -280,7 +282,7 @@ func (e *Engine) flush(ctx context.Context) error {
 		for i := 1; i < e.observationFailures && wait < 30*time.Second; i++ {
 			wait *= 2
 		}
-		wait = min(time.Minute, wait+leadJitter(wait))
+		wait = min(time.Minute, wait+observationJitter(wait))
 		if se != nil {
 			wait = max(wait, se.RetryAfter)
 		}
@@ -298,6 +300,20 @@ func (e *Engine) flush(ctx context.Context) error {
 		}
 	}
 	return nil
+}
+
+func observationJitter(wait time.Duration) time.Duration {
+	span := wait / 10
+	if span <= 0 {
+		return 0
+	}
+	// Nanosecond ranges need more than 16 bits of entropy; otherwise every
+	// node retries within a few microseconds of the same lower bound.
+	var b [8]byte
+	if _, err := rand.Read(b[:]); err != nil {
+		return 0
+	}
+	return time.Duration(binary.LittleEndian.Uint64(b[:])%uint64(2*span+1)) - span
 }
 
 // Timestamps and read-at detail change every tick. The semantic transition
