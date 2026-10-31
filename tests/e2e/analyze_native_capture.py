@@ -92,13 +92,18 @@ def analyze(run, record):
     decoded = json.loads(notes['decode'])
     role_order = ['member', 'node', 'origin']
     packets = {role: [json.loads(line) for line in (run/'headers'/doc['id']/(role+'.headers.jsonl')).read_text().splitlines()] for role in role_order}
-    result = dict(id=doc['id'], run_id=doc['run_id'], source_commit=doc['source_commit'], status=doc['status'], clock_offsets={}, capture_checks={}, ptb={}, fragmentation_needed={})
+    result = dict(id=doc['id'], run_id=doc['run_id'], source_commit=doc['source_commit'], status=doc['status'], clock_offsets={}, capture_checks={}, metadata_checks={}, ptb={}, fragmentation_needed={})
     for role, check in zip(role_order, decoded):
         p = evidence['points'][role]
         complete = p['statistics_ok'] and p['process_stopped'] and p['kernel_drops'] == 0 and p['captured'] == check['records'] == len(packets[role]) and check['header_errors'] == 0 and check['file_complete'] and check['snap_truncated_records'] == 0
         result['capture_checks'][role] = dict(complete=complete, decoded=check['records'], captured=p['captured'], kernel_drops=p['kernel_drops'])
         assert complete, f'{doc["id"]}/{role}: incomplete capture'
+        result['metadata_checks'][role] = dict(
+            links_and_origin_route=all(s['points'][role]['commands'].get('links', {}).get('ok',False) and s['points'][role]['commands'].get('origin_route', {}).get('ok',False) for s in evidence['samples']),
+            native_implementation_recorded=role=='origin' or all('uses_kernel_interface' in s['points'][role] for s in evidence['samples']))
         result['clock_offsets'][role] = offsets(evidence, role)
+        bounds = run/'headers'/doc['id']/(role+'.bounds.jsonl')
+        bounds.write_text(''.join(json.dumps(bound(p,result['clock_offsets'][role]),separators=(',', ':'))+'\n' for p in packets[role]))
         result['ptb'][role] = [r['packet'] for r in packets[role] if r.get('protocol') == 58 and r.get('icmp', {}).get('type') == 2]
         result['fragmentation_needed'][role] = [r['packet'] for r in packets[role] if r.get('protocol') == 1 and r.get('icmp', {}).get('type') == 3 and r.get('icmp', {}).get('code') == 4]
     if doc['id'] == 'initial-selection':
@@ -134,8 +139,16 @@ def analyze(run, record):
         result[label]['sender_interface'] = dev
         result[label]['receiver_interface'] = rdev
         result[label]['absent_bounds'] = [bound(p,result['clock_offsets'][sender]) for p in tx if p['packet'] in result[label]['absent_sender_packets']]
-    origin = [p for p in bulk['origin'] if p.get('tcp', {}).get('src_port') == 9446 and p['packet_type'] == 4]
-    received = [p for p in bulk['member'] if p.get('tcp', {}).get('src_port') == 9446 and p['packet_type'] != 4]
+    port = result['transfer']['bulk']['endpoint']['local_port']
+    result['bulk_local_port'] = port
+    result['reverse_streams'] = {}
+    for stream_port in sorted({p['tcp']['dst_port'] for p in bulk['origin'] if p.get('tcp', {}).get('src_port') == 9446}):
+        tx = [p for p in bulk['origin'] if p.get('tcp', {}).get('src_port') == 9446 and p['tcp']['dst_port'] == stream_port and p['packet_type'] == 4]
+        rx = [p for p in bulk['member'] if p.get('tcp', {}).get('src_port') == 9446 and p['tcp']['dst_port'] == stream_port and p['packet_type'] != 4]
+        result['reverse_streams'][str(stream_port)] = dict(current_bulk=stream_port == port, first_gap=first_gap(tx, rx), sent_packets=[p['packet'] for p in tx], received_packets=[p['packet'] for p in rx])
+    result['datagram_scope'] = 'All selected endpoint datagrams within the command window, including control packets and older TCP streams. Stream ports above keep current bulk separate. Encrypted packets are not assigned to inner streams by time alone.'
+    origin = [p for p in bulk['origin'] if p.get('tcp', {}).get('src_port') == 9446 and p['tcp']['dst_port'] == port and p['packet_type'] == 4]
+    received = [p for p in bulk['member'] if p.get('tcp', {}).get('src_port') == 9446 and p['tcp']['dst_port'] == port and p['packet_type'] != 4]
     gap = first_gap(origin, received)
     result['first_missing_tcp_range'] = gap
     if gap:
