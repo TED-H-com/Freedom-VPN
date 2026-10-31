@@ -31,6 +31,10 @@ def main():
     for attempt in attempts['attempts']:
         for entry in attempt['files']:
             assert hashlib.sha256((PUBLIC/entry['file']).read_bytes()).hexdigest()==entry['sha256'],entry['file']
+    prerequisites=json.loads((PUBLIC/'followup12-prerequisites.json').read_text())
+    for entry in prerequisites['read_documents']:
+        raw=subprocess.check_output(['git','show',entry['revision']+':'+entry['path']],cwd=ROOT)
+        assert hashlib.sha256(raw).hexdigest()==entry['sha256'],entry['path']
     count=0
     for section,key in [('follow_up_12','records'),('follow_up_11','records'),('follow_up_10','records'),('handover_follow_up_6','reviewed_documents'),('follow_up_7','files'),('handover_follow_up_13','reviewed_documents')]:
         for entry in scope.get(section,{}).get(key,[]):

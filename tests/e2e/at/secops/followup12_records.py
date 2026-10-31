@@ -48,7 +48,7 @@ def refresh_scope():
              'restore-reconcile.json','restore-reconcile.md','summary.md','README.md','RUN.md','requests.md',
              '2026-10-31-follow-up-12-handover.md','followup12-transports-live.json','followup12-transports-run.json',
              'followup12-restore-live.json','followup12-restore-run.json','followup12-verdict.json','validation.json',
-             'followup12-lab-preflight.json','followup12-attempts.json',
+             'followup12-lab-preflight.json','followup12-prerequisites.json','followup12-attempts.json',
              'followup12-transports-attempt1-live.json','followup12-transports-attempt1-run.json',
              'followup12-transports-attempt2-live.json','followup12-transports-attempt2-run.json',
              'history/index.json','history/README.md']
@@ -150,7 +150,7 @@ def main():
     requests=PUBLIC/'requests.md'; old=requests.read_text().split('\n# Requests to orchestrator — Follow-up 12')[0]
     old+='\n# Requests to orchestrator — Follow-up 12 (2026-10-31 UTC)\n\n'
     old+=f'SECOPS-21: **{status21}**, owner `w3-wire-nodes` follow-up 29 / D-099. See [hold and first-offer evidence](SECOPS-21.json); no closure from compiler tests.\n\n'
-    old+='D-102 prerequisite read attempted on application base `510a4ab`: `docs/e2e/RESPONSES.md` and `docs/node/install-followup3-2026-10-31.md` are absent, including a repository filename search. Please publish those dated handovers on main (devstack / installer owners). The available node D-099 handover was read before planning. The older devstack ENR-06 finding is not treated as proof of the subsequently reported socket/runtime fix or a passing full upgrade. No external pin or packaged unit was changed.\n\n'
+    old+='D-102: `docs/e2e/RESPONSES.md` is absent on application base `510a4ab` and was rechecked on later main `945eff8`; please publish the dated answers (devstack owner). The installer handover was initially absent but became available during the lab wait and was read directly from `63a4116` without changing the measured base. It reports ENR-06 socket/runtime fixed, with the required full upgrade still failing at final_sample because state/meter.checkpoint is absent. The node D-099 handover was read before planning. [Read revisions and hashes](followup12-prerequisites.json). No external pin or packaged unit changed.\n\n'
     old+='D-103 is resolved by this task: only `fvpn-w4-secops-*`, network `fvpn-w4-secops`, port base 30000. The two-run guard refers to the prepared independent transport and restore fresh-stack runs, each torn down before the next.\n\n'
     old+='| Sub-case / missing export | Status / owner | Limit |\n|---|---|---|\n'
     for k,v in subcases.items(): old+=f'| {k} | {v.get("status")} / {v.get("owner","w4-at-security-ops")} | {v.get("missing_export",v.get("blocker",v.get("scope",v.get("transport_scope","See recorded samples"))))} |\n'
