@@ -2463,8 +2463,10 @@ type AdminDevice struct {
 	// cannot clear it. It clears when an operator re-authorizes the device
 	// (`POST /admin/members/{member_id}/devices/{device_id}/authorize`) or
 	// the device is revoked. A device-limit rejection never sets it
-	// (§17.4, D-076).
-	AuthorizationUnconfirmed *bool `json:"authorization_unconfirmed"`
+	// (§17.4, D-076). Absent means the server does not project it yet
+	// (before wire-members follow-up 10); a server that projects it always
+	// emits it, `false` included.
+	AuthorizationUnconfirmed *bool `json:"authorization_unconfirmed,omitempty"`
 
 	// AuthorizationUnconfirmedSince Creation time of the `device_authorization_fences` row. Null when the device is not fenced.
 	AuthorizationUnconfirmedSince nullable.Nullable[time.Time] `json:"authorization_unconfirmed_since"`
@@ -3600,8 +3602,10 @@ type MemberDevice struct {
 	// cannot clear it. It clears when an operator re-authorizes the device
 	// (`POST /admin/members/{member_id}/devices/{device_id}/authorize`) or
 	// the device is revoked. A device-limit rejection never sets it
-	// (§17.4, D-076).
-	AuthorizationUnconfirmed *bool                        `json:"authorization_unconfirmed"`
+	// (§17.4, D-076). Absent means the server does not project it yet
+	// (before wire-members follow-up 10); a server that projects it always
+	// emits it, `false` included.
+	AuthorizationUnconfirmed *bool                        `json:"authorization_unconfirmed,omitempty"`
 	AuthorizedAt             nullable.Nullable[time.Time] `json:"authorized_at"`
 	CreatedAt                time.Time                    `json:"created_at"`
 	DeviceId                 openapi_types.UUID           `json:"device_id"`

@@ -2905,9 +2905,11 @@ export interface components {
              *     cannot clear it. It clears when an operator re-authorizes the device
              *     (`POST /admin/members/{member_id}/devices/{device_id}/authorize`) or
              *     the device is revoked. A device-limit rejection never sets it
-             *     (§17.4, D-076).
+             *     (§17.4, D-076). Absent means the server does not project it yet
+             *     (before wire-members follow-up 10); a server that projects it always
+             *     emits it, `false` included.
              */
-            readonly authorization_unconfirmed: boolean;
+            readonly authorization_unconfirmed?: boolean;
             /** Format: date-time */
             authorized_at: string | null;
             /** Format: date-time */

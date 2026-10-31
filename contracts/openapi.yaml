@@ -17,7 +17,7 @@ info:
     and the `awaiting_member_grants` block reason (ENR-02, ENR-03, D-067).
     Revision 11 (1.7.0) adds `ErrorCode` `AWAITING_MEMBER_GRANTS` (D-071) and
     optional nullable `NodeDetail.identity_conflict` (D-072).
-    Revision 12 (1.8.0) adds required read-only
+    Revision 12 (1.8.0) adds optional read-only
     `MemberDevice.authorization_unconfirmed` (D-077), `GET /admin/devices`
     (`listAdminDevices`), `POST /admin/members/{member_id}/devices/{device_id}/authorize`
     (`authorizeMemberDevice`), and nullable `NodeDetail.usage_outbox` (SECOPS-19).
@@ -6481,7 +6481,7 @@ components:
       enum: [pending, authorized, rejected_over_limit, revoked]
     MemberDevice:
       type: object
-      required: [device_id, name, platform, status, authorization_unconfirmed, authorized_at, revoked_at, last_seen_at, created_at]
+      required: [device_id, name, platform, status, authorized_at, revoked_at, last_seen_at, created_at]
       properties:
         device_id:
           type: string
@@ -6497,7 +6497,6 @@ components:
         authorization_unconfirmed:
           type: boolean
           readOnly: true
-          x-omitempty: false
           description: |
             True while a `device_authorization_fences` row exists for this device,
             false otherwise. `DeviceStatus` is unchanged: a fenced device reads
@@ -6505,7 +6504,9 @@ components:
             cannot clear it. It clears when an operator re-authorizes the device
             (`POST /admin/members/{member_id}/devices/{device_id}/authorize`) or
             the device is revoked. A device-limit rejection never sets it
-            (§17.4, D-076).
+            (§17.4, D-076). Absent means the server does not project it yet
+            (before wire-members follow-up 10); a server that projects it always
+            emits it, `false` included.
         authorized_at:
           type: string
           format: date-time
