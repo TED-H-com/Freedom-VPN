@@ -1,6 +1,6 @@
 {
   "id": "AT19",
-  "run_id": "170ea3e3",
+  "run_id": "71b1a160",
   "title": "跨節點累計、Shadow/Enforce 模式切換、月初重置與臨時覆寫 (Cross-Node Fair-Use, Shadow/Enforce, Monthly Reset \u0026 Temporary Override)",
   "spec": "§11.1–§11.7, §14.2, §19.5 AT19",
   "requirements": [
@@ -12,101 +12,101 @@
     "API01"
   ],
   "status": "pass",
-  "at": "2026-10-31T12:15:15Z",
+  "at": "2026-10-31T15:59:41Z",
   "build": {
-    "git_commit": "3a59beb47e8bc311e063c525fdae4ea17067d134",
+    "git_commit": "7ccaabade8efc5074cfde5dcae84c6b4a27fd8c0",
     "git_dirty": false,
     "go_version": "go1.27.3",
     "goos": "linux",
     "goarch": "amd64",
     "binaries": {
-      "fvpn-agent": "fd83483f0622845b171c379abf60fd30345f4ab35a52b5e7669f26cf779405d7",
-      "fvpn-control": "51b5d0bd9d0b83075e0f2908a42d0eba6930c80ae84ba63f3f38fb2aa2c8c07b",
-      "fvpn-updater": "c7445c6fe09189f824c9d10a116dccd3b80f12610f6d08ccb40a380fc26318f9",
-      "fvpn-worker": "39b8613bde65b337d53427c57cc41a249b129ccc06a4b95f78505782cfdb41e8"
+      "fvpn-agent": "0b6b5f5298da163dffb5d55f60d509ba2400e44267016dc0f9edcc4174c1b9d9",
+      "fvpn-control": "70d59b4b603175097a5c09d954924018cebc4013261a9cbed21057cacb721d68",
+      "fvpn-updater": "da6aedad360efee545879c7dcca066de9203f9941bba8442b9a8691c5c004d7c",
+      "fvpn-worker": "ca9e11cd340cfd3c1bba39f545eac481e13378e539c2e446a4b079a8c36b1844"
     }
   },
   "image_digests": {
     "adguard": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
-    "control": "sha256:828508d3f8e6ab2a989b17a158ee4f5e3c4c4203d99d4cd6676ac3c66c89875c",
+    "control": "sha256:9833b0e97e7fc321b1e70de5b93161e044237a3b188fcf50a519b6f8753b773d",
     "coredns": "sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97",
     "gateway": "sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce",
-    "idp": "sha256:4a3dac5f099d334c9da1ca4748e156dcaecd2257df0b3c793aabd4c564d3c16c",
-    "member": "sha256:2ad692f0706759ca2cd489b5a6aa423bdd4f810a56b04b4481920d847936fcfd",
+    "idp": "sha256:aa21215338d562d4f4d7a515cb04657bac4fd61e29b22d83c8772f78f91d79e8",
+    "member": "sha256:e0f559571719bed6f6ea06ca454709056cd0be6b9a860a77e6052f00744ac4c3",
     "netbird": "sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c",
-    "node": "sha256:2ad692f0706759ca2cd489b5a6aa423bdd4f810a56b04b4481920d847936fcfd",
-    "origin": "sha256:22308bf55886f4eb7a0afd0a54652cdd9e1d306120f9d2ab418fa3bb1a86a82f",
-    "payment": "sha256:fe109660c60156e1b1c71f1f49a3e228848a848d00e5b48dfa12446c56fc72a0",
-    "postgres": "sha256:a3d7b3bf12c09363ca39428cf9885c7853685a14eb2a13b1efae8b3aa37a45a4",
-    "worker": "sha256:ae9834c5f7fde040a24f859add3ba03dc0948661b607580ab61f209030563d50"
+    "node": "sha256:e0f559571719bed6f6ea06ca454709056cd0be6b9a860a77e6052f00744ac4c3",
+    "origin": "sha256:4ddcc6f26cf4d9aa563113fc7eb3710d219700a84c5abf5eaa133e46d6488144",
+    "payment": "sha256:79c7ae496c98160b79d828000dc6a3823f619608f3e405162f1c575eb4c5ba3a",
+    "postgres": "sha256:3a8df43f508568ef1c521564329d50bda066bb92a8380af651df1204f037caf6",
+    "worker": "sha256:eae1b2a2b25aa35ac9dc32bf47e0d7d96ec8ef73b200c73a68a87dd2f4322623"
   },
-  "policy_revision": "applied_config_generation=10; domain_rule_set=01a191e0-6be4-7c0f-bf7f-60d993174618; fair_use=01a191e1-87a4-7a08-a7ce-ad096dc300e8; plan=01a191e0-7d2f-7cdd-b21d-22cbb2438344; release_support=01a191e0-675a-78b6-8806-3fea1277f133; dns_profile=01a191e0-7054-74e0-b0b4-757b181778e2",
-  "node_incarnation": "01a191e0-8191-7d82-8822-0497f4dbee7c",
+  "policy_revision": "applied_config_generation=7; dns_profile=01a192ae-02e2-72ea-87a9-9f65999de3c4; domain_rule_set=01a192ad-fe76-795c-b901-cfc0d8c5dbbd; fair_use=01a192ae-fd68-7a8e-a242-19b450bf5fe2; plan=01a192ae-0fa8-7740-8c7d-770421c5cfb7; release_support=01a192ad-f9f1-7ab1-8343-e172f63c6a1a",
+  "node_incarnation": "01a192ae-1361-7d54-a603-22b10f2ac4a6",
   "expected": "Fair-Use policy enforces tier invariants, aggregates member usage across multiple serving exits (node \u0026 node2), transitions from shadow to enforce mode and across usage thresholds by recompiling only carrying exits, installing Tier 2 kernel tc classes on both exits, and clearing fair_use.applying from true to false once both carrying exits acknowledge the compiled generation, while ignoring duplicate/replayed events and preserving per-incarnation retained usage across node re-enrollment.",
-  "actual": "Live multi-node test enrolled second exit 01a191e2-b50c-75a4-8d56-b480eea714db (node2) and non-carrying node 01a191e3-fbf0-7701-a4a8-3fe1a3d6fce4, routed memberA traffic across both carrying exits (aggregating 28587 bytes across 2 exits), verified shadow mode (60Mbit on node, 15Mbit on node2), proved Transition 1 (policy.activated mode=enforce: carrying gens node 10-\u003e11, node2 4-\u003e5, non-carrying 0-\u003e0; Tier 2 5Mbit/2Mbit tc classes on both exits; fair_use.applying true-\u003efalse in 56181 ms via observation 01a191e5-0403-79f5-874a-dcb629a09ae4; replay no double bump) and Transition 2 (fup.member_generation_changed via usage threshold crossing: carrying gens node 12-\u003e13, node2 6-\u003e7, non-carrying 0-\u003e0; Tier 2 5Mbit/2Mbit tc classes on both exits; fair_use.applying true-\u003efalse in 66466 ms via observation 01a191e6-4790-77a3-a45f-7e21b499c56f; replay no double bump), and verified ENR-03 per-incarnation retained usage across node2 re-enrollment (01a191e2-b648-7824-b7cb-b747c222f2c1 -\u003e 01a191e6-9633-7ccc-bae2-e65610e0e145).",
+  "actual": "Live multi-node test enrolled second exit 01a192b0-2fb8-719f-9818-d04e4237ed6f (node2) and non-carrying node 01a192b1-8199-7ef2-8edf-1bcb771d17a6, routed memberA traffic across both carrying exits (aggregating 28614 bytes across 2 exits), verified shadow mode (60Mbit on node, 15Mbit on node2), proved Transition 1 (policy.activated mode=enforce: carrying gens node 7-\u003e8, node2 4-\u003e5, non-carrying 0-\u003e0; Tier 2 5Mbit/2Mbit tc classes on both exits; fair_use.applying true-\u003efalse in 6533 ms via observation 01a192b1-bd70-76df-b761-30054c9a5e34; replay no double bump) and Transition 2 (fup.member_generation_changed via usage threshold crossing: carrying gens node 9-\u003e10, node2 6-\u003e7, non-carrying 0-\u003e0; Tier 2 5Mbit/2Mbit tc classes on both exits; fair_use.applying true-\u003efalse in 54453 ms via observation 01a192b2-bdcf-7c42-9349-1b50d8c8f913; replay no double bump), and verified ENR-03 per-incarnation retained usage across node2 re-enrollment (01a192b0-311f-7e4f-b1ad-d6b7f7de5a94 -\u003e 01a192b2-f8a4-7eda-bf06-f55aba2ea13d).",
   "commands": [
     {
       "command": "e2e.PrepareServingBaseline(ctx, admin.Client, admin.CSRF, false)",
       "exit_code": 0,
-      "output": "boot_release_id=01a191e0-62de-7d9a-851c-0f9a0c1b2669 support_revision_id=01a191e0-675a-78b6-8806-3fea1277f133 digests=4",
-      "at": "2026-10-31T12:12:45Z"
+      "output": "boot_release_id=01a192ad-f580-7a9b-9dfb-e23ad4e48964 support_revision_id=01a192ad-f9f1-7ab1-8343-e172f63c6a1a digests=4",
+      "at": "2026-10-31T15:57:17Z"
     },
     {
       "command": "POST /api/v1/admin/groups",
       "exit_code": 0,
-      "output": "HTTP 201 group_id=01a191e0-69b2-7cc5-a5cc-94505d02e903 code=at-usage-grp-170ea3e3",
-      "at": "2026-10-31T12:12:45Z"
+      "output": "HTTP 201 group_id=01a192ad-fc48-77d5-becd-3f73f5d9994a code=at-usage-grp-71b1a160",
+      "at": "2026-10-31T15:57:18Z"
     },
     {
       "command": "POST /api/v1/admin/policies (dns_profile, fair_use shadow, plan with exit_group_ids) + POST /activate",
       "exit_code": 0,
-      "output": "dns_rev=01a191e0-7054-74e0-b0b4-757b181778e2 fair_use_shadow_rev=01a191e0-74c8-78ef-8d02-89a42e896600 plan_rev=01a191e0-7d2f-7cdd-b21d-22cbb2438344",
-      "at": "2026-10-31T12:12:51Z"
+      "output": "dns_rev=01a192ae-02e2-72ea-87a9-9f65999de3c4 fair_use_shadow_rev=01a192ae-074a-7e65-ab37-36640d42fc99 plan_rev=01a192ae-0fa8-7740-8c7d-770421c5cfb7",
+      "at": "2026-10-31T15:57:23Z"
     },
     {
       "command": "lab execInContainer(node): nft list ruleset; nft -j list ruleset; first serving observation",
       "exit_code": 0,
-      "output": "report_id=01a191e1-6bef-728e-b55c-11c3801cc3b0; no foreign rules; Docker DNS NAT absent; #240 lab cleanup made this node serve; D-079 present but not exercised\ntable inet fvpn {\n\tcounter ctbase {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctv6 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctin {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctbadns {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctdeny {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter cthost {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctinv {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctnodn {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctunkd {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctunku {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter d_01a191e0f90c7809a6b22f5cefdcad1d {\n\t\tpackets 8 bytes 1514\n\t}\n\n\tcounter d_01a191e133d97c2c93f8fd22a736f77f {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter nd_01a191e0f90c7809a6b22f5cefdcad1d {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter nd_01a191e133d97c2c93f8fd22a736f77f {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter nu_01a191e0f90c7809a6b22f5cefdcad1d {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter nu_01a191e133d97c2c93f8fd22a736f77f {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter u_01a191e0f90c7809a6b22f5cefdcad1d {\n\t\tpackets 8 bytes 1066\n\t}\n\n\tcounter u_01a191e133d97c2c93f8fd22a736f77f {\n\t\tpackets 0 bytes 0\n\t}\n\n\tset allowed_v4 {\n\t\ttype ipv4_addr\n\t\tflags timeout\n\t\telements = { 100.96.150.23 timeout 9m54s833ms expires 9m52s99ms, 100.96.210.17 timeout 9m54s833ms expires 9m52s99ms }\n\t}\n\n\tset denied_v4 {\n\t\ttype ipv4_addr\n\t\tflags interval\n\t\tauto-merge\n\t\telements = { 0.0.0.0/8, 10.0.0.0/8,\n\t\t\t     100.64.0.0/10, 127.0.0.0/8,\n\t\t\t     169.254.0.0/16, 192.0.2.0/12,\n\t\t\t     192.0.0.0/24, 192.0.2.0/24,\n\t\t\t     192.88.99.0/24, 192.168.0.0/16,\n\t\t\t     198.18.0.0/15, 198.51.100.0/24,\n\t\t\t     203.0.113.0/24, 224.0.0.0/3 }\n\t}\n\n\tset host_v4 {\n\t\ttype ipv4_addr\n\t\tflags interval\n\t\tauto-merge\n\t\telements = { 198.51.100.20 }\n\t}\n\n\tset resolver_v4 {\n\t\ttype ipv4_addr\n\t\telements = { 198.51.100.53 }\n\t}\n\n\tchain forward {\n\t\ttype filter hook forward priority mangle; policy drop;\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=8 fvpn_metering=forward_admission_v1\"\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a191e0-5a47-777e-af02-a3161664463f:475b\"\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a191e0-5aba-7dd0-9eec-14e48c1a9ea1:d1d3\"\n\t\tiifname \"fvmb0\" oifname \"fvup0\" meta nfproto ipv6 counter name \"ctv6\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" meta nfproto ipv6 counter name \"ctv6\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ct state invalid counter name \"ctinv\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ct state invalid counter name \"ctinv\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr != @allowed_v4 counter name \"ctunku\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.96.210.17 ip daddr @resolver_v4 tcp dport 53 counter name \"nu_01a191e0f90c7809a6b22f5cefdcad1d\" meta priority set 1:475b accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.96.210.17 ip daddr @resolver_v4 udp dport 53 counter name \"nu_01a191e0f90c7809a6b22f5cefdcad1d\" meta priority set 1:475b accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.96.150.23 ip daddr @resolver_v4 tcp dport 53 counter name \"nu_01a191e133d97c2c93f8fd22a736f77f\" meta priority set 1:d1d3 accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.96.150.23 ip daddr @resolver_v4 udp dport 53 counter name \"nu_01a191e133d97c2c93f8fd22a736f77f\" meta priority set 1:d1d3 accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip daddr @resolver_v4 counter name \"ctbadns\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip daddr @denied_v4 counter name \"ctdeny\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip daddr @host_v4 counter name \"cthost\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.96.210.17 counter name \"u_01a191e0f90c7809a6b22f5cefdcad1d\" meta priority set 1:475b accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.96.150.23 counter name \"u_01a191e133d97c2c93f8fd22a736f77f\" meta priority set 1:d1d3 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr != @allowed_v4 counter name \"ctunkd\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ct state != { established, related } counter name \"ctnodn\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.96.210.17 tcp sport 53 counter name \"nd_01a191e0f90c7809a6b22f5cefdcad1d\" meta priority set 1:475b accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.96.210.17 udp sport 53 counter name \"nd_01a191e0f90c7809a6b22f5cefdcad1d\" meta priority set 1:475b accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr 100.96.210.17 counter name \"d_01a191e0f90c7809a6b22f5cefdcad1d\" meta priority set 1:475b accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.96.150.23 tcp sport 53 counter name \"nd_01a191e133d97c2c93f8fd22a736f77f\" meta priority set 1:d1d3 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.96.150.23 udp sport 53 counter name \"nd_01a191e133d97c2c93f8fd22a736f77f\" meta priority set 1:d1d3 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr 100.96.150.23 counter name \"d_01a191e133d97c2c93f8fd22a736f77f\" meta priority set 1:d1d3 accept\n\t}\n\n\tchain input {\n\t\ttype filter hook input priority mangle; policy accept;\n\t\tiifname \"fvmb0\" counter name \"ctin\" drop\n\t\tip saddr 100.64.0.0/10 counter name \"ctin\" drop\n\t}\n\n\tchain output {\n\t\ttype filter hook output priority mangle; policy accept;\n\t}\n\n\tchain postrouting {\n\t\ttype nat hook postrouting priority srcnat; policy accept;\n\t\toifname \"fvup0\" ip saddr @allowed_v4 snat ip to 198.51.100.20\n\t}\n}\n",
-      "at": "2026-10-31T12:13:54Z"
+      "output": "report_id=01a192ae-e3bf-70a8-a75c-e79f4a504873; no foreign rules; Docker DNS NAT absent; #240 lab cleanup made this node serve; D-079 present but not exercised\ntable inet fvpn {\n\tcounter ctbase {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctv6 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctin {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctbadns {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctdeny {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter cthost {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctinv {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctnodn {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctunkd {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctunku {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter d_01a192ae6f4572b9ad7ce02298bacbcc {\n\t\tpackets 8 bytes 1514\n\t}\n\n\tcounter d_01a192aeaa4e7791b0c77b3d5974b528 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter nd_01a192ae6f4572b9ad7ce02298bacbcc {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter nd_01a192aeaa4e7791b0c77b3d5974b528 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter nu_01a192ae6f4572b9ad7ce02298bacbcc {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter nu_01a192aeaa4e7791b0c77b3d5974b528 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter u_01a192ae6f4572b9ad7ce02298bacbcc {\n\t\tpackets 8 bytes 1066\n\t}\n\n\tcounter u_01a192aeaa4e7791b0c77b3d5974b528 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tset allowed_v4 {\n\t\ttype ipv4_addr\n\t\tflags timeout\n\t\telements = { 100.68.183.201 timeout 9m54s805ms expires 9m52s817ms, 100.68.243.111 timeout 9m54s805ms expires 9m52s817ms }\n\t}\n\n\tset denied_v4 {\n\t\ttype ipv4_addr\n\t\tflags interval\n\t\tauto-merge\n\t\telements = { 0.0.0.0/8, 10.0.0.0/8,\n\t\t\t     100.64.0.0/10, 127.0.0.0/8,\n\t\t\t     169.254.0.0/16, 192.0.2.0/12,\n\t\t\t     192.0.0.0/24, 192.0.2.0/24,\n\t\t\t     192.88.99.0/24, 192.168.0.0/16,\n\t\t\t     198.18.0.0/15, 198.51.100.0/24,\n\t\t\t     203.0.113.0/24, 224.0.0.0/3 }\n\t}\n\n\tset host_v4 {\n\t\ttype ipv4_addr\n\t\tflags interval\n\t\tauto-merge\n\t\telements = { 198.51.100.20 }\n\t}\n\n\tset resolver_v4 {\n\t\ttype ipv4_addr\n\t\telements = { 198.51.100.53 }\n\t}\n\n\tchain forward {\n\t\ttype filter hook forward priority mangle; policy drop;\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=6 fvpn_metering=forward_admission_v1\"\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a192ad-e9a0-79d7-9490-c3c5320fcacf:955e\"\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a192ad-ec27-74ff-891f-09d9c0668310:87c5\"\n\t\tiifname \"fvmb0\" oifname \"fvup0\" meta nfproto ipv6 counter name \"ctv6\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" meta nfproto ipv6 counter name \"ctv6\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ct state invalid counter name \"ctinv\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ct state invalid counter name \"ctinv\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr != @allowed_v4 counter name \"ctunku\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.68.243.111 ip daddr @resolver_v4 tcp dport 53 counter name \"nu_01a192ae6f4572b9ad7ce02298bacbcc\" meta priority set 1:955e accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.68.243.111 ip daddr @resolver_v4 udp dport 53 counter name \"nu_01a192ae6f4572b9ad7ce02298bacbcc\" meta priority set 1:955e accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.68.183.201 ip daddr @resolver_v4 tcp dport 53 counter name \"nu_01a192aeaa4e7791b0c77b3d5974b528\" meta priority set 1:87c5 accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.68.183.201 ip daddr @resolver_v4 udp dport 53 counter name \"nu_01a192aeaa4e7791b0c77b3d5974b528\" meta priority set 1:87c5 accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip daddr @resolver_v4 counter name \"ctbadns\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip daddr @denied_v4 counter name \"ctdeny\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip daddr @host_v4 counter name \"cthost\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.68.243.111 counter name \"u_01a192ae6f4572b9ad7ce02298bacbcc\" meta priority set 1:955e accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.68.183.201 counter name \"u_01a192aeaa4e7791b0c77b3d5974b528\" meta priority set 1:87c5 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr != @allowed_v4 counter name \"ctunkd\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ct state != { established, related } counter name \"ctnodn\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.68.243.111 tcp sport 53 counter name \"nd_01a192ae6f4572b9ad7ce02298bacbcc\" meta priority set 1:955e accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.68.243.111 udp sport 53 counter name \"nd_01a192ae6f4572b9ad7ce02298bacbcc\" meta priority set 1:955e accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr 100.68.243.111 counter name \"d_01a192ae6f4572b9ad7ce02298bacbcc\" meta priority set 1:955e accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.68.183.201 tcp sport 53 counter name \"nd_01a192aeaa4e7791b0c77b3d5974b528\" meta priority set 1:87c5 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.68.183.201 udp sport 53 counter name \"nd_01a192aeaa4e7791b0c77b3d5974b528\" meta priority set 1:87c5 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr 100.68.183.201 counter name \"d_01a192aeaa4e7791b0c77b3d5974b528\" meta priority set 1:87c5 accept\n\t}\n\n\tchain input {\n\t\ttype filter hook input priority mangle; policy accept;\n\t\tiifname \"fvmb0\" counter name \"ctin\" drop\n\t\tip saddr 100.64.0.0/10 counter name \"ctin\" drop\n\t}\n\n\tchain output {\n\t\ttype filter hook output priority mangle; policy accept;\n\t}\n\n\tchain postrouting {\n\t\ttype nat hook postrouting priority srcnat; policy accept;\n\t\toifname \"fvup0\" ip saddr @allowed_v4 snat ip to 198.51.100.20\n\t}\n}\n",
+      "at": "2026-10-31T15:58:19Z"
     },
     {
       "command": "PATCH /api/v1/admin/nodes/{id} + JoinNativeMember(memberA, memberB) + PUT /publication + D-067 Cycle 1 (bring_up) provisional-lease window",
       "exit_code": 0,
-      "output": "node_id=01a191e0-7f82-714e-bc9c-0407ab79ba7a exit_id=01a191e0-7f82-714f-a9fc-e3f77eb7fe43 deviceA=01a191e0-f90c-7809-a6b2-2f5cefdcad1d deviceB=01a191e1-33d9-7c2c-93f8-fd22a736f77f provisional_lease=d0ea2a4b-890f-437c-a9a3-9ce4202055e5 (ttl=60s, members=0) ready_obs=01a191e1-582e-7e13-a799-4d2750b7a18f (reasons=[awaiting_member_grants], checks=map[lease:AWAITING_MEMBER_GRANTS qos:AWAITING_MEMBER_GRANTS source_binding:AWAITING_MEMBER_GRANTS]) populated_lease=f234dd5d-df9e-4b9e-b6cf-d1f3907d1f3e (members=2) ready_to_populated_ms=5801 apply_blocker=HEALTH_CHECK_FAILED (01a191e0-9613-73f0-854c-0ea40426ec87) heartbeat=\"v1\\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\\nmono_ns 32369534756941\\nwall_unix_ns 1793448832018385846\\npolicy_expires_mono_ns 32964343958456\\nbaseline_ok 1\\nserving 1\\ngeneration 8\\nreason serving\"",
-      "at": "2026-10-31T12:13:54Z"
+      "output": "node_id=01a192ae-1201-70bf-b380-a6dfdbc2724c exit_id=01a192ae-1201-70c0-9ca3-8470b302d19d deviceA=01a192ae-6f45-72b9-ad7c-e02298bacbcc deviceB=01a192ae-aa4e-7791-b0c7-7b3d5974b528 provisional_lease=f0222062-809a-4020-8949-3e2ab4e2453c (ttl=60s, members=0) ready_obs=01a192ae-cfa2-70c4-84b9-d23904520b8d (reasons=[awaiting_member_grants], checks=map[lease:AWAITING_MEMBER_GRANTS qos:AWAITING_MEMBER_GRANTS source_binding:AWAITING_MEMBER_GRANTS]) populated_lease=45cdabe0-75f3-49b9-b647-dd0050c41bac (members=2) ready_to_populated_ms=5786 apply_blocker=HEALTH_CHECK_FAILED (01a192ae-1506-7c1c-902e-e05074863376) heartbeat=\"v1\\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\\nmono_ns 45835115233154\\nwall_unix_ns 1793462297598862167\\npolicy_expires_mono_ns 46429799214679\\nbaseline_ok 1\\nserving 1\\ngeneration 6\\nreason serving\"",
+      "at": "2026-10-31T15:58:19Z"
     },
     {
       "command": "Baseline HTTPS probe through exit node (member -\u003e fvnb0 -\u003e fvmb0 -\u003e fvup0 -\u003e origin)",
       "exit_code": 0,
-      "output": "counted=true generation=8 delta_up=1066 delta_down=1514 origin_src=198.51.100.20",
-      "at": "2026-10-31T12:13:54Z"
+      "output": "counted=true generation=6 delta_up=1066 delta_down=1514 origin_src=198.51.100.20",
+      "at": "2026-10-31T15:58:19Z"
     },
     {
       "command": "StartSecondExit + EnrollAt(node2) + enrollNonCarryingNode + selectExitRoute(node2) + cross-node usage ingestion on node \u0026 node2",
       "exit_code": 0,
-      "output": "node2_id=01a191e2-b50c-75a4-8d56-b480eea714db exit2_net_id=fvpn-exit-8d134ca3f8803120407aa46c other_node_id=01a191e3-fbf0-7701-a4a8-3fe1a3d6fce4 trNode2_counted=true distinct_exits=2 cross_node_total_bytes=28587 shadow_state=normal",
-      "at": "2026-10-31T12:16:41Z"
+      "output": "node2_id=01a192b0-2fb8-719f-9818-d04e4237ed6f exit2_net_id=fvpn-exit-523f9a9a11209b2ddb089bd8 other_node_id=01a192b1-8199-7ef2-8edf-1bcb771d17a6 trNode2_counted=true distinct_exits=2 cross_node_total_bytes=28614 shadow_state=normal",
+      "at": "2026-10-31T16:01:10Z"
     },
     {
       "command": "Transition 1 (policy.activated mode=enforce) + Transition 2 (fup.member_generation_changed via usage ingestion) + duplicate event replays",
       "exit_code": 0,
-      "output": "T1(policy.activated): gens node=10-\u003e11 node2=4-\u003e5 other=0-\u003e0 applying_true-\u003efalse=true/true (56181ms, obs=01a191e5-0403-79f5-874a-dcb629a09ae4) tc_tier2=true/true replay_after=map[01a191e0-7f82-714e-bc9c-0407ab79ba7a:11 01a191e2-b50c-75a4-8d56-b480eea714db:5 01a191e3-fbf0-7701-a4a8-3fe1a3d6fce4:0] | T2(fup.member_generation_changed): gens node=12-\u003e13 node2=6-\u003e7 other=0-\u003e0 applying_true-\u003efalse=true/true (66466ms, obs=01a191e6-4790-77a3-a45f-7e21b499c56f) tc_tier2=true/true replay_after=map[01a191e0-7f82-714e-bc9c-0407ab79ba7a:13 01a191e2-b50c-75a4-8d56-b480eea714db:7 01a191e3-fbf0-7701-a4a8-3fe1a3d6fce4:0]",
-      "at": "2026-10-31T12:19:16Z"
+      "output": "T1(policy.activated): gens node=7-\u003e8 node2=4-\u003e5 other=0-\u003e0 applying_true-\u003efalse=true/true (6533ms, obs=01a192b1-bd70-76df-b761-30054c9a5e34) tc_tier2=true/true replay_after=map[01a192ae-1201-70bf-b380-a6dfdbc2724c:8 01a192b0-2fb8-719f-9818-d04e4237ed6f:5 01a192b1-8199-7ef2-8edf-1bcb771d17a6:0] | T2(fup.member_generation_changed): gens node=9-\u003e10 node2=6-\u003e7 other=0-\u003e0 applying_true-\u003efalse=true/true (54453ms, obs=01a192b2-bdcf-7c42-9349-1b50d8c8f913) tc_tier2=true/true replay_after=map[01a192ae-1201-70bf-b380-a6dfdbc2724c:10 01a192b0-2fb8-719f-9818-d04e4237ed6f:7 01a192b1-8199-7ef2-8edf-1bcb771d17a6:0]",
+      "at": "2026-10-31T16:02:36Z"
     },
     {
       "command": "ENR-03 per-incarnation retained usage: POST /admin/nodes/{id}/revoke + bound POST /admin/enrollments + fvpn-agent enroll + GET /admin/nodes/{id}/incarnations + new incarnation usage",
       "exit_code": 0,
-      "output": "node2=01a191e2-b50c-75a4-8d56-b480eea714db old_inc=01a191e2-b648-7824-b7cb-b747c222f2c1 (retained=1066/1515 B) new_inc=01a191e6-9633-7ccc-bae2-e65610e0e145 (after_traffic=1066/1516 B) member_period_unchanged_on_reenroll=true old_inc_fixed_after_new_traffic=true",
-      "at": "2026-10-31T12:20:39Z"
+      "output": "node2=01a192b0-2fb8-719f-9818-d04e4237ed6f old_inc=01a192b0-311f-7e4f-b1ad-d6b7f7de5a94 (retained=1066/1514 B) new_inc=01a192b2-f8a4-7eda-bf06-f55aba2ea13d (after_traffic=1066/1515 B) member_period_unchanged_on_reenroll=true old_inc_fixed_after_new_traffic=true",
+      "at": "2026-10-31T16:03:53Z"
     }
   ],
   "observations": {
     "active_policy_revisions": {
-      "dns_profile": "01a191e0-7054-74e0-b0b4-757b181778e2",
-      "domain_rule_set": "01a191e0-6be4-7c0f-bf7f-60d993174618",
-      "fair_use": "01a191e4-36fe-75da-a899-9782b79e847b",
-      "plan": "01a191e0-7d2f-7cdd-b21d-22cbb2438344",
-      "release_support": "01a191e7-e05b-7766-b0d3-c824f7d8d0f1"
+      "dns_profile": "01a192ae-02e2-72ea-87a9-9f65999de3c4",
+      "domain_rule_set": "01a192ad-fe76-795c-b901-cfc0d8c5dbbd",
+      "fair_use": "01a192b1-a3ad-71dc-83fa-b76a2917db20",
+      "plan": "01a192ae-0fa8-7740-8c7d-770421c5cfb7",
+      "release_support": "01a192b4-443c-78fd-9c37-43dd5b55cfaf"
     },
     "bootstrap_transfer": {
       "after_download_bytes": "1514",
@@ -117,7 +117,7 @@
       "delta_download_bytes": "1514",
       "delta_upload_bytes": "1066",
       "expected_snat": "198.51.100.20",
-      "generation": "8",
+      "generation": "6",
       "http_200": true,
       "member_fvnb0_rx_bytes_delta": 2036,
       "member_fvnb0_tx_bytes_delta": 1648,
@@ -127,67 +127,67 @@
       "node_service": "node",
       "origin_authenticated": true,
       "origin_source": "198.51.100.20",
-      "probe_id": "ad54e22c-3ca5-4a55-99fd-9a7ad428b0e2",
+      "probe_id": "ffd71653-e911-489d-8600-9f8621127093",
       "requests": 1
     },
     "cross_node_combined_bytes": "115000000000",
     "cross_node_distinct_exits": 2,
-    "cross_node_total_bytes": 28587,
-    "device_a_id": "01a191e0-f90c-7809-a6b2-2f5cefdcad1d",
-    "device_b_id": "01a191e1-33d9-7c2c-93f8-fd22a736f77f",
+    "cross_node_total_bytes": 28614,
+    "device_a_id": "01a192ae-6f45-72b9-ad7c-e02298bacbcc",
+    "device_b_id": "01a192ae-aa4e-7791-b0c7-7b3d5974b528",
     "enforce_applied_tier": 1,
     "enforce_generation": "1",
     "enr03_per_incarnation_retained_usage": {
       "active_reenroll_rejected_409_code": "NODE_INCARNATION_ACTIVE",
       "db_period_totals_after_new_traffic": {
-        "download_bytes": "18177",
+        "download_bytes": "18163",
         "period_id": "2026-10",
-        "total_bytes": "31169",
-        "upload_bytes": "12992"
+        "total_bytes": "31195",
+        "upload_bytes": "13032"
       },
       "db_period_totals_after_reinstall": {
-        "download_bytes": "16661",
+        "download_bytes": "16648",
         "period_id": "2026-10",
-        "total_bytes": "28587",
-        "upload_bytes": "11926"
+        "total_bytes": "28614",
+        "upload_bytes": "11966"
       },
       "db_period_totals_before_reinstall": {
-        "download_bytes": "16661",
+        "download_bytes": "16648",
         "period_id": "2026-10",
-        "total_bytes": "28587",
-        "upload_bytes": "11926"
+        "total_bytes": "28614",
+        "upload_bytes": "11966"
       },
       "incarnations_after_new_traffic": {
         "items": [
           {
-            "bound_at": "2026-10-31T12:19:30.500786Z",
-            "bound_public_key_sha256": "cf359ff5412786a1ede104f6a71787f7687cff73822ce245c8d4364a2a009fe1",
-            "created_at": "2026-10-31T12:19:30.49818Z",
+            "bound_at": "2026-10-31T16:02:45.041248Z",
+            "bound_public_key_sha256": "fca50724232fb5a5f8bea95d9e8f2e76c9d0616a7183b9d74c791e0e42eac2e5",
+            "created_at": "2026-10-31T16:02:45.038523Z",
             "current": true,
-            "enrollment_id": "01a191e6-93f2-70e0-a681-0fbc0f0c68c4",
-            "incarnation_id": "01a191e6-9633-7ccc-bae2-e65610e0e145",
+            "enrollment_id": "01a192b2-f571-770c-831c-6436c28c3e25",
+            "incarnation_id": "01a192b2-f8a4-7eda-bf06-f55aba2ea13d",
             "retire_reason": null,
             "retired_at": null,
             "state": "active",
             "usage": {
-              "download_bytes": "1516",
-              "through": "2026-10-31T12:20:36.786213Z",
+              "download_bytes": "1515",
+              "through": "2026-10-31T16:03:51.178876Z",
               "upload_bytes": "1066"
             }
           },
           {
-            "bound_at": "2026-10-31T12:15:16.564694Z",
-            "bound_public_key_sha256": "beb5501407ab39266c2c7ecb8470b2a2720c63d59ce05d2370f2a81551198b3f",
-            "created_at": "2026-10-31T12:15:16.562285Z",
+            "bound_at": "2026-10-31T15:59:42.904356Z",
+            "bound_public_key_sha256": "9736928ce1a2e18d66f52873b0ed5f62b8917637921c8db7453d30052e7f13bf",
+            "created_at": "2026-10-31T15:59:42.902002Z",
             "current": false,
-            "enrollment_id": "01a191e2-b50c-75a3-ba79-578baed29400",
-            "incarnation_id": "01a191e2-b648-7824-b7cb-b747c222f2c1",
+            "enrollment_id": "01a192b0-2fb8-719e-8ba1-c83bd22b56cd",
+            "incarnation_id": "01a192b0-311f-7e4f-b1ad-d6b7f7de5a94",
             "retire_reason": "reinstall",
-            "retired_at": "2026-10-31T12:19:22.087035Z",
+            "retired_at": "2026-10-31T16:02:41.108373Z",
             "state": "retired",
             "usage": {
-              "download_bytes": "1515",
-              "through": "2026-10-31T12:19:10.1871Z",
+              "download_bytes": "1514",
+              "through": "2026-10-31T16:02:29.801241Z",
               "upload_bytes": "1066"
             }
           }
@@ -197,12 +197,12 @@
       "incarnations_after_reinstall": {
         "items": [
           {
-            "bound_at": "2026-10-31T12:19:30.500786Z",
-            "bound_public_key_sha256": "cf359ff5412786a1ede104f6a71787f7687cff73822ce245c8d4364a2a009fe1",
-            "created_at": "2026-10-31T12:19:30.49818Z",
+            "bound_at": "2026-10-31T16:02:45.041248Z",
+            "bound_public_key_sha256": "fca50724232fb5a5f8bea95d9e8f2e76c9d0616a7183b9d74c791e0e42eac2e5",
+            "created_at": "2026-10-31T16:02:45.038523Z",
             "current": true,
-            "enrollment_id": "01a191e6-93f2-70e0-a681-0fbc0f0c68c4",
-            "incarnation_id": "01a191e6-9633-7ccc-bae2-e65610e0e145",
+            "enrollment_id": "01a192b2-f571-770c-831c-6436c28c3e25",
+            "incarnation_id": "01a192b2-f8a4-7eda-bf06-f55aba2ea13d",
             "retire_reason": null,
             "retired_at": null,
             "state": "active",
@@ -213,18 +213,18 @@
             }
           },
           {
-            "bound_at": "2026-10-31T12:15:16.564694Z",
-            "bound_public_key_sha256": "beb5501407ab39266c2c7ecb8470b2a2720c63d59ce05d2370f2a81551198b3f",
-            "created_at": "2026-10-31T12:15:16.562285Z",
+            "bound_at": "2026-10-31T15:59:42.904356Z",
+            "bound_public_key_sha256": "9736928ce1a2e18d66f52873b0ed5f62b8917637921c8db7453d30052e7f13bf",
+            "created_at": "2026-10-31T15:59:42.902002Z",
             "current": false,
-            "enrollment_id": "01a191e2-b50c-75a3-ba79-578baed29400",
-            "incarnation_id": "01a191e2-b648-7824-b7cb-b747c222f2c1",
+            "enrollment_id": "01a192b0-2fb8-719e-8ba1-c83bd22b56cd",
+            "incarnation_id": "01a192b0-311f-7e4f-b1ad-d6b7f7de5a94",
             "retire_reason": "reinstall",
-            "retired_at": "2026-10-31T12:19:22.087035Z",
+            "retired_at": "2026-10-31T16:02:41.108373Z",
             "state": "retired",
             "usage": {
-              "download_bytes": "1515",
-              "through": "2026-10-31T12:19:10.1871Z",
+              "download_bytes": "1514",
+              "through": "2026-10-31T16:02:29.801241Z",
               "upload_bytes": "1066"
             }
           }
@@ -234,18 +234,18 @@
       "incarnations_after_revoke": {
         "items": [
           {
-            "bound_at": "2026-10-31T12:15:16.564694Z",
-            "bound_public_key_sha256": "beb5501407ab39266c2c7ecb8470b2a2720c63d59ce05d2370f2a81551198b3f",
-            "created_at": "2026-10-31T12:15:16.562285Z",
+            "bound_at": "2026-10-31T15:59:42.904356Z",
+            "bound_public_key_sha256": "9736928ce1a2e18d66f52873b0ed5f62b8917637921c8db7453d30052e7f13bf",
+            "created_at": "2026-10-31T15:59:42.902002Z",
             "current": true,
-            "enrollment_id": "01a191e2-b50c-75a3-ba79-578baed29400",
-            "incarnation_id": "01a191e2-b648-7824-b7cb-b747c222f2c1",
+            "enrollment_id": "01a192b0-2fb8-719e-8ba1-c83bd22b56cd",
+            "incarnation_id": "01a192b0-311f-7e4f-b1ad-d6b7f7de5a94",
             "retire_reason": "revocation",
-            "retired_at": "2026-10-31T12:19:22.087035Z",
+            "retired_at": "2026-10-31T16:02:41.108373Z",
             "state": "retired",
             "usage": {
-              "download_bytes": "1515",
-              "through": "2026-10-31T12:19:10.1871Z",
+              "download_bytes": "1514",
+              "through": "2026-10-31T16:02:29.801241Z",
               "upload_bytes": "1066"
             }
           }
@@ -255,18 +255,18 @@
       "incarnations_before_revoke": {
         "items": [
           {
-            "bound_at": "2026-10-31T12:15:16.564694Z",
-            "bound_public_key_sha256": "beb5501407ab39266c2c7ecb8470b2a2720c63d59ce05d2370f2a81551198b3f",
-            "created_at": "2026-10-31T12:15:16.562285Z",
+            "bound_at": "2026-10-31T15:59:42.904356Z",
+            "bound_public_key_sha256": "9736928ce1a2e18d66f52873b0ed5f62b8917637921c8db7453d30052e7f13bf",
+            "created_at": "2026-10-31T15:59:42.902002Z",
             "current": true,
-            "enrollment_id": "01a191e2-b50c-75a3-ba79-578baed29400",
-            "incarnation_id": "01a191e2-b648-7824-b7cb-b747c222f2c1",
+            "enrollment_id": "01a192b0-2fb8-719e-8ba1-c83bd22b56cd",
+            "incarnation_id": "01a192b0-311f-7e4f-b1ad-d6b7f7de5a94",
             "retire_reason": null,
             "retired_at": null,
             "state": "active",
             "usage": {
-              "download_bytes": "1515",
-              "through": "2026-10-31T12:19:10.1871Z",
+              "download_bytes": "1514",
+              "through": "2026-10-31T16:02:29.801241Z",
               "upload_bytes": "1066"
             }
           }
@@ -275,64 +275,64 @@
       },
       "member_total_unchanged_on_reenroll": true,
       "member_totals_after_new_traffic": {
-        "download_bytes": "18177",
-        "total_bytes": "31169",
-        "upload_bytes": "12992"
+        "download_bytes": "18163",
+        "total_bytes": "31195",
+        "upload_bytes": "13032"
       },
       "member_totals_after_reinstall": {
-        "download_bytes": "16661",
-        "total_bytes": "28587",
-        "upload_bytes": "11926"
+        "download_bytes": "16648",
+        "total_bytes": "28614",
+        "upload_bytes": "11966"
       },
       "member_totals_before_reinstall": {
-        "download_bytes": "16661",
-        "total_bytes": "28587",
-        "upload_bytes": "11926"
+        "download_bytes": "16648",
+        "total_bytes": "28614",
+        "upload_bytes": "11966"
       },
       "new_incarnation_counted_transfer": {
-        "after_download_bytes": "1516",
+        "after_download_bytes": "1515",
         "after_upload_bytes": "1066",
         "before_download_bytes": "0",
         "before_upload_bytes": "0",
         "counted": true,
-        "delta_download_bytes": "1516",
+        "delta_download_bytes": "1515",
         "delta_upload_bytes": "1066",
         "expected_snat": "198.51.100.22",
         "generation": "11",
         "http_200": true,
-        "member_fvnb0_rx_bytes_delta": 2036,
-        "member_fvnb0_tx_bytes_delta": 1648,
+        "member_fvnb0_rx_bytes_delta": 1980,
+        "member_fvnb0_tx_bytes_delta": 1556,
         "member_service": "member",
-        "node_fvup0_l3_rx_bytes_delta": 1544,
+        "node_fvup0_l3_rx_bytes_delta": 1543,
         "node_fvup0_l3_tx_bytes_delta": 1094,
         "node_service": "node2",
         "origin_authenticated": true,
         "origin_source": "198.51.100.22",
-        "probe_id": "54504b73-cffa-48af-8b37-5dcfeadaa98b",
+        "probe_id": "f9ff6f4d-e0d1-4395-9f68-d07651ab7d1e",
         "requests": 1
       },
-      "new_incarnation_id": "01a191e6-9633-7ccc-bae2-e65610e0e145",
+      "new_incarnation_id": "01a192b2-f8a4-7eda-bf06-f55aba2ea13d",
       "new_traffic_accumulated_same_month": true,
-      "node_id": "01a191e2-b50c-75a4-8d56-b480eea714db",
-      "old_incarnation_id": "01a191e2-b648-7824-b7cb-b747c222f2c1",
+      "node_id": "01a192b0-2fb8-719f-9818-d04e4237ed6f",
+      "old_incarnation_id": "01a192b0-311f-7e4f-b1ad-d6b7f7de5a94",
       "old_incarnation_usage_fixed": true
     },
-    "exit_id": "01a191e0-7f82-714f-a9fc-e3f77eb7fe43",
-    "exit_network_id": "fvpn-exit-64b43b541ce08edf7c30dafe",
+    "exit_id": "01a192ae-1201-70c0-9ca3-8470b302d19d",
+    "exit_network_id": "fvpn-exit-52224fafdfc84991844da4c7",
     "first_serving_apply": {
       "agent_core_followup20_in_image": false,
       "docker_dns_nat_present": false,
       "foreign_chains": null,
       "foreign_rule_classification": "no foreign rules; Docker DNS NAT absent; #240 lab cleanup made this node serve; D-079 present but not exercised",
-      "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 32369534756941\nwall_unix_ns 1793448832018385846\npolicy_expires_mono_ns 32964343958456\nbaseline_ok 1\nserving 1\ngeneration 8\nreason serving",
-      "image_build_commit": "3a59beb47e8bc311e063c525fdae4ea17067d134",
-      "image_origin_main_commit": "7e044c71ecf1d07f63e89721bd213db6611a6a47",
+      "heartbeat": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 45835115233154\nwall_unix_ns 1793462297598862167\npolicy_expires_mono_ns 46429799214679\nbaseline_ok 1\nserving 1\ngeneration 6\nreason serving",
+      "image_build_commit": "7ccaabade8efc5074cfde5dcae84c6b4a27fd8c0",
+      "image_origin_main_commit": "fb5e002549f79e8ef61bebcf42cce1678ab65cb1",
       "loopback_evidence": null,
-      "nft_ruleset_excerpt": "table inet fvpn {\n\tcounter ctbase {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctv6 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctin {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctbadns {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctdeny {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter cthost {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctinv {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctnodn {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctunkd {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctunku {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter d_01a191e0f90c7809a6b22f5cefdcad1d {\n\t\tpackets 8 bytes 1514\n\t}\n\n\tcounter d_01a191e133d97c2c93f8fd22a736f77f {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter nd_01a191e0f90c7809a6b22f5cefdcad1d {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter nd_01a191e133d97c2c93f8fd22a736f77f {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter nu_01a191e0f90c7809a6b22f5cefdcad1d {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter nu_01a191e133d97c2c93f8fd22a736f77f {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter u_01a191e0f90c7809a6b22f5cefdcad1d {\n\t\tpackets 8 bytes 1066\n\t}\n\n\tcounter u_01a191e133d97c2c93f8fd22a736f77f {\n\t\tpackets 0 bytes 0\n\t}\n\n\tset allowed_v4 {\n\t\ttype ipv4_addr\n\t\tflags timeout\n\t\telements = { 100.96.150.23 timeout 9m54s833ms expires 9m52s99ms, 100.96.210.17 timeout 9m54s833ms expires 9m52s99ms }\n\t}\n\n\tset denied_v4 {\n\t\ttype ipv4_addr\n\t\tflags interval\n\t\tauto-merge\n\t\telements = { 0.0.0.0/8, 10.0.0.0/8,\n\t\t\t     100.64.0.0/10, 127.0.0.0/8,\n\t\t\t     169.254.0.0/16, 192.0.2.0/12,\n\t\t\t     192.0.0.0/24, 192.0.2.0/24,\n\t\t\t     192.88.99.0/24, 192.168.0.0/16,\n\t\t\t     198.18.0.0/15, 198.51.100.0/24,\n\t\t\t     203.0.113.0/24, 224.0.0.0/3 }\n\t}\n\n\tset host_v4 {\n\t\ttype ipv4_addr\n\t\tflags interval\n\t\tauto-merge\n\t\telements = { 198.51.100.20 }\n\t}\n\n\tset resolver_v4 {\n\t\ttype ipv4_addr\n\t\telements = { 198.51.100.53 }\n\t}\n\n\tchain forward {\n\t\ttype filter hook forward priority mangle; policy drop;\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=8 fvpn_metering=forward_admission_v1\"\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a191e0-5a47-777e-af02-a3161664463f:475b\"\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a191e0-5aba-7dd0-9eec-14e48c1a9ea1:d1d3\"\n\t\tiifname \"fvmb0\" oifname \"fvup0\" meta nfproto ipv6 counter name \"ctv6\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" meta nfproto ipv6 counter name \"ctv6\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ct state invalid counter name \"ctinv\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ct state invalid counter name \"ctinv\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr != @allowed_v4 counter name \"ctunku\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.96.210.17 ip daddr @resolver_v4 tcp dport 53 counter name \"nu_01a191e0f90c7809a6b22f5cefdcad1d\" meta priority set 1:475b accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.96.210.17 ip daddr @resolver_v4 udp dport 53 counter name \"nu_01a191e0f90c7809a6b22f5cefdcad1d\" meta priority set 1:475b accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.96.150.23 ip daddr @resolver_v4 tcp dport 53 counter name \"nu_01a191e133d97c2c93f8fd22a736f77f\" meta priority set 1:d1d3 accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.96.150.23 ip daddr @resolver_v4 udp dport 53 counter name \"nu_01a191e133d97c2c93f8fd22a736f77f\" meta priority set 1:d1d3 accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip daddr @resolver_v4 counter name \"ctbadns\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip daddr @denied_v4 counter name \"ctdeny\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip daddr @host_v4 counter name \"cthost\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.96.210.17 counter name \"u_01a191e0f90c7809a6b22f5cefdcad1d\" meta priority set 1:475b accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.96.150.23 counter name \"u_01a191e133d97c2c93f8fd22a736f77f\" meta priority set 1:d1d3 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr != @allowed_v4 counter name \"ctunkd\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ct state != { established, related } counter name \"ctnodn\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.96.210.17 tcp sport 53 counter name \"nd_01a191e0f90c7809a6b22f5cefdcad1d\" meta priority set 1:475b accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.96.210.17 udp sport 53 counter name \"nd_01a191e0f90c7809a6b22f5cefdcad1d\" meta priority set 1:475b accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr 100.96.210.17 counter name \"d_01a191e0f90c7809a6b22f5cefdcad1d\" meta priority set 1:475b accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.96.150.23 tcp sport 53 counter name \"nd_01a191e133d97c2c93f8fd22a736f77f\" meta priority set 1:d1d3 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.96.150.23 udp sport 53 counter name \"nd_01a191e133d97c2c93f8fd22a736f77f\" meta priority set 1:d1d3 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr 100.96.150.23 counter name \"d_01a191e133d97c2c93f8fd22a736f77f\" meta priority set 1:d1d3 accept\n\t}\n\n\tchain input {\n\t\ttype filter hook input priority mangle; policy accept;\n\t\tiifname \"fvmb0\" counter name \"ctin\" drop\n\t\tip saddr 100.64.0.0/10 counter name \"ctin\" drop\n\t}\n\n\tchain output {\n\t\ttype filter hook output priority mangle; policy accept;\n\t}\n\n\tchain postrouting {\n\t\ttype nat hook postrouting priority srcnat; policy accept;\n\t\toifname \"fvup0\" ip saddr @allowed_v4 snat ip to 198.51.100.20\n\t}\n}\n",
+      "nft_ruleset_excerpt": "table inet fvpn {\n\tcounter ctbase {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctv6 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctin {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctbadns {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctdeny {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter cthost {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctinv {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctnodn {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctunkd {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctunku {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter d_01a192ae6f4572b9ad7ce02298bacbcc {\n\t\tpackets 8 bytes 1514\n\t}\n\n\tcounter d_01a192aeaa4e7791b0c77b3d5974b528 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter nd_01a192ae6f4572b9ad7ce02298bacbcc {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter nd_01a192aeaa4e7791b0c77b3d5974b528 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter nu_01a192ae6f4572b9ad7ce02298bacbcc {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter nu_01a192aeaa4e7791b0c77b3d5974b528 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter u_01a192ae6f4572b9ad7ce02298bacbcc {\n\t\tpackets 8 bytes 1066\n\t}\n\n\tcounter u_01a192aeaa4e7791b0c77b3d5974b528 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tset allowed_v4 {\n\t\ttype ipv4_addr\n\t\tflags timeout\n\t\telements = { 100.68.183.201 timeout 9m54s805ms expires 9m52s817ms, 100.68.243.111 timeout 9m54s805ms expires 9m52s817ms }\n\t}\n\n\tset denied_v4 {\n\t\ttype ipv4_addr\n\t\tflags interval\n\t\tauto-merge\n\t\telements = { 0.0.0.0/8, 10.0.0.0/8,\n\t\t\t     100.64.0.0/10, 127.0.0.0/8,\n\t\t\t     169.254.0.0/16, 192.0.2.0/12,\n\t\t\t     192.0.0.0/24, 192.0.2.0/24,\n\t\t\t     192.88.99.0/24, 192.168.0.0/16,\n\t\t\t     198.18.0.0/15, 198.51.100.0/24,\n\t\t\t     203.0.113.0/24, 224.0.0.0/3 }\n\t}\n\n\tset host_v4 {\n\t\ttype ipv4_addr\n\t\tflags interval\n\t\tauto-merge\n\t\telements = { 198.51.100.20 }\n\t}\n\n\tset resolver_v4 {\n\t\ttype ipv4_addr\n\t\telements = { 198.51.100.53 }\n\t}\n\n\tchain forward {\n\t\ttype filter hook forward priority mangle; policy drop;\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=6 fvpn_metering=forward_admission_v1\"\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a192ad-e9a0-79d7-9490-c3c5320fcacf:955e\"\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a192ad-ec27-74ff-891f-09d9c0668310:87c5\"\n\t\tiifname \"fvmb0\" oifname \"fvup0\" meta nfproto ipv6 counter name \"ctv6\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" meta nfproto ipv6 counter name \"ctv6\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ct state invalid counter name \"ctinv\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ct state invalid counter name \"ctinv\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr != @allowed_v4 counter name \"ctunku\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.68.243.111 ip daddr @resolver_v4 tcp dport 53 counter name \"nu_01a192ae6f4572b9ad7ce02298bacbcc\" meta priority set 1:955e accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.68.243.111 ip daddr @resolver_v4 udp dport 53 counter name \"nu_01a192ae6f4572b9ad7ce02298bacbcc\" meta priority set 1:955e accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.68.183.201 ip daddr @resolver_v4 tcp dport 53 counter name \"nu_01a192aeaa4e7791b0c77b3d5974b528\" meta priority set 1:87c5 accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.68.183.201 ip daddr @resolver_v4 udp dport 53 counter name \"nu_01a192aeaa4e7791b0c77b3d5974b528\" meta priority set 1:87c5 accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip daddr @resolver_v4 counter name \"ctbadns\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip daddr @denied_v4 counter name \"ctdeny\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip daddr @host_v4 counter name \"cthost\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.68.243.111 counter name \"u_01a192ae6f4572b9ad7ce02298bacbcc\" meta priority set 1:955e accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.68.183.201 counter name \"u_01a192aeaa4e7791b0c77b3d5974b528\" meta priority set 1:87c5 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr != @allowed_v4 counter name \"ctunkd\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ct state != { established, related } counter name \"ctnodn\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.68.243.111 tcp sport 53 counter name \"nd_01a192ae6f4572b9ad7ce02298bacbcc\" meta priority set 1:955e accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.68.243.111 udp sport 53 counter name \"nd_01a192ae6f4572b9ad7ce02298bacbcc\" meta priority set 1:955e accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr 100.68.243.111 counter name \"d_01a192ae6f4572b9ad7ce02298bacbcc\" meta priority set 1:955e accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.68.183.201 tcp sport 53 counter name \"nd_01a192aeaa4e7791b0c77b3d5974b528\" meta priority set 1:87c5 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.68.183.201 udp sport 53 counter name \"nd_01a192aeaa4e7791b0c77b3d5974b528\" meta priority set 1:87c5 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr 100.68.183.201 counter name \"d_01a192aeaa4e7791b0c77b3d5974b528\" meta priority set 1:87c5 accept\n\t}\n\n\tchain input {\n\t\ttype filter hook input priority mangle; policy accept;\n\t\tiifname \"fvmb0\" counter name \"ctin\" drop\n\t\tip saddr 100.64.0.0/10 counter name \"ctin\" drop\n\t}\n\n\tchain output {\n\t\ttype filter hook output priority mangle; policy accept;\n\t}\n\n\tchain postrouting {\n\t\ttype nat hook postrouting priority srcnat; policy accept;\n\t\toifname \"fvup0\" ip saddr @allowed_v4 snat ip to 198.51.100.20\n\t}\n}\n",
       "observation": {
         "agent_version": "0.1.0",
         "applied_binding_revision": "1",
-        "applied_config_generation": "8",
+        "applied_config_generation": "6",
         "applied_policy_refs": {
           "authorization_generation": "1",
           "dns_generation": "1",
@@ -343,72 +343,72 @@
           {
             "error_code": null,
             "name": "dns_policy",
-            "observed_at": "2026-10-31T12:13:51.87208783Z",
+            "observed_at": "2026-10-31T15:58:17.338792068Z",
             "status": "passed"
           },
           {
             "error_code": null,
             "name": "internet_only",
-            "observed_at": "2026-10-31T12:13:51.87208783Z",
+            "observed_at": "2026-10-31T15:58:17.338792068Z",
             "status": "passed"
           },
           {
             "error_code": null,
             "name": "lease",
-            "observed_at": "2026-10-31T12:13:51.87208783Z",
+            "observed_at": "2026-10-31T15:58:17.338792068Z",
             "status": "passed"
           },
           {
             "error_code": null,
             "name": "meter_path",
-            "observed_at": "2026-10-31T12:13:51.87208783Z",
+            "observed_at": "2026-10-31T15:58:17.338792068Z",
             "status": "passed"
           },
           {
             "error_code": null,
             "name": "policy_signature",
-            "observed_at": "2026-10-31T12:13:51.87208783Z",
+            "observed_at": "2026-10-31T15:58:17.338792068Z",
             "status": "passed"
           },
           {
-            "detail": "read_at=2026-10-31T12:13:51.971505445Z source=live candidate=8 verified=true {\"generation\":\"8\",\"phase\":\"verify\",\"reads\":20,\"objects\":6,\"truncated\":true,\"sha256\":\"eef7aaa7889d13aec23c058efd872e7a0fd369ea6abd97ca423cbdcf182f7785\"}",
+            "detail": "read_at=2026-10-31T15:58:17.511861363Z source=live candidate=6 verified=true {\"generation\":\"6\",\"phase\":\"verify\",\"reads\":20,\"objects\":6,\"truncated\":true,\"sha256\":\"3542a3eafa129c55284faff32d18a3818d65155fbc0d0464782c93addd63201a\"}",
             "error_code": null,
             "name": "qos",
-            "observed_at": "2026-10-31T12:13:51.87208783Z",
+            "observed_at": "2026-10-31T15:58:17.338792068Z",
             "status": "passed"
           },
           {
             "error_code": null,
             "name": "release_supported",
-            "observed_at": "2026-10-31T12:13:51.87208783Z",
+            "observed_at": "2026-10-31T15:58:17.338792068Z",
             "status": "passed"
           },
           {
             "error_code": null,
             "name": "source_binding",
-            "observed_at": "2026-10-31T12:13:51.87208783Z",
+            "observed_at": "2026-10-31T15:58:17.338792068Z",
             "status": "passed"
           },
           {
             "error_code": null,
             "name": "storage",
-            "observed_at": "2026-10-31T12:13:51.87208783Z",
+            "observed_at": "2026-10-31T15:58:17.338792068Z",
             "status": "passed"
           },
           {
             "detail": "Egress probe used no extra target.",
             "error_code": null,
             "name": "tunnel_probe",
-            "observed_at": "2026-10-31T12:13:51.87208783Z",
+            "observed_at": "2026-10-31T15:58:17.338792068Z",
             "status": "passed"
           }
         ],
-        "current_release_id": "01a191e0-62de-7d9a-851c-0f9a0c1b2669",
+        "current_release_id": "01a192ad-f580-7a9b-9dfb-e23ad4e48964",
         "data_health": "healthy",
         "dns_policy_evidence": {
-          "applied_at": "2026-10-31T12:13:51.869998308Z",
-          "content_sha256": "2be76732cb0eb11ab6d1c4e9391895c3b6f9de7706da8ae4d8f50265d4750f2c",
-          "document_id": "01a191e0-738a-7f0e-afc0-b01de37f3bf2",
+          "applied_at": "2026-10-31T15:58:17.336055258Z",
+          "content_sha256": "3219e9546e80dda132a9afcf9c3ce90207754ad8e75fc51b6264ec39c7e11d38",
+          "document_id": "01a192ae-0540-7e92-9151-8e07de82870c",
           "error_code": null,
           "feeds": [],
           "generation": "1",
@@ -416,10 +416,10 @@
         },
         "errors": [],
         "forwarding_block_reasons": [],
-        "last_good_release_id": "01a191e0-62de-7d9a-851c-0f9a0c1b2669",
+        "last_good_release_id": "01a192ad-f580-7a9b-9dfb-e23ad4e48964",
         "lease": {
-          "expires_at": "2026-11-01T12:13:51.847759013Z",
-          "lease_id": "f234dd5d-df9e-4b9e-b6cf-d1f3907d1f3e"
+          "expires_at": "2026-11-01T15:58:17.298767073Z",
+          "lease_id": "45cdabe0-75f3-49b9-b647-dd0050c41bac"
         },
         "member_forwarding_enabled": true,
         "netbird": {
@@ -427,11 +427,11 @@
           "peer_id": null,
           "version": null
         },
-        "node_id": "01a191e0-7f82-714e-bc9c-0407ab79ba7a",
-        "node_incarnation_id": "01a191e0-8191-7d82-8822-0497f4dbee7c",
-        "observed_at": "2026-10-31T12:13:51.98315829Z",
+        "node_id": "01a192ae-1201-70bf-b380-a6dfdbc2724c",
+        "node_incarnation_id": "01a192ae-1361-7d54-a603-22b10f2ac4a6",
+        "observed_at": "2026-10-31T15:58:17.535018321Z",
         "provisioning_state": "ready",
-        "report_id": "01a191e1-6bef-728e-b55c-11c3801cc3b0",
+        "report_id": "01a192ae-e3bf-70a8-a75c-e79f4a504873",
         "safety_status": "passed",
         "tc_evidence": {
           "attachments": [
@@ -440,14 +440,14 @@
               "interface": "fvmb0",
               "objects": [
                 {
-                  "handle": "475b:",
+                  "handle": "87c5:",
                   "kind": "fq_codel",
-                  "parent": "1:475b"
+                  "parent": "1:87c5"
                 },
                 {
-                  "handle": "d1d3:",
+                  "handle": "955e:",
                   "kind": "fq_codel",
-                  "parent": "1:d1d3"
+                  "parent": "1:955e"
                 },
                 {
                   "handle": "1:",
@@ -461,14 +461,14 @@
               "interface": "fvup0",
               "objects": [
                 {
-                  "handle": "475b:",
+                  "handle": "87c5:",
                   "kind": "fq_codel",
-                  "parent": "1:475b"
+                  "parent": "1:87c5"
                 },
                 {
-                  "handle": "d1d3:",
+                  "handle": "955e:",
                   "kind": "fq_codel",
-                  "parent": "1:d1d3"
+                  "parent": "1:955e"
                 },
                 {
                   "handle": "1:",
@@ -483,12 +483,12 @@
               "objects": []
             },
             {
-              "attachment": "1:475b",
+              "attachment": "1:87c5",
               "interface": "fvmb0",
               "objects": []
             },
             {
-              "attachment": "1:d1d3",
+              "attachment": "1:955e",
               "interface": "fvmb0",
               "objects": []
             },
@@ -498,12 +498,12 @@
               "objects": []
             },
             {
-              "attachment": "475b:",
+              "attachment": "87c5:",
               "interface": "fvmb0",
               "objects": []
             },
             {
-              "attachment": "d1d3:",
+              "attachment": "955e:",
               "interface": "fvmb0",
               "objects": []
             },
@@ -528,12 +528,12 @@
               "objects": []
             },
             {
-              "attachment": "1:475b",
+              "attachment": "1:87c5",
               "interface": "fvup0",
               "objects": []
             },
             {
-              "attachment": "1:d1d3",
+              "attachment": "1:955e",
               "interface": "fvup0",
               "objects": []
             },
@@ -543,19 +543,19 @@
               "objects": []
             },
             {
-              "attachment": "475b:",
+              "attachment": "87c5:",
               "interface": "fvup0",
               "objects": []
             }
           ],
-          "candidate_generation": "8",
+          "candidate_generation": "6",
           "error_code": null,
           "objects_total": 6,
           "phase": "verify",
-          "read_at": "2026-10-31T12:13:51.971075118Z",
+          "read_at": "2026-10-31T15:58:17.511759449Z",
           "reads_total": 20,
           "rejected": null,
-          "sha256": "eef7aaa7889d13aec23c058efd872e7a0fd369ea6abd97ca423cbdcf182f7785",
+          "sha256": "3542a3eafa129c55284faff32d18a3818d65155fbc0d0464782c93addd63201a",
           "truncated": true,
           "verified": true
         },
@@ -570,22 +570,22 @@
           "blocked_seq": null,
           "central_acked_through": "0",
           "last_durable_event_seq": "0",
-          "ledger_epoch": "84a1f7a0-b640-4dcf-8c5a-d654c53bd71a",
-          "meter_epoch_id": "01a191e1-6b87-7244-80d6-3db747e82a90",
+          "ledger_epoch": "3b3d68b0-fc62-4d15-9d83-f0aea976d52e",
+          "meter_epoch_id": "01a192ae-e308-7496-b960-1f18a309c825",
           "oldest_unacked_at": null,
           "unacked_event_count": 0,
           "unacked_payload_bytes": "0"
         }
       },
       "observation_classification_field": "absent: ObservationReport has no foreign-rule classification field on this tree; classification above is enforce.LoopbackEvidence over the live read-back",
-      "received_at": "2026-10-31T12:13:51.990089Z"
+      "received_at": "2026-10-31T15:58:17.547466Z"
     },
     "fup_member_state_enforce": {
       "effective_down_bps": 5000000,
       "effective_up_bps": 2000000,
       "member_usage_fair_use_view": {
         "applying": false,
-        "as_of": "2026-10-31T12:19:07.310385Z",
+        "as_of": "2026-10-31T16:02:21.801207Z",
         "rate": {
           "down_bps": 5000000,
           "up_bps": 2000000
@@ -603,29 +603,29 @@
       "tc_node_enforced_5mbit": true
     },
     "fup_transition_1_policy_activated": {
-      "applying_cleared_at": "2026-10-31T12:17:52.632374592Z",
+      "applying_cleared_at": "2026-10-31T16:01:25.545053866Z",
       "applying_cleared_to_false": true,
       "applying_observed_true": true,
       "both_exits_compiled_tier2_rate": true,
       "both_exits_installed_tier2_tc": true,
       "clearing_observation_generation": 5,
-      "clearing_observation_node_id": "01a191e2-b50c-75a4-8d56-b480eea714db",
-      "clearing_observation_received_at": "2026-10-31T12:17:47.547519Z",
-      "clearing_observation_report_id": "01a191e5-0403-79f5-874a-dcb629a09ae4",
+      "clearing_observation_node_id": "01a192b0-2fb8-719f-9818-d04e4237ed6f",
+      "clearing_observation_received_at": "2026-10-31T16:01:24.341842Z",
+      "clearing_observation_report_id": "01a192b1-bd70-76df-b761-30054c9a5e34",
       "desired_gen_after": {
-        "01a191e0-7f82-714e-bc9c-0407ab79ba7a": 11,
-        "01a191e2-b50c-75a4-8d56-b480eea714db": 5,
-        "01a191e3-fbf0-7701-a4a8-3fe1a3d6fce4": 0
+        "01a192ae-1201-70bf-b380-a6dfdbc2724c": 8,
+        "01a192b0-2fb8-719f-9818-d04e4237ed6f": 5,
+        "01a192b1-8199-7ef2-8edf-1bcb771d17a6": 0
       },
       "desired_gen_after_replay": {
-        "01a191e0-7f82-714e-bc9c-0407ab79ba7a": 11,
-        "01a191e2-b50c-75a4-8d56-b480eea714db": 5,
-        "01a191e3-fbf0-7701-a4a8-3fe1a3d6fce4": 0
+        "01a192ae-1201-70bf-b380-a6dfdbc2724c": 8,
+        "01a192b0-2fb8-719f-9818-d04e4237ed6f": 5,
+        "01a192b1-8199-7ef2-8edf-1bcb771d17a6": 0
       },
       "desired_gen_before": {
-        "01a191e0-7f82-714e-bc9c-0407ab79ba7a": 10,
-        "01a191e2-b50c-75a4-8d56-b480eea714db": 4,
-        "01a191e3-fbf0-7701-a4a8-3fe1a3d6fce4": 0
+        "01a192ae-1201-70bf-b380-a6dfdbc2724c": 7,
+        "01a192b0-2fb8-719f-9818-d04e4237ed6f": 4,
+        "01a192b1-8199-7ef2-8edf-1bcb771d17a6": 0
       },
       "enforced_down_bps": 5000000,
       "enforced_tier_index": 2,
@@ -633,39 +633,39 @@
       "fup_member_generation_after": 1,
       "fup_member_generation_after_replay": 1,
       "fup_member_generation_before": 0,
-      "node1_compiled_member_rate": "member=01a191e0-5a47-777e-af02-a3161664463f generation=11 down=5000000 up=2000000 class=1:475b",
+      "node1_compiled_member_rate": "member=01a192ad-e9a0-79d7-9490-c3c5320fcacf generation=8 down=5000000 up=2000000 class=1:955e",
       "node1_tc_class_rate": "ceil 5Mbit down (fvmb0) / ceil 2Mbit up (fvup0)",
-      "node2_compiled_member_rate": "member=01a191e0-5a47-777e-af02-a3161664463f generation=5 down=5000000 up=2000000 class=1:475b",
+      "node2_compiled_member_rate": "member=01a192ad-e9a0-79d7-9490-c3c5320fcacf generation=5 down=5000000 up=2000000 class=1:955e",
       "node2_tc_class_rate": "ceil 5Mbit down (fvmb0) / ceil 2Mbit up (fvup0)",
-      "started_at": "2026-10-31T12:16:56.450772665Z",
+      "started_at": "2026-10-31T16:01:19.011162418Z",
       "transition": "policy_activated_enforce_tier2",
       "trigger": "POST /api/v1/admin/policies/{id}/activate (mode=enforce, Tier 2 5Mbit/2Mbit)",
-      "wall_clock_ms_to_applying_false": 56181
+      "wall_clock_ms_to_applying_false": 6533
     },
     "fup_transition_2_member_generation_changed": {
-      "applying_cleared_at": "2026-10-31T12:19:11.726295278Z",
+      "applying_cleared_at": "2026-10-31T16:02:31.341566728Z",
       "applying_cleared_to_false": true,
       "applying_observed_true": true,
       "both_exits_compiled_tier2_rate": true,
       "both_exits_installed_tier2_tc": true,
       "clearing_observation_generation": 7,
-      "clearing_observation_node_id": "01a191e2-b50c-75a4-8d56-b480eea714db",
-      "clearing_observation_received_at": "2026-10-31T12:19:10.363278Z",
-      "clearing_observation_report_id": "01a191e6-4790-77a3-a45f-7e21b499c56f",
+      "clearing_observation_node_id": "01a192b0-2fb8-719f-9818-d04e4237ed6f",
+      "clearing_observation_received_at": "2026-10-31T16:02:29.975974Z",
+      "clearing_observation_report_id": "01a192b2-bdcf-7c42-9349-1b50d8c8f913",
       "desired_gen_after": {
-        "01a191e0-7f82-714e-bc9c-0407ab79ba7a": 13,
-        "01a191e2-b50c-75a4-8d56-b480eea714db": 7,
-        "01a191e3-fbf0-7701-a4a8-3fe1a3d6fce4": 0
+        "01a192ae-1201-70bf-b380-a6dfdbc2724c": 10,
+        "01a192b0-2fb8-719f-9818-d04e4237ed6f": 7,
+        "01a192b1-8199-7ef2-8edf-1bcb771d17a6": 0
       },
       "desired_gen_after_replay": {
-        "01a191e0-7f82-714e-bc9c-0407ab79ba7a": 13,
-        "01a191e2-b50c-75a4-8d56-b480eea714db": 7,
-        "01a191e3-fbf0-7701-a4a8-3fe1a3d6fce4": 0
+        "01a192ae-1201-70bf-b380-a6dfdbc2724c": 10,
+        "01a192b0-2fb8-719f-9818-d04e4237ed6f": 7,
+        "01a192b1-8199-7ef2-8edf-1bcb771d17a6": 0
       },
       "desired_gen_before": {
-        "01a191e0-7f82-714e-bc9c-0407ab79ba7a": 12,
-        "01a191e2-b50c-75a4-8d56-b480eea714db": 6,
-        "01a191e3-fbf0-7701-a4a8-3fe1a3d6fce4": 0
+        "01a192ae-1201-70bf-b380-a6dfdbc2724c": 9,
+        "01a192b0-2fb8-719f-9818-d04e4237ed6f": 6,
+        "01a192b1-8199-7ef2-8edf-1bcb771d17a6": 0
       },
       "enforced_down_bps": 5000000,
       "enforced_tier_index": 2,
@@ -673,51 +673,51 @@
       "fup_member_generation_after": 3,
       "fup_member_generation_after_replay": 3,
       "fup_member_generation_before": 2,
-      "node1_compiled_member_rate": "member=01a191e0-5aba-7dd0-9eec-14e48c1a9ea1 generation=13 down=5000000 up=2000000 class=1:d1d3",
+      "node1_compiled_member_rate": "member=01a192ad-ec27-74ff-891f-09d9c0668310 generation=10 down=5000000 up=2000000 class=1:87c5",
       "node1_tc_class_rate": "ceil 5Mbit down (fvmb0) / ceil 2Mbit up (fvup0)",
-      "node2_compiled_member_rate": "member=01a191e0-5aba-7dd0-9eec-14e48c1a9ea1 generation=7 down=5000000 up=2000000 class=1:d1d3",
+      "node2_compiled_member_rate": "member=01a192ad-ec27-74ff-891f-09d9c0668310 generation=7 down=5000000 up=2000000 class=1:87c5",
       "node2_tc_class_rate": "ceil 5Mbit down (fvmb0) / ceil 2Mbit up (fvup0)",
-      "started_at": "2026-10-31T12:18:05.259844298Z",
+      "started_at": "2026-10-31T16:01:36.888133855Z",
       "transition": "fup_member_generation_changed_tier0_to_tier2",
       "trigger": "POST /api/v1/agent/usage-batches -\u003e fup.member_generation_changed (crossing Tier 2 threshold)",
-      "wall_clock_ms_to_applying_false": 66466
+      "wall_clock_ms_to_applying_false": 54453
     },
-    "group_id": "01a191e0-69b2-7cc5-a5cc-94505d02e903",
+    "group_id": "01a192ad-fc48-77d5-becd-3f73f5d9994a",
     "node1_effective_down_bps": "25000000",
     "node2_effective_down_bps": "15000000",
     "node2_transfer": {
-      "after_download_bytes": "1515",
+      "after_download_bytes": "1514",
       "after_upload_bytes": "1066",
       "before_download_bytes": "0",
       "before_upload_bytes": "0",
       "counted": true,
-      "delta_download_bytes": "1515",
+      "delta_download_bytes": "1514",
       "delta_upload_bytes": "1066",
       "expected_snat": "198.51.100.22",
       "generation": "4",
       "http_200": true,
-      "member_fvnb0_rx_bytes_delta": 2036,
-      "member_fvnb0_tx_bytes_delta": 1648,
+      "member_fvnb0_rx_bytes_delta": 1980,
+      "member_fvnb0_tx_bytes_delta": 1556,
       "member_service": "member",
-      "node_fvup0_l3_rx_bytes_delta": 1543,
+      "node_fvup0_l3_rx_bytes_delta": 1542,
       "node_fvup0_l3_tx_bytes_delta": 1094,
       "node_service": "node2",
       "origin_authenticated": true,
       "origin_source": "198.51.100.22",
-      "probe_id": "2e05baf3-dd7f-41f7-804b-ca0276c3aaeb",
+      "probe_id": "a5cff19a-f0b9-40c6-97a2-0a1009a18a16",
       "requests": 1
     },
-    "node_id": "01a191e0-7f82-714e-bc9c-0407ab79ba7a",
-    "node_incarnation_id": "01a191e0-8191-7d82-8822-0497f4dbee7c",
+    "node_id": "01a192ae-1201-70bf-b380-a6dfdbc2724c",
+    "node_incarnation_id": "01a192ae-1361-7d54-a603-22b10f2ac4a6",
     "november_reset_generation": "4",
     "november_reset_state": "normal",
     "override_generation": "2",
     "port_base": 48000,
     "post_override_generation": "3",
-    "run_id": "170ea3e3",
+    "run_id": "71b1a160",
     "shadow_generation": "0",
-    "shadow_tc_node": "class htb 1:1 root rate 1Gbit ceil 1Gbit burst 256Kb cburst 256Kb \nclass htb 1:fffe parent 1:1 prio 0 rate 1Mbit ceil 1Gbit burst 256Kb cburst 256Kb \nclass htb 1:d1d3 parent 1:1 leaf d1d3: prio 1 rate 60Mbit ceil 60Mbit burst 75000b cburst 75000b \nclass htb 1:475b parent 1:1 leaf 475b: prio 1 rate 60Mbit ceil 60Mbit burst 75000b cburst 75000b",
-    "shadow_tc_node2": "class htb 1:1 root rate 1Gbit ceil 1Gbit burst 256Kb cburst 256Kb \nclass htb 1:fffe parent 1:1 prio 0 rate 1Mbit ceil 1Gbit burst 256Kb cburst 256Kb \nclass htb 1:d1d3 parent 1:1 leaf d1d3: prio 1 rate 15Mbit ceil 15Mbit burst 18750b cburst 18750b \nclass htb 1:475b parent 1:1 leaf 475b: prio 1 rate 15Mbit ceil 15Mbit burst 18750b cburst 18750b \nclass fq_codel 475b:1fa parent 475b:",
+    "shadow_tc_node": "class htb 1:1 root rate 1Gbit ceil 1Gbit burst 256Kb cburst 256Kb \nclass htb 1:fffe parent 1:1 prio 0 rate 1Mbit ceil 1Gbit burst 256Kb cburst 256Kb \nclass htb 1:87c5 parent 1:1 leaf 87c5: prio 1 rate 60Mbit ceil 60Mbit burst 75000b cburst 75000b \nclass htb 1:955e parent 1:1 leaf 955e: prio 1 rate 60Mbit ceil 60Mbit burst 75000b cburst 75000b",
+    "shadow_tc_node2": "class htb 1:1 root rate 1Gbit ceil 1Gbit burst 256Kb cburst 256Kb \nclass htb 1:fffe parent 1:1 prio 0 rate 1Mbit ceil 1Gbit burst 256Kb cburst 256Kb \nclass htb 1:87c5 parent 1:1 leaf 87c5: prio 1 rate 15Mbit ceil 15Mbit burst 18750b cburst 18750b \nclass htb 1:955e parent 1:1 leaf 955e: prio 1 rate 15Mbit ceil 15Mbit burst 18750b cburst 18750b \nclass fq_codel 955e:372 parent 955e:",
     "shadow_would_apply_tier": 1,
     "stack_prefix": "fvpn-w4-usage"
   },
@@ -726,13 +726,13 @@
       "name": "LiveFairUseRecompileCarryingExitsApplyingConvergenceAndReplayIdempotency",
       "spec_ref": "§11.2, §11.5, §11.6, §14.3, FUP02, FUP04",
       "status": "pass",
-      "summary": "PR #222 verified live: Transition 1 (policy.activated mode=enforce) incremented desired_config_generation on both carrying exits (node 10-\u003e11, node2 4-\u003e5) and left non-carrying node at 0-\u003e0, cleared fair_use.applying true-\u003efalse in 56181 ms via observation 01a191e5-0403-79f5-874a-dcb629a09ae4, and ignored replay; Transition 2 (fup.member_generation_changed) incremented carrying exits (node 12-\u003e13, node2 6-\u003e7) and left non-carrying node at 0-\u003e0, cleared fair_use.applying true-\u003efalse in 66466 ms via observation 01a191e6-4790-77a3-a45f-7e21b499c56f, and ignored duplicate usage replay."
+      "summary": "PR #222 verified live: Transition 1 (policy.activated mode=enforce) incremented desired_config_generation on both carrying exits (node 7-\u003e8, node2 4-\u003e5) and left non-carrying node at 0-\u003e0, cleared fair_use.applying true-\u003efalse in 6533 ms via observation 01a192b1-bd70-76df-b761-30054c9a5e34, and ignored replay; Transition 2 (fup.member_generation_changed) incremented carrying exits (node 9-\u003e10, node2 6-\u003e7) and left non-carrying node at 0-\u003e0, cleared fair_use.applying true-\u003efalse in 54453 ms via observation 01a192b2-bdcf-7c42-9349-1b50d8c8f913, and ignored duplicate usage replay."
     },
     {
       "name": "LiveENR03PerIncarnationRetainedUsageAcrossNodeReenrollment",
       "spec_ref": "§5.2, §10.5, §14.2, ENR03, MTR03",
       "status": "pass",
-      "summary": "GET /api/v1/admin/nodes/01a191e2-b50c-75a4-8d56-b480eea714db/incarnations listed new incarnation 01a191e6-9633-7ccc-bae2-e65610e0e145 (active, initial 0/0, after traffic 1066/1516 B) and retired incarnation 01a191e2-b648-7824-b7cb-b747c222f2c1 (retire_reason=reinstall, retained 1066/1515 B fixed across new traffic) newest-first while member_usage_periods stayed unchanged on re-enrollment (28587 B) and accumulated on the same month (31169 B)."
+      "summary": "GET /api/v1/admin/nodes/01a192b0-2fb8-719f-9818-d04e4237ed6f/incarnations listed new incarnation 01a192b2-f8a4-7eda-bf06-f55aba2ea13d (active, initial 0/0, after traffic 1066/1515 B) and retired incarnation 01a192b0-311f-7e4f-b1ad-d6b7f7de5a94 (retire_reason=reinstall, retained 1066/1514 B fixed across new traffic) newest-first while member_usage_periods stayed unchanged on re-enrollment (28614 B) and accumulated on the same month (31195 B)."
     },
     {
       "name": "CrossNodeUsageAggregationAndPerExitRateScope",
