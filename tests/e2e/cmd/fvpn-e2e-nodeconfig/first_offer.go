@@ -105,6 +105,9 @@ func (f *firstOfferObserver) wrap(next http.Handler) http.Handler {
 		}
 		w.WriteHeader(rr.Code)
 		n, writeErr := w.Write(rr.Body.Bytes())
+		if desired && writeErr == nil {
+			writeErr = http.NewResponseController(w).Flush()
+		}
 		at := time.Now().UTC()
 		if desired && rr.Code == 200 && ev.First == nil {
 			var doc struct {

@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -116,7 +117,17 @@ func TestE2E_Followup18Installer(t *testing.T) {
 	r.publish(ctx, admin, r.nodeID)
 	r.fixtureServingMember(ctx, admin)
 	r.installerMarker18(ctx, s)
-	r.installerUsage17(ctx, s, selected)
+	// Multiple deliberate wrapper samples otherwise exceed the packaged
+	// StartLimitBurst=5 / StartLimitIntervalSec=120. Keep that safety intact.
+	t.Log("waiting 121 seconds between deliberate installer restart campaigns")
+	for i := 0; i < 121; i++ {
+		select {
+		case <-ctx.Done():
+			t.Fatal(ctx.Err())
+		case <-time.After(time.Second):
+		}
+	}
+	r.installerUsage18(ctx, s, selected)
 	r.installerServing18(ctx, s)
 	r.installerCapture17(ctx, s)
 	r.installerUpgrade18(ctx, s)
@@ -216,8 +227,10 @@ func (r *runner) installerUpgrade18(ctx context.Context, s *Stack) {
 	checkpoint, checkpointErr := r.lab.docker(c, "cat", "/var/lib/vpn-node/state/meter.checkpoint")
 	note("genuine_meter_checkpoint_present", boolText(checkpointErr == nil))
 	note("checkpoint_after", string(checkpoint))
-	journal, _ := r.lab.docker(c, "sh", "-c", `find /var/lib/vpn-node/update-journal -maxdepth 2 -type f -name '*.json' -print -exec cat {} \;`)
-	note("journal", string(journal))
+	_, copyErr := r.lab.docker(c, "/usr/local/bin/fvpn-e2e-nodeconfig", "journal-copy")
+	journal, exportErr := s.ExportContainerFile(ctx, "installer-node", "/var/lib/vpn-node/e2e/journal.snapshot.db", filepath.Join(r.lab.root, ".agent/tmp", r.runID+"-installer-journal.db"))
+	noteJSON(&rec, "journal_snapshot", journal)
+	note("journal_copy_complete", boolText(copyErr == nil && exportErr == nil))
 	after, _ := r.lab.docker(c, "readlink", "/opt/vpn-node/current")
 	note("current_before", string(before))
 	note("current_after", string(after))
@@ -232,7 +245,7 @@ func (r *runner) installerUpgrade18(ctx context.Context, s *Stack) {
 	for _, k := range []string{"processes", "identity_and_state", "internet_only", "dns_policy", "tunnel_probe"} {
 		healthy = healthy && v.Health[k] == "passed"
 	}
-	if statusErr == nil && decoded && v.State == "succeeded" && checkpointErr == nil && !bytes.Equal(before, after) && healthy {
+	if copyErr == nil && exportErr == nil && statusErr == nil && decoded && v.State == "succeeded" && checkpointErr == nil && !bytes.Equal(before, after) && healthy {
 		rec.Status = StatusPass
 	}
 	note("owner", "updater / agent-core; durable result decides success, independent of apply exit")
@@ -262,6 +275,92 @@ func (r *runner) installerServing18(ctx context.Context, s *Stack) {
 	err = db.QueryRow(ctx, `SELECT jsonb_build_object('received_at',received_at,'report',report_payload) FROM node_observations WHERE node_id=$1 ORDER BY received_at DESC LIMIT 1`, r.nodeID).Scan(&row)
 	note("central_observation", string(row))
 	if err == nil && strings.Contains(string(beat), "serving 1") {
+		rec.Status = StatusPass
+	}
+}
+
+func (r *runner) installerUsage18(ctx context.Context, s, selected *Stack) {
+	rec := Record{ID: "installer-usage", Title: "ENR-05 same installer slot: counted traffic, held ACKs and CLI ledger", Spec: []string{"§10.5", "ENR-05"}, Status: StatusFail}
+	defer func() { r.record(rec) }()
+	note := recPathNote(&rec)
+	if !r.flowCounted {
+		note("error", "no counted installer member path")
+		return
+	}
+	if err := s.HoldUsageAcknowledgements(ctx, "installer-node", true); err != nil {
+		note("hold", err.Error())
+		return
+	}
+	defer func() { _ = s.HoldUsageAcknowledgements(context.WithoutCancel(ctx), "installer-node", false) }()
+	initial, err := s.UsageLedgerSnapshot(ctx, "installer-node")
+	if err != nil {
+		note("snapshot", err.Error())
+		return
+	}
+	before, err := selected.CountedMemberTraffic(ctx, r.usageDevice)
+	if err != nil {
+		note("counter", err.Error())
+		return
+	}
+	if _, err = selected.StartEstablishedTransports(ctx, r.usageDevice); err != nil {
+		note("transport", err.Error())
+		return
+	}
+	defer func() { _ = selected.StopEstablishedTransports(context.WithoutCancel(ctx)) }()
+	wait, cancel := context.WithTimeout(ctx, 150*time.Second)
+	var held UsageSnapshot
+	produced := waitUntil(wait, 2*time.Second, func() bool {
+		held, err = s.UsageLedgerSnapshot(wait, "installer-node")
+		return err == nil && held.UnackedCount > initial.UnackedCount
+	})
+	cancel()
+	after, counterErr := selected.CountedMemberTraffic(ctx, r.usageDevice)
+	noteJSON(&rec, "counters_before", before)
+	noteJSON(&rec, "counters_after", after)
+	noteJSON(&rec, "initial", initial)
+	noteJSON(&rec, "held", held)
+	_ = selected.StopEstablishedTransports(ctx)
+	// Sample only after the wrapper quiesces SQLite, then restore its prior state.
+	again, wrapperErr := s.RerunInstaller(ctx, "installer-node")
+	noteJSON(&rec, "serving_rerun", again)
+	first, e1 := s.UsageLedgerSnapshotBytes(ctx, "installer-node")
+	second, e2 := s.UsageLedgerSnapshotBytes(ctx, "installer-node")
+	note("quiescent_snapshot_byte_equal", boolText(e1 == nil && e2 == nil && bytes.Equal(first, second)))
+	restoreErr := s.RestoreInstallerServices(ctx, "installer-node", again.Services)
+	note("services_restored", boolText(restoreErr == nil))
+	if restoreErr != nil {
+		note("restoration_error", restoreErr.Error())
+	}
+	if err = s.HoldUsageAcknowledgements(ctx, "installer-node", false); err != nil {
+		note("release", err.Error())
+		return
+	}
+	target, _ := strconv.ParseUint(held.LastEventSeq, 10, 64)
+	wait, cancel = context.WithTimeout(ctx, 150*time.Second)
+	defer cancel()
+	var released UsageSnapshot
+	caught := waitUntil(wait, 2*time.Second, func() bool {
+		released, err = s.UsageLedgerSnapshot(wait, "installer-node")
+		ack, _ := strconv.ParseUint(released.AckedThrough, 10, 64)
+		return err == nil && ack >= target
+	})
+	noteJSON(&rec, "released", released)
+	transportErr := error(nil)
+	// A successful systemctl start is not a serving readback. Wait for a
+	// fresh heartbeat before opening the post-wrapper native sockets.
+	fresh, stop := context.WithTimeout(ctx, 45*time.Second)
+	ready := waitUntil(fresh, time.Second, func() bool {
+		b, e := r.lab.docker(s.installerContainer(), "cat", "/run/vpn-node/heartbeat")
+		return e == nil && strings.Contains(string(b), "serving 1")
+	})
+	stop()
+	note("serving_after_restore", boolText(ready))
+	if restoreErr == nil && ready {
+		_, transportErr = selected.StartEstablishedTransports(ctx, r.usageDevice)
+	}
+	note("post_wrapper_transport_restored", boolText(restoreErr == nil && ready && transportErr == nil))
+	note("scope", "same-incarnation hold/release only; authorized old-incarnation backlog delivery remains unresolved")
+	if produced && held.AckedThrough == initial.AckedThrough && counterErr == nil && before.Present && after.Present && after.Upload > before.Upload && after.Download > before.Download && wrapperErr == nil && again.Exit == 0 && again.Before == again.Hashes && e1 == nil && e2 == nil && bytes.Equal(first, second) && restoreErr == nil && caught && ready && transportErr == nil {
 		rec.Status = StatusPass
 	}
 }
