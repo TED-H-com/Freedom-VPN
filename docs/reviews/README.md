@@ -50,9 +50,9 @@ Every individual finding (High, Medium, and Low) is tabulated in full in its res
 | High | `r14-d067-d070-review`: `ObserveRevokedDeviceCutoffTx` in `internal/nodes/observations.go` scanned every non-revoked/non-decommissioned node without scoping to serving exit groups or bounding by heartbeat freshness (`DefaultStaleTimeout = 90 s`), allowing a single stale, offline, or ungrouped node with a pending `ISOLATION_POLICY_INVALID` apply error to hold `member.revoke` and `member_device.revoke` `"nodes"` steps `pending` indefinitely (`TestReviewR14_Q1_UnrelatedOfflineNodeHoldsRevokePendingIndefinitely`). | closed | #217 |
 | High | `r15-d072-d075-review` H-1: the renewal that freezes a cloned incarnation can still issue a member-grant lease at the fleet offline cap; the next failed observation does not shorten that lease. | closed | #254 / #259; server clamp only, see packet-stop limits |
 
-Status checked on main `982c209`, 2026-10-31 EDT: r15 owner fixes and proofs adopted; see its archive for the server-clamp and quarantine limits. r16 delivered; dispositions below.
+Status checked on main `7e044c71`, 2026-10-31 EDT: r15 owner fixes and proofs adopted; see its archive for the server-clamp and quarantine limits. r16 delivered; dispositions below.
 
-## r16 dispositions at the follow-up 16 cutoff
+## r16 dispositions at the follow-up 17 cutoff
 
 The report is byte-identical to `.agent/REVIEW.md` on
 `origin/r16-rev13-d089-d099-review`, commit
@@ -64,12 +64,12 @@ orchestrator's current routing is below; no proof files were adopted here.
 | Finding | Current disposition |
 |---|---|
 | H-1: fenced device still bound and leased | Fixed by wire-nodes follow-up 31 with the desired-state owner (#291): fenced devices excluded from signed bindings and lease device lists; worker recompiles affected signed envelopes before acknowledging the detecting sync job. Live propagation timing remains unmeasured. |
-| M-1: failed identity-freeze persist | Open → agent-core follow-up 24. Successful latch tests do not close failed-persistence recovery. |
+| M-1: failed identity-freeze persist | Fixed by agent-core follow-up 24 (#305): durable freeze intent, locked-store restart recovery, Step retries, withheld acceptance and lost-response replay guard. Failed-persistence regression retained; #312 reruns the r16 proofs. |
 | M-2: installer rollback version write | Fixed by fleet-update follow-up 11 (#300): accepted installer rollback restores current and last-good versions. |
-| L-1: installer row cardinality / ETag churn | Fixed by fleet-update follow-up 11 (#300), D-110 deterministic job identity and visible-change-only ETag updates; updater follow-up 15 adoption remains pending. |
+| L-1: installer row cardinality / ETag churn | Fixed by fleet-update follow-up 11 (#300), D-110 deterministic job identity and visible-change-only ETag updates; updater follow-up 15 (#307) adopts the catalog-bound ID and D-114 legacy replacement. |
 | Known, reconfirmed: generation-only cache advance | Fixed after the review base by wire-nodes follow-up 29 (#277), [state_cache.go](../../internal/nodes/httpwire/state_cache.go) and its runtime eligibility fence. Accepted D-099 ordinary-proposal semantics apply; live SECOPS-21 remains open. |
 | Known, reconfirmed: keyed installer replay 500 | Fixed after the review base by #277, [replay.go](../../internal/nodes/httpwire/replay.go), `TestD089_HTTPInstallerResultKeyedReplay`. |
 
 D-110 / D-111 and their delivery boundaries are in the [operator decisions
-register](../handover/README.md#follow-up-16-decisions-register-2026-10-31-edt).
+register](../handover/README.md#follow-up-17-decisions-register-2026-10-31-edt).
 Owners adopt the `TestReviewR16_*` proofs in their follow-ups.

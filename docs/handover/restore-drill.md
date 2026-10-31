@@ -1,5 +1,10 @@
 # Backup and Restore Drill Record (`docs/handover/restore-drill.md`)
 
+Latest cutoff: [follow-up 17 operator evidence](follow-up-17.md). #313
+harness-proves the SECOPS-21 first-offer capture (2/0/0, delivery 4 > retained 3,
+matching local digest and central 202); full restore remains open for secops 13.
+Earlier restore measurements below retain their original cutoff.
+
 This document provides the repeatable backup, point-in-time restore (PITR), and post-restore reconciliation procedure (`§9.3`, `§17.2`, `§17.3`, `§17.4`, `§19 AT30`), together with the measured RPO and RTO evidence from the Wave 4 verification drill.
 
 ---
