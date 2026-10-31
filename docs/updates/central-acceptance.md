@@ -9,7 +9,8 @@ make go-lint
 
 Integration tests require `FVPN_TEST_DATABASE_URL` for PostgreSQL 17. Each uses
 `internal/db/dbtest`, creates an isolated database and drops it on cleanup.
-The Make targets use private on-disk scratch under `.agent/tmp` and remove it.
+The Make targets use on-disk scratch under `.agent/tmp`; Go removes its temporary
+build/test directories on normal completion.
 Ordinary `go test ./...` requires neither PostgreSQL nor network/root/Docker.
 No real node or host networking is changed.
 
@@ -65,9 +66,23 @@ explicit `source: central` still completes its authorized job.
 `TestD089_InstallerAcceptanceClosesHeartbeatSeeding` fences later heartbeat seeding
 even after an accepted failure on a node whose current version remains null.
 `TestD089_InstallerAdminNodeHTTP` exercises admin node detail and list responses.
-`TestD089_InstallerFailuresAndTransaction` proves failure/rollback preserve node
-versions, already-current establishes last-good, and caller rollback undoes both
+`TestD089_InstallerFailuresAndTransaction` proves failure preserves node
+versions, rollback records the restored release, already-current establishes last-good, and caller rollback undoes both
 receipt and projection. `TestD097_InstallerProjectionCentralPrecedenceAndIncarnation`
 proves central-job precedence, unchanged confirmed batch evidence, latest
 accepted source selection, and rejection/old-incarnation exclusion. These are
 central integration proofs, not physical installer or real ARM64 runs.
+
+## D-127 correction coverage (2026-10-31)
+
+The unchanged `TestReviewR17_LaterInstallerOutcomeCanCorrectTheRecordedRelease`
+now passes alongside the other copied r17 installer proofs and all r16 proofs.
+`TestD127_SuccessAfterSeedMovesBothVersions` and
+`TestD127_RollbackAfterSuccessMovesBothVersions` cover both architecture identities,
+immutable history, node detail/summary and ETags. The remaining `TestD127_*`
+tests cover both exact stored ACKs (including the real HTTP keyed replay reader),
+concurrent delivery, third flips, changed same-outcome evidence, other disallowed
+transitions, ineligible corrections, unchanged rollback/health checks, nine
+random job IDs, the central generation high-water, and migration 00192's
+round-trip, row bound, immutable guards and lossless downgrade refusal.
+See [D-127 lifecycle and devstack hand-off](central-lifecycle.md#installer-outcome-corrections-d-127-2026-10-31).

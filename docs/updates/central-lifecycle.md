@@ -201,26 +201,31 @@ release. The same canonical payload-hash, terminal version/time, health, error,
 state-schema and usage-checkpoint checks apply as for central results. Rollback
 still requires the restored release's trusted manifest, serving permission,
 compatible schema and health. A pre-health failure must retain the centrally
-recorded current release; without that baseline, it fails closed.
+recorded current release; D-111 also permits a distinct eligible baseline to
+seed previously null current/last-good columns, retaining null health and the
+original failure code.
 
-Migration `00191_installer_update_results.sql` stores immutable payload, hash,
-release, state, incarnation, receipt time and ACK under `(node_id, job_id)`.
-An identical hash returns the original ACK, including its timestamp, without
-another audit or projection write. A different payload for that same node/job
-returns 409 `ACK_CONFLICT` and keeps the first evidence. Release-policy changes
-do not rewrite a previously accepted receipt. Authentication/current-incarnation
-checks still apply to replays. A job's first accepted evidence is immutable;
-the updater must retain and replay its original terminal payload.
+Migrations `00191_installer_update_results.sql` and
+`00192_installer_outcome_corrections.sql` store immutable payload, hash, release,
+state, incarnation, receipt time and ACK under `(node_id, job_id, result_id)`.
+D-110 derives the job ID from the requested release, verified manifest digest
+and authenticated incarnation through `internal/installerjob`. Wrong IDs return
+409 `STATE_CONFLICT` with `details.reason=job_id_mismatch`. D-127 permits one
+correction as described below. An exact payload replay returns its original ACK
+without another audit or projection write, even after a correction or a release
+policy change. Authentication/current-incarnation checks still apply.
 
 Verified `succeeded` and `already_current` results set current and last-good to
-the installed release, satisfying D-068. Failure and rollback evidence do not
-move either node version. Acceptance emits `update_result.accept` on the node
-resource with `source: installer`. It never creates, binds, completes or changes
-a central job, target or batch, nor changes progress, retries, rollout gates,
-confirmation timestamps, recovery state or accepted central generation. The ACK
-reports the retained central generation; its version-applied flag is independent
-of that generation. Publication intent is unchanged. New evidence advances the
-node detail's ETag; exact replays do not.
+the installed release. Eligible `rolled_back` evidence sets both to the restored
+release; D-111 pre-health seeding sets both to the baseline without inventing
+passing health. Every version write respects the central generation high-water.
+Acceptance emits `update_result.accept` on the node resource with `source: installer`.
+It never creates, binds, completes or changes a central job, target or batch, nor
+changes progress, retries, rollout gates, confirmation timestamps, recovery state
+or accepted central generation. The ACK reports the retained central generation;
+its version-applied flag is independent of that generation. Publication intent
+is unchanged. Only changes to versions or the visible summary advance the node
+ETag; exact replays do not.
 
 Operators see the installed release in admin node detail. Under D-097, a current
 central job always supplies `NodeUpdateSummary`. When no current central job
@@ -232,10 +237,70 @@ receipts and older incarnations cannot replace this view. `UpdateTarget` and
 The existing target `current_release_id` is a live node-version read and can
 reflect the installed release without changing target/job status or result evidence.
 
-The HTTP idempotency-key replay adapter must read installer ACKs from this new
-table using authenticated node/incarnation and job ID. Its current central-only
-`update_results` lookup is owned by the wire-nodes lane; the domain's exact
-replay and transaction behavior are covered independently here.
+The existing HTTP idempotency-key replay adapter selects installer ACKs using
+authenticated node/incarnation, job ID, result ID and payload hash. Both outcomes
+therefore replay independently through keyed HTTP replay and fresh-key domain
+replay without a wire change.
+
+## Installer outcome corrections (D-127, 2026-10-31)
+
+One derived job can store its first receipt and **one** correction on the same
+incarnation. The only allowed transitions are:
+
+| First accepted receipt | Correction | Version effect when generation permits |
+|---|---|---|
+| D-111 pre-health `failed` receipt whose ACK applied a null-baseline seed | `succeeded` | Current and last-good become the candidate |
+| `succeeded` | `rolled_back` | Current and last-good become the eligible restored release |
+
+Each correction has a new `result_id` and passes the same manifest, terminal
+health, schema, checkpoint, serving and rollback checks as an initial result.
+An ineligible correction candidate or a revoked/unsupported restored release
+returns 422 `MINIMUM_VERSION_VIOLATION`, leaving the versions and receipt count
+unchanged. Other evidence errors retain their existing error codes/statuses.
+A correction below the central generation high-water is accepted as history
+without changing the versions or central work. Central-job summary precedence
+is unchanged.
+
+Any other distinct second payload returns 409 `ACK_CONFLICT` with “Installer
+job already has different evidence”: the same outcome with changed evidence,
+failure after success, `already_current` in either correction position, or
+success after a failure that did not apply a D-111 seed. Reusing a result ID with
+a different payload also conflicts. After the correction, every third distinct
+payload conflicts, including seed → succeeded → rolled_back and succeeded →
+rolled_back → succeeded. Exact replays of either stored payload remain valid.
+The updater retains a bare `ACK_CONFLICT` as `OutboxConflict`; only the existing
+`STATE_CONFLICT` / `job_id_mismatch` case retires a delivery as `OutboxRejected`.
+
+Migration 00192 derives the UUID `result_id` from the immutable payload for the
+primary key, preserving the repository's UUID key invariant. A separate unique
+`(node_id, job_id, outcome_sequence)` constraint bounds the sequence to 1 or 2.
+Existing rows default to 1 without changing their payload or ACK. The first row stays
+immutable history: its original `accepted_as_history` and applied flags are
+never rewritten to describe the later correction. Sequence 2 carries its own
+payload, ACK and acceptance audit. Exact replay never reapplies a historical
+version. The database bound is two rows per node/job; D-110 continues to reject
+arbitrary additional job IDs. Fleet/node locks serialize concurrent delivery.
+Correction receipt time is at least one PostgreSQL microsecond after the first
+receipt, so the existing node summary selects it even across a clock step.
+
+Deploy 00192 before the new control binary; deploy the updated writer together
+with correction support. The Down migration restores the old unique key and
+removes the new column when no correction rows exist. Once corrections exist,
+Down fails atomically instead of deleting history; retain 00192 and use a forward
+fix. The round-trip test preserves a preexisting receipt across DownTo(191)/Up,
+then verifies acceptance, replay, conflicts, row bounds, immutability guards and
+refusal of a destructive downgrade after correction.
+
+Devstack hand-off: run two live cases on unchanged incarnations: install/failed
+pre-health seed → succeeded must move both fleet release columns from baseline
+to candidate, and a separate install/succeeded → rolled_back must move both
+back to the eligible restored release. Read node detail/summary and ETags, retain
+both history rows and their ACKs, and replay each original payload to prove no
+version regression or added audit. If one run sends seed → succeeded →
+rolled_back for the same derived job, D-127 requires that third distinct payload
+to remain `ACK_CONFLICT`; it is the cardinality negative control. Check revoked
+rollback rejection and a newer central generation as well. These central tests
+and cross-builds do not replace live amd64/arm64 journal and dataplane evidence.
 
 ## Counting example (§13.12)
 
