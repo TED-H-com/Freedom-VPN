@@ -27,6 +27,13 @@ def labelled(label):
 def first(label):
     rs = labelled(label)
     return rs[0] if rs else {}
+def member_up(row):
+    try:
+        links=json.loads(row.get('readback','').splitlines()[0])
+        return next(('UP' in link.get('flags',[]) for link in links if link.get('ifname')=='fvmb0'), None)
+    except (ValueError, IndexError, TypeError):
+        return None
+
 def tc(report):
     return report.get('tc_evidence') or {}
 def qos(report):
@@ -60,7 +67,7 @@ for r in clean:
 negative = labelled('dirty newer generation')
 dirty_reports = [r.get('observation', {}) for r in negative]
 dirty_tc = [b for b in dirty_reports if not b.get('member_forwarding_enabled') and tc(b).get('error_code') == 'TC_FOREIGN_FILTER' and int(tc(b).get('candidate_generation') or 0) > initial_gen]
-negative_preserved = bool(negative) and all('flower' in r.get('readback', '') and 'mirred' in r.get('readback', '') and 'serving 0' in r.get('readback', '') for r in negative)
+negative_preserved = bool(negative) and all('flower' in r.get('readback', '') and 'mirred' in r.get('readback', '') and 'serving 0' in r.get('readback', '') and member_up(r) is False for r in negative)
 removed = first('fresh removal read').get('readback', '')
 final = first('final recovered state')
 positive = first('final counted control').get('positive', {})
@@ -76,11 +83,11 @@ state_apply=(int(state_gen)>initial_gen and state.get('applied_generation')==sta
              and 'fvpn_generation='+state_gen in final.get('kernel_ruleset', '')
              and bool(state.get('member_path')))
 checks = [
- dict(number=1, name='retained rejected read and quarantine', passed=bool(initial.get('member_forwarding_enabled') and rejections and any('serving 0' in r.get('readback', '') for r in labelled('containment wait')))),
+ dict(number=1, name='retained rejected read and quarantine', passed=bool(initial.get('member_forwarding_enabled') and tc(initial).get('verified') and rejections and any('serving 0' in r.get('readback', '') and member_up(r) is False and 'quarantine_fvmb0' in r.get('kernel_ruleset','') for r in labelled('containment wait')))),
  dict(number=2, name='all injected foreign objects removed with fresh read', passed=removal.get('ok') is True and bool(removed) and 'clsact' not in removed and 'flower' not in removed and 'mirred' not in removed),
  dict(number=3, name='clean newer generation and matching lease reach Apply', passed=bool(state_apply and matching)),
  dict(number=4, name='fresh verified Apply and live tc_evidence with canonical digest and historical rejection', passed=bool(state_apply and live and history) and all(digest(tc(r['report'])) for r in clean)),
- dict(number=5, name='restored topology marker serving and counted packet control', passed=bool(matching and positive.get('counted') and int(positive.get('admission_bytes_after') or 0)>int(positive.get('admission_bytes_before') or 0) and 'serving 1' in final.get('readback', '') and 'quarantine_fvmb0' not in final.get('kernel_ruleset', 'missing')) and 'kernel_ruleset' in final),
+ dict(number=5, name='restored topology marker serving and counted packet control', passed=bool(matching and positive.get('counted') and int(positive.get('admission_bytes_after') or 0)>int(positive.get('admission_bytes_before') or 0) and 'serving 1' in final.get('readback', '') and 'quarantine_fvmb0' not in final.get('kernel_ruleset', 'missing')) and 'kernel_ruleset' in final and member_up(final) is True),
  dict(number=6, name='dirty newer generation remains non-serving and preserves foreign objects', passed=bool(dirty_tc and negative_preserved)),
 ]
 write('recovery-verdict.json', dict(run_id=trace.get('run_id'), passed=all(c['passed'] for c in checks), status='pass' if all(c['passed'] for c in checks) else 'blocked', assertions=checks, initial_generation=str(initial_gen), durable_apply_generation=state_gen, durable_apply_verified=state_apply, apply_evidence='read-only retained_applied + member_path + installed generation + matching signed lease; qos source=apply is superseded by mandatory fresh live read before reporting', rejected_report_ids=[r['report']['report_id'] for r in rejections], apply_report_ids=[r['report']['report_id'] for r in apply], live_report_ids=[r['report']['report_id'] for r in live], matching_report_ids=[r['report']['report_id'] for r in matching], historical_error_rows=history, injected_creator='isolation harness explicitly installed clsact/flower/mirred', unsolicited_creator='No creator inferred from object kinds; see every retained rejected row in tc-evidence-index.json.'))
