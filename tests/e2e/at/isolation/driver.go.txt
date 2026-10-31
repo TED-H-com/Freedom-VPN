@@ -112,6 +112,15 @@ func TestIsolationAssembled(t *testing.T) {
 		x.problem("w3-devstack-e2e", "admin login failed")
 		return
 	}
+	x.binary = filepath.Join(t.TempDir(), "isolation-probe")
+	cmd := exec.CommandContext(ctx, "go", "build", "-o", x.binary, filepath.Join(root, "tests/e2e/at/isolation/probe_main.go"), filepath.Join(root, "tests/e2e/at/isolation/observer_main.go"))
+	if out, e := cmd.CombinedOutput(); e != nil {
+		x.problem("acceptance", string(out))
+		return
+	}
+	if !x.install(lab.node) || !x.installObserver() {
+		return
+	}
 	if !x.prepare() {
 		return
 	}
@@ -124,12 +133,6 @@ func TestIsolationAssembled(t *testing.T) {
 	}
 	x.a, _ = lab.login(ctx, "iso-a", "member")
 	x.b, _ = lab.login(ctx, "iso-b", "member")
-	x.binary = filepath.Join(t.TempDir(), "isolation-probe")
-	cmd := exec.CommandContext(ctx, "go", "build", "-o", x.binary, filepath.Join(root, "tests/e2e/at/isolation/probe_main.go"))
-	if out, e := cmd.CombinedOutput(); e != nil {
-		x.problem("acceptance", string(out))
-		return
-	}
 	for _, c := range []string{x.a1.lab.member, x.a2.lab.member, x.b1.lab.member, lab.node, lab.prefix + "-origin"} {
 		if !x.install(c) {
 			return
@@ -146,6 +149,8 @@ func TestIsolationAssembled(t *testing.T) {
 	x.revoke()
 	x.restart()
 	x.deadline()
+	x.foreignRedirect()
+	x.freezeIdentity()
 }
 
 func (x *isolationRun) problem(owner, detail string) {
@@ -159,6 +164,7 @@ func (x *isolationRun) problem(owner, detail string) {
 func (x *isolationRun) finish() {
 	x.stopConvergence()
 	x.writeConvergence()
+	x.archiveReceiver()
 	x.noteEvaluator()
 	for _, id := range []string{"AT10", "AT11", "AT12", "AT13"} {
 		rec := x.records[id]
@@ -846,7 +852,24 @@ func (x *isolationRun) peers() {
 	if len(desired.Signed.DNS.Resolvers) > 0 {
 		resolver := desired.Signed.DNS.Resolvers[0]
 		route, _ := x.a1.lab.docker(x.a1.lab.member, "ip", "route", "get", resolver)
-		x.add("AT12", iso.Check{Name: "designated DNS exception", Status: iso.StatusBlocked, Positive: x.proof(x.a1), Actual: "resolver=" + resolver + "; route=" + strings.TrimSpace(string(route)) + "; no export places the designated resolver behind the exit, so the member route is still the Docker underlay", Owner: "w3-devstack-e2e: resolver on member underlay"})
+		c := iso.Check{Name: "designated DNS exception", Status: iso.StatusBlocked, Positive: x.proof(x.a1), Owner: "w3-devstack-e2e / node enforcement", Actual: "resolver=" + resolver + "; route=" + strings.TrimSpace(string(route))}
+		ok := strings.Contains(string(route), "dev fvnb0")
+		for _, tcp := range []bool{false, true} {
+			observed, err := (&Stack{lab: x.a1.lab}).ObserveDesignatedDNS(x.ctx, x.a1.usageDevice, tcp)
+			c.Observations = append(c.Observations, iso.Observation{Name: observed.Transport, Detail: mustJSON(observed)})
+			ok = ok && err == nil && observed.Reply == "rcode=0 answers=1" && observed.DNSUpload > 0 && observed.DNSDownload > 0 && observed.InternetUpload == 0 && observed.InternetDownload == 0
+			if err != nil {
+				c.Observations = append(c.Observations, iso.Observation{Name: "error", Detail: err.Error()})
+			}
+		}
+		if c.Positive.Valid() {
+			c.Status = iso.StatusFail
+			if ok {
+				c.Status = iso.StatusPass
+				c.Owner = ""
+			}
+		}
+		x.add("AT12", c)
 	}
 	x.spoofedSource()
 }
@@ -1185,6 +1208,11 @@ func (x *isolationRun) wholeNodeExpiry() {
 		c.Owner = "w2-agent-core"
 		return
 	}
+	if !x.sleep(time.Until(held.Expires.Add(-10 * time.Second))) {
+		return
+	}
+	stopCapture := x.startContinuousExpiry(held.Expires)
+	defer stopCapture()
 	if !x.sleep(time.Until(held.Expires.Add(-4 * time.Second))) {
 		return
 	}
@@ -1193,9 +1221,13 @@ func (x *isolationRun) wholeNodeExpiry() {
 	tick := x.agentTick()
 	c.Observations = append(c.Observations, iso.Observation{Name: "agent_tick", Detail: tick.String()})
 	var earlyBaseline, saw time.Time
+	var reads []map[string]any
 	for {
 		now := time.Now()
 		chain := x.r.lab.forwardChain()
+		readEnd := time.Now()
+		beat, _ := x.r.lab.docker(x.r.lab.node, "cat", "/run/vpn-node/heartbeat")
+		reads = append(reads, map[string]any{"read_start": now.UTC().Format(time.RFC3339Nano), "read_end": readEnd.UTC().Format(time.RFC3339Nano), "heartbeat_read_end": time.Now().UTC().Format(time.RFC3339Nano), "chain": chain, "heartbeat": strings.TrimSpace(string(beat))})
 		baselined := chain.Present && chain.Baseline && chain.Generation == 0 && chain.MemberAccept == 0 && chain.Policy == "drop"
 		if baselined && now.Before(held.Expires) && earlyBaseline.IsZero() {
 			earlyBaseline = now
@@ -1213,6 +1245,7 @@ func (x *isolationRun) wholeNodeExpiry() {
 	}
 	heartbeat, _ := x.r.lab.docker(x.r.lab.node, "cat", "/run/vpn-node/heartbeat")
 	c.Observations = append(c.Observations, iso.Observation{Name: "baseline_at", Detail: saw.UTC().Format(time.RFC3339Nano)}, iso.Observation{Name: "early_baseline_at", Detail: earlyBaseline.UTC().Format(time.RFC3339Nano)}, iso.Observation{Name: "heartbeat_after_deadline", Detail: strings.TrimSpace(string(heartbeat))})
+	x.extra("whole-node-bracketed-reads.json", map[string]any{"signed_deadline": held.Expires, "reads": reads})
 	frozen, ok1 := x.a1.admissionBytes()
 	dropRoute, dropResult, ingress, delivered := x.capturedConnect(x.a1, x.a1.lab.prefix+"-origin", x.a1.originIP(), 443, &c)
 	frozenAfter, ok2 := x.a1.admissionBytes()
@@ -1803,4 +1836,239 @@ func TestIsolationRecoverySampling(t *testing.T) {
 		t.Fatalf("recovery window: %+v", result)
 	}
 	t.Logf("recovery provisional samples=%d ready_to_populated_ms=%d admitted_at=%s", len(result.SampleTimes), result.ReadyToPopulatedMS, admittedAt)
+}
+
+// Follow-up 7 observers use the node/container kernel clock (the same host UTC
+// clock as the driver). No product observations or projection rows are written.
+func (x *isolationRun) extra(name string, value any) {
+	raw, err := json.MarshalIndent(value, "", "  ")
+	if err == nil {
+		err = iso.WriteExtra(x.dir, name, string(raw)+"\n")
+	}
+	if err != nil {
+		x.t.Error(err)
+	}
+}
+func (x *isolationRun) installObserver() bool {
+	out, err := x.r.lab.docker(x.r.lab.node, "sh", "-c", `cp /tmp/isolation-probe /usr/local/bin/isolation-observer
+mv /usr/local/bin/fvpn-e2e-nodeconfig /usr/local/bin/fvpn-e2e-nodeconfig-original
+cat > /usr/local/bin/fvpn-e2e-nodeconfig <<'WRAPPER'
+#!/bin/sh
+if [ "${1:-}" = resolver-proxy ]; then exec /usr/local/bin/isolation-observer observe-proxy; fi
+exec /usr/local/bin/fvpn-e2e-nodeconfig-original "$@"
+WRAPPER
+chmod 755 /usr/local/bin/fvpn-e2e-nodeconfig
+/usr/local/bin/isolation-observer configure-observation`)
+	if err != nil {
+		x.problem("acceptance", string(out))
+		return false
+	}
+	return true
+}
+func (x *isolationRun) archiveReceiver() {
+	if x.r == nil {
+		return
+	}
+	time.Sleep(150 * time.Millisecond)
+	// This stream exceeds the shared lab.docker 2 MiB diagnostic limit.
+	raw, err := exec.CommandContext(x.ctx, "docker", "exec", x.r.lab.node, "cat", "/var/lib/vpn-node/e2e/isolation-observations.jsonl").Output()
+	if err != nil {
+		x.extra("receiver-capture.json", map[string]any{"error": "capture unavailable"})
+		return
+	}
+	var rows []json.RawMessage
+	for _, line := range bytes.Split(raw, []byte("\n")) {
+		if len(line) > 0 && json.Valid(line) {
+			rows = append(rows, append(json.RawMessage(nil), line...))
+		}
+	}
+	x.extra("receiver-capture.json", map[string]any{"run_id": x.records["AT10"].RunID, "build": x.records["AT10"].Build, "drain_ms": 100, "heartbeat_seconds": 1, "poll_seconds": 1, "observation_seconds": 1, "scope": "Transparent loopback mTLS control receiver, every observation POST body and response plus renewal transactions; no headers. Installed before enrollment and retained across source restarts.", "transactions": rows})
+	conn, err := x.r.lab.db(x.ctx)
+	if err != nil {
+		return
+	}
+	defer conn.Close(x.ctx)
+	var history []byte
+	if conn.QueryRow(x.ctx, `SELECT jsonb_build_object('accepted_report_ids', (SELECT jsonb_agg(report_id) FROM node_observations WHERE node_id=$1), 'leases', (SELECT jsonb_agg(jsonb_build_object('id',id,'issued_at',issued_at,'envelope',envelope) ORDER BY issued_at) FROM serving_leases WHERE node_id=$1),'desired', (SELECT envelope FROM desired_state_envelopes WHERE node_id=$1))`, x.r.nodeID).Scan(&history) == nil {
+		x.extra("lease-history.json", json.RawMessage(history))
+	}
+}
+
+type isolationCapture struct {
+	cmd  *exec.Cmd
+	out  bytes.Buffer
+	name string
+}
+
+func (x *isolationRun) continuousCapture(container, iface, filter, name string, seconds int) *isolationCapture {
+	c := &isolationCapture{name: name}
+	c.cmd = exec.CommandContext(x.ctx, "docker", "exec", container, "timeout", "-s", "INT", strconv.Itoa(seconds), "tcpdump", "-n", "-tt", "--time-stamp-precision=nano", "-l", "-i", iface, filter)
+	c.cmd.Stdout = &c.out
+	c.cmd.Stderr = &c.out
+	if err := c.cmd.Start(); err != nil {
+		x.t.Logf("capture start: %v", err)
+	}
+	return c
+}
+func (x *isolationRun) finishCapture(c *isolationCapture) {
+	if c == nil {
+		return
+	}
+	_ = c.cmd.Wait()
+	_ = iso.WriteExtra(x.dir, c.name, c.out.String())
+}
+func (x *isolationRun) startContinuousExpiry(deadline time.Time) func() {
+	filter := "host " + x.a1.originIP() + " and tcp port 443"
+	caps := []*isolationCapture{x.continuousCapture(x.r.lab.node, "any", filter, "whole-node-node-capture.txt", 25), x.continuousCapture(x.r.lab.node, "fvup0", filter, "whole-node-uplink-capture.txt", 25)}
+	_ = exec.Command("docker", "exec", "-d", x.a1.lab.member, "/tmp/isolation-probe", "timed", x.a1.originIP(), "443", "22", "/tmp/isolation-expiry-timed.jsonl").Run()
+	stop, done := make(chan struct{}), make(chan struct{})
+	go func() {
+		defer close(done)
+		var rows []map[string]any
+		defer func() {
+			x.extra("whole-node-continuous-reads.json", map[string]any{"signed_deadline": deadline, "reads": rows})
+		}()
+		for {
+			select {
+			case <-stop:
+				return
+			case <-x.ctx.Done():
+				return
+			default:
+			}
+			start := time.Now()
+			raw, _ := x.r.lab.docker(x.r.lab.node, "sh", "-c", "nft list chain inet fvpn forward; cat /run/vpn-node/heartbeat")
+			rows = append(rows, map[string]any{"read_start": start.UTC().Format(time.RFC3339Nano), "read_end": time.Now().UTC().Format(time.RFC3339Nano), "readback": string(raw)})
+			time.Sleep(100 * time.Millisecond)
+		}
+	}()
+	return func() {
+		for _, c := range caps {
+			x.finishCapture(c)
+		}
+		close(stop)
+		<-done
+		raw, _ := x.r.lab.docker(x.a1.lab.member, "cat", "/tmp/isolation-expiry-timed.jsonl")
+		var rows []json.RawMessage
+		for _, line := range bytes.Split(raw, []byte("\n")) {
+			if json.Valid(line) {
+				rows = append(rows, append(json.RawMessage(nil), line...))
+			}
+		}
+		x.extra("whole-node-probes.json", map[string]any{"signed_deadline": deadline, "probes": rows, "clock": "shared host UTC; start/end brackets include connect duration; packet headers use Unix seconds"})
+	}
+}
+func (x *isolationRun) networkSnapshot(label string) map[string]any {
+	start := time.Now()
+	raw, _ := x.r.lab.docker(x.r.lab.node, "sh", "-c", `ip -j link show; ip -j addr show dev fvmb0; ip -j route show table all dev fvmb0; tc -j filter show dev fvmb0 ingress; cat /run/vpn-node/heartbeat`)
+	row := map[string]any{"label": label, "read_start": start.UTC().Format(time.RFC3339Nano), "read_end": time.Now().UTC().Format(time.RFC3339Nano), "readback": string(raw)}
+	conn, err := x.r.lab.db(x.ctx)
+	if err == nil {
+		defer conn.Close(x.ctx)
+		var body []byte
+		if conn.QueryRow(x.ctx, `SELECT report_payload FROM node_observations WHERE node_id=$1 ORDER BY received_at DESC LIMIT 1`, x.r.nodeID).Scan(&body) == nil {
+			row["observation"] = json.RawMessage(body)
+		}
+	}
+	return row
+}
+func (x *isolationRun) capacityGeneration(down int) string {
+	path := x.r.lab.public + "/api/v1/admin/nodes/" + x.r.nodeID.String()
+	get, e := x.admin.call(x.ctx, "GET", path, nil, nil)
+	if e != nil {
+		return "GET failed"
+	}
+	patch, e := x.admin.call(x.ctx, "PATCH", path, map[string]any{"capacity": map[string]any{"down_bps": down, "up_bps": 200000000, "member_down_bps_cap": 100000000, "member_up_bps_cap": 100000000}}, map[string]string{"If-Match": get.Header.Get("ETag"), "Idempotency-Key": uuid.NewString()})
+	return httpDetail(patch, e)
+}
+func (x *isolationRun) foreignRedirect() {
+	c := iso.Check{Name: "foreign ingress redirect containment and D-096 recovery", Positive: x.proof(x.a1), Status: iso.StatusBlocked, Owner: "w1-netlab follow-up 14 / w2-agent-core follow-up 23"}
+	defer func() { x.add("AT10", c) }()
+	if !c.Positive.Valid() {
+		c.Actual = "pre-injection counted control unavailable; no redirect injected"
+		return
+	}
+	var rows []map[string]any
+	rows = append(rows, x.networkSnapshot("before injection"))
+	_, _ = x.r.lab.docker(x.r.lab.node, "sh", "-c", "ip -4 address save dev fvmb0 > /tmp/isolation-member-addresses; ip -4 route save table all dev fvmb0 > /tmp/isolation-member-routes")
+	caps := []*isolationCapture{x.continuousCapture(x.a1.lab.member, "fvnb0", "udp port 9", "redirect-member-capture.txt", 30), x.continuousCapture(x.r.lab.node, "any", "udp port 9", "redirect-node-capture.txt", 30), x.continuousCapture(x.r.lab.node, "fvup0", "udp port 9", "redirect-uplink-capture.txt", 30)}
+	defer func() {
+		for _, cap := range caps {
+			x.finishCapture(cap)
+		}
+		x.extra("foreign-redirect.json", map[string]any{"run_id": x.records["AT10"].RunID, "rows": rows, "restoration_owner": "harness restores saved member addresses/routes after an explicit D-096 route-loss hold; NetBird remains running", "assisted": true})
+	}()
+	_ = exec.Command("docker", "exec", "-d", x.a1.lab.member, "/tmp/isolation-probe", "pulse", x.a1.originIP(), "28").Run()
+	time.Sleep(300 * time.Millisecond)
+	at := time.Now()
+	out, e := x.r.lab.docker(x.r.lab.node, "sh", "-c", "tc qdisc add dev fvmb0 clsact; tc filter add dev fvmb0 ingress protocol ip pref 49152 flower ip_proto udp dst_ip "+x.a1.originIP()+" dst_port 9 action mirred egress redirect dev fvup0")
+	rows = append(rows, map[string]any{"label": "inject clsact mirred", "start": at.UTC().Format(time.RFC3339Nano), "end": time.Now().UTC().Format(time.RFC3339Nano), "output": string(out), "ok": e == nil})
+	var contained bool
+	for i := 0; i < 20; i++ {
+		row := x.networkSnapshot("containment wait")
+		rows = append(rows, row)
+		raw, _ := json.Marshal(row)
+		if strings.Contains(string(raw), "TC_FOREIGN_FILTER") && strings.Contains(row["readback"].(string), "serving 0") {
+			contained = true
+			break
+		}
+		time.Sleep(500 * time.Millisecond)
+	}
+	time.Sleep(3 * time.Second)
+	rows = append(rows, x.networkSnapshot("quarantine steady"))
+	at = time.Now()
+	out, e = x.r.lab.docker(x.r.lab.node, "sh", "-c", "tc qdisc del dev fvmb0 clsact; ip -4 route flush dev fvmb0")
+	rows = append(rows, map[string]any{"label": "remove filter and hold missing member routes", "start": at.UTC().Format(time.RFC3339Nano), "end": time.Now().UTC().Format(time.RFC3339Nano), "output": string(out), "ok": e == nil, "clean_apply_request": x.capacityGeneration(207000000)})
+	for range 12 {
+		rows = append(rows, x.networkSnapshot("D-096 hold"))
+		time.Sleep(500 * time.Millisecond)
+	}
+	at = time.Now()
+	out, e = x.r.lab.docker(x.r.lab.node, "sh", "-c", "ip link set fvmb0 up; ip -4 address restore < /tmp/isolation-member-addresses; ip -4 route restore < /tmp/isolation-member-routes")
+	rows = append(rows, map[string]any{"label": "harness restores member path", "start": at.UTC().Format(time.RFC3339Nano), "end": time.Now().UTC().Format(time.RFC3339Nano), "output": string(out), "ok": e == nil})
+	recovered := false
+	for range 30 {
+		row := x.networkSnapshot("recovery wait")
+		rows = append(rows, row)
+		if strings.Contains(row["readback"].(string), "serving 1") {
+			recovered = true
+			break
+		}
+		time.Sleep(500 * time.Millisecond)
+	}
+	after := x.proof(x.a1)
+	c.Observations = append(c.Observations, iso.Observation{Name: "recovered_counted_control", Detail: mustJSON(after)})
+	c.Actual = fmt.Sprintf("TC_FOREIGN_FILTER withdrawal=%t; restored serving=%t counted=%t; explicit harness route-loss hold/restoration: assisted run, never an unattended clean pass; see foreign-redirect.json and continuous captures", contained, recovered, after.Valid())
+	// Detailed capture review supplies the deciding outcome; never infer a pass
+	// from heartbeat withdrawal without checking uplink and target packets.
+}
+func (x *isolationRun) freezeIdentity() {
+	at := time.Now()
+	fixture, err := x.stack.StartClonedIdentityFixture(x.ctx, "node")
+	evidence := map[string]any{"started_at": at.UTC().Format(time.RFC3339Nano), "owner": "ENR-02 / ENR-03; this is the consumer latch observation only"}
+	defer func() { x.extra("identity-freeze.json", evidence) }()
+	if err != nil {
+		evidence["status"] = "blocked"
+		evidence["detail"] = err.Error()
+		return
+	}
+	var rows []map[string]any
+	for range 90 {
+		obs, e := fixture.Observe(x.ctx)
+		row := x.networkSnapshot("clone acceptance window")
+		row["clone_observation"] = obs
+		if e != nil {
+			row["clone_read_error"] = e.Error()
+		}
+		rows = append(rows, row)
+		if obs.MappingFrozen && strings.Contains(row["readback"].(string), "identity_frozen") {
+			time.Sleep(3 * time.Second)
+			rows = append(rows, x.networkSnapshot("freeze latch held"))
+			break
+		}
+		time.Sleep(time.Second)
+	}
+	evidence["rows"] = rows
+	evidence["status"] = "requires receiver correlation"
+	evidence["fixture"] = "same enrolled incarnation presented from a second lab network; not a newly enrolled identity"
 }
