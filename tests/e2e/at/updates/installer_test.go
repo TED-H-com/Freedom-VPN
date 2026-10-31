@@ -240,7 +240,10 @@ func (s *updatesFollowup) installerHandoff(stack *e2e.Stack, baseline e2e.Servin
 	// Real absent-checkpoint negative before central has a release baseline.
 	h.run("stop_for_checkpoint_negative", "systemctl", "stop", "fvpn-watchdog.service", "fvpn-agent.service")
 	stageFailure := h.upgrade("stage_checkpoint_negative", 1)
-	pendingBytes := h.run("failure_pending", "cat", installerPending).Stdout
+	h.run("failure_pending", "cat", installerPending)
+	if h.run("preserve_failure_pending", "cp", installerPending, "/var/tmp/e2e-rel/failure-pending.json").Exit != 0 {
+		return
+	}
 	before := h.current()
 	h.note("current_before_failure", before)
 	h.run("checkpoint_before_negative", "cat", "/var/lib/vpn-node/state/meter.checkpoint")
@@ -252,7 +255,7 @@ func (s *updatesFollowup) installerHandoff(stack *e2e.Stack, baseline e2e.Servin
 	h.check("checkpoint_failure", stageFailure.Exit == 0 && failed.Exit == 1 && strings.Contains(failed.Stderr, "CHECKPOINT_FAILED") && h.current() == before && failedStatus.text("state") == "failed" && failedStatus.text("stage") == "final_sample" && string(failure["usage_checkpoint"]) == "null" && string(failure["member_forwarding_enabled"]) == "false")
 	// Restore the exact original pending bytes to its original path for sealed
 	// replay. No changed path/request UUID can masquerade as this replay.
-	if !must(h.put(installerPending, []byte(pendingBytes))) {
+	if h.run("restore_exact_failure_pending", "cp", "/var/tmp/e2e-rel/failure-pending.json", installerPending).Exit != 0 {
 		return
 	}
 	replayFailure := h.run("sealed_failure_apply", installedUpdater, "apply", "--config", installerConfig, "--pending", installerPending)
