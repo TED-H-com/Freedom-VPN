@@ -321,18 +321,27 @@ func (p *probe) installerHooks(t *testing.T) {
 	must(p.stack.RestoreInstallerServices(p.ctx, "installer-node", states) == nil)
 	must(p.installerPublish(node)) // revoke disables publication; restore through the public API
 	freshRules, ok := p.installerServingReadback(node, restoredAt)
+	detail["fresh_current_serving"] = freshRules
 	must(ok)
 	must(p.selectInstallerExit(node))
 	freshTraffic, ok := p.installerTraffic(selected)
+	detail["fresh_current_traffic"] = freshTraffic
 	must(ok)
 	var firstSeq, firstCounted string
-	must(p.waitInstaller(90*time.Second, func() bool {
+	uploaded := p.waitInstaller(90*time.Second, func() bool {
 		firstOK := p.freezeSQL(fmt.Sprintf("SELECT to_json(COALESCE(min(event_seq),0)::text) FROM usage_events WHERE node_id='%s' AND incarnation_id='%s'", node, current), &firstSeq)
 		countedOK := p.freezeSQL(fmt.Sprintf("SELECT to_json(COALESCE(min(e.event_seq),0)::text) FROM usage_events e JOIN usage_samples s ON s.event_id=e.id WHERE e.node_id='%s' AND e.incarnation_id='%s' AND s.upload_bytes>0 AND s.download_bytes>0", node, current), &firstCounted)
-		ack, aOK := new(big.Int).SetString(p.streamACK(node, current), 10)
+		ackText := p.streamACK(node, current)
+		ack, aOK := new(big.Int).SetString(ackText, 10)
+		snap, snapshotErr := p.stack.UsageLedgerSnapshot(p.ctx, "installer-node")
+		detail["fresh_upload_poll"] = map[string]any{"first_seq": firstSeq, "first_counted_seq": firstCounted, "ack": ackText, "event_read_ok": firstOK, "sample_read_ok": countedOK, "snapshot_read_ok": snapshotErr == nil, "snapshot": snap}
 		seq, sOK := new(big.Int).SetString(firstCounted, 10)
 		return firstOK && countedOK && firstSeq == "1" && firstCounted != "0" && aOK && sOK && ack.Cmp(seq) >= 0
-	}))
+	})
+	if !uploaded {
+		detail["fresh_upload_diagnostics"] = p.currentUploadDiagnostics(t, node, current)
+	}
+	must(uploaded)
 	p.expect("AT07", "controlled_reinstall", true, map[string]any{"owner": "installer", "outcome": installerOutcomeView(reinstalled, nil), "serving": freshRules, "traffic": freshTraffic, "new_stream_first_sequence": firstSeq, "new_stream_first_counted_sequence": firstCounted, "origin_ack_before_current_traffic": oldACK, "devstack_rows": devstack18 + " installer-reenroll / installer-serving-readback"})
 }
 
@@ -479,6 +488,47 @@ func (p *probe) installerServingReadback(node uuid.UUID, since time.Time) (map[s
 		return e == nil && installerRuleShape(string(raw)) && active && serving && wall.After(since) && time.Since(wall) < 15*time.Second && centralOK && central.Forwarding && central.Received.After(since)
 	})
 	return d, ok
+}
+
+func (p *probe) currentUploadDiagnostics(t *testing.T, node, current uuid.UUID) map[string]any {
+	d := map[string]any{"quiescent": p.stopInstaller()}
+	db := p.installerLedgerCopy(t)
+	rows, err := db.Query("SELECT idempotency_key,body FROM upload_batches ORDER BY created_at")
+	if err != nil {
+		return d
+	}
+	defer rows.Close()
+	var batches []map[string]any
+	for rows.Next() {
+		var key string
+		var body []byte
+		if rows.Scan(&key, &body) != nil {
+			break
+		}
+		var req api.UsageBatchRequest
+		if json.Unmarshal(body, &req) != nil {
+			break
+		}
+		if req.OriginIncarnationId != nil {
+			continue
+		}
+		b := map[string]any{"idempotency_key": key, "request": req}
+		var encoded string
+		query := fmt.Sprintf("SELECT to_json(encode(b.response_body,'hex')) FROM usage_batch_replays b JOIN idempotency_requests i ON i.id=b.id WHERE i.key_hash=decode('%s','hex')", hash([]byte(key)))
+		b["central_response_present"] = p.freezeSQL(query, &encoded)
+		raw, e := hex.DecodeString(encoded)
+		if e == nil && json.Valid(raw) {
+			b["central_response"] = json.RawMessage(raw)
+		}
+		batches = append(batches, b)
+	}
+	d["current_batches"] = batches
+	var obs json.RawMessage
+	d["observation_read_ok"] = p.freezeSQL(fmt.Sprintf("SELECT jsonb_build_object('received_at',received_at,'report',report_payload) FROM node_observations WHERE node_id='%s' AND incarnation_id='%s' ORDER BY received_at DESC LIMIT 1", node, current), &obs)
+	if json.Valid(obs) {
+		d["observation"] = obs
+	}
+	return d
 }
 
 // Replay the exact production batch under its saved key and current mTLS
