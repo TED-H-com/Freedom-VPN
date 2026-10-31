@@ -38,11 +38,13 @@ var (
 	rel2    installer.ReleaseFixture
 )
 
-func TestMain(m *testing.M) {
+func TestMain(m *testing.M) { os.Exit(runSuite(m)) }
+
+func runSuite(m *testing.M) int {
 	wd, err := os.Getwd()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
+		return 1
 	}
 	rootDir = wd
 	for {
@@ -52,39 +54,42 @@ func TestMain(m *testing.M) {
 		parent := filepath.Dir(rootDir)
 		if parent == rootDir {
 			fmt.Fprintln(os.Stderr, "go.mod not found")
-			os.Exit(1)
+			return 1
 		}
 		rootDir = parent
 	}
 	binDir, err = os.MkdirTemp("", "fvpn-w5-installer-bin-")
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
+		return 1
 	}
+	defer os.RemoveAll(binDir)
+	defer cleanupDocker()
 	if err := buildBins(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
+		return 1
 	}
 	rel1, err = buildRel(binDir, "019a0000-0000-7000-8000-0000000000c1", "1")
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
+		return 1
 	}
 	rel2, err = buildRel(binDir, "019a0000-0000-7000-8000-0000000000c2", "2")
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
+		return 1
+	}
+	if err := trustBothReleases(); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		return 1
 	}
 	cmd := exec.Command("docker", "build", "-t", imageRef, "-f", filepath.Join(rootDir, "tests/installer/Dockerfile"), filepath.Join(rootDir, "tests/installer"))
 	cmd.Stdout, cmd.Stderr = os.Stdout, os.Stderr
 	if err := cmd.Run(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
+		return 1
 	}
-	code := m.Run()
-	cleanupDocker()
-	_ = os.RemoveAll(binDir)
-	os.Exit(code)
+	return m.Run()
 }
 
 func buildBins() error {
@@ -125,11 +130,43 @@ func buildRel(dir, id, seq string) (installer.ReleaseFixture, error) {
 	return installer.BuildReleaseFixture(out, filepath.Join(rootDir, "deploy/node/systemd"), id, seq, bins)
 }
 
+// TEST ONLY: both independently generated signing keys are provisioned before
+// install. The production updater must not trust a key merely because an
+// upgrade command supplied it.
+func trustBothReleases() error {
+	var combined struct {
+		Keys []json.RawMessage `json:"keys"`
+	}
+	for _, rel := range []installer.ReleaseFixture{rel1, rel2} {
+		raw, err := os.ReadFile(rel.Trust)
+		if err != nil {
+			return err
+		}
+		var one struct {
+			Keys []json.RawMessage `json:"keys"`
+		}
+		if err := json.Unmarshal(raw, &one); err != nil {
+			return err
+		}
+		combined.Keys = append(combined.Keys, one.Keys...)
+	}
+	raw, err := json.Marshal(combined)
+	if err != nil {
+		return err
+	}
+	for _, rel := range []installer.ReleaseFixture{rel1, rel2} {
+		if err := os.WriteFile(rel.Trust, raw, 0o644); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func cleanupDocker() {
 	out, _ := exec.Command("docker", "ps", "-aq", "--filter", "name=fvpn-w5-installer-").Output()
 	ids := strings.Fields(string(out))
 	if len(ids) > 0 {
-		args := append([]string{"rm", "-f"}, ids...)
+		args := append([]string{"rm", "-fv"}, ids...)
 		_ = exec.Command("docker", args...).Run()
 	}
 	out, _ = exec.Command("docker", "images", "--format", "{{.Repository}}:{{.Tag}}").Output()
@@ -194,13 +231,13 @@ func waitSystemd(t *testing.T, name string, d time.Duration) bool {
 
 func startSystemd(t *testing.T, name string) {
 	t.Helper()
-	t.Cleanup(func() { _ = exec.Command("docker", "rm", "-f", name).Run() })
+	t.Cleanup(func() { _ = exec.Command("docker", "rm", "-fv", name).Run() })
 	var last string
 	// A privileged systemd PID 1 occasionally exits in the first instant
 	// when the host cgroup is busy. Retry that start; do not treat it as
 	// an installer failure.
 	for attempt := 1; attempt <= 3; attempt++ {
-		_ = exec.Command("docker", "rm", "-f", name).Run()
+		_ = exec.Command("docker", "rm", "-fv", name).Run()
 		out, code := runCmd(t, time.Minute, "docker", "run", "-d", "--name", name,
 			"--privileged", "--cgroupns=host",
 			"-v", "/sys/fs/cgroup:/sys/fs/cgroup:rw",
@@ -229,12 +266,12 @@ func startSystemd(t *testing.T, name string) {
 
 func startSleep(t *testing.T, name string) {
 	t.Helper()
-	_ = exec.Command("docker", "rm", "-f", name).Run()
+	_ = exec.Command("docker", "rm", "-fv", name).Run()
 	out, code := runCmd(t, time.Minute, "docker", "run", "-d", "--name", name, "--entrypoint", "sleep", imageRef, "infinity")
 	if code != 0 {
 		t.Fatalf("sleep container: %s", out)
 	}
-	t.Cleanup(func() { _ = exec.Command("docker", "rm", "-f", name).Run() })
+	t.Cleanup(func() { _ = exec.Command("docker", "rm", "-fv", name).Run() })
 }
 
 func copyIn(t *testing.T, c, src, dest string) {
@@ -467,6 +504,15 @@ func TestInstallLifecycle(t *testing.T) {
 	if check.ReleaseID != rel1.ReleaseID || check.ManifestSHA256 == "" {
 		t.Fatalf("release in check %+v", check)
 	}
+	assertBaseline(t, check.Baseline, out)
+	updaterConfig := mustExec(t, name, "cat", "/etc/vpn-node/updater.json")
+	if strings.Contains(updaterConfig, `"boot_id"`) {
+		t.Fatal("generated config should omit boot_id")
+	}
+	noWork := mustExec(t, name, "/opt/vpn-node/current/fvpn-updater", "run", "--config", "/etc/vpn-node/updater.json")
+	if !strings.Contains(noWork, "desired-state file is absent") {
+		t.Fatalf("fresh run: %s", noWork)
+	}
 	res, out, code = doInstall(t, name, relIn("1", rel1.ReleaseID), url, ca, bundle, "")
 	if code != 0 || res.Status != "already_current" {
 		t.Fatalf("re-run %d %+v\n%s", code, res, out)
@@ -498,23 +544,7 @@ func TestInstallLifecycle(t *testing.T) {
 	if mode != "700" {
 		t.Fatalf("identity mode %s", mode)
 	}
-	cur := strings.TrimSpace(mustExec(t, name, "readlink", "/opt/vpn-node/current"))
-	upOut, upCode := dexec(t, name, "/usr/local/bin/fvpn-node-install", "upgrade", "--json",
-		"--manifest", relIn("2", rel2.ReleaseID).Manifest,
-		"--artifact", relIn("2", rel2.ReleaseID).Artifact,
-		"--trust", relIn("2", rel2.ReleaseID).Trust)
-	if !strings.Contains(upOut, `"status": "staged"`) {
-		t.Fatalf("upgrade %d\n%s", upCode, upOut)
-	}
-	if got := strings.TrimSpace(mustExec(t, name, "readlink", "/opt/vpn-node/current")); got != cur {
-		t.Fatalf("upgrade moved current %s -> %s", cur, got)
-	}
-	if _, code := dexec(t, name, "test", "-f", "/var/lib/vpn-node/update-staging/pending-release.json"); code != 0 {
-		t.Fatal("pending release was not written")
-	}
-	if _, code := dexec(t, name, "test", "-x", "/opt/vpn-node/releases/"+rel2.ReleaseID+"/fvpn-agent"); code != 0 {
-		t.Fatal("upgrade did not stage the release tree")
-	}
+	testPendingHandoff(t, name, check.Baseline)
 	res, out, code = doInstall(t, name, relIn("2", rel2.ReleaseID), url, ca, bundle, "")
 	if code != 0 || res.ReleaseID != rel2.ReleaseID {
 		t.Fatalf("newer install %d %+v\n%s", code, res, out)
@@ -531,6 +561,11 @@ func TestInstallLifecycle(t *testing.T) {
 	if reenrollCode != 0 || !strings.Contains(reenrollOut, `"status": "reenrolled"`) {
 		t.Fatalf("reenroll %d\n%s", reenrollCode, reenrollOut)
 	}
+	var reenrolled installer.Result
+	if err := decodeJSON(reenrollOut, &reenrolled); err != nil {
+		t.Fatal(err)
+	}
+	assertBaseline(t, reenrolled.Baseline, reenrollOut)
 	inc2 := incarnation(t, name)
 	if inc2 == inc1 || sha(t, name, "/var/lib/vpn-node/identity/key.pem") == key1 {
 		t.Fatal("reenroll did not replace the identity")
@@ -663,7 +698,7 @@ type bootID struct{ key, inc, machine string }
 
 func bootClone(t *testing.T, name string) bootID {
 	t.Helper()
-	_ = exec.Command("docker", "rm", "-f", name).Run()
+	_ = exec.Command("docker", "rm", "-fv", name).Run()
 	out, code := runCmd(t, time.Minute, "docker", "run", "-d", "--name", name,
 		"--privileged", "--cgroupns=host",
 		"-v", "/sys/fs/cgroup:/sys/fs/cgroup:rw",
@@ -671,9 +706,9 @@ func bootClone(t *testing.T, name string) bootID {
 	if code != 0 {
 		t.Fatalf("clone %s: %s", name, out)
 	}
-	t.Cleanup(func() { _ = exec.Command("docker", "rm", "-f", name).Run() })
+	t.Cleanup(func() { _ = exec.Command("docker", "rm", "-fv", name).Run() })
 	if !waitSystemd(t, name, 45*time.Second) {
-		_ = exec.Command("docker", "rm", "-f", name).Run()
+		_ = exec.Command("docker", "rm", "-fv", name).Run()
 		out, code = runCmd(t, time.Minute, "docker", "run", "-d", "--name", name,
 			"--privileged", "--cgroupns=host",
 			"-v", "/sys/fs/cgroup:/sys/fs/cgroup:rw",

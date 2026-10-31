@@ -18,7 +18,7 @@ func Remove(ctx context.Context, env *Env, purge bool) (*Result, error) {
 		return nil, err
 	}
 	l := env.layout()
-	lk, err := tryLock(l.LockPath)
+	lk, err := tryLock(ctx, l)
 	if err != nil {
 		if errors.Is(err, errBusy) {
 			return nil, errf(ExitBusy, "busy", "update lock is held")
