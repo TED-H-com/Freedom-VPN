@@ -1,0 +1,7 @@
+time=2026-10-31T09:23:21.790Z level=INFO msg="meter epoch opened" epoch_id=01a19145-523d-744e-9ca5-c526ded6bdfa reason=baseline boot_id=97c018d7-a925-4723-9127-83c097de1c8a event_seq=0
+time=2026-10-31T09:23:21.795Z level=INFO msg="usage checkpoint applied"
+time=2026-10-31T09:23:21.836Z level=INFO msg="bootstrap stored"
+{"event":"apply","generation":"1","start":{"wall_ns":"1793438601851207461","mono_ns":"22139367578129"},"end":{"wall_ns":"1793438601924189323","mono_ns":"22139440560191"},"verified":true,"deadline":{"granularity_ns":"1000000","install_bound_ns":"100000000","apply_start_ns":"22139367579331","render_start_ns":"22139380414736","installed_by_ns":"22139396448860","guard_released":true},"batches":[{"kind":"guard_install","start":{"wall_ns":"1793438601864158416","mono_ns":"22139380529498"},"end":{"wall_ns":"1793438601880072367","mono_ns":"22139396443120"},"ok":true},{"kind":"guard_release","start":{"wall_ns":"1793438601880079703","mono_ns":"22139396450828"},"end":{"wall_ns":"1793438601902078629","mono_ns":"22139418449071"},"ok":true}]}
+time=2026-10-31T09:23:21.964Z level=INFO msg="usage status available"
+time=2026-10-31T09:23:21.964Z level=WARN msg="updater journal snapshot" reason=missing
+time=2026-10-31T09:23:22.227Z level=INFO msg="meter epoch closed" epoch_id=01a19145-523d-744e-9ca5-c526ded6bdfa reason=final_sample event_seq=1
