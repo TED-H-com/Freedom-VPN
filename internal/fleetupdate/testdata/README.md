@@ -15,6 +15,22 @@ times and manifest references with a real isolated job and recompute the hash.
 The node side retains failed candidate checks in its journal. These fixtures do
 not require the proposed candidate_health field.
 
+## Owned harness captures (D-132, 2026-10-31)
+
+`d062-harness-result-delivery.json` and
+`d062-harness-rollback-delivery-finding.json` are byte-identical copies of the
+redacted follow-up 9 harness archives. Each consuming test records its archive
+path and SHA-256 digest. They are historical TEST ONLY records, not current live
+acceptance claims or complete UpdateResult contract bodies. The tests preserve
+state, stage, error and health while binding identities, hashes and times to
+real authorized jobs in isolated databases. Rollback still rejects candidate
+health and requires the recorded restored-release health before acceptance.
+The tests read only these owned copies, so future AT evidence moves cannot
+change their inputs. `TestD132_EvidenceReferencesUseImmutableHistory` rejects
+references to mutable AT evidence anywhere in this package tree.
+
+## Direct rollback capture
+
 `at26-direct-rollback.json` is the unchanged result captured from the acceptance
 harness run at source `5cb36d0`. It is test data, contains no secrets or host paths,
 and includes both health profiles: the candidate tunnel probe failed and all
