@@ -154,6 +154,22 @@ For DNS set `FVPN_E2E_TWO_RESOLVERS=true` during up and
 `FVPN_E2E_FIXTURES16=1 FVPN_E2E_FOLLOWUP19=1` during its focused runner.
 The final gate order and real exits are recorded in the worktree hand-off.
 
+## Verification and outstanding items
+
+The [gate ledger](gates.md) retains every real exit. Final E2E lint, untagged
+and tagged E2E tests, committed-evidence hygiene, handover tests, root go-lint,
+linux/amd64 and linux/arm64 builds, and diff checks all pass. Real execution
+here is amd64; arm64 hardware acceptance is not claimed. Final owned Docker
+inventory is zero. All 138 archived files verify byte-identically, and the
+follow-up 16/17/18 roots are unchanged. The [origin retention detail](usage-retention.md)
+pins all eight canonical events and both origin ACKs across D-118 adoption.
+
+Two orchestrator items remain: D-087 needs the central lease dependency seam
+outside this lane before an honest assembled fixed-generation grant hook can
+be exported; D-124 needs the actual stale fixture path because the named file
+has no Decide call on this base. F8-02 remains an observed intermittent loss
+with a narrowed packet boundary, not a proven kernel cause or product fix.
+
 ## Live scenario table
 
 Each link retains raw observations and the exact source commit. Passes are
