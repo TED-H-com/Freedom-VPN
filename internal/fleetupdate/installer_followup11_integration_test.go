@@ -333,3 +333,34 @@ func TestD110_InstallerOlderSuccessAndSeedCannotMoveObservation(t *testing.T) {
 		})
 	}
 }
+
+func TestD110_InstallerLegacyReceiptStillReplays(t *testing.T) {
+	l := newLabState(t)
+	i := l.node("amd64", "disabled", "registered", false)
+	r := installerResult(t, l, i)
+	r.JobId = uuid.New() // TEST ONLY historical pre-D-110 receipt identity.
+	raw := payload(t, r)
+	if err := json.Unmarshal(raw, &r); err != nil {
+		t.Fatal(err)
+	}
+	ack := api.UpdateResultAck{ResultId: r.ResultId, Accepted: true, ReceivedAt: time.Now().UTC().Truncate(time.Microsecond)}
+	if _, err := l.s.pool.Exec(l.ctx, `INSERT INTO installer_update_results(node_id,job_id,incarnation_id,release_id,state,payload,payload_hash,ack,received_at) VALUES($1,$2,$3,$4,$5,$6,decode($7,'hex'),$8,$9)`, i.NodeID, r.JobId, i.IncarnationID, r.RequestedReleaseId, r.State, raw, r.PayloadHash, mustJSON(t, ack), ack.ReceivedAt); err != nil {
+		t.Fatal(err)
+	}
+	l.support([]uuid.UUID{l.old}, []uuid.UUID{l.old}, []uuid.UUID{l.new})
+	detail, _, err := nodes.NewService(l.s.pool).GetNode(l.ctx, i.NodeID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	got, err := l.s.SubmitResult(l.ctx, i, raw)
+	if err != nil || !reflect.DeepEqual(got, ack) {
+		t.Fatal("legacy replay revalidated job identity or eligibility", got, err)
+	}
+	r.ResultId = uuid.New()
+	got, err = l.s.SubmitResult(l.ctx, i, payload(t, r))
+	installerError(t, got, err, apierr.AckConflict, 409)
+	after, _, err := nodes.NewService(l.s.pool).GetNode(l.ctx, i.NodeID)
+	if err != nil || after.ResourceVersion != detail.ResourceVersion {
+		t.Fatal("legacy replay changed ETag", err)
+	}
+}

@@ -50,7 +50,8 @@ central never receives the pending-record bytes or their hash.
 
 `TestD110_MainUpdaterClaimNamespaceCompatibility` invokes main's actual
 `ApplyPending`, reads its durable result, and reproduces the legacy ID. The test
-also demonstrates that this legacy ID differs from D-110's manifest-based ID.
+also demonstrates that this legacy ID differs from D-110's manifest-based ID,
+and accepts the coordinated follow-up 15 switch to the new ID.
 `TestD110_StableManifestIdentity` pins the D-110 formula and input binding.
 
 The updater lane must switch to `installerjob.ID` in follow-up 15 before new
@@ -59,8 +60,7 @@ record hashing for staging integrity, but must not use staging paths, random
 request IDs, or pending-record hashes to create new central receipt identities.
 Retries must retain the original sealed result bytes. A previously accepted
 legacy receipt can still replay; a legacy receipt not yet accepted will receive
-`job_id_mismatch`. Coordinate that transition and the compatibility test with
-this lane; do not claim unchanged live compatibility with main's old updater.
+`job_id_mismatch`. Coordinate that transition with this lane; do not claim unchanged live compatibility with main's old updater.
 
 ## D-111: an eligible seed can establish a missing baseline
 
@@ -90,8 +90,9 @@ null and is not evidence that health checks passed.
 ## Regression and acceptance checks
 
 - Adopted r16 self-promotion, rollback and cardinality proofs. The rollback proof
-  retains its version assertions but uses a distinct eligible candidate for the
-  second attempt, because D-110 forbids a second random job ID for the first one.
+  retains its version assertions and the recorded candidate, but re-enrolls
+  before the independent rollback receipt: D-110 forbids a second random job
+  ID for the same incarnation and release.
   The redirect/byte-verification proof is under `node/updater`, owned by that lane.
 - D-111 tests exercise failed pre-health, rolled-back and succeeded results for
   amd64/arm64 identities, ineligible baselines and candidate promotion rejection,

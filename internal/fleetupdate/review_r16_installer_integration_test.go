@@ -5,7 +5,6 @@ package fleetupdate
 import (
 	"testing"
 
-	"github.com/TED-H-com/Freedom-VPN/internal/releases/releasetest"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"github.com/google/uuid"
@@ -21,15 +20,13 @@ func TestReviewR16_InstallerRollbackMovesRecordedVersion(t *testing.T) {
 	installerVersions(t, l, i, l.new, l.new)
 
 	// D-110 permits one immutable receipt per incarnation and release. Keep
-	// the successful install above, then fail a distinct eligible candidate;
-	// the rollback must still replace both recorded pointers with l.old.
-	l.f.Manifest.ReleaseId = uuid.New()
-	l.f.Manifest.ProductVersion = "1.3.0-test"
-	if _, err := l.s.releases.Register(l.ctx, releasetest.Command(), l.f.Request(t, l.f.Manifest)); err != nil {
+	// the successful install above and its recorded candidate, then re-enroll
+	// before the independent rollback receipt. All rollback assertions below
+	// remain unchanged; a second random job ID is no longer a valid fixture.
+	if _, err := l.s.pool.Exec(l.ctx, `UPDATE node_incarnations SET revoked_at=clock_timestamp() WHERE id=$1`, i.IncarnationID); err != nil {
 		t.Fatal(err)
 	}
-	l.new = l.f.Manifest.ReleaseId
-	l.support([]uuid.UUID{l.old, ok.RequestedReleaseId, l.new}, []uuid.UUID{l.old, ok.RequestedReleaseId, l.new}, []uuid.UUID{})
+	i = l.enroll(i, "amd64")
 	rb := installerResult(t, l, i)
 	rb.ResultId = uuid.New()
 	rb.State = api.UpdateResultStateRolledBack

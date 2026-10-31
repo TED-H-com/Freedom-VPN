@@ -73,12 +73,18 @@ func TestD110_MainUpdaterClaimNamespaceCompatibility(t *testing.T) {
 	sum := sha256.Sum256(canonical)
 	pendingDigest := hex.EncodeToString(sum[:])
 	legacy := uuid.NewSHA1(claimNamespace(release, digest), []byte(pendingDigest+"|"+e.Node.Incarnation.String()))
-	if minted.JobId != legacy {
-		t.Fatalf("main updater job = %s; reproduced legacy derivation = %s", minted.JobId, legacy)
-	}
-	// Main hashes the whole pending record; central only receives the manifest
-	// digest. Follow-up 15 must switch that final input to ID before live use.
-	if minted.JobId == ID(release, digest, e.Node.Incarnation) {
+	desired := ID(release, digest, e.Node.Incarnation)
+	if legacy == desired {
 		t.Fatal("legacy pending-record identity unexpectedly matches D-110")
+	}
+	// Main currently mints legacy; the same interop test must also accept the
+	// coordinated follow-up 15 switch to the shared D-110 helper.
+	switch minted.JobId {
+	case legacy:
+		t.Log("reproduced main updater's legacy pending-record identity; follow-up 15 must switch to D-110")
+	case desired:
+		t.Log("updater uses the shared D-110 manifest identity")
+	default:
+		t.Fatalf("updater job = %s; want legacy %s or coordinated D-110 %s", minted.JobId, legacy, desired)
 	}
 }
