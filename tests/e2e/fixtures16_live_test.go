@@ -46,7 +46,8 @@ func TestE2E_Followup16Fixtures(t *testing.T) {
 	}
 	b := BrowserSession{Client: admin.http, CSRF: admin.csrf}
 	if err = s.PrepareNativeUnderlay(ctx); err != nil {
-		t.Fatal(err)
+		r.record(Record{ID: "fixture-setup", Title: "Pre-enrollment underlay setup", Spec: []string{"AT11"}, Status: StatusFail, Observations: []Observation{{Name: "error", Detail: err.Error()}}})
+		return
 	}
 	if err = s.InstallFixtureProbe(ctx); err != nil {
 		t.Fatal(err)

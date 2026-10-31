@@ -8,12 +8,18 @@ import (
 	"fmt"
 	"os/exec"
 	"strings"
+	"time"
 )
 
 // PrepareNativeUnderlay attaches a dedicated IPv6-only bridge to the real node
 // namespace and member. No host routes, DNS or nftables are edited. The bridge
 // has no masquerading and no public endpoint; e2e-down owns it via node-*.
 func (s *Stack) PrepareNativeUnderlay(ctx context.Context) error {
+	wait, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+	if !waitUntil(wait, time.Second, func() bool { return s.lab.stage(s.lab.node, "/var/lib/vpn-node/e2e/status.json") == "waiting_token" }) {
+		return fmt.Errorf("underlay requires a running fresh node waiting for enrollment")
+	}
 	network := s.lab.prefix + "-node-underlay"
 	if exec.CommandContext(ctx, "docker", "network", "inspect", network).Run() == nil {
 		return fmt.Errorf("underlay requires a fresh fixture")
