@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"context"
 	"crypto/sha256"
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -13,6 +14,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"testing"
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/packaging/release"
@@ -144,6 +146,7 @@ func (s *updatesFollowup) installerHandoff(stack *e2e.Stack, baseline e2e.Servin
 			h.rec.Actual = "installer release registration: " + at.Redact(err.Error())
 			return
 		}
+		defer os.RemoveAll(b.Directory)
 		path := fmt.Sprintf("/var/tmp/e2e-rel/handoff-%d", i)
 		if h.run("", "mkdir", "-p", path).Exit != 0 {
 			return
@@ -189,6 +192,7 @@ func (s *updatesFollowup) installerHandoff(stack *e2e.Stack, baseline e2e.Servin
 		h.rec.Actual = "installer enrollment creation failed"
 		return
 	}
+	defer h.retire(enrollment.Enrollment.NodeId.String())
 	token, err := enrollment.Token.Get()
 	if err != nil || stack.StageInstallerToken(s.ctx, "installer-node", token) != nil {
 		return
@@ -212,6 +216,11 @@ func (s *updatesFollowup) installerHandoff(stack *e2e.Stack, baseline e2e.Servin
 		}
 	}
 	h.note("lab_adapters", []string{"Real binaries for both architectures repacked at installer root with unchanged packaged systemd units, re-signed with generated lab release key and registered through public API", "Initial signed archive retained for offline seed; no journal writes", "Runtime systemd condition delays automatic apply for stage inspection; product ExecStart unchanged"})
+	// Hold the first agent start until missing-desired-state behavior is measured.
+	if h.put("/run/systemd/system/fvpn-agent.service.d/fresh.conf", []byte("[Unit]\nConditionPathExists=/run/vpn-node/fresh-allow\n")) != nil {
+		return
+	}
+	h.note("fresh_agent_barrier", "TEST ONLY runtime condition holds the agent before its first poll; no desired-state file/job is manufactured or deleted")
 	installed, installErr := stack.RerunInstaller(s.ctx, "installer-node")
 	h.rec.NodeIncarnation = installed.Incarnation
 	h.note("install", installed)
@@ -224,9 +233,10 @@ func (s *updatesFollowup) installerHandoff(stack *e2e.Stack, baseline e2e.Servin
 	}
 	node := enrollment.Enrollment.NodeId.String()
 	h.central("central_before", node)
-	h.note("fresh_serving_gate_observation", s.readJSON(`SELECT coalesce((SELECT jsonb_build_object('member_forwarding_enabled', report_payload->'member_forwarding_enabled', 'forwarding_block_reasons', report_payload->'forwarding_block_reasons') FROM node_observations WHERE node_id=$1), 'null'::jsonb)`, enrollment.Enrollment.NodeId))
 	h.run("installed_baseline", "cat", "/var/lib/vpn-node/install/baseline.json")
-	seed := h.run("seed", installedUpdater, "seed", "--config", installerConfig, "--manifest", "/var/lib/vpn-node/update-staging/"+releases[0].ID.String()+".manifest.json", "--tree", "/opt/vpn-node/releases/"+releases[0].ID.String())
+	h.run("installed_tree_modes", "find", "/opt/vpn-node/releases/"+releases[0].ID.String(), "-printf", "%P %m %y\n")
+	h.run("seed_default_umask", installedUpdater, "seed", "--config", installerConfig, "--manifest", "/var/lib/vpn-node/update-staging/"+releases[0].ID.String()+".manifest.json", "--tree", "/opt/vpn-node/releases/"+releases[0].ID.String())
+	seed := h.run("seed_packaged_umask", "sh", "-c", `umask 077; exec "$@"`, "sh", installedUpdater, "seed", "--config", installerConfig, "--manifest", "/var/lib/vpn-node/update-staging/"+releases[0].ID.String()+".manifest.json", "--tree", "/opt/vpn-node/releases/"+releases[0].ID.String())
 	seeded := h.status("status_seeded")
 	h.check("seed", seed.Exit == 0 && document(seeded["seeded_baseline"]).text("release_id") == releases[0].ID.String())
 	cfgOut := h.run("", "cat", installerConfig)
@@ -243,7 +253,7 @@ func (s *updatesFollowup) installerHandoff(stack *e2e.Stack, baseline e2e.Servin
 	noWork := h.run("fresh_second_run", installedUpdater, "run", "--config", installerConfig)
 	h.check("fresh_no_work", missing && noWork.Exit == 0 && strings.Contains(unit.Stdout, "ExecMainStatus=0") && strings.Contains(unit.Stdout, "Result=success"))
 	check := h.run("fresh_installer_check", "fvpn-node-install", "check", "--json")
-	h.check("fresh_check_no_updater_drift", document([]byte(check.Stdout)) != nil && !strings.Contains(string(document([]byte(check.Stdout))["drifts"]), "fvpn-updater"))
+	h.check("fresh_check_no_updater_drift", document([]byte(check.Stdout)) != nil && !strings.Contains(string(document([]byte(check.Stdout))["drifts"]), "unit fvpn-updater.service "))
 	guard := h.absent("/var/lib/vpn-node/update-journal/forwarding.blocked")
 	h.check("fresh_guard_clear", missing && guard)
 	h.note("fresh_forwarding_scope", "Updater latch absence only. Other serving prerequisites may remain blocked; central forwarding reasons and failed packaged units are recorded, never interpreted as serving success.")
@@ -258,6 +268,15 @@ func (s *updatesFollowup) installerHandoff(stack *e2e.Stack, baseline e2e.Servin
 	legacy := h.run("legacy_boot_config", installedUpdater, "run", "--config", "/var/tmp/e2e-rel/legacy-updater.json")
 	legacyHolder := h.run("legacy_lock_holder", "cat", "/var/lib/vpn-node/update.lock")
 	h.check("legacy_boot_config", legacy.Exit == 0 && document([]byte(legacyHolder.Stdout)).text("boot_id") == kernel)
+	h.run("release_fresh_barrier", "rm", "/run/systemd/system/fvpn-agent.service.d/fresh.conf")
+	h.run("reload_after_fresh", "systemctl", "daemon-reload")
+	h.run("start_agent_after_fresh", "systemctl", "start", "fvpn-agent.service")
+	s.wait(20*time.Second, func() bool {
+		raw := s.readJSON(`SELECT to_jsonb(count(*)) FROM node_observations WHERE node_id=$1`, enrollment.Enrollment.NodeId)
+		return string(raw) != "0"
+	})
+	h.note("fresh_serving_gate_observation", s.readJSON(`SELECT coalesce((SELECT jsonb_build_object('member_forwarding_enabled', report_payload->'member_forwarding_enabled', 'forwarding_block_reasons', report_payload->'forwarding_block_reasons') FROM node_observations WHERE node_id=$1), 'null'::jsonb)`, enrollment.Enrollment.NodeId))
+	h.run("stop_agent_after_fresh", "systemctl", "stop", "fvpn-agent.service")
 	// Expose production defaults before adding only the owned lab endpoint.
 	delete(cfg, "boot_id")
 	cfg.set("result_url", s.r.lab.agent+"/api/v1/agent/update-results")
@@ -289,8 +308,11 @@ func (s *updatesFollowup) installerHandoff(stack *e2e.Stack, baseline e2e.Servin
 	h.run("units_after_apply", "systemctl", "show", "fvpn-agent.service", "fvpn-watchdog.service", "-p", "Id", "-p", "ExecMainStartTimestampMonotonic", "-p", "ActiveState", "-p", "Result")
 	var health map[string]string
 	_ = json.Unmarshal(after["health"], &health)
-	h.check("apply", (updatesJournal{Health: health}).allPassed() && h.current() == "releases/"+releases[1].ID.String() && (applied.Exit == 0 || applied.Exit == 2) && after.text("source") == "installer" && after.text("state") == "succeeded" && after.text("current_release_id") == releases[1].ID.String() && h.absent(installerPending))
+	h.check("apply", (updatesJournal{Health: health}).allPassed() && filepath.Base(h.current()) == releases[1].ID.String() && (applied.Exit == 0 || applied.Exit == 2) && after.text("source") == "installer" && after.text("state") == "succeeded" && after.text("current_release_id") == releases[1].ID.String() && h.absent(installerPending))
+	h.run("second_run_after_apply", installedUpdater, "run", "--config", installerConfig)
+	h.status("status_after_second_run")
 	h.run("flush", installedUpdater, "flush", "--config", installerConfig)
+	h.journalEvidence()
 	central := h.central("central_after", node)
 	h.check("central", installerCentralSuccess(central, releases[1].ID.String()))
 	h.note("central_installer_receipts", s.readJSON(`SELECT coalesce(jsonb_agg(jsonb_build_object('payload',payload,'ack',ack)), '[]'::jsonb) FROM installer_update_results WHERE node_id=$1`, enrollment.Enrollment.NodeId))
@@ -422,4 +444,75 @@ func (h *handoffRun) buildRelease(stack *e2e.Stack, version, sequence string) (e
 	}
 	b.ManifestSHA256, err = release.EnvelopeSHA256(b.Manifest)
 	return b, err
+}
+
+func testInstallerEvidence(t *testing.T) {
+	t.Helper()
+	good := document([]byte(`{"releases":{"current_release_id":"new"},"update":{"source":"installer","batch_id":null,"state":"succeeded"}}`))
+	if !installerCentralSuccess(good, "new") {
+		t.Fatal("accepted installer summary rejected")
+	}
+	for _, raw := range []string{
+		`{"releases":{"current_release_id":"old"},"update":{"source":"installer","batch_id":null,"state":"succeeded"}}`,
+		`{"releases":{"current_release_id":"new"},"update":{"source":"central","batch_id":null,"state":"succeeded"}}`,
+		`{"releases":{"current_release_id":"new"},"update":{"source":"installer","state":"succeeded"}}`,
+		`{"releases":{"current_release_id":"new"},"update":{"source":"installer","batch_id":null,"state":"failed"}}`,
+		`{"releases":{"current_release_id":"new"},"update":null}`,
+	} {
+		if installerCentralSuccess(document([]byte(raw)), "new") {
+			t.Fatal("incomplete installer evidence passed")
+		}
+	}
+}
+
+// Keep this early installer node outside the regular all-nodes batch snapshots.
+// Retirement is through the API with ETag and read-back, never a database edit.
+func (h *handoffRun) retire(node string) {
+	view := h.central("before_fixture_retirement", node)
+	resp, err := h.s.admin.call(h.s.ctx, "DELETE", h.s.r.lab.public+"/api/v1/admin/nodes/"+node, nil, map[string]string{"Idempotency-Key": uuid.NewString(), "If-Match": `"` + view.text("resource_version") + `"`})
+	h.note("fixture_retirement_http", httpDetail(resp, err))
+	retired := h.central("fixture_retired", node)
+	if err != nil || resp.Status != 202 || retired.text("lifecycle_state") != "retired" {
+		h.s.r.t.Fatal("installer fixture retirement not confirmed; refusing polluted fleet snapshots")
+	}
+}
+
+// Copy only a quiescent updater journal, then issue read-only SQL. No identity
+// database or key is copied, and no product journal row is edited.
+func (h *handoffRun) journalEvidence() {
+	path := filepath.Join(h.s.r.t.TempDir(), "installer-journal.db")
+	source := h.s.r.lab.prefix + "-installer-node:/var/lib/vpn-node/update-journal/journal.db"
+	if exec.CommandContext(h.s.ctx, "docker", "cp", source, path).Run() != nil {
+		h.note("journal_copy", "failed")
+		return
+	}
+	_ = exec.CommandContext(h.s.ctx, "docker", "cp", source+"-wal", path+"-wal").Run()
+	db, err := sql.Open("sqlite", "file:"+path+"?mode=ro&_pragma=query_only(1)")
+	if err != nil {
+		h.note("journal_read", "failed")
+		return
+	}
+	defer db.Close()
+	var raw string
+	err = db.QueryRow(`SELECT coalesce(json_group_array(json_object('job_id',job_id,'release_id',release_id,'phase',phase,'outcome',outcome,'error_code',error_code,'claim',json(intent_json))),'[]') FROM jobs`).Scan(&raw)
+	if err == nil {
+		h.note("journal_jobs", json.RawMessage(raw))
+	}
+	err = db.QueryRow(`SELECT coalesce(json_group_array(json_object('stage',stage,'error_code',error_code,'error_stage',error_stage,'finished_at',finished_at)),'[]') FROM txns`).Scan(&raw)
+	if err == nil {
+		h.note("journal_transactions", json.RawMessage(raw))
+	}
+	var payload []byte
+	if db.QueryRow(`SELECT payload FROM result_outbox ORDER BY seq DESC LIMIT 1`).Scan(&payload) == nil && json.Valid(payload) {
+		h.note("immutable_result_payload", json.RawMessage(payload))
+		if h.put("/var/tmp/e2e-rel/result.json", payload) != nil {
+			return
+		}
+		// Keyed exact replay supplies the deciding HTTP validation error if the
+		// product sender records a rejection; it never manufactures a result.
+		key := uuid.NewString()
+		args := []string{"curl", "--silent", "--show-error", "--max-time", "20", "--cacert", "/var/tmp/e2e-rel/ca.pem", "--cert", "/var/lib/vpn-node/identity/cert.pem", "--key", "/var/lib/vpn-node/identity/key.pem", "-H", "Content-Type: application/json", "-H", "Idempotency-Key: " + key, "--data-binary", "@/var/tmp/e2e-rel/result.json", "-w", "\nHTTP %{http_code}\n", h.s.r.lab.agent + "/api/v1/agent/update-results"}
+		h.run("result_keyed_submission", args...)
+		h.run("result_keyed_replay", args...)
+	}
 }

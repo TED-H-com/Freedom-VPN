@@ -1,0 +1,55 @@
+{
+  "run_id": "d2d4e9df-70f8-4305-b6c8-4ffdab5b8d3b",
+  "prefix": "w4-updates",
+  "port_base": 42000,
+  "scope": "Follow-up 9 regular-lab requested scenario; not complete original §19 acceptance or physical arm64 proof",
+  "id": "AT26",
+  "title": "Genuine candidate health failure rolls back",
+  "spec": [
+    "UPD01",
+    "UPD02",
+    "§13.4",
+    "§13.9",
+    "§13.10",
+    "§13.12"
+  ],
+  "status": "blocked",
+  "at": "2026-10-31T06:28:45Z",
+  "expected": "Genuine candidate health failure rolls back",
+  "actual": "w4-node-updater: last-good prerequisite absent; required follow-up 8 check incomplete: revision7_empty_target; required follow-up 8 check incomplete: revision7_rollback_target; required follow-up 8 check incomplete: conflict_bounds",
+  "git": "e1125955596dcd34405f81eb706fee023d66c501",
+  "node_incarnation": "01a190a1-384c-7b54-8743-d8148ca143ef",
+  "commands": [
+    "make -f mk/at-updates.mk at-updates"
+  ],
+  "observations": [
+    {
+      "name": "harness_source",
+      "detail": "{\"differs_from_source_commit\":false,\"files_sha256\":{\"authority_test.go\":\"468d7d3c1dbfbdb40a3c781650cd8993fc55e93b9e6d28930c3d52189715de21\",\"doc.go\":\"a43799934c9463e13de1e43c2e0f4373410be7c31421ceee8a3eb963717f6382\",\"evidence.go\":\"5f77f6740ded1f0561fd8e7496b04ca3b240f501b7146cc684aaa6d033588e85\",\"evidence_test.go\":\"eaa999300a284ba220deacae957eaab01f73fda21aab0d07481ccb958bd469cd\",\"installer_test.go\":\"9f1fdb9d13ca134a8780489ee127692150eff4dcdab224c974a325c4619889a2\",\"lab_test.go\":\"30fc113965a1b10d59fc5918fa340971c0f7f52f8c40db0e94780b9eff39e58b\",\"live_test.go\":\"4a72c1910a46769c70277ece7f328e7b6ba31ad8d3410eacbcfed7aea88db287\",\"preresult_test.go\":\"530332759bdecdde7924f3d5cf95def55682a11b13293410cd59e62a22f6bfdf\",\"probe_test.go\":\"b214d46d2f8582457830cb485904ee85df176d53734b32731351f39c20b50d01\",\"restated_test.go\":\"d35f27ea2c26e1d4e5e86ac6e9c7110678e5a7cc65373d08608e31331bd65aa8\"}}"
+    },
+    {
+      "name": "manifest_and_artifact_digests",
+      "detail": "{\"artifact_sha256_0.1.0_amd64\":\"72e18f215d849e0027bde45c46dd8b5f771583fdb69a81b9d50cdf6ce4107fb0\",\"artifact_sha256_0.1.0_arm64\":\"86710dc80c2e1b417143cbdaa89d1b5e99cab91ecab3557337cd94ce633fdf66\",\"artifact_sha256_1.0.1_amd64\":\"f3aa6eec9a5b0894d1bfa6edc8955b22f17e4e516940bd5339a064488f648d56\",\"artifact_sha256_1.0.1_arm64\":\"0a5a239c30a6f9b23d5b002fa543edc3bbc8861c860ce54096ae7ae073913369\",\"artifact_sha256_1.0.2_amd64\":\"7519df443ea65f66d48d911bd940943313e61e641d4fec056b839903f2c2be22\",\"artifact_sha256_1.0.2_arm64\":\"a0ac6182a7070c966424fd0cc477053c425b9d1b3de4bfbb674288b1e8d656a0\",\"manifest_sha256_0.1.0\":\"c2adf4f243bfbba96778f81917b71adfec23696c444a57fbfde3f4dd89846748\",\"manifest_sha256_1.0.1\":\"6088932c9812ca220f6bec1b68baa098ff538d8c2508df26ffe3568e1d18c5af\",\"manifest_sha256_1.0.2\":\"5fe7a5a7e3cdb06ed58df68197f29ca88bc64528b68ac9e31e34069109dc5059\",\"signed_manifest_sha256_0.1.0\":\"c5b4ae3b03654012d87daaff861a1c00a3ef69c37f0c665ef091700a8d8e7d49\",\"signed_manifest_sha256_1.0.1\":\"8d5c49543a1cac85d13cc4c6309989e0d8580045bc486ae4b02dceb35ee3abb4\",\"signed_manifest_sha256_1.0.2\":\"b45c9f301f9db7a56d0f40c5ac462197408d104078cd334ca3e4415ee470d73b\"}"
+    },
+    {
+      "name": "support_policy_revision",
+      "detail": "\"01a190a1-27d0-7332-9145-c9b6105ffd67\""
+    },
+    {
+      "name": "unrelated_release",
+      "detail": "{\"digests\":{\"artifact_sha256_1.0.3_amd64\":\"c81538a66966f99091fdd6eee5c9b01d08cad4ada81e4c7f654ed82f9067bc1a\",\"artifact_sha256_1.0.3_arm64\":\"a6234f8aa50fdc28427659514f0f469b2c3566e5e5393aa05470483c586aeeef\",\"manifest_sha256_1.0.3\":\"e7d66c6f48477247d3fdf67fbf8fa9c338144ba613503b91c0bda0d11a9e669a\",\"signed_manifest_sha256_1.0.3\":\"6c9a827af02964c36ed09dbe16e44a1c59b51f6b7f90433798403fef6b9629a3\"},\"purpose\":\"TEST ONLY registered, never installed or made fleet default\",\"release_id\":\"01a190a1-3013-7b4f-8348-7503b6f997fe\",\"version\":\"1.0.3\"}"
+    },
+    {
+      "name": "accepted_unpublished_baseline",
+      "detail": "true"
+    },
+    {
+      "name": "netbird_manifest_version",
+      "detail": "\"0.82.0\""
+    },
+    {
+      "name": "release_ids",
+      "detail": "{\"boot\":\"01a190a1-0b1b-7422-ab02-52f6f566b632\",\"good\":\"01a190a1-19f7-736f-8d85-af45aa08a07b\",\"negative\":\"01a190a1-2356-73af-8b3c-0e01b7f3fa28\"}"
+    }
+  ]
+}

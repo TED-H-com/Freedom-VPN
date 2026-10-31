@@ -109,7 +109,22 @@ func TestUpdatesFollowup(t *testing.T) {
 		s.note(id, "manifest_and_artifact_digests", baseline.Digests)
 		s.note(id, "support_policy_revision", baseline.SupportRevision)
 	}
+	stack, err := e2e.OpenStack()
+	if err != nil {
+		s.blockAll("w3-devstack-e2e: shared stack unavailable")
+		return
+	}
+	defer stack.Close()
+	// Run before any fleet default exists; retire this fixture before batch snapshots.
+	s.installerHandoff(stack, baseline)
 	unrelated := s.unrelatedRelease()
+	if err := lab.alignKernelBoot("node"); err != nil {
+		s.blockAll("devstack kernel boot identity adapter failed")
+		return
+	}
+	for id := range records {
+		s.note(id, "kernel_boot_adapter", "TEST ONLY: copy kernel boot_id into devstack agent boot-id input before enrollment; updater config omits boot_id; request devstack follow-up 16")
+	}
 	r.enroll(ctx, admin)
 	if r.nodeID == uuid.Nil || r.incID == uuid.Nil {
 		s.blockAll("w3-wire-nodes: enrollment/peer bootstrap prerequisite failed")
@@ -137,14 +152,6 @@ func TestUpdatesFollowup(t *testing.T) {
 		s.blockAll("w2-agent-core / w3-wire-nodes: accepted ready baseline not observed")
 		return
 	}
-	stack, err := e2e.OpenStack()
-	if err != nil {
-		s.blockAll("w3-devstack-e2e: shared stack unavailable")
-		return
-	}
-	defer stack.Close()
-	// Independent installer evidence still runs when a regular-lab prerequisite fails.
-	defer s.installerHandoff(stack, baseline)
 	probe, err := stack.SetupUpdaterProbe(ctx, "node", e2e.EnrolledNode{NodeID: r.nodeID, IncarnationID: r.incID})
 	if err != nil {
 		s.blockAll("w3-devstack-e2e: exported probe peer setup failed: " + at.Redact(err.Error()))
@@ -621,6 +628,7 @@ func updatesRecoveryComplete(before, after updatesJournal, blocked, running bool
 }
 
 func TestUpdatesFollowupEvidence(t *testing.T) {
+	testInstallerEvidence(t)
 	testFollowup4Evidence(t)
 	testFollowup5Evidence(t)
 	testFollowup7Evidence(t)
