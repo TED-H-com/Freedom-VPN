@@ -269,7 +269,7 @@ label; accounting contract §10.5–§10.8), use this sequence:
    before/after usage DB/WAL hashes and retired identity/bound-state digests.
    This wrapper leaves the services quiescent for sampling. Never rename or
    relabel the surviving events as the new incarnation.
-5. Read the incarnations API again: it exports `incarnation_id`, `is_current`,
+5. Read the incarnations API again: it exports `incarnation_id`, `current`,
    `state`, `retired_at`, `retire_reason` and retained usage per incarnation.
    `InstallerOutcome.Incarnation` and the node's public `identity/node.json`
    identify the new presenter. The CLI snapshot identifies the **current ledger
