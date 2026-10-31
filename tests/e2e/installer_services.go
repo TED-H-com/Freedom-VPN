@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-// InstallerServiceState retains active/inactive/failed/not-found states. The
+// InstallerServiceState retains active/inactive/failed/activating states. The
 // updater oneshot normally finishes inactive; restoring it must not apply a job.
 type InstallerServiceState map[string]string
 
@@ -77,12 +77,19 @@ func (s *Stack) retainInstallerServices(ctx context.Context, out *InstallerOutco
 	return nil
 }
 
-// HoldInstallerFirstPoll and HoldInstallerApply are TEST ONLY runtime systemd
-// conditions. Arm before installation/staging. Release removes only our drop-in
-// and reloads units; it does not start anything. Packaged ExecStart is unchanged.
+// HoldInstallerFirstPoll withholds desired-state GETs at the authenticated lab
+// proxy. It lets bootstrap run and write the setup key required by netbird-up;
+// stopping the entire agent before bootstrap would deadlock initial installation.
 func (s *Stack) HoldInstallerFirstPoll(ctx context.Context, hold bool) error {
-	return s.installerBarrier(ctx, "fvpn-agent.service", hold)
+	const marker = "/var/lib/vpn-node/e2e/hold-first-poll"
+	if hold {
+		return writeContainerFile(ctx, s.installerContainer(), marker, "600", nil)
+	}
+	return exec.CommandContext(ctx, "docker", "exec", s.installerContainer(), "rm", "-f", marker).Run()
 }
+
+// HoldInstallerApply is a TEST ONLY runtime systemd condition. Release removes
+// only our drop-in and reloads units; it does not start anything.
 func (s *Stack) HoldInstallerApply(ctx context.Context, hold bool) error {
 	return s.installerBarrier(ctx, "fvpn-updater.service", hold)
 }

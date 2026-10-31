@@ -102,8 +102,9 @@ keep this ID and are process-restart evidence, not fresh-kernel evidence.
 unchanged packaged units and the lab release signer. `PrepareInstallerNode`
 uses these for its older/newer fixtures. `RegisterInstallerReleases` uploads
 them, calls the admin release API and waits for worker verification. Activate
-support policy separately. `HoldInstallerFirstPoll` and `HoldInstallerApply`
-expose the runtime condition barriers; releasing either does not start a unit.
+support policy separately. `HoldInstallerFirstPoll` withholds only desired-state
+GETs while allowing genuine bootstrap. `HoldInstallerApply` exposes the runtime
+systemd condition barrier; releasing either does not start a unit.
 `InstallerServices` / `RestoreInstallerServices` make the sampling lifecycle
 explicit. [Exact paths, invocation and limits](installer-layout.md).
 

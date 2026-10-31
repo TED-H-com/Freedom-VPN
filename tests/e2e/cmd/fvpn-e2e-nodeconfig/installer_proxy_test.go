@@ -18,7 +18,8 @@ func TestENR06InstallerProxyRequiresCurrentVerifiedIdentity(t *testing.T) {
 	if err := os.WriteFile(marker, nil, 0600); err != nil {
 		t.Fatal(err)
 	}
-	handler := installerProxyHandler(public, agent, func() (tls.Certificate, error) { return tls.Certificate{Certificate: [][]byte{leaf}}, nil }, marker)
+	firstPoll := filepath.Join(t.TempDir(), "hold-first-poll")
+	handler := installerProxyHandler(public, agent, func() (tls.Certificate, error) { return tls.Certificate{Certificate: [][]byte{leaf}}, nil }, marker, firstPoll)
 	for _, tc := range []struct {
 		name, method, path string
 		verified           bool
@@ -60,5 +61,23 @@ func TestENR06InstallerProxyRequiresCurrentVerifiedIdentity(t *testing.T) {
 	handler.ServeHTTP(w, r)
 	if w.Code != 204 {
 		t.Fatalf("released usage: %d", w.Code)
+	}
+	if err := os.WriteFile(firstPoll, nil, 0600); err != nil {
+		t.Fatal(err)
+	}
+	for _, tc := range []struct {
+		method, path string
+		status       int
+	}{
+		{"GET", "/api/v1/agent/desired-state", 503},
+		{"POST", "/api/v1/agent/netbird-bootstrap", 204},
+		{"POST", "/api/v1/agent/usage-batches", 204},
+	} {
+		r.Method, r.URL.Path = tc.method, tc.path
+		w = httptest.NewRecorder()
+		handler.ServeHTTP(w, r)
+		if w.Code != tc.status {
+			t.Fatalf("first-poll %s: %d", tc.path, w.Code)
+		}
 	}
 }

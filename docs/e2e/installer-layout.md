@@ -46,11 +46,13 @@ the agent can mistake legitimate WAL writes for installer changes.
 
 ## First-poll and apply capture
 
-Before installation, `HoldInstallerFirstPoll(ctx, true)` installs a TEST ONLY
-runtime systemd condition for the agent. This permits missing-desired-state
-and fresh updater no-work capture before the first agent poll. Release with
-`false`, then explicitly start the agent/watchdog; an agent deliberately held
-inactive is not started by restoring an inactive service snapshot.
+Before installation, `HoldInstallerFirstPoll(ctx, true)` withholds only the
+authenticated desired-state GET at the installer proxy. Bootstrap still runs
+and writes the real setup key required by `netbird-up`. This permits
+missing-desired-state and fresh updater no-work capture before the first
+successful desired-state poll. Release with `false`, then restore/start the
+agent/watchdog. Holding the entire service would prevent bootstrap and cause
+installation to time out; the first diagnostic attempt retains that failure.
 
 Before `upgrade`, `HoldInstallerApply(ctx, true)` holds the automatic updater
 unit. The packaged ExecStart remains unchanged. Capture the pending document

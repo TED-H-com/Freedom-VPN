@@ -50,12 +50,12 @@ func installerProxy() error {
 		return tls.LoadX509KeyPair("/var/lib/vpn-node/identity/cert.pem", "/var/lib/vpn-node/identity/key.pem")
 	}
 	agent := proxy("https://agent.example.invalid:9443", &tls.Config{MinVersion: tls.VersionTLS13, RootCAs: roots, GetClientCertificate: func(*tls.CertificateRequestInfo) (*tls.Certificate, error) { c, e := identity(); return &c, e }})
-	handler := installerProxyHandler(public, agent, identity, usageHoldMarker)
+	handler := installerProxyHandler(public, agent, identity, usageHoldMarker, "/var/lib/vpn-node/e2e/hold-first-poll")
 	srv := &http.Server{Addr: "127.0.0.1:9444", Handler: handler, ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 30 * time.Second, WriteTimeout: 30 * time.Second, TLSConfig: &tls.Config{MinVersion: tls.VersionTLS13, ClientAuth: tls.VerifyClientCertIfGiven, ClientCAs: clients}}
 	return srv.ListenAndServeTLS("/var/tmp/e2e-rel/fault-proxy.crt", "/var/tmp/e2e-rel/fault-proxy.key")
 }
 
-func installerProxyHandler(public, agent http.Handler, identity func() (tls.Certificate, error), holdMarker string) http.Handler {
+func installerProxyHandler(public, agent http.Handler, identity func() (tls.Certificate, error), holdMarker, firstPollMarker string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Cache-Control", "no-store")
 		if r.Method == http.MethodPost && r.URL.Path == "/api/v1/agent/enroll" {
@@ -69,6 +69,12 @@ func installerProxyHandler(public, agent http.Handler, identity func() (tls.Cert
 		}
 		if withholdUsage(w, r, holdMarker) {
 			return
+		}
+		if r.Method == http.MethodGet && r.URL.Path == "/api/v1/agent/desired-state" {
+			if _, err := os.Stat(firstPollMarker); err == nil {
+				http.Error(w, "TEST ONLY first desired-state poll held", http.StatusServiceUnavailable)
+				return
+			}
 		}
 		agent.ServeHTTP(w, r)
 	})
