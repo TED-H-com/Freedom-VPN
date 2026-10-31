@@ -519,16 +519,21 @@ retained, err := stack.RetainEnrollingThirdNode(ctx, admin)
 booted, err := stack.BootEnrollingThirdNode(ctx, admin)
 ```
 
-The `node3` slot enrolls through the production API/agent, stops before bootstrap
-and retains its private identity/certificate/key in durable bind mounts. The
-mid-run boot resumes this directory snapshot without another enrollment token
-or fabricated rows. This is a stopped-container directory snapshot, not a VM
-snapshot or the ENR-06 installer. The return value exports node/incarnation IDs,
-retention/boot timestamps, before/after provisioning states, identity equality,
-local stage `enrolling_snapshot`, the central lifecycle/provisioning states
-(`registered/applying` immediately after production enrollment),
-and `eligible_at`: the first admin API observation of `ready` with that identity.
-This timestamp is an observation bound, not an inferred Docker-start completion.
-Publication, campaign membership and update assignment must still be observed
-by AT24/AT26/D-089 consumers. All `node3-*` objects are included in exact-prefix
-teardown.
+The `node3` slot receives a real preinstalled enrollment through the admin API.
+The actual agent CLI runs once against a closed loopback port: it generates and
+persists its key, CSR, enrollment request and pending incarnation, then returns
+failure without consuming the token. The normal entrypoint remains held. The
+central node is genuinely `enrolling/pending` with no bound incarnation, so fleet
+snapshot consumers can exercise the enrolling-target branch. No database rows
+are fabricated or reset.
+
+The stopped directory snapshot retains those private files. Mid-run boot releases
+the marker and completes the original request against the real control URL. The
+export contains node ID, pending incarnation/request IDs, a key digest, central
+unbound-incarnation evidence, before/after states, retention/boot timestamps,
+and `eligible_at`: the first admin API observation of `ready` with the same key
+and the formerly pending incarnation now bound centrally. The prepared
+preinstalled-token deadline still applies; no expired token is bypassed.
+This is a durable directory snapshot, not a VM snapshot or ENR-06 installer.
+Publication, campaign membership and update assignment remain AT24/AT26/D-089
+consumer assertions. All `node3-*` objects are included in exact-prefix teardown.

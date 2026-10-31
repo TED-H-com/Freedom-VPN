@@ -65,18 +65,18 @@ else
     while [ ! -s /var/lib/vpn-node/e2e/enrollment.token ]; do
         sleep 1
     done
+    # TEST ONLY: a retained snapshot may already contain a real pending key,
+    # CSR and incarnation after an offline CLI attempt. Keep the API-issued
+    # token unconsumed until its mid-run boot resumes that same request.
+    if [ -f /var/lib/vpn-node/e2e/hold-enrolling ]; then
+        printf '%s\n' '{"stage":"enrolling_snapshot"}' > /var/lib/vpn-node/e2e/status.json
+        while [ -f /var/lib/vpn-node/e2e/hold-enrolling ]; do sleep 1; done
+    fi
     printf '%s\n' '{"stage":"enrolling"}' > /var/lib/vpn-node/e2e/status.json
     if ! fvpn-agent enroll -config /etc/vpn-node/agent-enroll.json -token-file /var/lib/vpn-node/e2e/enrollment.token; then
         printf '%s\n' '{"stage":"enroll_failed"}' > /var/lib/vpn-node/e2e/status.json
         exit 1
     fi
-fi
-# TEST ONLY retained-enrollment fixture: durable real identity exists, but no
-# bootstrap, peer join or agent heartbeat has occurred. Remove only this marker
-# when the fleet harness is ready to boot its pre-existing third identity.
-if [ -f /var/lib/vpn-node/e2e/hold-enrolling ]; then
-    printf '%s\n' '{"stage":"enrolling_snapshot"}' > /var/lib/vpn-node/e2e/status.json
-    while [ -f /var/lib/vpn-node/e2e/hold-enrolling ]; do sleep 1; done
 fi
 # PIDs belong to the old container process tree, not the durable identity.
 rm -f /var/lib/vpn-node/e2e/agent.pid
