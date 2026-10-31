@@ -375,6 +375,8 @@ func (s *Service) RenewTx(
 	}
 
 	// 2. Check replay by (node_id, incarnation_id, renewal_request_id) (§16.3: replay never restarts TTL).
+	// D-088: preserve the original signature even after the stored expiry is
+	// clamped. Central validity checks use the row, not this replayed deadline.
 	var existingEnvBytes []byte
 	err = tx.QueryRow(ctx, `
 		SELECT envelope
