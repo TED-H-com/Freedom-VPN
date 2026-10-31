@@ -56,7 +56,7 @@ type timedApplyExecutor struct {
 
 func (x timedApplyExecutor) Output(ctx context.Context, name string, args ...string) ([]byte, error) {
 	b, err := x.Executor.Output(ctx, name, args...)
-	if name == "tc" && !x.timing.stopped {
+	if name == "tc" && len(args) > 0 && args[0] == "-j" && !x.timing.stopped {
 		x.timing.at = x.timing.now().UTC()
 	}
 	return b, err

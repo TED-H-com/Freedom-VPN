@@ -133,6 +133,50 @@ func TestISO_F6_ObservationEvidenceRevision13(t *testing.T) {
 	}
 }
 
+type evidenceClockExecutor struct {
+	renderedExecutor
+	advance func(time.Duration)
+}
+
+func (x *evidenceClockExecutor) Output(ctx context.Context, name string, args ...string) ([]byte, error) {
+	x.advance(time.Millisecond)
+	return x.renderedExecutor.Output(ctx, name, args...)
+}
+
+func TestISO_F6_ApplyRejectionTimestampPrecedesRollback(t *testing.T) {
+	r := newRig(t)
+	alignControlClock(r)
+	serveBoundGeneration(t, r)
+	r.manualUsage(t)
+	x := &evidenceClockExecutor{advance: r.clock.Advance}
+	x.model = *r.eng.appliedModel
+	p := SystemPlane{Executor: x}
+	if _, err := p.Apply(t.Context(), x.model, nil); err != nil {
+		t.Fatal(err)
+	}
+	x.foreignTC = true
+	timing := &applyReadTiming{now: r.clock.Wall}
+	res, err := p.Apply(context.WithValue(t.Context(), applyReadKey{}, timing), x.model, nil)
+	if err == nil || res.Verified || res.Evidence.TCSummary.Phase != "pre_apply" || timing.at.IsZero() || !timing.at.Before(r.clock.Wall()) {
+		t.Fatalf("missing pre-rollback read: result=%+v at=%s err=%v", res.Evidence.TCSummary, timing.at, err)
+	}
+	r.eng.retainServingRead(res.Evidence, x.model.Generation, timing.at, "apply", false)
+	r.eng.recordApplyQuarantine(res, err)
+	r.eng.rejectServing(t.Context(), x.model, res.Evidence, err)
+	r.clock.Advance(time.Second)
+	rep := mustReport(t, r, t.Context())
+	requireObservationSchema(t, rep)
+	q, _ := checkBy(rep.Checks, api.NodeCheckNameQos)
+	if q.Status != api.HealthCheckStatusFailed || !strings.Contains(*q.Detail, "source=apply") || !strings.Contains(*q.Detail, timing.at.Format(time.RFC3339Nano)) {
+		t.Fatal("cached Apply mislabeled", q)
+	}
+	for _, row := range rep.Errors {
+		if row.Stage == "tc_evidence" && !row.ObservedAt.Equal(timing.at) {
+			t.Fatal("post-rollback read time substituted")
+		}
+	}
+}
+
 type barrierSource struct{ obs meter.Observation }
 
 func (s *barrierSource) Read(context.Context) (meter.Observation, error) { return s.obs, nil }
