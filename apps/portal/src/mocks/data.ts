@@ -309,6 +309,11 @@ function buildInitialNodeDetails(): Record<string, NodeDetail> {
       },
     ],
   };
+  primary.identity_conflict = {
+    mapping_frozen: false,
+    conflict_count: 0,
+    last_conflict_at: null,
+  };
 
   const safetyFailed = clone(CONTRACT_EXAMPLES_USED_BY_MOCKS.NodeDetail);
   safetyFailed.node_id = SAFETY_FAILED_NODE_ID;
@@ -322,6 +327,11 @@ function buildInitialNodeDetails(): Record<string, NodeDetail> {
   safetyFailed.member_group_ids = [PRIMARY_GROUP_ID];
   safetyFailed.resource_version = '19';
   safetyFailed.dns_policy_evidence = null;
+  safetyFailed.identity_conflict = {
+    mapping_frozen: true,
+    conflict_count: 2,
+    last_conflict_at: '2026-10-30T18:00:00Z',
+  };
   safetyFailed.checks = [
     {
       name: 'internet_only',
@@ -362,6 +372,7 @@ function buildInitialNodeDetails(): Record<string, NodeDetail> {
   offlineNode.member_group_ids = [];
   offlineNode.resource_version = '7';
   offlineNode.dns_policy_evidence = null;
+  offlineNode.identity_conflict = null;
 
   return {
     [primary.node_id]: primary,

@@ -736,7 +736,7 @@ func (s *Service) executePublish(ctx context.Context, opID uuid.UUID, nodeID uui
 		if appliedGen < desiredGen {
 			cause = "stale_generation"
 		}
-		return s.failGatedPublish(ctx, opID, nodeID, nodes.StepAgentPolicy, string(apierr.NodeNotServiceable), err.Error(), cause)
+		return s.failGatedPublish(ctx, opID, nodeID, nodes.StepAgentPolicy, string(apierr.NodeNotServiceable), "member_forwarding_unconfirmed", cause)
 	}
 
 	if err := s.markStepSucceeded(ctx, opID, nodes.StepAgentPolicy, fmt.Sprintf("node:%s:gen:%s:safety:passed", nodeID, appliedGenStr), now); err != nil {
@@ -1320,6 +1320,77 @@ func (s *Service) failPublishStepOutcome(ctx context.Context, opID, nodeID uuid.
 			SET publication_observed = CASE WHEN $2::boolean THEN publication_observed ELSE 'error' END,
 			    resource_version = resource_version + 1
 			WHERE node_id = $1`, nodeID, confirmedWithdrawn); err != nil {
+			return err
+		}
+		return nil
+	})
+	if err != nil {
+		return api.Operation{}, err
+	}
+	return nodes.GetOperation(ctx, s.pool, opID)
+}
+
+func (s *Service) pendingPublishStepOutcome(ctx context.Context, opID, nodeID uuid.UUID, stepName, errCode, errMsg, gateReason string) (api.Operation, error) {
+	now := s.now().UTC()
+	err := commandtx.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
+		var (
+			stepsBytes []byte
+			refsBytes  []byte
+		)
+		if err := tx.QueryRow(ctx, `
+			SELECT steps, observed_refs
+			FROM operations
+			WHERE id = $1
+			FOR UPDATE`, opID).Scan(&stepsBytes, &refsBytes); err != nil {
+			return err
+		}
+		var steps map[string]nodes.StoredStep
+		_ = json.Unmarshal(stepsBytes, &steps)
+		if steps == nil {
+			steps = map[string]nodes.StoredStep{}
+		}
+		var refs map[string]string
+		if len(refsBytes) > 0 {
+			_ = json.Unmarshal(refsBytes, &refs)
+		}
+		if refs == nil {
+			refs = map[string]string{}
+		}
+		st := steps[stepName]
+		st.Status = string(api.OperationStepStatusPending)
+		st.ObservedRef = ""
+		st.ObservedAt = nil
+		st.ErrorCode = &errCode
+		st.ErrorMessage = &errMsg
+		st.Reason = gateReason
+		st.UpdatedAt = now
+		steps[stepName] = st
+		delete(refs, stepName)
+		if stepName == nodes.StepAgentPolicy {
+			if probe, ok := steps[nodes.StepDataPathProbe]; ok && probe.Required {
+				probe.Status = string(api.OperationStepStatusPending)
+				probe.ObservedRef = ""
+				probe.ObservedAt = nil
+				probe.ErrorCode = nil
+				probe.ErrorMessage = nil
+				probe.Reason = ""
+				probe.UpdatedAt = now
+				steps[nodes.StepDataPathProbe] = probe
+				delete(refs, nodes.StepDataPathProbe)
+			}
+		}
+		stepsJSON, _ := json.Marshal(steps)
+		refsJSON, _ := json.Marshal(refs)
+
+		if _, err := tx.Exec(ctx, `
+			UPDATE operations
+			SET status = 'running',
+			    steps = $2::jsonb,
+			    observed_refs = $3::jsonb,
+			    error_code = NULL,
+			    error_message = NULL,
+			    resource_version = coalesce(resource_version, 0) + 1
+			WHERE id = $1`, opID, stepsJSON, refsJSON); err != nil {
 			return err
 		}
 		return nil

@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
-  "follow_up": 7,
-  "started_at": "2026-10-30T19:23:34Z",
-  "finished_at": "2026-10-30T19:59:27Z",
-  "source_revision": "443cbb0d787e3b4a6ef9daf33bb060e4d89932bf",
-  "application_base": "fb3ea32",
-  "run_id": "ab96acac-8713-485a-9c29-88f20110e2e5",
-  "driver_run_id": "f54627cd-eb5f-4d42-a7d9-e916cc0e5127",
+  "follow_up": 8,
+  "started_at": "2026-10-30T22:00:15Z",
+  "finished_at": "2026-10-30T22:10:16Z",
+  "source_revision": "6350853010054cf656465e5e677c60dc29553cb5",
+  "application_base": "6b98422",
+  "run_id": "0f5fb60d-f6a7-45c6-8ebe-175e0a480bd8",
+  "driver_run_id": "af67be8e-3c40-4728-95e2-159e2aa5a3f6",
   "hardware": "shared development host; not candidate hardware",
   "commands": [
     [
@@ -27,9 +27,9 @@
       "2",
       "-count=1",
       "-timeout",
-      "65m",
+      "35m",
       "-run",
-      "^TestAT28_AT31_Followup7$",
+      "^TestAT30_Followup8_LiveRestoreReconcile$",
       "./tests/e2e/at/secops"
     ],
     [
@@ -39,25 +39,25 @@
       "e2e-down"
     ]
   ],
-  "probe_source_sha256": "f830695290e94d999b7d9f05cdd15fc52bd84c2c5f0b09ff79e112d9b9929f60",
-  "policy_revision": "01a18e45-2ef2-7928-8842-cb727eb863fd",
-  "node_incarnation": "31098d68-decf-4cde-b6ae-097ad69f6267",
-  "agent_node_incarnation": "01a18e45-58f2-7a9c-8449-6c8ced14c767",
+  "probe_source_sha256": "bf66c5da34e1a13e3666fde94c784f56c0036614e796d16d569410b2dfe69408",
+  "policy_revision": "01a18ed4-4e97-7280-89b5-45ac54906282",
+  "node_incarnation": "",
+  "agent_node_incarnation": "01a18ed4-5b85-70fc-9461-7893a7c017f7",
   "image_digests": [
     {
-      "image_id": "sha256:e9f2c7cff1cd68b0bfa7ac4548335f197d88a37d39fc5acd0d0f543f94f89816",
+      "image_id": "sha256:d062093db4e8d1608a6a1f4f842e7d245134547bbce86ed3bc1aab1f92ba2da3",
       "service": "postgres"
     },
     {
-      "image_id": "sha256:c49e52563fec70dad7363818558012aa4502871835218f53c0440d966983dd67",
+      "image_id": "sha256:4872a19bbfc3b343b6820038907bff443bc9207595fb1586084c9ff85c9e8ae0",
       "service": "idp"
     },
     {
-      "image_id": "sha256:f26d3b2473cddd221c0cf40ea42307eb407d0f8ae80f391c741c13e17aabe34c",
+      "image_id": "sha256:72fe0e15780f77ceb50b993c938ad34e5c31faf47bbe215c16c7c4cf1f7d2893",
       "service": "payment"
     },
     {
-      "image_id": "sha256:2363ab8a61ab529a5bdb3ec1d82a6363614d7ebfe6dab4efffbdda7e4c69afd1",
+      "image_id": "sha256:7ffd5075db74ae3a3bafe4825bdf1ad3dd7365c87cedf862083e144f4ed8daa2",
       "service": "origin"
     },
     {
@@ -77,329 +77,102 @@
       "service": "adguard"
     },
     {
-      "image_id": "sha256:29656c46da670df3d48cf04182c3ef85c46cd9d344d3f7a6fb3c197943adcfc8",
+      "image_id": "sha256:cbe2d2500e03e41c12d81b100ce3e8b93365edde25d640d13afe2412532a3b16",
       "service": "control"
     },
     {
-      "image_id": "sha256:97d2f24fde2ddacf88ed52ffdb9d842387a9996e766d5d4037cb5d48d1a19600",
+      "image_id": "sha256:46d8c2345888d80f0da6ef5d5b1da05803f8d40b4f1ee18de1367fb2d6b039f7",
       "service": "worker"
     },
     {
-      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "image_id": "sha256:a8eba036d655382ff88f337102dec08d08a28360b5ec98e0b9bea376bd5df590",
       "service": "node-netns"
     },
     {
-      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "image_id": "sha256:a8eba036d655382ff88f337102dec08d08a28360b5ec98e0b9bea376bd5df590",
       "service": "node"
     },
     {
-      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "image_id": "sha256:a8eba036d655382ff88f337102dec08d08a28360b5ec98e0b9bea376bd5df590",
       "service": "member"
     },
     {
-      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
-      "service": "node2-netns"
+      "image_id": "sha256:4538b115de157572484778b131051d5b3954668da94e14e2ee6c45dbb0bb9786",
+      "service": "restore-live"
     },
     {
-      "image_id": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
-      "service": "node2-adguard"
+      "image_id": "sha256:a8eba036d655382ff88f337102dec08d08a28360b5ec98e0b9bea376bd5df590",
+      "service": "member-at30-m2-d3-t1"
     },
     {
-      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
-      "service": "node2"
+      "image_id": "sha256:a8eba036d655382ff88f337102dec08d08a28360b5ec98e0b9bea376bd5df590",
+      "service": "member-at30-m3-d1-t1"
     },
     {
-      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
-      "service": "member-secops-deadline-lease"
+      "image_id": "sha256:a8eba036d655382ff88f337102dec08d08a28360b5ec98e0b9bea376bd5df590",
+      "service": "member-at30-m2-d2"
     },
     {
-      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
-      "service": "member-secops-deadline-grant"
+      "image_id": "sha256:a8eba036d655382ff88f337102dec08d08a28360b5ec98e0b9bea376bd5df590",
+      "service": "member-at30-m2-d1"
     },
     {
-      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
-      "service": "member-secops-deadline-paid"
-    },
-    {
-      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
-      "service": "member-secops-u19-p3"
-    },
-    {
-      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
-      "service": "member-secops-u19-p2"
-    },
-    {
-      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
-      "service": "member-secops-u19-p1"
-    },
-    {
-      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
-      "service": "member-secops-u18-p3"
-    },
-    {
-      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
-      "service": "member-secops-u18-p2"
-    },
-    {
-      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
-      "service": "member-secops-u18-p1"
-    },
-    {
-      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
-      "service": "member-secops-u17-p3"
-    },
-    {
-      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
-      "service": "member-secops-u17-p2"
-    },
-    {
-      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
-      "service": "member-secops-u17-p1"
-    },
-    {
-      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
-      "service": "member-secops-u16-p3"
-    },
-    {
-      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
-      "service": "member-secops-u16-p2"
-    },
-    {
-      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
-      "service": "member-secops-u16-p1"
-    },
-    {
-      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
-      "service": "member-secops-u15-p3"
-    },
-    {
-      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
-      "service": "member-secops-u15-p2"
-    },
-    {
-      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
-      "service": "member-secops-u15-p1"
-    },
-    {
-      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
-      "service": "member-secops-u14-p3"
-    },
-    {
-      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
-      "service": "member-secops-u14-p2"
-    },
-    {
-      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
-      "service": "member-secops-u14-p1"
-    },
-    {
-      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
-      "service": "member-secops-u13-p3"
-    },
-    {
-      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
-      "service": "member-secops-u13-p2"
-    },
-    {
-      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
-      "service": "member-secops-u13-p1"
-    },
-    {
-      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
-      "service": "member-secops-u12-p3"
-    },
-    {
-      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
-      "service": "member-secops-u12-p2"
-    },
-    {
-      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
-      "service": "member-secops-u12-p1"
-    },
-    {
-      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
-      "service": "member-secops-u11-p3"
-    },
-    {
-      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
-      "service": "member-secops-u11-p2"
-    },
-    {
-      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
-      "service": "member-secops-u11-p1"
-    },
-    {
-      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
-      "service": "member-secops-u10-p3"
-    },
-    {
-      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
-      "service": "member-secops-u10-p2"
-    },
-    {
-      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
-      "service": "member-secops-u10-p1"
-    },
-    {
-      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
-      "service": "member-secops-u09-p3"
-    },
-    {
-      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
-      "service": "member-secops-u09-p2"
-    },
-    {
-      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
-      "service": "member-secops-u09-p1"
-    },
-    {
-      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
-      "service": "member-secops-u08-p3"
-    },
-    {
-      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
-      "service": "member-secops-u08-p2"
-    },
-    {
-      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
-      "service": "member-secops-u08-p1"
-    },
-    {
-      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
-      "service": "member-secops-u07-p3"
-    },
-    {
-      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
-      "service": "member-secops-u07-p2"
-    },
-    {
-      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
-      "service": "member-secops-u07-p1"
-    },
-    {
-      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
-      "service": "member-secops-u06-p3"
-    },
-    {
-      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
-      "service": "member-secops-u06-p2"
-    },
-    {
-      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
-      "service": "member-secops-u06-p1"
-    },
-    {
-      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
-      "service": "member-secops-u05-p3"
-    },
-    {
-      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
-      "service": "member-secops-u05-p2"
-    },
-    {
-      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
-      "service": "member-secops-u05-p1"
-    },
-    {
-      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
-      "service": "member-secops-u04-p3"
-    },
-    {
-      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
-      "service": "member-secops-u04-p2"
-    },
-    {
-      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
-      "service": "member-secops-u04-p1"
-    },
-    {
-      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
-      "service": "member-secops-u03-p3"
-    },
-    {
-      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
-      "service": "member-secops-u03-p2"
-    },
-    {
-      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
-      "service": "member-secops-u03-p1"
-    },
-    {
-      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
-      "service": "member-secops-u02-p3"
-    },
-    {
-      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
-      "service": "member-secops-u02-p2"
-    },
-    {
-      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
-      "service": "member-secops-u02-p1"
-    },
-    {
-      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
-      "service": "member-secops-u01-p3"
-    },
-    {
-      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
-      "service": "member-secops-u01-p2"
-    },
-    {
-      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
-      "service": "member-secops-u01-p1"
-    },
-    {
-      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
-      "service": "member-secops-u00-p3"
-    },
-    {
-      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
-      "service": "member-secops-u00-p2"
-    },
-    {
-      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
-      "service": "member-secops-u00-p1"
-    },
-    {
-      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
-      "service": "member-proxy-b"
-    },
-    {
-      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
-      "service": "member-proxy-a"
+      "image_id": "sha256:a8eba036d655382ff88f337102dec08d08a28360b5ec98e0b9bea376bd5df590",
+      "service": "member-at30-m1-d1"
     }
   ],
   "build_digests": [
     {
       "name": "amd64.test",
-      "sha256": "9a563f3bf75858a1c9abf334908ef8d23ea2ec714aa1d39a430b18ba2348c592"
+      "sha256": "5478e23b83b35ab98bbd1b6117957fcbd05046c544c79f16329c43eaa684829d"
+    },
+    {
+      "name": "arm64.test",
+      "sha256": "f4f0e3857f90e6859fd620e624cca99ad51e492496568b64c77445254e5fecc7"
     },
     {
       "name": "proxyprobe",
       "sha256": "a9109d38c54602b0e23cb033f5979caa3ccfa730ed42da9d7cd7267da9368bed"
-    },
-    {
-      "name": "arm64.test",
-      "sha256": "38e022e0f268db063915895a36ce1574938184d81da33228f631231851f25e65"
     }
   ],
-  "previous_run": "history/follow-up-6/",
+  "previous_run": "history/follow-up-7/",
   "projector_owned_rows_written": [],
-  "expected": "An isolated DB/WAL restore replays previously ACKed node archives, reconciles provider and peers without duplicates or entitlement extension, and measures complete-service RPO/RTO.",
-  "actual": {
-    "evidence": [
-      "history/follow-up-6/pitr.json"
-    ],
-    "historical_subset": "history/follow-up-6/AT30.json"
-  },
-  "status": "blocked",
   "id": "AT30",
   "requirements": [
     "DATA01",
     "BILL01",
     "MTR03"
   ],
+  "status": "blocked",
+  "expected": "An isolated DB/WAL restore replays previously ACKed node archives, reconciles provider and peers without duplicates or entitlement extension, preserves or explains revocation intent, and measures complete-service RPO/RTO.",
+  "actual": {
+    "evaluation": {
+      "primary_overwrite_refusal": true,
+      "post_restore_checklist_6_of_6": true,
+      "fail_safe_negative_without_protocol": true,
+      "product_restore_protocol_5_steps": true,
+      "retained_node_usage_replay": true,
+      "provider_reconciliation": true,
+      "unmapped_peer_discovery_deduplicated": true,
+      "existing_member_t1_peer_rediscovered": true,
+      "t0_t1_device_revocation_preserved": false
+    },
+    "evidence": [
+      "restore-reconcile.json",
+      "restore-reconcile.md",
+      "history/follow-up-6/pitr.json"
+    ],
+    "rpo_seconds": {
+      "pre_replay_db_rpo_seconds": 116.651367,
+      "post_replay_service_rpo_seconds": 0
+    },
+    "rto_seconds": {
+      "protocol_rto_seconds": 105.938765968,
+      "total_outage_rto_seconds": 111.512077088
+    },
+    "previous_record": "history/follow-up-7/AT30.json"
+  },
   "blockers": [
-    "Unchanged since Follow-up 6: original isolated PITR remains valid historical evidence; real retained-node replay plus independently current provider/peer/revocation reconciliation remain."
+    "SECOPS-18 (w2-members / internal/devices): A device revoked in T0..T1 (peerM2D2) has member_devices.status='authorized' in the restored T0 database while NetBird N1 has already withdrawn it from fvpn-paid-<group_id> (with no external revocation tombstone in NetBird). When members.reconcile -> SyncMember -> SyncDevice (apps/worker/jobs_members.go:158, internal/devices/worker.go:72-93) runs after restore, it treats T0 member_devices.status='authorized' as authoritative and calls s.Adapter.SetAuthorization(ctx, deployment, peer, true, groups), silently re-adding the revoked peer to NetBird's paid group and re-including it in the node's active device_bindings without a discrepancy audit or re-confirmation."
   ]
 }

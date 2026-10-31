@@ -86,3 +86,7 @@ AT07 live nodes each have one incarnation and a usage checkpoint with accepted
 bytes `"0"` and `through` set (`2026-10-30T20:51:11.681114Z` and
 `2026-10-30T20:51:24.065428Z`). That is the documented checkpoint-with-no-samples
 shape. Counted historical usage across an installer rerun is still unmeasured.
+
+## Follow-up 3 — `identity_conflict` on run `60a7102e`
+
+`NodeDetail.identity_conflict` is projected on this tree (`#217`). On the cloned node, `getNode` returned HTTP 200 with the field present both before `StartClonedIdentityFixture` and after both stages were `enrolled`: `{mapping_frozen: false, conflict_count: 0, last_conflict_at: null}`. `Observe` then reported `endpoint_rows` 1, `conflicts` 0, `mapping_frozen` false. The lab offered one compatibility domain on each bridge (`172.28.38.0/24` and `192.0.11.0/24`), so the conflict, freeze, revoke plus re-enroll, and quiet-window steps were not run. ENR-05 and ENR-06 symbols are still absent from `docs/e2e/RUN.md`.

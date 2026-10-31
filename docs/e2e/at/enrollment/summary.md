@@ -1,31 +1,20 @@
-# Enrollment acceptance — follow-up 2
+# Enrollment acceptance
 
-Run `7615d23d-d572-4db1-a903-9610dd3bcef3`, 2026-10-30 20:49:33Z–20:55:13Z,
-on `w4-enroll / 12000`. Source `efba7fba96e9e354900e9360b6ef4cfebf578ea7`
-(dirty harness at invocation), tree SHA-256
-`79cc1e81c8cc85f9044c425e3505608d51714bf91a90d0f444e0ed560899fc0b`.
-Both fresh stacks and both live probes exit 0. The acceptance target exits
-nonzero because AT06 still carries prior failures and AT07 still has blocked
-subchecks.
+Every required check must pass. Missing hooks keep the complete AT blocked.
 
-| AT | Complete status | Decisive observation | Current subchecks | Record |
-|---|---|---|---|---|
-| AT06 | blocked | Prior failed check requires explicit review. The four retained failures are run `bebfe230-26d4-4e3d-b052-81d258d04e07` (`audit_read`, `issue_reinstall`, `incarnation_history`, `probe_process`), HTTP 429 `RATE_LIMITED`. The harness now honors `Retry-After`. That resolution is a harness change. Every current subcheck passed, including `token_sha256` (revision 10, PR #195) and `listNodeIncarnations` (PR #200) and `EnrollmentPeerInventory` (devstack follow-up 12, PR #204). | 205 passing, 0 blocked, 0 failed | [AT06.json](AT06.json), [AT06.md](AT06.md) |
-| AT07 | blocked | `StartClonedIdentityFixture.Observe` showed the same machine, agent SPKI and NetBird key hashes on source and clone, both stages `enrolled`, `conflicts` 0, `mapping_frozen` false (ENR-08) | 15 passing, 7 blocked, 0 failed | [AT07.json](AT07.json), [AT07.md](AT07.md) |
+| AT | Status | Decisive observation | Evidence |
+|---|---|---|---|
+| AT06 | blocked | HTTP 429 recurred (2) on limiter class browser, bucket BrowserRate 10/s burst 30. Owner: control. The bebfe230 review stays unresolved. | [AT06.json](AT06.json), [AT06.md](AT06.md) |
+| AT07 | blocked | ENR-07 / devstack follow-up 14: the lab has no second /24 for the clone. StartClonedIdentityFixture(ctx, "node") attaches node-clone to the same lab bridge and the same origin bridge (last octet .23). The agent mTLS path is the local resolver proxy to agent.example.invalid:9443, whose TCP peer is that lab address, not trusted gateway 172.28.38.21/32, so X-Forwarded-For is not the compatibility domain. Interleave, conflict freeze, revokeNode plus re-enroll, and the quiet-window promotion were not run. | [AT07.json](AT07.json), [AT07.md](AT07.md) |
 
-ENR-02 and ENR-03 are closed on this run. ENR-04 is closed: the join cycle's
-discarded-response race returned 201 and 409 `ENROLLMENT_KEY_MISMATCH`, the
-replay joined with bootstrap HTTP 200, and both inventory reads were
-`complete` with one setup key, one use and one projected peer. ENR-07
-fingerprints are measured and differ across the two clean first boots. The
-clone fixture ran; conflict rows did not appear. ENR-05 and ENR-06 stay blocked
-on devstack follow-up 13.
+See [RUN.md](RUN.md) and [requests.md](requests.md). Immutable attempts are in `history/`.
 
-Earlier immutable runs: initial `79b89e47-b23f-45f8-a683-28e0557dc1ba` and
-`9db51ea3-d807-449e-a812-cfad739db675`; follow-up 1
-`75dbb974-04d2-4e45-a6bd-cfe0d923bd2c`; the 429 attempt
-`bebfe230-26d4-4e3d-b052-81d258d04e07`; the revision-10 measurement
-`9bb66c4e-e429-450b-8671-521d33926ede` on `746651e` before follow-up 12 was in
-this branch. [Requests](requests.md), [API review](api-surface-review.md) and
-[RUN.md](RUN.md) carry the closure evidence. Teardown left owned containers,
-networks, volumes and images at zero.
+## Follow-up 3 — run `60a7102e-b824-4927-a576-62033f458157`
+
+UTC `2026-10-30T23:05:38Z`–`2026-10-30T23:10:54Z`. Source `99ab668` dirty, tree `62e86bf6b54985af168edc6d49193a272c4442007b03074df8686e07f37be406`. Both probes exited 0. Cleanup `{containers:0,networks:0,volumes:0,images:0}`.
+
+AT06: 254 passing, 1 blocked, 0 failed. The blocked check is `rate_limit_review`: two HTTP 429 responses, both limiter class `browser` (`GET /api/v1/admin/audit-events` and `GET /api/v1/admin/nodes/{id}/incarnations`). `audit_read`, `issue_reinstall` and `incarnation_history` passed after `Retry-After`. The bebfe230 review stays unresolved. Owner of the bucket: control.
+
+AT07: 15 passing, 7 blocked, 0 failed. The clone and the source shared `172.28.38.0/24` (`172.28.38.40` and `172.28.38.129`) and `192.0.11.0/24` (`192.0.11.20` and `192.0.11.23`). After both stages were `enrolled`, `Observe` reported one endpoint row, zero conflicts, `mapping_frozen` false. `getNode` projected `identity_conflict` `{false, 0, null}`. The interleave, freeze, revoke plus re-enroll, and quiet-window steps were not run. ENR-05 and ENR-06 stay blocked on the follow-up 13 recheck and were not emulated.
+
+Run `35e542f8-730e-4be0-8214-e4a9dd818c40` is the earlier attempt in this follow-up. Its process exit is the same two 429s failing the Go test. That history directory is unchanged.

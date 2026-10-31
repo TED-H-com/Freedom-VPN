@@ -18,14 +18,20 @@ Legal port bases are `6000 + 6000*n` for `n` from 0 through 9; `66000`
 is rejected. Existing bases `18000..60000` retain their original subnets and
 ports. The added `12000` slot belongs to `w4-enroll`; `6000` stays reserved.
 See the [binding table](RUN.md#assigned-port-slots) for all owners and subnets.
-This task uses only `e2e` / `18000`. Teardown matches only its own prefix.
+This task uses only `e2e` / `18000`. Teardown matches only its own prefix:
+exactly `fvpn-<prefix>`, or `fvpn-<prefix>-` plus a known service, volume, or
+runtime token. Prefix `e2e` does not remove `fvpn-e2e-exports-*`. A native
+peer whose name contains `exports` is still removed, because its token is
+`member`.
 
 Images use neutral `fvpn-devstack-*` tags, including
 `fvpn-devstack-netbird:0.82.0`, so harnesses share the Docker build cache.
 Bring-up pins locally built services to their immutable image IDs before
 starting Compose; a concurrent worktree moving a shared `:local` tag cannot
 change that run's selected image. Per-prefix `fvpn-<prefix>-*:run` aliases retain those images while concurrent
-builds move the neutral tags; teardown removes these runtime aliases. Auxiliary
+builds move the neutral tags; teardown removes these runtime aliases by the
+full `repository:tag` (`fvpn-<prefix>-node:run`), not a bare `:latest` name.
+Auxiliary
 update nodes use the running node's image ID. Teardown retains the shared images.
 
 ## Loopback ports

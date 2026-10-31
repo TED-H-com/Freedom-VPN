@@ -352,13 +352,14 @@ func TestD067_AwaitingMemberGrantsObservationAndPublicationEvidence(t *testing.T
 	if forwarding {
 		t.Fatalf("forwarding = %v, want false", forwarding)
 	}
-	if len(errs) != 0 {
-		t.Fatalf("errors = %v, want empty", errs)
+	if len(errs) != 1 || errs[0].Code != api.ErrorCodeAWAITINGMEMBERGRANTS || errs[0].Stage != "lease" || errs[0].Message != "Serving lease has no member grants yet." {
+		t.Fatalf("errors = %+v, want one AWAITING_MEMBER_GRANTS lease error", errs)
 	}
 
 	now := report.ObservedAt.UTC()
-	if cause := publicationForwardingFailure(report, now, false); cause != "forwarding_disabled" {
-		t.Fatalf("publicationForwardingFailure = %q, want forwarding_disabled", cause)
+	// A failed lease/qos/source_binding check returns check_failed before the forwarding_disabled branch.
+	if cause := publicationForwardingFailure(report, now, false); cause != "check_failed" {
+		t.Fatalf("publicationForwardingFailure = %q, want check_failed", cause)
 	}
 	if PublicationForwardingEvidence(report, now) {
 		t.Fatal("PublicationForwardingEvidence must be false while awaiting_member_grants has member_forwarding_enabled=false")
