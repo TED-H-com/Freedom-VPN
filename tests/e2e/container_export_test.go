@@ -34,7 +34,11 @@ func TestISO01CompleteCaptureExport(t *testing.T) {
 		t.Fatal("failed command replaced complete capture")
 	}
 	var diagnostic diagnosticBuffer
-	_, _ = diagnostic.Write([]byte(input))
+	cmd = exec.Command("cat")
+	cmd.Stdin, cmd.Stdout = strings.NewReader(input), &diagnostic
+	if err = cmd.Run(); err != nil {
+		t.Fatal(err)
+	}
 	if !diagnostic.overflow || diagnostic.Len() != 1<<20 {
 		t.Fatal("diagnostic overflow not explicit")
 	}

@@ -69,9 +69,14 @@ func exportCommand(cmd *exec.Cmd, destination string) (result ContainerExport, e
 }
 
 type diagnosticBuffer struct {
-	bytes.Buffer
+	buf      bytes.Buffer
 	overflow bool
 }
+
+// Do not embed bytes.Buffer: its promoted ReadFrom would let io.Copy bypass
+// Write's limit when os/exec drains a child's stdout.
+func (b *diagnosticBuffer) Bytes() []byte { return b.buf.Bytes() }
+func (b *diagnosticBuffer) Len() int      { return b.buf.Len() }
 
 func (b *diagnosticBuffer) Write(p []byte) (int, error) {
 	n := len(p)
@@ -80,6 +85,6 @@ func (b *diagnosticBuffer) Write(p []byte) (int, error) {
 		b.overflow = true
 		p = p[:remaining]
 	}
-	_, _ = b.Buffer.Write(p)
+	_, _ = b.buf.Write(p)
 	return n, nil
 }
