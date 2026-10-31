@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
@@ -80,6 +81,14 @@ func (s *Stack) prepareInstallerResolver(ctx context.Context) error {
 			strings.TrimSpace(string(img)), "--no-check-update", "--no-permcheck", "-c", "/opt/adguardhome/conf/AdGuardHome.yaml", "-w", "/opt/adguardhome/work").Run(); err != nil {
 			return err
 		}
+	}
+	ready, cancel := context.WithTimeout(ctx, 15*time.Second)
+	defer cancel()
+	if !waitUntil(ready, 200*time.Millisecond, func() bool {
+		raw, err := exec.CommandContext(ready, "docker", "exec", c, "ss", "-H", "-lnu", "sport = :53").Output()
+		return err == nil && strings.Contains(string(raw), ":53")
+	}) {
+		return fmt.Errorf("installer resolver did not bind DNS before NetBird startup")
 	}
 	return nil
 }
