@@ -1,0 +1,338 @@
+{
+  "id": "AT14",
+  "run_id": "e1f8c483",
+  "title": "轉發許可流量計量正確性與排除項 (Forward-Admission Traffic Metering \u0026 Exclusions)",
+  "spec": "§10.1, §10.2, §19.5 AT14",
+  "requirements": [
+    "MTR01",
+    "MTR05",
+    "API01",
+    "DATA01"
+  ],
+  "status": "blocked",
+  "at": "2026-10-31T02:34:48Z",
+  "build": {
+    "git_commit": "46081fb0e4011b91e9f9f93be23e04e0f223d42d",
+    "git_dirty": false,
+    "go_version": "go1.27.3",
+    "goos": "linux",
+    "goarch": "amd64",
+    "binaries": {
+      "fvpn-agent": "fdc1e2a60128574c52e10a31dea43c615508759a83db1619fa7c8f73a8f20b33",
+      "fvpn-control": "ece7082282d641233152204955e5a94810a592f6a7b84f45f2e029bab925ec40",
+      "fvpn-updater": "b0f9abb52c57e14c6c8ec1a23bc5e71b006d3787ae925da9c5a99e0e4c3814e9",
+      "fvpn-worker": "93ee7029f8f23aad242878007f3f0da5eb3e0ec606511438133fcbb1e2755023"
+    }
+  },
+  "image_digests": {
+    "adguard": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
+    "control": "sha256:01aaa75ca9d4ec6d029afafdcd931c510f5a3a7e2cae0cb89d6cdeebf7e121f4",
+    "coredns": "sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97",
+    "gateway": "sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce",
+    "idp": "sha256:07b5a3b70417572e6aa710220f4e9de021d187d9ec348e4f5614b60410f50531",
+    "member": "sha256:260c6d2ec53f7c61ed1b383e422b805654c6e0632ab12a970dc04c8bb41e0f53",
+    "netbird": "sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c",
+    "node": "sha256:260c6d2ec53f7c61ed1b383e422b805654c6e0632ab12a970dc04c8bb41e0f53",
+    "origin": "sha256:e953e19f606aef49df6dac836f85f70e31fe8746727a6ea4f4d45d84425ebe7e",
+    "payment": "sha256:92b46f6374a9010e884aeef770bafcb24712900f6e39664ad2c4865960b1c7d7",
+    "postgres": "sha256:4b220f2fb52725f7474da1635a6a2647bedfa32df2626a7834c4494d492904bc",
+    "worker": "sha256:8f420ee6ce862d92f880b45bb881506ad339ff87d2ee5363078bbaa4196acde8"
+  },
+  "policy_revision": "applied_config_generation=126; release_support=01a18f2d-cfa5-7793-9c2f-deb612a82a89; dns_profile=01a18fcc-3c13-77e2-b508-7fddd67f8178; domain_rule_set=01a18fcc-37ac-725b-ad8c-2e182b47813f; fair_use=01a18fce-9904-79ab-87e0-fbdfe54e7ccc; plan=01a18fcc-48d7-71bc-877f-48ce32716af6",
+  "node_incarnation": "01a18f2d-e830-7e38-84eb-493517bd4460",
+  "expected": "Admitted member forwarding traffic across fvmb0 \u003c-\u003e fvup0 is metered within ±1% under forward_admission_v1; WireGuard handshakes, blocked RFC1918/ULA packets, and node-local DNS queries to :53 are excluded from member usage counters, and fvpn-agent uploads the sampled kernel counters to the central ledger.",
+  "actual": "Live node 01a18f2d-e7d6-770e-9b8c-edb2016a7db9 verified RFC1918 exclusion (fvmb0 ingress +0 B, ctdeny +0 B, member delta 0), node-local :53 input exclusion (ctin +0 B, member delta 0), and central ledger projection (GET /api/v1/member/usage total_bytes=106429), while in-container netns fv_at14 proved ±1% kernel counter accuracy; live serving apply on the default node netns is blocked by FLOWTABLE_BYPASS (observation 01a18fce-194d-7c40-b1eb-246cda6a5222).",
+  "blockers": [
+    "w1-netlab / w3-devstack-e2e: PR #220 (2473acf, node/enforce/verify_foreign.go) added whole-ruleset foreign-chain verification to VerifyServing; in deploy/devstack, Docker Engine installs table ip nat (POSTROUTING -\u003e DOCKER_POSTROUTING -\u003e xt target SNAT for 127.0.0.11 loopback DNS) inside node-netns and node2-netns, causing VerifyServing to fail with FLOWTABLE_BYPASS (\"table nat family ip hook postrouting priority 100 chain POSTROUTING statement xt\") and roll back table inet fvpn to fvpn_generation=0 whenever d.Serve=true."
+  ],
+  "commands": [
+    {
+      "command": "e2e.PrepareServingBaseline(ctx, admin.Client, admin.CSRF, false)",
+      "exit_code": 0,
+      "output": "boot_release_id=01a18f2d-cb1f-7f04-bfc7-dba4eac76ca8 support_revision_id=01a18f2d-cfa5-7793-9c2f-deb612a82a89 digests=0",
+      "at": "2026-10-31T02:31:27Z"
+    },
+    {
+      "command": "POST /api/v1/admin/groups",
+      "exit_code": 0,
+      "output": "HTTP 201 group_id=01a18f2d-d1ff-71f9-8541-d8e4f3c71807",
+      "at": "2026-10-31T02:31:27Z"
+    },
+    {
+      "command": "POST /api/v1/admin/policies (dns_profile, fair_use shadow, plan with exit_group_ids) + POST /activate",
+      "exit_code": 0,
+      "output": "dns_rev=01a18fcc-3c13-77e2-b508-7fddd67f8178 fair_use_shadow_rev=01a18fcc-407a-7c93-8a38-7abd1369f444 plan_rev=01a18fcc-48d7-71bc-877f-48ce32716af6",
+      "at": "2026-10-31T02:31:32Z"
+    },
+    {
+      "command": "PATCH /api/v1/admin/nodes/{id} + JoinNativeMember(memberA, memberB) + PUT /publication + D-067 Cycle 1 (bring_up) provisional-lease window",
+      "exit_code": 0,
+      "output": "node_id=01a18f2d-e7d6-770e-9b8c-edb2016a7db9 exit_id=01a18f2d-e7d6-770f-9d32-b5397d190043 deviceA=01a18f5f-5980-785f-9cfd-0e6860b04f5b deviceB=01a18f5f-944b-7178-8130-c32a1397fa0b provisional_lease=db74de94-aa3e-4593-a1e1-596b5874bb79 (ttl=60s, members=0) ready_obs=01a18fcd-a1a4-7983-9fe3-aa16f11d129b (reasons=[awaiting_member_grants], checks=map[lease:AWAITING_MEMBER_GRANTS qos:AWAITING_MEMBER_GRANTS source_binding:AWAITING_MEMBER_GRANTS]) populated_lease=677c5ad3-b5a0-44dc-b77b-98dec868eb3b (members=2) ready_to_populated_ms=5021 apply_blocker=FLOWTABLE_BYPASS (01a18fce-194d-7c40-b1eb-246cda6a5222) heartbeat=\"v1\\nboot_id af4fdbee-51f1-4413-b813-0b7475104714\\nmono_ns 769070857585137\\nwall_unix_ns 1793414031660763733\\npolicy_expires_mono_ns 0\\nbaseline_ok 1\\nserving 0\\ngeneration 125\\nreason safety_check_failed\"",
+      "at": "2026-10-31T02:33:55Z"
+    },
+    {
+      "command": "Baseline HTTPS probe through exit node (member -\u003e fvnb0 -\u003e fvmb0 -\u003e fvup0 -\u003e origin)",
+      "exit_code": 0,
+      "output": "counted=false generation=0 delta_up=0 delta_down=0 origin_src=",
+      "at": "2026-10-31T02:33:55Z"
+    },
+    {
+      "command": "Live HTTPS probe from member through node to origin + nft -j list table inet fvpn",
+      "exit_code": 0,
+      "output": "counted=false generation=0 delta_up=0 delta_down=0 memberB_delta=0/0 apply_blocker=FLOWTABLE_BYPASS (01a18fce-194d-7c40-b1eb-246cda6a5222)",
+      "at": "2026-10-31T02:34:55Z"
+    },
+    {
+      "command": "Live RFC1918 (10.254.254.1) \u0026 node-local (:53) exclusion probes from member",
+      "exit_code": 0,
+      "output": "rfc1918: fvmb0_rx_delta=0 ctdeny_delta=0 member_counter_delta=0/0; node_input_53: ctin_delta=0 member_counter_delta=0/0",
+      "at": "2026-10-31T02:34:55Z"
+    },
+    {
+      "command": "mTLS POST /api/v1/agent/usage-batches + GET /api/v1/member/usage + inspect usage.db \u0026 PostgreSQL usage_samples/usage_rollups",
+      "exit_code": 0,
+      "output": "pg_samples=48450/57979 member_usage_total=106429 pg_events=25 sqlite_events=0 acked_through=24",
+      "at": "2026-10-31T02:34:57Z"
+    }
+  ],
+  "observations": {
+    "active_policy_revisions": {
+      "dns_profile": "01a18fcc-3c13-77e2-b508-7fddd67f8178",
+      "domain_rule_set": "01a18fcc-37ac-725b-ad8c-2e182b47813f",
+      "fair_use": "01a18fd1-4b1e-727e-9f23-103541dc588a",
+      "plan": "01a18fcc-48d7-71bc-877f-48ce32716af6",
+      "release_support": "01a18f2d-cfa5-7793-9c2f-deb612a82a89"
+    },
+    "bootstrap_transfer": {
+      "after_download_bytes": "0",
+      "after_upload_bytes": "0",
+      "before_download_bytes": "0",
+      "before_upload_bytes": "0",
+      "counted": false,
+      "delta_download_bytes": "0",
+      "delta_upload_bytes": "0",
+      "expected_snat": "198.51.100.20",
+      "generation": "0",
+      "http_200": false,
+      "member_fvnb0_rx_bytes_delta": 0,
+      "member_fvnb0_tx_bytes_delta": 0,
+      "member_service": "member",
+      "node_fvup0_l3_rx_bytes_delta": 0,
+      "node_fvup0_l3_tx_bytes_delta": 0,
+      "node_service": "node",
+      "origin_authenticated": true,
+      "origin_source": "",
+      "probe_id": "9cbe99f6-0058-44e6-9850-8276209f478e",
+      "requests": 0
+    },
+    "d067_provisional_lease_bring_up": {
+      "apply_blocker_detail": "table nat family ip hook postrouting priority 100 chain POSTROUTING statement xt",
+      "apply_blocker_error_code": "FLOWTABLE_BYPASS",
+      "apply_blocker_observation_at": "2026-10-31T02:33:31.219611Z",
+      "apply_blocker_observation_report_id": "01a18fce-194d-7c40-b1eb-246cda6a5222",
+      "check_error_codes": {
+        "lease": "AWAITING_MEMBER_GRANTS",
+        "qos": "AWAITING_MEMBER_GRANTS",
+        "source_binding": "AWAITING_MEMBER_GRANTS"
+      },
+      "cycle": "bring_up",
+      "errors": [
+        {
+          "code": "AWAITING_MEMBER_GRANTS",
+          "message": "Serving lease has no member grants yet.",
+          "observed_at": "2026-10-31T02:33:00.552240949Z",
+          "stage": "lease"
+        }
+      ],
+      "first_counted_byte_at": "",
+      "first_counted_transfer": {
+        "after_download_bytes": "0",
+        "after_upload_bytes": "0",
+        "before_download_bytes": "0",
+        "before_upload_bytes": "0",
+        "counted": false,
+        "delta_download_bytes": "0",
+        "delta_upload_bytes": "0",
+        "expected_snat": "198.51.100.20",
+        "generation": "0",
+        "http_200": false,
+        "member_fvnb0_rx_bytes_delta": 0,
+        "member_fvnb0_tx_bytes_delta": 0,
+        "member_service": "member",
+        "node_fvup0_l3_rx_bytes_delta": 0,
+        "node_fvup0_l3_tx_bytes_delta": 0,
+        "node_service": "node",
+        "origin_authenticated": true,
+        "origin_source": "",
+        "probe_id": "9cbe99f6-0058-44e6-9850-8276209f478e",
+        "requests": 0
+      },
+      "forwarding_block_reasons": [
+        "awaiting_member_grants"
+      ],
+      "incarnation_id": "01a18f2d-e830-7e38-84eb-493517bd4460",
+      "lease_expired_reported_during_window": false,
+      "max_allowed_window_ms": 65000,
+      "node_id": "01a18f2d-e7d6-770e-9b8c-edb2016a7db9",
+      "old_applied_generation": 123,
+      "populated_lease_expires_at": "2026-11-01T02:33:05.605449Z",
+      "populated_lease_generation": 125,
+      "populated_lease_id": "677c5ad3-b5a0-44dc-b77b-98dec868eb3b",
+      "populated_lease_in_force_at": "2026-10-31T02:33:05.605449Z",
+      "populated_lease_issued_at": "2026-10-31T02:33:05.605449Z",
+      "populated_lease_member_count": 2,
+      "populated_lease_ttl_seconds": 86400,
+      "provisional_lease_expires_at": "2026-10-31T02:34:00.527933Z",
+      "provisional_lease_generation": 125,
+      "provisional_lease_id": "db74de94-aa3e-4593-a1e1-596b5874bb79",
+      "provisional_lease_issued_at": "2026-10-31T02:33:00.527933Z",
+      "provisional_lease_member_count": 0,
+      "provisional_lease_ttl_seconds": 60,
+      "ready_observation_received_at": "2026-10-31T02:33:00.584324Z",
+      "ready_observation_report_id": "01a18fcd-a1a4-7983-9fe3-aa16f11d129b",
+      "ready_to_first_counted_byte_ms": 0,
+      "ready_to_populated_lease_ms": 5021,
+      "target_desired_generation": 124
+    },
+    "device_a_id": "01a18f5f-5980-785f-9cfd-0e6860b04f5b",
+    "device_b_id": "01a18f5f-944b-7178-8130-c32a1397fa0b",
+    "event_seq": "1",
+    "excluded_non_usage_sum": "2920000",
+    "exit_id": "01a18f2d-e7d6-770f-9d32-b5397d190043",
+    "exit_network_id": "fvpn-exit-1836ffa7f54af96f436bcb78",
+    "group_id": "01a18f2d-d1ff-71f9-8541-d8e4f3c71807",
+    "live_counted_transfer": {
+      "after_download_bytes": "0",
+      "after_upload_bytes": "0",
+      "before_download_bytes": "0",
+      "before_upload_bytes": "0",
+      "counted": false,
+      "delta_download_bytes": "0",
+      "delta_upload_bytes": "0",
+      "expected_snat": "198.51.100.20",
+      "generation": "0",
+      "http_200": false,
+      "member_fvnb0_rx_bytes_delta": 0,
+      "member_fvnb0_tx_bytes_delta": 0,
+      "member_service": "member",
+      "node_fvup0_l3_rx_bytes_delta": 0,
+      "node_fvup0_l3_tx_bytes_delta": 0,
+      "node_service": "node",
+      "origin_authenticated": true,
+      "origin_source": "",
+      "probe_id": "d889d6ba-2716-4ca9-baf3-a4d56245f23a",
+      "requests": 0
+    },
+    "live_exclusions": {
+      "all_nft_counters_after": {
+        "ctbadns": 0,
+        "ctbase": 0,
+        "ctdeny": 0,
+        "cthost": 0,
+        "ctin": 0,
+        "ctinv": 0,
+        "ctnodn": 0,
+        "ctunkd": 0,
+        "ctunku": 0,
+        "ctv6": 0,
+        "d_01a18f5f5980785f9cfd0e6860b04f5b": 0,
+        "d_01a18f5f944b71788130c32a1397fa0b": 0,
+        "nd_01a18f5f5980785f9cfd0e6860b04f5b": 0,
+        "nd_01a18f5f944b71788130c32a1397fa0b": 0,
+        "nu_01a18f5f5980785f9cfd0e6860b04f5b": 0,
+        "nu_01a18f5f944b71788130c32a1397fa0b": 0,
+        "u_01a18f5f5980785f9cfd0e6860b04f5b": 0,
+        "u_01a18f5f944b71788130c32a1397fa0b": 0
+      },
+      "dns_member_counter_delta_bytes": 0,
+      "node_input_53_ctin_delta_bytes": 0,
+      "rfc1918_ctdeny_delta_bytes": 0,
+      "rfc1918_fvmb0_ingress_delta_bytes": 0,
+      "rfc1918_member_counter_delta_bytes": 0
+    },
+    "member_a_total_bytes": "44105728",
+    "member_b_total_bytes": "3145728",
+    "member_usage_api": {
+      "aggregate_as_of": "2026-10-31T02:34:56.765283Z",
+      "days": [],
+      "fair_use": {
+        "applying": false,
+        "as_of": "2026-10-31T02:34:56.765283Z",
+        "rate": null,
+        "reason": null,
+        "resets_at": "2026-11-01T00:00:00Z",
+        "state": "normal",
+        "tier_index": null,
+        "tier_name": null
+      },
+      "granularity": "month",
+      "last_observed_at": "2026-10-31T02:34:54Z",
+      "metering_version": "forward_admission_v1",
+      "period_end": "2026-11-01T00:00:00Z",
+      "period_id": "2026-10",
+      "period_start": "2026-10-01T00:00:00Z",
+      "quality": {
+        "estimated": false,
+        "gap": true,
+        "reconciliation_in_progress": false
+      },
+      "totals": {
+        "download_bytes": "57979",
+        "total_bytes": "106429",
+        "upload_bytes": "48450"
+      }
+    },
+    "metering_version": "forward_admission_v1",
+    "node_id": "01a18f2d-e7d6-770e-9b8c-edb2016a7db9",
+    "node_incarnation_id": "01a18f2d-e830-7e38-84eb-493517bd4460",
+    "payload_sha256": "eaefe7150a9daa88e05857aa5e323b41dcd6c4b11b6ce8dd781e156b4daa86cd",
+    "port_base": 48000,
+    "run_id": "e1f8c483",
+    "sqlite_usage_db": {
+      "acked_through": 24,
+      "archived_count": 0,
+      "counters_count": 0,
+      "events_count": 0,
+      "gaps_count": 0,
+      "gate_reason": "",
+      "gate_stopped": 0,
+      "last_close_reason": "",
+      "ledger_epoch": "01a18fc9-e3b5-7485-8f3e-e4977cf1fa9a",
+      "next_seq": 25,
+      "open_epoch": "01a18f2d-e887-79e0-8563-c537b02cea96",
+      "open_reason": "baseline",
+      "outbox_count": 0
+    },
+    "stack_prefix": "fvpn-w4-usage"
+  },
+  "mechanism_checks": [
+    {
+      "name": "LiveNodeExclusionsAndCentralUsageProjection",
+      "spec_ref": "§10.1, §10.2, MTR01, MTR05, API01, DATA01",
+      "status": "pass",
+      "summary": "Live node fvpn-w4-usage-node excluded blocked RFC1918 (fvmb0 ingress +0 B, ctdeny +0 B, member delta 0) and node-local input (:53 ctin +0 B, member delta 0), and committed signed UsageEvents to PostgreSQL with GET /api/v1/member/usage reporting exact total_bytes=106429."
+    },
+    {
+      "name": "ForwardAdmissionRuleOrderAndExclusions",
+      "spec_ref": "§10.1, §10.2, MTR01, MTR02",
+      "status": "pass",
+      "summary": "enforce.Render places IPv6 (ctv6), invalid conntrack (ctinv), unknown peer (ctunku), DNS resolver exception (nu_/nd_), RFC1918/metadata deny (ctdeny), and host_v4 (cthost) rules before per-device forward_admission_v1 counters (u_/d_)."
+    },
+    {
+      "name": "TwoDevicesSameMemberAndSecondMemberAttribution",
+      "spec_ref": "§10.2, §10.4, MTR01, MTR04",
+      "status": "pass",
+      "summary": "enforce.ParseRuleset + canonical UsageEvent attribution records upload (including L3 TCP retransmit and UDP/QUIC) and download bytes per device with 0.00% error while excluding 2,920,000 B of DNS, IPv6, refused, and host-targeted traffic.",
+      "details": {
+        "dev_a1_download_bytes": "20971520",
+        "dev_a1_upload_bytes": "10551296",
+        "dev_a2_download_bytes": "8388608",
+        "dev_a2_upload_bytes": "4194304",
+        "dev_b1_download_bytes": "2097152",
+        "dev_b1_upload_bytes": "1048576",
+        "excluded_dns_bytes": "1150000",
+        "excluded_drop_bytes": "1770000"
+      }
+    }
+  ]
+}
