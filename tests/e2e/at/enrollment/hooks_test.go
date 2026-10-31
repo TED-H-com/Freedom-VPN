@@ -6,7 +6,11 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"os"
 	"os/exec"
+	"path/filepath"
+
+	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"strconv"
 	"strings"
 	"time"
@@ -17,7 +21,9 @@ import (
 
 const usageInstallerGap = "ENR-05: #266 HoldUsageAcknowledgements, UsageLedgerSnapshot and MemberTransportStack accept node/node2/node-clone, while ControlledReinstall accepts only installer-node. Owner devstack: export the hold, snapshot and counted member transport on that same installer slot, including its proxy/config paths and service restoration. Owner usage/installer: supply an authorized old-incarnation backlog delivery protocol; packaging/installer/reenroll.go explicitly leaves retained old events unuploaded. No central-once or cross-reinstall usage claim."
 
-const installerStartupGap = "ENR-06: #266 real installer startup prerequisite failed. Owner packaging/installer and deploy/node/systemd (installer follow-up 3): fix NetBird socket write permissions and shared RuntimeDirectory lifecycle, then devstack rerun the wrappers and restore prior service state after hash sampling. No working forwarding baseline; successful rerun and ControlledReinstall are not reached."
+const installerStartupGap = "ENR-06: initial installer prerequisite did not complete; see actual exit, failing step, journal, unit and socket observations. Owner installer/devstack. PR #279 fixes the prior socket permissions; this run does not assume the result."
+
+const installerRestoreGap = "ENR-06: RerunInstaller and ControlledReinstall stop agent/watchdog/updater for hash sampling; docs/e2e/RESPONSES.md is absent and no installer-slot service-restoration export is documented. Owner devstack: restore prior service state and export the installer-slot serving baseline. Invocation/digest observations alone cannot pass the serving lifecycle row."
 
 // This is a narrow availability/snapshot proof on the regular node. It must
 // never satisfy counted_unacked_usage: the installer uses a different slot.
@@ -114,21 +120,39 @@ func (p *probe) usageRoute(post bool) (status int, code string, retryable, ok bo
 	return status, body.Error.Code, body.Error.Retryable, status != 0 && decode == nil
 }
 
+func installerHashesView(h e2e.InstallerHashes) map[string]string {
+	return map[string]string{
+		"key_sha256": h.Key, "cert_sha256": h.Cert, "node_json_sha256": h.NodeJSON,
+		"usage_db_sha256": h.UsageDB, "usage_wal_sha256": h.UsageWAL,
+		"machine_id_sha256": h.MachineID, "current": h.Current,
+	}
+}
+
 func installerOutcomeView(out e2e.InstallerOutcome, err error) map[string]any {
 	// Never publish Message, stderr, certificates or token-file contents.
 	return map[string]any{
 		"exit": out.Exit, "status": out.Status, "code": out.Code, "wrapper_error": err != nil,
 		"node_id": out.NodeID, "incarnation_id": out.Incarnation,
-		"before": out.Before, "after": out.Hashes,
+		"failing_step": installerFailingStep(out),
+		"retired_mode": out.RetiredMode, "retired": installerHashesView(out.RetiredHashes),
+		"bound_state_before_sha256": out.BoundStateBefore, "retired_bound_state_sha256": out.RetiredBoundState,
+		"before": installerHashesView(out.Before), "after": installerHashesView(out.Hashes),
 	}
 }
 
 func (p *probe) installerHooks() {
 	gap := installerStartupGap
-	detail := map[string]any{"source_pr": 266, "slot": "installer-node", "container": "fvpn-w4-enroll-installer-node"}
+	oldCertificateDenied := false
+	detail := map[string]any{"source_pr": 266, "installer_fix_pr": 279, "slot": "installer-node", "container": "fvpn-w4-enroll-installer-node",
+		"response_file_present": false, "service_restoration_export": "missing", "serving_baseline_measured": false}
 	defer func() {
-		p.note("AT07", "counted_unacked_usage", "blocked", map[string]any{"gap": usageInstallerGap, "slot_probe": detail["slot_probe"], "counted_traffic_started": false, "controlled_reinstall_run": false})
+		p.note("AT07", "counted_unacked_usage", "blocked", map[string]any{"gap": usageInstallerGap, "slot_probe": detail["slot_probe"], "counted_traffic_started": false, "controlled_reinstall_run": detail["controlled_reinstall"] != nil})
 		for _, name := range []string{"installer_rerun", "identity_ledger_preserved", "controlled_reinstall", "old_certificate_denied", "historical_usage_retained"} {
+			if name == "old_certificate_denied" && oldCertificateDenied {
+				p.note("AT07", name, "pass", map[string]any{"prerequisite": detail,
+					"scope": "retired installer certificate denied on direct mTLS desired-state and observations; no serving or usage claim"})
+				continue
+			}
 			p.note("AT07", name, "blocked", map[string]any{"gap": gap, "prerequisite": detail,
 				"usage_gap": usageInstallerGap, "check": name})
 		}
@@ -164,21 +188,184 @@ func (p *probe) installerHooks() {
 	installed, err := p.stack.RerunInstaller(p.ctx, "installer-node")
 	detail["install_finished_at"] = time.Now().UTC().Format(time.RFC3339Nano)
 	detail["initial_install"] = installerOutcomeView(installed, err)
-	logs, logErr := exec.CommandContext(p.ctx, "docker", "exec", "fvpn-w4-enroll-installer-node", "journalctl",
-		"-u", "fvpn-netbird.service", "-u", "fvpn-agent.service", "--no-pager", "-n", "100", "-o", "cat").Output()
-	detail["journal_read_ok"] = logErr == nil
-	detail["netbird_socket_readonly"] = bytes.Contains(logs, []byte("listen unix /var/run/netbird.sock: bind: read-only file system"))
-	detail["agent_heartbeat_readonly"] = bytes.Contains(logs, []byte("mkdir /run/vpn-node: read-only file system"))
-	p.scanStream("installer-node/journal", logs, logErr)
+	detail["after_initial_install"] = p.installerDiagnostics("initial", installed)
 	if node, parseErr := uuid.Parse(installed.NodeID); parseErr == nil {
 		detail["projection_after_install"] = p.identityProjection(node)
 		if inc, incErr := uuid.Parse(installed.Incarnation); incErr == nil {
 			p.oneIncarnation("AT07", node, inc, token.enrollment.EnrollmentId)
 		}
 	}
-	// Wrapper success alone cannot prove forwarding. The wrapper stops the
-	// services for hashing, and no installer-slot resume/traffic export exists.
-	if err == nil && installed.Exit == 0 {
-		gap = "ENR-06: initial install returned success, but #266 wrappers leave agent/watchdog/updater stopped after hashing and expose no installer-slot forwarding/resume helper. Owner devstack: restore prior service state and expose same-slot traffic before rerun/reinstall assertions."
+	if err != nil || installed.Exit != 0 || installed.Status != "installed" {
+		return
 	}
+	// Measure the available wrappers even though the missing restoration/usage
+	// exports keep the composed acceptance rows blocked. Never start services
+	// manually and never select a newer archive (journaled upgrade is separate).
+	gap = installerRestoreGap
+	again, err := p.stack.RerunInstaller(p.ctx, "installer-node")
+	detail["rerun"] = installerOutcomeView(again, err)
+	detail["after_rerun"] = p.installerDiagnostics("rerun", again)
+	detail["rerun_hashes_unchanged"] = installed.Hashes == again.Before && again.Before == again.Hashes
+	if err != nil || again.Exit != 0 || again.Status != "already_current" {
+		gap = "ENR-06: idempotent RerunInstaller did not complete; see actual outcome and diagnostics. Owner installer/devstack."
+		return
+	}
+	node, nodeErr := uuid.Parse(installed.NodeID)
+	oldInc, incErr := uuid.Parse(installed.Incarnation)
+	if nodeErr != nil || incErr != nil {
+		gap = "ENR-06: installed identity IDs missing from wrapper outcome"
+		return
+	}
+	before, beforeResp, beforeErr := p.listIncarnations(node, "")
+	detail["history_before"] = installerHistoryView(before)
+	detail["history_before_read_ok"] = beforeErr == nil && beforeResp.Status == 200
+	rev, revErr := p.revokeNodeReason(node, "TEST ONLY AT07 controlled installer reinstall")
+	detail["revoke_response"] = safeResponse(rev, revErr)
+	if revErr != nil || rev.Status != 202 {
+		gap = "ENR-06: API revocation prerequisite failed; ControlledReinstall not attempted"
+		return
+	}
+	// These additional token assertions belong to the installer measurement;
+	// retain AT06's existing regression population.
+	firstCheck := len(p.checks)
+	fresh, issued := p.issueOn("installer-reinstall", 900, &node)
+	for i := firstCheck; i < len(p.checks); i++ {
+		p.checks[i].AT = "AT07"
+	}
+	if !issued {
+		gap = "ENR-06: fresh same-Node API enrollment prerequisite failed"
+		return
+	}
+	detail["controlled_reinstall_started_at"] = time.Now().UTC().Format(time.RFC3339Nano)
+	reinstalled, reinstallErr := p.stack.ControlledReinstall(p.ctx, "installer-node", fresh.token)
+	detail["controlled_reinstall_finished_at"] = time.Now().UTC().Format(time.RFC3339Nano)
+	detail["controlled_reinstall"] = installerOutcomeView(reinstalled, reinstallErr)
+	detail["after_controlled_reinstall"] = p.installerDiagnostics("reinstall", reinstalled)
+	page, resp, readErr := p.listIncarnations(node, "")
+	detail["history_after"] = installerHistoryView(page)
+	detail["history_after_read_ok"] = readErr == nil && resp.Status == 200
+	detail["projection_after_reinstall"] = p.identityProjection(node)
+	detail["same_node_new_incarnation"] = reinstalled.NodeID == node.String() && reinstalled.Incarnation != "" && reinstalled.Incarnation != oldInc.String()
+	// A retained empty ledger is not the required counted backlog proof.
+	detail["retired_identity_hashes_match"] = reinstalled.RetiredMode == "700" && reinstalled.RetiredHashes.Key == again.Hashes.Key && reinstalled.RetiredHashes.Cert == again.Hashes.Cert && reinstalled.RetiredHashes.NodeJSON == again.Hashes.NodeJSON
+	if reinstallErr != nil || reinstalled.Exit != 0 || reinstalled.Status != "reenrolled" {
+		gap = "ENR-06: ControlledReinstall did not complete; see actual outcome and diagnostics. Owner installer/devstack."
+		return
+	}
+	denials, denied := p.installerRetiredCertificate()
+	detail["old_certificate_denial"] = denials
+	newInc, newIncErr := uuid.Parse(reinstalled.Incarnation)
+	oldCertificateDenied = denied && newIncErr == nil && newInc != oldInc && newInc != uuid.Nil && reinstalled.NodeID == node.String()
+}
+
+func installerHistoryView(page api.NodeIncarnationList) []map[string]any {
+	result := []map[string]any{}
+	for _, item := range page.Items {
+		reason, _ := item.RetireReason.Get()
+		result = append(result, map[string]any{"incarnation_id": item.IncarnationId, "current": item.Current,
+			"state": item.State, "retire_reason": reason, "usage": usageView(item.Usage)})
+	}
+	return result
+}
+
+// Allowlist the step, never persist arbitrary CLI messages or stderr.
+func installerFailingStep(out e2e.InstallerOutcome) string {
+	if out.Exit == 0 {
+		return "none"
+	}
+	for _, unit := range []string{"fvpn-netbird.service", "fvpn-agent.service", "fvpn-watchdog.service", "fvpn-updater.timer"} {
+		if strings.Contains(out.Message, "starting "+unit+" failed") {
+			return "start " + unit
+		}
+	}
+	for _, step := range []string{"enrollment failed", "updater seed failed", "seed baseline", "dependency"} {
+		if strings.Contains(out.Message, step) {
+			return step
+		}
+	}
+	return "unclassified; private CLI diagnostic retained"
+}
+
+func (p *probe) installerDiagnostics(phase string, out e2e.InstallerOutcome) map[string]any {
+	const container = "fvpn-w4-enroll-installer-node"
+	result := map[string]any{"observed_at": time.Now().UTC().Format(time.RFC3339Nano)}
+	logs, logErr := exec.CommandContext(p.ctx, "docker", "exec", container, "journalctl",
+		"-u", "fvpn-netbird.service", "-u", "fvpn-agent.service", "-u", "fvpn-watchdog.service", "-u", "fvpn-updater.service", "--no-pager", "-n", "200", "-o", "cat").Output()
+	result["journal_read_ok"] = logErr == nil
+	result["netbird_socket_readonly"] = bytes.Contains(logs, []byte("listen unix /var/run/netbird.sock: bind: read-only file system"))
+	result["agent_heartbeat_readonly"] = bytes.Contains(logs, []byte("mkdir /run/vpn-node: read-only file system"))
+	// One scan row per phase; the initial row keeps the previous AT06 name.
+	if phase == "initial" {
+		p.scanStream("installer-node/journal", logs, logErr)
+	} else {
+		first := len(p.checks)
+		p.scanStream("installer-node/"+phase+"-journal", logs, logErr)
+		for i := first; i < len(p.checks); i++ {
+			p.checks[i].AT = "AT07"
+		}
+	}
+	units := map[string]any{}
+	var private bytes.Buffer
+	private.Write(logs)
+	private.WriteString("\nCLI message (private): " + out.Message + "\n")
+	for _, unit := range []string{"fvpn-netbird.service", "fvpn-agent.service", "fvpn-watchdog.service", "fvpn-updater.service", "fvpn-updater.timer"} {
+		raw, err := exec.CommandContext(p.ctx, "docker", "exec", container, "systemctl", "show", unit,
+			"-p", "LoadState", "-p", "ActiveState", "-p", "SubState", "-p", "Result", "-p", "ExecMainStatus").Output()
+		fields := map[string]any{"read_ok": err == nil}
+		for _, line := range strings.Split(strings.TrimSpace(string(raw)), "\n") {
+			key, value, ok := strings.Cut(line, "=")
+			if ok {
+				fields[key] = value
+			}
+		}
+		units[unit] = fields
+		private.WriteString("\n" + unit + "\n")
+		private.Write(raw)
+	}
+	result["units"] = units
+	sockets := map[string]any{}
+	for _, path := range []string{"/run/fvpn-netbird/netbird.sock", "/var/run/netbird.sock"} {
+		sockets[path] = exec.CommandContext(p.ctx, "docker", "exec", container, "test", "-S", path).Run() == nil
+	}
+	mode, modeErr := exec.CommandContext(p.ctx, "docker", "exec", container, "stat", "-c", "%a", "/run/fvpn-netbird").Output()
+	sockets["directory_mode"] = strings.TrimSpace(string(mode))
+	sockets["directory_stat_ok"] = modeErr == nil
+	result["sockets"] = sockets
+	result["private_diagnostics_saved"] = os.WriteFile(filepath.Join(filepath.Dir(p.resultPath), "installer-"+phase+".log"), private.Bytes(), 0600) == nil
+	return result
+}
+
+func (p *probe) installerRetiredCertificate() (map[string]any, bool) {
+	const container = "fvpn-w4-enroll-installer-node"
+	result := map[string]any{}
+	allDenied := true
+	// Read-only requests with the product-retired files in their original
+	// container. Use direct mTLS, since the loopback adapter uses current identity.
+	for _, route := range []string{"desired-state", "observations"} {
+		script := `set -eu
+for d in /var/lib/vpn-node/identity.retired/*; do [ -d "$d" ] && retired="$d"; done
+exec curl --silent --show-error --max-time 15 --cacert /var/tmp/e2e-rel/ca.pem --cert "$retired/cert.pem" --key "$retired/key.pem" -w '\n%{http_code}' "$@"`
+		args := []string{"exec", container, "sh", "-c", script, "sh"}
+		if route == "observations" {
+			args = append(args, "-H", "Content-Type: application/json", "--data", "{}")
+		}
+		args = append(args, "https://agent.example.invalid:9443/api/v1/agent/"+route)
+		raw, err := exec.CommandContext(p.ctx, "docker", args...).Output()
+		body, status, found := strings.Cut(string(raw), "\n")
+		// JSON may contain newlines; split at the last newline from curl instead.
+		if i := bytes.LastIndexByte(raw, '\n'); i >= 0 {
+			body, status, found = string(raw[:i]), string(raw[i+1:]), true
+		}
+		var response struct {
+			Error struct {
+				Code string `json:"code"`
+			} `json:"error"`
+		}
+		decoded := json.Unmarshal([]byte(body), &response) == nil
+		denied := err == nil && found && decoded && status == "403" && response.Error.Code == "IDENTITY_REVOKED"
+		allDenied = allDenied && denied
+		result[route] = map[string]any{"http_status": status, "code": response.Error.Code, "decoded": decoded,
+			"denied": denied}
+	}
+	return result, allDenied
 }

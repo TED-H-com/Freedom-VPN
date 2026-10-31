@@ -6,6 +6,7 @@ import (
 	"go/token"
 	"slices"
 	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/TED-H-com/Freedom-VPN/internal/exits"
@@ -158,6 +159,23 @@ func TestSECOPS11_BoundedFailureCausesMatchExitsVocabulary(t *testing.T) {
 	} {
 		if operations.IsBoundedFailureCause(bad) {
 			t.Fatalf("operations.IsBoundedFailureCause(%q) = true, want false", bad)
+		}
+	}
+}
+
+func TestD107_PublicationGateMessageRejectsUnboundedInputs(t *testing.T) {
+	for _, tc := range []struct{ message, cause string }{
+		{"member_forwarding_unconfirmed", ""},
+		{"member_forwarding_unconfirmed", "lease_expired"},
+		{"member_forwarding_unconfirmed", "publication_observed=absent"},
+		{"member_forwarding_unconfirmed", "lease_unconfirmed\nTEST ONLY upstream body"},
+		{"member_forwarding_unconfirmed", strings.Repeat("x", 1001)},
+		{"TEST ONLY upstream body", "lease_unconfirmed"},
+		{strings.Repeat("界", 1001), "lease_unconfirmed"},
+		{"", "lease_unconfirmed"},
+	} {
+		if message, ok := operations.PublicationGateMessage(tc.message, tc.cause); ok || message != "" {
+			t.Fatalf("unbounded pair produced a diagnostic: %q", message)
 		}
 	}
 }

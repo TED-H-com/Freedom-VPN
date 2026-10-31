@@ -1,72 +1,72 @@
 {
-  "run_id": "4011dd32-73ef-4f49-b78b-6cf1ab8496c9",
-  "started_at": "2026-10-31T06:10:11Z",
-  "finished_at": "2026-10-31T06:15:49Z",
+  "run_id": "1af27741-cbd9-4fdb-aa1c-7d02790e7a46",
+  "started_at": "2026-10-31T07:28:01Z",
+  "finished_at": "2026-10-31T07:34:14Z",
   "source": {
-    "commit": "200c027144ecf523c647c0954659467ca873ae5f",
-    "tree_sha256": "04e361cfab859e45662593cf6bd439100f28019e1a6af4399fa9ec595438ccf9",
+    "commit": "3f604e2c2d0fd89ee7e2d91014ab31ff46aed7a8",
+    "tree_sha256": "a7e7159e3f9652344ec56461abd2242de6c1f64cc0425af715a7f84b2aa143e8",
     "dirty": false,
     "tree_hash_scope": "sorted tracked and nonignored files, excluding generated enrollment evidence"
   },
   "prefix": "w4-enroll",
   "port_base": 12000,
   "image_digests": {
-    "control": "sha256:5d7ebd05c889478d6dee6cc5411a0609f4f7cd2d364600c392e9b60a26eadb62",
-    "worker": "sha256:9c7af6a67b6daa41c58313a9ad0682498f9f6d78a9c59badeffb5eb56a2230b4",
-    "node": "sha256:b2c84e058f2523eb87e8b678e673039ab87f8b19c0f9cd77d2d17119aebe5664"
+    "control": "sha256:f36f33cac073df7456162ebc50b4ac26bf3f6a5946cfb0017e33abaf114df6ee",
+    "worker": "sha256:9629c1f6ace8c92c835d8a6652f6d72d0f1bf9a21992505f3a3cc39e3c1edeae",
+    "node": "sha256:4071d2fb45775356a7c3dd7188388b0c05c1cb89ace04f12b6fb8379b8343150"
   },
   "image_evidence": "immutable running container image IDs",
   "commands": [
     {
       "name": "fresh_teardown",
-      "started_at": "2026-10-31T06:10:11Z",
-      "finished_at": "2026-10-31T06:10:12Z",
+      "started_at": "2026-10-31T07:28:01Z",
+      "finished_at": "2026-10-31T07:28:02Z",
       "exit_code": 0
     },
     {
       "name": "fresh_startup",
-      "started_at": "2026-10-31T06:10:12Z",
-      "finished_at": "2026-10-31T06:10:45Z",
+      "started_at": "2026-10-31T07:28:02Z",
+      "finished_at": "2026-10-31T07:28:39Z",
       "exit_code": 0
     },
     {
       "name": "compile_probe",
-      "started_at": "2026-10-31T06:10:46Z",
-      "finished_at": "2026-10-31T06:10:46Z",
+      "started_at": "2026-10-31T07:28:39Z",
+      "finished_at": "2026-10-31T07:28:40Z",
       "exit_code": 0
     },
     {
       "name": "live_probe",
-      "started_at": "2026-10-31T06:10:46Z",
-      "finished_at": "2026-10-31T06:13:43Z",
+      "started_at": "2026-10-31T07:28:40Z",
+      "finished_at": "2026-10-31T07:31:28Z",
       "exit_code": 0
     },
     {
       "name": "join_teardown",
-      "started_at": "2026-10-31T06:13:43Z",
-      "finished_at": "2026-10-31T06:14:25Z",
+      "started_at": "2026-10-31T07:31:28Z",
+      "finished_at": "2026-10-31T07:32:17Z",
       "exit_code": 0
     },
     {
       "name": "join_startup",
-      "started_at": "2026-10-31T06:14:25Z",
-      "finished_at": "2026-10-31T06:14:48Z",
+      "started_at": "2026-10-31T07:32:17Z",
+      "finished_at": "2026-10-31T07:32:56Z",
       "exit_code": 0
     },
     {
       "name": "live_probe_join",
-      "started_at": "2026-10-31T06:14:48Z",
-      "finished_at": "2026-10-31T06:15:06Z",
+      "started_at": "2026-10-31T07:32:56Z",
+      "finished_at": "2026-10-31T07:33:32Z",
       "exit_code": 0
     },
     {
       "name": "final_teardown",
-      "started_at": "2026-10-31T06:15:06Z",
-      "finished_at": "2026-10-31T06:15:49Z",
+      "started_at": "2026-10-31T07:33:32Z",
+      "finished_at": "2026-10-31T07:34:14Z",
       "exit_code": 0
     }
   ],
-  "test_binary_sha256": "9ded592b18155b5490d617efc49e00d0ecb9b678fe0b6ad9da4ef93e83092878",
+  "test_binary_sha256": "e8b2b9a297b2b98392a9633449ffe090969e731a32da31b311fdfe6cb942c67a",
   "cleanup": {
     "containers": 0,
     "networks": 0,
@@ -74,9 +74,9 @@
     "images": 0
   },
   "join_image_digests": {
-    "control": "sha256:6f0b3c587de98ff6befd5b16ca77926ba693c33abb1faf209c59b2124fa4d2c8",
-    "worker": "sha256:7ff925e0bd89d3f472d92443b872489ad4b4ed5fe9b51897aa6235725d7191ad",
-    "node": "sha256:a51333c7315b99a97eb3d612a10b1b4394d57b1ffd6725191fab8f36df5e67d3"
+    "control": "sha256:cf5dec0a70832ad74039a52b1044d095612f4c6560a05782268ae56d5039a645",
+    "worker": "sha256:32178980b55f57ea9269cbe1ce64f37c5e8c7593027af23a732f0185b940a8a0",
+    "node": "sha256:ba348e49c901de756085a890a2d909b7b672f12bca81ef3a035abd99de32902b"
   },
   "id": "AT07",
   "status": "blocked",
@@ -99,7 +99,7 @@
       "name": "fresh_stack",
       "status": "pass",
       "detail": "E2E_RESET=1 fresh stack started",
-      "observed_at": "2026-10-31T06:10:45Z"
+      "observed_at": "2026-10-31T07:28:39Z"
     },
     {
       "at": "AT07",
@@ -109,29 +109,29 @@
         "phase": "full",
         "exit_code": 0
       },
-      "observed_at": "2026-10-31T06:13:43Z"
+      "observed_at": "2026-10-31T07:31:28Z"
     },
     {
       "at": "AT07",
       "name": "current_incarnation",
       "status": "pass",
       "detail": {
-        "current_incarnation_id": "01a19095-fd96-7a20-89a0-04de5e27558e",
-        "node_id": "01a19095-fd6a-76d7-b161-da3fd48bd569",
+        "current_incarnation_id": "01a190dd-4dcc-74e3-a8fe-582506de2ee4",
+        "node_id": "01a190dd-4c1c-75a7-a811-222521233df4",
         "response": {
           "error_code": "",
           "http_status": 200,
           "transport_error": false
         }
       },
-      "observed_at": "2026-10-31T06:12:05.133270016Z"
+      "observed_at": "2026-10-31T07:29:54.388518637Z"
     },
     {
       "at": "AT07",
       "name": "node_api_surface",
       "status": "pass",
       "detail": {
-        "current_incarnation_id": "01a19095-fd96-7a20-89a0-04de5e27558e",
+        "current_incarnation_id": "01a190dd-4dcc-74e3-a8fe-582506de2ee4",
         "field_names": [
           "capacity",
           "checks",
@@ -168,33 +168,33 @@
           "update",
           "usage_outbox"
         ],
-        "node_id": "01a19095-fd6a-76d7-b161-da3fd48bd569",
+        "node_id": "01a190dd-4c1c-75a7-a811-222521233df4",
         "operation": "getNode",
         "peer_bound": true
       },
-      "observed_at": "2026-10-31T06:12:05.13370411Z"
+      "observed_at": "2026-10-31T07:29:54.389145755Z"
     },
     {
       "at": "AT07",
       "name": "current_incarnation",
       "status": "pass",
       "detail": {
-        "current_incarnation_id": "01a19096-18d8-73b7-98a3-0365a5e621d4",
-        "node_id": "01a19096-1761-7271-8ea8-88b70cc12f40",
+        "current_incarnation_id": "01a190dd-6bf0-744c-b4a6-aa22f42cf6a9",
+        "node_id": "01a190dd-6a94-79a8-bf7a-c5f4e2d591da",
         "response": {
           "error_code": "",
           "http_status": 200,
           "transport_error": false
         }
       },
-      "observed_at": "2026-10-31T06:12:05.137323232Z"
+      "observed_at": "2026-10-31T07:29:54.393850525Z"
     },
     {
       "at": "AT07",
       "name": "node_api_surface",
       "status": "pass",
       "detail": {
-        "current_incarnation_id": "01a19096-18d8-73b7-98a3-0365a5e621d4",
+        "current_incarnation_id": "01a190dd-6bf0-744c-b4a6-aa22f42cf6a9",
         "field_names": [
           "capacity",
           "checks",
@@ -231,11 +231,11 @@
           "update",
           "usage_outbox"
         ],
-        "node_id": "01a19096-1761-7271-8ea8-88b70cc12f40",
+        "node_id": "01a190dd-6a94-79a8-bf7a-c5f4e2d591da",
         "operation": "getNode",
-        "peer_bound": false
+        "peer_bound": true
       },
-      "observed_at": "2026-10-31T06:12:05.137682605Z"
+      "observed_at": "2026-10-31T07:29:54.394460162Z"
     },
     {
       "at": "AT07",
@@ -246,23 +246,23 @@
         "count": 1,
         "current": true,
         "default_items_at_most_50": true,
-        "enrollment_id": "01a19095-fd6a-76d6-9974-6b30448511ef",
-        "incarnation_id": "01a19095-fd96-7a20-89a0-04de5e27558e",
+        "enrollment_id": "01a190dd-4c1c-75a6-97e5-84105311e1ba",
+        "incarnation_id": "01a190dd-4dcc-74e3-a8fe-582506de2ee4",
         "limit_1_items": 1,
         "matches_get_enrollment": true,
         "matches_get_node": true,
         "next_cursor_null": true,
-        "node_id": "01a19095-fd6a-76d7-b161-da3fd48bd569",
+        "node_id": "01a190dd-4c1c-75a7-a811-222521233df4",
         "operation": "listNodeIncarnations",
         "state": "active",
         "usage": {
           "download_bytes": "0",
-          "through": "2026-10-31T06:11:51.450338Z",
+          "through": "2026-10-31T07:29:45.048656Z",
           "through_null": false,
           "upload_bytes": "0"
         }
       },
-      "observed_at": "2026-10-31T06:12:05.145939773Z"
+      "observed_at": "2026-10-31T07:29:54.410317757Z"
     },
     {
       "at": "AT07",
@@ -273,23 +273,23 @@
         "count": 1,
         "current": true,
         "default_items_at_most_50": true,
-        "enrollment_id": "01a19096-1761-7270-a6d4-ce5a90a30812",
-        "incarnation_id": "01a19096-18d8-73b7-98a3-0365a5e621d4",
+        "enrollment_id": "01a190dd-6a94-79a7-8a24-54bd7a277922",
+        "incarnation_id": "01a190dd-6bf0-744c-b4a6-aa22f42cf6a9",
         "limit_1_items": 1,
         "matches_get_enrollment": true,
         "matches_get_node": true,
         "next_cursor_null": true,
-        "node_id": "01a19096-1761-7271-8ea8-88b70cc12f40",
+        "node_id": "01a190dd-6a94-79a8-bf7a-c5f4e2d591da",
         "operation": "listNodeIncarnations",
         "state": "active",
         "usage": {
           "download_bytes": "0",
-          "through": "2026-10-31T06:11:58.432874Z",
+          "through": "2026-10-31T07:29:52.776153Z",
           "through_null": false,
           "upload_bytes": "0"
         }
       },
-      "observed_at": "2026-10-31T06:12:05.15464959Z"
+      "observed_at": "2026-10-31T07:29:54.422624907Z"
     },
     {
       "at": "AT07",
@@ -299,13 +299,13 @@
         "changed_on_main": "contract revision 10 PR #200 listNodeIncarnations",
         "each_count": 1,
         "node_ids": [
-          "01a19095-fd6a-76d7-b161-da3fd48bd569",
-          "01a19096-1761-7271-8ea8-88b70cc12f40"
+          "01a190dd-4c1c-75a7-a811-222521233df4",
+          "01a190dd-6a94-79a8-bf7a-c5f4e2d591da"
         ],
         "operation": "listNodeIncarnations",
         "retirement_measured_on": "AT06 incarnation_history"
       },
-      "observed_at": "2026-10-31T06:12:05.154983546Z"
+      "observed_at": "2026-10-31T07:29:54.423084977Z"
     },
     {
       "at": "AT07",
@@ -313,19 +313,19 @@
       "status": "pass",
       "detail": {
         "image_digests": [
-          "sha256:b2c84e058f2523eb87e8b678e673039ab87f8b19c0f9cd77d2d17119aebe5664",
-          "sha256:b2c84e058f2523eb87e8b678e673039ab87f8b19c0f9cd77d2d17119aebe5664"
+          "sha256:4071d2fb45775356a7c3dd7188388b0c05c1cb89ace04f12b6fb8379b8343150",
+          "sha256:4071d2fb45775356a7c3dd7188388b0c05c1cb89ace04f12b6fb8379b8343150"
         ],
         "incarnation_ids": [
-          "01a19095-fd96-7a20-89a0-04de5e27558e",
-          "01a19096-18d8-73b7-98a3-0365a5e621d4"
+          "01a190dd-4dcc-74e3-a8fe-582506de2ee4",
+          "01a190dd-6bf0-744c-b4a6-aa22f42cf6a9"
         ],
         "node_ids": [
-          "01a19095-fd6a-76d7-b161-da3fd48bd569",
-          "01a19096-1761-7271-8ea8-88b70cc12f40"
+          "01a190dd-4c1c-75a7-a811-222521233df4",
+          "01a190dd-6a94-79a8-bf7a-c5f4e2d591da"
         ]
       },
-      "observed_at": "2026-10-31T06:12:05.17607106Z"
+      "observed_at": "2026-10-31T07:29:54.447310384Z"
     },
     {
       "at": "AT07",
@@ -336,7 +336,7 @@
         "http_status": 200,
         "transport_error": false
       },
-      "observed_at": "2026-10-31T06:12:05.18048526Z"
+      "observed_at": "2026-10-31T07:29:54.452120953Z"
     },
     {
       "at": "AT07",
@@ -354,7 +354,20 @@
             "peer_id"
           ],
           "resource": {
-            "id": "01a19095-fd6a-76d7-b161-da3fd48bd569",
+            "id": "01a190dd-4c1c-75a7-a811-222521233df4",
+            "type": "node"
+          }
+        },
+        {
+          "action": "bootstrap.claimed",
+          "after_fields": [
+            "reason"
+          ],
+          "before_fields": [
+            "reason"
+          ],
+          "resource": {
+            "id": "01a190dd-4c1c-75a7-a811-222521233df4",
             "type": "node"
           }
         },
@@ -368,20 +381,7 @@
           ],
           "before_fields": [],
           "resource": {
-            "id": "01a19095-fd6a-76d7-b161-da3fd48bd569",
-            "type": "node"
-          }
-        },
-        {
-          "action": "bootstrap.claimed",
-          "after_fields": [
-            "reason"
-          ],
-          "before_fields": [
-            "reason"
-          ],
-          "resource": {
-            "id": "01a19095-fd6a-76d7-b161-da3fd48bd569",
+            "id": "01a190dd-4c1c-75a7-a811-222521233df4",
             "type": "node"
           }
         },
@@ -396,7 +396,7 @@
           ],
           "before_fields": [],
           "resource": {
-            "id": "01a19095-fd6a-76d7-b161-da3fd48bd569",
+            "id": "01a190dd-4c1c-75a7-a811-222521233df4",
             "type": "node"
           }
         },
@@ -410,7 +410,7 @@
           ],
           "before_fields": [],
           "resource": {
-            "id": "01a19095-fd6a-76d7-b161-da3fd48bd569",
+            "id": "01a190dd-4c1c-75a7-a811-222521233df4",
             "type": "node"
           }
         },
@@ -424,12 +424,12 @@
           ],
           "before_fields": [],
           "resource": {
-            "id": "01a19095-fd6a-76d7-b161-da3fd48bd569",
+            "id": "01a190dd-4c1c-75a7-a811-222521233df4",
             "type": "node"
           }
         }
       ],
-      "observed_at": "2026-10-31T06:12:05.180806908Z"
+      "observed_at": "2026-10-31T07:29:54.452560845Z"
     },
     {
       "at": "AT07",
@@ -440,7 +440,7 @@
         "http_status": 200,
         "transport_error": false
       },
-      "observed_at": "2026-10-31T06:12:05.183253575Z"
+      "observed_at": "2026-10-31T07:29:54.455984821Z"
     },
     {
       "at": "AT07",
@@ -448,29 +448,17 @@
       "status": "pass",
       "detail": [
         {
-          "action": "bootstrap.claimed",
+          "action": "node.peer_discovered",
           "after_fields": [
-            "reason"
+            "incarnation_id",
+            "peer_id"
           ],
           "before_fields": [
-            "reason"
+            "incarnation_id",
+            "peer_id"
           ],
           "resource": {
-            "id": "01a19096-1761-7271-8ea8-88b70cc12f40",
-            "type": "node"
-          }
-        },
-        {
-          "action": "node.lease_renewed",
-          "after_fields": [
-            "authorization_generation",
-            "config_generation",
-            "lease_id",
-            "member_grants"
-          ],
-          "before_fields": [],
-          "resource": {
-            "id": "01a19096-1761-7271-8ea8-88b70cc12f40",
+            "id": "01a190dd-6a94-79a8-bf7a-c5f4e2d591da",
             "type": "node"
           }
         },
@@ -485,7 +473,20 @@
           ],
           "before_fields": [],
           "resource": {
-            "id": "01a19096-1761-7271-8ea8-88b70cc12f40",
+            "id": "01a190dd-6a94-79a8-bf7a-c5f4e2d591da",
+            "type": "node"
+          }
+        },
+        {
+          "action": "bootstrap.claimed",
+          "after_fields": [
+            "reason"
+          ],
+          "before_fields": [
+            "reason"
+          ],
+          "resource": {
+            "id": "01a190dd-6a94-79a8-bf7a-c5f4e2d591da",
             "type": "node"
           }
         },
@@ -499,7 +500,7 @@
           ],
           "before_fields": [],
           "resource": {
-            "id": "01a19096-1761-7271-8ea8-88b70cc12f40",
+            "id": "01a190dd-6a94-79a8-bf7a-c5f4e2d591da",
             "type": "node"
           }
         },
@@ -513,12 +514,12 @@
           ],
           "before_fields": [],
           "resource": {
-            "id": "01a19096-1761-7271-8ea8-88b70cc12f40",
+            "id": "01a190dd-6a94-79a8-bf7a-c5f4e2d591da",
             "type": "node"
           }
         }
       ],
-      "observed_at": "2026-10-31T06:12:05.183578831Z"
+      "observed_at": "2026-10-31T07:29:54.456419209Z"
     },
     {
       "at": "AT07",
@@ -527,18 +528,18 @@
       "detail": {
         "changed_on_main": "devstack follow-up 12 PR #204 MachineIdentityFingerprints",
         "node": {
-          "agent_spki_sha256": "b76e33a43c43852103188014aa4d37cd4be53a29ff1bdce40f84659e02a166d9",
-          "machine_id_sha256": "c304fd2fa66443278327abf3519a78d03e23abd50adc38b61e4dc83d0c36f210",
-          "netbird_public_key_sha256": "a270437ae0ea03636e75efc1b606ba96eb9713dba776f360840224282c6ee8e0"
+          "agent_spki_sha256": "6aa3d00a1a20b53e303d2623d74337f05d23ab120dcfb3184d17bee4f9a75269",
+          "machine_id_sha256": "ada90921c66a2f5264723c95bd717f3a4b4036ef62d59d48af59f34890f9569d",
+          "netbird_public_key_sha256": "9afa8511d7fb47a8d723af2f0609c9d2190a55a2f0f7c8c66ea03788bc9e029b"
         },
         "node2": {
-          "agent_spki_sha256": "68bf71239c74cf4e110f1f59bdd5a7ee61ada6759a9fb6a9a7f62358162b688f",
-          "machine_id_sha256": "28583ae51e7adb133547a1303d87ce54755cd24878d77b657fbdc27a3cbe8122",
-          "netbird_public_key_sha256": "7394c8002a2eae24ad01ecead5c73a2842966dc1f5094b37659e29c41bc83aa1"
+          "agent_spki_sha256": "d3bbb54eeea7ae83cc6128360f851a65bd6d8927fe9aa1b90ed43639700882f6",
+          "machine_id_sha256": "92aaff00290830db7016cdd9bb8d087d8e46d97f610c5a91b1ddae6132d58ed6",
+          "netbird_public_key_sha256": "d59edf1089bf069aeb4ff2845530dc4d02c8b3326aa1c6906dc26f9bc39ce171"
         },
         "reads_ok": true
       },
-      "observed_at": "2026-10-31T06:12:05.230263056Z"
+      "observed_at": "2026-10-31T07:29:54.510568553Z"
     },
     {
       "at": "AT07",
@@ -547,18 +548,18 @@
       "detail": {
         "changed_on_main": "devstack follow-up 12 PR #204 MachineIdentityFingerprints",
         "node": {
-          "agent_spki_sha256": "b76e33a43c43852103188014aa4d37cd4be53a29ff1bdce40f84659e02a166d9",
-          "machine_id_sha256": "c304fd2fa66443278327abf3519a78d03e23abd50adc38b61e4dc83d0c36f210",
-          "netbird_public_key_sha256": "a270437ae0ea03636e75efc1b606ba96eb9713dba776f360840224282c6ee8e0"
+          "agent_spki_sha256": "6aa3d00a1a20b53e303d2623d74337f05d23ab120dcfb3184d17bee4f9a75269",
+          "machine_id_sha256": "ada90921c66a2f5264723c95bd717f3a4b4036ef62d59d48af59f34890f9569d",
+          "netbird_public_key_sha256": "9afa8511d7fb47a8d723af2f0609c9d2190a55a2f0f7c8c66ea03788bc9e029b"
         },
         "node2": {
-          "agent_spki_sha256": "68bf71239c74cf4e110f1f59bdd5a7ee61ada6759a9fb6a9a7f62358162b688f",
-          "machine_id_sha256": "28583ae51e7adb133547a1303d87ce54755cd24878d77b657fbdc27a3cbe8122",
-          "netbird_public_key_sha256": "7394c8002a2eae24ad01ecead5c73a2842966dc1f5094b37659e29c41bc83aa1"
+          "agent_spki_sha256": "d3bbb54eeea7ae83cc6128360f851a65bd6d8927fe9aa1b90ed43639700882f6",
+          "machine_id_sha256": "92aaff00290830db7016cdd9bb8d087d8e46d97f610c5a91b1ddae6132d58ed6",
+          "netbird_public_key_sha256": "d59edf1089bf069aeb4ff2845530dc4d02c8b3326aa1c6906dc26f9bc39ce171"
         },
         "reads_ok": true
       },
-      "observed_at": "2026-10-31T06:12:05.230740163Z"
+      "observed_at": "2026-10-31T07:29:54.511373261Z"
     },
     {
       "at": "AT07",
@@ -571,24 +572,24 @@
         "held_code": "DEPENDENCY_UNAVAILABLE",
         "held_retryable": true,
         "held_status": 503,
-        "hold_applied_at": "2026-10-31T06:12:05.728533112Z",
-        "hold_requested_at": "2026-10-31T06:12:05.707281842Z",
+        "hold_applied_at": "2026-10-31T07:29:55.02311985Z",
+        "hold_requested_at": "2026-10-31T07:29:54.999222387Z",
         "mechanism": "network-side mTLS proxy marker /var/lib/vpn-node/e2e/hold-usage; only POST /api/v1/agent/usage-batches returns retryable 503 before control; central ledger epoch unchanged",
         "paused_snapshot_bytes_unchanged": true,
-        "release_requested_at": "2026-10-31T06:12:05.829922214Z",
-        "released_at": "2026-10-31T06:12:05.850705481Z",
+        "release_requested_at": "2026-10-31T07:29:55.146754897Z",
+        "released_at": "2026-10-31T07:29:55.168742802Z",
         "released_code": "VALIDATION_FAILED",
         "released_status": 422,
         "scope": "endpoint scope and read-only snapshot only; no counted traffic or reinstall",
         "slot": "node",
         "snapshot_before": {
           "schema_version": 1,
-          "node_id": "01a19095-fd6a-76d7-b161-da3fd48bd569",
-          "node_incarnation_id": "01a19095-fd96-7a20-89a0-04de5e27558e",
-          "ledger_epoch": "cf843a8b-2b29-4f30-a8e2-6fe5304271f9",
+          "node_id": "01a190dd-4c1c-75a7-a811-222521233df4",
+          "node_incarnation_id": "01a190dd-4dcc-74e3-a8fe-582506de2ee4",
+          "ledger_epoch": "9138c1ef-c44f-4129-b69e-b5b1b7f4ac8e",
           "meter_epochs": [
             {
-              "meter_epoch_id": "01a19095-fe12-7037-80f3-22b2a922f1d7",
+              "meter_epoch_id": "01a190dd-4e51-7266-a59a-79062ab2a4fc",
               "state": "current"
             }
           ],
@@ -598,10 +599,10 @@
           "unacked_payload_bytes": "0",
           "unacked_events": []
         },
-        "snapshot_sha256": "dab397f195f3e6eed0d05c46e47858bb30bd3a473dc085531f7fab73d2f873c7",
+        "snapshot_sha256": "910e85471bfbca845877435f59d504c0b8d134083977cb5397fce45e2de97065",
         "source_pr": 266
       },
-      "observed_at": "2026-10-31T06:12:06.393907069Z"
+      "observed_at": "2026-10-31T07:29:55.73009595Z"
     },
     {
       "at": "AT07",
@@ -635,9 +636,9 @@
         },
         "observe_enrolled": {
           "clone": {
-            "agent_spki_sha256": "b76e33a43c43852103188014aa4d37cd4be53a29ff1bdce40f84659e02a166d9",
-            "machine_id_sha256": "c304fd2fa66443278327abf3519a78d03e23abd50adc38b61e4dc83d0c36f210",
-            "netbird_public_key_sha256": "a270437ae0ea03636e75efc1b606ba96eb9713dba776f360840224282c6ee8e0"
+            "agent_spki_sha256": "6aa3d00a1a20b53e303d2623d74337f05d23ab120dcfb3184d17bee4f9a75269",
+            "machine_id_sha256": "ada90921c66a2f5264723c95bd717f3a4b4036ef62d59d48af59f34890f9569d",
+            "netbird_public_key_sha256": "9afa8511d7fb47a8d723af2f0609c9d2190a55a2f0f7c8c66ea03788bc9e029b"
           },
           "clone_stage": "enrolled",
           "conflicts": 1,
@@ -646,17 +647,17 @@
           "read_ok": true,
           "same_identity": true,
           "source": {
-            "agent_spki_sha256": "b76e33a43c43852103188014aa4d37cd4be53a29ff1bdce40f84659e02a166d9",
-            "machine_id_sha256": "c304fd2fa66443278327abf3519a78d03e23abd50adc38b61e4dc83d0c36f210",
-            "netbird_public_key_sha256": "a270437ae0ea03636e75efc1b606ba96eb9713dba776f360840224282c6ee8e0"
+            "agent_spki_sha256": "6aa3d00a1a20b53e303d2623d74337f05d23ab120dcfb3184d17bee4f9a75269",
+            "machine_id_sha256": "ada90921c66a2f5264723c95bd717f3a4b4036ef62d59d48af59f34890f9569d",
+            "netbird_public_key_sha256": "9afa8511d7fb47a8d723af2f0609c9d2190a55a2f0f7c8c66ea03788bc9e029b"
           },
           "source_stage": "enrolled"
         },
         "observe_frozen": {
           "clone": {
-            "agent_spki_sha256": "b76e33a43c43852103188014aa4d37cd4be53a29ff1bdce40f84659e02a166d9",
-            "machine_id_sha256": "c304fd2fa66443278327abf3519a78d03e23abd50adc38b61e4dc83d0c36f210",
-            "netbird_public_key_sha256": "a270437ae0ea03636e75efc1b606ba96eb9713dba776f360840224282c6ee8e0"
+            "agent_spki_sha256": "6aa3d00a1a20b53e303d2623d74337f05d23ab120dcfb3184d17bee4f9a75269",
+            "machine_id_sha256": "ada90921c66a2f5264723c95bd717f3a4b4036ef62d59d48af59f34890f9569d",
+            "netbird_public_key_sha256": "9afa8511d7fb47a8d723af2f0609c9d2190a55a2f0f7c8c66ea03788bc9e029b"
           },
           "clone_stage": "enrolled",
           "conflicts": 1,
@@ -665,17 +666,17 @@
           "read_ok": true,
           "same_identity": true,
           "source": {
-            "agent_spki_sha256": "b76e33a43c43852103188014aa4d37cd4be53a29ff1bdce40f84659e02a166d9",
-            "machine_id_sha256": "c304fd2fa66443278327abf3519a78d03e23abd50adc38b61e4dc83d0c36f210",
-            "netbird_public_key_sha256": "a270437ae0ea03636e75efc1b606ba96eb9713dba776f360840224282c6ee8e0"
+            "agent_spki_sha256": "6aa3d00a1a20b53e303d2623d74337f05d23ab120dcfb3184d17bee4f9a75269",
+            "machine_id_sha256": "ada90921c66a2f5264723c95bd717f3a4b4036ef62d59d48af59f34890f9569d",
+            "netbird_public_key_sha256": "9afa8511d7fb47a8d723af2f0609c9d2190a55a2f0f7c8c66ea03788bc9e029b"
           },
           "source_stage": "enrolled"
         },
         "observe_stable": {
           "clone": {
-            "agent_spki_sha256": "b76e33a43c43852103188014aa4d37cd4be53a29ff1bdce40f84659e02a166d9",
-            "machine_id_sha256": "c304fd2fa66443278327abf3519a78d03e23abd50adc38b61e4dc83d0c36f210",
-            "netbird_public_key_sha256": "a270437ae0ea03636e75efc1b606ba96eb9713dba776f360840224282c6ee8e0"
+            "agent_spki_sha256": "6aa3d00a1a20b53e303d2623d74337f05d23ab120dcfb3184d17bee4f9a75269",
+            "machine_id_sha256": "ada90921c66a2f5264723c95bd717f3a4b4036ef62d59d48af59f34890f9569d",
+            "netbird_public_key_sha256": "9afa8511d7fb47a8d723af2f0609c9d2190a55a2f0f7c8c66ea03788bc9e029b"
           },
           "clone_stage": "enrolled",
           "conflicts": 1,
@@ -684,9 +685,9 @@
           "read_ok": true,
           "same_identity": true,
           "source": {
-            "agent_spki_sha256": "b76e33a43c43852103188014aa4d37cd4be53a29ff1bdce40f84659e02a166d9",
-            "machine_id_sha256": "c304fd2fa66443278327abf3519a78d03e23abd50adc38b61e4dc83d0c36f210",
-            "netbird_public_key_sha256": "a270437ae0ea03636e75efc1b606ba96eb9713dba776f360840224282c6ee8e0"
+            "agent_spki_sha256": "6aa3d00a1a20b53e303d2623d74337f05d23ab120dcfb3184d17bee4f9a75269",
+            "machine_id_sha256": "ada90921c66a2f5264723c95bd717f3a4b4036ef62d59d48af59f34890f9569d",
+            "netbird_public_key_sha256": "9afa8511d7fb47a8d723af2f0609c9d2190a55a2f0f7c8c66ea03788bc9e029b"
           },
           "source_stage": "enrolled"
         },
@@ -732,9 +733,9 @@
           "clone_stopped": true,
           "observe_after_reenroll": {
             "clone": {
-              "agent_spki_sha256": "b76e33a43c43852103188014aa4d37cd4be53a29ff1bdce40f84659e02a166d9",
-              "machine_id_sha256": "c304fd2fa66443278327abf3519a78d03e23abd50adc38b61e4dc83d0c36f210",
-              "netbird_public_key_sha256": "a270437ae0ea03636e75efc1b606ba96eb9713dba776f360840224282c6ee8e0"
+              "agent_spki_sha256": "6aa3d00a1a20b53e303d2623d74337f05d23ab120dcfb3184d17bee4f9a75269",
+              "machine_id_sha256": "ada90921c66a2f5264723c95bd717f3a4b4036ef62d59d48af59f34890f9569d",
+              "netbird_public_key_sha256": "9afa8511d7fb47a8d723af2f0609c9d2190a55a2f0f7c8c66ea03788bc9e029b"
             },
             "clone_stage": "enrolled",
             "conflicts": 1,
@@ -743,13 +744,13 @@
             "read_ok": true,
             "same_identity": false,
             "source": {
-              "agent_spki_sha256": "1d01ad2bd2544b34b870bc14eaec81aaa7a3571dd1686bf53830077b161f357b",
-              "machine_id_sha256": "c304fd2fa66443278327abf3519a78d03e23abd50adc38b61e4dc83d0c36f210",
-              "netbird_public_key_sha256": "a270437ae0ea03636e75efc1b606ba96eb9713dba776f360840224282c6ee8e0"
+              "agent_spki_sha256": "19bb0d5b82da0185969b1ba330fe728451e379ebd96b34ad910f64a2d09b02c3",
+              "machine_id_sha256": "ada90921c66a2f5264723c95bd717f3a4b4036ef62d59d48af59f34890f9569d",
+              "netbird_public_key_sha256": "9afa8511d7fb47a8d723af2f0609c9d2190a55a2f0f7c8c66ea03788bc9e029b"
             },
             "source_stage": "enrolled"
           },
-          "old_incarnation_id": "01a19095-fd96-7a20-89a0-04de5e27558e",
+          "old_incarnation_id": "01a190dd-4dcc-74e3-a8fe-582506de2ee4",
           "projection_after_clone_present": {
             "conflict_count": 0,
             "http_status": 200,
@@ -775,7 +776,7 @@
           "reenroll_path": "entrypoint waiting_token after identity files and agent.db were removed; not an installer wrapper and not ENR-06",
           "reenroll_stage": "enrolled",
           "reenrollment_issued": true,
-          "replacement_incarnation_id": "01a19097-3e23-7128-9797-66b2a68e2b81",
+          "replacement_incarnation_id": "01a190de-7e76-74a0-9293-9d4b4e707277",
           "replacement_is_new": true,
           "revoke_http_status": 202
         },
@@ -783,7 +784,7 @@
         "request": "ENR-07",
         "started": true
       },
-      "observed_at": "2026-10-31T06:13:14.45608364Z"
+      "observed_at": "2026-10-31T07:31:03.969783898Z"
     },
     {
       "at": "AT07",
@@ -794,30 +795,99 @@
         "count": 1,
         "current": true,
         "default_items_at_most_50": true,
-        "enrollment_id": "01a19097-5517-7832-8c88-2fbb39b22dc1",
-        "incarnation_id": "01a19097-5a5e-7a9d-be44-03ed39315faf",
+        "enrollment_id": "01a190de-9766-70bd-9186-bf373f166aa4",
+        "incarnation_id": "01a190de-9d5f-7615-a589-5ad0f19271ec",
         "limit_1_items": 1,
         "matches_get_enrollment": true,
         "matches_get_node": true,
         "next_cursor_null": true,
-        "node_id": "01a19097-5517-7833-bb6e-7a0fb2533c95",
+        "node_id": "01a190de-9766-70be-b3a3-f1a4e64c7a10",
         "operation": "listNodeIncarnations",
         "state": "active",
         "usage": {
           "download_bytes": "0",
-          "through": "2026-10-31T06:13:20.799943Z",
+          "through": "2026-10-31T07:31:11.031839Z",
           "through_null": false,
           "upload_bytes": "0"
         }
       },
-      "observed_at": "2026-10-31T06:13:42.782316187Z"
+      "observed_at": "2026-10-31T07:31:12.261247065Z"
+    },
+    {
+      "at": "AT07",
+      "name": "secret_scan_installer-node/rerun-journal",
+      "status": "pass",
+      "detail": {
+        "bytes_scanned": 1656,
+        "digest_occurrences": 0,
+        "matches": 0,
+        "needles": 79,
+        "other_token_derived": 0
+      },
+      "observed_at": "2026-10-31T07:31:13.406390371Z"
+    },
+    {
+      "at": "AT07",
+      "name": "issue_installer-reinstall",
+      "status": "pass",
+      "detail": {
+        "error_code": "",
+        "http_status": 201,
+        "transport_error": false
+      },
+      "observed_at": "2026-10-31T07:31:13.703595511Z"
+    },
+    {
+      "at": "AT07",
+      "name": "token_sha256_create",
+      "status": "pass",
+      "detail": {
+        "digest": "527b8aa5c928973cdfc4274506e77cac809ec343c30af1712a70a114d937cba6",
+        "enrollment_id": "01a190de-a8a6-7329-bdf1-45eec4743bed",
+        "matches_create": true,
+        "node_id": "01a190de-9766-70be-b3a3-f1a4e64c7a10"
+      },
+      "observed_at": "2026-10-31T07:31:13.704204647Z"
+    },
+    {
+      "at": "AT07",
+      "name": "issue_no_store_installer-reinstall",
+      "status": "pass",
+      "detail": "no-store",
+      "observed_at": "2026-10-31T07:31:13.704624177Z"
+    },
+    {
+      "at": "AT07",
+      "name": "token_sha256_get",
+      "status": "pass",
+      "detail": {
+        "digest": "527b8aa5c928973cdfc4274506e77cac809ec343c30af1712a70a114d937cba6",
+        "enrollment_id": "01a190de-a8a6-7329-bdf1-45eec4743bed",
+        "matches_get": true,
+        "plaintext_absent": true,
+        "state": "pending"
+      },
+      "observed_at": "2026-10-31T07:31:13.706940233Z"
+    },
+    {
+      "at": "AT07",
+      "name": "secret_scan_installer-node/reinstall-journal",
+      "status": "pass",
+      "detail": {
+        "bytes_scanned": 4097,
+        "digest_occurrences": 0,
+        "matches": 0,
+        "needles": 80,
+        "other_token_derived": 0
+      },
+      "observed_at": "2026-10-31T07:31:27.78692744Z"
     },
     {
       "at": "AT07",
       "name": "counted_unacked_usage",
       "status": "blocked",
       "detail": {
-        "controlled_reinstall_run": false,
+        "controlled_reinstall_run": true,
         "counted_traffic_started": false,
         "gap": "ENR-05: #266 HoldUsageAcknowledgements, UsageLedgerSnapshot and MemberTransportStack accept node/node2/node-clone, while ControlledReinstall accepts only installer-node. Owner devstack: export the hold, snapshot and counted member transport on that same installer slot, including its proxy/config paths and service restoration. Owner usage/installer: supply an authorized old-incarnation backlog delivery protocol; packaging/installer/reenroll.go explicitly leaves retained old events unuploaded. No central-once or cross-reinstall usage claim.",
         "slot_probe": {
@@ -826,7 +896,7 @@
           "transport_unknown_node_slot": true
         }
       },
-      "observed_at": "2026-10-31T06:13:42.782919032Z"
+      "observed_at": "2026-10-31T07:31:28.173489373Z"
     },
     {
       "at": "AT07",
@@ -834,41 +904,320 @@
       "status": "blocked",
       "detail": {
         "check": "installer_rerun",
-        "gap": "ENR-06: #266 real installer startup prerequisite failed. Owner packaging/installer and deploy/node/systemd (installer follow-up 3): fix NetBird socket write permissions and shared RuntimeDirectory lifecycle, then devstack rerun the wrappers and restore prior service state after hash sampling. No working forwarding baseline; successful rerun and ControlledReinstall are not reached.",
+        "gap": "ENR-06: RerunInstaller and ControlledReinstall stop agent/watchdog/updater for hash sampling; docs/e2e/RESPONSES.md is absent and no installer-slot service-restoration export is documented. Owner devstack: restore prior service state and export the installer-slot serving baseline. Invocation/digest observations alone cannot pass the serving lifecycle row.",
         "prerequisite": {
-          "agent_heartbeat_readonly": true,
+          "after_controlled_reinstall": {
+            "agent_heartbeat_readonly": false,
+            "journal_read_ok": true,
+            "netbird_socket_readonly": false,
+            "observed_at": "2026-10-31T07:31:27.749801418Z",
+            "private_diagnostics_saved": true,
+            "sockets": {
+              "/run/fvpn-netbird/netbird.sock": true,
+              "/var/run/netbird.sock": false,
+              "directory_mode": "700",
+              "directory_stat_ok": true
+            },
+            "units": {
+              "fvpn-agent.service": {
+                "ActiveState": "inactive",
+                "ExecMainStatus": "0",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "dead",
+                "read_ok": true
+              },
+              "fvpn-netbird.service": {
+                "ActiveState": "active",
+                "ExecMainStatus": "0",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "running",
+                "read_ok": true
+              },
+              "fvpn-updater.service": {
+                "ActiveState": "inactive",
+                "ExecMainStatus": "0",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "dead",
+                "read_ok": true
+              },
+              "fvpn-updater.timer": {
+                "ActiveState": "inactive",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "dead",
+                "read_ok": true
+              },
+              "fvpn-watchdog.service": {
+                "ActiveState": "inactive",
+                "ExecMainStatus": "0",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "dead",
+                "read_ok": true
+              }
+            }
+          },
+          "after_initial_install": {
+            "agent_heartbeat_readonly": false,
+            "journal_read_ok": true,
+            "netbird_socket_readonly": false,
+            "observed_at": "2026-10-31T07:31:11.9306225Z",
+            "private_diagnostics_saved": true,
+            "sockets": {
+              "/run/fvpn-netbird/netbird.sock": true,
+              "/var/run/netbird.sock": false,
+              "directory_mode": "700",
+              "directory_stat_ok": true
+            },
+            "units": {
+              "fvpn-agent.service": {
+                "ActiveState": "inactive",
+                "ExecMainStatus": "0",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "dead",
+                "read_ok": true
+              },
+              "fvpn-netbird.service": {
+                "ActiveState": "active",
+                "ExecMainStatus": "0",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "running",
+                "read_ok": true
+              },
+              "fvpn-updater.service": {
+                "ActiveState": "inactive",
+                "ExecMainStatus": "0",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "dead",
+                "read_ok": true
+              },
+              "fvpn-updater.timer": {
+                "ActiveState": "inactive",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "dead",
+                "read_ok": true
+              },
+              "fvpn-watchdog.service": {
+                "ActiveState": "inactive",
+                "ExecMainStatus": "0",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "dead",
+                "read_ok": true
+              }
+            }
+          },
+          "after_rerun": {
+            "agent_heartbeat_readonly": false,
+            "journal_read_ok": true,
+            "netbird_socket_readonly": false,
+            "observed_at": "2026-10-31T07:31:13.364485488Z",
+            "private_diagnostics_saved": true,
+            "sockets": {
+              "/run/fvpn-netbird/netbird.sock": true,
+              "/var/run/netbird.sock": false,
+              "directory_mode": "700",
+              "directory_stat_ok": true
+            },
+            "units": {
+              "fvpn-agent.service": {
+                "ActiveState": "inactive",
+                "ExecMainStatus": "0",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "dead",
+                "read_ok": true
+              },
+              "fvpn-netbird.service": {
+                "ActiveState": "active",
+                "ExecMainStatus": "0",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "running",
+                "read_ok": true
+              },
+              "fvpn-updater.service": {
+                "ActiveState": "inactive",
+                "ExecMainStatus": "0",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "dead",
+                "read_ok": true
+              },
+              "fvpn-updater.timer": {
+                "ActiveState": "inactive",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "dead",
+                "read_ok": true
+              },
+              "fvpn-watchdog.service": {
+                "ActiveState": "inactive",
+                "ExecMainStatus": "0",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "dead",
+                "read_ok": true
+              }
+            }
+          },
           "container": "fvpn-w4-enroll-installer-node",
-          "image_digest": "sha256:6a8d1df88bc8f5410f9c76944cbedc34623d8bf6b526419e668d5509fefda6c3",
-          "initial_install": {
+          "controlled_reinstall": {
             "after": {
-              "Key": "6587053dec1a54452fe649e6f7b4b1cf87405f2aa1c706571fb2c402414d6b3e",
-              "Cert": "4feda363102b475c1e8be437d0d99392b749f097b145bbb4edd3d3e7c15da6ec",
-              "NodeJSON": "03789fe17806a616cfdba05c295f0b35b26e7525bd28bcbf77022f14252a6f19",
-              "UsageDB": "d357ad366aeb968c6bb1f27db4f501d99d02edf96ca6277202bb607464a34141",
-              "UsageWAL": "absent",
-              "MachineID": "60e767eb6d5e6d68c3fccc945156698adc3ec567f805b17012c8e7350df272a3",
-              "Current": "releases/52db8139-44fe-44a6-9d1e-02620a7e4484"
+              "cert_sha256": "17be03f313de1a6711dda0cc0968f5382b2b92c2c5333d2fa4facad6ca821564",
+              "current": "releases/d3a83c6c-2459-4026-aadb-bab67673cdcf",
+              "key_sha256": "712f6a5bbc449bb674e81cc7b24ad231f28b7e197d9d44d320b46f455a44db65",
+              "machine_id_sha256": "60e767eb6d5e6d68c3fccc945156698adc3ec567f805b17012c8e7350df272a3",
+              "node_json_sha256": "eb71470a44f9a9c44e38bc81c39defd5a129b29e0b28af464af1d1441da148de",
+              "usage_db_sha256": "61f012373b185ae9daaf00f74b4a14a8e031823bf33cfaee102e05abaeb2674b",
+              "usage_wal_sha256": "absent"
             },
             "before": {
-              "Key": "absent",
-              "Cert": "absent",
-              "NodeJSON": "absent",
-              "UsageDB": "absent",
-              "UsageWAL": "absent",
-              "MachineID": "60e767eb6d5e6d68c3fccc945156698adc3ec567f805b17012c8e7350df272a3",
-              "Current": "absent"
+              "cert_sha256": "203717c4f886f8d38f4aaacd7ec685630b3df8a6a8cbd89209ae2741fcbb982d",
+              "current": "releases/d3a83c6c-2459-4026-aadb-bab67673cdcf",
+              "key_sha256": "95f554d4fcf4f82fafdd64304217377769f72324861fae8ff0b8719aa4c8cfb7",
+              "machine_id_sha256": "60e767eb6d5e6d68c3fccc945156698adc3ec567f805b17012c8e7350df272a3",
+              "node_json_sha256": "885f43fd72933e4ce3ecd0474a62a373a1c721d3292633f4eb24ef661c03dcb6",
+              "usage_db_sha256": "61f012373b185ae9daaf00f74b4a14a8e031823bf33cfaee102e05abaeb2674b",
+              "usage_wal_sha256": "absent"
             },
-            "code": "failed",
-            "exit": 1,
-            "incarnation_id": "01a19097-5a5e-7a9d-be44-03ed39315faf",
-            "node_id": "01a19097-5517-7833-bb6e-7a0fb2533c95",
-            "status": "",
+            "bound_state_before_sha256": {
+              "agent.db": "066016fe877cb3624913095fbee9e8b47a3ed898b9842d4c97c37474e4a7d0aa",
+              "agent.db-shm": "absent",
+              "agent.db-wal": "absent",
+              "desired-state.json": "109d6c0fef01eec753c621e3e02421bf4a73879236b4937366d1f59648ddd8f6"
+            },
+            "code": "baseline",
+            "exit": 0,
+            "failing_step": "none",
+            "incarnation_id": "01a190de-b351-76b9-9c0f-8300d9496d3a",
+            "node_id": "01a190de-9766-70be-b3a3-f1a4e64c7a10",
+            "retired": {
+              "cert_sha256": "203717c4f886f8d38f4aaacd7ec685630b3df8a6a8cbd89209ae2741fcbb982d",
+              "current": "",
+              "key_sha256": "95f554d4fcf4f82fafdd64304217377769f72324861fae8ff0b8719aa4c8cfb7",
+              "machine_id_sha256": "",
+              "node_json_sha256": "885f43fd72933e4ce3ecd0474a62a373a1c721d3292633f4eb24ef661c03dcb6",
+              "usage_db_sha256": "",
+              "usage_wal_sha256": ""
+            },
+            "retired_bound_state_sha256": {
+              "agent.db": "066016fe877cb3624913095fbee9e8b47a3ed898b9842d4c97c37474e4a7d0aa",
+              "agent.db-shm": "absent",
+              "agent.db-wal": "absent",
+              "desired-state.json": "109d6c0fef01eec753c621e3e02421bf4a73879236b4937366d1f59648ddd8f6"
+            },
+            "retired_mode": "700",
+            "status": "reenrolled",
             "wrapper_error": false
           },
-          "install_finished_at": "2026-10-31T06:13:42.72750912Z",
-          "install_started_at": "2026-10-31T06:13:19.306946818Z",
-          "journal_read_ok": true,
-          "netbird_socket_readonly": true,
+          "controlled_reinstall_finished_at": "2026-10-31T07:31:27.749790797Z",
+          "controlled_reinstall_started_at": "2026-10-31T07:31:13.707442342Z",
+          "history_after": [
+            {
+              "current": true,
+              "incarnation_id": "01a190de-b351-76b9-9c0f-8300d9496d3a",
+              "retire_reason": "",
+              "state": "active",
+              "usage": {
+                "download_bytes": "0",
+                "through_null": true,
+                "upload_bytes": "0"
+              }
+            },
+            {
+              "current": false,
+              "incarnation_id": "01a190de-9d5f-7615-a589-5ad0f19271ec",
+              "retire_reason": "reinstall",
+              "state": "retired",
+              "usage": {
+                "download_bytes": "0",
+                "through": "2026-10-31T07:31:11.031839Z",
+                "through_null": false,
+                "upload_bytes": "0"
+              }
+            }
+          ],
+          "history_after_read_ok": true,
+          "history_before": [
+            {
+              "current": true,
+              "incarnation_id": "01a190de-9d5f-7615-a589-5ad0f19271ec",
+              "retire_reason": "",
+              "state": "active",
+              "usage": {
+                "download_bytes": "0",
+                "through": "2026-10-31T07:31:11.031839Z",
+                "through_null": false,
+                "upload_bytes": "0"
+              }
+            }
+          ],
+          "history_before_read_ok": true,
+          "image_digest": "sha256:b752f7d984b79a3fad84169c41632d89c50edd65462fedfceb540fc1fc9f05fc",
+          "initial_install": {
+            "after": {
+              "cert_sha256": "203717c4f886f8d38f4aaacd7ec685630b3df8a6a8cbd89209ae2741fcbb982d",
+              "current": "releases/d3a83c6c-2459-4026-aadb-bab67673cdcf",
+              "key_sha256": "95f554d4fcf4f82fafdd64304217377769f72324861fae8ff0b8719aa4c8cfb7",
+              "machine_id_sha256": "60e767eb6d5e6d68c3fccc945156698adc3ec567f805b17012c8e7350df272a3",
+              "node_json_sha256": "885f43fd72933e4ce3ecd0474a62a373a1c721d3292633f4eb24ef661c03dcb6",
+              "usage_db_sha256": "61f012373b185ae9daaf00f74b4a14a8e031823bf33cfaee102e05abaeb2674b",
+              "usage_wal_sha256": "absent"
+            },
+            "before": {
+              "cert_sha256": "absent",
+              "current": "absent",
+              "key_sha256": "absent",
+              "machine_id_sha256": "60e767eb6d5e6d68c3fccc945156698adc3ec567f805b17012c8e7350df272a3",
+              "node_json_sha256": "absent",
+              "usage_db_sha256": "absent",
+              "usage_wal_sha256": "absent"
+            },
+            "bound_state_before_sha256": null,
+            "code": "baseline",
+            "exit": 0,
+            "failing_step": "none",
+            "incarnation_id": "01a190de-9d5f-7615-a589-5ad0f19271ec",
+            "node_id": "01a190de-9766-70be-b3a3-f1a4e64c7a10",
+            "retired": {
+              "cert_sha256": "",
+              "current": "",
+              "key_sha256": "",
+              "machine_id_sha256": "",
+              "node_json_sha256": "",
+              "usage_db_sha256": "",
+              "usage_wal_sha256": ""
+            },
+            "retired_bound_state_sha256": null,
+            "retired_mode": "",
+            "status": "installed",
+            "wrapper_error": false
+          },
+          "install_finished_at": "2026-10-31T07:31:11.930606746Z",
+          "install_started_at": "2026-10-31T07:31:09.346675341Z",
+          "installer_fix_pr": 279,
+          "old_certificate_denial": {
+            "desired-state": {
+              "code": "IDENTITY_REVOKED",
+              "decoded": true,
+              "denied": true,
+              "http_status": "403"
+            },
+            "observations": {
+              "code": "IDENTITY_REVOKED",
+              "decoded": true,
+              "denied": true,
+              "http_status": "403"
+            }
+          },
           "projection_after_install": {
             "http_status": 200,
             "identity_conflict": {
@@ -882,6 +1231,69 @@
             "read_ok": true,
             "safety_status": "unknown"
           },
+          "projection_after_reinstall": {
+            "http_status": 200,
+            "identity_conflict": {
+              "conflict_count": 0,
+              "last_conflict_at": null,
+              "mapping_frozen": false
+            },
+            "identity_conflict_present": true,
+            "member_forwarding_observed": null,
+            "provisioning_state": "applying",
+            "read_ok": true,
+            "safety_status": "unknown"
+          },
+          "rerun": {
+            "after": {
+              "cert_sha256": "203717c4f886f8d38f4aaacd7ec685630b3df8a6a8cbd89209ae2741fcbb982d",
+              "current": "releases/d3a83c6c-2459-4026-aadb-bab67673cdcf",
+              "key_sha256": "95f554d4fcf4f82fafdd64304217377769f72324861fae8ff0b8719aa4c8cfb7",
+              "machine_id_sha256": "60e767eb6d5e6d68c3fccc945156698adc3ec567f805b17012c8e7350df272a3",
+              "node_json_sha256": "885f43fd72933e4ce3ecd0474a62a373a1c721d3292633f4eb24ef661c03dcb6",
+              "usage_db_sha256": "61f012373b185ae9daaf00f74b4a14a8e031823bf33cfaee102e05abaeb2674b",
+              "usage_wal_sha256": "absent"
+            },
+            "before": {
+              "cert_sha256": "203717c4f886f8d38f4aaacd7ec685630b3df8a6a8cbd89209ae2741fcbb982d",
+              "current": "releases/d3a83c6c-2459-4026-aadb-bab67673cdcf",
+              "key_sha256": "95f554d4fcf4f82fafdd64304217377769f72324861fae8ff0b8719aa4c8cfb7",
+              "machine_id_sha256": "60e767eb6d5e6d68c3fccc945156698adc3ec567f805b17012c8e7350df272a3",
+              "node_json_sha256": "885f43fd72933e4ce3ecd0474a62a373a1c721d3292633f4eb24ef661c03dcb6",
+              "usage_db_sha256": "61f012373b185ae9daaf00f74b4a14a8e031823bf33cfaee102e05abaeb2674b",
+              "usage_wal_sha256": "absent"
+            },
+            "bound_state_before_sha256": null,
+            "code": "baseline",
+            "exit": 0,
+            "failing_step": "none",
+            "incarnation_id": "01a190de-9d5f-7615-a589-5ad0f19271ec",
+            "node_id": "01a190de-9766-70be-b3a3-f1a4e64c7a10",
+            "retired": {
+              "cert_sha256": "",
+              "current": "",
+              "key_sha256": "",
+              "machine_id_sha256": "",
+              "node_json_sha256": "",
+              "usage_db_sha256": "",
+              "usage_wal_sha256": ""
+            },
+            "retired_bound_state_sha256": null,
+            "retired_mode": "",
+            "status": "already_current",
+            "wrapper_error": false
+          },
+          "rerun_hashes_unchanged": true,
+          "response_file_present": false,
+          "retired_identity_hashes_match": true,
+          "revoke_response": {
+            "error_code": "",
+            "http_status": 202,
+            "transport_error": false
+          },
+          "same_node_new_incarnation": true,
+          "service_restoration_export": "missing",
+          "serving_baseline_measured": false,
           "slot": "installer-node",
           "slot_probe": {
             "hold_unknown_node_slot": true,
@@ -892,7 +1304,7 @@
         },
         "usage_gap": "ENR-05: #266 HoldUsageAcknowledgements, UsageLedgerSnapshot and MemberTransportStack accept node/node2/node-clone, while ControlledReinstall accepts only installer-node. Owner devstack: export the hold, snapshot and counted member transport on that same installer slot, including its proxy/config paths and service restoration. Owner usage/installer: supply an authorized old-incarnation backlog delivery protocol; packaging/installer/reenroll.go explicitly leaves retained old events unuploaded. No central-once or cross-reinstall usage claim."
       },
-      "observed_at": "2026-10-31T06:13:42.783309839Z"
+      "observed_at": "2026-10-31T07:31:28.174159027Z"
     },
     {
       "at": "AT07",
@@ -900,41 +1312,320 @@
       "status": "blocked",
       "detail": {
         "check": "identity_ledger_preserved",
-        "gap": "ENR-06: #266 real installer startup prerequisite failed. Owner packaging/installer and deploy/node/systemd (installer follow-up 3): fix NetBird socket write permissions and shared RuntimeDirectory lifecycle, then devstack rerun the wrappers and restore prior service state after hash sampling. No working forwarding baseline; successful rerun and ControlledReinstall are not reached.",
+        "gap": "ENR-06: RerunInstaller and ControlledReinstall stop agent/watchdog/updater for hash sampling; docs/e2e/RESPONSES.md is absent and no installer-slot service-restoration export is documented. Owner devstack: restore prior service state and export the installer-slot serving baseline. Invocation/digest observations alone cannot pass the serving lifecycle row.",
         "prerequisite": {
-          "agent_heartbeat_readonly": true,
+          "after_controlled_reinstall": {
+            "agent_heartbeat_readonly": false,
+            "journal_read_ok": true,
+            "netbird_socket_readonly": false,
+            "observed_at": "2026-10-31T07:31:27.749801418Z",
+            "private_diagnostics_saved": true,
+            "sockets": {
+              "/run/fvpn-netbird/netbird.sock": true,
+              "/var/run/netbird.sock": false,
+              "directory_mode": "700",
+              "directory_stat_ok": true
+            },
+            "units": {
+              "fvpn-agent.service": {
+                "ActiveState": "inactive",
+                "ExecMainStatus": "0",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "dead",
+                "read_ok": true
+              },
+              "fvpn-netbird.service": {
+                "ActiveState": "active",
+                "ExecMainStatus": "0",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "running",
+                "read_ok": true
+              },
+              "fvpn-updater.service": {
+                "ActiveState": "inactive",
+                "ExecMainStatus": "0",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "dead",
+                "read_ok": true
+              },
+              "fvpn-updater.timer": {
+                "ActiveState": "inactive",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "dead",
+                "read_ok": true
+              },
+              "fvpn-watchdog.service": {
+                "ActiveState": "inactive",
+                "ExecMainStatus": "0",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "dead",
+                "read_ok": true
+              }
+            }
+          },
+          "after_initial_install": {
+            "agent_heartbeat_readonly": false,
+            "journal_read_ok": true,
+            "netbird_socket_readonly": false,
+            "observed_at": "2026-10-31T07:31:11.9306225Z",
+            "private_diagnostics_saved": true,
+            "sockets": {
+              "/run/fvpn-netbird/netbird.sock": true,
+              "/var/run/netbird.sock": false,
+              "directory_mode": "700",
+              "directory_stat_ok": true
+            },
+            "units": {
+              "fvpn-agent.service": {
+                "ActiveState": "inactive",
+                "ExecMainStatus": "0",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "dead",
+                "read_ok": true
+              },
+              "fvpn-netbird.service": {
+                "ActiveState": "active",
+                "ExecMainStatus": "0",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "running",
+                "read_ok": true
+              },
+              "fvpn-updater.service": {
+                "ActiveState": "inactive",
+                "ExecMainStatus": "0",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "dead",
+                "read_ok": true
+              },
+              "fvpn-updater.timer": {
+                "ActiveState": "inactive",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "dead",
+                "read_ok": true
+              },
+              "fvpn-watchdog.service": {
+                "ActiveState": "inactive",
+                "ExecMainStatus": "0",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "dead",
+                "read_ok": true
+              }
+            }
+          },
+          "after_rerun": {
+            "agent_heartbeat_readonly": false,
+            "journal_read_ok": true,
+            "netbird_socket_readonly": false,
+            "observed_at": "2026-10-31T07:31:13.364485488Z",
+            "private_diagnostics_saved": true,
+            "sockets": {
+              "/run/fvpn-netbird/netbird.sock": true,
+              "/var/run/netbird.sock": false,
+              "directory_mode": "700",
+              "directory_stat_ok": true
+            },
+            "units": {
+              "fvpn-agent.service": {
+                "ActiveState": "inactive",
+                "ExecMainStatus": "0",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "dead",
+                "read_ok": true
+              },
+              "fvpn-netbird.service": {
+                "ActiveState": "active",
+                "ExecMainStatus": "0",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "running",
+                "read_ok": true
+              },
+              "fvpn-updater.service": {
+                "ActiveState": "inactive",
+                "ExecMainStatus": "0",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "dead",
+                "read_ok": true
+              },
+              "fvpn-updater.timer": {
+                "ActiveState": "inactive",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "dead",
+                "read_ok": true
+              },
+              "fvpn-watchdog.service": {
+                "ActiveState": "inactive",
+                "ExecMainStatus": "0",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "dead",
+                "read_ok": true
+              }
+            }
+          },
           "container": "fvpn-w4-enroll-installer-node",
-          "image_digest": "sha256:6a8d1df88bc8f5410f9c76944cbedc34623d8bf6b526419e668d5509fefda6c3",
-          "initial_install": {
+          "controlled_reinstall": {
             "after": {
-              "Key": "6587053dec1a54452fe649e6f7b4b1cf87405f2aa1c706571fb2c402414d6b3e",
-              "Cert": "4feda363102b475c1e8be437d0d99392b749f097b145bbb4edd3d3e7c15da6ec",
-              "NodeJSON": "03789fe17806a616cfdba05c295f0b35b26e7525bd28bcbf77022f14252a6f19",
-              "UsageDB": "d357ad366aeb968c6bb1f27db4f501d99d02edf96ca6277202bb607464a34141",
-              "UsageWAL": "absent",
-              "MachineID": "60e767eb6d5e6d68c3fccc945156698adc3ec567f805b17012c8e7350df272a3",
-              "Current": "releases/52db8139-44fe-44a6-9d1e-02620a7e4484"
+              "cert_sha256": "17be03f313de1a6711dda0cc0968f5382b2b92c2c5333d2fa4facad6ca821564",
+              "current": "releases/d3a83c6c-2459-4026-aadb-bab67673cdcf",
+              "key_sha256": "712f6a5bbc449bb674e81cc7b24ad231f28b7e197d9d44d320b46f455a44db65",
+              "machine_id_sha256": "60e767eb6d5e6d68c3fccc945156698adc3ec567f805b17012c8e7350df272a3",
+              "node_json_sha256": "eb71470a44f9a9c44e38bc81c39defd5a129b29e0b28af464af1d1441da148de",
+              "usage_db_sha256": "61f012373b185ae9daaf00f74b4a14a8e031823bf33cfaee102e05abaeb2674b",
+              "usage_wal_sha256": "absent"
             },
             "before": {
-              "Key": "absent",
-              "Cert": "absent",
-              "NodeJSON": "absent",
-              "UsageDB": "absent",
-              "UsageWAL": "absent",
-              "MachineID": "60e767eb6d5e6d68c3fccc945156698adc3ec567f805b17012c8e7350df272a3",
-              "Current": "absent"
+              "cert_sha256": "203717c4f886f8d38f4aaacd7ec685630b3df8a6a8cbd89209ae2741fcbb982d",
+              "current": "releases/d3a83c6c-2459-4026-aadb-bab67673cdcf",
+              "key_sha256": "95f554d4fcf4f82fafdd64304217377769f72324861fae8ff0b8719aa4c8cfb7",
+              "machine_id_sha256": "60e767eb6d5e6d68c3fccc945156698adc3ec567f805b17012c8e7350df272a3",
+              "node_json_sha256": "885f43fd72933e4ce3ecd0474a62a373a1c721d3292633f4eb24ef661c03dcb6",
+              "usage_db_sha256": "61f012373b185ae9daaf00f74b4a14a8e031823bf33cfaee102e05abaeb2674b",
+              "usage_wal_sha256": "absent"
             },
-            "code": "failed",
-            "exit": 1,
-            "incarnation_id": "01a19097-5a5e-7a9d-be44-03ed39315faf",
-            "node_id": "01a19097-5517-7833-bb6e-7a0fb2533c95",
-            "status": "",
+            "bound_state_before_sha256": {
+              "agent.db": "066016fe877cb3624913095fbee9e8b47a3ed898b9842d4c97c37474e4a7d0aa",
+              "agent.db-shm": "absent",
+              "agent.db-wal": "absent",
+              "desired-state.json": "109d6c0fef01eec753c621e3e02421bf4a73879236b4937366d1f59648ddd8f6"
+            },
+            "code": "baseline",
+            "exit": 0,
+            "failing_step": "none",
+            "incarnation_id": "01a190de-b351-76b9-9c0f-8300d9496d3a",
+            "node_id": "01a190de-9766-70be-b3a3-f1a4e64c7a10",
+            "retired": {
+              "cert_sha256": "203717c4f886f8d38f4aaacd7ec685630b3df8a6a8cbd89209ae2741fcbb982d",
+              "current": "",
+              "key_sha256": "95f554d4fcf4f82fafdd64304217377769f72324861fae8ff0b8719aa4c8cfb7",
+              "machine_id_sha256": "",
+              "node_json_sha256": "885f43fd72933e4ce3ecd0474a62a373a1c721d3292633f4eb24ef661c03dcb6",
+              "usage_db_sha256": "",
+              "usage_wal_sha256": ""
+            },
+            "retired_bound_state_sha256": {
+              "agent.db": "066016fe877cb3624913095fbee9e8b47a3ed898b9842d4c97c37474e4a7d0aa",
+              "agent.db-shm": "absent",
+              "agent.db-wal": "absent",
+              "desired-state.json": "109d6c0fef01eec753c621e3e02421bf4a73879236b4937366d1f59648ddd8f6"
+            },
+            "retired_mode": "700",
+            "status": "reenrolled",
             "wrapper_error": false
           },
-          "install_finished_at": "2026-10-31T06:13:42.72750912Z",
-          "install_started_at": "2026-10-31T06:13:19.306946818Z",
-          "journal_read_ok": true,
-          "netbird_socket_readonly": true,
+          "controlled_reinstall_finished_at": "2026-10-31T07:31:27.749790797Z",
+          "controlled_reinstall_started_at": "2026-10-31T07:31:13.707442342Z",
+          "history_after": [
+            {
+              "current": true,
+              "incarnation_id": "01a190de-b351-76b9-9c0f-8300d9496d3a",
+              "retire_reason": "",
+              "state": "active",
+              "usage": {
+                "download_bytes": "0",
+                "through_null": true,
+                "upload_bytes": "0"
+              }
+            },
+            {
+              "current": false,
+              "incarnation_id": "01a190de-9d5f-7615-a589-5ad0f19271ec",
+              "retire_reason": "reinstall",
+              "state": "retired",
+              "usage": {
+                "download_bytes": "0",
+                "through": "2026-10-31T07:31:11.031839Z",
+                "through_null": false,
+                "upload_bytes": "0"
+              }
+            }
+          ],
+          "history_after_read_ok": true,
+          "history_before": [
+            {
+              "current": true,
+              "incarnation_id": "01a190de-9d5f-7615-a589-5ad0f19271ec",
+              "retire_reason": "",
+              "state": "active",
+              "usage": {
+                "download_bytes": "0",
+                "through": "2026-10-31T07:31:11.031839Z",
+                "through_null": false,
+                "upload_bytes": "0"
+              }
+            }
+          ],
+          "history_before_read_ok": true,
+          "image_digest": "sha256:b752f7d984b79a3fad84169c41632d89c50edd65462fedfceb540fc1fc9f05fc",
+          "initial_install": {
+            "after": {
+              "cert_sha256": "203717c4f886f8d38f4aaacd7ec685630b3df8a6a8cbd89209ae2741fcbb982d",
+              "current": "releases/d3a83c6c-2459-4026-aadb-bab67673cdcf",
+              "key_sha256": "95f554d4fcf4f82fafdd64304217377769f72324861fae8ff0b8719aa4c8cfb7",
+              "machine_id_sha256": "60e767eb6d5e6d68c3fccc945156698adc3ec567f805b17012c8e7350df272a3",
+              "node_json_sha256": "885f43fd72933e4ce3ecd0474a62a373a1c721d3292633f4eb24ef661c03dcb6",
+              "usage_db_sha256": "61f012373b185ae9daaf00f74b4a14a8e031823bf33cfaee102e05abaeb2674b",
+              "usage_wal_sha256": "absent"
+            },
+            "before": {
+              "cert_sha256": "absent",
+              "current": "absent",
+              "key_sha256": "absent",
+              "machine_id_sha256": "60e767eb6d5e6d68c3fccc945156698adc3ec567f805b17012c8e7350df272a3",
+              "node_json_sha256": "absent",
+              "usage_db_sha256": "absent",
+              "usage_wal_sha256": "absent"
+            },
+            "bound_state_before_sha256": null,
+            "code": "baseline",
+            "exit": 0,
+            "failing_step": "none",
+            "incarnation_id": "01a190de-9d5f-7615-a589-5ad0f19271ec",
+            "node_id": "01a190de-9766-70be-b3a3-f1a4e64c7a10",
+            "retired": {
+              "cert_sha256": "",
+              "current": "",
+              "key_sha256": "",
+              "machine_id_sha256": "",
+              "node_json_sha256": "",
+              "usage_db_sha256": "",
+              "usage_wal_sha256": ""
+            },
+            "retired_bound_state_sha256": null,
+            "retired_mode": "",
+            "status": "installed",
+            "wrapper_error": false
+          },
+          "install_finished_at": "2026-10-31T07:31:11.930606746Z",
+          "install_started_at": "2026-10-31T07:31:09.346675341Z",
+          "installer_fix_pr": 279,
+          "old_certificate_denial": {
+            "desired-state": {
+              "code": "IDENTITY_REVOKED",
+              "decoded": true,
+              "denied": true,
+              "http_status": "403"
+            },
+            "observations": {
+              "code": "IDENTITY_REVOKED",
+              "decoded": true,
+              "denied": true,
+              "http_status": "403"
+            }
+          },
           "projection_after_install": {
             "http_status": 200,
             "identity_conflict": {
@@ -948,6 +1639,69 @@
             "read_ok": true,
             "safety_status": "unknown"
           },
+          "projection_after_reinstall": {
+            "http_status": 200,
+            "identity_conflict": {
+              "conflict_count": 0,
+              "last_conflict_at": null,
+              "mapping_frozen": false
+            },
+            "identity_conflict_present": true,
+            "member_forwarding_observed": null,
+            "provisioning_state": "applying",
+            "read_ok": true,
+            "safety_status": "unknown"
+          },
+          "rerun": {
+            "after": {
+              "cert_sha256": "203717c4f886f8d38f4aaacd7ec685630b3df8a6a8cbd89209ae2741fcbb982d",
+              "current": "releases/d3a83c6c-2459-4026-aadb-bab67673cdcf",
+              "key_sha256": "95f554d4fcf4f82fafdd64304217377769f72324861fae8ff0b8719aa4c8cfb7",
+              "machine_id_sha256": "60e767eb6d5e6d68c3fccc945156698adc3ec567f805b17012c8e7350df272a3",
+              "node_json_sha256": "885f43fd72933e4ce3ecd0474a62a373a1c721d3292633f4eb24ef661c03dcb6",
+              "usage_db_sha256": "61f012373b185ae9daaf00f74b4a14a8e031823bf33cfaee102e05abaeb2674b",
+              "usage_wal_sha256": "absent"
+            },
+            "before": {
+              "cert_sha256": "203717c4f886f8d38f4aaacd7ec685630b3df8a6a8cbd89209ae2741fcbb982d",
+              "current": "releases/d3a83c6c-2459-4026-aadb-bab67673cdcf",
+              "key_sha256": "95f554d4fcf4f82fafdd64304217377769f72324861fae8ff0b8719aa4c8cfb7",
+              "machine_id_sha256": "60e767eb6d5e6d68c3fccc945156698adc3ec567f805b17012c8e7350df272a3",
+              "node_json_sha256": "885f43fd72933e4ce3ecd0474a62a373a1c721d3292633f4eb24ef661c03dcb6",
+              "usage_db_sha256": "61f012373b185ae9daaf00f74b4a14a8e031823bf33cfaee102e05abaeb2674b",
+              "usage_wal_sha256": "absent"
+            },
+            "bound_state_before_sha256": null,
+            "code": "baseline",
+            "exit": 0,
+            "failing_step": "none",
+            "incarnation_id": "01a190de-9d5f-7615-a589-5ad0f19271ec",
+            "node_id": "01a190de-9766-70be-b3a3-f1a4e64c7a10",
+            "retired": {
+              "cert_sha256": "",
+              "current": "",
+              "key_sha256": "",
+              "machine_id_sha256": "",
+              "node_json_sha256": "",
+              "usage_db_sha256": "",
+              "usage_wal_sha256": ""
+            },
+            "retired_bound_state_sha256": null,
+            "retired_mode": "",
+            "status": "already_current",
+            "wrapper_error": false
+          },
+          "rerun_hashes_unchanged": true,
+          "response_file_present": false,
+          "retired_identity_hashes_match": true,
+          "revoke_response": {
+            "error_code": "",
+            "http_status": 202,
+            "transport_error": false
+          },
+          "same_node_new_incarnation": true,
+          "service_restoration_export": "missing",
+          "serving_baseline_measured": false,
           "slot": "installer-node",
           "slot_probe": {
             "hold_unknown_node_slot": true,
@@ -958,7 +1712,7 @@
         },
         "usage_gap": "ENR-05: #266 HoldUsageAcknowledgements, UsageLedgerSnapshot and MemberTransportStack accept node/node2/node-clone, while ControlledReinstall accepts only installer-node. Owner devstack: export the hold, snapshot and counted member transport on that same installer slot, including its proxy/config paths and service restoration. Owner usage/installer: supply an authorized old-incarnation backlog delivery protocol; packaging/installer/reenroll.go explicitly leaves retained old events unuploaded. No central-once or cross-reinstall usage claim."
       },
-      "observed_at": "2026-10-31T06:13:42.783729221Z"
+      "observed_at": "2026-10-31T07:31:28.1747938Z"
     },
     {
       "at": "AT07",
@@ -966,41 +1720,320 @@
       "status": "blocked",
       "detail": {
         "check": "controlled_reinstall",
-        "gap": "ENR-06: #266 real installer startup prerequisite failed. Owner packaging/installer and deploy/node/systemd (installer follow-up 3): fix NetBird socket write permissions and shared RuntimeDirectory lifecycle, then devstack rerun the wrappers and restore prior service state after hash sampling. No working forwarding baseline; successful rerun and ControlledReinstall are not reached.",
+        "gap": "ENR-06: RerunInstaller and ControlledReinstall stop agent/watchdog/updater for hash sampling; docs/e2e/RESPONSES.md is absent and no installer-slot service-restoration export is documented. Owner devstack: restore prior service state and export the installer-slot serving baseline. Invocation/digest observations alone cannot pass the serving lifecycle row.",
         "prerequisite": {
-          "agent_heartbeat_readonly": true,
+          "after_controlled_reinstall": {
+            "agent_heartbeat_readonly": false,
+            "journal_read_ok": true,
+            "netbird_socket_readonly": false,
+            "observed_at": "2026-10-31T07:31:27.749801418Z",
+            "private_diagnostics_saved": true,
+            "sockets": {
+              "/run/fvpn-netbird/netbird.sock": true,
+              "/var/run/netbird.sock": false,
+              "directory_mode": "700",
+              "directory_stat_ok": true
+            },
+            "units": {
+              "fvpn-agent.service": {
+                "ActiveState": "inactive",
+                "ExecMainStatus": "0",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "dead",
+                "read_ok": true
+              },
+              "fvpn-netbird.service": {
+                "ActiveState": "active",
+                "ExecMainStatus": "0",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "running",
+                "read_ok": true
+              },
+              "fvpn-updater.service": {
+                "ActiveState": "inactive",
+                "ExecMainStatus": "0",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "dead",
+                "read_ok": true
+              },
+              "fvpn-updater.timer": {
+                "ActiveState": "inactive",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "dead",
+                "read_ok": true
+              },
+              "fvpn-watchdog.service": {
+                "ActiveState": "inactive",
+                "ExecMainStatus": "0",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "dead",
+                "read_ok": true
+              }
+            }
+          },
+          "after_initial_install": {
+            "agent_heartbeat_readonly": false,
+            "journal_read_ok": true,
+            "netbird_socket_readonly": false,
+            "observed_at": "2026-10-31T07:31:11.9306225Z",
+            "private_diagnostics_saved": true,
+            "sockets": {
+              "/run/fvpn-netbird/netbird.sock": true,
+              "/var/run/netbird.sock": false,
+              "directory_mode": "700",
+              "directory_stat_ok": true
+            },
+            "units": {
+              "fvpn-agent.service": {
+                "ActiveState": "inactive",
+                "ExecMainStatus": "0",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "dead",
+                "read_ok": true
+              },
+              "fvpn-netbird.service": {
+                "ActiveState": "active",
+                "ExecMainStatus": "0",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "running",
+                "read_ok": true
+              },
+              "fvpn-updater.service": {
+                "ActiveState": "inactive",
+                "ExecMainStatus": "0",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "dead",
+                "read_ok": true
+              },
+              "fvpn-updater.timer": {
+                "ActiveState": "inactive",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "dead",
+                "read_ok": true
+              },
+              "fvpn-watchdog.service": {
+                "ActiveState": "inactive",
+                "ExecMainStatus": "0",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "dead",
+                "read_ok": true
+              }
+            }
+          },
+          "after_rerun": {
+            "agent_heartbeat_readonly": false,
+            "journal_read_ok": true,
+            "netbird_socket_readonly": false,
+            "observed_at": "2026-10-31T07:31:13.364485488Z",
+            "private_diagnostics_saved": true,
+            "sockets": {
+              "/run/fvpn-netbird/netbird.sock": true,
+              "/var/run/netbird.sock": false,
+              "directory_mode": "700",
+              "directory_stat_ok": true
+            },
+            "units": {
+              "fvpn-agent.service": {
+                "ActiveState": "inactive",
+                "ExecMainStatus": "0",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "dead",
+                "read_ok": true
+              },
+              "fvpn-netbird.service": {
+                "ActiveState": "active",
+                "ExecMainStatus": "0",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "running",
+                "read_ok": true
+              },
+              "fvpn-updater.service": {
+                "ActiveState": "inactive",
+                "ExecMainStatus": "0",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "dead",
+                "read_ok": true
+              },
+              "fvpn-updater.timer": {
+                "ActiveState": "inactive",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "dead",
+                "read_ok": true
+              },
+              "fvpn-watchdog.service": {
+                "ActiveState": "inactive",
+                "ExecMainStatus": "0",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "dead",
+                "read_ok": true
+              }
+            }
+          },
           "container": "fvpn-w4-enroll-installer-node",
-          "image_digest": "sha256:6a8d1df88bc8f5410f9c76944cbedc34623d8bf6b526419e668d5509fefda6c3",
-          "initial_install": {
+          "controlled_reinstall": {
             "after": {
-              "Key": "6587053dec1a54452fe649e6f7b4b1cf87405f2aa1c706571fb2c402414d6b3e",
-              "Cert": "4feda363102b475c1e8be437d0d99392b749f097b145bbb4edd3d3e7c15da6ec",
-              "NodeJSON": "03789fe17806a616cfdba05c295f0b35b26e7525bd28bcbf77022f14252a6f19",
-              "UsageDB": "d357ad366aeb968c6bb1f27db4f501d99d02edf96ca6277202bb607464a34141",
-              "UsageWAL": "absent",
-              "MachineID": "60e767eb6d5e6d68c3fccc945156698adc3ec567f805b17012c8e7350df272a3",
-              "Current": "releases/52db8139-44fe-44a6-9d1e-02620a7e4484"
+              "cert_sha256": "17be03f313de1a6711dda0cc0968f5382b2b92c2c5333d2fa4facad6ca821564",
+              "current": "releases/d3a83c6c-2459-4026-aadb-bab67673cdcf",
+              "key_sha256": "712f6a5bbc449bb674e81cc7b24ad231f28b7e197d9d44d320b46f455a44db65",
+              "machine_id_sha256": "60e767eb6d5e6d68c3fccc945156698adc3ec567f805b17012c8e7350df272a3",
+              "node_json_sha256": "eb71470a44f9a9c44e38bc81c39defd5a129b29e0b28af464af1d1441da148de",
+              "usage_db_sha256": "61f012373b185ae9daaf00f74b4a14a8e031823bf33cfaee102e05abaeb2674b",
+              "usage_wal_sha256": "absent"
             },
             "before": {
-              "Key": "absent",
-              "Cert": "absent",
-              "NodeJSON": "absent",
-              "UsageDB": "absent",
-              "UsageWAL": "absent",
-              "MachineID": "60e767eb6d5e6d68c3fccc945156698adc3ec567f805b17012c8e7350df272a3",
-              "Current": "absent"
+              "cert_sha256": "203717c4f886f8d38f4aaacd7ec685630b3df8a6a8cbd89209ae2741fcbb982d",
+              "current": "releases/d3a83c6c-2459-4026-aadb-bab67673cdcf",
+              "key_sha256": "95f554d4fcf4f82fafdd64304217377769f72324861fae8ff0b8719aa4c8cfb7",
+              "machine_id_sha256": "60e767eb6d5e6d68c3fccc945156698adc3ec567f805b17012c8e7350df272a3",
+              "node_json_sha256": "885f43fd72933e4ce3ecd0474a62a373a1c721d3292633f4eb24ef661c03dcb6",
+              "usage_db_sha256": "61f012373b185ae9daaf00f74b4a14a8e031823bf33cfaee102e05abaeb2674b",
+              "usage_wal_sha256": "absent"
             },
-            "code": "failed",
-            "exit": 1,
-            "incarnation_id": "01a19097-5a5e-7a9d-be44-03ed39315faf",
-            "node_id": "01a19097-5517-7833-bb6e-7a0fb2533c95",
-            "status": "",
+            "bound_state_before_sha256": {
+              "agent.db": "066016fe877cb3624913095fbee9e8b47a3ed898b9842d4c97c37474e4a7d0aa",
+              "agent.db-shm": "absent",
+              "agent.db-wal": "absent",
+              "desired-state.json": "109d6c0fef01eec753c621e3e02421bf4a73879236b4937366d1f59648ddd8f6"
+            },
+            "code": "baseline",
+            "exit": 0,
+            "failing_step": "none",
+            "incarnation_id": "01a190de-b351-76b9-9c0f-8300d9496d3a",
+            "node_id": "01a190de-9766-70be-b3a3-f1a4e64c7a10",
+            "retired": {
+              "cert_sha256": "203717c4f886f8d38f4aaacd7ec685630b3df8a6a8cbd89209ae2741fcbb982d",
+              "current": "",
+              "key_sha256": "95f554d4fcf4f82fafdd64304217377769f72324861fae8ff0b8719aa4c8cfb7",
+              "machine_id_sha256": "",
+              "node_json_sha256": "885f43fd72933e4ce3ecd0474a62a373a1c721d3292633f4eb24ef661c03dcb6",
+              "usage_db_sha256": "",
+              "usage_wal_sha256": ""
+            },
+            "retired_bound_state_sha256": {
+              "agent.db": "066016fe877cb3624913095fbee9e8b47a3ed898b9842d4c97c37474e4a7d0aa",
+              "agent.db-shm": "absent",
+              "agent.db-wal": "absent",
+              "desired-state.json": "109d6c0fef01eec753c621e3e02421bf4a73879236b4937366d1f59648ddd8f6"
+            },
+            "retired_mode": "700",
+            "status": "reenrolled",
             "wrapper_error": false
           },
-          "install_finished_at": "2026-10-31T06:13:42.72750912Z",
-          "install_started_at": "2026-10-31T06:13:19.306946818Z",
-          "journal_read_ok": true,
-          "netbird_socket_readonly": true,
+          "controlled_reinstall_finished_at": "2026-10-31T07:31:27.749790797Z",
+          "controlled_reinstall_started_at": "2026-10-31T07:31:13.707442342Z",
+          "history_after": [
+            {
+              "current": true,
+              "incarnation_id": "01a190de-b351-76b9-9c0f-8300d9496d3a",
+              "retire_reason": "",
+              "state": "active",
+              "usage": {
+                "download_bytes": "0",
+                "through_null": true,
+                "upload_bytes": "0"
+              }
+            },
+            {
+              "current": false,
+              "incarnation_id": "01a190de-9d5f-7615-a589-5ad0f19271ec",
+              "retire_reason": "reinstall",
+              "state": "retired",
+              "usage": {
+                "download_bytes": "0",
+                "through": "2026-10-31T07:31:11.031839Z",
+                "through_null": false,
+                "upload_bytes": "0"
+              }
+            }
+          ],
+          "history_after_read_ok": true,
+          "history_before": [
+            {
+              "current": true,
+              "incarnation_id": "01a190de-9d5f-7615-a589-5ad0f19271ec",
+              "retire_reason": "",
+              "state": "active",
+              "usage": {
+                "download_bytes": "0",
+                "through": "2026-10-31T07:31:11.031839Z",
+                "through_null": false,
+                "upload_bytes": "0"
+              }
+            }
+          ],
+          "history_before_read_ok": true,
+          "image_digest": "sha256:b752f7d984b79a3fad84169c41632d89c50edd65462fedfceb540fc1fc9f05fc",
+          "initial_install": {
+            "after": {
+              "cert_sha256": "203717c4f886f8d38f4aaacd7ec685630b3df8a6a8cbd89209ae2741fcbb982d",
+              "current": "releases/d3a83c6c-2459-4026-aadb-bab67673cdcf",
+              "key_sha256": "95f554d4fcf4f82fafdd64304217377769f72324861fae8ff0b8719aa4c8cfb7",
+              "machine_id_sha256": "60e767eb6d5e6d68c3fccc945156698adc3ec567f805b17012c8e7350df272a3",
+              "node_json_sha256": "885f43fd72933e4ce3ecd0474a62a373a1c721d3292633f4eb24ef661c03dcb6",
+              "usage_db_sha256": "61f012373b185ae9daaf00f74b4a14a8e031823bf33cfaee102e05abaeb2674b",
+              "usage_wal_sha256": "absent"
+            },
+            "before": {
+              "cert_sha256": "absent",
+              "current": "absent",
+              "key_sha256": "absent",
+              "machine_id_sha256": "60e767eb6d5e6d68c3fccc945156698adc3ec567f805b17012c8e7350df272a3",
+              "node_json_sha256": "absent",
+              "usage_db_sha256": "absent",
+              "usage_wal_sha256": "absent"
+            },
+            "bound_state_before_sha256": null,
+            "code": "baseline",
+            "exit": 0,
+            "failing_step": "none",
+            "incarnation_id": "01a190de-9d5f-7615-a589-5ad0f19271ec",
+            "node_id": "01a190de-9766-70be-b3a3-f1a4e64c7a10",
+            "retired": {
+              "cert_sha256": "",
+              "current": "",
+              "key_sha256": "",
+              "machine_id_sha256": "",
+              "node_json_sha256": "",
+              "usage_db_sha256": "",
+              "usage_wal_sha256": ""
+            },
+            "retired_bound_state_sha256": null,
+            "retired_mode": "",
+            "status": "installed",
+            "wrapper_error": false
+          },
+          "install_finished_at": "2026-10-31T07:31:11.930606746Z",
+          "install_started_at": "2026-10-31T07:31:09.346675341Z",
+          "installer_fix_pr": 279,
+          "old_certificate_denial": {
+            "desired-state": {
+              "code": "IDENTITY_REVOKED",
+              "decoded": true,
+              "denied": true,
+              "http_status": "403"
+            },
+            "observations": {
+              "code": "IDENTITY_REVOKED",
+              "decoded": true,
+              "denied": true,
+              "http_status": "403"
+            }
+          },
           "projection_after_install": {
             "http_status": 200,
             "identity_conflict": {
@@ -1014,6 +2047,69 @@
             "read_ok": true,
             "safety_status": "unknown"
           },
+          "projection_after_reinstall": {
+            "http_status": 200,
+            "identity_conflict": {
+              "conflict_count": 0,
+              "last_conflict_at": null,
+              "mapping_frozen": false
+            },
+            "identity_conflict_present": true,
+            "member_forwarding_observed": null,
+            "provisioning_state": "applying",
+            "read_ok": true,
+            "safety_status": "unknown"
+          },
+          "rerun": {
+            "after": {
+              "cert_sha256": "203717c4f886f8d38f4aaacd7ec685630b3df8a6a8cbd89209ae2741fcbb982d",
+              "current": "releases/d3a83c6c-2459-4026-aadb-bab67673cdcf",
+              "key_sha256": "95f554d4fcf4f82fafdd64304217377769f72324861fae8ff0b8719aa4c8cfb7",
+              "machine_id_sha256": "60e767eb6d5e6d68c3fccc945156698adc3ec567f805b17012c8e7350df272a3",
+              "node_json_sha256": "885f43fd72933e4ce3ecd0474a62a373a1c721d3292633f4eb24ef661c03dcb6",
+              "usage_db_sha256": "61f012373b185ae9daaf00f74b4a14a8e031823bf33cfaee102e05abaeb2674b",
+              "usage_wal_sha256": "absent"
+            },
+            "before": {
+              "cert_sha256": "203717c4f886f8d38f4aaacd7ec685630b3df8a6a8cbd89209ae2741fcbb982d",
+              "current": "releases/d3a83c6c-2459-4026-aadb-bab67673cdcf",
+              "key_sha256": "95f554d4fcf4f82fafdd64304217377769f72324861fae8ff0b8719aa4c8cfb7",
+              "machine_id_sha256": "60e767eb6d5e6d68c3fccc945156698adc3ec567f805b17012c8e7350df272a3",
+              "node_json_sha256": "885f43fd72933e4ce3ecd0474a62a373a1c721d3292633f4eb24ef661c03dcb6",
+              "usage_db_sha256": "61f012373b185ae9daaf00f74b4a14a8e031823bf33cfaee102e05abaeb2674b",
+              "usage_wal_sha256": "absent"
+            },
+            "bound_state_before_sha256": null,
+            "code": "baseline",
+            "exit": 0,
+            "failing_step": "none",
+            "incarnation_id": "01a190de-9d5f-7615-a589-5ad0f19271ec",
+            "node_id": "01a190de-9766-70be-b3a3-f1a4e64c7a10",
+            "retired": {
+              "cert_sha256": "",
+              "current": "",
+              "key_sha256": "",
+              "machine_id_sha256": "",
+              "node_json_sha256": "",
+              "usage_db_sha256": "",
+              "usage_wal_sha256": ""
+            },
+            "retired_bound_state_sha256": null,
+            "retired_mode": "",
+            "status": "already_current",
+            "wrapper_error": false
+          },
+          "rerun_hashes_unchanged": true,
+          "response_file_present": false,
+          "retired_identity_hashes_match": true,
+          "revoke_response": {
+            "error_code": "",
+            "http_status": 202,
+            "transport_error": false
+          },
+          "same_node_new_incarnation": true,
+          "service_restoration_export": "missing",
+          "serving_baseline_measured": false,
           "slot": "installer-node",
           "slot_probe": {
             "hold_unknown_node_slot": true,
@@ -1024,49 +2120,326 @@
         },
         "usage_gap": "ENR-05: #266 HoldUsageAcknowledgements, UsageLedgerSnapshot and MemberTransportStack accept node/node2/node-clone, while ControlledReinstall accepts only installer-node. Owner devstack: export the hold, snapshot and counted member transport on that same installer slot, including its proxy/config paths and service restoration. Owner usage/installer: supply an authorized old-incarnation backlog delivery protocol; packaging/installer/reenroll.go explicitly leaves retained old events unuploaded. No central-once or cross-reinstall usage claim."
       },
-      "observed_at": "2026-10-31T06:13:42.784115941Z"
+      "observed_at": "2026-10-31T07:31:28.17548078Z"
     },
     {
       "at": "AT07",
       "name": "old_certificate_denied",
-      "status": "blocked",
+      "status": "pass",
       "detail": {
-        "check": "old_certificate_denied",
-        "gap": "ENR-06: #266 real installer startup prerequisite failed. Owner packaging/installer and deploy/node/systemd (installer follow-up 3): fix NetBird socket write permissions and shared RuntimeDirectory lifecycle, then devstack rerun the wrappers and restore prior service state after hash sampling. No working forwarding baseline; successful rerun and ControlledReinstall are not reached.",
         "prerequisite": {
-          "agent_heartbeat_readonly": true,
+          "after_controlled_reinstall": {
+            "agent_heartbeat_readonly": false,
+            "journal_read_ok": true,
+            "netbird_socket_readonly": false,
+            "observed_at": "2026-10-31T07:31:27.749801418Z",
+            "private_diagnostics_saved": true,
+            "sockets": {
+              "/run/fvpn-netbird/netbird.sock": true,
+              "/var/run/netbird.sock": false,
+              "directory_mode": "700",
+              "directory_stat_ok": true
+            },
+            "units": {
+              "fvpn-agent.service": {
+                "ActiveState": "inactive",
+                "ExecMainStatus": "0",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "dead",
+                "read_ok": true
+              },
+              "fvpn-netbird.service": {
+                "ActiveState": "active",
+                "ExecMainStatus": "0",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "running",
+                "read_ok": true
+              },
+              "fvpn-updater.service": {
+                "ActiveState": "inactive",
+                "ExecMainStatus": "0",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "dead",
+                "read_ok": true
+              },
+              "fvpn-updater.timer": {
+                "ActiveState": "inactive",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "dead",
+                "read_ok": true
+              },
+              "fvpn-watchdog.service": {
+                "ActiveState": "inactive",
+                "ExecMainStatus": "0",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "dead",
+                "read_ok": true
+              }
+            }
+          },
+          "after_initial_install": {
+            "agent_heartbeat_readonly": false,
+            "journal_read_ok": true,
+            "netbird_socket_readonly": false,
+            "observed_at": "2026-10-31T07:31:11.9306225Z",
+            "private_diagnostics_saved": true,
+            "sockets": {
+              "/run/fvpn-netbird/netbird.sock": true,
+              "/var/run/netbird.sock": false,
+              "directory_mode": "700",
+              "directory_stat_ok": true
+            },
+            "units": {
+              "fvpn-agent.service": {
+                "ActiveState": "inactive",
+                "ExecMainStatus": "0",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "dead",
+                "read_ok": true
+              },
+              "fvpn-netbird.service": {
+                "ActiveState": "active",
+                "ExecMainStatus": "0",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "running",
+                "read_ok": true
+              },
+              "fvpn-updater.service": {
+                "ActiveState": "inactive",
+                "ExecMainStatus": "0",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "dead",
+                "read_ok": true
+              },
+              "fvpn-updater.timer": {
+                "ActiveState": "inactive",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "dead",
+                "read_ok": true
+              },
+              "fvpn-watchdog.service": {
+                "ActiveState": "inactive",
+                "ExecMainStatus": "0",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "dead",
+                "read_ok": true
+              }
+            }
+          },
+          "after_rerun": {
+            "agent_heartbeat_readonly": false,
+            "journal_read_ok": true,
+            "netbird_socket_readonly": false,
+            "observed_at": "2026-10-31T07:31:13.364485488Z",
+            "private_diagnostics_saved": true,
+            "sockets": {
+              "/run/fvpn-netbird/netbird.sock": true,
+              "/var/run/netbird.sock": false,
+              "directory_mode": "700",
+              "directory_stat_ok": true
+            },
+            "units": {
+              "fvpn-agent.service": {
+                "ActiveState": "inactive",
+                "ExecMainStatus": "0",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "dead",
+                "read_ok": true
+              },
+              "fvpn-netbird.service": {
+                "ActiveState": "active",
+                "ExecMainStatus": "0",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "running",
+                "read_ok": true
+              },
+              "fvpn-updater.service": {
+                "ActiveState": "inactive",
+                "ExecMainStatus": "0",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "dead",
+                "read_ok": true
+              },
+              "fvpn-updater.timer": {
+                "ActiveState": "inactive",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "dead",
+                "read_ok": true
+              },
+              "fvpn-watchdog.service": {
+                "ActiveState": "inactive",
+                "ExecMainStatus": "0",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "dead",
+                "read_ok": true
+              }
+            }
+          },
           "container": "fvpn-w4-enroll-installer-node",
-          "image_digest": "sha256:6a8d1df88bc8f5410f9c76944cbedc34623d8bf6b526419e668d5509fefda6c3",
-          "initial_install": {
+          "controlled_reinstall": {
             "after": {
-              "Key": "6587053dec1a54452fe649e6f7b4b1cf87405f2aa1c706571fb2c402414d6b3e",
-              "Cert": "4feda363102b475c1e8be437d0d99392b749f097b145bbb4edd3d3e7c15da6ec",
-              "NodeJSON": "03789fe17806a616cfdba05c295f0b35b26e7525bd28bcbf77022f14252a6f19",
-              "UsageDB": "d357ad366aeb968c6bb1f27db4f501d99d02edf96ca6277202bb607464a34141",
-              "UsageWAL": "absent",
-              "MachineID": "60e767eb6d5e6d68c3fccc945156698adc3ec567f805b17012c8e7350df272a3",
-              "Current": "releases/52db8139-44fe-44a6-9d1e-02620a7e4484"
+              "cert_sha256": "17be03f313de1a6711dda0cc0968f5382b2b92c2c5333d2fa4facad6ca821564",
+              "current": "releases/d3a83c6c-2459-4026-aadb-bab67673cdcf",
+              "key_sha256": "712f6a5bbc449bb674e81cc7b24ad231f28b7e197d9d44d320b46f455a44db65",
+              "machine_id_sha256": "60e767eb6d5e6d68c3fccc945156698adc3ec567f805b17012c8e7350df272a3",
+              "node_json_sha256": "eb71470a44f9a9c44e38bc81c39defd5a129b29e0b28af464af1d1441da148de",
+              "usage_db_sha256": "61f012373b185ae9daaf00f74b4a14a8e031823bf33cfaee102e05abaeb2674b",
+              "usage_wal_sha256": "absent"
             },
             "before": {
-              "Key": "absent",
-              "Cert": "absent",
-              "NodeJSON": "absent",
-              "UsageDB": "absent",
-              "UsageWAL": "absent",
-              "MachineID": "60e767eb6d5e6d68c3fccc945156698adc3ec567f805b17012c8e7350df272a3",
-              "Current": "absent"
+              "cert_sha256": "203717c4f886f8d38f4aaacd7ec685630b3df8a6a8cbd89209ae2741fcbb982d",
+              "current": "releases/d3a83c6c-2459-4026-aadb-bab67673cdcf",
+              "key_sha256": "95f554d4fcf4f82fafdd64304217377769f72324861fae8ff0b8719aa4c8cfb7",
+              "machine_id_sha256": "60e767eb6d5e6d68c3fccc945156698adc3ec567f805b17012c8e7350df272a3",
+              "node_json_sha256": "885f43fd72933e4ce3ecd0474a62a373a1c721d3292633f4eb24ef661c03dcb6",
+              "usage_db_sha256": "61f012373b185ae9daaf00f74b4a14a8e031823bf33cfaee102e05abaeb2674b",
+              "usage_wal_sha256": "absent"
             },
-            "code": "failed",
-            "exit": 1,
-            "incarnation_id": "01a19097-5a5e-7a9d-be44-03ed39315faf",
-            "node_id": "01a19097-5517-7833-bb6e-7a0fb2533c95",
-            "status": "",
+            "bound_state_before_sha256": {
+              "agent.db": "066016fe877cb3624913095fbee9e8b47a3ed898b9842d4c97c37474e4a7d0aa",
+              "agent.db-shm": "absent",
+              "agent.db-wal": "absent",
+              "desired-state.json": "109d6c0fef01eec753c621e3e02421bf4a73879236b4937366d1f59648ddd8f6"
+            },
+            "code": "baseline",
+            "exit": 0,
+            "failing_step": "none",
+            "incarnation_id": "01a190de-b351-76b9-9c0f-8300d9496d3a",
+            "node_id": "01a190de-9766-70be-b3a3-f1a4e64c7a10",
+            "retired": {
+              "cert_sha256": "203717c4f886f8d38f4aaacd7ec685630b3df8a6a8cbd89209ae2741fcbb982d",
+              "current": "",
+              "key_sha256": "95f554d4fcf4f82fafdd64304217377769f72324861fae8ff0b8719aa4c8cfb7",
+              "machine_id_sha256": "",
+              "node_json_sha256": "885f43fd72933e4ce3ecd0474a62a373a1c721d3292633f4eb24ef661c03dcb6",
+              "usage_db_sha256": "",
+              "usage_wal_sha256": ""
+            },
+            "retired_bound_state_sha256": {
+              "agent.db": "066016fe877cb3624913095fbee9e8b47a3ed898b9842d4c97c37474e4a7d0aa",
+              "agent.db-shm": "absent",
+              "agent.db-wal": "absent",
+              "desired-state.json": "109d6c0fef01eec753c621e3e02421bf4a73879236b4937366d1f59648ddd8f6"
+            },
+            "retired_mode": "700",
+            "status": "reenrolled",
             "wrapper_error": false
           },
-          "install_finished_at": "2026-10-31T06:13:42.72750912Z",
-          "install_started_at": "2026-10-31T06:13:19.306946818Z",
-          "journal_read_ok": true,
-          "netbird_socket_readonly": true,
+          "controlled_reinstall_finished_at": "2026-10-31T07:31:27.749790797Z",
+          "controlled_reinstall_started_at": "2026-10-31T07:31:13.707442342Z",
+          "history_after": [
+            {
+              "current": true,
+              "incarnation_id": "01a190de-b351-76b9-9c0f-8300d9496d3a",
+              "retire_reason": "",
+              "state": "active",
+              "usage": {
+                "download_bytes": "0",
+                "through_null": true,
+                "upload_bytes": "0"
+              }
+            },
+            {
+              "current": false,
+              "incarnation_id": "01a190de-9d5f-7615-a589-5ad0f19271ec",
+              "retire_reason": "reinstall",
+              "state": "retired",
+              "usage": {
+                "download_bytes": "0",
+                "through": "2026-10-31T07:31:11.031839Z",
+                "through_null": false,
+                "upload_bytes": "0"
+              }
+            }
+          ],
+          "history_after_read_ok": true,
+          "history_before": [
+            {
+              "current": true,
+              "incarnation_id": "01a190de-9d5f-7615-a589-5ad0f19271ec",
+              "retire_reason": "",
+              "state": "active",
+              "usage": {
+                "download_bytes": "0",
+                "through": "2026-10-31T07:31:11.031839Z",
+                "through_null": false,
+                "upload_bytes": "0"
+              }
+            }
+          ],
+          "history_before_read_ok": true,
+          "image_digest": "sha256:b752f7d984b79a3fad84169c41632d89c50edd65462fedfceb540fc1fc9f05fc",
+          "initial_install": {
+            "after": {
+              "cert_sha256": "203717c4f886f8d38f4aaacd7ec685630b3df8a6a8cbd89209ae2741fcbb982d",
+              "current": "releases/d3a83c6c-2459-4026-aadb-bab67673cdcf",
+              "key_sha256": "95f554d4fcf4f82fafdd64304217377769f72324861fae8ff0b8719aa4c8cfb7",
+              "machine_id_sha256": "60e767eb6d5e6d68c3fccc945156698adc3ec567f805b17012c8e7350df272a3",
+              "node_json_sha256": "885f43fd72933e4ce3ecd0474a62a373a1c721d3292633f4eb24ef661c03dcb6",
+              "usage_db_sha256": "61f012373b185ae9daaf00f74b4a14a8e031823bf33cfaee102e05abaeb2674b",
+              "usage_wal_sha256": "absent"
+            },
+            "before": {
+              "cert_sha256": "absent",
+              "current": "absent",
+              "key_sha256": "absent",
+              "machine_id_sha256": "60e767eb6d5e6d68c3fccc945156698adc3ec567f805b17012c8e7350df272a3",
+              "node_json_sha256": "absent",
+              "usage_db_sha256": "absent",
+              "usage_wal_sha256": "absent"
+            },
+            "bound_state_before_sha256": null,
+            "code": "baseline",
+            "exit": 0,
+            "failing_step": "none",
+            "incarnation_id": "01a190de-9d5f-7615-a589-5ad0f19271ec",
+            "node_id": "01a190de-9766-70be-b3a3-f1a4e64c7a10",
+            "retired": {
+              "cert_sha256": "",
+              "current": "",
+              "key_sha256": "",
+              "machine_id_sha256": "",
+              "node_json_sha256": "",
+              "usage_db_sha256": "",
+              "usage_wal_sha256": ""
+            },
+            "retired_bound_state_sha256": null,
+            "retired_mode": "",
+            "status": "installed",
+            "wrapper_error": false
+          },
+          "install_finished_at": "2026-10-31T07:31:11.930606746Z",
+          "install_started_at": "2026-10-31T07:31:09.346675341Z",
+          "installer_fix_pr": 279,
+          "old_certificate_denial": {
+            "desired-state": {
+              "code": "IDENTITY_REVOKED",
+              "decoded": true,
+              "denied": true,
+              "http_status": "403"
+            },
+            "observations": {
+              "code": "IDENTITY_REVOKED",
+              "decoded": true,
+              "denied": true,
+              "http_status": "403"
+            }
+          },
           "projection_after_install": {
             "http_status": 200,
             "identity_conflict": {
@@ -1080,6 +2453,69 @@
             "read_ok": true,
             "safety_status": "unknown"
           },
+          "projection_after_reinstall": {
+            "http_status": 200,
+            "identity_conflict": {
+              "conflict_count": 0,
+              "last_conflict_at": null,
+              "mapping_frozen": false
+            },
+            "identity_conflict_present": true,
+            "member_forwarding_observed": null,
+            "provisioning_state": "applying",
+            "read_ok": true,
+            "safety_status": "unknown"
+          },
+          "rerun": {
+            "after": {
+              "cert_sha256": "203717c4f886f8d38f4aaacd7ec685630b3df8a6a8cbd89209ae2741fcbb982d",
+              "current": "releases/d3a83c6c-2459-4026-aadb-bab67673cdcf",
+              "key_sha256": "95f554d4fcf4f82fafdd64304217377769f72324861fae8ff0b8719aa4c8cfb7",
+              "machine_id_sha256": "60e767eb6d5e6d68c3fccc945156698adc3ec567f805b17012c8e7350df272a3",
+              "node_json_sha256": "885f43fd72933e4ce3ecd0474a62a373a1c721d3292633f4eb24ef661c03dcb6",
+              "usage_db_sha256": "61f012373b185ae9daaf00f74b4a14a8e031823bf33cfaee102e05abaeb2674b",
+              "usage_wal_sha256": "absent"
+            },
+            "before": {
+              "cert_sha256": "203717c4f886f8d38f4aaacd7ec685630b3df8a6a8cbd89209ae2741fcbb982d",
+              "current": "releases/d3a83c6c-2459-4026-aadb-bab67673cdcf",
+              "key_sha256": "95f554d4fcf4f82fafdd64304217377769f72324861fae8ff0b8719aa4c8cfb7",
+              "machine_id_sha256": "60e767eb6d5e6d68c3fccc945156698adc3ec567f805b17012c8e7350df272a3",
+              "node_json_sha256": "885f43fd72933e4ce3ecd0474a62a373a1c721d3292633f4eb24ef661c03dcb6",
+              "usage_db_sha256": "61f012373b185ae9daaf00f74b4a14a8e031823bf33cfaee102e05abaeb2674b",
+              "usage_wal_sha256": "absent"
+            },
+            "bound_state_before_sha256": null,
+            "code": "baseline",
+            "exit": 0,
+            "failing_step": "none",
+            "incarnation_id": "01a190de-9d5f-7615-a589-5ad0f19271ec",
+            "node_id": "01a190de-9766-70be-b3a3-f1a4e64c7a10",
+            "retired": {
+              "cert_sha256": "",
+              "current": "",
+              "key_sha256": "",
+              "machine_id_sha256": "",
+              "node_json_sha256": "",
+              "usage_db_sha256": "",
+              "usage_wal_sha256": ""
+            },
+            "retired_bound_state_sha256": null,
+            "retired_mode": "",
+            "status": "already_current",
+            "wrapper_error": false
+          },
+          "rerun_hashes_unchanged": true,
+          "response_file_present": false,
+          "retired_identity_hashes_match": true,
+          "revoke_response": {
+            "error_code": "",
+            "http_status": 202,
+            "transport_error": false
+          },
+          "same_node_new_incarnation": true,
+          "service_restoration_export": "missing",
+          "serving_baseline_measured": false,
           "slot": "installer-node",
           "slot_probe": {
             "hold_unknown_node_slot": true,
@@ -1088,9 +2524,9 @@
           },
           "source_pr": 266
         },
-        "usage_gap": "ENR-05: #266 HoldUsageAcknowledgements, UsageLedgerSnapshot and MemberTransportStack accept node/node2/node-clone, while ControlledReinstall accepts only installer-node. Owner devstack: export the hold, snapshot and counted member transport on that same installer slot, including its proxy/config paths and service restoration. Owner usage/installer: supply an authorized old-incarnation backlog delivery protocol; packaging/installer/reenroll.go explicitly leaves retained old events unuploaded. No central-once or cross-reinstall usage claim."
+        "scope": "retired installer certificate denied on direct mTLS desired-state and observations; no serving or usage claim"
       },
-      "observed_at": "2026-10-31T06:13:42.78451106Z"
+      "observed_at": "2026-10-31T07:31:28.176624543Z"
     },
     {
       "at": "AT07",
@@ -1098,41 +2534,320 @@
       "status": "blocked",
       "detail": {
         "check": "historical_usage_retained",
-        "gap": "ENR-06: #266 real installer startup prerequisite failed. Owner packaging/installer and deploy/node/systemd (installer follow-up 3): fix NetBird socket write permissions and shared RuntimeDirectory lifecycle, then devstack rerun the wrappers and restore prior service state after hash sampling. No working forwarding baseline; successful rerun and ControlledReinstall are not reached.",
+        "gap": "ENR-06: RerunInstaller and ControlledReinstall stop agent/watchdog/updater for hash sampling; docs/e2e/RESPONSES.md is absent and no installer-slot service-restoration export is documented. Owner devstack: restore prior service state and export the installer-slot serving baseline. Invocation/digest observations alone cannot pass the serving lifecycle row.",
         "prerequisite": {
-          "agent_heartbeat_readonly": true,
+          "after_controlled_reinstall": {
+            "agent_heartbeat_readonly": false,
+            "journal_read_ok": true,
+            "netbird_socket_readonly": false,
+            "observed_at": "2026-10-31T07:31:27.749801418Z",
+            "private_diagnostics_saved": true,
+            "sockets": {
+              "/run/fvpn-netbird/netbird.sock": true,
+              "/var/run/netbird.sock": false,
+              "directory_mode": "700",
+              "directory_stat_ok": true
+            },
+            "units": {
+              "fvpn-agent.service": {
+                "ActiveState": "inactive",
+                "ExecMainStatus": "0",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "dead",
+                "read_ok": true
+              },
+              "fvpn-netbird.service": {
+                "ActiveState": "active",
+                "ExecMainStatus": "0",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "running",
+                "read_ok": true
+              },
+              "fvpn-updater.service": {
+                "ActiveState": "inactive",
+                "ExecMainStatus": "0",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "dead",
+                "read_ok": true
+              },
+              "fvpn-updater.timer": {
+                "ActiveState": "inactive",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "dead",
+                "read_ok": true
+              },
+              "fvpn-watchdog.service": {
+                "ActiveState": "inactive",
+                "ExecMainStatus": "0",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "dead",
+                "read_ok": true
+              }
+            }
+          },
+          "after_initial_install": {
+            "agent_heartbeat_readonly": false,
+            "journal_read_ok": true,
+            "netbird_socket_readonly": false,
+            "observed_at": "2026-10-31T07:31:11.9306225Z",
+            "private_diagnostics_saved": true,
+            "sockets": {
+              "/run/fvpn-netbird/netbird.sock": true,
+              "/var/run/netbird.sock": false,
+              "directory_mode": "700",
+              "directory_stat_ok": true
+            },
+            "units": {
+              "fvpn-agent.service": {
+                "ActiveState": "inactive",
+                "ExecMainStatus": "0",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "dead",
+                "read_ok": true
+              },
+              "fvpn-netbird.service": {
+                "ActiveState": "active",
+                "ExecMainStatus": "0",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "running",
+                "read_ok": true
+              },
+              "fvpn-updater.service": {
+                "ActiveState": "inactive",
+                "ExecMainStatus": "0",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "dead",
+                "read_ok": true
+              },
+              "fvpn-updater.timer": {
+                "ActiveState": "inactive",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "dead",
+                "read_ok": true
+              },
+              "fvpn-watchdog.service": {
+                "ActiveState": "inactive",
+                "ExecMainStatus": "0",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "dead",
+                "read_ok": true
+              }
+            }
+          },
+          "after_rerun": {
+            "agent_heartbeat_readonly": false,
+            "journal_read_ok": true,
+            "netbird_socket_readonly": false,
+            "observed_at": "2026-10-31T07:31:13.364485488Z",
+            "private_diagnostics_saved": true,
+            "sockets": {
+              "/run/fvpn-netbird/netbird.sock": true,
+              "/var/run/netbird.sock": false,
+              "directory_mode": "700",
+              "directory_stat_ok": true
+            },
+            "units": {
+              "fvpn-agent.service": {
+                "ActiveState": "inactive",
+                "ExecMainStatus": "0",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "dead",
+                "read_ok": true
+              },
+              "fvpn-netbird.service": {
+                "ActiveState": "active",
+                "ExecMainStatus": "0",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "running",
+                "read_ok": true
+              },
+              "fvpn-updater.service": {
+                "ActiveState": "inactive",
+                "ExecMainStatus": "0",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "dead",
+                "read_ok": true
+              },
+              "fvpn-updater.timer": {
+                "ActiveState": "inactive",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "dead",
+                "read_ok": true
+              },
+              "fvpn-watchdog.service": {
+                "ActiveState": "inactive",
+                "ExecMainStatus": "0",
+                "LoadState": "loaded",
+                "Result": "success",
+                "SubState": "dead",
+                "read_ok": true
+              }
+            }
+          },
           "container": "fvpn-w4-enroll-installer-node",
-          "image_digest": "sha256:6a8d1df88bc8f5410f9c76944cbedc34623d8bf6b526419e668d5509fefda6c3",
-          "initial_install": {
+          "controlled_reinstall": {
             "after": {
-              "Key": "6587053dec1a54452fe649e6f7b4b1cf87405f2aa1c706571fb2c402414d6b3e",
-              "Cert": "4feda363102b475c1e8be437d0d99392b749f097b145bbb4edd3d3e7c15da6ec",
-              "NodeJSON": "03789fe17806a616cfdba05c295f0b35b26e7525bd28bcbf77022f14252a6f19",
-              "UsageDB": "d357ad366aeb968c6bb1f27db4f501d99d02edf96ca6277202bb607464a34141",
-              "UsageWAL": "absent",
-              "MachineID": "60e767eb6d5e6d68c3fccc945156698adc3ec567f805b17012c8e7350df272a3",
-              "Current": "releases/52db8139-44fe-44a6-9d1e-02620a7e4484"
+              "cert_sha256": "17be03f313de1a6711dda0cc0968f5382b2b92c2c5333d2fa4facad6ca821564",
+              "current": "releases/d3a83c6c-2459-4026-aadb-bab67673cdcf",
+              "key_sha256": "712f6a5bbc449bb674e81cc7b24ad231f28b7e197d9d44d320b46f455a44db65",
+              "machine_id_sha256": "60e767eb6d5e6d68c3fccc945156698adc3ec567f805b17012c8e7350df272a3",
+              "node_json_sha256": "eb71470a44f9a9c44e38bc81c39defd5a129b29e0b28af464af1d1441da148de",
+              "usage_db_sha256": "61f012373b185ae9daaf00f74b4a14a8e031823bf33cfaee102e05abaeb2674b",
+              "usage_wal_sha256": "absent"
             },
             "before": {
-              "Key": "absent",
-              "Cert": "absent",
-              "NodeJSON": "absent",
-              "UsageDB": "absent",
-              "UsageWAL": "absent",
-              "MachineID": "60e767eb6d5e6d68c3fccc945156698adc3ec567f805b17012c8e7350df272a3",
-              "Current": "absent"
+              "cert_sha256": "203717c4f886f8d38f4aaacd7ec685630b3df8a6a8cbd89209ae2741fcbb982d",
+              "current": "releases/d3a83c6c-2459-4026-aadb-bab67673cdcf",
+              "key_sha256": "95f554d4fcf4f82fafdd64304217377769f72324861fae8ff0b8719aa4c8cfb7",
+              "machine_id_sha256": "60e767eb6d5e6d68c3fccc945156698adc3ec567f805b17012c8e7350df272a3",
+              "node_json_sha256": "885f43fd72933e4ce3ecd0474a62a373a1c721d3292633f4eb24ef661c03dcb6",
+              "usage_db_sha256": "61f012373b185ae9daaf00f74b4a14a8e031823bf33cfaee102e05abaeb2674b",
+              "usage_wal_sha256": "absent"
             },
-            "code": "failed",
-            "exit": 1,
-            "incarnation_id": "01a19097-5a5e-7a9d-be44-03ed39315faf",
-            "node_id": "01a19097-5517-7833-bb6e-7a0fb2533c95",
-            "status": "",
+            "bound_state_before_sha256": {
+              "agent.db": "066016fe877cb3624913095fbee9e8b47a3ed898b9842d4c97c37474e4a7d0aa",
+              "agent.db-shm": "absent",
+              "agent.db-wal": "absent",
+              "desired-state.json": "109d6c0fef01eec753c621e3e02421bf4a73879236b4937366d1f59648ddd8f6"
+            },
+            "code": "baseline",
+            "exit": 0,
+            "failing_step": "none",
+            "incarnation_id": "01a190de-b351-76b9-9c0f-8300d9496d3a",
+            "node_id": "01a190de-9766-70be-b3a3-f1a4e64c7a10",
+            "retired": {
+              "cert_sha256": "203717c4f886f8d38f4aaacd7ec685630b3df8a6a8cbd89209ae2741fcbb982d",
+              "current": "",
+              "key_sha256": "95f554d4fcf4f82fafdd64304217377769f72324861fae8ff0b8719aa4c8cfb7",
+              "machine_id_sha256": "",
+              "node_json_sha256": "885f43fd72933e4ce3ecd0474a62a373a1c721d3292633f4eb24ef661c03dcb6",
+              "usage_db_sha256": "",
+              "usage_wal_sha256": ""
+            },
+            "retired_bound_state_sha256": {
+              "agent.db": "066016fe877cb3624913095fbee9e8b47a3ed898b9842d4c97c37474e4a7d0aa",
+              "agent.db-shm": "absent",
+              "agent.db-wal": "absent",
+              "desired-state.json": "109d6c0fef01eec753c621e3e02421bf4a73879236b4937366d1f59648ddd8f6"
+            },
+            "retired_mode": "700",
+            "status": "reenrolled",
             "wrapper_error": false
           },
-          "install_finished_at": "2026-10-31T06:13:42.72750912Z",
-          "install_started_at": "2026-10-31T06:13:19.306946818Z",
-          "journal_read_ok": true,
-          "netbird_socket_readonly": true,
+          "controlled_reinstall_finished_at": "2026-10-31T07:31:27.749790797Z",
+          "controlled_reinstall_started_at": "2026-10-31T07:31:13.707442342Z",
+          "history_after": [
+            {
+              "current": true,
+              "incarnation_id": "01a190de-b351-76b9-9c0f-8300d9496d3a",
+              "retire_reason": "",
+              "state": "active",
+              "usage": {
+                "download_bytes": "0",
+                "through_null": true,
+                "upload_bytes": "0"
+              }
+            },
+            {
+              "current": false,
+              "incarnation_id": "01a190de-9d5f-7615-a589-5ad0f19271ec",
+              "retire_reason": "reinstall",
+              "state": "retired",
+              "usage": {
+                "download_bytes": "0",
+                "through": "2026-10-31T07:31:11.031839Z",
+                "through_null": false,
+                "upload_bytes": "0"
+              }
+            }
+          ],
+          "history_after_read_ok": true,
+          "history_before": [
+            {
+              "current": true,
+              "incarnation_id": "01a190de-9d5f-7615-a589-5ad0f19271ec",
+              "retire_reason": "",
+              "state": "active",
+              "usage": {
+                "download_bytes": "0",
+                "through": "2026-10-31T07:31:11.031839Z",
+                "through_null": false,
+                "upload_bytes": "0"
+              }
+            }
+          ],
+          "history_before_read_ok": true,
+          "image_digest": "sha256:b752f7d984b79a3fad84169c41632d89c50edd65462fedfceb540fc1fc9f05fc",
+          "initial_install": {
+            "after": {
+              "cert_sha256": "203717c4f886f8d38f4aaacd7ec685630b3df8a6a8cbd89209ae2741fcbb982d",
+              "current": "releases/d3a83c6c-2459-4026-aadb-bab67673cdcf",
+              "key_sha256": "95f554d4fcf4f82fafdd64304217377769f72324861fae8ff0b8719aa4c8cfb7",
+              "machine_id_sha256": "60e767eb6d5e6d68c3fccc945156698adc3ec567f805b17012c8e7350df272a3",
+              "node_json_sha256": "885f43fd72933e4ce3ecd0474a62a373a1c721d3292633f4eb24ef661c03dcb6",
+              "usage_db_sha256": "61f012373b185ae9daaf00f74b4a14a8e031823bf33cfaee102e05abaeb2674b",
+              "usage_wal_sha256": "absent"
+            },
+            "before": {
+              "cert_sha256": "absent",
+              "current": "absent",
+              "key_sha256": "absent",
+              "machine_id_sha256": "60e767eb6d5e6d68c3fccc945156698adc3ec567f805b17012c8e7350df272a3",
+              "node_json_sha256": "absent",
+              "usage_db_sha256": "absent",
+              "usage_wal_sha256": "absent"
+            },
+            "bound_state_before_sha256": null,
+            "code": "baseline",
+            "exit": 0,
+            "failing_step": "none",
+            "incarnation_id": "01a190de-9d5f-7615-a589-5ad0f19271ec",
+            "node_id": "01a190de-9766-70be-b3a3-f1a4e64c7a10",
+            "retired": {
+              "cert_sha256": "",
+              "current": "",
+              "key_sha256": "",
+              "machine_id_sha256": "",
+              "node_json_sha256": "",
+              "usage_db_sha256": "",
+              "usage_wal_sha256": ""
+            },
+            "retired_bound_state_sha256": null,
+            "retired_mode": "",
+            "status": "installed",
+            "wrapper_error": false
+          },
+          "install_finished_at": "2026-10-31T07:31:11.930606746Z",
+          "install_started_at": "2026-10-31T07:31:09.346675341Z",
+          "installer_fix_pr": 279,
+          "old_certificate_denial": {
+            "desired-state": {
+              "code": "IDENTITY_REVOKED",
+              "decoded": true,
+              "denied": true,
+              "http_status": "403"
+            },
+            "observations": {
+              "code": "IDENTITY_REVOKED",
+              "decoded": true,
+              "denied": true,
+              "http_status": "403"
+            }
+          },
           "projection_after_install": {
             "http_status": 200,
             "identity_conflict": {
@@ -1146,6 +2861,69 @@
             "read_ok": true,
             "safety_status": "unknown"
           },
+          "projection_after_reinstall": {
+            "http_status": 200,
+            "identity_conflict": {
+              "conflict_count": 0,
+              "last_conflict_at": null,
+              "mapping_frozen": false
+            },
+            "identity_conflict_present": true,
+            "member_forwarding_observed": null,
+            "provisioning_state": "applying",
+            "read_ok": true,
+            "safety_status": "unknown"
+          },
+          "rerun": {
+            "after": {
+              "cert_sha256": "203717c4f886f8d38f4aaacd7ec685630b3df8a6a8cbd89209ae2741fcbb982d",
+              "current": "releases/d3a83c6c-2459-4026-aadb-bab67673cdcf",
+              "key_sha256": "95f554d4fcf4f82fafdd64304217377769f72324861fae8ff0b8719aa4c8cfb7",
+              "machine_id_sha256": "60e767eb6d5e6d68c3fccc945156698adc3ec567f805b17012c8e7350df272a3",
+              "node_json_sha256": "885f43fd72933e4ce3ecd0474a62a373a1c721d3292633f4eb24ef661c03dcb6",
+              "usage_db_sha256": "61f012373b185ae9daaf00f74b4a14a8e031823bf33cfaee102e05abaeb2674b",
+              "usage_wal_sha256": "absent"
+            },
+            "before": {
+              "cert_sha256": "203717c4f886f8d38f4aaacd7ec685630b3df8a6a8cbd89209ae2741fcbb982d",
+              "current": "releases/d3a83c6c-2459-4026-aadb-bab67673cdcf",
+              "key_sha256": "95f554d4fcf4f82fafdd64304217377769f72324861fae8ff0b8719aa4c8cfb7",
+              "machine_id_sha256": "60e767eb6d5e6d68c3fccc945156698adc3ec567f805b17012c8e7350df272a3",
+              "node_json_sha256": "885f43fd72933e4ce3ecd0474a62a373a1c721d3292633f4eb24ef661c03dcb6",
+              "usage_db_sha256": "61f012373b185ae9daaf00f74b4a14a8e031823bf33cfaee102e05abaeb2674b",
+              "usage_wal_sha256": "absent"
+            },
+            "bound_state_before_sha256": null,
+            "code": "baseline",
+            "exit": 0,
+            "failing_step": "none",
+            "incarnation_id": "01a190de-9d5f-7615-a589-5ad0f19271ec",
+            "node_id": "01a190de-9766-70be-b3a3-f1a4e64c7a10",
+            "retired": {
+              "cert_sha256": "",
+              "current": "",
+              "key_sha256": "",
+              "machine_id_sha256": "",
+              "node_json_sha256": "",
+              "usage_db_sha256": "",
+              "usage_wal_sha256": ""
+            },
+            "retired_bound_state_sha256": null,
+            "retired_mode": "",
+            "status": "already_current",
+            "wrapper_error": false
+          },
+          "rerun_hashes_unchanged": true,
+          "response_file_present": false,
+          "retired_identity_hashes_match": true,
+          "revoke_response": {
+            "error_code": "",
+            "http_status": 202,
+            "transport_error": false
+          },
+          "same_node_new_incarnation": true,
+          "service_restoration_export": "missing",
+          "serving_baseline_measured": false,
           "slot": "installer-node",
           "slot_probe": {
             "hold_unknown_node_slot": true,
@@ -1156,7 +2934,7 @@
         },
         "usage_gap": "ENR-05: #266 HoldUsageAcknowledgements, UsageLedgerSnapshot and MemberTransportStack accept node/node2/node-clone, while ControlledReinstall accepts only installer-node. Owner devstack: export the hold, snapshot and counted member transport on that same installer slot, including its proxy/config paths and service restoration. Owner usage/installer: supply an authorized old-incarnation backlog delivery protocol; packaging/installer/reenroll.go explicitly leaves retained old events unuploaded. No central-once or cross-reinstall usage claim."
       },
-      "observed_at": "2026-10-31T06:13:42.784936508Z"
+      "observed_at": "2026-10-31T07:31:28.177279709Z"
     }
   ],
   "prior_checks": [
@@ -5901,6 +7679,1095 @@
       "detail": "ENR-05/ENR-06 stay blocked, waiting on devstack f15. Counted usage across RerunInstaller(ctx, slot) and ControlledReinstall(ctx, slot, enrollment) is not exported. listNodeIncarnations usage retention is measured separately. Not emulated.",
       "observed_at": "2026-10-31T02:21:39.394240996Z",
       "run_id": "ec2e6279-0649-4d47-b31a-cf13aeba7303"
+    },
+    {
+      "at": "AT07",
+      "name": "fresh_stack",
+      "status": "pass",
+      "detail": "E2E_RESET=1 fresh stack started",
+      "observed_at": "2026-10-31T06:10:45Z",
+      "run_id": "4011dd32-73ef-4f49-b78b-6cf1ab8496c9"
+    },
+    {
+      "at": "AT07",
+      "name": "probe_process",
+      "status": "pass",
+      "detail": {
+        "phase": "full",
+        "exit_code": 0
+      },
+      "observed_at": "2026-10-31T06:13:43Z",
+      "run_id": "4011dd32-73ef-4f49-b78b-6cf1ab8496c9"
+    },
+    {
+      "at": "AT07",
+      "name": "current_incarnation",
+      "status": "pass",
+      "detail": {
+        "current_incarnation_id": "01a19095-fd96-7a20-89a0-04de5e27558e",
+        "node_id": "01a19095-fd6a-76d7-b161-da3fd48bd569",
+        "response": {
+          "error_code": "",
+          "http_status": 200,
+          "transport_error": false
+        }
+      },
+      "observed_at": "2026-10-31T06:12:05.133270016Z",
+      "run_id": "4011dd32-73ef-4f49-b78b-6cf1ab8496c9"
+    },
+    {
+      "at": "AT07",
+      "name": "node_api_surface",
+      "status": "pass",
+      "detail": {
+        "current_incarnation_id": "01a19095-fd96-7a20-89a0-04de5e27558e",
+        "field_names": [
+          "capacity",
+          "checks",
+          "config_generation",
+          "control_status",
+          "created_at",
+          "current_incarnation_id",
+          "data_health",
+          "dns_policy_evidence",
+          "drift",
+          "exit_id",
+          "group_ids",
+          "identity_conflict",
+          "last_seen_at",
+          "lifecycle_state",
+          "member_forwarding_observed",
+          "member_group_ids",
+          "name",
+          "netbird_peer_id",
+          "node_id",
+          "notes",
+          "observed_exit_ipv4",
+          "observed_exit_ipv6",
+          "platform",
+          "provisioning_state",
+          "publication_intent",
+          "publication_observed",
+          "recent_errors",
+          "region",
+          "releases",
+          "resource_version",
+          "retired_at",
+          "safety_status",
+          "update",
+          "usage_outbox"
+        ],
+        "node_id": "01a19095-fd6a-76d7-b161-da3fd48bd569",
+        "operation": "getNode",
+        "peer_bound": true
+      },
+      "observed_at": "2026-10-31T06:12:05.13370411Z",
+      "run_id": "4011dd32-73ef-4f49-b78b-6cf1ab8496c9"
+    },
+    {
+      "at": "AT07",
+      "name": "current_incarnation",
+      "status": "pass",
+      "detail": {
+        "current_incarnation_id": "01a19096-18d8-73b7-98a3-0365a5e621d4",
+        "node_id": "01a19096-1761-7271-8ea8-88b70cc12f40",
+        "response": {
+          "error_code": "",
+          "http_status": 200,
+          "transport_error": false
+        }
+      },
+      "observed_at": "2026-10-31T06:12:05.137323232Z",
+      "run_id": "4011dd32-73ef-4f49-b78b-6cf1ab8496c9"
+    },
+    {
+      "at": "AT07",
+      "name": "node_api_surface",
+      "status": "pass",
+      "detail": {
+        "current_incarnation_id": "01a19096-18d8-73b7-98a3-0365a5e621d4",
+        "field_names": [
+          "capacity",
+          "checks",
+          "config_generation",
+          "control_status",
+          "created_at",
+          "current_incarnation_id",
+          "data_health",
+          "dns_policy_evidence",
+          "drift",
+          "exit_id",
+          "group_ids",
+          "identity_conflict",
+          "last_seen_at",
+          "lifecycle_state",
+          "member_forwarding_observed",
+          "member_group_ids",
+          "name",
+          "netbird_peer_id",
+          "node_id",
+          "notes",
+          "observed_exit_ipv4",
+          "observed_exit_ipv6",
+          "platform",
+          "provisioning_state",
+          "publication_intent",
+          "publication_observed",
+          "recent_errors",
+          "region",
+          "releases",
+          "resource_version",
+          "retired_at",
+          "safety_status",
+          "update",
+          "usage_outbox"
+        ],
+        "node_id": "01a19096-1761-7271-8ea8-88b70cc12f40",
+        "operation": "getNode",
+        "peer_bound": false
+      },
+      "observed_at": "2026-10-31T06:12:05.137682605Z",
+      "run_id": "4011dd32-73ef-4f49-b78b-6cf1ab8496c9"
+    },
+    {
+      "at": "AT07",
+      "name": "incarnation_uniqueness",
+      "status": "pass",
+      "detail": {
+        "changed_on_main": "contract revision 10 PR #200 listNodeIncarnations",
+        "count": 1,
+        "current": true,
+        "default_items_at_most_50": true,
+        "enrollment_id": "01a19095-fd6a-76d6-9974-6b30448511ef",
+        "incarnation_id": "01a19095-fd96-7a20-89a0-04de5e27558e",
+        "limit_1_items": 1,
+        "matches_get_enrollment": true,
+        "matches_get_node": true,
+        "next_cursor_null": true,
+        "node_id": "01a19095-fd6a-76d7-b161-da3fd48bd569",
+        "operation": "listNodeIncarnations",
+        "state": "active",
+        "usage": {
+          "download_bytes": "0",
+          "through": "2026-10-31T06:11:51.450338Z",
+          "through_null": false,
+          "upload_bytes": "0"
+        }
+      },
+      "observed_at": "2026-10-31T06:12:05.145939773Z",
+      "run_id": "4011dd32-73ef-4f49-b78b-6cf1ab8496c9"
+    },
+    {
+      "at": "AT07",
+      "name": "incarnation_uniqueness",
+      "status": "pass",
+      "detail": {
+        "changed_on_main": "contract revision 10 PR #200 listNodeIncarnations",
+        "count": 1,
+        "current": true,
+        "default_items_at_most_50": true,
+        "enrollment_id": "01a19096-1761-7270-a6d4-ce5a90a30812",
+        "incarnation_id": "01a19096-18d8-73b7-98a3-0365a5e621d4",
+        "limit_1_items": 1,
+        "matches_get_enrollment": true,
+        "matches_get_node": true,
+        "next_cursor_null": true,
+        "node_id": "01a19096-1761-7271-8ea8-88b70cc12f40",
+        "operation": "listNodeIncarnations",
+        "state": "active",
+        "usage": {
+          "download_bytes": "0",
+          "through": "2026-10-31T06:11:58.432874Z",
+          "through_null": false,
+          "upload_bytes": "0"
+        }
+      },
+      "observed_at": "2026-10-31T06:12:05.15464959Z",
+      "run_id": "4011dd32-73ef-4f49-b78b-6cf1ab8496c9"
+    },
+    {
+      "at": "AT07",
+      "name": "incarnation_history",
+      "status": "pass",
+      "detail": {
+        "changed_on_main": "contract revision 10 PR #200 listNodeIncarnations",
+        "each_count": 1,
+        "node_ids": [
+          "01a19095-fd6a-76d7-b161-da3fd48bd569",
+          "01a19096-1761-7271-8ea8-88b70cc12f40"
+        ],
+        "operation": "listNodeIncarnations",
+        "retirement_measured_on": "AT06 incarnation_history"
+      },
+      "observed_at": "2026-10-31T06:12:05.154983546Z",
+      "run_id": "4011dd32-73ef-4f49-b78b-6cf1ab8496c9"
+    },
+    {
+      "at": "AT07",
+      "name": "distinct_api_first_boot",
+      "status": "pass",
+      "detail": {
+        "image_digests": [
+          "sha256:b2c84e058f2523eb87e8b678e673039ab87f8b19c0f9cd77d2d17119aebe5664",
+          "sha256:b2c84e058f2523eb87e8b678e673039ab87f8b19c0f9cd77d2d17119aebe5664"
+        ],
+        "incarnation_ids": [
+          "01a19095-fd96-7a20-89a0-04de5e27558e",
+          "01a19096-18d8-73b7-98a3-0365a5e621d4"
+        ],
+        "node_ids": [
+          "01a19095-fd6a-76d7-b161-da3fd48bd569",
+          "01a19096-1761-7271-8ea8-88b70cc12f40"
+        ]
+      },
+      "observed_at": "2026-10-31T06:12:05.17607106Z",
+      "run_id": "4011dd32-73ef-4f49-b78b-6cf1ab8496c9"
+    },
+    {
+      "at": "AT07",
+      "name": "node_audit_read",
+      "status": "pass",
+      "detail": {
+        "error_code": "",
+        "http_status": 200,
+        "transport_error": false
+      },
+      "observed_at": "2026-10-31T06:12:05.18048526Z",
+      "run_id": "4011dd32-73ef-4f49-b78b-6cf1ab8496c9"
+    },
+    {
+      "at": "AT07",
+      "name": "node_audit_fields",
+      "status": "pass",
+      "detail": [
+        {
+          "action": "node.peer_discovered",
+          "after_fields": [
+            "incarnation_id",
+            "peer_id"
+          ],
+          "before_fields": [
+            "incarnation_id",
+            "peer_id"
+          ],
+          "resource": {
+            "id": "01a19095-fd6a-76d7-b161-da3fd48bd569",
+            "type": "node"
+          }
+        },
+        {
+          "action": "node.lease_renewed",
+          "after_fields": [
+            "authorization_generation",
+            "config_generation",
+            "lease_id",
+            "member_grants"
+          ],
+          "before_fields": [],
+          "resource": {
+            "id": "01a19095-fd6a-76d7-b161-da3fd48bd569",
+            "type": "node"
+          }
+        },
+        {
+          "action": "bootstrap.claimed",
+          "after_fields": [
+            "reason"
+          ],
+          "before_fields": [
+            "reason"
+          ],
+          "resource": {
+            "id": "01a19095-fd6a-76d7-b161-da3fd48bd569",
+            "type": "node"
+          }
+        },
+        {
+          "action": "node.observation_applied",
+          "after_fields": [
+            "applied_config_generation",
+            "data_health",
+            "provisioning_state",
+            "report_id",
+            "safety_status"
+          ],
+          "before_fields": [],
+          "resource": {
+            "id": "01a19095-fd6a-76d7-b161-da3fd48bd569",
+            "type": "node"
+          }
+        },
+        {
+          "action": "node.lease_renewed",
+          "after_fields": [
+            "authorization_generation",
+            "config_generation",
+            "lease_id",
+            "member_grants"
+          ],
+          "before_fields": [],
+          "resource": {
+            "id": "01a19095-fd6a-76d7-b161-da3fd48bd569",
+            "type": "node"
+          }
+        },
+        {
+          "action": "node.desired_state_compiled",
+          "after_fields": [
+            "binding_revision",
+            "desired_config_generation",
+            "desired_state_id",
+            "dns_generation"
+          ],
+          "before_fields": [],
+          "resource": {
+            "id": "01a19095-fd6a-76d7-b161-da3fd48bd569",
+            "type": "node"
+          }
+        }
+      ],
+      "observed_at": "2026-10-31T06:12:05.180806908Z",
+      "run_id": "4011dd32-73ef-4f49-b78b-6cf1ab8496c9"
+    },
+    {
+      "at": "AT07",
+      "name": "node_audit_read",
+      "status": "pass",
+      "detail": {
+        "error_code": "",
+        "http_status": 200,
+        "transport_error": false
+      },
+      "observed_at": "2026-10-31T06:12:05.183253575Z",
+      "run_id": "4011dd32-73ef-4f49-b78b-6cf1ab8496c9"
+    },
+    {
+      "at": "AT07",
+      "name": "node_audit_fields",
+      "status": "pass",
+      "detail": [
+        {
+          "action": "bootstrap.claimed",
+          "after_fields": [
+            "reason"
+          ],
+          "before_fields": [
+            "reason"
+          ],
+          "resource": {
+            "id": "01a19096-1761-7271-8ea8-88b70cc12f40",
+            "type": "node"
+          }
+        },
+        {
+          "action": "node.lease_renewed",
+          "after_fields": [
+            "authorization_generation",
+            "config_generation",
+            "lease_id",
+            "member_grants"
+          ],
+          "before_fields": [],
+          "resource": {
+            "id": "01a19096-1761-7271-8ea8-88b70cc12f40",
+            "type": "node"
+          }
+        },
+        {
+          "action": "node.observation_applied",
+          "after_fields": [
+            "applied_config_generation",
+            "data_health",
+            "provisioning_state",
+            "report_id",
+            "safety_status"
+          ],
+          "before_fields": [],
+          "resource": {
+            "id": "01a19096-1761-7271-8ea8-88b70cc12f40",
+            "type": "node"
+          }
+        },
+        {
+          "action": "node.lease_renewed",
+          "after_fields": [
+            "authorization_generation",
+            "config_generation",
+            "lease_id",
+            "member_grants"
+          ],
+          "before_fields": [],
+          "resource": {
+            "id": "01a19096-1761-7271-8ea8-88b70cc12f40",
+            "type": "node"
+          }
+        },
+        {
+          "action": "node.desired_state_compiled",
+          "after_fields": [
+            "binding_revision",
+            "desired_config_generation",
+            "desired_state_id",
+            "dns_generation"
+          ],
+          "before_fields": [],
+          "resource": {
+            "id": "01a19096-1761-7271-8ea8-88b70cc12f40",
+            "type": "node"
+          }
+        }
+      ],
+      "observed_at": "2026-10-31T06:12:05.183578831Z",
+      "run_id": "4011dd32-73ef-4f49-b78b-6cf1ab8496c9"
+    },
+    {
+      "at": "AT07",
+      "name": "machine_identity",
+      "status": "pass",
+      "detail": {
+        "changed_on_main": "devstack follow-up 12 PR #204 MachineIdentityFingerprints",
+        "node": {
+          "agent_spki_sha256": "b76e33a43c43852103188014aa4d37cd4be53a29ff1bdce40f84659e02a166d9",
+          "machine_id_sha256": "c304fd2fa66443278327abf3519a78d03e23abd50adc38b61e4dc83d0c36f210",
+          "netbird_public_key_sha256": "a270437ae0ea03636e75efc1b606ba96eb9713dba776f360840224282c6ee8e0"
+        },
+        "node2": {
+          "agent_spki_sha256": "68bf71239c74cf4e110f1f59bdd5a7ee61ada6759a9fb6a9a7f62358162b688f",
+          "machine_id_sha256": "28583ae51e7adb133547a1303d87ce54755cd24878d77b657fbdc27a3cbe8122",
+          "netbird_public_key_sha256": "7394c8002a2eae24ad01ecead5c73a2842966dc1f5094b37659e29c41bc83aa1"
+        },
+        "reads_ok": true
+      },
+      "observed_at": "2026-10-31T06:12:05.230263056Z",
+      "run_id": "4011dd32-73ef-4f49-b78b-6cf1ab8496c9"
+    },
+    {
+      "at": "AT07",
+      "name": "distinct_first_boot",
+      "status": "pass",
+      "detail": {
+        "changed_on_main": "devstack follow-up 12 PR #204 MachineIdentityFingerprints",
+        "node": {
+          "agent_spki_sha256": "b76e33a43c43852103188014aa4d37cd4be53a29ff1bdce40f84659e02a166d9",
+          "machine_id_sha256": "c304fd2fa66443278327abf3519a78d03e23abd50adc38b61e4dc83d0c36f210",
+          "netbird_public_key_sha256": "a270437ae0ea03636e75efc1b606ba96eb9713dba776f360840224282c6ee8e0"
+        },
+        "node2": {
+          "agent_spki_sha256": "68bf71239c74cf4e110f1f59bdd5a7ee61ada6759a9fb6a9a7f62358162b688f",
+          "machine_id_sha256": "28583ae51e7adb133547a1303d87ce54755cd24878d77b657fbdc27a3cbe8122",
+          "netbird_public_key_sha256": "7394c8002a2eae24ad01ecead5c73a2842966dc1f5094b37659e29c41bc83aa1"
+        },
+        "reads_ok": true
+      },
+      "observed_at": "2026-10-31T06:12:05.230740163Z",
+      "run_id": "4011dd32-73ef-4f49-b78b-6cf1ab8496c9"
+    },
+    {
+      "at": "AT07",
+      "name": "usage_hold_endpoint_scope",
+      "status": "pass",
+      "detail": {
+        "cleanup_agent_resumed": true,
+        "cleanup_hold_released": true,
+        "desired_state_status": 200,
+        "held_code": "DEPENDENCY_UNAVAILABLE",
+        "held_retryable": true,
+        "held_status": 503,
+        "hold_applied_at": "2026-10-31T06:12:05.728533112Z",
+        "hold_requested_at": "2026-10-31T06:12:05.707281842Z",
+        "mechanism": "network-side mTLS proxy marker /var/lib/vpn-node/e2e/hold-usage; only POST /api/v1/agent/usage-batches returns retryable 503 before control; central ledger epoch unchanged",
+        "paused_snapshot_bytes_unchanged": true,
+        "release_requested_at": "2026-10-31T06:12:05.829922214Z",
+        "released_at": "2026-10-31T06:12:05.850705481Z",
+        "released_code": "VALIDATION_FAILED",
+        "released_status": 422,
+        "scope": "endpoint scope and read-only snapshot only; no counted traffic or reinstall",
+        "slot": "node",
+        "snapshot_before": {
+          "schema_version": 1,
+          "node_id": "01a19095-fd6a-76d7-b161-da3fd48bd569",
+          "node_incarnation_id": "01a19095-fd96-7a20-89a0-04de5e27558e",
+          "ledger_epoch": "cf843a8b-2b29-4f30-a8e2-6fe5304271f9",
+          "meter_epochs": [
+            {
+              "meter_epoch_id": "01a19095-fe12-7037-80f3-22b2a922f1d7",
+              "state": "current"
+            }
+          ],
+          "last_event_seq": "0",
+          "acked_through": "0",
+          "unacked_count": 0,
+          "unacked_payload_bytes": "0",
+          "unacked_events": []
+        },
+        "snapshot_sha256": "dab397f195f3e6eed0d05c46e47858bb30bd3a473dc085531f7fab73d2f873c7",
+        "source_pr": 266
+      },
+      "observed_at": "2026-10-31T06:12:06.393907069Z",
+      "run_id": "4011dd32-73ef-4f49-b78b-6cf1ab8496c9"
+    },
+    {
+      "at": "AT07",
+      "name": "cloned_identity_conflict",
+      "status": "pass",
+      "detail": {
+        "active_window": "120s",
+        "add_host": false,
+        "audit_read_ok": true,
+        "changed_on_main": "devstack follow-up 14 PR #240 AttachClonePresentationNetwork; wire-nodes follow-up 21 PR #211 ObserveEndpointTx; follow-up 22 PR #217 identity_conflict",
+        "compatibility_rule": "IPv4 /24 and IPv6 /48; X->Y->X inside the window is one conflict",
+        "conflict_count_stable": true,
+        "identity_conflict_audits": 1,
+        "identity_conflict_audits_after_wait": 1,
+        "lab_hosts_agent": "172.29.38.30",
+        "networks": {
+          "clone_addresses": "fvpn-w4-enroll=172.28.38.129 fvpn-w4-enroll-node-clone-net=172.29.38.23 fvpn-w4-enroll-origin=192.0.11.23",
+          "clone_presentation_ip": "172.29.38.23",
+          "inspect_ok": true,
+          "lab_subnet": "172.28.38.0/24",
+          "origin_subnet": "192.0.11.0/24",
+          "presentation_differs": true,
+          "presentation_subnet": "172.29.38.0/24",
+          "same_lab_slash24": true,
+          "same_origin_slash24": true,
+          "source_addresses": "fvpn-w4-enroll=172.28.38.40 fvpn-w4-enroll-origin=192.0.11.20",
+          "source_on_presentation": false
+        },
+        "observe_before": {
+          "read_ok": false
+        },
+        "observe_enrolled": {
+          "clone": {
+            "agent_spki_sha256": "b76e33a43c43852103188014aa4d37cd4be53a29ff1bdce40f84659e02a166d9",
+            "machine_id_sha256": "c304fd2fa66443278327abf3519a78d03e23abd50adc38b61e4dc83d0c36f210",
+            "netbird_public_key_sha256": "a270437ae0ea03636e75efc1b606ba96eb9713dba776f360840224282c6ee8e0"
+          },
+          "clone_stage": "enrolled",
+          "conflicts": 1,
+          "endpoint_rows": 1,
+          "mapping_frozen": true,
+          "read_ok": true,
+          "same_identity": true,
+          "source": {
+            "agent_spki_sha256": "b76e33a43c43852103188014aa4d37cd4be53a29ff1bdce40f84659e02a166d9",
+            "machine_id_sha256": "c304fd2fa66443278327abf3519a78d03e23abd50adc38b61e4dc83d0c36f210",
+            "netbird_public_key_sha256": "a270437ae0ea03636e75efc1b606ba96eb9713dba776f360840224282c6ee8e0"
+          },
+          "source_stage": "enrolled"
+        },
+        "observe_frozen": {
+          "clone": {
+            "agent_spki_sha256": "b76e33a43c43852103188014aa4d37cd4be53a29ff1bdce40f84659e02a166d9",
+            "machine_id_sha256": "c304fd2fa66443278327abf3519a78d03e23abd50adc38b61e4dc83d0c36f210",
+            "netbird_public_key_sha256": "a270437ae0ea03636e75efc1b606ba96eb9713dba776f360840224282c6ee8e0"
+          },
+          "clone_stage": "enrolled",
+          "conflicts": 1,
+          "endpoint_rows": 1,
+          "mapping_frozen": true,
+          "read_ok": true,
+          "same_identity": true,
+          "source": {
+            "agent_spki_sha256": "b76e33a43c43852103188014aa4d37cd4be53a29ff1bdce40f84659e02a166d9",
+            "machine_id_sha256": "c304fd2fa66443278327abf3519a78d03e23abd50adc38b61e4dc83d0c36f210",
+            "netbird_public_key_sha256": "a270437ae0ea03636e75efc1b606ba96eb9713dba776f360840224282c6ee8e0"
+          },
+          "source_stage": "enrolled"
+        },
+        "observe_stable": {
+          "clone": {
+            "agent_spki_sha256": "b76e33a43c43852103188014aa4d37cd4be53a29ff1bdce40f84659e02a166d9",
+            "machine_id_sha256": "c304fd2fa66443278327abf3519a78d03e23abd50adc38b61e4dc83d0c36f210",
+            "netbird_public_key_sha256": "a270437ae0ea03636e75efc1b606ba96eb9713dba776f360840224282c6ee8e0"
+          },
+          "clone_stage": "enrolled",
+          "conflicts": 1,
+          "endpoint_rows": 1,
+          "mapping_frozen": true,
+          "read_ok": true,
+          "same_identity": true,
+          "source": {
+            "agent_spki_sha256": "b76e33a43c43852103188014aa4d37cd4be53a29ff1bdce40f84659e02a166d9",
+            "machine_id_sha256": "c304fd2fa66443278327abf3519a78d03e23abd50adc38b61e4dc83d0c36f210",
+            "netbird_public_key_sha256": "a270437ae0ea03636e75efc1b606ba96eb9713dba776f360840224282c6ee8e0"
+          },
+          "source_stage": "enrolled"
+        },
+        "old_incarnation_read": true,
+        "presentation": {
+          "clone_address": "172.29.38.23",
+          "control_address": "172.29.38.30",
+          "network": "fvpn-w4-enroll-node-clone-net",
+          "ok": true,
+          "subnet": "172.29.38.0/24"
+        },
+        "presentation_separated": true,
+        "projection_before": {
+          "http_status": 200,
+          "identity_conflict": {
+            "conflict_count": 0,
+            "last_conflict_at": null,
+            "mapping_frozen": false
+          },
+          "identity_conflict_present": true,
+          "member_forwarding_observed": false,
+          "provisioning_state": "ready",
+          "read_ok": true,
+          "safety_status": "passed"
+        },
+        "projection_frozen": {
+          "conflict_count": 1,
+          "http_status": 200,
+          "last_conflict_at_present": true,
+          "mapping_frozen": true,
+          "member_forwarding_observed": "false",
+          "object": true,
+          "provisioning_state": "failed",
+          "read_ok": true,
+          "safety_status": "failed"
+        },
+        "recovery": {
+          "clone_denied": true,
+          "clone_present_error_code": "IDENTITY_REVOKED",
+          "clone_present_http_status": 403,
+          "clone_present_observed": true,
+          "clone_running": true,
+          "clone_stopped": true,
+          "observe_after_reenroll": {
+            "clone": {
+              "agent_spki_sha256": "b76e33a43c43852103188014aa4d37cd4be53a29ff1bdce40f84659e02a166d9",
+              "machine_id_sha256": "c304fd2fa66443278327abf3519a78d03e23abd50adc38b61e4dc83d0c36f210",
+              "netbird_public_key_sha256": "a270437ae0ea03636e75efc1b606ba96eb9713dba776f360840224282c6ee8e0"
+            },
+            "clone_stage": "enrolled",
+            "conflicts": 1,
+            "endpoint_rows": 1,
+            "mapping_frozen": true,
+            "read_ok": true,
+            "same_identity": false,
+            "source": {
+              "agent_spki_sha256": "1d01ad2bd2544b34b870bc14eaec81aaa7a3571dd1686bf53830077b161f357b",
+              "machine_id_sha256": "c304fd2fa66443278327abf3519a78d03e23abd50adc38b61e4dc83d0c36f210",
+              "netbird_public_key_sha256": "a270437ae0ea03636e75efc1b606ba96eb9713dba776f360840224282c6ee8e0"
+            },
+            "source_stage": "enrolled"
+          },
+          "old_incarnation_id": "01a19095-fd96-7a20-89a0-04de5e27558e",
+          "projection_after_clone_present": {
+            "conflict_count": 0,
+            "http_status": 200,
+            "last_conflict_at_present": false,
+            "mapping_frozen": false,
+            "member_forwarding_observed": "false",
+            "object": true,
+            "provisioning_state": "applying",
+            "read_ok": true,
+            "safety_status": "failed"
+          },
+          "projection_after_reenroll": {
+            "conflict_count": 0,
+            "http_status": 200,
+            "last_conflict_at_present": false,
+            "mapping_frozen": false,
+            "member_forwarding_observed": "false",
+            "object": true,
+            "provisioning_state": "applying",
+            "read_ok": true,
+            "safety_status": "failed"
+          },
+          "reenroll_path": "entrypoint waiting_token after identity files and agent.db were removed; not an installer wrapper and not ENR-06",
+          "reenroll_stage": "enrolled",
+          "reenrollment_issued": true,
+          "replacement_incarnation_id": "01a19097-3e23-7128-9797-66b2a68e2b81",
+          "replacement_is_new": true,
+          "revoke_http_status": 202
+        },
+        "reenroll_path": "operator revoke plus the node entrypoint after identity files are removed; not ENR-06",
+        "request": "ENR-07",
+        "started": true
+      },
+      "observed_at": "2026-10-31T06:13:14.45608364Z",
+      "run_id": "4011dd32-73ef-4f49-b78b-6cf1ab8496c9"
+    },
+    {
+      "at": "AT07",
+      "name": "incarnation_uniqueness",
+      "status": "pass",
+      "detail": {
+        "changed_on_main": "contract revision 10 PR #200 listNodeIncarnations",
+        "count": 1,
+        "current": true,
+        "default_items_at_most_50": true,
+        "enrollment_id": "01a19097-5517-7832-8c88-2fbb39b22dc1",
+        "incarnation_id": "01a19097-5a5e-7a9d-be44-03ed39315faf",
+        "limit_1_items": 1,
+        "matches_get_enrollment": true,
+        "matches_get_node": true,
+        "next_cursor_null": true,
+        "node_id": "01a19097-5517-7833-bb6e-7a0fb2533c95",
+        "operation": "listNodeIncarnations",
+        "state": "active",
+        "usage": {
+          "download_bytes": "0",
+          "through": "2026-10-31T06:13:20.799943Z",
+          "through_null": false,
+          "upload_bytes": "0"
+        }
+      },
+      "observed_at": "2026-10-31T06:13:42.782316187Z",
+      "run_id": "4011dd32-73ef-4f49-b78b-6cf1ab8496c9"
+    },
+    {
+      "at": "AT07",
+      "name": "counted_unacked_usage",
+      "status": "blocked",
+      "detail": {
+        "controlled_reinstall_run": false,
+        "counted_traffic_started": false,
+        "gap": "ENR-05: #266 HoldUsageAcknowledgements, UsageLedgerSnapshot and MemberTransportStack accept node/node2/node-clone, while ControlledReinstall accepts only installer-node. Owner devstack: export the hold, snapshot and counted member transport on that same installer slot, including its proxy/config paths and service restoration. Owner usage/installer: supply an authorized old-incarnation backlog delivery protocol; packaging/installer/reenroll.go explicitly leaves retained old events unuploaded. No central-once or cross-reinstall usage claim.",
+        "slot_probe": {
+          "hold_unknown_node_slot": true,
+          "snapshot_unknown_node_slot": true,
+          "transport_unknown_node_slot": true
+        }
+      },
+      "observed_at": "2026-10-31T06:13:42.782919032Z",
+      "run_id": "4011dd32-73ef-4f49-b78b-6cf1ab8496c9"
+    },
+    {
+      "at": "AT07",
+      "name": "installer_rerun",
+      "status": "blocked",
+      "detail": {
+        "check": "installer_rerun",
+        "gap": "ENR-06: #266 real installer startup prerequisite failed. Owner packaging/installer and deploy/node/systemd (installer follow-up 3): fix NetBird socket write permissions and shared RuntimeDirectory lifecycle, then devstack rerun the wrappers and restore prior service state after hash sampling. No working forwarding baseline; successful rerun and ControlledReinstall are not reached.",
+        "prerequisite": {
+          "agent_heartbeat_readonly": true,
+          "container": "fvpn-w4-enroll-installer-node",
+          "image_digest": "sha256:6a8d1df88bc8f5410f9c76944cbedc34623d8bf6b526419e668d5509fefda6c3",
+          "initial_install": {
+            "after": {
+              "key_sha256": "6587053dec1a54452fe649e6f7b4b1cf87405f2aa1c706571fb2c402414d6b3e",
+              "cert_sha256": "4feda363102b475c1e8be437d0d99392b749f097b145bbb4edd3d3e7c15da6ec",
+              "node_json_sha256": "03789fe17806a616cfdba05c295f0b35b26e7525bd28bcbf77022f14252a6f19",
+              "usage_db_sha256": "d357ad366aeb968c6bb1f27db4f501d99d02edf96ca6277202bb607464a34141",
+              "usage_wal_sha256": "absent",
+              "machine_id_sha256": "60e767eb6d5e6d68c3fccc945156698adc3ec567f805b17012c8e7350df272a3",
+              "current": "releases/52db8139-44fe-44a6-9d1e-02620a7e4484"
+            },
+            "before": {
+              "key_sha256": "absent",
+              "cert_sha256": "absent",
+              "node_json_sha256": "absent",
+              "usage_db_sha256": "absent",
+              "usage_wal_sha256": "absent",
+              "machine_id_sha256": "60e767eb6d5e6d68c3fccc945156698adc3ec567f805b17012c8e7350df272a3",
+              "current": "absent"
+            },
+            "code": "failed",
+            "exit": 1,
+            "incarnation_id": "01a19097-5a5e-7a9d-be44-03ed39315faf",
+            "node_id": "01a19097-5517-7833-bb6e-7a0fb2533c95",
+            "status": "",
+            "wrapper_error": false
+          },
+          "install_finished_at": "2026-10-31T06:13:42.72750912Z",
+          "install_started_at": "2026-10-31T06:13:19.306946818Z",
+          "journal_read_ok": true,
+          "netbird_socket_readonly": true,
+          "projection_after_install": {
+            "http_status": 200,
+            "identity_conflict": {
+              "conflict_count": 0,
+              "last_conflict_at": null,
+              "mapping_frozen": false
+            },
+            "identity_conflict_present": true,
+            "member_forwarding_observed": null,
+            "provisioning_state": "applying",
+            "read_ok": true,
+            "safety_status": "unknown"
+          },
+          "slot": "installer-node",
+          "slot_probe": {
+            "hold_unknown_node_slot": true,
+            "snapshot_unknown_node_slot": true,
+            "transport_unknown_node_slot": true
+          },
+          "source_pr": 266
+        },
+        "usage_gap": "ENR-05: #266 HoldUsageAcknowledgements, UsageLedgerSnapshot and MemberTransportStack accept node/node2/node-clone, while ControlledReinstall accepts only installer-node. Owner devstack: export the hold, snapshot and counted member transport on that same installer slot, including its proxy/config paths and service restoration. Owner usage/installer: supply an authorized old-incarnation backlog delivery protocol; packaging/installer/reenroll.go explicitly leaves retained old events unuploaded. No central-once or cross-reinstall usage claim."
+      },
+      "observed_at": "2026-10-31T06:13:42.783309839Z",
+      "run_id": "4011dd32-73ef-4f49-b78b-6cf1ab8496c9"
+    },
+    {
+      "at": "AT07",
+      "name": "identity_ledger_preserved",
+      "status": "blocked",
+      "detail": {
+        "check": "identity_ledger_preserved",
+        "gap": "ENR-06: #266 real installer startup prerequisite failed. Owner packaging/installer and deploy/node/systemd (installer follow-up 3): fix NetBird socket write permissions and shared RuntimeDirectory lifecycle, then devstack rerun the wrappers and restore prior service state after hash sampling. No working forwarding baseline; successful rerun and ControlledReinstall are not reached.",
+        "prerequisite": {
+          "agent_heartbeat_readonly": true,
+          "container": "fvpn-w4-enroll-installer-node",
+          "image_digest": "sha256:6a8d1df88bc8f5410f9c76944cbedc34623d8bf6b526419e668d5509fefda6c3",
+          "initial_install": {
+            "after": {
+              "key_sha256": "6587053dec1a54452fe649e6f7b4b1cf87405f2aa1c706571fb2c402414d6b3e",
+              "cert_sha256": "4feda363102b475c1e8be437d0d99392b749f097b145bbb4edd3d3e7c15da6ec",
+              "node_json_sha256": "03789fe17806a616cfdba05c295f0b35b26e7525bd28bcbf77022f14252a6f19",
+              "usage_db_sha256": "d357ad366aeb968c6bb1f27db4f501d99d02edf96ca6277202bb607464a34141",
+              "usage_wal_sha256": "absent",
+              "machine_id_sha256": "60e767eb6d5e6d68c3fccc945156698adc3ec567f805b17012c8e7350df272a3",
+              "current": "releases/52db8139-44fe-44a6-9d1e-02620a7e4484"
+            },
+            "before": {
+              "key_sha256": "absent",
+              "cert_sha256": "absent",
+              "node_json_sha256": "absent",
+              "usage_db_sha256": "absent",
+              "usage_wal_sha256": "absent",
+              "machine_id_sha256": "60e767eb6d5e6d68c3fccc945156698adc3ec567f805b17012c8e7350df272a3",
+              "current": "absent"
+            },
+            "code": "failed",
+            "exit": 1,
+            "incarnation_id": "01a19097-5a5e-7a9d-be44-03ed39315faf",
+            "node_id": "01a19097-5517-7833-bb6e-7a0fb2533c95",
+            "status": "",
+            "wrapper_error": false
+          },
+          "install_finished_at": "2026-10-31T06:13:42.72750912Z",
+          "install_started_at": "2026-10-31T06:13:19.306946818Z",
+          "journal_read_ok": true,
+          "netbird_socket_readonly": true,
+          "projection_after_install": {
+            "http_status": 200,
+            "identity_conflict": {
+              "conflict_count": 0,
+              "last_conflict_at": null,
+              "mapping_frozen": false
+            },
+            "identity_conflict_present": true,
+            "member_forwarding_observed": null,
+            "provisioning_state": "applying",
+            "read_ok": true,
+            "safety_status": "unknown"
+          },
+          "slot": "installer-node",
+          "slot_probe": {
+            "hold_unknown_node_slot": true,
+            "snapshot_unknown_node_slot": true,
+            "transport_unknown_node_slot": true
+          },
+          "source_pr": 266
+        },
+        "usage_gap": "ENR-05: #266 HoldUsageAcknowledgements, UsageLedgerSnapshot and MemberTransportStack accept node/node2/node-clone, while ControlledReinstall accepts only installer-node. Owner devstack: export the hold, snapshot and counted member transport on that same installer slot, including its proxy/config paths and service restoration. Owner usage/installer: supply an authorized old-incarnation backlog delivery protocol; packaging/installer/reenroll.go explicitly leaves retained old events unuploaded. No central-once or cross-reinstall usage claim."
+      },
+      "observed_at": "2026-10-31T06:13:42.783729221Z",
+      "run_id": "4011dd32-73ef-4f49-b78b-6cf1ab8496c9"
+    },
+    {
+      "at": "AT07",
+      "name": "controlled_reinstall",
+      "status": "blocked",
+      "detail": {
+        "check": "controlled_reinstall",
+        "gap": "ENR-06: #266 real installer startup prerequisite failed. Owner packaging/installer and deploy/node/systemd (installer follow-up 3): fix NetBird socket write permissions and shared RuntimeDirectory lifecycle, then devstack rerun the wrappers and restore prior service state after hash sampling. No working forwarding baseline; successful rerun and ControlledReinstall are not reached.",
+        "prerequisite": {
+          "agent_heartbeat_readonly": true,
+          "container": "fvpn-w4-enroll-installer-node",
+          "image_digest": "sha256:6a8d1df88bc8f5410f9c76944cbedc34623d8bf6b526419e668d5509fefda6c3",
+          "initial_install": {
+            "after": {
+              "key_sha256": "6587053dec1a54452fe649e6f7b4b1cf87405f2aa1c706571fb2c402414d6b3e",
+              "cert_sha256": "4feda363102b475c1e8be437d0d99392b749f097b145bbb4edd3d3e7c15da6ec",
+              "node_json_sha256": "03789fe17806a616cfdba05c295f0b35b26e7525bd28bcbf77022f14252a6f19",
+              "usage_db_sha256": "d357ad366aeb968c6bb1f27db4f501d99d02edf96ca6277202bb607464a34141",
+              "usage_wal_sha256": "absent",
+              "machine_id_sha256": "60e767eb6d5e6d68c3fccc945156698adc3ec567f805b17012c8e7350df272a3",
+              "current": "releases/52db8139-44fe-44a6-9d1e-02620a7e4484"
+            },
+            "before": {
+              "key_sha256": "absent",
+              "cert_sha256": "absent",
+              "node_json_sha256": "absent",
+              "usage_db_sha256": "absent",
+              "usage_wal_sha256": "absent",
+              "machine_id_sha256": "60e767eb6d5e6d68c3fccc945156698adc3ec567f805b17012c8e7350df272a3",
+              "current": "absent"
+            },
+            "code": "failed",
+            "exit": 1,
+            "incarnation_id": "01a19097-5a5e-7a9d-be44-03ed39315faf",
+            "node_id": "01a19097-5517-7833-bb6e-7a0fb2533c95",
+            "status": "",
+            "wrapper_error": false
+          },
+          "install_finished_at": "2026-10-31T06:13:42.72750912Z",
+          "install_started_at": "2026-10-31T06:13:19.306946818Z",
+          "journal_read_ok": true,
+          "netbird_socket_readonly": true,
+          "projection_after_install": {
+            "http_status": 200,
+            "identity_conflict": {
+              "conflict_count": 0,
+              "last_conflict_at": null,
+              "mapping_frozen": false
+            },
+            "identity_conflict_present": true,
+            "member_forwarding_observed": null,
+            "provisioning_state": "applying",
+            "read_ok": true,
+            "safety_status": "unknown"
+          },
+          "slot": "installer-node",
+          "slot_probe": {
+            "hold_unknown_node_slot": true,
+            "snapshot_unknown_node_slot": true,
+            "transport_unknown_node_slot": true
+          },
+          "source_pr": 266
+        },
+        "usage_gap": "ENR-05: #266 HoldUsageAcknowledgements, UsageLedgerSnapshot and MemberTransportStack accept node/node2/node-clone, while ControlledReinstall accepts only installer-node. Owner devstack: export the hold, snapshot and counted member transport on that same installer slot, including its proxy/config paths and service restoration. Owner usage/installer: supply an authorized old-incarnation backlog delivery protocol; packaging/installer/reenroll.go explicitly leaves retained old events unuploaded. No central-once or cross-reinstall usage claim."
+      },
+      "observed_at": "2026-10-31T06:13:42.784115941Z",
+      "run_id": "4011dd32-73ef-4f49-b78b-6cf1ab8496c9"
+    },
+    {
+      "at": "AT07",
+      "name": "old_certificate_denied",
+      "status": "blocked",
+      "detail": {
+        "check": "old_certificate_denied",
+        "gap": "ENR-06: #266 real installer startup prerequisite failed. Owner packaging/installer and deploy/node/systemd (installer follow-up 3): fix NetBird socket write permissions and shared RuntimeDirectory lifecycle, then devstack rerun the wrappers and restore prior service state after hash sampling. No working forwarding baseline; successful rerun and ControlledReinstall are not reached.",
+        "prerequisite": {
+          "agent_heartbeat_readonly": true,
+          "container": "fvpn-w4-enroll-installer-node",
+          "image_digest": "sha256:6a8d1df88bc8f5410f9c76944cbedc34623d8bf6b526419e668d5509fefda6c3",
+          "initial_install": {
+            "after": {
+              "key_sha256": "6587053dec1a54452fe649e6f7b4b1cf87405f2aa1c706571fb2c402414d6b3e",
+              "cert_sha256": "4feda363102b475c1e8be437d0d99392b749f097b145bbb4edd3d3e7c15da6ec",
+              "node_json_sha256": "03789fe17806a616cfdba05c295f0b35b26e7525bd28bcbf77022f14252a6f19",
+              "usage_db_sha256": "d357ad366aeb968c6bb1f27db4f501d99d02edf96ca6277202bb607464a34141",
+              "usage_wal_sha256": "absent",
+              "machine_id_sha256": "60e767eb6d5e6d68c3fccc945156698adc3ec567f805b17012c8e7350df272a3",
+              "current": "releases/52db8139-44fe-44a6-9d1e-02620a7e4484"
+            },
+            "before": {
+              "key_sha256": "absent",
+              "cert_sha256": "absent",
+              "node_json_sha256": "absent",
+              "usage_db_sha256": "absent",
+              "usage_wal_sha256": "absent",
+              "machine_id_sha256": "60e767eb6d5e6d68c3fccc945156698adc3ec567f805b17012c8e7350df272a3",
+              "current": "absent"
+            },
+            "code": "failed",
+            "exit": 1,
+            "incarnation_id": "01a19097-5a5e-7a9d-be44-03ed39315faf",
+            "node_id": "01a19097-5517-7833-bb6e-7a0fb2533c95",
+            "status": "",
+            "wrapper_error": false
+          },
+          "install_finished_at": "2026-10-31T06:13:42.72750912Z",
+          "install_started_at": "2026-10-31T06:13:19.306946818Z",
+          "journal_read_ok": true,
+          "netbird_socket_readonly": true,
+          "projection_after_install": {
+            "http_status": 200,
+            "identity_conflict": {
+              "conflict_count": 0,
+              "last_conflict_at": null,
+              "mapping_frozen": false
+            },
+            "identity_conflict_present": true,
+            "member_forwarding_observed": null,
+            "provisioning_state": "applying",
+            "read_ok": true,
+            "safety_status": "unknown"
+          },
+          "slot": "installer-node",
+          "slot_probe": {
+            "hold_unknown_node_slot": true,
+            "snapshot_unknown_node_slot": true,
+            "transport_unknown_node_slot": true
+          },
+          "source_pr": 266
+        },
+        "usage_gap": "ENR-05: #266 HoldUsageAcknowledgements, UsageLedgerSnapshot and MemberTransportStack accept node/node2/node-clone, while ControlledReinstall accepts only installer-node. Owner devstack: export the hold, snapshot and counted member transport on that same installer slot, including its proxy/config paths and service restoration. Owner usage/installer: supply an authorized old-incarnation backlog delivery protocol; packaging/installer/reenroll.go explicitly leaves retained old events unuploaded. No central-once or cross-reinstall usage claim."
+      },
+      "observed_at": "2026-10-31T06:13:42.78451106Z",
+      "run_id": "4011dd32-73ef-4f49-b78b-6cf1ab8496c9"
+    },
+    {
+      "at": "AT07",
+      "name": "historical_usage_retained",
+      "status": "blocked",
+      "detail": {
+        "check": "historical_usage_retained",
+        "gap": "ENR-06: #266 real installer startup prerequisite failed. Owner packaging/installer and deploy/node/systemd (installer follow-up 3): fix NetBird socket write permissions and shared RuntimeDirectory lifecycle, then devstack rerun the wrappers and restore prior service state after hash sampling. No working forwarding baseline; successful rerun and ControlledReinstall are not reached.",
+        "prerequisite": {
+          "agent_heartbeat_readonly": true,
+          "container": "fvpn-w4-enroll-installer-node",
+          "image_digest": "sha256:6a8d1df88bc8f5410f9c76944cbedc34623d8bf6b526419e668d5509fefda6c3",
+          "initial_install": {
+            "after": {
+              "key_sha256": "6587053dec1a54452fe649e6f7b4b1cf87405f2aa1c706571fb2c402414d6b3e",
+              "cert_sha256": "4feda363102b475c1e8be437d0d99392b749f097b145bbb4edd3d3e7c15da6ec",
+              "node_json_sha256": "03789fe17806a616cfdba05c295f0b35b26e7525bd28bcbf77022f14252a6f19",
+              "usage_db_sha256": "d357ad366aeb968c6bb1f27db4f501d99d02edf96ca6277202bb607464a34141",
+              "usage_wal_sha256": "absent",
+              "machine_id_sha256": "60e767eb6d5e6d68c3fccc945156698adc3ec567f805b17012c8e7350df272a3",
+              "current": "releases/52db8139-44fe-44a6-9d1e-02620a7e4484"
+            },
+            "before": {
+              "key_sha256": "absent",
+              "cert_sha256": "absent",
+              "node_json_sha256": "absent",
+              "usage_db_sha256": "absent",
+              "usage_wal_sha256": "absent",
+              "machine_id_sha256": "60e767eb6d5e6d68c3fccc945156698adc3ec567f805b17012c8e7350df272a3",
+              "current": "absent"
+            },
+            "code": "failed",
+            "exit": 1,
+            "incarnation_id": "01a19097-5a5e-7a9d-be44-03ed39315faf",
+            "node_id": "01a19097-5517-7833-bb6e-7a0fb2533c95",
+            "status": "",
+            "wrapper_error": false
+          },
+          "install_finished_at": "2026-10-31T06:13:42.72750912Z",
+          "install_started_at": "2026-10-31T06:13:19.306946818Z",
+          "journal_read_ok": true,
+          "netbird_socket_readonly": true,
+          "projection_after_install": {
+            "http_status": 200,
+            "identity_conflict": {
+              "conflict_count": 0,
+              "last_conflict_at": null,
+              "mapping_frozen": false
+            },
+            "identity_conflict_present": true,
+            "member_forwarding_observed": null,
+            "provisioning_state": "applying",
+            "read_ok": true,
+            "safety_status": "unknown"
+          },
+          "slot": "installer-node",
+          "slot_probe": {
+            "hold_unknown_node_slot": true,
+            "snapshot_unknown_node_slot": true,
+            "transport_unknown_node_slot": true
+          },
+          "source_pr": 266
+        },
+        "usage_gap": "ENR-05: #266 HoldUsageAcknowledgements, UsageLedgerSnapshot and MemberTransportStack accept node/node2/node-clone, while ControlledReinstall accepts only installer-node. Owner devstack: export the hold, snapshot and counted member transport on that same installer slot, including its proxy/config paths and service restoration. Owner usage/installer: supply an authorized old-incarnation backlog delivery protocol; packaging/installer/reenroll.go explicitly leaves retained old events unuploaded. No central-once or cross-reinstall usage claim."
+      },
+      "observed_at": "2026-10-31T06:13:42.784936508Z",
+      "run_id": "4011dd32-73ef-4f49-b78b-6cf1ab8496c9"
     }
   ],
   "prior_failure_review": {
