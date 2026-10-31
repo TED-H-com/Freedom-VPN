@@ -7,6 +7,12 @@ import subprocess
 import sys
 import tempfile
 
+def cache_tags():
+    tags = ["fvpn-w4-isolation-cache-" + service + ":" + tag for service, tag in (
+        ("nginx", "1.30.0"), ("coredns", "1.12.0"), ("adguard", "v0.107.59"), ("netbird", "0.82.0"), ("postgres", "17"))]
+    tags += ["fvpn-w4-isolation-cache-" + service + ":local" for service in ("idp", "payment", "origin", "control", "worker", "node")]
+    return tags
+
 root = Path(__file__).resolve().parents[4]
 os.chdir(root)
 if sys.argv[1:] not in [["up"], ["down"]]:
@@ -23,4 +29,14 @@ with tempfile.TemporaryDirectory(prefix="isolation-docker.", dir=root / ".agent/
     shim.chmod(0o755)
     env["PATH"] = temporary + os.pathsep + env["PATH"]
     result = subprocess.run(["sh", "deploy/devstack/" + sys.argv[1] + ".sh"], env=env)
+if sys.argv[1:] == ["down"]:
+    # The shim's cache tags are task-owned. prefix.sh has no "cache" token,
+    # so down.sh leaves them and the makefile leftover check matches them.
+    listed = subprocess.run(["docker", "images", "--format", "{{.Repository}}:{{.Tag}}"], capture_output=True, text=True)
+    have = set(listed.stdout.split())
+    present = [tag for tag in cache_tags() if tag in have]
+    if present:
+        removed = subprocess.run(["docker", "rmi", *present])
+        if result.returncode == 0:
+            result = removed
 raise SystemExit(result.returncode)
