@@ -265,8 +265,10 @@ label; accounting contract §10.5–§10.8), use this sequence:
    node_id**, extract the secret token privately, call
    `HoldInstallerFirstPoll(ctx, true)`, then
    `ControlledReinstall(ctx, "installer-node", token)`. Require `reenrolled`,
-   unchanged Node ID, different `InstallerOutcome.Incarnation`, matching
-   before/after usage DB/WAL hashes and retired identity/bound-state digests.
+   unchanged Node ID, different `InstallerOutcome.Incarnation`, matching retired identity/bound-state digests and retained origin canonical
+   payloads, event sequence/hash and origin ACK. D-118 runs during replacement
+   bootstrap: usage DB/WAL hashes may change before this wrapper returns.
+   File equality after adoption is not the retention predicate.
    This wrapper leaves the services quiescent for sampling. Never rename or
    relabel the surviving events as the new incarnation.
 5. Read the incarnations API again: it exports `incarnation_id`, `current`,
@@ -305,21 +307,16 @@ product package readers, documented in [usage-store](../node/usage-store.md#reti
 the shared fixture does not call an internal product transition to simulate
 adoption. Existing CLI/file/API exports suffice for this hand-off path.
 
-Both central D-105 and usage-agent follow-up 3's retained store/uploader are
-already on this base. Central requires the replacement's `created_at` to be
-later than origin `revoked_at`. **The remaining production activation hook is
-in agent-core's `Engine.ensureUsage`, `node/agent/usage.go`: it still opens with
-`Options{Trust: e.trust}` rather than the verified reenrollment retirement
-option.** Until agent-core 25 integrates that hook under the node lock with old
-loops stopped, the surviving ledger fails closed on incarnation mismatch.
-The shared wrapper supplies neither that transition nor synthetic delivery.
-Usage AT should adopt the path after that hook lands and prove once-only
-attribution/ACKs. See the separate live [follow-up 18 outcomes](runs/2026-10-31/followup18/README.md);
-no prior blocked retired-stream assertion is promoted by documentation.
-Use the fresh installer-serving path for this hand-off. The separate
-post-successful-upgrade reenrollment in run `8a1124a1` failed `baseline_failed`
-with seed `HASH_MISMATCH`; its ledger was retained but that command is not a
-successful reinstall. [Diagnostic](runs/2026-10-31/followup18/8a1124a1-8653-4f8c-bd1b-2eb3ae5c3179/post-upgrade-reenroll-diagnostic.md).
+D-118 is now implemented in agent-core (#320), under the node lock and
+`usage.db.lock`, and executes during replacement bootstrap. The wrapper can
+therefore return after stream adoption has already changed the DB/WAL. Compare
+immutable canonical origin payload bytes, origin event sequence and hash, and
+the origin stream's retained ACK; keep the new stream's ACK separate. Usage AT
+follow-up 5 (#324) consumed the controlled retirement/reinstall path. These
+claims do not retroactively change the archived follow-up 18 file measurements.
+The historical `8a1124a1` seed `HASH_MISMATCH` is retained in
+[its diagnostic](runs/2026-10-31/followup18/8a1124a1-8653-4f8c-bd1b-2eb3ae5c3179/post-upgrade-reenroll-diagnostic.md);
+the combined-source seed result belongs to follow-up 19.
 
 ## portal / wire-nodes — 2026-10-31
 
@@ -441,3 +438,153 @@ size/digest receipts under private `.agent/tmp`. Packet contents are not
 committed. [Measured verdicts and limits](runs/2026-10-31/followup18/README.md)
 remain separate from the archived members failure. A successful rerun alone
 cannot establish that reconnect caused that earlier failure.
+
+## usage — 2026-10-31 (follow-up 19)
+
+> Update docs/e2e/RESPONSES.md, usage follow-up 18 step 4 and its stale activation note
+
+Corrected above: D-118 executes during bootstrap, so DB/WAL equality is no
+longer required after adoption. Preserve canonical payloads and origin
+sequence/hash/ACK, separately from the replacement stream and its ACK.
+
+The two real reinstall runs retain [eight exact canonical origin events](runs/2026-10-31/followup19/usage-retention.md),
+with origin sequence/hash and ACK before/after adoption plus coherent snapshot
+SHA pins. The serving candidate run retains ACK 4; the stopped-agent run's
+origin ACK advances 3→4. Neither is inferred from the replacement stream.
+
+## DNS-publish — 2026-10-31 (follow-up 19)
+
+> Devstack follow-up 16, request 1
+
+`fixtureDNSNegative` now requires exactly RCODE 0 and zero answer types for
+[BACKEND F8-CNAME/F8-SVCB](../dns/BACKEND.md), with the TEST ONLY profile's
+F8-TTL5 synthetic SOA TTL 5. A/AAAA/HTTPS cite F8-A/F8-AAAA/F8-HTTPS; alias A
+and wildcard A cite F8-A scopes C/W. Each synthetic lookup waits six seconds
+for a previous five-second cache entry to expire, then records lookup elapsed
+time and allows only the whole-second TTL decrement within that measured
+lookup (plus one rounding second). Lookups taking five seconds cannot prove
+the TTL. NODATA is not NXDOMAIN. The absent authority name, positive cache
+expiry and rebinding controls keep their separate assertions.
+
+The combined-source [live DNS row](runs/2026-10-31/followup19/5282829c-c11e-4f34-954a-5bc2a5bceca5/dns-negative.md)
+passes on UDP and TCP: both exact NODATA rows have RCODE 0, zero answers and
+SOA TTL 5, and the matching NXDOMAIN rows have TTL 5. Synthetic lookup times
+are 31–46 ms after the explicit cache-expiry wait. The whole fixture campaign
+is 15/0/1 because its separate MTU-1280 transfer stalls at 12,012 bytes; that
+failure is retained and is not a DNS result.
+
+## installer — 2026-10-31 (follow-up 19)
+
+> Installer 5 evidence scope
+
+[Installer follow-up 5](../node/install-followup5-2026-10-31.md) is isolated
+installer-side evidence; it does not replace ENR-05. The real serving acceptance
+remains devstack 18's scoped native traffic/ledger proof and the separately
+recorded follow-up 19 combined-source upgrade rerun.
+
+## isolation / agent-core — 2026-10-31 (follow-up 19)
+
+> D-087 clean provisional recipe — agent-core + devstack.
+
+The corresponding assembled central switch is **not available on this base**.
+`internal/nodes/httpwire/state.go:RenewServingLease` constructs
+`leases.NewService` directly with the production DB entitlement reader.
+`internal/leases/leases.go` requires published + registered + ready + unfrozen
+state before including grants. `SetMemberGrantsReady` and `/member-grants`
+exist only in fake control/labcontrol; the assembled devstack runs the real
+central HTTP handler. Holding a lease response produces a transport error;
+it cannot create an authentic empty signed lease. Unpublish, mapping freeze,
+changing entitlements, editing projector rows or re-signing a stripped response
+would not be the requested clean fixed-generation trigger.
+
+This item stops at the ownership boundary. Requested owner change:
+`internal/nodes/httpwire/state.go` and `internal/nodes/httpwire/runtime.go` need a
+TEST ONLY injectable grant-eligibility reader/factory, defaulting to the exact
+production reader, that can withhold future grants without changing desired
+bindings/generation or ready/published state. `leases.WithEntitlementReader`
+already exists; the HTTP handler does not expose that seam. No production
+bypass or synthetic accepted observation was added in this lane.
+
+Once that owner seam exists, the exported harness sequence must be: arm false
+on a clean unfrozen published generation with bindings; let the existing
+populated lease renew naturally (false does not revoke it); retain the genuine
+empty signed lease and every actual observation; require ready/passed, exactly
+`awaiting_member_grants`, the three AWAITING checks and one lease error; release
+true only after the qualifying report is accepted; require a populated lease,
+a distinct accepted serving report, unchanged generation/bindings and counted
+native traffic. The agent-core 27 labcontrol proof remains producer evidence,
+not an executed central/devstack trigger. Isolation's assembled AT10 remains
+unproved here.
+
+## orchestrator — 2026-10-31 (follow-up 19)
+
+> D-124 fixture
+
+On source `33034048`, `tests/e2e/cmd/fvpn-e2e-prepare/agent_config_test.go`
+contains only config/hosts tests and never calls `agent.Decide`. No file in
+that command directory calls it. The referenced model
+`internal/nodes/publication_evidence_test.go` already sets both desired and
+lease future expiries. No unrelated fixture or assertion was changed. Route
+the actual stale fixture path if another file was intended.
+
+## updater / installer — 2026-10-31 (follow-up 19 measured result)
+
+> Updater 17 request 1 / installer 6 request 1
+
+The unchanged serving fixture passes **14/0/0**, initial apply **0**, on the
+combined source: [d6aaa798](runs/2026-10-31/followup19/d6aaa798-6c39-49f1-8fa9-5f84f696ac91/installer-journaled-upgrade.md).
+The real member allow-set is withdrawn while mTLS control returns 200; the
+five-field checkpoint's barrier UUID equals the persisted latch under its
+original boot/deadline. The actual meter epoch closes with `final_sample`,
+and the sealed receipt matches its durable watermark 4 / ACK 3. This is a
+quiet final sample, not a newly generated post-withdrawal byte event. The
+candidate pointer/executable switch, all five health checks and canonical
+receipt hash pass. Installer check uses `updater_journal` and keeps install
+history. [Candidate revoke/re-enrollment](runs/2026-10-31/followup19/d6aaa798-6c39-49f1-8fa9-5f84f696ac91/installer-reenroll.md)
+seeds successfully with no HASH_MISMATCH or tree repair, retains canonical
+origin events and retired identity, restores services and refuses the old
+certificate (403 through both paths).
+
+The old stopped-agent sequence separately yields **13/0/1**:
+[04de29d3](runs/2026-10-31/followup19/04de29d3-e56b-4a32-b678-21462845ddb6/installer-quiescent-candidate.md).
+A stopped agent cannot respond to D-125's new latch. Initial apply and sealed
+replay return **1**, recover returns **2**, pointer stays unchanged, forwarding
+stays blocked, and coherent journal and receipt bytes remain identical.
+Its later seed succeeds on the unchanged initial tree; that is not candidate
+seed acceptance. The serving run supplies that proof. All prior devstack 18
+artifacts remain unchanged, with the byte-identical archive and pins linked
+from the [run overview](runs/2026-10-31/followup19/README.md).
+
+## netlab — 2026-10-31 (follow-up 19)
+
+> Netlab 19 request 2: exact F8-02 failed/control decode
+
+All four requested raw pcaps exist here and match their exact byte/SHA receipts.
+[Full payload-free decode and completeness limits](runs/2026-10-31/followup19/capture-decode/README.md)
+retain TCP sequence/ACK/SACK/window/options/length and outer IP fragmentation
+headers for every packet. The failed 22,022-byte flow's member ACK stops at
+10731373; the missing 1,228-byte inner segment is retransmitted at node tunnel
+egress but absent at member. Associated outer IPv4 packets are unfragmented
+1,340-byte packets on the node's 1500 link, absent at the 1280 member link.
+Receive-link MTU rejection is a bounded inference, not a measured kernel drop
+reason; the failed pair has no retained tcpdump drop statistics or endpoint
+samples. The original 11,011-byte members row has no matching capture here.
+
+A [fresh same-order reconnect capture](runs/2026-10-31/followup19/capture-fresh/README.md)
+retains all 12 member/node/origin pcaps with header decodes, actual MTUs,
+process bounds, capture counts, and endpoint read/write/line/error/TCP_INFO.
+It passes all four 64,064-byte transfers under the unchanged 12-second bound.
+Its 1280 reverse path sends 1,006-byte TCP / 1,132-byte outer packets; all
+arrive. In the opposite direction, 52 fragment pairs match at both ends.
+This successful control does not clear either historical failure or support
+a global MTU/MSS change. Both dual rows require IPv6 refusal without uplink
+probe leakage plus IPv4 completion; underlay family is not overlay IPv6
+service. There is no separate bottleneck router in this topology. No product
+or NetBird MTU, MSS or policy was changed.
+
+The intervening DNS fixture campaign also retains a genuine 12,012-byte
+MTU-1280 timeout with 12 complete echoes and no partial final line. One
+[additional captured reconnect attempt](runs/2026-10-31/followup19/capture-repeat/README.md)
+again completes all four transfers. No instrumented failure was captured;
+per-I/O tracing can affect scheduling/segmentation. These controls do not
+erase the failures or establish the exact kernel drop reason.
