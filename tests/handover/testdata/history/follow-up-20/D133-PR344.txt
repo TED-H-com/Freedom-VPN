@@ -1,0 +1,11 @@
+### D-133 same-host A/B (live install bound)
+Held under **D-133** at 12:4x: the first delivery's final live gate had failed (`TestD085_LiveReadNetlab`, Apply 11 render→installed 152.125 ms > 100 ms) while the host ran four chains and two sessions (load ≈ 16). The resume ran a same-host A/B/A/B at CPU-quiet conditions — A = unchanged main `0df1716d` (fresh `git archive`, all 6,090 blobs verified before and after), B = this branch `036a4829`; `vmstat 5 7` with r ≤ 3 and idle ≥ 80 % before and after every leg (the load average ≈ 11 is held by I/O-blocked threads of an unrelated read-only scan; recorded per leg, every failed CPU sample retained). **All four live gates and all four full agent suites pass.**
+
+| Leg | Live install command p99 / max (ms) | Live outer guard p50 / p90 / p99 / max (ms) | Assembled outer guard p99 / max (ms) |
+|---|---|---|---|
+| A1 main | 24.24 / 25.49 | 26.30 / 35.17 / 38.07 / 40.36 | 47.89 / 47.89 |
+| B1 branch | 27.78 / 29.01 | 27.58 / 38.68 / 51.67 / 57.92 | 43.60 / 45.60 |
+| A2 main | 24.21 / 24.76 | 26.52 / 34.72 / 40.34 / 41.61 | 49.75 / 49.75 |
+| B2 branch | 25.76 / 27.93 | 28.06 / 38.81 / 50.46 / 52.02 | 41.24 / 41.91 |
+
+Nearest-rank percentiles over all 117 (live) / 99–103 (assembled) completed guards; failed Applies kept separate (none reached install in any leg; no assembled Apply failed). B's live outer tails are higher in both repeats (B1 Apply 137 = install 29.01 + gap 0.003 + release 28.92 ms) while its assembled tails are lower in both; no selected install approaches 100 ms; the source review finds no agent work inside the bracket (installed-by → release-start gap ≤ 0.010 ms). **Decision (D-133 case 3):** the 152 ms failure is attributed to host contention, the branch's live gate passes, no production code changed from `036a4829`; the tail shift is retained in the dated hand-off and re-measured by isolation 10 on this main. Still unmet on A and B alike and left visible: literal zero pre-D loss (two pre-D expiry drops in every assembled trace, first ingress D−63.3 / D−63.5 ms; the unchanged D-104 predicate passes) and the historical 52.596 ms outer-guard ceiling (B1 57.92 ms). No tolerance, bracket or predicate change.

@@ -1,7 +1,7 @@
 # Backup and Restore Drill Record (`docs/handover/restore-drill.md`)
 
-**Current cut — [follow-up 19](follow-up-19.md) (2026-10-31 EDT):** Restore 00193 before ingestion resumes; sealed valid 1 ns events recover on ordinary retry. SECOPS-21 remains closed on the assembled restore harness (#316); the earlier AT30 numbers remain scoped shared-host measurements.
-Previous cut: [follow-up 18](follow-up-18.md), through #324.
+**Current cut — [follow-up 20](follow-up-20.md) (2026-10-31 EDT):** Evidence through #344; 00193 rollout / Down guidance and the earlier AT30 measurements remain unchanged. SECOPS-21 remains closed on the assembled restore harness (#316).
+Previous cut: [follow-up 19](follow-up-19.md), through #337.
 
 Historical follow-up 17 cutoff: [follow-up 17 operator evidence](follow-up-17.md). #313
 harness-proves the SECOPS-21 first-offer capture (2/0/0, delivery 4 > retained 3,

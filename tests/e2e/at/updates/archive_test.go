@@ -10,7 +10,16 @@ import (
 )
 
 func TestD098_Followup9ArchivePins(t *testing.T) {
-	root := filepath.Join("..", "..", "..", "..", "docs/e2e/at/updates/history/follow-up-9")
+	checkArchivePins(t, "follow-up-9", 65)
+}
+
+func TestD132_Followup10ArchivePins(t *testing.T) {
+	checkArchivePins(t, "follow-up-10", 39)
+}
+
+func checkArchivePins(t *testing.T, followup string, count int) {
+	t.Helper()
+	root := filepath.Join("..", "..", "..", "..", "docs/e2e/at/updates/history", followup)
 	raw, err := os.ReadFile(filepath.Join(root, "SHA256SUMS"))
 	if err != nil {
 		t.Fatal(err)
@@ -29,7 +38,7 @@ func TestD098_Followup9ArchivePins(t *testing.T) {
 			t.Fatalf("archive drift: %s", fields[1])
 		}
 	}
-	if len(rows) != 65 {
+	if len(rows) != count {
 		t.Fatalf("archive inventory changed: %d", len(rows))
 	}
 }

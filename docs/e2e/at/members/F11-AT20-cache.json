@@ -1,0 +1,417 @@
+{
+  "run_id": "7edb263f-1f6e-4f94-9e8e-26099f96a699",
+  "source_commit": "33abb2fd2c2fc95826c6e69eb434045522d6f7ef",
+  "case_status": "blocked",
+  "checks": [
+    {
+      "name": "cache initial",
+      "status": "pass",
+      "expected": "positive TTL <=10, negative SOA TTL <=5",
+      "actual": {
+        "negative": {
+          "authority_serial": 0,
+          "dns_trace": {
+            "started": "2026-10-31T18:50:31.490507871Z",
+            "completed": "2026-10-31T18:50:31.523827904Z",
+            "responder": "primary",
+            "cache_state": "unknown",
+            "trace_complete": true,
+            "resolver_events": [
+              {
+                "started": "2026-10-31T18:50:31.520760069Z",
+                "completed": "2026-10-31T18:50:31.521253636Z",
+                "role": "primary",
+                "source_role": "native",
+                "fixture_case": "absent",
+                "rr_type": 1,
+                "protocol": "udp",
+                "rcode": 3,
+                "ttls": [],
+                "address_classes": [],
+                "authority_serial": 1001,
+                "success": true
+              }
+            ],
+            "authority_events": [],
+            "authority_serial_after_query": 1001,
+            "authority_read_at": "2026-10-31T18:50:31.672288658Z",
+            "answer_ttl_remaining": []
+          },
+          "authority_ttl": 2,
+          "has_soa": true,
+          "available": true,
+          "rcode": 3,
+          "types": [],
+          "ttls": [],
+          "address_classes": [],
+          "expected_answer": false,
+          "connected": false,
+          "bytes": 0,
+          "milliseconds": 1
+        },
+        "positive": {
+          "authority_serial": 0,
+          "dns_trace": {
+            "started": "2026-10-31T18:50:31.312287437Z",
+            "completed": "2026-10-31T18:50:31.354845181Z",
+            "responder": "primary",
+            "cache_state": "miss_authority_exchange_observed",
+            "trace_complete": true,
+            "resolver_events": [
+              {
+                "started": "2026-10-31T18:50:31.35098018Z",
+                "completed": "2026-10-31T18:50:31.351892831Z",
+                "role": "primary",
+                "source_role": "native",
+                "fixture_case": "cache",
+                "rr_type": 1,
+                "protocol": "udp",
+                "rcode": 0,
+                "ttls": [
+                  10
+                ],
+                "address_classes": [
+                  "other_ipv4"
+                ],
+                "authority_serial": 0,
+                "success": true
+              }
+            ],
+            "authority_events": [
+              {
+                "started": "2026-10-31T18:50:31.351469533Z",
+                "completed": "2026-10-31T18:50:31.351731922Z",
+                "role": "authority",
+                "source_role": "primary",
+                "fixture_case": "cache",
+                "rr_type": 1,
+                "protocol": "udp",
+                "rcode": 0,
+                "ttls": [
+                  10
+                ],
+                "address_classes": [
+                  "other_ipv4"
+                ],
+                "authority_serial": 0,
+                "success": true
+              }
+            ],
+            "authority_serial_after_query": 1001,
+            "authority_read_at": "2026-10-31T18:50:31.490498643Z",
+            "answer_ttl_remaining": [
+              10
+            ]
+          },
+          "authority_ttl": 0,
+          "has_soa": false,
+          "available": true,
+          "rcode": 0,
+          "types": [
+            1
+          ],
+          "ttls": [
+            10
+          ],
+          "address_classes": [
+            "other_ipv4"
+          ],
+          "expected_answer": true,
+          "connected": false,
+          "bytes": 0,
+          "milliseconds": 1
+        }
+      },
+      "command": "native DNS before authority-only change",
+      "at": "2026-10-31T18:50:31Z"
+    },
+    {
+      "name": "changed authority",
+      "status": "pass",
+      "expected": "new answer while caches untouched",
+      "actual": {
+        "authority": {
+          "authority_serial": 0,
+          "authority_ttl": 0,
+          "has_soa": false,
+          "available": true,
+          "rcode": 0,
+          "types": [
+            1
+          ],
+          "ttls": [
+            10
+          ],
+          "address_classes": [
+            "private_ipv4"
+          ],
+          "expected_answer": true,
+          "connected": false,
+          "bytes": 0,
+          "milliseconds": 0
+        },
+        "changed_at": "2026-10-31T18:50:31.672476525Z"
+      },
+      "command": "SetDNSFixturePhase(private); query authority until new serial visible",
+      "at": "2026-10-31T18:50:32Z"
+    },
+    {
+      "name": "positive/negative cache before TTL",
+      "status": "pass",
+      "expected": "old positive and NXDOMAIN persist with remaining TTL",
+      "actual": {
+        "negative": {
+          "authority_serial": 0,
+          "dns_trace": {
+            "started": "2026-10-31T18:50:32.720010199Z",
+            "completed": "2026-10-31T18:50:32.762269781Z",
+            "responder": "primary",
+            "cache_state": "unknown",
+            "trace_complete": true,
+            "resolver_events": [
+              {
+                "started": "2026-10-31T18:50:32.758925355Z",
+                "completed": "2026-10-31T18:50:32.75937774Z",
+                "role": "primary",
+                "source_role": "native",
+                "fixture_case": "absent",
+                "rr_type": 1,
+                "protocol": "udp",
+                "rcode": 3,
+                "ttls": [],
+                "address_classes": [],
+                "authority_serial": 1001,
+                "success": true
+              }
+            ],
+            "authority_events": [],
+            "authority_serial_after_query": 1002,
+            "authority_read_at": "2026-10-31T18:50:32.91093547Z",
+            "answer_ttl_remaining": []
+          },
+          "authority_ttl": 1,
+          "has_soa": true,
+          "available": true,
+          "rcode": 3,
+          "types": [],
+          "ttls": [],
+          "address_classes": [],
+          "expected_answer": false,
+          "connected": false,
+          "bytes": 0,
+          "milliseconds": 1
+        },
+        "observed_at": "2026-10-31T18:50:33.082900043Z",
+        "positive": {
+          "authority_serial": 0,
+          "dns_trace": {
+            "started": "2026-10-31T18:50:32.910942528Z",
+            "completed": "2026-10-31T18:50:32.94451992Z",
+            "responder": "primary",
+            "cache_state": "inferred_hit_no_authority_exchange",
+            "trace_complete": true,
+            "resolver_events": [
+              {
+                "started": "2026-10-31T18:50:32.941225076Z",
+                "completed": "2026-10-31T18:50:32.941731164Z",
+                "role": "primary",
+                "source_role": "native",
+                "fixture_case": "cache",
+                "rr_type": 1,
+                "protocol": "udp",
+                "rcode": 0,
+                "ttls": [
+                  9
+                ],
+                "address_classes": [
+                  "other_ipv4"
+                ],
+                "authority_serial": 0,
+                "success": true
+              }
+            ],
+            "authority_events": [],
+            "authority_serial_after_query": 1002,
+            "authority_read_at": "2026-10-31T18:50:33.082887214Z",
+            "answer_ttl_remaining": [
+              9
+            ]
+          },
+          "authority_ttl": 0,
+          "has_soa": false,
+          "available": true,
+          "rcode": 0,
+          "types": [
+            1
+          ],
+          "ttls": [
+            9
+          ],
+          "address_classes": [
+            "other_ipv4"
+          ],
+          "expected_answer": true,
+          "connected": false,
+          "bytes": 0,
+          "milliseconds": 1
+        }
+      },
+      "command": "ProbeNativeDNS without flushing either cache",
+      "at": "2026-10-31T18:50:33Z"
+    },
+    {
+      "name": "positive/negative cache after TTL",
+      "status": "pass",
+      "expected": "both new authority answers visible",
+      "actual": {
+        "formerly_negative": {
+          "authority_serial": 0,
+          "dns_trace": {
+            "started": "2026-10-31T18:50:45.093647402Z",
+            "completed": "2026-10-31T18:50:45.134330822Z",
+            "responder": "primary",
+            "cache_state": "miss_authority_exchange_observed",
+            "trace_complete": true,
+            "resolver_events": [
+              {
+                "started": "2026-10-31T18:50:45.131185271Z",
+                "completed": "2026-10-31T18:50:45.132107191Z",
+                "role": "primary",
+                "source_role": "native",
+                "fixture_case": "absent",
+                "rr_type": 1,
+                "protocol": "udp",
+                "rcode": 0,
+                "ttls": [
+                  5
+                ],
+                "address_classes": [
+                  "other_ipv4"
+                ],
+                "authority_serial": 0,
+                "success": true
+              }
+            ],
+            "authority_events": [
+              {
+                "started": "2026-10-31T18:50:45.131640453Z",
+                "completed": "2026-10-31T18:50:45.13193206Z",
+                "role": "authority",
+                "source_role": "primary",
+                "fixture_case": "absent",
+                "rr_type": 1,
+                "protocol": "udp",
+                "rcode": 0,
+                "ttls": [
+                  5
+                ],
+                "address_classes": [
+                  "other_ipv4"
+                ],
+                "authority_serial": 0,
+                "success": true
+              }
+            ],
+            "authority_serial_after_query": 1002,
+            "authority_read_at": "2026-10-31T18:50:45.273546617Z",
+            "answer_ttl_remaining": [
+              5
+            ]
+          },
+          "authority_ttl": 0,
+          "has_soa": false,
+          "available": true,
+          "rcode": 0,
+          "types": [
+            1
+          ],
+          "ttls": [
+            5
+          ],
+          "address_classes": [
+            "other_ipv4"
+          ],
+          "expected_answer": true,
+          "connected": false,
+          "bytes": 0,
+          "milliseconds": 1
+        },
+        "observed_at": "2026-10-31T18:50:45.451988848Z",
+        "positive": {
+          "authority_serial": 0,
+          "dns_trace": {
+            "started": "2026-10-31T18:50:45.273555002Z",
+            "completed": "2026-10-31T18:50:45.313786833Z",
+            "responder": "primary",
+            "cache_state": "miss_authority_exchange_observed",
+            "trace_complete": true,
+            "resolver_events": [
+              {
+                "started": "2026-10-31T18:50:45.310481674Z",
+                "completed": "2026-10-31T18:50:45.311324749Z",
+                "role": "primary",
+                "source_role": "native",
+                "fixture_case": "cache",
+                "rr_type": 1,
+                "protocol": "udp",
+                "rcode": 0,
+                "ttls": [
+                  10
+                ],
+                "address_classes": [
+                  "private_ipv4"
+                ],
+                "authority_serial": 0,
+                "success": true
+              }
+            ],
+            "authority_events": [
+              {
+                "started": "2026-10-31T18:50:45.310923287Z",
+                "completed": "2026-10-31T18:50:45.311153636Z",
+                "role": "authority",
+                "source_role": "primary",
+                "fixture_case": "cache",
+                "rr_type": 1,
+                "protocol": "udp",
+                "rcode": 0,
+                "ttls": [
+                  10
+                ],
+                "address_classes": [
+                  "private_ipv4"
+                ],
+                "authority_serial": 0,
+                "success": true
+              }
+            ],
+            "authority_serial_after_query": 1002,
+            "authority_read_at": "2026-10-31T18:50:45.451977522Z",
+            "answer_ttl_remaining": [
+              10
+            ]
+          },
+          "authority_ttl": 0,
+          "has_soa": false,
+          "available": true,
+          "rcode": 0,
+          "types": [
+            1
+          ],
+          "ttls": [
+            10
+          ],
+          "address_classes": [
+            "private_ipv4"
+          ],
+          "expected_answer": true,
+          "connected": false,
+          "bytes": 0,
+          "milliseconds": 1
+        }
+      },
+      "command": "ProbeNativeDNS after real TTL elapses",
+      "at": "2026-10-31T18:50:45Z"
+    }
+  ]
+}

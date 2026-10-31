@@ -23,7 +23,7 @@ func requireFollowup7Evidence(records map[string]*at.Record) {
 		"AT24": {"pre_result_versions", "null_last_good_seed", "first_result_last_good", "recorded_versions", "offline_snapshot", "offline_completion", "new_node_inheritance"},
 		"AT25": {"probe_inspection", "lab_probe_peer", "failed_requires_cause"},
 		"AT26": {"revision7_empty_target", "revision7_rollback_target", "conflict_bounds"},
-		"AT27": {"pre_result_audits", "recorded_audits", "recorded_versions", "withheld_observation", "recorded_last_good", "stale_ack", "observation_authority"},
+		"AT27": {"pre_result_audits", "recorded_audits", "recorded_versions", "withheld_observation", "recorded_last_good", "stale_ack", "observation_authority", "physical_rollback"},
 	} {
 		for _, name := range names {
 			passed := false

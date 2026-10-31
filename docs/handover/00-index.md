@@ -1,7 +1,7 @@
 # Handover index
 
-**Current cut — [follow-up 19](follow-up-19.md) (2026-10-31 EDT):** Current operator evidence is follow-up 19 through #337. Earlier dated snapshots retain their original cutoffs.
-Previous cut: [follow-up 18](follow-up-18.md), through #324.
+**Current cut — [follow-up 20](follow-up-20.md) (2026-10-31 EDT):** Operator evidence through #344; D-133 and the remaining measurements are in the decision register. Earlier dated snapshots retain their original cutoffs.
+Previous cut: [follow-up 19](follow-up-19.md), through #337.
 
 Historical follow-up 17 cutoff: [follow-up 17 operator evidence](follow-up-17.md). #313
 harness-proves the SECOPS-21 first-offer capture (2/0/0, delivery 4 > retained 3,

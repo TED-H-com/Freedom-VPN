@@ -199,6 +199,26 @@ func (h *handoffRun) resultAcceptance(node string, candidate e2e.BuiltRelease, r
 	expected := uuid.NewSHA1(namespace, []byte(candidate.ManifestSHA256+"|"+h.rec.NodeIncarnation))
 	h.note("recomputed_job_id", expected)
 	h.check("job_id", result.text("job_id") == expected.String())
+	// Establish product delivery before any HTTP contract stimulus can supply
+	// an ACK. A drained outbox alone is insufficient: match both stored ACKs
+	// and the immutable sealed payload, then flush again without a new receipt.
+	beforeGenerated := h.central("central_generated_delivery", node)
+	db := h.journal()
+	if db != nil {
+		var ackJSON, hash string
+		var outboxCount, historyCount int
+		err := db.QueryRow(`SELECT ack_json,payload_hash FROM result_history WHERE result_id=?`, result.text("result_id")).Scan(&ackJSON, &hash)
+		errOutbox := db.QueryRow(`SELECT count(*) FROM result_outbox`).Scan(&outboxCount)
+		errHistory := db.QueryRow(`SELECT count(*) FROM result_history`).Scan(&historyCount)
+		db.Close()
+		central := document(h.s.readJSON(`SELECT coalesce((SELECT jsonb_build_object('payload',payload,'ack',ack) FROM installer_update_results WHERE node_id=$1 AND job_id=$2 AND outcome_sequence=1),'null'::jsonb)`, uuid.MustParse(node), expected))
+		h.note("generated_local_ack", document([]byte(ackJSON)))
+		h.note("generated_central_receipt_and_ack", central)
+		h.note("generated_delivery_counts", map[string]int{"outbox": outboxCount, "history": historyCount})
+		flush := h.run("generated_repeat_flush", installedUpdater, "flush", "--config", installerConfig)
+		afterGenerated := h.central("central_generated_after_flush", node)
+		h.check("generated_delivery", err == nil && errOutbox == nil && errHistory == nil && outboxCount == 0 && historyCount == 1 && hash == result.text("payload_hash") && sameJSON(marshalDoc(result), central["payload"]) && sameJSON([]byte(ackJSON), central["ack"]) && installerCentralSuccess(beforeGenerated, candidate.ID.String()) && flush.Exit == 0 && sameJSON(marshalDoc(beforeGenerated), marshalDoc(afterGenerated)))
+	}
 	key := uuid.NewString()
 	ack := h.submit("success_submission", result, key)
 	beforeReplay := h.central("central_after_success", node)

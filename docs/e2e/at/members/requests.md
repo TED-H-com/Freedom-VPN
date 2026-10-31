@@ -1,22 +1,48 @@
 # Members requests and external blockers
 
-Current full-case status and evidence: [summary.md](summary.md). Follow-up 9 run
+Current full-case status and evidence: [summary.md](summary.md). Follow-up 10 run
+`2be2d32f` is immutable in [follow-up 10](history/follow-up-10/RUN.md), with its
+[35-file checksum index](history/follow-up-10/SHA256SUMS) (D-098). Follow-up 9 run
 `11e305fe` is immutable in [follow-up 9](history/follow-up-9/RUN.md), with its
 [33-file checksum index](history/follow-up-9/SHA256SUMS) (D-098). Historical
 run `69f92f49` and its requests are immutable in [follow-up 8](history/follow-up-8/requests.md),
 with [32-file checksum index](history/follow-up-8/SHA256SUMS) (D-098).
 
-## Follow-up 10 — 2026-10-31 (D-102, D-126, D-128)
+## Follow-up 11 — 2026-10-31 (D-098, D-102, D-129, D-132)
+
+Run `7edb263f-1f6e-4f94-9e8e-26099f96a699`, harness `33abb2fd`, baseline
+`96ec0630` (devstack 20 #343, agent-core 28 #344, netlab 20 #336).
+**2 complete cases pass / 6 blocked / 2 fail; 558 pass / 5 blocked / 3 fail checks.**
+AT02's finite-expiry reader row and AT20's unchanged before-TTL row pass as new
+measurements; F10-02/F10-03 stay historically failed and unattributed.
+F10-01 is closed by netlab 20; F10-04 is closed under D-129.
+
+The unchanged full AT09 sequence recovers at generation **30 → 30**, serving
+in **6.032389860 s**, first counted byte in **11.399224550 s**, with three
+D-126-valid provisional reports (including the original mixed safety shape).
+The initial tc rejection remains in the full capture. This timing differs from
+follow-up 10 on the baseline that includes [agent-core 28](../../../node/followup28-iso-f6-03-2026-10-31.md);
+no causal latency comparison is claimed. The full case still fails its
+MTU-1280 row, and all five unavailable selectors remain blocked with their
+resource reasons. No forced generation, state repair or topology repair.
+
+**Nine pending request groups:** the six carried groups (F8-02; F4-03;
+F4-04; F4-10; F4-05/F4-07; F4-06), plus F11-01/F11-02/F11-03 below.
+The two historical diagnostic-export requests are answered, with original
+failure attribution still unavailable. No new request is filed outside this
+owned register.
+
+## Historical follow-up 10 — 2026-10-31 (D-102, D-126, D-128)
 
 Baseline `d3e9a0f1` includes agent-core 27 (#325), wire-nodes 32 (#321) and
 netlab 19 (#318). **F9-01 is closed as a predicate mismatch under D-126**;
 see the producer/central answers in its section below. The replay accepts the
 three original provisional observations, including the mixed safety report,
 and rejects unexplained safety codes. It does not rewrite the archived failed
-run or prove live recovery. The fresh full mutation sequence is recorded in
-[RUN.md](RUN.md); full-case status continues to include resource blockers.
+run or prove live recovery. That full mutation sequence is recorded in
+[archived RUN.md](history/follow-up-10/RUN.md); full-case status continues to include resource blockers.
 
-**Fresh run `2be2d32f`: 2 pass / 6 blocked / 2 fail; 560 / 5 / 2 subchecks.**
+**Historical run `2be2d32f`: 2 pass / 6 blocked / 2 fail; 560 / 5 / 2 subchecks.**
 AT09 has 38 pass / 5 blocked / 0 fail checks, with live mixed-report acceptance
 and recovery, but the full sequence produced generation 29, not 30 (F10-04).
 F10-02 (AT02 unreadable sample) and F10-03 (AT20 before-TTL cache result) remain
@@ -100,6 +126,35 @@ owns the exact-sequence decode/capture**: full payload-free TCP and outer
 headers, capture completeness and endpoint read/write/partial-line counts,
 with the original 12-second deadline and 64,064-byte requirement. The original
 11,011-byte failure remains failed; the follow-up 9 MTU-1280 pass is no fix proof.
+
+**Follow-up 11 answer, 2026-10-31:**
+[Devstack 20's instrumented failure](../../runs/2026-10-31/followup20/capture-cce1a688/README.md),
+run `cce1a688`, transfers **10,010 / 64,064 bytes in 12,011 ms at MTU 1280**
+on **attempt 1 of 3**; the campaign stops after that failure. Nineteen reverse
+outer IPv4 datagrams of length **1,340** are absent at the member; all seventeen
+of length **1,132** arrive. No PTB is captured. Endpoint counts, full payload-free
+headers, original pcap pins, TCP_INFO and capture limits are retained there.
+**Netlab 21 owns interpretation.** Receive-link MTU rejection remains an
+inference, not an established exact drop reason. This new failure does not
+rewrite the historical members boundary or any later native bulk measurement.
+
+**New members follow-up 11 measurement, 2026-10-31:** full AT09 is
+**fail, 37 pass / 5 blocked / 1 fail**. The dual/1280 row returns
+**13,013 / 64,064 bytes in 12,010 ms**, `bulk_echo_incomplete` / endpoint
+`timeout`, with **direct P2P IPv6 underlay selected both before and after**.
+The payload is IPv4 (D-123). Endpoint write/read counts are **64,108 / 13,081**,
+with **13 complete lines**, zero partial-line bytes, `bytes_acked=64109`,
+`notsent_bytes=0`, and `total_retrans=0` in the retained client TCP_INFO.
+Named device counters increase **66,216 upload / 38,241 download** bytes.
+All three MTU-1500 rows pass (64,064 bytes in 2 / 1 / 1 ms).
+[Exact failed row](F11-F8-02-mtu1280.json), [all rows](NATIVE.md).
+
+This new failed transfer remains assigned to **netlab 21** with F8-02. Its
+IPv6 underlay and 13,013-byte boundary are distinct from devstack 20's IPv4
+outer-datagram capture and the historical 11,011-byte members failure. No
+per-datagram capture is claimed for this run, and the client TCP_INFO alone
+does not identify the lost response hop. No MTU/MSS workaround, retry or
+assertion change is made.
 
 ### F9-01 — mixed provisional lease and tc-rejection observation, 2026-10-31
 
@@ -218,20 +273,18 @@ No request to another lane is needed for this correction.
 
 ## Follow-up 10 pin request — 2026-10-31 (D-098, D-102)
 
-### F10-01 — netlab attribution source pin still names mutable AT09
+### F10-01 — netlab attribution source pin, closed 2026-10-31
 
-Owner: **netlab / orchestrator**. This is an evidence-index correction, not a
-new runtime failure. `docs/poc/G2-followup19-evidence/source-pins.json` points
-its members input at `docs/e2e/at/members/AT09.json`, while SHA-256
-`c89ba7b98285a0883889c83455ed24368e1b73859978fe11a1f008012d09ea3c`
-identifies the original failure in
-[history/follow-up-8/AT09.json](history/follow-up-8/AT09.json). The root file
-already held follow-up 9 at this task's start. Please change that pin's path
-to the immutable archive, retaining its digest, and update the original-members
-link in `docs/poc/G2-f802-native-attribution-2026-10-31.md` likewise.
-Both files are outside this lane and remain untouched; only this correction
-is deferred. The follow-up 8 archive and all 13 handover snapshots still match.
-The original failure's attribution and devstack 19 capture request are unchanged.
+[Netlab 20, PR #336](https://github.com/TED-H-com/Freedom-VPN/pull/336)
+corrects `docs/poc/G2-followup19-evidence/source-pins.json` to
+[history/follow-up-8/AT09.json](history/follow-up-8/AT09.json), retaining SHA-256
+`c89ba7b98285a0883889c83455ed24368e1b73859978fe11a1f008012d09ea3c`.
+The corresponding attribution link is corrected on this baseline. Both files
+were verified read-only. D-132 limits product-test pins to immutable `history/`
+paths; living members root evidence may be replaced. The unchanged provenance
+text in `internal/nodes/testdata/d126-mixed-observation.txt` names the original
+follow-up 9 run; its original source is preserved in the follow-up 9 archive.
+No outside-owned file or handover snapshot is edited.
 
 ## Follow-up 10 new failure — 2026-10-31 (D-102)
 
@@ -240,7 +293,7 @@ The original failure's attribution and devstack 19 capture request are unchanged
 Owners: **members harness / devstack counter reader**, with **agent-core / netlab**
 if the missing read is traced to enforcement. Run `2be2d32f-bfd9-46f5-bf29-afaa6617ae94`,
 harness `731be5a7`, retains **AT02 fail: 121 pass / 0 blocked / 1 fail**.
-[`persistent withdrawal member-a3`](F10-02-withdrawal.json) has 234 samples;
+[`persistent withdrawal member-a3`](history/follow-up-10/F10-02-withdrawal.json) has 234 samples;
 the one at `2026-10-31T13:35:45.333735552Z` has `read_ok=false` and counters
 `Present=false`, while the transport status is running without an error.
 The adjacent reads succeed. The current capture does not retain the counter
@@ -256,9 +309,32 @@ read to succeed, so **the failure is retained without a retry or relaxation**.
 
 Please expose the bounded counter-read error category and correlate the failed
 read with the original enforcement/read timestamps before attributing it.
-[AT02.json](AT02.json) keeps the complete mutation evidence; the linked capture
+[Archived AT02.json](history/follow-up-10/AT02.json) keeps the complete mutation evidence; the linked capture
 copies the failed check and all 234 samples by JSON value. No product or
 persistent-withdrawal assertion was changed in this follow-up.
+
+**Follow-up 11 diagnostic answer, 2026-10-31:**
+[Devstack 20](../../RESPONSES.md#members--2026-10-31-follow-up-20-f10-02--f10-04-d-102)
+adds reader categories, independent status diagnosis and same-boot monotonic
+enforcement brackets. Runs `218e18c9` (214 samples) and `977efa83` (247 samples,
+494 producer joins to 242 trace records) have no failed read. The historical
+`13:35:45.333735552Z` error cannot be recovered: **F10-02 remains historically
+failed and unattributed**. Members 11 enables the observer before enrollment,
+retains both reader diagnoses, rejects incomplete joins and keeps the existing
+every-read-success predicate with no retry. Its new result is a separate row.
+
+**New follow-up 11 measurement, 2026-10-31:** run `7edb263f` passes the
+unchanged finite-expiry withdrawal check: **186/186 reads succeed**, counter
+and status categories all `none`, both last reply increments at
+`18:34:36.591993718Z`, **408.006282 ms before** the `18:34:37Z` deadline.
+Senders remain active, counters stabilize, and sampling extends through the
+original target-plus-four-second window. Across the two withdrawal checks,
+**214 samples / 428 before-after producer records** join the **798-record**
+gap-free stream, including renewals and explicit baseline/heartbeat sources.
+[Full producer stream](AT02-enforcement-timing.json), [AT02](AT02.json).
+The diagnostic-export request is answered; no failed reader sample recurs.
+Full AT02 still **fails 121/0/2** on the separate F11-02/F11-03 checks below.
+This does not repair or attribute historical F10-02.
 
 ### F10-03 — AT20 positive cache changes before the retained TTL, 2026-10-31
 
@@ -266,7 +342,7 @@ Owners: **devstack/native DNS fixture / dns-publish**, with the members harness
 for query-path evidence. Run `2be2d32f`, harness `731be5a7`, retains **AT20 fail:
 80 pass / 0 blocked / 1 fail**. The unchanged `positive/negative cache before
 TTL` assertion fails; the per-type DNS filtering/RCODE/SOA/TTL rows still pass.
-[Cache capture](F10-03-cache.json), [complete AT20 evidence](AT20.json).
+[Cache capture](history/follow-up-10/F10-03-cache.json), [complete AT20 evidence](history/follow-up-10/AT20.json).
 
 The initial positive query at `13:52:11Z` returns the old `other_ipv4` answer
 with TTL 10 (2,502 ms query duration). After the authority-only change, at
@@ -282,25 +358,133 @@ selection/cache receipts and the authority phase timestamps before assigning
 cause. Preserve this failed before-TTL row. Positive IDNA, production resolver
 distribution and platform requests remain open independently.
 
-### F10-04 — full sequence yielded generation 29, not requested 30, 2026-10-31
+**Follow-up 11 diagnostic answer, 2026-10-31:**
+[Devstack 20](../../RESPONSES.md#members--dns-publish--2026-10-31-follow-up-20-f10-03-d-102)
+retains 36/36 complete query traces in `cce1a688`. Its initial positive and
+before-TTL replies identify primary, old class, TTL 10 then 9; the latter has
+no authority exchange (inferred hit only). After TTL, primary returns the
+private class with TTL 10 and an observed authority exchange. Authority serial
+1002 after the before-TTL query is a separate sample, not the cached A record's
+serial. Negative policy cache state stays unknown unless separately attributable.
+The historical **2,502 ms query and premature changed answer remain failed and
+unattributed**; the missing responder cannot be recovered. Members 11 preserves
+the unchanged assertion, the complete shared `dns_trace`, and the distinction
+between native milliseconds and broader wrapper/query bounds. Multiple matches
+stay ambiguous; no private AdGuard cache flag is claimed.
 
-Owner: **members / devstack / orchestrator qualification review**. The complete
-unchanged mutation order ran on baseline `d3e9a0f1`, harness `731be5a7`, run
-`2be2d32f`. `RestartNodeNamespace90` observed desired and applied **29 → 29**,
-not the requested generation 30. No extra mutation, state/topology repair or
-generation bump was made to force the number. [Complete capture](AT09-restart.json)
-and the `same-generation D-067 restart recovery and lease sequence` row in
-[AT09.json](AT09.json) retain the actual values.
+**New follow-up 11 measurement, 2026-10-31:** run `7edb263f` keeps AT20
+**blocked, 81 pass / 0 blocked / 0 fail** on its resource boundaries, with the
+unchanged cache assertion passing. All **39/39 native query traces** are
+complete and uniquely identify **primary**. Initial positive: `other_ipv4`,
+TTL **10**, observed authority exchange, separately sampled authority serial
+**1001**. Before TTL at `18:50:32.944519920Z`: primary still returns
+`other_ipv4`, TTL **9**, **no authority exchange** (inferred positive hit only),
+while the authority sample is **1002**. After TTL: `private_ipv4`, TTL **10**,
+observed exchange, authority sample **1002**. [Full AT20](AT20.json),
+[cache trace](F11-AT20-cache.json).
 
-Recovery passed at generation 29: serving in 15.751594344 s, first counted byte
-in 21.357052110 s; three provisional reports satisfy D-126 without lease_expired.
-All 38 executed AT09 checks pass, five selector rows remain blocked, and the
-complete case stays blocked. This is **not exact generation-30 qualification**.
-The original generation-30 F8-01 closure remains the immutable follow-up 9 run,
-and the offline D-126 test replays that original generation-30 sequence.
+Each positive native probe reports **1 ms**. Their broader retained query-call
+bounds are approximately **42.558 / 33.577 / 40.232 ms**; the later
+`authority_read_at` also shows separate trace-collection overhead. Negative
+before-TTL remains NXDOMAIN / SOA TTL **1**, with SOA serial **1001** in the
+resolver receipt while the separate authority sample is **1002**; its cache
+state remains **unknown**. No private AdGuard flag or cached-A serial is claimed.
+The trace-export request is answered, with no new premature answer in this run.
+The original 2,502 ms query and premature answer remain failed and unattributed;
+a passing rerun proves no historical TTL fix. Dns-publish 9 is not part of this
+run's baseline and supplies no claim here.
 
-Please reconcile the generation-producing history for a deterministic exact-30
-reproduction. The reason this
-unchanged full sequence produced one fewer generation is not attributed by the
-capture. No passing subset or recovery result closes the full case, and no
-second run is used to replace the two new failures elsewhere in this run.
+### F10-04 — same-generation qualification, closed 2026-10-31 under D-129
+
+The complete unchanged mutation order on baseline `d3e9a0f1`, harness
+`731be5a7`, run `2be2d32f`, recovered at desired/applied **29 → 29**:
+serving in **15.751594344 s**, first counted byte in **21.357052110 s**,
+with **three provisional reports under D-126** and no `lease_expired`.
+[Immutable capture](history/follow-up-10/AT09-restart.json) and
+[complete AT09](history/follow-up-10/AT09.json) retain 38 pass / 5 blocked / 0 fail.
+
+**D-129 (orchestrator decision, 2026-10-31): same-generation recovery qualifies
+at whatever generation the unchanged mutation sequence yields; 30 is not a
+contract value.** This makes the generation-29 recovery qualification complete.
+[Devstack 20's F10-04 answer](../../RESPONSES.md#members--2026-10-31-follow-up-20-f10-02--f10-04-d-102)
+confirms the hooks preserve the product-issued generation and add no mutation
+to force 30. Its earlier exact-30 reconciliation request is superseded by D-129.
+There is no forced generation, state repair or topology repair.
+The original generation-30 F8-01 closure remains the immutable
+[follow-up 9 run](history/follow-up-9/RUN.md). Recovery qualification does not
+pass the complete AT09 case while any selector row remains blocked.
+
+## Follow-up 11 new observation — 2026-10-31 (D-102)
+
+### F11-01 — AT01 initial native path does not reach the node
+
+Owner: **devstack / native integration**, with **netlab** for the first missing
+transport hop if needed. Run `7edb263f-1f6e-4f94-9e8e-26099f96a699`, harness
+`33abb2fd`, leaves AT01 **blocked**, 16 pass / 0 blocked / 0 fail subchecks,
+plus its platform blockers. The existing forwarding gate retains F4-01's
+missing-path blocker; the sleep/wake analogue and second transfer are not
+executed after this prerequisite fails. [Complete capture](F11-01-forwarding.json).
+
+At `2026-10-31T18:27:29Z`, route selection changes from `eth0` to `fvnb0` in
+the native `netbird` table. The member daemon is connected. The bounded
+controlled-origin TCP/443 probe observes **five outbound packets at member
+fvnb0, zero at node and origin**, zero origin requests and no device-byte
+increments. Both node reads are available at **generation 5**, with six member
+accept rules; all retained diagnostic counters are zero. The matching current
+generation lease is retained in [AT01.json](AT01.json).
+
+Please attribute the selected-route-to-node transport gap from this evidence;
+a generation-0 baseline or node enforcement drop is not established. No retry,
+route repair, topology repair or passing later transfer replaces this row.
+The evidence-collection check passes because its capture completed; it does
+not claim positive forwarding. The complete AT01 case remains blocked.
+
+### F11-02 — D-077 transfer starts before populated-grant serving, 2026-10-31
+
+Owner: **members harness readiness**, with **wire-nodes** only if the observed
+empty-to-populated renewal schedule needs contract review. [Capture](F11-02-capture.json),
+[accepted observations](F11-AT02-observations.json), [producer stream](AT02-enforcement-timing.json).
+Run `7edb263f` fails `D-077 re-grant counted forwarding` at `18:29:53Z`.
+The prerequisite at `18:29:39Z` passes desired/applied/latest-lease generation
+**10**, but retains **zero member grants**, forwarding false and
+`AWAITING_MEMBER_GRANTS`. The current `forwardingGate` checks generation and
+expiry, not populated-grant serving. The controlled transfer at `18:29:40Z`
+therefore observes no receipt or byte increments, generation 10 → 0, and
+`ctbase +300` bytes.
+
+Producer sequence **269** accepts the empty generation-10 lease; **270** applies
+it, and **275** records a successful agent baseline call with cause
+`awaiting_member_grants`, bracket **54921971917713–54922010047959 ns**.
+The accepted report at `18:30:09.584931Z` is subsequently serving. This supports
+a premature harness prerequisite; it does not establish a producer defect or
+an unauthorized forwarding leak. Please require actual populated-grant serving
+before the future D-077 positive probe, preserving the existing transfer assertion
+and this failed run. No readiness change, retry or rerun is made here.
+
+### F11-03 — admitted sibling control meets generation-13 rollback, 2026-10-31
+
+Owners: **agent-core / netlab**, with **devstack** for the shared
+`ObserveMemberIngress` fixture. [Complete failed check and producer window](F11-03-capture.json),
+[accepted observations](F11-AT02-observations.json). The strict ingress check at
+`18:31:56Z` fails only its positive sibling control: the revoked source increments
+`ctunku` by **1 packet / 29 bytes** with unchanged device counters and empty
+uplink/origin captures. The admitted sibling instead increments `ctbase` by
+**1 packet / 29 bytes**, with zero device upload delta and no uplink/origin packet.
+Both injections report success using the existing tun-mirred mechanism.
+
+The accepted generation-13 report is serving at `18:31:04.782079Z`, then reports
+`HEALTH_CHECK_FAILED` / `stage=apply`, `safety_check_failed`, forwarding false
+from `18:31:20.766966Z` through `18:31:56.065559Z`. The producer records failed
+applies, `apply_rollback` and `verification_HEALTH_CHECK_FAILED` baseline calls.
+For example, sequence **453** is a failed apply; **454** records successful
+rollback at **55052609280751–55052943484892 ns**; **455–456** retain verification
+baseline calls. Sequence **459** successfully applies the same generation;
+the accepted `18:31:59.629518Z` report serves again.
+
+Please attribute the failed Apply/fixture interaction from the original producer
+records. The rollback writer is recorded, but the underlying health-check
+failure is not identified by the sanitized `apply failed` report. These are
+wall-window correlations with original same-boot producer brackets; the older
+injection capture has no independent monotonic bracket, so no exact kernel
+commit timestamp or injection-caused defect is asserted. Later recovery does
+not repair the failed sibling control. No state/topology repair or retry is made.
