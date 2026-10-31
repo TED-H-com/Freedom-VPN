@@ -91,3 +91,20 @@ current decision/findings update. Tests never read a living lane AT record.
 regular AT23–AT27 blocked and unmeasured platforms distinct from local/harness
 proofs. Live document hashes in scope-review.json are checked separately from
 these historical evidence hashes.
+## Follow-up 20 — #344 cutoff
+
+`followup20-main.json` pins main 96ec0630 and seven roadmap rows (#338–#344).
+`followup20-snapshots.json` records 37 immutable inputs: 26 byte-identical source
+files, nine exact file excerpts, one merged-PR D-133 excerpt with byte offsets
+and full-message hash, and one dated, selected-field Dependabot #22 API capture.
+The alert is external status; the main-cut lockfile excerpt is separate.
+Original source links and wording in copied Markdown resolve at the source
+location/commit. The snapshots are evidence, not current operator instructions.
+
+`register19.md` and seven original entrypoint excerpts freeze follow-up 19's
+16 subtests / 13 roadmap rows / 37 original inputs. Follow-up 18 is unchanged.
+`TestHandover_Followup20Claims` separately checks the #344 dispositions, exact
+fresh gap and byte counters, stored ACK replay, immutable run verdicts, archive
+hashes, D-133 attribution and still-open measurements. No test reads a living
+AT-root file or binds another lane's mutable prose. Current owned-document
+integrity hashes stay separate in `scope-review.json`.

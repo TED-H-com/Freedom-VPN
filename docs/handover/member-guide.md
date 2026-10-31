@@ -1,7 +1,26 @@
 # Freedom VPN 會員使用手冊 / Member Guide (`docs/handover/member-guide.md`)
 
-**Current cut — [follow-up 19](follow-up-19.md) (2026-10-31 EDT):** F9-01 已依 D-126 / D-128 結案；D-129 接受世代不變的 29 → 29 重啟列，完整 AT09 仍待驗證。ISO-F6-03 是尚未修復的 AT13 產品缺陷；F8-02 原因未定。F9-01 closed; full AT09 remains blocked. ISO-F6-03 is an open product defect; F8-02 remains unattributed. Real platform qualification remains open.
-Previous cut: [follow-up 18](follow-up-18.md), through #324.
+**Current cut — [follow-up 20](follow-up-20.md) (2026-10-31 EDT):** 節點可在同次開機、原租約有效且驗證通過時接續服務；不代表實機驗收已完成。A qualifying same-boot node restart can retain service under its original lease; physical-platform acceptance remains pending. ISO-F6-03 stays open.
+Previous cut: [follow-up 19](follow-up-19.md), through #337.
+
+**2026-10-31 節點重啟與更新通知（#344 截止）：** 短暫重啟節點代理程式後，
+若仍在同一次作業系統開機、原租約尚未到期且安全檢查全部通過，可接續服務，
+但不會延長原到期時間。驗證失敗或作業系統重新開機仍會暫停會員轉送，保留控制
+連線等待安全恢復。更新結果若因缺少回報設定而待送，營運人員修復設定後會送出
+原有收據；本機更新成功不等於中央已確認。安裝程式已產生回報設定，迴路位址
+選項僅供 TEST ONLY 測試。會員不需重做更新或改動安全設定。ISO-F6-03 原因仍未
+確認，完整 AT09、實機平台與其他待測項目並未因此結案。
+
+**Node restart and update notice (2026-10-31, cutoff #344):** After a short node
+agent restart on the same OS boot, service can continue when the original lease
+is still valid and all safety checks pass. Its deadline is unchanged. Failed
+verification or an OS reboot pauses member forwarding while control access
+remains available for safe recovery. If an update receipt is pending because
+reporting settings are missing, operators repair the settings and send the
+original receipt; local update success alone is not central confirmation. The
+installer now generates reporting settings; loopback is TEST ONLY. Members
+need not repeat the update or alter safety settings. ISO-F6-03 remains
+unattributed; full AT09 and physical-platform acceptance remain pending.
 
 本文件包含繁體中文（預設語言，`zh-TW`）與英文（`en`）雙語完整說明（`AGENTS.md §3`、`§7.3`、`§8.1`–`§8.3`、`§9.2`、`§9.4`、`§10`–`§12`、`§16.3`、`§16.5`、`§18.4`–`§18.5`、`§19.1`）。
 This document provides the complete Member Guide in Traditional Chinese (`zh-TW`, primary) followed by English (`en`, secondary).
