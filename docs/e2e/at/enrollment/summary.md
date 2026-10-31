@@ -38,3 +38,7 @@ vet, untagged Go tests and whitespace checks passed. Cleanup inventory:
 See [RUN.md](RUN.md), [requests.md](requests.md), and
 [follow-up 5 archive](history/follow-up-5/README.md). Historical files remain
 byte-identical; new records use explicit SHA-256 digest labels.
+
+Final moving-main recheck: RESPONSES.md has since appeared on main, with only
+members/updates answers and no ENR-05 response. The measured worktree and
+remaining blockers are unchanged; see the dated requests entry.

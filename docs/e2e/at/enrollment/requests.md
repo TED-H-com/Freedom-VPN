@@ -216,3 +216,13 @@ an authorized delivery protocol after revocation. This run has zero historical
 bytes, so unchanged usage.db and unchanged API usage are disk/empty-history
 observations only. The full updater `final_sample` failure is not exercised.
 All owned Docker inventory is zero after teardown.
+
+### D-102 final moving-main recheck (2026-10-31)
+
+While this run was in progress, main advanced to `5ce76e9d2b1d26c49a44d77c9184d7aa73d71f31` and added
+`docs/e2e/RESPONSES.md`. Read that file directly from the main commit during
+the final audit: it contains members and updates answers only, with no
+enrollment/ENR-05 response. The measured worktree remains based on `945eff8`,
+where the file is absent. This later documentation does not close the missing
+installer-slot exports. No merge, rebase, pin update or product change was made;
+all live results retain their exact measured source.

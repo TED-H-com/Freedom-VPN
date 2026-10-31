@@ -651,3 +651,13 @@ linux/amd64 and linux/arm64 compilation. Live hardware is amd64; real arm64
 execution is not claimed. No dependency changes or tmpfs test scratch.
 Final teardown exited 0 and inventory was
 `{"containers":0,"networks":0,"volumes":0,"images":0}`.
+
+### D-102 final moving-main recheck (2026-10-31)
+
+While this run was in progress, main advanced to `5ce76e9d2b1d26c49a44d77c9184d7aa73d71f31` and added
+`docs/e2e/RESPONSES.md`. Read that file directly from the main commit during
+the final audit: it contains members and updates answers only, with no
+enrollment/ENR-05 response. The measured worktree remains based on `945eff8`,
+where the file is absent. This later documentation does not close the missing
+installer-slot exports. No merge, rebase, pin update or product change was made;
+all live results retain their exact measured source.
