@@ -1346,12 +1346,14 @@ async function enrollLiveNode(
       usage: {
         ledger_epoch: ledgerEpoch,
         meter_epoch_id: meterEpochId,
-        last_durable_event_seq: '10',
+        last_durable_event_seq: '12',
         central_acked_through: '10',
         blocked_seq: null,
-        unacked_event_count: 0,
-        unacked_payload_bytes: '0',
-        oldest_unacked_at: null,
+        unacked_event_count: 2,
+        unacked_payload_bytes: '1840',
+        oldest_unacked_at: new Date(nowMs - 30_000)
+          .toISOString()
+          .replace(/\.\d{3}Z$/, 'Z'),
         acked_archive_bytes: '4096',
       },
       update: activeUpdateObs,
@@ -3534,6 +3536,159 @@ async function main() {
                 res.end(
                   JSON.stringify({
                     resource_version: updated.rows[0]?.resource_version,
+                  }),
+                );
+                return;
+              }
+
+              if (
+                req.method === 'POST' &&
+                reqUrl.pathname === '/__e2e/setup-revision12-devices'
+              ) {
+                const targetMemberId = roleSessions.member.session.member_id;
+                const entRes = await pool.query(
+                  `SELECT m.status AS member_status, e.state AS entitlement_state
+                   FROM members m
+                   LEFT JOIN entitlements e ON e.member_id = m.id
+                   WHERE m.id = $1`,
+                  [targetMemberId],
+                );
+                if (
+                  !entRes.rows[0] ||
+                  entRes.rows[0].member_status !== 'active' ||
+                  entRes.rows[0].entitlement_state !== 'active'
+                ) {
+                  const now = new Date();
+                  const vFrom = new Date(now.getTime() - 3600_000);
+                  const vUntil = new Date(now.getTime() + 14 * 86400_000);
+                  await grantMemberEntitlementViaApi(
+                    controlBaseUrl,
+                    adminAuth,
+                    caPem,
+                    targetMemberId,
+                    seededPlan.revisionId,
+                    vFrom,
+                    vUntil,
+                    'TEST ONLY E2E revision 12 device test grant',
+                  );
+                  await pollMemberEntitlementActive(
+                    pool,
+                    targetMemberId,
+                    'setup-revision12-devices',
+                  );
+                  await drainNodeAffectingOutbox(pool, 'setup-revision12-devices-grant');
+                }
+
+                // Seed three real discovered devices; revoke one through the product API.
+                const existingAuthRes = await pool.query(
+                  `SELECT d.id, d.peer_id
+                   FROM member_devices d
+                   JOIN device_authorization_observations o ON o.device_id = d.id
+                   WHERE d.member_id = $1
+                     AND d.status = 'authorized'
+                     AND o.observed_authorized = true
+                   ORDER BY d.id`,
+                  [targetMemberId],
+                );
+                if (existingAuthRes.rows.length < 3) {
+                  const netbirdUserId = roleSessions.member.sub || 'oidc-sub-member-1';
+                  nbController.objects.users.set(netbirdUserId, {
+                    id: netbirdUserId,
+                    auto_groups: [],
+                    is_service_user: false,
+                    is_blocked: false,
+                  });
+                  const subnetOctet = Math.floor(Math.random() * 200) + 10;
+                  for (let idx = 1; idx <= 3 - existingAuthRes.rows.length; idx += 1) {
+                    const suffix = crypto.randomUUID().slice(0, 6);
+                    const peerId = `nb-peer-r12-${idx}-${suffix}`;
+                    const ip = `100.64.${subnetOctet}.${50 + idx}`;
+                    nbController.objects.peers.set(peerId, {
+                      id: peerId,
+                      name: `Revision12 Device ${idx}`,
+                      user_id: netbirdUserId,
+                      ephemeral: false,
+                      ip,
+                    });
+                  }
+                }
+                const authorizedIds = await pollMemberAuthorizedDevices(
+                  pool,
+                  targetMemberId,
+                  3,
+                  'setup-revision12-devices',
+                );
+                const [authorizedDeviceId, fencedDeviceId, revokedDeviceId] =
+                  authorizedIds;
+                const peer = await pool.query(
+                  'SELECT peer_id FROM member_devices WHERE id = $1',
+                  [fencedDeviceId],
+                );
+                const fencedPeerId = peer.rows[0].peer_id;
+                const revoke = await httpsRequest(
+                  `${controlBaseUrl}/api/v1/member/devices/${revokedDeviceId}`,
+                  {
+                    method: 'DELETE',
+                    headers: {
+                      Cookie: roleSessions.member.sessionCookie,
+                      'X-CSRF-Token': roleSessions.member.csrfToken,
+                      Origin: 'https://portal.example.invalid',
+                      'Idempotency-Key': crypto.randomUUID(),
+                    },
+                    ca: caPem,
+                  },
+                );
+                if (revoke.status !== 202)
+                  throw new Error(
+                    `Revision 12 revoke failed (${revoke.status}): ${revoke.text}`,
+                  );
+                await drainNodeAffectingOutbox(pool, 'revision12-revoke');
+
+                // Fence fencedDeviceId and withdraw it from paid groups in NetBird
+                await pool.query(
+                  `INSERT INTO device_authorization_fences(device_id, fenced_at, observed_group_ids)
+                   VALUES ($1, clock_timestamp(), '{}')
+                   ON CONFLICT (device_id) DO UPDATE SET fenced_at = clock_timestamp()`,
+                  [fencedDeviceId],
+                );
+                await pool.query(
+                  `UPDATE device_authorization_observations
+                   SET observed_authorized = false, observed_at = clock_timestamp()
+                   WHERE device_id = $1`,
+                  [fencedDeviceId],
+                );
+                for (const [, grp] of nbController.objects.groups.entries()) {
+                  if (grp.name && grp.name.startsWith('fvpn-paid-')) {
+                    grp.peers = (grp.peers || []).filter(
+                      (p) => (typeof p === 'string' ? p : p.id) !== fencedPeerId,
+                    );
+                  }
+                }
+
+                // TEST ONLY: discovery immediately authorizes eligible peers, so seed a
+                // pending device without a historical overlay binding. Retain it until
+                // the isolated database is dropped; member_devices forbids deletion.
+                const freshPendingDeviceId = crypto.randomUUID();
+                await pool.query(
+                  `INSERT INTO member_devices(id, member_id, deployment_id, peer_id, name, status, platform)
+                   VALUES ($1, $2, 'nb-dev', $3, 'Fresh Pending Tablet', 'pending', 'ios')`,
+                  [
+                    freshPendingDeviceId,
+                    targetMemberId,
+                    `nb-peer-fresh-pending-${freshPendingDeviceId}`,
+                  ],
+                );
+
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(
+                  JSON.stringify({
+                    member_id: targetMemberId,
+                    authorized_device_id: authorizedDeviceId,
+                    fenced_device_id: fencedDeviceId,
+                    fresh_pending_device_id: freshPendingDeviceId,
+                    revoked_device_id: revokedDeviceId,
+                    live_node_id: liveNode.nodeId,
+                    secondary_node_id: secondaryNode.nodeId,
                   }),
                 );
                 return;

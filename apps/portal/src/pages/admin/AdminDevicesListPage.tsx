@@ -298,12 +298,10 @@ export function AdminDevicesListPage(): React.ReactElement {
             >
               {t('admin.devices.filter.apply')}
             </button>
-          </div>
 
-          {(unconfirmedFilter !== 'all' ||
-            statusFilter !== 'all' ||
-            memberIdFilter.trim().length > 0) && (
-            <div className="form-field">
+            {(unconfirmedFilter !== 'all' ||
+              statusFilter !== 'all' ||
+              memberIdFilter.trim().length > 0) && (
               <button
                 type="button"
                 className="btn btn-secondary"
@@ -315,12 +313,12 @@ export function AdminDevicesListPage(): React.ReactElement {
               >
                 {t('admin.devices.filter.clearFilters')}
               </button>
-            </div>
-          )}
+            )}
+          </div>
         </form>
 
         <div className="table-wrapper">
-          <table className="data-table" data-testid="admin-devices-table">
+          <table className="data-table device-table" data-testid="admin-devices-table">
             <thead>
               <tr>
                 <th>{t('admin.devices.col.member')}</th>
