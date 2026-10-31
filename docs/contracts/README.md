@@ -9,7 +9,7 @@ The product contract is [`docs/spec/PROJECT_SPEC.zh-TW.md`](../spec/PROJECT_SPEC
 
 | Artifact | Path | Kind |
 |---|---|---|
-| OpenAPI 3.0.3 document, 49 endpoints (§14.2 to §14.4 plus D-015, D-056, D-057, D-065, ENR-02/ENR-03, D-067, D-071, D-072, D-076, D-077, SECOPS-19) | [`contracts/openapi.yaml`](../../contracts/openapi.yaml) | hand-written, **source of truth** |
+| OpenAPI 3.0.3 document, 50 endpoints (§14.2 to §14.4 plus D-015, D-056, D-057, D-065, ENR-02/ENR-03, D-067, D-071, D-072, D-076, D-077, SECOPS-19) | [`contracts/openapi.yaml`](../../contracts/openapi.yaml) | hand-written, **source of truth** |
 | JSON Schema 2020-12 for API signed or hashed documents | [`contracts/schemas/`](../../contracts/schemas) | generated from `openapi.yaml` |
 | Go types (types only, oapi-codegen v2.8.1) | [`pkg/api/api.gen.go`](../../pkg/api/api.gen.go) | generated |
 | TypeScript types (openapi-typescript 7.13.0) | [`contracts/ts/openapi.d.ts`](../../contracts/ts/openapi.d.ts) | generated |
@@ -113,7 +113,7 @@ malformed public key, and missing revocation timestamp.
 These rules are enforced by tests in `contracts/` (test names in brackets).
 
 - **Prefix and paths.** Paths are relative to the server URL `.../api/v1`.
-  JSON is UTF-8. [`TestAPI01_EndpointCountIs49`]
+  JSON is UTF-8. [`TestAPI01_EndpointCountIs50`]
 - **IDs.** Our entity, operation and request IDs are UUIDs (`format: uuid`).
   External IDs (NetBird peer, OIDC subject, provider price) are opaque strings.
   [`TestAPI01_IDTimeAndMoneyConventions`]
@@ -242,7 +242,7 @@ meanings and where those codes may appear are in [Revision 8](#revision-8).
 ## Browser role selector (D-032)
 
 `GET /auth/session` and `POST /auth/logout` are existing browser routes outside
-`/api/v1` and outside the 49-endpoint API. Their query parameter is recorded in
+`/api/v1` and outside the 50-endpoint API. Their query parameter is recorded in
 `openapi.yaml` under `x-fvpn-browser-auth`:
 
 | Parameter | Type | Presence | Cookies |
@@ -254,6 +254,71 @@ identity and logout CSRF context come from the selected cookie. The selector
 does not grant a role. The task's proposed `/api/v1/auth/*` aliases do not exist
 on main; adding them would violate the fixed endpoint count. No aliases are
 introduced by this revision.
+
+## Revision 14
+
+API version **1.10.0**. The final endpoint count is **50** (49 → 50).
+
+| Revision | API version | Operations | Change |
+|---|---|---|---|
+| 13 | 1.9.0 | 49 | Freeze signal, installer result source, `TC_FOREIGN_FILTER` |
+| 14 | 1.10.0 | 50 | Manual grant withdrawal, D-105 retired-stream hand-off, D-106 TC read-back |
+
+- **AT29 explicit withdrawal:** `POST /admin/members/{member_id}/grants/{grant_id}/revoke`
+  (`revokeMemberGrant`) requires `adminSession`, `csrfToken`, `Idempotency-Key`
+  and `ReasonRequest`. It returns `202` with `member.grant_revoke`, resource
+  `entitlement_grant:<grant_id>`, and the same audit action with the reason.
+  Missing/wrong-member grants return `404 RESOURCE_NOT_FOUND`; a new command
+  for a revoked or expired grant returns `409 STATE_CONFLICT`. Same-key replay
+  returns the original receipt. Devices it authorized move to pending through
+  D-050 / D-081 within one heartbeat. Finite expiry remains a separate AT29 case.
+  Withdrawal accepts the grant ID for either finite or open-ended grants;
+  creation and the existing grant read schema remain unchanged.
+  This follows admin POST revoke conventions and the existing grant command's
+  idempotency convention; grants have no independent ETag/version resource.
+- **D-105 / ENR-05:** `UsageBatchRequest.origin_incarnation_id` is optional and
+  non-nullable. Each batch selects exactly one original stream. Batch identity
+  remains the presenting current mTLS identity; nested events keep their original
+  identity, sequence and digest. The origin must be retired on the same node,
+  with the current incarnation enrolled strictly after retirement. Every event's
+  interval end must be at most retirement plus the retired stream's configured
+  sampling interval. Ineligible origins return whole-request `409 STATE_CONFLICT`;
+  identity mismatch remains `403 INCARNATION_MISMATCH`; out-of-window events
+  return per-event `rejected` / `VALIDATION_FAILED`. Failures are audited.
+  `UsageBatchResult.node_incarnation_id` now explicitly identifies the selected
+  original stream, so its existing ACK/result fields provide the per-stream ACK
+  without a second ACK structure. Current-stream calls keep their existing shape.
+  Central never drains automatically or accepts retired certificates. The agent
+  initiates the hand-off once at re-enrolment when its ledger survived, retries
+  until ACK, and never re-mints events. Dedup and conflict semantics are unchanged.
+- **D-106:** optional nullable `ObservationReport.tc_evidence` references closed
+  `TCReadbackEvidence`. It preserves actual read time, candidate generation
+  (not an ACK), phase and complete verifier outcome. Required nullable
+  `error_code` and `rejected` preserve unknown/no-decision states. Counts are
+  bounded at 2147483647, rows at 16, objects/actions at 4, and deciding objects
+  at 1; strings are redacted 1–32-character tokens. `sha256` hashes the RFC 8785
+  projection `{"reads": reads_total, "objects": objects_total, "truncated": truncated,
+  "tc": attachments}`, matching netlab follow-up 14. No raw matches, parameters,
+  stderr, routes, destinations or payloads. Absent/null means no retained read.
+  Existing `errors[stage=tc_evidence]` rows remain unchanged.
+- **Considered, not added:** publication-gate cause already travels in
+  `Operation.steps[].message`, including `member_forwarding_unconfirmed (lease_unconfirmed)`
+  (wire-nodes follow-up 30). No new cause field or enum.
+
+No new `ErrorCode`; `pkg/apierr/codes.go` and portal error mappings are unchanged.
+The generated `RevokeMemberGrant` composition fallback returns `501 NOT_IMPLEMENTED`
+until its runtime owner registers a handler. No runtime adoption is claimed here.
+
+| Operation or field | Implementing lane |
+|---|---|
+| `revokeMemberGrant` | wire-members follow-up 11; secops AT29 acceptance |
+| `UsageBatchRequest.origin_incarnation_id`, original-stream ACK | usage-central / usage-agent; enrollment ENR-05 and usage acceptance |
+| `ObservationReport.tc_evidence` | agent-core follow-up 25 emits; wire-nodes follow-up 31 stores/projects; isolation acceptance |
+
+Vectors cover manual withdrawal/replay/conflicts, accepted/rejected/replayed
+retired-stream events, and verified/rejected/truncated TC reads. Go schema and
+round-trip tests plus TypeScript vector/type checks validate the new surfaces;
+service eligibility and data-plane convergence remain runtime-owner work.
 
 ## Revision 13
 
@@ -803,7 +868,7 @@ through `npx`). The Redocly configuration is `contracts/redocly.yaml`
 
 ## How to add or change an endpoint
 
-1. Find the requirement in the spec. New endpoints change the current count of 49 (including D-015, D-065, ENR-03 and D-077);
+1. Find the requirement in the spec. New endpoints change the current count of 50 (including D-015, D-065, ENR-03 and D-077);
    coordinate with the orchestrator and update `specEndpoints` and
    `specStatuses` in `contracts/openapi_test.go`.
 2. Edit `contracts/openapi.yaml`: path, `operationId` (lowerCamelCase, stable),
@@ -849,6 +914,7 @@ against `x-fvpn-spec` and `x-fvpn-requirements` by `TestDocs_EndpointTable`.
 | `GET /admin/members/{member_id}` | `getMember` | adminSession | 200 | §14.2, §9.2 | MEM01 BILL02 ENT01 |
 | `PATCH /admin/members/{member_id}` | `updateMember` | adminSession + csrfToken | 200,202 | §14.2, §9.2, §14.5 | MEM03 BILL02 ENT02 API01 |
 | `POST /admin/members/{member_id}/grants` | `createMemberGrant` | adminSession + csrfToken | 202 | §14.2, §9.2, §15.2 | BILL02 ENT01 |
+| `POST /admin/members/{member_id}/grants/{grant_id}/revoke` | `revokeMemberGrant` | adminSession + csrfToken | 202 | §14.2, §9.2, §9.4, §15.2 | BILL02 ENT02 MEM03 |
 | `GET /admin/devices` | `listAdminDevices` | adminSession | 200 | §14.2, §17.4, §9.4 | MEM03 DATA01 |
 | `POST /admin/members/{member_id}/devices/{device_id}/authorize` | `authorizeMemberDevice` | adminSession + csrfToken | 202 | §14.2, §17.4, §9.4 | MEM03 DATA01 |
 | `GET /admin/policies` | `listPolicies` | adminSession | 200 | §14.2, §15.3 | FUP01 DNS01 UPD04 |
@@ -937,7 +1003,8 @@ unchanged.
   (same key, different hash) and 422 (invalid event) outcomes are reported per
   event as `conflict` with `USAGE_EVENT_CONFLICT` and `rejected` with
   `VALIDATION_FAILED`/`METER_PATH_INVALID`, and `blocked_seq` names the event
-  that stops ACK progress. Whole-request 403, 409 `LEDGER_EPOCH_MISMATCH`, 422
+  that stops ACK progress. D-105 also rejects ineligible origins with whole-request
+  409 `STATE_CONFLICT`. Whole-request 403, 409 `LEDGER_EPOCH_MISMATCH`, 422
   and 503 remain.
 - Field names follow each spec example: the update intent and update result use
   `incarnation_id` (§13.10), other documents use `node_incarnation_id`.

@@ -15,7 +15,7 @@ import (
 
 // specEndpoints is the endpoint table of §14.2 to §14.4, relative to /api/v1.
 var specEndpoints = []string{
-	// §14.2 Admin (30, including D-057, D-065, ENR-03 and D-077)
+	// §14.2 Admin (31, including D-057, D-065, ENR-03, D-077 and AT29)
 	"GET /admin/fleet-config",
 	"PUT /admin/fleet-config",
 	"GET /admin/groups",
@@ -35,6 +35,7 @@ var specEndpoints = []string{
 	"GET /admin/members/{member_id}",
 	"PATCH /admin/members/{member_id}",
 	"POST /admin/members/{member_id}/grants",
+	"POST /admin/members/{member_id}/grants/{grant_id}/revoke",
 	"POST /admin/members/{member_id}/devices/{device_id}/authorize",
 	"GET /admin/policies",
 	"POST /admin/policies",
@@ -71,7 +72,8 @@ var specEndpoints = []string{
 
 // specStatuses holds the success statuses listed in §14.2 to §14.4.
 var specStatuses = map[string][]string{
-	"GET /admin/fleet-config": {"200"}, "PUT /admin/fleet-config": {"200"},
+	"POST /admin/members/{member_id}/grants/{grant_id}/revoke": {"202"},
+	"GET /admin/fleet-config":                                  {"200"}, "PUT /admin/fleet-config": {"200"},
 	"GET /admin/groups": {"200"}, "POST /admin/groups": {"201"}, "GET /agent/resolver-documents/{document_id}": {"200"},
 	"GET /admin/nodes": {"200"}, "POST /admin/enrollments": {"201"}, "GET /admin/enrollments/{enrollment_id}": {"200"},
 	"POST /admin/enrollments/{enrollment_id}/revoke": {"200"}, "GET /admin/nodes/{node_id}": {"200"},
@@ -115,12 +117,12 @@ func operations(t *testing.T) []opInfo {
 	return ops
 }
 
-func TestAPI01_EndpointCountIs49(t *testing.T) {
+func TestAPI01_EndpointCountIs50(t *testing.T) {
 	ops := operations(t)
-	if len(ops) != 49 {
-		t.Fatalf("got %d operations, want 49 (§14.1, D-015/D-056/D-057/D-065, ENR-03, D-077)", len(ops))
+	if len(ops) != 50 {
+		t.Fatalf("got %d operations, want 50 (§14.1, D-015/D-056/D-057/D-065, ENR-03, D-077)", len(ops))
 	}
-	if len(specEndpoints) != 49 {
+	if len(specEndpoints) != 50 {
 		t.Fatalf("spec table has %d entries", len(specEndpoints))
 	}
 	var got []string
@@ -584,7 +586,7 @@ func TestAPI01_OptionalNullableFields(t *testing.T) {
 			if p.Value != nil && p.Value.Nullable && !req[name] {
 				if (v.path == "UpdateTarget#" && (name == "policy_generation" || name == "policy_refs" || name == "previous_release_id" || name == "health" || name == "candidate_health")) ||
 					(v.path == "DnsServiceConfig#" && name == "resolver_document") ||
-					(v.path == "ObservationReport#" && name == "dns_policy_evidence") ||
+					(v.path == "ObservationReport#" && (name == "dns_policy_evidence" || name == "tc_evidence")) ||
 					(v.path == "DesiredState#" && name == "egress_probe") ||
 					(v.path == "PolicyDefinition#" && name == "threat_feed_status") ||
 					(v.path == "NodeDetail#/allOf/1" && (name == "dns_policy_evidence" || name == "identity_conflict" || name == "usage_outbox")) ||

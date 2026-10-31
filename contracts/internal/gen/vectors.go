@@ -407,6 +407,7 @@ func vectorsAndExamples() (map[string][]byte, error) {
 	out["vectors/canonical-json.json"] = cj
 	out["vectors/decimal-strings.json"] = decimalStringVectors()
 
+	revision14Files(out)
 	out["examples/invalid/reasons.generated.json"] = pretty(reasons)
 	return out, nil
 }

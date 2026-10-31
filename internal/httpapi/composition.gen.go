@@ -201,6 +201,19 @@ func Compose(sets ...any) (*Composite, error) {
 		n := 0
 		for _, s := range sets {
 			if _, ok := s.(interface {
+				RevokeMemberGrant(context.Context, gen.RevokeMemberGrantRequestObject) (gen.RevokeMemberGrantResponseObject, error)
+			}); ok {
+				n++
+			}
+		}
+		if n > 1 {
+			return nil, fmt.Errorf("duplicate handler: RevokeMemberGrant")
+		}
+	}
+	{
+		n := 0
+		for _, s := range sets {
+			if _, ok := s.(interface {
 				ListNodes(context.Context, gen.ListNodesRequestObject) (gen.ListNodesResponseObject, error)
 			}); ok {
 				n++
@@ -804,6 +817,17 @@ func (c *Composite) CreateMemberGrant(ctx context.Context, r gen.CreateMemberGra
 			CreateMemberGrant(context.Context, gen.CreateMemberGrantRequestObject) (gen.CreateMemberGrantResponseObject, error)
 		}); ok {
 			return h.CreateMemberGrant(ctx, r)
+		}
+	}
+	return nil, errNotImplemented
+}
+
+func (c *Composite) RevokeMemberGrant(ctx context.Context, r gen.RevokeMemberGrantRequestObject) (gen.RevokeMemberGrantResponseObject, error) {
+	for _, s := range c.sets {
+		if h, ok := s.(interface {
+			RevokeMemberGrant(context.Context, gen.RevokeMemberGrantRequestObject) (gen.RevokeMemberGrantResponseObject, error)
+		}); ok {
+			return h.RevokeMemberGrant(ctx, r)
 		}
 	}
 	return nil, errNotImplemented

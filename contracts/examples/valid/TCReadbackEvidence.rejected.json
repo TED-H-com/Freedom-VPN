@@ -1,0 +1,39 @@
+{
+  "attachments": [
+    {
+      "attachment": "ingress",
+      "interface": "fvwan0",
+      "objects": [
+        {
+          "actions": [
+            "mirred"
+          ],
+          "kind": "matchall",
+          "parent": "ffff:"
+        }
+      ]
+    }
+  ],
+  "candidate_generation": "18446744073709551615",
+  "error_code": "TC_FOREIGN_FILTER",
+  "objects_total": 1,
+  "phase": "verify",
+  "read_at": "2026-10-28T15:00:29Z",
+  "reads_total": 1,
+  "rejected": {
+    "attachment": "ingress",
+    "interface": "fvwan0",
+    "objects": [
+      {
+        "actions": [
+          "mirred"
+        ],
+        "kind": "matchall",
+        "parent": "ffff:"
+      }
+    ]
+  },
+  "sha256": "c57355cb80736e4023b422916bb7c002e1bb771dd134042dbcc1e9b1bc0862bf",
+  "truncated": false,
+  "verified": false
+}

@@ -340,5 +340,17 @@
     "pointer": "/max_offline_lease_seconds",
     "keyword": "minimum",
     "note": "The test-lab floor is 60 seconds (D-065). Out of range is 422 VALIDATION_FAILED."
+  },
+  "TCReadbackEvidence.raw-matches.json": {
+    "kind": "schema",
+    "pointer": "",
+    "keyword": "additionalProperties",
+    "note": "D-106 closed privacy projection and exact decimal generation."
+  },
+  "TCReadbackEvidence.numeric-generation.json": {
+    "kind": "schema",
+    "pointer": "/candidate_generation",
+    "keyword": "type",
+    "note": "D-106 closed privacy projection and exact decimal generation."
   }
 }
