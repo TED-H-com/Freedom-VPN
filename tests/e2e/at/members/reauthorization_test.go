@@ -3,12 +3,14 @@
 package members
 
 import (
+	"crypto/sha256"
 	"encoding/json"
 	"fmt"
 	"net/url"
 	"strings"
 	"time"
 
+	"github.com/TED-H-com/Freedom-VPN/internal/auth"
 	"github.com/TED-H-com/Freedom-VPN/internal/entitlement"
 	memberdomain "github.com/TED-H-com/Freedom-VPN/internal/members"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
@@ -233,8 +235,21 @@ func (l *live) replaceFixtureGrant(r *record, b *browser, rev uuid.UUID) bool {
 	if err != nil {
 		return false
 	}
+	// Bootstrap admin credentials deliberately have no public-subject ID.
+	// Resolve the actor from this authenticated admin session, never from a
+	// NetBird credential or an arbitrary administrator row.
 	var actor uuid.UUID
-	if l.pool.QueryRow(l.ctx, `SELECT id FROM admin_identities WHERE subject=$1`, l.admin.cred.ID).Scan(&actor) != nil {
+	origin, _ := url.Parse("https://portal.example.invalid:8443")
+	for _, cookie := range l.admin.client.Jar.Cookies(origin) {
+		if cookie.Name != auth.AdminSessionCookie {
+			continue
+		}
+		hash := sha256.Sum256([]byte(cookie.Value))
+		err = l.pool.QueryRow(l.ctx, `SELECT admin_id FROM admin_sessions WHERE token_hash=$1 AND absolute_expires_at>clock_timestamp()`, hash[:]).Scan(&actor)
+		break
+	}
+	r.check("D-081 fixture administrator", "actor resolved from current admin session", fmt.Sprintf("resolved=%t", actor != uuid.Nil && err == nil), "hash own cookie in memory; read matching unexpired admin_sessions row; no token emitted", actor != uuid.Nil && err == nil)
+	if actor == uuid.Nil || err != nil {
 		return false
 	}
 	rows, err := l.pool.Query(l.ctx, `SELECT id FROM entitlement_grants WHERE member_id=$1 AND revoked_at IS NULL`, b.member)

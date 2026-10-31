@@ -1,0 +1,464 @@
+{
+  "node_incarnations": {
+    "node": "01a1900b-e5e4-7130-86d4-4b52c6f495e6"
+  },
+  "complete": true,
+  "id": "AT05",
+  "title": "Three node join sources",
+  "spec": [
+    "§19.1",
+    "§19 AT05",
+    "NODE01 NODE04 ENR01 ENR04 PKG01"
+  ],
+  "status": "blocked",
+  "observations": [
+    {
+      "name": "devstack f14 restart policy worker",
+      "detail": "pass; expected: unless-stopped; actual: unless-stopped; command: docker inspect own container HostConfig.RestartPolicy.Name"
+    },
+    {
+      "name": "devstack f14 restart policy control",
+      "detail": "pass; expected: unless-stopped; actual: unless-stopped; command: docker inspect own container HostConfig.RestartPolicy.Name"
+    },
+    {
+      "name": "devstack f14 restart policy netbird",
+      "detail": "pass; expected: unless-stopped; actual: unless-stopped; command: docker inspect own container HostConfig.RestartPolicy.Name"
+    },
+    {
+      "name": "shared serving baseline",
+      "detail": "pass; expected: verified tree-built amd64/arm64 boot and active nonempty release policy; actual: prepared=true; boot_present=true; artifact_digests=4; command: e2e.PrepareServingBaseline(ctx, admin.Client, csrf, false)"
+    },
+    {
+      "name": "D-057 group A",
+      "detail": "pass; expected: 201; actual: HTTP 201 ; command: POST /admin/groups"
+    },
+    {
+      "name": "D-057 group B",
+      "detail": "pass; expected: 201; actual: HTTP 201 ; command: POST /admin/groups"
+    },
+    {
+      "name": "create fair_use",
+      "detail": "pass; expected: 201; actual: HTTP 201 ; command: POST /admin/policies"
+    },
+    {
+      "name": "activate fair_use",
+      "detail": "pass; expected: 202 pending; actual: HTTP 202 ; command: POST /admin/policies/{id}/activate"
+    },
+    {
+      "name": "active fair_use",
+      "detail": "pass; expected: active_revision_id matches issued revision; actual: converged=true; command: poll product policy_definitions projection"
+    },
+    {
+      "name": "create domain_rule_set",
+      "detail": "pass; expected: 201; actual: HTTP 201 ; command: POST /admin/policies"
+    },
+    {
+      "name": "activate domain_rule_set",
+      "detail": "pass; expected: 202 pending; actual: HTTP 202 ; command: POST /admin/policies/{id}/activate"
+    },
+    {
+      "name": "active domain_rule_set",
+      "detail": "pass; expected: active_revision_id matches issued revision; actual: converged=true; command: poll product policy_definitions projection"
+    },
+    {
+      "name": "create dns_profile",
+      "detail": "pass; expected: 201; actual: HTTP 201 ; command: POST /admin/policies"
+    },
+    {
+      "name": "activate dns_profile",
+      "detail": "pass; expected: 202 pending; actual: HTTP 202 ; command: POST /admin/policies/{id}/activate"
+    },
+    {
+      "name": "active dns_profile",
+      "detail": "pass; expected: active_revision_id matches issued revision; actual: converged=true; command: poll product policy_definitions projection"
+    },
+    {
+      "name": "create plan",
+      "detail": "pass; expected: 201; actual: HTTP 201 ; command: POST /admin/policies"
+    },
+    {
+      "name": "activate plan",
+      "detail": "pass; expected: 202 pending; actual: HTTP 202 ; command: POST /admin/policies/{id}/activate"
+    },
+    {
+      "name": "active plan",
+      "detail": "pass; expected: active_revision_id matches issued revision; actual: converged=true; command: poll product policy_definitions projection"
+    },
+    {
+      "name": "create plan",
+      "detail": "pass; expected: 201; actual: HTTP 201 ; command: POST /admin/policies"
+    },
+    {
+      "name": "activate plan",
+      "detail": "pass; expected: 202 pending; actual: HTTP 202 ; command: POST /admin/policies/{id}/activate"
+    },
+    {
+      "name": "active plan",
+      "detail": "pass; expected: active_revision_id matches issued revision; actual: converged=true; command: poll product policy_definitions projection"
+    },
+    {
+      "name": "projected catalogue",
+      "detail": "pass; expected: two active finite plans, distinct exit groups, no SQL fixtures; actual: plan_projected=true; command: read worker plan_revisions projection after API activation"
+    },
+    {
+      "name": "installer reservation",
+      "detail": "pass; expected: 201, one-time secret, no-store; actual: HTTP 201 ; secret_present=true; no_store=true; command: POST /admin/enrollments"
+    },
+    {
+      "name": "installer idempotent replay",
+      "detail": "pass; expected: same node, secret null; actual: HTTP 201 ; same_node=true; secret_available=false; command: repeat POST with same Idempotency-Key"
+    },
+    {
+      "name": "installer enrollment",
+      "detail": "pass; expected: node-owned mTLS incarnation appears; actual: incarnation_present=true; command: node entrypoint: fvpn-agent enroll; SELECT current_incarnation_id"
+    },
+    {
+      "name": "preinstalled reservation",
+      "detail": "pass; expected: 201, one-time secret, no-store; actual: HTTP 201 ; secret_present=true; no_store=true; command: POST /admin/enrollments"
+    },
+    {
+      "name": "preinstalled idempotent replay",
+      "detail": "pass; expected: same node, secret null; actual: HTTP 201 ; same_node=true; secret_available=false; command: repeat POST with same Idempotency-Key"
+    },
+    {
+      "name": "auto-report is unpublished",
+      "detail": "pass; expected: unpublished; actual: unpublished; command: SELECT publication_intent FROM nodes"
+    },
+    {
+      "name": "empty release allowlist rejected",
+      "detail": "pass; expected: 422; at least one serving release required by contract; actual: HTTP 422 VALIDATION_FAILED; command: POST /admin/policies release_support (empty negative control)"
+    },
+    {
+      "name": "runtime inventory",
+      "detail": "pass; expected: one actual node image; actual: node_image_inspected=true; node_containers=1; command: docker inspect fvpn-w4-members-node"
+    },
+    {
+      "name": "blocked",
+      "detail": "Running lab has one installer node runtime; preinstalled/cloud-init boot flavours and their package provenance are absent. A preinstalled reservation is not a boot test. The signed boot release and nonempty support policy are created through the shared PrepareServingBaseline hook; arm64 is cross-built only."
+    },
+    {
+      "name": "provenance",
+      "detail": "source=3685322b0aa247f1a52be682750f6f147cb90dc9; applied generation=1; incarnation=01a1900b-e5e4-7130-86d4-4b52c6f495e6; image/binary digests in JSON"
+    },
+    {
+      "name": "operator",
+      "detail": "needs operator run; see OPERATORS.md"
+    }
+  ],
+  "at": "2026-10-31T03:40:48Z",
+  "run_id": "63a07f95-6a73-4f6c-95d9-f10a5a22de8c",
+  "source_commit": "3685322b0aa247f1a52be682750f6f147cb90dc9",
+  "release_digests": {
+    "artifact_sha256_0.1.0_amd64": "dc04af364d7d02acfee039d257ced2f44f4d98a5f29e90c8765cd0a1a3f262f0",
+    "artifact_sha256_0.1.0_arm64": "79ff8286a305f9a4e31d295abf5c83d57fd5a06e5cd4559cc2d62e997ba21980",
+    "manifest_sha256_0.1.0": "9ce7031a500db964bf8793ea9917d566cf0821f735a16bea8d34d849b704c49d",
+    "signed_manifest_sha256_0.1.0": "a5e13416c9775e07d22870e0f26532a8c82305a0ef902d5dfd7c3c5c9ce35b31"
+  },
+  "build": {
+    "test_binary_sha256": "dbed0bb0409f01755e6afd196cbfb0052555b2ab47f390709c9fa8a8786b8610",
+    "source_commit": "3685322b0aa247f1a52be682750f6f147cb90dc9",
+    "source_dirty": false,
+    "image_digests": {
+      "adguard": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
+      "control": "sha256:8b700bea0dca14978bce52ec763aa79fc0f7b2474346523cce851e3934834a5d",
+      "coredns": "sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97",
+      "gateway": "sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce",
+      "idp": "sha256:19f36b68738674d53bd01aee2869bb3efaa938585d0d3acb9f02e6622d1f4917",
+      "member": "sha256:bdf8b90340266a4bbe77e5ab02a637f6cd7baf3271c0b09e271d525506b2e923",
+      "netbird": "sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c",
+      "node": "sha256:bdf8b90340266a4bbe77e5ab02a637f6cd7baf3271c0b09e271d525506b2e923",
+      "node-netns": "sha256:bdf8b90340266a4bbe77e5ab02a637f6cd7baf3271c0b09e271d525506b2e923",
+      "origin": "sha256:3c2c7f348609eeb460173249660ccf8f7ad6e4e1074e63cc705a6973c2eb4559",
+      "payment": "sha256:23b03dd85bbc07c9d2ac32220589580108bebd39e34a61dcb79425801182d0e5",
+      "postgres": "sha256:b91d823961cce705be26285a250edb67f332f00169c46ba3e62dccaf6c0ef52f",
+      "worker": "sha256:c024d37b65e4879c6750b149d3e1c87537e8f4e92cdcafdc5aa9086623159713"
+    },
+    "binary_sha256": {
+      "fvpn-agent": "40751013baa6412564068bc22fa61620cf02eb0cc1a06007239402dd7b36a1f5",
+      "fvpn-control": "aa72778fd91f3b8e435f94ba0f516423534b0d67fbbeac8aab70f37c626c403e",
+      "fvpn-updater": "8d38dd30cdd72d153f62d254e82df508a11bbd442e9ee390dd775310074b5576",
+      "fvpn-worker": "fa78c8a4b918c148878d0ecfa5a8372fd5e310f366a0127472325bc774a014f9"
+    },
+    "binary_vcs": {
+      "fvpn-agent": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "false",
+        "vcs.revision": "3685322b0aa247f1a52be682750f6f147cb90dc9",
+        "vcs.time": "2026-10-31T03:39:51Z"
+      },
+      "fvpn-control": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "false",
+        "vcs.revision": "3685322b0aa247f1a52be682750f6f147cb90dc9",
+        "vcs.time": "2026-10-31T03:39:51Z"
+      },
+      "fvpn-updater": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "false",
+        "vcs.revision": "3685322b0aa247f1a52be682750f6f147cb90dc9",
+        "vcs.time": "2026-10-31T03:39:51Z"
+      },
+      "fvpn-worker": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "false",
+        "vcs.revision": "3685322b0aa247f1a52be682750f6f147cb90dc9",
+        "vcs.time": "2026-10-31T03:39:51Z"
+      }
+    }
+  },
+  "policy_revision": "1",
+  "active_policy_revisions": {
+    "dns_profile": "01a1900b-d4ae-792f-8168-8a9ba79919e9",
+    "domain_rule_set": "01a1900b-cff1-7d88-b9cf-0f13a6390354",
+    "fair_use": "01a1900b-cb33-737b-bef9-2c02a3015a53",
+    "plan": "01a1900b-de32-70ab-86e0-2ccaa53ddfb1",
+    "release_support": "01a1900b-c3eb-741c-8852-3f09a8d539ee"
+  },
+  "node_incarnation": "01a1900b-e5e4-7130-86d4-4b52c6f495e6",
+  "steps": [
+    {
+      "name": "devstack f14 restart policy worker",
+      "status": "pass",
+      "expected": "unless-stopped",
+      "actual": "unless-stopped",
+      "command": "docker inspect own container HostConfig.RestartPolicy.Name",
+      "at": "2026-10-31T03:40:49Z"
+    },
+    {
+      "name": "devstack f14 restart policy control",
+      "status": "pass",
+      "expected": "unless-stopped",
+      "actual": "unless-stopped",
+      "command": "docker inspect own container HostConfig.RestartPolicy.Name",
+      "at": "2026-10-31T03:40:49Z"
+    },
+    {
+      "name": "devstack f14 restart policy netbird",
+      "status": "pass",
+      "expected": "unless-stopped",
+      "actual": "unless-stopped",
+      "command": "docker inspect own container HostConfig.RestartPolicy.Name",
+      "at": "2026-10-31T03:40:49Z"
+    },
+    {
+      "name": "shared serving baseline",
+      "status": "pass",
+      "expected": "verified tree-built amd64/arm64 boot and active nonempty release policy",
+      "actual": "prepared=true; boot_present=true; artifact_digests=4",
+      "command": "e2e.PrepareServingBaseline(ctx, admin.Client, csrf, false)",
+      "at": "2026-10-31T03:40:52Z"
+    },
+    {
+      "name": "D-057 group A",
+      "status": "pass",
+      "expected": "201",
+      "actual": "HTTP 201 ",
+      "command": "POST /admin/groups",
+      "at": "2026-10-31T03:40:53Z"
+    },
+    {
+      "name": "D-057 group B",
+      "status": "pass",
+      "expected": "201",
+      "actual": "HTTP 201 ",
+      "command": "POST /admin/groups",
+      "at": "2026-10-31T03:40:53Z"
+    },
+    {
+      "name": "create fair_use",
+      "status": "pass",
+      "expected": "201",
+      "actual": "HTTP 201 ",
+      "command": "POST /admin/policies",
+      "at": "2026-10-31T03:40:54Z"
+    },
+    {
+      "name": "activate fair_use",
+      "status": "pass",
+      "expected": "202 pending",
+      "actual": "HTTP 202 ",
+      "command": "POST /admin/policies/{id}/activate",
+      "at": "2026-10-31T03:40:55Z"
+    },
+    {
+      "name": "active fair_use",
+      "status": "pass",
+      "expected": "active_revision_id matches issued revision",
+      "actual": "converged=true",
+      "command": "poll product policy_definitions projection",
+      "at": "2026-10-31T03:40:55Z"
+    },
+    {
+      "name": "create domain_rule_set",
+      "status": "pass",
+      "expected": "201",
+      "actual": "HTTP 201 ",
+      "command": "POST /admin/policies",
+      "at": "2026-10-31T03:40:55Z"
+    },
+    {
+      "name": "activate domain_rule_set",
+      "status": "pass",
+      "expected": "202 pending",
+      "actual": "HTTP 202 ",
+      "command": "POST /admin/policies/{id}/activate",
+      "at": "2026-10-31T03:40:56Z"
+    },
+    {
+      "name": "active domain_rule_set",
+      "status": "pass",
+      "expected": "active_revision_id matches issued revision",
+      "actual": "converged=true",
+      "command": "poll product policy_definitions projection",
+      "at": "2026-10-31T03:40:56Z"
+    },
+    {
+      "name": "create dns_profile",
+      "status": "pass",
+      "expected": "201",
+      "actual": "HTTP 201 ",
+      "command": "POST /admin/policies",
+      "at": "2026-10-31T03:40:56Z"
+    },
+    {
+      "name": "activate dns_profile",
+      "status": "pass",
+      "expected": "202 pending",
+      "actual": "HTTP 202 ",
+      "command": "POST /admin/policies/{id}/activate",
+      "at": "2026-10-31T03:40:57Z"
+    },
+    {
+      "name": "active dns_profile",
+      "status": "pass",
+      "expected": "active_revision_id matches issued revision",
+      "actual": "converged=true",
+      "command": "poll product policy_definitions projection",
+      "at": "2026-10-31T03:40:57Z"
+    },
+    {
+      "name": "create plan",
+      "status": "pass",
+      "expected": "201",
+      "actual": "HTTP 201 ",
+      "command": "POST /admin/policies",
+      "at": "2026-10-31T03:40:58Z"
+    },
+    {
+      "name": "activate plan",
+      "status": "pass",
+      "expected": "202 pending",
+      "actual": "HTTP 202 ",
+      "command": "POST /admin/policies/{id}/activate",
+      "at": "2026-10-31T03:40:58Z"
+    },
+    {
+      "name": "active plan",
+      "status": "pass",
+      "expected": "active_revision_id matches issued revision",
+      "actual": "converged=true",
+      "command": "poll product policy_definitions projection",
+      "at": "2026-10-31T03:40:58Z"
+    },
+    {
+      "name": "create plan",
+      "status": "pass",
+      "expected": "201",
+      "actual": "HTTP 201 ",
+      "command": "POST /admin/policies",
+      "at": "2026-10-31T03:40:59Z"
+    },
+    {
+      "name": "activate plan",
+      "status": "pass",
+      "expected": "202 pending",
+      "actual": "HTTP 202 ",
+      "command": "POST /admin/policies/{id}/activate",
+      "at": "2026-10-31T03:40:59Z"
+    },
+    {
+      "name": "active plan",
+      "status": "pass",
+      "expected": "active_revision_id matches issued revision",
+      "actual": "converged=true",
+      "command": "poll product policy_definitions projection",
+      "at": "2026-10-31T03:40:59Z"
+    },
+    {
+      "name": "projected catalogue",
+      "status": "pass",
+      "expected": "two active finite plans, distinct exit groups, no SQL fixtures",
+      "actual": "plan_projected=true",
+      "command": "read worker plan_revisions projection after API activation",
+      "at": "2026-10-31T03:40:59Z"
+    },
+    {
+      "name": "installer reservation",
+      "status": "pass",
+      "expected": "201, one-time secret, no-store",
+      "actual": "HTTP 201 ; secret_present=true; no_store=true",
+      "command": "POST /admin/enrollments",
+      "at": "2026-10-31T03:41:00Z"
+    },
+    {
+      "name": "installer idempotent replay",
+      "status": "pass",
+      "expected": "same node, secret null",
+      "actual": "HTTP 201 ; same_node=true; secret_available=false",
+      "command": "repeat POST with same Idempotency-Key",
+      "at": "2026-10-31T03:41:01Z"
+    },
+    {
+      "name": "installer enrollment",
+      "status": "pass",
+      "expected": "node-owned mTLS incarnation appears",
+      "actual": "incarnation_present=true",
+      "command": "node entrypoint: fvpn-agent enroll; SELECT current_incarnation_id",
+      "at": "2026-10-31T03:41:02Z"
+    },
+    {
+      "name": "preinstalled reservation",
+      "status": "pass",
+      "expected": "201, one-time secret, no-store",
+      "actual": "HTTP 201 ; secret_present=true; no_store=true",
+      "command": "POST /admin/enrollments",
+      "at": "2026-10-31T03:41:02Z"
+    },
+    {
+      "name": "preinstalled idempotent replay",
+      "status": "pass",
+      "expected": "same node, secret null",
+      "actual": "HTTP 201 ; same_node=true; secret_available=false",
+      "command": "repeat POST with same Idempotency-Key",
+      "at": "2026-10-31T03:41:03Z"
+    },
+    {
+      "name": "auto-report is unpublished",
+      "status": "pass",
+      "expected": "unpublished",
+      "actual": "unpublished",
+      "command": "SELECT publication_intent FROM nodes",
+      "at": "2026-10-31T03:41:03Z"
+    },
+    {
+      "name": "empty release allowlist rejected",
+      "status": "pass",
+      "expected": "422; at least one serving release required by contract",
+      "actual": "HTTP 422 VALIDATION_FAILED",
+      "command": "POST /admin/policies release_support (empty negative control)",
+      "at": "2026-10-31T03:41:03Z"
+    },
+    {
+      "name": "runtime inventory",
+      "status": "pass",
+      "expected": "one actual node image",
+      "actual": "node_image_inspected=true; node_containers=1",
+      "command": "docker inspect fvpn-w4-members-node",
+      "at": "2026-10-31T03:41:03Z"
+    }
+  ],
+  "blockers": [
+    "Running lab has one installer node runtime; preinstalled/cloud-init boot flavours and their package provenance are absent. A preinstalled reservation is not a boot test. The signed boot release and nonempty support policy are created through the shared PrepareServingBaseline hook; arm64 is cross-built only."
+  ],
+  "operator_status": "needs operator run"
+}
