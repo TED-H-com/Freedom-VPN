@@ -427,6 +427,7 @@ func (s *liveSuite) evalAT20(t *testing.T) (rec Record) {
 	before := s.memberPeriodUsage(period)
 	beforeInc := s.incarnationView(node)
 	rec.Observations["origin_cli_before_reenrollment"] = held
+	rec.Observations["held_events_before_reenrollment"] = events
 	rec.Observations["quiescent_cli_byte_equal"] = true
 	rec.Observations["held_transfer"] = heldTransfer
 	rec.Observations["held_device_counters_before"] = countersBefore
@@ -458,14 +459,15 @@ func (s *liveSuite) evalAT20(t *testing.T) (rec Record) {
 	}
 	var accepted api.OperationAccepted
 	must(json.Unmarshal(revoked.body, &accepted))
-	// Wait for all API revocation worker effects; do not infer them from 202.
+	var operation api.Operation
 	if !s.waitFor(45*time.Second, func() bool {
-		var pending int
-		_ = s.pool.QueryRow(s.ctx, `SELECT count(*) FROM outbox_events WHERE aggregate_id=$1 AND delivered_at IS NULL AND dead_lettered_at IS NULL`, node).Scan(&pending)
-		return pending == 0
+		response := s.apiCall(s.admin, http.MethodGet, "/api/v1/admin/operations/"+accepted.OperationId.String(), nil, nil)
+		return response.status == http.StatusOK && json.Unmarshal(response.body, &operation) == nil && operation.Status == api.OperationStatusSucceeded
 	}) {
-		t.Fatal("AT20 revocation worker effects pending")
+		t.Fatal("AT20 revocation operation did not succeed")
 	}
+	rec.Observations["revoke_operation_completed"] = operation
+
 	must(s.hook.HoldInstallerFirstPoll(s.ctx, true))
 	replacement, err := s.hook.ControlledReinstall(s.ctx, "installer-node", s.installerToken(node))
 	must(err)
@@ -473,9 +475,50 @@ func (s *liveSuite) evalAT20(t *testing.T) (rec Record) {
 	if replacement.Exit != 0 || replacement.Status != "reenrolled" || replacement.NodeID != node.String() || replacement.Incarnation == origin.String() {
 		t.Fatalf("AT20 controlled reinstall: %s/%d", replacement.Status, replacement.Exit)
 	}
-	if replacement.Before.UsageDB != replacement.Hashes.UsageDB || replacement.Before.UsageWAL != replacement.Hashes.UsageWAL {
-		t.Fatal("AT20 reinstall changed usage DB/WAL")
+	rec.Observations["reinstall_usage_files_byte_equal"] = replacement.Before.UsageDB == replacement.Hashes.UsageDB && replacement.Before.UsageWAL == replacement.Hashes.UsageWAL
+	// ControlledReinstall starts the new agent for bootstrap. D-118 may already
+	// have adopted the original stream before the wrapper stops services again.
+	// Compare the immutable contents and original ACK, not the SQLite container.
+	adoptedDB := s.handoffLedgerCopy("installer-node")
+	var localCurrent string
+	must(adoptedDB.QueryRowContext(s.ctx, `SELECT incarnation_id FROM meta WHERE id=1`).Scan(&localCurrent))
+	table := "events"
+	if localCurrent != origin.String() {
+		if localCurrent != replacement.Incarnation {
+			t.Fatal("AT20 unexpected ledger incarnation after reinstall")
+		}
+		table = "retired_events"
+		var ack, last string
+		must(adoptedDB.QueryRowContext(s.ctx, `SELECT CAST(acked_through AS TEXT),CAST(last_seq AS TEXT) FROM retired_streams WHERE incarnation_id=?`, origin.String()).Scan(&ack, &last))
+		if ack != held.AckedThrough || last != held.LastEventSeq {
+			t.Fatal("AT20 adoption changed held origin ACK/last sequence")
+		}
 	}
+	for _, ev := range events {
+		var raw []byte
+		var hash string
+		query := "SELECT payload,payload_sha256 FROM " + table + " WHERE seq=?"
+		args := []any{uint64(ev.Event.EventSeq)}
+		if table == "retired_events" {
+			query += " AND incarnation_id=?"
+			args = append(args, origin.String())
+		}
+		must(adoptedDB.QueryRowContext(s.ctx, query, args...).Scan(&raw, &hash))
+		if !bytes.Equal(raw, ev.Raw) || hash != ev.Event.PayloadSha256 {
+			t.Fatalf("AT20 reinstall changed canonical event %s", ev.Event.EventSeq)
+		}
+	}
+	if replacement.RetiredMode != "700" || replacement.Before.Key != replacement.RetiredHashes.Key || replacement.Before.Cert != replacement.RetiredHashes.Cert || replacement.Before.NodeJSON != replacement.RetiredHashes.NodeJSON {
+		t.Fatal("AT20 original identity not retained")
+	}
+	for name, digest := range replacement.BoundStateBefore {
+		if replacement.RetiredBoundState[name] != digest {
+			t.Fatal("AT20 original bound state not retained")
+		}
+	}
+	rec.Observations["ledger_current_at_wrapper_return"] = localCurrent
+	rec.Observations["reinstall_original_payload_bytes_equal"] = true
+	rec.Observations["reinstall_hash_scope"] = "ControlledReinstall starts the verified replacement agent for bootstrap; D-118 can move the unchanged original stream to retired tables before quiescence. File hashes may change; canonical payloads, hashes and original ACK must not."
 	current, err := uuid.Parse(replacement.Incarnation)
 	must(err)
 	rec.Observations["presenting_incarnation_id"] = current
@@ -522,6 +565,23 @@ func (s *liveSuite) evalAT20(t *testing.T) (rec Record) {
 	rec.Observations["member_period_after"] = after
 	afterInc := s.incarnationView(node)
 	rec.Observations["incarnations_after_handoff"] = afterInc
+	if len(beforeInc.Items) != 1 || len(afterInc.Items) != 2 {
+		t.Fatal("AT20 unexpected incarnation history")
+	}
+	var originUsage, currentUsage api.NodeIncarnationUsage
+	for _, row := range afterInc.Items {
+		switch row.IncarnationId {
+		case origin:
+			originUsage = row.Usage
+		case current:
+			currentUsage = row.Usage
+		}
+	}
+	if originUsage.UploadBytes.String() != decimalSum(beforeInc.Items[0].Usage.UploadBytes.String(), up) || originUsage.DownloadBytes.String() != decimalSum(beforeInc.Items[0].Usage.DownloadBytes.String(), down) || uint64(currentUsage.UploadBytes) != 0 || uint64(currentUsage.DownloadBytes) != 0 {
+		t.Fatal("AT20 incarnation view moved historical bytes or double-minted usage")
+	}
+	rec.Observations["origin_incarnation_usage_before_plus_held"] = true
+	rec.Observations["current_incarnation_usage_bytes"] = "0"
 	equality := after.Totals.UploadBytes.String() == decimalSum(before.Totals.UploadBytes.String(), up) && after.Totals.DownloadBytes.String() == decimalSum(before.Totals.DownloadBytes.String(), down) && after.Totals.TotalBytes.String() == decimalSum(before.Totals.TotalBytes.String(), decimalSum(up, down))
 	if !equality {
 		t.Fatalf("AT20 before+held equality: before=%s held=%s after=%s", before.Totals.TotalBytes, decimalSum(up, down), after.Totals.TotalBytes)
@@ -595,8 +655,13 @@ func (s *liveSuite) evalAT20(t *testing.T) (rec Record) {
 	if lateResp.status != http.StatusOK || len(lateACK.Results) != 1 || lateACK.Results[0].Status != api.UsageEventResultStatusRejected || lateACK.NodeIncarnationId != origin {
 		t.Fatalf("AT20 late event: %d %+v", lateResp.status, lateACK)
 	}
+	eventError, err := lateACK.Results[0].Error.Get()
+	must(err)
+	if eventError.Code != "VALIDATION_FAILED" {
+		t.Fatalf("AT20 late event code %s", eventError.Code)
+	}
 	var audit json.RawMessage
-	must(s.pool.QueryRow(s.ctx, `SELECT jsonb_build_object('id',id,'action',action,'result',result,'metadata',after_diff,'request_id',request_id) FROM audit_events WHERE action='usage.ingest_rejected' AND after_diff->>'origin_incarnation_id'=$1 AND after_diff->>'reason'='retired_window' ORDER BY occurred_at DESC LIMIT 1`, origin.String()).Scan(&audit))
+	must(s.pool.QueryRow(s.ctx, `SELECT jsonb_build_object('id',id,'action',action,'result',result,'metadata',after_diff,'request_id',request_id) FROM audit_events WHERE action='usage.ingest_rejected' AND after_diff->>'origin_incarnation_id'=$1 AND after_diff->>'reason'='retired_window' AND after_diff->>'event_seq'=$2 AND request_id=$3::uuid AND result='failed' ORDER BY occurred_at DESC LIMIT 1`, origin.String(), decstr.U64(lateSeq).String(), lateResp.headers.Get("X-Request-ID")).Scan(&audit))
 	rec.Observations["late_event_audit"] = audit
 	var acceptedLate int
 	must(s.pool.QueryRow(s.ctx, `SELECT count(*) FROM usage_events WHERE node_id=$1 AND incarnation_id=$2 AND event_seq=$3`, node, origin, decstr.U64(lateSeq).String()).Scan(&acceptedLate))

@@ -1,4 +1,4 @@
-# AT14–AT19 (§19): usage metering, ledger and Fair-Use acceptance targets.
+# AT14–AT19 (§19), AT20 (ENR-05 extension): usage metering, ledger and Fair-Use acceptance targets.
 # Assigned stack instance: FVPN_E2E_PREFIX=w4-usage FVPN_E2E_PORT_BASE=48000.
 
 export GOTOOLCHAIN := local

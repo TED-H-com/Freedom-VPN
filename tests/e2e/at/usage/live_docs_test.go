@@ -44,8 +44,9 @@ func (s *liveSuite) writeDocs(records []Record) {
 			fmt.Fprintf(&requests, "- %s: %s\n", r.ID, b)
 		}
 	}
+	requests.WriteString("- Devstack documentation (nonblocking): update RESPONSES.md usage step 4 after D-118. ControlledReinstall starts the replacement agent for bootstrap, so the usage DB/WAL hashes may change before it returns quiescent. Original canonical event bytes, origin ACK and history remain the preservation invariant. See [diagnostic eba86d44](history/follow-up-5/eba86d44/README.md). Outside-owned file left unchanged.\n")
 	if !blocked {
-		requests.WriteString("None. AT20 is the usage lane ENR-05 extension; it is not the DNS case numbered AT20 in §19. Installer hardware/platform and restore-runbook campaigns remain with their owners.\n")
+		requests.WriteString("No product blocker. AT20 is the usage lane ENR-05 extension; it is not the DNS case numbered AT20 in §19. Installer hardware/platform and restore-runbook campaigns remain with their owners.\n")
 	}
 	requests.WriteString("\n" + timing.String())
 	for _, record := range records {
