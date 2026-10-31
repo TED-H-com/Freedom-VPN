@@ -24,6 +24,8 @@ type Beat struct {
 	Serving       bool
 	Generation    uint64
 	Reason        string
+	// Evidence is compact, sanitized JSON from the agent; the watchdog does not use it for admission.
+	Evidence string
 }
 
 // ReadBootID reads /proc/sys/kernel/random/boot_id, or path when set.
@@ -62,6 +64,9 @@ func WriteHeartbeat(path string, b Beat) error {
 	fmt.Fprintf(&body, "serving %d\n", boolBit(b.Serving))
 	fmt.Fprintf(&body, "generation %d\n", b.Generation)
 	fmt.Fprintf(&body, "reason %s\n", reason)
+	if b.Evidence != "" && !strings.ContainsAny(b.Evidence, "\r\n") {
+		fmt.Fprintf(&body, "evidence %s\n", b.Evidence)
+	}
 	return writeAtomic(path, []byte(body.String()), 0o644)
 }
 
@@ -125,6 +130,7 @@ func ReadHeartbeat(path string) (Beat, error) {
 		return Beat{}, fmt.Errorf("watchdog: heartbeat generation")
 	}
 	b.Generation = gen
+	b.Evidence = fields["evidence"]
 	b.Reason = fields["reason"]
 	if b.Reason == "" {
 		return Beat{}, fmt.Errorf("watchdog: heartbeat reason")

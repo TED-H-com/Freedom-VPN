@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
+	"encoding/json"
 	"errors"
 	"log/slog"
 	"maps"
@@ -106,6 +107,7 @@ type Engine struct {
 	incID              uuid.UUID
 	enrolled           bool
 	revoked            bool
+	identityFrozen     bool
 	bootstrapLost      bool
 	desired            *api.DesiredState
 	desiredETag        string
@@ -124,6 +126,11 @@ type Engine struct {
 	appliedModel       *enforce.Model
 	appliedAssignments map[uuid.UUID]uint16
 	appliedGen         uint64
+	planeLocked        bool
+	quarantinePending  bool
+	containment        *containmentEvidence
+	memberPath         *MemberPath
+	memberPathPending  bool
 	assignments        map[uuid.UUID]uint16
 	counters           map[string]enforce.CounterValue
 	addresses          []addrID
@@ -324,6 +331,11 @@ func (e *Engine) loadCert() error {
 }
 
 func (e *Engine) loadIdentity(ctx context.Context) error {
+	if v, _, err := e.store.Meta(ctx, "identity_frozen"); err != nil {
+		return err
+	} else {
+		e.identityFrozen = v == "1"
+	}
 	if v, ok, err := e.store.Meta(ctx, "revoked"); err != nil {
 		return err
 	} else if ok && v == "1" {
@@ -536,6 +548,26 @@ func (e *Engine) Step(ctx context.Context) error {
 }
 
 func (e *Engine) loadRuntime(ctx context.Context) error {
+	if raw, ok, err := e.store.Meta(ctx, "retained_applied"); err != nil {
+		return err
+	} else if ok {
+		var retained retainedApplied
+		if err := json.Unmarshal([]byte(raw), &retained); err != nil {
+			return err
+		}
+		e.appliedModel, e.appliedAssignments = &retained.Model, retained.Assignments
+	}
+
+	if raw, ok, err := e.store.Meta(ctx, "member_path"); err != nil {
+		return err
+	} else if ok {
+		var path MemberPath
+		if err := json.Unmarshal([]byte(raw), &path); err != nil {
+			return err
+		}
+		e.memberPath = &path
+	}
+
 	if a, ok, err := e.store.Anchor(ctx); err != nil {
 		return err
 	} else if ok && a.Trusted && a.BootID == e.bootID {
@@ -638,6 +670,7 @@ func (e *Engine) input() Input {
 		AnchorOK: e.anchorOK, LatchBlocked: e.latchBlocked, RecoverBlocked: e.recoverBlocked,
 		Backend: e.cfg.NetbirdBackend, ReleaseID: e.cfg.ReleaseUUID(), Assignments: e.assignments,
 		TestMode: e.cfg.TestMode, ExemptV4: exempt, ExtraDenied: extra, HostV4: host,
+		IdentityFrozen: e.identityFrozen,
 		HostReserveBPS: e.cfg.HostReserveBPS, Revoked: e.revoked, Enrolled: e.enrolled,
 		BaselineOK: e.baselineOK, StorageOK: e.storageOK, BootstrapLost: e.bootstrapLost,
 		ApplyError: e.applyError, DependencyMissing: e.dependencyMissing, LeaseRetryPending: e.leaseRetryAt > 0,
@@ -769,8 +802,6 @@ func (e *Engine) baseline(ctx context.Context) error {
 	// A planned baseline is not an external meter reset. Clear this before
 	// FinalSample reads the counters.
 	e.expectServing.Store(false)
-	e.appliedModel = nil
-	e.appliedAssignments = nil
 	dp, err := e.cfg.DatapathValue()
 	if err != nil {
 		return err
@@ -856,6 +887,8 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 		return err
 	}
 	defer lock.Release()
+	e.planeLocked = true
+	defer func() { e.planeLocked = false }()
 	model := d.Model
 	queued := planRevokes(e.pendingRevoke, e.addresses, model.Bindings)
 	model.Revoke = queued
@@ -870,19 +903,37 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 	var ctErr *enforce.ConntrackDeleteError
 	verifiedDelete := err != nil && res.Verified && errors.As(err, &ctErr)
 	pending := verifiedDelete && len(ctErr.Failed) > 0
+	if res.Quarantine != nil {
+		e.recordApplyQuarantine(res)
+	}
 	if err != nil && !verifiedDelete {
 		e.rejectServing(ctx, model, res.Evidence, err)
 		return nil
 	}
+	// Retain the model actually installed, including its class assignments,
+	// before any subsequent read can reject it.
+	e.appliedModel = &model
+	e.appliedAssignments = maps.Clone(res.Plan.Assignments)
+	// Apply alone releases quarantine. A missing member route/address below
+	// must not lower the clean link again and prevent its owner's repair.
+	e.quarantinePending = false
 	// Apply's evidence can already be stale by its return (for example a
 	// filter inserted during conntrack deletion). Read before acknowledging.
 	if !e.verifyServingModel(ctx, model, res.Plan.Assignments) {
 		return nil
 	}
-	e.appliedModel = &model
-	e.appliedAssignments = maps.Clone(res.Plan.Assignments)
+	retained, _ := json.Marshal(retainedApplied{Model: model, Assignments: e.appliedAssignments})
+	if err := e.store.SetMeta(ctx, "retained_applied", string(retained)); err != nil {
+		e.storageOK = false
+		e.rejectServing(ctx, model, res.Evidence, err)
+		return nil
+	}
+	if !e.checkMemberPath(ctx, model) {
+		return nil
+	}
 	e.serving = true
 	e.applyError = nil
+	e.containment = nil
 	e.expectServing.Store(true)
 	e.baselineOK = true
 	e.policyExpires = d.PolicyExpires
@@ -956,7 +1007,7 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 }
 
 func (e *Engine) ackApplied(ctx context.Context, gen uint64) {
-	if gen == 0 || e.desired == nil || !e.desiredOK || e.applyError != nil || e.dependencyMissing {
+	if e.identityFrozen || gen == 0 || e.desired == nil || !e.desiredOK || e.applyError != nil || e.dependencyMissing {
 		return
 	}
 	if e.appliedGen == gen {
@@ -1023,10 +1074,16 @@ func (e *Engine) beat() {
 	} else if len(e.decision.Reasons) > 0 {
 		reason = string(e.decision.Reasons[0])
 	}
+	if e.memberPathPending && !e.quarantinePending {
+		reason = "member_path_unconfigured"
+	}
+	if e.identityFrozen {
+		reason = "identity_frozen"
+	}
 	err := watchdog.WriteHeartbeat(e.cfg.HeartbeatPath, watchdog.Beat{
 		BootID: e.bootID, Mono: mono, Wall: e.clock.Wall().UTC(),
 		PolicyExpires: e.policyExpires, BaselineOK: e.baselineOK, Serving: e.serving,
-		Generation: e.appliedGen, Reason: reason,
+		Generation: e.appliedGen, Reason: reason, Evidence: e.containmentJSON(),
 	})
 	if err != nil {
 		e.log.Warn("heartbeat", "err", err.Error())

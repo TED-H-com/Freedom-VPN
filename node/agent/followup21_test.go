@@ -52,10 +52,14 @@ func assertLiveWithdrawn(t *testing.T, r *rig, generation uint64, message string
 	if b.Serving || b.PolicyExpires != 0 || b.Reason != "safety_check_failed" || !b.BaselineOK || b.Generation != generation {
 		t.Fatalf("withdrawn heartbeat: %+v", b)
 	}
-	if r.eng.serving || r.eng.policyExpires != 0 || r.eng.appliedModel != nil || r.eng.expectServing.Load() {
+	if r.eng.serving || r.eng.policyExpires != 0 || r.eng.expectServing.Load() {
 		t.Fatal("retained serving evidence survived withdrawal")
 	}
-	if r.eng.applyError == nil || r.eng.applyError.Code != api.ErrorCodeHEALTHCHECKFAILED || r.eng.applyError.Message != message {
+	code := api.ErrorCodeHEALTHCHECKFAILED
+	if message == "TC_FOREIGN_FILTER" {
+		code = api.ErrorCodeTCFOREIGNFILTER
+	}
+	if r.eng.applyError == nil || r.eng.applyError.Code != code || r.eng.applyError.Message != message {
 		t.Fatalf("verification error: %+v", r.eng.applyError)
 	}
 	rep, ok := r.srv.LastObservation()
@@ -88,7 +92,7 @@ func TestD085_ISO01_BetweenApplyInjection(t *testing.T) {
 	before := r.plane.applies
 	stepOK(t, r)
 	assertLiveWithdrawn(t, r, 2, "TC_FOREIGN_FILTER")
-	if r.plane.applies != before || len(p.models) != 1 || !reflect.DeepEqual(p.models[0], oldModel) || !reflect.DeepEqual(p.assignments[0], oldAssignments) {
+	if r.plane.applies != before || len(p.models) != 2 || !reflect.DeepEqual(p.models[0], oldModel) || !reflect.DeepEqual(p.assignments[0], oldAssignments) {
 		t.Fatal("drift was overwritten by Apply or checked against a desired model")
 	}
 	// The ordinary renewal slot supplies a lease for the offered generation.
@@ -104,7 +108,7 @@ func TestD085_ISO01_BetweenApplyInjection(t *testing.T) {
 	if !mustBeat(t, r).Serving || r.eng.appliedGen != 3 || r.eng.applyError != nil || r.plane.applies != before+1 {
 		t.Fatalf("clean full Apply did not restore serving: serving=%v gen=%d error=%+v applies=%d before=%d reasons=%v lease=%d", r.eng.serving, r.eng.appliedGen, r.eng.applyError, r.plane.applies, before, r.eng.decision.Reasons, r.eng.lease.ConfigGeneration)
 	}
-	t.Log("generation 2 serving -> filter injected -> next heartbeat non-serving/safety_check_failed; HEALTH_CHECK_FAILED/TC_FOREIGN_FILTER -> desired 3 accepted, ACK remains 2 -> filter removed, full Apply -> generation 3 serving")
+	t.Log("generation 2 serving -> filter injected -> next heartbeat non-serving/safety_check_failed; TC_FOREIGN_FILTER -> desired 3 accepted, ACK remains 2 -> filter removed, full Apply -> generation 3 serving")
 }
 
 func TestD085_InjectionAfterApplyBeforeAck(t *testing.T) {
@@ -131,7 +135,7 @@ func TestD085_FinalReadWithBusyApplyLock(t *testing.T) {
 	p := &livePlane{memPlane: r.plane}
 	p.read = func(context.Context) error {
 		// First read is clean. Inject after it, before the deferred heartbeat.
-		p.foreign = len(p.models) == 2
+		p.foreign = p.foreign || len(p.models) == 2
 		return nil
 	}
 	r.eng.plane = p
@@ -143,7 +147,7 @@ func TestD085_FinalReadWithBusyApplyLock(t *testing.T) {
 	before := r.plane.applies
 	stepOK(t, r)
 	assertLiveWithdrawn(t, r, 2, "TC_FOREIGN_FILTER")
-	if r.plane.applies != before || len(p.models) != 2 {
+	if r.plane.applies != before || len(p.models) != 3 {
 		t.Fatal("busy Apply bypassed the final live read")
 	}
 }
