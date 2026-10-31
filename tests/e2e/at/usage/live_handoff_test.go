@@ -330,6 +330,8 @@ func (s *liveSuite) evalAT20(t *testing.T) (rec Record) {
 	must(err)
 	rec.NodeIncarnation = origin.String()
 	rec.Observations["handoff_node_id"] = node
+	rec.Observations["node_id"] = node
+	rec.Observations["node_incarnation_id"] = origin
 	rec.Observations["origin_incarnation_id"] = origin
 	retiredClient := s.buildNodeMTLSClient("installer-node")
 	must(s.hook.ConfigureInstallerServing(s.ctx))
@@ -361,6 +363,8 @@ func (s *liveSuite) evalAT20(t *testing.T) (rec Record) {
 	}) {
 		t.Fatal("AT20 installer exit unavailable")
 	}
+	rec.Observations["exit_id"] = exit
+	rec.Observations["exit_network_id"] = exitNetworkID(exit)
 	selected, err := s.hook.MemberTransportStack(s.containerName("member"), "installer-node")
 	must(err)
 	originIP, _ := s.originAndSNAT("installer-node")
@@ -435,7 +439,7 @@ func (s *liveSuite) evalAT20(t *testing.T) (rec Record) {
 	before := s.memberPeriodUsage(period)
 	beforeInc := s.incarnationView(node)
 	rec.Observations["origin_cli_before_reenrollment"] = held
-	rec.Observations["held_events_before_reenrollment"] = events
+	rec.Observations["held_events_before_reenrollment"] = append([]handoffEvent(nil), events...)
 	rec.Observations["quiescent_cli_byte_equal"] = true
 	rec.Observations["held_transfer"] = heldTransfer
 	rec.Observations["held_device_counters_before"] = countersBefore
