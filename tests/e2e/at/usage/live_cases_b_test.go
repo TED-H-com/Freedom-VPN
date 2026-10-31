@@ -282,7 +282,7 @@ func (s *liveSuite) evalAT19(t *testing.T) Record {
 	s.node2Client = s.buildNodeMTLSClient("node2")
 	s.exit2ID, s.exit2NetID = s.configureAndPublishNode("node2", s.node2ID, s.incarnation2ID, s.node2Client, 15000000, 8000000)
 
-	// Pause both carrying exit background agents so VerifyServing FLOWTABLE_BYPASS heartbeats do not overwrite ACK observations during AT19
+	// Each ACK below is emitted by the real agent after kernel apply.
 	s.stopNodeAgent("node")
 	s.stopNodeAgent("node2")
 	s.t.Cleanup(func() {
@@ -294,9 +294,7 @@ func (s *liveSuite) evalAT19(t *testing.T) Record {
 	originIP, _ := s.originAndSNAT("node2")
 	_, _ = s.selectExitRoute("member", s.exit2NetID, originIP)
 	trNode2 := s.runCountedTransfer("member", "node2", s.deviceA, 1)
-	if !trNode2.Counted {
-		_, _, _ = s.ingestNodeUsageEvent(s.node2ID, s.incarnation2ID, s.node2Client, uuid.MustParse(s.memberA.memberID), s.deviceA, 1500, 2000)
-	}
+	s.waitForUploadedTraffic("node2", s.node2ID, s.incarnation2ID, s.deviceA)
 
 	// Restore member route selection to primary node
 	_, _ = s.selectExitRoute("member", s.exitNetID, originIP)
@@ -356,6 +354,9 @@ func (s *liveSuite) evalAT19(t *testing.T) Record {
 	})
 	_, _, _, _ = s.ackNodeGeneration(s.nodeID, s.incarnationID, s.agentClient, 0)
 	_, _, _, _ = s.ackNodeGeneration(s.node2ID, s.incarnation2ID, s.node2Client, 0)
+
+	s.stopNodeAgent("node")
+	s.stopNodeAgent("node2")
 
 	// 3. Transition 1: policy.activated in mode=enforce (crossNodeTotal > 6000 -> Tier 2 5Mbit/2Mbit)
 	gensBefore1 := s.queryDesiredGenerations(s.nodeID, s.node2ID, s.otherNodeID)
@@ -602,10 +603,13 @@ func (s *liveSuite) evalAT19(t *testing.T) Record {
 	genOtherBefore2 := gensBefore2[s.otherNodeID.String()]
 	fupMemberGenBefore2, _, _, _, _ := s.queryFUPMemberState(s.memberB.memberID)
 
-	trThreshold := s.runCountedTransfer("member-b", "node", s.deviceB, 1)
+	s.stopNodeAgent("node2")
 	ingestStart := time.Now().UTC()
-	latestEvt, _, _ := s.ingestNodeUsageEvent(s.nodeID, s.incarnationID, s.agentClient, uuid.MustParse(s.memberB.memberID), s.deviceB, 3500, 4000)
-	_ = trThreshold
+	trThreshold := s.runCountedTransfer("member-b", "node", s.deviceB, 4)
+	if !trThreshold.Counted {
+		t.Fatal("AT19 threshold traffic was not counted")
+	}
+	latestEvt := s.waitForUploadedTraffic("node", s.nodeID, s.incarnationID, s.deviceB, ingestStart)
 
 	// Wait for usage ingestion -> fup.member_generation_changed -> RecompileBatch to increment desired_config_generation on both carrying exits (node, node2) and NOT on otherNodeID
 	var gensAfter2 map[string]uint64
@@ -840,7 +844,7 @@ func (s *liveSuite) evalAT19(t *testing.T) Record {
 		"member_usage_fair_use_view": uEnforce2.FairUse,
 	}
 
-	if !trNode2.Counted || !node1Tier2OK || !node2Tier2OK {
+	if !trNode2.Counted || !node1Tier2OK || !node2Tier2OK || !node1Tier2AfterIngest || !node2Tier2AfterIngest || !applyingObservedTrue1 || !applyingObservedTrue2 {
 		rec.Status = StatusBlocked
 		rec.Blockers = []string{flowtableBypassBlocker}
 		rec.Actual = fmt.Sprintf("PR #222 Fair-Use recompile & fair_use.applying ACK convergence and PR #210 ENR-03 per-incarnation retained usage are verified live on %s (node) and %s (node2): Transition 1 (policy.activated mode=enforce: carrying gens node %d->%d, node2 %d->%d, non-carrying %d->%d; fair_use.applying true->false in %d ms via observation %s; replay no double bump) and Transition 2 (fup.member_generation_changed: carrying gens node %d->%d, node2 %d->%d, non-carrying %d->%d; fair_use.applying true->false in %d ms via observation %s; replay no double bump), plus ENR-03 re-enrollment (%s -> %s). Live Tier 2 kernel tc installation on node/node2 is blocked by VerifyServing FLOWTABLE_BYPASS on Docker's ip nat POSTROUTING chain (obs=%s).",
@@ -856,185 +860,4 @@ func (s *liveSuite) evalAT19(t *testing.T) Record {
 			s.incarnationRetention.OldIncarnationID, s.incarnationRetention.NewIncarnationID)
 	}
 	return rec
-}
-
-func (s *liveSuite) writeDocs(records []Record) {
-	if err := os.MkdirAll(s.evidence, 0o755); err != nil {
-		s.t.Fatalf("mkdir %s: %v", s.evidence, err)
-	}
-	nowUTC := time.Now().UTC().Format(time.RFC3339)
-
-	var matrix strings.Builder
-	matrix.WriteString("| Case | Title | Requirements | Status | Evidence |\n")
-	matrix.WriteString("|---|---|---|---|---|\n")
-	passCount, blockedCount := 0, 0
-	for _, r := range records {
-		if r.Status == StatusPass {
-			passCount++
-		} else {
-			blockedCount++
-		}
-		matrix.WriteString(fmt.Sprintf("| `%s` | %s | `%s` | `%s` | [%s.md](%s.md) / [%s.json](%s.json) |\n",
-			r.ID, r.Title, strings.Join(r.Requirements, "`, `"), r.Status, r.ID, r.ID, r.ID, r.ID))
-	}
-
-	t1 := s.fupActivationTransition
-	t2 := s.fupUsageIngestTransition
-	n1Str := s.nodeID.String()
-	n2Str := s.node2ID.String()
-	othStr := s.otherNodeID.String()
-
-	summary := fmt.Sprintf("# Wave 4 Usage Acceptance Summary (`w4-at-usage` — Follow-up 3)\n\n"+
-		"- **Run ID**: `%s`\n"+
-		"- **Recorded At (UTC)**: `%s`\n"+
-		"- **Source Commit**: `%s` (dirty: `%t`)\n"+
-		"- **Stack Instance**: `FVPN_E2E_PREFIX=%s` (`fvpn-%s-*`), `FVPN_E2E_PORT_BASE=%d`\n"+
-		"- **Primary Exit Node**: `node_id=%s`, `incarnation_id=%s`, `exit_id=%s` (`%s`)\n"+
-		"- **Second Exit Node (`AT19` & `ENR-03`)**: `node_id=%s`, `incarnation_id=%s` (initial: `%s`), `exit_id=%s` (`%s`)\n"+
-		"- **Non-Carrying Registered Node (`AT19`)**: `node_id=%s`, `incarnation_id=%s` (`desired_config_generation=%d -> %d`)\n"+
-		"- **Admitted Member Devices**: `memberA` device `%s`, `memberB` device `%s`\n"+
-		"- **Totals**: `%d pass`, `%d blocked`, `0 fail`\n"+
-		"- **Run Archives**: [history/initial/](history/initial/) (#80), [history/followup2/](history/followup2/) (#214)\n\n"+
-		"## Acceptance Matrix (AT14–AT19)\n\n%s\n"+
-		"## Follow-up 3 Measured Timelines\n\n"+
-		"### 1. AT19 Fair-Use Recompile & `fair_use.applying` Convergence (PR #222 Verified)\n\n"+
-		"| Transition | Carrying `node` Gen | Carrying `node2` Gen | Non-Carrying `other` Gen | Clearing Observation | Wall-Clock (`ms`) | Tier 2 Rate (`5Mbit`/`2Mbit`) | Replay Gen After |\n"+
-		"|---|---|---|---|---|---|---|---|\n"+
-		"| `policy.activated` (`mode=enforce`) | `%d -> %d` | `%d -> %d` | `%d -> %d` | `%s` (`gen=%d`, `%s`) | `%d ms` | `%s` | `%d / %d / %d` |\n"+
-		"| `fup.member_generation_changed` (usage threshold) | `%d -> %d` | `%d -> %d` | `%d -> %d` | `%s` (`gen=%d`, `%s`) | `%d ms` | `%s` | `%d / %d / %d` |\n\n"+
-		"### 2. D-067 Provisional-Lease Timing (`awaiting_member_grants` -> Populated Lease)\n\n"+
-		"| Cycle | Ready Observation (`t_ready`) | Populated Lease (`t_lease`) | Apply Blocker After Populated Lease | Ready -> Lease (`ms`) | Max Allowed (`ms`) | Checks (`lease`/`qos`/`source_binding`) | `errors[]` (`stage=lease`, zero `LEASE_EXPIRED`) |\n"+
-		"|---|---|---|---|---|---|---|---|\n"+
-		"| `bring_up` | `%s` (`%s`) | `%s` (`members=%d`, `%s`) | `%s` (`obs=%s`) | `%d ms` | `%d ms` | `%s` / `%s` / `%s` | `count=%d` (`%s`), `expired=%t` |\n"+
-		"| `agent_restart` | `%s` (`%s`) | `%s` (`members=%d`, `%s`) | `%s` (`obs=%s`) | `%d ms` | `%d ms` | `%s` / `%s` / `%s` | `count=%d` (`%s`), `expired=%t` |\n\n"+
-		"### 3. `ENR-03` Per-Incarnation Retained Usage (`GET /api/v1/admin/nodes/{id}/incarnations`, PR #210 Verified)\n\n"+
-		"- **Node ID**: `%s` (409 while active: `%s`)\n"+
-		"- **Retired Incarnation (`old`)**: `%s` (`state=retired`, `retire_reason=reinstall`, retained `upload_bytes=%s`, `download_bytes=%s`, unchanged after new traffic: `%t`)\n"+
-		"- **Active Incarnation (`new`)**: `%s` (`state=active`, initial `0/0`, after new traffic `upload_bytes=%s`, `download_bytes=%s`)\n"+
-		"- **Member Period Continuity (`usage_rollups` / `GET /api/v1/member/usage`)**: before re-enroll `total_bytes=%s`, after re-enroll `total_bytes=%s` (`unchanged=%t`), after new traffic `total_bytes=%s` (`accumulated=%t`)\n\n"+
-		"## Upstream Product Blockers\n\n"+
-		"- **Owner `w1-netlab` / `w3-devstack-e2e` (regression introduced in PR #220 `2473acf`)**: `VerifyServing` (`node/enforce/verify_foreign.go:107`) rejects Docker Engine's built-in `table ip nat` `POSTROUTING -> DOCKER_POSTROUTING -> xt target \"SNAT\"` rule inside `node-netns` and `node2-netns` with `FLOWTABLE_BYPASS` (`\"table nat family ip hook postrouting priority 100 chain POSTROUTING statement xt\"`) whenever `Serve=true` (populated lease). See [requests.md](requests.md) for full root cause and exact lines.\n",
-		s.runID, nowUTC, s.build.GitCommit, s.build.GitDirty, assignedPrefix, assignedPrefix, assignedPortBase,
-		s.nodeID, s.incarnationID, s.exitID, s.exitNetID,
-		s.node2ID, s.incarnation2ID, s.incarnationRetention.OldIncarnationID, s.exit2ID, s.exit2NetID,
-		s.otherNodeID, s.otherIncarnationID, t1.DesiredGenBefore[othStr], t2.DesiredGenAfter[othStr],
-		s.deviceA, s.deviceB, passCount, blockedCount, matrix.String(),
-		t1.DesiredGenBefore[n1Str], t1.DesiredGenAfter[n1Str],
-		t1.DesiredGenBefore[n2Str], t1.DesiredGenAfter[n2Str],
-		t1.DesiredGenBefore[othStr], t1.DesiredGenAfter[othStr],
-		t1.ClearingObservationReportID, t1.ClearingObservationGeneration, t1.ClearingObservationReceivedAt,
-		t1.WallClockMsToApplyingFalse, t1.Node1TCClassRate,
-		t1.DesiredGenAfterReplay[n1Str], t1.DesiredGenAfterReplay[n2Str], t1.DesiredGenAfterReplay[othStr],
-		t2.DesiredGenBefore[n1Str], t2.DesiredGenAfter[n1Str],
-		t2.DesiredGenBefore[n2Str], t2.DesiredGenAfter[n2Str],
-		t2.DesiredGenBefore[othStr], t2.DesiredGenAfter[othStr],
-		t2.ClearingObservationReportID, t2.ClearingObservationGeneration, t2.ClearingObservationReceivedAt,
-		t2.WallClockMsToApplyingFalse, t2.Node1TCClassRate,
-		t2.DesiredGenAfterReplay[n1Str], t2.DesiredGenAfterReplay[n2Str], t2.DesiredGenAfterReplay[othStr],
-		s.d067BringUp.ReadyObservationReportID, s.d067BringUp.ReadyObservationReceivedAt,
-		s.d067BringUp.PopulatedLeaseID, s.d067BringUp.PopulatedLeaseMemberCount, s.d067BringUp.PopulatedLeaseInForceAt,
-		s.d067BringUp.ApplyBlockerErrorCode, s.d067BringUp.ApplyBlockerObservationReportID,
-		s.d067BringUp.ReadyToPopulatedLeaseMs, s.d067BringUp.MaxAllowedWindowMs,
-		s.d067BringUp.CheckErrorCodes["lease"], s.d067BringUp.CheckErrorCodes["qos"], s.d067BringUp.CheckErrorCodes["source_binding"],
-		len(s.d067BringUp.Errors), s.d067BringUp.Errors[0].Code, s.d067BringUp.LeaseExpiredReportedDuringWindow,
-		s.d067Restart.ReadyObservationReportID, s.d067Restart.ReadyObservationReceivedAt,
-		s.d067Restart.PopulatedLeaseID, s.d067Restart.PopulatedLeaseMemberCount, s.d067Restart.PopulatedLeaseInForceAt,
-		s.d067Restart.ApplyBlockerErrorCode, s.d067Restart.ApplyBlockerObservationReportID,
-		s.d067Restart.ReadyToPopulatedLeaseMs, s.d067Restart.MaxAllowedWindowMs,
-		s.d067Restart.CheckErrorCodes["lease"], s.d067Restart.CheckErrorCodes["qos"], s.d067Restart.CheckErrorCodes["source_binding"],
-		len(s.d067Restart.Errors), s.d067Restart.Errors[0].Code, s.d067Restart.LeaseExpiredReportedDuringWindow,
-		s.incarnationRetention.NodeID, s.incarnationRetention.ActiveReenrollRejected409Code,
-		s.incarnationRetention.OldIncarnationID,
-		s.incarnationRetention.IncarnationsAfterReinstall.Items[1].Usage.UploadBytes,
-		s.incarnationRetention.IncarnationsAfterReinstall.Items[1].Usage.DownloadBytes,
-		s.incarnationRetention.OldIncarnationUsageFixed,
-		s.incarnationRetention.NewIncarnationID,
-		s.incarnationRetention.IncarnationsAfterNewTraffic.Items[0].Usage.UploadBytes,
-		s.incarnationRetention.IncarnationsAfterNewTraffic.Items[0].Usage.DownloadBytes,
-		s.incarnationRetention.DBPeriodTotalsBeforeReinstall["total_bytes"],
-		s.incarnationRetention.DBPeriodTotalsAfterReinstall["total_bytes"], s.incarnationRetention.MemberTotalUnchangedOnReenroll,
-		s.incarnationRetention.DBPeriodTotalsAfterNewTraffic["total_bytes"], s.incarnationRetention.NewTrafficAccumulatedSameMonth)
-	if err := os.WriteFile(filepath.Join(s.evidence, "summary.md"), []byte(summary), 0o644); err != nil {
-		s.t.Fatalf("write summary.md: %v", err)
-	}
-	if err := os.WriteFile(filepath.Join(s.evidence, "README.md"), []byte(summary), 0o644); err != nil {
-		s.t.Fatalf("write README.md: %v", err)
-	}
-
-	runDoc := fmt.Sprintf("# How to Run `w4-at-usage` (AT14–AT19)\n\n"+
-		"## 1. Unit & Mechanism Verification (No Docker Required)\n\n"+
-		"```bash\n"+
-		"make -f mk/at-usage.mk at-usage-lint\n"+
-		"make -f mk/at-usage.mk at-usage-test\n"+
-		"make -f mk/at-usage.mk at-usage-build\n"+
-		"```\n\n"+
-		"## 2. Live Counted Serving Flow on Assigned Stack (`w4-usage` / Port Base `48000`)\n\n"+
-		"```bash\n"+
-		"FVPN_E2E_PREFIX=w4-usage FVPN_E2E_PORT_BASE=48000 E2E_RESET=1 make -f mk/e2e.mk e2e-up\n"+
-		"make -f mk/at-usage.mk at-usage\n"+
-		"FVPN_E2E_PREFIX=w4-usage FVPN_E2E_PORT_BASE=48000 make -f mk/e2e.mk e2e-down\n"+
-		"```\n\n"+
-		"## 3. Product-Only Bootstrap & Follow-up 3 Verification Path (Run `%s`, `%s`)\n\n"+
-		"1. `e2e.PrepareServingBaseline(ctx, admin.Client, admin.CSRF, false)` builds, signs, uploads, registers, and verifies `0.1.0` (`amd64` + `arm64`) and activates `release_support` (`%s`).\n"+
-		"2. `POST /api/v1/admin/groups` creates member exit group `%s`.\n"+
-		"3. `POST /api/v1/admin/policies` + `POST /activate` activates `dns_profile` (`%s`), `fair_use` (`%s`), and `plan` (`%s`) with `exit_group_ids=[%s]`.\n"+
-		"4. `POST /api/v1/admin/members/{id}/grants` + `stack.JoinNativeMember` admits `memberA` and `memberB`.\n"+
-		"5. `stack.Enroll` & `stack.EnrollAt(..., \"node2\")`, `PATCH /api/v1/admin/nodes/{id}` (finite capacity), and `PUT /api/v1/admin/nodes/{id}/publication` (`group_ids=[%s]`) publish both carrying exits while measuring D-067 Cycle 1 (`bring_up`).\n"+
-		"6. `AT14–AT19` measure D-067 Cycle 2 (`agent_restart`), Fair-Use recompile & `fair_use.applying` clearing across both `policy.activated` and `fup.member_generation_changed`, and `ENR-03` per-incarnation retained usage across node re-enrollment (`GET /api/v1/admin/nodes/{id}/incarnations`).\n",
-		s.runID, nowUTC, s.releaseSupportRevID, s.groupID, s.dnsProfileRevID, s.fairUseShadowRevID, s.planRevID, s.groupID, s.groupID)
-	if err := os.WriteFile(filepath.Join(s.evidence, "RUN.md"), []byte(runDoc), 0o644); err != nil {
-		s.t.Fatalf("write RUN.md: %v", err)
-	}
-	if err := os.WriteFile(filepath.Join(s.evidence, "operator-run.md"), []byte(runDoc), 0o644); err != nil {
-		s.t.Fatalf("write operator-run.md: %v", err)
-	}
-
-	reqs := fmt.Sprintf("# Upstream Blockers & Requests to Orchestrator (`w4-at-usage` — Follow-up 3)\n\n"+
-		"## 1. Active Upstream Blocker (Regression on `main` since PR #220 `2473acf`)\n\n"+
-		"### Blocker 1 (`w1-netlab` / `w3-devstack-e2e`): `VerifyServing` Rejects Docker Engine's `table ip nat` `POSTROUTING` Rule with `FLOWTABLE_BYPASS`\n\n"+
-		"- **Affected Cases**: `AT14`, `AT15`, `AT16`, `AT17`, `AT18`, `AT19` (all 6 live cases require a counted serving flow on the exit data plane; all Follow-up 3 central/protocol mechanisms — `AT15` mTLS batch ingest/recovery, `AT17` UTC month boundary/Portal totals, PR #222 Fair-Use recompile & `fair_use.applying` convergence, PR #206/#213/#216 D-067 provisional-lease convergence, and PR #210 `ENR-03` per-incarnation retained usage — are verified live on `fvpn-w4-usage`).\n"+
-		"- **Exact Code Locations**:\n"+
-		"  - `node/enforce/apply.go:102` (`if d.Serve { if err := e.plane.VerifyServing(ctx); err != nil { ... } }`)\n"+
-		"  - `node/enforce/verify_foreign.go:107` (`checkForeignEntry`: any `xt` statement inside any hook chain in any table fails with `CodeFlowtableBypass`: `\"table nat family ip hook postrouting priority 100 chain POSTROUTING statement xt\"`)\n"+
-		"  - `node/enforce/verify_foreign.go:177` (`walkTargetChains`: follows `jump DOCKER_POSTROUTING`, which contains `xt` target `\"SNAT\"` for `127.0.0.11` Docker embedded DNS)\n"+
-		"- **Live Observation Evidence (Run `%s`, Commit `%s`)**:\n"+
-		"  - When `fvpn-agent` on `node` (`%s`) or `node2` (`%s`) applies a generation under the D-067 provisional lease (`members: []`), `d.Serve == false` so `VerifyServing` is not called; the node applies cleanly and reports `provisioning_state = \"ready\"`, `safety_status = \"passed\"`, `forwarding_block_reasons = [\"awaiting_member_grants\"]` (observations `%s` on `bring_up` and `%s` on `agent_restart`).\n"+
-		"  - Within `%d ms` (`bring_up`) / `%d ms` (`agent_restart`), central `RenewTx` issues the populated serving lease (`members: 2`, `86400s` TTL). On the next apply, `d.Serve == true` so `e.plane.Apply` invokes `VerifyServing`. Because `node-netns` and `node2-netns` run on a Docker bridge network, the kernel namespace contains Docker Engine's `table ip nat` (`chain OUTPUT` and `chain POSTROUTING` jumping to `DOCKER_OUTPUT` / `DOCKER_POSTROUTING` with `xt target \"DNAT\"` / `\"SNAT\"` for `127.0.0.11`).\n"+
-		"  - `VerifyServing` fails with `FLOWTABLE_BYPASS: table nat family ip hook postrouting priority 100 chain POSTROUTING statement xt`, rolls back `table inet fvpn` to baseline (`fvpn_generation = 0`), and emits `safety_status = \"failed\"` (observations `%s` and `%s`).\n"+
-		"- **Required Fix (`w1-netlab` or `w3-devstack-e2e`)**:\n"+
-		"  - In `node/enforce/verify_foreign.go`, exempt Docker's loopback embedded-DNS chains (`DOCKER_OUTPUT` / `DOCKER_POSTROUTING` matching `127.0.0.11` in `table ip nat`), or in `deploy/devstack/entrypoint-node-netns.sh` remove the unused `DOCKER_OUTPUT`/`DOCKER_POSTROUTING` jumps from `table ip nat` inside the lab container namespace before starting `fvpn-agent` (`AGENTS.md` §4 forbids `w4-at-usage` from touching tables outside `inet fvpn` or editing `node/enforce` / `deploy/devstack`).\n\n"+
-		"## 2. Resolved Since Follow-up 2 (#214)\n\n"+
-		"1. **Resolved by PR #222 (`w3-policy-fup`) — Desired-State Recompile on `policy.activated` and `fup.member_generation_changed`**:\n"+
-		"   - Verified live in `AT19`: activating `fair_use` in `mode=enforce` incremented `desired_config_generation` on both carrying exits (`node` `%d -> %d`, `node2` `%d -> %d`) and left the non-carrying node (`%s`) at `%d -> %d`; usage ingestion crossing the Tier 2 threshold (`fup.member_generation_changed`) incremented `desired_config_generation` on both carrying exits (`node` `%d -> %d`, `node2` `%d -> %d`) and left the non-carrying node at `%d -> %d`. Replaying either event did not bump generations twice.\n"+
-		"2. **Resolved by PR #222 (`w3-policy-fup`) — `pgNodeAckReader.GetMemberNodeAckStatus` Clearing `fair_use.applying`**:\n"+
-		"   - Verified live in `AT19`: `GET /api/v1/member/usage` `fair_use.applying` stayed `true` while only `node` had acknowledged the new generation, and transitioned `true -> false` once `node2` also acknowledged (`%d ms` on `policy.activated` via observation `%s`; `%d ms` on `fup.member_generation_changed` via observation `%s`).\n"+
-		"3. **Verified on `main` (PR #206, #213, #216) — D-067 Provisional-Lease Convergence (`AWAITING_MEMBER_GRANTS`)**:\n"+
-		"   - Measured on two real cycles (`bring_up`: `%d ms` ready->populated-lease; `agent_restart`: `%d ms` ready->populated-lease), both within `<= 65000 ms` (`60 s + 1 heartbeat`), reporting `AWAITING_MEMBER_GRANTS` on `lease`/`qos`/`source_binding` and 1 `errors[]` entry at `stage=lease` (never `LEASE_EXPIRED`).\n"+
-		"4. **Verified on `main` (PR #210) — `ENR-03` Per-Incarnation Retained Usage (`GET /api/v1/admin/nodes/{id}/incarnations`)**:\n"+
-		"   - Verified live on `node2` (`%s`): re-enrolling `node2` after counted traffic retired incarnation `%s` (`retire_reason=reinstall`, retained `upload_bytes=%s`, `download_bytes=%s`) and activated incarnation `%s` newest-first without altering `usage_rollups` / `GET /api/v1/member/usage` (`total_bytes=%s`), and subsequent traffic on `%s` accumulated on the same member period (`total_bytes=%s`) while `%s` stayed fixed.\n",
-		s.runID, s.build.GitCommit, s.nodeID, s.node2ID,
-		s.d067BringUp.ReadyObservationReportID, s.d067Restart.ReadyObservationReportID,
-		s.d067BringUp.ReadyToPopulatedLeaseMs, s.d067Restart.ReadyToPopulatedLeaseMs,
-		s.d067BringUp.ApplyBlockerObservationReportID, s.d067Restart.ApplyBlockerObservationReportID,
-		t1.DesiredGenBefore[n1Str], t1.DesiredGenAfter[n1Str],
-		t1.DesiredGenBefore[n2Str], t1.DesiredGenAfter[n2Str],
-		s.otherNodeID, t1.DesiredGenBefore[othStr], t1.DesiredGenAfter[othStr],
-		t2.DesiredGenBefore[n1Str], t2.DesiredGenAfter[n1Str],
-		t2.DesiredGenBefore[n2Str], t2.DesiredGenAfter[n2Str],
-		t2.DesiredGenBefore[othStr], t2.DesiredGenAfter[othStr],
-		t1.WallClockMsToApplyingFalse, t1.ClearingObservationReportID,
-		t2.WallClockMsToApplyingFalse, t2.ClearingObservationReportID,
-		s.d067BringUp.ReadyToPopulatedLeaseMs, s.d067Restart.ReadyToPopulatedLeaseMs,
-		s.incarnationRetention.NodeID,
-		s.incarnationRetention.OldIncarnationID,
-		s.incarnationRetention.IncarnationsAfterReinstall.Items[1].Usage.UploadBytes,
-		s.incarnationRetention.IncarnationsAfterReinstall.Items[1].Usage.DownloadBytes,
-		s.incarnationRetention.NewIncarnationID,
-		s.incarnationRetention.DBPeriodTotalsAfterReinstall["total_bytes"],
-		s.incarnationRetention.NewIncarnationID,
-		s.incarnationRetention.DBPeriodTotalsAfterNewTraffic["total_bytes"],
-		s.incarnationRetention.OldIncarnationID)
-	if err := os.WriteFile(filepath.Join(s.evidence, "requests.md"), []byte(reqs), 0o644); err != nil {
-		s.t.Fatalf("write requests.md: %v", err)
-	}
 }

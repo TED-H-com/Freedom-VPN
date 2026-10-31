@@ -81,8 +81,7 @@ ip route del 10.254.254.1/32 dev fvnb0 2>/dev/null || true
 	)
 
 	// 2. Ingest signed UsageEvent from node (s.nodeID / s.incarnationID) for memberA / s.deviceA and verify central ledger + GET /api/v1/member/usage
-	memAUUID := uuid.MustParse(s.memberA.memberID)
-	_, _, _ = s.ingestNodeUsageEvent(s.nodeID, s.incarnationID, s.agentClient, memAUUID, s.deviceA, 2214, 2411)
+	s.waitForUploadedTraffic("node", s.nodeID, s.incarnationID, s.deviceA)
 	sqlSnap := s.inspectNodeUsageSQLite("node", s.deviceA)
 
 	var pgSamplesUp, pgSamplesDown string
@@ -223,7 +222,7 @@ func (s *liveSuite) evalAT16(t *testing.T) Record {
 		At:       time.Now().UTC().Format(time.RFC3339),
 	})
 
-	// Keep node agent paused and acknowledge current desired_config_generation so subsequent evaluations start from a clean ACKed baseline
+	// Resume the real agent after watchdog withdrawal and wait for its serving ACK.
 	_, _, _, _ = s.ackNodeGeneration(s.nodeID, s.incarnationID, s.agentClient, 0)
 
 	rec.MechanismChecks = append(rec.MechanismChecks,
@@ -272,6 +271,7 @@ func (s *liveSuite) evalAT16(t *testing.T) Record {
 // 2. Exercises out-of-order upload (seq s1, s3 -> missing s2), Idempotency-Key batch replay, duplicate event retry, gap fill (seq s2 -> contiguous ACK s3), conflicting payload_sha256 audit (USAGE_EVENT_CONFLICT), rejected event blocked_seq (with >2^53 decimal string upload_bytes) and unblock, and 409/403 whole-request error guards.
 // 3. Exercises the live §17.3 operator recovery CLI (`fvpn-usage-admin freeze`, `begin-recovery`, `complete-recovery`, `drill-down`) and `replay_unavailable` tombstone recording on the new ledger_epoch.
 func (s *liveSuite) evalAT15(t *testing.T) Record {
+	s.stopNodeAgent("node")
 	rec := s.baseRecord(
 		"AT15",
 		"用量批次冪等、亂序缺口、衝突稽核與簽章檢查點恢復 (Idempotent Usage Ingest, Contiguous ACK, Conflict Audit & Signed Checkpoint Recovery)",

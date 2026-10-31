@@ -23,7 +23,8 @@ WRAPPER
     export FVPN_E2E_IMAGE_ADGUARD=fvpn-w4-usage-adguard:v0.107.59
     export FVPN_E2E_IMAGE_NETBIRD=fvpn-w4-usage-netbird:0.82.0
     git rev-parse HEAD > .agent/usage-image-source.txt
-    E2E_RESET=1 make -f mk/e2e.mk e2e-up
+    git merge-base HEAD origin/main > .agent/usage-image-main.txt
+    E2E_RESET=${E2E_RESET:-1} make -f mk/e2e.mk e2e-up
     ;;
   down) make -f mk/e2e.mk e2e-down ;;
   *) echo 'usage: bash tests/e2e/at/usage/stack.sh up|down' >&2; exit 2 ;;
