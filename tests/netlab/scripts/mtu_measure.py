@@ -6,7 +6,6 @@ and counters distinguish local PMTU errors, forwarded quoted errors and the
 v1 IPv6 block. Synthetic payloads are never written to evidence.
 """
 import json
-import os
 from pathlib import Path
 import re
 import signal
@@ -150,7 +149,7 @@ def udp_seed():
 def snapshot():
     return dict(wall_ns=str(time.time_ns()),
                 nft=run(None, 'nft', '-a', 'list', 'table', 'inet', 'fvpn')['stdout'],
-                tc={dev: {kind: json.loads(run(None, 'tc', '-j', '-s', kind, 'show', 'dev', dev)['stdout'])
+                tc={dev: {kind: run(None, 'tc', '-s', kind, 'show', 'dev', dev)['stdout']
                           for kind in ('qdisc', 'class', 'filter')} for dev in ('fv-fh', 'fv-ih')})
 
 
@@ -177,6 +176,35 @@ def reconnect():
     run('fv-a1', 'ip', '-6', 'route', 'add', 'default', 'dev', 'fv-wg0')
     run('fv-a1', 'ethtool', '-K', 'fv-wg0', 'gro', 'off', 'gso', 'off', 'tso', 'off', check=False)
     return str(time.time_ns())
+
+
+def capture_check(text, stats):
+    # Linux any/SLL also reports multicast (M), broadcast (B), other-host (P).
+    headers = len(re.findall(r'^\d+\.\d+\s+\S+\s+(?:In|Out|M|B|P)\s+IP(?:6)? ', text, re.M))
+    count = re.search(r'(\d+) packets captured', stats)
+    drops = re.search(r'(\d+) packets dropped by kernel', stats)
+    return dict(parsed_headers=headers, captured=int(count[1]) if count else None,
+                dropped=int(drops[1]) if drops else None,
+                ok=bool(count and drops and int(count[1]) == headers and int(drops[1]) == 0))
+
+
+def static_transit_neighbors():
+    # The rendered input chain drops all packets on fv-fh, including ND.
+    # Static lab neighbors expose the forward hook without changing that rule.
+    before = {}
+    for ns, dev in [(None, 'fv-fh'), ('fv-fwd', 'fv-ff'), (None, 'fv-ih'), ('fv-inet', 'fv-ii')]:
+        before[(ns or 'node') + '/' + dev] = {
+            'addresses': json.loads(run(ns, 'ip', '-j', 'addr', 'show', 'dev', dev)['stdout']),
+            'neighbors': json.loads(run(ns, 'ip', '-6', '-j', 'neigh', 'show', 'dev', dev)['stdout'])}
+    write('transit-before.json', before)
+    pairs = [(None, 'fv-fh', 'fd00:db8:ff::34', 'fv-fwd', 'fv-ff'),
+             ('fv-fwd', 'fv-ff', 'fd00:db8:ff::33', None, 'fv-fh')]
+    for ns, dev, address, peer_ns, peer_dev in pairs:
+        peer = json.loads(run(peer_ns, 'ip', '-j', 'link', 'show', 'dev', peer_dev)['stdout'])[0]
+        run(ns, 'ip', '-6', 'neigh', 'replace', address, 'lladdr', peer['address'], 'nud', 'permanent', 'dev', dev)
+    write('transit-static-neighbors.json', {
+        (ns or 'node') + '/' + dev: json.loads(run(ns, 'ip', '-6', '-j', 'neigh', 'show', 'dev', dev)['stdout'])
+        for ns, dev, _, _, _ in pairs})
 
 
 def measure():
@@ -213,6 +241,7 @@ def measure():
                 if proc.poll() is not None or time.monotonic() > limit:
                     raise RuntimeError('capture did not start: '+role)
                 time.sleep(.01)
+        static_transit_neighbors()
         write('initial.json', snapshot())
         # Matrix ordering: IPv4 1500, IPv6 1500, both 1500, both 1280.
         # Families here are inner IP; the tunnel underlay stays IPv4.
@@ -252,12 +281,7 @@ def measure():
     for role, _ in captures:
         text = (BASE/(role+'.txt')).read_text()
         stats = (BASE/(role+'.err')).read_text()
-        headers = len(re.findall(r'^\d+\.\d+\s+\S+\s+(?:In|Out)\s+IP(?:6)? ', text, re.M))
-        count = re.search(r'(\d+) packets captured', stats)
-        drops = re.search(r'(\d+) packets dropped by kernel', stats)
-        ok = bool(count and drops and int(count[1]) == headers and int(drops[1]) == 0)
-        checks[role] = dict(parsed_headers=headers, captured=int(count[1]) if count else None,
-                            dropped=int(drops[1]) if drops else None, ok=ok)
+        checks[role] = capture_check(text, stats)
     write('capture-checks.json', checks)
     if not all(r['ok'] for r in checks.values()):
         raise RuntimeError('MTU capture count/drop check failed')
