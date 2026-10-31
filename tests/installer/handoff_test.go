@@ -11,6 +11,21 @@ import (
 	"github.com/google/uuid"
 )
 
+func TestD089_MergedUpdaterSeedProbe(t *testing.T) {
+	const name = "fvpn-w5-installer-seed-probe"
+	startSleep(t, name)
+	stage(t, name)
+	out, code := dexec(t, name, "/var/tmp/w5/rel1/tree-1/fvpn-updater", "seed", "--help")
+	if code == 64 && strings.Contains(out, `unknown command "seed"`) {
+		t.Logf("baseline: not seeded (updater without seed); probe exit=%d stderr=%q", code, out)
+		return
+	}
+	if (code != 0 && code != 64) || !strings.Contains(out, "-manifest") || !strings.Contains(out, "-tree") {
+		t.Fatalf("seed probe: exit=%d stderr=%q", code, out)
+	}
+	t.Logf("seed subcommand available; probe exit=%d stderr=%q", code, out)
+}
+
 func assertBaseline(t *testing.T, baseline *installer.BaselineResult, log string) {
 	t.Helper()
 	if baseline == nil || !strings.Contains(log, "baseline: "+baseline.Status) {
@@ -94,7 +109,7 @@ func testPendingHandoff(t *testing.T, c string, baseline *installer.BaselineResu
 	applyOut, code := dexec(t, c, updater, "apply", "--config", config, "--pending", pendingPath)
 	view := status()
 	if baseline.Status == "seeded" {
-		if code != 0 || view["state"] != "locally_succeeded" || view["current_release_id"] != rel2.ReleaseID {
+		if code != 0 || view["state"] != "succeeded" || view["current_release_id"] != rel2.ReleaseID {
 			t.Fatalf("verified baseline must apply: exit=%d status=%+v\n%s", code, view, applyOut)
 		}
 	} else {

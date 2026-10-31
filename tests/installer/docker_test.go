@@ -238,8 +238,10 @@ func startSystemd(t *testing.T, name string) {
 	// an installer failure.
 	for attempt := 1; attempt <= 3; attempt++ {
 		_ = exec.Command("docker", "rm", "-fv", name).Run()
-		out, code := runCmd(t, time.Minute, "docker", "run", "-d", "--name", name,
+		out, code := runCmd(t, time.Minute, "docker", "run", "-dt", "--name", name,
 			"--privileged", "--cgroupns=host",
+			"--env", "SYSTEMD_LOG_TARGET=console",
+			"--env", "SYSTEMD_LOG_LEVEL=info",
 			"-v", "/sys/fs/cgroup:/sys/fs/cgroup:rw",
 			imageRef)
 		if code != 0 {
@@ -261,7 +263,8 @@ func startSystemd(t *testing.T, name string) {
 		}
 	}
 	logs, _ := runCmd(t, 20*time.Second, "docker", "logs", name)
-	t.Fatalf("systemd did not come up (%q)\n%s", last, logs)
+	state, _ := runCmd(t, 20*time.Second, "docker", "inspect", "--format", "{{json .State}}", name)
+	t.Fatalf("systemd did not come up (%q)\n%s\n%s", last, state, logs)
 }
 
 func startSleep(t *testing.T, name string) {
@@ -699,8 +702,10 @@ type bootID struct{ key, inc, machine string }
 func bootClone(t *testing.T, name string) bootID {
 	t.Helper()
 	_ = exec.Command("docker", "rm", "-fv", name).Run()
-	out, code := runCmd(t, time.Minute, "docker", "run", "-d", "--name", name,
+	out, code := runCmd(t, time.Minute, "docker", "run", "-dt", "--name", name,
 		"--privileged", "--cgroupns=host",
+		"--env", "SYSTEMD_LOG_TARGET=console",
+		"--env", "SYSTEMD_LOG_LEVEL=info",
 		"-v", "/sys/fs/cgroup:/sys/fs/cgroup:rw",
 		"fvpn-w5-installer-image:prepared")
 	if code != 0 {
@@ -709,8 +714,10 @@ func bootClone(t *testing.T, name string) bootID {
 	t.Cleanup(func() { _ = exec.Command("docker", "rm", "-fv", name).Run() })
 	if !waitSystemd(t, name, 45*time.Second) {
 		_ = exec.Command("docker", "rm", "-fv", name).Run()
-		out, code = runCmd(t, time.Minute, "docker", "run", "-d", "--name", name,
+		out, code = runCmd(t, time.Minute, "docker", "run", "-dt", "--name", name,
 			"--privileged", "--cgroupns=host",
+			"--env", "SYSTEMD_LOG_TARGET=console",
+			"--env", "SYSTEMD_LOG_LEVEL=info",
 			"-v", "/sys/fs/cgroup:/sys/fs/cgroup:rw",
 			"fvpn-w5-installer-image:prepared")
 		if code != 0 {

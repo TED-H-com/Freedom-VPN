@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/TED-H-com/Freedom-VPN/node/nodelock"
+	"github.com/TED-H-com/Freedom-VPN/node/updater"
 	"github.com/TED-H-com/Freedom-VPN/packaging/release"
 	"github.com/google/uuid"
 )
@@ -170,4 +171,92 @@ func TestAT26_InstallerUsesSharedKernelBootLock(t *testing.T) {
 	if got := readLock(env.Layout).BootID; got != strings.TrimSpace(string(boot)) {
 		t.Fatalf("holder boot %s, want kernel value", got)
 	}
+}
+
+// Exercise the actual merged consumer and SQLite journal without a privileged
+// container. This proves the hand-off reaches the baseline guard, not a switch
+// or health success. No test creates release or pointer journal evidence.
+func TestD089_RealUpdaterConsumesWriterRecord(t *testing.T) {
+	ctx := context.Background()
+	dir := t.TempDir()
+	env := baseEnv(t, dir)
+	old := mustRelease(t, dir, uuid.NewString(), "1")
+	if _, err := Install(ctx, env, mustReq(t, dir, old)); err != nil {
+		t.Fatal(err)
+	}
+	next := mustRelease(t, dir, uuid.NewString(), "2")
+	cfg, err := updater.LoadConfig(env.Layout.updaterConfig())
+	if err != nil {
+		t.Fatal(err)
+	}
+	// TEST ONLY: no HTTP requests are made. The independently signed fixture
+	// is explicitly trusted, and fake enrollment certificates are not used.
+	cfg.MTLSCert, cfg.MTLSKey, cfg.MTLSCA = "", "", ""
+	cfg.ReleaseTrust = next.Trust
+	cfg.StopCommand, cfg.StartCommand = nil, nil
+	engine, err := cfg.Engine()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer engine.Close()
+	stage := func() *Result {
+		r, err := Upgrade(ctx, env, next.Manifest, next.Artifact, next.Trust)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return r
+	}
+	result := stage()
+	raw, err := os.ReadFile(env.Layout.pendingUpgrade())
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Logf("writer record: %s", raw)
+	assertFailure := func(want string, count int) string {
+		t.Helper()
+		err := engine.ApplyPending(ctx, env.Layout.pendingUpgrade())
+		if err == nil || !strings.Contains(err.Error(), want) {
+			t.Fatalf("apply: %v, want %s", err, want)
+		}
+		outbox, err := engine.Journal.Outbox(ctx)
+		if err != nil || len(outbox) != count {
+			t.Fatalf("outbox count=%d err=%v", len(outbox), err)
+		}
+		job, err := engine.Journal.GetJob(ctx, outbox[count-1].JobID, 1)
+		if err != nil || job.Outcome != "failed" || !strings.Contains(string(job.IntentJSON), `"source":"installer"`) {
+			t.Fatalf("job: %+v %v", job, err)
+		}
+		if got, _ := os.Readlink(env.Layout.CurrentLink); got != "releases/"+old.ReleaseID {
+			t.Fatal("failure moved current")
+		}
+		t.Logf("installer job %s rejected: %s", job.JobID, want)
+		return job.JobID
+	}
+	first := assertFailure("CHECKPOINT_FAILED", 1)
+	if err := os.WriteFile(env.Layout.pendingUpgrade(), raw, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := engine.ApplyPending(ctx, env.Layout.pendingUpgrade()); err != nil {
+		t.Fatal(err)
+	}
+	if outbox, err := engine.Journal.Outbox(ctx); err != nil || len(outbox) != 1 {
+		t.Fatalf("replay: %v %v", outbox, err)
+	}
+	second := stage()
+	if result.RequestID == second.RequestID || assertFailure("CHECKPOINT_FAILED", 2) == first {
+		t.Fatal("second invocation did not create new work")
+	}
+	third := stage()
+	envelope, err := os.ReadFile(third.ManifestPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	tampered := strings.Replace(string(envelope), `"1.2.2"`, `"9.9.9"`, 1)
+	if tampered == string(envelope) {
+		t.Fatal("no tamper")
+	}
+	if err := os.WriteFile(third.ManifestPath, []byte(tampered), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	assertFailure("HASH_MISMATCH", 3)
 }
