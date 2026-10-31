@@ -3,10 +3,17 @@
 package agent
 
 import (
+	"bufio"
+	"bytes"
 	"context"
+	"fmt"
+	"github.com/TED-H-com/Freedom-VPN/tests/netlab"
+	"net"
+	"net/netip"
 	"os"
 	"os/exec"
 	"slices"
+	"strings"
 	"testing"
 	"time"
 
@@ -17,6 +24,7 @@ import (
 type measuredSystemPlane struct {
 	SystemPlane
 	reads []time.Duration
+	paths []time.Duration
 }
 
 func (p *measuredSystemPlane) VerifyServing(ctx context.Context, model enforce.Model, assignments map[uuid.UUID]uint16) (enforce.ServingEvidence, error) {
@@ -24,6 +32,13 @@ func (p *measuredSystemPlane) VerifyServing(ctx context.Context, model enforce.M
 	ev, err := p.SystemPlane.VerifyServing(ctx, model, assignments)
 	p.reads = append(p.reads, time.Since(start))
 	return ev, err
+}
+
+func (p *measuredSystemPlane) MemberPath(ctx context.Context, m enforce.Model, expected *MemberPath) (MemberPath, error) {
+	start := time.Now()
+	path, err := p.SystemPlane.MemberPath(ctx, m, expected)
+	p.paths = append(p.paths, time.Since(start))
+	return path, err
 }
 
 // Invoked only by the foreground container launcher in tests/netlab/agent.
@@ -48,12 +63,44 @@ func TestD085_LiveReadNetlab(t *testing.T) {
 			run("ip", "link", "set", iface, "up")
 		}
 	}
+	// The lab topology owns these addresses and routes, exactly as the
+	// netlab D-090 recovery helper does (documentation IPv6 prefixes here).
+	run("ip", "addr", "add", "192.0.2.33/30", "dev", "fv-fh")
+	run("ip", "addr", "add", "192.0.2.34/30", "dev", "fv-fa")
+	run("ip", "addr", "add", "192.0.2.37/30", "dev", "fv-ih")
+	run("ip", "netns", "add", "fv-inet")
+	run("ip", "link", "set", "fv-ia", "netns", "fv-inet")
+	run("ip", "netns", "exec", "fv-inet", "ip", "addr", "add", "192.0.2.38/30", "dev", "fv-ia")
+	run("ip", "netns", "exec", "fv-inet", "ip", "link", "set", "fv-ia", "up")
+	reconcile := func() {
+		run("ip", "route", "replace", "100.64.0.0/10", "via", "192.0.2.34", "dev", "fv-fh")
+		run("ip", "-6", "addr", "replace", "2001:db8:ff::33/64", "dev", "fv-fh", "nodad")
+		run("ip", "-6", "route", "replace", "2001:db8:a1::/64", "via", "2001:db8:ff::34", "dev", "fv-fh")
+	}
+	reconcile()
+	control := exec.CommandContext(t.Context(), "ip", "netns", "exec", "fv-inet", "python3", "-u", "-c", `import socket
+s=socket.socket(); s.bind(('192.0.2.38',40080)); s.listen(); print('ready',flush=True)
+while True:
+ c,_=s.accept(); c.sendall(b'control-ok'); c.close()
+`)
+	ready, err := control.StdoutPipe()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := control.Start(); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = control.Process.Kill(); _ = control.Wait() })
+	if line, err := bufio.NewReader(ready).ReadString('\n'); err != nil || line != "ready\n" {
+		t.Fatal("control listener", line, err)
+	}
 	r := newRig(t)
 	alignControlClock(r)
 	serveBoundGeneration(t, r)
 	r.manualUsage(t)
 	p := &measuredSystemPlane{}
 	r.eng.plane = p
+	r.eng.memberPath = nil // the initial fake plane has no kernel topology
 	r.eng.cfg.HeartbeatSeconds, r.eng.cfg.PollSeconds = 1, 1
 	r.eng.withdraw(t.Context())
 	stepOK(t, r)
@@ -61,6 +108,7 @@ func TestD085_LiveReadNetlab(t *testing.T) {
 		t.Fatalf("real Apply failed: %+v %s", r.eng.decision.Errors, r.log.String())
 	}
 	p.reads = nil
+	p.paths = nil
 	const steps = 30
 	started := time.Now()
 	for range steps {
@@ -81,17 +129,109 @@ func TestD085_LiveReadNetlab(t *testing.T) {
 	t.Logf("real nft/tc: steps=%d reads=%d mean_read=%s p50=%s p95=%s max=%s added_live_reads_per_step=%s total_step_mean=%s timeout=%s",
 		steps, len(p.reads), total/time.Duration(len(p.reads)), p.reads[len(p.reads)/2], p.reads[len(p.reads)*95/100], p.reads[len(p.reads)-1], total/steps, stepMean, r.eng.servingReadTimeout())
 
+	var pathTotal time.Duration
+	for _, d := range p.paths {
+		pathTotal += d
+	}
+	t.Logf("D096 topology reads: count=%d mean=%s added_per_step=%s; follow-up 21 live-read reference=52.6ms; combined_verification_per_step=%s", len(p.paths), pathTotal/time.Duration(len(p.paths)), pathTotal/steps, (pathTotal+total)/steps)
+
 	run("tc", "qdisc", "add", "dev", "fv-fh", "clsact")
 	run("tc", "filter", "add", "dev", "fv-fh", "ingress", "pref", "1", "matchall", "action", "mirred", "egress", "redirect", "dev", "fv-ih")
+	before := liveBypassPackets(t)
+	if before != 1 {
+		t.Fatalf("injection did not exercise bypass: packets=%d", before)
+	}
+	started = time.Now()
 	stepOK(t, r)
+	t.Logf("D090 injected next-step withdrawal cost=%s", time.Since(started))
 	assertLiveWithdrawn(t, r, 2, "TC_FOREIGN_FILTER")
-	// Baseline intentionally leaves this foreign filter. D-090 will supply
-	// quarantine; remove the test injection explicitly before recovery.
+	assertTCWire(t, r)
+	q := r.eng.containment.Quarantine
+	if q == nil || !q.Quarantined || !q.Recorded || !q.Baseline.Installed || !q.Baseline.Verified || len(q.Links) != 1 || q.Links[0].After.AdminUp {
+		t.Fatalf("quarantine evidence: %+v", q)
+	}
+	after := liveBypassPackets(t)
+	if after != 0 {
+		t.Fatalf("quarantine bypass packets=%d", after)
+	}
+	c, err := net.DialTimeout("tcp", "192.0.2.38:40080", time.Second)
+	if err != nil {
+		t.Fatal("uplink control", err)
+	}
+	_ = c.SetReadDeadline(time.Now().Add(time.Second))
+	b := make([]byte, 32)
+	n, err := c.Read(b)
+	_ = c.Close()
+	if err != nil || string(b[:n]) != "control-ok" {
+		t.Fatal("control response", err)
+	}
+	t.Logf("D090 deciding observation: pre-quarantine uplink_packets=%d nft_delta=0; post-quarantine uplink_packets=%d nft_delta=0; node uplink control=pass TLS observation=accepted; evidence=%s", before, after, r.eng.containmentJSON())
+	// A daemon may raise the link between steps. The next step contains it.
+	run("ip", "link", "set", "fv-fh", "up")
+	stepOK(t, r)
+	if mustBeat(t, r).Serving || !r.eng.containment.Quarantine.Quarantined {
+		t.Fatal("repeat containment failed")
+	}
+	// Only this harness removes its foreign state. Apply raises the member
+	// link; D-096 must reject the missing routes/IPv6 address before serving.
 	run("tc", "filter", "del", "dev", "fv-fh", "ingress", "pref", "1")
 	run("tc", "qdisc", "del", "dev", "fv-fh", "clsact")
 	stepOK(t, r)
-	if !mustBeat(t, r).Serving || r.eng.applyError != nil {
-		t.Fatalf("real full Apply recovery failed: %+v", r.eng.decision.Errors)
+	if mustBeat(t, r).Serving || mustBeat(t, r).Reason != "member_path_unconfigured" {
+		t.Fatalf("premature recovery: %+v", mustBeat(t, r))
 	}
-	t.Log("real engine: serving -> injected ingress redirect -> next Step non-serving with TC_FOREIGN_FILTER/control report accepted -> remove injection -> clean full Apply serving")
+	reconcile()
+	stepOK(t, r)
+	if !mustBeat(t, r).Serving || r.eng.applyError != nil {
+		t.Fatalf("real recovery failed: %+v", r.eng.decision.Errors)
+	}
+	t.Log("D096 clean Apply raised link but stayed non-serving until harness restored two routes and one IPv6 address; next full Apply + topology check restored serving")
+}
+
+// Same ingress injector as the netlab deciding observation. tcpdump readiness
+// is explicit; the capture is a supervised child and all traffic is in-lab.
+func liveBypassPackets(t *testing.T) int {
+	t.Helper()
+	ctx, cancel := context.WithTimeout(t.Context(), 2*time.Second)
+	defer cancel()
+	cmd := exec.CommandContext(ctx, "tcpdump", "-l", "-n", "-i", "fv-ih", "-c", "1", "udp port 39997")
+	var out bytes.Buffer
+	cmd.Stdout = &out
+	stderr, err := cmd.StderrPipe()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := cmd.Start(); err != nil {
+		t.Fatal(err)
+	}
+	reader := bufio.NewScanner(stderr)
+	ready := false
+	for reader.Scan() {
+		if strings.Contains(reader.Text(), "listening on") {
+			ready = true
+			break
+		}
+	}
+	if !ready {
+		_ = cmd.Wait()
+		t.Fatal("capture not ready")
+	}
+	obs, injectErr := netlab.InjectMemberIngress(t.Context(), netlab.IngressSpec{MemberIface: "fv-fh", Source: netip.MustParseAddr("100.64.9.9"), Dest: netip.MustParseAddr("203.0.113.10"), DestPort: 39997})
+	err = cmd.Wait()
+	if injectErr != nil {
+		t.Fatal(injectErr)
+	}
+	if obs.After["ctunku"].Packets != obs.Before["ctunku"].Packets {
+		t.Fatalf("injection reached nft: %+v", obs)
+	}
+	if out.Len() == 0 {
+		if ctx.Err() == nil {
+			t.Fatalf("capture failed: %v", err)
+		}
+		return 0
+	}
+	if err != nil {
+		t.Fatal(fmt.Errorf("capture: %w", err))
+	}
+	return 1
 }
