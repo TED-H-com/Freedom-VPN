@@ -1,0 +1,169 @@
+{
+  "run_id": "2be2d32f-bfd9-46f5-bf29-afaa6617ae94",
+  "source_commit": "731be5a7af7657660d96c240695747a23a3f5c96",
+  "case": "AT20",
+  "request": "F10-03",
+  "status": "fail",
+  "checks": [
+    {
+      "name": "cache initial",
+      "status": "pass",
+      "expected": "positive TTL <=10, negative SOA TTL <=5",
+      "actual": {
+        "negative": {
+          "authority_ttl": 2,
+          "has_soa": true,
+          "available": true,
+          "rcode": 3,
+          "types": [],
+          "ttls": [],
+          "address_classes": [],
+          "expected_answer": false,
+          "connected": false,
+          "bytes": 0,
+          "milliseconds": 1
+        },
+        "positive": {
+          "authority_ttl": 0,
+          "has_soa": false,
+          "available": true,
+          "rcode": 0,
+          "types": [
+            1
+          ],
+          "ttls": [
+            10
+          ],
+          "address_classes": [
+            "other_ipv4"
+          ],
+          "expected_answer": true,
+          "connected": false,
+          "bytes": 0,
+          "milliseconds": 2502
+        }
+      },
+      "command": "native DNS before authority-only change",
+      "at": "2026-10-31T13:52:11Z"
+    },
+    {
+      "name": "changed authority",
+      "status": "pass",
+      "expected": "new answer while caches untouched",
+      "actual": {
+        "authority": {
+          "authority_ttl": 0,
+          "has_soa": false,
+          "available": true,
+          "rcode": 0,
+          "types": [
+            1
+          ],
+          "ttls": [
+            10
+          ],
+          "address_classes": [
+            "private_ipv4"
+          ],
+          "expected_answer": true,
+          "connected": false,
+          "bytes": 0,
+          "milliseconds": 0
+        },
+        "changed_at": "2026-10-31T13:52:11.835999256Z"
+      },
+      "command": "SetDNSFixturePhase(private); query authority until new serial visible",
+      "at": "2026-10-31T13:52:12Z"
+    },
+    {
+      "name": "positive/negative cache before TTL",
+      "status": "fail",
+      "expected": "old positive and NXDOMAIN persist with remaining TTL",
+      "actual": {
+        "negative": {
+          "authority_ttl": 1,
+          "has_soa": true,
+          "available": true,
+          "rcode": 3,
+          "types": [],
+          "ttls": [],
+          "address_classes": [],
+          "expected_answer": false,
+          "connected": false,
+          "bytes": 0,
+          "milliseconds": 1
+        },
+        "observed_at": "2026-10-31T13:52:12.96280019Z",
+        "positive": {
+          "authority_ttl": 0,
+          "has_soa": false,
+          "available": true,
+          "rcode": 0,
+          "types": [
+            1
+          ],
+          "ttls": [
+            10
+          ],
+          "address_classes": [
+            "private_ipv4"
+          ],
+          "expected_answer": false,
+          "connected": false,
+          "bytes": 0,
+          "milliseconds": 1
+        }
+      },
+      "command": "ProbeNativeDNS without flushing either cache",
+      "at": "2026-10-31T13:52:12Z"
+    },
+    {
+      "name": "positive/negative cache after TTL",
+      "status": "pass",
+      "expected": "both new authority answers visible",
+      "actual": {
+        "formerly_negative": {
+          "authority_ttl": 0,
+          "has_soa": false,
+          "available": true,
+          "rcode": 0,
+          "types": [
+            1
+          ],
+          "ttls": [
+            5
+          ],
+          "address_classes": [
+            "other_ipv4"
+          ],
+          "expected_answer": true,
+          "connected": false,
+          "bytes": 0,
+          "milliseconds": 2
+        },
+        "observed_at": "2026-10-31T13:52:25.057177644Z",
+        "positive": {
+          "authority_ttl": 0,
+          "has_soa": false,
+          "available": true,
+          "rcode": 0,
+          "types": [
+            1
+          ],
+          "ttls": [
+            10
+          ],
+          "address_classes": [
+            "private_ipv4"
+          ],
+          "expected_answer": true,
+          "connected": false,
+          "bytes": 0,
+          "milliseconds": 1
+        }
+      },
+      "command": "ProbeNativeDNS after real TTL elapses",
+      "at": "2026-10-31T13:52:25Z"
+    }
+  ]
+}
