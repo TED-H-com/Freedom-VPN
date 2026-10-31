@@ -67,7 +67,7 @@ func (f *firstOfferObserver) wrap(next http.Handler) http.Handler {
 		defer f.mu.Unlock()
 		if desired {
 			if _, err := os.Stat(f.hold); err == nil {
-				http.Error(w, "TEST ONLY desired-state hold", 503)
+				http.Error(w, "TEST ONLY desired-state hold", http.StatusServiceUnavailable)
 				return
 			}
 		}
@@ -89,7 +89,7 @@ func (f *firstOfferObserver) wrap(next http.Handler) http.Handler {
 		if observation {
 			body, e := io.ReadAll(io.LimitReader(r.Body, 4<<20))
 			if e != nil {
-				http.Error(w, "capture read failed", 502)
+				http.Error(w, "capture read failed", http.StatusBadGateway)
 				return
 			}
 			_ = r.Body.Close()
