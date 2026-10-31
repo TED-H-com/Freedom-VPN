@@ -24,15 +24,12 @@ runtime token. Prefix `e2e` does not remove `fvpn-e2e-exports-*`. A native
 peer whose name contains `exports` is still removed, because its token is
 `member`.
 
-Images use neutral `fvpn-devstack-*` tags, including
-`fvpn-devstack-netbird:0.82.0`, so harnesses share the Docker build cache.
-Bring-up pins locally built services to their immutable image IDs before
-starting Compose; a concurrent worktree moving a shared `:local` tag cannot
-change that run's selected image. Per-prefix `fvpn-<prefix>-*:run` aliases retain those images while concurrent
-builds move the neutral tags; teardown removes these runtime aliases by the
-full `repository:tag` (`fvpn-<prefix>-node:run`), not a bare `:latest` name.
-Auxiliary
-update nodes use the running node's image ID. Teardown retains the shared images.
+Bring-up tags images only as `fvpn-<prefix>-*:run` and pins locally built
+services to immutable image IDs before starting Compose. Docker's shared
+layer cache remains reusable without moving another worktree's mutable tag.
+Teardown removes the full owned `repository:tag`; it retains upstream cache
+layers and pre-existing neutral images. Auxiliary nodes use the running
+node's image ID.
 
 ## Loopback ports
 

@@ -705,7 +705,10 @@ exposes other CLI invocations on that same owned container. `Before` and
 `Hashes` include key/cert/node.json, usage.db and optional WAL, machine-id,
 and the current symlink text; absent files are explicitly `absent` and do not
 prove retention. Agent/watchdog/updater services stop before hashing. The
-retired identity directory mode and new incarnation are returned separately.
+retired identity directory mode, old identity hashes, hashes of all four
+incarnation-bound state files, and new incarnation are returned separately.
+A new `agent.db` may exist after reenrollment; retention is checked against
+the retired files rather than by demanding that the new database be absent.
 Product start/recovery failures remain failed evidence with their owner;
 these wrappers do not substitute fake enrollment or certify old-cert rejection.
 `e2e-down` removes the installer container/image and its private artifacts.

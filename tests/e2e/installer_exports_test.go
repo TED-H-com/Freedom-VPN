@@ -202,7 +202,6 @@ func (r *runner) exportsInstaller(ctx context.Context, s *Stack, admin BrowserSe
 	}
 	note("exit_4", "UNSUPPORTED_PLATFORM is covered by tests/installer; this container is Ubuntu 24.04")
 	beforeDB := newerRun.Hashes.UsageDB
-	agentDB := !s.installerAbsent(ctx, "/var/lib/vpn-node/state/agent.db")
 	nodeID, err := uuid.Parse(installed.NodeID)
 	if err != nil {
 		note("node_id", "unreadable")
@@ -227,13 +226,16 @@ func (r *runner) exportsInstaller(ctx context.Context, s *Stack, admin BrowserSe
 	note("incarnation_changed", boolText(reenrolled.Incarnation != "" && reenrolled.Incarnation != installed.Incarnation))
 	note("retired_mode", emptyDash(reenrolled.RetiredMode))
 	note("usage_db_same", boolText(reenrolled.Hashes.UsageDB == beforeDB))
-	moved := s.installerAbsent(ctx, "/var/lib/vpn-node/state/agent.db")
-	if agentDB {
-		moved = moved && exec.CommandContext(ctx, "docker", "exec", s.installerContainer(), "sh", "-c", `ls /var/lib/vpn-node/identity.retired/*/state-agent.db >/dev/null 2>&1`).Run() == nil
+	moved := len(reenrolled.BoundStateBefore) == 4
+	for name, digest := range reenrolled.BoundStateBefore {
+		moved = moved && reenrolled.RetiredBoundState[name] == digest
 	}
+	retired := reenrolled.RetiredHashes.Key == reenrolled.Before.Key && reenrolled.RetiredHashes.Cert == reenrolled.Before.Cert && reenrolled.RetiredHashes.NodeJSON == reenrolled.Before.NodeJSON
+	note("retired_identity_hashes_match", boolText(retired))
+	note("stable_node_id", boolText(reenrolled.NodeID == installed.NodeID))
 	note("agent_db_moved_aside", boolText(moved))
 	note("old_certificate", "ENR-02 stays the harness; this wrapper does not prove central rejects it")
-	if reenrolled.Exit != 0 || reenrolled.Status != "reenrolled" || reenrolled.Incarnation == installed.Incarnation || reenrolled.RetiredMode != "700" || reenrolled.Hashes.UsageDB != beforeDB || !moved {
+	if reenrolled.Exit != 0 || reenrolled.Status != "reenrolled" || reenrolled.Incarnation == installed.Incarnation || reenrolled.RetiredMode != "700" || reenrolled.Hashes.UsageDB != beforeDB || !moved || !retired || reenrolled.NodeID != installed.NodeID || reenrolled.Hashes.UsageWAL != reenrolled.Before.UsageWAL {
 		note("reenroll_message", clipText(reenrolled.Message, 240))
 		return
 	}

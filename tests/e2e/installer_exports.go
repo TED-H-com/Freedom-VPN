@@ -29,15 +29,18 @@ type InstallerHashes struct {
 // installer: 0 ok, 1 failed, 2 check drift, 3 busy, 4 platform, 5 dependency,
 // 64 usage. upgrade can set Status to staged and still exit 1.
 type InstallerOutcome struct {
-	Exit        int
-	Status      string
-	Code        string
-	Incarnation string
-	NodeID      string
-	RetiredMode string
-	Message     string
-	Before      InstallerHashes
-	Hashes      InstallerHashes
+	Exit              int
+	Status            string
+	Code              string
+	Incarnation       string
+	NodeID            string
+	RetiredMode       string
+	RetiredHashes     InstallerHashes
+	BoundStateBefore  map[string]string
+	RetiredBoundState map[string]string
+	Message           string
+	Before            InstallerHashes
+	Hashes            InstallerHashes
 }
 
 type installerSpec struct {
@@ -225,8 +228,13 @@ func (s *Stack) ControlledReinstall(ctx context.Context, slot, enrollment string
 	if err != nil {
 		return InstallerOutcome{}, err
 	}
+	bound, err := s.installerBoundHashes(ctx, "/var/lib/vpn-node/state", false)
+	if err != nil {
+		return InstallerOutcome{}, err
+	}
 	out := s.runInstaller(ctx, []string{"/usr/local/bin/fvpn-node-install", "reenroll", "--json", "--token-file", path})
 	out.Before = before
+	out.BoundStateBefore = bound
 	_ = exec.CommandContext(ctx, "docker", "exec", s.installerContainer(), "rm", "-f", path).Run()
 	if out.Exit < 0 {
 		return out, fmt.Errorf("%s", out.Message)
@@ -235,7 +243,26 @@ func (s *Stack) ControlledReinstall(ctx context.Context, slot, enrollment string
 		return out, stopErr
 	}
 	out.Hashes, err = s.installerHashes(ctx)
-	out.RetiredMode = s.retiredMode(ctx)
+	retired, retiredErr := s.retiredDirectory(ctx)
+	if retiredErr == nil && retired != "" {
+		out.RetiredMode, retiredErr = s.fileMode(ctx, retired)
+		if retiredErr != nil {
+			return out, retiredErr
+		}
+		for _, item := range []struct {
+			dest *string
+			name string
+		}{{&out.RetiredHashes.Key, "key.pem"}, {&out.RetiredHashes.Cert, "cert.pem"}, {&out.RetiredHashes.NodeJSON, "node.json"}} {
+			*item.dest, retiredErr = s.hashInside(ctx, retired+"/"+item.name, false)
+			if retiredErr != nil {
+				return out, retiredErr
+			}
+		}
+		out.RetiredBoundState, retiredErr = s.installerBoundHashes(ctx, retired, true)
+	}
+	if err == nil {
+		err = retiredErr
+	}
 	s.noteIdentity(ctx, &out)
 	return out, err
 }
@@ -487,12 +514,25 @@ func (s *Stack) fileMode(ctx context.Context, path string) (string, error) {
 	return strings.TrimSpace(string(out)), nil
 }
 
-func (s *Stack) retiredMode(ctx context.Context) string {
-	out, err := exec.CommandContext(ctx, "docker", "exec", s.installerContainer(), "sh", "-c", `d=$(ls -1d /var/lib/vpn-node/identity.retired/*/ 2>/dev/null | tail -1); test -n "$d" && stat -c %a "$d"`).Output()
-	if err != nil {
-		return ""
+func (s *Stack) retiredDirectory(ctx context.Context) (string, error) {
+	out, err := exec.CommandContext(ctx, "docker", "exec", s.installerContainer(), "sh", "-c", `for d in /var/lib/vpn-node/identity.retired/*; do [ -d "$d" ] && printf '%s\n' "$d"; done | sort | tail -1`).Output()
+	return strings.TrimSpace(string(out)), err
+}
+func (s *Stack) installerBoundHashes(ctx context.Context, dir string, retired bool) (map[string]string, error) {
+	result := map[string]string{}
+	for _, name := range []string{"agent.db", "agent.db-wal", "agent.db-shm", "desired-state.json"} {
+		path := dir + "/"
+		if retired {
+			path += "state-"
+		}
+		path += name
+		digest, err := s.hashInside(ctx, path, false)
+		if err != nil {
+			return nil, err
+		}
+		result[name] = digest
 	}
-	return strings.TrimSpace(string(out))
+	return result, nil
 }
 
 func (s *Stack) noteIdentity(ctx context.Context, out *InstallerOutcome) {
