@@ -129,7 +129,7 @@ func (e *Engine) ensureUsage(ctx context.Context) {
 		return
 	}
 	e.usageOnce = true
-	st, err := usagestore.Open(e.cfg.UsageDBPath(), e.nodeID, e.incID, usagestore.Options{Trust: e.trust})
+	st, err := usagestore.Open(e.cfg.UsageDBPath(), e.nodeID, e.incID, usagestore.Options{Trust: e.trust, RetirePreviousAt: e.clock.Wall()})
 	if err != nil {
 		e.usagePersist = true
 		e.log.Error("usage store", "err", err.Error())
