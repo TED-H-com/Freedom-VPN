@@ -31,6 +31,7 @@ type Measurement struct {
 	Renewal   *MeasurementRenewal     `json:"renewal,omitempty"`
 	Baseline  *MeasurementBaseline    `json:"baseline,omitempty"`
 	Heartbeat *MeasurementHeartbeat   `json:"heartbeat,omitempty"`
+	Host      *MeasurementHost        `json:"host,omitempty"`
 }
 
 // Baseline brackets the actual writer call, including failed calls. Cause is
@@ -121,7 +122,7 @@ func (e *Engine) measurementEnabled() bool {
 	return e.cfg.TestMode && e.cfg.TestTimingPath != ""
 }
 
-func (e *Engine) measureTiming(ev enforce.ServingEvidence, source string) {
+func (e *Engine) measureTiming(ev enforce.ServingEvidence, source string, host ...*MeasurementHost) {
 	if !e.measurementEnabled() {
 		return
 	}
@@ -130,6 +131,9 @@ func (e *Engine) measureTiming(ev enforce.ServingEvidence, source string) {
 		return
 	}
 	m := Measurement{Source: source, Timing: timing}
+	if len(host) > 0 {
+		m.Host = host[0]
+	}
 	if tc := ev.TCReadbackEvidence(); tc != nil {
 		m.TC = tc.Sha256
 	}
