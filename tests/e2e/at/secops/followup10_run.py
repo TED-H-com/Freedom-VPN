@@ -89,6 +89,9 @@ def cleanup_disk_state(env: dict) -> dict:
 
 
 def main() -> int:
+    if os.environ.get("FVPN_SECOPS_FOLLOWUP11") == "restore":
+        from followup11_run import main as followup11
+        return followup11("restore")
     PRIVATE.mkdir(parents=True, exist_ok=True)
     (ROOT / ".agent/tmp").mkdir(parents=True, exist_ok=True)
     source = subprocess.check_output(
