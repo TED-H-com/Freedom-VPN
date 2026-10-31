@@ -34,7 +34,7 @@ REQUIRED = {
              "incarnation_uniqueness", "incarnation_history",
              "machine_identity", "counted_unacked_usage", "installer_rerun",
              "identity_ledger_preserved", "controlled_reinstall", "old_certificate_denied",
-             "historical_usage_retained", "cloned_identity_conflict", "serving_freeze_source", "serving_freeze_withdrawal", "serving_freeze_restart",
+             "historical_usage_retained", "current_gap_ack_1", "current_counted_ack_2", "cloned_identity_conflict", "serving_freeze_source", "serving_freeze_withdrawal", "serving_freeze_restart",
              "installer_stopped_hash_equality", "installer_rerun_identity",
              "installer_reinstall_identity", "installer_service_restoration", "installer_usage_hold_release"],
 }
@@ -140,6 +140,8 @@ def digest_labels(value):
 def previous(docdir, at):
     path = docdir / (at + ".json")
     if not path.exists():
+        path = docdir / "history/follow-up-8" / (at + ".json")
+    if not path.exists():
         path = docdir / "history/follow-up-7" / (at + ".json")
     if not path.exists():
         path = docdir / "history/follow-up-6" / (at + ".json")
@@ -229,6 +231,17 @@ def lookup_review_passed(checks):
 # runs every 60s; AT20 allows 90s. No unrelated prior failure is covered.
 INSTALLER_REVIEW_RUN = "57b90cf6-d233-4209-a114-765ef15376f7"
 CURSOR_REVIEW_RUN = "805ba242-f343-44ab-9221-d250d81b95b9"
+D130_REVIEW_RUNS = ("a5c706dd-7b2a-437e-88f2-3d1cd7b403cd", "f27a81a0-183e-46b4-85a8-304b2f64b635")
+
+
+def d130_review_passed(checks):
+    if not installer_review_passed(checks):
+        return False
+    for name, ack in (("current_gap_ack_1", "1"), ("current_counted_ack_2", "2")):
+        hits = [c for c in checks if c.get("at") == "AT07" and c["name"] == name]
+        if not hits or any(c["status"] != "pass" or c.get("detail", {}).get("central_ack") != ack for c in hits):
+            return False
+    return True
 
 
 def installer_review_passed(checks):
@@ -246,6 +259,11 @@ def installer_review_passed(checks):
 
 
 def review_covers(at, prior, checks):
+    if prior.get("run_id") in D130_REVIEW_RUNS:
+        covered = prior.get("name") == "probe_process" or (
+            at == "AT07" and prior.get("name") == "installer_prerequisite" and
+            prior.get("detail", {}).get("step") == "fresh current-incarnation serving traffic")
+        return covered and d130_review_passed(checks)
     if prior.get("run_id") == CURSOR_REVIEW_RUN:
         covered = prior.get("name") == "probe_process" or (at == "AT07" and (
             prior.get("name") == "OriginACKAndIndependentCurrentACK" or (
@@ -299,6 +317,16 @@ def records(meta, observed, prior):
                       requirements=["ENR01", "ENR02", "SEC01"] if at == "AT06" else ["ENR03", "PKG01", "DATA01"],
                       spec=["§19 " + at, "§6.1", "§6.2", "§6.3", "§6.4"],
                       checks=checks, prior_checks=prior[at])
+        if any(c.get("run_id") in D130_REVIEW_RUNS and c["status"] == "fail" for c in prior[at]):
+            record["follow_up_9_d130_review"] = {
+                "run_ids": list(D130_REVIEW_RUNS),
+                "disposition": "resolved" if d130_review_passed(review_checks) else "unresolved",
+                "fixes": ["#330 usage-agent: planBaseline and other event intervals use whole microseconds", "#331 usage-central: migration 00193 accepts nondecreasing stored microsecond projections"],
+                "scope": "Only the current-stream upload prerequisite at fresh current-incarnation serving traffic and its propagated process failures. Every original failure remains in prior_checks and the byte-identical follow-up-8 archive.",
+                "required_evidence": "All five composed rows, four named AT20 assertions, successful processes, fresh unknown gap ACK 1, then counted 550/358 bytes ACK 2 with independent retired attribution.",
+            }
+            if status == "pass":
+                record["actual"] = "All current checks pass. D-130 (#330/#331) is measured by fresh gap ACK 1 then counted 908-byte event ACK 2; all five composed AT07 rows and four AT20 assertions pass. Historical failures remain archived and explicitly reviewed."
         if at in REVIEWED:
             disposition = "not_applied"
             uncovered = any(c["status"] == "fail" and not review_covers(at, c, review_checks) for c in prior[at])

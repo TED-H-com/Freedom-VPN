@@ -323,6 +323,22 @@ func (p *probe) installerHooks(t *testing.T) {
 	freshRules, ok := p.installerServingReadback(node, restoredAt)
 	detail["fresh_current_serving"] = freshRules
 	must(ok)
+	// Observe the empty baseline gap's own ACK before generating member traffic.
+	// This keeps ACK 1 distinct from the subsequent counted event's ACK 2.
+	step("current unknown-continuity gap ACK 1", "agent/meter and usage-central")
+	var gap storedCurrentGap
+	gapACK := p.waitInstaller(90*time.Second, func() bool {
+		gap = p.currentGap(node, current)
+		snap, e := p.stack.UsageLedgerSnapshot(p.ctx, "installer-node")
+		detail["current_gap_cli"], detail["current_gap"] = snap, gap
+		return gap.valid(node, current) && e == nil && snap.NodeIncarnationID == current.String() && snap.AckedThrough == "1" && p.streamACK(node, current) == "1"
+	})
+	p.expect("AT07", "current_gap_ack_1", gapACK, map[string]any{"owner": "agent/meter and usage-central", "stored_gap": gap, "cli": detail["current_gap_cli"], "central_ack": p.streamACK(node, current)})
+	if !gapACK {
+		detail["fresh_upload_diagnostics"] = p.currentUploadDiagnostics(t, node, current)
+	}
+	must(gapACK)
+	step("fresh current-incarnation counted event ACK 2", "agent/usage-central")
 	must(p.selectInstallerExit(node))
 	freshTraffic, ok := p.installerTraffic(selected)
 	detail["fresh_current_traffic"] = freshTraffic
@@ -332,17 +348,47 @@ func (p *probe) installerHooks(t *testing.T) {
 		firstOK := p.freezeSQL(fmt.Sprintf("SELECT to_json(COALESCE(min(event_seq),0)::text) FROM usage_events WHERE node_id='%s' AND incarnation_id='%s'", node, current), &firstSeq)
 		countedOK := p.freezeSQL(fmt.Sprintf("SELECT to_json(COALESCE(min(e.event_seq),0)::text) FROM usage_events e JOIN usage_samples s ON s.event_id=e.id WHERE e.node_id='%s' AND e.incarnation_id='%s' AND s.upload_bytes>0 AND s.download_bytes>0", node, current), &firstCounted)
 		ackText := p.streamACK(node, current)
-		ack, aOK := new(big.Int).SetString(ackText, 10)
 		snap, snapshotErr := p.stack.UsageLedgerSnapshot(p.ctx, "installer-node")
 		detail["fresh_upload_poll"] = map[string]any{"first_seq": firstSeq, "first_counted_seq": firstCounted, "ack": ackText, "event_read_ok": firstOK, "sample_read_ok": countedOK, "snapshot_read_ok": snapshotErr == nil, "snapshot": snap}
-		seq, sOK := new(big.Int).SetString(firstCounted, 10)
-		return firstOK && countedOK && firstSeq == "1" && firstCounted != "0" && aOK && sOK && ack.Cmp(seq) >= 0
+		return firstOK && countedOK && firstSeq == "1" && firstCounted == "2" && ackText == "2" && snapshotErr == nil && snap.NodeIncarnationID == current.String() && snap.AckedThrough == "2" && snap.UnackedCount == 0
 	})
-	if !uploaded {
-		detail["fresh_upload_diagnostics"] = p.currentUploadDiagnostics(t, node, current)
-	}
+	// Retain successful production batches and heartbeat as well as failures.
+	detail["fresh_upload_diagnostics"] = p.currentUploadDiagnostics(t, node, current)
 	must(uploaded)
-	p.expect("AT07", "controlled_reinstall", true, map[string]any{"owner": "installer", "outcome": installerOutcomeView(reinstalled, nil), "serving": freshRules, "traffic": freshTraffic, "new_stream_first_sequence": firstSeq, "new_stream_first_counted_sequence": firstCounted, "origin_ack_before_current_traffic": oldACK, "devstack_rows": devstack18 + " installer-reenroll / installer-serving-readback"})
+	var samples json.RawMessage
+	samplesOK := p.freezeSQL(fmt.Sprintf("SELECT COALESCE(jsonb_agg(jsonb_build_object('event_seq',e.event_seq::text,'incarnation_id',e.incarnation_id,'member_id',s.member_id,'device_id',s.device_id,'binding_revision',s.binding_revision::text,'upload_bytes',s.upload_bytes::text,'download_bytes',s.download_bytes::text)), '[]'::jsonb) FROM usage_events e JOIN usage_samples s ON s.event_id=e.id WHERE e.node_id='%s' AND e.incarnation_id='%s'", node, current), &samples)
+	var rows908 int
+	bytesOK := p.freezeSQL(fmt.Sprintf("SELECT count(*) FROM usage_events e JOIN usage_samples s ON s.event_id=e.id WHERE e.node_id='%s' AND e.incarnation_id='%s' AND e.event_seq=2 AND s.member_id='%s' AND s.device_id='%s' AND s.binding_revision=1 AND s.upload_bytes=550 AND s.download_bytes=358", node, current, p.servingMember.MemberID, p.servingDevice), &rows908) && rows908 == 1
+	finalInc, response, readErr := p.listIncarnations(node, "")
+	separate := readErr == nil && response.Status == 200 && len(finalInc.Items) == 2 && finalInc.Items[0].IncarnationId == current && finalInc.Items[1].IncarnationId == origin && finalInc.Items[1].Usage.UploadBytes == originUsage.UploadBytes && finalInc.Items[1].Usage.DownloadBytes == originUsage.DownloadBytes && finalInc.Items[0].Usage.UploadBytes.String() == "550" && finalInc.Items[0].Usage.DownloadBytes.String() == "358" && p.streamACK(node, origin) == oldACK && p.historicalEvents(events)
+	finalUsage, usageOK := p.memberUsage(period)
+	bytesOK = bytesOK && usageOK && finalUsage.Totals.UploadBytes.String() == decimalSum(after.Totals.UploadBytes.String(), "550") && finalUsage.Totals.DownloadBytes.String() == decimalSum(after.Totals.DownloadBytes.String(), "358")
+	p.expect("AT07", "current_counted_ack_2", uploaded && samplesOK && bytesOK && separate, map[string]any{"owner": "usage-central", "central_ack": p.streamACK(node, current), "origin_ack": p.streamACK(node, origin), "samples": samples, "incarnations": installerHistoryView(finalInc), "member_period": finalUsage, "poll": detail["fresh_upload_poll"], "production": detail["fresh_upload_diagnostics"]})
+	must(samplesOK && bytesOK && separate)
+	p.expect("AT07", "installer_prerequisite", true, map[string]any{"step": stage, "owner": owner})
+	p.expect("AT07", "controlled_reinstall", true, map[string]any{"owner": "installer", "outcome": installerOutcomeView(reinstalled, nil), "serving": freshRules, "traffic": freshTraffic, "new_stream_first_sequence": firstSeq, "new_stream_first_counted_sequence": firstCounted, "origin_ack_before_current_traffic": oldACK, "current_ack_sequence": []string{"0", "1", "2"}, "current_upload_bytes": "550", "current_download_bytes": "358", "stored_gap": gap, "evidence": detail, "devstack_rows": devstack18 + " installer-reenroll / installer-serving-readback"})
+}
+
+type storedCurrentGap struct {
+	ReadOK     bool           `json:"read_ok"`
+	Start      time.Time      `json:"stored_interval_start"`
+	End        time.Time      `json:"stored_interval_end"`
+	PayloadHex string         `json:"payload_hex"`
+	Hash       string         `json:"payload_sha256"`
+	Event      api.UsageEvent `json:"canonical_event"`
+}
+
+func (p *probe) currentGap(node, current uuid.UUID) storedCurrentGap {
+	var gap storedCurrentGap
+	gap.ReadOK = p.freezeSQL(fmt.Sprintf("SELECT jsonb_build_object('stored_interval_start',e.interval_start,'stored_interval_end',e.interval_end,'payload_hex',encode(p.payload,'hex'),'payload_sha256',encode(e.payload_hash,'hex')) FROM usage_events e JOIN usage_event_payloads p ON p.event_id=e.id WHERE e.node_id='%s' AND e.incarnation_id='%s' AND e.event_seq=1", node, current), &gap)
+	raw, err := hex.DecodeString(gap.PayloadHex)
+	gap.ReadOK = gap.ReadOK && err == nil && json.Unmarshal(raw, &gap.Event) == nil
+	return gap
+}
+
+func (g storedCurrentGap) valid(node, current uuid.UUID) bool {
+	e := g.Event
+	return g.ReadOK && e.NodeId == node && e.NodeIncarnationId == current && e.EventSeq.String() == "1" && e.Quality == api.UsageQualityGap && e.Gap != nil && e.Gap.Reason == "unknown" && len(e.Records) == 0 && e.PayloadSha256 == g.Hash && e.IntervalStart.Nanosecond()%1000 == 0 && e.IntervalEnd.Sub(e.IntervalStart) == time.Microsecond && g.Start.Equal(e.IntervalStart) && g.End.Equal(e.IntervalEnd)
 }
 
 func (p *probe) waitInstaller(d time.Duration, f func() bool) bool {
