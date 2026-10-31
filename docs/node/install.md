@@ -105,6 +105,8 @@ Initial install also retains the verified archive as `update-staging/<artifact-s
 
 Installer-sourced results are supported centrally. Local `status` does not prove central acceptance. The real agent writes `state/meter.checkpoint` only after its durable final meter sample and epoch close. The updater consumes that checkpoint before stopping services and switching releases. Final candidate health requires signed desired-state/lease responses, the candidate's challenge-bound attestation and reachable probe targets. A missing checkpoint or failed health check remains a failure; never manufacture either result.
 
+[Follow-up 5](install-followup5-2026-10-31.md) passed the full privileged suite, including the real checkpoint, journaled switch and all five candidate health checks. Its isolated unpublished-node fixture uses signed fake control, a real TCP listener and TEST ONLY NetBird management/relay status. It does not establish native member traffic, central result acceptance or physical arm64 execution. Stopping the listener independently proves that real candidate health fails closed.
+
 <a id="temporary-updater-contract-retire-after-follow-up-15--agent-core-follow-up-24"></a>
 
 ### Updater extraction and terminal results
