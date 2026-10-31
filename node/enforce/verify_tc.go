@@ -113,6 +113,7 @@ type ServingEvidence struct {
 	// Immutable transport snapshot captured before rollback. Access through
 	// TCReadbackEvidence; zero-value evidence has no retained read.
 	tcReadback *tcReadbackSnapshot
+	timing     *TimingEvidence
 }
 
 // VerifyServing reads live nft, tc and policy-routing state on every call.
@@ -127,9 +128,21 @@ func VerifyServing(ctx context.Context, ex Executor, m Model, assignments map[uu
 // Apply alone may verify the staged serving rules while the quarantine marker
 // is retained. Public verification always rejects that marker.
 func verifyServing(ctx context.Context, ex Executor, m Model, assignments map[uuid.UUID]uint16, recovering bool) (ev ServingEvidence, err error) {
-	defer func() { ev.retainTC(m.Generation, "verify", err) }()
+	timing := newTiming("verify", m.Generation)
+	timing.Start = timingSample()
+	read := VerificationTiming{Start: timing.Start}
+	defer func() {
+		ev.retainTC(m.Generation, "verify", err)
+		read.End = timingSample()
+		read.PrecisionRead, read.SHA256, read.Verified = ev.DeadlineRead, ev.TCSummary.SHA256, err == nil
+		timing.End, timing.Succeeded, timing.Verified = read.End, err == nil, err == nil
+		timing.Verifications = append(timing.Verifications, read)
+		ev.timing = timing
+	}()
 	defer func() { ev.PolicyRules = readPolicyRules(ctx, ex) }()
+	read.NFTRead.Start = timingSample()
 	raw, nftErr := ex.Output(ctx, "nft", "-j", "list", "ruleset")
+	read.NFTRead.End, read.NFTRead.OK = timingSample(), nftErr == nil
 	if nftErr == nil {
 		rs, parseErr := ParseRuleset(raw)
 		if parseErr == nil {
@@ -144,7 +157,9 @@ func verifyServing(ctx context.Context, ex Executor, m Model, assignments map[uu
 	}
 	// Scan tc even with the link down or nft baseline installed: neither may
 	// hide the retained redirect or change its specific failure reason.
+	read.TCRead.Start = timingSample()
 	qos, reads, err := readServingTC(ctx, ex, m)
+	read.TCRead.End, read.TCRead.OK = timingSample(), err == nil
 	ev.TC = reads
 	if err != nil {
 		return ev, err

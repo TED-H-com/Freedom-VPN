@@ -28,6 +28,7 @@ func TestD104_AT13_DeadlineContinuity(t *testing.T) {
 		Apply    struct {
 			Deadline enforce.DeadlineEvidence `json:"deadline"`
 			Evidence enforce.ServingEvidence  `json:"evidence"`
+			Timing   *enforce.TimingEvidence  `json:"timing"`
 		} `json:"apply"`
 		Packets []struct {
 			ID      int   `json:"packet_id"`
@@ -58,7 +59,7 @@ func TestD104_AT13_DeadlineContinuity(t *testing.T) {
 		} else {
 			drops++
 			if firstDrop == 0 {
-				firstDrop = p.Sent
+				firstDrop = p.Ingress
 			}
 		}
 	}
@@ -67,6 +68,10 @@ func TestD104_AT13_DeadlineContinuity(t *testing.T) {
 		t.Fatalf("continuity: last=%s first_drop=%s positives=%d drops=%d post=%d", time.Duration(last-trace.Deadline), time.Duration(firstDrop-trace.Deadline), positive, drops, post)
 	}
 	d := trace.Apply.Deadline
+	requireApplyTiming(t, trace.Apply.Timing)
+	if trace.Apply.Timing.Deadline != d || trace.Apply.Timing.Verifications[0].PrecisionRead != trace.Apply.Evidence.DeadlineRead {
+		t.Fatal("producer samples differ from Apply/precision evidence")
+	}
 	if !d.GuardReleased || d.InstalledBy-d.RenderStart > d.InstallBound {
 		t.Fatalf("unbounded install: %+v", d)
 	}

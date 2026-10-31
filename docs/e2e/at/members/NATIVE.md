@@ -1,76 +1,59 @@
-# Native transport and DNS evidence — Follow-up 8
+# Native transport and DNS evidence — Follow-up 9
 
-Run `69f92f49-73dc-4779-8101-dfb6a802a96b`, harness `d79accd9c693aed83713072c925b3b5005b5684c`, product baseline `6848add` (#284), assigned `w4-members / 24000`. The tables below are derived from the current AT JSON, not historical fixture runs.
+Run `11e305fe-6360-4dbd-95b1-67274aa4988c`, harness `49fbb48e013b824c4ce107d3cb551db79b915b42`, product baseline `7e044c71` (agent-core 25 #312, devstack 18 #313, dns-publish 8 #309 and netlab 18), assigned `w4-members / 24000`.
 
-| AT09 row | Bytes | Selected family before → after | Upload delta | Download delta | Status |
-|---|---:|---|---:|---:|---|
-| native ipv4 MTU 1500 transfer | 64064 | ipv4 → ipv4 | 65936 | 68139 | pass |
-| native ipv6 MTU 1500 transfer | 64064 | ipv6 → ipv6 | 66820 | 68035 | pass |
-| native dual MTU 1500 transfer | 64064 | ipv6 → ipv6 | 66924 | 68191 | pass |
-| native dual MTU 1280 transfer | 11011 | ipv4 → ipv4 | 66296 | 45963 | fail |
+All family labels below refer to underlay availability. The payload destination is IPv4. D-123 permits an IPv6Block/no-leak assertion and IPv4 completion at MTU 1280; it supplies no IPv6 end-to-end MTU/PMTU row. Independent no-leak and IPv4 ICMP traversal evidence: [netlab follow-up 18](../../../poc/G2-f802-mtu1280-2026-10-31.md).
 
-These are underlay-family and finite TCP/MTU measurements. They do not establish IPv6 overlay forwarding, QUIC or a complete PMTU campaign.
+| Native row | Selected underlay before → after | Bytes / requested | Milliseconds | Upload / download delta | Result |
+|---|---|---:|---:|---:|---|
+| native ipv4 MTU 1500 transfer | ipv4 → ipv4 | 64064 / 64064 | 2 | 66612 / 68035 | pass |
+| native ipv6 MTU 1500 transfer | ipv6 → ipv6 | 64064 / 64064 | 1 | 66924 / 68087 | pass |
+| native dual MTU 1500 transfer | ipv6 → ipv6 | 64064 / 64064 | 1 | 66196 / 68191 | pass |
+| native dual MTU 1280 transfer | ipv4 → ipv4 | 64064 / 64064 | 1 | 67652 / 68139 | pass |
 
-| Unavailable selector | Status | Fixture declaration |
-|---|---|---|
-| native linux quic | blocked | requires a pinned QUIC client/server at the controlled origin; UDP echo is not QUIC |
-| native android tcp | blocked | requires the named real platform and operator client; no emulation by the Linux container |
-| native ios tcp | blocked | requires the named real platform and operator client; no emulation by the Linux container |
-| native windows tcp | blocked | requires the named real platform and operator client; no emulation by the Linux container |
-| native macos tcp | blocked | requires the named real platform and operator client; no emulation by the Linux container |
+The original F8-02 failure (11,011/64,064 bytes in 12,011 ms) remains archived and unattributed. Devstack 18 captured failures with either underlay family, with and without reconnect. Netlab completes IPv4 at 1280; neither owner establishes whether the original native partial transfer is a NetBird defect or fixture echo/read behavior. See [dated requests](requests.md).
 
-Issued resolver list: `["192.0.4.53", "192.0.4.54"]`; observed native endpoints: `["192.0.4.53:53", "192.0.4.54:53"]`. Native DNS enabled: True; system uses native stub: True; identical applied document: True. Distribution into the peer-restricted native group is TEST ONLY.
+[Complete restart capture](AT09-restart.json) retains all 90 seconds, boot/final nft/tc, heartbeats, central observations and redacted agent log. Historical rejections are retained; no topology/state/generation repair is performed.
 
-The shared 28-row RR matrix includes positive and label-boundary controls. Direct blocked CNAME/SVCB return empty NODATA; other blocked query types return NXDOMAIN. SOA presence and TTL are recorded independently. DNS owners still need to confirm the wording.
+Restart: desired 30 → 30, applied 30 → 30; restart `2026-10-31T12:06:31.816656225Z`, fresh serving `2026-10-31T12:06:47.545258Z` (15.729 s), first counted byte `2026-10-31T12:06:53.190469871Z` (21.374 s). Composite recovery/lease assertion: **fail** because it includes the D-067 mixed-state predicate. The generation, new populated lease, fresh serving and counted-traffic evidence close F8-01; F9-01 preserves the separate reporting-contract failure.
 
-| Transport | Fixture case | Type | RCODE / interpretation | Answer types | SOA present / TTL | Status |
-|---|---|---|---|---|---|---|
-| UDP | rr | A | 0 / NOERROR | [1] | False / 0 | pass |
-| UDP | rr | AAAA | 0 / NOERROR | [28] | False / 0 | pass |
-| UDP | alias | CNAME | 0 / NOERROR | [5] | False / 0 | pass |
-| UDP | service | SVCB | 0 / NOERROR | [64] | False / 0 | pass |
-| UDP | service | HTTPS | 0 / NOERROR | [65] | False / 0 | pass |
-| UDP | feed-01 | A | 3 / NXDOMAIN | [] | True / 5 | pass |
-| UDP | feed-01 | AAAA | 3 / NXDOMAIN | [] | True / 5 | pass |
-| UDP | blocked-cname | CNAME | 0 / NODATA | [] | True / 5 | pass |
-| UDP | feed-01 | SVCB | 0 / NODATA | [] | True / 5 | pass |
-| UDP | feed-01 | HTTPS | 3 / NXDOMAIN | [] | True / 5 | pass |
-| UDP | blocked-alias | A | 3 / NXDOMAIN | [] | True / 5 | pass |
-| UDP | sub | A | 3 / NXDOMAIN | [] | True / 5 | pass |
-| UDP | notfeed-01 | A | 0 / NOERROR | [1] | False / 0 | pass |
-| UDP | absent | A | 3 / NXDOMAIN | [] | True / 5 | pass |
-| TCP | rr | A | 0 / NOERROR | [1] | False / 0 | pass |
-| TCP | rr | AAAA | 0 / NOERROR | [28] | False / 0 | pass |
-| TCP | alias | CNAME | 0 / NOERROR | [5] | False / 0 | pass |
-| TCP | service | SVCB | 0 / NOERROR | [64] | False / 0 | pass |
-| TCP | service | HTTPS | 0 / NOERROR | [65] | False / 0 | pass |
-| TCP | feed-01 | A | 3 / NXDOMAIN | [] | True / 5 | pass |
-| TCP | feed-01 | AAAA | 3 / NXDOMAIN | [] | True / 5 | pass |
-| TCP | blocked-cname | CNAME | 0 / NODATA | [] | True / 5 | pass |
-| TCP | feed-01 | SVCB | 0 / NODATA | [] | True / 5 | pass |
-| TCP | feed-01 | HTTPS | 3 / NXDOMAIN | [] | True / 5 | pass |
-| TCP | blocked-alias | A | 3 / NXDOMAIN | [] | True / 5 | pass |
-| TCP | sub | A | 3 / NXDOMAIN | [] | True / 5 | pass |
-| TCP | notfeed-01 | A | 0 / NOERROR | [1] | False / 0 | pass |
-| TCP | absent | A | 3 / NXDOMAIN | [] | True / 4 | pass |
+| AT20 native query | Backend row / scope | RCODE | Answer types | SOA / TTL | Result |
+|---|---|---:|---|---|---|
+| RR case 01 TCP=false; rr QTYPE 1 | upstream control (not synthetic filtering);  | 0 | [1] | False / 0 | pass |
+| RR case 02 TCP=false; rr QTYPE 28 | upstream control (not synthetic filtering);  | 0 | [28] | False / 0 | pass |
+| RR case 03 TCP=false; alias QTYPE 5 | upstream control (not synthetic filtering);  | 0 | [5] | False / 0 | pass |
+| RR case 04 TCP=false; service QTYPE 64 | upstream control (not synthetic filtering);  | 0 | [64] | False / 0 | pass |
+| RR case 05 TCP=false; service QTYPE 65 | upstream control (not synthetic filtering);  | 0 | [65] | False / 0 | pass |
+| RR case 06 TCP=false; feed-01 QTYPE 1 | F8-A / F8-TTL5; D | 3 | [] | True / 5 | pass |
+| RR case 07 TCP=false; feed-01 QTYPE 28 | F8-AAAA / F8-TTL5; D | 3 | [] | True / 5 | pass |
+| RR case 08 TCP=false; blocked-cname QTYPE 5 | F8-CNAME / F8-TTL5; D | 0 | [] | True / 5 | pass |
+| RR case 09 TCP=false; feed-01 QTYPE 64 | F8-SVCB / F8-TTL5; D | 0 | [] | True / 5 | pass |
+| RR case 10 TCP=false; feed-01 QTYPE 65 | F8-HTTPS / F8-TTL5; D | 3 | [] | True / 5 | pass |
+| RR case 11 TCP=false; blocked-alias QTYPE 1 | F8-A / F8-TTL5; C | 3 | [] | True / 5 | pass |
+| RR case 12 TCP=false; sub QTYPE 1 | F8-A / F8-TTL5; W | 3 | [] | True / 5 | pass |
+| RR case 13 TCP=false; notfeed-01 QTYPE 1 | upstream control (not synthetic filtering);  | 0 | [1] | False / 0 | pass |
+| RR case 14 TCP=false; absent QTYPE 1 | upstream control (not synthetic filtering);  | 3 | [] | True / 5 | pass |
+| RR case 01 TCP=true; rr QTYPE 1 | upstream control (not synthetic filtering);  | 0 | [1] | False / 0 | pass |
+| RR case 02 TCP=true; rr QTYPE 28 | upstream control (not synthetic filtering);  | 0 | [28] | False / 0 | pass |
+| RR case 03 TCP=true; alias QTYPE 5 | upstream control (not synthetic filtering);  | 0 | [5] | False / 0 | pass |
+| RR case 04 TCP=true; service QTYPE 64 | upstream control (not synthetic filtering);  | 0 | [64] | False / 0 | pass |
+| RR case 05 TCP=true; service QTYPE 65 | upstream control (not synthetic filtering);  | 0 | [65] | False / 0 | pass |
+| RR case 06 TCP=true; feed-01 QTYPE 1 | F8-A / F8-TTL5; D | 3 | [] | True / 5 | pass |
+| RR case 07 TCP=true; feed-01 QTYPE 28 | F8-AAAA / F8-TTL5; D | 3 | [] | True / 5 | pass |
+| RR case 08 TCP=true; blocked-cname QTYPE 5 | F8-CNAME / F8-TTL5; D | 0 | [] | True / 5 | pass |
+| RR case 09 TCP=true; feed-01 QTYPE 64 | F8-SVCB / F8-TTL5; D | 0 | [] | True / 5 | pass |
+| RR case 10 TCP=true; feed-01 QTYPE 65 | F8-HTTPS / F8-TTL5; D | 3 | [] | True / 5 | pass |
+| RR case 11 TCP=true; blocked-alias QTYPE 1 | F8-A / F8-TTL5; C | 3 | [] | True / 5 | pass |
+| RR case 12 TCP=true; sub QTYPE 1 | F8-A / F8-TTL5; W | 3 | [] | True / 5 | pass |
+| RR case 13 TCP=true; notfeed-01 QTYPE 1 | upstream control (not synthetic filtering);  | 0 | [1] | False / 0 | pass |
+| RR case 14 TCP=true; absent QTYPE 1 | upstream control (not synthetic filtering);  | 3 | [] | True / 4 | pass |
 
-| Cache observation | Positive answer TTLs / class | Negative RCODE / SOA TTL (or new answer) | Status |
-|---|---|---|---|
-| cache initial | [10] / ['other_ipv4'] | 3 / 4; answers [] | pass |
-| positive/negative cache before TTL | [9] / ['other_ipv4'] | 3 / 3; answers [] | pass |
-| positive/negative cache after TTL | [10] / ['private_ipv4'] | 0 / 0; answers [1] | pass |
+RCODE 0 with zero answers and SOA is NODATA, never NXDOMAIN. Synthetic filtering uses the five-second profile; [BACKEND.md §2.1.1–§2.1.4](../../../dns/BACKEND.md) defines each table row. The positive and absent-upstream controls are separately labeled; cache phase/TTL observations remain in AT20.json.
 
-| Rebinding type | Private DNS answer classes | Node listener connected | Member connected / available / error | Status |
-|---|---|---|---|---|
-| 1 | ['private_ipv4'] | True | False / True /  | pass |
-| 28 | ['private_ipv6'] | True | False / False / connect_unavailable | pass |
+| Case / query | Backend row | RCODE | Answer types | SOA / TTL | Result |
+|---|---|---:|---|---|---|
+| AT21 fallback block policy | F8-A / F8-TTL5 | 3 | [] | True / 5 | pass |
+| AT22 privacy sentinel query | F8-A / F8-TTL5 | 3 | [] | True / 5 | pass |
+| AT22 node last-good block response | F8-A / F8-TTL5 | 3 | [] | True / 5 | pass |
 
-The IPv6 member connect attempt reports `connect_unavailable`; the node-side IPv6 listener works. This is a failed member connection, not evidence of an established IPv6 overlay path.
-
-| Native OS lookup | Milliseconds | Available | Status |
-|---|---:|---|---|
-| automatic secondary fallback | 2503 | True | pass |
-| both down bounded failure | 12001 | False | pass |
-| native DNS recovery | 41 | True | pass |
-
-Full cases retain the blockers and failures in [summary.md](summary.md). Exact observations are in [AT09.json](AT09.json), [AT20.json](AT20.json), [AT21.json](AT21.json) and [AT22.json](AT22.json).
+All platform/QUIC unavailable selectors remain blocked. [OPERATORS.md](OPERATORS.md) retains the required real-device procedures. Native distribution remains TEST ONLY. DNS wording closure does not close IDNA, platform, production distribution, URL privacy or retention gaps.

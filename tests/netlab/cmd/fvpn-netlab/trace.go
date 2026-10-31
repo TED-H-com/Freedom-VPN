@@ -78,7 +78,8 @@ func tracedApply(ctx context.Context, m enforce.Model, prev map[string]enforce.C
 		Error      enforce.Reason           `json:"error,omitempty"`
 		Deadline   enforce.DeadlineEvidence `json:"deadline"`
 		Batches    []traceBatch             `json:"batches"`
-	}{"apply", m.Generation, start, end, res.Verified, reason, res.Deadline, ex.Batches}
+		Timing     *enforce.TimingEvidence  `json:"timing"`
+	}{"apply", m.Generation, start, end, res.Verified, reason, res.Deadline, ex.Batches, res.Evidence.TimingEvidence()}
 	if logErr := json.NewEncoder(dst).Encode(row); err == nil && logErr != nil {
 		return res, logErr
 	}

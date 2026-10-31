@@ -63,8 +63,8 @@ func (l *live) replaceFiniteGrant(r *record, b *browser, plan uuid.UUID, until t
 	r.jsonCheck("finite grant production transition", "accepted, replayed and worker projected; finite deadline; export partial result on error", map[string]any{"before_authorized": beforeAuth, "before_pending": beforePending, "transition": result, "error": safeError(err), "http": capture.rows}, "Stack.ReplaceFiniteGrant: authenticated domain revoke + public grant POST + worker operation GET; no projection writes", err == nil && result.Projected && result.RevokeReplayVerified && result.CreateReplayVerified && result.Authorized == result.DeviceLimit && result.Pending == 3-result.DeviceLimit)
 	for _, id := range result.Revoked {
 		var audit []byte
-		e := l.pool.QueryRow(l.ctx, `SELECT coalesce(jsonb_agg(jsonb_build_object('action',action,'resource',resource,'result',result,'operation_id',operation_id,'occurred_at',occurred_at)),'[]'::jsonb) FROM audit_events WHERE action='grant.revoke' AND resource=$1`, "entitlement_grant:"+id.String()).Scan(&audit)
-		n := l.count(`SELECT count(*) FROM audit_events WHERE action='grant.revoke' AND resource=$1`, "entitlement_grant:"+id.String())
+		e := l.pool.QueryRow(l.ctx, `SELECT coalesce(jsonb_agg(jsonb_build_object('action',action,'resource',resource,'result',result,'operation_id',operation_id,'occurred_at',occurred_at)),'[]'::jsonb) FROM audit_events WHERE action='member.grant_revoke' AND resource=$1`, "entitlement_grant:"+id.String()).Scan(&audit)
+		n := l.count(`SELECT count(*) FROM audit_events WHERE action='member.grant_revoke' AND resource=$1`, "entitlement_grant:"+id.String())
 		r.check("finite grant audited revoke replay", "exactly one audit event per revoked grant", string(audit), "read audit_events; same-key replay must not duplicate revocation", e == nil && n == 1)
 	}
 	return err == nil && result.Projected
@@ -78,9 +78,9 @@ func safeError(err error) string {
 func (l *live) invalidFiniteGrant(r *record, b *browser, plan uuid.UUID) {
 	before := l.revision(b)
 	live := l.count(`SELECT count(*) FROM entitlement_grants WHERE member_id=$1 AND revoked_at IS NULL AND valid_until>clock_timestamp()`, b.member)
-	audits := l.count(`SELECT count(*) FROM audit_events WHERE action='grant.revoke'`)
+	audits := l.count(`SELECT count(*) FROM audit_events WHERE action='member.grant_revoke'`)
 	got, err := l.hook.ReplaceFiniteGrant(l.ctx, labstack.BrowserSession{Client: l.admin.client, CSRF: l.admin.csrf}, uuid.MustParse(b.member), plan, time.Now().UTC().Add(-time.Second))
-	r.jsonCheck("expired finite input rejected before revoke", "error; no revoked grants, unchanged revision/live grants/audits", map[string]any{"result": got, "error": safeError(err), "revision_before": before, "revision_after": l.revision(b), "live_grants": live}, "Stack.ReplaceFiniteGrant(past deadline); read-only before/after projection and audit", err != nil && !got.Accepted && len(got.Revoked) == 0 && before == l.revision(b) && live == l.count(`SELECT count(*) FROM entitlement_grants WHERE member_id=$1 AND revoked_at IS NULL AND valid_until>clock_timestamp()`, b.member) && audits == l.count(`SELECT count(*) FROM audit_events WHERE action='grant.revoke'`))
+	r.jsonCheck("expired finite input rejected before revoke", "error; no revoked grants, unchanged revision/live grants/audits", map[string]any{"result": got, "error": safeError(err), "revision_before": before, "revision_after": l.revision(b), "live_grants": live}, "Stack.ReplaceFiniteGrant(past deadline); read-only before/after projection and audit", err != nil && !got.Accepted && len(got.Revoked) == 0 && before == l.revision(b) && live == l.count(`SELECT count(*) FROM entitlement_grants WHERE member_id=$1 AND revoked_at IS NULL AND valid_until>clock_timestamp()`, b.member) && audits == l.count(`SELECT count(*) FROM audit_events WHERE action='member.grant_revoke'`))
 }
 
 // Expiry is a separate transition: without a lower subscription/grant the

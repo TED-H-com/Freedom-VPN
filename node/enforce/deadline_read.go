@@ -16,6 +16,8 @@ type DeadlineReadEvidence struct {
 	Start    time.Duration `json:"start_ns,string"`
 	End      time.Duration `json:"end_ns,string"`
 	Elements int           `json:"elements"`
+	ReadOK   bool          `json:"read_ok"`
+	Verified bool          `json:"verified"`
 }
 
 type allowedLifetime struct {
@@ -149,9 +151,11 @@ func readAllowedLifetimes(ctx context.Context, ex Executor, m Model) (ev Deadlin
 	}
 	raw, err := ex.Output(ctx, "nft", "list", "set", "inet", "fvpn", "allowed_v4")
 	ev.End, _ = MonotonicNow()
+	ev.ReadOK = err == nil
 	if err != nil {
 		return ev, checkf(ReasonIsolation, "allowed_v4 precision read failed")
 	}
 	ev.Elements, err = verifyAllowedLifetimes(raw, m, ev.Start)
+	ev.Verified = err == nil
 	return ev, err
 }

@@ -29,7 +29,11 @@ type DeadlineEvidence struct {
 	InstallBound  time.Duration `json:"install_bound_ns,string"`
 	ApplyStart    time.Duration `json:"apply_start_ns,string"`
 	RenderStart   time.Duration `json:"render_start_ns,string"`
+	InstallStart  time.Duration `json:"install_start_ns,string"`
 	InstalledBy   time.Duration `json:"installed_by_ns,string"`
+	InstallOK     bool          `json:"install_ok"`
+	ReleaseStart  time.Duration `json:"release_start_ns,string"`
+	ReleaseEnd    time.Duration `json:"release_end_ns,string"`
 	GuardReleased bool          `json:"guard_released"`
 }
 
