@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net"
 	"os/exec"
 	"strings"
 	"time"
@@ -130,4 +131,58 @@ func (s *Stack) ObserveNativeUnderlay(ctx context.Context) (out NativeUnderlayOb
 	}
 	walk(doc)
 	return out, nil
+}
+
+// SelectedNativeExit records only the selected exit's transport metadata.
+// Matching uses its native overlay address in memory; addresses/keys stay private.
+type SelectedNativeExit struct {
+	Connected bool   `json:"connected"`
+	Type      string `json:"connection_type"`
+	Family    string `json:"chosen_family"`
+}
+
+func (s *Stack) ObserveSelectedNativeExit(ctx context.Context) (SelectedNativeExit, error) {
+	raw, err := exec.CommandContext(ctx, "docker", "exec", s.lab.node, "netbird", "status", "--json").Output()
+	var node struct {
+		IP string `json:"netbirdIp"`
+	}
+	if err != nil || json.Unmarshal(raw, &node) != nil || node.IP == "" {
+		return SelectedNativeExit{}, fmt.Errorf("exit native address unavailable")
+	}
+	raw, err = exec.CommandContext(ctx, "docker", "exec", s.lab.member, "netbird", "status", "--json").Output()
+	if err != nil {
+		return SelectedNativeExit{}, fmt.Errorf("member native status unavailable")
+	}
+	var status struct {
+		Peers struct {
+			Details []struct {
+				IP       string `json:"netbirdIp"`
+				Status   string `json:"status"`
+				Type     string `json:"connectionType"`
+				Endpoint struct {
+					Remote string `json:"remote"`
+				} `json:"iceCandidateEndpoint"`
+			} `json:"details"`
+		} `json:"peers"`
+	}
+	if json.Unmarshal(raw, &status) != nil {
+		return SelectedNativeExit{}, fmt.Errorf("native status malformed")
+	}
+	for _, p := range status.Peers.Details {
+		if strings.Split(p.IP, "/")[0] != strings.Split(node.IP, "/")[0] {
+			continue
+		}
+		out := SelectedNativeExit{Connected: strings.EqualFold(p.Status, "Connected"), Type: p.Type, Family: "unavailable"}
+		host, _, e := net.SplitHostPort(p.Endpoint.Remote)
+		if e == nil {
+			if ip := net.ParseIP(host); ip != nil {
+				out.Family = "ipv6"
+				if ip.To4() != nil {
+					out.Family = "ipv4"
+				}
+			}
+		}
+		return out, nil
+	}
+	return SelectedNativeExit{}, fmt.Errorf("selected exit absent")
 }

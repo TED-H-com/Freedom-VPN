@@ -1,0 +1,22 @@
+{
+  "id": "regular-kernel-boot",
+  "title": "Enrolled ordinary agent and updater share kernel boot identity",
+  "spec": [
+    "AT23",
+    "F9-06"
+  ],
+  "status": "pass",
+  "observations": [
+    {
+      "name": "baseline_release_id",
+      "detail": "\"01a19195-cab8-726e-b45b-6aa42c0a1670\""
+    },
+    {
+      "name": "agent_heartbeat_and_updater_lock_match_kernel",
+      "detail": "true"
+    }
+  ],
+  "at": "2026-10-31T10:51:25Z",
+  "run_id": "8a1124a1-8653-4f8c-bd1b-2eb3ae5c3179",
+  "source_commit": "a0089b8386c749100d9bd19b8002dd4d666d065c"
+}
