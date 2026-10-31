@@ -145,6 +145,25 @@ type plan struct {
 	noop   bool
 }
 
+// eventInterval enforces D-130 (2026-10-31): every newly minted interval has
+// UTC whole-microsecond endpoints and is at least one microsecond wide, so
+// central persistence cannot collapse it. Without a checkpoint, use the
+// microsecond before end. Otherwise retain the truncated checkpoint as start
+// and advance end if needed, even on clock rollback. Callers checkpoint the
+// returned end so consecutive samples stay contiguous. Sealed events are never
+// changed; a legacy nanosecond checkpoint is truncated only for the new start.
+func eventInterval(start, end time.Time) (time.Time, time.Time) {
+	start = start.UTC().Truncate(time.Microsecond)
+	end = end.UTC().Truncate(time.Microsecond)
+	if start.IsZero() {
+		start = end.Add(-time.Microsecond)
+	}
+	if !end.After(start) {
+		end = start.Add(time.Microsecond)
+	}
+	return start, end
+}
+
 // planContinuity decides whether a process start may keep the open meter
 // epoch (§10.7). A short restart with the same boot id and counters that
 // have not gone backwards continues the epoch. Anything else opens a new
@@ -162,6 +181,7 @@ func planContinuity(head usagestore.Head, obs Observation, now time.Time) (plan,
 }
 
 func planBaseline(head usagestore.Head, cur []usagestore.Counter, now time.Time, bootID string) plan {
+	start, end := eventInterval(head.LastSample, now)
 	id := uuid.Must(uuid.NewV7())
 	reason := "baseline"
 	if head.HasHistory {
@@ -175,7 +195,7 @@ func planBaseline(head usagestore.Head, cur []usagestore.Counter, now time.Time,
 		Counters:  cur,
 		Open:      &usagestore.NewEpoch{ID: id, Reason: reason, BootID: bootID},
 		BootID:    bootID,
-		SampledAt: now,
+		SampledAt: end,
 	}
 	// A clean final sample already checkpointed the previous epoch. The new
 	// baseline is the counters as they are, not a claim that they are zero
@@ -193,15 +213,18 @@ func planBaseline(head usagestore.Head, cur []usagestore.Counter, now time.Time,
 		gapReason = string(api.UsageGapReasonUnknown)
 	}
 	if needGap {
-		start := now.Add(-time.Nanosecond)
 		c.Event = &usagestore.Draft{
 			EpochID:   id,
 			Start:     start,
-			End:       now,
+			End:       end,
 			Quality:   string(api.UsageQualityGap),
 			GapReason: gapReason,
 			Detail:    "unknown counter continuity",
 		}
+	} else if now.Before(end) {
+		// A quiet reopen need not advance a checkpoint already at or ahead
+		// of this clock reading: there is no interval to give minimum width.
+		c.SampledAt = start
 	}
 	return plan{commit: c}
 }
@@ -261,6 +284,7 @@ func planSample(head usagestore.Head, obs Observation, now time.Time, interval t
 	if !end.After(head.LastSample) && !head.LastSample.IsZero() {
 		return plan{hold: true}, nil
 	}
+	start, end := eventInterval(head.LastSample, end)
 	recs, mapping := attribute(head, cur, end)
 	c := usagestore.Commit{
 		Epoch:     head.OpenEpoch,
@@ -278,13 +302,10 @@ func planSample(head usagestore.Head, obs Observation, now time.Time, interval t
 	}
 	d := usagestore.Draft{
 		EpochID: head.OpenEpoch,
-		Start:   head.LastSample,
+		Start:   start,
 		End:     end,
 		Records: recs,
 		Quality: string(api.UsageQualityComplete),
-	}
-	if head.LastSample.IsZero() {
-		d.Start = end.Add(-time.Nanosecond)
 	}
 	switch {
 	case mapping:
@@ -308,8 +329,7 @@ func planSample(head usagestore.Head, obs Observation, now time.Time, interval t
 
 func planClockGap(head usagestore.Head, obs Observation, now time.Time) (plan, error) {
 	cur := usageCounters(obs)
-	start := head.LastSample
-	end := start.Add(time.Nanosecond)
+	start, end := eventInterval(head.LastSample, head.LastSample)
 	t := head.LastSample
 	c := usagestore.Commit{
 		Epoch:     head.OpenEpoch,
@@ -361,13 +381,12 @@ func planSwitch(head usagestore.Head, obs Observation, cur []usagestore.Counter,
 	estimated := false
 	if !opening && !head.LastSample.IsZero() {
 		end, estimated = stampEnd(head.LastSample, now, interval)
+	}
+	start, end := eventInterval(head.LastSample, end)
+	if !opening && !head.LastSample.IsZero() {
 		if !bootChanged(head.BootID, obs.BootID) {
 			recs, _ = attribute(head, cur, end)
 		}
-	}
-	start := head.LastSample
-	if !end.After(start) {
-		start = end.Add(-time.Nanosecond)
 	}
 	var last *time.Time
 	if !head.LastSample.IsZero() {
