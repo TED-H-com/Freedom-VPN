@@ -13,6 +13,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"golang.org/x/sys/unix"
@@ -23,7 +24,22 @@ import (
 const controlledOrigin = "192.0.4.10"
 const probePort = 38443
 
+func probeSourcePort() uint16 {
+	if len(os.Args) == 3 {
+		return probePort
+	}
+	if len(os.Args) != 4 {
+		os.Exit(2)
+	}
+	port, err := strconv.ParseUint(os.Args[3], 10, 16)
+	if err != nil || port < 1024 {
+		os.Exit(2)
+	}
+	return uint16(port)
+}
+
 func transfer() {
+	port := probeSourcePort()
 	result := map[string]any{"http_status": 0, "body_bytes": 0, "origin_receipt": false}
 	defer func() { _ = json.NewEncoder(os.Stdout).Encode(result) }()
 	raw, err := os.ReadFile("/etc/vpn-node/ca.pem")
@@ -40,7 +56,7 @@ func transfer() {
 		if addr != "releases.example.invalid:443" {
 			return nil, fmt.Errorf("outside lab")
 		}
-		return (&net.Dialer{Timeout: 5 * time.Second, LocalAddr: &net.TCPAddr{Port: probePort}}).DialContext(ctx, "tcp4", net.JoinHostPort(controlledOrigin, "443"))
+		return (&net.Dialer{Timeout: 5 * time.Second, LocalAddr: &net.TCPAddr{Port: int(port)}}).DialContext(ctx, "tcp4", net.JoinHostPort(controlledOrigin, "443"))
 	}}
 	defer tr.CloseIdleConnections()
 	req, _ := http.NewRequestWithContext(ctx, "GET", "https://releases.example.invalid/healthz", nil)
@@ -57,8 +73,9 @@ func transfer() {
 }
 
 func observe() {
+	port := probeSourcePort()
 	counts := map[string]map[string]int{}
-	result := map[string]any{"available": false, "interfaces": counts, "duration_seconds": 9, "filter": "controlled-origin TCP/443, fixed client port 38443"}
+	result := map[string]any{"available": false, "interfaces": counts, "duration_seconds": 9, "filter": fmt.Sprintf("controlled-origin TCP/443, client port %d", port)}
 	defer func() { _ = json.NewEncoder(os.Stdout).Encode(result) }()
 	// SOCK_DGRAM removes the link header on both Ethernet and WireGuard.
 	fd, err := unix.Socket(unix.AF_PACKET, unix.SOCK_DGRAM|unix.SOCK_NONBLOCK, int(htons(unix.ETH_P_ALL)))
@@ -84,7 +101,7 @@ func observe() {
 		if err != nil {
 			continue
 		}
-		direction := packetDirection(buf[:n])
+		direction := packetDirection(buf[:n], port)
 		if direction == "" {
 			continue
 		}
@@ -103,7 +120,7 @@ func observe() {
 	}
 }
 func htons(v uint16) uint16 { return v<<8 | v>>8 }
-func packetDirection(p []byte) string {
+func packetDirection(p []byte, port uint16) string {
 	if len(p) < 20 || p[0]>>4 != 4 || p[9] != 6 {
 		return ""
 	}
@@ -113,10 +130,10 @@ func packetDirection(p []byte) string {
 	}
 	src, dst := net.IP(p[12:16]).String(), net.IP(p[16:20]).String()
 	sport, dport := binary.BigEndian.Uint16(p[offset:]), binary.BigEndian.Uint16(p[offset+2:])
-	if dst == controlledOrigin && dport == 443 && sport == probePort {
+	if dst == controlledOrigin && dport == 443 && sport == port {
 		return "to_origin"
 	}
-	if src == controlledOrigin && sport == 443 && dport == probePort {
+	if src == controlledOrigin && sport == 443 && dport == port {
 		return "from_origin"
 	}
 	return ""

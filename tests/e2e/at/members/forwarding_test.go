@@ -8,7 +8,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"path/filepath"
 	"strings"
 	"sync"
 	"time"
@@ -119,14 +118,14 @@ func (l *live) traceForwardingExpected(r *record, service string, device uuid.UU
 		return false
 	}
 	if service != "member" {
-		_, err := l.docker("cp", filepath.Join(l.root, ".agent/at-members/probe"), l.name(service)+":/tmp/at-members-probe")
+		_, err := l.docker("cp", l.probePath(), l.name(service)+":/tmp/at-members-probe")
 		if err != nil {
 			r.block("Extra native peer probe unavailable")
 			return false
 		}
 	}
 
-	if raw, e := os.ReadFile(filepath.Join(l.root, ".agent/at-members/probe")); e == nil {
+	if raw, e := os.ReadFile(l.probePath()); e == nil {
 		hash := sha256.Sum256(raw)
 		o.ProbeSHA256 = hex.EncodeToString(hash[:])
 	}
@@ -170,11 +169,16 @@ func (l *live) traceForwardingExpected(r *record, service string, device uuid.UU
 	}
 	o.PeerStatus, _ = json.Marshal(selected)
 	o.Before = l.counters(device)
+	l.probeSequence++
+	if l.probeSequence > 9999 {
+		l.t.Fatal("probe source port range exhausted")
+	}
+	port := fmt.Sprint(20000 + l.probeSequence)
 	var wg sync.WaitGroup
 	var mu sync.Mutex
 	for _, point := range []string{service, l.nodeContainer(), "origin"} {
 		wg.Go(func() {
-			raw, err := l.inside(point, "/tmp/at-members-probe", "observe", "bounded")
+			raw, err := l.inside(point, "/tmp/at-members-probe", "observe", "bounded", port)
 			if err != nil || !json.Valid(raw) {
 				raw = []byte(`{"available":false}`)
 			}
@@ -186,7 +190,7 @@ func (l *live) traceForwardingExpected(r *record, service string, device uuid.UU
 	time.Sleep(time.Second)
 	probeID := uuid.NewString()
 	armed := l.request(nil, "PUT", "https://releases.example.invalid/e2e/traffic", map[string]string{"id": probeID}, map[string]string{"X-E2E-Secret": l.secret("origin.secret")})
-	raw, err := l.inside(service, "/tmp/at-members-probe", "transfer", probeID)
+	raw, err := l.inside(service, "/tmp/at-members-probe", "transfer", probeID, port)
 	if err != nil || !json.Valid(raw) {
 		raw = []byte(`{"origin_receipt":false,"probe_error":true}`)
 	}

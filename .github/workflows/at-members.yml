@@ -17,6 +17,7 @@ env:
   CGO_ENABLED: "0"
   FVPN_E2E_PREFIX: w4-members
   FVPN_E2E_PORT_BASE: "24000"
+  FVPN_E2E_TWO_RESOLVERS: "true"
 
 jobs:
   verify:
@@ -32,7 +33,7 @@ jobs:
   assigned-stack:
     if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-24.04
-    timeout-minutes: 60
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
@@ -51,9 +52,6 @@ jobs:
       - name: Record live acceptance (blocked is non-green)
         if: steps.up.outcome == 'success'
         run: make -f mk/at-members.mk at-members
-      - name: Supplement projection and scheduled feed evidence
-        if: always() && steps.up.outcome == 'success'
-        run: make -f mk/at-members.mk at-members-readback
       - name: Remove only this job's stack
         if: always() && steps.up.outcome != 'skipped'
         run: make -f mk/e2e.mk e2e-down

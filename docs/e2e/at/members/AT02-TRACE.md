@@ -1,20 +1,20 @@
-# AT02 device-to-usage trace — Follow-up 7
+# AT02 finite grant and device-to-usage trace — Follow-up 8
 
-Run `297faa31-2f90-4aab-8cf0-6818629f46c8`. See [AT02.json](AT02.json) for statuses, timestamps, exact packet/counter snapshots and operation IDs, and [D077.md](D077.md) for the new restore-fence API matrix.
+Run `69f92f49-73dc-4779-8101-dfb6a802a96b`, harness `d79accd9c693aed83713072c925b3b5005b5684c`, product baseline `6848add` (#284), assigned `w4-members / 24000`. All deciding bodies, times, samples and audit rows are in [AT02.json](AT02.json).
 
-| Stage | Product path | Deciding evidence |
-|---|---|---|
-| Identity | Shared IdP browser + native device flow | Same public subject, verified production mapping; no seeded identity proof |
-| Final slot | Two barrier-synchronized production `ObserveAndAuthorize` calls | Exactly one committed admission and one limit denial |
-| Ownership | Member list/delete and owner-gated service read | Another member's actual device is absent/404 and unchanged |
-| Slot reuse | Member DELETE, then former race loser admission | Authorized count 3 → 2 → 3 |
-| Revoked ingress | `Stack.ObserveMemberIngress` on `fvmb0` | Revoked frame hits `ctunku`, zero forwarded bytes; admitted sibling hits its own counter and reaches origin |
-| Restore fence | Migration 00188 row input, running worker | Member/admin flags present; stable filtered keyset; native HTTPS denied |
-| Explicit re-grant | Production admin authorize HTTP route | 202 + operation, fence deletion, worker list `authorized` + explicit `false`, counted HTTPS |
-| Re-grant negatives | Production HTTP middleware and handler | Member session 401, CSRF 403, owner mismatch 404, revoked/limit 409; fence preserved on rejected grant |
-| Replay | Same key and empty body | Same operation and device resource version; no second grant |
-| Usage | Real node mTLS + projected device binding | Unknown device rejected while agent stopped; exact real accepted event replayed twice as duplicate, unchanged receipt/samples |
+| Transition | Authorized / pending before → after | Entitlement revision before → after | Deadline | Grant worker operation | Status |
+|---|---|---|---|---|---|
+| ReplaceFiniteGrant | 3/0 → 2/1 | 2 → 4 | 2026-10-31T09:53:13.073851374Z | 01a19129-b913-71a0-8715-fa1671c5ee51 | pass |
+| ReplaceFiniteGrant | 2/1 → 3/0 | 4 → 6 | 2026-10-31T09:53:36.718773267Z | 01a1912a-1568-77cc-9036-80934af2ed38 | pass |
+| ReplaceFiniteGrant | 3/0 → 3/0 | 6 → 8 | 2026-10-31T08:55:49Z | 01a1912a-f5cb-7c8c-835d-b620bbefaa80 | pass |
 
-The D-081 pending device is produced by a real plan downgrade. Only fixture grant retirement uses the production internal `RevokeGrant` transaction because neither an HTTP endpoint nor a shared fixture export exists. Grant creation and every D-077 action use HTTP. No device/entitlement/binding/observation row is fabricated.
+Production revoke is audited once per grant under same-key replay; expired input is rejected before revocation and leaves the revision/live grants/audits unchanged. The immediate lower-limit transition and the real valid_until expiry are distinct. This member has no fallback plan at expiry, so all three authorized devices become pending. Restoration must reach 3/0, a succeeded parent worker operation, and counted forwarding.
 
-All traffic is bounded to the assigned lab. Only the rejected unknown-device input is synthetic; the positive replay uses a real metered event. [Follow-up 6](history/follow-up-6/AT02-TRACE.md) and the [interrupted first](history/follow-up-7/attempt-1/RUN.md) and [second](history/follow-up-7/attempt-2/RUN.md) attempts are historical evidence only.
+Persistent TCP/9446 and authenticated UDP/9445 senders remain active beyond cutoff; reply increments and both device counters are sampled. The bound is the prepared heartbeat interval. Polling bounds observed reply time and is not a packet capture timestamp.
+
+- pass: event 2026-10-31T08:53:13.073851341Z; last TCP/UDP reply observed 0.944/0.944 s after the event; bound 5 s; sender active True; counters stable or removed True.
+- pass: event 2026-10-31T08:55:49Z; last TCP/UDP reply observed -0.842/-0.842 s after the event; bound 5 s; sender active True; counters stable or removed True.
+
+The baseline also rechecks final-slot contention, ownership denial, slot reuse, strict revoked-source fvmb0 ingress versus a counted admitted sibling, restore-fence re-authorization and the real meter duplicate replay. [D077.md](D077.md) indexes HTTP outcomes. The accepted usage replay is read from a real agent payload; it never races the live sequence with a fabricated positive event.
+
+Revoke audit operation IDs: `01a19129-b908-7821-b5e4-2df4cbe96ac9`, `01a1912a-155f-77ad-beca-65650cd4f217`, `01a1912a-f5c1-7ed5-9f5e-fc507ee886ad`. Expiry restoration worker operation: `01a1912c-4906-73e9-98d7-504497144d4b`. Full POST/replay and GET bodies remain in the corresponding AT02 steps.
