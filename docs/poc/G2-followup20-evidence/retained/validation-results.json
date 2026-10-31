@@ -1,0 +1,42 @@
+{
+  "test_only": true,
+  "gates": [
+    {
+      "command": "make -f mk/netlab.mk netlab-lint netlab-unit netlab-integration netlab-build FVPN_LAB_PREFIX=fvpn-w1-netlab-f19",
+      "exit": 0,
+      "output": "ok  \tgithub.com/TED-H-com/Freedom-VPN/node/enforce\t0.670s\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab\t0.020s\n...............\n----------------------------------------------------------------------\nRan 15 tests in 0.003s\n\nOK\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab\t0.020s\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab/at\t(cached)\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab/agent\t(cached)\n"
+    },
+    {
+      "command": "python3 tests/netlab/scripts/disktmp.py make go-lint go-with-disk-tmp=",
+      "exit": 0,
+      "output": ""
+    },
+    {
+      "command": "python3 tests/netlab/scripts/disktmp.py go test -count=1 ./tests/handover/...",
+      "exit": 0,
+      "output": "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/handover\t0.300s\n"
+    },
+    {
+      "command": "python3 tests/netlab/scripts/disktmp.py go test -count=1 ./node/agent/...",
+      "exit": 0,
+      "output": "ok  \tgithub.com/TED-H-com/Freedom-VPN/node/agent\t54.692s\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/agent/cmd/fvpn-agent\t0.078s\n"
+    },
+    {
+      "command": "python3 tests/netlab/scripts/disktmp.py go test -count=1 -run TestCommittedEvidenceFiles_ValidAndHygieneClean\\|TestD098_Followup18ArchivePins -v ./tests/netlab",
+      "exit": 0,
+      "output": "=== RUN   TestD098_Followup18ArchivePins\n    evidence_test.go:65: D-098: 122 byte/SHA-256 pins match\n--- PASS: TestD098_Followup18ArchivePins (0.00s)\n=== RUN   TestCommittedEvidenceFiles_ValidAndHygieneClean\n--- PASS: TestCommittedEvidenceFiles_ValidAndHygieneClean (0.02s)\nPASS\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab\t0.022s\n"
+    }
+  ],
+  "live_gates": [
+    {
+      "gate": "netlab-test",
+      "exit": 0,
+      "go_seconds": 216.419
+    },
+    {
+      "gate": "netlab-agent-measure",
+      "exit": 0,
+      "scenario_seconds": 22.95
+    }
+  ]
+}
