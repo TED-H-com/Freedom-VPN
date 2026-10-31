@@ -190,7 +190,7 @@ func TestUpdatesFollowup(t *testing.T) {
 	} else if localGood && goodJournal.allPassed() && confirmed.State == "succeeded" {
 		s.block("AT23", "w2-agent-core / w3-wire-fleet: local D-053 success and central succeeded, but later agent observations do not confirm the update generation")
 	} else {
-		s.block("AT23", "w4-node-updater / w3-wire-fleet: good update or central confirmation prerequisite incomplete")
+		s.block("AT23", "devstack / agent-core / updater: good candidate did not reach verified local success; inspect process_agent.log, executable_layout and journal")
 	}
 	if !localGood {
 		s.block("AT24", "w4-node-updater: last-good prerequisite absent")
@@ -478,6 +478,10 @@ func (s *updatesFollowup) execute(id string, interrupt bool) {
 			s.note(id, "process_"+name, string(raw))
 		}
 	}
+	// Read only: the shared regular fixture and installer fixture use different
+	// executable layouts. Preserve the paths if active-release validation fails.
+	layout, layoutErr := s.r.lab.docker(s.r.lab.node, "ls", "-l", "/opt/vpn-node/current/fvpn-agent", "/opt/vpn-node/current/bin/fvpn-agent")
+	s.note(id, "executable_layout", map[string]any{"output": string(layout), "both_paths_present": layoutErr == nil})
 	s.r.t.Logf("%s updater finished=%t interrupt=%t", id, finished, interrupt)
 	raw, _ := os.ReadFile(filepath.Join(dir, "updater-result.json"))
 	var result struct {
