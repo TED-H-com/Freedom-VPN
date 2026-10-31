@@ -10,6 +10,12 @@ lab_name="fvpn-w2-agent-core-live-$$"
 lab_image="$lab_name:lab"
 cleanup() {
     docker rm -fv "$lab_name" >/dev/null 2>&1 || true
+    # A killed test can leave root-owned 0700 temp directories on the mount.
+    if [ -d "$task_tmp/scratch" ]; then
+        docker run --rm --name "$lab_name-clean" --network none \
+            -v "$task_tmp/scratch:/scratch" "$lab_image" \
+            find /scratch -mindepth 1 -delete >/dev/null 2>&1 || true
+    fi
     docker rmi "$lab_image" >/dev/null 2>&1 || true
     rm -rf "$task_tmp"
 }
