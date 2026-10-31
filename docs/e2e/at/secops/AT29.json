@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "follow_up": 12,
+  "follow_up": 13,
   "id": "AT29",
   "status": "blocked",
   "requirements": [
@@ -5374,7 +5374,10 @@
     "Device revoke does not independently attribute native route withdrawal versus exit conntrack enforcement."
   ],
   "evidence": [
+    "history/follow-up-12/AT29.json",
     "history/follow-up-12/followup12-transports-live.json",
     "history/follow-up-12/followup12-transports-run.json"
-  ]
+  ],
+  "record_kind": "carried forward; no transport rerun",
+  "current_restore_run_id": "5218b7d5-1415-4e1b-8618-48ea2d3cf03e"
 }

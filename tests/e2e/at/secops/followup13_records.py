@@ -180,7 +180,7 @@ def main():
     harness = 'Devstack 18 [proof run](../../runs/2026-10-31/followup18/5f74d7c3-6404-461d-9f47-296bd69958c2/first-desired-offer.md) (2/0/0; first 4 > retained 3; HTTP 202 central receipt) validates the export only. This lane uses the separate restore run above for closure. [Export contract](../../RESPONSES.md).\n\n'
     attempt = '[Preparation failure](followup13-restore-attempt1-failure.json): the first attempt stopped before ArmFirstDesiredOffer because its negative-drill central connection had been closed. No delivery was captured or discarded. The local-only retained read fixes that harness error; [failed driver and zero cleanup](followup13-restore-attempt1-run.json) remain preserved.\n\n'
     tail = attempt + f'Cleanup **{verdict["cleanup"]}**: [container/network/volume/image inventory and disk state removal](cleanup.json). [Run commands](RUN.md).\n'
-    (PUBLIC / 'restore-reconcile.md').write_text('# AT30 restore — Follow-up 13\n\n' + intro + delta_text + table + '\n' + proof)
+    (PUBLIC / 'restore-reconcile.md').write_text(('# AT30 restore — Follow-up 13\n\n' + intro + delta_text + table + '\n' + proof).rstrip() + '\n')
     (PUBLIC / 'AT30.md').write_text((PUBLIC / 'restore-reconcile.md').read_text())
     for name in ('summary.md','README.md'):
         (PUBLIC / name).write_text('# Follow-up 13 — first post-restore delivery\n\n' + intro + proof + delta_text + blocked + archive + tail)

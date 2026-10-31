@@ -57,7 +57,7 @@ def main():
     for name in paths:
         raw = (ROOT/name).read_bytes()
         assert not scan(raw), name
-    print(f'PASS: {total} archive pins (Follow-up 12 byte-identical to #301), {count} scope pins; one restore run; first-delivery verdict {record["request_status"]}; AT29/AT31 unchanged blocked; cleanup zero; evidence hygiene')
+    print(f'PASS: {total} archive pins (Follow-up 12 byte-identical to #301), {count} scope pins; one completed restore (pre-arm failure archived); first-delivery verdict {record["request_status"]}; AT29/AT31 unchanged blocked; cleanup zero; evidence hygiene')
 
 
 if __name__ == '__main__': main()

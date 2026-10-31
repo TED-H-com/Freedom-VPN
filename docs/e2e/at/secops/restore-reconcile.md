@@ -1,27 +1,28 @@
-# Follow-up 12 — transports and restore
+# AT30 restore — Follow-up 13
 
-AT30 **passed**; SECOPS-21 **open**. Application base `510a4ab7f73bdcfc28aaef53f8d1d6deef97ad67`. Restore run `dd845a7f-2660-431c-a8e6-c513108cc07d`; transport run `cf81f6f8-4ccf-43d2-aae2-10121f6b169d`. Shared development host measurements.
+AT30 **passed**; SECOPS-21 **closed**. Restore run `5218b7d5-1415-4e1b-8618-48ea2d3cf03e` on application base `7e044c71ecf1d07f63e89721bd213db6611a6a47`. Shared development host measurements; no production SLA.
 
-| Measurement | Archived follow-up 10 | Archived follow-up 11 (no new run) | Follow-up 12 |
-|---|---|---|---|
-| T0 / backup | 2026-10-31T04:03:16.470627Z / 20261031-040312F | 2026-10-31T04:03:16.470627Z / 20261031-040312F | 2026-10-31T09:06:59.403292Z / 20261031-090656F |
-| L0 → L1 sequence | 2 → 4 | 2 → 4 | 2 → 5 |
-| L0 → L1 bytes | 28139 → 79058 | 28139 → 79058 | 28103 → 79142 |
-| Primary-overwrite refusal / checklist / PITR seconds | 2 / 6/6 / 9.749752081 | 2 / 6/6 / 9.749752081 | 2 / 6/6 / 5.264910803 |
-| Negative restore window (s) / ACK / max seen | 120.143013897 / 2 / 5 | 120.143013897 / 2 / 5 | 120.071618829 / 2 / 6 |
-| Pre-replay database RPO (s) | 95.507504 | 95.507504 | 106.450816 |
-| Post-replay service usage RPO (s) | 0 | 0 | 0 |
-| Protocol RTO (s) | 93.532554563 | 93.532554563 | 66.903926483 |
-| Total outage RTO (s) | 106.868537734 | 106.868537734 | 74.531204784 |
-| Replay events / hashes / lost / duplicate / gaps | 4 / 4 / 0 / 0 / 0 | 4 / 4 / 0 / 0 / 0 | 5 / 5 / 0 / 0 / 0 |
-| Provider reconciliation | passed | passed | passed |
-| SECOPS-19 hold unacked / bytes → replay unacked / bytes | 3 / 2352 → 0 / 0 | 3 / 2352 → 0 / 0 | 4 / 3198 → 0 / 0 |
-| SECOPS-19 CLI hold unacked / bytes → replay unacked / bytes | 3 / 2352 → 0 / 0 | 3 / 2352 → 0 / 0 | 4 / 3198 → 0 / 0 |
-| Central revoke / fresh post-restore enrollment negatives | True / True | True / True | True / True |
-| D-076 fence / regrant | passed | passed | passed |
+Pre-replay database RPO (s): `92.163101` s versus `106.45` s; delta `-14.286899` s.
+Total outage RTO (s): `81.016113709` s versus `74.53` s; delta `6.486113709` s.
 
-[AT29 established transport sub-cases](AT29.md) and [AT31 bounded relay](AT31.md) record individual results and remaining limits.
+| Measurement | Follow-up 12 | Follow-up 13 |
+|---|---|---|
+| T0 / backup | 2026-10-31T09:06:59.403292Z / 20261031-090656F | 2026-10-31T11:52:14.423299Z / 20261031-115210F |
+| L0 → L1 sequence | 2 → 5 | 1 → 3 |
+| L0 → L1 bytes | 28103 → 79142 | 28067 → 78746 |
+| Primary-overwrite refusal / checklist / PITR seconds | 2 / 6/6 / 5.264910803 | 2 / 6/6 / 5.092580478 |
+| Negative restore window (s) / ACK / max seen | 120.071618829 / 2 / 6 | 120.121679141 / 1 / 5 |
+| Pre-replay database RPO (s) | 106.450816 | 92.163101 |
+| Post-replay service usage RPO (s) | 0 | 0 |
+| Protocol RTO (s) | 66.903926483 | 72.950138032 |
+| Total outage RTO (s) | 74.531204784 | 81.016113709 |
+| Replay events / hashes / lost / duplicate / gaps | 5 / 5 / 0 / 0 / 0 | 3 / 3 / 0 / 0 / 0 |
+| Provider reconciliation | passed | passed |
+| SECOPS-19 hold unacked / bytes → replay unacked / bytes | 4 / 3198 → 0 / 0 | 4 / 3006 → 0 / 0 |
+| SECOPS-19 CLI hold unacked / bytes → replay unacked / bytes | 4 / 3198 → 0 / 0 | 4 / 3006 → 0 / 0 |
+| Central revoke / fresh post-restore enrollment negatives | True / True | True / True |
+| D-076 fence / regrant | passed | passed |
 
-D-095 hold proved: `True`. First new stored offer `16`; retained node `15`. [HTTP probe, hold and generation history](SECOPS-21.json). D-099 roadmap eligibility: `True`. Compiler success alone does not close SECOPS-21.
+First delivered offer: HTTP `200`, generation `19` versus retained `15`, delivered `2026-10-31T11:56:09.869156137Z`; complete write `True`. Body SHA-256 `9db8da4cb30ef897e1eaf7f3494eaf8063c7823fcf7d3473d5250052ffc8b0f6`; local accepted/applied `19` / `19`, digest `9db8da4cb30ef897e1eaf7f3494eaf8063c7823fcf7d3473d5250052ffc8b0f6`. Applied ACK HTTP `202`, generation `19`, report `01a191d1-3799-7cee-ba57-53efe5f3dc18`, joined to the [central receipt and ordering evidence](SECOPS-21.json). Capture armed once; no retry or generation repair.
 
-[Merged follow-up 10 archive](history/follow-up-10/restore-reconcile.json) is byte-identical to PR #265; [follow-up 9](history/follow-up-9/restore-reconcile.json) remains at its D-098 handover claims path.
+The first separate HTTP **probe** returned `19` at `2026-10-31T11:56:10.163037901Z`. The first new stored **compiler row** was `16`. Neither substitutes for the captured delivery. D-095 exact HTTP 503 / `pending fresh observation after restore` drift and unchanged generation, row count and envelope fingerprint: `True`.
