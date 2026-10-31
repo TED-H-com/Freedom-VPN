@@ -121,6 +121,8 @@ write('tc-evidence-index.json', dict(run_id=trace.get('run_id'), reads=[dict(rep
 qualifying=[]
 for r in reports:
     b=r['report'];errors=b.get('errors') or []
-    if b.get('provisioning_state')=='ready' and b.get('safety_status')=='passed' and b.get('member_forwarding_enabled') is False and b.get('forwarding_block_reasons')==['awaiting_member_grants'] and len(errors)==1 and errors[0].get('stage')=='lease' and errors[0].get('code')=='AWAITING_MEMBER_GRANTS':
+    checks={c.get('name'):c for c in b.get('checks',[])}
+    exact_checks=all(checks.get(name,{}).get('status')=='failed' and checks.get(name,{}).get('error_code')=='AWAITING_MEMBER_GRANTS' for name in ('lease','qos','source_binding'))
+    if 200 <= r['status'] < 300 and (b.get('lease') or {}).get('lease_id') and b.get('provisioning_state')=='ready' and b.get('safety_status')=='passed' and b.get('member_forwarding_enabled') is False and b.get('forwarding_block_reasons')==['awaiting_member_grants'] and exact_checks and len(errors)==1 and errors[0].get('stage')=='lease' and errors[0].get('code')=='AWAITING_MEMBER_GRANTS' and errors[0].get('message')=='Serving lease has no member grants yet.':
         qualifying.append(r)
-write('provisional-receiver-analysis.json', dict(run_id=receiver.get('run_id'), recipe='agent-core follow-up 24 clean node / fixed published generation / SetMemberGrantsReady(false) then true', recipe_executed=False, blocker='SetMemberGrantsReady is fake-control-only; no assembled public API counterpart. No synthetic transition.', qualifying_reports=qualifying, observation_posts=len(reports)))
+write('provisional-receiver-analysis.json', dict(run_id=receiver.get('run_id'), recipe='agent-core follow-up 24 clean node / fixed published generation / SetMemberGrantsReady(false) then true', recipe_executed=False, blocker='D-087 blocked on internal/nodes/httpwire/state.go and runtime.go grant-eligibility seam: wire-nodes 33, then devstack 20 hook, then isolation follow-up 10. No synthetic transition.', qualifying_reports=qualifying, observation_posts=len(reports)))

@@ -1,0 +1,63 @@
+{
+  "run_id": "cf1a8c61-aced-4ab3-aa7e-a28cca1716e9",
+  "prefix": "w4-updates",
+  "port_base": 42000,
+  "scope": "Follow-up 10 regular-lab requested scenario; not complete original §19 acceptance or physical arm64 proof",
+  "id": "AT25",
+  "title": "Tampered archive never executes",
+  "spec": [
+    "UPD01",
+    "UPD02",
+    "§13.4",
+    "§13.9",
+    "§13.10",
+    "§13.12"
+  ],
+  "status": "blocked",
+  "at": "2026-10-31T15:23:41Z",
+  "expected": "Tampered archive never executes",
+  "actual": "w4-node-updater: last-good prerequisite absent; required follow-up 8 check incomplete: probe_inspection; required follow-up 8 check incomplete: lab_probe_peer; required follow-up 8 check incomplete: failed_requires_cause",
+  "git": "a6403f296bf38d77fe01ca912868d3b559608bfb",
+  "node_incarnation": "01a1928c-995c-7e55-aa9e-c1f56dc609bd",
+  "commands": [
+    "make -f mk/at-updates.mk at-updates"
+  ],
+  "observations": [
+    {
+      "name": "harness_source",
+      "detail": "{\"differs_from_source_commit\":false,\"files_sha256\":{\"archive_test.go\":\"2a0f0c393d72df81ce8e796038a960ef693af8412a4acb32fab3a429bb66b7f5\",\"authority_test.go\":\"468d7d3c1dbfbdb40a3c781650cd8993fc55e93b9e6d28930c3d52189715de21\",\"doc.go\":\"a43799934c9463e13de1e43c2e0f4373410be7c31421ceee8a3eb963717f6382\",\"evidence.go\":\"5f77f6740ded1f0561fd8e7496b04ca3b240f501b7146cc684aaa6d033588e85\",\"evidence_test.go\":\"eaa999300a284ba220deacae957eaab01f73fda21aab0d07481ccb958bd469cd\",\"installer_receipts_test.go\":\"2cf9f36609767ac4e29a3dc179cc91f7985c1a608407a8af8219b3a69ee3b176\",\"installer_test.go\":\"986620abd1dc833d071249f0da671c56755be42a9a97c540212587fe78abe000\",\"lab_test.go\":\"fc7c87390b17b118879dfd5da57a20901f081f8c14e22b45e40d2aa8e844ade5\",\"live_test.go\":\"e53bf7766fc6abc68713612e416fb57ec17c6dc03eb25e3d3a9f4272cb909621\",\"preresult_test.go\":\"530332759bdecdde7924f3d5cf95def55682a11b13293410cd59e62a22f6bfdf\",\"probe_test.go\":\"b214d46d2f8582457830cb485904ee85df176d53734b32731351f39c20b50d01\",\"restated_test.go\":\"a8a8895ed5a056ab4ca924e40836fc9c169f1d2c0c913549e982805153a47172\"}}"
+    },
+    {
+      "name": "manifest_and_artifact_digests",
+      "detail": "{\"artifact_sha256_0.1.0_amd64\":\"0ae2346841869a913ca8ce961928dae9ee0c854f610087e288632526ade381ab\",\"artifact_sha256_0.1.0_arm64\":\"46887dd7b47beb13ea2024b5ba022adb82b0063a0b209aed0e66c6e8d8096bce\",\"artifact_sha256_1.0.1_amd64\":\"51c55f40b88389454975e394353b382a1fe2c5c460ad5067b59e2bbb93b3410a\",\"artifact_sha256_1.0.1_arm64\":\"af3f27d83197c94f022eee00ffc14fd3684c1bfde16f0d417d13dafd110f77b0\",\"artifact_sha256_1.0.2_amd64\":\"ab4984d349709f64817cbfb678ccbada51f6beb13984eb18daae081c74934b04\",\"artifact_sha256_1.0.2_arm64\":\"49f175c92401bbd7f465e5e36daa2c568715bc68440d1993dabc9212c0a68288\",\"manifest_sha256_0.1.0\":\"ca4321c7b8b9527c6bdef1f556072cff85ecf2df454bf7add6b62956fe5bfe41\",\"manifest_sha256_1.0.1\":\"dc125f279ba1eb06aba06f690286b3741820b238dc526f06684e2a9a1440866c\",\"manifest_sha256_1.0.2\":\"c0a33a31a62834ccaafde0a197d13455f236d61ba370551219219df3971e7620\",\"signed_manifest_sha256_0.1.0\":\"8feea4251bac5d160f0fda08621e4d088098462d44c9602cd4b2c47b5c35ba40\",\"signed_manifest_sha256_1.0.1\":\"bfaeaea175b8e2ca124833e5a5a1a0638a1affe085eb2de81e18a8dd281ad493\",\"signed_manifest_sha256_1.0.2\":\"a937ad597638eadc2dff609094c77caa750c9920d8d996fac67c0394f1a2563e\"}"
+    },
+    {
+      "name": "support_policy_revision",
+      "detail": "\"01a1928b-6109-7de5-870a-bdf51a2c4474\""
+    },
+    {
+      "name": "unrelated_release",
+      "detail": "{\"digests\":{\"artifact_sha256_1.0.3_amd64\":\"d47acb1e8e9c32d86a84ebf7eb245d440bfbdc1efb6dc0748adf896ac1c059dc\",\"artifact_sha256_1.0.3_arm64\":\"37c9404e3ef5bb4ee8d434320ed943cea1e62973fc9ea4119b476467f1a17e1c\",\"manifest_sha256_1.0.3\":\"e706163135e5372047fa74b534c3896b2e561505337c6ac3f93f98ced221345c\",\"signed_manifest_sha256_1.0.3\":\"4d951e5cdbe68b6921b7a3920546ecf7f70ceef8306ed9e41de22e2de63ac5fe\"},\"purpose\":\"TEST ONLY registered, never installed or made fleet default\",\"release_id\":\"01a1928c-9450-74b7-8606-bb2326a642e6\",\"version\":\"1.0.3\"}"
+    },
+    {
+      "name": "kernel_boot_verified",
+      "detail": "\"Read-only comparison: devstack agent boot-id input equals kernel boot_id before enrollment; updater config omits boot_id (F9-06)\""
+    },
+    {
+      "name": "accepted_unpublished_baseline",
+      "detail": "true"
+    },
+    {
+      "name": "netbird_manifest_version",
+      "detail": "\"0.82.0\""
+    },
+    {
+      "name": "release_ids",
+      "detail": "{\"boot\":\"01a1928b-4b0f-7721-b80e-56e9a7fabb74\",\"good\":\"01a1928b-53c1-710b-912d-27dad1a659a5\",\"negative\":\"01a1928b-5c99-7079-93f2-48bf8a6e8f9c\"}"
+    },
+    {
+      "name": "probe_setup_notes",
+      "detail": "[{\"name\":\"probe_not_member\",\"detail\":\"true\"},{\"name\":\"probe_route_selected\",\"detail\":\"true\"},{\"name\":\"probe_config_scope\",\"detail\":\"one dedicated setup-key peer /32; one isolated origin /32 UDP 4443; no member device or grant\"}]"
+    }
+  ]
+}

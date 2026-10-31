@@ -1,0 +1,613 @@
+{
+  "run_id": "cf1a8c61-aced-4ab3-aa7e-a28cca1716e9",
+  "prefix": "w4-updates",
+  "port_base": 42000,
+  "scope": "Follow-up 10 systemd hand-off and central receipt acceptance; serving traffic proof cited from devstack 19",
+  "id": "installer-handoff",
+  "title": "D-110/D-111/D-125/D-127 installer hand-off",
+  "spec": [
+    "UPD02",
+    "UPD03",
+    "UPD05",
+    "§13.5",
+    "§13.6",
+    "§13.9",
+    "D-080",
+    "D-098",
+    "D-110",
+    "D-111",
+    "D-125",
+    "D-127"
+  ],
+  "status": "pass",
+  "at": "2026-10-31T15:20:46Z",
+  "expected": "Install, seed, stage and real correlated apply; central baseline/promotion/replay/correction; tamper, checkpoint and downgrade refusals",
+  "actual": "All installer hand-off and central receipt checks passed",
+  "git": "a6403f296bf38d77fe01ca912868d3b559608bfb",
+  "node_incarnation": "01a1928b-bb5b-796b-aea1-f477fa6c506d",
+  "commands": [
+    "make -f mk/at-updates.mk at-updates"
+  ],
+  "observations": [
+    {
+      "name": "consumed_devstack19",
+      "detail": "\"docs/e2e/runs/2026-10-31/followup19/d6aaa798-6c39-49f1-8fa9-5f84f696ac91/installer-journaled-upgrade.md: serving withdrawal, five-field correlation and nonzero durable watermark; this run uses a quiet unpublished agent and separately tests central acceptance\""
+    },
+    {
+      "name": "release_10",
+      "detail": "{\"architectures\":[\"amd64\",\"arm64\"],\"manifest_sha256\":\"5fd77b5cb3256bdc90f61a9d5d851591530a74304042f3aa06433f70b79dc1e3\",\"release_id\":\"01a1928b-7a1e-7ac5-9fc9-bac86b04d8a2\"}"
+    },
+    {
+      "name": "release_11",
+      "detail": "{\"architectures\":[\"amd64\",\"arm64\"],\"manifest_sha256\":\"cf690ac907f25a07539757594df547110491348e61da11fe4928d2d8af40c512\",\"release_id\":\"01a1928b-84fa-7184-bdc1-8f1a3c073021\"}"
+    },
+    {
+      "name": "release_12",
+      "detail": "{\"architectures\":[\"amd64\",\"arm64\"],\"manifest_sha256\":\"caf7b274da42529256b39f58b8cfbc3825621410e22b32d50215304b0df71cd3\",\"release_id\":\"01a1928b-9ea6-7be5-8d67-15be1ae7267c\"}"
+    },
+    {
+      "name": "release_13",
+      "detail": "{\"architectures\":[\"amd64\",\"arm64\"],\"manifest_sha256\":\"7a4b3f7aefbf29eabe93617afc0a249645405b7524aa7a379d271b9b3b5d0180\",\"release_id\":\"01a1928b-ae70-7b8a-b127-0128096f0f28\"}"
+    },
+    {
+      "name": "install",
+      "detail": "{\"Exit\":0,\"Status\":\"installed\",\"Code\":\"baseline\",\"Incarnation\":\"01a1928b-bb5b-796b-aea1-f477fa6c506d\",\"NodeID\":\"01a1928b-b54b-7970-a632-ad94e73a45f6\",\"RetiredMode\":\"\",\"RetiredHashes\":{},\"BoundStateBefore\":null,\"RetiredBoundState\":null,\"Message\":\"\",\"Before\":{\"key_sha256\":\"absent\",\"cert_sha256\":\"absent\",\"node_json_sha256\":\"absent\",\"usage_db_sha256\":\"absent\",\"usage_wal_sha256\":\"absent\",\"machine_id_sha256\":\"186cc62b3ea133e7b6da9685430b24e54bb999ea093280f231a8b358af70ce92\",\"current_target\":\"absent\"},\"Hashes\":{\"key_sha256\":\"f4182503640c32ba2ee9ad5b6ee9526d4156e418e3c07b433b04718f5829850b\",\"cert_sha256\":\"25fab9c0653de7f0d8d42c055747fd16a38e2a26f87735a5cbc37f999a40a750\",\"node_json_sha256\":\"c7daf0a9b969096b1d3144251632c2c2d630ed29dbfaa562202aaa885a7c1c4e\",\"usage_db_sha256\":\"f9c9c21fd2d3793a67ad321bd6feb3b179edf91756e286d17a05fd645d8a496d\",\"usage_wal_sha256\":\"absent\",\"machine_id_sha256\":\"186cc62b3ea133e7b6da9685430b24e54bb999ea093280f231a8b358af70ce92\",\"current_target\":\"releases/01a1928b-7a1e-7ac5-9fc9-bac86b04d8a2\"},\"Services\":{\"fvpn-agent.service\":\"active\",\"fvpn-updater.service\":\"inactive\",\"fvpn-updater.timer\":\"active\",\"fvpn-watchdog.service\":\"active\"}}"
+    },
+    {
+      "name": "netbird_socket",
+      "detail": "{\"command\":[\"test\",\"-S\",\"/run/fvpn-netbird/netbird.sock\"],\"exit\":0,\"stdout\":\"\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "netbird_service",
+      "detail": "{\"command\":[\"systemctl\",\"is-active\",\"fvpn-netbird.service\"],\"exit\":0,\"stdout\":\"active\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "check_install",
+      "detail": "true"
+    },
+    {
+      "name": "central_before_http",
+      "detail": "\"200\""
+    },
+    {
+      "name": "central_before_etag",
+      "detail": "\"\\\"4\\\"\""
+    },
+    {
+      "name": "central_before",
+      "detail": "{\"capacity\":null,\"checks\":[{\"detail\":\"Desired state is not in force.\",\"error_code\":\"AUTHORIZATION_EXPIRED\",\"name\":\"dns_policy\",\"observed_at\":\"2026-10-31T15:19:53.648344663Z\",\"status\":\"failed\"},{\"error_code\":null,\"name\":\"internet_only\",\"observed_at\":\"2026-10-31T15:19:53.648344663Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"lease\",\"observed_at\":\"2026-10-31T15:19:53.648344663Z\",\"status\":\"not_run\"},{\"error_code\":null,\"name\":\"meter_path\",\"observed_at\":\"2026-10-31T15:19:53.648344663Z\",\"status\":\"passed\"},{\"detail\":\"Desired state is not signed for this node.\",\"error_code\":\"SIGNATURE_INVALID\",\"name\":\"policy_signature\",\"observed_at\":\"2026-10-31T15:19:53.648344663Z\",\"status\":\"failed\"},{\"error_code\":null,\"name\":\"qos\",\"observed_at\":\"2026-10-31T15:19:53.648344663Z\",\"status\":\"not_run\"},{\"detail\":\"Release is not in the serving set.\",\"error_code\":\"MINIMUM_VERSION_VIOLATION\",\"name\":\"release_supported\",\"observed_at\":\"2026-10-31T15:19:53.648344663Z\",\"status\":\"failed\"},{\"error_code\":null,\"name\":\"source_binding\",\"observed_at\":\"2026-10-31T15:19:53.648344663Z\",\"status\":\"not_run\"},{\"error_code\":null,\"name\":\"storage\",\"observed_at\":\"2026-10-31T15:19:53.648344663Z\",\"status\":\"passed\"},{\"detail\":\"Egress probe used no extra target.\",\"error_code\":\"HEALTH_CHECK_FAILED\",\"name\":\"tunnel_probe\",\"observed_at\":\"2026-10-31T15:19:53.648344663Z\",\"status\":\"failed\"}],\"config_generation\":{\"applied\":\"0\",\"desired\":\"0\"},\"control_status\":\"online\",\"created_at\":\"2026-10-31T15:19:51.883178Z\",\"current_incarnation_id\":\"01a1928b-bb5b-796b-aea1-f477fa6c506d\",\"data_health\":\"failed\",\"dns_policy_evidence\":null,\"drift\":[],\"exit_id\":\"01a1928b-b54b-7971-9554-e13d0772b0c1\",\"group_ids\":[],\"identity_conflict\":{\"conflict_count\":0,\"last_conflict_at\":null,\"mapping_frozen\":false},\"last_seen_at\":\"2026-10-31T15:19:53.712651Z\",\"lifecycle_state\":\"registered\",\"member_forwarding_observed\":false,\"member_group_ids\":[],\"name\":\"TEST ONLY installer handoff\",\"netbird_peer_id\":\"[redacted]\",\"node_id\":\"01a1928b-b54b-7970-a632-ad94e73a45f6\",\"notes\":null,\"observed_exit_ipv4\":null,\"observed_exit_ipv6\":null,\"platform\":{\"arch\":\"amd64\",\"os\":\"ubuntu\",\"os_version\":\"24.04\"},\"provisioning_state\":\"applying\",\"publication_intent\":\"unpublished\",\"publication_observed\":\"absent\",\"recent_errors\":[{\"code\":\"HEALTH_CHECK_FAILED\",\"message\":\"tunnel_probe\",\"observed_at\":\"2026-10-31T15:19:53.648344663Z\",\"stage\":\"probe\"}],\"region\":null,\"releases\":{\"current_release_id\":null,\"desired_release_id\":null,\"last_good_release_id\":null},\"resource_version\":\"4\",\"retired_at\":null,\"safety_status\":\"failed\",\"update\":null,\"usage_outbox\":{\"acked_archive_bytes\":\"0\",\"blocked_seq\":null,\"central_acked_through\":\"0\",\"last_durable_event_seq\":\"0\",\"ledger_epoch\":\"e5b59b1a-689b-4510-8fd0-ebbf274022e6\",\"meter_epoch_id\":null,\"observed_at\":\"2026-10-31T15:19:53.712651Z\",\"oldest_unacked_at\":null,\"unacked_event_count\":0,\"unacked_payload_bytes\":\"0\"}}"
+    },
+    {
+      "name": "null_central_baseline",
+      "detail": "null"
+    },
+    {
+      "name": "seed_default_umask",
+      "detail": "{\"command\":[\"/opt/vpn-node/current/fvpn-updater\",\"seed\",\"--config\",\"/etc/vpn-node/updater.json\",\"--manifest\",\"/var/lib/vpn-node/update-staging/01a1928b-7a1e-7ac5-9fc9-bac86b04d8a2.manifest.json\",\"--tree\",\"/opt/vpn-node/releases/01a1928b-7a1e-7ac5-9fc9-bac86b04d8a2\"],\"exit\":0,\"stdout\":\"\",\"stderr\":\"{\\\"time\\\":\\\"2026-10-31T15:20:04.812531049Z\\\",\\\"level\\\":\\\"INFO\\\",\\\"msg\\\":\\\"verified installer baseline seeded\\\",\\\"release_id\\\":\\\"01a1928b-7a1e-7ac5-9fc9-bac86b04d8a2\\\"}\"}"
+    },
+    {
+      "name": "status_seeded",
+      "detail": "{\"command\":[\"/opt/vpn-node/current/fvpn-updater\",\"status\",\"--config\",\"/etc/vpn-node/updater.json\"],\"exit\":0,\"stdout\":\"{\\n  \\\"generation\\\": null,\\n  \\\"job_id\\\": \\\"\\\",\\n  \\\"stage\\\": \\\"\\\",\\n  \\\"state\\\": \\\"\\\",\\n  \\\"current_release_id\\\": \\\"01a1928b-7a1e-7ac5-9fc9-bac86b04d8a2\\\",\\n  \\\"last_good_release_id\\\": \\\"\\\",\\n  \\\"seeded_baseline\\\": {\\n    \\\"release_id\\\": \\\"01a1928b-7a1e-7ac5-9fc9-bac86b04d8a2\\\",\\n    \\\"manifest_sha256\\\": \\\"5fd77b5cb3256bdc90f61a9d5d851591530a74304042f3aa06433f70b79dc1e3\\\",\\n    \\\"tree_hash\\\": \\\"fca5d6f8df4946d6746b1f80ff811f8c67dfe3e15f70b9b5f7df18ea60ee2048\\\",\\n    \\\"boot_id\\\": \\\"97c018d7-a925-4723-9127-83c097de1c8a\\\",\\n    \\\"seeded_at\\\": \\\"2026-10-31T15:20:04.050439697Z\\\"\\n  },\\n  \\\"recovery_required\\\": false,\\n  \\\"last_result_state\\\": \\\"\\\",\\n  \\\"last_rejection\\\": null,\\n  \\\"health\\\": null,\\n  \\\"candidate_health_json\\\": null\\n}\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "seed_umask077",
+      "detail": "{\"command\":[\"sh\",\"-c\",\"umask 077; exec \\\"$@\\\"\",\"sh\",\"/opt/vpn-node/current/fvpn-updater\",\"seed\",\"--config\",\"/etc/vpn-node/updater.json\",\"--manifest\",\"/var/lib/vpn-node/update-staging/01a1928b-7a1e-7ac5-9fc9-bac86b04d8a2.manifest.json\",\"--tree\",\"/opt/vpn-node/releases/01a1928b-7a1e-7ac5-9fc9-bac86b04d8a2\"],\"exit\":0,\"stdout\":\"\",\"stderr\":\"{\\\"time\\\":\\\"2026-10-31T15:20:05.049258271Z\\\",\\\"level\\\":\\\"INFO\\\",\\\"msg\\\":\\\"verified installer baseline seeded\\\",\\\"release_id\\\":\\\"01a1928b-7a1e-7ac5-9fc9-bac86b04d8a2\\\"}\"}"
+    },
+    {
+      "name": "status_seeded_again",
+      "detail": "{\"command\":[\"/opt/vpn-node/current/fvpn-updater\",\"status\",\"--config\",\"/etc/vpn-node/updater.json\"],\"exit\":0,\"stdout\":\"{\\n  \\\"generation\\\": null,\\n  \\\"job_id\\\": \\\"\\\",\\n  \\\"stage\\\": \\\"\\\",\\n  \\\"state\\\": \\\"\\\",\\n  \\\"current_release_id\\\": \\\"01a1928b-7a1e-7ac5-9fc9-bac86b04d8a2\\\",\\n  \\\"last_good_release_id\\\": \\\"\\\",\\n  \\\"seeded_baseline\\\": {\\n    \\\"release_id\\\": \\\"01a1928b-7a1e-7ac5-9fc9-bac86b04d8a2\\\",\\n    \\\"manifest_sha256\\\": \\\"5fd77b5cb3256bdc90f61a9d5d851591530a74304042f3aa06433f70b79dc1e3\\\",\\n    \\\"tree_hash\\\": \\\"fca5d6f8df4946d6746b1f80ff811f8c67dfe3e15f70b9b5f7df18ea60ee2048\\\",\\n    \\\"boot_id\\\": \\\"97c018d7-a925-4723-9127-83c097de1c8a\\\",\\n    \\\"seeded_at\\\": \\\"2026-10-31T15:20:04.050439697Z\\\"\\n  },\\n  \\\"recovery_required\\\": false,\\n  \\\"last_result_state\\\": \\\"\\\",\\n  \\\"last_rejection\\\": null,\\n  \\\"health\\\": null,\\n  \\\"candidate_health_json\\\": null\\n}\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "check_seed",
+      "detail": "true"
+    },
+    {
+      "name": "generated_config",
+      "detail": "{\"desired_state\":\"/var/lib/vpn-node/state/desired-state.json\",\"desired_trust\":\"/etc/vpn-node/desired-trust.json\",\"incarnation_id\":\"01a1928b-bb5b-796b-aea1-f477fa6c506d\",\"meter_checkpoint\":\"/var/lib/vpn-node/state/meter.checkpoint\",\"mtls_ca\":\"/var/lib/vpn-node/identity/ca.pem\",\"mtls_cert\":\"/var/lib/vpn-node/identity/cert.pem\",\"mtls_key\":\"/var/lib/vpn-node/identity/key.pem\",\"node_id\":\"01a1928b-b54b-7970-a632-ad94e73a45f6\",\"platform\":{\"os_id\":\"ubuntu\",\"os_version\":\"24.04\",\"architecture\":\"amd64\",\"updater_version\":\"1.0.0\",\"control_api_major\":1,\"policy_schema\":1,\"usage_schema\":1,\"state_schema\":1},\"release_trust\":\"/etc/vpn-node/release-trust.json\",\"result_url\":\"\",\"start_command\":[\"/bin/sh\",\"-c\",\"exec systemctl start fvpn-watchdog.service fvpn-agent.service\",\"fvpn-updater-start\"],\"stop_command\":[\"systemctl\",\"stop\",\"fvpn-agent.service\",\"fvpn-watchdog.service\"]}"
+    },
+    {
+      "name": "fresh_oneshot",
+      "detail": "{\"command\":[\"systemctl\",\"start\",\"fvpn-updater.service\"],\"exit\":0,\"stdout\":\"\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "fresh_unit",
+      "detail": "{\"command\":[\"systemctl\",\"show\",\"fvpn-updater.service\",\"-p\",\"ExecMainStatus\",\"-p\",\"Result\"],\"exit\":0,\"stdout\":\"Result=success\\nExecMainStatus=0\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "fresh_run",
+      "detail": "{\"command\":[\"/opt/vpn-node/current/fvpn-updater\",\"run\",\"--config\",\"/etc/vpn-node/updater.json\"],\"exit\":0,\"stdout\":\"\",\"stderr\":\"{\\\"time\\\":\\\"2026-10-31T15:20:05.31289343Z\\\",\\\"level\\\":\\\"INFO\\\",\\\"msg\\\":\\\"desired-state file is absent\\\"}\"}"
+    },
+    {
+      "name": "check_fresh_no_work",
+      "detail": "true"
+    },
+    {
+      "name": "check_fresh_guard_clear",
+      "detail": "true"
+    },
+    {
+      "name": "kernel_boot_id",
+      "detail": "{\"command\":[\"cat\",\"/proc/sys/kernel/random/boot_id\"],\"exit\":0,\"stdout\":\"97c018d7-a925-4723-9127-83c097de1c8a\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "legacy_boot_config",
+      "detail": "{\"command\":[\"/opt/vpn-node/current/fvpn-updater\",\"run\",\"--config\",\"/var/tmp/e2e-rel/legacy-updater.json\"],\"exit\":0,\"stdout\":\"\",\"stderr\":\"{\\\"time\\\":\\\"2026-10-31T15:20:05.456474139Z\\\",\\\"level\\\":\\\"INFO\\\",\\\"msg\\\":\\\"desired-state file is absent\\\"}\"}"
+    },
+    {
+      "name": "legacy_lock_holder",
+      "detail": "{\"command\":[\"cat\",\"/var/lib/vpn-node/update.lock\"],\"exit\":0,\"stdout\":\"{\\\"pid\\\":1843,\\\"boot_id\\\":\\\"97c018d7-a925-4723-9127-83c097de1c8a\\\",\\\"start_time\\\":4354295}\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "check_legacy_boot_config",
+      "detail": "true"
+    },
+    {
+      "name": "reporting_adapter",
+      "detail": "\"Explicit owned result_url, CA and origins; generated installer reporting configuration is not claimed\""
+    },
+    {
+      "name": "agent_ready",
+      "detail": "true"
+    },
+    {
+      "name": "agent_boot",
+      "detail": "{\"command\":[\"cat\",\"/run/vpn-node/heartbeat\"],\"exit\":0,\"stdout\":\"v1\\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\\nmono_ns 43543773338013\\nwall_unix_ns 1793460006256967401\\npolicy_expires_mono_ns 0\\nbaseline_ok 1\\nserving 0\\ngeneration 1\\nreason recovery_required\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "check_boot_kernel",
+      "detail": "true"
+    },
+    {
+      "name": "upgrade",
+      "detail": "{\"Exit\":0,\"Status\":\"staged\",\"Code\":\"\",\"Incarnation\":\"\",\"NodeID\":\"\",\"RetiredMode\":\"\",\"RetiredHashes\":{},\"BoundStateBefore\":null,\"RetiredBoundState\":null,\"Message\":\"staged; updater run completed; inspect fvpn-updater status for the apply result\",\"Before\":{},\"Hashes\":{},\"Services\":null}"
+    },
+    {
+      "name": "pending_before_apply",
+      "detail": "{\"command\":[\"cat\",\"/var/lib/vpn-node/update-staging/pending-release.json\"],\"exit\":0,\"stdout\":\"{\\n  \\\"release_id\\\": \\\"01a1928b-84fa-7184-bdc1-8f1a3c073021\\\",\\n  \\\"manifest_path\\\": \\\"/var/lib/vpn-node/update-staging/01a1928b-84fa-7184-bdc1-8f1a3c073021.manifest.json\\\",\\n  \\\"request_id\\\": \\\"d1a49543-d5d8-4147-bc7c-b4f46a945302\\\",\\n  \\\"manifest_sha256\\\": \\\"cf690ac907f25a07539757594df547110491348e61da11fe4928d2d8af40c512\\\",\\n  \\\"artifact_path\\\": \\\"/var/lib/vpn-node/update-staging/646b760209d9764484694fdcaf31bd77a12f2b45c27c32b465693b92cd307364.tar.zst\\\",\\n  \\\"tree_path\\\": \\\"/opt/vpn-node/releases/01a1928b-84fa-7184-bdc1-8f1a3c073021\\\",\\n  \\\"updater_command\\\": \\\"/opt/vpn-node/current/fvpn-updater run -config /etc/vpn-node/updater.json\\\"\\n}\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "current_after_stage",
+      "detail": "\"releases/01a1928b-7a1e-7ac5-9fc9-bac86b04d8a2\""
+    },
+    {
+      "name": "staged_pending",
+      "detail": "{\"artifact_path\":\"/var/lib/vpn-node/update-staging/646b760209d9764484694fdcaf31bd77a12f2b45c27c32b465693b92cd307364.tar.zst\",\"manifest_path\":\"/var/lib/vpn-node/update-staging/01a1928b-84fa-7184-bdc1-8f1a3c073021.manifest.json\",\"manifest_sha256\":\"cf690ac907f25a07539757594df547110491348e61da11fe4928d2d8af40c512\",\"release_id\":\"01a1928b-84fa-7184-bdc1-8f1a3c073021\",\"request_id\":\"d1a49543-d5d8-4147-bc7c-b4f46a945302\",\"tree_path\":\"/opt/vpn-node/releases/01a1928b-84fa-7184-bdc1-8f1a3c073021\",\"updater_command\":\"/opt/vpn-node/current/fvpn-updater run -config /etc/vpn-node/updater.json\"}"
+    },
+    {
+      "name": "check_staged",
+      "detail": "true"
+    },
+    {
+      "name": "units_before_apply",
+      "detail": "{\"command\":[\"systemctl\",\"show\",\"fvpn-agent.service\",\"fvpn-watchdog.service\",\"-p\",\"Id\",\"-p\",\"ExecMainStartTimestampMonotonic\"],\"exit\":0,\"stdout\":\"ExecMainStartTimestampMonotonic=43543607684\\nId=fvpn-agent.service\\n\\nExecMainStartTimestampMonotonic=43543689748\\nId=fvpn-watchdog.service\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "apply",
+      "detail": "{\"command\":[\"/opt/vpn-node/current/fvpn-updater\",\"apply\",\"--config\",\"/etc/vpn-node/updater.json\",\"--pending\",\"/var/lib/vpn-node/update-staging/pending-release.json\"],\"exit\":0,\"stdout\":\"\",\"stderr\":\"{\\\"time\\\":\\\"2026-10-31T15:20:06.944167874Z\\\",\\\"level\\\":\\\"INFO\\\",\\\"msg\\\":\\\"applying installer pending release\\\",\\\"release_id\\\":\\\"01a1928b-84fa-7184-bdc1-8f1a3c073021\\\"}\"}"
+    },
+    {
+      "name": "handshake_trace",
+      "detail": "{\"command\":[\"cat\",\"/var/lib/vpn-node/e2e/upgrade-observe.jsonl\"],\"exit\":0,\"stdout\":\"{\\\"at\\\":\\\"2026-10-31T15:20:06.807311812Z\\\",\\\"boot_id\\\":\\\"97c018d7-a925-4723-9127-83c097de1c8a\\\",\\\"checkpoint\\\":\\\"absent\\\",\\\"control_http_status\\\":\\\"200\\\",\\\"control_read_ok\\\":true,\\\"heartbeat\\\":\\\"v1\\\\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\\\\nmono_ns 43543773338013\\\\nwall_unix_ns 1793460006256967401\\\\npolicy_expires_mono_ns 0\\\\nbaseline_ok 1\\\\nserving 0\\\\ngeneration 1\\\\nreason recovery_required\\\",\\\"latch\\\":\\\"absent\\\",\\\"nft\\\":\\\"{\\\\\\\"nftables\\\\\\\": [{\\\\\\\"metainfo\\\\\\\": {\\\\\\\"version\\\\\\\": \\\\\\\"1.0.9\\\\\\\", \\\\\\\"release_name\\\\\\\": \\\\\\\"Old Doc Yak #3\\\\\\\", \\\\\\\"json_schema_version\\\\\\\": 1}}, {\\\\\\\"table\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"handle\\\\\\\": 3}}, {\\\\\\\"counter\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"ctbase\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"handle\\\\\\\": 1, \\\\\\\"packets\\\\\\\": 0, \\\\\\\"bytes\\\\\\\": 0}}, {\\\\\\\"counter\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"ctv6\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"handle\\\\\\\": 2, \\\\\\\"packets\\\\\\\": 0, \\\\\\\"bytes\\\\\\\": 0}}, {\\\\\\\"counter\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"ctin\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"handle\\\\\\\": 3, \\\\\\\"packets\\\\\\\": 0, \\\\\\\"bytes\\\\\\\": 0}}, {\\\\\\\"set\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"allowed_v4\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"type\\\\\\\": \\\\\\\"ipv4_addr\\\\\\\", \\\\\\\"handle\\\\\\\": 4, \\\\\\\"flags\\\\\\\": [\\\\\\\"timeout\\\\\\\"]}}, {\\\\\\\"chain\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"forward\\\\\\\", \\\\\\\"handle\\\\\\\": 82, \\\\\\\"type\\\\\\\": \\\\\\\"filter\\\\\\\", \\\\\\\"hook\\\\\\\": \\\\\\\"forward\\\\\\\", \\\\\\\"prio\\\\\\\": -150, \\\\\\\"policy\\\\\\\": \\\\\\\"drop\\\\\\\"}}, {\\\\\\\"chain\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"input\\\\\\\", \\\\\\\"handle\\\\\\\": 83, \\\\\\\"type\\\\\\\": \\\\\\\"filter\\\\\\\", \\\\\\\"hook\\\\\\\": \\\\\\\"input\\\\\\\", \\\\\\\"prio\\\\\\\": -150, \\\\\\\"policy\\\\\\\": \\\\\\\"accept\\\\\\\"}}, {\\\\\\\"chain\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"output\\\\\\\", \\\\\\\"handle\\\\\\\": 84, \\\\\\\"type\\\\\\\": \\\\\\\"filter\\\\\\\", \\\\\\\"hook\\\\\\\": \\\\\\\"output\\\\\\\", \\\\\\\"prio\\\\\\\": -150, \\\\\\\"policy\\\\\\\": \\\\\\\"accept\\\\\\\"}}, {\\\\\\\"chain\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"postrouting\\\\\\\", \\\\\\\"handle\\\\\\\": 85, \\\\\\\"type\\\\\\\": \\\\\\\"nat\\\\\\\", \\\\\\\"hook\\\\\\\": \\\\\\\"postrouting\\\\\\\", \\\\\\\"prio\\\\\\\": 100, \\\\\\\"policy\\\\\\\": \\\\\\\"accept\\\\\\\"}}, {\\\\\\\"rule\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"chain\\\\\\\": \\\\\\\"forward\\\\\\\", \\\\\\\"handle\\\\\\\": 86, \\\\\\\"comment\\\\\\\": \\\\\\\"fvpn_generation=0 fvpn_baseline=1 fvpn_metering=forward_admission_v1\\\\\\\", \\\\\\\"expr\\\\\\\": [{\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"payload\\\\\\\": {\\\\\\\"protocol\\\\\\\": \\\\\\\"ip\\\\\\\", \\\\\\\"field\\\\\\\": \\\\\\\"saddr\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"192.0.2.255\\\\\\\"}}, {\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"payload\\\\\\\": {\\\\\\\"protocol\\\\\\\": \\\\\\\"ip\\\\\\\", \\\\\\\"field\\\\\\\": \\\\\\\"daddr\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"192.0.2.255\\\\\\\"}}]}}, {\\\\\\\"rule\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"chain\\\\\\\": \\\\\\\"forward\\\\\\\", \\\\\\\"handle\\\\\\\": 87, \\\\\\\"expr\\\\\\\": [{\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"meta\\\\\\\": {\\\\\\\"key\\\\\\\": \\\\\\\"iifname\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"fvmb0\\\\\\\"}}, {\\\\\\\"counter\\\\\\\": \\\\\\\"ctbase\\\\\\\"}, {\\\\\\\"drop\\\\\\\": null}]}}, {\\\\\\\"rule\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"chain\\\\\\\": \\\\\\\"forward\\\\\\\", \\\\\\\"handle\\\\\\\": 88, \\\\\\\"expr\\\\\\\": [{\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"meta\\\\\\\": {\\\\\\\"key\\\\\\\": \\\\\\\"oifname\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"fvmb0\\\\\\\"}}, {\\\\\\\"counter\\\\\\\": \\\\\\\"ctbase\\\\\\\"}, {\\\\\\\"drop\\\\\\\": null}]}}, {\\\\\\\"rule\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"chain\\\\\\\": \\\\\\\"forward\\\\\\\", \\\\\\\"handle\\\\\\\": 89, \\\\\\\"expr\\\\\\\": [{\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"meta\\\\\\\": {\\\\\\\"key\\\\\\\": \\\\\\\"iifname\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"fvmb0\\\\\\\"}}, {\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"meta\\\\\\\": {\\\\\\\"key\\\\\\\": \\\\\\\"nfproto\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"ipv6\\\\\\\"}}, {\\\\\\\"counter\\\\\\\": \\\\\\\"ctv6\\\\\\\"}, {\\\\\\\"drop\\\\\\\": null}]}}, {\\\\\\\"rule\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"chain\\\\\\\": \\\\\\\"forward\\\\\\\", \\\\\\\"handle\\\\\\\": 90, \\\\\\\"expr\\\\\\\": [{\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"meta\\\\\\\": {\\\\\\\"key\\\\\\\": \\\\\\\"oifname\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"fvmb0\\\\\\\"}}, {\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"meta\\\\\\\": {\\\\\\\"key\\\\\\\": \\\\\\\"nfproto\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"ipv6\\\\\\\"}}, {\\\\\\\"counter\\\\\\\": \\\\\\\"ctv6\\\\\\\"}, {\\\\\\\"drop\\\\\\\": null}]}}, {\\\\\\\"rule\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"chain\\\\\\\": \\\\\\\"input\\\\\\\", \\\\\\\"handle\\\\\\\": 91, \\\\\\\"expr\\\\\\\": [{\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"meta\\\\\\\": {\\\\\\\"key\\\\\\\": \\\\\\\"iifname\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"fvmb0\\\\\\\"}}, {\\\\\\\"counter\\\\\\\": \\\\\\\"ctin\\\\\\\"}, {\\\\\\\"drop\\\\\\\": null}]}}, {\\\\\\\"rule\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"chain\\\\\\\": \\\\\\\"input\\\\\\\", \\\\\\\"handle\\\\\\\": 92, \\\\\\\"expr\\\\\\\": [{\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"payload\\\\\\\": {\\\\\\\"protocol\\\\\\\": \\\\\\\"ip\\\\\\\", \\\\\\\"field\\\\\\\": \\\\\\\"saddr\\\\\\\"}}, \\\\\\\"right\\\\\\\": {\\\\\\\"prefix\\\\\\\": {\\\\\\\"addr\\\\\\\": \\\\\\\"100.64.0.0\\\\\\\", \\\\\\\"len\\\\\\\": 10}}}}, {\\\\\\\"counter\\\\\\\": \\\\\\\"ctin\\\\\\\"}, {\\\\\\\"drop\\\\\\\": null}]}}]}\\\\n\\\",\\\"nft_read_ok\\\":true,\\\"read_finished_at\\\":\\\"2026-10-31T15:20:06.820239527Z\\\",\\\"wait_notes\\\":{}}\\n{\\\"at\\\":\\\"2026-10-31T15:20:07.084568005Z\\\",\\\"boot_id\\\":\\\"97c018d7-a925-4723-9127-83c097de1c8a\\\",\\\"checkpoint\\\":\\\"absent\\\",\\\"control_http_status\\\":\\\"200\\\",\\\"control_read_ok\\\":true,\\\"heartbeat\\\":\\\"v1\\\\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\\\\nmono_ns 43543773338013\\\\nwall_unix_ns 1793460006256967401\\\\npolicy_expires_mono_ns 0\\\\nbaseline_ok 1\\\\nserving 0\\\\ngeneration 1\\\\nreason recovery_required\\\",\\\"latch\\\":\\\"6c959500-1d81-4523-8388-94b2c2896fcb\\\",\\\"nft\\\":\\\"{\\\\\\\"nftables\\\\\\\": [{\\\\\\\"metainfo\\\\\\\": {\\\\\\\"version\\\\\\\": \\\\\\\"1.0.9\\\\\\\", \\\\\\\"release_name\\\\\\\": \\\\\\\"Old Doc Yak #3\\\\\\\", \\\\\\\"json_schema_version\\\\\\\": 1}}, {\\\\\\\"table\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"handle\\\\\\\": 3}}, {\\\\\\\"counter\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"ctbase\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"handle\\\\\\\": 1, \\\\\\\"packets\\\\\\\": 0, \\\\\\\"bytes\\\\\\\": 0}}, {\\\\\\\"counter\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"ctv6\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"handle\\\\\\\": 2, \\\\\\\"packets\\\\\\\": 0, \\\\\\\"bytes\\\\\\\": 0}}, {\\\\\\\"counter\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"ctin\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"handle\\\\\\\": 3, \\\\\\\"packets\\\\\\\": 0, \\\\\\\"bytes\\\\\\\": 0}}, {\\\\\\\"set\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"allowed_v4\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"type\\\\\\\": \\\\\\\"ipv4_addr\\\\\\\", \\\\\\\"handle\\\\\\\": 4, \\\\\\\"flags\\\\\\\": [\\\\\\\"timeout\\\\\\\"]}}, {\\\\\\\"chain\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"forward\\\\\\\", \\\\\\\"handle\\\\\\\": 82, \\\\\\\"type\\\\\\\": \\\\\\\"filter\\\\\\\", \\\\\\\"hook\\\\\\\": \\\\\\\"forward\\\\\\\", \\\\\\\"prio\\\\\\\": -150, \\\\\\\"policy\\\\\\\": \\\\\\\"drop\\\\\\\"}}, {\\\\\\\"chain\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"input\\\\\\\", \\\\\\\"handle\\\\\\\": 83, \\\\\\\"type\\\\\\\": \\\\\\\"filter\\\\\\\", \\\\\\\"hook\\\\\\\": \\\\\\\"input\\\\\\\", \\\\\\\"prio\\\\\\\": -150, \\\\\\\"policy\\\\\\\": \\\\\\\"accept\\\\\\\"}}, {\\\\\\\"chain\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"output\\\\\\\", \\\\\\\"handle\\\\\\\": 84, \\\\\\\"type\\\\\\\": \\\\\\\"filter\\\\\\\", \\\\\\\"hook\\\\\\\": \\\\\\\"output\\\\\\\", \\\\\\\"prio\\\\\\\": -150, \\\\\\\"policy\\\\\\\": \\\\\\\"accept\\\\\\\"}}, {\\\\\\\"chain\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"postrouting\\\\\\\", \\\\\\\"handle\\\\\\\": 85, \\\\\\\"type\\\\\\\": \\\\\\\"nat\\\\\\\", \\\\\\\"hook\\\\\\\": \\\\\\\"postrouting\\\\\\\", \\\\\\\"prio\\\\\\\": 100, \\\\\\\"policy\\\\\\\": \\\\\\\"accept\\\\\\\"}}, {\\\\\\\"rule\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"chain\\\\\\\": \\\\\\\"forward\\\\\\\", \\\\\\\"handle\\\\\\\": 86, \\\\\\\"comment\\\\\\\": \\\\\\\"fvpn_generation=0 fvpn_baseline=1 fvpn_metering=forward_admission_v1\\\\\\\", \\\\\\\"expr\\\\\\\": [{\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"payload\\\\\\\": {\\\\\\\"protocol\\\\\\\": \\\\\\\"ip\\\\\\\", \\\\\\\"field\\\\\\\": \\\\\\\"saddr\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"192.0.2.255\\\\\\\"}}, {\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"payload\\\\\\\": {\\\\\\\"protocol\\\\\\\": \\\\\\\"ip\\\\\\\", \\\\\\\"field\\\\\\\": \\\\\\\"daddr\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"192.0.2.255\\\\\\\"}}]}}, {\\\\\\\"rule\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"chain\\\\\\\": \\\\\\\"forward\\\\\\\", \\\\\\\"handle\\\\\\\": 87, \\\\\\\"expr\\\\\\\": [{\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"meta\\\\\\\": {\\\\\\\"key\\\\\\\": \\\\\\\"iifname\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"fvmb0\\\\\\\"}}, {\\\\\\\"counter\\\\\\\": \\\\\\\"ctbase\\\\\\\"}, {\\\\\\\"drop\\\\\\\": null}]}}, {\\\\\\\"rule\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"chain\\\\\\\": \\\\\\\"forward\\\\\\\", \\\\\\\"handle\\\\\\\": 88, \\\\\\\"expr\\\\\\\": [{\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"meta\\\\\\\": {\\\\\\\"key\\\\\\\": \\\\\\\"oifname\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"fvmb0\\\\\\\"}}, {\\\\\\\"counter\\\\\\\": \\\\\\\"ctbase\\\\\\\"}, {\\\\\\\"drop\\\\\\\": null}]}}, {\\\\\\\"rule\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"chain\\\\\\\": \\\\\\\"forward\\\\\\\", \\\\\\\"handle\\\\\\\": 89, \\\\\\\"expr\\\\\\\": [{\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"meta\\\\\\\": {\\\\\\\"key\\\\\\\": \\\\\\\"iifname\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"fvmb0\\\\\\\"}}, {\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"meta\\\\\\\": {\\\\\\\"key\\\\\\\": \\\\\\\"nfproto\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"ipv6\\\\\\\"}}, {\\\\\\\"counter\\\\\\\": \\\\\\\"ctv6\\\\\\\"}, {\\\\\\\"drop\\\\\\\": null}]}}, {\\\\\\\"rule\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"chain\\\\\\\": \\\\\\\"forward\\\\\\\", \\\\\\\"handle\\\\\\\": 90, \\\\\\\"expr\\\\\\\": [{\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"meta\\\\\\\": {\\\\\\\"key\\\\\\\": \\\\\\\"oifname\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"fvmb0\\\\\\\"}}, {\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"meta\\\\\\\": {\\\\\\\"key\\\\\\\": \\\\\\\"nfproto\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"ipv6\\\\\\\"}}, {\\\\\\\"counter\\\\\\\": \\\\\\\"ctv6\\\\\\\"}, {\\\\\\\"drop\\\\\\\": null}]}}, {\\\\\\\"rule\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"chain\\\\\\\": \\\\\\\"input\\\\\\\", \\\\\\\"handle\\\\\\\": 91, \\\\\\\"expr\\\\\\\": [{\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"meta\\\\\\\": {\\\\\\\"key\\\\\\\": \\\\\\\"iifname\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"fvmb0\\\\\\\"}}, {\\\\\\\"counter\\\\\\\": \\\\\\\"ctin\\\\\\\"}, {\\\\\\\"drop\\\\\\\": null}]}}, {\\\\\\\"rule\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"chain\\\\\\\": \\\\\\\"input\\\\\\\", \\\\\\\"handle\\\\\\\": 92, \\\\\\\"expr\\\\\\\": [{\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"payload\\\\\\\": {\\\\\\\"protocol\\\\\\\": \\\\\\\"ip\\\\\\\", \\\\\\\"field\\\\\\\": \\\\\\\"saddr\\\\\\\"}}, \\\\\\\"right\\\\\\\": {\\\\\\\"prefix\\\\\\\": {\\\\\\\"addr\\\\\\\": \\\\\\\"100.64.0.0\\\\\\\", \\\\\\\"len\\\\\\\": 10}}}}, {\\\\\\\"counter\\\\\\\": \\\\\\\"ctin\\\\\\\"}, {\\\\\\\"drop\\\\\\\": null}]}}]}\\\\n\\\",\\\"nft_read_ok\\\":true,\\\"read_finished_at\\\":\\\"2026-10-31T15:20:07.096255286Z\\\",\\\"wait_notes\\\":{\\\"meter-wait-01a1928b-f099-7101-9029-ff709237aeab\\\":\\\"{\\\\\\\"boot_id\\\\\\\":\\\\\\\"97c018d7-a925-4723-9127-83c097de1c8a\\\\\\\",\\\\\\\"identity\\\\\\\":\\\\\\\"6c959500-1d81-4523-8388-94b2c2896fcb\\\\\\\",\\\\\\\"started\\\\\\\":\\\\\\\"2026-10-31T15:20:07.066087184Z\\\\\\\",\\\\\\\"deadline\\\\\\\":\\\\\\\"2026-10-31T15:20:37.066087184Z\\\\\\\"}\\\"}}\\n{\\\"at\\\":\\\"2026-10-31T15:20:11.232052969Z\\\",\\\"boot_id\\\":\\\"97c018d7-a925-4723-9127-83c097de1c8a\\\",\\\"checkpoint\\\":\\\"{\\\\\\\"closed_meter_epoch_id\\\\\\\":\\\\\\\"01a1928b-ecfe-7017-97a7-d39843b9f812\\\\\\\",\\\\\\\"last_durable_event_seq\\\\\\\":\\\\\\\"0\\\\\\\",\\\\\\\"central_acked_through\\\\\\\":\\\\\\\"0\\\\\\\",\\\\\\\"new_meter_epoch_id\\\\\\\":\\\\\\\"\\\\\\\",\\\\\\\"barrier_id\\\\\\\":\\\\\\\"6c959500-1d81-4523-8388-94b2c2896fcb\\\\\\\"}\\\",\\\"control_http_status\\\":\\\"200\\\",\\\"control_read_ok\\\":true,\\\"heartbeat\\\":\\\"v1\\\\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\\\\nmono_ns 43543773338013\\\\nwall_unix_ns 1793460006256967401\\\\npolicy_expires_mono_ns 0\\\\nbaseline_ok 1\\\\nserving 0\\\\ngeneration 1\\\\nreason recovery_required\\\",\\\"latch\\\":\\\"6c959500-1d81-4523-8388-94b2c2896fcb\\\",\\\"nft\\\":\\\"{\\\\\\\"nftables\\\\\\\": [{\\\\\\\"metainfo\\\\\\\": {\\\\\\\"version\\\\\\\": \\\\\\\"1.0.9\\\\\\\", \\\\\\\"release_name\\\\\\\": \\\\\\\"Old Doc Yak #3\\\\\\\", \\\\\\\"json_schema_version\\\\\\\": 1}}, {\\\\\\\"table\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"handle\\\\\\\": 3}}, {\\\\\\\"counter\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"ctbase\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"handle\\\\\\\": 1, \\\\\\\"packets\\\\\\\": 0, \\\\\\\"bytes\\\\\\\": 0}}, {\\\\\\\"counter\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"ctv6\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"handle\\\\\\\": 2, \\\\\\\"packets\\\\\\\": 0, \\\\\\\"bytes\\\\\\\": 0}}, {\\\\\\\"counter\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"ctin\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"handle\\\\\\\": 3, \\\\\\\"packets\\\\\\\": 0, \\\\\\\"bytes\\\\\\\": 0}}, {\\\\\\\"set\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"allowed_v4\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"type\\\\\\\": \\\\\\\"ipv4_addr\\\\\\\", \\\\\\\"handle\\\\\\\": 4, \\\\\\\"flags\\\\\\\": [\\\\\\\"timeout\\\\\\\"]}}, {\\\\\\\"chain\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"forward\\\\\\\", \\\\\\\"handle\\\\\\\": 93, \\\\\\\"type\\\\\\\": \\\\\\\"filter\\\\\\\", \\\\\\\"hook\\\\\\\": \\\\\\\"forward\\\\\\\", \\\\\\\"prio\\\\\\\": -150, \\\\\\\"policy\\\\\\\": \\\\\\\"drop\\\\\\\"}}, {\\\\\\\"chain\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"input\\\\\\\", \\\\\\\"handle\\\\\\\": 94, \\\\\\\"type\\\\\\\": \\\\\\\"filter\\\\\\\", \\\\\\\"hook\\\\\\\": \\\\\\\"input\\\\\\\", \\\\\\\"prio\\\\\\\": -150, \\\\\\\"policy\\\\\\\": \\\\\\\"accept\\\\\\\"}}, {\\\\\\\"chain\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"output\\\\\\\", \\\\\\\"handle\\\\\\\": 95, \\\\\\\"type\\\\\\\": \\\\\\\"filter\\\\\\\", \\\\\\\"hook\\\\\\\": \\\\\\\"output\\\\\\\", \\\\\\\"prio\\\\\\\": -150, \\\\\\\"policy\\\\\\\": \\\\\\\"accept\\\\\\\"}}, {\\\\\\\"chain\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"postrouting\\\\\\\", \\\\\\\"handle\\\\\\\": 96, \\\\\\\"type\\\\\\\": \\\\\\\"nat\\\\\\\", \\\\\\\"hook\\\\\\\": \\\\\\\"postrouting\\\\\\\", \\\\\\\"prio\\\\\\\": 100, \\\\\\\"policy\\\\\\\": \\\\\\\"accept\\\\\\\"}}, {\\\\\\\"rule\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"chain\\\\\\\": \\\\\\\"forward\\\\\\\", \\\\\\\"handle\\\\\\\": 97, \\\\\\\"comment\\\\\\\": \\\\\\\"fvpn_generation=0 fvpn_baseline=1 fvpn_metering=forward_admission_v1\\\\\\\", \\\\\\\"expr\\\\\\\": [{\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"payload\\\\\\\": {\\\\\\\"protocol\\\\\\\": \\\\\\\"ip\\\\\\\", \\\\\\\"field\\\\\\\": \\\\\\\"saddr\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"192.0.2.255\\\\\\\"}}, {\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"payload\\\\\\\": {\\\\\\\"protocol\\\\\\\": \\\\\\\"ip\\\\\\\", \\\\\\\"field\\\\\\\": \\\\\\\"daddr\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"192.0.2.255\\\\\\\"}}]}}, {\\\\\\\"rule\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"chain\\\\\\\": \\\\\\\"forward\\\\\\\", \\\\\\\"handle\\\\\\\": 98, \\\\\\\"expr\\\\\\\": [{\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"meta\\\\\\\": {\\\\\\\"key\\\\\\\": \\\\\\\"iifname\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"fvmb0\\\\\\\"}}, {\\\\\\\"counter\\\\\\\": \\\\\\\"ctbase\\\\\\\"}, {\\\\\\\"drop\\\\\\\": null}]}}, {\\\\\\\"rule\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"chain\\\\\\\": \\\\\\\"forward\\\\\\\", \\\\\\\"handle\\\\\\\": 99, \\\\\\\"expr\\\\\\\": [{\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"meta\\\\\\\": {\\\\\\\"key\\\\\\\": \\\\\\\"oifname\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"fvmb0\\\\\\\"}}, {\\\\\\\"counter\\\\\\\": \\\\\\\"ctbase\\\\\\\"}, {\\\\\\\"drop\\\\\\\": null}]}}, {\\\\\\\"rule\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"chain\\\\\\\": \\\\\\\"forward\\\\\\\", \\\\\\\"handle\\\\\\\": 100, \\\\\\\"expr\\\\\\\": [{\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"meta\\\\\\\": {\\\\\\\"key\\\\\\\": \\\\\\\"iifname\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"fvmb0\\\\\\\"}}, {\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"meta\\\\\\\": {\\\\\\\"key\\\\\\\": \\\\\\\"nfproto\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"ipv6\\\\\\\"}}, {\\\\\\\"counter\\\\\\\": \\\\\\\"ctv6\\\\\\\"}, {\\\\\\\"drop\\\\\\\": null}]}}, {\\\\\\\"rule\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"chain\\\\\\\": \\\\\\\"forward\\\\\\\", \\\\\\\"handle\\\\\\\": 101, \\\\\\\"expr\\\\\\\": [{\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"meta\\\\\\\": {\\\\\\\"key\\\\\\\": \\\\\\\"oifname\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"fvmb0\\\\\\\"}}, {\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"meta\\\\\\\": {\\\\\\\"key\\\\\\\": \\\\\\\"nfproto\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"ipv6\\\\\\\"}}, {\\\\\\\"counter\\\\\\\": \\\\\\\"ctv6\\\\\\\"}, {\\\\\\\"drop\\\\\\\": null}]}}, {\\\\\\\"rule\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"chain\\\\\\\": \\\\\\\"input\\\\\\\", \\\\\\\"handle\\\\\\\": 102, \\\\\\\"expr\\\\\\\": [{\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"meta\\\\\\\": {\\\\\\\"key\\\\\\\": \\\\\\\"iifname\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"fvmb0\\\\\\\"}}, {\\\\\\\"counter\\\\\\\": \\\\\\\"ctin\\\\\\\"}, {\\\\\\\"drop\\\\\\\": null}]}}, {\\\\\\\"rule\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"chain\\\\\\\": \\\\\\\"input\\\\\\\", \\\\\\\"handle\\\\\\\": 103, \\\\\\\"expr\\\\\\\": [{\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"payload\\\\\\\": {\\\\\\\"protocol\\\\\\\": \\\\\\\"ip\\\\\\\", \\\\\\\"field\\\\\\\": \\\\\\\"saddr\\\\\\\"}}, \\\\\\\"right\\\\\\\": {\\\\\\\"prefix\\\\\\\": {\\\\\\\"addr\\\\\\\": \\\\\\\"100.64.0.0\\\\\\\", \\\\\\\"len\\\\\\\": 10}}}}, {\\\\\\\"counter\\\\\\\": \\\\\\\"ctin\\\\\\\"}, {\\\\\\\"drop\\\\\\\": null}]}}]}\\\\n\\\",\\\"nft_read_ok\\\":true,\\\"read_finished_at\\\":\\\"2026-10-31T15:20:11.243675893Z\\\",\\\"wait_notes\\\":{\\\"meter-wait-01a1928b-f099-7101-9029-ff709237aeab\\\":\\\"{\\\\\\\"boot_id\\\\\\\":\\\\\\\"97c018d7-a925-4723-9127-83c097de1c8a\\\\\\\",\\\\\\\"identity\\\\\\\":\\\\\\\"6c959500-1d81-4523-8388-94b2c2896fcb\\\\\\\",\\\\\\\"started\\\\\\\":\\\\\\\"2026-10-31T15:20:07.066087184Z\\\\\\\",\\\\\\\"deadline\\\\\\\":\\\\\\\"2026-10-31T15:20:37.066087184Z\\\\\\\"}\\\"}}\\n{\\\"at\\\":\\\"2026-10-31T15:20:11.669770018Z\\\",\\\"boot_id\\\":\\\"97c018d7-a925-4723-9127-83c097de1c8a\\\",\\\"checkpoint\\\":\\\"{\\\\\\\"closed_meter_epoch_id\\\\\\\":\\\\\\\"01a1928b-ecfe-7017-97a7-d39843b9f812\\\\\\\",\\\\\\\"last_durable_event_seq\\\\\\\":\\\\\\\"0\\\\\\\",\\\\\\\"central_acked_through\\\\\\\":\\\\\\\"0\\\\\\\",\\\\\\\"new_meter_epoch_id\\\\\\\":\\\\\\\"\\\\\\\",\\\\\\\"barrier_id\\\\\\\":\\\\\\\"6c959500-1d81-4523-8388-94b2c2896fcb\\\\\\\"}\\\",\\\"control_http_status\\\":\\\"200\\\",\\\"control_read_ok\\\":true,\\\"heartbeat\\\":\\\"v1\\\\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\\\\nmono_ns 43549037453585\\\\nwall_unix_ns 1793460011521082560\\\\npolicy_expires_mono_ns 0\\\\nbaseline_ok 1\\\\nserving 0\\\\ngeneration 1\\\\nreason meter_storage_failed\\\",\\\"latch\\\":\\\"6c959500-1d81-4523-8388-94b2c2896fcb\\\",\\\"nft\\\":\\\"{\\\\\\\"nftables\\\\\\\": [{\\\\\\\"metainfo\\\\\\\": {\\\\\\\"version\\\\\\\": \\\\\\\"1.0.9\\\\\\\", \\\\\\\"release_name\\\\\\\": \\\\\\\"Old Doc Yak #3\\\\\\\", \\\\\\\"json_schema_version\\\\\\\": 1}}, {\\\\\\\"table\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"handle\\\\\\\": 3}}, {\\\\\\\"counter\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"ctbase\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"handle\\\\\\\": 1, \\\\\\\"packets\\\\\\\": 0, \\\\\\\"bytes\\\\\\\": 0}}, {\\\\\\\"counter\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"ctv6\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"handle\\\\\\\": 2, \\\\\\\"packets\\\\\\\": 0, \\\\\\\"bytes\\\\\\\": 0}}, {\\\\\\\"counter\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"ctin\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"handle\\\\\\\": 3, \\\\\\\"packets\\\\\\\": 0, \\\\\\\"bytes\\\\\\\": 0}}, {\\\\\\\"set\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"allowed_v4\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"type\\\\\\\": \\\\\\\"ipv4_addr\\\\\\\", \\\\\\\"handle\\\\\\\": 4, \\\\\\\"flags\\\\\\\": [\\\\\\\"timeout\\\\\\\"]}}, {\\\\\\\"chain\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"forward\\\\\\\", \\\\\\\"handle\\\\\\\": 137, \\\\\\\"type\\\\\\\": \\\\\\\"filter\\\\\\\", \\\\\\\"hook\\\\\\\": \\\\\\\"forward\\\\\\\", \\\\\\\"prio\\\\\\\": -150, \\\\\\\"policy\\\\\\\": \\\\\\\"drop\\\\\\\"}}, {\\\\\\\"chain\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"input\\\\\\\", \\\\\\\"handle\\\\\\\": 138, \\\\\\\"type\\\\\\\": \\\\\\\"filter\\\\\\\", \\\\\\\"hook\\\\\\\": \\\\\\\"input\\\\\\\", \\\\\\\"prio\\\\\\\": -150, \\\\\\\"policy\\\\\\\": \\\\\\\"accept\\\\\\\"}}, {\\\\\\\"chain\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"output\\\\\\\", \\\\\\\"handle\\\\\\\": 139, \\\\\\\"type\\\\\\\": \\\\\\\"filter\\\\\\\", \\\\\\\"hook\\\\\\\": \\\\\\\"output\\\\\\\", \\\\\\\"prio\\\\\\\": -150, \\\\\\\"policy\\\\\\\": \\\\\\\"accept\\\\\\\"}}, {\\\\\\\"chain\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"name\\\\\\\": \\\\\\\"postrouting\\\\\\\", \\\\\\\"handle\\\\\\\": 140, \\\\\\\"type\\\\\\\": \\\\\\\"nat\\\\\\\", \\\\\\\"hook\\\\\\\": \\\\\\\"postrouting\\\\\\\", \\\\\\\"prio\\\\\\\": 100, \\\\\\\"policy\\\\\\\": \\\\\\\"accept\\\\\\\"}}, {\\\\\\\"rule\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"chain\\\\\\\": \\\\\\\"forward\\\\\\\", \\\\\\\"handle\\\\\\\": 141, \\\\\\\"comment\\\\\\\": \\\\\\\"fvpn_generation=0 fvpn_baseline=1 fvpn_metering=forward_admission_v1\\\\\\\", \\\\\\\"expr\\\\\\\": [{\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"payload\\\\\\\": {\\\\\\\"protocol\\\\\\\": \\\\\\\"ip\\\\\\\", \\\\\\\"field\\\\\\\": \\\\\\\"saddr\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"192.0.2.255\\\\\\\"}}, {\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"payload\\\\\\\": {\\\\\\\"protocol\\\\\\\": \\\\\\\"ip\\\\\\\", \\\\\\\"field\\\\\\\": \\\\\\\"daddr\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"192.0.2.255\\\\\\\"}}]}}, {\\\\\\\"rule\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"chain\\\\\\\": \\\\\\\"forward\\\\\\\", \\\\\\\"handle\\\\\\\": 142, \\\\\\\"expr\\\\\\\": [{\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"meta\\\\\\\": {\\\\\\\"key\\\\\\\": \\\\\\\"iifname\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"fvmb0\\\\\\\"}}, {\\\\\\\"counter\\\\\\\": \\\\\\\"ctbase\\\\\\\"}, {\\\\\\\"drop\\\\\\\": null}]}}, {\\\\\\\"rule\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"chain\\\\\\\": \\\\\\\"forward\\\\\\\", \\\\\\\"handle\\\\\\\": 143, \\\\\\\"expr\\\\\\\": [{\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"meta\\\\\\\": {\\\\\\\"key\\\\\\\": \\\\\\\"oifname\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"fvmb0\\\\\\\"}}, {\\\\\\\"counter\\\\\\\": \\\\\\\"ctbase\\\\\\\"}, {\\\\\\\"drop\\\\\\\": null}]}}, {\\\\\\\"rule\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"chain\\\\\\\": \\\\\\\"forward\\\\\\\", \\\\\\\"handle\\\\\\\": 144, \\\\\\\"expr\\\\\\\": [{\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"meta\\\\\\\": {\\\\\\\"key\\\\\\\": \\\\\\\"iifname\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"fvmb0\\\\\\\"}}, {\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"meta\\\\\\\": {\\\\\\\"key\\\\\\\": \\\\\\\"nfproto\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"ipv6\\\\\\\"}}, {\\\\\\\"counter\\\\\\\": \\\\\\\"ctv6\\\\\\\"}, {\\\\\\\"drop\\\\\\\": null}]}}, {\\\\\\\"rule\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"chain\\\\\\\": \\\\\\\"forward\\\\\\\", \\\\\\\"handle\\\\\\\": 145, \\\\\\\"expr\\\\\\\": [{\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"meta\\\\\\\": {\\\\\\\"key\\\\\\\": \\\\\\\"oifname\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"fvmb0\\\\\\\"}}, {\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"meta\\\\\\\": {\\\\\\\"key\\\\\\\": \\\\\\\"nfproto\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"ipv6\\\\\\\"}}, {\\\\\\\"counter\\\\\\\": \\\\\\\"ctv6\\\\\\\"}, {\\\\\\\"drop\\\\\\\": null}]}}, {\\\\\\\"rule\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"chain\\\\\\\": \\\\\\\"input\\\\\\\", \\\\\\\"handle\\\\\\\": 146, \\\\\\\"expr\\\\\\\": [{\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"meta\\\\\\\": {\\\\\\\"key\\\\\\\": \\\\\\\"iifname\\\\\\\"}}, \\\\\\\"right\\\\\\\": \\\\\\\"fvmb0\\\\\\\"}}, {\\\\\\\"counter\\\\\\\": \\\\\\\"ctin\\\\\\\"}, {\\\\\\\"drop\\\\\\\": null}]}}, {\\\\\\\"rule\\\\\\\": {\\\\\\\"family\\\\\\\": \\\\\\\"inet\\\\\\\", \\\\\\\"table\\\\\\\": \\\\\\\"fvpn\\\\\\\", \\\\\\\"chain\\\\\\\": \\\\\\\"input\\\\\\\", \\\\\\\"handle\\\\\\\": 147, \\\\\\\"expr\\\\\\\": [{\\\\\\\"match\\\\\\\": {\\\\\\\"op\\\\\\\": \\\\\\\"==\\\\\\\", \\\\\\\"left\\\\\\\": {\\\\\\\"payload\\\\\\\": {\\\\\\\"protocol\\\\\\\": \\\\\\\"ip\\\\\\\", \\\\\\\"field\\\\\\\": \\\\\\\"saddr\\\\\\\"}}, \\\\\\\"right\\\\\\\": {\\\\\\\"prefix\\\\\\\": {\\\\\\\"addr\\\\\\\": \\\\\\\"100.64.0.0\\\\\\\", \\\\\\\"len\\\\\\\": 10}}}}, {\\\\\\\"counter\\\\\\\": \\\\\\\"ctin\\\\\\\"}, {\\\\\\\"drop\\\\\\\": null}]}}]}\\\\n\\\",\\\"nft_read_ok\\\":true,\\\"read_finished_at\\\":\\\"2026-10-31T15:20:11.683125302Z\\\",\\\"wait_notes\\\":{}}\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "correlated_checkpoint",
+      "detail": "{\"barrier_id\":\"6c959500-1d81-4523-8388-94b2c2896fcb\",\"central_acked_through\":\"0\",\"closed_meter_epoch_id\":\"01a1928b-ecfe-7017-97a7-d39843b9f812\",\"last_durable_event_seq\":\"0\",\"new_meter_epoch_id\":\"\"}"
+    },
+    {
+      "name": "correlated_wait",
+      "detail": "{\"boot_id\":\"97c018d7-a925-4723-9127-83c097de1c8a\",\"identity\":\"6c959500-1d81-4523-8388-94b2c2896fcb\",\"started\":\"2026-10-31T15:20:07.066087184Z\",\"deadline\":\"2026-10-31T15:20:37.066087184Z\"}"
+    },
+    {
+      "name": "usage_snapshot",
+      "detail": "{\"bytes\":\"110592\",\"sha256\":\"cd5745afcd21492615b3df2ffc66f76fe0d3386db49beba8a4cb51a619617f50\"}"
+    },
+    {
+      "name": "finalized_epoch",
+      "detail": "{\"boot_id\":\"97c018d7-a925-4723-9127-83c097de1c8a\",\"close_reason\":\"final_sample\",\"closed_at\":\"2026-10-31T15:20:06.215506Z\",\"epoch_id\":\"01a1928b-ecfe-7017-97a7-d39843b9f812\"}"
+    },
+    {
+      "name": "check_correlated",
+      "detail": "true"
+    },
+    {
+      "name": "status_after_apply",
+      "detail": "{\"command\":[\"/opt/vpn-node/current/fvpn-updater\",\"status\",\"--config\",\"/etc/vpn-node/updater.json\"],\"exit\":0,\"stdout\":\"{\\n  \\\"generation\\\": \\\"1\\\",\\n  \\\"job_id\\\": \\\"e40dafd9-ee76-52c1-97a8-375ef98bd73a\\\",\\n  \\\"source\\\": \\\"installer\\\",\\n  \\\"requested_release_id\\\": \\\"01a1928b-84fa-7184-bdc1-8f1a3c073021\\\",\\n  \\\"stage\\\": \\\"report\\\",\\n  \\\"state\\\": \\\"succeeded\\\",\\n  \\\"journal_stage\\\": \\\"locally_succeeded\\\",\\n  \\\"current_release_id\\\": \\\"01a1928b-84fa-7184-bdc1-8f1a3c073021\\\",\\n  \\\"last_good_release_id\\\": \\\"01a1928b-84fa-7184-bdc1-8f1a3c073021\\\",\\n  \\\"recovery_required\\\": false,\\n  \\\"last_result_state\\\": \\\"succeeded\\\",\\n  \\\"last_rejection\\\": null,\\n  \\\"health\\\": {\\n    \\\"dns_policy\\\": \\\"passed\\\",\\n    \\\"identity_and_state\\\": \\\"passed\\\",\\n    \\\"internet_only\\\": \\\"passed\\\",\\n    \\\"processes\\\": \\\"passed\\\",\\n    \\\"tunnel_probe\\\": \\\"passed\\\"\\n  },\\n  \\\"candidate_health_json\\\": {\\n    \\\"dns_policy\\\": \\\"passed\\\",\\n    \\\"identity_and_state\\\": \\\"passed\\\",\\n    \\\"internet_only\\\": \\\"passed\\\",\\n    \\\"processes\\\": \\\"passed\\\",\\n    \\\"tunnel_probe\\\": \\\"passed\\\"\\n  }\\n}\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "current_after_apply",
+      "detail": "\"releases/01a1928b-84fa-7184-bdc1-8f1a3c073021\""
+    },
+    {
+      "name": "units_after_apply",
+      "detail": "{\"command\":[\"systemctl\",\"show\",\"fvpn-agent.service\",\"fvpn-watchdog.service\",\"-p\",\"Id\",\"-p\",\"ExecMainStartTimestampMonotonic\"],\"exit\":0,\"stdout\":\"ExecMainStartTimestampMonotonic=43548862856\\nId=fvpn-agent.service\\n\\nExecMainStartTimestampMonotonic=43548861090\\nId=fvpn-watchdog.service\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "running_executable",
+      "detail": "{\"command\":[\"sh\",\"-c\",\"p=$(systemctl show -p MainPID --value fvpn-agent.service); readlink /proc/$p/exe\"],\"exit\":0,\"stdout\":\"/opt/vpn-node/releases/01a1928b-84fa-7184-bdc1-8f1a3c073021/fvpn-agent\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "check_restarts",
+      "detail": "true"
+    },
+    {
+      "name": "journal_snapshot",
+      "detail": "{\"bytes\":\"73728\",\"sha256\":\"a013beddf719b85aee57da95ea258b69d6405bb3d7afe7bb6181178d961fcb00\"}"
+    },
+    {
+      "name": "success_receipt_source",
+      "detail": "\"central immutable payload matched to local acknowledged result_id/job_id/hash\""
+    },
+    {
+      "name": "success_receipt_hash_valid",
+      "detail": "true"
+    },
+    {
+      "name": "success_receipt",
+      "detail": "{\"attempt\":1,\"batch_id\":null,\"boot_id\":\"97c018d7-a925-4723-9127-83c097de1c8a\",\"current_release_id\":\"01a1928b-84fa-7184-bdc1-8f1a3c073021\",\"error_code\":null,\"finished_at\":\"2026-10-31T15:20:11Z\",\"generation\":\"1\",\"health\":{\"processes\":\"passed\",\"dns_policy\":\"passed\",\"tunnel_probe\":\"passed\",\"internet_only\":\"passed\",\"identity_and_state\":\"passed\"},\"incarnation_id\":\"01a1928b-bb5b-796b-aea1-f477fa6c506d\",\"job_id\":\"e40dafd9-ee76-52c1-97a8-375ef98bd73a\",\"manifest_sha256\":\"cf690ac907f25a07539757594df547110491348e61da11fe4928d2d8af40c512\",\"member_forwarding_enabled\":false,\"node_id\":\"01a1928b-b54b-7970-a632-ad94e73a45f6\",\"payload_hash\":\"3a3d087906eb71d8af21bc474143dff59d059c436c14c39b0bbab23d2ee69152\",\"policy_generation\":\"0\",\"previous_release_id\":\"01a1928b-7a1e-7ac5-9fc9-bac86b04d8a2\",\"publication_intent\":\"disabled\",\"recovery_required\":false,\"requested_release_id\":\"01a1928b-84fa-7184-bdc1-8f1a3c073021\",\"result_id\":\"aaf17c21-7538-5ee1-9b9b-01be0bb4a05b\",\"source\":\"installer\",\"stage\":\"report\",\"started_at\":\"2026-10-31T15:20:07Z\",\"state\":\"succeeded\",\"state_schema_version\":1,\"target_id\":null,\"usage_checkpoint\":{\"new_meter_epoch_id\":\"01a1928c-0154-730e-929b-340659bd5c0d\",\"central_acked_through\":\"0\",\"closed_meter_epoch_id\":\"01a1928b-ecfe-7017-97a7-d39843b9f812\",\"last_durable_event_seq\":\"0\"}}"
+    },
+    {
+      "name": "check_apply",
+      "detail": "true"
+    },
+    {
+      "name": "journal_snapshot",
+      "detail": "{\"bytes\":\"73728\",\"sha256\":\"a013beddf719b85aee57da95ea258b69d6405bb3d7afe7bb6181178d961fcb00\"}"
+    },
+    {
+      "name": "job_claim",
+      "detail": "{\"boot_id\":\"97c018d7-a925-4723-9127-83c097de1c8a\",\"intent\":{\"attempt\":1,\"authorization_valid_until\":\"0001-01-01T00:00:00Z\",\"batch_id\":null,\"generation\":\"1\",\"incarnation_id\":\"01a1928b-bb5b-796b-aea1-f477fa6c506d\",\"issued_at\":\"2026-10-31T15:20:06.916103913Z\",\"job_id\":\"e40dafd9-ee76-52c1-97a8-375ef98bd73a\",\"manifest_sha256\":\"cf690ac907f25a07539757594df547110491348e61da11fe4928d2d8af40c512\",\"manifest_url\":\"\",\"node_id\":\"01a1928b-b54b-7970-a632-ad94e73a45f6\",\"publication_intent\":\"disabled\",\"release_id\":\"01a1928b-84fa-7184-bdc1-8f1a3c073021\",\"target_id\":null},\"pending_path\":\"/var/lib/vpn-node/update-staging/pending-release.json\",\"pending_sha256\":\"e9e9c0d53cecd2429a8b5d533a4735003b4b43d8b9dfd41f889733a579ff336e\",\"policy_generation\":\"0\",\"policy_known\":true,\"revoked\":[],\"serving\":[\"01a1928b-7a1e-7ac5-9fc9-bac86b04d8a2\"],\"source\":\"installer\",\"state_schema\":1}"
+    },
+    {
+      "name": "check_boot_kernel",
+      "detail": "true"
+    },
+    {
+      "name": "post_apply_check",
+      "detail": "{\"command\":[\"/usr/local/bin/fvpn-node-install\",\"check\",\"--json\"],\"exit\":0,\"stdout\":\"{\\n  \\\"status\\\": \\\"healthy\\\",\\n  \\\"baseline\\\": {\\n    \\\"status\\\": \\\"seeded\\\",\\n    \\\"manifest_path\\\": \\\"/var/lib/vpn-node/update-staging/01a1928b-7a1e-7ac5-9fc9-bac86b04d8a2.manifest.json\\\",\\n    \\\"tree_path\\\": \\\"/opt/vpn-node/releases/01a1928b-7a1e-7ac5-9fc9-bac86b04d8a2\\\",\\n    \\\"probe\\\": {\\n      \\\"exit_code\\\": 64,\\n      \\\"stderr\\\": \\\"Usage of seed:\\\\n  -config string\\\\n    \\\\tupdater config JSON (paths only, no keys)\\\\n  -manifest string\\\\n    \\\\tretained signed release envelope\\\\n  -pending string\\\\n    \\\\tinstaller pending-release.json to apply\\\\n  -tree string\\\\n    \\\\tresolved current release directory to verify\\\\n\\\"\\n    },\\n    \\\"seed\\\": {\\n      \\\"exit_code\\\": 0,\\n      \\\"stderr\\\": \\\"{\\\\\\\"time\\\\\\\":\\\\\\\"2026-10-31T15:20:04.053428781Z\\\\\\\",\\\\\\\"level\\\\\\\":\\\\\\\"INFO\\\\\\\",\\\\\\\"msg\\\\\\\":\\\\\\\"verified installer baseline seeded\\\\\\\",\\\\\\\"release_id\\\\\\\":\\\\\\\"01a1928b-7a1e-7ac5-9fc9-bac86b04d8a2\\\\\\\"}\\\\n\\\"\\n    }\\n  },\\n  \\\"os_id\\\": \\\"ubuntu\\\",\\n  \\\"os_version\\\": \\\"24.04\\\",\\n  \\\"arch\\\": \\\"amd64\\\",\\n  \\\"kernel\\\": \\\"Linux 7.0.0-38-generic\\\",\\n  \\\"release_id\\\": \\\"01a1928b-84fa-7184-bdc1-8f1a3c073021\\\",\\n  \\\"release_source\\\": \\\"updater_journal\\\",\\n  \\\"install_record\\\": {\\n    \\\"release_id\\\": \\\"01a1928b-7a1e-7ac5-9fc9-bac86b04d8a2\\\",\\n    \\\"manifest_sha256\\\": \\\"5fd77b5cb3256bdc90f61a9d5d851591530a74304042f3aa06433f70b79dc1e3\\\",\\n    \\\"release_sequence\\\": \\\"10\\\",\\n    \\\"product_version\\\": \\\"1.1.0\\\",\\n    \\\"arch\\\": \\\"amd64\\\",\\n    \\\"installed_at\\\": \\\"2026-10-31T15:19:53Z\\\",\\n    \\\"netbird_package_installed\\\": false\\n  },\\n  \\\"updater\\\": {\\n    \\\"current_release_id\\\": \\\"01a1928b-84fa-7184-bdc1-8f1a3c073021\\\",\\n    \\\"state\\\": \\\"succeeded\\\",\\n    \\\"recovery_required\\\": false\\n  },\\n  \\\"units\\\": {\\n    \\\"fvpn-agent.service\\\": \\\"active\\\",\\n    \\\"fvpn-netbird.service\\\": \\\"active\\\",\\n    \\\"fvpn-node-netbird-up.service\\\": \\\"active\\\",\\n    \\\"fvpn-updater-recover.service\\\": \\\"active\\\",\\n    \\\"fvpn-updater.service\\\": \\\"inactive\\\",\\n    \\\"fvpn-updater.timer\\\": \\\"active\\\",\\n    \\\"fvpn-watchdog.service\\\": \\\"active\\\"\\n  },\\n  \\\"directories\\\": [\\n    {\\n      \\\"path\\\": \\\"/etc/vpn-node\\\",\\n      \\\"mode\\\": \\\"0755\\\",\\n      \\\"expected\\\": \\\"0755\\\",\\n      \\\"ok\\\": true\\n    },\\n    {\\n      \\\"path\\\": \\\"/var/lib/vpn-node\\\",\\n      \\\"mode\\\": \\\"0700\\\",\\n      \\\"expected\\\": \\\"0700\\\",\\n      \\\"ok\\\": true\\n    },\\n    {\\n      \\\"path\\\": \\\"/var/lib/vpn-node/identity\\\",\\n      \\\"mode\\\": \\\"0700\\\",\\n      \\\"expected\\\": \\\"0700\\\",\\n      \\\"ok\\\": true\\n    },\\n    {\\n      \\\"path\\\": \\\"/var/lib/vpn-node/state\\\",\\n      \\\"mode\\\": \\\"0700\\\",\\n      \\\"expected\\\": \\\"0700\\\",\\n      \\\"ok\\\": true\\n    },\\n    {\\n      \\\"path\\\": \\\"/var/lib/vpn-node/update-journal\\\",\\n      \\\"mode\\\": \\\"0700\\\",\\n      \\\"expected\\\": \\\"0700\\\",\\n      \\\"ok\\\": true\\n    },\\n    {\\n      \\\"path\\\": \\\"/var/lib/vpn-node/update-staging\\\",\\n      \\\"mode\\\": \\\"0700\\\",\\n      \\\"expected\\\": \\\"0700\\\",\\n      \\\"ok\\\": true\\n    },\\n    {\\n      \\\"path\\\": \\\"/var/lib/vpn-node/install\\\",\\n      \\\"mode\\\": \\\"0700\\\",\\n      \\\"expected\\\": \\\"0700\\\",\\n      \\\"ok\\\": true\\n    },\\n    {\\n      \\\"path\\\": \\\"/opt/vpn-node\\\",\\n      \\\"mode\\\": \\\"0755\\\",\\n      \\\"expected\\\": \\\"0755\\\",\\n      \\\"ok\\\": true\\n    },\\n    {\\n      \\\"path\\\": \\\"/opt/vpn-node/releases\\\",\\n      \\\"mode\\\": \\\"0755\\\",\\n      \\\"expected\\\": \\\"0755\\\",\\n      \\\"ok\\\": true\\n    },\\n    {\\n      \\\"path\\\": \\\"/run/vpn-node\\\",\\n      \\\"mode\\\": \\\"0755\\\",\\n      \\\"expected\\\": \\\"0755\\\",\\n      \\\"ok\\\": true\\n    }\\n  ],\\n  \\\"lock\\\": {\\n    \\\"held\\\": false,\\n    \\\"pid\\\": 2199,\\n    \\\"boot_id\\\": \\\"97c018d7-a925-4723-9127-83c097de1c8a\\\",\\n    \\\"start_time\\\": 4354440\\n  },\\n  \\\"identity\\\": {\\n    \\\"present\\\": true,\\n    \\\"incarnation_id\\\": \\\"01a1928b-bb5b-796b-aea1-f477fa6c506d\\\",\\n    \\\"node_id\\\": \\\"01a1928b-b54b-7970-a632-ad94e73a45f6\\\"\\n  },\\n  \\\"usage_store_present\\\": true,\\n  \\\"netbird\\\": {\\n    \\\"version\\\": \\\"0.82.0\\\",\\n    \\\"daemon\\\": \\\"connected\\\"\\n  },\\n  \\\"installer_marker\\\": {\\n    \\\"table\\\": \\\"fvpn_install\\\",\\n    \\\"present\\\": true,\\n    \\\"legacy_owner\\\": false\\n  },\\n  \\\"drifts\\\": []\\n}\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "recomputed_job_id",
+      "detail": "\"e40dafd9-ee76-52c1-97a8-375ef98bd73a\""
+    },
+    {
+      "name": "check_job_id",
+      "detail": "true"
+    },
+    {
+      "name": "success_submission",
+      "detail": "{\"body\":{\"accepted\":true,\"accepted_as_history\":false,\"applied_to_current_observation\":true,\"observed_update_generation\":\"0\",\"received_at\":\"2026-10-31T15:20:11.652805Z\",\"result_id\":\"aaf17c21-7538-5ee1-9b9b-01be0bb4a05b\"},\"status\":202}"
+    },
+    {
+      "name": "central_after_success_http",
+      "detail": "\"200\""
+    },
+    {
+      "name": "central_after_success_etag",
+      "detail": "\"\\\"8\\\"\""
+    },
+    {
+      "name": "central_after_success",
+      "detail": "{\"capacity\":null,\"checks\":[{\"error_code\":null,\"name\":\"dns_policy\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"internet_only\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"lease\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"not_run\"},{\"error_code\":null,\"name\":\"meter_path\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"policy_signature\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"qos\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"not_run\"},{\"error_code\":null,\"name\":\"release_supported\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"source_binding\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"not_run\"},{\"error_code\":null,\"name\":\"storage\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"passed\"},{\"detail\":\"Egress probe used no extra target.\",\"error_code\":null,\"name\":\"tunnel_probe\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"passed\"}],\"config_generation\":{\"applied\":\"1\",\"desired\":\"1\"},\"control_status\":\"online\",\"created_at\":\"2026-10-31T15:19:51.883178Z\",\"current_incarnation_id\":\"01a1928b-bb5b-796b-aea1-f477fa6c506d\",\"data_health\":\"healthy\",\"dns_policy_evidence\":null,\"drift\":[],\"exit_id\":\"01a1928b-b54b-7971-9554-e13d0772b0c1\",\"group_ids\":[],\"identity_conflict\":{\"conflict_count\":0,\"last_conflict_at\":null,\"mapping_frozen\":false},\"last_seen_at\":\"2026-10-31T15:20:06.250448Z\",\"lifecycle_state\":\"registered\",\"member_forwarding_observed\":false,\"member_group_ids\":[],\"name\":\"TEST ONLY installer handoff\",\"netbird_peer_id\":\"[redacted]\",\"node_id\":\"01a1928b-b54b-7970-a632-ad94e73a45f6\",\"notes\":null,\"observed_exit_ipv4\":null,\"observed_exit_ipv6\":null,\"platform\":{\"arch\":\"amd64\",\"os\":\"ubuntu\",\"os_version\":\"24.04\"},\"provisioning_state\":\"ready\",\"publication_intent\":\"unpublished\",\"publication_observed\":\"absent\",\"recent_errors\":[],\"region\":null,\"releases\":{\"current_release_id\":\"01a1928b-84fa-7184-bdc1-8f1a3c073021\",\"desired_release_id\":null,\"last_good_release_id\":\"01a1928b-84fa-7184-bdc1-8f1a3c073021\"},\"resource_version\":\"8\",\"retired_at\":null,\"safety_status\":\"passed\",\"update\":{\"batch_id\":null,\"generation\":\"1\",\"job_id\":\"e40dafd9-ee76-52c1-97a8-375ef98bd73a\",\"last_error_code\":null,\"last_observed_at\":null,\"last_result_at\":\"2026-10-31T15:20:11.652805Z\",\"source\":\"installer\",\"state\":\"succeeded\"},\"usage_outbox\":{\"acked_archive_bytes\":\"0\",\"blocked_seq\":null,\"central_acked_through\":\"0\",\"last_durable_event_seq\":\"0\",\"ledger_epoch\":\"e5b59b1a-689b-4510-8fd0-ebbf274022e6\",\"meter_epoch_id\":null,\"observed_at\":\"2026-10-31T15:20:06.250448Z\",\"oldest_unacked_at\":null,\"unacked_event_count\":0,\"unacked_payload_bytes\":\"0\"}}"
+    },
+    {
+      "name": "check_central",
+      "detail": "true"
+    },
+    {
+      "name": "keyed_exact_replay",
+      "detail": "{\"body\":{\"accepted\":true,\"accepted_as_history\":false,\"applied_to_current_observation\":true,\"observed_update_generation\":\"0\",\"received_at\":\"2026-10-31T15:20:11.652805Z\",\"result_id\":\"aaf17c21-7538-5ee1-9b9b-01be0bb4a05b\"},\"status\":202}"
+    },
+    {
+      "name": "new_key_exact_replay",
+      "detail": "{\"body\":{\"accepted\":true,\"accepted_as_history\":false,\"applied_to_current_observation\":true,\"observed_update_generation\":\"0\",\"received_at\":\"2026-10-31T15:20:11.652805Z\",\"result_id\":\"aaf17c21-7538-5ee1-9b9b-01be0bb4a05b\"},\"status\":202}"
+    },
+    {
+      "name": "central_after_replay_http",
+      "detail": "\"200\""
+    },
+    {
+      "name": "central_after_replay_etag",
+      "detail": "\"\\\"8\\\"\""
+    },
+    {
+      "name": "central_after_replay",
+      "detail": "{\"capacity\":null,\"checks\":[{\"error_code\":null,\"name\":\"dns_policy\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"internet_only\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"lease\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"not_run\"},{\"error_code\":null,\"name\":\"meter_path\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"policy_signature\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"qos\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"not_run\"},{\"error_code\":null,\"name\":\"release_supported\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"source_binding\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"not_run\"},{\"error_code\":null,\"name\":\"storage\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"passed\"},{\"detail\":\"Egress probe used no extra target.\",\"error_code\":null,\"name\":\"tunnel_probe\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"passed\"}],\"config_generation\":{\"applied\":\"1\",\"desired\":\"1\"},\"control_status\":\"online\",\"created_at\":\"2026-10-31T15:19:51.883178Z\",\"current_incarnation_id\":\"01a1928b-bb5b-796b-aea1-f477fa6c506d\",\"data_health\":\"healthy\",\"dns_policy_evidence\":null,\"drift\":[],\"exit_id\":\"01a1928b-b54b-7971-9554-e13d0772b0c1\",\"group_ids\":[],\"identity_conflict\":{\"conflict_count\":0,\"last_conflict_at\":null,\"mapping_frozen\":false},\"last_seen_at\":\"2026-10-31T15:20:06.250448Z\",\"lifecycle_state\":\"registered\",\"member_forwarding_observed\":false,\"member_group_ids\":[],\"name\":\"TEST ONLY installer handoff\",\"netbird_peer_id\":\"[redacted]\",\"node_id\":\"01a1928b-b54b-7970-a632-ad94e73a45f6\",\"notes\":null,\"observed_exit_ipv4\":null,\"observed_exit_ipv6\":null,\"platform\":{\"arch\":\"amd64\",\"os\":\"ubuntu\",\"os_version\":\"24.04\"},\"provisioning_state\":\"ready\",\"publication_intent\":\"unpublished\",\"publication_observed\":\"absent\",\"recent_errors\":[],\"region\":null,\"releases\":{\"current_release_id\":\"01a1928b-84fa-7184-bdc1-8f1a3c073021\",\"desired_release_id\":null,\"last_good_release_id\":\"01a1928b-84fa-7184-bdc1-8f1a3c073021\"},\"resource_version\":\"8\",\"retired_at\":null,\"safety_status\":\"passed\",\"update\":{\"batch_id\":null,\"generation\":\"1\",\"job_id\":\"e40dafd9-ee76-52c1-97a8-375ef98bd73a\",\"last_error_code\":null,\"last_observed_at\":null,\"last_result_at\":\"2026-10-31T15:20:11.652805Z\",\"source\":\"installer\",\"state\":\"succeeded\"},\"usage_outbox\":{\"acked_archive_bytes\":\"0\",\"blocked_seq\":null,\"central_acked_through\":\"0\",\"last_durable_event_seq\":\"0\",\"ledger_epoch\":\"e5b59b1a-689b-4510-8fd0-ebbf274022e6\",\"meter_epoch_id\":null,\"observed_at\":\"2026-10-31T15:20:06.250448Z\",\"oldest_unacked_at\":null,\"unacked_event_count\":0,\"unacked_payload_bytes\":\"0\"}}"
+    },
+    {
+      "name": "check_replay",
+      "detail": "true"
+    },
+    {
+      "name": "modified_replay",
+      "detail": "{\"body\":{\"error\":{\"code\":\"ACK_CONFLICT\",\"message\":\"Installer job already has different evidence\",\"request_id\":\"01a1928c-06b4-78cb-8d59-cd6b62f00268\",\"retryable\":true,\"details\":{}}},\"status\":409}"
+    },
+    {
+      "name": "check_conflict",
+      "detail": "true"
+    },
+    {
+      "name": "wrong_job_id",
+      "detail": "{\"body\":{\"error\":{\"code\":\"STATE_CONFLICT\",\"message\":\"Installer job ID does not match release and incarnation\",\"request_id\":\"01a1928c-0700-7376-b265-5794d793d27a\",\"retryable\":true,\"details\":{\"reason\":\"job_id_mismatch\"}}},\"status\":409}"
+    },
+    {
+      "name": "central_after_wrong_job_http",
+      "detail": "\"200\""
+    },
+    {
+      "name": "central_after_wrong_job_etag",
+      "detail": "\"\\\"8\\\"\""
+    },
+    {
+      "name": "central_after_wrong_job",
+      "detail": "{\"capacity\":null,\"checks\":[{\"error_code\":null,\"name\":\"dns_policy\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"internet_only\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"lease\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"not_run\"},{\"error_code\":null,\"name\":\"meter_path\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"policy_signature\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"qos\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"not_run\"},{\"error_code\":null,\"name\":\"release_supported\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"source_binding\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"not_run\"},{\"error_code\":null,\"name\":\"storage\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"passed\"},{\"detail\":\"Egress probe used no extra target.\",\"error_code\":null,\"name\":\"tunnel_probe\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"passed\"}],\"config_generation\":{\"applied\":\"1\",\"desired\":\"1\"},\"control_status\":\"online\",\"created_at\":\"2026-10-31T15:19:51.883178Z\",\"current_incarnation_id\":\"01a1928b-bb5b-796b-aea1-f477fa6c506d\",\"data_health\":\"healthy\",\"dns_policy_evidence\":null,\"drift\":[],\"exit_id\":\"01a1928b-b54b-7971-9554-e13d0772b0c1\",\"group_ids\":[],\"identity_conflict\":{\"conflict_count\":0,\"last_conflict_at\":null,\"mapping_frozen\":false},\"last_seen_at\":\"2026-10-31T15:20:06.250448Z\",\"lifecycle_state\":\"registered\",\"member_forwarding_observed\":false,\"member_group_ids\":[],\"name\":\"TEST ONLY installer handoff\",\"netbird_peer_id\":\"[redacted]\",\"node_id\":\"01a1928b-b54b-7970-a632-ad94e73a45f6\",\"notes\":null,\"observed_exit_ipv4\":null,\"observed_exit_ipv6\":null,\"platform\":{\"arch\":\"amd64\",\"os\":\"ubuntu\",\"os_version\":\"24.04\"},\"provisioning_state\":\"ready\",\"publication_intent\":\"unpublished\",\"publication_observed\":\"absent\",\"recent_errors\":[],\"region\":null,\"releases\":{\"current_release_id\":\"01a1928b-84fa-7184-bdc1-8f1a3c073021\",\"desired_release_id\":null,\"last_good_release_id\":\"01a1928b-84fa-7184-bdc1-8f1a3c073021\"},\"resource_version\":\"8\",\"retired_at\":null,\"safety_status\":\"passed\",\"update\":{\"batch_id\":null,\"generation\":\"1\",\"job_id\":\"e40dafd9-ee76-52c1-97a8-375ef98bd73a\",\"last_error_code\":null,\"last_observed_at\":null,\"last_result_at\":\"2026-10-31T15:20:11.652805Z\",\"source\":\"installer\",\"state\":\"succeeded\"},\"usage_outbox\":{\"acked_archive_bytes\":\"0\",\"blocked_seq\":null,\"central_acked_through\":\"0\",\"last_durable_event_seq\":\"0\",\"ledger_epoch\":\"e5b59b1a-689b-4510-8fd0-ebbf274022e6\",\"meter_epoch_id\":null,\"observed_at\":\"2026-10-31T15:20:06.250448Z\",\"oldest_unacked_at\":null,\"unacked_event_count\":0,\"unacked_payload_bytes\":\"0\"}}"
+    },
+    {
+      "name": "check_wrong_job",
+      "detail": "true"
+    },
+    {
+      "name": "check_null_baseline_promotion",
+      "detail": "true"
+    },
+    {
+      "name": "stop_for_checkpoint_negative",
+      "detail": "{\"command\":[\"systemctl\",\"stop\",\"fvpn-watchdog.service\",\"fvpn-agent.service\"],\"exit\":0,\"stdout\":\"\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "withdraw_checkpoint",
+      "detail": "{\"command\":[\"sh\",\"-c\",\"if [ -e \\\"$1\\\" ]; then mv \\\"$1\\\" \\\"${1}.withdrawn\\\"; fi\",\"sh\",\"/var/lib/vpn-node/state/meter.checkpoint\"],\"exit\":0,\"stdout\":\"\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "stage_checkpoint_negative",
+      "detail": "{\"Exit\":0,\"Status\":\"staged\",\"Code\":\"\",\"Incarnation\":\"\",\"NodeID\":\"\",\"RetiredMode\":\"\",\"RetiredHashes\":{},\"BoundStateBefore\":null,\"RetiredBoundState\":null,\"Message\":\"staged; updater run completed; inspect fvpn-updater status for the apply result\",\"Before\":{},\"Hashes\":{},\"Services\":null}"
+    },
+    {
+      "name": "failure_pending",
+      "detail": "{\"command\":[\"cat\",\"/var/lib/vpn-node/update-staging/pending-release.json\"],\"exit\":0,\"stdout\":\"{\\n  \\\"release_id\\\": \\\"01a1928b-9ea6-7be5-8d67-15be1ae7267c\\\",\\n  \\\"manifest_path\\\": \\\"/var/lib/vpn-node/update-staging/01a1928b-9ea6-7be5-8d67-15be1ae7267c.manifest.json\\\",\\n  \\\"request_id\\\": \\\"38ab84c7-f632-4d54-96f9-81a9a7a55098\\\",\\n  \\\"manifest_sha256\\\": \\\"caf7b274da42529256b39f58b8cfbc3825621410e22b32d50215304b0df71cd3\\\",\\n  \\\"artifact_path\\\": \\\"/var/lib/vpn-node/update-staging/9eaa5cac5062f7488f296cc3adc39115a355f8ca5c41984d26b2c68c3d03f993.tar.zst\\\",\\n  \\\"tree_path\\\": \\\"/opt/vpn-node/releases/01a1928b-9ea6-7be5-8d67-15be1ae7267c\\\",\\n  \\\"updater_command\\\": \\\"/opt/vpn-node/current/fvpn-updater run -config /etc/vpn-node/updater.json\\\"\\n}\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "preserve_failure_pending",
+      "detail": "{\"command\":[\"cp\",\"/var/lib/vpn-node/update-staging/pending-release.json\",\"/var/tmp/e2e-rel/failure-pending.json\"],\"exit\":0,\"stdout\":\"\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "current_before_failure",
+      "detail": "\"releases/01a1928b-84fa-7184-bdc1-8f1a3c073021\""
+    },
+    {
+      "name": "checkpoint_before_negative",
+      "detail": "{\"command\":[\"cat\",\"/var/lib/vpn-node/state/meter.checkpoint\"],\"exit\":1,\"stdout\":\"\",\"stderr\":\"cat: /var/lib/vpn-node/state/meter.checkpoint: No such file or directory\"}"
+    },
+    {
+      "name": "apply_checkpoint_negative",
+      "detail": "{\"command\":[\"/opt/vpn-node/current/fvpn-updater\",\"apply\",\"--config\",\"/etc/vpn-node/updater.json\",\"--pending\",\"/var/lib/vpn-node/update-staging/pending-release.json\"],\"exit\":1,\"stdout\":\"\",\"stderr\":\"{\\\"time\\\":\\\"2026-10-31T15:20:13.316135249Z\\\",\\\"level\\\":\\\"INFO\\\",\\\"msg\\\":\\\"applying installer pending release\\\",\\\"release_id\\\":\\\"01a1928b-9ea6-7be5-8d67-15be1ae7267c\\\"}\\nfvpn-updater: updater: CHECKPOINT_FAILED: installer outcome=failed\"}"
+    },
+    {
+      "name": "checkpoint_failure_status",
+      "detail": "{\"command\":[\"/opt/vpn-node/current/fvpn-updater\",\"status\",\"--config\",\"/etc/vpn-node/updater.json\"],\"exit\":0,\"stdout\":\"{\\n  \\\"generation\\\": \\\"1\\\",\\n  \\\"job_id\\\": \\\"66b2f0f1-19eb-5e8f-b9c6-1305c4918af1\\\",\\n  \\\"source\\\": \\\"installer\\\",\\n  \\\"requested_release_id\\\": \\\"01a1928b-9ea6-7be5-8d67-15be1ae7267c\\\",\\n  \\\"stage\\\": \\\"final_sample\\\",\\n  \\\"state\\\": \\\"failed\\\",\\n  \\\"journal_stage\\\": \\\"rolled_back\\\",\\n  \\\"current_release_id\\\": \\\"01a1928b-84fa-7184-bdc1-8f1a3c073021\\\",\\n  \\\"last_good_release_id\\\": \\\"01a1928b-84fa-7184-bdc1-8f1a3c073021\\\",\\n  \\\"recovery_required\\\": false,\\n  \\\"last_result_state\\\": \\\"failed\\\",\\n  \\\"last_rejection\\\": null,\\n  \\\"health\\\": null,\\n  \\\"candidate_health_json\\\": null\\n}\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "journal_snapshot",
+      "detail": "{\"bytes\":\"73728\",\"sha256\":\"c5d3fa845c51d7317cd2c85d6c8b8158104ff7986fd69d797dfb199206b79945\"}"
+    },
+    {
+      "name": "failure_receipt_source",
+      "detail": "\"central immutable payload matched to local acknowledged result_id/job_id/hash\""
+    },
+    {
+      "name": "failure_receipt_hash_valid",
+      "detail": "true"
+    },
+    {
+      "name": "failure_receipt",
+      "detail": "{\"attempt\":1,\"batch_id\":null,\"boot_id\":\"97c018d7-a925-4723-9127-83c097de1c8a\",\"current_release_id\":\"01a1928b-84fa-7184-bdc1-8f1a3c073021\",\"error_code\":\"CHECKPOINT_FAILED\",\"finished_at\":\"2026-10-31T15:20:44Z\",\"generation\":\"1\",\"health\":null,\"incarnation_id\":\"01a1928b-bb5b-796b-aea1-f477fa6c506d\",\"job_id\":\"66b2f0f1-19eb-5e8f-b9c6-1305c4918af1\",\"manifest_sha256\":\"caf7b274da42529256b39f58b8cfbc3825621410e22b32d50215304b0df71cd3\",\"member_forwarding_enabled\":false,\"node_id\":\"01a1928b-b54b-7970-a632-ad94e73a45f6\",\"payload_hash\":\"1bbe3da820dc2130b31f2b4745c5ba69e33a7ed7cf62eaa3fc1981abcb9f37bd\",\"policy_generation\":\"0\",\"previous_release_id\":\"01a1928b-84fa-7184-bdc1-8f1a3c073021\",\"publication_intent\":\"disabled\",\"recovery_required\":false,\"requested_release_id\":\"01a1928b-9ea6-7be5-8d67-15be1ae7267c\",\"result_id\":\"c71c65d2-3215-5604-9f05-410855987d34\",\"source\":\"installer\",\"stage\":\"final_sample\",\"started_at\":\"2026-10-31T15:20:14Z\",\"state\":\"failed\",\"state_schema_version\":1,\"target_id\":null,\"usage_checkpoint\":null}"
+    },
+    {
+      "name": "current_after_failure",
+      "detail": "\"releases/01a1928b-84fa-7184-bdc1-8f1a3c073021\""
+    },
+    {
+      "name": "failure_latch",
+      "detail": "{\"command\":[\"cat\",\"/var/lib/vpn-node/update-journal/forwarding.blocked\"],\"exit\":0,\"stdout\":\"1dfd3b35-5ee9-4251-a786-821469ddc2a8\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "check_checkpoint_failure",
+      "detail": "true"
+    },
+    {
+      "name": "restore_exact_failure_pending",
+      "detail": "{\"command\":[\"cp\",\"/var/tmp/e2e-rel/failure-pending.json\",\"/var/lib/vpn-node/update-staging/pending-release.json\"],\"exit\":0,\"stdout\":\"\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "sealed_failure_apply",
+      "detail": "{\"command\":[\"/opt/vpn-node/current/fvpn-updater\",\"apply\",\"--config\",\"/etc/vpn-node/updater.json\",\"--pending\",\"/var/lib/vpn-node/update-staging/pending-release.json\"],\"exit\":1,\"stdout\":\"\",\"stderr\":\"fvpn-updater: updater: CHECKPOINT_FAILED: installer outcome=failed\"}"
+    },
+    {
+      "name": "sealed_failure_recover",
+      "detail": "{\"command\":[\"/opt/vpn-node/current/fvpn-updater\",\"recover\",\"--config\",\"/etc/vpn-node/updater.json\"],\"exit\":2,\"stdout\":\"\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "journal_snapshot",
+      "detail": "{\"bytes\":\"73728\",\"sha256\":\"c5d3fa845c51d7317cd2c85d6c8b8158104ff7986fd69d797dfb199206b79945\"}"
+    },
+    {
+      "name": "failure_receipt_after_recovery_source",
+      "detail": "\"central immutable payload matched to local acknowledged result_id/job_id/hash\""
+    },
+    {
+      "name": "failure_receipt_after_recovery_hash_valid",
+      "detail": "true"
+    },
+    {
+      "name": "failure_receipt_after_recovery",
+      "detail": "{\"attempt\":1,\"batch_id\":null,\"boot_id\":\"97c018d7-a925-4723-9127-83c097de1c8a\",\"current_release_id\":\"01a1928b-84fa-7184-bdc1-8f1a3c073021\",\"error_code\":\"CHECKPOINT_FAILED\",\"finished_at\":\"2026-10-31T15:20:44Z\",\"generation\":\"1\",\"health\":null,\"incarnation_id\":\"01a1928b-bb5b-796b-aea1-f477fa6c506d\",\"job_id\":\"66b2f0f1-19eb-5e8f-b9c6-1305c4918af1\",\"manifest_sha256\":\"caf7b274da42529256b39f58b8cfbc3825621410e22b32d50215304b0df71cd3\",\"member_forwarding_enabled\":false,\"node_id\":\"01a1928b-b54b-7970-a632-ad94e73a45f6\",\"payload_hash\":\"1bbe3da820dc2130b31f2b4745c5ba69e33a7ed7cf62eaa3fc1981abcb9f37bd\",\"policy_generation\":\"0\",\"previous_release_id\":\"01a1928b-84fa-7184-bdc1-8f1a3c073021\",\"publication_intent\":\"disabled\",\"recovery_required\":false,\"requested_release_id\":\"01a1928b-9ea6-7be5-8d67-15be1ae7267c\",\"result_id\":\"c71c65d2-3215-5604-9f05-410855987d34\",\"source\":\"installer\",\"stage\":\"final_sample\",\"started_at\":\"2026-10-31T15:20:14Z\",\"state\":\"failed\",\"state_schema_version\":1,\"target_id\":null,\"usage_checkpoint\":null}"
+    },
+    {
+      "name": "check_failure_replay",
+      "detail": "true"
+    },
+    {
+      "name": "failure_submission",
+      "detail": "{\"body\":{\"accepted\":true,\"accepted_as_history\":false,\"applied_to_current_observation\":false,\"observed_update_generation\":\"0\",\"received_at\":\"2026-10-31T15:20:44.689824Z\",\"result_id\":\"c71c65d2-3215-5604-9f05-410855987d34\"},\"status\":202}"
+    },
+    {
+      "name": "central_after_failure_http",
+      "detail": "\"200\""
+    },
+    {
+      "name": "central_after_failure_etag",
+      "detail": "\"\\\"9\\\"\""
+    },
+    {
+      "name": "central_after_failure",
+      "detail": "{\"capacity\":null,\"checks\":[{\"error_code\":null,\"name\":\"dns_policy\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"internet_only\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"lease\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"not_run\"},{\"error_code\":null,\"name\":\"meter_path\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"policy_signature\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"qos\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"not_run\"},{\"error_code\":null,\"name\":\"release_supported\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"source_binding\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"not_run\"},{\"error_code\":null,\"name\":\"storage\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"passed\"},{\"detail\":\"Egress probe used no extra target.\",\"error_code\":null,\"name\":\"tunnel_probe\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"passed\"}],\"config_generation\":{\"applied\":\"1\",\"desired\":\"1\"},\"control_status\":\"online\",\"created_at\":\"2026-10-31T15:19:51.883178Z\",\"current_incarnation_id\":\"01a1928b-bb5b-796b-aea1-f477fa6c506d\",\"data_health\":\"healthy\",\"dns_policy_evidence\":null,\"drift\":[],\"exit_id\":\"01a1928b-b54b-7971-9554-e13d0772b0c1\",\"group_ids\":[],\"identity_conflict\":{\"conflict_count\":0,\"last_conflict_at\":null,\"mapping_frozen\":false},\"last_seen_at\":\"2026-10-31T15:20:06.250448Z\",\"lifecycle_state\":\"registered\",\"member_forwarding_observed\":false,\"member_group_ids\":[],\"name\":\"TEST ONLY installer handoff\",\"netbird_peer_id\":\"[redacted]\",\"node_id\":\"01a1928b-b54b-7970-a632-ad94e73a45f6\",\"notes\":null,\"observed_exit_ipv4\":null,\"observed_exit_ipv6\":null,\"platform\":{\"arch\":\"amd64\",\"os\":\"ubuntu\",\"os_version\":\"24.04\"},\"provisioning_state\":\"ready\",\"publication_intent\":\"unpublished\",\"publication_observed\":\"absent\",\"recent_errors\":[],\"region\":null,\"releases\":{\"current_release_id\":\"01a1928b-84fa-7184-bdc1-8f1a3c073021\",\"desired_release_id\":null,\"last_good_release_id\":\"01a1928b-84fa-7184-bdc1-8f1a3c073021\"},\"resource_version\":\"9\",\"retired_at\":null,\"safety_status\":\"passed\",\"update\":{\"batch_id\":null,\"generation\":\"1\",\"job_id\":\"66b2f0f1-19eb-5e8f-b9c6-1305c4918af1\",\"last_error_code\":\"CHECKPOINT_FAILED\",\"last_observed_at\":null,\"last_result_at\":\"2026-10-31T15:20:44.689824Z\",\"source\":\"installer\",\"state\":\"failed\"},\"usage_outbox\":{\"acked_archive_bytes\":\"0\",\"blocked_seq\":null,\"central_acked_through\":\"0\",\"last_durable_event_seq\":\"0\",\"ledger_epoch\":\"e5b59b1a-689b-4510-8fd0-ebbf274022e6\",\"meter_epoch_id\":null,\"observed_at\":\"2026-10-31T15:20:06.250448Z\",\"oldest_unacked_at\":null,\"unacked_event_count\":0,\"unacked_payload_bytes\":\"0\"}}"
+    },
+    {
+      "name": "check_failure_baseline",
+      "detail": "true"
+    },
+    {
+      "name": "flush_failure",
+      "detail": "{\"command\":[\"/opt/vpn-node/current/fvpn-updater\",\"flush\",\"--config\",\"/etc/vpn-node/updater.json\"],\"exit\":0,\"stdout\":\"\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "central_before_correction_http",
+      "detail": "\"200\""
+    },
+    {
+      "name": "central_before_correction_etag",
+      "detail": "\"\\\"9\\\"\""
+    },
+    {
+      "name": "central_before_correction",
+      "detail": "{\"capacity\":null,\"checks\":[{\"error_code\":null,\"name\":\"dns_policy\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"internet_only\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"lease\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"not_run\"},{\"error_code\":null,\"name\":\"meter_path\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"policy_signature\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"qos\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"not_run\"},{\"error_code\":null,\"name\":\"release_supported\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"source_binding\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"not_run\"},{\"error_code\":null,\"name\":\"storage\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"passed\"},{\"detail\":\"Egress probe used no extra target.\",\"error_code\":null,\"name\":\"tunnel_probe\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"passed\"}],\"config_generation\":{\"applied\":\"1\",\"desired\":\"1\"},\"control_status\":\"online\",\"created_at\":\"2026-10-31T15:19:51.883178Z\",\"current_incarnation_id\":\"01a1928b-bb5b-796b-aea1-f477fa6c506d\",\"data_health\":\"healthy\",\"dns_policy_evidence\":null,\"drift\":[],\"exit_id\":\"01a1928b-b54b-7971-9554-e13d0772b0c1\",\"group_ids\":[],\"identity_conflict\":{\"conflict_count\":0,\"last_conflict_at\":null,\"mapping_frozen\":false},\"last_seen_at\":\"2026-10-31T15:20:06.250448Z\",\"lifecycle_state\":\"registered\",\"member_forwarding_observed\":false,\"member_group_ids\":[],\"name\":\"TEST ONLY installer handoff\",\"netbird_peer_id\":\"[redacted]\",\"node_id\":\"01a1928b-b54b-7970-a632-ad94e73a45f6\",\"notes\":null,\"observed_exit_ipv4\":null,\"observed_exit_ipv6\":null,\"platform\":{\"arch\":\"amd64\",\"os\":\"ubuntu\",\"os_version\":\"24.04\"},\"provisioning_state\":\"ready\",\"publication_intent\":\"unpublished\",\"publication_observed\":\"absent\",\"recent_errors\":[],\"region\":null,\"releases\":{\"current_release_id\":\"01a1928b-84fa-7184-bdc1-8f1a3c073021\",\"desired_release_id\":null,\"last_good_release_id\":\"01a1928b-84fa-7184-bdc1-8f1a3c073021\"},\"resource_version\":\"9\",\"retired_at\":null,\"safety_status\":\"passed\",\"update\":{\"batch_id\":null,\"generation\":\"1\",\"job_id\":\"66b2f0f1-19eb-5e8f-b9c6-1305c4918af1\",\"last_error_code\":\"CHECKPOINT_FAILED\",\"last_observed_at\":null,\"last_result_at\":\"2026-10-31T15:20:44.689824Z\",\"source\":\"installer\",\"state\":\"failed\"},\"usage_outbox\":{\"acked_archive_bytes\":\"0\",\"blocked_seq\":null,\"central_acked_through\":\"0\",\"last_durable_event_seq\":\"0\",\"ledger_epoch\":\"e5b59b1a-689b-4510-8fd0-ebbf274022e6\",\"meter_epoch_id\":null,\"observed_at\":\"2026-10-31T15:20:06.250448Z\",\"oldest_unacked_at\":null,\"unacked_event_count\":0,\"unacked_payload_bytes\":\"0\"}}"
+    },
+    {
+      "name": "correction_scope",
+      "detail": "\"TEST ONLY central HTTP rollback stimulus based on the genuine success; no local rollback or baseline health is claimed by this synthetic document\""
+    },
+    {
+      "name": "correction_payload",
+      "detail": "{\"attempt\":1,\"batch_id\":null,\"boot_id\":\"97c018d7-a925-4723-9127-83c097de1c8a\",\"candidate_health\":{\"processes\":\"passed\",\"dns_policy\":\"passed\",\"tunnel_probe\":\"passed\",\"internet_only\":\"passed\",\"identity_and_state\":\"passed\"},\"current_release_id\":\"01a1928b-7a1e-7ac5-9fc9-bac86b04d8a2\",\"error_code\":\"HEALTH_CHECK_FAILED\",\"finished_at\":\"2026-10-31T15:20:45Z\",\"generation\":\"1\",\"health\":{\"processes\":\"passed\",\"dns_policy\":\"passed\",\"tunnel_probe\":\"passed\",\"internet_only\":\"passed\",\"identity_and_state\":\"passed\"},\"incarnation_id\":\"01a1928b-bb5b-796b-aea1-f477fa6c506d\",\"job_id\":\"e40dafd9-ee76-52c1-97a8-375ef98bd73a\",\"manifest_sha256\":\"cf690ac907f25a07539757594df547110491348e61da11fe4928d2d8af40c512\",\"member_forwarding_enabled\":false,\"node_id\":\"01a1928b-b54b-7970-a632-ad94e73a45f6\",\"payload_hash\":\"5c3af4d49683227862f9c1597a69d362582a410143e72d8905f551e24067144c\",\"policy_generation\":\"0\",\"previous_release_id\":\"01a1928b-84fa-7184-bdc1-8f1a3c073021\",\"publication_intent\":\"disabled\",\"recovery_required\":false,\"requested_release_id\":\"01a1928b-84fa-7184-bdc1-8f1a3c073021\",\"result_id\":\"abd49e0e-f029-412f-b090-acc11d686783\",\"source\":\"installer\",\"stage\":\"report\",\"started_at\":\"2026-10-31T15:20:07Z\",\"state\":\"rolled_back\",\"state_schema_version\":1,\"target_id\":null,\"usage_checkpoint\":{\"new_meter_epoch_id\":\"01a1928c-0154-730e-929b-340659bd5c0d\",\"central_acked_through\":\"0\",\"closed_meter_epoch_id\":\"01a1928b-ecfe-7017-97a7-d39843b9f812\",\"last_durable_event_seq\":\"0\"}}"
+    },
+    {
+      "name": "rollback_correction",
+      "detail": "{\"body\":{\"accepted\":true,\"accepted_as_history\":false,\"applied_to_current_observation\":true,\"observed_update_generation\":\"0\",\"received_at\":\"2026-10-31T15:20:45.551866Z\",\"result_id\":\"abd49e0e-f029-412f-b090-acc11d686783\"},\"status\":202}"
+    },
+    {
+      "name": "central_after_correction_http",
+      "detail": "\"200\""
+    },
+    {
+      "name": "central_after_correction_etag",
+      "detail": "\"\\\"10\\\"\""
+    },
+    {
+      "name": "central_after_correction",
+      "detail": "{\"capacity\":null,\"checks\":[{\"error_code\":null,\"name\":\"dns_policy\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"internet_only\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"lease\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"not_run\"},{\"error_code\":null,\"name\":\"meter_path\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"policy_signature\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"qos\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"not_run\"},{\"error_code\":null,\"name\":\"release_supported\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"source_binding\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"not_run\"},{\"error_code\":null,\"name\":\"storage\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"passed\"},{\"detail\":\"Egress probe used no extra target.\",\"error_code\":null,\"name\":\"tunnel_probe\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"passed\"}],\"config_generation\":{\"applied\":\"1\",\"desired\":\"1\"},\"control_status\":\"online\",\"created_at\":\"2026-10-31T15:19:51.883178Z\",\"current_incarnation_id\":\"01a1928b-bb5b-796b-aea1-f477fa6c506d\",\"data_health\":\"healthy\",\"dns_policy_evidence\":null,\"drift\":[],\"exit_id\":\"01a1928b-b54b-7971-9554-e13d0772b0c1\",\"group_ids\":[],\"identity_conflict\":{\"conflict_count\":0,\"last_conflict_at\":null,\"mapping_frozen\":false},\"last_seen_at\":\"2026-10-31T15:20:06.250448Z\",\"lifecycle_state\":\"registered\",\"member_forwarding_observed\":false,\"member_group_ids\":[],\"name\":\"TEST ONLY installer handoff\",\"netbird_peer_id\":\"[redacted]\",\"node_id\":\"01a1928b-b54b-7970-a632-ad94e73a45f6\",\"notes\":null,\"observed_exit_ipv4\":null,\"observed_exit_ipv6\":null,\"platform\":{\"arch\":\"amd64\",\"os\":\"ubuntu\",\"os_version\":\"24.04\"},\"provisioning_state\":\"ready\",\"publication_intent\":\"unpublished\",\"publication_observed\":\"absent\",\"recent_errors\":[],\"region\":null,\"releases\":{\"current_release_id\":\"01a1928b-7a1e-7ac5-9fc9-bac86b04d8a2\",\"desired_release_id\":null,\"last_good_release_id\":\"01a1928b-7a1e-7ac5-9fc9-bac86b04d8a2\"},\"resource_version\":\"10\",\"retired_at\":null,\"safety_status\":\"passed\",\"update\":{\"batch_id\":null,\"generation\":\"1\",\"job_id\":\"e40dafd9-ee76-52c1-97a8-375ef98bd73a\",\"last_error_code\":\"HEALTH_CHECK_FAILED\",\"last_observed_at\":null,\"last_result_at\":\"2026-10-31T15:20:45.551866Z\",\"source\":\"installer\",\"state\":\"rolled_back\"},\"usage_outbox\":{\"acked_archive_bytes\":\"0\",\"blocked_seq\":null,\"central_acked_through\":\"0\",\"last_durable_event_seq\":\"0\",\"ledger_epoch\":\"e5b59b1a-689b-4510-8fd0-ebbf274022e6\",\"meter_epoch_id\":null,\"observed_at\":\"2026-10-31T15:20:06.250448Z\",\"oldest_unacked_at\":null,\"unacked_event_count\":0,\"unacked_payload_bytes\":\"0\"}}"
+    },
+    {
+      "name": "first_receipt_after_correction",
+      "detail": "{\"body\":{\"accepted\":true,\"accepted_as_history\":false,\"applied_to_current_observation\":true,\"observed_update_generation\":\"0\",\"received_at\":\"2026-10-31T15:20:11.652805Z\",\"result_id\":\"aaf17c21-7538-5ee1-9b9b-01be0bb4a05b\"},\"status\":202}"
+    },
+    {
+      "name": "correction_exact_replay",
+      "detail": "{\"body\":{\"accepted\":true,\"accepted_as_history\":false,\"applied_to_current_observation\":true,\"observed_update_generation\":\"0\",\"received_at\":\"2026-10-31T15:20:45.551866Z\",\"result_id\":\"abd49e0e-f029-412f-b090-acc11d686783\"},\"status\":202}"
+    },
+    {
+      "name": "correction_new_key_replay",
+      "detail": "{\"body\":{\"accepted\":true,\"accepted_as_history\":false,\"applied_to_current_observation\":true,\"observed_update_generation\":\"0\",\"received_at\":\"2026-10-31T15:20:45.551866Z\",\"result_id\":\"abd49e0e-f029-412f-b090-acc11d686783\"},\"status\":202}"
+    },
+    {
+      "name": "third_outcome_conflict",
+      "detail": "{\"body\":{\"error\":{\"code\":\"ACK_CONFLICT\",\"message\":\"Installer job already has different evidence\",\"request_id\":\"01a1928c-885f-7892-950d-6a6213d9f207\",\"retryable\":true,\"details\":{}}},\"status\":409}"
+    },
+    {
+      "name": "central_after_correction_replays_http",
+      "detail": "\"200\""
+    },
+    {
+      "name": "central_after_correction_replays_etag",
+      "detail": "\"\\\"10\\\"\""
+    },
+    {
+      "name": "central_after_correction_replays",
+      "detail": "{\"capacity\":null,\"checks\":[{\"error_code\":null,\"name\":\"dns_policy\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"internet_only\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"lease\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"not_run\"},{\"error_code\":null,\"name\":\"meter_path\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"policy_signature\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"qos\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"not_run\"},{\"error_code\":null,\"name\":\"release_supported\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"source_binding\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"not_run\"},{\"error_code\":null,\"name\":\"storage\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"passed\"},{\"detail\":\"Egress probe used no extra target.\",\"error_code\":null,\"name\":\"tunnel_probe\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"passed\"}],\"config_generation\":{\"applied\":\"1\",\"desired\":\"1\"},\"control_status\":\"online\",\"created_at\":\"2026-10-31T15:19:51.883178Z\",\"current_incarnation_id\":\"01a1928b-bb5b-796b-aea1-f477fa6c506d\",\"data_health\":\"healthy\",\"dns_policy_evidence\":null,\"drift\":[],\"exit_id\":\"01a1928b-b54b-7971-9554-e13d0772b0c1\",\"group_ids\":[],\"identity_conflict\":{\"conflict_count\":0,\"last_conflict_at\":null,\"mapping_frozen\":false},\"last_seen_at\":\"2026-10-31T15:20:06.250448Z\",\"lifecycle_state\":\"registered\",\"member_forwarding_observed\":false,\"member_group_ids\":[],\"name\":\"TEST ONLY installer handoff\",\"netbird_peer_id\":\"[redacted]\",\"node_id\":\"01a1928b-b54b-7970-a632-ad94e73a45f6\",\"notes\":null,\"observed_exit_ipv4\":null,\"observed_exit_ipv6\":null,\"platform\":{\"arch\":\"amd64\",\"os\":\"ubuntu\",\"os_version\":\"24.04\"},\"provisioning_state\":\"ready\",\"publication_intent\":\"unpublished\",\"publication_observed\":\"absent\",\"recent_errors\":[],\"region\":null,\"releases\":{\"current_release_id\":\"01a1928b-7a1e-7ac5-9fc9-bac86b04d8a2\",\"desired_release_id\":null,\"last_good_release_id\":\"01a1928b-7a1e-7ac5-9fc9-bac86b04d8a2\"},\"resource_version\":\"10\",\"retired_at\":null,\"safety_status\":\"passed\",\"update\":{\"batch_id\":null,\"generation\":\"1\",\"job_id\":\"e40dafd9-ee76-52c1-97a8-375ef98bd73a\",\"last_error_code\":\"HEALTH_CHECK_FAILED\",\"last_observed_at\":null,\"last_result_at\":\"2026-10-31T15:20:45.551866Z\",\"source\":\"installer\",\"state\":\"rolled_back\"},\"usage_outbox\":{\"acked_archive_bytes\":\"0\",\"blocked_seq\":null,\"central_acked_through\":\"0\",\"last_durable_event_seq\":\"0\",\"ledger_epoch\":\"e5b59b1a-689b-4510-8fd0-ebbf274022e6\",\"meter_epoch_id\":null,\"observed_at\":\"2026-10-31T15:20:06.250448Z\",\"oldest_unacked_at\":null,\"unacked_event_count\":0,\"unacked_payload_bytes\":\"0\"}}"
+    },
+    {
+      "name": "central_installer_history",
+      "detail": "[{\"ack\":{\"accepted\":true,\"result_id\":\"aaf17c21-7538-5ee1-9b9b-01be0bb4a05b\",\"received_at\":\"2026-10-31T15:20:11.652805Z\",\"accepted_as_history\":false,\"observed_update_generation\":\"0\",\"applied_to_current_observation\":true},\"job_id\":\"e40dafd9-ee76-52c1-97a8-375ef98bd73a\",\"payload\":{\"stage\":\"report\",\"state\":\"succeeded\",\"health\":{\"processes\":\"passed\",\"dns_policy\":\"passed\",\"tunnel_probe\":\"passed\",\"internet_only\":\"passed\",\"identity_and_state\":\"passed\"},\"job_id\":\"e40dafd9-ee76-52c1-97a8-375ef98bd73a\",\"source\":\"installer\",\"attempt\":1,\"boot_id\":\"97c018d7-a925-4723-9127-83c097de1c8a\",\"node_id\":\"01a1928b-b54b-7970-a632-ad94e73a45f6\",\"batch_id\":null,\"result_id\":\"aaf17c21-7538-5ee1-9b9b-01be0bb4a05b\",\"target_id\":null,\"error_code\":null,\"generation\":\"1\",\"started_at\":\"2026-10-31T15:20:07Z\",\"finished_at\":\"2026-10-31T15:20:11Z\",\"payload_hash\":\"3a3d087906eb71d8af21bc474143dff59d059c436c14c39b0bbab23d2ee69152\",\"incarnation_id\":\"01a1928b-bb5b-796b-aea1-f477fa6c506d\",\"manifest_sha256\":\"cf690ac907f25a07539757594df547110491348e61da11fe4928d2d8af40c512\",\"usage_checkpoint\":{\"new_meter_epoch_id\":\"01a1928c-0154-730e-929b-340659bd5c0d\",\"central_acked_through\":\"0\",\"closed_meter_epoch_id\":\"01a1928b-ecfe-7017-97a7-d39843b9f812\",\"last_durable_event_seq\":\"0\"},\"policy_generation\":\"0\",\"recovery_required\":false,\"current_release_id\":\"01a1928b-84fa-7184-bdc1-8f1a3c073021\",\"publication_intent\":\"disabled\",\"previous_release_id\":\"01a1928b-7a1e-7ac5-9fc9-bac86b04d8a2\",\"requested_release_id\":\"01a1928b-84fa-7184-bdc1-8f1a3c073021\",\"state_schema_version\":1,\"member_forwarding_enabled\":false},\"outcome_sequence\":1},{\"ack\":{\"accepted\":true,\"result_id\":\"c71c65d2-3215-5604-9f05-410855987d34\",\"received_at\":\"2026-10-31T15:20:44.689824Z\",\"accepted_as_history\":false,\"observed_update_generation\":\"0\",\"applied_to_current_observation\":false},\"job_id\":\"66b2f0f1-19eb-5e8f-b9c6-1305c4918af1\",\"payload\":{\"stage\":\"final_sample\",\"state\":\"failed\",\"health\":null,\"job_id\":\"66b2f0f1-19eb-5e8f-b9c6-1305c4918af1\",\"source\":\"installer\",\"attempt\":1,\"boot_id\":\"97c018d7-a925-4723-9127-83c097de1c8a\",\"node_id\":\"01a1928b-b54b-7970-a632-ad94e73a45f6\",\"batch_id\":null,\"result_id\":\"c71c65d2-3215-5604-9f05-410855987d34\",\"target_id\":null,\"error_code\":\"CHECKPOINT_FAILED\",\"generation\":\"1\",\"started_at\":\"2026-10-31T15:20:14Z\",\"finished_at\":\"2026-10-31T15:20:44Z\",\"payload_hash\":\"1bbe3da820dc2130b31f2b4745c5ba69e33a7ed7cf62eaa3fc1981abcb9f37bd\",\"incarnation_id\":\"01a1928b-bb5b-796b-aea1-f477fa6c506d\",\"manifest_sha256\":\"caf7b274da42529256b39f58b8cfbc3825621410e22b32d50215304b0df71cd3\",\"usage_checkpoint\":null,\"policy_generation\":\"0\",\"recovery_required\":false,\"current_release_id\":\"01a1928b-84fa-7184-bdc1-8f1a3c073021\",\"publication_intent\":\"disabled\",\"previous_release_id\":\"01a1928b-84fa-7184-bdc1-8f1a3c073021\",\"requested_release_id\":\"01a1928b-9ea6-7be5-8d67-15be1ae7267c\",\"state_schema_version\":1,\"member_forwarding_enabled\":false},\"outcome_sequence\":1},{\"ack\":{\"accepted\":true,\"result_id\":\"abd49e0e-f029-412f-b090-acc11d686783\",\"received_at\":\"2026-10-31T15:20:45.551866Z\",\"accepted_as_history\":false,\"observed_update_generation\":\"0\",\"applied_to_current_observation\":true},\"job_id\":\"e40dafd9-ee76-52c1-97a8-375ef98bd73a\",\"payload\":{\"stage\":\"report\",\"state\":\"rolled_back\",\"health\":{\"processes\":\"passed\",\"dns_policy\":\"passed\",\"tunnel_probe\":\"passed\",\"internet_only\":\"passed\",\"identity_and_state\":\"passed\"},\"job_id\":\"e40dafd9-ee76-52c1-97a8-375ef98bd73a\",\"source\":\"installer\",\"attempt\":1,\"boot_id\":\"97c018d7-a925-4723-9127-83c097de1c8a\",\"node_id\":\"01a1928b-b54b-7970-a632-ad94e73a45f6\",\"batch_id\":null,\"result_id\":\"abd49e0e-f029-412f-b090-acc11d686783\",\"target_id\":null,\"error_code\":\"HEALTH_CHECK_FAILED\",\"generation\":\"1\",\"started_at\":\"2026-10-31T15:20:07Z\",\"finished_at\":\"2026-10-31T15:20:45Z\",\"payload_hash\":\"5c3af4d49683227862f9c1597a69d362582a410143e72d8905f551e24067144c\",\"incarnation_id\":\"01a1928b-bb5b-796b-aea1-f477fa6c506d\",\"manifest_sha256\":\"cf690ac907f25a07539757594df547110491348e61da11fe4928d2d8af40c512\",\"candidate_health\":{\"processes\":\"passed\",\"dns_policy\":\"passed\",\"tunnel_probe\":\"passed\",\"internet_only\":\"passed\",\"identity_and_state\":\"passed\"},\"usage_checkpoint\":{\"new_meter_epoch_id\":\"01a1928c-0154-730e-929b-340659bd5c0d\",\"central_acked_through\":\"0\",\"closed_meter_epoch_id\":\"01a1928b-ecfe-7017-97a7-d39843b9f812\",\"last_durable_event_seq\":\"0\"},\"policy_generation\":\"0\",\"recovery_required\":false,\"current_release_id\":\"01a1928b-7a1e-7ac5-9fc9-bac86b04d8a2\",\"publication_intent\":\"disabled\",\"previous_release_id\":\"01a1928b-84fa-7184-bdc1-8f1a3c073021\",\"requested_release_id\":\"01a1928b-84fa-7184-bdc1-8f1a3c073021\",\"state_schema_version\":1,\"member_forwarding_enabled\":false},\"outcome_sequence\":2}]"
+    },
+    {
+      "name": "check_correction",
+      "detail": "true"
+    },
+    {
+      "name": "check_etag",
+      "detail": "true"
+    },
+    {
+      "name": "receipt_cardinality",
+      "detail": "\"3 total receipts; 2 outcomes for the success job\""
+    },
+    {
+      "name": "flush_success",
+      "detail": "{\"command\":[\"/opt/vpn-node/current/fvpn-updater\",\"flush\",\"--config\",\"/etc/vpn-node/updater.json\"],\"exit\":0,\"stdout\":\"\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "stage_tamper",
+      "detail": "{\"Exit\":0,\"Status\":\"staged\",\"Code\":\"\",\"Incarnation\":\"\",\"NodeID\":\"\",\"RetiredMode\":\"\",\"RetiredHashes\":{},\"BoundStateBefore\":null,\"RetiredBoundState\":null,\"Message\":\"staged; updater run completed; inspect fvpn-updater status for the apply result\",\"Before\":{},\"Hashes\":{},\"Services\":null}"
+    },
+    {
+      "name": "tamper_stimulus",
+      "detail": "{\"command\":[\"sh\",\"-c\",\"printf X | dd of=\\\"$1\\\" bs=1 seek=32 count=1 conv=notrunc status=none\",\"sh\",\"/var/lib/vpn-node/update-staging/58c904dd9a4dbb971b366bc35f25da1b7f53561388c18d42c59e370f741fe22c.tar.zst\"],\"exit\":0,\"stdout\":\"\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "apply_tampered",
+      "detail": "{\"command\":[\"/opt/vpn-node/current/fvpn-updater\",\"apply\",\"--config\",\"/etc/vpn-node/updater.json\",\"--pending\",\"/var/lib/vpn-node/update-staging/pending-release.json\"],\"exit\":2,\"stdout\":\"\",\"stderr\":\"fvpn-updater: updater: installer outcome=failed (HASH_MISMATCH): updater: member forwarding must stay blocked\"}"
+    },
+    {
+      "name": "check_tamper",
+      "detail": "true"
+    },
+    {
+      "name": "preserve_pending",
+      "detail": "{\"command\":[\"sh\",\"-c\",\"if [ -e \\\"$1\\\" ]; then mv \\\"$1\\\" \\\"${1%.json}.tamper.json\\\"; fi\",\"sh\",\"/var/lib/vpn-node/update-staging/pending-release.json\"],\"exit\":0,\"stdout\":\"\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "downgrade",
+      "detail": "{\"Exit\":1,\"Status\":\"\",\"Code\":\"DOWNGRADE\",\"Incarnation\":\"\",\"NodeID\":\"\",\"RetiredMode\":\"\",\"RetiredHashes\":{},\"BoundStateBefore\":null,\"RetiredBoundState\":null,\"Message\":\"DOWNGRADE: refusing to replace release 01a1928b-84fa-7184-bdc1-8f1a3c073021 with 01a1928b-7a1e-7ac5-9fc9-bac86b04d8a2\",\"Before\":{},\"Hashes\":{},\"Services\":null}"
+    },
+    {
+      "name": "check_downgrade",
+      "detail": "true"
+    },
+    {
+      "name": "before_fixture_retirement_http",
+      "detail": "\"200\""
+    },
+    {
+      "name": "before_fixture_retirement_etag",
+      "detail": "\"\\\"10\\\"\""
+    },
+    {
+      "name": "before_fixture_retirement",
+      "detail": "{\"capacity\":null,\"checks\":[{\"error_code\":null,\"name\":\"dns_policy\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"internet_only\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"lease\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"not_run\"},{\"error_code\":null,\"name\":\"meter_path\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"policy_signature\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"qos\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"not_run\"},{\"error_code\":null,\"name\":\"release_supported\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"source_binding\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"not_run\"},{\"error_code\":null,\"name\":\"storage\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"passed\"},{\"detail\":\"Egress probe used no extra target.\",\"error_code\":null,\"name\":\"tunnel_probe\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"passed\"}],\"config_generation\":{\"applied\":\"1\",\"desired\":\"1\"},\"control_status\":\"online\",\"created_at\":\"2026-10-31T15:19:51.883178Z\",\"current_incarnation_id\":\"01a1928b-bb5b-796b-aea1-f477fa6c506d\",\"data_health\":\"healthy\",\"dns_policy_evidence\":null,\"drift\":[],\"exit_id\":\"01a1928b-b54b-7971-9554-e13d0772b0c1\",\"group_ids\":[],\"identity_conflict\":{\"conflict_count\":0,\"last_conflict_at\":null,\"mapping_frozen\":false},\"last_seen_at\":\"2026-10-31T15:20:06.250448Z\",\"lifecycle_state\":\"registered\",\"member_forwarding_observed\":false,\"member_group_ids\":[],\"name\":\"TEST ONLY installer handoff\",\"netbird_peer_id\":\"[redacted]\",\"node_id\":\"01a1928b-b54b-7970-a632-ad94e73a45f6\",\"notes\":null,\"observed_exit_ipv4\":null,\"observed_exit_ipv6\":null,\"platform\":{\"arch\":\"amd64\",\"os\":\"ubuntu\",\"os_version\":\"24.04\"},\"provisioning_state\":\"ready\",\"publication_intent\":\"unpublished\",\"publication_observed\":\"absent\",\"recent_errors\":[],\"region\":null,\"releases\":{\"current_release_id\":\"01a1928b-7a1e-7ac5-9fc9-bac86b04d8a2\",\"desired_release_id\":null,\"last_good_release_id\":\"01a1928b-7a1e-7ac5-9fc9-bac86b04d8a2\"},\"resource_version\":\"10\",\"retired_at\":null,\"safety_status\":\"passed\",\"update\":{\"batch_id\":null,\"generation\":\"1\",\"job_id\":\"e40dafd9-ee76-52c1-97a8-375ef98bd73a\",\"last_error_code\":\"HEALTH_CHECK_FAILED\",\"last_observed_at\":null,\"last_result_at\":\"2026-10-31T15:20:45.551866Z\",\"source\":\"installer\",\"state\":\"rolled_back\"},\"usage_outbox\":{\"acked_archive_bytes\":\"0\",\"blocked_seq\":null,\"central_acked_through\":\"0\",\"last_durable_event_seq\":\"0\",\"ledger_epoch\":\"e5b59b1a-689b-4510-8fd0-ebbf274022e6\",\"meter_epoch_id\":null,\"observed_at\":\"2026-10-31T15:20:06.250448Z\",\"oldest_unacked_at\":null,\"unacked_event_count\":0,\"unacked_payload_bytes\":\"0\"}}"
+    },
+    {
+      "name": "fixture_retirement_http",
+      "detail": "\"202\""
+    },
+    {
+      "name": "fixture_retired_http",
+      "detail": "\"200\""
+    },
+    {
+      "name": "fixture_retired_etag",
+      "detail": "\"\\\"11\\\"\""
+    },
+    {
+      "name": "fixture_retired",
+      "detail": "{\"capacity\":null,\"checks\":[{\"error_code\":null,\"name\":\"dns_policy\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"internet_only\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"lease\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"not_run\"},{\"error_code\":null,\"name\":\"meter_path\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"policy_signature\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"qos\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"not_run\"},{\"error_code\":null,\"name\":\"release_supported\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"source_binding\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"not_run\"},{\"error_code\":null,\"name\":\"storage\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"passed\"},{\"detail\":\"Egress probe used no extra target.\",\"error_code\":null,\"name\":\"tunnel_probe\",\"observed_at\":\"2026-10-31T15:20:06.18798617Z\",\"status\":\"passed\"}],\"config_generation\":{\"applied\":\"1\",\"desired\":\"2\"},\"control_status\":\"online\",\"created_at\":\"2026-10-31T15:19:51.883178Z\",\"current_incarnation_id\":\"01a1928b-bb5b-796b-aea1-f477fa6c506d\",\"data_health\":\"healthy\",\"dns_policy_evidence\":null,\"drift\":[],\"exit_id\":\"01a1928b-b54b-7971-9554-e13d0772b0c1\",\"group_ids\":[],\"identity_conflict\":{\"conflict_count\":0,\"last_conflict_at\":null,\"mapping_frozen\":false},\"last_seen_at\":\"2026-10-31T15:20:06.250448Z\",\"lifecycle_state\":\"retired\",\"member_forwarding_observed\":false,\"member_group_ids\":[],\"name\":\"TEST ONLY installer handoff\",\"netbird_peer_id\":\"[redacted]\",\"node_id\":\"01a1928b-b54b-7970-a632-ad94e73a45f6\",\"notes\":null,\"observed_exit_ipv4\":null,\"observed_exit_ipv6\":null,\"platform\":{\"arch\":\"amd64\",\"os\":\"ubuntu\",\"os_version\":\"24.04\"},\"provisioning_state\":\"ready\",\"publication_intent\":\"disabled\",\"publication_observed\":\"absent\",\"recent_errors\":[],\"region\":null,\"releases\":{\"current_release_id\":\"01a1928b-7a1e-7ac5-9fc9-bac86b04d8a2\",\"desired_release_id\":null,\"last_good_release_id\":\"01a1928b-7a1e-7ac5-9fc9-bac86b04d8a2\"},\"resource_version\":\"11\",\"retired_at\":\"2026-10-31T15:20:46.622319Z\",\"safety_status\":\"passed\",\"update\":{\"batch_id\":null,\"generation\":\"1\",\"job_id\":\"e40dafd9-ee76-52c1-97a8-375ef98bd73a\",\"last_error_code\":\"HEALTH_CHECK_FAILED\",\"last_observed_at\":null,\"last_result_at\":\"2026-10-31T15:20:45.551866Z\",\"source\":\"installer\",\"state\":\"rolled_back\"},\"usage_outbox\":{\"acked_archive_bytes\":\"0\",\"blocked_seq\":null,\"central_acked_through\":\"0\",\"last_durable_event_seq\":\"0\",\"ledger_epoch\":\"e5b59b1a-689b-4510-8fd0-ebbf274022e6\",\"meter_epoch_id\":null,\"observed_at\":\"2026-10-31T15:20:06.250448Z\",\"oldest_unacked_at\":null,\"unacked_event_count\":0,\"unacked_payload_bytes\":\"0\"}}"
+    }
+  ]
+}

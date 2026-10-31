@@ -278,3 +278,85 @@ Closed by this run:
 There are **four routed requests**. The assembled gate returned 2 for blocked
 scope, not a fabricated all-green result. Owned lint/test/build, handover,
 root go-lint and evidence hygiene pass; owned Docker inventory is zero.
+
+## Follow-up 9 requests — 2026-10-31
+
+Current run **`2be2797b-7a28-4e9f-a1fe-5fffa4c1b047`**, live source `e496d826`,
+product baseline `fb5e0025`, 953.07 s. **AT10 blocked (8/1/0), AT11 blocked
+(2/1/0), AT12 pass (10/0/0), AT13 fail (5/1/1)**; counts are pass/blocked/fail.
+The assembled gate returns 2 (lab=0, stack=1). No rerun replaces this outcome.
+The [summary](summary.md) preserves every measured result and its scope.
+
+Delivered prerequisites: netlab 19 / agent-core 27 timing is consumed in 3,289
+retained snapshots, including failures and both recovery verifiers. ISO-F6-01
+passes all six assertions; all 557 D-106 wire digests match. D-120's separate
+100-reload stream passes unchanged with one eligible loss among 50 datagrams.
+D-093 reconciles 15 agreements, 13 open / two retired within simulator scope.
+
+### Requests to orchestrator
+
+1. **D-087 — wire-nodes 33, then devstack 20, then isolation follow-up 10.**
+   Latest amendment confirmed: devstack 19 did not export the false/true grant
+   transition. `internal/nodes/httpwire/state.go` / `runtime.go` need a TEST ONLY
+   injectable grant-eligibility reader/factory using the existing
+   `leases.WithEntitlementReader` option. Once wired, devstack must export the
+   controlled future-grant transition without changing publication, bindings,
+   generation or projector outputs. This lane stopped that item at the boundary.
+   No synthetic transition was driven. Zero qualifying accepted reports among
+   562 POSTs; no new duration. Historical **4,767 / 5,021 / 5,025 ms** remain.
+
+2. **ISO-F6-03 new expiry failure — w2-agent-core, serving/heartbeat/watchdog path.**
+   Exact locations: `node/agent/engine.go` `Step`, `finishServingStep`,
+   `verifyCurrentServing`; `node/watchdog/watch.go` `Watch.needsBaseline`.
+   Netlab supports verifier diagnostics. See the [focused failure index](expiry-failure-correlation.json)
+   and [every loss window](producer-timing-analysis.json). Generation-30 lease
+   deadline D=`42835508568707` ns stays valid. Apply 955 and live reads 956/957
+   succeed; verifier 958 fails with `GENERATION_MISMATCH`, followed by blocked
+   audit 959. The periodic kernel read shows generation-0 baseline, empty
+   allowed_v4 and serving 0. Apply 961 subsequently restores generation 30 and
+   forwarding under the same lease. The capture contains **96 early drops,
+   then 65 positives, then 41 final expiry drops**. **95 early drops are outside
+   every completed guard**, one overlaps the recovering install. First drop
+   D−8,098.843780 ms; forwarding resumes D−3,298.889928 ms; last positive
+   D−99.972452 ms. No post-deadline positive occurs, but later positives after
+   the first drop fail the unchanged D-104 predicate. Investigate the
+   control-loss I/O / heartbeat / concurrent baseline sequence. The writer of
+   that baseline is **not identified** by the exported Engine timing; watchdog
+   participation is an inference, and its retained log is empty. No netlab
+   allowance or synthetic timestamp can close this gap. Product changes are
+   outside this lane and were stopped independently.
+
+   The **separate renewal finding** is fully correlated: 1,396 probes, two real
+   signed renewals, 70 Applies/guards, **three losses** (IDs 54/294/1315). All
+   three ingress reads lie inside install commands, with outer brackets
+   **37.676074 / 36.090627 / 50.196105 ms**. Netlab/agent-core now have the bracket
+   size evidence; every loss remains counted, with no D-120 tolerance. The old
+   producer-export request is delivered. Historical **17** losses remain
+   unclassified because their original run lacks exact producer timestamps.
+
+3. **AT11 native IPv6/platform matrix — devstack and platform operators.**
+   Supply the real dual-stack and member-platform routes/captures. Metadata and
+   6to4 passes and the separate IPv6-block mechanism do not establish that
+   matrix. This outside-scope item remains blocked.
+
+4. **AT13 full continuous fault/platform matrix — acceptance and operators.**
+   Execute continuous counted probes through crash, NetBird restart, OS reboot,
+   updater transition and real platforms, including physical arm64. Ordinary
+   restart recovery and cross-compilation do not substitute. This item remains
+   blocked separately from the newly failed expiry check.
+
+5. **Netlab 20 — resume pin verification on the immutable follow-up 8 paths.**
+   All three are byte-identical and included in
+   `docs/e2e/at/isolation/history/follow-up-8/archive.json`:
+
+   | Immutable archive path | SHA-256 |
+   |---|---|
+   | `docs/e2e/at/isolation/history/follow-up-8/deadline-verdict.json` | `94d777e21b93689e899442f5e3b7d62463527099c8ce511de56d87b6b7253ae1` |
+   | `docs/e2e/at/isolation/history/follow-up-8/recovery-verdict.json` | `b1a40773309c350664e502d87e8699fe9388c1211b94c2c241f5968bfaa452ce` |
+   | `docs/e2e/at/isolation/history/follow-up-8/continuity-analysis.json` | `9e5d77f88c69c8b30fe3d78abe185c37bb9ccb610ea464f532b4a75d7ada5b5c` |
+
+There are **five routed requests**, including the immutable-path hand-off.
+D-098 archived 80/80 follow-up 8 files before rewriting root evidence; follow-up
+6 and 7 are untouched (44/44 and 52/52). Handover already uses immutable claims,
+so no file or pin moved. Owned lint/test/build, handover, root lint and hygiene
+pass. Owned Docker inventory is zero. No push, PR, tag or product edit.

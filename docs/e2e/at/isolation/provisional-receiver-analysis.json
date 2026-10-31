@@ -1,8 +1,8 @@
 {
-  "run_id": "7779d83c-2f78-4699-ac88-8fcc59e8cf87",
+  "run_id": "2be2797b-7a28-4e9f-a1fe-5fffa4c1b047",
   "recipe": "agent-core follow-up 24 clean node / fixed published generation / SetMemberGrantsReady(false) then true",
   "recipe_executed": false,
-  "blocker": "SetMemberGrantsReady is fake-control-only; no assembled public API counterpart. No synthetic transition.",
+  "blocker": "D-087 blocked on internal/nodes/httpwire/state.go and runtime.go grant-eligibility seam: wire-nodes 33, then devstack 20 hook, then isolation follow-up 10. No synthetic transition.",
   "qualifying_reports": [],
-  "observation_posts": 544
+  "observation_posts": 562
 }

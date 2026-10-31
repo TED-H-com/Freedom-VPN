@@ -32,6 +32,8 @@ func main() {
 		observeProxy()
 	case "configure-observation":
 		configureObservation()
+	case "producer-clock":
+		producerClock()
 	case "timed":
 		seconds, _ := strconv.Atoi(os.Args[4])
 		end := time.Now().Add(time.Duration(seconds) * time.Second)

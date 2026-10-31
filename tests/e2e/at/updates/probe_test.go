@@ -238,8 +238,11 @@ func (p *updateProbeCapture) finish() {
 			finding = "tampered archive rejected at preflight (HASH_MISMATCH) before health check; probe scope does not apply to an archive that never passes preflight"
 			ok = ok && len(omissions) == 0 && agentErr == nil && noExceptionOpened
 		} else {
-			finding = "configured probe_peer issued in fresh challenge with no omission diagnostic; exported observer verified bounded D-064 exception traversal and cleanup"
 			ok = ok && len(omissions) == 0 && agentErr == nil && carries && obs.Verified
+			finding = "Configured probe peer has no verified fresh challenge and traversal; inspect measured challenge, attestation and observer fields"
+			if ok {
+				finding = "configured probe_peer issued in fresh challenge with no omission diagnostic; exported observer verified bounded D-064 exception traversal and cleanup"
+			}
 		}
 	}
 	var setupNotes []e2e.Observation
@@ -277,8 +280,10 @@ func (p *updateProbeCapture) finish() {
 		evidence["agent_handling"] = "No probe object issued; D-064 exception installation/refusal not exercised"
 	} else if p.id == "AT25" && len(p.challenges) == 0 {
 		evidence["agent_handling"] = "Tampered archive rejected at preflight before stageCheck; no challenge issued and D-064 probe exception window stayed closed (grant_samples=0, elements_after=0)"
-	} else {
+	} else if ok {
 		evidence["agent_handling"] = "Candidate installed bounded D-064 probe exception for the matching challenge while update lock was held, answered health-attest.json, and removed all probe_grant_v4 elements"
+	} else {
+		evidence["agent_handling"] = "Candidate probe exception and health response were not verified; no successful traversal is claimed"
 	}
 	agentLog, agentLogErr := s.r.lab.docker(s.r.lab.node, "cat", "/var/lib/vpn-node/e2e/agent.log")
 	agentEvents := []map[string]any{}
