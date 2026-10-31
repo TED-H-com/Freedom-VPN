@@ -7,8 +7,8 @@
   "nft": "nftables v1.0.9 (Old Doc Yak #3)",
   "nft_package": "1.0.9-1ubuntu0.1",
   "precision": {
-    "read_start_ns": "29296070511274",
-    "read_end_ns": "29296072186097",
+    "read_start_ns": "41956115527466",
+    "read_end_ns": "41956116766476",
     "timeout_expires_ms": [
       [
         1001,
@@ -126,32 +126,38 @@
       ]
     }
   },
-  "deadline_ns": "29299022488885",
+  "deadline_ns": "41959065048723",
   "apply": {
     "leases": [
       {
         "member_id": "019a0000-0000-7000-8000-00000000000a",
-        "effective_service_end": "2026-10-31T12:22:38.514290948Z",
-        "node_lease_end": "2026-10-31T12:22:38.514290948Z",
-        "signed_server_time": "2026-10-31T11:22:38.514290948Z",
+        "effective_service_end": "2026-10-31T15:53:38.562206816Z",
+        "node_lease_end": "2026-10-31T15:53:38.562206816Z",
+        "signed_server_time": "2026-10-31T14:53:38.562206816Z",
         "max_offline_seconds": 3600,
-        "deadline_mono_ns": "29299022488885"
+        "deadline_mono_ns": "41959065048723"
       }
     ],
     "deadline": {
       "granularity_ns": "1000000",
       "install_bound_ns": "100000000",
-      "apply_start_ns": "29296122489650",
-      "render_start_ns": "29296135762855",
-      "installed_by_ns": "29296149817047",
+      "apply_start_ns": "41956165049687",
+      "render_start_ns": "41956178234463",
+      "install_start_ns": "41956178332698",
+      "installed_by_ns": "41956195517382",
+      "install_ok": true,
+      "release_start_ns": "41956195519500",
+      "release_end_ns": "41956207343832",
       "guard_released": true
     },
     "verified": true,
     "evidence": {
       "deadline_read": {
-        "start_ns": "29296167703903",
-        "end_ns": "29296169379020",
-        "elements": 1
+        "start_ns": "41956210160709",
+        "end_ns": "41956211508232",
+        "elements": 1,
+        "read_ok": true,
+        "verified": true
       },
       "quarantined": false,
       "tc": [
@@ -406,12 +412,59 @@
       "error_code": null,
       "objects_total": 6,
       "phase": "verify",
-      "read_at": "2026-10-31T11:22:38.671346489Z",
+      "read_at": "2026-10-31T14:53:38.709503157Z",
       "reads_total": 20,
       "rejected": null,
       "sha256": "710fc38cc7614c2c283545f89e47f67147fd40d5ce16f7fef7c4cfd3922697c8",
       "truncated": true,
       "verified": true
+    },
+    "timing": {
+      "version": 1,
+      "clock": "CLOCK_MONOTONIC",
+      "operation": "apply",
+      "candidate_generation": "104",
+      "start_ns": "41956165049687",
+      "end_ns": "41956226020861",
+      "succeeded": true,
+      "verified": true,
+      "deadline": {
+        "granularity_ns": "1000000",
+        "install_bound_ns": "100000000",
+        "apply_start_ns": "41956165049687",
+        "render_start_ns": "41956178234463",
+        "install_start_ns": "41956178332698",
+        "installed_by_ns": "41956195517382",
+        "install_ok": true,
+        "release_start_ns": "41956195519500",
+        "release_end_ns": "41956207343832",
+        "guard_released": true
+      },
+      "verifications": [
+        {
+          "start_ns": "41956207353258",
+          "end_ns": "41956226014945",
+          "nft_read": {
+            "start_ns": "41956207353583",
+            "end_ns": "41956209221573",
+            "ok": true
+          },
+          "tc_read": {
+            "start_ns": "41956211517740",
+            "end_ns": "41956224802696",
+            "ok": true
+          },
+          "precision_read": {
+            "start_ns": "41956210160709",
+            "end_ns": "41956211508232",
+            "elements": 1,
+            "read_ok": true,
+            "verified": true
+          },
+          "tc_sha256": "710fc38cc7614c2c283545f89e47f67147fd40d5ce16f7fef7c4cfd3922697c8",
+          "verified": true
+        }
+      ]
     },
     "generation": 104,
     "admitted": 1,
@@ -443,8 +496,8 @@
         "peer_id": "",
         "binding_revision": 0,
         "direction": "download",
-        "packets": 6,
-        "bytes": 448,
+        "packets": 7,
+        "bytes": 500,
         "namespace": "forward_admission_v1"
       },
       {
@@ -525,8 +578,8 @@
         "peer_id": "peer-a1",
         "binding_revision": 1,
         "direction": "download",
-        "packets": 128,
-        "bytes": 5638,
+        "packets": 111,
+        "bytes": 4926,
         "namespace": "forward_admission_v1"
       },
       {
@@ -535,8 +588,8 @@
         "peer_id": "peer-a1",
         "binding_revision": 1,
         "direction": "upload",
-        "packets": 191,
-        "bytes": 8914,
+        "packets": 163,
+        "bytes": 7634,
         "namespace": "forward_admission_v1"
       }
     ],
@@ -548,272 +601,272 @@
   "packets": [
     {
       "packet_id": 0,
-      "target_ns": "29296421488885",
-      "sent_ns": "29296421649037",
-      "ingress_ns": "29296421797501",
-      "egress_ns": "29296421804352",
-      "end_ns": "29296501782991"
+      "target_ns": "41956464048723",
+      "sent_ns": "41956464171331",
+      "ingress_ns": "41956464281077",
+      "egress_ns": "41956464287427",
+      "end_ns": "41956544266525"
     },
     {
       "packet_id": 1,
-      "target_ns": "29296521488885",
-      "sent_ns": "29296521615560",
-      "ingress_ns": "29296521722177",
-      "egress_ns": "29296521725751",
-      "end_ns": "29296601811229"
+      "target_ns": "41956564048723",
+      "sent_ns": "41956564133808",
+      "ingress_ns": "41956564206077",
+      "egress_ns": "41956564209203",
+      "end_ns": "41956644262384"
     },
     {
       "packet_id": 2,
-      "target_ns": "29296621488885",
-      "sent_ns": "29296621648979",
-      "ingress_ns": "29296621750931",
-      "egress_ns": "29296621754235",
-      "end_ns": "29296701828053"
+      "target_ns": "41956664048723",
+      "sent_ns": "41956664148812",
+      "ingress_ns": "41956664261807",
+      "egress_ns": "41956664264850",
+      "end_ns": "41956744250970"
     },
     {
       "packet_id": 3,
-      "target_ns": "29296721488885",
-      "sent_ns": "29296721660163",
-      "ingress_ns": "29296721797753",
-      "egress_ns": "29296721801187",
-      "end_ns": "29296801787974"
+      "target_ns": "41956764048723",
+      "sent_ns": "41956764145933",
+      "ingress_ns": "41956764243934",
+      "egress_ns": "41956764246822",
+      "end_ns": "41956844247555"
     },
     {
       "packet_id": 4,
-      "target_ns": "29296821488885",
-      "sent_ns": "29296821579539",
-      "ingress_ns": "29296821687688",
-      "egress_ns": "29296821691141",
-      "end_ns": "29296901774707"
+      "target_ns": "41956864048723",
+      "sent_ns": "41956864161760",
+      "ingress_ns": "41956864274742",
+      "egress_ns": "41956864278596",
+      "end_ns": "41956944339564"
     },
     {
       "packet_id": 5,
-      "target_ns": "29296921488885",
-      "sent_ns": "29296921653117",
-      "ingress_ns": "29296921787709",
-      "egress_ns": "29296921791836",
-      "end_ns": "29297001839341"
+      "target_ns": "41956964048723",
+      "sent_ns": "41956964138830",
+      "ingress_ns": "41956964195421",
+      "egress_ns": "41956964198377",
+      "end_ns": "41957044310292"
     },
     {
       "packet_id": 6,
-      "target_ns": "29297021488885",
-      "sent_ns": "29297021596904",
-      "ingress_ns": "29297021698155",
-      "egress_ns": "29297021701320",
-      "end_ns": "29297101699593"
+      "target_ns": "41957064048723",
+      "sent_ns": "41957064128328",
+      "ingress_ns": "41957064186199",
+      "egress_ns": "41957064189085",
+      "end_ns": "41957144239466"
     },
     {
       "packet_id": 7,
-      "target_ns": "29297121488885",
-      "sent_ns": "29297121631362",
-      "ingress_ns": "29297121678441",
-      "egress_ns": "29297121681765",
-      "end_ns": "29297201828698"
+      "target_ns": "41957164048723",
+      "sent_ns": "41957164173715",
+      "ingress_ns": "41957164247070",
+      "egress_ns": "41957164250647",
+      "end_ns": "41957244369950"
     },
     {
       "packet_id": 8,
-      "target_ns": "29297221488885",
-      "sent_ns": "29297221597915",
-      "ingress_ns": "29297221700305",
-      "egress_ns": "29297221703477",
-      "end_ns": "29297301715663"
+      "target_ns": "41957264048723",
+      "sent_ns": "41957264118374",
+      "ingress_ns": "41957264173701",
+      "egress_ns": "41957264176774",
+      "end_ns": "41957344246215"
     },
     {
       "packet_id": 9,
-      "target_ns": "29297321488885",
-      "sent_ns": "29297321620765",
-      "ingress_ns": "29297321740669",
-      "egress_ns": "29297321743155",
-      "end_ns": "29297401752572"
+      "target_ns": "41957364048723",
+      "sent_ns": "41957364147272",
+      "ingress_ns": "41957364206885",
+      "egress_ns": "41957364211746",
+      "end_ns": "41957444317806"
     },
     {
       "packet_id": 10,
-      "target_ns": "29297421488885",
-      "sent_ns": "29297421610484",
-      "ingress_ns": "29297421737202",
-      "egress_ns": "29297421741644",
-      "end_ns": "29297501727743"
+      "target_ns": "41957464048723",
+      "sent_ns": "41957464141821",
+      "ingress_ns": "41957464194771",
+      "egress_ns": "41957464197064",
+      "end_ns": "41957544363944"
     },
     {
       "packet_id": 11,
-      "target_ns": "29297521488885",
-      "sent_ns": "29297521605702",
-      "ingress_ns": "29297521704482",
-      "egress_ns": "29297521707860",
-      "end_ns": "29297601844167"
+      "target_ns": "41957564048723",
+      "sent_ns": "41957564151851",
+      "ingress_ns": "41957564212833",
+      "egress_ns": "41957564214883",
+      "end_ns": "41957644335192"
     },
     {
       "packet_id": 12,
-      "target_ns": "29297621488885",
-      "sent_ns": "29297621685800",
-      "ingress_ns": "29297621771001",
-      "egress_ns": "29297621773985",
-      "end_ns": "29297701805701"
+      "target_ns": "41957664048723",
+      "sent_ns": "41957664282953",
+      "ingress_ns": "41957664338530",
+      "egress_ns": "41957664340625",
+      "end_ns": "41957744385444"
     },
     {
       "packet_id": 13,
-      "target_ns": "29297721488885",
-      "sent_ns": "29297721592565",
-      "ingress_ns": "29297721677098",
-      "egress_ns": "29297721680692",
-      "end_ns": "29297801719604"
+      "target_ns": "41957764048723",
+      "sent_ns": "41957764140819",
+      "ingress_ns": "41957764202044",
+      "egress_ns": "41957764204607",
+      "end_ns": "41957844341566"
     },
     {
       "packet_id": 14,
-      "target_ns": "29297821488885",
-      "sent_ns": "29297821600388",
-      "ingress_ns": "29297821713273",
-      "egress_ns": "29297821716680",
-      "end_ns": "29297901714952"
+      "target_ns": "41957864048723",
+      "sent_ns": "41957864240242",
+      "ingress_ns": "41957864294012",
+      "egress_ns": "41957864295947",
+      "end_ns": "41957944350660"
     },
     {
       "packet_id": 15,
-      "target_ns": "29297921488885",
-      "sent_ns": "29297921608003",
-      "ingress_ns": "29297921703821",
-      "egress_ns": "29297921707412",
-      "end_ns": "29298001724264"
+      "target_ns": "41957964048723",
+      "sent_ns": "41957964289809",
+      "ingress_ns": "41957964355662",
+      "egress_ns": "41957964357645",
+      "end_ns": "41958044403713"
     },
     {
       "packet_id": 16,
-      "target_ns": "29298021488885",
-      "sent_ns": "29298021595323",
-      "ingress_ns": "29298021678482",
-      "egress_ns": "29298021681763",
-      "end_ns": "29298101710549"
+      "target_ns": "41958064048723",
+      "sent_ns": "41958064310228",
+      "ingress_ns": "41958064377992",
+      "egress_ns": "41958064381146",
+      "end_ns": "41958144419681"
     },
     {
       "packet_id": 17,
-      "target_ns": "29298121488885",
-      "sent_ns": "29298121601828",
-      "ingress_ns": "29298121693935",
-      "egress_ns": "29298121696909",
-      "end_ns": "29298201719415"
+      "target_ns": "41958164048723",
+      "sent_ns": "41958164229598",
+      "ingress_ns": "41958164304961",
+      "egress_ns": "41958164307386",
+      "end_ns": "41958244451048"
     },
     {
       "packet_id": 18,
-      "target_ns": "29298221488885",
-      "sent_ns": "29298221600466",
-      "ingress_ns": "29298221703963",
-      "egress_ns": "29298221707840",
-      "end_ns": "29298301717810"
+      "target_ns": "41958264048723",
+      "sent_ns": "41958264127107",
+      "ingress_ns": "41958264180686",
+      "egress_ns": "41958264183556",
+      "end_ns": "41958344315620"
     },
     {
       "packet_id": 19,
-      "target_ns": "29298321488885",
-      "sent_ns": "29298321576951",
-      "ingress_ns": "29298321659260",
-      "egress_ns": "29298321662122",
-      "end_ns": "29298401689867"
+      "target_ns": "41958364048723",
+      "sent_ns": "41958364218624",
+      "ingress_ns": "41958364274957",
+      "egress_ns": "41958364277773",
+      "end_ns": "41958444404512"
     },
     {
       "packet_id": 20,
-      "target_ns": "29298421488885",
-      "sent_ns": "29298421597338",
-      "ingress_ns": "29298421735809",
-      "egress_ns": "29298421739207",
-      "end_ns": "29298501718133"
+      "target_ns": "41958464048723",
+      "sent_ns": "41958464131233",
+      "ingress_ns": "41958464192896",
+      "egress_ns": "41958464195179",
+      "end_ns": "41958544240055"
     },
     {
       "packet_id": 21,
-      "target_ns": "29298521488885",
-      "sent_ns": "29298521701917",
-      "ingress_ns": "29298521780890",
-      "egress_ns": "29298521784349",
-      "end_ns": "29298601840819"
+      "target_ns": "41958564048723",
+      "sent_ns": "41958564229665",
+      "ingress_ns": "41958564301270",
+      "egress_ns": "41958564303780",
+      "end_ns": "41958644418520"
     },
     {
       "packet_id": 22,
-      "target_ns": "29298621488885",
-      "sent_ns": "29298621600824",
-      "ingress_ns": "29298621682179",
-      "egress_ns": "29298621686086",
-      "end_ns": "29298701719917"
+      "target_ns": "41958664048723",
+      "sent_ns": "41958664231079",
+      "ingress_ns": "41958664287974",
+      "egress_ns": "41958664292486",
+      "end_ns": "41958744404005"
     },
     {
       "packet_id": 23,
-      "target_ns": "29298721488885",
-      "sent_ns": "29298721589846",
-      "ingress_ns": "29298721669290",
-      "egress_ns": "29298721672690",
-      "end_ns": "29298801797178"
+      "target_ns": "41958764048723",
+      "sent_ns": "41958764290118",
+      "ingress_ns": "41958764350695",
+      "egress_ns": "41958764352972",
+      "end_ns": "41958844478250"
     },
     {
       "packet_id": 24,
-      "target_ns": "29298821488885",
-      "sent_ns": "29298821575866",
-      "ingress_ns": "29298821646384",
-      "egress_ns": "29298821656050",
-      "end_ns": "29298901689351"
+      "target_ns": "41958864048723",
+      "sent_ns": "41958864243422",
+      "ingress_ns": "41958864329815",
+      "egress_ns": "41958864342793",
+      "end_ns": "41958944349956"
     },
     {
       "packet_id": 25,
-      "target_ns": "29298921488885",
-      "sent_ns": "29298921597663",
-      "ingress_ns": "29298921685132",
-      "egress_ns": "29298921689158",
-      "end_ns": "29299001820732"
+      "target_ns": "41958964048723",
+      "sent_ns": "41958964241428",
+      "ingress_ns": "41958964320193",
+      "egress_ns": "41958964325810",
+      "end_ns": "41959044426937"
     },
     {
       "packet_id": 26,
-      "target_ns": "29299021488885",
-      "sent_ns": "29299021594993",
-      "ingress_ns": "29299021658036",
+      "target_ns": "41959064048723",
+      "sent_ns": "41959064277155",
+      "ingress_ns": "41959064319849",
       "egress_ns": "0",
-      "end_ns": "29299101707338"
+      "end_ns": "41959144437518"
     },
     {
       "packet_id": 27,
-      "target_ns": "29299121488885",
-      "sent_ns": "29299121616620",
-      "ingress_ns": "29299121697528",
+      "target_ns": "41959164048723",
+      "sent_ns": "41959164267277",
+      "ingress_ns": "41959164311050",
       "egress_ns": "0",
-      "end_ns": "29299201721889"
+      "end_ns": "41959244383005"
     },
     {
       "packet_id": 28,
-      "target_ns": "29299221488885",
-      "sent_ns": "29299221583748",
-      "ingress_ns": "29299221648751",
+      "target_ns": "41959264048723",
+      "sent_ns": "41959264165602",
+      "ingress_ns": "41959264221959",
       "egress_ns": "0",
-      "end_ns": "29299301699504"
+      "end_ns": "41959344376555"
     },
     {
       "packet_id": 29,
-      "target_ns": "29299321488885",
-      "sent_ns": "29299321593707",
-      "ingress_ns": "29299321650678",
+      "target_ns": "41959364048723",
+      "sent_ns": "41959364206483",
+      "ingress_ns": "41959364258764",
       "egress_ns": "0",
-      "end_ns": "29299401706976"
+      "end_ns": "41959444385991"
     },
     {
       "packet_id": 30,
-      "target_ns": "29299421488885",
-      "sent_ns": "29299421596407",
-      "ingress_ns": "29299421665827",
+      "target_ns": "41959464048723",
+      "sent_ns": "41959464139179",
+      "ingress_ns": "41959464181418",
       "egress_ns": "0",
-      "end_ns": "29299501709183"
+      "end_ns": "41959544349634"
     },
     {
       "packet_id": 31,
-      "target_ns": "29299521488885",
-      "sent_ns": "29299521600895",
-      "ingress_ns": "29299521674316",
+      "target_ns": "41959564048723",
+      "sent_ns": "41959564211527",
+      "ingress_ns": "41959564260988",
       "egress_ns": "0",
-      "end_ns": "29299601714161"
+      "end_ns": "41959644387383"
     },
     {
       "packet_id": 32,
-      "target_ns": "29299621488885",
-      "sent_ns": "29299621579991",
-      "ingress_ns": "29299621640202",
+      "target_ns": "41959664048723",
+      "sent_ns": "41959664257607",
+      "ingress_ns": "41959664313862",
       "egress_ns": "0",
-      "end_ns": "29299701694467"
+      "end_ns": "41959744443413"
     }
   ],
   "installed_member_read": {
-    "start_ns": "29296189567313",
-    "end_ns": "29296191538130",
-    "text": "table inet fvpn {\n\tset allowed_v4 {\n\t\ttype ipv4_addr\n\t\tflags timeout\n\t\telements = { 100.64.1.1 timeout 2s786ms expires 2s732ms }\n\t}\n}\n"
+    "start_ns": "41956227331948",
+    "end_ns": "41956228708762",
+    "text": "table inet fvpn {\n\tset allowed_v4 {\n\t\ttype ipv4_addr\n\t\tflags timeout\n\t\telements = { 100.64.1.1 timeout 2s786ms expires 2s737ms }\n\t}\n}\n"
   }
 }
