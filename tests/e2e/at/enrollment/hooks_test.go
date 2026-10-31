@@ -142,11 +142,17 @@ func installerOutcomeView(out e2e.InstallerOutcome, err error) map[string]any {
 
 func (p *probe) installerHooks() {
 	gap := installerStartupGap
+	oldCertificateDenied := false
 	detail := map[string]any{"source_pr": 266, "installer_fix_pr": 279, "slot": "installer-node", "container": "fvpn-w4-enroll-installer-node",
 		"response_file_present": false, "service_restoration_export": "missing", "serving_baseline_measured": false}
 	defer func() {
 		p.note("AT07", "counted_unacked_usage", "blocked", map[string]any{"gap": usageInstallerGap, "slot_probe": detail["slot_probe"], "counted_traffic_started": false, "controlled_reinstall_run": detail["controlled_reinstall"] != nil})
 		for _, name := range []string{"installer_rerun", "identity_ledger_preserved", "controlled_reinstall", "old_certificate_denied", "historical_usage_retained"} {
+			if name == "old_certificate_denied" && oldCertificateDenied {
+				p.note("AT07", name, "pass", map[string]any{"prerequisite": detail,
+					"scope": "retired installer certificate denied on direct mTLS desired-state and observations; no serving or usage claim"})
+				continue
+			}
 			p.note("AT07", name, "blocked", map[string]any{"gap": gap, "prerequisite": detail,
 				"usage_gap": usageInstallerGap, "check": name})
 		}
@@ -246,7 +252,10 @@ func (p *probe) installerHooks() {
 		gap = "ENR-06: ControlledReinstall did not complete; see actual outcome and diagnostics. Owner installer/devstack."
 		return
 	}
-	detail["old_certificate_denial"] = p.installerRetiredCertificate()
+	denials, denied := p.installerRetiredCertificate()
+	detail["old_certificate_denial"] = denials
+	newInc, newIncErr := uuid.Parse(reinstalled.Incarnation)
+	oldCertificateDenied = denied && newIncErr == nil && newInc != oldInc && newInc != uuid.Nil && reinstalled.NodeID == node.String()
 }
 
 func installerHistoryView(page api.NodeIncarnationList) []map[string]any {
@@ -326,9 +335,10 @@ func (p *probe) installerDiagnostics(phase string, out e2e.InstallerOutcome) map
 	return result
 }
 
-func (p *probe) installerRetiredCertificate() map[string]any {
+func (p *probe) installerRetiredCertificate() (map[string]any, bool) {
 	const container = "fvpn-w4-enroll-installer-node"
 	result := map[string]any{}
+	allDenied := true
 	// Read-only requests with the product-retired files in their original
 	// container. Use direct mTLS, since the loopback adapter uses current identity.
 	for _, route := range []string{"desired-state", "observations"} {
@@ -352,8 +362,10 @@ exec curl --silent --show-error --max-time 15 --cacert /var/tmp/e2e-rel/ca.pem -
 			} `json:"error"`
 		}
 		decoded := json.Unmarshal([]byte(body), &response) == nil
+		denied := err == nil && found && decoded && status == "403" && response.Error.Code == "IDENTITY_REVOKED"
+		allDenied = allDenied && denied
 		result[route] = map[string]any{"http_status": status, "code": response.Error.Code, "decoded": decoded,
-			"denied": err == nil && found && decoded && status == "403" && response.Error.Code == "IDENTITY_REVOKED"}
+			"denied": denied}
 	}
-	return result
+	return result, allDenied
 }
