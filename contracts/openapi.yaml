@@ -21,6 +21,7 @@ info:
     `MemberDevice.authorization_unconfirmed` (D-077), `GET /admin/devices`
     (`listAdminDevices`), `POST /admin/members/{member_id}/devices/{device_id}/authorize`
     (`authorizeMemberDevice`), and nullable `NodeDetail.usage_outbox` (SECOPS-19).
+    revision 12 erratum (2026-10-30): the `authorizeMemberDevice` limit response is `409` `DEVICE_LIMIT_REACHED`; description only, no schema change.
     The changelog is `docs/contracts/README.md`.
     This document is the single source of truth: Go types (`pkg/api`) and
     TypeScript types (`contracts/ts/openapi.d.ts`) are generated from it, and the
@@ -874,7 +875,7 @@ paths:
         an operation of kind `member.device_authorize`. No request body. `404`
         when the device does not belong to the member. `409` `STATE_CONFLICT`
         when the device is `revoked` (the server returns its conflict error).
-        `422` `DEVICE_LIMIT_REACHED` when authorizing would exceed the member's
+        `409` `DEVICE_LIMIT_REACHED` when authorizing would exceed the member's
         device allowance. The member cannot call this operation.
       x-fvpn-spec: '§14.2, §17.4, §9.4'
       x-fvpn-requirements: [MEM03, DATA01]

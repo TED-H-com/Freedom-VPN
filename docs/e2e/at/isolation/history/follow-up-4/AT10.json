@@ -1,0 +1,106 @@
+{
+  "run_id": "fa0074cc-3b1a-403d-b8c2-3a3439fe2b7e",
+  "started_at": "2026-10-31T00:27:07Z",
+  "source_dirty": false,
+  "checks": [
+    {
+      "name": "serving setup",
+      "status": "blocked",
+      "at": "2026-10-31T00:31:43Z",
+      "actual": "serving publication fail-closed FLOWTABLE_BYPASS (#220 VerifyServing) on Docker embedded DNS NAT; chain ip nat OUTPUT hook output prio -100 policy accept; chain ip nat POSTROUTING hook postrouting prio 100 policy accept; rule ip nat DOCKER_OUTPUT match {\"op\": \"==\", \"left\": {\"payload\": {\"protocol\": \"ip\", \"field\": \"daddr\"}}, \"right\": \"127.0.0.11\"}; rule ip nat DOCKER_OUTPUT xt {\"type\": \"target\", \"name\": \"DNAT\"}; rule ip nat DOCKER_OUTPUT match {\"op\": \"==\", \"left\": {\"payload\": {\"protocol\": \"ip\", \"field\": \"daddr\"}}, \"right\": \"127.0.0.11\"}; rule ip nat DOCKER_OUTPUT xt {\"type\": \"target\", \"name\": \"DNAT\"}; rule ip nat OUTPUT match {\"op\": \"==\", \"left\": {\"payload\": {\"protocol\": \"ip\", \"field\": \"daddr\"}}, \"right\": \"127.0.0.11\"}; rule ip nat OUTPUT jump {\"target\": \"DOCKER_OUTPUT\"}; rule ip nat DOCKER_POSTROUTING match {\"op\": \"==\", \"left\": {\"payload\": {\"protocol\": \"ip\", \"field\": \"saddr\"}}, \"right\": \"127.0.0.11\"}; rule ip nat DOCKER_POSTROUTING xt {\"type\": \"target\", \"name\": \"SNAT\"}; rule ip nat DOCKER_POSTROUTING match {\"op\": \"==\", \"left\": {\"payload\": {\"protocol\": \"ip\", \"field\": \"saddr\"}}, \"right\": \"127.0.0.11\"}; rule ip nat DOCKER_POSTROUTING xt {\"type\": \"target\", \"name\": \"SNAT\"}; rule ip nat POSTROUTING match {\"op\": \"==\", \"left\": {\"payload\": {\"protocol\": \"ip\", \"field\": \"daddr\"}}, \"right\": \"127.0.0.11\"}; rule ip nat POSTROUTING jump {\"target\": \"DOCKER_POSTROUTING\"}; the harness did not write nft; devstack follow-up 14 must keep this postrouting xt SNAT out of the ruleset VerifyServing reads",
+      "owner": "w3-devstack-e2e: node netns table ip nat POSTROUTING xt SNAT for 127.0.0.11",
+      "positive_control": {
+        "device_id": "",
+        "container": "",
+        "at": "",
+        "counted": false,
+        "admission_bytes_before": "",
+        "admission_bytes_after": "",
+        "observations": null
+      },
+      "observations": [
+        {
+          "name": "publication_put",
+          "detail": "422 NODE_NOT_SERVICEABLE"
+        },
+        {
+          "name": "publication_error",
+          "detail": "NODE_NOT_SERVICEABLE node does not satisfy serving baseline requirements {\"failed_checks\":[\"provisioning_state=applying (want ready)\",\"safety_status=failed\"]}"
+        },
+        {
+          "name": "foreign_ruleset",
+          "detail": "chain ip nat OUTPUT hook output prio -100 policy accept; chain ip nat POSTROUTING hook postrouting prio 100 policy accept; rule ip nat DOCKER_OUTPUT match {\"op\": \"==\", \"left\": {\"payload\": {\"protocol\": \"ip\", \"field\": \"daddr\"}}, \"right\": \"127.0.0.11\"}; rule ip nat DOCKER_OUTPUT xt {\"type\": \"target\", \"name\": \"DNAT\"}; rule ip nat DOCKER_OUTPUT match {\"op\": \"==\", \"left\": {\"payload\": {\"protocol\": \"ip\", \"field\": \"daddr\"}}, \"right\": \"127.0.0.11\"}; rule ip nat DOCKER_OUTPUT xt {\"type\": \"target\", \"name\": \"DNAT\"}; rule ip nat OUTPUT match {\"op\": \"==\", \"left\": {\"payload\": {\"protocol\": \"ip\", \"field\": \"daddr\"}}, \"right\": \"127.0.0.11\"}; rule ip nat OUTPUT jump {\"target\": \"DOCKER_OUTPUT\"}; rule ip nat DOCKER_POSTROUTING match {\"op\": \"==\", \"left\": {\"payload\": {\"protocol\": \"ip\", \"field\": \"saddr\"}}, \"right\": \"127.0.0.11\"}; rule ip nat DOCKER_POSTROUTING xt {\"type\": \"target\", \"name\": \"SNAT\"}; rule ip nat DOCKER_POSTROUTING match {\"op\": \"==\", \"left\": {\"payload\": {\"protocol\": \"ip\", \"field\": \"saddr\"}}, \"right\": \"127.0.0.11\"}; rule ip nat DOCKER_POSTROUTING xt {\"type\": \"target\", \"name\": \"SNAT\"}; rule ip nat POSTROUTING match {\"op\": \"==\", \"left\": {\"payload\": {\"protocol\": \"ip\", \"field\": \"daddr\"}}, \"right\": \"127.0.0.11\"}; rule ip nat POSTROUTING jump {\"target\": \"DOCKER_POSTROUTING\"}"
+        },
+        {
+          "name": "heartbeat",
+          "detail": "v1\nboot_id e5153470-e464-4236-836f-56f1c619f1ac\nmono_ns 761741398123330\nwall_unix_ns 1793406702201302064\npolicy_expires_mono_ns 0\nbaseline_ok 1\nserving 0\ngeneration 3\nreason safety_check_failed"
+        },
+        {
+          "name": "accepted_observation",
+          "detail": "{\"checks\": [{\"name\": \"dns_policy\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T00:31:16.688055275Z\"}, {\"name\": \"internet_only\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T00:31:16.688055275Z\"}, {\"name\": \"lease\", \"status\": \"failed\", \"error_code\": \"FLOWTABLE_BYPASS\", \"observed_at\": \"2026-10-31T00:31:16.688055275Z\"}, {\"name\": \"meter_path\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T00:31:16.688055275Z\"}, {\"name\": \"policy_signature\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T00:31:16.688055275Z\"}, {\"name\": \"qos\", \"status\": \"failed\", \"error_code\": \"FLOWTABLE_BYPASS\", \"observed_at\": \"2026-10-31T00:31:16.688055275Z\"}, {\"name\": \"release_supported\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T00:31:16.688055275Z\"}, {\"name\": \"source_binding\", \"status\": \"failed\", \"error_code\": \"FLOWTABLE_BYPASS\", \"observed_at\": \"2026-10-31T00:31:16.688055275Z\"}, {\"name\": \"storage\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T00:31:16.688055275Z\"}, {\"name\": \"tunnel_probe\", \"detail\": \"Egress probe used no extra target.\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-10-31T00:31:16.688055275Z\"}], \"errors\": [{\"code\": \"FLOWTABLE_BYPASS\", \"stage\": \"apply\", \"message\": \"FLOWTABLE_BYPASS\", \"observed_at\": \"2026-10-31T00:31:16.657517254Z\"}], \"reasons\": [\"safety_check_failed\"], \"forwarding\": false, \"generation\": \"3\"}"
+        }
+      ]
+    },
+    {
+      "name": "provisional lease reports AWAITING_MEMBER_GRANTS",
+      "status": "blocked",
+      "at": "2026-10-31T00:31:43Z",
+      "actual": "agent follow-up 18 is on main 491a307dd505e33b14dc0e993aa7e86b28e82f68; the grant-less lease window was not sampled because serving publication never succeeded",
+      "owner": "w2-agent-core",
+      "positive_control": {
+        "device_id": "",
+        "container": "",
+        "at": "",
+        "counted": false,
+        "admission_bytes_before": "",
+        "admission_bytes_after": "",
+        "observations": null
+      }
+    }
+  ],
+  "id": "AT10",
+  "title": "Assembled isolation AT10",
+  "spec": [
+    "§19 AT10"
+  ],
+  "status": "blocked",
+  "at": "2026-10-31T00:31:43Z",
+  "build": "491a307dd505e33b14dc0e993aa7e86b28e82f68",
+  "image_digests": [
+    "control sha256:129f42cebba11e3b315b94bac57764dcfb45a4e21eb9b726d5cfded77fdbc0de",
+    "worker sha256:6a62b89cf1b45ef5cafe0f29753cb4f57be462cf2e60f4d5552ef4730305790c",
+    "node sha256:ac13b520d08ff2767257b3b0e57a78244321de8642e98ebbecaabf7b10bb8fff",
+    "member sha256:ac13b520d08ff2767257b3b0e57a78244321de8642e98ebbecaabf7b10bb8fff",
+    "netbird sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c",
+    "adguard sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
+    "gateway sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce",
+    "origin sha256:4c63d730cabb298e45bd6c988d6725afd1ba2d0e38514d66587ff041881fd369",
+    "idp sha256:2126a32a53ac19886ee80c24731af53454da9e8d38e63cbb2dc5a5b301cd3aff",
+    "postgres sha256:21a734ef2aac3b7a444b8fcd7067b2361f317e7280698b86d67e07d94feacce6"
+  ],
+  "policy_revision": "3",
+  "node_incarnation": "01a18f5a-7265-77d1-b36b-b40cff08d76d",
+  "expected": "Protected host, intranet and metadata destinations stay denied during interface changes, with the same member's counted origin control.",
+  "actual": "See per-check positive controls, outcomes and owners.",
+  "commands": [
+    "make -f mk/at-isolation.mk at-isolation"
+  ],
+  "observations": [
+    {
+      "name": "boot_release",
+      "detail": "01a18f5a-6b48-7d50-a2ad-9cdc43f003e2"
+    },
+    {
+      "name": "convergence_timeline",
+      "detail": "no counted member byte during the sampled window; samples=0"
+    },
+    {
+      "name": "destination_positive_controls",
+      "detail": "with_positive=; without_positive=RFC1918-10,RFC1918-172,RFC1918-192,metadata,public-prefix-internal,deprecated-6to4"
+    },
+    {
+      "name": "mechanism_control",
+      "detail": "lab-AT10.json; separate mechanism proof, never substitutes for a counted product control"
+    }
+  ]
+}
