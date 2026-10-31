@@ -1507,3 +1507,159 @@ func TestHandover_Followup10Claims(t *testing.T) {
 		}
 	}
 }
+
+func TestHandover_Followup11Claims(t *testing.T) {
+	root := repoRoot(t)
+
+	// 1. Verify operator-guide.md pins for Follow-up 11:
+	// - D-076 (#227): device_authorization_fences (migration 00188), device.authorization.external_withdrawal, fvpn_device_restore_fence_decisions_total, exact quoted paragraph from docs/members/README.md, explicit AuthorizeDevice / member.device_authorize, dated pointer to revision 12 D-077.
+	// - D-073 & D-075 (#228): node_identity_endpoints candidate_hash / candidate_first_seen_at / candidate_last_seen_at under SELECT ... FOR UPDATE, node_incarnations.stale_generation_grace_at (migration 00187), decisions never read audit_events.
+	// - fvpn-agent usage snapshot (#225): -config /etc/vpn-node/agent-run.json [-json], fields, exit codes 0/1/2/3/4/5/64, ApplyACK non-torn rule, installer re-run preservation.
+	// - SECOPS-19 (#226): ObservationReport.usage carries live UsageOutboxStatus in node_observations.report_payload, dated pointer to revision 12 NodeDetail.usage_outbox.
+	// - D-078 & acceptance cross-references (#229, #231): Retry-After 429 rule, control follow-up 21 dated note, enrollment follow-up 3 (run 60a7102e, ENR-08 closed, AT06 254 pass / 1 blocked, AT07 15 pass / 7 blocked), members follow-up 6 (run 80db103b, AT02 42/0 strict fvmb0 ingress injection, AT09 36.976 s / 41.695 s).
+	operatorGuide := readOwnedDoc(t, root, "docs/handover/operator-guide.md")
+	for _, token := range []string{
+		"#225", "#226", "#227", "#228", "#229", "#231",
+		// D-076 (#227) & exact owner quote.
+		"D-076",
+		"db/migrations/00188_device_authorization_fences.sql",
+		"device_authorization_fences",
+		"device.authorization.external_withdrawal",
+		"fvpn_device_restore_fence_decisions_total",
+		"device authorization unconfirmed during ledger restore",
+		"GET /api/v1/admin/audit-events?resource_type=member_device&resource_id=<device_id>",
+		"While `usage_ledger_state.mode` is `frozen` or `reconciling`, each device that `SyncDevice` newly fences is logged once as `device authorization unconfirmed during ledger restore` with `device_id`, `member_id`, `peer_id`, and `ledger_mode`, and counted in `fvpn_device_restore_fence_decisions_total` on the worker registry. Those device ids need an explicit re-authorization decision after `complete-recovery` if the member is still entitled.",
+		"Entitlement restoration does not clear a fence; only an explicit re-authorization (`AuthorizeDevice`, operation kind `member.device_authorize`, actor `system` or `admin`, new idempotency key) or a revoke does",
+		"D-077",
+		"MemberDevice.authorization_unconfirmed",
+		// D-073 & D-075 (#228).
+		"D-073",
+		"D-075",
+		"db/migrations/00187_identity_roaming_and_readiness_grace.sql",
+		"candidate_hash",
+		"candidate_first_seen_at",
+		"candidate_last_seen_at",
+		"SELECT ... FOR UPDATE",
+		"node_incarnations.stale_generation_grace_at",
+		"readiness and grace decisions never read `audit_events`",
+		// fvpn-agent usage snapshot (#225).
+		"fvpn-agent usage snapshot -config /etc/vpn-node/agent-run.json",
+		"node/agent/cmd/fvpn-agent/usage_snapshot.go",
+		"docs/node/usage-store.md",
+		"acked_through",
+		"unacked_count",
+		"unacked_payload_bytes",
+		"unacked_events",
+		"payload_sha256",
+		// SECOPS-19 (#226).
+		"SECOPS-19",
+		"ObservationReport.usage",
+		"UsageOutboxStatus",
+		"unacked_event_count",
+		"oldest_unacked_at",
+		"node/agent/usage_status.go",
+		"node_observations.report_payload",
+		"NodeDetail.usage_outbox",
+		// D-078 & acceptance cross-references (#229, #231).
+		"D-078",
+		"a `429` that carries `Retry-After` and whose retry succeeds is the limiter working as specified; harnesses report the counts as evidence, and calibration stays with `control`",
+		"control follow-up 21 reviews `browser_rate`",
+		"60a7102e-b824-4927-a576-62033f458157",
+		"254 pass / 1 blocked / 0 fail",
+		"rate_limit_review",
+		"15 pass / 7 blocked / 0 fail",
+		"80db103b-622c-42b1-946d-4628daaa213d",
+		"3 pass / 7 blocked / 0 fail",
+		"36.976 s",
+		"41.695 s",
+		"31 -> 32",
+	} {
+		if !strings.Contains(operatorGuide, token) {
+			t.Errorf("docs/handover/operator-guide.md missing expected follow-up 11 token %q", token)
+		}
+	}
+
+	// 2. Verify deploy.md and restore-drill.md pins for #227 (D-076 post-complete-recovery step) and #228 (D-073 durable roaming candidate across two replicas).
+	deployGuide := readOwnedDoc(t, root, "docs/handover/deploy.md")
+	for _, token := range []string{
+		"#227", "#228",
+		"D-073",
+		"D-076",
+		"D-077",
+		"db/migrations/00187_identity_roaming_and_readiness_grace.sql",
+		"db/migrations/00188_device_authorization_fences.sql",
+		"candidate_hash",
+		"candidate_first_seen_at",
+		"candidate_last_seen_at",
+		"SELECT ... FOR UPDATE",
+		"device_authorization_fences",
+		"device.authorization.external_withdrawal",
+		"device authorization unconfirmed during ledger restore",
+		"fvpn_device_restore_fence_decisions_total",
+	} {
+		if !strings.Contains(deployGuide, token) {
+			t.Errorf("docs/handover/deploy.md missing expected follow-up 11 token %q", token)
+		}
+	}
+
+	restoreDrill := readOwnedDoc(t, root, "docs/handover/restore-drill.md")
+	for _, token := range []string{
+		"#227",
+		"D-076",
+		"D-077",
+		"db/migrations/00188_device_authorization_fences.sql",
+		"device_authorization_fences",
+		"device.authorization.external_withdrawal",
+		"device authorization unconfirmed during ledger restore",
+		"fvpn_device_restore_fence_decisions_total",
+		"6.3 Review Devices Fenced as Authorization-Unconfirmed",
+	} {
+		if !strings.Contains(restoreDrill, token) {
+			t.Errorf("docs/handover/restore-drill.md missing expected follow-up 11 token %q", token)
+		}
+	}
+
+	// 3. Verify member-guide.md (zh-TW and en) pins for D-076 (#227) and members follow-up 6 (#231).
+	memberGuide := readOwnedDoc(t, root, "docs/handover/member-guide.md")
+	for _, token := range []string{
+		"#227", "#231",
+		"D-076",
+		"在服務備份還原後，若某台裝置的授權狀態尚待營運人員確認，該裝置亦可能暫時顯示為 `pending`，直到營運人員完成確認為止，會員端的任何操作均不會改變此狀態",
+		"After a service restore, a device may show as `pending` until an operator confirms it, and nothing you do on the member side changes that",
+		"80db103b-622c-42b1-946d-4628daaa213d",
+		"36.976",
+		"41.695",
+	} {
+		if !strings.Contains(memberGuide, token) {
+			t.Errorf("docs/handover/member-guide.md missing expected follow-up 11 token %q", token)
+		}
+	}
+
+	// 4. Verify calibration.md pins for D-078 (#229) and BrowserRate 10/s burst 30 / AgentRate 5/s burst 10.
+	calibrationGuide := readOwnedDoc(t, root, "docs/handover/calibration.md")
+	for _, token := range []string{
+		"#229",
+		"D-078",
+		"`browser_rate` (`10/s`, burst `30`",
+		"`agent_rate` (`5/s`, burst `10`)",
+		"a `429` that carries `Retry-After` and whose retry succeeds is the limiter working as specified; harnesses report the counts as evidence, and calibration stays with `control`",
+		"control follow-up 21 reviews `browser_rate`",
+	} {
+		if !strings.Contains(calibrationGuide, token) {
+			t.Errorf("docs/handover/calibration.md missing expected follow-up 11 token %q", token)
+		}
+	}
+
+	// 5. Verify ops/README.md and handover/README.md index pins.
+	for _, rel := range []string{"docs/ops/README.md", "docs/handover/README.md"} {
+		doc := readOwnedDoc(t, root, rel)
+		for _, token := range []string{
+			"#225", "#226", "#227", "#228", "#229", "#231",
+			"D-073", "D-075", "D-076", "D-078",
+		} {
+			if !strings.Contains(doc, token) {
+				t.Errorf("%s missing expected follow-up 11 token %q", rel, token)
+			}
+		}
+	}
+}
