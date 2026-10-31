@@ -1,0 +1,196 @@
+[
+  {
+    "dns_info": {
+      "blocked_response_ttl": 60,
+      "blocking_ipv4": "",
+      "blocking_ipv6": "",
+      "blocking_mode": "nxdomain",
+      "bootstrap_dns": [
+        "192.0.2.2:5353"
+      ],
+      "cache_optimistic": false,
+      "cache_size": 4194304,
+      "cache_ttl_max": 0,
+      "cache_ttl_min": 0,
+      "disable_ipv6": false,
+      "dnssec_enabled": false,
+      "edns_cs_custom_ip": "",
+      "edns_cs_enabled": false,
+      "edns_cs_use_custom": false,
+      "fallback_dns": [],
+      "local_ptr_upstreams": [],
+      "protection_disabled_until": null,
+      "protection_enabled": true,
+      "ratelimit": 0,
+      "ratelimit_subnet_len_ipv4": 24,
+      "ratelimit_subnet_len_ipv6": 56,
+      "ratelimit_whitelist": [],
+      "resolve_clients": false,
+      "upstream_dns": [
+        "192.0.2.2:5353"
+      ],
+      "upstream_dns_file": "",
+      "upstream_mode": "",
+      "upstream_timeout": 10,
+      "use_private_ptr_resolvers": false
+    },
+    "role": "primary",
+    "yaml_dns": {
+      "aaaa_disabled": false,
+      "allowed_clients": [],
+      "anonymize_client_ip": true,
+      "bind_hosts": [
+        "0.0.0.0"
+      ],
+      "blocked_hosts": [
+        "version.bind",
+        "id.server",
+        "hostname.bind"
+      ],
+      "bogus_nxdomain": [],
+      "bootstrap_dns": [
+        "192.0.2.2:5353"
+      ],
+      "bootstrap_prefer_ipv6": false,
+      "cache_optimistic": false,
+      "cache_size": 4194304,
+      "cache_ttl_max": 0,
+      "cache_ttl_min": 0,
+      "disallowed_clients": [],
+      "dns64_prefixes": [],
+      "edns_client_subnet": {
+        "custom_ip": "",
+        "enabled": false,
+        "use_custom": false
+      },
+      "enable_dnssec": false,
+      "fallback_dns": [],
+      "fastest_timeout": "1s",
+      "handle_ddr": true,
+      "hostsfile_enabled": false,
+      "ipset": [],
+      "ipset_file": "",
+      "local_ptr_upstreams": [],
+      "max_goroutines": 300,
+      "port": 5353,
+      "private_networks": [],
+      "ratelimit": 0,
+      "ratelimit_subnet_len_ipv4": 24,
+      "ratelimit_subnet_len_ipv6": 56,
+      "ratelimit_whitelist": [],
+      "refuse_any": true,
+      "serve_http3": false,
+      "serve_plain_dns": true,
+      "trusted_proxies": [
+        "127.0.0.0/8",
+        "::1/128"
+      ],
+      "upstream_dns": [
+        "192.0.2.2:5353"
+      ],
+      "upstream_dns_file": "",
+      "upstream_mode": "load_balance",
+      "upstream_timeout": "10s",
+      "use_dns64": false,
+      "use_http3_upstreams": false,
+      "use_private_ptr_resolvers": false
+    }
+  },
+  {
+    "dns_info": {
+      "blocked_response_ttl": 60,
+      "blocking_ipv4": "",
+      "blocking_ipv6": "",
+      "blocking_mode": "nxdomain",
+      "bootstrap_dns": [
+        "192.0.2.2:5353"
+      ],
+      "cache_optimistic": false,
+      "cache_size": 4194304,
+      "cache_ttl_max": 0,
+      "cache_ttl_min": 0,
+      "disable_ipv6": false,
+      "dnssec_enabled": false,
+      "edns_cs_custom_ip": "",
+      "edns_cs_enabled": false,
+      "edns_cs_use_custom": false,
+      "fallback_dns": [],
+      "local_ptr_upstreams": [],
+      "protection_disabled_until": null,
+      "protection_enabled": true,
+      "ratelimit": 0,
+      "ratelimit_subnet_len_ipv4": 24,
+      "ratelimit_subnet_len_ipv6": 56,
+      "ratelimit_whitelist": [],
+      "resolve_clients": false,
+      "upstream_dns": [
+        "192.0.2.2:5353"
+      ],
+      "upstream_dns_file": "",
+      "upstream_mode": "",
+      "upstream_timeout": 10,
+      "use_private_ptr_resolvers": false
+    },
+    "role": "secondary",
+    "yaml_dns": {
+      "aaaa_disabled": false,
+      "allowed_clients": [],
+      "anonymize_client_ip": true,
+      "bind_hosts": [
+        "0.0.0.0"
+      ],
+      "blocked_hosts": [
+        "version.bind",
+        "id.server",
+        "hostname.bind"
+      ],
+      "bogus_nxdomain": [],
+      "bootstrap_dns": [
+        "192.0.2.2:5353"
+      ],
+      "bootstrap_prefer_ipv6": false,
+      "cache_optimistic": false,
+      "cache_size": 4194304,
+      "cache_ttl_max": 0,
+      "cache_ttl_min": 0,
+      "disallowed_clients": [],
+      "dns64_prefixes": [],
+      "edns_client_subnet": {
+        "custom_ip": "",
+        "enabled": false,
+        "use_custom": false
+      },
+      "enable_dnssec": false,
+      "fallback_dns": [],
+      "fastest_timeout": "1s",
+      "handle_ddr": true,
+      "hostsfile_enabled": false,
+      "ipset": [],
+      "ipset_file": "",
+      "local_ptr_upstreams": [],
+      "max_goroutines": 300,
+      "port": 5353,
+      "private_networks": [],
+      "ratelimit": 0,
+      "ratelimit_subnet_len_ipv4": 24,
+      "ratelimit_subnet_len_ipv6": 56,
+      "ratelimit_whitelist": [],
+      "refuse_any": true,
+      "serve_http3": false,
+      "serve_plain_dns": true,
+      "trusted_proxies": [
+        "127.0.0.0/8",
+        "::1/128"
+      ],
+      "upstream_dns": [
+        "192.0.2.2:5353"
+      ],
+      "upstream_dns_file": "",
+      "upstream_mode": "load_balance",
+      "upstream_timeout": "10s",
+      "use_dns64": false,
+      "use_http3_upstreams": false,
+      "use_private_ptr_resolvers": false
+    }
+  }
+]

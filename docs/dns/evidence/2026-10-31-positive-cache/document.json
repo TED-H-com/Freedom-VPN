@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "kind": "resolver_document",
+  "profile_code": "positive-cache",
+  "block_response": "nxdomain",
+  "blocked_ttl_seconds": 60,
+  "safe_search": false,
+  "privacy": {
+    "querylog_enabled": false,
+    "querylog_file_enabled": false,
+    "statistics_enabled": false
+  },
+  "upstreams": [
+    "192.0.2.2:5353"
+  ],
+  "bootstrap_dns": [
+    "192.0.2.2:5353"
+  ],
+  "fallback_dns": [],
+  "rules": [],
+  "feeds": []
+}

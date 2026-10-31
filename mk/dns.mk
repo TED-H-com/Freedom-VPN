@@ -17,7 +17,7 @@ TEST_TARGETS += dns-test
 LINT_TARGETS += dns-lint
 VERIFY_TARGETS += dns-verify
 
-.PHONY: dns-build dns-lint dns-verify dns-test dns-up dns-down dns-test-integration dns-test-publish dns-lab dns-response-shape
+.PHONY: dns-build dns-lint dns-verify dns-test dns-up dns-down dns-test-integration dns-test-publish dns-lab dns-response-shape dns-positive-cache
 
 dns-build:
 	@$(dns-with-disk-tmp) go build $(DNS_PKGS) ./apps/worker/...
@@ -50,6 +50,11 @@ dns-lab:
 dns-response-shape:
 	@mkdir -p .agent/tmp
 	@TMPDIR="$$(pwd)/.agent/tmp" GOTMPDIR="$$(pwd)/.agent/tmp" FVPN_NETLAB=1 FVPN_LAB_PREFIX=$${FVPN_LAB_PREFIX:-fvpn-w3-dns-publish} go test -count=1 -v -tags=netlab -timeout 10m ./tests/netlab/dns/... -run '^TestAT20_ResponseShape$$'
+
+# Same production Apply, pinned defaults, no flush during measured queries.
+dns-positive-cache:
+	@mkdir -p .agent/tmp
+	@TMPDIR="$$(pwd)/.agent/tmp" GOTMPDIR="$$(pwd)/.agent/tmp" FVPN_NETLAB=1 FVPN_LAB_PREFIX=$${FVPN_LAB_PREFIX:-fvpn-w3-dns-publish} go test -count=1 -v -tags=netlab -timeout 10m ./tests/netlab/dns/... -run '^TestAT20_PositiveCacheTTL$$'
 
 dns-up:
 	FVPN_DNS_PREFIX=$(FVPN_DNS_PREFIX) bash $(DNS_COMPOSE_DIR)/bootstrap.sh

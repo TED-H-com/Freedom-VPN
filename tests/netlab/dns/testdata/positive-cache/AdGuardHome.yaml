@@ -1,0 +1,49 @@
+# TEST ONLY: unauthenticated admin API on an isolated lab bridge, no published ports.
+# Cache, upstream mode and timeout intentionally omitted: measure pinned defaults.
+http:
+  address: 0.0.0.0:8080
+users: []
+dns:
+  bind_hosts: [0.0.0.0]
+  port: 5353
+  ratelimit: 0
+  refuse_any: true
+  upstream_dns: [192.0.2.2:5353]
+  bootstrap_dns: [192.0.2.2:5353]
+  fallback_dns: []
+  aaaa_disabled: false
+  enable_dnssec: false
+  use_private_ptr_resolvers: false
+  local_ptr_upstreams: []
+  hostsfile_enabled: false
+querylog:
+  enabled: false
+  file_enabled: false
+  interval: 24h
+statistics:
+  enabled: false
+  interval: 24h
+filters: []
+whitelist_filters: []
+user_rules: []
+filtering:
+  blocking_mode: nxdomain
+  blocked_response_ttl: 60
+  filtering_enabled: true
+  protection_enabled: true
+  filters_update_interval: 0
+  parental_enabled: false
+  safebrowsing_enabled: false
+  safe_search:
+    enabled: false
+clients:
+  runtime_sources:
+    whois: false
+    arp: false
+    rdns: false
+    dhcp: false
+    hosts: false
+log:
+  enabled: false
+  verbose: false
+schema_version: 29
