@@ -14,3 +14,9 @@ Source revisions, timestamps and verdicts are historical. Relative links inside
 these snapshots retain their original `docs/e2e/at/secops/` context; they were
 not rewritten to suggest a new execution. Current results start at
 [summary.md](../summary.md).
+
+Follow-up 12 is archived byte-identically from PR #301 (`8b5e809b`) under
+[follow-up-12/](follow-up-12/archive-index.json): transport `cf81f6f8` and restore
+`dd845a7f`. All original root JSON/Markdown records are pinned; earlier archives
+are unchanged. The archive uses the PR #301 scope review; later handover pin
+updates remain in the current scope review.

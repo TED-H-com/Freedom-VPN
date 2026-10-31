@@ -57,7 +57,7 @@ func (l *live) nativeMatrix(r *record) {
 		after, ae := l.hook.DeviceByteCounters(l.ctx, id)
 		afterPath, ape := l.hook.ObserveNativeUnderlay(l.ctx)
 		chosenAfter, caErr := l.selectedNativePath()
-		r.jsonCheck(label+" transfer", "64064 TCP bytes and upload/download counters increase; actual chosen family recorded", map[string]any{"selection": selection, "before_path": beforePath, "after_path": afterPath, "selected_exit_before": chosenBefore, "selected_exit_after": chosenAfter, "before_counters": before, "after_counters": after, "transfer": got}, "native down/up; ObserveNativeUnderlay; fixture bulk; DeviceByteCounters", familyOK(chosenBefore) && familyOK(chosenAfter) && cbErr == nil && caErr == nil && chosenBefore.Connected && chosenAfter.Connected && down == nil && up == nil && ready && pe == nil && be == nil && ge == nil && ae == nil && ape == nil && got.Available && got.Bytes == 64064 && before.Present && after.Present && after.Upload > before.Upload && after.Download > before.Download)
+		r.jsonCheck(label+" transfer", "IPv4 overlay: 64064 TCP bytes and upload/download counters increase; selected underlay family recorded; D-123 IPv6Block, no IPv6 end-to-end MTU/PMTU claim", map[string]any{"overlay_family": "ipv4", "ipv6_mode": "block", "ipv6_no_leak_evidence": "docs/poc/G2-f802-mtu1280-2026-10-31.md (independent netlab measurement; ctv6 drops in both directions, no member class dequeue)", "selection": selection, "before_path": beforePath, "after_path": afterPath, "selected_exit_before": chosenBefore, "selected_exit_after": chosenAfter, "before_counters": before, "after_counters": after, "transfer": got}, "native down/up; ObserveNativeUnderlay; fixture bulk; DeviceByteCounters", familyOK(chosenBefore) && familyOK(chosenAfter) && cbErr == nil && caErr == nil && chosenBefore.Connected && chosenAfter.Connected && down == nil && up == nil && ready && pe == nil && be == nil && ge == nil && ae == nil && ape == nil && got.Available && got.Bytes == 64064 && before.Present && after.Present && after.Upload > before.Upload && after.Download > before.Download)
 	}
 	for _, row := range []struct{ platform, protocol string }{{"linux", "quic"}, {"android", "tcp"}, {"ios", "tcp"}, {"windows", "tcp"}, {"macos", "tcp"}} {
 		selection, e := labstack.SelectNativeFixture(labstack.NativeFixtureInputs{Underlay: "dual", MTU: 1280, Protocol: row.protocol, Platform: row.platform})
@@ -93,6 +93,7 @@ func (l *live) nativeMatrix(r *record) {
 	} else {
 		_, _ = l.hook.ForceMemberRelay(l.ctx, "", false)
 	}
+	r.block("D-123: v1.0 IPv6Block. IPv6 no-leak evidence is the independent rendered-policy netlab follow-up 18 measurement (docs/poc/G2-f802-mtu1280-2026-10-31.md); this native fixture measures IPv4 payload over the selected underlay, not end-to-end IPv6 MTU/PMTU. F8-02 remains unattributed pending native reconnect capture/application read counts if the 64064-byte row fails.")
 	r.block("F4-03: physical second NAT/roaming and ICMP-black-hole PMTU remain platform/operator work; finite TCP transfers at 1500/1280 are not a full PMTU campaign.")
 }
 

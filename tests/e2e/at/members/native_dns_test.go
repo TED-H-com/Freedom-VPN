@@ -63,17 +63,30 @@ func (l *live) nativeDNSMatrix(r *record) {
 				r.jsonCheck(label+" authority control", "existing upstream RR", control, "direct owned authority positive control; no query contents exported", e == nil && control.Available && control.RCode == 0 && len(control.Types) > 0)
 			}
 			got, e := l.hook.ProbeNativeDNS(l.ctx, "", tc.name, tc.typ, tcp, "")
-			// Follow-up 16's recorded convention: direct blocked CNAME/SVCB NODATA;
-			// the other blocked types NXDOMAIN. Keep exact RCODE and SOA TTL per row.
-			r.jsonCheck(label, "recorded RCODE/answer convention", map[string]any{"case": strings.Split(tc.name, ".")[0], "rr_type": tc.typ, "tcp": tcp, "expected_rcode": tc.code, "expected_answer": tc.answer, "actual": got}, "ProbeNativeDNS through native OS stub", e == nil && got.Available && got.RCode == tc.code && (len(got.Types) > 0) == tc.answer)
+			// dns-publish follow-up 8: synthetic filtering is type-specific.
+			// Absent upstream names and positive cache controls are separate.
+			tableRow, scope := "upstream control (not synthetic filtering)", ""
+			shapeOK := got.Available && got.RCode == tc.code && (len(got.Types) > 0) == tc.answer
+			if !tc.answer && tc.name != "absent.example.invalid" {
+				tableRow = map[uint16]string{1: "F8-A", 28: "F8-AAAA", 5: "F8-CNAME", 64: "F8-SVCB", 65: "F8-HTTPS"}[tc.typ]
+				scope = "D"
+				if tc.name == "blocked-alias.example.invalid" {
+					scope = "C"
+				} else if strings.HasPrefix(tc.name, "sub.") {
+					scope = "W"
+				}
+				shapeOK = shapeOK && tableRow != "" && got.HasSOA && got.AuthorityTTL == 5
+				tableRow += " / F8-TTL5"
+			}
+			r.jsonCheck(label, "exact RCODE/answers; filtered rows require SOA TTL 5 per docs/dns/BACKEND.md §2.1.1–§2.1.4", map[string]any{"case": strings.Split(tc.name, ".")[0], "rr_type": tc.typ, "tcp": tcp, "expected_rcode": tc.code, "expected_answer": tc.answer, "backend_table_row": tableRow, "scope": scope, "actual": got}, "ProbeNativeDNS through native OS stub; retain observed SOA/TTL/types", e == nil && shapeOK)
 		}
 	}
 	for _, name := range []string{"FEED-01.example.invalid", "feed-01.example.invalid."} {
 		got, e := l.hook.ProbeNativeDNS(l.ctx, "", name, 1, false, "")
-		r.jsonCheck("native case/dot normalization", "NXDOMAIN, no answer", got, "ProbeNativeDNS mixed case/trailing dot synthetic blocked name", e == nil && got.Available && got.RCode == 3 && len(got.Types) == 0)
+		r.jsonCheck("native case/dot normalization", "F8-A / F8-TTL5: RCODE 3, zero answers, SOA TTL 5", got, "ProbeNativeDNS mixed case/trailing dot synthetic blocked name; docs/dns/BACKEND.md §2.1", e == nil && blockedDNS5(got))
 	}
 	l.nativeDNSCache(r)
-	r.block("AT20 wording confirmation: blocked direct CNAME/SVCB return empty NODATA under the pinned backend; DNS owners must confirm §12 block-response wording. IDNA wire-positive fixture is still absent (canonical A-label API input is tested). Owner: DNS/netlab and w3-devstack-e2e.")
+	r.block("F4-07: IDNA wire-positive fixture is still absent (canonical A-label API input is tested). Owner: w3-devstack-e2e. DNS wording retired 2026-10-31 by docs/dns/BACKEND.md §2.1.1–§2.1.4; distribution/platform gaps remain separate.")
 }
 func (l *live) nativeDNSCache(r *record) {
 	// Refresh the negative within its five-second window immediately before change.
@@ -126,7 +139,7 @@ func (l *live) nativeDNSFallback(r *record) {
 	r.jsonCheck("primary resolver transport down", "stopped", map[string]any{"at": at, "stopped": err == nil}, "docker stop owned origin-dns transport; node policy health stays up", err == nil)
 	probe("automatic secondary fallback", "notfeed-01.example.invalid", true)
 	blocked, e := l.hook.ProbeNativeDNS(l.ctx, "", "feed-01.example.invalid", 1, false, "")
-	r.jsonCheck("fallback block policy", "NXDOMAIN no answer from remaining controlled resolver", blocked, "ProbeNativeDNS with primary transport down", e == nil && blocked.Available && blocked.RCode == 3 && len(blocked.Types) == 0)
+	r.jsonCheck("fallback block policy", "F8-A / F8-TTL5: RCODE 3, zero answers, SOA TTL 5 from remaining resolver", blocked, "ProbeNativeDNS with primary transport down; docs/dns/BACKEND.md §2.1.4", e == nil && blockedDNS5(blocked))
 	_, err = l.docker("stop", "-t", "2", secondary)
 	r.check("both resolver transports down", "stopped", safeError(err), "docker stop owned secondary transport", err == nil)
 	// Unique uncached name avoids the positive/negative matrix's cache entries.
@@ -140,4 +153,10 @@ func (l *live) nativeDNSFallback(r *record) {
 	})
 	r.jsonCheck("native DNS recovery", "system resolution resumes within bounded recovery", map[string]any{"result": recovered, "recovery_ms": time.Since(start).Milliseconds()}, "restart only owned resolver transports; native system lookup", err == nil && ok)
 	r.block("F4-05 production automatic nameserver distribution is unclaimed: ConfigureNativeDNS uses a TEST ONLY peer group with the exact product-issued list. Android Private DNS/browser DoH remain operator/native-client integration work.")
+}
+
+// The fixture applies a five-second blocked-response profile. This checks the
+// exact fresh synthetic response, not a cached upstream NXDOMAIN convention.
+func blockedDNS5(got labstack.FixtureProbeResult) bool {
+	return got.Available && got.RCode == 3 && len(got.Types) == 0 && got.HasSOA && got.AuthorityTTL == 5
 }

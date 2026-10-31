@@ -1,0 +1,1270 @@
+{
+  "schema_version": 1,
+  "scope": "Repository-local review of README, member guide draft, portal member texts and the current checkout of Wave 4/dev-stack evidence. External upstream product claims were not reverified.",
+  "spec": [
+    "\u00a71",
+    "\u00a77.3",
+    "\u00a716.3",
+    "\u00a719 AT32"
+  ],
+  "findings": [
+    {
+      "id": "DOC01",
+      "status": "resolved",
+      "resolved_in": "docs/handover/member-guide.md (Part I zh-TW \u00a73.2 and Part II en \u00a73.2)",
+      "type": "documentation_change_request",
+      "owner": "documentation",
+      "file": "docs/handover/member-guide.md",
+      "section": "3.2 / AT09 (both languages)",
+      "claim": "Guarantees no local ISP fallback when the tunnel fails.",
+      "actual": "Spec \u00a77.3 and portal member.gettingStarted.killSwitchWarningBody explicitly exclude a complete client kill switch. Server-side fail closed is not endpoint routing protection.",
+      "requested_change": "Replace the guarantee with the portal limitation; record disconnect, sleep and network-switch behavior per platform.",
+      "evidence": [
+        "apps/portal/src/i18n/zh-TW.ts",
+        "apps/portal/src/i18n/en.ts",
+        "docs/spec/PROJECT_SPEC.zh-TW.md"
+      ]
+    },
+    {
+      "id": "DOC02",
+      "status": "resolved",
+      "resolved_in": "docs/handover/member-guide.md (Part I zh-TW \u00a72.2 A\u2013D and Part II en \u00a72.2 A\u2013D)",
+      "type": "documentation_change_request",
+      "owner": "documentation",
+      "file": "docs/handover/member-guide.md",
+      "section": "2.2 (all four platform sequences)",
+      "claim": "Tells members to click Authorize Device in the portal.",
+      "actual": "MemberDevicesPage implements list and revoke only. The 41-endpoint contract has no member authorize command; authorization is a central entitlement/device-sync action (\u00a77.3).",
+      "requested_change": "Describe automatic central authorization and pending/authorized status; do not invent a button or endpoint.",
+      "evidence": [
+        "apps/portal/src/pages/member/MemberDevicesPage.tsx",
+        "contracts/openapi.yaml"
+      ]
+    },
+    {
+      "id": "DOC03",
+      "status": "resolved",
+      "resolved_in": "docs/handover/member-guide.md (Part I zh-TW \u00a73.2, \u00a74 and Part II en \u00a73.2, \u00a74)",
+      "type": "documentation_change_request",
+      "owner": "documentation",
+      "file": "docs/handover/member-guide.md",
+      "section": "3.2 (zh-TW), 4 (both languages)",
+      "claim": "Promises forwarding off within 30 seconds on disable/switch and describes immediate revocation.",
+      "actual": "\u00a716.3 uses the earliest lease/service deadline; \u00a716.5 online revocation target starts at 60 seconds and is not an offline guarantee. Prior lease-expiry run had no serving flow.",
+      "requested_change": "Distinguish watchdog staleness from online revocation and offline deadline; label timings unmeasured until AT29 runs.",
+      "evidence": [
+        "docs/spec/PROJECT_SPEC.zh-TW.md",
+        "docs/e2e/runs/2026-10-29/lease-expiry.json"
+      ]
+    },
+    {
+      "id": "DOC04",
+      "status": "resolved",
+      "resolved_in": "docs/handover/member-guide.md (Part I zh-TW \u00a71, \u00a72.2C, \u00a73.1, \u00a73.3 and Part II en \u00a71, \u00a72.2C, \u00a73.1, \u00a73.3)",
+      "type": "documentation_change_request",
+      "owner": "documentation",
+      "file": "docs/handover/member-guide.md",
+      "section": "1, 2.2C, 3.1, 3.3 (both languages)",
+      "claim": "Calls native versions verified and Linux checks Verified on dev/test stack; tells iOS users to install build 2 from App Store.",
+      "actual": "docs/netbird/VERSIONS.md labels all native candidates needs measurement and describes iOS build 2 as TestFlight with App Store availability unasserted. The current checkout has no matching four-platform evidence.",
+      "requested_change": "Use candidate versions and needs operator run; link dated evidence only after actual device runs.",
+      "evidence": [
+        "docs/netbird/VERSIONS.md",
+        "docs/e2e/README.md"
+      ]
+    },
+    {
+      "id": "DOC05",
+      "status": "resolved",
+      "resolved_in": "docs/handover/member-guide.md (Part I zh-TW \u00a73.1 and Part II en \u00a73.1)",
+      "type": "documentation_change_request",
+      "owner": "documentation",
+      "file": "docs/handover/member-guide.md",
+      "section": "3.1 (zh-TW exit-IP claim and both language commands)",
+      "claim": "Uses GET /member/me to verify exit IP and a bare curl to an authenticated endpoint.",
+      "actual": "The response is account/entitlement information, not an egress reflection. No session cookie is supplied. A failed ping alone also lacks a reachable control test.",
+      "requested_change": "Use the controlled lab origin observed source IP with a positive reachability control; use a protected session config for authenticated API reads.",
+      "evidence": [
+        "contracts/openapi.yaml",
+        "tests/e2e/scenarios_test.go"
+      ]
+    },
+    {
+      "id": "DOC06",
+      "status": "resolved",
+      "resolved_in": "docs/handover/member-guide.md (Part I zh-TW \u00a76.1 and Part II en \u00a76.1)",
+      "type": "documentation_change_request",
+      "owner": "documentation",
+      "file": "docs/handover/member-guide.md",
+      "section": "6.1 (both languages)",
+      "claim": "Claims all port-53 traffic is DNAT redirected to two fixed overlay resolvers.",
+      "actual": "RenderServing allows configured resolver addresses but has no DNS DNAT; arbitrary external DNS handling is a selected policy decision in \u00a712.6. The guide presents example addresses as operational guarantees.",
+      "requested_change": "Describe configured resolver use and the measured external-DNS policy, remove unsupported universal interception.",
+      "evidence": [
+        "node/enforce/render_nft.go",
+        "docs/spec/PROJECT_SPEC.zh-TW.md"
+      ]
+    },
+    {
+      "id": "DOC07",
+      "status": "resolved",
+      "resolved_in": "docs/handover/member-guide.md (Part I zh-TW \u00a76.2 and Part II en \u00a76.2)",
+      "type": "documentation_change_request",
+      "owner": "documentation",
+      "file": "docs/handover/member-guide.md",
+      "section": "6.2 (zh-TW)",
+      "claim": "Equates DoT with DNS carried over HTTPS port 443.",
+      "actual": "\u00a712.6 distinguishes DoT/DoQ from DoH over ordinary HTTPS; portal copy groups bypass cases without this transport equivalence.",
+      "requested_change": "Separate protocols and state that actual behavior depends on selected policy and platform.",
+      "evidence": [
+        "docs/spec/PROJECT_SPEC.zh-TW.md",
+        "apps/portal/src/i18n/zh-TW.ts"
+      ]
+    },
+    {
+      "id": "DOC08",
+      "status": "resolved",
+      "resolved_in": "docs/handover/member-guide.md (Part I zh-TW \u00a77.2 and Part II en \u00a77.2)",
+      "type": "documentation_change_request",
+      "owner": "documentation",
+      "file": "docs/handover/member-guide.md",
+      "section": "7.2 (both languages)",
+      "claim": "Promises allow overrides take effect for every member within 60 seconds because blocked_ttl_seconds=60.",
+      "actual": "\u00a712.5\u201312.6 includes publication/ACK, resolver caches, app caches and existing connections; TTL is configurable and is not an end-to-end SLA.",
+      "requested_change": "State configured TTL and measured publication delay separately; remove universal 60-second promise.",
+      "evidence": [
+        "contracts/openapi.yaml",
+        "apps/portal/src/i18n/en.ts",
+        "docs/spec/PROJECT_SPEC.zh-TW.md"
+      ]
+    },
+    {
+      "id": "DOC09",
+      "status": "resolved",
+      "resolved_in": "README.md (Status and \u00a7What it does)",
+      "type": "documentation_change_request",
+      "owner": "documentation",
+      "file": "README.md",
+      "section": "What it does",
+      "claim": "Describes absolute isolation, working ledger/shaping and signed fleet rollback in the present tense.",
+      "actual": "README already says early development, but prior published run records still block forwarding, usage and update-good. The feature list does not identify these acceptance gaps.",
+      "requested_change": "Label intended capabilities and link the acceptance matrix; qualify absolute host/LAN reachability claims by the supported server path.",
+      "evidence": [
+        "docs/e2e/runs/2026-10-29/forwarding.json",
+        "docs/e2e/runs/2026-10-29/usage.json",
+        "docs/e2e/runs/2026-10-29/update-good.json"
+      ]
+    },
+    {
+      "id": "DOC10",
+      "status": "resolved",
+      "resolved_in": "docs/handover/member-guide.md (Part I zh-TW \u00a75.1 and Part II en \u00a75.1)",
+      "type": "documentation_change_request",
+      "owner": "documentation",
+      "file": "docs/handover/member-guide.md",
+      "section": "5.1 (both languages)",
+      "claim": "Describes admitted IPv4/IPv6 bytes without saying IPv6 forwarding is blocked in v1.",
+      "actual": "node/enforce only implements IPv6Block and the renderer drops member IPv6. No supported IPv6 Internet path is established.",
+      "requested_change": "State the current IPv6-block mode and distinguish the ledger format from available forwarding.",
+      "evidence": [
+        "node/enforce/model.go",
+        "node/enforce/render_nft.go"
+      ]
+    },
+    {
+      "id": "DOC11",
+      "status": "resolved",
+      "resolved_in": "docs/handover/member-guide.md (Part I zh-TW \u00a75.3 and Part II en \u00a75.3)",
+      "type": "documentation_change_request",
+      "owner": "documentation",
+      "file": "docs/handover/member-guide.md",
+      "section": "5.3 (both languages)",
+      "claim": "Treats minimum_rate as a guaranteed delivered bandwidth floor and never-disconnect promise.",
+      "actual": "\u00a711.5\u201311.7 require a usable configured shaping floor, not unlimited delivered throughput; lease, isolation, meter or storage failure still stops forwarding.",
+      "requested_change": "Describe the configured floor and shared-capacity limits; retain mandatory fail-closed exceptions.",
+      "evidence": [
+        "docs/spec/PROJECT_SPEC.zh-TW.md",
+        "node/enforce/model.go"
+      ]
+    },
+    {
+      "id": "DOC12",
+      "status": "resolved",
+      "resolution": "Relabeled member.devices.col.overlayIp in zh-TW.ts and en.ts to Device ID (\u88dd\u7f6e\u8b58\u5225\u78bc (Device ID) / Device ID) matching the contract-supported MemberDevice.device_id rendered by MemberDevicesPage.tsx.",
+      "type": "documentation_change_request",
+      "owner": "portal",
+      "file": "apps/portal/src/pages/member/MemberDevicesPage.tsx",
+      "section": "member.devices.col.overlayIp table cell",
+      "claim": "Column label says allocated address / Peer ID.",
+      "actual": "The cell renders dev.device_id, an internal UUID, rather than an overlay address or peer ID.",
+      "requested_change": "Relabel as device ID or render contract-supported observed peer information; keep implementation details out of member guidance.",
+      "evidence": [
+        "apps/portal/src/i18n/en.ts",
+        "apps/portal/src/i18n/zh-TW.ts"
+      ]
+    },
+    {
+      "id": "DOC13",
+      "status": "resolved",
+      "resolved_in": "docs/handover/member-guide.md (all sections in Part I zh-TW and Part II en, plus aligned citations in docs/handover/{README,deploy,calibration,restore-drill,operator-guide}.md)",
+      "type": "documentation_change_request",
+      "owner": "documentation",
+      "file": "docs/handover/member-guide.md",
+      "section": "spec/AT references throughout",
+      "claim": "Uses \u00a77.5, ISO03/ISO04, AT03 for revoke, AT18 for UTC reset, and AT17 for tiering.",
+      "actual": "The authoritative spec has \u00a77.1\u20137.3 and ISO01/ISO02; AT03 is payments, AT18 is combined shaping, AT17 is month/late/quality and AT19 is tiers/reset.",
+      "requested_change": "Audit section and requirement references against the actual catalogue; map the guide to AT01/02/04/09/19/21/29 as appropriate.",
+      "evidence": [
+        "docs/spec/PROJECT_SPEC.zh-TW.md"
+      ]
+    },
+    {
+      "id": "DOC14",
+      "status": "resolved",
+      "type": "documentation_change_request",
+      "owner": "documentation",
+      "file": "docs/handover/member-guide.md",
+      "section": "Part II 2.2",
+      "claim": "Current contract described as OpenAPI 1.1.1.",
+      "actual": "contracts/openapi.yaml info.version is 1.2.0 on tested revision f7281ec; endpoint count remains 44.",
+      "requested_change": "Update or remove the stale version reference; retain the automatic device admission and unmeasured-platform qualifications.",
+      "evidence": [
+        "contracts/openapi.yaml",
+        "docs/handover/member-guide.md"
+      ],
+      "resolved_in": "docs/handover/member-guide.md Part II 2.2; tests/handover/handover_test.go TestHandover_OpenAPIClaims",
+      "resolution": "Guide now states OpenAPI 1.3.0 from info.version on the handover review base; parsed contract still has 44 operations. The test requires the current version and checks stated versions/counts. Historical source revisions and hashes below are retained."
+    }
+  ],
+  "unified_model_review": [
+    {
+      "area": "schema",
+      "evidence": "TestAT32_UnifiedNodeContractSurface",
+      "result": "executed by acceptance runner"
+    },
+    {
+      "area": "three delivery origins",
+      "evidence": "internal/enrollment/service_integration_test.go:TestAT05_UniformDeliveryMetadataAndPlatforms",
+      "result": "component test only; physical source comparison needs operator run"
+    },
+    {
+      "area": "lifecycle",
+      "evidence": "internal/nodes/nodes_integration_test.go:TestAT32_CentralEnrollConfigureObserveLifecycle",
+      "result": "component test only"
+    },
+    {
+      "area": "notes",
+      "evidence": "contracts/openapi.yaml NodeDetail.notes; internal/enrollment/service.go Create; internal/nodes/nodes.go",
+      "result": "notes documented as metadata; no full runtime source/notes authorization comparison claimed"
+    }
+  ],
+  "follow_up_1": {
+    "reviewed_at": "2026-10-30T02:08:34.805456+00:00",
+    "source_revision": "eebdbf7175f46ca21000b176afdc3808f8a8e58c",
+    "findings_rechecked": 13,
+    "unresolved_documentation_findings": 0,
+    "physical_acceptance": "needs operator run",
+    "sources": [
+      {
+        "path": "README.md",
+        "sha256": "4f81bc254d327c276a19f7d11dea8b0f217809704c1370f4b7db6b3ede9b821e"
+      },
+      {
+        "path": "docs/handover/member-guide.md",
+        "sha256": "904b0d46cc3cea3fab77e719a57a685404e5f12809b9727beb0aed2c8cfa4322"
+      },
+      {
+        "path": "apps/portal/src/i18n/zh-TW.ts",
+        "sha256": "a4bee9d40cd7936efd2ba1c8f44199324d30497a56d113c307624635775f5822"
+      },
+      {
+        "path": "apps/portal/src/i18n/en.ts",
+        "sha256": "514e173e208328586f3a07b963705efab4481196da3ed363c625a917d448f9d5"
+      },
+      {
+        "path": "apps/portal/src/pages/member/MemberDevicesPage.tsx",
+        "sha256": "3a01fb7a6082f84357453beccef3d065aafad5b91a49c1f4d88e7383a5c19646"
+      },
+      {
+        "path": "docs/netbird/VERSIONS.md",
+        "sha256": "2396c3b2594b4324335fec8fe4659d170a1a50915c45011f7f047df36ee84140"
+      }
+    ],
+    "conclusion": "Resolved copy now qualifies intended capabilities and unmeasured platform/flow behavior. Native admission and synthetic ledger replay do not establish forwarding, hardware capacity or client kill-switch guarantees."
+  },
+  "follow_up_2": {
+    "reviewed_at": "2026-10-30T03:53:49.106412Z",
+    "source_revision": "e48c6af582a599447e90afc446ca56f5bcd8c5ba",
+    "method": "Compare current source hashes with Follow-up 1 and inspect git diff 125a761..HEAD for changed public text",
+    "sources": [
+      {
+        "path": "README.md",
+        "sha256": "4f81bc254d327c276a19f7d11dea8b0f217809704c1370f4b7db6b3ede9b821e"
+      },
+      {
+        "path": "docs/handover/member-guide.md",
+        "sha256": "904b0d46cc3cea3fab77e719a57a685404e5f12809b9727beb0aed2c8cfa4322"
+      },
+      {
+        "path": "apps/portal/src/i18n/zh-TW.ts",
+        "sha256": "a4bee9d40cd7936efd2ba1c8f44199324d30497a56d113c307624635775f5822"
+      },
+      {
+        "path": "apps/portal/src/i18n/en.ts",
+        "sha256": "514e173e208328586f3a07b963705efab4481196da3ed363c625a917d448f9d5"
+      },
+      {
+        "path": "apps/portal/src/pages/member/MemberDevicesPage.tsx",
+        "sha256": "3a01fb7a6082f84357453beccef3d065aafad5b91a49c1f4d88e7383a5c19646"
+      },
+      {
+        "path": "docs/netbird/VERSIONS.md",
+        "sha256": "2396c3b2594b4324335fec8fe4659d170a1a50915c45011f7f047df36ee84140"
+      }
+    ],
+    "changed_public_text": [
+      "Member guide endpoint count corrected to 44; device admission still automatic",
+      "Portal adds admin update evidence detail labels; member copy unchanged"
+    ],
+    "new_mismatches": [],
+    "physical_acceptance": "needs operator run",
+    "conclusion": "Prior DOC01\u2013DOC13 resolutions remain applicable. This run proves native admission and the isolated physical ledger/grant/audit restore boundary, not member platform kill-switch behavior, serving availability, real node archive recovery, or capacity."
+  },
+  "follow_up_3": {
+    "reviewed_at": "2026-10-30T04:50:26.068612Z",
+    "source_revision": "f7281ec96ead10747e9908bc6a7894a6efd5a46c",
+    "method": "Inspect public text delta from 1773ae4 to f7281ec; preserve previous DOC01-DOC13 review and physical operator gates. No new full UI or platform run.",
+    "sources": [
+      {
+        "path": "README.md",
+        "sha256": "4f81bc254d327c276a19f7d11dea8b0f217809704c1370f4b7db6b3ede9b821e"
+      },
+      {
+        "path": "docs/handover/member-guide.md",
+        "sha256": "904b0d46cc3cea3fab77e719a57a685404e5f12809b9727beb0aed2c8cfa4322"
+      },
+      {
+        "path": "apps/portal/src/i18n/zh-TW.ts",
+        "sha256": "a4bee9d40cd7936efd2ba1c8f44199324d30497a56d113c307624635775f5822"
+      },
+      {
+        "path": "apps/portal/src/i18n/en.ts",
+        "sha256": "514e173e208328586f3a07b963705efab4481196da3ed363c625a917d448f9d5"
+      },
+      {
+        "path": "apps/portal/src/pages/member/MemberDevicesPage.tsx",
+        "sha256": "3a01fb7a6082f84357453beccef3d065aafad5b91a49c1f4d88e7383a5c19646"
+      },
+      {
+        "path": "contracts/openapi.yaml",
+        "sha256": "0894285c536a334fda5869c7b531afc48deb8cd5e975d68896bdacc98cb785c2"
+      }
+    ],
+    "new_mismatches": [
+      "DOC14"
+    ],
+    "physical_acceptance": "needs operator run",
+    "conclusion": "New text continues to qualify unmeasured forwarding, platform and propagation behavior; native authorization is observed here. Contract version reference is stale; no full serving, client platform, or UI-render acceptance is claimed."
+  },
+  "handover_follow_up_3": {
+    "reviewed_at": "2026-10-30T05:20:20.920146Z",
+    "source_revision": "d28ec914b74d54354c88c78cbde667659f69a229",
+    "method": "Read merged PR bodies #108-#133 and verify operator/member claims against source files at the review base; compare DOC01-DOC13 statuses with secops requests.md; resolve DOC14 with a contract-parsing handover check.",
+    "findings_rechecked": 14,
+    "unresolved_documentation_findings": 0,
+    "contract_version": "1.3.0",
+    "operation_count": 44,
+    "sources": [
+      {
+        "path": "README.md",
+        "sha256": "4f81bc254d327c276a19f7d11dea8b0f217809704c1370f4b7db6b3ede9b821e"
+      },
+      {
+        "path": "docs/handover/member-guide.md",
+        "sha256": "904b0d46cc3cea3fab77e719a57a685404e5f12809b9727beb0aed2c8cfa4322"
+      },
+      {
+        "path": "contracts/openapi.yaml",
+        "sha256": "0894285c536a334fda5869c7b531afc48deb8cd5e975d68896bdacc98cb785c2"
+      },
+      {
+        "path": "tests/handover/handover_test.go",
+        "sha256": "0e77db074920114a5fe2b5ded35992dac8e3abb43d89c0bdccd7e3384054fcab"
+      },
+      {
+        "path": "docs/e2e/at/secops/requests.md",
+        "sha256": "bd82b2a5a1bee3e6ab3aa5be8da795aa0f61547310ed63ca21c9446e55be7de2"
+      }
+    ],
+    "physical_acceptance": "needs operator run",
+    "conclusion": "DOC01-DOC13 remain resolved and DOC14 is corrected. The member guide retains platform, forwarding and propagation qualifications. Typed DNS evidence is admin-only. This documentation review makes no new serving, platform, UI or physical acceptance claim."
+  },
+  "follow_up_4": {
+    "reviewed_at": "2026-10-30T06:51:58.202463+00:00",
+    "source_revision": "9b17127c888f94191d759617c99fe1225078a092",
+    "method": "Read public-text delta from f7281ec to current #148; recheck DOC14 with TestHandover_OpenAPIClaims; preserve historical review sections.",
+    "findings_rechecked": 14,
+    "unresolved_documentation_findings": 0,
+    "new_mismatches": [],
+    "resolved_prs": [
+      138
+    ],
+    "sources": [
+      {
+        "path": "README.md",
+        "sha256": "4f81bc254d327c276a19f7d11dea8b0f217809704c1370f4b7db6b3ede9b821e"
+      },
+      {
+        "path": "docs/handover/member-guide.md",
+        "sha256": "904b0d46cc3cea3fab77e719a57a685404e5f12809b9727beb0aed2c8cfa4322"
+      },
+      {
+        "path": "apps/portal/src/i18n/zh-TW.ts",
+        "sha256": "a4bee9d40cd7936efd2ba1c8f44199324d30497a56d113c307624635775f5822"
+      },
+      {
+        "path": "apps/portal/src/i18n/en.ts",
+        "sha256": "514e173e208328586f3a07b963705efab4481196da3ed363c625a917d448f9d5"
+      },
+      {
+        "path": "apps/portal/src/pages/member/MemberDevicesPage.tsx",
+        "sha256": "3a01fb7a6082f84357453beccef3d065aafad5b91a49c1f4d88e7383a5c19646"
+      },
+      {
+        "path": "docs/netbird/VERSIONS.md",
+        "sha256": "2396c3b2594b4324335fec8fe4659d170a1a50915c45011f7f047df36ee84140"
+      },
+      {
+        "path": "contracts/openapi.yaml",
+        "sha256": "0894285c536a334fda5869c7b531afc48deb8cd5e975d68896bdacc98cb785c2"
+      }
+    ],
+    "physical_acceptance": "needs operator run",
+    "conclusion": "DOC01\u2013DOC14 remain resolved. Current README and guide qualify unmeasured flow cutoffs, native platforms, DNS propagation and hardware capacity. Member identity/quota text tracks #134/#139; admin typed DNS evidence is not promised in member views. Publication, native admission and limiter results do not certify traffic or capacity. Current live verdicts are in AT28\u2013AT32 records."
+  },
+  "follow_up_5": {
+    "reviewed_at": "2026-10-30T09:29:11.712304Z",
+    "source_revision": "446b6b0f643586d48859236664800df8c2d1ef64",
+    "method": "Read member-guide changed sections since prior measured main plus existing role/scope/claim sources; retain physical platform qualifications. Compare current measurements once completed.",
+    "resolved_prior_findings": "DOC01\u2013DOC14 remain attributed to their owner fixes; new source texts still correctly qualify real member platforms.",
+    "new_mismatches": [
+      {
+        "id": "DOC15",
+        "owner": "w4-handover and w3-devstack-e2e",
+        "files": [
+          "docs/handover/member-guide.md:121",
+          "docs/handover/member-guide.md:353",
+          "docs/e2e/RUN.md:207"
+        ],
+        "actual": "Current prose still cites missing conntrack or lease refresh as the current serving gate; #153 includes conntrack and this run already proves selected counted forwarding. Historical records remain valid but need explicit historical attribution.",
+        "request": "Link current counted-flow and post-revoke/deadline records, retaining unmeasured platform/clock/transport qualifications.",
+        "status": "documentation change requested"
+      }
+    ],
+    "sources": [
+      {
+        "path": "README.md",
+        "sha256": "4f81bc254d327c276a19f7d11dea8b0f217809704c1370f4b7db6b3ede9b821e"
+      },
+      {
+        "path": "docs/handover/member-guide.md",
+        "sha256": "904b0d46cc3cea3fab77e719a57a685404e5f12809b9727beb0aed2c8cfa4322"
+      },
+      {
+        "path": "apps/portal/src/i18n/zh-TW.ts",
+        "sha256": "a4bee9d40cd7936efd2ba1c8f44199324d30497a56d113c307624635775f5822"
+      },
+      {
+        "path": "apps/portal/src/i18n/en.ts",
+        "sha256": "514e173e208328586f3a07b963705efab4481196da3ed363c625a917d448f9d5"
+      },
+      {
+        "path": "apps/portal/src/pages/member/MemberDevicesPage.tsx",
+        "sha256": "3a01fb7a6082f84357453beccef3d065aafad5b91a49c1f4d88e7383a5c19646"
+      },
+      {
+        "path": "docs/netbird/VERSIONS.md",
+        "sha256": "2396c3b2594b4324335fec8fe4659d170a1a50915c45011f7f047df36ee84140"
+      },
+      {
+        "path": "contracts/openapi.yaml",
+        "sha256": "0894285c536a334fda5869c7b531afc48deb8cd5e975d68896bdacc98cb785c2"
+      },
+      {
+        "path": "docs/e2e/RUN.md",
+        "sha256": "d3c1a2daef8ff801670e10ffbb573467bec66a6ca1692f6e7d66db4fac616d52"
+      }
+    ]
+  },
+  "follow_up_6": {
+    "source_revision": "00e1d0c",
+    "review": "Admission and control diagnostics after #170/#169; no new mixed-traffic or physical certification",
+    "previous": "history/follow-up-5/scope-review.json",
+    "DOC15": {
+      "status": "resolved by handover #163",
+      "evidence": "docs/e2e/RUN.md SECOPS-04 now requires measured counted prerequisites; member-guide attributes earlier blockers historically"
+    },
+    "remaining": "operator physical origins/platforms; no new source-based privilege or workflow",
+    "sources": [
+      {
+        "path": "docs/e2e/RUN.md",
+        "sha256": "d3c1a2daef8ff801670e10ffbb573467bec66a6ca1692f6e7d66db4fac616d52"
+      },
+      {
+        "path": "docs/handover/member-guide.md",
+        "sha256": "904b0d46cc3cea3fab77e719a57a685404e5f12809b9727beb0aed2c8cfa4322"
+      }
+    ]
+  },
+  "handover_follow_up_6": {
+    "reviewed_at": "2026-10-30T22:15:00Z",
+    "base_main_commit": "a8998cdecc02c0984f7435d478a19362a2751728",
+    "reviewed_documents": [
+      {
+        "path": "README.md",
+        "sha256": "4f81bc254d327c276a19f7d11dea8b0f217809704c1370f4b7db6b3ede9b821e"
+      },
+      {
+        "path": "docs/handover/README.md",
+        "sha256": "3402830d6ee2c1565bebf58eb915a35a0a8dfa5bec3ea5e702999965506945e3"
+      },
+      {
+        "path": "docs/handover/deploy.md",
+        "sha256": "b7858eac7ac3430489aa2f70c489e7b7a6fd8aa83903c89ff984f237e89e942f"
+      },
+      {
+        "path": "docs/handover/calibration.md",
+        "sha256": "4e9f3f278fde58188de441b1aea62c69e39c0845baf137716dc5abb94c7c114a"
+      },
+      {
+        "path": "docs/handover/operator-guide.md",
+        "sha256": "061b72db8c6d235d914de357553a15242fca6664f474f0ffdbd537140b122604"
+      },
+      {
+        "path": "docs/handover/member-guide.md",
+        "sha256": "904b0d46cc3cea3fab77e719a57a685404e5f12809b9727beb0aed2c8cfa4322"
+      },
+      {
+        "path": "docs/ops/README.md",
+        "sha256": "4e5e7b78f801d937154b13fd2d86a63ed7ca80b57e78d7fca3e73860892f118c"
+      }
+    ],
+    "doc15_handover_half": {
+      "id": "DOC15",
+      "files": [
+        "docs/handover/member-guide.md:121",
+        "docs/handover/member-guide.md:353"
+      ],
+      "status": "resolved in w4-handover follow-up 6",
+      "resolution": "docs/handover/member-guide.md attributes the prior blocked AT02/AT03/AT04/AT08 records historically to members follow-up 3 (#151) and early devstack follow-up 9 (#153), links the current scoped evidence in security-ops follow-up 5 (#165: counted-flow.json, post-revoke.json, deadlines.json, capacity.json) and devstack follow-up 10 (#170: device-revoke.md, second-exit hook), and preserves the grace, clock, platform, and transport qualifications. docs/e2e/RUN.md:207 remains w3-devstack-e2e's half."
+    }
+  },
+  "follow_up_7": {
+    "reviewed_at": "2026-10-30T22:15:00Z",
+    "application_base": "a8998cd",
+    "scope": "Read public README/member guide/operator guide, changed handover claims, and portal i18n text after #185/#188/#191/#200/#203/#204..#231 (D-065 fleet configuration operator view, contract revision 11, D-067/D-068/D-070/D-071/D-072/D-073/D-074/D-075/D-076/D-078, SECOPS-19, fvpn-agent usage snapshot #225, control follow-up 19/20, whole-ruleset nftables read-back #220, Fair-Use enforcement reach #222, AT30 second half #221, and DOC16 follow-up 5 history pin). Physical platform and candidate-hardware rows stay needs operator run.",
+    "files": [
+      {
+        "path": "README.md",
+        "sha256": "4f81bc254d327c276a19f7d11dea8b0f217809704c1370f4b7db6b3ede9b821e"
+      },
+      {
+        "path": "docs/handover/member-guide.md",
+        "sha256": "904b0d46cc3cea3fab77e719a57a685404e5f12809b9727beb0aed2c8cfa4322"
+      },
+      {
+        "path": "docs/handover/operator-guide.md",
+        "sha256": "061b72db8c6d235d914de357553a15242fca6664f474f0ffdbd537140b122604"
+      },
+      {
+        "path": "docs/handover/calibration.md",
+        "sha256": "4e9f3f278fde58188de441b1aea62c69e39c0845baf137716dc5abb94c7c114a"
+      },
+      {
+        "path": "docs/ops/README.md",
+        "sha256": "4e5e7b78f801d937154b13fd2d86a63ed7ca80b57e78d7fca3e73860892f118c"
+      },
+      {
+        "path": "apps/portal/src/i18n/en.ts",
+        "sha256": "514e173e208328586f3a07b963705efab4481196da3ed363c625a917d448f9d5"
+      },
+      {
+        "path": "apps/portal/src/i18n/zh-TW.ts",
+        "sha256": "a4bee9d40cd7936efd2ba1c8f44199324d30497a56d113c307624635775f5822"
+      }
+    ],
+    "decisions": [
+      "D-065 fleet API and finite-grace preparation are now inputs; only measured signed/counted cutoff is a pass.",
+      "D-066 protected transient credentials are a separate class from ordinary logs/captures/readable files.",
+      "60 native admissions and dev-host numbers cannot certify production hardware or forced relay."
+    ],
+    "evidence": [
+      "capacity.json",
+      "deadlines.json",
+      "limiter.json",
+      "secret-scan.json"
+    ],
+    "new_requests": [
+      {
+        "id": "DOC16",
+        "owner": "w4-handover",
+        "status": "resolved in w4-handover follow-up 8",
+        "resolved_in": "docs/handover/member-guide.md (Part I zh-TW \u00a73.2 and Part II en \u00a73.2); tests/handover/handover_test.go",
+        "file": "docs/handover/member-guide.md",
+        "section": "Measurement status, both languages",
+        "reason": "#180/#188 cites mutable secops counted-flow/deadlines/capacity paths as Follow-up 5 evidence with fixed two-device numbers; those root records change each run. Pin the cited #165 values to history/follow-up-5/ (or the exact commit). Keep guest wall-clock rollback distinct from component clock tests."
+      }
+    ]
+  },
+  "follow_up_8": {
+    "reviewed_at": "2026-10-30T22:10:16Z",
+    "application_base": "6b98422",
+    "source_revision": "6350853010054cf656465e5e677c60dc29553cb5",
+    "scope": "AT30 second half: live central database restore to T0 while node, payment provider, and NetBird hold T1 state; measured fail-safe negative, 5-step fvpn-usage-admin protocol, retained-node replay, provider reconciliation, and peer/revocation reconciliation.",
+    "evidence": [
+      "restore-reconcile.json",
+      "restore-reconcile.md",
+      "AT30.json",
+      "AT30.md"
+    ],
+    "new_requests": [
+      {
+        "id": "SECOPS-18",
+        "owner": "w2-members",
+        "status": "open",
+        "file": "internal/devices/worker.go",
+        "section": "SyncDevice (lines 72-93) / members.reconcile",
+        "reason": "After restoring central DB to T0, a device revoked in T0..T1 (peerM2D2) has member_devices.status='authorized' in T0 DB while NetBird N1 has withdrawn it from fvpn-paid-<group_id>. SyncDevice treats T0 status='authorized' as authoritative and calls SetAuthorization(peer, true), silently re-authorizing the revoked peer in NetBird and resuming counted member traffic."
+      }
+    ]
+  },
+  "follow_up_9": {
+    "reviewed_at": "2026-10-31T01:46:57Z",
+    "application_base": "205633f",
+    "source_revision": "205633f0de8b3befbd563a092b856c0bc089e9c9",
+    "scope": "AT30 second half re-measured on #231 with D-076 restore authorization fence (#227), SECOPS-19 live UsageOutboxStatus in observations (#226), and read-only fvpn-agent usage snapshot (#225); AT30 passed. Scope review pins refreshed for own records only.",
+    "evidence": [
+      "restore-reconcile.json",
+      "restore-reconcile.md",
+      "AT30.json",
+      "AT30.md"
+    ],
+    "records": [
+      {
+        "path": "docs/e2e/at/secops/restore-reconcile.json",
+        "sha256": "df7ba138d937846c6168c063c01152be78c44f0a246ae63279b2e55a23b9a053"
+      },
+      {
+        "path": "docs/e2e/at/secops/restore-reconcile.md",
+        "sha256": "32df96204bd650920343864421f9d2ca3d025c51ea364f25b6a41bb6fda0922a"
+      },
+      {
+        "path": "docs/e2e/at/secops/AT30.json",
+        "sha256": "fbd072fed76c83eae424c05bc6f1f6dba7912e21aea2c1b18daf9339d4153779"
+      },
+      {
+        "path": "docs/e2e/at/secops/AT30.md",
+        "sha256": "32df96204bd650920343864421f9d2ca3d025c51ea364f25b6a41bb6fda0922a"
+      },
+      {
+        "path": "docs/e2e/at/secops/followup9-live.json",
+        "sha256": "dcf634111def2bbc35f287e786c1bca312277debe3b84769fd13b9448cec6271"
+      },
+      {
+        "path": "docs/e2e/at/secops/followup9-run.json",
+        "sha256": "2ed5272633b342cddaeef691615b5b18072d12db7e662b0a08f446f0dc4fd06d"
+      },
+      {
+        "path": "docs/e2e/at/secops/followup9-verdict.json",
+        "sha256": "0b0b50c47c7f57c7f3b273514357e338954ed6354eda982ec6003b3406b8e37e"
+      },
+      {
+        "path": "docs/e2e/at/secops/live.json",
+        "sha256": "97c3743cfd41efd42b24b07b06807dec82950af0ebb496078aa6ca54ad652461"
+      },
+      {
+        "path": "docs/e2e/at/secops/cleanup.json",
+        "sha256": "70fbacd9950c28cd54051056a829e241c56fef219ce6b9d5eef473b046ecb164"
+      },
+      {
+        "path": "docs/e2e/at/secops/dependencies.json",
+        "sha256": "4cfb3be3e7403a85271fcef28bea57f4eb8527afced7ca75d07b110ffd239a9d"
+      },
+      {
+        "path": "docs/e2e/at/secops/requests.md",
+        "sha256": "bd82b2a5a1bee3e6ab3aa5be8da795aa0f61547310ed63ca21c9446e55be7de2"
+      },
+      {
+        "path": "docs/e2e/at/secops/summary.md",
+        "sha256": "32df96204bd650920343864421f9d2ca3d025c51ea364f25b6a41bb6fda0922a"
+      },
+      {
+        "path": "docs/e2e/at/secops/RUN.md",
+        "sha256": "5d7f78b6988639ae361001f44b496aba265d8f78846c0c4860409420e7ac9ffb"
+      }
+    ],
+    "closed_requests": [
+      "SECOPS-05",
+      "SECOPS-18",
+      "SECOPS-19"
+    ],
+    "new_requests": [
+      "SECOPS-20",
+      "SECOPS-21"
+    ]
+  },
+  "follow_up_10": {
+    "reviewed_at": "2026-10-31T04:23:47Z",
+    "source_revision": "319c5259344347e7eef50eb5becb2645785d1047",
+    "scope": "Own Follow-up 10 records only; historical pins remain tied to their historical records. No broader AT or hardware promotion.",
+    "records": [
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/AT28.json",
+        "sha256": "0ffbb027a2f5a7b825fe8f147803a949d21ddc7e70ae0797afac68919e21f632"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/AT28.md",
+        "sha256": "28c956e495111706e2372359e9e240344ae1967ad4598f31f470344d05ca3cdf"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/AT29.json",
+        "sha256": "f140cff3bcb68a7634b90d6a1b7d233ec3324fcb58615d8a4225bbb2650074c6"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/AT29.md",
+        "sha256": "828cc5b73bc47a52afde75ae590308057292be3e8588b07df8f79875296c18fa"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/AT30.json",
+        "sha256": "fbd072fed76c83eae424c05bc6f1f6dba7912e21aea2c1b18daf9339d4153779"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/AT30.md",
+        "sha256": "32df96204bd650920343864421f9d2ca3d025c51ea364f25b6a41bb6fda0922a"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/AT31.json",
+        "sha256": "4fc0fab7abf8c116df38a03b70115fe1a729e09fce3f1edbd1bc24378010ce11"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/AT31.md",
+        "sha256": "b31629f6407694bf25f0538d5eeecf78cf2254eeec225865528aafb094e59b4d"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/AT32.json",
+        "sha256": "a6c613bc4b096d61815ce13fb9e9f17557278f29642d325ba5d911cf1a2a7ab3"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/AT32.md",
+        "sha256": "d653c872db4654bb9955ba123c025e2957483b3c59aa9e6849db37d57e9c57ef"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/D-077.json",
+        "sha256": "5a7b380105decb6bb4dcbb80033bc0758c11c46fab43a26dbab877b69e4b7751"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/README.md",
+        "sha256": "378954f252db25060c2f6604e071cc50acc4ec60535eb0275e0f677012bf0832"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/RUN.md",
+        "sha256": "5d7f78b6988639ae361001f44b496aba265d8f78846c0c4860409420e7ac9ffb"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/SECOPS-16.json",
+        "sha256": "82755a36d47f9483eeb8560fbb9fb1493a84c71b850fd2757fd1d38ad73a5806"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/SECOPS-17.json",
+        "sha256": "d6687a7d35ba0ba5ff7c6214a891fec7a25c2635bbfd5c160d8d39599bd7523a"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/SECOPS-18.json",
+        "sha256": "bb6389028780d10be33e5d9b63548e15f0b63dd492d06261b5d3d6d0bd1291cf"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/SECOPS-19.json",
+        "sha256": "d373e94fc45db9fd61d751e709f4efbafa240a9e72056256b6612e1816ca97df"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/SECOPS-20.json",
+        "sha256": "d2f46f3ffff3a674db2aaea9c423e7ae56d450ae2783e77b90286657a8a25d2f"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/SECOPS-21.json",
+        "sha256": "baacd10857d584942e839b1f3a9f284888d98d2d4909590f8d263dcb897aed67"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/cleanup.json",
+        "sha256": "70fbacd9950c28cd54051056a829e241c56fef219ce6b9d5eef473b046ecb164"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/dependencies.json",
+        "sha256": "4cfb3be3e7403a85271fcef28bea57f4eb8527afced7ca75d07b110ffd239a9d"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/followup10-attempt1-live.json",
+        "sha256": "20444597edfc106f959a55154c2d62c706a07a4316df74e637c79321e2fb8134"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/followup10-attempt1-run.json",
+        "sha256": "e86e0e1c8b6d696be520f145f12eb357f4af112598d0ed385e0b3aebfd43df2e"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/followup10-attempt1-verdict.json",
+        "sha256": "04037e172ece9f72ac1c4eed629bf6517dc789728f154408fc09962f1cb1c995"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/followup10-attempts.json",
+        "sha256": "e697ccebb1f54603d1a2f3964f72c978fe32321d523ca9456a625aee2f9f0404"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/followup10-live.json",
+        "sha256": "bc4d3c87a76a102d6671e0cd52e8aebc660e6d0a8f7c165ec18ccbbffb901f8e"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/followup10-run.json",
+        "sha256": "dc1821f575454b804b175130e62cddac9e30a9acd789aab17667a7108542c8d0"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/followup10-verdict.json",
+        "sha256": "7103060bbc89d7410c5dda5d923ac1d5fe17e9248abc1f0e3a27e559746c1935"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/live.json",
+        "sha256": "97c3743cfd41efd42b24b07b06807dec82950af0ebb496078aa6ca54ad652461"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/requests.md",
+        "sha256": "a6ec7a05049a121929a30214bb77909cf698e07ea22f627fb901716436c8dbc3"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/restore-reconcile.json",
+        "sha256": "df7ba138d937846c6168c063c01152be78c44f0a246ae63279b2e55a23b9a053"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/restore-reconcile.md",
+        "sha256": "32df96204bd650920343864421f9d2ca3d025c51ea364f25b6a41bb6fda0922a"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/secret-scan.json",
+        "sha256": "82755a36d47f9483eeb8560fbb9fb1493a84c71b850fd2757fd1d38ad73a5806"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/secret-scan.md",
+        "sha256": "3433cb1e4327a02d56f29bd00d7137da6a4733e4e740abe402309cbb441bb184"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/summary.md",
+        "sha256": "32df96204bd650920343864421f9d2ca3d025c51ea364f25b6a41bb6fda0922a"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/validation.json",
+        "sha256": "5296b1e81d40fdec3fb0df056bd06f3c5083a8b7dcbfedcb17f7cfd1d567a774"
+      }
+    ],
+    "requests": {
+      "SECOPS-17": "closed",
+      "SECOPS-18": "closed",
+      "SECOPS-19": "closed",
+      "SECOPS-20": "closed",
+      "SECOPS-21": "open",
+      "SECOPS-16": "closed"
+    }
+  },
+  "handover_follow_up_13": {
+    "reviewed_at": "2026-10-31T03:44:42.187567Z",
+    "base_main_commit": "d9e28f895a62aa3eb2c18ab9a647c7bdde27a348",
+    "scope": "D-077/D-081 restore re-authorization, SECOPS-19 projection and migration 00189, SECOPS-21 generation floor (#245), browser calibration (#233), usage-agent pure reads (#232), installer (#239), D-079, r14/r15 archives and dated acceptance evidence. No new live acceptance claimed.",
+    "reviewed_documents": [
+      {
+        "path": "docs/handover/00-index.md",
+        "sha256": "8931511fcb865516a692935237b33a1f880bcb7846eeca15255db4414ef4f0a6"
+      },
+      {
+        "path": "docs/handover/11-database-and-retention.md",
+        "sha256": "51aa9fd3d62b55131c9984ad954e590c110790a8bc0a16d828c2c213764073bf"
+      },
+      {
+        "path": "docs/handover/README.md",
+        "sha256": "3402830d6ee2c1565bebf58eb915a35a0a8dfa5bec3ea5e702999965506945e3"
+      },
+      {
+        "path": "docs/handover/calibration.md",
+        "sha256": "4e9f3f278fde58188de441b1aea62c69e39c0845baf137716dc5abb94c7c114a"
+      },
+      {
+        "path": "docs/handover/deploy.md",
+        "sha256": "b7858eac7ac3430489aa2f70c489e7b7a6fd8aa83903c89ff984f237e89e942f"
+      },
+      {
+        "path": "docs/handover/member-guide.md",
+        "sha256": "904b0d46cc3cea3fab77e719a57a685404e5f12809b9727beb0aed2c8cfa4322"
+      },
+      {
+        "path": "docs/handover/operator-guide.md",
+        "sha256": "061b72db8c6d235d914de357553a15242fca6664f474f0ffdbd537140b122604"
+      },
+      {
+        "path": "docs/handover/restore-drill.md",
+        "sha256": "09c72c781de81da4761f3a5c06dd282b01286d6771e78599c70c00b63fc35c23"
+      },
+      {
+        "path": "docs/ops/README.md",
+        "sha256": "4e5e7b78f801d937154b13fd2d86a63ed7ca80b57e78d7fca3e73860892f118c"
+      },
+      {
+        "path": "docs/reviews/README.md",
+        "sha256": "4ece7356ef089a719e4fa5b70a0c185ca3c9920b57aadbba993498cc3b31be95"
+      },
+      {
+        "path": "docs/reviews/r13-r12-fixes-review.md",
+        "sha256": "7c7041cff51c69e90225bd3ae8222c73961ce35ee6d37135901df08c59e914e4"
+      },
+      {
+        "path": "docs/reviews/r14-d067-d070-review.md",
+        "sha256": "56a6fb8e36d0564accd73712ef1e49331402c3e1f9479955015bb18dd7493416"
+      },
+      {
+        "path": "docs/reviews/r15-d072-d075-review.md",
+        "sha256": "d2d59bd80136f5a45b75f3f9c25a6baecb6f44a9494514cb970f9e32766a2992"
+      }
+    ]
+  },
+  "handover_follow_up_14": {
+    "reviewed_at": "2026-10-31T06:11:58.123389Z",
+    "base_main_commit": "c6e3eca92d3813aeec4a4c212b204fd32648ca5a",
+    "scope": "Revision 13 producer/consumer boundaries; D-084 clamp; D-085/D-087/D-090; D-083/D-078; D-089 seed and pending acceptance; D-091/D-095/D-099; D-093/D-097/D-098/D-100; r15 closures and dated owner measurements. No new live acceptance run.",
+    "reviewed_documents": [
+      {
+        "path": "docs/handover/00-index.md",
+        "sha256": "8931511fcb865516a692935237b33a1f880bcb7846eeca15255db4414ef4f0a6"
+      },
+      {
+        "path": "docs/handover/11-database-and-retention.md",
+        "sha256": "51aa9fd3d62b55131c9984ad954e590c110790a8bc0a16d828c2c213764073bf"
+      },
+      {
+        "path": "docs/handover/README.md",
+        "sha256": "3402830d6ee2c1565bebf58eb915a35a0a8dfa5bec3ea5e702999965506945e3"
+      },
+      {
+        "path": "docs/handover/calibration.md",
+        "sha256": "4e9f3f278fde58188de441b1aea62c69e39c0845baf137716dc5abb94c7c114a"
+      },
+      {
+        "path": "docs/handover/deploy.md",
+        "sha256": "b7858eac7ac3430489aa2f70c489e7b7a6fd8aa83903c89ff984f237e89e942f"
+      },
+      {
+        "path": "docs/handover/member-guide.md",
+        "sha256": "904b0d46cc3cea3fab77e719a57a685404e5f12809b9727beb0aed2c8cfa4322"
+      },
+      {
+        "path": "docs/handover/operator-guide.md",
+        "sha256": "061b72db8c6d235d914de357553a15242fca6664f474f0ffdbd537140b122604"
+      },
+      {
+        "path": "docs/handover/restore-drill.md",
+        "sha256": "09c72c781de81da4761f3a5c06dd282b01286d6771e78599c70c00b63fc35c23"
+      },
+      {
+        "path": "docs/ops/README.md",
+        "sha256": "4e5e7b78f801d937154b13fd2d86a63ed7ca80b57e78d7fca3e73860892f118c"
+      },
+      {
+        "path": "docs/reviews/README.md",
+        "sha256": "4ece7356ef089a719e4fa5b70a0c185ca3c9920b57aadbba993498cc3b31be95"
+      },
+      {
+        "path": "docs/reviews/r15-d072-d075-review.md",
+        "sha256": "d2d59bd80136f5a45b75f3f9c25a6baecb6f44a9494514cb970f9e32766a2992"
+      }
+    ]
+  },
+  "follow_up_11": {
+    "reviewed_at": "2026-10-31T08:09:15Z",
+    "scope": "Scoped established transports, bounded relay and restore regression; every changed live document pinned; archived snapshots immutable. scope-review.json excludes its own recursive hash.",
+    "records": [
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-11/AT29.json",
+        "sha256": "f140cff3bcb68a7634b90d6a1b7d233ec3324fcb58615d8a4225bbb2650074c6"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-11/AT29.md",
+        "sha256": "828cc5b73bc47a52afde75ae590308057292be3e8588b07df8f79875296c18fa"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-11/AT30.json",
+        "sha256": "fbd072fed76c83eae424c05bc6f1f6dba7912e21aea2c1b18daf9339d4153779"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-11/AT30.md",
+        "sha256": "32df96204bd650920343864421f9d2ca3d025c51ea364f25b6a41bb6fda0922a"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-11/AT31.json",
+        "sha256": "4fc0fab7abf8c116df38a03b70115fe1a729e09fce3f1edbd1bc24378010ce11"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-11/AT31.md",
+        "sha256": "b31629f6407694bf25f0538d5eeecf78cf2254eeec225865528aafb094e59b4d"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-11/SECOPS-21.json",
+        "sha256": "baacd10857d584942e839b1f3a9f284888d98d2d4909590f8d263dcb897aed67"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-11/restore-reconcile.json",
+        "sha256": "df7ba138d937846c6168c063c01152be78c44f0a246ae63279b2e55a23b9a053"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-11/restore-reconcile.md",
+        "sha256": "32df96204bd650920343864421f9d2ca3d025c51ea364f25b6a41bb6fda0922a"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-11/summary.md",
+        "sha256": "32df96204bd650920343864421f9d2ca3d025c51ea364f25b6a41bb6fda0922a"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-11/README.md",
+        "sha256": "378954f252db25060c2f6604e071cc50acc4ec60535eb0275e0f677012bf0832"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-11/RUN.md",
+        "sha256": "5d7f78b6988639ae361001f44b496aba265d8f78846c0c4860409420e7ac9ffb"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-11/requests.md",
+        "sha256": "bd82b2a5a1bee3e6ab3aa5be8da795aa0f61547310ed63ca21c9446e55be7de2"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-11/2026-10-31-follow-up-11-handover.md",
+        "sha256": "2eac1990c49bc45004e3d564c5c00b5d74c3f62018319969a405bd09642cd191"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-11/validation.json",
+        "sha256": "5296b1e81d40fdec3fb0df056bd06f3c5083a8b7dcbfedcb17f7cfd1d567a774"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/index.json",
+        "sha256": "20dfed60425e5e92ec20f823c198b6631767afdc5dacbf204cef87ca05e5a257"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/README.md",
+        "sha256": "2d0b5bdd6c2a83c86bc7d8fc1ebf1c9e6e905f6ebaf7197a960811bb146f24b2"
+      }
+    ]
+  },
+  "follow_up_12": {
+    "reviewed_at": "2026-10-31T09:25:47Z",
+    "scope": "Scoped established transports, bounded relay and restore regression; every changed live document pinned; archived snapshots immutable. scope-review.json excludes its own recursive hash.",
+    "records": [
+      {
+        "path": "docs/e2e/at/secops/AT29.json",
+        "sha256": "43def1ade8a6fd846e02bad607036deef27db2c183f6095acf16cfd71ab3ecd4"
+      },
+      {
+        "path": "docs/e2e/at/secops/AT29.md",
+        "sha256": "0220d7375b70ab5e685987f438f9eb6fa4020cac201cc2e977c19d42f9fae2ae"
+      },
+      {
+        "path": "docs/e2e/at/secops/AT30.json",
+        "sha256": "fcac5bfb6df5848f96e9e4ef62dc5d6b7a1e472277cc26676e060113083fc7a6"
+      },
+      {
+        "path": "docs/e2e/at/secops/AT30.md",
+        "sha256": "20589ef24428e15fe431f065be7c9bc19636cf139e45614aa3cf22b215014584"
+      },
+      {
+        "path": "docs/e2e/at/secops/AT31.json",
+        "sha256": "00895a135743f6de1b842577b237f15288a074e779c5647bd51b45910418ac99"
+      },
+      {
+        "path": "docs/e2e/at/secops/AT31.md",
+        "sha256": "3a37a35c98fa1e17fa2ac8e9b5f9b9381bbb469a5fa6e60acbb3ed1a3cde5146"
+      },
+      {
+        "path": "docs/e2e/at/secops/SECOPS-21.json",
+        "sha256": "c2cc2166a9d6e0a2ca7be9bfc8ec5e8b102eee4f5cd4d7411166a70ba4bd1129"
+      },
+      {
+        "path": "docs/e2e/at/secops/restore-reconcile.json",
+        "sha256": "6d98d28e669e5830951d886348ce69bb02654d87128fbf96a6cb3159825950b3"
+      },
+      {
+        "path": "docs/e2e/at/secops/restore-reconcile.md",
+        "sha256": "20589ef24428e15fe431f065be7c9bc19636cf139e45614aa3cf22b215014584"
+      },
+      {
+        "path": "docs/e2e/at/secops/summary.md",
+        "sha256": "20589ef24428e15fe431f065be7c9bc19636cf139e45614aa3cf22b215014584"
+      },
+      {
+        "path": "docs/e2e/at/secops/README.md",
+        "sha256": "6a4b9a6818f2db2b9d6dc559374347c4c0c1d903afcc794f4597d3726574c25f"
+      },
+      {
+        "path": "docs/e2e/at/secops/RUN.md",
+        "sha256": "f32de04f41f345e16e803466f1106532982def1c739d75a37b0cc1c350649338"
+      },
+      {
+        "path": "docs/e2e/at/secops/requests.md",
+        "sha256": "b7b2d922b1b2a48f80a8afdc514d77b78105914b0b775e7bf43217f2e54fbf3b"
+      },
+      {
+        "path": "docs/e2e/at/secops/live.json",
+        "sha256": "2fda5545545817a77d910a8be732cba977cb1d75b1411fd39a3fde33529997ca"
+      },
+      {
+        "path": "docs/e2e/at/secops/cleanup.json",
+        "sha256": "af055acebed32b6e782f7e86b43eaa48abc992223aff5358b08e690490cf90c3"
+      },
+      {
+        "path": "docs/e2e/at/secops/2026-10-31-follow-up-12-handover.md",
+        "sha256": "18f357bc5d993168a450eb98d722ff3374085315d5bfb6ca2b6a3f04d4654991"
+      },
+      {
+        "path": "docs/e2e/at/secops/followup12-transports-live.json",
+        "sha256": "39aa566d92e0613c48c1f1a4f07406673774b1b6d1904f89ab9cedc755d0702f"
+      },
+      {
+        "path": "docs/e2e/at/secops/followup12-transports-run.json",
+        "sha256": "8f312496a17fc0d8e0f7ed699013b8976d5988e18918e88d3ca48f6cf94e0e0c"
+      },
+      {
+        "path": "docs/e2e/at/secops/followup12-restore-live.json",
+        "sha256": "9d6d04f67334223e8961ad3962df5952dc20343d2685a1fa544cdbe5b5fe0117"
+      },
+      {
+        "path": "docs/e2e/at/secops/followup12-restore-run.json",
+        "sha256": "e3fec85639847bebb9f4fdadc17e837ae8570b97c5b1daaa038aefa1661f9329"
+      },
+      {
+        "path": "docs/e2e/at/secops/followup12-verdict.json",
+        "sha256": "665c0a929e4033097b03eaf358fdf8f9d6dfa9627b4149ada1753f850f09fc58"
+      },
+      {
+        "path": "docs/e2e/at/secops/validation.json",
+        "sha256": "aa6019801c00fc0bc997f478663a6f487591138ce5eecddd056e0a99537400b2"
+      },
+      {
+        "path": "docs/e2e/at/secops/followup12-lab-preflight.json",
+        "sha256": "d21702a791f10b63bb96f2bbfe59b867120cf79a1c7d7dc54365a702bfa29b40"
+      },
+      {
+        "path": "docs/e2e/at/secops/followup12-prerequisites.json",
+        "sha256": "f45630751542f6796b72e5137e18b3a08e215d0dcf43e364f35aec4988e05144"
+      },
+      {
+        "path": "docs/e2e/at/secops/followup12-attempts.json",
+        "sha256": "a5b62511fd5b0a086184461e4129e19e064f34cea5b014a8aa1299adce7056bb"
+      },
+      {
+        "path": "docs/e2e/at/secops/followup12-transports-attempt1-live.json",
+        "sha256": "6b1abf18047295fa14b5d66b0ad6abb46a0417a611e6624f1bbae866f0d916e7"
+      },
+      {
+        "path": "docs/e2e/at/secops/followup12-transports-attempt1-run.json",
+        "sha256": "072f24242a51b459f0de5329b9b14a6ee3f270b332da673c8854c74dcc3dba0f"
+      },
+      {
+        "path": "docs/e2e/at/secops/followup12-transports-attempt2-live.json",
+        "sha256": "3d8b52d4ed99763738cdf0bdaefdfcec60f48b450a137c228f68c451f68b8cc3"
+      },
+      {
+        "path": "docs/e2e/at/secops/followup12-transports-attempt2-run.json",
+        "sha256": "7e06ae56ba0e33a1a2685f20200668691aa86a43e29a256f64f0d98bb7953323"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/index.json",
+        "sha256": "20dfed60425e5e92ec20f823c198b6631767afdc5dacbf204cef87ca05e5a257"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/README.md",
+        "sha256": "2d0b5bdd6c2a83c86bc7d8fc1ebf1c9e6e905f6ebaf7197a960811bb146f24b2"
+      }
+    ]
+  },
+  "handover_follow_up_15": {
+    "reviewed_at": "2026-10-31T07:48:41.417628+00:00",
+    "base_main_commit": "b79ee236821bbf8d2c47c43c1146b9be9006e26f",
+    "scope": "D-098 final archives and dated acceptance; D-099 clarified, D-101 through D-111; D-109 pin ownership; byte-identical r16 report and owner dispositions. No new live acceptance run. Resumed through #290: enrollment follow-up 6 immutable run and follow-up 5 archive, revision 14 contracts, D-104 renderer delivery; consumers and assembled AT13 remain open.",
+    "reviewed_documents": [
+      {
+        "path": "docs/handover/00-index.md",
+        "sha256": "8931511fcb865516a692935237b33a1f880bcb7846eeca15255db4414ef4f0a6"
+      },
+      {
+        "path": "docs/handover/11-database-and-retention.md",
+        "sha256": "51aa9fd3d62b55131c9984ad954e590c110790a8bc0a16d828c2c213764073bf"
+      },
+      {
+        "path": "docs/handover/README.md",
+        "sha256": "3402830d6ee2c1565bebf58eb915a35a0a8dfa5bec3ea5e702999965506945e3"
+      },
+      {
+        "path": "docs/handover/deploy.md",
+        "sha256": "b7858eac7ac3430489aa2f70c489e7b7a6fd8aa83903c89ff984f237e89e942f"
+      },
+      {
+        "path": "docs/handover/operator-guide.md",
+        "sha256": "061b72db8c6d235d914de357553a15242fca6664f474f0ffdbd537140b122604"
+      },
+      {
+        "path": "docs/handover/restore-drill.md",
+        "sha256": "09c72c781de81da4761f3a5c06dd282b01286d6771e78599c70c00b63fc35c23"
+      },
+      {
+        "path": "docs/ops/README.md",
+        "sha256": "4e5e7b78f801d937154b13fd2d86a63ed7ca80b57e78d7fca3e73860892f118c"
+      },
+      {
+        "path": "docs/reviews/README.md",
+        "sha256": "4ece7356ef089a719e4fa5b70a0c185ca3c9920b57aadbba993498cc3b31be95"
+      },
+      {
+        "path": "docs/reviews/r15-d072-d075-review.md",
+        "sha256": "d2d59bd80136f5a45b75f3f9c25a6baecb6f44a9494514cb970f9e32766a2992"
+      },
+      {
+        "path": "docs/reviews/r16-rev13-d089-d099-review.md",
+        "sha256": "aa1e3fd95905d85975a43ecf304673d993d5fbbfc9817110635fc183c5f081fb"
+      }
+    ]
+  },
+  "contract_revision_14": {
+    "revision": 14,
+    "info_version": "1.10.0",
+    "operations": 50,
+    "implemented_operations": 49,
+    "pending_handler": "revokeMemberGrant",
+    "scope": "Contract-only pins; D-105 and D-106 adoption and AT29 withdrawal remain with runtime/acceptance owners. No new live acceptance run.",
+    "updated_documents": [
+      {
+        "path": "contracts/openapi.yaml",
+        "sha256": "0894285c536a334fda5869c7b531afc48deb8cd5e975d68896bdacc98cb785c2"
+      },
+      {
+        "path": "docs/contracts/README.md",
+        "sha256": "ea401ef899594d5824fe15f4b9ec155f89e629f403b40191878cfc94d064ba6b"
+      },
+      {
+        "path": "docs/handover/README.md",
+        "sha256": "3402830d6ee2c1565bebf58eb915a35a0a8dfa5bec3ea5e702999965506945e3"
+      },
+      {
+        "path": "docs/handover/operator-guide.md",
+        "sha256": "061b72db8c6d235d914de357553a15242fca6664f474f0ffdbd537140b122604"
+      },
+      {
+        "path": "docs/handover/member-guide.md",
+        "sha256": "904b0d46cc3cea3fab77e719a57a685404e5f12809b9727beb0aed2c8cfa4322"
+      },
+      {
+        "path": "docs/ops/README.md",
+        "sha256": "4e5e7b78f801d937154b13fd2d86a63ed7ca80b57e78d7fca3e73860892f118c"
+      }
+    ]
+  }
+}
