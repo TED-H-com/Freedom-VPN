@@ -35,6 +35,7 @@ type Input struct {
 	HostV4         []netip.Prefix
 	HostReserveBPS uint64
 	Revoked        bool
+	IdentityFrozen bool
 	Enrolled       bool
 	BaselineOK     bool
 	StorageOK      bool
@@ -121,7 +122,7 @@ func Decide(in Input) Decision {
 		}
 		reasons = append(reasons, r)
 	}
-	if !in.Enrolled || in.Revoked {
+	if !in.Enrolled || in.Revoked || in.IdentityFrozen {
 		add(api.ForwardingBlockReasonIdentityInvalid)
 	}
 	if in.BootstrapLost {
@@ -255,7 +256,7 @@ func Decide(in Input) Decision {
 		d.Model = enforce.Model{}
 		d.PolicyExpires = 0
 	}
-	if in.Desired != nil && in.DesiredOK && in.BaselineOK && in.Enrolled && !in.Revoked && !in.BootstrapLost && in.ApplyError == nil && !in.DependencyMissing {
+	if in.Desired != nil && in.DesiredOK && in.BaselineOK && in.Enrolled && !in.Revoked && !in.IdentityFrozen && !in.BootstrapLost && in.ApplyError == nil && !in.DependencyMissing {
 		d.Applied = uint64(in.Desired.ConfigGeneration)
 	}
 	evaluateServing := in.Desired != nil && published && in.DesiredOK && len(in.Desired.DeviceBindings) > 0
@@ -265,6 +266,9 @@ func Decide(in Input) Decision {
 	d.Provisioning = provisioningOf(in, d.Applied > 0)
 	if in.ApplyError != nil {
 		d.Errors = append(d.Errors, *in.ApplyError)
+	}
+	if in.IdentityFrozen {
+		d.Errors = append(d.Errors, api.NodeError{Code: api.ErrorCodeHEALTHCHECKFAILED, Message: "identity_frozen", Stage: "identity", ObservedAt: at})
 	}
 	if in.ConntrackBlocked {
 		msg := in.ConntrackDetail
@@ -461,7 +465,7 @@ func safetyOf(in Input, releaseChecked, releaseOK bool) api.SafetyStatus {
 	policyDeadline := in.Desired != nil && in.DesiredExpired
 	leaseDeadline := !in.LeaseFresh || in.Lease == nil || in.LeaseMonoSent <= 0
 
-	hard := !in.BaselineOK || !in.StorageOK || in.UsagePersist || in.UsageDisk ||
+	hard := in.IdentityFrozen || !in.BaselineOK || !in.StorageOK || in.UsagePersist || in.UsageDisk ||
 		in.Backend != "kernel" || in.MeterFailed || in.ApplyError != nil || in.DependencyMissing ||
 		in.ConntrackBlocked
 	if releaseChecked && !releaseOK {

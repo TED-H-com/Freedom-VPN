@@ -107,7 +107,7 @@ func (e *Engine) syncLease(ctx context.Context) error {
 		NodeIncarnationId:       e.incID,
 		RenewalRequestId:        reqID,
 	}
-	if e.appliedGen > 0 {
+	if !e.identityFrozen && e.appliedGen > 0 {
 		req.AppliedConfigGeneration = presence.NewNullableWithValue(decstr.U64(e.appliedGen))
 	}
 	if e.lease != nil && e.lease.LeaseId != uuid.Nil {
@@ -141,7 +141,7 @@ func (e *Engine) syncLease(ctx context.Context) error {
 }
 
 func (e *Engine) needRenew() bool {
-	if e.leaseRetryAt > 0 || !e.leaseFresh || e.lease == nil || e.leaseMono <= 0 || !e.anchorOK || (e.applyError == nil && e.leaseBehindApplied()) {
+	if e.leaseRetryAt > 0 || !e.leaseFresh || e.lease == nil || e.leaseMono <= 0 || !e.anchorOK || (!e.identityFrozen && e.applyError == nil && e.leaseBehindApplied()) {
 		return true
 	}
 	// D-067 bounds every grant-less renewal, including an empty lease
@@ -159,7 +159,7 @@ func (e *Engine) needRenew() bool {
 }
 
 func (e *Engine) leaseGrantless() bool {
-	return e.leaseFresh && e.lease != nil && len(e.lease.Members) == 0
+	return e.leaseFresh && e.lease != nil && (e.identityFrozen || len(e.lease.Members) == 0)
 }
 
 // provisionalRenewCap is the longest gap between grant-less renewals.
@@ -227,7 +227,7 @@ func (e *Engine) leaseBehindApplied() bool {
 // decision already computed: forwarding stays off, and the reason is not
 // lease_expired.
 func (e *Engine) renewAppliedLease(ctx context.Context) error {
-	if e.applyError != nil || e.dependencyMissing || !e.leaseBehindApplied() {
+	if e.identityFrozen || e.applyError != nil || e.dependencyMissing || !e.leaseBehindApplied() {
 		return nil
 	}
 	if err := e.syncLease(ctx); err != nil && ctx.Err() != nil {

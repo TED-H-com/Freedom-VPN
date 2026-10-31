@@ -51,7 +51,7 @@ func (e *Engine) report(ctx context.Context, at time.Time) (api.ObservationRepor
 	appliedGen := presence.NewNullNullable[decstr.U64]()
 	appliedBind := presence.NewNullNullable[decstr.U64]()
 	appliedPol := presence.NewNullNullable[api.PolicyRefs]()
-	if e.appliedGen > 0 && e.desired != nil {
+	if !e.identityFrozen && e.appliedGen > 0 && e.desired != nil {
 		appliedGen = presence.NewNullableWithValue(decstr.U64(e.appliedGen))
 		appliedBind = presence.NewNullableWithValue(e.desired.BindingRevision)
 		appliedPol = presence.NewNullableWithValue(e.desired.PolicyRefs)
@@ -114,6 +114,7 @@ func (e *Engine) report(ctx context.Context, at time.Time) (api.ObservationRepor
 	rep.Netbird.Backend = backend
 	rep.Netbird.PeerId = presence.NewNullNullable[string]()
 	rep.Netbird.Version = presence.NewNullNullable[string]()
+	e.attachContainment(&rep, at)
 	e.attachUsage(ctx, &rep)
 	e.attachUpdate(ctx, &rep)
 	if e.dnsEv != nil {
@@ -222,8 +223,15 @@ func (e *Engine) flush(ctx context.Context) error {
 			_ = e.store.MarkConflict(ctx, item.ReportID)
 			continue
 		}
-		_, err := e.client.Observe(ctx, item.ReportID, rep)
+		if e.identityFrozen && (rep.MemberForwardingEnabled || !rep.AppliedConfigGeneration.IsNull()) {
+			_ = e.store.MarkConflict(ctx, item.ReportID)
+			continue
+		}
+		accepted, err := e.client.Observe(ctx, item.ReportID, rep)
 		if err == nil {
+			if accepted.IdentityFrozen != nil && *accepted.IdentityFrozen {
+				e.freezeIdentity(ctx)
+			}
 			if serr := e.store.MarkAccepted(ctx, item.ReportID, e.clock.Wall().UTC()); serr != nil {
 				e.storageOK = false
 			}

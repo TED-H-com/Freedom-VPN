@@ -17,6 +17,8 @@ type Plane interface {
 	// VerifyServing reads live state against the last applied model, not a
 	// newly desired model. Implementations must honor ctx's read deadline.
 	VerifyServing(ctx context.Context, m enforce.Model, assignments map[uuid.UUID]uint16) (enforce.ServingEvidence, error)
+	Quarantine(ctx context.Context, m enforce.Model) (enforce.QuarantineEvidence, error)
+	MemberPath(ctx context.Context, m enforce.Model, expected *MemberPath) (MemberPath, error)
 	// Baseline is the watchdog and steady fail-closed path. It has no probe.
 	Baseline(ctx context.Context, dp enforce.Datapath) error
 	// BaselineModel is ApplyBaselineModel. A non-nil Probe is the §13.9
@@ -106,4 +108,9 @@ func (p SystemPlane) Baseline(ctx context.Context, dp enforce.Datapath) error {
 // model has one. VerifyBaseline runs on this same model.
 func (p SystemPlane) BaselineModel(ctx context.Context, m enforce.Model) error {
 	return enforce.ApplyBaselineModel(ctx, p.executor(), m)
+}
+
+// Quarantine uses exactly the executor (and namespace) used by Apply.
+func (p SystemPlane) Quarantine(ctx context.Context, m enforce.Model) (enforce.QuarantineEvidence, error) {
+	return enforce.Quarantine(ctx, p.executor(), m)
 }
