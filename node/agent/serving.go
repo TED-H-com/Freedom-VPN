@@ -76,10 +76,15 @@ func (e *Engine) expireServing(ctx context.Context) bool {
 // Quarantine precedes withdrawal and always uses the retained applied model.
 func (e *Engine) rejectServing(ctx context.Context, model enforce.Model, evidence enforce.ServingEvidence, err error) {
 	e.noteApply(err)
+	var check *enforce.CheckError
+	if e.kernel != nil && e.expectServing.Load() && errors.As(err, &check) && check.Reason == enforce.ReasonGenerationMismatch {
+		// The real live read found a replaced/cleared ruleset. Retain that
+		// incident before our planned baseline disables reset detection.
+		e.kernel.rejectedGeneration()
+	}
 	// A failed/canceled read must still be able to install the baseline.
 	cleanupCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
 	defer cancel()
-	var check *enforce.CheckError
 	if errors.As(err, &check) && check.Reason == enforce.ReasonTCForeignFilter {
 		e.quarantinePending = true
 		e.memberPathPending = true

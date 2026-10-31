@@ -181,6 +181,52 @@ type barrierSource struct{ obs meter.Observation }
 
 func (s *barrierSource) Read(context.Context) (meter.Observation, error) { return s.obs, nil }
 
+func TestMTR03_GenerationRejectionRetainsGapBeforeFinalSample(t *testing.T) {
+	r := newRig(t)
+	alignControlClock(r)
+	serveBoundGeneration(t, r)
+	r.manualUsage(t)
+	r.eng.meter.Close()
+	name := meter.CounterName(r.eng.appliedModel.Bindings[0].DeviceID, meter.DirUpload)
+	state := enforce.State{Table: true, Chains: map[string]bool{"forward": true}, Generation: 2, Counters: map[string]enforce.CounterValue{name: {}}}
+	k := &kernelSource{boot: r.eng.bootID.String(), bindings: r.eng.meterBindings, expect: r.eng.expectServing.Load,
+		read: func(context.Context) (enforce.State, error) { return state, nil }}
+	var err error
+	r.eng.kernel = k
+	r.eng.meter, err = meter.New(meter.Config{NodeID: r.eng.nodeID, IncarnationID: r.eng.incID, Store: r.eng.usage, Source: k})
+	if err != nil {
+		t.Fatal(err)
+	}
+	state.Counters[name] = enforce.CounterValue{Packets: 10, Bytes: 4096}
+	if err := r.eng.meter.Sample(t.Context()); err != nil {
+		t.Fatal(err)
+	}
+	before, _ := r.eng.usage.Head(t.Context())
+	state.Generation = 0 // The live read wins the race against the sampler.
+	r.eng.rejectServing(t.Context(), *r.eng.appliedModel, enforce.ServingEvidence{Counters: state.Counters}, &enforce.CheckError{Reason: enforce.ReasonGenerationMismatch})
+	after, _ := r.eng.usage.Head(t.Context())
+	gap := false
+	for seq := before.NextSeq; seq < after.NextSeq; seq++ {
+		row, err := r.eng.usage.Event(t.Context(), seq)
+		if err != nil {
+			t.Fatal(err)
+		}
+		var event api.UsageEvent
+		if err := json.Unmarshal(row.Payload, &event); err != nil {
+			t.Fatal(err)
+		}
+		if event.Gap != nil && event.Gap.Reason == api.UsageGapReasonCounterDiscontinuity {
+			gap = true
+		}
+	}
+	if !gap || r.eng.serving || !r.eng.finalDone || after.OpenEpoch != uuid.Nil {
+		t.Fatal("withdrawal erased the real discontinuity or left the barrier incomplete")
+	}
+	if _, err := (updater.FileMeter{Path: r.eng.cfg.MeterCheckpoint}).FinalSample(t.Context()); err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestMTR03_UPD05_DurableFileMeterBarrier(t *testing.T) {
 	r := newRig(t)
 	alignControlClock(r)

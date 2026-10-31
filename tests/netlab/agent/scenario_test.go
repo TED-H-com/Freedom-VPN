@@ -53,12 +53,14 @@ func TestLab02_WatchdogEnforces(t *testing.T) {
 	flushConntrack(t)
 	admin(t, "/release", "")
 	admin(t, "/service", `{"seconds":3600}`)
-	startWatch(t)
 	defer stopWatch()
 	startAgent(t)
 	if !waitProbe(t, "allow", 20*time.Second) {
 		t.Fatalf("agent did not start forwarding:\n%s", debugPlane(t))
 	}
+	// Establish a fresh heartbeat before exercising the crash watchdog. A
+	// stale heartbeat from the preceding case is not this test's injection.
+	startWatch(t)
 	// SIGKILL, not SIGTERM. A graceful stop is itself a hand-off and
 	// installs the baseline; this test needs the process to disappear
 	// so the watchdog is what fail-closes.
