@@ -117,6 +117,31 @@ func checkpointMatches(cp, result updateDocument) bool {
 	return usage.text("new_meter_epoch_id") != "" && usage.text("new_meter_epoch_id") != cp.text("closed_meter_epoch_id")
 }
 
+// Prove the matched checkpoint names a real finalized durable epoch. The
+// fixture is quiet; a zero watermark is not evidence of nonzero traffic.
+func (h *handoffRun) finalization(cp updateDocument) bool {
+	if cp == nil || h.run("", "/usr/local/bin/fvpn-e2e-nodeconfig", "usage-copy").Exit != 0 {
+		return false
+	}
+	path := filepath.Join(h.s.r.t.TempDir(), "usage.db")
+	exported, err := h.stack.ExportContainerFile(h.s.ctx, "installer-node", "/var/lib/vpn-node/e2e/usage.snapshot.db", path)
+	h.note("usage_snapshot", exported)
+	if err != nil {
+		return false
+	}
+	db, err := sql.Open("sqlite", "file:"+path+"?mode=ro&_pragma=query_only(1)")
+	if err != nil {
+		return false
+	}
+	defer db.Close()
+	var closed, reason, boot string
+	if db.QueryRow(`SELECT closed_at,close_reason,boot_id FROM epochs WHERE epoch_id=?`, cp.text("closed_meter_epoch_id")).Scan(&closed, &reason, &boot) != nil {
+		return false
+	}
+	h.note("finalized_epoch", map[string]string{"epoch_id": cp.text("closed_meter_epoch_id"), "closed_at": closed, "close_reason": reason, "boot_id": boot})
+	return closed != "" && reason == "final_sample"
+}
+
 type installerHTTP struct {
 	status int
 	body   updateDocument

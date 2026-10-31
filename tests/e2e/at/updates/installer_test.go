@@ -164,7 +164,7 @@ func (s *updatesFollowup) installerHandoff(stack *e2e.Stack, baseline e2e.Servin
 			return
 		}
 	}
-	_, _, err = stack.ActivatePolicy(s.ctx, admin, "release_support", "TEST ONLY installer handoff", map[string]any{"approved_release_ids": ids, "revoked_release_ids": []string{}, "minimum_serving_version": map[string]any{"serving_release_ids": ids}})
+	_, _, err = stack.ActivatePolicy(s.ctx, admin, "release_support", "e2e-installer-handoff", map[string]any{"approved_release_ids": ids, "revoked_release_ids": []string{}, "minimum_serving_version": map[string]any{"serving_release_ids": ids}})
 	if !must(err) || !must(stack.HoldInstallerFirstPoll(s.ctx, true)) {
 		return
 	}
@@ -285,7 +285,7 @@ func (s *updatesFollowup) installerHandoff(stack *e2e.Stack, baseline e2e.Servin
 	observeErr := observer.Wait()
 	trace := h.run("handshake_trace", "cat", "/var/lib/vpn-node/e2e/upgrade-observe.jsonl").Stdout
 	checkpoint := h.correlated(trace, kernel)
-	h.check("correlated", observeErr == nil && checkpoint != nil)
+	h.check("correlated", observeErr == nil && checkpoint != nil && h.finalization(checkpoint))
 	after := h.status("status_after_apply")
 	h.note("current_after_apply", h.current())
 	unitsAfter := h.run("units_after_apply", "systemctl", "show", "fvpn-agent.service", "fvpn-watchdog.service", "-p", "Id", "-p", "ExecMainStartTimestampMonotonic").Stdout

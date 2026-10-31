@@ -396,7 +396,7 @@ func (r *runner) writeUpdaterConfig() error {
 		},
 		"release_trust": "/etc/vpn-node/trust.json", "desired_trust": "/etc/vpn-node/trust.json",
 		"desired_state":    "/var/lib/vpn-node/state/desired-state.json",
-		"meter_checkpoint": "/var/lib/vpn-node/e2e/meter.json",
+		"meter_checkpoint": "/var/lib/vpn-node/state/meter.checkpoint",
 		"stop_command":     []string{"/usr/local/bin/agent-service.sh", "stop"}, "start_command": []string{"/usr/local/bin/agent-service.sh", "start"},
 		"result_url":               r.lab.agent + "/api/v1/agent/update-results",
 		"allowed_artifact_origins": []string{r.lab.agent},

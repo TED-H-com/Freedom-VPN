@@ -438,8 +438,10 @@ func (s *updatesFollowup) running(id uuid.UUID) bool {
 func (s *updatesFollowup) execute(id string, interrupt bool) {
 	dir := filepath.Join(s.r.lab.state, s.r.lab.nodeSlot(), "var", "e2e")
 	pause := filepath.Join(dir, "pause-agent")
-	if err := os.WriteFile(pause, []byte("1\n"), 0o644); err != nil {
-		s.r.t.Fatal("pause failed")
+	// D-125 requires the real agent to answer the new updater latch. The
+	// updater's StopCommand owns the later service stop after final sampling.
+	if err := os.Remove(pause); err != nil && !os.IsNotExist(err) {
+		s.r.t.Fatal("resume before final sampling failed")
 	}
 	if !interrupt {
 		defer os.Remove(pause)
