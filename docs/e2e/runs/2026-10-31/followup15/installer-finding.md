@@ -35,3 +35,9 @@ listener for anonymous enrollment. The harness now adapts the installer's
 single URL through a local TLS proxy: only enrollment goes to the public
 listener; runtime calls require the current verified node identity and use
 central's direct mTLS listener. The focused run above includes that adapter.
+
+The final fresh-stack export run `12d10041-9d33-4fbb-a4b0-9d2a21bce785`
+on `4fb5fa8` reproduced both read-only-path diagnostics after enrollment of
+incarnation `01a19039-037e-7453-9c6d-8109b3c2a549`. Install returned exit 1,
+code `failed`; the argv-token and insecure token-file probes each returned
+64 as required. See [installer-wrappers](exports/installer-wrappers.md).

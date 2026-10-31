@@ -367,3 +367,6 @@ connection bucket. The agent mTLS listener remains direct, and nginx
 Follow-up 15 records go directly under the UTC day's `followup15/` directory.
 The earlier dated-root evidence is retained. Current hook contracts and open
 scope boundaries are in [RUN.md](RUN.md) and the dated harness request notes.
+The [2026-10-31 final run](runs/2026-10-31/followup15/README.md) records
+acceptance 32 passed / 1 blocked / 0 failed and exports 21 passed / 0 blocked /
+1 failed. IPv6 is blocked; real installer service startup is the failed case.

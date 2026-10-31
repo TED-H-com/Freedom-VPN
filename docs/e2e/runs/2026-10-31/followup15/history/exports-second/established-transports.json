@@ -1,0 +1,42 @@
+{
+  "id": "established-transports",
+  "title": "Persistent member TCP and authenticated UDP echo",
+  "spec": [
+    "§8",
+    "AT29"
+  ],
+  "status": "pass",
+  "observations": [
+    {
+      "name": "bytes_before",
+      "detail": "2672"
+    },
+    {
+      "name": "tcp_echoes",
+      "detail": "1"
+    },
+    {
+      "name": "udp_replies",
+      "detail": "1"
+    },
+    {
+      "name": "bytes_mid",
+      "detail": "3424"
+    },
+    {
+      "name": "bytes_stopped",
+      "detail": "3580"
+    },
+    {
+      "name": "bytes_after",
+      "detail": "3580"
+    },
+    {
+      "name": "probe",
+      "detail": "updater UDP 4443 was not used"
+    }
+  ],
+  "at": "2026-10-31T04:01:53Z",
+  "run_id": "630b9f07-62d2-4db1-9737-9060732db1f1",
+  "source_commit": "3c25ce9daa081874988c9b09bc8c26e66d3c1b46"
+}

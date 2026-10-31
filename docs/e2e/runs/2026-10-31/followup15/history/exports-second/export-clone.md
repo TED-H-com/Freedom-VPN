@@ -1,0 +1,14 @@
+# export-clone
+
+Pre-boot cloned enrolled image and hash-only machine identity
+
+Status: pass
+
+Run: 630b9f07-62d2-4db1-9737-9060732db1f1
+
+Source: 3c25ce9daa081874988c9b09bc8c26e66d3c1b46
+
+Spec: §6.2, AT07, ENR-07
+
+- clone_observation: {"Source":{"machine_id_sha256":"227a90344037bc2ad09c92e9b6677ad43dba3f43eab10ecde6611593612ff6a5","agent_spki_sha256":"303742e84ccc792633702c2a1e4c9bb0948913b4c2c107af266d856be36f34f9","netbird_public_key_sha256":"43001630133b03857bddb49ff09b2bcb55f1bfb6a8f46318e88759980607e2a8"},"Clone":{"machine_id_sha256":"227a90344037bc2ad09c92e9b6677ad43dba3f43eab10ecde6611593612ff6a5","agent_spki_sha256":"303742e84ccc792633702c2a1e4c9bb0948913b4c2c107af266d856be36f34f9","netbird_public_key_sha256":"43001630133b03857bddb49ff09b2bcb55f1bfb6a8f46318e88759980607e2a8"},"same_identity":true,"endpoint_rows":1,"conflicts":1,"mapping_frozen":true,"SourceStage":"enrolled","CloneStage":"enrolled"}
+- snapshot: source stopped; durable state and native identity copied before clone boot; source resumed
