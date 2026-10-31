@@ -139,6 +139,9 @@ func TestATMembers_Live(t *testing.T) {
 		t.Fatal("shared stack hook unavailable")
 	}
 	defer l.hook.Close()
+	if err = l.hook.EnableEnforcementTiming(ctx); err != nil {
+		t.Fatal("enable TEST ONLY enforcement timing before enrollment: ", err)
+	}
 	if err = l.hook.PrepareNativeUnderlay(ctx); err != nil {
 		t.Fatal(err)
 	}
@@ -169,6 +172,9 @@ func TestATMembers_Live(t *testing.T) {
 			// Each independent case performs real OIDC reauthentication; never lengthen recent-auth policy.
 			l.admin = l.login("e2e-admin", "admin")
 			task.run(&r)
+			if task.id == "AT02" {
+				l.recordCounterTiming(&r)
+			}
 			r.Complete = true
 			l.write(&r)
 			if r.Status != e2e.StatusPass {
