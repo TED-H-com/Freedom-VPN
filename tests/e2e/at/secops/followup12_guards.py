@@ -33,11 +33,20 @@ def main():
             assert hashlib.sha256((ROOT/entry['path']).read_bytes()).hexdigest()==entry['sha256'],entry['path']
             count+=1
     if args.archive_only:
-        print(f'PASS: merged Follow-up 10 archive, unchanged Follow-up 9 restore and {count} current SHA-256 pins; live execution not checked')
+        print(f'PASS: merged Follow-up 10/11 archives, unchanged Follow-up 9 restore and {count} current SHA-256 pins; live execution not checked')
         return
+    run_ids = set()
+    driver_ids = set()
     for phase in ('transports','restore'):
         run=json.loads((PUBLIC/f'followup12-{phase}-run.json').read_text())
         live=json.loads((PUBLIC/f'followup12-{phase}-live.json').read_text())
+        assert run['follow_up']==live['follow_up']==12,phase
+        assert run['phase']==phase and run['finished_at'],phase
+        assert run['d099_roadmap_present'] is True,phase
+        assert run['driver_run_id'] not in driver_ids,phase
+        assert live['run_id'] not in run_ids,phase
+        run_ids.add(live['run_id'])
+        driver_ids.add(run['driver_run_id'])
         assert run['live']['status']=='passed',phase
         assert live['go_test_failed'] is False,phase
         assert run['source_revision']==live['source_revision'],phase
@@ -47,7 +56,7 @@ def main():
     for path in PUBLIC.iterdir():
         if path.suffix in ('.json','.md'):
             assert not scan(path.read_bytes()),path.name
-    print(f'PASS: merged Follow-up 10 archive, unchanged Follow-up 9 restore, {count} current SHA-256 pins, two live runs, cleanup and capture hygiene')
+    print(f'PASS: merged Follow-up 10/11 archives, unchanged Follow-up 9 restore, {count} current SHA-256 pins, two distinct live runs, cleanup and capture hygiene')
 
 
 if __name__=='__main__':main()
