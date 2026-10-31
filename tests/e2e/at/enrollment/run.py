@@ -232,6 +232,7 @@ def lookup_review_passed(checks):
 INSTALLER_REVIEW_RUN = "57b90cf6-d233-4209-a114-765ef15376f7"
 CURSOR_REVIEW_RUN = "805ba242-f343-44ab-9221-d250d81b95b9"
 D130_REVIEW_RUNS = ("a5c706dd-7b2a-437e-88f2-3d1cd7b403cd", "f27a81a0-183e-46b4-85a8-304b2f64b635")
+EARLY_GAP_REVIEW_RUN = "6c05c918-0819-4ea2-94f9-1d7e12e84c35"
 
 
 def d130_review_passed(checks):
@@ -259,6 +260,11 @@ def installer_review_passed(checks):
 
 
 def review_covers(at, prior, checks):
+    if prior.get("run_id") == EARLY_GAP_REVIEW_RUN:
+        covered = prior.get("name") == "probe_process" or (
+            at == "AT07" and prior.get("name") == "installer_prerequisite" and
+            prior.get("detail", {}).get("step") == "autonomous origin upload with new presenter")
+        return covered and d130_review_passed(checks)
     if prior.get("run_id") in D130_REVIEW_RUNS:
         covered = prior.get("name") == "probe_process" or (
             at == "AT07" and prior.get("name") == "installer_prerequisite" and
@@ -317,6 +323,14 @@ def records(meta, observed, prior):
                       requirements=["ENR01", "ENR02", "SEC01"] if at == "AT06" else ["ENR03", "PKG01", "DATA01"],
                       spec=["§19 " + at, "§6.1", "§6.2", "§6.3", "§6.4"],
                       checks=checks, prior_checks=prior[at])
+        if any(c.get("run_id") == EARLY_GAP_REVIEW_RUN and c["status"] == "fail" for c in prior[at]):
+            record["follow_up_9_early_gap_review"] = {
+                "run_id": EARLY_GAP_REVIEW_RUN,
+                "disposition": "resolved" if d130_review_passed(review_checks) else "unresolved",
+                "owner": "enrollment harness",
+                "cause": "After origin ACK 3, the fixed product had already ACKed the fresh empty gap at 1. The inherited harness required current ACK 0. CLI read last_seq 1, ACK 1, no unacked events; the original stream remained separately ACKed at 3.",
+                "correction": "Permit current ACK 1 only with its own verified empty unknown gap and matching central/CLI ACK. Original batch replay must leave that current ACK unchanged. Require separate gap ACK 1, counted 908-byte ACK 2, all five rows, four AT20 assertions and successful processes. The failed attempt remains immutable.",
+            }
         if any(c.get("run_id") in D130_REVIEW_RUNS and c["status"] == "fail" for c in prior[at]):
             record["follow_up_9_d130_review"] = {
                 "run_ids": list(D130_REVIEW_RUNS),

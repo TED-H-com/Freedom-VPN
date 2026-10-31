@@ -261,7 +261,13 @@ func (p *probe) installerHooks(t *testing.T) {
 	must(postDB.QueryRow("SELECT CAST(acked_through AS TEXT),CAST(last_seq AS TEXT),ledger_epoch,final_code FROM retired_streams WHERE incarnation_id=?", origin.String()).Scan(&oldACK, &last, &epoch, &finalCode) == nil)
 	var currentStart string
 	must(postDB.QueryRow("SELECT CAST(COALESCE((SELECT min(seq) FROM events),(SELECT next_seq FROM meta WHERE id=1)) AS TEXT)").Scan(&currentStart) == nil)
-	independent := oldACK == held.LastEventSeq && last == held.LastEventSeq && finalCode == "" && held.LedgerEpoch != nil && epoch == *held.LedgerEpoch && p.streamACK(node, current) == "0" && currentCLI.AckedThrough == "0" && currentStart == "1"
+	// D-130 permits the empty current baseline gap to ACK before we quiesce.
+	// Its own verified receipt is independent of the retired stream's ACK.
+	currentACK := p.streamACK(node, current)
+	currentGap := p.currentGap(node, current)
+	currentIndependent := currentACK == currentCLI.AckedThrough && (currentACK == "0" || (currentACK == "1" && currentGap.valid(node, current)))
+	independent := oldACK == held.LastEventSeq && last == held.LastEventSeq && finalCode == "" && held.LedgerEpoch != nil && epoch == *held.LedgerEpoch && currentIndependent && currentStart == "1"
+	detail["current_gap_after_handoff"] = currentGap
 	detail["current_cli_after_handoff"], detail["retired_local_stream"] = currentCLI, map[string]string{"incarnation_id": origin.String(), "acked_through": oldACK, "last_seq": last, "ledger_epoch": epoch, "final_code": finalCode}
 	detail["current_first_sequence"] = currentStart
 	detail["current_next_sequence"] = decimalSum(currentCLI.LastEventSeq, "1")
@@ -281,7 +287,7 @@ func (p *probe) installerHooks(t *testing.T) {
 	p.expect("AT07", "OriginalPayloadAndHistoricalAttribution", originalOK && attributed, map[string]any{"assertion_source": usageAT20, "events": events, "before": installerHistoryView(beforeInc), "after": installerHistoryView(afterInc)})
 	must(equality && originalOK && attributed)
 	// Saved production batches must present the new certificate identity while
-	// selecting the original stream. The current stream has not ACKed any events.
+	// selecting the original stream. Any current gap ACK must remain unchanged.
 	currentBefore := p.streamACK(node, current)
 	rows, err := postDB.Query("SELECT idempotency_key,body FROM upload_batches ORDER BY created_at")
 	must(err == nil)
@@ -308,7 +314,7 @@ func (p *probe) installerHooks(t *testing.T) {
 	must(ok)
 	replayStable := currentBefore == currentAfter && replayUsage.Totals == after.Totals && p.historicalEvents(events)
 	p.expect("AT07", "AgentSameKeyStoredResultReplay", replayStable, map[string]any{"assertion_source": usageAT20, "batches": batches, "totals_unchanged": replayUsage.Totals == after.Totals})
-	p.expect("AT07", "OriginACKAndIndependentCurrentACK", independent && replayStable, map[string]any{"assertion_source": usageAT20, "origin_ack": oldACK, "current_ack_before_replay": currentBefore, "current_ack_after_replay": currentAfter, "current_last_seq": currentCLI.LastEventSeq, "current_first_seq": currentStart, "current_next_seq": decimalSum(currentCLI.LastEventSeq, "1")})
+	p.expect("AT07", "OriginACKAndIndependentCurrentACK", independent && replayStable, map[string]any{"assertion_source": usageAT20, "origin_ack": oldACK, "current_ack_before_replay": currentBefore, "current_ack_after_replay": currentAfter, "current_gap": currentGap, "current_last_seq": currentCLI.LastEventSeq, "current_first_seq": currentStart, "current_next_seq": decimalSum(currentCLI.LastEventSeq, "1")})
 	must(replayStable)
 	p.expect("AT07", "identity_ledger_preserved", true, detail)
 	p.expect("AT07", "historical_usage_retained", true, map[string]any{"owner": "usage", "assertion_source": usageAT20, "assertions": []string{"BeforePlusHeldByteEquality", "OriginalPayloadAndHistoricalAttribution", "OriginACKAndIndependentCurrentACK"}, "evidence": detail})
@@ -366,7 +372,7 @@ func (p *probe) installerHooks(t *testing.T) {
 	p.expect("AT07", "current_counted_ack_2", uploaded && samplesOK && bytesOK && separate, map[string]any{"owner": "usage-central", "central_ack": p.streamACK(node, current), "origin_ack": p.streamACK(node, origin), "samples": samples, "incarnations": installerHistoryView(finalInc), "member_period": finalUsage, "poll": detail["fresh_upload_poll"], "production": detail["fresh_upload_diagnostics"]})
 	must(samplesOK && bytesOK && separate)
 	p.expect("AT07", "installer_prerequisite", true, map[string]any{"step": stage, "owner": owner})
-	p.expect("AT07", "controlled_reinstall", true, map[string]any{"owner": "installer", "outcome": installerOutcomeView(reinstalled, nil), "serving": freshRules, "traffic": freshTraffic, "new_stream_first_sequence": firstSeq, "new_stream_first_counted_sequence": firstCounted, "origin_ack_before_current_traffic": oldACK, "current_ack_sequence": []string{"0", "1", "2"}, "current_upload_bytes": "550", "current_download_bytes": "358", "stored_gap": gap, "evidence": detail, "devstack_rows": devstack18 + " installer-reenroll / installer-serving-readback"})
+	p.expect("AT07", "controlled_reinstall", true, map[string]any{"owner": "installer", "outcome": installerOutcomeView(reinstalled, nil), "serving": freshRules, "traffic": freshTraffic, "new_stream_first_sequence": firstSeq, "new_stream_first_counted_sequence": firstCounted, "origin_ack_before_current_traffic": oldACK, "current_ack_sequence": []string{"1", "2"}, "current_upload_bytes": "550", "current_download_bytes": "358", "stored_gap": gap, "evidence": detail, "devstack_rows": devstack18 + " installer-reenroll / installer-serving-readback"})
 }
 
 type storedCurrentGap struct {

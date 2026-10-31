@@ -119,9 +119,11 @@ class EvidenceTests(unittest.TestCase):
         for c in checks:
             if c["name"] in ("current_gap_ack_1", "current_counted_ack_2"):
                 c["detail"] = {"central_ack": "1" if c["name"] == "current_gap_ack_1" else "2"}
-        for run_id in run.D130_REVIEW_RUNS:
+        for run_id in (*run.D130_REVIEW_RUNS, run.EARLY_GAP_REVIEW_RUN):
+            step = ("autonomous origin upload with new presenter" if run_id == run.EARLY_GAP_REVIEW_RUN
+                    else "fresh current-incarnation serving traffic")
             prior = dict(run_id=run_id, name="installer_prerequisite", status="fail",
-                         detail={"step": "fresh current-incarnation serving traffic"})
+                         detail={"step": step})
             self.assertTrue(run.review_covers("AT07", prior, checks))
             self.assertFalse(run.review_covers("AT07", dict(prior, name="old_certificate_denied"), checks))
             self.assertFalse(run.review_covers("AT07", dict(prior, detail={"step": "unrelated"}), checks))
