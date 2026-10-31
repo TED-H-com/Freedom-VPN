@@ -1,6 +1,7 @@
 # Freedom VPN
 
-**Current cut — [follow-up 18](docs/handover/follow-up-18.md) (2026-10-31 EDT):** SECOPS-21 closed in the assembled restore harness; AT14–AT20 pass in usage run 170ea3e3. AT09 F9-01, native F8-02 attribution and the devstack serving-node upgrade remain open.
+**Current cut — [follow-up 19](docs/handover/follow-up-19.md) (2026-10-31 EDT):** ENR-07 and F9-01 closed; serving-node upgrade passes. ISO-F6-03 is an open AT13 product defect. Regular AT23–AT27 remain blocked; native F8-02 remains unattributed.
+Previous cut: [follow-up 18](docs/handover/follow-up-18.md), through #324.
 
 Freedom VPN is a member-based, multi-region VPN platform for a small paid community, starting at about 20 members. Every exit node runs the same node package and joins one central control plane, whether it is a pre-installed box, a cloud Ubuntu VM or any other Ubuntu host.
 
