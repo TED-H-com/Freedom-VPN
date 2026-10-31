@@ -36,6 +36,22 @@ func (s *liveSuite) evalAT14(t *testing.T) Record {
 	transferStarted := time.Now().UTC()
 	tr := s.runCountedTransfer("member", "node", s.deviceA, 8)
 	bUp1, bDown1, _, allAfter, _ := s.deviceCounters("node", s.deviceB)
+	// The lab routes only its origin subnet over fvup0. Give this denied
+	// probe a temporary /32 route to that interface so it reaches ctdeny;
+	// otherwise the forward chain's default drop excludes it on eth1.
+	if out, code, err := s.execInContainer("node", "ip", "route", "add", "10.254.254.1/32", "dev", "fvup0"); err != nil || code != 0 {
+		t.Fatalf("AT14 private probe route: %v (%d): %s", err, code, out)
+	}
+	removeProbeRoute := func() {
+		if out, code, err := s.execInContainer("node", "ip", "route", "del", "10.254.254.1/32", "dev", "fvup0"); err != nil || code != 0 {
+			t.Errorf("AT14 private probe route cleanup: %v (%d): %s", err, code, out)
+		}
+	}
+	defer func() {
+		if removeProbeRoute != nil {
+			removeProbeRoute()
+		}
+	}()
 
 	uBeforeRFC, dBeforeRFC, _, cBeforeRFC, _ := s.deviceCounters("node", s.deviceA)
 	fvmbRxBefore, _ := s.ifaceBytes("node", "fvmb0")
@@ -65,6 +81,8 @@ ip route del 10.254.254.1/32 dev fvnb0 2>/dev/null || true
 	fvmbRxAfter, _ := s.ifaceBytes("node", "fvmb0")
 	rfcIngressBytes := fvmbRxAfter - fvmbRxBefore
 	rfcDenyDelta := cAfterRFC["ctdeny"] - cBeforeRFC["ctdeny"]
+	removeProbeRoute()
+	removeProbeRoute = nil
 
 	nodeTunnelOut, _, _ := s.execInContainer("node", "ip", "-o", "-4", "addr", "show", "fvmb0")
 	nodeOverlayIP := ""
@@ -141,6 +159,7 @@ ip route del 10.254.254.1/32 dev fvnb0 2>/dev/null || true
 	}
 	rec.Observations["live_counted_transfer"] = tr
 	rec.Observations["live_exclusions"] = map[string]any{
+		"private_probe_route":                "temporary node-netns 10.254.254.1/32 dev fvup0, removed after probe; no default route change",
 		"native_rfc1918_ctdeny_delta_bytes":  nativeRFCDenyDelta,
 		"shared_rfc1918_ingress_probe":       rfcIngress,
 		"rfc1918_fvmb0_ingress_delta_bytes":  rfcIngressBytes,
