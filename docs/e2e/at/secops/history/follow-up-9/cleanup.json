@@ -1,0 +1,192 @@
+{
+  "schema_version": 1,
+  "follow_up": 9,
+  "started_at": "2026-10-31T01:36:15Z",
+  "finished_at": "2026-10-31T01:46:57Z",
+  "source_revision": "205633f0de8b3befbd563a092b856c0bc089e9c9",
+  "application_base": "205633f",
+  "run_id": "42396951-2d9a-49f4-95c3-45f33d9519d5",
+  "driver_run_id": "4e0cca84-5c8e-4b94-88d2-4bfc6843a0b0",
+  "hardware": "shared development host; not candidate hardware",
+  "commands": [
+    [
+      "make",
+      "-f",
+      "mk/e2e.mk",
+      "e2e-up"
+    ],
+    [
+      "go",
+      "test",
+      "-json",
+      "-tags",
+      "e2e,integration",
+      "-p",
+      "1",
+      "-parallel",
+      "2",
+      "-count=1",
+      "-timeout",
+      "35m",
+      "-run",
+      "^TestAT30_Followup9_LiveRestoreReconcile$",
+      "./tests/e2e/at/secops"
+    ],
+    [
+      "make",
+      "-f",
+      "mk/e2e.mk",
+      "e2e-down"
+    ]
+  ],
+  "probe_source_sha256": "a02469294a39abe2a3b93a85954877959e7ae99f038869847a32dbe8d73c3a8a",
+  "policy_revision": "01a18f9a-4902-7b2b-b023-c63381c9fb8e",
+  "node_incarnation": "",
+  "agent_node_incarnation": "01a18f9a-5715-7999-a7f8-ee812d1b6d61",
+  "image_digests": [
+    {
+      "image_id": "sha256:9e8d813139bec9dc32ce806c7eac9af156fd5c162555a8391a45e65ab225d361",
+      "service": "postgres"
+    },
+    {
+      "image_id": "sha256:d7fb258e6a34863e248d7e0128f563a30776cffb7246e9894a77e4baed51d906",
+      "service": "idp"
+    },
+    {
+      "image_id": "sha256:f9459540b9f36447c77b99988c7256276f68eb16d3e8da62884515bb2ff7b459",
+      "service": "payment"
+    },
+    {
+      "image_id": "sha256:c026a8c14fda6444ce86187a651366901b75cee19c8bc85d4a5b3d0b90618917",
+      "service": "origin"
+    },
+    {
+      "image_id": "sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c",
+      "service": "netbird"
+    },
+    {
+      "image_id": "sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce",
+      "service": "gateway"
+    },
+    {
+      "image_id": "sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97",
+      "service": "coredns"
+    },
+    {
+      "image_id": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
+      "service": "adguard"
+    },
+    {
+      "image_id": "sha256:1a1e62fdc180fde5ee8694872565efbc44e21d3aac5cc19c23c06fb193ed6d67",
+      "service": "control"
+    },
+    {
+      "image_id": "sha256:370508a12926a014ec9e5d181247da7f9635ab831a0fff304161e17646d0463c",
+      "service": "worker"
+    },
+    {
+      "image_id": "sha256:cd65651c8c862e7db30a2636a90ca86485b7da5fd4358d1d762cb7dc816987b4",
+      "service": "node-netns"
+    },
+    {
+      "image_id": "sha256:cd65651c8c862e7db30a2636a90ca86485b7da5fd4358d1d762cb7dc816987b4",
+      "service": "node"
+    },
+    {
+      "image_id": "sha256:cd65651c8c862e7db30a2636a90ca86485b7da5fd4358d1d762cb7dc816987b4",
+      "service": "member"
+    },
+    {
+      "image_id": "sha256:cd65651c8c862e7db30a2636a90ca86485b7da5fd4358d1d762cb7dc816987b4",
+      "service": "member-at30-m2-d3-post-restore"
+    },
+    {
+      "image_id": "sha256:cd65651c8c862e7db30a2636a90ca86485b7da5fd4358d1d762cb7dc816987b4",
+      "service": "member-at30-m3-d1-t1"
+    },
+    {
+      "image_id": "sha256:cd65651c8c862e7db30a2636a90ca86485b7da5fd4358d1d762cb7dc816987b4",
+      "service": "member-at30-m2-d2"
+    },
+    {
+      "image_id": "sha256:cd65651c8c862e7db30a2636a90ca86485b7da5fd4358d1d762cb7dc816987b4",
+      "service": "member-at30-m2-d1"
+    },
+    {
+      "image_id": "sha256:cd65651c8c862e7db30a2636a90ca86485b7da5fd4358d1d762cb7dc816987b4",
+      "service": "member-at30-m1-d1"
+    }
+  ],
+  "build_digests": [
+    {
+      "name": "amd64.test",
+      "sha256": "f45a172806f8b6067986077d955f6865983b9d52373922a29c8817df3f9873bb"
+    },
+    {
+      "name": "arm64.test",
+      "sha256": "8ea49a6ce92430f943efc1cb24c86f0f3836f577fd9b97ea189f145dbaec1dd3"
+    },
+    {
+      "name": "proxyprobe",
+      "sha256": "9de350a1323d51cf6fc1cf6ece60a1fc1f0cf49f03c73374e29a37c6659170cd"
+    }
+  ],
+  "previous_run": "history/follow-up-8/",
+  "projector_owned_rows_written": [],
+  "prefix": "fvpn-w4-secops",
+  "port_base": "30000",
+  "inventory_before": {
+    "containers": {
+      "exit_code": 0,
+      "count": 0
+    },
+    "networks": {
+      "exit_code": 0,
+      "count": 0
+    },
+    "volumes": {
+      "exit_code": 0,
+      "count": 0
+    },
+    "images": {
+      "exit_code": 0,
+      "count": 0
+    }
+  },
+  "inventory_after": {
+    "containers": {
+      "exit_code": 0,
+      "count": 0
+    },
+    "networks": {
+      "exit_code": 0,
+      "count": 0
+    },
+    "volumes": {
+      "exit_code": 0,
+      "count": 0
+    },
+    "images": {
+      "exit_code": 0,
+      "count": 0
+    }
+  },
+  "down": {
+    "command": [
+      "make",
+      "-f",
+      "mk/e2e.mk",
+      "e2e-down"
+    ],
+    "started_at": "2026-10-31T01:46:16Z",
+    "finished_at": "2026-10-31T01:46:57Z",
+    "elapsed_seconds": 41.078,
+    "exit_code": 0,
+    "scan": {
+      "stream": "followup9-e2e-down",
+      "bytes": 3039,
+      "findings": []
+    }
+  },
+  "status": "passed"
+}
