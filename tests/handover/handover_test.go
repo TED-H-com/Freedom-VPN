@@ -551,28 +551,70 @@ func TestHandover_MigrationInventory(t *testing.T) {
 }
 
 type sqlBlock struct {
-	Doc            string
-	Index          int
-	ClusterRoleDDL bool
-	Raw            string
+	Doc                    string
+	Index                  int
+	ClusterRoleDDL         bool
+	MutatingMaintenanceSQL bool
+	Raw                    string
 }
 
+func sqlCheckedDocs(t testing.TB, root string) []string {
+	t.Helper()
+	matches, err := filepath.Glob(filepath.Join(root, "docs", "handover", "*.md"))
+	if err != nil {
+		t.Fatalf("glob docs/handover/*.md: %v", err)
+	}
+	var docs []string
+	for _, m := range matches {
+		rel, err := filepath.Rel(root, m)
+		if err != nil {
+			t.Fatalf("rel path for %s: %v", m, err)
+		}
+		docs = append(docs, filepath.ToSlash(rel))
+	}
+	docs = append(docs, "docs/ops/README.md")
+	slices.Sort(docs)
+	return docs
+}
+
+// extractSQLBlocks extracts every ```sql fence from docs/handover/*.md (including
+// restore-drill.md) and docs/ops/README.md using the exact line-based handoverSQL
+// rule from tests/backup/drill_integration_test.go.
 func extractSQLBlocks(t testing.TB, root string) []sqlBlock {
 	t.Helper()
-	sqlFenceRE := regexp.MustCompile("(?s)```sql\\n(.*?)```")
 	var out []sqlBlock
-	for _, doc := range ownedDocs {
+	for _, doc := range sqlCheckedDocs(t, root) {
 		content := readOwnedDoc(t, root, doc)
-		matches := sqlFenceRE.FindAllStringSubmatch(content, -1)
-		for i, m := range matches {
-			body := strings.TrimSpace(m[1])
-			clusterDDL := strings.HasPrefix(body, "-- [mechanical-check: cluster-role-ddl]")
-			out = append(out, sqlBlock{
-				Doc:            doc,
-				Index:          i + 1,
-				ClusterRoleDDL: clusterDDL,
-				Raw:            body,
-			})
+		var inFence bool
+		var cur []string
+		idx := 0
+		for _, line := range strings.Split(content, "\n") {
+			trimmed := strings.TrimSpace(line)
+			if !inFence {
+				if trimmed == "```sql" {
+					inFence = true
+					cur = nil
+				}
+				continue
+			}
+			if trimmed == "```" {
+				inFence = false
+				body := strings.TrimSpace(strings.Join(cur, "\n"))
+				if body != "" {
+					idx++
+					clusterDDL := strings.HasPrefix(body, "-- [mechanical-check: cluster-role-ddl]")
+					mutatingMaint := strings.HasPrefix(body, "-- [mechanical-check: mutating-maintenance-sql]")
+					out = append(out, sqlBlock{
+						Doc:                    doc,
+						Index:                  idx,
+						ClusterRoleDDL:         clusterDDL,
+						MutatingMaintenanceSQL: mutatingMaint,
+						Raw:                    body,
+					})
+				}
+				continue
+			}
+			cur = append(cur, line)
 		}
 	}
 	return out
@@ -584,14 +626,28 @@ func TestHandover_SQLBlocksClassified(t *testing.T) {
 	if len(blocks) == 0 {
 		t.Fatal("expected to find SQL blocks in owned handover docs")
 	}
+	restoreDrillBlocks := 0
 	for _, b := range blocks {
+		if b.Doc == "docs/handover/restore-drill.md" {
+			restoreDrillBlocks++
+			if b.ClusterRoleDDL || b.MutatingMaintenanceSQL || strings.Contains(b.Raw, "[mechanical-check:") {
+				t.Errorf("%s SQL block #%d must not carry any [mechanical-check: ...] exemption because TestAT30_BackupPITRDrill executes every fence read-only", b.Doc, b.Index)
+			}
+		}
 		if b.ClusterRoleDDL {
 			t.Logf("[non-mechanical: cluster-role-ddl] %s SQL block #%d explicitly marked as superuser/cluster role DDL", b.Doc, b.Index)
+			continue
+		}
+		if b.MutatingMaintenanceSQL {
+			t.Logf("[mechanical-check: mutating-maintenance-sql] %s SQL block #%d explicitly marked as mutating maintenance SQL (executed in rolled-back read-write tx)", b.Doc, b.Index)
 			continue
 		}
 		if strings.Contains(b.Raw, "CREATE DATABASE") || strings.Contains(b.Raw, "CREATE ROLE") {
 			t.Errorf("%s SQL block #%d contains cluster DDL without -- [mechanical-check: cluster-role-ddl] marker", b.Doc, b.Index)
 		}
+	}
+	if restoreDrillBlocks < 5 {
+		t.Errorf("expected at least 5 SQL blocks in docs/handover/restore-drill.md, got %d", restoreDrillBlocks)
 	}
 }
 
@@ -1661,5 +1717,51 @@ func TestHandover_Followup11Claims(t *testing.T) {
 				t.Errorf("%s missing expected follow-up 11 token %q", rel, token)
 			}
 		}
+	}
+}
+
+func TestHandover_Followup12Claims(t *testing.T) {
+	root := repoRoot(t)
+
+	restoreDrill := readOwnedDoc(t, root, "docs/handover/restore-drill.md")
+	wantFenceQuery := strings.Join([]string{
+		"SELECT f.device_id, d.member_id, d.peer_id, d.status, f.fenced_at, f.observed_group_ids",
+		"     FROM device_authorization_fences f",
+		"     JOIN member_devices d ON d.id = f.device_id",
+		"     ORDER BY f.fenced_at DESC;",
+	}, "\n")
+	if !strings.Contains(restoreDrill, wantFenceQuery) {
+		t.Errorf("docs/handover/restore-drill.md missing corrected D-076 fence review SQL query:\n%s", wantFenceQuery)
+	}
+
+	operatorGuide := readOwnedDoc(t, root, "docs/handover/operator-guide.md")
+	for _, docName := range sqlCheckedDocs(t, root) {
+		content := readOwnedDoc(t, root, docName)
+		for _, forbidden := range []string{
+			"SELECT device_id, member_id, peer_id, reason, fenced_at",
+			"columns `device_id`, `member_id`, `fenced_at`, `reason`",
+			"`device_authorization_fences` (`reason =",
+		} {
+			if strings.Contains(content, forbidden) {
+				t.Errorf("%s still contains stale D-076 fence schema text %q", docName, forbidden)
+			}
+		}
+	}
+
+	for _, rel := range []string{"docs/handover/restore-drill.md", "docs/handover/operator-guide.md"} {
+		content := readOwnedDoc(t, root, rel)
+		for _, token := range []string{
+			"`device_id`, `fenced_at`, `observed_group_ids`",
+			"member_devices",
+			"device.authorization.external_withdrawal",
+			"device authorization unconfirmed during ledger restore",
+		} {
+			if !strings.Contains(content, token) {
+				t.Errorf("%s missing expected follow-up 12 token %q", rel, token)
+			}
+		}
+	}
+	if !strings.Contains(operatorGuide, "-- [mechanical-check: mutating-maintenance-sql]") {
+		t.Error("docs/handover/operator-guide.md missing -- [mechanical-check: mutating-maintenance-sql] marker on purge_retained SQL fence")
 	}
 }
