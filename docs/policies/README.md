@@ -205,6 +205,8 @@ After a central point-in-time restore, PostgreSQL can hold an older `nodes.desir
 
 D-095 also gates the **first** post-restore compilation (§17.3, AT30 / SECOPS-21). Follow [restore Step 1](../usage/restore-runbook.md): run freeze-ingest before starting control/worker on the restored database. Under its existing node row lock, the compiler reads the ledger mode and durable freeze cutoff, then requires the latest observation for the current incarnation to have central `received_at` strictly after that cutoff. Until then it returns retryable `DEPENDENCY_UNAVAILABLE` with `pending fresh observation after restore`, retaining the stored envelope; the node drift view and a node-scoped operation expose that same status. The cutoff is retained in the existing restore observation operation after `complete-recovery`, so an unreported node remains held even if no compile visited it during recovery. After a fresh report of applied 14 against restored desired 11 / stored maximum 13, the first new compiled offer is 15. Receipt evidence completes only the restore observation step; normal applied-policy acknowledgement is still required. Mode `normal` with no restore marker preserves the existing behavior.
 
+If the fresh report's node wall clock is older than the last projected observation, the observation writer deliberately leaves `nodes.applied_config_generation` unchanged. During restore, the compiler also includes the fresh current-incarnation receipt's `applied_generation` in the maximum, so clock skew cannot produce an offer below that evidence. It never writes the applied-generation projection.
+
 ---
 
 ## 5. Time-Limited Admin Overrides (§11.1, §11.6, FUP04)

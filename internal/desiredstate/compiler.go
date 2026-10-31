@@ -169,34 +169,36 @@ func nextConfigGeneration(desired, applied, maxStored uint64) uint64 {
 // receipt and applied generation are from the same committed observation state.
 // FreezeIngest installs durable node operations before services start (D-095).
 // Their cutoff survives completion; updated_at alone would lose that boundary.
-func restoreObservation(ctx context.Context, tx pgx.Tx, nodeID, incarnationID uuid.UUID) (*time.Time, uuid.UUID, error) {
+func restoreObservation(ctx context.Context, tx pgx.Tx, nodeID, incarnationID uuid.UUID) (*time.Time, uuid.UUID, uint64, error) {
 	var mode string
 	var frozenAt, receivedAt *time.Time
 	var observationID *uuid.UUID
+	var appliedGen *string
 	err := tx.QueryRow(ctx, `SELECT s.mode,
 		coalesce((SELECT max(created_at) FROM operations
 		 WHERE principal=$3 AND resource_type='node' AND resource_id=$1),
 		 r.created_at, CASE WHEN s.mode <> 'normal' THEN s.updated_at END),
-		o.id, o.received_at
+		o.id, o.received_at, o.applied_generation::text
 		FROM usage_ledger_state s
 		JOIN usage_ledger_epochs e ON e.id=s.current_epoch
 		LEFT JOIN usage_recovery_records r ON r.id=e.recovery_record_id
-		LEFT JOIN LATERAL (SELECT id, received_at FROM node_observations
+		LEFT JOIN LATERAL (SELECT id, received_at, applied_generation FROM node_observations
 		 WHERE node_id=$1 AND incarnation_id=$2
 		 ORDER BY received_at DESC, id DESC LIMIT 1) o ON true
 		WHERE s.id='00000000-0000-0000-0000-000000000130'`,
-		nodeID, incarnationID, usage.RestoreObservationPrincipal).Scan(&mode, &frozenAt, &observationID, &receivedAt)
+		nodeID, incarnationID, usage.RestoreObservationPrincipal).Scan(&mode, &frozenAt, &observationID, &receivedAt, &appliedGen)
 	if err != nil {
-		return nil, uuid.Nil, err
+		return nil, uuid.Nil, 0, err
 	}
 	if frozenAt == nil && mode == "normal" {
-		return nil, uuid.Nil, nil
+		return nil, uuid.Nil, 0, nil
 	}
 	if frozenAt == nil || receivedAt == nil || !receivedAt.After(*frozenAt) {
-		return nil, uuid.Nil, apierr.New(apierr.DependencyUnavailable, usage.RestoreObservationStatus).
+		return nil, uuid.Nil, 0, apierr.New(apierr.DependencyUnavailable, usage.RestoreObservationStatus).
 			WithDetail("node_id", nodeID.String()).WithDetail("node_incarnation_id", incarnationID.String())
 	}
-	return frozenAt, *observationID, nil
+	generation, err := strconv.ParseUint(*appliedGen, 10, 64)
+	return frozenAt, *observationID, generation, err
 }
 
 // releaseRestoreHold records receipt evidence, not an applied-policy success.
@@ -282,13 +284,17 @@ func (c *Compiler) CompileTx(ctx context.Context, tx pgx.Tx, nodeID uuid.UUID) (
 		return CompiledDesiredState{}, apierr.Newf(apierr.StateConflict, "node %s has no active incarnation", nodeID)
 	}
 	incarnationID := *currentIncarnationID
-	frozenAt, restoreObservationID, err := restoreObservation(ctx, tx, nodeID, incarnationID)
+	frozenAt, restoreObservationID, freshAppliedGen, err := restoreObservation(ctx, tx, nodeID, incarnationID)
 	if err != nil {
 		return CompiledDesiredState{}, err
 	}
 
 	currentGen, _ := strconv.ParseUint(currentGenStr, 10, 64)
 	appliedGen, _ := strconv.ParseUint(appliedGenStr, 10, 64)
+	// A fresh central receipt can have an older node wall clock. In that case
+	// SubmitObservation preserves the projected nodes fields, but the receipt's
+	// applied generation still fences our first post-restore offer (D-095).
+	appliedGen = max(appliedGen, freshAppliedGen)
 	var maxStoredGenStr string
 	if err := tx.QueryRow(ctx, `
 		SELECT coalesce(max(generation), 0)::text

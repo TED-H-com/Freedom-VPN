@@ -276,3 +276,20 @@ func TestAT30_D095_DirectBeginRecoveryAlsoHolds(t *testing.T) {
 	f.submit(f.report(14))
 	f.assertFirstOffer()
 }
+
+func TestAT30_D095_FreshReceiptWithOlderNodeClock(t *testing.T) {
+	f := newRestoreFixture(t)
+	f.freeze()
+	f.begin()
+	f.now = f.now.Add(time.Second)
+	r := f.report(14)
+	r.ObservedAt = f.oldReport.ObservedAt.Add(-time.Minute)
+	f.submit(r)
+	// The observation writer intentionally leaves projected node fields alone
+	// for older observed_at. The fresh receipt still reports the retained 14.
+	var applied string
+	if err := f.pool.QueryRow(t.Context(), `SELECT applied_config_generation::text FROM nodes WHERE id=$1`, f.node).Scan(&applied); err != nil || applied != "11" {
+		t.Fatalf("older node-clock projection = %s, %v; want unchanged 11", applied, err)
+	}
+	f.assertFirstOffer()
+}
