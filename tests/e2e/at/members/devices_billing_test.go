@@ -163,6 +163,7 @@ func (l *live) payment(r *record) {
 	} else {
 		l.forwardingGate(r)
 		l.traceForwarding(r, "member-paid", device)
+		l.reauthorization(r, l.c, device, "member-paid", false, false)
 	}
 }
 
