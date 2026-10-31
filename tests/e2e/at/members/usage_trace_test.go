@@ -61,6 +61,7 @@ func (l *live) usageTrace(r *record) {
 	if err != nil {
 		return
 	}
+	conflictsBefore := l.count(`SELECT count(*) FROM usage_event_conflicts WHERE node_id=$1 AND incarnation_id=$2`, l.node, l.inc)
 	var seq decstr.U64
 	if l.pool.QueryRow(l.ctx, `SELECT (coalesce(max(event_seq),0)+1)::text FROM usage_events WHERE node_id=$1 AND incarnation_id=$2`, l.node, l.inc).Scan(&seq) != nil {
 		r.block("usage sequence read unavailable")
@@ -127,4 +128,6 @@ func (l *live) usageTrace(r *record) {
 	samples := l.count(`SELECT count(*) FROM usage_samples s JOIN usage_events e ON e.id=s.event_id WHERE e.node_id=$1 AND e.incarnation_id=$2 AND e.event_seq=$3::numeric`, l.node, l.inc, seq.String())
 	r.check("positive control durable evidence", "one receipt, unchanged sample count", fmt.Sprintf("receipts=%d; samples_before=%d; samples_after=%d", receipts, before, samples), "SELECT usage_events and usage_samples after duplicate", receipts == 1 && samples == before)
 
+	conflictsAfter := l.count(`SELECT count(*) FROM usage_event_conflicts WHERE node_id=$1 AND incarnation_id=$2`, l.node, l.inc)
+	r.check("usage diagnostic adds no sequence conflict", "conflict count unchanged", fmt.Sprintf("before=%d; after=%d", conflictsBefore, conflictsAfter), "read usage_event_conflicts for the real meter stream", conflictsBefore == conflictsAfter)
 }
