@@ -42,6 +42,13 @@ not advance generations. A concurrent explicit authorization is read by the
 compiler normally; the helper never changes device status or opens a revoke
 operation.
 
+The compiler holds the existing shared member/entitlement locks until its
+transaction commits. Fence creation already takes the member update lock. This
+serializes a first or previously grantless compile with fencing: either the
+compile commits first and its binding is visible to fanout, or the fence commits
+first and the binding read excludes it. A compile paused at signing cannot
+create an unnoticed grant after the detecting job is acknowledged.
+
 This is the same asynchronous propagation boundary as ordinary revocation.
 An already delivered signature is not remotely erased. The agent must fetch
 and apply the new generation; offline nodes retain the existing policy/lease
@@ -71,6 +78,12 @@ mapping. It verifies signed replacement on two exits, including a removed group;
 no generation change on an unrelated exit; no fabricated applied evidence;
 repeat sync stability; original-key replay retaining the fence; and a new
 explicit authorization restoring the device list and signed binding.
+
+`TestD077_FenceSerializesWithFirstBindingCompile` pauses a real compiler after
+eligibility reads and runs the fence job concurrently. PostgreSQL lock evidence
+establishes the ordering, and the final signed envelope must remove the device
+before the job returns. It covers the no-prior-envelope race found during the
+independent patch review.
 
 These are central PostgreSQL, compiler and worker tests with generated signing
 keys and test-only external peer read-back. They are not live NetBird, packet

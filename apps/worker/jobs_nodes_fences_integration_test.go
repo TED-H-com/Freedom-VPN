@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 	"slices"
+	"sync"
 	"testing"
 	"time"
 
@@ -15,6 +16,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/internal/desiredstate"
 	"github.com/TED-H-com/Freedom-VPN/internal/leases"
 	membersruntime "github.com/TED-H-com/Freedom-VPN/internal/members/runtime"
+	"github.com/TED-H-com/Freedom-VPN/internal/signing"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 	"github.com/TED-H-com/Freedom-VPN/pkg/envelope"
@@ -178,5 +180,101 @@ func TestD077_FenceRecompilesBoundExitsBeforeJobReceipt(t *testing.T) {
 				t.Fatal("explicit re-authorization did not restore the signed binding")
 			}
 		})
+	}
+}
+
+// TEST ONLY signer pauses after the compiler has read device eligibility.
+type fencePausedSigner struct {
+	provider signing.Provider
+	entered  chan struct{}
+	release  chan struct{}
+}
+
+func (s fencePausedSigner) Sign(ctx context.Context, purpose envelope.Purpose, signed any) (envelope.Envelope, error) {
+	close(s.entered)
+	select {
+	case <-s.release:
+		return s.provider.SignEnvelope(ctx, signing.Purpose(purpose), signed)
+	case <-ctx.Done():
+		return envelope.Envelope{}, ctx.Err()
+	}
+}
+
+// D-077: a first compile must commit before the fence, or read the committed
+// fence. Otherwise fanout can see no stored binding and acknowledge too early.
+func TestD077_FenceSerializesWithFirstBindingCompile(t *testing.T) {
+	f := newMemberPolicyFixture(t, true)
+	app, err := Open(t.Context(), Dependencies{Config: f.config, Pool: f.pool}, f.memberDomain(), nodes())
+	if err != nil {
+		t.Fatal(err)
+	}
+	device, err := f.services.HTTP.Devices.AuthorizeDevice(t.Context(), memberPolicyCommand("system", uuid.New()), f.peer.peer)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = f.services.HTTP.Devices.SyncDevice(t.Context(), device.DeviceID); err != nil {
+		t.Fatal(err)
+	}
+	ctx, cancel := context.WithTimeout(t.Context(), 15*time.Second)
+	pause := fencePausedSigner{provider: f.provider, entered: make(chan struct{}), release: make(chan struct{})}
+	var release sync.Once
+	unblock := func() { release.Do(func() { close(pause.release) }) }
+	t.Cleanup(func() { unblock(); cancel() })
+	compiler := desiredstate.NewCompiler(f.pool, pause)
+	compiled := make(chan error, 1)
+	go func() { _, err := compiler.Compile(ctx, f.node); compiled <- err }()
+	select {
+	case <-pause.entered:
+	case err := <-compiled:
+		t.Fatal("first compile failed before reaching signer", err)
+	case <-ctx.Done():
+		t.Fatal(ctx.Err())
+	}
+	f.peer.peer.Authorized, f.peer.peer.Groups = false, nil
+	var event db.ClaimedEvent
+	event.EventType, event.SchemaVersion = "netbird.device_sync", 1
+	if err = f.pool.QueryRow(ctx, `SELECT aggregate_id,aggregate_version::text,payload FROM outbox_events WHERE event_type='netbird.device_sync' AND aggregate_id=$1 LIMIT 1`, device.DeviceID).Scan(&event.AggregateID, &event.AggregateVersion, &event.Payload); err != nil {
+		t.Fatal(err)
+	}
+	job := make(chan error, 1)
+	go func() { _, err := memberJob(app.context(ctx), event); job <- err }()
+	// Wait for either real PostgreSQL lock evidence or the unsafe early job
+	// completion. No scheduling sleep is used to decide which ordering occurred.
+	tick := time.NewTicker(10 * time.Millisecond)
+	defer tick.Stop()
+	finished := false
+waitFence:
+	for {
+		select {
+		case err = <-job:
+			if err != nil {
+				t.Fatal(err)
+			}
+			finished = true
+			break waitFence
+		case <-tick.C:
+			var waiting bool
+			if err = f.pool.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM pg_stat_activity WHERE datname=current_database() AND wait_event_type='Lock' AND query='SELECT id FROM members WHERE id=$1 FOR UPDATE')`).Scan(&waiting); err != nil {
+				t.Fatal(err)
+			}
+			if waiting {
+				break waitFence
+			}
+		case <-ctx.Done():
+			t.Fatal(ctx.Err())
+		}
+	}
+	unblock()
+	if err = <-compiled; err != nil {
+		t.Fatal(err)
+	}
+	if !finished {
+		if err = <-job; err != nil {
+			t.Fatal(err)
+		}
+	}
+	state := fenceState(t, f, f.node)
+	if len(state.DeviceBindings) != 0 || state.ConfigGeneration != 2 {
+		t.Fatalf("fence job acknowledged before concurrent first compile was invalidated: early=%v generation=%s bindings=%v", finished, state.ConfigGeneration, state.DeviceBindings)
 	}
 }

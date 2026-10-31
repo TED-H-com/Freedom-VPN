@@ -318,7 +318,11 @@ func (r *DBEntitlementReader) ListEntitledMembersForGroups(ctx context.Context, 
 		}
 	}
 
-	serving, err := entitlement.ListServingMembersForGroups(ctx, r.q, groupIDs, asOf)
+	// CompileTx supplies its transaction, so these locks live through signing
+	// and persistence. SyncDevice takes the member update lock when opening a
+	// fence: it must see this compile committed before selecting bound exits,
+	// or commit first so the binding query below observes the fence (D-077).
+	serving, err := entitlement.ListServingMembersForGroupsForShare(ctx, r.q, groupIDs, asOf)
 	if err != nil {
 		return nil, err
 	}
