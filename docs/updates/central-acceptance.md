@@ -50,3 +50,24 @@ Review regression coverage:
 | 15.3 | `TestUPD02_FailedRegistrationAndOperationEvidence`: pending reuse, failed re-registration conflict and original-command replay |
 | 4 / D-029 | `releasetest.AssertLedger`: every operation reads through `operations.Store.Get`; audit pages include all persisted events with zero anomalies; verification failure has a safe step and top-level error |
 | Applied policy generation | `TestAT26_AppliedPolicyEvidenceIsImmutable`: exact large decimal and matching policy refs, conflict handling, history cannot rewrite accepted evidence |
+
+## Installer-applied results (D-089)
+
+`TestD089_InstallerAcceptReplayAndIsolation` validates the canonical installer
+example against OpenAPI, accepts both architecture fixtures, checks exact and
+concurrent ACK replay, conflicting content, immutable rows, audit provenance,
+node release/summary projection and unchanged central-table rows/counts.
+`TestD089_InstallerRejections` covers identity/incarnation, publication,
+central-issued IDs, source-less unknown jobs, hash and terminal-evidence fences.
+`TestD089_InstallerDoesNotCompleteQueuedBatch` preserves queued work and proves
+explicit `source: central` still completes its authorized job.
+`TestD089_InstallerPreHealthBaseline` checks the unchanged-release failure rule.
+`TestD089_InstallerAcceptanceClosesHeartbeatSeeding` fences later heartbeat seeding
+even after an accepted failure on a node whose current version remains null.
+`TestD089_InstallerAdminNodeHTTP` exercises admin node detail and list responses.
+`TestD089_InstallerFailuresAndTransaction` proves failure/rollback preserve node
+versions, already-current establishes last-good, and caller rollback undoes both
+receipt and projection. `TestD097_InstallerProjectionCentralPrecedenceAndIncarnation`
+proves central-job precedence, unchanged confirmed batch evidence, latest
+accepted source selection, and rejection/old-incarnation exclusion. These are
+central integration proofs, not physical installer or real ARM64 runs.

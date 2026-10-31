@@ -53,18 +53,6 @@ func (s *Service) submitResult(ctx context.Context, i Identity, raw []byte) (api
 	if value, err := r.CurrentReleaseId.Get(); err == nil {
 		currentReleaseID = &value
 	}
-	var health *api.UpdateHealth
-	if value, err := r.Health.Get(); err == nil {
-		health = &value
-	}
-	var finishedAt *time.Time
-	if value, err := r.FinishedAt.Get(); err == nil {
-		finishedAt = &value
-	}
-	var usageCheckpoint *api.UpdateUsageCheckpoint
-	if value, err := r.UsageCheckpoint.Get(); err == nil {
-		usageCheckpoint = &value
-	}
 	var errorCode *api.ErrorCode
 	if value, err := r.ErrorCode.Get(); err == nil {
 		errorCode = &value
@@ -92,6 +80,10 @@ func (s *Service) submitResult(ctx context.Context, i Identity, raw []byte) (api
 			return e
 		}
 		if e = authenticate(ctx, tx, n, i); e != nil {
+			return e
+		}
+		if r.Source != nil && *r.Source == api.UpdateResultSourceInstaller {
+			ack, e = s.acceptInstallerResult(ctx, tx, n, i, r, raw, digest)
 			return e
 		}
 		var oldHash string
@@ -167,29 +159,10 @@ func (s *Service) submitResult(ctx context.Context, i Identity, raw []byte) (api
 			if !r.StartedAt.Before(*j.validUntil) || r.StartedAt.Before(*j.issued) {
 				return apierr.New(apierr.AuthorizationExpired, "Transaction started after authorization expired")
 			}
-			if isTerminal && (currentReleaseID == nil || finishedAt == nil || finishedAt.Before(r.StartedAt)) {
-				return apierr.New(apierr.ValidationFailed, "Terminal result requires actual version and completion time")
+			if e := validateCompletionEvidence(r, j.releaseID, j.attemptRelease); e != nil {
+				return e
 			}
-			if r.State == api.UpdateResultStateFailed && errorCode == nil {
-				return apierr.New(apierr.ValidationFailed, "Failed result requires an error code")
-			}
-			// D-062(a): a failed pre-health stage cannot invent checks or claim the
-			// candidate as current. The baseline was captured at first authorization.
-			preHealthFailure := r.State == api.UpdateResultStateFailed && beforeHealth(stage)
-			if preHealthFailure {
-				if health != nil || j.attemptRelease == nil || !equalID(j.attemptRelease, currentReleaseID) {
-					return apierr.New(apierr.ValidationFailed, "Pre-health failure requires null health, an error and the unchanged attempt release")
-				}
-			} else if isTerminal && health == nil {
-				return apierr.New(apierr.ValidationFailed, "Terminal result at or after health checks requires health evidence")
-			}
-			if usageCheckpoint != nil && usageCheckpoint.CentralAckedThrough > usageCheckpoint.LastDurableEventSeq {
-				return apierr.New(apierr.CheckpointFailed, "Usage acknowledgement exceeds durable checkpoint")
-			}
-			success := r.State == "succeeded" || r.State == "already_current"
-			if success && (currentReleaseID == nil || *currentReleaseID != j.releaseID || !healthy(health) || recoveryRequired || errorCode != nil || usageCheckpoint == nil) {
-				return apierr.New(apierr.HealthCheckFailed, "Target completion requires version, health and durable checkpoint evidence")
-			}
+			success := r.State == api.UpdateResultStateSucceeded || r.State == api.UpdateResultStateAlreadyCurrent
 			manifest, e := s.releases.Manifest(ctx, tx, j.releaseID)
 			if e != nil {
 				return e
@@ -228,31 +201,8 @@ func (s *Service) submitResult(ctx context.Context, i Identity, raw []byte) (api
 					}
 					return audit.AppendEvent(ctx, tx, event)
 				}
-				rollbackManifest, e := s.releases.Manifest(ctx, tx, *currentReleaseID)
-				if e != nil {
+				if e := s.validateRollbackEvidence(ctx, tx, manifest, r); e != nil {
 					return e
-				}
-				// D-034e/D-062(c): serving authorization differs from approval to
-				// target a new install. Still require a verified, trusted manifest.
-				var verified bool
-				if e = tx.QueryRow(ctx, `SELECT state='verified' FROM release_verifications WHERE release_id=$1`, *currentReleaseID).Scan(&verified); e != nil {
-					return e
-				}
-				if !verified {
-					return apierr.New(apierr.ReleaseNotApproved, "Rollback release is not verified")
-				}
-				rollbackRaw, e := json.Marshal(rollbackManifest)
-				if e != nil {
-					return e
-				}
-				if _, _, e = s.releases.Validator.ValidateManifest(rollbackRaw, time.Now().UTC()); e != nil {
-					return e
-				}
-				if r.StateSchemaVersion != rollbackManifest.Signed.Compatibility.StateSchemaTo {
-					return apierr.New(apierr.SchemaIncompatible, "Rollback state schema differs from the active release")
-				}
-				if !manifest.Signed.Rollback.StateReadableByPrevious || (len(manifest.Signed.Rollback.AllowedReleaseIds) > 0 && !slices.Contains(manifest.Signed.Rollback.AllowedReleaseIds, *currentReleaseID)) || *currentReleaseID == j.releaseID || !healthy(health) {
-					return apierr.New(apierr.SchemaIncompatible, "Rollback lacks allowed release and health evidence")
 				}
 			}
 			if r.MemberForwardingEnabled && (n.publication != "published" || r.PublicationIntent != "published" || r.State == "applying" || r.State == "checking" || recovery || currentReleaseID == nil || !slices.Contains(serving, *currentReleaseID) || slices.Contains(revoked, *currentReleaseID)) {
