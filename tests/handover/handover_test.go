@@ -2806,7 +2806,7 @@ func TestHandover_Followup16Claims(t *testing.T) {
 	})
 	t.Run("enrollment7_freeze_and_five_blockers", func(t *testing.T) {
 		const run = "59ef4bf8-7d4a-490f-a74d-6b54394375e0"
-		const base = "docs/e2e/at/enrollment/history/" + run + "/"
+		const base = "docs/e2e/at/enrollment/history/follow-up-7/"
 		checkHandoverRecord(t, root, base+"AT06.json", run, "pass", 424, 0, 0)
 		checkHandoverRecord(t, root, base+"AT07.json", run, "blocked", 36, 5, 0)
 		require(ops, "AT06 424 pass / 0 blocked / 0 fail", "AT07 36 pass / 5 blocked / 0 fail", "Five rows blocked on D-116 / D-105", "within **227 ms**", "survived a process restart", "zero un-ACKed bytes")
@@ -3211,7 +3211,7 @@ func TestHandover_Followup17Claims(t *testing.T) {
 		require(doc, "ENR-05 passed in this harness", "final_sample / failed / rolled_back", "baseline_failed", "HASH_MISMATCH", "**2/0/0 passed**", "4 > retained 3", "**202** receipt", "SECOPS-21 remains open", "secops 13", "installer 6 / updater 17", "netlab 19 / wire-nodes 32", "both selected underlay families", "not yet proved", "generation-30/full-history", "journal-copy", "current stream's CLI ACK is not the retired ACK", "not implemented", "13 open / 2 retired")
 	})
 	t.Run("unpromoted_acceptance_and_snapshot_integrity", func(t *testing.T) {
-		checkHandoverRecord(t, root, "docs/e2e/at/enrollment/history/59ef4bf8-7d4a-490f-a74d-6b54394375e0/AT07.json", "59ef4bf8-7d4a-490f-a74d-6b54394375e0", "blocked", 36, 5, 0)
+		checkHandoverRecord(t, root, "docs/e2e/at/enrollment/history/follow-up-7/AT07.json", "59ef4bf8-7d4a-490f-a74d-6b54394375e0", "blocked", 36, 5, 0)
 		for _, path := range []string{fixture + "cf81f6f8-4ccf-43d2-aae2-10121f6b169d-AT29.json", fixture + "cf81f6f8-4ccf-43d2-aae2-10121f6b169d-AT31.json", fixture + "69f92f49-73dc-4779-8101-dfb6a802a96b-AT09.json"} {
 			var r struct{ Status string }
 			if err := json.Unmarshal([]byte(readOwnedDoc(t, root, path)), &r); err != nil {

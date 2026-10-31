@@ -42,8 +42,8 @@ MISSING = {
     "peer_uniqueness": "ENR-04 join cycle did not record EnrollmentPeerInventory; devstack follow-up 12 PR #204 exports JoinEnrolledIdentity",
     "distinct_first_boot": "ENR-07 MachineIdentityFingerprints was not read; devstack follow-up 12 PR #204 exports it",
     "machine_identity": "ENR-07 MachineIdentityFingerprints was not read; devstack follow-up 12 PR #204 exports it",
-    "counted_unacked_usage": "ENR-05: D-116 installer owner chain blocks serving; see docs/e2e/runs/2026-10-31/followup17/a7c41436-82b3-4665-b75c-e2887f2e1009/installer-owner-chain.md. D-105 revision 14 specifies the handoff; D-112 central acceptance and the node uploader are not merged. Current Reenroll preserves events unuploaded.",
-    "installer_rerun": "ENR-06: installer probe not reached. Installer #279 fixes the prior startup cause; devstack #294 exports RestoreInstallerServices; D-116 still blocks serving.",
+    "counted_unacked_usage": "ENR-05: live installer serving/counting prerequisite not reached; see installer_prerequisite for component and step.",
+    "installer_rerun": "ENR-06: installer probe not reached. D-116 is available; see installer_prerequisite for the measured component and step.",
     "identity_ledger_preserved": "ENR-05/ENR-06: requires a running installer-node with counted unACKed usage, retired mode 0700 and newest-first incarnation history. Not reached.",
     "controlled_reinstall": "ENR-06: ControlledReinstall on installer-node not reached; a successful initial install and documented service restoration are prerequisites.",
     "old_certificate_denied": "ENR-06: retired installer certificate unavailable until ControlledReinstall; desired-state and observation denial not reached.",
@@ -140,6 +140,8 @@ def digest_labels(value):
 def previous(docdir, at):
     path = docdir / (at + ".json")
     if not path.exists():
+        path = docdir / "history/follow-up-7" / (at + ".json")
+    if not path.exists():
         path = docdir / "history/follow-up-6" / (at + ".json")
     if not path.exists():
         return []
@@ -223,7 +225,38 @@ def lookup_review_passed(checks):
     return True
 
 
+# Exact diagnostic deadline miss, retained unchanged. The production uploader
+# runs every 60s; AT20 allows 90s. No unrelated prior failure is covered.
+INSTALLER_REVIEW_RUN = "57b90cf6-d233-4209-a114-765ef15376f7"
+CURSOR_REVIEW_RUN = "805ba242-f343-44ab-9221-d250d81b95b9"
+
+
+def installer_review_passed(checks):
+    required = [("AT07", n) for n in (
+        "installer_rerun", "controlled_reinstall", "counted_unacked_usage",
+        "identity_ledger_preserved", "historical_usage_retained",
+        "BeforePlusHeldByteEquality", "OriginalPayloadAndHistoricalAttribution",
+        "OriginACKAndIndependentCurrentACK", "AgentSameKeyStoredResultReplay", "old_certificate_denied", "probe_process")]
+    required.append(("AT06", "probe_process"))
+    for at, name in required:
+        hits = [c for c in checks if c.get("at") == at and c["name"] == name]
+        if not hits or any(c["status"] != "pass" for c in hits):
+            return False
+    return True
+
+
 def review_covers(at, prior, checks):
+    if prior.get("run_id") == CURSOR_REVIEW_RUN:
+        covered = prior.get("name") == "probe_process" or (at == "AT07" and (
+            prior.get("name") == "OriginACKAndIndependentCurrentACK" or (
+            prior.get("name") == "installer_prerequisite" and
+            prior.get("detail", {}).get("step") == "autonomous origin upload with new presenter")))
+        return covered and installer_review_passed(checks)
+    if prior.get("run_id") == INSTALLER_REVIEW_RUN:
+        covered = prior.get("name") == "probe_process" or (
+            at == "AT07" and prior.get("name") == "installer_prerequisite" and
+            prior.get("detail", {}).get("step") == "count baseline traffic and upload")
+        return covered and installer_review_passed(checks)
     if prior.get("run_id") == LOOKUP_REVIEW_RUN and prior.get("name") in LOOKUP_FAILURES.get(at, ()):
         return lookup_review_passed(checks)
     spec = REVIEWED.get(at)
@@ -304,6 +337,20 @@ def records(meta, observed, prior):
                 "cause": "The primary member fixture names its NetBird peer fvpn-member-e2e; this harness mistakenly looked for the container name. The real member was already authorized and the ordinary node already had a populated serving lease. Only serving_freeze_source failed, propagating exit 1 to both AT process rows. Freeze withdrawal/restart and all seven installer subset checks passed in that attempt.",
                 "correction": "Pass the primary fixture's documented peer name to JoinNativeMember. Require current source, freeze withdrawal/restart and both process checks to pass before resolving these exact historical rows; retain every original result.",
             }
+        if any(c.get("run_id") == INSTALLER_REVIEW_RUN and c["status"] == "fail" for c in prior[at]):
+            record["follow_up_8_deadline_review"] = {
+                "run_id": INSTALLER_REVIEW_RUN,
+                "disposition": "resolved" if installer_review_passed(review_checks) else "unresolved",
+                "cause": "Installer serving and counted traffic passed. The harness allowed only 45s for the production 60s upload cadence; AT20 waitForUploadedTraffic allows 90s. The timeout propagated to both process rows. These exact failures stay in prior_checks.",
+                "correction": "Use AT20's 90s baseline upload allowance and retain the CLI poll evidence. Require all five composed rows, all three named accounting assertions, retired-certificate denial and both successful processes. Also republish explicitly through the API before fresh post-reinstall traffic: revoke disables publication.",
+            }
+        if any(c.get("run_id") == CURSOR_REVIEW_RUN and c["status"] == "fail" for c in prior[at]):
+            record["follow_up_8_cursor_review"] = {
+                "run_id": CURSOR_REVIEW_RUN,
+                "disposition": "resolved" if installer_review_passed(review_checks) else "unresolved",
+                "cause": "Origin ACK reached 3 with unchanged payloads and independent current ACK 0. The new stream already held an empty seq-1 event. The harness incorrectly required last_seq 0, a condition absent from AT20's assertion. Actual failure rows remain unchanged.",
+                "correction": "Apply AT20's origin-selected ACK and same-key canonical replay assertions, unchanged current ACK and totals, plus the new stream's first sequence 1. Record last/next sequence separately; an empty initial event is not counted traffic. Require actual fresh counted usage and its ACK after API republication.",
+            }
         result[at] = record
     return result
 
@@ -324,10 +371,11 @@ def persist(docdir, recs, archive):
                 f"Source: `{rec['source']['commit']}`; tree SHA-256 `{rec['source']['tree_sha256']}`.\n\n"
                 f"Images: {rec['image_evidence']}.\n\nRequirements: {', '.join(rec['requirements'])}.\n\n"
                 f"Prior checks retained: {len(rec['prior_checks'])}.\n\n"
-                "| Check | Status | Observation |\n|---|---|---|\n")
+                "| Check | Status | Owner | Evidence / observation |\n|---|---|---|---|\n")
         for c in rec["checks"]:
             detail = json.dumps(c["detail"], ensure_ascii=False) if not isinstance(c["detail"], str) else c["detail"]
-            text += f"| {c['name']} | {c['status']} | {detail.replace('|', '/')} |\n"
+            owner = c["detail"].get("owner", "enrollment") if isinstance(c["detail"], dict) else "enrollment"
+            text += f"| {c['name']} | {c['status']} | {owner} | [{at}.json](./{at}.json): {detail.replace('|', '/')} |\n"
         text += f"\nFull provenance and prior checks: [{at}.json]({at}.json). Requests: [requests.md](requests.md).\n"
         for directory in (docdir, archive):
             (directory / (at + ".json")).write_text(raw)

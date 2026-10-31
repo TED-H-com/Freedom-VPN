@@ -16,13 +16,7 @@ import (
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/tests/e2e"
-	"github.com/google/uuid"
 )
-
-const installerOwnerProof = "docs/e2e/runs/2026-10-31/followup17/a7c41436-82b3-4665-b75c-e2887f2e1009/installer-owner-chain.md"
-const installerServingGap = "D-116 / ENR-06: installer inet fvpn owner marker fails verifyChainSet with HOOK_PRIORITY_MISMATCH; serving rerun/reinstall and nonzero same-slot usage remain blocked. Proof: " + installerOwnerProof
-const usageInstallerGap = "D-105 / D-112 / ENR-05: contracts revision 14 defines the retired-stream handoff; central acceptance and node uploader are not merged on this source. Before+held-byte equality and historical attribution remain blocked. Contract proof: contracts/openapi.yaml submitUsageBatch and docs/contracts/README.md revision 14. Implementation boundary: packaging/installer/reenroll.go retains events without upload. Serving prerequisite also blocked by D-116. Proof: " + installerOwnerProof
-const installerStartupGap = "ENR-06: initial installer prerequisite did not complete; see actual exit, failing step, journal, unit and socket observations."
 
 // This is a narrow availability/snapshot proof on the regular node. It must
 // never satisfy counted_unacked_usage: the installer uses a different slot.
@@ -137,134 +131,6 @@ func installerOutcomeView(out e2e.InstallerOutcome, err error) map[string]any {
 		"bound_state_before_sha256": out.BoundStateBefore, "retired_bound_state_sha256": out.RetiredBoundState,
 		"before": installerHashesView(out.Before), "after": installerHashesView(out.Hashes), "services_to_restore": out.Services,
 	}
-}
-
-func (p *probe) installerHooks() {
-	gap := installerStartupGap
-	oldCertificateDenied := false
-	detail := map[string]any{"source_pr": 294, "installer_fix_pr": 279, "slot": "installer-node", "container": "fvpn-w4-enroll-installer-node",
-		"response_file_present": true, "service_restoration_export": "RestoreInstallerServices", "serving_baseline_measured": false,
-		"serving_blocker_proof": installerOwnerProof, "retired_stream_decisions": []string{"D-105", "D-112"}}
-	defer func() {
-		p.note("AT07", "counted_unacked_usage", "blocked", map[string]any{"gap": installerServingGap, "counted_traffic_started": false, "controlled_reinstall_run": detail["controlled_reinstall"] != nil})
-		for _, name := range []string{"installer_rerun", "identity_ledger_preserved", "controlled_reinstall", "old_certificate_denied", "historical_usage_retained"} {
-			if name == "old_certificate_denied" && oldCertificateDenied {
-				p.note("AT07", name, "pass", map[string]any{"prerequisite": detail,
-					"scope": "retired installer certificate denied on direct mTLS desired-state and observations; no serving or usage claim"})
-				continue
-			}
-			rowGap := gap
-			if name == "identity_ledger_preserved" || name == "historical_usage_retained" {
-				rowGap = usageInstallerGap
-			}
-			p.note("AT07", name, "blocked", map[string]any{"gap": rowGap, "prerequisite": detail, "check": name})
-		}
-	}()
-	if err := p.stack.PrepareInstallerNode(p.ctx); err != nil {
-		gap = "ENR-06: PrepareInstallerNode failed before invocation. Owner devstack: restore the dedicated systemd fixture; diagnostic content withheld."
-		return
-	}
-	detail["image_digest"] = dockerText(p.ctx, "inspect", "--format={{.Image}}", "fvpn-w4-enroll-installer-node")
-	token, ok := p.issue("installer-initial", 900)
-	if !ok {
-		gap = "ENR-06: initial installer token API prerequisite failed"
-		return
-	}
-	if err := p.stack.StageInstallerToken(p.ctx, "installer-node", token.token); err != nil {
-		gap = "ENR-06: StageInstallerToken failed; owner devstack"
-		return
-	}
-	detail["install_started_at"] = time.Now().UTC().Format(time.RFC3339Nano)
-	installed, err := p.stack.RerunInstaller(p.ctx, "installer-node")
-	detail["install_finished_at"] = time.Now().UTC().Format(time.RFC3339Nano)
-	detail["initial_install"] = installerOutcomeView(installed, err)
-	detail["after_initial_install"] = p.installerDiagnostics("initial", installed)
-	if node, parseErr := uuid.Parse(installed.NodeID); parseErr == nil {
-		detail["projection_after_install"] = p.identityProjection(node)
-		if inc, incErr := uuid.Parse(installed.Incarnation); incErr == nil {
-			p.oneIncarnation("AT07", node, inc, token.enrollment.EnrollmentId)
-		}
-	}
-	if err != nil || installed.Exit != 0 || installed.Status != "installed" {
-		p.restoreInstaller("initial-error", installed, detail)
-		return
-	}
-	p.restoreInstaller("initial", installed, detail)
-	gap = installerServingGap
-	// Each invocation's own before/after snapshot is quiescent. Agent writes
-	// between restored calls are legitimate and are not hash-equality failures.
-	again, err := p.stack.RerunInstaller(p.ctx, "installer-node")
-	detail["rerun"] = installerOutcomeView(again, err)
-	detail["after_rerun"] = p.installerDiagnostics("rerun", again)
-	stable := err == nil && again.Exit == 0 && again.Status == "already_current" && again.Before == again.Hashes
-	detail["rerun_hashes_unchanged"] = stable
-	p.expect("AT07", "installer_stopped_hash_equality", stable, installerOutcomeView(again, err))
-	p.expect("AT07", "installer_rerun_identity", stable && installed.NodeID == again.NodeID && installed.Incarnation == again.Incarnation,
-		map[string]any{"initial_node": installed.NodeID, "initial_incarnation": installed.Incarnation, "rerun": installerOutcomeView(again, err)})
-	p.installerUsageHold()
-	p.restoreInstaller("rerun", again, detail)
-	if err != nil || again.Exit != 0 || again.Status != "already_current" {
-		gap = "ENR-06: idempotent RerunInstaller did not complete; see actual outcome and diagnostics."
-		return
-	}
-	node, nodeErr := uuid.Parse(installed.NodeID)
-	oldInc, incErr := uuid.Parse(installed.Incarnation)
-	if nodeErr != nil || incErr != nil {
-		gap = "ENR-06: installed identity IDs missing from wrapper outcome"
-		return
-	}
-	before, beforeResp, beforeErr := p.listIncarnations(node, "")
-	detail["history_before"] = installerHistoryView(before)
-	detail["history_before_read_ok"] = beforeErr == nil && beforeResp.Status == 200
-	rev, revErr := p.revokeNodeReason(node, "TEST ONLY AT07 controlled installer reinstall")
-	detail["revoke_response"] = safeResponse(rev, revErr)
-	if revErr != nil || rev.Status != 202 {
-		gap = "ENR-06: API revocation prerequisite failed; ControlledReinstall not attempted"
-		return
-	}
-	// These additional token assertions belong to the installer measurement;
-	// retain AT06's existing regression population.
-	firstCheck := len(p.checks)
-	fresh, issued := p.issueOn("installer-reinstall", 900, &node)
-	for i := firstCheck; i < len(p.checks); i++ {
-		p.checks[i].AT = "AT07"
-	}
-	if !issued {
-		gap = "ENR-06: fresh same-Node API enrollment prerequisite failed"
-		return
-	}
-	detail["controlled_reinstall_started_at"] = time.Now().UTC().Format(time.RFC3339Nano)
-	reinstalled, reinstallErr := p.stack.ControlledReinstall(p.ctx, "installer-node", fresh.token)
-	detail["controlled_reinstall_finished_at"] = time.Now().UTC().Format(time.RFC3339Nano)
-	detail["controlled_reinstall"] = installerOutcomeView(reinstalled, reinstallErr)
-	detail["after_controlled_reinstall"] = p.installerDiagnostics("reinstall", reinstalled)
-	page, resp, readErr := p.listIncarnations(node, "")
-	detail["history_after"] = installerHistoryView(page)
-	detail["history_after_read_ok"] = readErr == nil && resp.Status == 200
-	detail["projection_after_reinstall"] = p.identityProjection(node)
-	detail["same_node_new_incarnation"] = reinstalled.NodeID == node.String() && reinstalled.Incarnation != "" && reinstalled.Incarnation != oldInc.String()
-	// A retained empty ledger is not the required counted backlog proof.
-	detail["retired_identity_hashes_match"] = reinstalled.RetiredMode == "700" && reinstalled.RetiredHashes.Key == reinstalled.Before.Key && reinstalled.RetiredHashes.Cert == reinstalled.Before.Cert && reinstalled.RetiredHashes.NodeJSON == reinstalled.Before.NodeJSON
-	retained := reinstalled.RetiredMode == "700" && reinstalled.RetiredHashes.Key == reinstalled.Before.Key &&
-		reinstalled.RetiredHashes.Cert == reinstalled.Before.Cert && reinstalled.RetiredHashes.NodeJSON == reinstalled.Before.NodeJSON &&
-		len(reinstalled.BoundStateBefore) == 4 && sameStrings(reinstalled.BoundStateBefore, reinstalled.RetiredBoundState) &&
-		reinstalled.Before.UsageDB == reinstalled.Hashes.UsageDB && reinstalled.Before.UsageWAL == reinstalled.Hashes.UsageWAL
-	history := readErr == nil && resp.Status == 200 && len(page.Items) == 2 &&
-		page.Items[0].IncarnationId.String() == reinstalled.Incarnation && page.Items[0].Current &&
-		page.Items[1].IncarnationId == oldInc && !page.Items[1].Current && page.Items[1].State == "retired"
-	p.expect("AT07", "installer_reinstall_identity", reinstallErr == nil && reinstalled.Exit == 0 && reinstalled.Status == "reenrolled" &&
-		detail["same_node_new_incarnation"] == true && retained && history,
-		map[string]any{"outcome": installerOutcomeView(reinstalled, reinstallErr), "history": installerHistoryView(page),
-			"retained_files_match": retained, "newest_first_history": history, "scope": "stopped files and identity only; nonzero retained usage is blocked"})
-	p.restoreInstaller("reinstall", reinstalled, detail)
-	if reinstallErr != nil || reinstalled.Exit != 0 || reinstalled.Status != "reenrolled" {
-		gap = "ENR-06: ControlledReinstall did not complete; see actual outcome and diagnostics. Owner installer/devstack."
-		return
-	}
-	denials, denied := p.installerRetiredCertificate()
-	detail["old_certificate_denial"] = denials
-	newInc, newIncErr := uuid.Parse(reinstalled.Incarnation)
-	oldCertificateDenied = denied && newIncErr == nil && newInc != oldInc && newInc != uuid.Nil && reinstalled.NodeID == node.String()
 }
 
 func installerHistoryView(page api.NodeIncarnationList) []map[string]any {

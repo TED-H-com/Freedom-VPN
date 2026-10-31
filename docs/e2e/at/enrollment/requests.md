@@ -1,46 +1,61 @@
-# Enrollment acceptance requests — follow-up 7
+# Enrollment acceptance requests — follow-up 8
 
-TEST ONLY. Dated 2026-10-31. D-102 enrollment answer is present in
-[RESPONSES.md](../../RESPONSES.md#enrollment--2026-10-31).
-Shared installer-node usage exports and RestoreInstallerServices are delivered
-by devstack follow-up 17 (#294); this run checks their real behavior.
+2026-10-31 — **1 request to orchestrator.**
 
-## ENR-06 — serving installer prerequisite (D-116)
+## New current-stream gap precision defect — agent/meter and usage-central
 
-Installer/enforcement: move the installer marker out of inet fvpn (installer
-follow-up 4), then rerun serving installer retention and restoration checks.
-The existing marker fails verifyChainSet with HOOK_PRIORITY_MISMATCH.
-[Authoritative product proof](../../runs/2026-10-31/followup17/a7c41436-82b3-4665-b75c-e2887f2e1009/installer-owner-chain.md).
-Stopped file hashes, identity and restored systemd state cannot close serving
-rerun/reinstall or nonzero retained usage.
+[Deciding evidence](current-stream-gap.md): current gap event 1 spans 1 ns;
+PostgreSQL stores both endpoints identically and rejects
+`usage_events_interval_check`. Repeated retryable uploads cannot advance current
+ACK beyond 0; counted event 2 retains 908 bytes. The earlier retired stream is
+successfully ACKed through 3 with correct historical attribution.
 
-## ENR-05 — retired-stream delivery (D-105 / D-112)
+Route to the owners of `node/internal/meter/delta.go` and
+`internal/usage/ingest.go` / central timestamp persistence. Fix generation and
+handle already immutable blocked gaps without rewriting this lane's events or
+loosening accounting/isolation. Those paths are outside enrollment ownership;
+none was edited. Rerun the composed reinstall/current-ACK check after the fix.
 
-Usage-central follow-up 4 and usage-agent follow-up 3: complete the revision-14
-retired-stream handoff, including authorized once-only delivery after revocation.
-Before-plus-held-byte equality and old-incarnation attribution remain blocked
-until both implementations merge. No retired event is submitted under the new
-identity by this harness.
+| Row | Status | Owner | Evidence |
+|---|---|---|---|
+| installer_rerun | pass | installer | Same identity and stopped file equality, restored serving and counted traffic; AT07 JSON and text rulesets. Devstack 18 installer-marker-migration / installer-wrappers corroborate. |
+| controlled_reinstall | blocked | agent/meter; usage-central | Wrapper, new identity, retained files, strict verifier, serving and fresh traffic pass. New current stream cannot ACK its 1 ns gap; [deciding evidence](current-stream-gap.md). This is not D-116. |
+| counted_unacked_usage | pass | agent / meter | Installer-node nonzero held upload/download, TCP/UDP receipts and counter increases; devstack 18 installer-usage corroborates. |
+| identity_ledger_preserved | pass | usage / agent | Original canonical payloads/hashes/ACK survive D-118 adoption; original stream delivered first using the current presenter. |
+| historical_usage_retained | pass | usage / control | AT20 named equality, historical samples, canonical same-key replay and independent ACKs all pass. |
 
-## D-098 archive
 
-Follow-up 6 root records were moved byte-identically before the new run to
-[history/follow-up-6](history/follow-up-6/README.md). The current run retains all
-prior check outcomes. No pin outside this lane is changed.
+## D-102 answers consumed
 
-## Follow-up 7 disposition — 2026-10-31
+[Enrollment response](../../RESPONSES.md#enrollment--2026-10-31): installer-node
+hold/snapshot/transport exports, ConfigureInstallerServing and shared service
+restoration are exercised. Its old D-116 blocker wording is superseded by #302,
+[devstack 18](../../runs/2026-10-31/followup18/README.md) and this lane's live
+marker/serving evidence. Legacy-marker migration is cited from devstack's
+installer-marker-migration row; this lane never manually edits markers.
 
-Run `59ef4bf8-7d4a-490f-a74d-6b54394375e0`: AT06 **424/0/0**, AT07 **36/5/0**; both phases 0 HTTP 429.
-ENR-02/03 serving-source withdrawal and restart persistence are **closed** by
-new measurements: one lease member and six live accept rules before the fault,
-227 ms conservative withdrawal bound against a 5-second heartbeat, persisted
-latch and fresh non-serving restart evidence. Isolation's earlier partial proof
-is not promoted. The native lookup defect in the diagnostic attempt is resolved
-only by the current passing setup/freeze/process checks; its records remain.
+[Usage response](../../RESPONSES.md#usage--2026-10-31): systemd quiescence,
+API retirement and same-node token, ControlledReinstall, restore, release,
+coherent ledger copies and origin/current ACK separation are exercised. Its
+activation-hook gap was closed by agent-core 25/#312. No SQL retirement or
+manual hand-off supplies the result.
 
-Devstack's same-slot hold/release, ledger snapshot, member-transport selection
-and service-restoration requests are **closed as exports**. The seven available
-installer subset assertions pass; nonzero installer usage is not observed.
-The two owner requests above remain: D-116 serving prerequisite, and D-105/D-112
-retired-stream delivery. No other request, missing enrollment response, or
-outside-owned pin change is needed. Request count: **2**.
+Before **908** + held **1816** = after **2724 bytes**. Two original events remain attributed once only to the retired incarnation. Origin ACK **3**, independent current ACK **0** through same-key replay; the new stream starts at sequence **1**.
+
+The named [AT20 assertions](../usage/AT20.md) pass here:
+BeforePlusHeldByteEquality, OriginalPayloadAndHistoricalAttribution,
+AgentSameKeyStoredResultReplay, OriginACKAndIndependentCurrentACK. D-118 can
+change SQLite DB/WAL containers during replacement bootstrap; the required
+original canonical payloads, hashes and ACK are unchanged. Same-incarnation
+rerun still proves quiescent file equality. Empty new-stream event 1 is not
+credited as traffic; its subsequent central precision failure is retained above.
+
+Freeze withdrawal was **334 ms**, **+107 ms** against the 227 ms baseline, below the 5000 ms bound. Real receipt replay and durable latch/restart passed.
+
+## Known gaps outside these AT07 rows
+
+The separate post-upgrade seed HASH_MISMATCH remains with installer 6 / updater
+17 in [devstack 18](../../runs/2026-10-31/followup18/README.md#candidate-health-and-post-upgrade-reenrollment).
+This run does not perform an upgrade. Physical arm64 is unmeasured; compilation
+passes. Freeze restart is an agent process restart, not OS reboot. AT20's other
+three named assertions retain the usage lane's evidence; no rerun is claimed.
