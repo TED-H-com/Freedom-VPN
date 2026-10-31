@@ -397,7 +397,9 @@ func (s *Service) recordIdentityConflict(ctx context.Context, tx pgx.Tx, id pki.
 		return err
 	}
 	if tag.RowsAffected() > 0 || freezeTag.RowsAffected() > 0 {
-		if _, err = tx.Exec(ctx, `UPDATE nodes SET resource_version=resource_version+1 WHERE id=$1`, id.NodeID); err != nil {
+		// D-084: the detecting renewal must see a not-ready incarnation in
+		// this transaction, before the next observation arrives.
+		if _, err = tx.Exec(ctx, `UPDATE nodes SET provisioning_state='failed', safety_status='failed', resource_version=resource_version+1 WHERE id=$1`, id.NodeID); err != nil {
 			return err
 		}
 	}
