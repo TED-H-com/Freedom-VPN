@@ -6,7 +6,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/streamstats"
 	"net"
 	"os"
 	"os/exec"
@@ -15,6 +14,7 @@ import (
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+	"github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/streamstats"
 	"github.com/google/uuid"
 )
 
