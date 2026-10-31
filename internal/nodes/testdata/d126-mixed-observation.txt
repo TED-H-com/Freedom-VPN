@@ -1,0 +1,33 @@
+TEST ONLY - recorded development-stack observation, not production identity.
+
+D-126 / members follow-up 9, F9-01:
+  run_id: 11e305fe-6360-4dbd-95b1-67274aa4988c
+  harness: 49fbb48e013b824c4ce107d3cb551db79b915b42
+  source: docs/e2e/at/members/AT09-restart.json
+  selection: capture.observations[1].report
+  received_at: 2026-10-31T12:06:32.527615+00:00
+  report_id: 01a191da-b749-7197-a530-4da436d7a001
+
+Source SHA-256:
+35894b55b4b1e03c3a4ba92bfc191f7b2af27629f002412135ebd11bce0070c2
+Fixture SHA-256 (7742 bytes, no terminal newline):
+e2bb60034ff6ac95d8c30f35ad4a2fff3e824abfe47abde77c0737661408b53f
+
+d126-mixed-observation.json is the literal source substring from the opening
+brace through the matching closing brace of the selected report. No JSON
+re-encoding, indentation changes, identity substitution or timestamp changes.
+The source is a captured report_payload value; it does not establish the
+original agent HTTP body's whitespace. The HTTP regression sends these exact
+fixture bytes, bypassing the usual test helper's JSON marshaling.
+
+The unit proof pins the fixture hash and checks complete JCS-byte equality
+through typed serialization. The integration proof checks both entrypoints,
+JSONB value equality and complete JCS-byte/hash equality after storage. PostgreSQL
+report_payload is JSONB, so this is not a claim of literal wire-byte retention.
+
+The checks and recent_errors exposed by NodeDetail retain their original
+arrays, timestamps, messages and codes. Operation projections expose their own
+step/final codes; they do not expose observation arrays. Current NodeDetail has
+no forwarding_block_reasons field. The report's reasons remain intact in its
+stored payload. Neither an accepted receipt nor the reported generation alone
+is an applied-policy ACK or permission to publish (§5.1, §5.2, §14.4–§14.5).
