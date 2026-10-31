@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -16,7 +17,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/internal/releases"
 	"github.com/TED-H-com/Freedom-VPN/internal/releases/releasetest"
 	"github.com/TED-H-com/Freedom-VPN/node/internal/updatejournal"
-	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+	"github.com/TED-H-com/Freedom-VPN/packaging/release"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"github.com/google/uuid"
 )
@@ -31,6 +32,23 @@ func TestD110_RealInstallerReceiptInteroperability(t *testing.T) {
 			w.releaseSeq = "2"
 			w.rollbackAllow = []uuid.UUID{old.id}
 			next := w.makeRelease("next", 1, []int{1})
+			// The shared updater fixture uses one display version; the central
+			// catalog requires a distinct immutable product version per release.
+			for i, rel := range []*builtRel{&old, &next} {
+				rel.manifest.ProductVersion = fmt.Sprintf("1.15.%d", i+1)
+				signed, err := json.Marshal(rel.manifest)
+				if err != nil {
+					t.Fatal(err)
+				}
+				_, rel.env, err = release.Sign(signed, w.key)
+				if err != nil {
+					t.Fatal(err)
+				}
+				rel.sum, err = release.EnvelopeSHA256(rel.env)
+				if err != nil {
+					t.Fatal(err)
+				}
+			}
 			var err error
 			l.rel.Validator, err = releases.NewValidator(w.trust, []string{w.srv.URL, "https://releases.example.invalid"})
 			if err != nil {
@@ -49,7 +67,7 @@ func TestD110_RealInstallerReceiptInteroperability(t *testing.T) {
 			l.support([]uuid.UUID{old.id, next.id}, []uuid.UUID{old.id, next.id}, []uuid.UUID{})
 			identity := l.node("amd64", "disabled", "registered", false)
 			// Match the live F9 installer: baseline seeded locally before central knows it.
-			if _, err := l.pool.Exec(l.ctx, `UPDATE nodes SET current_release_id=NULL,last_good_release_id=NULL WHERE id=$1`, identity.NodeID); err != nil {
+			if _, err := l.pool.Exec(l.ctx, `UPDATE nodes SET current_release_id=NULL,last_good_release_id=NULL,resource_version=resource_version+1 WHERE id=$1`, identity.NodeID); err != nil {
 				t.Fatal(err)
 			}
 			w.eng.Node.ID, w.eng.Node.Incarnation = identity.NodeID, identity.IncarnationID

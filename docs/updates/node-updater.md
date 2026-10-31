@@ -23,7 +23,7 @@ fvpn-updater version
 
 | Exit | Meaning |
 |---|---|
-| 0 | The journal does not require forwarding to stay off. `help` and `version` also exit 0. `status` exits 0 when it reads successfully, including when the snapshot says recovery is required. `seed` exits 0 only after verifying and recording (or re-verifying) the baseline; it makes no serving or health claim. |
+| 0 | The command completed without an operation error; `apply` never uses 0 for a sealed failed job. This is not permission to forward member traffic. `help` and `version` also exit 0. `status` exits 0 when it reads successfully, including when the snapshot says recovery is required. `seed` exits 0 only after verifying and recording (or re-verifying) the baseline; it makes no serving or health claim. |
 | 2 | Only `ErrMembersBlocked`. Members must stay blocked. |
 | 1 | Any other failure, including a config that does not load and `flush` without `result_url`. |
 | 64 | Usage, an unknown command, a bad flag, or missing required flags. `seed -h` and `seed --help` print seed-specific flag help and exit 64. |
@@ -34,7 +34,7 @@ The config file holds paths and ids. It does not hold the release private key. `
 
 The forwarding latch is `forwarding.blocked` in the journal directory. The agent must not enable member forwarding while that file exists or while `BlocksForwarding` is true. The nftables gate itself belongs to the agent.
 
-## Installer hand-off (D-080, D-089)
+## Installer hand-off (D-080, D-089, D-110)
 
 Initial install and reenroll retain the exact verified signed envelope (`Verified.Raw`) as mode 0600 under update-staging. After releasing `/var/lib/vpn-node/update.lock`, the installer probes `<current>/fvpn-updater seed --help`, then invokes:
 
@@ -72,7 +72,7 @@ Both apply paths take the lock, recover existing work, and use the journaled ver
 | `tree_path` | Informational extracted tree; apply extracts again from a verified private archive copy. |
 | `updater_command` | Informational; never executed. |
 | `manifest_path` | Merged writer's retained signed envelope; a bounded regular file, mode 0600. |
-| `request_id` | Merged writer's per-invocation UUID; included in canonical record identity. |
+| `request_id` | Merged writer's per-invocation UUID; included in the local integrity digest only. |
 | `manifest` | Optional inline signed envelope supported by the consumer; takes precedence over `manifest_path`. |
 
 The live current pointer must match journal evidence. An unseeded installer-created pointer still fails with `CHECKPOINT_FAILED`; it is never interpreted as an empty node. Missing verification material seals an identified request as `failed/verify/ARTIFACT_INVALID`; malformed or unidentifiable records remain in place.
@@ -83,7 +83,7 @@ The `upgrade` staging command is owned by `packaging/installer/upgrade.go`, disp
 
 The terminal job and pending-file cleanup obligation commit together. Then the matching record is renamed to `pending-release.<state>.json` and its parent directory is fsynced. Recovery retries cleanup without another apply/result. The canonical record hash prevents an old completion from consuming a newly staged request.
 
-Local success remains distinct from central acceptance. Until fleet-update supports installer evidence, HTTP 404 `RESOURCE_NOT_FOUND` for a result with `source: installer` stays pending, preserving the exact payload/hash and journal. Each flush sends at most one attempt for that result and durably defers the next attempt with the existing exponential/jitter schedule (200 ms initial, 30 s cap by default). Retryable failure holds later results behind it; no payload is manufactured or rewritten. The log says `central not yet accepting installer evidence`. A 409 `ACK_CONFLICT` is terminal, logged and retained. Source-less/central 404s remain permanent rejections. Central-issued results keep the default central source. Central acceptance of installer results is a separate fleet-update deliverable.
+Local success remains distinct from central acceptance. Central accepts eligible installer evidence under D-110/D-111. Against an older deployment or before release registration, HTTP 404 `RESOURCE_NOT_FOUND` for a result with `source: installer` stays pending, preserving the exact payload/hash and journal. Each flush sends at most one attempt for that result and durably defers the next attempt with the existing exponential/jitter schedule (200 ms initial, 30 s cap by default). Retryable failure holds later results behind it; no payload is manufactured or rewritten. The log says `central not yet accepting installer evidence`. A 409 `ACK_CONFLICT` is terminal, logged and retained. Source-less/central 404s remain permanent rejections. Central-issued results keep the default central source. D-114 handles legacy unaccepted identities as described below.
 
 The lock holder, seed and job claim use the kernel boot id. Configured `boot_id` is only a logged fallback when the kernel value is unavailable; the installer now omits it. A missing desired-state file remains `ErrNoWork`; malformed or unreadable input still fails closed through `GuardSource`.
 
