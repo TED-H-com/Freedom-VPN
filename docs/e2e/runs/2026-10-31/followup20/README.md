@@ -93,3 +93,57 @@ DNS/readback checks. Product executable/journal verification is unchanged.
 This supplies updates 11's regular-fixture prerequisite, not full AT23–AT27
 qualification. Its recipient-owned `live_test.go` root-path assertions and
 `lab_test.go` legacy checkpoint configuration still need adoption by that lane.
+
+## F10-03: two-resolver query attribution
+
+The broader [cce1a688 run](cce1a688-6af5-483c-bd67-2d167c51c04b/dns-negative.md)
+is **15 / 0 / 1**, actual exit **1**, source `98a4b460`; DNS passes and the MTU
+row below fails. All **36 DNS matrix queries** retain complete resolver/authority
+traces. Query payloads and full qnames are not logged. The two actual filtering
+resolvers retain the same applied document; no resolver is chosen by the test,
+no cache is flushed, and all previous positive/negative TTL assertions remain.
+
+| Positive cache query (resolver completion UTC) | Responder | Returned class | TTL | Authority exchange | Authority SOA sampled after query |
+|---|---|---|---:|---|---:|
+| Initial 16:28:47.762244225 | primary | other_ipv4 | 10 | observed | 1001 |
+| Before TTL 16:28:48.970141306 | primary | other_ipv4 | 9 | none observed | 1002 |
+| After TTL 16:29:01.359396477 | primary | private_ipv4 | 10 | observed | 1002 |
+
+The middle answer is an **inferred cache hit**, retaining the old class about
+1.208 seconds after the initial response while the authority is already changed.
+The after-TTL fetch returns the new class about 13.597 seconds after the first
+response. The negative control retains NXDOMAIN, SOA serial 1001 and TTL 4
+before expiry while the authority is at serial 1002; afterward it resolves.
+A positive cached record has no SOA: the separately sampled serial is never
+claimed as its cached serial. Negative policy answers retain `cache_state=unknown`
+where the harness cannot separate local policy from cache. Full events, time
+bounds and native query duration remain available for consumer interpretation.
+
+The [fallback row](cce1a688-6af5-483c-bd67-2d167c51c04b/native-dns-fallback.md)
+identifies an actual secondary response during primary failure. That trace is
+marked incomplete because the intentionally stopped primary cannot be read.
+The main cache measurement has all three trace files readable. This run does
+not reproduce F10-03 and cannot retrospectively attribute its missing responder.
+The dated [D-102 answer](../../../RESPONSES.md#members--dns-publish--2026-10-31-follow-up-20-f10-03-d-102)
+coordinates inference/serial wording with dns-publish 9 and members 11.
+
+## Instrumented broader MTU-1280 failure
+
+Attempt **1 of at most 3** captured the requested failure, so no further attempts
+were run. The [original transfer record](cce1a688-6af5-483c-bd67-2d167c51c04b/native-matrix-inputs.md)
+retains **10,010 / 64,064 bytes in 12,011 ms**; its 1500 control completes
+64,064 bytes in 2 ms. Both underlay selections remain direct IPv4. All original
+inputs/reconnect ordering and the 12-second criterion are retained. The IPv6
+refusal/no-uplink-leak controls pass independently.
+
+The [six pinned payload-free decodes and endpoint analysis](capture-cce1a688/README.md)
+localize the first missing 1,228-byte TCP range after node tunnel egress and
+before member capture. Later data is SACKed around the persistent gap. Nineteen
+captured reverse outer packets of length 1,340 are missing at the member;
+seventeen of length 1,132 arrive. The origin socket receives the whole upload,
+then develops write backpressure with response bytes unacknowledged. All files
+end on complete records, decode without header errors, and match tcpdump's
+captured counts; filter/capture differences remain explicit. The exact
+kernel/virtual-link drop reason is not established. No MTU/MSS workaround is
+made. Per-I/O tracing can change segmentation, but does not always eliminate
+this failure; historical 11,011/12,012/22,022-byte failures remain unchanged.

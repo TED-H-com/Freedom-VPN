@@ -718,3 +718,69 @@ Physical platforms, OS reboot and the full continuous fault matrix still need
 their designated operators. The native dual-underlay fixture measures IPv4
 overlay traffic and IPv6Block refusal; it cannot qualify a member-platform
 matrix. Recipient request registers and immutable follow-up 8 pins stay intact.
+
+## netlab / members — 2026-10-31 (follow-up 20, F8-02 instrumented failure, D-102)
+
+The requested broader fixture now has an **instrumented failed transfer**:
+[run cce1a688](runs/2026-10-31/followup20/cce1a688-6af5-483c-bd67-2d167c51c04b/native-matrix-inputs.md),
+**10,010 / 64,064 bytes in 12,011 ms** at MTU 1280; the preceding 1500 control
+passes 64,064 bytes in 2 ms. We bounded the campaign at three fresh attempts,
+stopping after this first captured failure. No further attempt was needed.
+The original reconnect/input ordering, deadline, IPv6Block controls and bulk
+criterion are unchanged; no global MTU or MSS adjustment was made.
+
+[All six complete decodes and analysis](runs/2026-10-31/followup20/capture-cce1a688/README.md)
+retain member/node/origin header records, original pcap pins, tcpdump statistics,
+process windows, link MTUs, endpoint counts and TCP_INFO. The first missing TCP
+range is [1784148912,1784150140). Origin and node tunnel egress retain its
+retransmissions; the member keeps ACKing that gap while SACKing later data.
+Nineteen captured reverse outer IPv4 datagrams of length 1,340 are absent at
+member; all seventeen of length 1,132 arrive. No fragmentation-needed/PTB is
+captured. The origin has received the full upload at its socket, then develops
+write backpressure while response bytes remain unacknowledged. This is stronger
+than a SYN-only or endpoint-count hypothesis; it does not name an exact kernel
+or virtual-link drop reason. Receive-link MTU rejection remains an inference.
+Capture/filter differences and GSO/GRO limits are explicit in the analysis.
+
+Per-I/O tracing can alter segmentation, but this attempt proves instrumentation
+does not always remove the failure. It neither reproduces the exact historical
+12,012/11,011-byte boundary nor changes those failed records. Netlab 20/21 notes
+were not present in this checkout or main when checked; this hand-off supplies
+the requested failure evidence for netlab 21's interpretation. IPv4 overlay is
+measured over the selected native underlay; no IPv6 service or ctv6 hit is invented.
+
+## members / dns-publish — 2026-10-31 (follow-up 20, F10-03, D-102)
+
+`ProbeNativeDNS` now returns per-query `dns_trace`: query bounds, resolver-role
+receipts, authority exchanges, TTL remaining and separately sampled authority
+SOA serial/time. All three metadata relays retain only closed synthetic case
+labels and response classes, not full qnames, answer addresses or payloads.
+Resolver query logging/statistics remain disabled. No cache flush or forced
+responder was added. See the [export contract](scenarios/harness-exports.md#follow-up-20--d-087-f10-02-and-f10-03-test-only).
+
+The [cce1a688 DNS record](runs/2026-10-31/followup20/cce1a688-6af5-483c-bd67-2d167c51c04b/dns-negative.md)
+passes the unchanged assertions, with **36/36 query traces complete**. Initial
+positive: primary, `other_ipv4`, TTL **10**, observed authority exchange,
+authority serial **1001** after the query. Before TTL: primary again, old class,
+TTL **9**, no authority exchange, authority serial **1002** after the query.
+After TTL: primary, `private_ipv4`, TTL **10**, observed exchange, serial **1002**.
+The negative before-TTL response retains SOA serial **1001** and TTL **4** while
+the separately queried authority is already **1002**. Primary-down fallback
+also identifies a real secondary response; its trace is explicitly incomplete
+because the stopped primary container cannot be read during that query.
+
+Wording for dns-publish 9 / members 11: a unique metadata match identifies the
+observed responder; multiple matches stay ambiguous. An authority exchange is
+positive evidence of an upstream fetch. No exchange supports an **inferred**
+cache hit for a positive answer, not a private AdGuard cache flag. Negative
+policy answers can be locally generated, so their cache state stays unknown
+unless separately attributable from the retained receipts. A positive cached A
+record has no SOA; `authority_serial_after_query` must never be represented as
+that cached record's serial. Native probe milliseconds and the broader wrapper
+bounds are distinct; trace collection itself adds elapsed time.
+
+F10-03's historical 2,502-ms initial query and premature changed answer remain
+failed and unattributed: this passing run cannot recover its missing responder
+identity or prove a product TTL fix. Members 11 can retain these fields through
+the existing shared result serialization, keeping its before-TTL assertion
+unchanged. No recipient harness, request register or historical row was edited.
