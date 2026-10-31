@@ -1,5 +1,12 @@
 # Operator Guide (`docs/handover/operator-guide.md`)
 
+Current evidence cutoff: **#313**, main `7e044c71`. The
+[follow-up 17 operator evidence](follow-up-17.md) records AT10 PASS under
+D-120, D-118 activation, D-123 IPv6Block posture, DNS per-type replies, and
+the three retained live failures. It distinguishes harness-proved results
+from acceptance not yet proved; dated follow-up 15/16 sections retain their
+historical status.
+
 This guide defines the routine operational runbooks for Freedom VPN administrators (`§6`–`§15`, `§17`–`§18`).
 
 For API examples, use the admin role cookie and obtain `ADMIN_CSRF_TOKEN` from `GET /auth/session?role=admin`; authenticated mutations also require the exact configured Origin ([control authentication](../control/AUTH.md)).
@@ -137,10 +144,10 @@ merged #296: the current mTLS identity presents one retired same-node origin,
 with enrollment strictly after retirement and interval end ≤ retirement plus
 central `sampling_interval_bound_seconds` (D-112, default 10 s). Original event
 identity/hash and the per-stream ACK are preserved. Node retention/upload
-merged #299 but is inactive pending agent-core follow-up 25's D-118 hook;
+merged #299 and is active through agent-core follow-up 25's D-118 hook (#312);
 usage AT follow-up 5 still owns live hand-off assertions. D-106's optional
 nullable `ObservationReport.tc_evidence` has its producer helper in #295;
-agent-core follow-up 25 still wires the observation. Absent/null means no
+agent-core follow-up 25 (#312) wires the authoritative observation. Absent/null means no
 retained read. Existing error rows remain unchanged.
 Publication-gate cause stays in `Operation.steps[].message`, including
 `member_forwarding_unconfirmed (lease_unconfirmed)`.
