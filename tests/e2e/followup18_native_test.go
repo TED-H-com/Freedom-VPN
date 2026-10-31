@@ -4,6 +4,7 @@ package e2e
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"os"
 	"os/exec"
@@ -105,7 +106,16 @@ func (r *runner) firstOffer18(ctx context.Context, s *Stack) {
 	noteJSON(&rec, "capture", got)
 	recPathNote(&rec)("scope", "live hold/release of retained state; full PostgreSQL restore and greater-than-retained assertion belong to secops")
 	if ok {
-		rec.Status = StatusPass
+		db, e := r.lab.db(ctx)
+		if e == nil {
+			defer db.Close(ctx)
+			var raw []byte
+			e = db.QueryRow(ctx, `SELECT jsonb_build_object('report_id',report_id,'received_at',received_at,'applied_generation',applied_generation::text) FROM node_observations WHERE node_id=$1 AND report_id=$2 AND applied_generation::text=$3`, r.nodeID, got.ACK.ReportID, got.First.Generation).Scan(&raw)
+			if e == nil {
+				noteJSON(&rec, "central_receipt", json.RawMessage(raw))
+				rec.Status = StatusPass
+			}
+		}
 	}
 }
 
@@ -141,7 +151,8 @@ func (r *runner) nativeMTU18(ctx context.Context, s *Stack) {
 			wait, cancel := context.WithTimeout(ctx, 60*time.Second)
 			_ = waitUntil(wait, time.Second, func() bool {
 				p, e := s.ObserveNativeUnderlay(wait)
-				return e == nil && p.Path.Direct+p.Path.Relayed > 0
+				chosen, ce := s.ObserveSelectedNativeExit(wait)
+				return e == nil && ce == nil && chosen.Connected && p.Path.Direct+p.Path.Relayed > 0
 			})
 			cancel()
 			time.Sleep(3 * time.Second)
@@ -157,11 +168,13 @@ func (r *runner) nativeMTU18(ctx context.Context, s *Stack) {
 		time.Sleep(time.Second)
 		before, _ := s.DeviceByteCounters(ctx, r.usageDevice)
 		path, _ := s.ObserveNativeUnderlay(ctx)
+		chosenBefore, cbErr := s.ObserveSelectedNativeExit(ctx)
 		got, e := s.fixtureProbe(ctx, r.lab.member, "-mode", "bulk", "-addr", r.lab.originIP+":9446", "-device", r.usageDevice.String())
 		after, ae := s.DeviceByteCounters(ctx, r.usageDevice)
 		end, _ := s.ObserveNativeUnderlay(ctx)
-		noteJSON(&rec, row.name+"_transfer", map[string]any{"before": before, "after": after, "path_before": path, "path_after": end, "bulk": got})
-		if e != nil || ae != nil || !got.Available || got.Bytes != 64064 || !after.Present || after.Upload <= before.Upload || after.Download <= before.Download {
+		chosenAfter, caErr := s.ObserveSelectedNativeExit(ctx)
+		noteJSON(&rec, row.name+"_transfer", map[string]any{"before": before, "after": after, "path_before": path, "path_after": end, "selected_before": chosenBefore, "selected_after": chosenAfter, "bulk": got})
+		if e != nil || ae != nil || cbErr != nil || caErr != nil || !chosenBefore.Connected || !chosenAfter.Connected || !got.Available || got.Bytes != 64064 || !after.Present || after.Upload <= before.Upload || after.Download <= before.Download {
 			rec.Status = StatusFail
 		}
 		for i, c := range paths {
