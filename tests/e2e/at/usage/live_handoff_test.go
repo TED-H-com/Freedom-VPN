@@ -126,6 +126,10 @@ func decimalSum(a, b string) string {
 func (s *liveSuite) d112Configuration(slot string) map[string]any {
 	// Config has no sampling override. Decode the running node's actual config
 	// and retain its checksum/provenance; ensureUsage passes the meter default.
+	command, code, err := s.execInContainer(slot, "systemctl", "show", "fvpn-agent.service", "-p", "ExecStart", "--value")
+	if err != nil || code != 0 || !strings.Contains(string(command), "/etc/vpn-node/agent-lab.json") {
+		s.t.Fatal("AT20 active service does not select the inspected node configuration")
+	}
 	raw, code, err := s.execInContainer(slot, "cat", "/etc/vpn-node/agent-lab.json")
 	if err != nil || code != 0 {
 		s.t.Fatal("AT20 read running node configuration")
@@ -165,6 +169,7 @@ func (s *liveSuite) d112Configuration(slot string) map[string]any {
 		"node_meter_interval_seconds":             interval,
 		"central_sampling_interval_bound_seconds": bound,
 		"interval_lte_bound":                      interval <= bound,
+		"node_service_exec_selects_config":        true,
 		"node_config_read":                        "/etc/vpn-node/agent-lab.json",
 		"node_interval_source":                    "Engine.ensureUsage passes no interval override; meter.DefaultSampleInterval is 10s in the recorded image source",
 		"central_config_read":                     "/etc/fvpn/usage.json",
@@ -301,6 +306,9 @@ func (s *liveSuite) evalAT20(t *testing.T) (rec Record) {
 	s.stopNodeAgent("node")
 	s.stopNodeAgent("node2")
 	must(s.hook.PrepareInstallerNode(s.ctx))
+	installerImage, err := s.runHostCmd("docker", "inspect", "--format", "{{.Image}}", s.containerName("installer-node"))
+	must(err)
+	rec.ImageDigests["installer-node"] = strings.TrimSpace(string(installerImage))
 	releases, err := s.hook.RegisterInstallerReleases(s.ctx, s.adminHook())
 	must(err)
 	ids := []uuid.UUID{s.baseline.Boot, releases[0].ID, releases[1].ID}
