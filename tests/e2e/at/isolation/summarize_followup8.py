@@ -75,3 +75,21 @@ for r in receiver:
             # never by the later observation emission time.
             unsolicited.append(item)
 write('foreign-redirect-analysis.json',dict(run_id=run,assisted=trace.get('assisted'),restoration_owner=trace.get('restoration_owner'),injection=injected,removal=removed,first_contained_read=contained,first_serving_read=serving,final_counted=positive,injection_to_contained_upper_ns=delta(contained['read_end'],injected['start']) if contained and injected else None,removal_to_serving_observed_upper_ns=delta(serving['read_end'],removed['end']) if serving and removed else None,removal_to_counted_upper_ns=delta(positive['at'],removed['end']) if positive and removed else None,rejected_reads=rejected,unsolicited_rejected_reads=unsolicited,creator='The harness created the labelled clsact/flower/mirred injection. A rejected row alone does not encode a process creator; any unsolicited rows remain unattributed.'))
+# Complete node-any capture and containment window, including pre-containment bypass.
+analysis=read('foreign-redirect-analysis.json',{})
+text=(root/'redirect-node-capture.txt').read_text()
+headers=[line for line in text.splitlines() if re.match(r'^\d+\.\d+ ',line)]
+reported=re.search(r'(?m)^(\d+) packets? captured$',text)
+def packet_ns(line):
+    sec,frac=line.split()[0].split('.')
+    return int(sec)*10**9+int(frac.ljust(9,'0'))
+if injected and contained and removed:
+    uplink=[line for line in headers if 'fvup0 Out ' in line and '.9: UDP' in line]
+    before=[line for line in uplink if ns(injected['start'])<=packet_ns(line)<ns(contained['read_end'])]
+    during=[line for line in uplink if ns(contained['read_end'])<=packet_ns(line)<ns(removed['end'])]
+    analysis['packet_evidence']=dict(parsed=len(headers),reported=int(reported[1]) if reported else None,complete=bool(reported and int(reported[1])==len(headers) and '0 packets dropped by kernel' in text),uplink_between_injection_start_and_confirmed_down=before,uplink_after_confirmed_down_until_removal=during)
+    raised=next((r for r in rows if r['label']=='recovery wait' and any(link.get('ifname')=='fvmb0' and 'UP' in link.get('flags',[]) for link in json.loads(r['readback'].splitlines()[0]))),None)
+    if raised:
+        analysis['first_link_up_read']=raised
+        analysis['removal_to_link_up_upper_ns']=delta(raised['read_end'],removed['end'])
+write('foreign-redirect-analysis.json',analysis)
