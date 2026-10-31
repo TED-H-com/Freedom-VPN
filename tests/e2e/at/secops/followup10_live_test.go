@@ -42,6 +42,9 @@ func TestAT30_Followup10_LiveRestoreReconcile(t *testing.T) {
 	if os.Getenv("FVPN_SECOPS_FOLLOWUP11") == "restore" {
 		p.metadata["follow_up"] = 11
 	}
+	if os.Getenv("FVPN_SECOPS_EVIDENCE_FOLLOWUP") == "13" {
+		p.metadata["follow_up"] = 13
+	}
 	p.open()
 	defer func() {
 		p.finish()
@@ -281,8 +284,10 @@ func TestAT30_Followup10_LiveRestoreReconcile(t *testing.T) {
 		},
 		"step4_reconciliation_observation": reconcileResult,
 	}
-	p.pastDue10(stack, nodeID)
-	p.bulkProtectedStreams10(stack)
+	if os.Getenv("FVPN_SECOPS_EVIDENCE_FOLLOWUP") != "13" {
+		p.pastDue10(stack, nodeID)
+		p.bulkProtectedStreams10(stack)
+	}
 }
 
 func (p *liveProbe) captureNodeUsageSnapshotCLI() map[string]any {
@@ -368,11 +373,26 @@ func (p *liveProbe) runProductRestoreProtocol9(
 	ctx := p.t.Context()
 	outageStart := time.Now()
 	var resumeAgent func()
+	var offerStack *labstack.Stack
 	if os.Getenv("FVPN_SECOPS_FOLLOWUP11") == "restore" {
 		resumeAgent = p.stopRestoreAgent11()
 		defer func() {
 			if resumeAgent != nil {
 				resumeAgent()
+			}
+		}()
+	}
+	if os.Getenv("FVPN_SECOPS_EVIDENCE_FOLLOWUP") == "13" {
+		var err error
+		offerStack, err = labstack.Open()
+		if err != nil {
+			p.t.Fatal("first-offer stack", err)
+		}
+		defer offerStack.Close()
+		p.armRestoreOffer13(offerStack)
+		defer func() {
+			if err := offerStack.ReleaseDesiredOffer(context.Background(), "node"); err != nil {
+				p.t.Error("release first-offer hold during cleanup", err)
 			}
 		}()
 	}
@@ -426,6 +446,9 @@ func (p *liveProbe) runProductRestoreProtocol9(
 		p.verifyRestoreHold11(nodeID)
 		resumeAgent()
 		resumeAgent = nil
+		if offerStack != nil {
+			p.captureRestoreOffer13(offerStack, nodeID, servicesStart)
+		}
 		p.sampleFirstHTTPAfterObservation11(nodeID, servicesStart)
 	}
 

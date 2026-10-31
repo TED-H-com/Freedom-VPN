@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "follow_up": 12,
+  "record_kind": "two independent live phases",
+  "application_base": "510a4ab7f73bdcfc28aaef53f8d1d6deef97ad67",
+  "phases": {
+    "transports": {
+      "run_id": "cf81f6f8-4ccf-43d2-aae2-10121f6b169d",
+      "driver_run_id": "23515d78-ee35-45c1-81bd-70a454095424",
+      "source_revision": "44eff52b47f891bc829900c51b320a2e01f64cde",
+      "started_at": "2026-10-31T07:30:16Z",
+      "finished_at": "2026-10-31T07:40:29Z",
+      "test_status": "passed",
+      "evidence": "followup12-transports-live.json",
+      "driver": "followup12-transports-run.json"
+    },
+    "restore": {
+      "run_id": "dd845a7f-2660-431c-a8e6-c513108cc07d",
+      "driver_run_id": "c8498f5b-455e-41a9-9804-2067690aec23",
+      "source_revision": "bf21d111f0b334368441144145abca8f5d0c060a",
+      "started_at": "2026-10-31T09:04:16Z",
+      "finished_at": "2026-10-31T09:23:05Z",
+      "test_status": "passed",
+      "evidence": "followup12-restore-live.json",
+      "driver": "followup12-restore-run.json"
+    }
+  },
+  "cases": {
+    "AT29": "blocked",
+    "AT30": "passed",
+    "AT31": "blocked"
+  },
+  "scope": "Current scoped measurements; full AT29/AT31 remain blocked. Older full-stack captures are under history/follow-up-11/."
+}
