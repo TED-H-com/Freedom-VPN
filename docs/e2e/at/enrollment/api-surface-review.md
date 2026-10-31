@@ -121,3 +121,18 @@ The current installer retains the old usage database with its original identity
 and documents no re-home/upload path. A new authenticated incarnation cannot
 upload old-incarnation batches; the required authorized protocol is an open
 usage/installer/control question. No direct SQL read or mutation is used here.
+
+## Follow-up 6 — revision 13 (2026-10-31)
+
+Reviewed OpenAPI 1.9.0 revision 13 on `945eff8`. New fields relevant to adjacent
+paths are `ObservationAccepted.identity_frozen` (D-088) and installer-sourced
+update results (D-089); `TC_FOREIGN_FILTER` is D-085. The token-hash,
+newest-first incarnation-history and direct agent mTLS denial surfaces used
+by AT06/AT07 are unchanged. No new product endpoint is requested here.
+
+`docs/e2e/RESPONSES.md` is absent. The existing follow-up 15 wrappers still
+lack installer-slot hold/snapshot/member transport and post-hash service
+restoration. PR #279 changes the packaged daemon socket/runtime lifecycle,
+not those devstack exports. The run calls only the shipped installer wrappers
+and uses API revocation plus a fresh same-Node enrollment for reenrollment.
+Historical unACKed-event delivery is still not defined by the HTTP contract.

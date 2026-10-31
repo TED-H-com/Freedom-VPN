@@ -1,4 +1,4 @@
-# Enrollment acceptance requests — follow-up 5
+# Enrollment acceptance requests — follow-up 6
 
 Current binding: `w4-enroll / 12000`. D-050 applies to every request. The
 initial 66000 attempts are immutable history, not the current binding.
@@ -155,3 +155,33 @@ AT06 passed 344/0/0 with zero full/join 429s. AT07 is 19/6/0 with no failed
 assertions. Both historical review dispositions are **resolved**, including
 AT07 `bebfe230` and `35e542f8`. There is no remaining orchestrator review request
 for those two rows. All teardown commands exited 0; owned inventory is zero.
+
+## Follow-up 6 — D-102 response check (2026-10-31)
+
+Checked base `945eff8` before any live installer action: `docs/e2e/RESPONSES.md`
+is absent. `docs/e2e/RUN.md` follow-up 15 and the actual exports still restrict
+`HoldUsageAcknowledgements`, `UsageLedgerSnapshot[Bytes]` and
+`MemberTransportStack` to the regular node slots. The installer wrappers accept
+only `installer-node`. No same-slot usage or service-restoration response has
+been delivered on this tree. This section is the enrollment lane's request;
+the shared request/response files are not edited (D-102).
+
+Installer [PR #279](https://github.com/TED-H-com/Freedom-VPN/pull/279) and
+[follow-up 3](../../../node/install-followup3-2026-10-31.md) fix the prior
+NetBird socket and shared runtime-directory cause. The new run measures those
+paths rather than repeating the old diagnosis. Full journaled upgrade remains
+outside this test; its `final_sample`/missing-meter-checkpoint failure is not
+worked around or claimed here.
+
+Remaining devstack exports: hold/release, read-only ledger snapshot, selected
+member transport/traffic and service restoration for **installer-node**. The
+regular-node `Service(start)` helper cannot restore this systemd fixture.
+Until delivered, installer subprocess outcomes and stopped-state hash equality
+remain partial evidence; serving rerun/reinstall and nonzero retained usage
+stay blocked. Usage/installer/control-pki also need the authorized delivery
+protocol for old-incarnation events retained after revocation.
+
+Follow-up 5's eight root records, including run IDs and original digest field
+names, are archived byte-for-byte under [history/follow-up-5](history/follow-up-5/README.md)
+(D-098). New evidence uses self-describing SHA-256 labels; copied prior rows in
+the current root records are relabeled without changing values or verdicts.
