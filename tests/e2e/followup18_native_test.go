@@ -13,6 +13,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/TED-H-com/Freedom-VPN/internal/netbird"
 	"github.com/google/uuid"
 )
 
@@ -78,7 +79,7 @@ func TestE2E_Followup18Native(t *testing.T) {
 	r.publish(ctx, admin, second.NodeID)
 	r.dir = originalDir
 	pre := Record{ID: "second-exit-counted", Title: "Serving second exit before namespace fault", Spec: []string{"AT09", "F8-01"}, Status: StatusFail}
-	if r.countedFlow(ctx, recPathNote(&pre)) {
+	if r.selectCurrentExit18(ctx, recPathNote(&pre)) && r.tracedFetch(ctx, recPathNote(&pre)) {
 		pre.Status = StatusPass
 	}
 	r.record(pre)
@@ -98,19 +99,34 @@ func TestE2E_Followup18Native(t *testing.T) {
 func (r *runner) firstOffer18(ctx context.Context, s *Stack) {
 	rec := Record{ID: "first-desired-offer", Title: "SECOPS-21 actual response, local accepted digest and applied receipt", Spec: []string{"SECOPS-21", "§14.7"}, Status: StatusFail}
 	defer func() { r.record(rec) }()
+	selected, err := r.lab.docker(r.lab.node, "cat", "/var/lib/vpn-node/e2e/agent-selected")
+	if err != nil {
+		recPathNote(&rec)("selected_release", err.Error())
+		return
+	}
+	release := strings.TrimSpace(string(selected))
 	// Quiet the agent before arming so no pre-hold GET can be mistaken for first.
-	_, err := r.lab.docker(r.lab.node, "/usr/local/bin/agent-service.sh", "stop")
+	err = s.Service(ctx, "stop", "")
 	if err != nil {
 		recPathNote(&rec)("stop", err.Error())
 		return
 	}
+	defer func() {
+		_ = s.ReleaseDesiredOffer(context.WithoutCancel(ctx), "node")
+		_ = s.Service(context.WithoutCancel(ctx), "start", release)
+	}()
 	id, err := s.ArmFirstDesiredOffer(ctx, "node")
 	noteJSON(&rec, "capture_id", id)
-	_, resume := r.lab.docker(r.lab.node, "/usr/local/bin/agent-service.sh", "start")
-	if err != nil || resume != nil {
+	if err != nil {
+		recPathNote(&rec)("arm_error", err.Error())
+		return
+	}
+	if err = s.Service(ctx, "start", release); err != nil {
+		recPathNote(&rec)("resume_error", err.Error())
 		return
 	}
 	if err = s.ReleaseDesiredOffer(ctx, "node"); err != nil {
+		recPathNote(&rec)("release_error", err.Error())
 		return
 	}
 	wait, cancel := context.WithTimeout(ctx, 45*time.Second)
@@ -134,6 +150,40 @@ func (r *runner) firstOffer18(ctx context.Context, s *Stack) {
 			}
 		}
 	}
+}
+
+// Select the published route belonging to this incarnation when both exits are
+// available. The provider and central reads only identify the real API route.
+func (r *runner) selectCurrentExit18(ctx context.Context, note func(string, string)) bool {
+	db, err := r.lab.db(ctx)
+	if err != nil {
+		return false
+	}
+	defer db.Close(ctx)
+	var peer string
+	if db.QueryRow(ctx, `SELECT peer_id FROM node_incarnations WHERE id=$1`, r.incID).Scan(&peer) != nil {
+		return false
+	}
+	f := &probeFixture{lab: r.lab}
+	wait, cancel := context.WithTimeout(ctx, 45*time.Second)
+	defer cancel()
+	ok := waitUntil(wait, time.Second, func() bool {
+		var routes []netbird.Route
+		if f.netbirdAPI(wait, "GET", "/routes", nil, &routes) != nil {
+			return false
+		}
+		advertised, _ := r.lab.docker(r.lab.member, "netbird", "routes", "list")
+		for _, route := range routes {
+			if route.Peer == peer && route.Network == "0.0.0.0/0" && route.Enabled && strings.Contains(string(advertised), route.NetworkID) {
+				out, e := r.lab.docker(r.lab.member, "netbird", "routes", "select", route.NetworkID)
+				note("selected_exit", strings.TrimSpace(string(out)))
+				return e == nil
+			}
+		}
+		return false
+	})
+	time.Sleep(3 * time.Second)
+	return ok
 }
 
 func (r *runner) nativeMTU18(ctx context.Context, s *Stack) {
@@ -176,7 +226,7 @@ func (r *runner) nativeMTU18(ctx context.Context, s *Stack) {
 		}
 		paths := []string{r.lab.member, r.lab.node}
 		for _, c := range paths {
-			script := `echo $$ > /var/lib/vpn-node/e2e/mtu-capture.pid; exec tcpdump -U -nn -s 128 -i any -w /var/lib/vpn-node/e2e/mtu.pcap 'icmp or icmp6 or tcp port 9446 or udp'`
+			script := `echo $$ > /var/lib/vpn-node/e2e/mtu-capture.pid; exec tcpdump --immediate-mode -U -nn -s 128 -i any -w /var/lib/vpn-node/e2e/mtu.pcap 'icmp or icmp6 or tcp port 9446 or udp' 2>/var/lib/vpn-node/e2e/mtu-capture.log`
 			e := exec.CommandContext(ctx, "docker", "exec", "-d", c, "sh", "-c", script).Run()
 			if e != nil {
 				rec.Status = StatusFail
@@ -196,7 +246,14 @@ func (r *runner) nativeMTU18(ctx context.Context, s *Stack) {
 		}
 		for i, c := range paths {
 			_, _ = r.lab.docker(c, "sh", "-c", `kill -INT "$(cat /var/lib/vpn-node/e2e/mtu-capture.pid)"`)
-			time.Sleep(200 * time.Millisecond)
+			flush, stop := context.WithTimeout(ctx, 3*time.Second)
+			_ = waitUntil(flush, 100*time.Millisecond, func() bool {
+				_, e := r.lab.docker(c, "sh", "-c", `kill -0 "$(cat /var/lib/vpn-node/e2e/mtu-capture.pid)"`)
+				return e != nil
+			})
+			stop()
+			stats, _ := r.lab.docker(c, "cat", "/var/lib/vpn-node/e2e/mtu-capture.log")
+			recPathNote(&rec)(fmt.Sprintf("%s_capture_%d_stats", row.name, i), string(stats))
 			// TCP SYN metadata contains MSS; ICMP summaries contain advertised MTU.
 			metadata, e := r.lab.docker(c, "tcpdump", "-nn", "-tt", "-v", "-r", "/var/lib/vpn-node/e2e/mtu.pcap", "icmp or icmp6 or (tcp port 9446 and tcp[tcpflags] & tcp-syn != 0)")
 			recPathNote(&rec)(fmt.Sprintf("%s_capture_%d_headers", row.name, i), string(metadata))

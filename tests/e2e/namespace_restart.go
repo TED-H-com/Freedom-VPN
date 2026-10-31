@@ -90,6 +90,7 @@ func (s *Stack) RestartNodeNamespace90(ctx context.Context, slot string, node uu
 			var at time.Time
 			e = db.QueryRow(ctx, `SELECT received_at FROM node_observations WHERE node_id=$1 AND received_at >= $2 AND report_payload->>'member_forwarding_enabled'='true' ORDER BY received_at LIMIT 1`, node, out.Started).Scan(&at)
 			if e == nil {
+				at = at.UTC()
 				out.ServingAt = &at
 			}
 		}
