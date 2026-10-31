@@ -53,7 +53,9 @@ func TestE2E_Followup17Installer(t *testing.T) {
 	ids := []uuid.UUID{releases[0].ID, releases[1].ID}
 	_, _, err = s.ActivatePolicy(ctx, b, "release_support", "installer-serving", map[string]any{"approved_release_ids": ids, "revoked_release_ids": []string{}, "minimum_serving_version": map[string]any{"serving_release_ids": ids}})
 	must(err)
-	r.profileID, _, err = s.ActivatePolicy(ctx, b, "dns_profile", "installer-dns", map[string]any{"profile_code": "installer-dns", "display_name": map[string]string{"zh-TW": "TEST ONLY installer resolver"}, "block_response": "nxdomain", "blocked_ttl_seconds": 5, "domain_rule_set_revision_ids": []string{}, "threat_feed_revision_ids": []string{}})
+	ruleRevision, _, err := s.ActivatePolicy(ctx, b, "domain_rule_set", "installer-dns-rules", map[string]any{"rules": []any{map[string]any{"rule_id": uuid.New(), "domain": "feed-01.example.invalid", "include_subdomains": true, "action": "block", "profile_id": nil, "reason": "admin_rule", "revision": "1"}}})
+	must(err)
+	r.profileID, _, err = s.ActivatePolicy(ctx, b, "dns_profile", "installer-dns", map[string]any{"profile_code": "installer-dns", "display_name": map[string]string{"zh-TW": "TEST ONLY installer resolver"}, "block_response": "nxdomain", "blocked_ttl_seconds": 5, "domain_rule_set_revision_ids": []uuid.UUID{ruleRevision}, "threat_feed_revision_ids": []string{}})
 	must(err)
 	r.catalogue(ctx, admin)
 

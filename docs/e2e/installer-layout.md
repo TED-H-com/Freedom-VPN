@@ -68,9 +68,11 @@ not OS reboot; acceptance restart checks require fresh heartbeat/readback.
 
 ## Serving member and ENR-05
 
-After installation, call `ConfigureInstallerServing(ctx)`. This starts a real
-AdGuard sidecar in the installer node's network namespace, supplies the private
-resolver credentials, and copies the generated agent configuration to
+`PrepareInstallerNode` starts the real AdGuard sidecar before NetBird joins,
+as in the ordinary lab node. This keeps NetBird's unused DNS stub from occupying
+overlay port 53 before AdGuard. After installation, call
+`ConfigureInstallerServing(ctx)`. It supplies the private resolver credentials
+through a pipe between the owned containers and copies the generated config to
 `/etc/vpn-node/agent-lab.json` with the real resolver endpoint and TEST ONLY
 5-second reporting/polling intervals. Runtime agent/watchdog drop-ins select
 that file. Packaged units and generated `agent.json` are preserved. Call it again

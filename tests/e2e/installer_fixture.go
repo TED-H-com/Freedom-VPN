@@ -55,12 +55,9 @@ func (s *Stack) RegisterInstallerReleases(ctx context.Context, admin BrowserSess
 	return result, nil
 }
 
-// ConfigureInstallerServing supplies the real AdGuard backend missing from the
-// installer's minimal configuration. The generated agent.json is preserved;
-// a TEST ONLY runtime drop-in selects agent-lab.json, copied from it with DNS
-// and short observation intervals. Call again after reenrollment/release change.
-// This does not publish an exit, grant a member, or write observations.
-func (s *Stack) ConfigureInstallerServing(ctx context.Context) error {
+// Start AdGuard before the first NetBird join, as in the ordinary node topology.
+// Otherwise NetBird's unused DNS stub can occupy the overlay port 53 first.
+func (s *Stack) prepareInstallerResolver(ctx context.Context) error {
 	c := s.installerContainer()
 	base := filepath.Join(s.lab.state, "installer-node", "adguard")
 	for _, dir := range []string{"conf", "work"} {
@@ -84,6 +81,16 @@ func (s *Stack) ConfigureInstallerServing(ctx context.Context) error {
 			return err
 		}
 	}
+	return nil
+}
+
+// ConfigureInstallerServing supplies the real AdGuard backend missing from the
+// installer's minimal configuration. The generated agent.json is preserved;
+// a TEST ONLY runtime drop-in selects agent-lab.json, copied from it with DNS
+// and short observation intervals. Call again after reenrollment/release change.
+// This does not publish an exit, grant a member, or write observations.
+func (s *Stack) ConfigureInstallerServing(ctx context.Context) error {
+	c := s.installerContainer()
 	if err := copyPrivateContainerFile(ctx, s.lab.prefix+"-node", "/etc/vpn-node/resolver-credentials.json", c, "/etc/vpn-node/resolver-credentials.json"); err != nil {
 		return err
 	}

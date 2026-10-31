@@ -176,6 +176,9 @@ func (s *Stack) PrepareInstallerNode(ctx context.Context) error {
 	}) {
 		return fmt.Errorf("installer proxy not ready")
 	}
+	if err = s.prepareInstallerResolver(ctx); err != nil {
+		return err
+	}
 	return s.SelectInstallerRelease(ctx, "older")
 }
 
