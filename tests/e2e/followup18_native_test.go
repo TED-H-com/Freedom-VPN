@@ -166,7 +166,19 @@ func (r *runner) firstOffer18(ctx context.Context, s *Stack, admin *session) {
 	if err != nil || detail.Status != 200 {
 		return
 	}
-	capacity := map[string]any{"capacity": map[string]any{"down_bps": 210000000, "up_bps": 210000000, "member_down_bps_cap": 100000000, "member_up_bps_cap": 100000000}}
+	var current struct {
+		Capacity struct {
+			Down uint64 `json:"down_bps"`
+		} `json:"capacity"`
+	}
+	if json.Unmarshal(detail.Body, &current) != nil {
+		return
+	}
+	parentRate := uint64(210000000)
+	if current.Capacity.Down == parentRate {
+		parentRate = 220000000
+	}
+	capacity := map[string]any{"capacity": map[string]any{"down_bps": parentRate, "up_bps": parentRate, "member_down_bps_cap": 100000000, "member_up_bps_cap": 100000000}}
 	patched, err := admin.call(ctx, "PATCH", r.lab.public+"/api/v1/admin/nodes/"+r.nodeID.String(), capacity, map[string]string{"If-Match": detail.Header.Get("ETag"), "Idempotency-Key": uuid.NewString()})
 	recPathNote(&rec)("configuration_command", httpDetail(patched, err))
 	recPathNote(&rec)("retained_generation", retained)
@@ -174,15 +186,20 @@ func (r *runner) firstOffer18(ctx context.Context, s *Stack, admin *session) {
 		return
 	}
 	changed, stopChanged := context.WithTimeout(ctx, 30*time.Second)
+	var queryErr error
 	ready := waitUntil(changed, time.Second, func() bool {
 		var advanced bool
 		// Compilation happens on the agent's real GET. Only wait for command
 		// intent here; the export below must prove delivery and application.
-		return db.QueryRow(changed, `SELECT desired_config_generation > $2::numeric FROM nodes WHERE id=$1`, r.nodeID, retained).Scan(&advanced) == nil && advanced
+		queryErr = db.QueryRow(changed, `SELECT desired_config_generation > $2::text::numeric FROM nodes WHERE id=$1`, r.nodeID, retained).Scan(&advanced)
+		return queryErr == nil && advanced
 	})
 	stopChanged()
 	if !ready {
 		recPathNote(&rec)("command", "new desired generation unavailable")
+		if queryErr != nil {
+			recPathNote(&rec)("query_error", queryErr.Error())
+		}
 		return
 	}
 	if err = s.Service(ctx, "start", release); err != nil {
