@@ -57,7 +57,7 @@ func (t *Trace) Record(request, response []byte, peer net.Addr, proto string, st
 	if t.Role == "authority" {
 		host, _, _ := net.SplitHostPort(peer.String())
 		e.Source = "other_fixture"
-		if strings.HasSuffix(host, ".20") {
+		if strings.HasSuffix(host, ".40") {
 			e.Source = "primary"
 		}
 		if strings.HasSuffix(host, ".22") {
