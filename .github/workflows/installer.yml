@@ -1,0 +1,44 @@
+# Privileged systemd container tests (make -f mk/installer.mk installer-test)
+# need a host that can run systemd as PID 1. GitHub-hosted runners do not.
+# This workflow runs lint, the library tests, and both architecture builds.
+name: Installer
+on:
+  push:
+    paths:
+      - packaging/installer/**
+      - deploy/node/**
+      - docs/node/install.md
+      - docs/node/install-*.md
+      - mk/installer.mk
+      - tests/installer/**
+      - .github/workflows/installer.yml
+      - go.mod
+      - go.sum
+  pull_request:
+    paths:
+      - packaging/installer/**
+      - deploy/node/**
+      - docs/node/install.md
+      - docs/node/install-*.md
+      - mk/installer.mk
+      - tests/installer/**
+      - .github/workflows/installer.yml
+      - go.mod
+      - go.sum
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    env:
+      GOTOOLCHAIN: local
+      CGO_ENABLED: "0"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.27.3"
+          cache: true
+      - run: make -f mk/installer.mk installer-lint
+      - run: make -f mk/installer.mk installer-unit
+      - run: make -f mk/installer.mk installer-build
