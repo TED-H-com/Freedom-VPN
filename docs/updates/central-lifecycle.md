@@ -182,6 +182,61 @@ AT26 producer capture, including passing restored checks and failed candidate
 tunnel probe. The regression rebinds only job/release identity and authorization
 times to isolated test data; it sends no applying/checking result before rollback.
 
+## Installer-applied results (D-089)
+
+`SubmitResult` and `SubmitResultTx` accept `source: installer` as evidence on
+the authenticated node. The body node/incarnation must match mTLS and the node's
+current, nonrevoked incarnation. The node-minted job must not exist in
+`update_jobs`; a central-issued job returns 409 `STATE_CONFLICT`, including one
+issued to another node. Installer evidence has attempt 1 and null batch/target.
+Without `source`, or with `source: central`, unknown jobs still return 404
+`RESOURCE_NOT_FOUND`.
+
+The requested release must be published. The existing catalog represents this
+as verified, approved, supported and nonrevoked, with a currently trusted signed
+manifest; it has no separate publication flag. An unknown release returns 404
+`RESOURCE_NOT_FOUND`; a registered but unpublished or revoked release returns
+409 `STATE_CONFLICT`. The result's manifest digest must match that immutable
+release. The same canonical payload-hash, terminal version/time, health, error,
+state-schema and usage-checkpoint checks apply as for central results. Rollback
+still requires the restored release's trusted manifest, serving permission,
+compatible schema and health. A pre-health failure must retain the centrally
+recorded current release; without that baseline, it fails closed.
+
+Migration `00191_installer_update_results.sql` stores immutable payload, hash,
+release, state, incarnation, receipt time and ACK under `(node_id, job_id)`.
+An identical hash returns the original ACK, including its timestamp, without
+another audit or projection write. A different payload for that same node/job
+returns 409 `ACK_CONFLICT` and keeps the first evidence. Release-policy changes
+do not rewrite a previously accepted receipt. Authentication/current-incarnation
+checks still apply to replays. A job's first accepted evidence is immutable;
+the updater must retain and replay its original terminal payload.
+
+Verified `succeeded` and `already_current` results set current and last-good to
+the installed release, satisfying D-068. Failure and rollback evidence do not
+move either node version. Acceptance emits `update_result.accept` on the node
+resource with `source: installer`. It never creates, binds, completes or changes
+a central job, target or batch, nor changes progress, retries, rollout gates,
+confirmation timestamps, recovery state or accepted central generation. The ACK
+reports the retained central generation; its version-applied flag is independent
+of that generation. Publication intent is unchanged. New evidence advances the
+node detail's ETag; exact replays do not.
+
+Operators see the installed release in admin node detail. Under D-097, a current
+central job always supplies `NodeUpdateSummary`. When no current central job
+exists, the newest accepted receipt of the current incarnation supplies the
+summary and its own `source`. Installer summaries have null `batch_id` and
+`last_observed_at`; they provide no batch/current-job projection. Rejected
+receipts and older incarnations cannot replace this view. `UpdateTarget` and
+`UpdateJobSummary` remain central-issued only.
+The existing target `current_release_id` is a live node-version read and can
+reflect the installed release without changing target/job status or result evidence.
+
+The HTTP idempotency-key replay adapter must read installer ACKs from this new
+table using authenticated node/incarnation and job ID. Its current central-only
+`update_results` lookup is owned by the wire-nodes lane; the domain's exact
+replay and transaction behavior are covered independently here.
+
 ## Counting example (§13.12)
 
 A batch snapshots six nodes. Initially: queued=4, waiting_online=2; denominator=6,
