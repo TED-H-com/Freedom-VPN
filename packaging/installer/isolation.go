@@ -105,8 +105,10 @@ func ensureTable(ctx context.Context, env *Env, j *Journal) (bool, error) {
 		}
 		// One atomic transaction, with exclusive creation. No partial empty
 		// table and no objects added to the agent's inet fvpn (D-116).
-		if err := env.run(ctx, "nft", "create", "table", "inet", table,
-			`{ chain owner { comment "managed-by=fvpn-node-install"; } }`); err != nil {
+		// nft 1.0.9's create-table form does not instantiate nested chains.
+		// Send two commands in the same nft transaction instead.
+		if err := env.run(ctx, "nft", "create", "table", "inet", table, ";",
+			"add", "chain", "inet", table, "owner", `{ comment "managed-by=fvpn-node-install"; }`); err != nil {
 			return false, err
 		}
 	}

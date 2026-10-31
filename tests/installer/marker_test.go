@@ -32,6 +32,7 @@ func TestAT07_D116InstallerMarkerAndAgentRules(t *testing.T) {
 	writeStdin(t, c, "/run/w5-token", token1+"\n", "0600")
 	_, out, code := doInstall(t, c, relIn("1", rel1.ReleaseID), url, ca, bundle, "/run/w5-token")
 	if code != 0 {
+		t.Logf("failed install nft read-back: %s", mustExec(t, c, "nft", "-j", "list", "ruleset"))
 		t.Fatalf("install: %d %s", code, out)
 	}
 	waitPath(t, c, "/run/vpn-node/heartbeat")
