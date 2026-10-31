@@ -19,6 +19,7 @@ import (
 )
 
 func main() {
+	dnsTraceRole := flag.String("dns-trace-role", "", "TEST ONLY primary, secondary or authority metadata trace")
 	dnsUpstream := flag.String("dns-upstream", "", "TEST ONLY DNS-only relay to the filtering resolver")
 	udpAddr := flag.String("probe-udp-addr", "", "TEST ONLY authenticated UDP probe listener")
 	memberTCP := flag.String("member-tcp-addr", "", "TEST ONLY persistent member TCP echo")
@@ -30,7 +31,24 @@ func main() {
 	secretFile := flag.String("secret-file", "", "upload secret")
 	flag.Parse()
 	if *dnsUpstream != "" {
-		if err := dnsrelay.Serve(*addr, *dnsUpstream, ""); err != nil {
+		var err error
+		if *dnsTraceRole != "" {
+			if *dnsTraceRole != "primary" && *dnsTraceRole != "secondary" && *dnsTraceRole != "authority" {
+				os.Exit(2)
+			}
+			if os.MkdirAll("/var/lib/fvpn-dns", 0700) != nil {
+				os.Exit(1)
+			}
+			f, e := os.OpenFile("/var/lib/fvpn-dns/events.jsonl", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0600)
+			if e != nil {
+				os.Exit(1)
+			}
+			_ = f.Close()
+			err = dnsrelay.ServeObserved(*addr, *dnsUpstream, "", &dnsrelay.Trace{Role: *dnsTraceRole, Path: "/var/lib/fvpn-dns/events.jsonl"})
+		} else {
+			err = dnsrelay.Serve(*addr, *dnsUpstream, "")
+		}
+		if err != nil {
 			fmt.Fprintln(os.Stderr, "DNS relay failed")
 			os.Exit(1)
 		}

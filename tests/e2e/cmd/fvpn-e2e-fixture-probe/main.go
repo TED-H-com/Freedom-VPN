@@ -15,24 +15,26 @@ import (
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/internal/dnspolicy"
+	"github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/dnsrelay"
 	"github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/streamstats"
 	"golang.org/x/net/dns/dnsmessage"
 )
 
 type result struct {
-	Endpoint       *streamstats.Sample `json:"endpoint,omitempty"`
-	AuthorityTTL   uint32              `json:"authority_ttl"`
-	HasSOA         bool                `json:"has_soa"`
-	Available      bool                `json:"available"`
-	RCode          int                 `json:"rcode"`
-	Types          []uint16            `json:"types"`
-	TTLs           []uint32            `json:"ttls"`
-	Classes        []string            `json:"address_classes"`
-	ExpectedAnswer bool                `json:"expected_answer"`
-	Connected      bool                `json:"connected"`
-	Bytes          int                 `json:"bytes"`
-	Milliseconds   int64               `json:"milliseconds"`
-	Error          string              `json:"error,omitempty"`
+	AuthoritySerial uint32              `json:"authority_serial"`
+	Endpoint        *streamstats.Sample `json:"endpoint,omitempty"`
+	AuthorityTTL    uint32              `json:"authority_ttl"`
+	HasSOA          bool                `json:"has_soa"`
+	Available       bool                `json:"available"`
+	RCode           int                 `json:"rcode"`
+	Types           []uint16            `json:"types"`
+	TTLs            []uint32            `json:"ttls"`
+	Classes         []string            `json:"address_classes"`
+	ExpectedAnswer  bool                `json:"expected_answer"`
+	Connected       bool                `json:"connected"`
+	Bytes           int                 `json:"bytes"`
+	Milliseconds    int64               `json:"milliseconds"`
+	Error           string              `json:"error,omitempty"`
 }
 
 func class(ip netip.Addr) string {
@@ -80,6 +82,30 @@ func main() {
 	out := result{RCode: -1, Types: []uint16{}, TTLs: []uint32{}, Classes: []string{}}
 	var trace *streamstats.Conn
 	switch *mode {
+	case "soa":
+		q := dnsmessage.Message{Header: dnsmessage.Header{ID: 1}, Questions: []dnsmessage.Question{{Name: dnsmessage.MustNewName("example.invalid."), Type: dnsmessage.TypeSOA, Class: dnsmessage.ClassINET}}}
+		packet, e := q.Pack()
+		if e != nil {
+			out.Error = "soa_pack"
+			break
+		}
+		raw, e := dnsrelay.Exchange("udp", *addr, packet)
+		if e != nil {
+			out.Error = "soa_unavailable"
+			break
+		}
+		var answer dnsmessage.Message
+		if answer.Unpack(raw) != nil {
+			out.Error = "soa_parse"
+			break
+		}
+		for _, a := range answer.Answers {
+			if b, ok := a.Body.(*dnsmessage.SOAResource); ok {
+				out.AuthoritySerial = b.Serial
+				out.AuthorityTTL = a.Header.TTL
+				out.Available = true
+			}
+		}
 	case "dns":
 		if !strings.HasSuffix(strings.TrimSuffix(strings.ToLower(*name), "."), ".example.invalid") {
 			os.Exit(2)

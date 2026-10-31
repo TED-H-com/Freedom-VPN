@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+	"github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/dnsrelay"
 	"github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/streamstats"
 	"github.com/google/uuid"
 )
@@ -21,19 +22,21 @@ import (
 const fixtureProbe = "/usr/local/bin/fvpn-e2e-fixture-probe"
 
 type FixtureProbeResult struct {
-	Endpoint       *streamstats.Sample `json:"endpoint,omitempty"`
-	AuthorityTTL   uint32              `json:"authority_ttl"`
-	HasSOA         bool                `json:"has_soa"`
-	Available      bool                `json:"available"`
-	RCode          int                 `json:"rcode"`
-	Types          []uint16            `json:"types"`
-	TTLs           []uint32            `json:"ttls"`
-	Classes        []string            `json:"address_classes"`
-	ExpectedAnswer bool                `json:"expected_answer"`
-	Connected      bool                `json:"connected"`
-	Bytes          int                 `json:"bytes"`
-	Milliseconds   int64               `json:"milliseconds"`
-	Error          string              `json:"error,omitempty"`
+	AuthoritySerial uint32              `json:"authority_serial"`
+	DNS             *DNSQueryTrace      `json:"dns_trace,omitempty"`
+	Endpoint        *streamstats.Sample `json:"endpoint,omitempty"`
+	AuthorityTTL    uint32              `json:"authority_ttl"`
+	HasSOA          bool                `json:"has_soa"`
+	Available       bool                `json:"available"`
+	RCode           int                 `json:"rcode"`
+	Types           []uint16            `json:"types"`
+	TTLs            []uint32            `json:"ttls"`
+	Classes         []string            `json:"address_classes"`
+	ExpectedAnswer  bool                `json:"expected_answer"`
+	Connected       bool                `json:"connected"`
+	Bytes           int                 `json:"bytes"`
+	Milliseconds    int64               `json:"milliseconds"`
+	Error           string              `json:"error,omitempty"`
 }
 
 func (s *Stack) InstallFixtureProbe(ctx context.Context) error {
@@ -77,7 +80,11 @@ func (s *Stack) ProbeNativeDNS(ctx context.Context, resolver, name string, rr ui
 	if tcp {
 		proto = "tcp"
 	}
-	return s.fixtureProbe(ctx, s.lab.member, "-mode", "dns", "-addr", resolver, "-name", name, "-type", fmt.Sprint(rr), "-proto", proto, "-expect", expected)
+	started := time.Now().UTC()
+	out, err := s.fixtureProbe(ctx, s.lab.member, "-mode", "dns", "-addr", resolver, "-name", name, "-type", fmt.Sprint(rr), "-proto", proto, "-expect", expected)
+	completed := time.Now().UTC()
+	out.DNS = s.dnsQueryTrace(ctx, dnsrelay.FixtureCase(name), rr, started, completed, out)
+	return out, err
 }
 func (s *Stack) fixtureProbe(ctx context.Context, container string, args ...string) (out FixtureProbeResult, err error) {
 	cmdArgs := append([]string{"exec", container, fixtureProbe}, args...)
@@ -140,7 +147,7 @@ func (s *Stack) ConfigureNativeDNS(ctx context.Context, admin BrowserSession, de
 	if err != nil {
 		return out, err
 	}
-	if err = exec.CommandContext(ctx, "docker", "run", "-d", "--name", s.lab.prefix+"-origin-dns-secondary", "--network", s.lab.prefix+"-origin", "--ip", out.Resolvers[1], strings.TrimSpace(string(image)), "-addr", ":53", "-dns-upstream", prefix+".22:5353").Run(); err != nil {
+	if err = exec.CommandContext(ctx, "docker", "run", "-d", "--name", s.lab.prefix+"-origin-dns-secondary", "--network", s.lab.prefix+"-origin", "--ip", out.Resolvers[1], strings.TrimSpace(string(image)), "-addr", ":53", "-dns-upstream", prefix+".22:5353", "-dns-trace-role", "secondary").Run(); err != nil {
 		return out, fmt.Errorf("secondary DNS transport: %w", err)
 	}
 	conn, err := s.lab.db(ctx)

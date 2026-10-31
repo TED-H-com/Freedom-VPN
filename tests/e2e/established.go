@@ -9,20 +9,15 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strings"
 	"time"
 
-	"github.com/TED-H-com/Freedom-VPN/node/enforce"
+	"github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/counterread"
 	"github.com/google/uuid"
 )
 
 // DeviceCounters is one device's admission byte counters. Present is false
 // when the named counters are not in the current ruleset.
-type DeviceCounters struct {
-	Upload   uint64 `json:"upload_bytes,string"`
-	Download uint64 `json:"download_bytes,string"`
-	Present  bool
-}
+type DeviceCounters = counterread.Result
 
 // EstablishedTransports is one persistent member TCP session and its
 // authenticated UDP echo. Stop closes both and removes the key file.
@@ -41,21 +36,26 @@ const (
 
 // DeviceByteCounters reads u_<device> and d_<device> from inet fvpn.
 func (s *Stack) DeviceByteCounters(ctx context.Context, device uuid.UUID) (DeviceCounters, error) {
-	raw, err := exec.CommandContext(ctx, "docker", "exec", s.lab.node, "nft", "-j", "list", "table", "inet", "fvpn").CombinedOutput()
+	out := DeviceCounters{}
+	started := time.Now().UTC()
+	raw, err := exec.CommandContext(ctx, "docker", "exec", s.lab.node, "/usr/local/bin/fvpn-e2e-nodeconfig", "device-counters", device.String()).Output()
 	if err != nil {
-		return DeviceCounters{}, err
+		out.Diagnostic.Started, out.Diagnostic.Completed = started, time.Now().UTC()
+		out.Diagnostic.Stage, out.Diagnostic.Category = "container_exec", "container_exec"
+		if ctx.Err() != nil {
+			out.Diagnostic.Category = "timeout_or_cancel"
+		}
+		return out, fmt.Errorf("counter read: %s", out.Diagnostic.Category)
 	}
-	st, err := enforce.ParseState(raw)
-	if err != nil {
-		return DeviceCounters{}, err
+	if json.Unmarshal(raw, &out) != nil {
+		out.Diagnostic.Stage = "helper_decode"
+		out.Diagnostic.Category = "parse"
+		return out, fmt.Errorf("counter helper parse")
 	}
-	suffix := strings.ReplaceAll(device.String(), "-", "")
-	up, upOK := st.Counters["u_"+suffix]
-	down, downOK := st.Counters["d_"+suffix]
-	if !upOK || !downOK {
-		return DeviceCounters{}, nil
+	if out.Diagnostic.Category != "none" {
+		return out, fmt.Errorf("counter %s: %s", out.Diagnostic.Stage, out.Diagnostic.Category)
 	}
-	return DeviceCounters{Upload: up.Bytes, Download: down.Bytes, Present: true}, nil
+	return out, nil
 }
 
 // CountedMemberTraffic is the counter read the member-traffic scenario uses
@@ -146,6 +146,12 @@ func (s *Stack) MemberSessionStatus(ctx context.Context) (tcpEchoes, udpReplies 
 
 // MemberTransportStatus distinguishes an active sender from successful replies.
 type MemberTransportStatus struct {
+	ReadDiagnostic struct {
+		Started   time.Time `json:"started"`
+		Completed time.Time `json:"completed"`
+		Stage     string    `json:"stage"`
+		Category  string    `json:"category"`
+	} `json:"read_diagnostic"`
 	TCPEchoes   int    `json:"tcp_echoes"`
 	UDPReplies  int    `json:"udp_replies"`
 	TCPAttempts int    `json:"tcp_attempts"`
@@ -156,11 +162,25 @@ type MemberTransportStatus struct {
 
 func (s *Stack) EstablishedStatus(ctx context.Context) (MemberTransportStatus, error) {
 	var status MemberTransportStatus
+	started := time.Now().UTC()
 	raw, err := exec.CommandContext(ctx, "docker", "exec", s.lab.member, "cat", memberSessionStatus).Output()
-	if err != nil {
-		return status, err
+	if err == nil {
+		err = json.Unmarshal(raw, &status)
+		if err != nil {
+			status.ReadDiagnostic.Category = "parse"
+		}
+	} else {
+		status.ReadDiagnostic.Category = "container_read"
+		if ctx.Err() != nil {
+			status.ReadDiagnostic.Category = "timeout_or_cancel"
+		}
 	}
-	err = json.Unmarshal(raw, &status)
+	status.ReadDiagnostic.Started = started
+	status.ReadDiagnostic.Completed = time.Now().UTC()
+	status.ReadDiagnostic.Stage = "member_status_read"
+	if err == nil {
+		status.ReadDiagnostic.Category = "none"
+	}
 	return status, err
 }
 

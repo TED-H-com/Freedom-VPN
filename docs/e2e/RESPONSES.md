@@ -588,3 +588,215 @@ MTU-1280 timeout with 12 complete echoes and no partial final line. One
 again completes all four transfers. No instrumented failure was captured;
 per-I/O tracing can affect scheduling/segmentation. These controls do not
 erase the failures or establish the exact kernel drop reason.
+
+## isolation / wire-nodes / agent-core — 2026-10-31 (follow-up 20, D-102)
+
+> D-087 / D-131: export the clean false → natural empty renewal → accepted
+> provisional report → true → populated lease / serving transition.
+
+The seam is now wired into a dedicated TEST ONLY composition of real control,
+using exactly `WithTestOnlyGrantEligibilityReaderFactory(grants.ReaderFactory)`
+and one `nodestest.NewMemberGrantEligibility()` instance. Prepare with
+`FVPN_E2E_GRANT_SEAM=1`; the [export contract](scenarios/harness-exports.md#follow-up-20--d-087-f10-02-and-f10-03-test-only)
+documents `SetMemberGrantsReady`, `MemberGrantEvidence` and
+`MemberGrantInvariants`, including the required receipt ordering. The production
+binary, desired compiler and entitlement projector are unchanged.
+
+[Run 5ab1f11c](runs/2026-10-31/followup20/5ab1f11c-a36b-4b77-bc70-85d902c93da6/member-grants-fixed-generation.md)
+passes 7/0/0. Generation 7, desired envelope/ETag, bindings, ready/passed state,
+publication, freeze flag and entitlement/device outputs remain byte-identical.
+The real empty and populated signed leases join to distinct accepted reports;
+true → serving receipt is 3,980 ms, followed by a complete 64,064-byte native
+transfer and increasing admission counters. No generation bump or state repair
+is made to drive the transition. This supplies isolation 10's central trigger;
+it does not replace isolation's assembled AT10 result or historical durations.
+
+The final [original-wire capture 79e59c20](runs/2026-10-31/followup20/79e59c20-f289-4679-9b37-01f060f2d376/member-grants-fixed-generation.md)
+also passes 7/0/0, at fixed generation 6. All 47 captured original JSON body
+hashes verify across 53 events. Both post-arm accepted reports remain ready /
+passed at generation 6. The 103 original detached node timing records have no
+sequence gaps and identify both renewals as newly accepted leases. True →
+accepted serving receipt is 4,112 ms. The baseline generation differs between
+fresh fixtures; neither is artificially forced to a particular number.
+
+The [first attempt](runs/2026-10-31/followup20/b4d2d001-a781-4df5-80d2-f7aad09f5b55/member-grants-fixed-generation.md)
+remains failed: normal initial FUP projection changed rate-policy generation
+1→0 and desired generation 5→6 during the window. The runner now lets initial
+outputs settle for 65 seconds before arming, without stopping either compiler.
+It also corrects its lease response decoder to the actual `signed.members`
+field. No failed evidence is rewritten.
+
+## members — 2026-10-31 (follow-up 20, F10-02 / F10-04, D-102)
+
+> Retain the counter-reader error category and correlate every sample with
+> enforcement/read timestamps; preserve the original failed finite-expiry row.
+
+The shared reader now retains category, stage, exit code, start/completion,
+kernel generation and both surrounding heartbeat reads. The session-status
+reader independently records its own failure category; consumers can distinguish
+which half caused `read_ok=false`. Missing counters remain distinct from failed
+reads. `EnableEnforcementTiming` before enrollment also enables the existing
+agent observer: each read carries same-boot monotonic bounds and before/after
+enforcement sequence records, with the full detached trace exported separately.
+No retry or assertion relaxation is introduced. The exact fields and
+category limits are in the [export contract](scenarios/harness-exports.md#follow-up-20--d-087-f10-02-and-f10-03-test-only).
+
+[Run 218e18c9](runs/2026-10-31/followup20/218e18c9-50ee-4050-a60e-a96e188b0167/finite-expiry-reader-diagnostics.md)
+retains 214 finite-expiry samples: all counter categories are `none`, both readers
+succeed, and all heartbeat reads are present. Last observed TCP/UDP increments
+are 182.021266 ms before the finite deadline. Senders stay active, final counters
+are stable/removed, and sampling continues six seconds after expiry. This is a
+reader-diagnostic reproduction, not a rerun of the complete members AT02 row.
+Container-visible host load is 8.94 / 10.61 / 11.69; the historical run has no
+matching retained load measurement, so comparable host load is unproven.
+The original 13:35:45.333735552Z error was not retained and cannot be recovered
+retrospectively. F10-02 remains historically failed and unattributed.
+
+The extended [timing-enabled run 977efa83](runs/2026-10-31/followup20/977efa83-e3bd-4ced-b548-dbc9763ed266/finite-expiry-reader-diagnostics.md)
+passes 2/0/0: 247 samples through deadline +16 seconds, all categories `none`.
+All 247 same-boot monotonic nft-read brackets and all 494 surrounding producer
+records join exactly to the 242-record full enforcement trace. Host load was
+16.45 / 13.65 / 13.03. No unreadable counter sample was reproduced. This preserves
+the original every-read-success criterion and gives members 11 the timestamps
+needed to attribute a future failure; it does not repair the historical sample.
+
+F10-04: the shared hooks preserve the generation the product actually issues.
+This task adds no mutation to force generation 30. Members' generation-29 full
+sequence and original generation-30 recovery remain distinct records. Exact-30
+history reconciliation belongs to the orchestrator and the generation-producing
+owners; neither this clean D-087 run nor another passing subset closes it.
+
+## updates — 2026-10-31 (follow-up 20, F10-01, D-102)
+
+> Align regular release artifacts, supervisor and shared assertions with the
+> installer release-root contract; use the actual product meter checkpoint.
+
+Regular bundles now contain root `fvpn-agent`, `fvpn-updater`, `fvpn-watchdog`
+and `release.json`. `InstallerLayout` adds the installer binary and original
+units. The supervisor separately handles `/usr/local/bin` bootstrap and exact
+`/opt/vpn-node/releases/<id>/fvpn-agent` candidate ownership. Shared executable
+assertions use the root path; product executable/journal validation is intact.
+Both shared recovery configurations use `/var/lib/vpn-node/state/meter.checkpoint`
+(the default from `node/agent/config.go`, documented in `docs/node/usage-upload.md`).
+The fixture no longer manufactures `e2e/meter.json`. A regular update keeps the
+agent alive for the genuine fresh D-125 checkpoint; the updater owns stop/start.
+
+The regular [run d6b01926](runs/2026-10-31/followup20/d6b01926-de6f-47e4-803b-ae3ea5c603df/update-good.md)
+passes **11/0/0**, exit **0**: twenty supervisor cycles, exact root candidate
+identity, apply exit 0, five passing health checks with the issued real probe,
+tampered-artifact rejection, and restart without enrollment. This is the
+regular shared fixture rerun; updates retains ownership of full AT23–AT27.
+
+Updates 11 must consume this layout in its own `tests/e2e/at/updates/live_test.go`
+(candidate-running and tampered-artifact absence checks still name `bin/`),
+then run the complete AT23–AT27 sequence. The initial checkout's recipient
+`lab_test.go` also had the legacy checkpoint, but updates 10 has since corrected
+it on main; no duplicate request is made for that file. Recipient adapters were
+not edited here. D-102 keeps this answer in RESPONSES.md and their registers
+with that lane. Updates 10's separate F10-02 generated `result_url` request is
+installer-owned (`packaging/installer/config.go`); this regular-fixture pass
+does not close it, and no packaging file is changed here.
+
+## security-ops / enrollment / usage — 2026-10-31 (follow-up 20, D-102)
+
+The merged secops 13 register reports SECOPS-21 closed using its own restore
+run and the shared first-offer export. No new export discrepancy is reported.
+Independently clocked disposable guests and full candidate-hardware capacity
+remain operator resources; this lane never changes the shared clock or claims
+physical arm64 acceptance. Manual grant revocation remains the wire-members /
+contracts API item; D-087 future eligibility suppression is not a substitute.
+Enrollment 9 reports zero new requests. Usage's D-118 canonical-event/origin-ACK
+clarification was already answered in follow-up 19; the DB/WAL file hashes are
+not preservation invariants across real adoption. No recipient register changes.
+
+## isolation — 2026-10-31 (follow-up 20, remaining follow-up 9 requests, D-102)
+
+The D-087 export above supplies the requested clean central trigger. The new
+ISO-F6-03 baseline-writer question remains with `node/agent/engine.go` and
+`node/watchdog/watch.go`; the shared detached Engine trace cannot identify a
+concurrent watchdog writer that the product does not emit. No synthetic writer
+or timestamp is added here. The 96 early drops, 65 subsequent positives and
+41 final expiry drops remain the isolation lane's failed evidence. Its three
+renewal losses retain their measured command brackets without a tolerance.
+Physical platforms, OS reboot and the full continuous fault matrix still need
+their designated operators. The native dual-underlay fixture measures IPv4
+overlay traffic and IPv6Block refusal; it cannot qualify a member-platform
+matrix. Recipient request registers and immutable follow-up 8 pins stay intact.
+
+## netlab / members — 2026-10-31 (follow-up 20, F8-02 instrumented failure, D-102)
+
+The requested broader fixture now has an **instrumented failed transfer**:
+[run cce1a688](runs/2026-10-31/followup20/cce1a688-6af5-483c-bd67-2d167c51c04b/native-matrix-inputs.md),
+**10,010 / 64,064 bytes in 12,011 ms** at MTU 1280; the preceding 1500 control
+passes 64,064 bytes in 2 ms. We bounded the campaign at three fresh attempts,
+stopping after this first captured failure. No further attempt was needed.
+The original reconnect/input ordering, deadline, IPv6Block controls and bulk
+criterion are unchanged; no global MTU or MSS adjustment was made.
+
+[All six complete decodes and analysis](runs/2026-10-31/followup20/capture-cce1a688/README.md)
+retain member/node/origin header records, original pcap pins, tcpdump statistics,
+process windows, link MTUs, endpoint counts and TCP_INFO. The first missing TCP
+range is [1784148912,1784150140). Origin and node tunnel egress retain its
+retransmissions; the member keeps ACKing that gap while SACKing later data.
+Nineteen captured reverse outer IPv4 datagrams of length 1,340 are absent at
+member; all seventeen of length 1,132 arrive. No fragmentation-needed/PTB is
+captured. The origin has received the full upload at its socket, then develops
+write backpressure while response bytes remain unacknowledged. This is stronger
+than a SYN-only or endpoint-count hypothesis; it does not name an exact kernel
+or virtual-link drop reason. Receive-link MTU rejection remains an inference.
+Capture/filter differences and GSO/GRO limits are explicit in the analysis.
+
+Per-I/O tracing can alter segmentation, but this attempt proves instrumentation
+does not always remove the failure. It neither reproduces the exact historical
+12,012/11,011-byte boundary nor changes those failed records. Netlab 20/21 notes
+were not present in this checkout or main when checked; this hand-off supplies
+the requested failure evidence for netlab 21's interpretation. IPv4 overlay is
+measured over the selected native underlay; no IPv6 service or ctv6 hit is invented.
+
+## members / dns-publish — 2026-10-31 (follow-up 20, F10-03, D-102)
+
+`ProbeNativeDNS` now returns per-query `dns_trace`: query bounds, resolver-role
+receipts, authority exchanges, TTL remaining and separately sampled authority
+SOA serial/time. All three metadata relays retain only closed synthetic case
+labels and response classes, not full qnames, answer addresses or payloads.
+Resolver query logging/statistics remain disabled. No cache flush or forced
+responder was added. See the [export contract](scenarios/harness-exports.md#follow-up-20--d-087-f10-02-and-f10-03-test-only).
+
+The [cce1a688 DNS record](runs/2026-10-31/followup20/cce1a688-6af5-483c-bd67-2d167c51c04b/dns-negative.md)
+passes the unchanged assertions, with **36/36 query traces complete**. Initial
+positive: primary, `other_ipv4`, TTL **10**, observed authority exchange,
+authority serial **1001** after the query. Before TTL: primary again, old class,
+TTL **9**, no authority exchange, authority serial **1002** after the query.
+After TTL: primary, `private_ipv4`, TTL **10**, observed exchange, serial **1002**.
+The negative before-TTL response retains SOA serial **1001** and TTL **4** while
+the separately queried authority is already **1002**. Primary-down fallback
+also identifies a real secondary response; its trace is explicitly incomplete
+because the stopped primary container cannot be read during that query.
+
+Wording for dns-publish 9 / members 11: a unique metadata match identifies the
+observed responder; multiple matches stay ambiguous. An authority exchange is
+positive evidence of an upstream fetch. No exchange supports an **inferred**
+cache hit for a positive answer, not a private AdGuard cache flag. Negative
+policy answers can be locally generated, so their cache state stays unknown
+unless separately attributable from the retained receipts. A positive cached A
+record has no SOA; `authority_serial_after_query` must never be represented as
+that cached record's serial. Native probe milliseconds and the broader wrapper
+bounds are distinct; trace collection itself adds elapsed time.
+
+F10-03's historical 2,502-ms initial query and premature changed answer remain
+failed and unattributed: this passing run cannot recover its missing responder
+identity or prove a product TTL fix. Members 11 can retain these fields through
+the existing shared result serialization, keeping its before-TTL assertion
+unchanged. No recipient harness, request register or historical row was edited.
+
+## usage / updates — 2026-10-31 (follow-up 20, newly merged registers, D-102)
+
+Read-only reconciliation against main `838e8eb2`: usage 6 explicitly closes
+its prior canonical-event retention request and reports no new requests. Its
+fresh D-130 gap and counted-event result is its own acceptance, not a new
+shared fixture measurement. Updates 10's newly merged register is answered by
+the F10-01 layout/result section above. Its actual apply configuration already
+uses the genuine checkpoint and keeps the agent alive; only its two executable
+path assertions still need the release-root adoption. F10-02 generated installer
+reporting remains with its named packaging owner. No other lane's register was
+edited, and this worktree was not rebased onto those newly merged changes.

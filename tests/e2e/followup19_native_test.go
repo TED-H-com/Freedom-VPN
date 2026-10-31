@@ -20,7 +20,8 @@ func TestE2E_Followup19Native(t *testing.T) {
 	t.Setenv("FVPN_E2E_NATIVE18", "1")
 	TestE2E_Followup18Native(t)
 }
-func (r *runner) nativeMTU19(ctx context.Context, s *Stack) {
+func (r *runner) nativeMTU19(ctx context.Context, s *Stack) { r.captureMTU19(ctx, s, false) }
+func (r *runner) captureMTU19(ctx context.Context, s *Stack, broader bool) {
 	rec := Record{ID: "native-mtu-comparison", Title: "F8-02 exact reconnect ordering with endpoint and complete header evidence", Spec: []string{"AT09", "AT11", "F8-02"}, Status: StatusPass}
 	defer func() { r.record(rec) }()
 	defer func() {
@@ -35,6 +36,20 @@ func (r *runner) nativeMTU19(ctx context.Context, s *Stack) {
 		mtu          int
 		reconnect    bool
 	}{{"matrix4", "ipv4", 1500, true}, {"matrix6", "ipv6", 1500, true}, {"matrixDual", "dual", 1500, true}, {"matrix1280", "dual", 1280, true}}
+	if broader {
+		rec.ID = "native-matrix-inputs"
+		rec.Title = "Broader fixture MTU transfers with follow-up 19 header and endpoint instrumentation"
+		rows = rows[:0]
+		rows = append(rows, struct {
+			name, family string
+			mtu          int
+			reconnect    bool
+		}{"broader1500", "dual", 1500, false}, struct {
+			name, family string
+			mtu          int
+			reconnect    bool
+		}{"broader1280", "dual", 1280, false})
+	}
 	for _, row := range rows {
 		selected, err := s.ApplyNativeInputs(ctx, NativeFixtureInputs{Underlay: row.family, MTU: row.mtu, Protocol: "tcp", Platform: "linux"})
 		noteJSON(&rec, row.name+"_input", selected)
@@ -134,7 +149,7 @@ func (r *runner) nativeMTU19(ctx context.Context, s *Stack) {
 			if i == 2 {
 				slot = "origin"
 			}
-			receipt, exportErr := s.ExportContainerFile(ctx, slot, "/var/lib/vpn-node/e2e/mtu.pcap", filepath.Join(r.lab.root, ".agent/tmp/followup19", r.runID+"-"+row.name+"-"+slot+".pcap"))
+			receipt, exportErr := s.ExportContainerFile(ctx, slot, "/var/lib/vpn-node/e2e/mtu.pcap", filepath.Join(r.lab.root, filepath.Join(".agent/tmp", fixtureCampaignDirectory()), r.runID+"-"+row.name+"-"+slot+".pcap"))
 			noteJSON(&rec, fmt.Sprintf("%s_capture_%d_receipt", row.name, i), receipt)
 			if exportErr != nil {
 				rec.Status = StatusFail
