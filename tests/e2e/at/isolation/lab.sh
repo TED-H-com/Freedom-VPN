@@ -18,9 +18,7 @@ wipe() {
 case "${1:-}" in
     up)
         mkdir -p "$repo/.agent/tmp"
-        task_tmp=$(mktemp -d "$repo/.agent/tmp/at-isolation-lab.XXXXXX")
-        trap 'rm -rf "$task_tmp"' EXIT
-        export TMPDIR=$task_tmp GOTMPDIR=$task_tmp GOTOOLCHAIN=local CGO_ENABLED=0
+        export TMPDIR=${TMPDIR:-$repo/.agent/tmp} GOTMPDIR=${GOTMPDIR:-$repo/.agent/tmp} GOTOOLCHAIN=local CGO_ENABLED=0
         go build -o "$state/fvpn-netlab" ./tests/netlab/cmd/fvpn-netlab
         docker build -t "$image" tests/netlab
         wipe

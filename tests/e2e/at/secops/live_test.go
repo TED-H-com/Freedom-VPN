@@ -763,7 +763,13 @@ func (p *liveProbe) finish() {
 			scan(service+" file "+name, raw, er)
 		}
 	}
-	rows, err := p.db.Query(p.t.Context(), "SELECT row_to_json(a)::text FROM audit_events a")
+	// A failed restore may leave no central connection. Preserve the remaining
+	// diagnostics and record the unavailable audit stream rather than panic.
+	var rows pgx.Rows
+	err := errors.New("central database unavailable during diagnostic capture")
+	if p.db != nil {
+		rows, err = p.db.Query(p.t.Context(), "SELECT row_to_json(a)::text FROM audit_events a")
+	}
 	var audit bytes.Buffer
 	count := 0
 	if err == nil {
@@ -823,8 +829,8 @@ func (p *liveProbe) finish() {
 	}
 	if phase := os.Getenv("FVPN_SECOPS_FOLLOWUP11"); phase == "restore" || phase == "transports" {
 		name = "followup11-" + phase + "-live.json"
-		if os.Getenv("FVPN_SECOPS_EVIDENCE_FOLLOWUP") == "12" {
-			name = "followup12-" + phase + "-live.json"
+		if followup := os.Getenv("FVPN_SECOPS_EVIDENCE_FOLLOWUP"); followup == "12" || followup == "13" {
+			name = "followup" + followup + "-" + phase + "-live.json"
 		}
 	}
 	if os.WriteFile(filepath.Join(p.root, "docs/e2e/at/secops", name), append(out, '\n'), 0644) != nil {

@@ -1,34 +1,45 @@
 {
   "schema_version": 1,
-  "follow_up": 12,
-  "application_base": "510a4ab7f73bdcfc28aaef53f8d1d6deef97ad67",
-  "source_revision": "bf21d111f0b334368441144145abca8f5d0c060a",
-  "run_id": "dd845a7f-2660-431c-a8e6-c513108cc07d",
-  "driver_run_id": "c8498f5b-455e-41a9-9804-2067690aec23",
-  "started_at": "2026-10-31T09:04:16Z",
-  "finished_at": "2026-10-31T09:23:05Z",
+  "follow_up": 13,
+  "application_base": "7e044c71ecf1d07f63e89721bd213db6611a6a47",
+  "source_revision": "c5d66ccccdbf0ca1c0f0f1120cb704d760c4ddac",
+  "run_id": "5218b7d5-1415-4e1b-8618-48ea2d3cf03e",
+  "driver_run_id": "47e4fdfc-7ba0-437d-b3c2-2fafe50c036b",
+  "started_at": "2026-10-31T11:49:34Z",
+  "finished_at": "2026-10-31T11:59:13Z",
   "hardware": "shared development host; not candidate hardware",
-  "probe_source_sha256": "16ff60b0f2f39a827de3953ea0b24818d41be6f8537854d9d9a0e797e01af425",
-  "record_renderer_sha256": "fca01192bfe08cc5e48c441e513937dd681e53eb57b5bd9dcc57704778e8e753",
-  "previous_run": "history/follow-up-11/",
+  "probe_source_sha256": "4f01f0939ec526d6395cfc473f4d3b05fadd90dce40754fd40455577bbaf5135",
+  "record_renderer_sha256": "46f491ab16489a5dd170ea344e1fa6c3bf23bda4a82fe4f55c0be4f59a9c043d",
+  "previous_run": "history/follow-up-12/",
   "projector_owned_rows_written": [],
   "id": "SECOPS-21",
-  "status": "blocked",
-  "request_status": "open",
-  "d099_roadmap_present": true,
+  "status": "passed",
+  "request_status": "closed",
+  "closure_guards": {
+    "live_restore_passed": true,
+    "d099_present": true,
+    "d095_hold_proved": true,
+    "one_matching_capture": true,
+    "retained_generation_observed_before_release": true,
+    "first_delivered_http_200_complete": true,
+    "first_generation_above_retained": true,
+    "first_offer_local_digest_and_applied_match": true,
+    "first_offer_applied_ack_with_central_receipt": true,
+    "no_generation_repair": true
+  },
   "hold": {
     "after": {
-      "utc": "2026-10-31T09:11:03.992661+00:00",
+      "utc": "2026-10-31T11:56:04.519005+00:00",
       "drift": [
         {
           "field": "desired_state_restore_observation",
-          "desired": "observation received after 2026-10-31T09:11:03.286406129Z",
+          "desired": "observation received after 2026-10-31T11:56:03.833679597Z",
           "observed": "pending fresh observation after restore"
         }
       ],
-      "applied": "9",
+      "applied": "10",
       "desired": "10",
-      "envelope_md5": "c591cdd587284f1a6207c47248441aef",
+      "envelope_md5": "0310315348e5371aea11600ff6543095",
       "stored_count": 9,
       "hold_operations": [
         {
@@ -38,27 +49,27 @@
               "reason": "pending fresh observation after restore",
               "status": "pending",
               "required": true,
-              "updated_at": "2026-10-31T09:11:03.286406+00:00"
+              "updated_at": "2026-10-31T11:56:03.833679+00:00"
             }
           },
           "status": "pending",
-          "created_at": "2026-10-31T09:11:03.286406+00:00"
+          "created_at": "2026-10-31T11:56:03.833679+00:00"
         }
       ]
     },
     "agent_stopped_for_pre_observation_probe": true,
     "before": {
-      "utc": "2026-10-31T09:11:03.86169+00:00",
+      "utc": "2026-10-31T11:56:04.384541+00:00",
       "drift": [
         {
           "field": "desired_state_restore_observation",
-          "desired": "observation received after 2026-10-31T09:11:03.286406129Z",
+          "desired": "observation received after 2026-10-31T11:56:03.833679597Z",
           "observed": "pending fresh observation after restore"
         }
       ],
-      "applied": "9",
+      "applied": "10",
       "desired": "10",
-      "envelope_md5": "c591cdd587284f1a6207c47248441aef",
+      "envelope_md5": "0310315348e5371aea11600ff6543095",
       "stored_count": 9,
       "hold_operations": [
         {
@@ -68,18 +79,18 @@
               "reason": "pending fresh observation after restore",
               "status": "pending",
               "required": true,
-              "updated_at": "2026-10-31T09:11:03.286406+00:00"
+              "updated_at": "2026-10-31T11:56:03.833679+00:00"
             }
           },
           "status": "pending",
-          "created_at": "2026-10-31T09:11:03.286406+00:00"
+          "created_at": "2026-10-31T11:56:03.833679+00:00"
         }
       ]
     },
     "freeze_before_services_start": true,
     "node_drift": [
       {
-        "desired": "observation received after 2026-10-31T09:11:03.286406129Z",
+        "desired": "observation received after 2026-10-31T11:56:03.833679597Z",
         "field": "desired_state_restore_observation",
         "observed": "pending fresh observation after restore"
       }
@@ -95,25 +106,25 @@
       "http_503": true,
       "message": "pending fresh observation after restore",
       "retryable": true,
-      "utc": "2026-10-31T09:11:03.907502646Z"
+      "utc": "2026-10-31T11:56:04.429579395Z"
     }
   },
   "actual": {
     "final": {
-      "applied": "19",
-      "captured_at": "2026-10-31T09:13:41.212038488Z",
-      "desired": "20",
-      "max_stored": "20",
-      "node_accepted_desired": "20",
-      "node_applied": "20",
+      "applied": "22",
+      "captured_at": "2026-10-31T11:58:27.508509362Z",
+      "desired": "22",
+      "max_stored": "22",
+      "node_accepted_desired": "22",
+      "node_applied": "22",
       "node_heartbeat": {
         "baseline_ok": "1",
-        "generation": "20",
-        "mono_ns": "21557044633166",
-        "policy_expires_mono_ns": "28277512919301",
+        "generation": "22",
+        "mono_ns": "31442598720762",
+        "policy_expires_mono_ns": "32033843449590",
         "reason": "serving",
         "serving": "1",
-        "wall_unix_ns": "1793438019528262588"
+        "wall_unix_ns": "1793447905082349744"
       }
     },
     "fix": "#245 w3-wire-policies-usage follow-up 5",
@@ -123,76 +134,89 @@
       {
         "errors": [],
         "applied": "15",
-        "received_at": "2026-10-31T09:11:04.363723+00:00"
-      },
-      {
-        "errors": [],
-        "applied": "17",
-        "received_at": "2026-10-31T09:11:09.427318+00:00"
-      },
-      {
-        "errors": [],
-        "applied": "17",
-        "received_at": "2026-10-31T09:11:39.434124+00:00"
-      },
-      {
-        "errors": [],
-        "applied": "17",
-        "received_at": "2026-10-31T09:12:09.459392+00:00"
-      },
-      {
-        "errors": [],
-        "applied": "17",
-        "received_at": "2026-10-31T09:12:39.714966+00:00"
+        "received_at": "2026-10-31T11:56:04.954015+00:00"
       },
       {
         "errors": [],
         "applied": "19",
-        "received_at": "2026-10-31T09:13:14.493777+00:00"
+        "received_at": "2026-10-31T11:56:10.015876+00:00"
+      },
+      {
+        "errors": [],
+        "applied": "19",
+        "received_at": "2026-10-31T11:56:45.028343+00:00"
+      },
+      {
+        "errors": [],
+        "applied": "19",
+        "received_at": "2026-10-31T11:57:15.582115+00:00"
+      },
+      {
+        "errors": [],
+        "applied": "20",
+        "received_at": "2026-10-31T11:57:50.210763+00:00"
+      },
+      {
+        "errors": [],
+        "applied": "21",
+        "received_at": "2026-10-31T11:57:55.19889+00:00"
+      },
+      {
+        "errors": [],
+        "applied": "22",
+        "received_at": "2026-10-31T11:58:20.257387+00:00"
       }
     ],
     "offers": [
       {
-        "signed_at": "2026-10-31T09:11:04.502381+00:00",
+        "signed_at": "2026-10-31T11:56:05.362175+00:00",
         "generation": "16"
       },
       {
-        "signed_at": "2026-10-31T09:11:06.861875+00:00",
+        "signed_at": "2026-10-31T11:56:05.36968+00:00",
         "generation": "17"
       },
       {
-        "signed_at": "2026-10-31T09:12:41.442278+00:00",
+        "signed_at": "2026-10-31T11:56:05.41724+00:00",
         "generation": "18"
       },
       {
-        "signed_at": "2026-10-31T09:12:42.884255+00:00",
+        "signed_at": "2026-10-31T11:56:07.39244+00:00",
         "generation": "19"
       },
       {
-        "signed_at": "2026-10-31T09:13:29.575561+00:00",
+        "signed_at": "2026-10-31T11:57:48.994554+00:00",
         "generation": "20"
+      },
+      {
+        "signed_at": "2026-10-31T11:57:51.038306+00:00",
+        "generation": "21"
+      },
+      {
+        "signed_at": "2026-10-31T11:58:16.330201+00:00",
+        "generation": "22"
       }
     ],
     "restored_central": {
-      "applied": "9",
-      "captured_at": "2026-10-31T09:11:03.444523225Z",
+      "applied": "10",
+      "captured_at": "2026-10-31T11:56:03.981114275Z",
       "desired": "10",
       "max_stored": "10",
       "node_accepted_desired": "15",
       "node_applied": "15",
       "node_heartbeat": {
-        "baseline_ok": "1",
+        "baseline_ok": "0",
         "generation": "15",
-        "mono_ns": "21390876086164",
-        "policy_expires_mono_ns": "28277513856895",
-        "reason": "serving",
-        "serving": "1",
-        "wall_unix_ns": "1793437853359715531"
+        "mono_ns": "31292993781964",
+        "policy_expires_mono_ns": "0",
+        "reason": "meter_storage_failed",
+        "serving": "0",
+        "wall_unix_ns": "1793447755477411361"
       }
     },
     "retained_at_t1": {
-      "applied": "12",
-      "captured_at": "2026-10-31T09:08:45.814808505Z",
+      "applied": "14",
+      "captured_at": "2026-10-31T11:53:46.552187897Z",
       "desired": "14",
       "max_stored": "14",
       "node_accepted_desired": "14",
@@ -200,43 +224,92 @@
       "node_heartbeat": {
         "baseline_ok": "1",
         "generation": "14",
-        "mono_ns": "21259429551345",
-        "policy_expires_mono_ns": "28277513827147",
+        "mono_ns": "31162399266364",
+        "policy_expires_mono_ns": "31751504278412",
         "reason": "serving",
         "serving": "1",
-        "wall_unix_ns": "1793437721913180587"
+        "wall_unix_ns": "1793447624882895242"
       }
     },
     "stale_generation_lines": [],
     "stale_generation_log_count": 0,
-    "window_start": "2026-10-31T09:11:03.444552377Z"
+    "window_start": "2026-10-31T11:56:03.981137554Z"
   },
-  "first_offer_analysis": {
-    "first_new_stored_offer": {
-      "signed_at": "2026-10-31T09:11:04.502381+00:00",
-      "generation": "16"
+  "first_delivered_offer": {
+    "agent_stopped_before_arm": true,
+    "arm_count": 1,
+    "armed_at": "2026-10-31T11:55:55.959421794Z",
+    "capture": {
+      "capture_id": "a744d26a-b1cc-40b5-96c2-861cd7a912cc",
+      "first": {
+        "http_status": 200,
+        "generation": "19",
+        "body_sha256": "9db8da4cb30ef897e1eaf7f3494eaf8063c7823fcf7d3473d5250052ffc8b0f6",
+        "bytes": 2034,
+        "delivered_at": "2026-10-31T11:56:09.869156137Z",
+        "write_complete": true
+      },
+      "local": {
+        "accepted_generation": "19",
+        "applied_generation": "19",
+        "envelope_sha256": "9db8da4cb30ef897e1eaf7f3494eaf8063c7823fcf7d3473d5250052ffc8b0f6",
+        "sampled_at": "2026-10-31T11:56:10.019699886Z"
+      },
+      "ack": {
+        "report_id": "01a191d1-3799-7cee-ba57-53efe5f3dc18",
+        "applied_generation": "19",
+        "http_status": 202,
+        "received_at": "2026-10-31T11:56:10.019227904Z"
+      }
     },
-    "retained_node_generation": "15",
-    "first_http_probe_after_fresh_observation": {
-      "command_ok": true,
-      "decoded": true,
-      "error_code": "",
-      "generation": "16",
-      "http_200": true,
-      "http_503": false,
-      "message": "",
-      "retryable": false,
-      "utc": "2026-10-31T09:11:04.521361985Z"
+    "capture_finished_at": "2026-10-31T11:56:10.115274067Z",
+    "capture_id": "a744d26a-b1cc-40b5-96c2-861cd7a912cc",
+    "central_receipt": {
+      "node_id": "01a191cb-b600-7259-8941-e94c1380c723",
+      "report_id": "01a191d1-3799-7cee-ba57-53efe5f3dc18",
+      "received_at": "2026-10-31T11:56:10.015876+00:00",
+      "applied_generation": "19"
     },
-    "first_new_stored_offer_is_above_retained": true,
-    "limitation": "Stored compiler rows and a timestamped HTTP probe are distinct. No response capture export proves the first envelope delivered to the running agent; no claim that absence of ErrStaleGeneration log lines proves acceptance.",
-    "closure_guards": {
-      "d099_on_measured_base": true,
-      "d095_hold_proved": true,
-      "first_stored_row_above_retained": true,
-      "first_delivered_http_response_proved": false,
-      "first_offer_local_store_accepted": false,
-      "first_stored_row_applied_ack": false
-    }
-  }
+    "first_generation_above_retained": true,
+    "release_started_at": "2026-10-31T11:56:05.19714965Z",
+    "released_at": "2026-10-31T11:56:05.217487728Z",
+    "retained_before_restore": {
+      "captured_at": "2026-10-31T11:55:55.899160645Z",
+      "node_accepted_desired": "15",
+      "node_applied": "15",
+      "node_heartbeat": {
+        "baseline_ok": "0",
+        "generation": "15",
+        "mono_ns": "31292993781964",
+        "policy_expires_mono_ns": "0",
+        "reason": "meter_storage_failed",
+        "serving": "0",
+        "wall_unix_ns": "1793447755477411361"
+      }
+    },
+    "retained_generation_observation": {
+      "report_id": "01a191d1-23d2-7dbc-8187-4859a2528b06",
+      "received_at": "2026-10-31T11:56:04.954015+00:00",
+      "central_applied": "15",
+      "applied_generation": "15"
+    },
+    "retained_generation_ordering_proved": true,
+    "scope": "first actual agent response after clean restore and release; direct-control HTTP probes are separate"
+  },
+  "first_http_probe_after_fresh_observation": {
+    "command_ok": true,
+    "decoded": true,
+    "error_code": "",
+    "generation": "19",
+    "http_200": true,
+    "http_503": false,
+    "message": "",
+    "retryable": false,
+    "utc": "2026-10-31T11:56:10.163037901Z"
+  },
+  "first_new_stored_compiler_row": {
+    "signed_at": "2026-10-31T11:56:05.362175+00:00",
+    "generation": "16"
+  },
+  "harness_validation_only": "../../runs/2026-10-31/followup18/5f74d7c3-6404-461d-9f47-296bd69958c2/first-desired-offer.md"
 }

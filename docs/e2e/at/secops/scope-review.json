@@ -2,22 +2,22 @@
   "schema_version": 1,
   "scope": "Repository-local review of README, member guide draft, portal member texts and the current checkout of Wave 4/dev-stack evidence. External upstream product claims were not reverified.",
   "spec": [
-    "\u00a71",
-    "\u00a77.3",
-    "\u00a716.3",
-    "\u00a719 AT32"
+    "§1",
+    "§7.3",
+    "§16.3",
+    "§19 AT32"
   ],
   "findings": [
     {
       "id": "DOC01",
       "status": "resolved",
-      "resolved_in": "docs/handover/member-guide.md (Part I zh-TW \u00a73.2 and Part II en \u00a73.2)",
+      "resolved_in": "docs/handover/member-guide.md (Part I zh-TW §3.2 and Part II en §3.2)",
       "type": "documentation_change_request",
       "owner": "documentation",
       "file": "docs/handover/member-guide.md",
       "section": "3.2 / AT09 (both languages)",
       "claim": "Guarantees no local ISP fallback when the tunnel fails.",
-      "actual": "Spec \u00a77.3 and portal member.gettingStarted.killSwitchWarningBody explicitly exclude a complete client kill switch. Server-side fail closed is not endpoint routing protection.",
+      "actual": "Spec §7.3 and portal member.gettingStarted.killSwitchWarningBody explicitly exclude a complete client kill switch. Server-side fail closed is not endpoint routing protection.",
       "requested_change": "Replace the guarantee with the portal limitation; record disconnect, sleep and network-switch behavior per platform.",
       "evidence": [
         "apps/portal/src/i18n/zh-TW.ts",
@@ -28,13 +28,13 @@
     {
       "id": "DOC02",
       "status": "resolved",
-      "resolved_in": "docs/handover/member-guide.md (Part I zh-TW \u00a72.2 A\u2013D and Part II en \u00a72.2 A\u2013D)",
+      "resolved_in": "docs/handover/member-guide.md (Part I zh-TW §2.2 A–D and Part II en §2.2 A–D)",
       "type": "documentation_change_request",
       "owner": "documentation",
       "file": "docs/handover/member-guide.md",
       "section": "2.2 (all four platform sequences)",
       "claim": "Tells members to click Authorize Device in the portal.",
-      "actual": "MemberDevicesPage implements list and revoke only. The 41-endpoint contract has no member authorize command; authorization is a central entitlement/device-sync action (\u00a77.3).",
+      "actual": "MemberDevicesPage implements list and revoke only. The 41-endpoint contract has no member authorize command; authorization is a central entitlement/device-sync action (§7.3).",
       "requested_change": "Describe automatic central authorization and pending/authorized status; do not invent a button or endpoint.",
       "evidence": [
         "apps/portal/src/pages/member/MemberDevicesPage.tsx",
@@ -44,13 +44,13 @@
     {
       "id": "DOC03",
       "status": "resolved",
-      "resolved_in": "docs/handover/member-guide.md (Part I zh-TW \u00a73.2, \u00a74 and Part II en \u00a73.2, \u00a74)",
+      "resolved_in": "docs/handover/member-guide.md (Part I zh-TW §3.2, §4 and Part II en §3.2, §4)",
       "type": "documentation_change_request",
       "owner": "documentation",
       "file": "docs/handover/member-guide.md",
       "section": "3.2 (zh-TW), 4 (both languages)",
       "claim": "Promises forwarding off within 30 seconds on disable/switch and describes immediate revocation.",
-      "actual": "\u00a716.3 uses the earliest lease/service deadline; \u00a716.5 online revocation target starts at 60 seconds and is not an offline guarantee. Prior lease-expiry run had no serving flow.",
+      "actual": "§16.3 uses the earliest lease/service deadline; §16.5 online revocation target starts at 60 seconds and is not an offline guarantee. Prior lease-expiry run had no serving flow.",
       "requested_change": "Distinguish watchdog staleness from online revocation and offline deadline; label timings unmeasured until AT29 runs.",
       "evidence": [
         "docs/spec/PROJECT_SPEC.zh-TW.md",
@@ -60,7 +60,7 @@
     {
       "id": "DOC04",
       "status": "resolved",
-      "resolved_in": "docs/handover/member-guide.md (Part I zh-TW \u00a71, \u00a72.2C, \u00a73.1, \u00a73.3 and Part II en \u00a71, \u00a72.2C, \u00a73.1, \u00a73.3)",
+      "resolved_in": "docs/handover/member-guide.md (Part I zh-TW §1, §2.2C, §3.1, §3.3 and Part II en §1, §2.2C, §3.1, §3.3)",
       "type": "documentation_change_request",
       "owner": "documentation",
       "file": "docs/handover/member-guide.md",
@@ -76,7 +76,7 @@
     {
       "id": "DOC05",
       "status": "resolved",
-      "resolved_in": "docs/handover/member-guide.md (Part I zh-TW \u00a73.1 and Part II en \u00a73.1)",
+      "resolved_in": "docs/handover/member-guide.md (Part I zh-TW §3.1 and Part II en §3.1)",
       "type": "documentation_change_request",
       "owner": "documentation",
       "file": "docs/handover/member-guide.md",
@@ -92,13 +92,13 @@
     {
       "id": "DOC06",
       "status": "resolved",
-      "resolved_in": "docs/handover/member-guide.md (Part I zh-TW \u00a76.1 and Part II en \u00a76.1)",
+      "resolved_in": "docs/handover/member-guide.md (Part I zh-TW §6.1 and Part II en §6.1)",
       "type": "documentation_change_request",
       "owner": "documentation",
       "file": "docs/handover/member-guide.md",
       "section": "6.1 (both languages)",
       "claim": "Claims all port-53 traffic is DNAT redirected to two fixed overlay resolvers.",
-      "actual": "RenderServing allows configured resolver addresses but has no DNS DNAT; arbitrary external DNS handling is a selected policy decision in \u00a712.6. The guide presents example addresses as operational guarantees.",
+      "actual": "RenderServing allows configured resolver addresses but has no DNS DNAT; arbitrary external DNS handling is a selected policy decision in §12.6. The guide presents example addresses as operational guarantees.",
       "requested_change": "Describe configured resolver use and the measured external-DNS policy, remove unsupported universal interception.",
       "evidence": [
         "node/enforce/render_nft.go",
@@ -108,13 +108,13 @@
     {
       "id": "DOC07",
       "status": "resolved",
-      "resolved_in": "docs/handover/member-guide.md (Part I zh-TW \u00a76.2 and Part II en \u00a76.2)",
+      "resolved_in": "docs/handover/member-guide.md (Part I zh-TW §6.2 and Part II en §6.2)",
       "type": "documentation_change_request",
       "owner": "documentation",
       "file": "docs/handover/member-guide.md",
       "section": "6.2 (zh-TW)",
       "claim": "Equates DoT with DNS carried over HTTPS port 443.",
-      "actual": "\u00a712.6 distinguishes DoT/DoQ from DoH over ordinary HTTPS; portal copy groups bypass cases without this transport equivalence.",
+      "actual": "§12.6 distinguishes DoT/DoQ from DoH over ordinary HTTPS; portal copy groups bypass cases without this transport equivalence.",
       "requested_change": "Separate protocols and state that actual behavior depends on selected policy and platform.",
       "evidence": [
         "docs/spec/PROJECT_SPEC.zh-TW.md",
@@ -124,13 +124,13 @@
     {
       "id": "DOC08",
       "status": "resolved",
-      "resolved_in": "docs/handover/member-guide.md (Part I zh-TW \u00a77.2 and Part II en \u00a77.2)",
+      "resolved_in": "docs/handover/member-guide.md (Part I zh-TW §7.2 and Part II en §7.2)",
       "type": "documentation_change_request",
       "owner": "documentation",
       "file": "docs/handover/member-guide.md",
       "section": "7.2 (both languages)",
       "claim": "Promises allow overrides take effect for every member within 60 seconds because blocked_ttl_seconds=60.",
-      "actual": "\u00a712.5\u201312.6 includes publication/ACK, resolver caches, app caches and existing connections; TTL is configurable and is not an end-to-end SLA.",
+      "actual": "§12.5–12.6 includes publication/ACK, resolver caches, app caches and existing connections; TTL is configurable and is not an end-to-end SLA.",
       "requested_change": "State configured TTL and measured publication delay separately; remove universal 60-second promise.",
       "evidence": [
         "contracts/openapi.yaml",
@@ -141,7 +141,7 @@
     {
       "id": "DOC09",
       "status": "resolved",
-      "resolved_in": "README.md (Status and \u00a7What it does)",
+      "resolved_in": "README.md (Status and §What it does)",
       "type": "documentation_change_request",
       "owner": "documentation",
       "file": "README.md",
@@ -158,7 +158,7 @@
     {
       "id": "DOC10",
       "status": "resolved",
-      "resolved_in": "docs/handover/member-guide.md (Part I zh-TW \u00a75.1 and Part II en \u00a75.1)",
+      "resolved_in": "docs/handover/member-guide.md (Part I zh-TW §5.1 and Part II en §5.1)",
       "type": "documentation_change_request",
       "owner": "documentation",
       "file": "docs/handover/member-guide.md",
@@ -174,13 +174,13 @@
     {
       "id": "DOC11",
       "status": "resolved",
-      "resolved_in": "docs/handover/member-guide.md (Part I zh-TW \u00a75.3 and Part II en \u00a75.3)",
+      "resolved_in": "docs/handover/member-guide.md (Part I zh-TW §5.3 and Part II en §5.3)",
       "type": "documentation_change_request",
       "owner": "documentation",
       "file": "docs/handover/member-guide.md",
       "section": "5.3 (both languages)",
       "claim": "Treats minimum_rate as a guaranteed delivered bandwidth floor and never-disconnect promise.",
-      "actual": "\u00a711.5\u201311.7 require a usable configured shaping floor, not unlimited delivered throughput; lease, isolation, meter or storage failure still stops forwarding.",
+      "actual": "§11.5–11.7 require a usable configured shaping floor, not unlimited delivered throughput; lease, isolation, meter or storage failure still stops forwarding.",
       "requested_change": "Describe the configured floor and shared-capacity limits; retain mandatory fail-closed exceptions.",
       "evidence": [
         "docs/spec/PROJECT_SPEC.zh-TW.md",
@@ -190,7 +190,7 @@
     {
       "id": "DOC12",
       "status": "resolved",
-      "resolution": "Relabeled member.devices.col.overlayIp in zh-TW.ts and en.ts to Device ID (\u88dd\u7f6e\u8b58\u5225\u78bc (Device ID) / Device ID) matching the contract-supported MemberDevice.device_id rendered by MemberDevicesPage.tsx.",
+      "resolution": "Relabeled member.devices.col.overlayIp in zh-TW.ts and en.ts to Device ID (裝置識別碼 (Device ID) / Device ID) matching the contract-supported MemberDevice.device_id rendered by MemberDevicesPage.tsx.",
       "type": "documentation_change_request",
       "owner": "portal",
       "file": "apps/portal/src/pages/member/MemberDevicesPage.tsx",
@@ -211,8 +211,8 @@
       "owner": "documentation",
       "file": "docs/handover/member-guide.md",
       "section": "spec/AT references throughout",
-      "claim": "Uses \u00a77.5, ISO03/ISO04, AT03 for revoke, AT18 for UTC reset, and AT17 for tiering.",
-      "actual": "The authoritative spec has \u00a77.1\u20137.3 and ISO01/ISO02; AT03 is payments, AT18 is combined shaping, AT17 is month/late/quality and AT19 is tiers/reset.",
+      "claim": "Uses §7.5, ISO03/ISO04, AT03 for revoke, AT18 for UTC reset, and AT17 for tiering.",
+      "actual": "The authoritative spec has §7.1–7.3 and ISO01/ISO02; AT03 is payments, AT18 is combined shaping, AT17 is month/late/quality and AT19 is tiers/reset.",
       "requested_change": "Audit section and requirement references against the actual catalogue; map the guide to AT01/02/04/09/19/21/29 as appropriate.",
       "evidence": [
         "docs/spec/PROJECT_SPEC.zh-TW.md"
@@ -328,7 +328,7 @@
     ],
     "new_mismatches": [],
     "physical_acceptance": "needs operator run",
-    "conclusion": "Prior DOC01\u2013DOC13 resolutions remain applicable. This run proves native admission and the isolated physical ledger/grant/audit restore boundary, not member platform kill-switch behavior, serving availability, real node archive recovery, or capacity."
+    "conclusion": "Prior DOC01–DOC13 resolutions remain applicable. This run proves native admission and the isolated physical ledger/grant/audit restore boundary, not member platform kill-switch behavior, serving availability, real node archive recovery, or capacity."
   },
   "follow_up_3": {
     "reviewed_at": "2026-10-30T04:50:26.068612Z",
@@ -392,7 +392,7 @@
         "sha256": "b97f411f952bb9a74bc99fad419282c88d1319db53a9e59b2ca29a398525666d"
       },
       {
-        "path": "docs/e2e/at/secops/requests.md",
+        "path": "docs/e2e/at/secops/history/follow-up-12/requests.md",
         "sha256": "b7b2d922b1b2a48f80a8afdc514d77b78105914b0b775e7bf43217f2e54fbf3b"
       }
     ],
@@ -440,13 +440,13 @@
       }
     ],
     "physical_acceptance": "needs operator run",
-    "conclusion": "DOC01\u2013DOC14 remain resolved. Current README and guide qualify unmeasured flow cutoffs, native platforms, DNS propagation and hardware capacity. Member identity/quota text tracks #134/#139; admin typed DNS evidence is not promised in member views. Publication, native admission and limiter results do not certify traffic or capacity. Current live verdicts are in AT28\u2013AT32 records."
+    "conclusion": "DOC01–DOC14 remain resolved. Current README and guide qualify unmeasured flow cutoffs, native platforms, DNS propagation and hardware capacity. Member identity/quota text tracks #134/#139; admin typed DNS evidence is not promised in member views. Publication, native admission and limiter results do not certify traffic or capacity. Current live verdicts are in AT28–AT32 records."
   },
   "follow_up_5": {
     "reviewed_at": "2026-10-30T09:29:11.712304Z",
     "source_revision": "446b6b0f643586d48859236664800df8c2d1ef64",
     "method": "Read member-guide changed sections since prior measured main plus existing role/scope/claim sources; retain physical platform qualifications. Compare current measurements once completed.",
-    "resolved_prior_findings": "DOC01\u2013DOC14 remain attributed to their owner fixes; new source texts still correctly qualify real member platforms.",
+    "resolved_prior_findings": "DOC01–DOC14 remain attributed to their owner fixes; new source texts still correctly qualify real member platforms.",
     "new_mismatches": [
       {
         "id": "DOC15",
@@ -609,7 +609,7 @@
         "id": "DOC16",
         "owner": "w4-handover",
         "status": "resolved in w4-handover follow-up 8",
-        "resolved_in": "docs/handover/member-guide.md (Part I zh-TW \u00a73.2 and Part II en \u00a73.2); tests/handover/handover_test.go",
+        "resolved_in": "docs/handover/member-guide.md (Part I zh-TW §3.2 and Part II en §3.2); tests/handover/handover_test.go",
         "file": "docs/handover/member-guide.md",
         "section": "Measurement status, both languages",
         "reason": "#180/#188 cites mutable secops counted-flow/deadlines/capacity paths as Follow-up 5 evidence with fixed two-device numbers; those root records change each run. Pin the cited #165 values to history/follow-up-5/ (or the exact commit). Keep guest wall-clock rollback distinct from component clock tests."
@@ -651,55 +651,55 @@
     ],
     "records": [
       {
-        "path": "docs/e2e/at/secops/restore-reconcile.json",
+        "path": "docs/e2e/at/secops/history/follow-up-12/restore-reconcile.json",
         "sha256": "6d98d28e669e5830951d886348ce69bb02654d87128fbf96a6cb3159825950b3"
       },
       {
-        "path": "docs/e2e/at/secops/restore-reconcile.md",
+        "path": "docs/e2e/at/secops/history/follow-up-12/restore-reconcile.md",
         "sha256": "20589ef24428e15fe431f065be7c9bc19636cf139e45614aa3cf22b215014584"
       },
       {
-        "path": "docs/e2e/at/secops/AT30.json",
+        "path": "docs/e2e/at/secops/history/follow-up-12/AT30.json",
         "sha256": "fcac5bfb6df5848f96e9e4ef62dc5d6b7a1e472277cc26676e060113083fc7a6"
       },
       {
-        "path": "docs/e2e/at/secops/AT30.md",
+        "path": "docs/e2e/at/secops/history/follow-up-12/AT30.md",
         "sha256": "20589ef24428e15fe431f065be7c9bc19636cf139e45614aa3cf22b215014584"
       },
       {
-        "path": "docs/e2e/at/secops/followup9-live.json",
+        "path": "docs/e2e/at/secops/history/follow-up-12/followup9-live.json",
         "sha256": "dcf634111def2bbc35f287e786c1bca312277debe3b84769fd13b9448cec6271"
       },
       {
-        "path": "docs/e2e/at/secops/followup9-run.json",
+        "path": "docs/e2e/at/secops/history/follow-up-12/followup9-run.json",
         "sha256": "2ed5272633b342cddaeef691615b5b18072d12db7e662b0a08f446f0dc4fd06d"
       },
       {
-        "path": "docs/e2e/at/secops/followup9-verdict.json",
+        "path": "docs/e2e/at/secops/history/follow-up-12/followup9-verdict.json",
         "sha256": "0b0b50c47c7f57c7f3b273514357e338954ed6354eda982ec6003b3406b8e37e"
       },
       {
-        "path": "docs/e2e/at/secops/live.json",
+        "path": "docs/e2e/at/secops/history/follow-up-12/live.json",
         "sha256": "2fda5545545817a77d910a8be732cba977cb1d75b1411fd39a3fde33529997ca"
       },
       {
-        "path": "docs/e2e/at/secops/cleanup.json",
+        "path": "docs/e2e/at/secops/history/follow-up-12/cleanup.json",
         "sha256": "af055acebed32b6e782f7e86b43eaa48abc992223aff5358b08e690490cf90c3"
       },
       {
-        "path": "docs/e2e/at/secops/dependencies.json",
+        "path": "docs/e2e/at/secops/history/follow-up-12/dependencies.json",
         "sha256": "4cfb3be3e7403a85271fcef28bea57f4eb8527afced7ca75d07b110ffd239a9d"
       },
       {
-        "path": "docs/e2e/at/secops/requests.md",
+        "path": "docs/e2e/at/secops/history/follow-up-12/requests.md",
         "sha256": "b7b2d922b1b2a48f80a8afdc514d77b78105914b0b775e7bf43217f2e54fbf3b"
       },
       {
-        "path": "docs/e2e/at/secops/summary.md",
+        "path": "docs/e2e/at/secops/history/follow-up-12/summary.md",
         "sha256": "20589ef24428e15fe431f065be7c9bc19636cf139e45614aa3cf22b215014584"
       },
       {
-        "path": "docs/e2e/at/secops/RUN.md",
+        "path": "docs/e2e/at/secops/history/follow-up-12/RUN.md",
         "sha256": "f32de04f41f345e16e803466f1106532982def1c739d75a37b0cc1c350649338"
       }
     ],
@@ -1048,11 +1048,11 @@
       },
       {
         "path": "docs/e2e/at/secops/history/index.json",
-        "sha256": "20dfed60425e5e92ec20f823c198b6631767afdc5dacbf204cef87ca05e5a257"
+        "sha256": "9a287259b6e354c60575fc6644a572f4deb4df5d37f19acee02b8248d460eba4"
       },
       {
         "path": "docs/e2e/at/secops/history/README.md",
-        "sha256": "2d0b5bdd6c2a83c86bc7d8fc1ebf1c9e6e905f6ebaf7197a960811bb146f24b2"
+        "sha256": "2492a5d6ec5a1d593373442f4b67c46d288becb518c51c053742fbfa40142e7f"
       }
     ]
   },
@@ -1061,128 +1061,128 @@
     "scope": "Scoped established transports, bounded relay and restore regression; every changed live document pinned; archived snapshots immutable. scope-review.json excludes its own recursive hash.",
     "records": [
       {
-        "path": "docs/e2e/at/secops/AT29.json",
+        "path": "docs/e2e/at/secops/history/follow-up-12/AT29.json",
         "sha256": "43def1ade8a6fd846e02bad607036deef27db2c183f6095acf16cfd71ab3ecd4"
       },
       {
-        "path": "docs/e2e/at/secops/AT29.md",
+        "path": "docs/e2e/at/secops/history/follow-up-12/AT29.md",
         "sha256": "0220d7375b70ab5e685987f438f9eb6fa4020cac201cc2e977c19d42f9fae2ae"
       },
       {
-        "path": "docs/e2e/at/secops/AT30.json",
+        "path": "docs/e2e/at/secops/history/follow-up-12/AT30.json",
         "sha256": "fcac5bfb6df5848f96e9e4ef62dc5d6b7a1e472277cc26676e060113083fc7a6"
       },
       {
-        "path": "docs/e2e/at/secops/AT30.md",
+        "path": "docs/e2e/at/secops/history/follow-up-12/AT30.md",
         "sha256": "20589ef24428e15fe431f065be7c9bc19636cf139e45614aa3cf22b215014584"
       },
       {
-        "path": "docs/e2e/at/secops/AT31.json",
+        "path": "docs/e2e/at/secops/history/follow-up-12/AT31.json",
         "sha256": "00895a135743f6de1b842577b237f15288a074e779c5647bd51b45910418ac99"
       },
       {
-        "path": "docs/e2e/at/secops/AT31.md",
+        "path": "docs/e2e/at/secops/history/follow-up-12/AT31.md",
         "sha256": "3a37a35c98fa1e17fa2ac8e9b5f9b9381bbb469a5fa6e60acbb3ed1a3cde5146"
       },
       {
-        "path": "docs/e2e/at/secops/SECOPS-21.json",
+        "path": "docs/e2e/at/secops/history/follow-up-12/SECOPS-21.json",
         "sha256": "c2cc2166a9d6e0a2ca7be9bfc8ec5e8b102eee4f5cd4d7411166a70ba4bd1129"
       },
       {
-        "path": "docs/e2e/at/secops/restore-reconcile.json",
+        "path": "docs/e2e/at/secops/history/follow-up-12/restore-reconcile.json",
         "sha256": "6d98d28e669e5830951d886348ce69bb02654d87128fbf96a6cb3159825950b3"
       },
       {
-        "path": "docs/e2e/at/secops/restore-reconcile.md",
+        "path": "docs/e2e/at/secops/history/follow-up-12/restore-reconcile.md",
         "sha256": "20589ef24428e15fe431f065be7c9bc19636cf139e45614aa3cf22b215014584"
       },
       {
-        "path": "docs/e2e/at/secops/summary.md",
+        "path": "docs/e2e/at/secops/history/follow-up-12/summary.md",
         "sha256": "20589ef24428e15fe431f065be7c9bc19636cf139e45614aa3cf22b215014584"
       },
       {
-        "path": "docs/e2e/at/secops/README.md",
+        "path": "docs/e2e/at/secops/history/follow-up-12/README.md",
         "sha256": "6a4b9a6818f2db2b9d6dc559374347c4c0c1d903afcc794f4597d3726574c25f"
       },
       {
-        "path": "docs/e2e/at/secops/RUN.md",
+        "path": "docs/e2e/at/secops/history/follow-up-12/RUN.md",
         "sha256": "f32de04f41f345e16e803466f1106532982def1c739d75a37b0cc1c350649338"
       },
       {
-        "path": "docs/e2e/at/secops/requests.md",
+        "path": "docs/e2e/at/secops/history/follow-up-12/requests.md",
         "sha256": "b7b2d922b1b2a48f80a8afdc514d77b78105914b0b775e7bf43217f2e54fbf3b"
       },
       {
-        "path": "docs/e2e/at/secops/live.json",
+        "path": "docs/e2e/at/secops/history/follow-up-12/live.json",
         "sha256": "2fda5545545817a77d910a8be732cba977cb1d75b1411fd39a3fde33529997ca"
       },
       {
-        "path": "docs/e2e/at/secops/cleanup.json",
+        "path": "docs/e2e/at/secops/history/follow-up-12/cleanup.json",
         "sha256": "af055acebed32b6e782f7e86b43eaa48abc992223aff5358b08e690490cf90c3"
       },
       {
-        "path": "docs/e2e/at/secops/2026-10-31-follow-up-12-handover.md",
+        "path": "docs/e2e/at/secops/history/follow-up-12/2026-10-31-follow-up-12-handover.md",
         "sha256": "18f357bc5d993168a450eb98d722ff3374085315d5bfb6ca2b6a3f04d4654991"
       },
       {
-        "path": "docs/e2e/at/secops/followup12-transports-live.json",
+        "path": "docs/e2e/at/secops/history/follow-up-12/followup12-transports-live.json",
         "sha256": "39aa566d92e0613c48c1f1a4f07406673774b1b6d1904f89ab9cedc755d0702f"
       },
       {
-        "path": "docs/e2e/at/secops/followup12-transports-run.json",
+        "path": "docs/e2e/at/secops/history/follow-up-12/followup12-transports-run.json",
         "sha256": "8f312496a17fc0d8e0f7ed699013b8976d5988e18918e88d3ca48f6cf94e0e0c"
       },
       {
-        "path": "docs/e2e/at/secops/followup12-restore-live.json",
+        "path": "docs/e2e/at/secops/history/follow-up-12/followup12-restore-live.json",
         "sha256": "9d6d04f67334223e8961ad3962df5952dc20343d2685a1fa544cdbe5b5fe0117"
       },
       {
-        "path": "docs/e2e/at/secops/followup12-restore-run.json",
+        "path": "docs/e2e/at/secops/history/follow-up-12/followup12-restore-run.json",
         "sha256": "e3fec85639847bebb9f4fdadc17e837ae8570b97c5b1daaa038aefa1661f9329"
       },
       {
-        "path": "docs/e2e/at/secops/followup12-verdict.json",
+        "path": "docs/e2e/at/secops/history/follow-up-12/followup12-verdict.json",
         "sha256": "665c0a929e4033097b03eaf358fdf8f9d6dfa9627b4149ada1753f850f09fc58"
       },
       {
-        "path": "docs/e2e/at/secops/validation.json",
+        "path": "docs/e2e/at/secops/history/follow-up-12/validation.json",
         "sha256": "aa6019801c00fc0bc997f478663a6f487591138ce5eecddd056e0a99537400b2"
       },
       {
-        "path": "docs/e2e/at/secops/followup12-lab-preflight.json",
+        "path": "docs/e2e/at/secops/history/follow-up-12/followup12-lab-preflight.json",
         "sha256": "d21702a791f10b63bb96f2bbfe59b867120cf79a1c7d7dc54365a702bfa29b40"
       },
       {
-        "path": "docs/e2e/at/secops/followup12-prerequisites.json",
+        "path": "docs/e2e/at/secops/history/follow-up-12/followup12-prerequisites.json",
         "sha256": "f45630751542f6796b72e5137e18b3a08e215d0dcf43e364f35aec4988e05144"
       },
       {
-        "path": "docs/e2e/at/secops/followup12-attempts.json",
+        "path": "docs/e2e/at/secops/history/follow-up-12/followup12-attempts.json",
         "sha256": "a5b62511fd5b0a086184461e4129e19e064f34cea5b014a8aa1299adce7056bb"
       },
       {
-        "path": "docs/e2e/at/secops/followup12-transports-attempt1-live.json",
+        "path": "docs/e2e/at/secops/history/follow-up-12/followup12-transports-attempt1-live.json",
         "sha256": "6b1abf18047295fa14b5d66b0ad6abb46a0417a611e6624f1bbae866f0d916e7"
       },
       {
-        "path": "docs/e2e/at/secops/followup12-transports-attempt1-run.json",
+        "path": "docs/e2e/at/secops/history/follow-up-12/followup12-transports-attempt1-run.json",
         "sha256": "072f24242a51b459f0de5329b9b14a6ee3f270b332da673c8854c74dcc3dba0f"
       },
       {
-        "path": "docs/e2e/at/secops/followup12-transports-attempt2-live.json",
+        "path": "docs/e2e/at/secops/history/follow-up-12/followup12-transports-attempt2-live.json",
         "sha256": "3d8b52d4ed99763738cdf0bdaefdfcec60f48b450a137c228f68c451f68b8cc3"
       },
       {
-        "path": "docs/e2e/at/secops/followup12-transports-attempt2-run.json",
+        "path": "docs/e2e/at/secops/history/follow-up-12/followup12-transports-attempt2-run.json",
         "sha256": "7e06ae56ba0e33a1a2685f20200668691aa86a43e29a256f64f0d98bb7953323"
       },
       {
         "path": "docs/e2e/at/secops/history/index.json",
-        "sha256": "20dfed60425e5e92ec20f823c198b6631767afdc5dacbf204cef87ca05e5a257"
+        "sha256": "9a287259b6e354c60575fc6644a572f4deb4df5d37f19acee02b8248d460eba4"
       },
       {
         "path": "docs/e2e/at/secops/history/README.md",
-        "sha256": "2d0b5bdd6c2a83c86bc7d8fc1ebf1c9e6e905f6ebaf7197a960811bb146f24b2"
+        "sha256": "2492a5d6ec5a1d593373442f4b67c46d288becb518c51c053742fbfa40142e7f"
       }
     ]
   },
@@ -1270,7 +1270,7 @@
   "handover_follow_up_16": {
     "reviewed_at": "2026-10-31",
     "source_commit": "982c209e3f1fb6603138e0bc2a6ee4a5191b4e89",
-    "scope": "Merged #291\u2013#303 operator reconciliation; live-document integrity only. Dated claims use separate immutable archives/run-ID snapshots. No new live acceptance.",
+    "scope": "Merged #291–#303 operator reconciliation; live-document integrity only. Dated claims use separate immutable archives/run-ID snapshots. No new live acceptance.",
     "reviewed_documents": [
       {
         "path": "docs/handover/README.md",
@@ -1319,6 +1319,116 @@
       {
         "path": "tests/handover/testdata/followup16-snapshots.json",
         "sha256": "12d86e86d17892a1646f52dacf5304e33033b5d6123e86c924c50c9fcb2d71f1"
+      }
+    ]
+  },
+  "follow_up_13": {
+    "reviewed_at": "2026-10-31T12:00:53Z",
+    "scope": "Restore-only first-delivery proof; AT29/AT31 retained blocked; immutable Follow-up 12 archive.",
+    "records": [
+      {
+        "path": "docs/e2e/at/secops/AT29.json",
+        "sha256": "d9ce638657b7ab213e9de3ef77543c78df2a6cfb882a322d70cd64c7f9f3d16e"
+      },
+      {
+        "path": "docs/e2e/at/secops/AT29.md",
+        "sha256": "8a769303b287778f26fc0ae58a861bfcd6225f80e6bf5455ccbca5ff4fd951a6"
+      },
+      {
+        "path": "docs/e2e/at/secops/AT30.json",
+        "sha256": "b66149ea2f330fe5773f627f23a7fae24224392a88c874a5d034f54855b8ab33"
+      },
+      {
+        "path": "docs/e2e/at/secops/AT30.md",
+        "sha256": "ff8a49a6f782e00bda172d31bc902e53b7d97a772407cecf9c50e2fedcff67ec"
+      },
+      {
+        "path": "docs/e2e/at/secops/AT31.json",
+        "sha256": "e78c680b86348231ab0e98dc5ad887932ac5f6bdd982b7a27dd0af040bcd9566"
+      },
+      {
+        "path": "docs/e2e/at/secops/AT31.md",
+        "sha256": "9db0b039b983dd52f835873bc151f567b4cbe6164cf2bfbfcb1c7d415e5ffae7"
+      },
+      {
+        "path": "docs/e2e/at/secops/SECOPS-21.json",
+        "sha256": "ede087efa2193bebdddd11f7e7b840ba9fc1e546bcfd3d80bf29ad3ffc356343"
+      },
+      {
+        "path": "docs/e2e/at/secops/restore-reconcile.json",
+        "sha256": "d8b4b87867d26860315bb1886ccf761306b1fe6ae27e00c01076e36be1c0a82e"
+      },
+      {
+        "path": "docs/e2e/at/secops/restore-reconcile.md",
+        "sha256": "ff8a49a6f782e00bda172d31bc902e53b7d97a772407cecf9c50e2fedcff67ec"
+      },
+      {
+        "path": "docs/e2e/at/secops/summary.md",
+        "sha256": "65003422e73c1800867102b79220cbc7a50fcf2e65bd3190bca1f5e13780a68c"
+      },
+      {
+        "path": "docs/e2e/at/secops/README.md",
+        "sha256": "65003422e73c1800867102b79220cbc7a50fcf2e65bd3190bca1f5e13780a68c"
+      },
+      {
+        "path": "docs/e2e/at/secops/RUN.md",
+        "sha256": "57209042727053d134d8a3aca6bc2c8d44d5054d2bc44ca620da246e3e05b755"
+      },
+      {
+        "path": "docs/e2e/at/secops/requests.md",
+        "sha256": "e94470a93c55dd845325ad25c2683564653c973fcfae9dc3ffb973b295f16eae"
+      },
+      {
+        "path": "docs/e2e/at/secops/live.json",
+        "sha256": "9f96b016aa305223ca72c77373fe22c6a253f0a7ccb1840cb069dc83f7433488"
+      },
+      {
+        "path": "docs/e2e/at/secops/cleanup.json",
+        "sha256": "d60f51f15ec2b0965e7cb5a9cab1102922fb093281be48b10a192926e6023ba0"
+      },
+      {
+        "path": "docs/e2e/at/secops/validation.json",
+        "sha256": "7cdc86f0a8efcad0f2625396183dddb313868db7bbd77dd61c6ea14811b133db"
+      },
+      {
+        "path": "docs/e2e/at/secops/2026-10-31-follow-up-13-handover.md",
+        "sha256": "05be7da9d2e61afcc55c265ed75991706006b97681af583369a927cb799216ee"
+      },
+      {
+        "path": "docs/e2e/at/secops/followup13-restore-live.json",
+        "sha256": "50fb59ca1aec179447dbe3ac5ce81a6e560dc17f674f749de28720bb47526597"
+      },
+      {
+        "path": "docs/e2e/at/secops/followup13-restore-run.json",
+        "sha256": "aa1cfe898763bda9f1780d342d0c78999d949da38d0c881db078dd57066fe13d"
+      },
+      {
+        "path": "docs/e2e/at/secops/followup13-verdict.json",
+        "sha256": "40e4371ea07f1a5ac60fc45339da395d036d96884b94d6ddef1bd231b6e7ae94"
+      },
+      {
+        "path": "docs/e2e/at/secops/followup13-lab-preflight.json",
+        "sha256": "71d41c92d24ab2bc82fb6419a86a99a59f2dd727408768ee268cb77472b8adf7"
+      },
+      {
+        "path": "docs/e2e/at/secops/followup13-restore-attempt1-run.json",
+        "sha256": "0cbb960166b6f9ee81c7a1c616a1be83c0c83bc743f1749313295d5dcdd4aa51"
+      },
+      {
+        "path": "docs/e2e/at/secops/followup13-restore-attempt1-failure.json",
+        "sha256": "edf924a22f782b60017dc4c3b69a9888b1123c45600536193ed263187ef1e464"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/index.json",
+        "sha256": "9a287259b6e354c60575fc6644a572f4deb4df5d37f19acee02b8248d460eba4"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/README.md",
+        "sha256": "2492a5d6ec5a1d593373442f4b67c46d288becb518c51c053742fbfa40142e7f"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-12/archive-index.json",
+        "sha256": "d33b2671341ec2a9659c148fce724f8dfadf5f74c0e97e4bb0ac8d5f8d7ba182"
       }
     ]
   }
