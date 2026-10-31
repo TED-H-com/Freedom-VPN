@@ -1,5 +1,7 @@
 """Regression checks for attribution, incomplete evidence and clock domains."""
 import copy
+import json
+from pathlib import Path
 import unittest
 import producer_timing as p
 
@@ -23,7 +25,125 @@ def packet(at):
     return dict(sent_ns=str(at),read_completion_ns=str(at+80),ingress_ns=str(at+1),egress_ns='0',result='timeout',packet_id=1)
 
 
+def host_fixture():
+    def sample(a, b, total):
+        return dict(start_ns=str(a), end_ns=str(b), ok=True, cpu_total_ticks=str(total),
+                    cpu_idle_ticks='20', cpu_iowait_ticks='0', procs_running='96', procs_blocked='0')
+    rows = fixture()
+    rows[0]['host'] = dict(before_apply=sample(90,99,100), after_apply=sample(200,201,200))
+    return rows
+
+
+def failed_install():
+    rows = host_fixture()
+    t = rows[0]['timing']
+    t.update(succeeded=False, verified=False, verifications=[])
+    # Synthetic tiny bound exercises the same integer comparison; no product bound change.
+    t['deadline'].update(install_ok=False, guard_released=False, install_bound_ns='10',
+                         release_start_ns='0', release_end_ns='0')
+    return rows
+
+
 class CorrelationTests(unittest.TestCase):
+    def test_host_join_overrun_is_not_causal_or_failed_verification(self):
+        rows = failed_install()
+        rows[0]['host'].update(failed_command='nft', exit_code=-1, signal=9)
+        a = p.validate_operations(rows)['failed_applies'][0]
+        self.assertEqual(p.identity(a), p.identity(rows[0]))
+        self.assertEqual(a['diagnostic_label'], 'fail-closed install overrun with recorded host contention')
+        self.assertEqual(a['cause_status'], 'unproven')
+        self.assertEqual(a['failure_stage'], 'install')
+        self.assertEqual(a['verification_status'], 'unavailable')
+        self.assertEqual(a['host_context']['idle_percent'], 0)
+        self.assertEqual(a['host_context']['command_status'], dict(failed_command='nft', exit_code=-1, signal=9))
+        self.assertFalse(a['complete_guard'])
+        self.assertNotIn('outer_guard', p.validate_operations(rows)['brackets'])
+        # Same sequence, distinct process. Never inherit host state across runs.
+        other = copy.deepcopy(rows[0]); other['run_id'] = 'other'; del other['host']
+        v = p.validate_operations(rows + [other])
+        self.assertEqual(v['failed_applies'][1]['diagnostic_label'], 'unavailable')
+        self.assertIsNone(v['failed_applies'][1]['host_context']['command_status']['exit_code'])
+        self.assertEqual(len(v['failed_applies']), 2)
+
+    def test_host_missing_failed_zero_and_decreasing_samples_are_unavailable(self):
+        for change in ('absent', 'failed', 'zero', 'decreasing'):
+            with self.subTest(change=change):
+                rows = failed_install(); h = rows[0]['host']
+                if change == 'absent': del rows[0]['host']
+                if change == 'failed': h['after_apply']['ok'] = False
+                if change == 'zero': h['after_apply']['cpu_total_ticks'] = '100'
+                if change == 'decreasing': h['after_apply']['cpu_total_ticks'] = '99'
+                a = p.validate_operations(rows)['applies'][0]
+                self.assertEqual(a['diagnostic_label'], 'unavailable')
+                self.assertEqual(a['host_context']['status'], 'unavailable')
+                self.assertIsNone(a['host_context']['idle_percent'])
+                self.assertTrue(a['install_overrun'])
+                self.assertEqual(a['cause_status'], 'unproven')
+
+    def test_bound_and_host_must_both_support_label(self):
+        for change in ('idle', 'iowait', 'one_runnable', 'within_bound', 'no_install'):
+            with self.subTest(change=change):
+                rows = failed_install(); h = rows[0]['host']; d = rows[0]['timing']['deadline']
+                if change == 'idle': h['after_apply']['cpu_idle_ticks'] = '40'
+                if change == 'iowait': h['after_apply']['cpu_iowait_ticks'] = '10'
+                if change == 'one_runnable': h['before_apply']['procs_running'] = '1'
+                if change == 'within_bound': d['install_bound_ns'] = '100000000'
+                if change == 'no_install': d.update(render_start_ns='0', install_start_ns='0', installed_by_ns='0')
+                a = p.validate_operations(rows)['applies'][0]
+                self.assertNotIn('with recorded host contention', a['diagnostic_label'])
+                self.assertEqual(a['cause_status'], 'unproven')
+        rows = host_fixture()
+        a = p.validate_operations(rows)['applies'][0]
+        self.assertEqual(a['verification_status'], 'passed')
+        self.assertEqual(a['host_context']['status'], 'available')
+        self.assertEqual(a['host_context']['command_status'], dict(failed_command=None, exit_code=None, signal=None))
+        rows[0]['timing'].update(succeeded=False, verified=False)
+        rows[0]['timing']['verifications'][0]['verified'] = False
+        a = p.validate_operations(rows)['failed_applies'][0]
+        self.assertEqual(a['failure_stage'], 'verification')
+        self.assertEqual(a['verification_status'], 'failed')
+        self.assertTrue(a['complete_guard'])
+
+    def test_invalid_host_or_command_status_rejected(self):
+        for change in ('early', 'late', 'float', 'leading_zero', 'overflow', 'total', 'delta', 'command', 'output', 'exit', 'signal', 'success'):
+            with self.subTest(change=change):
+                rows = failed_install(); h = rows[0]['host']
+                if change == 'early': h['after_apply']['start_ns'] = '199'
+                if change == 'late': h['before_apply']['end_ns'] = '101'
+                if change == 'float': h['before_apply']['cpu_total_ticks'] = 100.0
+                if change == 'leading_zero': h['before_apply']['cpu_total_ticks'] = '0100'
+                if change == 'overflow': h['before_apply']['cpu_total_ticks'] = '18446744073709551616'
+                if change == 'total': h['before_apply']['cpu_idle_ticks'] = '101'
+                if change == 'delta': h['after_apply'].update(cpu_total_ticks='110', cpu_idle_ticks='40')
+                if change == 'command': h['failed_command'] = 'nft -f sensitive-input'
+                if change == 'output': h['stderr'] = 'not permitted'
+                if change == 'exit': h['exit_code'] = True
+                if change == 'signal': h['signal'] = '9'
+                if change == 'success': rows = host_fixture(); rows[0]['host']['failed_command'] = 'tc'
+                with self.assertRaises(ValueError): p.validate_operations(rows)
+
+    def test_historical_first_attempt_remains_unavailable_and_all_losses_counted(self):
+        root = Path(__file__).resolve().parents[4]/'docs/e2e/at/isolation/history/follow-up-10-attempt-1'
+        rows = [json.loads(s) for s in (root/'producer-operations.jsonl').read_text().splitlines()]
+        v = p.validate_operations(rows)
+        self.assertEqual(len(v['failed_applies']), 49)
+        for a in v['failed_applies']:
+            self.assertEqual(a['failure_stage'], 'install')
+            self.assertEqual(a['verification_status'], 'unavailable')
+            self.assertEqual(a['diagnostic_label'], 'unavailable')
+            self.assertEqual(a['cause_status'], 'unproven')
+            self.assertTrue(a['install_overrun'])
+        self.assertEqual(v['failed_applies'][0]['sequence'], '712')
+        self.assertEqual(v['failed_applies'][0]['render_to_installed_ns'], '215890796')
+        self.assertEqual(v['brackets']['outer_guard']['count'], 678)
+        packets = p.packet_trace(json.loads((root/'renewal-probes.json').read_text()),
+                                 json.loads((root/'renewal-packets.json').read_text()),
+                                 json.loads((root/'producer-clock.json').read_text()))
+        losses = [p.correlate(x, v) for x in packets if x['result'] != 'ok']
+        self.assertEqual(len(packets), 1396)
+        self.assertEqual(len(losses), 279)
+        self.assertEqual(sum(bool(x['ingress_in_outer_guard']) for x in losses), 29)
+
     def test_inside_and_outside_guard_remain_losses(self):
         validated=p.validate_operations(fixture())
         inside=p.correlate(packet(120),validated)

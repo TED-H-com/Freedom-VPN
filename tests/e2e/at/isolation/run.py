@@ -65,6 +65,7 @@ with tempfile.TemporaryDirectory(prefix='at-isolation.', dir=ROOT / '.agent/tmp'
         slots()
         lab = call(['sh', 'tests/e2e/at/isolation/lab.sh', 'up'], env)
         if lab == 0:
+            slots()  # Recheck after stack startup before running its suites.
             reload = call(['go', 'test', '-tags', 'netlab', '-count=1', '-v', '-timeout=10m', '-run', '^(TestAT10_AT13_ReloadRevokeBaseline|TestD104_AT13_DeadlineContinuity)$', './tests/netlab'], env)
             owned = call(['go', 'test', '-tags', 'netlab', '-count=1', '-timeout=40m', '-p', '1', '-parallel', '1', './tests/netlab/at'], env)
             lab = reload or owned
@@ -73,6 +74,7 @@ with tempfile.TemporaryDirectory(prefix='at-isolation.', dir=ROOT / '.agent/tmp'
         slots()
         stack = call(['python3', 'tests/e2e/at/isolation/stack.py', 'up'], env)
         if stack == 0:
+            slots()
             stack = call(['python3', 'tests/e2e/at/isolation/driver.py', 'run'], env)
             review = call(['python3', '-B', 'tests/e2e/at/isolation/review_followup10.py', evidence], env)
             stack = stack or review

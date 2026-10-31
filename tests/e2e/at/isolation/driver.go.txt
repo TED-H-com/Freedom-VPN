@@ -81,10 +81,10 @@ func TestIsolationAssembled(t *testing.T) {
 	for _, id := range []string{"AT10", "AT11", "AT12", "AT13"} {
 		x.records[id] = &iso.Record{ID: id, Title: "Assembled isolation " + id, Spec: []string{"§19 " + id}, Status: iso.StatusBlocked, RunID: runID, StartedAt: time.Now().UTC().Format(time.RFC3339), Build: strings.TrimSpace(string(source)), SourceDirty: len(dirty) > 0, Actual: "setup not completed", Commands: []string{"make -f mk/at-isolation.mk at-isolation"}}
 		x.records[id].Expected = map[string]string{
-			"AT10": "Protected host, intranet and metadata destinations stay denied during interface changes, with the same member's counted origin control.",
+			"AT10": "Protected host, intranet and metadata destinations stay denied during interface changes, with the same member's counted origin control. D-134: atomic outer-guard cost is measured per run, with no fixed historical ceiling; every renewal loss stays counted. D-135: failed Apply installs node-wide generation-0 baseline, preserving revocation without restoring the previous generation; forwarding requires the next successful Apply.",
 			"AT11": "IPv4 and IPv6 platform routes cannot bypass protected destinations; unavailable platforms remain blocked.",
 			"AT12": "Same-member and cross-member peers remain isolated; publication groups withdraw excluded members; DNS and source identity exceptions require independent proof.",
-			"AT13": "Disable, revoke and signed expiry withdraw forwarding; restart recovers safely and unmeasured fault windows remain blocked.",
+			"AT13": "Disable, revoke and signed expiry withdraw forwarding; restart recovers safely and unmeasured fault windows remain blocked. D-134: the conservative expiry transition is [D-101ms,D] (100ms installation reserve plus 1ms truncation); every pre-D/renewal loss stays counted, with no literal zero-pre-D-loss claim. An install overrun never releases the guard; baseline replaces it atomically while closed. D-135: failed Apply installs node-wide generation-0 baseline, preserving revocation without restoring the previous generation; forwarding requires the next successful Apply.",
 		}[id]
 	}
 	defer x.finish()

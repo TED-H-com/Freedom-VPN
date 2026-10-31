@@ -72,3 +72,20 @@ are not measurements of this attempt. The original offline reviewer rejected
 mixed clock/namespace inputs; the corrected reviewer refuses an unexecuted
 expiry window before reading packet files. All owned Docker inventory was zero
 on teardown. This attempt stays retained regardless of later outcomes.
+
+## Follow-up 11 consumer replay — 2026-10-31
+
+The [new replay](first-attempt-host-review.json) reads the immutable first
+attempt with agent-core 29's consumer contract. All **49** failures have
+`failure_stage=install`, `verification_status=unavailable`, host label
+**unavailable** and `cause_status=unproven`. No historical host or command
+status is inferred. All **279** renewal losses remain (29 overlapping completed
+guards, 250 outside). The original archive and analysis are unchanged.
+
+Agent-core 29's controlled quiet/loaded interventions did not reproduce the
+install overrun (maximum render→installed 53.133468 ms, even with 384 busy
+workers and 0% aggregate idle); the chain-gate correlation does not establish
+cause. See [its assessment](../../../node/followup29-install-contention-2026-10-31.md).
+D-135 explains the named rollback as node-wide generation-0 baseline, with
+revocation preserved and no previous-generation restoration. Forwarding needs
+the next successful Apply; missing verifier records are not verifier failures.

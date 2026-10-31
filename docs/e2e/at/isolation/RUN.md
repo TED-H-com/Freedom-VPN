@@ -1,4 +1,14 @@
-# Isolation run procedure — Follow-up 10
+# Isolation run procedure — Follow-up 11
+
+Product baseline: `45209609d33d567c5f04d49441799cdd3efac59b` (main after
+agent-core 29 / PR #356 and netlab 21 / PR #355). The preflight command
+`go env GOCACHE` returned `/data/ted-h-cache/go-build`; no cache path is
+hard-coded in the runner. Runtime source identity is recorded in each AT row.
+
+Before the one assembled run, retain `vmstat 5 7` and
+`pgrep -af 'gates.sh|mk/at-'`. The public `host-preflight.json` keeps the CPU
+samples and sanitized suite inventory; original command output remains in
+`.agent/follow-up-11/`. These host observations do not attribute a failure.
 
 Run from the worktree root:
 
@@ -6,13 +16,14 @@ Run from the worktree root:
 make -f mk/at-isolation.mk at-isolation-lint at-isolation-test at-isolation-build
 make -f mk/at-isolation.mk at-isolation
 python3 -B tests/e2e/at/isolation/review_followup10.py
+python3 -B tests/e2e/at/isolation/producer_timing.py --replay-first-attempt
 python3 tests/e2e/at/isolation/run.py go test -count=1 ./tests/handover/...
 python3 tests/e2e/at/isolation/run.py make go-lint 'go-with-disk-tmp='
 ```
 
 The runner allocates disk TMPDIR/GOTMPDIR under `.agent/tmp`, checks
 `pgrep -af 'gates.sh|mk/at-'` before each stack, and waits while two other suite
-process trees are active. Teardown uses Python `finally`, with no shell cleanup
+process trees are active, and rechecks after startup. Teardown uses Python `finally`, with no shell cleanup
 traps. The root lint variable override uses the runner's disk-temp lifecycle
 instead of the root recipe's shell trap; vet/staticcheck commands are unchanged.
 Only `fvpn-w4-isolation-*` Docker objects are created or removed. The final
@@ -52,7 +63,7 @@ unpublish, transport fault or manufactured observation drives this transition.
 
 ## Exact producer timing and ISO-F6-03
 
-Before enrollment, the owned helper enables agent-core 28's TEST ONLY
+Before enrollment, the owned helper enables agent-core 29's TEST ONLY
 `test_timing_path`. The agent appends detached `TimingEvidence()` snapshots
 after every real Apply, live VerifyServing and blocked audit, including failures,
 plus renewal, baseline-writer and heartbeat records. All source kinds participate
@@ -108,8 +119,9 @@ restart receipt remain retained.
 `producer-operations.jsonl` is the original source stream;
 `producer-timing-analysis.json` is the full correlation;
 `continuity-analysis.json` and `expiry-timing-analysis.json` expose each window.
-Outer-guard and install-command p50/p90/p99/max use nearest rank over completed
-guards. `completed_guard_install_command` gives the matching install population;
+Outer-guard, install-command and render→installed p50/p90/p99/max use nearest rank over completed
+guards. D-134 treats these as the measured cost of the atomic guard, with no
+fixed historical ceiling; 52.596424 ms was a sample, not a guarantee. `completed_guard_install_command` gives the matching install population;
 `failed_applies` separately retains every failed operation and its actual brackets.
 The source `baseline` rows name real agent causes; `agent.log.txt` and
 `watchdog.log.txt` retain normal producer reasons, decisions and writes. Neither
@@ -160,3 +172,47 @@ The second attempt `5e9e4041` is independently pinned under
 followed the stability wait and triggered ordinary projection before false; its
 AT10 failure remains evidence. The corrected sequence above precedes the third
 run. No product failure is erased by either later run.
+
+## Follow-up 11 host consumer and D-134 / D-135 wording
+
+Each Apply joins its own `host.before_apply` / `host.after_apply` and sanitized
+command status by the original process run ID, boot ID and decimal sequence.
+The consumer validates sample types, brackets outside Apply and inside its
+anchor, counter bounds, and the `nft`/`tc`/`other`, exit-code and signal fields.
+Missing exit fields are unknown, never zero. Missing host blocks, `ok=false`,
+zero total tick deltas or decreasing counters produce unavailable context,
+with no idle percentage. Missing verification is unavailable, never a failed
+verification; baseline cause names cannot manufacture verifier records.
+
+The conservative TEST ONLY diagnostic uses a positive aggregate total tick
+delta, zero idle **and** iowait tick deltas, and more than one runnable process
+in both samples. Only a failed install exceeding its recorded bound, with no
+release and those contemporaneous samples, receives “fail-closed install
+overrun with recorded host contention”. This reports coincident observations;
+it is not a cgroup measurement or scheduler causal proof. All failure causes
+remain `unproven`; no failure or lost packet is removed from totals. Partial
+and failed operations stay outside completed-guard distributions.
+
+The first-attempt replay reads only `history/follow-up-10-attempt-1/` and writes
+`first-attempt-host-review.json`, leaving original bytes and pins untouched.
+All 49 failed installs have host label **unavailable** and cause **unproven**;
+all 279 renewal losses remain counted. Agent-core 29's controlled contention
+experiment did not reproduce an overrun; chain-gate correlation is not cause.
+
+D-134 describes the conservative expiry transition as **[D−101 ms, D]**,
+from the 100 ms installation reserve and 1 ms truncation. The unchanged D-104
+first-drop bound D+100 ms is an observation bound, never permission for a
+post-D positive. Every pre-D and renewal loss remains counted. No literal
+zero pre-D-loss claim is made. An overrun never opens the guard; the baseline
+may replace it atomically while member forwarding remains closed.
+
+D-135 rollback installs the **node-wide generation-0 baseline**, preserving
+revocation without restoring a previous generation. Admitted siblings also
+lose forwarding; restoration requires the next successful Apply and live
+checks with current authorization. The 100 ms install bound does not bound
+that outage. No acceptance predicate is changed.
+
+Before any rewrite, commit `0a9cd15b` archived run `bfcc3880` under
+`history/follow-up-10/`: all 100 files byte-identical to the baseline and
+SHA-256 pinned. Earlier archives and both attempts are untouched. Handover
+reads immutable evidence; no D-132 one-file exception is needed.
