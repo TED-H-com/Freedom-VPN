@@ -109,13 +109,13 @@ func (s *updatesFollowup) installerHandoff(stack *e2e.Stack, baseline e2e.Servin
 	h := &handoffRun{s: s, stack: stack, checks: map[string]bool{}}
 	h.rec = *s.rec["AT24"]
 	h.rec.ID, h.rec.Title = "installer-handoff", "D-110/D-111/D-125/D-127 installer hand-off"
-	h.rec.Status, h.rec.Scope = at.StatusBlocked, "Follow-up 10 systemd hand-off and central receipt acceptance; serving traffic proof cited from devstack 19"
+	h.rec.Status, h.rec.Scope = at.StatusBlocked, "Follow-up 11 systemd hand-off and central receipt acceptance; serving traffic proof cited from devstack 19"
 	h.rec.Spec = []string{"UPD02", "UPD03", "UPD05", "§13.5", "§13.6", "§13.9", "D-080", "D-098", "D-110", "D-111", "D-125", "D-127"}
 	h.rec.Expected = "Install, seed, stage and real correlated apply; central baseline/promotion/replay/correction; tamper, checkpoint and downgrade refusals"
 	h.rec.Actual = "Installer prerequisites not reached"
 	h.rec.Observations = nil
 	defer func() {
-		required := []string{"install", "seed", "fresh_no_work", "fresh_guard_clear", "boot_kernel", "legacy_boot_config", "checkpoint_failure", "failure_replay", "failure_baseline", "null_baseline_promotion", "staged", "correlated", "apply", "restarts", "central", "job_id", "replay", "conflict", "wrong_job", "correction", "etag", "tamper", "downgrade"}
+		required := []string{"install", "seed", "generated_reporting", "generated_delivery", "reporting_unchanged", "no_missing_result_url", "fresh_no_work", "fresh_guard_clear", "boot_kernel", "legacy_boot_config", "checkpoint_failure", "failure_replay", "failure_baseline", "null_baseline_promotion", "staged", "correlated", "apply", "restarts", "central", "job_id", "replay", "conflict", "wrong_job", "correction", "etag", "tamper", "downgrade"}
 		var failed []string
 		for _, k := range required {
 			if !h.checks[k] {
@@ -144,7 +144,7 @@ func (s *updatesFollowup) installerHandoff(stack *e2e.Stack, baseline e2e.Servin
 		return true
 	}
 	h.note("consumed_devstack19", "docs/e2e/runs/2026-10-31/followup19/d6aaa798-6c39-49f1-8fa9-5f84f696ac91/installer-journaled-upgrade.md: serving withdrawal, five-field correlation and nonzero durable watermark; this run uses a quiet unpublished agent and separately tests central acceptance")
-	s.r.t.Log("follow-up 10: systemd installer hand-off")
+	s.r.t.Log("follow-up 11: systemd installer hand-off")
 	if !must(stack.PrepareInstallerNode(s.ctx)) {
 		return
 	}
@@ -159,7 +159,7 @@ func (s *updatesFollowup) installerHandoff(stack *e2e.Stack, baseline e2e.Servin
 			return
 		}
 		defer os.RemoveAll(dir)
-		b, err := stack.BuildInstallerRelease(s.ctx, dir, spec.version, spec.seq, "TEST-ONLY-updates-followup10", e2e.ReleaseOptions{})
+		b, err := stack.BuildInstallerRelease(s.ctx, dir, spec.version, spec.seq, "TEST-ONLY-updates-followup11", e2e.ReleaseOptions{})
 		if !must(err) || !must(stack.RegisterRelease(s.ctx, admin, b)) {
 			return
 		}
@@ -193,6 +193,25 @@ func (s *updatesFollowup) installerHandoff(stack *e2e.Stack, baseline e2e.Servin
 		return
 	}
 	installed, err := stack.RerunInstaller(s.ctx, "installer-node")
+	h.note("install_wrapper", installed)
+	// The shared wrapper still selects a loopback proxy without installer 7's
+	// explicit opt-in. Measure that refusal, then provide the documented TEST
+	// ONLY installation input here; never rewrite generated updater policy.
+	if err == nil && installed.Exit == 64 && strings.Contains(installed.Message, "loopback") {
+		spec := document([]byte(h.run("", "cat", "/var/tmp/e2e-installer.json").Stdout))
+		args := []string{"install", "--json", "--allow-loopback"}
+		for _, field := range []string{"manifest", "artifact", "trust", "control_url", "server_ca", "trust_bundle", "host_reserve_bps", "snat", "netbird_management_url", "token_file"} {
+			args = append(args, "--"+strings.ReplaceAll(field, "_", "-"), spec.text(field))
+		}
+		h.note("install_explicit_test_input", "TEST ONLY --allow-loopback for the shared https://127.0.0.1:9444 enrollment/mTLS proxy; all other arguments from the shared installer spec")
+		installed, err = stack.ProbeInstallerExit(s.ctx, "installer-node", args)
+		if err == nil {
+			installed.Services, err = stack.InstallerServices(s.ctx, "installer-node")
+		}
+		h.run("stop_for_seed_readback", "systemctl", "stop", "fvpn-agent.service", "fvpn-watchdog.service")
+		identity := document([]byte(h.run("", "cat", "/var/lib/vpn-node/identity/node.json").Stdout))
+		installed.Incarnation = identity.text("node_incarnation_id")
+	}
 	h.note("install", installed)
 	h.rec.NodeIncarnation = installed.Incarnation
 	if !must(err) {
@@ -216,6 +235,32 @@ func (s *updatesFollowup) installerHandoff(stack *e2e.Stack, baseline e2e.Servin
 	}
 	_, hasBoot := cfg["boot_id"]
 	h.note("generated_config", sanitizeUpdaterConfig(cfg))
+	generated := h.run("generated_config_hash", "sha256sum", installerConfig).Stdout
+	defer func() {
+		h.check("reporting_unchanged", generated != "" && h.run("final_generated_config_hash", "sha256sum", installerConfig).Stdout == generated)
+		logs := h.run("updater_service_logs", "journalctl", "--no-pager", "-o", "cat", "-u", "fvpn-updater.service", "-u", "fvpn-updater-recover.service")
+		missingURL := false
+		for _, ob := range h.rec.Observations {
+			if strings.Contains(ob.Detail, "result_url_missing") {
+				missingURL = true
+			}
+		}
+		h.check("no_missing_result_url", logs.Exit == 0 && !missingURL)
+	}()
+	agentCfg := document([]byte(h.run("", "cat", "/etc/vpn-node/agent.json").Stdout))
+	origin := agentCfg.text("control_url")
+	trust := h.run("server_trust_matches_enrollment", "cmp", "-s", cfg.text("mtls_ca"), "/var/tmp/e2e-rel/ca.pem")
+	clientIssuer := h.run("server_trust_differs_from_client_issuer", "cmp", "-s", cfg.text("mtls_ca"), "/var/lib/vpn-node/identity/ca.pem")
+	origins, _ := json.Marshal([]string{origin})
+	h.check("generated_reporting", cfg.text("result_url") == origin+"/api/v1/agent/update-results" && origin != "" && sameJSON(cfg["allowed_artifact_origins"], origins) && cfg.text("mtls_ca") == "/etc/vpn-node/ca.pem" && trust.Exit == 0 && clientIssuer.Exit == 1 && cfg.text("mtls_cert") == "/var/lib/vpn-node/identity/cert.pem" && cfg.text("mtls_key") == "/var/lib/vpn-node/identity/key.pem")
+	h.note("artifact_origin_decision", "Retain shared https://releases.example.invalid: release-process.md publishes immutable HTTPS artifacts separately; install.md requires explicit extra private-origin configuration; no documented control-only artifact hosting and no generated policy override")
+	if !h.checks["install"] || !h.checks["seed"] {
+		h.run("install_baseline_diagnostic", "cat", "/var/lib/vpn-node/install/baseline.json")
+		h.central("central_after_prerequisite_failure", node)
+		h.note("central_receipt_count", s.readJSON(`SELECT to_jsonb(count(*)) FROM installer_update_results WHERE node_id=$1`, uuid.MustParse(node)))
+		h.rec.Actual = "Installer/seed prerequisite failed with generated configuration; no policy repair, staging, apply or receipt delivery claimed; inspect install and seed diagnostics"
+		return
+	}
 	missing := h.absent("/var/lib/vpn-node/state/desired-state.json") && h.absent(installerPending)
 	h.run("fresh_oneshot", "systemctl", "start", "fvpn-updater.service")
 	unit := h.run("fresh_unit", "systemctl", "show", "fvpn-updater.service", "-p", "ExecMainStatus", "-p", "Result")
@@ -232,16 +277,9 @@ func (s *updatesFollowup) installerHandoff(stack *e2e.Stack, baseline e2e.Servin
 	holder := document([]byte(h.run("legacy_lock_holder", "cat", "/var/lib/vpn-node/update.lock").Stdout))
 	h.check("legacy_boot_config", legacy.Exit == 0 && holder.text("boot_id") == kernel)
 	delete(cfg, "boot_id")
-	// The installer still leaves result_url empty. Retain that fact, then supply
-	// the owned lab endpoint explicitly, as documented by devstack.
-	cfg.set("result_url", s.r.lab.agent+"/api/v1/agent/update-results")
-	cfg.set("mtls_ca", "/var/tmp/e2e-rel/ca.pem")
-	cfg.set("allowed_artifact_origins", []string{s.r.lab.agent, s.r.lab.releases})
-	raw, _ = json.Marshal(cfg)
-	if !must(h.put(installerConfig, raw)) || !must(stack.HoldInstallerApply(s.ctx, true)) || !must(stack.ConfigureInstallerServing(s.ctx)) || !must(stack.HoldInstallerFirstPoll(s.ctx, false)) || !must(stack.RestoreInstallerServices(s.ctx, "installer-node", installed.Services)) {
+	if !must(stack.HoldInstallerApply(s.ctx, true)) || !must(stack.ConfigureInstallerServing(s.ctx)) || !must(stack.HoldInstallerFirstPoll(s.ctx, false)) || !must(stack.RestoreInstallerServices(s.ctx, "installer-node", installed.Services)) {
 		return
 	}
-	h.note("reporting_adapter", "Explicit owned result_url, CA and origins; generated installer reporting configuration is not claimed")
 	ready := s.wait(60*time.Second, func() bool {
 		return !h.absent("/var/lib/vpn-node/state/desired-state.json") && strings.Contains(h.run("", "cat", "/run/vpn-node/heartbeat").Stdout, "boot_id "+kernel)
 	})

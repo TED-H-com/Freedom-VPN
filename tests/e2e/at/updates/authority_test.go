@@ -25,7 +25,7 @@ func requireFollowup4Evidence(records map[string]*at.Record) {
 	for id, names := range map[string][]string{
 		"AT25": {"failed_requires_cause"},
 		"AT26": {"revision7_empty_target", "revision7_rollback_target", "conflict_bounds"},
-		"AT27": {"observation_authority"},
+		"AT27": {"observation_authority", "physical_rollback"},
 	} {
 		all := true
 		for _, name := range names {
