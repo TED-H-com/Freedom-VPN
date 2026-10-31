@@ -247,7 +247,7 @@ timing. It neither selects a route nor reconnects, waits for serving, or repairs
 transport. Existing `ApplyNativeInputs` still lowers **only member** eth0/eth1.
 
 Each namespace capture is `any` with SLL2 interface index/direction: member
-underlay and `fvnb0`; selected node underlay, `fvnb0`, `fvmb0` and `fvup0`; origin.
+underlay and `fvnb0`; selected node underlay, its native `fvmb0` tunnel and `fvup0`; origin.
 The closed filter is ICMP/ICMPv6, UDP (including fragments) and TCP 443/9446.
 Raw full-snaplen pcaps are private (mode 0600 export); 32 MiB capture buffers
 reduce observer drops. Retained capture counts, received-by-filter counts,
@@ -259,7 +259,10 @@ Raw receipts identify ignored files; they are not public retained-tree pins.
 `Samples[].points` includes independently bracketed command reads at member,
 node and origin: link names/indexes/MTUs; origin, overlay and selected endpoint
 route-get results; connection type; selected local/remote ICE endpoint family,
-port and address token. WireGuard public allowed-IP/endpoint views are matched
+port and address token. `relay_endpoint`/`relay_route` resolve a selected relay
+address only inside the controlled fixture; an absent ICE endpoint is not proof
+of missing relay transport. The native `uses_kernel_interface` flag and link
+kind are read back. WireGuard public allowed-IP/endpoint views are matched
 by the selected peer overlay address; peer keys are used only in memory. No
 private-key dump is read. `wireguard_endpoint` and `wireguard_route` distinguish
 an actual outer peer endpoint from a local userspace proxy. Missing peers and

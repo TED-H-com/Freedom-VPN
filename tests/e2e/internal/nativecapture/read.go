@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
+	"net/url"
 	"os"
 	"os/exec"
 	"strings"
@@ -58,6 +59,7 @@ type Status struct {
 	} `json:"peers"`
 }
 type Peer struct {
+	Relay    string `json:"relayServerAddress"`
 	IP       string `json:"netbirdIp"`
 	Status   string `json:"status"`
 	Type     string `json:"connectionType"`
@@ -120,6 +122,7 @@ type Command struct {
 	OK    bool  `json:"ok"`
 }
 type Snapshot struct {
+	Relay               Endpoint           `json:"relay_endpoint"`
 	UsesKernelInterface bool               `json:"uses_kernel_interface"`
 	Start               Clock              `json:"start"`
 	End                 Clock              `json:"end"`
@@ -185,6 +188,24 @@ func Read(ctx context.Context, target, origin string) (Snapshot, error) {
 			out.Overlay = Token(p.IP)
 			out.Local = EndpointView(p.Endpoint.Local)
 			out.Remote = EndpointView(p.Endpoint.Remote)
+			if relay, e := url.Parse(p.Relay); e == nil && relay.Host != "" {
+				port := relay.Port()
+				if port == "" {
+					port = "443"
+				}
+				host := relay.Hostname()
+				if net.ParseIP(host) == nil && strings.HasSuffix(host, ".example.invalid") {
+					a, e := net.DefaultResolver.LookupIPAddr(ctx, host)
+					if e == nil && len(a) > 0 {
+						host = a[0].IP.String()
+					}
+				}
+				if net.ParseIP(host) != nil {
+					out.Relay = EndpointView(net.JoinHostPort(host, port))
+					route("relay_route", host)
+				}
+			}
+
 			host, _, _ := net.SplitHostPort(p.Endpoint.Remote)
 			route("peer_route", host)
 			route("overlay_route", strings.Split(target, "/")[0])
