@@ -4,11 +4,9 @@ import hashlib
 import json
 from pathlib import Path
 
-from followup10_records import load, measurements, generation_verdict
+from followup10_records import load, measurements
 from followup9_records import evaluate_at30, clean_inventory
 from run import ROOT, PUBLIC, write_json, utc, scan
-
-
 from followup11_records import protocol_cutoff, generation_status
 
 
@@ -47,11 +45,16 @@ def refresh_scope():
     write_json(path,scope)
 
 
-def main():
+def completed_runs():
+    """No summary mutation until both independent fresh-stack runs finish."""
     for phase in ('transports','restore'):
         run = load(PUBLIC/f'followup12-{phase}-run.json')
         if not run.get('finished_at') or not (PUBLIC/f'followup12-{phase}-live.json').exists():
             raise SystemExit('Both fresh live runs must complete before rendering summaries')
+
+
+def main():
+    completed_runs()
     trun, rrun = (load(PUBLIC/f'followup12-{p}-run.json') for p in ('transports','restore'))
     for phase in ('transports','restore'):
         path=PUBLIC/f'followup12-{phase}-live.json'
@@ -116,11 +119,16 @@ def main():
     (PUBLIC/'README.md').write_text('# Wave 4 security and operations acceptance\n\n[Follow-up 12 results](summary.md), [AT29 sub-cases](AT29.md), [AT30 restore regression](AT30.md), [AT31 relay path](AT31.md), [requests and owners](requests.md), and [run instructions](RUN.md). Full AT28/AT32 and prior SECOPS-16/17/18/19/20 evidence remain explicitly dated Follow-up 10 records; this run does not promote their scope.\n\nThe D-098 [follow-up 10 archive](history/follow-up-10/) is immutable. Candidate hardware, physical arm64 and guest clock rollback remain unmeasured.\n')
     note=f'# 2026-10-31 — Follow-up 12 handover\n\nFollow-up 10 archive: `docs/e2e/at/secops/history/follow-up-10/`, exact PR #265 commit `2f1f939`, run `0e8ff9a4-4fa1-4154-ae35-847a5be4d985`. Pin `restore-reconcile.json` → `measurement_comparison.follow_up_10` there. Keep `history/follow-up-9/restore-reconcile.json` for handover follow-up 13.\n\nAT30 regression: **{at30}**. SECOPS-21: **{status21}**; first new stored offer `{first.get("generation") if first else None}`, retained `{retained}`.\n\n| AT29 / AT31 sub-case | Result |\n|---|---|\n'
     for k,v in subcases.items(): note+=f'| {k} | {v.get("status")} |\n'
+    note+='\n'+table
+    note+=f'\nCleanup: **{verdict["cleanup"]}**. Both run records include teardown exit status, state-directory removal and final container/network/volume/image counts. [Transport run](followup12-transports-run.json); [restore run](followup12-restore-run.json).\n'
+    note+='\nFollow-up 11 root records (105 files) are byte-identical to PR #274 under [history/follow-up-11/](history/follow-up-11/), with SHA-256 index entries. Its restore measurements are retained follow-up 10 values, not a new execution. No older snapshot was moved or rewritten.\n'
     note+='\nExact samples and export limits: [AT29](AT29.json), [AT31](AT31.json), [SECOPS-21](SECOPS-21.json). The existing handover test already reads the follow-up 9 archive; no further test repoint is needed.\n'
     (PUBLIC/'2026-10-31-follow-up-12-handover.md').write_text(note)
     requests=PUBLIC/'requests.md'; old=requests.read_text().split('\n# Requests to orchestrator — Follow-up 12')[0]
     old+='\n# Requests to orchestrator — Follow-up 12 (2026-10-31 UTC)\n\n'
     old+=f'SECOPS-21: **{status21}**, owner `w3-wire-nodes` follow-up 29 / D-099. See [hold and first-offer evidence](SECOPS-21.json); no closure from compiler tests.\n\n'
+    old+='D-102 prerequisite read attempted on application base `510a4ab`: `docs/e2e/RESPONSES.md` and `docs/node/install-followup3-2026-10-31.md` are absent, including a repository filename search. Please publish those dated handovers on main (devstack / installer owners). The available node D-099 handover was read before planning. The older devstack ENR-06 finding is not treated as proof of the subsequently reported socket/runtime fix or a passing full upgrade. No external pin or packaged unit was changed.\n\n'
+    old+='D-103 is resolved by this task: only `fvpn-w4-secops-*`, network `fvpn-w4-secops`, port base 30000. The two-run guard refers to the prepared independent transport and restore fresh-stack runs, each torn down before the next.\n\n'
     old+='| Sub-case / missing export | Status / owner | Limit |\n|---|---|---|\n'
     for k,v in subcases.items(): old+=f'| {k} | {v.get("status")} / {v.get("owner","w4-at-security-ops")} | {v.get("missing_export",v.get("blocker",v.get("scope",v.get("transport_scope","See recorded samples"))))} |\n'
     old+='| AT31 full capacity | blocked / operator + w4-at-security-ops | Needs chosen candidate hardware and 20-member/60-device mixed-load relay measurements; bounded single-member export is delivered. |\n\n[Dated handover and archive pins](2026-10-31-follow-up-12-handover.md).\n'; requests.write_text(old)
@@ -138,8 +146,10 @@ test -z "$(gofmt -l .)"
 git diff --check
 ```
 
-Use only the assigned w4-secops / port-base 30000 stack. Check `pgrep -af gates.sh`
-before each live run; wait when two integration gates are active. Both fresh runs
+Use only the assigned w4-secops / port-base 30000 stack. Before each live run check
+`pgrep -af gates.sh | grep -v grep` and
+`docker ps --format '{{.Names}}' | grep -c '^fvpn-w'`.
+If two other lanes' suites or labs are active, wait and retry every five minutes. Both fresh runs
 use disk scratch and unconditional cleanup. The restore target runs the same
 Follow-up 10 drill, with Follow-up 12 filenames and D-095 hold read-back added.
 Freeze and begin-recovery run while control/worker remain stopped. Briefly stop
