@@ -1,150 +1,146 @@
-# Isolation run procedure — Follow-up 6
+# Isolation run procedure — Follow-up 7
 
 ```sh
 make -f mk/at-isolation.mk at-isolation-lint
 make -f mk/at-isolation.mk at-isolation
+python3 tests/e2e/at/isolation/review_followup7.py
 make go-lint
 go vet ./...
-make go-build
 ```
 
-Use `FVPN_E2E_PREFIX=w4-isolation`, `FVPN_E2E_PORT_BASE=36000` and only
-`fvpn-w4-isolation-*` Docker objects. The mechanism container is
-`fvpn-w4-isolation-lab`. The target runs that lab first, removes it, builds a
-fresh assembled stack, runs the shared driver through the owned Go overlay,
-and tears down. The assigned prefixes are sequential. Host networking is
-untouched; host test scratch is disk-backed under `.agent/tmp`.
+The binding is `w4-isolation` / port base `36000`; Docker objects are limited
+to `fvpn-w4-isolation-*`. The target runs the mechanism lab, removes it, builds
+the assembled stack, runs the owned overlay against the shared driver, then
+tears down. A blocked or failed product case returns make exit 2 after all
+four records are written. A mechanism pass never substitutes for a product
+pass (§19.2). Check `pgrep -af gates.sh` before starting; wait if two integration
+suites are active. Commands run in the foreground; Go scratch is on disk under
+`.agent/tmp`. Host networking is untouched.
 
-A blocked or failed product case makes the aggregate exit 2 after all four records are
-written. A mechanism pass does not promote a blocked product case (§19.2).
-The final inventory includes containers, networks, volumes and image tags,
-including the task-owned cache tags. Follow-up 5's teardown fix (#246) removes
-the standalone isolation target before shared compose teardown, then removes
-cache tags. No sibling prefix is inspected internally or changed.
+## D-087 receiver recipe
 
-Bootstrap uses `PrepareServingBaseline`, API-created DNS rules, groups, plans
-and finite grants, native admission, and publication read-back. The runner
-reuses shared `countedFlow`, `selectExit`, `tracedFetch`, and
-`Stack.ObserveMemberIngress` through `driver.py`; SQL reads observations and
-signed documents only. It neither writes projector-owned rows nor bypasses a
-serving gate.
+Before enrollment, the harness installs its TEST ONLY transparent receiver in
+the node's existing loopback mTLS transport. It validates the same client CA,
+uses the enrolled client certificate upstream, and forwards bodies and
+responses unchanged. The agent config sets `heartbeat_seconds=1`,
+`poll_seconds=1`, and `observation_seconds=1`. The receiver is running before
+the first lease renewal, including empty-lease issuance. The source entrypoint
+starts it again across the ordinary restart and the clone fixture's source
+restart. It records no request headers or credential responses.
 
-## Provisional sampling contract
+Every `POST /api/v1/agent/observations` body and acceptance response enters a
+queue drained to disk every **100 ms**. Renewal transactions and successful
+signed desired-state GET responses are retained for correlation. This is not
+a latest-state snapshot. `receiver-capture.json` holds the transaction stream;
+`lease-history.json` includes central accepted report IDs so missing accepted
+observations can be detected. Repeated POST retries are kept. The separate
+250 ms `convergence-timeline.json` remains auxiliary kernel/database evidence.
 
-Read [agent-core #250](https://github.com/TED-H-com/Freedom-VPN/pull/250)
-and its Follow-up 20 report before choosing the cadence. Its routing section
-names the approximately **5 s** lab window, referring to usage follow-up 3's
-**5021 / 5025 ms**. The report's deterministic **55 s from ready / 60 s from
-request** proof uses a 90 s heartbeat and is not this lab's expected window.
-The historical 80.622 s first-ever-ready metric includes pre-publication
-setup and is not an isolated renewal-cadence measurement.
+`review_followup7.py` requires an accepted report with all of these:
 
-The sampler now starts immediately after enrollment, before publication,
-and runs at a **250 ms target cadence** until the first counted member byte.
-Repeated reads are retained. Each sample has the desired/lease/observation
-generations, grant count, lease ID and issuance time, observation ID and time,
-all checks, all errors, forwarding state, and a separately timestamped live
-forward-chain read. These are read-only snapshots; database and nft reads are
-sequential, not atomic.
+- `report_id`, `observed_at`, and `lease.lease_id` retained verbatim;
+- nonempty signed desired bindings, matching desired/applied/lease generation,
+  empty lease members, and observation inside that lease's validity interval;
+- `member_forwarding_enabled=false`, `provisioning_state=ready`,
+  `safety_status=passed`, and only `awaiting_member_grants` as block reason;
+- lease, qos and source_binding checks coded `AWAITING_MEMBER_GRANTS`, and
+  exactly one error with that code at stage `lease`.
 
-`EvaluateProvisional` requires at least three distinct samples inside one
-same-generation grant-less interval with desired bindings, an accepted
-ready/passed observation using that lease, `AWAITING_MEMBER_GRANTS` on
-lease/qos/source_binding, exactly one error at stage lease, and no member
-forward accept. It relates the ready timestamp to the populated lease's
-issuance on that generation. The AT10 check additionally requires the real
-member's later counted origin control. `convergence-timeline.json` retains
-all reads, including transitions before a coherent observation is available;
-those stale transitions are not scored as ready reports.
+Expired leases, empty desired bindings, mismatched generations and other
+safety failures are excluded. The script relates each qualifying report to
+the next populated lease on its generation. It writes derived evidence only;
+it does not silently promote AT10. The AT10 check also needs an actual counted
+member control. Comparators are follow-up 6's **4,767 ms** assisted recovery and
+usage follow-up 3's **5,021 / 5,025 ms**. A window not observed stays blocked.
 
-### Read-only recovery sampling used on this run
+## ISO-F6-03 continuous expiry capture
 
-The ordinary bootstrap did not enter the qualifying condition. During the
-final run's later tc failure, a separate observer ran against the same stack:
+The existing fleet API sequence sets the TEST ONLY offline ceiling to 60 s,
+forces renewal through a capacity generation, stops control/worker, reads the
+node-held signed lease, and later restores the ceiling with its audit trail.
+The original strict case predicate remains: counted forwarding near expiry,
+no early baseline, baseline within one configured agent tick, and post-deadline
+member ingress denied with flat admission counters (§16.3).
+
+Ten seconds before the signed deadline, continuous header-only tcpdump starts
+on the node at both member and uplink boundaries. A member makes TCP connect attempts every
+50 ms plus connect time (150 ms timeout), retaining the start/end/result of
+every attempt. A separate reader brackets nft/heartbeat reads at a 100 ms target
+cadence. Capture lasts 25 s, spanning the deadline; kernel-drop summaries must
+be checked. Linux packet timestamps and driver/container UTC share one host
+clock. `whole-node-probes.json`, `whole-node-continuous-reads.json`,
+`whole-node-bracketed-reads.json`, and the two capture text files preserve the
+raw timing. `expiry-timing-analysis.json` derives the last successful connect,
+first failed connect, baseline bracket and expiry-reporting heartbeat. A
+connection timeout is a missing-response bracket, not an exact drop timestamp;
+use the packet headers to locate ingress and response. Conservative monotonic
+expiry is allowed by §16.3, but the retained case is not redefined to hide an
+early loss of its positive control.
+
+## D-090 containment and D-096 recovery
+
+After the ordinary AT sequence, obtain another counted member control. Start
+continuous UDP/9 probes and captures at member fvnb0, node interfaces and the
+controlled origin. Inject a foreign clsact ingress flower/mirred redirect on
+node fvmb0 toward fvup0. Record injection brackets, accepted observations,
+heartbeat, links, addresses, member routes and tc filter read-back. Confirm
+`TC_FOREIGN_FILTER`, non-serving, member links administratively down, uplink
+and control links retained, and no bypass packets after quarantine.
+
+Remove the foreign filter and request a newer capacity generation for a full
+Apply. The harness deliberately removes the saved member routes to expose the
+D-096 hold, then restores its saved addresses/routes inside the lab node. It
+records who performed restoration and retains each recovery read. No topology
+expectation, applied-model row or observation is seeded. D-100 permits refreshing
+expectations only through a clean verified Apply of a newer published generation.
+A harness restoration or extra recovery makes the assembled run **assisted**;
+it is never an unattended clean pass. `foreign-redirect.json` and the
+capture files contain the deciding observations, including any failure to
+recover.
+
+## Freeze latch
+
+Last, `StartClonedIdentityFixture` stops the source for a private consistent
+snapshot, starts a second presentation of the enrolled identity on the clone
+lab network, and resumes the source. This is the same copied incarnation,
+not a new enrollment. No key material enters committed evidence. Correlate
+`identity_frozen: true` in the source receiver's actual acceptance response
+with non-serving heartbeat, immediate renewal and omitted generation ACKs.
+Clone detection ownership remains ENR-02 / ENR-03; `identity-freeze.json`
+records the available fixture result, and the receiver analysis records its
+consumer effect. A fixture/setup failure is a blocker, not a latch pass.
+
+## Archives and provenance
+
+`history/follow-up-6/` is the complete 44-file current follow-up 6 snapshot,
+byte-identical to the files before this run. It includes the final assisted
+run `bf671f3a-c6ac-4824-9107-425c4c5a5f02`, not the older diagnostic or
+bootstrap-only snapshots. `history/follow-up-5/` is untouched; the handover
+follow-up 13 test remains pinned there under D-098. Pass claims for current
+AT10–AT13 come only from the final full run identified by the current records.
+
+## Follow-up 7 capture corrections
+
+The full run used harness `d1a90ea`. Its node `any` captures contain both fvmb0
+and fvup0, including direction. The extra origin-container captures failed
+because that image has no tcpdump; they are retained as errors. After the run,
+the helper was corrected to use an explicit second node-uplink capture. No
+new live outcome is attributed to that correction.
+
+The shared `lab.docker` truncates diagnostic stdout. The full receiver disk file
+was recovered through a task-owned network-disabled reader and matched to the
+source boot IDs in the central report index. The exporter now uses unbounded
+`exec.CommandContext(...).Output()` for this specific capture. Keep the full
+receiver artifact even when the derived provisional check is blocked.
+
+The extra assist actually used at 06:31:25Z is preserved as an explicit command:
 
 ```sh
-python3 tests/e2e/at/isolation/driver.py sample-recovery
-docker restart fvpn-w4-isolation-node
-# After the assembled target finishes and writes all four records:
-FVPN_AT_REVIEW_RECOVERY_DIR="$PWD/docs/e2e/at/isolation" go test -count=1 -v -run '^TestAT10_ReviewRecoveryWindow$' ./tests/e2e/at/isolation
+python3 tests/e2e/at/isolation/assist.py
 ```
 
-Start the observer before the recovery restart (in a second terminal); the
-observer itself performs no mutation. Use the same assigned prefix, port base
-and state-directory environment as the assembled driver. This was an extra
-recovery after `TC_FOREIGN_FILTER`, not the later ordinary AT13 restart. The
-exact action and time are in `recovery-action.json`. The observer retains a
-rolling pre-window buffer, every in-window poll, and the first admitted
-same-generation sample. Its executable source is recorded separately from
-the stack's image source. It does not submit any agent observation.
-
-The explicit offline review verifies run/build identity, re-evaluates all
-qualifying samples, and requires a counted AT12 `node-management-22` control
-whose serving heartbeat has the same generation after lease population. It
-preserves the original bootstrap-only record under
-`history/follow-up-6-bootstrap-only/`, then updates only AT10's provisional
-check. The original interface failure and four blocked peer controls remain.
-The positive control's `at` marks its attempt start; the post-transfer
-heartbeat timestamps the successful counted recovery.
-
-## Serving read-back
-
-The first counted positive triggers `nft -j list ruleset` and the latest
-accepted product observation read. The AT10 record retains both. D-079
-source presence is established from the module root; attribution comes from
-the observed foreign rules, not the presence of the patch alone.
-
-[Netlab #256](https://github.com/TED-H-com/Freedom-VPN/pull/256) adds live tc
-reads to `VerifyServing`. The mechanism AT10 control preserves the returned
-`evidence.tc` **verbatim** in `lab-AT10-tc.json` and its `tc_readback`
-observation. No foreign tc state is planted for this read. The assembled
-record separately states whether the product observation exposes tc; lab
-proof and product observation transport are distinct evidence surfaces.
-
-## Existing subset controls
-
-Each negative embeds that device's counted, CA-verified origin request.
-Destination checks prove a listening target from the node and capture at
-node/target ingress. The interface-change case maintains at least ten
-protected-target attempts per second across a disposable dummy interface and
-an API capacity change. Routes/interfaces are confined to owned containers.
-
-Publication excludes B while retaining A, then disables and restores the
-exit. Revocation observes TCP/UDP fixtures, conntrack deletion, a subsequent
-serving generation and an admitted sibling. `Stack.ObserveMemberIngress`
-measures revoked and forged `100.64.7.7` UDP/9 sources on `fvmb0`: `ctunku`
-+1, member counters unchanged and no uplink/origin packet; the admitted
-sibling moves its own upload counter by one. This existing hook uses
-`tun-mirred`, link type 65534, source port 40000, with temporary injection
-objects removed by the shared harness. It runs after the initial tc evidence.
-
-Finite-member expiry uses the signed member deadline with control and worker
-stopped, retaining the route and checking five ingress attempts, zero uplink
-packets and frozen admission bytes. Whole-node expiry then uses the admin
-fleet-config API, strong ETag/If-Match and Idempotency-Key to set the ceiling
-to 60 seconds. A capacity patch forces a new lease. Control and worker stop
-before its renewal lead; forwarding must hold near expiry and return to the
-baseline within one configured agent tick. The ceiling is restored to 86400
-through the same API and both audit events are retained. The original
-TEST ONLY audit-reason wording remains unchanged. No host clock is changed.
-
-## Records and archives
-
-`AT10.json`–`AT13.json` and their Markdown files are the product records.
-`lab-AT*.json` and sibling captures/matrices are mechanism evidence.
-`summary.md` gives this run's measured outcomes; `requests.md` names remaining
-owners. `cleanup-inventory.json` is the owned-prefix inventory after full
-teardown. The source commit, immutable image IDs, run ID, incarnation and UTC
-times are in the case records.
-
-Follow-up 5's 33 records are byte-identical under `history/follow-up-5/`.
-Earlier histories retain their original run identity. The live AT13 evaluator
-SHA256 is `d4cd4dfd0957cace3ef9cd63168a4653c75ac1d0ba07d5c5ca1af00603f38d53`
-(concatenated `capture.go` and `capture_review_test.go`); neither file changed.
-The offline `at-isolation-review-captures` target rewrites records in its
-selected directory. Use a copy of an archived run for offline review; never
-replace current live records with that output.
-
-## Follow-up 6 run identity and attribution
-
-Final run `bf671f3a-c6ac-4824-9107-425c4c5a5f02`, harness `e711ebd822eda2ea1b5ba10b187818fda6777a74`, product origin/main baseline `5d1e5ce8727ca824fa24197ce2568bd513bac7f3`; UTC `2026-10-31T04:37:28Z`–`2026-10-31T05:01:32Z`. The foreign-rule read-back is `[]`: Docker chains are absent, so #240 explains the serving pass. D-079 #241 is present but no `loopback_scoped` entry was exercised. The initial diagnostic run, owned partial-operation wait correction, final-run tc rejection, extra real restart and 19-sample recovery proof are documented in `summary.md`. The final run was assisted; interface and four peer checks remain blocked, and whole-node expiry is failed on near-deadline continuity. Ready-observed → populated was 4767 ms; ready-received → populated was 4760 ms, beside usage follow-up 3’s 5021 / 5025 ms. Final inventory: `{"containers":0,"networks":0,"volumes":0,"images":0}`.
+Run only against the still-running assigned lab after capturing the failed
+recovery. It performs an authenticated capacity PATCH to 208000000 down_bps
+with ETag/Idempotency-Key, then restores the saved lab IPv4 addresses/routes;
+it writes `recovery-action.json`. It does not make the assembled run unattended
+and does not establish success merely because the API returned 202.
