@@ -192,3 +192,89 @@ history and must not be read as the current result.
    results must not replace those dated claims silently. The lane's standalone
    make target is not a `gates.sh` process; coordinating wrappers should count
    it too (one other gate at launch; two other wrappers appeared later).
+
+## Follow-up 8 requests — 2026-10-31
+
+Current run **`7779d83c-2f78-4699-ac88-8fcc59e8cf87`**, image/harness `dafb8f4d`,
+product baseline `62f24e6d` through #312/#308. **AT10 blocked (8/1/0), AT11 blocked
+(2/1/0), AT12 pass (10/0/0), AT13 blocked (6/1/0)**; counts are pass/blocked/fail.
+The [current AT/ISO table](summary.md) and raw records supersede earlier dated
+requests as current evidence. Earlier outcomes remain in their archives.
+
+Closed by this run:
+
+- **ISO-F6-01 / D-096:** all six [G2 assertions pass](recovery-verdict.json).
+  Generation 30 serving → injected clsact/flower/mirred → dirty generation 31
+  rejected without deleting foreign objects → removal → clean generation 32,
+  matching populated lease and verified Apply/live read → native topology and
+  counted recovery. No restart or harness route/address/link repair. Injection
+  to contained observation ≤425.984 ms; removal to observed link-up ≤640.719 ms,
+  serving ≤8.941 s, completed counted control ≤18.063 s. These are measured
+  upper bounds, not production guarantees. Four redirected packets preceded
+  quarantine; none reached the uplink from confirmed down until removal.
+- **ISO-F6-02 / D-106:** 539 actual tc wire reads, all 539 canonical digests match.
+  Revision-13 qos detail and historical tc_evidence errors remain retained.
+  No unsolicited rejected object appeared; this harness created all observed
+  foreign clsact/flower/mirred objects. The original unretained follow-up 6
+  object's creator remains unknown, not attributed from a passing reproduction.
+- **ISO-F6-03 packet predicate:** generation-30 deadline D=`30175198061283` ns;
+  last positive **D−99.952819 ms**, first drop **D−61.767983 ms**, 161 positives /
+  41 drops, no post-deadline or later positives, zero capture drops. No added
+  cadence allowance. AT13 is no longer failed by that predicate, but remains
+  blocked by the separate full fault/platform matrix.
+- **D-120:** netlab 18 was present before launch; the printed AT10 verdict is
+  **PASS under D-120**. 100 reloads, 101 verified Applies, 59 datagrams, **zero UDP
+  losses and zero TCP timeouts**; therefore no loss fails conditions (i)–(v),
+  and the per-loss table is empty. Maximum guard upper bound 47.066166 ms and
+  render→installed 28.231196 ms, each ≤100 ms. The [complete analyzer output](reload-stream/TestAT10_AT13_ReloadRevokeBaseline/at10-analysis.json)
+  is the verdict input. This is an AT10 continuity rule, distinct from D-104.
+- **D-098 / D-109:** final follow-up 6 and 7 archives verified 44/44 and 52/52
+  SHA-256 matches, including corrected final verdicts. Handover already reads
+  archives/immutable fixtures, so no living-file claim pin moved. Its current
+  AT10 path-string rejection test does not read that file. Handover tests pass.
+- **D-102 / D-108:** consumed RESPONSES.md's complete export helper; source and
+  clone producers were stopped after measurements, then receiver drained and
+  exported. Node `any` is the independent member/uplink record, with complete
+  packet counts and zero kernel drops.
+
+### Requests to orchestrator
+
+1. **D-087 clean provisional recipe — agent-core + devstack.** Agent-core 24's
+   recipe uses fake-control `SetMemberGrantsReady(false/true)` on a clean,
+   unfrozen, fixed-generation published node with desired bindings. Current
+   assembled public APIs expose no equivalent. Implement/export that controlled
+   transition without changing publication/generation or writing projector rows;
+   then this lane can measure it once. This item requires files outside this
+   lane's ownership and was stopped independently. No synthetic transition was
+   used. The receiver retained 544 observation POSTs and zero qualifying
+   ready/passed provisional reports; no new duration replaces historical
+   4,767 / 5,021 / 5,025 ms. [Recipe limitation and observations](provisional-receiver-analysis.json).
+
+2. **Exact D-104 producer timing — agent-core / enforcement.** Export real
+   Apply start, final-render sample, installed-by, guard install/release command
+   brackets and executor precision-read samples in a suitable test-only
+   measurement surface. Current `node/agent`/`node/enforce` are outside this
+   lane's owned paths. The retained passive netlink timestamps are receipt
+   bounds, not those missing samples. The original recorder's top-level-JSON
+   gap is explicit; the corrected read-only recorder covers renewal/expiry/
+   recovery without modifying product binaries. The [renewal trace](continuity-analysis.json)
+   has two real renewals, 68 guard receipt intervals, 1,396 probes and **17
+   losses**, all with ingress and no uplink egress. Its 80 ms dual-phase probes
+   are not the 1.5 s D-120 stream; no tolerance was applied to them. Correlate
+   these against genuine command brackets before claiming strict renewal
+   continuity. The exact final expiry packet predicate passes independently.
+
+3. **AT11 native IPv6/platform coverage — devstack + platform operators.**
+   Supply real dual-stack/native member paths and the required platform route/
+   capture matrix. The current metadata/6to4 passes and netlab IPv6-block proof
+   do not provide those inputs. AT11 stays blocked.
+
+4. **AT13 full continuous fault/platform matrix — acceptance + operators.**
+   Execute continuous counted probes through crash, NetBird restart, OS reboot,
+   updater transition and real device/platform paths, including physical arm64.
+   Ordinary process restart, finite-member expiry and whole-node deadline
+   measurements do not substitute for that matrix. AT13 stays blocked.
+
+There are **four routed requests**. The assembled gate returned 2 for blocked
+scope, not a fabricated all-green result. Owned lint/test/build, handover,
+root go-lint and evidence hygiene pass; owned Docker inventory is zero.

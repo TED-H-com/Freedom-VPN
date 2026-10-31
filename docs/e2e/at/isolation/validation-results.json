@@ -1,61 +1,79 @@
 {
-  "run_id": "041e9e48-79a6-45dd-a19d-8b5a63290655",
-  "checks": [
+  "run_id": "7779d83c-2f78-4699-ac88-8fcc59e8cf87",
+  "results": [
     {
-      "command": "make -f mk/at-isolation.mk at-isolation-lint",
+      "command": "make -f mk/at-isolation.mk at-isolation-lint at-isolation-test at-isolation-build",
       "exit_code": 0,
-      "tail": ""
+      "output_tail": [
+        "+ go vet ./tests/e2e/at/isolation/... ./tests/netlab/at/...",
+        "+ go vet -tags netlab ./tests/netlab/at/...",
+        "+ go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 ./tests/e2e/at/isolation/... ./tests/netlab/at/...",
+        "+ go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 -tags netlab ./tests/netlab/at/...",
+        "+ go vet tests/e2e/at/isolation/probe_main.go tests/e2e/at/isolation/observer_main.go",
+        "+ go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 tests/e2e/at/isolation/probe_main.go tests/e2e/at/isolation/observer_main.go",
+        "+ go test -count=1 ./tests/e2e/at/isolation/... ./tests/netlab/at/...",
+        "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/isolation\t0.163s",
+        "?   \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab/at\t[no test files]",
+        "+ python3 tests/e2e/at/isolation/driver.py build",
+        "+ sh -ec for arch in amd64 arm64; do GOOS=linux GOARCH=$arch go build -o \"$GOTMPDIR/probe-$arch\" tests/e2e/at/isolation/probe_main.go tests/e2e/at/isolation/observer_main.go; done"
+      ]
     },
     {
       "command": "make -f mk/at-isolation.mk at-isolation",
       "exit_code": 2,
-      "tail": "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab/at\t20.237s\n    isolation_owned_test.go:188: AT10: blocked\n    isolation_owned_test.go:188: AT11: blocked\n    isolation_owned_test.go:188: AT13: fail\n--- FAIL: TestIsolationAssembled (932.39s)\nat-isolation lab=0 stack=1\nmake: *** [mk/at-isolation.mk:51: at-isolation] Error 2",
-      "note": "Expected non-green acceptance gate: blocked AT10/11 and failed AT13; all case records written."
+      "output_tail": [
+        "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab\t22.307s",
+        "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab/at\t19.962s",
+        "--- FAIL: TestIsolationAssembled (950.65s)",
+        "FAIL\tgithub.com/TED-H-com/Freedom-VPN/tests/e2e\t950.661s",
+        "owned-prefix inventory: {\"containers\": [], \"images\": [], \"networks\": [], \"volumes\": []}",
+        "at-isolation lab=0 stack=1",
+        "make: *** [mk/at-isolation.mk:57: at-isolation] Error 2"
+      ]
+    },
+    {
+      "command": "go test -count=1 ./tests/handover/...",
+      "exit_code": 0,
+      "output_tail": [
+        "+ go test -count=1 ./tests/handover/...",
+        "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/handover\t0.278s"
+      ]
     },
     {
       "command": "make go-lint",
       "exit_code": 0,
-      "tail": ""
-    },
-    {
-      "command": "go vet ./...",
-      "exit_code": 0,
-      "tail": ""
-    },
-    {
-      "command": "make go-build",
-      "exit_code": 0,
-      "tail": "building github.com/TED-H-com/Freedom-VPN/apps/control/cmd/fvpn-control for linux/amd64\nbuilding github.com/TED-H-com/Freedom-VPN/apps/worker/cmd/fvpn-worker for linux/amd64\nbuilding github.com/TED-H-com/Freedom-VPN/contracts/internal/cmd/contractsgen for linux/amd64\nbuilding github.com/TED-H-com/Freedom-VPN/internal/db/cmd/fvpn-db-sweep for linux/amd64\nbuilding github.com/TED-H-com/Freedom-VPN/internal/db/cmd/fvpn-migrate for linux/amd64\nbuilding github.com/TED-H-com/Freedom-VPN/internal/dnspolicy/cmd/bootstrap for linux/amd64\nbuilding github.com/TED-H-com/Freedom-VPN/internal/httpapi/cmd/controlgen for linux/amd64\nbuilding github.com/TED-H-com/Freedom-VPN/internal/usage/cmd/fvpn-usage-admin for linux/amd64\nbuilding github.com/TED-H-com/Freedom-VPN/node/agent/cmd/fvpn-agent for linux/amd64\nbuilding github.com/TED-H-com/Freedom-VPN/node/internal/fakecontrol/cmd/fvpn-labcontrol for linux/amd64\nbuilding github.com/TED-H-com/Freedom-VPN/node/updater/cmd/fvpn-updater for linux/amd64\nbuilding github.com/TED-H-com/Freedom-VPN/node/watchdog/cmd/fvpn-watchdog for linux/amd64\nbuilding github.com/TED-H-com/Freedom-VPN/packaging/installer/cmd/fvpn-node-install for linux/amd64\nbuilding github.com/TED-H-com/Freedom-VPN/packaging/release/cmd/fvpn-release for linux/amd64\nbuilding github.com/TED-H-com/Freedom-VPN/tests/e2e/at/members/cmd/probe for linux/amd64\nbuilding github.com/TED-H-com/Freedom-VPN/tests/e2e/at/secops/proxyprobe for linux/amd64\nbuilding github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-idp for linux/amd64\nbuilding github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-member-session for linux/amd64\nbuilding github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-nbbootstrap for linux/amd64\nbuilding github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-nodeconfig for linux/amd64\nbuilding github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-origin for linux/amd64\nbuilding github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-payment for linux/amd64\nbuilding github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-prepare for linux/amd64\nbuilding github.com/TED-H-com/Freedom-VPN/tests/netlab/cmd/fvpn-netlab for linux/amd64\nbuilding github.com/TED-H-com/Freedom-VPN/apps/control/cmd/fvpn-control for linux/arm64\nbuilding github.com/TED-H-com/Freedom-VPN/apps/worker/cmd/fvpn-worker for linux/arm64\nbuilding github.com/TED-H-com/Freedom-VPN/contracts/internal/cmd/contractsgen for linux/arm64\nbuilding github.com/TED-H-com/Freedom-VPN/internal/db/cmd/fvpn-db-sweep for linux/arm64\nbuilding github.com/TED-H-com/Freedom-VPN/internal/db/cmd/fvpn-migrate for linux/arm64\nbuilding github.com/TED-H-com/Freedom-VPN/internal/dnspolicy/cmd/bootstrap for linux/arm64\nbuilding github.com/TED-H-com/Freedom-VPN/internal/httpapi/cmd/controlgen for linux/arm64\nbuilding github.com/TED-H-com/Freedom-VPN/internal/usage/cmd/fvpn-usage-admin for linux/arm64\nbuilding github.com/TED-H-com/Freedom-VPN/node/agent/cmd/fvpn-agent for linux/arm64\nbuilding github.com/TED-H-com/Freedom-VPN/node/internal/fakecontrol/cmd/fvpn-labcontrol for linux/arm64\nbuilding github.com/TED-H-com/Freedom-VPN/node/updater/cmd/fvpn-updater for linux/arm64\nbuilding github.com/TED-H-com/Freedom-VPN/node/watchdog/cmd/fvpn-watchdog for linux/arm64\nbuilding github.com/TED-H-com/Freedom-VPN/packaging/installer/cmd/fvpn-node-install for linux/arm64\nbuilding github.com/TED-H-com/Freedom-VPN/packaging/release/cmd/fvpn-release for linux/arm64\nbuilding github.com/TED-H-com/Freedom-VPN/tests/e2e/at/members/cmd/probe for linux/arm64\nbuilding github.com/TED-H-com/Freedom-VPN/tests/e2e/at/secops/proxyprobe for linux/arm64\nbuilding github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-idp for linux/arm64\nbuilding github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-member-session for linux/arm64\nbuilding github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-nbbootstrap for linux/arm64\nbuilding github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-nodeconfig for linux/arm64\nbuilding github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-origin for linux/arm64\nbuilding github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-payment for linux/arm64\nbuilding github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-prepare for linux/arm64\nbuilding github.com/TED-H-com/Freedom-VPN/tests/netlab/cmd/fvpn-netlab for linux/arm64\n"
-    },
-    {
-      "command": "go test -count=1 ./...",
-      "exit_code": 0,
-      "tail": "160s\nok  \tgithub.com/TED-H-com/Freedom-VPN/internal/nodes\t0.022s\n?   \tgithub.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx\t[no test files]\nok  \tgithub.com/TED-H-com/Freedom-VPN/internal/nodes/httpwire\t0.012s\n?   \tgithub.com/TED-H-com/Freedom-VPN/internal/nodes/nodestest\t[no test files]\nok  \tgithub.com/TED-H-com/Freedom-VPN/internal/operations\t0.015s\nok  \tgithub.com/TED-H-com/Freedom-VPN/internal/pki\t0.083s\n?   \tgithub.com/TED-H-com/Freedom-VPN/internal/pki/pkitest\t[no test files]\nok  \tgithub.com/TED-H-com/Freedom-VPN/internal/policies\t0.062s\n?   \tgithub.com/TED-H-com/Freedom-VPN/internal/policies/policiestest\t[no test files]\nok  \tgithub.com/TED-H-com/Freedom-VPN/internal/releases\t0.125s\n?   \tgithub.com/TED-H-com/Freedom-VPN/internal/releases/releasetest\t[no test files]\nok  \tgithub.com/TED-H-com/Freedom-VPN/internal/signing\t0.129s\nok  \tgithub.com/TED-H-com/Freedom-VPN/internal/usage\t0.038s\nok  \tgithub.com/TED-H-com/Freedom-VPN/internal/usage/cmd/fvpn-usage-admin\t0.012s\n?   \tgithub.com/TED-H-com/Freedom-VPN/internal/usage/usagetest\t[no test files]\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/agent\t21.427s\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/agent/cmd/fvpn-agent\t0.071s\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/dns\t0.033s\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/enforce\t0.124s\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/internal/agentstore\t0.196s\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/internal/controlclient\t30.028s\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/internal/fakecontrol\t0.041s\n?   \tgithub.com/TED-H-com/Freedom-VPN/node/internal/fakecontrol/cmd/fvpn-labcontrol\t[no test files]\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/internal/healthattest\t0.063s\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/internal/meter\t0.570s\n?   \tgithub.com/TED-H-com/Freedom-VPN/node/internal/nodelock\t[no test files]\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/internal/timeanchor\t0.002s\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/internal/updatejournal\t0.824s\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/internal/usagestore\t0.899s\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/internal/usageupload\t0.304s\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/nodelock\t0.041s\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/updater\t20.552s\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/updater/cmd/fvpn-updater\t0.302s\n?   \tgithub.com/TED-H-com/Freedom-VPN/node/updater/fsutil\t[no test files]\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/watchdog\t0.015s\n?   \tgithub.com/TED-H-com/Freedom-VPN/node/watchdog/cmd/fvpn-watchdog\t[no test files]\nok  \tgithub.com/TED-H-com/Freedom-VPN/packaging/installer\t3.697s\n?   \tgithub.com/TED-H-com/Freedom-VPN/packaging/installer/cmd/fvpn-node-install\t[no test files]\nok  \tgithub.com/TED-H-com/Freedom-VPN/packaging/release\t0.018s\n?   \tgithub.com/TED-H-com/Freedom-VPN/packaging/release/cmd/fvpn-release\t[no test files]\nok  \tgithub.com/TED-H-com/Freedom-VPN/pkg/api\t0.014s\nok  \tgithub.com/TED-H-com/Freedom-VPN/pkg/api/presence\t0.002s\nok  \tgithub.com/TED-H-com/Freedom-VPN/pkg/apierr\t0.002s\nok  \tgithub.com/TED-H-com/Freedom-VPN/pkg/canonjson\t0.014s\nok  \tgithub.com/TED-H-com/Freedom-VPN/pkg/decstr\t0.002s\nok  \tgithub.com/TED-H-com/Freedom-VPN/pkg/envelope\t0.008s\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/backup\t0.022s\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e\t0.072s\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/enrollment\t0.007s\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/isolation\t0.143s\n?   \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/members\t[no test files]\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/members/cmd/probe\t0.002s\n?   \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/secops\t[no test files]\n?   \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/secops/proxyprobe\t[no test files]\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/updates\t0.012s\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/usage\t2.509s\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-idp\t0.130s\n?   \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-member-session\t[no test files]\n?   \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-nbbootstrap\t[no test files]\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-nodeconfig\t0.010s\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-origin\t0.405s\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-payment\t0.013s\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-prepare\t0.104s\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/internal/dnsrelay\t0.103s\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/internal/idplogin\t0.004s\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/internal/labtls\t0.002s\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/internal/probeauth\t0.002s\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/handover\t0.174s\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab\t0.002s\n?   \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab/at\t[no test files]\n?   \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab/cmd/fvpn-netlab\t[no test files]\n"
+      "output_tail": [
+        "+ make go-lint"
+      ]
     },
     {
       "command": "go test -count=1 -v -run ^TestCommittedEvidenceFiles_ValidAndHygieneClean$ ./tests/e2e/at/isolation",
       "exit_code": 0,
-      "tail": "=== RUN   TestCommittedEvidenceFiles_ValidAndHygieneClean\n--- PASS: TestCommittedEvidenceFiles_ValidAndHygieneClean (0.13s)\nPASS\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/isolation\t0.133s\n"
+      "output_tail": [
+        "+ go test -count=1 -v -run ^TestCommittedEvidenceFiles_ValidAndHygieneClean$ ./tests/e2e/at/isolation",
+        "=== RUN   TestCommittedEvidenceFiles_ValidAndHygieneClean",
+        "--- PASS: TestCommittedEvidenceFiles_ValidAndHygieneClean (0.18s)",
+        "PASS",
+        "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/isolation\t0.178s"
+      ]
     },
     {
-      "command": "GOOS=linux GOARCH=amd64 go build probe_main.go observer_main.go",
+      "command": "test -z \"$(gofmt -l $(git ls-files '*.go'))\"",
       "exit_code": 0,
-      "tail": ""
-    },
-    {
-      "command": "GOOS=linux GOARCH=arm64 go build probe_main.go observer_main.go",
-      "exit_code": 0,
-      "tail": ""
+      "output_tail": []
     },
     {
       "command": "git diff --check",
       "exit_code": 0,
-      "tail": ""
+      "output_tail": []
     },
     {
-      "command": "owned Docker inventory after teardown and evidence-reader cleanup",
+      "command": "final handover + owned evidence tests after documentation",
       "exit_code": 0,
-      "tail": "{\"containers\": 0, \"networks\": 0, \"volumes\": 0, \"images\": 0}"
+      "output_tail": [
+        "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/handover\t0.284s",
+        "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/isolation\t0.164s"
+      ]
     }
   ]
 }

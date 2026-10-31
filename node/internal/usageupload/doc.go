@@ -7,8 +7,10 @@
 //
 // Per-event results move a contiguous prefix into the replay archive.
 // blocked_seq and a hash conflict stop the prefix. A 503 does not move the
-// ACK. A 409 LEDGER_EPOCH_MISMATCH fetches the signed usage checkpoint
-// before the next attempt. The batch result is not a signed checkpoint and
+// ACK. A current-stream 409 LEDGER_EPOCH_MISMATCH fetches its signed checkpoint
+// before the next attempt. Retired recovery gaps are reported with the hand-off,
+// never re-fetched; an origin epoch mismatch retains the tail without a restore
+// fetch. The batch result is not a signed checkpoint and
 // cannot change the ledger epoch or lower the ACK.
 //
 // Resends use the stored canonical payload byte for byte. This package does

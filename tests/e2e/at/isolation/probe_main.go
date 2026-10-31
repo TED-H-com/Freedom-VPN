@@ -20,6 +20,14 @@ func main() {
 		os.Exit(2)
 	}
 	switch os.Args[1] {
+	case "deadline-probes", "renewal-probes":
+		deadlineProbes()
+	case "nft-clock":
+		nftClock()
+	case "packet-clock":
+		packetClock()
+	case "clock":
+		_ = json.NewEncoder(os.Stdout).Encode(clockSample())
 	case "observe-proxy":
 		observeProxy()
 	case "configure-observation":
