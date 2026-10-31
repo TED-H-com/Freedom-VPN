@@ -682,7 +682,9 @@ Installer hooks use **only** slot `installer-node`, not the regular lab node:
 
 1. `PrepareInstallerNode(ctx)` builds the dedicated Ubuntu 24.04 systemd image,
    starts `fvpn-<prefix>-installer-node`, and stages two freshly signed real
-   binary archives. It uses the pinned real NetBird client and lab CA/control.
+   binary archives. A loopback TLS adapter splits the installer's single
+   control URL into public enrollment and verified mTLS runtime requests; it
+   reloads the current node identity on reenrollment. It uses the pinned real NetBird client and lab CA/control.
 2. Create an installer enrollment through the admin API, then
    `StageInstallerToken(ctx, "installer-node", token)` writes it privately.
 3. `RerunInstaller(ctx, "installer-node")` executes the merged install CLI with

@@ -767,7 +767,7 @@ func (r *runner) controlStop(ctx context.Context) {
 	time.Sleep(3 * time.Second)
 	later, statusErr := s.EstablishedStatus(ctx)
 	bytesLater, laterErr := s.DeviceByteCounters(ctx, r.usageDevice)
-	quiet := statusErr == nil && bytesErr == nil && laterErr == nil && later.Running && later.TCPAttempts > stopped.TCPAttempts && later.UDPAttempts > stopped.UDPAttempts && later.TCPEchoes == stopped.TCPEchoes && later.UDPReplies == stopped.UDPReplies && bytesStopped == bytesLater
+	quiet := statusErr == nil && bytesErr == nil && laterErr == nil && bytesStopped.Present && bytesLater.Present && later.Running && later.TCPAttempts > stopped.TCPAttempts && later.UDPAttempts > stopped.UDPAttempts && later.TCPEchoes == stopped.TCPEchoes && later.UDPReplies == stopped.UDPReplies && bytesStopped == bytesLater
 	recPathNote(&rec)("active_senders_after_cutoff", boolText(later.Running && later.TCPAttempts > stopped.TCPAttempts && later.UDPAttempts > stopped.UDPAttempts))
 	recPathNote(&rec)("established_replies_and_bytes_stopped", boolText(quiet))
 	recPathNote(&rec)("established_after", fmt.Sprintf("tcp=%d udp=%d attempts_tcp=%d attempts_udp=%d", later.TCPEchoes, later.UDPReplies, later.TCPAttempts, later.UDPAttempts))

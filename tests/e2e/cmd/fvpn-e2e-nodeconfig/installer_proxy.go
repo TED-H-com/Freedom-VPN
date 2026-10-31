@@ -40,7 +40,9 @@ func installerProxy() error {
 		u, _ := url.Parse(target)
 		p := httputil.NewSingleHostReverseProxy(u)
 		p.Transport = &http.Transport{TLSClientConfig: config, DisableKeepAlives: true, ResponseHeaderTimeout: 15 * time.Second}
-		p.ErrorHandler = func(w http.ResponseWriter, _ *http.Request, _ error) { http.Error(w, "lab upstream unavailable", 502) }
+		p.ErrorHandler = func(w http.ResponseWriter, _ *http.Request, _ error) {
+			http.Error(w, "lab upstream unavailable", http.StatusBadGateway)
+		}
 		return p
 	}
 	public := proxy("https://portal.example.invalid:8443", &tls.Config{MinVersion: tls.VersionTLS13, RootCAs: roots})
@@ -62,7 +64,7 @@ func installerProxyHandler(public, agent http.Handler, identity func() (tls.Cert
 		}
 		current, err := identity()
 		if err != nil || r.TLS == nil || len(r.TLS.VerifiedChains) == 0 || len(r.TLS.PeerCertificates) == 0 || len(current.Certificate) == 0 || !bytes.Equal(r.TLS.PeerCertificates[0].Raw, current.Certificate[0]) {
-			http.Error(w, "node identity required", 403)
+			http.Error(w, "node identity required", http.StatusForbidden)
 			return
 		}
 		agent.ServeHTTP(w, r)
