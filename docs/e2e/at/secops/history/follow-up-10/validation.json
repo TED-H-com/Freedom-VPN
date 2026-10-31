@@ -1,0 +1,182 @@
+{
+  "schema_version": 1,
+  "follow_up": 10,
+  "status": "passed",
+  "source_revision": "319c5259344347e7eef50eb5becb2645785d1047",
+  "run_id": "0e8ff9a4-4fa1-4154-ae35-847a5be4d985",
+  "checked_at": "2026-10-31T04:27:39.571294Z",
+  "toolchain": "go1.27.3 linux/amd64",
+  "settings": {
+    "CGO_ENABLED": "0",
+    "GOTOOLCHAIN": "local",
+    "GOFLAGS": "-p=2",
+    "GOMAXPROCS": "2"
+  },
+  "checks": [
+    {
+      "name": "area lint/test/build",
+      "command": [
+        "make",
+        "-f",
+        "mk/at-secops.mk",
+        "at-secops-lint",
+        "at-secops-test",
+        "at-secops-build"
+      ],
+      "exit_code": 0,
+      "output_bytes": 1020,
+      "output_sha256": "e03eedfec895ca6e4879184f9b557e9b959d61dcacdb43c357108e7d9cd12863",
+      "output_tail": [
+        "python3 tests/e2e/at/secops/diskexec.py go vet -tags e2e,integration ./tests/e2e/at/secops/...",
+        "python3 tests/e2e/at/secops/diskexec.py go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 -tags e2e,integration ./tests/e2e/at/secops/...",
+        "python3 tests/e2e/at/secops/diskexec.py go test -tags e2e -p 1 -parallel 2 ./tests/e2e/at/secops/...",
+        "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/secops\t3.276s",
+        "?   \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/secops/proxyprobe\t[no test files]",
+        "python3 tests/e2e/at/secops/diskexec.py python3 -m unittest discover -s tests/e2e/at/secops -p 'test_*.py'",
+        ".........................",
+        "----------------------------------------------------------------------",
+        "Ran 25 tests in 0.002s",
+        "",
+        "OK",
+        "GOOS=linux GOARCH=amd64 python3 tests/e2e/at/secops/diskexec.py go test -c -tags e2e,integration -o .agent/secops/build/amd64.test ./tests/e2e/at/secops",
+        "GOOS=linux GOARCH=arm64 python3 tests/e2e/at/secops/diskexec.py go test -c -tags e2e,integration -o .agent/secops/build/arm64.test ./tests/e2e/at/secops"
+      ]
+    },
+    {
+      "name": "whole-module pinned lint",
+      "command": [
+        "make",
+        "go-lint"
+      ],
+      "exit_code": 0,
+      "output_bytes": 0,
+      "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "output_tail": []
+    },
+    {
+      "name": "whole-module vet",
+      "command": [
+        "go",
+        "vet",
+        "./..."
+      ],
+      "exit_code": 0,
+      "output_bytes": 0,
+      "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "output_tail": []
+    },
+    {
+      "name": "whole-tree formatting",
+      "command": [
+        "gofmt",
+        "-l",
+        "."
+      ],
+      "exit_code": 0,
+      "output_bytes": 0,
+      "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "output_tail": []
+    },
+    {
+      "name": "history byte comparison",
+      "command": [
+        "history comparison against 9be7a54 and index SHA-256"
+      ],
+      "exit_code": 0,
+      "output_bytes": 84,
+      "output_sha256": "79770a1f096ebf3bfda390fa70575579919a4c8c8970a952442b73e0eac75199",
+      "output_tail": [
+        "PASS: 90 follow-up 9 records match the index and pre-takeover commit byte for byte."
+      ]
+    },
+    {
+      "name": "live Follow-up 10 target",
+      "command": [
+        "make",
+        "-f",
+        "mk/at-secops.mk",
+        "at-secops-followup10"
+      ],
+      "exit_code": 0,
+      "test": {
+        "command": [
+          "go",
+          "test",
+          "-json",
+          "-tags",
+          "e2e,integration",
+          "-p",
+          "1",
+          "-parallel",
+          "2",
+          "-count=1",
+          "-timeout",
+          "45m",
+          "-run",
+          "^TestAT30_Followup10_LiveRestoreReconcile$",
+          "./tests/e2e/at/secops"
+        ],
+        "started_at": "2026-10-31T04:01:07Z",
+        "finished_at": "2026-10-31T04:22:57Z",
+        "elapsed_seconds": 1310.416,
+        "exit_code": 0,
+        "scan": {
+          "stream": "followup10-live",
+          "bytes": 5164,
+          "findings": []
+        },
+        "status": "passed",
+        "required_tests": [
+          "TestAT30_Followup10_LiveRestoreReconcile"
+        ],
+        "missing": [],
+        "skipped": [],
+        "tests": [
+          {
+            "name": "TestAT30_Followup10_LiveRestoreReconcile",
+            "result": "pass",
+            "elapsed_seconds": 1309.82
+          }
+        ],
+        "package_results": {
+          "github.com/TED-H-com/Freedom-VPN/tests/e2e/at/secops": "pass"
+        }
+      },
+      "cleanup": {
+        "containers": {
+          "exit_code": 0,
+          "count": 0
+        },
+        "networks": {
+          "exit_code": 0,
+          "count": 0
+        },
+        "volumes": {
+          "exit_code": 0,
+          "count": 0
+        },
+        "images": {
+          "exit_code": 0,
+          "count": 0
+        }
+      },
+      "disk_state_cleanup": {
+        "exit_code": 0,
+        "removed": true
+      }
+    },
+    {
+      "name": "working diff whitespace",
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit_code": 0,
+      "output_bytes": 0
+    }
+  ],
+  "probe_source_sha256": "d478487184650ec8b801b722d6db12c6ce2494223498d139134bb9fe1ed4eace",
+  "final_go_sources_match_measured_hash": true,
+  "qualification": "Gate success does not close SECOPS-21 or promote deferred AT29/AT31/physical-hardware cases. See current verdict and request records."
+}
