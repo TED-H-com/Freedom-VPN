@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 
 from followup9_records import evaluate_at30, clean_inventory, _ledger_counts
-from run import ROOT, PUBLIC, PRIVATE, scan, write_json
+from run import ROOT, PUBLIC, scan, write_json, REQUIREMENTS, EXPECTED
 
 
 def load(path):
@@ -97,8 +97,10 @@ def main():
                   started_at=run.get('started_at'), finished_at=run.get('finished_at'),
                   hardware='shared development host; not candidate hardware',
                   probe_source_sha256=live.get('probe_source_sha256'),
+                  record_renderer_sha256=digest(Path(__file__)),
                   commands=[run.get(k, {}).get('command') for k in ('up', 'live', 'down')],
                   image_digests=live.get('image_digests', []),
+                  build_digests=[{'name':f.name,'sha256':digest(f)} for f in sorted((ROOT/'.agent/secops/build').glob('*.test'))],
                   policy_revision=live.get('policy_revision'), agent_node_incarnation=live.get('agent_node_incarnation'),
                   previous_run='history/follow-up-9/', projector_owned_rows_written=[])
     written = []
@@ -167,6 +169,26 @@ def main():
                        ordinary_passed=ordinary_ok, captures_passed=capture_ok, protected_lifecycle_passed=lifecycle_ok,
                        limitation='Covers this measured stack, retained log files and evidence captures. Configuration/key stores are intended credential stores, not ordinary logs. No claim about every possible logging path; no matched values published.')
     write('SECOPS-16.json', scan_record); write('secret-scan.json', scan_record)
+    # Refresh remaining blockers without promoting historical full AT cases.
+    remaining = {
+        'AT28': ['Full resource-family ownership matrix is beyond this scoped live restore/scan run.'],
+        'AT29': ['Established TCP/UDP transport cases await devstack follow-up 15; disposable-guest clock rollback remains an operator run.'],
+        'AT31': ['Forced-relay mixed transport awaits devstack follow-up 15; candidate hardware remains unmeasured. The 60-peer run here proves stream attribution only.'],
+        'AT32': ['Physical three-origin, physical arm64 and member-platform runs remain operator work; no production capacity or SLA claim.'],
+    }
+    if not scan_ok:
+        remaining['AT28'].append('SECOPS-16 remains open; see the current scan record.')
+    if findings.get('SECOPS-17') != 'closed':
+        remaining['AT29'].append('SECOPS-17 finite grace remains open; see the current provider record.')
+    current_evidence = {'AT28':['SECOPS-16.json'], 'AT29':['SECOPS-17.json'],
+                        'AT31':['SECOPS-16.json'], 'AT32':['scope-review.json']}
+    for at, gaps in remaining.items():
+        write(at+'.json', dict(common, id=at, status='blocked', requirements=REQUIREMENTS[at],
+              expected=EXPECTED[at], blockers=gaps, full_case_rerun=False,
+              actual={'current_scoped_evidence':current_evidence[at], 'historical_full_record':'history/follow-up-9/'+at+'.json'}))
+        md(at+'.md', '# '+at+' — Follow-up 10 scope review\n\nFull status: **blocked**; full case not rerun.\n\n' + ' '.join(gaps) +
+           '\n\nCurrent scoped evidence: ' + ', '.join('['+name+']('+name+')' for name in current_evidence[at]) +
+           '. Prior case and measurements remain in [Follow-up 9 history](history/follow-up-9/'+at+'.json).\n')
     cleanup_ok = clean_inventory(run.get('inventory_after', {})) and run.get('state_cleanup', {}).get('removed') is True
     write('cleanup.json', dict(common, status='passed' if cleanup_ok else 'blocked', inventory=run.get('inventory_after', {}), state_cleanup=run.get('state_cleanup', {})))
     cases = {k: 'blocked' for k in ['AT28','AT29','AT30','AT31','AT32']};cases['AT30']=status
