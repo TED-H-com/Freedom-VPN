@@ -274,3 +274,36 @@ func TestD105_RecoveryRangesBelongToOrigin(t *testing.T) {
 		t.Fatal("ACKed gap remained pending")
 	}
 }
+
+func TestD105_HandoffACKClearsUnconfirmedOldBlocker(t *testing.T) {
+	ctx := context.Background()
+	s, ev := handoffStore(t, Options{})
+	blocked := uint64(1)
+	if err := s.ApplyACK(ctx, BatchACK{Blocked: &blocked, Results: []EventResult{{Seq: 1, Status: StatusRejected}}}); err != nil {
+		t.Fatal(err)
+	}
+	path := s.Path()
+	_ = s.Close()
+	st, err := Open(path, testNode, nextInc, Options{RetirePreviousAt: ev.End})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer st.Close()
+	streams, _ := st.RetiredStreams(ctx)
+	if streams[0].BlockedSeq == nil {
+		t.Fatal("old blocker was not retained")
+	}
+	// Central now accepts this original event. The earlier live rejection
+	// must not turn into a fabricated final D-105 receipt or pin the old ACK.
+	if err := st.ApplyRetiredACK(ctx, testInc, BatchACK{Highest: 1, Results: []EventResult{{Seq: 1, Status: StatusAccepted}}}); err != nil {
+		t.Fatal(err)
+	}
+	streams, _ = st.RetiredStreams(ctx)
+	if streams[0].AckedThrough != 1 || streams[0].BlockedSeq != nil || streams[0].Pending != 0 {
+		t.Fatalf("stale live blocker %+v", streams[0])
+	}
+	audit, _ := st.HandoffRejections(ctx)
+	if len(audit) != 0 {
+		t.Fatal("invented final hand-off rejection")
+	}
+}

@@ -242,9 +242,10 @@ func (s *Store) ApplyRetiredACK(ctx context.Context, origin uuid.UUID, ack Batch
 	defer func() { _ = tx.Rollback() }()
 	var highest, last uint64
 	var epoch sql.NullString
-	var oldBlocked sql.NullInt64
-	if err := tx.QueryRowContext(ctx, `SELECT acked_through, last_seq, ledger_epoch, blocked_seq
-  FROM retired_streams WHERE incarnation_id = ?`, origin.String()).Scan(&highest, &last, &epoch, &oldBlocked); err != nil {
+	var finalBlocked sql.NullInt64
+	if err := tx.QueryRowContext(ctx, `SELECT acked_through, last_seq, ledger_epoch,
+ (SELECT MIN(seq) FROM handoff_rejections WHERE origin = ? AND seq > 0)
+ FROM retired_streams WHERE incarnation_id = ?`, origin.String(), origin.String()).Scan(&highest, &last, &epoch, &finalBlocked); err != nil {
 		return err
 	}
 	if epoch.Valid && epoch.String != "" && epoch.String != ack.LedgerEpoch.String() {
@@ -260,8 +261,10 @@ func (s *Store) ApplyRetiredACK(ctx context.Context, origin uuid.UUID, ack Batch
 		return fmt.Errorf("usagestore: invalid hand-off blocked sequence")
 	}
 	blocked := ack.Blocked
-	if oldBlocked.Valid && (blocked == nil || uint64(oldBlocked.Int64) < *blocked) {
-		v := uint64(oldBlocked.Int64)
+	// A live-stream blocker copied at retirement is not a final hand-off
+	// receipt. Only audited terminal receipts survive a new successful ACK.
+	if finalBlocked.Valid && (blocked == nil || uint64(finalBlocked.Int64) < *blocked) {
+		v := uint64(finalBlocked.Int64)
 		blocked = &v
 	}
 	for _, r := range ack.Results {
