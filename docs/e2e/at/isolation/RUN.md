@@ -216,3 +216,10 @@ Before any rewrite, commit `0a9cd15b` archived run `bfcc3880` under
 `history/follow-up-10/`: all 100 files byte-identical to the baseline and
 SHA-256 pinned. Earlier archives and both attempts are untouched. Handover
 reads immutable evidence; no D-132 one-file exception is needed.
+
+
+The follow-up 11 sample is `edd986c4-16d2-4aab-b92f-baa19f8bd829`, runtime
+source `2304f77a733978405a35eea3b8d0a075027ce88e` with `source_dirty=false`.
+Full foreground command 1,199.880 seconds, exit 2 (lab=0, stack=1); AT10/AT12
+pass, AT11/AT13 retain operator blocks. The completed-guard and host results
+are in `summary.md`; these are independent measurements, not a quiet A/B leg.
