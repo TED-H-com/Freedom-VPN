@@ -88,6 +88,16 @@ err := usageSvc.CompleteRecovery(ctx, actorUUID)
 - Clears `reconciliation_in_progress = FALSE` on `usage_rollups` while preserving `gap = TRUE` on any periods affected by `replay_unavailable` or event gaps.
 - Sets `usage_ledger_state.mode = 'normal'`, records `completed_at` on `usage_ledger_epochs`, and appends a `usage_ledger.complete_recovery` audit event on `fleet_config:00000000-0000-0000-0000-000000000001` with `usage_ledger_id = "00000000-0000-0000-0000-000000000130"` and `recovery_id` in `changes.after` (Decision D-051).
 
+### Step 6: Review devices fenced during the restore (D-076 / D-077)
+
+While `usage_ledger_state.mode` is `frozen` or `reconciling`, each device that `SyncDevice` newly fences is logged once as `device authorization unconfirmed during ledger restore`, with `device_id`, `member_id`, `peer_id`, and `ledger_mode`, and counted in `fvpn_device_restore_fence_decisions_total` on the worker registry. These devices require an explicit operator decision before the peer is granted again. Restored `member_devices.status=authorized` and `device_authorization_observations.observed_authorized=true` rows do not re-grant the peer, and restoring entitlement does not clear the fence. Never delete `device_authorization_fences` in the restore transaction.
+
+After `complete-recovery`, review the affected devices using the revision 12 API in [`contracts/openapi.yaml`](../../contracts/openapi.yaml):
+
+1. List fenced devices with `GET /api/v1/admin/devices?authorization_unconfirmed=true` (`listAdminDevices`), following pagination. `MemberDevice.authorization_unconfirmed` identifies the fence; `AdminDevice.authorization_unconfirmed_since` gives its creation time. For a specific device, inspect `GET /api/v1/admin/audit-events?resource_type=member_device&resource_id=<device_id>` (`listAuditEvents`) for `device.authorization.external_withdrawal` events.
+2. Confirm the member is entitled and review any central revocation. A device central itself revoked (`status` is `revoked` or `closed`, or a newer `member.device_revoke` / `device.revoke` explains the withdrawal) is not re-authorized.
+3. Where re-authorization is appropriate, submit `POST /api/v1/admin/members/{member_id}/devices/{device_id}/authorize` (`authorizeMemberDevice`) with an admin session, CSRF token and `Idempotency-Key`; no request body is required. It returns `202` with an operation of kind `member.device_authorize`. This is acceptance only: verify operation completion and device read-back before treating the peer as granted. A revoked device returns `409 STATE_CONFLICT`; reaching the member's device limit returns `409 DEVICE_LIMIT_REACHED` (D-081).
+
 ### Operator CLI (`fvpn-usage-admin`)
 All five operator recovery and drill-down workflows can be invoked from the CLI against the central configuration file:
 ```bash

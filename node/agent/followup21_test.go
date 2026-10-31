@@ -55,11 +55,11 @@ func assertLiveWithdrawn(t *testing.T, r *rig, generation uint64, message string
 	if r.eng.serving || r.eng.policyExpires != 0 || r.eng.expectServing.Load() {
 		t.Fatal("retained serving evidence survived withdrawal")
 	}
-	code := api.ErrorCodeHEALTHCHECKFAILED
+	wantCode := api.ErrorCodeHEALTHCHECKFAILED
 	if message == "TC_FOREIGN_FILTER" {
-		code = api.ErrorCodeTCFOREIGNFILTER
+		wantCode = api.ErrorCodeTCFOREIGNFILTER
 	}
-	if r.eng.applyError == nil || r.eng.applyError.Code != code || r.eng.applyError.Message != message {
+	if r.eng.applyError == nil || r.eng.applyError.Code != wantCode || r.eng.applyError.Message != message {
 		t.Fatalf("verification error: %+v", r.eng.applyError)
 	}
 	rep, ok := r.srv.LastObservation()
