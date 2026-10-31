@@ -1,5 +1,7 @@
 # Operator Guide (`docs/handover/operator-guide.md`)
 
+**Current cut — [follow-up 18](follow-up-18.md) (2026-10-31 EDT):** D-125 checkpoint correlation and D-118 lifetime locking are merged (#320/#323); D-126/D-128 retain cumulative observation values with a 202 receipt. D-127 permits one bounded installer correction (#322). SECOPS-21 closed on the assembled harness; live upgrade and correction captures remain open.
+
 Current evidence cutoff: **#313**, main `7e044c71`. The
 [follow-up 17 operator evidence](follow-up-17.md) records AT10 PASS under
 D-120, D-118 activation, D-123 IPv6Block posture, DNS per-type replies, and
@@ -902,7 +904,7 @@ D093-06 / D093-10 are retired. D093-12 remains open: the harness still writes
 fixture transport decision is pending. A fixture result is not real agent
 kernel or updater evidence.
 
-Latest AT30 measurement (#301), run `dd845a7f-2660-431c-a8e6-c513108cc07d`:
+Historical follow-up 12 AT30 measurement (#301), run `dd845a7f-2660-431c-a8e6-c513108cc07d`:
 **passed**, pre-replay database RPO **106.45 s**, post-replay service usage RPO
 **0 s**, protocol RTO **66.90 s**, total outage RTO **74.53 s**, replay
 **5 events / 5 hashes / 0 lost / 0 duplicate / 0 gaps**. D-095 gives the exact

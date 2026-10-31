@@ -1,10 +1,12 @@
 # Freedom VPN
 
+**Current cut — [follow-up 18](docs/handover/follow-up-18.md) (2026-10-31 EDT):** SECOPS-21 closed in the assembled restore harness; AT14–AT20 pass in usage run 170ea3e3. AT09 F9-01, native F8-02 attribution and the devstack serving-node upgrade remain open.
+
 Freedom VPN is a member-based, multi-region VPN platform for a small paid community, starting at about 20 members. Every exit node runs the same node package and joins one central control plane, whether it is a pre-installed box, a cloud Ubuntu VM or any other Ubuntu host.
 
 **Status:** early development. Nothing here is production-ready. Progress and remaining blockers are tracked in [docs/ROADMAP.md](docs/ROADMAP.md), the dev-stack run records and shared lab hooks in [docs/e2e/README.md](docs/e2e/README.md) and [docs/e2e/RUN.md](docs/e2e/RUN.md), and the acceptance matrix ([docs/e2e/at/enrollment/RUN.md](docs/e2e/at/enrollment/RUN.md), [docs/e2e/at/members/README.md](docs/e2e/at/members/README.md), [docs/e2e/at/isolation/README.md](docs/e2e/at/isolation/README.md), [docs/e2e/at/updates/summary.md](docs/e2e/at/updates/summary.md), [docs/e2e/at/secops/README.md](docs/e2e/at/secops/README.md)).
 
-Latest operator evidence: [follow-up 17](docs/handover/follow-up-17.md), through
+Historical follow-up 17 operator evidence: [follow-up 17](docs/handover/follow-up-17.md), through
 #313. AT10 passes under the D-120 test definition; D-123 retains IPv6Block.
 ENR-05 and the first-offer hook are harness-proved; serving updater, post-upgrade
 seed and native MTU failures remain recorded, with full acceptance limits in

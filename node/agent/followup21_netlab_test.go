@@ -12,6 +12,7 @@ import (
 	"net/netip"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"slices"
 	"strings"
 	"testing"
@@ -27,33 +28,6 @@ type measuredSystemPlane struct {
 	reads   []time.Duration
 	paths   []time.Duration
 	applies []enforce.ApplyResult
-	guards  []guardCommand
-}
-
-type guardCommand struct {
-	Phase      string
-	Start, End time.Duration
-}
-type guardExecutor struct {
-	enforce.Executor
-	spans *[]guardCommand
-}
-
-func (x guardExecutor) NftBatch(ctx context.Context, script string) error {
-	phase := ""
-	if strings.Contains(script, "add chain inet fvpn fv_deadline_guard") {
-		phase = "install"
-	}
-	if strings.Contains(script, "delete chain inet fvpn fv_deadline_guard") {
-		phase = "release"
-	}
-	start, _ := timeanchor.Mono()
-	err := x.Executor.NftBatch(ctx, script)
-	end, _ := timeanchor.Mono()
-	if phase != "" {
-		*x.spans = append(*x.spans, guardCommand{phase, start, end})
-	}
-	return err
 }
 
 func (p *measuredSystemPlane) Apply(ctx context.Context, model enforce.Model, counters map[string]enforce.CounterValue) (enforce.ApplyResult, error) {
@@ -137,12 +111,29 @@ while True:
 		t.Fatal("control listener", line, err)
 	}
 	r := newRig(t)
+	r.eng.cfg.BootIDFile = "/proc/sys/kernel/random/boot_id"
+	bootRaw, err := os.ReadFile(r.eng.cfg.BootIDFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	boot, err := uuid.Parse(strings.TrimSpace(string(bootRaw)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	r.eng.bootID = boot
+	r.eng.meterSource = staticSource{boot: boot.String()}
 	r.eng.clock = timeanchor.System{}
 	r.srv.SetClock(r.eng.clock.Wall)
 	serveBoundGeneration(t, r)
 	r.manualUsage(t)
 	p := &measuredSystemPlane{}
-	p.Executor = guardExecutor{enforce.System{}, &p.guards}
+	p.Executor = enforce.System{}
+	r.eng.cfg.TestMode = true
+	evidenceDir := os.Getenv("FVPN_AGENT_EVIDENCE_DIR")
+	if evidenceDir == "" {
+		evidenceDir = t.TempDir()
+	}
+	r.eng.cfg.TestTimingPath = filepath.Join(evidenceDir, "operations.jsonl")
 	r.eng.plane = p
 	r.eng.memberPath = nil // the initial fake plane has no kernel topology
 	r.eng.cfg.HeartbeatSeconds, r.eng.cfg.PollSeconds = 1, 1

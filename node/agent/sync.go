@@ -115,6 +115,11 @@ func (e *Engine) syncLease(ctx context.Context) error {
 	}
 	e.leaseAttempted = true
 	e.leaseAttemptAt = mono
+	// The local measurement records the actual request and resulting accepted
+	// lease together, after this synchronous transaction completes.
+	if e.measurementEnabled() {
+		defer func() { e.measureLease(reqID, mono, wall) }()
+	}
 	raw, err := e.client.RenewLeaseOnce(ctx, reqID, req)
 	if isRevoked(err) {
 		e.markRevoked(ctx)

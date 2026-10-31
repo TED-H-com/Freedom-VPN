@@ -252,12 +252,27 @@ func TestLEASE01_RetryAfterPreservesFreshLeaseUntilDeadline(t *testing.T) {
 // listings stay on the embedded executor; filters and policy rules are explicit.
 type renderedExecutor struct {
 	revocationExecutor
-	folded    int
-	table     listedTable
-	foreignTC bool
-	linkDown  bool
-	tcModel   enforce.Model
-	tcReady   bool
+	folded             int
+	table              listedTable
+	foreignTC          bool
+	linkDown           bool
+	tcModel            enforce.Model
+	tcReady            bool
+	allowedInstalledAt time.Time
+}
+
+// The kernel decrements remaining element lifetime after installation. Keep
+// the original timeout for verification, but report a decaying expires value.
+// Sampling at NftBatch (not lazy fold/read) also models slow consumers.
+func (ex *renderedExecutor) NftBatch(ctx context.Context, script string) error {
+	at := time.Now()
+	if err := ex.revocationExecutor.NftBatch(ctx, script); err != nil {
+		return err
+	}
+	if strings.Contains(script, "add element inet fvpn allowed_v4") || strings.Contains(script, "flush set inet fvpn allowed_v4") || strings.Contains(script, "add set inet fvpn allowed_v4") {
+		ex.allowedInstalledAt = at
+	}
+	return nil
 }
 
 func (ex *renderedExecutor) TCBatch(context.Context, string) error {
@@ -313,8 +328,24 @@ func (ex *renderedExecutor) Output(ctx context.Context, name string, args ...str
 				return nil, fmt.Errorf("missing allowed_v4")
 			}
 			body := ""
-			if len(set.elems) > 0 {
-				body = " elements = { " + strings.Join(set.elems, ", ") + " }"
+			var elements []string
+			for _, element := range set.elems {
+				fields := strings.Fields(element)
+				if len(fields) != 3 || fields[1] != "timeout" || ex.allowedInstalledAt.IsZero() {
+					return nil, fmt.Errorf("invalid timed fixture element")
+				}
+				timeout, err := time.ParseDuration(fields[2])
+				if err != nil {
+					return nil, err
+				}
+				remaining := timeout - time.Since(ex.allowedInstalledAt)
+				if remaining <= 0 {
+					continue
+				}
+				elements = append(elements, fmt.Sprintf("%s expires %dms", element, remaining/time.Millisecond))
+			}
+			if len(elements) > 0 {
+				body = " elements = { " + strings.Join(elements, ", ") + " }"
 			}
 			return []byte("table inet fvpn { set allowed_v4 { type ipv4_addr flags timeout" + body + " } }"), nil
 		}

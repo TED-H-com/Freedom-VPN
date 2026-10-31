@@ -1,0 +1,252 @@
+{
+  "node_incarnations": {
+    "node": "01a191bd-b529-72d9-8a7d-4a21ecc5d9ef",
+    "node2": "01a191c8-126e-794c-bdf5-08721da77c8d"
+  },
+  "complete": true,
+  "id": "AT21",
+  "title": "DNS failure and encrypted DNS boundary",
+  "spec": [
+    "§19.1",
+    "§19 AT21",
+    "DNS03 DNS04 APP01"
+  ],
+  "status": "blocked",
+  "observations": [
+    {
+      "name": "native DNS healthy",
+      "detail": "pass; expected: normal system resolution matches availability; bounded at 13 seconds; actual: {\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":-1,\"types\":[],\"ttls\":[],\"address_classes\":[\"other_ipv4\",\"other_ipv6\"],\"expected_answer\":true,\"connected\":false,\"bytes\":0,\"milliseconds\":1}; command: fixture lookup uses OS stub, no explicit resolver"
+    },
+    {
+      "name": "primary resolver transport down",
+      "detail": "pass; expected: stopped; actual: {\"at\":\"2026-10-31T11:58:58.736651913Z\",\"stopped\":true}; command: docker stop owned origin-dns transport; node policy health stays up"
+    },
+    {
+      "name": "automatic secondary fallback",
+      "detail": "pass; expected: normal system resolution matches availability; bounded at 13 seconds; actual: {\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":-1,\"types\":[],\"ttls\":[],\"address_classes\":[\"other_ipv4\"],\"expected_answer\":true,\"connected\":false,\"bytes\":0,\"milliseconds\":2503}; command: fixture lookup uses OS stub, no explicit resolver"
+    },
+    {
+      "name": "fallback block policy",
+      "detail": "pass; expected: F8-A / F8-TTL5: RCODE 3, zero answers, SOA TTL 5 from remaining resolver; actual: {\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":2501}; command: ProbeNativeDNS with primary transport down; docs/dns/BACKEND.md §2.1.4"
+    },
+    {
+      "name": "both resolver transports down",
+      "detail": "pass; expected: stopped; actual: ; command: docker stop owned secondary transport"
+    },
+    {
+      "name": "both down bounded failure",
+      "detail": "pass; expected: normal system resolution matches availability; bounded at 13 seconds; actual: {\"authority_ttl\":0,\"has_soa\":false,\"available\":false,\"rcode\":-1,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":12001,\"error\":\"lookup_unavailable\"}; command: fixture lookup uses OS stub, no explicit resolver"
+    },
+    {
+      "name": "native DNS recovery",
+      "detail": "pass; expected: system resolution resumes within bounded recovery; actual: {\"recovery_ms\":40,\"result\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":-1,\"types\":[],\"ttls\":[],\"address_classes\":[\"other_ipv4\",\"other_ipv6\"],\"expected_answer\":true,\"connected\":false,\"bytes\":0,\"milliseconds\":1}}; command: restart only owned resolver transports; native system lookup"
+    },
+    {
+      "name": "sync fault activation",
+      "detail": "pass; expected: 202; actual: HTTP 202 ; command: activate normal profile while shared byte-corruption hook armed"
+    },
+    {
+      "name": "resolver synchronization corruption",
+      "detail": "pass; expected: failed HASH_MISMATCH; last-good synthetic rule still blocks; actual: observed=true; outcome=failed; error=HASH_MISMATCH; last_good={\"answers\":0,\"authority_ttl\":5,\"available\":true,\"has_soa\":true,\"rcode\":3,\"ttl\":5,\"types\":[]}; command: shared node loopback mTLS corruption hook; typed NodeDetail evidence and DNS query"
+    },
+    {
+      "name": "typed DNS evidence",
+      "detail": "pass; expected: record exact issued-document application, or explicit null; actual: HTTP=200; decoded=true; specified=true; null=false; present=true; outcome=applied; error_code=; issued_document_matches=true; command: GET NodeDetail.dns_policy_evidence using generated 1.2.0 type; read issued document"
+    },
+    {
+      "name": "issued resolver document mTLS fetch",
+      "detail": "pass; expected: 200 canonical bytes match node evidence digest; actual: HTTP=200; hash_matches=true; bytes=1220; command: GET /agent/resolver-documents/{issued_id} using actual node mTLS; hash in memory"
+    },
+    {
+      "name": "current desired-state DNS selection",
+      "detail": "pass; expected: record response independently of previously issued document; actual: HTTP=200; code=; ambiguous_active_profiles=false; command: GET /agent/desired-state via actual mTLS; retain only allowlisted error"
+    },
+    {
+      "name": "blocked",
+      "detail": "F4-05 production automatic nameserver distribution is unclaimed: ConfigureNativeDNS uses a TEST ONLY peer group with the exact product-issued list. Android Private DNS/browser DoH remain operator/native-client integration work."
+    },
+    {
+      "name": "provenance",
+      "detail": "source=49fbb48e013b824c4ce107d3cb551db79b915b42; applied generation=66; incarnation=01a191bd-b529-72d9-8a7d-4a21ecc5d9ef; image/binary digests in JSON"
+    },
+    {
+      "name": "operator",
+      "detail": "needs operator run; see OPERATORS.md"
+    }
+  ],
+  "at": "2026-10-31T11:58:58Z",
+  "run_id": "11e305fe-6360-4dbd-95b1-67274aa4988c",
+  "source_commit": "49fbb48e013b824c4ce107d3cb551db79b915b42",
+  "release_digests": {
+    "artifact_sha256_0.1.0_amd64": "8fb3a6277f76e4393df89eed69a69af019024aca22ea8d92d0381ce2ce15b068",
+    "artifact_sha256_0.1.0_arm64": "ae1a9773410f3b5764147f7324129fdb6099e2662976827bddfa9eaceec37a2e",
+    "manifest_sha256_0.1.0": "a19a73dc10a273d87db142a898bde9ba0cff4bb7fbcfcac25e4614de57027f06",
+    "signed_manifest_sha256_0.1.0": "e8a2da2d4fd1d34da164f30232abf6b2d0054299d8f89551281099dca7fe8340"
+  },
+  "build": {
+    "test_binary_sha256": "bd13f77a84bd3acc99e8cc040bd9f4dd79dae113a7721a1ddc3877cbd0dc3443",
+    "source_commit": "49fbb48e013b824c4ce107d3cb551db79b915b42",
+    "source_dirty": false,
+    "image_digests": {
+      "adguard": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
+      "control": "sha256:b2cd7e33022c240d74b661911c7c8245e3ac0ca1d2a817a0db23a76cfa29d415",
+      "coredns": "sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97",
+      "gateway": "sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce",
+      "idp": "sha256:0436f60aec88bc5cf772148bffa8bc3bfee0fb1e23054c54e542d26771cb3cd8",
+      "member": "sha256:50ff2a475c4339b5f4f3e03d2b10a44d2ee180b3de8af0eccfcd73b1aec31db4",
+      "netbird": "sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c",
+      "node": "sha256:50ff2a475c4339b5f4f3e03d2b10a44d2ee180b3de8af0eccfcd73b1aec31db4",
+      "node-netns": "sha256:50ff2a475c4339b5f4f3e03d2b10a44d2ee180b3de8af0eccfcd73b1aec31db4",
+      "node2": "sha256:50ff2a475c4339b5f4f3e03d2b10a44d2ee180b3de8af0eccfcd73b1aec31db4",
+      "node2-adguard": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
+      "node2-netns": "sha256:50ff2a475c4339b5f4f3e03d2b10a44d2ee180b3de8af0eccfcd73b1aec31db4",
+      "origin": "sha256:02cb7b74d0c7f33d0d2fe50c43441c8264f5f08ce2d40909051d2ba0fe929852",
+      "payment": "sha256:e378b462106d6f06d75d606a53e6fdecf3c2029eedd661c8d252219317122da4",
+      "postgres": "sha256:a489fe73e8ceac3807c7e535134ceb5b309f4e6388af7f7c36625cef1828c91d",
+      "worker": "sha256:6f93362f98da64326a2d55c361ae5ace16e61ffd27dac1516193f122c6080b7b"
+    },
+    "binary_sha256": {
+      "fvpn-agent": "2c2fffcc8a5dca81996af57c8d1e1a72bdb65307759e73af7ceb43296d6e5c20",
+      "fvpn-control": "a94cbf47a381c3773786d4c7376d688d43cee5d942b89056dcdb2074238afa84",
+      "fvpn-updater": "661d3fa3a6240c31a6695fe8613983039e105ef2332fc3a32cdc09685fad5284",
+      "fvpn-worker": "ab86c5bbbf1cb851c270989ed03c541ad3934d7fffe258035c0ef5b70f282a49"
+    },
+    "binary_vcs": {
+      "fvpn-agent": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "false",
+        "vcs.revision": "49fbb48e013b824c4ce107d3cb551db79b915b42",
+        "vcs.time": "2026-10-31T11:33:40Z"
+      },
+      "fvpn-control": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "false",
+        "vcs.revision": "49fbb48e013b824c4ce107d3cb551db79b915b42",
+        "vcs.time": "2026-10-31T11:33:40Z"
+      },
+      "fvpn-updater": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "false",
+        "vcs.revision": "49fbb48e013b824c4ce107d3cb551db79b915b42",
+        "vcs.time": "2026-10-31T11:33:40Z"
+      },
+      "fvpn-worker": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "false",
+        "vcs.revision": "49fbb48e013b824c4ce107d3cb551db79b915b42",
+        "vcs.time": "2026-10-31T11:33:40Z"
+      }
+    }
+  },
+  "policy_revision": "66",
+  "active_policy_revisions": {
+    "dns_profile": "01a191d4-1206-7aa1-8fe9-2055bf0d136a",
+    "domain_rule_set": "01a191bd-9d24-77ba-999b-0ecfca5347fe",
+    "fair_use": "01a191bd-9863-774f-85ce-9c458cadf42f",
+    "plan": "01a191c2-8ed3-7422-b84b-5546dfc4f61a",
+    "release_support": "01a191bd-9102-749a-80de-25a0dea3348a"
+  },
+  "node_incarnation": "01a191bd-b529-72d9-8a7d-4a21ecc5d9ef",
+  "steps": [
+    {
+      "name": "native DNS healthy",
+      "status": "pass",
+      "expected": "normal system resolution matches availability; bounded at 13 seconds",
+      "actual": "{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":-1,\"types\":[],\"ttls\":[],\"address_classes\":[\"other_ipv4\",\"other_ipv6\"],\"expected_answer\":true,\"connected\":false,\"bytes\":0,\"milliseconds\":1}",
+      "command": "fixture lookup uses OS stub, no explicit resolver",
+      "at": "2026-10-31T11:58:58Z"
+    },
+    {
+      "name": "primary resolver transport down",
+      "status": "pass",
+      "expected": "stopped",
+      "actual": "{\"at\":\"2026-10-31T11:58:58.736651913Z\",\"stopped\":true}",
+      "command": "docker stop owned origin-dns transport; node policy health stays up",
+      "at": "2026-10-31T11:58:58Z"
+    },
+    {
+      "name": "automatic secondary fallback",
+      "status": "pass",
+      "expected": "normal system resolution matches availability; bounded at 13 seconds",
+      "actual": "{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":-1,\"types\":[],\"ttls\":[],\"address_classes\":[\"other_ipv4\"],\"expected_answer\":true,\"connected\":false,\"bytes\":0,\"milliseconds\":2503}",
+      "command": "fixture lookup uses OS stub, no explicit resolver",
+      "at": "2026-10-31T11:59:01Z"
+    },
+    {
+      "name": "fallback block policy",
+      "status": "pass",
+      "expected": "F8-A / F8-TTL5: RCODE 3, zero answers, SOA TTL 5 from remaining resolver",
+      "actual": "{\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":2501}",
+      "command": "ProbeNativeDNS with primary transport down; docs/dns/BACKEND.md §2.1.4",
+      "at": "2026-10-31T11:59:03Z"
+    },
+    {
+      "name": "both resolver transports down",
+      "status": "pass",
+      "expected": "stopped",
+      "actual": "",
+      "command": "docker stop owned secondary transport",
+      "at": "2026-10-31T11:59:04Z"
+    },
+    {
+      "name": "both down bounded failure",
+      "status": "pass",
+      "expected": "normal system resolution matches availability; bounded at 13 seconds",
+      "actual": "{\"authority_ttl\":0,\"has_soa\":false,\"available\":false,\"rcode\":-1,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":12001,\"error\":\"lookup_unavailable\"}",
+      "command": "fixture lookup uses OS stub, no explicit resolver",
+      "at": "2026-10-31T11:59:16Z"
+    },
+    {
+      "name": "native DNS recovery",
+      "status": "pass",
+      "expected": "system resolution resumes within bounded recovery",
+      "actual": "{\"recovery_ms\":40,\"result\":{\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":-1,\"types\":[],\"ttls\":[],\"address_classes\":[\"other_ipv4\",\"other_ipv6\"],\"expected_answer\":true,\"connected\":false,\"bytes\":0,\"milliseconds\":1}}",
+      "command": "restart only owned resolver transports; native system lookup",
+      "at": "2026-10-31T11:59:16Z"
+    },
+    {
+      "name": "sync fault activation",
+      "status": "pass",
+      "expected": "202",
+      "actual": "HTTP 202 ",
+      "command": "activate normal profile while shared byte-corruption hook armed",
+      "at": "2026-10-31T11:59:17Z"
+    },
+    {
+      "name": "resolver synchronization corruption",
+      "status": "pass",
+      "expected": "failed HASH_MISMATCH; last-good synthetic rule still blocks",
+      "actual": "observed=true; outcome=failed; error=HASH_MISMATCH; last_good={\"answers\":0,\"authority_ttl\":5,\"available\":true,\"has_soa\":true,\"rcode\":3,\"ttl\":5,\"types\":[]}",
+      "command": "shared node loopback mTLS corruption hook; typed NodeDetail evidence and DNS query",
+      "at": "2026-10-31T11:59:21Z"
+    },
+    {
+      "name": "typed DNS evidence",
+      "status": "pass",
+      "expected": "record exact issued-document application, or explicit null",
+      "actual": "HTTP=200; decoded=true; specified=true; null=false; present=true; outcome=applied; error_code=; issued_document_matches=true",
+      "command": "GET NodeDetail.dns_policy_evidence using generated 1.2.0 type; read issued document",
+      "at": "2026-10-31T11:59:27Z"
+    },
+    {
+      "name": "issued resolver document mTLS fetch",
+      "status": "pass",
+      "expected": "200 canonical bytes match node evidence digest",
+      "actual": "HTTP=200; hash_matches=true; bytes=1220",
+      "command": "GET /agent/resolver-documents/{issued_id} using actual node mTLS; hash in memory",
+      "at": "2026-10-31T11:59:29Z"
+    },
+    {
+      "name": "current desired-state DNS selection",
+      "status": "pass",
+      "expected": "record response independently of previously issued document",
+      "actual": "HTTP=200; code=; ambiguous_active_profiles=false",
+      "command": "GET /agent/desired-state via actual mTLS; retain only allowlisted error",
+      "at": "2026-10-31T11:59:31Z"
+    }
+  ],
+  "blockers": [
+    "F4-05 production automatic nameserver distribution is unclaimed: ConfigureNativeDNS uses a TEST ONLY peer group with the exact product-issued list. Android Private DNS/browser DoH remain operator/native-client integration work."
+  ],
+  "operator_status": "needs operator run"
+}

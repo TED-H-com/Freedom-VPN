@@ -251,7 +251,7 @@ func (l *live) recordRestartRecovery(r *record, desiredBefore, appliedBefore dec
 func (l *live) verifyProvisionalObservations(r *record, resumedAt time.Time, expectedGen string, provisionalAdmin map[string]any) bool {
 	rows, err := l.pool.Query(l.ctx, `SELECT received_at,report_payload FROM node_observations WHERE node_id=$1 AND received_at>=$2 AND (report_payload->>'member_forwarding_enabled')::boolean=false ORDER BY received_at`, l.node, resumedAt)
 	if err != nil {
-		r.check("D-067 revision 11 provisional lease observation", "awaiting_member_grants block reason, AWAITING_MEMBER_GRANTS on lease/qos/source_binding, one stage=lease error", err.Error(), "SELECT post-restart provisional node_observations", false)
+		r.check("D-067 revision 11 provisional lease observation", "awaiting_member_grants reason, D-126 per-check precedence, one provisional stage=lease error", err.Error(), "SELECT post-restart provisional node_observations", false)
 		return false
 	}
 	defer rows.Close()
@@ -272,59 +272,11 @@ func (l *live) verifyProvisionalObservations(r *record, resumedAt time.Time, exp
 			continue
 		}
 		provisionalCount++
-		hasAwaiting := false
-		for _, reason := range rep.ForwardingBlockReasons {
-			if reason == api.ForwardingBlockReasonAwaitingMemberGrants {
-				hasAwaiting = true
-			}
-			if reason == api.ForwardingBlockReasonLeaseExpired {
-				sawLeaseExpired = true
-			}
-		}
-		checkCodeOK := func(name api.NodeCheckName) (bool, string, string) {
-			for _, c := range rep.Checks {
-				if c.Name == name {
-					code, codeErr := c.ErrorCode.Get()
-					detail := ""
-					if c.Detail != nil {
-						detail = *c.Detail
-					}
-					return c.Status == api.HealthCheckStatusFailed && codeErr == nil && code == api.ErrorCodeAWAITINGMEMBERGRANTS, string(code), detail
-				}
-			}
-			return false, "", ""
-		}
-		leaseOK, leaseCode, leaseDetail := checkCodeOK(api.NodeCheckNameLease)
-		qosOK, qosCode, _ := checkCodeOK(api.NodeCheckNameQos)
-		bindOK, bindCode, _ := checkCodeOK(api.NodeCheckNameSourceBinding)
-		leaseErrors := 0
-		leaseErrorCodeOK := false
-		for _, e := range rep.Errors {
-			if e.Stage == "lease" {
-				leaseErrors++
-				if e.Code == api.ErrorCodeAWAITINGMEMBERGRANTS && e.Message == "Serving lease has no member grants yet." {
-					leaseErrorCodeOK = true
-				}
-			}
-		}
-		obsValid := hasAwaiting && !sawLeaseExpired && leaseOK && leaseDetail == "Serving lease has no member grants yet." && qosOK && bindOK && leaseErrors == 1 && leaseErrorCodeOK
-		if !obsValid {
-			allValid = false
-		}
-		samples = append(samples, map[string]any{
-			"received_at":               receivedAt.Format(time.RFC3339Nano),
-			"applied_config_generation": rep.AppliedConfigGeneration,
-			"safety_status":             rep.SafetyStatus,
-			"forwarding_block_reasons":  rep.ForwardingBlockReasons,
-			"lease_error_code":          leaseCode,
-			"lease_detail":              leaseDetail,
-			"qos_error_code":            qosCode,
-			"source_binding_error_code": bindCode,
-			"errors_count":              len(rep.Errors),
-			"lease_stage_errors_count":  leaseErrors,
-			"errors":                    rep.Errors,
-			"matches_d067_revision11":   obsValid,
-		})
+		obsValid, expired, sample := provisionalObservation(rep)
+		sawLeaseExpired = sawLeaseExpired || expired
+		allValid = allValid && obsValid
+		sample["received_at"] = receivedAt.Format(time.RFC3339Nano)
+		samples = append(samples, sample)
 	}
 	ok := provisionalCount > 0 && allValid && !sawLeaseExpired && expectedGen != ""
 	actual, _ := json.Marshal(map[string]any{
@@ -336,7 +288,7 @@ func (l *live) verifyProvisionalObservations(r *record, resumedAt time.Time, exp
 	})
 	r.check(
 		"D-067 revision 11 provisional lease observation",
-		"provisional observations report awaiting_member_grants (never lease_expired); lease, qos and source_binding checks carry error_code AWAITING_MEMBER_GRANTS; errors[] has exactly one stage=lease entry",
+		"provisional observations report awaiting_member_grants (never lease_expired); each failed lease/qos/source_binding check carries AWAITING_MEMBER_GRANTS or, with safety_check_failed, its active enforcement safety code (D-126); exactly one stage=lease error retains the provisional cause",
 		string(actual),
 		"inspect post-restart provisional api.ObservationReport rows and GET /admin/nodes/{node2}",
 		ok,

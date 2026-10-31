@@ -118,6 +118,33 @@ func serve(dir, admin string) error {
 		w.Header().Set("Cache-Control", "no-store")
 		_ = json.NewEncoder(w).Encode(rep)
 	})
+	mux.HandleFunc("GET /observations", func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Cache-Control", "no-store")
+		_ = json.NewEncoder(w).Encode(srv.ObservationReports())
+	})
+	mux.HandleFunc("POST /member-grants", func(w http.ResponseWriter, r *http.Request) {
+		var body struct {
+			Ready *bool `json:"ready"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&body); err != nil || body.Ready == nil {
+			http.Error(w, "ready", http.StatusBadRequest)
+			return
+		}
+		srv.SetMemberGrantsReady(*body.Ready)
+		w.WriteHeader(http.StatusNoContent)
+	})
+	mux.HandleFunc("POST /lease-window", func(w http.ResponseWriter, r *http.Request) {
+		var body struct {
+			Seconds int `json:"seconds"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&body); err != nil || body.Seconds < 60 || body.Seconds > 86400 {
+			http.Error(w, "seconds", http.StatusBadRequest)
+			return
+		}
+		srv.SetMaxOfflineSeconds(body.Seconds)
+		w.WriteHeader(http.StatusNoContent)
+	})
 	mux.HandleFunc("POST /service", func(w http.ResponseWriter, r *http.Request) {
 		var body struct {
 			Seconds int `json:"seconds"`

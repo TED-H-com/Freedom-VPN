@@ -18,7 +18,7 @@ NODE_TMPDIR := $(CURDIR)/.agent/tmp
 NODE_ENV  := TMPDIR='$(NODE_TMPDIR)' GOTMPDIR='$(NODE_TMPDIR)' CGO_ENABLED=0 GOTOOLCHAIN=local
 NODE_PKGS := ./node/agent/... ./node/watchdog/... ./node/internal/agentstore/... ./node/internal/controlclient/... ./node/internal/timeanchor/... ./node/internal/fakecontrol/... ./node/internal/nodelock/... ./node/internal/usagestore/... ./node/internal/meter/...
 NODE_STATICCHECK := honnef.co/go/tools/cmd/staticcheck@v0.8.2
-NODE_LAB_PREFIX ?= fvpn-w2-agent-core-lab
+NODE_LAB_PREFIX ?= $(if $(FVPN_LAB_PREFIX),$(FVPN_LAB_PREFIX),fvpn-w2-agent-core-lab)
 NODE_NETLAB_TEST_ARGS ?=
 NODE_NETLAB_MK := mk/netlab.mk
 
@@ -60,6 +60,7 @@ node-verify: node-lint node-test node-build
 # Privileged. Brings the shared netlab container up under this task's name,
 # runs only tests/netlab/agent, then removes the container and the lab image.
 node-test-netlab: node-temp
+	python3 -B -m unittest discover -s tests/netlab/agent -p timing_analysis_test.py
 	@set -eu; \
 	status=0; \
 	$(NODE_ENV) $(NODE_GO) build -trimpath -o bin/fvpn-agent ./node/agent/cmd/fvpn-agent || status=$$?; \

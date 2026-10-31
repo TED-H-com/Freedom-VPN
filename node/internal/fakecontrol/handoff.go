@@ -4,6 +4,8 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
+	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"sync"
 
 	"github.com/google/uuid"
@@ -80,4 +82,15 @@ func (s *Server) SetMaxOfflineSeconds(seconds int) {
 	s.maxOffline = seconds
 	s.stickyRaw = nil
 	s.stickyETag = ""
+}
+
+// ObservationReports retains each distinct accepted TEST ONLY body, in order.
+// Read the complete receiver history rather than polling only LastObservation.
+func (s *Server) ObservationReports() []api.ObservationReport {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	raw, _ := json.Marshal(s.observationReports)
+	var out []api.ObservationReport
+	_ = json.Unmarshal(raw, &out)
+	return out
 }
