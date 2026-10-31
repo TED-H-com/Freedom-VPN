@@ -265,8 +265,10 @@ label; accounting contract §10.5–§10.8), use this sequence:
    node_id**, extract the secret token privately, call
    `HoldInstallerFirstPoll(ctx, true)`, then
    `ControlledReinstall(ctx, "installer-node", token)`. Require `reenrolled`,
-   unchanged Node ID, different `InstallerOutcome.Incarnation`, matching
-   before/after usage DB/WAL hashes and retired identity/bound-state digests.
+   unchanged Node ID, different `InstallerOutcome.Incarnation`, matching retired identity/bound-state digests and retained origin canonical
+   payloads, event sequence/hash and origin ACK. D-118 runs during replacement
+   bootstrap: usage DB/WAL hashes may change before this wrapper returns.
+   File equality after adoption is not the retention predicate.
    This wrapper leaves the services quiescent for sampling. Never rename or
    relabel the surviving events as the new incarnation.
 5. Read the incarnations API again: it exports `incarnation_id`, `current`,
@@ -305,21 +307,16 @@ product package readers, documented in [usage-store](../node/usage-store.md#reti
 the shared fixture does not call an internal product transition to simulate
 adoption. Existing CLI/file/API exports suffice for this hand-off path.
 
-Both central D-105 and usage-agent follow-up 3's retained store/uploader are
-already on this base. Central requires the replacement's `created_at` to be
-later than origin `revoked_at`. **The remaining production activation hook is
-in agent-core's `Engine.ensureUsage`, `node/agent/usage.go`: it still opens with
-`Options{Trust: e.trust}` rather than the verified reenrollment retirement
-option.** Until agent-core 25 integrates that hook under the node lock with old
-loops stopped, the surviving ledger fails closed on incarnation mismatch.
-The shared wrapper supplies neither that transition nor synthetic delivery.
-Usage AT should adopt the path after that hook lands and prove once-only
-attribution/ACKs. See the separate live [follow-up 18 outcomes](runs/2026-10-31/followup18/README.md);
-no prior blocked retired-stream assertion is promoted by documentation.
-Use the fresh installer-serving path for this hand-off. The separate
-post-successful-upgrade reenrollment in run `8a1124a1` failed `baseline_failed`
-with seed `HASH_MISMATCH`; its ledger was retained but that command is not a
-successful reinstall. [Diagnostic](runs/2026-10-31/followup18/8a1124a1-8653-4f8c-bd1b-2eb3ae5c3179/post-upgrade-reenroll-diagnostic.md).
+D-118 is now implemented in agent-core (#320), under the node lock and
+`usage.db.lock`, and executes during replacement bootstrap. The wrapper can
+therefore return after stream adoption has already changed the DB/WAL. Compare
+immutable canonical origin payload bytes, origin event sequence and hash, and
+the origin stream's retained ACK; keep the new stream's ACK separate. Usage AT
+follow-up 5 (#324) consumed the controlled retirement/reinstall path. These
+claims do not retroactively change the archived follow-up 18 file measurements.
+The historical `8a1124a1` seed `HASH_MISMATCH` is retained in
+[its diagnostic](runs/2026-10-31/followup18/8a1124a1-8653-4f8c-bd1b-2eb3ae5c3179/post-upgrade-reenroll-diagnostic.md);
+the combined-source seed result belongs to follow-up 19.
 
 ## portal / wire-nodes — 2026-10-31
 
@@ -441,3 +438,34 @@ size/digest receipts under private `.agent/tmp`. Packet contents are not
 committed. [Measured verdicts and limits](runs/2026-10-31/followup18/README.md)
 remain separate from the archived members failure. A successful rerun alone
 cannot establish that reconnect caused that earlier failure.
+
+## usage — 2026-10-31 (follow-up 19)
+
+> Update docs/e2e/RESPONSES.md, usage follow-up 18 step 4 and its stale activation note
+
+Corrected above: D-118 executes during bootstrap, so DB/WAL equality is no
+longer required after adoption. Preserve canonical payloads and origin
+sequence/hash/ACK, separately from the replacement stream and its ACK.
+
+## DNS-publish — 2026-10-31 (follow-up 19)
+
+> Devstack follow-up 16, request 1
+
+`fixtureDNSNegative` now requires exactly RCODE 0 and zero answer types for
+[BACKEND F8-CNAME/F8-SVCB](../dns/BACKEND.md), with the TEST ONLY profile's
+F8-TTL5 synthetic SOA TTL 5. A/AAAA/HTTPS cite F8-A/F8-AAAA/F8-HTTPS; alias A
+and wildcard A cite F8-A scopes C/W. Each synthetic lookup waits six seconds
+for a previous five-second cache entry to expire, then records lookup elapsed
+time and allows only the whole-second TTL decrement within that measured
+lookup (plus one rounding second). Lookups taking five seconds cannot prove
+the TTL. NODATA is not NXDOMAIN. The absent authority name, positive cache
+expiry and rebinding controls keep their separate assertions.
+
+## installer — 2026-10-31 (follow-up 19)
+
+> Installer 5 evidence scope
+
+[Installer follow-up 5](../node/install-followup5-2026-10-31.md) is isolated
+installer-side evidence; it does not replace ENR-05. The real serving acceptance
+remains devstack 18's scoped native traffic/ledger proof and the separately
+recorded follow-up 19 combined-source upgrade rerun.

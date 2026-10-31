@@ -255,6 +255,10 @@ func (r *runner) installerReenroll17(ctx context.Context, s *Stack, admin Browse
 	rec := Record{ID: "installer-reenroll", Title: "Controlled reinstall, retained identity and retired certificate refusal", Spec: []string{"ENR-06", "AT07", "§6.3"}, Status: StatusFail}
 	defer func() { r.record(rec) }()
 	note := recPathNote(&rec)
+	var originCopy string
+	if os.Getenv("FVPN_E2E_FOLLOWUP19") == "1" {
+		originCopy, _ = r.usageCopy19(ctx, s, "origin")
+	}
 	if !r.revokeInstallerNode(ctx, s, admin, r.nodeID, note) {
 		return
 	}
@@ -292,6 +296,17 @@ func (r *runner) installerReenroll17(ctx context.Context, s *Stack, admin Browse
 		moved = moved && out.RetiredBoundState[name] == digest
 	}
 	kept := out.Before.UsageDB == out.Hashes.UsageDB && out.Before.UsageWAL == out.Hashes.UsageWAL
+	if os.Getenv("FVPN_E2E_FOLLOWUP19") == "1" {
+		afterCopy, copyErr := r.usageCopy19(ctx, s, "adopted")
+		var retainedErr error
+		kept, retainedErr = retainedUsage19(originCopy, afterCopy, r.incID.String())
+		note("canonical_origin_events_retained", boolText(kept && copyErr == nil && retainedErr == nil))
+		if retainedErr != nil {
+			note("retained_events_error", retainedErr.Error())
+		}
+		check, _ := r.lab.docker(s.installerContainer(), "/usr/local/bin/fvpn-node-install", "check", "--json")
+		note("post_reenroll_seed_check", string(check))
+	}
 	identity := out.Before.Key == out.RetiredHashes.Key && out.Before.Cert == out.RetiredHashes.Cert && out.Before.NodeJSON == out.RetiredHashes.NodeJSON
 	note("usage_retained", boolText(kept))
 	note("bound_state_retired", boolText(moved))
@@ -305,6 +320,9 @@ func (r *runner) installerReenroll17(ctx context.Context, s *Stack, admin Browse
 		err = s.RestoreInstallerServices(ctx, "installer-node", out.Services)
 	}
 	note("restoration", boolText(err == nil))
+	if err != nil {
+		rec.Status = StatusFail
+	}
 }
 
 func (r *runner) installerUpgrade17(ctx context.Context, s *Stack) {

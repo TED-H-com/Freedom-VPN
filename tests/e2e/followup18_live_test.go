@@ -33,7 +33,7 @@ func TestE2E_Followup18Installer(t *testing.T) {
 	defer cancel()
 	head, _ := exec.CommandContext(ctx, "git", "rev-parse", "HEAD").Output()
 	id := uuid.NewString()
-	r := &runner{t: t, lab: l, runID: id, sourceCommit: strings.TrimSpace(string(head)), dir: filepath.Join(l.root, "docs/e2e/runs", time.Now().UTC().Format("2006-01-02"), "followup18", id)}
+	r := &runner{t: t, lab: l, runID: id, sourceCommit: strings.TrimSpace(string(head)), dir: filepath.Join(l.root, "docs/e2e/runs", time.Now().UTC().Format("2006-01-02"), installerCampaignDirectory(), id)}
 	defer r.finish()
 	s := &Stack{lab: l}
 	admin := r.login(ctx, "e2e-admin", "admin")
@@ -130,7 +130,11 @@ func TestE2E_Followup18Installer(t *testing.T) {
 	r.installerUsage18(ctx, s, selected)
 	r.installerServing18(ctx, s)
 	r.installerCapture17(ctx, s)
-	r.installerUpgrade18(ctx, s, os.Getenv("FVPN_E2E_CANDIDATE18") == "1")
+	if os.Getenv("FVPN_E2E_FOLLOWUP19") == "1" {
+		r.installerUpgrade19(ctx, s, os.Getenv("FVPN_E2E_CANDIDATE18") == "1")
+	} else {
+		r.installerUpgrade18(ctx, s, os.Getenv("FVPN_E2E_CANDIDATE18") == "1")
+	}
 	r.installerReenroll17(ctx, s, b)
 	// Exercise the changed ordinary entrypoint with an enrolled agent, then a
 	// real process restart. Do this after installer measurements because the

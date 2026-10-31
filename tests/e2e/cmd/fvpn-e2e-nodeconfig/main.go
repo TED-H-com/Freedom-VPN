@@ -17,6 +17,12 @@ import (
 
 func main() {
 	run := prepare
+	if len(os.Args) == 2 && os.Args[1] == "upgrade-observe" {
+		run = upgradeObserve
+	}
+	if len(os.Args) == 2 && os.Args[1] == "usage-copy" {
+		run = usageCopy
+	}
 	if len(os.Args) == 2 && os.Args[1] == "journal-copy" {
 		run = journalCopy
 	}

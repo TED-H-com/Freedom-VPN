@@ -350,7 +350,7 @@ func (r *runner) fixtureDNSNegative(ctx context.Context, s *Stack) {
 			answer bool
 		}{
 			{"rr.example.invalid", 1, 0, true}, {"rr.example.invalid", 28, 0, true}, {"alias.example.invalid", 5, 0, true}, {"service.example.invalid", 64, 0, true}, {"service.example.invalid", 65, 0, true},
-			{"feed-01.example.invalid", 1, 3, false}, {"feed-01.example.invalid", 28, 3, false}, {"blocked-cname.example.invalid", 5, 3, false}, {"feed-01.example.invalid", 64, 3, false}, {"feed-01.example.invalid", 65, 3, false},
+			{"feed-01.example.invalid", 1, 3, false}, {"feed-01.example.invalid", 28, 3, false}, {"blocked-cname.example.invalid", 5, 0, false}, {"feed-01.example.invalid", 64, 0, false}, {"feed-01.example.invalid", 65, 3, false},
 			{"blocked-alias.example.invalid", 1, 3, false}, {"sub.feed-01.example.invalid", 1, 3, false}, {"notfeed-01.example.invalid", 1, 0, true}, {"absent.example.invalid", 1, 3, false},
 		} {
 			// Every blocked fixture except the intentionally absent name exists at
@@ -362,22 +362,39 @@ func (r *runner) fixtureDNSNegative(ctx context.Context, s *Stack) {
 					rec.Status = StatusFail
 				}
 			}
+			synthetic := !tc.answer && tc.name != "absent.example.invalid"
+			// F8-TTL5 is the origin TTL. Let prior negative cache entries age
+			// out naturally; do not flush caches or equate NODATA with NXDOMAIN.
+			if synthetic {
+				time.Sleep(6 * time.Second)
+			}
+			started := time.Now()
 			got, e := s.ProbeNativeDNS(ctx, "", tc.name, tc.typ, proto, "")
+			elapsed := time.Since(started)
+			backend := map[uint16]string{1: "F8-A", 28: "F8-AAAA", 5: "F8-CNAME", 64: "F8-SVCB", 65: "F8-HTTPS"}[tc.typ]
+			if tc.name == "blocked-alias.example.invalid" {
+				backend = "F8-A scope C"
+			}
+			if tc.name == "sub.feed-01.example.invalid" {
+				backend = "F8-A scope W"
+			}
+			if !synthetic {
+				backend = "upstream authority control; separate from synthetic filtering"
+			}
+			// The resolver profile starts each synthetic SOA at 5. Whole-second
+			// cache aging during the measured lookup can decrease that value.
+			ageBudget := uint32(elapsed/time.Second) + 1
+			minimum := uint32(0)
+			if ageBudget < 5 {
+				minimum = 5 - ageBudget
+			}
+			ttlOK := !synthetic || got.HasSOA && got.AuthorityTTL >= minimum && got.AuthorityTTL <= 5 && elapsed < 5*time.Second
 			key := fmt.Sprintf("case_%d_%t", len(rec.Observations), proto)
-			expectedCodes := []int{tc.rcode}
-			// The pinned backend returns synthetic NODATA for these query types.
-			// Both forms must have zero answer RRs; never accept an open alias/hint.
-			if !tc.answer && (tc.typ == 5 || tc.typ == 64) {
-				expectedCodes = []int{0, 3}
-			}
-			codeOK := false
-			for _, code := range expectedCodes {
-				codeOK = codeOK || got.RCode == code
-			}
-			noteJSON(&rec, key, map[string]any{"case": strings.Split(tc.name, ".")[0], "rr_type": tc.typ, "tcp": proto, "expected_rcodes": expectedCodes, "expected_answer": tc.answer, "actual": got})
-			if e != nil || !got.Available || !codeOK || tc.answer && len(got.Types) == 0 || !tc.answer && len(got.Types) != 0 {
+			noteJSON(&rec, key, map[string]any{"case": strings.Split(tc.name, ".")[0], "rr_type": tc.typ, "tcp": proto, "expected_rcodes": []int{tc.rcode}, "expected_answer": tc.answer, "backend_row": backend, "ttl_source": "F8-TTL5: synthetic origin SOA TTL 5; 6s prior-cache expiry", "lookup_milliseconds": elapsed.Milliseconds(), "cache_aged_minimum_ttl": minimum, "actual": got})
+			if e != nil || !got.Available || got.RCode != tc.rcode || tc.answer && len(got.Types) == 0 || !tc.answer && len(got.Types) != 0 || !ttlOK {
 				rec.Status = StatusFail
 			}
+
 		}
 	}
 	first, e := s.ProbeNativeDNS(ctx, "", "cache.example.invalid", 1, false, s.lab.originIP)
@@ -449,7 +466,7 @@ func (r *runner) fixtureDNSNegative(ctx context.Context, s *Stack) {
 	if e != nil || e2 != nil || !v6Control.Connected || v6Denied.Connected {
 		rec.Status = StatusFail
 	}
-	recPathNote(&rec)("expected", "blocked A/AAAA/HTTPS and CNAME-chain A yield NXDOMAIN; direct CNAME/SVCB yield NXDOMAIN or empty NODATA; allowed label boundary resolves; old cache survives until TTL then changes; allowlisted private A/AAAA never authorize member forwarding")
+	recPathNote(&rec)("expected", "blocked A/AAAA/HTTPS and CNAME-chain A yield NXDOMAIN; direct CNAME/SVCB yield RCODE 0 empty NODATA with synthetic SOA TTL 5 (cache aging measured); allowed label boundary resolves; old cache survives until TTL then changes; allowlisted private A/AAAA never authorize member forwarding")
 }
 func (r *runner) fixtureFiniteGrant(ctx context.Context, s *Stack, admin BrowserSession) {
 	rec := Record{ID: "finite-grant-downgrade", Title: "Finite plan downgrade via production revoke, admin create and worker readback", Spec: []string{"§9.2", "AT02", "D-050", "D-081"}, Status: StatusPass}
