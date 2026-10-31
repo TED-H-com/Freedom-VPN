@@ -196,9 +196,13 @@ func (r *runner) fixtureUnderlay(ctx context.Context, s *Stack) {
 			return e == nil && path.Path.Direct+path.Path.Relayed > 0
 		})
 		cancel()
+		time.Sleep(3 * time.Second)
+		path, _ = s.ObserveNativeUnderlay(ctx)
 		noteJSON(&rec, family+"_transport", path)
 		got, e := s.fixtureProbe(ctx, s.lab.member, "-mode", "bulk", "-addr", s.lab.originIP+":9446", "-device", r.usageDevice.String())
 		noteJSON(&rec, family+"_member_bulk", got)
+		after, _ := s.ObserveNativeUnderlay(ctx)
+		noteJSON(&rec, family+"_transport_after_bulk", after)
 		if !seen || e != nil || !got.Available {
 			rec.Status = StatusFail
 		}

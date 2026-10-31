@@ -16,15 +16,17 @@ import (
 )
 
 type EnrollingFleetSnapshot struct {
-	NodeID        uuid.UUID `json:"node_id"`
-	IncarnationID uuid.UUID `json:"incarnation_id"`
-	RetainedAt    time.Time `json:"retained_at"`
-	BootedAt      time.Time `json:"booted_at"`
-	EligibleAt    time.Time `json:"eligible_at"`
-	BeforeState   string    `json:"before_state"`
-	AfterState    string    `json:"after_state"`
-	SameIdentity  bool      `json:"same_identity"`
-	Eligibility   string    `json:"eligibility"`
+	LocalStage      string    `json:"local_stage"`
+	BeforeLifecycle string    `json:"before_lifecycle"`
+	NodeID          uuid.UUID `json:"node_id"`
+	IncarnationID   uuid.UUID `json:"incarnation_id"`
+	RetainedAt      time.Time `json:"retained_at"`
+	BootedAt        time.Time `json:"booted_at"`
+	EligibleAt      time.Time `json:"eligible_at"`
+	BeforeState     string    `json:"before_state"`
+	AfterState      string    `json:"after_state"`
+	SameIdentity    bool      `json:"same_identity"`
+	Eligibility     string    `json:"eligibility"`
 }
 
 // RetainEnrollingThirdNode enrolls through the real entrypoint and holds before
@@ -72,8 +74,12 @@ func (s *Stack) RetainEnrollingThirdNode(ctx context.Context, admin BrowserSessi
 		return out, fmt.Errorf("fleet snapshot: node readback")
 	}
 	out.BeforeState = string(detail.ProvisioningState)
-	if out.BeforeState != "enrolling" {
-		return out, fmt.Errorf("fleet snapshot: expected enrolling, observed %s", out.BeforeState)
+	out.LocalStage = "enrolling_snapshot"
+	out.BeforeLifecycle = string(detail.LifecycleState)
+	// Enrollment completion assigns registered/applying centrally. Enrolling
+	// here is the real local phase before bootstrap, not a fabricated enum.
+	if out.BeforeState != "applying" || out.BeforeLifecycle != "registered" {
+		return out, fmt.Errorf("fleet snapshot: unexpected central enrollment state")
 	}
 	if err = exec.CommandContext(ctx, "docker", "stop", "-t", "10", container).Run(); err != nil {
 		return out, fmt.Errorf("fleet snapshot: stop failed")

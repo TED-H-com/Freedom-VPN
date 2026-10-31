@@ -146,6 +146,9 @@ func (s *Stack) ConfigureNativeDNS(ctx context.Context, admin BrowserSession, de
 	if err = cmd.Run(); err != nil {
 		return out, err
 	}
+	if err = exec.CommandContext(ctx, "docker", "exec", s.lab.member, "netbird", "down").Run(); err != nil {
+		return out, fmt.Errorf("restart native DNS client")
+	}
 	if err = exec.CommandContext(ctx, "docker", "exec", s.lab.member, "netbird", "up", "--disable-dns=false").Run(); err != nil {
 		return out, fmt.Errorf("enable native DNS")
 	}
@@ -157,10 +160,12 @@ func (s *Stack) ConfigureNativeDNS(ctx context.Context, admin BrowserSession, de
 		out.NativeDNSEnabled = e == nil && json.Unmarshal(raw, &native) == nil && !native.DisableDNS
 		raw, e = s.lab.docker(s.lab.member, "cat", "/etc/resolv.conf")
 		out.SystemUsesNativeStub = false
+		nameservers := 0
 		if e == nil {
 			for _, line := range strings.Split(string(raw), "\n") {
 				fields := strings.Fields(line)
 				if len(fields) == 2 && fields[0] == "nameserver" {
+					nameservers++
 					ip := net.ParseIP(fields[1])
 					if ip != nil && (strings.HasPrefix(fields[1], "100.") || fields[1] == "127.0.0.1") {
 						out.SystemUsesNativeStub = true
@@ -168,6 +173,7 @@ func (s *Stack) ConfigureNativeDNS(ctx context.Context, admin BrowserSession, de
 				}
 			}
 		}
+		out.SystemUsesNativeStub = out.SystemUsesNativeStub && nameservers == 1
 		return out.NativeDNSEnabled && out.SystemUsesNativeStub
 	}) {
 		return out, fmt.Errorf("native system resolver not installed")

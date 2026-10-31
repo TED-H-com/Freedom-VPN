@@ -105,13 +105,17 @@ func (s *Stack) ObserveNativeUnderlay(ctx context.Context) (out NativeUnderlayOb
 			}
 		case map[string]any:
 			for k, v := range x {
-				if strings.Contains(strings.ToLower(k), "endpoint") {
-					if addr, ok := v.(string); ok && addr != "" {
-						family := "ipv4"
-						if strings.Count(addr, ":") > 1 {
-							family = "ipv6"
+				if strings.EqualFold(k, "iceCandidateEndpoint") {
+					if endpoints, ok := v.(map[string]any); ok {
+						for _, endpoint := range endpoints {
+							if addr, ok := endpoint.(string); ok && addr != "" {
+								family := "ipv4"
+								if strings.Count(addr, ":") > 1 {
+									family = "ipv6"
+								}
+								out.CandidateFamilies[family]++
+							}
 						}
-						out.CandidateFamilies[family]++
 					}
 				}
 				walk(v)

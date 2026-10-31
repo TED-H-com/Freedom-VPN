@@ -169,6 +169,9 @@ func main() {
 			out.Bytes += len(payload)
 		}
 		out.Available = e == nil && out.Bytes == 64064
+		if !out.Available {
+			out.Error = "bulk_echo_incomplete"
+		}
 		out.Connected = true
 	default:
 		os.Exit(2)
