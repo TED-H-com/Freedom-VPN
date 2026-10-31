@@ -199,3 +199,15 @@ func compactJSON(t *testing.T, raw []byte) []byte {
 	}
 	return out.Bytes()
 }
+
+func TestD118_UnchangedIncarnationDoesNotRetire(t *testing.T) {
+	r := newRig(t)
+	alignControlClock(r)
+	serveBoundGeneration(t, r)
+	original := r.eng.incID
+	restartEngine(t, r, r.plane)
+	streams, err := r.eng.usage.RetiredStreams(t.Context())
+	if err != nil || len(streams) != 0 || r.eng.incID != original {
+		t.Fatalf("unchanged identity retired: %+v %v", streams, err)
+	}
+}

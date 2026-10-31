@@ -30,3 +30,13 @@ func (s *Server) UsageBodies() [][]byte {
 	}
 	return out
 }
+
+// SetMaxOfflineSeconds selects the TEST ONLY lease cadence fixture. signLease
+// retains its ordinary 60..86400 second bounds. Drop sticky replay explicitly.
+func (s *Server) SetMaxOfflineSeconds(seconds int) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.maxOffline = seconds
+	s.stickyRaw = nil
+	s.stickyETag = ""
+}

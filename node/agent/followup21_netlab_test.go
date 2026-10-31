@@ -18,13 +18,48 @@ import (
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/node/enforce"
+	"github.com/TED-H-com/Freedom-VPN/node/internal/timeanchor"
 	"github.com/google/uuid"
 )
 
 type measuredSystemPlane struct {
 	SystemPlane
-	reads []time.Duration
-	paths []time.Duration
+	reads   []time.Duration
+	paths   []time.Duration
+	applies []enforce.ApplyResult
+	guards  []guardCommand
+}
+
+type guardCommand struct {
+	Phase      string
+	Start, End time.Duration
+}
+type guardExecutor struct {
+	enforce.Executor
+	spans *[]guardCommand
+}
+
+func (x guardExecutor) NftBatch(ctx context.Context, script string) error {
+	phase := ""
+	if strings.Contains(script, "add chain inet fvpn fv_deadline_guard") {
+		phase = "install"
+	}
+	if strings.Contains(script, "delete chain inet fvpn fv_deadline_guard") {
+		phase = "release"
+	}
+	start, _ := timeanchor.Mono()
+	err := x.Executor.NftBatch(ctx, script)
+	end, _ := timeanchor.Mono()
+	if phase != "" {
+		*x.spans = append(*x.spans, guardCommand{phase, start, end})
+	}
+	return err
+}
+
+func (p *measuredSystemPlane) Apply(ctx context.Context, model enforce.Model, counters map[string]enforce.CounterValue) (enforce.ApplyResult, error) {
+	res, err := p.SystemPlane.Apply(ctx, model, counters)
+	p.applies = append(p.applies, res)
+	return res, err
 }
 
 func (p *measuredSystemPlane) VerifyServing(ctx context.Context, model enforce.Model, assignments map[uuid.UUID]uint16) (enforce.ServingEvidence, error) {
@@ -95,10 +130,12 @@ while True:
 		t.Fatal("control listener", line, err)
 	}
 	r := newRig(t)
-	alignControlClock(r)
+	r.eng.clock = timeanchor.System{}
+	r.srv.SetClock(r.eng.clock.Wall)
 	serveBoundGeneration(t, r)
 	r.manualUsage(t)
 	p := &measuredSystemPlane{}
+	p.Executor = guardExecutor{enforce.System{}, &p.guards}
 	r.eng.plane = p
 	r.eng.memberPath = nil // the initial fake plane has no kernel topology
 	r.eng.cfg.HeartbeatSeconds, r.eng.cfg.PollSeconds = 1, 1
@@ -186,6 +223,7 @@ while True:
 		t.Fatalf("real recovery failed: %+v", r.eng.decision.Errors)
 	}
 	t.Log("D096 clean Apply raised link but stayed non-serving until harness restored two routes and one IPv6 address; next full Apply + topology check restored serving")
+	followup25Restart(t, r, p, reconcile)
 	followup23LiveProof(t, r)
 }
 

@@ -10,6 +10,8 @@ def main():
     scratch.mkdir(parents=True, exist_ok=True)
     name = f"fvpn-w2-agent-core-lab-live-{os.getpid()}"
     image = name + ":lab"
+    evidence = Path.cwd() / ".agent" / "f25-live-evidence"
+    evidence.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(dir=scratch, prefix="live-") as temporary:
         env = dict(os.environ, GOMAXPROCS="4", GOFLAGS="-p=4", CGO_ENABLED="0",
                    GOTOOLCHAIN="local", TMPDIR=temporary, GOTMPDIR=temporary)
@@ -21,7 +23,8 @@ def main():
             run("docker", "build", "-t", image, "tests/netlab")
             # Scratch is in the container's disk overlay, removed with it.
             run("docker", "run", "--rm", "--name", name, "--privileged", "--network", "none", "--workdir", "/scratch",
-                "-e", "FVPN_AGENT_LIVE_NETLAB=1", "-e", "GOMAXPROCS=4", "-e", "TMPDIR=/scratch",
+                "-e", "FVPN_AGENT_LIVE_NETLAB=1", "-e", "FVPN_AGENT_EVIDENCE_DIR=/evidence",
+                "-v", str(evidence) + ":/evidence", "-e", "GOMAXPROCS=4", "-e", "TMPDIR=/scratch",
                 "-v", binary + ":/agent.test:ro", image, "/agent.test", "-test.run",
                 "^TestD085_LiveReadNetlab$", "-test.v", "-test.timeout=3m")
         finally:

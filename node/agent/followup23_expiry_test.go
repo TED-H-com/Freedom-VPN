@@ -14,13 +14,21 @@ func TestISOF603_RenewalFailureAndDeadline(t *testing.T) {
 	alignControlClock(r)
 	serveBoundGeneration(t, r)
 	r.manualUsage(t)
+	// Isolate the lease deadline: reissued desired snapshots must not be the
+	// earlier, independently renewable policy bound in this failure test.
+	binding := oneBinding(r.clock.Wall())
+	binding.ValidUntil = r.clock.Wall().Add(2 * time.Hour)
+	fixture := generationFixture(2, binding)
+	fixture.TTL = 2 * time.Hour
+	r.srv.SetFixture(fixture)
+	stepOK(t, r)
 	deadline := r.eng.policyExpires
 	r.srv.FailLeases(100)
 	advanceToRenewal(r)
 	before := r.srv.LeaseRenewals()
 	stepOK(t, r)
 	if r.srv.LeaseRenewals() != before+1 || !r.eng.serving || r.eng.policyExpires != deadline {
-		t.Fatal("renewal failure shortened a valid lease")
+		t.Fatalf("renewal failure changed deadline: renewals=%d want=%d serving=%t before=%s after=%s errors=%+v", r.srv.LeaseRenewals(), before+1, r.eng.serving, deadline, r.eng.policyExpires, r.eng.decision.Errors)
 	}
 	r.clock.Advance(deadline - r.clock.Mono() - 1500*time.Millisecond)
 	stepOK(t, r)
@@ -124,5 +132,40 @@ func TestD104_DeadlineMinimum(t *testing.T) {
 				t.Fatalf("minimum lost: model=%+v expiry=%s want=%s err=%v", model, expiry, want, err)
 			}
 		})
+	}
+}
+
+func TestD104_MemberDeadlinesAreIndependentAndBindingOrderInvariant(t *testing.T) {
+	in := withAdmittedMember(servingInput())
+	bindings := threeBindings(in.Lease.IssuedAt)
+	// Devices 0 and 1 share a member; its shortest binding must win in both
+	// orders, without changing the other member's distinct absolute pointer.
+	bindings[1].MemberId = bindings[0].MemberId
+	bindings[0].ValidUntil = in.Lease.IssuedAt.Add(2500 * time.Millisecond)
+	bindings[1].ValidUntil = in.Lease.IssuedAt.Add(7500 * time.Millisecond)
+	bindings[2].ValidUntil = in.Lease.IssuedAt.Add(9500 * time.Millisecond)
+	in.Desired.DeviceBindings = bindings
+	in.Lease.Members = []api.MemberLease{oneMember(in.Lease.IssuedAt, bindings[0].MemberId), oneMember(in.Lease.IssuedAt, bindings[2].MemberId)}
+	for range 2 {
+		m, expiry, err := buildModel(in)
+		if err != nil || len(m.Leases) != 2 {
+			t.Fatal("member deadlines", m, err)
+		}
+		if m.Leases[0].DeadlineMono == m.Leases[1].DeadlineMono {
+			t.Fatal("aliased deadlines")
+		}
+		for _, lease := range m.Leases {
+			want := in.LeaseMonoSent + 2500*time.Millisecond
+			if lease.MemberID == bindings[2].MemberId {
+				want = in.LeaseMonoSent + 9500*time.Millisecond
+			}
+			if *lease.DeadlineMono != want {
+				t.Fatal("wrong member minimum", *lease.DeadlineMono, want)
+			}
+		}
+		if expiry != in.LeaseMonoSent+2500*time.Millisecond {
+			t.Fatal("wrong wake deadline")
+		}
+		bindings[0], bindings[1] = bindings[1], bindings[0]
 	}
 }
