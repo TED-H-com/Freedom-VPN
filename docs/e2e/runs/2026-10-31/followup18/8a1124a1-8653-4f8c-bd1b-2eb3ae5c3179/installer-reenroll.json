@@ -1,0 +1,39 @@
+{
+  "id": "installer-reenroll",
+  "title": "Controlled reinstall, retained identity and retired certificate refusal",
+  "spec": [
+    "ENR-06",
+    "AT07",
+    "§6.3"
+  ],
+  "status": "fail",
+  "observations": [
+    {
+      "name": "revoke",
+      "detail": "202"
+    },
+    {
+      "name": "reenroll",
+      "detail": "{\"Exit\":1,\"Status\":\"\",\"Code\":\"baseline_failed\",\"Incarnation\":\"01a19195-a743-7382-af78-f850dff9f71f\",\"NodeID\":\"01a19192-cabd-7a26-8cdc-3049aeda33fa\",\"RetiredMode\":\"700\",\"RetiredHashes\":{\"key_sha256\":\"f6928dc6476e1646f20090580acc9e4256071e794e1275c91a77f9ecb9eb6e7c\",\"cert_sha256\":\"3e338a0721f4a6c03ae98aa18e761946cfe2d978757c0fba46d14115f09d2c8a\",\"node_json_sha256\":\"249ee2d4b60c59191244473e4e0669ab005ad0f89a715e4a8732446295700dd8\"},\"BoundStateBefore\":{\"agent_db_sha256\":\"24df70795670f58428fa14d182e1cb36a16f0220654c3e6e08aa27a4b4fc46f2\",\"agent_db_shm_sha256\":\"absent\",\"agent_db_wal_sha256\":\"absent\",\"desired_state_json_sha256\":\"6f0943ea254ec05874a0f629c5ff3c6abdcc3b85e2482d2272c9b8e4edea53d7\"},\"RetiredBoundState\":{\"agent_db_sha256\":\"24df70795670f58428fa14d182e1cb36a16f0220654c3e6e08aa27a4b4fc46f2\",\"agent_db_shm_sha256\":\"absent\",\"agent_db_wal_sha256\":\"absent\",\"desired_state_json_sha256\":\"6f0943ea254ec05874a0f629c5ff3c6abdcc3b85e2482d2272c9b8e4edea53d7\"},\"Message\":\"baseline_failed: updater seed failed; inspect check --json baseline\",\"Before\":{\"key_sha256\":\"f6928dc6476e1646f20090580acc9e4256071e794e1275c91a77f9ecb9eb6e7c\",\"cert_sha256\":\"3e338a0721f4a6c03ae98aa18e761946cfe2d978757c0fba46d14115f09d2c8a\",\"node_json_sha256\":\"249ee2d4b60c59191244473e4e0669ab005ad0f89a715e4a8732446295700dd8\",\"usage_db_sha256\":\"ec82332dc9d8f3a236d979976aea000a3a53a0477927791c1b8503b8fb288f5a\",\"usage_wal_sha256\":\"absent\",\"machine_id_sha256\":\"186cc62b3ea133e7b6da9685430b24e54bb999ea093280f231a8b358af70ce92\",\"current_target\":\"releases/01a19192-b8f2-7424-864b-9b781677ba18\"},\"Hashes\":{\"key_sha256\":\"bb88299f9fdd6f71312ab9ddab74d42468fb40a1d1be5dbe3772b10868825491\",\"cert_sha256\":\"f1cac99ef527ab0c985b259bd28a16c7b3a22b6babc5fecfec9a3a4d7912711d\",\"node_json_sha256\":\"a787300d22df62ebfee72825bb5896cfd8dda18a81099e0aca1034241cae71b7\",\"usage_db_sha256\":\"ec82332dc9d8f3a236d979976aea000a3a53a0477927791c1b8503b8fb288f5a\",\"usage_wal_sha256\":\"absent\",\"machine_id_sha256\":\"186cc62b3ea133e7b6da9685430b24e54bb999ea093280f231a8b358af70ce92\",\"current_target\":\"releases/01a19192-b8f2-7424-864b-9b781677ba18\"},\"Services\":{\"fvpn-agent.service\":\"active\",\"fvpn-updater.service\":\"inactive\",\"fvpn-updater.timer\":\"active\",\"fvpn-watchdog.service\":\"active\"}}"
+    },
+    {
+      "name": "retired_certificate_http",
+      "detail": "{\"direct\":\"403\",\"proxy\":\"403\"}"
+    },
+    {
+      "name": "usage_retained",
+      "detail": "true"
+    },
+    {
+      "name": "bound_state_retired",
+      "detail": "true"
+    },
+    {
+      "name": "restoration",
+      "detail": "true"
+    }
+  ],
+  "at": "2026-10-31T10:51:13Z",
+  "run_id": "8a1124a1-8653-4f8c-bd1b-2eb3ae5c3179",
+  "source_commit": "a0089b8386c749100d9bd19b8002dd4d666d065c"
+}

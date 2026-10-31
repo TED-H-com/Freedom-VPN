@@ -1,0 +1,226 @@
+# installer-serving-readback
+
+D-116 four-chain verifier and separate hookless marker after traffic restoration
+
+Status: pass
+
+Run: abd7ce3a-7b3f-4fa3-8120-c11635971e2c
+
+Source: 0b9fb5ebbff0d1618679b8eed6925b7aa9cc7daf
+
+Spec: ENR-05, D-116, AT07
+
+- heartbeat: v1
+boot_id 97c018d7-a925-4723-9127-83c097de1c8a
+mono_ns 25377218536786
+wall_unix_ns 1793441839702165764
+policy_expires_mono_ns 28950674173035
+baseline_ok 1
+serving 1
+generation 6
+reason serving
+
+- table_fvpn: {"nftables": [{"metainfo": {"version": "1.0.9", "release_name": "Old Doc Yak #3", "json_schema_version": 1}}, {"table": {"family": "inet", "name": "fvpn", "handle": 3}}, {"counter": {"family": "inet", "name": "ctbase", "table": "fvpn", "handle": 1, "packets": 2, "bytes": 134}}, {"counter": {"family": "inet", "name": "ctv6", "table": "fvpn", "handle": 2, "packets": 0, "bytes": 0}}, {"counter": {"family": "inet", "name": "ctin", "table": "fvpn", "handle": 3, "packets": 0, "bytes": 0}}, {"counter": {"family": "inet", "name": "ctbadns", "table": "fvpn", "handle": 170, "packets": 0, "bytes": 0}}, {"counter": {"family": "inet", "name": "ctdeny", "table": "fvpn", "handle": 171, "packets": 0, "bytes": 0}}, {"counter": {"family": "inet", "name": "cthost", "table": "fvpn", "handle": 172, "packets": 0, "bytes": 0}}, {"counter": {"family": "inet", "name": "ctinv", "table": "fvpn", "handle": 173, "packets": 0, "bytes": 0}}, {"counter": {"family": "inet", "name": "ctnodn", "table": "fvpn", "handle": 174, "packets": 0, "bytes": 0}}, {"counter": {"family": "inet", "name": "ctunkd", "table": "fvpn", "handle": 175, "packets": 0, "bytes": 0}}, {"counter": {"family": "inet", "name": "ctunku", "table": "fvpn", "handle": 176, "packets": 0, "bytes": 0}}, {"counter": {"family": "inet", "name": "d_01a191766ee9742e9f4c47e812bd7e29", "table": "fvpn", "handle": 290, "packets": 29, "bytes": 2913}}, {"counter": {"family": "inet", "name": "nd_01a191766ee9742e9f4c47e812bd7e29", "table": "fvpn", "handle": 291, "packets": 0, "bytes": 0}}, {"counter": {"family": "inet", "name": "nu_01a191766ee9742e9f4c47e812bd7e29", "table": "fvpn", "handle": 292, "packets": 0, "bytes": 0}}, {"counter": {"family": "inet", "name": "u_01a191766ee9742e9f4c47e812bd7e29", "table": "fvpn", "handle": 293, "packets": 40, "bytes": 3074}}, {"set": {"family": "inet", "name": "allowed_v4", "table": "fvpn", "type": "ipv4_addr", "handle": 4, "flags": ["timeout"]}}, {"set": {"family": "inet", "name": "denied_v4", "table": "fvpn", "type": "ipv4_addr", "handle": 177, "flags": ["interval"], "elem": [{"prefix": {"addr": "0.0.0.0", "len": 8}}, {"prefix": {"addr": "10.0.0.0", "len": 8}}, {"prefix": {"addr": "100.64.0.0", "len": 10}}, {"prefix": {"addr": "127.0.0.0", "len": 8}}, {"prefix": {"addr": "169.254.0.0", "len": 16}}, {"prefix": {"addr": "172.16.0.0", "len": 12}}, {"prefix": {"addr": "192.0.0.0", "len": 24}}, {"prefix": {"addr": "192.0.2.0", "len": 24}}, {"prefix": {"addr": "192.88.99.0", "len": 24}}, {"prefix": {"addr": "192.168.0.0", "len": 16}}, {"prefix": {"addr": "198.18.0.0", "len": 15}}, {"prefix": {"addr": "198.51.100.0", "len": 24}}, {"prefix": {"addr": "203.0.113.0", "len": 24}}, {"prefix": {"addr": "224.0.0.0", "len": 3}}]}}, {"set": {"family": "inet", "name": "host_v4", "table": "fvpn", "type": "ipv4_addr", "handle": 178, "flags": ["interval"], "elem": ["192.0.3.24"]}}, {"set": {"family": "inet", "name": "resolver_v4", "table": "fvpn", "type": "ipv4_addr", "handle": 179, "elem": ["192.0.3.53"]}}, {"chain": {"family": "inet", "table": "fvpn", "name": "forward", "handle": 500, "type": "filter", "hook": "forward", "prio": -150, "policy": "drop"}}, {"chain": {"family": "inet", "table": "fvpn", "name": "input", "handle": 501, "type": "filter", "hook": "input", "prio": -150, "policy": "accept"}}, {"chain": {"family": "inet", "table": "fvpn", "name": "output", "handle": 502, "type": "filter", "hook": "output", "prio": -150, "policy": "accept"}}, {"chain": {"family": "inet", "table": "fvpn", "name": "postrouting", "handle": 503, "type": "nat", "hook": "postrouting", "prio": 100, "policy": "accept"}}, {"rule": {"family": "inet", "table": "fvpn", "chain": "forward", "handle": 504, "comment": "fvpn_generation=0 fvpn_baseline=1 fvpn_metering=forward_admission_v1", "expr": [{"match": {"op": "==", "left": {"payload": {"protocol": "ip", "field": "saddr"}}, "right": "192.0.2.255"}}, {"match": {"op": "==", "left": {"payload": {"protocol": "ip", "field": "daddr"}}, "right": "192.0.2.255"}}]}}, {"rule": {"family": "inet", "table": "fvpn", "chain": "forward", "handle": 505, "comment": "fvpn_class=01a19176-52a3-75bf-a381-1aa55b6b803f:b492", "expr": [{"match": {"op": "==", "left": {"payload": {"protocol": "ip", "field": "saddr"}}, "right": "192.0.2.255"}}, {"match": {"op": "==", "left": {"payload": {"protocol": "ip", "field": "daddr"}}, "right": "192.0.2.255"}}]}}, {"rule": {"family": "inet", "table": "fvpn", "chain": "forward", "handle": 506, "expr": [{"match": {"op": "==", "left": {"meta": {"key": "iifname"}}, "right": "fvmb0"}}, {"counter": "ctbase"}, {"drop": null}]}}, {"rule": {"family": "inet", "table": "fvpn", "chain": "forward", "handle": 507, "expr": [{"match": {"op": "==", "left": {"meta": {"key": "oifname"}}, "right": "fvmb0"}}, {"counter": "ctbase"}, {"drop": null}]}}, {"rule": {"family": "inet", "table": "fvpn", "chain": "forward", "handle": 508, "expr": [{"match": {"op": "==", "left": {"meta": {"key": "iifname"}}, "right": "fvmb0"}}, {"match": {"op": "==", "left": {"meta": {"key": "nfproto"}}, "right": "ipv6"}}, {"counter": "ctv6"}, {"drop": null}]}}, {"rule": {"family": "inet", "table": "fvpn", "chain": "forward", "handle": 509, "expr": [{"match": {"op": "==", "left": {"meta": {"key": "oifname"}}, "right": "fvmb0"}}, {"match": {"op": "==", "left": {"meta": {"key": "nfproto"}}, "right": "ipv6"}}, {"counter": "ctv6"}, {"drop": null}]}}, {"rule": {"family": "inet", "table": "fvpn", "chain": "input", "handle": 510, "expr": [{"match": {"op": "==", "left": {"meta": {"key": "iifname"}}, "right": "fvmb0"}}, {"counter": "ctin"}, {"drop": null}]}}, {"rule": {"family": "inet", "table": "fvpn", "chain": "input", "handle": 511, "expr": [{"match": {"op": "==", "left": {"payload": {"protocol": "ip", "field": "saddr"}}, "right": {"prefix": {"addr": "100.64.0.0", "len": 10}}}}, {"counter": "ctin"}, {"drop": null}]}}]}
+
+- table_fvpn_install: {"nftables": [{"metainfo": {"version": "1.0.9", "release_name": "Old Doc Yak #3", "json_schema_version": 1}}, {"table": {"family": "inet", "name": "fvpn_install", "handle": 4}}, {"chain": {"family": "inet", "table": "fvpn_install", "name": "owner", "handle": 1, "comment": "managed-by=fvpn-node-install"}}]}
+
+- installer_check: drifted: unit fvpn-watchdog.service inactive, unit fvpn-agent.service failed, unit fvpn-updater.timer inactive
+{
+  "status": "drifted",
+  "baseline": {
+    "status": "seeded",
+    "manifest_path": "/var/lib/vpn-node/update-staging/01a19175-e341-792a-b34b-af9c102815b4.manifest.json",
+    "tree_path": "/opt/vpn-node/releases/01a19175-e341-792a-b34b-af9c102815b4",
+    "probe": {
+      "exit_code": 64,
+      "stderr": "Usage of seed:\n  -config string\n    \tupdater config JSON (paths only, no keys)\n  -manifest string\n    \tretained signed release envelope\n  -pending string\n    \tinstaller pending-release.json to apply\n  -tree string\n    \tresolved current release directory to verify\n"
+    },
+    "seed": {
+      "exit_code": 0,
+      "stderr": "{\"time\":\"2026-10-31T10:17:20.827154144Z\",\"level\":\"INFO\",\"msg\":\"verified installer baseline seeded\",\"release_id\":\"01a19175-e341-792a-b34b-af9c102815b4\"}\n"
+    }
+  },
+  "os_id": "ubuntu",
+  "os_version": "24.04",
+  "arch": "amd64",
+  "kernel": "Linux 7.0.0-38-generic",
+  "release_id": "01a19175-e341-792a-b34b-af9c102815b4",
+  "manifest_sha256": "16ed81b1b7ec04c6895c84e1e89a92cabfbec4cb11a096584115b1e0a9ba5b96",
+  "release_source": "updater_journal",
+  "install_record": {
+    "release_id": "01a19175-e341-792a-b34b-af9c102815b4",
+    "manifest_sha256": "16ed81b1b7ec04c6895c84e1e89a92cabfbec4cb11a096584115b1e0a9ba5b96",
+    "release_sequence": "10",
+    "product_version": "1.1.0",
+    "arch": "amd64",
+    "installed_at": "2026-10-31T10:16:33Z",
+    "netbird_package_installed": false
+  },
+  "updater": {
+    "current_release_id": "01a19175-e341-792a-b34b-af9c102815b4",
+    "state": "",
+    "recovery_required": false,
+    "seeded_baseline": {
+      "release_id": "01a19175-e341-792a-b34b-af9c102815b4",
+      "manifest_sha256": "16ed81b1b7ec04c6895c84e1e89a92cabfbec4cb11a096584115b1e0a9ba5b96"
+    }
+  },
+  "units": {
+    "fvpn-agent.service": "failed",
+    "fvpn-netbird.service": "active",
+    "fvpn-node-netbird-up.service": "active",
+    "fvpn-updater-recover.service": "active",
+    "fvpn-updater.service": "inactive",
+    "fvpn-updater.timer": "inactive",
+    "fvpn-watchdog.service": "inactive"
+  },
+  "directories": [
+    {
+      "path": "/etc/vpn-node",
+      "mode": "0755",
+      "expected": "0755",
+      "ok": true
+    },
+    {
+      "path": "/var/lib/vpn-node",
+      "mode": "0700",
+      "expected": "0700",
+      "ok": true
+    },
+    {
+      "path": "/var/lib/vpn-node/identity",
+      "mode": "0700",
+      "expected": "0700",
+      "ok": true
+    },
+    {
+      "path": "/var/lib/vpn-node/state",
+      "mode": "0700",
+      "expected": "0700",
+      "ok": true
+    },
+    {
+      "path": "/var/lib/vpn-node/update-journal",
+      "mode": "0700",
+      "expected": "0700",
+      "ok": true
+    },
+    {
+      "path": "/var/lib/vpn-node/update-staging",
+      "mode": "0700",
+      "expected": "0700",
+      "ok": true
+    },
+    {
+      "path": "/var/lib/vpn-node/install",
+      "mode": "0700",
+      "expected": "0700",
+      "ok": true
+    },
+    {
+      "path": "/opt/vpn-node",
+      "mode": "0755",
+      "expected": "0755",
+      "ok": true
+    },
+    {
+      "path": "/opt/vpn-node/releases",
+      "mode": "0755",
+      "expected": "0755",
+      "ok": true
+    },
+    {
+      "path": "/run/vpn-node",
+      "mode": "0755",
+      "expected": "0755",
+      "ok": true
+    }
+  ],
+  "lock": {
+    "held": false,
+    "pid": 4257,
+    "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+    "start_time": 2537818
+  },
+  "identity": {
+    "present": true,
+    "incarnation_id": "01a19176-03c8-77ec-ab1e-8cc16897277a",
+    "node_id": "01a19175-fd93-7037-86a1-b2ff221c1d75"
+  },
+  "usage_store_present": true,
+  "netbird": {
+    "version": "0.82.0",
+    "daemon": "connected"
+  },
+  "installer_marker": {
+    "table": "fvpn_install",
+    "present": true,
+    "legacy_owner": false
+  },
+  "drifts": [
+    "unit fvpn-watchdog.service inactive",
+    "unit fvpn-agent.service failed",
+    "unit fvpn-updater.timer inactive"
+  ]
+}
+
+- agent_journal: Oct 31 10:16:33 490b8f357f31 systemd[1]: Started fvpn-agent.service - Freedom VPN node agent.
+Oct 31 10:16:33 490b8f357f31 fvpn-agent[1395]: time=2026-10-31T10:16:33.203Z level=INFO msg="meter epoch opened" epoch_id=01a19176-04b1-71bc-974d-564ab769c190 reason=baseline boot_id=97c018d7-a925-4723-9127-83c097de1c8a event_seq=0
+Oct 31 10:16:33 490b8f357f31 fvpn-agent[1395]: time=2026-10-31T10:16:33.217Z level=INFO msg="usage checkpoint applied"
+Oct 31 10:16:33 490b8f357f31 fvpn-agent[1395]: time=2026-10-31T10:16:33.220Z level=WARN msg="desired state" err="controlclient: http 503"
+Oct 31 10:16:33 490b8f357f31 fvpn-agent[1395]: time=2026-10-31T10:16:33.285Z level=INFO msg="meter epoch closed" epoch_id=01a19176-04b1-71bc-974d-564ab769c190 reason=final_sample event_seq=0
+Oct 31 10:16:33 490b8f357f31 fvpn-agent[1395]: time=2026-10-31T10:16:33.313Z level=INFO msg="usage status available"
+Oct 31 10:16:43 490b8f357f31 fvpn-agent[1395]: time=2026-10-31T10:16:43.237Z level=WARN msg="desired state" err="controlclient: http 503"
+Oct 31 10:16:43 490b8f357f31 fvpn-agent[1395]: time=2026-10-31T10:16:43.253Z level=INFO msg="bootstrap stored"
+Oct 31 10:16:43 490b8f357f31 systemd[1]: Stopping fvpn-agent.service - Freedom VPN node agent...
+Oct 31 10:16:43 490b8f357f31 systemd[1]: fvpn-agent.service: Deactivated successfully.
+Oct 31 10:16:43 490b8f357f31 systemd[1]: Stopped fvpn-agent.service - Freedom VPN node agent.
+Oct 31 10:16:44 490b8f357f31 systemd[1]: Started fvpn-agent.service - Freedom VPN node agent.
+Oct 31 10:16:44 490b8f357f31 fvpn-agent[1674]: time=2026-10-31T10:16:44.336Z level=INFO msg="meter epoch opened" epoch_id=01a19176-302c-7504-a5bb-8032f31bf671 reason=after_final_sample boot_id=97c018d7-a925-4723-9127-83c097de1c8a event_seq=0
+Oct 31 10:16:44 490b8f357f31 fvpn-agent[1674]: time=2026-10-31T10:16:44.345Z level=INFO msg="usage checkpoint applied"
+Oct 31 10:16:44 490b8f357f31 fvpn-agent[1674]: time=2026-10-31T10:16:44.347Z level=WARN msg="desired state" err="controlclient: http 503"
+Oct 31 10:16:44 490b8f357f31 fvpn-agent[1674]: time=2026-10-31T10:16:44.404Z level=INFO msg="meter epoch closed" epoch_id=01a19176-302c-7504-a5bb-8032f31bf671 reason=final_sample event_seq=0
+Oct 31 10:16:44 490b8f357f31 fvpn-agent[1674]: time=2026-10-31T10:16:44.438Z level=INFO msg="usage status available"
+Oct 31 10:16:44 490b8f357f31 systemd[1]: Stopping fvpn-agent.service - Freedom VPN node agent...
+Oct 31 10:16:44 490b8f357f31 systemd[1]: fvpn-agent.service: Deactivated successfully.
+Oct 31 10:16:44 490b8f357f31 systemd[1]: Stopped fvpn-agent.service - Freedom VPN node agent.
+Oct 31 10:16:46 490b8f357f31 systemd[1]: Started fvpn-agent.service - Freedom VPN node agent.
+Oct 31 10:16:46 490b8f357f31 fvpn-agent[2046]: time=2026-10-31T10:16:46.239Z level=INFO msg="meter epoch opened" epoch_id=01a19176-379b-76d4-8116-a1c4ecf4f73e reason=after_final_sample boot_id=97c018d7-a925-4723-9127-83c097de1c8a event_seq=0
+Oct 31 10:16:46 490b8f357f31 fvpn-agent[2046]: time=2026-10-31T10:16:46.247Z level=INFO msg="usage checkpoint applied"
+Oct 31 10:16:46 490b8f357f31 fvpn-agent[2046]: time=2026-10-31T10:16:46.249Z level=WARN msg="desired state" err="controlclient: http 503"
+Oct 31 10:16:46 490b8f357f31 fvpn-agent[2046]: time=2026-10-31T10:16:46.312Z level=INFO msg="meter epoch closed" epoch_id=01a19176-379b-76d4-8116-a1c4ecf4f73e reason=final_sample event_seq=0
+Oct 31 10:16:46 490b8f357f31 fvpn-agent[2046]: time=2026-10-31T10:16:46.351Z level=INFO msg="usage status available"
+Oct 31 10:16:46 490b8f357f31 systemd[1]: Stopping fvpn-agent.service - Freedom VPN node agent...
+Oct 31 10:16:46 490b8f357f31 systemd[1]: fvpn-agent.service: Deactivated successfully.
+Oct 31 10:16:46 490b8f357f31 systemd[1]: Stopped fvpn-agent.service - Freedom VPN node agent.
+Oct 31 10:16:46 490b8f357f31 systemd[1]: Started fvpn-agent.service - Freedom VPN node agent.
+Oct 31 10:16:47 490b8f357f31 fvpn-agent[2277]: time=2026-10-31T10:16:47.007Z level=INFO msg="meter epoch opened" epoch_id=01a19176-3a9a-728a-a527-70e207bc1bdd reason=after_final_sample boot_id=97c018d7-a925-4723-9127-83c097de1c8a event_seq=0
+Oct 31 10:16:47 490b8f357f31 fvpn-agent[2277]: time=2026-10-31T10:16:47.016Z level=INFO msg="usage checkpoint applied"
+Oct 31 10:16:47 490b8f357f31 fvpn-agent[2277]: time=2026-10-31T10:16:47.231Z level=INFO msg="meter epoch closed" epoch_id=01a19176-3a9a-728a-a527-70e207bc1bdd reason=final_sample event_seq=0
+Oct 31 10:16:47 490b8f357f31 fvpn-agent[2277]: time=2026-10-31T10:16:47.266Z level=INFO msg="usage status available"
+Oct 31 10:16:52 490b8f357f31 fvpn-agent[2277]: time=2026-10-31T10:16:52.117Z level=INFO msg="meter epoch opened" epoch_id=01a19176-4e94-7940-a752-997cf2b85276 reason=after_final_sample boot_id=97c018d7-a925-4723-9127-83c097de1c8a event_seq=0
+Oct 31 10:16:57 490b8f357f31 fvpn-agent[2277]: time=2026-10-31T10:16:57.109Z level=INFO msg="meter epoch closed" epoch_id=01a19176-4e94-7940-a752-997cf2b85276 reason=final_sample event_seq=0
+Oct 31 10:16:57 490b8f357f31 fvpn-agent[2277]: time=2026-10-31T10:16:57.235Z level=INFO msg="meter epoch opened" epoch_id=01a19176-6291-7a14-8a8e-1b4526242098 reason=after_final_sample boot_id=97c018d7-a925-4723-9127-83c097de1c8a event_seq=0
+Oct 31 10:17:02 490b8f357f31 fvpn-agent[2277]: time=2026-10-31T10:17:02.105Z level=INFO msg="meter epoch closed" epoch_id=01a19176-6291-7a14-8a8e-1b4526242098 reason=final_sample event_seq=0
+Oct 31 10:17:02 490b8f357f31 fvpn-agent[2277]: time=2026-10-31T10:17:02.219Z level=INFO msg="meter epoch opened" epoch_id=01a19176-760a-7154-aa9f-a5cbc566d1da reason=after_final_sample boot_id=97c018d7-a925-4723-9127-83c097de1c8a event_seq=0
+Oct 31 10:17:12 490b8f357f31 systemd[1]: Stopping fvpn-agent.service - Freedom VPN node agent...
+Oct 31 10:17:12 490b8f357f31 fvpn-agent[2277]: time=2026-10-31T10:17:12.485Z level=INFO msg="meter epoch closed" epoch_id=01a19176-760a-7154-aa9f-a5cbc566d1da reason=final_sample event_seq=0
+Oct 31 10:17:12 490b8f357f31 systemd[1]: fvpn-agent.service: Deactivated successfully.
+Oct 31 10:17:12 490b8f357f31 systemd[1]: Stopped fvpn-agent.service - Freedom VPN node agent.
+Oct 31 10:17:12 490b8f357f31 systemd[1]: fvpn-agent.service: Consumed 1.012s CPU time, 28.6M memory peak, 0B memory swap peak.
+Oct 31 10:17:14 490b8f357f31 systemd[1]: Started fvpn-agent.service - Freedom VPN node agent.
+Oct 31 10:17:14 490b8f357f31 fvpn-agent[3671]: time=2026-10-31T10:17:14.366Z level=INFO msg="meter epoch opened" epoch_id=01a19176-a57b-7394-a4a7-336846f71718 reason=after_final_sample boot_id=97c018d7-a925-4723-9127-83c097de1c8a event_seq=0
+Oct 31 10:17:14 490b8f357f31 fvpn-agent[3671]: time=2026-10-31T10:17:14.372Z level=INFO msg="usage checkpoint applied"
+Oct 31 10:17:14 490b8f357f31 fvpn-agent[3671]: time=2026-10-31T10:17:14.396Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=1
+Oct 31 10:17:14 490b8f357f31 fvpn-agent[3671]: time=2026-10-31T10:17:14.530Z level=INFO msg="usage status available"
+Oct 31 10:17:19 490b8f357f31 fvpn-agent[3671]: time=2026-10-31T10:17:19.458Z level=INFO msg="meter epoch closed" epoch_id=01a19176-a57b-7394-a4a7-336846f71718 reason=final_sample event_seq=2
+Oct 31 10:17:19 490b8f357f31 fvpn-agent[3671]: time=2026-10-31T10:17:19.575Z level=INFO msg="meter epoch opened" epoch_id=01a19176-b9d6-7167-8f46-7140fd4beeb0 reason=after_final_sample boot_id=97c018d7-a925-4723-9127-83c097de1c8a event_seq=0
+Oct 31 10:17:20 490b8f357f31 systemd[1]: Stopping fvpn-agent.service - Freedom VPN node agent...
+Oct 31 10:17:20 490b8f357f31 fvpn-agent[3671]: time=2026-10-31T10:17:20.270Z level=INFO msg="meter epoch closed" epoch_id=01a19176-b9d6-7167-8f46-7140fd4beeb0 reason=final_sample event_seq=3
+Oct 31 10:17:20 490b8f357f31 systemd[1]: fvpn-agent.service: Deactivated successfully.
+Oct 31 10:17:20 490b8f357f31 systemd[1]: Stopped fvpn-agent.service - Freedom VPN node agent.
+Oct 31 10:17:21 490b8f357f31 systemd[1]: fvpn-agent.service: Start request repeated too quickly.
+Oct 31 10:17:21 490b8f357f31 systemd[1]: fvpn-agent.service: Failed with result 'start-limit-hit'.
+Oct 31 10:17:21 490b8f357f31 systemd[1]: Failed to start fvpn-agent.service - Freedom VPN node agent.
+
+- central_observation: {"report": {"lease": {"lease_id": "92853540-b929-414b-92f9-a62c2a856ccd", "expires_at": "2026-11-01T10:17:19.545485306Z"}, "usage": {"blocked_seq": null, "ledger_epoch": "8a0a5c6b-5340-4a5b-82e7-682f115884d3", "meter_epoch_id": "01a19176-b9d6-7167-8f46-7140fd4beeb0", "oldest_unacked_at": "2026-10-31T10:17:19.456639177Z", "acked_archive_bytes": "654", "unacked_event_count": 1, "central_acked_through": "1", "unacked_payload_bytes": "652", "last_durable_event_seq": "2"}, "checks": [{"name": "dns_policy", "status": "passed", "error_code": null, "observed_at": "2026-10-31T10:17:19.568401007Z"}, {"name": "internet_only", "status": "passed", "error_code": null, "observed_at": "2026-10-31T10:17:19.568401007Z"}, {"name": "lease", "status": "passed", "error_code": null, "observed_at": "2026-10-31T10:17:19.568401007Z"}, {"name": "meter_path", "status": "passed", "error_code": null, "observed_at": "2026-10-31T10:17:19.568401007Z"}, {"name": "policy_signature", "status": "passed", "error_code": null, "observed_at": "2026-10-31T10:17:19.568401007Z"}, {"name": "qos", "detail": "read_at=2026-10-31T10:17:19.657872107Z source=live candidate=6 verified=true {\"generation\":\"6\",\"phase\":\"verify\",\"reads\":16,\"objects\":4,\"truncated\":false,\"sha256\":\"b7fcb05c02da0a4a09193eb12184b9a0e06c4bff5c9d1946b7add466fc5df3da\"}", "status": "passed", "error_code": null, "observed_at": "2026-10-31T10:17:19.568401007Z"}, {"name": "release_supported", "status": "passed", "error_code": null, "observed_at": "2026-10-31T10:17:19.568401007Z"}, {"name": "source_binding", "status": "passed", "error_code": null, "observed_at": "2026-10-31T10:17:19.568401007Z"}, {"name": "storage", "status": "passed", "error_code": null, "observed_at": "2026-10-31T10:17:19.568401007Z"}, {"name": "tunnel_probe", "detail": "Egress probe used no extra target.", "status": "passed", "error_code": null, "observed_at": "2026-10-31T10:17:19.568401007Z"}], "errors": [], "update": {"stage": null, "state": null, "job_id": null, "generation": null}, "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a", "netbird": {"backend": "kernel", "peer_id": null, "version": null}, "node_id": "01a19175-fd93-7037-86a1-b2ff221c1d75", "report_id": "01a19176-ba35-7842-9013-ceeeee4c35cb", "data_health": "healthy", "observed_at": "2026-10-31T10:17:19.669529467Z", "agent_version": "1.1.0", "safety_status": "passed", "current_release_id": "01a19175-e341-792a-b34b-af9c102815b4", "provisioning_state": "ready", "applied_policy_refs": {"dns_generation": "1", "fup_generation": "1", "authorization_generation": "1"}, "dns_policy_evidence": {"feeds": [], "outcome": "applied", "applied_at": "2026-10-31T10:17:19.56529128Z", "error_code": null, "generation": "1", "document_id": "01a19176-00ea-7bfa-9207-4fb5ecbbcb74", "content_sha256": "9c7ccf7bf78dc4156ca9af19e996819d82442891b0100807212590d5f9691eda"}, "node_incarnation_id": "01a19176-03c8-77ec-ab1e-8cc16897277a", "last_good_release_id": "01a19175-e341-792a-b34b-af9c102815b4", "applied_binding_revision": "1", "forwarding_block_reasons": [], "applied_config_generation": "6", "member_forwarding_enabled": true}, "received_at": "2026-10-31T10:17:19.677011+00:00"}

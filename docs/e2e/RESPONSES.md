@@ -231,3 +231,213 @@ and HTTP 403 for the retired certificate on both direct and proxy paths.
 Service restoration succeeded. Nonzero historical usage and forwarding after
 restoration are not claimed from those file/service results. The complete
 campaign remains exit 1 (8 pass / 1 blocked / 3 fail).
+
+## usage — 2026-10-31
+
+> # Requests — Follow-up 4
+>
+> Usage — the D-105 hand-off path
+
+The current usage request file says “None”; the second quoted line is the
+orchestrator follow-up 18 assignment. The shared exports already support the
+controlled same-node path. For the requested usage AT20 hand-off case (lane
+label; accounting contract §10.5–§10.8), use this sequence:
+
+1. Use `PrepareInstallerNode`, `RegisterInstallerReleases`, real publication
+   and `MemberTransportStack(member, "installer-node")` to establish counted
+   traffic. Hold `HoldUsageAcknowledgements(ctx, "installer-node", true)`;
+   wait for nonzero `UnackedEvents[].Records` and save the CLI snapshot's
+   `NodeIncarnationID`, `LedgerEpoch`, `LastEventSeq`, `AckedThrough`, event
+   sequence/hash and byte totals. A nonempty payload is not sufficient evidence
+   of nonzero member bytes.
+2. Save `InstallerServices`; stop `fvpn-updater.timer`, `fvpn-updater.service`,
+   `fvpn-watchdog.service`, then `fvpn-agent.service` inside the installer
+   container. This is the same quiescence order as `RerunInstaller`. Keep the
+   usage hold throughout. Take two `UsageLedgerSnapshotBytes` calls and require
+   byte equality. Do not use the ordinary node's supervisor hook in systemd.
+3. Through `Stack.Call`, GET `/api/v1/admin/nodes/{id}` and POST
+   `/api/v1/admin/nodes/{id}/revoke` with its ETag in `If-Match`, a new
+   `Idempotency-Key`, and `{"reason":"TEST ONLY controlled reinstall"}`.
+   Expect 202, then GET `/api/v1/admin/nodes/{id}/incarnations` until the origin
+   is `retired` with `retired_at`. Wait for the returned operation's worker
+   effects when checking external peer revocation. No SQL retirement shortcut.
+4. POST `/api/v1/admin/enrollments` with `delivery:"installer"` and the **same
+   node_id**, extract the secret token privately, call
+   `HoldInstallerFirstPoll(ctx, true)`, then
+   `ControlledReinstall(ctx, "installer-node", token)`. Require `reenrolled`,
+   unchanged Node ID, different `InstallerOutcome.Incarnation`, matching
+   before/after usage DB/WAL hashes and retired identity/bound-state digests.
+   This wrapper leaves the services quiescent for sampling. Never rename or
+   relabel the surviving events as the new incarnation.
+5. Read the incarnations API again: it exports `incarnation_id`, `is_current`,
+   `state`, `retired_at`, `retire_reason` and retained usage per incarnation.
+   `InstallerOutcome.Incarnation` and the node's public `identity/node.json`
+   identify the new presenter. The CLI snapshot identifies the **current ledger
+   stream**, its `acked_through`, event sequence and payload hashes. After the
+   D-105 store transition it describes the new stream only. Save the origin
+   snapshot before reenrollment; the new stream's ACK is not the retired ACK. The API's usage `through` is a timestamp,
+   not a sequence ACK.
+6. `ConfigureInstallerServing`, release the first-poll barrier, and
+   `RestoreInstallerServices` with the state saved **before** the manual stop
+   (the reinstall wrapper sees those already-stopped units). Then release
+   `HoldUsageAcknowledgements`. D-105 must use the current certificate and
+   top-level current `node_incarnation_id`, with `origin_incarnation_id` set
+   to the retired origin; immutable events retain the old incarnation and
+   hashes. Save the real batch ACK and read-only `usage_checkpoints` row keyed
+   by `(node_id, incarnation_id)` to distinguish origin and current streams.
+   The central `highest_contiguous_seq` belongs to that selected stream; no ACK may be
+   borrowed from the new incarnation. Replay must leave origin totals unchanged.
+
+For the **local retired ACK**, stop the services again and use the existing
+`ExportContainerFile` to copy `state/usage.db` and its WAL (when present) into
+one private scratch directory, keeping the filenames paired. No process may
+write between the two exports. Open that coherent pair read-only and query:
+
+```sql
+SELECT incarnation_id, CAST(acked_through AS TEXT) AS acked_through,
+       CAST(last_seq AS TEXT) AS last_seq, ledger_epoch, final_code
+FROM retired_streams ORDER BY rowid;
+```
+
+This is evidence extraction, not retirement by SQL. The CLI does not yet expose
+retired tables. `RetiredStreams`, `RetiredUnacked` and `HandoffRejections` are
+product package readers, documented in [usage-store](../node/usage-store.md#retired-stream-hand-off-d-105-enr-05);
+the shared fixture does not call an internal product transition to simulate
+adoption. Existing CLI/file/API exports suffice for this hand-off path.
+
+Both central D-105 and usage-agent follow-up 3's retained store/uploader are
+already on this base. Central requires the replacement's `created_at` to be
+later than origin `revoked_at`. **The remaining production activation hook is
+in agent-core's `Engine.ensureUsage`, `node/agent/usage.go`: it still opens with
+`Options{Trust: e.trust}` rather than the verified reenrollment retirement
+option.** Until agent-core 25 integrates that hook under the node lock with old
+loops stopped, the surviving ledger fails closed on incarnation mismatch.
+The shared wrapper supplies neither that transition nor synthetic delivery.
+Usage AT should adopt the path after that hook lands and prove once-only
+attribution/ACKs. See the separate live [follow-up 18 outcomes](runs/2026-10-31/followup18/README.md);
+no prior blocked retired-stream assertion is promoted by documentation.
+Use the fresh installer-serving path for this hand-off. The separate
+post-successful-upgrade reenrollment in run `8a1124a1` failed `baseline_failed`
+with seed `HASH_MISMATCH`; its ledger was retained but that command is not a
+successful reinstall. [Diagnostic](runs/2026-10-31/followup18/8a1124a1-8653-4f8c-bd1b-2eb3ae5c3179/post-upgrade-reenroll-diagnostic.md).
+
+## portal / wire-nodes — 2026-10-31
+
+> ### D-093 harness audit — 2026-10-31, Follow-up 18
+>
+> D093-12
+
+This lane supports option (a), **a compiled TEST ONLY fixture fetcher**, if the
+worker/release owners choose it. This is a view, not an implemented product
+change. `internal/releases/verify.go` rejects local addresses and bypasses
+proxy environment settings; `apps/worker/jobs_nodes.go` unconditionally creates
+`NewHTTPSFetcher`. Merely registering a release over HTTP cannot bypass that
+worker decision. The portal's SQL `verified` remains a fixture shortcut today.
+
+Use a dedicated build tag such as `e2e_fixture_fetcher`, with mutually exclusive
+factory files (`//go:build e2e_fixture_fetcher` / `!e2e_fixture_fetcher`). Keep the
+strict default factory in every untagged build. The tagged implementation
+should still run the genuine manifest validation, origin allowlist, signature,
+length/hash verification and operation/read-back workflow; replace only the
+bounded TLS transport to a selected owned fixture origin. Refuse redirects and
+unlisted origins; never implement “always verified”. A corrupt artifact must
+produce a failed verification through the same worker job.
+
+For adoption, `mk/e2e.mk` would expose an explicit dev-only worker build mode,
+not append the tag to global `GOFLAGS`. `deploy/devstack/up.sh` would pass it
+only to `go build ./apps/worker/cmd/fvpn-worker`; the image context would carry
+the worker binary plus source commit, `go version -m` build settings (including
+`-tags`), binary SHA-256 and immutable image ID. Start the container by that
+recorded ID, then compare `docker inspect .Image` and the running container's
+`/usr/local/bin/service` hash with the receipt. Document the mode and both positive and
+corrupt-artifact runs in `docs/e2e`. Production packaging/CI must use clean
+untagged builds and fail if their build metadata includes this tag; those
+outside-owned gates need the worker/release owners, not an e2e-only assertion.
+The portal's non-Docker worker launcher also needs its own explicit tag and
+binary receipt when adopting the factory.
+
+An honest existing alternative is to point browser tests at this real Docker
+stack's API-created releases and isolated fixture origin, which the current
+worker verifies. This requires migrating the portal fixture setup and cannot
+retroactively close its current localhost/SQL row. No public artifact hosting
+or production SSRF relaxation is proposed. [All fifteen audit rows reconciled](portal-d093-reconciliation-2026-10-31.md).
+
+## security-ops — 2026-10-31
+
+> # Requests to orchestrator — Follow-up 12 (2026-10-31 UTC)
+
+`labstack.Stack` now exports `ArmFirstDesiredOffer`, `ReleaseDesiredOffer`, and
+`FirstDesiredOffer`. Rebuild the secops stack so its node image contains the
+new `fvpn-e2e-nodeconfig` proxy. Stop the ordinary node with the supervised
+`Stack.Service(ctx, "stop", "")`, arm the capture for that slot, then resume
+with `Stack.Service(ctx, "start", selectedRelease)`; read `selectedRelease`
+from `e2e/agent-selected` before stopping (normally `/usr/local`).
+Arming returns a capture UUID and holds actual desired GETs with 503 while
+observations can proceed. Perform the restore/retained-generation observation
+ordering required by D-099, then release the hold. Do not issue diagnostic
+GETs through loopback 9444 while armed: the first response must go to the
+retained agent. Separate direct-control probes remain separate evidence.
+
+Poll `FirstDesiredOffer` and require the matching capture UUID:
+
+- `first.generation`, exact `body_sha256`, byte count, `delivered_at`, and
+  `write_complete`, plus `http_status`: the first actual response flushed at the agent proxy,
+  never a compiler-row inference. A 304 or error is retained with no generation;
+  later 200 responses cannot overwrite it or turn it into a proven first offer.
+- `local.accepted_generation`, `applied_generation`, `envelope_sha256`, and
+  sample time: a read-only SQLite query of `state/agent.db` while processing
+  the agent's subsequent observation. It is retained only for the exact first
+  generation and digest. A successful write without this match is insufficient.
+- `ack.report_id`, `applied_generation`, HTTP status and receipt time: the
+  corresponding observation really reached control and got 200/202 while the
+  local store matched. Join `report_id` to the central observation if the
+  consuming lane also needs durable server-row evidence. A later generation's
+  ACK cannot satisfy the first offer.
+
+The HTTP-side marker lives solely in the test proxy; it is necessary because
+SQL compilation and separate probes do not prove delivery. Local acceptance
+is sampled, so a first generation superseded before the next observation stays
+**unproved**, not inferred accepted. The capture does not freeze subsequent
+compilation to manufacture a matching ACK. The focused live hold/release test
+is not itself PostgreSQL-restore acceptance; SECOPS-21 still needs the secops
+lane's greater-than-retained and restore guards. The live supplement
+[5f74d7c3](runs/2026-10-31/followup18/5f74d7c3-6404-461d-9f47-296bd69958c2/first-desired-offer.md)
+passes with first delivered generation 4 > retained 3, exact local digest and
+applied generation 4, and a 202 receipt joined to the central report. A real
+capacity PATCH/read-back supplies a new document in this test. Waiting for
+compilation or generation advancement while GETs are held is invalid: both
+occur on the agent GET. The earlier first-304 and polling mistakes are archived.
+
+## members — 2026-10-31
+
+> ### F8-01 — second-exit namespace restart does not regain serving
+
+`RestartNodeNamespace90(ctx, slot, nodeID)` is exported through `labstack` for
+`node` and `node2`. It stops the agent container, AdGuard and namespace holder,
+then starts namespace, AdGuard and agent in order. It keeps durable state and
+does not change generations or repair tc. The result contains before/after
+central generations, the first boot nft/tc read-back, timestamped heartbeat
+samples over the full first 90 seconds, all central observations in that
+window, first fresh forwarding observation if any, final nft/tc and agent log.
+It returns partial evidence on an error. Use only an established serving node;
+check generation equality and a fresh serving observation before claiming
+recovery. Agent-core follow-up 25 owns any product fix. The shared host kernel
+boot ID remains unchanged; this is namespace/process restart evidence.
+The current isolated second-exit fixture recovers at unchanged generation 3 in
+5.96 seconds, despite capturing an initial tc missing-link rejection; all 90
+seconds are retained. The original generation-30/full-mutation failure is not
+closed by that smaller reproduction. [Live evidence](runs/2026-10-31/followup18/daf790fc-81f7-49a2-8a65-f3ec8faec656/namespace-restart-90.md).
+
+## members — 2026-10-31
+
+> ### F8-02 — MTU 1280 bulk transfer incomplete
+
+The follow-up 18 native runner executes standalone dual 1500/1280 without
+reconnect, then the consumer's IPv4/IPv6/dual 1500 → dual 1280 reconnect matrix,
+plus forced IPv6 and IPv4 availability at 1280. It records transfer bytes,
+counters and native candidate families, captures TCP SYN MSS and ICMP/ICMPv6
+MTU messages on member and exit, and exports complete bounded pcaps with
+size/digest receipts under private `.agent/tmp`. Packet contents are not
+committed. [Measured verdicts and limits](runs/2026-10-31/followup18/README.md)
+remain separate from the archived members failure. A successful rerun alone
+cannot establish that reconnect caused that earlier failure.

@@ -1,0 +1,38 @@
+{
+  "id": "second-exit-counted",
+  "title": "Serving second exit before namespace fault",
+  "spec": [
+    "AT09",
+    "F8-01"
+  ],
+  "status": "fail",
+  "observations": [
+    {
+      "name": "member_route_before_selection",
+      "detail": "192.0.3.10 dev fvnb0 table netbird src 100.122.232.86 uid 0 \n    cache"
+    },
+    {
+      "name": "netbird_networks_before_selection",
+      "detail": "Available Networks:\n\n  - ID: fvpn-exit-421c2a1a2d0ba381bbebed3e\n    Network: 0.0.0.0/0\n    Status: Selected\n\n  - ID: fvpn-exit-4a88849e9ed494e8a41b53f9\n    Network: 0.0.0.0/0\n    Status: Not Selected"
+    },
+    {
+      "name": "exit_discovery_seconds",
+      "detail": "0.000"
+    },
+    {
+      "name": "exit_selection",
+      "detail": "expected exactly one API-published exit"
+    },
+    {
+      "name": "owner",
+      "detail": "w3-devstack-e2e: native client exit selection; see route and NetBird network evidence"
+    },
+    {
+      "name": "heartbeat",
+      "detail": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 26336294132788\nwall_unix_ns 1793442798777761634\npolicy_expires_mono_ns 29806060200067\nbaseline_ok 1\nserving 1\ngeneration 3\nreason serving"
+    }
+  ],
+  "at": "2026-10-31T10:33:20Z",
+  "run_id": "2454c833-ae93-48e0-96b0-00dee7cc3117",
+  "source_commit": "114d31df188dfa71b43c5884588e8f8f9ea958b2"
+}
