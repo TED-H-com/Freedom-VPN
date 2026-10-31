@@ -16,6 +16,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/fup"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes"
+	"github.com/TED-H-com/Freedom-VPN/internal/usage"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
@@ -163,6 +164,72 @@ func nextConfigGeneration(desired, applied, maxStored uint64) uint64 {
 	return base + 1
 }
 
+// restoreObservation checks central receipt time, never the node's wall clock.
+// The caller holds the node row lock, shared with SubmitObservation, so the
+// receipt and applied generation are from the same committed observation state.
+// FreezeIngest installs durable node operations before services start (D-095).
+// Their cutoff survives completion; updated_at alone would lose that boundary.
+func restoreObservation(ctx context.Context, tx pgx.Tx, nodeID, incarnationID uuid.UUID) (*time.Time, uuid.UUID, uint64, error) {
+	var mode string
+	var frozenAt, receivedAt *time.Time
+	var observationID *uuid.UUID
+	var appliedGen *string
+	err := tx.QueryRow(ctx, `SELECT s.mode,
+		coalesce((SELECT max(created_at) FROM operations
+		 WHERE principal=$3 AND resource_type='node' AND resource_id=$1),
+		 r.created_at, CASE WHEN s.mode <> 'normal' THEN s.updated_at END),
+		o.id, o.received_at, o.applied_generation::text
+		FROM usage_ledger_state s
+		JOIN usage_ledger_epochs e ON e.id=s.current_epoch
+		LEFT JOIN usage_recovery_records r ON r.id=e.recovery_record_id
+		LEFT JOIN LATERAL (SELECT id, received_at, applied_generation FROM node_observations
+		 WHERE node_id=$1 AND incarnation_id=$2
+		 ORDER BY received_at DESC, id DESC LIMIT 1) o ON true
+		WHERE s.id='00000000-0000-0000-0000-000000000130'`,
+		nodeID, incarnationID, usage.RestoreObservationPrincipal).Scan(&mode, &frozenAt, &observationID, &receivedAt, &appliedGen)
+	if err != nil {
+		return nil, uuid.Nil, 0, err
+	}
+	if frozenAt == nil && mode == "normal" {
+		return nil, uuid.Nil, 0, nil
+	}
+	if frozenAt == nil || receivedAt == nil || !receivedAt.After(*frozenAt) {
+		return nil, uuid.Nil, 0, apierr.New(apierr.DependencyUnavailable, usage.RestoreObservationStatus).
+			WithDetail("node_id", nodeID.String()).WithDetail("node_incarnation_id", incarnationID.String())
+	}
+	generation, err := strconv.ParseUint(*appliedGen, 10, 64)
+	return frozenAt, *observationID, generation, err
+}
+
+// releaseRestoreHold records receipt evidence, not an applied-policy success.
+// The compiler and receipt check have the node lock throughout this transaction.
+func releaseRestoreHold(ctx context.Context, tx pgx.Tx, nodeID, observationID uuid.UUID, frozenAt time.Time) error {
+	if _, err := tx.Exec(ctx, `UPDATE operations SET status='running',
+		resource_version=coalesce(resource_version,0)+1
+		WHERE principal=$1 AND resource_type='node' AND resource_id=$2
+		AND created_at <= $3 AND status='pending'`, usage.RestoreObservationPrincipal, nodeID, frozenAt); err != nil {
+		return err
+	}
+	if _, err := tx.Exec(ctx, `UPDATE operations op SET status='succeeded', completed_at=clock_timestamp(),
+		steps=jsonb_build_object('fresh_observation', jsonb_build_object(
+		 'order',1,'required',true,'status','succeeded','observed_ref','fresh_observation',
+		 'observed_at',ob.received_at,'updated_at',clock_timestamp())),
+		observed_refs=jsonb_build_object('fresh_observation','node_observation:' || ob.id::text),
+		resource_version=coalesce(op.resource_version,0)+1
+		FROM node_observations ob
+		WHERE op.principal=$1 AND op.resource_type='node' AND op.resource_id=$2
+		AND op.created_at <= $3 AND op.status='running' AND ob.id=$4`,
+		usage.RestoreObservationPrincipal, nodeID, frozenAt, observationID); err != nil {
+		return err
+	}
+	_, err := tx.Exec(ctx, `UPDATE nodes SET drift=coalesce((
+		SELECT jsonb_agg(d) FROM jsonb_array_elements(drift) d WHERE d->>'field' <> $2), '[]'::jsonb),
+		resource_version=resource_version+1
+		WHERE id=$1 AND drift @> jsonb_build_array(jsonb_build_object('field',$2::text))`,
+		nodeID, usage.RestoreObservationField)
+	return err
+}
+
 // Compile compiles a new monotonically increasing config_generation for nodeID,
 // signs the DesiredState with the desired-state key purpose, and persists it (§5, §14.7).
 func (c *Compiler) Compile(ctx context.Context, nodeID uuid.UUID) (CompiledDesiredState, error) {
@@ -217,9 +284,17 @@ func (c *Compiler) CompileTx(ctx context.Context, tx pgx.Tx, nodeID uuid.UUID) (
 		return CompiledDesiredState{}, apierr.Newf(apierr.StateConflict, "node %s has no active incarnation", nodeID)
 	}
 	incarnationID := *currentIncarnationID
+	frozenAt, restoreObservationID, freshAppliedGen, err := restoreObservation(ctx, tx, nodeID, incarnationID)
+	if err != nil {
+		return CompiledDesiredState{}, err
+	}
 
 	currentGen, _ := strconv.ParseUint(currentGenStr, 10, 64)
 	appliedGen, _ := strconv.ParseUint(appliedGenStr, 10, 64)
+	// A fresh central receipt can have an older node wall clock. In that case
+	// SubmitObservation preserves the projected nodes fields, but the receipt's
+	// applied generation still fences our first post-restore offer (D-095).
+	appliedGen = max(appliedGen, freshAppliedGen)
 	var maxStoredGenStr string
 	if err := tx.QueryRow(ctx, `
 		SELECT coalesce(max(generation), 0)::text
@@ -603,6 +678,11 @@ func (c *Compiler) CompileTx(ctx context.Context, tx pgx.Tx, nodeID uuid.UUID) (
 
 	if c.documentIssued != nil {
 		if err := c.documentIssued(ctx, tx, desired); err != nil {
+			return CompiledDesiredState{}, err
+		}
+	}
+	if frozenAt != nil {
+		if err := releaseRestoreHold(ctx, tx, nodeID, restoreObservationID, *frozenAt); err != nil {
 			return CompiledDesiredState{}, err
 		}
 	}

@@ -1,67 +1,25 @@
-# Wave 4 member acceptance — Follow-up 6
+# Member acceptance
 
-Run only the assigned `w4-members / 24000` stack. [RUN.md](RUN.md) records the
-Follow-up 6 execution; [summary.md](summary.md) lists current AT outcomes and
-[requests.md](requests.md) names the resolved AT02 ingress injection (#219) and
-F4-01 D-067 / revision 11 (#193, #213, #216) checks along with remaining owners.
-Prior evidence is preserved under [history/follow-up-5](history/follow-up-5/RUN.md),
-[history/follow-up-4](history/follow-up-4/RUN.md) and
-[history/follow-up-3](history/follow-up-3/RUN.md).
+Assigned instance: `FVPN_E2E_PREFIX=w4-members FVPN_E2E_PORT_BASE=24000`.
+Current outcomes: [summary.md](summary.md), [run ledger](RUN.md), and the ten current AT JSON/Markdown pairs. The full target exits nonzero while a complete case is blocked. [D077.md](D077.md) indexes the production device re-authorization calls, bodies, operation IDs and fence counts.
 
 ```sh
 FVPN_E2E_PREFIX=w4-members FVPN_E2E_PORT_BASE=24000 E2E_RESET=1 make -f mk/e2e.mk e2e-up
 make -f mk/at-members.mk at-members
 make -f mk/at-members.mk at-members-readback
 FVPN_E2E_PREFIX=w4-members FVPN_E2E_PORT_BASE=24000 make -f mk/e2e.mk e2e-down
-```
-
-The full target is intentionally non-green when any complete AT is blocked.
-The readback target records supplemental scheduled observations (such as the
-300-second feed refresh and immutable restart timeline) on the same images and
-incarnation; its successful exit cannot pass a full AT.
-
-D-050 applies throughout: signed releases use `PrepareServingBaseline`; groups,
-plans, grants, publication and devices use product APIs and production admission.
-Native login uses the shared Dex walker. Two barrier-synchronized goroutines
-exercise the real device adapter for the last slot. SQL reads projections; only
-synthetic audit retention inputs are inserted directly.
-
-Billing uses real checkout sessions, authenticated provider snapshots and exact
-signed hook bytes for every event, including created and failed. Replays are
-paced two seconds apart, asserted once and never retried after a 429. No limiter
-setting, invoice, subscription or entitlement projection is changed by the test.
-
-Forwarding records contain native route selection, route interface, node named
-counter snapshots and concurrent bounded packet observations inside the member,
-node and origin containers. The observer keeps only counts by interface and
-direction for the controlled TCP connection; no packet body, URL history or
-credential is retained. Both a CA-verified origin response and increases in the
-specific device's upload/download counters, plus authenticated origin receipt
-from the selected node's SNAT address, are required for counted forwarding.
-In AT02, strict post-withdrawal ingress is also measured on `fvmb0` via
-`labstack.Stack.ObserveMemberIngress` (`tun-mirred`, link type `65534`, port `40000` -> `192.0.4.10:9`).
-See [forwarding-observation.md](forwarding-observation.md).
-
-DNS policy revisions reuse one active definition. Node-mTLS document digests
-and typed `dns_policy_evidence` distinguish publication from actual application.
-The scheduled feed experiment tests `attribution:null`, rejects blank notes,
-then observes a real failed refresh and retained last-good content. Loopback DNS
-is explicitly separate from native member DNS; the stock client disables DNS.
-
-Records include run UUID, source/build/image digests, UTC timestamps, commands,
-expected/actual results, policy revisions and incarnation. `complete:false`
-means an incremental record, never a completed AT. Raw logs, provider bodies,
-signatures and credentials stay out of public evidence.
-
-[OPERATORS.md](OPERATORS.md) retains exact **needs operator run** scripts for
-Windows/macOS/iOS/Android, physical arm64 and second physical NAT.
-[PROCEDURES.md](PROCEDURES.md) describes the complete acceptance matrix.
-
-```sh
 make -f mk/at-members.mk at-members-lint at-members-test at-members-build
 make go-lint
-go vet -tags e2e ./tests/...
+mkdir -p .agent/tmp
+TMPDIR="$PWD/.agent/tmp" GOTMPDIR="$PWD/.agent/tmp" CGO_ENABLED=0 GOTOOLCHAIN=local go vet ./...
 ```
 
-The unchanged workflow uses the existing shared Portal browser dependency,
-checks the owned packages and tears down only this prefix.
+Use a fresh stack. The readback target supplements the same run and verifies image/incarnation identity; it does not overwrite primary failures or pass blocked cases. The primary deadline is 35 minutes (Go test limit 40 minutes); the manually dispatched workflow reserves 60 minutes for startup, scheduled readback and cleanup. Disk scratch is private under the worktree's `.agent/tmp`; no host tmpfs is used.
+
+Signed releases, native peers and second exits reuse the shared lab hooks. Groups, plans and grants use the product APIs; quota contention uses the real production adapter. D-077 adds only the explicitly authorized restore-fence SQL input. D-081 fixture grant retirement uses the production domain transaction, pending a shared downgrade export. No identity, device, entitlement, binding or observation projection is repaired.
+
+Forwarding requires a controlled origin receipt and the named device counters; [forwarding-observation.md](forwarding-observation.md) explains the boundary. Operation acceptance remains distinct from observed completion, including the existing operation returned by fenced re-grants. Billing replays are paced and asserted once; DNS loopback probes are distinct from native fallback. Credentials and raw provider signatures are not published.
+
+[BLOCKERS.md](BLOCKERS.md) and [requests.md](requests.md) retain F4-03/04/05/06/07/10. [OPERATORS.md](OPERATORS.md) retains exact **needs operator run** procedures for Windows/macOS/iOS/Android, physical arm64 and second NAT. The complete matrix is in [PROCEDURES.md](PROCEDURES.md).
+
+[Follow-up 6](history/follow-up-6/RUN.md) and the [interrupted fixture](history/follow-up-7/attempt-1/RUN.md) and [meter-collision](history/follow-up-7/attempt-2/RUN.md) attempts remain archived. Current pass claims come only from the final run.

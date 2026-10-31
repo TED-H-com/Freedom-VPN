@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 )
 
 // DeliveryError preserves the HTTP evidence without retaining a response body,
@@ -28,6 +29,16 @@ func (e *DeliveryError) Unwrap() error { return e.Op }
 
 func (e *DeliveryError) rejected() bool {
 	return e.HTTPStatus >= 400 && e.HTTPStatus < 500 && e.HTTPStatus != 409 && e.HTTPStatus != 429
+}
+
+func installerResultPending(payload []byte, status int, code string) bool {
+	if status != http.StatusNotFound || code != string(apierr.ResourceNotFound) {
+		return false
+	}
+	var result struct {
+		Source api.UpdateResultSource `json:"source"`
+	}
+	return json.Unmarshal(payload, &result) == nil && result.Source == api.UpdateResultSourceInstaller
 }
 
 func responseCode(body []byte) string {

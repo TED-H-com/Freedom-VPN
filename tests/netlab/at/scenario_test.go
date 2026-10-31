@@ -67,6 +67,10 @@ func TestAT10_HostAndUpstream(t *testing.T) {
 
 	m := labModel(3000, allBinds(), nil)
 	doc := applyModel(t, m)
+	if !doc.Verified || len(doc.Evidence.TC) == 0 || string(doc.Evidence.TC) == "null" {
+		fail(t, &rec, "serving verification lacks tc evidence")
+	}
+	_ = isolation.WriteExtra(evidenceDir(), "lab-AT10-tc.json", string(doc.Evidence.TC)+"\n")
 	if doc.Admitted != 3 {
 		fail(t, &rec, "admitted %d, want 3", doc.Admitted)
 	}
@@ -158,6 +162,7 @@ func TestAT10_HostAndUpstream(t *testing.T) {
 	rec.Status = isolation.StatusPass
 	rec.Actual = fmt.Sprintf("20 regenerations, interface flap, rate %.1f attempts/s, protected destinations denied, 203.0.113.10:80 allowed, captures empty. This is the mechanism lab, not the assembled stack.", rate)
 	rec.Observations = []isolation.Observation{
+		{Name: "tc_readback", Detail: string(doc.Evidence.TC)},
 		{Name: "attempts", Detail: fmt.Sprintf("%d", stat.Attempts)},
 		{Name: "seconds", Detail: fmt.Sprintf("%.3f", stat.Seconds)},
 		{Name: "rate_per_s", Detail: fmt.Sprintf("%.2f", rate)},

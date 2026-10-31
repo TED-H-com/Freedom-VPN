@@ -19,11 +19,14 @@ If PostgreSQL is restored from a backup or point-in-time snapshot taken at $T_{\
 ## 2. Step-by-Step Restore & Replay Procedure (`§17.3`, `AT30`)
 
 ### Step 1: Freeze Ingest (`FreezeIngest`)
-Before or immediately upon bringing up the restored database, freeze usage ingestion so nodes receive `503 SERVICE_UNAVAILABLE` (`retryable: true`) and do not advance watermarks or prune local spools:
+Keep control and worker services stopped while restoring PostgreSQL. Run **freeze-ingest on the restored database before starting either service** (the operator CLI subcommand is `freeze`). Verify that the command succeeds, then start control/worker and proceed to Step 2. D-095 requires this ordering: the restore marker must exist before any compiler can offer a generation based only on restored observations. Frozen usage ingestion returns `503 DEPENDENCY_UNAVAILABLE` (`retryable: true`), preventing nodes from advancing watermarks or pruning local spools:
 ```go
-err := usageSvc.FreezeIngest(ctx)
+err := usageSvc.FreezeIngest(ctx, actorUUID, "planned snapshot restore")
 ```
 - Sets `usage_ledger_state.mode = 'frozen'` and appends a `usage_ledger.freeze` audit event on `fleet_config:00000000-0000-0000-0000-000000000001` with `usage_ledger_id = "00000000-0000-0000-0000-000000000130"` in `changes.after` (Decision D-051).
+- Atomically records per-node freeze cutoffs and pending `fresh_observation` steps in `node.update` operations with principal `system:restore-observation` (D-095). These operations retain the boundary after recovery completes; audit retention cannot release an unreported node. Repeating `freeze` while already frozen preserves the original cutoff.
+
+**What operators see (D-095):** `GET /api/v1/admin/nodes/{node_id}` includes a `drift` entry with field `desired_state_restore_observation` and observed status **`pending fresh observation after restore`**; the corresponding operation's `fresh_observation` step has the same message. Compilation returns retryable `503 DEPENDENCY_UNAVAILABLE` with this status and node/incarnation IDs, leaving the last issued envelope and generation unchanged. The hold clears on the next successful compile after central receives an observation from the node's current incarnation strictly after the freeze time. `complete-recovery` alone does not clear it, including for a node never compiled during recovery. Receipt time, not the node's `observed_at`, determines freshness; replaying a deduplicated old report cannot release the hold. A completed `fresh_observation` step confirms receipt only, not policy application.
 
 ### Step 2: Enter Recovery Mode & Rotate `ledger_epoch` (`BeginRecovery`)
 Invoke `BeginRecovery` with the operator reason and actor ID:

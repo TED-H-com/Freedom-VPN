@@ -22,6 +22,26 @@ import (
 
 const faultMarker = "/var/lib/vpn-node/e2e/corrupt-resolver"
 const faultEvidence = "/var/lib/vpn-node/e2e/resolver-fault.json"
+const usageHoldMarker = "/var/lib/vpn-node/e2e/hold-usage"
+
+// usageWithholdBody is the agent-visible 503. Control-side FreezeIngest is
+// the product fault, but releasing it mints a new ledger epoch. This marker
+// is the lab transport boundary the agent actually dials (127.0.0.1:9444).
+const usageWithholdBody = `{"error":{"code":"DEPENDENCY_UNAVAILABLE","message":"usage acknowledgements withheld","request_id":"00000000-0000-0000-0000-000000000000","retryable":true,"details":{}}}`
+
+func withholdUsage(w http.ResponseWriter, r *http.Request, marker string) bool {
+	if r.Method != http.MethodPost || r.URL.Path != "/api/v1/agent/usage-batches" {
+		return false
+	}
+	if _, err := os.Stat(marker); err != nil {
+		return false
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Cache-Control", "no-store")
+	w.WriteHeader(http.StatusServiceUnavailable)
+	_, _ = io.WriteString(w, usageWithholdBody)
+	return true
+}
 
 type resolverFault struct {
 	marker, evidence string
@@ -99,6 +119,12 @@ func resolverProxy() error {
 	proxy.ErrorHandler = func(w http.ResponseWriter, _ *http.Request, _ error) {
 		http.Error(w, "lab transport unavailable", http.StatusBadGateway)
 	}
-	srv := &http.Server{Addr: "127.0.0.1:9444", Handler: proxy, ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 30 * time.Second, WriteTimeout: 30 * time.Second, TLSConfig: &tls.Config{MinVersion: tls.VersionTLS12, ClientCAs: clientRoots, ClientAuth: tls.RequireAndVerifyClientCert}}
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if withholdUsage(w, r, usageHoldMarker) {
+			return
+		}
+		proxy.ServeHTTP(w, r)
+	})
+	srv := &http.Server{Addr: "127.0.0.1:9444", Handler: handler, ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 30 * time.Second, WriteTimeout: 30 * time.Second, TLSConfig: &tls.Config{MinVersion: tls.VersionTLS12, ClientCAs: clientRoots, ClientAuth: tls.RequireAndVerifyClientCert}}
 	return srv.ListenAndServeTLS("/etc/vpn-node/fault-proxy.crt", "/etc/vpn-node/fault-proxy.key")
 }

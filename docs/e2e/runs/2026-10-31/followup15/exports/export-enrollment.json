@@ -1,0 +1,35 @@
+{
+  "id": "export-enrollment",
+  "title": "Harness key replay, race and actual one-time peer bootstrap",
+  "spec": [
+    "§6.2",
+    "AT06",
+    "ENR-04"
+  ],
+  "status": "pass",
+  "observations": [
+    {
+      "name": "race_result",
+      "detail": "{\"enroll_http\":201,\"bootstrap_http\":0,\"request_sha256\":\"9f2cf36fec4eeb24f678a46e2a222847939718833d9f1dfda5a22d7d6a821b53\",\"response_discarded\":true,\"joined\":false,\"node_id\":\"00000000-0000-0000-0000-000000000000\",\"incarnation_id\":\"00000000-0000-0000-0000-000000000000\"}"
+    },
+    {
+      "name": "race_result",
+      "detail": "{\"enroll_http\":409,\"bootstrap_http\":0,\"error_code\":\"ENROLLMENT_KEY_MISMATCH\",\"request_sha256\":\"b5256d7a0154c92d283e9db3c38e3b2eb6c0779441bb7328be152594643ed68b\",\"response_discarded\":true,\"joined\":false,\"node_id\":\"00000000-0000-0000-0000-000000000000\",\"incarnation_id\":\"00000000-0000-0000-0000-000000000000\"}"
+    },
+    {
+      "name": "replay_join",
+      "detail": "{\"enroll_http\":200,\"bootstrap_http\":200,\"request_sha256\":\"9f2cf36fec4eeb24f678a46e2a222847939718833d9f1dfda5a22d7d6a821b53\",\"response_discarded\":false,\"joined\":true,\"node_id\":\"01a19037-19ff-70f0-925a-42c19eb86120\",\"incarnation_id\":\"e11d0386-8ca2-47a7-a58f-096188bc4e09\"}"
+    },
+    {
+      "name": "peer_inventory",
+      "detail": "{\"enrollment_id\":\"01a19037-19ff-70ef-91f7-1d5f49a9c687\",\"operation_id\":\"01a19037-1ed0-7a00-99cf-70ebe3090a9d\",\"node_id\":\"01a19037-19ff-70f0-925a-42c19eb86120\",\"incarnation_id\":\"e11d0386-8ca2-47a7-a58f-096188bc4e09\",\"enrollment_state\":\"consumed\",\"setup_keys\":1,\"setup_key_uses\":1,\"correlation_groups\":0,\"peers\":1,\"projected_peer_present\":true,\"complete\":true}"
+    },
+    {
+      "name": "incarnation_history",
+      "detail": "current API incarnation observed; complete history/count remains ENR-03, nodes/control + PKI"
+    }
+  ],
+  "at": "2026-10-31T04:28:28Z",
+  "run_id": "12d10041-9d33-4fbb-a4b0-9d2a21bce785",
+  "source_commit": "4fb5fa88ac400605ac08ee42c8eac99e936ec2a3"
+}

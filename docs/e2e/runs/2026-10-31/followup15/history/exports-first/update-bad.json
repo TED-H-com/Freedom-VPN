@@ -1,0 +1,87 @@
+{
+  "id": "update-bad",
+  "title": "Tampered artifact fails closed",
+  "spec": [
+    "§13.4",
+    "§19 AT25",
+    "§19 AT27"
+  ],
+  "status": "pass",
+  "observations": [
+    {
+      "name": "batch",
+      "detail": "202"
+    },
+    {
+      "name": "fleet_generation",
+      "detail": "3"
+    },
+    {
+      "name": "target_count",
+      "detail": "1"
+    },
+    {
+      "name": "desired_contains_release",
+      "detail": "true"
+    },
+    {
+      "name": "running_candidate_executable",
+      "detail": "false"
+    },
+    {
+      "name": "exit_code",
+      "detail": "1"
+    },
+    {
+      "name": "locally_succeeded",
+      "detail": "false"
+    },
+    {
+      "name": "rolled_back",
+      "detail": "false"
+    },
+    {
+      "name": "HASH_MISMATCH",
+      "detail": "true"
+    },
+    {
+      "name": "recovery_required",
+      "detail": "false"
+    },
+    {
+      "name": "ISOLATION_BASELINE_MISSING",
+      "detail": "false"
+    },
+    {
+      "name": "artifact url address",
+      "detail": "false"
+    },
+    {
+      "name": "health_json",
+      "detail": "-"
+    },
+    {
+      "name": "health_attestation",
+      "detail": "-"
+    },
+    {
+      "name": "error_code",
+      "detail": "-"
+    },
+    {
+      "name": "result_last_error",
+      "detail": "-"
+    },
+    {
+      "name": "journal_excerpt",
+      "detail": "fvpn-updater: updater: HASH_MISMATCH: artifact"
+    },
+    {
+      "name": "note",
+      "detail": "tampered bytes were rejected"
+    }
+  ],
+  "at": "2026-10-31T03:44:34Z",
+  "run_id": "926791b9-36ef-4051-9d44-cd7eafdc8792",
+  "source_commit": "9e493e8f6407dd7f091963fb7e133a11123305c3"
+}

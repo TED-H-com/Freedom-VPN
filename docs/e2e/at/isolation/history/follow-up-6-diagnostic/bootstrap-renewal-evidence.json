@@ -1,0 +1,133 @@
+{
+  "leases": [
+    {
+      "lease_id": "9bb2ea15-0ec1-41d6-a9c2-0f8d5b4f82c5",
+      "issued_at": "2026-10-31T04:19:32.795151Z",
+      "generation": "0",
+      "member_count": 0
+    },
+    {
+      "lease_id": "fe75cb74-80b7-4e91-9b41-5be7ff2595ea",
+      "issued_at": "2026-10-31T04:19:37.797693Z",
+      "generation": "0",
+      "member_count": 0
+    },
+    {
+      "lease_id": "57b43986-e5a6-4d5d-8670-dcd4068c710b",
+      "issued_at": "2026-10-31T04:19:42.988976Z",
+      "generation": "1",
+      "member_count": 0
+    },
+    {
+      "lease_id": "24c80b0c-c9e7-41ef-9391-3364e91c4118",
+      "issued_at": "2026-10-31T04:20:02.989129Z",
+      "generation": "1",
+      "member_count": 0
+    },
+    {
+      "lease_id": "f9aeaf67-ded6-43aa-8ce0-be46af7a39e4",
+      "issued_at": "2026-10-31T04:20:08.135306Z",
+      "generation": "3",
+      "member_count": 0
+    },
+    {
+      "lease_id": "fb00f1e3-6592-4442-8c00-5f89d98af98c",
+      "issued_at": "2026-10-31T04:20:13.361945Z",
+      "generation": "5",
+      "member_count": 0
+    },
+    {
+      "lease_id": "cc8713ef-8316-4088-9954-d112d40049e3",
+      "issued_at": "2026-10-31T04:20:47.809763Z",
+      "generation": "6",
+      "member_count": 1
+    },
+    {
+      "lease_id": "fe0feae6-b24a-45e2-b7fc-0bac9d4ebc1b",
+      "issued_at": "2026-10-31T04:20:58.108577Z",
+      "generation": "8",
+      "member_count": 1
+    },
+    {
+      "lease_id": "182feeb1-88e8-4a91-8d55-f835298dc744",
+      "issued_at": "2026-10-31T04:21:13.555317Z",
+      "generation": "9",
+      "member_count": 1
+    },
+    {
+      "lease_id": "1d6b9f64-a201-4559-879c-fd57697e27fc",
+      "issued_at": "2026-10-31T04:21:18.757431Z",
+      "generation": "10",
+      "member_count": 2
+    }
+  ],
+  "reports": [
+    {
+      "errors": [
+        {
+          "code": "HEALTH_CHECK_FAILED",
+          "stage": "probe",
+          "message": "tunnel_probe",
+          "observed_at": "2026-10-31T04:19:32.81843349Z"
+        }
+      ],
+      "safety": "failed",
+      "reasons": [
+        "policy_missing",
+        "safety_check_failed"
+      ],
+      "report_id": "01a1902f-2b68-7425-8b73-2edddf16a9b5",
+      "generation": null,
+      "observed_at": "2026-10-31T04:19:32.840269374Z",
+      "provisioning": "applying",
+      "observation_id": "aed0c102-5cb6-4996-a93a-3d9398c06fb9"
+    },
+    {
+      "errors": [],
+      "safety": "passed",
+      "reasons": [
+        "not_published"
+      ],
+      "report_id": "01a1902f-a15a-72ec-a8da-9d9c54d3e109",
+      "generation": "1",
+      "observed_at": "2026-10-31T04:20:03.034188776Z",
+      "provisioning": "ready",
+      "observation_id": "63e603df-3f0c-4230-aec1-3bd10261a431"
+    },
+    {
+      "errors": [],
+      "safety": "passed",
+      "reasons": [],
+      "report_id": "01a1902f-b5a5-7cff-9a9e-4b3c831ecc72",
+      "generation": "3",
+      "observed_at": "2026-10-31T04:20:08.229847578Z",
+      "provisioning": "ready",
+      "observation_id": "6db58ccb-a7fc-4cb6-a420-7b7a47bafb86"
+    },
+    {
+      "errors": [],
+      "safety": "passed",
+      "reasons": [],
+      "report_id": "01a19030-3c2a-7899-aa3a-bf34dd5c46f4",
+      "generation": "5",
+      "observed_at": "2026-10-31T04:20:42.666560234Z",
+      "provisioning": "ready",
+      "observation_id": "3bd71dc2-6f4e-41cf-92e9-8ae935f5b445"
+    },
+    {
+      "errors": [],
+      "safety": "passed",
+      "reasons": [],
+      "report_id": "01a19030-b521-7a82-adbb-e799712d0c42",
+      "generation": "9",
+      "observed_at": "2026-10-31T04:21:13.633685535Z",
+      "provisioning": "ready",
+      "observation_id": "51fb71f3-93d4-464b-921a-66e32391d673"
+    }
+  ],
+  "awaiting_report_count": 0,
+  "run_id": "82eac082-27a1-4526-b1a4-ae05246824b2",
+  "build": "5ddd1126ff1ea72799384b9543f80419cfad4ebf",
+  "cutoff": "2026-10-31T04:21:40Z",
+  "scope": "Read-only accepted report and issuance history through the first counted control start; no synthetic observations submitted."
+}
