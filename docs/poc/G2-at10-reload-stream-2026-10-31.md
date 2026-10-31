@@ -235,3 +235,36 @@ python3 tests/netlab/scripts/reload_analysis.py \
   --apply <directory>/at10-apply.jsonl --trace-base <directory>/at10 \
   --output .agent/tmp/at10-analysis.json --d120
 ```
+
+### Follow-up 18 measured verdicts
+
+Both fresh-topology runs are **AT10 PASS under D-120**. The full lane gate
+passed in 215.374 s; its AT10/AT13 scenario passed in 18.36 s. The independent
+focused scenario passed in 19.056 s. Production enforcement is unchanged.
+
+| Run | Reloads / verified Applies | Datagrams | UDP losses / TCP timeouts | Maximum guard upper bound / render→installed (ms) | Capture counts: origin / node / responder |
+| --- | --- | --- | --- | --- | --- |
+| Full lane | 100 / 101 | 48 | 1 / 0 | 49.925007 / 31.036204 | 97 / 195 / 98 |
+| Focused | 100 / 101 | 52 | 0 / 0 | 53.039064 / 30.299261 | 106 / 212 / 106 |
+
+Every capture has zero kernel drops and parsed count equal to reported count;
+every measured datagram has node ingress and a completed read. Sidecar/text
+verdicts agree and all 101 Apply records verify in each run. Captures include
+extra packets after the sidecar boundary while the same stream continues for
+AT13; those headers are retained and counted, not invented sidecar records.
+
+| Datagram | Generation | Outer bracket start / end (Unix ns) | Upper bound (ms) | Render→installed (ms) | Classification | Next datagram | Failing conditions |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 19 (lane) | 1039 | 1793440487062509962 / 1793440487088038517 | 25.528070 | 13.781637 | boundary | 20: ok | none |
+
+This loss differs from the follow-up 17 samples: request ingress **and egress**
+and responder ingress/egress are observed, as is reply ingress on `fv-ih`.
+The first missing packet stage is reply egress on `fv-fh`. Node request ingress
+at 1793440487064678000 ns still lies in exactly one verified outer bracket;
+that is the D-120 criterion. The trace does not prove the precise drop instant.
+There are no consecutive losses, no TCP timeout, and one loss per 100 reloads.
+The focused run's per-loss table explicitly says `(no UDP losses)`.
+
+See [lane verdict](G2-followup18-evidence/lane/TestAT10_AT13_ReloadRevokeBaseline/d120-verdict.txt)
+and [focused verdict](G2-followup18-evidence/focused/TestAT10_AT13_ReloadRevokeBaseline/d120-verdict.txt),
+with their adjacent raw captures, sidecar, Apply JSONL and complete analysis.
