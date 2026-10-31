@@ -237,12 +237,16 @@ func (r *runner) installerCapture17(ctx context.Context, s *Stack) {
 	origin := s.lab.prefix + "-origin"
 	cmd := exec.CommandContext(ctx, "docker", "exec", origin, "sh", "-c", `timeout 15 tcpdump -U -nn -i lo -c 2 -w /tmp/e2e-origin.pcap 'tcp port 443' >/tmp/e2e-capture.log 2>&1 & pid=$!; sleep 1; wget -q --no-check-certificate -O /dev/null https://127.0.0.1/healthz; wait "$pid"`)
 	captureErr := cmd.Run()
-	path := filepath.Join(s.lab.root, ".agent", "tmp", "followup17-origin.pcap")
+	scratch := filepath.Join(s.lab.root, ".agent", "tmp")
+	if os.Getenv("FVPN_E2E_FOLLOWUP19") == "1" {
+		scratch = filepath.Join(scratch, "followup19", r.runID)
+	}
+	path := filepath.Join(scratch, "followup17-origin.pcap")
 	capture, exportErr := s.ExportContainerFile(ctx, "origin", "/tmp/e2e-origin.pcap", path)
 	noteJSON(&rec, "origin_pcap", capture)
 	// The independent large fixture exceeds the old diagnostic ceiling.
 	_, createErr := r.lab.docker(origin, "sh", "-c", "dd if=/dev/zero of=/tmp/e2e-large-export bs=1048576 count=3 status=none")
-	large, largeErr := s.ExportContainerFile(ctx, "origin", "/tmp/e2e-large-export", filepath.Join(s.lab.root, ".agent", "tmp", "followup17-large-export"))
+	large, largeErr := s.ExportContainerFile(ctx, "origin", "/tmp/e2e-large-export", filepath.Join(scratch, "followup17-large-export"))
 	noteJSON(&rec, "large_export", large)
 	_, overflowErr := r.lab.docker(origin, "cat", "/tmp/e2e-large-export")
 	note("diagnostic_overflow_explicit", boolText(overflowErr != nil))
