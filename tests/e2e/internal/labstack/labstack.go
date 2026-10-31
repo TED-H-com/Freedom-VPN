@@ -65,6 +65,8 @@ type MemberTransportStatus = e2e.MemberTransportStatus
 type DNSPathObservation = e2e.DNSPathObservation
 
 type GrantTransition = e2e.GrantTransition
+type GrantWireEvent = e2e.GrantWireEvent
+type DNSQueryTrace = e2e.DNSQueryTrace
 
 type EnrollingFleetSnapshot = e2e.EnrollingFleetSnapshot
 type NativeFixtureInputs = e2e.NativeFixtureInputs
