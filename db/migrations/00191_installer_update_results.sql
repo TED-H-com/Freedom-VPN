@@ -19,3 +19,9 @@ CREATE INDEX installer_update_results_latest ON installer_update_results(node_id
 CREATE TRIGGER installer_update_results_immutable BEFORE UPDATE OR DELETE ON installer_update_results FOR EACH ROW EXECUTE FUNCTION immutable_row();
 CREATE TRIGGER installer_update_results_no_truncate BEFORE TRUNCATE ON installer_update_results FOR EACH STATEMENT EXECUTE FUNCTION immutable_row();
 COMMENT ON TABLE installer_update_results IS 'Project Spec §13.8, §13.10.3, §15.4; D-089 installer-applied node evidence, never central batch results.';
+
+-- +goose Down
+DROP TRIGGER installer_update_results_immutable ON installer_update_results;
+DROP TRIGGER installer_update_results_no_truncate ON installer_update_results;
+DROP INDEX installer_update_results_latest;
+DROP TABLE installer_update_results;
