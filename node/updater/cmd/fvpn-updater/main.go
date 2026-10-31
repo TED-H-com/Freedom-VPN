@@ -24,7 +24,7 @@ func main() {
 
 func run(args []string, stdout, stderr io.Writer) int {
 	if len(args) == 0 {
-		fmt.Fprintln(stderr, "usage: fvpn-updater <run|recover|flush|status|apply|version>")
+		fmt.Fprintln(stderr, "usage: fvpn-updater <run|recover|flush|status|apply|seed|version>")
 		return 64
 	}
 	switch args[0] {
@@ -33,9 +33,9 @@ func run(args []string, stdout, stderr io.Writer) int {
 			fmt.Fprintln(stdout, updater.Version)
 			return 0
 		}
-		fmt.Fprintln(stderr, "usage: fvpn-updater <run|recover|flush|status|apply|version>")
+		fmt.Fprintln(stderr, "usage: fvpn-updater <run|recover|flush|status|apply|seed|version>")
 		return 0
-	case "run", "recover", "flush", "apply":
+	case "run", "recover", "flush", "apply", "seed":
 		return command(args[0], args[1:], stderr)
 	case "status":
 		return status(args[1:], stdout, stderr)
@@ -94,6 +94,11 @@ func command(name string, args []string, stderr io.Writer) int {
 	fs.SetOutput(stderr)
 	cfgPath := fs.String("config", "", "updater config JSON (paths only, no keys)")
 	pending := fs.String("pending", "", "installer pending-release.json to apply")
+	var manifest, tree string
+	if name == "seed" {
+		fs.StringVar(&manifest, "manifest", "", "retained signed release envelope")
+		fs.StringVar(&tree, "tree", "", "resolved current release directory to verify")
+	}
 	if err := fs.Parse(args); err != nil {
 		return 64
 	}
@@ -107,6 +112,10 @@ func command(name string, args []string, stderr io.Writer) int {
 	}
 	if fs.NArg() != 0 || (name != "apply" && *pending != "") {
 		fmt.Fprintln(stderr, "fvpn-updater: unexpected arguments")
+		return 64
+	}
+	if name == "seed" && (strings.TrimSpace(manifest) == "" || strings.TrimSpace(tree) == "") {
+		fmt.Fprintln(stderr, "fvpn-updater: seed requires -config, -manifest and -tree")
 		return 64
 	}
 	cfg, err := updater.LoadConfig(*cfgPath)
@@ -134,6 +143,8 @@ func command(name string, args []string, stderr io.Writer) int {
 		runErr = eng.Recover(ctx)
 	case "apply":
 		runErr = eng.ApplyPending(ctx, *pending)
+	case "seed":
+		runErr = eng.Seed(ctx, manifest, tree)
 	default:
 		runErr = eng.Flush(ctx)
 	}

@@ -31,6 +31,7 @@ type SnapshotState struct {
 	JournalStage     Stage           `json:"journal_stage,omitempty"`
 	CurrentRelease   string          `json:"current_release_id"`
 	LastGoodRelease  string          `json:"last_good_release_id"`
+	SeededBaseline   *SeededBaseline `json:"seeded_baseline,omitempty"`
 	RecoveryRequired bool            `json:"recovery_required"`
 	LastResultState  string          `json:"last_result_state"`
 	LastRejection    *Rejection      `json:"last_rejection"`
@@ -98,6 +99,13 @@ func readSnapshot(ctx context.Context, tx *sql.Tx, version int) (SnapshotState, 
 	}
 	if s.LastGoodRelease, _, err = getMeta(ctx, tx, metaLastGoodRelease); err != nil {
 		return s, err
+	}
+	if raw, ok, err := getMeta(ctx, tx, seedPrefix+s.CurrentRelease); err != nil {
+		return s, err
+	} else if ok {
+		if err := json.Unmarshal([]byte(raw), &s.SeededBaseline); err != nil {
+			return s, err
+		}
 	}
 	outcome, _, err := getMeta(ctx, tx, metaTerminalOutcome)
 	if err != nil {

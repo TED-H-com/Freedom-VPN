@@ -1,19 +1,46 @@
-# Follow-up 9 — AT30 re-measured with D-076 fence & SECOPS-19 visibility
+# Follow-up 10 — restore and security/operations evidence
 
-Application base `205633f` (#231); harness `205633f0de8b3befbd563a092b856c0bc089e9c9`; run `42396951-2d9a-49f4-95c3-45f33d9519d5`. Shared development host, **not candidate hardware**.
+AT30: **passed**. Run `0e8ff9a4-4fa1-4154-ae35-847a5be4d985`; application base `d9e28f8` includes #240, #241, #244 and #245. 2026-10-31T04:00:29Z → 2026-10-31T04:23:47Z. Shared development host, not candidate hardware.
 
-| Measurement | Follow-up 8 (`#221`) | Follow-up 9 (`#231`) |
+| Measurement | Follow-up 9 (#242) | Follow-up 10 |
 |---|---|---|
-| `T0` pgBackRest full backup / restore target | `20261030-220312F` | `20261031-013901F` / `2026-10-31T01:39:06.450534Z` (LSN `0/7000DA8`) |
-| `L0` → `L1` central ACKed usage sequence (`N0` → `N1`) | `2` → `5` | `1` (`28015` B) → `3` (`78833` B) |
-| SECOPS-19 during restore hold (`node_observations` / `fvpn-agent usage snapshot`) | zeroed `UsageOutboxStatus` | `unacked_event_count=3` (`2352` B) / `unacked_count=3` (`2352` B), `ledger_epoch=01a18f9f-c20a-7716-9f31-8b078efba999` |
-| SECOPS-19 after `complete-recovery` & replay | SQLite inspection only | Both converged to `0` unacked (`unacked_payload_bytes="0"`, `acked_through=4`, `last_event_seq=4`) |
-| Usage replay (`L2` vs `L1` and `L0`) | **passed** (`5/5` hashes, `0` lost, `0` dup) | **passed** (`3/3` events, `3/3` hashes, `0` lost, `0` dup, `0` gaps) |
-| Pre-replay DB RPO (`T1 - T0`) / Post-replay service usage RPO | `116.651 s` / `0 s` | `90.301 s` / `0 s` |
-| Protocol RTO (Step 1 `freeze` → ready) / Total outage RTO | `105.94 s` / `111.51 s` | `112.35 s` / `121.88 s` |
-| Provider reconciliation (`Central L2` vs `P1`) | **passed** | **passed** (`m1` `canceled` + `refund=1` + `expired`; `m2` `active`, `entitlement_extended=False`) |
-| `T0..T1` revoked device (`peerM2D2`) after restore (`SECOPS-18` / D-076) | **blocked** (re-granted in NetBird) | **passed**: fenced (`device_authorization_fences=1`, worker log + counter `=1`, `external_withdrawal` audit `=1`, `GET /member/devices` `status=pending`, data-plane withdrawn) |
-| D-076 Re-grant (`AuthorizeDevice`) & Two Negatives | N/A | **passed**: `T0` key replay kept fence (`1`); fresh `AuthorizeDevice` cleared fence (`0`) and restored flow; central revoke (`revoked`, `fence=0`) and fresh post-restore enroll (`authorized`, `fence=0`) unfenced |
-| **AT30 overall status** | **blocked** (`SECOPS-18`) | **passed** |
+| T0 / backup | 2026-10-31T01:39:06.450534Z / 20261031-013901F | 2026-10-31T04:03:16.470627Z / 20261031-040312F |
+| L0 → L1 sequence | 1 → 3 | 2 → 4 |
+| L0 → L1 bytes | 28015 → 78833 | 28139 → 79058 |
+| Primary-overwrite refusal / checklist / PITR seconds | 2 / 6/6 / 7.171869656 | 2 / 6/6 / 9.749752081 |
+| Negative restore window (s) / ACK / max seen | 120.124449594 / 1 / 4 | 120.143013897 / 2 / 5 |
+| Pre-replay database RPO (s) | 90.300808 | 95.507504 |
+| Post-replay service usage RPO (s) | 0 | 0 |
+| Protocol RTO (s) | 112.345194834 | 93.532554563 |
+| Total outage RTO (s) | 121.87620611 | 106.868537734 |
+| Replay events / hashes / lost / duplicate / gaps | 3 / 3 / 0 / 0 / 0 | 4 / 4 / 0 / 0 / 0 |
+| Provider reconciliation | passed | passed |
+| SECOPS-19 hold unacked / bytes → replay unacked / bytes | 3 / 2352 → 0 / 0 | 3 / 2352 → 0 / 0 |
+| SECOPS-19 CLI hold unacked / bytes → replay unacked / bytes | 3 / 2352 → 0 / 0 | 3 / 2352 → 0 / 0 |
+| Central revoke / fresh post-restore enrollment negatives | True / True | True / True |
+| D-076 fence / regrant | passed | passed |
 
-Full details and command sequences are in [restore-reconcile.md](restore-reconcile.md) and [restore-reconcile.json](restore-reconcile.json). Follow-up 8 records are archived byte-for-byte under [history/follow-up-8](history/follow-up-8/archive-index.json). See [requests](requests.md) and [run instructions](RUN.md).
+D-077 uses an admin session, CSRF, Origin, a fresh UUID key and no body. A still-authorized fenced device returns its existing `member.device_authorize` operation with the original desired generation. Completion is read from `GET /admin/devices` after worker sync.
+
+| Request | HTTP / error | Operation / desired generation | Fence | Flag |
+|---|---|---|---|---|
+| GET member/devices before | 200  | — / — | 1 | True |
+| GET admin/devices before | 200  | — / — | 1 | True |
+| POST authorize with member cookie | 401 UNAUTHENTICATED | — / — | 1 | True |
+| POST authorize admin CSRF Origin fresh key no body | 202  | 01a1901f-e211-722b-bd48-1a14d8876476 / 1 | 0 | — |
+| POST authorize same key replay | 202  | 01a1901f-e211-722b-bd48-1a14d8876476 / 1 | 0 | — |
+| GET admin/devices after worker sync | 200  | — / — | 0 | False |
+| GET member/devices after worker sync | 200  | — / — | 0 | False |
+| POST authorize revoked device | 409 STATE_CONFLICT | — / — | 0 | False |
+
+SECOPS-16: **closed**; SECOPS-17: **closed**; SECOPS-18: **closed**; SECOPS-19: **closed**; SECOPS-20: **closed**; SECOPS-21: **open**.
+
+SECOPS-20: `ip_nat_present=False`, `member_forwarding_enabled=True`, `loopback_scoped=0` entries. #240 deletes the lab NAT before agent startup and explains this serving transition. #241 is present; the empty loopback-scoped list does not exercise its exception. Follow-up 9’s before capture is unchanged in history.
+
+SECOPS-21: compare all central offers and applied observations in [SECOPS-21.json](SECOPS-21.json). The agent silently ignores `ErrStaleGeneration`; zero matching log lines alone is insufficient. No harness generation adjustment is made.
+
+First post-restore offer: `11` at `2026-10-31T04:07:21.367362+00:00`; retained node generation before central services resumed: `14` (node applied `14`, central T1 observation `12`). Below retained: `True`. When below retained, the remaining issue is startup ordering: compilation ran before fresh retained-generation observation. #245 can only use the applied generation already stored centrally.
+
+AT29 established TCP/UDP and AT31 forced relay remain deferred to devstack follow-up 15. The bulk native run is only SECOPS-16 stream attribution. Physical arm64, candidate hardware and guest clock rollback remain operator work. Portal member/admin API state is measured for SECOPS-17; browser rendering is not exercised.
+
+Structured measurements: [restore-reconcile.json](restore-reconcile.json), [D-077.json](D-077.json), [secret-scan.json](secret-scan.json), [SECOPS-17.json](SECOPS-17.json).

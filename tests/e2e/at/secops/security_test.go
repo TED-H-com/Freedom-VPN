@@ -133,8 +133,8 @@ func TestAT28_AllContractRoleBoundaries(t *testing.T) {
 			})
 		}
 	}
-	// D-065 / contracts revision 9 and revision 10 (#191) bring the contract to 47 operations (45 protected).
-	if operations != 47 || protected != 45 {
+	// D-077 / contracts revision 12 adds two protected admin device operations.
+	if operations != 49 || protected != 47 {
 		t.Fatalf("contract coverage changed: operations=%d protected=%d", operations, protected)
 	}
 	t.Logf("contract operations=%d protected=%d; enrollment and provider webhook use distinct credential checks", operations, protected)
