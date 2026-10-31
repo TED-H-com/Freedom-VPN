@@ -1,0 +1,2019 @@
+{
+  "schema_version": 1,
+  "run_started_at": "2026-10-30T06:49:14Z",
+  "run_finished_at": "2026-10-30T07:10:35Z",
+  "source_revision": "9b17127c888f94191d759617c99fe1225078a092",
+  "probe_source_sha256": "a4cba1800eedd63667ba6ad2fc25f3c9beaf241f5bd805e2a24bfa6c24f404d2",
+  "build_digests": [
+    {
+      "arch": "amd64",
+      "kind": "acceptance_test_binary",
+      "sha256": "fabfd3fc2a8f1ca836cd0b2a558641e462abe8764cc8e55b8f7d1e2ebe620355",
+      "command": [
+        "go",
+        "test",
+        "-c",
+        "-tags",
+        "e2e,integration",
+        "-o",
+        "<disk-scratch>/secops-amd64.test",
+        "./tests/e2e/at/secops"
+      ],
+      "started_at": "2026-10-30T07:10:02Z",
+      "finished_at": "2026-10-30T07:10:02Z",
+      "elapsed_seconds": 0.565,
+      "exit_code": 0,
+      "scan": {
+        "stream": "build-amd64",
+        "bytes": 0,
+        "findings": []
+      }
+    },
+    {
+      "arch": "arm64",
+      "kind": "acceptance_test_binary",
+      "sha256": "411e156413f84571e911cc1392bc244f65097fad86f4d0024f7d3c7750dba058",
+      "command": [
+        "go",
+        "test",
+        "-c",
+        "-tags",
+        "e2e,integration",
+        "-o",
+        "<disk-scratch>/secops-arm64.test",
+        "./tests/e2e/at/secops"
+      ],
+      "started_at": "2026-10-30T07:10:02Z",
+      "finished_at": "2026-10-30T07:10:03Z",
+      "elapsed_seconds": 0.816,
+      "exit_code": 0,
+      "scan": {
+        "stream": "build-arm64",
+        "bytes": 0,
+        "findings": []
+      }
+    },
+    {
+      "name": "fvpn-agent",
+      "arch": "amd64",
+      "sha256": "63edcdc3bddf776c0339a2abd15c887dd78884b981623cf6b2d655837c8653f2",
+      "kind": "lab_build_binary"
+    },
+    {
+      "name": "fvpn-control",
+      "arch": "amd64",
+      "sha256": "2b154dc0ed4d6660f6442adc31ee98fb41d8197402efeb2bbd6f06e05c37688b",
+      "kind": "lab_build_binary"
+    },
+    {
+      "name": "fvpn-e2e-idp",
+      "arch": "amd64",
+      "sha256": "2870689df549ec1fc4a0e45aea31c02a63de12639dd6a45c9fe92dec303ab00c",
+      "kind": "lab_build_binary"
+    },
+    {
+      "name": "fvpn-e2e-nbbootstrap",
+      "arch": "amd64",
+      "sha256": "47204de0fe0fed434f949eea5e80b1b4520dacbf05042d21ec543efd7f401b15",
+      "kind": "lab_build_binary"
+    },
+    {
+      "name": "fvpn-e2e-nodeconfig",
+      "arch": "amd64",
+      "sha256": "0c46ddde8307089ac13830ce14216c4c622f62eb958b2b144f34004fe1583260",
+      "kind": "lab_build_binary"
+    },
+    {
+      "name": "fvpn-e2e-origin",
+      "arch": "amd64",
+      "sha256": "494bfb4c6091274599949a2b40dd82b77b5d9c4e89ece925c29ab5aa187c9128",
+      "kind": "lab_build_binary"
+    },
+    {
+      "name": "fvpn-e2e-payment",
+      "arch": "amd64",
+      "sha256": "2f68952576b77fb478fa49357e51a3c0469a48d2f223a327758829ea94f65b78",
+      "kind": "lab_build_binary"
+    },
+    {
+      "name": "fvpn-e2e-prepare",
+      "arch": "amd64",
+      "sha256": "ab75bd85ca372afa1de472738d2ff04472f4cca32819217dc84b4917ac13bf9f",
+      "kind": "lab_build_binary"
+    },
+    {
+      "name": "fvpn-updater",
+      "arch": "amd64",
+      "sha256": "3eb93fcd6a80641b7ae4206445fa192b89c5ce214456c6c3559b62388ad5b566",
+      "kind": "lab_build_binary"
+    },
+    {
+      "name": "fvpn-watchdog",
+      "arch": "amd64",
+      "sha256": "9bc41ae23435391df06bd267e22e6ba64d2a4a8114f5e3ec9d41f8ab9b46f448",
+      "kind": "lab_build_binary"
+    },
+    {
+      "name": "fvpn-worker",
+      "arch": "amd64",
+      "sha256": "1bd5aeaed7d7cf079a5f41a4af06bfde38e660bd02db994af80af45231d56fc5",
+      "kind": "lab_build_binary"
+    }
+  ],
+  "image_digests": [
+    {
+      "image_id": "sha256:a680945078c4343b63f36902000807cd0ab61f0d5fb112a35b675710aaae769b",
+      "service": "postgres"
+    },
+    {
+      "image_id": "sha256:263ebda4d921cb783a2a5eb2cfe887b1ca8137de4b8e3c80bdc5679e8f7e4d6d",
+      "service": "idp"
+    },
+    {
+      "image_id": "sha256:7cc5e6683541e475eafd2abc1ff2b3c25d41f7f7d8f09c152513b6f00812d22e",
+      "service": "payment"
+    },
+    {
+      "image_id": "sha256:2a097fd81544c6228c0c5370d99b0f84c768285ac21e805b920981020f721f6d",
+      "service": "origin"
+    },
+    {
+      "image_id": "sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c",
+      "service": "netbird"
+    },
+    {
+      "image_id": "sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce",
+      "service": "gateway"
+    },
+    {
+      "image_id": "sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97",
+      "service": "coredns"
+    },
+    {
+      "image_id": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
+      "service": "adguard"
+    },
+    {
+      "image_id": "sha256:e5310d1b54ae0bf3fdabac32f783a7c3fccc8d351d1fb4177720c190506df1a7",
+      "service": "control"
+    },
+    {
+      "image_id": "sha256:274e7c37268cfaddfad906d9b3b2895757d3835fd13fe419a876c58ca8f3da96",
+      "service": "worker"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "node-netns"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "node"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u16-p3"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u16-p2"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u16-p1"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u15-p3"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u15-p2"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u15-p1"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u14-p3"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u14-p2"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u14-p1"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u13-p3"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u13-p2"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u13-p1"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u12-p3"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u12-p2"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u12-p1"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u11-p3"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u11-p2"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u11-p1"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u10-p3"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u10-p2"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u10-p1"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u09-p3"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u09-p2"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u09-p1"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u08-p3"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u08-p2"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u08-p1"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u07-p3"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u07-p2"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u07-p1"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u06-p3"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u06-p2"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u06-p1"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u05-p3"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u05-p2"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u05-p1"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u04-p3"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u04-p2"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u04-p1"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u03-p3"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u03-p2"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u03-p1"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u02-p3"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u02-p2"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u02-p1"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u01-p3"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u01-p2"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u01-p1"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u00-p3"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u00-p2"
+    }
+  ],
+  "policy_revision": "1",
+  "node_incarnation": "74561fdc-bb3f-4143-9cdc-dc4827a54e64",
+  "stack": {
+    "status": "running-stack-observed",
+    "reason": "Live probes executed on the assigned prefix; case-specific preconditions and measurements follow.",
+    "inventory_before": {
+      "containers": {
+        "exit_code": 0,
+        "count": 0
+      },
+      "networks": {
+        "exit_code": 0,
+        "count": 0
+      },
+      "volumes": {
+        "exit_code": 0,
+        "count": 0
+      },
+      "images": {
+        "exit_code": 0,
+        "count": 0
+      }
+    },
+    "up": {
+      "command": [
+        "make",
+        "-f",
+        "mk/e2e.mk",
+        "e2e-up"
+      ],
+      "started_at": "2026-10-30T06:49:14Z",
+      "finished_at": "2026-10-30T06:49:36Z",
+      "elapsed_seconds": 21.672,
+      "exit_code": 0,
+      "scan": {
+        "stream": "e2e-up",
+        "bytes": 19841,
+        "findings": []
+      }
+    },
+    "live_probe": {
+      "command": [
+        "go",
+        "test",
+        "-json",
+        "-tags",
+        "e2e,integration",
+        "-p",
+        "1",
+        "-parallel",
+        "2",
+        "-count=1",
+        "-timeout",
+        "55m",
+        "-run",
+        "^TestAT28_AT31_Followup4$",
+        "./tests/e2e/at/secops"
+      ],
+      "started_at": "2026-10-30T06:49:36Z",
+      "finished_at": "2026-10-30T07:09:17Z",
+      "elapsed_seconds": 1181.085,
+      "exit_code": 1,
+      "scan": {
+        "stream": "live-probe",
+        "bytes": 9097,
+        "findings": []
+      },
+      "status": "failed",
+      "required_tests": [
+        "TestAT28_AT31_Followup4"
+      ],
+      "missing": [],
+      "skipped": [],
+      "tests": [
+        {
+          "name": "TestAT28_AT31_Followup4",
+          "result": "fail",
+          "elapsed_seconds": 1180.64
+        }
+      ],
+      "package_results": {
+        "github.com/TED-H-com/Freedom-VPN/tests/e2e/at/secops": "fail"
+      }
+    },
+    "isolated_restore": {
+      "status": "historical record preserved",
+      "compatibility": "historical; no new compatibility assertion in Follow-up 4",
+      "new_restore_executed": false
+    },
+    "down": {
+      "command": [
+        "make",
+        "-f",
+        "mk/e2e.mk",
+        "e2e-down"
+      ],
+      "started_at": "2026-10-30T07:09:17Z",
+      "finished_at": "2026-10-30T07:10:02Z",
+      "elapsed_seconds": 45.076,
+      "exit_code": 0,
+      "scan": {
+        "stream": "e2e-down",
+        "bytes": 3056,
+        "findings": []
+      }
+    },
+    "inventory_after": {
+      "containers": {
+        "exit_code": 0,
+        "count": 0
+      },
+      "networks": {
+        "exit_code": 0,
+        "count": 0
+      },
+      "volumes": {
+        "exit_code": 0,
+        "count": 0
+      },
+      "images": {
+        "exit_code": 0,
+        "count": 0
+      }
+    }
+  },
+  "id": "AT31",
+  "spec": [
+    "§19.1",
+    "§19 AT31"
+  ],
+  "requirements": [
+    "NFR01",
+    "NODE02",
+    "FUP04"
+  ],
+  "status": "blocked",
+  "verdict": "blocked",
+  "expected": "20 members/60 authorized devices under the recorded mixed load; correct authorization and ledger; read p95 <500 ms, policy <=60 s, usage <=120 s, CPU/memory/IO and relay throughput recorded.",
+  "actual": {
+    "component_status": "passed",
+    "component_suites": [
+      "rate-classes",
+      "publication-empty",
+      "login-d060",
+      "login-subject",
+      "publication-worker",
+      "publication-evidence"
+    ],
+    "full_stack_executed": true,
+    "full_acceptance_profile_executed": false
+  },
+  "blockers": [
+    "No counted serving flow; full sampling/policy/multi-flow/relay profile not executed. Candidate hardware remains needs operator run.",
+    "SECOPS-15: usage body limit mismatch.",
+    "Combined run did not confirm 60 devices. Isolated recheck admitted 50, then native login 51 failed with gateway connection exhaustion: deploy/devstack/nginx.conf worker_connections=256 (SECOPS-10)."
+  ],
+  "commands": [
+    [
+      "go",
+      "test",
+      "-json",
+      "-tags",
+      "e2e,integration",
+      "-p",
+      "1",
+      "-parallel",
+      "2",
+      "-count=1",
+      "-timeout",
+      "8m",
+      "-run",
+      "^(TestClassifyOperationIDsMatchLoadedSpec|TestAnonymousAddressBurstUsesIPv6Prefix|TestReviewR9_LoginLimiterAddressIdentityBoundsAndRoutes)$",
+      "./internal/httpapi"
+    ],
+    [
+      "go",
+      "test",
+      "-json",
+      "-tags",
+      "e2e,integration",
+      "-p",
+      "1",
+      "-parallel",
+      "2",
+      "-count=1",
+      "-timeout",
+      "8m",
+      "-run",
+      "^(TestAT08_PublicationWorkerEmptyBindingEvidence)$",
+      "./internal/nodes/httpwire"
+    ],
+    [
+      "go",
+      "test",
+      "-json",
+      "-tags",
+      "e2e,integration",
+      "-p",
+      "1",
+      "-parallel",
+      "2",
+      "-count=1",
+      "-timeout",
+      "8m",
+      "-run",
+      "^(TestAT31_D060_LoginAddressBurstAndMetric)$",
+      "./internal/httpapi"
+    ],
+    [
+      "go",
+      "test",
+      "-json",
+      "-tags",
+      "e2e,integration",
+      "-p",
+      "1",
+      "-parallel",
+      "2",
+      "-count=1",
+      "-timeout",
+      "8m",
+      "-run",
+      "^(TestSEC05_SubjectLoginLimitAndRequestedRole)$",
+      "./internal/auth"
+    ],
+    [
+      "go",
+      "test",
+      "-json",
+      "-tags",
+      "e2e,integration",
+      "-p",
+      "1",
+      "-parallel",
+      "2",
+      "-count=1",
+      "-timeout",
+      "8m",
+      "-run",
+      "^(TestSECOPS11_PublicationWorkerRequiresArmedMemberDataPath)$",
+      "./internal/nodes/httpwire"
+    ],
+    [
+      "go",
+      "test",
+      "-json",
+      "-tags",
+      "e2e,integration",
+      "-p",
+      "1",
+      "-parallel",
+      "2",
+      "-count=1",
+      "-timeout",
+      "8m",
+      "-run",
+      "^(TestSECOPS11_RecordedBaselineDoesNotProveServing)$",
+      "./internal/nodes"
+    ]
+  ],
+  "operator_run": {
+    "status": "needs operator run",
+    "script": "operator-runs.md#at31"
+  },
+  "evidence": [
+    "live.json",
+    "components.json",
+    "secret-scan.json",
+    "requests.md",
+    "native-scale.json",
+    "native-scale-live.json",
+    "native-cohort.json",
+    "native-diagnostics.json"
+  ],
+  "capacity": {
+    "profile": "load-profile.json",
+    "full_profile_executed": false,
+    "candidate_hardware": false,
+    "measured_subset": null,
+    "grants": {
+      "active_members": 20,
+      "commands": 20,
+      "finite_end": "2026-10-30T07:50:22Z",
+      "writes": "admin grants only; projected tables read-only"
+    },
+    "requested_devices": 60,
+    "authorized_devices": null,
+    "concurrent_sign_in": {
+      "attempts": 20,
+      "authenticated": 20,
+      "barrier_started": true,
+      "issuer": "embedded Dex, separate cookie jars; no shared assume slot",
+      "last_login_http_status": {
+        "200": 20
+      },
+      "login_wall_ms": [
+        450.846,
+        449.911,
+        468.317,
+        464.14,
+        468.289,
+        406.126,
+        464.97,
+        450.506,
+        368.265,
+        469.908,
+        472.885,
+        413.407,
+        448.528,
+        384.513,
+        443.392,
+        424.977,
+        373.248,
+        465.137,
+        441.27,
+        231.479
+      ],
+      "metrics_after": {
+        "address": 0,
+        "subject": 0
+      },
+      "metrics_before": {
+        "address": 0,
+        "subject": 0
+      },
+      "requests_by_identity": [
+        [
+          {
+            "utc": "2026-10-30T06:56:10.711051932Z",
+            "method": "GET",
+            "path": "/auth/login",
+            "status": 302,
+            "request_id": "01a18b98-35cf-79e5-8797-60760041b3b1"
+          },
+          {
+            "utc": "2026-10-30T06:56:11.148385247Z",
+            "method": "GET",
+            "path": "/auth/callback",
+            "status": 303,
+            "request_id": "01a18b98-3756-71dd-bcc9-9f908b5c4d06"
+          },
+          {
+            "utc": "2026-10-30T06:56:11.150435918Z",
+            "method": "GET",
+            "path": "/auth/session",
+            "status": 200,
+            "request_id": "01a18b98-378d-734e-a54b-9bddeb259abf"
+          }
+        ],
+        [
+          {
+            "utc": "2026-10-30T06:56:10.711636786Z",
+            "method": "GET",
+            "path": "/auth/login",
+            "status": 302,
+            "request_id": "01a18b98-35ce-7496-85fb-f16d76a1fcfe"
+          },
+          {
+            "utc": "2026-10-30T06:56:11.147501782Z",
+            "method": "GET",
+            "path": "/auth/callback",
+            "status": 303,
+            "request_id": "01a18b98-3749-7b43-a1e7-104805b9c15c"
+          },
+          {
+            "utc": "2026-10-30T06:56:11.150411561Z",
+            "method": "GET",
+            "path": "/auth/session",
+            "status": 200,
+            "request_id": "01a18b98-378c-73b7-92c6-93ea74bc2833"
+          }
+        ],
+        [
+          {
+            "utc": "2026-10-30T06:56:10.711237118Z",
+            "method": "GET",
+            "path": "/auth/login",
+            "status": 302,
+            "request_id": "01a18b98-35cf-7d26-a33d-c333207e5052"
+          },
+          {
+            "utc": "2026-10-30T06:56:11.165901069Z",
+            "method": "GET",
+            "path": "/auth/callback",
+            "status": 303,
+            "request_id": "01a18b98-3763-73cc-b88c-b63fb1866b6f"
+          },
+          {
+            "utc": "2026-10-30T06:56:11.168581647Z",
+            "method": "GET",
+            "path": "/auth/session",
+            "status": 200,
+            "request_id": "01a18b98-379e-7ef8-94e3-3b323e000b9b"
+          }
+        ],
+        [
+          {
+            "utc": "2026-10-30T06:56:10.713738876Z",
+            "method": "GET",
+            "path": "/auth/login",
+            "status": 302,
+            "request_id": "01a18b98-35d4-7056-90dc-e0e2711589bf"
+          },
+          {
+            "utc": "2026-10-30T06:56:11.161702958Z",
+            "method": "GET",
+            "path": "/auth/callback",
+            "status": 303,
+            "request_id": "01a18b98-3716-7623-8f80-fafbb2e1631e"
+          },
+          {
+            "utc": "2026-10-30T06:56:11.16405505Z",
+            "method": "GET",
+            "path": "/auth/session",
+            "status": 200,
+            "request_id": "01a18b98-379a-7a97-b7d6-6082d925f0a3"
+          }
+        ],
+        [
+          {
+            "utc": "2026-10-30T06:56:10.714013742Z",
+            "method": "GET",
+            "path": "/auth/login",
+            "status": 302,
+            "request_id": "01a18b98-35d4-76d6-b014-60a7850e330f"
+          },
+          {
+            "utc": "2026-10-30T06:56:11.166020685Z",
+            "method": "GET",
+            "path": "/auth/callback",
+            "status": 303,
+            "request_id": "01a18b98-3735-74cd-a1be-2516fd97ae80"
+          },
+          {
+            "utc": "2026-10-30T06:56:11.168886266Z",
+            "method": "GET",
+            "path": "/auth/session",
+            "status": 200,
+            "request_id": "01a18b98-379f-7557-9228-b5763298d562"
+          }
+        ],
+        [
+          {
+            "utc": "2026-10-30T06:56:10.713810273Z",
+            "method": "GET",
+            "path": "/auth/login",
+            "status": 302,
+            "request_id": "01a18b98-35d4-7c8b-b3d0-89c23b7cdd08"
+          },
+          {
+            "utc": "2026-10-30T06:56:11.103474837Z",
+            "method": "GET",
+            "path": "/auth/callback",
+            "status": 303,
+            "request_id": "01a18b98-36c6-7f02-a990-dce7a2b33b45"
+          },
+          {
+            "utc": "2026-10-30T06:56:11.106367542Z",
+            "method": "GET",
+            "path": "/auth/session",
+            "status": 200,
+            "request_id": "01a18b98-3761-7016-85a7-8c9169aca52d"
+          }
+        ],
+        [
+          {
+            "utc": "2026-10-30T06:56:10.713937911Z",
+            "method": "GET",
+            "path": "/auth/login",
+            "status": 302,
+            "request_id": "01a18b98-35d3-7976-9a94-2c7eb3c6f894"
+          },
+          {
+            "utc": "2026-10-30T06:56:11.162492299Z",
+            "method": "GET",
+            "path": "/auth/callback",
+            "status": 303,
+            "request_id": "01a18b98-3737-7129-bd49-0cb165ff62bc"
+          },
+          {
+            "utc": "2026-10-30T06:56:11.166570566Z",
+            "method": "GET",
+            "path": "/auth/session",
+            "status": 200,
+            "request_id": "01a18b98-379b-7e8b-9cc0-378e864095eb"
+          }
+        ],
+        [
+          {
+            "utc": "2026-10-30T06:56:10.713849582Z",
+            "method": "GET",
+            "path": "/auth/login",
+            "status": 302,
+            "request_id": "01a18b98-35d3-761a-a365-5d3b8f1bb98b"
+          },
+          {
+            "utc": "2026-10-30T06:56:11.14833125Z",
+            "method": "GET",
+            "path": "/auth/callback",
+            "status": 303,
+            "request_id": "01a18b98-36e0-7321-9466-64774f58d89d"
+          },
+          {
+            "utc": "2026-10-30T06:56:11.15048925Z",
+            "method": "GET",
+            "path": "/auth/session",
+            "status": 200,
+            "request_id": "01a18b98-378c-7f2d-8c3d-f6afbb0e5f7b"
+          }
+        ],
+        [
+          {
+            "utc": "2026-10-30T06:56:10.711147846Z",
+            "method": "GET",
+            "path": "/auth/login",
+            "status": 302,
+            "request_id": "01a18b98-35cd-7b0b-ac40-64b9890ecd1d"
+          },
+          {
+            "utc": "2026-10-30T06:56:11.065617484Z",
+            "method": "GET",
+            "path": "/auth/callback",
+            "status": 303,
+            "request_id": "01a18b98-36a6-7092-9765-eab1b111db68"
+          },
+          {
+            "utc": "2026-10-30T06:56:11.068267454Z",
+            "method": "GET",
+            "path": "/auth/session",
+            "status": 200,
+            "request_id": "01a18b98-373a-7b5d-807c-91f3ac2916f6"
+          }
+        ],
+        [
+          {
+            "utc": "2026-10-30T06:56:10.711211979Z",
+            "method": "GET",
+            "path": "/auth/login",
+            "status": 302,
+            "request_id": "01a18b98-35ce-70bb-bdb4-0525eebc624e"
+          },
+          {
+            "utc": "2026-10-30T06:56:11.167474424Z",
+            "method": "GET",
+            "path": "/auth/callback",
+            "status": 303,
+            "request_id": "01a18b98-36e2-7ca9-b8b2-f2117df98fa6"
+          },
+          {
+            "utc": "2026-10-30T06:56:11.169600579Z",
+            "method": "GET",
+            "path": "/auth/session",
+            "status": 200,
+            "request_id": "01a18b98-37a0-7796-b965-1419cd7caf77"
+          }
+        ],
+        [
+          {
+            "utc": "2026-10-30T06:56:10.711983211Z",
+            "method": "GET",
+            "path": "/auth/login",
+            "status": 302,
+            "request_id": "01a18b98-35d0-7a1a-bc2e-1bfb2e1e0568"
+          },
+          {
+            "utc": "2026-10-30T06:56:11.170486554Z",
+            "method": "GET",
+            "path": "/auth/callback",
+            "status": 303,
+            "request_id": "01a18b98-376d-723c-b4e3-a9724613c978"
+          },
+          {
+            "utc": "2026-10-30T06:56:11.172298397Z",
+            "method": "GET",
+            "path": "/auth/session",
+            "status": 200,
+            "request_id": "01a18b98-37a3-7757-9d85-128b43335699"
+          }
+        ],
+        [
+          {
+            "utc": "2026-10-30T06:56:10.711223863Z",
+            "method": "GET",
+            "path": "/auth/login",
+            "status": 302,
+            "request_id": "01a18b98-35cf-703c-9f48-f8737b2762a0"
+          },
+          {
+            "utc": "2026-10-30T06:56:11.110687351Z",
+            "method": "GET",
+            "path": "/auth/callback",
+            "status": 303,
+            "request_id": "01a18b98-36f5-7d71-b1e2-3147993c45f9"
+          },
+          {
+            "utc": "2026-10-30T06:56:11.113376146Z",
+            "method": "GET",
+            "path": "/auth/session",
+            "status": 200,
+            "request_id": "01a18b98-3767-7f2a-853c-06008d687a84"
+          }
+        ],
+        [
+          {
+            "utc": "2026-10-30T06:56:10.713898922Z",
+            "method": "GET",
+            "path": "/auth/login",
+            "status": 302,
+            "request_id": "01a18b98-35d2-762f-9ba9-53d0b251d17c"
+          },
+          {
+            "utc": "2026-10-30T06:56:11.14616814Z",
+            "method": "GET",
+            "path": "/auth/callback",
+            "status": 303,
+            "request_id": "01a18b98-36f0-7cb7-8cae-73021a34011d"
+          },
+          {
+            "utc": "2026-10-30T06:56:11.149552286Z",
+            "method": "GET",
+            "path": "/auth/session",
+            "status": 200,
+            "request_id": "01a18b98-378b-73b3-ada6-9d15c1ff2e58"
+          }
+        ],
+        [
+          {
+            "utc": "2026-10-30T06:56:10.711037254Z",
+            "method": "GET",
+            "path": "/auth/login",
+            "status": 302,
+            "request_id": "01a18b98-35ce-7c15-b93c-17a089787d48"
+          },
+          {
+            "utc": "2026-10-30T06:56:11.08199203Z",
+            "method": "GET",
+            "path": "/auth/callback",
+            "status": 303,
+            "request_id": "01a18b98-36ca-70f1-85e9-68591a47510b"
+          },
+          {
+            "utc": "2026-10-30T06:56:11.08445112Z",
+            "method": "GET",
+            "path": "/auth/session",
+            "status": 200,
+            "request_id": "01a18b98-374a-7d4d-9802-6afc5f72f18c"
+          }
+        ],
+        [
+          {
+            "utc": "2026-10-30T06:56:10.713976569Z",
+            "method": "GET",
+            "path": "/auth/login",
+            "status": 302,
+            "request_id": "01a18b98-35d5-70a6-931b-bac22444e9d6"
+          },
+          {
+            "utc": "2026-10-30T06:56:11.141062055Z",
+            "method": "GET",
+            "path": "/auth/callback",
+            "status": 303,
+            "request_id": "01a18b98-371b-70dc-a9ed-1dd206526ac1"
+          },
+          {
+            "utc": "2026-10-30T06:56:11.1436661Z",
+            "method": "GET",
+            "path": "/auth/session",
+            "status": 200,
+            "request_id": "01a18b98-3786-71dd-ac61-cb2a4e3bca08"
+          }
+        ],
+        [
+          {
+            "utc": "2026-10-30T06:56:10.713739783Z",
+            "method": "GET",
+            "path": "/auth/login",
+            "status": 302,
+            "request_id": "01a18b98-35d1-7644-a714-6045f135f412"
+          },
+          {
+            "utc": "2026-10-30T06:56:11.122557559Z",
+            "method": "GET",
+            "path": "/auth/callback",
+            "status": 303,
+            "request_id": "01a18b98-372a-78d4-b7e2-c581ce5078b9"
+          },
+          {
+            "utc": "2026-10-30T06:56:11.12416364Z",
+            "method": "GET",
+            "path": "/auth/session",
+            "status": 200,
+            "request_id": "01a18b98-3773-7571-b162-3183907f5a79"
+          }
+        ],
+        [
+          {
+            "utc": "2026-10-30T06:56:10.711133008Z",
+            "method": "GET",
+            "path": "/auth/login",
+            "status": 302,
+            "request_id": "01a18b98-35cf-757e-9f87-bd1191a8dcbe"
+          },
+          {
+            "utc": "2026-10-30T06:56:11.070702067Z",
+            "method": "GET",
+            "path": "/auth/callback",
+            "status": 303,
+            "request_id": "01a18b98-36ee-76d8-99cc-d12bf11340b5"
+          },
+          {
+            "utc": "2026-10-30T06:56:11.073001198Z",
+            "method": "GET",
+            "path": "/auth/session",
+            "status": 200,
+            "request_id": "01a18b98-373f-77ba-80e0-181355fd67c9"
+          }
+        ],
+        [
+          {
+            "utc": "2026-10-30T06:56:10.713767677Z",
+            "method": "GET",
+            "path": "/auth/login",
+            "status": 302,
+            "request_id": "01a18b98-35d1-7db8-840a-6a2ebd2dfe8e"
+          },
+          {
+            "utc": "2026-10-30T06:56:11.162492054Z",
+            "method": "GET",
+            "path": "/auth/callback",
+            "status": 303,
+            "request_id": "01a18b98-3741-74bf-a8ef-e11cbbae191a"
+          },
+          {
+            "utc": "2026-10-30T06:56:11.166042351Z",
+            "method": "GET",
+            "path": "/auth/session",
+            "status": 200,
+            "request_id": "01a18b98-379b-7b22-a700-19ef04b49bae"
+          }
+        ],
+        [
+          {
+            "utc": "2026-10-30T06:56:10.711079627Z",
+            "method": "GET",
+            "path": "/auth/login",
+            "status": 302,
+            "request_id": "01a18b98-35d0-7465-ba9a-719105437f34"
+          },
+          {
+            "utc": "2026-10-30T06:56:11.138262553Z",
+            "method": "GET",
+            "path": "/auth/callback",
+            "status": 303,
+            "request_id": "01a18b98-370e-7a66-9a8d-a1175f159750"
+          },
+          {
+            "utc": "2026-10-30T06:56:11.143128636Z",
+            "method": "GET",
+            "path": "/auth/session",
+            "status": 200,
+            "request_id": "01a18b98-3783-7c7b-8915-774d77f675b8"
+          }
+        ],
+        [
+          {
+            "utc": "2026-10-30T06:56:10.708646181Z",
+            "method": "GET",
+            "path": "/auth/login",
+            "status": 302,
+            "request_id": "01a18b98-35cb-7586-ad19-cb71d9b3fbc0"
+          },
+          {
+            "utc": "2026-10-30T06:56:10.928851352Z",
+            "method": "GET",
+            "path": "/auth/callback",
+            "status": 303,
+            "request_id": "01a18b98-362d-7277-8a10-e51554636fef"
+          },
+          {
+            "utc": "2026-10-30T06:56:10.931602644Z",
+            "method": "GET",
+            "path": "/auth/session",
+            "status": 200,
+            "request_id": "01a18b98-36b2-7275-9f1b-a999b8129f23"
+          }
+        ]
+      ],
+      "session_http_status": {
+        "200": 20
+      },
+      "supersedes": "followup1-login.json; D-060 / PR #106",
+      "wrong_member": 0,
+      "zero_status": "login walker did not complete; not a measured session HTTP response"
+    },
+    "synthetic_ledger_ack": null,
+    "login_41st_request": null,
+    "login_subject_limit": null,
+    "login_settings": {
+      "login_rate": {
+        "per_second": 1,
+        "burst": 40
+      },
+      "login_subject_per_minute": 10,
+      "max_concurrent": 128,
+      "mutated": false,
+      "source": "prepared central.json plus named container environment overrides"
+    },
+    "rate_classes": {
+      "anonymous_shared": {
+        "actual_first_rejection": 11,
+        "elapsed_seconds": 0.009014037,
+        "expected_first_rejection": 11,
+        "expected_metric": "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}",
+        "first_error_code": "RATE_LIMITED",
+        "first_retry_after": "1",
+        "metric_delta": 1,
+        "metrics_after": {
+          "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 3,
+          "fvpn_control_rate_limited_total{class=\"heartbeat\",limiter=\"subject\"}": 1,
+          "fvpn_control_rate_limited_total{class=\"lease\",limiter=\"subject\"}": 1
+        },
+        "metrics_before": {
+          "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 2,
+          "fvpn_control_rate_limited_total{class=\"heartbeat\",limiter=\"subject\"}": 1,
+          "fvpn_control_rate_limited_total{class=\"lease\",limiter=\"subject\"}": 1
+        },
+        "passed": true,
+        "requests": [
+          {
+            "code": "VALIDATION_FAILED",
+            "index": 1,
+            "retry_after": "",
+            "status": 422,
+            "utc": "2026-10-30T06:55:19.309044595Z"
+          },
+          {
+            "code": "WEBHOOK_SIGNATURE_INVALID",
+            "index": 2,
+            "retry_after": "",
+            "status": 401,
+            "utc": "2026-10-30T06:55:19.309938649Z"
+          },
+          {
+            "code": "VALIDATION_FAILED",
+            "index": 3,
+            "retry_after": "",
+            "status": 422,
+            "utc": "2026-10-30T06:55:19.310977845Z"
+          },
+          {
+            "code": "WEBHOOK_SIGNATURE_INVALID",
+            "index": 4,
+            "retry_after": "",
+            "status": 401,
+            "utc": "2026-10-30T06:55:19.311652445Z"
+          },
+          {
+            "code": "VALIDATION_FAILED",
+            "index": 5,
+            "retry_after": "",
+            "status": 422,
+            "utc": "2026-10-30T06:55:19.312327689Z"
+          },
+          {
+            "code": "WEBHOOK_SIGNATURE_INVALID",
+            "index": 6,
+            "retry_after": "",
+            "status": 401,
+            "utc": "2026-10-30T06:55:19.312994908Z"
+          },
+          {
+            "code": "VALIDATION_FAILED",
+            "index": 7,
+            "retry_after": "",
+            "status": 422,
+            "utc": "2026-10-30T06:55:19.31367279Z"
+          },
+          {
+            "code": "WEBHOOK_SIGNATURE_INVALID",
+            "index": 8,
+            "retry_after": "",
+            "status": 401,
+            "utc": "2026-10-30T06:55:19.314342541Z"
+          },
+          {
+            "code": "VALIDATION_FAILED",
+            "index": 9,
+            "retry_after": "",
+            "status": 422,
+            "utc": "2026-10-30T06:55:19.315009476Z"
+          },
+          {
+            "code": "WEBHOOK_SIGNATURE_INVALID",
+            "index": 10,
+            "retry_after": "",
+            "status": 401,
+            "utc": "2026-10-30T06:55:19.315764387Z"
+          },
+          {
+            "code": "RATE_LIMITED",
+            "index": 11,
+            "retry_after": "1",
+            "status": 429,
+            "utc": "2026-10-30T06:55:19.316561188Z"
+          }
+        ]
+      },
+      "enrollment": {
+        "actual_first_rejection": 11,
+        "elapsed_seconds": 0.012018429,
+        "expected_first_rejection": 11,
+        "expected_metric": "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}",
+        "first_error_code": "RATE_LIMITED",
+        "first_retry_after": "1",
+        "metric_delta": 1,
+        "metrics_after": {
+          "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 1,
+          "fvpn_control_rate_limited_total{class=\"heartbeat\",limiter=\"subject\"}": 1,
+          "fvpn_control_rate_limited_total{class=\"lease\",limiter=\"subject\"}": 1
+        },
+        "metrics_before": {
+          "fvpn_control_rate_limited_total{class=\"heartbeat\",limiter=\"subject\"}": 1,
+          "fvpn_control_rate_limited_total{class=\"lease\",limiter=\"subject\"}": 1
+        },
+        "passed": true,
+        "requests": [
+          {
+            "code": "VALIDATION_FAILED",
+            "index": 1,
+            "retry_after": "",
+            "status": 422,
+            "utc": "2026-10-30T06:55:07.112531028Z"
+          },
+          {
+            "code": "VALIDATION_FAILED",
+            "index": 2,
+            "retry_after": "",
+            "status": 422,
+            "utc": "2026-10-30T06:55:07.113664081Z"
+          },
+          {
+            "code": "VALIDATION_FAILED",
+            "index": 3,
+            "retry_after": "",
+            "status": 422,
+            "utc": "2026-10-30T06:55:07.114694145Z"
+          },
+          {
+            "code": "VALIDATION_FAILED",
+            "index": 4,
+            "retry_after": "",
+            "status": 422,
+            "utc": "2026-10-30T06:55:07.1157017Z"
+          },
+          {
+            "code": "VALIDATION_FAILED",
+            "index": 5,
+            "retry_after": "",
+            "status": 422,
+            "utc": "2026-10-30T06:55:07.116635663Z"
+          },
+          {
+            "code": "VALIDATION_FAILED",
+            "index": 6,
+            "retry_after": "",
+            "status": 422,
+            "utc": "2026-10-30T06:55:07.117567753Z"
+          },
+          {
+            "code": "VALIDATION_FAILED",
+            "index": 7,
+            "retry_after": "",
+            "status": 422,
+            "utc": "2026-10-30T06:55:07.119037088Z"
+          },
+          {
+            "code": "VALIDATION_FAILED",
+            "index": 8,
+            "retry_after": "",
+            "status": 422,
+            "utc": "2026-10-30T06:55:07.120042586Z"
+          },
+          {
+            "code": "VALIDATION_FAILED",
+            "index": 9,
+            "retry_after": "",
+            "status": 422,
+            "utc": "2026-10-30T06:55:07.120840641Z"
+          },
+          {
+            "code": "VALIDATION_FAILED",
+            "index": 10,
+            "retry_after": "",
+            "status": 422,
+            "utc": "2026-10-30T06:55:07.121595742Z"
+          },
+          {
+            "code": "RATE_LIMITED",
+            "index": 11,
+            "retry_after": "1",
+            "status": 429,
+            "utc": "2026-10-30T06:55:07.122256002Z"
+          }
+        ]
+      },
+      "heartbeat": {
+        "actual_first_rejection": 6,
+        "elapsed_seconds": 0.003177168,
+        "expected_first_rejection": 6,
+        "expected_metric": "fvpn_control_rate_limited_total{class=\"heartbeat\",limiter=\"subject\"}",
+        "first_error_code": "RATE_LIMITED",
+        "first_retry_after": "1",
+        "metric_delta": 1,
+        "metrics_after": {
+          "fvpn_control_rate_limited_total{class=\"heartbeat\",limiter=\"subject\"}": 1
+        },
+        "metrics_before": {},
+        "passed": true,
+        "requests": [
+          {
+            "code": "VALIDATION_FAILED",
+            "index": 1,
+            "retry_after": "",
+            "status": 422,
+            "utc": "2026-10-30T06:54:54.923530797Z"
+          },
+          {
+            "code": "VALIDATION_FAILED",
+            "index": 2,
+            "retry_after": "",
+            "status": 422,
+            "utc": "2026-10-30T06:54:54.923849351Z"
+          },
+          {
+            "code": "VALIDATION_FAILED",
+            "index": 3,
+            "retry_after": "",
+            "status": 422,
+            "utc": "2026-10-30T06:54:54.924133634Z"
+          },
+          {
+            "code": "VALIDATION_FAILED",
+            "index": 4,
+            "retry_after": "",
+            "status": 422,
+            "utc": "2026-10-30T06:54:54.924349368Z"
+          },
+          {
+            "code": "VALIDATION_FAILED",
+            "index": 5,
+            "retry_after": "",
+            "status": 422,
+            "utc": "2026-10-30T06:54:54.924623701Z"
+          },
+          {
+            "code": "RATE_LIMITED",
+            "index": 6,
+            "retry_after": "1",
+            "status": 429,
+            "utc": "2026-10-30T06:54:54.924821909Z"
+          }
+        ]
+      },
+      "ipv6": {
+        "lab_network_ipv6": "false",
+        "network_read_ok": true,
+        "reason": "This live transport dials assigned IPv4 loopback ports. No IPv6-origin experiment or host/network changes; owner component tests cover /64 and invalid RemoteAddr.",
+        "status": "needs operator run"
+      },
+      "lease": {
+        "actual_first_rejection": 6,
+        "elapsed_seconds": 0.007659705,
+        "expected_first_rejection": 6,
+        "expected_metric": "fvpn_control_rate_limited_total{class=\"lease\",limiter=\"subject\"}",
+        "first_error_code": "RATE_LIMITED",
+        "first_retry_after": "1",
+        "metric_delta": 1,
+        "metrics_after": {
+          "fvpn_control_rate_limited_total{class=\"heartbeat\",limiter=\"subject\"}": 1,
+          "fvpn_control_rate_limited_total{class=\"lease\",limiter=\"subject\"}": 1
+        },
+        "metrics_before": {
+          "fvpn_control_rate_limited_total{class=\"heartbeat\",limiter=\"subject\"}": 1
+        },
+        "passed": true,
+        "requests": [
+          {
+            "code": "",
+            "index": 1,
+            "retry_after": "",
+            "status": 200,
+            "utc": "2026-10-30T06:55:01.017341033Z"
+          },
+          {
+            "code": "",
+            "index": 2,
+            "retry_after": "",
+            "status": 200,
+            "utc": "2026-10-30T06:55:01.018669647Z"
+          },
+          {
+            "code": "",
+            "index": 3,
+            "retry_after": "",
+            "status": 200,
+            "utc": "2026-10-30T06:55:01.01968373Z"
+          },
+          {
+            "code": "",
+            "index": 4,
+            "retry_after": "",
+            "status": 200,
+            "utc": "2026-10-30T06:55:01.020722101Z"
+          },
+          {
+            "code": "",
+            "index": 5,
+            "retry_after": "",
+            "status": 200,
+            "utc": "2026-10-30T06:55:01.021779127Z"
+          },
+          {
+            "code": "RATE_LIMITED",
+            "index": 6,
+            "retry_after": "1",
+            "status": 429,
+            "utc": "2026-10-30T06:55:01.022533282Z"
+          }
+        ]
+      },
+      "ledger": {
+        "actual_rows": 1,
+        "expected_rows": 1,
+        "kernel_flow": false,
+        "read_ok": true,
+        "synthetic": true
+      },
+      "observation_payload": "{} deliberately schema-invalid: no projected observation rows written",
+      "settings": "unmodified D-060 defaults after #145; ingress 20/s burst60 per class/address; heartbeat and lease 1/s burst5; usage and anonymous 2/s burst10",
+      "source": "one host transport address; node B certificate; real agent uses node A identity",
+      "usage": {
+        "actual_first_rejection": 11,
+        "elapsed_seconds": 0.035695213,
+        "expected_first_rejection": 11,
+        "expected_metric": "fvpn_control_rate_limited_total{class=\"usage\",limiter=\"subject\"}",
+        "first_error_code": "RATE_LIMITED",
+        "first_retry_after": "1",
+        "metric_delta": 1,
+        "metrics_after": {
+          "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 3,
+          "fvpn_control_rate_limited_total{class=\"heartbeat\",limiter=\"subject\"}": 1,
+          "fvpn_control_rate_limited_total{class=\"lease\",limiter=\"subject\"}": 1,
+          "fvpn_control_rate_limited_total{class=\"usage\",limiter=\"subject\"}": 1
+        },
+        "metrics_before": {
+          "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 3,
+          "fvpn_control_rate_limited_total{class=\"heartbeat\",limiter=\"subject\"}": 1,
+          "fvpn_control_rate_limited_total{class=\"lease\",limiter=\"subject\"}": 1
+        },
+        "passed": true,
+        "requests": [
+          {
+            "code": "",
+            "index": 1,
+            "retry_after": "",
+            "status": 200,
+            "utc": "2026-10-30T06:55:25.417003821Z"
+          },
+          {
+            "code": "",
+            "index": 2,
+            "retry_after": "",
+            "status": 200,
+            "utc": "2026-10-30T06:55:25.421072541Z"
+          },
+          {
+            "code": "",
+            "index": 3,
+            "retry_after": "",
+            "status": 200,
+            "utc": "2026-10-30T06:55:25.423704699Z"
+          },
+          {
+            "code": "",
+            "index": 4,
+            "retry_after": "",
+            "status": 200,
+            "utc": "2026-10-30T06:55:25.426472687Z"
+          },
+          {
+            "code": "",
+            "index": 5,
+            "retry_after": "",
+            "status": 200,
+            "utc": "2026-10-30T06:55:25.430137688Z"
+          },
+          {
+            "code": "",
+            "index": 6,
+            "retry_after": "",
+            "status": 200,
+            "utc": "2026-10-30T06:55:25.43255315Z"
+          },
+          {
+            "code": "",
+            "index": 7,
+            "retry_after": "",
+            "status": 200,
+            "utc": "2026-10-30T06:55:25.434504651Z"
+          },
+          {
+            "code": "",
+            "index": 8,
+            "retry_after": "",
+            "status": 200,
+            "utc": "2026-10-30T06:55:25.436769414Z"
+          },
+          {
+            "code": "",
+            "index": 9,
+            "retry_after": "",
+            "status": 200,
+            "utc": "2026-10-30T06:55:25.439107964Z"
+          },
+          {
+            "code": "",
+            "index": 10,
+            "retry_after": "",
+            "status": 200,
+            "utc": "2026-10-30T06:55:25.44138195Z"
+          },
+          {
+            "code": "RATE_LIMITED",
+            "index": 11,
+            "retry_after": "1",
+            "status": 429,
+            "utc": "2026-10-30T06:55:25.442024288Z"
+          }
+        ]
+      },
+      "usage_acknowledgements": [
+        {
+          "blocked_seq": null,
+          "highest_contiguous_seq": "1",
+          "ledger_epoch": "19e797db-f0ed-4234-aafa-6221296186a3",
+          "node_id": "01a18b93-01c2-7350-95e5-b41801d102ff",
+          "node_incarnation_id": "74561fdc-bb3f-4143-9cdc-dc4827a54e64",
+          "received_at": "2026-10-30T06:55:25.40773147Z",
+          "results": [
+            {
+              "error": null,
+              "event_seq": "1",
+              "status": "accepted"
+            }
+          ]
+        },
+        {
+          "blocked_seq": null,
+          "highest_contiguous_seq": "1",
+          "ledger_epoch": "19e797db-f0ed-4234-aafa-6221296186a3",
+          "node_id": "01a18b93-01c2-7350-95e5-b41801d102ff",
+          "node_incarnation_id": "74561fdc-bb3f-4143-9cdc-dc4827a54e64",
+          "received_at": "2026-10-30T06:55:25.417993678Z",
+          "results": [
+            {
+              "error": null,
+              "event_seq": "1",
+              "status": "duplicate"
+            }
+          ]
+        },
+        {
+          "blocked_seq": null,
+          "highest_contiguous_seq": "1",
+          "ledger_epoch": "19e797db-f0ed-4234-aafa-6221296186a3",
+          "node_id": "01a18b93-01c2-7350-95e5-b41801d102ff",
+          "node_incarnation_id": "74561fdc-bb3f-4143-9cdc-dc4827a54e64",
+          "received_at": "2026-10-30T06:55:25.421659896Z",
+          "results": [
+            {
+              "error": null,
+              "event_seq": "1",
+              "status": "duplicate"
+            }
+          ]
+        },
+        {
+          "blocked_seq": null,
+          "highest_contiguous_seq": "1",
+          "ledger_epoch": "19e797db-f0ed-4234-aafa-6221296186a3",
+          "node_id": "01a18b93-01c2-7350-95e5-b41801d102ff",
+          "node_incarnation_id": "74561fdc-bb3f-4143-9cdc-dc4827a54e64",
+          "received_at": "2026-10-30T06:55:25.424386145Z",
+          "results": [
+            {
+              "error": null,
+              "event_seq": "1",
+              "status": "duplicate"
+            }
+          ]
+        },
+        {
+          "blocked_seq": null,
+          "highest_contiguous_seq": "1",
+          "ledger_epoch": "19e797db-f0ed-4234-aafa-6221296186a3",
+          "node_id": "01a18b93-01c2-7350-95e5-b41801d102ff",
+          "node_incarnation_id": "74561fdc-bb3f-4143-9cdc-dc4827a54e64",
+          "received_at": "2026-10-30T06:55:25.427843283Z",
+          "results": [
+            {
+              "error": null,
+              "event_seq": "1",
+              "status": "duplicate"
+            }
+          ]
+        },
+        {
+          "blocked_seq": null,
+          "highest_contiguous_seq": "1",
+          "ledger_epoch": "19e797db-f0ed-4234-aafa-6221296186a3",
+          "node_id": "01a18b93-01c2-7350-95e5-b41801d102ff",
+          "node_incarnation_id": "74561fdc-bb3f-4143-9cdc-dc4827a54e64",
+          "received_at": "2026-10-30T06:55:25.430571502Z",
+          "results": [
+            {
+              "error": null,
+              "event_seq": "1",
+              "status": "duplicate"
+            }
+          ]
+        },
+        {
+          "blocked_seq": null,
+          "highest_contiguous_seq": "1",
+          "ledger_epoch": "19e797db-f0ed-4234-aafa-6221296186a3",
+          "node_id": "01a18b93-01c2-7350-95e5-b41801d102ff",
+          "node_incarnation_id": "74561fdc-bb3f-4143-9cdc-dc4827a54e64",
+          "received_at": "2026-10-30T06:55:25.432843804Z",
+          "results": [
+            {
+              "error": null,
+              "event_seq": "1",
+              "status": "duplicate"
+            }
+          ]
+        },
+        {
+          "blocked_seq": null,
+          "highest_contiguous_seq": "1",
+          "ledger_epoch": "19e797db-f0ed-4234-aafa-6221296186a3",
+          "node_id": "01a18b93-01c2-7350-95e5-b41801d102ff",
+          "node_incarnation_id": "74561fdc-bb3f-4143-9cdc-dc4827a54e64",
+          "received_at": "2026-10-30T06:55:25.434808234Z",
+          "results": [
+            {
+              "error": null,
+              "event_seq": "1",
+              "status": "duplicate"
+            }
+          ]
+        },
+        {
+          "blocked_seq": null,
+          "highest_contiguous_seq": "1",
+          "ledger_epoch": "19e797db-f0ed-4234-aafa-6221296186a3",
+          "node_id": "01a18b93-01c2-7350-95e5-b41801d102ff",
+          "node_incarnation_id": "74561fdc-bb3f-4143-9cdc-dc4827a54e64",
+          "received_at": "2026-10-30T06:55:25.437233923Z",
+          "results": [
+            {
+              "error": null,
+              "event_seq": "1",
+              "status": "duplicate"
+            }
+          ]
+        },
+        {
+          "blocked_seq": null,
+          "highest_contiguous_seq": "1",
+          "ledger_epoch": "19e797db-f0ed-4234-aafa-6221296186a3",
+          "node_id": "01a18b93-01c2-7350-95e5-b41801d102ff",
+          "node_incarnation_id": "74561fdc-bb3f-4143-9cdc-dc4827a54e64",
+          "received_at": "2026-10-30T06:55:25.439416644Z",
+          "results": [
+            {
+              "error": null,
+              "event_seq": "1",
+              "status": "duplicate"
+            }
+          ]
+        }
+      ],
+      "usage_body_limits": [
+        {
+          "actual_status": 200,
+          "bytes": 1048576,
+          "code": "",
+          "expected_status": 200,
+          "fixture": "identical valid one-event batch padded with legal JSON trailing whitespace; optional idempotency header omitted",
+          "passed": true,
+          "valid_json": true
+        },
+        {
+          "actual_status": 400,
+          "bytes": 1048577,
+          "code": "MALFORMED_REQUEST",
+          "expected_status": 200,
+          "fixture": "identical valid one-event batch padded with legal JSON trailing whitespace; optional idempotency header omitted",
+          "passed": false,
+          "valid_json": true
+        },
+        {
+          "actual_status": 400,
+          "bytes": 8388608,
+          "code": "MALFORMED_REQUEST",
+          "expected_status": 200,
+          "fixture": "identical valid one-event batch padded with legal JSON trailing whitespace; optional idempotency header omitted",
+          "passed": false,
+          "valid_json": true
+        },
+        {
+          "actual_status": 413,
+          "bytes": 8388609,
+          "code": "PAYLOAD_TOO_LARGE",
+          "expected_status": 413,
+          "fixture": "identical valid one-event batch padded with legal JSON trailing whitespace; optional idempotency header omitted",
+          "passed": true,
+          "valid_json": true
+        }
+      ],
+      "webhook": {
+        "actual_first_rejection": 11,
+        "elapsed_seconds": 0.009414603,
+        "expected_first_rejection": 11,
+        "expected_metric": "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}",
+        "first_error_code": "RATE_LIMITED",
+        "first_retry_after": "1",
+        "metric_delta": 1,
+        "metrics_after": {
+          "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 2,
+          "fvpn_control_rate_limited_total{class=\"heartbeat\",limiter=\"subject\"}": 1,
+          "fvpn_control_rate_limited_total{class=\"lease\",limiter=\"subject\"}": 1
+        },
+        "metrics_before": {
+          "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 1,
+          "fvpn_control_rate_limited_total{class=\"heartbeat\",limiter=\"subject\"}": 1,
+          "fvpn_control_rate_limited_total{class=\"lease\",limiter=\"subject\"}": 1
+        },
+        "passed": true,
+        "requests": [
+          {
+            "code": "WEBHOOK_SIGNATURE_INVALID",
+            "index": 1,
+            "retry_after": "",
+            "status": 401,
+            "utc": "2026-10-30T06:55:13.214228185Z"
+          },
+          {
+            "code": "WEBHOOK_SIGNATURE_INVALID",
+            "index": 2,
+            "retry_after": "",
+            "status": 401,
+            "utc": "2026-10-30T06:55:13.215336807Z"
+          },
+          {
+            "code": "WEBHOOK_SIGNATURE_INVALID",
+            "index": 3,
+            "retry_after": "",
+            "status": 401,
+            "utc": "2026-10-30T06:55:13.216138947Z"
+          },
+          {
+            "code": "WEBHOOK_SIGNATURE_INVALID",
+            "index": 4,
+            "retry_after": "",
+            "status": 401,
+            "utc": "2026-10-30T06:55:13.216864868Z"
+          },
+          {
+            "code": "WEBHOOK_SIGNATURE_INVALID",
+            "index": 5,
+            "retry_after": "",
+            "status": 401,
+            "utc": "2026-10-30T06:55:13.217630937Z"
+          },
+          {
+            "code": "WEBHOOK_SIGNATURE_INVALID",
+            "index": 6,
+            "retry_after": "",
+            "status": 401,
+            "utc": "2026-10-30T06:55:13.218341961Z"
+          },
+          {
+            "code": "WEBHOOK_SIGNATURE_INVALID",
+            "index": 7,
+            "retry_after": "",
+            "status": 401,
+            "utc": "2026-10-30T06:55:13.219029401Z"
+          },
+          {
+            "code": "WEBHOOK_SIGNATURE_INVALID",
+            "index": 8,
+            "retry_after": "",
+            "status": 401,
+            "utc": "2026-10-30T06:55:13.219658932Z"
+          },
+          {
+            "code": "WEBHOOK_SIGNATURE_INVALID",
+            "index": 9,
+            "retry_after": "",
+            "status": 401,
+            "utc": "2026-10-30T06:55:13.220323306Z"
+          },
+          {
+            "code": "WEBHOOK_SIGNATURE_INVALID",
+            "index": 10,
+            "retry_after": "",
+            "status": 401,
+            "utc": "2026-10-30T06:55:13.22098151Z"
+          },
+          {
+            "code": "RATE_LIMITED",
+            "index": 11,
+            "retry_after": "1",
+            "status": 429,
+            "utc": "2026-10-30T06:55:13.22164719Z"
+          }
+        ]
+      }
+    },
+    "native_scale": {
+      "attempted_new_peers": 50,
+      "blocker": "member device list did not contain exactly three authorized peers",
+      "elapsed_seconds": 772.424477875,
+      "hook": "StartNativePeer + JoinNativeMember",
+      "new_authorized_peers": 50,
+      "new_identity_matches": 50,
+      "projector_writes": false,
+      "requested_peers": 60,
+      "requested_users": 20,
+      "users": [
+        {
+          "authorized": 3,
+          "http_status": 200,
+          "user_index": 0
+        },
+        {
+          "authorized": 3,
+          "http_status": 200,
+          "user_index": 1
+        },
+        {
+          "authorized": 3,
+          "http_status": 200,
+          "user_index": 2
+        },
+        {
+          "authorized": 3,
+          "http_status": 200,
+          "user_index": 3
+        },
+        {
+          "authorized": 3,
+          "http_status": 200,
+          "user_index": 4
+        },
+        {
+          "authorized": 3,
+          "http_status": 200,
+          "user_index": 5
+        },
+        {
+          "authorized": 3,
+          "http_status": 200,
+          "user_index": 6
+        },
+        {
+          "authorized": 3,
+          "http_status": 200,
+          "user_index": 7
+        },
+        {
+          "authorized": 3,
+          "http_status": 200,
+          "user_index": 8
+        },
+        {
+          "authorized": 3,
+          "http_status": 200,
+          "user_index": 9
+        },
+        {
+          "authorized": 3,
+          "http_status": 200,
+          "user_index": 10
+        },
+        {
+          "authorized": 3,
+          "http_status": 200,
+          "user_index": 11
+        },
+        {
+          "authorized": 3,
+          "http_status": 200,
+          "user_index": 12
+        },
+        {
+          "authorized": 3,
+          "http_status": 200,
+          "user_index": 13
+        },
+        {
+          "authorized": 3,
+          "http_status": 200,
+          "user_index": 14
+        },
+        {
+          "authorized": 3,
+          "http_status": 200,
+          "user_index": 15
+        },
+        {
+          "authorized": 0,
+          "http_status": 0,
+          "user_index": 16
+        }
+      ]
+    },
+    "initial_authorized_device_snapshot": 1,
+    "main_run_native_peer_authorization_observations": 51,
+    "cohort_60_confirmed_in_main_run": false,
+    "main_run_stop": "User index 16 final read had no HTTP response; subsequent admin login failed. Root cause unclassified in the original capture; zero is not an HTTP status or a proved zero-device count.",
+    "login_threshold_history": "followup3-limiter.json",
+    "isolated_native_admission_subset": {
+      "status": "blocked",
+      "record": "native-scale.json",
+      "source_revision": "9b17127c888f94191d759617c99fe1225078a092",
+      "node_incarnation": null,
+      "flow_or_capacity_claim": false
+    }
+  },
+  "record_rendered_at": "2026-10-30T07:57:11Z"
+}
