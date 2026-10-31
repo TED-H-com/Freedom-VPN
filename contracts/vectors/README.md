@@ -85,3 +85,16 @@ compare their length and digest to signed `size_bytes`/`content_sha256`, and onl
 then parse/apply. Go and TypeScript check the new vector against the committed
 canonical document; changing the reference or probe target invalidates its
 signature. The original desired-state vectors remain byte-for-byte unchanged.
+
+## Revision 14
+
+- `member-grant-revoke.json`: AT29 request, asynchronous receipt, audit action,
+  same-key replay, unknown/wrong-member, revoked and expired outcomes.
+- `usage-retired-handoff.json`: D-105 enrollment/retirement context and accepted,
+  out-of-window rejected, and byte-identical duplicate requests. ACK identity is
+  the retired original stream. These are semantic service cases, not schema failures.
+- `tc-readback-evidence.json`: D-106 verified/rejected/truncated reads with the
+  exact canonical `reads`/`objects`/`truncated`/`tc` digest projection, matching
+  netlab follow-up 14. Candidate generation is a string even at uint64 maximum.
+
+Go and TypeScript verify hashes and round trips. Runtime acceptance is separate.

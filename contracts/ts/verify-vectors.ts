@@ -136,6 +136,36 @@ check(dsv.signed.update.manifest_sha256 === man.envelope_sha256, "desired state 
 const revoked = load("desired-state-revocations-signing.json");
 check(!ed25519Verify(revoked.public_key_b64, canonicalize({ ...revoked.signed, revoked_release_ids: [] }), revoked.signature_b64), "removed revocation invalidates signature");
 
+// ---- revision 14: exact original-stream bytes/ACK and bounded TC digests
+const handoff = load("usage-retired-handoff.json");
+const acceptedHandoff = handoff.cases.find((c: any) => c.name === "accepted");
+for (const c of handoff.cases) {
+  const req = c.request;
+  check(req.node_incarnation_id === handoff.context.presenting_incarnation_id, `D-105 ${c.name} current identity`);
+  check(c.response.node_incarnation_id === req.origin_incarnation_id, `D-105 ${c.name} original-stream ACK`);
+  for (const event of req.events) {
+    check(event.node_incarnation_id === req.origin_incarnation_id, `D-105 ${c.name} immutable origin`);
+    check(hashWithout(event, "payload_sha256") === event.payload_sha256, `D-105 ${c.name} original hash`);
+  }
+  if (c.name === "idempotent-replay") {
+    check(canonicalize(req) === canonicalize(acceptedHandoff.request), "D-105 byte-identical replay");
+    check(c.response.results[0].status === "duplicate", "D-105 duplicate without recounting");
+  }
+  if (c.name === "after-retirement-window") {
+    check(c.audited && c.response.results[0].error.code === "VALIDATION_FAILED", "D-105 late event audited rejection");
+    check(c.response.highest_contiguous_seq === handoff.context.previous_highest_contiguous_seq, "D-105 rejected ACK unchanged");
+  }
+}
+for (const c of load("tc-readback-evidence.json").cases) {
+  const e = c.evidence;
+  const projection = canonicalize({ reads: e.reads_total, objects: e.objects_total, truncated: e.truncated, tc: e.attachments });
+  check(projection === c.canonical_projection, `D-106 ${c.name} canonical rows/counts`);
+  check(sha256hex(projection) === e.sha256, `D-106 ${c.name} digest`);
+  check(isDecimalString(e.candidate_generation), `D-106 ${c.name} exact generation`);
+  check(e.attachments.length <= 16 && e.attachments.every((r: any) => r.objects.length <= 4), `D-106 ${c.name} bounded rows`);
+  check(e.rejected === null || e.rejected.objects.length <= 1, `D-106 ${c.name} deciding row bound`);
+}
+
 if (failures > 0) {
   console.error(`${failures} of ${checks} vector checks failed`);
   process.exit(1);

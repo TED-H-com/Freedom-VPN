@@ -1973,6 +1973,69 @@ func (e SubscriptionSummaryReconciliationStatus) Valid() bool {
 	}
 }
 
+// Defines values for TCReadAttachmentError.
+const (
+	TCReadAttachmentErrorInvalidJson    TCReadAttachmentError = "invalid_json"
+	TCReadAttachmentErrorInvalidListing TCReadAttachmentError = "invalid_listing"
+	TCReadAttachmentErrorReadFailed     TCReadAttachmentError = "read_failed"
+)
+
+// Valid indicates whether the value is a known member of the TCReadAttachmentError enum.
+func (e TCReadAttachmentError) Valid() bool {
+	switch e {
+	case TCReadAttachmentErrorInvalidJson:
+		return true
+	case TCReadAttachmentErrorInvalidListing:
+		return true
+	case TCReadAttachmentErrorReadFailed:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for TCReadbackEvidencePhase.
+const (
+	TCReadbackEvidencePhaseLoad     TCReadbackEvidencePhase = "load"
+	TCReadbackEvidencePhasePreApply TCReadbackEvidencePhase = "pre_apply"
+	TCReadbackEvidencePhaseVerify   TCReadbackEvidencePhase = "verify"
+)
+
+// Valid indicates whether the value is a known member of the TCReadbackEvidencePhase enum.
+func (e TCReadbackEvidencePhase) Valid() bool {
+	switch e {
+	case TCReadbackEvidencePhaseLoad:
+		return true
+	case TCReadbackEvidencePhasePreApply:
+		return true
+	case TCReadbackEvidencePhaseVerify:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for TCRejectedAttachmentError.
+const (
+	TCRejectedAttachmentErrorInvalidJson    TCRejectedAttachmentError = "invalid_json"
+	TCRejectedAttachmentErrorInvalidListing TCRejectedAttachmentError = "invalid_listing"
+	TCRejectedAttachmentErrorReadFailed     TCRejectedAttachmentError = "read_failed"
+)
+
+// Valid indicates whether the value is a known member of the TCRejectedAttachmentError enum.
+func (e TCRejectedAttachmentError) Valid() bool {
+	switch e {
+	case TCRejectedAttachmentErrorInvalidJson:
+		return true
+	case TCRejectedAttachmentErrorInvalidListing:
+		return true
+	case TCRejectedAttachmentErrorReadFailed:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ThreatFeedPayloadCategories.
 const (
 	ThreatFeedPayloadCategoriesAds      ThreatFeedPayloadCategories = "ads"
@@ -4347,6 +4410,9 @@ type ObservationReport struct {
 	// SafetyStatus Whether isolation and a valid policy meet the baseline (§5).
 	SafetyStatus SafetyStatus `json:"safety_status"`
 
+	// TcEvidence D-106 retained actual read. Absent or null means no retained read, never an empty successful scan. Existing errors[stage=tc_evidence] rows remain unchanged.
+	TcEvidence nullable.Nullable[TCReadbackEvidence] `json:"tc_evidence,omitzero"`
+
 	// Update Populated from durable updater state on every observation (D-062e).
 	// A null generation means no update state and must never be read as generation 0.
 	Update struct {
@@ -5002,6 +5068,89 @@ type SubscriptionSummary struct {
 // SubscriptionSummaryReconciliationStatus defines model for SubscriptionSummary.ReconciliationStatus.
 type SubscriptionSummaryReconciliationStatus string
 
+// TCReadAttachment Bounded attachment read; error is a fixed status, never raw stderr.
+type TCReadAttachment struct {
+	// Attachment Producer-redacted bounded ASCII token; never a raw match, parameter or command output.
+	Attachment TCToken                `json:"attachment"`
+	Error      *TCReadAttachmentError `json:"error,omitempty"`
+
+	// Interface Producer-redacted bounded ASCII token; never a raw match, parameter or command output.
+	Interface TCToken        `json:"interface"`
+	Objects   []TCReadObject `json:"objects"`
+}
+
+// TCReadAttachmentError defines model for TCReadAttachment.Error.
+type TCReadAttachmentError string
+
+// TCReadObject defines model for TCReadObject.
+type TCReadObject struct {
+	Actions *[]TCToken `json:"actions,omitempty"`
+
+	// Handle Producer-redacted bounded ASCII token; never a raw match, parameter or command output.
+	Handle *TCToken `json:"handle,omitempty"`
+
+	// Kind Producer-redacted bounded ASCII token; never a raw match, parameter or command output.
+	Kind TCToken `json:"kind"`
+
+	// Parent Producer-redacted bounded ASCII token; never a raw match, parameter or command output.
+	Parent *TCToken `json:"parent,omitempty"`
+	Root   *bool    `json:"root,omitempty"`
+}
+
+// TCReadbackEvidence D-106 retained actual TC read, linked by the parent observation report_id.
+// No raw matches, action parameters, stderr, routes, destinations or packet
+// payloads. Successful reads are retained too. verified is the complete
+// serving-verifier outcome, not just a clean TC scan. candidate_generation
+// is the generation under verification, never an applied-generation ACK.
+// read_at is the actual verifier read time; never refresh an old snapshot's
+// timestamp or substitute rollback evidence for the rejected read.
+type TCReadbackEvidence struct {
+	Attachments []TCReadAttachment `json:"attachments"`
+
+	// CandidateGeneration Exact uint64 decimal string, at most 18446744073709551615; not an ACK.
+	CandidateGeneration decstr.U64                   `json:"candidate_generation"`
+	ErrorCode           nullable.Nullable[ErrorCode] `json:"error_code"`
+	ObjectsTotal        int                          `json:"objects_total"`
+	Phase               TCReadbackEvidencePhase      `json:"phase"`
+	ReadAt              time.Time                    `json:"read_at"`
+	ReadsTotal          int                          `json:"reads_total"`
+
+	// Rejected Deciding attachment with at most one object; null when none. A verified read has rejected null.
+	Rejected nullable.Nullable[TCRejectedAttachment] `json:"rejected"`
+
+	// Sha256 RFC 8785 SHA-256 of retained bounded rows and counts, matching the
+	// netlab read-back projection: {"reads": reads_total, "objects":
+	// objects_total, "truncated": truncated, "tc": attachments}. Array
+	// order and optional object-member presence are retained exactly.
+	Sha256 string `json:"sha256"`
+
+	// Truncated True if any rows, objects or actions were omitted from the retained read.
+	Truncated bool `json:"truncated"`
+
+	// Verified Actual complete serving-verifier outcome.
+	Verified bool `json:"verified"`
+}
+
+// TCReadbackEvidencePhase defines model for TCReadbackEvidence.Phase.
+type TCReadbackEvidencePhase string
+
+// TCRejectedAttachment Bounded attachment read containing at most one deciding object; error is a fixed status, never raw stderr.
+type TCRejectedAttachment struct {
+	// Attachment Producer-redacted bounded ASCII token; never a raw match, parameter or command output.
+	Attachment TCToken                    `json:"attachment"`
+	Error      *TCRejectedAttachmentError `json:"error,omitempty"`
+
+	// Interface Producer-redacted bounded ASCII token; never a raw match, parameter or command output.
+	Interface TCToken        `json:"interface"`
+	Objects   []TCReadObject `json:"objects"`
+}
+
+// TCRejectedAttachmentError defines model for TCRejectedAttachment.Error.
+type TCRejectedAttachmentError string
+
+// TCToken Producer-redacted bounded ASCII token; never a raw match, parameter or command output.
+type TCToken = string
+
 // ThreatFeedPayload Threat or category feed source with license basis (§12.3, §14.2). A feed
 // whose commercial use is not confirmed must not be placed in a production
 // profile. Fetch times and results are observations stored separately.
@@ -5462,7 +5611,12 @@ type UpdateUsageCheckpoint struct {
 	NewMeterEpochId     nullable.Nullable[openapi_types.UUID] `json:"new_meter_epoch_id"`
 }
 
-// UsageBatchRequest A batch of usage events of one incarnation stream (§10.5). Batch limits are central parameters; the contract maximum is 1000 events.
+// UsageBatchRequest A batch of usage events of one incarnation stream (§10.5, D-105).
+// Batch identity always names the presenting current incarnation; optional
+// origin_incarnation_id selects one retired stream under submitUsageBatch's
+// eligibility and interval rules. Events and replay_unavailable refer to
+// that selected stream only. Batch limits are central parameters; the
+// contract maximum is 1000 events.
 type UsageBatchRequest struct {
 	Events []UsageEvent `json:"events"`
 
@@ -5470,9 +5624,14 @@ type UsageBatchRequest struct {
 	LedgerEpoch nullable.Nullable[openapi_types.UUID] `json:"ledger_epoch"`
 
 	// NodeId Must equal the certificate identity; never overrides it.
-	NodeId            openapi_types.UUID        `json:"node_id"`
-	NodeIncarnationId openapi_types.UUID        `json:"node_incarnation_id"`
-	ReplayUnavailable *[]ReplayUnavailableRange `json:"replay_unavailable,omitempty"`
+	NodeId openapi_types.UUID `json:"node_id"`
+
+	// NodeIncarnationId Must equal the presenting current certificate incarnation, including during hand-off.
+	NodeIncarnationId openapi_types.UUID `json:"node_incarnation_id"`
+
+	// OriginIncarnationId Eligible retired stream (D-105). Omit for the presenting current stream; null is invalid. Never part of an event hash.
+	OriginIncarnationId *openapi_types.UUID       `json:"origin_incarnation_id,omitempty"`
+	ReplayUnavailable   *[]ReplayUnavailableRange `json:"replay_unavailable,omitempty"`
 }
 
 // UsageBatchResult Returned after commit (§10.6). highest_contiguous_seq is the highest
@@ -5480,15 +5639,20 @@ type UsageBatchRequest struct {
 // durably stored ("0" when event 1 is missing). It never goes backwards
 // within one ledger_epoch. blocked_seq is the lowest sequence above
 // highest_contiguous_seq that is in conflict or rejected and therefore stops
-// ACK progress, or null.
+// ACK progress, or null. D-105: node_incarnation_id is the selected original
+// stream, equal to request.origin_incarnation_id when supplied, otherwise
+// request.node_incarnation_id. All ACK fields and event results belong to
+// this stream only, never implicitly to the presenting incarnation.
 type UsageBatchResult struct {
 	BlockedSeq           nullable.Nullable[decstr.U64] `json:"blocked_seq"`
 	HighestContiguousSeq decstr.U64                    `json:"highest_contiguous_seq"`
 	LedgerEpoch          openapi_types.UUID            `json:"ledger_epoch"`
 	NodeId               openapi_types.UUID            `json:"node_id"`
-	NodeIncarnationId    openapi_types.UUID            `json:"node_incarnation_id"`
-	ReceivedAt           time.Time                     `json:"received_at"`
-	Results              []UsageEventResult            `json:"results"`
+
+	// NodeIncarnationId Original stream being acknowledged, including a retired origin in D-105.
+	NodeIncarnationId openapi_types.UUID `json:"node_incarnation_id"`
+	ReceivedAt        time.Time          `json:"received_at"`
+	Results           []UsageEventResult `json:"results"`
 }
 
 // UsageCheckpoint Central ledger watermark for one node incarnation stream (§17.3). Computed
@@ -5713,6 +5877,9 @@ type DeviceId = openapi_types.UUID
 // EnrollmentId defines model for EnrollmentId.
 type EnrollmentId = openapi_types.UUID
 
+// GrantId defines model for GrantId.
+type GrantId = openapi_types.UUID
+
 // IdempotencyKey defines model for IdempotencyKey.
 type IdempotencyKey = openapi_types.UUID
 
@@ -5914,6 +6081,16 @@ type AuthorizeMemberDeviceParams struct {
 
 // CreateMemberGrantParams defines parameters for CreateMemberGrant.
 type CreateMemberGrantParams struct {
+	// IdempotencyKey Client-generated UUID (§14.5). Scope: principal, HTTP method, normalized
+	// route and key. Same key and same validated payload return the same resource
+	// or operation; same key and a different payload return 409
+	// IDEMPOTENCY_CONFLICT. Kept at least 7 days (recommended default). Missing
+	// header: 400 MALFORMED_REQUEST.
+	IdempotencyKey IdempotencyKey `json:"Idempotency-Key"`
+}
+
+// RevokeMemberGrantParams defines parameters for RevokeMemberGrant.
+type RevokeMemberGrantParams struct {
 	// IdempotencyKey Client-generated UUID (§14.5). Scope: principal, HTTP method, normalized
 	// route and key. Same key and same validated payload return the same resource
 	// or operation; same key and a different payload return 409
@@ -6243,6 +6420,9 @@ type UpdateMemberJSONRequestBody = MemberPatch
 
 // CreateMemberGrantJSONRequestBody defines body for CreateMemberGrant for application/json ContentType.
 type CreateMemberGrantJSONRequestBody = GrantCreateRequest
+
+// RevokeMemberGrantJSONRequestBody defines body for RevokeMemberGrant for application/json ContentType.
+type RevokeMemberGrantJSONRequestBody = ReasonRequest
 
 // UpdateNodeJSONRequestBody defines body for UpdateNode for application/json ContentType.
 type UpdateNodeJSONRequestBody = NodePatch
