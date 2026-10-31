@@ -282,6 +282,17 @@ Decode with `tests/e2e/decode_capture.py --stable-addresses --out <archive>` and
 the three pcaps. It emits headers, opaque full-IP-packet hashes and `addr-…`
 tokens matching snapshots, never payload/MAC/native keys. Preserve original
 private receipts and publicly pin only immutable run/archive files (D-132).
+For first-selection forensics, optional `--wireguard-headers` adds only message
+type, public sender/receiver indexes, decimal counter, length, loopback address
+classification and an opaque message hash. It checks fixed WireGuard layouts
+and reserved bytes on UDP port 51820; it exports no ephemeral key, MAC or
+ciphertext. Classification does not authenticate a handshake or prove kernel
+acceptance. The message hash can join a handshake through a local proxy even
+when its outer IP header changes. Retain the decoder revision for post-run
+derivations. Start/stop are bracketed separately per role; a sender tail after
+the receiver stopped cannot establish loss. `analyze_native_capture.py` joins
+headers with the retained readbacks and derives the stated empirical packet
+clock bounds. Run it before pinning a new immutable evidence subtree.
 
 `ConstrainSelectedNativePeer1280(ctx)` is a **separate control**, returning a
 cleanup function. It requires the connected selected sender's P2P IPv6 endpoint

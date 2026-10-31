@@ -1,8 +1,20 @@
 import struct
 import unittest
-from decode_capture import decode_ip
+from decode_capture import decode_ip, wireguard_header
 
 class HeaderOnly(unittest.TestCase):
+    def test_wireguard_fixed_fields_only_and_truncation(self):
+        import json
+        message = struct.pack('<III', 2, 123, 456) + b'PRIVATE!' * 10
+        got = wireguard_header(message)
+        self.assertEqual((got['type'], got['sender_index'], got['receiver_index']), (2, 123, 456))
+        self.assertNotIn('PRIVATE', json.dumps(got))
+        self.assertEqual(set(got), {'type', 'length', 'sender_index', 'receiver_index', 'message_sha256'})
+        self.assertIsNone(wireguard_header(message[:-1]))
+        self.assertIsNone(wireguard_header(bytes([2, 1]) + message[2:]))
+        data = struct.pack('<IIQ', 4, 456, 2**64-1) + bytes(16)
+        self.assertEqual(wireguard_header(data)['counter'], '18446744073709551615')
+
     def test_payload_is_never_exported(self):
         import json
         ip = bytes([0x45,0])+struct.pack('!H',48)+bytes(5)+bytes([6])+bytes(10)

@@ -116,6 +116,11 @@ def analyze(run, record):
             selected = [p for p in packets[role] if p.get('tcp', {}).get('src_port') == 20001 or p.get('tcp', {}).get('dst_port') == 20001]
             result['hops'][role] = [dict(bound(p, result['clock_offsets'][role]), interface=indexes.get(p['interface_index'], 'unknown'), packet_type=p['packet_type'], tcp=p['tcp']) for p in selected]
         result['member_syns'] = [p for p in result['hops']['member'] if p['interface'] == 'fvnb0' and p['packet_type'] == 4 and p['tcp']['flags'] == 2]
+        result['wireguard_headers'] = {}
+        for role in role_order:
+            indexes = {p['ifindex']: p['ifname'] for p in (before['points'][role]['links'] or [])}
+            result['wireguard_headers'][role] = [dict(bound(p, result['clock_offsets'][role]), interface=indexes.get(p['interface_index'], 'unknown'), packet_type=p['packet_type'], ip_version=p['ip_version'], src=p['src'], dst=p['dst'], udp=p['udp'], wireguard=p['wireguard']) for p in packets[role] if 'wireguard' in p]
+        result['wireguard_scope'] = 'Optional structural header decode, not authentication. Message hashes join proxy hops without exporting encrypted content. Capture stop times differ: do not treat a later sender tail as loss at an already stopped receiver.'
         result['transfer'] = json.loads(notes['transfer'])
         result['scope'] = 'Fresh first-use observation only. Historical five packets cannot be reconstructed. See inner/outer capture and readback bounds before assigning any fault.'
         return result
