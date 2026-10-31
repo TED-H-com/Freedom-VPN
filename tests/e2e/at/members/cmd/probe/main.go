@@ -47,7 +47,11 @@ func main() {
 		if len(res.Answers) > 0 {
 			ttl = res.Answers[0].TTL
 		}
-		_ = json.NewEncoder(os.Stdout).Encode(map[string]any{"available": true, "rcode": int(res.RCode), "answers": len(res.Answers), "ttl": ttl})
+		types := make([]uint16, 0, len(res.Answers))
+		for _, answer := range res.Answers {
+			types = append(types, uint16(answer.Type))
+		}
+		_ = json.NewEncoder(os.Stdout).Encode(map[string]any{"available": true, "rcode": int(res.RCode), "answers": len(res.Answers), "types": types, "ttl": ttl, "has_soa": res.HasSOA, "authority_ttl": res.AuthorityTTL})
 	case "http":
 		allowed := map[string]bool{"/control/querylog/config": true, "/control/querylog": true, "/control/stats/config": true, "/control/stats": true, "/control/filtering/status": true, "/control/dns_info": true}
 		endpoint := "http://127.0.0.1:8080" + os.Args[2]

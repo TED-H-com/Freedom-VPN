@@ -1,20 +1,27 @@
-# AT02 finite grant and device-to-usage trace — Follow-up 8
+# AT02 finite grant and device-to-usage trace — Follow-up 9
 
-Run `69f92f49-73dc-4779-8101-dfb6a802a96b`, harness `d79accd9c693aed83713072c925b3b5005b5684c`, product baseline `6848add` (#284), assigned `w4-members / 24000`. All deciding bodies, times, samples and audit rows are in [AT02.json](AT02.json).
+Run `11e305fe-6360-4dbd-95b1-67274aa4988c`, harness `49fbb48e013b824c4ce107d3cb551db79b915b42`, product baseline `7e044c71` (agent-core 25 #312, devstack 18 #313, dns-publish 8 #309 and netlab 18), assigned `w4-members / 24000`.
 
-| Transition | Authorized / pending before → after | Entitlement revision before → after | Deadline | Grant worker operation | Status |
+All safe HTTP bodies, audit rows, operation IDs and transport samples remain in [AT02.json](AT02.json).
+
+| Transition | Authorized / pending before → after | Revision before → after | Deadline | Worker operation | Result |
 |---|---|---|---|---|---|
-| ReplaceFiniteGrant | 3/0 → 2/1 | 2 → 4 | 2026-10-31T09:53:13.073851374Z | 01a19129-b913-71a0-8715-fa1671c5ee51 | pass |
-| ReplaceFiniteGrant | 2/1 → 3/0 | 4 → 6 | 2026-10-31T09:53:36.718773267Z | 01a1912a-1568-77cc-9036-80934af2ed38 | pass |
-| ReplaceFiniteGrant | 3/0 → 3/0 | 6 → 8 | 2026-10-31T08:55:49Z | 01a1912a-f5cb-7c8c-835d-b620bbefaa80 | pass |
+| ReplaceFiniteGrant | 3/0 → 2/1 | 2 → 4 | 2026-10-31T12:40:23.854501239Z | 01a191c2-c7cb-7457-866a-4b4c9107ae50 | pass |
+| ReplaceFiniteGrant | 2/1 → 3/0 | 4 → 6 | 2026-10-31T12:40:48.493154078Z | 01a191c3-280a-7be9-b165-a32a3297540c | pass |
+| ReplaceFiniteGrant | 3/0 → 3/0 | 6 → 8 | 2026-10-31T11:42:25Z | 01a191c3-7f94-70c1-8e3b-e8c038b8c7d0 | pass |
 
-Production revoke is audited once per grant under same-key replay; expired input is rejected before revocation and leaves the revision/live grants/audits unchanged. The immediate lower-limit transition and the real valid_until expiry are distinct. This member has no fallback plan at expiry, so all three authorized devices become pending. Restoration must reach 3/0, a succeeded parent worker operation, and counted forwarding.
+D-119 (2026-10-31) retires the inherited scheduled-deadline downgrade interpretation. Plan v1.0 has no scheduled plan-change contract. Billing replaces a grant at the period boundary; natural expiry with no other grant yields 0/3. The harness measures both independently and fabricates no fallback.
 
-Persistent TCP/9446 and authenticated UDP/9445 senders remain active beyond cutoff; reply increments and both device counters are sampled. The bound is the prepared heartbeat interval. Polling bounds observed reply time and is not a packet capture timestamp.
+Revoke audit replay: **pass**; `member.grant_revoke` operation `01a191c2-c7c3-74dd-b387-68688c7c9d1f` at `2026-10-31T11:40:23.86751+00:00`.
 
-- pass: event 2026-10-31T08:53:13.073851341Z; last TCP/UDP reply observed 0.944/0.944 s after the event; bound 5 s; sender active True; counters stable or removed True.
-- pass: event 2026-10-31T08:55:49Z; last TCP/UDP reply observed -0.842/-0.842 s after the event; bound 5 s; sender active True; counters stable or removed True.
+Revoke audit replay: **pass**; `member.grant_revoke` operation `01a191c3-2800-7bb9-bc50-1b5854d559f5` at `2026-10-31T11:40:48.505074+00:00`.
 
-The baseline also rechecks final-slot contention, ownership denial, slot reuse, strict revoked-source fvmb0 ingress versus a counted admitted sibling, restore-fence re-authorization and the real meter duplicate replay. [D077.md](D077.md) indexes HTTP outcomes. The accepted usage replay is read from a real agent payload; it never races the live sequence with a fabricated positive event.
+Revoke audit replay: **pass**; `member.grant_revoke` operation `01a191c3-7f8b-70a9-bd8c-294690200eb8` at `2026-10-31T11:41:10.915173+00:00`.
 
-Revoke audit operation IDs: `01a19129-b908-7821-b5e4-2df4cbe96ac9`, `01a1912a-155f-77ad-beca-65650cd4f217`, `01a1912a-f5c1-7ed5-9f5e-fc507ee886ad`. Expiry restoration worker operation: `01a1912c-4906-73e9-98d7-504497144d4b`. Full POST/replay and GET bodies remain in the corresponding AT02 steps.
+Natural expiry: deadline `2026-10-31T11:42:25Z`, observed `2026-10-31T11:42:33.858593867Z`, authorized/pending **0/3**, result **pass**.
+
+Expiry restoration: operation `01a191c4-ca97-784e-be76-b45813c28409`; the separate completion check requires a succeeded parent operation, 3/0 and fresh counted forwarding.
+
+The interrupted [attempt 1](history/follow-up-9/attempt-1/RUN.md) retained the stale `grant.revoke` query failures. The current selector is `member.grant_revoke`, matching the production service and its integration contract; exactly one audit per revoked grant remains mandatory.
+
+Persistent senders retain the same TCP/UDP sockets through cutoff; [forwarding-observation.md](forwarding-observation.md) records timestamps and bounds. No identity, entitlement, binding, device or observation projection is repaired.

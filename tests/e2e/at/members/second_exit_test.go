@@ -100,11 +100,21 @@ func (l *live) twoExits(r *record) {
 	_ = json.Unmarshal(raw, &v)
 	safe, _ := json.Marshal(map[string]any{"probe": v, "route": l.routeObservation("member"), "origin_requests": received.Requests, "origin_node": source})
 	r.check("selected exit offline behavior", "record bounded origin result and actual route", string(safe), "stop node2, its resolver and namespace holder; bounded HTTPS; authenticated origin arrival; restart same durable identity", stop == nil && e == nil)
+	// Keep the original stop/offline probe sequence, then let the shared hook
+	// restart the already-stopped namespace and retain the entire 90-second
+	// window. Observe counted recovery concurrently so collection does not
+	// postpone the first traffic probe until after the acceptance deadline.
 	resumedAt := time.Now().UTC()
-	_, nsErr := l.docker("start", l.name("node2-netns"))
-	_, dnsErr := l.docker("start", l.name("node2-adguard"))
-	_, resume := l.docker("start", l.name("node2"))
-	r.check("second exit resume", "start succeeds", fmt.Sprintf("started=%t", resume == nil && nsErr == nil && dnsErr == nil), "docker start assigned node2", resume == nil && nsErr == nil && dnsErr == nil)
+	type restartResult struct {
+		evidence e2e.NamespaceRestartEvidence
+		err      error
+	}
+	restartDone := make(chan restartResult, 1)
+	nodeID := l.node
+	go func() {
+		evidence, err := l.hook.RestartNodeNamespace90(l.ctx, "node2", nodeID)
+		restartDone <- restartResult{evidence, err}
+	}()
 	var readyAt time.Time
 	var provisionalAdmin map[string]any
 	ready := l.wait(90*time.Second, func() bool {
@@ -124,6 +134,14 @@ func (l *live) twoExits(r *record) {
 	l.lastFirstByteAt = time.Time{}
 	counted := l.traceForwarding(r, "member", device)
 	firstByteAt := l.lastFirstByteAt
+	capture := <-restartDone
+	r.jsonCheck("second exit complete 90-second restart capture", "full window, unchanged generation; boot/final nft/tc, heartbeats, observations and agent log retained", map[string]any{"capture": capture.evidence, "error": safeError(capture.err)}, "RestartNodeNamespace90; no state, topology or generation repair", capture.err == nil && capture.evidence.GenerationBefore == desiredBefore.String() && capture.evidence.GenerationAfter == desiredBefore.String() && capture.evidence.Finished.Sub(capture.evidence.Started) >= 90*time.Second && len(capture.evidence.Samples) > 0)
+	if !capture.evidence.Started.IsZero() {
+		resumedAt = capture.evidence.Started
+	}
+	if capture.evidence.ServingAt != nil {
+		readyAt = *capture.evidence.ServingAt
+	}
 	l.recordRestartRecovery(r, desiredBefore, appliedBefore, resumedAt, readyAt, firstByteAt, provisionalAdmin, counted)
 	l.resolverEvidence(r)
 	restore()
