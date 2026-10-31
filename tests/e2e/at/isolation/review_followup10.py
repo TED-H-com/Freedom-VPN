@@ -20,8 +20,8 @@ old.update(missing_producer_samples=[],available='Exact producer snapshots plus 
            last_accepted_renewal=r['expiry']['last_accepted_renewal'],loss_correlation=r['expiry']['losses'])
 write('expiry-timing-analysis.json',old)
 
-# Focused failure index, derived from this run. A baseline's presence does not
-# identify its writer; exact engine timing does not cover watchdog ApplyBaseline.
+# Focused failure index, derived only from this run. Baseline source rows name
+# agent writes; the separate watchdog log retains its own decisions and writes.
 verdict=json.loads((root/'deadline-verdict.json').read_text())
 positives=[p for p in verdict['packets'] if int(p['egress_mono_ns'])>0]
 first_positive=min((int(p['ingress_mono_ns']) for p in positives),default=0)
@@ -67,3 +67,9 @@ write('expiry-failure-correlation.json',dict(run_id=r['run_id'],status='pass' if
     first_baseline_read=baselines[0] if baselines else None,last_baseline_read=baselines[-1] if baselines else None,
     writer_evidence='Actual agent baseline calls are bracketed in baseline_rows; watchdog decisions/writes are in the retained reason log. No historical attribution is inferred.',
     all_loss_windows='producer-timing-analysis.json and expiry-timing-analysis.json retain every loss, with command and verifier references.'))
+
+# Independently recheck original D-087 wire bytes and acceptance ordering.
+from grant_evidence import validate as validate_grants
+write('member-grants-audit.json', validate_grants(
+    json.loads((root/'member-grants-transition.json').read_text()),
+    json.loads((root/'member-grants-wire.json').read_text())))

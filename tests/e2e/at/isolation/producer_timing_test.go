@@ -91,3 +91,11 @@ func TestD098_Followup9ArchivePins(t *testing.T) {
 		}
 	}
 }
+
+func TestD087_OriginalWireAndAcceptedTransition(t *testing.T) {
+	out, err := exec.Command("python3", "-B", "-m", "unittest", "-v", "grant_evidence_test.py").CombinedOutput()
+	if err != nil {
+		t.Fatalf("grant transition: %v\n%s", err, out)
+	}
+	t.Log(string(out))
+}
