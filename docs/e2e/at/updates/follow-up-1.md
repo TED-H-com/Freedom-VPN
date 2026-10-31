@@ -170,6 +170,4 @@ AT24/AT26/AT27 pass under the restated accepted-result authority criteria. AT24 
 
 ## Follow-up 8 mapping
 
-Run `71f2aa37-b0b9-4568-abe0-2ba7665377e4`, source `bc93ce430ebe8a50e5dfdaf4121352047fe89249` (on `main` `52dc77026cb168df5684ae2ccd5cbcadb4dbaeff`), evidence `2026-10-30T20:59:15Z`. Prefix `w4-updates`, port base 42000.
-
-All five scenarios (`AT23`–`AT27`) execute in one live run and **pass** (make exit **0**). F5-02 is closed by the exported updater probe peer (#204): AT23 verifies D-063 issuance (`configured_probe_issued=true`, 0 omissions) and D-064 bounded exception traversal (`verified=true`, 14 authenticated UDP replies, 0 elements after); AT25 verifies pre-health byte-tamper rejection (`HASH_MISMATCH`, 0 challenges, 0 grant samples) and records that probe scope does not apply to an archive that never passes preflight. D-068 (#189) policy quotes and line citations are aligned with `docs/updates/central-lifecycle.md:425-506`. See [summary](summary.md), [probe issuance](probe-issuance.md), [pre-result](pre-result.md), [inheritance](inheritance.md), [RUN](RUN.md), and [requests](requests.md).
+The merged PR #212 evidence and its original run mapping are preserved in [history/follow-up-8](history/follow-up-8/README.md). See [the current summary](summary.md) for follow-up 9; historical pass claims do not carry forward.
