@@ -1,36 +1,74 @@
-# Running updates follow-up 9
+# Follow-up 10 run procedure
 
-Use the dedicated `w4-updates` stack and port base `42000`:
+Use branch `w4-at-updates`, prefix `w4-updates` and port base `42000`.
+Before starting the stack, run `pgrep -af 'gates.sh|mk/at-'` and wait while two
+other integration suites are active. Run foreground commands only. The Python
+runner owns disk scratch under `.agent/tmp` and calls the shared `e2e-down`
+harness in `finally`; it uses no shell cleanup trap.
 
 ```sh
 make -f mk/at-updates.mk at-updates-lint
 make -f mk/at-updates.mk at-updates
-make go-lint
+```
+
+The live target builds the current checkout, runs all five regular AT scenarios
+and the installer extension in one Go test, writes every record, and fails if
+any assigned case or extension check is incomplete. It tears down only the
+`fvpn-w4-updates-*` stack. A zero command exit alone never supplies a pass.
+
+The systemd extension uses devstack's `PrepareInstallerNode`,
+`RegisterInstallerReleases`, `BuildInstallerRelease`, `RerunInstaller`,
+`ProbeInstallerExit`, `HoldInstallerFirstPoll`, `HoldInstallerApply`,
+`ConfigureInstallerServing` and `RestoreInstallerServices`. It uses the shared
+`upgrade-observe`, `journal-copy` and `ExportContainerFile` evidence tools.
+Updater invocations, read-only status and negative stimuli run from the test;
+there is no interactive container repair, product edit or journal write.
+
+The initial no-work observation holds only the authenticated desired-state
+poll. Bootstrap is allowed to finish so the real NetBird daemon can join through
+`/run/fvpn-netbird/netbird.sock`. Seed verifies the same material under the
+process default umask and 077. The first stopped-agent attempt establishes a
+real final-sample failure and exercises D-111's null-central-baseline receipt.
+Its exact pending bytes are restored to the original path for sealed replay;
+changing the pending path or request UUID is not a valid replay test.
+
+The next higher release runs with the real agent active. The shared observer
+records the updater's persisted wait, boot and latch identity and the agent's
+five-field checkpoint. A pass requires byte-equal UUIDs within the original
+window, matching receipt accounting, apply exit 0, a real pointer/executable
+switch, unit restarts and all five health checks. The run uses a quiet,
+unpublished fixture. The serving withdrawal and nonzero durable watermark
+measurement is consumed from [devstack 19](../../runs/2026-10-31/followup19/README.md)
+and its [D-102 response](../../RESPONSES.md#updater--installer--2026-10-31-follow-up-19-measured-result).
+
+Central checks use real mTLS HTTP: recomputed D-110 UUIDv5 identity, accepted
+failure baseline and success promotion, exact keyed and new-key replay,
+modified replay conflict, wrong-job refusal, receipt cardinality and node
+resource versions. The D-127/r16 M-2 rollback correction is an explicitly
+labeled **TEST ONLY HTTP contract stimulus**, derived from the genuine success
+receipt. It does not claim a local rollback; regular AT26 measures that path.
+The receipt history must retain both payloads and both stored ACKs, and reject
+a third outcome. A separate higher staged artifact is byte-tampered; a lower
+sequence is refused before writing pending.
+
+The installer's generated result configuration is recorded before supplying
+the owned lab result URL, CA and exact allowed origins. This adapter does not
+claim that the installer configures reporting itself.
+
+```sh
+mkdir -p .agent/tmp
+export TMPDIR="$PWD/.agent/tmp" GOTMPDIR="$PWD/.agent/tmp"
+make go-lint go-with-disk-tmp=
 go vet ./...
+go test ./...
+go test ./tests/e2e -run '^TestCommittedFixtureEvidence_ValidAndHygieneClean$' -count=1 -v
 git diff --check
 ```
 
-The live target resets the owned stack, runs in the foreground, writes evidence before its acceptance gate, and tears down every `fvpn-w4-updates-*` container, image, network and volume even on failure. `AT_UPDATES_REUSE=1` is only for a newly prepared stack before any enrollment. Scratch is on disk under `.agent/tmp`, never tmpfs.
+The root lint override removes only its shell cleanup trap; its gofmt, vet and
+pinned staticcheck commands remain unchanged. These are engineering acceptance
+fixtures with generated TEST ONLY identities and signing material.
 
-The current run and product SHA are in [summary.md](summary.md) and [source-main.json](source-main.json). [Follow-up 8](history/follow-up-8/README.md) is historical. The [first follow-up 9 diagnostic run](history/follow-up-9-first-run/README.md) exposed the devstack boot-ID mismatch; its labels do not supply current pass claims.
-
-`TestUpdatesFollowup` first builds the shared real signed baseline. Its independent installer record runs before a fleet default exists:
-
-1. `PrepareInstallerNode` creates the dedicated Ubuntu 24.04 systemd container. The harness repacks shared `BuildRelease` binaries at the installer layout, adds the unchanged packaged units and real installer binary for both architectures, signs with the generated lab release key, registers through `RegisterRelease`, and activates support through the API. Sequences are 10 (installed), 11 (upgrade) and 9 (downgrade).
-2. A runtime systemd condition holds the agent's first poll, so neither a desired-state file nor an update job exists during the fresh-node check. `RerunInstaller` calls the real installer; packaged NetBird failures remain failures. The signed initial archive is retained for offline seed. Both standalone seed and seed with the packaged `umask 077` are recorded; no tree or journal repair is performed.
-3. The updater oneshot and a second foreground `run` exercise missing desired state. `check --json`, latch absence, seeded status, the kernel boot ID and lock metadata are captured. A separate config with an intentionally different fallback boot ID tests compatibility and kernel precedence. The first agent poll is then released to obtain real forwarding reasons.
-4. A runtime `ConditionPathExists` delays automatic updater execution while `upgrade --json` stages sequence 11. Pending bytes, status, exit and `current` are recorded. Foreground `apply --pending` uses the product stop/start commands and health logic. No meter checkpoint or health result is supplied by this harness. The generated config is recorded before adding the lab result endpoint, server CA and exact allowed origins.
-5. Product `status`, quiescent read-only journal copies, `flush`, central receipts and `GET /api/v1/admin/nodes/{id}` distinguish local outcomes from acceptance. An outbox result still present after flush is submitted and replayed with the same HTTP idempotency key, retaining its original bytes, to capture any rejection details.
-6. A freshly staged sequence-11 archive is byte-tampered and must fail before switching. Sequence 9 must be refused by `upgrade` with `DOWNGRADE`; an unexpectedly staged downgrade is preserved and withheld from apply. The installer node is retired through the API with an ETag and read-back before regular all-node batch snapshots.
-
-The regular lab then runs all five requested scenarios unchanged in substance:
-
-- **AT23:** good candidate, challenge-bound health, exported D-063/D-064 probe, central success and confirmation.
-- **AT25:** byte-tampered archive, preflight `HASH_MISMATCH`, no candidate execution, accepted failed result.
-- **AT26:** genuine closed-port candidate probe failure, healthy last-good rollback, current terminal ACK, target evidence and bounded conflicts.
-- **AT24:** naturally offline target, catch-up success, and a later node's own first-sync completion without changing the original snapshot.
-- **AT27:** pre-result and accepted-result authority probes, stale ACK replay and newer-job preservation.
-
-Before enrollment, the owned adapter copies each regular container's kernel boot ID into the devstack agent's boot-ID input. The updater config omits `boot_id`. The devstack entrypoint's random UUID otherwise disagrees with D-080's kernel identity. This adapter, installer release-layout support and capture barriers are requested as shared devstack follow-up 16 exports.
-
-`AT23.json`–`AT27.json` and `installer-handoff.json` share one run ID. A regular AT24/AT26 pass does not make the installer extension pass. The make target remains nonzero if that extension is incomplete. Full original §19 populations and physical arm64 execution remain outside this focused run; both architectures are cross-built into the signed artifacts.
+Prior root records and the unchanged first run are pinned in the
+[follow-up 9 archive](history/follow-up-9/ARCHIVE.md) (D-098). Current claims
+must name the new run ID; historical failures stay historical failures.

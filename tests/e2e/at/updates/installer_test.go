@@ -242,9 +242,13 @@ func (s *updatesFollowup) installerHandoff(stack *e2e.Stack, baseline e2e.Servin
 	stageFailure := h.upgrade("stage_checkpoint_negative", 1)
 	pendingBytes := h.run("failure_pending", "cat", installerPending).Stdout
 	before := h.current()
+	h.note("current_before_failure", before)
+	h.run("checkpoint_before_negative", "cat", "/var/lib/vpn-node/state/meter.checkpoint")
 	failed := h.run("apply_checkpoint_negative", installedUpdater, "apply", "--config", installerConfig, "--pending", installerPending)
 	failedStatus := h.status("checkpoint_failure_status")
 	failure := h.receipt("failure_receipt")
+	h.note("current_after_failure", h.current())
+	h.run("failure_latch", "cat", "/var/lib/vpn-node/update-journal/forwarding.blocked")
 	h.check("checkpoint_failure", stageFailure.Exit == 0 && failed.Exit == 1 && strings.Contains(failed.Stderr, "CHECKPOINT_FAILED") && h.current() == before && failedStatus.text("state") == "failed" && failedStatus.text("stage") == "final_sample" && string(failure["usage_checkpoint"]) == "null" && string(failure["member_forwarding_enabled"]) == "false")
 	// Restore the exact original pending bytes to its original path for sealed
 	// replay. No changed path/request UUID can masquerade as this replay.
@@ -267,6 +271,8 @@ func (s *updatesFollowup) installerHandoff(stack *e2e.Stack, baseline e2e.Servin
 	s.wait(20*time.Second, func() bool { return h.run("", "systemctl", "is-active", "fvpn-agent.service").Stdout == "active" })
 	stage := h.upgrade("upgrade", 2)
 	pending := document([]byte(h.run("pending_before_apply", "cat", installerPending).Stdout))
+	h.note("current_after_stage", h.current())
+	h.note("staged_pending", pending)
 	h.check("staged", stage.Exit == 0 && stage.Status == "staged" && pending.text("release_id") == releases[2].ID.String() && h.current() == before)
 	unitsBefore := h.run("units_before_apply", "systemctl", "show", "fvpn-agent.service", "fvpn-watchdog.service", "-p", "Id", "-p", "ExecMainStartTimestampMonotonic").Stdout
 	observer := exec.CommandContext(s.ctx, "docker", "exec", s.r.lab.prefix+"-installer-node", "/usr/local/bin/fvpn-e2e-nodeconfig", "upgrade-observe")
@@ -281,6 +287,7 @@ func (s *updatesFollowup) installerHandoff(stack *e2e.Stack, baseline e2e.Servin
 	checkpoint := h.correlated(trace, kernel)
 	h.check("correlated", observeErr == nil && checkpoint != nil)
 	after := h.status("status_after_apply")
+	h.note("current_after_apply", h.current())
 	unitsAfter := h.run("units_after_apply", "systemctl", "show", "fvpn-agent.service", "fvpn-watchdog.service", "-p", "Id", "-p", "ExecMainStartTimestampMonotonic").Stdout
 	executable := h.run("running_executable", "sh", "-c", `p=$(systemctl show -p MainPID --value fvpn-agent.service); readlink /proc/$p/exe`).Stdout
 	h.check("restarts", unitsBefore != unitsAfter && strings.Contains(executable, releases[2].ID.String()))
