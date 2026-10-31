@@ -346,8 +346,8 @@ func TestReviewR13_Q1_Q2_WhatHeld(t *testing.T) {
 		t.Fatalf("Apply: verified=%v err=%v", res.Verified, err)
 	}
 
-	if len(f.nft) != 1 || len(f.tc) != 1 {
-		t.Fatalf("expected 1 nft batch and 1 tc batch, got nft=%d tc=%d", len(f.nft), len(f.tc))
+	if len(f.nft) != 2 || len(f.tc) != 1 {
+		t.Fatalf("expected guarded nft install, guard release, and 1 tc batch, got nft=%d tc=%d", len(f.nft), len(f.tc))
 	}
 	hasTableList := false
 	hasRuleset := false

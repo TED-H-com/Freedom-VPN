@@ -86,6 +86,16 @@ type Binding struct {
 	ValidUntil      time.Time      `json:"valid_until"`
 }
 
+// DeadlineGranularity is the measured timeout quantum for the supported lab
+// kernel and nft build (D-104). Millisecond input and text read-back are exact;
+// nft 1.0.9 JSON timeouts are whole seconds and cannot verify this contract.
+const DeadlineGranularity = time.Millisecond
+
+// DeadlineInstallBound is reserved between the final monotonic sample/render
+// and completion of the guarded nft installation. Apply never opens the guard
+// if this budget is exceeded. This is an enforced budget, not a scheduler SLA.
+const DeadlineInstallBound = 100 * time.Millisecond
+
 // MemberLease is the per-member service window (§16.3). The forwarding
 // deadline is the earliest of the entitlement end, the node lease end, and
 // signed_server_time plus the offline lease. TimeoutCeilSeconds, when set,
@@ -97,6 +107,11 @@ type MemberLease struct {
 	SignedServerTime    time.Time `json:"signed_server_time"`
 	MaxOfflineSeconds   uint64    `json:"max_offline_seconds"`
 	TimeoutCeilSeconds  uint64    `json:"timeout_ceil_seconds,omitempty"`
+	// DeadlineMono is the absolute CLOCK_MONOTONIC elapsed duration at which
+	// forwarding must stop. Nil supports legacy callers; a non-nil zero or
+	// negative value is expired. Include every signed/binding/local cap in it.
+	// It is not wall time, a relative timeout, or time since process start.
+	DeadlineMono *time.Duration `json:"deadline_mono_ns,omitempty,string"`
 }
 
 // Rate is an HTB rate and ceil in bits per second. Rate is the guaranteed
@@ -128,12 +143,18 @@ type QoS struct {
 
 // Model is the desired data-plane generation.
 type Model struct {
-	Generation uint64        `json:"generation"`
-	IPv6Mode   IPv6Mode      `json:"ipv6_mode"`
-	Now        time.Time     `json:"now"`
-	Datapath   Datapath      `json:"datapath"`
-	Bindings   []Binding     `json:"bindings"`
-	Leases     []MemberLease `json:"leases"`
+	Generation uint64    `json:"generation"`
+	IPv6Mode   IPv6Mode  `json:"ipv6_mode"`
+	Now        time.Time `json:"now"`
+	// NowMono is the CLOCK_MONOTONIC sample used by pure Render. Apply and
+	// VerifyServing resample it; callers must not persist a relative allowance.
+	NowMono time.Duration `json:"now_mono_ns,string"`
+	// timeoutReserve is deducted only by Apply; a bare Render is a plan, not
+	// authorization to install without the guarded latency check.
+	timeoutReserve time.Duration
+	Datapath       Datapath      `json:"datapath"`
+	Bindings       []Binding     `json:"bindings"`
+	Leases         []MemberLease `json:"leases"`
 	// Resolvers are the only destinations that may use TCP/UDP 53 (§8.1).
 	Resolvers []netip.Addr `json:"resolvers"`
 	// DeniedV4 replaces SpecDeniedV4 when non-nil. A nil slice means the spec
