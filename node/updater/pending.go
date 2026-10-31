@@ -28,13 +28,14 @@ import (
 // PendingReleaseFile is the installer hand-off name under the staging directory.
 const PendingReleaseFile = "pending-release.json"
 
-// SourceInstaller is the journal intent source for an installer-staged apply.
-// The wire update result has no source member (additionalProperties: false).
+// SourceInstaller identifies installer-staged claims and wire results (D-089).
 const SourceInstaller = "installer"
 
 // PendingRelease is the record packaging/installer writes. The writer emits
-// release_id, manifest_sha256, artifact_path, tree_path and updater_command.
-// manifest and manifest_path are optional. The current writer sets neither.
+// release_id, manifest_sha256, artifact_path, tree_path, updater_command,
+// manifest_path and a fresh request_id. The retained envelope is Verified.Raw,
+// mode 0600 under update-staging. Inline manifest remains supported. Unknown
+// fields, including request_id, participate in canonical request identity.
 // tree_path is not installed. updater_command is not executed.
 type PendingRelease struct {
 	ReleaseID      string          `json:"release_id,omitempty"`

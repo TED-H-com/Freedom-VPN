@@ -136,14 +136,14 @@ func lastPayload(t *testing.T, w *world) ([]byte, api.UpdateResult) {
 	return box[len(box)-1].Payload, res
 }
 
-func assertNoWireSource(t *testing.T, payload []byte) {
+func assertInstallerWireSource(t *testing.T, payload []byte) {
 	t.Helper()
 	var m map[string]json.RawMessage
 	if err := json.Unmarshal(payload, &m); err != nil {
 		t.Fatal(err)
 	}
-	if _, ok := m["source"]; ok {
-		t.Fatal("wire result has source")
+	if string(m["source"]) != `"installer"` {
+		t.Fatal("wire result lacks installer source")
 	}
 }
 
@@ -241,7 +241,7 @@ func TestUPD_F13_OneshotAppliesInstallerRelease(t *testing.T) {
 		t.Fatalf("intent source %s boot %s serving %v", c.Source, c.BootID, c.Serving)
 	}
 	payload, res := lastPayload(t, w)
-	assertNoWireSource(t, payload)
+	assertInstallerWireSource(t, payload)
 	if res.State != api.UpdateResultStateSucceeded || res.RequestedReleaseId != rel.id || res.MemberForwardingEnabled || res.PublicationIntent != api.PublicationIntentPublished {
 		t.Fatalf("result state %s release %s forwarding %v intent %s", res.State, res.RequestedReleaseId, res.MemberForwardingEnabled, res.PublicationIntent)
 	}
@@ -336,7 +336,7 @@ func TestUPD_F13_ApplyPendingRollsBackToLastGood(t *testing.T) {
 		t.Fatalf("serving %v source %s", c.Serving, c.Source)
 	}
 	payload, res := lastPayload(t, w)
-	assertNoWireSource(t, payload)
+	assertInstallerWireSource(t, payload)
 	if res.State != api.UpdateResultStateRolledBack || res.RequestedReleaseId != next.id || requiredValue(t, res.CurrentReleaseId) != old.id || requiredValue(t, res.PreviousReleaseId) != next.id {
 		t.Fatalf("state %s current %v previous %v requested %s", res.State, res.CurrentReleaseId, res.PreviousReleaseId, res.RequestedReleaseId)
 	}
@@ -378,7 +378,7 @@ func TestUPD_F13_WriterRecordWithoutManifestFailsClosed(t *testing.T) {
 		t.Fatalf("source %s release %s", c.Source, c.Intent.ReleaseId)
 	}
 	payload, res := lastPayload(t, w)
-	assertNoWireSource(t, payload)
+	assertInstallerWireSource(t, payload)
 	if res.State != api.UpdateResultStateFailed || requiredValue(t, res.ErrorCode) != api.ErrorCode(apierr.ArtifactInvalid) || requiredValue(t, res.Stage) != api.UpdateStageVerify {
 		t.Fatalf("state %s code %v stage %v", res.State, res.ErrorCode, res.Stage)
 	}
