@@ -31,7 +31,7 @@ func (l *live) recordCounterTiming(r *record) {
 		}
 	}
 	joinErr := validateCounterTiming(trace, reads)
-	recovery, recoveryOK, observed := siblingRecovery(trace, l.siblingObserved)
+	recovery, recoveryOK, observed := siblingRecovery(trace, l.siblingObserved, l.siblingSent)
 	recovery["run_id"], recovery["source_commit"] = l.runID, l.build.Source
 	recovery["sender"] = l.siblingSent
 	evidence, _ := json.MarshalIndent(recovery, "", "  ")

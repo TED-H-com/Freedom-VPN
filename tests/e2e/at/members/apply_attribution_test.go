@@ -97,7 +97,7 @@ type recoveryBracket struct {
 	Recovered   bool          `json:"forwarding_observed_after_next_successful_apply"`
 }
 
-func siblingRecovery(trace []json.RawMessage, observed json.RawMessage) (map[string]any, bool, bool) {
+func siblingRecovery(trace []json.RawMessage, observed json.RawMessage, sent ...json.RawMessage) (map[string]any, bool, bool) {
 	var capture siblingObservation
 	valid := json.Unmarshal(observed, &capture) == nil && capture.Start > 0 && capture.End > capture.Start && capture.StatsAvailable && capture.Stats.Drops == 0 && capture.Errors == 0
 	rows := make([]agent.Measurement, len(trace))
@@ -198,7 +198,23 @@ func siblingRecovery(trace []json.RawMessage, observed json.RawMessage) (map[str
 	for _, b := range brackets {
 		valid = valid && b.Recovered
 	}
+
+	attempts := len(ingress)
+	sendErrors := 0
+	if len(sent) > 0 {
+		var sender struct {
+			Attempts int `json:"attempts"`
+			Errors   int `json:"send_errors"`
+		}
+		if json.Unmarshal(sent[0], &sender) != nil || sender.Attempts < len(ingress) || sender.Attempts < len(egress) {
+			valid = false
+		} else {
+			attempts, sendErrors = sender.Attempts, sender.Errors
+		}
+	}
+	missingIngress := attempts - len(ingress)
+	valid = valid && missingIngress == 0 && sendErrors == 0
 	// A recorded contention label never enters this acceptance predicate.
 	valid = valid && len(ingress) > 0 && len(egress) > 0 && outside == 0
-	return map[string]any{"contract": "D-135; baseline start/end to next successful Apply end are command bounds, not kernel commit timestamps; recovery sampled at 20 ms, first egress within 1 s; D-134 gives no fixed guard ceiling", "apply_records": diagnoses, "failed_apply_total": failedTotal, "failed_apply_bracketed": len(brackets), "brackets": brackets, "ingress_packets": len(ingress), "egress_packets": len(egress), "lost_admitted_packets": losses, "losses_in_completed_guards": guardLoss, "losses_outside_baseline_or_completed_guard": outside, "observation": capture, "cause_status": "unproven"}, valid, len(brackets) > 0
+	return map[string]any{"contract": "D-135; baseline start/end to next successful Apply end are command bounds, not kernel commit timestamps; recovery sampled at 20 ms, first egress within 1 s; D-134 gives no fixed guard ceiling", "apply_records": diagnoses, "failed_apply_total": failedTotal, "failed_apply_bracketed": len(brackets), "brackets": brackets, "ingress_packets": len(ingress), "egress_packets": len(egress), "lost_admitted_packets": attempts - len(egress), "node_ingress_without_egress": losses, "sender_attempts": attempts, "send_errors": sendErrors, "not_observed_at_node_ingress": missingIngress, "losses_in_completed_guards": guardLoss, "losses_outside_baseline_or_completed_guard": outside, "observation": capture, "cause_status": "unproven"}, valid, len(brackets) > 0
 }

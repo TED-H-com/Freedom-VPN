@@ -17,7 +17,7 @@ import (
 
 const siblingStop = "/tmp/fvpn-members-sibling-stop"
 
-var siblingMagic = []byte("FVPN TEST ONLY 12")
+const siblingMagic = "FVPN TEST ONLY 12"
 
 func monoNS() int64 {
 	var t unix.Timespec
@@ -39,7 +39,7 @@ func siblingSequence(b []byte) (uint64, bool) {
 		return 0, false
 	}
 	h := int(b[0]&15) * 4
-	if h < 20 || len(b) < h+8+len(siblingMagic)+8 || binary.BigEndian.Uint16(b[h+2:h+4]) != 40002 || !bytes.Equal(b[h+8:h+8+len(siblingMagic)], siblingMagic) {
+	if h < 20 || len(b) < h+8+len(siblingMagic)+8 || binary.BigEndian.Uint16(b[h+2:h+4]) != 40002 || !bytes.Equal(b[h+8:h+8+len(siblingMagic)], []byte(siblingMagic)) {
 		return 0, false
 	}
 	return binary.BigEndian.Uint64(b[h+8+len(siblingMagic):]), true

@@ -282,7 +282,7 @@ func (l *live) devices(r *record) {
 	}
 	l.finishSibling(r, siblingCapture)
 	l.reauthorizationLimit(r, replacement, second, loserService)
-	r.check("AT02 assertion boundary", "quota, owner isolation, strict post-withdrawal fvmb0 ingress drop (ctunku +1, zero forwarded bytes), sibling/replacement counted flows, empty revoked conntrack and continuous agent PID", "ObserveMemberIngress proves revoked source increments ctunku by 1 with empty fvup0/origin captures and frozen device counters while sibling injection increments u_<hex> by 1 and reaches fvup0/origin", "Stack.ObserveMemberIngress through tests/e2e/internal/labstack; §19 AT02", true)
+	r.check("AT02 assertion boundary", "quota, owner isolation, strict post-withdrawal fvmb0 ingress drop (ctunku +1, zero forwarded bytes), sibling/replacement counted flows, empty revoked conntrack and continuous agent PID", "Revoked UDP/9 source is asserted independently; sibling UDP/9 outcome and continuous UDP/40002 attempts/ingress/egress are retained; D-135 recovery verdict joins the full producer stream", "Stack.ObserveMemberIngress through tests/e2e/internal/labstack; §19 AT02", true)
 }
 
 func (l *live) overlayIPv4(service string) string {
@@ -402,7 +402,7 @@ func (l *live) strictPostWithdrawalIngress(r *record, revokedSource string, revo
 	})
 	r.check(
 		"strict post-withdrawal fvmb0 ingress injection",
-		"revoked source increments ctunku by 1 with 0 forwarded bytes (empty fvup0/origin captures, all device counters held); admitted sibling one-shot outcome retained; D-135 baseline-to-next-successful-Apply bracket and every loss evaluated separately",
+		"revoked source increments ctunku by 1 with 0 forwarded bytes (empty fvup0/origin captures, all counters except the separately measured sibling held); admitted sibling one-shot outcome retained; D-135 baseline-to-next-successful-Apply bracket and every loss evaluated separately",
 		string(evidence),
 		"labstack.Stack.ObserveMemberIngress(ctx, revokedSource, dest) and ObserveMemberIngress(ctx, siblingSource, dest) on fvmb0 (tun-mirred, link type 65534, source port 40000, dest port 9)",
 		revokedOK,
