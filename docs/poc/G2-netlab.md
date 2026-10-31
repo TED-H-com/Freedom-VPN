@@ -255,7 +255,7 @@ D-090 adds `Quarantine(ctx context.Context, ex Executor, m Model) (QuarantineEvi
 
 `VerifyServing` scans tc even when the member link is down or the baseline is installed. A retained redirect still returns `TC_FOREIGN_FILTER`, with attachment/action evidence and `quarantined=true`. Only Apply releases quarantine: hold the link down, check tc ownership before mutation, install and fully verify serving nft/tc, raise the member link, verify again, then remove and read back the recovery marker. Failed recovery re-quarantines. A model naming a different member link cannot release a retained marker.
 
-The 2026-10-31 follow-up 13 run uses `FVPN_LAB_PREFIX=fvpn-w1-netlab-f13` and `make -f mk/netlab.mk netlab-lint netlab-unit netlab-build netlab-test`, with `GOMAXPROCS=4 GOFLAGS=-p=4` and disk scratch under `.agent/tmp`. These D-090 measurements come from that run:
+The 2026-10-31 follow-up 13 run uses `FVPN_LAB_PREFIX=fvpn-w1-netlab-f13` and `make -f mk/netlab.mk netlab-lint netlab-unit netlab-build netlab-test`, with `GOMAXPROCS=4 GOFLAGS=-p=4` and disk scratch under `.agent/tmp`. The full suite passed in 207.520 seconds (make exit 0). The [recorded output](G2-D090-evidence.txt) contains these D-090 measurements from that run:
 
 | Sequence in `TestReviewR15_TcMirredAndPolicyRoutingBypass/tc_clsact_mirred` | Measured result |
 |---|---|
