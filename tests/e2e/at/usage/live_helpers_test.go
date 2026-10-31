@@ -10,7 +10,6 @@ import (
 	"crypto/sha256"
 	"crypto/tls"
 	"crypto/x509"
-	"crypto/x509/pkix"
 	"database/sql"
 	"encoding/base64"
 	"encoding/hex"
@@ -936,7 +935,6 @@ func (s *liveSuite) enrollNonCarryingNode() (uuid.UUID, uuid.UUID) {
 		s.t.Fatalf("generate P-256 key: %v", err)
 	}
 	csrDER, err := x509.CreateCertificateRequest(rand.Reader, &x509.CertificateRequest{
-		Subject:            pkix.Name{CommonName: incID.String()},
 		SignatureAlgorithm: x509.ECDSAWithSHA256,
 	}, priv)
 	if err != nil {
