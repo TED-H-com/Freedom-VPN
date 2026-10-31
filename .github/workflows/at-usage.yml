@@ -41,13 +41,13 @@ jobs:
       - name: Start assigned w4-usage stack
         id: up
         continue-on-error: true
-        run: FVPN_E2E_PREFIX=w4-usage FVPN_E2E_PORT_BASE=48000 E2E_RESET=1 make -f mk/e2e.mk e2e-up
-      - name: Run AT14-AT19 acceptance suite (blocked cases exit non-zero after writing evidence)
+        run: bash tests/e2e/at/usage/stack.sh up
+      - name: Run AT14-AT20 acceptance suite (blocked cases exit non-zero after writing evidence)
         if: steps.up.outcome == 'success'
         run: make -f mk/at-usage.mk at-usage
       - name: Tear down assigned w4-usage stack
         if: always() && steps.up.outcome != 'skipped'
-        run: FVPN_E2E_PREFIX=w4-usage FVPN_E2E_PORT_BASE=48000 make -f mk/e2e.mk e2e-down
+        run: bash tests/e2e/at/usage/stack.sh down
       - uses: actions/upload-artifact@v4
         if: always()
         with:

@@ -201,7 +201,11 @@ func (s *liveSuite) buildNodeMTLSClient(nodeService string) *http.Client {
 }
 
 func (s *liveSuite) originAndSNAT(nodeService string) (string, string) {
-	raw, code, err := s.execInContainer(nodeService, "cat", "/etc/vpn-node/agent-run.json")
+	cfgPath := "/etc/vpn-node/agent-run.json"
+	if nodeService == "installer-node" {
+		cfgPath = "/etc/vpn-node/agent-lab.json"
+	}
+	raw, code, err := s.execInContainer(nodeService, "cat", cfgPath)
 	if err != nil || code != 0 {
 		return "", ""
 	}
