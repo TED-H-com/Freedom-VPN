@@ -239,7 +239,7 @@ func startSystemd(t *testing.T, name string) {
 	for attempt := 1; attempt <= 3; attempt++ {
 		_ = exec.Command("docker", "rm", "-fv", name).Run()
 		out, code := runCmd(t, time.Minute, "docker", "run", "-dt", "--name", name,
-			"--privileged", "--cgroupns=host",
+			"--privileged", "--cgroupns=host", "--network=none",
 			"--env", "SYSTEMD_LOG_TARGET=console",
 			"--env", "SYSTEMD_LOG_LEVEL=info",
 			"-v", "/sys/fs/cgroup:/sys/fs/cgroup:rw",
@@ -270,7 +270,7 @@ func startSystemd(t *testing.T, name string) {
 func startSleep(t *testing.T, name string) {
 	t.Helper()
 	_ = exec.Command("docker", "rm", "-fv", name).Run()
-	out, code := runCmd(t, time.Minute, "docker", "run", "-d", "--name", name, "--entrypoint", "sleep", imageRef, "infinity")
+	out, code := runCmd(t, time.Minute, "docker", "run", "-d", "--name", name, "--network=none", "--entrypoint", "sleep", imageRef, "infinity")
 	if code != 0 {
 		t.Fatalf("sleep container: %s", out)
 	}
@@ -394,6 +394,7 @@ func seedForeign(t *testing.T, c string) (defRoute, resolv string) {
 	mustExec(t, c, "nft", "add", "table", "inet", "foreignw5")
 	mustExec(t, c, "nft", "add", "chain", "inet", "foreignw5", "keep", "{ type filter hook input priority 0; policy accept; }")
 	mustExec(t, c, "ip", "route", "add", "203.0.113.0/24", "dev", "lo")
+	mustExec(t, c, "ip", "route", "add", "default", "dev", "lo")
 	defRoute = strings.TrimSpace(mustExec(t, c, "ip", "route", "show", "default"))
 	resolv = sha(t, c, "/etc/resolv.conf")
 	return defRoute, resolv
@@ -494,11 +495,11 @@ func TestInstallLifecycle(t *testing.T) {
 	if _, code := dexec(t, name, "test", "!", "-e", "/run/w5-token"); code != 0 {
 		t.Fatal("token file was not consumed")
 	}
+	testENR06Runtime(t, name)
 	waitPath(t, name, "/var/lib/vpn-node/state/usage.db")
 	key1 := sha(t, name, "/var/lib/vpn-node/identity/key.pem")
 	cert1 := sha(t, name, "/var/lib/vpn-node/identity/cert.pem")
 	node1 := sha(t, name, "/var/lib/vpn-node/identity/node.json")
-	usage1 := sha(t, name, "/var/lib/vpn-node/state/usage.db")
 	inc1 := incarnation(t, name)
 	check := mustCheck(t, name, 0)
 	if check.Status != "healthy" || !check.Identity.Present || check.Identity.IncarnationID != inc1 || !check.UsageStore {
@@ -508,7 +509,6 @@ func TestInstallLifecycle(t *testing.T) {
 		t.Fatalf("release in check %+v", check)
 	}
 	assertBaseline(t, check.Baseline, out)
-	testENR06Runtime(t, name)
 	updaterConfig := mustExec(t, name, "cat", "/etc/vpn-node/updater.json")
 	if strings.Contains(updaterConfig, `"boot_id"`) {
 		t.Fatal("generated config should omit boot_id")
@@ -517,6 +517,8 @@ func TestInstallLifecycle(t *testing.T) {
 	if !strings.Contains(noWork, "desired-state file is absent") {
 		t.Fatalf("fresh run: %s", noWork)
 	}
+	mustExec(t, name, "systemctl", "stop", "fvpn-agent")
+	usage1 := sha(t, name, "/var/lib/vpn-node/state/usage.db")
 	res, out, code = doInstall(t, name, relIn("1", rel1.ReleaseID), url, ca, bundle, "")
 	if code != 0 || res.Status != "already_current" {
 		t.Fatalf("re-run %d %+v\n%s", code, res, out)
@@ -527,6 +529,7 @@ func TestInstallLifecycle(t *testing.T) {
 		sha(t, name, "/var/lib/vpn-node/state/usage.db") != usage1 {
 		t.Fatal("identity or usage store changed on re-run")
 	}
+	mustExec(t, name, "systemctl", "start", "fvpn-agent")
 	mustExec(t, name, "rm", "-f", "/etc/systemd/system/fvpn-agent.service")
 	mustExec(t, name, "chmod", "0755", "/var/lib/vpn-node/identity")
 	drift := mustCheck(t, name, installer.ExitDrifted)
@@ -548,6 +551,7 @@ func TestInstallLifecycle(t *testing.T) {
 	if mode != "700" {
 		t.Fatalf("identity mode %s", mode)
 	}
+	mustExec(t, name, "systemctl", "stop", "fvpn-agent")
 	usageBefore := sha(t, name, "/var/lib/vpn-node/state/usage.db")
 	writeStdin(t, name, "/run/w5-token2", token2+"\n", "0600")
 	reenrollOut, reenrollCode := dexec(t, name, "/usr/local/bin/fvpn-node-install", "reenroll", "--json", "--token-file", "/run/w5-token2")
@@ -699,7 +703,7 @@ func bootClone(t *testing.T, name string) bootID {
 	t.Helper()
 	_ = exec.Command("docker", "rm", "-fv", name).Run()
 	out, code := runCmd(t, time.Minute, "docker", "run", "-dt", "--name", name,
-		"--privileged", "--cgroupns=host",
+		"--privileged", "--cgroupns=host", "--network=none",
 		"--env", "SYSTEMD_LOG_TARGET=console",
 		"--env", "SYSTEMD_LOG_LEVEL=info",
 		"-v", "/sys/fs/cgroup:/sys/fs/cgroup:rw",
@@ -711,7 +715,7 @@ func bootClone(t *testing.T, name string) bootID {
 	if !waitSystemd(t, name, 45*time.Second) {
 		_ = exec.Command("docker", "rm", "-fv", name).Run()
 		out, code = runCmd(t, time.Minute, "docker", "run", "-dt", "--name", name,
-			"--privileged", "--cgroupns=host",
+			"--privileged", "--cgroupns=host", "--network=none",
 			"--env", "SYSTEMD_LOG_TARGET=console",
 			"--env", "SYSTEMD_LOG_LEVEL=info",
 			"-v", "/sys/fs/cgroup:/sys/fs/cgroup:rw",

@@ -10,6 +10,8 @@ StartLimitBurst=5
 
 [Service]
 Type=simple
+# NetBird's relative update-result cleanup must stay inside its writable state.
+WorkingDirectory=/var/lib/netbird
 ExecStart=/usr/bin/netbird service run --daemon-addr unix:///run/fvpn-netbird/netbird.sock --log-level warn --log-file console
 Restart=on-failure
 RestartSec=2s

@@ -36,6 +36,11 @@ func testENR06Runtime(t *testing.T, c string) {
 	mustCheck(t, c, 0)
 	logs := mustExec(t, c, "journalctl", "-u", "fvpn-netbird", "-u", "fvpn-agent", "--no-pager")
 	if strings.Contains(logs, "read-only file system") {
+		for _, line := range strings.Split(logs, "\n") {
+			if strings.Contains(line, "read-only file system") {
+				t.Log(line)
+			}
+		}
 		t.Fatal("ENR-06 read-only-path diagnostic returned")
 	}
 	t.Log("ENR-06: real NetBird socket bound; enrollment -> services active -> check healthy; shared runtime survives all consumer stop/start cycles")
