@@ -1,20 +1,20 @@
-# Forwarding observations — Follow-up 8
+# Forwarding observations — Follow-up 9
 
-Run `69f92f49-73dc-4779-8101-dfb6a802a96b`, harness `d79accd9c693aed83713072c925b3b5005b5684c`, product baseline `6848add` (#284), assigned `w4-members / 24000`. [AT JSON records](summary.md) retain exact before/after snapshots. Counted HTTPS requires the authenticated controlled origin receipt, selected-exit SNAT and upload/download counter increases. Negative rows need positive controls.
+Run `11e305fe-6360-4dbd-95b1-67274aa4988c`, harness `49fbb48e013b824c4ce107d3cb551db79b915b42`, product baseline `7e044c71` (agent-core 25 #312, devstack 18 #313, dns-publish 8 #309 and netlab 18), assigned `w4-members / 24000`.
 
-| AT | Persistent cohort | Event UTC | Last TCP / UDP reply delta (s) | Bound (s) | Assertion |
+Counted HTTPS requires the controlled origin receipt, selected-exit SNAT and device upload/download increases. All snapshots remain in the AT JSON records.
+
+| AT | Persistent cohort | Event UTC | Last TCP / UDP reply delta (s) | Bound (s) | Result |
 |---|---|---|---:|---:|---|
-| AT02 | member-a4 | 2026-10-31T08:53:13.073851341Z | 0.944 / 0.944 | 5 | pass |
-| AT02 | member-a4 | 2026-10-31T08:55:49Z | -0.842 / -0.842 | 5 | pass |
-| AT04 | member-paid | 2026-10-31T09:01:58.446450493Z | 3.479 / 3.479 | 60 | pass |
-| AT04 | member-paid2 | 2026-10-31T09:01:58.446450493Z | 3.385 / 3.385 | 60 | pass |
-| AT04 | member-expiry1 | 2026-10-31T09:06:03Z | 0.169 / 0.169 | 60 | pass |
-| AT04 | member-expiry2 | 2026-10-31T09:06:03Z | -0.559 / -0.559 | 60 | pass |
-| AT04 | member-suspend1 | 2026-10-31T09:09:04.520234854Z | 2.306 / 2.306 | 60 | pass |
-| AT04 | member-suspend2 | 2026-10-31T09:09:04.520234854Z | 2.510 / 2.510 | 60 | pass |
+| AT02 | member-a3 | 2026-10-31T11:40:23.854501216Z | 0.936 / 0.936 | 5 | pass |
+| AT02 | member-a3 | 2026-10-31T11:42:25Z | -0.158 / -0.158 | 5 | pass |
+| AT04 | member-paid | 2026-10-31T11:47:20.239400279Z | 3.450 / 3.450 | 60 | pass |
+| AT04 | member-paid2 | 2026-10-31T11:47:20.239400279Z | 3.468 / 3.468 | 60 | pass |
+| AT04 | member-expiry1 | 2026-10-31T11:51:26Z | 0.059 / 0.059 | 60 | pass |
+| AT04 | member-expiry2 | 2026-10-31T11:51:26Z | -0.250 / -0.250 | 60 | pass |
+| AT04 | member-suspend1 | 2026-10-31T11:54:22.437571017Z | 2.337 / 2.337 | 60 | pass |
+| AT04 | member-suspend2 | 2026-10-31T11:54:22.437571017Z | 1.887 / 1.887 | 60 | pass |
 
-TCP never reconnects and UDP retains its socket. Samples after the bound prove senders remain active while replies and counters stop (or the policy removes the counter). The 250 ms polling cadence bounds observations; it is not wire timing. AT04 includes both exits for refund, paid expiry and suspension.
+TCP and UDP keep their established sockets. Post-bound samples prove senders remain active while replies/counters stop or policy removes counters. Poll timestamps bound observations, not wire delivery. AT04 exercises both exits.
 
-AT09 bulk rows retain the selected exit connection/family before and after, exact bytes and both device counters. A four-row TCP/MTU test does not establish QUIC, physical roaming, second NAT or ICMP-black-hole PMTU. Explicit unavailable rows remain blocked.
-
-Fenced native HTTPS and strict injected ingress are separate: fence withdrawal removes the native route; AT02 revoked-source injection enters fvmb0 directly and checks ctunku versus the sibling counter and controlled origin. No withdrawn route or policy is restored to manufacture a denial proof.
+AT09 transfer counters and selected-family observations are indexed in [NATIVE.md](NATIVE.md). Under D-123 those family selectors describe the underlay; the payload is IPv4. No QUIC, physical roaming, second NAT, full PMTU or IPv6 overlay forwarding claim follows. The separate revoked-source ingress test uses positive controls and never restores a withdrawn production route to manufacture denial.

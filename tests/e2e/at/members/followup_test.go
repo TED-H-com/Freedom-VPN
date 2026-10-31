@@ -223,8 +223,8 @@ func (l *live) feedLastGood(r *record) {
 	}
 	r.Blockers = filtered
 	l.resolverEvidence(r)
-	answer := l.dnsLocal("feed-01.example.invalid", "1", "udp")
-	r.check("node last-good block response", "controlled positive name remains NXDOMAIN after invalid feed update", answer, "node loopback DNS after actual 300-second failed refresh; not a native member DNS claim", strings.Contains(answer, `"rcode":3`))
+	answer, answerErr := l.fixture("node", "-mode", "dns", "-addr", "127.0.0.1:53", "-name", "feed-01.example.invalid", "-type", "1")
+	r.jsonCheck("node last-good block response", "F8-A / F8-TTL5: RCODE 3, zero answers, SOA TTL 5 after invalid feed update", answer, "node loopback DNS after actual 300-second failed refresh; docs/dns/BACKEND.md §2.1.4; not native member DNS", answerErr == nil && blockedDNS5(answer))
 	r.block("D-054 central feed bootstrap/publication/last-good are exercised using self-authored TEST ONLY data. Complete AT22 still needs member URL traffic and remaining file/raw-usage/backup retention coverage; typed resolver application is recorded separately above. Commercial feed approval remains a business decision.")
 }
 
