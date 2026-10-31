@@ -25,6 +25,9 @@ const (
 	// ReasonFlowtable means a flowtable or offload could bypass the counters
 	// (§10.3).
 	ReasonFlowtable Reason = "FLOWTABLE_BYPASS"
+	// ReasonTCForeignFilter means foreign or unreadable tc state can bypass
+	// admission, accounting or shaping on a member-path interface (D-085).
+	ReasonTCForeignFilter Reason = "TC_FOREIGN_FILTER"
 	// ReasonDeviceClass means a device binding has no counter or class.
 	ReasonDeviceClass Reason = "DEVICE_CLASS_MISSING"
 	// ReasonMeterEpoch means a named counter went backwards or disappeared.

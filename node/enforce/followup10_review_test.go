@@ -17,7 +17,7 @@ func TestReviewR14_VerifierModel(t *testing.T) {
 		t.Fatal(err)
 	}
 	base := fixtureServing(m, plan.Assignments)
-	if err := VerifyServing(base, m, plan.Assignments); err != nil {
+	if err := verifyServingRuleset(base, m, plan.Assignments); err != nil {
 		t.Fatalf("fixture: %v", err)
 	}
 	member := m.Datapath.MemberIngress
@@ -28,14 +28,14 @@ func TestReviewR14_VerifierModel(t *testing.T) {
 			"family": "inet", "table": TableName, "chain": "forward",
 			"expr": []any{map[string]any{"return": nil}},
 		})
-		if err := VerifyServing(raw, m, plan.Assignments); err == nil {
+		if err := verifyServingRuleset(raw, m, plan.Assignments); err == nil {
 			t.Fatal("return verdict accepted")
 		}
 	})
 
 	t.Run("policy_accept_on_forward", func(t *testing.T) {
 		raw := mutateChainPolicy(t, base, "forward", "accept")
-		if err := VerifyServing(raw, m, plan.Assignments); err == nil {
+		if err := verifyServingRuleset(raw, m, plan.Assignments); err == nil {
 			t.Fatal("forward policy accept accepted")
 		}
 	})
@@ -45,7 +45,7 @@ func TestReviewR14_VerifierModel(t *testing.T) {
 			"family": "inet", "table": TableName, "name": "prerouting",
 			"type": "filter", "hook": "prerouting", "prio": -200, "policy": "accept",
 		}})
-		if err := VerifyServing(raw, m, plan.Assignments); err == nil {
+		if err := verifyServingRuleset(raw, m, plan.Assignments); err == nil {
 			t.Fatal("extra base chain inside inet fvpn accepted")
 		}
 	})
@@ -58,7 +58,7 @@ func TestReviewR14_VerifierModel(t *testing.T) {
 				map[string]any{"accept": nil},
 			},
 		})
-		if err := VerifyServing(raw, m, plan.Assignments); err == nil {
+		if err := verifyServingRuleset(raw, m, plan.Assignments); err == nil {
 			t.Fatal("ct state established accept on forward accepted")
 		}
 	})
@@ -74,7 +74,7 @@ func TestReviewR14_VerifierModel(t *testing.T) {
 				map[string]any{"drop": nil},
 			},
 		})
-		if err := VerifyServing(raw, m, plan.Assignments); err != nil {
+		if err := verifyServingRuleset(raw, m, plan.Assignments); err != nil {
 			t.Fatalf("renderer-shaped ct state invalid drop rejected: %v", err)
 		}
 	})
@@ -90,7 +90,7 @@ func TestReviewR14_VerifierModel(t *testing.T) {
 				map[string]any{"drop": nil},
 			},
 		})
-		if err := VerifyServing(raw, m, plan.Assignments); err != nil {
+		if err := verifyServingRuleset(raw, m, plan.Assignments); err != nil {
 			t.Fatalf("renderer-shaped nfproto ipv6 drop rejected: %v", err)
 		}
 	})
@@ -100,7 +100,7 @@ func TestReviewR14_VerifierModel(t *testing.T) {
 			"family": "inet", "table": TableName, "name": "allowed_v4",
 			"elem": []any{map[string]any{"prefix": map[string]any{"addr": "100.64.0.0", "len": 10}}},
 		})
-		if err := VerifyServing(raw, m, plan.Assignments); err == nil {
+		if err := verifyServingRuleset(raw, m, plan.Assignments); err == nil {
 			t.Fatal("allowed_v4 prefix element accepted")
 		}
 	})
@@ -110,7 +110,7 @@ func TestReviewR14_VerifierModel(t *testing.T) {
 			"family": "inet", "table": TableName, "name": "allowed_v4",
 			"flags": []string{"interval"},
 		})
-		if err := VerifyServing(raw, m, plan.Assignments); err == nil {
+		if err := verifyServingRuleset(raw, m, plan.Assignments); err == nil {
 			t.Fatal("allowed_v4 interval flag accepted")
 		}
 	})
@@ -120,7 +120,7 @@ func TestReviewR14_VerifierModel(t *testing.T) {
 			"family": "inet", "table": TableName, "name": "allowed_v4",
 			"flags": []string{"timeout"},
 		})
-		if err := VerifyServing(raw, m, plan.Assignments); err != nil {
+		if err := verifyServingRuleset(raw, m, plan.Assignments); err != nil {
 			t.Fatalf("renderer timeout flag rejected: %v", err)
 		}
 	})
@@ -133,7 +133,7 @@ func TestReviewR14_VerifierModel(t *testing.T) {
 				map[string]any{"accept": nil},
 			},
 		})
-		if err := VerifyServing(raw, m, plan.Assignments); err == nil {
+		if err := verifyServingRuleset(raw, m, plan.Assignments); err == nil {
 			t.Fatal("meta nfproto ipv6 accept accepted")
 		}
 	})
@@ -160,7 +160,7 @@ func TestReviewR14_VerifierModel(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if err := VerifyServing(raw, m, plan.Assignments); err != nil {
+		if err := verifyServingRuleset(raw, m, plan.Assignments); err != nil {
 			t.Fatalf("extra ip version match on a device accept rejected: %v", err)
 		}
 	})
@@ -170,7 +170,7 @@ func TestReviewR14_VerifierModel(t *testing.T) {
 			"family": "inet", "table": TableName, "name": usageCounter(dirUpload, m.Bindings[0].DeviceID),
 			"packets": 999, "bytes": 999,
 		}})
-		if err := VerifyServing(raw, m, plan.Assignments); err != nil {
+		if err := verifyServingRuleset(raw, m, plan.Assignments); err != nil {
 			t.Fatalf("rebinding a named counter's packet count rejected the ruleset: %v", err)
 		}
 		bare := prependRule(t, base, "forward", map[string]any{
@@ -180,7 +180,7 @@ func TestReviewR14_VerifierModel(t *testing.T) {
 				map[string]any{"accept": nil},
 			},
 		})
-		if err := VerifyServing(bare, m, plan.Assignments); err == nil {
+		if err := verifyServingRuleset(bare, m, plan.Assignments); err == nil {
 			t.Fatal("accept that only names the upload counter was accepted")
 		}
 	})
@@ -208,7 +208,7 @@ func TestReviewR14_VerifierModel(t *testing.T) {
 		if _, merged := parsed.Chains["not_fvpn"]; merged {
 			t.Fatal("foreign chain merged into the inet fvpn chain map")
 		}
-		if err := VerifyServing(raw, m, plan.Assignments); err != nil {
+		if err := verifyServingRuleset(raw, m, plan.Assignments); err != nil {
 			t.Fatalf("accept-only table at priority -200 rejected: %v", err)
 		}
 
@@ -225,7 +225,7 @@ func TestReviewR14_VerifierModel(t *testing.T) {
 				"value": "100.64.1.1",
 			}}},
 		}})
-		err = VerifyServing(mangled, m, plan.Assignments)
+		err = verifyServingRuleset(mangled, m, plan.Assignments)
 		if ReasonCode(err) != ReasonIsolation {
 			t.Fatalf("ip saddr set: %v", err)
 		}
@@ -454,7 +454,7 @@ func TestFollowup10_ForeignChains(t *testing.T) {
 			for _, obj := range tc.objects {
 				raw = appendNft(raw, obj)
 			}
-			err := VerifyServing(raw, m, plan.Assignments)
+			err := verifyServingRuleset(raw, m, plan.Assignments)
 			if tc.reason == "" {
 				if err != nil {
 					t.Fatalf("tolerated chain rejected: %v", err)

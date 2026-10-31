@@ -118,22 +118,15 @@ func verifyCmd(args []string) error {
 		return err
 	}
 	ctx := context.Background()
-	raw, err := enforce.System{}.Output(ctx, "nft", "-j", "list", "ruleset")
-	if err != nil {
-		return err
-	}
 	plan, err := enforce.Render(m, enforce.State{}, enforce.TCState{})
 	if err != nil {
 		return err
 	}
-	if err := enforce.VerifyServing(raw, m, plan.Assignments); err != nil {
-		return err
+	evidence, err := enforce.VerifyServing(ctx, enforce.System{}, m, plan.Assignments)
+	if printErr := json.NewEncoder(os.Stdout).Encode(evidence); err == nil {
+		return printErr
 	}
-	qos, err := readQoS(ctx, m)
-	if err != nil {
-		return err
-	}
-	return enforce.VerifyQoS(qos, m, plan.Assignments)
+	return err
 }
 
 func countersCmd(args []string) error {
@@ -283,13 +276,17 @@ func writeResult(w io.Writer, generation uint64, res enforce.ApplyResult) error 
 		assign[id.String()] = fmt.Sprintf("%x", minor)
 	}
 	doc := struct {
-		Generation  uint64            `json:"generation"`
-		Admitted    int               `json:"admitted"`
-		Resets      []enforce.Reset   `json:"resets"`
-		Finals      []enforce.Sample  `json:"finals"`
-		Samples     []enforce.Sample  `json:"samples"`
-		Assignments map[string]string `json:"assignments"`
+		Verified    bool                    `json:"verified"`
+		Evidence    enforce.ServingEvidence `json:"evidence"`
+		Generation  uint64                  `json:"generation"`
+		Admitted    int                     `json:"admitted"`
+		Resets      []enforce.Reset         `json:"resets"`
+		Finals      []enforce.Sample        `json:"finals"`
+		Samples     []enforce.Sample        `json:"samples"`
+		Assignments map[string]string       `json:"assignments"`
 	}{
+		Verified:    res.Verified,
+		Evidence:    res.Evidence,
 		Generation:  generation,
 		Admitted:    res.Plan.Admitted,
 		Resets:      res.Resets,
@@ -308,20 +305,4 @@ func writeResult(w io.Writer, generation uint64, res enforce.ApplyResult) error 
 	}
 	enc := json.NewEncoder(w)
 	return enc.Encode(doc)
-}
-
-func readQoS(ctx context.Context, m enforce.Model) (map[string][2][]byte, error) {
-	out := map[string][2][]byte{}
-	for _, ifc := range []string{m.Datapath.Uplink, m.Datapath.MemberIngress} {
-		q, err := enforce.System{}.Output(ctx, "tc", "-j", "qdisc", "show", "dev", ifc)
-		if err != nil {
-			return nil, err
-		}
-		c, err := enforce.System{}.Output(ctx, "tc", "-j", "class", "show", "dev", ifc)
-		if err != nil {
-			return nil, err
-		}
-		out[ifc] = [2][]byte{q, c}
-	}
-	return out, nil
 }
