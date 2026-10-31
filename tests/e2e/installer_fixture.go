@@ -84,7 +84,7 @@ func (s *Stack) ConfigureInstallerServing(ctx context.Context) error {
 			return err
 		}
 	}
-	if err := dockerCopy(ctx, filepath.Join(s.lab.state, "node", "etc", "resolver-credentials.json"), c+":/etc/vpn-node/resolver-credentials.json"); err != nil {
+	if err := copyPrivateContainerFile(ctx, s.lab.prefix+"-node", "/etc/vpn-node/resolver-credentials.json", c, "/etc/vpn-node/resolver-credentials.json"); err != nil {
 		return err
 	}
 	if err := exec.CommandContext(ctx, "docker", "exec", c, "sh", "-c", "chown 0:0 /etc/vpn-node/resolver-credentials.json && chmod 600 /etc/vpn-node/resolver-credentials.json").Run(); err != nil {
@@ -115,4 +115,27 @@ func (s *Stack) ConfigureInstallerServing(ctx context.Context) error {
 		}
 	}
 	return exec.CommandContext(ctx, "docker", "exec", c, "systemctl", "daemon-reload").Run()
+}
+
+// The source is root-owned mode 0600 after the ordinary node entrypoint. Pipe
+// directly between owned containers; do not read the private host bind mount or
+// expose credential bytes in command arguments, diagnostics or evidence.
+func copyPrivateContainerFile(ctx context.Context, source, sourcePath, target, targetPath string) error {
+	read := exec.CommandContext(ctx, "docker", "exec", source, "cat", "--", sourcePath)
+	write := exec.CommandContext(ctx, "docker", "exec", "-i", target, "sh", "-c", `umask 077; cat > "$1" && chmod 600 "$1"`, "sh", targetPath)
+	pipe, err := read.StdoutPipe()
+	if err != nil {
+		return err
+	}
+	write.Stdin = pipe
+	if err = read.Start(); err != nil {
+		return err
+	}
+	writeErr := write.Run()
+	_ = pipe.Close()
+	readErr := read.Wait()
+	if writeErr != nil || readErr != nil {
+		return fmt.Errorf("private container file transfer failed")
+	}
+	return nil
 }
