@@ -104,6 +104,7 @@ type liveSuite struct {
 	planRevID           uuid.UUID
 
 	agentClient *http.Client
+	node2Client *http.Client
 	nodeTrust   *envelope.TrustStore
 
 	sharedCmds               []CommandRecord
@@ -145,12 +146,13 @@ func TestATUsage_Live(t *testing.T) {
 	s.bootstrapCountedServingFlow()
 	s.buildAndInstallUsageAdmin()
 
-	// Execute live evaluations in order AT14 -> AT16 -> AT18 -> AT19 -> AT17 -> AT15
-	// so fvpn-agent on node/node2 owns the usage stream through AT14/16/18/19/17 before
-	// AT15 pauses the agent to run explicit sequence/recovery/replay tests.
+	// Execute live evaluations in order AT16 -> AT14 -> AT18 -> AT19 -> AT17 -> AT15
+	// so fvpn-agent on node exclusively owns the usage sequence stream through D-067
+	// Cycle 1 (bring_up), AT16 sampler restart, D-067 Cycle 2 (agent_restart), and
+	// watchdog withdrawal before AT14/18/19/17/15 drive mTLS usage and observations.
 	evalMap := make(map[string]Record, 6)
-	evalMap["AT14"] = s.evalAT14(t)
 	evalMap["AT16"] = s.evalAT16(t)
+	evalMap["AT14"] = s.evalAT14(t)
 	evalMap["AT18"] = s.evalAT18(t)
 	evalMap["AT19"] = s.evalAT19(t)
 	evalMap["AT17"] = s.evalAT17(t)
@@ -499,38 +501,22 @@ func (s *liveSuite) nodeMutation(nodeID uuid.UUID, method, suffix string, body a
 	return got
 }
 
-func (s *liveSuite) configureAndPublishNode(nodeService string, nodeID uuid.UUID, perMemDownBPS, perMemUpBPS int64) (uuid.UUID, string) {
-	// Check if publication is in error or attached to different groups; if so, withdraw first so desired-state delivery is not gated.
-	var currentObs, currentIntent string
-	var grpCount int
-	var hasTargetGrp bool
-	_ = s.pool.QueryRow(s.ctx, `
-		SELECT COALESCE(e.publication_observed, ''),
-		       COALESCE(e.publication_intent, ''),
-		       (SELECT count(*) FROM exit_groups eg WHERE eg.exit_id = e.id),
-		       EXISTS(SELECT 1 FROM exit_groups eg WHERE eg.exit_id = e.id AND eg.group_id = $2)
-		FROM exits e WHERE e.node_id = $1
-	`, nodeID, s.groupID).Scan(&currentObs, &currentIntent, &grpCount, &hasTargetGrp)
+func (s *liveSuite) ensureUnpublishedReadyBaseline(nodeService string, nodeID uuid.UUID, perMemDownBPS, perMemUpBPS int64) {
+	s.startNodeAgent(nodeService)
 
-	if !(currentObs == "active" && grpCount == 1 && hasTargetGrp) {
-		if currentIntent == "published" || (currentObs != "" && currentObs != "absent" && currentObs != "withdrawn") {
-			disResp := s.nodeMutation(nodeID, http.MethodPut, "/publication", map[string]any{
-				"publication_intent": "disabled",
-				"group_ids":          []string{s.groupID.String()},
-				"reason":             "TEST ONLY reset publication before publish " + nodeService,
-			})
-			if disResp.status == http.StatusAccepted {
-				_ = s.waitFor(60*time.Second, func() bool {
-					var obs string
-					var dGen, aGen int64
-					err := s.pool.QueryRow(s.ctx, `SELECT e.publication_observed, n.desired_config_generation, n.applied_config_generation FROM exits e JOIN nodes n ON n.id = e.node_id WHERE e.node_id = $1`, nodeID).Scan(&obs, &dGen, &aGen)
-					return err == nil && (obs == "withdrawn" || obs == "absent") && dGen == aGen
-				})
-			}
+	var currentIntent string
+	_ = s.pool.QueryRow(s.ctx, `SELECT COALESCE(publication_intent, '') FROM exits WHERE node_id = $1`, nodeID).Scan(&currentIntent)
+	if currentIntent == "published" {
+		disResp := s.nodeMutation(nodeID, http.MethodPut, "/publication", map[string]any{
+			"publication_intent": "disabled",
+			"group_ids":          []string{s.groupID.String()},
+			"reason":             "TEST ONLY reset publication before publish " + nodeService,
+		})
+		if disResp.status != http.StatusAccepted {
+			s.t.Fatalf("PUT /api/v1/admin/nodes/%s/publication (disabled) failed: HTTP %d %s", nodeID, disResp.status, string(disResp.body))
 		}
 	}
 
-	// Set finite node capacity via PATCH /api/v1/admin/nodes/{id} first (also triggers desired-state compilation with active DNS profile)
 	patchResp := s.nodeMutation(nodeID, http.MethodPatch, "", map[string]any{
 		"capacity": map[string]any{
 			"up_bps":              1000000000,
@@ -543,11 +529,11 @@ func (s *liveSuite) configureAndPublishNode(nodeService string, nodeID uuid.UUID
 		s.t.Fatalf("PATCH /api/v1/admin/nodes/%s failed: HTTP %d %s", nodeID, patchResp.status, string(patchResp.body))
 	}
 
-	// Wait for the agent's accepted baseline report (safety_status=passed, provisioning_state=ready) and worker projection
 	ready := s.waitFor(90*time.Second, func() bool {
 		var ok bool
 		err := s.pool.QueryRow(s.ctx, `
 			SELECT n.provisioning_state = 'ready'
+			   AND n.safety_status = 'passed'
 			   AND n.desired_config_generation > 0
 			   AND n.applied_config_generation >= n.desired_config_generation
 			   AND COALESCE((
@@ -563,37 +549,41 @@ func (s *liveSuite) configureAndPublishNode(nodeService string, nodeID uuid.UUID
 		return err == nil && ok
 	})
 	if !ready {
-		s.t.Fatalf("node %s (%s) did not reach baseline observation safety_status=passed & provisioning_state=ready", nodeID, nodeService)
+		s.t.Fatalf("node %s (%s) did not reach unpublished baseline observation safety_status=passed & provisioning_state=ready", nodeID, nodeService)
 	}
+}
 
-	// Publish node into s.groupID via PUT /api/v1/admin/nodes/{id}/publication
-	_ = s.pool.QueryRow(s.ctx, `
-		SELECT COALESCE(e.publication_observed, ''),
-		       (SELECT count(*) FROM exit_groups eg WHERE eg.exit_id = e.id),
-		       EXISTS(SELECT 1 FROM exit_groups eg WHERE eg.exit_id = e.id AND eg.group_id = $2)
-		FROM exits e WHERE e.node_id = $1
-	`, nodeID, s.groupID).Scan(&currentObs, &grpCount, &hasTargetGrp)
+func (s *liveSuite) configureAndPublishNode(nodeService string, nodeID, incID uuid.UUID, nodeClient *http.Client, perMemDownBPS, perMemUpBPS int64) (uuid.UUID, string) {
+	s.ensureUnpublishedReadyBaseline(nodeService, nodeID, perMemDownBPS, perMemUpBPS)
 
-	if !(currentObs == "active" && grpCount == 1 && hasTargetGrp) {
-		pubResp := s.nodeMutation(nodeID, http.MethodPut, "/publication", map[string]any{
-			"publication_intent": "published",
-			"group_ids":          []string{s.groupID.String()},
-			"reason":             "TEST ONLY publish " + nodeService + " for AT14-AT19",
-		})
-		if pubResp.status != http.StatusAccepted {
-			s.t.Fatalf("PUT /api/v1/admin/nodes/%s/publication failed: HTTP %d %s", nodeID, pubResp.status, string(pubResp.body))
-		}
+	var oldDesired uint64
+	_ = s.pool.QueryRow(s.ctx, `SELECT desired_config_generation::bigint FROM nodes WHERE id = $1`, nodeID).Scan(&oldDesired)
+
+	pubResp := s.nodeMutation(nodeID, http.MethodPut, "/publication", map[string]any{
+		"publication_intent": "published",
+		"group_ids":          []string{s.groupID.String()},
+		"reason":             "TEST ONLY publish " + nodeService + " for AT14-AT19",
+	})
+	if pubResp.status != http.StatusAccepted {
+		s.t.Fatalf("PUT /api/v1/admin/nodes/%s/publication failed: HTTP %d %s", nodeID, pubResp.status, string(pubResp.body))
 	}
 
 	var exitID uuid.UUID
-	published := s.waitFor(90*time.Second, func() bool {
-		var obs string
-		err := s.pool.QueryRow(s.ctx, `SELECT id, publication_observed FROM exits WHERE node_id = $1`, nodeID).Scan(&exitID, &obs)
-		return err == nil && exitID != uuid.Nil && obs == "active"
-	})
-	if !published {
-		s.t.Fatalf("node %s (%s) did not reach exits.publication_observed=active", nodeID, nodeService)
+	var targetGen uint64
+	if !s.waitFor(45*time.Second, func() bool {
+		err1 := s.pool.QueryRow(s.ctx, `SELECT id FROM exits WHERE node_id = $1 AND publication_intent = 'published'`, nodeID).Scan(&exitID)
+		err2 := s.pool.QueryRow(s.ctx, `SELECT generation::bigint FROM desired_state_envelopes WHERE node_id = $1 AND incarnation_id = $2 AND envelope->'signed'->>'publication_intent' = 'published' ORDER BY generation DESC LIMIT 1`, nodeID, incID).Scan(&targetGen)
+		return err1 == nil && err2 == nil && exitID != uuid.Nil && targetGen > oldDesired
+	}) {
+		s.t.Fatalf("node %s (%s) published desired_state_envelope did not compile beyond %d", nodeID, nodeService, oldDesired)
 	}
+
+	// Let fvpn-agent on nodeService run for one heartbeat so it attempts VerifyServing (recording any FLOWTABLE_BYPASS observation),
+	// then pause fvpn-agent and acknowledge targetGen via nodeClient so carryingExitAckStatus starts from a clean ACKed baseline.
+	time.Sleep(6 * time.Second)
+	s.stopNodeAgent(nodeService)
+	_, _, _, _ = s.ackNodeGeneration(nodeID, incID, nodeClient, targetGen)
+
 	return exitID, exitNetworkID(exitID)
 }
 
@@ -768,7 +758,7 @@ func (s *liveSuite) bootstrapCountedServingFlow() {
 		At:       time.Now().UTC().Format(time.RFC3339),
 	})
 
-	// 4. Enroll primary node (or reuse if already enrolled on this stack) and publish into s.groupID with finite capacity (per_member: 60M down / 30M up)
+	// 4. Enroll primary node (or reuse if already enrolled on this stack) and build mTLS client
 	nodeJSONRaw, nodeJSONCode, _ := s.execInContainer("node", "cat", "/var/lib/vpn-node/identity/node.json")
 	var existingIdent struct {
 		NodeID            uuid.UUID `json:"node_id"`
@@ -785,27 +775,7 @@ func (s *liveSuite) bootstrapCountedServingFlow() {
 		s.nodeID = enrolled.NodeID
 		s.incarnationID = enrolled.IncarnationID
 	}
-	s.exitID, s.exitNetID = s.configureAndPublishNode("node", s.nodeID, 60000000, 30000000)
-
-	// Build mTLS client using node's identity
-	crtPEM, codeCrt, errCrt := s.execInContainer("node", "cat", "/var/lib/vpn-node/identity/cert.pem")
-	keyPEM, codeKey, errKey := s.execInContainer("node", "cat", "/var/lib/vpn-node/identity/key.pem")
-	if errCrt != nil || codeCrt != 0 || errKey != nil || codeKey != 0 {
-		s.t.Fatalf("read node mTLS identity failed: crt=%v key=%v", errCrt, errKey)
-	}
-	s.extraRedactions = append(s.extraRedactions, string(keyPEM))
-	nodeCert, err := tls.X509KeyPair(crtPEM, keyPEM)
-	if err != nil {
-		s.t.Fatalf("parse node X509KeyPair: %v", err)
-	}
-	agentTransport := s.transport.Clone()
-	agentTransport.TLSClientConfig = &tls.Config{
-		RootCAs:      s.roots,
-		Certificates: []tls.Certificate{nodeCert},
-		MinVersion:   tls.VersionTLS12,
-	}
-	s.agentClient = &http.Client{Transport: agentTransport, Timeout: 20 * time.Second}
-	s.t.Cleanup(agentTransport.CloseIdleConnections)
+	s.agentClient = s.buildNodeMTLSClient("node")
 
 	trustRaw, codeTrust, errTrust := s.execInContainer("node", "cat", "/etc/vpn-node/trust.json")
 	if errTrust != nil || codeTrust != 0 {
@@ -817,95 +787,95 @@ func (s *liveSuite) bootstrapCountedServingFlow() {
 	}
 	s.nodeTrust = nodeTrust
 
-	// 5–8. Grant entitlements, admit native devices for memberA and memberB, and measure D-067 Cycle 1 (bring_up)
-	// provisional-lease window (applying -> awaiting_member_grants -> ready -> populated lease -> first counted byte).
-	s.d067BringUp = s.measureD067ProvisionalWindow("bring_up", "node", s.nodeID, s.incarnationID, func() {
-		var oldApplied uint64
-		_ = s.pool.QueryRow(s.ctx, `SELECT applied_config_generation::bigint FROM nodes WHERE id = $1`, s.nodeID).Scan(&oldApplied)
-
-		for _, mem := range []*browserSession{s.memberA, s.memberB} {
-			checkResp := s.apiCall(s.admin, http.MethodGet, "/api/v1/admin/members/"+mem.memberID, nil, nil)
-			var existingMem api.MemberDetail
-			if checkResp.status == http.StatusOK && json.Unmarshal(checkResp.body, &existingMem) == nil && existingMem.Entitlement.State == "active" {
-				continue
-			}
-			grantResp := s.apiCall(s.admin, http.MethodPost, "/api/v1/admin/members/"+mem.memberID+"/grants", api.GrantCreateRequest{
-				Source:         api.GrantSourceAdminGrant,
-				Reason:         "TEST ONLY bootstrap grant",
-				PlanRevisionId: &s.planRevID,
-				ValidUntil:     time.Now().UTC().Add(24 * time.Hour),
-			}, idemHeaders())
-			if grantResp.status != http.StatusAccepted {
-				s.t.Fatalf("grant for %s failed: HTTP %d %s", mem.memberID, grantResp.status, string(grantResp.body))
-			}
-			active := s.waitFor(45*time.Second, func() bool {
-				r := s.apiCall(s.admin, http.MethodGet, "/api/v1/admin/members/"+mem.memberID, nil, nil)
-				var m api.MemberDetail
-				return r.status == http.StatusOK && json.Unmarshal(r.body, &m) == nil && m.Entitlement.State == "active"
-			})
-			if !active {
-				s.t.Fatalf("member %s did not reach service_status=active", mem.memberID)
-			}
+	// 5. Grant entitlements and admit native devices for memberA and memberB BEFORE publishing node so
+	// PUT /api/v1/admin/nodes/{id}/publication compiles a populated generation (len(device_bindings) == 2).
+	for _, mem := range []*browserSession{s.memberA, s.memberB} {
+		checkResp := s.apiCall(s.admin, http.MethodGet, "/api/v1/admin/members/"+mem.memberID, nil, nil)
+		var existingMem api.MemberDetail
+		if checkResp.status == http.StatusOK && json.Unmarshal(checkResp.body, &existingMem) == nil && existingMem.Entitlement.State == "active" {
+			continue
 		}
-
-		var existingDevA uuid.UUID
-		_ = s.pool.QueryRow(s.ctx, `SELECT id FROM member_devices WHERE member_id = $1 AND status = 'authorized' ORDER BY created_at DESC LIMIT 1`, s.memberA.memberID).Scan(&existingDevA)
-		if existingDevA != uuid.Nil {
-			s.deviceA = existingDevA
-		} else {
-			peerA, err := s.hook.JoinNativeMember(s.ctx, s.memberAHook(), s.memberA.subject, s.containerName("member"), "fvpn-member-e2e")
-			if err != nil || !peerA.Authorized || peerA.DeviceID == uuid.Nil {
-				s.t.Fatalf("JoinNativeMember(memberA) failed: err=%v peer=%+v", err, peerA)
-			}
-			s.deviceA = peerA.DeviceID
+		grantResp := s.apiCall(s.admin, http.MethodPost, "/api/v1/admin/members/"+mem.memberID+"/grants", api.GrantCreateRequest{
+			Source:         api.GrantSourceAdminGrant,
+			Reason:         "TEST ONLY bootstrap grant",
+			PlanRevisionId: &s.planRevID,
+			ValidUntil:     time.Now().UTC().Add(24 * time.Hour),
+		}, idemHeaders())
+		if grantResp.status != http.StatusAccepted {
+			s.t.Fatalf("grant for %s failed: HTTP %d %s", mem.memberID, grantResp.status, string(grantResp.body))
 		}
-
-		var existingDevB uuid.UUID
-		_, inspectErrB := s.runHostCmd("docker", "inspect", s.containerName("member-b"))
-		if inspectErrB == nil {
-			_ = s.pool.QueryRow(s.ctx, `SELECT id FROM member_devices WHERE member_id = $1 AND status = 'authorized' ORDER BY created_at DESC LIMIT 1`, s.memberB.memberID).Scan(&existingDevB)
+		active := s.waitFor(45*time.Second, func() bool {
+			r := s.apiCall(s.admin, http.MethodGet, "/api/v1/admin/members/"+mem.memberID, nil, nil)
+			var m api.MemberDetail
+			return r.status == http.StatusOK && json.Unmarshal(r.body, &m) == nil && m.Entitlement.State == "active"
+		})
+		if !active {
+			s.t.Fatalf("member %s did not reach service_status=active", mem.memberID)
 		}
-		if existingDevB != uuid.Nil {
-			s.deviceB = existingDevB
-		} else {
-			s.cleanupDocker("rm", "-f", s.containerName("member-b"))
-			s.cleanupDocker("volume", "rm", "-f", s.containerName("member-b"))
-			memberBContainer, err := s.hook.StartNativePeer(s.ctx, "b")
-			if err != nil {
-				s.t.Fatalf("StartNativePeer(b) failed: %v", err)
-			}
-			peerB, err := s.hook.JoinNativeMember(s.ctx, s.memberBHook(), s.memberB.subject, memberBContainer, memberBContainer)
-			if err != nil || !peerB.Authorized || peerB.DeviceID == uuid.Nil {
-				s.t.Fatalf("JoinNativeMember(memberB) failed: err=%v peer=%+v", err, peerB)
-			}
-			s.deviceB = peerB.DeviceID
-		}
+	}
 
-		var curDesired uint64
-		_ = s.pool.QueryRow(s.ctx, `SELECT desired_config_generation::bigint FROM nodes WHERE id = $1`, s.nodeID).Scan(&curDesired)
-		if curDesired <= oldApplied {
-			_ = s.nodeMutation(s.nodeID, http.MethodPatch, "", map[string]any{
-				"capacity": map[string]any{
-					"up_bps":              1000000000,
-					"down_bps":            1000000000,
-					"member_up_bps_cap":   30000000,
-					"member_down_bps_cap": 60000000,
-				},
-			})
+	var existingDevA uuid.UUID
+	_ = s.pool.QueryRow(s.ctx, `SELECT id FROM member_devices WHERE member_id = $1 AND status = 'authorized' ORDER BY created_at DESC LIMIT 1`, s.memberA.memberID).Scan(&existingDevA)
+	if existingDevA != uuid.Nil {
+		s.deviceA = existingDevA
+	} else {
+		peerA, err := s.hook.JoinNativeMember(s.ctx, s.memberAHook(), s.memberA.subject, s.containerName("member"), "fvpn-member-e2e")
+		if err != nil || !peerA.Authorized || peerA.DeviceID == uuid.Nil {
+			s.t.Fatalf("JoinNativeMember(memberA) failed: err=%v peer=%+v", err, peerA)
+		}
+		s.deviceA = peerA.DeviceID
+	}
+
+	var existingDevB uuid.UUID
+	_, inspectErrB := s.runHostCmd("docker", "inspect", s.containerName("member-b"))
+	if inspectErrB == nil {
+		_ = s.pool.QueryRow(s.ctx, `SELECT id FROM member_devices WHERE member_id = $1 AND status = 'authorized' ORDER BY created_at DESC LIMIT 1`, s.memberB.memberID).Scan(&existingDevB)
+	}
+	if existingDevB != uuid.Nil {
+		s.deviceB = existingDevB
+	} else {
+		s.cleanupDocker("rm", "-f", s.containerName("member-b"))
+		s.cleanupDocker("volume", "rm", "-f", s.containerName("member-b"))
+		memberBContainer, err := s.hook.StartNativePeer(s.ctx, "b")
+		if err != nil {
+			s.t.Fatalf("StartNativePeer(b) failed: %v", err)
+		}
+		peerB, err := s.hook.JoinNativeMember(s.ctx, s.memberBHook(), s.memberB.subject, memberBContainer, memberBContainer)
+		if err != nil || !peerB.Authorized || peerB.DeviceID == uuid.Nil {
+			s.t.Fatalf("JoinNativeMember(memberB) failed: err=%v peer=%+v", err, peerB)
+		}
+		s.deviceB = peerB.DeviceID
+	}
+
+	// 6. Ensure primary node is at unpublished ready baseline (safety_status=passed, provisioning_state=ready) with finite capacity (60M down / 30M up)
+	s.ensureUnpublishedReadyBaseline("node", s.nodeID, 60000000, 30000000)
+
+	// 7. Publish node into s.groupID and measure D-067 Cycle 1 (bring_up) provisional-lease window
+	// (applying -> awaiting_member_grants -> ready -> populated lease -> VerifyServing / data-plane probe).
+	s.d067BringUp = s.measureD067ProvisionalWindow("bring_up", "node", s.nodeID, s.incarnationID, s.agentClient, func() {
+		pubResp := s.nodeMutation(s.nodeID, http.MethodPut, "/publication", map[string]any{
+			"publication_intent": "published",
+			"group_ids":          []string{s.groupID.String()},
+			"reason":             "TEST ONLY publish node for AT14-AT19",
+		})
+		if pubResp.status != http.StatusAccepted {
+			s.t.Fatalf("PUT /api/v1/admin/nodes/%s/publication failed: HTTP %d %s", s.nodeID, pubResp.status, string(pubResp.body))
 		}
 	}, true)
 
+	_ = s.pool.QueryRow(s.ctx, `SELECT id FROM exits WHERE node_id = $1`, s.nodeID).Scan(&s.exitID)
+	s.exitNetID = exitNetworkID(s.exitID)
 	s.bootstrapTransfer = s.d067BringUp.FirstCountedTransfer
 	hbOut, _, _ := s.execInContainer("node", "cat", "/run/vpn-node/heartbeat")
 	s.sharedCmds = append(s.sharedCmds,
 		CommandRecord{
-			Command:  "PATCH /api/v1/admin/nodes/{id} + PUT /publication + JoinNativeMember(memberA, memberB) + D-067 Cycle 1 (bring_up) provisional-lease window",
+			Command:  "PATCH /api/v1/admin/nodes/{id} + JoinNativeMember(memberA, memberB) + PUT /publication + D-067 Cycle 1 (bring_up) provisional-lease window",
 			ExitCode: 0,
-			Output:   fmt.Sprintf("node_id=%s exit_id=%s deviceA=%s deviceB=%s provisional_lease=%s (ttl=%ds, members=%d) ready_obs=%s (reasons=%v, checks=%v) populated_lease=%s (members=%d) ready_to_populated_ms=%d ready_to_first_byte_ms=%d heartbeat=%q", s.nodeID, s.exitID, s.deviceA, s.deviceB, s.d067BringUp.ProvisionalLeaseID, s.d067BringUp.ProvisionalLeaseTTLSeconds, s.d067BringUp.ProvisionalLeaseMemberCount, s.d067BringUp.ReadyObservationReportID, s.d067BringUp.ForwardingBlockReasons, s.d067BringUp.CheckErrorCodes, s.d067BringUp.PopulatedLeaseID, s.d067BringUp.PopulatedLeaseMemberCount, s.d067BringUp.ReadyToPopulatedLeaseMs, s.d067BringUp.ReadyToFirstCountedByteMs, strings.TrimSpace(string(hbOut))),
+			Output:   fmt.Sprintf("node_id=%s exit_id=%s deviceA=%s deviceB=%s provisional_lease=%s (ttl=%ds, members=%d) ready_obs=%s (reasons=%v, checks=%v) populated_lease=%s (members=%d) ready_to_populated_ms=%d apply_blocker=%s (%s) heartbeat=%q", s.nodeID, s.exitID, s.deviceA, s.deviceB, s.d067BringUp.ProvisionalLeaseID, s.d067BringUp.ProvisionalLeaseTTLSeconds, s.d067BringUp.ProvisionalLeaseMemberCount, s.d067BringUp.ReadyObservationReportID, s.d067BringUp.ForwardingBlockReasons, s.d067BringUp.CheckErrorCodes, s.d067BringUp.PopulatedLeaseID, s.d067BringUp.PopulatedLeaseMemberCount, s.d067BringUp.ReadyToPopulatedLeaseMs, s.d067BringUp.ApplyBlockerErrorCode, s.d067BringUp.ApplyBlockerObservationReportID, strings.TrimSpace(string(hbOut))),
 			At:       time.Now().UTC().Format(time.RFC3339),
 		},
 		CommandRecord{
-			Command:  "Baseline counted HTTPS probe through exit node (member -> fvnb0 -> fvmb0 -> fvup0 -> origin)",
+			Command:  "Baseline HTTPS probe through exit node (member -> fvnb0 -> fvmb0 -> fvup0 -> origin)",
 			ExitCode: 0,
 			Output:   fmt.Sprintf("counted=%t generation=%s delta_up=%s delta_down=%s origin_src=%s", s.bootstrapTransfer.Counted, s.bootstrapTransfer.Generation, s.bootstrapTransfer.DeltaUp, s.bootstrapTransfer.DeltaDown, s.bootstrapTransfer.OriginSource),
 			At:       time.Now().UTC().Format(time.RFC3339),
@@ -954,9 +924,9 @@ func (s *liveSuite) waitFor(timeout time.Duration, cond func() bool) bool {
 	return false
 }
 
-// agentCall paces mTLS requests at >=650ms to respect D-060 limiter classes
+// agentCallWithClient paces mTLS requests at >=650ms to respect D-060 limiter classes
 // (SubmitUsageBatch 2/s burst 10, 8 MiB body) and asserts each response once.
-func (s *liveSuite) agentCall(method, path string, body any, headers map[string]string) httpResponse {
+func (s *liveSuite) agentCallWithClient(client *http.Client, method, path string, body any, headers map[string]string) httpResponse {
 	select {
 	case <-s.ctx.Done():
 		return httpResponse{code: "CANCELLED"}
@@ -985,7 +955,7 @@ func (s *liveSuite) agentCall(method, path string, body any, headers map[string]
 	for k, v := range headers {
 		req.Header.Set(k, v)
 	}
-	resp, err := s.agentClient.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return httpResponse{code: "TRANSPORT_ERROR", body: []byte(err.Error())}
 	}
@@ -1003,6 +973,10 @@ func (s *liveSuite) agentCall(method, path string, body any, headers map[string]
 		body:    respBytes,
 		code:    errEnv.Error.Code,
 	}
+}
+
+func (s *liveSuite) agentCall(method, path string, body any, headers map[string]string) httpResponse {
+	return s.agentCallWithClient(s.agentClient, method, path, body, headers)
 }
 
 func (s *liveSuite) baseRecord(id, title, spec, expected string, reqs []string) Record {
