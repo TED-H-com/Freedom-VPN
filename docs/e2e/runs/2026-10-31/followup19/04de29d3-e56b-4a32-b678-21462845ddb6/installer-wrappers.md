@@ -1,0 +1,22 @@
+# installer-wrappers
+
+ENR-06 fixed runtime layout, sampled hashes and restoration
+
+Status: pass
+
+Run: 04de29d3-e56b-4a32-b678-21462845ddb6
+
+Source: fb5b8fcee72bd71b3bd0a4536af9049df4055096
+
+Spec: §6.3, ENR-06, AT07
+
+- registered_release_0: {"architectures":["amd64","arm64"],"manifest_sha256":"0f32fde0fd482890b50ebf9888470e789b312ff89391d763d4c1060f721b371f","release_id":"01a1924d-93c5-7e6e-879f-528a14cc7a18"}
+- registered_release_1: {"architectures":["amd64","arm64"],"manifest_sha256":"aa7fdbcbbca1dcdab23551108ebbeeef92c356c55a6ec7d408c0ceed37afa092","release_id":"01a1924d-9e16-70b7-b02f-a036a6c2043c"}
+- initial: {"Exit":0,"Status":"installed","Code":"baseline","Incarnation":"01a1924d-b2ed-7dae-875c-392d39febfa2","NodeID":"01a1924d-ad8a-75f0-9fab-9ac72ddcc32f","RetiredMode":"","RetiredHashes":{},"BoundStateBefore":null,"RetiredBoundState":null,"Message":"","Before":{"key_sha256":"absent","cert_sha256":"absent","node_json_sha256":"absent","usage_db_sha256":"absent","usage_wal_sha256":"absent","machine_id_sha256":"186cc62b3ea133e7b6da9685430b24e54bb999ea093280f231a8b358af70ce92","current_target":"absent"},"Hashes":{"key_sha256":"089481b80da5d1a59010dc3a87074576a6b4cf6337fbf075f560818bf4c6d518","cert_sha256":"0416b71e0b602e3840c6af2bce5587b83fe79d0b5ad46d009b297034ab90df8c","node_json_sha256":"1ad2927c061be6a7df7ba221187f17c5973a9aff6bcff2556d4ee7b48a19e00e","usage_db_sha256":"98c74d0c7444b12dbd3883df57186b3ff987ec775ca7a22153276c5dc5004213","usage_wal_sha256":"absent","machine_id_sha256":"186cc62b3ea133e7b6da9685430b24e54bb999ea093280f231a8b358af70ce92","current_target":"releases/01a1924d-93c5-7e6e-879f-528a14cc7a18"},"Services":{"fvpn-agent.service":"active","fvpn-updater.service":"inactive","fvpn-updater.timer":"active","fvpn-watchdog.service":"active"}}
+- first_poll_barrier_no_desired: true
+- fresh_updater_no_work: true
+- rerun: {"Exit":0,"Status":"already_current","Code":"baseline","Incarnation":"01a1924d-b2ed-7dae-875c-392d39febfa2","NodeID":"01a1924d-ad8a-75f0-9fab-9ac72ddcc32f","RetiredMode":"","RetiredHashes":{},"BoundStateBefore":null,"RetiredBoundState":null,"Message":"already_current","Before":{"key_sha256":"089481b80da5d1a59010dc3a87074576a6b4cf6337fbf075f560818bf4c6d518","cert_sha256":"0416b71e0b602e3840c6af2bce5587b83fe79d0b5ad46d009b297034ab90df8c","node_json_sha256":"1ad2927c061be6a7df7ba221187f17c5973a9aff6bcff2556d4ee7b48a19e00e","usage_db_sha256":"0809fa39bb1bcf60e8d3802c011c3d890869b2f6bb658f7b85b314f618387389","usage_wal_sha256":"absent","machine_id_sha256":"186cc62b3ea133e7b6da9685430b24e54bb999ea093280f231a8b358af70ce92","current_target":"releases/01a1924d-93c5-7e6e-879f-528a14cc7a18"},"Hashes":{"key_sha256":"089481b80da5d1a59010dc3a87074576a6b4cf6337fbf075f560818bf4c6d518","cert_sha256":"0416b71e0b602e3840c6af2bce5587b83fe79d0b5ad46d009b297034ab90df8c","node_json_sha256":"1ad2927c061be6a7df7ba221187f17c5973a9aff6bcff2556d4ee7b48a19e00e","usage_db_sha256":"0809fa39bb1bcf60e8d3802c011c3d890869b2f6bb658f7b85b314f618387389","usage_wal_sha256":"absent","machine_id_sha256":"186cc62b3ea133e7b6da9685430b24e54bb999ea093280f231a8b358af70ce92","current_target":"releases/01a1924d-93c5-7e6e-879f-528a14cc7a18"},"Services":{"fvpn-agent.service":"active","fvpn-updater.service":"inactive","fvpn-updater.timer":"active","fvpn-watchdog.service":"active"}}
+- rerun_hashes_stable: true
+- netbird_owned_socket: true
+- shared_runtime_survives_consumer_stop: true
+- restored_services: {"fvpn-agent.service":"active","fvpn-updater.service":"inactive","fvpn-updater.timer":"active","fvpn-watchdog.service":"active"}

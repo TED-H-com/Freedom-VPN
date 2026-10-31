@@ -50,6 +50,32 @@ SQLite integrity is `ok`; the sealed receipt hash is
 `10f1cda9ce46c7d3e9a1a99fc7d2f1dcff0b8988ca587daf438a53b27fc9d6e7`.
 Binary journals, usage stores and packet payloads are not public artifacts.
 
+## Stopped-agent replay of the former isolated sequence
+
+[Run 04de29d3](04de29d3-e56b-4a32-b678-21462845ddb6/installer-quiescent-candidate.md)
+is **13 / 0 / 1**, exit **1**, on source `fb5b8fce`. The old sequence stops the
+real agent before apply. Under D-125 it cannot answer the new latch: there is
+no checkpoint before or after the 30-second wait. Apply seals
+`failed / final_sample / CHECKPOINT_FAILED`, with null health/usage and
+`recovery_required=false`; it never switches the candidate pointer.
+Initial apply and actual sealed replay both exit **1**, and blocked recovery
+exits **2**. The forwarding latch remains. This is the measured nondestructive
+pre-stop failure; destructive recovery-required injection is not claimed here.
+
+The coherent journals before and after replay/recovery are both 81,920 bytes,
+SHA-256 `1dd765f0d7a2e8aaa29836acb229089235b8950d7bb62fa99f7ec51ec50948e1`.
+The sealed receipt payload is also compared byte-for-byte. The private files
+are `.agent/tmp/followup19/04de29d3-e56b-4a32-b678-21462845ddb6-installer-journal.db`
+and the same run's `-after-recovery.db`.
+
+The following [re-enrollment](04de29d3-e56b-4a32-b678-21462845ddb6/installer-reenroll.md)
+passes, retaining canonical origin events, retired identity and old-certificate
+refusal, with seed exit 0 and services restored. No HASH_MISMATCH recurs, but
+this verifies the **unchanged initial tree**, because the candidate never
+switched. The serving run above supplies the real candidate seed acceptance.
+The isolated failure is retained as failed rather than converted into success
+by starting an agent early or supplying a checkpoint.
+
 ## Evidence preservation and limits
 
 Before any new publication, all 138 files in follow-up 18 were copied
