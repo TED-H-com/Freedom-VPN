@@ -120,7 +120,8 @@ func TestF902_ExtractAndSeedAcrossUmasks(t *testing.T) {
 	}
 }
 
-func TestF903_ApplyCLIReportsSealedCheckpointFailure(t *testing.T) {
+func sealedFailureCLIInputs(t *testing.T) (updater.Layout, string, string, string, []byte) {
+	t.Helper()
 	lay, cfgPath, _, baseline, args := seedCLIInputs(t)
 	var out, stderr bytes.Buffer
 	if code := run(args, &out, &stderr); code != 0 {
@@ -174,6 +175,12 @@ func TestF903_ApplyCLIReportsSealedCheckpointFailure(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	return lay, cfgPath, baseline, pending, record
+}
+
+func TestF903_ApplyCLIReportsSealedCheckpointFailure(t *testing.T) {
+	lay, cfgPath, baseline, pending, record := sealedFailureCLIInputs(t)
+	var out, stderr bytes.Buffer
 	for range 2 {
 		if err := os.WriteFile(pending, record, 0600); err != nil {
 			t.Fatal(err)

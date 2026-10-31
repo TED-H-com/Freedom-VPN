@@ -35,8 +35,9 @@ func meterWaitDuration(ms int) (time.Duration, error) {
 }
 
 // FileMeter decodes the agent's durable closed-epoch snapshot. FinalSample is
-// a single-read decoder, not proof that the snapshot belongs to an update.
-// Engine always uses the journaled wait below before consuming a FileMeter.
+// a legacy single-read decoder, not proof that a snapshot belongs to an update.
+// Correlated snapshots require the persisted identity supplied by Engine's wait;
+// FinalSample alone has no such authority and continues to refuse them.
 // OpenEpoch writes nothing; the existing epoch-<txn> note owns that decision.
 type FileMeter struct {
 	Path string
@@ -44,6 +45,12 @@ type FileMeter struct {
 }
 
 func (m FileMeter) FinalSample(ctx context.Context) (UsageCheckpoint, error) {
+	return m.finalSample(ctx, "")
+}
+
+// finalSample makes one decision from one file snapshot. The identity comes
+// only from the validated durable wait note, never from the checkpoint itself.
+func (m FileMeter) finalSample(ctx context.Context, identity string) (UsageCheckpoint, error) {
 	if err := ctx.Err(); err != nil {
 		return UsageCheckpoint{}, err
 	}
@@ -51,7 +58,10 @@ func (m FileMeter) FinalSample(ctx context.Context) (UsageCheckpoint, error) {
 	if err != nil {
 		return UsageCheckpoint{}, err
 	}
-	var c UsageCheckpoint
+	var c struct {
+		UsageCheckpoint
+		BarrierID string `json:"barrier_id,omitempty"`
+	}
 	d := json.NewDecoder(bytes.NewReader(b))
 	d.DisallowUnknownFields()
 	if d.Decode(&c) != nil || d.Decode(new(any)) != io.EOF {
@@ -66,7 +76,14 @@ func (m FileMeter) FinalSample(ctx context.Context) (UsageCheckpoint, error) {
 	if json.Unmarshal(b, &fields) != nil || fields["last_durable_event_seq"] == nil || fields["central_acked_through"] == nil {
 		return UsageCheckpoint{}, permanent(apierr.CheckpointFailed, "meter checkpoint watermarks")
 	}
-	return c, nil
+	if identity == "" {
+		if fields["barrier_id"] != nil {
+			return UsageCheckpoint{}, permanent(apierr.CheckpointFailed, "meter checkpoint requires journaled barrier")
+		}
+	} else if uuid.Validate(c.BarrierID) != nil || c.BarrierID != identity {
+		return UsageCheckpoint{}, permanent(apierr.CheckpointFailed, "meter_checkpoint_uncorrelated")
+	}
+	return c.UsageCheckpoint, nil
 }
 
 // readMeterFile bounds each read and refuses special files without blocking on
@@ -89,7 +106,7 @@ func readMeterFile(path string) ([]byte, error) {
 	return b, nil
 }
 
-// meterWait is updater-local evidence, NOT an extension of the agent format.
+// meterWait is updater-local evidence. D-125 echoes Identity in barrier_id.
 // Persist before Block so a restart cannot obtain another wait budget. The
 // opaque latch identity detects Unblock/Block between reads and across restart.
 type meterWait struct {
@@ -183,17 +200,20 @@ func (e *Engine) waitMeter(ctx context.Context, txn updatejournal.Txn, m FileMet
 		if ctx.Err() != nil || !time.Now().Before(note.Deadline) {
 			return fail(reason)
 		}
-		_, err = m.FinalSample(ctx)
-		if err == nil {
-			// Agent-core 24 has no boot/transaction/close-time correlation.
-			// A different UUID, larger watermark, new inode or later mtime
-			// does not prove a post-block close. Do not consume this sample.
-			// Acceptance is blocked on the agent-core 26 format decision.
+		cp, sampleErr := m.finalSample(ctx, note.Identity)
+		if op := asOp(sampleErr); op != nil && op.Detail == "meter_checkpoint_uncorrelated" {
 			reason = "meter_checkpoint_uncorrelated"
 		}
 		latch, err = readMeterFile(g.Path)
 		if err != nil || string(latch) != note.Identity+"\n" {
 			return UsageCheckpoint{}, permanent(apierr.StateConflict, "meter_barrier_withdrawn")
+		}
+		// A read that finishes after the bound cannot authorize a switch.
+		if ctx.Err() != nil || !time.Now().Before(note.Deadline) {
+			return fail(reason)
+		}
+		if sampleErr == nil {
+			return cp, nil
 		}
 		timer := time.NewTimer(meterCheckpointPoll)
 		select {
