@@ -694,7 +694,8 @@ func TestAT18_HTTPShadowVsEnforceMemberRatePolicyAndOverrides(t *testing.T) {
 		t.Fatalf("expected Tier 1 rate (50M/25M, reason=fair_use_tier) in enforce mode, got %+v", rateEnforce)
 	}
 
-	// Verify GET /api/v1/member/usage now reflects adjusted state and Applying=true (fail-closed before node ACK).
+	// D-091: this fixture has a registered node but no published carrying exit.
+	// The member usage projection keeps the adjusted tier with Applying=false.
 	wMemEnforce := st.doMember(t, http.MethodGet, "/api/v1/member/usage?period_id=2026-10")
 	if wMemEnforce.Code != http.StatusOK {
 		t.Fatalf("GET /member/usage enforce status=%d body=%s", wMemEnforce.Code, wMemEnforce.Body.String())
@@ -703,35 +704,10 @@ func TestAT18_HTTPShadowVsEnforceMemberRatePolicyAndOverrides(t *testing.T) {
 	if err := json.Unmarshal(wMemEnforce.Body.Bytes(), &muEnforce); err != nil {
 		t.Fatalf("unmarshal MemberUsage enforce: %v", err)
 	}
-	if muEnforce.FairUse.State != api.FairUseStatusStateAdjusted || !muEnforce.FairUse.Applying {
-		t.Fatalf("expected state=adjusted applying=true before node ACK, got state=%s applying=%v", muEnforce.FairUse.State, muEnforce.FairUse.Applying)
+	if muEnforce.FairUse.State != api.FairUseStatusStateAdjusted || muEnforce.FairUse.Applying {
+		t.Fatalf("expected state=adjusted applying=false with no carrying exits, got state=%s applying=%v", muEnforce.FairUse.State, muEnforce.FairUse.Applying)
 	}
 
-	// Record node observation with safety_status='passed', control_status='online', and fup_generation="1".
-	obsHash := make([]byte, 32)
-	if _, err := pool.Exec(ctx, `
-		INSERT INTO node_observations (
-			node_id, incarnation_id, report_id, payload_hash, observed_at,
-			applied_generation, schema_version, checks, control_status, data_health, safety_status
-		) VALUES (
-			$1, $2, $3, $4, $5,
-			1, 1, '{"applied_policy_refs": {"fup_generation": "1"}}'::jsonb, 'online', 'healthy', 'passed'
-		)
-	`, nodeID, incID, uuid.New(), obsHash, base.Add(11*time.Minute)); err != nil {
-		t.Fatalf("insert node_observations: %v", err)
-	}
-
-	wMemAcked := st.doMember(t, http.MethodGet, "/api/v1/member/usage?period_id=2026-10")
-	if wMemAcked.Code != http.StatusOK {
-		t.Fatalf("GET /member/usage after ACK status=%d body=%s", wMemAcked.Code, wMemAcked.Body.String())
-	}
-	var muAcked api.MemberUsage
-	if err := json.Unmarshal(wMemAcked.Body.Bytes(), &muAcked); err != nil {
-		t.Fatalf("unmarshal MemberUsage after ACK: %v", err)
-	}
-	if muAcked.FairUse.Applying {
-		t.Fatalf("expected applying=false after serving node ACKed fup_generation 1")
-	}
 }
 
 type noopMembersCompiler struct{}

@@ -634,6 +634,39 @@ func TestFUP03_MemberAndAdminStatusNodeAck(t *testing.T) {
 	if adminStatus2.NodeSyncSummary != "applied on 3 nodes" {
 		t.Fatalf("NodeSyncSummary = %q, want %q", adminStatus2.NodeSyncSummary, "applied on 3 nodes")
 	}
+
+	for _, tc := range []struct {
+		name     string
+		status   NodeAckStatus
+		applying bool
+		summary  string
+	}{
+		{"no carrying exits", NodeAckStatus{}, false, "no published exit carries this member"},
+		{"awaiting all envelopes", NodeAckStatus{TotalServingNodes: 2, PendingNodes: 2, NodesWithoutEnvelope: 2}, true, "pending desired-state compilation"},
+		{"awaiting one envelope", NodeAckStatus{TotalServingNodes: 2, PendingNodes: 1, AckedNodes: 1, NodesWithoutEnvelope: 1}, true, "pending on 1 node"},
+		{"frozen and unsafe exits", NodeAckStatus{TotalServingNodes: 3, PendingNodes: 2, AckedNodes: 1, FrozenNodes: 1, UnsafeNodes: 1}, true, "pending on 2 nodes (1 frozen, 1 unsafe)"},
+		{"frozen before compilation", NodeAckStatus{TotalServingNodes: 1, PendingNodes: 1, NodesWithoutEnvelope: 1, FrozenNodes: 1}, true, "pending desired-state compilation (1 frozen)"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			ackR.mu.Lock()
+			ackR.status = tc.status
+			ackR.mu.Unlock()
+			adminStatus, err := engine.GetAdminMemberStatus(ctx, memberID, periodID)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if adminStatus.MemberStatus.Applying != tc.applying || adminStatus.NodeSyncSummary != tc.summary {
+				t.Fatalf("applying=%v summary=%q, want %v %q", adminStatus.MemberStatus.Applying, adminStatus.NodeSyncSummary, tc.applying, tc.summary)
+			}
+			memberStatus, err := engine.GetMemberStatus(ctx, memberID, periodID)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if memberStatus.Applying != tc.applying {
+				t.Fatalf("member applying=%v, want %v", memberStatus.Applying, tc.applying)
+			}
+		})
+	}
 }
 
 func Test11_1_CoalescedWorkerAndWatermark(t *testing.T) {
