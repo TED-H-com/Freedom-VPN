@@ -3,14 +3,21 @@ package installer
 import (
 	"context"
 	"crypto/sha256"
+	"database/sql"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"io"
+	"net/url"
 	"os"
 	"path/filepath"
 
 	"github.com/TED-H-com/Freedom-VPN/node/updater/fsutil"
+	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
+	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 	"github.com/google/uuid"
+	_ "modernc.org/sqlite"
 )
 
 // pendingRelease hands verification inputs to the updater's journaled apply
@@ -51,11 +58,22 @@ func Upgrade(ctx context.Context, env *Env, manifestPath, artifactPath, trustPat
 		return nil, err
 	}
 	defer lk.Release()
+	cur, err := upgradeCurrent(ctx, env)
+	if err != nil {
+		return nil, err
+	}
+	id := verified.Manifest.ReleaseId.String()
+	if seqCmp(cur.ReleaseSequence, verified.Manifest.ReleaseSequence.String()) > 0 ||
+		(cur.ReleaseID != id && seqCmp(cur.ReleaseSequence, verified.Manifest.ReleaseSequence.String()) == 0) {
+		return nil, errf(ExitFailed, "DOWNGRADE", "refusing to replace release %s with %s", cur.ReleaseID, id)
+	}
+	if cur.ReleaseID == id && cur.ManifestSHA256 != verified.SHA {
+		return nil, errf(ExitFailed, "IMMUTABLE", "release %s is already installed with a different manifest", id)
+	}
 	if err := reconcileMarker(ctx, env); err != nil {
 		return nil, err
 	}
 
-	id := verified.Manifest.ReleaseId.String()
 	dest := l.releaseDir(id)
 	if err := os.MkdirAll(l.StagingDir, 0o700); err != nil {
 		return nil, err
@@ -120,6 +138,69 @@ func Upgrade(ctx context.Context, env *Env, manifestPath, artifactPath, trustPat
 		UpdaterCommand: cmd,
 		Message:        "staged; updater run completed; inspect fvpn-updater status for the apply result",
 	}, nil
+}
+
+// upgradeCurrent runs under the shared lock, before any staging or marker
+// mutation. installed.json is install history: after a journaled switch the
+// immutable, digest-checked journal envelope supplies the active sequence.
+// Like the agent's release identity reader, this opens SQLite read-only and
+// never initializes or migrates it. Unreadable evidence must not permit staging.
+func upgradeCurrent(ctx context.Context, env *Env) (installedState, error) {
+	l := env.layout()
+	refused := func() (installedState, error) {
+		return installedState{}, errf(ExitFailed, "installed_state", "cannot establish the installed release sequence")
+	}
+	cur, has := readInstalled(l)
+	if !has {
+		return refused()
+	}
+	if _, err := decstr.Parse(cur.ReleaseSequence); err != nil {
+		return refused()
+	}
+	target, err := filepath.EvalSymlinks(l.CurrentLink)
+	if err != nil {
+		return refused()
+	}
+	if target != l.releaseDir(cur.ReleaseID) || readBaseline(l).Status == "seeded" {
+		st, err := readUpdaterStatus(ctx, env, true)
+		if err != nil || st == nil || st.CurrentReleaseID == "" || st.RecoveryRequired {
+			return refused()
+		}
+		u := url.URL{Scheme: "file", Path: filepath.Join(l.UpdateJournal, "journal.db"), RawQuery: "mode=ro&_pragma=query_only(1)&_pragma=busy_timeout(50)"}
+		db, err := sql.Open("sqlite", u.String())
+		if err != nil {
+			return refused()
+		}
+		defer db.Close()
+		var raw []byte
+		var digest string
+		if err := db.QueryRowContext(ctx, `SELECT manifest_envelope, manifest_sha256 FROM releases WHERE release_id = ?`, st.CurrentReleaseID).Scan(&raw, &digest); err != nil {
+			return refused()
+		}
+		hash, err := canonjson.HashHex(raw)
+		if err != nil || hash != digest {
+			return refused()
+		}
+		var record struct {
+			Signed api.ReleaseManifest `json:"signed"`
+		}
+		if json.Unmarshal(raw, &record) != nil || record.Signed.ReleaseId.String() != st.CurrentReleaseID {
+			return refused()
+		}
+		cur.ReleaseID, cur.ManifestSHA256 = st.CurrentReleaseID, digest
+		cur.ReleaseSequence = record.Signed.ReleaseSequence.String()
+	}
+	if _, err := decstr.Parse(cur.ReleaseSequence); err != nil {
+		return refused()
+	}
+	id, err := uuid.Parse(cur.ReleaseID)
+	if err != nil || id == uuid.Nil || id.String() != cur.ReleaseID {
+		return refused()
+	}
+	if target != l.releaseDir(cur.ReleaseID) {
+		return refused()
+	}
+	return cur, nil
 }
 
 func fileSHA(path string) (string, error) {
