@@ -2423,14 +2423,14 @@ func TestHandover_Followup15Claims(t *testing.T) {
 		if err := json.Unmarshal([]byte(readOwnedDoc(t, root, mainPin)), &pin); err != nil {
 			t.Fatal(err)
 		}
-		if pin.Commit != "5ce76e9d2b1d26c49a44d77c9184d7aa73d71f31" || len(pin.Rows) != 14 {
+		if pin.Commit != "b79ee236821bbf8d2c47c43c1146b9be9006e26f" || len(pin.Rows) != 17 {
 			t.Fatalf("wrong follow-up 15 cutoff: %+v", pin)
 		}
-		for _, pr := range []int{273, 274, 275, 276, 277, 279, 280, 281, 282, 283, 284, 285, 286, 287} {
+		for _, pr := range []int{273, 274, 275, 276, 277, 279, 280, 281, 282, 283, 284, 285, 286, 287, 288, 289, 290} {
 			require(mainPin, fmt.Sprintf("done (#%d)", pr))
 			require(ops, fmt.Sprintf("#%d", pr))
 		}
-		for _, coming := range []string{"w4-at-security-ops follow-up 12", "w1-netlab follow-up 15", "w4-at-enrollment follow-up 6", "w2-agent-core follow-up 24", "w4-at-members follow-up 8", "w3-devstack-e2e follow-up 17", "w2-fleet-update follow-up 11", "w3-wire-nodes follow-up 31"} {
+		for _, coming := range []string{"w4-at-security-ops follow-up 12", "w1-netlab follow-up 16", "w2-agent-core follow-up 25", "w4-at-isolation follow-up 8", "w3-wire-members follow-up 11", "w2-agent-core follow-up 24", "w4-at-members follow-up 8", "w3-devstack-e2e follow-up 17", "w2-fleet-update follow-up 11", "w3-wire-nodes follow-up 31"} {
 			if strings.Contains(strings.Join(pin.Rows, "\n"), "| "+coming+" |") {
 				t.Errorf("coming work included in delivered claims: %s", coming)
 			}
@@ -2444,8 +2444,8 @@ func TestHandover_Followup15Claims(t *testing.T) {
 			}
 			previous = pos
 		}
-		require(register, "Follow-up 14 stopped at #272", "Current contract is revision 13", "Security-ops follow-up 12", "Netlab follow-up 15", "Enrollment follow-up 6", "Agent-core follow-up 24", "Members follow-up 8", "Devstack follow-up 17", "Contracts revision 14", "Fleet-update follow-up 11; updater follow-up 15")
-		require(register, "current incarnation may deliver the un-ACKed tail", "enrolled after retirement", "within one sampling interval", "retired certificate is never accepted", "pending contracts revision 14", "Clean serving evidence belongs on the observation", "tc_evidence", "job_id_mismatch", "uuid.NewSHA1", "one row per (incarnation, release)", "replay rules stay unchanged", "nodes.resource_version", "current_release_id = last_good_release_id = that release", "without promoting the candidate")
+		require(register, "Follow-up 14 stopped at #272", "Current contract is revision 14", "Security-ops follow-up 12", "Netlab follow-up 15", "Enrollment follow-up 6", "Agent-core follow-up 24", "Members follow-up 8", "Devstack follow-up 17", "Wire-members follow-up 11", "Fleet-update follow-up 11; updater follow-up 15")
+		require(register, "current incarnation may deliver the un-ACKed tail", "enrolled after retirement", "within one sampling interval", "retired certificate is never accepted", "Contract merged in revision 14 (#289)", "Clean serving evidence belongs on the observation", "tc_evidence", "job_id_mismatch", "uuid.NewSHA1", "one row per (incarnation, release)", "replay rules stay unchanged", "nodes.resource_version", "current_release_id = last_good_release_id = that release", "without promoting the candidate")
 	})
 	t.Run("D099_HTTP_regression_and_live_boundary", func(t *testing.T) {
 		require("internal/nodes/httpwire/state_cache_integration_test.go", "TestAT30_D099_HTTPDesiredStateRestoreCache", "TestAT30_D099_HTTPDesiredStateGenerationFences")
@@ -2478,7 +2478,26 @@ func TestHandover_Followup15Claims(t *testing.T) {
 		require("node/agent/followup12_test.go", "TestD096_RealNetBird", "TestISO_F6_RetainedFailureBlocksNewGeneration")
 		require("node/agent/followup23_path_test.go", "TestD100_TopologyRefreshRequiresCleanNewerPublishedApply", "TestD100_LegacyTopologyGenerationPinsBeforeBaselineACK")
 		require("node/agent/followup23_freeze_integration_test.go", "TestD088_RealHTTPWireFreezeConsumer")
-		require(op, "54.4 ms", "78.6 ms", "1.8–2.0 s", "zero\nredirected frames", "one-second harness hold", "Installer-owned transit and IPv6", "no agent route", "no D-100 override", "recovery latch after `TC_FOREIGN_FILTER`", "whole-second floor", "diagnostic lab exit 0 is not acceptance", "**AT13 stays failed**", "netlab follow-up 15, agent-core follow-up 24")
+		require(op, "54.4 ms", "78.6 ms", "1.8–2.0 s", "zero\nredirected frames", "one-second harness hold", "Installer-owned transit and IPv6", "no agent route", "no D-100 override", "recovery latch after `TC_FOREIGN_FILTER`", "whole-second floor", "diagnostic lab exit 0 is not acceptance", "**AT13 stays failed**", "agent-core follow-ups 24/25 and isolation")
+	})
+	t.Run("D104_renderer_delivery_keeps_assembled_AT13_open", func(t *testing.T) {
+		require(mainPin, "done (#290)", "1 ms set-element quantum", "100 ms render→installed-by budget", "D−100.707 ms", "D−0.837 ms", "assembled AT13 stays open")
+		require("node/enforce/deadline_test.go", "TestD104_AT13_MillisecondDeadline", "TestD104_AllowedPrecisionRead", "TestD104_AT13_InstallOverrunNeverOpensGuard")
+		require("tests/netlab/scenario_deadline_test.go", "TestD104_AT13_DeadlineContinuity")
+		for _, path := range []string{op, ops} {
+			require(path, "1 ms quantum", "100 ms guarded-install bound", "text read-back", "D−100.7 ms", "D−0.8 ms", "follow-ups 24/25", "follow-up 8", "physical arm64", "suspend")
+		}
+		require(op, "**AT13 stays failed**", "A stalled install keeps", "G2-deadline-contract-2026-10-31.md")
+		require(ops, "**Assembled AT13 stays open**")
+	})
+	t.Run("revision14_contracts_and_pending_consumers", func(t *testing.T) {
+		require(mainPin, "done (#289)", "API 1.10.0, 50 operations", "ACK per original stream", "late events rejected + audited")
+		require("contracts/revision14_test.go", "TestAT29_ManualGrantWithdrawalContract", "TestMTR03_D105RetiredStreamVectors", "TestISO01_D106TCReadbackBoundsAndDigest")
+		require("internal/httpapi/gen/revision14_test.go", "TestAT29_RevokeMemberGrantCompositionStub")
+		require(register, "Current contract is revision 14", "OpenAPI `1.10.0`, `50` operations", "POST /admin/members/{member_id}/grants/{grant_id}/revoke", "admin session + CSRF + required `Idempotency-Key`", "existing `Operation`", "member.grant_revoke", "501 NOT_IMPLEMENTED", "wire-members follow-up 11", "optional, non-null `UsageBatchRequest.origin_incarnation_id`", "UsageBatchResult.node_incarnation_id", "late events are rejected and audited without advancing that ACK", "optional nullable `ObservationReport.tc_evidence`", "Usage/agent consumers and live ENR-05 acceptance remain pending", "D-110/D-111 remain coming")
+		for _, vector := range []string{"member-grant-revoke", "usage-retired-handoff", "tc-readback-evidence"} {
+			require(register, "contracts/vectors/"+vector+".json")
+		}
 	})
 	t.Run("isolation7_is_a_new_dated_claim_set", func(t *testing.T) {
 		const run = "041e9e48-79a6-45dd-a19d-8b5a63290655"
@@ -2494,13 +2513,38 @@ func TestHandover_Followup15Claims(t *testing.T) {
 	})
 	t.Run("enrollment5_and_installer3_keep_unresolved_acceptance", func(t *testing.T) {
 		const run = "4011dd32-73ef-4f49-b78b-6cf1ab8496c9"
-		base := "docs/e2e/at/enrollment/history/" + run + "/"
+		base := "docs/e2e/at/enrollment/history/follow-up-5/"
 		checkHandoverRecord(t, root, base+"AT06.json", run, "pass", 344, 0, 0)
 		checkHandoverRecord(t, root, base+"AT07.json", run, "blocked", 19, 6, 0)
-		require(ops, run, "AT06 344 pass / 0 blocked / 0 fail", "AT07 19 pass / 6 blocked / 0 fail", "ENR-05 same-slot exports", "enrollment follow-up 6 reruns", "9 pass / 1 required fail")
+		require(ops, run, "AT06 344 pass / 0 blocked / 0 fail", "AT07 19 pass / 6 blocked / 0 fail", "ENR-05 same-slot exports", "enrollment follow-up 6 verifies the fix", "9 pass / 1 required fail")
 		require("tests/installer/handoff_test.go", "TestD089_RealSeedThenJournaledUpgrade", "TestD089_MergedUpdaterSeedProbe")
 		require("packaging/installer/reconcile_test.go", "TestD089_CheckAfterJournaledSwitch")
 		require(op, "/run/fvpn-netbird/netbird.sock", "shared runtime survives consumer restarts", "offline seed", "firstboot", "required", "**red**", "state/meter.checkpoint", "CHECKPOINT_FAILED", "final_sample", "updater exits 0", "Agent-core follow-up 24")
+	})
+	t.Run("enrollment6_startup_fixed_five_AT07_rows_blocked", func(t *testing.T) {
+		const run = "1af27741-cbd9-4fdb-aa1c-7d02790e7a46"
+		const base = "docs/e2e/at/enrollment/history/" + run + "/"
+		checkHandoverRecord(t, root, base+"AT06.json", run, "pass", 376, 0, 0)
+		checkHandoverRecord(t, root, base+"AT07.json", run, "blocked", 26, 5, 0)
+		var record struct {
+			Checks []struct{ Name, Status string } `json:"checks"`
+		}
+		if err := json.Unmarshal([]byte(readOwnedDoc(t, root, base+"AT07.json")), &record); err != nil {
+			t.Fatal(err)
+		}
+		var blocked []string
+		for _, check := range record.Checks {
+			if check.Status == "blocked" {
+				blocked = append(blocked, check.Name)
+			}
+		}
+		slices.Sort(blocked)
+		if !slices.Equal(blocked, []string{"controlled_reinstall", "counted_unacked_usage", "historical_usage_retained", "identity_ledger_preserved", "installer_rerun"}) {
+			t.Fatalf("AT07 remaining blockers changed: %v", blocked)
+		}
+		require(mainPin, "done (#288)", "installer-startup half of ENR-06 verified fixed on #279", "five rows blocked")
+		require("tests/e2e/at/enrollment/installer_evidence_test.go", "TestAT07_InstallerEvidenceUsesDigestLabels")
+		require(ops, run, "AT06 376 pass / 0 blocked / 0 fail", "AT07 26 pass / 5 blocked / 0 fail", "ENR-06 installer startup verified fixed on #279", "Five AT07 rows remain blocked", "same Node, fresh incarnation", "old certificate denied on both routes", "post-wrapper service restoration", "No full journaled-upgrade pass is claimed", "eight original files byte-identical")
 	})
 	t.Run("updates9_regular_pass_and_blocked_extension", func(t *testing.T) {
 		const run = "89fc6769-0a09-403d-ae88-84f736ee1dce"
@@ -2562,13 +2606,13 @@ func TestHandover_Followup15Claims(t *testing.T) {
 			if hex.EncodeToString(sum[:]) != p.SHA256 {
 				t.Errorf("D-098 archived bytes changed: %s", p.Path)
 			}
-			for _, lane := range []string{"isolation", "secops"} {
+			for _, lane := range []string{"isolation", "secops", "enrollment"} {
 				if strings.HasPrefix(p.Path, "docs/e2e/at/"+lane+"/history/follow-up-") {
 					counts[lane]++
 				}
 			}
 		}
-		if counts["isolation"] != 44 || counts["secops"] != 104 || len(pins) != 182 {
+		if counts["isolation"] != 44 || counts["secops"] != 104 || counts["enrollment"] != 8 || len(pins) != 197 {
 			t.Fatalf("archive inventory changed: %v total=%d", counts, len(pins))
 		}
 		require("docs/reviews/r16-rev13-d089-d099-review.md", "main` at `5575470", "Reviewing model: `grok/grok-4.7`", "H-1", "M-1", "M-2", "L-1", "Known, reconfirmed, not filed")
@@ -2578,6 +2622,7 @@ func TestHandover_Followup15Claims(t *testing.T) {
 	t.Run("D109_rejects_cross_lane_prose_pins", func(t *testing.T) {
 		for _, tc := range []struct{ path, token string }{
 			{"docs/policies/2026-10-31-secops-21-handover.md", "cachedStateSigner.Sign"},
+			{"docs/poc/G2-deadline-contract-2026-10-31.md", "1 ms"},
 			{"docs/usage/restore-runbook.md", "Step 6"},
 			{"docs/node/install.md", "already_current"},
 			{"internal/nodes/httpwire/state_cache.go", "cachedStateSigner"},

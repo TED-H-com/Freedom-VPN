@@ -50,7 +50,7 @@ Every individual finding (High, Medium, and Low) is tabulated in full in its res
 | High | `r14-d067-d070-review`: `ObserveRevokedDeviceCutoffTx` in `internal/nodes/observations.go` scanned every non-revoked/non-decommissioned node without scoping to serving exit groups or bounding by heartbeat freshness (`DefaultStaleTimeout = 90 s`), allowing a single stale, offline, or ungrouped node with a pending `ISOLATION_POLICY_INVALID` apply error to hold `member.revoke` and `member_device.revoke` `"nodes"` steps `pending` indefinitely (`TestReviewR14_Q1_UnrelatedOfflineNodeHoldsRevokePendingIndefinitely`). | closed | #217 |
 | High | `r15-d072-d075-review` H-1: the renewal that freezes a cloned incarnation can still issue a member-grant lease at the fleet offline cap; the next failed observation does not shorten that lease. | closed | #254 / #259; server clamp only, see packet-stop limits |
 
-Status checked on main `5ce76e9`, 2026-10-31 EDT: r15 owner fixes and proofs adopted; see its archive for the server-clamp and quarantine limits. r16 delivered; dispositions below.
+Status checked on main `b79ee23`, 2026-10-31 EDT: r15 owner fixes and proofs adopted; see its archive for the server-clamp and quarantine limits. r16 delivered; dispositions below.
 
 ## r16 dispositions at the follow-up 15 cutoff
 

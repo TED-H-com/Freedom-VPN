@@ -55,8 +55,9 @@ Historical status at main `c6e3eca`, superseded where stated by follow-up 15 bel
 
 ## Follow-up 15 decisions register (2026-10-31 EDT)
 
-Verified against main `5ce76e9` (through #287). Follow-up 14 stopped at #272;
-#273–#277 are all additions here, along with #279–#287. The [dated acceptance
+Verified against main `b79ee23` (through #290), refreshed from the initial
+`5ce76e9` / #287 cut. Follow-up 14 stopped at #272;
+#273–#277 are all additions here, along with #279–#290. The [dated acceptance
 snapshot](../ops/README.md#follow-up-15-acceptance-snapshot-2026-10-31-edt) and
 `TestHandover_Followup15Claims` pin this cutoff. No new live acceptance run was
 performed by handover. Pending design below comes from the orchestrator's
@@ -70,9 +71,9 @@ follow-up 15 decisions; a design approval is not an implementation claim.
 | D-101 | Merged #275 closes Portal CI red since #259. The dev stack's live node obtains a real serving lease through `POST /api/v1/agent/lease-renewals` using mTLS and reports the issued ID/expiry unchanged. Fixtures never fabricate lease evidence. |
 | D-102 | A lane's `requests.md` is written only by its owner. Devstack answers in `docs/e2e/RESPONSES.md`; route new cross-lane requests through the orchestrator. Fixture delivery #284 does not pass the consuming AT cases. |
 | D-103 | Security-ops uses its existing harness namespace `fvpn-w4-secops-*` (network `fvpn-w4-secops`), prefix `w4-secops`, port base `30000`. Follow-up 11 prepared but did not run live AT29 / AT31 / AT30; follow-up 12 is coming. |
-| D-104 | Deadlines must be enforced at the renderer's true precision, with no whole-second floor. Netlab follow-up 15 defines the sub-second contract, agent-core follow-up 24 consumes it, then isolation re-asserts continuity and post-deadline denial. AT13 stays failed until that chain passes; the diagnostic lab's exit 0 is not acceptance. |
-| D-105 | Design decision, pending contracts revision 14: the current incarnation may deliver the un-ACKed tail of a retired incarnation's stream unchanged. Central accepts only the same node, with the presenting incarnation enrolled after retirement, and intervals ending within one sampling interval of retirement. The retired certificate is never accepted. This is the ENR-05 hand-off design, not shipped retired-stream acceptance. |
-| D-106 | Clean serving evidence belongs on the observation, with actual read time, candidate generation and verifier outcome. Failed reads retain their rejected snapshot before rollback; an old snapshot is not fresh evidence. Agent-core follow-up 24 owns transport; optional `tc_evidence` is pending contracts revision 14. Absence is not a successful scan. |
+| D-104 | Deadlines must be enforced at the renderer's true precision, with no whole-second floor. Netlab follow-up 15 (#290) ships monotonic absolute deadlines, a measured 1 ms quantum, a 100 ms guarded-install bound and nft text read-back. Agent-core follow-ups 24/25 must consume it, then isolation follow-up 8 re-asserts continuity and post-deadline denial. AT13 stays failed until that chain passes; the diagnostic lab's exit 0 is not acceptance. |
+| D-105 | Contract merged in revision 14 (#289): the current incarnation may deliver the un-ACKed tail of a retired incarnation's stream unchanged using optional, non-null `UsageBatchRequest.origin_incarnation_id`. Central's contract accepts only the same node, with the presenting incarnation enrolled after retirement (strictly), and intervals ending within one sampling interval of retirement. The ACK names the original stream through `UsageBatchResult.node_incarnation_id`; late events are rejected and audited without advancing that ACK. The retired certificate is never accepted. Usage/agent consumers and live ENR-05 acceptance remain pending. |
+| D-106 | Clean serving evidence belongs on the observation, with actual read time, candidate generation and verifier outcome. Revision 14 (#289) merges optional nullable `ObservationReport.tc_evidence` with bounded `TCReadbackEvidence`. Failed reads retain their rejected snapshot before rollback; an old snapshot is not fresh evidence. Agent-core follow-ups 24/25 and netlab follow-up 16 own the remaining transport/read-back work. Absence is not a successful scan. |
 | D-107 | Merged #287: wire-nodes follow-up 30 owns publication-gate cause projection through revision 13's `Operation.steps[].message` for admin and node readers. Format: `<stored message> (<cause>)`, e.g. `member_forwarding_unconfirmed (lease_unconfirmed)`. D-074 still holds publication `running`; a polling timeout is not a failure. |
 | D-108 | D-096 is closed only for the measured pinned native IPv4 member interface owned by NetBird 0.82.0. NetBird remains the route/address owner and the agent waits for verified restoration. No agent route writer, no D-100 override. Installer-owned transit and IPv6 configurations are outside this closure. |
 | D-109 | Handover token pins belong only in owned documents, D-098 byte-identical archives, roadmap rows / PR numbers / contract version strings, or Go test names present on main. Never pin prose in another lane's living document. |
@@ -85,22 +86,34 @@ incarnation's latest accepted result projects `source: installer`,
 `batch_id: null`, and a current central job's projection wins. Migration
 `00191_installer_update_results.sql` includes Down; deploy it before the new
 control binary. Keyed HTTP replay is fixed in #277. This does not close the
-required red installer upgrade test or the AT07 rerun.
+required red installer upgrade test. Enrollment follow-up 6 (#288) verifies
+ENR-06 startup on #279; AT07 still has five blocked rows.
+
+Current contract is revision 14: OpenAPI `1.10.0`, `50` operations (#289).
+`revokeMemberGrant` defines `POST /admin/members/{member_id}/grants/{grant_id}/revoke`
+under `/api/v1`, with admin session + CSRF + required `Idempotency-Key` and a
+reason. Its `202` uses the existing `Operation`, kind/audit `member.grant_revoke`.
+The generated stub returns `501 NOT_IMPLEMENTED` until wire-members follow-up 11
+registers the handler; 49 operations are wired at this cutoff. Contract vectors:
+`contracts/vectors/member-grant-revoke.json`,
+`contracts/vectors/usage-retired-handoff.json`, and
+`contracts/vectors/tc-readback-evidence.json`. D-110/D-111 remain coming:
+revision 14 does not implement the fleet-update result-consumer decisions.
 
 ## Coming at the follow-up 15 cutoff
 
-None of these lanes has a merged roadmap row at `5ce76e9`; no result is claimed.
-Wire-nodes follow-up 30 is already merged (#287), so it is in the register above.
+None of these deliveries has a merged roadmap row at `b79ee23`; no result is claimed.
+Wire-nodes follow-up 30 (#287), enrollment follow-up 6 (#288), contracts
+revision 14 (#289) and netlab follow-up 15 (#290) are delivered above.
 
 | Work | Decision / acceptance boundary |
 |---|---|
 | Security-ops follow-up 12 | D-103 / D-099: live SECOPS-21 first delivery, node-local store and applied ACK; live AT29 / AT31. |
-| Netlab follow-up 15 | D-104: sub-second renderer deadline contract; isolation must rerun after the agent consumes it. |
-| Enrollment follow-up 6 | D-105 / D-089: AT07 rerun on the fixed installer; ENR-05 same-slot exports and retired tail still need evidence. |
 | Agent-core follow-up 24 | D-104 / D-106 / D-108 / D-089: recovery latch after `TC_FOREIGN_FILTER` plus newer generation, ISO-F6-02 transport, meter checkpoint; r16 M-1 failed freeze persistence. |
+| Agent-core follow-up 25; isolation follow-up 8; netlab follow-up 16 | D-104 / D-106: consume the merged deadline and observation contracts; re-assert assembled AT13 and transport clean serving evidence. |
 | Members follow-up 8 | D-102: consume the new fixtures; existing blocked member/platform cases are not promoted. |
 | Devstack follow-up 17 | D-102 / D-089: kernel boot identity and reusable installer fixtures; answers stay in its own response log. |
-| Contracts revision 14 | D-105 / D-106: retired stream hand-off and `tc_evidence`; also the missing `revokeMemberGrant` operation. Current contract is revision 13. |
+| Wire-members follow-up 11; usage/agent hand-off consumers | D-105 / AT29: register `revokeMemberGrant` and implement retired-stream delivery/acceptance. The merged schema and vectors do not close live withdrawal or ENR-05. |
 | Wire-nodes follow-up 31 with the desired-state owner | D-076: r16 H-1, fenced device still bound and leased. |
 | Fleet-update follow-up 11; updater follow-up 15 | D-110 / D-111: r16 M-2 rollback version recording and L-1 cardinality; null-baseline installer failure acceptance; updater adopts the job-ID helper. |
 

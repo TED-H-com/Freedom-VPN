@@ -800,14 +800,24 @@ See [G2 follow-up 14](../poc/G2-followup14.md).
 The separate recovery latch after `TC_FOREIGN_FILTER` plus a newer generation
 is reproduced and assigned to agent-core follow-up 24. The original ISO-F6-01
 tc object's creator is still unknown. D-106 requires clean serving read-back
-on the observation; revision 14's `tc_evidence` field and agent transport are
-coming. Never turn absent evidence into a passing check.
+on the observation. Revision 14 (#289) supplies optional nullable
+`ObservationReport.tc_evidence`; agent-core follow-ups 24/25 and netlab
+follow-up 16 still own transport and clean read-back integration. Never turn
+absent evidence into a passing check.
 
 D-104 requires deadlines at the renderer's true precision, without a
 whole-second floor. Agent-core follow-up 23 reproduced early cutoff with 2.9 s
 remaining rendered as 2 s; its diagnostic lab exit 0 is not acceptance.
-**AT13 stays failed** pending netlab follow-up 15, agent-core follow-up 24 and
-isolation re-assertion. Isolation follow-up 7 is assisted: AT12 passes, AT10 /
+Netlab follow-up 15 (#290) now implements monotonic absolute member deadlines
+with a measured **1 ms quantum**, **100 ms guarded-install bound**, and nft
+text read-back (JSON read-back loses this precision). A stalled install keeps
+the temporary member-forwarding drop guard closed. The enforce-level trace
+records last positive **D−100.7 ms**, first drop **D−0.8 ms**, and no later
+positive. This is measured on kernel 7.0.0-38 / nft 1.0.9; other kernels,
+physical arm64 and suspend remain unmeasured. See the [deadline contract and
+trace](../poc/G2-deadline-contract-2026-10-31.md).
+**AT13 stays failed** pending agent-core follow-ups 24/25 and isolation
+follow-up 8 re-assertion. Isolation follow-up 7 is assisted: AT12 passes, AT10 /
 AT11 remain blocked and AT13 fails. Its results do not replace the pinned
 follow-up 5 or final follow-up 6 claims. See the [dated acceptance
 snapshot](../ops/README.md#follow-up-15-acceptance-snapshot-2026-10-31-edt) and
