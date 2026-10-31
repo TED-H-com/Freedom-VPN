@@ -96,7 +96,7 @@ func (p *probe) prepareFreezeSource(node uuid.UUID) bool {
 	if err != nil || r.Status != 202 {
 		return false
 	}
-	peer, err := p.stack.JoinNativeMember(p.ctx, member, "e2e-member", "fvpn-w4-enroll-member", "fvpn-w4-enroll-member")
+	peer, err := p.stack.JoinNativeMember(p.ctx, member, "e2e-member", "fvpn-w4-enroll-member", "fvpn-member-e2e")
 	detail["native_identity_matched"], detail["native_authorized"], detail["native_log_scan"] = peer.IdentityMatched, peer.Authorized, peer.Stream
 	if err != nil || !peer.IdentityMatched || !peer.Authorized {
 		detail["step"] = "native_join"

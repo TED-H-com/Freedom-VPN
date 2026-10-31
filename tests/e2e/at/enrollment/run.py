@@ -34,7 +34,7 @@ REQUIRED = {
              "incarnation_uniqueness", "incarnation_history",
              "machine_identity", "counted_unacked_usage", "installer_rerun",
              "identity_ledger_preserved", "controlled_reinstall", "old_certificate_denied",
-             "historical_usage_retained", "cloned_identity_conflict", "serving_freeze_withdrawal", "serving_freeze_restart",
+             "historical_usage_retained", "cloned_identity_conflict", "serving_freeze_source", "serving_freeze_withdrawal", "serving_freeze_restart",
              "installer_stopped_hash_equality", "installer_rerun_identity",
              "installer_reinstall_identity", "installer_service_restoration", "installer_usage_hold_release"],
 }
@@ -42,7 +42,7 @@ MISSING = {
     "peer_uniqueness": "ENR-04 join cycle did not record EnrollmentPeerInventory; devstack follow-up 12 PR #204 exports JoinEnrolledIdentity",
     "distinct_first_boot": "ENR-07 MachineIdentityFingerprints was not read; devstack follow-up 12 PR #204 exports it",
     "machine_identity": "ENR-07 MachineIdentityFingerprints was not read; devstack follow-up 12 PR #204 exports it",
-    "counted_unacked_usage": "ENR-05: D-116 installer owner chain blocks serving; see docs/e2e/runs/2026-10-31/followup17/a7c41436-82b3-4665-b75c-e2887f2e1009/installer-owner-chain.md. Owner usage/installer: define authorized delivery of retained old-incarnation events after reenroll; current Reenroll preserves them unuploaded.",
+    "counted_unacked_usage": "ENR-05: D-116 installer owner chain blocks serving; see docs/e2e/runs/2026-10-31/followup17/a7c41436-82b3-4665-b75c-e2887f2e1009/installer-owner-chain.md. D-105 revision 14 specifies the handoff; D-112 central acceptance and the node uploader are not merged. Current Reenroll preserves events unuploaded.",
     "installer_rerun": "ENR-06: installer probe not reached. Installer #279 fixes the prior startup cause; devstack #294 exports RestoreInstallerServices; D-116 still blocks serving.",
     "identity_ledger_preserved": "ENR-05/ENR-06: requires a running installer-node with counted unACKed usage, retired mode 0700 and newest-first incarnation history. Not reached.",
     "controlled_reinstall": "ENR-06: ControlledReinstall on installer-node not reached; a successful initial install and documented service restoration are prerequisites.",
@@ -207,7 +207,25 @@ def review_evidence(at, checks):
     return bool(reviews) and all(hit["status"] == "pass" and behaviour_ok(hit["detail"]) for hit in reviews)
 
 
+# This attempt remains immutable. Only its exact harness lookup/shared-process
+# failures can be resolved, and only by current source, freeze and process proof.
+LOOKUP_REVIEW_RUN = "d83ac47d-0074-42d7-bb3b-65a2db536be5"
+LOOKUP_FAILURES = {"AT06": ("probe_process",), "AT07": ("serving_freeze_source", "probe_process")}
+
+
+def lookup_review_passed(checks):
+    required = [("AT07", "serving_freeze_source"), ("AT07", "serving_freeze_withdrawal"),
+                ("AT07", "serving_freeze_restart"), ("AT07", "probe_process"), ("AT06", "probe_process")]
+    for at, name in required:
+        hits = [c for c in checks if c.get("at") == at and c["name"] == name]
+        if not hits or any(c["status"] != "pass" for c in hits):
+            return False
+    return True
+
+
 def review_covers(at, prior, checks):
+    if prior.get("run_id") == LOOKUP_REVIEW_RUN and prior.get("name") in LOOKUP_FAILURES.get(at, ()):
+        return lookup_review_passed(checks)
     spec = REVIEWED.get(at)
     if not spec or not review_evidence(at, checks):
         return False
@@ -278,6 +296,14 @@ def records(meta, observed, prior):
             if "rescored_follow_up_3" in REVIEWED[at]:
                 review["rescored_follow_up_3"] = REVIEWED[at]["rescored_follow_up_3"]
             record["prior_failure_review"] = review
+        if any(c.get("run_id") == LOOKUP_REVIEW_RUN and c["status"] == "fail" for c in prior[at]):
+            record["follow_up_7_lookup_review"] = {
+                "run_id": LOOKUP_REVIEW_RUN,
+                "names": list(LOOKUP_FAILURES[at]),
+                "disposition": "resolved" if lookup_review_passed(review_checks) else "unresolved",
+                "cause": "The primary member fixture names its NetBird peer fvpn-member-e2e; this harness mistakenly looked for the container name. The real member was already authorized and the ordinary node already had a populated serving lease. Only serving_freeze_source failed, propagating exit 1 to both AT process rows. Freeze withdrawal/restart and all seven installer subset checks passed in that attempt.",
+                "correction": "Pass the primary fixture's documented peer name to JoinNativeMember. Require current source, freeze withdrawal/restart and both process checks to pass before resolving these exact historical rows; retain every original result.",
+            }
         result[at] = record
     return result
 
@@ -397,6 +423,9 @@ def main():
             return built
 
         def bring_up(label):
+            down = run(label + "_teardown", ["make", "-f", "mk/e2e.mk", "e2e-down"])
+            if down or any(inventory().values()):
+                return False, "Owned-prefix fresh teardown did not complete"
             # Recheck before both fresh phases; admission can change during the
             # first probe. Parent/child make processes count as one suite.
             while True:
@@ -411,9 +440,6 @@ def main():
                     break
                 print(f"{label}: waiting for admission; other suites: {', '.join(suites)}", flush=True)
                 time.sleep(30)
-            down = run(label + "_teardown", ["make", "-f", "mk/e2e.mk", "e2e-down"])
-            if down or any(inventory().values()):
-                return False, "Owned-prefix fresh teardown did not complete"
             up = run(label + "_startup", ["make", "-f", "mk/e2e.mk", "e2e-up"], {"E2E_RESET": "1"})
             startup = (private / (label + "_startup.log")).read_text(errors="replace")
             if "port base slot is out of range" in startup:

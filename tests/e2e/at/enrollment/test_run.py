@@ -46,6 +46,15 @@ class EvidenceTests(unittest.TestCase):
             self.assertNotIn("Key", labels)
             self.assertNotIn("Cert", labels)
 
+    def test_lookup_failure_review_needs_complete_current_proof(self):
+        checks = self.passing()
+        prior = dict(name="probe_process", status="fail", run_id=run.LOOKUP_REVIEW_RUN)
+        self.assertTrue(run.review_covers("AT06", prior, checks))
+        for name in ("serving_freeze_source", "serving_freeze_withdrawal", "serving_freeze_restart"):
+            missing = [c for c in checks if c["name"] != name]
+            self.assertFalse(run.review_covers("AT06", prior, missing))
+        self.assertFalse(run.review_covers("AT06", dict(prior, name="different_key_race"), checks))
+
     def test_admission_deduplicates_suites_and_excludes_self(self):
         processes = """1 bash bin/gates.sh w4-at-members
 2 make -f mk/at-members.mk at-members
