@@ -149,6 +149,39 @@ type NodeAckStatus struct {
 	TotalServingNodes int
 	AckedNodes        int
 	PendingNodes      int
+	// Pending subsets for diagnostics. Frozen nodes are not counted again as unsafe.
+	NodesWithoutEnvelope int
+	FrozenNodes          int
+	UnsafeNodes          int
+}
+
+func (s NodeAckStatus) syncSummary() string {
+	if s.TotalServingNodes == 0 {
+		return "no published exit carries this member"
+	}
+	count, state := s.AckedNodes, "applied"
+	if s.PendingNodes > 0 {
+		count, state = s.PendingNodes, "pending"
+	}
+	noun := "nodes"
+	if count == 1 {
+		noun = "node"
+	}
+	summary := fmt.Sprintf("%s on %d %s", state, count, noun)
+	if s.NodesWithoutEnvelope == s.TotalServingNodes {
+		summary = "pending desired-state compilation"
+	}
+	var reasons []string
+	if s.FrozenNodes > 0 {
+		reasons = append(reasons, fmt.Sprintf("%d frozen", s.FrozenNodes))
+	}
+	if s.UnsafeNodes > 0 {
+		reasons = append(reasons, fmt.Sprintf("%d unsafe", s.UnsafeNodes))
+	}
+	if len(reasons) > 0 {
+		summary += " (" + strings.Join(reasons, ", ") + ")"
+	}
+	return summary
 }
 
 // NodeAckReader queries per-node acknowledgment of a member's enforced FUP policy generation.
@@ -794,7 +827,7 @@ func (e *Engine) RevokeOverride(ctx context.Context, in RevokeOverrideInput) (*E
 // In shadow mode it always reports `state: "normal"` with no rate or tier throttling.
 // In enforce mode `Applying` remains `true` until every published exit carrying the member
 // has applied the compiled config generation that contains this member generation
-// (never claiming applied on a 202).
+// (never claiming applied on a 202). With zero carrying exits it is false (D-091).
 func (e *Engine) GetMemberStatus(ctx context.Context, memberID uuid.UUID, periodID string) (api.FairUseStatus, error) {
 	adminStatus, err := e.GetAdminMemberStatus(ctx, memberID, periodID)
 	if err != nil {
@@ -845,20 +878,9 @@ func (e *Engine) GetAdminMemberStatus(ctx context.Context, memberID uuid.UUID, p
 		}
 		nodeSyncSummary = "shadow (no enforcement)"
 	} else {
-		// Enforce mode (§11.2, FUP03): Applying is true until every carrying exit ACKs the compiled generation.
-		applying := false
-		if st.Generation > 0 {
-			if ackStatus.TotalServingNodes == 0 || ackStatus.PendingNodes > 0 {
-				applying = true
-			}
-		}
-		if ackStatus.TotalServingNodes == 0 {
-			nodeSyncSummary = "pending desired-state compilation"
-		} else if ackStatus.PendingNodes > 0 {
-			nodeSyncSummary = fmt.Sprintf("pending on %d nodes", ackStatus.PendingNodes)
-		} else {
-			nodeSyncSummary = fmt.Sprintf("applied on %d nodes", ackStatus.AckedNodes)
-		}
+		// D-091 / §11.2, FUP03: with zero carrying exits there are no pending ACKs.
+		applying := st.Generation > 0 && ackStatus.PendingNodes > 0
+		nodeSyncSummary = ackStatus.syncSummary()
 
 		var ratePair *api.RatePair
 		if st.EnforcedDownBps != nil && st.EnforcedUpBps != nil {
@@ -1503,29 +1525,18 @@ type pgNodeAckReader struct {
 }
 
 func (r *pgNodeAckReader) GetMemberNodeAckStatus(ctx context.Context, memberID uuid.UUID, generation decstr.U64) (NodeAckStatus, error) {
-	status, carrying, err := r.carryingExitAckStatus(ctx, memberID, generation)
-	if err != nil {
-		return NodeAckStatus{}, err
-	}
-	if carrying {
-		return status, nil
-	}
-	// No published exit carries this member. Keep the registered-node read of
-	// checks.applied_policy_refs so callers that have not compiled exits still
-	// observe the same pending/applied counts. Production observations store
-	// applied_policy_refs on report_payload, and that value is the fleet
-	// generation, so it is not used once an exit carries the member.
-	return r.legacyRegisteredNodeAckStatus(ctx, generation)
+	return r.carryingExitAckStatus(ctx, memberID, generation)
 }
 
 // carryingExitAckStatus counts published exits that serve memberID. An exit has
 // acknowledged when its current desired-state envelope already contains this
 // member generation and nodes.applied_config_generation has reached that
 // envelope's config generation, and the latest observation passed safety while
-// online. The fleet applied_policy_refs.fup_generation is a different counter
-// from fup_member_states.generation, so comparing them leaves applying set
-// after the exits have installed the member class.
-func (r *pgNodeAckReader) carryingExitAckStatus(ctx context.Context, memberID uuid.UUID, generation decstr.U64) (NodeAckStatus, bool, error) {
+// online. The node must currently pass safety and its current incarnation's
+// endpoint mapping must not be frozen (D-091). The fleet counter in
+// applied_policy_refs.fup_generation differs from fup_member_states.generation;
+// comparing them leaves applying set after exits have installed the member class.
+func (r *pgNodeAckReader) carryingExitAckStatus(ctx context.Context, memberID uuid.UUID, generation decstr.U64) (NodeAckStatus, error) {
 	rows, err := r.db.Query(ctx, `
 		WITH carrying AS (
 			SELECT DISTINCT n.id AS node_id
@@ -1552,6 +1563,12 @@ func (r *pgNodeAckReader) carryingExitAckStatus(ctx context.Context, memberID uu
 		SELECT
 			n.applied_config_generation::text,
 			COALESCE(env.generation::text, '0'),
+			env.node_id IS NULL,
+			n.safety_status = 'passed',
+			EXISTS (
+				SELECT 1 FROM node_identity_endpoints ie
+				WHERE ie.incarnation_id = n.current_incarnation_id AND ie.mapping_frozen
+			),
 			COALESCE((
 				SELECT v->>'generation'
 				FROM jsonb_array_elements(COALESCE(env.envelope->'signed'->'member_rate_policies', '[]'::jsonb)) v
@@ -1571,19 +1588,27 @@ func (r *pgNodeAckReader) carryingExitAckStatus(ctx context.Context, memberID uu
 		  ON env.node_id = n.id AND env.incarnation_id = n.current_incarnation_id
 		ORDER BY n.id`, memberID)
 	if err != nil {
-		return NodeAckStatus{}, false, fmt.Errorf("fup: query carrying exit ack status: %w", err)
+		return NodeAckStatus{}, fmt.Errorf("fup: query carrying exit ack status: %w", err)
 	}
 	defer rows.Close()
 
 	var status NodeAckStatus
 	for rows.Next() {
 		var appliedStr, envGenStr, memberGenStr string
-		var obsOK bool
-		if err := rows.Scan(&appliedStr, &envGenStr, &memberGenStr, &obsOK); err != nil {
-			return NodeAckStatus{}, false, err
+		var noEnvelope, nodeSafe, frozen, obsOK bool
+		if err := rows.Scan(&appliedStr, &envGenStr, &noEnvelope, &nodeSafe, &frozen, &memberGenStr, &obsOK); err != nil {
+			return NodeAckStatus{}, err
 		}
 		status.TotalServingNodes++
-		if !obsOK || memberGenStr == "" {
+		if noEnvelope {
+			status.NodesWithoutEnvelope++
+		}
+		if frozen {
+			status.FrozenNodes++
+		} else if !nodeSafe {
+			status.UnsafeNodes++
+		}
+		if frozen || !nodeSafe || !obsOK || memberGenStr == "" {
 			continue
 		}
 		memberGen, err := decstr.Parse(memberGenStr)
@@ -1599,55 +1624,6 @@ func (r *pgNodeAckReader) carryingExitAckStatus(ctx context.Context, memberID uu
 			continue
 		}
 		status.AckedNodes++
-	}
-	if err := rows.Err(); err != nil {
-		return NodeAckStatus{}, false, err
-	}
-	if status.TotalServingNodes == 0 {
-		return NodeAckStatus{}, false, nil
-	}
-	status.PendingNodes = status.TotalServingNodes - status.AckedNodes
-	return status, true, nil
-}
-
-func (r *pgNodeAckReader) legacyRegisteredNodeAckStatus(ctx context.Context, generation decstr.U64) (NodeAckStatus, error) {
-	rows, err := r.db.Query(ctx, `
-		SELECT COALESCE(
-		           (SELECT no.checks->'applied_policy_refs'->>'fup_generation'
-		            FROM node_observations no
-		            WHERE no.node_id = n.id
-		              AND no.safety_status = 'passed'
-		              AND no.control_status = 'online'
-		            ORDER BY no.received_at DESC
-		            LIMIT 1),
-		           ''
-		       ) AS obs_fup_gen
-		FROM nodes n
-		WHERE n.lifecycle_state = 'registered'
-	`)
-	if err != nil {
-		return NodeAckStatus{}, fmt.Errorf("fup: query registered nodes ack status: %w", err)
-	}
-	defer rows.Close()
-
-	var status NodeAckStatus
-	for rows.Next() {
-		var obsFupGenStr string
-		if err := rows.Scan(&obsFupGenStr); err != nil {
-			return NodeAckStatus{}, err
-		}
-		status.TotalServingNodes++
-		acked := false
-		// Fail-closed: only an online node with safety_status=passed and an explicit
-		// applied_policy_refs.fup_generation >= generation counts as ACKed (§11.2, FUP03).
-		if obsFupGenStr != "" {
-			if gen, err := decstr.Parse(obsFupGenStr); err == nil && gen >= generation {
-				acked = true
-			}
-		}
-		if acked {
-			status.AckedNodes++
-		}
 	}
 	if err := rows.Err(); err != nil {
 		return NodeAckStatus{}, err
