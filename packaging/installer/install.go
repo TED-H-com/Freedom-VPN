@@ -6,6 +6,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/TED-H-com/Freedom-VPN/node/updater/fsutil"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 )
 
@@ -79,7 +80,7 @@ func Install(ctx context.Context, env *Env, req InstallRequest) (*Result, error)
 		}
 	}
 
-	lk, err := tryLock(l.LockPath)
+	lk, err := tryLock(ctx, l)
 	if err != nil {
 		if errors.Is(err, errBusy) {
 			return nil, errf(ExitBusy, "busy", "update lock is held")
@@ -108,12 +109,20 @@ func Install(ctx context.Context, env *Env, req InstallRequest) (*Result, error)
 	}
 	same := has && cur.ReleaseID == id && cur.ManifestSHA256 == verified.SHA
 	if same && unitsMatch(l, id) && modesMatch(l) && agentConfigMatch(l, req, verified) {
+		if err := fsutil.WriteFileAtomic(l.releaseManifest(id), verified.Raw, 0o600); err != nil {
+			return nil, err
+		}
 		release()
+		baseline, err := seedBaseline(ctx, env)
+		if err != nil {
+			return nil, err
+		}
 		node, _ := readNode(l)
 		return &Result{
 			Status: statusAlreadyCurrent, ReleaseID: id, ManifestSHA256: verified.SHA,
 			IncarnationID: node.NodeIncarnationID,
 			Message:       "already_current",
+			Baseline:      baseline,
 		}, nil
 	}
 
@@ -131,6 +140,9 @@ func Install(ctx context.Context, env *Env, req InstallRequest) (*Result, error)
 	if req.FaultAfter == "directories" {
 		_ = j.Rollback(ctx)
 		return nil, errf(ExitFailed, "rolled_back", "fault after directories")
+	}
+	if err := j.WriteFile(l.releaseManifest(id), verified.Raw, 0o600); err != nil {
+		return fail(err)
 	}
 	installedPkg, err := ensureNetbird(ctx, env, j)
 	if err != nil {
@@ -238,6 +250,10 @@ func Install(ctx context.Context, env *Env, req InstallRequest) (*Result, error)
 	if err := j.Finish(); err != nil {
 		return nil, err
 	}
+	baseline, err := seedBaseline(ctx, env)
+	if err != nil {
+		return nil, err
+	}
 	node, _ := readNode(l)
 	status := statusInstalled
 	if has {
@@ -247,7 +263,7 @@ func Install(ctx context.Context, env *Env, req InstallRequest) (*Result, error)
 		}
 	}
 	return &Result{
-		Status: status, ReleaseID: id, ManifestSHA256: verified.SHA,
+		Status: status, ReleaseID: id, ManifestSHA256: verified.SHA, Baseline: baseline,
 		IncarnationID: node.NodeIncarnationID,
 	}, nil
 }

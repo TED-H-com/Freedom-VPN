@@ -8,14 +8,17 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+
+	"github.com/TED-H-com/Freedom-VPN/node/updater/fsutil"
+	"github.com/google/uuid"
 )
 
-// pendingRelease is the hand-off the running updater does not read today.
-// fvpn-updater has no local-apply command (run, recover, flush, status,
-// version only). upgrade stages a verified tree and starts `fvpn-updater run`.
-// It does not move current and does not write the update journal (§13.6).
+// pendingRelease hands verification inputs to the updater's journaled apply
+// path (D-080, D-089). TreePath and UpdaterCommand are informational only.
 type pendingRelease struct {
 	ReleaseID      string `json:"release_id"`
+	ManifestPath   string `json:"manifest_path"`
+	RequestID      string `json:"request_id"`
 	ManifestSHA256 string `json:"manifest_sha256"`
 	ArtifactPath   string `json:"artifact_path"`
 	TreePath       string `json:"tree_path"`
@@ -40,7 +43,7 @@ func Upgrade(ctx context.Context, env *Env, manifestPath, artifactPath, trustPat
 		return nil, err
 	}
 	l := env.layout()
-	lk, err := tryLock(l.LockPath)
+	lk, err := tryLock(ctx, l)
 	if err != nil {
 		if errors.Is(err, errBusy) {
 			return nil, errf(ExitBusy, "busy", "update lock is held")
@@ -71,16 +74,21 @@ func Upgrade(ctx context.Context, env *Env, manifestPath, artifactPath, trustPat
 	if err := copyFile(artifactPath, staged, 0o644); err != nil {
 		return nil, err
 	}
+	manifest := l.releaseManifest(id)
+	if err := fsutil.WriteFileAtomic(manifest, verified.Raw, 0o600); err != nil {
+		return nil, err
+	}
+	requestID := uuid.NewString()
 	cmd := l.updaterBin() + " run -config " + l.updaterConfig()
 	pending := pendingRelease{
-		ReleaseID: id, ManifestSHA256: verified.SHA,
+		ReleaseID: id, ManifestSHA256: verified.SHA, ManifestPath: manifest, RequestID: requestID,
 		ArtifactPath: staged, TreePath: dest, UpdaterCommand: cmd,
 	}
 	raw, err := marshalIndent(pending)
 	if err != nil {
 		return nil, err
 	}
-	if err := os.WriteFile(l.pendingUpgrade(), raw, 0o600); err != nil {
+	if err := fsutil.WriteFileAtomic(l.pendingUpgrade(), raw, 0o600); err != nil {
 		return nil, err
 	}
 	if err := lk.Release(); err != nil {
@@ -90,6 +98,7 @@ func Upgrade(ctx context.Context, env *Env, manifestPath, artifactPath, trustPat
 	if _, err := os.Stat(l.updaterConfig()); err != nil {
 		return &Result{
 			Status: statusStaged, ReleaseID: id, ManifestSHA256: verified.SHA,
+			ManifestPath: manifest, RequestID: requestID,
 			UpdaterCommand: cmd,
 			Message:        "staged; updater config is missing so the updater was not started",
 		}, errf(ExitFailed, "updater_failed", "updater config is missing")
@@ -97,14 +106,16 @@ func Upgrade(ctx context.Context, env *Env, manifestPath, artifactPath, trustPat
 	if err := env.services().Start(ctx, UnitUpdater); err != nil {
 		return &Result{
 			Status: statusStaged, ReleaseID: id, ManifestSHA256: verified.SHA,
+			ManifestPath: manifest, RequestID: requestID,
 			UpdaterCommand: cmd,
-			Message:        "staged; updater run failed and current was not moved",
+			Message:        "staged; updater run failed; inspect fvpn-updater status",
 		}, errf(ExitFailed, "updater_failed", "updater run failed")
 	}
 	return &Result{
 		Status: statusStaged, ReleaseID: id, ManifestSHA256: verified.SHA,
+		ManifestPath: manifest, RequestID: requestID,
 		UpdaterCommand: cmd,
-		Message:        "staged; current was not moved",
+		Message:        "staged; updater run completed; inspect fvpn-updater status for the apply result",
 	}, nil
 }
 
