@@ -611,6 +611,14 @@ transfer and increasing admission counters. No generation bump or state repair
 is made to drive the transition. This supplies isolation 10's central trigger;
 it does not replace isolation's assembled AT10 result or historical durations.
 
+The final [original-wire capture 79e59c20](runs/2026-10-31/followup20/79e59c20-f289-4679-9b37-01f060f2d376/member-grants-fixed-generation.md)
+also passes 7/0/0, at fixed generation 6. All 47 captured original JSON body
+hashes verify across 53 events. Both post-arm accepted reports remain ready /
+passed at generation 6. The 103 original detached node timing records have no
+sequence gaps and identify both renewals as newly accepted leases. True →
+accepted serving receipt is 4,112 ms. The baseline generation differs between
+fresh fixtures; neither is artificially forced to a particular number.
+
 The [first attempt](runs/2026-10-31/followup20/b4d2d001-a781-4df5-80d2-f7aad09f5b55/member-grants-fixed-generation.md)
 remains failed: normal initial FUP projection changed rate-policy generation
 1→0 and desired generation 5→6 during the window. The runner now lets initial
@@ -643,6 +651,14 @@ Container-visible host load is 8.94 / 10.61 / 11.69; the historical run has no
 matching retained load measurement, so comparable host load is unproven.
 The original 13:35:45.333735552Z error was not retained and cannot be recovered
 retrospectively. F10-02 remains historically failed and unattributed.
+
+The extended [timing-enabled run 977efa83](runs/2026-10-31/followup20/977efa83-e3bd-4ced-b548-dbc9763ed266/finite-expiry-reader-diagnostics.md)
+passes 2/0/0: 247 samples through deadline +16 seconds, all categories `none`.
+All 247 same-boot monotonic nft-read brackets and all 494 surrounding producer
+records join exactly to the 242-record full enforcement trace. Host load was
+16.45 / 13.65 / 13.03. No unreadable counter sample was reproduced. This preserves
+the original every-read-success criterion and gives members 11 the timestamps
+needed to attribute a future failure; it does not repair the historical sample.
 
 F10-04: the shared hooks preserve the generation the product actually issues.
 This task adds no mutation to force generation 30. Members' generation-29 full
