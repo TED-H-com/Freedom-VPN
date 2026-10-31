@@ -1,0 +1,18 @@
+# installer-reenroll
+
+Controlled reinstall, retained identity and retired certificate refusal
+
+Status: pass
+
+Run: a7c41436-82b3-4665-b75c-e2887f2e1009
+
+Source: d37720e9062b3ff4528ec0213d38c10d1b6309f3
+
+Spec: ENR-06, AT07, §6.3
+
+- revoke: 202
+- reenroll: {"Exit":0,"Status":"reenrolled","Code":"baseline","Incarnation":"01a19108-ee92-7e76-9529-62bff53a5f90","NodeID":"01a19103-41ed-756e-b07f-b6e58fb0724f","RetiredMode":"700","RetiredHashes":{"key_sha256":"5815acc32a94ddd915143c1c5806ace172d986188f2075914c38387d972278a5","cert_sha256":"a9356dc14b68b205393135417b4eb82e089dd1e1d2e10ca455a873ce5cc58cce","node_json_sha256":"547c10e19fafbf6221388bd73416d6981b502e2631e4aec90d6b2afe006ab611"},"BoundStateBefore":{"agent_db_sha256":"1854e2f855c28de1f962658a68c513b2f4707be92bd24d13f4ab4c85234ce0c7","agent_db_shm_sha256":"absent","agent_db_wal_sha256":"absent","desired_state_json_sha256":"36d28d594b600f13cad088d0b8df72d1eaae56f5b42d7a190ad6d69cf14ce7f6"},"RetiredBoundState":{"agent_db_sha256":"1854e2f855c28de1f962658a68c513b2f4707be92bd24d13f4ab4c85234ce0c7","agent_db_shm_sha256":"absent","agent_db_wal_sha256":"absent","desired_state_json_sha256":"36d28d594b600f13cad088d0b8df72d1eaae56f5b42d7a190ad6d69cf14ce7f6"},"Message":"identity retired under identity.retired; usage store kept","Before":{"key_sha256":"5815acc32a94ddd915143c1c5806ace172d986188f2075914c38387d972278a5","cert_sha256":"a9356dc14b68b205393135417b4eb82e089dd1e1d2e10ca455a873ce5cc58cce","node_json_sha256":"547c10e19fafbf6221388bd73416d6981b502e2631e4aec90d6b2afe006ab611","usage_db_sha256":"fa92ca188c1d688d4f93b9fab0314d2cf41a306f9bab1b1eddf9155875c5f1f6","usage_wal_sha256":"absent","machine_id_sha256":"186cc62b3ea133e7b6da9685430b24e54bb999ea093280f231a8b358af70ce92","current_target":"releases/01a19103-293b-7dd5-8f43-5fb038c97d37"},"Hashes":{"key_sha256":"82ff775d6f066dd7a6637b04aec493f07754be61d714c72e0a7ec3a634bb3573","cert_sha256":"fed09700890b817adaf1489b11b3c40880c0212bd828ae9d952358d77adaa869","node_json_sha256":"8ec0e0da8f20659800cbf1db6c00d28182964235c0695a8a6afc558cd1729def","usage_db_sha256":"fa92ca188c1d688d4f93b9fab0314d2cf41a306f9bab1b1eddf9155875c5f1f6","usage_wal_sha256":"absent","machine_id_sha256":"186cc62b3ea133e7b6da9685430b24e54bb999ea093280f231a8b358af70ce92","current_target":"releases/01a19103-293b-7dd5-8f43-5fb038c97d37"},"Services":{"fvpn-agent.service":"active","fvpn-updater.service":"inactive","fvpn-updater.timer":"active","fvpn-watchdog.service":"active"}}
+- retired_certificate_http: {"direct":"403","proxy":"403"}
+- usage_retained: true
+- bound_state_retired: true
+- restoration: true

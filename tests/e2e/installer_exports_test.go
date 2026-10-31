@@ -311,3 +311,10 @@ func TestENR06InstallerOutcomeRetainsFailureWithStagedStatus(t *testing.T) {
 		}
 	}
 }
+
+func TestENR06InstallerHashesNameTheirDigests(t *testing.T) {
+	raw, err := json.Marshal(InstallerHashes{Key: strings.Repeat("a", 64), Cert: "absent"})
+	if err != nil || !strings.Contains(string(raw), `"key_sha256"`) || !strings.Contains(string(raw), `"cert_sha256":"absent"`) || strings.Contains(string(raw), `"Key"`) {
+		t.Fatalf("ambiguous digest labels: %s, %v", raw, err)
+	}
+}
