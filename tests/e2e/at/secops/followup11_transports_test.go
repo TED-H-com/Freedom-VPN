@@ -93,8 +93,9 @@ func TestAT29_AT31_Followup11_Transports(t *testing.T) {
 			defer func() { p.t = parent }()
 			row := map[string]any{"status": "blocked", "owner": "w3-devstack-e2e", "transport_scope": "one original TCP/9446 connection and authenticated UDP/9445 socket; independent senders; helper limit 20 minutes"}
 			rows[kind] = row
+			complete := false
 			defer func() {
-				if t.Failed() {
+				if t.Failed() && !complete {
 					row["status"] = "failed"
 				}
 			}()
@@ -268,6 +269,7 @@ func TestAT29_AT31_Followup11_Transports(t *testing.T) {
 					t.Error(kind, "authorized recovery failed")
 				}
 			}
+			complete = true
 			t.Logf("AT29 %s: %s", kind, row["status"])
 		})
 	}
@@ -295,6 +297,9 @@ func (p *liveProbe) forcedRelay11(stack, transport *labstack.Stack, peer flowPee
 	row["forced_after_seconds"] = time.Since(start).Seconds()
 	if err != nil {
 		row["blocker"] = "bounded ForceMemberRelay did not observe relay with zero direct peers"
+		row["status"] = "failed"
+		row["force_error"] = err.Error()
+		p.t.Error("forced relay did not satisfy the existing bounded export")
 		return
 	}
 	b := sampleTransport11(ctx, transport, peer.Device, start)
