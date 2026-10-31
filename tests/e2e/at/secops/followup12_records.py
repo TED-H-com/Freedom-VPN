@@ -14,6 +14,15 @@ def digest(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def attempts_and_replies(row, window):
+    samples = row.get(window, [])
+    if len(samples) < 2:
+        return 'unmeasured'
+    a, b = samples[0].get('status', {}), samples[-1].get('status', {})
+    return '; '.join(f'{p} attempts {a.get(attempt)} → {b.get(attempt)}, replies {a.get(reply)} → {b.get(reply)}'
+                     for p, attempt, reply in [('TCP', 'tcp_attempts', 'tcp_echoes'), ('UDP', 'udp_attempts', 'udp_replies')])
+
+
 def refresh_scope():
     path = PUBLIC/'scope-review.json'
     scope = load(path)
@@ -39,7 +48,7 @@ def refresh_scope():
              'restore-reconcile.json','restore-reconcile.md','summary.md','README.md','RUN.md','requests.md',
              '2026-10-31-follow-up-12-handover.md','followup12-transports-live.json','followup12-transports-run.json',
              'followup12-restore-live.json','followup12-restore-run.json','followup12-verdict.json','validation.json',
-             'history/index.json','history/README.md']
+             'followup12-lab-preflight.json','history/index.json','history/README.md']
     scope['follow_up_12'] = dict(reviewed_at=utc(), scope='Scoped established transports, bounded relay and restore regression; every changed live document pinned; archived snapshots immutable. scope-review.json excludes its own recursive hash.',
                                 records=[dict(path=str((PUBLIC/name).relative_to(ROOT)),sha256=digest(PUBLIC/name)) for name in names if (PUBLIC/name).exists()])
     write_json(path,scope)
@@ -119,6 +128,16 @@ def main():
     (PUBLIC/'README.md').write_text('# Wave 4 security and operations acceptance\n\n[Follow-up 12 results](summary.md), [AT29 sub-cases](AT29.md), [AT30 restore regression](AT30.md), [AT31 relay path](AT31.md), [requests and owners](requests.md), and [run instructions](RUN.md). Full AT28/AT32 and prior SECOPS-16/17/18/19/20 evidence remain explicitly dated Follow-up 10 records; this run does not promote their scope.\n\nThe D-098 [follow-up 10 archive](history/follow-up-10/) is immutable. Candidate hardware, physical arm64 and guest clock rollback remain unmeasured.\n')
     note=f'# 2026-10-31 — Follow-up 12 handover\n\nFollow-up 10 archive: `docs/e2e/at/secops/history/follow-up-10/`, exact PR #265 commit `2f1f939`, run `0e8ff9a4-4fa1-4154-ae35-847a5be4d985`. Pin `restore-reconcile.json` → `measurement_comparison.follow_up_10` there. Keep `history/follow-up-9/restore-reconcile.json` for handover follow-up 13.\n\nAT30 regression: **{at30}**. SECOPS-21: **{status21}**; first new stored offer `{first.get("generation") if first else None}`, retained `{retained}`.\n\n| AT29 / AT31 sub-case | Result |\n|---|---|\n'
     for k,v in subcases.items(): note+=f'| {k} | {v.get("status")} |\n'
+    note+='\n| Sub-case / window | Independent sender attempts and replies |\n|---|---|\n'
+    for k,v in subcases.items():
+        if k in ('grant_expiry','lease_expiry','device_revoke'):
+            note+=f'| {k} / cutoff | {attempts_and_replies(v,"cutoff_samples")} |\n'
+        elif k=='forced_relay':
+            for window in ('relay_samples','direct_restored_samples'):
+                note+=f'| {k} / {window} | {attempts_and_replies(v,window)} |\n'
+    note+='\nThe transport helper lifetime remains 20 minutes, relay match 180 seconds and each relay-path wait 90 seconds. Missing counters are not zero-byte proof. Per-sample counter presence and monotonic timing remain in the JSON evidence.\n'
+    probe=restore.get('first_http_probe_after_fresh_observation',{})
+    note+=f'\nSECOPS-21: the separately labeled first HTTP **probe** returned generation `{probe.get("generation")}`; the first new stored compiler row was `{first.get("generation") if first else None}`; the retained node was `{retained}`. First-delivered agent response evidence is required for closure. The final local generation and central applied observations are recorded separately in [SECOPS-21.json](SECOPS-21.json).\n'
     note+='\n'+table
     note+=f'\nCleanup: **{verdict["cleanup"]}**. Both run records include teardown exit status, state-directory removal and final container/network/volume/image counts. [Transport run](followup12-transports-run.json); [restore run](followup12-restore-run.json).\n'
     note+='\nFollow-up 11 root records (105 files) are byte-identical to PR #274 under [history/follow-up-11/](history/follow-up-11/), with SHA-256 index entries. Its restore measurements are retained follow-up 10 values, not a new execution. No older snapshot was moved or rewritten.\n'

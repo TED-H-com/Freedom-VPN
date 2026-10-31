@@ -1,0 +1,31 @@
+{
+  "namespace": "fvpn-w4-secops",
+  "port_base": 30000,
+  "checks": [
+    {
+      "checked_at": "2026-10-31T06:46:00Z",
+      "time_precision": "minute",
+      "other_gate_suites": 3,
+      "running_fvpn_w_containers": 0,
+      "action": "wait five minutes"
+    },
+    {
+      "checked_at": "2026-10-31T06:51:37Z",
+      "other_gate_suites": 1,
+      "running_fvpn_w_containers": 1,
+      "other_active_lanes": [
+        "w1-netlab"
+      ],
+      "action": "start transports"
+    },
+    {
+      "checked_at": "2026-10-31T06:56:34Z",
+      "other_gate_suites": 1,
+      "running_fvpn_w_containers": 0,
+      "other_active_lanes": [
+        "w4-at-isolation"
+      ],
+      "action": "start transport attempt 2"
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "attempts": [
+    {
+      "phase": "transports",
+      "attempt": 1,
+      "status": "failed",
+      "finding": "Counted flow was unavailable after 90 seconds; the prepared transport harness omitted the publication/serving API precondition used by AT30. Its fatal helper aborted the other sub-cases. No fault injected, no transport pass claimed.",
+      "correction": "Publish through the existing servingGate10 API helper after admission. Preserve the 90-second flow bound and retain a failed flow sample without aborting independent sub-cases.",
+      "files": [
+        {
+          "file": "followup12-transports-attempt1-live.json",
+          "sha256": "6b1abf18047295fa14b5d66b0ad6abb46a0417a611e6624f1bbae866f0d916e7"
+        },
+        {
+          "file": "followup12-transports-attempt1-run.json",
+          "sha256": "072f24242a51b459f0de5329b9b14a6ee3f270b332da673c8854c74dcc3dba0f"
+        }
+      ]
+    }
+  ]
+}

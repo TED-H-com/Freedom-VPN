@@ -44,6 +44,21 @@ func quietTransport11(a, b transportSample11) bool {
 		b.Status.TCPEchoes == a.Status.TCPEchoes && b.Status.UDPReplies == a.Status.UDPReplies
 }
 
+func (p *liveProbe) transportFlow11(peer flowPeer, timeout time.Duration) map[string]any {
+	var last map[string]any
+	for deadline := time.Now().Add(timeout); time.Now().Before(deadline); {
+		last = p.selectedFlow(peer)
+		if last["counted"] == true {
+			return last
+		}
+		time.Sleep(2 * time.Second)
+	}
+	// Retain the failed sample and continue independent transport cases. The
+	// bound and the positive-flow prerequisite are identical to waitCountedFlow.
+	p.t.Errorf("peer %s did not produce a counted flow within %s", peer.Service, timeout)
+	return last
+}
+
 func TestAT29_AT31_Followup11_Transports(t *testing.T) {
 	if os.Getenv("FVPN_SECOPS_FOLLOWUP11") != "transports" {
 		t.Skip("requires assigned fresh transport stack")
@@ -94,7 +109,12 @@ func TestAT29_AT31_Followup11_Transports(t *testing.T) {
 				row["blocker"] = "native admission unavailable"
 				return
 			}
-			flow := p.waitCountedFlow(peer, 90*time.Second)
+			if kind == "grant_expiry" {
+				// Enrollment and capacity do not publish an exit. Use the same
+				// API/read-back precondition as the restore drill after admission.
+				row["serving_precondition"] = p.servingGate10(admin, node)
+			}
+			flow := p.transportFlow11(peer, 90*time.Second)
 			row["before_counted_flow"] = flow
 			if flow["counted"] != true {
 				row["blocker"] = "no selected counted serving flow"
@@ -233,7 +253,7 @@ func TestAT29_AT31_Followup11_Transports(t *testing.T) {
 				p.grantAt(admin, m, time.Now().UTC().Add(20*time.Minute), "followup11-recovery")
 			}
 			if kind != "device_revoke" {
-				row["recovery_flow"] = p.waitCountedFlow(peer, 120*time.Second)
+				row["recovery_flow"] = p.transportFlow11(peer, 120*time.Second)
 				row["recovery_ack"] = p.publicationObservation(node)
 				if row["recovery_flow"].(map[string]any)["counted"] != true {
 					row["status"] = "failed"
