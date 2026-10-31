@@ -4,10 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"reflect"
 	"slices"
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/internal/audit"
+	"github.com/TED-H-com/Freedom-VPN/internal/installerjob"
+	"github.com/TED-H-com/Freedom-VPN/internal/nodes"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
@@ -63,10 +66,27 @@ func (s *Service) acceptInstallerResult(ctx context.Context, tx pgx.Tx, n node, 
 	if hash != r.ManifestSha256 {
 		return ack, apierr.New(apierr.HashMismatch, "Installer result does not match published release content")
 	}
-	if err = validateCompletionEvidence(r, r.RequestedReleaseId, n.current); err != nil {
+	if r.JobId != installerjob.ID(r.RequestedReleaseId, hash, i.IncarnationID) {
+		return ack, apierr.New(apierr.StateConflict, "Installer job ID does not match release and incarnation").WithDetail("reason", "job_id_mismatch")
+	}
+	current, currentErr := r.CurrentReleaseId.Get()
+	baseline := n.current
+	success := r.State == api.UpdateResultStateSucceeded || r.State == api.UpdateResultStateAlreadyCurrent
+	stage, _ := r.Stage.Get()
+	// D-111: a verified installer seed may precede any central observation.
+	// Only a distinct, eligible baseline can explain a failed attempt; a
+	// failure never establishes the candidate as current or last-good.
+	seed := n.current == nil && currentErr == nil && (success || r.State == api.UpdateResultStateRolledBack ||
+		r.State == api.UpdateResultStateFailed && beforeHealth(&stage) && current != r.RequestedReleaseId)
+	if seed {
+		if _, _, _, err = s.releases.Eligible(ctx, tx, current); err != nil {
+			return ack, err
+		}
+		baseline = &current
+	}
+	if err = validateCompletionEvidence(r, r.RequestedReleaseId, baseline); err != nil {
 		return ack, err
 	}
-	success := r.State == api.UpdateResultStateSucceeded || r.State == api.UpdateResultStateAlreadyCurrent
 	if success && r.StateSchemaVersion != manifest.Signed.Compatibility.StateSchemaTo {
 		return ack, apierr.New(apierr.SchemaIncompatible, "Completed state schema differs from manifest")
 	}
@@ -74,7 +94,6 @@ func (s *Service) acceptInstallerResult(ctx context.Context, tx pgx.Tx, n node, 
 	if err = tx.QueryRow(ctx, `SELECT supported_release_ids,revoked_release_ids FROM fleet_config`).Scan(&serving, &revoked); err != nil {
 		return ack, err
 	}
-	current, _ := r.CurrentReleaseId.Get()
 	if r.State == api.UpdateResultStateRolledBack {
 		previous, e := r.PreviousReleaseId.Get()
 		if e != nil || previous != r.RequestedReleaseId || r.ErrorCode.IsNull() {
@@ -89,21 +108,23 @@ func (s *Service) acceptInstallerResult(ctx context.Context, tx pgx.Tx, n node, 
 	}
 	recovery, _ := r.RecoveryRequired.Get()
 	lastGood := n.lastGood
-	if success || r.State == api.UpdateResultStateRolledBack {
+	if success || r.State == api.UpdateResultStateRolledBack || seed {
 		lastGood = &current
 	}
 	recovery = recovery || lastGood != nil && slices.Contains(revoked, *lastGood) || slices.Contains(revoked, current)
 	if r.MemberForwardingEnabled && (n.publication != "published" || r.PublicationIntent != "published" || r.State == "applying" || r.State == "checking" || recovery || !slices.Contains(serving, current) || slices.Contains(revoked, current)) {
 		return ack, apierr.New(apierr.NodeNotServiceable, "Forwarding contradicts current serving restrictions")
 	}
-	applied := success && (!equalID(n.current, &current) || !equalID(n.lastGood, &current))
-	// The node detail's update summary changes on every new acceptance, so its
-	// strong ETag advances even when the installed version is unchanged.
-	_, err = tx.Exec(ctx, `UPDATE nodes SET current_release_id=CASE WHEN $3 THEN $2 ELSE current_release_id END,last_good_release_id=CASE WHEN $3 THEN $2 ELSE last_good_release_id END,resource_version=resource_version+1 WHERE id=$1`, i.NodeID, current, success)
+	// Installer evidence never advances the central generation high-water,
+	// and an older receipt cannot replace a newer central observation (§13.8).
+	applied := (success || r.State == api.UpdateResultStateRolledBack || seed) &&
+		n.observedHighWater <= r.Generation && (!equalID(n.current, &current) || !equalID(n.lastGood, &current))
+	before, err := nodes.ReadUpdateSummary(ctx, tx, i.NodeID)
 	if err != nil {
 		return ack, err
 	}
-	ack = api.UpdateResultAck{ResultId: r.ResultId, Accepted: true, AcceptedAsHistory: false, AppliedToCurrentObservation: applied, ObservedUpdateGeneration: n.observedHighWater, ReceivedAt: time.Now().UTC().Truncate(time.Microsecond)}
+	history := r.Generation < n.observedHighWater
+	ack = api.UpdateResultAck{ResultId: r.ResultId, Accepted: true, AcceptedAsHistory: history, AppliedToCurrentObservation: applied, ObservedUpdateGeneration: n.observedHighWater, ReceivedAt: time.Now().UTC().Truncate(time.Microsecond)}
 	ackRaw, err := json.Marshal(ack)
 	if err != nil {
 		return api.UpdateResultAck{}, err
@@ -112,11 +133,21 @@ func (s *Service) acceptInstallerResult(ctx context.Context, tx pgx.Tx, n node, 
 	if err != nil {
 		return api.UpdateResultAck{}, err
 	}
+	after, err := nodes.ReadUpdateSummary(ctx, tx, i.NodeID)
+	if err != nil {
+		return api.UpdateResultAck{}, err
+	}
+	if applied || !reflect.DeepEqual(before, after) {
+		_, err = tx.Exec(ctx, `UPDATE nodes SET current_release_id=CASE WHEN $3 THEN $2 ELSE current_release_id END,last_good_release_id=CASE WHEN $3 THEN $2 ELSE last_good_release_id END,resource_version=resource_version+1 WHERE id=$1`, i.NodeID, current, applied)
+		if err != nil {
+			return api.UpdateResultAck{}, err
+		}
+	}
 	requestID := commandtx.RequestID(ctx)
 	event, err := audit.NewEvent(audit.Entry{
 		Actor: audit.Actor{Type: api.AuditEventActorTypeNode, ID: i.NodeID}, Action: "update_result.accept",
 		Resource: api.ResourceRef{Type: api.ResourceTypeNode, Id: i.NodeID}, Result: api.AuditEventResultSucceeded, RequestID: &requestID,
-		After: map[string]any{"state": r.State, "accepted_as_history": false, "result_id": r.ResultId, "job_id": r.JobId, "source": api.UpdateResultSourceInstaller}, Fields: []string{"state", "accepted_as_history", "result_id", "job_id", "source"},
+		After: map[string]any{"state": r.State, "accepted_as_history": history, "result_id": r.ResultId, "job_id": r.JobId, "source": api.UpdateResultSourceInstaller}, Fields: []string{"state", "accepted_as_history", "result_id", "job_id", "source"},
 	})
 	if err == nil {
 		err = audit.AppendEvent(ctx, tx, event)

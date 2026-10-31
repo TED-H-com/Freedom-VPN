@@ -111,6 +111,7 @@ type BatchACK struct {
 type EventResult struct {
 	Seq    uint64
 	Status string
+	Code   string // allowlisted error code for a retired-stream rejection audit
 }
 
 // Event status strings, matching the contract.

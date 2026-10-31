@@ -401,10 +401,14 @@ func (s *Store) PurgeArchive(ctx context.Context, now time.Time) (int, error) {
 			return 0, err
 		}
 	}
+	retired, err := s.purgeRetiredTx(ctx, tx, cutoff)
+	if err != nil {
+		return 0, err
+	}
 	if err := tx.Commit(); err != nil {
 		return 0, err
 	}
-	return len(drop), nil
+	return len(drop) + retired, nil
 }
 
 // EvaluateGate applies the outbox, archive and disk caps (§10.8).
@@ -466,6 +470,9 @@ func (s *Store) streamView(ctx context.Context) (Health, error) {
 func (s *Store) evaluateGate(ctx context.Context) (Health, error) {
 	h, err := s.streamView(ctx)
 	if err != nil {
+		return Health{}, err
+	}
+	if err := s.addRetiredHealth(ctx, &h); err != nil {
 		return Health{}, err
 	}
 	if s.diskFoot != nil {

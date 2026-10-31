@@ -937,6 +937,7 @@ func (p *probe) at07(t *testing.T) {
 	p.machineIdentity()
 	p.usageHoldScope()
 	// The clone fixture stops and resumes node. node2 stays the clean second exit.
+	p.prepareFreezeSource(first.NodeID)
 	p.clonedIdentity(first.NodeID)
 	p.installerHooks()
 }
@@ -1428,6 +1429,13 @@ func (p *probe) clonedIdentity(node uuid.UUID) {
 	}
 	beforeProjection := p.identityProjection(node)
 	detail["projection_before"] = beforeProjection
+	monitor := p.startFreezeMonitor(node)
+	checkedFreeze := false
+	defer func() {
+		if !checkedFreeze {
+			p.checkServingFreeze(node, monitor)
+		}
+	}()
 	fixture, err := p.stack.StartClonedIdentityFixture(p.ctx, "node")
 	if err != nil || fixture == nil {
 		detail["gap"] = "StartClonedIdentityFixture did not start. Owner: devstack."
@@ -1534,6 +1542,8 @@ func (p *probe) clonedIdentity(node uuid.UUID) {
 		p.expect("AT07", "cloned_identity_conflict", false, detail)
 		return
 	}
+	p.checkServingFreeze(node, monitor)
+	checkedFreeze = true
 	recovery := p.recoverCloneConflict(node, oldInc, read)
 	detail["recovery"] = recovery
 	if recovery["clone_denied"] != true {

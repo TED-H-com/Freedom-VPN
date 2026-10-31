@@ -43,3 +43,21 @@ type Controller interface {
 ## Fault injection
 
 `Sample` asks the store hook to fail at `sample.read` (before the counter read) and `sample.plan` (before the commit). Store commit steps are in `docs/node/usage-store.md`. An injected crash is not reported as `persist_failed`. A crash after commit leaves the event durable; the next sample does not emit it again.
+
+
+## Retirement window bound (D-112)
+
+Production `Engine.ensureUsage` in `node/agent/usage.go` omits `Config.Interval`,
+so `meter.New` resolves it to `DefaultSampleInterval = 10 * time.Second`.
+`TestD112_ProductionSamplingInterval` pins the actual production construction
+site and the resolved default. A production interval must be at most central's
+`usage.SamplingIntervalBound`, whose default is 10 seconds. A deployment that
+needs a longer interval must raise central's configured bound before adopting
+that interval or delivering such tails. Revision 14's historical-interval
+wording is superseded by D-112; central does not reconstruct sampling history.
+
+Before a controlled retirement the enrollment owner stops forwarding and the
+old sampler, preserving its final committed sample. Re-enrollment hands off
+those stored events unchanged. No capability claim says a stalled sampler or
+clock always fits the window; central rejects over-window events and the
+uploader retains their payloads with a final local rejection audit.

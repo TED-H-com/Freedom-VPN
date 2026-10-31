@@ -18,21 +18,26 @@ import (
 	_ "modernc.org/sqlite" // pure-Go SQLite (AGENTS.md §3)
 )
 
-const schemaVersion = 1
+const schemaVersion = 2
 
 // Options configure Open. Zero durations and byte caps take the §10.5 and
 // §10.8 defaults. MinFreeBytes stays zero until an operator sets it.
 type Options struct {
-	Now             func() time.Time
-	Hook            Hook
-	Trust           *envelope.TrustStore
-	UnackedMaxAge   time.Duration
-	UnackedMaxBytes uint64
-	ArchiveRetain   time.Duration
-	ArchiveMaxBytes uint64
-	MinFreeBytes    uint64
-	DiskFree        func(path string) (uint64, error)
-	DiskFootprint   func(path string) (uint64, error)
+	// RetirePreviousAt explicitly authorizes a same-node incarnation change
+	// after verified re-enrollment. It is the locally observed retirement time,
+	// not central's authoritative revoked_at. Zero keeps identity mismatch fatal.
+	// The caller must stop the previous meter/uploader and hold the node lock.
+	RetirePreviousAt time.Time
+	Now              func() time.Time
+	Hook             Hook
+	Trust            *envelope.TrustStore
+	UnackedMaxAge    time.Duration
+	UnackedMaxBytes  uint64
+	ArchiveRetain    time.Duration
+	ArchiveMaxBytes  uint64
+	MinFreeBytes     uint64
+	DiskFree         func(path string) (uint64, error)
+	DiskFootprint    func(path string) (uint64, error)
 }
 
 // Store is an open usage database. It is safe for one process. The node
@@ -42,8 +47,9 @@ type Store struct {
 	path string
 	mu   sync.Mutex
 
-	nodeID uuid.UUID
-	incID  uuid.UUID
+	nodeID           uuid.UUID
+	incID            uuid.UUID
+	retirePreviousAt time.Time
 
 	now   func() time.Time
 	hook  Hook
@@ -83,7 +89,7 @@ func Open(path string, nodeID, incID uuid.UUID, opt Options) (*Store, error) {
 	}
 	db.SetMaxOpenConns(1)
 	s := &Store{
-		db: db, path: path, nodeID: nodeID, incID: incID,
+		db: db, path: path, nodeID: nodeID, incID: incID, retirePreviousAt: opt.RetirePreviousAt,
 		now: opt.Now, hook: opt.Hook, trust: opt.Trust,
 		unackedMaxAge: opt.UnackedMaxAge, unackedMaxBytes: opt.UnackedMaxBytes,
 		archiveRetain: opt.ArchiveRetain, archiveMaxBytes: opt.ArchiveMaxBytes,
@@ -178,6 +184,12 @@ func (s *Store) migrate(ctx context.Context) error {
 	if v == schemaVersion {
 		return s.checkIdentity(ctx)
 	}
+	if v == 1 {
+		if err := s.migrateHandoff(ctx); err != nil {
+			return err
+		}
+		return s.checkIdentity(ctx)
+	}
 	stmts := []string{
 		`CREATE TABLE meta (
 			id INTEGER PRIMARY KEY CHECK (id = 1),
@@ -252,7 +264,7 @@ func (s *Store) migrate(ctx context.Context) error {
 			first_seq INTEGER NOT NULL,
 			last_seq INTEGER NOT NULL,
 			created_at TEXT NOT NULL)`,
-		fmt.Sprintf(`PRAGMA user_version = %d`, schemaVersion),
+		`PRAGMA user_version = 1`,
 	}
 	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
@@ -269,7 +281,10 @@ func (s *Store) migrate(ctx context.Context) error {
 		s.nodeID.String(), s.incID.String()); err != nil {
 		return fmt.Errorf("usagestore: migrate: %w", err)
 	}
-	return tx.Commit()
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+	return s.migrateHandoff(ctx)
 }
 
 func (s *Store) checkIdentity(ctx context.Context) error {
@@ -278,8 +293,14 @@ func (s *Store) checkIdentity(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("usagestore: read identity: %w", err)
 	}
-	if node != s.nodeID.String() || inc != s.incID.String() {
+	if node != s.nodeID.String() {
 		return ErrIdentity
+	}
+	if inc != s.incID.String() {
+		if s.retirePreviousAt.IsZero() {
+			return ErrIdentity
+		}
+		return s.retirePrevious(ctx, inc)
 	}
 	return nil
 }
