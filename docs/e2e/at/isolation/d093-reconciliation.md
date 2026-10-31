@@ -1,8 +1,8 @@
-# D-093 reconciliation — isolation follow-up 9
+# D-093 reconciliation — isolation follow-up 10
 
 Consumed the [devstack 19 reconciliation](../../portal-d093-reconciliation-followup19-2026-10-31.md)
 and checked it against the [portal follow-up 18 audit](../../../portal/DEV.md#d-093-harness-audit--2026-10-31-follow-up-18)
-on product baseline `fb5e0025`. All fifteen classifications agree: **13 open,
+on product baseline `96ec0630`. All fifteen classifications agree: **13 open,
 2 retired within the portal simulator's scope**. This isolation run does not
 retire any portal row.
 
@@ -20,6 +20,11 @@ retire any portal row.
 
 The new producer timing is a local TEST ONLY diagnostic sibling of D-106,
 written by the real agent after operations. It changes neither the observation
-schema nor any observation's safety/forwarding result. D-087 is blocked precisely
-because the real lease endpoint lacks the required controlled input seam;
-editing production output rows would not establish the requested transition.
+schema nor any observation's safety/forwarding result. D-087 now has the documented wire-nodes 33 / devstack 20 input seam: one
+constructor-injected eligibility reader in the dedicated TEST ONLY control.
+It changes future lease grants only; the desired compiler, entitlements and
+device projections remain real and are compared byte-for-byte. The assembled
+transition and its original signed wire evidence do not retire any portal row.
+Devstack 20 also aligned its release root and genuine meter checkpoint; this
+supersedes the shared harness limitation described in follow-up 19 for D093-11,
+while the portal simulator's own D093-11 classification remains open.

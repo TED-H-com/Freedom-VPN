@@ -1,0 +1,800 @@
+{
+  "fixture": "same enrolled incarnation presented from a second lab network; not a newly enrolled identity",
+  "owner": "ENR-02 / ENR-03; this is the consumer latch observation only",
+  "rows": [
+    {
+      "clone_observation": {
+        "Source": {
+          "machine_id_sha256": "1d08d0b2f235ac6053da043f818e39f4ab5d5a56d317a207eba5d8a878591eb6",
+          "agent_spki_sha256": "4024186fa453059273dd6502ca7794df0c122942e08c89901fc74c5213d0f257",
+          "netbird_public_key_sha256": "1a913eff06ccfbe0ef852336ae228cb1f39226de136deff06a538a1af92a2ef5"
+        },
+        "Clone": {
+          "machine_id_sha256": "",
+          "agent_spki_sha256": "",
+          "netbird_public_key_sha256": ""
+        },
+        "same_identity": false,
+        "endpoint_rows": 0,
+        "conflicts": 0,
+        "mapping_frozen": false,
+        "SourceStage": "",
+        "CloneStage": ""
+      },
+      "clone_read_error": "private node helper identity-fingerprints failed",
+      "kernel_ruleset": "table inet fvpn {\n\tcounter ctbase {\n\t\tpackets 41 bytes 1746\n\t}\n\n\tcounter ctv6 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctin {\n\t\tpackets 4 bytes 240\n\t}\n\n\tcounter ctbadns {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctdeny {\n\t\tpackets 3900 bytes 234000\n\t}\n\n\tcounter cthost {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctinv {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctnodn {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctunkd {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctunku {\n\t\tpackets 36 bytes 1431\n\t}\n\n\tcounter d_01a19346299978089d73f1268f72ee8e {\n\t\tpackets 1836 bytes 102922\n\t}\n\n\tcounter nd_01a19346299978089d73f1268f72ee8e {\n\t\tpackets 6 bytes 438\n\t}\n\n\tcounter nu_01a19346299978089d73f1268f72ee8e {\n\t\tpackets 6 bytes 372\n\t}\n\n\tcounter u_01a19346299978089d73f1268f72ee8e {\n\t\tpackets 2887 bytes 128787\n\t}\n\n\tcounter d_01a19346647979fd8bf1a7cf6bbecfbc {\n\t\tpackets 68 bytes 5499\n\t}\n\n\tcounter nd_01a19346647979fd8bf1a7cf6bbecfbc {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter nu_01a19346647979fd8bf1a7cf6bbecfbc {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter u_01a19346647979fd8bf1a7cf6bbecfbc {\n\t\tpackets 94 bytes 6028\n\t}\n\n\tcounter d_01a193469f89718c8c44bf3078115491 {\n\t\tpackets 16 bytes 3038\n\t}\n\n\tcounter nd_01a193469f89718c8c44bf3078115491 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter nu_01a193469f89718c8c44bf3078115491 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter u_01a193469f89718c8c44bf3078115491 {\n\t\tpackets 17 bytes 2266\n\t}\n\n\tcounter d_01a193516052713cb0b8f8baee60e27c {\n\t\tpackets 8 bytes 1519\n\t}\n\n\tcounter nd_01a193516052713cb0b8f8baee60e27c {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter nu_01a193516052713cb0b8f8baee60e27c {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter u_01a193516052713cb0b8f8baee60e27c {\n\t\tpackets 8 bytes 1113\n\t}\n\n\tset allowed_v4 {\n\t\ttype ipv4_addr\n\t\tflags timeout\n\t\telements = { 100.86.188.61 timeout 40s844ms expires 39s22ms, 100.86.219.232 timeout 40s844ms expires 39s22ms }\n\t}\n\n\tset denied_v4 {\n\t\ttype ipv4_addr\n\t\tflags interval\n\t\tauto-merge\n\t\telements = { 0.0.0.0/8, 10.0.0.0/8,\n\t\t\t     100.64.0.0/10, 127.0.0.0/8,\n\t\t\t     169.254.0.0/16, 172.16.0.0/12,\n\t\t\t     192.0.0.0/24, 192.0.2.0/24,\n\t\t\t     192.88.99.0/24, 192.168.0.0/16,\n\t\t\t     198.18.0.0/15, 198.51.100.0/24,\n\t\t\t     203.0.113.0/24, 224.0.0.0/3 }\n\t}\n\n\tset host_v4 {\n\t\ttype ipv4_addr\n\t\tflags interval\n\t\tauto-merge\n\t\telements = { 192.0.6.20 }\n\t}\n\n\tset resolver_v4 {\n\t\ttype ipv4_addr\n\t\telements = { 192.0.6.53 }\n\t}\n\n\tchain forward {\n\t\ttype filter hook forward priority mangle; policy drop;\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=32 fvpn_metering=forward_admission_v1\"\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a19346-038e-7917-875a-31760d61d39f:81c9\"\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a19346-678f-7ccc-98a4-f73fb7ecdae4:3444\"\n\t\tiifname \"fvmb0\" oifname \"fvup0\" meta nfproto ipv6 counter name \"ctv6\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" meta nfproto ipv6 counter name \"ctv6\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ct state invalid counter name \"ctinv\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ct state invalid counter name \"ctinv\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr != @allowed_v4 counter name \"ctunku\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.86.188.61 ip daddr @resolver_v4 tcp dport 53 counter name \"nu_01a19346299978089d73f1268f72ee8e\" meta priority set 1:81c9 accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.86.188.61 ip daddr @resolver_v4 udp dport 53 counter name \"nu_01a19346299978089d73f1268f72ee8e\" meta priority set 1:81c9 accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.86.219.232 ip daddr @resolver_v4 tcp dport 53 counter name \"nu_01a193469f89718c8c44bf3078115491\" meta priority set 1:3444 accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.86.219.232 ip daddr @resolver_v4 udp dport 53 counter name \"nu_01a193469f89718c8c44bf3078115491\" meta priority set 1:3444 accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip daddr @resolver_v4 counter name \"ctbadns\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip daddr @denied_v4 counter name \"ctdeny\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip daddr @host_v4 counter name \"cthost\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.86.188.61 counter name \"u_01a19346299978089d73f1268f72ee8e\" meta priority set 1:81c9 accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.86.219.232 counter name \"u_01a193469f89718c8c44bf3078115491\" meta priority set 1:3444 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr != @allowed_v4 counter name \"ctunkd\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ct state != { established, related } counter name \"ctnodn\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.86.188.61 tcp sport 53 counter name \"nd_01a19346299978089d73f1268f72ee8e\" meta priority set 1:81c9 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.86.188.61 udp sport 53 counter name \"nd_01a19346299978089d73f1268f72ee8e\" meta priority set 1:81c9 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr 100.86.188.61 counter name \"d_01a19346299978089d73f1268f72ee8e\" meta priority set 1:81c9 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.86.219.232 tcp sport 53 counter name \"nd_01a193469f89718c8c44bf3078115491\" meta priority set 1:3444 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.86.219.232 udp sport 53 counter name \"nd_01a193469f89718c8c44bf3078115491\" meta priority set 1:3444 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr 100.86.219.232 counter name \"d_01a193469f89718c8c44bf3078115491\" meta priority set 1:3444 accept\n\t}\n\n\tchain input {\n\t\ttype filter hook input priority mangle; policy accept;\n\t\tiifname \"fvmb0\" counter name \"ctin\" drop\n\t\tip saddr 100.64.0.0/10 counter name \"ctin\" drop\n\t}\n\n\tchain output {\n\t\ttype filter hook output priority mangle; policy accept;\n\t}\n\n\tchain postrouting {\n\t\ttype nat hook postrouting priority srcnat; policy accept;\n\t\toifname \"fvup0\" ip saddr @allowed_v4 snat ip to 192.0.6.20\n\t}\n}\n",
+      "label": "clone acceptance window",
+      "observation": {
+        "lease": {
+          "lease_id": "e4298455-dfff-4c89-ab9f-ad79b1441d55",
+          "expires_at": "2026-10-31T19:03:49.867397268Z"
+        },
+        "usage": {
+          "blocked_seq": "28",
+          "ledger_epoch": "b072b377-6b57-478b-adc5-98a08ed06db3",
+          "meter_epoch_id": "01a19356-d519-7620-96ee-1aa034d5368f",
+          "oldest_unacked_at": "2026-10-31T18:54:08.738325214Z",
+          "acked_archive_bytes": "17501",
+          "unacked_event_count": 146,
+          "central_acked_through": "27",
+          "unacked_payload_bytes": "94456",
+          "last_durable_event_seq": "173"
+        },
+        "checks": [
+          {
+            "name": "dns_policy",
+            "status": "passed",
+            "error_code": null,
+            "observed_at": "2026-10-31T19:03:08.895063751Z"
+          },
+          {
+            "name": "internet_only",
+            "status": "passed",
+            "error_code": null,
+            "observed_at": "2026-10-31T19:03:08.895063751Z"
+          },
+          {
+            "name": "lease",
+            "status": "passed",
+            "error_code": null,
+            "observed_at": "2026-10-31T19:03:08.895063751Z"
+          },
+          {
+            "name": "meter_path",
+            "status": "passed",
+            "error_code": null,
+            "observed_at": "2026-10-31T19:03:08.895063751Z"
+          },
+          {
+            "name": "policy_signature",
+            "status": "passed",
+            "error_code": null,
+            "observed_at": "2026-10-31T19:03:08.895063751Z"
+          },
+          {
+            "name": "qos",
+            "detail": "read_at=2026-10-31T19:03:08.998563464Z source=live candidate=32 verified=true {\"generation\":\"32\",\"phase\":\"verify\",\"reads\":20,\"objects\":6,\"truncated\":true,\"sha256\":\"d214cbe7f67cdf132e6bb0365e5dccae18fec9768939d5e2e94e455ef06253cb\"}",
+            "status": "passed",
+            "error_code": null,
+            "observed_at": "2026-10-31T19:03:08.895063751Z"
+          },
+          {
+            "name": "release_supported",
+            "status": "passed",
+            "error_code": null,
+            "observed_at": "2026-10-31T19:03:08.895063751Z"
+          },
+          {
+            "name": "source_binding",
+            "status": "passed",
+            "error_code": null,
+            "observed_at": "2026-10-31T19:03:08.895063751Z"
+          },
+          {
+            "name": "storage",
+            "status": "passed",
+            "error_code": null,
+            "observed_at": "2026-10-31T19:03:08.895063751Z"
+          },
+          {
+            "name": "tunnel_probe",
+            "detail": "Egress probe used no extra target.",
+            "status": "passed",
+            "error_code": null,
+            "observed_at": "2026-10-31T19:03:08.895063751Z"
+          }
+        ],
+        "errors": [
+          {
+            "code": "TC_FOREIGN_FILTER",
+            "stage": "tc_evidence",
+            "message": "{\"candidate_generation\":\"30\",\"read_at\":\"2026-10-31T19:01:34.646820633Z\",\"source\":\"rejected\"}",
+            "observed_at": "2026-10-31T19:01:34.646820633Z"
+          },
+          {
+            "code": "TC_FOREIGN_FILTER",
+            "stage": "tc_evidence",
+            "message": "{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"clsact\",\"handle\":\"ffff:\",\"parent\":\"ffff:fff1\"}]}",
+            "observed_at": "2026-10-31T19:01:34.646820633Z"
+          },
+          {
+            "code": "TC_FOREIGN_FILTER",
+            "stage": "tc_evidence",
+            "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\",\"handle\":\"1\",\"actions\":[\"mirred\"]}]}",
+            "observed_at": "2026-10-31T19:01:34.646820633Z"
+          },
+          {
+            "code": "TC_FOREIGN_FILTER",
+            "stage": "tc_evidence",
+            "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\"}]}",
+            "observed_at": "2026-10-31T19:01:34.646820633Z"
+          },
+          {
+            "code": "TC_FOREIGN_FILTER",
+            "stage": "tc_evidence",
+            "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"3444:\",\"parent\":\"1:3444\"}]}",
+            "observed_at": "2026-10-31T19:01:34.646820633Z"
+          },
+          {
+            "code": "TC_FOREIGN_FILTER",
+            "stage": "tc_evidence",
+            "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"81c9:\",\"parent\":\"1:81c9\"}]}",
+            "observed_at": "2026-10-31T19:01:34.646820633Z"
+          },
+          {
+            "code": "TC_FOREIGN_FILTER",
+            "stage": "tc_evidence",
+            "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"htb\",\"handle\":\"1:\",\"root\":true}]}",
+            "observed_at": "2026-10-31T19:01:34.646820633Z"
+          },
+          {
+            "code": "TC_FOREIGN_FILTER",
+            "stage": "initial_quarantine",
+            "message": "{\"quarantined\":true,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"before\":{\"admin_up\":true,\"operstate\":\"UNKNOWN\"},\"after\":{\"admin_up\":false,\"operstate\":\"DOWN\"}}],\"baseline\":{\"installed\":true,\"verified\":true}}",
+            "observed_at": "2026-10-31T19:03:09.010538704Z"
+          },
+          {
+            "code": "TC_FOREIGN_FILTER",
+            "stage": "quarantine",
+            "message": "{\"quarantined\":true,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"before\":{\"admin_up\":false,\"operstate\":\"DOWN\"},\"after\":{\"admin_up\":false,\"operstate\":\"DOWN\"}}],\"baseline\":{\"installed\":true,\"verified\":true}}",
+            "observed_at": "2026-10-31T19:03:09.010538704Z"
+          },
+          {
+            "code": "TC_FOREIGN_FILTER",
+            "stage": "apply_quarantine",
+            "message": "{\"quarantined\":true,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"before\":{\"admin_up\":false,\"operstate\":\"DOWN\"},\"after\":{\"admin_up\":false,\"operstate\":\"DOWN\"}}],\"baseline\":{\"installed\":true,\"verified\":true}}",
+            "observed_at": "2026-10-31T19:03:09.010538704Z"
+          }
+        ],
+        "update": {
+          "stage": null,
+          "state": null,
+          "job_id": null,
+          "generation": null
+        },
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "netbird": {
+          "backend": "kernel",
+          "peer_id": null,
+          "version": null
+        },
+        "node_id": "01a19345-e6a4-744f-a898-cc348bb066f3",
+        "report_id": "01a19358-21d2-7e23-8bff-e4a2e859c2d0",
+        "data_health": "healthy",
+        "observed_at": "2026-10-31T19:03:09.010538704Z",
+        "tc_evidence": {
+          "phase": "verify",
+          "sha256": "d214cbe7f67cdf132e6bb0365e5dccae18fec9768939d5e2e94e455ef06253cb",
+          "read_at": "2026-10-31T19:03:08.998428604Z",
+          "rejected": null,
+          "verified": true,
+          "truncated": true,
+          "error_code": null,
+          "attachments": [
+            {
+              "objects": [
+                {
+                  "kind": "fq_codel",
+                  "handle": "3444:",
+                  "parent": "1:3444"
+                },
+                {
+                  "kind": "fq_codel",
+                  "handle": "81c9:",
+                  "parent": "1:81c9"
+                },
+                {
+                  "kind": "htb",
+                  "root": true,
+                  "handle": "1:"
+                }
+              ],
+              "interface": "fvmb0",
+              "attachment": "qdisc"
+            },
+            {
+              "objects": [
+                {
+                  "kind": "fq_codel",
+                  "handle": "3444:",
+                  "parent": "1:3444"
+                },
+                {
+                  "kind": "fq_codel",
+                  "handle": "81c9:",
+                  "parent": "1:81c9"
+                },
+                {
+                  "kind": "htb",
+                  "root": true,
+                  "handle": "1:"
+                }
+              ],
+              "interface": "fvup0",
+              "attachment": "qdisc"
+            },
+            {
+              "objects": [],
+              "interface": "fvmb0",
+              "attachment": "1:1"
+            },
+            {
+              "objects": [],
+              "interface": "fvmb0",
+              "attachment": "1:3444"
+            },
+            {
+              "objects": [],
+              "interface": "fvmb0",
+              "attachment": "1:81c9"
+            },
+            {
+              "objects": [],
+              "interface": "fvmb0",
+              "attachment": "1:fffe"
+            },
+            {
+              "objects": [],
+              "interface": "fvmb0",
+              "attachment": "3444:"
+            },
+            {
+              "objects": [],
+              "interface": "fvmb0",
+              "attachment": "81c9:"
+            },
+            {
+              "objects": [],
+              "interface": "fvmb0",
+              "attachment": "egress"
+            },
+            {
+              "objects": [],
+              "interface": "fvmb0",
+              "attachment": "ingress"
+            },
+            {
+              "objects": [],
+              "interface": "fvmb0",
+              "attachment": "root"
+            },
+            {
+              "objects": [],
+              "interface": "fvup0",
+              "attachment": "1:1"
+            },
+            {
+              "objects": [],
+              "interface": "fvup0",
+              "attachment": "1:3444"
+            },
+            {
+              "objects": [],
+              "interface": "fvup0",
+              "attachment": "1:81c9"
+            },
+            {
+              "objects": [],
+              "interface": "fvup0",
+              "attachment": "1:fffe"
+            },
+            {
+              "objects": [],
+              "interface": "fvup0",
+              "attachment": "3444:"
+            }
+          ],
+          "reads_total": 20,
+          "objects_total": 6,
+          "candidate_generation": "32"
+        },
+        "agent_version": "0.1.0",
+        "safety_status": "passed",
+        "current_release_id": "01a19345-e1b9-7916-83f4-05366397b575",
+        "provisioning_state": "ready",
+        "applied_policy_refs": {
+          "dns_generation": "1",
+          "fup_generation": "1",
+          "authorization_generation": "1"
+        },
+        "dns_policy_evidence": {
+          "feeds": [],
+          "outcome": "applied",
+          "applied_at": "2026-10-31T19:03:08.891488028Z",
+          "error_code": null,
+          "generation": "1",
+          "document_id": "01a19345-e697-7945-a04f-bee5ca81fbf2",
+          "content_sha256": "0207aa0a0c9c167ca022fa7483eb2856daec47ac8bc2cd4be82169c03b377416"
+        },
+        "node_incarnation_id": "01a19345-e8bf-711d-974d-fe15c08025b9",
+        "last_good_release_id": "01a19345-e1b9-7916-83f4-05366397b575",
+        "applied_binding_revision": "1",
+        "forwarding_block_reasons": [],
+        "applied_config_generation": "32",
+        "member_forwarding_enabled": true
+      },
+      "read_end": "2026-10-31T19:03:10.722885875Z",
+      "read_start": "2026-10-31T19:03:10.592892514Z",
+      "readback": "[{\"ifindex\":1,\"ifname\":\"lo\",\"flags\":[\"LOOPBACK\",\"UP\",\"LOWER_UP\"],\"mtu\":65536,\"qdisc\":\"noqueue\",\"operstate\":\"UNKNOWN\",\"linkmode\":\"DEFAULT\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"loopback\",\"address\":\"00:00:00:00:00:00\",\"broadcast\":\"00:00:00:00:00:00\"},{\"ifindex\":2,\"link_index\":5550,\"ifname\":\"fvup0\",\"flags\":[\"BROADCAST\",\"MULTICAST\",\"UP\",\"LOWER_UP\"],\"mtu\":1500,\"qdisc\":\"htb\",\"operstate\":\"UP\",\"linkmode\":\"DEFAULT\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"ether\",\"address\":\"a2:b8:01:b6:01:79\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"link_netnsid\":0},{\"ifindex\":3,\"link_index\":5551,\"ifname\":\"eth1\",\"flags\":[\"BROADCAST\",\"MULTICAST\",\"UP\",\"LOWER_UP\"],\"mtu\":1500,\"qdisc\":\"noqueue\",\"operstate\":\"UP\",\"linkmode\":\"DEFAULT\",\"group\":\"default\",\"link_type\":\"ether\",\"address\":\"2a:37:a1:1b:f5:b8\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"link_netnsid\":0},{\"ifindex\":4,\"ifname\":\"fvmb0\",\"flags\":[\"POINTOPOINT\",\"NOARP\",\"UP\",\"LOWER_UP\"],\"mtu\":1280,\"qdisc\":\"htb\",\"operstate\":\"UNKNOWN\",\"linkmode\":\"DEFAULT\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"none\"}]\n[{\"ifindex\":4,\"ifname\":\"fvmb0\",\"flags\":[\"POINTOPOINT\",\"NOARP\",\"UP\",\"LOWER_UP\"],\"mtu\":1280,\"qdisc\":\"htb\",\"operstate\":\"UNKNOWN\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"none\",\"addr_info\":[{\"family\":\"inet\",\"local\":\"100.86.208.230\",\"prefixlen\":16,\"broadcast\":\"100.86.255.255\",\"scope\":\"global\",\"label\":\"fvmb0\",\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295}]}]\n[{\"dst\":\"100.86.0.0/16\",\"protocol\":\"kernel\",\"scope\":\"link\",\"prefsrc\":\"100.86.208.230\",\"flags\":[]},{\"type\":\"local\",\"dst\":\"100.86.208.230\",\"table\":\"local\",\"protocol\":\"kernel\",\"scope\":\"host\",\"prefsrc\":\"100.86.208.230\",\"flags\":[]},{\"type\":\"broadcast\",\"dst\":\"100.86.255.255\",\"table\":\"local\",\"protocol\":\"kernel\",\"scope\":\"link\",\"prefsrc\":\"100.86.208.230\",\"flags\":[]},{\"type\":\"multicast\",\"dst\":\"ff00::/8\",\"table\":\"local\",\"protocol\":\"kernel\",\"metric\":256,\"flags\":[],\"pref\":\"medium\"}]\n[{\"kind\":\"htb\",\"handle\":\"1:\",\"root\":true,\"refcnt\":2,\"options\":{\"r2q\":10,\"default\":\"0xfffe\",\"direct_packets_stat\":0,\"direct_qlen\":1000}},{\"kind\":\"fq_codel\",\"handle\":\"3444:\",\"parent\":\"1:3444\",\"options\":{\"limit\":10240,\"flows\":1024,\"quantum\":1514,\"target\":4999,\"interval\":99999,\"memory_limit\":33554432,\"ecn\":true,\"drop_batch\":64}},{\"kind\":\"fq_codel\",\"handle\":\"81c9:\",\"parent\":\"1:81c9\",\"options\":{\"limit\":10240,\"flows\":1024,\"quantum\":1514,\"target\":4999,\"interval\":99999,\"memory_limit\":33554432,\"ecn\":true,\"drop_batch\":64}}]\n[]\nv1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 56926561649568\nwall_unix_ns 1793473389045278460\npolicy_expires_mono_ns 56967380199082\nbaseline_ok 1\nserving 1\ngeneration 32\nreason serving\nevidence {\"read_at\":\"2026-10-31T19:01:34.646820633Z\",\"initial_quarantine\":{\"quarantined\":true,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"before\":{\"admin_up\":true,\"operstate\":\"UNKNOWN\"},\"after\":{\"admin_up\":false,\"operstate\":\"DOWN\"}}],\"baseline\":{\"installed\":true,\"verified\":true}},\"code\":\"TC_FOREIGN_FILTER\",\"tc\":[{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"clsact\",\"handle\":\"ffff:\",\"parent\":\"ffff:fff1\"}]},{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\",\"handle\":\"1\",\"actions\":[\"mirred\"]},{\"kind\":\"flower\"}]},{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"3444:\",\"parent\":\"1:3444\"},{\"kind\":\"fq_codel\",\"handle\":\"81c9:\",\"parent\":\"1:81c9\"},{\"kind\":\"htb\",\"handle\":\"1:\",\"root\":true}]}],\"quarantine\":{\"quarantined\":true,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"before\":{\"admin_up\":false,\"operstate\":\"DOWN\"},\"after\":{\"admin_up\":false,\"operstate\":\"DOWN\"}}],\"baseline\":{\"installed\":true,\"verified\":true}},\"apply_quarantine\":{\"quarantined\":true,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"before\":{\"admin_up\":false,\"operstate\":\"DOWN\"},\"after\":{\"admin_up\":false,\"operstate\":\"DOWN\"}}],\"baseline\":{\"installed\":true,\"verified\":true}}}\n"
+    },
+    {
+      "clone_observation": {
+        "Source": {
+          "machine_id_sha256": "1d08d0b2f235ac6053da043f818e39f4ab5d5a56d317a207eba5d8a878591eb6",
+          "agent_spki_sha256": "4024186fa453059273dd6502ca7794df0c122942e08c89901fc74c5213d0f257",
+          "netbird_public_key_sha256": "1a913eff06ccfbe0ef852336ae228cb1f39226de136deff06a538a1af92a2ef5"
+        },
+        "Clone": {
+          "machine_id_sha256": "1d08d0b2f235ac6053da043f818e39f4ab5d5a56d317a207eba5d8a878591eb6",
+          "agent_spki_sha256": "4024186fa453059273dd6502ca7794df0c122942e08c89901fc74c5213d0f257",
+          "netbird_public_key_sha256": "1a913eff06ccfbe0ef852336ae228cb1f39226de136deff06a538a1af92a2ef5"
+        },
+        "same_identity": true,
+        "endpoint_rows": 1,
+        "conflicts": 1,
+        "mapping_frozen": true,
+        "SourceStage": "enrolled",
+        "CloneStage": "enrolled"
+      },
+      "kernel_ruleset": "table inet fvpn {\n\tcounter ctbase {\n\t\tpackets 41 bytes 1746\n\t}\n\n\tcounter ctv6 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctin {\n\t\tpackets 4 bytes 240\n\t}\n\n\tcounter ctbadns {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctdeny {\n\t\tpackets 3900 bytes 234000\n\t}\n\n\tcounter cthost {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctinv {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctnodn {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctunkd {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctunku {\n\t\tpackets 36 bytes 1431\n\t}\n\n\tcounter d_01a19346299978089d73f1268f72ee8e {\n\t\tpackets 1836 bytes 102922\n\t}\n\n\tcounter nd_01a19346299978089d73f1268f72ee8e {\n\t\tpackets 6 bytes 438\n\t}\n\n\tcounter nu_01a19346299978089d73f1268f72ee8e {\n\t\tpackets 6 bytes 372\n\t}\n\n\tcounter u_01a19346299978089d73f1268f72ee8e {\n\t\tpackets 2887 bytes 128787\n\t}\n\n\tcounter d_01a19346647979fd8bf1a7cf6bbecfbc {\n\t\tpackets 68 bytes 5499\n\t}\n\n\tcounter nd_01a19346647979fd8bf1a7cf6bbecfbc {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter nu_01a19346647979fd8bf1a7cf6bbecfbc {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter u_01a19346647979fd8bf1a7cf6bbecfbc {\n\t\tpackets 94 bytes 6028\n\t}\n\n\tcounter d_01a193469f89718c8c44bf3078115491 {\n\t\tpackets 16 bytes 3038\n\t}\n\n\tcounter nd_01a193469f89718c8c44bf3078115491 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter nu_01a193469f89718c8c44bf3078115491 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter u_01a193469f89718c8c44bf3078115491 {\n\t\tpackets 17 bytes 2266\n\t}\n\n\tcounter d_01a193516052713cb0b8f8baee60e27c {\n\t\tpackets 8 bytes 1519\n\t}\n\n\tcounter nd_01a193516052713cb0b8f8baee60e27c {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter nu_01a193516052713cb0b8f8baee60e27c {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter u_01a193516052713cb0b8f8baee60e27c {\n\t\tpackets 8 bytes 1113\n\t}\n\n\tset allowed_v4 {\n\t\ttype ipv4_addr\n\t\tflags timeout\n\t}\n\n\tset denied_v4 {\n\t\ttype ipv4_addr\n\t\tflags interval\n\t\tauto-merge\n\t\telements = { 0.0.0.0/8, 10.0.0.0/8,\n\t\t\t     100.64.0.0/10, 127.0.0.0/8,\n\t\t\t     169.254.0.0/16, 172.16.0.0/12,\n\t\t\t     192.0.0.0/24, 192.0.2.0/24,\n\t\t\t     192.88.99.0/24, 192.168.0.0/16,\n\t\t\t     198.18.0.0/15, 198.51.100.0/24,\n\t\t\t     203.0.113.0/24, 224.0.0.0/3 }\n\t}\n\n\tset host_v4 {\n\t\ttype ipv4_addr\n\t\tflags interval\n\t\tauto-merge\n\t\telements = { 192.0.6.20 }\n\t}\n\n\tset resolver_v4 {\n\t\ttype ipv4_addr\n\t\telements = { 192.0.6.53 }\n\t}\n\n\tchain forward {\n\t\ttype filter hook forward priority mangle; policy drop;\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=0 fvpn_baseline=1 fvpn_metering=forward_admission_v1\"\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a19346-038e-7917-875a-31760d61d39f:81c9\"\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a19346-678f-7ccc-98a4-f73fb7ecdae4:3444\"\n\t\tiifname \"fvmb0\" counter name \"ctbase\" drop\n\t\toifname \"fvmb0\" counter name \"ctbase\" drop\n\t\tiifname \"fvmb0\" meta nfproto ipv6 counter name \"ctv6\" drop\n\t\toifname \"fvmb0\" meta nfproto ipv6 counter name \"ctv6\" drop\n\t}\n\n\tchain input {\n\t\ttype filter hook input priority mangle; policy accept;\n\t\tiifname \"fvmb0\" counter name \"ctin\" drop\n\t\tip saddr 100.64.0.0/10 counter name \"ctin\" drop\n\t}\n\n\tchain output {\n\t\ttype filter hook output priority mangle; policy accept;\n\t}\n\n\tchain postrouting {\n\t\ttype nat hook postrouting priority srcnat; policy accept;\n\t}\n}\n",
+      "label": "clone acceptance window",
+      "observation": {
+        "lease": {
+          "lease_id": "f3f64ae4-25b2-45a6-984b-42b4e4a9f5eb",
+          "expires_at": "2026-10-31T19:04:11.128178346Z"
+        },
+        "usage": {
+          "blocked_seq": "28",
+          "ledger_epoch": "b072b377-6b57-478b-adc5-98a08ed06db3",
+          "meter_epoch_id": null,
+          "oldest_unacked_at": "2026-10-31T18:54:08.738325214Z",
+          "acked_archive_bytes": "17501",
+          "unacked_event_count": 147,
+          "central_acked_through": "27",
+          "unacked_payload_bytes": "94999",
+          "last_durable_event_seq": "174"
+        },
+        "checks": [
+          {
+            "name": "dns_policy",
+            "status": "passed",
+            "error_code": null,
+            "observed_at": "2026-10-31T19:03:11.262293483Z"
+          },
+          {
+            "name": "internet_only",
+            "status": "passed",
+            "error_code": null,
+            "observed_at": "2026-10-31T19:03:11.262293483Z"
+          },
+          {
+            "name": "lease",
+            "status": "failed",
+            "error_code": "TC_FOREIGN_FILTER",
+            "observed_at": "2026-10-31T19:03:11.262293483Z"
+          },
+          {
+            "name": "meter_path",
+            "status": "passed",
+            "error_code": null,
+            "observed_at": "2026-10-31T19:03:11.262293483Z"
+          },
+          {
+            "name": "policy_signature",
+            "status": "passed",
+            "error_code": null,
+            "observed_at": "2026-10-31T19:03:11.262293483Z"
+          },
+          {
+            "name": "qos",
+            "status": "failed",
+            "error_code": "TC_FOREIGN_FILTER",
+            "observed_at": "2026-10-31T19:03:11.262293483Z"
+          },
+          {
+            "name": "release_supported",
+            "status": "passed",
+            "error_code": null,
+            "observed_at": "2026-10-31T19:03:11.262293483Z"
+          },
+          {
+            "name": "source_binding",
+            "status": "failed",
+            "error_code": "TC_FOREIGN_FILTER",
+            "observed_at": "2026-10-31T19:03:11.262293483Z"
+          },
+          {
+            "name": "storage",
+            "status": "passed",
+            "error_code": null,
+            "observed_at": "2026-10-31T19:03:11.262293483Z"
+          },
+          {
+            "name": "tunnel_probe",
+            "detail": "Egress probe used no extra target.",
+            "status": "failed",
+            "error_code": "HEALTH_CHECK_FAILED",
+            "observed_at": "2026-10-31T19:03:11.262293483Z"
+          }
+        ],
+        "errors": [
+          {
+            "code": "AWAITING_MEMBER_GRANTS",
+            "stage": "lease",
+            "message": "Serving lease has no member grants yet.",
+            "observed_at": "2026-10-31T19:03:11.262293483Z"
+          },
+          {
+            "code": "HEALTH_CHECK_FAILED",
+            "stage": "probe",
+            "message": "tunnel_probe",
+            "observed_at": "2026-10-31T19:03:11.262293483Z"
+          },
+          {
+            "code": "TC_FOREIGN_FILTER",
+            "stage": "apply",
+            "message": "TC_FOREIGN_FILTER",
+            "observed_at": "2026-10-31T19:03:11.140695677Z"
+          },
+          {
+            "code": "HEALTH_CHECK_FAILED",
+            "stage": "identity",
+            "message": "identity_frozen",
+            "observed_at": "2026-10-31T19:03:11.262293483Z"
+          },
+          {
+            "code": "TC_FOREIGN_FILTER",
+            "stage": "tc_evidence",
+            "message": "{\"candidate_generation\":\"32\",\"read_at\":\"2026-10-31T19:03:11.140720834Z\",\"source\":\"rejected\"}",
+            "observed_at": "2026-10-31T19:03:11.140720834Z"
+          },
+          {
+            "code": "TC_FOREIGN_FILTER",
+            "stage": "tc_evidence",
+            "message": "{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}",
+            "observed_at": "2026-10-31T19:03:11.140720834Z"
+          },
+          {
+            "code": "TC_FOREIGN_FILTER",
+            "stage": "initial_quarantine",
+            "message": "{\"quarantined\":true,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"before\":{\"admin_up\":true,\"operstate\":\"UNKNOWN\"},\"after\":{\"admin_up\":false,\"operstate\":\"DOWN\"}}],\"baseline\":{\"installed\":true,\"verified\":true}}",
+            "observed_at": "2026-10-31T19:03:11.262497519Z"
+          },
+          {
+            "code": "TC_FOREIGN_FILTER",
+            "stage": "quarantine",
+            "message": "{\"quarantined\":true,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"before\":{\"admin_up\":true,\"operstate\":\"UNKNOWN\"},\"after\":{\"admin_up\":false,\"operstate\":\"DOWN\"}}],\"baseline\":{\"installed\":true,\"verified\":true}}",
+            "observed_at": "2026-10-31T19:03:11.262497519Z"
+          }
+        ],
+        "update": {
+          "stage": null,
+          "state": null,
+          "job_id": null,
+          "generation": null
+        },
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "netbird": {
+          "backend": "kernel",
+          "peer_id": null,
+          "version": null
+        },
+        "node_id": "01a19345-e6a4-744f-a898-cc348bb066f3",
+        "report_id": "01a19358-2a9e-77bd-a113-95821ba06735",
+        "data_health": "failed",
+        "observed_at": "2026-10-31T19:03:11.262497519Z",
+        "tc_evidence": {
+          "phase": "verify",
+          "sha256": "012466f480280825f4be68bd43bc0c963476a3f5a54ee486910edc7d1e9b4aed",
+          "read_at": "2026-10-31T19:03:11.140581397Z",
+          "rejected": {
+            "error": "read_failed",
+            "objects": [],
+            "interface": "fvmb0",
+            "attachment": "qdisc"
+          },
+          "verified": false,
+          "truncated": false,
+          "error_code": "TC_FOREIGN_FILTER",
+          "attachments": [
+            {
+              "error": "read_failed",
+              "objects": [],
+              "interface": "fvmb0",
+              "attachment": "qdisc"
+            }
+          ],
+          "reads_total": 1,
+          "objects_total": 0,
+          "candidate_generation": "32"
+        },
+        "agent_version": "0.1.0",
+        "safety_status": "failed",
+        "current_release_id": "01a19345-e1b9-7916-83f4-05366397b575",
+        "provisioning_state": "applying",
+        "applied_policy_refs": null,
+        "dns_policy_evidence": {
+          "feeds": [],
+          "outcome": "applied",
+          "applied_at": "2026-10-31T19:03:10.985776774Z",
+          "error_code": null,
+          "generation": "1",
+          "document_id": "01a19345-e697-7945-a04f-bee5ca81fbf2",
+          "content_sha256": "0207aa0a0c9c167ca022fa7483eb2856daec47ac8bc2cd4be82169c03b377416"
+        },
+        "node_incarnation_id": "01a19345-e8bf-711d-974d-fe15c08025b9",
+        "last_good_release_id": "01a19345-e1b9-7916-83f4-05366397b575",
+        "applied_binding_revision": null,
+        "forwarding_block_reasons": [
+          "identity_invalid",
+          "safety_check_failed",
+          "awaiting_member_grants"
+        ],
+        "applied_config_generation": null,
+        "member_forwarding_enabled": false
+      },
+      "read_end": "2026-10-31T19:03:11.871395153Z",
+      "read_start": "2026-10-31T19:03:11.845455642Z",
+      "readback": "[{\"ifindex\":1,\"ifname\":\"lo\",\"flags\":[\"LOOPBACK\",\"UP\",\"LOWER_UP\"],\"mtu\":65536,\"qdisc\":\"noqueue\",\"operstate\":\"UNKNOWN\",\"linkmode\":\"DEFAULT\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"loopback\",\"address\":\"00:00:00:00:00:00\",\"broadcast\":\"00:00:00:00:00:00\"},{\"ifindex\":2,\"link_index\":5550,\"ifname\":\"fvup0\",\"flags\":[\"BROADCAST\",\"MULTICAST\",\"UP\",\"LOWER_UP\"],\"mtu\":1500,\"qdisc\":\"noqueue\",\"operstate\":\"UP\",\"linkmode\":\"DEFAULT\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"ether\",\"address\":\"a2:b8:01:b6:01:79\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"link_netnsid\":0},{\"ifindex\":3,\"link_index\":5551,\"ifname\":\"eth1\",\"flags\":[\"BROADCAST\",\"MULTICAST\",\"UP\",\"LOWER_UP\"],\"mtu\":1500,\"qdisc\":\"noqueue\",\"operstate\":\"UP\",\"linkmode\":\"DEFAULT\",\"group\":\"default\",\"link_type\":\"ether\",\"address\":\"2a:37:a1:1b:f5:b8\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"link_netnsid\":0},{\"ifindex\":4,\"ifname\":\"fvmb0\",\"flags\":[\"POINTOPOINT\",\"NOARP\",\"UP\",\"LOWER_UP\"],\"mtu\":1280,\"qdisc\":\"noqueue\",\"operstate\":\"UNKNOWN\",\"linkmode\":\"DEFAULT\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"none\"}]\n[{\"ifindex\":4,\"ifname\":\"fvmb0\",\"flags\":[\"POINTOPOINT\",\"NOARP\",\"UP\",\"LOWER_UP\"],\"mtu\":1280,\"qdisc\":\"noqueue\",\"operstate\":\"UNKNOWN\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"none\",\"addr_info\":[{\"family\":\"inet\",\"local\":\"100.86.208.230\",\"prefixlen\":16,\"broadcast\":\"100.86.255.255\",\"scope\":\"global\",\"label\":\"fvmb0\",\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295}]}]\n[{\"dst\":\"100.86.0.0/16\",\"protocol\":\"kernel\",\"scope\":\"link\",\"prefsrc\":\"100.86.208.230\",\"flags\":[]},{\"type\":\"local\",\"dst\":\"100.86.208.230\",\"table\":\"local\",\"protocol\":\"kernel\",\"scope\":\"host\",\"prefsrc\":\"100.86.208.230\",\"flags\":[]},{\"type\":\"broadcast\",\"dst\":\"100.86.255.255\",\"table\":\"local\",\"protocol\":\"kernel\",\"scope\":\"link\",\"prefsrc\":\"100.86.208.230\",\"flags\":[]},{\"type\":\"multicast\",\"dst\":\"ff00::/8\",\"table\":\"local\",\"protocol\":\"kernel\",\"metric\":256,\"flags\":[],\"pref\":\"medium\"}]\n[{\"kind\":\"noqueue\",\"handle\":\"0:\",\"root\":true,\"refcnt\":2,\"options\":{}}]\n[]\nv1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 56928751414850\nwall_unix_ns 1793473391235044106\npolicy_expires_mono_ns 0\nbaseline_ok 1\nserving 0\ngeneration 32\nreason identity_frozen\n"
+    },
+    {
+      "kernel_ruleset": "table inet fvpn {\n\tcounter ctbase {\n\t\tpackets 41 bytes 1746\n\t}\n\n\tcounter ctv6 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctin {\n\t\tpackets 4 bytes 240\n\t}\n\n\tcounter ctbadns {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctdeny {\n\t\tpackets 3900 bytes 234000\n\t}\n\n\tcounter cthost {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctinv {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctnodn {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctunkd {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctunku {\n\t\tpackets 36 bytes 1431\n\t}\n\n\tcounter d_01a19346299978089d73f1268f72ee8e {\n\t\tpackets 1836 bytes 102922\n\t}\n\n\tcounter nd_01a19346299978089d73f1268f72ee8e {\n\t\tpackets 6 bytes 438\n\t}\n\n\tcounter nu_01a19346299978089d73f1268f72ee8e {\n\t\tpackets 6 bytes 372\n\t}\n\n\tcounter u_01a19346299978089d73f1268f72ee8e {\n\t\tpackets 2887 bytes 128787\n\t}\n\n\tcounter d_01a19346647979fd8bf1a7cf6bbecfbc {\n\t\tpackets 68 bytes 5499\n\t}\n\n\tcounter nd_01a19346647979fd8bf1a7cf6bbecfbc {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter nu_01a19346647979fd8bf1a7cf6bbecfbc {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter u_01a19346647979fd8bf1a7cf6bbecfbc {\n\t\tpackets 94 bytes 6028\n\t}\n\n\tcounter d_01a193469f89718c8c44bf3078115491 {\n\t\tpackets 16 bytes 3038\n\t}\n\n\tcounter nd_01a193469f89718c8c44bf3078115491 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter nu_01a193469f89718c8c44bf3078115491 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter u_01a193469f89718c8c44bf3078115491 {\n\t\tpackets 17 bytes 2266\n\t}\n\n\tcounter d_01a193516052713cb0b8f8baee60e27c {\n\t\tpackets 8 bytes 1519\n\t}\n\n\tcounter nd_01a193516052713cb0b8f8baee60e27c {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter nu_01a193516052713cb0b8f8baee60e27c {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter u_01a193516052713cb0b8f8baee60e27c {\n\t\tpackets 8 bytes 1113\n\t}\n\n\tset allowed_v4 {\n\t\ttype ipv4_addr\n\t\tflags timeout\n\t}\n\n\tset denied_v4 {\n\t\ttype ipv4_addr\n\t\tflags interval\n\t\tauto-merge\n\t\telements = { 0.0.0.0/8, 10.0.0.0/8,\n\t\t\t     100.64.0.0/10, 127.0.0.0/8,\n\t\t\t     169.254.0.0/16, 172.16.0.0/12,\n\t\t\t     192.0.0.0/24, 192.0.2.0/24,\n\t\t\t     192.88.99.0/24, 192.168.0.0/16,\n\t\t\t     198.18.0.0/15, 198.51.100.0/24,\n\t\t\t     203.0.113.0/24, 224.0.0.0/3 }\n\t}\n\n\tset host_v4 {\n\t\ttype ipv4_addr\n\t\tflags interval\n\t\tauto-merge\n\t\telements = { 192.0.6.20 }\n\t}\n\n\tset resolver_v4 {\n\t\ttype ipv4_addr\n\t\telements = { 192.0.6.53 }\n\t}\n\n\tchain forward {\n\t\ttype filter hook forward priority mangle; policy drop;\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=0 fvpn_baseline=1 fvpn_metering=forward_admission_v1\"\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a19346-038e-7917-875a-31760d61d39f:81c9\"\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a19346-678f-7ccc-98a4-f73fb7ecdae4:3444\"\n\t\tiifname \"fvmb0\" counter name \"ctbase\" drop\n\t\toifname \"fvmb0\" counter name \"ctbase\" drop\n\t\tiifname \"fvmb0\" meta nfproto ipv6 counter name \"ctv6\" drop\n\t\toifname \"fvmb0\" meta nfproto ipv6 counter name \"ctv6\" drop\n\t}\n\n\tchain input {\n\t\ttype filter hook input priority mangle; policy accept;\n\t\tiifname \"fvmb0\" counter name \"ctin\" drop\n\t\tip saddr 100.64.0.0/10 counter name \"ctin\" drop\n\t}\n\n\tchain output {\n\t\ttype filter hook output priority mangle; policy accept;\n\t}\n\n\tchain postrouting {\n\t\ttype nat hook postrouting priority srcnat; policy accept;\n\t}\n}\n",
+      "label": "freeze latch held",
+      "observation": {
+        "lease": {
+          "lease_id": "fb312313-cbdf-4a94-aa86-7e0116cd8ff0",
+          "expires_at": "2026-10-31T19:04:12.129281659Z"
+        },
+        "usage": {
+          "blocked_seq": "28",
+          "ledger_epoch": "b072b377-6b57-478b-adc5-98a08ed06db3",
+          "meter_epoch_id": null,
+          "oldest_unacked_at": "2026-10-31T18:54:08.738325214Z",
+          "acked_archive_bytes": "17501",
+          "unacked_event_count": 147,
+          "central_acked_through": "27",
+          "unacked_payload_bytes": "94999",
+          "last_durable_event_seq": "174"
+        },
+        "checks": [
+          {
+            "name": "dns_policy",
+            "status": "passed",
+            "error_code": null,
+            "observed_at": "2026-10-31T19:03:12.210152465Z"
+          },
+          {
+            "name": "internet_only",
+            "status": "passed",
+            "error_code": null,
+            "observed_at": "2026-10-31T19:03:12.210152465Z"
+          },
+          {
+            "name": "lease",
+            "status": "failed",
+            "error_code": "TC_FOREIGN_FILTER",
+            "observed_at": "2026-10-31T19:03:12.210152465Z"
+          },
+          {
+            "name": "meter_path",
+            "status": "passed",
+            "error_code": null,
+            "observed_at": "2026-10-31T19:03:12.210152465Z"
+          },
+          {
+            "name": "policy_signature",
+            "status": "passed",
+            "error_code": null,
+            "observed_at": "2026-10-31T19:03:12.210152465Z"
+          },
+          {
+            "name": "qos",
+            "status": "failed",
+            "error_code": "TC_FOREIGN_FILTER",
+            "observed_at": "2026-10-31T19:03:12.210152465Z"
+          },
+          {
+            "name": "release_supported",
+            "status": "passed",
+            "error_code": null,
+            "observed_at": "2026-10-31T19:03:12.210152465Z"
+          },
+          {
+            "name": "source_binding",
+            "status": "failed",
+            "error_code": "TC_FOREIGN_FILTER",
+            "observed_at": "2026-10-31T19:03:12.210152465Z"
+          },
+          {
+            "name": "storage",
+            "status": "passed",
+            "error_code": null,
+            "observed_at": "2026-10-31T19:03:12.210152465Z"
+          },
+          {
+            "name": "tunnel_probe",
+            "detail": "Egress probe used no extra target.",
+            "status": "passed",
+            "error_code": null,
+            "observed_at": "2026-10-31T19:03:12.210152465Z"
+          }
+        ],
+        "errors": [
+          {
+            "code": "AWAITING_MEMBER_GRANTS",
+            "stage": "lease",
+            "message": "Serving lease has no member grants yet.",
+            "observed_at": "2026-10-31T19:03:12.210152465Z"
+          },
+          {
+            "code": "TC_FOREIGN_FILTER",
+            "stage": "apply",
+            "message": "TC_FOREIGN_FILTER",
+            "observed_at": "2026-10-31T19:03:11.140695677Z"
+          },
+          {
+            "code": "HEALTH_CHECK_FAILED",
+            "stage": "identity",
+            "message": "identity_frozen",
+            "observed_at": "2026-10-31T19:03:12.210152465Z"
+          },
+          {
+            "code": "TC_FOREIGN_FILTER",
+            "stage": "tc_evidence",
+            "message": "{\"candidate_generation\":\"32\",\"read_at\":\"2026-10-31T19:03:11.140720834Z\",\"source\":\"rejected\"}",
+            "observed_at": "2026-10-31T19:03:11.140720834Z"
+          },
+          {
+            "code": "TC_FOREIGN_FILTER",
+            "stage": "tc_evidence",
+            "message": "{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}",
+            "observed_at": "2026-10-31T19:03:11.140720834Z"
+          },
+          {
+            "code": "TC_FOREIGN_FILTER",
+            "stage": "initial_quarantine",
+            "message": "{\"quarantined\":true,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"before\":{\"admin_up\":true,\"operstate\":\"UNKNOWN\"},\"after\":{\"admin_up\":false,\"operstate\":\"DOWN\"}}],\"baseline\":{\"installed\":true,\"verified\":true}}",
+            "observed_at": "2026-10-31T19:03:12.210005487Z"
+          },
+          {
+            "code": "TC_FOREIGN_FILTER",
+            "stage": "quarantine",
+            "message": "{\"quarantined\":true,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"before\":{\"admin_up\":false,\"operstate\":\"DOWN\"},\"after\":{\"admin_up\":false,\"operstate\":\"DOWN\"}}],\"baseline\":{\"installed\":true,\"verified\":true}}",
+            "observed_at": "2026-10-31T19:03:12.210005487Z"
+          }
+        ],
+        "update": {
+          "stage": null,
+          "state": null,
+          "job_id": null,
+          "generation": null
+        },
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "netbird": {
+          "backend": "kernel",
+          "peer_id": null,
+          "version": null
+        },
+        "node_id": "01a19345-e6a4-744f-a898-cc348bb066f3",
+        "report_id": "01a19358-2e52-7527-b791-f9a896f7cff0",
+        "data_health": "healthy",
+        "observed_at": "2026-10-31T19:03:12.210005487Z",
+        "tc_evidence": {
+          "phase": "verify",
+          "sha256": "1ece0c59a69ede7189b07cae26efda1411305903611f1a3f24a21da82fe2804e",
+          "read_at": "2026-10-31T19:03:12.190994535Z",
+          "rejected": null,
+          "verified": false,
+          "truncated": false,
+          "error_code": "GENERATION_MISMATCH",
+          "attachments": [
+            {
+              "objects": [
+                {
+                  "kind": "noqueue",
+                  "root": true,
+                  "handle": "0:"
+                }
+              ],
+              "interface": "fvmb0",
+              "attachment": "qdisc"
+            },
+            {
+              "objects": [
+                {
+                  "kind": "noqueue",
+                  "root": true,
+                  "handle": "0:"
+                }
+              ],
+              "interface": "fvup0",
+              "attachment": "qdisc"
+            },
+            {
+              "objects": [],
+              "interface": "fvmb0",
+              "attachment": "egress"
+            },
+            {
+              "objects": [],
+              "interface": "fvmb0",
+              "attachment": "ingress"
+            },
+            {
+              "objects": [],
+              "interface": "fvmb0",
+              "attachment": "root"
+            },
+            {
+              "objects": [],
+              "interface": "fvup0",
+              "attachment": "egress"
+            },
+            {
+              "objects": [],
+              "interface": "fvup0",
+              "attachment": "ingress"
+            },
+            {
+              "objects": [],
+              "interface": "fvup0",
+              "attachment": "root"
+            }
+          ],
+          "reads_total": 8,
+          "objects_total": 2,
+          "candidate_generation": "32"
+        },
+        "agent_version": "0.1.0",
+        "safety_status": "failed",
+        "current_release_id": "01a19345-e1b9-7916-83f4-05366397b575",
+        "provisioning_state": "applying",
+        "applied_policy_refs": null,
+        "dns_policy_evidence": {
+          "feeds": [],
+          "outcome": "applied",
+          "applied_at": "2026-10-31T19:03:12.155436566Z",
+          "error_code": null,
+          "generation": "1",
+          "document_id": "01a19345-e697-7945-a04f-bee5ca81fbf2",
+          "content_sha256": "0207aa0a0c9c167ca022fa7483eb2856daec47ac8bc2cd4be82169c03b377416"
+        },
+        "node_incarnation_id": "01a19345-e8bf-711d-974d-fe15c08025b9",
+        "last_good_release_id": "01a19345-e1b9-7916-83f4-05366397b575",
+        "applied_binding_revision": null,
+        "forwarding_block_reasons": [
+          "identity_invalid",
+          "safety_check_failed",
+          "awaiting_member_grants"
+        ],
+        "applied_config_generation": null,
+        "member_forwarding_enabled": false
+      },
+      "read_end": "2026-10-31T19:03:14.92637206Z",
+      "read_start": "2026-10-31T19:03:14.899662277Z",
+      "readback": "[{\"ifindex\":1,\"ifname\":\"lo\",\"flags\":[\"LOOPBACK\",\"UP\",\"LOWER_UP\"],\"mtu\":65536,\"qdisc\":\"noqueue\",\"operstate\":\"UNKNOWN\",\"linkmode\":\"DEFAULT\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"loopback\",\"address\":\"00:00:00:00:00:00\",\"broadcast\":\"00:00:00:00:00:00\"},{\"ifindex\":2,\"link_index\":5550,\"ifname\":\"fvup0\",\"flags\":[\"BROADCAST\",\"MULTICAST\",\"UP\",\"LOWER_UP\"],\"mtu\":1500,\"qdisc\":\"noqueue\",\"operstate\":\"UP\",\"linkmode\":\"DEFAULT\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"ether\",\"address\":\"a2:b8:01:b6:01:79\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"link_netnsid\":0},{\"ifindex\":3,\"link_index\":5551,\"ifname\":\"eth1\",\"flags\":[\"BROADCAST\",\"MULTICAST\",\"UP\",\"LOWER_UP\"],\"mtu\":1500,\"qdisc\":\"noqueue\",\"operstate\":\"UP\",\"linkmode\":\"DEFAULT\",\"group\":\"default\",\"link_type\":\"ether\",\"address\":\"2a:37:a1:1b:f5:b8\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"link_netnsid\":0},{\"ifindex\":4,\"ifname\":\"fvmb0\",\"flags\":[\"POINTOPOINT\",\"NOARP\",\"UP\",\"LOWER_UP\"],\"mtu\":1280,\"qdisc\":\"noqueue\",\"operstate\":\"UNKNOWN\",\"linkmode\":\"DEFAULT\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"none\"}]\n[{\"ifindex\":4,\"ifname\":\"fvmb0\",\"flags\":[\"POINTOPOINT\",\"NOARP\",\"UP\",\"LOWER_UP\"],\"mtu\":1280,\"qdisc\":\"noqueue\",\"operstate\":\"UNKNOWN\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"none\",\"addr_info\":[{\"family\":\"inet\",\"local\":\"100.86.208.230\",\"prefixlen\":16,\"broadcast\":\"100.86.255.255\",\"scope\":\"global\",\"label\":\"fvmb0\",\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295}]}]\n[{\"dst\":\"100.86.0.0/16\",\"protocol\":\"kernel\",\"scope\":\"link\",\"prefsrc\":\"100.86.208.230\",\"flags\":[]},{\"type\":\"local\",\"dst\":\"100.86.208.230\",\"table\":\"local\",\"protocol\":\"kernel\",\"scope\":\"host\",\"prefsrc\":\"100.86.208.230\",\"flags\":[]},{\"type\":\"broadcast\",\"dst\":\"100.86.255.255\",\"table\":\"local\",\"protocol\":\"kernel\",\"scope\":\"link\",\"prefsrc\":\"100.86.208.230\",\"flags\":[]},{\"type\":\"multicast\",\"dst\":\"ff00::/8\",\"table\":\"local\",\"protocol\":\"kernel\",\"metric\":256,\"flags\":[],\"pref\":\"medium\"}]\n[{\"kind\":\"noqueue\",\"handle\":\"0:\",\"root\":true,\"refcnt\":2,\"options\":{}}]\n[]\nv1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 56931727528786\nwall_unix_ns 1793473394211157701\npolicy_expires_mono_ns 0\nbaseline_ok 1\nserving 0\ngeneration 32\nreason identity_frozen\n"
+    }
+  ],
+  "started_at": "2026-10-31T19:02:49.175285966Z",
+  "status": "requires receiver correlation"
+}

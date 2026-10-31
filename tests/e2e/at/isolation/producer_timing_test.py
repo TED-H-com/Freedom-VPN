@@ -81,6 +81,40 @@ class CorrelationTests(unittest.TestCase):
         self.assertEqual(len(valid['verifiers']),2)
         self.assertEqual(len(valid['recovery_double_verifiers']),1)
 
+    def test_baseline_heartbeat_sources_and_nearest_rank(self):
+        rows=fixture()
+        anchor=dict(mono_before_ns='301',mono_after_ns='303',wall='2026-10-31T00:00:00Z')
+        rows += [dict(run_id='run',boot_id='boot',sequence='2',source='baseline',anchor=anchor,
+                      baseline=dict(start_ns='250',end_ns='280',cause='policy_deadline',succeeded=True)),
+                 dict(run_id='run',boot_id='boot',sequence='3',source='heartbeat',anchor=anchor,
+                      heartbeat=dict(mono_ns='290',policy_expires_mono_ns='0',generation='1',written=True))]
+        valid=p.validate_operations(rows)
+        self.assertEqual(valid['snapshots'],3)
+        self.assertEqual(len(valid['producer_rows']),2)
+        self.assertEqual(valid['source_counts'],{'apply':1,'baseline':1,'heartbeat':1})
+        loss=p.correlate(packet(260),valid)
+        self.assertEqual(loss['baseline_window_overlap'][0]['baseline']['cause'],'policy_deadline')
+        self.assertIsNone(loss['last_written_heartbeat'])
+        loss=p.correlate(packet(310),valid)
+        self.assertEqual(loss['last_completed_baseline']['sequence'],'2')
+        self.assertEqual(loss['last_written_heartbeat']['sequence'],'3')
+        self.assertEqual(valid['brackets']['outer_guard']['p99_ns'],'30')
+        self.assertEqual(valid['brackets']['completed_guard_install_command']['max_ns'],'15')
+        for kind in ('baseline','heartbeat'):
+            bad=copy.deepcopy(rows)
+            bad[1 if kind=='baseline' else 2][kind]['end_ns' if kind=='baseline' else 'mono_ns']='400'
+            with self.assertRaises(ValueError):p.validate_operations(bad)
+        # Two completed guards: nearest rank p50 is the first, not their mean.
+        second=copy.deepcopy(rows[0]);second['sequence']='4'
+        second['timing']['deadline']['release_end_ns']='146'
+        valid=p.validate_operations(rows+[second])
+        self.assertEqual(valid['brackets']['outer_guard']['p50_ns'],'30')
+        self.assertEqual(valid['brackets']['outer_guard']['p90_ns'],'31')
+        second['timing']['succeeded']=False
+        valid=p.validate_operations(rows+[second])
+        self.assertEqual(len(valid['failed_applies']),1)
+        self.assertEqual(valid['brackets']['outer_guard']['count'],2)
+
     def test_clock_namespace_mismatch_and_missing_ingress_rejected(self):
         clock=dict(boot_id='boot',time_namespace='time:1',offsets='monotonic 0 0\nboottime 0 0',clock='CLOCK_MONOTONIC')
         other=dict(clock,time_namespace='time:2')
