@@ -8,7 +8,7 @@ The latter does not clear the former. No product or NetBird MTU, MSS, nft
 policy or dependency change is justified or made here.
 
 Scope: AT09 / EXIT02 / APP01 / NFR01 (§19), MTU policy §8.3 and SEC02.
-Sources are the [original members row](../e2e/at/members/AT09.json),
+Sources are the [original members row](../e2e/at/members/history/follow-up-8/AT09.json),
 [devstack 18 overview](../e2e/runs/2026-10-31/followup18/README.md),
 [2454c833 captures](../e2e/runs/2026-10-31/followup18/2454c833-ae93-48e0-96b0-00dee7cc3117/native-mtu-comparison.json),
 [daf790fc captures](../e2e/runs/2026-10-31/followup18/daf790fc-81f7-49a2-8a65-f3ec8faec656/native-mtu-comparison.json)
