@@ -541,7 +541,38 @@ func (s *liveSuite) evalAT19(t *testing.T) Record {
 	}
 
 	// 4. Transition 2: fup.member_generation_changed via usage ingestion moving memberB across the Tier 2 threshold (6000 B -> 5Mbit/2Mbit)
-	// Under the active mode=enforce policy, memberB starts in Tier 0 (0 B < 6000 B, 100Mbit/50Mbit, fair_use.applying == false).
+	// Ensure memberB starts at 0 bytes (Tier 0, 100Mbit/50Mbit) via audited negative adjustment if a prior run left usage on memberB.
+	var curBUp, curBDown int64
+	var curBPeriod string
+	_ = s.pool.QueryRow(s.ctx, `
+		SELECT period, COALESCE(upload_bytes, 0)::bigint, COALESCE(download_bytes, 0)::bigint
+		FROM usage_rollups
+		WHERE member_id = $1 AND granularity = 'month'
+		ORDER BY period_start DESC, projection_generation DESC
+		LIMIT 1
+	`, s.memberB.memberID).Scan(&curBPeriod, &curBUp, &curBDown)
+	if curBUp+curBDown > 0 {
+		var adjActor string
+		_ = s.pool.QueryRow(s.ctx, `SELECT id::text FROM admin_identities LIMIT 1`).Scan(&adjActor)
+		if adjActor == "" {
+			adjActor = "00000000-0000-0000-0000-000000000003"
+		}
+		_, adjCode, adjErr := s.runUsageAdmin("adjust",
+			"-member-id", s.memberB.memberID,
+			"-period", curBPeriod,
+			"-upload-bytes", fmt.Sprintf("-%d", curBUp),
+			"-download-bytes", fmt.Sprintf("-%d", curBDown),
+			"-actor", adjActor,
+			"-reason", "TEST ONLY reset memberB to Tier 0 before AT19 Transition 2",
+		)
+		if adjErr != nil || adjCode != 0 {
+			t.Fatalf("AT19 reset memberB usage via fvpn-usage-admin adjust failed: code=%d err=%v", adjCode, adjErr)
+		}
+		_ = s.waitFor(15*time.Second, func() bool {
+			_, _, tierIdx, downBps, _ := s.queryFUPMemberState(s.memberB.memberID)
+			return tierIdx == 0 && downBps == 100000000
+		})
+	}
 	_, _, _, _ = s.ackNodeGeneration(s.nodeID, s.incarnationID, s.agentClient, 0)
 	_, _, _, _ = s.ackNodeGeneration(s.node2ID, s.incarnation2ID, s.node2Client, 0)
 	if !s.waitFor(10*time.Second, func() bool {

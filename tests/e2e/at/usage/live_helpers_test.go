@@ -1133,6 +1133,11 @@ func (s *liveSuite) measurePerIncarnationRetainedUsage() incarnationRetentionMea
 	if err := os.MkdirAll(tokenDir, 0o700); err != nil {
 		s.t.Fatalf("ENR-03 mkdir %s: %v", tokenDir, err)
 	}
+	// Pre-arm pause-agent before writing enrollment.token so fvpn-agent enroll + netbird up complete
+	// without starting fvpn-agent run (keeping newInc2 usage at 0/0 and through=null until inspected).
+	if err := os.WriteFile(filepath.Join(tokenDir, "pause-agent"), []byte("1\n"), 0o600); err != nil {
+		s.t.Fatalf("ENR-03 write pause-agent failed: %v", err)
+	}
 	tokenPath := filepath.Join(tokenDir, "enrollment.token")
 	if err := os.WriteFile(tokenPath+".tmp", []byte(token+"\n"), 0o600); err != nil || os.Rename(tokenPath+".tmp", tokenPath) != nil {
 		s.t.Fatalf("ENR-03 write enrollment.token failed: %v", err)
