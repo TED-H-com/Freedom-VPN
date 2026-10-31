@@ -109,7 +109,7 @@ func (s *updatesFollowup) installerHandoff(stack *e2e.Stack, baseline e2e.Servin
 	h := &handoffRun{s: s, stack: stack, checks: map[string]bool{}}
 	h.rec = *s.rec["AT24"]
 	h.rec.ID, h.rec.Title = "installer-handoff", "D-110/D-111/D-125/D-127 installer hand-off"
-	h.rec.Status, h.rec.Scope = at.StatusBlocked, "Follow-up 11 systemd hand-off and central receipt acceptance; serving traffic proof cited from devstack 19"
+	h.rec.Status, h.rec.Scope = at.StatusBlocked, "Follow-up 12 systemd hand-off and central receipt acceptance; serving traffic proof cited from devstack 19"
 	h.rec.Spec = []string{"UPD02", "UPD03", "UPD05", "§13.5", "§13.6", "§13.9", "D-080", "D-098", "D-110", "D-111", "D-125", "D-127"}
 	h.rec.Expected = "Install, seed, stage and real correlated apply; central baseline/promotion/replay/correction; tamper, checkpoint and downgrade refusals"
 	h.rec.Actual = "Installer prerequisites not reached"
@@ -129,6 +129,7 @@ func (s *updatesFollowup) installerHandoff(stack *e2e.Stack, baseline e2e.Servin
 			h.rec.Status = at.StatusFail
 			h.rec.Actual += "; incomplete checks: " + strings.Join(failed, ", ")
 		}
+		h.rec.At = time.Now().UTC().Format(time.RFC3339Nano)
 		if err := at.Write(filepath.Join(s.r.lab.root, "docs/e2e/at/updates"), h.rec); err != nil {
 			s.r.t.Error(err)
 		}
@@ -144,7 +145,7 @@ func (s *updatesFollowup) installerHandoff(stack *e2e.Stack, baseline e2e.Servin
 		return true
 	}
 	h.note("consumed_devstack19", "docs/e2e/runs/2026-10-31/followup19/d6aaa798-6c39-49f1-8fa9-5f84f696ac91/installer-journaled-upgrade.md: serving withdrawal, five-field correlation and nonzero durable watermark; this run uses a quiet unpublished agent and separately tests central acceptance")
-	s.r.t.Log("follow-up 11: systemd installer hand-off")
+	s.r.t.Log("follow-up 12: systemd installer hand-off")
 	if !must(stack.PrepareInstallerNode(s.ctx)) {
 		return
 	}
@@ -159,7 +160,7 @@ func (s *updatesFollowup) installerHandoff(stack *e2e.Stack, baseline e2e.Servin
 			return
 		}
 		defer os.RemoveAll(dir)
-		b, err := stack.BuildInstallerRelease(s.ctx, dir, spec.version, spec.seq, "TEST-ONLY-updates-followup11", e2e.ReleaseOptions{})
+		b, err := stack.BuildInstallerRelease(s.ctx, dir, spec.version, spec.seq, "TEST-ONLY-updates-followup12", e2e.ReleaseOptions{})
 		if !must(err) || !must(stack.RegisterRelease(s.ctx, admin, b)) {
 			return
 		}
@@ -192,29 +193,28 @@ func (s *updatesFollowup) installerHandoff(stack *e2e.Stack, baseline e2e.Servin
 	if !must(err) || !must(stack.StageInstallerToken(s.ctx, "installer-node", token)) {
 		return
 	}
+	// Read the shared spec without changing it. Only RerunInstaller installs;
+	// this diagnostic vector mirrors installArgs and is never executed here.
+	spec := document([]byte(h.run("", "cat", "/var/tmp/e2e-installer.json").Stdout))
+	h.note("shared_installer_spec", spec)
+	args := []string{"/usr/local/bin/fvpn-node-install", "install", "--json"}
+	for _, field := range []string{"manifest", "artifact", "trust", "control_url", "server_ca", "trust_bundle", "host_reserve_bps", "snat", "netbird_management_url"} {
+		args = append(args, "--"+strings.ReplaceAll(field, "_", "-"), spec.text(field))
+	}
+	if string(spec["allow_loopback"]) == "true" && spec.text("control_url") == "https://127.0.0.1:9444" {
+		args = append(args, "--allow-loopback")
+	}
+	if h.absent("/var/lib/vpn-node/identity/node.json") {
+		args = append(args, "--token-file", spec.text("token_file"))
+	}
+	h.note("install_arguments_from_shared_spec", args)
+	h.note("install_path", "shared Stack.RerunInstaller only; no ProbeInstallerExit installation fallback")
 	installed, err := stack.RerunInstaller(s.ctx, "installer-node")
 	h.note("install_wrapper", installed)
-	// The shared wrapper still selects a loopback proxy without installer 7's
-	// explicit opt-in. Measure that refusal, then provide the documented TEST
-	// ONLY installation input here; never rewrite generated updater policy.
-	if err == nil && installed.Exit == 64 && strings.Contains(installed.Message, "loopback") {
-		spec := document([]byte(h.run("", "cat", "/var/tmp/e2e-installer.json").Stdout))
-		args := []string{"install", "--json", "--allow-loopback"}
-		for _, field := range []string{"manifest", "artifact", "trust", "control_url", "server_ca", "trust_bundle", "host_reserve_bps", "snat", "netbird_management_url", "token_file"} {
-			args = append(args, "--"+strings.ReplaceAll(field, "_", "-"), spec.text(field))
-		}
-		h.note("install_explicit_test_input", "TEST ONLY --allow-loopback for the shared https://127.0.0.1:9444 enrollment/mTLS proxy; all other arguments from the shared installer spec")
-		installed, err = stack.ProbeInstallerExit(s.ctx, "installer-node", args)
-		if err == nil {
-			installed.Services, err = stack.InstallerServices(s.ctx, "installer-node")
-		}
-		h.run("stop_for_seed_readback", "systemctl", "stop", "fvpn-agent.service", "fvpn-watchdog.service")
-		identity := document([]byte(h.run("", "cat", "/var/lib/vpn-node/identity/node.json").Stdout))
-		installed.Incarnation = identity.text("node_incarnation_id")
-	}
 	h.note("install", installed)
 	h.rec.NodeIncarnation = installed.Incarnation
-	if !must(err) {
+	if !must(err) || installed.Exit != 0 {
+		h.rec.Actual = "Shared installer wrapper refused installation; see exit, shared spec and derived argument vector; no fallback attempted"
 		return
 	}
 	socket := h.run("netbird_socket", "test", "-S", "/run/fvpn-netbird/netbird.sock")
