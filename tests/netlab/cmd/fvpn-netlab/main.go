@@ -67,6 +67,7 @@ func applyCmd(args []string) error {
 	fs := flag.NewFlagSet("apply", flag.ContinueOnError)
 	path := fs.String("f", "-", "model JSON path or - for stdin")
 	prevPath := fs.String("prev", "", "optional previous counter JSON (§10.7)")
+	deadlineWindow := fs.Duration("deadline-window", 0, "TEST ONLY: map member deadline onto CLOCK_MONOTONIC immediately before Apply")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
@@ -78,8 +79,19 @@ func applyCmd(args []string) error {
 	if err != nil {
 		return err
 	}
+	if *deadlineWindow > 0 {
+		m.Now = time.Now().UTC()
+		m.NowMono, err = enforce.MonotonicNow()
+		if err != nil {
+			return err
+		}
+		deadline := m.NowMono + *deadlineWindow
+		for i := range m.Leases {
+			m.Leases[i].DeadlineMono = &deadline
+		}
+	}
 	res, err := enforce.Apply(context.Background(), enforce.System{}, m, prev)
-	if printErr := writeResult(os.Stdout, m.Generation, res); printErr != nil && err == nil {
+	if printErr := writeResult(os.Stdout, m, res); printErr != nil && err == nil {
 		return printErr
 	}
 	return err
@@ -192,10 +204,10 @@ func holdCmd(args []string) error {
 	}
 	res, err := enforce.Apply(context.Background(), enforce.System{}, m, nil)
 	if err != nil {
-		_ = writeResult(os.Stdout, m.Generation, res)
+		_ = writeResult(os.Stdout, m, res)
 		return err
 	}
-	if err := writeResult(os.Stdout, m.Generation, res); err != nil {
+	if err := writeResult(os.Stdout, m, res); err != nil {
 		return err
 	}
 	if err := os.WriteFile(*ready, []byte("ok\n"), 0o644); err != nil {
@@ -289,12 +301,14 @@ func loadModel(path string) (enforce.Model, error) {
 	return m, nil
 }
 
-func writeResult(w io.Writer, generation uint64, res enforce.ApplyResult) error {
+func writeResult(w io.Writer, m enforce.Model, res enforce.ApplyResult) error {
 	assign := map[string]string{}
 	for id, minor := range res.Plan.Assignments {
 		assign[id.String()] = fmt.Sprintf("%x", minor)
 	}
 	doc := struct {
+		Leases      []enforce.MemberLease       `json:"leases"`
+		Deadline    enforce.DeadlineEvidence    `json:"deadline"`
 		Verified    bool                        `json:"verified"`
 		Evidence    enforce.ServingEvidence     `json:"evidence"`
 		Quarantine  *enforce.QuarantineEvidence `json:"quarantine,omitempty"`
@@ -305,10 +319,12 @@ func writeResult(w io.Writer, generation uint64, res enforce.ApplyResult) error 
 		Samples     []enforce.Sample            `json:"samples"`
 		Assignments map[string]string           `json:"assignments"`
 	}{
+		Leases:      m.Leases,
+		Deadline:    res.Deadline,
 		Verified:    res.Verified,
 		Evidence:    res.Evidence,
 		Quarantine:  res.Quarantine,
-		Generation:  generation,
+		Generation:  m.Generation,
 		Admitted:    res.Plan.Admitted,
 		Resets:      res.Resets,
 		Finals:      res.Plan.Finals,

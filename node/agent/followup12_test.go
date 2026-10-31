@@ -266,6 +266,17 @@ func (ex *renderedExecutor) Output(ctx context.Context, name string, args ...str
 		if err := ex.fold(); err != nil {
 			return nil, err
 		}
+		if strings.Join(args, " ") == "list set inet fvpn allowed_v4" {
+			set := ex.table.sets["allowed_v4"]
+			if set == nil {
+				return nil, fmt.Errorf("missing allowed_v4")
+			}
+			body := ""
+			if len(set.elems) > 0 {
+				body = " elements = { " + strings.Join(set.elems, ", ") + " }"
+			}
+			return []byte("table inet fvpn { set allowed_v4 { type ipv4_addr flags timeout" + body + " } }"), nil
+		}
 		return ex.table.listingJSON()
 	}
 	return ex.revocationExecutor.Output(ctx, name, args...)
@@ -410,6 +421,13 @@ func (t *listedTable) applyLine(line string) error {
 	case "delete set":
 		delete(t.sets, name)
 		t.setOrder = dropName(t.setOrder, name)
+		return nil
+	case "flush chain":
+		ch := t.chains[name]
+		if ch == nil {
+			return fmt.Errorf("nft listing: flush missing chain %s", name)
+		}
+		ch.rules = nil
 		return nil
 	case "delete chain":
 		delete(t.chains, name)

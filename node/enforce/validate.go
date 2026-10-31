@@ -41,7 +41,7 @@ type admittedDevice struct {
 	Binding Binding
 	Lease   MemberLease
 	Addrs   []netip.Addr
-	Timeout uint32
+	Timeout time.Duration
 	Minor   uint16
 }
 
@@ -121,7 +121,7 @@ func validateServing(m Model) ([]admittedDevice, map[uuid.UUID]uint16, []netip.P
 			return nil, nil, nil, fmt.Errorf("device %s has no allowed ipv4", b.DeviceID)
 		}
 		sortAddrs(addrs)
-		timeout, admit := elementTimeout(b, lease, m.Now)
+		timeout, admit := memberTimeout(b, lease, m)
 		dev := admittedDevice{Binding: b, Lease: lease, Addrs: addrs, Timeout: timeout}
 		if admit {
 			devices = append(devices, dev)

@@ -15,7 +15,7 @@ NETLAB_BIN := $(ROOT)/.agent/tmp/$(FVPN_LAB_PREFIX)-fvpn-netlab
 # the container netns. topology.sh drops the default route that comes with it.
 NETLAB_DNS_NET := $(FVPN_LAB_PREFIX)-dns
 
-netlab-disk-env = set -eu; mkdir -p .agent/tmp; task_tmp=$$(mktemp -d "$$(pwd)/.agent/tmp/netlab.XXXXXX"); trap 'rm -rf "$$task_tmp"' EXIT; export TMPDIR="$$task_tmp" GOTMPDIR="$$task_tmp" CGO_ENABLED=0 GOTOOLCHAIN=local;
+netlab-disk-env = set -eu; mkdir -p .agent/tmp; task_tmp=$$(mktemp -d "$$(pwd)/.agent/tmp/netlab.XXXXXX"); trap 'python3 -c '"'"'import shutil,sys; shutil.rmtree(sys.argv[1])'"'"' "$$task_tmp"' EXIT; export TMPDIR="$$task_tmp" GOTMPDIR="$$task_tmp" CGO_ENABLED=0 GOTOOLCHAIN=local;
 
 .PHONY: netlab-integration netlab-real-netbird netlab-unit netlab-lint netlab-build netlab-image netlab-wipe-scratch netlab-up netlab-down netlab-test netlab-test-full netlab-evidence
 
@@ -28,7 +28,7 @@ netlab-lint:
 	test -z "$$(gofmt -l $$files)" || { echo 'gofmt required'; gofmt -l $$files; exit 1; }; \
 	mkdir -p .agent/tmp; \
 	task_tmp=$$(mktemp -d "$$(pwd)/.agent/tmp/go.XXXXXX"); \
-	trap 'rm -rf "$$task_tmp"' EXIT; \
+	trap 'python3 -c '"'"'import shutil,sys; shutil.rmtree(sys.argv[1])'"'"' "$$task_tmp"' EXIT; \
 	export TMPDIR="$$task_tmp" GOTMPDIR="$$task_tmp" CGO_ENABLED=0 GOTOOLCHAIN=local; \
 	go vet ./node/enforce/...; \
 	go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 ./node/enforce/...; \
