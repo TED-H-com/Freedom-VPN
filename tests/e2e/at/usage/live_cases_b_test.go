@@ -207,7 +207,7 @@ func (s *liveSuite) evalAT18(t *testing.T) Record {
 		rec.Actual = fmt.Sprintf("Central DesiredState compilation verified effective_rate = min(plan=80M/40M, tier0=100M/50M, exit=60M/30M) = 60Mbit down / 30Mbit up on %s and node enforce.RenderQosCommands verified root htb 1:, host reserve 1:fffe (100Mbit prio 0), and fq_codel leaf classes 1:10/1:11. Live kernel tc class installation on %s is blocked because VerifyServing rejects Docker's ip nat POSTROUTING chain with FLOWTABLE_BYPASS (obs=%s) and rolls back the serving apply.",
 			s.containerName("node"), s.containerName("node"), s.d067BringUp.ApplyBlockerObservationReportID)
 	} else {
-		rec.Actual = fmt.Sprintf("Live serving exit %s installed kernel tc HTB + fq_codel on fvmb0 and fvup0 with host reserve class 1:fffe (100Mbit) and member classes 1:10/1:11 at effective_rate = min(plan=80M/40M, tier0=100M/50M, exit=60M/30M) = 60Mbit down / 30Mbit up, shaped concurrent memberA (+%s/+%s B) and memberB (+%s/+%s B) flows, and preserved mTLS control-plane responsiveness (HTTP 200).",
+		rec.Actual = fmt.Sprintf("Live serving exit %s installed kernel tc HTB + fq_codel on fvmb0 and fvup0 with host reserve class 1:fffe (100Mbit) and per-member classes at effective_rate = min(plan=80M/40M, tier0=100M/50M, exit=60M/30M) = 60Mbit down / 30Mbit up, shaped concurrent memberA (+%s/+%s B) and memberB (+%s/+%s B) flows, and preserved mTLS control-plane responsiveness (HTTP 200).",
 			s.containerName("node"), trA.DeltaUp, trA.DeltaDown, trB.DeltaUp, trB.DeltaDown)
 	}
 	return rec
