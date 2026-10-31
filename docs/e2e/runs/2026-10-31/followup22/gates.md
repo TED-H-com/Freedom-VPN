@@ -43,10 +43,10 @@ proceeded with only one other suite active. No three live suites were launched.
 ### up-ready — exit 0
 
 ```text
- Container fvpn-e2e-member Started 
- Container fvpn-e2e-control Healthy 
- Container fvpn-e2e-node Starting 
- Container fvpn-e2e-node Started 
+ Container fvpn-e2e-member Started
+ Container fvpn-e2e-control Healthy
+ Container fvpn-e2e-node Starting
+ Container fvpn-e2e-node Started
 e2e stack is up
 ```
 
@@ -76,10 +76,10 @@ FAIL
 ### down-final — exit 0
 
 ```text
- Volume fvpn-e2e-pg Removed 
- Volume fvpn-e2e-pgbackrest-repo Removed 
- Network fvpn-e2e-origin Removed 
- Network fvpn-e2e Removed 
+ Volume fvpn-e2e-pg Removed
+ Volume fvpn-e2e-pgbackrest-repo Removed
+ Network fvpn-e2e-origin Removed
+ Network fvpn-e2e Removed
 e2e stack is down
 ```
 
