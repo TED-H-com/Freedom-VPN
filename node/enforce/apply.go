@@ -66,12 +66,19 @@ func IsConntrackDeleteFailure(err error) bool {
 // on a path we cannot account (§10.3, §8.2). Resets are reported and never
 // cleared by recreating counter objects (§10.7).
 func Apply(ctx context.Context, ex Executor, m Model, previous map[string]CounterValue) (result ApplyResult, err error) {
+	measurement := newTiming("apply", m.Generation)
+	var timing DeadlineEvidence
+	defer func() {
+		result.Deadline = timing
+		measurement.Start, measurement.End = timing.ApplyStart, timingSample()
+		measurement.Deadline, measurement.Succeeded, measurement.Verified = timing, err == nil, result.Verified
+		result.Evidence.timing = measurement
+	}()
 	applyStart, err := MonotonicNow()
 	if err != nil {
 		return ApplyResult{}, err
 	}
-	timing := DeadlineEvidence{Granularity: DeadlineGranularity, InstallBound: DeadlineInstallBound, ApplyStart: applyStart}
-	defer func() { result.Deadline = timing }()
+	timing = DeadlineEvidence{Granularity: DeadlineGranularity, InstallBound: DeadlineInstallBound, ApplyStart: applyStart}
 
 	if err := validateDatapath(m.Datapath); err != nil {
 		return ApplyResult{}, err
@@ -168,14 +175,17 @@ func Apply(ctx context.Context, ex Executor, m Model, previous map[string]Counte
 	}
 	// The guard and candidate are one transaction. A late commit stays closed,
 	// including if the agent dies before it observes the overrun.
+	guarded := guardedNFT(plan.NFT, m)
 	installCtx, cancelInstall := context.WithTimeout(ctx, DeadlineInstallBound)
-	err = ex.NftBatch(installCtx, guardedNFT(plan.NFT, m))
+	timing.InstallStart = timingSample()
+	err = ex.NftBatch(installCtx, guarded)
+	timing.InstalledBy, _ = MonotonicNow()
+	timing.InstallOK = err == nil
 	cancelInstall()
 	if state.Chains == nil {
 		state.Chains = map[string]bool{}
 	}
 	state.Chains[deadlineGuard] = true
-	timing.InstalledBy, _ = MonotonicNow()
 	if err != nil || timing.InstalledBy < timing.RenderStart || timing.InstalledBy-timing.RenderStart > DeadlineInstallBound {
 		_ = installBaseline(ctx, ex, m.Datapath, state)
 		if err == nil {
@@ -183,7 +193,10 @@ func Apply(ctx context.Context, ex Executor, m Model, previous map[string]Counte
 		}
 		return ApplyResult{Plan: plan, Deadline: timing}, err
 	}
-	if err = releaseDeadlineGuard(ctx, ex); err != nil {
+	timing.ReleaseStart = timingSample()
+	err = releaseDeadlineGuard(ctx, ex)
+	timing.ReleaseEnd = timingSample()
+	if err != nil {
 		_ = installBaseline(ctx, ex, m.Datapath, state)
 		return ApplyResult{Plan: plan, Deadline: timing}, err
 	}
@@ -196,6 +209,7 @@ func Apply(ctx context.Context, ex Executor, m Model, previous map[string]Counte
 	// VerifyServing reads live nft and tc state together. A foreign filter is
 	// the same serving-gate failure as a flowtable bypass.
 	evidence, err := verifyServing(ctx, ex, m, plan.Assignments, len(quarantined) > 0)
+	measurement.Verifications = append(measurement.Verifications, evidence.timing.Verifications...)
 	if err != nil {
 		var check *CheckError
 		if (errors.As(err, &check) && check.Reason == ReasonTCForeignFilter) || len(quarantined) > 0 {
@@ -208,6 +222,9 @@ func Apply(ctx context.Context, ex Executor, m Model, previous map[string]Counte
 	}
 	if len(quarantined) > 0 {
 		evidence, err = releaseQuarantine(ctx, ex, m, plan.Assignments)
+		if evidence.timing != nil {
+			measurement.Verifications = append(measurement.Verifications, evidence.timing.Verifications...)
+		}
 		if err != nil {
 			q, qerr := Quarantine(ctx, ex, m)
 			evidence.Quarantined, evidence.QuarantinedLinks = q.Recorded, quarantinedLinksFor(m, q)

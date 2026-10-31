@@ -171,7 +171,8 @@ func verifyCmd(args []string) error {
 	doc := struct {
 		enforce.ServingEvidence
 		TCEvidence *api.TCReadbackEvidence `json:"tc_evidence"`
-	}{evidence, evidence.TCReadbackEvidence()}
+		Timing     *enforce.TimingEvidence `json:"timing"`
+	}{evidence, evidence.TCReadbackEvidence(), evidence.TimingEvidence()}
 	if printErr := json.NewEncoder(os.Stdout).Encode(doc); err == nil {
 		return printErr
 	}
@@ -330,6 +331,7 @@ func writeResult(w io.Writer, m enforce.Model, res enforce.ApplyResult) error {
 		Verified    bool                        `json:"verified"`
 		Evidence    enforce.ServingEvidence     `json:"evidence"`
 		TCEvidence  *api.TCReadbackEvidence     `json:"tc_evidence"`
+		Timing      *enforce.TimingEvidence     `json:"timing"`
 		Quarantine  *enforce.QuarantineEvidence `json:"quarantine,omitempty"`
 		Generation  uint64                      `json:"generation"`
 		Admitted    int                         `json:"admitted"`
@@ -343,6 +345,7 @@ func writeResult(w io.Writer, m enforce.Model, res enforce.ApplyResult) error {
 		Verified:    res.Verified,
 		Evidence:    res.Evidence,
 		TCEvidence:  res.Evidence.TCReadbackEvidence(),
+		Timing:      res.Evidence.TimingEvidence(),
 		Quarantine:  res.Quarantine,
 		Generation:  m.Generation,
 		Admitted:    res.Plan.Admitted,
