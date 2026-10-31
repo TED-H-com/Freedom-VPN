@@ -1,0 +1,204 @@
+{
+          "lease": {
+            "lease_id": "f952b66c-7e43-477b-8e5d-7cecd9a830ab",
+            "expires_at": "2026-10-31T12:07:32.389206258Z"
+          },
+          "usage": {
+            "blocked_seq": "6",
+            "ledger_epoch": "b8f12bba-c3bd-42b4-8c10-73999dc9c27a",
+            "meter_epoch_id": null,
+            "oldest_unacked_at": "2026-10-31T11:47:25.926556135Z",
+            "acked_archive_bytes": "3264",
+            "unacked_event_count": 15,
+            "central_acked_through": "5",
+            "unacked_payload_bytes": "9717",
+            "last_durable_event_seq": "20"
+          },
+          "checks": [
+            {
+              "name": "dns_policy",
+              "status": "passed",
+              "error_code": null,
+              "observed_at": "2026-10-31T12:06:32.52068165Z"
+            },
+            {
+              "name": "internet_only",
+              "status": "passed",
+              "error_code": null,
+              "observed_at": "2026-10-31T12:06:32.52068165Z"
+            },
+            {
+              "name": "lease",
+              "status": "failed",
+              "error_code": "TC_FOREIGN_FILTER",
+              "observed_at": "2026-10-31T12:06:32.52068165Z"
+            },
+            {
+              "name": "meter_path",
+              "status": "passed",
+              "error_code": null,
+              "observed_at": "2026-10-31T12:06:32.52068165Z"
+            },
+            {
+              "name": "policy_signature",
+              "status": "passed",
+              "error_code": null,
+              "observed_at": "2026-10-31T12:06:32.52068165Z"
+            },
+            {
+              "name": "qos",
+              "status": "failed",
+              "error_code": "TC_FOREIGN_FILTER",
+              "observed_at": "2026-10-31T12:06:32.52068165Z"
+            },
+            {
+              "name": "release_supported",
+              "status": "passed",
+              "error_code": null,
+              "observed_at": "2026-10-31T12:06:32.52068165Z"
+            },
+            {
+              "name": "source_binding",
+              "status": "failed",
+              "error_code": "TC_FOREIGN_FILTER",
+              "observed_at": "2026-10-31T12:06:32.52068165Z"
+            },
+            {
+              "name": "storage",
+              "status": "passed",
+              "error_code": null,
+              "observed_at": "2026-10-31T12:06:32.52068165Z"
+            },
+            {
+              "name": "tunnel_probe",
+              "detail": "Egress probe used no extra target.",
+              "status": "failed",
+              "error_code": "HEALTH_CHECK_FAILED",
+              "observed_at": "2026-10-31T12:06:32.52068165Z"
+            }
+          ],
+          "errors": [
+            {
+              "code": "AWAITING_MEMBER_GRANTS",
+              "stage": "lease",
+              "message": "Serving lease has no member grants yet.",
+              "observed_at": "2026-10-31T12:06:32.52068165Z"
+            },
+            {
+              "code": "HEALTH_CHECK_FAILED",
+              "stage": "probe",
+              "message": "tunnel_probe",
+              "observed_at": "2026-10-31T12:06:32.52068165Z"
+            },
+            {
+              "code": "TC_FOREIGN_FILTER",
+              "stage": "apply",
+              "message": "TC_FOREIGN_FILTER",
+              "observed_at": "2026-10-31T12:06:32.484238862Z"
+            },
+            {
+              "code": "TC_FOREIGN_FILTER",
+              "stage": "tc_evidence",
+              "message": "{\"candidate_generation\":\"30\",\"read_at\":\"2026-10-31T12:06:32.484278038Z\",\"source\":\"rejected\"}",
+              "observed_at": "2026-10-31T12:06:32.484278038Z"
+            },
+            {
+              "code": "TC_FOREIGN_FILTER",
+              "stage": "tc_evidence",
+              "message": "{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":null,\"error\":\"read_failed\"}",
+              "observed_at": "2026-10-31T12:06:32.484278038Z"
+            },
+            {
+              "code": "TC_FOREIGN_FILTER",
+              "stage": "initial_quarantine",
+              "message": "{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}}",
+              "observed_at": "2026-10-31T12:06:32.521093013Z"
+            },
+            {
+              "code": "TC_FOREIGN_FILTER",
+              "stage": "quarantine",
+              "message": "{\"quarantined\":false,\"recorded\":true,\"links\":[{\"interface\":\"fvmb0\",\"error\":\"down_verify_failed\"}],\"baseline\":{\"installed\":true,\"verified\":true}}",
+              "observed_at": "2026-10-31T12:06:32.521093013Z"
+            },
+            {
+              "code": "TC_FOREIGN_FILTER",
+              "stage": "quarantine",
+              "message": "\"quarantine_incomplete\"",
+              "observed_at": "2026-10-31T12:06:32.521093013Z"
+            }
+          ],
+          "update": {
+            "stage": null,
+            "state": null,
+            "job_id": null,
+            "generation": null
+          },
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "netbird": {
+            "backend": "kernel",
+            "peer_id": null,
+            "version": null
+          },
+          "node_id": "01a191c8-1134-7549-95e9-148a9c103ffc",
+          "report_id": "01a191da-b749-7197-a530-4da436d7a001",
+          "data_health": "failed",
+          "observed_at": "2026-10-31T12:06:32.521093013Z",
+          "tc_evidence": {
+            "phase": "verify",
+            "sha256": "012466f480280825f4be68bd43bc0c963476a3f5a54ee486910edc7d1e9b4aed",
+            "read_at": "2026-10-31T12:06:32.484189226Z",
+            "rejected": {
+              "error": "read_failed",
+              "objects": [],
+              "interface": "fvmb0",
+              "attachment": "qdisc"
+            },
+            "verified": false,
+            "truncated": false,
+            "error_code": "TC_FOREIGN_FILTER",
+            "attachments": [
+              {
+                "error": "read_failed",
+                "objects": [],
+                "interface": "fvmb0",
+                "attachment": "qdisc"
+              }
+            ],
+            "reads_total": 1,
+            "objects_total": 0,
+            "candidate_generation": "30"
+          },
+          "agent_version": "0.1.0",
+          "safety_status": "failed",
+          "current_release_id": "01a191bd-8c88-77fe-9f19-2edfb8a6d1e6",
+          "provisioning_state": "applying",
+          "applied_policy_refs": {
+            "dns_generation": "5",
+            "fup_generation": "1",
+            "authorization_generation": "1"
+          },
+          "dns_policy_evidence": {
+            "feeds": [
+              {
+                "feed_code": "at-members-9ef8ae3d",
+                "rule_count": 2,
+                "content_sha256": "08523819bcfee0e9ca2527e9702c57024c98c8c7f72fb1b430f5aee45eff6423"
+              }
+            ],
+            "outcome": "applied",
+            "applied_at": "2026-10-31T12:06:32.411572503Z",
+            "error_code": null,
+            "generation": "5",
+            "document_id": "01a191d4-8883-7950-b782-6b95e03555b3",
+            "content_sha256": "32846577f8de47aa3852d705fa84b8303327c4f4600fda6a8d2afcfbc4a952ab"
+          },
+          "node_incarnation_id": "01a191c8-126e-794c-bdf5-08721da77c8d",
+          "last_good_release_id": "01a191bd-8c88-77fe-9f19-2edfb8a6d1e6",
+          "applied_binding_revision": "5",
+          "forwarding_block_reasons": [
+            "safety_check_failed",
+            "awaiting_member_grants"
+          ],
+          "applied_config_generation": "30",
+          "member_forwarding_enabled": false
+        }
