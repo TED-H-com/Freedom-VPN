@@ -1,0 +1,37 @@
+{
+  "run_id": "89fc6769-0a09-403d-ae88-84f736ee1dce",
+  "source_commit": "5d98ea8f613fc415897b0a42940f0af6834ee2ae",
+  "product_main": "5575470587a4e3014bd515e624ba2ad0aacbd140",
+  "at": "2026-10-31T06:43:47Z",
+  "prefix": "w4-updates",
+  "port_base": 42000,
+  "harness_source": {
+    "differs_from_source_commit": false,
+    "files_sha256": {
+      "authority_test.go": "468d7d3c1dbfbdb40a3c781650cd8993fc55e93b9e6d28930c3d52189715de21",
+      "doc.go": "a43799934c9463e13de1e43c2e0f4373410be7c31421ceee8a3eb963717f6382",
+      "evidence.go": "5f77f6740ded1f0561fd8e7496b04ca3b240f501b7146cc684aaa6d033588e85",
+      "evidence_test.go": "eaa999300a284ba220deacae957eaab01f73fda21aab0d07481ccb958bd469cd",
+      "installer_test.go": "e94e0f2e895dfe07780b75c286c5314c6c6814b3da7e87d13d58ec6007b8165c",
+      "lab_test.go": "1d22a7d62171ff2fa84f6474cb046878992fafddd1d868be3cb6ecb19865854d",
+      "live_test.go": "b9aa482dfc2915c46b0706faf3a9a3d04d6f5682285582936a11bcd132c85980",
+      "preresult_test.go": "530332759bdecdde7924f3d5cf95def55682a11b13293410cd59e62a22f6bfdf",
+      "probe_test.go": "b214d46d2f8582457830cb485904ee85df176d53734b32731351f39c20b50d01",
+      "restated_test.go": "a180ae1c73acc4b8d9b15178e60a0299396d2d611eebd932b4d48b5fbc2ac5c9"
+    }
+  },
+  "main_commit": {
+    "commit": "5575470587a4e3014bd515e624ba2ad0aacbd140",
+    "subject": "roadmap: w2-fleet-update follow-up 10 merged (#273)",
+    "committed_at": "2026-10-31T02:19:06-04:00"
+  },
+  "roadmap_rows": [
+    "| w3-devstack-e2e follow-up 15 | lab exports for the acceptance lanes: persistent member transports (established TCP/UDP across steps), bounded forced relay with restoration, exit-traversing TCP/UDP DNS through the permitted loopback resolver client, usage hold / snapshot / backlog hooks, dedicated real-systemd installer wrappers (ENR-06); node entrypoint keeps the Docker ip-nat deletion; all six request logs answered with dated responses — acceptance 32 pass / 1 blocked (IPv6) / 0 fail, exports 21 pass / 1 fail: on the real installer node the product service fails its first start after enrollment because NetBird's default socket is outside the packaged write allowlist (installer follow-up 3) | done (#266) |",
+    "| w2-updater follow-up 13 | D-080 installer hand-off: the journaled apply path consumes pending-release.json (automatic on run or `fvpn-updater apply --pending`), manifest re-verified and the archive extracted from an updater-owned snapshot, installer job UUIDv5 bound to release + manifest hash + canonical record + incarnation, result recorded locally without advancing the accepted central generation, forwarding stays blocked, crash recovery consumes once (prepared/switched/checking) and cleans orphan snapshots; kernel boot id with configured fallback; missing desired state = exit 0 no work; node/nodelock exported; proven open → installer f2 / contracts / fleet-update: the #239 pending writer omits the signed manifest envelope (fails closed ARTIFACT_INVALID), a freshly installed node has no verified updater baseline (CHECKPOINT_FAILED), central rejects installer-local job ids (RESOURCE_NOT_FOUND) | done (#253) |",
+    "| w2-updater follow-up 14 | fvpn-updater seed (D-089 (b)): verified post-install baseline from the signed archive (staged or signed URL) with tree-hash comparison, atomic release/current/schema/seed evidence, idempotent replay, fail-closed on conflicts/invalid signatures/changed trees/lock contention; status shows the seeded baseline; installer results carry source: installer with durable capped 404 retries and terminal logged 409; TestD089_RealUpdaterConsumesWriterRecord unchanged | done (#269) |",
+    "| w2-fleet-update follow-up 10 | D-089 central acceptance of installer-applied results (source: installer from the node mTLS identity for node-minted job ids, eligible releases only: unknown 404 / ineligible 409), immutable receipts in the append-only installer_update_results table (migration 00191), exact ACK replay, 409 ACK_CONFLICT on conflicting replay, node version promoted on verified success, central jobs/batches untouched; D-097: NodeUpdateSummary projects the current incarnation's latest accepted installer result as source: installer, batch_id null (a current central job wins) | done (#273) |",
+    "| w4-handover follow-up 13 | revision 12 operator workflow (fenced devices → explicit admin re-authorize, existing-operation receipt, 409 STATE_CONFLICT / 409 DEVICE_LIMIT_REACHED per D-081, worker read-back), SECOPS-19 NodeDetail.usage_outbox + migration 00189, installer lifecycle (#239), D-079 production restriction, latest AT30 measurement (#242: replay 3/3, RPO 0 B, RTO 121.88 s) beside #221, SECOPS-21 (#245) recovery check on config_generation.desired/applied, r14 archive corrected, r15 archived as open; TestHandover_Followup13Claims; the stale 47/45 pin in tests/e2e/at/secops/security_test.go routed to security-ops | done (#251) |",
+    "| w5-node-installer: `fvpn-node-install` for Ubuntu 24.04 nodes (§6.3, PKG01, ENR03, §18.2) — install / idempotent re-run (`already_current`) / check / upgrade staged for fvpn-updater / remove / reenroll (identity retired, `usage.db` kept) / image-prepare + firstboot; journal-first rollback that never flushes the host ruleset; signed-release bootstrap refusing `latest`; systemd units (watchdog without PartOf/BindsTo/Requires on the agent); privileged ubuntu:24.04 container proofs; AT07 re-run / controlled-reinstall / image-clone preconditions enabled; updater apply hook, boot_id source and the fresh-node no-desired-state oneshot routed to the updater lane, ENR-06 wrappers to devstack | WP09 | done (#239) |",
+    "| w5-node-installer follow-up 2 | D-089 installer side: the pending record retains the exact verified signed manifest envelope (manifest_path, 0600) plus a per-invocation request_id, written atomically and exposed by check; install/reenroll probe the installed updater and run `fvpn-updater seed` when present, recording the outcome in install/baseline.json and `check --json` (\"not seeded (updater without seed)\" against the merged updater, exit 64 — no fabricated baseline); every lock through node/nodelock; refresh-boot-id ExecStartPre removed from both updater units and /etc/vpn-node dropped from ReadWritePaths; docs/node/install.md corrected; the real merged-updater consumer proves CHECKPOINT_FAILED / exact-record idempotence / HASH_MISMATCH; the systemd container lifecycle gate did not execute this run (host inotify exhaustion) — re-run in follow-up 3 once updater follow-up 14 ships seed | done (#258) |"
+  ]
+}

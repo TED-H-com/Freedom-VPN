@@ -1,0 +1,10 @@
+{
+  "run_id": "89fc6769-0a09-403d-ae88-84f736ee1dce",
+  "source_commit": "5d98ea8f613fc415897b0a42940f0af6834ee2ae",
+  "product_main": "5575470587a4e3014bd515e624ba2ad0aacbd140",
+  "at": "2026-10-31T06:38:18.134810+00:00",
+  "scope": "Read-only supplemental inspection of the same installer node after its hand-off checks; no state changes",
+  "command": "docker exec fvpn-w4-updates-installer-node: test presence of /var/lib/vpn-node/state/meter.checkpoint; readlink /opt/vpn-node/current",
+  "exit": 0,
+  "output": "meter_checkpoint=absent\nreleases/01a190a9-e3c2-7ca8-95d4-6ce5c777bfdf\n"
+}
