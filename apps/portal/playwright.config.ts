@@ -50,6 +50,7 @@ export default defineConfig({
     ? undefined
     : {
         command: `PORTAL_DEV_PORT=${devPort} node e2e/dev-stack.mjs`,
+        stdout: 'pipe',
         url: `${baseURL}/auth/session`,
         timeout: 60_000,
         // Let dev-stack drop its isolated database and remove generated test keys.
