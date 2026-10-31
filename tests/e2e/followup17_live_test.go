@@ -306,6 +306,9 @@ func (r *runner) installerReenroll17(ctx context.Context, s *Stack, admin Browse
 		}
 		check, _ := r.lab.docker(s.installerContainer(), "/usr/local/bin/fvpn-node-install", "check", "--json")
 		note("post_reenroll_seed_check", string(check))
+		if strings.Contains(string(check), "HASH_MISMATCH") {
+			r.seedInventory19(ctx, s, note)
+		}
 	}
 	identity := out.Before.Key == out.RetiredHashes.Key && out.Before.Cert == out.RetiredHashes.Cert && out.Before.NodeJSON == out.RetiredHashes.NodeJSON
 	note("usage_retained", boolText(kept))

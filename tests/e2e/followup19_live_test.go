@@ -283,3 +283,28 @@ func retainedUsage19(before, after, origin string) (bool, error) {
 	}
 	return count > 0, rows.Err()
 }
+
+// Preserve both inventories only on an actual seed mismatch. Extraction is into
+// a fresh evidence directory; current and every release remain read-only.
+func (r *runner) seedInventory19(ctx context.Context, s *Stack, note func(string, string)) {
+	script := `set -eu
+ ref=/var/lib/vpn-node/e2e/seed-reference
+ test ! -e "$ref"
+ mkdir "$ref"
+ tar --zstd --same-permissions --no-same-owner -xf /var/tmp/e2e-rel/newer/artifact.tar.zst -C "$ref"
+ cd "$ref"
+ find . -printf '%y %m %s %p\n'
+ find . -type f -exec sha256sum {} \;
+ `
+	out, e := r.lab.docker(s.installerContainer(), "sh", "-c", script)
+	note("signed_reference_inventory", string(out))
+	if e != nil {
+		note("reference_inventory_error", e.Error())
+	}
+	out, e = r.lab.docker(s.installerContainer(), "sh", "-c", `set -eu; cd /opt/vpn-node/current; find . -printf '%y %m %s %p\n'; find . -type f -exec sha256sum {} \;`)
+	note("resolved_current_inventory", string(out))
+	if e != nil {
+		note("current_inventory_error", e.Error())
+	}
+	note("seed_divergence_owner", "updater / installer; no tree repair")
+}
