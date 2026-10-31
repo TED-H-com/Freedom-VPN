@@ -2,7 +2,10 @@
 
 package netlab
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
 
 func startReloadTrace(t *testing.T) {
 	t.Helper()
@@ -21,7 +24,11 @@ func finishReloadTrace(t *testing.T) {
 	mustExec(t, "touch", "/scratch/at10-trace.done")
 	for _, name := range []string{"at10-origin.txt", "at10-origin.err", "at10-node.txt", "at10-node.err", "at10-responder.txt", "at10-responder.err", "at10-apply.jsonl", "stream-a1.log", "stream-a1.log.jsonl"} {
 		if scratchExists("/scratch/" + name) {
-			save(t, name, readScratch(t, "/scratch/"+name))
+			evidenceName := name
+			if strings.HasSuffix(name, ".log") {
+				evidenceName = strings.TrimSuffix(name, ".log") + ".txt"
+			}
+			save(t, evidenceName, readScratch(t, "/scratch/"+name))
 		}
 	}
 }
