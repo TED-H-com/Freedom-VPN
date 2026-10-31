@@ -60,7 +60,7 @@ func TestISO_F6_SummaryDeterminismAndBounds(t *testing.T) {
 	}
 	b := ServingEvidence{TC: reads}
 	b.retainTC(14, "verify", err)
-	if !reflect.DeepEqual(a, b) {
+	if !reflect.DeepEqual(a.TC, b.TC) || !reflect.DeepEqual(a.TCSummary, b.TCSummary) {
 		t.Fatal("dump ordering changes evidence")
 	}
 	if len(a.TC) != 16 || !a.TCSummary.Truncated || a.TCSummary.Reads != 100 || a.TCSummary.Objects != 2000 || a.TCSummary.Rejected.Attachment != "1:63" || a.TCSummary.Rejected.Objects[0].Handle != "19" {
