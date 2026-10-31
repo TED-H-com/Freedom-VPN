@@ -1,0 +1,145 @@
+{
+  "complete": false,
+  "id": "AT05",
+  "title": "Three node join sources",
+  "spec": [
+    "§19.1",
+    "§19 AT05",
+    "NODE01 NODE04 ENR01 ENR04 PKG01"
+  ],
+  "status": "blocked",
+  "observations": [
+    {
+      "name": "devstack f14 restart policy worker",
+      "detail": "pass; expected: unless-stopped; actual: unless-stopped; command: docker inspect own container HostConfig.RestartPolicy.Name"
+    },
+    {
+      "name": "devstack f14 restart policy control",
+      "detail": "pass; expected: unless-stopped; actual: unless-stopped; command: docker inspect own container HostConfig.RestartPolicy.Name"
+    },
+    {
+      "name": "devstack f14 restart policy netbird",
+      "detail": "pass; expected: unless-stopped; actual: unless-stopped; command: docker inspect own container HostConfig.RestartPolicy.Name"
+    },
+    {
+      "name": "shared serving baseline",
+      "detail": "pass; expected: verified tree-built amd64/arm64 boot and active nonempty release policy; actual: prepared=true; boot_present=true; artifact_digests=4; command: e2e.PrepareServingBaseline(ctx, admin.Client, csrf, false)"
+    },
+    {
+      "name": "blocked",
+      "detail": "Run in progress; this is an incremental record, not a full AT result."
+    },
+    {
+      "name": "provenance",
+      "detail": "source=f63ebd9cb15735437e6cc11e3f469807f5cd8b18; applied generation=unavailable; incarnation=unavailable; image/binary digests in JSON"
+    },
+    {
+      "name": "operator",
+      "detail": "needs operator run; see OPERATORS.md"
+    }
+  ],
+  "at": "2026-10-31T18:16:21Z",
+  "run_id": "35ce8851-229b-4f28-8e20-2a40a8c1af83",
+  "source_commit": "f63ebd9cb15735437e6cc11e3f469807f5cd8b18",
+  "release_digests": {
+    "artifact_sha256_0.1.0_amd64": "0c4a5fe6f703ab2eaeaa763d1611866719a70cce4cb4b72323305e09476e883b",
+    "artifact_sha256_0.1.0_arm64": "0183d77838a706e4adaac10b28e9de1b8d914317b620593b454b1d68c784472b",
+    "manifest_sha256_0.1.0": "2ad149ea7e5ecb5d51d1fa157f1aa3bdf6b836b74ddc9678495d78bf1d0beda3",
+    "signed_manifest_sha256_0.1.0": "fe683c094a8afac8c764873015adafb537deeb3d074a85455529dd4093804225"
+  },
+  "build": {
+    "test_binary_sha256": "9336fdf1f613f4c3bf539e58859a30b325e456aa3d7cd77f18054fd45536df85",
+    "source_commit": "f63ebd9cb15735437e6cc11e3f469807f5cd8b18",
+    "source_dirty": false,
+    "image_digests": {
+      "adguard": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
+      "control": "sha256:7a497ffb9bed6ee3450b44301c547265ff9f19c7db2acb9a03c12f449ee1511a",
+      "coredns": "sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97",
+      "gateway": "sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce",
+      "idp": "sha256:e453757fca6273e861ad5268fe691c249a541c98334dc187bd55676321965705",
+      "member": "sha256:c8fffdaf76e49cd1d38403565403871c7c092426c065789200a5960aafb2b6fc",
+      "netbird": "sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c",
+      "node": "sha256:c8fffdaf76e49cd1d38403565403871c7c092426c065789200a5960aafb2b6fc",
+      "node-netns": "sha256:c8fffdaf76e49cd1d38403565403871c7c092426c065789200a5960aafb2b6fc",
+      "origin": "sha256:5d2e5b91dce71eef04be57ea54e11a8d602768312fa50eac355a75ed3069450e",
+      "payment": "sha256:ef83c2f0f4f43f7c8c02c2ee53d1eb1667f25b617b089a7aeeaf91c206baa6fe",
+      "postgres": "sha256:363a0e6d48b66841dc7d01985d4212f3c663c65e56500a0d5c99b3ec090add2a",
+      "worker": "sha256:81dfd91f12a3d39ae71cdee924c887cc9b18a9ff022fa7a6f19e040c5bd36634"
+    },
+    "binary_sha256": {
+      "fvpn-agent": "d1c47ca3f267551f0471484622558e2c5fb0d5b1e1ceaddc7eafc2a4a1e06ec8",
+      "fvpn-control": "2f806d168309376516ec1540c886f50945597bd0c468a2dba60a9ebd69f841d2",
+      "fvpn-updater": "06656f467960bdb0c30d283c5ba4539c940a2e3df239155d542ceb0b3689cd7f",
+      "fvpn-worker": "945af867fcb7ead8ed096b427f4195142e5ce0f2d29fea159f5e48fe63d41106"
+    },
+    "binary_vcs": {
+      "fvpn-agent": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "false",
+        "vcs.revision": "f63ebd9cb15735437e6cc11e3f469807f5cd8b18",
+        "vcs.time": "2026-10-31T18:15:39Z"
+      },
+      "fvpn-control": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "false",
+        "vcs.revision": "f63ebd9cb15735437e6cc11e3f469807f5cd8b18",
+        "vcs.time": "2026-10-31T18:15:39Z"
+      },
+      "fvpn-updater": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "false",
+        "vcs.revision": "f63ebd9cb15735437e6cc11e3f469807f5cd8b18",
+        "vcs.time": "2026-10-31T18:15:39Z"
+      },
+      "fvpn-worker": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "false",
+        "vcs.revision": "f63ebd9cb15735437e6cc11e3f469807f5cd8b18",
+        "vcs.time": "2026-10-31T18:15:39Z"
+      }
+    }
+  },
+  "policy_revision": "unavailable",
+  "active_policy_revisions": {
+    "release_support": "01a1932d-5bf1-74e4-9f28-9dd2bce237aa"
+  },
+  "node_incarnation": "unavailable",
+  "steps": [
+    {
+      "name": "devstack f14 restart policy worker",
+      "status": "pass",
+      "expected": "unless-stopped",
+      "actual": "unless-stopped",
+      "command": "docker inspect own container HostConfig.RestartPolicy.Name",
+      "at": "2026-10-31T18:16:22Z"
+    },
+    {
+      "name": "devstack f14 restart policy control",
+      "status": "pass",
+      "expected": "unless-stopped",
+      "actual": "unless-stopped",
+      "command": "docker inspect own container HostConfig.RestartPolicy.Name",
+      "at": "2026-10-31T18:16:22Z"
+    },
+    {
+      "name": "devstack f14 restart policy netbird",
+      "status": "pass",
+      "expected": "unless-stopped",
+      "actual": "unless-stopped",
+      "command": "docker inspect own container HostConfig.RestartPolicy.Name",
+      "at": "2026-10-31T18:16:22Z"
+    },
+    {
+      "name": "shared serving baseline",
+      "status": "pass",
+      "expected": "verified tree-built amd64/arm64 boot and active nonempty release policy",
+      "actual": "prepared=true; boot_present=true; artifact_digests=4",
+      "command": "e2e.PrepareServingBaseline(ctx, admin.Client, csrf, false)",
+      "at": "2026-10-31T18:16:25Z"
+    }
+  ],
+  "blockers": [
+    "Run in progress; this is an incremental record, not a full AT result."
+  ],
+  "operator_status": "needs operator run"
+}
