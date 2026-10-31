@@ -85,3 +85,19 @@ from grant_evidence import validate as validate_grants
 write('member-grants-audit.json', validate_grants(
     json.loads((root/'member-grants-transition.json').read_text()),
     json.loads((root/'member-grants-wire.json').read_text())))
+
+# Join original node acceptance records to both genuine response/report pairs.
+transition=json.loads((root/'member-grants-transition.json').read_text())
+joined={}
+for phase,lease_key,report_key,flip_key in [
+    ('empty','empty_lease','provisional_receipt','false_flip'),
+    ('populated','populated_lease','serving_receipt','true_flip')]:
+    event=transition[lease_key]
+    lease_id=event['response']['signed']['lease_id']
+    accepted=[p for p in rows if p.get('renewal',{}).get('new_lease') and p.get('lease',{}).get('lease_id')==lease_id]
+    if len(accepted)!=1:
+        raise ValueError('missing or duplicate actual node lease acceptance: '+phase)
+    joined[phase]=dict(flip=transition[flip_key],server_renewal=dict(started=event['started'],completed=event['completed'],response_sha256=event['response_sha256']),
+        node_acceptance=accepted[0],accepted_report=dict(report_id=transition[report_key]['request']['report_id'],started=transition[report_key]['started'],completed=transition[report_key]['completed']))
+write('member-grants-timing.json',dict(run_id=r['run_id'],phases=joined,counted_forwarding=transition['counted_forwarding'],
+    timing_basis='Server completion, original detached node renewal completion and actual accepted observation receipts are separate samples. Counted native packet timestamps are in the original captures; no scheduled slot is substituted.'))

@@ -7,7 +7,6 @@ bound kernel commits; neither an overlap nor a netlink receipt is a drop time.
 import json
 from pathlib import Path
 import statistics
-import math
 from collections import Counter
 import sys
 
@@ -131,7 +130,7 @@ def validate_operations(rows):
     def distribution(values):
         ordered = sorted(values)
         return dict(count=len(values), median_ns=str(int(statistics.median(values))), worst_ns=str(max(values)),
-                    **{name+'_ns': str(ordered[math.ceil(q*len(ordered))-1]) for name,q in [('p50',.5),('p90',.9),('p99',.99),('max',1)]})
+                    **{name+'_ns': str(ordered[(q*len(ordered)+99)//100-1]) for name,q in [('p50',50),('p90',90),('p99',99),('max',100)]})
     return dict(source_counts=dict(Counter(r['source'] for r in rows)),
                 producer_rows=[r for r in rows if r['source'] in ('baseline','heartbeat')],
                 failed_applies=[a for a in applies if not a['operation']['succeeded']],
