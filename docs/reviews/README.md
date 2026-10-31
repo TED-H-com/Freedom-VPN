@@ -33,7 +33,7 @@
 
 ## Consolidated High-Severity Findings Summary
 
-Every individual finding (High, Medium, and Low) is tabulated in full in its respective review file. The table below summarizes representative High-severity findings across the fourteen reviews:
+Every individual finding (High, Medium, and Low) is tabulated in full in its respective review file. The table below summarizes representative High-severity findings across the archived reviews:
 
 | Severity | Finding | Status | Closing PR |
 |---|---|---|---|

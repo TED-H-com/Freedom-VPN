@@ -2,7 +2,7 @@
 
 **Current cut — [follow-up 18](../handover/follow-up-18.md) (2026-10-31 EDT):** Current acceptance is follow-up 18 through #324; the dated tables below retain their own cutoffs.
 
-Latest reconciliation: [follow-up 17](#follow-up-17-acceptance-snapshot-2026-10-31-edt),
+Historical follow-up 17 reconciliation: [follow-up 17](#follow-up-17-acceptance-snapshot-2026-10-31-edt),
 main `7e044c71` through #313. Earlier tables retain the verdicts at their own cutoffs.
 
 Operational runbooks, deployment guides, parameter calibration references, and disaster recovery checklists are maintained under [`docs/handover/`](../handover/README.md) alongside domain-specific operational references:

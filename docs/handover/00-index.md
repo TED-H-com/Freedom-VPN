@@ -2,9 +2,9 @@
 
 **Current cut — [follow-up 18](follow-up-18.md) (2026-10-31 EDT):** Current operator evidence is follow-up 18 through #324. Earlier numbered snapshots retain their original cutoffs.
 
-Latest cutoff: [follow-up 17 operator evidence](follow-up-17.md). #313
+Historical follow-up 17 cutoff: [follow-up 17 operator evidence](follow-up-17.md). #313
 harness-proves the SECOPS-21 first-offer capture (2/0/0, delivery 4 > retained 3,
-matching local digest and central 202); full restore remains open for secops 13.
+matching local digest and central 202); full restore was open for secops 13 at that cutoff.
 Earlier restore measurements below retain their original cutoff.
 
 Start with the [runbook catalogue](README.md). The [database and retention index](11-database-and-retention.md) includes `00189_node_incarnation_usage_outbox.sql` (`#243`, SECOPS-19 / D-075 / D-077 §2). The migration inventory comes from `db/migrations/*.sql`; use the deployment checklist to compare the complete inventory with the target database.

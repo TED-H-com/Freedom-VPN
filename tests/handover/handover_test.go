@@ -3469,6 +3469,7 @@ func TestHandover_Followup18Claims(t *testing.T) {
 		require(archive+"fleet12.md", "one** correction", "same", "incarnation", "D-111 pre-health", "whose ACK applied a null-baseline seed", "every third distinct", "00192", "UUID `result_id`", "outcome_sequence", "Down fails atomically", "Deploy 00192 before the new control binary")
 		require("internal/fleetupdate/installer_followup12_integration_test.go", "TestD127_SuccessAfterSeedMovesBothVersions", "TestD127_RollbackAfterSuccessMovesBothVersions", "TestD127_ExactReplayOfEitherOutcomeReturnsStoredAck", "TestD127_ThirdFlipIsAckConflict", "TestD127_OtherSecondEvidenceIsAckConflict", "TestD127_CorrectionRespectsCentralGenerationHighWater", "TestD127_Migration192RoundTripPreservesEvidenceAndBounds")
 		require("internal/fleetupdate/installer_followup12_http_integration_test.go", "TestD127_CorrectionHTTPReplaysBothStoredAcks")
+		require("docs/handover/11-database-and-retention.md", "00192_installer_outcome_corrections.sql", "outcome_sequence bounded to 1..2", "Apply before control; Down refuses once corrections exist")
 		require(doc, "applied D-111 pre-health seed", "under the unchanged generation fence", "first receipt stays", "original ACK flags", "Replay of either payload returns its stored ACK", "third payload", "ACK_CONFLICT", "Deploy migration 00192 before the new control binary", "payload-derived", "outcome_sequence", "1..2", "Down", "harness-proved on PostgreSQL tests", "not yet run")
 	})
 	t.Run("usage5_live_retired_stream_and_same_key_replay", func(t *testing.T) {
@@ -3559,7 +3560,7 @@ func TestHandover_Followup18Claims(t *testing.T) {
 			} `json:"handover_follow_up_18"`
 		}
 		readJSON("docs/e2e/at/secops/scope-review.json", &manifest)
-		if len(manifest.Followup.Documents) != 11 {
+		if len(manifest.Followup.Documents) != 12 {
 			t.Fatalf("live inventory = %d", len(manifest.Followup.Documents))
 		}
 		for _, pin := range manifest.Followup.Documents {
@@ -3572,7 +3573,7 @@ func TestHandover_Followup18Claims(t *testing.T) {
 
 	t.Run("unpromoted_acceptance_and_D098_D109_integrity", func(t *testing.T) {
 		for _, at := range []string{"AT29", "AT31"} {
-			wantValue(archive+"secops13-"+at+".json", `"blocked"`, "status")
+			wantValue(archive+"cf81f6f8-4ccf-43d2-aae2-10121f6b169d-"+at+".json", `"blocked"`, "status")
 		}
 		checkHandoverRecord(t, root, "docs/e2e/at/enrollment/history/59ef4bf8-7d4a-490f-a74d-6b54394375e0/AT07.json", "59ef4bf8-7d4a-490f-a74d-6b54394375e0", "blocked", 36, 5, 0)
 		require(archive+"updater17.md", "84b6a342", "does not contain PR #307", "PR #310", "Devstack 19 owns the serving-node rerun", "Installer 6 separately consumes")

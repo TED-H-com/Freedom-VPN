@@ -2,9 +2,9 @@
 
 **Current cut — [follow-up 18](follow-up-18.md) (2026-10-31 EDT):** Deploy migration 00192 before the new control binary. Down refuses once installer corrections exist. #320/#323 provide checkpoint correlation; the devstack 19 serving-node rerun is not yet proved.
 
-Latest cutoff: [follow-up 17 operator evidence](follow-up-17.md). #313
+Historical follow-up 17 cutoff: [follow-up 17 operator evidence](follow-up-17.md). #313
 harness-proves the SECOPS-21 first-offer capture (2/0/0, delivery 4 > retained 3,
-matching local digest and central 202); full restore remains open for secops 13.
+matching local digest and central 202); full restore was open for secops 13 at that cutoff.
 Earlier restore measurements below retain their original cutoff.
 
 This runbook guides operators through transitioning Freedom VPN from the local development and E2E lab stack (`deploy/devstack`) to production hosts (`§3`, `§5`–`§8`, `§10`–`§13`, `§15`–`§18`, `§21`).

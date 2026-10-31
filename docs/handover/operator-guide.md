@@ -904,7 +904,7 @@ D093-06 / D093-10 are retired. D093-12 remains open: the harness still writes
 fixture transport decision is pending. A fixture result is not real agent
 kernel or updater evidence.
 
-Latest AT30 measurement (#301), run `dd845a7f-2660-431c-a8e6-c513108cc07d`:
+Historical follow-up 12 AT30 measurement (#301), run `dd845a7f-2660-431c-a8e6-c513108cc07d`:
 **passed**, pre-replay database RPO **106.45 s**, post-replay service usage RPO
 **0 s**, protocol RTO **66.90 s**, total outage RTO **74.53 s**, replay
 **5 events / 5 hashes / 0 lost / 0 duplicate / 0 gaps**. D-095 gives the exact
