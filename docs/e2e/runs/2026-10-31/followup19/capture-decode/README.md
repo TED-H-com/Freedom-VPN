@@ -118,3 +118,22 @@ matching decoded totals. The original 11,011-byte members row has **no matching
 pcap in this worktree**; the available 22,022-byte row is a different run. A
 fresh same-order native reconnect campaign is recorded separately with origin
 headers and endpoint samples. No historical verdict is replaced.
+
+The outer headers further narrow the observation boundary. Three late
+retransmissions of inner `[10731373,10732601)` on node fvmb0 are followed by:
+
+| Inner TCP time | Node outer UDP time | Outer IPv4 ID | IP / UDP length | DF / MF / offset | Matching member header |
+|---|---|---:|---|---|---|
+| 1793442775.156689 | 1793442775.156906 | 19823 | 1340 / 1320 | false / false / 0 | absent |
+| 1793442776.820703 | 1793442776.820896 | 21296 | 1340 / 1320 | false / false / 0 | absent |
+| 1793442780.084703 | 1793442780.084951 | 23849 | 1340 / 1320 | false / false / 0 | absent |
+
+These node-interface-2 outbound UDP 51820→51820 packets are unfragmented and
+larger than the recorded member underlay MTU 1280; node underlay MTU is 1500.
+The timing/size correspondence points to loss on that native underlay boundary,
+consistent with receive-link MTU rejection, rather than an origin read stall.
+That mechanism is an **inference**, not a measured kernel drop reason: the old
+capture lacks drop statistics and encrypted payloads are not inspected. Outer
+DF=false does not mean a directly bridged link will fragment the frame. No
+router hop or ICMP emission is inferred. The successful control's smaller
+response packets do not disprove this size-dependent failure mode.
