@@ -19,7 +19,7 @@ import (
 // new ledger epoch. This marker returns 503 without forwarding and without
 // changing the epoch. It does not edit the outbox.
 func (s *Stack) HoldUsageAcknowledgements(ctx context.Context, slot string, hold bool) error {
-	container, err := s.nodeSlot(slot)
+	container, _, err := s.usageSlot(slot)
 	if err != nil {
 		return err
 	}
@@ -31,7 +31,7 @@ func (s *Stack) HoldUsageAcknowledgements(ctx context.Context, slot string, hold
 }
 
 // UsageLedgerSnapshot runs `fvpn-agent usage snapshot -json` and parses it.
-// The slot is the lab node name: "node", "node2", or "node-clone".
+// The slot is "node", "node2", "node-clone", or "installer-node".
 func (s *Stack) UsageLedgerSnapshot(ctx context.Context, slot string) (UsageSnapshot, error) {
 	raw, err := s.UsageLedgerSnapshotBytes(ctx, slot)
 	if err != nil {
@@ -48,11 +48,15 @@ func (s *Stack) UsageLedgerSnapshot(ctx context.Context, slot string) (UsageSnap
 // newline. Two calls are compared as bytes. Re-encoding the parsed snapshot
 // is not that proof.
 func (s *Stack) UsageLedgerSnapshotBytes(ctx context.Context, slot string) ([]byte, error) {
-	container, err := s.nodeSlot(slot)
+	container, config, err := s.usageSlot(slot)
 	if err != nil {
 		return nil, err
 	}
-	cmd := exec.CommandContext(ctx, "docker", "exec", container, "fvpn-agent", "usage", "snapshot", "-config", "/etc/vpn-node/agent-run.json", "-json")
+	bin := "fvpn-agent"
+	if slot == "installer-node" {
+		bin = "/opt/vpn-node/current/fvpn-agent"
+	}
+	cmd := exec.CommandContext(ctx, "docker", "exec", container, bin, "usage", "snapshot", "-config", config, "-json")
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
@@ -63,6 +67,14 @@ func (s *Stack) UsageLedgerSnapshotBytes(ctx context.Context, slot string) ([]by
 		return nil, fmt.Errorf("usage snapshot was empty")
 	}
 	return stdout.Bytes(), nil
+}
+
+func (s *Stack) usageSlot(slot string) (container, config string, err error) {
+	if slot == "installer-node" {
+		return s.installerContainer(), "/etc/vpn-node/agent.json", nil
+	}
+	container, err = s.nodeSlot(slot)
+	return container, "/etc/vpn-node/agent-run.json", err
 }
 
 const (

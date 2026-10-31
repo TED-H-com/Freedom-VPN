@@ -110,6 +110,9 @@ type ServingEvidence struct {
 	TCSummary        TCSummary               `json:"tc_summary"`
 	PolicyRules      []PolicyRuleEvidence    `json:"policy_rules"`
 	Counters         map[string]CounterValue `json:"-"`
+	// Immutable transport snapshot captured before rollback. Access through
+	// TCReadbackEvidence; zero-value evidence has no retained read.
+	tcReadback *tcReadbackSnapshot
 }
 
 // VerifyServing reads live nft, tc and policy-routing state on every call.

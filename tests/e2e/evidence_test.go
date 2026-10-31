@@ -64,9 +64,9 @@ func TestSEC02_WriteRedactsIdentitySubjects(t *testing.T) {
 
 // The follow-up campaign's archived failures are part of the public artifact.
 func TestCommittedFixtureEvidence_ValidAndHygieneClean(t *testing.T) {
-	root := "../../docs/e2e/runs/2026-10-31/followup16"
+	root := "../../docs/e2e/runs/2026-10-31"
 	if _, err := os.Stat(root); os.IsNotExist(err) {
-		t.Skip("no committed follow-up 16 records")
+		t.Skip("no committed follow-up fixture records")
 	}
 	records := 0
 	err := filepath.WalkDir(root, func(path string, d os.DirEntry, err error) error {
@@ -74,6 +74,9 @@ func TestCommittedFixtureEvidence_ValidAndHygieneClean(t *testing.T) {
 			return err
 		}
 		if d.IsDir() {
+			if path != root && filepath.Dir(path) == root && d.Name() != "followup16" && d.Name() != "followup17" {
+				return filepath.SkipDir
+			}
 			return nil
 		}
 		raw, err := os.ReadFile(path)

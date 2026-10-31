@@ -196,7 +196,7 @@ func (s *Stack) MemberTransportStack(member, nodeSlot string) (*Stack, error) {
 	if nodeSlot == "" {
 		nodeSlot = "node"
 	}
-	node, err := s.nodeSlot(nodeSlot)
+	node, _, err := s.usageSlot(nodeSlot)
 	if err != nil {
 		return nil, err
 	}

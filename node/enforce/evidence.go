@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
@@ -18,7 +19,7 @@ import (
 // and object even when it falls outside the bounded sample of other reads.
 // SHA256 covers the retained bounded rows and total counts using RFC 8785,
 // never packet selectors. It is not a digest of omitted raw kernel data.
-// This is a library/report-only value, not a new HTTP contract field.
+// TCReadbackEvidence maps this library summary to the D-106 HTTP contract.
 type TCSummary struct {
 	Generation decstr.U64      `json:"generation"`
 	Phase      string          `json:"phase"`
@@ -66,10 +67,28 @@ func cleanTCToken(s string) string {
 
 func cleanTCRead(r TCReadEvidence) TCReadEvidence {
 	v := TCReadEvidence{Interface: cleanTCToken(r.Interface), Attachment: cleanTCToken(r.Attachment), Error: cleanTCToken(r.Error), Objects: make([]TCObject, 0, len(r.Objects))}
+	if v.Interface == "" {
+		v.Interface = "redacted"
+	}
+	if v.Attachment == "" {
+		v.Attachment = "redacted"
+	}
+	switch v.Error {
+	case "", "read_failed", "invalid_json", "invalid_listing":
+	default:
+		v.Error = "invalid_listing"
+	}
 	for _, o := range r.Objects {
 		x := TCObject{Kind: cleanTCToken(o.Kind), Handle: cleanTCToken(o.Handle), Parent: cleanTCToken(o.Parent), Root: o.Root}
+		if x.Kind == "" {
+			x.Kind = "redacted"
+		}
 		for _, action := range o.Actions {
-			x.Actions = append(x.Actions, cleanTCToken(action))
+			a := cleanTCToken(action)
+			if a == "" {
+				a = "redacted"
+			}
+			x.Actions = append(x.Actions, a)
 		}
 		// Action order is semantic; retain it. Object dump order is not.
 		v.Objects = append(v.Objects, x)
@@ -100,10 +119,16 @@ func boundTCRead(r TCReadEvidence) (TCReadEvidence, bool) {
 // Called before any rollback or quarantine, using only the reads that decided
 // this verification. Never re-read after rollback and label it as the rejection.
 func (ev *ServingEvidence) retainTC(generation uint64, phase string, err error) {
-	s := TCSummary{Generation: decstr.U64(generation), Phase: phase, Reads: len(ev.TC)}
+	readAt := time.Now().UTC()
+	const maxCount = 2147483647 // D-106 counts are bounded independently of Go int.
+	s := TCSummary{Generation: decstr.U64(generation), Phase: phase, Reads: min(len(ev.TC), maxCount), Truncated: len(ev.TC) > maxCount}
 	reads := make([]TCReadEvidence, 0, len(ev.TC))
 	for _, r := range ev.TC {
-		s.Objects += len(r.Objects)
+		if len(r.Objects) > maxCount-s.Objects {
+			s.Objects, s.Truncated = maxCount, true
+		} else {
+			s.Objects += len(r.Objects)
+		}
 		reads = append(reads, cleanTCRead(r))
 	}
 	sort.Slice(reads, func(i, j int) bool {
@@ -119,7 +144,10 @@ func (ev *ServingEvidence) retainTC(generation uint64, phase string, err error) 
 	var check *CheckError
 	if errors.As(err, &check) && check.tc != nil {
 		r, truncated := boundTCRead(cleanTCRead(*check.tc))
-		s.Rejected, s.Truncated = &r, truncated
+		if len(r.Objects) > 1 {
+			r.Objects, truncated = r.Objects[:1], true
+		}
+		s.Rejected, s.Truncated = &r, s.Truncated || truncated
 		// Existing agent versions forward TC rows through report-only errors.
 		// Put the deciding row first so their own truncation cannot discard it.
 		selected := []TCReadEvidence{r}
@@ -149,6 +177,7 @@ func (ev *ServingEvidence) retainTC(generation uint64, phase string, err error) 
 		TC        []TCReadEvidence `json:"tc"`
 	}{s.Reads, s.Objects, s.Truncated, reads})))
 	ev.TC, ev.TCSummary = reads, s
+	ev.tcReadback = newTCReadbackSnapshot(*ev, readAt, err)
 }
 
 func tcCheck(r TCReadEvidence, obj *TCObject) error {

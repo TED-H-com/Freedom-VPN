@@ -88,3 +88,146 @@ job assignment, update inheritance and D-089 assertions.
 
 [Exact lifecycle invocation](README.md#retained-third-enrolling-fleet-target).
 [Run IDs and deciding observations](runs/2026-10-31/followup16/README.md).
+
+## updates — 2026-10-31
+
+> # Requests to orchestrator — follow-up 9
+
+F9-06: the ordinary lab entrypoint now reads the kernel boot ID, matching the
+packaged updater. Remove the acceptance lane's random-to-kernel write adapter;
+an optional read-only equality assertion remains useful. Container restarts
+keep this ID and are process-restart evidence, not fresh-kernel evidence.
+
+`BuildInstallerRelease` builds real root-layout amd64/arm64 archives with the
+unchanged packaged units and the lab release signer. `PrepareInstallerNode`
+uses these for its older/newer fixtures. `RegisterInstallerReleases` uploads
+them, calls the admin release API and waits for worker verification. Activate
+support policy separately. `HoldInstallerFirstPoll` withholds only desired-state
+GETs while allowing genuine bootstrap. `HoldInstallerApply` exposes the runtime
+systemd condition barrier; releasing either does not start a unit.
+`InstallerServices` / `RestoreInstallerServices` make the sampling lifecycle
+explicit. [Exact paths, invocation and limits](installer-layout.md).
+
+The missing genuine `state/meter.checkpoint` remains a product prerequisite.
+These exports never supply one and do not promote an updater process exit 0
+over a failed durable result. Candidate restart/health remains unverified until
+the barrier is supplied by agent-core and the real apply succeeds.
+The [complete follow-up 17 run](runs/2026-10-31/followup17/README.md) passed
+kernel/heartbeat/updater-lock equality and the ordinary process restart check;
+installer apply still returned durable `failed/final_sample`, health null.
+
+## isolation — 2026-10-31
+
+> ## Follow-up 7 requests — 2026-10-31
+
+The origin image now includes `tcpdump` via an origin-only image build argument.
+`Stack.ExportContainerFile` streams raw capture bytes to a private mode-0600 disk
+file, atomically publishes on success, and returns size/SHA-256. The diagnostic
+`lab.docker` explicitly errors above 1 MiB; it no longer returns clipped success.
+The owned isolation receiver adapter calls the shared stream export. Stop or
+quiesce the writer before final capture, then redact the private file before
+committing it. A read failure cannot replace a previously complete destination.
+[Shared export contract](installer-layout.md#complete-capture-exports).
+
+This does not close AT11 hardware/platform coverage or AT13's continuous
+crash/NetBird/OS-reboot/updater matrix. Its process restart assertion now expects
+the same kernel ID and a fresh serving heartbeat.
+The [live plumbing row](runs/2026-10-31/followup17/a7c41436-82b3-4665-b75c-e2887f2e1009/capture-and-boot.md)
+passed a real 204-byte origin capture, a complete 3,145,728-byte disk export and
+explicit diagnostic overflow. These are helper checks, not a rerun of the
+isolation lane's full acceptance matrix.
+
+## security-ops — 2026-10-31
+
+> # Requests to orchestrator — Follow-up 11 (2026-10-31 UTC; live execution pending)
+
+AT29 guest-clock rollback is an **operator-run row**. No VM is provisioned by
+this Docker harness and no shared-kernel container clock is changed. The
+[operator procedure](at29-guest-clock.md) requires an independently clocked
+disposable Ubuntu guest, isolated control/member/origin, genuine signed finite
+deadlines, guest-only wall-clock rollback with the agent killed, independent
+monotonic timing and continuous TCP/UDP receipts, then recovery ACK. It remains
+blocked until those real traces exist. There is no simulated clock pass.
+
+## portal — 2026-10-31
+
+> **Portal D-093 audit read** (portal follow-up 17)
+
+I read `docs/portal/DEV.md` on this checkout. It documents D-101's simulated
+kernel/QoS/usage/updater evidence but does **not** contain the requested 15-value
+D-093 table. The classification below therefore audits the current
+`apps/portal/e2e/dev-stack.mjs` directly. The 15 audit rows below group concrete
+writes in that simulator; their numbering is not a row-for-row match to the
+absent table. No portal
+file is changed. Live values below mean the real agent/control/worker paths in
+the assembled privileged devstack, not the portal's mTLS reporter simulator.
+
+| Harness-written group | Real evidence available now | Extra lab or fixture boundary |
+|---|---|---|
+| 1. `internet_only=passed` | Actual agent baseline/ruleset verification and accepted check, with nft read-back | Adversarial bypass, spoof, private-destination and continuous-fault coverage needs the network lab; a passed check alone does not prove the matrix. |
+| 2. `meter_path=passed` | Actual nft device admission counters, sampler and check | Fragments, offload/bypass and failure attribution need netlab stimuli; no constant passes. |
+| 3. `tunnel_probe=passed` | Agent probe outcome/detail plus real native NetBird path and independent origin receipt | Full NAT/platform/QUIC matrix is unmeasured. A status/handshake string does not establish end-to-end traffic. |
+| 4. `provisioning_state=ready` | Product observations and node API projection after actual bootstrap/apply | Do not force ready while awaiting grants or failing safety. |
+| 5. `safety_status=passed` | Actual agent decision and accepted central observation | Fault rows require real missing policy, lease, isolation or meter conditions. |
+| 6. `data_health=healthy` | Actual datapath probe outcome and API projection | Unknown/degraded rows need corresponding probe behavior; not arbitrary UI constants. |
+| 7. Applied config/policy/binding revisions copied from desired | Real application ACKs, observed generation and signed desired state independently | Copying desired into applied is never evidence. |
+| 8. Forwarding boolean/block reasons | Agent decision, signed lease, current rules and counted persistent TCP/UDP | Deadline/crash/freeze tests need the network lab; wall-clock rollback needs the operator guest above. |
+| 9. NetBird peer/version/backend | Real enrolled peer mapping, native status and kernel interface | Fake peer IDs and the portal's fixed version remain simulator values. |
+| 10. Usage epoch/sequence/ACK/outbox counters | `UsageLedgerSnapshot` and agent usage observations, including nonzero held outbox and release | Exact canned counts/ages/byte totals remain display fixtures. |
+| 11. DNS applied outcome, digest/generation and feed counts | Real signed document fetch/apply, AdGuard read-back, node evidence and controlled DNS queries | Fixed feed digest/count 1420 is fixture-only; negative/cache/rebind/transport matrix needs controlled lab authority. |
+| 12. Current/last-good release IDs | Installed tree and durable updater status, accepted product observations | Must not advance last-good from install, stage or a process exit alone. |
+| 13. Updater state/stage/result/health/checkpoint | Genuine updater journal and failure results; regular devstack update scenarios exercise real binaries | The ordinary lab's `e2e/meter.json` is still a TEST ONLY checkpoint adapter. Fully journaled installer success is blocked by the absent genuine meter checkpoint; fixed all-passed health and synthetic seq 10/9 are fixture-only. |
+| 14. Direct-SQL `release_verifications` | `BuildRelease` / `BuildInstallerRelease` → `RegisterRelease`, real downloads/signatures and worker verification read-back | Replace SQL seeding with that public workflow for live claims. |
+| 15. Direct-SQL `usage_rollups` | Real counted member bytes → durable events → accepted batches → worker rollup/member usage reads | The exact >2^53 totals and canned estimated/gap flags are fixture-only display/precision cases. Do not generate petabytes or mutate live projector rows to obtain them. |
+
+The real paths can replace simulator inputs in a separate portal integration
+run; they cannot retroactively make the existing browser fixture rows live-node
+evidence. The shared stack uses TEST ONLY IdP/payment fixtures; their external
+provider behavior and physical arm64/mobile/desktop coverage are not established
+by the live-node checks above.
+
+## enrollment — 2026-10-31
+
+> # Enrollment acceptance requests — follow-up 5
+
+ENR-06 now reaches successful initial installation and an `already_current`
+rerun on the fixed NetBird socket/runtime layout. Digests serialize with
+`*_sha256` names and retain `absent`; `current_target` is symlink text.
+`InstallerOutcome.Services` captures active consumers before sampling and
+those started by the installer. Call `RestoreInstallerServices(ctx,
+"installer-node", out.Services)` after comparing quiescent files, including
+when the wrapper returns an error. It restores captured active services with
+read-back and leaves an inactive updater oneshot inactive. The shared runtime
+and NetBird socket survive sampling. [Contract and example](installer-layout.md).
+
+ENR-05's `HoldUsageAcknowledgements`, `UsageLedgerSnapshot` /
+`UsageLedgerSnapshotBytes`, `MemberTransportStack` and `CountedMemberTraffic`
+now accept `installer-node`. The hold is on the authenticated installer proxy
+at loopback 9444; the CLI uses `/opt/vpn-node/current/fvpn-agent` and
+`/etc/vpn-node/agent.json`. `ConfigureInstallerServing` supplies the real
+AdGuard backend, and the focused campaign composes publication, native member
+join, persistent TCP/UDP, counters and held usage without writing observations
+or ledger rows.
+
+The live attempt exposed an additional **product blocker**: the installer
+creates an empty `inet fvpn owner` chain, but enforcement requires exactly
+four chains and reports `HOOK_PRIORITY_MISMATCH`. Publication and the counted
+member prerequisite do not complete. Nonzero held usage and restored traffic
+therefore remain unproved. The harness leaves the marker and verifier intact;
+the owner is installer/enforcement (`packaging/installer/isolation.go` and
+`node/enforce/verify.go`), outside this lane's paths.
+[Actual marker and agent failure](runs/2026-10-31/followup17/a7c41436-82b3-4665-b75c-e2887f2e1009/installer-owner-chain.md).
+
+Authorized old-incarnation backlog delivery remains a separate unresolved
+usage/installer protocol. Disk preservation cannot establish once-only central
+totals or permission to send retired events under the new certificate. The
+full journaled installer upgrade also remains failed at the genuine missing
+meter checkpoint; no replacement checkpoint is supplied here.
+
+In [run a7c41436](runs/2026-10-31/followup17/README.md), controlled reinstall
+also exited 0 (`reenrolled`): same Node ID, different incarnation, retired mode
+0700, retained identity/bound-state digests, unchanged usage DB/WAL digests,
+and HTTP 403 for the retired certificate on both direct and proxy paths.
+Service restoration succeeded. Nonzero historical usage and forwarding after
+restoration are not claimed from those file/service results. The complete
+campaign remains exit 1 (8 pass / 1 blocked / 3 fail).

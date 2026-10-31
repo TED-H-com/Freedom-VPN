@@ -1,3 +1,5 @@
+import { publicationGateDiagnostics } from './publication-diagnostics.mjs';
+import type { NodeDetail } from '../src/api/types';
 import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
 
 const BASE_URL = process.env.PORTAL_E2E_BASE_URL || 'http://127.0.0.1:4173';
@@ -80,7 +82,7 @@ async function waitForOperationHeadline(
 
   if (!lastOp || lastOp.status !== expectedStatus) {
     throw new Error(
-      `Operation ${opId} (${lastOp?.kind ?? 'unknown'}) did not reach ${expectedStatus}; status=${lastOp?.status ?? 'null'} error_code=${lastOp?.error?.code ?? 'none'} error_message=${lastOp?.error?.message ?? 'none'} steps=${JSON.stringify(lastOp?.steps ?? [])}`,
+      `Operation ${opId} (${lastOp?.kind ?? 'unknown'}) did not reach ${expectedStatus}; status=${lastOp?.status ?? 'null'} error_code=${lastOp?.error?.code ?? 'none'} error_message=${lastOp?.error?.message ?? 'none'} publication_gates=${JSON.stringify(publicationGateDiagnostics(lastOp))} steps=${JSON.stringify(lastOp?.steps ?? [])}`,
     );
   }
 
@@ -681,18 +683,27 @@ test.describe('Freedom VPN Portal Live Control Plane E2E Suite (§18, AT01–AT0
       '絕非中央驗證已套用之證明',
     );
     await expect(page.getByTestId('node-dns-evidence-outcome')).toContainText('applied');
-    await expect(
-      page.getByTestId('node-dns-evidence-feed-malware-domains-default'),
-    ).toContainText('rules=1420');
+    // D093-10: the seeded profile references no feeds; do not invent a row/count.
+    await expect(page.getByTestId(/^node-dns-evidence-feed-/)).toHaveCount(0);
 
     // 412 conflict handling on PUT /publication with stale ETag
     const preBumpGetRes = await request.get(
       `${BASE_URL}/api/v1/admin/nodes/${tpeNode.node_id}`,
     );
     expect(preBumpGetRes.status()).toBe(200);
-    const preBumpNode = (await preBumpGetRes.json()) as {
-      resource_version: string;
-    };
+    const preBumpNode = (await preBumpGetRes.json()) as NodeDetail;
+    expect(preBumpNode.dns_policy_evidence?.feeds).toEqual([]);
+    const dnsEvidence = preBumpNode.dns_policy_evidence!;
+    expect(dnsEvidence.content_sha256).toMatch(/^[0-9a-f]{64}$/);
+    await expect(page.getByTestId('node-dns-evidence-document-id')).toHaveText(
+      dnsEvidence.document_id,
+    );
+    await expect(page.getByTestId('node-dns-evidence-content-sha256')).toHaveText(
+      dnsEvidence.content_sha256,
+    );
+    await expect(page.getByTestId('node-dns-evidence-generation')).toHaveText(
+      dnsEvidence.generation,
+    );
     await expect(page.getByTestId('node-detail-meta')).toContainText(
       `ETag: "${preBumpNode.resource_version}"`,
     );

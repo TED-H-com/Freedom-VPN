@@ -61,7 +61,7 @@ func (s *Stack) startExitSlot(ctx context.Context, slot, lastOctet string, clone
 	}
 	// Clean second exits copy configuration/public trust; the explicit fault
 	// fixture below also snapshots durable identity while the source is stopped.
-	// The entrypoint generates a fresh boot id/recovery config after enrollment.
+	// The entrypoint reads this kernel's boot id and rebuilds recovery config.
 	for _, file := range []string{"boot-id", "updater-recover.json"} {
 		_ = os.Remove(filepath.Join(base, "etc", file))
 	}
