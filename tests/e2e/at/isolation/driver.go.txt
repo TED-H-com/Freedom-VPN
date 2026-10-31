@@ -2051,7 +2051,7 @@ func (x *isolationRun) retainReasonLogs(label string) {
 	for _, name := range []string{"agent", "watchdog"} {
 		source := "/var/lib/vpn-node/e2e/" + name + ".log"
 		if label != "final" {
-			_, err := exec.Command("docker", "exec", x.r.lab.node, "sh", "-c", `mv -- "$1" "$2"; : > "$1"`, "isolation-log-rotation", source, source+"."+label).CombinedOutput()
+			_, err := exec.Command("docker", "exec", x.r.lab.node, "sh", "-c", `mv -- "$1" "$2" && : > "$1"`, "isolation-log-rotation", source, source+"."+label).CombinedOutput()
 			if err != nil {
 				x.t.Errorf("reason log rotation %s/%s failed", name, label)
 			}
