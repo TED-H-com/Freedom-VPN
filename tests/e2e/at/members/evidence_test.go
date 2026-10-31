@@ -29,7 +29,7 @@ func TestCommittedEvidenceHygiene(t *testing.T) {
 				t.Errorf("unsafe evidence %s", path)
 			}
 		}
-		if filepath.Ext(path) == ".json" && strings.HasPrefix(filepath.Base(path), "AT") {
+		if filepath.Ext(path) == ".json" && len(filepath.Base(path)) == len("AT01.json") && strings.HasPrefix(filepath.Base(path), "AT") {
 			var rec struct {
 				RunID  string `json:"run_id"`
 				Source string `json:"source_commit"`

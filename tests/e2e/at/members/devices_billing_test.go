@@ -281,7 +281,7 @@ func (l *live) entitlements(r *record) {
 		l.endPair(r, services, monitors, ep.end)
 	}
 	suspended := l.login("AT-suspend-"+l.run, "member")
-	got := l.patchMember(suspended, map[string]any{"admin_suspended": true, "suspension_reason": "TEST ONLY successful payment precedence"})
+	got := l.patchMember(r, suspended, map[string]any{"admin_suspended": true, "suspension_reason": "TEST ONLY successful payment precedence"})
 	r.check("manual suspension before payment", "202", detail(got), "PATCH member with If-Match", got.status == 202)
 	sp := l.checkout(r, suspended, time.Now().Add(time.Hour))
 	if sp != nil && l.truth(r, sp) {

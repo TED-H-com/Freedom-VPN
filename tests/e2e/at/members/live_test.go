@@ -161,7 +161,7 @@ func TestATMembers_Live(t *testing.T) {
 		id  string
 		run func(*record)
 	}{
-		{"AT05", l.enrollment}, {"AT01", l.identity}, {"AT02", l.devices}, {"AT03", l.payment}, {"AT04", l.entitlements}, {"AT08", l.publication}, {"AT09", l.exits}, {"AT20", l.dnsRules}, {"AT21", l.dnsFailure}, {"AT22", l.privacy},
+		{"AT05", l.enrollment}, {"AT01", l.identity}, {"AT02", l.devices}, {"AT03", l.payment}, {"AT04", l.entitlements}, {"AT08", l.publication}, {"AT20", l.dnsRules}, {"AT21", l.dnsFailure}, {"AT22", l.privacy}, {"AT09", l.exits},
 	} {
 		t.Run(task.id, func(t *testing.T) {
 			r := l.newRecord(task.id)

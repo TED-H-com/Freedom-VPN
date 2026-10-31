@@ -177,18 +177,24 @@ func (l *live) feedLastGood(r *record) {
 		r.block("D-054 worker could not bootstrap the controlled feed: " + reason + ". Last-good cannot be tested without a verified initial snapshot.")
 		return
 	}
-	beforeDNS := l.dnsLocal("feed-01.example.invalid", "1", "udp")
-	if !strings.Contains(beforeDNS, `"rcode":0`) {
-		_, baseRev := l.policy("dns_profile", map[string]any{"profile_code": "at-feed-positive", "display_name": map[string]string{"zh-TW": "TEST ONLY feed positive control"}, "block_response": "nxdomain", "blocked_ttl_seconds": 5, "domain_rule_set_revision_ids": []string{}, "threat_feed_revision_ids": []string{}})
-		if baseRev != uuid.Nil {
-			_ = l.activate(baseRev)
-			_ = l.wait(45*time.Second, func() bool {
-				beforeDNS = l.dnsLocal("feed-01.example.invalid", "1", "udp")
-				return strings.Contains(beforeDNS, `"rcode":0`) && strings.Contains(beforeDNS, `"answers":1`)
-			})
-		}
+	// The resolver rejects an empty compiled rule bundle. Establish a nonempty
+	// positive-control profile and observe its application before the feed profile.
+	allow, allowRev := l.policy("domain_rule_set", map[string]any{"rules": []any{rule("lab.example.invalid", true, "block"), rule("feed-01.example.invalid", true, "allow")}})
+	r.check("feed positive rules", "201 nonempty synthetic control rules", detail(allow), "POST domain_rule_set with explicit controlled-name allow", allow.status == 201)
+	base, baseRev := l.policy("dns_profile", map[string]any{"profile_code": "at-feed-positive", "display_name": map[string]string{"zh-TW": "TEST ONLY feed positive control"}, "block_response": "nxdomain", "blocked_ttl_seconds": 5, "domain_rule_set_revision_ids": []uuid.UUID{allowRev}, "threat_feed_revision_ids": []string{}})
+	r.check("feed positive profile", "201", detail(base), "POST DNS profile referencing nonempty control rules", base.status == 201)
+	if baseRev != uuid.Nil {
+		act := l.activate(baseRev)
+		r.check("feed positive activation", "202", detail(act), "POST policy activation; completion is observed separately", act.status == 202)
 	}
-	r.check("feed positive DNS control", "known controlled upstream name resolves before feed activation", beforeDNS, "node loopback query controlled feed-01.example.invalid before feed profile", strings.Contains(beforeDNS, `"rcode":0`) && strings.Contains(beforeDNS, `"answers":1`))
+	l.resolverEvidence(r)
+	beforeDNS := ""
+	positive := l.wait(45*time.Second, func() bool {
+		beforeDNS = l.dnsLocal("feed-01.example.invalid", "1", "udp")
+		return strings.Contains(beforeDNS, `"rcode":0`) && strings.Contains(beforeDNS, `"answers":1`)
+	})
+	r.check("feed positive DNS control", "known controlled upstream name resolves before feed profile", beforeDNS, "node loopback query after explicit positive-control profile", positive)
+
 	profile, pid := l.policy("dns_profile", map[string]any{"profile_code": "at-members-feed", "display_name": map[string]string{"zh-TW": "TEST ONLY feed"}, "block_response": "nxdomain", "blocked_ttl_seconds": 5, "domain_rule_set_revision_ids": []string{}, "threat_feed_revision_ids": []uuid.UUID{rev}})
 	r.check("feed profile creation", "record reference validation result", detail(profile), "POST DNS profile referencing approved feed", profile.status == 201)
 	if profile.status == 201 && pid != uuid.Nil {

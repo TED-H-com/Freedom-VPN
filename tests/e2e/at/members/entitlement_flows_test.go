@@ -66,7 +66,7 @@ func (l *live) suspendedFlows(r *record) {
 	services := l.paidPair(r, b, "suspend")
 	monitors := l.pairMonitors(r, services)
 	at := time.Now().UTC()
-	suspended := l.patchMember(b, map[string]any{"admin_suspended": true, "suspension_reason": "TEST ONLY live flow withdrawal"})
+	suspended := l.patchMember(r, b, map[string]any{"admin_suspended": true, "suspension_reason": "TEST ONLY live flow withdrawal"})
 	r.check("live suspension command", "202", detail(suspended), "PATCH member with live TCP connections on both nodes", suspended.status == 202)
 	again := l.event(r, p, "invoice.paid")
 	delivery := l.sendEvent(again)

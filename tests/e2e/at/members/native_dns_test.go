@@ -23,6 +23,17 @@ func (l *live) configureNativeDNS(r *record) bool {
 	cfg, err := l.hook.ConfigureNativeDNS(l.ctx, labstack.BrowserSession{Client: l.admin.client, CSRF: l.admin.csrf}, l.awaitDevice(l.nativePeer), []uuid.UUID{l.node, l.second.NodeID})
 	l.nativeDNS = err == nil && len(cfg.Resolvers) == 2 && cfg.NativeResolversMatch && cfg.NativeDNSEnabled && cfg.SystemUsesNativeStub && cfg.SameAppliedDocument
 	r.jsonCheck("native two-resolver configuration", "exact issued pair, native enabled, one OS stub, identical applied documents", map[string]any{"configuration": cfg, "error": safeError(err)}, "ConfigureNativeDNS; TEST ONLY peer-restricted distribution of production-issued addresses", l.nativeDNS)
+	if l.nativeDNS {
+		start := time.Now()
+		var attempts []labstack.FixtureProbeResult
+		ready := l.wait(30*time.Second, func() bool {
+			got, e := l.hook.ProbeNativeDNS(l.ctx, "", "rr.example.invalid", 1, false, l.originIP())
+			attempts = append(attempts, got)
+			return e == nil && got.Available && got.ExpectedAnswer
+		})
+		r.jsonCheck("native DNS forwarding readiness", "bounded positive lookup after native down/up; preserve startup attempts", map[string]any{"attempts": attempts, "elapsed_ms": time.Since(start).Milliseconds()}, "ProbeNativeDNS startup readiness before one-shot RR matrix", ready)
+		l.nativeDNS = ready
+	}
 	if !l.nativeDNS {
 		r.block("F4-05: native DNS setup did not converge; no fallback or matrix inferred")
 	}

@@ -21,7 +21,7 @@ import (
 )
 
 func (l *live) installProbe() bool {
-	path := filepath.Join(l.root, ".agent/at-members/probe")
+	path := filepath.Join(l.root, ".agent/tmp/at-members-probe")
 	cmd := exec.CommandContext(l.ctx, "go", "build", "-o", path, "./tests/e2e/at/members/cmd/probe")
 	cmd.Dir = l.root
 	cmd.Env = append(os.Environ(), "CGO_ENABLED=0", "GOOS=linux", "GOARCH=amd64")

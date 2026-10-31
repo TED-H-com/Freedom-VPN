@@ -256,6 +256,7 @@ func (l *live) reauthorizationLimit(r *record, id, revoked uuid.UUID, service st
 		return l.count(`SELECT count(*) FROM member_devices WHERE id=$1 AND status='pending'`, id) == 1 && l.count(`SELECT count(*) FROM member_devices WHERE member_id=$1 AND status='authorized'`, l.a.member) == 2
 	})
 	r.check("D-081 limit precondition", "two authorized of limit two; replacement pending", fmt.Sprintf("ready=%t", pending), "real plan downgrade -> entitlement worker reconciliation; no row fixtures", pending)
+	l.traceForwarding(r, "member", l.awaitDevice(l.nativePeer))
 	if !l.fenceInsert(r, id) {
 		return
 	}
