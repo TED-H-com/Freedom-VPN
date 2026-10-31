@@ -65,3 +65,11 @@ follow-up 9 restore snapshot and handover claims test are unchanged.
 | SECOPS-21 | open — D-099 pending / w3-wire-nodes follow-up 29 | D-095 is merged, but no D-099 roadmap row exists on base c6e3eca. No new first-offer generations observed because the live run has not started. |
 
 [Prepared commands, archive pins, all sub-case statuses and exact export limits](2026-10-31-follow-up-11-handover.md).
+
+# Requests to orchestrator — Follow-up 12 (2026-10-31 UTC, live work in progress)
+
+At 08:01 UTC the AT30 restore run is ready but has been deferred by the required two-other-lanes guard since transport teardown at 07:40 UTC. Please reserve the next available lane slot if fleet coordination is needed; the secops harness continues five-minute retries without changing the rule. [Exact preflight checks](followup12-lab-preflight.json). The secops namespace is empty.
+
+Transport attempt 3 passed finite grant expiry, lease expiry with control loss and agent SIGKILL, device revoke, and bounded relay/direct restoration. Earlier failed harness attempts remain in [followup12-attempts.json](followup12-attempts.json). Root live summaries await the independent restore run.
+
+D-102 dated devstack answers were read from later main `5ce76e9`; the installer handover was read from `63a4116`. Application base remains `510a4ab`; [read revisions and scope](followup12-prerequisites.json). New requests remain in this file.
