@@ -269,8 +269,12 @@ func (s *liveSuite) evalAT19(t *testing.T) Record {
 	s.node2Client = s.buildNodeMTLSClient("node2")
 	s.exit2ID, s.exit2NetID = s.configureAndPublishNode("node2", s.node2ID, s.incarnation2ID, s.node2Client, 15000000, 8000000)
 
-	// Pause node2 background agent and synchronize applied_config_generation on both carrying exits
+	// Pause both carrying exit background agents so VerifyServing FLOWTABLE_BYPASS heartbeats do not overwrite ACK observations during AT19
+	s.stopNodeAgent("node")
 	s.stopNodeAgent("node2")
+	s.t.Cleanup(func() {
+		s.startNodeAgent("node")
+	})
 	_, _, _, _ = s.ackNodeGeneration(s.nodeID, s.incarnationID, s.agentClient, 0)
 	_, _, _, _ = s.ackNodeGeneration(s.node2ID, s.incarnation2ID, s.node2Client, 0)
 
@@ -885,7 +889,7 @@ func (s *liveSuite) writeDocs(records []Record) {
 		"- **Stack Instance**: `FVPN_E2E_PREFIX=%s` (`fvpn-%s-*`), `FVPN_E2E_PORT_BASE=%d`\n"+
 		"- **Primary Exit Node**: `node_id=%s`, `incarnation_id=%s`, `exit_id=%s` (`%s`)\n"+
 		"- **Second Exit Node (`AT19` & `ENR-03`)**: `node_id=%s`, `incarnation_id=%s` (initial: `%s`), `exit_id=%s` (`%s`)\n"+
-		"- **Non-Carrying Registered Node (`AT19`)**: `node_id=%s`, `incarnation_id=%s` (`desired_config_generation=0`)\n"+
+		"- **Non-Carrying Registered Node (`AT19`)**: `node_id=%s`, `incarnation_id=%s` (`desired_config_generation=%d -> %d`)\n"+
 		"- **Admitted Member Devices**: `memberA` device `%s`, `memberB` device `%s`\n"+
 		"- **Totals**: `%d pass`, `%d blocked`, `0 fail`\n"+
 		"- **Run Archives**: [history/initial/](history/initial/) (#80), [history/followup2/](history/followup2/) (#214)\n\n"+
@@ -911,7 +915,7 @@ func (s *liveSuite) writeDocs(records []Record) {
 		s.runID, nowUTC, s.build.GitCommit, s.build.GitDirty, assignedPrefix, assignedPrefix, assignedPortBase,
 		s.nodeID, s.incarnationID, s.exitID, s.exitNetID,
 		s.node2ID, s.incarnation2ID, s.incarnationRetention.OldIncarnationID, s.exit2ID, s.exit2NetID,
-		s.otherNodeID, s.otherIncarnationID,
+		s.otherNodeID, s.otherIncarnationID, t1.DesiredGenBefore[othStr], t2.DesiredGenAfter[othStr],
 		s.deviceA, s.deviceB, passCount, blockedCount, matrix.String(),
 		t1.DesiredGenBefore[n1Str], t1.DesiredGenAfter[n1Str],
 		t1.DesiredGenBefore[n2Str], t1.DesiredGenAfter[n2Str],
