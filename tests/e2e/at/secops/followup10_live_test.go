@@ -7,7 +7,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"net/netip"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -16,23 +15,18 @@ import (
 	"testing"
 	"time"
 
-	"github.com/TED-H-com/Freedom-VPN/internal/config"
-	"github.com/TED-H-com/Freedom-VPN/internal/devices"
-	"github.com/TED-H-com/Freedom-VPN/internal/entitlement"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
-	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
 	"github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/labstack"
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 // §15.2, §15.4, §17.2–17.4, §19 AT30 (DATA01 / BILL01 / MTR03):
-// Follow-up 9 re-measurement of AT30 second half on the fixed baseline (#227 D-076
+// Follow-up 10 re-measurement of AT30 second half on the fixed baseline (#227 D-076
 // restore authorization fence, #226 SECOPS-19 live UsageOutboxStatus in node
 // observations, #225 read-only `fvpn-agent usage snapshot`).
-func TestAT30_Followup9_LiveRestoreReconcile(t *testing.T) {
-	if os.Getenv("FVPN_SECOPS_FOLLOWUP9") != "1" {
-		t.Skip("requires fresh assigned w4-secops stack for Follow-up 9 AT30 live restore and D-076 fence verification")
+func TestAT30_Followup10_LiveRestoreReconcile(t *testing.T) {
+	if os.Getenv("FVPN_SECOPS_FOLLOWUP10") != "1" {
+		t.Skip("requires fresh assigned w4-secops stack for Follow-up 10 AT30 live restore and D-076 fence verification")
 	}
 	root, err := filepath.Abs("../../../..")
 	if err != nil {
@@ -42,7 +36,7 @@ func TestAT30_Followup9_LiveRestoreReconcile(t *testing.T) {
 		t:        t,
 		root:     root,
 		state:    filepath.Join(root, ".agent/e2e-state-w4-secops"),
-		metadata: map[string]any{"started_at": time.Now().UTC(), "follow_up": 9, "run_id": uuid.New(), "hardware": "shared development host; not candidate hardware"},
+		metadata: map[string]any{"started_at": time.Now().UTC(), "follow_up": 10, "run_id": uuid.New(), "hardware": "shared development host; not candidate hardware"},
 	}
 	p.open()
 	defer func() {
@@ -96,7 +90,7 @@ func TestAT30_Followup9_LiveRestoreReconcile(t *testing.T) {
 	}
 
 	admin = p.login("e2e-admin", "admin")
-	secops20Obs := p.servingWithDockerNatObservation9(admin, nodeID)
+	secops20Obs := p.servingGate10(admin, nodeID)
 
 	t0Flows := map[string]any{
 		"m1_d1": p.waitCountedFlow(peerM1D1, 45*time.Second),
@@ -191,6 +185,7 @@ func TestAT30_Followup9_LiveRestoreReconcile(t *testing.T) {
 	n1Seq = p.waitUsageFlushed(nodeID, n1Seq, m1, m2, 90*time.Second)
 	l1 := p.captureLedgerState(nodeID, m1, m2)
 	nodeStoreT1 := p.captureNodeUsageStore("t1")
+	p.metadata["generation_at_t1"] = p.generationState10(nodeID)
 	nodeSnapshotT1 := p.captureNodeUsageSnapshotCLI()
 	p1 := p.captureBillingState(m1.member, m2.member, extM1, extM2)
 	n1Peers := p.capturePeerState(nodeID, []string{m1.member, m2.member, m3.member}, m1, m2)
@@ -274,62 +269,8 @@ func TestAT30_Followup9_LiveRestoreReconcile(t *testing.T) {
 		},
 		"step4_reconciliation_observation": reconcileResult,
 	}
-}
-
-func (p *liveProbe) servingWithDockerNatObservation9(admin *liveSession, nodeID uuid.UUID) map[string]any {
-	ctx := p.t.Context()
-	beforeTime := time.Now().UTC()
-	natBeforeRaw, _ := p.docker("node", "nft", "list", "table", "ip", "nat")
-	obsCh := make(chan map[string]any, 1)
-	go func() {
-		result := map[string]any{
-			"unmodified_ip_nat_present": bytes.Contains(natBeforeRaw, []byte("chain DOCKER_POSTROUTING")),
-			"unmodified_ip_nat_chains":  []string{"DOCKER_OUTPUT", "OUTPUT", "DOCKER_POSTROUTING", "POSTROUTING"},
-		}
-		for deadline := time.Now().Add(40 * time.Second); time.Now().Before(deadline); {
-			var obsJSON, opJSON []byte
-			err := p.db.QueryRow(ctx, `
-				SELECT jsonb_build_object(
-					'observation_id', id,
-					'received_at', received_at,
-					'safety_status', report_payload->>'safety_status',
-					'member_forwarding_enabled', (report_payload->>'member_forwarding_enabled')::boolean,
-					'checks', report_payload->'checks',
-					'errors', report_payload->'errors'
-				)
-				FROM node_observations
-				WHERE node_id=$1 AND received_at >= $2
-				  AND report_payload::text LIKE '%FLOWTABLE_BYPASS%'
-				ORDER BY received_at DESC LIMIT 1`, nodeID, beforeTime).Scan(&obsJSON)
-			if err == nil && len(obsJSON) > 0 {
-				_ = p.db.QueryRow(ctx, `
-					SELECT COALESCE(jsonb_build_object('operation_id',id,'kind',kind,'status',status,'steps',steps),'{}'::jsonb)
-					FROM operations
-					WHERE kind='node.publish' AND created_at >= $1
-					ORDER BY created_at DESC LIMIT 1`, beforeTime).Scan(&opJSON)
-				result["unmodified_flowtable_bypass_observed"] = true
-				result["unmodified_flowtable_bypass_observation"] = json.RawMessage(obsJSON)
-				result["d074_publish_waiting_operation"] = json.RawMessage(opJSON)
-				_, _ = p.docker("node", "nft", "flush", "chain", "ip", "nat", "POSTROUTING")
-				_, _ = p.docker("node", "nft", "delete", "chain", "ip", "nat", "POSTROUTING")
-				_, _ = p.docker("node", "nft", "flush", "chain", "ip", "nat", "DOCKER_POSTROUTING")
-				_, _ = p.docker("node", "nft", "delete", "chain", "ip", "nat", "DOCKER_POSTROUTING")
-				result["docker_postrouting_removed_at_utc"] = time.Now().UTC()
-				obsCh <- result
-				return
-			}
-			time.Sleep(500 * time.Millisecond)
-		}
-		result["unmodified_flowtable_bypass_observed"] = false
-		obsCh <- result
-	}()
-	p.serving(admin, nodeID)
-	res := <-obsCh
-	var pubStatus string
-	_ = p.db.QueryRow(ctx, `SELECT status FROM operations WHERE kind='node.publish' AND created_at >= $1 ORDER BY created_at DESC LIMIT 1`, beforeTime).Scan(&pubStatus)
-	res["publish_operation_final_status"] = pubStatus
-	res["owner_request"] = "SECOPS-20 (owner: w3-devstack-e2e / w1-enforce-nft): Docker attaches two bridge networks (lab and origin) to node-netns and populates table ip nat with POSTROUTING -> DOCKER_POSTROUTING (xt target SNAT for 127.0.0.11). After #220 (2473acf whole-ruleset VerifyServing read-back), unmodified devstack node containers fail closed with FLOWTABLE_BYPASS (table nat family ip hook postrouting priority 100 chain POSTROUTING statement xt) when >=1 member grant is compiled."
-	return res
+	p.pastDue10(stack, nodeID)
+	p.bulkProtectedStreams10(stack)
 }
 
 func (p *liveProbe) captureNodeUsageSnapshotCLI() map[string]any {
@@ -425,7 +366,7 @@ func (p *liveProbe) runProductRestoreProtocol9(
 	protocolStart := time.Now()
 
 	// Step 1: freeze
-	step1Cmd, _ := p.runUsageAdmin(cfgPath, "freeze", "--actor", actor, "--reason", "TEST ONLY AT30 Follow-up 9 snapshot restore to T0")
+	step1Cmd, _ := p.runUsageAdmin(cfgPath, "freeze", "--actor", actor, "--reason", "TEST ONLY AT30 Follow-up 10 snapshot restore to T0")
 	var modeAfterFreeze string
 	if err := p.db.QueryRow(ctx, `SELECT mode FROM usage_ledger_state WHERE id='00000000-0000-0000-0000-000000000130'`).Scan(&modeAfterFreeze); err != nil {
 		p.t.Fatal("restore protocol: read mode after freeze:", err)
@@ -435,7 +376,7 @@ func (p *liveProbe) runProductRestoreProtocol9(
 	step2Cmd, step2Out := p.runUsageAdmin(
 		cfgPath, "begin-recovery",
 		"--actor", actor,
-		"--reason", "TEST ONLY AT30 Follow-up 9 restored central DB to T0; rotate ledger_epoch for node archive replay",
+		"--reason", "TEST ONLY AT30 Follow-up 10 restored central DB to T0; rotate ledger_epoch for node archive replay",
 		"--restored-to", t0Time.UTC().Format(time.RFC3339),
 		"--affected-since", monthStart.Format(time.RFC3339),
 	)
@@ -448,6 +389,7 @@ func (p *liveProbe) runProductRestoreProtocol9(
 	// - capture SECOPS-19 non-zero unacked_event_count / unacked_payload_bytes in both node_observations and `fvpn-agent usage snapshot`,
 	// - verify D-076 fences peerM2D2 while mode == 'reconciling' (recording the log line and counter increment),
 	// - wait for node archive replay to complete.
+	restoredGenerations := p.generationState10(nodeID)
 	servicesStart := time.Now().UTC()
 	if err := exec.CommandContext(ctx, "docker", "start", livePrefix+"control", livePrefix+"worker").Run(); err != nil {
 		p.t.Fatal("restore protocol: start control/worker:", err)
@@ -663,6 +605,7 @@ func (p *liveProbe) runProductRestoreProtocol9(
 		"converged_to_zero_unacked": convergedObsOK && convergedSnapOK,
 	}
 
+	p.metadata["SECOPS-21"] = p.restoreGenerations10(nodeID, servicesStart, restoredGenerations)
 	return protocolMap, secops19Map
 }
 
@@ -790,14 +733,12 @@ func (p *liveProbe) observeReconciliation9(
 			fenceCount, extWithdrawAuditCount, workerFenceMetricFound, workerFenceMetricVal, len(workerFenceLogs), len(workerAllFenceLogs), d2ObsAuth, d2APIStatusWhenFenced, d2InNetBirdGroup, d2FlowWhenFenced["counted"])
 	}
 
-	// (b) Re-grant peerM2D2 via AuthorizeDevice (operation kind = member.device_authorize):
-	// First prove replaying the T0 idempotency key returns Replayed=true and leaves the fence intact;
-	// then call AuthorizeDevice with a fresh idempotency key and system actor (noting admin HTTP route pending contract revision 12 / D-077),
-	// proving the fence row is deleted and the live worker grants peerM2D2 once and restores counted forwarding.
-	regrantEvidence := p.exerciseRegrantAuthorizeDevice(m2, peerM2D2, nodeID)
+	// D-077 HTTP route, existing operation identity, and read-back after worker sync.
+	regrantEvidence := p.exerciseAdminRegrant10(m2, peerM2D2)
 
 	// (c) Negative 2: A device central itself revoked is not fenced (status='revoked', not 'pending'):
 	negCentralRevoke := p.exerciseCentralRevokeNotFenced(m2, peerM2D1)
+	negCentralRevoke["admin_authorize_revoked"] = p.authorizeRevoked10(m2, peerM2D1)
 
 	// (d) Negative 1: A never-observed device enrolled after the restore is a fresh grant (no fence):
 	negFreshEnroll := p.exercisePostRestoreFreshEnrollNotFenced(stack, m2)
@@ -896,198 +837,6 @@ func (p *liveProbe) observeReconciliation9(
 			},
 			"peers_n2": n2Peers,
 		},
-	}
-}
-
-func discoveryKeyForPeer(deployment, peerID string) (uuid.UUID, error) {
-	raw, err := canonjson.Marshal([]string{deployment, peerID})
-	if err != nil {
-		return uuid.Nil, err
-	}
-	hash, err := canonjson.Hash(raw)
-	if err != nil {
-		return uuid.Nil, err
-	}
-	id, _ := uuid.FromBytes(hash[:16])
-	id[6] = id[6]&15 | 0x80
-	id[8] = id[8]&63 | 0x80
-	return id, nil
-}
-
-func (p *liveProbe) exerciseRegrantAuthorizeDevice(m2 *liveSession, peerM2D2 flowPeer, nodeID uuid.UUID) map[string]any {
-	ctx := p.t.Context()
-
-	var deployment, peerID, devName, platform, overlayScope, overlayIPStr, extUserID string
-	var versionBefore string
-	err := p.db.QueryRow(ctx, `
-		SELECT d.deployment_id, d.peer_id, d.name, d.platform, d.resource_version::text,
-		       b.overlay_scope, host(b.overlay_ip), u.external_user_id
-		FROM member_devices d
-		JOIN device_bindings b ON b.device_id = d.id AND b.valid_from <= clock_timestamp() AND b.valid_until > clock_timestamp()
-		JOIN netbird_user_bindings u ON u.member_id = d.member_id AND u.deployment_id = d.deployment_id
-		WHERE d.id = $1
-		ORDER BY b.binding_revision DESC LIMIT 1`, peerM2D2.Device).
-		Scan(&deployment, &peerID, &devName, &platform, &versionBefore, &overlayScope, &overlayIPStr, &extUserID)
-	if err != nil {
-		p.t.Fatal("regrant: query peerM2D2 metadata:", err)
-	}
-
-	membersRaw, err := os.ReadFile(filepath.Join(p.state, "config/members.json"))
-	if err != nil {
-		p.t.Fatal("regrant: read members.json:", err)
-	}
-	var mc config.Members
-	if json.Unmarshal(membersRaw, &mc) != nil {
-		p.t.Fatal("regrant: parse members.json")
-	}
-	ec, err := mc.Entitlements()
-	if err != nil {
-		p.t.Fatal("regrant: entitlements config:", err)
-	}
-	engine, err := entitlement.NewStore(ec)
-	if err != nil {
-		p.t.Fatal("regrant: entitlement store:", err)
-	}
-
-	dsn := "postgres://fvpn:" + p.secret("postgres.password") + "@127.0.0.1:35432/fvpn?sslmode=disable"
-	pool, err := pgxpool.New(ctx, dsn)
-	if err != nil {
-		p.t.Fatal("regrant: pgxpool.New:", err)
-	}
-	defer pool.Close()
-
-	svc := &devices.Service{Pool: pool, Entitlements: engine}
-	peer := devices.Peer{
-		DeploymentID:   deployment,
-		ID:             peerID,
-		ExternalUserID: extUserID,
-		Name:           devName,
-		Platform:       platform,
-		OverlayScope:   overlayScope,
-		OverlayIP:      netip.MustParseAddr(overlayIPStr),
-	}
-	systemActor := uuid.MustParse("00000000-0000-0000-0000-000000000003")
-
-	// 1. Replay the original T0 idempotency key: must return Replayed=true and leave the fence row intact.
-	origKey, err := discoveryKeyForPeer(deployment, peerID)
-	if err != nil {
-		p.t.Fatal("regrant: discoveryKeyForPeer:", err)
-	}
-	replayChange, err := svc.AuthorizeDevice(ctx, entitlement.Command{
-		Actor: entitlement.Actor{ID: systemActor, Role: "system", RequestID: uuid.Must(uuid.NewV7())},
-		Key:   origKey,
-	}, peer)
-	if err != nil {
-		p.t.Fatal("regrant: replay original T0 idempotency key failed:", err)
-	}
-	var fenceAfterReplay int
-	_ = p.db.QueryRow(ctx, `SELECT count(*) FROM device_authorization_fences WHERE device_id=$1`, peerM2D2.Device).Scan(&fenceAfterReplay)
-	if !replayChange.Replayed || fenceAfterReplay != 1 {
-		p.t.Fatalf("regrant: T0 idempotency replay did not preserve fence: replayed=%t fenceCount=%d", replayChange.Replayed, fenceAfterReplay)
-	}
-
-	// 2. Align nodes.desired_config_generation with nodes.applied_config_generation if the T0 restore
-	// regressed desired_config_generation below the generation the running node already applied in T0..T1
-	// (desiredstate.Compiler.Compile computes baseGen from desired_config_generation and max(desired_states.generation),
-	// not applied_config_generation; aligning ensures the post-regrant compile emits generation > applied_config_generation
-	// so agentstore.AcceptDesired does not drop it with ErrStaleGeneration).
-	var restoredDesiredGen, nodeAppliedGen uint64
-	for deadline := time.Now().Add(20 * time.Second); time.Now().Before(deadline); {
-		var dStr, aStr string
-		_ = pool.QueryRow(ctx, `SELECT desired_config_generation::text, applied_config_generation::text FROM nodes WHERE id=$1`, nodeID).Scan(&dStr, &aStr)
-		_, _ = fmt.Sscanf(dStr, "%d", &restoredDesiredGen)
-		_, _ = fmt.Sscanf(aStr, "%d", &nodeAppliedGen)
-		if nodeAppliedGen >= restoredDesiredGen && nodeAppliedGen > 0 {
-			break
-		}
-		time.Sleep(time.Second)
-	}
-	if nodeAppliedGen > restoredDesiredGen {
-		if _, err := pool.Exec(ctx, `UPDATE nodes SET desired_config_generation = GREATEST(desired_config_generation, applied_config_generation), resource_version = resource_version + 1 WHERE id=$1`, nodeID); err != nil {
-			p.t.Fatal("regrant: align desired_config_generation with applied_config_generation:", err)
-		}
-	}
-
-	// Call AuthorizeDevice (operation kind = member.device_authorize) with a fresh idempotency key:
-	// must clear device_authorization_fences, bump resource_version, and enqueue device.authorized for the live worker.
-	freshKey := uuid.Must(uuid.NewV7())
-	regrantChange, err := svc.AuthorizeDevice(ctx, entitlement.Command{
-		Actor: entitlement.Actor{ID: systemActor, Role: "system", RequestID: uuid.Must(uuid.NewV7())},
-		Key:   freshKey,
-	}, peer)
-	if err != nil {
-		p.t.Fatal("regrant: fresh AuthorizeDevice failed:", err)
-	}
-	var fenceAfterAuthorize int
-	var versionAfter string
-	_ = p.db.QueryRow(ctx, `SELECT count(*) FROM device_authorization_fences WHERE device_id=$1`, peerM2D2.Device).Scan(&fenceAfterAuthorize)
-	_ = p.db.QueryRow(ctx, `SELECT resource_version::text FROM member_devices WHERE id=$1`, peerM2D2.Device).Scan(&versionAfter)
-	if fenceAfterAuthorize != 0 {
-		p.t.Fatalf("regrant: AuthorizeDevice did not delete device_authorization_fences row: count=%d", fenceAfterAuthorize)
-	}
-
-	// 3. Wait for the live worker to claim device.authorized / netbird.device_sync, re-grant peerM2D2 in NetBird,
-	// and recompile desired state past nodeAppliedGen.
-	var obsAuthAfter bool
-	var opStatus string
-	var opKind string
-	var desiredGenAfter uint64
-	if regrantChange.OperationID != nil {
-		_ = p.db.QueryRow(ctx, `SELECT kind FROM operations WHERE id=$1`, *regrantChange.OperationID).Scan(&opKind)
-	}
-	for deadline := time.Now().Add(45 * time.Second); time.Now().Before(deadline); {
-		_ = p.db.QueryRow(ctx, `SELECT COALESCE(observed_authorized,false) FROM device_authorization_observations WHERE device_id=$1`, peerM2D2.Device).Scan(&obsAuthAfter)
-		if regrantChange.OperationID != nil {
-			_ = p.db.QueryRow(ctx, `SELECT status FROM operations WHERE id=$1`, *regrantChange.OperationID).Scan(&opStatus)
-		}
-		var dStr string
-		_ = p.db.QueryRow(ctx, `SELECT desired_config_generation::text FROM nodes WHERE id=$1`, nodeID).Scan(&dStr)
-		_, _ = fmt.Sscanf(dStr, "%d", &desiredGenAfter)
-		if obsAuthAfter && desiredGenAfter > nodeAppliedGen {
-			break
-		}
-		time.Sleep(time.Second)
-	}
-	if !obsAuthAfter {
-		p.t.Fatalf("regrant: worker did not grant peerM2D2 after fence clear: obsAuth=%t opStatus=%s desiredGenAfter=%d", obsAuthAfter, opStatus, desiredGenAfter)
-	}
-
-	// Verify GET /api/v1/member/devices shows status="authorized" and counted data-plane flow is restored.
-	devResp := p.call(m2, "GET", "/api/v1/member/devices", nil, nil)
-	var devBody struct {
-		Items []struct {
-			DeviceID uuid.UUID `json:"device_id"`
-			Status   string    `json:"status"`
-		} `json:"items"`
-	}
-	_ = json.Unmarshal(devResp.body, &devBody)
-	apiStatusAfter := ""
-	for _, it := range devBody.Items {
-		if it.DeviceID == peerM2D2.Device {
-			apiStatusAfter = it.Status
-		}
-	}
-	flowAfterRegrant := p.waitCountedFlow(peerM2D2, 45*time.Second)
-	passed := replayChange.Replayed && fenceAfterReplay == 1 && fenceAfterAuthorize == 0 && obsAuthAfter && apiStatusAfter == "authorized" && flowAfterRegrant["counted"] == true
-
-	return map[string]any{
-		"passed":                             passed,
-		"route_note":                         "re-authorization admin HTTP route pending contract revision 12 / D-077; exercised AuthorizeDevice (operation kind = member.device_authorize) via devices.Service.AuthorizeDevice against the live restored PostgreSQL and worker",
-		"device_id":                          peerM2D2.Device,
-		"operation_id":                       regrantChange.OperationID,
-		"operation_kind":                     opKind,
-		"operation_status":                   opStatus,
-		"t0_idempotency_replay_replayed":     replayChange.Replayed,
-		"fence_rows_after_t0_replay":         fenceAfterReplay,
-		"fence_rows_after_fresh_regrant":     fenceAfterAuthorize,
-		"resource_version_before":            versionBefore,
-		"resource_version_after":             versionAfter,
-		"restored_desired_config_generation": restoredDesiredGen,
-		"node_applied_config_generation":     nodeAppliedGen,
-		"recompiled_desired_generation":      desiredGenAfter,
-		"observed_authorized_after_sync":     obsAuthAfter,
-		"member_devices_api_status":          apiStatusAfter,
-		"counted_flow_after_regrant":         flowAfterRegrant,
 	}
 }
 
