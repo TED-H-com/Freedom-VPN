@@ -1,0 +1,26 @@
+{
+  "id": "portal-billing-return",
+  "title": "Built Portal billing return renders in a browser",
+  "spec": [
+    "§18.4",
+    "§19 AT03"
+  ],
+  "status": "pass",
+  "observations": [
+    {
+      "name": "billing_return_http",
+      "detail": "200"
+    },
+    {
+      "name": "built_portal_spa",
+      "detail": "true"
+    },
+    {
+      "name": "browser_probe",
+      "detail": "{\"http_status\":200,\"billing_page_visible\":true,\"api_error\":false,\"pending_confirmation\":true}"
+    }
+  ],
+  "at": "2026-10-31T04:08:11Z",
+  "run_id": "2347f2a4-02aa-4f56-94f2-c3bde88b5a6d",
+  "source_commit": "4fb5fa88ac400605ac08ee42c8eac99e936ec2a3"
+}

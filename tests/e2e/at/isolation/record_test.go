@@ -1,6 +1,7 @@
 package isolation
 
 import (
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"strings"
@@ -76,5 +77,34 @@ func TestParseForwardChainIgnoresNetBirdAccepts(t *testing.T) {
 	view = ParseForwardChain(serving)
 	if view.Generation != 4 || view.MemberAccept != 1 {
 		t.Fatalf("serving view %+v", view)
+	}
+}
+
+// Scan all committed evidence, including archives, without reading ignored state.
+func TestCommittedEvidenceFiles_ValidAndHygieneClean(t *testing.T) {
+	root := "../../../../docs/e2e/at/isolation"
+	err := filepath.WalkDir(root, func(path string, d os.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if d.IsDir() {
+			return nil
+		}
+		raw, err := os.ReadFile(path)
+		if err != nil {
+			return err
+		}
+		if filepath.Ext(path) == ".json" && !json.Valid(raw) {
+			t.Errorf("invalid JSON: %s", path)
+		}
+		for _, bad := range []string{"/ho" + "me/", "BEGIN " + "EC PRIVATE KEY", "BEGIN " + "RSA PRIVATE KEY", "BEGIN " + "OPENSSH PRIVATE KEY", "sk_" + "live_", "gh" + "p_", "gh" + "o_"} {
+			if strings.Contains(string(raw), bad) {
+				t.Errorf("%s contains forbidden evidence text", path)
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		t.Fatal(err)
 	}
 }

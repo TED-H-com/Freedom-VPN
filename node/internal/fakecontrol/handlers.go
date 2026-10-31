@@ -378,7 +378,7 @@ func (s *Server) lease(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) signLease(node, inc uuid.UUID) ([]byte, string, error) {
 	s.mu.Lock()
-	if s.sticky && s.stickyRaw != nil && !s.corrupt && !s.wrongNode && !s.wrongInc {
+	if s.sticky && s.stickyRaw != nil && (s.identityFrozen == nil || !*s.identityFrozen) && !s.corrupt && !s.wrongNode && !s.wrongInc {
 		raw := append([]byte(nil), s.stickyRaw...)
 		etag := s.stickyETag
 		s.mu.Unlock()
@@ -396,6 +396,10 @@ func (s *Server) signLease(node, inc uuid.UUID) ([]byte, string, error) {
 	force := s.forceGen
 	leaseGen := s.leaseGen
 	grantsReady := s.grantsReady
+	if s.identityFrozen != nil && *s.identityFrozen {
+		grantsReady = false
+		maxOff = 60
+	}
 	s.mu.Unlock()
 	if maxOff < 60 {
 		maxOff = 60
@@ -506,9 +510,10 @@ func (s *Server) observe(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	acc := api.ObservationAccepted{
-		Accepted:   true,
-		ReceivedAt: time.Now().UTC(),
-		ReportId:   rep.ReportId,
+		Accepted:       true,
+		IdentityFrozen: s.identityFrozen,
+		ReceivedAt:     time.Now().UTC(),
+		ReportId:       rep.ReportId,
 	}
 	s.obs[rep.ReportId.String()] = acc
 	s.lastObs = rep

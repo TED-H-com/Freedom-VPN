@@ -5,6 +5,8 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/dnsrelay"
+	"net"
 	"os"
 	"runtime"
 	"strings"
@@ -15,6 +17,12 @@ import (
 
 func main() {
 	run := prepare
+	if len(os.Args) == 2 && os.Args[1] == "dns-relay" {
+		run = nodeDNSRelay
+	}
+	if len(os.Args) == 2 && os.Args[1] == "installer-proxy" {
+		run = installerProxy
+	}
 	if len(os.Args) >= 2 && os.Args[1] == "probe-client" {
 		run = probeClient
 	}
@@ -94,4 +102,27 @@ func prepare() error {
 	}
 	_, err = updater.LoadConfig(path)
 	return err
+}
+
+// The origin-network relay must reach AdGuard through loopback because the
+// signed resolver document permits loopback/overlay clients, not origin IPs.
+func nodeDNSRelay() error {
+	raw, err := os.ReadFile("/etc/vpn-node/agent-run.json")
+	if err != nil {
+		return err
+	}
+	var cfg struct {
+		Datapath struct {
+			SNAT string `json:"snat"`
+		} `json:"datapath"`
+	}
+	if err = json.Unmarshal(raw, &cfg); err != nil {
+		return err
+	}
+	ip := net.ParseIP(cfg.Datapath.SNAT).To4()
+	if ip == nil {
+		return fmt.Errorf("DNS relay address")
+	}
+	ip[3] = 53
+	return dnsrelay.Serve(cfg.Datapath.SNAT+":5353", "127.0.0.1:53", ip.String())
 }

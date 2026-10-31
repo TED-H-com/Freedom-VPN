@@ -473,7 +473,8 @@ func WorkFromEnvelope(raw []byte, trust *envelope.TrustStore, node Node, now tim
 
 // HTTPSink posts an update result. The contract answers 202. 409 is
 // ACK_CONFLICT. Other 4xx responses except 429 are permanent rejections.
-// Transport/5xx failures and throttling stay pending (D-062d).
+// Transport/5xx failures and throttling stay pending (D-062d). Installer
+// RESOURCE_NOT_FOUND is retriable until central accepts local evidence (D-089).
 type HTTPSink struct {
 	Now            func() time.Time // tests may inject the HTTP Retry-After clock
 	URL            string
@@ -531,6 +532,8 @@ func (s HTTPSink) Submit(ctx context.Context, payload []byte) (Accepted, bool, e
 		retry := false
 		var retryAt time.Time
 		switch {
+		case installerResultPending(payload, resp.StatusCode, apiCode):
+			code, retry = apierr.ResourceNotFound, true
 		case resp.StatusCode >= 500:
 			code, retry = apierr.StoreUnavailable, true
 		case resp.StatusCode == http.StatusTooManyRequests:

@@ -8,6 +8,7 @@ import (
 	"crypto/tls"
 	"flag"
 	"fmt"
+	"github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/dnsrelay"
 	"io"
 	"net"
 	"net/http"
@@ -18,13 +19,23 @@ import (
 )
 
 func main() {
+	dnsUpstream := flag.String("dns-upstream", "", "TEST ONLY DNS-only relay to the filtering resolver")
 	udpAddr := flag.String("probe-udp-addr", "", "TEST ONLY authenticated UDP probe listener")
+	memberTCP := flag.String("member-tcp-addr", "", "TEST ONLY persistent member TCP echo")
+	memberUDP := flag.String("member-udp-addr", "", "TEST ONLY authenticated member UDP echo")
 	addr := flag.String("addr", ":443", "listen address")
 	cert := flag.String("cert", "", "TLS certificate")
 	key := flag.String("key", "", "TLS private key")
 	dir := flag.String("dir", "/var/lib/releases", "artifact root")
 	secretFile := flag.String("secret-file", "", "upload secret")
 	flag.Parse()
+	if *dnsUpstream != "" {
+		if err := dnsrelay.Serve(*addr, *dnsUpstream, ""); err != nil {
+			fmt.Fprintln(os.Stderr, "DNS relay failed")
+			os.Exit(1)
+		}
+		return
+	}
 	if *cert == "" || *key == "" || *secretFile == "" {
 		fmt.Fprintln(os.Stderr, "fvpn-e2e-origin: cert, key and secret are required")
 		os.Exit(2)
@@ -55,6 +66,27 @@ func main() {
 		}
 		defer conn.Close()
 		go probe.serveUDP(conn, []byte(token))
+	}
+	// Member echo is a different listener from the updater probe. UDP replies
+	// require a device the TCP hello registered.
+	echo := newMemberEcho()
+	if *memberTCP != "" {
+		ln, err := net.Listen("tcp4", *memberTCP)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "fvpn-e2e-origin: member tcp")
+			os.Exit(1)
+		}
+		defer ln.Close()
+		go echo.serveTCP(ln)
+	}
+	if *memberUDP != "" {
+		conn, err := net.ListenPacket("udp4", *memberUDP)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "fvpn-e2e-origin: member udp")
+			os.Exit(1)
+		}
+		defer conn.Close()
+		go echo.serveUDP(conn, []byte(token))
 	}
 	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, r *http.Request) {
 		probe.observe(r)

@@ -86,6 +86,10 @@ func buildResult(in resultInput) (payload []byte, hash string, id uuid.UUID, err
 		TargetId:                c.Intent.TargetId,
 		UsageCheckpoint:         presence.FromPointer(in.Checkpoint),
 	}
+	if c.Source == SourceInstaller {
+		source := api.UpdateResultSourceInstaller
+		res.Source = &source
+	}
 	if in.State == api.UpdateResultStateRolledBack {
 		res.CandidateHealth = presence.FromPointer(in.CandidateHealth)
 	}
@@ -209,8 +213,12 @@ func (e *Engine) flushLocked(ctx context.Context) error {
 	}
 	for _, ent := range pending {
 		if !ent.RetryNotBefore.IsZero() && e.now().Before(ent.RetryNotBefore) {
+			code, detail := apierr.RateLimited, "result retry deferred"
+			if installerResultPending(ent.Payload, ent.LastHTTPStatus, ent.LastAPICode) {
+				code, detail = apierr.ResourceNotFound, "central not yet accepting installer evidence"
+			}
 			return &DeliveryError{HTTPStatus: ent.LastHTTPStatus, APICode: ent.LastAPICode,
-				RetryAt: ent.RetryNotBefore, Op: transient(apierr.RateLimited, "result retry deferred")}
+				RetryAt: ent.RetryNotBefore, Op: transient(code, detail)}
 		}
 		if ent.State == string(api.UpdateResultStateRolledBack) {
 			ent, err = e.Journal.PopulateCandidateHealth(ctx, ent.ResultID)
@@ -225,6 +233,7 @@ func (e *Engine) flushLocked(ctx context.Context) error {
 			}); err != nil {
 				return err
 			}
+			e.log().Warn("update result conflict", "http_status", ack.HTTPStatus, "api_code", ack.APICode)
 			continue
 		}
 		if err != nil {
@@ -235,7 +244,14 @@ func (e *Engine) flushLocked(ctx context.Context) error {
 			var delivery *DeliveryError
 			if errors.As(err, &delivery) {
 				failure.HTTPStatus, failure.APICode, failure.RetryNotBefore = delivery.HTTPStatus, delivery.APICode, delivery.RetryAt
-				if delivery.rejected() {
+				if installerResultPending(ent.Payload, delivery.HTTPStatus, delivery.APICode) {
+					// One attempt per flush, with the existing capped backoff.
+					// Do not let an older central deployment reject durable local evidence.
+					failure.RetryNotBefore = e.now().Add(e.backoff(ent.SendAttempts + 1))
+					err = &DeliveryError{HTTPStatus: delivery.HTTPStatus, APICode: delivery.APICode,
+						RetryAt: failure.RetryNotBefore, Op: transient(apierr.ResourceNotFound, "central not yet accepting installer evidence")}
+					e.log().Info("central not yet accepting installer evidence", "http_status", delivery.HTTPStatus, "api_code", delivery.APICode)
+				} else if delivery.rejected() {
 					failure.Status = updatejournal.OutboxRejected
 				}
 			}

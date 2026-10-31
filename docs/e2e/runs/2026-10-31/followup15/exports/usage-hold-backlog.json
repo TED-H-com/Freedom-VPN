@@ -1,0 +1,43 @@
+{
+  "id": "usage-hold-backlog",
+  "title": "Usage production, stable restart snapshot and ACK release",
+  "spec": [
+    "§10.5",
+    "AT07",
+    "ENR-05"
+  ],
+  "status": "pass",
+  "observations": [
+    {
+      "name": "produced_while_held",
+      "detail": "true"
+    },
+    {
+      "name": "acked_before",
+      "detail": "9"
+    },
+    {
+      "name": "acked_held",
+      "detail": "9"
+    },
+    {
+      "name": "unacked_held",
+      "detail": "1"
+    },
+    {
+      "name": "restart_preserved_hashes_and_ack",
+      "detail": "true"
+    },
+    {
+      "name": "acked_after_release",
+      "detail": "10"
+    },
+    {
+      "name": "released_caught_up",
+      "detail": "true"
+    }
+  ],
+  "at": "2026-10-31T04:27:27Z",
+  "run_id": "12d10041-9d33-4fbb-a4b0-9d2a21bce785",
+  "source_commit": "4fb5fa88ac400605ac08ee42c8eac99e936ec2a3"
+}

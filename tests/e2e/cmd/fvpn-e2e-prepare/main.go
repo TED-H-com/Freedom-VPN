@@ -237,7 +237,7 @@ func run(state string, reset bool, lay layout, graceSeconds int) error {
 		OnlineSeconds: 180, StuckSeconds: 600, ReconcileSeconds: 5, FetchSeconds: 20, DesiredStateSeconds: 600,
 		NetBirdURL: "https://netbird.example.invalid/api", NetBirdDeployment: "e2e",
 		NetBirdTokenFile: "/secrets/netbird.token",
-		DNSResolverIPv4:  []string{lay.LabPrefix + ".40"}, DNSResolverIPv6: []string{},
+		DNSResolverIPv4:  []string{lay.OriginPrefix + ".53"}, DNSResolverIPv6: []string{},
 		ReleaseOrigins: []string{"https://releases.example.invalid"},
 	}
 	if err := nodes.Validate(); err != nil {

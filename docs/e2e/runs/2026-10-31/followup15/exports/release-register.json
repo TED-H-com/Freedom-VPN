@@ -1,0 +1,79 @@
+{
+  "id": "release-register",
+  "title": "Signed real releases and non-empty serving baseline through APIs",
+  "spec": [
+    "§13.2",
+    "§13.3",
+    "§13.4"
+  ],
+  "status": "pass",
+  "observations": [
+    {
+      "name": "manifest_sha256_0.1.0",
+      "detail": "2386cd6969a60eef00886d750d81f6a6d5d4cf6090eda150f444533656d74857"
+    },
+    {
+      "name": "artifact_sha256_1.0.1_arm64",
+      "detail": "21ed5cc8fa8a4c8a7ac0c582fd823b89cb41de7a0db4faacbedcc1ef212a11b2"
+    },
+    {
+      "name": "manifest_sha256_1.0.1",
+      "detail": "88967c5e92710bc8ed68394dd88c3b2eb32ba711aad9b1fc0ba10dbdfb1b3a5e"
+    },
+    {
+      "name": "manifest_sha256_1.0.2",
+      "detail": "5c2f8d3a0e1e3339b629c1cc9429a587111588169cfdbbb68cf679ca6442691c"
+    },
+    {
+      "name": "artifact_sha256_0.1.0_amd64",
+      "detail": "bd00c3cabc4cab43be256e44a6292bb6d11e36636e4a712aab88cc740881fad9"
+    },
+    {
+      "name": "artifact_sha256_1.0.1_amd64",
+      "detail": "2350d72d0d5b6876890921ecd802913bb282607d9eff8af92947a2c9f885702d"
+    },
+    {
+      "name": "signed_manifest_sha256_1.0.1",
+      "detail": "c57899bf5140c687a3c1774084e12b6cef93ec665647f5709e2c2decc17b4df8"
+    },
+    {
+      "name": "artifact_sha256_1.0.2_amd64",
+      "detail": "66387097a8e328f5bc343842ccce544c363662a4f75faf3b3fe27e3ccfb4c870"
+    },
+    {
+      "name": "artifact_sha256_1.0.2_arm64",
+      "detail": "4f7a61bc73e5353244a901412e6dc836ed4810c6d2b8896c363c9043709a5574"
+    },
+    {
+      "name": "signed_manifest_sha256_1.0.2",
+      "detail": "01027206eae01f1ae5077e0db3b18cca0f9a52602a9edaf9b6d7a4879abcaaac"
+    },
+    {
+      "name": "artifact_sha256_0.1.0_arm64",
+      "detail": "f4bc30fa552fa7c5c7bbe09026fcd7150fdf9f4d596fbaedcecb9b7c67b989ad"
+    },
+    {
+      "name": "signed_manifest_sha256_0.1.0",
+      "detail": "c8ecd11c9282780ff0c1c9073e1fada9fffaa727447c8eb98f07cd50acac7fb3"
+    },
+    {
+      "name": "boot_release_id",
+      "detail": "01a19033-87f6-7f3d-a3fd-b70c2b891cd7"
+    },
+    {
+      "name": "support_revision_id",
+      "detail": "01a19033-9c40-71ae-b2c3-2e686574ed4d"
+    },
+    {
+      "name": "support_policy",
+      "detail": "API activated; all three verified releases explicitly permitted"
+    },
+    {
+      "name": "arm64",
+      "detail": "cross-compiled and packaged; not executed on this host"
+    }
+  ],
+  "at": "2026-10-31T04:24:23Z",
+  "run_id": "12d10041-9d33-4fbb-a4b0-9d2a21bce785",
+  "source_commit": "4fb5fa88ac400605ac08ee42c8eac99e936ec2a3"
+}

@@ -45,6 +45,7 @@ type lab struct {
 	netbird   string
 	releases  string
 	originIP  string
+	labPrefix string
 	transport *http.Transport
 }
 
@@ -64,6 +65,7 @@ func openLab() (*lab, error) {
 	var stack struct {
 		Prefix    string         `json:"prefix"`
 		OriginIP  string         `json:"origin_ip"`
+		LabPrefix string         `json:"lab_prefix"`
 		HostPorts map[string]int `json:"host_ports"`
 	}
 	rawStack, err := os.ReadFile(filepath.Join(state, "stack.json"))
@@ -99,7 +101,7 @@ func openLab() (*lab, error) {
 		TLSClientConfig: &tls.Config{RootCAs: pool, MinVersion: tls.VersionTLS12},
 	}
 	return &lab{
-		root: root, state: state, prefix: stack.Prefix, ports: stack.HostPorts, originIP: stack.OriginIP,
+		root: root, state: state, prefix: stack.Prefix, ports: stack.HostPorts, originIP: stack.OriginIP, labPrefix: stack.LabPrefix,
 		node: stack.Prefix + "-node", member: stack.Prefix + "-member", control: stack.Prefix + "-control",
 		public: "https://portal.example.invalid:8443", agent: "https://agent.example.invalid:9443",
 		idp: "https://idp.example.invalid", netbird: "https://netbird.example.invalid",

@@ -1,0 +1,30 @@
+{
+  "id": "revoke",
+  "title": "Operator revoke",
+  "spec": [
+    "§5",
+    "§19 AT13"
+  ],
+  "status": "pass",
+  "observations": [
+    {
+      "name": "fresh_admin_auth",
+      "detail": "true"
+    },
+    {
+      "name": "revoke",
+      "detail": "202"
+    },
+    {
+      "name": "lifecycle",
+      "detail": "revoked"
+    },
+    {
+      "name": "connections",
+      "detail": "existing-flow teardown was not separately probed"
+    }
+  ],
+  "at": "2026-10-31T04:21:42Z",
+  "run_id": "2347f2a4-02aa-4f56-94f2-c3bde88b5a6d",
+  "source_commit": "4fb5fa88ac400605ac08ee42c8eac99e936ec2a3"
+}

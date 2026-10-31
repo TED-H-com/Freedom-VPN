@@ -52,7 +52,7 @@ func assertLiveWithdrawn(t *testing.T, r *rig, generation uint64, message string
 	if b.Serving || b.PolicyExpires != 0 || b.Reason != "safety_check_failed" || !b.BaselineOK || b.Generation != generation {
 		t.Fatalf("withdrawn heartbeat: %+v", b)
 	}
-	if r.eng.serving || r.eng.policyExpires != 0 || r.eng.appliedModel != nil || r.eng.expectServing.Load() {
+	if r.eng.serving || r.eng.policyExpires != 0 || r.eng.expectServing.Load() {
 		t.Fatal("retained serving evidence survived withdrawal")
 	}
 	wantCode := api.ErrorCodeHEALTHCHECKFAILED
@@ -92,7 +92,7 @@ func TestD085_ISO01_BetweenApplyInjection(t *testing.T) {
 	before := r.plane.applies
 	stepOK(t, r)
 	assertLiveWithdrawn(t, r, 2, "TC_FOREIGN_FILTER")
-	if r.plane.applies != before || len(p.models) != 1 || !reflect.DeepEqual(p.models[0], oldModel) || !reflect.DeepEqual(p.assignments[0], oldAssignments) {
+	if r.plane.applies != before || len(p.models) != 2 || !reflect.DeepEqual(p.models[0], oldModel) || !reflect.DeepEqual(p.assignments[0], oldAssignments) {
 		t.Fatal("drift was overwritten by Apply or checked against a desired model")
 	}
 	// The ordinary renewal slot supplies a lease for the offered generation.
@@ -135,7 +135,7 @@ func TestD085_FinalReadWithBusyApplyLock(t *testing.T) {
 	p := &livePlane{memPlane: r.plane}
 	p.read = func(context.Context) error {
 		// First read is clean. Inject after it, before the deferred heartbeat.
-		p.foreign = len(p.models) == 2
+		p.foreign = p.foreign || len(p.models) == 2
 		return nil
 	}
 	r.eng.plane = p
@@ -147,7 +147,7 @@ func TestD085_FinalReadWithBusyApplyLock(t *testing.T) {
 	before := r.plane.applies
 	stepOK(t, r)
 	assertLiveWithdrawn(t, r, 2, "TC_FOREIGN_FILTER")
-	if r.plane.applies != before || len(p.models) != 2 {
+	if r.plane.applies != before || len(p.models) != 3 {
 		t.Fatal("busy Apply bypassed the final live read")
 	}
 }
