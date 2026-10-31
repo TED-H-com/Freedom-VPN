@@ -353,6 +353,13 @@ func vectorsAndExamples() (map[string][]byte, error) {
 		"result":                 rawJSON(ur),
 	})
 	out["examples/valid/UpdateResult.json"] = prettyDoc(ur)
+	// TEST ONLY installer-local job: no batch/target and no central generation.
+	installer := setMember(ur, []string{"source"}, `"installer"`)
+	installer = setMember(installer, []string{"batch_id"}, "null")
+	installer = setMember(installer, []string{"target_id"}, "null")
+	installer = setMember(installer, []string{"generation"}, `"0"`)
+	installer = setMember(installer, []string{"job_id"}, `"7b000bd9-3626-58ba-a147-715ab94ed9f2"`)
+	out["examples/valid/UpdateResult.installer.json"] = prettyDoc(withHash(installer, "payload_hash"))
 	out["examples/valid/UpdateResult.rolled-back.json"] = prettyDoc(urRB)
 	out["examples/valid/UpdateResult.null-stage.json"] = prettyDoc(withHash(setMember(ur, []string{"stage"}, "null"), "payload_hash"))
 	out["examples/valid/UpdateResult.null-candidate-health.json"] = prettyDoc(withHash(setMember(ur, []string{"candidate_health"}, "null"), "payload_hash"))

@@ -7,9 +7,9 @@ import (
 
 func TestAPI01_Revision10EnrollmentDigestIncarnationsAndBlockReason(t *testing.T) {
 	doc := loadDoc(t)
-	// Revision 12 advances info.version to 1.8.0 and the operation count to 49. This test still pins revision 10's decisions.
-	if doc.Info.Version != "1.8.0" {
-		t.Fatal("API version must be 1.8.0")
+	// Revision 13 advances info.version to 1.9.0 with the operation count still 49. This test still pins revision 10's decisions.
+	if doc.Info.Version != "1.9.0" {
+		t.Fatal("API version must be 1.9.0")
 	}
 	if n := len(operations(t)); n != 49 {
 		t.Fatalf("got %d operations, want 49", n)
