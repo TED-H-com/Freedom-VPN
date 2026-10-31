@@ -161,6 +161,7 @@ func TestF903_ApplyCLIReportsSealedCheckpointFailure(t *testing.T) {
 	if err := os.WriteFile(cfg.ReleaseTrust, trustRaw, 0600); err != nil {
 		t.Fatal(err)
 	}
+	cfg.MeterCheckpointWaitMS = 5
 	raw, err := json.Marshal(cfg)
 	if err != nil {
 		t.Fatal(err)

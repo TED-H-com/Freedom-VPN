@@ -34,6 +34,78 @@ The config file holds paths and ids. It does not hold the release private key. `
 
 The forwarding latch is `forwarding.blocked` in the journal directory. The agent must not enable member forwarding while that file exists or while `BlocksForwarding` is true. The nftables gate itself belongs to the agent.
 
+## FileGate / FileMeter handshake — 2026-10-31 (follow-up 16)
+
+**Fresh-checkpoint acceptance is blocked on agent-core follow-up 26.** The
+[agent-core 24 hand-off](../node/followup24-updater-2026-10-31.md) explicitly says
+its format has no transaction, boot or close-time correlation. The existing
+`closed_meter_epoch_id`, `last_durable_event_seq`, `central_acked_through` and
+empty `new_meter_epoch_id` describe a real completed durable close. They cannot
+prove that the close followed this update's block. An epoch can open before the
+block, a quiet close need not advance the sequence, and UUID ordering, file
+mtime, a new inode or a new watermark is not a block acknowledgement.
+
+This delivery implements the bounded wait, withdrawal and restart safeguards.
+It deliberately refuses **every uncorrelated FileMeter checkpoint**, including a
+newly published genuine one, rather than switch on ambiguous evidence. A
+successful FileMeter upgrade and the late-but-fresh success test remain deferred.
+No agent checkpoint member has been invented or added. Agent-core needs to
+agree and publish a `barrier_id` tied to the exact live updater block, after
+verified withdrawal and durable finalization, with boot/restart and withdrawal
+semantics. That proposed member is an owner request, not a supported field.
+
+The updater's `meter_checkpoint_wait_ms` config knob defaults to **30000 ms**
+when omitted or zero. Explicit values are integers from 1 through 300000 ms;
+negative or larger values fail configuration load. The default is 待實測, not a
+measured guarantee. For example, `"meter_checkpoint_wait_ms": 15000` selects
+15 seconds. `Config.Engine` passes the value to `FileMeter.Wait`; the poll
+interval is 100 ms. The earlier caller deadline, when present, also bounds the
+wait. No service stop, start, switch or new epoch occurs on handshake failure.
+
+Before publishing the latch, the updater atomically writes and fsyncs a private
+`meter-wait-<txn>` note in its journal directory with its boot ID, start, deadline
+and opaque latch identity. These are updater-local fields, not agent evidence.
+The latch remains a presence-only block for today's agent. `FileGate.Block`
+preserves an existing identity; `Unblock` removes the latch and fsyncs the
+parent. A later block has another identity. Missing, replaced or unreadable
+latches discard the pending sample, including an unblock/reblock between polls.
+The updater checks the latch before and after each checkpoint read.
+
+There is **one decision per checkpoint read**: the bytes from one bounded,
+regular-file descriptor form one snapshot. The bounded freshness wait may
+re-read the file; it never treats an earlier read as permission for a later
+sample. Symlinks, FIFOs, devices, oversized files, malformed/unknown fields,
+missing watermarks, a nil closed epoch, a nonempty new epoch and ACK above the
+durable sequence are refused. The updater never writes or deletes the agent's
+checkpoint, never fabricates sequence numbers and never repairs meter state.
+
+| Failure | Sealed receipt and local diagnostic |
+|---|---|
+| No readable valid checkpoint by the original deadline | `failed`, `final_sample`, `CHECKPOINT_FAILED`; `meter_checkpoint_timeout` |
+| Valid checkpoint observed, but no supported correlation | `failed`, `final_sample`, `CHECKPOINT_FAILED`; `meter_checkpoint_uncorrelated` |
+| Latch withdrawn or replaced before sampling completes | `failed`, `final_sample`, `STATE_CONFLICT`; `meter_barrier_withdrawn` |
+| Missing/corrupt wait note, changed boot or backward clock before the recorded start | `failed`, `final_sample`, `CHECKPOINT_FAILED`; `meter_wait_invalid` |
+
+Diagnostics are fixed strings in the existing journal error/event fields. The
+wire receipt uses only existing contract codes, has `usage_checkpoint: null`
+and reports forwarding disabled; `STATE_CONFLICT` at `final_sample` identifies
+the discarded withdrawal. Current/last-good and the baseline service are
+retained without restart. The local transaction finishes as nondestructive
+`rolled_back`, with job/result outcome `failed` and the durable gate blocked.
+A newly failed `apply` exits 1; subsequent recovery of the blocked failure exits
+2. Neither recovery nor a checkpoint arriving after the deadline reopens the
+sealed job or changes its receipt bytes.
+
+Recovery at `prepared`/`blocked` retains the original deadline and rereads the
+current latch and checkpoint. It never republishes a missing handshake latch
+to hide withdrawal. A crash after writing the note but before publishing the
+latch conservatively fails. A missing legacy note or changed boot fails closed.
+A recovered `final_sampled` transaction is checked again before stop; a legacy
+checkpoint without handshake evidence is discarded from the failure receipt.
+Terminal cleanup removes the local wait note, leaving the sealed journal and
+outbox evidence intact. The successful stage-recovery tests below use injected
+`Meter` adapters; they do not prove acceptance of the uncorrelated agent format.
+
 ## Installer hand-off (D-080, D-089, D-110)
 
 Initial install and reenroll retain the exact verified signed envelope (`Verified.Raw`) as mode 0600 under update-staging. After releasing `/var/lib/vpn-node/update.lock`, the installer probes `<current>/fvpn-updater seed --help`, then invokes:
@@ -173,7 +245,7 @@ A currently installed release named by the persisted signed set is unhealthy. Th
 
 When no safe retained release can be restored, the `current` symlink stays where it is (the failed candidate, or the revoked release). Forwarding stays off. The symlink is not moved to an unverified tree.
 
-A failure before services are stopped (for example the metering barrier) is not destructive. The journal ends `rolled_back`, the result state is `failed`, and forwarding follows the publication rule because the old process is still the one that is running. A stop failure is reported as `START_FAILED` with stage `stop_services` (there is no `STOP_FAILED` code) and the rollback is destructive, so `last_good` is started again.
+A failure before services are stopped is not destructive. FileMeter handshake failures follow the stricter retained-baseline, blocked-gate rule above. For other failures, The journal ends `rolled_back`, the result state is `failed`, and forwarding follows the publication rule because the old process is still the one that is running. A stop failure is reported as `START_FAILED` with stage `stop_services` (there is no `STOP_FAILED` code) and the rollback is destructive, so `last_good` is started again.
 
 `Block` failing does not finish the transaction. The stage stays `prepared`, the error is `UPDATE_BUSY`, and the journal still reports forwarding blocked.
 
@@ -342,7 +414,7 @@ Identity and the usage outbox are not rewritten by the update or the rollback (�
 - Signed `revoked_release_ids` on a verified desired-state envelope (revision 3) are persisted as a monotonic union in the journal. An id is never removed (§17.2). The member is accepted only when `config_generation` is not older than the last applied generation; an older generation is `STALE_GENERATION` and does not shrink the set or return a revoked release to service (§13.4, §15.3). An absent member does not update the signed set. An empty member adds nothing and does not clear it. The updater never installs a revoked release, never selects one as a rollback target, and does not let one pass the forwarding gate. A signed-revoked current release stops member forwarding immediately (`recovery_required`). An update job whose intent release is not revoked still downloads, verifies, installs and health-checks that release; serving resumes only after those checks. When there is no such job, or the intent release is itself revoked, the node rolls back to the newest retained release that is not revoked, or stays in `recovery_required` with forwarding blocked. A later job for a non-revoked release can still rescue it.
 - `policy_generation` is the desired-state `config_generation` actually applied when the result was produced (D-043, §13.10.3). It is not the update job generation and not a desired state that was only received. A result is not posted before that generation is known. A superseded job keeps the generation it applied, not a newer generation accepted for a later job.
 - When no safe retained release can be restored, `current` stays on the failed candidate or the revoked release, the symlink is never moved to an unverified tree, and members stay blocked. Confirmed.
-- A checkpoint failure before `stop_services` ends as `rolled_back`/`failed` without blocking members, because nothing destructive happened. Confirmed: §13.9 step 4 applies only after the destructive stage.
+- FileMeter handshake failure before `stop_services` retains the baseline without restarting it, seals `rolled_back`/`failed`, and keeps forwarding blocked (follow-up 16, §13.6 step 8).
 - Toolchain 1.27.3 arrives in a separate orchestrator task (decision D-014). Keep `GOTOOLCHAIN=local` and `go.mod` at 1.27.1.
 - D-034a. Release archives contain regular files and directories only. `ExtractArchive` rejects symlinks, hard links and every other member type. `fsutil.TreeHash` returns an error on a symlink. The `current` pointer stays a symlink outside the tree.
 - D-034b. Publication intent and the forwarding-blocked state are one journal record, written in the same step that changes them. `reapplyPublication` and `BlocksForwarding` read that record, not a stale `LastTxn`. `maybeAlreadyCurrent` does not short-circuit when `current` is not `last_good`, when forwarding is blocked, or when the last terminal outcome is `failed`, `rolled_back` or `recovery_required`. A manifest, compatibility or serving-list failure blocks the gate before it returns. Outcome `failed` is blocking. There is no `failed` stage.

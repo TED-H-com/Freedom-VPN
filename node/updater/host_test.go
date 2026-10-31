@@ -254,15 +254,16 @@ func TestUPD_LoadConfigAndRecover(t *testing.T) {
 	trustPath := filepath.Join(root, "trust.json")
 	writeTrust(t, trustPath)
 	cfg := Config{
-		Layout:          testLayout(root),
-		NodeID:          uuid.Must(uuid.NewV7()),
-		IncarnationID:   uuid.Must(uuid.NewV7()),
-		BootID:          uuid.Must(uuid.NewV7()),
-		Platform:        testPlatform(),
-		ReleaseTrust:    trustPath,
-		DesiredTrust:    trustPath,
-		DesiredState:    filepath.Join(root, "desired.json"),
-		MeterCheckpoint: filepath.Join(root, "meter.json"),
+		Layout:                testLayout(root),
+		NodeID:                uuid.Must(uuid.NewV7()),
+		IncarnationID:         uuid.Must(uuid.NewV7()),
+		BootID:                uuid.Must(uuid.NewV7()),
+		Platform:              testPlatform(),
+		ReleaseTrust:          trustPath,
+		DesiredTrust:          trustPath,
+		DesiredState:          filepath.Join(root, "desired.json"),
+		MeterCheckpoint:       filepath.Join(root, "meter.json"),
+		MeterCheckpointWaitMS: 17,
 	}
 	path := filepath.Join(root, "config.json")
 	b, err := json.Marshal(cfg)
@@ -295,6 +296,9 @@ func TestUPD_LoadConfigAndRecover(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer eng.Close()
+	if m, ok := eng.Meter.(FileMeter); !ok || m.Wait != 17*time.Millisecond {
+		t.Fatalf("configured meter wait was not wired: %+v", eng.Meter)
+	}
 	if err := eng.Recover(context.Background()); err != nil {
 		t.Fatal(err)
 	}

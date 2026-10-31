@@ -1,6 +1,7 @@
 package updater
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -373,7 +374,7 @@ func checkpointFromUsage(c UsageCheckpoint, newEpoch string) (*api.UpdateUsageCh
 }
 
 func decodeCheckpoint(raw []byte) (*api.UpdateUsageCheckpoint, error) {
-	if len(raw) == 0 {
+	if len(raw) == 0 || bytes.Equal(bytes.TrimSpace(raw), []byte("null")) {
 		return nil, nil
 	}
 	var c api.UpdateUsageCheckpoint
