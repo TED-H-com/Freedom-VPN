@@ -681,6 +681,12 @@ Both shared recovery configurations use `/var/lib/vpn-node/state/meter.checkpoin
 The fixture no longer manufactures `e2e/meter.json`. A regular update keeps the
 agent alive for the genuine fresh D-125 checkpoint; the updater owns stop/start.
 
+The regular [run d6b01926](runs/2026-10-31/followup20/d6b01926-de6f-47e4-803b-ae3ea5c603df/update-good.md)
+passes **11/0/0**, exit **0**: twenty supervisor cycles, exact root candidate
+identity, apply exit 0, five passing health checks with the issued real probe,
+tampered-artifact rejection, and restart without enrollment. This is the
+regular shared fixture rerun; updates retains ownership of full AT23–AT27.
+
 Updates 11 must consume this layout in its own `tests/e2e/at/updates/live_test.go`
 (candidate-running and tampered-artifact absence checks still name `bin/`) and
 `tests/e2e/at/updates/lab_test.go` (its config still names `e2e/meter.json`).
@@ -698,3 +704,17 @@ contracts API item; D-087 future eligibility suppression is not a substitute.
 Enrollment 9 reports zero new requests. Usage's D-118 canonical-event/origin-ACK
 clarification was already answered in follow-up 19; the DB/WAL file hashes are
 not preservation invariants across real adoption. No recipient register changes.
+
+## isolation — 2026-10-31 (follow-up 20, remaining follow-up 9 requests, D-102)
+
+The D-087 export above supplies the requested clean central trigger. The new
+ISO-F6-03 baseline-writer question remains with `node/agent/engine.go` and
+`node/watchdog/watch.go`; the shared detached Engine trace cannot identify a
+concurrent watchdog writer that the product does not emit. No synthetic writer
+or timestamp is added here. The 96 early drops, 65 subsequent positives and
+41 final expiry drops remain the isolation lane's failed evidence. Its three
+renewal losses retain their measured command brackets without a tolerance.
+Physical platforms, OS reboot and the full continuous fault matrix still need
+their designated operators. The native dual-underlay fixture measures IPv4
+overlay traffic and IPv6Block refusal; it cannot qualify a member-platform
+matrix. Recipient request registers and immutable follow-up 8 pins stay intact.
