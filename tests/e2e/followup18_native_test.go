@@ -96,11 +96,11 @@ func TestE2E_Followup18Native(t *testing.T) {
 	r.record(rec)
 }
 
-// This supplement uses the retained primary from the native campaign. It does
+// This supplement uses the retained enrolled primary from either campaign. It does
 // not enroll another identity or replace its store to manufacture acceptance.
 func TestE2E_Followup18FirstOffer(t *testing.T) {
 	if os.Getenv("FVPN_E2E_FIRST_OFFER18") != "1" {
-		t.Skip("set FVPN_E2E_FIRST_OFFER18=1 after the native campaign")
+		t.Skip("set FVPN_E2E_FIRST_OFFER18=1 with a retained enrolled primary")
 	}
 	l, err := openLab()
 	if err != nil {
@@ -173,14 +173,16 @@ func (r *runner) firstOffer18(ctx context.Context, s *Stack, admin *session) {
 	if err != nil || (patched.Status != 200 && patched.Status != 202) {
 		return
 	}
-	compiled, stopCompiled := context.WithTimeout(ctx, 30*time.Second)
-	ready := waitUntil(compiled, time.Second, func() bool {
+	changed, stopChanged := context.WithTimeout(ctx, 30*time.Second)
+	ready := waitUntil(changed, time.Second, func() bool {
 		var advanced bool
-		return db.QueryRow(compiled, `SELECT generation > $2::numeric FROM desired_state_envelopes WHERE node_id=$1`, r.nodeID, retained).Scan(&advanced) == nil && advanced
+		// Compilation happens on the agent's real GET. Only wait for command
+		// intent here; the export below must prove delivery and application.
+		return db.QueryRow(changed, `SELECT desired_config_generation > $2::numeric FROM nodes WHERE id=$1`, r.nodeID, retained).Scan(&advanced) == nil && advanced
 	})
-	stopCompiled()
+	stopChanged()
 	if !ready {
-		recPathNote(&rec)("compiler", "new desired envelope unavailable")
+		recPathNote(&rec)("command", "new desired generation unavailable")
 		return
 	}
 	if err = s.Service(ctx, "start", release); err != nil {
