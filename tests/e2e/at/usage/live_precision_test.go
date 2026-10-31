@@ -129,7 +129,8 @@ func (s *liveSuite) replayCurrentBatches(db *sql.DB, node, current uuid.UUID, cl
 		if err = json.Unmarshal(b.Body, &req); err != nil {
 			s.t.Fatal(err)
 		}
-		if req.OriginIncarnationId != nil {
+		// Adoption retains pre-reinstall batches as well as hand-off requests.
+		if req.OriginIncarnationId != nil || req.NodeIncarnationId != current {
 			continue
 		}
 		if req.NodeId != node || req.NodeIncarnationId != current {
