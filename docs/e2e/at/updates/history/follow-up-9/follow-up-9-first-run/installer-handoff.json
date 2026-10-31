@@ -1,0 +1,274 @@
+{
+  "run_id": "d2d4e9df-70f8-4305-b6c8-4ffdab5b8d3b",
+  "prefix": "w4-updates",
+  "port_base": 42000,
+  "scope": "Follow-up 9 installer extension to AT24/AT26; fresh node and kernel boot identity",
+  "id": "installer-handoff",
+  "title": "D-080/D-089 systemd installer to updater hand-off",
+  "spec": [
+    "UPD02",
+    "UPD03",
+    "UPD05",
+    "§13.5",
+    "§13.6",
+    "§13.9",
+    "D-080",
+    "D-089",
+    "D-097"
+  ],
+  "status": "blocked",
+  "at": "2026-10-31T06:28:45Z",
+  "expected": "Verified seed, no-work exit 0, staged upgrade with unchanged current, installer-sourced healthy apply and central promotion; tamper and downgrade refused",
+  "actual": "See check_* observations: authentic apply, fresh-node guard, tamper and downgrade are independently measured; failed service/health prerequisites remain blocked",
+  "git": "e1125955596dcd34405f81eb706fee023d66c501",
+  "node_incarnation": "01a190a4-cfca-7222-bf9e-9ad3932b6971",
+  "commands": [
+    "make -f mk/at-updates.mk at-updates"
+  ],
+  "observations": [
+    {
+      "name": "release_10",
+      "detail": "{\"architectures\":[\"amd64\",\"arm64\"],\"manifest_sha256\":\"f094ac088f94c4e70068e660363c2fc06013f3d20c18687ca2e1309d905c72bb\",\"release_id\":\"01a190a4-6fae-7305-88b2-ba0ff56defe6\"}"
+    },
+    {
+      "name": "release_11",
+      "detail": "{\"architectures\":[\"amd64\",\"arm64\"],\"manifest_sha256\":\"7bc162e124d5acdda57e4cf73c7e854500624fc280ee0077ad3e07d67b5109d4\",\"release_id\":\"01a190a4-9545-7633-a493-831bd78ab414\"}"
+    },
+    {
+      "name": "release_9",
+      "detail": "{\"architectures\":[\"amd64\",\"arm64\"],\"manifest_sha256\":\"23cf6a654dee33de83beebea175b03fe8ff76f1c5be6767d6d19c289efdfbd63\",\"release_id\":\"01a190a4-aa12-79ce-8cb6-ba8215fd6bac\"}"
+    },
+    {
+      "name": "support_policy_revision",
+      "detail": "\"01a190a4-c4d6-7251-a077-39e1d332f0cc\""
+    },
+    {
+      "name": "lab_adapters",
+      "detail": "[\"Real binaries for both architectures repacked at installer root with unchanged packaged systemd units, re-signed with generated lab release key and registered through public API\",\"Initial signed archive retained for offline seed; no journal writes\",\"Runtime systemd condition delays automatic apply for stage inspection; product ExecStart unchanged\"]"
+    },
+    {
+      "name": "install",
+      "detail": "{\"Exit\":1,\"Status\":\"\",\"Code\":\"failed\",\"Incarnation\":\"01a190a4-cfca-7222-bf9e-9ad3932b6971\",\"NodeID\":\"01a190a4-c635-788e-8f41-2378040cd01b\",\"RetiredMode\":\"\",\"RetiredHashes\":{\"Key\":\"\",\"Cert\":\"\",\"NodeJSON\":\"\",\"UsageDB\":\"\",\"UsageWAL\":\"\",\"MachineID\":\"\",\"Current\":\"\"},\"BoundStateBefore\":null,\"RetiredBoundState\":null,\"Message\":\"failed: starting fvpn-node-netbird-up.service failed: p from the setup key file... 2026-10-31T06:28:14.642Z WARN client/internal/profilemanager/profilemanager.go:122: failed to get config directory: neither $XDG_CONFIG_HOME nor $HOME are defined Error: failed to connect to daemon error: context dead\",\"Before\":{\"Key\":\"absent\",\"Cert\":\"absent\",\"NodeJSON\":\"absent\",\"UsageDB\":\"absent\",\"UsageWAL\":\"absent\",\"MachineID\":\"60e767eb6d5e6d68c3fccc945156698adc3ec567f805b17012c8e7350df272a3\",\"Current\":\"absent\"},\"Hashes\":{\"Key\":\"5568c7836ad6fb0aba61252aa016c6a4046c13ebfa78252d80dfa99a9f4ef447\",\"Cert\":\"9052023beda03f5f8cada97ff21b252d79a5b19052ad5e60f5a617aa845dcd5a\",\"NodeJSON\":\"4e06a27021a205e66542aed3cbc43fb13d8d325a5a2260003fc8801748bff00c\",\"UsageDB\":\"0e0072e0d2fe58d6f75db6d7324b1a650be72fcc11b48eb17d95dc43aa2291be\",\"UsageWAL\":\"absent\",\"MachineID\":\"60e767eb6d5e6d68c3fccc945156698adc3ec567f805b17012c8e7350df272a3\",\"Current\":\"releases/01a190a4-6fae-7305-88b2-ba0ff56defe6\"}}"
+    },
+    {
+      "name": "install_wrapper_error",
+      "detail": "false"
+    },
+    {
+      "name": "first_start_units",
+      "detail": "{\"command\":[\"systemctl\",\"show\",\"fvpn-netbird.service\",\"fvpn-agent.service\",\"fvpn-node-netbird-up.service\",\"-p\",\"Id\",\"-p\",\"ActiveState\",\"-p\",\"SubState\",\"-p\",\"Result\",\"-p\",\"ExecMainStatus\"],\"exit\":0,\"stdout\":\"Result=exit-code\\nExecMainStatus=1\\nId=fvpn-netbird.service\\nActiveState=inactive\\nSubState=dead\\n\\nResult=success\\nExecMainStatus=0\\nId=fvpn-agent.service\\nActiveState=inactive\\nSubState=dead\\n\\nResult=exit-code\\nExecMainStatus=1\\nId=fvpn-node-netbird-up.service\\nActiveState=inactive\\nSubState=dead\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "first_start_errors",
+      "detail": "{\"command\":[\"journalctl\",\"--no-pager\",\"-o\",\"cat\",\"-n\",\"35\",\"-u\",\"fvpn-netbird.service\",\"-u\",\"fvpn-agent.service\",\"-u\",\"fvpn-node-netbird-up.service\"],\"exit\":0,\"stdout\":\"fvpn-netbird.service: Scheduled restart job, restart counter is at 2.\\nfvpn-node-netbird-up.service: Main process exited, code=killed, status=15/TERM\\nfvpn-node-netbird-up.service: Failed with result 'signal'.\\nStopped fvpn-node-netbird-up.service - Bring NetBird up from the setup key file.\\nStarted fvpn-netbird.service - NetBird client for Freedom VPN.\\nStarting fvpn-node-netbird-up.service - Bring NetBird up from the setup key file...\\nError: listen daemon interface: listen unix /var/run/netbird.sock: bind: read-only file system\\nfvpn-netbird.service: Main process exited, code=exited, status=1/FAILURE\\nfvpn-netbird.service: Failed with result 'exit-code'.\\n2026-10-31T06:28:08.642Z WARN client/internal/profilemanager/profilemanager.go:122: failed to get config directory: neither $XDG_CONFIG_HOME nor $HOME are defined\\nfvpn-netbird.service: Scheduled restart job, restart counter is at 3.\\nfvpn-node-netbird-up.service: Main process exited, code=killed, status=15/TERM\\nfvpn-node-netbird-up.service: Failed with result 'signal'.\\nStopped fvpn-node-netbird-up.service - Bring NetBird up from the setup key file.\\nStarted fvpn-netbird.service - NetBird client for Freedom VPN.\\nStarting fvpn-node-netbird-up.service - Bring NetBird up from the setup key file...\\nError: listen daemon interface: listen unix /var/run/netbird.sock: bind: read-only file system\\nfvpn-netbird.service: Main process exited, code=exited, status=1/FAILURE\\nfvpn-netbird.service: Failed with result 'exit-code'.\\n2026-10-31T06:28:14.642Z WARN client/internal/profilemanager/profilemanager.go:122: failed to get config directory: neither $XDG_CONFIG_HOME nor $HOME are defined\\ntime=2026-10-31T06:28:17.075Z level=WARN msg=heartbeat err=\\\"mkdir /run/vpn-node: read-only file system\\\"\\nError: failed to connect to daemon error: context deadline exceeded\\nIf the daemon is not running please run:\\nnetbird service install\\nnetbird service start\\nfailed: exit status 1\\nfvpn-node-netbird-up.service: Main process exited, code=exited, status=1/FAILURE\\nfvpn-node-netbird-up.service: Failed with result 'exit-code'.\\nFailed to start fvpn-node-netbird-up.service - Bring NetBird up from the setup key file.\\nStopped fvpn-node-netbird-up.service - Bring NetBird up from the setup key file.\\nStopped fvpn-netbird.service - NetBird client for Freedom VPN.\\nStopping fvpn-agent.service - Freedom VPN node agent...\\ntime=2026-10-31T06:28:24.660Z level=WARN msg=heartbeat err=\\\"mkdir /run/vpn-node: read-only file system\\\"\\nfvpn-agent.service: Deactivated successfully.\\nStopped fvpn-agent.service - Freedom VPN node agent.\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "central_before_http",
+      "detail": "\"200\""
+    },
+    {
+      "name": "central_before",
+      "detail": "{\"capacity\":null,\"checks\":[{\"error_code\":null,\"name\":\"dns_policy\",\"observed_at\":\"2026-10-31T06:28:05.022470557Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"internet_only\",\"observed_at\":\"2026-10-31T06:28:05.022470557Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"lease\",\"observed_at\":\"2026-10-31T06:28:05.022470557Z\",\"status\":\"not_run\"},{\"error_code\":null,\"name\":\"meter_path\",\"observed_at\":\"2026-10-31T06:28:05.022470557Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"policy_signature\",\"observed_at\":\"2026-10-31T06:28:05.022470557Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"qos\",\"observed_at\":\"2026-10-31T06:28:05.022470557Z\",\"status\":\"not_run\"},{\"error_code\":null,\"name\":\"release_supported\",\"observed_at\":\"2026-10-31T06:28:05.022470557Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"source_binding\",\"observed_at\":\"2026-10-31T06:28:05.022470557Z\",\"status\":\"not_run\"},{\"error_code\":null,\"name\":\"storage\",\"observed_at\":\"2026-10-31T06:28:05.022470557Z\",\"status\":\"passed\"},{\"detail\":\"Egress probe used no extra target.\",\"error_code\":\"HEALTH_CHECK_FAILED\",\"name\":\"tunnel_probe\",\"observed_at\":\"2026-10-31T06:28:05.022470557Z\",\"status\":\"failed\"}],\"config_generation\":{\"applied\":\"1\",\"desired\":\"3\"},\"control_status\":\"online\",\"created_at\":\"2026-10-31T06:28:00.181056Z\",\"current_incarnation_id\":\"01a190a4-cfca-7222-bf9e-9ad3932b6971\",\"data_health\":\"failed\",\"dns_policy_evidence\":null,\"drift\":[],\"exit_id\":\"01a190a4-c635-788f-b921-60900c048549\",\"group_ids\":[],\"identity_conflict\":{\"conflict_count\":0,\"last_conflict_at\":null,\"mapping_frozen\":false},\"last_seen_at\":\"2026-10-31T06:28:05.119957Z\",\"lifecycle_state\":\"registered\",\"member_forwarding_observed\":false,\"member_group_ids\":[],\"name\":\"TEST ONLY installer handoff\",\"netbird_peer_id\":null,\"node_id\":\"01a190a4-c635-788e-8f41-2378040cd01b\",\"notes\":null,\"observed_exit_ipv4\":null,\"observed_exit_ipv6\":null,\"platform\":{\"arch\":\"amd64\",\"os\":\"ubuntu\",\"os_version\":\"24.04\"},\"provisioning_state\":\"applying\",\"publication_intent\":\"unpublished\",\"publication_observed\":\"absent\",\"recent_errors\":[{\"code\":\"HEALTH_CHECK_FAILED\",\"message\":\"tunnel_probe\",\"observed_at\":\"2026-10-31T06:28:05.022470557Z\",\"stage\":\"probe\"}],\"region\":null,\"releases\":{\"current_release_id\":null,\"desired_release_id\":\"01a190a1-19f7-736f-8d85-af45aa08a07b\",\"last_good_release_id\":null},\"resource_version\":\"8\",\"retired_at\":null,\"safety_status\":\"failed\",\"update\":{\"batch_id\":\"01a190a4-d0f9-7708-b2f8-f2585cc1278c\",\"generation\":\"1\",\"job_id\":\"01a190a4-d0fb-75b7-8419-1e25b29175ae\",\"last_error_code\":null,\"last_observed_at\":\"2026-10-31T06:28:05.11141Z\",\"last_result_at\":null,\"source\":\"central\",\"state\":\"queued\"},\"usage_outbox\":{\"acked_archive_bytes\":\"0\",\"blocked_seq\":null,\"central_acked_through\":\"0\",\"last_durable_event_seq\":\"0\",\"ledger_epoch\":\"efcc318e-8038-4a73-bf33-524cf80f681d\",\"meter_epoch_id\":\"01a190a4-d0e8-7513-bf0d-b74b34762930\",\"observed_at\":\"2026-10-31T06:28:05.119957Z\",\"oldest_unacked_at\":null,\"unacked_event_count\":0,\"unacked_payload_bytes\":\"0\"}}"
+    },
+    {
+      "name": "fresh_serving_gate_observation",
+      "detail": "{\"forwarding_block_reasons\":[\"not_published\",\"safety_check_failed\"],\"member_forwarding_enabled\":false}"
+    },
+    {
+      "name": "installed_baseline",
+      "detail": "{\"command\":[\"cat\",\"/var/lib/vpn-node/install/baseline.json\"],\"exit\":1,\"stdout\":\"\",\"stderr\":\"cat: /var/lib/vpn-node/install/baseline.json: No such file or directory\"}"
+    },
+    {
+      "name": "seed",
+      "detail": "{\"command\":[\"/opt/vpn-node/current/fvpn-updater\",\"seed\",\"--config\",\"/etc/vpn-node/updater.json\",\"--manifest\",\"/var/lib/vpn-node/update-staging/01a190a4-6fae-7305-88b2-ba0ff56defe6.manifest.json\",\"--tree\",\"/opt/vpn-node/releases/01a190a4-6fae-7305-88b2-ba0ff56defe6\"],\"exit\":1,\"stdout\":\"\",\"stderr\":\"fvpn-updater: updater: HASH_MISMATCH: seed tree differs from the signed artifact\"}"
+    },
+    {
+      "name": "status_seeded",
+      "detail": "{\"command\":[\"/opt/vpn-node/current/fvpn-updater\",\"status\",\"--config\",\"/etc/vpn-node/updater.json\"],\"exit\":0,\"stdout\":\"{\\n  \\\"generation\\\": null,\\n  \\\"job_id\\\": \\\"\\\",\\n  \\\"stage\\\": \\\"\\\",\\n  \\\"state\\\": \\\"\\\",\\n  \\\"current_release_id\\\": \\\"\\\",\\n  \\\"last_good_release_id\\\": \\\"\\\",\\n  \\\"recovery_required\\\": false,\\n  \\\"last_result_state\\\": \\\"\\\",\\n  \\\"last_rejection\\\": null,\\n  \\\"health\\\": null,\\n  \\\"candidate_health_json\\\": null\\n}\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "check_seed",
+      "detail": "false"
+    },
+    {
+      "name": "generated_config",
+      "detail": "{\"has_boot_id\":false,\"meter_checkpoint\":\"/var/lib/vpn-node/state/meter.checkpoint\",\"result_url\":\"\",\"start_command\":[\"systemctl\",\"start\",\"fvpn-watchdog.service\",\"fvpn-agent.service\"],\"stop_command\":[\"systemctl\",\"stop\",\"fvpn-agent.service\",\"fvpn-watchdog.service\"]}"
+    },
+    {
+      "name": "fresh_no_desired_or_pending",
+      "detail": "false"
+    },
+    {
+      "name": "fresh_oneshot",
+      "detail": "{\"command\":[\"systemctl\",\"start\",\"fvpn-updater.service\"],\"exit\":1,\"stdout\":\"\",\"stderr\":\"Job for fvpn-updater.service failed because the control process exited with error code.\\nSee \\\"systemctl status fvpn-updater.service\\\" and \\\"journalctl -xeu fvpn-updater.service\\\" for details.\"}"
+    },
+    {
+      "name": "fresh_unit_result",
+      "detail": "{\"command\":[\"systemctl\",\"show\",\"fvpn-updater.service\",\"-p\",\"ExecMainStatus\",\"-p\",\"Result\",\"-p\",\"ActiveState\"],\"exit\":0,\"stdout\":\"Result=exit-code\\nExecMainStatus=1\\nActiveState=failed\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "fresh_second_run",
+      "detail": "{\"command\":[\"/opt/vpn-node/current/fvpn-updater\",\"run\",\"--config\",\"/etc/vpn-node/updater.json\"],\"exit\":1,\"stdout\":\"\",\"stderr\":\"{\\\"time\\\":\\\"2026-10-31T06:28:27.987315883Z\\\",\\\"level\\\":\\\"INFO\\\",\\\"msg\\\":\\\"download retry\\\",\\\"url\\\":\\\"https://releases.example.invalid/r/01a190a1-19f7-736f-8d85-af45aa08a07b/manifest.json\\\",\\\"attempt\\\":1,\\\"err\\\":\\\"Get \\\\\\\"https://releases.example.invalid/r/01a190a1-19f7-736f-8d85-af45aa08a07b/manifest.json\\\\\\\": tls: failed to verify certificate: x509: certificate signed by unknown authority\\\"}\\n{\\\"time\\\":\\\"2026-10-31T06:28:28.17629282Z\\\",\\\"level\\\":\\\"INFO\\\",\\\"msg\\\":\\\"download retry\\\",\\\"url\\\":\\\"https://releases.example.invalid/r/01a190a1-19f7-736f-8d85-af45aa08a07b/manifest.json\\\",\\\"attempt\\\":2,\\\"err\\\":\\\"Get \\\\\\\"https://releases.example.invalid/r/01a190a1-19f7-736f-8d85-af45aa08a07b/manifest.json\\\\\\\": tls: failed to verify certificate: x509: certificate signed by unknown authority\\\"}\\n{\\\"time\\\":\\\"2026-10-31T06:28:28.287794407Z\\\",\\\"level\\\":\\\"INFO\\\",\\\"msg\\\":\\\"download retry\\\",\\\"url\\\":\\\"https://releases.example.invalid/r/01a190a1-19f7-736f-8d85-af45aa08a07b/manifest.json\\\",\\\"attempt\\\":3,\\\"err\\\":\\\"Get \\\\\\\"https://releases.example.invalid/r/01a190a1-19f7-736f-8d85-af45aa08a07b/manifest.json\\\\\\\": tls: failed to verify certificate: x509: certificate signed by unknown authority\\\"}\\n{\\\"time\\\":\\\"2026-10-31T06:28:28.468334705Z\\\",\\\"level\\\":\\\"INFO\\\",\\\"msg\\\":\\\"download retry\\\",\\\"url\\\":\\\"https://releases.example.invalid/r/01a190a1-19f7-736f-8d85-af45aa08a07b/manifest.json\\\",\\\"attempt\\\":4,\\\"err\\\":\\\"Get \\\\\\\"https://releases.example.invalid/r/01a190a1-19f7-736f-8d85-af45aa08a07b/manifest.json\\\\\\\": tls: failed to verify certificate: x509: certificate signed by unknown authority\\\"}\\n{\\\"time\\\":\\\"2026-10-31T06:28:29.905948435Z\\\",\\\"level\\\":\\\"INFO\\\",\\\"msg\\\":\\\"download retry\\\",\\\"url\\\":\\\"https://releases.example.invalid/r/01a190a1-19f7-736f-8d85-af45aa08a07b/manifest.json\\\",\\\"attempt\\\":5,\\\"err\\\":\\\"Get \\\\\\\"https://releases.example.invalid/r/01a190a1-19f7-736f-8d85-af45aa08a07b/manifest.json\\\\\\\": tls: failed to verify certificate: x509: certificate signed by unknown authority\\\"}\\nfvpn-updater: updater: STORE_UNAVAILABLE: download\"}"
+    },
+    {
+      "name": "check_fresh_no_work",
+      "detail": "false"
+    },
+    {
+      "name": "fresh_installer_check",
+      "detail": "{\"command\":[\"fvpn-node-install\",\"check\",\"--json\"],\"exit\":2,\"stdout\":\"{\\n  \\\"status\\\": \\\"drifted\\\",\\n  \\\"baseline\\\": {\\n    \\\"status\\\": \\\"not recorded\\\",\\n    \\\"probe\\\": {\\n      \\\"exit_code\\\": 0,\\n      \\\"stderr\\\": \\\"\\\"\\n    }\\n  },\\n  \\\"os_id\\\": \\\"ubuntu\\\",\\n  \\\"os_version\\\": \\\"24.04\\\",\\n  \\\"arch\\\": \\\"amd64\\\",\\n  \\\"kernel\\\": \\\"Linux 7.0.0-38-generic\\\",\\n  \\\"release_id\\\": \\\"01a190a4-6fae-7305-88b2-ba0ff56defe6\\\",\\n  \\\"manifest_sha256\\\": \\\"f094ac088f94c4e70068e660363c2fc06013f3d20c18687ca2e1309d905c72bb\\\",\\n  \\\"units\\\": {\\n    \\\"fvpn-agent.service\\\": \\\"inactive\\\",\\n    \\\"fvpn-netbird.service\\\": \\\"inactive\\\",\\n    \\\"fvpn-node-netbird-up.service\\\": \\\"inactive\\\",\\n    \\\"fvpn-updater-recover.service\\\": \\\"inactive\\\",\\n    \\\"fvpn-updater.service\\\": \\\"failed\\\",\\n    \\\"fvpn-updater.timer\\\": \\\"inactive\\\",\\n    \\\"fvpn-watchdog.service\\\": \\\"inactive\\\"\\n  },\\n  \\\"directories\\\": [\\n    {\\n      \\\"path\\\": \\\"/etc/vpn-node\\\",\\n      \\\"mode\\\": \\\"0755\\\",\\n      \\\"expected\\\": \\\"0755\\\",\\n      \\\"ok\\\": true\\n    },\\n    {\\n      \\\"path\\\": \\\"/var/lib/vpn-node\\\",\\n      \\\"mode\\\": \\\"0700\\\",\\n      \\\"expected\\\": \\\"0700\\\",\\n      \\\"ok\\\": true\\n    },\\n    {\\n      \\\"path\\\": \\\"/var/lib/vpn-node/identity\\\",\\n      \\\"mode\\\": \\\"0700\\\",\\n      \\\"expected\\\": \\\"0700\\\",\\n      \\\"ok\\\": true\\n    },\\n    {\\n      \\\"path\\\": \\\"/var/lib/vpn-node/state\\\",\\n      \\\"mode\\\": \\\"0700\\\",\\n      \\\"expected\\\": \\\"0700\\\",\\n      \\\"ok\\\": true\\n    },\\n    {\\n      \\\"path\\\": \\\"/var/lib/vpn-node/update-journal\\\",\\n      \\\"mode\\\": \\\"0700\\\",\\n      \\\"expected\\\": \\\"0700\\\",\\n      \\\"ok\\\": true\\n    },\\n    {\\n      \\\"path\\\": \\\"/var/lib/vpn-node/update-staging\\\",\\n      \\\"mode\\\": \\\"0700\\\",\\n      \\\"expected\\\": \\\"0700\\\",\\n      \\\"ok\\\": true\\n    },\\n    {\\n      \\\"path\\\": \\\"/var/lib/vpn-node/install\\\",\\n      \\\"mode\\\": \\\"0700\\\",\\n      \\\"expected\\\": \\\"0700\\\",\\n      \\\"ok\\\": true\\n    },\\n    {\\n      \\\"path\\\": \\\"/opt/vpn-node\\\",\\n      \\\"mode\\\": \\\"0755\\\",\\n      \\\"expected\\\": \\\"0755\\\",\\n      \\\"ok\\\": true\\n    },\\n    {\\n      \\\"path\\\": \\\"/opt/vpn-node/releases\\\",\\n      \\\"mode\\\": \\\"0755\\\",\\n      \\\"expected\\\": \\\"0755\\\",\\n      \\\"ok\\\": true\\n    },\\n    {\\n      \\\"path\\\": \\\"/run/vpn-node\\\",\\n      \\\"expected\\\": \\\"0755\\\",\\n      \\\"ok\\\": false\\n    }\\n  ],\\n  \\\"lock\\\": {\\n    \\\"held\\\": false,\\n    \\\"pid\\\": 1841,\\n    \\\"boot_id\\\": \\\"97c018d7-a925-4723-9127-83c097de1c8a\\\",\\n    \\\"start_time\\\": 1164544\\n  },\\n  \\\"identity\\\": {\\n    \\\"present\\\": true,\\n    \\\"incarnation_id\\\": \\\"01a190a4-cfca-7222-bf9e-9ad3932b6971\\\",\\n    \\\"node_id\\\": \\\"01a190a4-c635-788e-8f41-2378040cd01b\\\"\\n  },\\n  \\\"usage_store_present\\\": true,\\n  \\\"netbird\\\": {\\n    \\\"version\\\": \\\"0.82.0\\\",\\n    \\\"daemon\\\": \\\"inactive\\\"\\n  },\\n  \\\"drifts\\\": [\\n    \\\"directory /run/vpn-node\\\",\\n    \\\"unit fvpn-watchdog.service inactive\\\",\\n    \\\"unit fvpn-agent.service inactive\\\",\\n    \\\"unit fvpn-netbird.service inactive\\\",\\n    \\\"unit fvpn-updater-recover.service inactive\\\",\\n    \\\"unit fvpn-updater.timer inactive\\\",\\n    \\\"unit fvpn-node-netbird-up.service inactive\\\",\\n    \\\"unit fvpn-updater.service failed\\\",\\n    \\\"netbird_daemon\\\"\\n  ]\\n}\",\"stderr\":\"drifted: directory /run/vpn-node, unit fvpn-watchdog.service inactive, unit fvpn-agent.service inactive, unit fvpn-netbird.service inactive, unit fvpn-updater-recover.service inactive, unit fvpn-updater.timer inactive, unit fvpn-node-netbird-up.service inactive, unit fvpn-updater.service failed, netbird_daemon\"}"
+    },
+    {
+      "name": "check_fresh_check_no_updater_drift",
+      "detail": "false"
+    },
+    {
+      "name": "check_fresh_guard_clear",
+      "detail": "false"
+    },
+    {
+      "name": "fresh_forwarding_scope",
+      "detail": "\"Updater latch absence only. Other serving prerequisites may remain blocked; central forwarding reasons and failed packaged units are recorded, never interpreted as serving success.\""
+    },
+    {
+      "name": "kernel_boot_id",
+      "detail": "{\"command\":[\"cat\",\"/proc/sys/kernel/random/boot_id\"],\"exit\":0,\"stdout\":\"97c018d7-a925-4723-9127-83c097de1c8a\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "lock_holder",
+      "detail": "{\"command\":[\"cat\",\"/var/lib/vpn-node/update.lock\"],\"exit\":0,\"stdout\":\"{\\\"pid\\\":1841,\\\"boot_id\\\":\\\"97c018d7-a925-4723-9127-83c097de1c8a\\\",\\\"start_time\\\":1164544}\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "check_boot_kernel",
+      "detail": "false"
+    },
+    {
+      "name": "legacy_boot_config",
+      "detail": "{\"command\":[\"/opt/vpn-node/current/fvpn-updater\",\"run\",\"--config\",\"/var/tmp/e2e-rel/legacy-updater.json\"],\"exit\":1,\"stdout\":\"\",\"stderr\":\"{\\\"time\\\":\\\"2026-10-31T06:28:40.19795741Z\\\",\\\"level\\\":\\\"INFO\\\",\\\"msg\\\":\\\"download retry\\\",\\\"url\\\":\\\"https://releases.example.invalid/r/01a190a1-19f7-736f-8d85-af45aa08a07b/manifest.json\\\",\\\"attempt\\\":1,\\\"err\\\":\\\"Get \\\\\\\"https://releases.example.invalid/r/01a190a1-19f7-736f-8d85-af45aa08a07b/manifest.json\\\\\\\": tls: failed to verify certificate: x509: certificate signed by unknown authority\\\"}\\n{\\\"time\\\":\\\"2026-10-31T06:28:40.307827143Z\\\",\\\"level\\\":\\\"INFO\\\",\\\"msg\\\":\\\"download retry\\\",\\\"url\\\":\\\"https://releases.example.invalid/r/01a190a1-19f7-736f-8d85-af45aa08a07b/manifest.json\\\",\\\"attempt\\\":2,\\\"err\\\":\\\"Get \\\\\\\"https://releases.example.invalid/r/01a190a1-19f7-736f-8d85-af45aa08a07b/manifest.json\\\\\\\": tls: failed to verify certificate: x509: certificate signed by unknown authority\\\"}\\n{\\\"time\\\":\\\"2026-10-31T06:28:40.415335285Z\\\",\\\"level\\\":\\\"INFO\\\",\\\"msg\\\":\\\"download retry\\\",\\\"url\\\":\\\"https://releases.example.invalid/r/01a190a1-19f7-736f-8d85-af45aa08a07b/manifest.json\\\",\\\"attempt\\\":3,\\\"err\\\":\\\"Get \\\\\\\"https://releases.example.invalid/r/01a190a1-19f7-736f-8d85-af45aa08a07b/manifest.json\\\\\\\": tls: failed to verify certificate: x509: certificate signed by unknown authority\\\"}\\n{\\\"time\\\":\\\"2026-10-31T06:28:40.434634482Z\\\",\\\"level\\\":\\\"INFO\\\",\\\"msg\\\":\\\"download retry\\\",\\\"url\\\":\\\"https://releases.example.invalid/r/01a190a1-19f7-736f-8d85-af45aa08a07b/manifest.json\\\",\\\"attempt\\\":4,\\\"err\\\":\\\"Get \\\\\\\"https://releases.example.invalid/r/01a190a1-19f7-736f-8d85-af45aa08a07b/manifest.json\\\\\\\": tls: failed to verify certificate: x509: certificate signed by unknown authority\\\"}\\n{\\\"time\\\":\\\"2026-10-31T06:28:41.114780072Z\\\",\\\"level\\\":\\\"INFO\\\",\\\"msg\\\":\\\"download retry\\\",\\\"url\\\":\\\"https://releases.example.invalid/r/01a190a1-19f7-736f-8d85-af45aa08a07b/manifest.json\\\",\\\"attempt\\\":5,\\\"err\\\":\\\"Get \\\\\\\"https://releases.example.invalid/r/01a190a1-19f7-736f-8d85-af45aa08a07b/manifest.json\\\\\\\": tls: failed to verify certificate: x509: certificate signed by unknown authority\\\"}\\nfvpn-updater: updater: STORE_UNAVAILABLE: download\"}"
+    },
+    {
+      "name": "legacy_lock_holder",
+      "detail": "{\"command\":[\"cat\",\"/var/lib/vpn-node/update.lock\"],\"exit\":0,\"stdout\":\"{\\\"pid\\\":1925,\\\"boot_id\\\":\\\"97c018d7-a925-4723-9127-83c097de1c8a\\\",\\\"start_time\\\":1165768}\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "check_legacy_boot_config",
+      "detail": "false"
+    },
+    {
+      "name": "lab_result_endpoint",
+      "detail": "\"Added result_url, agent CA and exact lab origins after recording the generated config; this is not evidence that installer configured result reporting\""
+    },
+    {
+      "name": "stage_barrier",
+      "detail": "{\"command\":[\"systemctl\",\"daemon-reload\"],\"exit\":0,\"stdout\":\"\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "upgrade",
+      "detail": "{\"command\":[\"fvpn-node-install\",\"upgrade\",\"--json\",\"--manifest\",\"/var/tmp/e2e-rel/handoff-1/manifest.json\",\"--artifact\",\"/var/tmp/e2e-rel/handoff-1/artifact.tar.zst\",\"--trust\",\"/var/tmp/e2e-rel/node-trust.json\"],\"exit\":0,\"stdout\":\"{\\n  \\\"status\\\": \\\"staged\\\",\\n  \\\"release_id\\\": \\\"01a190a4-9545-7633-a493-831bd78ab414\\\",\\n  \\\"manifest_sha256\\\": \\\"7bc162e124d5acdda57e4cf73c7e854500624fc280ee0077ad3e07d67b5109d4\\\",\\n  \\\"message\\\": \\\"staged; updater run completed; inspect fvpn-updater status for the apply result\\\",\\n  \\\"updater_command\\\": \\\"/opt/vpn-node/current/fvpn-updater run -config /etc/vpn-node/updater.json\\\",\\n  \\\"manifest_path\\\": \\\"/var/lib/vpn-node/update-staging/01a190a4-9545-7633-a493-831bd78ab414.manifest.json\\\",\\n  \\\"request_id\\\": \\\"93ea62b7-a693-41ef-92c6-b52511358bbb\\\"\\n}\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "pending_before_apply",
+      "detail": "{\"command\":[\"cat\",\"/var/lib/vpn-node/update-staging/pending-release.json\"],\"exit\":0,\"stdout\":\"{\\n  \\\"release_id\\\": \\\"01a190a4-9545-7633-a493-831bd78ab414\\\",\\n  \\\"manifest_path\\\": \\\"/var/lib/vpn-node/update-staging/01a190a4-9545-7633-a493-831bd78ab414.manifest.json\\\",\\n  \\\"request_id\\\": \\\"93ea62b7-a693-41ef-92c6-b52511358bbb\\\",\\n  \\\"manifest_sha256\\\": \\\"7bc162e124d5acdda57e4cf73c7e854500624fc280ee0077ad3e07d67b5109d4\\\",\\n  \\\"artifact_path\\\": \\\"/var/lib/vpn-node/update-staging/3206a61e2e9399b6df7c486476d2d3def5c6c77c7b96f18d6da1b5c259d90e02.tar.zst\\\",\\n  \\\"tree_path\\\": \\\"/opt/vpn-node/releases/01a190a4-9545-7633-a493-831bd78ab414\\\",\\n  \\\"updater_command\\\": \\\"/opt/vpn-node/current/fvpn-updater run -config /etc/vpn-node/updater.json\\\"\\n}\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "current_before",
+      "detail": "\"releases/01a190a4-6fae-7305-88b2-ba0ff56defe6\""
+    },
+    {
+      "name": "current_after_stage",
+      "detail": "\"releases/01a190a4-6fae-7305-88b2-ba0ff56defe6\""
+    },
+    {
+      "name": "check_staged",
+      "detail": "true"
+    },
+    {
+      "name": "units_before_apply",
+      "detail": "{\"command\":[\"systemctl\",\"show\",\"fvpn-agent.service\",\"fvpn-watchdog.service\",\"-p\",\"Id\",\"-p\",\"ExecMainStartTimestampMonotonic\",\"-p\",\"ActiveState\",\"-p\",\"Result\"],\"exit\":0,\"stdout\":\"Result=success\\nExecMainStartTimestampMonotonic=11620377273\\nId=fvpn-agent.service\\nActiveState=inactive\\n\\nResult=success\\nExecMainStartTimestampMonotonic=11620333120\\nId=fvpn-watchdog.service\\nActiveState=inactive\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "apply",
+      "detail": "{\"command\":[\"/opt/vpn-node/current/fvpn-updater\",\"apply\",\"--config\",\"/etc/vpn-node/updater.json\",\"--pending\",\"/var/lib/vpn-node/update-staging/pending-release.json\"],\"exit\":1,\"stdout\":\"\",\"stderr\":\"fvpn-updater: updater: CHECKPOINT_FAILED: current release has no matching updater journal\"}"
+    },
+    {
+      "name": "status_after_apply",
+      "detail": "{\"command\":[\"/opt/vpn-node/current/fvpn-updater\",\"status\",\"--config\",\"/etc/vpn-node/updater.json\"],\"exit\":0,\"stdout\":\"{\\n  \\\"generation\\\": \\\"1\\\",\\n  \\\"job_id\\\": \\\"b0f88e73-80f9-54e8-aa7b-26b04a027eec\\\",\\n  \\\"source\\\": \\\"installer\\\",\\n  \\\"requested_release_id\\\": \\\"01a190a4-9545-7633-a493-831bd78ab414\\\",\\n  \\\"stage\\\": \\\"verify\\\",\\n  \\\"state\\\": \\\"failed\\\",\\n  \\\"current_release_id\\\": \\\"\\\",\\n  \\\"last_good_release_id\\\": \\\"\\\",\\n  \\\"recovery_required\\\": false,\\n  \\\"last_result_state\\\": \\\"failed\\\",\\n  \\\"last_rejection\\\": null,\\n  \\\"health\\\": null,\\n  \\\"candidate_health_json\\\": null\\n}\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "current_after_apply",
+      "detail": "\"releases/01a190a4-6fae-7305-88b2-ba0ff56defe6\""
+    },
+    {
+      "name": "pending_consumed_after_apply",
+      "detail": "true"
+    },
+    {
+      "name": "units_after_apply",
+      "detail": "{\"command\":[\"systemctl\",\"show\",\"fvpn-agent.service\",\"fvpn-watchdog.service\",\"-p\",\"Id\",\"-p\",\"ExecMainStartTimestampMonotonic\",\"-p\",\"ActiveState\",\"-p\",\"Result\"],\"exit\":0,\"stdout\":\"Result=success\\nExecMainStartTimestampMonotonic=11620377273\\nId=fvpn-agent.service\\nActiveState=inactive\\n\\nResult=success\\nExecMainStartTimestampMonotonic=11620333120\\nId=fvpn-watchdog.service\\nActiveState=inactive\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "check_apply",
+      "detail": "false"
+    },
+    {
+      "name": "flush",
+      "detail": "{\"command\":[\"/opt/vpn-node/current/fvpn-updater\",\"flush\",\"--config\",\"/etc/vpn-node/updater.json\"],\"exit\":0,\"stdout\":\"\",\"stderr\":\"{\\\"time\\\":\\\"2026-10-31T06:28:44.099389742Z\\\",\\\"level\\\":\\\"WARN\\\",\\\"msg\\\":\\\"update result rejected\\\",\\\"http_status\\\":422,\\\"api_code\\\":\\\"VALIDATION_FAILED\\\"}\"}"
+    },
+    {
+      "name": "central_after_http",
+      "detail": "\"200\""
+    },
+    {
+      "name": "central_after",
+      "detail": "{\"capacity\":null,\"checks\":[{\"error_code\":null,\"name\":\"dns_policy\",\"observed_at\":\"2026-10-31T06:28:05.022470557Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"internet_only\",\"observed_at\":\"2026-10-31T06:28:05.022470557Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"lease\",\"observed_at\":\"2026-10-31T06:28:05.022470557Z\",\"status\":\"not_run\"},{\"error_code\":null,\"name\":\"meter_path\",\"observed_at\":\"2026-10-31T06:28:05.022470557Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"policy_signature\",\"observed_at\":\"2026-10-31T06:28:05.022470557Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"qos\",\"observed_at\":\"2026-10-31T06:28:05.022470557Z\",\"status\":\"not_run\"},{\"error_code\":null,\"name\":\"release_supported\",\"observed_at\":\"2026-10-31T06:28:05.022470557Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"source_binding\",\"observed_at\":\"2026-10-31T06:28:05.022470557Z\",\"status\":\"not_run\"},{\"error_code\":null,\"name\":\"storage\",\"observed_at\":\"2026-10-31T06:28:05.022470557Z\",\"status\":\"passed\"},{\"detail\":\"Egress probe used no extra target.\",\"error_code\":\"HEALTH_CHECK_FAILED\",\"name\":\"tunnel_probe\",\"observed_at\":\"2026-10-31T06:28:05.022470557Z\",\"status\":\"failed\"}],\"config_generation\":{\"applied\":\"1\",\"desired\":\"3\"},\"control_status\":\"online\",\"created_at\":\"2026-10-31T06:28:00.181056Z\",\"current_incarnation_id\":\"01a190a4-cfca-7222-bf9e-9ad3932b6971\",\"data_health\":\"failed\",\"dns_policy_evidence\":null,\"drift\":[],\"exit_id\":\"01a190a4-c635-788f-b921-60900c048549\",\"group_ids\":[],\"identity_conflict\":{\"conflict_count\":0,\"last_conflict_at\":null,\"mapping_frozen\":false},\"last_seen_at\":\"2026-10-31T06:28:05.119957Z\",\"lifecycle_state\":\"registered\",\"member_forwarding_observed\":false,\"member_group_ids\":[],\"name\":\"TEST ONLY installer handoff\",\"netbird_peer_id\":null,\"node_id\":\"01a190a4-c635-788e-8f41-2378040cd01b\",\"notes\":null,\"observed_exit_ipv4\":null,\"observed_exit_ipv6\":null,\"platform\":{\"arch\":\"amd64\",\"os\":\"ubuntu\",\"os_version\":\"24.04\"},\"provisioning_state\":\"applying\",\"publication_intent\":\"unpublished\",\"publication_observed\":\"absent\",\"recent_errors\":[{\"code\":\"HEALTH_CHECK_FAILED\",\"message\":\"tunnel_probe\",\"observed_at\":\"2026-10-31T06:28:05.022470557Z\",\"stage\":\"probe\"}],\"region\":null,\"releases\":{\"current_release_id\":null,\"desired_release_id\":\"01a190a1-19f7-736f-8d85-af45aa08a07b\",\"last_good_release_id\":null},\"resource_version\":\"8\",\"retired_at\":null,\"safety_status\":\"failed\",\"update\":{\"batch_id\":\"01a190a4-d0f9-7708-b2f8-f2585cc1278c\",\"generation\":\"1\",\"job_id\":\"01a190a4-d0fb-75b7-8419-1e25b29175ae\",\"last_error_code\":null,\"last_observed_at\":\"2026-10-31T06:28:05.11141Z\",\"last_result_at\":null,\"source\":\"central\",\"state\":\"queued\"},\"usage_outbox\":{\"acked_archive_bytes\":\"0\",\"blocked_seq\":null,\"central_acked_through\":\"0\",\"last_durable_event_seq\":\"0\",\"ledger_epoch\":\"efcc318e-8038-4a73-bf33-524cf80f681d\",\"meter_epoch_id\":\"01a190a4-d0e8-7513-bf0d-b74b34762930\",\"observed_at\":\"2026-10-31T06:28:05.119957Z\",\"oldest_unacked_at\":null,\"unacked_event_count\":0,\"unacked_payload_bytes\":\"0\"}}"
+    },
+    {
+      "name": "check_central",
+      "detail": "false"
+    },
+    {
+      "name": "central_installer_receipts",
+      "detail": "[]"
+    },
+    {
+      "name": "stage_tamper",
+      "detail": "{\"command\":[\"fvpn-node-install\",\"upgrade\",\"--json\",\"--manifest\",\"/var/tmp/e2e-rel/handoff-1/manifest.json\",\"--artifact\",\"/var/tmp/e2e-rel/handoff-1/artifact.tar.zst\",\"--trust\",\"/var/tmp/e2e-rel/node-trust.json\"],\"exit\":0,\"stdout\":\"{\\n  \\\"status\\\": \\\"staged\\\",\\n  \\\"release_id\\\": \\\"01a190a4-9545-7633-a493-831bd78ab414\\\",\\n  \\\"manifest_sha256\\\": \\\"7bc162e124d5acdda57e4cf73c7e854500624fc280ee0077ad3e07d67b5109d4\\\",\\n  \\\"message\\\": \\\"staged; updater run completed; inspect fvpn-updater status for the apply result\\\",\\n  \\\"updater_command\\\": \\\"/opt/vpn-node/current/fvpn-updater run -config /etc/vpn-node/updater.json\\\",\\n  \\\"manifest_path\\\": \\\"/var/lib/vpn-node/update-staging/01a190a4-9545-7633-a493-831bd78ab414.manifest.json\\\",\\n  \\\"request_id\\\": \\\"9e8be492-609f-4ed0-8429-9787c98bd1a6\\\"\\n}\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "tamper_stimulus",
+      "detail": "{\"command\":[\"sh\",\"-c\",\"printf X | dd of=\\\"$1\\\" bs=1 seek=32 count=1 conv=notrunc status=none\",\"sh\",\"/var/lib/vpn-node/update-staging/3206a61e2e9399b6df7c486476d2d3def5c6c77c7b96f18d6da1b5c259d90e02.tar.zst\"],\"exit\":0,\"stdout\":\"\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "apply_tampered",
+      "detail": "{\"command\":[\"/opt/vpn-node/current/fvpn-updater\",\"apply\",\"--config\",\"/etc/vpn-node/updater.json\",\"--pending\",\"/var/lib/vpn-node/update-staging/pending-release.json\"],\"exit\":1,\"stdout\":\"\",\"stderr\":\"fvpn-updater: updater: HASH_MISMATCH: staged artifact\"}"
+    },
+    {
+      "name": "status_after_tamper",
+      "detail": "{\"command\":[\"/opt/vpn-node/current/fvpn-updater\",\"status\",\"--config\",\"/etc/vpn-node/updater.json\"],\"exit\":0,\"stdout\":\"{\\n  \\\"generation\\\": \\\"1\\\",\\n  \\\"job_id\\\": \\\"9a389f1d-8b52-50d2-8593-71674e09c00f\\\",\\n  \\\"source\\\": \\\"installer\\\",\\n  \\\"requested_release_id\\\": \\\"01a190a4-9545-7633-a493-831bd78ab414\\\",\\n  \\\"stage\\\": \\\"verify\\\",\\n  \\\"state\\\": \\\"failed\\\",\\n  \\\"current_release_id\\\": \\\"\\\",\\n  \\\"last_good_release_id\\\": \\\"\\\",\\n  \\\"recovery_required\\\": false,\\n  \\\"last_result_state\\\": \\\"failed\\\",\\n  \\\"last_rejection\\\": {\\n    \\\"result_id\\\": \\\"47f2b213-1665-596f-a0be-7f232dcdcdd7\\\",\\n    \\\"http_status\\\": 422,\\n    \\\"api_code\\\": \\\"VALIDATION_FAILED\\\",\\n    \\\"code\\\": \\\"VALIDATION_FAILED\\\",\\n    \\\"at\\\": \\\"2026-10-31T06:28:44.095968614Z\\\"\\n  },\\n  \\\"health\\\": null,\\n  \\\"candidate_health_json\\\": null\\n}\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "check_tamper",
+      "detail": "true"
+    },
+    {
+      "name": "preserve_pending_if_any",
+      "detail": "{\"command\":[\"sh\",\"-c\",\"if [ -e \\\"$1\\\" ]; then mv \\\"$1\\\" \\\"${1%.json}.before-downgrade.json\\\"; fi\",\"sh\",\"/var/lib/vpn-node/update-staging/pending-release.json\"],\"exit\":0,\"stdout\":\"\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "downgrade",
+      "detail": "{\"command\":[\"fvpn-node-install\",\"upgrade\",\"--json\",\"--manifest\",\"/var/tmp/e2e-rel/handoff-2/manifest.json\",\"--artifact\",\"/var/tmp/e2e-rel/handoff-2/artifact.tar.zst\",\"--trust\",\"/var/tmp/e2e-rel/node-trust.json\"],\"exit\":0,\"stdout\":\"{\\n  \\\"status\\\": \\\"staged\\\",\\n  \\\"release_id\\\": \\\"01a190a4-aa12-79ce-8cb6-ba8215fd6bac\\\",\\n  \\\"manifest_sha256\\\": \\\"23cf6a654dee33de83beebea175b03fe8ff76f1c5be6767d6d19c289efdfbd63\\\",\\n  \\\"message\\\": \\\"staged; updater run completed; inspect fvpn-updater status for the apply result\\\",\\n  \\\"updater_command\\\": \\\"/opt/vpn-node/current/fvpn-updater run -config /etc/vpn-node/updater.json\\\",\\n  \\\"manifest_path\\\": \\\"/var/lib/vpn-node/update-staging/01a190a4-aa12-79ce-8cb6-ba8215fd6bac.manifest.json\\\",\\n  \\\"request_id\\\": \\\"66fe8390-c590-43d1-9294-5c39d6ad23e3\\\"\\n}\",\"stderr\":\"\"}"
+    },
+    {
+      "name": "downgrade_pending_absent",
+      "detail": "false"
+    },
+    {
+      "name": "check_downgrade",
+      "detail": "false"
+    },
+    {
+      "name": "downgrade_pending_record",
+      "detail": "{\"command\":[\"sh\",\"-c\",\"if [ -e \\\"$1\\\" ]; then cat \\\"$1\\\"; mv \\\"$1\\\" \\\"${1%.json}.downgrade-not-applied.json\\\"; fi\",\"sh\",\"/var/lib/vpn-node/update-staging/pending-release.json\"],\"exit\":0,\"stdout\":\"{\\n  \\\"release_id\\\": \\\"01a190a4-aa12-79ce-8cb6-ba8215fd6bac\\\",\\n  \\\"manifest_path\\\": \\\"/var/lib/vpn-node/update-staging/01a190a4-aa12-79ce-8cb6-ba8215fd6bac.manifest.json\\\",\\n  \\\"request_id\\\": \\\"66fe8390-c590-43d1-9294-5c39d6ad23e3\\\",\\n  \\\"manifest_sha256\\\": \\\"23cf6a654dee33de83beebea175b03fe8ff76f1c5be6767d6d19c289efdfbd63\\\",\\n  \\\"artifact_path\\\": \\\"/var/lib/vpn-node/update-staging/b77fbd2fd54518c41e9d6ec6e336852bf4721a448fdf78d7a82bdc9c30489cf9.tar.zst\\\",\\n  \\\"tree_path\\\": \\\"/opt/vpn-node/releases/01a190a4-aa12-79ce-8cb6-ba8215fd6bac\\\",\\n  \\\"updater_command\\\": \\\"/opt/vpn-node/current/fvpn-updater run -config /etc/vpn-node/updater.json\\\"\\n}\",\"stderr\":\"\"}"
+    }
+  ]
+}

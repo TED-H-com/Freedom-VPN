@@ -153,7 +153,7 @@ func (s *updatesFollowup) inheritDefault(original api.UpdateBatchAccepted, relea
 		s.block("AT24", "w3-devstack-e2e: shared second node hook failed: "+at.Redact(err.Error()))
 		return false
 	}
-	if err = s.r.lab.alignKernelBoot("node2"); err != nil {
+	if err = s.r.lab.verifyKernelBoot("node2"); err != nil {
 		s.block("AT24", "second node kernel boot identity adapter failed")
 		return false
 	}

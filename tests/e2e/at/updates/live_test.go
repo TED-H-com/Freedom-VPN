@@ -42,7 +42,7 @@ func TestUpdatesFollowup(t *testing.T) {
 	}
 	for i, title := range titles {
 		id := fmt.Sprintf("AT%d", 23+i)
-		records[id] = &at.Record{ID: id, Title: title, Status: at.StatusBlocked, RunID: runID, Prefix: "w4-updates", PortBase: 42000, Git: strings.TrimSpace(string(commit)), Scope: "Follow-up 9 regular-lab requested scenario; not complete original §19 acceptance or physical arm64 proof", Spec: []string{"UPD01", "UPD02", "§13.4", "§13.9", "§13.10", "§13.12"}, Expected: title, Actual: "Prerequisite not reached; see suite summary", Commands: []string{"make -f mk/at-updates.mk at-updates"}}
+		records[id] = &at.Record{ID: id, Title: title, Status: at.StatusBlocked, RunID: runID, Prefix: "w4-updates", PortBase: 42000, Git: strings.TrimSpace(string(commit)), Scope: "Follow-up 10 regular-lab requested scenario; not complete original §19 acceptance or physical arm64 proof", Spec: []string{"UPD01", "UPD02", "§13.4", "§13.9", "§13.10", "§13.12"}, Expected: title, Actual: "Prerequisite not reached; see suite summary", Commands: []string{"make -f mk/at-updates.mk at-updates"}}
 	}
 	// Record exact harness bytes as well as the product source commit. This
 	// remains reproducible when evidence and a capture fix share a final commit.
@@ -70,12 +70,12 @@ func TestUpdatesFollowup(t *testing.T) {
 		requireFollowup7Evidence(records)
 		dir := filepath.Join(root, "docs", "e2e", "at", "updates")
 		var summary strings.Builder
-		fmt.Fprintf(&summary, "# Updates follow-up 9\n\nRun: %s\n\nSource: %s\n\nThese labels follow the orchestrator's follow-up scenario list. They do not redefine the broader §19 cases. Physical arm64 execution and the full original §19 population remain outside this run. Both architectures contain compiled real binaries.\n\n| Scenario | Result | Observation |\n|---|---|---|\n", runID, strings.TrimSpace(string(commit)))
+		fmt.Fprintf(&summary, "# Updates follow-up 10\n\nRun: %s\n\nSource: %s\n\nThese labels follow the orchestrator's follow-up scenario list. They do not redefine the broader §19 cases. Physical arm64 execution and the full original §19 population remain outside this run. Both architectures contain compiled real binaries.\n\n| Scenario | Result | Observation |\n|---|---|---|\n", runID, strings.TrimSpace(string(commit)))
 		for i := 23; i <= 27; i++ {
 			rec := records[fmt.Sprintf("AT%d", i)]
 			fmt.Fprintf(&summary, "| [%s](%s.md) | %s | %s |\n", rec.ID, rec.ID, rec.Status, at.Redact(rec.Actual))
 		}
-		summary.WriteString("\nSee [current requests](requests.md) and the [follow-up 8 history](history/follow-up-8/README.md).\n")
+		summary.WriteString("\nSee [current requests](requests.md) and the [follow-up 9 archive](history/follow-up-9/ARCHIVE.md).\n")
 		if err := at.WriteAcceptance(dir, records); err != nil {
 			t.Error(err)
 		}
@@ -118,12 +118,12 @@ func TestUpdatesFollowup(t *testing.T) {
 	// Run before any fleet default exists; retire this fixture before batch snapshots.
 	s.installerHandoff(stack, baseline)
 	unrelated := s.unrelatedRelease()
-	if err := lab.alignKernelBoot("node"); err != nil {
-		s.blockAll("devstack kernel boot identity adapter failed")
+	if err := lab.verifyKernelBoot("node"); err != nil {
+		s.blockAll("devstack kernel boot identity differs")
 		return
 	}
 	for id := range records {
-		s.note(id, "kernel_boot_adapter", "TEST ONLY: copy kernel boot_id into devstack agent boot-id input before enrollment; updater config omits boot_id; request devstack follow-up 16")
+		s.note(id, "kernel_boot_verified", "Read-only comparison: devstack agent boot-id input equals kernel boot_id before enrollment; updater config omits boot_id (F9-06)")
 	}
 	r.enroll(ctx, admin)
 	if r.nodeID == uuid.Nil || r.incID == uuid.Nil {
@@ -190,7 +190,7 @@ func TestUpdatesFollowup(t *testing.T) {
 	} else if localGood && goodJournal.allPassed() && confirmed.State == "succeeded" {
 		s.block("AT23", "w2-agent-core / w3-wire-fleet: local D-053 success and central succeeded, but later agent observations do not confirm the update generation")
 	} else {
-		s.block("AT23", "w4-node-updater / w3-wire-fleet: good update or central confirmation prerequisite incomplete")
+		s.block("AT23", "devstack / agent-core / updater: good candidate did not reach verified local success; inspect process_agent.log, executable_layout and journal")
 	}
 	if !localGood {
 		s.block("AT24", "w4-node-updater: last-good prerequisite absent")
@@ -367,7 +367,7 @@ func (s *updatesFollowup) createBatch(id string, release uuid.UUID) (api.UpdateB
 		s.block(id, "w3-wire-fleet: fleet read unavailable")
 		return accepted, false
 	}
-	reply, err = s.admin.call(s.ctx, "POST", s.r.lab.public+"/api/v1/admin/update-batches", api.UpdateBatchCreateRequest{ReleaseId: release, Scope: api.UpdateBatchCreateRequestScopeAllNodes, ExpectedGeneration: page.Fleet.Generation, SetFleetDefault: true, Reason: "TEST ONLY updates follow-up 9"}, map[string]string{"Idempotency-Key": uuid.NewString()})
+	reply, err = s.admin.call(s.ctx, "POST", s.r.lab.public+"/api/v1/admin/update-batches", api.UpdateBatchCreateRequest{ReleaseId: release, Scope: api.UpdateBatchCreateRequestScopeAllNodes, ExpectedGeneration: page.Fleet.Generation, SetFleetDefault: true, Reason: "TEST ONLY updates follow-up 10"}, map[string]string{"Idempotency-Key": uuid.NewString()})
 	s.note(id, "batch_response", httpDetail(reply, err))
 	if err != nil || reply.Status != 202 || json.Unmarshal(reply.Body, &accepted) != nil {
 		s.block(id, "w3-wire-fleet: batch create not accepted")
@@ -438,8 +438,10 @@ func (s *updatesFollowup) running(id uuid.UUID) bool {
 func (s *updatesFollowup) execute(id string, interrupt bool) {
 	dir := filepath.Join(s.r.lab.state, s.r.lab.nodeSlot(), "var", "e2e")
 	pause := filepath.Join(dir, "pause-agent")
-	if err := os.WriteFile(pause, []byte("1\n"), 0o644); err != nil {
-		s.r.t.Fatal("pause failed")
+	// D-125 requires the real agent to answer the new updater latch. The
+	// updater's StopCommand owns the later service stop after final sampling.
+	if err := os.Remove(pause); err != nil && !os.IsNotExist(err) {
+		s.r.t.Fatal("resume before final sampling failed")
 	}
 	if !interrupt {
 		defer os.Remove(pause)
@@ -470,6 +472,16 @@ func (s *updatesFollowup) execute(id string, interrupt bool) {
 	})
 	probe.finish()
 	s.note(id, "updater_finished", finished)
+	for _, name := range []string{"updater.out", "agent.log", "watchdog.log"} {
+		raw, err := s.r.lab.docker(s.r.lab.node, "tail", "-n", "60", "/var/lib/vpn-node/e2e/"+name)
+		if err == nil {
+			s.note(id, "process_"+name, string(raw))
+		}
+	}
+	// Read only: the shared regular fixture and installer fixture use different
+	// executable layouts. Preserve the paths if active-release validation fails.
+	layout, layoutErr := s.r.lab.docker(s.r.lab.node, "ls", "-l", "/opt/vpn-node/current/fvpn-agent", "/opt/vpn-node/current/bin/fvpn-agent")
+	s.note(id, "executable_layout", map[string]any{"output": string(layout), "both_paths_present": layoutErr == nil})
 	s.r.t.Logf("%s updater finished=%t interrupt=%t", id, finished, interrupt)
 	raw, _ := os.ReadFile(filepath.Join(dir, "updater-result.json"))
 	var result struct {
@@ -490,6 +502,8 @@ type updatesJournal struct {
 	TxnID           string            `json:"txn_id"`
 	Stage           string            `json:"stage"`
 	Error           string            `json:"error"`
+	ErrorStage      string            `json:"error_stage"`
+	Events          []string          `json:"events"`
 	JobError        string            `json:"job_error"`
 	Current         string            `json:"current"`
 	LastGood        string            `json:"last_good"`
@@ -544,6 +558,7 @@ func (s *updatesFollowup) journal(release uuid.UUID) updatesJournal {
 	}
 	defer db.Close()
 	var health, candidate string
+	_ = db.QueryRow(`SELECT coalesce(error_stage,'') FROM txns WHERE release_id=? ORDER BY updated_at DESC LIMIT 1`, release.String()).Scan(&view.ErrorStage)
 	_ = db.QueryRow(`SELECT txn_id,stage,coalesce(error_code,''),coalesce(health_json,''),coalesce(candidate_health_json,'') FROM txns WHERE release_id=? ORDER BY updated_at DESC LIMIT 1`, release.String()).Scan(&view.TxnID, &view.Stage, &view.Error, &health, &candidate)
 	_ = json.Unmarshal([]byte(health), &view.Health)
 	_ = json.Unmarshal([]byte(candidate), &view.CandidateHealth)
@@ -561,6 +576,7 @@ func (s *updatesFollowup) journal(release uuid.UUID) updatesJournal {
 		if rows.Scan(&raw) != nil {
 			continue
 		}
+		view.Events = append(view.Events, raw)
 		var event map[string]any
 		if json.Unmarshal([]byte(raw), &event) != nil || event["kind"] != "health_attest" {
 			continue
