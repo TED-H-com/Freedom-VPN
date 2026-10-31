@@ -4,14 +4,14 @@ Publish the enrolled exit
 
 Status: pass
 
-Run: c0106e5d-d8e8-400b-abe0-181d6428fc55
+Run: bf671f3a-c6ac-4824-9107-425c4c5a5f02
 
-Source: 7fa0443c532b1c9a395cd93620152fb6902584ae
+Source: e711ebd822eda2ea1b5ba10b187818fda6777a74
 
 Spec: §5.2, §14.2
 
 - agent_baseline_observed: true
-- stored_rows: {"node": {"peer_id": "dbikmln8k4c000c3cidg", "data_health": "healthy", "safety_status": "passed", "provisioning_state": "ready", "applied_config_generation": "1", "desired_config_generation": "1"}, "observation": {"checks": [{"name": "dns_policy", "status": "passed", "error_code": null, "observed_at": "2026-10-31T01:59:11.43466696Z"}, {"name": "internet_only", "status": "passed", "error_code": null, "observed_at": "2026-10-31T01:59:11.43466696Z"}, {"name": "lease", "status": "not_run", "error_code": null, "observed_at": "2026-10-31T01:59:11.43466696Z"}, {"name": "meter_path", "status": "passed", "error_code": null, "observed_at": "2026-10-31T01:59:11.43466696Z"}, {"name": "policy_signature", "status": "passed", "error_code": null, "observed_at": "2026-10-31T01:59:11.43466696Z"}, {"name": "qos", "status": "not_run", "error_code": null, "observed_at": "2026-10-31T01:59:11.43466696Z"}, {"name": "release_supported", "status": "passed", "error_code": null, "observed_at": "2026-10-31T01:59:11.43466696Z"}, {"name": "source_binding", "status": "not_run", "error_code": null, "observed_at": "2026-10-31T01:59:11.43466696Z"}, {"name": "storage", "status": "passed", "error_code": null, "observed_at": "2026-10-31T01:59:11.43466696Z"}, {"name": "tunnel_probe", "detail": "Egress probe used no extra target.", "status": "passed", "error_code": null, "observed_at": "2026-10-31T01:59:11.43466696Z"}], "peer_id": null, "data_health": "healthy", "safety_status": "passed", "provisioning_state": "ready", "applied_config_generation": "1"}, "exit_group_count": 0, "peer_observe_events": 2}
+- stored_rows: {"node": {"peer_id": "dbin14n8k4c000bu6a5g", "data_health": "healthy", "safety_status": "passed", "provisioning_state": "ready", "applied_config_generation": "1", "desired_config_generation": "1"}, "observation": {"checks": [{"name": "dns_policy", "status": "passed", "error_code": null, "observed_at": "2026-10-31T04:38:03.237974009Z"}, {"name": "internet_only", "status": "passed", "error_code": null, "observed_at": "2026-10-31T04:38:03.237974009Z"}, {"name": "lease", "status": "not_run", "error_code": null, "observed_at": "2026-10-31T04:38:03.237974009Z"}, {"name": "meter_path", "status": "passed", "error_code": null, "observed_at": "2026-10-31T04:38:03.237974009Z"}, {"name": "policy_signature", "status": "passed", "error_code": null, "observed_at": "2026-10-31T04:38:03.237974009Z"}, {"name": "qos", "status": "not_run", "error_code": null, "observed_at": "2026-10-31T04:38:03.237974009Z"}, {"name": "release_supported", "status": "passed", "error_code": null, "observed_at": "2026-10-31T04:38:03.237974009Z"}, {"name": "source_binding", "status": "not_run", "error_code": null, "observed_at": "2026-10-31T04:38:03.237974009Z"}, {"name": "storage", "status": "passed", "error_code": null, "observed_at": "2026-10-31T04:38:03.237974009Z"}, {"name": "tunnel_probe", "detail": "Egress probe used no extra target.", "status": "passed", "error_code": null, "observed_at": "2026-10-31T04:38:03.237974009Z"}], "peer_id": null, "data_health": "healthy", "safety_status": "passed", "provisioning_state": "ready", "applied_config_generation": "1"}, "exit_group_count": 0, "peer_observe_events": 2}
 - control_status: online
 - safety_status: passed
 - data_health: healthy
@@ -33,9 +33,9 @@ Spec: §5.2, §14.2
 - check_tunnel_probe: passed
 - capacity_patch: 202
 - capacity_input: TEST ONLY 200 Mbps parent / 100 Mbps member caps through PATCH; required by the agent QoS model
-- request: {"publication_intent":"published","group_ids":["01a18fae-2f82-7ac3-b4dd-523d91259048"],"reason":"e2e acceptance publish"}; If-Match="8"
+- request: {"publication_intent":"published","group_ids":["01a1903f-a36e-7c2f-9869-4f07822985a5"],"reason":"e2e acceptance publish"}; If-Match="8"
 - put: 202
-- operation_id: 2d52a3de-5fc9-4dbb-b85e-b931e1ece186
+- operation_id: abe08b9d-baf0-4021-b211-dc3e5c3c74b2
 - operation_status: succeeded
 - operation_kind: node.publish
 - step_agent_policy: succeeded
