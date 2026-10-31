@@ -4,10 +4,13 @@ package e2e
 
 import (
 	"context"
+	"database/sql"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/node/enforce"
+	"github.com/google/uuid"
 )
 
 // countedFlow proves admission on this node, not merely an HTTP response on
@@ -99,4 +102,59 @@ func (r *runner) noteAdmissionGate(ctx context.Context, admin *session, rec *Rec
 	if !r.flowCounted {
 		note("traffic", "not claimed; no admission counter increment. Inspect route selection, tunnel captures and named rule counters.")
 	}
+}
+
+// noteReadyLeaseDelay records the observed gap between the first ready
+// observation and the next serving lease whose members array is non-empty.
+// D-067 is a product renew. This does not restart the agent to force one.
+func (r *runner) noteReadyLeaseDelay(ctx context.Context, rec *Record) {
+	note := recPathNote(rec)
+	if r.nodeID == uuid.Nil {
+		note("ready_to_populated_lease", "node absent")
+		return
+	}
+	conn, err := r.lab.db(ctx)
+	if err != nil {
+		note("ready_to_populated_lease", "database unavailable")
+		return
+	}
+	defer conn.Close(ctx)
+	var readyAt, populatedAt sql.NullTime
+	var latestMembers sql.NullInt32
+	err = conn.QueryRow(ctx, `
+SELECT
+  (SELECT min(received_at) FROM node_observations WHERE node_id=$1 AND report_payload->>'provisioning_state'='ready'),
+  (SELECT min(s.issued_at) FROM serving_leases s
+    WHERE s.node_id=$1
+      AND s.issued_at >= (SELECT min(received_at) FROM node_observations WHERE node_id=$1 AND report_payload->>'provisioning_state'='ready')
+      AND jsonb_typeof(s.envelope->'signed'->'members')='array'
+      AND jsonb_array_length(s.envelope->'signed'->'members') > 0),
+  (SELECT jsonb_array_length(s.envelope->'signed'->'members') FROM serving_leases s
+    WHERE s.node_id=$1 AND jsonb_typeof(s.envelope->'signed'->'members')='array'
+    ORDER BY s.issued_at DESC LIMIT 1)`, r.nodeID).Scan(&readyAt, &populatedAt, &latestMembers)
+	if err != nil {
+		note("ready_to_populated_lease", "query failed")
+		return
+	}
+	if readyAt.Valid {
+		note("provisioning_ready_at", readyAt.Time.UTC().Format(time.RFC3339Nano))
+	} else {
+		note("provisioning_ready_at", "not observed")
+	}
+	if populatedAt.Valid {
+		note("populated_lease_at", populatedAt.Time.UTC().Format(time.RFC3339Nano))
+	} else {
+		note("populated_lease_at", "not observed")
+	}
+	if latestMembers.Valid {
+		note("latest_lease_member_count", itoa(int(latestMembers.Int32)))
+	} else {
+		note("latest_lease_member_count", "not observed")
+	}
+	if readyAt.Valid && populatedAt.Valid {
+		note("ready_to_populated_lease_seconds", strconv.FormatFloat(populatedAt.Time.Sub(readyAt.Time).Seconds(), 'f', 3, 64))
+		return
+	}
+	note("ready_to_populated_lease_seconds", "not observed")
+	note("ready_to_populated_lease_owner", "w2-node-agent / w1-leases: D-067 renews within 60s of ready; the lab does not restart the agent to force a populated members lease")
 }

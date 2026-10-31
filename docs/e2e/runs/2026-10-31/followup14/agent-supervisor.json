@@ -1,0 +1,30 @@
+{
+  "id": "agent-supervisor",
+  "title": "Agent stop and start go through the supervisor",
+  "spec": [
+    "§5",
+    "D-053"
+  ],
+  "status": "pass",
+  "observations": [
+    {
+      "name": "cycles",
+      "detail": "20"
+    },
+    {
+      "name": "final_pid_present",
+      "detail": "true"
+    },
+    {
+      "name": "pause_cleared",
+      "detail": "true"
+    },
+    {
+      "name": "repeated_start_same_pid",
+      "detail": "true"
+    }
+  ],
+  "at": "2026-10-31T00:43:13Z",
+  "run_id": "4e3e9487-fe0f-4d88-a396-d5d5fa4a8e1d",
+  "source_commit": "7029dbe631b8344ccd0db3991fac81e773a26ed5"
+}

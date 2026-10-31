@@ -310,6 +310,9 @@ func run(state string, reset bool, lay layout, graceSeconds int) error {
 	if err := writeAgentConfigs(state, lay.OriginPrefix); err != nil {
 		return err
 	}
+	if err := writeLabHosts(state, lay.LabPrefix, lay.OriginIP); err != nil {
+		return err
+	}
 	if err := writeNetBird(state); err != nil {
 		return err
 	}
@@ -400,6 +403,19 @@ func writeAgentConfigs(state, originPrefix string) error {
 	return writeJSON(filepath.Join(dir, "agent-run.json"), runCfg)
 }
 
+// writeLabHosts is the control-plane pin for the node process container.
+// compose extra_hosts cannot be combined with network_mode: service:, and
+// the entrypoint appends only names that are not already in /etc/hosts.
+func writeLabHosts(state, labPrefix, originIP string) error {
+	body := fmt.Sprintf(`%s.30 agent.example.invalid
+%s.21 netbird.example.invalid
+%s.21 portal.example.invalid
+%s.11 idp.example.invalid
+%s releases.example.invalid
+`, labPrefix, labPrefix, labPrefix, labPrefix, originIP)
+	return writeSecret(filepath.Join(state, "node", "etc", "lab-hosts"), []byte(body))
+}
+
 func writeNetBird(state string) error {
 	authSecret, err := randomHex(32)
 	if err != nil {
@@ -475,7 +491,7 @@ dns:
   bind_hosts:
     - 0.0.0.0
   bootstrap_dns:
-    - 127.0.0.11:53
+    - %s:53
   cache_size: 4096
   cache_ttl_max: 0
   cache_ttl_min: 0
@@ -533,7 +549,7 @@ users:
   - name: e2e
     password: %q
 whitelist_filters: []
-`, coreDNS, string(hash))
+`, coreDNS, coreDNS, string(hash))
 	dir := filepath.Join(state, "adguard", "conf")
 	if err := os.MkdirAll(dir, 0o700); err != nil {
 		return err

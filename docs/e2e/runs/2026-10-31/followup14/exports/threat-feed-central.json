@@ -1,0 +1,123 @@
+{
+  "id": "threat-feed-central",
+  "title": "Approved feed bootstrap, wrong pin and resolver publication",
+  "spec": [
+    "§12.3",
+    "§12.5",
+    "§19 AT22"
+  ],
+  "status": "pass",
+  "observations": [
+    {
+      "name": "prepared_content_sha256",
+      "detail": "c7561f2cb987ed5790e8f2a17d180f98b50284430460a17bb6f6b0355472a174"
+    },
+    {
+      "name": "create_e2e-feed",
+      "detail": "201"
+    },
+    {
+      "name": "activate_good_feed",
+      "detail": "202"
+    },
+    {
+      "name": "bootstrap",
+      "detail": "true"
+    },
+    {
+      "name": "last_good_content",
+      "detail": "c7561f2cb987ed5790e8f2a17d180f98b50284430460a17bb6f6b0355472a174"
+    },
+    {
+      "name": "normalized_rule_count",
+      "detail": "10"
+    },
+    {
+      "name": "content_kind",
+      "detail": "approved_snapshot"
+    },
+    {
+      "name": "bootstrap_audit_count",
+      "detail": "1"
+    },
+    {
+      "name": "metrics_after_bootstrap",
+      "detail": "fvpn_dns_feed_last_good_age_seconds{feed_code=\"e2e-feed\"} 0.962678661; fvpn_dns_feed_refresh_total{feed_code=\"e2e-feed\",result=\"success\"} 1"
+    },
+    {
+      "name": "create_e2e-feed-profile",
+      "detail": "201"
+    },
+    {
+      "name": "activate_profile",
+      "detail": "202"
+    },
+    {
+      "name": "resolver_document_exists",
+      "detail": "true"
+    },
+    {
+      "name": "policy_generation",
+      "detail": "1"
+    },
+    {
+      "name": "resolver_document_sha256",
+      "detail": "96efd876f78265df3d8949f797c49f28a52d50df16a0376677c0ded42d70c29a"
+    },
+    {
+      "name": "document_embeds_normalized_rules_and_hash_matches",
+      "detail": "true"
+    },
+    {
+      "name": "create_e2e-feed-bad-pin",
+      "detail": "201"
+    },
+    {
+      "name": "activate_bad_pin",
+      "detail": "202"
+    },
+    {
+      "name": "wrong_pin_rejected",
+      "detail": "true"
+    },
+    {
+      "name": "wrong_pin_last_good_content",
+      "detail": "null"
+    },
+    {
+      "name": "wrong_pin_last_error_code",
+      "detail": "content_mismatch"
+    },
+    {
+      "name": "wrong_pin_consecutive_failures",
+      "detail": "1"
+    },
+    {
+      "name": "refresh_failed_audit_count",
+      "detail": "1"
+    },
+    {
+      "name": "previous_revision_last_good_and_publication_retained",
+      "detail": "true"
+    },
+    {
+      "name": "metrics_after_bad_pin",
+      "detail": "fvpn_dns_feed_last_good_age_seconds{feed_code=\"e2e-feed\"} +Inf; fvpn_dns_feed_refresh_total{feed_code=\"e2e-feed\",result=\"content_mismatch\"} 1; fvpn_dns_feed_refresh_total{feed_code=\"e2e-feed\",result=\"success\"} 1"
+    },
+    {
+      "name": "scope",
+      "detail": "Last-good is per revision: the rejected new revision stays null; the prior approved content and resolver generation remain intact. No on-node claim."
+    },
+    {
+      "name": "activate_restore_good_feed",
+      "detail": "202"
+    },
+    {
+      "name": "approved_feed_restored_for_node",
+      "detail": "true"
+    }
+  ],
+  "at": "2026-10-31T01:15:48Z",
+  "run_id": "0a687f3a-2351-4234-b43d-882109267967",
+  "source_commit": "7029dbe631b8344ccd0db3991fac81e773a26ed5"
+}

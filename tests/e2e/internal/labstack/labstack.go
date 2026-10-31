@@ -47,6 +47,7 @@ type EnrollmentPeers = e2e.EnrollmentPeers
 type IdentityFingerprints = e2e.IdentityFingerprints
 type ClonedIdentityFixture = e2e.ClonedIdentityFixture
 type CloneObservation = e2e.CloneObservation
+type ClonePresentation = e2e.ClonePresentation
 type IngressCounter = e2e.IngressCounter
 type MemberIngressResult = e2e.MemberIngressResult
 type MemberIngressProof = e2e.MemberIngressProof
