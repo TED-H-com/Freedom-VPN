@@ -1,0 +1,26 @@
+  unit:
+    name: DNS Unit & Cross-Compile
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.27.3"
+
+      - name: Lint & Vet
+        run: make -f mk/dns.mk dns-lint
+
+      - name: Cross-Compile (linux/amd64 and linux/arm64)
+        run: make -f mk/dns.mk dns-build
+
+      - name: Unit Tests
+        run: make -f mk/dns.mk dns-test
+
+      - name: Pinned resolver response shape (AT20)
+        run: make -f mk/dns.mk dns-response-shape
+
+      - name: Pinned resolver positive cache and TTL (AT20)
+        run: make -f mk/dns.mk dns-positive-cache

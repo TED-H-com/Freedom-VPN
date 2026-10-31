@@ -108,3 +108,14 @@ fresh gap and byte counters, stored ACK replay, immutable run verdicts, archive
 hashes, D-133 attribution and still-open measurements. No test reads a living
 AT-root file or binds another lane's mutable prose. Current owned-document
 integrity hashes stay separate in `scope-review.json`.
+
+Follow-up 21 fixes main `6d1e320d`, through #351, with seven exact roadmap rows
+in `followup21-main.json`. `followup21-snapshots.json` records 13 immutable
+inputs: 12 exact excerpts with byte offsets and full-source digests, plus the
+byte-identical dated updater 19 hand-off. Eight excerpts freeze the follow-up
+20 register and entrypoints; its 18 assertions, 7 rows and 38 inputs retain
+all original expectations. Current acceptance results use roadmap rows only:
+no members 11, isolation 10 or updates 11 living root is copied or read.
+Historical owner archives are verified directly: members 10 (35 files),
+updates 10 (39), isolation 9 (86), and both isolation 10 attempts (92 / 98).
+The live scope-review manifest remains separate from dated claims.

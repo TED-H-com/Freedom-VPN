@@ -1,7 +1,7 @@
 # Backup and Restore Drill Record (`docs/handover/restore-drill.md`)
 
-**Current cut — [follow-up 20](follow-up-20.md) (2026-10-31 EDT):** Evidence through #344; 00193 rollout / Down guidance and the earlier AT30 measurements remain unchanged. SECOPS-21 remains closed on the assembled restore harness (#316).
-Previous cut: [follow-up 19](follow-up-19.md), through #337.
+**Current cut — [follow-up 21](follow-up-21.md) (2026-10-31 EDT):** Through #351: positive-cache limits, retained verified install archives and Dependabot #22 status are documented. Regular AT23–AT27 and assembled D-087 AT10 pass; historical failures remain frozen.
+Previous cut: [follow-up 20](follow-up-20.md), through #344.
 
 Historical follow-up 17 cutoff: [follow-up 17 operator evidence](follow-up-17.md). #313
 harness-proves the SECOPS-21 first-offer capture (2/0/0, delivery 4 > retained 3,

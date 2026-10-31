@@ -1,7 +1,7 @@
 # Production Deployment Runbook (`docs/handover/deploy.md`)
 
-**Current cut — [follow-up 20](follow-up-20.md) (2026-10-31 EDT):** #341 generates authenticated updater reporting from the validated HTTPS control origin; loopback is TEST ONLY. #342 preserves pending receipts on missing reporting config. Apply 00193 before ingestion resumes; Down remains guarded.
-Previous cut: [follow-up 19](follow-up-19.md), through #337.
+**Current cut — [follow-up 21](follow-up-21.md) (2026-10-31 EDT):** Through #351: positive-cache limits, retained verified install archives and Dependabot #22 status are documented. Regular AT23–AT27 and assembled D-087 AT10 pass; historical failures remain frozen.
+Previous cut: [follow-up 20](follow-up-20.md), through #344.
 
 Installer 7 reporting inputs are required: a validated HTTPS control origin
 (`--control-url`) and its readable server CA bundle (`--server-ca`). Generated
@@ -11,8 +11,9 @@ server trust, and `mtls_cert` / `mtls_key` use the enrolled node identity.
 fail before host changes; a same-release rerun repairs reporting fields and
 server CA while preserving unrelated settings and durable state.
 `install --allow-loopback` is **TEST ONLY**, for an isolated HTTPS lab; leave it
-disabled in production. The question of a distinct artifact host is an owner
-decision pending updates 11, not a defect at this cutoff.
+disabled in production. Updates 11 (#346) closes the distinct artifact-origin
+question by measurement: the list grants private / CGNAT exceptions only;
+the measured non-private origin needs none, and no rejection occurred.
 
 Updater 18 logs `result_url_missing` when sealing without reporting config and
 keeps the original receipt pending. Explicit flush fails `VALIDATION_FAILED`
@@ -22,6 +23,14 @@ adopt fully verified same-boot serving under the original valid lease and
 deadline; failed qualification or OS reboot still closes forwarding. Use the
 [operator reporting/restart procedure](operator-guide.md#reporting-and-restart-changes-at-344)
 and [installer input reference](../node/install.md#authenticated-updater-reporting-f10-02-136-13103).
+
+Initial and same-release installs retain the verified archive and envelope
+before seed (#351). With the archive present, seed verifies a private copy and
+the whole tree without fetching the artifact; only absence chooses the guarded
+signed-URL download. Corrupt archives fail closed. This is offline seed, not
+offline enrollment. See [operator changes at #351](operator-guide.md#operator-changes-at-351)
+for this correction, the F9-INFLIGHT positive-cache limitation when choosing
+`blocked_response_ttl`, and Dependabot #22's pending owner disposition.
 
 Historical follow-up 17 cutoff: [follow-up 17 operator evidence](follow-up-17.md). #313
 harness-proves the SECOPS-21 first-offer capture (2/0/0, delivery 4 > retained 3,
