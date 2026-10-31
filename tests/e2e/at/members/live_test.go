@@ -83,6 +83,7 @@ type record struct {
 	Operator         string            `json:"operator_status,omitempty"`
 }
 type live struct {
+	probeSequence                            int
 	t                                        *testing.T
 	ctx                                      context.Context
 	root, state                              string

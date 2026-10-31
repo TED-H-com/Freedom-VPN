@@ -16,21 +16,29 @@ func TestAT02PacketObserverScope(t *testing.T) {
 	copy(p[16:20], net.ParseIP(controlledOrigin).To4())
 	binary.BigEndian.PutUint16(p[20:22], probePort)
 	binary.BigEndian.PutUint16(p[22:24], 443)
-	if packetDirection(p) != "to_origin" {
+	if packetDirection(p, probePort) != "to_origin" {
 		t.Fatal("controlled request missing")
 	}
+	if packetDirection(p, 20001) != "" {
+		t.Fatal("previous transfer admitted into current port observation")
+	}
+	binary.BigEndian.PutUint16(p[20:22], 20001)
+	if packetDirection(p, 20001) != "to_origin" {
+		t.Fatal("selected per-transfer port missing")
+	}
+	binary.BigEndian.PutUint16(p[20:22], probePort)
 	for n := 0; n < len(p); n++ {
-		if packetDirection(p[:n]) != "" {
+		if packetDirection(p[:n], probePort) != "" {
 			t.Fatal("truncated packet admitted")
 		}
 	}
 	p[16] = 203
-	if packetDirection(p) != "" {
+	if packetDirection(p, probePort) != "" {
 		t.Fatal("unrelated destination admitted")
 	}
 	p[16] = 192
 	p[20] = 0
-	if packetDirection(p) != "" {
+	if packetDirection(p, probePort) != "" {
 		t.Fatal("other connection admitted")
 	}
 }

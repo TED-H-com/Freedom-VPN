@@ -20,8 +20,10 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+func (l *live) probePath() string { return filepath.Join(l.root, ".agent/tmp/at-members-probe") }
+
 func (l *live) installProbe() bool {
-	path := filepath.Join(l.root, ".agent/tmp/at-members-probe")
+	path := l.probePath()
 	cmd := exec.CommandContext(l.ctx, "go", "build", "-o", path, "./tests/e2e/at/members/cmd/probe")
 	cmd.Dir = l.root
 	cmd.Env = append(os.Environ(), "CGO_ENABLED=0", "GOOS=linux", "GOARCH=amd64")
