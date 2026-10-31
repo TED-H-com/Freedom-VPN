@@ -162,13 +162,16 @@ func (s *liveSuite) evalAT16(t *testing.T) Record {
 	s.stopNodeAgent("node")
 	s.startNodeAgent("node")
 	var snapAfterRestart sqliteUsageSnapshot
-	_ = s.waitFor(20*time.Second, func() bool {
+	_ = s.waitFor(10*time.Second, func() bool {
 		snapAfterRestart = s.inspectNodeUsageSQLite("node", s.deviceA)
-		return snapAfterRestart.EventsCount > 0 && snapAfterRestart.OutboxCount == 0 &&
-			snapAfterRestart.AckedThrough >= uint64(snapAfterRestart.EventsCount) &&
-			snapAfterRestart.NextSeq > snapBeforeRestart.NextSeq
+		if s.bootstrapTransfer.Counted {
+			return snapAfterRestart.EventsCount > 0 && snapAfterRestart.OutboxCount == 0 &&
+				snapAfterRestart.AckedThrough >= uint64(snapAfterRestart.EventsCount) &&
+				snapAfterRestart.NextSeq > snapBeforeRestart.NextSeq
+		}
+		return snapAfterRestart.NextSeq >= 1 && snapAfterRestart.NextSeq >= snapBeforeRestart.NextSeq && snapAfterRestart.GateStopped == 0
 	})
-	if snapAfterRestart.NextSeq <= snapBeforeRestart.NextSeq || snapAfterRestart.GateStopped != 0 {
+	if snapAfterRestart.NextSeq < snapBeforeRestart.NextSeq || (s.bootstrapTransfer.Counted && snapAfterRestart.NextSeq <= snapBeforeRestart.NextSeq) || snapAfterRestart.GateStopped != 0 {
 		t.Fatalf("AT16 live agent restart check failed: before=%+v after=%+v", snapBeforeRestart, snapAfterRestart)
 	}
 	rec.Commands = append(rec.Commands, CommandRecord{

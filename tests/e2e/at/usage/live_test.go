@@ -502,7 +502,8 @@ func (s *liveSuite) nodeMutation(nodeID uuid.UUID, method, suffix string, body a
 }
 
 func (s *liveSuite) ensureUnpublishedReadyBaseline(nodeService string, nodeID uuid.UUID, perMemDownBPS, perMemUpBPS int64) {
-	s.startNodeAgent(nodeService)
+	// Stop fvpn-agent first so any in-memory e.applyError from a previous serving attempt is cleared on restart.
+	s.stopNodeAgent(nodeService)
 
 	var currentIntent string
 	_ = s.pool.QueryRow(s.ctx, `SELECT COALESCE(publication_intent, '') FROM exits WHERE node_id = $1`, nodeID).Scan(&currentIntent)
@@ -528,6 +529,17 @@ func (s *liveSuite) ensureUnpublishedReadyBaseline(nodeService string, nodeID uu
 	if patchResp.status != http.StatusOK && patchResp.status != http.StatusAccepted {
 		s.t.Fatalf("PATCH /api/v1/admin/nodes/%s failed: HTTP %d %s", nodeID, patchResp.status, string(patchResp.body))
 	}
+
+	// Wait for outbox events (node.publication_changed / node.updated) to compile the non-serving desired state
+	_ = s.waitFor(20*time.Second, func() bool {
+		var pending int
+		var intent string
+		_ = s.pool.QueryRow(s.ctx, `SELECT count(*) FROM outbox_events WHERE status = 'pending'`).Scan(&pending)
+		_ = s.pool.QueryRow(s.ctx, `SELECT COALESCE(envelope->'signed'->>'publication_intent', '') FROM desired_state_envelopes WHERE node_id = $1 ORDER BY generation DESC LIMIT 1`, nodeID).Scan(&intent)
+		return pending == 0 && (intent == "unpublished" || intent == "disabled")
+	})
+
+	s.startNodeAgent(nodeService)
 
 	ready := s.waitFor(90*time.Second, func() bool {
 		var ok bool
