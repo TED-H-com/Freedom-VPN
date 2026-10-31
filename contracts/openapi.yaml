@@ -1,10 +1,10 @@
 openapi: 3.0.3
 info:
   title: Freedom VPN Control API
-  version: 1.9.0
+  version: 1.10.0
   description: |
     Contract for the Freedom VPN central control API (Project Spec v1.0, §14).
-    There are 49 endpoints, including D-015 bootstrap and D-056/D-057 delivery/groups.
+    There are 50 endpoints, including D-015 bootstrap and D-056/D-057 delivery/groups.
     Revision 6 (1.2.0) types reported `NodeDetail.dns_policy_evidence`, records
     D-062 update-result and observation semantics, and D-034e rollback allow-list
     semantics. Revision 7 (1.3.0) adds optional nullable rollback evidence on
@@ -23,6 +23,8 @@ info:
     (`authorizeMemberDevice`), and nullable `NodeDetail.usage_outbox` (SECOPS-19).
     revision 12 erratum (2026-10-30): the `authorizeMemberDevice` limit response is `409` `DEVICE_LIMIT_REACHED`; description only, no schema change.
     revision 13 (2026-10-31): `ObservationAccepted.identity_frozen` (D-088); `source: installer` on update results (D-089); error code `TC_FOREIGN_FILTER` (D-085).
+    Revision 14 (1.10.0) adds `revokeMemberGrant` (AT29), retired-stream usage
+    hand-off (D-105) and optional nullable `ObservationReport.tc_evidence` (D-106).
     The changelog is `docs/contracts/README.md`.
     This document is the single source of truth: Go types (`pkg/api`) and
     TypeScript types (`contracts/ts/openapi.d.ts`) are generated from it, and the
@@ -67,11 +69,15 @@ x-fvpn-mutual-tls:
     server derives node_id and node_incarnation_id from the verified
     certificate and the central binding, checks the incarnation and revocation
     state on every request, and treats node_id / node_incarnation_id in bodies
-    only as consistency checks (mismatch: 403 INCARNATION_MISMATCH). Headers
-    such as X-Node-ID or X-Client-Cert supplied by a client are never trusted.
+    only as consistency checks (mismatch: 403 INCARNATION_MISMATCH).
+    D-105 is the sole event-origin exception: on submitUsageBatch, the batch
+    identity still equals the current certificate identity, while an explicit
+    origin_incarnation_id selects one eligible retired stream for the immutable
+    nested events. It never authenticates a retired certificate or another node.
+    Headers such as X-Node-ID or X-Client-Cert supplied by a client are never trusted.
 x-fvpn-browser-auth:
   description: |
-    Existing browser routes outside /api/v1 (D-032), excluded from the 49 API
+    Existing browser routes outside /api/v1 (D-032), excluded from the 50 API
     endpoints. There are no /api/v1/auth/session or /api/v1/auth/logout aliases.
   routes: ['GET /auth/session', 'POST /auth/logout']
   parameters:
@@ -843,6 +849,63 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/GrantCreateRequest'
+      responses:
+        '202':
+          $ref: '#/components/responses/OperationAccepted'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+
+  /admin/members/{member_id}/grants/{grant_id}/revoke:
+    post:
+      operationId: revokeMemberGrant
+      tags: [admin]
+      summary: Withdraw a member grant
+      description: |
+        Explicit manual withdrawal of a finite or open-ended member grant
+        (§9.2, §9.4, §15.2, AT29). The grant must belong to member_id; an unknown
+        member or grant, or a grant belonging to another member, is 404
+        RESOURCE_NOT_FOUND. An already revoked or expired grant is 409
+        STATE_CONFLICT for a new command. Same-key, same-payload retries return
+        the original operation, including after withdrawal.
+        Accepts a required reason and returns 202 with kind member.grant_revoke
+        and resource entitlement_grant:<grant_id>. The withdrawal intent,
+        operation and audit action member.grant_revoke are committed together;
+        the audit records the reason and grant/member IDs. The devices it
+        authorized move to pending through D-050 / D-081 within one heartbeat.
+        Completion requires the existing policy and authorization read-back;
+        202 is only acceptance. Finite-grant expiry remains a separate case.
+        This command does not permit creation of open-ended grants.
+      x-fvpn-spec: '§14.2, §9.2, §9.4, §15.2'
+      x-fvpn-requirements: [BILL02, ENT02, MEM03]
+      security:
+        - adminSession: []
+          csrfToken: []
+      parameters:
+        - $ref: '#/components/parameters/MemberId'
+        - $ref: '#/components/parameters/GrantId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReasonRequest'
       responses:
         '202':
           $ref: '#/components/responses/OperationAccepted'
@@ -2054,7 +2117,35 @@ paths:
         * Invalid format, integer or mapping: `rejected` with VALIDATION_FAILED or
           METER_PATH_INVALID (the §10.6 HTTP 422 outcome, per event).
 
-        `highest_contiguous_seq` counts only committed events of this incarnation
+        D-105 retired-stream hand-off (ENR-05): the batch node_id and
+        node_incarnation_id MUST equal the verified current mTLS identity.
+        Absent origin_incarnation_id means that current stream. When present,
+        origin_incarnation_id MUST identify a retired incarnation of the same
+        node_id, and the presenting incarnation MUST be current and have been
+        enrolled strictly after that origin was retired. Every event MUST keep
+        its original node_id, node_incarnation_id, event_seq and payload_sha256;
+        its node_incarnation_id MUST equal origin_incarnation_id. Mixed streams
+        are forbidden. The retired certificate itself is never accepted (§6.2).
+        Ineligible origins (including unknown, other-node, active, or enrollment
+        not after retirement) are 409 STATE_CONFLICT for the whole batch, with
+        no ledger change. Event/batch identity mismatches remain 403
+        INCARNATION_MISMATCH. Both failures MUST be audited.
+        Every handed-off event's interval_end MUST be <= the retirement time
+        plus one configured sampling interval in force for the retired stream.
+        Later events are rejected per event with VALIDATION_FAILED and audited;
+        they never advance ACK. Valid events retain the same dedup key and hash
+        rules above, including duplicate on replay and conflict on changed digest.
+        Central MUST NOT automatically drain a retired stream. Only the agent's
+        explicit hand-off at re-enrolment, once when its ledger survived, starts
+        delivery; retries of that hand-off are allowed until ACK. Events MUST
+        NOT be re-minted or attributed to the presenting incarnation.
+
+        The response node_incarnation_id identifies the selected ORIGINAL stream
+        (origin_incarnation_id when supplied, otherwise the presenting incarnation).
+        This is a per-stream ACK: highest_contiguous_seq, blocked_seq, results
+        and replay_unavailable all refer only to that stream. The current stream's
+        ACK never advances from a retired-stream hand-off.
+        `highest_contiguous_seq` counts only committed events of the selected
         stream, never "largest seen"; `blocked_seq` names the lowest sequence that
         stops ACK progress. Whole-request outcomes: 403 for an mTLS identity
         mismatch (no ledger change), 409 LEDGER_EPOCH_MISMATCH when the batch
@@ -2726,6 +2817,14 @@ components:
       name: enrollment_id
       in: path
       required: true
+      schema:
+        type: string
+        format: uuid
+    GrantId:
+      name: grant_id
+      in: path
+      required: true
+      description: Member entitlement grant ID.
       schema:
         type: string
         format: uuid
@@ -7404,6 +7503,131 @@ components:
         `qos` and `source_binding` checks and the single `errors[]` entry use
         `ErrorCode` `AWAITING_MEMBER_GRANTS` (D-071). This enum is unchanged.
       enum: [not_published, identity_invalid, provisioning_incomplete, policy_missing, policy_expired, lease_expired, awaiting_member_grants, clock_untrusted, safety_check_failed, meter_path_invalid, meter_storage_failed, outbox_full, disk_low, release_not_supported, update_in_progress, recovery_required]
+    TCToken:
+      type: string
+      description: Producer-redacted bounded ASCII token; never a raw match, parameter or command output.
+      pattern: '^[a-zA-Z0-9_:-]{1,32}$'
+      minLength: 1
+      maxLength: 32
+    TCReadObject:
+      type: object
+      additionalProperties: false
+      required: [kind]
+      properties:
+        kind:
+          $ref: '#/components/schemas/TCToken'
+        handle:
+          $ref: '#/components/schemas/TCToken'
+        parent:
+          $ref: '#/components/schemas/TCToken'
+        root:
+          type: boolean
+        actions:
+          type: array
+          maxItems: 4
+          items:
+            $ref: '#/components/schemas/TCToken'
+    TCReadAttachment:
+      type: object
+      description: Bounded attachment read; error is a fixed status, never raw stderr.
+      additionalProperties: false
+      required: [interface, attachment, objects]
+      properties:
+        interface:
+          $ref: '#/components/schemas/TCToken'
+        attachment:
+          $ref: '#/components/schemas/TCToken'
+        objects:
+          type: array
+          maxItems: 4
+          items:
+            $ref: '#/components/schemas/TCReadObject'
+        error:
+          type: string
+          enum: [read_failed, invalid_json, invalid_listing]
+    TCRejectedAttachment:
+      type: object
+      description: Bounded attachment read containing at most one deciding object; error is a fixed status, never raw stderr.
+      additionalProperties: false
+      required: [interface, attachment, objects]
+      properties:
+        interface:
+          $ref: '#/components/schemas/TCToken'
+        attachment:
+          $ref: '#/components/schemas/TCToken'
+        objects:
+          type: array
+          maxItems: 1
+          items:
+            $ref: '#/components/schemas/TCReadObject'
+        error:
+          type: string
+          enum: [read_failed, invalid_json, invalid_listing]
+    TCReadbackEvidence:
+      type: object
+      description: |
+        D-106 retained actual TC read, linked by the parent observation report_id.
+        No raw matches, action parameters, stderr, routes, destinations or packet
+        payloads. Successful reads are retained too. verified is the complete
+        serving-verifier outcome, not just a clean TC scan. candidate_generation
+        is the generation under verification, never an applied-generation ACK.
+        read_at is the actual verifier read time; never refresh an old snapshot's
+        timestamp or substitute rollback evidence for the rejected read.
+      additionalProperties: false
+      required: [candidate_generation, read_at, phase, verified, error_code, reads_total, objects_total, truncated, sha256, attachments, rejected]
+      properties:
+        candidate_generation:
+          type: string
+          pattern: '^(0|[1-9][0-9]*)$'
+          maxLength: 20
+          x-go-type: decstr.U64
+          x-go-type-import: {path: github.com/TED-H-com/Freedom-VPN/pkg/decstr}
+          description: Exact uint64 decimal string, at most 18446744073709551615; not an ACK.
+        read_at:
+          type: string
+          format: date-time
+          pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,9})?Z$'
+        phase:
+          type: string
+          enum: [load, pre_apply, verify]
+        verified:
+          type: boolean
+          description: Actual complete serving-verifier outcome.
+        error_code:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/ErrorCode'
+          nullable: true
+        reads_total:
+          type: integer
+          minimum: 0
+          maximum: 2147483647
+        objects_total:
+          type: integer
+          minimum: 0
+          maximum: 2147483647
+        truncated:
+          type: boolean
+          description: True if any rows, objects or actions were omitted from the retained read.
+        sha256:
+          type: string
+          pattern: '^[0-9a-f]{64}$'
+          description: |
+            RFC 8785 SHA-256 of retained bounded rows and counts, matching the
+            netlab read-back projection: {"reads": reads_total, "objects":
+            objects_total, "truncated": truncated, "tc": attachments}. Array
+            order and optional object-member presence are retained exactly.
+        attachments:
+          type: array
+          maxItems: 16
+          items:
+            $ref: '#/components/schemas/TCReadAttachment'
+        rejected:
+          type: object
+          allOf:
+            - $ref: '#/components/schemas/TCRejectedAttachment'
+          nullable: true
+          description: Deciding attachment with at most one object; null when none. A verified read has rejected null.
     ObservationReport:
       type: object
       description: |
@@ -7450,6 +7674,14 @@ components:
       - errors
       additionalProperties: false
       properties:
+        tc_evidence:
+          x-omitempty: false
+          x-omitzero: true
+          type: object
+          allOf:
+            - $ref: '#/components/schemas/TCReadbackEvidence'
+          nullable: true
+          description: D-106 retained actual read. Absent or null means no retained read, never an empty successful scan. Existing errors[stage=tc_evidence] rows remain unchanged.
         report_id:
           type: string
           format: uuid
@@ -7916,7 +8148,13 @@ components:
           enum: [retention_expired, local_data_lost]
     UsageBatchRequest:
       type: object
-      description: A batch of usage events of one incarnation stream (§10.5). Batch limits are central parameters; the contract maximum is 1000 events.
+      description: |
+        A batch of usage events of one incarnation stream (§10.5, D-105).
+        Batch identity always names the presenting current incarnation; optional
+        origin_incarnation_id selects one retired stream under submitUsageBatch's
+        eligibility and interval rules. Events and replay_unavailable refer to
+        that selected stream only. Batch limits are central parameters; the
+        contract maximum is 1000 events.
       required: [node_id, node_incarnation_id, ledger_epoch, events]
       additionalProperties: false
       properties:
@@ -7927,6 +8165,11 @@ components:
         node_incarnation_id:
           type: string
           format: uuid
+          description: Must equal the presenting current certificate incarnation, including during hand-off.
+        origin_incarnation_id:
+          type: string
+          format: uuid
+          description: Eligible retired stream (D-105). Omit for the presenting current stream; null is invalid. Never part of an event hash.
         ledger_epoch:
           type: string
           format: uuid
@@ -7983,7 +8226,10 @@ components:
         durably stored ("0" when event 1 is missing). It never goes backwards
         within one ledger_epoch. blocked_seq is the lowest sequence above
         highest_contiguous_seq that is in conflict or rejected and therefore stops
-        ACK progress, or null.
+        ACK progress, or null. D-105: node_incarnation_id is the selected original
+        stream, equal to request.origin_incarnation_id when supplied, otherwise
+        request.node_incarnation_id. All ACK fields and event results belong to
+        this stream only, never implicitly to the presenting incarnation.
       required: [node_id, node_incarnation_id, ledger_epoch, highest_contiguous_seq, blocked_seq, results, received_at]
       properties:
         node_id:
@@ -7992,6 +8238,7 @@ components:
         node_incarnation_id:
           type: string
           format: uuid
+          description: Original stream being acknowledged, including a retired origin in D-105.
         ledger_epoch:
           type: string
           format: uuid

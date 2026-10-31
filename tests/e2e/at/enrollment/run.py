@@ -40,9 +40,9 @@ MISSING = {
     "distinct_first_boot": "ENR-07 MachineIdentityFingerprints was not read; devstack follow-up 12 PR #204 exports it",
     "machine_identity": "ENR-07 MachineIdentityFingerprints was not read; devstack follow-up 12 PR #204 exports it",
     "counted_unacked_usage": "ENR-05: devstack #266 usage hooks exclude installer-node. Owner devstack: expose the hold, ledger snapshot and selected member transport on the installer slot. Owner usage/installer: define authorized delivery of retained old-incarnation events after reenroll; current Reenroll preserves them unuploaded.",
-    "installer_rerun": "ENR-06: installer probe not reached. Owner packaging/installer: fix real NetBird startup reported in #266; devstack: restore prior service state after wrapper hash sampling.",
+    "installer_rerun": "ENR-06: installer probe not reached. Installer #279 fixes the prior startup cause; owner devstack: restore prior service state after wrapper hash sampling.",
     "identity_ledger_preserved": "ENR-05/ENR-06: requires a running installer-node with counted unACKed usage, retired mode 0700 and newest-first incarnation history. Not reached.",
-    "controlled_reinstall": "ENR-06: ControlledReinstall on installer-node not reached; initial real installer startup is a prerequisite (#266).",
+    "controlled_reinstall": "ENR-06: ControlledReinstall on installer-node not reached; a successful initial install and documented service restoration are prerequisites.",
     "old_certificate_denied": "ENR-06: retired installer certificate unavailable until ControlledReinstall; desired-state and observation denial not reached.",
     "historical_usage_retained": "ENR-05/ENR-06: nonzero retired usage plus new-incarnation traffic requires usage hooks on installer-node and authorized backlog delivery. Not reached.",
     "cloned_identity_conflict": "ENR-07: StartClonedIdentityFixture was not observed on fvpn-<prefix>-node-clone-net.",
@@ -120,13 +120,27 @@ def source():
             "tree_hash_scope": "sorted tracked and nonignored files, excluding generated enrollment evidence"}
 
 
+def digest_labels(value):
+    """Relabel copied prior evidence; immutable history files remain byte-identical."""
+    names = {"Key": "key_sha256", "Cert": "cert_sha256", "NodeJSON": "node_json_sha256",
+             "UsageDB": "usage_db_sha256", "UsageWAL": "usage_wal_sha256",
+             "MachineID": "machine_id_sha256", "Current": "current"}
+    if isinstance(value, list):
+        return [digest_labels(item) for item in value]
+    if isinstance(value, dict):
+        if set(value) == set(names):
+            return {names[key]: item for key, item in value.items()}
+        return {key: digest_labels(item) for key, item in value.items()}
+    return value
+
+
 def previous(docdir, at):
     path = docdir / (at + ".json")
     if not path.exists():
         return []
     old = json.loads(path.read_text())
     # Retain every previous check, including failures and blocked prerequisites.
-    return old.get("prior_checks", []) + [dict(c, run_id=old["run_id"]) for c in old["checks"]]
+    return digest_labels(old.get("prior_checks", []) + [dict(c, run_id=old["run_id"]) for c in old["checks"]])
 
 
 def observation(detail):

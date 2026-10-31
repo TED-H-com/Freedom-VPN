@@ -15,7 +15,9 @@ NETLAB_BIN := $(ROOT)/.agent/tmp/$(FVPN_LAB_PREFIX)-fvpn-netlab
 # the container netns. topology.sh drops the default route that comes with it.
 NETLAB_DNS_NET := $(FVPN_LAB_PREFIX)-dns
 
-.PHONY: netlab-unit netlab-lint netlab-build netlab-image netlab-wipe-scratch netlab-up netlab-down netlab-test netlab-test-full netlab-evidence
+netlab-disk-env = set -eu; mkdir -p .agent/tmp; task_tmp=$$(mktemp -d "$$(pwd)/.agent/tmp/netlab.XXXXXX"); trap 'python3 -c '"'"'import shutil,sys; shutil.rmtree(sys.argv[1])'"'"' "$$task_tmp"' EXIT; export TMPDIR="$$task_tmp" GOTMPDIR="$$task_tmp" CGO_ENABLED=0 GOTOOLCHAIN=local;
+
+.PHONY: netlab-integration netlab-real-netbird netlab-unit netlab-lint netlab-build netlab-image netlab-wipe-scratch netlab-up netlab-down netlab-test netlab-test-full netlab-evidence
 
 # gofmt, vet, and staticcheck for the enforce library and the netlab harness.
 # The privileged suite is not part of this target.
@@ -26,7 +28,7 @@ netlab-lint:
 	test -z "$$(gofmt -l $$files)" || { echo 'gofmt required'; gofmt -l $$files; exit 1; }; \
 	mkdir -p .agent/tmp; \
 	task_tmp=$$(mktemp -d "$$(pwd)/.agent/tmp/go.XXXXXX"); \
-	trap 'rm -rf "$$task_tmp"' EXIT; \
+	trap 'python3 -c '"'"'import shutil,sys; shutil.rmtree(sys.argv[1])'"'"' "$$task_tmp"' EXIT; \
 	export TMPDIR="$$task_tmp" GOTMPDIR="$$task_tmp" CGO_ENABLED=0 GOTOOLCHAIN=local; \
 	go vet ./node/enforce/...; \
 	go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 ./node/enforce/...; \
@@ -34,10 +36,19 @@ netlab-lint:
 	go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 -tags netlab ./tests/netlab ./tests/netlab/at ./tests/netlab/agent ./tests/netlab/cmd/fvpn-netlab
 
 netlab-unit:
-	cd $(ROOT) && CGO_ENABLED=0 go test ./node/enforce/...
+	@cd $(ROOT) && $(netlab-disk-env) go test ./node/enforce/... ./tests/netlab
+
+# Tagged harness compilation and unprivileged prerequisite/driver checks.
+# Live mechanisms remain in netlab-test and netlab-real-netbird.
+netlab-integration:
+	@cd $(ROOT) && $(netlab-disk-env) go test -tags netlab ./tests/netlab ./tests/netlab/at ./tests/netlab/agent
+
+netlab-real-netbird:
+	cd $(ROOT) && FVPN_LAB_PREFIX='$(FVPN_LAB_PREFIX)' bash tests/netlab/scripts/gates.sh real-netbird
 
 netlab-build:
-	cd $(ROOT) && CGO_ENABLED=0 go build -o $(NETLAB_BIN) ./tests/netlab/cmd/fvpn-netlab
+	@cd $(ROOT) && $(netlab-disk-env) go build -o $(NETLAB_BIN) ./tests/netlab/cmd/fvpn-netlab; \
+	GOOS=linux GOARCH=arm64 go build -o "$$task_tmp/fvpn-netlab-arm64" ./tests/netlab/cmd/fvpn-netlab
 
 netlab-image:
 	docker build -t $(NETLAB_IMAGE) $(ROOT)/tests/netlab
@@ -74,7 +85,7 @@ netlab-test:
 	status=0; \
 	$(MAKE) -f $(NETLAB_MK) netlab-up FVPN_LAB_PREFIX='$(FVPN_LAB_PREFIX)' || status=$$?; \
 	if [ $$status -eq 0 ]; then \
-		cd $(ROOT) && FVPN_NETLAB=1 FVPN_LAB_PREFIX='$(FVPN_LAB_PREFIX)' \
+		cd $(ROOT) && $(netlab-disk-env) FVPN_NETLAB=1 FVPN_LAB_PREFIX='$(FVPN_LAB_PREFIX)' \
 			go test -tags netlab -count=1 -timeout 40m -p 1 -parallel 1 -v ./tests/netlab || status=$$?; \
 	fi; \
 	$(MAKE) -f $(NETLAB_MK) netlab-down FVPN_LAB_PREFIX='$(FVPN_LAB_PREFIX)' || true; \
@@ -87,7 +98,7 @@ netlab-evidence:
 	status=0; \
 	$(MAKE) -f $(NETLAB_MK) netlab-up FVPN_LAB_PREFIX='$(FVPN_LAB_PREFIX)' || status=$$?; \
 	if [ $$status -eq 0 ]; then \
-		cd $(ROOT) && FVPN_NETLAB=1 FVPN_LAB_PREFIX='$(FVPN_LAB_PREFIX)' \
+		cd $(ROOT) && $(netlab-disk-env) FVPN_NETLAB=1 FVPN_LAB_PREFIX='$(FVPN_LAB_PREFIX)' \
 			FVPN_NETLAB_EVIDENCE_DIR='docs/poc/G2-evidence' \
 			go test -tags netlab -count=1 -timeout 40m -p 1 -parallel 1 -v ./tests/netlab || status=$$?; \
 	fi; \
@@ -99,7 +110,7 @@ netlab-test-full:
 	status=0; \
 	$(MAKE) -f $(NETLAB_MK) netlab-up FVPN_LAB_PREFIX='$(FVPN_LAB_PREFIX)' || status=$$?; \
 	if [ $$status -eq 0 ]; then \
-		cd $(ROOT) && FVPN_NETLAB=1 FVPN_NETLAB_FULL=1 FVPN_LAB_PREFIX='$(FVPN_LAB_PREFIX)' \
+		cd $(ROOT) && $(netlab-disk-env) FVPN_NETLAB=1 FVPN_NETLAB_FULL=1 FVPN_LAB_PREFIX='$(FVPN_LAB_PREFIX)' \
 			go test -tags netlab -count=1 -timeout 100m -p 1 -parallel 1 -v ./tests/netlab || status=$$?; \
 	fi; \
 	$(MAKE) -f $(NETLAB_MK) netlab-down FVPN_LAB_PREFIX='$(FVPN_LAB_PREFIX)' || true; \

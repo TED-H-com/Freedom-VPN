@@ -121,3 +121,27 @@ The current installer retains the old usage database with its original identity
 and documents no re-home/upload path. A new authenticated incarnation cannot
 upload old-incarnation batches; the required authorized protocol is an open
 usage/installer/control question. No direct SQL read or mutation is used here.
+
+## Follow-up 6 — revision 13 (2026-10-31)
+
+Reviewed OpenAPI 1.9.0 revision 13 on `945eff8`. New fields relevant to adjacent
+paths are `ObservationAccepted.identity_frozen` (D-088) and installer-sourced
+update results (D-089); `TC_FOREIGN_FILTER` is D-085. The token-hash,
+newest-first incarnation-history and direct agent mTLS denial surfaces used
+by AT06/AT07 are unchanged. No new product endpoint is requested here.
+
+`docs/e2e/RESPONSES.md` is absent. The existing follow-up 15 wrappers still
+lack installer-slot hold/snapshot/member transport and post-hash service
+restoration. PR #279 changes the packaged daemon socket/runtime lifecycle,
+not those devstack exports. The run calls only the shipped installer wrappers
+and uses API revocation plus a fresh same-Node enrollment for reenrollment.
+Historical unACKed-event delivery is still not defined by the HTTP contract.
+
+Run `1af27741-cbd9-4fdb-aa1c-7d02790e7a46` confirmed the unchanged runtime authorization boundary:
+the actual installer-retired certificate received 403 `IDENTITY_REVOKED` from
+both GET desired-state and POST observations through direct mTLS. The same
+Node's incarnation list returned the new active/current row then the old
+retired/reinstall row with zero-byte usage and unchanged old checkpoint time.
+The node projection stayed applying / safety unknown / forwarding null after
+wrapper hash sampling. These are observations, not a serving or nonzero-usage
+proof. No API contract or product source was edited.

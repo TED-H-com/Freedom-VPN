@@ -5,6 +5,7 @@ import (
 	"net/netip"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -14,8 +15,10 @@ type RenderPlan struct {
 	NFT         string
 	TC          string
 	Assignments map[uuid.UUID]uint16
-	// Timeouts is the kernel allow-set lifetime per admitted device, in seconds.
-	Timeouts map[string]uint32
+	// Timeouts is the deprecated whole-second projection for legacy diagnostics.
+	// Use ElementTimeouts for the actual rendered durations; never install from this.
+	Timeouts        map[string]uint32
+	ElementTimeouts map[string]time.Duration
 	// Finals are last readings for device counters this plan stops referencing.
 	// The caller persists them before it considers the device gone (§10.7).
 	Finals   []Sample
@@ -217,16 +220,18 @@ func Render(m Model, state State, tcState TCState) (RenderPlan, error) {
 		return RenderPlan{}, err
 	}
 	plan := RenderPlan{
-		NFT:         b.String(),
-		TC:          tc,
-		Assignments: assignments,
-		Timeouts:    map[string]uint32{},
+		NFT:             b.String(),
+		TC:              tc,
+		Assignments:     assignments,
+		Timeouts:        map[string]uint32{},
+		ElementTimeouts: map[string]time.Duration{},
 	}
 	admitted := 0
 	for _, d := range devices {
 		if d.TimeoutOK() {
 			admitted++
-			plan.Timeouts[d.Binding.DeviceID.String()] = d.Timeout
+			plan.Timeouts[d.Binding.DeviceID.String()] = uint32(d.Timeout / time.Second)
+			plan.ElementTimeouts[d.Binding.DeviceID.String()] = d.Timeout
 		}
 	}
 	plan.Admitted = admitted
@@ -254,6 +259,9 @@ func RenderBaseline(m Model, state State) (string, error) {
 	var b strings.Builder
 	b.WriteString("# inet fvpn boot baseline. Member forwarding is off (§8.2).\n")
 	fmt.Fprintf(&b, "add table %s %s\n", TableFamily, TableName)
+	if state.hasChain(deadlineGuard) {
+		fmt.Fprintf(&b, "delete chain %s %s %s\n", TableFamily, TableName, deadlineGuard)
+	}
 	names := []string{counterBase, counterV6, counterInput}
 	if m.Probe != nil {
 		names = append(names, counterInvalid, counterDenied, counterHost, counterProbeUp, counterProbeDown)
@@ -508,7 +516,7 @@ func allowedElements(devices []admittedDevice) string {
 			continue
 		}
 		for _, addr := range d.Addrs {
-			parts = append(parts, fmt.Sprintf("%s timeout %ds", addr, d.Timeout))
+			parts = append(parts, fmt.Sprintf("%s timeout %dms", addr, d.Timeout/time.Millisecond))
 		}
 	}
 	return strings.Join(parts, ", ")

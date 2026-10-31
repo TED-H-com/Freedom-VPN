@@ -1,13 +1,19 @@
 package agent
 
 import (
+	"bufio"
 	"context"
 	"encoding/json"
 	"fmt"
 	"net/netip"
+	"os"
+	"os/exec"
 	"reflect"
+	"regexp"
+	"slices"
 	"strconv"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -260,6 +266,17 @@ func (ex *renderedExecutor) Output(ctx context.Context, name string, args ...str
 		if err := ex.fold(); err != nil {
 			return nil, err
 		}
+		if strings.Join(args, " ") == "list set inet fvpn allowed_v4" {
+			set := ex.table.sets["allowed_v4"]
+			if set == nil {
+				return nil, fmt.Errorf("missing allowed_v4")
+			}
+			body := ""
+			if len(set.elems) > 0 {
+				body = " elements = { " + strings.Join(set.elems, ", ") + " }"
+			}
+			return []byte("table inet fvpn { set allowed_v4 { type ipv4_addr flags timeout" + body + " } }"), nil
+		}
 		return ex.table.listingJSON()
 	}
 	return ex.revocationExecutor.Output(ctx, name, args...)
@@ -404,6 +421,13 @@ func (t *listedTable) applyLine(line string) error {
 	case "delete set":
 		delete(t.sets, name)
 		t.setOrder = dropName(t.setOrder, name)
+		return nil
+	case "flush chain":
+		ch := t.chains[name]
+		if ch == nil {
+			return fmt.Errorf("nft listing: flush missing chain %s", name)
+		}
+		ch.rules = nil
 		return nil
 	case "delete chain":
 		delete(t.chains, name)
@@ -741,4 +765,389 @@ func matchMeta(op, key, right string) map[string]any {
 		"left":  map[string]any{"meta": map[string]any{"key": key}},
 		"right": right,
 	}}
+}
+
+// TestD096_RealNetBird is launched by tests/netlab/scripts/gates.sh.
+// TLS control is the existing rig; NetBird, nft, tc, routes and packets are real.
+func TestD096_RealNetBird(t *testing.T) {
+	if os.Getenv("FVPN_REAL_NETBIRD") != "1" {
+		t.Skip("requires isolated real-NetBird netlab")
+	}
+	if _, err := os.Stat("/.dockerenv"); err != nil {
+		t.Fatal("requires container")
+	}
+	raw, err := os.ReadFile("/scratch/real-netbird/peers.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var peers map[string]string
+	if err := json.Unmarshal(raw, &peers); err != nil {
+		t.Fatal(err)
+	}
+	run := func(name string, args ...string) string {
+		t.Helper()
+		b, err := exec.CommandContext(t.Context(), name, args...).CombinedOutput()
+		if err != nil {
+			t.Fatalf("lab command %s: %v %s", name, err, b)
+		}
+		return string(b)
+	}
+	r := newRig(t)
+	alignControlClock(r)
+	serveBoundGeneration(t, r)
+	r.manualUsage(t)
+	r.eng.cfg.Datapath.MemberIngress = "fvnb0"
+	r.eng.prober = &verProbe{version: "0.82.0"}
+	binding := oneBinding(r.clock.Wall())
+	binding.AllowedIpv4 = []string{peers["fv-member"] + "/32"}
+	r.srv.SetFixture(generationFixture(3, binding))
+	p := &followup14Plane{}
+	r.eng.plane = p
+	r.eng.memberPath = nil
+	r.eng.cfg.HeartbeatSeconds, r.eng.cfg.PollSeconds = 1, 1
+	r.eng.withdraw(t.Context())
+	stepOK(t, r)
+	if !r.eng.serving {
+		t.Fatalf("real Apply failed: %+v; summary=%s", r.eng.decision.Errors, p.result.Evidence.ReportDetail())
+	}
+	t.Logf("initial generation=3 topology_addresses=%d topology_routes=%d tc=%s", len(r.eng.memberPath.Addresses), len(r.eng.memberPath.Routes), p.result.Evidence.ReportDetail())
+	// Reproduce the isolation interface-change sequence without planted tc state.
+	for cycle := range 10 {
+		run("ip", "link", "add", "fvisotest", "type", "dummy")
+		run("ip", "addr", "add", "198.51.100.10/32", "dev", "fvisotest")
+		run("ip", "link", "set", "fvisotest", "up")
+		stepOK(t, r)
+		run("ip", "link", "del", "fvisotest")
+		stepOK(t, r)
+		if !r.eng.serving {
+			t.Fatalf("ISO-F6-01 cycle=%d summary=%s errors=%+v", cycle, p.result.Evidence.ReportDetail(), r.eng.decision.Errors)
+		}
+	}
+	t.Log("ISO-F6-01: 10 real-NetBird interface add/remove + Apply cycles passed, no foreign object planted")
+	// Capture headers only on the isolated uplink. Traffic is from the real peer
+	// to this node's overlay address; the planted redirect is the positive control.
+	capture := exec.CommandContext(t.Context(), "tcpdump", "-l", "-nn", "-q", "-e", "-tt", "-i", "fv-ih", "ether[0] == 0x45 and ether[9] == 17 and ether[22:2] == 39997")
+	var packets followup14Buffer
+	capture.Stdout = &packets
+	pipe, err := capture.StderrPipe()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := capture.Start(); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = capture.Process.Kill(); _ = capture.Wait() })
+	scan := bufio.NewScanner(pipe)
+	ready := false
+	for scan.Scan() {
+		if strings.Contains(scan.Text(), "listening on") {
+			ready = true
+			break
+		}
+	}
+	if !ready {
+		t.Fatal("capture unavailable")
+	}
+	var captureStats strings.Builder
+	captureDone := make(chan struct{})
+	go func() {
+		defer close(captureDone)
+		for scan.Scan() {
+			captureStats.WriteString(scan.Text() + "\n")
+		}
+	}()
+	sender := exec.CommandContext(t.Context(), "ip", "netns", "exec", "fv-member", "python3", "-u", "-c", `import socket,time,sys
+s=socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
+s.bind(('',40000))
+while True:
+ s.sendto(b'TEST ONLY D096', (sys.argv[1],39997));time.sleep(.01)
+`, peers["fv-node"])
+	if err := sender.Start(); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = sender.Process.Kill(); _ = sender.Wait() })
+	var latencies []time.Duration
+	for cycle := range 10 {
+		beforePositive := packets.Count()
+		run("tc", "qdisc", "add", "dev", "fvnb0", "clsact")
+		run("tc", "filter", "add", "dev", "fvnb0", "ingress", "pref", "1", "matchall", "action", "mirred", "egress", "redirect", "dev", "fv-ih")
+		time.Sleep(250 * time.Millisecond)
+		positive := packets.Count() - beforePositive
+		if positive == 0 {
+			t.Fatal("real peer redirect positive control produced no packet")
+		}
+		stepOK(t, r)
+		if mustBeat(t, r).Serving || r.eng.containment == nil || !r.eng.containment.Quarantine.Quarantined {
+			t.Fatal("quarantine failed")
+		}
+		time.Sleep(100 * time.Millisecond) // drain capture stdout before the down interval
+		downStart := packets.Count()
+		var downAddresses []struct {
+			Addresses []json.RawMessage `json:"addr_info"`
+		}
+		if err := json.Unmarshal([]byte(run("ip", "-j", "addr", "show", "dev", "fvnb0")), &downAddresses); err != nil {
+			t.Fatal(err)
+		}
+		var downRoutes []struct {
+			Flags []string `json:"flags"`
+		}
+		if err := json.Unmarshal([]byte(run("ip", "-j", "-4", "route", "show", "table", "all", "dev", "fvnb0")), &downRoutes); err != nil {
+			t.Fatal(err)
+		}
+		downFlags := 0
+		for _, route := range downRoutes {
+			if slices.Contains(route.Flags, "linkdown") {
+				downFlags++
+			}
+		}
+		t.Logf("D096 cycle=%d while_down_addresses=%d routes4=%d linkdown_routes=%d", cycle+1, len(downAddresses[0].Addresses), len(downRoutes), downFlags)
+		raises := 0
+		started := time.Now()
+		for time.Since(started) < 5*time.Second {
+			b := run("ip", "-j", "link", "show", "dev", "fvnb0")
+			var links []struct {
+				Flags []string `json:"flags"`
+			}
+			if err := json.Unmarshal([]byte(b), &links); err != nil {
+				t.Fatal(err)
+			}
+			if len(links) == 1 && slices.Contains(links[0].Flags, "UP") {
+				raises++
+			}
+			time.Sleep(20 * time.Millisecond)
+		}
+		downPackets := packets.Count() - downStart
+		_, pathErr := p.MemberPath(t.Context(), *r.eng.appliedModel, r.eng.memberPath)
+		// Read the engine's actual evidence before the recovery removes it.
+		t.Logf("D096 cycle=%d positive_redirect_frames=%d down_ms=%d link_up_samples=%d down_uplink_packets=%d member_path_check=%v heartbeat_serving=%t containment=%s", cycle+1, positive, time.Since(started).Milliseconds(), raises, downPackets, pathErr, mustBeat(t, r).Serving, r.eng.containmentJSON())
+		if raises != 0 || downPackets != 0 {
+			t.Fatalf("unexpected natural link raise or bypass; packets=%s", packets.String())
+		}
+		run("tc", "filter", "del", "dev", "fvnb0", "ingress", "pref", "1")
+		run("tc", "qdisc", "del", "dev", "fvnb0", "clsact")
+		p.raised = time.Time{}
+		p.raiseStarted = time.Time{}
+		stepOK(t, r)
+		if !mustBeat(t, r).Serving {
+			t.Fatalf("recovery stayed blocked: %+v", r.eng.decision.Errors)
+		}
+		if p.raiseStarted.IsZero() || p.pathOK.Before(p.raised) {
+			t.Fatal("missing link-up/topology timing")
+		}
+		latencies = append(latencies, p.pathOK.Sub(p.raiseStarted))
+		t.Logf("D096 cycle=%d raise_command_to_topology_verified_us=%d addresses=%d routes=%d", cycle+1, latencies[len(latencies)-1].Microseconds(), len(r.eng.memberPath.Addresses), len(r.eng.memberPath.Routes))
+	}
+	slices.Sort(latencies)
+	t.Logf("D096 cycles=10 natural_raise_cycles=0 quarantine_observation_seconds=50 poll_ms=20 raise_command_to_path_median_us=%d worst_us=%d (upper bounds including verification; IPv4 retained; no harness route/address repair)", (latencies[4]+latencies[5]).Microseconds()/2, latencies[9].Microseconds())
+	// A deliberate real NetBird reconnect recreates its own link and removes
+	// the foreign attachment. Cancel the deciding Step's control context:
+	// deferred containment must still run, without authorizing a clean Apply.
+	var raceWindows []time.Duration
+	for cycle := range 10 {
+		run("tc", "qdisc", "add", "dev", "fvnb0", "clsact")
+		run("tc", "filter", "add", "dev", "fvnb0", "ingress", "pref", "1", "matchall", "action", "mirred", "egress", "redirect", "dev", "fv-ih")
+		stepOK(t, r)
+		readInput := func() uint64 {
+			b := run("nft", "-j", "list", "ruleset")
+			rs, err := enforce.ParseRuleset([]byte(b))
+			if err != nil {
+				t.Fatal(err)
+			}
+			return rs.Counters["ctin"].Packets
+		}
+		time.Sleep(100 * time.Millisecond)
+		packetStart := packets.Count()
+		inputBefore := readInput()
+		run("netbird", "--daemon-addr", "unix:///scratch/real-netbird/node.sock", "down")
+		lastDown := time.Now()
+		reconnectStart := lastDown
+		up := exec.CommandContext(t.Context(), "netbird", "--daemon-addr", "unix:///scratch/real-netbird/node.sock", "up")
+		if err := up.Start(); err != nil {
+			t.Fatal(err)
+		}
+		var firstUp time.Time
+		for time.Since(reconnectStart) < 15*time.Second {
+			sampledAt := time.Now()
+			raw, _ := exec.CommandContext(t.Context(), "ip", "-j", "link", "show", "dev", "fvnb0").Output()
+			var links []struct {
+				Flags []string `json:"flags"`
+			}
+			if json.Unmarshal(raw, &links) == nil && len(links) == 1 && slices.Contains(links[0].Flags, "UP") {
+				firstUp = time.Now()
+				break
+			}
+			lastDown = sampledAt
+			time.Sleep(20 * time.Millisecond)
+		}
+		if err := up.Wait(); err != nil {
+			t.Fatal("NetBird reconnect failed")
+		}
+		if firstUp.IsZero() {
+			t.Fatal("NetBird did not raise link")
+		}
+		// Interface creation precedes peer handshake readiness. Keep capture
+		// running throughout and require real ingress before evaluating this
+		// window; silence during reconnect cannot prove baseline containment.
+		trafficDeadline := time.Now().Add(10 * time.Second)
+		for readInput() <= inputBefore && time.Now().Before(trafficDeadline) {
+			time.Sleep(50 * time.Millisecond)
+		}
+		if readInput() <= inputBefore {
+			t.Fatal("real peer did not reconnect within traffic readiness bound")
+		}
+		trafficReady := time.Now()
+		_, pathErr := p.MemberPath(t.Context(), *r.eng.appliedModel, r.eng.memberPath)
+		// Read current VerifyServing too: a topology pass is not an admission pass.
+		_, serveErr := p.VerifyServing(t.Context(), *r.eng.appliedModel, r.eng.appliedAssignments)
+		p.lowered = time.Time{}
+		time.Sleep(time.Second)
+		canceled, cancel := context.WithCancel(t.Context())
+		cancel()
+		if err := r.eng.Step(canceled); err != context.Canceled {
+			t.Fatalf("canceled Step: %v", err)
+		}
+		end := p.lowered
+		if end.IsZero() || mustBeat(t, r).Serving || !r.eng.containment.Quarantine.Quarantined {
+			t.Fatal("reconnect was not re-contained")
+		}
+		time.Sleep(100 * time.Millisecond)
+		frames := packets.Count() - packetStart
+		inputDrops := readInput() - inputBefore
+		raceWindows = append(raceWindows, p.lowerStarted.Sub(firstUp))
+		t.Logf("D096 reconnect_cycle=%d link_raise_window_lower_us=%d upper_us=%d link_up_to_traffic_ready_us=%d d096_during_window=%v serving_verify=%v unmetered_frames=%d input_drop_packets=%d heartbeat_serving=%t quarantine_before_up=%t quarantine_after_up=%t", cycle+1, p.lowerStarted.Sub(firstUp).Microseconds(), end.Sub(lastDown).Microseconds(), trafficReady.Sub(firstUp).Microseconds(), pathErr, serveErr, frames, inputDrops, mustBeat(t, r).Serving, r.eng.containment.Quarantine.Links[0].Before.AdminUp, r.eng.containment.Quarantine.Links[0].After.AdminUp)
+		if inputDrops == 0 {
+			t.Fatal("no real peer ingress during reconnect window")
+		}
+		if frames != 0 {
+			t.Fatalf("reconnect baseline leaked: %s", packets.String())
+		}
+		stepOK(t, r)
+		if !mustBeat(t, r).Serving {
+			t.Fatalf("post-reconnect recovery failed: errors=%+v reasons=%+v tc=%s containment=%s", r.eng.decision.Errors, r.eng.decision.Reasons, p.result.Evidence.ReportDetail(), r.eng.containmentJSON())
+		}
+	}
+	slices.Sort(raceWindows)
+	t.Logf("D096 deliberate_reconnects=10 raise_cycles=10 window_median_us=%d worst_us=%d cadence=1s step_context=canceled foreign_attachment_removed_by_NetBird=true", (raceWindows[4]+raceWindows[5]).Microseconds()/2, raceWindows[9].Microseconds())
+	_ = sender.Process.Kill()
+	_ = sender.Wait()
+	if err := capture.Process.Signal(os.Interrupt); err != nil {
+		t.Fatal(err)
+	}
+	select {
+	case <-captureDone:
+	case <-time.After(3 * time.Second):
+		t.Fatal("capture did not flush")
+	}
+	if err := capture.Wait(); err != nil {
+		t.Fatal(err)
+	}
+	captured := regexp.MustCompile(`(?m)^(\d+) packets captured$`).FindStringSubmatch(captureStats.String())
+	dropped := regexp.MustCompile(`(?m)^(\d+) packets dropped by kernel$`).FindStringSubmatch(captureStats.String())
+	if len(captured) != 2 || len(dropped) != 2 || dropped[1] != "0" {
+		t.Fatal("capture completeness unproved")
+	}
+	n, err := strconv.Atoi(captured[1])
+	if err != nil || n != packets.Count() {
+		t.Fatal("capture header count mismatch")
+	}
+	t.Logf("D096 capture_complete=true captured_redirect_frames=%d kernel_capture_drops=0 packet=TEST_ONLY_IPv4_UDP_40000_to_39997_length42 raw_IPv4_on_Ethernet=true", n)
+
+}
+
+type followup14Plane struct {
+	SystemPlane
+	result       enforce.ApplyResult
+	raised       time.Time
+	raiseStarted time.Time
+	lowerStarted time.Time
+	lowered      time.Time
+	pathOK       time.Time
+}
+
+func (p *followup14Plane) Apply(ctx context.Context, m enforce.Model, prev map[string]enforce.CounterValue) (enforce.ApplyResult, error) {
+	p.SystemPlane.Executor = &followup14Executor{plane: p}
+	res, err := p.SystemPlane.Apply(ctx, m, prev)
+	p.result = res
+	return res, err
+}
+func (p *followup14Plane) MemberPath(ctx context.Context, m enforce.Model, expected *MemberPath) (MemberPath, error) {
+	path, err := p.SystemPlane.MemberPath(ctx, m, expected)
+	if err == nil {
+		p.pathOK = time.Now()
+	}
+	return path, err
+}
+
+type followup14Executor struct {
+	enforce.System
+	plane *followup14Plane
+}
+
+func (ex *followup14Executor) Output(ctx context.Context, name string, args ...string) ([]byte, error) {
+	started := time.Now()
+	b, err := ex.System.Output(ctx, name, args...)
+	if name == "ip" && strings.Join(args, " ") == "link set dev fvnb0 up" && err == nil {
+		ex.plane.raised = time.Now()
+		ex.plane.raiseStarted = started
+	}
+	if name == "ip" && strings.Join(args, " ") == "link set dev fvnb0 down" && err == nil && ex.plane.lowered.IsZero() {
+		ex.plane.lowered = time.Now()
+		ex.plane.lowerStarted = started
+	}
+
+	return b, err
+}
+
+type followup14Buffer struct {
+	mu sync.Mutex
+	b  strings.Builder
+}
+
+func (b *followup14Buffer) Write(p []byte) (int, error) {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	return b.b.Write(p)
+}
+func (b *followup14Buffer) Count() int {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	count := 0
+	for _, line := range strings.Split(b.b.String(), "\n") {
+		fields := strings.Fields(line)
+		if len(fields) > 0 {
+			if _, err := strconv.ParseFloat(fields[0], 64); err == nil {
+				count++
+			}
+		}
+	}
+	return count
+}
+func (b *followup14Buffer) String() string { b.mu.Lock(); defer b.mu.Unlock(); return b.b.String() }
+
+// Diagnostic reproduction for agent-core 23. The original rejected object's
+// identity is not recoverable from ISO-F6-01; this proves the subsequent latch.
+func TestISO_F6_RetainedFailureBlocksNewGeneration(t *testing.T) {
+	r := newRig(t)
+	alignControlClock(r)
+	serveBoundGeneration(t, r)
+	p := &revocationPlane{memPlane: r.plane}
+	r.eng.plane = p
+	stepOK(t, r)
+	p.ex.foreignTC = true
+	stepOK(t, r)
+	if r.eng.applyError == nil || r.eng.applyError.Code != api.ErrorCodeTCFOREIGNFILTER {
+		t.Fatal("fixture did not reject tc")
+	}
+	p.ex.foreignTC = false
+	// The reported capacity update was after the tc rejection. Model that order.
+	r.srv.SetFixture(generationFixture(3, oneBinding(r.clock.Wall())))
+	applies, renewals := len(p.results), r.srv.LeaseRenewals()
+	for range 5 {
+		r.clock.Advance(time.Second)
+		stepOK(t, r)
+	}
+	if r.eng.serving || r.eng.appliedGen != 2 || r.eng.desired.ConfigGeneration != 3 || r.eng.lease.ConfigGeneration != 2 || len(p.results) != applies || r.srv.LeaseRenewals() != renewals || r.eng.needRenew() {
+		t.Fatalf("latch reproduction changed: serving=%t applied=%d desired=%s lease=%s apply_calls=%d renewals=%d", r.eng.serving, r.eng.appliedGen, r.eng.desired.ConfigGeneration, r.eng.lease.ConfigGeneration, len(p.results)-applies, r.srv.LeaseRenewals()-renewals)
+	}
+	t.Log("ISO-F6-01 recovery latch: foreign tc removed; desired=3 applied=2 lease=2; 5 steps / 5s; new Apply calls=0 renewals=0 needRenew=false; retained TC_FOREIGN_FILTER + policy_missing")
 }
