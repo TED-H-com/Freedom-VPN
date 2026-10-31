@@ -51,6 +51,7 @@ func TestUpdatesFollowup(t *testing.T) {
 	if err != nil {
 		t.Fatal("harness source listing failed")
 	}
+	paths = append(paths, filepath.Join(root, "tests/e2e/at/updates/run.py"), filepath.Join(root, "tests/e2e/at/updates/supplemental.py"))
 	for _, path := range paths {
 		raw, err := os.ReadFile(path)
 		if err != nil {

@@ -79,7 +79,8 @@ def transport(rec, obs):
 def origin(rec, obs):
     if obs['fixture_retired']['lifecycle_state'] != 'retired':
         raise RuntimeError('refusing uncached probe on an active installer fixture')
-    current = read('readlink', '/opt/vpn-node/current')
+    current_link = read('readlink', '/opt/vpn-node/current')
+    current = read('readlink', '-f', '/opt/vpn-node/current')
     release = current.rsplit('/', 1)[1]
     manifest = STAGING + release + '.manifest.json'
     envelope = json.loads(read('cat', manifest))
@@ -107,7 +108,8 @@ def origin(rec, obs):
     after = json.loads(read(UPDATER, 'status', '--config', CONFIG))
     restored = read('sha256sum', cache) == cache_hash
     unchanged_config = read('sha256sum', CONFIG) == config_hash
-    unchanged_current = read('readlink', '/opt/vpn-node/current') == current
+    unchanged_current = (read('readlink', '/opt/vpn-node/current') == current_link
+                         and read('readlink', '-f', '/opt/vpn-node/current') == current)
     changed = sorted(k for k in before.keys() | after.keys() if before.get(k) != after.get(k))
     ok = (seed['exit'] == 0 and restored and unchanged_config and unchanged_current
           and changed == ['seeded_baseline'] and not private and not cgnat
@@ -117,6 +119,7 @@ def origin(rec, obs):
         scope='TEST ONLY post-handoff uncached seed of retired installer fixture; no apply or central acceptance claim',
         artifact_url=artifact['url'], config=obs['generated_config'],
         cache_sha256_before=cache_hash.split()[0], current_before=current,
+        current_link_before=current_link,
         status_before=before, seed_without_cache=seed, cache_restored_identical=restored,
         generated_config_unchanged=unchanged_config, status_after=after,
         status_unchanged=before == after, current_unchanged=unchanged_current,
@@ -124,7 +127,8 @@ def origin(rec, obs):
         passed=ok, resolved_origin=dict(hostname=hostname, is_rfc1918=private, is_cgnat=cgnat,
             classification='controlled Docker origin; address omitted',
             address_sha256=hashlib.sha256(address.encode()).hexdigest()),
-        decision='No rejection and no new origin input: allowed_artifact_origins grants private/CGNAT exceptions, not a universal host restriction. Cache restored; only verified seeded_baseline added.',
+        decision=('No rejection and no new origin input: allowed_artifact_origins grants private/CGNAT exceptions, not a universal host restriction. Cache restored; only verified seeded_baseline added.'
+                  if ok else 'Probe incomplete; inspect the command exit, stderr and state comparisons. No successful download or new origin input is inferred.'),
         stimulus=dict(cache_path=cache, held_path=held,
             steps=['Read retained signed manifest for current and record status/config/cache hashes.',
                    'Move only the retained archive to a held sibling; run recorded seed with unchanged generated config.',
