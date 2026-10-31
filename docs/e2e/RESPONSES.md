@@ -907,80 +907,90 @@ positive upgrade assertions. No updater behavior or assertion is relaxed.
 
 ## netlab / members — 2026-10-31 (follow-up 22, F8-02, D-102)
 
-> **2026-10-31 — devstack/native transport owner, F8-02:**
+> **2026-10-31 — native transport owner, F8-02:**
 
 The original members IPv4/1500 → IPv6/1500 → dual/1500 → dual/1280 mutation
-and down/up sequence now has member-underlay/tunnel, selected-node-underlay/
-tunnel/uplink and origin header captures. [Run 004d6156](runs/2026-10-31/followup22/README.md)
-retains **12/0/1**, process exit **1**. Its original four rows pass, including
-an IPv6-selected 1280 row whose reverse data packets stay at 1,152 bytes.
-The separately labeled IPv6 asymmetric row fails at **10,010 / 64,064 bytes
-in 12,007 ms**. It retains the unchanged member-only MTU mutation, not a
-replacement for either historical failing row.
+and down/up sequence now retains member underlay/tunnel, selected node
+underlay/tunnel/uplink and origin captures. Both fresh campaigns' original
+four rows pass; selected family and packet sizing are reported per row. The
+member-only MTU mutation is unchanged. Devstack 20 `cce1a688` and members 11
+IPv6 history remain untouched. Supplemental asymmetric IPv6 rows retain the
+failure: first run **10,010 / 64,064 bytes, 12,007 ms**; final run **16,016 /
+64,064 bytes, 12,011 ms**. Process exits stay **1**; criteria were not weakened.
 
-The [header analysis](runs/2026-10-31/followup22/004d6156-3a1f-408c-ab1a-087a971965c3/headers/analysis.json)
-finds **23** reverse outer IPv6 packets of **1,360 bytes** at node eth2 and
-**zero** at member eth1; every smaller packet arrives. The first absent TCP
-range is **[3516855168,3516856396)**. It is at origin and node tunnel egress,
-never member tunnel ingress. All **52** upload fragment pairs arrive. All
-three namespace captures have zero drops/truncations; **PTB = 0** everywhere.
-This corroborates netlab 21 beyond enforcement. Receive-link rejection is
-an inference from capture location/size, not a captured kernel drop reason.
+[Final capture analysis](runs/2026-10-31/followup22/9b3a89e7-fa86-426c-9737-ce55bf66aa77/analysis.md)
+finds all **15** reverse outer IPv6 packets of **1,360 bytes** absent at member
+underlay, while every smaller selected-endpoint packet arrives. First absent
+TCP range **[3005476689,3005477917)** is at origin and node tunnel egress,
+not member tunnel ingress. All 52 upload fragment pairs arrive. The first
+campaign independently lost all **23** oversized reverse packets. Captures
+have zero drops/truncations. Loss is beyond enforcement; receive-link MTU
+rejection is an inference, not a recorded kernel drop reason.
 
-A separate fixture-only `/128` sender route with MTU **1280** makes the path
-constraint explicit. The same selected IPv6 peer remains connected; there is
-no intervening reconnect, global MTU/MSS change, policy edit or health repair.
-The formerly absent range reaches member tunnel packet **34** as the old
-connection retransmits after the route constraint. Both reverse IPv6 fragments
-(**1,280 + 136** bytes) match across the link. The new bulk connection separately
-completes **64,064 bytes in 3 ms**, using smaller reverse packets. The old timed-out
-application is not claimed recovered. No PTB is observed or injected: this
-proves behavior with a known per-peer route constraint, not reactive PMTU learning.
+A separate fixture-only selected sender `/128` route with **MTU 1280** makes
+the path constraint explicit. Same peer, no reconnect or global MTU/MSS change.
+Route readbacks prove installation and exact removal. The final three controls
+receive **64,064 bytes in 1 ms** each; controls 1 and 3 deliver respectively
+**7 and 44 reverse fragment pairs**, joined across the underlay, with complete
+current-bulk TCP byte coverage. This strengthens the first campaign's separate
+old-flow fragment receipt and new-flow success. **No PTB is seen at node,
+tunnel or any other capture point**: sender fragmentation follows known route
+MTU, not measured reactive PMTU discovery. A route constraint was chosen to
+isolate sender sizing without introducing router/ICMP behavior.
 
-The member-only topology is labeled an **asymmetric receive-link fixture
-artifact**. It has no router to advertise a path limit and does not certify a
-real member-platform link. If that real-platform case is established later,
-known-peer MTU/packetization belongs to the pinned NetBird/WireGuard transport
-integration (binary pin in `deploy/devstack/Dockerfile.node`), not an enforcement
-MSS clamp. No production change or global default is requested from this fixture
-alone. The route-control export and its exact cleanup are in the
-[export contract](scenarios/harness-exports.md#follow-up-22--selected-native-path-capture-test-only).
+This member-only topology is an **asymmetric receive-link fixture artifact**;
+it has no router or sender signal and does not certify a real platform link.
+If a real known-1280 receiver is established, peer MTU/packetization belongs
+to pinned NetBird/WireGuard integration (`deploy/devstack/Dockerfile.node`),
+not an enforcement MSS clamp. No production default or repair is inferred.
 
-D-098 was committed first as `716f8144`: [63 immutable pins](followup21-archive.sha256).
-Devstack 20 `cce1a688`, members 11 and all older evidence stay unchanged.
-The DNS third-node/installer `.24` collision remains handled by **separate
-reset stacks**; the slot layout is unchanged.
+D-098 was first, commit `716f8144`: [63 immutable pins](followup21-archive.sha256).
+The DNS third-node / installer `.24` collision remains handled by **separate
+reset stacks**; slot layout is unchanged.
 
 ## members / netlab — 2026-10-31 (follow-up 22, F11-01, D-102)
 
-> **2026-10-31 — devstack 21, F11-01:**
+> **2026-10-31 — members 12 and native transport owner, F11-01:**
 
-`StartNativeCapture`, `NativeCapture.Sample` and `NativeCapture.Stop` are
-available through `labstack`, including on `MemberTransportStack`'s selected
-member/node. Start before the existing route-selection call; retain snapshots
-during selection and the original transfer. [The contract](scenarios/harness-exports.md#follow-up-22--selected-native-path-capture-test-only)
-specifies per-hop monotonic command/capture bounds, route-get/link readbacks,
-selected peer/ICE/relay metadata, exact pcap export receipts and payload-free
-header/hash decoding. Unknown endpoints, failed reads and capture drops remain
-explicit. It never reconnects, chooses an exit, waits for serving or generates
-traffic. Members 12 owns its adoption in `tests/e2e/at/members/forwarding_test.go`;
-that file and all recipient evidence/registers are untouched.
+`StartNativeCapture`, `Sample`, `Stop` and selected-peer readbacks are available
+through `labstack` / `MemberTransportStack`. The [export contract](scenarios/harness-exports.md#follow-up-22--selected-native-path-capture-test-only)
+specifies ready/stop and per-command monotonic bounds, route/link/ICE/relay/
+WireGuard endpoint readbacks, private pcap receipts and payload-free joins.
+Start before the existing route selection; sample during selection and the
+original transfer. It does not reconnect, select an exit, wait for serving or
+repair transport. Members 12 owns adoption in
+`tests/e2e/at/members/forwarding_test.go`; that file is unchanged.
 
-The fresh [first-selection sample](runs/2026-10-31/followup22/004d6156-3a1f-408c-ab1a-087a971965c3/initial-selection.md)
-passes with **one SYN**, not five failed packets. Sequence **3425414161** is at
-member tunnel packet 13, node tunnel 95, node uplink 102 and origin 27; the
-HTTP request takes **6 ms**, with an origin receipt and increasing device
-counters. It runs before the ordinary counted-flow retry. Native status is
-pending around selection and later reports Relayed. An empty ICE endpoint
-cannot be treated as a node fault. The full members 11 prior history was not
-replayed; these packets cannot replace the original five.
+The [final fresh reproduction](runs/2026-10-31/followup22/9b3a89e7-fa86-426c-9737-ce55bf66aa77/analysis.md)
+has **five SYNs**, sequence **1392714787**, source port 20001: member tunnel
+packets **8, 144, 155, 160, 163**. None reaches node inner ingress or origin.
+The HTTP attempt fails after **5,004 ms**; origin requests = 0, node upload /
+download remain **0 → 0**, generation **5**, heartbeat serving=true. It runs
+before the ordinary counted-flow retry. No node health repair is applied.
 
-Therefore F11-01's historical first-unconfirmed interval remains **after member
-tunnel egress, before observable selected-node ingress**. No transport or node
-fault is assigned. Members 12 must join its own future failing five to these
-outer captures/readbacks before narrowing that interval. The first campaign's
-origin interface readback was unavailable, and its `wg` utility absent; those
-reads are explicitly false. The completed observer supplies those tools,
-selects the actual tunnel name and samples during the first transfer. Public
-packet monotonic intervals are empirical clock projections with stated
-wall-clock-stability assumptions, not invented hardware or kernel-commit times.
+The first SYN's WireGuard initiation (member lo packet 9) has the same message
+hash/index as node lo packet 133. Node eth2 packet 134 responds; the identical
+response reaches member eth1 packet 137. Its IPv6 **source is loopback**, token
+`addr-eff8e7ca506627fe`, distinct from the selected node endpoint. No structurally
+valid WireGuard type-4 transport-data message appears at member (including lo)
+or node during the request. Readbacks transition from local endpoint/pending
+to IPv6 P2P connected while all subsequent inner SYNs still fail. The first
+unconfirmed data step in this reproduction is **member inner tunnel egress →
+observable WireGuard transport-data emission**, before node inner ingress.
+The handshake response reaching member underlay does not prove kernel/session
+acceptance. This is not evidence of an enforcement fault.
+
+All three captures are complete (167 / 172 / 30 records), zero drops/truncation;
+metadata reads now succeed. Every packet has an empirical monotonic interval
+with explicit wall-clock stability assumptions. Node's later handshake tail
+is after the member capture stopped and cannot prove receiver loss/recovery.
+The loopback-source response and endpoint transition are handed to the
+**native NetBird/WireGuard integration owner** (NetBird 0.82.0 binary pin in
+`deploy/devstack/Dockerfile.node`; `node/agent/probe.go` only observes status).
+Please trace handshake/session acceptance before assigning a fault or repair.
+
+The first campaign's one-SYN success and missing origin/WireGuard readbacks
+remain retained as history. The final run reproduces the failure pattern on
+a fresh stack; it does not replay all members 11 history or identify those
+historical packet identities. Members 12 should compare its own original
+sequence using these exports before transferring a root-cause conclusion.

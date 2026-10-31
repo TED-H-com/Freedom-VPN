@@ -10,6 +10,31 @@ ignored disk copies. The two loose members analysis files have immutable
 copies under `followup21-archive`. Earlier follow-ups, devstack 20's `cce1a688`
 and members 11's IPv6 row are unchanged.
 
+[155 evidence pins](../../../followup22-captures.sha256) cover only immutable
+UUID run subtrees. [Gate receipts](gates.md) retain the real live failures and
+passing offline checks. D-102 handoffs are in [RESPONSES](../../../RESPONSES.md).
+
+## Final campaign: five SYNs located and reverse fragmentation demonstrated
+
+[Run 9b3a89e7](9b3a89e7-fa86-426c-9737-ce55bf66aa77/analysis.md), source `a1796b0d`, retains
+**13 pass / 0 blocked / 2 fail**, process exit **1**. All original mutation rows
+pass; the supplemental asymmetric IPv6 row fails at **16,016 / 64,064 bytes**.
+All **15** reverse 1,360-byte packets are absent at member underlay while every
+smaller packet arrives. Three explicit per-peer route-MTU controls complete
+64,064 bytes each; the final control delivers **44 reverse fragment pairs**.
+No PTB appears. Complete metadata is now available at every capture point.
+
+The initial selection reproduces **five SYNs** at member tunnel egress, none
+at node inner ingress or origin, zero device counters at generation 5. The
+member initiation joins to node loopback; the matching IPv6 response reaches
+member underlay with a **loopback source address**. No WireGuard transport-data
+message follows within the request. The first unconfirmed data step is member
+inner egress → observable transport-data emission. This narrows a fresh
+reproduction; it does not reconstruct the five historical packets or assign
+an enforcement fault. The full packet/monotonic table and transport-owner
+handoff are in the linked analysis. All 27 final captures have zero drops or
+truncations. Post-run WireGuard header decoding is revision `bf82cbe4`.
+
 ## First campaign: retained failure and explicit-path control
 
 Run [004d6156](004d6156-3a1f-408c-ab1a-087a971965c3/ipv6-asymmetric.md), source
@@ -77,7 +102,7 @@ The native binary is selected in `deploy/devstack/Dockerfile.node`; the owned
 fixture changes the member link in `tests/e2e/native_underlay.go`. This task
 neither chooses a production MTU nor asserts a production repair.
 
-## F11-01: first use is observed, historical five are not reconstructed
+## First campaign F11-01: successful one-SYN sample
 
 [Initial selection](004d6156-3a1f-408c-ab1a-087a971965c3/initial-selection.md)
 starts captures before selecting the product-created exit. It retains route

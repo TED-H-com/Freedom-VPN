@@ -1,0 +1,5515 @@
+{
+  "schema": "native-capture-analysis-v1",
+  "rows": [
+    {
+      "id": "initial-selection",
+      "run_id": "9b3a89e7-fa86-426c-9737-ce55bf66aa77",
+      "source_commit": "a1796b0d2be7f0ef068f66347fccb11d55ed58a4",
+      "status": "fail",
+      "clock_offsets": {
+        "member": {
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "pairs": 462,
+          "offset_lower_ns": "-1793416462483633886",
+          "offset_upper_ns": "-1793416462483628113",
+          "measured_offset_span_ns": "5773",
+          "assumption": "No intervening wall-clock step; empirical offset envelope, not hardware packet timestamps. Pcap microsecond quantization adds 1000 ns."
+        },
+        "node": {
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "pairs": 464,
+          "offset_lower_ns": "-1793416462483629822",
+          "offset_upper_ns": "-1793416462483628400",
+          "measured_offset_span_ns": "1422",
+          "assumption": "No intervening wall-clock step; empirical offset envelope, not hardware packet timestamps. Pcap microsecond quantization adds 1000 ns."
+        },
+        "origin": {
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "pairs": 160,
+          "offset_lower_ns": "-1793416462483629679",
+          "offset_upper_ns": "-1793416462483628531",
+          "measured_offset_span_ns": "1148",
+          "assumption": "No intervening wall-clock step; empirical offset envelope, not hardware packet timestamps. Pcap microsecond quantization adds 1000 ns."
+        }
+      },
+      "capture_checks": {
+        "member": {
+          "complete": true,
+          "decoded": 167,
+          "captured": 167,
+          "kernel_drops": 0
+        },
+        "node": {
+          "complete": true,
+          "decoded": 172,
+          "captured": 172,
+          "kernel_drops": 0
+        },
+        "origin": {
+          "complete": true,
+          "decoded": 30,
+          "captured": 30,
+          "kernel_drops": 0
+        }
+      },
+      "metadata_checks": {
+        "member": {
+          "links_and_origin_route": true,
+          "native_implementation_recorded": true
+        },
+        "node": {
+          "links_and_origin_route": true,
+          "native_implementation_recorded": true
+        },
+        "origin": {
+          "links_and_origin_route": true,
+          "native_implementation_recorded": true
+        }
+      },
+      "ptb": {
+        "member": [],
+        "node": [],
+        "origin": []
+      },
+      "fragmentation_needed": {
+        "member": [],
+        "node": [],
+        "origin": []
+      },
+      "selection_samples": [
+        "before-selection",
+        "selection-0",
+        "before-first-transfer",
+        "first-transfer-0",
+        "first-transfer-1",
+        "first-transfer-2",
+        "first-transfer-3",
+        "first-transfer-4",
+        "first-transfer-5",
+        "first-transfer-6",
+        "first-transfer-7",
+        "first-transfer-8",
+        "first-transfer-9",
+        "first-transfer-10",
+        "first-transfer-11",
+        "first-transfer-12",
+        "first-transfer-13",
+        "first-transfer-14",
+        "first-transfer-15",
+        "first-transfer-16",
+        "first-transfer-17",
+        "first-transfer-18",
+        "first-transfer-19",
+        "first-transfer-20",
+        "after-first-transfer",
+        "final"
+      ],
+      "hops": {
+        "member": [
+          {
+            "packet": 8,
+            "timestamp": "1793485082.974273",
+            "mono_lower_ns": "68620490639114",
+            "mono_upper_ns": "68620490645887",
+            "interface": "fvnb0",
+            "packet_type": 4,
+            "tcp": {
+              "src_port": 20001,
+              "dst_port": 443,
+              "seq": 1392714787,
+              "ack": 0,
+              "flags": 2,
+              "window": 64480,
+              "header_length": 40,
+              "length": 0,
+              "options": [
+                {
+                  "kind": 2,
+                  "length": 4,
+                  "mss": 1240
+                },
+                {
+                  "kind": 4,
+                  "length": 2
+                },
+                {
+                  "kind": 8,
+                  "length": 10,
+                  "tsval": 4167013189,
+                  "tsecr": 0
+                },
+                {
+                  "kind": 3,
+                  "length": 3,
+                  "window_scale": 10
+                }
+              ]
+            }
+          },
+          {
+            "packet": 144,
+            "timestamp": "1793485084.020789",
+            "mono_lower_ns": "68621537155114",
+            "mono_upper_ns": "68621537161887",
+            "interface": "fvnb0",
+            "packet_type": 4,
+            "tcp": {
+              "src_port": 20001,
+              "dst_port": 443,
+              "seq": 1392714787,
+              "ack": 0,
+              "flags": 2,
+              "window": 64480,
+              "header_length": 40,
+              "length": 0,
+              "options": [
+                {
+                  "kind": 2,
+                  "length": 4,
+                  "mss": 1240
+                },
+                {
+                  "kind": 4,
+                  "length": 2
+                },
+                {
+                  "kind": 8,
+                  "length": 10,
+                  "tsval": 4167014236,
+                  "tsecr": 0
+                },
+                {
+                  "kind": 3,
+                  "length": 3,
+                  "window_scale": 10
+                }
+              ]
+            }
+          },
+          {
+            "packet": 155,
+            "timestamp": "1793485085.044641",
+            "mono_lower_ns": "68622561007114",
+            "mono_upper_ns": "68622561013887",
+            "interface": "fvnb0",
+            "packet_type": 4,
+            "tcp": {
+              "src_port": 20001,
+              "dst_port": 443,
+              "seq": 1392714787,
+              "ack": 0,
+              "flags": 2,
+              "window": 64480,
+              "header_length": 40,
+              "length": 0,
+              "options": [
+                {
+                  "kind": 2,
+                  "length": 4,
+                  "mss": 1240
+                },
+                {
+                  "kind": 4,
+                  "length": 2
+                },
+                {
+                  "kind": 8,
+                  "length": 10,
+                  "tsval": 4167015260,
+                  "tsecr": 0
+                },
+                {
+                  "kind": 3,
+                  "length": 3,
+                  "window_scale": 10
+                }
+              ]
+            }
+          },
+          {
+            "packet": 160,
+            "timestamp": "1793485086.069663",
+            "mono_lower_ns": "68623586029114",
+            "mono_upper_ns": "68623586035887",
+            "interface": "fvnb0",
+            "packet_type": 4,
+            "tcp": {
+              "src_port": 20001,
+              "dst_port": 443,
+              "seq": 1392714787,
+              "ack": 0,
+              "flags": 2,
+              "window": 64480,
+              "header_length": 40,
+              "length": 0,
+              "options": [
+                {
+                  "kind": 2,
+                  "length": 4,
+                  "mss": 1240
+                },
+                {
+                  "kind": 4,
+                  "length": 2
+                },
+                {
+                  "kind": 8,
+                  "length": 10,
+                  "tsval": 4167016285,
+                  "tsecr": 0
+                },
+                {
+                  "kind": 3,
+                  "length": 3,
+                  "window_scale": 10
+                }
+              ]
+            }
+          },
+          {
+            "packet": 163,
+            "timestamp": "1793485087.092662",
+            "mono_lower_ns": "68624609028114",
+            "mono_upper_ns": "68624609034887",
+            "interface": "fvnb0",
+            "packet_type": 4,
+            "tcp": {
+              "src_port": 20001,
+              "dst_port": 443,
+              "seq": 1392714787,
+              "ack": 0,
+              "flags": 2,
+              "window": 64480,
+              "header_length": 40,
+              "length": 0,
+              "options": [
+                {
+                  "kind": 2,
+                  "length": 4,
+                  "mss": 1240
+                },
+                {
+                  "kind": 4,
+                  "length": 2
+                },
+                {
+                  "kind": 8,
+                  "length": 10,
+                  "tsval": 4167017308,
+                  "tsecr": 0
+                },
+                {
+                  "kind": 3,
+                  "length": 3,
+                  "window_scale": 10
+                }
+              ]
+            }
+          }
+        ],
+        "node": [],
+        "origin": []
+      },
+      "member_syns": [
+        {
+          "packet": 8,
+          "timestamp": "1793485082.974273",
+          "mono_lower_ns": "68620490639114",
+          "mono_upper_ns": "68620490645887",
+          "interface": "fvnb0",
+          "packet_type": 4,
+          "tcp": {
+            "src_port": 20001,
+            "dst_port": 443,
+            "seq": 1392714787,
+            "ack": 0,
+            "flags": 2,
+            "window": 64480,
+            "header_length": 40,
+            "length": 0,
+            "options": [
+              {
+                "kind": 2,
+                "length": 4,
+                "mss": 1240
+              },
+              {
+                "kind": 4,
+                "length": 2
+              },
+              {
+                "kind": 8,
+                "length": 10,
+                "tsval": 4167013189,
+                "tsecr": 0
+              },
+              {
+                "kind": 3,
+                "length": 3,
+                "window_scale": 10
+              }
+            ]
+          }
+        },
+        {
+          "packet": 144,
+          "timestamp": "1793485084.020789",
+          "mono_lower_ns": "68621537155114",
+          "mono_upper_ns": "68621537161887",
+          "interface": "fvnb0",
+          "packet_type": 4,
+          "tcp": {
+            "src_port": 20001,
+            "dst_port": 443,
+            "seq": 1392714787,
+            "ack": 0,
+            "flags": 2,
+            "window": 64480,
+            "header_length": 40,
+            "length": 0,
+            "options": [
+              {
+                "kind": 2,
+                "length": 4,
+                "mss": 1240
+              },
+              {
+                "kind": 4,
+                "length": 2
+              },
+              {
+                "kind": 8,
+                "length": 10,
+                "tsval": 4167014236,
+                "tsecr": 0
+              },
+              {
+                "kind": 3,
+                "length": 3,
+                "window_scale": 10
+              }
+            ]
+          }
+        },
+        {
+          "packet": 155,
+          "timestamp": "1793485085.044641",
+          "mono_lower_ns": "68622561007114",
+          "mono_upper_ns": "68622561013887",
+          "interface": "fvnb0",
+          "packet_type": 4,
+          "tcp": {
+            "src_port": 20001,
+            "dst_port": 443,
+            "seq": 1392714787,
+            "ack": 0,
+            "flags": 2,
+            "window": 64480,
+            "header_length": 40,
+            "length": 0,
+            "options": [
+              {
+                "kind": 2,
+                "length": 4,
+                "mss": 1240
+              },
+              {
+                "kind": 4,
+                "length": 2
+              },
+              {
+                "kind": 8,
+                "length": 10,
+                "tsval": 4167015260,
+                "tsecr": 0
+              },
+              {
+                "kind": 3,
+                "length": 3,
+                "window_scale": 10
+              }
+            ]
+          }
+        },
+        {
+          "packet": 160,
+          "timestamp": "1793485086.069663",
+          "mono_lower_ns": "68623586029114",
+          "mono_upper_ns": "68623586035887",
+          "interface": "fvnb0",
+          "packet_type": 4,
+          "tcp": {
+            "src_port": 20001,
+            "dst_port": 443,
+            "seq": 1392714787,
+            "ack": 0,
+            "flags": 2,
+            "window": 64480,
+            "header_length": 40,
+            "length": 0,
+            "options": [
+              {
+                "kind": 2,
+                "length": 4,
+                "mss": 1240
+              },
+              {
+                "kind": 4,
+                "length": 2
+              },
+              {
+                "kind": 8,
+                "length": 10,
+                "tsval": 4167016285,
+                "tsecr": 0
+              },
+              {
+                "kind": 3,
+                "length": 3,
+                "window_scale": 10
+              }
+            ]
+          }
+        },
+        {
+          "packet": 163,
+          "timestamp": "1793485087.092662",
+          "mono_lower_ns": "68624609028114",
+          "mono_upper_ns": "68624609034887",
+          "interface": "fvnb0",
+          "packet_type": 4,
+          "tcp": {
+            "src_port": 20001,
+            "dst_port": 443,
+            "seq": 1392714787,
+            "ack": 0,
+            "flags": 2,
+            "window": 64480,
+            "header_length": 40,
+            "length": 0,
+            "options": [
+              {
+                "kind": 2,
+                "length": 4,
+                "mss": 1240
+              },
+              {
+                "kind": 4,
+                "length": 2
+              },
+              {
+                "kind": 8,
+                "length": 10,
+                "tsval": 4167017308,
+                "tsecr": 0
+              },
+              {
+                "kind": 3,
+                "length": 3,
+                "window_scale": 10
+              }
+            ]
+          }
+        }
+      ],
+      "wireguard_headers": {
+        "member": [
+          {
+            "packet": 9,
+            "timestamp": "1793485082.974376",
+            "mono_lower_ns": "68620490742114",
+            "mono_upper_ns": "68620490748887",
+            "interface": "lo",
+            "packet_type": 0,
+            "ip_version": 4,
+            "src": "addr-12ca17b49af22894",
+            "dst": "addr-32bcd336456e1b8c",
+            "udp": {
+              "src_port": 51820,
+              "dst_port": 45972,
+              "length": 156
+            },
+            "wireguard": {
+              "type": 1,
+              "length": 148,
+              "message_sha256": "da8dccfa27f8bd9e043608192d236a544d0f6e7664fc35ec0cface0bae392477",
+              "sender_index": 2673567615,
+              "source_loopback": true,
+              "destination_loopback": true
+            }
+          },
+          {
+            "packet": 137,
+            "timestamp": "1793485083.177072",
+            "mono_lower_ns": "68620693438114",
+            "mono_upper_ns": "68620693444887",
+            "interface": "eth1",
+            "packet_type": 0,
+            "ip_version": 6,
+            "src": "addr-eff8e7ca506627fe",
+            "dst": "addr-5f910114cdbd19f5",
+            "udp": {
+              "src_port": 51820,
+              "dst_port": 51820,
+              "length": 100
+            },
+            "wireguard": {
+              "type": 2,
+              "length": 92,
+              "message_sha256": "ef5ecd0d31df4fd04c3c74936c3f8e34ffd69260967a3383f20b5eabfff2ad85",
+              "sender_index": 3456060565,
+              "receiver_index": 2673567615,
+              "source_loopback": true,
+              "destination_loopback": false
+            }
+          }
+        ],
+        "node": [
+          {
+            "packet": 10,
+            "timestamp": "1793485082.976368",
+            "mono_lower_ns": "68620492738178",
+            "mono_upper_ns": "68620492740600",
+            "interface": "lo",
+            "packet_type": 0,
+            "ip_version": 4,
+            "src": "addr-12ca17b49af22894",
+            "dst": "addr-32bcd336456e1b8c",
+            "udp": {
+              "src_port": 51820,
+              "dst_port": 47013,
+              "length": 156
+            },
+            "wireguard": {
+              "type": 1,
+              "length": 148,
+              "message_sha256": "d8c3352985fecc8ff533714bbd57633ef7d0af552c80cac55eb8dfe68ad93292",
+              "sender_index": 807848540,
+              "source_loopback": true,
+              "destination_loopback": true
+            }
+          },
+          {
+            "packet": 133,
+            "timestamp": "1793485083.176940",
+            "mono_lower_ns": "68620693310178",
+            "mono_upper_ns": "68620693312600",
+            "interface": "lo",
+            "packet_type": 0,
+            "ip_version": 6,
+            "src": "addr-5f910114cdbd19f5",
+            "dst": "addr-eff8e7ca506627fe",
+            "udp": {
+              "src_port": 51820,
+              "dst_port": 51820,
+              "length": 156
+            },
+            "wireguard": {
+              "type": 1,
+              "length": 148,
+              "message_sha256": "da8dccfa27f8bd9e043608192d236a544d0f6e7664fc35ec0cface0bae392477",
+              "sender_index": 2673567615,
+              "source_loopback": false,
+              "destination_loopback": true
+            }
+          },
+          {
+            "packet": 134,
+            "timestamp": "1793485083.177064",
+            "mono_lower_ns": "68620693434178",
+            "mono_upper_ns": "68620693436600",
+            "interface": "eth2",
+            "packet_type": 4,
+            "ip_version": 6,
+            "src": "addr-eff8e7ca506627fe",
+            "dst": "addr-5f910114cdbd19f5",
+            "udp": {
+              "src_port": 51820,
+              "dst_port": 51820,
+              "length": 100
+            },
+            "wireguard": {
+              "type": 2,
+              "length": 92,
+              "message_sha256": "ef5ecd0d31df4fd04c3c74936c3f8e34ffd69260967a3383f20b5eabfff2ad85",
+              "sender_index": 3456060565,
+              "receiver_index": 2673567615,
+              "source_loopback": true,
+              "destination_loopback": false
+            }
+          },
+          {
+            "packet": 167,
+            "timestamp": "1793485088.309802",
+            "mono_lower_ns": "68625826172178",
+            "mono_upper_ns": "68625826174600",
+            "interface": "eth2",
+            "packet_type": 4,
+            "ip_version": 6,
+            "src": "addr-837a7935ba5539b1",
+            "dst": "addr-5f910114cdbd19f5",
+            "udp": {
+              "src_port": 51820,
+              "dst_port": 51820,
+              "length": 156
+            },
+            "wireguard": {
+              "type": 1,
+              "length": 148,
+              "message_sha256": "da2bdca2cc9677d7cdd6a472e2cb825b567cadf0844d6c773b1a83225566247f",
+              "sender_index": 1619197188,
+              "source_loopback": false,
+              "destination_loopback": false
+            }
+          },
+          {
+            "packet": 168,
+            "timestamp": "1793485088.309915",
+            "mono_lower_ns": "68625826285178",
+            "mono_upper_ns": "68625826287600",
+            "interface": "eth2",
+            "packet_type": 0,
+            "ip_version": 6,
+            "src": "addr-5f910114cdbd19f5",
+            "dst": "addr-837a7935ba5539b1",
+            "udp": {
+              "src_port": 51820,
+              "dst_port": 51820,
+              "length": 156
+            },
+            "wireguard": {
+              "type": 1,
+              "length": 148,
+              "message_sha256": "3b48a393d3950b1cb5041827c14b4a32165a9993ecfbd281bc7363cd6e2097b2",
+              "sender_index": 503336530,
+              "source_loopback": false,
+              "destination_loopback": false
+            }
+          },
+          {
+            "packet": 169,
+            "timestamp": "1793485088.309970",
+            "mono_lower_ns": "68625826340178",
+            "mono_upper_ns": "68625826342600",
+            "interface": "eth2",
+            "packet_type": 0,
+            "ip_version": 6,
+            "src": "addr-5f910114cdbd19f5",
+            "dst": "addr-837a7935ba5539b1",
+            "udp": {
+              "src_port": 51820,
+              "dst_port": 51820,
+              "length": 100
+            },
+            "wireguard": {
+              "type": 2,
+              "length": 92,
+              "message_sha256": "a18af9652a5bdc14914782615a339828503054eb357289509e272b563fa235bf",
+              "sender_index": 3760935210,
+              "receiver_index": 1619197188,
+              "source_loopback": false,
+              "destination_loopback": false
+            }
+          },
+          {
+            "packet": 170,
+            "timestamp": "1793485088.310123",
+            "mono_lower_ns": "68625826493178",
+            "mono_upper_ns": "68625826495600",
+            "interface": "eth2",
+            "packet_type": 4,
+            "ip_version": 6,
+            "src": "addr-837a7935ba5539b1",
+            "dst": "addr-5f910114cdbd19f5",
+            "udp": {
+              "src_port": 51820,
+              "dst_port": 51820,
+              "length": 100
+            },
+            "wireguard": {
+              "type": 2,
+              "length": 92,
+              "message_sha256": "120320f805071f908dd8433f251bf60a9fca3a461032266ffb31ae74b9e7565e",
+              "sender_index": 2861611941,
+              "receiver_index": 503336530,
+              "source_loopback": false,
+              "destination_loopback": false
+            }
+          }
+        ],
+        "origin": []
+      },
+      "wireguard_scope": "Optional structural header decode, not authentication. Message hashes join proxy hops without exporting encrypted content. Capture stop times differ: do not treat a later sender tail as loss at an already stopped receiver.",
+      "transfer": {
+        "after": {
+          "upload_bytes": "0",
+          "download_bytes": "0",
+          "Present": true,
+          "kernel_generation": "5",
+          "read_diagnostic": {
+            "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+            "read_start_mono_ns": "68625562991036",
+            "read_end_mono_ns": "68625565304386",
+            "enforcement_before": {
+              "available": false,
+              "error": "timing_not_enabled_or_unreadable"
+            },
+            "enforcement_after": {
+              "available": false,
+              "error": "timing_not_enabled_or_unreadable"
+            },
+            "started": "2026-10-31T22:18:08.046561974Z",
+            "completed": "2026-10-31T22:18:08.048933431Z",
+            "stage": "nft_read",
+            "category": "none",
+            "exit": 0,
+            "heartbeat_before": {
+              "read_at": "2026-10-31T22:18:08.046562143Z",
+              "wall_unix_ns": "1793485083485841037",
+              "serving": true,
+              "read_ok": true
+            },
+            "heartbeat_after": {
+              "read_at": "2026-10-31T22:18:08.048936489Z",
+              "wall_unix_ns": "1793485083485841037",
+              "serving": true,
+              "read_ok": true
+            }
+          }
+        },
+        "before": {
+          "upload_bytes": "0",
+          "download_bytes": "0",
+          "Present": true,
+          "kernel_generation": "5",
+          "read_diagnostic": {
+            "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+            "read_start_mono_ns": "68620448590214",
+            "read_end_mono_ns": "68620450888645",
+            "enforcement_before": {
+              "available": false,
+              "error": "timing_not_enabled_or_unreadable"
+            },
+            "enforcement_after": {
+              "available": false,
+              "error": "timing_not_enabled_or_unreadable"
+            },
+            "started": "2026-10-31T22:18:02.932149052Z",
+            "completed": "2026-10-31T22:18:02.934517593Z",
+            "stage": "nft_read",
+            "category": "none",
+            "exit": 0,
+            "heartbeat_before": {
+              "read_at": "2026-10-31T22:18:02.93214929Z",
+              "wall_unix_ns": "1793485078643055200",
+              "serving": true,
+              "read_ok": true
+            },
+            "heartbeat_after": {
+              "read_at": "2026-10-31T22:18:02.934519574Z",
+              "wall_unix_ns": "1793485078643055200",
+              "serving": true,
+              "read_ok": true
+            }
+          }
+        },
+        "http": {
+          "authority_serial": 0,
+          "authority_ttl": 0,
+          "has_soa": false,
+          "available": false,
+          "rcode": -1,
+          "types": [],
+          "ttls": [],
+          "address_classes": [],
+          "expected_answer": false,
+          "connected": false,
+          "bytes": 0,
+          "milliseconds": 5004,
+          "error": "http_unavailable"
+        }
+      },
+      "scope": "Fresh first-use observation only. Historical five packets cannot be reconstructed. See inner/outer capture and readback bounds before assigning any fault."
+    },
+    {
+      "id": "matrix4",
+      "run_id": "9b3a89e7-fa86-426c-9737-ce55bf66aa77",
+      "source_commit": "a1796b0d2be7f0ef068f66347fccb11d55ed58a4",
+      "status": "pass",
+      "clock_offsets": {
+        "member": {
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "pairs": 70,
+          "offset_lower_ns": "-1793416462483629395",
+          "offset_upper_ns": "-1793416462483628476",
+          "measured_offset_span_ns": "919",
+          "assumption": "No intervening wall-clock step; empirical offset envelope, not hardware packet timestamps. Pcap microsecond quantization adds 1000 ns."
+        },
+        "node": {
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "pairs": 76,
+          "offset_lower_ns": "-1793416462483629505",
+          "offset_upper_ns": "-1793416462483628571",
+          "measured_offset_span_ns": "934",
+          "assumption": "No intervening wall-clock step; empirical offset envelope, not hardware packet timestamps. Pcap microsecond quantization adds 1000 ns."
+        },
+        "origin": {
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "pairs": 28,
+          "offset_lower_ns": "-1793416462483629152",
+          "offset_upper_ns": "-1793416462483628560",
+          "measured_offset_span_ns": "592",
+          "assumption": "No intervening wall-clock step; empirical offset envelope, not hardware packet timestamps. Pcap microsecond quantization adds 1000 ns."
+        }
+      },
+      "capture_checks": {
+        "member": {
+          "complete": true,
+          "decoded": 858,
+          "captured": 858,
+          "kernel_drops": 0
+        },
+        "node": {
+          "complete": true,
+          "decoded": 779,
+          "captured": 779,
+          "kernel_drops": 0
+        },
+        "origin": {
+          "complete": true,
+          "decoded": 147,
+          "captured": 147,
+          "kernel_drops": 0
+        }
+      },
+      "metadata_checks": {
+        "member": {
+          "links_and_origin_route": true,
+          "native_implementation_recorded": true
+        },
+        "node": {
+          "links_and_origin_route": true,
+          "native_implementation_recorded": true
+        },
+        "origin": {
+          "links_and_origin_route": true,
+          "native_implementation_recorded": true
+        }
+      },
+      "ptb": {
+        "member": [],
+        "node": [],
+        "origin": []
+      },
+      "fragmentation_needed": {
+        "member": [],
+        "node": [],
+        "origin": []
+      },
+      "selected_before": {
+        "member": {
+          "local": {
+            "address": "addr-129fe9318e066262",
+            "port": "51820",
+            "family": "ipv4"
+          },
+          "remote": {
+            "address": "addr-459868bfedca20a7",
+            "port": "51820",
+            "family": "ipv4"
+          },
+          "wireguard_endpoint": {
+            "address": "",
+            "port": "",
+            "family": ""
+          },
+          "routes": {
+            "origin_route": [
+              {
+                "dst": "addr-4bc4aaecd8e0429e",
+                "dev": "fvnb0",
+                "prefsrc": "addr-87f7093ab4d856e1",
+                "table": "netbird"
+              }
+            ],
+            "overlay_route": [
+              {
+                "dst": "addr-1ee9971a929fcecf",
+                "dev": "fvnb0",
+                "prefsrc": "addr-87f7093ab4d856e1"
+              }
+            ],
+            "peer_route": [
+              {
+                "dst": "addr-459868bfedca20a7",
+                "dev": "eth0",
+                "prefsrc": "addr-129fe9318e066262"
+              }
+            ]
+          }
+        },
+        "node": {
+          "local": {
+            "address": "addr-863b282f8542980b",
+            "port": "51820",
+            "family": "ipv4"
+          },
+          "remote": {
+            "address": "addr-129fe9318e066262",
+            "port": "51820",
+            "family": "ipv4"
+          },
+          "wireguard_endpoint": {
+            "address": "addr-eae6d9feea9d449b",
+            "port": "3128",
+            "family": "ipv4"
+          },
+          "routes": {
+            "origin_route": [
+              {
+                "dst": "addr-4bc4aaecd8e0429e",
+                "dev": "fvup0",
+                "prefsrc": "addr-7706aa7b8793e2bf"
+              }
+            ],
+            "overlay_route": [
+              {
+                "dst": "addr-87f7093ab4d856e1",
+                "dev": "fvmb0",
+                "prefsrc": "addr-1ee9971a929fcecf"
+              }
+            ],
+            "peer_route": [
+              {
+                "dst": "addr-129fe9318e066262",
+                "dev": "eth1",
+                "prefsrc": "addr-459868bfedca20a7"
+              }
+            ],
+            "wireguard_route": [
+              {
+                "dst": "addr-eae6d9feea9d449b",
+                "dev": "lo",
+                "prefsrc": "addr-12ca17b49af22894",
+                "table": "local"
+              }
+            ]
+          }
+        }
+      },
+      "transfer": {
+        "after": {
+          "upload_bytes": "68505",
+          "download_bytes": "69830",
+          "Present": true,
+          "kernel_generation": "5",
+          "read_diagnostic": {
+            "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+            "read_start_mono_ns": "68641187090518",
+            "read_end_mono_ns": "68641189343445",
+            "enforcement_before": {
+              "available": false,
+              "error": "timing_not_enabled_or_unreadable"
+            },
+            "enforcement_after": {
+              "available": false,
+              "error": "timing_not_enabled_or_unreadable"
+            },
+            "started": "2026-10-31T22:18:23.670670112Z",
+            "completed": "2026-10-31T22:18:23.672972416Z",
+            "stage": "nft_read",
+            "category": "none",
+            "exit": 0,
+            "heartbeat_before": {
+              "read_at": "2026-10-31T22:18:23.670670274Z",
+              "wall_unix_ns": "1793485103481714795",
+              "serving": true,
+              "read_ok": true
+            },
+            "heartbeat_after": {
+              "read_at": "2026-10-31T22:18:23.672974824Z",
+              "wall_unix_ns": "1793485103481714795",
+              "serving": true,
+              "read_ok": true
+            }
+          }
+        },
+        "before": {
+          "upload_bytes": "1685",
+          "download_bytes": "1639",
+          "Present": true,
+          "kernel_generation": "5",
+          "read_diagnostic": {
+            "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+            "read_start_mono_ns": "68641038740963",
+            "read_end_mono_ns": "68641040764255",
+            "enforcement_before": {
+              "available": false,
+              "error": "timing_not_enabled_or_unreadable"
+            },
+            "enforcement_after": {
+              "available": false,
+              "error": "timing_not_enabled_or_unreadable"
+            },
+            "started": "2026-10-31T22:18:23.522308113Z",
+            "completed": "2026-10-31T22:18:23.524393187Z",
+            "stage": "nft_read",
+            "category": "none",
+            "exit": 0,
+            "heartbeat_before": {
+              "read_at": "2026-10-31T22:18:23.522308414Z",
+              "wall_unix_ns": "1793485103481714795",
+              "serving": true,
+              "read_ok": true
+            },
+            "heartbeat_after": {
+              "read_at": "2026-10-31T22:18:23.524397616Z",
+              "wall_unix_ns": "1793485103481714795",
+              "serving": true,
+              "read_ok": true
+            }
+          }
+        },
+        "bulk": {
+          "authority_serial": 0,
+          "endpoint": {
+            "at": "2026-10-31T22:18:23.64396Z",
+            "local_port": 50654,
+            "remote_port": 9446,
+            "read_bytes": 64387,
+            "write_bytes": 64108,
+            "complete_lines": 64,
+            "partial_line_bytes": 0,
+            "error": "none",
+            "tcp_info": {
+              "bytes_acked": 64109,
+              "bytes_received": 64387,
+              "lost": 0,
+              "notsent_bytes": 0,
+              "rcv_mss": 1006,
+              "rcv_space": 12280,
+              "retrans": 0,
+              "rto_us": 201000,
+              "rtt_us": 147,
+              "sacked": 0,
+              "snd_cwnd": 63,
+              "snd_mss": 1228,
+              "snd_wnd": 66560,
+              "state": 1,
+              "total_retrans": 0,
+              "unacked": 0
+            }
+          },
+          "authority_ttl": 0,
+          "has_soa": false,
+          "available": true,
+          "rcode": -1,
+          "types": [],
+          "ttls": [],
+          "address_classes": [],
+          "expected_answer": false,
+          "connected": true,
+          "bytes": 64064,
+          "milliseconds": 1
+        },
+        "selected_after": {
+          "connected": true,
+          "connection_type": "P2P",
+          "chosen_family": "ipv4"
+        },
+        "selected_before": {
+          "connected": true,
+          "connection_type": "P2P",
+          "chosen_family": "ipv4"
+        }
+      },
+      "reverse": {
+        "sizes": {
+          "124": {
+            "sent": 9,
+            "arrived": 9,
+            "absent": 0
+          },
+          "1132": {
+            "sent": 64,
+            "arrived": 64,
+            "absent": 0
+          }
+        },
+        "absent_sender_packets": [],
+        "unmatched_receiver_packets": 0,
+        "sender_interface": "eth1",
+        "receiver_interface": "eth0",
+        "absent_bounds": []
+      },
+      "forward": {
+        "sizes": {
+          "124": {
+            "sent": 30,
+            "arrived": 30,
+            "absent": 0
+          },
+          "156": {
+            "sent": 1,
+            "arrived": 1,
+            "absent": 0
+          },
+          "1340": {
+            "sent": 52,
+            "arrived": 52,
+            "absent": 0
+          },
+          "332": {
+            "sent": 1,
+            "arrived": 1,
+            "absent": 0
+          }
+        },
+        "absent_sender_packets": [],
+        "unmatched_receiver_packets": 0,
+        "sender_interface": "eth0",
+        "receiver_interface": "eth1",
+        "absent_bounds": []
+      },
+      "bulk_local_port": 50654,
+      "reverse_streams": {
+        "50654": {
+          "current_bulk": true,
+          "first_gap": null,
+          "sent_packets": [
+            9,
+            12,
+            13,
+            16,
+            20,
+            22,
+            23,
+            24,
+            26,
+            27,
+            28,
+            32,
+            35,
+            37,
+            38,
+            39,
+            41,
+            44,
+            47,
+            49,
+            52,
+            53,
+            54,
+            55,
+            56,
+            59,
+            63,
+            64,
+            65,
+            67,
+            68,
+            69,
+            71,
+            72,
+            73,
+            74,
+            75,
+            76,
+            77,
+            78,
+            79,
+            80,
+            81,
+            82,
+            83,
+            84,
+            85,
+            86,
+            87,
+            88,
+            89,
+            91,
+            98,
+            101,
+            103,
+            104,
+            105,
+            106,
+            107,
+            108,
+            109,
+            110,
+            111,
+            115,
+            117,
+            118,
+            119,
+            121,
+            123,
+            124,
+            126,
+            127,
+            131
+          ],
+          "received_packets": [
+            593,
+            599,
+            601,
+            617,
+            620,
+            635,
+            637,
+            638,
+            645,
+            648,
+            649,
+            650,
+            654,
+            660,
+            689,
+            694,
+            695,
+            698,
+            700,
+            702,
+            705,
+            707,
+            709,
+            715,
+            717,
+            720,
+            721,
+            724,
+            728,
+            732,
+            733,
+            734,
+            736,
+            740,
+            742,
+            746,
+            747,
+            749,
+            754,
+            758,
+            760,
+            765,
+            766,
+            771,
+            773,
+            774,
+            779,
+            780,
+            785,
+            787,
+            791,
+            792,
+            796,
+            798,
+            803,
+            804,
+            807,
+            810,
+            811,
+            817,
+            818,
+            822,
+            824,
+            826,
+            830,
+            835,
+            836,
+            841,
+            843,
+            844,
+            846,
+            850,
+            856
+          ]
+        }
+      },
+      "datagram_scope": "All selected endpoint datagrams within the command window, including control packets and older TCP streams. Stream ports above keep current bulk separate. Encrypted packets are not assigned to inner streams by time alone.",
+      "first_missing_tcp_range": null
+    },
+    {
+      "id": "matrix6",
+      "run_id": "9b3a89e7-fa86-426c-9737-ce55bf66aa77",
+      "source_commit": "a1796b0d2be7f0ef068f66347fccb11d55ed58a4",
+      "status": "pass",
+      "clock_offsets": {
+        "member": {
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "pairs": 68,
+          "offset_lower_ns": "-1793416462483629345",
+          "offset_upper_ns": "-1793416462483628505",
+          "measured_offset_span_ns": "840",
+          "assumption": "No intervening wall-clock step; empirical offset envelope, not hardware packet timestamps. Pcap microsecond quantization adds 1000 ns."
+        },
+        "node": {
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "pairs": 76,
+          "offset_lower_ns": "-1793416462483629342",
+          "offset_upper_ns": "-1793416462483628516",
+          "measured_offset_span_ns": "826",
+          "assumption": "No intervening wall-clock step; empirical offset envelope, not hardware packet timestamps. Pcap microsecond quantization adds 1000 ns."
+        },
+        "origin": {
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "pairs": 28,
+          "offset_lower_ns": "-1793416462483629234",
+          "offset_upper_ns": "-1793416462483628535",
+          "measured_offset_span_ns": "699",
+          "assumption": "No intervening wall-clock step; empirical offset envelope, not hardware packet timestamps. Pcap microsecond quantization adds 1000 ns."
+        }
+      },
+      "capture_checks": {
+        "member": {
+          "complete": true,
+          "decoded": 611,
+          "captured": 611,
+          "kernel_drops": 0
+        },
+        "node": {
+          "complete": true,
+          "decoded": 538,
+          "captured": 538,
+          "kernel_drops": 0
+        },
+        "origin": {
+          "complete": true,
+          "decoded": 145,
+          "captured": 145,
+          "kernel_drops": 0
+        }
+      },
+      "metadata_checks": {
+        "member": {
+          "links_and_origin_route": true,
+          "native_implementation_recorded": true
+        },
+        "node": {
+          "links_and_origin_route": true,
+          "native_implementation_recorded": true
+        },
+        "origin": {
+          "links_and_origin_route": true,
+          "native_implementation_recorded": true
+        }
+      },
+      "ptb": {
+        "member": [],
+        "node": [],
+        "origin": []
+      },
+      "fragmentation_needed": {
+        "member": [],
+        "node": [],
+        "origin": []
+      },
+      "selected_before": {
+        "member": {
+          "local": {
+            "address": "addr-5f910114cdbd19f5",
+            "port": "51820",
+            "family": "ipv6"
+          },
+          "remote": {
+            "address": "addr-837a7935ba5539b1",
+            "port": "51820",
+            "family": "ipv6"
+          },
+          "wireguard_endpoint": {
+            "address": "",
+            "port": "",
+            "family": ""
+          },
+          "routes": {
+            "origin_route": [
+              {
+                "dst": "addr-4bc4aaecd8e0429e",
+                "dev": "fvnb0",
+                "prefsrc": "addr-87f7093ab4d856e1",
+                "table": "netbird"
+              }
+            ],
+            "overlay_route": [
+              {
+                "dst": "addr-1ee9971a929fcecf",
+                "dev": "fvnb0",
+                "prefsrc": "addr-87f7093ab4d856e1"
+              }
+            ],
+            "peer_route": [
+              {
+                "dst": "addr-837a7935ba5539b1",
+                "dev": "eth1",
+                "prefsrc": "addr-5f910114cdbd19f5"
+              }
+            ]
+          }
+        },
+        "node": {
+          "local": {
+            "address": "addr-837a7935ba5539b1",
+            "port": "51820",
+            "family": "ipv6"
+          },
+          "remote": {
+            "address": "addr-5f910114cdbd19f5",
+            "port": "51820",
+            "family": "ipv6"
+          },
+          "wireguard_endpoint": {
+            "address": "addr-affc91dd15c7d447",
+            "port": "3128",
+            "family": "ipv4"
+          },
+          "routes": {
+            "origin_route": [
+              {
+                "dst": "addr-4bc4aaecd8e0429e",
+                "dev": "fvup0",
+                "prefsrc": "addr-7706aa7b8793e2bf"
+              }
+            ],
+            "overlay_route": [
+              {
+                "dst": "addr-87f7093ab4d856e1",
+                "dev": "fvmb0",
+                "prefsrc": "addr-1ee9971a929fcecf"
+              }
+            ],
+            "peer_route": [
+              {
+                "dst": "addr-5f910114cdbd19f5",
+                "dev": "eth2",
+                "prefsrc": "addr-837a7935ba5539b1"
+              }
+            ],
+            "wireguard_route": [
+              {
+                "dst": "addr-affc91dd15c7d447",
+                "dev": "lo",
+                "prefsrc": "addr-12ca17b49af22894",
+                "table": "local"
+              }
+            ]
+          }
+        }
+      },
+      "transfer": {
+        "after": {
+          "upload_bytes": "135585",
+          "download_bytes": "138021",
+          "Present": true,
+          "kernel_generation": "5",
+          "read_diagnostic": {
+            "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+            "read_start_mono_ns": "68647873998775",
+            "read_end_mono_ns": "68647876288962",
+            "enforcement_before": {
+              "available": false,
+              "error": "timing_not_enabled_or_unreadable"
+            },
+            "enforcement_after": {
+              "available": false,
+              "error": "timing_not_enabled_or_unreadable"
+            },
+            "started": "2026-10-31T22:18:30.357580274Z",
+            "completed": "2026-10-31T22:18:30.35991792Z",
+            "stage": "nft_read",
+            "category": "none",
+            "exit": 0,
+            "heartbeat_before": {
+              "read_at": "2026-10-31T22:18:30.357580436Z",
+              "wall_unix_ns": "1793485108484800002",
+              "serving": true,
+              "read_ok": true
+            },
+            "heartbeat_after": {
+              "read_at": "2026-10-31T22:18:30.359921649Z",
+              "wall_unix_ns": "1793485108484800002",
+              "serving": true,
+              "read_ok": true
+            }
+          }
+        },
+        "before": {
+          "upload_bytes": "68505",
+          "download_bytes": "69830",
+          "Present": true,
+          "kernel_generation": "5",
+          "read_diagnostic": {
+            "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+            "read_start_mono_ns": "68647736364525",
+            "read_end_mono_ns": "68647738434102",
+            "enforcement_before": {
+              "available": false,
+              "error": "timing_not_enabled_or_unreadable"
+            },
+            "enforcement_after": {
+              "available": false,
+              "error": "timing_not_enabled_or_unreadable"
+            },
+            "started": "2026-10-31T22:18:30.219936152Z",
+            "completed": "2026-10-31T22:18:30.222063038Z",
+            "stage": "nft_read",
+            "category": "none",
+            "exit": 0,
+            "heartbeat_before": {
+              "read_at": "2026-10-31T22:18:30.219936321Z",
+              "wall_unix_ns": "1793485108484800002",
+              "serving": true,
+              "read_ok": true
+            },
+            "heartbeat_after": {
+              "read_at": "2026-10-31T22:18:30.222065112Z",
+              "wall_unix_ns": "1793485108484800002",
+              "serving": true,
+              "read_ok": true
+            }
+          }
+        },
+        "bulk": {
+          "authority_serial": 0,
+          "endpoint": {
+            "at": "2026-10-31T22:18:30.331313687Z",
+            "local_port": 44706,
+            "remote_port": 9446,
+            "read_bytes": 64387,
+            "write_bytes": 64108,
+            "complete_lines": 64,
+            "partial_line_bytes": 0,
+            "error": "none",
+            "tcp_info": {
+              "bytes_acked": 64109,
+              "bytes_received": 64387,
+              "lost": 0,
+              "notsent_bytes": 0,
+              "rcv_mss": 1006,
+              "rcv_space": 12280,
+              "retrans": 0,
+              "rto_us": 201000,
+              "rtt_us": 132,
+              "sacked": 0,
+              "snd_cwnd": 63,
+              "snd_mss": 1228,
+              "snd_wnd": 67584,
+              "state": 1,
+              "total_retrans": 0,
+              "unacked": 0
+            }
+          },
+          "authority_ttl": 0,
+          "has_soa": false,
+          "available": true,
+          "rcode": -1,
+          "types": [],
+          "ttls": [],
+          "address_classes": [],
+          "expected_answer": false,
+          "connected": true,
+          "bytes": 64064,
+          "milliseconds": 1
+        },
+        "selected_after": {
+          "connected": true,
+          "connection_type": "P2P",
+          "chosen_family": "ipv6"
+        },
+        "selected_before": {
+          "connected": true,
+          "connection_type": "P2P",
+          "chosen_family": "ipv6"
+        }
+      },
+      "reverse": {
+        "sizes": {
+          "144": {
+            "sent": 9,
+            "arrived": 9,
+            "absent": 0
+          },
+          "1152": {
+            "sent": 64,
+            "arrived": 64,
+            "absent": 0
+          }
+        },
+        "absent_sender_packets": [],
+        "unmatched_receiver_packets": 0,
+        "sender_interface": "eth2",
+        "receiver_interface": "eth1",
+        "absent_bounds": []
+      },
+      "forward": {
+        "sizes": {
+          "144": {
+            "sent": 32,
+            "arrived": 32,
+            "absent": 0
+          },
+          "176": {
+            "sent": 1,
+            "arrived": 1,
+            "absent": 0
+          },
+          "1360": {
+            "sent": 52,
+            "arrived": 52,
+            "absent": 0
+          },
+          "352": {
+            "sent": 1,
+            "arrived": 1,
+            "absent": 0
+          }
+        },
+        "absent_sender_packets": [],
+        "unmatched_receiver_packets": 0,
+        "sender_interface": "eth1",
+        "receiver_interface": "eth2",
+        "absent_bounds": []
+      },
+      "bulk_local_port": 44706,
+      "reverse_streams": {
+        "44706": {
+          "current_bulk": true,
+          "first_gap": null,
+          "sent_packets": [
+            17,
+            20,
+            21,
+            24,
+            28,
+            29,
+            33,
+            34,
+            35,
+            37,
+            40,
+            41,
+            43,
+            46,
+            49,
+            52,
+            54,
+            55,
+            56,
+            58,
+            61,
+            63,
+            66,
+            69,
+            71,
+            72,
+            73,
+            76,
+            77,
+            79,
+            80,
+            82,
+            83,
+            85,
+            86,
+            88,
+            89,
+            91,
+            92,
+            93,
+            95,
+            96,
+            98,
+            99,
+            100,
+            101,
+            103,
+            105,
+            106,
+            108,
+            109,
+            110,
+            111,
+            113,
+            114,
+            115,
+            116,
+            117,
+            121,
+            122,
+            123,
+            124,
+            127,
+            128,
+            129,
+            130,
+            131,
+            134,
+            135,
+            137,
+            138,
+            139,
+            144
+          ],
+          "received_packets": [
+            315,
+            322,
+            323,
+            339,
+            346,
+            352,
+            359,
+            360,
+            367,
+            375,
+            377,
+            392,
+            393,
+            394,
+            395,
+            400,
+            401,
+            406,
+            412,
+            420,
+            430,
+            433,
+            435,
+            436,
+            441,
+            443,
+            448,
+            449,
+            453,
+            456,
+            457,
+            461,
+            464,
+            468,
+            469,
+            474,
+            475,
+            479,
+            482,
+            483,
+            487,
+            490,
+            491,
+            495,
+            497,
+            502,
+            503,
+            508,
+            509,
+            512,
+            516,
+            517,
+            521,
+            524,
+            526,
+            531,
+            534,
+            535,
+            538,
+            544,
+            545,
+            548,
+            551,
+            552,
+            556,
+            559,
+            562,
+            565,
+            568,
+            571,
+            572,
+            577,
+            583
+          ]
+        }
+      },
+      "datagram_scope": "All selected endpoint datagrams within the command window, including control packets and older TCP streams. Stream ports above keep current bulk separate. Encrypted packets are not assigned to inner streams by time alone.",
+      "first_missing_tcp_range": null
+    },
+    {
+      "id": "matrixDual",
+      "run_id": "9b3a89e7-fa86-426c-9737-ce55bf66aa77",
+      "source_commit": "a1796b0d2be7f0ef068f66347fccb11d55ed58a4",
+      "status": "pass",
+      "clock_offsets": {
+        "member": {
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "pairs": 68,
+          "offset_lower_ns": "-1793416462483629375",
+          "offset_upper_ns": "-1793416462483628525",
+          "measured_offset_span_ns": "850",
+          "assumption": "No intervening wall-clock step; empirical offset envelope, not hardware packet timestamps. Pcap microsecond quantization adds 1000 ns."
+        },
+        "node": {
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "pairs": 76,
+          "offset_lower_ns": "-1793416462483629332",
+          "offset_upper_ns": "-1793416462483628545",
+          "measured_offset_span_ns": "787",
+          "assumption": "No intervening wall-clock step; empirical offset envelope, not hardware packet timestamps. Pcap microsecond quantization adds 1000 ns."
+        },
+        "origin": {
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "pairs": 28,
+          "offset_lower_ns": "-1793416462483629274",
+          "offset_upper_ns": "-1793416462483628497",
+          "measured_offset_span_ns": "777",
+          "assumption": "No intervening wall-clock step; empirical offset envelope, not hardware packet timestamps. Pcap microsecond quantization adds 1000 ns."
+        }
+      },
+      "capture_checks": {
+        "member": {
+          "complete": true,
+          "decoded": 873,
+          "captured": 873,
+          "kernel_drops": 0
+        },
+        "node": {
+          "complete": true,
+          "decoded": 808,
+          "captured": 808,
+          "kernel_drops": 0
+        },
+        "origin": {
+          "complete": true,
+          "decoded": 154,
+          "captured": 154,
+          "kernel_drops": 0
+        }
+      },
+      "metadata_checks": {
+        "member": {
+          "links_and_origin_route": true,
+          "native_implementation_recorded": true
+        },
+        "node": {
+          "links_and_origin_route": true,
+          "native_implementation_recorded": true
+        },
+        "origin": {
+          "links_and_origin_route": true,
+          "native_implementation_recorded": true
+        }
+      },
+      "ptb": {
+        "member": [],
+        "node": [],
+        "origin": []
+      },
+      "fragmentation_needed": {
+        "member": [],
+        "node": [],
+        "origin": []
+      },
+      "selected_before": {
+        "member": {
+          "local": {
+            "address": "addr-129fe9318e066262",
+            "port": "51820",
+            "family": "ipv4"
+          },
+          "remote": {
+            "address": "addr-459868bfedca20a7",
+            "port": "51820",
+            "family": "ipv4"
+          },
+          "wireguard_endpoint": {
+            "address": "",
+            "port": "",
+            "family": ""
+          },
+          "routes": {
+            "origin_route": [
+              {
+                "dst": "addr-4bc4aaecd8e0429e",
+                "dev": "fvnb0",
+                "prefsrc": "addr-87f7093ab4d856e1",
+                "table": "netbird"
+              }
+            ],
+            "overlay_route": [
+              {
+                "dst": "addr-1ee9971a929fcecf",
+                "dev": "fvnb0",
+                "prefsrc": "addr-87f7093ab4d856e1"
+              }
+            ],
+            "peer_route": [
+              {
+                "dst": "addr-459868bfedca20a7",
+                "dev": "eth0",
+                "prefsrc": "addr-129fe9318e066262"
+              }
+            ]
+          }
+        },
+        "node": {
+          "local": {
+            "address": "addr-459868bfedca20a7",
+            "port": "51820",
+            "family": "ipv4"
+          },
+          "remote": {
+            "address": "addr-129fe9318e066262",
+            "port": "51820",
+            "family": "ipv4"
+          },
+          "wireguard_endpoint": {
+            "address": "addr-b38e9ecfa1d5b3ae",
+            "port": "3128",
+            "family": "ipv4"
+          },
+          "routes": {
+            "origin_route": [
+              {
+                "dst": "addr-4bc4aaecd8e0429e",
+                "dev": "fvup0",
+                "prefsrc": "addr-7706aa7b8793e2bf"
+              }
+            ],
+            "overlay_route": [
+              {
+                "dst": "addr-87f7093ab4d856e1",
+                "dev": "fvmb0",
+                "prefsrc": "addr-1ee9971a929fcecf"
+              }
+            ],
+            "peer_route": [
+              {
+                "dst": "addr-129fe9318e066262",
+                "dev": "eth1",
+                "prefsrc": "addr-459868bfedca20a7"
+              }
+            ],
+            "wireguard_route": [
+              {
+                "dst": "addr-b38e9ecfa1d5b3ae",
+                "dev": "lo",
+                "prefsrc": "addr-12ca17b49af22894",
+                "table": "local"
+              }
+            ]
+          }
+        }
+      },
+      "transfer": {
+        "after": {
+          "upload_bytes": "202925",
+          "download_bytes": "206212",
+          "Present": true,
+          "kernel_generation": "5",
+          "read_diagnostic": {
+            "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+            "read_start_mono_ns": "68654355989656",
+            "read_end_mono_ns": "68654358453518",
+            "enforcement_before": {
+              "available": false,
+              "error": "timing_not_enabled_or_unreadable"
+            },
+            "enforcement_after": {
+              "available": false,
+              "error": "timing_not_enabled_or_unreadable"
+            },
+            "started": "2026-10-31T22:18:36.839572499Z",
+            "completed": "2026-10-31T22:18:36.842082632Z",
+            "stage": "nft_read",
+            "category": "none",
+            "exit": 0,
+            "heartbeat_before": {
+              "read_at": "2026-10-31T22:18:36.839572685Z",
+              "wall_unix_ns": "1793485113514069587",
+              "serving": true,
+              "read_ok": true
+            },
+            "heartbeat_after": {
+              "read_at": "2026-10-31T22:18:36.84208726Z",
+              "wall_unix_ns": "1793485113514069587",
+              "serving": true,
+              "read_ok": true
+            }
+          }
+        },
+        "before": {
+          "upload_bytes": "135585",
+          "download_bytes": "138021",
+          "Present": true,
+          "kernel_generation": "5",
+          "read_diagnostic": {
+            "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+            "read_start_mono_ns": "68654203516363",
+            "read_end_mono_ns": "68654205536512",
+            "enforcement_before": {
+              "available": false,
+              "error": "timing_not_enabled_or_unreadable"
+            },
+            "enforcement_after": {
+              "available": false,
+              "error": "timing_not_enabled_or_unreadable"
+            },
+            "started": "2026-10-31T22:18:36.687087813Z",
+            "completed": "2026-10-31T22:18:36.68916555Z",
+            "stage": "nft_read",
+            "category": "none",
+            "exit": 0,
+            "heartbeat_before": {
+              "read_at": "2026-10-31T22:18:36.687088032Z",
+              "wall_unix_ns": "1793485113514069587",
+              "serving": true,
+              "read_ok": true
+            },
+            "heartbeat_after": {
+              "read_at": "2026-10-31T22:18:36.689170588Z",
+              "wall_unix_ns": "1793485113514069587",
+              "serving": true,
+              "read_ok": true
+            }
+          }
+        },
+        "bulk": {
+          "authority_serial": 0,
+          "endpoint": {
+            "at": "2026-10-31T22:18:36.813046379Z",
+            "local_port": 53732,
+            "remote_port": 9446,
+            "read_bytes": 64387,
+            "write_bytes": 64108,
+            "complete_lines": 64,
+            "partial_line_bytes": 0,
+            "error": "none",
+            "tcp_info": {
+              "bytes_acked": 64109,
+              "bytes_received": 64387,
+              "lost": 0,
+              "notsent_bytes": 0,
+              "rcv_mss": 1006,
+              "rcv_space": 12280,
+              "retrans": 0,
+              "rto_us": 201000,
+              "rtt_us": 135,
+              "sacked": 0,
+              "snd_cwnd": 63,
+              "snd_mss": 1228,
+              "snd_wnd": 65536,
+              "state": 1,
+              "total_retrans": 0,
+              "unacked": 0
+            }
+          },
+          "authority_ttl": 0,
+          "has_soa": false,
+          "available": true,
+          "rcode": -1,
+          "types": [],
+          "ttls": [],
+          "address_classes": [],
+          "expected_answer": false,
+          "connected": true,
+          "bytes": 64064,
+          "milliseconds": 1
+        },
+        "selected_after": {
+          "connected": true,
+          "connection_type": "P2P",
+          "chosen_family": "ipv4"
+        },
+        "selected_before": {
+          "connected": true,
+          "connection_type": "P2P",
+          "chosen_family": "ipv4"
+        }
+      },
+      "reverse": {
+        "sizes": {
+          "124": {
+            "sent": 9,
+            "arrived": 9,
+            "absent": 0
+          },
+          "1132": {
+            "sent": 64,
+            "arrived": 64,
+            "absent": 0
+          }
+        },
+        "absent_sender_packets": [],
+        "unmatched_receiver_packets": 0,
+        "sender_interface": "eth1",
+        "receiver_interface": "eth0",
+        "absent_bounds": []
+      },
+      "forward": {
+        "sizes": {
+          "124": {
+            "sent": 29,
+            "arrived": 29,
+            "absent": 0
+          },
+          "156": {
+            "sent": 1,
+            "arrived": 1,
+            "absent": 0
+          },
+          "1340": {
+            "sent": 52,
+            "arrived": 52,
+            "absent": 0
+          },
+          "332": {
+            "sent": 1,
+            "arrived": 1,
+            "absent": 0
+          }
+        },
+        "absent_sender_packets": [],
+        "unmatched_receiver_packets": 0,
+        "sender_interface": "eth0",
+        "receiver_interface": "eth1",
+        "absent_bounds": []
+      },
+      "bulk_local_port": 53732,
+      "reverse_streams": {
+        "53732": {
+          "current_bulk": true,
+          "first_gap": null,
+          "sent_packets": [
+            21,
+            24,
+            25,
+            28,
+            32,
+            33,
+            34,
+            35,
+            36,
+            38,
+            40,
+            43,
+            46,
+            49,
+            52,
+            55,
+            59,
+            61,
+            62,
+            64,
+            67,
+            70,
+            72,
+            74,
+            77,
+            80,
+            82,
+            87,
+            88,
+            90,
+            91,
+            92,
+            94,
+            95,
+            96,
+            98,
+            99,
+            101,
+            102,
+            104,
+            105,
+            107,
+            108,
+            110,
+            111,
+            112,
+            114,
+            115,
+            116,
+            118,
+            119,
+            120,
+            122,
+            123,
+            124,
+            125,
+            127,
+            128,
+            130,
+            132,
+            133,
+            135,
+            136,
+            137,
+            138,
+            139,
+            142,
+            143,
+            145,
+            146,
+            147,
+            148,
+            153
+          ],
+          "received_packets": [
+            609,
+            615,
+            617,
+            634,
+            635,
+            642,
+            643,
+            649,
+            658,
+            659,
+            663,
+            676,
+            678,
+            683,
+            688,
+            689,
+            695,
+            698,
+            701,
+            713,
+            717,
+            718,
+            729,
+            730,
+            734,
+            735,
+            740,
+            741,
+            745,
+            748,
+            750,
+            751,
+            756,
+            757,
+            761,
+            763,
+            767,
+            769,
+            772,
+            775,
+            781,
+            782,
+            783,
+            788,
+            790,
+            791,
+            795,
+            797,
+            801,
+            804,
+            806,
+            808,
+            810,
+            815,
+            816,
+            819,
+            824,
+            825,
+            828,
+            831,
+            834,
+            836,
+            842,
+            843,
+            848,
+            849,
+            852,
+            856,
+            857,
+            860,
+            864,
+            865,
+            871
+          ]
+        }
+      },
+      "datagram_scope": "All selected endpoint datagrams within the command window, including control packets and older TCP streams. Stream ports above keep current bulk separate. Encrypted packets are not assigned to inner streams by time alone.",
+      "first_missing_tcp_range": null
+    },
+    {
+      "id": "matrix1280",
+      "run_id": "9b3a89e7-fa86-426c-9737-ce55bf66aa77",
+      "source_commit": "a1796b0d2be7f0ef068f66347fccb11d55ed58a4",
+      "status": "pass",
+      "clock_offsets": {
+        "member": {
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "pairs": 68,
+          "offset_lower_ns": "-1793416462483629313",
+          "offset_upper_ns": "-1793416462483628493",
+          "measured_offset_span_ns": "820",
+          "assumption": "No intervening wall-clock step; empirical offset envelope, not hardware packet timestamps. Pcap microsecond quantization adds 1000 ns."
+        },
+        "node": {
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "pairs": 76,
+          "offset_lower_ns": "-1793416462483629413",
+          "offset_upper_ns": "-1793416462483628543",
+          "measured_offset_span_ns": "870",
+          "assumption": "No intervening wall-clock step; empirical offset envelope, not hardware packet timestamps. Pcap microsecond quantization adds 1000 ns."
+        },
+        "origin": {
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "pairs": 28,
+          "offset_lower_ns": "-1793416462483629458",
+          "offset_upper_ns": "-1793416462483628514",
+          "measured_offset_span_ns": "944",
+          "assumption": "No intervening wall-clock step; empirical offset envelope, not hardware packet timestamps. Pcap microsecond quantization adds 1000 ns."
+        }
+      },
+      "capture_checks": {
+        "member": {
+          "complete": true,
+          "decoded": 976,
+          "captured": 976,
+          "kernel_drops": 0
+        },
+        "node": {
+          "complete": true,
+          "decoded": 945,
+          "captured": 945,
+          "kernel_drops": 0
+        },
+        "origin": {
+          "complete": true,
+          "decoded": 168,
+          "captured": 168,
+          "kernel_drops": 0
+        }
+      },
+      "metadata_checks": {
+        "member": {
+          "links_and_origin_route": true,
+          "native_implementation_recorded": true
+        },
+        "node": {
+          "links_and_origin_route": true,
+          "native_implementation_recorded": true
+        },
+        "origin": {
+          "links_and_origin_route": true,
+          "native_implementation_recorded": true
+        }
+      },
+      "ptb": {
+        "member": [],
+        "node": [],
+        "origin": []
+      },
+      "fragmentation_needed": {
+        "member": [],
+        "node": [],
+        "origin": []
+      },
+      "selected_before": {
+        "member": {
+          "local": {
+            "address": "addr-129fe9318e066262",
+            "port": "51820",
+            "family": "ipv4"
+          },
+          "remote": {
+            "address": "addr-459868bfedca20a7",
+            "port": "51820",
+            "family": "ipv4"
+          },
+          "wireguard_endpoint": {
+            "address": "",
+            "port": "",
+            "family": ""
+          },
+          "routes": {
+            "origin_route": [
+              {
+                "dst": "addr-4bc4aaecd8e0429e",
+                "dev": "fvnb0",
+                "prefsrc": "addr-87f7093ab4d856e1",
+                "table": "netbird"
+              }
+            ],
+            "overlay_route": [
+              {
+                "dst": "addr-1ee9971a929fcecf",
+                "dev": "fvnb0",
+                "prefsrc": "addr-87f7093ab4d856e1"
+              }
+            ],
+            "peer_route": [
+              {
+                "dst": "addr-459868bfedca20a7",
+                "dev": "eth0",
+                "prefsrc": "addr-129fe9318e066262"
+              }
+            ]
+          }
+        },
+        "node": {
+          "local": {
+            "address": "addr-113bfe83b2a63eb8",
+            "port": "33904",
+            "family": "ipv4"
+          },
+          "remote": {
+            "address": "addr-129fe9318e066262",
+            "port": "51820",
+            "family": "ipv4"
+          },
+          "wireguard_endpoint": {
+            "address": "addr-1e6645702d821645",
+            "port": "3128",
+            "family": "ipv4"
+          },
+          "routes": {
+            "origin_route": [
+              {
+                "dst": "addr-4bc4aaecd8e0429e",
+                "dev": "fvup0",
+                "prefsrc": "addr-7706aa7b8793e2bf"
+              }
+            ],
+            "overlay_route": [
+              {
+                "dst": "addr-87f7093ab4d856e1",
+                "dev": "fvmb0",
+                "prefsrc": "addr-1ee9971a929fcecf"
+              }
+            ],
+            "peer_route": [
+              {
+                "dst": "addr-129fe9318e066262",
+                "dev": "eth1",
+                "prefsrc": "addr-459868bfedca20a7"
+              }
+            ],
+            "wireguard_route": [
+              {
+                "dst": "addr-1e6645702d821645",
+                "dev": "lo",
+                "prefsrc": "addr-12ca17b49af22894",
+                "table": "local"
+              }
+            ]
+          }
+        }
+      },
+      "transfer": {
+        "after": {
+          "upload_bytes": "270993",
+          "download_bytes": "274611",
+          "Present": true,
+          "kernel_generation": "5",
+          "read_diagnostic": {
+            "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+            "read_start_mono_ns": "68660928747951",
+            "read_end_mono_ns": "68660932523422",
+            "enforcement_before": {
+              "available": false,
+              "error": "timing_not_enabled_or_unreadable"
+            },
+            "enforcement_after": {
+              "available": false,
+              "error": "timing_not_enabled_or_unreadable"
+            },
+            "started": "2026-10-31T22:18:43.41232357Z",
+            "completed": "2026-10-31T22:18:43.416152413Z",
+            "stage": "nft_read",
+            "category": "none",
+            "exit": 0,
+            "heartbeat_before": {
+              "read_at": "2026-10-31T22:18:43.412323726Z",
+              "wall_unix_ns": "1793485123358163024",
+              "serving": true,
+              "read_ok": true
+            },
+            "heartbeat_after": {
+              "read_at": "2026-10-31T22:18:43.416156502Z",
+              "wall_unix_ns": "1793485123358163024",
+              "serving": true,
+              "read_ok": true
+            }
+          }
+        },
+        "before": {
+          "upload_bytes": "202925",
+          "download_bytes": "206212",
+          "Present": true,
+          "kernel_generation": "5",
+          "read_diagnostic": {
+            "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+            "read_start_mono_ns": "68660779338685",
+            "read_end_mono_ns": "68660781758562",
+            "enforcement_before": {
+              "available": false,
+              "error": "timing_not_enabled_or_unreadable"
+            },
+            "enforcement_after": {
+              "available": false,
+              "error": "timing_not_enabled_or_unreadable"
+            },
+            "started": "2026-10-31T22:18:43.262913176Z",
+            "completed": "2026-10-31T22:18:43.265387629Z",
+            "stage": "nft_read",
+            "category": "none",
+            "exit": 0,
+            "heartbeat_before": {
+              "read_at": "2026-10-31T22:18:43.262913338Z",
+              "wall_unix_ns": "1793485118506294772",
+              "serving": true,
+              "read_ok": true
+            },
+            "heartbeat_after": {
+              "read_at": "2026-10-31T22:18:43.265394478Z",
+              "wall_unix_ns": "1793485118506294772",
+              "serving": true,
+              "read_ok": true
+            }
+          }
+        },
+        "bulk": {
+          "authority_serial": 0,
+          "endpoint": {
+            "at": "2026-10-31T22:18:43.386001689Z",
+            "local_port": 53734,
+            "remote_port": 9446,
+            "read_bytes": 64387,
+            "write_bytes": 64108,
+            "complete_lines": 64,
+            "partial_line_bytes": 0,
+            "error": "none",
+            "tcp_info": {
+              "bytes_acked": 64109,
+              "bytes_received": 64387,
+              "lost": 0,
+              "notsent_bytes": 0,
+              "rcv_mss": 1006,
+              "rcv_space": 12280,
+              "retrans": 0,
+              "rto_us": 201000,
+              "rtt_us": 155,
+              "sacked": 0,
+              "snd_cwnd": 63,
+              "snd_mss": 1228,
+              "snd_wnd": 68608,
+              "state": 1,
+              "total_retrans": 0,
+              "unacked": 0
+            }
+          },
+          "authority_ttl": 0,
+          "has_soa": false,
+          "available": true,
+          "rcode": -1,
+          "types": [],
+          "ttls": [],
+          "address_classes": [],
+          "expected_answer": false,
+          "connected": true,
+          "bytes": 64064,
+          "milliseconds": 2
+        },
+        "selected_after": {
+          "connected": true,
+          "connection_type": "P2P",
+          "chosen_family": "ipv4"
+        },
+        "selected_before": {
+          "connected": true,
+          "connection_type": "P2P",
+          "chosen_family": "ipv4"
+        }
+      },
+      "reverse": {
+        "sizes": {
+          "124": {
+            "sent": 13,
+            "arrived": 13,
+            "absent": 0
+          },
+          "1132": {
+            "sent": 64,
+            "arrived": 64,
+            "absent": 0
+          }
+        },
+        "absent_sender_packets": [],
+        "unmatched_receiver_packets": 0,
+        "sender_interface": "eth1",
+        "receiver_interface": "eth0",
+        "absent_bounds": []
+      },
+      "forward": {
+        "sizes": {
+          "124": {
+            "sent": 31,
+            "arrived": 31,
+            "absent": 0
+          },
+          "156": {
+            "sent": 1,
+            "arrived": 1,
+            "absent": 0
+          },
+          "1276": {
+            "sent": 52,
+            "arrived": 52,
+            "absent": 0
+          },
+          "84": {
+            "sent": 52,
+            "arrived": 52,
+            "absent": 0
+          },
+          "332": {
+            "sent": 1,
+            "arrived": 1,
+            "absent": 0
+          }
+        },
+        "absent_sender_packets": [],
+        "unmatched_receiver_packets": 0,
+        "sender_interface": "eth0",
+        "receiver_interface": "eth1",
+        "absent_bounds": []
+      },
+      "bulk_local_port": 53734,
+      "reverse_streams": {
+        "53734": {
+          "current_bulk": true,
+          "first_gap": null,
+          "sent_packets": [
+            17,
+            20,
+            21,
+            25,
+            27,
+            29,
+            32,
+            35,
+            36,
+            37,
+            38,
+            39,
+            41,
+            42,
+            43,
+            45,
+            47,
+            51,
+            53,
+            57,
+            59,
+            61,
+            64,
+            66,
+            68,
+            71,
+            74,
+            77,
+            79,
+            82,
+            85,
+            88,
+            90,
+            92,
+            94,
+            98,
+            100,
+            103,
+            106,
+            110,
+            111,
+            113,
+            115,
+            116,
+            118,
+            119,
+            121,
+            122,
+            124,
+            125,
+            126,
+            127,
+            128,
+            129,
+            132,
+            133,
+            135,
+            136,
+            137,
+            138,
+            141,
+            143,
+            144,
+            145,
+            146,
+            148,
+            150,
+            151,
+            153,
+            154,
+            155,
+            156,
+            157,
+            159,
+            160,
+            161,
+            167
+          ],
+          "received_packets": [
+            648,
+            654,
+            656,
+            685,
+            686,
+            687,
+            692,
+            693,
+            694,
+            702,
+            703,
+            718,
+            719,
+            725,
+            731,
+            734,
+            742,
+            743,
+            756,
+            757,
+            763,
+            770,
+            777,
+            778,
+            792,
+            793,
+            814,
+            815,
+            816,
+            817,
+            820,
+            826,
+            830,
+            840,
+            841,
+            849,
+            857,
+            858,
+            859,
+            863,
+            866,
+            869,
+            872,
+            875,
+            878,
+            883,
+            884,
+            887,
+            890,
+            891,
+            897,
+            898,
+            903,
+            905,
+            906,
+            910,
+            915,
+            916,
+            920,
+            924,
+            925,
+            927,
+            929,
+            933,
+            936,
+            939,
+            943,
+            944,
+            947,
+            950,
+            953,
+            955,
+            960,
+            962,
+            967,
+            968,
+            974
+          ]
+        }
+      },
+      "datagram_scope": "All selected endpoint datagrams within the command window, including control packets and older TCP streams. Stream ports above keep current bulk separate. Encrypted packets are not assigned to inner streams by time alone.",
+      "first_missing_tcp_range": null
+    },
+    {
+      "id": "ipv6-asymmetric",
+      "run_id": "9b3a89e7-fa86-426c-9737-ce55bf66aa77",
+      "source_commit": "a1796b0d2be7f0ef068f66347fccb11d55ed58a4",
+      "status": "fail",
+      "clock_offsets": {
+        "member": {
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "pairs": 68,
+          "offset_lower_ns": "-1793416462483629650",
+          "offset_upper_ns": "-1793416462483628513",
+          "measured_offset_span_ns": "1137",
+          "assumption": "No intervening wall-clock step; empirical offset envelope, not hardware packet timestamps. Pcap microsecond quantization adds 1000 ns."
+        },
+        "node": {
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "pairs": 76,
+          "offset_lower_ns": "-1793416462483629393",
+          "offset_upper_ns": "-1793416462483628547",
+          "measured_offset_span_ns": "846",
+          "assumption": "No intervening wall-clock step; empirical offset envelope, not hardware packet timestamps. Pcap microsecond quantization adds 1000 ns."
+        },
+        "origin": {
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "pairs": 28,
+          "offset_lower_ns": "-1793416462483629408",
+          "offset_upper_ns": "-1793416462483628517",
+          "measured_offset_span_ns": "891",
+          "assumption": "No intervening wall-clock step; empirical offset envelope, not hardware packet timestamps. Pcap microsecond quantization adds 1000 ns."
+        }
+      },
+      "capture_checks": {
+        "member": {
+          "complete": true,
+          "decoded": 668,
+          "captured": 668,
+          "kernel_drops": 0
+        },
+        "node": {
+          "complete": true,
+          "decoded": 604,
+          "captured": 604,
+          "kernel_drops": 0
+        },
+        "origin": {
+          "complete": true,
+          "decoded": 148,
+          "captured": 148,
+          "kernel_drops": 0
+        }
+      },
+      "metadata_checks": {
+        "member": {
+          "links_and_origin_route": true,
+          "native_implementation_recorded": true
+        },
+        "node": {
+          "links_and_origin_route": true,
+          "native_implementation_recorded": true
+        },
+        "origin": {
+          "links_and_origin_route": true,
+          "native_implementation_recorded": true
+        }
+      },
+      "ptb": {
+        "member": [],
+        "node": [],
+        "origin": []
+      },
+      "fragmentation_needed": {
+        "member": [],
+        "node": [],
+        "origin": []
+      },
+      "selected_before": {
+        "member": {
+          "local": {
+            "address": "addr-5f910114cdbd19f5",
+            "port": "51820",
+            "family": "ipv6"
+          },
+          "remote": {
+            "address": "addr-837a7935ba5539b1",
+            "port": "51820",
+            "family": "ipv6"
+          },
+          "wireguard_endpoint": {
+            "address": "",
+            "port": "",
+            "family": ""
+          },
+          "routes": {
+            "origin_route": [
+              {
+                "dst": "addr-4bc4aaecd8e0429e",
+                "dev": "fvnb0",
+                "prefsrc": "addr-87f7093ab4d856e1",
+                "table": "netbird"
+              }
+            ],
+            "overlay_route": [
+              {
+                "dst": "addr-1ee9971a929fcecf",
+                "dev": "fvnb0",
+                "prefsrc": "addr-87f7093ab4d856e1"
+              }
+            ],
+            "peer_route": [
+              {
+                "dst": "addr-837a7935ba5539b1",
+                "dev": "eth1",
+                "prefsrc": "addr-5f910114cdbd19f5"
+              }
+            ]
+          }
+        },
+        "node": {
+          "local": {
+            "address": "addr-ed77cd6812ba7a08",
+            "port": "51820",
+            "family": "ipv6"
+          },
+          "remote": {
+            "address": "addr-5f910114cdbd19f5",
+            "port": "51820",
+            "family": "ipv6"
+          },
+          "wireguard_endpoint": {
+            "address": "addr-86a16abf2f54c44c",
+            "port": "3128",
+            "family": "ipv4"
+          },
+          "routes": {
+            "origin_route": [
+              {
+                "dst": "addr-4bc4aaecd8e0429e",
+                "dev": "fvup0",
+                "prefsrc": "addr-7706aa7b8793e2bf"
+              }
+            ],
+            "overlay_route": [
+              {
+                "dst": "addr-87f7093ab4d856e1",
+                "dev": "fvmb0",
+                "prefsrc": "addr-1ee9971a929fcecf"
+              }
+            ],
+            "peer_route": [
+              {
+                "dst": "addr-5f910114cdbd19f5",
+                "dev": "eth2",
+                "prefsrc": "addr-837a7935ba5539b1"
+              }
+            ],
+            "wireguard_route": [
+              {
+                "dst": "addr-86a16abf2f54c44c",
+                "dev": "lo",
+                "prefsrc": "addr-12ca17b49af22894",
+                "table": "local"
+              }
+            ]
+          }
+        }
+      },
+      "transfer": {
+        "after": {
+          "upload_bytes": "338193",
+          "download_bytes": "318598",
+          "Present": true,
+          "kernel_generation": "5",
+          "read_diagnostic": {
+            "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+            "read_start_mono_ns": "68679591046676",
+            "read_end_mono_ns": "68679593501483",
+            "enforcement_before": {
+              "available": false,
+              "error": "timing_not_enabled_or_unreadable"
+            },
+            "enforcement_after": {
+              "available": false,
+              "error": "timing_not_enabled_or_unreadable"
+            },
+            "started": "2026-10-31T22:19:02.07460413Z",
+            "completed": "2026-10-31T22:19:02.077130559Z",
+            "stage": "nft_read",
+            "category": "none",
+            "exit": 0,
+            "heartbeat_before": {
+              "read_at": "2026-10-31T22:19:02.07460429Z",
+              "wall_unix_ns": "1793485138527271210",
+              "serving": true,
+              "read_ok": true
+            },
+            "heartbeat_after": {
+              "read_at": "2026-10-31T22:19:02.077136346Z",
+              "wall_unix_ns": "1793485138527271210",
+              "serving": true,
+              "read_ok": true
+            }
+          }
+        },
+        "before": {
+          "upload_bytes": "270993",
+          "download_bytes": "274611",
+          "Present": true,
+          "kernel_generation": "5",
+          "read_diagnostic": {
+            "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+            "read_start_mono_ns": "68667418889074",
+            "read_end_mono_ns": "68667421393103",
+            "enforcement_before": {
+              "available": false,
+              "error": "timing_not_enabled_or_unreadable"
+            },
+            "enforcement_after": {
+              "available": false,
+              "error": "timing_not_enabled_or_unreadable"
+            },
+            "started": "2026-10-31T22:18:49.902450424Z",
+            "completed": "2026-10-31T22:18:49.905022226Z",
+            "stage": "nft_read",
+            "category": "none",
+            "exit": 0,
+            "heartbeat_before": {
+              "read_at": "2026-10-31T22:18:49.902450587Z",
+              "wall_unix_ns": "1793485128502670174",
+              "serving": true,
+              "read_ok": true
+            },
+            "heartbeat_after": {
+              "read_at": "2026-10-31T22:18:49.905026006Z",
+              "wall_unix_ns": "1793485128502670174",
+              "serving": true,
+              "read_ok": true
+            }
+          }
+        },
+        "bulk": {
+          "authority_serial": 0,
+          "endpoint": {
+            "at": "2026-10-31T22:19:02.043858922Z",
+            "local_port": 41296,
+            "remote_port": 9446,
+            "read_bytes": 16099,
+            "write_bytes": 64108,
+            "complete_lines": 16,
+            "partial_line_bytes": 0,
+            "error": "timeout",
+            "tcp_info": {
+              "bytes_acked": 64109,
+              "bytes_received": 16099,
+              "lost": 0,
+              "notsent_bytes": 0,
+              "rcv_mss": 1006,
+              "rcv_space": 12280,
+              "retrans": 0,
+              "rto_us": 201000,
+              "rtt_us": 257,
+              "sacked": 0,
+              "snd_cwnd": 64,
+              "snd_mss": 1228,
+              "snd_wnd": 68608,
+              "state": 1,
+              "total_retrans": 1,
+              "unacked": 0
+            }
+          },
+          "authority_ttl": 0,
+          "has_soa": false,
+          "available": false,
+          "rcode": -1,
+          "types": [],
+          "ttls": [],
+          "address_classes": [],
+          "expected_answer": false,
+          "connected": true,
+          "bytes": 16016,
+          "milliseconds": 12011,
+          "error": "bulk_echo_incomplete"
+        },
+        "selected_after": {
+          "connected": true,
+          "connection_type": "P2P",
+          "chosen_family": "ipv6"
+        },
+        "selected_before": {
+          "connected": true,
+          "connection_type": "P2P",
+          "chosen_family": "ipv6"
+        }
+      },
+      "reverse": {
+        "sizes": {
+          "144": {
+            "sent": 11,
+            "arrived": 11,
+            "absent": 0
+          },
+          "1152": {
+            "sent": 23,
+            "arrived": 23,
+            "absent": 0
+          },
+          "1360": {
+            "sent": 15,
+            "arrived": 0,
+            "absent": 15
+          },
+          "256": {
+            "sent": 1,
+            "arrived": 1,
+            "absent": 0
+          },
+          "232": {
+            "sent": 12,
+            "arrived": 12,
+            "absent": 0
+          },
+          "196": {
+            "sent": 6,
+            "arrived": 6,
+            "absent": 0
+          }
+        },
+        "absent_sender_packets": [
+          408,
+          412,
+          415,
+          417,
+          491,
+          502,
+          504,
+          506,
+          507,
+          510,
+          519,
+          522,
+          531,
+          534,
+          564
+        ],
+        "unmatched_receiver_packets": 0,
+        "sender_interface": "eth2",
+        "receiver_interface": "eth1",
+        "absent_bounds": [
+          {
+            "packet": 408,
+            "timestamp": "1793485130.033594",
+            "mono_lower_ns": "68667549964607",
+            "mono_upper_ns": "68667549966453"
+          },
+          {
+            "packet": 412,
+            "timestamp": "1793485130.033599",
+            "mono_lower_ns": "68667549969607",
+            "mono_upper_ns": "68667549971453"
+          },
+          {
+            "packet": 415,
+            "timestamp": "1793485130.033601",
+            "mono_lower_ns": "68667549971607",
+            "mono_upper_ns": "68667549973453"
+          },
+          {
+            "packet": 417,
+            "timestamp": "1793485130.033603",
+            "mono_lower_ns": "68667549973607",
+            "mono_upper_ns": "68667549975453"
+          },
+          {
+            "packet": 491,
+            "timestamp": "1793485130.033695",
+            "mono_lower_ns": "68667550065607",
+            "mono_upper_ns": "68667550067453"
+          },
+          {
+            "packet": 502,
+            "timestamp": "1793485130.033722",
+            "mono_lower_ns": "68667550092607",
+            "mono_upper_ns": "68667550094453"
+          },
+          {
+            "packet": 504,
+            "timestamp": "1793485130.033724",
+            "mono_lower_ns": "68667550094607",
+            "mono_upper_ns": "68667550096453"
+          },
+          {
+            "packet": 506,
+            "timestamp": "1793485130.033726",
+            "mono_lower_ns": "68667550096607",
+            "mono_upper_ns": "68667550098453"
+          },
+          {
+            "packet": 507,
+            "timestamp": "1793485130.033727",
+            "mono_lower_ns": "68667550097607",
+            "mono_upper_ns": "68667550099453"
+          },
+          {
+            "packet": 510,
+            "timestamp": "1793485130.033976",
+            "mono_lower_ns": "68667550346607",
+            "mono_upper_ns": "68667550348453"
+          },
+          {
+            "packet": 519,
+            "timestamp": "1793485130.236953",
+            "mono_lower_ns": "68667753323607",
+            "mono_upper_ns": "68667753325453"
+          },
+          {
+            "packet": 522,
+            "timestamp": "1793485130.645650",
+            "mono_lower_ns": "68668162020607",
+            "mono_upper_ns": "68668162022453"
+          },
+          {
+            "packet": 531,
+            "timestamp": "1793485131.510652",
+            "mono_lower_ns": "68669027022607",
+            "mono_upper_ns": "68669027024453"
+          },
+          {
+            "packet": 534,
+            "timestamp": "1793485133.174665",
+            "mono_lower_ns": "68670691035607",
+            "mono_upper_ns": "68670691037453"
+          },
+          {
+            "packet": 564,
+            "timestamp": "1793485136.438649",
+            "mono_lower_ns": "68673955019607",
+            "mono_upper_ns": "68673955021453"
+          }
+        ]
+      },
+      "forward": {
+        "sizes": {
+          "144": {
+            "sent": 12,
+            "arrived": 12,
+            "absent": 0
+          },
+          "176": {
+            "sent": 1,
+            "arrived": 1,
+            "absent": 0
+          },
+          "1280:fragment@0": {
+            "sent": 52,
+            "arrived": 52,
+            "absent": 0
+          },
+          "136:fragment@1232": {
+            "sent": 52,
+            "arrived": 52,
+            "absent": 0
+          },
+          "352": {
+            "sent": 1,
+            "arrived": 1,
+            "absent": 0
+          },
+          "384": {
+            "sent": 1,
+            "arrived": 1,
+            "absent": 0
+          },
+          "232": {
+            "sent": 6,
+            "arrived": 6,
+            "absent": 0
+          },
+          "196": {
+            "sent": 12,
+            "arrived": 12,
+            "absent": 0
+          },
+          "80": {
+            "sent": 1,
+            "arrived": 1,
+            "absent": 0
+          }
+        },
+        "absent_sender_packets": [],
+        "unmatched_receiver_packets": 0,
+        "sender_interface": "eth1",
+        "receiver_interface": "eth2",
+        "absent_bounds": []
+      },
+      "bulk_local_port": 41296,
+      "reverse_streams": {
+        "41296": {
+          "current_bulk": true,
+          "first_gap": [
+            3005476689,
+            3005477917
+          ],
+          "sent_packets": [
+            22,
+            25,
+            26,
+            30,
+            31,
+            34,
+            36,
+            40,
+            42,
+            44,
+            46,
+            47,
+            48,
+            49,
+            51,
+            54,
+            56,
+            59,
+            62,
+            64,
+            66,
+            70,
+            71,
+            76,
+            78,
+            81,
+            82,
+            85,
+            86,
+            89,
+            93,
+            95,
+            97,
+            102,
+            104,
+            106,
+            107,
+            109,
+            111,
+            112,
+            113,
+            114,
+            115,
+            131,
+            148
+          ],
+          "received_packets": [
+            377,
+            384,
+            385,
+            405,
+            420,
+            421,
+            428,
+            429,
+            434,
+            440,
+            441,
+            447,
+            451,
+            464,
+            468,
+            476,
+            479,
+            480,
+            489,
+            500,
+            505,
+            506,
+            511,
+            523,
+            535,
+            540,
+            545,
+            548,
+            557,
+            559,
+            569,
+            571,
+            576,
+            582,
+            640
+          ]
+        }
+      },
+      "datagram_scope": "All selected endpoint datagrams within the command window, including control packets and older TCP streams. Stream ports above keep current bulk separate. Encrypted packets are not assigned to inner streams by time alone.",
+      "first_missing_tcp_range": [
+        3005476689,
+        3005477917
+      ],
+      "missing_range_receipts": {
+        "member": [],
+        "node": [
+          {
+            "packet": 396,
+            "timestamp": "1793485130.033577",
+            "mono_lower_ns": "68667549947607",
+            "mono_upper_ns": "68667549949453",
+            "interface": "fvup0",
+            "packet_type": 0,
+            "tcp": {
+              "src_port": 9446,
+              "dst_port": 41296,
+              "seq": 3005476689,
+              "ack": 1376087468,
+              "flags": 24,
+              "window": 47,
+              "header_length": 32,
+              "length": 5030,
+              "options": [
+                {
+                  "kind": 8,
+                  "length": 10,
+                  "tsval": 1141855922,
+                  "tsecr": 1427573544
+                }
+              ]
+            }
+          },
+          {
+            "packet": 399,
+            "timestamp": "1793485130.033579",
+            "mono_lower_ns": "68667549949607",
+            "mono_upper_ns": "68667549951453",
+            "interface": "fvmb0",
+            "packet_type": 4,
+            "tcp": {
+              "src_port": 9446,
+              "dst_port": 41296,
+              "seq": 3005476689,
+              "ack": 1376087468,
+              "flags": 24,
+              "window": 47,
+              "header_length": 32,
+              "length": 5030,
+              "options": [
+                {
+                  "kind": 8,
+                  "length": 10,
+                  "tsval": 1141855922,
+                  "tsecr": 1427573544
+                }
+              ]
+            }
+          },
+          {
+            "packet": 486,
+            "timestamp": "1793485130.033681",
+            "mono_lower_ns": "68667550051607",
+            "mono_upper_ns": "68667550053453",
+            "interface": "fvup0",
+            "packet_type": 0,
+            "tcp": {
+              "src_port": 9446,
+              "dst_port": 41296,
+              "seq": 3005476689,
+              "ack": 1376106096,
+              "flags": 16,
+              "window": 35,
+              "header_length": 32,
+              "length": 1228,
+              "options": [
+                {
+                  "kind": 8,
+                  "length": 10,
+                  "tsval": 1141855923,
+                  "tsecr": 1427573544
+                }
+              ]
+            }
+          },
+          {
+            "packet": 487,
+            "timestamp": "1793485130.033683",
+            "mono_lower_ns": "68667550053607",
+            "mono_upper_ns": "68667550055453",
+            "interface": "fvmb0",
+            "packet_type": 4,
+            "tcp": {
+              "src_port": 9446,
+              "dst_port": 41296,
+              "seq": 3005476689,
+              "ack": 1376106096,
+              "flags": 16,
+              "window": 35,
+              "header_length": 32,
+              "length": 1228,
+              "options": [
+                {
+                  "kind": 8,
+                  "length": 10,
+                  "tsval": 1141855923,
+                  "tsecr": 1427573544
+                }
+              ]
+            }
+          },
+          {
+            "packet": 517,
+            "timestamp": "1793485130.236673",
+            "mono_lower_ns": "68667753043607",
+            "mono_upper_ns": "68667753045453",
+            "interface": "fvup0",
+            "packet_type": 0,
+            "tcp": {
+              "src_port": 9446,
+              "dst_port": 41296,
+              "seq": 3005476689,
+              "ack": 1376106096,
+              "flags": 16,
+              "window": 67,
+              "header_length": 32,
+              "length": 1228,
+              "options": [
+                {
+                  "kind": 8,
+                  "length": 10,
+                  "tsval": 1141856126,
+                  "tsecr": 1427573549
+                }
+              ]
+            }
+          },
+          {
+            "packet": 518,
+            "timestamp": "1793485130.236706",
+            "mono_lower_ns": "68667753076607",
+            "mono_upper_ns": "68667753078453",
+            "interface": "fvmb0",
+            "packet_type": 4,
+            "tcp": {
+              "src_port": 9446,
+              "dst_port": 41296,
+              "seq": 3005476689,
+              "ack": 1376106096,
+              "flags": 16,
+              "window": 67,
+              "header_length": 32,
+              "length": 1228,
+              "options": [
+                {
+                  "kind": 8,
+                  "length": 10,
+                  "tsval": 1141856126,
+                  "tsecr": 1427573549
+                }
+              ]
+            }
+          },
+          {
+            "packet": 520,
+            "timestamp": "1793485130.644778",
+            "mono_lower_ns": "68668161148607",
+            "mono_upper_ns": "68668161150453",
+            "interface": "fvup0",
+            "packet_type": 0,
+            "tcp": {
+              "src_port": 9446,
+              "dst_port": 41296,
+              "seq": 3005476689,
+              "ack": 1376106096,
+              "flags": 16,
+              "window": 67,
+              "header_length": 32,
+              "length": 1228,
+              "options": [
+                {
+                  "kind": 8,
+                  "length": 10,
+                  "tsval": 1141856534,
+                  "tsecr": 1427573549
+                }
+              ]
+            }
+          },
+          {
+            "packet": 521,
+            "timestamp": "1793485130.644809",
+            "mono_lower_ns": "68668161179607",
+            "mono_upper_ns": "68668161181453",
+            "interface": "fvmb0",
+            "packet_type": 4,
+            "tcp": {
+              "src_port": 9446,
+              "dst_port": 41296,
+              "seq": 3005476689,
+              "ack": 1376106096,
+              "flags": 16,
+              "window": 67,
+              "header_length": 32,
+              "length": 1228,
+              "options": [
+                {
+                  "kind": 8,
+                  "length": 10,
+                  "tsval": 1141856534,
+                  "tsecr": 1427573549
+                }
+              ]
+            }
+          },
+          {
+            "packet": 529,
+            "timestamp": "1793485131.509748",
+            "mono_lower_ns": "68669026118607",
+            "mono_upper_ns": "68669026120453",
+            "interface": "fvup0",
+            "packet_type": 0,
+            "tcp": {
+              "src_port": 9446,
+              "dst_port": 41296,
+              "seq": 3005476689,
+              "ack": 1376106096,
+              "flags": 16,
+              "window": 67,
+              "header_length": 32,
+              "length": 1228,
+              "options": [
+                {
+                  "kind": 8,
+                  "length": 10,
+                  "tsval": 1141857399,
+                  "tsecr": 1427573549
+                }
+              ]
+            }
+          },
+          {
+            "packet": 530,
+            "timestamp": "1793485131.509788",
+            "mono_lower_ns": "68669026158607",
+            "mono_upper_ns": "68669026160453",
+            "interface": "fvmb0",
+            "packet_type": 4,
+            "tcp": {
+              "src_port": 9446,
+              "dst_port": 41296,
+              "seq": 3005476689,
+              "ack": 1376106096,
+              "flags": 16,
+              "window": 67,
+              "header_length": 32,
+              "length": 1228,
+              "options": [
+                {
+                  "kind": 8,
+                  "length": 10,
+                  "tsval": 1141857399,
+                  "tsecr": 1427573549
+                }
+              ]
+            }
+          },
+          {
+            "packet": 532,
+            "timestamp": "1793485133.173665",
+            "mono_lower_ns": "68670690035607",
+            "mono_upper_ns": "68670690037453",
+            "interface": "fvup0",
+            "packet_type": 0,
+            "tcp": {
+              "src_port": 9446,
+              "dst_port": 41296,
+              "seq": 3005476689,
+              "ack": 1376106096,
+              "flags": 16,
+              "window": 67,
+              "header_length": 32,
+              "length": 1228,
+              "options": [
+                {
+                  "kind": 8,
+                  "length": 10,
+                  "tsval": 1141859063,
+                  "tsecr": 1427573549
+                }
+              ]
+            }
+          },
+          {
+            "packet": 533,
+            "timestamp": "1793485133.173700",
+            "mono_lower_ns": "68670690070607",
+            "mono_upper_ns": "68670690072453",
+            "interface": "fvmb0",
+            "packet_type": 4,
+            "tcp": {
+              "src_port": 9446,
+              "dst_port": 41296,
+              "seq": 3005476689,
+              "ack": 1376106096,
+              "flags": 16,
+              "window": 67,
+              "header_length": 32,
+              "length": 1228,
+              "options": [
+                {
+                  "kind": 8,
+                  "length": 10,
+                  "tsval": 1141859063,
+                  "tsecr": 1427573549
+                }
+              ]
+            }
+          },
+          {
+            "packet": 562,
+            "timestamp": "1793485136.437667",
+            "mono_lower_ns": "68673954037607",
+            "mono_upper_ns": "68673954039453",
+            "interface": "fvup0",
+            "packet_type": 0,
+            "tcp": {
+              "src_port": 9446,
+              "dst_port": 41296,
+              "seq": 3005476689,
+              "ack": 1376106096,
+              "flags": 16,
+              "window": 67,
+              "header_length": 32,
+              "length": 1228,
+              "options": [
+                {
+                  "kind": 8,
+                  "length": 10,
+                  "tsval": 1141862327,
+                  "tsecr": 1427573549
+                }
+              ]
+            }
+          },
+          {
+            "packet": 563,
+            "timestamp": "1793485136.437698",
+            "mono_lower_ns": "68673954068607",
+            "mono_upper_ns": "68673954070453",
+            "interface": "fvmb0",
+            "packet_type": 4,
+            "tcp": {
+              "src_port": 9446,
+              "dst_port": 41296,
+              "seq": 3005476689,
+              "ack": 1376106096,
+              "flags": 16,
+              "window": 67,
+              "header_length": 32,
+              "length": 1228,
+              "options": [
+                {
+                  "kind": 8,
+                  "length": 10,
+                  "tsval": 1141862327,
+                  "tsecr": 1427573549
+                }
+              ]
+            }
+          }
+        ],
+        "origin": [
+          {
+            "packet": 78,
+            "timestamp": "1793485130.033575",
+            "mono_lower_ns": "68667549945592",
+            "mono_upper_ns": "68667549947483",
+            "interface": "eth0",
+            "packet_type": 4,
+            "tcp": {
+              "src_port": 9446,
+              "dst_port": 41296,
+              "seq": 3005476689,
+              "ack": 1376087468,
+              "flags": 24,
+              "window": 47,
+              "header_length": 32,
+              "length": 5030,
+              "options": [
+                {
+                  "kind": 8,
+                  "length": 10,
+                  "tsval": 1141855922,
+                  "tsecr": 1427573544
+                }
+              ]
+            }
+          },
+          {
+            "packet": 102,
+            "timestamp": "1793485130.033680",
+            "mono_lower_ns": "68667550050592",
+            "mono_upper_ns": "68667550052483",
+            "interface": "eth0",
+            "packet_type": 4,
+            "tcp": {
+              "src_port": 9446,
+              "dst_port": 41296,
+              "seq": 3005476689,
+              "ack": 1376106096,
+              "flags": 16,
+              "window": 35,
+              "header_length": 32,
+              "length": 1228,
+              "options": [
+                {
+                  "kind": 8,
+                  "length": 10,
+                  "tsval": 1141855923,
+                  "tsecr": 1427573544
+                }
+              ]
+            }
+          },
+          {
+            "packet": 112,
+            "timestamp": "1793485130.236652",
+            "mono_lower_ns": "68667753022592",
+            "mono_upper_ns": "68667753024483",
+            "interface": "eth0",
+            "packet_type": 4,
+            "tcp": {
+              "src_port": 9446,
+              "dst_port": 41296,
+              "seq": 3005476689,
+              "ack": 1376106096,
+              "flags": 16,
+              "window": 67,
+              "header_length": 32,
+              "length": 1228,
+              "options": [
+                {
+                  "kind": 8,
+                  "length": 10,
+                  "tsval": 1141856126,
+                  "tsecr": 1427573549
+                }
+              ]
+            }
+          },
+          {
+            "packet": 113,
+            "timestamp": "1793485130.644749",
+            "mono_lower_ns": "68668161119592",
+            "mono_upper_ns": "68668161121483",
+            "interface": "eth0",
+            "packet_type": 4,
+            "tcp": {
+              "src_port": 9446,
+              "dst_port": 41296,
+              "seq": 3005476689,
+              "ack": 1376106096,
+              "flags": 16,
+              "window": 67,
+              "header_length": 32,
+              "length": 1228,
+              "options": [
+                {
+                  "kind": 8,
+                  "length": 10,
+                  "tsval": 1141856534,
+                  "tsecr": 1427573549
+                }
+              ]
+            }
+          },
+          {
+            "packet": 114,
+            "timestamp": "1793485131.509724",
+            "mono_lower_ns": "68669026094592",
+            "mono_upper_ns": "68669026096483",
+            "interface": "eth0",
+            "packet_type": 4,
+            "tcp": {
+              "src_port": 9446,
+              "dst_port": 41296,
+              "seq": 3005476689,
+              "ack": 1376106096,
+              "flags": 16,
+              "window": 67,
+              "header_length": 32,
+              "length": 1228,
+              "options": [
+                {
+                  "kind": 8,
+                  "length": 10,
+                  "tsval": 1141857399,
+                  "tsecr": 1427573549
+                }
+              ]
+            }
+          },
+          {
+            "packet": 115,
+            "timestamp": "1793485133.173647",
+            "mono_lower_ns": "68670690017592",
+            "mono_upper_ns": "68670690019483",
+            "interface": "eth0",
+            "packet_type": 4,
+            "tcp": {
+              "src_port": 9446,
+              "dst_port": 41296,
+              "seq": 3005476689,
+              "ack": 1376106096,
+              "flags": 16,
+              "window": 67,
+              "header_length": 32,
+              "length": 1228,
+              "options": [
+                {
+                  "kind": 8,
+                  "length": 10,
+                  "tsval": 1141859063,
+                  "tsecr": 1427573549
+                }
+              ]
+            }
+          },
+          {
+            "packet": 131,
+            "timestamp": "1793485136.437651",
+            "mono_lower_ns": "68673954021592",
+            "mono_upper_ns": "68673954023483",
+            "interface": "eth0",
+            "packet_type": 4,
+            "tcp": {
+              "src_port": 9446,
+              "dst_port": 41296,
+              "seq": 3005476689,
+              "ack": 1376106096,
+              "flags": 16,
+              "window": 67,
+              "header_length": 32,
+              "length": 1228,
+              "options": [
+                {
+                  "kind": 8,
+                  "length": 10,
+                  "tsval": 1141862327,
+                  "tsecr": 1427573549
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "ipv6-explicit1280",
+      "run_id": "9b3a89e7-fa86-426c-9737-ce55bf66aa77",
+      "source_commit": "a1796b0d2be7f0ef068f66347fccb11d55ed58a4",
+      "status": "pass",
+      "clock_offsets": {
+        "member": {
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "pairs": 68,
+          "offset_lower_ns": "-1793416462483629631",
+          "offset_upper_ns": "-1793416462483628474",
+          "measured_offset_span_ns": "1157",
+          "assumption": "No intervening wall-clock step; empirical offset envelope, not hardware packet timestamps. Pcap microsecond quantization adds 1000 ns."
+        },
+        "node": {
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "pairs": 76,
+          "offset_lower_ns": "-1793416462483629599",
+          "offset_upper_ns": "-1793416462483628523",
+          "measured_offset_span_ns": "1076",
+          "assumption": "No intervening wall-clock step; empirical offset envelope, not hardware packet timestamps. Pcap microsecond quantization adds 1000 ns."
+        },
+        "origin": {
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "pairs": 28,
+          "offset_lower_ns": "-1793416462483629547",
+          "offset_upper_ns": "-1793416462483628528",
+          "measured_offset_span_ns": "1019",
+          "assumption": "No intervening wall-clock step; empirical offset envelope, not hardware packet timestamps. Pcap microsecond quantization adds 1000 ns."
+        }
+      },
+      "capture_checks": {
+        "member": {
+          "complete": true,
+          "decoded": 391,
+          "captured": 391,
+          "kernel_drops": 0
+        },
+        "node": {
+          "complete": true,
+          "decoded": 503,
+          "captured": 503,
+          "kernel_drops": 0
+        },
+        "origin": {
+          "complete": true,
+          "decoded": 151,
+          "captured": 151,
+          "kernel_drops": 0
+        }
+      },
+      "metadata_checks": {
+        "member": {
+          "links_and_origin_route": true,
+          "native_implementation_recorded": true
+        },
+        "node": {
+          "links_and_origin_route": true,
+          "native_implementation_recorded": true
+        },
+        "origin": {
+          "links_and_origin_route": true,
+          "native_implementation_recorded": true
+        }
+      },
+      "ptb": {
+        "member": [],
+        "node": [],
+        "origin": []
+      },
+      "fragmentation_needed": {
+        "member": [],
+        "node": [],
+        "origin": []
+      },
+      "selected_before": {
+        "member": {
+          "local": {
+            "address": "addr-5f910114cdbd19f5",
+            "port": "51820",
+            "family": "ipv6"
+          },
+          "remote": {
+            "address": "addr-837a7935ba5539b1",
+            "port": "51820",
+            "family": "ipv6"
+          },
+          "wireguard_endpoint": {
+            "address": "",
+            "port": "",
+            "family": ""
+          },
+          "routes": {
+            "origin_route": [
+              {
+                "dst": "addr-4bc4aaecd8e0429e",
+                "dev": "fvnb0",
+                "prefsrc": "addr-87f7093ab4d856e1",
+                "table": "netbird"
+              }
+            ],
+            "overlay_route": [
+              {
+                "dst": "addr-1ee9971a929fcecf",
+                "dev": "fvnb0",
+                "prefsrc": "addr-87f7093ab4d856e1"
+              }
+            ],
+            "peer_route": [
+              {
+                "dst": "addr-837a7935ba5539b1",
+                "dev": "eth1",
+                "prefsrc": "addr-5f910114cdbd19f5"
+              }
+            ]
+          }
+        },
+        "node": {
+          "local": {
+            "address": "addr-ed77cd6812ba7a08",
+            "port": "51820",
+            "family": "ipv6"
+          },
+          "remote": {
+            "address": "addr-5f910114cdbd19f5",
+            "port": "51820",
+            "family": "ipv6"
+          },
+          "wireguard_endpoint": {
+            "address": "addr-5f910114cdbd19f5",
+            "port": "51820",
+            "family": "ipv6"
+          },
+          "routes": {
+            "origin_route": [
+              {
+                "dst": "addr-4bc4aaecd8e0429e",
+                "dev": "fvup0",
+                "prefsrc": "addr-7706aa7b8793e2bf"
+              }
+            ],
+            "overlay_route": [
+              {
+                "dst": "addr-87f7093ab4d856e1",
+                "dev": "fvmb0",
+                "prefsrc": "addr-1ee9971a929fcecf"
+              }
+            ],
+            "peer_route": [
+              {
+                "dst": "addr-5f910114cdbd19f5",
+                "dev": "eth2",
+                "prefsrc": "addr-837a7935ba5539b1",
+                "metrics": [
+                  {
+                    "mtu": 1280
+                  }
+                ]
+              }
+            ],
+            "wireguard_route": [
+              {
+                "dst": "addr-5f910114cdbd19f5",
+                "dev": "eth2",
+                "prefsrc": "addr-837a7935ba5539b1",
+                "metrics": [
+                  {
+                    "mtu": 1280
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "transfer": {
+        "after": {
+          "upload_bytes": "405893",
+          "download_bytes": "387809",
+          "Present": true,
+          "kernel_generation": "5",
+          "read_diagnostic": {
+            "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+            "read_start_mono_ns": "68681883328648",
+            "read_end_mono_ns": "68681885596591",
+            "enforcement_before": {
+              "available": false,
+              "error": "timing_not_enabled_or_unreadable"
+            },
+            "enforcement_after": {
+              "available": false,
+              "error": "timing_not_enabled_or_unreadable"
+            },
+            "started": "2026-10-31T22:19:04.366910541Z",
+            "completed": "2026-10-31T22:19:04.369225531Z",
+            "stage": "nft_read",
+            "category": "none",
+            "exit": 0,
+            "heartbeat_before": {
+              "read_at": "2026-10-31T22:19:04.366910694Z",
+              "wall_unix_ns": "1793485143540354242",
+              "serving": true,
+              "read_ok": true
+            },
+            "heartbeat_after": {
+              "read_at": "2026-10-31T22:19:04.369227818Z",
+              "wall_unix_ns": "1793485143540354242",
+              "serving": true,
+              "read_ok": true
+            }
+          }
+        },
+        "before": {
+          "upload_bytes": "338193",
+          "download_bytes": "319930",
+          "Present": true,
+          "kernel_generation": "5",
+          "read_diagnostic": {
+            "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+            "read_start_mono_ns": "68681732713547",
+            "read_end_mono_ns": "68681735041927",
+            "enforcement_before": {
+              "available": false,
+              "error": "timing_not_enabled_or_unreadable"
+            },
+            "enforcement_after": {
+              "available": false,
+              "error": "timing_not_enabled_or_unreadable"
+            },
+            "started": "2026-10-31T22:19:04.216274762Z",
+            "completed": "2026-10-31T22:19:04.21867091Z",
+            "stage": "nft_read",
+            "category": "none",
+            "exit": 0,
+            "heartbeat_before": {
+              "read_at": "2026-10-31T22:19:04.216275097Z",
+              "wall_unix_ns": "1793485143540354242",
+              "serving": true,
+              "read_ok": true
+            },
+            "heartbeat_after": {
+              "read_at": "2026-10-31T22:19:04.218673134Z",
+              "wall_unix_ns": "1793485143540354242",
+              "serving": true,
+              "read_ok": true
+            }
+          }
+        },
+        "bulk": {
+          "authority_serial": 0,
+          "endpoint": {
+            "at": "2026-10-31T22:19:04.34121293Z",
+            "local_port": 58402,
+            "remote_port": 9446,
+            "read_bytes": 64387,
+            "write_bytes": 64108,
+            "complete_lines": 64,
+            "partial_line_bytes": 0,
+            "error": "none",
+            "tcp_info": {
+              "bytes_acked": 64109,
+              "bytes_received": 64387,
+              "lost": 0,
+              "notsent_bytes": 0,
+              "rcv_mss": 1006,
+              "rcv_space": 12280,
+              "retrans": 0,
+              "rto_us": 201000,
+              "rtt_us": 208,
+              "sacked": 0,
+              "snd_cwnd": 56,
+              "snd_mss": 1228,
+              "snd_wnd": 68608,
+              "state": 1,
+              "total_retrans": 0,
+              "unacked": 0
+            }
+          },
+          "authority_ttl": 0,
+          "has_soa": false,
+          "available": true,
+          "rcode": -1,
+          "types": [],
+          "ttls": [],
+          "address_classes": [],
+          "expected_answer": false,
+          "connected": true,
+          "bytes": 64064,
+          "milliseconds": 1
+        },
+        "selected_after": {
+          "connected": true,
+          "connection_type": "P2P",
+          "chosen_family": "ipv6"
+        },
+        "selected_before": {
+          "connected": true,
+          "connection_type": "P2P",
+          "chosen_family": "ipv6"
+        }
+      },
+      "reverse": {
+        "sizes": {
+          "144": {
+            "sent": 11,
+            "arrived": 11,
+            "absent": 0
+          },
+          "1152": {
+            "sent": 54,
+            "arrived": 54,
+            "absent": 0
+          },
+          "1280:fragment@0": {
+            "sent": 7,
+            "arrived": 7,
+            "absent": 0
+          },
+          "136:fragment@1232": {
+            "sent": 7,
+            "arrived": 7,
+            "absent": 0
+          },
+          "480": {
+            "sent": 1,
+            "arrived": 1,
+            "absent": 0
+          },
+          "1264": {
+            "sent": 1,
+            "arrived": 1,
+            "absent": 0
+          }
+        },
+        "absent_sender_packets": [],
+        "unmatched_receiver_packets": 0,
+        "sender_interface": "eth2",
+        "receiver_interface": "eth1",
+        "absent_bounds": []
+      },
+      "forward": {
+        "sizes": {
+          "144": {
+            "sent": 30,
+            "arrived": 30,
+            "absent": 0
+          },
+          "176": {
+            "sent": 1,
+            "arrived": 1,
+            "absent": 0
+          },
+          "1280:fragment@0": {
+            "sent": 52,
+            "arrived": 52,
+            "absent": 0
+          },
+          "136:fragment@1232": {
+            "sent": 52,
+            "arrived": 52,
+            "absent": 0
+          },
+          "352": {
+            "sent": 1,
+            "arrived": 1,
+            "absent": 0
+          }
+        },
+        "absent_sender_packets": [],
+        "unmatched_receiver_packets": 0,
+        "sender_interface": "eth1",
+        "receiver_interface": "eth2",
+        "absent_bounds": []
+      },
+      "bulk_local_port": 58402,
+      "reverse_streams": {
+        "58402": {
+          "current_bulk": true,
+          "first_gap": null,
+          "sent_packets": [
+            3,
+            6,
+            7,
+            11,
+            16,
+            21,
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            31,
+            34,
+            36,
+            38,
+            40,
+            42,
+            45,
+            48,
+            52,
+            55,
+            57,
+            59,
+            60,
+            61,
+            62,
+            63,
+            64,
+            65,
+            66,
+            68,
+            70,
+            72,
+            74,
+            76,
+            79,
+            81,
+            83,
+            89,
+            91,
+            92,
+            94,
+            95,
+            96,
+            97,
+            100,
+            104,
+            105,
+            106,
+            107,
+            108,
+            111,
+            113,
+            115,
+            116,
+            117,
+            118,
+            121,
+            122,
+            123,
+            124,
+            125,
+            128,
+            130,
+            131,
+            135
+          ],
+          "received_packets": [
+            40,
+            47,
+            48,
+            70,
+            86,
+            87,
+            91,
+            100,
+            107,
+            109,
+            123,
+            128,
+            129,
+            141,
+            142,
+            150,
+            164,
+            165,
+            167,
+            168,
+            178,
+            180,
+            184,
+            189,
+            193,
+            194,
+            200,
+            206,
+            208,
+            210,
+            211,
+            221,
+            223,
+            229,
+            232,
+            237,
+            246,
+            254,
+            256,
+            260,
+            261,
+            270,
+            274,
+            277,
+            280,
+            281,
+            284,
+            289,
+            292,
+            296,
+            299,
+            303,
+            304,
+            306,
+            312,
+            315,
+            317,
+            320,
+            323,
+            325,
+            331,
+            332,
+            336,
+            337,
+            343,
+            344,
+            349,
+            350,
+            354,
+            356,
+            359,
+            364
+          ]
+        }
+      },
+      "datagram_scope": "All selected endpoint datagrams within the command window, including control packets and older TCP streams. Stream ports above keep current bulk separate. Encrypted packets are not assigned to inner streams by time alone.",
+      "first_missing_tcp_range": null
+    },
+    {
+      "id": "ipv6-explicit-repeat1",
+      "run_id": "9b3a89e7-fa86-426c-9737-ce55bf66aa77",
+      "source_commit": "a1796b0d2be7f0ef068f66347fccb11d55ed58a4",
+      "status": "pass",
+      "clock_offsets": {
+        "member": {
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "pairs": 68,
+          "offset_lower_ns": "-1793416462483629377",
+          "offset_upper_ns": "-1793416462483628506",
+          "measured_offset_span_ns": "871",
+          "assumption": "No intervening wall-clock step; empirical offset envelope, not hardware packet timestamps. Pcap microsecond quantization adds 1000 ns."
+        },
+        "node": {
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "pairs": 76,
+          "offset_lower_ns": "-1793416462483629274",
+          "offset_upper_ns": "-1793416462483628511",
+          "measured_offset_span_ns": "763",
+          "assumption": "No intervening wall-clock step; empirical offset envelope, not hardware packet timestamps. Pcap microsecond quantization adds 1000 ns."
+        },
+        "origin": {
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "pairs": 28,
+          "offset_lower_ns": "-1793416462483629402",
+          "offset_upper_ns": "-1793416462483628499",
+          "measured_offset_span_ns": "903",
+          "assumption": "No intervening wall-clock step; empirical offset envelope, not hardware packet timestamps. Pcap microsecond quantization adds 1000 ns."
+        }
+      },
+      "capture_checks": {
+        "member": {
+          "complete": true,
+          "decoded": 382,
+          "captured": 382,
+          "kernel_drops": 0
+        },
+        "node": {
+          "complete": true,
+          "decoded": 495,
+          "captured": 495,
+          "kernel_drops": 0
+        },
+        "origin": {
+          "complete": true,
+          "decoded": 144,
+          "captured": 144,
+          "kernel_drops": 0
+        }
+      },
+      "metadata_checks": {
+        "member": {
+          "links_and_origin_route": true,
+          "native_implementation_recorded": true
+        },
+        "node": {
+          "links_and_origin_route": true,
+          "native_implementation_recorded": true
+        },
+        "origin": {
+          "links_and_origin_route": true,
+          "native_implementation_recorded": true
+        }
+      },
+      "ptb": {
+        "member": [],
+        "node": [],
+        "origin": []
+      },
+      "fragmentation_needed": {
+        "member": [],
+        "node": [],
+        "origin": []
+      },
+      "selected_before": {
+        "member": {
+          "local": {
+            "address": "addr-5f910114cdbd19f5",
+            "port": "51820",
+            "family": "ipv6"
+          },
+          "remote": {
+            "address": "addr-837a7935ba5539b1",
+            "port": "51820",
+            "family": "ipv6"
+          },
+          "wireguard_endpoint": {
+            "address": "",
+            "port": "",
+            "family": ""
+          },
+          "routes": {
+            "origin_route": [
+              {
+                "dst": "addr-4bc4aaecd8e0429e",
+                "dev": "fvnb0",
+                "prefsrc": "addr-87f7093ab4d856e1",
+                "table": "netbird"
+              }
+            ],
+            "overlay_route": [
+              {
+                "dst": "addr-1ee9971a929fcecf",
+                "dev": "fvnb0",
+                "prefsrc": "addr-87f7093ab4d856e1"
+              }
+            ],
+            "peer_route": [
+              {
+                "dst": "addr-837a7935ba5539b1",
+                "dev": "eth1",
+                "prefsrc": "addr-5f910114cdbd19f5"
+              }
+            ]
+          }
+        },
+        "node": {
+          "local": {
+            "address": "addr-ed77cd6812ba7a08",
+            "port": "51820",
+            "family": "ipv6"
+          },
+          "remote": {
+            "address": "addr-5f910114cdbd19f5",
+            "port": "51820",
+            "family": "ipv6"
+          },
+          "wireguard_endpoint": {
+            "address": "addr-5f910114cdbd19f5",
+            "port": "51820",
+            "family": "ipv6"
+          },
+          "routes": {
+            "origin_route": [
+              {
+                "dst": "addr-4bc4aaecd8e0429e",
+                "dev": "fvup0",
+                "prefsrc": "addr-7706aa7b8793e2bf"
+              }
+            ],
+            "overlay_route": [
+              {
+                "dst": "addr-87f7093ab4d856e1",
+                "dev": "fvmb0",
+                "prefsrc": "addr-1ee9971a929fcecf"
+              }
+            ],
+            "peer_route": [
+              {
+                "dst": "addr-5f910114cdbd19f5",
+                "dev": "eth2",
+                "prefsrc": "addr-837a7935ba5539b1",
+                "metrics": [
+                  {
+                    "mtu": 1280
+                  }
+                ]
+              }
+            ],
+            "wireguard_route": [
+              {
+                "dst": "addr-5f910114cdbd19f5",
+                "dev": "eth2",
+                "prefsrc": "addr-837a7935ba5539b1",
+                "metrics": [
+                  {
+                    "mtu": 1280
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "transfer": {
+        "after": {
+          "upload_bytes": "473701",
+          "download_bytes": "455948",
+          "Present": true,
+          "kernel_generation": "5",
+          "read_diagnostic": {
+            "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+            "read_start_mono_ns": "68684118597601",
+            "read_end_mono_ns": "68684120713561",
+            "enforcement_before": {
+              "available": false,
+              "error": "timing_not_enabled_or_unreadable"
+            },
+            "enforcement_after": {
+              "available": false,
+              "error": "timing_not_enabled_or_unreadable"
+            },
+            "started": "2026-10-31T22:19:06.602181935Z",
+            "completed": "2026-10-31T22:19:06.60434251Z",
+            "stage": "nft_read",
+            "category": "none",
+            "exit": 0,
+            "heartbeat_before": {
+              "read_at": "2026-10-31T22:19:06.602182099Z",
+              "wall_unix_ns": "1793485143540354242",
+              "serving": true,
+              "read_ok": true
+            },
+            "heartbeat_after": {
+              "read_at": "2026-10-31T22:19:06.604344383Z",
+              "wall_unix_ns": "1793485143540354242",
+              "serving": true,
+              "read_ok": true
+            }
+          }
+        },
+        "before": {
+          "upload_bytes": "405893",
+          "download_bytes": "387809",
+          "Present": true,
+          "kernel_generation": "5",
+          "read_diagnostic": {
+            "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+            "read_start_mono_ns": "68683976674050",
+            "read_end_mono_ns": "68683978708352",
+            "enforcement_before": {
+              "available": false,
+              "error": "timing_not_enabled_or_unreadable"
+            },
+            "enforcement_after": {
+              "available": false,
+              "error": "timing_not_enabled_or_unreadable"
+            },
+            "started": "2026-10-31T22:19:06.460254391Z",
+            "completed": "2026-10-31T22:19:06.462337404Z",
+            "stage": "nft_read",
+            "category": "none",
+            "exit": 0,
+            "heartbeat_before": {
+              "read_at": "2026-10-31T22:19:06.460254547Z",
+              "wall_unix_ns": "1793485143540354242",
+              "serving": true,
+              "read_ok": true
+            },
+            "heartbeat_after": {
+              "read_at": "2026-10-31T22:19:06.462344304Z",
+              "wall_unix_ns": "1793485143540354242",
+              "serving": true,
+              "read_ok": true
+            }
+          }
+        },
+        "bulk": {
+          "authority_serial": 0,
+          "endpoint": {
+            "at": "2026-10-31T22:19:06.576470492Z",
+            "local_port": 47940,
+            "remote_port": 9446,
+            "read_bytes": 64387,
+            "write_bytes": 64108,
+            "complete_lines": 64,
+            "partial_line_bytes": 0,
+            "error": "none",
+            "tcp_info": {
+              "bytes_acked": 64109,
+              "bytes_received": 64387,
+              "lost": 0,
+              "notsent_bytes": 0,
+              "rcv_mss": 1006,
+              "rcv_space": 12280,
+              "retrans": 0,
+              "rto_us": 201000,
+              "rtt_us": 166,
+              "sacked": 0,
+              "snd_cwnd": 63,
+              "snd_mss": 1228,
+              "snd_wnd": 68608,
+              "state": 1,
+              "total_retrans": 0,
+              "unacked": 0
+            }
+          },
+          "authority_ttl": 0,
+          "has_soa": false,
+          "available": true,
+          "rcode": -1,
+          "types": [],
+          "ttls": [],
+          "address_classes": [],
+          "expected_answer": false,
+          "connected": true,
+          "bytes": 64064,
+          "milliseconds": 1
+        },
+        "selected_after": {
+          "connected": true,
+          "connection_type": "P2P",
+          "chosen_family": "ipv6"
+        },
+        "selected_before": {
+          "connected": true,
+          "connection_type": "P2P",
+          "chosen_family": "ipv6"
+        }
+      },
+      "reverse": {
+        "sizes": {
+          "144": {
+            "sent": 8,
+            "arrived": 8,
+            "absent": 0
+          },
+          "1152": {
+            "sent": 64,
+            "arrived": 64,
+            "absent": 0
+          }
+        },
+        "absent_sender_packets": [],
+        "unmatched_receiver_packets": 0,
+        "sender_interface": "eth2",
+        "receiver_interface": "eth1",
+        "absent_bounds": []
+      },
+      "forward": {
+        "sizes": {
+          "144": {
+            "sent": 30,
+            "arrived": 30,
+            "absent": 0
+          },
+          "176": {
+            "sent": 1,
+            "arrived": 1,
+            "absent": 0
+          },
+          "1280:fragment@0": {
+            "sent": 52,
+            "arrived": 52,
+            "absent": 0
+          },
+          "136:fragment@1232": {
+            "sent": 52,
+            "arrived": 52,
+            "absent": 0
+          },
+          "352": {
+            "sent": 1,
+            "arrived": 1,
+            "absent": 0
+          }
+        },
+        "absent_sender_packets": [],
+        "unmatched_receiver_packets": 0,
+        "sender_interface": "eth1",
+        "receiver_interface": "eth2",
+        "absent_bounds": []
+      },
+      "bulk_local_port": 47940,
+      "reverse_streams": {
+        "47940": {
+          "current_bulk": true,
+          "first_gap": null,
+          "sent_packets": [
+            3,
+            6,
+            7,
+            11,
+            16,
+            22,
+            23,
+            25,
+            27,
+            29,
+            33,
+            36,
+            39,
+            42,
+            45,
+            49,
+            52,
+            56,
+            58,
+            61,
+            63,
+            65,
+            66,
+            69,
+            73,
+            74,
+            75,
+            76,
+            77,
+            78,
+            79,
+            80,
+            81,
+            82,
+            83,
+            86,
+            89,
+            90,
+            92,
+            93,
+            94,
+            96,
+            98,
+            100,
+            101,
+            103,
+            104,
+            105,
+            107,
+            108,
+            110,
+            111,
+            113,
+            114,
+            116,
+            117,
+            118,
+            120,
+            121,
+            122,
+            124,
+            126,
+            128,
+            129,
+            130,
+            131,
+            132,
+            133,
+            136,
+            138,
+            140,
+            143
+          ],
+          "received_packets": [
+            36,
+            42,
+            44,
+            63,
+            81,
+            89,
+            97,
+            104,
+            107,
+            109,
+            123,
+            130,
+            149,
+            150,
+            153,
+            178,
+            179,
+            180,
+            187,
+            193,
+            202,
+            206,
+            213,
+            215,
+            216,
+            217,
+            218,
+            220,
+            221,
+            225,
+            226,
+            229,
+            231,
+            236,
+            240,
+            244,
+            246,
+            249,
+            251,
+            256,
+            258,
+            262,
+            264,
+            268,
+            270,
+            273,
+            276,
+            281,
+            283,
+            288,
+            289,
+            290,
+            294,
+            297,
+            298,
+            302,
+            306,
+            308,
+            312,
+            314,
+            318,
+            320,
+            324,
+            326,
+            329,
+            332,
+            336,
+            338,
+            342,
+            344,
+            348,
+            352
+          ]
+        }
+      },
+      "datagram_scope": "All selected endpoint datagrams within the command window, including control packets and older TCP streams. Stream ports above keep current bulk separate. Encrypted packets are not assigned to inner streams by time alone.",
+      "first_missing_tcp_range": null
+    },
+    {
+      "id": "ipv6-explicit-repeat2",
+      "run_id": "9b3a89e7-fa86-426c-9737-ce55bf66aa77",
+      "source_commit": "a1796b0d2be7f0ef068f66347fccb11d55ed58a4",
+      "status": "pass",
+      "clock_offsets": {
+        "member": {
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "pairs": 68,
+          "offset_lower_ns": "-1793416462483629430",
+          "offset_upper_ns": "-1793416462483628508",
+          "measured_offset_span_ns": "922",
+          "assumption": "No intervening wall-clock step; empirical offset envelope, not hardware packet timestamps. Pcap microsecond quantization adds 1000 ns."
+        },
+        "node": {
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "pairs": 76,
+          "offset_lower_ns": "-1793416462483629424",
+          "offset_upper_ns": "-1793416462483628553",
+          "measured_offset_span_ns": "871",
+          "assumption": "No intervening wall-clock step; empirical offset envelope, not hardware packet timestamps. Pcap microsecond quantization adds 1000 ns."
+        },
+        "origin": {
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "pairs": 28,
+          "offset_lower_ns": "-1793416462483629285",
+          "offset_upper_ns": "-1793416462483628537",
+          "measured_offset_span_ns": "748",
+          "assumption": "No intervening wall-clock step; empirical offset envelope, not hardware packet timestamps. Pcap microsecond quantization adds 1000 ns."
+        }
+      },
+      "capture_checks": {
+        "member": {
+          "complete": true,
+          "decoded": 410,
+          "captured": 410,
+          "kernel_drops": 0
+        },
+        "node": {
+          "complete": true,
+          "decoded": 453,
+          "captured": 453,
+          "kernel_drops": 0
+        },
+        "origin": {
+          "complete": true,
+          "decoded": 109,
+          "captured": 109,
+          "kernel_drops": 0
+        }
+      },
+      "metadata_checks": {
+        "member": {
+          "links_and_origin_route": true,
+          "native_implementation_recorded": true
+        },
+        "node": {
+          "links_and_origin_route": true,
+          "native_implementation_recorded": true
+        },
+        "origin": {
+          "links_and_origin_route": true,
+          "native_implementation_recorded": true
+        }
+      },
+      "ptb": {
+        "member": [],
+        "node": [],
+        "origin": []
+      },
+      "fragmentation_needed": {
+        "member": [],
+        "node": [],
+        "origin": []
+      },
+      "selected_before": {
+        "member": {
+          "local": {
+            "address": "addr-5f910114cdbd19f5",
+            "port": "51820",
+            "family": "ipv6"
+          },
+          "remote": {
+            "address": "addr-837a7935ba5539b1",
+            "port": "51820",
+            "family": "ipv6"
+          },
+          "wireguard_endpoint": {
+            "address": "",
+            "port": "",
+            "family": ""
+          },
+          "routes": {
+            "origin_route": [
+              {
+                "dst": "addr-4bc4aaecd8e0429e",
+                "dev": "fvnb0",
+                "prefsrc": "addr-87f7093ab4d856e1",
+                "table": "netbird"
+              }
+            ],
+            "overlay_route": [
+              {
+                "dst": "addr-1ee9971a929fcecf",
+                "dev": "fvnb0",
+                "prefsrc": "addr-87f7093ab4d856e1"
+              }
+            ],
+            "peer_route": [
+              {
+                "dst": "addr-837a7935ba5539b1",
+                "dev": "eth1",
+                "prefsrc": "addr-5f910114cdbd19f5"
+              }
+            ]
+          }
+        },
+        "node": {
+          "local": {
+            "address": "addr-ed77cd6812ba7a08",
+            "port": "51820",
+            "family": "ipv6"
+          },
+          "remote": {
+            "address": "addr-5f910114cdbd19f5",
+            "port": "51820",
+            "family": "ipv6"
+          },
+          "wireguard_endpoint": {
+            "address": "addr-5f910114cdbd19f5",
+            "port": "51820",
+            "family": "ipv6"
+          },
+          "routes": {
+            "origin_route": [
+              {
+                "dst": "addr-4bc4aaecd8e0429e",
+                "dev": "fvup0",
+                "prefsrc": "addr-7706aa7b8793e2bf"
+              }
+            ],
+            "overlay_route": [
+              {
+                "dst": "addr-87f7093ab4d856e1",
+                "dev": "fvmb0",
+                "prefsrc": "addr-1ee9971a929fcecf"
+              }
+            ],
+            "peer_route": [
+              {
+                "dst": "addr-5f910114cdbd19f5",
+                "dev": "eth2",
+                "prefsrc": "addr-837a7935ba5539b1",
+                "metrics": [
+                  {
+                    "mtu": 1280
+                  }
+                ]
+              }
+            ],
+            "wireguard_route": [
+              {
+                "dst": "addr-5f910114cdbd19f5",
+                "dev": "eth2",
+                "prefsrc": "addr-837a7935ba5539b1",
+                "metrics": [
+                  {
+                    "mtu": 1280
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "transfer": {
+        "after": {
+          "upload_bytes": "541041",
+          "download_bytes": "522007",
+          "Present": true,
+          "kernel_generation": "5",
+          "read_diagnostic": {
+            "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+            "read_start_mono_ns": "68686477476640",
+            "read_end_mono_ns": "68686479555843",
+            "enforcement_before": {
+              "available": false,
+              "error": "timing_not_enabled_or_unreadable"
+            },
+            "enforcement_after": {
+              "available": false,
+              "error": "timing_not_enabled_or_unreadable"
+            },
+            "started": "2026-10-31T22:19:08.961062288Z",
+            "completed": "2026-10-31T22:19:08.963184845Z",
+            "stage": "nft_read",
+            "category": "none",
+            "exit": 0,
+            "heartbeat_before": {
+              "read_at": "2026-10-31T22:19:08.961062462Z",
+              "wall_unix_ns": "1793485148530429387",
+              "serving": true,
+              "read_ok": true
+            },
+            "heartbeat_after": {
+              "read_at": "2026-10-31T22:19:08.963187947Z",
+              "wall_unix_ns": "1793485148530429387",
+              "serving": true,
+              "read_ok": true
+            }
+          }
+        },
+        "before": {
+          "upload_bytes": "473701",
+          "download_bytes": "455948",
+          "Present": true,
+          "kernel_generation": "5",
+          "read_diagnostic": {
+            "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+            "read_start_mono_ns": "68686330744121",
+            "read_end_mono_ns": "68686333113082",
+            "enforcement_before": {
+              "available": false,
+              "error": "timing_not_enabled_or_unreadable"
+            },
+            "enforcement_after": {
+              "available": false,
+              "error": "timing_not_enabled_or_unreadable"
+            },
+            "started": "2026-10-31T22:19:08.814315146Z",
+            "completed": "2026-10-31T22:19:08.816742158Z",
+            "stage": "nft_read",
+            "category": "none",
+            "exit": 0,
+            "heartbeat_before": {
+              "read_at": "2026-10-31T22:19:08.814315316Z",
+              "wall_unix_ns": "1793485148530429387",
+              "serving": true,
+              "read_ok": true
+            },
+            "heartbeat_after": {
+              "read_at": "2026-10-31T22:19:08.816747138Z",
+              "wall_unix_ns": "1793485148530429387",
+              "serving": true,
+              "read_ok": true
+            }
+          }
+        },
+        "bulk": {
+          "authority_serial": 0,
+          "endpoint": {
+            "at": "2026-10-31T22:19:08.934224035Z",
+            "local_port": 47948,
+            "remote_port": 9446,
+            "read_bytes": 64387,
+            "write_bytes": 64108,
+            "complete_lines": 64,
+            "partial_line_bytes": 0,
+            "error": "none",
+            "tcp_info": {
+              "bytes_acked": 64109,
+              "bytes_received": 64387,
+              "lost": 0,
+              "notsent_bytes": 0,
+              "rcv_mss": 1228,
+              "rcv_space": 12280,
+              "retrans": 0,
+              "rto_us": 201000,
+              "rtt_us": 233,
+              "sacked": 0,
+              "snd_cwnd": 63,
+              "snd_mss": 1228,
+              "snd_wnd": 66560,
+              "state": 1,
+              "total_retrans": 0,
+              "unacked": 0
+            }
+          },
+          "authority_ttl": 0,
+          "has_soa": false,
+          "available": true,
+          "rcode": -1,
+          "types": [],
+          "ttls": [],
+          "address_classes": [],
+          "expected_answer": false,
+          "connected": true,
+          "bytes": 64064,
+          "milliseconds": 1
+        },
+        "selected_after": {
+          "connected": true,
+          "connection_type": "P2P",
+          "chosen_family": "ipv6"
+        },
+        "selected_before": {
+          "connected": true,
+          "connection_type": "P2P",
+          "chosen_family": "ipv6"
+        }
+      },
+      "reverse": {
+        "sizes": {
+          "144": {
+            "sent": 16,
+            "arrived": 16,
+            "absent": 0
+          },
+          "1152": {
+            "sent": 10,
+            "arrived": 10,
+            "absent": 0
+          },
+          "1280:fragment@0": {
+            "sent": 44,
+            "arrived": 44,
+            "absent": 0
+          },
+          "136:fragment@1232": {
+            "sent": 43,
+            "arrived": 43,
+            "absent": 0
+          },
+          "480": {
+            "sent": 1,
+            "arrived": 1,
+            "absent": 0
+          },
+          "88:fragment@1232": {
+            "sent": 1,
+            "arrived": 1,
+            "absent": 0
+          }
+        },
+        "absent_sender_packets": [],
+        "unmatched_receiver_packets": 0,
+        "sender_interface": "eth2",
+        "receiver_interface": "eth1",
+        "absent_bounds": []
+      },
+      "forward": {
+        "sizes": {
+          "144": {
+            "sent": 26,
+            "arrived": 26,
+            "absent": 0
+          },
+          "176": {
+            "sent": 1,
+            "arrived": 1,
+            "absent": 0
+          },
+          "1280:fragment@0": {
+            "sent": 52,
+            "arrived": 52,
+            "absent": 0
+          },
+          "136:fragment@1232": {
+            "sent": 52,
+            "arrived": 52,
+            "absent": 0
+          },
+          "352": {
+            "sent": 1,
+            "arrived": 1,
+            "absent": 0
+          }
+        },
+        "absent_sender_packets": [],
+        "unmatched_receiver_packets": 0,
+        "sender_interface": "eth1",
+        "receiver_interface": "eth2",
+        "absent_bounds": []
+      },
+      "bulk_local_port": 47948,
+      "reverse_streams": {
+        "47948": {
+          "current_bulk": true,
+          "first_gap": null,
+          "sent_packets": [
+            2,
+            5,
+            6,
+            9,
+            11,
+            16,
+            18,
+            21,
+            24,
+            25,
+            26,
+            28,
+            29,
+            30,
+            31,
+            33,
+            35,
+            38,
+            40,
+            44,
+            47,
+            50,
+            54,
+            58,
+            60,
+            65,
+            66,
+            70,
+            71,
+            73,
+            77,
+            93
+          ],
+          "received_packets": [
+            41,
+            48,
+            49,
+            71,
+            80,
+            92,
+            98,
+            101,
+            102,
+            103,
+            104,
+            117,
+            122,
+            123,
+            125,
+            144,
+            151,
+            152,
+            160,
+            172,
+            174,
+            179,
+            184,
+            189,
+            220,
+            222,
+            229,
+            236,
+            237,
+            242,
+            246,
+            254,
+            255,
+            256,
+            262,
+            267,
+            272,
+            276,
+            279,
+            284,
+            287,
+            294,
+            299,
+            303,
+            306,
+            310,
+            313,
+            314,
+            321,
+            327,
+            333,
+            340,
+            342,
+            346,
+            350,
+            353,
+            359,
+            364,
+            368,
+            371,
+            373,
+            381
+          ]
+        }
+      },
+      "datagram_scope": "All selected endpoint datagrams within the command window, including control packets and older TCP streams. Stream ports above keep current bulk separate. Encrypted packets are not assigned to inner streams by time alone.",
+      "first_missing_tcp_range": null
+    }
+  ]
+}
