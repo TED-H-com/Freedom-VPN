@@ -55,7 +55,7 @@ func (e *Engine) loadFreeze(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	e.identityFrozen, e.freezeDurable = v == "1", v == "1"
+	e.identityFrozen, e.freezeDurable = e.identityFrozen || v == "1", v == "1"
 	if raw, err := os.ReadFile(filepath.Join(e.cfg.StateDir, "identity-freeze.intent")); err == nil {
 		id, ok, readErr := e.store.Identity(ctx)
 		if readErr != nil {

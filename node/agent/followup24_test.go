@@ -14,6 +14,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/node/enforce"
 	"github.com/TED-H-com/Freedom-VPN/node/internal/fakecontrol"
 	"github.com/TED-H-com/Freedom-VPN/node/internal/healthattest"
+	"github.com/TED-H-com/Freedom-VPN/node/internal/meter"
 	"github.com/TED-H-com/Freedom-VPN/node/internal/updatejournal"
 	"github.com/TED-H-com/Freedom-VPN/node/updater"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
@@ -132,11 +133,28 @@ func TestISO_F6_ObservationEvidenceRevision13(t *testing.T) {
 	}
 }
 
+type barrierSource struct{ obs meter.Observation }
+
+func (s *barrierSource) Read(context.Context) (meter.Observation, error) { return s.obs, nil }
+
 func TestMTR03_UPD05_DurableFileMeterBarrier(t *testing.T) {
 	r := newRig(t)
 	alignControlClock(r)
 	serveBoundGeneration(t, r)
 	r.manualUsage(t)
+	// Drive the production sampler with a controlled admission-counter read.
+	// The final bytes must create a real durable event before publication.
+	r.eng.meter.Close()
+	name := meter.CounterName(r.eng.appliedModel.Bindings[0].DeviceID, meter.DirUpload)
+	src := &barrierSource{obs: meter.Observation{BootID: r.eng.bootID.String(), Bindings: r.eng.appliedModel.Bindings, Counters: map[string]enforce.CounterValue{name: {}}}}
+	var err error
+	r.eng.meter, err = meter.New(meter.Config{NodeID: r.eng.nodeID, IncarnationID: r.eng.incID, Store: r.eng.usage, Source: src})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := r.eng.meter.Sample(t.Context()); err != nil {
+		t.Fatal(err)
+	}
 	head, err := r.eng.usage.Head(t.Context())
 	if err != nil {
 		t.Fatal(err)
@@ -144,6 +162,7 @@ func TestMTR03_UPD05_DurableFileMeterBarrier(t *testing.T) {
 	if _, err := (updater.FileMeter{Path: r.eng.cfg.MeterCheckpoint}).FinalSample(t.Context()); err == nil {
 		t.Fatal("open epoch exposed checkpoint")
 	}
+	src.obs.Counters[name] = enforce.CounterValue{Packets: 1, Bytes: 4096}
 	r.eng.handoff(t.Context())
 	cp, err := (updater.FileMeter{Path: r.eng.cfg.MeterCheckpoint}).FinalSample(t.Context())
 	if err != nil {
@@ -155,6 +174,9 @@ func TestMTR03_UPD05_DurableFileMeterBarrier(t *testing.T) {
 	}
 	if cp.ClosedMeterEpochID != head.OpenEpoch.String() || after.OpenEpoch != uuid.Nil || cp.LastDurableEventSeq != decstr.U64(after.NextSeq-1) || cp.CentralAckedThrough != decstr.U64(after.AckedThrough) || cp.NewMeterEpochID != "" {
 		t.Fatalf("not real cursor: %+v head=%+v", cp, after)
+	}
+	if after.NextSeq <= head.NextSeq {
+		t.Fatal("final counter delta was not durably recorded")
 	}
 	raw := readFile(t, r.eng.cfg.MeterCheckpoint)
 	r.eng.handoff(t.Context())

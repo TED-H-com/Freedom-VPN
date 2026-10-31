@@ -569,6 +569,9 @@ func (e *Engine) Step(ctx context.Context) error {
 }
 
 func (e *Engine) loadRuntime(ctx context.Context) error {
+	if err := e.loadFreeze(ctx); err != nil {
+		return err
+	}
 	if raw, ok, err := e.store.Meta(ctx, "retained_applied"); err != nil {
 		return err
 	} else if ok {
