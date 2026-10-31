@@ -93,10 +93,7 @@ func TestAT10_AT13_ReloadRevokeBaseline(t *testing.T) {
 		}
 	}
 	finishReloadTrace(t)
-	if !streamHealthy(t, "/scratch/stream-a1.log") {
-		save(t, "stream-during-regen.log", readScratch(t, "/scratch/stream-a1.log"))
-		t.Fatal("allowed flow failed during ruleset regeneration")
-	}
+	requireD120(t)
 
 	ctBefore := execText("conntrack", "-L")
 	save(t, "conntrack-before-revoke.txt", sanitize(ctBefore))
@@ -210,33 +207,6 @@ func flapLAN(t *testing.T) {
 		t.Fatalf("flapped LAN received a packet:\n%s", body)
 	}
 	mustExec(t, "ip", "link", "del", "fv-px")
-}
-
-func streamHealthy(t *testing.T, path string) bool {
-	t.Helper()
-	body := readScratch(t, path)
-	lines := strings.Split(strings.TrimSpace(body), "\n")
-	if len(lines) == 0 {
-		return false
-	}
-	var lastOK time.Time
-	var fails int
-	for _, line := range lines {
-		ts, kind, ok := parseStream(line)
-		if !ok {
-			continue
-		}
-		if kind == "ok" {
-			lastOK = ts
-		}
-		if strings.HasPrefix(kind, "fail") {
-			fails++
-		}
-	}
-	if fails > 0 {
-		return false
-	}
-	return time.Since(lastOK) < 3*time.Second
 }
 
 func waitStreamFail(t *testing.T, path string, after time.Time, limit time.Duration) time.Duration {
