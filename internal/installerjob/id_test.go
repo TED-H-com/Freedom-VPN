@@ -1,4 +1,4 @@
-package installerjob
+package installerjob_test
 
 import (
 	"crypto/sha256"
@@ -9,6 +9,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/TED-H-com/Freedom-VPN/internal/installerjob"
 	"github.com/TED-H-com/Freedom-VPN/node/updater"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
@@ -21,10 +22,10 @@ func TestD110_StableManifestIdentity(t *testing.T) {
 	incarnation := uuid.MustParse("00000000-0000-4000-8000-000000000002")
 	digest := strings.Repeat("ab", 32)
 	want := uuid.NewSHA1(uuid.NewSHA1(uuid.NameSpaceOID, []byte("fvpn-installer-apply|"+release.String()+"|"+digest)), []byte(digest+"|"+incarnation.String()))
-	if got := ID(release, digest, incarnation); got != want || got.Version() != 5 || ID(release, strings.ToUpper(digest), incarnation) != got {
+	if got := installerjob.ID(release, digest, incarnation); got != want || got.Version() != 5 || installerjob.ID(release, strings.ToUpper(digest), incarnation) != got {
 		t.Fatal("manifest identity or normalization changed", got, want)
 	}
-	for _, got := range []uuid.UUID{ID(uuid.New(), digest, incarnation), ID(release, strings.Repeat("cd", 32), incarnation), ID(release, digest, uuid.New())} {
+	for _, got := range []uuid.UUID{installerjob.ID(uuid.New(), digest, incarnation), installerjob.ID(release, strings.Repeat("cd", 32), incarnation), installerjob.ID(release, digest, uuid.New())} {
 		if got == want {
 			t.Fatal("release, digest and incarnation must each bind the identity")
 		}
@@ -72,8 +73,8 @@ func TestD110_MainUpdaterClaimNamespaceCompatibility(t *testing.T) {
 	}
 	sum := sha256.Sum256(canonical)
 	pendingDigest := hex.EncodeToString(sum[:])
-	legacy := uuid.NewSHA1(claimNamespace(release, digest), []byte(pendingDigest+"|"+e.Node.Incarnation.String()))
-	desired := ID(release, digest, e.Node.Incarnation)
+	legacy := uuid.NewSHA1(uuid.NewSHA1(uuid.NameSpaceOID, []byte("fvpn-installer-apply|"+release.String()+"|"+digest)), []byte(pendingDigest+"|"+e.Node.Incarnation.String()))
+	desired := installerjob.ID(release, digest, e.Node.Incarnation)
 	if legacy == desired {
 		t.Fatal("legacy pending-record identity unexpectedly matches D-110")
 	}
