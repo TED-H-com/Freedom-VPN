@@ -68,6 +68,8 @@ def measurements(case):
         'T0 / backup': f"{s1.get('t0_utc')} / {s1.get('pgbackrest_backup', {}).get('backup_label')}",
         'L0 → L1 sequence': f"{u.get('n0_seq_at_t0')} → {u.get('n1_seq_at_t1')}",
         'L0 → L1 bytes': f"{_ledger_counts(s1.get('ledger_l0', {}))[2]} → {_ledger_counts(s2.get('ledger_l1', {}))[2]}",
+        'Primary-overwrite refusal / checklist / PITR seconds': f"{s3.get('primary_overwrite_refusal', {}).get('exit_code')} / {proto.get('restore_info', {}).get('checklist_sections')}/6 / {proto.get('restore_info', {}).get('pitr_seconds')}",
+        'Negative restore window (s) / ACK / max seen': f"{s3.get('fail_safe_negative_without_protocol', {}).get('window_seconds')} / {s3.get('fail_safe_negative_without_protocol', {}).get('after_120s_central_ack')} / {s3.get('fail_safe_negative_without_protocol', {}).get('after_120s_central_max_seen')}",
         'Pre-replay database RPO (s)': u.get('pre_replay_db_rpo_seconds'),
         'Post-replay service usage RPO (s)': u.get('post_replay_service_rpo_seconds'),
         'Protocol RTO (s)': proto.get('protocol_rto_seconds'),
@@ -75,6 +77,8 @@ def measurements(case):
         'Replay events / hashes / lost / duplicate / gaps': f"{u.get('l2_events_1_to_n1')} / {u.get('canonical_hash_matches_1_to_n1')} / {u.get('lost_t0_t1_acked_events')} / {u.get('double_counted_events')} / {u.get('usage_ledger_gaps')}",
         'Provider reconciliation': s4.get('provider_reconciliation', {}).get('status'),
         'SECOPS-19 hold unacked / bytes → replay unacked / bytes': f"{hold.get('unacked_event_count')} / {hold.get('unacked_payload_bytes')} → {zero.get('unacked_event_count')} / {zero.get('unacked_payload_bytes')}",
+        'SECOPS-19 CLI hold unacked / bytes → replay unacked / bytes': f"{v.get('during_restore_hold', {}).get('fvpn_agent_usage_snapshot_cli', {}).get('snapshot', {}).get('unacked_count')} / {v.get('during_restore_hold', {}).get('fvpn_agent_usage_snapshot_cli', {}).get('snapshot', {}).get('unacked_payload_bytes')} → {v.get('after_complete_recovery_and_replay', {}).get('fvpn_agent_usage_snapshot_cli', {}).get('snapshot', {}).get('unacked_count')} / {v.get('after_complete_recovery_and_replay', {}).get('fvpn_agent_usage_snapshot_cli', {}).get('snapshot', {}).get('unacked_payload_bytes')}",
+        'Central revoke / fresh post-restore enrollment negatives': f"{s4.get('peer_revocation_reconciliation', {}).get('negative_central_revoke_not_fenced', {}).get('passed')} / {s4.get('peer_revocation_reconciliation', {}).get('negative_post_restore_fresh_enroll_builds', {}).get('passed')}",
         'D-076 fence / regrant': s4.get('peer_revocation_reconciliation', {}).get('status'),
     }
 
@@ -213,6 +217,17 @@ def main():
     summary += 'Full raw structured measurements: [restore-reconcile.json](restore-reconcile.json), [D-077.json](D-077.json), [secret-scan.json](secret-scan.json), [SECOPS-17.json](SECOPS-17.json).\n'
     if blockers: summary += '\nBlockers: ' + ' '.join(blockers) + '\n'
     md('summary.md',summary);md('restore-reconcile.md',summary);md('AT30.md',summary)
+    md('README.md', f"# Wave 4 security and operations acceptance\n\n[Follow-up 10](summary.md) measures the local lab on application base `d9e28f8` (#240/#241/#244/#245), with live harness `{run.get('source_revision')}`. Shared development host; no candidate-hardware or production SLA claim.\n\n"
+       + '| Case | Full status | Scope |\n|---|---|---|\n'
+       + f'| [AT30](AT30.json) | **{status}** | Physical T0 restore, retained-node replay, provider/device reconciliation, D-077 HTTP re-grant and measured RPO/RTO. |\n'
+       + '| [AT28](AT28.json) | blocked | D-066 scan measured; full ownership matrix beyond this run. |\n'
+       + '| [AT29](AT29.json) | blocked | Finite past_due grace measured; established transports await devstack follow-up 15, guest clock rollback remains an operator run. |\n'
+       + '| [AT31](AT31.json) | blocked | The bulk cohort proves final stream attribution; forced relay awaits devstack follow-up 15 and candidate hardware remains unmeasured. |\n'
+       + '| [AT32](AT32.json) | blocked | Physical origins, arm64 and member platforms remain operator work. |\n\n'
+       + '[SECOPS-16](SECOPS-16.json) applies D-066: ordinary logs, captures and readable log files must be clean; root-owned 0600 pre-delete login credentials are a separate class with final scan and deletion proof. Protected key-name counts alone are not leaks under this criterion.\n\n'
+       + '[SECOPS-20](SECOPS-20.json) records the fresh serving gate and NAT read-back. [SECOPS-21](SECOPS-21.json) records the first post-restore generation, node-local retained state, observations and any remaining startup ordering issue. Prior failed observations are retained.\n\n'
+       + 'Use [RUN.md](RUN.md), [requests.md](requests.md), [validation.json](validation.json) and [scope-review.json](scope-review.json). The current target requires AT30, SECOPS-16/17/20 and cleanup; SECOPS-21 remains explicitly open when its first-offer proof fails. [Follow-up 9 history](history/follow-up-9/archive-index.json) is byte-identical; [diagnostic attempt](followup10-attempts.json) records the finalized-run preparation.\n')
+
     md('secret-scan.md',f"# SECOPS-16 — Follow-up 10\n\nStatus: **{scan_record['status']}**. {len(ordinary)} ordinary streams, {len(protected)} final protected-stream records (60 bulk), {len(public_scan)} public records and three driver captures. Ordinary: {ordinary_ok}; captures: {capture_ok}; protected lifecycle: {lifecycle_ok}.\n\n{scan_record['criterion']}. [Per-stream counts and lifecycle evidence](secret-scan.json). No values or matched lines are published.\n")
     notes = '# Requests to orchestrator — Follow-up 10\n\nDated 2026-10-31 UTC (2026-10-30 brief). Source includes #240/#241/#244/#245; owned harness and evidence paths only.\n\n| Item | Status | Evidence / action |\n|---|---|---|\n'
     reasons = {'SECOPS-16':'D-066 ordinary scan and final per-stream protected lifecycle, including the 60-peer bulk export.',
@@ -257,7 +272,7 @@ are deferred to devstack follow-up 15. The scan cohort does not claim capacity.
     for name,state in findings.items():deps.setdefault('requests',{})[name]={'status':state,'detail':reasons[name],'evidence':name+'.json'}
     write('dependencies.json',deps)
     scope=load(PUBLIC/'scope-review.json')
-    names=sorted(set(written+['followup10-live.json','followup10-run.json','followup10-attempts.json','followup10-attempt1-live.json','followup10-attempt1-run.json','followup10-attempt1-verdict.json']))
+    names=sorted(set(written+['followup10-live.json','followup10-run.json','followup10-attempts.json','followup10-attempt1-live.json','followup10-attempt1-run.json','followup10-attempt1-verdict.json','validation.json']))
     scope['follow_up_10']={'reviewed_at':run.get('finished_at'),'source_revision':run.get('source_revision'),
         'scope':'Own Follow-up 10 records only; historical pins remain tied to their historical records. No broader AT or hardware promotion.',
         'records':[{'path':'docs/e2e/at/secops/'+name,'sha256':digest(PUBLIC/name)} for name in names if (PUBLIC/name).is_file()],
