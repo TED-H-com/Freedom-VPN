@@ -86,3 +86,62 @@ transitions, ineligible corrections, unchanged rollback/health checks, nine
 random job IDs, the central generation high-water, and migration 00192's
 round-trip, row bound, immutable guards and lossless downgrade refusal.
 See [D-127 lifecycle and devstack hand-off](central-lifecycle.md#installer-outcome-corrections-d-127-2026-10-31).
+
+## Live installer central acceptance — updates follow-up 10 (2026-10-31)
+
+Updates follow-up 10, merged as #337, ran the installer → updater → central
+extension on product main `fb5e002549f79e8ef61bebcf42cce1678ab65cb1`, harness
+`0df8599dc84d4b85e48182f20aa4b0fc741bc72a`, run
+`695f977c-b587-4768-88f1-0514f3a4f1ac` at `2026-10-31T15:27:22Z`.
+The [JSON record](../e2e/at/updates/installer-handoff.json),
+[rendered hand-off](../e2e/at/updates/installer-handoff.md) and
+[follow-up report](../e2e/at/updates/follow-up-10.md) on main record all 23
+installer extension checks passing. These living links identify the cited run;
+no digest is pinned to a living evidence file. This is measured central
+acceptance for UPD02, UPD03 and UPD05 (§13.6, §13.8, §13.9).
+
+| Stimulus | Live central result |
+|---|---|
+| Real sealed installer success after sequence-11 apply | HTTP 202; `source=installer`, `batch_id=null`, current = last-good = sequence 11 from a null central baseline. The D-110 job ID was recomputed and matched the receipt. |
+| Same-key and new-key exact receipt replays | HTTP 202 / 202 with stored ACKs; ETag remains `"8"`. |
+| Modified receipt; wrong job ID | HTTP 409 `ACK_CONFLICT`; HTTP 409 `STATE_CONFLICT` with `details.reason=job_id_mismatch`. Release pointers, update summary and version stay unchanged at ETag `"8"`. |
+| Failed sequence-12 apply after real checkpoint withdrawal | `CHECKPOINT_FAILED` at `final_sample`, null checkpoint and health; failed evidence accepted HTTP 202. Current = last-good stays sequence 11; the failure summary advances the ETag to `"9"`. |
+| D-127 / r17 M-2 later rollback correction | **TEST ONLY HTTP stimulus** derived from the real success; accepted HTTP 202. Central current = last-good returns to sequence 10, state becomes `rolled_back`, ETag `"9"` → `"10"`. |
+| First-receipt and correction replays; third changed outcome | HTTP 202 / 202 with both stored ACKs retained; the correction also replays under a new key with HTTP 202. A third changed outcome returns HTTP 409 `ACK_CONFLICT`; correction ETag stays `"10"`. Two outcomes remain stored for the success job. |
+
+The source report labels the correction “D-127 / r16 M-2”; the same measured
+correction supplies the r17 M-2 central acceptance evidence recorded here.
+The correction did not perform a local rollback or measure restored baseline
+health. **Physical rollback (AT26) and the regular AT23–AT27 rows remain
+blocked** by updates F10-01, the devstack fixture layout item: the regular
+builder places the executable under `bin/`, while active-release validation
+expects it at the release root. AT23 cannot establish last-good, so AT24–AT27
+cannot execute their later scenarios. The full live make target exits 2.
+
+The extension used a quiet unpublished amd64 agent and an explicitly configured
+central endpoint, CA and allowed origins. Generated installer reporting remains
+F10-02 because its `result_url` is empty. Serving-traffic withdrawal/nonzero
+accounting is separately cited by updates 10 from devstack 19; physical arm64
+execution remains open. These results claim no live production rollout.
+
+## Fixture ownership and evidence paths (D-132, 2026-10-31)
+
+`TestD062a_PrecheckFailureHarnessDelivery` and
+`TestD062c_RollbackHarnessRequiresRestoredHealthEmptyAllowlist` now read
+byte-identical redacted captures in `internal/fleetupdate/testdata/`. Each test
+comments its immutable follow-up 9 source and SHA-256 digest. State, stage,
+error and health assertions are retained, with IDs, hashes and times rebound
+to real authorized jobs. An empty precheck record now fails explicitly before
+indexing. `TestD132_EvidenceReferencesUseImmutableHistory` scans every file
+under `internal/fleetupdate/` during ordinary tests and rejects AT evidence
+references outside a `history/` path, including comments and fixture files.
+
+The recursive audit of fleetupdate and installerjob tests found no remaining
+cross-lane AT file reads. Shared contract example reads remain:
+`ObservationReport.json` in `d062_integration_test.go` and
+`review_r9_d062_integration_test.go`, and `UpdateResult.installer.json` in
+`installer_results_integration_test.go`. The shared `releasetest.New` helper
+reads the canonical release-manifest signing vector in `contracts/vectors/`.
+Installerjob creates its pending record under `t.TempDir()` and exercises the
+updater against that isolated tree. These contract and local scratch inputs
+do not depend on another lane's evolving evidence files.
