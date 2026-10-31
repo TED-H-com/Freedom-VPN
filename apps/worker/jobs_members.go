@@ -70,6 +70,7 @@ func memberJob(ctx context.Context, event db.ClaimedEvent) (string, error) {
 		return "", errors.New("unsupported member event schema")
 	}
 	pool := s.HTTP.Members.Pool
+	var fenceEvents []db.ClaimedEvent
 	switch event.EventType {
 	case "billing.inbox_received":
 		var p struct {
@@ -117,8 +118,12 @@ func memberJob(ctx context.Context, event db.ClaimedEvent) (string, error) {
 		// removal leaves the projection unchanged. SyncMember observes the
 		// member.grant_revoke netbird step only after every device read-back;
 		// fence fanout must finish before the job's policy receipt is acknowledged.
-		syncErr := s.HTTP.Devices.SyncMember(ctx, p.MemberID)
-		if e := errors.Join(syncErr, recompileFencedMember(ctx, s, p.MemberID)); e != nil {
+		if syncErr := s.HTTP.Devices.SyncMember(ctx, p.MemberID); syncErr != nil {
+			return "", errors.Join(syncErr, recompileFencedMember(ctx, s, p.MemberID))
+		}
+		var e error
+		fenceEvents, e = fencedMemberEvents(ctx, s, p.MemberID)
+		if e != nil {
 			return "", e
 		}
 	case "billing.reconcile":
@@ -206,7 +211,9 @@ func memberJob(ctx context.Context, event db.ClaimedEvent) (string, error) {
 		// needs the ordinary policy/read-back path for this member and its groups.
 		policyEvent.EventType = "member.entitlement_changed"
 	}
-	compiled, e := compiler.RecompileBatch(ctx, []db.ClaimedEvent{policyEvent})
+	// Combine fence invalidation with policy work so overlapping exits compile
+	// once. Both must succeed before the withdrawal job receives its receipt.
+	compiled, e := compiler.RecompileBatch(ctx, append(fenceEvents, policyEvent))
 	if e != nil {
 		return "", e
 	}
@@ -243,6 +250,22 @@ func memberJob(ctx context.Context, event db.ClaimedEvent) (string, error) {
 // callers run this even on errors. The persisted fence and signed bindings also
 // recover work after a crash; no transient "new fence" flag is required.
 func recompileFencedMember(ctx context.Context, s *membersruntime.Services, member uuid.UUID) error {
+	events, err := fencedMemberEvents(ctx, s, member)
+	if err != nil || len(events) == 0 {
+		return err
+	}
+	compiler := s.Compiler
+	if compiler == nil {
+		compiler = membersruntime.CompilerFromContext(ctx)
+	}
+	if compiler == nil {
+		return errors.New("member desired-state compiler required")
+	}
+	_, err = compiler.RecompileBatch(ctx, events)
+	return err
+}
+
+func fencedMemberEvents(ctx context.Context, s *membersruntime.Services, member uuid.UUID) ([]db.ClaimedEvent, error) {
 	rows, err := s.HTTP.Members.Pool.Query(ctx, `
 		SELECT e.node_id FROM desired_state_envelopes e
 		JOIN nodes n ON n.id=e.node_id AND n.current_incarnation_id=e.incarnation_id
@@ -253,28 +276,20 @@ func recompileFencedMember(ctx context.Context, s *membersruntime.Services, memb
 			WHERE d.member_id=$1
 		) ORDER BY e.node_id`, member)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	ids, err := pgx.CollectRows(rows, pgx.RowTo[uuid.UUID])
 	if err != nil || len(ids) == 0 {
-		return err
-	}
-	compiler := s.Compiler
-	if compiler == nil {
-		compiler = membersruntime.CompilerFromContext(ctx)
-	}
-	if compiler == nil {
-		return errors.New("member desired-state compiler required")
+		return nil, err
 	}
 	// This is an in-process invalidation hint, not a device status transition or
 	// a new revoke operation. Explicit node IDs include old groups still bound
 	// in signed state and avoid recompiling exits that already dropped the peer.
 	payload, err := canonjson.Marshal(map[string]any{"node_ids": ids})
 	if err != nil {
-		return err
+		return nil, err
 	}
-	_, err = compiler.RecompileBatch(ctx, []db.ClaimedEvent{{OutboxEvent: db.OutboxEvent{EventType: desiredstate.EventDeviceRevoked, Payload: payload}}})
-	return err
+	return []db.ClaimedEvent{{OutboxEvent: db.OutboxEvent{EventType: desiredstate.EventDeviceRevoked, Payload: payload}}}, nil
 }
 
 type scheduledPage struct {

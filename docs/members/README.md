@@ -202,17 +202,17 @@ when today's entitlement projection does not change. Devices losing service
 move to pending through D-050 / D-081; finite expiry remains a separate AT29
 case. Live heartbeat/forwarding timing requires the acceptance lab.
 
-Revision 14 also specifies withdrawal of open-ended grants, but this base's
-database requires a non-null, finite `valid_until`; the grant read schema and
-creation API are finite too. That vector's runtime coverage is pending an
-orchestrator-defined representation and schema migration. This handler does
-not introduce open-ended creation or a synthetic production deadline.
+Every grant is finite (D-117); withdrawal of a far-future grant recomputes the
+projection like any other grant.
 
 Grant withdrawal and entitlement restoration preserve an existing
-`authorization_unconfirmed` fence; neither re-authorizes that device. Pending
-**w3-wire-nodes follow-up 31** (absent on this base), such a device will also be
-neither bound in desired state nor leased. That r16 H-1 fix belongs to
-`internal/desiredstate` / `internal/leases`; the fence behavior here remains D-077.
+`authorization_unconfirmed` fence; neither re-authorizes that device. With
+**w3-wire-nodes follow-up 31** merged, the device is neither bound in desired
+state nor leased. The worker reconciles every current-incarnation signed
+binding through the device-revocation compiler fanout before acknowledging the
+withdrawal job, including exits no longer in the member's groups. Overlapping
+fence and withdrawal work compiles once; the operation still requires NetBird
+read-back and node enforcement evidence. The fence behavior remains D-077.
 
 `devices.NetBirdAdapter` implements the existing narrow `devices.Adapter`.
 `EnsureMemberDevice` verifies the actual user, including service/blocked/unsafe

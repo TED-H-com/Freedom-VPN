@@ -42,6 +42,51 @@ func grantRevokePath(member, grant uuid.UUID) string {
 	return "/api/v1/admin/members/" + member.String() + "/grants/" + grant.String() + "/revoke"
 }
 
+func TestAT29_D117_RevokeFarFutureFiniteGrant(t *testing.T) {
+	f := newFixture(t)
+	admin := f.login("TEST-long-grant-admin", "admin")
+	member := f.login("TEST-long-grant-member", "member")
+	grant := f.grant(admin, member, f.now.Add(-time.Minute), f.now.Add(time.Hour))
+	f.drain()
+	var before entitlement.Result
+	var revision decstr.U64
+	if err := f.pool.QueryRow(t.Context(), `SELECT projection,revision::text FROM entitlements WHERE member_id=$1`, member.id).Scan(&before, &revision); err != nil {
+		t.Fatal(err)
+	}
+	// TEST ONLY persisted long-lived grant. Creation still enforces its bounded
+	// duration setting; withdrawal must also handle existing finite rows beyond
+	// that setting, without inventing an open-ended grant representation (D-117).
+	end, target := f.now.AddDate(10, 0, 0), uuid.New()
+	before.EffectiveServiceEnd = &end
+	before.SourceRefs = append(before.SourceRefs, target)
+	raw, err := json.Marshal(before)
+	if err != nil {
+		t.Fatal(err)
+	}
+	f.exec(`INSERT INTO entitlement_grants(id,member_id,source,valid_from,valid_until,reason,created_by,plan_revision_id) VALUES($1,$2,'admin_grant',$3,$4,'TEST ONLY far-future finite grant',$5,$6)`, target, member.id, f.now.Add(-time.Minute), end, admin.id.String(), f.revision)
+	f.exec(`UPDATE entitlements SET effective_service_end=$2,projection=$3,source_refs=$4,next_transition_at=$5 WHERE member_id=$1`, member.id, end, raw, before.SourceRefs, f.now.Add(time.Hour))
+	if !before.Allows(f.now) || len(before.SourceRefs) != 2 || before.SourceRefs[0] != grant.Resource.Id || before.SourceRefs[1] != target {
+		t.Fatal("fixture lacks an active finite grant", before)
+	}
+	body := `{"reason":"TEST ONLY far-future finite withdrawal"}`
+	w := f.call(admin, "POST", grantRevokePath(member.id, target), body, nil)
+	requireStatus(t, w, 202)
+	op := decode[api.Operation](t, w)
+	var after entitlement.Result
+	var nextRevision decstr.U64
+	var shortened bool
+	remainingEnd := f.now.Add(time.Hour)
+	if err = f.pool.QueryRow(t.Context(), `SELECT projection,revision::text,effective_service_end=$2 AND next_transition_at=$2 AND source_refs=ARRAY[$3::uuid] FROM entitlements WHERE member_id=$1`, member.id, remainingEnd, grant.Resource.Id).Scan(&after, &nextRevision, &shortened); err != nil {
+		t.Fatal(err)
+	}
+	if !after.Allows(f.now) || after.EffectiveServiceEnd == nil || !after.EffectiveServiceEnd.Equal(remainingEnd) || len(after.SourceRefs) != 1 || after.SourceRefs[0] != grant.Resource.Id || nextRevision != revision+1 || !shortened {
+		t.Fatalf("far-future withdrawal did not recompute projection: %+v revision %s", after, nextRevision)
+	}
+	f.assertGrantWithdrawalAudit(admin, member.id, op, "member.grant_revoke", body)
+	f.drain()
+	f.assertGrantReadback(admin, op.OperationId)
+}
+
 // Revision 14 drives statuses and codes; successful responses are also validated
 // by fixture.call against the generated OpenAPI document, through composition.
 func TestAT29_RevokeMemberGrantContractVectors(t *testing.T) {
@@ -83,14 +128,17 @@ func TestAT29_RevokeMemberGrantContractVectors(t *testing.T) {
 	}
 	var accepted api.Operation
 	for _, c := range v.Cases {
+		// D-117 retires this obsolete vector label: all grants are finite.
+		// TestAT29_D117_RevokeFarFutureFiniteGrant covers the long-lived case.
+		if c.Name == "open-ended" {
+			continue
+		}
 		t.Run(c.Name, func(t *testing.T) {
 			targets := []string{path}
 			headers := map[string]string{}
 			switch c.Name {
 			case "finite", "same-key-replay":
 				headers = v.Headers
-			case "open-ended":
-				t.Skip("revision 14 representation pending: production entitlement_grants.valid_until is NOT NULL and CHECK(isfinite(valid_until)); no open-ended fixture can be inserted")
 			case "unknown-or-other-member":
 				targets = []string{grantRevokePath(member.id, uuid.New()), grantRevokePath(other.id, grant.Resource.Id), grantRevokePath(uuid.New(), grant.Resource.Id)}
 			case "already-revoked":
