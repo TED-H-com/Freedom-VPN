@@ -42,7 +42,7 @@ func TestUpdatesFollowup(t *testing.T) {
 	}
 	for i, title := range titles {
 		id := fmt.Sprintf("AT%d", 23+i)
-		records[id] = &at.Record{ID: id, Title: title, Status: at.StatusBlocked, RunID: runID, Prefix: "w4-updates", PortBase: 42000, Git: strings.TrimSpace(string(commit)), Scope: "Follow-up 9 regular-lab requested scenario; not complete original §19 acceptance or physical arm64 proof", Spec: []string{"UPD01", "UPD02", "§13.4", "§13.9", "§13.10", "§13.12"}, Expected: title, Actual: "Prerequisite not reached; see suite summary", Commands: []string{"make -f mk/at-updates.mk at-updates"}}
+		records[id] = &at.Record{ID: id, Title: title, Status: at.StatusBlocked, RunID: runID, Prefix: "w4-updates", PortBase: 42000, Git: strings.TrimSpace(string(commit)), Scope: "Follow-up 10 regular-lab requested scenario; not complete original §19 acceptance or physical arm64 proof", Spec: []string{"UPD01", "UPD02", "§13.4", "§13.9", "§13.10", "§13.12"}, Expected: title, Actual: "Prerequisite not reached; see suite summary", Commands: []string{"make -f mk/at-updates.mk at-updates"}}
 	}
 	// Record exact harness bytes as well as the product source commit. This
 	// remains reproducible when evidence and a capture fix share a final commit.
@@ -70,12 +70,12 @@ func TestUpdatesFollowup(t *testing.T) {
 		requireFollowup7Evidence(records)
 		dir := filepath.Join(root, "docs", "e2e", "at", "updates")
 		var summary strings.Builder
-		fmt.Fprintf(&summary, "# Updates follow-up 9\n\nRun: %s\n\nSource: %s\n\nThese labels follow the orchestrator's follow-up scenario list. They do not redefine the broader §19 cases. Physical arm64 execution and the full original §19 population remain outside this run. Both architectures contain compiled real binaries.\n\n| Scenario | Result | Observation |\n|---|---|---|\n", runID, strings.TrimSpace(string(commit)))
+		fmt.Fprintf(&summary, "# Updates follow-up 10\n\nRun: %s\n\nSource: %s\n\nThese labels follow the orchestrator's follow-up scenario list. They do not redefine the broader §19 cases. Physical arm64 execution and the full original §19 population remain outside this run. Both architectures contain compiled real binaries.\n\n| Scenario | Result | Observation |\n|---|---|---|\n", runID, strings.TrimSpace(string(commit)))
 		for i := 23; i <= 27; i++ {
 			rec := records[fmt.Sprintf("AT%d", i)]
 			fmt.Fprintf(&summary, "| [%s](%s.md) | %s | %s |\n", rec.ID, rec.ID, rec.Status, at.Redact(rec.Actual))
 		}
-		summary.WriteString("\nSee [current requests](requests.md) and the [follow-up 8 history](history/follow-up-8/README.md).\n")
+		summary.WriteString("\nSee [current requests](requests.md) and the [follow-up 9 archive](history/follow-up-9/ARCHIVE.md).\n")
 		if err := at.WriteAcceptance(dir, records); err != nil {
 			t.Error(err)
 		}
@@ -118,12 +118,12 @@ func TestUpdatesFollowup(t *testing.T) {
 	// Run before any fleet default exists; retire this fixture before batch snapshots.
 	s.installerHandoff(stack, baseline)
 	unrelated := s.unrelatedRelease()
-	if err := lab.alignKernelBoot("node"); err != nil {
-		s.blockAll("devstack kernel boot identity adapter failed")
+	if err := lab.verifyKernelBoot("node"); err != nil {
+		s.blockAll("devstack kernel boot identity differs")
 		return
 	}
 	for id := range records {
-		s.note(id, "kernel_boot_adapter", "TEST ONLY: copy kernel boot_id into devstack agent boot-id input before enrollment; updater config omits boot_id; request devstack follow-up 16")
+		s.note(id, "kernel_boot_verified", "Read-only comparison: devstack agent boot-id input equals kernel boot_id before enrollment; updater config omits boot_id (F9-06)")
 	}
 	r.enroll(ctx, admin)
 	if r.nodeID == uuid.Nil || r.incID == uuid.Nil {
@@ -367,7 +367,7 @@ func (s *updatesFollowup) createBatch(id string, release uuid.UUID) (api.UpdateB
 		s.block(id, "w3-wire-fleet: fleet read unavailable")
 		return accepted, false
 	}
-	reply, err = s.admin.call(s.ctx, "POST", s.r.lab.public+"/api/v1/admin/update-batches", api.UpdateBatchCreateRequest{ReleaseId: release, Scope: api.UpdateBatchCreateRequestScopeAllNodes, ExpectedGeneration: page.Fleet.Generation, SetFleetDefault: true, Reason: "TEST ONLY updates follow-up 9"}, map[string]string{"Idempotency-Key": uuid.NewString()})
+	reply, err = s.admin.call(s.ctx, "POST", s.r.lab.public+"/api/v1/admin/update-batches", api.UpdateBatchCreateRequest{ReleaseId: release, Scope: api.UpdateBatchCreateRequestScopeAllNodes, ExpectedGeneration: page.Fleet.Generation, SetFleetDefault: true, Reason: "TEST ONLY updates follow-up 10"}, map[string]string{"Idempotency-Key": uuid.NewString()})
 	s.note(id, "batch_response", httpDetail(reply, err))
 	if err != nil || reply.Status != 202 || json.Unmarshal(reply.Body, &accepted) != nil {
 		s.block(id, "w3-wire-fleet: batch create not accepted")

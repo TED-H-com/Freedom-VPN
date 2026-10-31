@@ -435,10 +435,9 @@ func (l *lab) nodeSlot() string {
 	return "node"
 }
 
-// D-080 reads the kernel boot id in updater. The devstack entrypoint still
-// fills this agent input with a random UUID; align it before enrollment so
-// challenges, attestations and observations refer to the same boot.
-func (l *lab) alignKernelBoot(slot string) error {
+// F9-06: verify the merged entrypoint supplies the kernel identity. Never
+// repair the input in this acceptance lane, which would hide a regression.
+func (l *lab) verifyKernelBoot(slot string) error {
 	if slot != "node" && slot != "node2" {
 		return errors.New("unknown node slot")
 	}
@@ -447,6 +446,6 @@ func (l *lab) alignKernelBoot(slot string) error {
 	if !waitUntil(ctx, time.Second, func() bool { return l.stage(l.prefix+"-"+slot, "/var/lib/vpn-node/e2e/status.json") == "waiting_token" }) {
 		return errors.New("node not waiting for enrollment")
 	}
-	_, err := l.docker(l.prefix+"-"+slot, "sh", "-c", `cat /proc/sys/kernel/random/boot_id > /etc/vpn-node/boot-id`)
+	_, err := l.docker(l.prefix+"-"+slot, "cmp", "/proc/sys/kernel/random/boot_id", "/etc/vpn-node/boot-id")
 	return err
 }
