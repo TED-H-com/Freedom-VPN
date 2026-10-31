@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-// initIsolation creates the product table and an empty netns when they are
+// initIsolation creates the installer marker and an empty netns when they are
 // absent (§6.3, AT13). It never flushes the host ruleset, never deletes a
 // table it did not create, and never moves a host interface. enforce
 // programs inet fvpn in the host network namespace, so the data-plane
@@ -39,10 +39,10 @@ func initIsolation(ctx context.Context, env *Env, j *Journal, member, uplink str
 // ownedState is the set of network objects this installer created.
 // remove deletes only this set (§6.3).
 type ownedState struct {
-	CreatedTable     bool     `json:"created_table"`
-	CreatedNetns     bool     `json:"created_netns"`
-	CreatedLinks     []string `json:"created_links"`
-	InstalledNetbird bool     `json:"installed_netbird"`
+	CreatedMarkerTable bool     `json:"created_marker_table"`
+	CreatedNetns       bool     `json:"created_netns"`
+	CreatedLinks       []string `json:"created_links"`
+	InstalledNetbird   bool     `json:"installed_netbird"`
 }
 
 func readOwned(l Layout) ownedState {
@@ -62,8 +62,8 @@ func writeOwned(env *Env, j *Journal) error {
 	st := prev
 	for _, rec := range j.file.Records {
 		switch rec.Action {
-		case "nft-table":
-			st.CreatedTable = true
+		case "nft-marker-table":
+			st.CreatedMarkerTable = true
 		case "netns":
 			st.CreatedNetns = true
 		case "link":
@@ -94,29 +94,33 @@ func contains(ss []string, s string) bool {
 }
 
 func ensureTable(ctx context.Context, env *Env, j *Journal) (bool, error) {
-	table := env.layout().NFTTable
-	if _, err := env.output(ctx, "nft", "list", "table", "inet", table); err == nil {
-		// Already present. Leave every rule in it alone (§6.3).
-		return false, nil
-	}
-	if err := j.Note("nft-table", "inet "+table, table, "created inet "+table); err != nil {
+	st, err := readMarker(ctx, env)
+	if err != nil {
 		return false, err
 	}
-	if err := env.run(ctx, "nft", "add", "table", "inet", table); err != nil {
-		return false, err
+	table := env.layout().markerTable()
+	if !st.Present {
+		if err := j.Note("nft-marker-table", "inet "+table, table, "created hookless installer marker"); err != nil {
+			return false, err
+		}
+		// One atomic transaction, with exclusive creation. No partial empty
+		// table and no objects added to the agent's inet fvpn (D-116).
+		if err := env.run(ctx, "nft", "create", "table", "inet", table,
+			`{ chain owner { comment "managed-by=fvpn-node-install"; } }`); err != nil {
+			return false, err
+		}
 	}
-	// owner has no hook. It marks the table as ours. forward starts at
-	// policy drop so member forwarding is fail-closed until the agent
-	// installs its baseline (AT13).
-	owner := `{ comment "managed-by=fvpn-node-install"; }`
-	forward := `{ type filter hook forward priority 0; policy drop; }`
-	if err := env.run(ctx, "nft", "add", "chain", "inet", table, "owner", owner); err != nil {
-		return false, err
+	if st.LegacyOwner {
+		// Forward-only migration: rollback must never resurrect the fifth
+		// chain that prevents serving. Delete only the exact empty marker.
+		if err := j.Note("nft-owner-migration", "inet "+env.layout().NFTTable, "owner", "removed legacy empty installer marker"); err != nil {
+			return false, err
+		}
+		if err := env.run(ctx, "nft", "delete", "chain", "inet", env.layout().NFTTable, "owner"); err != nil {
+			return false, err
+		}
 	}
-	if err := env.run(ctx, "nft", "add", "chain", "inet", table, "forward", forward); err != nil {
-		return false, err
-	}
-	return true, nil
+	return !st.Present || st.LegacyOwner, nil
 }
 
 func ensureNetns(ctx context.Context, env *Env, j *Journal) error {
@@ -153,10 +157,10 @@ func ensureLink(ctx context.Context, env *Env, j *Journal, name string) error {
 }
 
 // removeOwnedNetwork deletes only the objects owned.json lists.
-func removeOwnedNetwork(ctx context.Context, env *Env) {
+func removeOwnedNetwork(ctx context.Context, env *Env) error {
 	st := readOwned(env.layout())
-	if st.CreatedTable {
-		_ = env.run(ctx, "nft", "delete", "table", "inet", env.layout().NFTTable)
+	if err := removeMarker(ctx, env); err != nil {
+		return err
 	}
 	for i := len(st.CreatedLinks) - 1; i >= 0; i-- {
 		_ = env.run(ctx, "ip", "link", "delete", st.CreatedLinks[i])
@@ -164,4 +168,5 @@ func removeOwnedNetwork(ctx context.Context, env *Env) {
 	if st.CreatedNetns {
 		_ = env.run(ctx, "ip", "netns", "delete", env.layout().NetnsName)
 	}
+	return nil
 }

@@ -472,8 +472,8 @@ func TestFaultRollback(t *testing.T) {
 	if strings.Contains(raw, "flush ruleset") {
 		t.Fatal("journal records a ruleset flush")
 	}
-	if _, code := dexec(t, name, "nft", "list", "table", "inet", "fvpn"); code == 0 {
-		t.Fatal("rollback left inet fvpn")
+	if _, code := dexec(t, name, "nft", "list", "table", "inet", "fvpn_install"); code == 0 {
+		t.Fatal("rollback left inet fvpn_install")
 	}
 	assertForeign(t, name, defRoute, resolv)
 	if _, code := dexec(t, name, "ip", "link", "show", "fvwprobe"); code == 0 {
@@ -590,9 +590,7 @@ func TestInstallLifecycle(t *testing.T) {
 	if _, code := dexec(t, name, "test", "-e", "/etc/systemd/system/fvpn-agent.service"); code == 0 {
 		t.Fatal("remove left the unit file")
 	}
-	if _, code := dexec(t, name, "nft", "list", "table", "inet", "fvpn"); code == 0 {
-		t.Fatal("remove left inet fvpn")
-	}
+	assertMarkerRemoved(t, name)
 	assertForeign(t, name, defRoute, resolv)
 	analyze, analyzeCode := dexec(t, name, "systemd-analyze", "verify",
 		"/opt/vpn-node/releases/"+rel1.ReleaseID+"/lib/systemd/fvpn-agent.service",
@@ -622,6 +620,7 @@ func TestRemovePurge(t *testing.T) {
 	if rmCode != 0 || !strings.Contains(rmOut, "purge:") {
 		t.Fatalf("purge %d\n%s", rmCode, rmOut)
 	}
+	assertMarkerRemoved(t, name)
 	for _, p := range []string{"/var/lib/vpn-node/identity", "/var/lib/vpn-node/state/usage.db", "/var/lib/vpn-node/update-journal", "/opt/vpn-node"} {
 		if _, code := dexec(t, name, "test", "-e", p); code == 0 {
 			t.Fatalf("purge left %s", p)

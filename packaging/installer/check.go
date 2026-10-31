@@ -34,6 +34,7 @@ type CheckReport struct {
 	Identity       IdentityStatus    `json:"identity"`
 	UsageStore     bool              `json:"usage_store_present"`
 	Netbird        NetbirdStatus     `json:"netbird"`
+	Marker         MarkerStatus      `json:"installer_marker"`
 	Drifts         []string          `json:"drifts"`
 }
 
@@ -96,6 +97,12 @@ func Check(ctx context.Context, env *Env) (*CheckReport, error) {
 		rep.Drifts = append(rep.Drifts, "platform")
 	}
 	inst, has := readInstalled(l)
+	rep.Marker, err = readMarker(ctx, env)
+	// A hookless marker is ephemeral and can be absent after reboot. Its
+	// absence is informational; a legacy or malformed marker is drift.
+	if err != nil || rep.Marker.LegacyOwner {
+		rep.Drifts = append(rep.Drifts, "installer_marker")
+	}
 	rep.Baseline = readBaseline(l)
 	if has {
 		rep.InstallRecord = &inst
@@ -314,6 +321,10 @@ func (r *CheckReport) Text() string {
 	fmt.Fprintf(&b, "identity: present=%t incarnation=%s\n", r.Identity.Present, r.Identity.IncarnationID)
 	fmt.Fprintf(&b, "usage_store_present: %t\n", r.UsageStore)
 	fmt.Fprintf(&b, "netbird: version=%s daemon=%s\n", r.Netbird.Version, r.Netbird.Daemon)
+	fmt.Fprintf(&b, "installer_marker: table=inet %s present=%t legacy_owner=%t\n", r.Marker.Table, r.Marker.Present, r.Marker.LegacyOwner)
+	if r.Updater != nil {
+		fmt.Fprintf(&b, "updater: state=%s recovery_required=%t\n", r.Updater.State, r.Updater.RecoveryRequired)
+	}
 	fmt.Fprintf(&b, "lock_held: %t\n", r.Lock.Held)
 	for _, u := range []string{UnitWatchdog, UnitAgent, UnitNetbird, UnitRecover, UnitTimer, UnitNetbirdUp, UnitUpdater} {
 		if s, ok := r.Units[u]; ok {
