@@ -5,7 +5,9 @@ package agent
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 	"os/exec"
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -71,13 +73,18 @@ func followup23LiveProof(t *testing.T, r *rig) {
 	if err != nil {
 		t.Fatalf("packet trace: %v %s", err, raw)
 	}
+	if dir := os.Getenv("FVPN_AGENT_EVIDENCE_DIR"); dir != "" {
+		if err := os.WriteFile(filepath.Join(dir, "d104-expiry.json"), raw, 0600); err != nil {
+			t.Fatal(err)
+		}
+	}
 	var trace struct {
-		Deadline int64 `json:"deadline_ns"`
+		Deadline int64 `json:"deadline_ns,string"`
 		Packets  []struct {
-			Sent    int64 `json:"sent_ns"`
-			Ingress int64 `json:"ingress_ns"`
-			Egress  int64 `json:"egress_ns"`
-			End     int64 `json:"end_ns"`
+			Sent    int64 `json:"sent_ns,string"`
+			Ingress int64 `json:"ingress_ns,string"`
+			Egress  int64 `json:"egress_ns,string"`
+			End     int64 `json:"end_ns,string"`
 		} `json:"packets"`
 	}
 	if err := json.Unmarshal(raw, &trace); err != nil {
@@ -148,5 +155,5 @@ while time.monotonic_ns()<D+600000000:
    if len(packet)>=46 and packet[12:14]==b'\x08\x00' and packet[23]==17 and packet[36:38]==struct.pack('!H',40099) and packet[42:46]==struct.pack('!I',seq):
     row['ingress_ns' if s==reads[0] else 'egress_ns']=at
  row['end_ns']=time.monotonic_ns();rows.append(row);seq+=1
-print(json.dumps({'deadline_ns':D,'packets':rows}))
+print(json.dumps({'deadline_ns':str(D),'packets':[{k:str(v) for k,v in row.items()} for row in rows]}))
 `

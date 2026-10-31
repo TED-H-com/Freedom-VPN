@@ -186,8 +186,9 @@ func Decide(in Input) Decision {
 	// A fresh same-generation lease with an empty member grant set, while
 	// device bindings are still desired (D-067), reports
 	// awaiting_member_grants. That lease is in force, so it is not
-	// lease_expired. The checks and the single errors entry use
-	// AWAITING_MEMBER_GRANTS (D-071, contract revision 11).
+	// lease_expired. The lease-stage error uses AWAITING_MEMBER_GRANTS.
+	// D-126: reasons accumulate; checks prefer a retained safety failure over
+	// provisional/awaiting over ok. Stage errors keep their own cause.
 	leaseStale := leaseGenerationStale(in)
 	leaseOK := leaseInForce(in) && !leaseStale
 	grantsPending := grantsProvisional(in)
@@ -344,6 +345,9 @@ func checks(in Input, at time.Time, releaseOK, releaseChecked, bindingOK, qosOK,
 		bind = withDetail(chk(api.NodeCheckNameSourceBinding, bindingOK && leaseOK, bindCode, at), "No member binding was admitted.")
 	}
 	if in.ApplyError != nil || in.DependencyMissing {
+		// D-126: these three checks depend on verified enforcement. A retained
+		// safety failure outranks provisional grants without erasing the
+		// independent lease-stage AWAITING_MEMBER_GRANTS error or reason.
 		code := api.ErrorCodeDEPENDENCYUNAVAILABLE
 		if in.ApplyError != nil {
 			code = in.ApplyError.Code

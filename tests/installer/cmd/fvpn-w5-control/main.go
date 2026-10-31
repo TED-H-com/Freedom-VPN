@@ -7,6 +7,7 @@
 package main
 
 import (
+	"context"
 	"crypto/ecdsa"
 	"crypto/ed25519"
 	"crypto/elliptic"
@@ -15,6 +16,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"crypto/x509/pkix"
+	"database/sql"
 	"encoding/hex"
 	"encoding/json"
 	"encoding/pem"
@@ -34,6 +36,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/envelope"
 	"github.com/google/uuid"
+	_ "modernc.org/sqlite"
 )
 
 func main() {
@@ -41,7 +44,15 @@ func main() {
 	tokenFile := flag.String("token-file", "", "file containing one enrollment token")
 	extra := flag.String("extra-token-file", "", "file containing a second enrollment token")
 	health := flag.Bool("upgrade-health", false, "TEST ONLY signed unpublished health fixture with a real TCP listener")
+	receipt := flag.String("upgrade-receipt", "", "TEST ONLY read a job's sealed receipt without changing the journal")
 	flag.Parse()
+	if *receipt != "" {
+		if err := readUpgradeReceipt(*receipt); err != nil {
+			fmt.Fprintln(os.Stderr, "fvpn-w5-control: receipt read failed")
+			os.Exit(1)
+		}
+		return
+	}
 	// serve blocks on success. A return is a setup failure. The message
 	// stays fixed so a token path is not copied into the log.
 	if *health {
@@ -51,6 +62,24 @@ func main() {
 	}
 	fmt.Fprintln(os.Stderr, "fvpn-w5-control: failed")
 	os.Exit(1)
+}
+
+// Read the live WAL through SQLite, never an incoherent copy or a writable
+// journal API that could create schema or evidence as a side effect.
+func readUpgradeReceipt(job string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	db, err := sql.Open("sqlite", "file:/var/lib/vpn-node/update-journal/journal.db?mode=ro&_pragma=query_only(1)&_pragma=busy_timeout(50)")
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+	var raw []byte
+	if err := db.QueryRowContext(ctx, `SELECT payload FROM result_outbox WHERE job_id = ? ORDER BY seq DESC LIMIT 1`, job).Scan(&raw); err != nil {
+		return err
+	}
+	_, err = os.Stdout.Write(append(raw, '\n'))
+	return err
 }
 
 func serveUpgrade(dir, tokenFile, extraFile string) error {
@@ -102,6 +131,13 @@ func serveUpgrade(dir, tokenFile, extraFile string) error {
 	mux := http.NewServeMux()
 	mux.HandleFunc("POST /stop-probe", func(w http.ResponseWriter, _ *http.Request) {
 		_ = probe.Close()
+		w.WriteHeader(http.StatusNoContent)
+	})
+	mux.HandleFunc("POST /revoke", func(w http.ResponseWriter, _ *http.Request) {
+		srv.Revoke()
+		// The shared fixture has a single bootstrap-consumption slot. Supply
+		// the next identity's TEST ONLY credential for controlled reenrollment.
+		srv.SetBootstrap("ready")
 		w.WriteHeader(http.StatusNoContent)
 	})
 	admin, err := net.Listen("tcp", "127.0.0.1:0")

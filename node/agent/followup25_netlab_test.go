@@ -12,6 +12,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/TED-H-com/Freedom-VPN/node/enforce"
 	"github.com/TED-H-com/Freedom-VPN/node/internal/timeanchor"
 )
 
@@ -123,7 +124,6 @@ func followup25Renewals(t *testing.T, r *rig) {
 	before := r.srv.LeaseRenewals()
 	p := r.eng.plane.(*measuredSystemPlane)
 	first := len(p.applies)
-	guardFirst := len(p.guards)
 	for i := range 75 {
 		time.Sleep(max(0, time.Until(start.Add(time.Duration(i+1)*time.Second))))
 		stepOK(t, r)
@@ -132,8 +132,13 @@ func followup25Renewals(t *testing.T, r *rig) {
 		}
 	}
 	var trace struct {
-		Packets    []struct{ Sent, Ingress, Egress int64 }
-		Start, End int64
+		Packets []struct {
+			Sent    int64 `json:"Sent,string"`
+			Ingress int64 `json:"Ingress,string"`
+			Egress  int64 `json:"Egress,string"`
+		}
+		Start int64 `json:"Start,string"`
+		End   int64 `json:"End,string"`
 	}
 	if err := json.NewDecoder(reader).Decode(&trace); err != nil {
 		t.Fatal(err, stderr.String())
@@ -153,7 +158,11 @@ func followup25Renewals(t *testing.T, r *rig) {
 		}
 	}
 	if dir := os.Getenv("FVPN_AGENT_EVIDENCE_DIR"); dir != "" {
-		raw, err := json.MarshalIndent(map[string]any{"trace": trace, "applies": p.applies[first:], "guard_commands": p.guards[guardFirst:]}, "", "  ")
+		timings := make([]*enforce.TimingEvidence, 0, len(p.applies)-first)
+		for _, res := range p.applies[first:] {
+			timings = append(timings, res.Evidence.TimingEvidence())
+		}
+		raw, err := json.MarshalIndent(map[string]any{"trace": trace, "timings": timings, "operations_file": "operations.jsonl"}, "", "  ")
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -161,7 +170,7 @@ func followup25Renewals(t *testing.T, r *rig) {
 			t.Fatal(err)
 		}
 	}
-	t.Logf("D104 guarded nft command brackets retained: commands=%d clock=CLOCK_MONOTONIC", len(p.guards)-guardFirst)
+	t.Log("D104 all Apply/live/blocked snapshots and lease transactions retained in operations.jsonl with run/boot anchors")
 	renewals := r.srv.LeaseRenewals() - before
 	if renewals < 2 || positive < 50000 {
 		t.Fatalf("missing renewal/traffic: renewals=%d positive=%d", renewals, positive)
@@ -209,5 +218,5 @@ while time.monotonic_ns()<end+80000000:
    if len(packet)>=46 and packet[12:14]==b'\x08\x00' and packet[23]==17 and packet[36:38]==struct.pack('!H',40099):
     seq=struct.unpack('!I',packet[42:46])[0]
     if seq<len(rows): rows[seq]['Ingress' if s==reads[0] else 'Egress']=at
-print(json.dumps({'Packets':rows,'Start':start,'End':time.monotonic_ns()}))
+print(json.dumps({'Packets':[{k:str(v) for k,v in row.items()} for row in rows],'Start':str(start),'End':str(time.monotonic_ns())}))
 `
