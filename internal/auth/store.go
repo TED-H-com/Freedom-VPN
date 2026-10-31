@@ -247,10 +247,10 @@ func (s PostgresStore) Login(ctx context.Context, i Identity, token, old string,
 	return
 }
 func (s PostgresStore) Session(ctx context.Context, token string, idle time.Duration) (p Principal, err error) {
-	err = s.Pool.QueryRow(ctx, `UPDATE browser_sessions s SET last_seen_at=clock_timestamp() FROM members m WHERE token_hash=$1 AND s.role='member' AND s.member_id=m.id AND m.status<>'closed' AND absolute_expires_at>clock_timestamp() AND last_seen_at>clock_timestamp()-$2::bigint*interval '1 millisecond' RETURNING s.member_id,s.role,s.display_label,s.mfa_verified,s.authenticated_at`, digest(token), idle.Milliseconds()).Scan(&p.ID, &p.Role, &p.DisplayLabel, &p.MFAVerified, &p.AuthenticatedAt)
+	err = s.Pool.QueryRow(ctx, `UPDATE browser_sessions s SET last_seen_at=clock_timestamp() FROM members m WHERE token_hash=$1 AND s.role='member' AND s.member_id=m.id AND m.status<>'closed' AND absolute_expires_at>clock_timestamp() AND last_seen_at>clock_timestamp()-$2::bigint*interval '1 millisecond' RETURNING s.member_id,s.role,s.display_label,s.mfa_verified,s.authenticated_at,s.id`, digest(token), idle.Milliseconds()).Scan(&p.ID, &p.Role, &p.DisplayLabel, &p.MFAVerified, &p.AuthenticatedAt, &p.SessionID)
 	if errors.Is(err, pgx.ErrNoRows) {
 		p.Role = Admin
-		err = s.Pool.QueryRow(ctx, `UPDATE admin_sessions SET last_seen_at=clock_timestamp() WHERE token_hash=$1 AND absolute_expires_at>clock_timestamp() AND last_seen_at>clock_timestamp()-$2::bigint*interval '1 millisecond' RETURNING admin_id,display_label,mfa_verified,authenticated_at`, digest(token), idle.Milliseconds()).Scan(&p.ID, &p.DisplayLabel, &p.MFAVerified, &p.AuthenticatedAt)
+		err = s.Pool.QueryRow(ctx, `UPDATE admin_sessions SET last_seen_at=clock_timestamp() WHERE token_hash=$1 AND absolute_expires_at>clock_timestamp() AND last_seen_at>clock_timestamp()-$2::bigint*interval '1 millisecond' RETURNING admin_id,display_label,mfa_verified,authenticated_at,id`, digest(token), idle.Milliseconds()).Scan(&p.ID, &p.DisplayLabel, &p.MFAVerified, &p.AuthenticatedAt, &p.SessionID)
 	}
 	return
 }

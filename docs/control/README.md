@@ -66,21 +66,29 @@ the high-impact rule conservatively (§16.1). Unknown fields in allowlisted writ
 schemas fail before domain code. Semantic domain constraints listed in
 `docs/contracts/README.md` remain each owning service's responsibility.
 
-Pre-authentication ingress is one table per route class (`browser`, `agent`,
+Pre-authentication ingress is one table per route class (`browser`, `read`, `agent`,
 `heartbeat`, `lease`, `usage`, `anonymous`). Each table holds
 `max_rate_principals` connection principals (default 10,000). IPv4 is one
 principal per address and IPv6 is one principal per /64 (D-060). The anonymous
 ingress table and the anonymous class table also keep a /48 group beside that
-/64 key. One /48 may hold every slot except a reserve of one (9,999 at the
-default cap of 10,000, and the single slot when the cap is one). The reserve
-is not a config key. A new /64 in a /48 that already has keys is refused with
-429 once only that slot remains, is not inserted, and does not evict another
-prefix. Another /48 or an IPv4 address can take it. IPv4 is not grouped. The
-reserve is only on the anonymous class, so the sweep inserts nothing into the
-browser, agent, heartbeat, lease, usage, or subject tables. Enrollment and
-webhooks take their class slot in the separate anonymous table under the same
-/64 key and the same reserve. The authenticated subject table is a further
-instance, keyed by node or session, with the same cap and no /48 group. An
+/64 key. One anonymous /48 holds at most `min(max_rate_principals / 2, 64)`
+principal slots (`anonymousGroupCap`, not a config key): 64 at the default
+cap of 10,000, and 5 when the table size is 10. Division rounds down, so a
+table size of 1 admits no anonymous IPv6 principal. A new /64 past that cap is
+refused with 429 when no idle slot in that same group can be reclaimed;
+it does not evict another prefix to satisfy the group cap. Another
+/48 or an IPv4 address can still enter. IPv4 is not grouped. The cap is only
+on the anonymous class (`EnrollNode` and `ReceiveProviderWebhook`), so the
+sweep inserts nothing into the browser, read, agent, heartbeat, lease, usage,
+or subject tables. Login stays per IPv6 /64 on its own limiter. The agent
+listener stays keyed by the node URN. Enrollment and webhooks take their
+class slot in the separate anonymous table under the same /64 key and the
+same cap. At the group cap, an idle-full or hour-old entry in the same group
+may be replaced; both group and whole-table eviction release group counts.
+The authenticated subject table is a further instance, keyed by node or
+session, with the same cap and no /48 group. Browser and read keys use the
+authenticated database session UUID, so sessions of the same administrator
+have independent budgets. Account IDs still scope resource ownership. An
 unparseable connection address, including an unparseable `X-Forwarded-For`
 entry chosen from a trusted peer, is refused with 429 and occupies no slot
 (see [authentication](AUTH.md)). An mTLS request without a verified client
@@ -127,28 +135,34 @@ and evicting the first bucket that is idle with a full token count or has
 been idle for more than one hour. The walk stops at that bucket and continues
 through every depleted bucket in front of it, up to the size of the table.
 A newcomer is refused with HTTP 429 and `Retry-After` of one second only when
-no bucket on that walk is eligible. Together with the anonymous reserve of
-one slot, that is the bound on a full table refusing newcomers. Ingress
-tables and the anonymous class table each use one rate. The subject table
-mixes class rates. The full walk is what lets a full browser bucket leave
-ahead of a run of slower heartbeat tails.
+no bucket on that walk is eligible. Together with the anonymous `/48` cap of
+`min(max_rate_principals / 2, 64)`, that is the bound on a full table refusing
+newcomers. Ingress tables and the anonymous class table each use one rate.
+The subject table mixes class rates. The full walk is what lets a full
+browser bucket leave ahead of a run of slower heartbeat tails.
 
-Rate buckets and concurrency gates stay separate for browser, agent control,
-heartbeat, lease, and usage traffic. The loaded operation ids `EnrollNode`
-and `ReceiveProviderWebhook` use the anonymous class, `SubmitObservation`
-uses heartbeat, `RenewServingLease` uses lease, and `SubmitUsageBatch` uses
-usage. Class `browser` is every other route, including administrator audit
-paging, incarnation history, and node and member detail. Its subject bucket
-`browser_rate` defaults to 10/s burst 30, half of `ingress_rate` (20/s burst
-60), so two operator sessions on one address can each spend a full subject
-budget before the shared browser ingress table binds. One session shares that
-bucket across those reads. The portal's heaviest admin mount is three GETs
-at once (fleet updates issues a fourth after the node list returns). Burst 30
-admits that mount ten times over, and an empty burst refills in 3
-seconds. The calibration arithmetic is in [authentication](AUTH.md).
+Rate buckets and concurrency gates stay separate for browser, read, agent
+control, heartbeat, lease, and usage traffic. The loaded operation ids
+`EnrollNode` and `ReceiveProviderWebhook` use the anonymous class,
+`SubmitObservation` uses heartbeat, `RenewServingLease` uses lease, and
+`SubmitUsageBatch` uses usage. Class `read` is the admin list reads
+`ListAuditEvents`, `ListNodes`, `ListNodeIncarnations`, `ListMembers`, and
+`ListAdminDevices`. Its subject bucket `read_rate` defaults to 30/s burst 60
+per session, so one operator screen can page three of those lists (five
+pages each, `limit=100`) without a 429. The request past that burst of 60
+without refill is 429, and `Retry-After` is unchanged. The separate read
+ingress table still uses 20/s burst 60 per address, which can bind before
+the session's 30/s allowance. `GET /admin/operations/{operation_id}`
+(`getAdminOperation`) stays on `browser_rate`; the contract has no
+`GET /admin/operations` collection. Class `browser` is every other non-agent
+route, including node and member detail. Its subject bucket `browser_rate`
+defaults to 10/s burst 30, half of `ingress_rate` (20/s burst 60), so two
+operator sessions on one address can each spend a full subject budget before
+the shared browser ingress table binds. The calibration arithmetic is in
+[authentication](AUTH.md).
 
-Body caps are separate from those rate buckets. Browser writes use
-`browser_body_bytes` (default 1 MiB). Agent control, heartbeat, lease
+Body caps are separate from those rate buckets. Browser routes and admin
+list reads use `browser_body_bytes` (default 1 MiB). Agent control, heartbeat, lease
 renewal, and anonymous enrollment use `agent_body_bytes` (default 1 MiB).
 Provider webhooks use `webhook_body_bytes` (default 1 MiB). Usage batches use
 `usage_body_bytes` (default 8 MiB). A body larger than its class cap is HTTP
@@ -257,11 +271,11 @@ minimum directive remains unchanged for the orchestrator to coordinate.
 Ingress and authenticated traffic use separate bounded limiter instances (§14.6).
 Each class has its own ingress table, enrollment and webhooks have a separate
 anonymous class table, and authenticated subjects have another. `max_rate_principals`
-bounds each instance independently. One IPv6 /48 can hold every anonymous
-slot except a reserve of one (`max_rate_principals` defaults to 10,000, so
-9,999 /64s) and cannot evict a browser, agent, heartbeat, lease, usage, or
-subject bucket. A full table walks from the tail until it finds an idle-full
-bucket or the table ends.
+bounds each instance independently. One IPv6 /48 holds at most
+`min(max_rate_principals / 2, 64)` anonymous principal slots (64 at the
+default cap of 10,000) and cannot evict a browser, read, agent, heartbeat,
+lease, usage, or subject bucket. A full table walks from the tail until it
+finds an idle-full bucket or the table ends.
 Existing heartbeat/lease/usage classes retain independent per-principal keys.
 Every framework 429 includes `Retry-After`, including `/auth/*` rate and
 concurrency rejections and the API concurrency gate. These remain process-local

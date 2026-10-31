@@ -19,8 +19,11 @@ const (
 )
 
 type Principal struct {
-	Role            Role
-	ID              uuid.UUID
+	Role Role
+	ID   uuid.UUID
+	// SessionID is the authenticated database session row, never the cookie.
+	// It is used only for browser rate keys; Scope keeps resource ownership.
+	SessionID       uuid.UUID `json:"-"`
 	NodeID          uuid.UUID
 	IncarnationID   uuid.UUID
 	DisplayLabel    string
