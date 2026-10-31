@@ -20,7 +20,7 @@ def main():
             run("go", "test", "-c", "-tags", "netlab", "-o", binary, "./node/agent", env=env)
             run("docker", "build", "-t", image, "tests/netlab")
             # Scratch is in the container's disk overlay, removed with it.
-            run("docker", "run", "--rm", "--name", name, "--privileged", "--network", "none",
+            run("docker", "run", "--rm", "--name", name, "--privileged", "--network", "none", "--workdir", "/scratch",
                 "-e", "FVPN_AGENT_LIVE_NETLAB=1", "-e", "GOMAXPROCS=4", "-e", "TMPDIR=/scratch",
                 "-v", binary + ":/agent.test:ro", image, "/agent.test", "-test.run",
                 "^TestD085_LiveReadNetlab$", "-test.v", "-test.timeout=3m")
