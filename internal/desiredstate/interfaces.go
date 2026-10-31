@@ -478,7 +478,8 @@ func (r *DBEntitlementReader) ListEntitledMembersForGroups(ctx context.Context, 
 			db.binding_revision,
 			db.valid_from,
 			db.valid_until,
-			(md.status <> 'authorized' OR md.revoked_at IS NOT NULL) AS is_revoked
+			(md.status <> 'authorized' OR md.revoked_at IS NOT NULL
+			 OR EXISTS(SELECT 1 FROM device_authorization_fences f WHERE f.device_id = md.id)) AS is_revoked
 		FROM device_bindings db
 		JOIN member_devices md ON md.id = db.device_id
 		WHERE db.member_id = ANY($1)

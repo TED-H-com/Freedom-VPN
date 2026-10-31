@@ -165,6 +165,7 @@ func queryLeaseEntitlementsForGroups(
 		WHERE md.member_id = ANY($1)
 		  AND md.status = 'authorized'
 		  AND md.revoked_at IS NULL
+		  AND NOT EXISTS(SELECT 1 FROM device_authorization_fences f WHERE f.device_id = md.id)
 		ORDER BY md.member_id ASC, md.id ASC`, memberIDs)
 	if err != nil {
 		return nil, err
