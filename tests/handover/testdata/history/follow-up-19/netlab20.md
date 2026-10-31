@@ -1,0 +1,202 @@
+# Follow-up 19 — native attribution and enforcement timing, 2026-10-31
+
+TEST ONLY evidence and local timing diagnostics for AT09 / AT10 / AT13 (§19),
+ISO01 / ISO02 / §8.2, D-104 / §16.3, D-106, D-120 and SEC02. Product base
+`ebbe5dfe` includes isolation #315. Enforcement policy, NetBird settings, MTU,
+MSS, dependency pins and both IPv6 forward-drop rules are unchanged.
+
+## F8-02
+
+[Native attribution](G2-f802-native-attribution-2026-10-31.md) gives the exact
+failed IPv4 handshake hops, the same-MSS/MTU successful control, and the missing
+full-flow/outer-fragment capture request with devstack's pcap receipts. No
+single transport cause is proved. The original 11,011-byte and later 22,022-byte
+transfers remain failures. No production transport change is proposed without
+that evidence. IPv6 overlay rejection is expected under D-123; native
+chosen_family is an underlay observation, not proof of an IPv6 overlay packet.
+
+## ISO-F6-03 producer surface
+
+`ServingEvidence.TimingEvidence()` now returns a detached local sibling to
+D-106. It retains each Apply start/end, final render, install command, guard
+release command, complete verifier interval, nft ruleset executor read,
+precision text executor read and aggregate tc read. Failed operations retain
+only stages actually reached. Both recovery verifier invocations are kept;
+live reads stay separate. All monotonic values are decimal strings, and each
+verifier carries its corresponding unchanged D-106 digest.
+
+[Exact API/JSON fields, command semantics and agent-core hand-off](G2-followup19-netlab-agent-2026-10-31.md).
+No log I/O was introduced inside the guard. These are userspace command
+brackets, never kernel commit timestamps. D-104's installation bound and
+D-120's stream-specific guard/loss predicate retain their separate meanings.
+
+Tests cover exact enclosing brackets against independent executor samples,
+install/release failures, precision command and parse failures, failed rollback
+after an installation overrun, pre-render rejection, detached snapshots,
+conntrack failure with verified serving retained, two recovery verifiers and
+a later live read. D-106 remains unchanged, including its projection hash.
+
+## Isolation follow-up 8 fallout
+
+The read-only assembled run `7779d83c` on `62f24e6d` establishes all six
+ISO-F6-01 assertions, 539/539 D-106 digests and the exact D-104 expiry predicate:
+161 positives / 41 drops, last positive D−99.952819 ms, first dropped ingress
+D−61.767983 ms, zero later positives. Its D-120 run has 100 reloads / 101
+verified Applies, 59 datagrams, zero UDP losses/TCP timeouts. Those results
+remain historical inputs, with SHA-256 [pins](G2-followup19-evidence/source-pins.json).
+
+Lab changes prompted by those results:
+
+- Require producer timing in all 101 fresh AT10 Apply records and independently
+  check that each producer bracket encloses the existing lab executor sample.
+  Missing producer evidence fails the new live scenario. The historical pure
+  D-120 analyzer still accepts the original archived inputs.
+- Use actual **ingress**, not send time, for the first dropped expiry packet;
+  check the producer/verifier precision timeline alongside the unchanged exact
+  D−101 ms last-positive and D+100 ms first-drop bounds. No cadence allowance.
+- Insert a verified **deny-all recovery candidate**, and prove the member probe
+  still fails, before restoring the populated model. This prevents a clean
+  verifier/link-up result from being mistaken for forwarding. Recovery trace
+  retains timing on both rejected and clean reads, including both recovery
+  verifiers. Lab veth route reconciliation remains explicit fixture assistance;
+  it does not claim native NetBird unattended topology recovery.
+
+Still owned elsewhere: agent-core 27 must export the new snapshots from actual
+Apply/live calls; isolation must rerun its renewal diagnostic to correlate new
+packet samples. Its 17 historical losses cannot acquire retrospective command
+brackets. D-120's tolerance does not apply to that 80 ms diagnostic. The D-087
+fixed-generation provisional-grant trigger belongs to agent-core/devstack;
+platform and continuous crash/restart/reboot/update matrices, including real
+arm64, remain acceptance/operator work. The six assembled recovery assertions
+need no speculative weakening or new fix from this lane.
+
+## D-098 retention
+
+[Follow-up 18 archive](G2-followup18-evidence/archive.json) pins **122 files**:
+120 existing evidence files plus exact copies of its two dated notes in
+`notes/`. Every byte was compared with merged source
+`dd5c8897e65c1b1dd4399bd8ee7d64f841fa20ec` (#308). Nothing in the original
+120-file directory was reserialized, normalized or replaced. The manifest
+records source path, destination path, bytes and SHA-256. Its source's existing
+text normalization policy is preserved as history, not repeated here.
+`TestD098_Followup18ArchivePins` checks hashes, lengths and complete directory
+coverage; the public-evidence hygiene gate covers the copies too. Follow-up 17
+artifacts and handover claim pins are untouched.
+
+### 2026-10-31 follow-up 20 — F10-01 source-pin correction
+
+Members follow-up 10 found that the AT09 source pin named the mutable current
+row. The pin and the attribution's original-row link now name
+`docs/e2e/at/members/history/follow-up-8/AT09.json`, preserving SHA-256
+`c89ba7b98285a0883889c83455ed24368e1b73859978fe11a1f008012d09ea3c`.
+The archive bytes and its SHA256SUMS agree. F8-02 remains failed and
+unattributed. The committed-evidence hygiene test previously checked JSON and
+public text only; the separate follow-up 18 test checked that archive's pins.
+It now also verifies every G2 source/retention/archive manifest's retained
+SHA-256 and optional byte length against the tree. Pins outside `docs/poc/`
+must name a `history/<snapshot>/` path or a dated devstack run-ID directory
+under `docs/e2e/runs/`; a matching digest at a mutable current row fails.
+Private pre-normalization `raw_sha256` receipts are provenance, not hashes of
+the retained tree. The check is deterministic and offline.
+
+The complete audit found 200 retained-file pins: 122 in follow-up 18's
+`archive.json`, 72 in follow-up 19's `retention-pins.json` and six in its
+`source-pins.json`. The two devstack inputs already use immutable run-ID paths;
+all retained digests match after the AT09 correction. The initial audit also
+found three isolation pins at current rows without byte-identical archives.
+Isolation follow-up 9 (#334) subsequently supplied the D-098 follow-up 8
+archive. On resumption, `sha256sum` and that archive's `archive.json` verified
+all three original digests before the pins moved to these archive paths:
+
+| Archive path under `docs/e2e/at/isolation/history/follow-up-8/` | Unchanged SHA-256 |
+| --- | --- |
+| `deadline-verdict.json` | `94d777e21b93689e899442f5e3b7d62463527099c8ce511de56d87b6b7253ae1` |
+| `recovery-verdict.json` | `b1a40773309c350664e502d87e8699fe9388c1211b94c2c241f5968bfaa452ce` |
+| `continuity-analysis.json` | `9e5d77f88c69c8b30fe3d78abe185c37bb9ccb610ea464f532b4a75d7ada5b5c` |
+
+The three archive findings are resolved with unchanged digests. All six source
+pins now name immutable history or run-ID paths; the strict gate has no
+exceptions. No older G2 pin manifest names another lane's current evidence.
+No new lab run or product acceptance result is claimed.
+
+## Follow-up 19 measured results
+
+One full lane run and one independent real-agent run, no acceptance retries.
+Live platform: amd64; arm64 cross-build only. Source `96478c0d` for runtime
+changes; `ca9569d2` archive-test content was already present at launch.
+
+| Campaign | Apply snapshots / measured UDP datagrams | UDP losses / TCP timeouts | Producer outer guard max / final render→installed max (ms) | Result |
+| --- | --- | --- | --- | --- |
+| Full lane | 101 / 54 | 0 / 0 | 48.521303 / 27.714599 | Full gate 216.419 s; AT10/AT13 19.01 s, PASS under D-120 |
+| Real Engine, 20 published generations | 23 / 77 | 0 / 0 | 47.153488 / 27.450343 | Measurement scenario 22.95 s, pass; not a 100-reload D-120 acceptance substitute |
+
+All 124 producer Apply snapshots enclose the independently sampled executor
+install/release calls, and include successful verifier/precision reads. The
+D-120 analyzer still uses its original decorator bracket (full-lane maximum
+48.516483 ms); the producer bracket is slightly wider because it encloses the
+decorator. No threshold changed. Node/origin/responder header-count checks
+pass with zero capture drops (lane 220/110/110; real agent 312/156/156).
+
+The full lane's exact expiry test passes: 26 positives / 7 drops, last positive
+**D−100.860387 ms**, first dropped ingress **D−0.845046 ms**. Its final
+render→installed bound is 14.290722 ms and actual precision executor read takes
+1.129761 ms. The recovery test passes in 1.67 s and retains eight read/Apply
+stages, including a **verified but non-forwarding deny-all model** with both
+recovery verifiers, followed by the populated model and positive member
+connection probe. The assembled run's separate counter proof is not inferred
+from this finite lab connection.
+The real-agent trace exports Apply calls; periodic agent live-read export is
+still agent-core 27's hand-off item.
+
+[Full runner output](G2-followup19-evidence/lane-run.txt),
+[AT10 raw inputs and verdict](G2-followup19-evidence/lane/TestAT10_AT13_ReloadRevokeBaseline/),
+[expiry trace](G2-followup19-evidence/lane/TestD104_AT13_DeadlineContinuity/trace.json),
+[recovery trace](G2-followup19-evidence/lane/TestISO_F6_01_ForeignRemovalNewGeneration/trace.json),
+[real-agent runner output](G2-followup19-evidence/agent-run.txt) and
+[real-agent packet/Apply analysis](G2-followup19-evidence/agent/TestD116_AT10_InstallerMarkerEnrollment/analysis.json)
+retain the observations. [Retention policy](G2-followup19-evidence/RETENTION.txt)
+and raw/retained SHA-256 pins describe text-only whitespace normalization.
+
+Lane lint/unit/tagged integration checks and amd64/arm64 builds, whole-module
+`make go-lint go-with-disk-tmp=`, agent regression tests, handover tests,
+formatting, diff and public-evidence hygiene pass. Both historical follow-up 18
+D-120 analyses recompute byte-identically from the unchanged archive. Task
+containers/images/networks/volumes are zero after harness teardown and explicit
+task image removal; the scratch binary was removed too.
+
+## Reproduction
+
+Use the disk-temp wrapper; it removes its own scratch through Python. Check
+`pgrep -af 'gates.sh|mk/at-'` before each privileged run and wait while two
+other integration suites are active. All objects use the lane prefix below.
+
+```sh
+make -f mk/netlab.mk netlab-lint netlab-unit netlab-integration netlab-build \
+  FVPN_LAB_PREFIX=fvpn-w1-netlab-f19
+python3 tests/netlab/scripts/disktmp.py make go-lint go-with-disk-tmp=
+python3 tests/netlab/scripts/disktmp.py go test -count=1 ./tests/handover/...
+pgrep -af 'gates.sh|mk/at-'
+FVPN_LAB_PREFIX=fvpn-w1-netlab-f19 FVPN_NETLAB_EVIDENCE_DIR=.agent/f19-lane \
+  make -f mk/netlab.mk netlab-test
+pgrep -af 'gates.sh|mk/at-'
+FVPN_LAB_PREFIX=fvpn-w1-netlab-f19 FVPN_NETLAB_EVIDENCE_DIR=.agent/f19-agent \
+  make -f mk/netlab.mk netlab-agent-measure
+```
+
+The harness owns teardown; remove the task-tagged image and scratch binary
+when all campaigns finish. Physical arm64 and native member platforms are not
+emulated by these gates.
+
+### Requests to orchestrator
+
+1. Place the completed [hand-off](G2-followup19-netlab-agent-2026-10-31.md) at
+   `docs/node/followup19-netlab-agent-2026-10-31.md`. That exact path is requested
+   by the task but excluded by its final ownership list, so only that placement
+   was stopped. No `node/agent` file was edited.
+2. Route the [precise F8-02 capture request](G2-f802-native-attribution-2026-10-31.md#missing-capture-and-d-102-request-to-devstack)
+   to devstack. Its capture/endpoint files and `requests.md` remain its own.
+3. Agent-core 27 should consume the local sibling via its opt-in measurement
+   output and hand it to isolation for a fresh renewal/expiry correlation run.
+   No claimed closure of the 17-loss producer gap can come from old receipt
+   timestamps. Existing D-087, platform and fault-matrix requests stay with
+   their assigned owners.
