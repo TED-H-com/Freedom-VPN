@@ -1020,8 +1020,10 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 		}
 	}
 	timing := &applyReadTiming{now: e.clock.Wall}
+	host := e.measureHostBeforeApply()
 	res, err := e.plane.Apply(context.WithValue(ctx, applyReadKey{}, timing), model, prev)
-	e.measureTiming(res.Evidence, "apply")
+	host.finish(err)
+	e.measureTiming(res.Evidence, "apply", host)
 	for _, b := range timing.baselines {
 		b.Cause = "apply_rollback"
 		if res.Quarantine != nil {
