@@ -16,6 +16,8 @@ All three regression subcases passed on the D-099 base:
 
 A test-only Go overlay of the pre-#277 HTTP cache files makes this same regression fail: the original probe receives stale **304 / generation 2** instead of 6; both SECOPS-21 cases receive stale **304 / generation 11** instead of 15. No production file was changed for this negative control. This establishes that the regression detects the former cache reuse defect.
 
+The stale pre-#277 cache path reproduced by that overlay is `cachedStateSigner.Sign` in `internal/nodes/httpwire/state_cache.go`.
+
 D-099's accepted interpretation is essential: `CompileTx` always proposes `max(desired, applied, maxStored) + 1`. The HTTP cache may reuse the cached generation or the ordinary one-step proposal only when no higher applied/stored fence exists and no restore observation is outstanding. Otherwise it re-signs and replaces the cache. Strict proposal equality would disable ordinary cache reuse. No new compiler decision API is introduced here.
 
 The live rerun must preserve this ordering and evidence (§14.7, §17.3–§17.5, DATA01 / MTR03, AT30):
@@ -25,6 +27,8 @@ The live rerun must preserve this ordering and evidence (§14.7, §17.3–§17.5
 3. Record the retained T1 node's local accepted/applied generations and incarnation before releasing its observation. Deliver a fresh current-incarnation report with applied **14**, centrally received strictly after the freeze cutoff. Capture the **first delivered HTTP offer**, not just a later compiler result: restored desired **11** / stored maximum **13** / retained **14** must produce **15**, with a new verified signature and ETag. Preserve every offer; do not hide a stale first offer with later successful ones or adjust generations in the harness.
 4. Read back the retained node's local store after delivery. Its accepted generation, ETag and envelope must match the delivered **15**. Then capture successful local application and the node's subsequent observation ACK with applied **15**, and central observed/applied **15**. A completed `fresh_observation` step proves receipt freshness only. Absence of `ErrStaleGeneration` log lines alone is insufficient because the agent can ignore that error silently. An unchanged conditional GET should now return 304 without another generation or signature.
 5. Repeat with `complete-recovery` before the fresh report, including a node never visited by the compiler during recovery. It remains held. A report received between freeze and begin remains fresh after completion; duplicate old reports and other-incarnation reports must not release the hold. Existing `TestAT30_D095` compiler tests cover these ordering cases and a fresh receipt whose node clock moved backwards.
+
+Do not close SECOPS-21 from the compiler tests alone. Security-ops follow-up 12 must establish closure from this live rerun.
 
 With the admin test DSN already configured, run the deciding tests using disk scratch:
 
