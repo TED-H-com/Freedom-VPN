@@ -124,7 +124,7 @@ func followup25Renewals(t *testing.T, r *rig) {
 	p := r.eng.plane.(*measuredSystemPlane)
 	first := len(p.applies)
 	guardFirst := len(p.guards)
-	for i := range 65 {
+	for i := range 75 {
 		time.Sleep(max(0, time.Until(start.Add(time.Duration(i+1)*time.Second))))
 		stepOK(t, r)
 		if !r.eng.serving {
@@ -157,11 +157,11 @@ func followup25Renewals(t *testing.T, r *rig) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if err := os.WriteFile(filepath.Join(dir, "d104-renewals.json"), raw, 0600); err != nil {
+		if err := os.WriteFile(filepath.Join(dir, "d104-renewals.json"), raw, 0644); err != nil {
 			t.Fatal(err)
 		}
 	}
-	t.Logf("D104 guarded nft command brackets (CLOCK_MONOTONIC): %+v", p.guards[guardFirst:])
+	t.Logf("D104 guarded nft command brackets retained: commands=%d clock=CLOCK_MONOTONIC", len(p.guards)-guardFirst)
 	renewals := r.srv.LeaseRenewals() - before
 	if renewals < 2 || positive < 50000 {
 		t.Fatalf("missing renewal/traffic: renewals=%d positive=%d", renewals, positive)
@@ -191,7 +191,7 @@ reads=[]
 for dev in ['fv-fh','fv-ih']:
  s=socket.socket(socket.AF_PACKET,socket.SOCK_RAW,socket.htons(3));s.bind((dev,0));s.setblocking(False);reads.append(s)
 header=mac('fv-fh')+mac('fv-fa')+b'\x08\x00'
-rows=[];start=time.monotonic_ns();end=start+66000000000;target=start
+rows=[];start=time.monotonic_ns();end=start+76000000000;target=start
 print('ready',flush=True)
 while time.monotonic_ns()<end+80000000:
  now=time.monotonic_ns()
