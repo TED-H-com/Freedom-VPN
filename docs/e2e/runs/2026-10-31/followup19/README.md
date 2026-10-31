@@ -96,6 +96,16 @@ header at the four exact requested size/SHA receipts and distinguishes the
 available 22,022-byte failure from the absent original 11,011-byte capture.
 No product or NetBird MTU/MSS adjustment is made.
 
+The [fresh native reconnect campaign](capture-fresh/README.md), `956c335d`,
+passes **7/0/0**, exit 0: IPv4 / IPv6 / dual at 1500, then dual at 1280,
+with all four IPv4 overlay transfers complete. Both dual rows separately
+require IPv6 refusal and no probe egress on the uplink. All 12 member/node/origin
+pcaps have exact size/SHA pins, complete decoded headers, process bounds,
+tcpdump statistics and endpoint samples. These successful controls do not
+clear the historical incomplete transfers. The old missing reverse-path packet
+is larger than this run's delivered response packets; the linked analysis
+states the MTU-boundary inference and its remaining limits.
+
 [D-093 reconciliation](../../../portal-d093-reconciliation-followup19-2026-10-31.md)
 retains all 15 row agreements, with 13 open and two retired within simulator
 scope. Cross-lane answers and the D-087 ownership-boundary request are only in

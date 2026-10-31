@@ -542,3 +542,30 @@ Its later seed succeeds on the unchanged initial tree; that is not candidate
 seed acceptance. The serving run supplies that proof. All prior devstack 18
 artifacts remain unchanged, with the byte-identical archive and pins linked
 from the [run overview](runs/2026-10-31/followup19/README.md).
+
+## netlab — 2026-10-31 (follow-up 19)
+
+> Netlab 19 request 2: exact F8-02 failed/control decode
+
+All four requested raw pcaps exist here and match their exact byte/SHA receipts.
+[Full payload-free decode and completeness limits](runs/2026-10-31/followup19/capture-decode/README.md)
+retain TCP sequence/ACK/SACK/window/options/length and outer IP fragmentation
+headers for every packet. The failed 22,022-byte flow's member ACK stops at
+10731373; the missing 1,228-byte inner segment is retransmitted at node tunnel
+egress but absent at member. Associated outer IPv4 packets are unfragmented
+1,340-byte packets on the node's 1500 link, absent at the 1280 member link.
+Receive-link MTU rejection is a bounded inference, not a measured kernel drop
+reason; the failed pair has no retained tcpdump drop statistics or endpoint
+samples. The original 11,011-byte members row has no matching capture here.
+
+A [fresh same-order reconnect capture](runs/2026-10-31/followup19/capture-fresh/README.md)
+retains all 12 member/node/origin pcaps with header decodes, actual MTUs,
+process bounds, capture counts, and endpoint read/write/line/error/TCP_INFO.
+It passes all four 64,064-byte transfers under the unchanged 12-second bound.
+Its 1280 reverse path sends 1,006-byte TCP / 1,132-byte outer packets; all
+arrive. In the opposite direction, 52 fragment pairs match at both ends.
+This successful control does not clear either historical failure or support
+a global MTU/MSS change. Both dual rows require IPv6 refusal without uplink
+probe leakage plus IPv4 completion; underlay family is not overlay IPv6
+service. There is no separate bottleneck router in this topology. No product
+or NetBird MTU, MSS or policy was changed.
