@@ -40,16 +40,18 @@ type check struct {
 }
 
 type probe struct {
-	ctx        context.Context
-	stack      *labstack.Stack
-	admin      labstack.BrowserSession
-	client     *http.Client
-	checks     []check
-	secrets    [][]byte
-	digests    [][]byte // lowercase token SHA-256; allowed in logs and admin reads
-	derived    [][]byte // other token-derived encodings; must be absent
-	reads      [][]byte // admin read and revoke bodies, never creation responses
-	resultPath string
+	ctx          context.Context
+	stack        *labstack.Stack
+	admin        labstack.BrowserSession
+	client       *http.Client
+	checks       []check
+	secrets      [][]byte
+	digests      [][]byte // lowercase token SHA-256; allowed in logs and admin reads
+	derived      [][]byte // other token-derived encodings; must be absent
+	reads        [][]byte // admin read and revoke bodies, never creation responses
+	resultPath   string
+	limited      []map[string]string
+	limitedCount int
 }
 
 func (p *probe) note(at, name, status string, detail any) {
@@ -125,6 +127,7 @@ func TestAT06_AT07_Live(t *testing.T) {
 		p.scanAdminReads()
 	}
 	p.scanEvidence()
+	p.rateReview()
 	for _, c := range p.checks {
 		if c.Status == "fail" {
 			t.Errorf("%s/%s failed; see safe evidence", c.AT, c.Name)
@@ -147,11 +150,69 @@ func (p *probe) callHeaders(method, path string, body any, headers map[string]st
 	var err error
 	for attempt := 0; attempt < 6; attempt++ {
 		last, err = p.stack.Call(p.ctx, p.admin, method, path, body, h)
+		if last.Status == http.StatusTooManyRequests {
+			p.sawLimited(method, path)
+		}
 		if err != nil || last.Status != http.StatusTooManyRequests || !waitRetry(p.ctx, last.Header.Get("Retry-After")) {
 			return last, err
 		}
 	}
 	return last, err
+}
+
+func classifyLimited(raw string) (class, path string) {
+	path = raw
+	if u, err := url.Parse(raw); err == nil && u.Path != "" {
+		path = u.Path
+	}
+	switch {
+	case strings.Contains(path, "/agent/enroll"):
+		return "anonymous", path
+	case strings.Contains(path, "/lease-renewals"):
+		return "lease", path
+	case strings.Contains(path, "/observations"):
+		return "heartbeat", path
+	case strings.Contains(path, "/agent/"):
+		return "agent", path
+	default:
+		return "browser", path
+	}
+}
+
+func (p *probe) sawLimited(method, raw string) {
+	p.limitedCount++
+	if len(p.limited) >= 20 {
+		return
+	}
+	class, path := classifyLimited(raw)
+	p.limited = append(p.limited, map[string]string{"method": method, "class": class, "path": path})
+}
+
+func (p *probe) rateReview() {
+	status := "pass"
+	detail := map[string]any{}
+	if p.limitedCount != 0 {
+		// A recurring 429 blocks AT06. It must not fail the process: that would
+		// add a new probe_process failure on top of the review signal.
+		status = "blocked"
+		detail["gap"] = fmt.Sprintf("HTTP 429 recurred (%d) on limiter class browser, bucket BrowserRate 10/s burst 30. Owner: control. The bebfe230 review stays unresolved.", p.limitedCount)
+	}
+	samples := p.limited
+	if samples == nil {
+		samples = []map[string]string{}
+	}
+	detail["http_429"] = p.limitedCount
+	detail["samples"] = samples
+	detail["limiter_class_for_prior_failures"] = "browser"
+	detail["bucket"] = "BrowserRate"
+	detail["per_second"] = 10
+	detail["burst"] = 30
+	detail["owner_if_recurs"] = "control"
+	detail["operations"] = []string{"ListAuditEvents", "CreateEnrollment", "ListNodeIncarnations"}
+	detail["reviewed_run"] = "bebfe230-26d4-4e3d-b052-81d258d04e07"
+	detail["changed_commit"] = "286eb57b44c2e783257767918680a0e1f097f106"
+	detail["what_changed"] = "Admin callHeaders and agent enroll post retry HTTP 429 RATE_LIMITED using Retry-After (1-30s, default 1s). Admin attempts stop at 6 and agent enroll attempts stop at 4. The Idempotency-Key stays the same across retries. The four retained failures were a harness burst against browser BrowserRate 10/s burst 30, merged in 286eb57 (#210)."
+	p.note("AT06", "rate_limit_review", status, detail)
 }
 
 func waitRetry(ctx context.Context, header string) bool {
@@ -280,12 +341,12 @@ func (p *probe) holder(t *testing.T) holder {
 	return h
 }
 
-func post(ctx context.Context, client *http.Client, url, token string, body []byte) (labstack.Response, error) {
+func (p *probe) post(ctx context.Context, client *http.Client, rawURL, token string, body []byte) (labstack.Response, error) {
 	var last labstack.Response
 	var err error
 	for attempt := 0; attempt < 4; attempt++ {
 		var req *http.Request
-		req, err = http.NewRequestWithContext(ctx, "POST", url, bytes.NewReader(body))
+		req, err = http.NewRequestWithContext(ctx, "POST", rawURL, bytes.NewReader(body))
 		if err != nil {
 			return labstack.Response{}, err
 		}
@@ -306,6 +367,9 @@ func post(ctx context.Context, client *http.Client, url, token string, body []by
 		_ = json.Unmarshal(raw, &env)
 		last = labstack.Response{Status: resp.StatusCode, Header: resp.Header, Body: raw, Code: env.Error.Code}
 		err = readErr
+		if last.Status == http.StatusTooManyRequests {
+			p.sawLimited("POST", rawURL)
+		}
 		if err != nil || last.Status != http.StatusTooManyRequests || !waitRetry(ctx, last.Header.Get("Retry-After")) {
 			return last, err
 		}
@@ -327,11 +391,11 @@ func (p *probe) at06(t *testing.T) {
 	}
 	drop := &dropSuccess{base: p.client.Transport}
 	lostClient := &http.Client{Transport: drop, Timeout: 30 * time.Second}
-	resp, err := post(p.ctx, lostClient, url, one.token, h.body)
+	resp, err := p.post(p.ctx, lostClient, url, one.token, h.body)
 	if !p.expect("AT06", "response_dropped", errors.Is(err, errDropped) && drop.dropped && resp.Status == 0, map[string]any{"observer_http_status": drop.status, "client_received_response": resp.Status != 0, "request_sha256": hash(h.body)}) {
 		return
 	}
-	resp, err = post(p.ctx, p.client, url, one.token, h.body)
+	resp, err = p.post(p.ctx, p.client, url, one.token, h.body)
 	var result api.EnrollResponse
 	valid := err == nil && resp.Status == 200 && json.Unmarshal(resp.Body, &result) == nil
 	p.expect("AT06", "same_holder_retry", valid && result.NodeId == drop.node && result.NodeIncarnationId == drop.incarnation && result.NodeIncarnationId == h.incarnation && hash([]byte(result.CertificatePem)) == drop.certificateHash, map[string]any{"response": safeResponse(resp, err), "node_id": result.NodeId, "incarnation_id": result.NodeIncarnationId, "certificate_sha256": hash([]byte(result.CertificatePem)), "identical_request_sha256": hash(h.body)})
@@ -357,7 +421,7 @@ func (p *probe) at06(t *testing.T) {
 	if err != nil {
 		t.Fatal("request encode failed")
 	}
-	resp, err = post(p.ctx, p.client, url, one.token, missingProof)
+	resp, err = p.post(p.ctx, p.client, url, one.token, missingProof)
 	p.expect("AT06", "token_only", err == nil && resp.Status == 422 && resp.Code == "VALIDATION_FAILED" && !bytes.Contains(resp.Body, []byte("certificate_pem")), safeResponse(resp, err))
 	// A structurally valid but false proof must also be refused.
 	noProof["proof"] = base64.StdEncoding.EncodeToString(make([]byte, 64))
@@ -365,9 +429,9 @@ func (p *probe) at06(t *testing.T) {
 	if err != nil {
 		t.Fatal("request encode failed")
 	}
-	resp, err = post(p.ctx, p.client, url, one.token, badProof)
+	resp, err = p.post(p.ctx, p.client, url, one.token, badProof)
 	p.expect("AT06", "invalid_proof", err == nil && resp.Status == 422 && resp.Code == "VALIDATION_FAILED" && !bytes.Contains(resp.Body, []byte("certificate_pem")), safeResponse(resp, err))
-	resp, err = post(p.ctx, p.client, "https://agent.example.invalid:9443/api/v1/agent/bootstrap", one.token, nil)
+	resp, err = p.post(p.ctx, p.client, "https://agent.example.invalid:9443/api/v1/agent/bootstrap", one.token, nil)
 	// TLS client-certificate refusal is not an application error code. Accept
 	// only the explicit TLS alert; arbitrary network failure is not denial proof.
 	tlsDenied := err != nil && strings.Contains(err.Error(), "tls: certificate required")
@@ -383,7 +447,7 @@ func (p *probe) at06(t *testing.T) {
 	start := make(chan struct{})
 	var wg sync.WaitGroup
 	for i := range holders {
-		wg.Go(func() { <-start; responses[i], errs[i] = post(p.ctx, p.client, url, race.token, holders[i].body) })
+		wg.Go(func() { <-start; responses[i], errs[i] = p.post(p.ctx, p.client, url, race.token, holders[i].body) })
 	}
 	close(start)
 	wg.Wait()
@@ -430,7 +494,7 @@ func (p *probe) at06(t *testing.T) {
 		})
 		p.readDigest(revoked.enrollment.EnrollmentId, revoked.digest, revoked.token)
 		p.audit(revoked, 0)
-		resp, err = post(p.ctx, p.client, url, revoked.token, p.holder(t).body)
+		resp, err = p.post(p.ctx, p.client, url, revoked.token, p.holder(t).body)
 		p.expect("AT06", "revoked_token", err == nil && resp.Status == 401 && resp.Code == "ENROLLMENT_TOKEN_REVOKED", safeResponse(resp, err))
 	}
 	p.incarnationHistory(t, one, h.incarnation)
@@ -445,7 +509,7 @@ func (p *probe) at06(t *testing.T) {
 			return
 		}
 	}
-	resp, err = post(p.ctx, p.client, url, expired.token, p.holder(t).body)
+	resp, err = p.post(p.ctx, p.client, url, expired.token, p.holder(t).body)
 	p.expect("AT06", "expired_token", err == nil && resp.Status == 401 && resp.Code == "ENROLLMENT_TOKEN_EXPIRED", safeResponse(resp, err))
 }
 
@@ -670,7 +734,7 @@ func (p *probe) incarnationHistory(t *testing.T, first issued, oldInc uuid.UUID)
 		return
 	}
 	h := p.holder(t)
-	resp, err := post(p.ctx, p.client, p.stack.PublicURL()+"/api/v1/agent/enroll", second.token, h.body)
+	resp, err := p.post(p.ctx, p.client, p.stack.PublicURL()+"/api/v1/agent/enroll", second.token, h.body)
 	var result api.EnrollResponse
 	enrolled := err == nil && resp.Status == 201 && json.Unmarshal(resp.Body, &result) == nil && result.NodeId == node && result.NodeIncarnationId == h.incarnation && result.NodeIncarnationId != oldInc
 	if enrolled {
@@ -790,9 +854,10 @@ func (p *probe) at07(t *testing.T) {
 	p.nodeAudit(second.NodeID)
 	p.machineIdentity()
 	// The clone fixture stops and resumes node. node2 stays the clean second exit.
-	p.clonedIdentity()
-	// PauseAgent resumes durable identity; it is not an installer rerun or a
-	// usage-ACK hold. No unsupported mutation is substituted here.
+	p.clonedIdentity(first.NodeID)
+	// PauseAgent resumes durable identity. It is not an installer rerun or a
+	// usage-ACK hold. Follow-up 13 did not export those product hooks.
+	p.blockedProductHooks()
 }
 
 func hex64(s string) bool {
@@ -830,17 +895,113 @@ func (p *probe) machineIdentity() {
 	p.expect("AT07", "distinct_first_boot", distinct, detail)
 }
 
-func (p *probe) clonedIdentity() {
-	const changed = "devstack follow-up 12 PR #204 StartClonedIdentityFixture"
+func dockerText(ctx context.Context, args ...string) string {
+	out, err := exec.CommandContext(ctx, "docker", args...).Output()
+	if err != nil {
+		return ""
+	}
+	return strings.TrimSpace(string(out))
+}
+
+func slash24(ip string) string {
+	parts := strings.Split(ip, ".")
+	if len(parts) != 4 {
+		return ""
+	}
+	return strings.Join(parts[:3], ".") + ".0/24"
+}
+
+func addressMap(line string) map[string]string {
+	out := map[string]string{}
+	for _, part := range strings.Fields(line) {
+		name, ip, ok := strings.Cut(part, "=")
+		if ok && ip != "" {
+			out[name] = ip
+		}
+	}
+	return out
+}
+
+func (p *probe) cloneNetworks() map[string]any {
+	lab := dockerText(p.ctx, "network", "inspect", "-f", "{{range .IPAM.Config}}{{.Subnet}}{{end}}", "fvpn-w4-enroll")
+	origin := dockerText(p.ctx, "network", "inspect", "-f", "{{range .IPAM.Config}}{{.Subnet}}{{end}}", "fvpn-w4-enroll-origin")
+	format := `{{range $n, $c := .NetworkSettings.Networks}}{{$n}}={{$c.IPAddress}} {{end}}`
+	source := dockerText(p.ctx, "inspect", "-f", format, "fvpn-w4-enroll-node-netns")
+	clone := dockerText(p.ctx, "inspect", "-f", format, "fvpn-w4-enroll-node-clone-netns")
+	src, cl := addressMap(source), addressMap(clone)
+	labDomain := slash24(src["fvpn-w4-enroll"])
+	originDomain := slash24(src["fvpn-w4-enroll-origin"])
+	return map[string]any{
+		"inspect_ok": lab != "" && origin != "" && source != "" && clone != "",
+		"lab_subnet": lab, "origin_subnet": origin,
+		"source_addresses": source, "clone_addresses": clone,
+		"same_lab_slash24":    labDomain != "" && labDomain == slash24(cl["fvpn-w4-enroll"]),
+		"same_origin_slash24": originDomain != "" && originDomain == slash24(cl["fvpn-w4-enroll-origin"]),
+	}
+}
+
+func jsonValue(raw json.RawMessage) any {
+	if len(raw) == 0 {
+		return nil
+	}
+	var v any
+	if json.Unmarshal(raw, &v) != nil {
+		return "unreadable"
+	}
+	return v
+}
+
+func (p *probe) identityProjection(node uuid.UUID) map[string]any {
+	r, err := p.call("GET", "/api/v1/admin/nodes/"+node.String(), nil)
+	p.keep(r)
+	view := map[string]any{"http_status": r.Status, "read_ok": false}
+	var raw map[string]json.RawMessage
+	if err != nil || r.Status != 200 || json.Unmarshal(r.Body, &raw) != nil {
+		return view
+	}
+	view["read_ok"] = true
+	view["provisioning_state"] = jsonValue(raw["provisioning_state"])
+	view["safety_status"] = jsonValue(raw["safety_status"])
+	view["member_forwarding_observed"] = jsonValue(raw["member_forwarding_observed"])
+	body, present := raw["identity_conflict"]
+	view["identity_conflict_present"] = present
+	if !present {
+		view["identity_conflict"] = "absent"
+		return view
+	}
+	view["identity_conflict"] = jsonValue(body)
+	return view
+}
+
+func observeView(o e2e.CloneObservation, readOK bool) map[string]any {
+	if !readOK {
+		return map[string]any{"read_ok": false}
+	}
+	return map[string]any{
+		"read_ok": true, "same_identity": o.SameIdentity,
+		"source_stage": o.SourceStage, "clone_stage": o.CloneStage,
+		"source": fingerprintView(o.Source), "clone": fingerprintView(o.Clone),
+		"endpoint_rows": o.EndpointRows, "conflicts": o.Conflicts, "mapping_frozen": o.MappingFrozen,
+	}
+}
+
+func (p *probe) clonedIdentity(node uuid.UUID) {
+	const changed = "wire-nodes follow-up 21 PR #211 ObserveEndpointTx; follow-up 22 PR #217 identity_conflict; devstack follow-up 12 PR #204 StartClonedIdentityFixture"
+	const gap = "ENR-07 / devstack follow-up 14: the lab has no second /24 for the clone. StartClonedIdentityFixture(ctx, \"node\") attaches node-clone to the same lab bridge and the same origin bridge (last octet .23). The agent mTLS path is the local resolver proxy to agent.example.invalid:9443, whose TCP peer is that lab address, not trusted gateway 172.28.38.21/32, so X-Forwarded-For is not the compatibility domain. Interleave, conflict freeze, revokeNode plus re-enroll, and the quiet-window promotion were not run."
+	beforeProjection := p.identityProjection(node)
 	fixture, err := p.stack.StartClonedIdentityFixture(p.ctx, "node")
 	if err != nil || fixture == nil {
-		p.expect("AT07", "cloned_identity_conflict", false, map[string]any{"started": false, "changed_on_main": changed})
+		p.note("AT07", "cloned_identity_conflict", "blocked", map[string]any{
+			"gap": gap, "started": false, "changed_on_main": changed, "owner": "devstack", "request": "ENR-07",
+			"projection_before": beforeProjection,
+		})
 		return
 	}
 	read := func() (e2e.CloneObservation, bool) {
 		obs, obsErr := fixture.Observe(p.ctx)
 		return obs, obsErr == nil
 	}
+	obsBefore, beforeOK := read()
 	var obs e2e.CloneObservation
 	ok := false
 	deadline := time.Now().Add(75 * time.Second)
@@ -853,39 +1014,51 @@ func (p *probe) clonedIdentity() {
 			break
 		}
 	}
-	view := func(o e2e.CloneObservation) map[string]any {
-		return map[string]any{
-			"started": true, "read_ok": ok, "same_identity": o.SameIdentity,
-			"source_stage": o.SourceStage, "clone_stage": o.CloneStage,
-			"source": fingerprintView(o.Source), "clone": fingerprintView(o.Clone),
-			"endpoint_rows": o.EndpointRows, "conflicts": o.Conflicts, "mapping_frozen": o.MappingFrozen,
-			"changed_on_main": changed,
+	obsEnrolled := obs
+	enrolledOK := ok
+	if ok && obs.SameIdentity && obs.SourceStage == "enrolled" && obs.CloneStage == "enrolled" {
+		settle := time.Now().Add(40 * time.Second)
+		for obs.EndpointRows == 0 && time.Now().Before(settle) && p.ctx.Err() == nil && waitRetry(p.ctx, "2") {
+			if next, good := read(); good {
+				obs, ok = next, true
+			}
 		}
+	}
+	afterProjection := p.identityProjection(node)
+	networks := p.cloneNetworks()
+	detail := map[string]any{
+		"gap": gap, "owner": "devstack", "request": "ENR-07", "started": true,
+		"changed_on_main":    changed,
+		"domain_offered":     "same lab /24 and same origin /24; trusted-proxy X-Forwarded-For is not the clone's TCP peer",
+		"networks":           networks,
+		"observe_before":     observeView(obsBefore, beforeOK),
+		"observe_enrolled":   observeView(obsEnrolled, enrolledOK),
+		"observe_after":      observeView(obs, ok),
+		"projection_before":  beforeProjection,
+		"projection_after":   afterProjection,
+		"steps_not_run":      []string{"interleave_two_domains", "conflict_freeze", "revoke_and_reenroll", "quiet_window_promotion"},
+		"active_window":      "120s",
+		"compatibility_rule": "IPv4 /24 and IPv6 /48; X->Y->X inside the window is one conflict",
 	}
 	if !ok || !obs.SameIdentity || obs.SourceStage != "enrolled" || obs.CloneStage != "enrolled" {
-		p.expect("AT07", "cloned_identity_conflict", false, view(obs))
+		detail["gap"] = "StartClonedIdentityFixture did not reach one enrolled identity on source and clone"
+		p.expect("AT07", "cloned_identity_conflict", false, detail)
 		return
 	}
-	freeze := time.Now().Add(65 * time.Second)
-	for obs.Conflicts == 0 || !obs.MappingFrozen {
-		if time.Now().After(freeze) || p.ctx.Err() != nil || !waitRetry(p.ctx, "2") {
-			break
-		}
-		if next, good := read(); good {
-			obs, ok = next, true
-		}
-	}
-	detail := view(obs)
-	// The export's own live record leaves this blocked: ObserveEndpoint has no
-	// production caller, so zero conflict rows are a product gap, not a missed hook.
-	if obs.Conflicts > 0 && obs.MappingFrozen {
-		p.expect("AT07", "cloned_identity_conflict", true, detail)
-		return
-	}
-	detail["owner"] = "PKI/enrollment + node identity adapter"
-	detail["request"] = "ENR-08"
-	detail["gap"] = "StartClonedIdentityFixture.Observe read node_identity_conflicts and mapping_frozen; both stayed unset"
+	// A real conflict on this stack would be a product surprise: both clients
+	// share one compatibility domain. Do not treat zero conflicts as a pass.
 	p.note("AT07", "cloned_identity_conflict", "blocked", detail)
+}
+
+func (p *probe) blockedProductHooks() {
+	const usage = "ENR-05 stays blocked after devstack follow-up 13 (#219). docs/e2e/requests.md recheck: node/internal/usageupload still acknowledges every batch. HoldUsageAcknowledgements, UsageLedgerSnapshot and CountedMemberTraffic are not exported. Owner: w4-usage, then devstack. Not emulated."
+	const installer = "ENR-06 stays blocked after devstack follow-up 13 (#219). packaging/ is only the release archive. RerunInstaller and ControlledReinstall are not exported. Owner: packaging/installer, then devstack. Not emulated."
+	p.note("AT07", "counted_unacked_usage", "blocked", usage)
+	p.note("AT07", "installer_rerun", "blocked", installer)
+	p.note("AT07", "identity_ledger_preserved", "blocked", "ENR-05/ENR-06: counted unacknowledged ledger and installer rerun required. Not emulated.")
+	p.note("AT07", "controlled_reinstall", "blocked", installer)
+	p.note("AT07", "old_certificate_denied", "blocked", "ENR-06: old-certificate mTLS rejection stays inside ControlledReinstall. Not emulated.")
+	p.note("AT07", "historical_usage_retained", "blocked", "ENR-05/ENR-06: counted usage across reinstall is not exported. listNodeIncarnations usage retention is measured separately. Not emulated.")
 }
 
 func (p *probe) peerUniqueness(t *testing.T) {

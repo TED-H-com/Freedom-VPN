@@ -68,7 +68,7 @@ func (s *Service) SubmitObservation(
 		return api.ObservationAccepted{}, err
 	}
 
-	canonBytes, err := canonjson.Marshal(report)
+	canonBytes, reportPayloadJSON, usageOutboxJSON, hasUsage, err := marshalObservationReport(report)
 	if err != nil {
 		return api.ObservationAccepted{}, apierr.Newf(apierr.MalformedRequest, "invalid observation payload for canonical hash: %v", err)
 	}
@@ -182,10 +182,6 @@ func (s *Service) SubmitObservation(
 		if err != nil {
 			return err
 		}
-		reportPayloadJSON, err := json.Marshal(report)
-		if err != nil {
-			return err
-		}
 
 		receivedAt := s.now().UTC().Truncate(time.Microsecond)
 		observedAt := report.ObservedAt.UTC()
@@ -245,6 +241,8 @@ func (s *Service) SubmitObservation(
 			// safety_status='passed' may preserve provisioning_state='ready' when central
 			// concurrently advances desired_config_generation; a second stale report
 			// below desired_config_generation downgrades provisioning_state to 'applying'.
+			// The one-shot grace mark lives on node_incarnations.stale_generation_grace_at,
+			// never in audit_events (D-075).
 			var acknowledged, bound bool
 			if err := tx.QueryRow(ctx, `
 				SELECT
@@ -253,14 +251,7 @@ func (s *Service) SubmitObservation(
 						OR (
 							n.provisioning_state = 'ready'
 							AND $2::numeric >= n.applied_config_generation
-							AND NOT coalesce((
-								SELECT (ae.after_diff->>'stale_generation_grace')::boolean
-								FROM audit_events ae
-								WHERE ae.resource = 'node:' || n.id::text
-								  AND ae.action = 'node.observation_applied'
-								ORDER BY ae.occurred_at DESC, ae.id DESC
-								LIMIT 1
-							), false)
+							AND i.stale_generation_grace_at IS NULL
 						)
 					),
 					$2::numeric > 0 AND $2::numeric < n.desired_config_generation AND n.provisioning_state = 'ready',
@@ -315,6 +306,30 @@ func (s *Service) SubmitObservation(
 				errorsArrayJSON, mappingFrozen,
 			); err != nil {
 				return err
+			}
+
+			var graceAt *time.Time
+			if staleGenerationGrace && provisioning == api.ProvisioningStateReady {
+				ts := observedAt.UTC()
+				graceAt = &ts
+			}
+			if _, err := tx.Exec(ctx, `
+				UPDATE node_incarnations
+				SET stale_generation_grace_at = $2
+				WHERE id = $1
+				  AND stale_generation_grace_at IS DISTINCT FROM $2
+			`, authIncarnationID, graceAt); err != nil {
+				return err
+			}
+			if hasUsage {
+				if _, err := tx.Exec(ctx, `
+					UPDATE node_incarnations
+					SET usage_outbox = $2::jsonb,
+					    usage_outbox_observed_at = $3
+					WHERE id = $1
+				`, authIncarnationID, usageOutboxJSON, receivedAt); err != nil {
+					return err
+				}
 			}
 
 			obsAuditID := uuid.Must(uuid.NewV7())
@@ -395,6 +410,75 @@ func (s *Service) SubmitObservation(
 		return api.ObservationAccepted{}, err
 	}
 	return accepted, nil
+}
+
+func hasUsageOutbox(u api.UsageOutboxStatus) bool {
+	return u.BlockedSeq.IsSpecified() ||
+		u.LedgerEpoch.IsSpecified() ||
+		u.MeterEpochId.IsSpecified() ||
+		u.OldestUnackedAt.IsSpecified() ||
+		u.AckedArchiveBytes != 0 ||
+		u.CentralAckedThrough != 0 ||
+		u.LastDurableEventSeq != 0 ||
+		u.UnackedEventCount != 0 ||
+		u.UnackedPayloadBytes != 0
+}
+
+func normalizeUsageOutbox(u api.UsageOutboxStatus) api.UsageOutboxStatus {
+	if !u.BlockedSeq.IsSpecified() {
+		u.BlockedSeq.SetNull()
+	}
+	if !u.LedgerEpoch.IsSpecified() {
+		u.LedgerEpoch.SetNull()
+	}
+	if !u.MeterEpochId.IsSpecified() {
+		u.MeterEpochId.SetNull()
+	}
+	if !u.OldestUnackedAt.IsSpecified() {
+		u.OldestUnackedAt.SetNull()
+	} else if ts, err := u.OldestUnackedAt.Get(); err == nil {
+		u.OldestUnackedAt.Set(ts.UTC())
+	}
+	return u
+}
+
+func marshalObservationReport(report api.ObservationReport) (canonBytes, reportPayloadJSON, usageOutboxJSON []byte, hasUsage bool, err error) {
+	hasUsage = hasUsageOutbox(report.Usage)
+	r := report
+	r.Usage = normalizeUsageOutbox(r.Usage)
+	if !hasUsage {
+		rawBytes, err := json.Marshal(r)
+		if err != nil {
+			return nil, nil, nil, false, err
+		}
+		var rawMap map[string]json.RawMessage
+		if err := json.Unmarshal(rawBytes, &rawMap); err != nil {
+			return nil, nil, nil, false, err
+		}
+		delete(rawMap, "usage")
+		canonBytes, err = canonjson.Marshal(rawMap)
+		if err != nil {
+			return nil, nil, nil, false, err
+		}
+		reportPayloadJSON, err = json.Marshal(rawMap)
+		if err != nil {
+			return nil, nil, nil, false, err
+		}
+		return canonBytes, reportPayloadJSON, nil, false, nil
+	}
+	canonBytes, err = canonjson.Marshal(r)
+	if err != nil {
+		return nil, nil, nil, false, err
+	}
+	reportPayloadJSON, err = json.Marshal(r)
+	if err != nil {
+		return nil, nil, nil, false, err
+	}
+	usageOutboxJSON, err = json.Marshal(r.Usage)
+	if err != nil {
+		return nil, nil, nil, false, err
+	}
+	return canonBytes, reportPayloadJSON, usageOutboxJSON, true, nil
 }
 
 // evaluateObservationEvidence enforces fail-closed validation on a node's reported checks (§5.1, §8, §10.3).
@@ -551,10 +635,20 @@ func advanceNodeOperationsOnObservation(
 	_, hasIsoErr := hasIsolationApplyError(report)
 	_, pendingIso := isPendingIsolationApplyError(report, effectiveForwarding)
 
+	var desiredNodeGenStr, dbAppliedNodeGenStr string
+	if err := tx.QueryRow(ctx, `SELECT desired_config_generation::text, applied_config_generation::text FROM nodes WHERE id = $1`, nodeID).Scan(&desiredNodeGenStr, &dbAppliedNodeGenStr); err != nil {
+		return err
+	}
+	desiredNodeGen, _ := strconv.ParseUint(desiredNodeGenStr, 10, 64)
+	dbAppliedNodeGen, _ := strconv.ParseUint(dbAppliedNodeGenStr, 10, 64)
+
 	for _, op := range ops {
 		var desiredGen uint64
 		if op.desiredGen != nil {
 			desiredGen, _ = strconv.ParseUint(*op.desiredGen, 10, 64)
+		}
+		if op.kind == OpKindPublish && desiredNodeGen > desiredGen {
+			desiredGen = desiredNodeGen
 		}
 		// Never advance an operation step if the node has not yet applied the desired config generation!
 		if desiredGen > 0 && (!report.AppliedConfigGeneration.IsSpecified() || report.AppliedConfigGeneration.IsNull() || appliedGen < desiredGen) {
@@ -719,18 +813,24 @@ func advanceNodeOperationsOnObservation(
 					return err
 				}
 			}
+		} else if op.kind == OpKindPublish &&
+			steps[StepAgentPolicy].Status == string(api.OperationStepStatusSucceeded) &&
+			steps[StepDataPathProbe].Status == string(api.OperationStepStatusSucceeded) {
+			if _, err := tx.Exec(ctx, `
+				UPDATE outbox_events
+				SET available_at = clock_timestamp()
+				WHERE event_type = 'node.publication_changed'
+				  AND payload->>'operation_id' = $1
+				  AND delivered_at IS NULL
+				  AND dead_lettered_at IS NULL
+				  AND available_at > clock_timestamp()`, op.id.String()); err != nil {
+				return err
+			}
 		}
 	}
 
 	// Also advance or hold the "nodes" step on member, entitlement_grant (via entitlement_grants.member_id),
 	// and member_device (via member_devices.member_id) operations (§5.2, §8.1, r13 M-3).
-	var desiredNodeGenStr, dbAppliedNodeGenStr string
-	if err := tx.QueryRow(ctx, `SELECT desired_config_generation::text, applied_config_generation::text FROM nodes WHERE id = $1`, nodeID).Scan(&desiredNodeGenStr, &dbAppliedNodeGenStr); err != nil {
-		return err
-	}
-	desiredNodeGen, _ := strconv.ParseUint(desiredNodeGenStr, 10, 64)
-	dbAppliedNodeGen, _ := strconv.ParseUint(dbAppliedNodeGenStr, 10, 64)
-
 	reportAcked := report.AppliedConfigGeneration.IsSpecified() &&
 		!report.AppliedConfigGeneration.IsNull() &&
 		appliedGen > 0 &&

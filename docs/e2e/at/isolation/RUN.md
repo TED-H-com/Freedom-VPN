@@ -19,10 +19,16 @@ promote a blocked product result.
 
 `stack.py` calls the shared devstack lifecycle. A temporary Docker argument
 wrapper substitutes task-owned cache tags for its neutral `fvpn-devstack-*`
-tags. All service images retain their shared build definitions; the records
-contain the immutable IDs of the running images. Python uses only its standard
-library. The existing Ubuntu workflow already has the shared stack's Python
-dependency and remains unchanged.
+tags. `down` removes the overlay's `fvpn-w4-isolation-isolation-target` container
+before the shared script, then removes the `fvpn-w4-isolation-cache-*` tags
+after it returns. The target is not a compose service. While it is attached,
+the shared script cannot delete `fvpn-w4-isolation-origin`, and the node cache
+tag stays referenced. `prefix.sh` has no `cache` token, so the shared script
+leaves those tags, and the makefile leftover check would otherwise exit 1. All service
+images retain their shared build definitions; the records contain the
+immutable IDs of the running images. Python uses only its standard library.
+The existing Ubuntu workflow already has the shared stack's Python dependency
+and remains unchanged.
 
 `driver.py` uses a Go overlay to add `driver.go.txt` to the shared `tests/e2e`
 test package. This executes the original private `countedFlow`, `selectExit`
@@ -47,9 +53,16 @@ All interface and route changes are confined to disposable containers.
 
 Publication excludes B while retaining A, then disables and restores the exit.
 Revocation observes established TCP/UDP fixtures, conntrack deletion, the next
-serving generation and an admitted sibling. Native route withdrawal limits
-independent attribution of post-revoke kernel ingress. Restart waits for a new
-serving heartbeat before checking recovery.
+serving generation and an admitted sibling. After that generation is serving,
+`Stack.ObserveMemberIngress` injects one UDP/9 datagram from the revoked
+overlay address and one from the still-admitted sibling onto `fvmb0`
+(`tun-mirred`, link type 65534, source port 40000). The revoked source must
+move `ctunku` by exactly one packet, leave every `u_`/`d_` counter still, and
+stay off `fvup0` and the origin. The sibling must move its own `u_<hex>` by
+exactly one packet and appear on both captures. The overlay calls that method
+on the prepared `Stack`; it does not exec `fvpn-netlab` itself. The same hook
+measures a forged `100.64.7.7` source for the AT12 unknown-source check.
+Restart waits for a new serving heartbeat before checking recovery.
 
 The finite-member expiry case checks the actual signed member deadline, then
 stops both control and worker before it. This preserves the advertised route
@@ -58,7 +71,7 @@ admission bytes. Both services are restarted afterward.
 
 Whole-node expiry then `PUT`s `/api/v1/admin/fleet-config` to
 `max_offline_lease_seconds=60` with reason
-`TEST ONLY: AT13 whole-node expiry (isolation follow-up 3)`, using the strong
+`TEST ONLY: AT13 whole-node expiry (isolation follow-up 4)`, using the strong
 ETag, `If-Match` and `Idempotency-Key`. A capacity patch, the same desired-state
 change the harness already makes, forces a renewal. The node must hold a 60s
 lease with member grants. Control and worker are stopped before the renewal
@@ -66,13 +79,23 @@ lead. The node must keep forwarding until that signed deadline and return to
 the baseline within one configured agent tick after it: ingress on `fvmb0`,
 nothing on the uplink, admission counters flat. After control answers,
 `86400` is restored with reason
-`TEST ONLY: restore AT13 whole-node expiry ceiling (isolation follow-up 3)`.
+`TEST ONLY: restore AT13 whole-node expiry ceiling (isolation follow-up 4)`.
 Both `fleet_config.update` audit events are recorded. No host clock is changed.
 No `fleet_config` row is written except through that API.
 
+After publication succeeds, the runner reads `nft -j list ruleset` and the
+latest `node_observations.report_payload` and stores both on the AT10 record.
+It does not write nft. `loopback_scoped` is recorded only when
+`node/enforce/verify_foreign.go` in the module root contains that classifier.
+The follow-up 5 run built `2473acf` (#220). D-079 (`a4191fa`, #241) is on
+later `origin/main` and is not an ancestor of that run.
+
 From publication until the first counted member byte, the runner samples
 desired and applied generations, lease grant counts, observation block reasons
-and the forward chain. The samples are `convergence-timeline.json`. The live
+and the forward chain. The samples are `convergence-timeline.json`. Agent
+follow-up 18 is on this `main`, so a grant-less same-generation sample must
+show lease-check `error_code` `AWAITING_MEMBER_GRANTS` and block reason
+`awaiting_member_grants`. The live
 AT13 record repeats the SHA256 of `capture.go` concatenated with
 `capture_review_test.go`; the singular/plural parser from follow-up 2 stays.
 
@@ -96,10 +119,30 @@ Follow-up 3's assembled run is `49799a38-1980-4c0f-a527-725646230eee`, source
 `4d84f0a651e60ae84f168a8a33248503a50cc94a`, UTC `2026-10-30T19:43:32Z` through
 `2026-10-30T19:57:57Z`. AT10 passed, including a positive for every destination
 case. Short whole-node expiry passed through the fleet-config API, and
-finite-member expiry was re-measured in the same stack. AT11, AT12 and AT13
-stay blocked on the designed gaps in `requests.md`. The aggregate exited 2.
-`summary.md` is the measured record. The follow-up 2 node snapshots were not
-rewritten by this runner; they remain only under `history/follow-up-2/`.
+finite-member expiry was re-measured in the same stack. That record is archived
+under `history/follow-up-3/` and is not the current run.
+
+Follow-up 4's assembled run is `fa0074cc-3b1a-403d-b8c2-3a3439fe2b7e`, source
+`491a307dd505e33b14dc0e993aa7e86b28e82f68`, UTC `2026-10-31T00:27:07Z` through
+`2026-10-31T00:31:43Z`, on main `205633f`. Serving publication fail-closed
+`FLOWTABLE_BYPASS` on Docker's `ip nat` `POSTROUTING` `xt` SNAT for
+`127.0.0.11`. No counted byte, no convergence sample, and no fleet-config PUT
+were recorded. AT10–AT13 stay blocked. The aggregate exited 2. That record is
+archived under `history/follow-up-4/` and is not the current run. When
+publication fails, the runner reads `nft -j list ruleset` and stores the
+foreign chains on check `serving setup`. It does not write nft.
+
+Follow-up 5's assembled run is `c0106e5d-d8e8-400b-abe0-181d6428fc55`, source
+`7fa0443c532b1c9a395cd93620152fb6902584ae` (`source_dirty=false`), on main
+`9e493e8` (#240). Product UTC `2026-10-31T01:58:35Z` through
+`2026-10-31T02:13:10Z`. Publication operation
+`2d52a3de-5fc9-4dbb-b85e-b931e1ece186` (`node.publish`) succeeded. The node
+ruleset read-back has no Docker NAT. `verify_foreign.go` in that tree is
+`2473acf` (#220). `git log -1 origin/main -- node/enforce/verify_foreign.go`
+at record time is `a4191fa` (#241, D-079), which this run did not build.
+`summary.md` is the measured record. The live make exited 1 because
+`fvpn-w4-isolation-isolation-target` was still attached to
+`fvpn-w4-isolation-origin`. That fixture is removed on `down` after this run.
 
 `at-isolation-review-captures` rewrites the AT13 record in its review directory.
 Follow-up 3's root AT13 is the live measurement; do not pass it through that

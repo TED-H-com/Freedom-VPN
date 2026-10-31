@@ -208,6 +208,33 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/admin/devices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List member devices
+         * @description Operator list of member devices (§17.4, §9.4, D-077). This is the list of
+         *     devices that need re-authorization after a ledger restore, and it also
+         *     answers per-member device questions. Opaque cursor keyset, the same
+         *     convention as `listMembers` and `listMemberDevices`: stable ascending
+         *     order by (`member_id`, `device_id`), `limit` default 50, maximum 100.
+         *     `member_id`, `authorization_unconfirmed` and `status` select the page
+         *     and do not change that order. `authorization_unconfirmed=true` returns
+         *     only devices that have a `device_authorization_fences` row.
+         */
+        get: operations["listAdminDevices"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/admin/members": {
         parameters: {
             query?: never;
@@ -272,6 +299,32 @@ export interface paths {
          *     follow asynchronously.
          */
         post: operations["createMemberGrant"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/members/{member_id}/devices/{device_id}/authorize": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Authorize a member device
+         * @description The only path that re-grants a fenced device (D-076), and the ordinary
+         *     admin authorization of a `pending` device. Accepts `AuthorizeDevice` as
+         *     an operation of kind `member.device_authorize`. No request body. `404`
+         *     when the device does not belong to the member. `409` `STATE_CONFLICT`
+         *     when the device is `revoked` (the server returns its conflict error).
+         *     `422` `DEVICE_LIMIT_REACHED` when authorizing would exceed the member's
+         *     device allowance. The member cannot call this operation.
+         */
+        post: operations["authorizeMemberDevice"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1449,6 +1502,19 @@ export interface components {
              *     no evidence was reported; never infer a successful apply.
              */
             dns_policy_evidence?: components["schemas"]["DnsPolicyEvidence"] | null;
+            /**
+             * @description Last reported usage outbox status for the node's current incarnation
+             *     (SECOPS-19). `null` until a report with a usage block has been accepted
+             *     for the current incarnation. Absent means the server does not project
+             *     it yet (pre-revision-12). Operators read it to see whether a node's
+             *     outbox is backing up. It never affects `safety_status` or forwarding.
+             *     It participates in the node strong ETag by the same rule as the other
+             *     observation-derived fields (`checks`, `recent_errors`, `safety_status`,
+             *     `member_forwarding_observed`, `data_health`, `dns_policy_evidence`):
+             *     accepting an observation increments `nodes.resource_version`, and
+             *     `GET /admin/nodes/{node_id}` returns `ETag` `"<resource_version>"`.
+             */
+            usage_outbox?: components["schemas"]["NodeUsageOutbox"] | null;
         };
         /**
          * @description One named node check. In the D-071 provisional state (the node lease for this
@@ -2832,6 +2898,18 @@ export interface components {
             /** @enum {string} */
             platform: "windows" | "macos" | "ios" | "android" | "linux" | "unknown";
             status: components["schemas"]["DeviceStatus"];
+            /**
+             * @description True while a `device_authorization_fences` row exists for this device,
+             *     false otherwise. `DeviceStatus` is unchanged: a fenced device reads
+             *     `status: pending` with `authorization_unconfirmed: true`. The member
+             *     cannot clear it. It clears when an operator re-authorizes the device
+             *     (`POST /admin/members/{member_id}/devices/{device_id}/authorize`) or
+             *     the device is revoked. A device-limit rejection never sets it
+             *     (§17.4, D-076). Absent means the server does not project it yet
+             *     (before wire-members follow-up 10); a server that projects it always
+             *     emits it, `false` included.
+             */
+            readonly authorization_unconfirmed?: boolean;
             /** Format: date-time */
             authorized_at: string | null;
             /** Format: date-time */
@@ -2846,6 +2924,30 @@ export interface components {
             next_cursor: string | null;
             device_limit: number | null;
             authorized_count: number;
+        };
+        /**
+         * @description One member device on the operator list (D-077). `member_id` is the owner.
+         *     `authorization_unconfirmed_since` is the fence row's creation time, null
+         *     when the device is not fenced.
+         */
+        AdminDevice: components["schemas"]["MemberDevice"] & {
+            /** Format: uuid */
+            readonly member_id: string;
+            /**
+             * Format: date-time
+             * @description Creation time of the `device_authorization_fences` row. Null when the device is not fenced.
+             */
+            readonly authorization_unconfirmed_since: string | null;
+        };
+        /**
+         * @description A page of member devices for operators. Same list conventions as
+         *     `MemberDeviceList` and `listMembers`: opaque cursor, `limit` default 50
+         *     maximum 100, stable ascending keyset on (`member_id`, `device_id`).
+         *     This page does not include `device_limit` or `authorized_count`.
+         */
+        AdminDeviceList: {
+            items: components["schemas"]["AdminDevice"][];
+            next_cursor: string | null;
         };
         /** @description Exit the member may select in the app (§18.4). The portal never switches the app's exit. */
         MemberExit: {
@@ -3355,6 +3457,40 @@ export interface components {
             oldest_unacked_at: string | null;
             /** @description Replay archive size, budgeted separately from the unacked backlog (§10.8). */
             acked_archive_bytes: string;
+        };
+        /**
+         * @description Usage outbox status from the last accepted observation that carried a
+         *     usage block for the node's current incarnation, plus that report's
+         *     receipt time (SECOPS-19). The field definitions match `UsageOutboxStatus`
+         *     verbatim. They are not `allOf` that schema: `UsageOutboxStatus` sets
+         *     `additionalProperties: false`, and an `allOf` extension then rejects
+         *     `observed_at`.
+         */
+        NodeUsageOutbox: {
+            /**
+             * Format: uuid
+             * @description Central ledger epoch the node is synchronized with.
+             */
+            ledger_epoch: string | null;
+            /** Format: uuid */
+            meter_epoch_id: string | null;
+            /** @description "0" when no event exists yet. */
+            last_durable_event_seq: string;
+            /** @description Highest contiguous ACK received in ledger_epoch; "0" when none. */
+            central_acked_through: string;
+            blocked_seq: string | null;
+            unacked_event_count: number;
+            /** @description Sum of canonical payload bytes of unacknowledged events (§10.8). */
+            unacked_payload_bytes: string;
+            /** Format: date-time */
+            oldest_unacked_at: string | null;
+            /** @description Replay archive size, budgeted separately from the unacked backlog (§10.8). */
+            acked_archive_bytes: string;
+            /**
+             * Format: date-time
+             * @description Receipt time of the accepted observation report (central `received_at`).
+             */
+            observed_at: string;
         };
         /** @description The report was durably accepted. Not a claim that it was cross-verified (§14.4). */
         ObservationAccepted: {
@@ -4481,6 +4617,47 @@ export interface operations {
             503: components["responses"]["ServiceUnavailable"];
         };
     };
+    listAdminDevices: {
+        parameters: {
+            query?: {
+                /** @description Opaque cursor from a previous page's `next_cursor`. Never parse or construct it (§14.1). */
+                cursor?: components["parameters"]["Cursor"];
+                /** @description Page size. Default 50, maximum 100 (§14.1, recommended default). */
+                limit?: components["parameters"]["Limit"];
+                /** @description Restrict the page to one member. */
+                member_id?: string;
+                /**
+                 * @description When true, only fenced devices. When false, only devices with no
+                 *     fence row. Omit to return both.
+                 */
+                authorization_unconfirmed?: boolean;
+                status?: components["schemas"]["DeviceStatus"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description A page of member devices. */
+            200: {
+                headers: {
+                    "X-Request-ID": components["headers"]["X-Request-ID"];
+                    "Cache-Control": components["headers"]["Cache-Control-No-Store"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminDeviceList"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+            429: components["responses"]["RateLimited"];
+            500: components["responses"]["InternalError"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
     listMembers: {
         parameters: {
             query?: {
@@ -4626,6 +4803,39 @@ export interface operations {
                 "application/json": components["schemas"]["GrantCreateRequest"];
             };
         };
+        responses: {
+            202: components["responses"]["OperationAccepted"];
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["Conflict"];
+            422: components["responses"]["UnprocessableEntity"];
+            429: components["responses"]["RateLimited"];
+            500: components["responses"]["InternalError"];
+            503: components["responses"]["ServiceUnavailable"];
+        };
+    };
+    authorizeMemberDevice: {
+        parameters: {
+            query?: never;
+            header: {
+                /**
+                 * @description Client-generated UUID (§14.5). Scope: principal, HTTP method, normalized
+                 *     route and key. Same key and same validated payload return the same resource
+                 *     or operation; same key and a different payload return 409
+                 *     IDEMPOTENCY_CONFLICT. Kept at least 7 days (recommended default). Missing
+                 *     header: 400 MALFORMED_REQUEST.
+                 */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                member_id: components["parameters"]["MemberId"];
+                device_id: components["parameters"]["DeviceId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             202: components["responses"]["OperationAccepted"];
             400: components["responses"]["BadRequest"];

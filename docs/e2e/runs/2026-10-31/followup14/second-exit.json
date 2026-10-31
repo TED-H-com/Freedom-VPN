@@ -1,0 +1,43 @@
+{
+  "id": "second-exit",
+  "title": "Second real exit enrollment and independent resolver",
+  "spec": [
+    "§6",
+    "§19 AT09",
+    "F3-03"
+  ],
+  "status": "pass",
+  "observations": [
+    {
+      "name": "distinct_identity",
+      "detail": "true"
+    },
+    {
+      "name": "provisioning_state",
+      "detail": "\"ready\""
+    },
+    {
+      "name": "safety_status",
+      "detail": "\"passed\""
+    },
+    {
+      "name": "data_health",
+      "detail": "\"healthy\""
+    },
+    {
+      "name": "applied_config_generation",
+      "detail": ""
+    },
+    {
+      "name": "independent_nft_table",
+      "detail": "true"
+    },
+    {
+      "name": "scope",
+      "detail": "real second node hook; publication and simultaneous two-exit traffic remain harness scenarios, physical topology and boot flavours need operator runs"
+    }
+  ],
+  "at": "2026-10-31T00:56:26Z",
+  "run_id": "4e3e9487-fe0f-4d88-a396-d5d5fa4a8e1d",
+  "source_commit": "7029dbe631b8344ccd0db3991fac81e773a26ed5"
+}

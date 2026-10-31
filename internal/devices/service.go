@@ -5,9 +5,11 @@ import (
 	"context"
 	"encoding/base64"
 	"errors"
-	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+	"log/slog"
 	"net/netip"
 	"time"
+
+	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/entitlement"
@@ -45,6 +47,9 @@ type Service struct {
 	Pool         *pgxpool.Pool
 	Entitlements *entitlement.Store
 	Adapter      Adapter
+	// Logger receives fence decisions. Nil uses slog.Default.
+	Logger *slog.Logger
+	fences *fenceAccounting
 }
 type Device struct {
 	ID                                  uuid.UUID `json:"device_id"`
@@ -56,7 +61,21 @@ type Device struct {
 	CreatedAt                           time.Time
 	Version                             decstr.U64 `json:"resource_version"`
 	ObservedAuthorized                  bool       `json:"observed_authorized"`
+	// AuthorizationUnconfirmed is true exactly while a device_authorization_fences row exists.
+	AuthorizationUnconfirmed bool
+	// FencedAt is that row's fenced_at, nil when the device is not fenced.
+	FencedAt *time.Time
 }
+
+// PublicStatus is the contract DeviceStatus. An authorized device whose
+// read-back is not current, including a fenced device, stays pending.
+func (d Device) PublicStatus() string {
+	if d.Status == "authorized" && !d.ObservedAuthorized {
+		return "pending"
+	}
+	return d.Status
+}
+
 type Change struct {
 	DeviceID, MemberID uuid.UUID
 	OperationID        *uuid.UUID
@@ -178,9 +197,38 @@ func (s *Service) AuthorizeDevice(ctx context.Context, c entitlement.Command, p 
 				return entitlement.ErrConflict
 			}
 
+			var versionBefore decstr.U64
+			if err = tx.QueryRow(ctx, `SELECT resource_version::text FROM member_devices WHERE id=$1`, existing).Scan(&versionBefore); err != nil {
+				return err
+			}
 			op, err := s.targetOperation(ctx, tx, c.Actor, existing, member, api.OperationKindMemberDeviceAuthorize, "device.authorized", projection.Revision)
 			if err != nil {
 				return err
+			}
+			cleared, err := clearAuthorizationFence(ctx, tx, existing)
+			if err != nil {
+				return err
+			}
+			if cleared {
+				// A replay of the original idempotency key never reaches this
+				// branch. If that command already has an outbox row at this
+				// version, bump so the grant sync has its own identity.
+				var version, binding decstr.U64
+				var deployment, peerID string
+				if err = tx.QueryRow(ctx, `SELECT resource_version::text,deployment_id,peer_id FROM member_devices WHERE id=$1`, existing).Scan(&version, &deployment, &peerID); err != nil {
+					return err
+				}
+				if version == versionBefore {
+					if err = tx.QueryRow(ctx, `UPDATE member_devices SET resource_version=resource_version+1 WHERE id=$1 RETURNING resource_version::text,deployment_id,peer_id`, existing).Scan(&version, &deployment, &peerID); err != nil {
+						return err
+					}
+					if err = tx.QueryRow(ctx, `SELECT coalesce(max(binding_revision),0)::text FROM device_bindings WHERE device_id=$1`, existing).Scan(&binding); err != nil {
+						return err
+					}
+					if err = enqueue(ctx, tx, "device.authorized", Event{MemberID: member, DeviceID: existing, DeviceVersion: version, EntitlementRevision: projection.Revision, DeploymentID: deployment, PeerID: peerID, BindingRevision: binding, OperationID: &op}); err != nil {
+						return err
+					}
+				}
 			}
 			result = Change{DeviceID: existing, MemberID: member, Revision: projection.Revision, OperationID: &op, Replayed: true}
 			return entitlement.Complete(ctx, tx, record, api.ResourceTypeMemberDevice, existing, &op, 202)
@@ -230,11 +278,14 @@ func (s *Service) AuthorizeDevice(ctx context.Context, c entitlement.Command, p 
 	return result, err
 }
 
-const deviceColumns = `id,member_id,name,platform,status,authorized_at,coalesce(revoked_at,closed_at),last_seen_at,created_at,resource_version::text,coalesce((SELECT o.observed_authorized AND o.observed_version=member_devices.resource_version AND o.observed_entitlement_revision=e.revision AND e.valid_from<=clock_timestamp() AND e.effective_service_end>clock_timestamp() AND NOT e.admin_suspended FROM device_authorization_observations o JOIN entitlements e ON e.member_id=member_devices.member_id WHERE o.device_id=member_devices.id),false)`
+// observedAuthorizedSQL is the read-back used for DeviceStatus. It is not the fence.
+const observedAuthorizedSQL = `coalesce((SELECT o.observed_authorized AND o.observed_version=member_devices.resource_version AND o.observed_entitlement_revision=e.revision AND e.valid_from<=clock_timestamp() AND e.effective_service_end>clock_timestamp() AND NOT e.admin_suspended FROM device_authorization_observations o JOIN entitlements e ON e.member_id=member_devices.member_id WHERE o.device_id=member_devices.id),false)`
+
+const deviceColumns = `id,member_id,name,platform,status,authorized_at,coalesce(revoked_at,closed_at),last_seen_at,created_at,resource_version::text,` + observedAuthorizedSQL + `,EXISTS(SELECT 1 FROM device_authorization_fences f WHERE f.device_id=member_devices.id),(SELECT f.fenced_at FROM device_authorization_fences f WHERE f.device_id=member_devices.id)`
 
 func scan(row pgx.Row) (Device, error) {
 	var d Device
-	err := row.Scan(&d.ID, &d.MemberID, &d.Name, &d.Platform, &d.Status, &d.AuthorizedAt, &d.RevokedAt, &d.LastSeenAt, &d.CreatedAt, &d.Version, &d.ObservedAuthorized)
+	err := row.Scan(&d.ID, &d.MemberID, &d.Name, &d.Platform, &d.Status, &d.AuthorizedAt, &d.RevokedAt, &d.LastSeenAt, &d.CreatedAt, &d.Version, &d.ObservedAuthorized, &d.AuthorizationUnconfirmed, &d.FencedAt)
 	if d.Status == "closed" {
 		d.Status = "revoked"
 	}
@@ -325,6 +376,9 @@ func (s *Service) RevokeDevice(ctx context.Context, c entitlement.Command, id uu
 		}
 		if status == "revoked" || status == "closed" {
 			result.Replayed = true
+			if err = deleteAuthorizationFence(ctx, tx, id); err != nil {
+				return err
+			}
 			op, err := s.targetOperation(ctx, tx, c.Actor, id, d.MemberID, api.OperationKindMemberDeviceRevoke, "device.revoked", projection.Revision)
 			if err != nil {
 				return err
@@ -357,6 +411,10 @@ func (s *Service) RevokeDevice(ctx context.Context, c entitlement.Command, id uu
 			return err
 		}
 		if err = entitlement.Audit(ctx, tx, c.Actor, "device.revoke", api.ResourceTypeMemberDevice, id, map[string]any{"status": status}, map[string]any{"status": "revoked"}, &op); err != nil {
+			return err
+		}
+		// D-077: revocation clears the fence in the same transaction. Quota withdrawal does not.
+		if err = deleteAuthorizationFence(ctx, tx, id); err != nil {
 			return err
 		}
 		result.MemberID = d.MemberID

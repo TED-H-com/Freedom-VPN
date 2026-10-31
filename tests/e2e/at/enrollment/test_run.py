@@ -58,5 +58,54 @@ class EvidenceTests(unittest.TestCase):
             self.assertFalse((path / "AT06.json").exists())
 
 
+    def passing(self):
+        checks = [dict(at=at, name=name, status="pass", detail="TEST ONLY")
+                  for at, names in run.REQUIRED.items() for name in names]
+        checks.append(dict(at="AT06", name="rate_limit_review", status="pass", detail={"http_429": 0}))
+        # These are emitted by the probe and are not required-name fillers.
+        for name in ("audit_read", "issue_reinstall"):
+            checks.append(dict(at="AT06", name=name, status="pass", detail="TEST ONLY"))
+        return checks
+
+    def test_reviewed_429_prior_passes_when_current_run_has_zero(self):
+        prior = {at: [] for at in run.REQUIRED}
+        group = run.REVIEWED["AT06"]["runs"][0]
+        prior["AT06"] = [dict(name=name, status="fail", run_id=group["run_id"]) for name in group["names"]]
+        recs = run.records(self.meta(), self.passing(), prior)
+        self.assertEqual(recs["AT06"]["status"], "pass")
+        self.assertEqual(recs["AT06"]["prior_failure_review"]["disposition"], "resolved")
+        self.assertIn("286eb57b44c2e783257767918680a0e1f097f106", recs["AT06"]["actual"])
+        self.assertEqual(recs["AT07"]["status"], "pass")
+
+    def test_reviewed_429_prior_stays_blocked_when_429_recurs(self):
+        checks = self.passing()
+        for check in checks:
+            if check["name"] == "rate_limit_review":
+                check["status"] = "fail"
+                check["detail"] = {"http_429": 2, "owner_if_recurs": "control", "limiter_class_for_prior_failures": "browser"}
+        prior = {at: [] for at in run.REQUIRED}
+        prior["AT06"] = [dict(name="audit_read", status="fail", run_id=run.REVIEWED["AT06"]["runs"][0]["run_id"])]
+        recs = run.records(self.meta(), checks, prior)
+        self.assertEqual(recs["AT06"]["status"], "blocked")
+        self.assertEqual(recs["AT06"]["prior_failure_review"]["disposition"], "recurs")
+
+    def test_unreviewed_prior_fail_still_blocks_a_clean_run(self):
+        prior = {at: [] for at in run.REQUIRED}
+        prior["AT06"] = [dict(name="audit_read", status="fail", run_id="some-other-run")]
+        recs = run.records(self.meta(), self.passing(), prior)
+        self.assertEqual(recs["AT06"]["status"], "blocked")
+        self.assertEqual(recs["AT06"]["prior_failure_review"]["disposition"], "not_applied")
+
+    def test_process_exit_from_review_signal_does_not_block_a_later_zero(self):
+        prior = {at: [] for at in run.REQUIRED}
+        prior["AT06"] = [
+            dict(name="probe_process", status="fail", run_id="35e542f8-730e-4be0-8214-e4a9dd818c40"),
+            dict(name="rate_limit_review", status="fail", run_id="35e542f8-730e-4be0-8214-e4a9dd818c40"),
+        ]
+        recs = run.records(self.meta(), self.passing(), prior)
+        self.assertEqual(recs["AT06"]["status"], "pass")
+        self.assertEqual(recs["AT06"]["prior_checks"][0]["status"], "fail")
+
+
 if __name__ == "__main__":
     unittest.main()

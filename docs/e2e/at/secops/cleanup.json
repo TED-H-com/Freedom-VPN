@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
-  "follow_up": 8,
-  "started_at": "2026-10-30T22:00:15Z",
-  "finished_at": "2026-10-30T22:10:16Z",
-  "source_revision": "6350853010054cf656465e5e677c60dc29553cb5",
-  "application_base": "6b98422",
-  "run_id": "0f5fb60d-f6a7-45c6-8ebe-175e0a480bd8",
-  "driver_run_id": "af67be8e-3c40-4728-95e2-159e2aa5a3f6",
+  "follow_up": 9,
+  "started_at": "2026-10-31T01:36:15Z",
+  "finished_at": "2026-10-31T01:46:57Z",
+  "source_revision": "205633f0de8b3befbd563a092b856c0bc089e9c9",
+  "application_base": "205633f",
+  "run_id": "42396951-2d9a-49f4-95c3-45f33d9519d5",
+  "driver_run_id": "4e0cca84-5c8e-4b94-88d2-4bfc6843a0b0",
   "hardware": "shared development host; not candidate hardware",
   "commands": [
     [
@@ -29,7 +29,7 @@
       "-timeout",
       "35m",
       "-run",
-      "^TestAT30_Followup8_LiveRestoreReconcile$",
+      "^TestAT30_Followup9_LiveRestoreReconcile$",
       "./tests/e2e/at/secops"
     ],
     [
@@ -39,25 +39,25 @@
       "e2e-down"
     ]
   ],
-  "probe_source_sha256": "bf66c5da34e1a13e3666fde94c784f56c0036614e796d16d569410b2dfe69408",
-  "policy_revision": "01a18ed4-4e97-7280-89b5-45ac54906282",
+  "probe_source_sha256": "a02469294a39abe2a3b93a85954877959e7ae99f038869847a32dbe8d73c3a8a",
+  "policy_revision": "01a18f9a-4902-7b2b-b023-c63381c9fb8e",
   "node_incarnation": "",
-  "agent_node_incarnation": "01a18ed4-5b85-70fc-9461-7893a7c017f7",
+  "agent_node_incarnation": "01a18f9a-5715-7999-a7f8-ee812d1b6d61",
   "image_digests": [
     {
-      "image_id": "sha256:d062093db4e8d1608a6a1f4f842e7d245134547bbce86ed3bc1aab1f92ba2da3",
+      "image_id": "sha256:9e8d813139bec9dc32ce806c7eac9af156fd5c162555a8391a45e65ab225d361",
       "service": "postgres"
     },
     {
-      "image_id": "sha256:4872a19bbfc3b343b6820038907bff443bc9207595fb1586084c9ff85c9e8ae0",
+      "image_id": "sha256:d7fb258e6a34863e248d7e0128f563a30776cffb7246e9894a77e4baed51d906",
       "service": "idp"
     },
     {
-      "image_id": "sha256:72fe0e15780f77ceb50b993c938ad34e5c31faf47bbe215c16c7c4cf1f7d2893",
+      "image_id": "sha256:f9459540b9f36447c77b99988c7256276f68eb16d3e8da62884515bb2ff7b459",
       "service": "payment"
     },
     {
-      "image_id": "sha256:7ffd5075db74ae3a3bafe4825bdf1ad3dd7365c87cedf862083e144f4ed8daa2",
+      "image_id": "sha256:c026a8c14fda6444ce86187a651366901b75cee19c8bc85d4a5b3d0b90618917",
       "service": "origin"
     },
     {
@@ -77,65 +77,61 @@
       "service": "adguard"
     },
     {
-      "image_id": "sha256:cbe2d2500e03e41c12d81b100ce3e8b93365edde25d640d13afe2412532a3b16",
+      "image_id": "sha256:1a1e62fdc180fde5ee8694872565efbc44e21d3aac5cc19c23c06fb193ed6d67",
       "service": "control"
     },
     {
-      "image_id": "sha256:46d8c2345888d80f0da6ef5d5b1da05803f8d40b4f1ee18de1367fb2d6b039f7",
+      "image_id": "sha256:370508a12926a014ec9e5d181247da7f9635ab831a0fff304161e17646d0463c",
       "service": "worker"
     },
     {
-      "image_id": "sha256:a8eba036d655382ff88f337102dec08d08a28360b5ec98e0b9bea376bd5df590",
+      "image_id": "sha256:cd65651c8c862e7db30a2636a90ca86485b7da5fd4358d1d762cb7dc816987b4",
       "service": "node-netns"
     },
     {
-      "image_id": "sha256:a8eba036d655382ff88f337102dec08d08a28360b5ec98e0b9bea376bd5df590",
+      "image_id": "sha256:cd65651c8c862e7db30a2636a90ca86485b7da5fd4358d1d762cb7dc816987b4",
       "service": "node"
     },
     {
-      "image_id": "sha256:a8eba036d655382ff88f337102dec08d08a28360b5ec98e0b9bea376bd5df590",
+      "image_id": "sha256:cd65651c8c862e7db30a2636a90ca86485b7da5fd4358d1d762cb7dc816987b4",
       "service": "member"
     },
     {
-      "image_id": "sha256:4538b115de157572484778b131051d5b3954668da94e14e2ee6c45dbb0bb9786",
-      "service": "restore-live"
+      "image_id": "sha256:cd65651c8c862e7db30a2636a90ca86485b7da5fd4358d1d762cb7dc816987b4",
+      "service": "member-at30-m2-d3-post-restore"
     },
     {
-      "image_id": "sha256:a8eba036d655382ff88f337102dec08d08a28360b5ec98e0b9bea376bd5df590",
-      "service": "member-at30-m2-d3-t1"
-    },
-    {
-      "image_id": "sha256:a8eba036d655382ff88f337102dec08d08a28360b5ec98e0b9bea376bd5df590",
+      "image_id": "sha256:cd65651c8c862e7db30a2636a90ca86485b7da5fd4358d1d762cb7dc816987b4",
       "service": "member-at30-m3-d1-t1"
     },
     {
-      "image_id": "sha256:a8eba036d655382ff88f337102dec08d08a28360b5ec98e0b9bea376bd5df590",
+      "image_id": "sha256:cd65651c8c862e7db30a2636a90ca86485b7da5fd4358d1d762cb7dc816987b4",
       "service": "member-at30-m2-d2"
     },
     {
-      "image_id": "sha256:a8eba036d655382ff88f337102dec08d08a28360b5ec98e0b9bea376bd5df590",
+      "image_id": "sha256:cd65651c8c862e7db30a2636a90ca86485b7da5fd4358d1d762cb7dc816987b4",
       "service": "member-at30-m2-d1"
     },
     {
-      "image_id": "sha256:a8eba036d655382ff88f337102dec08d08a28360b5ec98e0b9bea376bd5df590",
+      "image_id": "sha256:cd65651c8c862e7db30a2636a90ca86485b7da5fd4358d1d762cb7dc816987b4",
       "service": "member-at30-m1-d1"
     }
   ],
   "build_digests": [
     {
       "name": "amd64.test",
-      "sha256": "5478e23b83b35ab98bbd1b6117957fcbd05046c544c79f16329c43eaa684829d"
+      "sha256": "f45a172806f8b6067986077d955f6865983b9d52373922a29c8817df3f9873bb"
     },
     {
       "name": "arm64.test",
-      "sha256": "f4f0e3857f90e6859fd620e624cca99ad51e492496568b64c77445254e5fecc7"
+      "sha256": "8ea49a6ce92430f943efc1cb24c86f0f3836f577fd9b97ea189f145dbaec1dd3"
     },
     {
       "name": "proxyprobe",
-      "sha256": "a9109d38c54602b0e23cb033f5979caa3ccfa730ed42da9d7cd7267da9368bed"
+      "sha256": "9de350a1323d51cf6fc1cf6ece60a1fc1f0cf49f03c73374e29a37c6659170cd"
     }
   ],
-  "previous_run": "history/follow-up-7/",
+  "previous_run": "history/follow-up-8/",
   "projector_owned_rows_written": [],
   "prefix": "fvpn-w4-secops",
   "port_base": "30000",
@@ -182,12 +178,12 @@
       "mk/e2e.mk",
       "e2e-down"
     ],
-    "started_at": "2026-10-30T22:09:35Z",
-    "finished_at": "2026-10-30T22:10:15Z",
-    "elapsed_seconds": 40.852,
+    "started_at": "2026-10-31T01:46:16Z",
+    "finished_at": "2026-10-31T01:46:57Z",
+    "elapsed_seconds": 41.078,
     "exit_code": 0,
     "scan": {
-      "stream": "followup8-e2e-down",
+      "stream": "followup9-e2e-down",
       "bytes": 3039,
       "findings": []
     }

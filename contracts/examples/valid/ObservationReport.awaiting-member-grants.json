@@ -53,7 +53,35 @@
       "status": "passed",
       "observed_at": "2026-10-28T15:00:30Z",
       "error_code": null
+    },
+    {
+      "name": "lease",
+      "status": "failed",
+      "observed_at": "2026-10-28T15:00:30Z",
+      "error_code": "AWAITING_MEMBER_GRANTS",
+      "detail": "Serving lease has no member grants yet."
+    },
+    {
+      "name": "qos",
+      "status": "failed",
+      "observed_at": "2026-10-28T15:00:30Z",
+      "error_code": "AWAITING_MEMBER_GRANTS",
+      "detail": "Rate policy could not be applied."
+    },
+    {
+      "name": "source_binding",
+      "status": "failed",
+      "observed_at": "2026-10-28T15:00:30Z",
+      "error_code": "AWAITING_MEMBER_GRANTS",
+      "detail": "No member binding was admitted."
     }
   ],
-  "errors": []
+  "errors": [
+    {
+      "code": "AWAITING_MEMBER_GRANTS",
+      "stage": "lease",
+      "message": "Serving lease has no member grants yet.",
+      "observed_at": "2026-10-28T15:00:30Z"
+    }
+  ]
 }

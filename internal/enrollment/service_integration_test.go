@@ -12,6 +12,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"log/slog"
+	"os"
 	"strings"
 	"sync"
 	"testing"
@@ -588,6 +589,240 @@ func TestAT07_RevocationJournalFencesFailedCommitAndNewEnrollment(t *testing.T) 
 	}
 	_, err = f.auth.Authenticate(ctx, cert)
 	expectCode(t, err, apierr.IdentityRevoked)
+}
+
+func TestD073_DurableRoamingCandidateMultiReplicaRestartConcurrencyAndMigration(t *testing.T) {
+	f := setup(t)
+	ctx := context.Background()
+
+	var clockMu sync.Mutex
+	now := time.Date(2026, 10, 30, 23, 0, 0, 0, time.UTC)
+	getNow := func() time.Time {
+		clockMu.Lock()
+		defer clockMu.Unlock()
+		return now
+	}
+	advance := func(d time.Duration) {
+		clockMu.Lock()
+		now = now.Add(d)
+		clockMu.Unlock()
+	}
+	newReplica := func(t *testing.T) *enrollment.Service {
+		t.Helper()
+		s, err := enrollment.NewService(f.pool, f.ca, f.auth, f.vault, f.vault, enrollment.Config{
+			BootstrapValidity:    enrollment.TestBootstrapValidity,
+			IdentityActiveWindow: 2 * time.Minute,
+			Logger:               slog.New(slog.NewTextHandler(f.logs, nil)),
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		s.SetClock(getNow)
+		return s
+	}
+
+	const (
+		domainX = "198.51.100.10:51820"
+		domainY = "203.0.113.20:51820"
+	)
+	hashY := sha256.Sum256([]byte("203.0.113.0/24"))
+
+	// (a) Multi-replica: two enrollment.Service instances over the same pool —
+	// X via replica A, Y via replica B, X via replica A inside the window ->
+	// one conflict row, mapping_frozen=true, one node.identity.conflict audit.
+	t.Run("multi_replica_interleaving", func(t *testing.T) {
+		_, _, out, cert := enroll(t, f)
+		replicaA := newReplica(t)
+		replicaB := newReplica(t)
+
+		if allowed, err := replicaA.ObserveEndpoint(ctx, cert, domainX, 2*time.Minute); err != nil || !allowed {
+			t.Fatalf("replicaA X initial: allowed=%v err=%v", allowed, err)
+		}
+		advance(20 * time.Second)
+		if allowed, err := replicaB.ObserveEndpoint(ctx, cert, domainY, 2*time.Minute); err != nil || !allowed {
+			t.Fatalf("replicaB Y candidate: allowed=%v err=%v", allowed, err)
+		}
+
+		var candHash []byte
+		var frozen bool
+		if err := f.pool.QueryRow(ctx, `SELECT candidate_hash, mapping_frozen FROM node_identity_endpoints WHERE incarnation_id=$1`, out.Response.NodeIncarnationId).Scan(&candHash, &frozen); err != nil {
+			t.Fatal(err)
+		}
+		if frozen || !bytes.Equal(candHash, hashY[:]) {
+			t.Fatalf("expected durable candidate Y on endpoint row: frozen=%v cand=%x", frozen, candHash)
+		}
+
+		advance(20 * time.Second)
+		if allowed, err := replicaA.ObserveEndpoint(ctx, cert, domainX, 2*time.Minute); err != nil || allowed {
+			t.Fatalf("replicaA X interleaving should freeze: allowed=%v err=%v", allowed, err)
+		}
+
+		var conflicts, audits int
+		if err := f.pool.QueryRow(ctx, `SELECT mapping_frozen, candidate_hash FROM node_identity_endpoints WHERE incarnation_id=$1`, out.Response.NodeIncarnationId).Scan(&frozen, &candHash); err != nil {
+			t.Fatal(err)
+		}
+		if !frozen || len(candHash) != 0 {
+			t.Fatalf("expected mapping_frozen=true and cleared candidate_hash: frozen=%v cand=%x", frozen, candHash)
+		}
+		if err := f.pool.QueryRow(ctx, `SELECT count(*) FROM node_identity_conflicts WHERE incarnation_id=$1`, out.Response.NodeIncarnationId).Scan(&conflicts); err != nil || conflicts != 1 {
+			t.Fatalf("conflicts=%d err=%v, want 1", conflicts, err)
+		}
+		if err := f.pool.QueryRow(ctx, `SELECT count(*) FROM audit_events WHERE action='node.identity.conflict' AND resource=$1`, "node:"+out.Response.NodeId.String()).Scan(&audits); err != nil || audits != 1 {
+			t.Fatalf("audits=%d err=%v, want 1", audits, err)
+		}
+	})
+
+	// (b) Restart: candidate Y recorded, a fresh Service constructed, X seen again -> conflict.
+	t.Run("restart_preserves_candidate", func(t *testing.T) {
+		_, _, out, cert := enroll(t, f)
+		beforeRestart := newReplica(t)
+		if allowed, err := beforeRestart.ObserveEndpoint(ctx, cert, domainX, 2*time.Minute); err != nil || !allowed {
+			t.Fatalf("beforeRestart X: allowed=%v err=%v", allowed, err)
+		}
+		advance(15 * time.Second)
+		if allowed, err := beforeRestart.ObserveEndpoint(ctx, cert, domainY, 2*time.Minute); err != nil || !allowed {
+			t.Fatalf("beforeRestart Y: allowed=%v err=%v", allowed, err)
+		}
+
+		afterRestart := newReplica(t)
+		advance(15 * time.Second)
+		if allowed, err := afterRestart.ObserveEndpoint(ctx, cert, domainX, 2*time.Minute); err != nil || allowed {
+			t.Fatalf("afterRestart X should detect conflict from durable candidate: allowed=%v err=%v", allowed, err)
+		}
+
+		var conflicts, audits int
+		if err := f.pool.QueryRow(ctx, `SELECT count(*) FROM node_identity_conflicts WHERE incarnation_id=$1`, out.Response.NodeIncarnationId).Scan(&conflicts); err != nil || conflicts != 1 {
+			t.Fatalf("conflicts=%d err=%v, want 1", conflicts, err)
+		}
+		if err := f.pool.QueryRow(ctx, `SELECT count(*) FROM audit_events WHERE action='node.identity.conflict' AND resource=$1`, "node:"+out.Response.NodeId.String()).Scan(&audits); err != nil || audits != 1 {
+			t.Fatalf("audits=%d err=%v, want 1", audits, err)
+		}
+	})
+
+	// (c) Concurrent X and Y observations on two goroutines in separate transactions ->
+	// at most one conflict row, no deadlock, no duplicate audit.
+	t.Run("concurrent_x_and_y_transactions", func(t *testing.T) {
+		_, _, out, cert := enroll(t, f)
+		replicaA := newReplica(t)
+		replicaB := newReplica(t)
+
+		// Seed X then candidate Y so concurrent observations contend directly on the locked row.
+		if allowed, err := replicaA.ObserveEndpoint(ctx, cert, domainX, 2*time.Minute); err != nil || !allowed {
+			t.Fatalf("seed X: allowed=%v err=%v", allowed, err)
+		}
+		advance(10 * time.Second)
+		if allowed, err := replicaB.ObserveEndpoint(ctx, cert, domainY, 2*time.Minute); err != nil || !allowed {
+			t.Fatalf("seed Y: allowed=%v err=%v", allowed, err)
+		}
+		advance(10 * time.Second)
+
+		start := make(chan struct{})
+		errCh := make(chan error, 8)
+		var wg sync.WaitGroup
+		for i := range 4 {
+			wg.Add(2)
+			go func(iter int) {
+				defer wg.Done()
+				<-start
+				_, e := replicaA.ObserveEndpoint(ctx, cert, domainX, 2*time.Minute)
+				errCh <- e
+			}(i)
+			go func(iter int) {
+				defer wg.Done()
+				<-start
+				_, e := replicaB.ObserveEndpoint(ctx, cert, domainY, 2*time.Minute)
+				errCh <- e
+			}(i)
+		}
+		close(start)
+		wg.Wait()
+		close(errCh)
+		for e := range errCh {
+			if e != nil {
+				t.Fatalf("concurrent ObserveEndpoint failed: %v", e)
+			}
+		}
+
+		var conflicts, audits int
+		if err := f.pool.QueryRow(ctx, `SELECT count(*) FROM node_identity_conflicts WHERE incarnation_id=$1`, out.Response.NodeIncarnationId).Scan(&conflicts); err != nil || conflicts != 1 {
+			t.Fatalf("concurrent conflicts=%d err=%v, want 1", conflicts, err)
+		}
+		if err := f.pool.QueryRow(ctx, `SELECT count(*) FROM audit_events WHERE action='node.identity.conflict' AND resource=$1`, "node:"+out.Response.NodeId.String()).Scan(&audits); err != nil || audits != 1 {
+			t.Fatalf("concurrent audits=%d err=%v, want 1", audits, err)
+		}
+	})
+
+	// (e) Roaming promotion still happens after the window with a fresh Service.
+	t.Run("roaming_promotion_after_window_with_fresh_service", func(t *testing.T) {
+		_, _, out, cert := enroll(t, f)
+		svc1 := newReplica(t)
+		if allowed, err := svc1.ObserveEndpoint(ctx, cert, domainX, 2*time.Minute); err != nil || !allowed {
+			t.Fatalf("svc1 X: allowed=%v err=%v", allowed, err)
+		}
+		advance(30 * time.Second)
+		if allowed, err := svc1.ObserveEndpoint(ctx, cert, domainY, 2*time.Minute); err != nil || !allowed {
+			t.Fatalf("svc1 Y candidate: allowed=%v err=%v", allowed, err)
+		}
+
+		// Advance past a full activeWindow since X was last seen (30s + 100s = 130s > 120s).
+		advance(100 * time.Second)
+		svc2 := newReplica(t)
+		if allowed, err := svc2.ObserveEndpoint(ctx, cert, domainY, 2*time.Minute); err != nil || !allowed {
+			t.Fatalf("svc2 Y promotion: allowed=%v err=%v", allowed, err)
+		}
+
+		var mapped []byte
+		var frozen bool
+		if err := f.pool.QueryRow(ctx, `SELECT endpoint_hash, mapping_frozen FROM node_identity_endpoints WHERE incarnation_id=$1`, out.Response.NodeIncarnationId).Scan(&mapped, &frozen); err != nil {
+			t.Fatal(err)
+		}
+		if frozen || !bytes.Equal(mapped, hashY[:]) {
+			t.Fatalf("expected Y promoted on fresh service: frozen=%v mapped=%x want=%x", frozen, mapped, hashY[:])
+		}
+		var conflicts int
+		if err := f.pool.QueryRow(ctx, `SELECT count(*) FROM node_identity_conflicts WHERE incarnation_id=$1`, out.Response.NodeIncarnationId).Scan(&conflicts); err != nil || conflicts != 0 {
+			t.Fatalf("conflicts=%d err=%v, want 0", conflicts, err)
+		}
+	})
+
+	// (d) Goose Down then Up round-trips on the per-run database.
+	t.Run("goose_down_and_up_round_trip", func(t *testing.T) {
+		raw, err := os.ReadFile("../../db/migrations/00187_identity_roaming_and_readiness_grace.sql")
+		if err != nil {
+			t.Fatal(err)
+		}
+		parts := strings.Split(string(raw), "-- +goose Down")
+		if len(parts) != 2 {
+			t.Fatalf("expected Up and Down sections in migration 00187")
+		}
+		upSQL := strings.TrimPrefix(parts[0], "-- +goose Up")
+		downSQL := parts[1]
+
+		if _, err := f.pool.Exec(ctx, downSQL); err != nil {
+			t.Fatalf("goose Down 00187: %v", err)
+		}
+		var colCount int
+		if err := f.pool.QueryRow(ctx, `
+			SELECT count(*) FROM information_schema.columns
+			WHERE table_schema='public'
+			  AND ((table_name='node_identity_endpoints' AND column_name IN ('candidate_hash','candidate_first_seen_at','candidate_last_seen_at'))
+			    OR (table_name='node_incarnations' AND column_name='stale_generation_grace_at'))
+		`).Scan(&colCount); err != nil || colCount != 0 {
+			t.Fatalf("after Down expected 0 columns from 00187, got %d (err=%v)", colCount, err)
+		}
+
+		if _, err := f.pool.Exec(ctx, upSQL); err != nil {
+			t.Fatalf("goose Up 00187: %v", err)
+		}
+		if err := f.pool.QueryRow(ctx, `
+			SELECT count(*) FROM information_schema.columns
+			WHERE table_schema='public'
+			  AND ((table_name='node_identity_endpoints' AND column_name IN ('candidate_hash','candidate_first_seen_at','candidate_last_seen_at'))
+			    OR (table_name='node_incarnations' AND column_name='stale_generation_grace_at'))
+		`).Scan(&colCount); err != nil || colCount != 4 {
+			t.Fatalf("after Up expected 4 columns from 00187, got %d (err=%v)", colCount, err)
+		}
+	})
 }
 
 // Inspect every text and bytea column (plus JSON, arrays and other text casts),

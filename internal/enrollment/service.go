@@ -63,9 +63,8 @@ type Service struct {
 	fence   pki.Revocations
 	cfg     Config
 
-	mu         sync.Mutex
-	clock      func() time.Time
-	candidates map[uuid.UUID]*roamingCandidate
+	mu    sync.Mutex
+	clock func() time.Time
 }
 
 func NewService(pool *pgxpool.Pool, ca *pki.CA, auth *pki.Service, secrets signing.Provider, fence pki.Revocations, cfg Config) (*Service, error) {
@@ -82,13 +81,12 @@ func NewService(pool *pgxpool.Pool, ca *pki.CA, auth *pki.Service, secrets signi
 		return nil, errors.New("enrollment: dependencies and explicit bootstrap validity required")
 	}
 	return &Service{
-		pool:       pool,
-		ca:         ca,
-		auth:       auth,
-		secrets:    secrets,
-		fence:      fence,
-		cfg:        cfg,
-		candidates: make(map[uuid.UUID]*roamingCandidate),
+		pool:    pool,
+		ca:      ca,
+		auth:    auth,
+		secrets: secrets,
+		fence:   fence,
+		cfg:     cfg,
 	}, nil
 }
 

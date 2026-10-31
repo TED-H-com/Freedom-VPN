@@ -83,6 +83,35 @@ func TestNodeCapacityRatePairAndFUPBuilder(t *testing.T) {
 	}
 }
 
+func TestNextConfigGenerationIncludesApplied(t *testing.T) {
+	// The restore shape is desired 11, stored max 13, applied 14. The next
+	// generation is 15, strictly above the generation the node already applied.
+	// When applied is at or below max(desired, stored), the next generation is
+	// the same value the compiler produced before applied participated.
+	cases := []struct {
+		name                     string
+		desired, applied, stored uint64
+		want                     uint64
+	}{
+		{name: "restore applied ahead of central", desired: 11, applied: 14, stored: 13, want: 15},
+		{name: "normal stored ahead of applied", desired: 11, applied: 10, stored: 13, want: 14},
+		{name: "normal applied equals stored", desired: 11, applied: 13, stored: 13, want: 14},
+		{name: "normal node caught up", desired: 11, applied: 11, stored: 11, want: 12},
+		{name: "fresh node", desired: 0, applied: 0, stored: 0, want: 1},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := nextConfigGeneration(tc.desired, tc.applied, tc.stored)
+			if got != tc.want {
+				t.Fatalf("nextConfigGeneration(%d, %d, %d) = %d, want %d", tc.desired, tc.applied, tc.stored, got, tc.want)
+			}
+			if got <= tc.desired || got <= tc.applied || got <= tc.stored {
+				t.Fatalf("generation %d is not strictly above desired %d, applied %d, and stored %d", got, tc.desired, tc.applied, tc.stored)
+			}
+		})
+	}
+}
+
 func TestDefaultAccountingPeriod(t *testing.T) {
 	ts := time.Date(2026, 10, 29, 14, 30, 0, 0, time.UTC)
 	ap := DefaultAccountingPeriod(ts)

@@ -56,8 +56,12 @@ func TestHandover_SQLStatementsExecuteAgainstMigratedSchema(t *testing.T) {
 	}
 
 	executedBlocks := 0
+	executedReadOnlyBlocks := 0
 	executedStmts := 0
 	for _, b := range blocks {
+		if b.Doc == "docs/handover/restore-drill.md" && (b.ClusterRoleDDL || b.MutatingMaintenanceSQL || strings.Contains(b.Raw, "[mechanical-check:")) {
+			t.Fatalf("%s SQL block #%d must not carry any [mechanical-check: ...] exemption because TestAT30_BackupPITRDrill executes every fence read-only", b.Doc, b.Index)
+		}
 		if b.ClusterRoleDDL {
 			t.Logf("[non-mechanical: cluster-role-ddl] %s SQL block #%d skipped cluster-level role DDL (D-039: schema only)", b.Doc, b.Index)
 			if strings.Contains(b.Raw, "purge_retained(text, timestamptz, text)") {
@@ -78,19 +82,51 @@ func TestHandover_SQLStatementsExecuteAgainstMigratedSchema(t *testing.T) {
 			continue
 		}
 		executedBlocks++
+
+		if b.MutatingMaintenanceSQL {
+			t.Logf("[mechanical-check: mutating-maintenance-sql] %s SQL block #%d executing in rolled-back read-write transaction", b.Doc, b.Index)
+			tx, err := pool.Begin(ctx)
+			if err != nil {
+				t.Fatalf("%s SQL block #%d: begin tx: %v", b.Doc, b.Index, err)
+			}
+			for j, stmt := range stmts {
+				if _, err := tx.Exec(ctx, stmt); err != nil {
+					t.Errorf("%s SQL block #%d statement #%d failed against migrated schema:\nSQL:\n%s\nerror: %v", b.Doc, b.Index, j+1, stmt, err)
+				}
+				executedStmts++
+			}
+			_ = tx.Rollback(ctx)
+			continue
+		}
+
+		executedReadOnlyBlocks++
+		// Execute both the raw fence as a single command (matching TestAT30_BackupPITRDrill's
+		// handoverSQL runner) and each statement inside a rolled-back read-only transaction.
+		tx, err := pool.Begin(ctx)
+		if err != nil {
+			t.Fatalf("%s SQL block #%d: begin read-only tx: %v", b.Doc, b.Index, err)
+		}
+		if _, err := tx.Exec(ctx, "SET LOCAL default_transaction_read_only = on"); err != nil {
+			_ = tx.Rollback(ctx)
+			t.Fatalf("%s SQL block #%d: SET LOCAL default_transaction_read_only = on: %v", b.Doc, b.Index, err)
+		}
+		if _, err := tx.Exec(ctx, b.Raw); err != nil {
+			t.Errorf("%s SQL block #%d raw fence failed under default_transaction_read_only = on:\nSQL:\n%s\nerror: %v", b.Doc, b.Index, b.Raw, err)
+		}
 		for j, stmt := range stmts {
-			if _, err := pool.Exec(ctx, stmt); err != nil {
-				t.Errorf("%s SQL block #%d statement #%d failed against migrated schema:\nSQL:\n%s\nerror: %v", b.Doc, b.Index, j+1, stmt, err)
+			if _, err := tx.Exec(ctx, stmt); err != nil {
+				t.Errorf("%s SQL block #%d statement #%d failed under default_transaction_read_only = on:\nSQL:\n%s\nerror: %v", b.Doc, b.Index, j+1, stmt, err)
 			}
 			executedStmts++
 		}
+		_ = tx.Rollback(ctx)
 	}
 
-	if executedBlocks == 0 || executedStmts == 0 {
-		t.Fatalf("expected to execute schema SQL statements; got blocks=%d stmts=%d", executedBlocks, executedStmts)
+	if executedBlocks == 0 || executedReadOnlyBlocks == 0 || executedStmts == 0 {
+		t.Fatalf("expected to execute schema SQL statements; got blocks=%d readOnlyBlocks=%d stmts=%d", executedBlocks, executedReadOnlyBlocks, executedStmts)
 	}
 
-	// Verify every backticked `<table>.<column>` reference in owned docs against
+	// Verify every backticked `<table>.<column>` reference in sqlCheckedDocs against
 	// information_schema.columns when `<table>` is a public PostgreSQL table.
 	tables := map[string]map[string]bool{}
 	rows, err := pool.Query(ctx, `
@@ -118,12 +154,14 @@ func TestHandover_SQLStatementsExecuteAgainstMigratedSchema(t *testing.T) {
 
 	tableColRE := regexp.MustCompile("`([a-z][a-z0-9_]*)\\.([a-z][a-z0-9_]*)`")
 	nonColumnDotted := map[string]string{
-		"members.json":        "config-file-name",
-		"members.reconcile":   "worker-periodic-event-type",
-		"fleet_config.update": "audit-action-name",
+		"members.json":                "config-file-name",
+		"nodes.json":                  "config-file-name",
+		"members.reconcile":           "worker-periodic-event-type",
+		"nodes.compile_desired_state": "worker-outbox-event-type",
+		"fleet_config.update":         "audit-action-name",
 	}
 	checkedTableCols := 0
-	for _, doc := range ownedDocs {
+	for _, doc := range sqlCheckedDocs(t, root) {
 		content := readOwnedDoc(t, root, doc)
 		for _, m := range tableColRE.FindAllStringSubmatch(content, -1) {
 			full, tbl, col := m[1]+"."+m[2], m[1], m[2]

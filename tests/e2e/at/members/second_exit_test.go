@@ -143,17 +143,22 @@ func (l *live) adminNodeSummary() map[string]any {
 func summarizeNodeDetail(node api.NodeDetail) map[string]any {
 	applied, _ := node.ConfigGeneration.Applied.Get()
 	forwarding, _ := node.MemberForwardingObserved.Get()
-	var leaseCheck map[string]any
-	for _, c := range node.Checks {
-		if c.Name == api.NodeCheckNameLease {
-			code, _ := c.ErrorCode.Get()
-			detail := ""
-			if c.Detail != nil {
-				detail = *c.Detail
+	checkMap := func(target api.NodeCheckName) map[string]any {
+		for _, c := range node.Checks {
+			if c.Name == target {
+				code, _ := c.ErrorCode.Get()
+				detail := ""
+				if c.Detail != nil {
+					detail = *c.Detail
+				}
+				return map[string]any{"status": c.Status, "error_code": code, "detail": detail, "observed_at": c.ObservedAt}
 			}
-			leaseCheck = map[string]any{"status": c.Status, "error_code": code, "detail": detail, "observed_at": c.ObservedAt}
-			break
 		}
+		return nil
+	}
+	var recentErrors []map[string]any
+	for _, e := range node.RecentErrors {
+		recentErrors = append(recentErrors, map[string]any{"stage": e.Stage, "code": e.Code, "message": e.Message, "observed_at": e.ObservedAt})
 	}
 	return map[string]any{
 		"desired_generation":         node.ConfigGeneration.Desired,
@@ -163,7 +168,10 @@ func summarizeNodeDetail(node api.NodeDetail) map[string]any {
 		"publication_observed":       node.PublicationObserved,
 		"safety_status":              node.SafetyStatus,
 		"member_forwarding_observed": forwarding,
-		"lease_check":                leaseCheck,
+		"lease_check":                checkMap(api.NodeCheckNameLease),
+		"qos_check":                  checkMap(api.NodeCheckNameQos),
+		"source_binding_check":       checkMap(api.NodeCheckNameSourceBinding),
+		"recent_errors":              recentErrors,
 	}
 }
 
@@ -188,6 +196,7 @@ func (l *live) recordRestartRecovery(r *record, desiredBefore, appliedBefore dec
 			postRestartPopulated = true
 		}
 	}
+	provisionalOK := l.verifyProvisionalObservations(r, resumedAt, desiredBefore.String(), provisionalAdmin)
 	firstByteSeconds := 0.0
 	if !firstByteAt.IsZero() {
 		firstByteSeconds = firstByteAt.Sub(resumedAt).Seconds()
@@ -217,6 +226,102 @@ func (l *live) recordRestartRecovery(r *record, desiredBefore, appliedBefore dec
 		"forwarding restored on unchanged desired generation within bounded schedule; provisional renewal yields populated lease and counted fvmb0 transfer",
 		string(summary),
 		"GET /admin/nodes/{node2} before/during/after restart; SELECT serving_leases and contiguous node_observations; verify counted member transfer",
-		sameGeneration && fwdAfter && postRestartPopulated && counted && !firstByteAt.IsZero() && firstByteSeconds > 0 && firstByteSeconds <= 90 && queryOK,
+		sameGeneration && fwdAfter && postRestartPopulated && provisionalOK && counted && !firstByteAt.IsZero() && firstByteSeconds > 0 && firstByteSeconds <= 90 && queryOK,
 	)
+}
+
+func (l *live) verifyProvisionalObservations(r *record, resumedAt time.Time, expectedGen string, provisionalAdmin map[string]any) bool {
+	rows, err := l.pool.Query(l.ctx, `SELECT received_at,report_payload FROM node_observations WHERE node_id=$1 AND received_at>=$2 AND (report_payload->>'member_forwarding_enabled')::boolean=false ORDER BY received_at`, l.node, resumedAt)
+	if err != nil {
+		r.check("D-067 revision 11 provisional lease observation", "awaiting_member_grants block reason, AWAITING_MEMBER_GRANTS on lease/qos/source_binding, one stage=lease error", err.Error(), "SELECT post-restart provisional node_observations", false)
+		return false
+	}
+	defer rows.Close()
+	provisionalCount := 0
+	allValid := true
+	sawLeaseExpired := false
+	var samples []map[string]any
+	for rows.Next() {
+		var receivedAt time.Time
+		var raw []byte
+		if rows.Scan(&receivedAt, &raw) != nil {
+			allValid = false
+			continue
+		}
+		var rep api.ObservationReport
+		if json.Unmarshal(raw, &rep) != nil {
+			allValid = false
+			continue
+		}
+		provisionalCount++
+		hasAwaiting := false
+		for _, reason := range rep.ForwardingBlockReasons {
+			if reason == api.ForwardingBlockReasonAwaitingMemberGrants {
+				hasAwaiting = true
+			}
+			if reason == api.ForwardingBlockReasonLeaseExpired {
+				sawLeaseExpired = true
+			}
+		}
+		checkCodeOK := func(name api.NodeCheckName) (bool, string, string) {
+			for _, c := range rep.Checks {
+				if c.Name == name {
+					code, codeErr := c.ErrorCode.Get()
+					detail := ""
+					if c.Detail != nil {
+						detail = *c.Detail
+					}
+					return c.Status == api.HealthCheckStatusFailed && codeErr == nil && code == api.ErrorCodeAWAITINGMEMBERGRANTS, string(code), detail
+				}
+			}
+			return false, "", ""
+		}
+		leaseOK, leaseCode, leaseDetail := checkCodeOK(api.NodeCheckNameLease)
+		qosOK, qosCode, _ := checkCodeOK(api.NodeCheckNameQos)
+		bindOK, bindCode, _ := checkCodeOK(api.NodeCheckNameSourceBinding)
+		leaseErrors := 0
+		leaseErrorCodeOK := false
+		for _, e := range rep.Errors {
+			if e.Stage == "lease" {
+				leaseErrors++
+				if e.Code == api.ErrorCodeAWAITINGMEMBERGRANTS && e.Message == "Serving lease has no member grants yet." {
+					leaseErrorCodeOK = true
+				}
+			}
+		}
+		obsValid := hasAwaiting && !sawLeaseExpired && leaseOK && leaseDetail == "Serving lease has no member grants yet." && qosOK && bindOK && leaseErrors == 1 && leaseErrorCodeOK
+		if !obsValid {
+			allValid = false
+		}
+		samples = append(samples, map[string]any{
+			"received_at":               receivedAt.Format(time.RFC3339Nano),
+			"applied_config_generation": rep.AppliedConfigGeneration,
+			"safety_status":             rep.SafetyStatus,
+			"forwarding_block_reasons":  rep.ForwardingBlockReasons,
+			"lease_error_code":          leaseCode,
+			"lease_detail":              leaseDetail,
+			"qos_error_code":            qosCode,
+			"source_binding_error_code": bindCode,
+			"errors_count":              len(rep.Errors),
+			"lease_stage_errors_count":  leaseErrors,
+			"errors":                    rep.Errors,
+			"matches_d067_revision11":   obsValid,
+		})
+	}
+	ok := provisionalCount > 0 && allValid && !sawLeaseExpired && expectedGen != ""
+	actual, _ := json.Marshal(map[string]any{
+		"provisional_observations": provisionalCount,
+		"all_match_revision_11":    allValid,
+		"saw_lease_expired":        sawLeaseExpired,
+		"provisional_admin_node":   provisionalAdmin,
+		"observations":             samples,
+	})
+	r.check(
+		"D-067 revision 11 provisional lease observation",
+		"provisional observations report awaiting_member_grants (never lease_expired); lease, qos and source_binding checks carry error_code AWAITING_MEMBER_GRANTS; errors[] has exactly one stage=lease entry",
+		string(actual),
+		"inspect post-restart provisional api.ObservationReport rows and GET /admin/nodes/{node2}",
+		ok,
+	)
+	return ok
 }

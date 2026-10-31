@@ -7,7 +7,6 @@ import (
 	"crypto/x509"
 	"errors"
 	"net"
-	"strconv"
 	"strings"
 	"time"
 
@@ -158,64 +157,6 @@ func (s *Service) revokeNode(ctx context.Context, cmd Command, node uuid.UUID, e
 	return out, nil
 }
 
-type roamingCandidate struct {
-	candidateHash   []byte
-	candidateSeenAt time.Time
-	priorA          []byte
-	priorB          []byte
-	txID            uint64
-	beforeTx        *roamingCandidate
-}
-
-func (c *roamingCandidate) cloneFlat() *roamingCandidate {
-	if c == nil {
-		return nil
-	}
-	return &roamingCandidate{
-		candidateHash:   bytes.Clone(c.candidateHash),
-		candidateSeenAt: c.candidateSeenAt,
-		priorA:          bytes.Clone(c.priorA),
-		priorB:          bytes.Clone(c.priorB),
-	}
-}
-
-func (c *roamingCandidate) beginTx(txID uint64) {
-	if c.txID != txID {
-		c.beforeTx = c.cloneFlat()
-		c.txID = txID
-	}
-}
-
-func (c *roamingCandidate) rollback() {
-	if c.beforeTx == nil {
-		c.candidateHash = nil
-		c.candidateSeenAt = time.Time{}
-		c.priorA = nil
-		c.priorB = nil
-		c.txID = 0
-		return
-	}
-	c.candidateHash = bytes.Clone(c.beforeTx.candidateHash)
-	c.candidateSeenAt = c.beforeTx.candidateSeenAt
-	c.priorA = bytes.Clone(c.beforeTx.priorA)
-	c.priorB = bytes.Clone(c.beforeTx.priorB)
-	c.txID = 0
-	c.beforeTx = nil
-}
-
-func (c *roamingCandidate) setPriorPair(a, b []byte) {
-	c.priorA = bytes.Clone(a)
-	c.priorB = bytes.Clone(b)
-}
-
-func (c *roamingCandidate) matchesPriorPair(a, b []byte) bool {
-	if c == nil || len(c.priorA) == 0 || len(c.priorB) == 0 {
-		return false
-	}
-	return (bytes.Equal(c.priorA, a) && bytes.Equal(c.priorB, b)) ||
-		(bytes.Equal(c.priorA, b) && bytes.Equal(c.priorB, a))
-}
-
 // CompatibilityDomain normalizes an IP endpoint or CIDR into its coarsened
 // compatibility domain (IPv4 /24 or IPv6 /48) before server-side hashing (D-072).
 // Non-IP opaque domain identifiers pass through trimmed.
@@ -259,10 +200,11 @@ func coarsenIPDomain(ip net.IP) string {
 // ObserveEndpoint receives an opaque, authenticated compatibility-domain value
 // from the adapter, never raw headers. Hashes avoid persisting endpoint lists.
 // A single switch X->Y inside activeWindow is treated as roaming (X remains
-// mapped while Y is recorded as candidate and promoted only after X has been
-// quiet for a full activeWindow). Interleaving (X->Y->X within activeWindow,
-// or Y and X both seen within one window twice) records a conflict and freezes
-// automatic mapping forever (§6.2, D-072).
+// mapped while Y is recorded as candidate in node_identity_endpoints and
+// promoted only after X has been quiet for a full activeWindow). Interleaving
+// (X->Y->X within activeWindow, two switches within one window, or a third
+// domain Z while X and Y are active) records a conflict and freezes automatic
+// mapping forever (§6.2, D-072, D-073).
 // Returns whether mapping updates are allowed. It does not grant forwarding.
 func (s *Service) ObserveEndpoint(ctx context.Context, cert *x509.Certificate, endpoint string, activeWindow time.Duration) (allowed bool, err error) {
 	ctx = requestContext(ctx)
@@ -281,9 +223,10 @@ func (s *Service) ObserveEndpoint(ctx context.Context, cert *x509.Certificate, e
 }
 
 // ObserveEndpointTx records an authenticated compatibility-domain observation
-// inside the caller's existing database transaction (D-072). Callers that already
-// hold fleet_config or run inside a request transaction use this entry point so
-// lock ordering (§13.1) and transactional atomicity are preserved.
+// inside the caller's existing database transaction (D-072, D-073). Candidate
+// state is persisted on node_identity_endpoints and serialised per incarnation
+// with SELECT ... FOR UPDATE so multi-replica control planes and restarts
+// evaluate roaming and interleaving identically.
 func (s *Service) ObserveEndpointTx(ctx context.Context, tx pgx.Tx, cert *x509.Certificate, endpoint string, activeWindow time.Duration) (allowed bool, err error) {
 	ctx = requestContext(ctx)
 	if activeWindow <= 0 {
@@ -300,8 +243,7 @@ func (s *Service) ObserveEndpointTx(ctx context.Context, tx pgx.Tx, cert *x509.C
 	hash := sha256.Sum256([]byte(domain))
 
 	var dbNow time.Time
-	var txID uint64
-	if err = tx.QueryRow(ctx, `SELECT clock_timestamp(), pg_current_xact_id()::text::bigint`).Scan(&dbNow, &txID); err != nil {
+	if err = tx.QueryRow(ctx, `SELECT clock_timestamp()`).Scan(&dbNow); err != nil {
 		return false, safe(err)
 	}
 	now := dbNow.UTC()
@@ -312,29 +254,33 @@ func (s *Service) ObserveEndpointTx(ctx context.Context, tx pgx.Tx, cert *x509.C
 		now = clock().UTC()
 	}
 
-	cand := s.reconcileCandidateTx(ctx, tx, id.IncarnationID, txID)
+	insertTag, err := tx.Exec(ctx, `
+		INSERT INTO node_identity_endpoints(incarnation_id, endpoint_hash, last_seen_at)
+		VALUES ($1, $2, $3)
+		ON CONFLICT (incarnation_id) DO NOTHING
+	`, id.IncarnationID, hash[:], now)
+	if err != nil {
+		return false, safe(err)
+	}
+	if insertTag.RowsAffected() == 1 {
+		if _, err = tx.Exec(ctx, `UPDATE nodes SET resource_version=resource_version+1 WHERE id=$1`, id.NodeID); err != nil {
+			return false, safe(err)
+		}
+		return true, nil
+	}
 
 	var prev []byte
 	var lastSeen time.Time
 	var frozen bool
-	err = tx.QueryRow(ctx, `SELECT endpoint_hash,last_seen_at,mapping_frozen FROM node_identity_endpoints WHERE incarnation_id=$1 FOR UPDATE`, id.IncarnationID).Scan(&prev, &lastSeen, &frozen)
-	if errors.Is(err, pgx.ErrNoRows) {
-		if _, err = tx.Exec(ctx, `INSERT INTO node_identity_endpoints(incarnation_id,endpoint_hash,last_seen_at) VALUES($1,$2,$3)`, id.IncarnationID, hash[:], now); err != nil {
-			return false, safe(err)
-		}
-		if _, err = tx.Exec(ctx, `UPDATE nodes SET resource_version=resource_version+1 WHERE id=$1`, id.NodeID); err != nil {
-			return false, safe(err)
-		}
-		s.mu.Lock()
-		cand.beginTx(txID)
-		cand.candidateHash = nil
-		cand.candidateSeenAt = time.Time{}
-		cand.priorA = nil
-		cand.priorB = nil
-		s.mu.Unlock()
-		return true, nil
-	}
-	if err != nil {
+	var candHash []byte
+	var candFirstSeen, candLastSeen *time.Time
+	if err = tx.QueryRow(ctx, `
+		SELECT endpoint_hash, last_seen_at, mapping_frozen,
+		       candidate_hash, candidate_first_seen_at, candidate_last_seen_at
+		FROM node_identity_endpoints
+		WHERE incarnation_id = $1
+		FOR UPDATE
+	`, id.IncarnationID).Scan(&prev, &lastSeen, &frozen, &candHash, &candFirstSeen, &candLastSeen); err != nil {
 		return false, safe(err)
 	}
 	if frozen {
@@ -342,28 +288,14 @@ func (s *Service) ObserveEndpointTx(ctx context.Context, tx pgx.Tx, cert *x509.C
 	}
 
 	xActive := lastSeen.UTC().After(now.Add(-activeWindow))
-	s.mu.Lock()
-	yActive := len(cand.candidateHash) > 0 && cand.candidateSeenAt.UTC().After(now.Add(-activeWindow))
-	if !yActive && len(cand.candidateHash) > 0 {
-		cand.beginTx(txID)
-		cand.candidateHash = nil
-		cand.candidateSeenAt = time.Time{}
-	}
-	candHash := bytes.Clone(cand.candidateHash)
-	matchesPrior := cand.matchesPriorPair(prev, hash[:])
-	s.mu.Unlock()
+	candActive := len(candHash) > 0 && candLastSeen != nil && candLastSeen.UTC().After(now.Add(-activeWindow))
 
 	if bytes.Equal(prev, hash[:]) {
-		if yActive {
+		if candActive {
 			// Interleaving X -> Y -> X while Y is still inside activeWindow.
 			if err = s.recordIdentityConflict(ctx, tx, id, prev, candHash, now); err != nil {
 				return false, safe(err)
 			}
-			s.mu.Lock()
-			cand.beginTx(txID)
-			cand.candidateHash = nil
-			cand.candidateSeenAt = time.Time{}
-			s.mu.Unlock()
 			return false, nil
 		}
 		if _, err = tx.Exec(ctx, `UPDATE node_identity_endpoints SET last_seen_at=$2 WHERE incarnation_id=$1`, id.IncarnationID, now); err != nil {
@@ -375,93 +307,73 @@ func (s *Service) ObserveEndpointTx(ctx context.Context, tx pgx.Tx, cert *x509.C
 	if !xActive {
 		// X has been quiet for at least a full activeWindow; promote the new
 		// endpoint (whether the roaming candidate Y or a fresh endpoint).
-		if _, err = tx.Exec(ctx, `UPDATE node_identity_endpoints SET endpoint_hash=$2,last_seen_at=$3 WHERE incarnation_id=$1`, id.IncarnationID, hash[:], now); err != nil {
+		// If the promoted endpoint was a roaming candidate that overlapped with X,
+		// retain displaced X as an inactive prior-pair marker (lastSeen <= now - activeWindow)
+		// so a second {Y, X} window still triggers a conflict.
+		hadOverlap := bytes.Equal(candHash, hash[:]) && candFirstSeen != nil && !candFirstSeen.UTC().Before(lastSeen.UTC())
+		var nextCandHash []byte
+		var nextCandFirst, nextCandLast *time.Time
+		if hadOverlap {
+			nextCandHash = prev
+			ts := lastSeen.UTC()
+			nextCandFirst = &ts
+			nextCandLast = &ts
+		}
+		if _, err = tx.Exec(ctx, `
+			UPDATE node_identity_endpoints
+			SET endpoint_hash = $2,
+			    last_seen_at = $3,
+			    candidate_hash = $4,
+			    candidate_first_seen_at = $5,
+			    candidate_last_seen_at = $6
+			WHERE incarnation_id = $1
+		`, id.IncarnationID, hash[:], now, nextCandHash, nextCandFirst, nextCandLast); err != nil {
 			return false, safe(err)
 		}
-		s.mu.Lock()
-		cand.beginTx(txID)
-		cand.candidateHash = nil
-		cand.candidateSeenAt = time.Time{}
-		s.mu.Unlock()
 		return true, nil
 	}
 
 	// X is still inside activeWindow and incoming hash != prev (X).
-	if yActive {
+	if candActive {
 		if !bytes.Equal(candHash, hash[:]) {
 			// A third incompatible domain Z observed while X and Y are inside the window.
 			if err = s.recordIdentityConflict(ctx, tx, id, prev, hash[:], now); err != nil {
 				return false, safe(err)
 			}
-			s.mu.Lock()
-			cand.beginTx(txID)
-			cand.candidateHash = nil
-			cand.candidateSeenAt = time.Time{}
-			s.mu.Unlock()
 			return false, nil
 		}
 		// Y observed again while waiting for X to remain quiet for activeWindow.
-		s.mu.Lock()
-		cand.beginTx(txID)
-		cand.candidateSeenAt = now
-		s.mu.Unlock()
+		if _, err = tx.Exec(ctx, `
+			UPDATE node_identity_endpoints
+			SET candidate_last_seen_at = $2
+			WHERE incarnation_id = $1
+		`, id.IncarnationID, now); err != nil {
+			return false, safe(err)
+		}
 		return true, nil
 	}
 
-	if matchesPrior {
+	if bytes.Equal(candHash, hash[:]) {
 		// Y and X have both been seen within one window twice.
 		if err = s.recordIdentityConflict(ctx, tx, id, prev, hash[:], now); err != nil {
 			return false, safe(err)
 		}
-		s.mu.Lock()
-		cand.beginTx(txID)
-		cand.candidateHash = nil
-		cand.candidateSeenAt = time.Time{}
-		s.mu.Unlock()
 		return false, nil
 	}
 
 	// First switch X -> Y inside activeWindow: roaming candidate. Keep X mapped
 	// in node_identity_endpoints and record Y as candidate until X has been quiet
 	// for a full activeWindow.
-	s.mu.Lock()
-	cand.beginTx(txID)
-	cand.candidateHash = bytes.Clone(hash[:])
-	cand.candidateSeenAt = now
-	cand.setPriorPair(prev, hash[:])
-	s.mu.Unlock()
+	if _, err = tx.Exec(ctx, `
+		UPDATE node_identity_endpoints
+		SET candidate_hash = $2,
+		    candidate_first_seen_at = $3,
+		    candidate_last_seen_at = $3
+		WHERE incarnation_id = $1
+	`, id.IncarnationID, hash[:], now); err != nil {
+		return false, safe(err)
+	}
 	return true, nil
-}
-
-func (s *Service) reconcileCandidateTx(ctx context.Context, tx pgx.Tx, incarnationID uuid.UUID, currentTxID uint64) *roamingCandidate {
-	s.mu.Lock()
-	if s.candidates == nil {
-		s.candidates = make(map[uuid.UUID]*roamingCandidate)
-	}
-	cand, ok := s.candidates[incarnationID]
-	if !ok {
-		cand = &roamingCandidate{}
-		s.candidates[incarnationID] = cand
-	}
-	prevTxID := cand.txID
-	s.mu.Unlock()
-
-	if prevTxID != 0 && prevTxID != currentTxID {
-		var status *string
-		if err := tx.QueryRow(ctx, `SELECT pg_xact_status($1::text::xid8)`, strconv.FormatUint(prevTxID, 10)).Scan(&status); err == nil {
-			s.mu.Lock()
-			if cand.txID == prevTxID {
-				if status != nil && *status == "aborted" {
-					cand.rollback()
-				} else if status != nil && *status == "committed" {
-					cand.txID = 0
-					cand.beforeTx = nil
-				}
-			}
-			s.mu.Unlock()
-		}
-	}
-	return cand
 }
 
 func (s *Service) recordIdentityConflict(ctx context.Context, tx pgx.Tx, id pki.NodeIdentity, prevHash, conflictingHash []byte, now time.Time) error {
@@ -473,7 +385,14 @@ func (s *Service) recordIdentityConflict(ctx context.Context, tx pgx.Tx, id pki.
 	if err != nil {
 		return err
 	}
-	freezeTag, err := tx.Exec(ctx, `UPDATE node_identity_endpoints SET mapping_frozen=true WHERE incarnation_id=$1 AND NOT mapping_frozen`, id.IncarnationID)
+	freezeTag, err := tx.Exec(ctx, `
+		UPDATE node_identity_endpoints
+		SET mapping_frozen = true,
+		    candidate_hash = NULL,
+		    candidate_first_seen_at = NULL,
+		    candidate_last_seen_at = NULL
+		WHERE incarnation_id = $1 AND NOT mapping_frozen
+	`, id.IncarnationID)
 	if err != nil {
 		return err
 	}

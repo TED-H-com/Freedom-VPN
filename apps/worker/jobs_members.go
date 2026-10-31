@@ -40,6 +40,12 @@ func members() Domain {
 		if e != nil {
 			return Built{}, &config.SettingError{Name: "members_config_file", Err: e}
 		}
+		if services.HTTP.Devices != nil {
+			services.HTTP.Devices.Logger = d.Logger
+			if e = services.HTTP.Devices.RegisterRestoreFences(d.Metrics); e != nil {
+				return Built{}, e
+			}
+		}
 		return Built{Jobs: MemberJobs(), Context: func(ctx context.Context) context.Context { return WithMembers(ctx, services) }, Runners: []func(context.Context) error{func(ctx context.Context) error { return RunMemberSchedule(ctx, services) }}}, nil
 	}}
 }
