@@ -67,7 +67,8 @@ func TestD062a_PrecheckFailureHarnessDelivery(t *testing.T) {
 }
 
 func TestD062c_RollbackHarnessRequiresRestoredHealthEmptyAllowlist(t *testing.T) {
-	raw, err := os.ReadFile("../../docs/e2e/at/updates/rollback-delivery-finding.json")
+	// D-132: pin the immutable follow-up 9 archive, never living evidence.
+	raw, err := os.ReadFile("../../docs/e2e/at/updates/history/follow-up-9/rollback-delivery-finding.json")
 	if err != nil {
 		t.Fatal(err)
 	}
