@@ -641,16 +641,17 @@ func (s *liveSuite) measureD067ProvisionalWindow(
 ) d067CycleMeasurement {
 	s.stopNodeAgent(nodeService)
 
-	var oldAppliedGen uint64
+	var oldDesiredGen, oldAppliedGen uint64
 	var lastObsAt time.Time
 	var lastPayloadRaw []byte
 	if err := s.pool.QueryRow(s.ctx, `
-		SELECT n.applied_config_generation::bigint,
+		SELECT n.desired_config_generation::bigint,
+		       n.applied_config_generation::bigint,
 		       COALESCE(n.last_observed_at, '1970-01-01T00:00:00Z'::timestamptz),
 		       (SELECT report_payload FROM node_observations WHERE node_id = n.id AND incarnation_id = $2 AND safety_status = 'passed' ORDER BY received_at DESC LIMIT 1)
 		FROM nodes n
 		WHERE n.id = $1
-	`, nodeID, incarnationID).Scan(&oldAppliedGen, &lastObsAt, &lastPayloadRaw); err != nil || len(lastPayloadRaw) == 0 {
+	`, nodeID, incarnationID).Scan(&oldDesiredGen, &oldAppliedGen, &lastObsAt, &lastPayloadRaw); err != nil || len(lastPayloadRaw) == 0 {
 		s.t.Fatalf("D-067 %s: query baseline observation for %s failed: err=%v payloadLen=%d", cycleName, nodeID, err, len(lastPayloadRaw))
 	}
 
@@ -659,15 +660,15 @@ func (s *liveSuite) measureD067ProvisionalWindow(
 	var targetDesiredGen uint64
 	if !s.waitFor(45*time.Second, func() bool {
 		err := s.pool.QueryRow(s.ctx, `SELECT desired_config_generation::bigint FROM nodes WHERE id = $1`, nodeID).Scan(&targetDesiredGen)
-		return err == nil && targetDesiredGen > oldAppliedGen
+		return err == nil && targetDesiredGen > oldDesiredGen
 	}) {
-		s.t.Fatalf("D-067 %s: desired_config_generation did not advance beyond %d (got %d)", cycleName, oldAppliedGen, targetDesiredGen)
+		s.t.Fatalf("D-067 %s: desired_config_generation did not advance beyond %d (got %d)", cycleName, oldDesiredGen, targetDesiredGen)
 	}
 
 	// Ensure nodes.provisioning_state is 'applying' and safety_status is 'passed' before starting fvpn-agent
-	var provState string
-	_ = s.pool.QueryRow(s.ctx, `SELECT provisioning_state FROM nodes WHERE id = $1`, nodeID).Scan(&provState)
-	for attempt := 0; attempt < 3 && provState != "applying"; attempt++ {
+	var provState, safetyState string
+	_ = s.pool.QueryRow(s.ctx, `SELECT provisioning_state, safety_status FROM nodes WHERE id = $1`, nodeID).Scan(&provState, &safetyState)
+	for attempt := 0; attempt < 3 && (provState != "applying" || safetyState != "passed"); attempt++ {
 		var staleRep api.ObservationReport
 		if err := json.Unmarshal(lastPayloadRaw, &staleRep); err != nil {
 			s.t.Fatalf("D-067 %s: unmarshal baseline observation report: %v", cycleName, err)
@@ -684,7 +685,7 @@ func (s *liveSuite) measureD067ProvisionalWindow(
 		staleRep.MemberForwardingEnabled = false
 		staleRep.ForwardingBlockReasons = []api.ForwardingBlockReason{api.ForwardingBlockReasonProvisioningIncomplete}
 		staleRep.Errors = []api.NodeError{}
-		staleRep.AppliedConfigGeneration.Set(decstr.U64(oldAppliedGen))
+		staleRep.AppliedConfigGeneration.Set(decstr.U64(oldDesiredGen))
 		for i := range staleRep.Checks {
 			staleRep.Checks[i].ObservedAt = obsAt
 		}
@@ -694,7 +695,7 @@ func (s *liveSuite) measureD067ProvisionalWindow(
 			s.t.Fatalf("D-067 %s: stale observation %d rejected: HTTP %d %s", cycleName, attempt, resp.status, string(resp.body))
 		}
 		time.Sleep(450 * time.Millisecond)
-		_ = s.pool.QueryRow(s.ctx, `SELECT provisioning_state FROM nodes WHERE id = $1`, nodeID).Scan(&provState)
+		_ = s.pool.QueryRow(s.ctx, `SELECT provisioning_state, safety_status FROM nodes WHERE id = $1`, nodeID).Scan(&provState, &safetyState)
 	}
 	if provState != "applying" {
 		s.t.Fatalf("D-067 %s: node %s did not enter provisioning_state=applying before agent start (got %q)", cycleName, nodeID, provState)
