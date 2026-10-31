@@ -165,7 +165,7 @@ real-client reconnect when the diagnostic harness changed publication to a
 newer generation. It is the subsequent latch, not proof of the original tc
 object's creator.
 
-Exact agent-core 23 path:
+Exact call path, rechecked on follow-up 16 (base `e498225`):
 
 1. `engine.go:noteApply` retains `applyError` from the tc rejection.
 2. `sync.go:needRenew` suppresses generation-driven renewal when `applyError`
@@ -174,7 +174,11 @@ Exact agent-core 23 path:
 3. `engine.go:enforce` omits the error only from its candidate `Decide` call.
    `decide.go:leaseGenerationStale` still yields `policy_missing`, so that
    candidate installs the baseline rather than running a serving Apply.
-4. `engine.go:ackApplied` refuses the candidate generation while the actual
+4. `serving.go:auditBlocked` still calls `VerifyServing`, but only a new
+   `TC_FOREIGN_FILTER` updates `applyError`; clean tc plus the retained nft
+   baseline returns `GENERATION_MISMATCH` and never clears the old error.
+   `verifyCurrentServing` returns early when already non-serving.
+5. `engine.go:ackApplied` refuses the candidate generation while the actual
    `e.applyError` is non-nil. `sync.go:renewAppliedLease` also returns early on
    that error. No clean Apply is reached to clear the retained error.
 
@@ -188,52 +192,136 @@ no filter, qdisc or unreadable attachment becomes allowed. Unit tests prove
 late rejected-object retention, deterministic ordering, decimal generation
 precision, redaction, load-error retention and continued quarantine.
 
-## ISO-F6-02: product transport handoff
+## ISO-F6-02 / D-106: product transport handoff (follow-up 16)
 
-`ServingEvidence.ReportDetail()` returns a deterministic summary within the
-existing 500-character `NodeCheck.detail` / `NodeError.message` limit. The lab
-Apply/verify read-back exposes the bounded `tc` rows and `tc_summary` directly.
-The real agent already forwards failed TC rows through report-only errors, so
-prioritizing the deciding row improves that existing surface immediately.
+Contracts revision 14 shipped `ObservationReport.tc_evidence` in #289. The
+producer entry point is now:
 
-A successful live read is still discarded by `node/agent/serving.go`'s
-`verifyServingModel`; `engine.go` also does not retain successful Apply evidence
-for `observe.go`. Those production files are outside this lane. Agent-core 23
-must retain the last actual read with its candidate generation and read time,
-attach `ReportDetail()` to the **qos check detail**, and preserve the actual
-check status/error. Do not invent a successful NodeError, label a rollback
-snapshot as the rejection, or label an old Apply snapshot as a fresh read.
-Failed reports should use the rejected read plus its original error code.
+```go
+if tc := evidence.TCReadbackEvidence(); tc != nil {
+    report.TcEvidence.Set(*tc)
+}
+```
 
-For contracts revision 14, the proposed typed addition is optional nullable
-`ObservationReport.tc_evidence`, referencing a new `TCReadbackEvidence` object
-with `additionalProperties: false`:
+Call it on the `ServingEvidence` returned by `VerifyServing` or on
+`ApplyResult.Evidence`, including error returns. The helper returns
+`*api.TCReadbackEvidence`; nil means no retained read. Capture this typed value
+before serializing or discarding `ServingEvidence`: its transport snapshot is
+private, intentionally separate from the public diagnostic JSON. Each call
+returns a detached copy. Mutating the copy, public `TC` rows, or quarantine
+annotations cannot rewrite the retained snapshot.
 
-| Field | Type and bound |
+The snapshot is captured after the complete verifier finishes reading and
+before any rollback or quarantine. `read_at` is the actual UTC completion time,
+not model `Now`, observation emission time, or conversion time. Conversion
+performs no I/O and never refreshes it. `verified` describes the complete
+nft/tc/QoS serving verifier. Clean tc with a failed nft rule/deadline/quarantine
+check remains false. Ownership-only `load`/`pre_apply` reads cannot be verified.
+It is not an Apply/engine success flag: later quarantine release, conntrack,
+member-path or lease checks may still fail; callers must honor the returned
+error and existing serving gates. No verifier was weakened.
+
+| Read-back element | `TCReadbackEvidence` field and semantics |
 | --- | --- |
-| `candidate_generation` | uint64 decimal string, existing 20-digit/max-uint64 convention; not an ACK |
-| `read_at` | UTC RFC 3339 date-time with `Z`; actual verifier read time |
-| `phase` | enum `load`, `pre_apply`, `verify` |
-| `verified` | boolean; actual complete serving-verifier outcome |
-| `error_code` | nullable existing `ErrorCode` |
-| `reads_total`, `objects_total` | integer, 0..2147483647 |
-| `truncated` | boolean; any omission from retained rows/actions |
-| `sha256` | lowercase hex string, exactly 64 characters, RFC 8785 digest of retained bounded rows and total counts |
-| `attachments` | array, maxItems 16, `TCReadAttachment` |
-| `rejected` | nullable `TCReadAttachment`, at most one deciding object |
+| `TCSummary.Generation` | `candidate_generation`: exact `decstr.U64` decimal string through max uint64; never an ACK |
+| Read completion sample | `read_at`: UTC RFC 3339 with `Z`, retained before rollback |
+| `TCSummary.Phase` | `phase`: `load`, `pre_apply`, or `verify` |
+| Complete `verifyServing` result | `verified`: true only for the full verifier's nil error, not merely an empty foreign-filter scan |
+| Returned `CheckError.Reason` | `error_code`: the matching existing HTTP enum, including `TC_FOREIGN_FILTER`; null for success or an unknown non-CheckError, never raw error text |
+| `TCSummary.Reads`, `.Objects` | `reads_total`, `objects_total`: counts before row selection, capped at 2147483647 with `truncated=true` on saturation |
+| `TCSummary.Truncated` | `truncated`: any omitted rows/objects/actions, including siblings displaced by the deciding row |
+| `TCSummary.SHA256` | `sha256`: unchanged netlab canonical digest below |
+| Bounded `TC` | `attachments`: at most 16 retained attachment reads, populated/error rows before empty ones |
+| `TCReadEvidence.Interface`, `.Attachment` | `attachments[].interface`, `.attachment`: member/uplink interface and qdisc/root/ingress/egress/class/parent handle |
+| `TCReadEvidence.Error` | optional attachment `error`: only `read_failed`, `invalid_json`, `invalid_listing` |
+| `TCObject` | `objects[]`: at most 4, carrying `kind`, optional `handle`, `parent`, true `root`, and at most 4 ordered action kinds |
+| `TCSummary.Rejected` | nullable `rejected`: deciding attachment with at most 1 object; same deciding row first in `attachments`; null when no TC decision exists |
 
-`TCReadAttachment`: required `interface`, `attachment`, `objects`; optional
-`error`. All strings use `^[a-zA-Z0-9_:-]{1,32}$` after producer redaction;
-`objects` has maxItems 4 (maxItems 1 in `rejected`). Each object has required
-`kind`, optional `handle`, `parent`, boolean `root`, and `actions` with maxItems 4
-of the same bounded token type. `error` is the enum
-`read_failed`, `invalid_json`, `invalid_listing`; never raw stderr. The parent
-observation's report ID supplies the observation linkage. A null/absent field
-means no retained read, never an empty successful scan.
+Tokens match `^[a-zA-Z0-9_:-]{1,32}$`; invalid, empty required, or credential-like
+tokens become `redacted`. Optional empty handles/parents remain omitted. No raw
+selectors, action parameters, stderr, routes, destinations, payloads or counters
+enter the contract. Reporting bounds never shorten the verifier's scan.
 
-This is a schema proposal, not a shipped contract or a claim that observation
-`4a1dc037-c2c0-4955-90a5-c19a2928e998` has been repaired retroactively. No contract
-or agent production file was changed here.
+D-106 has **no foreign-object count field**. `objects_total` counts all observed
+objects, not foreign objects. A verified full read proves zero foreign objects;
+a rejected read identifies its deciding object, not an exhaustive foreign-object
+count (the verifier can stop on a read failure). Do not relabel total objects as
+foreign or invent an extra field in the closed schema.
+
+`sha256` is RFC 8785 SHA-256 over exactly:
+
+`{reads: reads_total, objects: objects_total, truncated: truncated, tc: attachments}`.
+Counts are JSON integers, truncated is a boolean and tc is the bounded array. Array order and optional
+member presence are significant. Timestamp, generation, outcome and rejection
+are outside this existing diagnostic digest; it is not a signature or a digest
+of omitted raw kernel data.
+
+The generated Go schema/round-trip test regenerates the verified, rejected and
+truncated vectors from producer rows (including the omitted seventeenth row),
+then matches the corresponding ObservationReport examples. Digests:
+
+| Example | Netlab = contract = ObservationReport example SHA-256 |
+| --- | --- |
+| verified | `058a980c795256f70ca7fe4490730c9b7fb6cd05a7e99d0f37e3cb34200ebcb2` |
+| rejected | `c57355cb80736e4023b422916bb7c002e1bb771dd134042dbcc1e9b1bc0862bf` |
+| truncated | `a41f0ebfd4d2ee92f8e250d99adae9f6d449cec76cadb420605ce121f31cc017` |
+
+`node contracts/ts/verify-vectors.ts` independently verifies these canonical
+projections. `ServingEvidence.ReportDetail()` and the existing
+`errors[stage=tc_evidence]` rejection transport remain available and unchanged.
+Success belongs in `tc_evidence`, never a manufactured NodeError. Agent-core
+follow-up 25 must retain successful Apply/live-read evidence from
+`engine.go`/`serving.go` for `observe.go`; those production files are unchanged
+here. Keep a historical failure's original time/generation separate from the
+latest read, and do not label a post-rollback baseline snapshot as the original
+rejection. Null/absent means no retained read, never an empty successful scan.
+
+## ISO-F6-01 follow-up 16 recovery proof and isolation follow-up 8 assertions
+
+The original follow-up 7 run `041e9e48-79a6-45dd-a19d-8b5a63290655` removed its
+injection at 06:29:32.889Z, requested generation 32, and remained applied at 31
+with `TC_FOREIGN_FILTER` / `policy_missing`. The extra generation 33 and assisted
+route restoration at 06:31:25Z did not establish recovery. This is consistent
+with the agent dependency above, not proof of a cached library verdict.
+
+`TestISO_F6_01_ForeignRemovalNewGeneration` reproduces the sequence with real
+kernel tc/nft in the privileged lab: generation 31 serves; injected
+clsact/mirred is rejected; dirty Apply quarantines; removing only the filter
+still rejects the foreign clsact; removing both yields a fresh
+`GENERATION_MISMATCH` against the baseline, with no rejected TC object; clean
+Apply generation 32 verifies, clears the marker and raises the member link;
+a subsequent public `VerifyServing` also verifies. The dated retained trace is
+`G2-tc-evidence-2026-10-31/TestISO_F6_01_ForeignRemovalNewGeneration/trace.json`.
+The final member probe is measured **after explicit lab-owned veth route/IPv6
+reconciliation**. This is library mechanism evidence, not assembled agent
+serving or a claim that NetBird restored this lab veth.
+
+The unprivileged same-executor regression also proves three fresh ingress
+reads during the clean Apply (ownership, staged verification, post-link-raise
+verification), and that the original rejection snapshot survives unchanged.
+The existing `TestISO_F6_RetainedFailureBlocksNewGeneration` still reproduces
+five steps/five seconds with desired 3, applied/lease 2, zero new serving Apply
+calls, zero renewals, and `needRenew=false`. No production agent file changed.
+
+Isolation follow-up 8 must assert all of the following before closing ISO-F6-01:
+
+1. Capture the initial serving generation, injected object/attachment and actual
+   rejected read/time, plus quarantine and non-serving heartbeat evidence.
+2. Remove **all** injected foreign objects (an empty filter block with foreign
+   clsact remaining is not clean). Retain fresh read-back proving absence.
+3. Publish the clean newer generation after rejection. Show the engine actually
+   reaches Apply, with the matching lease generation and pending/quarantine
+   transitions; a 202 or repeated blocked audit is insufficient.
+4. Retain successful Apply and fresh live `tc_evidence` with the newer candidate
+   generation, actual UTC read times, verified=true, null error/rejection and a
+   recomputable digest. Keep historical failed reads explicitly historical.
+5. Prove restored member-path/topology, marker clearance, serving heartbeat and
+   observation, applied generation, and member packet/counter positive control.
+   Record the address/route owner and any harness assistance. A clean library
+   result alone does not close the assembled recovery defect.
+6. Keep the failure control: with the foreign object still present, a newer
+   generation stays non-serving, retains `TC_FOREIGN_FILTER`, and never deletes
+   the foreign object as part of enforcement.
 
 ## Running the campaign
 
