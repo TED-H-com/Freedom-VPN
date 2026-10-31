@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
-  "follow_up": 8,
-  "checked_at": "2026-10-30T22:10:16Z",
-  "application_base": "6b98422",
-  "harness_revision": "6350853010054cf656465e5e677c60dc29553cb5",
+  "follow_up": 9,
+  "checked_at": "2026-10-31T01:46:57Z",
+  "application_base": "205633f",
+  "harness_revision": "205633f0de8b3befbd563a092b856c0bc089e9c9",
   "roadmap": [
     "fb3ea32 roadmap: w2-agent-core follow-up 15 merged (#195)",
     "5bf13e1 contracts: revision 10 (API 1.6.0, 47 operations) \u2014 Enrollment.token_sha256, GET /admin/nodes/{node_id}/incarnations, awaiting_member_grants (ENR-02, ENR-03, D-067) (#191)",
@@ -56,7 +56,11 @@
     "agent_followup_14": 181,
     "secops_followup_6": 178,
     "secops_followup_7": 203,
-    "members_followup_5": 205
+    "members_followup_5": 205,
+    "secops_followup_8": 221,
+    "usage_agent_followup_1": 225,
+    "node_agent_followup_19": 226,
+    "wire_members_followup_9_d076": 227
   },
   "absent_on_measured_main": [
     "devstack follow-up 12 per-stream bulk scanner results"
@@ -69,7 +73,7 @@
     "git log --oneline origin/main -20",
     "git diff 5ee3a05..8eaafcb --name-only -- deploy/backup docs/handover/restore-drill.md docs/ops/backups.md"
   ],
-  "history": "history/follow-up-7/dependencies.json",
+  "history": "history/follow-up-8/dependencies.json",
   "requests": {
     "SECOPS-04": {
       "status": "resolved input APIs/configuration",
@@ -95,10 +99,13 @@
       "evidence": "secret-scan.json"
     },
     "SECOPS-05": {
-      "status": "measured in follow-up 8 (usage replay & provider reconciliation passed; #205 discovery-denial deduplication verified)",
+      "status": "closed (AT30 passed in follow-up 9)",
       "prs": [
         165,
-        205
+        205,
+        225,
+        226,
+        227
       ],
       "evidence": "restore-reconcile.json"
     },
@@ -107,15 +114,34 @@
       "evidence": "limiter.json"
     },
     "SECOPS-18": {
-      "status": "open",
+      "status": "closed",
       "owner": "w2-members (internal/devices)",
-      "detail": "T0..T1 revoked device (peerM2D2) re-authorized by SyncDevice after restoring central DB to T0",
+      "prs": [
+        227
+      ],
+      "detail": "D-076 restore authorization fence verified in live AT30 restore (fence row, worker log, worker counter, external_withdrawal audit, pending status, withdrawn data plane, re-grant via AuthorizeDevice, and two negatives)",
       "evidence": "restore-reconcile.json"
     },
     "SECOPS-19": {
-      "status": "informational",
-      "owner": "w1-node-agent (node/agent/observe.go)",
-      "detail": "node/agent/observe.go:111-116 sends zeroed UsageOutboxStatus; retained archive sequences only visible via SQLite usage.db",
+      "status": "closed",
+      "owner": "w1-node-agent (node/agent/observe.go, node/agent/usage_snapshot.go)",
+      "prs": [
+        225,
+        226
+      ],
+      "detail": "Live UsageOutboxStatus in node_observations and read-only fvpn-agent usage snapshot verified during restore hold (non-zero unacked) and post-replay convergence (zero unacked)",
+      "evidence": "restore-reconcile.json"
+    },
+    "SECOPS-20": {
+      "status": "open",
+      "owner": "w3-devstack-e2e (deploy/devstack/entrypoint-node.sh) / w1-enforce-nft (node/enforce/verify_foreign.go)",
+      "detail": "Docker attaches two networks (lab and origin) to node-netns and populates table ip nat POSTROUTING -> DOCKER_POSTROUTING (xt target SNAT for 127.0.0.11), causing VerifyServing (#220 whole-ruleset read-back) to fail closed with FLOWTABLE_BYPASS on unmodified devstack node containers when >=1 member grant is compiled",
+      "evidence": "restore-reconcile.json"
+    },
+    "SECOPS-21": {
+      "status": "open",
+      "owner": "w2-policy (internal/desiredstate/compiler.go:198-211) / w3-wire-nodes (internal/nodes/observations.go:289)",
+      "detail": "After central DB restore to T0 while node retains T1 applied_config_generation, desiredstate.Compiler.Compile computes baseGen from desired_config_generation and max(desired_states.generation) without including nodes.applied_config_generation, emitting stale generations rejected by fvpn-agent with ErrStaleGeneration",
       "evidence": "restore-reconcile.json"
     }
   }

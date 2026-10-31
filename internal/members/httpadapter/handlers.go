@@ -112,6 +112,7 @@ type deferred struct {
 func (d deferred) VisitUpdateMemberResponse(w http.ResponseWriter) error          { return d.run(w) }
 func (d deferred) VisitCreateMemberGrantResponse(w http.ResponseWriter) error     { return d.run(w) }
 func (d deferred) VisitRevokeMemberDeviceResponse(w http.ResponseWriter) error    { return d.run(w) }
+func (d deferred) VisitAuthorizeMemberDeviceResponse(w http.ResponseWriter) error { return d.run(w) }
 func (d deferred) VisitCreateCheckoutSessionResponse(w http.ResponseWriter) error { return d.run(w) }
 func (d deferred) VisitCreateBillingPortalSessionResponse(w http.ResponseWriter) error {
 	return d.run(w)

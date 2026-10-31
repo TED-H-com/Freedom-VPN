@@ -247,7 +247,11 @@ one `getUpdateBatch` follows and the node-list query stops, so the screen
 issues four GETs in sequence and three at once. Overview mounts two,
 plus the batch when a node carries `batch_id`. The node list, member list,
 settings, DNS, fair-use, enrollment detail, and groups screens each mount
-one. `GET /auth/session` uses the session login bucket, outside this class.
+one. `GET /admin/devices` (the operator device list, including
+`authorization_unconfirmed`) and
+`POST /admin/members/{member_id}/devices/{device_id}/authorize` are the same
+browser class: an admin session, with CSRF and `Idempotency-Key` on the command.
+`GET /auth/session` uses the session login bucket, outside this class.
 An in-flight operation polls at 60 ms, then 120 ms, 240 ms, and doubles up to
 2 s. A node-detail write, its two invalidations, and those polls stay under
 ten browser requests in the first second.
