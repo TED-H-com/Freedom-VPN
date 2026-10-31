@@ -136,6 +136,8 @@ func (r *Runtime) CompileControlState(ctx context.Context, node, incarnation uui
 		signer := cachedStateSigner{signer: purposeSigner{r.Provider, envelope.PurposeDesiredState}, cached: cachedResult}
 		compiler := r.desiredStateCompiler(signer,
 			desiredstate.WithClock(func() time.Time { return now }),
+			// D-087: grant suppression belongs only to lease issuance. Keep
+			// desired bindings and the generation on production DB inputs.
 			desiredstate.WithEntitlementReader(desiredstate.NewDBEntitlementReader(tx)),
 			desiredstate.WithPolicyReader(policySnapshot{snap}))
 		out, e = compiler.CompileTx(ctx, tx, node)
@@ -179,7 +181,6 @@ func (h *Handlers) RenewServingLease(ctx context.Context, r gen.RenewServingLeas
 		return nil, e
 	}
 	p := principal(ctx)
-	svc := leases.NewService(h.Runtime.Pool, purposeSigner{h.Runtime.Provider, envelope.PurposeLease})
 	var out api.ServingLeaseEnvelope
 	// Use the observation path's fleet-before-node lock order, including
 	// when the HTTP command middleware already owns the transaction.
@@ -187,6 +188,14 @@ func (h *Handlers) RenewServingLease(ctx context.Context, r gen.RenewServingLeas
 		if err := h.observeAgentEndpointTx(ctx, tx); err != nil {
 			return err
 		}
+		var reader leases.EntitlementReader = leases.DBEntitlementReader{}
+		if factory := h.Runtime.testOnlyGrantEligibility; factory != nil {
+			reader = factory(tx)
+			if reader == nil {
+				return apierr.New(apierr.DependencyUnavailable, "Grant eligibility reader unavailable.")
+			}
+		}
+		svc := leases.NewService(h.Runtime.Pool, purposeSigner{h.Runtime.Provider, envelope.PurposeLease}, leases.WithEntitlementReader(reader))
 		var err error
 		out, err = svc.RenewTx(ctx, tx, p.NodeID, p.IncarnationID, *r.Body)
 		return err
