@@ -1,0 +1,25 @@
+{
+  "id": "export-native-streams",
+  "title": "Bounded final native stream inventories",
+  "spec": [
+    "SECOPS-16"
+  ],
+  "status": "pass",
+  "observations": [
+    {
+      "name": "final_results",
+      "detail": "{\"streams\":[{\"stream\":\"fvpn-e2e-member-exports-u01-p1/protected-device-flow\",\"result\":\"scanned\",\"scan\":{\"present\":true,\"bytes\":103,\"mode\":\"0:600\",\"device_flow_keys\":1},\"deleted\":true},{\"stream\":\"fvpn-e2e-member-exports-u01-p2/protected-device-flow\",\"result\":\"scanned\",\"scan\":{\"present\":true,\"bytes\":103,\"mode\":\"0:600\",\"device_flow_keys\":1},\"deleted\":true}],\"Users\":1,\"Peers\":2,\"IdentityMatches\":2,\"Authorized\":2,\"ScannedLogs\":2,\"ProtectedLogs\":2,\"SimultaneousAuthorized\":2}"
+    },
+    {
+      "name": "deleted_stream_missing",
+      "detail": "true"
+    },
+    {
+      "name": "foreign_container_refused",
+      "detail": "true"
+    }
+  ],
+  "at": "2026-10-31T04:27:43Z",
+  "run_id": "12d10041-9d33-4fbb-a4b0-9d2a21bce785",
+  "source_commit": "4fb5fa88ac400605ac08ee42c8eac99e936ec2a3"
+}

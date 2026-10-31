@@ -34,7 +34,7 @@ func TestE2E_HarnessExports(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	r := &runner{t: t, lab: l, runID: uuid.NewString(), sourceCommit: strings.TrimSpace(string(head)), dir: filepath.Join(l.root, "docs/e2e/runs", time.Now().UTC().Format("2006-01-02"), "followup14", "exports")}
+	r := &runner{t: t, lab: l, runID: uuid.NewString(), sourceCommit: strings.TrimSpace(string(head)), dir: filepath.Join(l.root, "docs/e2e/runs", time.Now().UTC().Format("2006-01-02"), "followup15", "exports")}
 	// Expected product gaps are recorded independently from export failures.
 	defer func() {
 		t.Logf("exports summary: pass=%d blocked=%d fail=%d run=%s source=%s", r.counts[StatusPass], r.counts[StatusBlocked], r.counts[StatusFail], r.runID, r.sourceCommit)
@@ -56,6 +56,11 @@ func TestE2E_HarnessExports(t *testing.T) {
 	r.desired(ctx)
 	r.publish(ctx, admin, node)
 	r.member(ctx, admin)
+	r.establishedTransports(ctx)
+	r.forcedRelay(ctx)
+	r.exitDNS(ctx)
+	r.exportsUsageHold(ctx, &Stack{lab: l})
+	r.exportsUsageBacklog(ctx, &Stack{lab: l})
 	r.exportsNative(ctx, admin)
 	r.updater(ctx, good, bad)
 	s := &Stack{lab: l}
@@ -63,6 +68,8 @@ func TestE2E_HarnessExports(t *testing.T) {
 	// Enrollment fixture is independent of the serving source and clone target.
 	r.exportsEnrollment(ctx, s, b)
 	r.exportsClone(ctx, s)
+	b = BrowserSession{Client: admin.http, CSRF: admin.csrf}
+	r.exportsInstaller(ctx, s, b)
 }
 func (r *runner) exportsNative(ctx context.Context, admin *session) {
 	rec := Record{ID: "export-native-streams", Title: "Bounded final native stream inventories", Spec: []string{"SECOPS-16"}, Status: StatusFail}

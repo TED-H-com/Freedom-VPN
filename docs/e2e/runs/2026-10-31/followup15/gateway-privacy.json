@@ -1,0 +1,39 @@
+{
+  "id": "gateway-privacy",
+  "title": "Gateway diagnostics exclude transient authentication query values",
+  "spec": [
+    "§17.2",
+    "§19 AT28",
+    "SECOPS-16"
+  ],
+  "status": "pass",
+  "observations": [
+    {
+      "name": "upstream_fault_status",
+      "detail": "502"
+    },
+    {
+      "name": "sentinel_value_matches",
+      "detail": "0"
+    },
+    {
+      "name": "query_key_matches",
+      "detail": "0"
+    },
+    {
+      "name": "connection_budget_errors",
+      "detail": "0"
+    },
+    {
+      "name": "safe_502_diagnostic",
+      "detail": "true"
+    },
+    {
+      "name": "configured_budget",
+      "detail": "2 workers x 4096 connections; 60 native peers plus service and login traffic"
+    }
+  ],
+  "at": "2026-10-31T04:19:23Z",
+  "run_id": "2347f2a4-02aa-4f56-94f2-c3bde88b5a6d",
+  "source_commit": "4fb5fa88ac400605ac08ee42c8eac99e936ec2a3"
+}

@@ -75,6 +75,7 @@ fi
 rm -f /var/lib/vpn-node/e2e/agent.pid
 fvpn-e2e-nodeconfig
 # TEST ONLY loopback mTLS transport; corrupts only when the private local marker is armed.
+fvpn-e2e-nodeconfig dns-relay >/var/lib/vpn-node/e2e/dns-relay.log 2>&1 &
 fvpn-e2e-nodeconfig resolver-proxy >/var/lib/vpn-node/e2e/resolver-proxy.log 2>&1 &
 printf '%s\n' '{"stage":"enrolled"}' > /var/lib/vpn-node/e2e/status.json
 fvpn-watchdog run -config /etc/vpn-node/agent-run.json >/var/lib/vpn-node/e2e/watchdog.log 2>&1 &

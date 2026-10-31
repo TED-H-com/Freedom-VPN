@@ -1,0 +1,50 @@
+{
+  "id": "usage-hold",
+  "title": "Withhold usage acknowledgements and read the ledger snapshot",
+  "spec": [
+    "§10",
+    "ENR-05"
+  ],
+  "status": "pass",
+  "observations": [
+    {
+      "name": "schema_version",
+      "detail": "1"
+    },
+    {
+      "name": "unacked_count",
+      "detail": "8"
+    },
+    {
+      "name": "snapshot_bytes",
+      "detail": "3281"
+    },
+    {
+      "name": "held_status",
+      "detail": "503"
+    },
+    {
+      "name": "held_body",
+      "detail": "HTTP/1.1 503 Service Unavailable\n  Cache-Control: no-store\n  Content-Type: application/json\n  Date: Sat, 31 Oct 2026 04:02:45 GMT\n  Content-Length: 169\n{\"error\":{\"code\":\"DEPENDENCY_UNAVAILABLE\",\"message\":\"usage acknowledgements withheld\",\"r"
+    },
+    {
+      "name": "other_route",
+      "detail": "not withheld"
+    },
+    {
+      "name": "released_status",
+      "detail": "415"
+    },
+    {
+      "name": "released_body",
+      "detail": "HTTP/1.1 415 Unsupported Media Type\n  Cache-Control: no-store\n  Content-Length: 161\n  Content-Security-Policy: default-src 'none'; frame-ancestors 'none'\n  Content-Type: application/json; charset=utf-8\n  Date: Sat, 31 Oct 2026 04:02:45 GMT\n"
+    },
+    {
+      "name": "knob",
+      "detail": "network-side marker on the node resolver proxy; control-side freeze cannot be released without a new ledger epoch"
+    }
+  ],
+  "at": "2026-10-31T04:02:46Z",
+  "run_id": "630b9f07-62d2-4db1-9737-9060732db1f1",
+  "source_commit": "3c25ce9daa081874988c9b09bc8c26e66d3c1b46"
+}

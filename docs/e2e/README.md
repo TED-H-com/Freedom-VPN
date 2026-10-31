@@ -24,15 +24,12 @@ runtime token. Prefix `e2e` does not remove `fvpn-e2e-exports-*`. A native
 peer whose name contains `exports` is still removed, because its token is
 `member`.
 
-Images use neutral `fvpn-devstack-*` tags, including
-`fvpn-devstack-netbird:0.82.0`, so harnesses share the Docker build cache.
-Bring-up pins locally built services to their immutable image IDs before
-starting Compose; a concurrent worktree moving a shared `:local` tag cannot
-change that run's selected image. Per-prefix `fvpn-<prefix>-*:run` aliases retain those images while concurrent
-builds move the neutral tags; teardown removes these runtime aliases by the
-full `repository:tag` (`fvpn-<prefix>-node:run`), not a bare `:latest` name.
-Auxiliary
-update nodes use the running node's image ID. Teardown retains the shared images.
+Bring-up tags images only as `fvpn-<prefix>-*:run` and pins locally built
+services to immutable image IDs before starting Compose. Docker's shared
+layer cache remains reusable without moving another worktree's mutable tag.
+Teardown removes the full owned `repository:tag`; it retains upstream cache
+layers and pre-existing neutral images. Auxiliary nodes use the running
+node's image ID.
 
 ## Loopback ports
 
@@ -356,3 +353,20 @@ connection bucket. The agent mTLS listener remains direct, and nginx
 `worker_connections` is a separate resource limit. See the
 [gateway scenario](scenarios/gateway-principals.md) and
 [finite grace and telemetry hooks](RUN.md).
+
+## Follow-up 15 scenario additions
+
+| Scenario | Evidence required |
+|---|---|
+| [established-transports](scenarios/established-transports.md) | Persistent TCP + authenticated member UDP replies and per-device counters move, then stop on cleanup |
+| [forced-relay](scenarios/forced-relay.md) | Connected relay path and traffic, then direct restoration on the same sockets |
+| [exit-dns](scenarios/exit-dns.md) | TCP/UDP designated DNS traverses the exit and uses DNS-only counters |
+| [member-ipv6](scenarios/exit-dns.md) | Explicit blocked native/platform matrix; no address-only pass |
+| [harness exports](scenarios/harness-exports.md) | Usage hold/release and parsed snapshot, backlog/restart proof, real systemd installer wrappers |
+
+Follow-up 15 records go directly under the UTC day's `followup15/` directory.
+The earlier dated-root evidence is retained. Current hook contracts and open
+scope boundaries are in [RUN.md](RUN.md) and the dated harness request notes.
+The [2026-10-31 final run](runs/2026-10-31/followup15/README.md) records
+acceptance 32 passed / 1 blocked / 0 failed and exports 21 passed / 0 blocked /
+1 failed. IPv6 is blocked; real installer service startup is the failed case.

@@ -49,3 +49,34 @@ func TestAT22TransportFaultScopeAndRecovery(t *testing.T) {
 		t.Fatalf("fault count %d", f.count)
 	}
 }
+
+func TestUsageHoldIsOnlyTheUsagePost(t *testing.T) {
+	dir := t.TempDir()
+	marker := filepath.Join(dir, "hold-usage")
+	rec := httptest.NewRecorder()
+	if withholdUsage(rec, httptest.NewRequest(http.MethodPost, "/api/v1/agent/usage-batches", nil), marker) {
+		t.Fatal("missing marker withheld")
+	}
+	if err := os.WriteFile(marker, []byte("hold\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if withholdUsage(httptest.NewRecorder(), httptest.NewRequest(http.MethodGet, "/api/v1/agent/usage-batches", nil), marker) {
+		t.Fatal("GET was withheld")
+	}
+	if withholdUsage(httptest.NewRecorder(), httptest.NewRequest(http.MethodPost, "/api/v1/agent/desired-state", nil), marker) {
+		t.Fatal("other POST was withheld")
+	}
+	rec = httptest.NewRecorder()
+	if !withholdUsage(rec, httptest.NewRequest(http.MethodPost, "/api/v1/agent/usage-batches", strings.NewReader("{}")), marker) {
+		t.Fatal("usage POST was forwarded")
+	}
+	if rec.Code != http.StatusServiceUnavailable || !strings.Contains(rec.Body.String(), `"code":"DEPENDENCY_UNAVAILABLE"`) {
+		t.Fatalf("withhold response %d %s", rec.Code, rec.Body.String())
+	}
+	if err := os.Remove(marker); err != nil {
+		t.Fatal(err)
+	}
+	if withholdUsage(httptest.NewRecorder(), httptest.NewRequest(http.MethodPost, "/api/v1/agent/usage-batches", nil), marker) {
+		t.Fatal("released marker still withheld")
+	}
+}

@@ -130,3 +130,17 @@ arm64 artifact and arm64 probe cross-build are not a hardware run.
 - D-067 is re-measured in AT09.json and summary.md, compared with follow-up 6's 36.976 seconds. Earlier timestamps do not describe this run.
 - Fenced native HTTPS is measured before/after explicit re-grant. While fenced, the route is withdrawn and the bounded probe receives no origin response; absent fvmb0 arrival is not a separate injected-ingress enforcement claim.
 - Rendered D-077 UI behavior and physical clients are outside this API/CLI observation; no portal finding is inferred from source alone.
+
+## Devstack follow-up 15 response (2026-10-31)
+
+F4-03 / F4-04: `StartEstablishedTransports`, `EstablishedStatus`, `DeviceByteCounters` and `StopEstablishedTransports` now expose persistent TCP/9446 and authenticated member UDP/9445. `MemberTransportStack(memberContainer, nodeSlot)` selects either exit and an owned native peer; use separate peers for simultaneous sessions. Senders remain active after a cutoff, TCP never reconnects, and UDP keeps its socket. `ForceMemberRelay` reads the connected path and restores it. See [RUN.md](../../../RUN.md) and the follow-up 15 evidence. UDP/4443 remains exclusively the updater probe. These fixtures enable the members campaign; they do not certify refund/expiry/suspension on both exits. QUIC, PMTU, four client platforms, physical second NAT, and rendered suspended/expired portal readback remain open with devstack/platform/portal owners; no such run was performed here.
+
+F4-05: the designated resolver is now on the isolated origin network. `ObserveDesignatedDNS` proves explicit TCP/UDP queries traverse the selected exit and move `nu_`/`nd_`, leaving Internet counters alone. The forwarder reaches the primary node's product-managed AdGuard. Native `DisableDNS` remains enabled, and this is not a two-resolver automatic fallback proof. Native DNS configuration/fallback remains devstack/native integration work; Private DNS/DoH remain operator runs.
+
+F4-06: the new transport/DNS helpers emit counts and response metadata, not query names, URLs or packet contents. The existing backup and privacy scans remain available. Aging representative raw-usage, rollup, file and backup artifacts through retention deadlines still needs sanctioned inputs from their owners; no projector rows were backdated. A bounded URL-history sample and commercial feed license approval remain open.
+
+F4-07: the controlled zone's existing `lab.example.invalid` positive answer drives the new exit-DNS check. The complete CNAME/HTTPS/SVCB negative, TTL/cache and rebinding fixture remains open with devstack and DNS/netlab; this follow-up does not claim that matrix.
+
+F4-10: the dedicated real Ubuntu/systemd installer node adds installer-source execution against lab control. Preinstalled image boot, cloud-init provenance and physical arm64 remain operator/packaging work. Cross-compilation is recorded separately.
+
+The worker restart request was delivered in #240: `unless-stopped` and the worker-restart scenario. `agent-service.sh` remains supervisor-owned. Prior requests and their measured claims above are preserved.

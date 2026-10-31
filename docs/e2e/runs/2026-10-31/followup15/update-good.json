@@ -1,0 +1,135 @@
+{
+  "id": "update-good",
+  "title": "Good release reaches a terminal updater state",
+  "spec": [
+    "§13",
+    "§19 AT23",
+    "§19 AT25"
+  ],
+  "status": "pass",
+  "observations": [
+    {
+      "name": "batch",
+      "detail": "202"
+    },
+    {
+      "name": "fleet_generation",
+      "detail": "2"
+    },
+    {
+      "name": "target_count",
+      "detail": "3"
+    },
+    {
+      "name": "desired_contains_release",
+      "detail": "true"
+    },
+    {
+      "name": "probe_not_member",
+      "detail": "true"
+    },
+    {
+      "name": "probe_route_selected",
+      "detail": "true"
+    },
+    {
+      "name": "probe_config_scope",
+      "detail": "one dedicated setup-key peer /32; one isolated origin /32 UDP 4443; no member device or grant"
+    },
+    {
+      "name": "running_candidate_executable",
+      "detail": "true"
+    },
+    {
+      "name": "probe_agent_config",
+      "detail": "/etc/vpn-node/agent-run.json"
+    },
+    {
+      "name": "updater_log_readable",
+      "detail": "true"
+    },
+    {
+      "name": "probe_omission_count",
+      "detail": "0"
+    },
+    {
+      "name": "invalid_probe_peer",
+      "detail": "false"
+    },
+    {
+      "name": "exit_code",
+      "detail": "0"
+    },
+    {
+      "name": "locally_succeeded",
+      "detail": "true"
+    },
+    {
+      "name": "rolled_back",
+      "detail": "false"
+    },
+    {
+      "name": "HASH_MISMATCH",
+      "detail": "false"
+    },
+    {
+      "name": "recovery_required",
+      "detail": "false"
+    },
+    {
+      "name": "ISOLATION_BASELINE_MISSING",
+      "detail": "false"
+    },
+    {
+      "name": "artifact url address",
+      "detail": "false"
+    },
+    {
+      "name": "health_json",
+      "detail": "{\"dns_policy\":\"passed\",\"identity_and_state\":\"passed\",\"internet_only\":\"passed\",\"processes\":\"passed\",\"tunnel_probe\":\"passed\"}"
+    },
+    {
+      "name": "health_attestation",
+      "detail": "{\"agent_dns_policy\":\"passed\",\"agent_internet_only\":\"passed\",\"agent_tunnel_probe\":\"passed\",\"agent_version\":\"1.0.1\",\"dns_policy_reason\":\"policy in force\",\"internet_only_reason\":\"baseline held\",\"kind\":\"health_attest\",\"netbird_version\":\"0.82.0\",\"phase\":\"candidate\",\"published\":\"published\",\"tunnel_probe_reason\":\"overlay_up\"}"
+    },
+    {
+      "name": "error_code",
+      "detail": "-"
+    },
+    {
+      "name": "result_last_error",
+      "detail": "-"
+    },
+    {
+      "name": "journal_excerpt",
+      "detail": "stage=locally_succeeded error_code= error_stage= error_detail= | health_json {\"dns_policy\":\"passed\",\"identity_and_state\":\"passed\",\"internet_only\":\"passed\",\"processes\":\"passed\",\"tunnel_probe\":\"passed\"} | event seq=8 stage=checking detail={\"kind\":\"health_attest\",\"phase\":\"candidate\",\"statuses\":{\"dns_policy\":\"passed\",\"identity_and_state\":\"passed\",\"internet_only\":\"passed\",\"processes\":\" | event seq=9 stage=locally_succeeded detail="
+    },
+    {
+      "name": "probe_traffic",
+      "detail": "{\"attempts\":2265,\"authenticated_udp_replies\":18}"
+    },
+    {
+      "name": "probe_window",
+      "detail": "{\"samples\":1604,\"grant_samples\":3,\"source_elements\":1,\"destination_elements\":1,\"max_timeout_seconds\":40,\"probe_up_bytes\":1386,\"probe_down_bytes\":1386,\"member_bytes_before\":46674,\"member_bytes_after\":46674,\"elements_after\":0}"
+    },
+    {
+      "name": "probe_origin_receipt",
+      "detail": "{\"probe_id\":\"1ef6e52a-b2df-40c3-93dc-b6f0e0c6fd4f\",\"requests\":18,\"source_address\":\"192.0.3.20\"}"
+    },
+    {
+      "name": "probe_traversal_verified",
+      "detail": "true"
+    },
+    {
+      "name": "configured_probe_issued",
+      "detail": "true"
+    },
+    {
+      "name": "note",
+      "detail": "locally_succeeded was observed"
+    }
+  ],
+  "at": "2026-10-31T04:20:22Z",
+  "run_id": "2347f2a4-02aa-4f56-94f2-c3bde88b5a6d",
+  "source_commit": "4fb5fa88ac400605ac08ee42c8eac99e936ec2a3"
+}

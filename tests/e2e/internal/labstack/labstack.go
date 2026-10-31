@@ -51,3 +51,13 @@ type ClonePresentation = e2e.ClonePresentation
 type IngressCounter = e2e.IngressCounter
 type MemberIngressResult = e2e.MemberIngressResult
 type MemberIngressProof = e2e.MemberIngressProof
+
+type DeviceCounters = e2e.DeviceCounters
+type EstablishedTransports = e2e.EstablishedTransports
+type RelayPath = e2e.RelayPath
+type UsageSnapshot = e2e.UsageSnapshot
+type InstallerHashes = e2e.InstallerHashes
+type InstallerOutcome = e2e.InstallerOutcome
+
+type MemberTransportStatus = e2e.MemberTransportStatus
+type DNSPathObservation = e2e.DNSPathObservation
