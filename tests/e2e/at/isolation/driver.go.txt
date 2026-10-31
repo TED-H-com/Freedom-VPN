@@ -2044,16 +2044,31 @@ chmod 755 /usr/local/bin/fvpn-e2e-nodeconfig
 	return true
 }
 
-// The shared supervisor truncates its log on process replacement. Retain each
-// source segment before the harness requests a restart or clone preparation.
+// Keep the original open file descriptors across supervisor truncation. A
+// rename before replacement retains shutdown writes as well as prior lines;
+// measurement changes no product decision or logging verbosity.
 func (x *isolationRun) retainReasonLogs(label string) {
 	for _, name := range []string{"agent", "watchdog"} {
-		raw, err := exec.Command("docker", "exec", x.r.lab.node, "cat", "/var/lib/vpn-node/e2e/"+name+".log").Output()
-		if err != nil {
-			x.t.Errorf("reason log retention %s/%s failed", name, label)
+		source := "/var/lib/vpn-node/e2e/" + name + ".log"
+		if label != "final" {
+			_, err := exec.Command("docker", "exec", x.r.lab.node, "sh", "-c", `mv -- "$1" "$2"; : > "$1"`, "isolation-log-rotation", source, source+"."+label).CombinedOutput()
+			if err != nil {
+				x.t.Errorf("reason log rotation %s/%s failed", name, label)
+			}
 			continue
 		}
-		_ = iso.WriteExtra(x.dir, name+"-"+label+".log.txt", string(raw))
+		for _, segment := range []string{"before-restart", "before-clone", "final"} {
+			path := source
+			if segment != "final" {
+				path += "." + segment
+			}
+			raw, err := exec.Command("docker", "exec", x.r.lab.node, "cat", path).Output()
+			if err != nil {
+				x.t.Errorf("reason log retention %s/%s failed", name, segment)
+				continue
+			}
+			_ = iso.WriteExtra(x.dir, name+"-"+segment+".log.txt", string(raw))
+		}
 	}
 }
 
