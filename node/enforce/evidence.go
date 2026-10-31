@@ -1,8 +1,6 @@
 package enforce
 
 import (
-	"crypto/sha256"
-	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -10,6 +8,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 )
 
@@ -17,7 +16,8 @@ import (
 // Generation is the candidate generation, not an acknowledgement. Phase is
 // load, pre_apply, or verify. Rejected retains the exact deciding attachment
 // and object even when it falls outside the bounded sample of other reads.
-// SHA256 covers the sorted, sanitized full read, never packet selectors.
+// SHA256 covers the retained bounded rows and total counts using RFC 8785,
+// never packet selectors. It is not a digest of omitted raw kernel data.
 // This is a library/report-only value, not a new HTTP contract field.
 type TCSummary struct {
 	Generation decstr.U64      `json:"generation"`
@@ -106,9 +106,16 @@ func (ev *ServingEvidence) retainTC(generation uint64, phase string, err error) 
 		s.Objects += len(r.Objects)
 		reads = append(reads, cleanTCRead(r))
 	}
-	sort.Slice(reads, func(i, j int) bool { return tcJSON(reads[i]) < tcJSON(reads[j]) })
-	h := sha256.Sum256([]byte(tcJSON(reads)))
-	s.SHA256 = hex.EncodeToString(h[:])
+	sort.Slice(reads, func(i, j int) bool {
+		// Preserve nonempty/error attachments before spending the bound on
+		// empty blocks. A clsact rejection must not hide its egress actions.
+		iActive := len(reads[i].Objects) > 0 || reads[i].Error != ""
+		jActive := len(reads[j].Objects) > 0 || reads[j].Error != ""
+		if iActive != jActive {
+			return iActive
+		}
+		return tcJSON(reads[i]) < tcJSON(reads[j])
+	})
 	var check *CheckError
 	if errors.As(err, &check) && check.tc != nil {
 		r, truncated := boundTCRead(cleanTCRead(*check.tc))
@@ -117,6 +124,9 @@ func (ev *ServingEvidence) retainTC(generation uint64, phase string, err error) 
 		// Put the deciding row first so their own truncation cannot discard it.
 		selected := []TCReadEvidence{r}
 		for _, other := range reads {
+			if other.Interface == r.Interface && other.Attachment == r.Attachment && len(other.Objects) > len(r.Objects) {
+				s.Truncated = true
+			}
 			if other.Interface != r.Interface || other.Attachment != r.Attachment {
 				selected = append(selected, other)
 			}
@@ -130,6 +140,14 @@ func (ev *ServingEvidence) retainTC(generation uint64, phase string, err error) 
 		r, truncated := boundTCRead(reads[i])
 		reads[i], s.Truncated = r, s.Truncated || truncated
 	}
+	// Bounded ASCII tokens and 16*4*4 entries fit well below canonjson.MaxBytes.
+	// No unsupported numbers or types occur in this projection.
+	s.SHA256, _ = canonjson.HashHex([]byte(tcJSON(struct {
+		Reads     int              `json:"reads"`
+		Objects   int              `json:"objects"`
+		Truncated bool             `json:"truncated"`
+		TC        []TCReadEvidence `json:"tc"`
+	}{s.Reads, s.Objects, s.Truncated, reads})))
 	ev.TC, ev.TCSummary = reads, s
 }
 

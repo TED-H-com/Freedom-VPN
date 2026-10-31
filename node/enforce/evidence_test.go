@@ -111,3 +111,16 @@ func TestISO_F6_LoadFailureRetainsAttachment(t *testing.T) {
 		t.Fatal("raw error leaked")
 	}
 }
+
+func TestISO_F6_PopulatedAttachmentsPrecedeEmptyBlocks(t *testing.T) {
+	ev := ServingEvidence{}
+	for i := range 20 {
+		ev.TC = append(ev.TC, TCReadEvidence{Interface: "fv-a", Attachment: fmt.Sprintf("1:%x", i)})
+	}
+	rejected := TCReadEvidence{Interface: "fv-z", Attachment: "qdisc", Objects: []TCObject{{Kind: "clsact", Handle: "ffff:", Parent: "ffff:fff1"}}}
+	ev.TC = append(ev.TC, rejected, TCReadEvidence{Interface: "fv-z", Attachment: "egress", Objects: []TCObject{{Kind: "matchall", Actions: []string{"skbedit"}}}})
+	ev.retainTC(14, "verify", tcCheck(rejected, &rejected.Objects[0]))
+	if ev.TC[0].Attachment != "qdisc" || ev.TC[1].Attachment != "egress" || len(ev.TC) != 16 || !ev.TCSummary.Truncated {
+		t.Fatalf("lost populated attachment behind empty blocks: %+v", ev.TC)
+	}
+}
