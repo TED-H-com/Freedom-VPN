@@ -155,6 +155,22 @@ func (e *Engine) saveMemberPath(ctx context.Context, path MemberPath, gen uint64
 	return true
 }
 
+// Pin a pre-D-100 record once at load, before a later baseline ACK can advance
+// appliedGen. This adds provenance only; it never reads or recaptures topology.
+func (e *Engine) migrateMemberPath(ctx context.Context) error {
+	if e.memberPath == nil || e.memberPath.Generation != 0 || e.appliedGen == 0 {
+		return nil
+	}
+	path := *e.memberPath
+	path.Generation = decstr.U64(e.appliedGen)
+	raw, _ := json.Marshal(path)
+	if err := e.store.SetMeta(ctx, "member_path", string(raw)); err != nil {
+		return err
+	}
+	e.memberPath = &path
+	return nil
+}
+
 func (e *Engine) checkMemberPath(ctx context.Context, model enforce.Model) bool {
 	path, ok := e.readMemberPath(ctx, model, e.memberPath)
 	if !ok {

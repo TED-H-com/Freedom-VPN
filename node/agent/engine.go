@@ -600,6 +600,9 @@ func (e *Engine) loadRuntime(ctx context.Context) error {
 			}
 		}
 	}
+	if err := e.migrateMemberPath(ctx); err != nil {
+		return err
+	}
 	if l, ok, err := e.store.Lease(ctx); err != nil {
 		return err
 	} else if ok {

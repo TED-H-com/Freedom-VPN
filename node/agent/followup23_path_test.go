@@ -2,6 +2,7 @@ package agent
 
 import (
 	"context"
+	"encoding/json"
 	"reflect"
 	"testing"
 
@@ -100,5 +101,31 @@ func TestD100_TopologyRefreshRequiresCleanNewerPublishedApply(t *testing.T) {
 				t.Fatal("same generation refreshed after restart")
 			}
 		})
+	}
+}
+
+func TestD100_LegacyTopologyGenerationPinsBeforeBaselineACK(t *testing.T) {
+	r := newRig(t)
+	alignControlClock(r)
+	serveBoundGeneration(t, r)
+	path := MemberPath{Interface: "fv-fh", Addresses: []string{"TEST ONLY topology hash"}}
+	raw, err := json.Marshal(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := r.eng.store.SetMeta(t.Context(), "member_path", string(raw)); err != nil {
+		t.Fatal(err)
+	}
+	restartEngine(t, r, r.plane)
+	if r.eng.memberPath.Generation != 2 {
+		t.Fatal("legacy capture generation not pinned")
+	}
+	// A newer baseline ACK is not a topology capture and cannot move the pin.
+	r.eng.appliedGen = 3
+	if err := r.eng.migrateMemberPath(t.Context()); err != nil {
+		t.Fatal(err)
+	}
+	if r.eng.memberPath.Generation != 2 {
+		t.Fatal("baseline ACK changed capture provenance")
 	}
 }
