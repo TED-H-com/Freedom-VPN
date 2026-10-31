@@ -51,6 +51,9 @@ func Upgrade(ctx context.Context, env *Env, manifestPath, artifactPath, trustPat
 		return nil, err
 	}
 	defer lk.Release()
+	if err := reconcileMarker(ctx, env); err != nil {
+		return nil, err
+	}
 
 	id := verified.Manifest.ReleaseId.String()
 	dest := l.releaseDir(id)
