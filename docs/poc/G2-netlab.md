@@ -219,11 +219,26 @@ The lab proof is `TestForeign_TableBeforeFvpn`. Table `inet fvobs` forward prior
 
 The measured line is `SUMMARY FOREIGN accept_ctunku=1 accept_uplink=0 verdict=ISOLATION_POLICY_INVALID mangle_exit=3 table_kept=1 recovered=1`.
 
+## Loopback-scoped foreign rules
+
+A foreign rule whose native `match` restricts the packet to loopback cannot act on forwarded member traffic. Forwarded packets do not carry loopback addresses, and the kernel drops a loopback-addressed packet that arrives on a non-loopback interface. `VerifyServing` classifies that rule as `loopback_scoped` and does not fail closed on it.
+
+The proof is read from the ruleset JSON. A native `payload` match on `ip saddr`, `ip daddr`, `ip6 saddr`, or `ip6 daddr` proves scope when the right-hand side is an address, a prefix, a range, or an anonymous set and every address in it is inside `127.0.0.0/8`, or, for IPv6, equal to `::1`. `127.0.0.0/8`, `127.0.0.11`, and `::1` prove scope. `127.0.0.0/7` and `0.0.0.0/0` do not. `meta l4proto` and port matches neither prove scope nor cancel a proof. An `xt` match is an opaque extension and proves nothing. A rule with no native address match proves nothing. Chain and table names prove nothing, including `DOCKER_OUTPUT` and `DOCKER_POSTROUTING`.
+
+`LoopbackEvidence` records each such rule: class `loopback_scoped`, table, family, chain, hook, rule handle, and the proving match. A base chain whose every rule is loopback-scoped is tolerated on a hook member traffic crosses. A `jump` or `goto` is tolerated when every rule of the target is loopback-scoped or otherwise safe under the accept, continue, counter, and log rule above. The jump is still walked when the jumping rule itself is loopback-scoped, so an unscoped rule in the target stays a bypass and the verdict names that rule's handle. An `xt` target, or any other opaque statement, reached through a rule that is not loopback-scoped is still `FLOWTABLE_BYPASS` or the follow-up 10 reason for that statement.
+
+Docker's embedded DNS NAT is this case. On a user-defined network the lab node container has `table ip nat`. Base chain `OUTPUT` (hook `output`, priority -100, policy accept) jumps to `DOCKER_OUTPUT`, whose rules match `ip daddr 127.0.0.11` and carry an `xt` target `DNAT`. Base chain `POSTROUTING` (hook `postrouting`, priority 100, policy accept) matches `ip daddr 127.0.0.11` and jumps to `DOCKER_POSTROUTING`, whose rules match `ip saddr 127.0.0.11` and carry an `xt` target `SNAT`. The lab keeps that NAT. `netlab-up` attaches the container to the `$(FVPN_LAB_PREFIX)-dns` bridge, and `topology.sh` removes the default route that bridge adds. `TestDockerDNS_LoopbackScopedServes` publishes a serving generation with those rules present. A non-admitted inject still increments `ctunku` and leaves the uplink empty.
+
+Production exit nodes must not run Docker, or any other NAT, for non-loopback traffic. A `MASQUERADE` or `xt` `SNAT` of a container subnet is not loopback-scoped and stays `FLOWTABLE_BYPASS`.
+
+The measured line is `SUMMARY LOOPBACK dns=1 serving=1 class=loopback_scoped postrouting_saddr=2 postrouting_daddr=1 ctunku=1 uplink=0`.
+
 ## Decisions
 
 - D-019: usage is the inner IPv4 total length admitted at the forward hook (§10.2). Bytes later dropped by HTB are not subtracted. "Delivered bytes" is not a ledger rule. The lab counters are the meter definition for the node agent.
 - Serving forward rules bind the member interface and the uplink. Upload uses `oifname` uplink. Download uses `iifname` uplink. The baseline drop does not.
 - A base chain outside `inet fvpn` that only accepts, continues, counts, or logs does not bypass the `fvpn` drop. A chain on a hook member traffic crosses that rewrites, marks, offloads, or drops fails `VerifyServing` closed. The agent still writes only `inet fvpn`. The measurement is `## Tables outside inet fvpn`.
+- D-079: a foreign rule whose native match restricts the packet to `127.0.0.0/8` or `::1` is `loopback_scoped` and is not a bypass. An `xt` match does not prove scope. Production exit nodes must not run Docker or any other NAT for non-loopback traffic. A container-subnet `MASQUERADE` stays `FLOWTABLE_BYPASS`. The measurement is `## Loopback-scoped foreign rules`.
 - D-063: the synthetic probe is an optional `Model.Probe`. Nil removes it through the same render path. The kernel element timeout is the authorization, capped by `ProbeMaxSeconds` and by `TimeoutCeilSeconds` or the remaining lifetime already in the kernel. At most four destinations, none overlapping a member binding. `Verify` fails closed on a wide prefix, an unparsed element, an original timeout above the ceiling, or a remaining lifetime past the model window. `probe_up` and `probe_down` are not member usage. The agent authenticates the test peer before it supplies the `/32`.
 - Clock-step expiry (§16.3) stays under 待實測. The kernel set-timeout evidence is accepted for Gate G2. This lab does not call `date -s` and does not change the host clock.
 - §11.7 production windows remain a recommended starting point. The short window is what CI runs.
