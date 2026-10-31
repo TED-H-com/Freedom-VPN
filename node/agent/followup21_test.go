@@ -55,7 +55,11 @@ func assertLiveWithdrawn(t *testing.T, r *rig, generation uint64, message string
 	if r.eng.serving || r.eng.policyExpires != 0 || r.eng.appliedModel != nil || r.eng.expectServing.Load() {
 		t.Fatal("retained serving evidence survived withdrawal")
 	}
-	if r.eng.applyError == nil || r.eng.applyError.Code != api.ErrorCodeHEALTHCHECKFAILED || r.eng.applyError.Message != message {
+	wantCode := api.ErrorCodeHEALTHCHECKFAILED
+	if message == "TC_FOREIGN_FILTER" {
+		wantCode = api.ErrorCodeTCFOREIGNFILTER
+	}
+	if r.eng.applyError == nil || r.eng.applyError.Code != wantCode || r.eng.applyError.Message != message {
 		t.Fatalf("verification error: %+v", r.eng.applyError)
 	}
 	rep, ok := r.srv.LastObservation()
@@ -104,7 +108,7 @@ func TestD085_ISO01_BetweenApplyInjection(t *testing.T) {
 	if !mustBeat(t, r).Serving || r.eng.appliedGen != 3 || r.eng.applyError != nil || r.plane.applies != before+1 {
 		t.Fatalf("clean full Apply did not restore serving: serving=%v gen=%d error=%+v applies=%d before=%d reasons=%v lease=%d", r.eng.serving, r.eng.appliedGen, r.eng.applyError, r.plane.applies, before, r.eng.decision.Reasons, r.eng.lease.ConfigGeneration)
 	}
-	t.Log("generation 2 serving -> filter injected -> next heartbeat non-serving/safety_check_failed; HEALTH_CHECK_FAILED/TC_FOREIGN_FILTER -> desired 3 accepted, ACK remains 2 -> filter removed, full Apply -> generation 3 serving")
+	t.Log("generation 2 serving -> filter injected -> next heartbeat non-serving/safety_check_failed; TC_FOREIGN_FILTER -> desired 3 accepted, ACK remains 2 -> filter removed, full Apply -> generation 3 serving")
 }
 
 func TestD085_InjectionAfterApplyBeforeAck(t *testing.T) {
