@@ -110,6 +110,11 @@ For the installer, repeat fresh up/down and select
 `^TestE2E_Followup21Installer$` with the same foreground/tag/count flags.
 The [scenario ledger](scenarios.md) preserves each original status;
 [gates.md](gates.md) records actual exits, including the aborted setup.
-Final offline gates run in the required order. Live execution is amd64;
+All required final offline gates pass in order, including committed-evidence
+hygiene, handover, whole-module lint and amd64/arm64 builds. The corrected
+final audit verifies zero owned Docker containers/networks/volumes/images,
+all 114 archive pins, immutable request joins and local documentation links.
+The first supplemental scope audit used a direct comparison to advancing main;
+its false scope failure and corrected `main...HEAD` audit are both retained. Live execution is amd64;
 arm64 cross-compilation is not physical arm64 acceptance. The shared PostgreSQL
 is not reconfigured, and final owned Docker inventory must be zero.
