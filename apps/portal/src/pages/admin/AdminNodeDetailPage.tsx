@@ -274,17 +274,23 @@ export function AdminNodeDetailPage(): React.ReactElement {
         'config_generation' in updated.data
           ? (updated.data.config_generation.applied ?? null)
           : (node.config_generation.applied ?? null);
-      setSavedSnapshot({
-        desired: nextDesired,
-        applied: nextApplied,
-      });
       if ('config_generation' in updated.data) {
         queryClient.setQueryData(['admin', 'node', nodeId], {
           data: updated.data,
           etag: updated.etag,
         });
+      } else if (updated.etag) {
+        queryClient.setQueryData(
+          ['admin', 'node', nodeId],
+          (prev: { data: typeof node; etag: string | null } | undefined) =>
+            prev ? { ...prev, etag: updated.etag } : prev,
+        );
       }
       await queryClient.invalidateQueries({ queryKey: ['admin', 'node', nodeId] });
+      setSavedSnapshot({
+        desired: nextDesired,
+        applied: nextApplied,
+      });
     } catch (err) {
       if (err instanceof ApiError && err.status === 412) {
         setConflictError(err);

@@ -293,11 +293,31 @@ test.describe('Freedom VPN Portal Live Control Plane E2E Suite (§18, AT01–AT0
       await expect(page.getByTestId('desired-config-gen')).toBeVisible();
       await expect(page.getByTestId('observed-config-gen')).toBeVisible();
 
-      // 3. Perform a valid PATCH with If-Match
+      // 3. Perform a valid PATCH with If-Match and wait for the post-save GET refetch to settle before bumping
       await expect(page.locator('#edit-node-name')).toHaveValue('tw-tpe-01');
       await page.locator('#edit-node-notes').fill('Updated note via E2E step 1');
+      const patch200Promise = page.waitForResponse(
+        (res) =>
+          res.url().includes(`/api/v1/admin/nodes/${tpeNode.node_id}`) &&
+          res.request().method() === 'PATCH',
+      );
+      const postPatchGetPromise = page.waitForResponse(
+        (res) =>
+          res.url().includes(`/api/v1/admin/nodes/${tpeNode.node_id}`) &&
+          res.request().method() === 'GET',
+      );
       await page.getByTestId('save-node-patch-btn').click();
+      const patch200Res = await patch200Promise;
+      expect([200, 202]).toContain(patch200Res.status());
+      const postPatchGetRes = await postPatchGetPromise;
+      expect(postPatchGetRes.status()).toBe(200);
+      const postPatchNode = (await postPatchGetRes.json()) as {
+        resource_version: string;
+      };
       await expect(page.getByTestId('saved-pending-apply-banner')).toBeVisible();
+      await expect(page.getByTestId('node-detail-meta')).toContainText(
+        `ETag: "${postPatchNode.resource_version}"`,
+      );
 
       // 4. Bump node resource_version concurrently on the backend while browser holds stale ETag
       const bumpRes = await request.post(`${BASE_URL}/__e2e/bump-node-version`, {
@@ -307,12 +327,26 @@ test.describe('Freedom VPN Portal Live Control Plane E2E Suite (§18, AT01–AT0
 
       // 5. Submit PATCH with stale ETag -> expect 412 RESOURCE_VERSION_CONFLICT and ConflictDialog
       await page.locator('#edit-node-notes').fill('Stale write attempt');
+      const patch412Promise = page.waitForResponse(
+        (res) =>
+          res.url().includes(`/api/v1/admin/nodes/${tpeNode.node_id}`) &&
+          res.request().method() === 'PATCH',
+      );
       await page.getByTestId('save-node-patch-btn').click();
+      const patch412Res = await patch412Promise;
+      expect(patch412Res.status()).toBe(412);
 
       await expect(page.getByTestId('conflict-dialog')).toBeVisible();
 
       // 6. Click reload in ConflictDialog -> verify latest version & concurrent notes load cleanly
+      const reloadGetPromise = page.waitForResponse(
+        (res) =>
+          res.url().includes(`/api/v1/admin/nodes/${tpeNode.node_id}`) &&
+          res.request().method() === 'GET',
+      );
       await page.getByTestId('conflict-reload-btn').click();
+      const reloadGetRes = await reloadGetPromise;
+      expect(reloadGetRes.status()).toBe(200);
       await expect(page.getByTestId('conflict-dialog')).toHaveCount(0);
       await expect(page.locator('#edit-node-notes')).toHaveValue(
         'Concurrent operator edit',
@@ -652,21 +686,59 @@ test.describe('Freedom VPN Portal Live Control Plane E2E Suite (§18, AT01–AT0
     ).toContainText('rules=1420');
 
     // 412 conflict handling on PUT /publication with stale ETag
+    const preBumpGetRes = await request.get(
+      `${BASE_URL}/api/v1/admin/nodes/${tpeNode.node_id}`,
+    );
+    expect(preBumpGetRes.status()).toBe(200);
+    const preBumpNode = (await preBumpGetRes.json()) as {
+      resource_version: string;
+    };
+    await expect(page.getByTestId('node-detail-meta')).toContainText(
+      `ETag: "${preBumpNode.resource_version}"`,
+    );
+
     const bumpRes = await request.post(`${BASE_URL}/__e2e/bump-node-version`, {
       data: { node_id: tpeNode.node_id },
     });
     expect(bumpRes.ok()).toBeTruthy();
+    const bumpedBody = (await bumpRes.json()) as { resource_version: string };
     await page.getByTestId('pub-group-checkbox-asia-premium').check();
+    const pub412Promise = page.waitForResponse(
+      (res) =>
+        res.url().includes(`/api/v1/admin/nodes/${tpeNode.node_id}/publication`) &&
+        res.request().method() === 'PUT',
+    );
     await page.getByTestId('publish-node-btn').click();
+    const pub412Res = await pub412Promise;
+    expect(pub412Res.status()).toBe(412);
     await expect(page.getByTestId('conflict-dialog')).toBeVisible();
+    const pubReloadGetPromise = page.waitForResponse(
+      (res) =>
+        res.url().includes(`/api/v1/admin/nodes/${tpeNode.node_id}`) &&
+        !res.url().includes('/publication') &&
+        res.request().method() === 'GET',
+    );
     await page.getByTestId('conflict-reload-btn').click();
+    const pubReloadGetRes = await pubReloadGetPromise;
+    expect(pubReloadGetRes.status()).toBe(200);
     await expect(page.getByTestId('conflict-dialog')).toHaveCount(0);
+    await expect(page.getByTestId('node-detail-meta')).toContainText(
+      `ETag: "${bumpedBody.resource_version}"`,
+    );
     await expect(page.getByTestId('pub-group-checkbox-asia-premium')).not.toBeChecked();
 
     // Replace exit group attachment set together with publication intent via PUT /publication
     await page.getByTestId('pub-group-checkbox-asia-premium').check();
     await expect(page.getByTestId('pub-group-checkbox-asia-premium')).toBeChecked();
+    const pub202GetPromise = page.waitForResponse(
+      (res) =>
+        res.url().includes(`/api/v1/admin/nodes/${tpeNode.node_id}`) &&
+        !res.url().includes('/publication') &&
+        res.request().method() === 'GET',
+    );
     await page.getByTestId('publish-node-btn').click();
+    const pub202GetRes = await pub202GetPromise;
+    expect(pub202GetRes.status()).toBe(200);
     await waitForOperationHeadline(
       page,
       request,
@@ -902,11 +974,24 @@ test.describe('Freedom VPN Portal Live Control Plane E2E Suite (§18, AT01–AT0
       // 4. Return to /admin/settings and reload to see the new value (3600)
       await page.goto('/admin/settings');
       await expect(page.getByTestId('admin-settings-page')).toBeVisible();
+      const reloadFleetConfigGetPromise = page.waitForResponse(
+        (res) =>
+          res.url().includes('/api/v1/admin/fleet-config') &&
+          res.request().method() === 'GET',
+      );
       await page.reload();
+      const reloadFleetConfigGetRes = await reloadFleetConfigGetPromise;
+      expect(reloadFleetConfigGetRes.status()).toBe(200);
+      const reloadedFleetConfig = (await reloadFleetConfigGetRes.json()) as {
+        resource_version: string;
+      };
       await expect(page.getByTestId('admin-settings-page')).toBeVisible();
       await expect(page.getByTestId('fleet-config-current-seconds')).toHaveText('3600 s');
       await expect(page.getByTestId('fleet-config-lease-seconds-input')).toHaveValue(
         '3600',
+      );
+      await expect(page.getByTestId('fleet-config-etag')).toHaveText(
+        `ETag: "${reloadedFleetConfig.resource_version}"`,
       );
 
       // 5. Provoke a 412 RESOURCE_VERSION_CONFLICT by advancing the resource via API while the page holds the stale ETag
@@ -951,7 +1036,14 @@ test.describe('Freedom VPN Portal Live Control Plane E2E Suite (§18, AT01–AT0
       await expect(page.getByTestId('conflict-dialog')).toBeVisible();
 
       // Reload from conflict dialog to load the latest version (1800)
+      const conflictReloadGetPromise = page.waitForResponse(
+        (res) =>
+          res.url().includes('/api/v1/admin/fleet-config') &&
+          res.request().method() === 'GET',
+      );
       await page.getByTestId('conflict-reload-btn').click();
+      const conflictReloadGetRes = await conflictReloadGetPromise;
+      expect(conflictReloadGetRes.status()).toBe(200);
       await expect(page.getByTestId('conflict-dialog')).toHaveCount(0);
       await expect(page.getByTestId('fleet-config-current-seconds')).toHaveText('1800 s');
       await expect(page.getByTestId('fleet-config-etag')).toHaveText(
