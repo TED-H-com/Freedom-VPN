@@ -1,4 +1,4 @@
-# AT14–AT19 (§19): usage metering, ledger and Fair-Use acceptance targets.
+# AT14–AT19 (§19), AT20 (ENR-05 extension): usage metering, ledger and Fair-Use acceptance targets.
 # Assigned stack instance: FVPN_E2E_PREFIX=w4-usage FVPN_E2E_PORT_BASE=48000.
 
 export GOTOOLCHAIN := local
@@ -9,7 +9,7 @@ FVPN_E2E_PORT_BASE ?= 48000
 AT_USAGE_STATICCHECK := honnef.co/go/tools/cmd/staticcheck@v0.8.2
 AT_USAGE_PKGS := ./tests/e2e/at/usage/...
 
-at-usage-disk = set -eu; mkdir -p .agent/tmp; at_tmp=$$(mktemp -d "$$(pwd)/.agent/tmp/at-usage.XXXXXX"); trap 'rm -rf "$$at_tmp"' EXIT; export TMPDIR="$$at_tmp" GOTMPDIR="$$at_tmp";
+at-usage-disk = set -eu; mkdir -p .agent/tmp; at_tmp="$$(pwd)/.agent/tmp"; export TMPDIR="$$at_tmp" GOTMPDIR="$$at_tmp";
 
 LINT_TARGETS += at-usage-lint
 TEST_TARGETS += at-usage-test
@@ -34,4 +34,4 @@ at-usage-lint:
 at-usage-build:
 	@$(at-usage-disk) for arch in amd64 arm64; do \
 		GOOS=linux GOARCH=$$arch go test -c -tags e2e -o "$$at_tmp/at-usage-$$arch.test" ./tests/e2e/at/usage; \
-	done
+	done; rm -f "$$at_tmp/at-usage-amd64.test" "$$at_tmp/at-usage-arm64.test"

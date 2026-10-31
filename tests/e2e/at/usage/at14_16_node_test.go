@@ -309,6 +309,7 @@ func RunAT16Mechanisms(t *testing.T) ([]MechanismCheck, map[string]any) {
 		BaselineOK:    true,
 		StorageOK:     true,
 		DesiredOK:     true,
+		Desired:       &api.DesiredState{ExpiresAt: now.Add(time.Hour)},
 		LeaseFresh:    true,
 		LeaseMonoSent: 30 * time.Second,
 		ReleaseID:     relID,

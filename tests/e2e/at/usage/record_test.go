@@ -102,7 +102,7 @@ func TestCommittedEvidenceFiles_ValidAndHygieneClean(t *testing.T) {
 		t.Skip("docs/e2e/at/usage not found")
 	}
 
-	cases := []string{"AT14", "AT15", "AT16", "AT17", "AT18", "AT19"}
+	cases := []string{"AT14", "AT15", "AT16", "AT17", "AT18", "AT19", "AT20"}
 	for _, id := range cases {
 		jsonPath := filepath.Join(evidenceDir, id+".json")
 		mdPath := filepath.Join(evidenceDir, id+".md")
@@ -148,7 +148,7 @@ func TestCommittedEvidenceFiles_ValidAndHygieneClean(t *testing.T) {
 		}
 	}
 	histDir := filepath.Join(evidenceDir, "history/initial")
-	for _, id := range cases {
+	for _, id := range cases[:6] {
 		for _, ext := range []string{".json", ".md"} {
 			p := filepath.Join(histDir, id+ext)
 			if raw, err := os.ReadFile(p); err != nil || len(raw) == 0 {
