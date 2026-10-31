@@ -19,6 +19,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx"
 	"github.com/TED-H-com/Freedom-VPN/internal/signing"
+	"github.com/TED-H-com/Freedom-VPN/internal/usage"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"github.com/TED-H-com/Freedom-VPN/pkg/envelope"
@@ -108,7 +109,12 @@ func (r *Runtime) CompileControlState(ctx context.Context, node, incarnation uui
 		var raw []byte
 		var tag string
 		var refs []uuid.UUID
-		e = tx.QueryRow(ctx, `SELECT e.envelope,e.etag,s.policy_refs FROM desired_state_envelopes e JOIN desired_states s ON s.id=e.desired_state_id WHERE e.node_id=$1 AND e.incarnation_id=$2`, node, incarnation).Scan(&raw, &tag, &refs)
+		var restorePending bool
+		e = tx.QueryRow(ctx, `SELECT e.envelope,e.etag,s.policy_refs,
+			EXISTS(SELECT 1 FROM operations o WHERE o.resource_type='node' AND o.resource_id=e.node_id
+			 AND o.principal=$3 AND o.status<>'succeeded')
+			FROM desired_state_envelopes e JOIN desired_states s ON s.id=e.desired_state_id
+			WHERE e.node_id=$1 AND e.incarnation_id=$2`, node, incarnation, usage.RestoreObservationPrincipal).Scan(&raw, &tag, &refs, &restorePending)
 		if e != nil && !errors.Is(e, pgx.ErrNoRows) {
 			return e
 		}
@@ -116,7 +122,9 @@ func (r *Runtime) CompileControlState(ctx context.Context, node, incarnation uui
 		var cachedResult *desiredstate.CompiledDesiredState
 		// Concrete revision IDs matter even if their maximum generation did not
 		// change. Member/FUP/binding inputs are compared after DB compilation below.
-		if e == nil && json.Unmarshal(raw, &cached) == nil && cached.Signed.ConfigGeneration.String() == generationText && cached.Signed.ExpiresAt.After(now.Add(time.Duration(r.Config.DesiredStateSeconds)*time.Second/2)) && slices.Equal(refs, snap.PolicyRefs) {
+		// The first post-restore compile must persist its new offer and release
+		// the observation hold, even when retained generation/content match.
+		if e == nil && !restorePending && json.Unmarshal(raw, &cached) == nil && cached.Signed.ConfigGeneration.String() == generationText && cached.Signed.ExpiresAt.After(now.Add(time.Duration(r.Config.DesiredStateSeconds)*time.Second/2)) && slices.Equal(refs, snap.PolicyRefs) {
 			trust, e := r.Provider.TrustBundle(ctx)
 			if e != nil {
 				return e
