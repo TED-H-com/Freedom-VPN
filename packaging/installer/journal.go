@@ -285,6 +285,10 @@ func (j *Journal) MkdirAll(path string, mode os.FileMode) error {
 
 // WriteFile records the previous bytes, then replaces the file.
 func (j *Journal) WriteFile(path string, data []byte, mode os.FileMode) error {
+	return j.replaceFile(path, mode, func() error { return fsutil.WriteFileAtomic(path, data, mode) })
+}
+
+func (j *Journal) replaceFile(path string, mode os.FileMode, write func() error) error {
 	prev := "absent"
 	prevMode := ""
 	backup := ""
@@ -310,7 +314,7 @@ func (j *Journal) WriteFile(path string, data []byte, mode os.FileMode) error {
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return err
 	}
-	if err := fsutil.WriteFileAtomic(path, data, mode); err != nil {
+	if err := write(); err != nil {
 		return err
 	}
 	return os.Chmod(path, mode)
