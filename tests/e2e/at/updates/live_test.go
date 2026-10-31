@@ -472,6 +472,12 @@ func (s *updatesFollowup) execute(id string, interrupt bool) {
 	})
 	probe.finish()
 	s.note(id, "updater_finished", finished)
+	for _, name := range []string{"updater.out", "agent.log", "watchdog.log"} {
+		raw, err := s.r.lab.docker(s.r.lab.node, "tail", "-n", "60", "/var/lib/vpn-node/e2e/"+name)
+		if err == nil {
+			s.note(id, "process_"+name, string(raw))
+		}
+	}
 	s.r.t.Logf("%s updater finished=%t interrupt=%t", id, finished, interrupt)
 	raw, _ := os.ReadFile(filepath.Join(dir, "updater-result.json"))
 	var result struct {
@@ -492,6 +498,8 @@ type updatesJournal struct {
 	TxnID           string            `json:"txn_id"`
 	Stage           string            `json:"stage"`
 	Error           string            `json:"error"`
+	ErrorStage      string            `json:"error_stage"`
+	Events          []string          `json:"events"`
 	JobError        string            `json:"job_error"`
 	Current         string            `json:"current"`
 	LastGood        string            `json:"last_good"`
@@ -546,6 +554,7 @@ func (s *updatesFollowup) journal(release uuid.UUID) updatesJournal {
 	}
 	defer db.Close()
 	var health, candidate string
+	_ = db.QueryRow(`SELECT coalesce(error_stage,'') FROM txns WHERE release_id=? ORDER BY updated_at DESC LIMIT 1`, release.String()).Scan(&view.ErrorStage)
 	_ = db.QueryRow(`SELECT txn_id,stage,coalesce(error_code,''),coalesce(health_json,''),coalesce(candidate_health_json,'') FROM txns WHERE release_id=? ORDER BY updated_at DESC LIMIT 1`, release.String()).Scan(&view.TxnID, &view.Stage, &view.Error, &health, &candidate)
 	_ = json.Unmarshal([]byte(health), &view.Health)
 	_ = json.Unmarshal([]byte(candidate), &view.CandidateHealth)
@@ -563,6 +572,7 @@ func (s *updatesFollowup) journal(release uuid.UUID) updatesJournal {
 		if rows.Scan(&raw) != nil {
 			continue
 		}
+		view.Events = append(view.Events, raw)
 		var event map[string]any
 		if json.Unmarshal([]byte(raw), &event) != nil || event["kind"] != "health_attest" {
 			continue

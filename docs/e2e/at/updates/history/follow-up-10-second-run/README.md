@@ -1,0 +1,5 @@
+# Follow-up 10 second diagnostic run
+
+Run `90088da7-931e-493f-bf35-cfbc95ca3775`, harness `d0d80a1b`, product base `fb5e0025`. Install/default-umask seed pass. The initial missing-checkpoint attempt seals CHECKPOINT_FAILED, apply/replay exit 1 and recover 2; the product sender accepts it and central establishes the eligible baseline. The subsequent higher apply obtains a correlated real checkpoint and succeeds locally with five passing health checks, but exits 2 because recovery entered from the previous blocked failure. An outbox-only harness reader missed the already acknowledged seals, so downstream receipt checks were not executed. The later run reads acknowledged payloads only after verifying their canonical hashes against local ACK history and measures initial success before the negative.
+
+Regular AT23 gets past final sampling but reaches recovery_required / ROLLBACK_FAILED without candidate attestation. No regular case passes; the later run must retain process diagnostics. These records are unchanged; no failed row is relabeled.
