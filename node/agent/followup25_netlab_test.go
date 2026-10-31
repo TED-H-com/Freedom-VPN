@@ -132,8 +132,13 @@ func followup25Renewals(t *testing.T, r *rig) {
 		}
 	}
 	var trace struct {
-		Packets    []struct{ Sent, Ingress, Egress int64 }
-		Start, End int64
+		Packets []struct {
+			Sent    int64 `json:"Sent,string"`
+			Ingress int64 `json:"Ingress,string"`
+			Egress  int64 `json:"Egress,string"`
+		}
+		Start int64 `json:"Start,string"`
+		End   int64 `json:"End,string"`
 	}
 	if err := json.NewDecoder(reader).Decode(&trace); err != nil {
 		t.Fatal(err, stderr.String())
@@ -213,5 +218,5 @@ while time.monotonic_ns()<end+80000000:
    if len(packet)>=46 and packet[12:14]==b'\x08\x00' and packet[23]==17 and packet[36:38]==struct.pack('!H',40099):
     seq=struct.unpack('!I',packet[42:46])[0]
     if seq<len(rows): rows[seq]['Ingress' if s==reads[0] else 'Egress']=at
-print(json.dumps({'Packets':rows,'Start':start,'End':time.monotonic_ns()}))
+print(json.dumps({'Packets':[{k:str(v) for k,v in row.items()} for row in rows],'Start':str(start),'End':str(time.monotonic_ns())}))
 `

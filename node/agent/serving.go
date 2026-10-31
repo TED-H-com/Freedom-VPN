@@ -31,10 +31,10 @@ func (e *Engine) verifyServingModel(ctx context.Context, model enforce.Model, as
 	readCtx, cancel := context.WithTimeout(ctx, e.servingReadTimeout())
 	defer cancel()
 	evidence, err := e.plane.VerifyServing(readCtx, model, assignments)
-	e.measureTiming(evidence, "live")
 	// Even an executor that returns success at the deadline cannot supply
 	// fresh evidence. Keep a specific CheckError when one accompanied it.
 	err = errors.Join(err, readCtx.Err())
+	e.measureTiming(evidence, "live")
 	e.retainServingRead(evidence, model.Generation, e.clock.Wall(), "live", err == nil)
 	if err == nil {
 		return true

@@ -42,6 +42,9 @@ def analyze(operations, renewal, expiry):
         span(t['operation'], ns(t, 'start_ns'), ns(t, 'end_ns'))
         assert ns(t, 'end_ns') <= ns(a, 'mono_before_ns')
         for v in t['verifications']:
+            if v['verified']:
+                assert v['nft_read']['ok'] and v['tc_read']['ok']
+                assert v['precision_read']['read_ok'] and v['precision_read']['verified']
             span('verifier', ns(v, 'start_ns'), ns(v, 'end_ns'))
             assert ns(t,'start_ns') <= ns(v,'start_ns') <= ns(v,'end_ns') <= ns(t,'end_ns')
             for label in ['nft_read', 'precision_read', 'tc_read']:
@@ -56,6 +59,8 @@ def analyze(operations, renewal, expiry):
             assert row['tc_sha256'] == t['verifications'][-1]['tc_sha256'], 'D-106 digest mismatch'
         if t['operation'] == 'apply':
             d = t['deadline']
+            if d['guard_released']:
+                assert d['install_ok'], 'release without successful install'
             if d['install_ok'] and d['guard_released']:
                 start, installed, release, end = [ns(d,k) for k in ['install_start_ns','installed_by_ns','release_start_ns','release_end_ns']]
                 assert ns(t,'start_ns') <= ns(d,'render_start_ns') <= start <= installed <= release <= end <= ns(t,'end_ns')
@@ -69,6 +74,8 @@ def analyze(operations, renewal, expiry):
                                    start=start, installed=installed, release=release, end=end))
     assert len(runs) == len(seen), 'run changed boot'
     assert guards and any(r.get('timing',{}).get('operation') == 'verify' for r in operations)
+    assert renewal['boot_id'] == expiry['boot_id'], 'packet traces changed boot'
+    assert renewal['boot_id'] in {b for _, b in runs}, 'packets and operations have different boots'
     packets = renewal['packets']
     assert all(int(p.get('ingress_ns',0)) > 0 for p in packets), 'missing member ingress'
     assert all(s['drops'] == 0 for s in renewal['capture_stats']+expiry['capture_stats'])
@@ -87,6 +94,8 @@ def analyze(operations, renewal, expiry):
     lo, hi = min(ns(p,'sent_ns') for p in packets), max(ns(p,'read_completion_ns') for p in packets)
     renewals = [r for r in operations if r.get('renewal',{}).get('new_lease') and lo <= ns(r['renewal'],'start_ns') <= hi]
     assert len(renewals) >= 2, 'two actual timed renewals required'
+    assert all(r['boot_id'] == renewal['boot_id'] for r in renewals)
+    assert ns(expiry,'deadline_ns') == ns(renewals[-1]['lease'],'node_deadline_ns'), 'expiry must use last accepted node deadline'
     d = ns(expiry,'deadline_ns')
     ps = expiry['packets']
     assert all(int(p.get('ingress_ns',0)) > 0 for p in ps)

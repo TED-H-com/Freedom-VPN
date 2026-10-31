@@ -104,5 +104,74 @@ traces. Both launchers remove their own prefixed containers and images.
 
 ## Measured results
 
-Pending the final run; the completed measurements and limitations are recorded
-here before hand-off.
+Final process run, 2026-10-31 at 13:04–13:06 UTC: generation 3 stayed fixed.
+Grant-ready → counted forwarding took **2.842420 s**; admission counters moved
+**1,404 → 12,060 bytes**. The qualifying and serving report IDs differ, and both
+were delivered before the one-hour periodic observation interval.
+
+The run retained **403 snapshots** (98 Applies, 299 standalone verifications,
+six renewal transactions), including blocked/failed operations. The two
+ordinary successful renewals during the measured stream are retained with
+request anchors and their accepted lease deadlines. Producer brackets over
+the entire provisional→granted→renewal→expiry capture are:
+
+| Producer bracket | Samples | Median | Worst |
+| --- | ---: | ---: | ---: |
+| Apply operation | 98 | 80.522598 ms | 111.687840 ms |
+| Final render → installed-by | 98 | 16.199167 ms | 27.132020 ms |
+| Install command | 98 | 16.101975 ms | 27.045925 ms |
+| Release command | 98 | 15.969551 ms | 28.742363 ms |
+| Outer guard bracket | 98 | 32.271094 ms | 51.114216 ms |
+| Complete verifier | 397 | 23.888295 ms | 44.653661 ms |
+| nft ruleset read | 397 | 2.601977 ms | 5.977605 ms |
+| Millisecond precision text read | 392 | 1.466713 ms | 3.664890 ms |
+| Aggregate tc read | 397 | 16.431154 ms | 28.096213 ms |
+
+The inner definitely-guarded interval had median **0.005385 ms**, maximum
+**0.010987 ms**. The kernel commits occur somewhere inside the install/release
+command brackets. Total Apply duration is not the D-104 100ms budget; the
+checked final-render→installed-by interval stayed within that bound.
+
+The independent **80ms dual-phase** renewal diagnostic delivered
+**1,506 / 1,518** probes (**12 losses**). All 12 had captured member ingress and
+no uplink egress. All 12 ingress read timestamps coincided with outer guard
+brackets; **10 loss windows overlapped an install-command bracket**, while
+two did not. This is command/capture correlation, not exact kernel drop timing.
+Every loss remains counted; strict renewal continuity is not a pass. There were
+zero capture drops and no unmatched loss ingress in this run.
+
+Whole-node expiry D=`35537916089829` ns passed the unchanged D-104 packet
+predicate: last positive **D−100.581476 ms**, first drop **D−63.888900 ms**,
+97 positives / 15 drops, no positive at/after D or after the first expiry drop.
+The final trace uses the last actually accepted node deadline, with no renewal
+after the harness holds lease responses. No cadence allowance was added.
+
+The preceding process run is also retained, not discarded: 395 snapshots,
+1,481/1,518 delivered, 37 losses, all 37 ingress timestamps in outer brackets,
+35 loss windows overlapping install. Its expiry offsets were
+−100.168232 / −63.890781 ms. Phase/scheduling differences change the loss count;
+neither run supports uninterrupted renewal availability.
+
+The separate live trace retained **477 snapshots across two process runs**:
+120 Applies, 339 live reads, 11 blocked audits and seven renewal transactions.
+It includes **14 failed operations** and **two Apply snapshots with both
+quarantine-recovery verifiers**. With 1ms dense probes over two ordinary
+renewals and 75 guarded Applies, **74,898 / 76,000** were delivered
+(**98.5500%**); all 1,102 loss ingress timestamps coincided with the library's
+outer guard brackets. Median/worst outer bracket was **29.063589 / 44.393668 ms**;
+final render→installed **14.148121 / 26.049629 ms**. Final phased expiry was
+**D−100.671926 ms / D−0.776235 ms**, 27 positives / seven drops, with no later
+positive. This extends the historical follow-up 25 trace without replacing it.
+
+Artifacts are retained in the lane's ignored `.agent/f27-evidence/`: the final
+process `assembled/`, preceding `assembled-first/`, and live
+`operations.jsonl`, `d104-renewals.json`, `d104-expiry.json`,
+`live-analysis.json`. Each includes the original integer/string clock evidence;
+the process `analysis.json` lists every loss and matching operation sequence.
+The live launcher returns private container-created artifacts to the invoking
+harness owner before cleaning up its container/image.
+
+Platform: Linux amd64, kernel `7.0.0-38-generic`, nftables `1.0.9`,
+iproute2 `6.1.0` / libbpf `1.3.0`. This is an agent/kernel/TLS fake-control lab;
+physical arm64, native NetBird and the full crash/reboot/updater/platform matrix
+remain 待實測. These measurements do not close the entire AT10 or AT13 matrix.

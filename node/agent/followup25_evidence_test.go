@@ -165,6 +165,9 @@ func TestD106_ProducerRetainsAuthoritativeSnapshot(t *testing.T) {
 	}
 	history := r.eng.containment.ReadAt
 	x.foreignTC = false
+	// Force the load-sensitive case: a kernel element's expires value must
+	// decay after the installation reserve, even between diagnostic reports.
+	time.Sleep(2 * enforce.DeadlineInstallBound)
 	ev, err = plane.VerifyServing(t.Context(), m, res.Plan.Assignments)
 	if err != nil {
 		t.Fatal(err)

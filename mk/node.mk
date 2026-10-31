@@ -60,6 +60,7 @@ node-verify: node-lint node-test node-build
 # Privileged. Brings the shared netlab container up under this task's name,
 # runs only tests/netlab/agent, then removes the container and the lab image.
 node-test-netlab: node-temp
+	python3 -B -m unittest discover -s tests/netlab/agent -p timing_analysis_test.py
 	@set -eu; \
 	status=0; \
 	$(NODE_ENV) $(NODE_GO) build -trimpath -o bin/fvpn-agent ./node/agent/cmd/fvpn-agent || status=$$?; \
