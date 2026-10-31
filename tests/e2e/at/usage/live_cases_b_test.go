@@ -911,7 +911,7 @@ func (s *liveSuite) writeDocs(records []Record) {
 		"- **Node ID**: `%s` (409 while active: `%s`)\n"+
 		"- **Retired Incarnation (`old`)**: `%s` (`state=retired`, `retire_reason=reinstall`, retained `upload_bytes=%s`, `download_bytes=%s`, unchanged after new traffic: `%t`)\n"+
 		"- **Active Incarnation (`new`)**: `%s` (`state=active`, initial `0/0`, after new traffic `upload_bytes=%s`, `download_bytes=%s`)\n"+
-		"- **Member Period Continuity (`member_usage_periods`)**: before re-enroll `total_bytes=%s`, after re-enroll `total_bytes=%s` (`unchanged=%t`), after new traffic `total_bytes=%s` (`accumulated=%t`)\n\n"+
+		"- **Member Period Continuity (`usage_rollups` / `GET /api/v1/member/usage`)**: before re-enroll `total_bytes=%s`, after re-enroll `total_bytes=%s` (`unchanged=%t`), after new traffic `total_bytes=%s` (`accumulated=%t`)\n\n"+
 		"## Upstream Product Blockers\n\n"+
 		"- **Owner `w1-netlab` / `w3-devstack-e2e` (regression introduced in PR #220 `2473acf`)**: `VerifyServing` (`node/enforce/verify_foreign.go:107`) rejects Docker Engine's built-in `table ip nat` `POSTROUTING -> DOCKER_POSTROUTING -> xt target \"SNAT\"` rule inside `node-netns` and `node2-netns` with `FLOWTABLE_BYPASS` (`\"table nat family ip hook postrouting priority 100 chain POSTROUTING statement xt\"`) whenever `Serve=true` (populated lease). See [requests.md](requests.md) for full root cause and exact lines.\n",
 		s.runID, nowUTC, s.build.GitCommit, s.build.GitDirty, assignedPrefix, assignedPrefix, assignedPortBase,
@@ -992,7 +992,7 @@ func (s *liveSuite) writeDocs(records []Record) {
 	reqs := fmt.Sprintf("# Upstream Blockers & Requests to Orchestrator (`w4-at-usage` — Follow-up 3)\n\n"+
 		"## 1. Active Upstream Blocker (Regression on `main` since PR #220 `2473acf`)\n\n"+
 		"### Blocker 1 (`w1-netlab` / `w3-devstack-e2e`): `VerifyServing` Rejects Docker Engine's `table ip nat` `POSTROUTING` Rule with `FLOWTABLE_BYPASS`\n\n"+
-		"- **Affected Cases**: `AT14`, `AT16`, `AT17`, `AT18`, `AT19` (`AT15` passes `1/1`; all Follow-up 3 central/protocol mechanisms — PR #222 Fair-Use recompile & `fair_use.applying` convergence, PR #206/#213/#216 D-067 provisional-lease convergence, and PR #210 `ENR-03` per-incarnation retained usage — are verified live on `fvpn-w4-usage`).\n"+
+		"- **Affected Cases**: `AT14`, `AT15`, `AT16`, `AT17`, `AT18`, `AT19` (all 6 live cases require a counted serving flow on the exit data plane; all Follow-up 3 central/protocol mechanisms — `AT15` mTLS batch ingest/recovery, `AT17` UTC month boundary/Portal totals, PR #222 Fair-Use recompile & `fair_use.applying` convergence, PR #206/#213/#216 D-067 provisional-lease convergence, and PR #210 `ENR-03` per-incarnation retained usage — are verified live on `fvpn-w4-usage`).\n"+
 		"- **Exact Code Locations**:\n"+
 		"  - `node/enforce/apply.go:102` (`if d.Serve { if err := e.plane.VerifyServing(ctx); err != nil { ... } }`)\n"+
 		"  - `node/enforce/verify_foreign.go:107` (`checkForeignEntry`: any `xt` statement inside any hook chain in any table fails with `CodeFlowtableBypass`: `\"table nat family ip hook postrouting priority 100 chain POSTROUTING statement xt\"`)\n"+
@@ -1011,7 +1011,7 @@ func (s *liveSuite) writeDocs(records []Record) {
 		"3. **Verified on `main` (PR #206, #213, #216) — D-067 Provisional-Lease Convergence (`AWAITING_MEMBER_GRANTS`)**:\n"+
 		"   - Measured on two real cycles (`bring_up`: `%d ms` ready->populated-lease; `agent_restart`: `%d ms` ready->populated-lease), both within `<= 65000 ms` (`60 s + 1 heartbeat`), reporting `AWAITING_MEMBER_GRANTS` on `lease`/`qos`/`source_binding` and 1 `errors[]` entry at `stage=lease` (never `LEASE_EXPIRED`).\n"+
 		"4. **Verified on `main` (PR #210) — `ENR-03` Per-Incarnation Retained Usage (`GET /api/v1/admin/nodes/{id}/incarnations`)**:\n"+
-		"   - Verified live on `node2` (`%s`): re-enrolling `node2` after counted traffic retired incarnation `%s` (`retire_reason=reinstall`, retained `upload_bytes=%s`, `download_bytes=%s`) and activated incarnation `%s` newest-first without altering `member_usage_periods` (`total_bytes=%s`), and subsequent traffic on `%s` accumulated on the same member period (`total_bytes=%s`) while `%s` stayed fixed.\n",
+		"   - Verified live on `node2` (`%s`): re-enrolling `node2` after counted traffic retired incarnation `%s` (`retire_reason=reinstall`, retained `upload_bytes=%s`, `download_bytes=%s`) and activated incarnation `%s` newest-first without altering `usage_rollups` / `GET /api/v1/member/usage` (`total_bytes=%s`), and subsequent traffic on `%s` accumulated on the same member period (`total_bytes=%s`) while `%s` stayed fixed.\n",
 		s.runID, s.build.GitCommit, s.nodeID, s.node2ID,
 		s.d067BringUp.ReadyObservationReportID, s.d067Restart.ReadyObservationReportID,
 		s.d067BringUp.ReadyToPopulatedLeaseMs, s.d067Restart.ReadyToPopulatedLeaseMs,

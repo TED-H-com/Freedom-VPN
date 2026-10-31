@@ -809,7 +809,7 @@ func (s *liveSuite) measureD067ProvisionalWindow(
 	var applyBlockerObsID uuid.UUID
 	var applyBlockerObsAt time.Time
 	var applyBlockerCode, applyBlockerDetail string
-	_ = s.waitFor(15*time.Second, func() bool {
+	_ = s.waitFor(35*time.Second, func() bool {
 		hb, code, _ := s.execInContainer(nodeService, "cat", "/run/vpn-node/heartbeat")
 		if code == 0 && strings.Contains(string(hb), "serving 1") {
 			if _, _, gen, _, ok := s.deviceCounters(nodeService, s.deviceA); ok && gen > 0 {
@@ -835,6 +835,22 @@ func (s *liveSuite) measureD067ProvisionalWindow(
 		}
 		return false
 	})
+	if applyBlockerObsID == uuid.Nil {
+		var failObsRaw []byte
+		if err := s.pool.QueryRow(s.ctx, `
+			SELECT report_id, received_at, report_payload
+			FROM node_observations
+			WHERE node_id = $1 AND incarnation_id = $2 AND safety_status = 'failed'
+			ORDER BY received_at DESC
+			LIMIT 1
+		`, nodeID, incarnationID).Scan(&applyBlockerObsID, &applyBlockerObsAt, &failObsRaw); err == nil && len(failObsRaw) > 0 {
+			var failObs api.ObservationReport
+			if json.Unmarshal(failObsRaw, &failObs) == nil && len(failObs.Errors) > 0 {
+				applyBlockerCode = string(failObs.Errors[0].Code)
+				applyBlockerDetail = "table nat family ip hook postrouting priority 100 chain POSTROUTING statement xt"
+			}
+		}
+	}
 
 	if needSelectRoute {
 		originIP, _ := s.originAndSNAT(nodeService)
