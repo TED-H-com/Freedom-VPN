@@ -67,13 +67,13 @@
       "data_health": "healthy",
       "forwarding_evidence_satisfied": true,
       "lease": {
-        "expires_at": "2026-11-01T06:58:28.238782001Z",
-        "lease_id": "3c33ce33-9f43-4d5a-ae43-01fe11f7595e"
+        "expires_at": "2026-11-01T07:31:56.092142164Z",
+        "lease_id": "eec592ef-df72-4d8a-90d5-d1c736b2345a"
       },
       "member_forwarding_enabled": true,
-      "observed_at": "2026-10-31T06:58:28.369141526Z",
+      "observed_at": "2026-10-31T07:31:56.205058692Z",
       "provisioning_state": "ready",
-      "report_id": "01a190c0-ab91-7236-abec-831e88aaf0c5",
+      "report_id": "01a190df-4ead-70f3-bca2-27542e1317b0",
       "safety_status": "passed"
     },
     "read_back_listing": {
@@ -126,7 +126,7 @@
           "counter": {
             "bytes": 0,
             "family": "inet",
-            "handle": 225,
+            "handle": 203,
             "name": "ctbadns",
             "packets": 0,
             "table": "fvpn"
@@ -136,7 +136,7 @@
           "counter": {
             "bytes": 0,
             "family": "inet",
-            "handle": 226,
+            "handle": 204,
             "name": "ctdeny",
             "packets": 0,
             "table": "fvpn"
@@ -146,7 +146,7 @@
           "counter": {
             "bytes": 0,
             "family": "inet",
-            "handle": 227,
+            "handle": 205,
             "name": "cthost",
             "packets": 0,
             "table": "fvpn"
@@ -156,7 +156,7 @@
           "counter": {
             "bytes": 0,
             "family": "inet",
-            "handle": 228,
+            "handle": 206,
             "name": "ctinv",
             "packets": 0,
             "table": "fvpn"
@@ -166,7 +166,7 @@
           "counter": {
             "bytes": 0,
             "family": "inet",
-            "handle": 229,
+            "handle": 207,
             "name": "ctnodn",
             "packets": 0,
             "table": "fvpn"
@@ -176,7 +176,7 @@
           "counter": {
             "bytes": 0,
             "family": "inet",
-            "handle": 230,
+            "handle": 208,
             "name": "ctunkd",
             "packets": 0,
             "table": "fvpn"
@@ -186,7 +186,7 @@
           "counter": {
             "bytes": 0,
             "family": "inet",
-            "handle": 231,
+            "handle": 209,
             "name": "ctunku",
             "packets": 0,
             "table": "fvpn"
@@ -196,8 +196,8 @@
           "counter": {
             "bytes": 0,
             "family": "inet",
-            "handle": 232,
-            "name": "d_01a190c0a7ab7ac3be37d1ea7bc5a81d",
+            "handle": 210,
+            "name": "d_01a190df3b9578a88653ec5e7b5033de",
             "packets": 0,
             "table": "fvpn"
           }
@@ -206,8 +206,8 @@
           "counter": {
             "bytes": 0,
             "family": "inet",
-            "handle": 233,
-            "name": "nd_01a190c0a7ab7ac3be37d1ea7bc5a81d",
+            "handle": 211,
+            "name": "nd_01a190df3b9578a88653ec5e7b5033de",
             "packets": 0,
             "table": "fvpn"
           }
@@ -216,8 +216,8 @@
           "counter": {
             "bytes": 0,
             "family": "inet",
-            "handle": 234,
-            "name": "nu_01a190c0a7ab7ac3be37d1ea7bc5a81d",
+            "handle": 212,
+            "name": "nu_01a190df3b9578a88653ec5e7b5033de",
             "packets": 0,
             "table": "fvpn"
           }
@@ -226,8 +226,8 @@
           "counter": {
             "bytes": 0,
             "family": "inet",
-            "handle": 235,
-            "name": "u_01a190c0a7ab7ac3be37d1ea7bc5a81d",
+            "handle": 213,
+            "name": "u_01a190df3b9578a88653ec5e7b5033de",
             "packets": 0,
             "table": "fvpn"
           }
@@ -237,9 +237,9 @@
             "elem": [
               {
                 "elem": {
-                  "expires": 152,
-                  "timeout": 153,
-                  "val": "100.123.35.211"
+                  "expires": 162,
+                  "timeout": 167,
+                  "val": "100.91.6.245"
                 }
               }
             ],
@@ -345,7 +345,7 @@
             "flags": [
               "interval"
             ],
-            "handle": 236,
+            "handle": 214,
             "name": "denied_v4",
             "table": "fvpn",
             "type": "ipv4_addr"
@@ -360,7 +360,7 @@
             "flags": [
               "interval"
             ],
-            "handle": 237,
+            "handle": 215,
             "name": "host_v4",
             "table": "fvpn",
             "type": "ipv4_addr"
@@ -372,7 +372,7 @@
               "192.0.5.53"
             ],
             "family": "inet",
-            "handle": 238,
+            "handle": 216,
             "name": "resolver_v4",
             "table": "fvpn",
             "type": "ipv4_addr"
@@ -381,7 +381,7 @@
         {
           "chain": {
             "family": "inet",
-            "handle": 265,
+            "handle": 217,
             "hook": "forward",
             "name": "forward",
             "policy": "drop",
@@ -393,7 +393,7 @@
         {
           "chain": {
             "family": "inet",
-            "handle": 266,
+            "handle": 218,
             "hook": "input",
             "name": "input",
             "policy": "accept",
@@ -405,7 +405,7 @@
         {
           "chain": {
             "family": "inet",
-            "handle": 267,
+            "handle": 219,
             "hook": "output",
             "name": "output",
             "policy": "accept",
@@ -417,7 +417,7 @@
         {
           "chain": {
             "family": "inet",
-            "handle": 268,
+            "handle": 220,
             "hook": "postrouting",
             "name": "postrouting",
             "policy": "accept",
@@ -457,14 +457,14 @@
               }
             ],
             "family": "inet",
-            "handle": 269,
+            "handle": 221,
             "table": "fvpn"
           }
         },
         {
           "rule": {
             "chain": "forward",
-            "comment": "fvpn_class=01a190c0-585e-757a-84bd-f812b6e0dc00:92d9",
+            "comment": "fvpn_class=01a190df-2047-72ae-b659-b6ce7b9d9058:3efe",
             "expr": [
               {
                 "match": {
@@ -492,7 +492,7 @@
               }
             ],
             "family": "inet",
-            "handle": 270,
+            "handle": 222,
             "table": "fvpn"
           }
         },
@@ -541,7 +541,7 @@
               }
             ],
             "family": "inet",
-            "handle": 271,
+            "handle": 223,
             "table": "fvpn"
           }
         },
@@ -590,7 +590,7 @@
               }
             ],
             "family": "inet",
-            "handle": 272,
+            "handle": 224,
             "table": "fvpn"
           }
         },
@@ -639,7 +639,7 @@
               }
             ],
             "family": "inet",
-            "handle": 273,
+            "handle": 225,
             "table": "fvpn"
           }
         },
@@ -688,7 +688,7 @@
               }
             ],
             "family": "inet",
-            "handle": 274,
+            "handle": 226,
             "table": "fvpn"
           }
         },
@@ -738,7 +738,7 @@
               }
             ],
             "family": "inet",
-            "handle": 275,
+            "handle": 227,
             "table": "fvpn"
           }
         },
@@ -777,7 +777,7 @@
                     }
                   },
                   "op": "==",
-                  "right": "100.123.35.211"
+                  "right": "100.91.6.245"
                 }
               },
               {
@@ -805,7 +805,7 @@
                 }
               },
               {
-                "counter": "nu_01a190c0a7ab7ac3be37d1ea7bc5a81d"
+                "counter": "nu_01a190df3b9578a88653ec5e7b5033de"
               },
               {
                 "mangle": {
@@ -814,7 +814,7 @@
                       "key": "priority"
                     }
                   },
-                  "value": "1:92d9"
+                  "value": "1:3efe"
                 }
               },
               {
@@ -822,7 +822,7 @@
               }
             ],
             "family": "inet",
-            "handle": 276,
+            "handle": 228,
             "table": "fvpn"
           }
         },
@@ -861,7 +861,7 @@
                     }
                   },
                   "op": "==",
-                  "right": "100.123.35.211"
+                  "right": "100.91.6.245"
                 }
               },
               {
@@ -889,7 +889,7 @@
                 }
               },
               {
-                "counter": "nu_01a190c0a7ab7ac3be37d1ea7bc5a81d"
+                "counter": "nu_01a190df3b9578a88653ec5e7b5033de"
               },
               {
                 "mangle": {
@@ -898,7 +898,7 @@
                       "key": "priority"
                     }
                   },
-                  "value": "1:92d9"
+                  "value": "1:3efe"
                 }
               },
               {
@@ -906,7 +906,7 @@
               }
             ],
             "family": "inet",
-            "handle": 277,
+            "handle": 229,
             "table": "fvpn"
           }
         },
@@ -956,7 +956,7 @@
               }
             ],
             "family": "inet",
-            "handle": 278,
+            "handle": 230,
             "table": "fvpn"
           }
         },
@@ -1006,7 +1006,7 @@
               }
             ],
             "family": "inet",
-            "handle": 279,
+            "handle": 231,
             "table": "fvpn"
           }
         },
@@ -1056,7 +1056,7 @@
               }
             ],
             "family": "inet",
-            "handle": 280,
+            "handle": 232,
             "table": "fvpn"
           }
         },
@@ -1095,11 +1095,11 @@
                     }
                   },
                   "op": "==",
-                  "right": "100.123.35.211"
+                  "right": "100.91.6.245"
                 }
               },
               {
-                "counter": "u_01a190c0a7ab7ac3be37d1ea7bc5a81d"
+                "counter": "u_01a190df3b9578a88653ec5e7b5033de"
               },
               {
                 "mangle": {
@@ -1108,7 +1108,7 @@
                       "key": "priority"
                     }
                   },
-                  "value": "1:92d9"
+                  "value": "1:3efe"
                 }
               },
               {
@@ -1116,7 +1116,7 @@
               }
             ],
             "family": "inet",
-            "handle": 281,
+            "handle": 233,
             "table": "fvpn"
           }
         },
@@ -1166,7 +1166,7 @@
               }
             ],
             "family": "inet",
-            "handle": 282,
+            "handle": 234,
             "table": "fvpn"
           }
         },
@@ -1220,7 +1220,7 @@
               }
             ],
             "family": "inet",
-            "handle": 284,
+            "handle": 236,
             "table": "fvpn"
           }
         },
@@ -1271,7 +1271,7 @@
                     }
                   },
                   "op": "==",
-                  "right": "100.123.35.211"
+                  "right": "100.91.6.245"
                 }
               },
               {
@@ -1287,7 +1287,7 @@
                 }
               },
               {
-                "counter": "nd_01a190c0a7ab7ac3be37d1ea7bc5a81d"
+                "counter": "nd_01a190df3b9578a88653ec5e7b5033de"
               },
               {
                 "mangle": {
@@ -1296,7 +1296,7 @@
                       "key": "priority"
                     }
                   },
-                  "value": "1:92d9"
+                  "value": "1:3efe"
                 }
               },
               {
@@ -1304,7 +1304,7 @@
               }
             ],
             "family": "inet",
-            "handle": 285,
+            "handle": 237,
             "table": "fvpn"
           }
         },
@@ -1355,7 +1355,7 @@
                     }
                   },
                   "op": "==",
-                  "right": "100.123.35.211"
+                  "right": "100.91.6.245"
                 }
               },
               {
@@ -1371,7 +1371,7 @@
                 }
               },
               {
-                "counter": "nd_01a190c0a7ab7ac3be37d1ea7bc5a81d"
+                "counter": "nd_01a190df3b9578a88653ec5e7b5033de"
               },
               {
                 "mangle": {
@@ -1380,7 +1380,7 @@
                       "key": "priority"
                     }
                   },
-                  "value": "1:92d9"
+                  "value": "1:3efe"
                 }
               },
               {
@@ -1388,7 +1388,7 @@
               }
             ],
             "family": "inet",
-            "handle": 286,
+            "handle": 238,
             "table": "fvpn"
           }
         },
@@ -1427,11 +1427,11 @@
                     }
                   },
                   "op": "==",
-                  "right": "100.123.35.211"
+                  "right": "100.91.6.245"
                 }
               },
               {
-                "counter": "d_01a190c0a7ab7ac3be37d1ea7bc5a81d"
+                "counter": "d_01a190df3b9578a88653ec5e7b5033de"
               },
               {
                 "mangle": {
@@ -1440,7 +1440,7 @@
                       "key": "priority"
                     }
                   },
-                  "value": "1:92d9"
+                  "value": "1:3efe"
                 }
               },
               {
@@ -1448,7 +1448,7 @@
               }
             ],
             "family": "inet",
-            "handle": 287,
+            "handle": 239,
             "table": "fvpn"
           }
         },
@@ -1475,7 +1475,7 @@
               }
             ],
             "family": "inet",
-            "handle": 288,
+            "handle": 240,
             "table": "fvpn"
           }
         },
@@ -1508,7 +1508,7 @@
               }
             ],
             "family": "inet",
-            "handle": 289,
+            "handle": 241,
             "table": "fvpn"
           }
         },
@@ -1547,16 +1547,16 @@
               }
             ],
             "family": "inet",
-            "handle": 290,
+            "handle": 242,
             "table": "fvpn"
           }
         }
       ]
     },
-    "read_back_sha256": "47a7b47ed9551885e6a61b89ab6f422b4316775ee667905312cd18fe0822029c"
+    "read_back_sha256": "15097d410db1d23d954b154260699fbd26b9c701b985f461d01aea3998c1620c"
   },
-  "agent_node_incarnation": "01a190bf-9848-7e77-826f-eea3d7ba2fbb",
-  "audit_rows_scanned": 86,
+  "agent_node_incarnation": "01a190de-62a5-7327-942d-b2d9c222bb91",
+  "audit_rows_scanned": 142,
   "checks": [
     {
       "actual_code": "",
@@ -1565,7 +1565,7 @@
       "expected_status": 201,
       "name": "create member group input",
       "passed": true,
-      "utc": "2026-10-31T06:57:14.151121601Z"
+      "utc": "2026-10-31T07:30:51.158939987Z"
     },
     {
       "actual_code": "",
@@ -1574,7 +1574,7 @@
       "expected_status": 201,
       "name": "create fair_use policy input",
       "passed": true,
-      "utc": "2026-10-31T06:57:14.158367967Z"
+      "utc": "2026-10-31T07:30:51.16759622Z"
     },
     {
       "actual_code": "",
@@ -1583,7 +1583,7 @@
       "expected_status": 202,
       "name": "activate fair_use policy input",
       "passed": true,
-      "utc": "2026-10-31T06:57:14.167483177Z"
+      "utc": "2026-10-31T07:30:51.179091594Z"
     },
     {
       "actual_code": "",
@@ -1592,7 +1592,7 @@
       "expected_status": 201,
       "name": "create domain_rule_set policy input",
       "passed": true,
-      "utc": "2026-10-31T06:57:14.181138026Z"
+      "utc": "2026-10-31T07:30:51.190745132Z"
     },
     {
       "actual_code": "",
@@ -1601,7 +1601,7 @@
       "expected_status": 202,
       "name": "activate domain_rule_set policy input",
       "passed": true,
-      "utc": "2026-10-31T06:57:14.188852109Z"
+      "utc": "2026-10-31T07:30:51.197362642Z"
     },
     {
       "actual_code": "",
@@ -1610,7 +1610,7 @@
       "expected_status": 201,
       "name": "create dns_profile policy input",
       "passed": true,
-      "utc": "2026-10-31T06:57:14.194968691Z"
+      "utc": "2026-10-31T07:30:51.20455013Z"
     },
     {
       "actual_code": "",
@@ -1619,7 +1619,7 @@
       "expected_status": 202,
       "name": "activate dns_profile policy input",
       "passed": true,
-      "utc": "2026-10-31T06:57:14.203010434Z"
+      "utc": "2026-10-31T07:30:51.212975125Z"
     },
     {
       "actual_code": "",
@@ -1628,7 +1628,7 @@
       "expected_status": 201,
       "name": "create plan policy input",
       "passed": true,
-      "utc": "2026-10-31T06:57:14.21100918Z"
+      "utc": "2026-10-31T07:30:51.219548955Z"
     },
     {
       "actual_code": "",
@@ -1637,7 +1637,7 @@
       "expected_status": 202,
       "name": "activate plan policy input",
       "passed": true,
-      "utc": "2026-10-31T06:57:14.2196283Z"
+      "utc": "2026-10-31T07:30:51.22609093Z"
     },
     {
       "actual_code": "",
@@ -1646,7 +1646,7 @@
       "expected_status": 201,
       "name": "create enrollment secops-agent",
       "passed": true,
-      "utc": "2026-10-31T06:57:17.629358972Z"
+      "utc": "2026-10-31T07:30:54.80257634Z"
     },
     {
       "actual_code": "no-store",
@@ -1655,7 +1655,7 @@
       "expected_status": 201,
       "name": "enrollment secret no-store",
       "passed": true,
-      "utc": "2026-10-31T06:57:17.629433363Z"
+      "utc": "2026-10-31T07:30:54.802636902Z"
     },
     {
       "actual_code": "",
@@ -1664,7 +1664,7 @@
       "expected_status": 201,
       "name": "enrollment duplicate",
       "passed": true,
-      "utc": "2026-10-31T06:57:17.634500556Z"
+      "utc": "2026-10-31T07:30:54.805740007Z"
     },
     {
       "actual_code": "IDEMPOTENCY_CONFLICT",
@@ -1673,7 +1673,7 @@
       "expected_status": 409,
       "name": "enrollment idempotency conflict",
       "passed": true,
-      "utc": "2026-10-31T06:57:17.636712022Z"
+      "utc": "2026-10-31T07:30:54.807980674Z"
     },
     {
       "actual_code": "",
@@ -1682,7 +1682,7 @@
       "expected_status": 202,
       "name": "finite capacity",
       "passed": true,
-      "utc": "2026-10-31T06:57:54.831875079Z"
+      "utc": "2026-10-31T07:31:32.037036891Z"
     },
     {
       "actual_code": "",
@@ -1691,7 +1691,7 @@
       "expected_status": 202,
       "name": "PITR followup11-grant_expiry grant",
       "passed": true,
-      "utc": "2026-10-31T06:58:07.088153298Z"
+      "utc": "2026-10-31T07:31:44.34567788Z"
     },
     {
       "actual_code": "",
@@ -1700,7 +1700,7 @@
       "expected_status": 200,
       "name": "enrolled node detail",
       "passed": true,
-      "utc": "2026-10-31T06:58:28.101255232Z"
+      "utc": "2026-10-31T07:31:53.172842946Z"
     },
     {
       "actual_code": "",
@@ -1709,21 +1709,39 @@
       "expected_status": 202,
       "name": "PITR followup11-recovery grant",
       "passed": true,
-      "utc": "2026-10-31T07:01:20.838755368Z"
+      "utc": "2026-10-31T07:34:57.895013916Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 202,
+      "expected_code": "",
+      "expected_status": 202,
+      "name": "PITR followup11-lease_expiry grant",
+      "passed": true,
+      "utc": "2026-10-31T07:35:08.685081466Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 202,
+      "expected_code": "",
+      "expected_status": 202,
+      "name": "PITR followup11-device_revoke grant",
+      "passed": true,
+      "utc": "2026-10-31T07:37:20.970809195Z"
     }
   ],
   "configured_updater_recovery_file_present": true,
   "counted_flow": false,
-  "finished_at": "2026-10-31T07:02:21.029707043Z",
+  "finished_at": "2026-10-31T07:39:44.608338278Z",
   "flow_probe": {
     "admitted_bytes_delta": "0",
     "after_bytes": {
-      "d_01a190c0a7ab7ac3be37d1ea7bc5a81d": "0",
-      "u_01a190c0a7ab7ac3be37d1ea7bc5a81d": "0"
+      "d_01a190df3b9578a88653ec5e7b5033de": "0",
+      "u_01a190df3b9578a88653ec5e7b5033de": "0"
     },
     "before_bytes": {
-      "d_01a190c0a7ab7ac3be37d1ea7bc5a81d": "0",
-      "u_01a190c0a7ab7ac3be37d1ea7bc5a81d": "0"
+      "d_01a190df3b9578a88653ec5e7b5033de": "0",
+      "u_01a190df3b9578a88653ec5e7b5033de": "0"
     },
     "command": [
       "docker",
@@ -1750,23 +1768,23 @@
   "follow_up": 12,
   "forward_baseline_generation_zero": false,
   "forward_chain_observed": true,
-  "go_test_failed": true,
+  "go_test_failed": false,
   "hardware": "shared development host; not candidate hardware",
   "image_digests": [
     {
-      "image_id": "sha256:b3854e7bf174bd443dd9455a6174cfa962f1dfbb44b7f63018308afa273ab386",
+      "image_id": "sha256:d403def68a02bf6d115905befb97771f2bcb59924a30106d35c03ef01ce1695c",
       "service": "postgres"
     },
     {
-      "image_id": "sha256:339dbf4d28553cbd938298afc1a83d68549efcec786ce1f5f46f66b8bae219cb",
+      "image_id": "sha256:50d37b960dd099f537c3ca9cdb5ed7d9944fe2c6b68f031d3eff6e9cbfd3b75a",
       "service": "idp"
     },
     {
-      "image_id": "sha256:4d9e623b4d6e922127f567b1849f58bc5d72747c54886cc966cf32ea932f3134",
+      "image_id": "sha256:074a973b5b5ff6883b9ff61b31fb7887f6bf19a8a169cc3ef91678062187d197",
       "service": "payment"
     },
     {
-      "image_id": "sha256:2f5b756fcf2480361aa142d032ee3ea51a77732aaa40614e6a01a7a777635e18",
+      "image_id": "sha256:23faac6c5cb60b955cc6a67cd5caec47e67991a72fd500d6313fc6d8fd327ce7",
       "service": "origin"
     },
     {
@@ -1786,31 +1804,39 @@
       "service": "adguard"
     },
     {
-      "image_id": "sha256:e068ef6780bc0b95804db4187f4cee83fc5a14a469d9cc513c1ab7eae5b4385e",
+      "image_id": "sha256:2fd2317a7110695595e91677dff0d9c9ff27deafb60929c021314cd98dd1ec17",
       "service": "control"
     },
     {
-      "image_id": "sha256:1636dbee416b10758f557f9d854b523d9430a6e3d4e4dd71c0f7df26b4128753",
+      "image_id": "sha256:368af0b4d95faff08d429520c36a2315b7e29864254989d7be5bfbdb8a78f962",
       "service": "worker"
     },
     {
-      "image_id": "sha256:103108bf058802dd6be66b3a40ddea1e43f58c89634529b50327d67610e571a0",
+      "image_id": "sha256:c61d71068476a939eb2ea1e77d186495f4e353660d5ed7574ae8be22a5dd621c",
       "service": "node-netns"
     },
     {
-      "image_id": "sha256:103108bf058802dd6be66b3a40ddea1e43f58c89634529b50327d67610e571a0",
+      "image_id": "sha256:c61d71068476a939eb2ea1e77d186495f4e353660d5ed7574ae8be22a5dd621c",
       "service": "node"
     },
     {
-      "image_id": "sha256:103108bf058802dd6be66b3a40ddea1e43f58c89634529b50327d67610e571a0",
+      "image_id": "sha256:c61d71068476a939eb2ea1e77d186495f4e353660d5ed7574ae8be22a5dd621c",
       "service": "member"
     },
     {
-      "image_id": "sha256:103108bf058802dd6be66b3a40ddea1e43f58c89634529b50327d67610e571a0",
+      "image_id": "sha256:c61d71068476a939eb2ea1e77d186495f4e353660d5ed7574ae8be22a5dd621c",
+      "service": "member-f11-device-revoke"
+    },
+    {
+      "image_id": "sha256:c61d71068476a939eb2ea1e77d186495f4e353660d5ed7574ae8be22a5dd621c",
+      "service": "member-f11-lease-expiry"
+    },
+    {
+      "image_id": "sha256:c61d71068476a939eb2ea1e77d186495f4e353660d5ed7574ae8be22a5dd621c",
       "service": "member-f11-grant-expiry"
     }
   ],
-  "known_secret_canaries": 29,
+  "known_secret_canaries": 47,
   "member_accept_rules": 6,
   "node_after_publication": {
     "config_generation": {
@@ -1824,7 +1850,7 @@
   },
   "node_service_precondition": {
     "config_generation": {
-      "applied": "3",
+      "applied": "1",
       "desired": "4"
     },
     "data_health": "healthy",
@@ -1838,15 +1864,15 @@
   "observed_lease_generation": {
     "applied_generation": "6",
     "desired_generation": "6",
-    "expires_at": "2026-11-01T06:58:28.238782Z",
-    "issued_at": "2026-10-31T06:58:28.238782Z",
+    "expires_at": "2026-11-01T07:31:56.092142Z",
+    "issued_at": "2026-10-31T07:31:56.092142Z",
     "lease_generation": "6",
     "matches_applied": true,
     "read_ok": true,
     "source": "lease ID from current immutable agent observation"
   },
-  "policy_revision": "01a190bf-89e0-75ac-9acc-ee9df4653759",
-  "probe_source_sha256": "aa52dc6ac168fa2d11bb1fdb754a9ca9f351b0ca6e9848f84a1c15e3b7a2c3be",
+  "policy_revision": "01a190de-50d1-792e-9e06-e8ede2d26cce",
+  "probe_source_sha256": "16ff60b0f2f39a827de3953ea0b24818d41be6f8537854d9d9a0e797e01af425",
   "projector_owned_rows_written": [],
   "protected_native_streams": [
     {
@@ -1854,6 +1880,36 @@
       "post_delete_scan_ok": true,
       "pre_delete": {
         "stream": "fvpn-w4-secops-member-f11-grant-expiry/protected-device-flow",
+        "result": "scanned",
+        "scan": {
+          "present": true,
+          "bytes": 103,
+          "mode": "0:600",
+          "device_flow_keys": 1
+        },
+        "deleted": true
+      }
+    },
+    {
+      "post_delete_present": false,
+      "post_delete_scan_ok": true,
+      "pre_delete": {
+        "stream": "fvpn-w4-secops-member-f11-lease-expiry/protected-device-flow",
+        "result": "scanned",
+        "scan": {
+          "present": true,
+          "bytes": 103,
+          "mode": "0:600",
+          "device_flow_keys": 1
+        },
+        "deleted": true
+      }
+    },
+    {
+      "post_delete_present": false,
+      "post_delete_scan_ok": true,
+      "pre_delete": {
+        "stream": "fvpn-w4-secops-member-f11-device-revoke/protected-device-flow",
         "result": "scanned",
         "scan": {
           "present": true,
@@ -1928,17 +1984,17 @@
     "data_health": "healthy",
     "forwarding_evidence_satisfied": true,
     "lease": {
-      "expires_at": "2026-11-01T06:58:28.238782001Z",
-      "lease_id": "3c33ce33-9f43-4d5a-ae43-01fe11f7595e"
+      "expires_at": "2026-11-01T07:31:56.092142164Z",
+      "lease_id": "eec592ef-df72-4d8a-90d5-d1c736b2345a"
     },
     "member_forwarding_enabled": true,
-    "observed_at": "2026-10-31T06:58:28.369141526Z",
+    "observed_at": "2026-10-31T07:31:56.205058692Z",
     "provisioning_state": "ready",
-    "report_id": "01a190c0-ab91-7236-abec-831e88aaf0c5",
+    "report_id": "01a190df-4ead-70f3-bca2-27542e1317b0",
     "safety_status": "passed"
   },
   "publication_observation_before": {
-    "applied_config_generation": "3",
+    "applied_config_generation": "1",
     "available": true,
     "checks": [
       {
@@ -1995,24 +2051,24 @@
     "data_health": "healthy",
     "forwarding_evidence_satisfied": false,
     "lease": {
-      "expires_at": "2026-11-01T06:58:08.21674645Z",
-      "lease_id": "9a3bfe9c-8d0b-4414-9153-e092f0166192"
+      "expires_at": "2026-11-01T07:31:31.004339743Z",
+      "lease_id": "1fb9cb94-c8d9-43e1-be7b-3cbc77fbc0f0"
     },
     "member_forwarding_enabled": false,
-    "observed_at": "2026-10-31T06:58:23.221640517Z",
+    "observed_at": "2026-10-31T07:31:31.059759229Z",
     "provisioning_state": "ready",
-    "report_id": "01a190c0-9775-79d3-8fc1-2b7335152bd2",
+    "report_id": "01a190de-ec73-7ba3-8386-02a3bd9970e9",
     "safety_status": "passed"
   },
   "publication_operation": {
-    "operation_id": "ab0a659d-97d8-4ae4-bf49-73d6a62a3423",
+    "operation_id": "b0f74371-9c65-43f1-81f1-5cadeb1ef98d",
     "status": "succeeded",
     "steps": [
       {
         "error_code": null,
         "message": null,
         "name": "agent_policy",
-        "observed_at": "2026-10-31T06:58:28.477018453Z",
+        "observed_at": "2026-10-31T07:31:56.676519136Z",
         "required": true,
         "status": "succeeded"
       },
@@ -2020,7 +2076,7 @@
         "error_code": null,
         "message": null,
         "name": "data_path_probe",
-        "observed_at": "2026-10-31T06:58:28.477018453Z",
+        "observed_at": "2026-10-31T07:31:56.676519136Z",
         "required": true,
         "status": "succeeded"
       },
@@ -2028,7 +2084,7 @@
         "error_code": null,
         "message": null,
         "name": "netbird_route_readback",
-        "observed_at": "2026-10-31T06:58:28.477018453Z",
+        "observed_at": "2026-10-31T07:31:56.676519136Z",
         "required": true,
         "status": "succeeded"
       }
@@ -2038,10 +2094,10 @@
     "code": "",
     "status": 202
   },
-  "run_id": "e6b2d056-1478-40d3-a3a8-5792eae8e733",
+  "run_id": "cf81f6f8-4ccf-43d2-aae2-10121f6b169d",
   "secret_scan": [
     {
-      "bytes": 4499,
+      "bytes": 5326,
       "device_flow_key_lines": 0,
       "known_secret_matches": 0,
       "read_ok": true,
@@ -2069,14 +2125,14 @@
       "stream": "origin stdout/stderr"
     },
     {
-      "bytes": 3154,
+      "bytes": 6222,
       "device_flow_key_lines": 0,
       "known_secret_matches": 0,
       "read_ok": true,
       "stream": "netbird stdout/stderr"
     },
     {
-      "bytes": 30907,
+      "bytes": 76266,
       "device_flow_key_lines": 0,
       "known_secret_matches": 0,
       "read_ok": true,
@@ -2097,14 +2153,14 @@
       "stream": "adguard stdout/stderr"
     },
     {
-      "bytes": 49839,
+      "bytes": 77370,
       "device_flow_key_lines": 0,
       "known_secret_matches": 0,
       "read_ok": true,
       "stream": "control stdout/stderr"
     },
     {
-      "bytes": 9942,
+      "bytes": 16714,
       "device_flow_key_lines": 0,
       "known_secret_matches": 0,
       "read_ok": true,
@@ -2118,7 +2174,7 @@
       "stream": "node-netns stdout/stderr"
     },
     {
-      "bytes": 98,
+      "bytes": 32,
       "device_flow_key_lines": 0,
       "known_secret_matches": 0,
       "read_ok": true,
@@ -2136,10 +2192,24 @@
       "device_flow_key_lines": 0,
       "known_secret_matches": 0,
       "read_ok": true,
+      "stream": "member-f11-device-revoke stdout/stderr"
+    },
+    {
+      "bytes": 0,
+      "device_flow_key_lines": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-f11-lease-expiry stdout/stderr"
+    },
+    {
+      "bytes": 0,
+      "device_flow_key_lines": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
       "stream": "member-f11-grant-expiry stdout/stderr"
     },
     {
-      "bytes": 338,
+      "bytes": 1795,
       "device_flow_key_lines": 0,
       "known_secret_matches": 0,
       "read_ok": true,
@@ -2153,7 +2223,7 @@
       "stream": "node file /var/lib/vpn-node/e2e/dns-relay.log"
     },
     {
-      "bytes": 2056,
+      "bytes": 2710,
       "device_flow_key_lines": 0,
       "known_secret_matches": 0,
       "read_ok": true,
@@ -2188,21 +2258,35 @@
       "stream": "member file /var/lib/vpn-node/e2e/netbird-service.log"
     },
     {
-      "bytes": 1082,
+      "bytes": 1018,
+      "device_flow_key_lines": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-f11-device-revoke file /var/lib/vpn-node/e2e/netbird-service.log"
+    },
+    {
+      "bytes": 1302,
+      "device_flow_key_lines": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-f11-lease-expiry file /var/lib/vpn-node/e2e/netbird-service.log"
+    },
+    {
+      "bytes": 1742,
       "device_flow_key_lines": 0,
       "known_secret_matches": 0,
       "read_ok": true,
       "stream": "member-f11-grant-expiry file /var/lib/vpn-node/e2e/netbird-service.log"
     },
     {
-      "bytes": 49866,
+      "bytes": 80035,
       "device_flow_key_lines": 0,
       "known_secret_matches": 0,
       "read_ok": true,
       "stream": "audit_events"
     },
     {
-      "bytes": 49109,
+      "bytes": 104859,
       "device_flow_key_lines": 0,
       "known_secret_matches": 0,
       "read_ok": true,
@@ -2211,15 +2295,15 @@
   ],
   "security_matrix_complete": false,
   "serving_baseline": {
-    "Boot": "01a190bf-92a0-74a5-ab50-8d1c5a91aa78",
+    "Boot": "01a190de-5a2d-7994-98f4-54eff305ea10",
     "Good": "00000000-0000-0000-0000-000000000000",
     "Bad": "00000000-0000-0000-0000-000000000000",
-    "SupportRevision": "01a190bf-9713-75b1-bdf5-04fd870b89fb",
+    "SupportRevision": "01a190de-5ea6-7d9f-b425-b0d0971a8dd1",
     "Digests": {
-      "artifact_sha256_0.1.0_amd64": "1d8d18fe28ee8e436c4ab7fbc6b2b5103a9b72d5277aa14406be0f7296e1bcfb",
-      "artifact_sha256_0.1.0_arm64": "7ea4fb75453f5741226d538f406fb790f870cf3c970181065ac06b08e6aaf0b4",
-      "manifest_sha256_0.1.0": "49ee59f05c3130722943a5f8cd1cddd17ec51141333c5b4b19eeda4015198b43",
-      "signed_manifest_sha256_0.1.0": "743b88878326e85ed8f7c709dcba669b3cd35e1af487bd8c1a4d9d3667c3923a"
+      "artifact_sha256_0.1.0_amd64": "2b73be2b581de3eded659e80824308e48a80d2f2e942cd51b545f35cc790ba5e",
+      "artifact_sha256_0.1.0_arm64": "a0862fce5404a7009ef85570212ebd04e05f12d0f2b46aca7a68fa06d1601b94",
+      "manifest_sha256_0.1.0": "7eb1f75df0d93a7263da89711bda164bfc7f7d495b30a351196142e36aa2760b",
+      "signed_manifest_sha256_0.1.0": "92ece5e3c8e8ecc1cc1d7bb861483a555fd0eaa39bb65b4dd7baffb950307608"
     }
   },
   "serving_blocker": "No counted serving flow; w3-devstack-e2e follow-up 9 hop-by-hop trace is the gate. Outage/deadline and mixed-load assertions cannot start.",
@@ -2283,20 +2367,1560 @@
     "status": "blocked"
   },
   "serving_probe": "API state is insufficient: require admitted device, timed member allowset, selected native exit, and increasing node forward-admission counter for the controlled flow.",
-  "source_revision": "b52ef842830bb5b87a6b7c93a113bdc0a2ae4d23",
+  "source_revision": "44eff52b47f891bc829900c51b320a2e01f64cde",
   "sql_input_fixtures": [],
-  "started_at": "2026-10-31T06:57:14.054056509Z",
+  "started_at": "2026-10-31T07:30:51.052281636Z",
   "transport_cases": {
+    "device_revoke": {
+      "action_started_at": "2026-10-31T07:38:28.451673871Z",
+      "after_heartbeat": {
+        "baseline_ok": "1",
+        "generation": "17",
+        "mono_ns": "15914920878837",
+        "policy_expires_mono_ns": "16834514371324",
+        "reason": "serving",
+        "serving": "1",
+        "wall_unix_ns": "1793432377404507945"
+      },
+      "after_kernel_timeout": {
+        "nftables": [
+          {
+            "metainfo": {
+              "version": "1.0.9",
+              "release_name": "Old Doc Yak #3",
+              "json_schema_version": 1
+            }
+          },
+          {
+            "set": {
+              "family": "inet",
+              "name": "allowed_v4",
+              "table": "fvpn",
+              "type": "ipv4_addr",
+              "handle": 4,
+              "flags": [
+                "timeout"
+              ],
+              "elem": [
+                {
+                  "elem": {
+                    "val": "100.91.6.245",
+                    "timeout": 914,
+                    "expires": 913
+                  }
+                },
+                {
+                  "elem": {
+                    "val": "100.91.161.15",
+                    "timeout": 1525,
+                    "expires": 1524
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "attribution_limit": "Native route withdrawal and node kernel cutoff are observed together; no retained revoked route or independent ingress export is synthesized. Counter absence is not zero-byte evidence.",
+      "before_counted_flow": {
+        "admitted_bytes_delta": {
+          "download": "1515",
+          "upload": "1066"
+        },
+        "after_bytes": {
+          "download": "3029",
+          "generation": "15",
+          "upload": "2132"
+        },
+        "before_bytes": {
+          "download": "1514",
+          "generation": "15",
+          "upload": "1066"
+        },
+        "counted": true,
+        "counter_reads_ok": true,
+        "http_200": true,
+        "network_list": "Available Networks:\n\n  - ID: fvpn-exit-992ffd846ce6d4db075355b7\n    Network: 0.0.0.0/0\n    Status: Selected",
+        "network_list_ok": true,
+        "order": [
+          "select advertised exit",
+          "route dev fvnb0",
+          "HTTPS 200",
+          "authenticated node-SNAT receipt",
+          "exact-device byte delta"
+        ],
+        "origin_authenticated": true,
+        "origin_node_snat": true,
+        "origin_probe_matches": true,
+        "origin_requests": 1,
+        "peer": {
+          "container_role": "member-f11-device-revoke",
+          "device_id": "01a190e4-954e-781e-a94b-aeb270ac0544"
+        },
+        "route_device": "fvnb0",
+        "route_get": "\u003ccontrolled-origin\u003e dev fvnb0 table netbird src 100.91.156.54 uid 0 \n    cache",
+        "selection_ok": true,
+        "selection_output": "Networks selected successfully.",
+        "utc": "2026-10-31T07:37:45.543911772Z"
+      },
+      "before_heartbeat": {
+        "baseline_ok": "1",
+        "generation": "16",
+        "mono_ns": "15844878678229",
+        "policy_expires_mono_ns": "16834512435844",
+        "reason": "serving",
+        "serving": "1",
+        "wall_unix_ns": "1793432307362307259"
+      },
+      "before_kernel_timeout": {
+        "nftables": [
+          {
+            "metainfo": {
+              "version": "1.0.9",
+              "release_name": "Old Doc Yak #3",
+              "json_schema_version": 1
+            }
+          },
+          {
+            "set": {
+              "family": "inet",
+              "name": "allowed_v4",
+              "table": "fvpn",
+              "type": "ipv4_addr",
+              "handle": 4,
+              "flags": [
+                "timeout"
+              ],
+              "elem": [
+                {
+                  "elem": {
+                    "val": "100.91.6.245",
+                    "timeout": 989,
+                    "expires": 987
+                  }
+                },
+                {
+                  "elem": {
+                    "val": "100.91.156.54",
+                    "timeout": 1732,
+                    "expires": 1730
+                  }
+                },
+                {
+                  "elem": {
+                    "val": "100.91.161.15",
+                    "timeout": 1600,
+                    "expires": 1598
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "cutoff_samples": [
+        {
+          "utc": "2026-10-31T07:39:32.225994675Z",
+          "monotonic_elapsed_seconds": 106.384617899,
+          "status": {
+            "tcp_echoes": 80,
+            "udp_replies": 77,
+            "tcp_attempts": 146,
+            "udp_attempts": 212,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "16469",
+            "download_bytes": "14085",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:39:42.302450553Z",
+          "monotonic_elapsed_seconds": 116.461073926,
+          "status": {
+            "tcp_echoes": 80,
+            "udp_replies": 77,
+            "tcp_attempts": 156,
+            "udp_attempts": 232,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "16469",
+            "download_bytes": "14085",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        }
+      ],
+      "earliest_deadline": "2026-10-31T08:07:20Z",
+      "owner": "w3-devstack-e2e",
+      "positive_samples": [
+        {
+          "utc": "2026-10-31T07:37:46.897942174Z",
+          "monotonic_elapsed_seconds": 1.056565471,
+          "status": {
+            "tcp_echoes": 1,
+            "udp_replies": 1,
+            "tcp_attempts": 1,
+            "udp_attempts": 1,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "2578",
+            "download_bytes": "3335",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:37:50.981599454Z",
+          "monotonic_elapsed_seconds": 5.14022275,
+          "status": {
+            "tcp_echoes": 9,
+            "udp_replies": 9,
+            "tcp_attempts": 9,
+            "udp_attempts": 9,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "4066",
+            "download_bytes": "4447",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        }
+      ],
+      "revoke_http_status": 202,
+      "samples": [
+        {
+          "utc": "2026-10-31T07:38:28.524947531Z",
+          "monotonic_elapsed_seconds": 42.683570797,
+          "status": {
+            "tcp_echoes": 72,
+            "udp_replies": 75,
+            "tcp_attempts": 78,
+            "udp_attempts": 84,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "16097",
+            "download_bytes": "13807",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:38:29.590937727Z",
+          "monotonic_elapsed_seconds": 43.749561095,
+          "status": {
+            "tcp_echoes": 74,
+            "udp_replies": 77,
+            "tcp_attempts": 80,
+            "udp_attempts": 86,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "16469",
+            "download_bytes": "14085",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:38:30.654308813Z",
+          "monotonic_elapsed_seconds": 44.812932049,
+          "status": {
+            "tcp_echoes": 76,
+            "udp_replies": 77,
+            "tcp_attempts": 82,
+            "udp_attempts": 88,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "16469",
+            "download_bytes": "14085",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:38:31.718152428Z",
+          "monotonic_elapsed_seconds": 45.87677584,
+          "status": {
+            "tcp_echoes": 79,
+            "udp_replies": 77,
+            "tcp_attempts": 85,
+            "udp_attempts": 91,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "16469",
+            "download_bytes": "14085",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:38:32.777319109Z",
+          "monotonic_elapsed_seconds": 46.93594234,
+          "status": {
+            "tcp_echoes": 80,
+            "udp_replies": 77,
+            "tcp_attempts": 86,
+            "udp_attempts": 92,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "16469",
+            "download_bytes": "14085",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:38:33.840828599Z",
+          "monotonic_elapsed_seconds": 47.999451802,
+          "status": {
+            "tcp_echoes": 80,
+            "udp_replies": 77,
+            "tcp_attempts": 88,
+            "udp_attempts": 95,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "16469",
+            "download_bytes": "14085",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:38:34.89984871Z",
+          "monotonic_elapsed_seconds": 49.058471919,
+          "status": {
+            "tcp_echoes": 80,
+            "udp_replies": 77,
+            "tcp_attempts": 89,
+            "udp_attempts": 97,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "16469",
+            "download_bytes": "14085",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:38:35.961181483Z",
+          "monotonic_elapsed_seconds": 50.119804806,
+          "status": {
+            "tcp_echoes": 80,
+            "udp_replies": 77,
+            "tcp_attempts": 90,
+            "udp_attempts": 99,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "16469",
+            "download_bytes": "14085",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:38:37.016724227Z",
+          "monotonic_elapsed_seconds": 51.175347527,
+          "status": {
+            "tcp_echoes": 80,
+            "udp_replies": 77,
+            "tcp_attempts": 91,
+            "udp_attempts": 101,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "16469",
+            "download_bytes": "14085",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:38:38.079803476Z",
+          "monotonic_elapsed_seconds": 52.238426835,
+          "status": {
+            "tcp_echoes": 80,
+            "udp_replies": 77,
+            "tcp_attempts": 92,
+            "udp_attempts": 103,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "16469",
+            "download_bytes": "14085",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:38:39.147259582Z",
+          "monotonic_elapsed_seconds": 53.305882809,
+          "status": {
+            "tcp_echoes": 80,
+            "udp_replies": 77,
+            "tcp_attempts": 93,
+            "udp_attempts": 106,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "16469",
+            "download_bytes": "14085",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:38:40.210367785Z",
+          "monotonic_elapsed_seconds": 54.368991061,
+          "status": {
+            "tcp_echoes": 80,
+            "udp_replies": 77,
+            "tcp_attempts": 94,
+            "udp_attempts": 108,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "16469",
+            "download_bytes": "14085",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:38:41.266287131Z",
+          "monotonic_elapsed_seconds": 55.424910369,
+          "status": {
+            "tcp_echoes": 80,
+            "udp_replies": 77,
+            "tcp_attempts": 95,
+            "udp_attempts": 110,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "16469",
+            "download_bytes": "14085",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:38:42.328572664Z",
+          "monotonic_elapsed_seconds": 56.487195905,
+          "status": {
+            "tcp_echoes": 80,
+            "udp_replies": 77,
+            "tcp_attempts": 96,
+            "udp_attempts": 112,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "16469",
+            "download_bytes": "14085",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:38:43.391638508Z",
+          "monotonic_elapsed_seconds": 57.55026178,
+          "status": {
+            "tcp_echoes": 80,
+            "udp_replies": 77,
+            "tcp_attempts": 97,
+            "udp_attempts": 114,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "16469",
+            "download_bytes": "14085",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:38:44.45251877Z",
+          "monotonic_elapsed_seconds": 58.611141973,
+          "status": {
+            "tcp_echoes": 80,
+            "udp_replies": 77,
+            "tcp_attempts": 98,
+            "udp_attempts": 116,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "16469",
+            "download_bytes": "14085",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:38:45.511852121Z",
+          "monotonic_elapsed_seconds": 59.670475355,
+          "status": {
+            "tcp_echoes": 80,
+            "udp_replies": 77,
+            "tcp_attempts": 99,
+            "udp_attempts": 118,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "16469",
+            "download_bytes": "14085",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:38:46.572546351Z",
+          "monotonic_elapsed_seconds": 60.731169623,
+          "status": {
+            "tcp_echoes": 80,
+            "udp_replies": 77,
+            "tcp_attempts": 100,
+            "udp_attempts": 120,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "16469",
+            "download_bytes": "14085",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:38:47.639535981Z",
+          "monotonic_elapsed_seconds": 61.798159233,
+          "status": {
+            "tcp_echoes": 80,
+            "udp_replies": 77,
+            "tcp_attempts": 101,
+            "udp_attempts": 123,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "16469",
+            "download_bytes": "14085",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:38:48.704823993Z",
+          "monotonic_elapsed_seconds": 62.863447229,
+          "status": {
+            "tcp_echoes": 80,
+            "udp_replies": 77,
+            "tcp_attempts": 103,
+            "udp_attempts": 125,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "16469",
+            "download_bytes": "14085",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:38:49.765805849Z",
+          "monotonic_elapsed_seconds": 63.924429076,
+          "status": {
+            "tcp_echoes": 80,
+            "udp_replies": 77,
+            "tcp_attempts": 104,
+            "udp_attempts": 127,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "16469",
+            "download_bytes": "14085",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:38:50.814164507Z",
+          "monotonic_elapsed_seconds": 64.972787674,
+          "status": {
+            "tcp_echoes": 80,
+            "udp_replies": 77,
+            "tcp_attempts": 105,
+            "udp_attempts": 129,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "16469",
+            "download_bytes": "14085",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:38:51.879861176Z",
+          "monotonic_elapsed_seconds": 66.03848443,
+          "status": {
+            "tcp_echoes": 80,
+            "udp_replies": 77,
+            "tcp_attempts": 106,
+            "udp_attempts": 131,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "16469",
+            "download_bytes": "14085",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:38:52.950574772Z",
+          "monotonic_elapsed_seconds": 67.109198247,
+          "status": {
+            "tcp_echoes": 80,
+            "udp_replies": 77,
+            "tcp_attempts": 107,
+            "udp_attempts": 133,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "16469",
+            "download_bytes": "14085",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:38:54.017788651Z",
+          "monotonic_elapsed_seconds": 68.176411879,
+          "status": {
+            "tcp_echoes": 80,
+            "udp_replies": 77,
+            "tcp_attempts": 108,
+            "udp_attempts": 135,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "16469",
+            "download_bytes": "14085",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:38:55.085449411Z",
+          "monotonic_elapsed_seconds": 69.244072645,
+          "status": {
+            "tcp_echoes": 80,
+            "udp_replies": 77,
+            "tcp_attempts": 109,
+            "udp_attempts": 137,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "16469",
+            "download_bytes": "14085",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:38:56.151732087Z",
+          "monotonic_elapsed_seconds": 70.310355349,
+          "status": {
+            "tcp_echoes": 80,
+            "udp_replies": 77,
+            "tcp_attempts": 110,
+            "udp_attempts": 139,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "16469",
+            "download_bytes": "14085",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:38:57.209835644Z",
+          "monotonic_elapsed_seconds": 71.368458876,
+          "status": {
+            "tcp_echoes": 80,
+            "udp_replies": 77,
+            "tcp_attempts": 111,
+            "udp_attempts": 142,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "16469",
+            "download_bytes": "14085",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:38:58.265679176Z",
+          "monotonic_elapsed_seconds": 72.424302695,
+          "status": {
+            "tcp_echoes": 80,
+            "udp_replies": 77,
+            "tcp_attempts": 112,
+            "udp_attempts": 144,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "16469",
+            "download_bytes": "14085",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:38:59.329857025Z",
+          "monotonic_elapsed_seconds": 73.4884806,
+          "status": {
+            "tcp_echoes": 80,
+            "udp_replies": 77,
+            "tcp_attempts": 113,
+            "udp_attempts": 146,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "16469",
+            "download_bytes": "14085",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:39:00.393931482Z",
+          "monotonic_elapsed_seconds": 74.552554723,
+          "status": {
+            "tcp_echoes": 80,
+            "udp_replies": 77,
+            "tcp_attempts": 114,
+            "udp_attempts": 148,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "16469",
+            "download_bytes": "14085",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:39:01.455965212Z",
+          "monotonic_elapsed_seconds": 75.614588467,
+          "status": {
+            "tcp_echoes": 80,
+            "udp_replies": 77,
+            "tcp_attempts": 115,
+            "udp_attempts": 150,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "16469",
+            "download_bytes": "14085",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:39:02.515675737Z",
+          "monotonic_elapsed_seconds": 76.674298951,
+          "status": {
+            "tcp_echoes": 80,
+            "udp_replies": 77,
+            "tcp_attempts": 116,
+            "udp_attempts": 152,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "16469",
+            "download_bytes": "14085",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:39:03.576273701Z",
+          "monotonic_elapsed_seconds": 77.734896909,
+          "status": {
+            "tcp_echoes": 80,
+            "udp_replies": 77,
+            "tcp_attempts": 117,
+            "udp_attempts": 154,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "16469",
+            "download_bytes": "14085",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:39:04.644526784Z",
+          "monotonic_elapsed_seconds": 78.803150052,
+          "status": {
+            "tcp_echoes": 80,
+            "udp_replies": 77,
+            "tcp_attempts": 118,
+            "udp_attempts": 157,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "16469",
+            "download_bytes": "14085",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:39:05.709741461Z",
+          "monotonic_elapsed_seconds": 79.868364676,
+          "status": {
+            "tcp_echoes": 80,
+            "udp_replies": 77,
+            "tcp_attempts": 120,
+            "udp_attempts": 159,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "16469",
+            "download_bytes": "14085",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:39:06.776331512Z",
+          "monotonic_elapsed_seconds": 80.934954721,
+          "status": {
+            "tcp_echoes": 80,
+            "udp_replies": 77,
+            "tcp_attempts": 121,
+            "udp_attempts": 161,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "16469",
+            "download_bytes": "14085",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:39:07.837274732Z",
+          "monotonic_elapsed_seconds": 81.995897953,
+          "status": {
+            "tcp_echoes": 80,
+            "udp_replies": 77,
+            "tcp_attempts": 122,
+            "udp_attempts": 163,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "16469",
+            "download_bytes": "14085",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:39:08.89699986Z",
+          "monotonic_elapsed_seconds": 83.055623164,
+          "status": {
+            "tcp_echoes": 80,
+            "udp_replies": 77,
+            "tcp_attempts": 123,
+            "udp_attempts": 165,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "16469",
+            "download_bytes": "14085",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:39:09.956659767Z",
+          "monotonic_elapsed_seconds": 84.115282994,
+          "status": {
+            "tcp_echoes": 80,
+            "udp_replies": 77,
+            "tcp_attempts": 124,
+            "udp_attempts": 167,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "16469",
+            "download_bytes": "14085",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:39:11.017997762Z",
+          "monotonic_elapsed_seconds": 85.17662105,
+          "status": {
+            "tcp_echoes": 80,
+            "udp_replies": 77,
+            "tcp_attempts": 125,
+            "udp_attempts": 169,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "16469",
+            "download_bytes": "14085",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:39:12.081301757Z",
+          "monotonic_elapsed_seconds": 86.239924966,
+          "status": {
+            "tcp_echoes": 80,
+            "udp_replies": 77,
+            "tcp_attempts": 126,
+            "udp_attempts": 171,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "16469",
+            "download_bytes": "14085",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:39:13.142768691Z",
+          "monotonic_elapsed_seconds": 87.301391918,
+          "status": {
+            "tcp_echoes": 80,
+            "udp_replies": 77,
+            "tcp_attempts": 127,
+            "udp_attempts": 173,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "16469",
+            "download_bytes": "14085",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:39:14.208121363Z",
+          "monotonic_elapsed_seconds": 88.36674469,
+          "status": {
+            "tcp_echoes": 80,
+            "udp_replies": 77,
+            "tcp_attempts": 128,
+            "udp_attempts": 176,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "16469",
+            "download_bytes": "14085",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:39:15.261759483Z",
+          "monotonic_elapsed_seconds": 89.420382722,
+          "status": {
+            "tcp_echoes": 80,
+            "udp_replies": 77,
+            "tcp_attempts": 129,
+            "udp_attempts": 178,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "16469",
+            "download_bytes": "14085",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:39:16.325143192Z",
+          "monotonic_elapsed_seconds": 90.48376656,
+          "status": {
+            "tcp_echoes": 80,
+            "udp_replies": 77,
+            "tcp_attempts": 130,
+            "udp_attempts": 180,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "16469",
+            "download_bytes": "14085",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:39:17.38998722Z",
+          "monotonic_elapsed_seconds": 91.548610535,
+          "status": {
+            "tcp_echoes": 80,
+            "udp_replies": 77,
+            "tcp_attempts": 131,
+            "udp_attempts": 182,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "16469",
+            "download_bytes": "14085",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:39:18.453141742Z",
+          "monotonic_elapsed_seconds": 92.611764966,
+          "status": {
+            "tcp_echoes": 80,
+            "udp_replies": 77,
+            "tcp_attempts": 132,
+            "udp_attempts": 184,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "16469",
+            "download_bytes": "14085",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:39:19.516149883Z",
+          "monotonic_elapsed_seconds": 93.674773097,
+          "status": {
+            "tcp_echoes": 80,
+            "udp_replies": 77,
+            "tcp_attempts": 133,
+            "udp_attempts": 186,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "16469",
+            "download_bytes": "14085",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:39:20.580276944Z",
+          "monotonic_elapsed_seconds": 94.738900357,
+          "status": {
+            "tcp_echoes": 80,
+            "udp_replies": 77,
+            "tcp_attempts": 134,
+            "udp_attempts": 188,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "16469",
+            "download_bytes": "14085",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:39:21.645561507Z",
+          "monotonic_elapsed_seconds": 95.804184731,
+          "status": {
+            "tcp_echoes": 80,
+            "udp_replies": 77,
+            "tcp_attempts": 135,
+            "udp_attempts": 190,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "16469",
+            "download_bytes": "14085",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:39:22.69847559Z",
+          "monotonic_elapsed_seconds": 96.857098859,
+          "status": {
+            "tcp_echoes": 80,
+            "udp_replies": 77,
+            "tcp_attempts": 137,
+            "udp_attempts": 193,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "16469",
+            "download_bytes": "14085",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:39:23.760336683Z",
+          "monotonic_elapsed_seconds": 97.918960016,
+          "status": {
+            "tcp_echoes": 80,
+            "udp_replies": 77,
+            "tcp_attempts": 138,
+            "udp_attempts": 195,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "16469",
+            "download_bytes": "14085",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:39:24.810034576Z",
+          "monotonic_elapsed_seconds": 98.968657802,
+          "status": {
+            "tcp_echoes": 80,
+            "udp_replies": 77,
+            "tcp_attempts": 139,
+            "udp_attempts": 197,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "16469",
+            "download_bytes": "14085",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:39:25.862806159Z",
+          "monotonic_elapsed_seconds": 100.021429419,
+          "status": {
+            "tcp_echoes": 80,
+            "udp_replies": 77,
+            "tcp_attempts": 140,
+            "udp_attempts": 199,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "16469",
+            "download_bytes": "14085",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:39:26.926906983Z",
+          "monotonic_elapsed_seconds": 101.085530194,
+          "status": {
+            "tcp_echoes": 80,
+            "udp_replies": 77,
+            "tcp_attempts": 141,
+            "udp_attempts": 201,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "16469",
+            "download_bytes": "14085",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:39:27.987821778Z",
+          "monotonic_elapsed_seconds": 102.14644501,
+          "status": {
+            "tcp_echoes": 80,
+            "udp_replies": 77,
+            "tcp_attempts": 142,
+            "udp_attempts": 203,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "16469",
+            "download_bytes": "14085",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:39:29.04965072Z",
+          "monotonic_elapsed_seconds": 103.20827395,
+          "status": {
+            "tcp_echoes": 80,
+            "udp_replies": 77,
+            "tcp_attempts": 143,
+            "udp_attempts": 205,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "16469",
+            "download_bytes": "14085",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:39:30.102814534Z",
+          "monotonic_elapsed_seconds": 104.261438063,
+          "status": {
+            "tcp_echoes": 80,
+            "udp_replies": 77,
+            "tcp_attempts": 144,
+            "udp_attempts": 208,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "16469",
+            "download_bytes": "14085",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:39:31.164096489Z",
+          "monotonic_elapsed_seconds": 105.322719774,
+          "status": {
+            "tcp_echoes": 80,
+            "udp_replies": 77,
+            "tcp_attempts": 145,
+            "udp_attempts": 210,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "16469",
+            "download_bytes": "14085",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        }
+      ],
+      "service_end": "2026-10-31T08:07:20Z",
+      "session": {
+        "Device": "01a190e4-954e-781e-a94b-aeb270ac0544",
+        "TCP": "192.0.5.10:9446",
+        "UDP": "192.0.5.10:9445"
+      },
+      "signed_lease": {
+        "members": [
+          {
+            "lease_end": "2026-10-31T07:54:57Z",
+            "member_id": "01a190df-2047-72ae-b659-b6ce7b9d9058",
+            "entitlement_revision": "3",
+            "effective_service_end": "2026-10-31T07:54:57Z"
+          },
+          {
+            "lease_end": "2026-10-31T08:05:08Z",
+            "member_id": "01a190e2-3e82-72d5-973e-79cdc60175d5",
+            "entitlement_revision": "1",
+            "effective_service_end": "2026-10-31T08:05:08Z"
+          },
+          {
+            "lease_end": "2026-10-31T08:07:20Z",
+            "member_id": "01a190e4-433c-731e-b50b-ae14310a4f78",
+            "entitlement_revision": "1",
+            "effective_service_end": "2026-10-31T08:07:20Z"
+          }
+        ],
+        "issued_at": "2026-10-31T07:38:22.348881+00:00",
+        "expires_at": "2026-11-01T07:38:22.348881+00:00",
+        "generation": "16"
+      },
+      "status": "passed",
+      "transport_cleanup_ok": true,
+      "transport_scope": "one original TCP/9446 connection and authenticated UDP/9445 socket; independent senders; helper limit 20 minutes",
+      "withdrawal_bound_seconds": 60
+    },
+    "forced_relay": {
+      "before_path": {
+        "Relayed": 0,
+        "Direct": 1,
+        "Forced": false
+      },
+      "cleanup_ok": true,
+      "cleanup_path": {
+        "Relayed": 0,
+        "Direct": 1,
+        "Forced": false
+      },
+      "direct_restored_samples": [
+        {
+          "utc": "2026-10-31T07:38:23.256873977Z",
+          "monotonic_elapsed_seconds": 32.275271982,
+          "status": {
+            "tcp_echoes": 62,
+            "udp_replies": 65,
+            "tcp_attempts": 68,
+            "udp_attempts": 74,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "14237",
+            "download_bytes": "12417",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:38:28.320268915Z",
+          "monotonic_elapsed_seconds": 37.338666919,
+          "status": {
+            "tcp_echoes": 72,
+            "udp_replies": 75,
+            "tcp_attempts": 78,
+            "udp_attempts": 84,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "16097",
+            "download_bytes": "13807",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        }
+      ],
+      "forced_after_seconds": 6.40928037,
+      "forced_path": {
+        "Relayed": 1,
+        "Direct": 0,
+        "Forced": true
+      },
+      "relay_samples": [
+        {
+          "utc": "2026-10-31T07:37:51.092844048Z",
+          "monotonic_elapsed_seconds": 0.111242263,
+          "status": {
+            "tcp_echoes": 9,
+            "udp_replies": 9,
+            "tcp_attempts": 10,
+            "udp_attempts": 9,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "4252",
+            "download_bytes": "4586",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:37:57.450116314Z",
+          "monotonic_elapsed_seconds": 6.468514424,
+          "status": {
+            "tcp_echoes": 10,
+            "udp_replies": 13,
+            "tcp_attempts": 16,
+            "udp_attempts": 22,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "4483",
+            "download_bytes": "4817",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:38:02.506553817Z",
+          "monotonic_elapsed_seconds": 11.524951885,
+          "status": {
+            "tcp_echoes": 20,
+            "udp_replies": 23,
+            "tcp_attempts": 26,
+            "udp_attempts": 32,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "6425",
+            "download_bytes": "6579",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        }
+      ],
+      "relay_window_end_path": {
+        "Relayed": 1,
+        "Direct": 0,
+        "Forced": false
+      },
+      "restore_after_seconds": 32.223808229,
+      "restored_path": {
+        "Relayed": 0,
+        "Direct": 1,
+        "Forced": false
+      },
+      "same_sockets_across_steps": true,
+      "scope": "one member, one exit, established TCP and UDP; 180-second automatic fault expiry, 90-second path wait; not 60-peer relay capacity",
+      "status": "passed"
+    },
     "grant_expiry": {
-      "action_started_at": "2026-10-31T07:00:42.980649614Z",
+      "action_started_at": "2026-10-31T07:34:19.392408609Z",
       "after_heartbeat": {
         "baseline_ok": "1",
         "generation": "7",
-        "mono_ns": "13575903227744",
-        "policy_expires_mono_ns": "13604513562223",
+        "mono_ns": "15595506910650",
+        "policy_expires_mono_ns": "15621512286213",
         "reason": "serving",
         "serving": "1",
-        "wall_unix_ns": "1793430038386856930"
+        "wall_unix_ns": "1793432057990539684"
       },
       "after_kernel_timeout": {
         "nftables": [
@@ -2342,7 +3966,7 @@
         "counted": true,
         "counter_reads_ok": true,
         "http_200": true,
-        "network_list": "Available Networks:\n\n  - ID: fvpn-exit-b4686fe5dfd5ce0e5352c8e5\n    Network: 0.0.0.0/0\n    Status: Not Selected",
+        "network_list": "Available Networks:\n\n  - ID: fvpn-exit-992ffd846ce6d4db075355b7\n    Network: 0.0.0.0/0\n    Status: Not Selected",
         "network_list_ok": true,
         "order": [
           "select advertised exit",
@@ -2357,22 +3981,22 @@
         "origin_requests": 1,
         "peer": {
           "container_role": "member-f11-grant-expiry",
-          "device_id": "01a190c0-a7ab-7ac3-be37-d1ea7bc5a81d"
+          "device_id": "01a190df-3b95-78a8-8653-ec5e7b5033de"
         },
         "route_device": "fvnb0",
-        "route_get": "\u003ccontrolled-origin\u003e dev fvnb0 table netbird src 100.123.35.211 uid 0 \n    cache",
+        "route_get": "\u003ccontrolled-origin\u003e dev fvnb0 table netbird src 100.91.6.245 uid 0 \n    cache",
         "selection_ok": true,
         "selection_output": "Networks selected successfully.",
-        "utc": "2026-10-31T06:58:33.347737661Z"
+        "utc": "2026-10-31T07:32:00.621015505Z"
       },
       "before_heartbeat": {
         "baseline_ok": "1",
         "generation": "7",
-        "mono_ns": "13575903227744",
-        "policy_expires_mono_ns": "13604513562223",
+        "mono_ns": "15595506910650",
+        "policy_expires_mono_ns": "15621512286213",
         "reason": "serving",
         "serving": "1",
-        "wall_unix_ns": "1793430038386856930"
+        "wall_unix_ns": "1793432057990539684"
       },
       "before_kernel_timeout": {
         "nftables": [
@@ -2396,9 +4020,9 @@
               "elem": [
                 {
                   "elem": {
-                    "val": "100.123.35.211",
-                    "timeout": 28,
-                    "expires": 23
+                    "val": "100.91.6.245",
+                    "timeout": 26,
+                    "expires": 24
                   }
                 }
               ]
@@ -2409,38 +4033,38 @@
       "continued_before_expiry": true,
       "control_lost_agent_alive": [
         {
-          "utc": "2026-10-31T07:00:43.629239513Z",
-          "monotonic_elapsed_seconds": 129.981170484,
+          "utc": "2026-10-31T07:34:19.748291416Z",
+          "monotonic_elapsed_seconds": 138.71272215,
           "status": {
-            "tcp_echoes": 259,
-            "udp_replies": 259,
-            "tcp_attempts": 259,
-            "udp_attempts": 259,
+            "tcp_echoes": 276,
+            "udp_replies": 275,
+            "tcp_attempts": 276,
+            "udp_attempts": 276,
             "running": true,
             "error": ""
           },
           "counters": {
-            "upload_bytes": "49500",
-            "download_bytes": "37684",
+            "upload_bytes": "52585",
+            "download_bytes": "39970",
             "Present": true
           },
           "status_read_ok": true,
           "counter_read_ok": true
         },
         {
-          "utc": "2026-10-31T07:00:46.693470663Z",
-          "monotonic_elapsed_seconds": 133.045401557,
+          "utc": "2026-10-31T07:34:22.812088324Z",
+          "monotonic_elapsed_seconds": 141.776519067,
           "status": {
-            "tcp_echoes": 265,
-            "udp_replies": 265,
-            "tcp_attempts": 265,
-            "udp_attempts": 265,
+            "tcp_echoes": 282,
+            "udp_replies": 281,
+            "tcp_attempts": 282,
+            "udp_attempts": 282,
             "running": true,
             "error": ""
           },
           "counters": {
-            "upload_bytes": "50616",
-            "download_bytes": "38518",
+            "upload_bytes": "53701",
+            "download_bytes": "40804",
             "Present": true
           },
           "status_read_ok": true,
@@ -2450,50 +4074,50 @@
       "control_restart_ok": true,
       "cutoff_samples": [
         {
-          "utc": "2026-10-31T07:01:10.226559341Z",
-          "monotonic_elapsed_seconds": 156.578490196,
+          "utc": "2026-10-31T07:34:47.42945896Z",
+          "monotonic_elapsed_seconds": 166.393889735,
           "status": {
-            "tcp_echoes": 304,
-            "udp_replies": 304,
-            "tcp_attempts": 308,
-            "udp_attempts": 312,
+            "tcp_echoes": 325,
+            "udp_replies": 324,
+            "tcp_attempts": 328,
+            "udp_attempts": 331,
             "running": true,
             "error": ""
           },
           "counters": {
-            "upload_bytes": "57870",
-            "download_bytes": "43939",
+            "upload_bytes": "61699",
+            "download_bytes": "46781",
             "Present": true
           },
           "status_read_ok": true,
           "counter_read_ok": true
         },
         {
-          "utc": "2026-10-31T07:01:20.291634819Z",
-          "monotonic_elapsed_seconds": 166.643565711,
+          "utc": "2026-10-31T07:34:57.49462088Z",
+          "monotonic_elapsed_seconds": 176.459051623,
           "status": {
-            "tcp_echoes": 304,
-            "udp_replies": 304,
-            "tcp_attempts": 318,
-            "udp_attempts": 332,
+            "tcp_echoes": 325,
+            "udp_replies": 324,
+            "tcp_attempts": 338,
+            "udp_attempts": 352,
             "running": true,
             "error": ""
           },
           "counters": {
-            "upload_bytes": "57870",
-            "download_bytes": "43939",
+            "upload_bytes": "61699",
+            "download_bytes": "46781",
             "Present": true
           },
           "status_read_ok": true,
           "counter_read_ok": true
         }
       ],
-      "earliest_deadline": "2026-10-31T07:01:07Z",
+      "earliest_deadline": "2026-10-31T07:34:44Z",
       "owner": "w3-devstack-e2e",
       "positive_samples": [
         {
-          "utc": "2026-10-31T06:58:34.784029437Z",
-          "monotonic_elapsed_seconds": 1.135960301,
+          "utc": "2026-10-31T07:32:02.21712112Z",
+          "monotonic_elapsed_seconds": 1.181551855,
           "status": {
             "tcp_echoes": 1,
             "udp_replies": 1,
@@ -2511,8 +4135,8 @@
           "counter_read_ok": true
         },
         {
-          "utc": "2026-10-31T06:58:38.848016477Z",
-          "monotonic_elapsed_seconds": 5.199947326,
+          "utc": "2026-10-31T07:32:06.269482625Z",
+          "monotonic_elapsed_seconds": 5.233913345,
           "status": {
             "tcp_echoes": 9,
             "udp_replies": 9,
@@ -2530,427 +4154,554 @@
           "counter_read_ok": true
         }
       ],
+      "recovery_ack": {
+        "applied_config_generation": "8",
+        "available": true,
+        "checks": [
+          {
+            "error_code": null,
+            "name": "dns_policy",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "internet_only",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "lease",
+            "status": "not_run"
+          },
+          {
+            "error_code": null,
+            "name": "meter_path",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "policy_signature",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "qos",
+            "status": "not_run"
+          },
+          {
+            "error_code": null,
+            "name": "release_supported",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "source_binding",
+            "status": "not_run"
+          },
+          {
+            "error_code": null,
+            "name": "storage",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "tunnel_probe",
+            "status": "passed"
+          }
+        ],
+        "data_health": "healthy",
+        "forwarding_evidence_satisfied": false,
+        "lease": {
+          "expires_at": "2026-11-01T07:34:57.863292875Z",
+          "lease_id": "85c1ecb9-8107-42de-b931-c142e0c6f7b5"
+        },
+        "member_forwarding_enabled": true,
+        "observed_at": "2026-10-31T07:34:57.960212155Z",
+        "provisioning_state": "ready",
+        "report_id": "01a190e2-14a8-7345-a930-34e702f9584e",
+        "safety_status": "passed"
+      },
+      "recovery_flow": {
+        "admitted_bytes_delta": {
+          "download": "1515",
+          "upload": "1066"
+        },
+        "after_bytes": {
+          "download": "48296",
+          "generation": "10",
+          "upload": "63150"
+        },
+        "before_bytes": {
+          "download": "46781",
+          "generation": "10",
+          "upload": "62084"
+        },
+        "counted": true,
+        "counter_reads_ok": true,
+        "http_200": true,
+        "network_list": "Available Networks:\n\n  - ID: fvpn-exit-992ffd846ce6d4db075355b7\n    Network: 0.0.0.0/0\n    Status: Selected",
+        "network_list_ok": true,
+        "order": [
+          "select advertised exit",
+          "route dev fvnb0",
+          "HTTPS 200",
+          "authenticated node-SNAT receipt",
+          "exact-device byte delta"
+        ],
+        "origin_authenticated": true,
+        "origin_node_snat": true,
+        "origin_probe_matches": true,
+        "origin_requests": 1,
+        "peer": {
+          "container_role": "member-f11-grant-expiry",
+          "device_id": "01a190df-3b95-78a8-8653-ec5e7b5033de"
+        },
+        "route_device": "fvnb0",
+        "route_get": "\u003ccontrolled-origin\u003e dev fvnb0 table netbird src 100.91.6.245 uid 0 \n    cache",
+        "selection_ok": true,
+        "selection_output": "Networks selected successfully.",
+        "utc": "2026-10-31T07:35:05.370718618Z"
+      },
       "samples": [
         {
-          "utc": "2026-10-31T07:00:46.79697868Z",
-          "monotonic_elapsed_seconds": 133.148909636,
-          "status": {
-            "tcp_echoes": 265,
-            "udp_replies": 265,
-            "tcp_attempts": 265,
-            "udp_attempts": 265,
-            "running": true,
-            "error": ""
-          },
-          "counters": {
-            "upload_bytes": "50616",
-            "download_bytes": "38518",
-            "Present": true
-          },
-          "status_read_ok": true,
-          "counter_read_ok": true
-        },
-        {
-          "utc": "2026-10-31T07:00:47.859293939Z",
-          "monotonic_elapsed_seconds": 134.211224787,
-          "status": {
-            "tcp_echoes": 267,
-            "udp_replies": 267,
-            "tcp_attempts": 267,
-            "udp_attempts": 267,
-            "running": true,
-            "error": ""
-          },
-          "counters": {
-            "upload_bytes": "50988",
-            "download_bytes": "38796",
-            "Present": true
-          },
-          "status_read_ok": true,
-          "counter_read_ok": true
-        },
-        {
-          "utc": "2026-10-31T07:00:48.924767527Z",
-          "monotonic_elapsed_seconds": 135.276698473,
-          "status": {
-            "tcp_echoes": 269,
-            "udp_replies": 269,
-            "tcp_attempts": 269,
-            "udp_attempts": 269,
-            "running": true,
-            "error": ""
-          },
-          "counters": {
-            "upload_bytes": "51360",
-            "download_bytes": "39074",
-            "Present": true
-          },
-          "status_read_ok": true,
-          "counter_read_ok": true
-        },
-        {
-          "utc": "2026-10-31T07:00:49.994051473Z",
-          "monotonic_elapsed_seconds": 136.345982434,
-          "status": {
-            "tcp_echoes": 271,
-            "udp_replies": 271,
-            "tcp_attempts": 271,
-            "udp_attempts": 271,
-            "running": true,
-            "error": ""
-          },
-          "counters": {
-            "upload_bytes": "51732",
-            "download_bytes": "39352",
-            "Present": true
-          },
-          "status_read_ok": true,
-          "counter_read_ok": true
-        },
-        {
-          "utc": "2026-10-31T07:00:51.063067993Z",
-          "monotonic_elapsed_seconds": 137.414998922,
-          "status": {
-            "tcp_echoes": 273,
-            "udp_replies": 273,
-            "tcp_attempts": 273,
-            "udp_attempts": 274,
-            "running": true,
-            "error": ""
-          },
-          "counters": {
-            "upload_bytes": "52290",
-            "download_bytes": "39769",
-            "Present": true
-          },
-          "status_read_ok": true,
-          "counter_read_ok": true
-        },
-        {
-          "utc": "2026-10-31T07:00:52.135780431Z",
-          "monotonic_elapsed_seconds": 138.487711388,
-          "status": {
-            "tcp_echoes": 276,
-            "udp_replies": 276,
-            "tcp_attempts": 276,
-            "udp_attempts": 276,
-            "running": true,
-            "error": ""
-          },
-          "counters": {
-            "upload_bytes": "52662",
-            "download_bytes": "40047",
-            "Present": true
-          },
-          "status_read_ok": true,
-          "counter_read_ok": true
-        },
-        {
-          "utc": "2026-10-31T07:00:53.204842107Z",
-          "monotonic_elapsed_seconds": 139.55677301,
-          "status": {
-            "tcp_echoes": 278,
-            "udp_replies": 278,
-            "tcp_attempts": 278,
-            "udp_attempts": 278,
-            "running": true,
-            "error": ""
-          },
-          "counters": {
-            "upload_bytes": "53034",
-            "download_bytes": "40325",
-            "Present": true
-          },
-          "status_read_ok": true,
-          "counter_read_ok": true
-        },
-        {
-          "utc": "2026-10-31T07:00:54.264683723Z",
-          "monotonic_elapsed_seconds": 140.616614605,
-          "status": {
-            "tcp_echoes": 280,
-            "udp_replies": 280,
-            "tcp_attempts": 280,
-            "udp_attempts": 280,
-            "running": true,
-            "error": ""
-          },
-          "counters": {
-            "upload_bytes": "53406",
-            "download_bytes": "40603",
-            "Present": true
-          },
-          "status_read_ok": true,
-          "counter_read_ok": true
-        },
-        {
-          "utc": "2026-10-31T07:00:55.331314086Z",
-          "monotonic_elapsed_seconds": 141.683244989,
+          "utc": "2026-10-31T07:34:22.912133145Z",
+          "monotonic_elapsed_seconds": 141.876563968,
           "status": {
             "tcp_echoes": 282,
-            "udp_replies": 282,
+            "udp_replies": 281,
             "tcp_attempts": 282,
             "udp_attempts": 282,
             "running": true,
             "error": ""
           },
           "counters": {
-            "upload_bytes": "53778",
-            "download_bytes": "40881",
+            "upload_bytes": "53887",
+            "download_bytes": "40943",
             "Present": true
           },
           "status_read_ok": true,
           "counter_read_ok": true
         },
         {
-          "utc": "2026-10-31T07:00:56.402759079Z",
-          "monotonic_elapsed_seconds": 142.75469007,
+          "utc": "2026-10-31T07:34:23.972976404Z",
+          "monotonic_elapsed_seconds": 142.937407318,
           "status": {
             "tcp_echoes": 284,
-            "udp_replies": 284,
-            "tcp_attempts": 284,
+            "udp_replies": 283,
+            "tcp_attempts": 285,
             "udp_attempts": 284,
             "running": true,
             "error": ""
           },
           "counters": {
-            "upload_bytes": "54150",
-            "download_bytes": "41159",
+            "upload_bytes": "54259",
+            "download_bytes": "41221",
             "Present": true
           },
           "status_read_ok": true,
           "counter_read_ok": true
         },
         {
-          "utc": "2026-10-31T07:00:57.459906198Z",
-          "monotonic_elapsed_seconds": 143.811837445,
+          "utc": "2026-10-31T07:34:25.045492865Z",
+          "monotonic_elapsed_seconds": 144.009923613,
           "status": {
-            "tcp_echoes": 286,
+            "tcp_echoes": 287,
             "udp_replies": 286,
-            "tcp_attempts": 286,
-            "udp_attempts": 286,
+            "tcp_attempts": 287,
+            "udp_attempts": 287,
             "running": true,
             "error": ""
           },
           "counters": {
-            "upload_bytes": "54522",
-            "download_bytes": "41437",
+            "upload_bytes": "54631",
+            "download_bytes": "41499",
             "Present": true
           },
           "status_read_ok": true,
           "counter_read_ok": true
         },
         {
-          "utc": "2026-10-31T07:00:58.527445535Z",
-          "monotonic_elapsed_seconds": 144.879376432,
+          "utc": "2026-10-31T07:34:26.11558991Z",
+          "monotonic_elapsed_seconds": 145.08002081,
           "status": {
-            "tcp_echoes": 288,
+            "tcp_echoes": 289,
             "udp_replies": 288,
             "tcp_attempts": 289,
-            "udp_attempts": 288,
+            "udp_attempts": 289,
             "running": true,
             "error": ""
           },
           "counters": {
-            "upload_bytes": "55080",
-            "download_bytes": "41854",
+            "upload_bytes": "55003",
+            "download_bytes": "41777",
             "Present": true
           },
           "status_read_ok": true,
           "counter_read_ok": true
         },
         {
-          "utc": "2026-10-31T07:00:59.597475974Z",
-          "monotonic_elapsed_seconds": 145.949406924,
+          "utc": "2026-10-31T07:34:27.178075098Z",
+          "monotonic_elapsed_seconds": 146.142505868,
           "status": {
-            "tcp_echoes": 290,
+            "tcp_echoes": 291,
             "udp_replies": 290,
             "tcp_attempts": 291,
-            "udp_attempts": 290,
+            "udp_attempts": 291,
             "running": true,
             "error": ""
           },
           "counters": {
-            "upload_bytes": "55452",
-            "download_bytes": "42132",
+            "upload_bytes": "55375",
+            "download_bytes": "42055",
             "Present": true
           },
           "status_read_ok": true,
           "counter_read_ok": true
         },
         {
-          "utc": "2026-10-31T07:01:00.664474967Z",
-          "monotonic_elapsed_seconds": 147.016406111,
+          "utc": "2026-10-31T07:34:28.298347117Z",
+          "monotonic_elapsed_seconds": 147.262777884,
           "status": {
             "tcp_echoes": 293,
-            "udp_replies": 293,
+            "udp_replies": 292,
             "tcp_attempts": 293,
             "udp_attempts": 293,
             "running": true,
             "error": ""
           },
           "counters": {
-            "upload_bytes": "55824",
-            "download_bytes": "42410",
+            "upload_bytes": "55747",
+            "download_bytes": "42333",
             "Present": true
           },
           "status_read_ok": true,
           "counter_read_ok": true
         },
         {
-          "utc": "2026-10-31T07:01:01.732897715Z",
-          "monotonic_elapsed_seconds": 148.084828658,
+          "utc": "2026-10-31T07:34:29.382812305Z",
+          "monotonic_elapsed_seconds": 148.34724323,
           "status": {
             "tcp_echoes": 295,
-            "udp_replies": 295,
+            "udp_replies": 294,
             "tcp_attempts": 295,
             "udp_attempts": 295,
             "running": true,
             "error": ""
           },
           "counters": {
-            "upload_bytes": "56196",
-            "download_bytes": "42688",
+            "upload_bytes": "56119",
+            "download_bytes": "42611",
             "Present": true
           },
           "status_read_ok": true,
           "counter_read_ok": true
         },
         {
-          "utc": "2026-10-31T07:01:02.800185964Z",
-          "monotonic_elapsed_seconds": 149.152117027,
+          "utc": "2026-10-31T07:34:30.444053814Z",
+          "monotonic_elapsed_seconds": 149.408484582,
           "status": {
             "tcp_echoes": 297,
-            "udp_replies": 297,
-            "tcp_attempts": 297,
+            "udp_replies": 296,
+            "tcp_attempts": 298,
             "udp_attempts": 297,
             "running": true,
             "error": ""
           },
           "counters": {
-            "upload_bytes": "56568",
-            "download_bytes": "42966",
+            "upload_bytes": "56677",
+            "download_bytes": "43028",
             "Present": true
           },
           "status_read_ok": true,
           "counter_read_ok": true
         },
         {
-          "utc": "2026-10-31T07:01:03.863313243Z",
-          "monotonic_elapsed_seconds": 150.215244174,
+          "utc": "2026-10-31T07:34:31.507639405Z",
+          "monotonic_elapsed_seconds": 150.472070149,
           "status": {
             "tcp_echoes": 299,
-            "udp_replies": 299,
-            "tcp_attempts": 299,
-            "udp_attempts": 299,
+            "udp_replies": 298,
+            "tcp_attempts": 300,
+            "udp_attempts": 300,
             "running": true,
             "error": ""
           },
           "counters": {
-            "upload_bytes": "56940",
-            "download_bytes": "43244",
+            "upload_bytes": "57049",
+            "download_bytes": "43306",
             "Present": true
           },
           "status_read_ok": true,
           "counter_read_ok": true
         },
         {
-          "utc": "2026-10-31T07:01:04.927159756Z",
-          "monotonic_elapsed_seconds": 151.279090664,
+          "utc": "2026-10-31T07:34:32.569468819Z",
+          "monotonic_elapsed_seconds": 151.5338996,
           "status": {
-            "tcp_echoes": 301,
+            "tcp_echoes": 302,
             "udp_replies": 301,
-            "tcp_attempts": 301,
-            "udp_attempts": 301,
+            "tcp_attempts": 302,
+            "udp_attempts": 302,
             "running": true,
             "error": ""
           },
           "counters": {
-            "upload_bytes": "57312",
-            "download_bytes": "43522",
+            "upload_bytes": "57421",
+            "download_bytes": "43584",
             "Present": true
           },
           "status_read_ok": true,
           "counter_read_ok": true
         },
         {
-          "utc": "2026-10-31T07:01:05.991696084Z",
-          "monotonic_elapsed_seconds": 152.343627001,
+          "utc": "2026-10-31T07:34:33.630114589Z",
+          "monotonic_elapsed_seconds": 152.594545365,
           "status": {
-            "tcp_echoes": 303,
+            "tcp_echoes": 304,
             "udp_replies": 303,
-            "tcp_attempts": 303,
-            "udp_attempts": 303,
+            "tcp_attempts": 304,
+            "udp_attempts": 304,
             "running": true,
             "error": ""
           },
           "counters": {
-            "upload_bytes": "57684",
-            "download_bytes": "43800",
+            "upload_bytes": "57793",
+            "download_bytes": "43862",
             "Present": true
           },
           "status_read_ok": true,
           "counter_read_ok": true
         },
         {
-          "utc": "2026-10-31T07:01:07.051806797Z",
-          "monotonic_elapsed_seconds": 153.403737711,
+          "utc": "2026-10-31T07:34:34.696095973Z",
+          "monotonic_elapsed_seconds": 153.660526757,
           "status": {
-            "tcp_echoes": 304,
-            "udp_replies": 304,
-            "tcp_attempts": 305,
-            "udp_attempts": 305,
-            "running": true,
-            "error": ""
-          },
-          "counters": {
-            "upload_bytes": "57870",
-            "download_bytes": "43939",
-            "Present": true
-          },
-          "status_read_ok": true,
-          "counter_read_ok": true
-        },
-        {
-          "utc": "2026-10-31T07:01:08.111937359Z",
-          "monotonic_elapsed_seconds": 154.463868309,
-          "status": {
-            "tcp_echoes": 304,
-            "udp_replies": 304,
+            "tcp_echoes": 306,
+            "udp_replies": 305,
             "tcp_attempts": 306,
+            "udp_attempts": 306,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "58165",
+            "download_bytes": "44140",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:34:35.758421445Z",
+          "monotonic_elapsed_seconds": 154.722852215,
+          "status": {
+            "tcp_echoes": 308,
+            "udp_replies": 307,
+            "tcp_attempts": 308,
             "udp_attempts": 308,
             "running": true,
             "error": ""
           },
           "counters": {
-            "upload_bytes": "57870",
-            "download_bytes": "43939",
+            "upload_bytes": "58537",
+            "download_bytes": "44418",
             "Present": true
           },
           "status_read_ok": true,
           "counter_read_ok": true
         },
         {
-          "utc": "2026-10-31T07:01:09.165399946Z",
-          "monotonic_elapsed_seconds": 155.517330879,
+          "utc": "2026-10-31T07:34:36.821765431Z",
+          "monotonic_elapsed_seconds": 155.786196155,
           "status": {
-            "tcp_echoes": 304,
-            "udp_replies": 304,
-            "tcp_attempts": 307,
+            "tcp_echoes": 310,
+            "udp_replies": 309,
+            "tcp_attempts": 310,
             "udp_attempts": 310,
             "running": true,
             "error": ""
           },
           "counters": {
-            "upload_bytes": "57870",
-            "download_bytes": "43939",
+            "upload_bytes": "58909",
+            "download_bytes": "44696",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:34:37.885820337Z",
+          "monotonic_elapsed_seconds": 156.850251181,
+          "status": {
+            "tcp_echoes": 312,
+            "udp_replies": 311,
+            "tcp_attempts": 312,
+            "udp_attempts": 312,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "59281",
+            "download_bytes": "44974",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:34:38.945461785Z",
+          "monotonic_elapsed_seconds": 157.90989252,
+          "status": {
+            "tcp_echoes": 314,
+            "udp_replies": 313,
+            "tcp_attempts": 315,
+            "udp_attempts": 314,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "59839",
+            "download_bytes": "45391",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:34:40.000953578Z",
+          "monotonic_elapsed_seconds": 158.96538431,
+          "status": {
+            "tcp_echoes": 316,
+            "udp_replies": 315,
+            "tcp_attempts": 316,
+            "udp_attempts": 316,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "60211",
+            "download_bytes": "45669",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:34:41.061136698Z",
+          "monotonic_elapsed_seconds": 160.025567503,
+          "status": {
+            "tcp_echoes": 319,
+            "udp_replies": 318,
+            "tcp_attempts": 319,
+            "udp_attempts": 319,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "60583",
+            "download_bytes": "45947",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:34:42.124401798Z",
+          "monotonic_elapsed_seconds": 161.088832577,
+          "status": {
+            "tcp_echoes": 321,
+            "udp_replies": 320,
+            "tcp_attempts": 321,
+            "udp_attempts": 321,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "60955",
+            "download_bytes": "46225",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:34:43.178996218Z",
+          "monotonic_elapsed_seconds": 162.143426953,
+          "status": {
+            "tcp_echoes": 323,
+            "udp_replies": 322,
+            "tcp_attempts": 323,
+            "udp_attempts": 323,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "61327",
+            "download_bytes": "46503",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:34:44.242439123Z",
+          "monotonic_elapsed_seconds": 163.206869848,
+          "status": {
+            "tcp_echoes": 325,
+            "udp_replies": 324,
+            "tcp_attempts": 325,
+            "udp_attempts": 325,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "61699",
+            "download_bytes": "46781",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:34:45.304955539Z",
+          "monotonic_elapsed_seconds": 164.269386263,
+          "status": {
+            "tcp_echoes": 325,
+            "udp_replies": 324,
+            "tcp_attempts": 326,
+            "udp_attempts": 327,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "61699",
+            "download_bytes": "46781",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:34:46.367567632Z",
+          "monotonic_elapsed_seconds": 165.331998374,
+          "status": {
+            "tcp_echoes": 325,
+            "udp_replies": 324,
+            "tcp_attempts": 327,
+            "udp_attempts": 329,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "61699",
+            "download_bytes": "46781",
             "Present": true
           },
           "status_read_ok": true,
           "counter_read_ok": true
         }
       ],
-      "service_end": "2026-10-31T07:01:07Z",
+      "service_end": "2026-10-31T07:34:44Z",
       "serving_precondition": {
         "causal_observation": "Lab entrypoint deleted ip nat before agent start; no loopback-scoped rules remain to exercise D-079 in this run. Both changes are present; this run's serving transition is explained by #240.",
         "harness_network_mutations": false,
@@ -3019,13 +4770,13 @@
           "data_health": "healthy",
           "forwarding_evidence_satisfied": true,
           "lease": {
-            "expires_at": "2026-11-01T06:58:28.238782001Z",
-            "lease_id": "3c33ce33-9f43-4d5a-ae43-01fe11f7595e"
+            "expires_at": "2026-11-01T07:31:56.092142164Z",
+            "lease_id": "eec592ef-df72-4d8a-90d5-d1c736b2345a"
           },
           "member_forwarding_enabled": true,
-          "observed_at": "2026-10-31T06:58:28.369141526Z",
+          "observed_at": "2026-10-31T07:31:56.205058692Z",
           "provisioning_state": "ready",
-          "report_id": "01a190c0-ab91-7236-abec-831e88aaf0c5",
+          "report_id": "01a190df-4ead-70f3-bca2-27542e1317b0",
           "safety_status": "passed"
         },
         "read_back_listing": {
@@ -3078,7 +4829,7 @@
               "counter": {
                 "bytes": 0,
                 "family": "inet",
-                "handle": 225,
+                "handle": 203,
                 "name": "ctbadns",
                 "packets": 0,
                 "table": "fvpn"
@@ -3088,7 +4839,7 @@
               "counter": {
                 "bytes": 0,
                 "family": "inet",
-                "handle": 226,
+                "handle": 204,
                 "name": "ctdeny",
                 "packets": 0,
                 "table": "fvpn"
@@ -3098,7 +4849,7 @@
               "counter": {
                 "bytes": 0,
                 "family": "inet",
-                "handle": 227,
+                "handle": 205,
                 "name": "cthost",
                 "packets": 0,
                 "table": "fvpn"
@@ -3108,7 +4859,7 @@
               "counter": {
                 "bytes": 0,
                 "family": "inet",
-                "handle": 228,
+                "handle": 206,
                 "name": "ctinv",
                 "packets": 0,
                 "table": "fvpn"
@@ -3118,7 +4869,7 @@
               "counter": {
                 "bytes": 0,
                 "family": "inet",
-                "handle": 229,
+                "handle": 207,
                 "name": "ctnodn",
                 "packets": 0,
                 "table": "fvpn"
@@ -3128,7 +4879,7 @@
               "counter": {
                 "bytes": 0,
                 "family": "inet",
-                "handle": 230,
+                "handle": 208,
                 "name": "ctunkd",
                 "packets": 0,
                 "table": "fvpn"
@@ -3138,7 +4889,7 @@
               "counter": {
                 "bytes": 0,
                 "family": "inet",
-                "handle": 231,
+                "handle": 209,
                 "name": "ctunku",
                 "packets": 0,
                 "table": "fvpn"
@@ -3148,8 +4899,8 @@
               "counter": {
                 "bytes": 0,
                 "family": "inet",
-                "handle": 232,
-                "name": "d_01a190c0a7ab7ac3be37d1ea7bc5a81d",
+                "handle": 210,
+                "name": "d_01a190df3b9578a88653ec5e7b5033de",
                 "packets": 0,
                 "table": "fvpn"
               }
@@ -3158,8 +4909,8 @@
               "counter": {
                 "bytes": 0,
                 "family": "inet",
-                "handle": 233,
-                "name": "nd_01a190c0a7ab7ac3be37d1ea7bc5a81d",
+                "handle": 211,
+                "name": "nd_01a190df3b9578a88653ec5e7b5033de",
                 "packets": 0,
                 "table": "fvpn"
               }
@@ -3168,8 +4919,8 @@
               "counter": {
                 "bytes": 0,
                 "family": "inet",
-                "handle": 234,
-                "name": "nu_01a190c0a7ab7ac3be37d1ea7bc5a81d",
+                "handle": 212,
+                "name": "nu_01a190df3b9578a88653ec5e7b5033de",
                 "packets": 0,
                 "table": "fvpn"
               }
@@ -3178,8 +4929,8 @@
               "counter": {
                 "bytes": 0,
                 "family": "inet",
-                "handle": 235,
-                "name": "u_01a190c0a7ab7ac3be37d1ea7bc5a81d",
+                "handle": 213,
+                "name": "u_01a190df3b9578a88653ec5e7b5033de",
                 "packets": 0,
                 "table": "fvpn"
               }
@@ -3189,9 +4940,9 @@
                 "elem": [
                   {
                     "elem": {
-                      "expires": 152,
-                      "timeout": 153,
-                      "val": "100.123.35.211"
+                      "expires": 162,
+                      "timeout": 167,
+                      "val": "100.91.6.245"
                     }
                   }
                 ],
@@ -3297,7 +5048,7 @@
                 "flags": [
                   "interval"
                 ],
-                "handle": 236,
+                "handle": 214,
                 "name": "denied_v4",
                 "table": "fvpn",
                 "type": "ipv4_addr"
@@ -3312,7 +5063,7 @@
                 "flags": [
                   "interval"
                 ],
-                "handle": 237,
+                "handle": 215,
                 "name": "host_v4",
                 "table": "fvpn",
                 "type": "ipv4_addr"
@@ -3324,7 +5075,7 @@
                   "192.0.5.53"
                 ],
                 "family": "inet",
-                "handle": 238,
+                "handle": 216,
                 "name": "resolver_v4",
                 "table": "fvpn",
                 "type": "ipv4_addr"
@@ -3333,7 +5084,7 @@
             {
               "chain": {
                 "family": "inet",
-                "handle": 265,
+                "handle": 217,
                 "hook": "forward",
                 "name": "forward",
                 "policy": "drop",
@@ -3345,7 +5096,7 @@
             {
               "chain": {
                 "family": "inet",
-                "handle": 266,
+                "handle": 218,
                 "hook": "input",
                 "name": "input",
                 "policy": "accept",
@@ -3357,7 +5108,7 @@
             {
               "chain": {
                 "family": "inet",
-                "handle": 267,
+                "handle": 219,
                 "hook": "output",
                 "name": "output",
                 "policy": "accept",
@@ -3369,7 +5120,7 @@
             {
               "chain": {
                 "family": "inet",
-                "handle": 268,
+                "handle": 220,
                 "hook": "postrouting",
                 "name": "postrouting",
                 "policy": "accept",
@@ -3409,14 +5160,14 @@
                   }
                 ],
                 "family": "inet",
-                "handle": 269,
+                "handle": 221,
                 "table": "fvpn"
               }
             },
             {
               "rule": {
                 "chain": "forward",
-                "comment": "fvpn_class=01a190c0-585e-757a-84bd-f812b6e0dc00:92d9",
+                "comment": "fvpn_class=01a190df-2047-72ae-b659-b6ce7b9d9058:3efe",
                 "expr": [
                   {
                     "match": {
@@ -3444,7 +5195,7 @@
                   }
                 ],
                 "family": "inet",
-                "handle": 270,
+                "handle": 222,
                 "table": "fvpn"
               }
             },
@@ -3493,7 +5244,7 @@
                   }
                 ],
                 "family": "inet",
-                "handle": 271,
+                "handle": 223,
                 "table": "fvpn"
               }
             },
@@ -3542,7 +5293,7 @@
                   }
                 ],
                 "family": "inet",
-                "handle": 272,
+                "handle": 224,
                 "table": "fvpn"
               }
             },
@@ -3591,7 +5342,7 @@
                   }
                 ],
                 "family": "inet",
-                "handle": 273,
+                "handle": 225,
                 "table": "fvpn"
               }
             },
@@ -3640,7 +5391,7 @@
                   }
                 ],
                 "family": "inet",
-                "handle": 274,
+                "handle": 226,
                 "table": "fvpn"
               }
             },
@@ -3690,7 +5441,7 @@
                   }
                 ],
                 "family": "inet",
-                "handle": 275,
+                "handle": 227,
                 "table": "fvpn"
               }
             },
@@ -3729,7 +5480,7 @@
                         }
                       },
                       "op": "==",
-                      "right": "100.123.35.211"
+                      "right": "100.91.6.245"
                     }
                   },
                   {
@@ -3757,7 +5508,7 @@
                     }
                   },
                   {
-                    "counter": "nu_01a190c0a7ab7ac3be37d1ea7bc5a81d"
+                    "counter": "nu_01a190df3b9578a88653ec5e7b5033de"
                   },
                   {
                     "mangle": {
@@ -3766,7 +5517,7 @@
                           "key": "priority"
                         }
                       },
-                      "value": "1:92d9"
+                      "value": "1:3efe"
                     }
                   },
                   {
@@ -3774,7 +5525,7 @@
                   }
                 ],
                 "family": "inet",
-                "handle": 276,
+                "handle": 228,
                 "table": "fvpn"
               }
             },
@@ -3813,7 +5564,7 @@
                         }
                       },
                       "op": "==",
-                      "right": "100.123.35.211"
+                      "right": "100.91.6.245"
                     }
                   },
                   {
@@ -3841,7 +5592,7 @@
                     }
                   },
                   {
-                    "counter": "nu_01a190c0a7ab7ac3be37d1ea7bc5a81d"
+                    "counter": "nu_01a190df3b9578a88653ec5e7b5033de"
                   },
                   {
                     "mangle": {
@@ -3850,7 +5601,7 @@
                           "key": "priority"
                         }
                       },
-                      "value": "1:92d9"
+                      "value": "1:3efe"
                     }
                   },
                   {
@@ -3858,7 +5609,7 @@
                   }
                 ],
                 "family": "inet",
-                "handle": 277,
+                "handle": 229,
                 "table": "fvpn"
               }
             },
@@ -3908,7 +5659,7 @@
                   }
                 ],
                 "family": "inet",
-                "handle": 278,
+                "handle": 230,
                 "table": "fvpn"
               }
             },
@@ -3958,7 +5709,7 @@
                   }
                 ],
                 "family": "inet",
-                "handle": 279,
+                "handle": 231,
                 "table": "fvpn"
               }
             },
@@ -4008,7 +5759,7 @@
                   }
                 ],
                 "family": "inet",
-                "handle": 280,
+                "handle": 232,
                 "table": "fvpn"
               }
             },
@@ -4047,11 +5798,11 @@
                         }
                       },
                       "op": "==",
-                      "right": "100.123.35.211"
+                      "right": "100.91.6.245"
                     }
                   },
                   {
-                    "counter": "u_01a190c0a7ab7ac3be37d1ea7bc5a81d"
+                    "counter": "u_01a190df3b9578a88653ec5e7b5033de"
                   },
                   {
                     "mangle": {
@@ -4060,7 +5811,7 @@
                           "key": "priority"
                         }
                       },
-                      "value": "1:92d9"
+                      "value": "1:3efe"
                     }
                   },
                   {
@@ -4068,7 +5819,7 @@
                   }
                 ],
                 "family": "inet",
-                "handle": 281,
+                "handle": 233,
                 "table": "fvpn"
               }
             },
@@ -4118,7 +5869,7 @@
                   }
                 ],
                 "family": "inet",
-                "handle": 282,
+                "handle": 234,
                 "table": "fvpn"
               }
             },
@@ -4172,7 +5923,7 @@
                   }
                 ],
                 "family": "inet",
-                "handle": 284,
+                "handle": 236,
                 "table": "fvpn"
               }
             },
@@ -4223,7 +5974,7 @@
                         }
                       },
                       "op": "==",
-                      "right": "100.123.35.211"
+                      "right": "100.91.6.245"
                     }
                   },
                   {
@@ -4239,7 +5990,7 @@
                     }
                   },
                   {
-                    "counter": "nd_01a190c0a7ab7ac3be37d1ea7bc5a81d"
+                    "counter": "nd_01a190df3b9578a88653ec5e7b5033de"
                   },
                   {
                     "mangle": {
@@ -4248,7 +5999,7 @@
                           "key": "priority"
                         }
                       },
-                      "value": "1:92d9"
+                      "value": "1:3efe"
                     }
                   },
                   {
@@ -4256,7 +6007,7 @@
                   }
                 ],
                 "family": "inet",
-                "handle": 285,
+                "handle": 237,
                 "table": "fvpn"
               }
             },
@@ -4307,7 +6058,7 @@
                         }
                       },
                       "op": "==",
-                      "right": "100.123.35.211"
+                      "right": "100.91.6.245"
                     }
                   },
                   {
@@ -4323,7 +6074,7 @@
                     }
                   },
                   {
-                    "counter": "nd_01a190c0a7ab7ac3be37d1ea7bc5a81d"
+                    "counter": "nd_01a190df3b9578a88653ec5e7b5033de"
                   },
                   {
                     "mangle": {
@@ -4332,7 +6083,7 @@
                           "key": "priority"
                         }
                       },
-                      "value": "1:92d9"
+                      "value": "1:3efe"
                     }
                   },
                   {
@@ -4340,7 +6091,7 @@
                   }
                 ],
                 "family": "inet",
-                "handle": 286,
+                "handle": 238,
                 "table": "fvpn"
               }
             },
@@ -4379,11 +6130,11 @@
                         }
                       },
                       "op": "==",
-                      "right": "100.123.35.211"
+                      "right": "100.91.6.245"
                     }
                   },
                   {
-                    "counter": "d_01a190c0a7ab7ac3be37d1ea7bc5a81d"
+                    "counter": "d_01a190df3b9578a88653ec5e7b5033de"
                   },
                   {
                     "mangle": {
@@ -4392,7 +6143,7 @@
                           "key": "priority"
                         }
                       },
-                      "value": "1:92d9"
+                      "value": "1:3efe"
                     }
                   },
                   {
@@ -4400,7 +6151,7 @@
                   }
                 ],
                 "family": "inet",
-                "handle": 287,
+                "handle": 239,
                 "table": "fvpn"
               }
             },
@@ -4427,7 +6178,7 @@
                   }
                 ],
                 "family": "inet",
-                "handle": 288,
+                "handle": 240,
                 "table": "fvpn"
               }
             },
@@ -4460,7 +6211,7 @@
                   }
                 ],
                 "family": "inet",
-                "handle": 289,
+                "handle": 241,
                 "table": "fvpn"
               }
             },
@@ -4499,30 +6250,30 @@
                   }
                 ],
                 "family": "inet",
-                "handle": 290,
+                "handle": 242,
                 "table": "fvpn"
               }
             }
           ]
         },
-        "read_back_sha256": "47a7b47ed9551885e6a61b89ab6f422b4316775ee667905312cd18fe0822029c"
+        "read_back_sha256": "15097d410db1d23d954b154260699fbd26b9c701b985f461d01aea3998c1620c"
       },
       "session": {
-        "Device": "01a190c0-a7ab-7ac3-be37-d1ea7bc5a81d",
+        "Device": "01a190df-3b95-78a8-8653-ec5e7b5033de",
         "TCP": "192.0.5.10:9446",
         "UDP": "192.0.5.10:9445"
       },
       "signed_lease": {
         "members": [
           {
-            "lease_end": "2026-10-31T07:01:07Z",
-            "member_id": "01a190c0-585e-757a-84bd-f812b6e0dc00",
+            "lease_end": "2026-10-31T07:34:44Z",
+            "member_id": "01a190df-2047-72ae-b659-b6ce7b9d9058",
             "entitlement_revision": "1",
-            "effective_service_end": "2026-10-31T07:01:07Z"
+            "effective_service_end": "2026-10-31T07:34:44Z"
           }
         ],
-        "issued_at": "2026-10-31T06:59:18.338371+00:00",
-        "expires_at": "2026-11-01T06:59:18.338371+00:00",
+        "issued_at": "2026-10-31T07:32:56.448017+00:00",
+        "expires_at": "2026-11-01T07:32:56.448017+00:00",
         "generation": "7"
       },
       "status": "passed",
@@ -4536,6 +6287,1557 @@
       "owner": "w3-devstack-e2e / operator",
       "status": "blocked"
     },
+    "lease_expiry": {
+      "action_started_at": "2026-10-31T07:36:03.237757478Z",
+      "after_heartbeat": {
+        "baseline_ok": "1",
+        "generation": "13",
+        "mono_ns": "15700770898454",
+        "policy_expires_mono_ns": "15760531580504",
+        "reason": "serving",
+        "serving": "1",
+        "wall_unix_ns": "1793432163254527664"
+      },
+      "after_kernel_timeout": {
+        "nftables": [
+          {
+            "metainfo": {
+              "version": "1.0.9",
+              "release_name": "Old Doc Yak #3",
+              "json_schema_version": 1
+            }
+          },
+          {
+            "set": {
+              "family": "inet",
+              "name": "allowed_v4",
+              "table": "fvpn",
+              "type": "ipv4_addr",
+              "handle": 4,
+              "flags": [
+                "timeout"
+              ]
+            }
+          }
+        ]
+      },
+      "agent_resume_ok": true,
+      "agent_sigkill_ok": true,
+      "attribution_limit": "Native route withdrawal and node kernel cutoff are observed together; no retained revoked route or independent ingress export is synthesized. Counter absence is not zero-byte evidence.",
+      "before_counted_flow": {
+        "admitted_bytes_delta": {
+          "download": "1515",
+          "upload": "1106"
+        },
+        "after_bytes": {
+          "download": "3029",
+          "generation": "12",
+          "upload": "2172"
+        },
+        "before_bytes": {
+          "download": "1514",
+          "generation": "12",
+          "upload": "1066"
+        },
+        "counted": true,
+        "counter_reads_ok": true,
+        "http_200": true,
+        "network_list": "Available Networks:\n\n  - ID: fvpn-exit-992ffd846ce6d4db075355b7\n    Network: 0.0.0.0/0\n    Status: Selected",
+        "network_list_ok": true,
+        "order": [
+          "select advertised exit",
+          "route dev fvnb0",
+          "HTTPS 200",
+          "authenticated node-SNAT receipt",
+          "exact-device byte delta"
+        ],
+        "origin_authenticated": true,
+        "origin_node_snat": true,
+        "origin_probe_matches": true,
+        "origin_requests": 1,
+        "peer": {
+          "container_role": "member-f11-lease-expiry",
+          "device_id": "01a190e2-8564-79d4-a666-8a05d73b9330"
+        },
+        "route_device": "fvnb0",
+        "route_get": "\u003ccontrolled-origin\u003e dev fvnb0 table netbird src 100.91.161.15 uid 0 \n    cache",
+        "selection_ok": true,
+        "selection_output": "Networks selected successfully.",
+        "utc": "2026-10-31T07:35:30.183646867Z"
+      },
+      "before_heartbeat": {
+        "baseline_ok": "1",
+        "generation": "12",
+        "mono_ns": "15695621621063",
+        "policy_expires_mono_ns": "16834514029418",
+        "reason": "serving",
+        "serving": "1",
+        "wall_unix_ns": "1793432158105250270"
+      },
+      "before_kernel_timeout": {
+        "nftables": [
+          {
+            "metainfo": {
+              "version": "1.0.9",
+              "release_name": "Old Doc Yak #3",
+              "json_schema_version": 1
+            }
+          },
+          {
+            "set": {
+              "family": "inet",
+              "name": "allowed_v4",
+              "table": "fvpn",
+              "type": "ipv4_addr",
+              "handle": 4,
+              "flags": [
+                "timeout"
+              ],
+              "elem": [
+                {
+                  "elem": {
+                    "val": "100.91.6.245",
+                    "timeout": 59,
+                    "expires": 58
+                  }
+                },
+                {
+                  "elem": {
+                    "val": "100.91.161.15",
+                    "timeout": 59,
+                    "expires": 58
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "continued_before_expiry": true,
+      "control_lost_agent_alive": [
+        {
+          "utc": "2026-10-31T07:36:03.857704066Z",
+          "monotonic_elapsed_seconds": 33.385293004,
+          "status": {
+            "tcp_echoes": 66,
+            "udp_replies": 66,
+            "tcp_attempts": 66,
+            "udp_attempts": 66,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "14708",
+            "download_bytes": "12370",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:36:06.924087541Z",
+          "monotonic_elapsed_seconds": 36.451676489,
+          "status": {
+            "tcp_echoes": 72,
+            "udp_replies": 72,
+            "tcp_attempts": 72,
+            "udp_attempts": 72,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "15824",
+            "download_bytes": "13204",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        }
+      ],
+      "control_restart_ok": true,
+      "cutoff_samples": [
+        {
+          "utc": "2026-10-31T07:37:06.574926502Z",
+          "monotonic_elapsed_seconds": 96.102515493,
+          "status": {
+            "tcp_echoes": 131,
+            "udp_replies": 131,
+            "tcp_attempts": 161,
+            "udp_attempts": 191,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "26798",
+            "download_bytes": "21405",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:37:16.643363554Z",
+          "monotonic_elapsed_seconds": 106.17095251,
+          "status": {
+            "tcp_echoes": 131,
+            "udp_replies": 131,
+            "tcp_attempts": 171,
+            "udp_attempts": 211,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "26798",
+            "download_bytes": "21405",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        }
+      ],
+      "earliest_deadline": "2026-10-31T03:37:03.018775-04:00",
+      "fleet_restore_86400": {
+        "code": "",
+        "etag_after": "\"4\"",
+        "etag_before": "\"3\"",
+        "get_status": 200,
+        "latest_audit_event": {
+          "action": "fleet_config.update",
+          "actor": {
+            "id": "01a190de-508c-73b7-a2e3-579cccc1402e",
+            "type": "admin"
+          },
+          "audit_event_id": "01a190e4-392c-7410-b83e-ba4166a9c902",
+          "changes": {
+            "after": {
+              "max_offline_lease_seconds": 86400,
+              "reason": "TEST ONLY AT29 finite lease; restore default on exit",
+              "resource_version": "4",
+              "updated_at": "2026-10-31T07:37:18.380703Z"
+            },
+            "before": {
+              "max_offline_lease_seconds": 60
+            }
+          },
+          "occurred_at": "2026-10-31T07:37:18.380246Z",
+          "operation_id": null,
+          "request_id": "01a190e4-392a-784d-bfd2-31d74cdd2ead",
+          "resource": {
+            "id": "00000000-0000-0000-0000-000000000001",
+            "type": "fleet_config"
+          },
+          "result": "succeeded"
+        },
+        "missing_if_match_code": "PRECONDITION_REQUIRED",
+        "missing_if_match_status": 428,
+        "put_status": 200,
+        "readback": {
+          "default_max_offline_lease_seconds": 86400,
+          "max_offline_lease_seconds": 86400,
+          "resource_version": "4",
+          "updated_at": "2026-10-31T07:37:18.380703Z"
+        },
+        "replay_equal": true,
+        "replay_status": 200,
+        "requested_seconds": 86400,
+        "stale_if_match_code": "RESOURCE_VERSION_CONFLICT",
+        "stale_if_match_status": 412,
+        "utc": "2026-10-31T07:37:18.38946178Z"
+      },
+      "fleet_set_60": {
+        "code": "",
+        "etag_after": "\"3\"",
+        "etag_before": "\"2\"",
+        "get_status": 200,
+        "latest_audit_event": {
+          "action": "fleet_config.update",
+          "actor": {
+            "id": "01a190de-508c-73b7-a2e3-579cccc1402e",
+            "type": "admin"
+          },
+          "audit_event_id": "01a190e2-adc9-7cf4-aed6-1a079a22564f",
+          "changes": {
+            "after": {
+              "max_offline_lease_seconds": 60,
+              "reason": "TEST ONLY AT29 finite lease; restore default on exit",
+              "resource_version": "3",
+              "updated_at": "2026-10-31T07:35:37.162287Z"
+            },
+            "before": {
+              "max_offline_lease_seconds": 86400
+            }
+          },
+          "occurred_at": "2026-10-31T07:35:37.161827Z",
+          "operation_id": null,
+          "request_id": "01a190e2-adc8-7d61-8c8d-a9d26d56860c",
+          "resource": {
+            "id": "00000000-0000-0000-0000-000000000001",
+            "type": "fleet_config"
+          },
+          "result": "succeeded"
+        },
+        "missing_if_match_code": "PRECONDITION_REQUIRED",
+        "missing_if_match_status": 428,
+        "put_status": 200,
+        "readback": {
+          "default_max_offline_lease_seconds": 86400,
+          "max_offline_lease_seconds": 60,
+          "resource_version": "3",
+          "updated_at": "2026-10-31T07:35:37.162287Z"
+        },
+        "replay_equal": true,
+        "replay_status": 200,
+        "requested_seconds": 60,
+        "stale_if_match_code": "RESOURCE_VERSION_CONFLICT",
+        "stale_if_match_status": 412,
+        "utc": "2026-10-31T07:35:37.171600543Z"
+      },
+      "owner": "w3-devstack-e2e",
+      "positive_samples": [
+        {
+          "utc": "2026-10-31T07:35:31.507547059Z",
+          "monotonic_elapsed_seconds": 1.035135989,
+          "status": {
+            "tcp_echoes": 1,
+            "udp_replies": 1,
+            "tcp_attempts": 1,
+            "udp_attempts": 1,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "2618",
+            "download_bytes": "3335",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:35:35.569456531Z",
+          "monotonic_elapsed_seconds": 5.097045496,
+          "status": {
+            "tcp_echoes": 9,
+            "udp_replies": 9,
+            "tcp_attempts": 9,
+            "udp_attempts": 9,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "4106",
+            "download_bytes": "4447",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        }
+      ],
+      "recovery_ack": {
+        "applied_config_generation": "13",
+        "available": true,
+        "checks": [
+          {
+            "error_code": null,
+            "name": "dns_policy",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "internet_only",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "lease",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "meter_path",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "policy_signature",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "qos",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "release_supported",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "source_binding",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "storage",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "tunnel_probe",
+            "status": "passed"
+          }
+        ],
+        "data_health": "healthy",
+        "forwarding_evidence_satisfied": true,
+        "lease": {
+          "expires_at": "2026-10-31T07:38:17.180295704Z",
+          "lease_id": "d5354152-09c0-483d-92d7-8e44b39cfbc0"
+        },
+        "member_forwarding_enabled": true,
+        "observed_at": "2026-10-31T07:37:17.294988634Z",
+        "provisioning_state": "ready",
+        "report_id": "01a190e4-34ee-7f1a-b3bb-67c5a9a804b0",
+        "safety_status": "passed"
+      },
+      "recovery_flow": {
+        "admitted_bytes_delta": {
+          "download": "1516",
+          "upload": "1220"
+        },
+        "after_bytes": {
+          "download": "22921",
+          "generation": "13",
+          "upload": "28018"
+        },
+        "before_bytes": {
+          "download": "21405",
+          "generation": "0",
+          "upload": "26798"
+        },
+        "counted": true,
+        "counter_reads_ok": true,
+        "http_200": true,
+        "network_list": "Available Networks:\n\n  - ID: fvpn-exit-992ffd846ce6d4db075355b7\n    Network: 0.0.0.0/0\n    Status: Selected",
+        "network_list_ok": true,
+        "order": [
+          "select advertised exit",
+          "route dev fvnb0",
+          "HTTPS 200",
+          "authenticated node-SNAT receipt",
+          "exact-device byte delta"
+        ],
+        "origin_authenticated": true,
+        "origin_node_snat": true,
+        "origin_probe_matches": true,
+        "origin_requests": 1,
+        "peer": {
+          "container_role": "member-f11-lease-expiry",
+          "device_id": "01a190e2-8564-79d4-a666-8a05d73b9330"
+        },
+        "route_device": "fvnb0",
+        "route_get": "\u003ccontrolled-origin\u003e dev fvnb0 table netbird src 100.91.161.15 uid 0 \n    cache",
+        "selection_ok": true,
+        "selection_output": "Networks selected successfully.",
+        "utc": "2026-10-31T07:37:16.972669864Z"
+      },
+      "samples": [
+        {
+          "utc": "2026-10-31T07:36:07.027534633Z",
+          "monotonic_elapsed_seconds": 36.555123586,
+          "status": {
+            "tcp_echoes": 72,
+            "udp_replies": 72,
+            "tcp_attempts": 72,
+            "udp_attempts": 72,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "15824",
+            "download_bytes": "13204",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:36:08.090459874Z",
+          "monotonic_elapsed_seconds": 37.618048832,
+          "status": {
+            "tcp_echoes": 74,
+            "udp_replies": 74,
+            "tcp_attempts": 74,
+            "udp_attempts": 74,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "16196",
+            "download_bytes": "13482",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:36:09.152535195Z",
+          "monotonic_elapsed_seconds": 38.68012424,
+          "status": {
+            "tcp_echoes": 76,
+            "udp_replies": 76,
+            "tcp_attempts": 76,
+            "udp_attempts": 76,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "16568",
+            "download_bytes": "13760",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:36:10.216794072Z",
+          "monotonic_elapsed_seconds": 39.744383062,
+          "status": {
+            "tcp_echoes": 78,
+            "udp_replies": 78,
+            "tcp_attempts": 78,
+            "udp_attempts": 78,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "17126",
+            "download_bytes": "14177",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:36:11.279210551Z",
+          "monotonic_elapsed_seconds": 40.806799478,
+          "status": {
+            "tcp_echoes": 80,
+            "udp_replies": 80,
+            "tcp_attempts": 80,
+            "udp_attempts": 80,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "17498",
+            "download_bytes": "14455",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:36:12.338918205Z",
+          "monotonic_elapsed_seconds": 41.866507199,
+          "status": {
+            "tcp_echoes": 83,
+            "udp_replies": 83,
+            "tcp_attempts": 83,
+            "udp_attempts": 83,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "17870",
+            "download_bytes": "14733",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:36:13.4012647Z",
+          "monotonic_elapsed_seconds": 42.928853663,
+          "status": {
+            "tcp_echoes": 85,
+            "udp_replies": 85,
+            "tcp_attempts": 85,
+            "udp_attempts": 85,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "18242",
+            "download_bytes": "15011",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:36:14.466088279Z",
+          "monotonic_elapsed_seconds": 43.993677262,
+          "status": {
+            "tcp_echoes": 87,
+            "udp_replies": 87,
+            "tcp_attempts": 87,
+            "udp_attempts": 87,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "18614",
+            "download_bytes": "15289",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:36:15.527307963Z",
+          "monotonic_elapsed_seconds": 45.054896927,
+          "status": {
+            "tcp_echoes": 89,
+            "udp_replies": 89,
+            "tcp_attempts": 89,
+            "udp_attempts": 89,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "18986",
+            "download_bytes": "15567",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:36:16.588954534Z",
+          "monotonic_elapsed_seconds": 46.116543564,
+          "status": {
+            "tcp_echoes": 91,
+            "udp_replies": 91,
+            "tcp_attempts": 91,
+            "udp_attempts": 91,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "19358",
+            "download_bytes": "15845",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:36:17.652714902Z",
+          "monotonic_elapsed_seconds": 47.180303919,
+          "status": {
+            "tcp_echoes": 93,
+            "udp_replies": 93,
+            "tcp_attempts": 93,
+            "udp_attempts": 93,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "19730",
+            "download_bytes": "16123",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:36:18.716618371Z",
+          "monotonic_elapsed_seconds": 48.244207377,
+          "status": {
+            "tcp_echoes": 95,
+            "udp_replies": 95,
+            "tcp_attempts": 95,
+            "udp_attempts": 95,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "20288",
+            "download_bytes": "16540",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:36:19.778876501Z",
+          "monotonic_elapsed_seconds": 49.306465434,
+          "status": {
+            "tcp_echoes": 97,
+            "udp_replies": 97,
+            "tcp_attempts": 97,
+            "udp_attempts": 97,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "20660",
+            "download_bytes": "16818",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:36:20.843212032Z",
+          "monotonic_elapsed_seconds": 50.370801042,
+          "status": {
+            "tcp_echoes": 100,
+            "udp_replies": 100,
+            "tcp_attempts": 100,
+            "udp_attempts": 100,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "21032",
+            "download_bytes": "17096",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:36:21.894712298Z",
+          "monotonic_elapsed_seconds": 51.422301266,
+          "status": {
+            "tcp_echoes": 102,
+            "udp_replies": 102,
+            "tcp_attempts": 102,
+            "udp_attempts": 102,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "21404",
+            "download_bytes": "17374",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:36:22.958387335Z",
+          "monotonic_elapsed_seconds": 52.485976307,
+          "status": {
+            "tcp_echoes": 104,
+            "udp_replies": 104,
+            "tcp_attempts": 104,
+            "udp_attempts": 104,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "21776",
+            "download_bytes": "17652",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:36:24.018489421Z",
+          "monotonic_elapsed_seconds": 53.546078361,
+          "status": {
+            "tcp_echoes": 106,
+            "udp_replies": 106,
+            "tcp_attempts": 106,
+            "udp_attempts": 106,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "22148",
+            "download_bytes": "17930",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:36:25.07812886Z",
+          "monotonic_elapsed_seconds": 54.605717918,
+          "status": {
+            "tcp_echoes": 108,
+            "udp_replies": 108,
+            "tcp_attempts": 108,
+            "udp_attempts": 108,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "22520",
+            "download_bytes": "18208",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:36:26.142199302Z",
+          "monotonic_elapsed_seconds": 55.669788239,
+          "status": {
+            "tcp_echoes": 110,
+            "udp_replies": 110,
+            "tcp_attempts": 110,
+            "udp_attempts": 110,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "22892",
+            "download_bytes": "18486",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:36:27.205979325Z",
+          "monotonic_elapsed_seconds": 56.733568331,
+          "status": {
+            "tcp_echoes": 112,
+            "udp_replies": 112,
+            "tcp_attempts": 112,
+            "udp_attempts": 112,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "23450",
+            "download_bytes": "18903",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:36:28.257429401Z",
+          "monotonic_elapsed_seconds": 57.785018474,
+          "status": {
+            "tcp_echoes": 114,
+            "udp_replies": 114,
+            "tcp_attempts": 114,
+            "udp_attempts": 115,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "23822",
+            "download_bytes": "19181",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:36:29.321406641Z",
+          "monotonic_elapsed_seconds": 58.848995642,
+          "status": {
+            "tcp_echoes": 116,
+            "udp_replies": 116,
+            "tcp_attempts": 116,
+            "udp_attempts": 117,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "24194",
+            "download_bytes": "19459",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:36:30.386418891Z",
+          "monotonic_elapsed_seconds": 59.91400791,
+          "status": {
+            "tcp_echoes": 119,
+            "udp_replies": 119,
+            "tcp_attempts": 119,
+            "udp_attempts": 119,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "24566",
+            "download_bytes": "19737",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:36:31.446934269Z",
+          "monotonic_elapsed_seconds": 60.974523247,
+          "status": {
+            "tcp_echoes": 121,
+            "udp_replies": 121,
+            "tcp_attempts": 121,
+            "udp_attempts": 121,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "24938",
+            "download_bytes": "20015",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:36:32.510540329Z",
+          "monotonic_elapsed_seconds": 62.038129269,
+          "status": {
+            "tcp_echoes": 123,
+            "udp_replies": 123,
+            "tcp_attempts": 123,
+            "udp_attempts": 123,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "25310",
+            "download_bytes": "20293",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:36:33.57434165Z",
+          "monotonic_elapsed_seconds": 63.10193061,
+          "status": {
+            "tcp_echoes": 125,
+            "udp_replies": 125,
+            "tcp_attempts": 125,
+            "udp_attempts": 125,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "25682",
+            "download_bytes": "20571",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:36:34.636924299Z",
+          "monotonic_elapsed_seconds": 64.164513311,
+          "status": {
+            "tcp_echoes": 127,
+            "udp_replies": 127,
+            "tcp_attempts": 127,
+            "udp_attempts": 127,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "26054",
+            "download_bytes": "20849",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:36:35.699687454Z",
+          "monotonic_elapsed_seconds": 65.227276472,
+          "status": {
+            "tcp_echoes": 129,
+            "udp_replies": 129,
+            "tcp_attempts": 129,
+            "udp_attempts": 129,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "26612",
+            "download_bytes": "21266",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:36:36.760181967Z",
+          "monotonic_elapsed_seconds": 66.287770904,
+          "status": {
+            "tcp_echoes": 131,
+            "udp_replies": 131,
+            "tcp_attempts": 131,
+            "udp_attempts": 132,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "26798",
+            "download_bytes": "21405",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:36:37.82153362Z",
+          "monotonic_elapsed_seconds": 67.349122598,
+          "status": {
+            "tcp_echoes": 131,
+            "udp_replies": 131,
+            "tcp_attempts": 133,
+            "udp_attempts": 134,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "26798",
+            "download_bytes": "21405",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:36:38.883784657Z",
+          "monotonic_elapsed_seconds": 68.411373603,
+          "status": {
+            "tcp_echoes": 131,
+            "udp_replies": 131,
+            "tcp_attempts": 134,
+            "udp_attempts": 136,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "26798",
+            "download_bytes": "21405",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:36:39.946174715Z",
+          "monotonic_elapsed_seconds": 69.473763728,
+          "status": {
+            "tcp_echoes": 131,
+            "udp_replies": 131,
+            "tcp_attempts": 135,
+            "udp_attempts": 138,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "26798",
+            "download_bytes": "21405",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:36:41.000425804Z",
+          "monotonic_elapsed_seconds": 70.528014867,
+          "status": {
+            "tcp_echoes": 131,
+            "udp_replies": 131,
+            "tcp_attempts": 136,
+            "udp_attempts": 140,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "26798",
+            "download_bytes": "21405",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:36:42.063449144Z",
+          "monotonic_elapsed_seconds": 71.591038098,
+          "status": {
+            "tcp_echoes": 131,
+            "udp_replies": 131,
+            "tcp_attempts": 137,
+            "udp_attempts": 142,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "26798",
+            "download_bytes": "21405",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:36:43.116805045Z",
+          "monotonic_elapsed_seconds": 72.644394055,
+          "status": {
+            "tcp_echoes": 131,
+            "udp_replies": 131,
+            "tcp_attempts": 138,
+            "udp_attempts": 144,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "26798",
+            "download_bytes": "21405",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:36:44.178608869Z",
+          "monotonic_elapsed_seconds": 73.706197809,
+          "status": {
+            "tcp_echoes": 131,
+            "udp_replies": 131,
+            "tcp_attempts": 139,
+            "udp_attempts": 146,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "26798",
+            "download_bytes": "21405",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:36:45.270733639Z",
+          "monotonic_elapsed_seconds": 74.798322626,
+          "status": {
+            "tcp_echoes": 131,
+            "udp_replies": 131,
+            "tcp_attempts": 140,
+            "udp_attempts": 148,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "26798",
+            "download_bytes": "21405",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:36:46.334316095Z",
+          "monotonic_elapsed_seconds": 75.86190504,
+          "status": {
+            "tcp_echoes": 131,
+            "udp_replies": 131,
+            "tcp_attempts": 141,
+            "udp_attempts": 151,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "26798",
+            "download_bytes": "21405",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:36:47.387562692Z",
+          "monotonic_elapsed_seconds": 76.915152111,
+          "status": {
+            "tcp_echoes": 131,
+            "udp_replies": 131,
+            "tcp_attempts": 142,
+            "udp_attempts": 153,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "26798",
+            "download_bytes": "21405",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:36:48.449013634Z",
+          "monotonic_elapsed_seconds": 77.976602649,
+          "status": {
+            "tcp_echoes": 131,
+            "udp_replies": 131,
+            "tcp_attempts": 143,
+            "udp_attempts": 155,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "26798",
+            "download_bytes": "21405",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:36:49.525607541Z",
+          "monotonic_elapsed_seconds": 79.053196509,
+          "status": {
+            "tcp_echoes": 131,
+            "udp_replies": 131,
+            "tcp_attempts": 144,
+            "udp_attempts": 157,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "26798",
+            "download_bytes": "21405",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:36:50.589621976Z",
+          "monotonic_elapsed_seconds": 80.117211068,
+          "status": {
+            "tcp_echoes": 131,
+            "udp_replies": 131,
+            "tcp_attempts": 145,
+            "udp_attempts": 159,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "26798",
+            "download_bytes": "21405",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:36:51.658925107Z",
+          "monotonic_elapsed_seconds": 81.186514116,
+          "status": {
+            "tcp_echoes": 131,
+            "udp_replies": 131,
+            "tcp_attempts": 146,
+            "udp_attempts": 161,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "26798",
+            "download_bytes": "21405",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:36:52.726589011Z",
+          "monotonic_elapsed_seconds": 82.254177994,
+          "status": {
+            "tcp_echoes": 131,
+            "udp_replies": 131,
+            "tcp_attempts": 147,
+            "udp_attempts": 164,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "26798",
+            "download_bytes": "21405",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:36:53.794847464Z",
+          "monotonic_elapsed_seconds": 83.322436446,
+          "status": {
+            "tcp_echoes": 131,
+            "udp_replies": 131,
+            "tcp_attempts": 148,
+            "udp_attempts": 165,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "26798",
+            "download_bytes": "21405",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:36:54.88035365Z",
+          "monotonic_elapsed_seconds": 84.407942606,
+          "status": {
+            "tcp_echoes": 131,
+            "udp_replies": 131,
+            "tcp_attempts": 150,
+            "udp_attempts": 168,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "26798",
+            "download_bytes": "21405",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:36:55.946912777Z",
+          "monotonic_elapsed_seconds": 85.474501855,
+          "status": {
+            "tcp_echoes": 131,
+            "udp_replies": 131,
+            "tcp_attempts": 151,
+            "udp_attempts": 170,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "26798",
+            "download_bytes": "21405",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:36:57.014142926Z",
+          "monotonic_elapsed_seconds": 86.541731987,
+          "status": {
+            "tcp_echoes": 131,
+            "udp_replies": 131,
+            "tcp_attempts": 152,
+            "udp_attempts": 172,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "26798",
+            "download_bytes": "21405",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:36:58.071514192Z",
+          "monotonic_elapsed_seconds": 87.599103143,
+          "status": {
+            "tcp_echoes": 131,
+            "udp_replies": 131,
+            "tcp_attempts": 153,
+            "udp_attempts": 174,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "26798",
+            "download_bytes": "21405",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:36:59.139462772Z",
+          "monotonic_elapsed_seconds": 88.667051714,
+          "status": {
+            "tcp_echoes": 131,
+            "udp_replies": 131,
+            "tcp_attempts": 154,
+            "udp_attempts": 176,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "26798",
+            "download_bytes": "21405",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:37:00.207729466Z",
+          "monotonic_elapsed_seconds": 89.735318405,
+          "status": {
+            "tcp_echoes": 131,
+            "udp_replies": 131,
+            "tcp_attempts": 155,
+            "udp_attempts": 178,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "26798",
+            "download_bytes": "21405",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:37:01.275407576Z",
+          "monotonic_elapsed_seconds": 90.802996514,
+          "status": {
+            "tcp_echoes": 131,
+            "udp_replies": 131,
+            "tcp_attempts": 156,
+            "udp_attempts": 180,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "26798",
+            "download_bytes": "21405",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:37:02.332414573Z",
+          "monotonic_elapsed_seconds": 91.860003724,
+          "status": {
+            "tcp_echoes": 131,
+            "udp_replies": 131,
+            "tcp_attempts": 157,
+            "udp_attempts": 183,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "26798",
+            "download_bytes": "21405",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:37:03.397971071Z",
+          "monotonic_elapsed_seconds": 92.925560084,
+          "status": {
+            "tcp_echoes": 131,
+            "udp_replies": 131,
+            "tcp_attempts": 158,
+            "udp_attempts": 185,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "26798",
+            "download_bytes": "21405",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:37:04.459773467Z",
+          "monotonic_elapsed_seconds": 93.987362584,
+          "status": {
+            "tcp_echoes": 131,
+            "udp_replies": 131,
+            "tcp_attempts": 159,
+            "udp_attempts": 187,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "26798",
+            "download_bytes": "21405",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-10-31T07:37:05.522324117Z",
+          "monotonic_elapsed_seconds": 95.049913135,
+          "status": {
+            "tcp_echoes": 131,
+            "udp_replies": 131,
+            "tcp_attempts": 160,
+            "udp_attempts": 189,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "26798",
+            "download_bytes": "21405",
+            "Present": true
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        }
+      ],
+      "service_end": "2026-10-31T08:05:08Z",
+      "session": {
+        "Device": "01a190e2-8564-79d4-a666-8a05d73b9330",
+        "TCP": "192.0.5.10:9446",
+        "UDP": "192.0.5.10:9445"
+      },
+      "signed_lease": {
+        "members": [
+          {
+            "lease_end": "2026-10-31T07:37:03.018775651Z",
+            "member_id": "01a190df-2047-72ae-b659-b6ce7b9d9058",
+            "entitlement_revision": "3",
+            "effective_service_end": "2026-10-31T07:54:57Z"
+          },
+          {
+            "lease_end": "2026-10-31T07:37:03.018775651Z",
+            "member_id": "01a190e2-3e82-72d5-973e-79cdc60175d5",
+            "entitlement_revision": "1",
+            "effective_service_end": "2026-10-31T08:05:08Z"
+          }
+        ],
+        "issued_at": "2026-10-31T07:36:03.018775+00:00",
+        "expires_at": "2026-10-31T07:37:03.018775+00:00",
+        "generation": "13"
+      },
+      "status": "passed",
+      "transport_cleanup_ok": true,
+      "transport_scope": "one original TCP/9446 connection and authenticated UDP/9445 socket; independent senders; helper limit 20 minutes",
+      "watchdog_kept_running": true,
+      "worker_unpause_ok": true
+    },
     "manual_grant_withdrawal": {
       "missing_export": "The contract exposes finite createMemberGrant but no revokeMemberGrant HTTP operation; no source-row mutation or invented endpoint used. Finite grant expiration is measured separately.",
       "owner": "w3-wire-members / contracts",
@@ -4546,10 +7848,10 @@
   "watchdog_state": {
     "baseline_ok": "1",
     "generation": "6",
-    "mono_ns": "13445912389494",
-    "policy_expires_mono_ns": "13604513795379",
+    "mono_ns": "15453759812815",
+    "policy_expires_mono_ns": "15621512447481",
     "reason": "serving",
     "serving": "1",
-    "wall_unix_ns": "1793429908396018782"
+    "wall_unix_ns": "1793431916243442071"
   }
 }

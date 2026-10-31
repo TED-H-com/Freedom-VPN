@@ -95,6 +95,13 @@ def main():
     analysis=dict(first_new_stored_offer=first,retained_node_generation=retained,first_http_probe_after_fresh_observation=restore.get('first_http_probe_after_fresh_observation'),
                   first_new_stored_offer_is_above_retained=bool(first and retained and int(first['generation'])>int(retained)),
                   limitation='Stored compiler rows and a timestamped HTTP probe are distinct. No response capture export proves the first envelope delivered to the running agent; no claim that absence of ErrStaleGeneration log lines proves acceptance.')
+    analysis['closure_guards'] = dict(
+        d099_on_measured_base=rrun.get('d099_roadmap_present') is True,
+        d095_hold_proved=restore.get('D-095',{}).get('passed') is True,
+        first_stored_row_above_retained=analysis['first_new_stored_offer_is_above_retained'],
+        first_delivered_http_response_proved=gen.get('first_http_offer',{}).get('first_response_proven') is True,
+        first_offer_local_store_accepted=gen.get('first_offer_local_store',{}).get('accepted') is True,
+        first_stored_row_applied_ack=bool(first and any(v.get('applied')==first['generation'] for v in gen.get('observations',[]))))
     write_json(PUBLIC/'SECOPS-21.json',dict(common,id='SECOPS-21',status='passed' if status21=='closed' else 'blocked',request_status=status21,d099_roadmap_present=rrun.get('d099_roadmap_present'),hold=restore.get('D-095'),actual=gen,first_offer_analysis=analysis))
     subcases={}
     for name,row in cases.items():
@@ -150,7 +157,7 @@ def main():
     requests=PUBLIC/'requests.md'; old=requests.read_text().split('\n# Requests to orchestrator — Follow-up 12')[0]
     old+='\n# Requests to orchestrator — Follow-up 12 (2026-10-31 UTC)\n\n'
     old+=f'SECOPS-21: **{status21}**, owner `w3-wire-nodes` follow-up 29 / D-099. See [hold and first-offer evidence](SECOPS-21.json); no closure from compiler tests.\n\n'
-    old+='D-102: `docs/e2e/RESPONSES.md` is absent on application base `510a4ab` and was rechecked on later main `945eff8`; please publish the dated answers (devstack owner). The installer handover was initially absent but became available during the lab wait and was read directly from `63a4116` without changing the measured base. It reports ENR-06 socket/runtime fixed, with the required full upgrade still failing at final_sample because state/meter.checkpoint is absent. The node D-099 handover was read before planning. [Read revisions and hashes](followup12-prerequisites.json). No external pin or packaged unit changed.\n\n'
+    old+='D-102: the dated devstack answers in `docs/e2e/RESPONSES.md` were read from later main `5ce76e9` once published. They document members/update exports; no first-delivered desired-state response capture is documented. The installer handover was read from `63a4116` once published; it reports ENR-06 socket/runtime fixed, with the required full upgrade still failing at final_sample because state/meter.checkpoint is absent. Both documents were absent on the assigned application base at task start. The node D-099 handover was read before planning. [Read revisions and hashes](followup12-prerequisites.json). No external pin, packaged unit or measured application base changed.\n\n'
     old+='D-103 is resolved by this task: only `fvpn-w4-secops-*`, network `fvpn-w4-secops`, port base 30000. The two-run guard refers to the prepared independent transport and restore fresh-stack runs, each torn down before the next.\n\n'
     old+='| Sub-case / missing export | Status / owner | Limit |\n|---|---|---|\n'
     for k,v in subcases.items(): old+=f'| {k} | {v.get("status")} / {v.get("owner","w4-at-security-ops")} | {v.get("missing_export",v.get("blocker",v.get("scope",v.get("transport_scope","See recorded samples"))))} |\n'
