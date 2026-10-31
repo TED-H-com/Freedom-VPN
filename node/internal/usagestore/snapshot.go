@@ -212,7 +212,7 @@ func readSnapshotDB(ctx context.Context, db *sql.DB) (Snapshot, error) {
 	if err := tx.QueryRowContext(ctx, `PRAGMA user_version`).Scan(&userVersion); err != nil {
 		return Snapshot{}, err
 	}
-	if userVersion != schemaVersion {
+	if userVersion != 1 && userVersion != schemaVersion {
 		return Snapshot{}, ErrCorrupt
 	}
 
@@ -251,7 +251,7 @@ func readSnapshotDB(ctx context.Context, db *sql.DB) (Snapshot, error) {
 	}
 
 	snap := Snapshot{
-		SchemaVersion:       userVersion,
+		SchemaVersion:       1, // Snapshot format is independent of SQLite migrations.
 		NodeID:              nodeID,
 		NodeIncarnationID:   incID,
 		MeterEpochs:         epochs,

@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/node/enforce"
+	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 )
 
 func main() {
@@ -154,7 +155,11 @@ func verifyCmd(args []string) error {
 		return err
 	}
 	evidence, err := enforce.VerifyServing(ctx, enforce.System{}, m, plan.Assignments)
-	if printErr := json.NewEncoder(os.Stdout).Encode(evidence); err == nil {
+	doc := struct {
+		enforce.ServingEvidence
+		TCEvidence *api.TCReadbackEvidence `json:"tc_evidence"`
+	}{evidence, evidence.TCReadbackEvidence()}
+	if printErr := json.NewEncoder(os.Stdout).Encode(doc); err == nil {
 		return printErr
 	}
 	return err
@@ -311,6 +316,7 @@ func writeResult(w io.Writer, m enforce.Model, res enforce.ApplyResult) error {
 		Deadline    enforce.DeadlineEvidence    `json:"deadline"`
 		Verified    bool                        `json:"verified"`
 		Evidence    enforce.ServingEvidence     `json:"evidence"`
+		TCEvidence  *api.TCReadbackEvidence     `json:"tc_evidence"`
 		Quarantine  *enforce.QuarantineEvidence `json:"quarantine,omitempty"`
 		Generation  uint64                      `json:"generation"`
 		Admitted    int                         `json:"admitted"`
@@ -323,6 +329,7 @@ func writeResult(w io.Writer, m enforce.Model, res enforce.ApplyResult) error {
 		Deadline:    res.Deadline,
 		Verified:    res.Verified,
 		Evidence:    res.Evidence,
+		TCEvidence:  res.Evidence.TCReadbackEvidence(),
 		Quarantine:  res.Quarantine,
 		Generation:  m.Generation,
 		Admitted:    res.Plan.Admitted,

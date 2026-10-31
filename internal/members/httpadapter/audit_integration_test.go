@@ -11,7 +11,6 @@ import (
 
 	"github.com/TED-H-com/Freedom-VPN/internal/audit"
 	"github.com/TED-H-com/Freedom-VPN/internal/auth"
-	"github.com/TED-H-com/Freedom-VPN/internal/entitlement"
 	"github.com/TED-H-com/Freedom-VPN/internal/operations"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/google/uuid"
@@ -19,7 +18,7 @@ import (
 
 // §9, §14.3, §15.4: exercise all member audit writers through the composed HTTP
 // server and its real workers, then read the entire stream through control-core.
-// Grant revocation is intentionally internal: no extra HTTP endpoint is added.
+// Grant withdrawal uses the revision 14 route, including same-key replay.
 func TestAPI01_R3MemberAuditLifecycle(t *testing.T) {
 	f := newFixture(t)
 	ctx := t.Context()
@@ -77,11 +76,10 @@ func TestAPI01_R3MemberAuditLifecycle(t *testing.T) {
 	}
 	f.drain()
 
-	command := entitlement.Command{Actor: entitlement.Actor{ID: admin.id, Role: string(auth.Admin), RequestID: uuid.New()}, Key: uuid.New()}
+	key := uuid.NewString()
 	for range 2 {
-		if err := f.services.HTTP.Members.RevokeGrant(ctx, command, member.id, grantOp.Resource.Id, "TEST ONLY audit lifecycle"); err != nil {
-			t.Fatal(err)
-		}
+		w = f.call(admin, "POST", path+"/grants/"+grantOp.Resource.Id.String()+"/revoke", `{"reason":"TEST ONLY audit lifecycle"}`, map[string]string{"Idempotency-Key": key})
+		requireStatus(t, w, 202)
 	}
 	f.drain()
 	var revokeID uuid.UUID
@@ -112,7 +110,7 @@ func TestAPI01_R3MemberAuditLifecycle(t *testing.T) {
 	}{
 		{"member.register", api.ResourceTypeMember, member.id, 1},
 		{"member.grant", api.ResourceTypeEntitlementGrant, grantOp.Resource.Id, 1},
-		{"grant.revoke", api.ResourceTypeEntitlementGrant, grantOp.Resource.Id, 1},
+		{"member.grant_revoke", api.ResourceTypeEntitlementGrant, grantOp.Resource.Id, 1},
 		{"device.authorize", api.ResourceTypeMemberDevice, device, 1},
 		{"device.revoke", api.ResourceTypeMemberDevice, device, 1},
 		{"member.patch", api.ResourceTypeMember, member.id, 2},

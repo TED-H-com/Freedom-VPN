@@ -1,8 +1,8 @@
-# Adversarial Security Reviews Archive (`r3`–`r15`)
+# Adversarial Security Reviews Archive (`r3`–`r16`)
 
 - **Date:** 2026-10-29 to 2026-10-31 (closure status)
 - **Reviewing model:** `grok/grok-4.7`, `agy/gemini-4-argon-high`, `antigravity/gemini`, `antigravity/gemini-4-argon` (see per-review metadata below; `r5` and `r8` commits carried no `Agent:` trailer)
-- **Decision / scope reviewed:** Wave 3 and Wave 4 adversarial security reviews (`r3-d055-review` through `r15-d072-d075-review`) across management peer discovery (`D-055`), DNS threat feeds (`D-054`), PostgreSQL pgBackRest backups and PITR drill (`D-025`, `AT30`), challenge-bound update health attestation (`D-053`), member identity mapping and device slot accounting (`D-052`, `D-029`), exit-group fencing and resolver-document delivery (`D-056`, `D-057`, `D-061`), update result evidence and rate limiting (`D-062`, `D-060`), synthetic-probe exception bounds and node agent hardening (`D-063`, `D-064`), zero-binding publication gating (`SECOPS-11`), node enforcement verifier, control rate-limit tables/large-body validation, `probe_omitted` evidence, and pre-result heartbeat seeding (`#167`–`#172`), the `r12` remediation verification wave (`#166`–`#174`), and the `r13` remediation and `D-067`–`D-072` verification wave (`#189`–`#202`). Earlier Wave 1 and Wave 2 reviews (`r1-db-review`, `r1-contracts-review`, `r2-control-review`, `r2-updater-review`, `r2-ledger-review`) are recorded in [`docs/ROADMAP.md`](../ROADMAP.md).
+- **Decision / scope reviewed:** Wave 3 and Wave 4 adversarial security reviews (`r3-d055-review` through `r16-rev13-d089-d099-review`) across management peer discovery (`D-055`), DNS threat feeds (`D-054`), PostgreSQL pgBackRest backups and PITR drill (`D-025`, `AT30`), challenge-bound update health attestation (`D-053`), member identity mapping and device slot accounting (`D-052`, `D-029`), exit-group fencing and resolver-document delivery (`D-056`, `D-057`, `D-061`), update result evidence and rate limiting (`D-062`, `D-060`), synthetic-probe exception bounds and node agent hardening (`D-063`, `D-064`), zero-binding publication gating (`SECOPS-11`), node enforcement verifier, control rate-limit tables/large-body validation, `probe_omitted` evidence, and pre-result heartbeat seeding (`#167`–`#172`), the `r12` remediation verification wave (`#166`–`#174`), and the `r13` remediation and `D-067`–`D-072` verification wave (`#189`–`#202`). Earlier Wave 1 and Wave 2 reviews (`r1-db-review`, `r1-contracts-review`, `r2-control-review`, `r2-updater-review`, `r2-ledger-review`) are recorded in [`docs/ROADMAP.md`](../ROADMAP.md).
 
 ## Archive Index
 
@@ -21,6 +21,7 @@
 | `r13-r12-fixes-review` | [`r13-r12-fixes-review.md`](r13-r12-fixes-review.md) | 2026-10-30 | `agy/gemini-4-argon-high` (commit `12496fd` trailer) | `r12` remediation verification across node enforcement verifier & QoS (`node/enforce`), revocation conntrack & sample filtering (`node/agent`, `node/enforce`), control rate limiters, `trusted_proxies`, & large-body validation (`internal/httpapi`, `internal/config`), `D-063` probe omission & recovery sealing (`node/updater`, `node/agent`), and pre-result heartbeat seeding & retry confirmation (`internal/fleetupdate`) | 12 (4 High, 5 Medium, 3 Low) — all closed in `#189`, `#190`, `#192`, `#193`, `#194`, `#196` | [`node/enforce/review_r13_enforce_test.go`](../../node/enforce/review_r13_enforce_test.go), [`internal/httpapi/review_r13_limits_test.go`](../../internal/httpapi/review_r13_limits_test.go), [`internal/fleetupdate/review_r13_seeding_integration_test.go`](../../internal/fleetupdate/review_r13_seeding_integration_test.go), [`node/agent/review_r13_agent_test.go`](../../node/agent/review_r13_agent_test.go), [`node/updater/review_r13_updater_test.go`](../../node/updater/review_r13_updater_test.go) |
 | `r14-d067-d070-review` | [`r14-d067-d070-review.md`](r14-d067-d070-review.md) | 2026-10-30 | `grok/grok-4.7` (commit `70efbde` trailer) | D-067/D-068/D-070 and r13 fixes: revoke fence, migrated addresses, stale readiness, foreign nft rules, node ingress, eviction and anonymous cap | 7 (1 High, 4 Medium, 2 Low); closed #215/#216/#217/#220 | `internal/nodes/observation_readiness_integration_test.go`, `node/agent/review_r14_m1_test.go`, `node/agent/followup15_test.go`, `node/enforce/followup10_review_test.go`, `tests/netlab/scenario_foreign_test.go`, `internal/httpapi/followup20_review_test.go` |
 | `r15-d072-d075-review` | [`r15-d072-d075-review.md`](r15-d072-d075-review.md) | 2026-10-30 | `grok/grok-4.7` (commit `dfafae0` trailer) | D-072–D-075 clone detection, lock order, revoke fence, gated publication, Fair-Use ACK, tc bypass and anonymous reserve | 8 (1 High, 6 Medium, 1 Low) — owner fixes adopted in #254/#259/#263/#256/#262/#252; packet-stop and agent quarantine integration remain qualified | [Adopted main proofs](r15-d072-d075-review.md#adopted-proof-files-on-main) |
+| `r16-rev13-d089-d099-review` | [`r16-rev13-d089-d099-review.md`](r16-rev13-d089-d099-review.md) | 2026-10-31 | `grok/grok-4.7` | Revision 13, D-089 / D-097 installer results, D-088 freeze, D-090 / D-096 containment, D-095 / D-099 restore hold; base `5575470` | 4 (1 High, 2 Medium, 1 Low), owner follow-ups pending; two known HTTP defects fixed after review base in #277 | Owners adopt `TestReviewR16_*`; only the report is archived here. |
 
 ## What Held Across the Reviews
 
@@ -31,7 +32,7 @@
 
 ## Consolidated High-Severity Findings Summary
 
-Every individual finding (High, Medium, and Low) is tabulated in full in its respective review file. The table below summarizes representative High-severity findings across the thirteen reviews:
+Every individual finding (High, Medium, and Low) is tabulated in full in its respective review file. The table below summarizes representative High-severity findings across the fourteen reviews:
 
 | Severity | Finding | Status | Closing PR |
 |---|---|---|---|
@@ -47,6 +48,28 @@ Every individual finding (High, Medium, and Low) is tabulated in full in its res
 | High | `r12-enforce-limits-review`: `VerifyServing` in `node/enforce/verify.go` accepted out-of-model forwarding rulesets, `node/updater/probe_addresses.go` accepted an empty node IPv4 list or symlinked `agent.json` and left probe omission unrecorded, and `observeTx` in `internal/fleetupdate/serving.go` misattributed cross-job audits/seeding and allowed pre-intent heartbeats to poison `attempt_release_id`. | closed | #167, #168, #171, #172 |
 | High | `r13-r12-fixes-review`: `VerifyServing` and `VerifyBaseline` in `node/enforce/parse_nft.go` and `node/enforce/verify.go` accept out-of-model rulesets (`jump`/`goto` into `output`, `vmap`, `!=` negated ports/interfaces, anonymous sets, narrowed drops, `flow add`), `splitUnbracketedIPv6` in `internal/httpapi/middleware.go` strips a `:0..9` hextet on compressed IPv6 addresses shifting `/64` into `trusted_proxies`, `AuthenticateAgent` runs uncached PostgreSQL queries before rate limiters/concurrency gates, and pre-result heartbeat seeding for an issued job in `internal/fleetupdate/serving.go` moves `nodes.current_release_id` without an accepted result and poisons superseding batch `attempt_release_id`. | closed | #189, #190, #196 |
 | High | `r14-d067-d070-review`: `ObserveRevokedDeviceCutoffTx` in `internal/nodes/observations.go` scanned every non-revoked/non-decommissioned node without scoping to serving exit groups or bounding by heartbeat freshness (`DefaultStaleTimeout = 90 s`), allowing a single stale, offline, or ungrouped node with a pending `ISOLATION_POLICY_INVALID` apply error to hold `member.revoke` and `member_device.revoke` `"nodes"` steps `pending` indefinitely (`TestReviewR14_Q1_UnrelatedOfflineNodeHoldsRevokePendingIndefinitely`). | closed | #217 |
-| High | `r15-d072-d075-review` H-1: the renewal that freezes a cloned incarnation can still issue a member-grant lease at the fleet offline cap; the next failed observation does not shorten that lease. | open | — routing in progress, 2026-10-30 EDT |
+| High | `r15-d072-d075-review` H-1: the renewal that freezes a cloned incarnation can still issue a member-grant lease at the fleet offline cap; the next failed observation does not shorten that lease. | closed | #254 / #259; server clamp only, see packet-stop limits |
 
-Status checked on main `c6e3eca`, 2026-10-31 EDT: r15 owner fixes and proofs adopted; see its archive for the server-clamp and library-only quarantine limits. r16 has not run.
+Status checked on main `b79ee23`, 2026-10-31 EDT: r15 owner fixes and proofs adopted; see its archive for the server-clamp and quarantine limits. r16 delivered; dispositions below.
+
+## r16 dispositions at the follow-up 15 cutoff
+
+The report is byte-identical to `.agent/REVIEW.md` on
+`origin/r16-rev13-d089-d099-review`, commit
+`e672d5d` (14 files: the report plus proof files), reviewed base `5575470`.
+SHA-256: `aa1e3fd95905d85975a43ecf304673d993d5fbbfc9817110635fc183c5f081fb`.
+Its original wording and ownership labels describe that review's base. The
+orchestrator's current routing is below; no proof files were adopted here.
+
+| Finding | Current disposition |
+|---|---|
+| H-1: fenced device still bound and leased | Open → wire-nodes follow-up 31 with the desired-state owner. |
+| M-1: failed identity-freeze persist | Open → agent-core follow-up 24. Successful latch tests do not close failed-persistence recovery. |
+| M-2: installer rollback version write | Open → fleet-update follow-up 11. |
+| L-1: installer row cardinality / ETag churn | Open → fleet-update follow-up 11, D-110. |
+| Known, reconfirmed: generation-only cache advance | Fixed after the review base by wire-nodes follow-up 29 (#277), [state_cache.go](../../internal/nodes/httpwire/state_cache.go) and its runtime eligibility fence. Accepted D-099 ordinary-proposal semantics apply; live SECOPS-21 remains open. |
+| Known, reconfirmed: keyed installer replay 500 | Fixed after the review base by #277, [replay.go](../../internal/nodes/httpwire/replay.go), `TestD089_HTTPInstallerResultKeyedReplay`. |
+
+D-110 / D-111 and their delivery boundaries are in the [operator decisions
+register](../handover/README.md#follow-up-15-decisions-register-2026-10-31-edt).
+Owners adopt the `TestReviewR16_*` proofs in their follow-ups.
