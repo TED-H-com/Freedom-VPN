@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/internal/netbird"
-	"github.com/TED-H-com/Freedom-VPN/node/agent"
 	"github.com/TED-H-com/Freedom-VPN/node/enforce"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
@@ -110,17 +109,8 @@ func (l *live) forwardingGate(r *record, devices ...uuid.UUID) bool {
 		if e != nil {
 			return false
 		}
-		for i := len(trace) - 1; i >= 0; i-- {
-			var m agent.Measurement
-			if json.Unmarshal(trace[i], &m) != nil || m.BootID != state.Observation.BootId || m.Lease == nil || m.Lease.ID != state.LeaseID || m.Lease.Generation != state.Generation || m.Lease.Members == 0 {
-				continue
-			}
-			if m.Heartbeat != nil && m.Heartbeat.Serving && m.Heartbeat.Generation == state.Generation {
-				joined = trace[i]
-				return true
-			}
-		}
-		return false
+		joined = servingProducer(trace, state.Observation.BootId, state.LeaseID, state.Generation)
+		return joined != nil
 	})
 	r.jsonCheck("populated-grant serving readiness", "fresh accepted serving observation; desired=applied=observed lease generation; unexpired populated lease, live intended binding and same-boot producer serving row", map[string]any{"ready": ready, "device_id": device, "accepted": json.RawMessage(raw), "producer_record": joined}, "read-only SQL + local desired state + EnforcementTiming; stop positive probe when unavailable", ready)
 	l.write(r)
