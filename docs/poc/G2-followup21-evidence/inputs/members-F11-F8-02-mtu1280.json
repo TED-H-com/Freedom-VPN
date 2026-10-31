@@ -1,0 +1,442 @@
+{
+  "run_id": "7edb263f-1f6e-4f94-9e8e-26099f96a699",
+  "source_commit": "33abb2fd2c2fc95826c6e69eb434045522d6f7ef",
+  "case_status": "fail",
+  "check": {
+    "name": "native dual MTU 1280 transfer",
+    "status": "fail",
+    "expected": "IPv4 overlay: 64064 TCP bytes and upload/download counters increase; selected underlay family recorded; D-123 IPv6Block, no IPv6 end-to-end MTU/PMTU claim",
+    "actual": {
+      "after_counters": {
+        "upload_bytes": "282799",
+        "download_bytes": "259238",
+        "Present": true,
+        "kernel_generation": "71",
+        "read_diagnostic": {
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "read_start_mono_ns": "56814367239976",
+          "read_end_mono_ns": "56814369809278",
+          "enforcement_before": {
+            "available": true,
+            "record": {
+              "run_id": "b8dea1db-e229-420d-afee-817d69ff3414",
+              "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+              "sequence": "1126",
+              "source": "live",
+              "anchor": {
+                "mono_before_ns": "56814265740981",
+                "wall": "2026-10-31T19:01:16.749369845Z",
+                "mono_after_ns": "56814265741167"
+              },
+              "timing": {
+                "version": 1,
+                "clock": "CLOCK_MONOTONIC",
+                "operation": "verify",
+                "candidate_generation": "71",
+                "start_ns": "56814245090109",
+                "end_ns": "56814265738037",
+                "succeeded": true,
+                "verified": true,
+                "deadline": {
+                  "granularity_ns": "0",
+                  "install_bound_ns": "0",
+                  "apply_start_ns": "0",
+                  "render_start_ns": "0",
+                  "install_start_ns": "0",
+                  "installed_by_ns": "0",
+                  "install_ok": false,
+                  "release_start_ns": "0",
+                  "release_end_ns": "0",
+                  "guard_released": false
+                },
+                "verifications": [
+                  {
+                    "start_ns": "56814245090109",
+                    "end_ns": "56814265738037",
+                    "nft_read": {
+                      "start_ns": "56814245090636",
+                      "end_ns": "56814247647836",
+                      "ok": true
+                    },
+                    "tc_read": {
+                      "start_ns": "56814250744907",
+                      "end_ns": "56814264308910",
+                      "ok": true
+                    },
+                    "precision_read": {
+                      "start_ns": "56814249198996",
+                      "end_ns": "56814250732914",
+                      "elements": 3,
+                      "read_ok": true,
+                      "verified": true
+                    },
+                    "tc_sha256": "7543e59d820ec6d32095860cd3caee4544f9de43ce846ce6fa12b60b9ad61ae9",
+                    "verified": true
+                  }
+                ]
+              },
+              "tc_sha256": "7543e59d820ec6d32095860cd3caee4544f9de43ce846ce6fa12b60b9ad61ae9",
+              "lease": {
+                "lease_id": "5864328f-3f31-452e-b680-9435ec613b7e",
+                "generation": "71",
+                "issued_at": "2026-10-31T18:58:01.806637988Z",
+                "expires_at": "2026-11-01T18:58:01.806637988Z",
+                "request_mono_ns": "56619319795034",
+                "node_deadline_ns": "143019319795034",
+                "members": 7
+              }
+            }
+          },
+          "enforcement_after": {
+            "available": true,
+            "record": {
+              "run_id": "b8dea1db-e229-420d-afee-817d69ff3414",
+              "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+              "sequence": "1128",
+              "source": "apply",
+              "anchor": {
+                "mono_before_ns": "56814367830239",
+                "wall": "2026-10-31T19:01:16.851459217Z",
+                "mono_after_ns": "56814367830568"
+              },
+              "timing": {
+                "version": 1,
+                "clock": "CLOCK_MONOTONIC",
+                "operation": "apply",
+                "candidate_generation": "71",
+                "start_ns": "56814291237241",
+                "end_ns": "56814367826511",
+                "succeeded": true,
+                "verified": true,
+                "deadline": {
+                  "granularity_ns": "1000000",
+                  "install_bound_ns": "100000000",
+                  "apply_start_ns": "56814291237241",
+                  "render_start_ns": "56814311834735",
+                  "install_start_ns": "56814311935726",
+                  "installed_by_ns": "56814325415983",
+                  "install_ok": true,
+                  "release_start_ns": "56814325419447",
+                  "release_end_ns": "56814346438448",
+                  "guard_released": true
+                },
+                "verifications": [
+                  {
+                    "start_ns": "56814346444045",
+                    "end_ns": "56814367809117",
+                    "nft_read": {
+                      "start_ns": "56814346444402",
+                      "end_ns": "56814348954080",
+                      "ok": true
+                    },
+                    "tc_read": {
+                      "start_ns": "56814352540639",
+                      "end_ns": "56814366307888",
+                      "ok": true
+                    },
+                    "precision_read": {
+                      "start_ns": "56814350954561",
+                      "end_ns": "56814352529262",
+                      "elements": 3,
+                      "read_ok": true,
+                      "verified": true
+                    },
+                    "tc_sha256": "7543e59d820ec6d32095860cd3caee4544f9de43ce846ce6fa12b60b9ad61ae9",
+                    "verified": true
+                  }
+                ]
+              },
+              "tc_sha256": "7543e59d820ec6d32095860cd3caee4544f9de43ce846ce6fa12b60b9ad61ae9",
+              "lease": {
+                "lease_id": "5864328f-3f31-452e-b680-9435ec613b7e",
+                "generation": "71",
+                "issued_at": "2026-10-31T18:58:01.806637988Z",
+                "expires_at": "2026-11-01T18:58:01.806637988Z",
+                "request_mono_ns": "56619319795034",
+                "node_deadline_ns": "143019319795034",
+                "members": 7
+              }
+            }
+          },
+          "started": "2026-10-31T19:01:16.841814266Z",
+          "completed": "2026-10-31T19:01:16.853438584Z",
+          "stage": "nft_read",
+          "category": "none",
+          "exit": 0,
+          "heartbeat_before": {
+            "read_at": "2026-10-31T19:01:16.8418144Z",
+            "wall_unix_ns": "1793473276749415394",
+            "serving": true,
+            "read_ok": true
+          },
+          "heartbeat_after": {
+            "read_at": "2026-10-31T19:01:16.86134491Z",
+            "wall_unix_ns": "1793473276749415394",
+            "serving": true,
+            "read_ok": true
+          }
+        }
+      },
+      "after_path": {
+        "path": {
+          "Relayed": 0,
+          "Direct": 2,
+          "Forced": false
+        },
+        "candidate_families": {
+          "ipv4": 2,
+          "ipv6": 2
+        }
+      },
+      "before_counters": {
+        "upload_bytes": "216583",
+        "download_bytes": "220997",
+        "Present": true,
+        "kernel_generation": "71",
+        "read_diagnostic": {
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "read_start_mono_ns": "56802271943049",
+          "read_end_mono_ns": "56802274507835",
+          "enforcement_before": {
+            "available": true,
+            "record": {
+              "run_id": "b8dea1db-e229-420d-afee-817d69ff3414",
+              "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+              "sequence": "1107",
+              "source": "live",
+              "anchor": {
+                "mono_before_ns": "56799440738381",
+                "wall": "2026-10-31T19:01:01.924367345Z",
+                "mono_after_ns": "56799440738678"
+              },
+              "timing": {
+                "version": 1,
+                "clock": "CLOCK_MONOTONIC",
+                "operation": "verify",
+                "candidate_generation": "71",
+                "start_ns": "56799418821391",
+                "end_ns": "56799440734058",
+                "succeeded": true,
+                "verified": true,
+                "deadline": {
+                  "granularity_ns": "0",
+                  "install_bound_ns": "0",
+                  "apply_start_ns": "0",
+                  "render_start_ns": "0",
+                  "install_start_ns": "0",
+                  "installed_by_ns": "0",
+                  "install_ok": false,
+                  "release_start_ns": "0",
+                  "release_end_ns": "0",
+                  "guard_released": false
+                },
+                "verifications": [
+                  {
+                    "start_ns": "56799418821391",
+                    "end_ns": "56799440734058",
+                    "nft_read": {
+                      "start_ns": "56799418821632",
+                      "end_ns": "56799421260968",
+                      "ok": true
+                    },
+                    "tc_read": {
+                      "start_ns": "56799424639470",
+                      "end_ns": "56799439274335",
+                      "ok": true
+                    },
+                    "precision_read": {
+                      "start_ns": "56799423266138",
+                      "end_ns": "56799424623748",
+                      "elements": 3,
+                      "read_ok": true,
+                      "verified": true
+                    },
+                    "tc_sha256": "7543e59d820ec6d32095860cd3caee4544f9de43ce846ce6fa12b60b9ad61ae9",
+                    "verified": true
+                  }
+                ]
+              },
+              "tc_sha256": "7543e59d820ec6d32095860cd3caee4544f9de43ce846ce6fa12b60b9ad61ae9",
+              "lease": {
+                "lease_id": "5864328f-3f31-452e-b680-9435ec613b7e",
+                "generation": "71",
+                "issued_at": "2026-10-31T18:58:01.806637988Z",
+                "expires_at": "2026-11-01T18:58:01.806637988Z",
+                "request_mono_ns": "56619319795034",
+                "node_deadline_ns": "143019319795034",
+                "members": 7
+              }
+            }
+          },
+          "enforcement_after": {
+            "available": true,
+            "record": {
+              "run_id": "b8dea1db-e229-420d-afee-817d69ff3414",
+              "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+              "sequence": "1107",
+              "source": "live",
+              "anchor": {
+                "mono_before_ns": "56799440738381",
+                "wall": "2026-10-31T19:01:01.924367345Z",
+                "mono_after_ns": "56799440738678"
+              },
+              "timing": {
+                "version": 1,
+                "clock": "CLOCK_MONOTONIC",
+                "operation": "verify",
+                "candidate_generation": "71",
+                "start_ns": "56799418821391",
+                "end_ns": "56799440734058",
+                "succeeded": true,
+                "verified": true,
+                "deadline": {
+                  "granularity_ns": "0",
+                  "install_bound_ns": "0",
+                  "apply_start_ns": "0",
+                  "render_start_ns": "0",
+                  "install_start_ns": "0",
+                  "installed_by_ns": "0",
+                  "install_ok": false,
+                  "release_start_ns": "0",
+                  "release_end_ns": "0",
+                  "guard_released": false
+                },
+                "verifications": [
+                  {
+                    "start_ns": "56799418821391",
+                    "end_ns": "56799440734058",
+                    "nft_read": {
+                      "start_ns": "56799418821632",
+                      "end_ns": "56799421260968",
+                      "ok": true
+                    },
+                    "tc_read": {
+                      "start_ns": "56799424639470",
+                      "end_ns": "56799439274335",
+                      "ok": true
+                    },
+                    "precision_read": {
+                      "start_ns": "56799423266138",
+                      "end_ns": "56799424623748",
+                      "elements": 3,
+                      "read_ok": true,
+                      "verified": true
+                    },
+                    "tc_sha256": "7543e59d820ec6d32095860cd3caee4544f9de43ce846ce6fa12b60b9ad61ae9",
+                    "verified": true
+                  }
+                ]
+              },
+              "tc_sha256": "7543e59d820ec6d32095860cd3caee4544f9de43ce846ce6fa12b60b9ad61ae9",
+              "lease": {
+                "lease_id": "5864328f-3f31-452e-b680-9435ec613b7e",
+                "generation": "71",
+                "issued_at": "2026-10-31T18:58:01.806637988Z",
+                "expires_at": "2026-11-01T18:58:01.806637988Z",
+                "request_mono_ns": "56619319795034",
+                "node_deadline_ns": "143019319795034",
+                "members": 7
+              }
+            }
+          },
+          "started": "2026-10-31T19:01:04.748198932Z",
+          "completed": "2026-10-31T19:01:04.758136914Z",
+          "stage": "nft_read",
+          "category": "none",
+          "exit": 0,
+          "heartbeat_before": {
+            "read_at": "2026-10-31T19:01:04.748199129Z",
+            "wall_unix_ns": "1793473261926850301",
+            "serving": true,
+            "read_ok": true
+          },
+          "heartbeat_after": {
+            "read_at": "2026-10-31T19:01:04.76428294Z",
+            "wall_unix_ns": "1793473261926850301",
+            "serving": true,
+            "read_ok": true
+          }
+        }
+      },
+      "before_path": {
+        "path": {
+          "Relayed": 0,
+          "Direct": 2,
+          "Forced": false
+        },
+        "candidate_families": {
+          "ipv4": 2,
+          "ipv6": 2
+        }
+      },
+      "ipv6_mode": "block",
+      "ipv6_no_leak_evidence": "docs/poc/G2-f802-mtu1280-2026-10-31.md (independent netlab measurement; ctv6 drops in both directions, no member class dequeue)",
+      "overlay_family": "ipv4",
+      "selected_exit_after": {
+        "connected": true,
+        "connection_type": "P2P",
+        "chosen_family": "ipv6"
+      },
+      "selected_exit_before": {
+        "connected": true,
+        "connection_type": "P2P",
+        "chosen_family": "ipv6"
+      },
+      "selection": {
+        "input": {
+          "underlay": "dual",
+          "mtu": 1280,
+          "protocol": "tcp",
+          "platform": "linux"
+        },
+        "available": true,
+        "reason": ""
+      },
+      "transfer": {
+        "authority_serial": 0,
+        "endpoint": {
+          "at": "2026-10-31T19:01:16.815679875Z",
+          "local_port": 38570,
+          "remote_port": 9446,
+          "read_bytes": 13081,
+          "write_bytes": 64108,
+          "complete_lines": 13,
+          "partial_line_bytes": 0,
+          "error": "timeout",
+          "tcp_info": {
+            "bytes_acked": 64109,
+            "bytes_received": 13081,
+            "lost": 0,
+            "notsent_bytes": 0,
+            "rcv_mss": 1006,
+            "rcv_space": 12280,
+            "retrans": 0,
+            "rto_us": 201000,
+            "rtt_us": 159,
+            "sacked": 0,
+            "snd_cwnd": 63,
+            "snd_mss": 1228,
+            "snd_wnd": 30720,
+            "state": 1,
+            "total_retrans": 0,
+            "unacked": 0
+          }
+        },
+        "authority_ttl": 0,
+        "has_soa": false,
+        "available": false,
+        "rcode": -1,
+        "types": [],
+        "ttls": [],
+        "address_classes": [],
+        "expected_answer": false,
+        "connected": true,
+        "bytes": 13013,
+        "milliseconds": 12010,
+        "error": "bulk_echo_incomplete"
+      }
+    },
+    "command": "native down/up; ObserveNativeUnderlay; fixture bulk; DeviceByteCounters",
+    "at": "2026-10-31T19:01:17Z"
+  }
+}

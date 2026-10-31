@@ -1,0 +1,714 @@
+{
+  "nftables": [
+    {
+      "metainfo": {
+        "version": "1.0.9",
+        "release_name": "Old Doc Yak #3",
+        "json_schema_version": 1
+      }
+    },
+    {
+      "table": {
+        "family": "inet",
+        "name": "fvpn",
+        "handle": 2
+      }
+    },
+    {
+      "counter": {
+        "family": "inet",
+        "name": "ctbase",
+        "table": "fvpn",
+        "handle": 1,
+        "packets": 117,
+        "bytes": 4544
+      }
+    },
+    {
+      "counter": {
+        "family": "inet",
+        "name": "ctv6",
+        "table": "fvpn",
+        "handle": 2,
+        "packets": 0,
+        "bytes": 0
+      }
+    },
+    {
+      "counter": {
+        "family": "inet",
+        "name": "ctin",
+        "table": "fvpn",
+        "handle": 3,
+        "packets": 18,
+        "bytes": 1080
+      }
+    },
+    {
+      "counter": {
+        "family": "inet",
+        "name": "ctbadns",
+        "table": "fvpn",
+        "handle": 16,
+        "packets": 10,
+        "bytes": 600
+      }
+    },
+    {
+      "counter": {
+        "family": "inet",
+        "name": "ctdeny",
+        "table": "fvpn",
+        "handle": 17,
+        "packets": 0,
+        "bytes": 0
+      }
+    },
+    {
+      "counter": {
+        "family": "inet",
+        "name": "cthost",
+        "table": "fvpn",
+        "handle": 18,
+        "packets": 0,
+        "bytes": 0
+      }
+    },
+    {
+      "counter": {
+        "family": "inet",
+        "name": "ctinv",
+        "table": "fvpn",
+        "handle": 19,
+        "packets": 0,
+        "bytes": 0
+      }
+    },
+    {
+      "counter": {
+        "family": "inet",
+        "name": "ctnodn",
+        "table": "fvpn",
+        "handle": 20,
+        "packets": 0,
+        "bytes": 0
+      }
+    },
+    {
+      "counter": {
+        "family": "inet",
+        "name": "ctunkd",
+        "table": "fvpn",
+        "handle": 21,
+        "packets": 0,
+        "bytes": 0
+      }
+    },
+    {
+      "counter": {
+        "family": "inet",
+        "name": "ctunku",
+        "table": "fvpn",
+        "handle": 22,
+        "packets": 48,
+        "bytes": 3111
+      }
+    },
+    {
+      "counter": {
+        "family": "inet",
+        "name": "d_019a00000000700080000000000000a1",
+        "table": "fvpn",
+        "handle": 23,
+        "packets": 288,
+        "bytes": 11522
+      }
+    },
+    {
+      "counter": {
+        "family": "inet",
+        "name": "d_019a00000000700080000000000000a2",
+        "table": "fvpn",
+        "handle": 24,
+        "packets": 6,
+        "bytes": 448
+      }
+    },
+    {
+      "counter": {
+        "family": "inet",
+        "name": "d_019a00000000700080000000000000b1",
+        "table": "fvpn",
+        "handle": 25,
+        "packets": 0,
+        "bytes": 0
+      }
+    },
+    {
+      "counter": {
+        "family": "inet",
+        "name": "nd_019a00000000700080000000000000a1",
+        "table": "fvpn",
+        "handle": 26,
+        "packets": 0,
+        "bytes": 0
+      }
+    },
+    {
+      "counter": {
+        "family": "inet",
+        "name": "nd_019a00000000700080000000000000a2",
+        "table": "fvpn",
+        "handle": 27,
+        "packets": 0,
+        "bytes": 0
+      }
+    },
+    {
+      "counter": {
+        "family": "inet",
+        "name": "nd_019a00000000700080000000000000b1",
+        "table": "fvpn",
+        "handle": 28,
+        "packets": 0,
+        "bytes": 0
+      }
+    },
+    {
+      "counter": {
+        "family": "inet",
+        "name": "nu_019a00000000700080000000000000a1",
+        "table": "fvpn",
+        "handle": 29,
+        "packets": 0,
+        "bytes": 0
+      }
+    },
+    {
+      "counter": {
+        "family": "inet",
+        "name": "nu_019a00000000700080000000000000a2",
+        "table": "fvpn",
+        "handle": 30,
+        "packets": 0,
+        "bytes": 0
+      }
+    },
+    {
+      "counter": {
+        "family": "inet",
+        "name": "nu_019a00000000700080000000000000b1",
+        "table": "fvpn",
+        "handle": 31,
+        "packets": 0,
+        "bytes": 0
+      }
+    },
+    {
+      "counter": {
+        "family": "inet",
+        "name": "u_019a00000000700080000000000000a1",
+        "table": "fvpn",
+        "handle": 32,
+        "packets": 355,
+        "bytes": 14588
+      }
+    },
+    {
+      "counter": {
+        "family": "inet",
+        "name": "u_019a00000000700080000000000000a2",
+        "table": "fvpn",
+        "handle": 33,
+        "packets": 10,
+        "bytes": 488
+      }
+    },
+    {
+      "counter": {
+        "family": "inet",
+        "name": "u_019a00000000700080000000000000b1",
+        "table": "fvpn",
+        "handle": 34,
+        "packets": 0,
+        "bytes": 0
+      }
+    },
+    {
+      "set": {
+        "family": "inet",
+        "name": "allowed_v4",
+        "table": "fvpn",
+        "type": "ipv4_addr",
+        "handle": 4,
+        "flags": [
+          "timeout"
+        ]
+      }
+    },
+    {
+      "set": {
+        "family": "inet",
+        "name": "denied_v4",
+        "table": "fvpn",
+        "type": "ipv4_addr",
+        "handle": 35,
+        "flags": [
+          "interval"
+        ],
+        "elem": [
+          {
+            "prefix": {
+              "addr": "0.0.0.0",
+              "len": 8
+            }
+          },
+          {
+            "prefix": {
+              "addr": "10.0.0.0",
+              "len": 8
+            }
+          },
+          {
+            "prefix": {
+              "addr": "100.64.0.0",
+              "len": 10
+            }
+          },
+          {
+            "prefix": {
+              "addr": "127.0.0.0",
+              "len": 8
+            }
+          },
+          {
+            "prefix": {
+              "addr": "169.254.0.0",
+              "len": 16
+            }
+          },
+          {
+            "prefix": {
+              "addr": "172.16.0.0",
+              "len": 12
+            }
+          },
+          {
+            "prefix": {
+              "addr": "192.0.0.0",
+              "len": 24
+            }
+          },
+          {
+            "prefix": {
+              "addr": "192.0.2.0",
+              "len": 24
+            }
+          },
+          {
+            "prefix": {
+              "addr": "192.88.99.0",
+              "len": 24
+            }
+          },
+          {
+            "prefix": {
+              "addr": "192.168.0.0",
+              "len": 16
+            }
+          },
+          {
+            "prefix": {
+              "addr": "198.18.0.0",
+              "len": 15
+            }
+          },
+          {
+            "prefix": {
+              "addr": "198.51.100.0",
+              "len": 24
+            }
+          },
+          {
+            "prefix": {
+              "addr": "224.0.0.0",
+              "len": 3
+            }
+          }
+        ]
+      }
+    },
+    {
+      "set": {
+        "family": "inet",
+        "name": "host_v4",
+        "table": "fvpn",
+        "type": "ipv4_addr",
+        "handle": 36,
+        "flags": [
+          "interval"
+        ],
+        "elem": [
+          "192.0.2.33",
+          "192.0.2.37",
+          "192.168.0.1"
+        ]
+      }
+    },
+    {
+      "set": {
+        "family": "inet",
+        "name": "resolver_v4",
+        "table": "fvpn",
+        "type": "ipv4_addr",
+        "handle": 37,
+        "elem": [
+          "198.51.100.53"
+        ]
+      }
+    },
+    {
+      "chain": {
+        "family": "inet",
+        "table": "fvpn",
+        "name": "forward",
+        "handle": 4591,
+        "type": "filter",
+        "hook": "forward",
+        "prio": -150,
+        "policy": "drop"
+      }
+    },
+    {
+      "chain": {
+        "family": "inet",
+        "table": "fvpn",
+        "name": "input",
+        "handle": 4592,
+        "type": "filter",
+        "hook": "input",
+        "prio": -150,
+        "policy": "accept"
+      }
+    },
+    {
+      "chain": {
+        "family": "inet",
+        "table": "fvpn",
+        "name": "output",
+        "handle": 4593,
+        "type": "filter",
+        "hook": "output",
+        "prio": -150,
+        "policy": "accept"
+      }
+    },
+    {
+      "chain": {
+        "family": "inet",
+        "table": "fvpn",
+        "name": "postrouting",
+        "handle": 4594,
+        "type": "nat",
+        "hook": "postrouting",
+        "prio": 100,
+        "policy": "accept"
+      }
+    },
+    {
+      "rule": {
+        "family": "inet",
+        "table": "fvpn",
+        "chain": "forward",
+        "handle": 4595,
+        "comment": "fvpn_generation=0 fvpn_baseline=1 fvpn_metering=forward_admission_v1",
+        "expr": [
+          {
+            "match": {
+              "op": "==",
+              "left": {
+                "payload": {
+                  "protocol": "ip",
+                  "field": "saddr"
+                }
+              },
+              "right": "192.0.2.255"
+            }
+          },
+          {
+            "match": {
+              "op": "==",
+              "left": {
+                "payload": {
+                  "protocol": "ip",
+                  "field": "daddr"
+                }
+              },
+              "right": "192.0.2.255"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "rule": {
+        "family": "inet",
+        "table": "fvpn",
+        "chain": "forward",
+        "handle": 4596,
+        "comment": "fvpn_class=019a0000-0000-7000-8000-00000000000a:2f",
+        "expr": [
+          {
+            "match": {
+              "op": "==",
+              "left": {
+                "payload": {
+                  "protocol": "ip",
+                  "field": "saddr"
+                }
+              },
+              "right": "192.0.2.255"
+            }
+          },
+          {
+            "match": {
+              "op": "==",
+              "left": {
+                "payload": {
+                  "protocol": "ip",
+                  "field": "daddr"
+                }
+              },
+              "right": "192.0.2.255"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "rule": {
+        "family": "inet",
+        "table": "fvpn",
+        "chain": "forward",
+        "handle": 4597,
+        "comment": "fvpn_class=019a0000-0000-7000-8000-00000000000b:30",
+        "expr": [
+          {
+            "match": {
+              "op": "==",
+              "left": {
+                "payload": {
+                  "protocol": "ip",
+                  "field": "saddr"
+                }
+              },
+              "right": "192.0.2.255"
+            }
+          },
+          {
+            "match": {
+              "op": "==",
+              "left": {
+                "payload": {
+                  "protocol": "ip",
+                  "field": "daddr"
+                }
+              },
+              "right": "192.0.2.255"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "rule": {
+        "family": "inet",
+        "table": "fvpn",
+        "chain": "forward",
+        "handle": 4598,
+        "expr": [
+          {
+            "match": {
+              "op": "==",
+              "left": {
+                "meta": {
+                  "key": "iifname"
+                }
+              },
+              "right": "fv-fh"
+            }
+          },
+          {
+            "counter": "ctbase"
+          },
+          {
+            "drop": null
+          }
+        ]
+      }
+    },
+    {
+      "rule": {
+        "family": "inet",
+        "table": "fvpn",
+        "chain": "forward",
+        "handle": 4599,
+        "expr": [
+          {
+            "match": {
+              "op": "==",
+              "left": {
+                "meta": {
+                  "key": "oifname"
+                }
+              },
+              "right": "fv-fh"
+            }
+          },
+          {
+            "counter": "ctbase"
+          },
+          {
+            "drop": null
+          }
+        ]
+      }
+    },
+    {
+      "rule": {
+        "family": "inet",
+        "table": "fvpn",
+        "chain": "forward",
+        "handle": 4600,
+        "expr": [
+          {
+            "match": {
+              "op": "==",
+              "left": {
+                "meta": {
+                  "key": "iifname"
+                }
+              },
+              "right": "fv-fh"
+            }
+          },
+          {
+            "match": {
+              "op": "==",
+              "left": {
+                "meta": {
+                  "key": "nfproto"
+                }
+              },
+              "right": "ipv6"
+            }
+          },
+          {
+            "counter": "ctv6"
+          },
+          {
+            "drop": null
+          }
+        ]
+      }
+    },
+    {
+      "rule": {
+        "family": "inet",
+        "table": "fvpn",
+        "chain": "forward",
+        "handle": 4601,
+        "expr": [
+          {
+            "match": {
+              "op": "==",
+              "left": {
+                "meta": {
+                  "key": "oifname"
+                }
+              },
+              "right": "fv-fh"
+            }
+          },
+          {
+            "match": {
+              "op": "==",
+              "left": {
+                "meta": {
+                  "key": "nfproto"
+                }
+              },
+              "right": "ipv6"
+            }
+          },
+          {
+            "counter": "ctv6"
+          },
+          {
+            "drop": null
+          }
+        ]
+      }
+    },
+    {
+      "rule": {
+        "family": "inet",
+        "table": "fvpn",
+        "chain": "input",
+        "handle": 4602,
+        "expr": [
+          {
+            "match": {
+              "op": "==",
+              "left": {
+                "meta": {
+                  "key": "iifname"
+                }
+              },
+              "right": "fv-fh"
+            }
+          },
+          {
+            "counter": "ctin"
+          },
+          {
+            "drop": null
+          }
+        ]
+      }
+    },
+    {
+      "rule": {
+        "family": "inet",
+        "table": "fvpn",
+        "chain": "input",
+        "handle": 4603,
+        "expr": [
+          {
+            "match": {
+              "op": "==",
+              "left": {
+                "payload": {
+                  "protocol": "ip",
+                  "field": "saddr"
+                }
+              },
+              "right": {
+                "prefix": {
+                  "addr": "100.64.0.0",
+                  "len": 10
+                }
+              }
+            }
+          },
+          {
+            "counter": "ctin"
+          },
+          {
+            "drop": null
+          }
+        ]
+      }
+    }
+  ]
+}
