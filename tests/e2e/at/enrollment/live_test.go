@@ -282,7 +282,7 @@ func (p *probe) rateReview() {
 	detail["rescored_header_value_recorded"] = false
 	detail["rescored_reasoning"] = "Follow-up 3 run 60a7102e recorded http_429 2, both class browser: GET /api/v1/admin/audit-events and GET /api/v1/admin/nodes/01a18f10-3f31-7ae7-890a-55354e77cec0/incarnations. The saved samples have no Retry-After value. callHeaders retried them with the same Idempotency-Key using Retry-After, audit_read and incarnation_history passed, and the join phase recorded http_429 0. D-078 scores that as the limiter working. The raw count stays in prior_checks."
 	detail["changed_commit"] = "286eb57b44c2e783257767918680a0e1f097f106"
-	detail["what_changed"] = "D-078 scores 429s by behaviour. Admin callHeaders and agent enroll post still retry HTTP 429 using Retry-After (1-30s, default 1s only when the header is absent) with the same Idempotency-Key. Admin attempts stop at 6 and agent enroll attempts stop at 4. A 429 without Retry-After, a retry that is still 429, or a non-browser class is a finding. The zero-count criterion is withdrawn."
+	detail["what_changed"] = "D-078 scores 429s by behaviour. Admin callHeaders and agent enroll post still retry HTTP 429 using Retry-After (1-30s, default 1s only when the header is absent) with the same Idempotency-Key. Admin attempts stop at 6 and agent enroll attempts stop at 4. A 429 without Retry-After, a retry that is still 429, or a class outside browser/read is a finding. Control #252 moved admin list reads to read; the zero-count criterion is withdrawn."
 	p.note("AT06", "rate_limit_review", status, detail)
 }
 

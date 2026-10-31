@@ -125,10 +125,33 @@ Live ENR-06 diagnosis (2026-10-31): real enrollment succeeded in the dedicated s
 
 ## Follow-up 5 review and current dependencies
 
-The authoritative devstack evidence is [follow-up 15](../../../runs/2026-10-31/followup15/README.md), [installer finding](../../../runs/2026-10-31/followup15/installer-finding.md), and [PR #266](https://github.com/TED-H-com/Freedom-VPN/pull/266). The export-availability requests are closed by #266; the composed AT07 requirements stay open in the table above. `CountedMemberTraffic` reads counters; `StartEstablishedTransports` generates member traffic. No old-incarnation rows or outbox are rewritten by this harness.
+The authoritative devstack evidence is [follow-up 15](../../runs/2026-10-31/followup15/README.md), [installer finding](../../runs/2026-10-31/followup15/installer-finding.md), and [PR #266](https://github.com/TED-H-com/Freedom-VPN/pull/266). The export-availability requests are closed by #266; the composed AT07 requirements stay open in the table above. `CountedMemberTraffic` reads counters; `StartEstablishedTransports` generates member traffic. No old-incarnation rows or outbox are rewritten by this harness.
 
 `packaging/installer/reenroll.go` documents a separate product constraint: the usage store retains its original Node/incarnation, `usagestore.Open` rejects a changed identity, and the uploader has no re-home path. Central rejects a batch whose incarnation differs from mTLS. The requested automatic post-reinstall delivery cannot be inferred from disk preservation. Owner usage/installer (with control/pki for authorization): define and implement the authorized handoff/replay path. This is a spec question under §6.2, §6.3, §10.5 and §19 AT07, not permission to bypass revocation.
 
 Control follow-up 21 [#233](https://github.com/TED-H-com/Freedom-VPN/pull/233) retained browser 10/s burst 30. Follow-up 22 [#252](https://github.com/TED-H-com/Freedom-VPN/pull/252) supersedes the list-read portion: class `read`, 30/s burst 60 for audit-events, nodes, incarnations, members and devices; detail/write routes stay `browser`, 10/s burst 30. Ingress is 20/s burst 60 per class/address. These are source/default observations, not a new load calibration. The harness scores successful Retry-After behavior for both browser-session classes and requires zero join-phase 429s. It labels per-request class from the current method/path mapping, because the HTTP response has no class header.
 
 AT07 process review now names `bebfe230-26d4-4e3d-b052-81d258d04e07` and `35e542f8-730e-4be0-8214-e4a9dd818c40`. Their only AT07 failed row is `probe_process`; both share the same failed Go invocation with AT06. The former's AT06 failures are the un-retried browser 429s, and the latter's sole AT06 assertion failure is the withdrawn zero-429 review rule. Resolution requires explicit current exit-0 process rows, the AT06 audit/reinstall/history checks and behavior review, and the corrected clone check. The review of `1d5c02a4` still names the missing wget `--content-on-error`. All original rows and immutable directories remain.
+
+### Follow-up 5 measured disposition
+
+Run `4011dd32-73ef-4f49-b78b-6cf1ab8496c9` (2026-10-31T06:10:11Z–2026-10-31T06:15:49Z) reproduced #266's
+installer failure after successful enrollment: exit 1, code `failed`, no success
+status, both read-only diagnostics true. Node `01a19097-5517-7833-bb6e-7a0fb2533c95` and incarnation
+`01a19097-5a5e-7a9d-be44-03ed39315faf` are visible through the API. Forwarding is null and
+safety unknown, so there is no serving baseline for the rerun/reinstall checks.
+All three installer-slot usage probes returned `unknown node slot`.
+
+ENR-05 and ENR-06 therefore remain **open**, with the precise owners/asks in the
+top table. The six blocked check names are `counted_unacked_usage`,
+`installer_rerun`, `identity_ledger_preserved`, `controlled_reinstall`,
+`old_certificate_denied`, `historical_usage_retained`. Successful wrapper
+invocations, retained-identity mode/history, both old-certificate denial paths,
+counted nonzero retained usage and automatic once-only delivery remain unmeasured.
+The endpoint-scope probe on `node` passed at 2026-10-31T06:12:05.728533112Z–2026-10-31T06:12:05.850705481Z,
+but had zero pending events and cannot close ENR-05.
+
+AT06 passed 344/0/0 with zero full/join 429s. AT07 is 19/6/0 with no failed
+assertions. Both historical review dispositions are **resolved**, including
+AT07 `bebfe230` and `35e542f8`. There is no remaining orchestrator review request
+for those two rows. All teardown commands exited 0; owned inventory is zero.
