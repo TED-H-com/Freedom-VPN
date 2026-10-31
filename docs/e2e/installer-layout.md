@@ -68,6 +68,16 @@ not OS reboot; acceptance restart checks require fresh heartbeat/readback.
 
 ## Serving member and ENR-05
 
+**Current product blocker:** the fresh install's empty `inet fvpn owner` marker
+survives agent rendering, while `node/enforce/verify.go` requires exactly four
+chains. The real agent reports `HOOK_PRIORITY_MISMATCH`, preventing publication
+and counted member traffic. The composed runner preserves this failure; it
+does not delete the marker or relax enforcement. See the
+[follow-up 17 read-back](runs/2026-10-31/followup17/a7c41436-82b3-4665-b75c-e2887f2e1009/installer-owner-chain.md).
+The exports below accept the installer slot, but nonzero same-slot usage and
+post-wrapper traffic restoration remain unproved until installer/enforcement
+agree on the owned table's shape.
+
 `PrepareInstallerNode` starts the real AdGuard sidecar before NetBird joins,
 as in the ordinary lab node. This keeps NetBird's unused DNS stub from occupying
 overlay port 53 before AdGuard. After installation, call

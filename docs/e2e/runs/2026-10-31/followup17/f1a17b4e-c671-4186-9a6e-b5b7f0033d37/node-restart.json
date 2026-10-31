@@ -1,0 +1,63 @@
+{
+  "id": "node-restart",
+  "title": "Enrolled node resumes without an installer token",
+  "spec": [
+    "§5",
+    "§6",
+    "F2-05"
+  ],
+  "status": "fail",
+  "observations": [
+    {
+      "name": "installer_token_absent_before",
+      "detail": "true"
+    },
+    {
+      "name": "resume_within_watchdog_deadline",
+      "detail": "false"
+    },
+    {
+      "name": "nft_table_readable",
+      "detail": "true"
+    },
+    {
+      "name": "new_observation_same_incarnation",
+      "detail": "false"
+    },
+    {
+      "name": "kernel_boot_unchanged",
+      "detail": "true"
+    },
+    {
+      "name": "resolver_after_restart",
+      "detail": "{\"admin_http\":200,\"query_log_enabled\":false,\"query_log_file_enabled\":false,\"rule_count\":0,\"rules_sha256\":\"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945\",\"statistics_enabled\":false,\"synthetic_answer_count\":2,\"synthetic_blocked\":false}"
+    },
+    {
+      "name": "restart_elapsed_ms",
+      "detail": "35205"
+    },
+    {
+      "name": "status_stage",
+      "detail": "enrolled"
+    },
+    {
+      "name": "heartbeat",
+      "detail": "v1\nboot_id 97c018d7-a925-4723-9127-83c097de1c8a\nmono_ns 17486834381976\nwall_unix_ns 1793433949318011692\npolicy_expires_mono_ns 0\nbaseline_ok 1\nserving 0\ngeneration 1\nreason not_published"
+    },
+    {
+      "name": "same_node_and_incarnation",
+      "detail": "true"
+    },
+    {
+      "name": "enrollment_rows_unchanged",
+      "detail": "true"
+    },
+    {
+      "name": "installer_token_absent_after",
+      "detail": "true"
+    }
+  ],
+  "at": "2026-10-31T08:05:53Z",
+  "run_id": "f1a17b4e-c671-4186-9a6e-b5b7f0033d37",
+  "source_commit": "6e3667f57a55c2757644b2840d4a6763435f5009"
+}

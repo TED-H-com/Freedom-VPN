@@ -112,6 +112,9 @@ The missing genuine `state/meter.checkpoint` remains a product prerequisite.
 These exports never supply one and do not promote an updater process exit 0
 over a failed durable result. Candidate restart/health remains unverified until
 the barrier is supplied by agent-core and the real apply succeeds.
+The [complete follow-up 17 run](runs/2026-10-31/followup17/README.md) passed
+kernel/heartbeat/updater-lock equality and the ordinary process restart check;
+installer apply still returned durable `failed/final_sample`, health null.
 
 ## isolation — 2026-10-31
 
@@ -129,6 +132,10 @@ committing it. A read failure cannot replace a previously complete destination.
 This does not close AT11 hardware/platform coverage or AT13's continuous
 crash/NetBird/OS-reboot/updater matrix. Its process restart assertion now expects
 the same kernel ID and a fresh serving heartbeat.
+The [live plumbing row](runs/2026-10-31/followup17/a7c41436-82b3-4665-b75c-e2887f2e1009/capture-and-boot.md)
+passed a real 204-byte origin capture, a complete 3,145,728-byte disk export and
+explicit diagnostic overflow. These are helper checks, not a rerun of the
+isolation lane's full acceptance matrix.
 
 ## security-ops — 2026-10-31
 
@@ -178,3 +185,49 @@ run; they cannot retroactively make the existing browser fixture rows live-node
 evidence. The shared stack uses TEST ONLY IdP/payment fixtures; their external
 provider behavior and physical arm64/mobile/desktop coverage are not established
 by the live-node checks above.
+
+## enrollment — 2026-10-31
+
+> # Enrollment acceptance requests — follow-up 5
+
+ENR-06 now reaches successful initial installation and an `already_current`
+rerun on the fixed NetBird socket/runtime layout. Digests serialize with
+`*_sha256` names and retain `absent`; `current_target` is symlink text.
+`InstallerOutcome.Services` captures active consumers before sampling and
+those started by the installer. Call `RestoreInstallerServices(ctx,
+"installer-node", out.Services)` after comparing quiescent files, including
+when the wrapper returns an error. It restores captured active services with
+read-back and leaves an inactive updater oneshot inactive. The shared runtime
+and NetBird socket survive sampling. [Contract and example](installer-layout.md).
+
+ENR-05's `HoldUsageAcknowledgements`, `UsageLedgerSnapshot` /
+`UsageLedgerSnapshotBytes`, `MemberTransportStack` and `CountedMemberTraffic`
+now accept `installer-node`. The hold is on the authenticated installer proxy
+at loopback 9444; the CLI uses `/opt/vpn-node/current/fvpn-agent` and
+`/etc/vpn-node/agent.json`. `ConfigureInstallerServing` supplies the real
+AdGuard backend, and the focused campaign composes publication, native member
+join, persistent TCP/UDP, counters and held usage without writing observations
+or ledger rows.
+
+The live attempt exposed an additional **product blocker**: the installer
+creates an empty `inet fvpn owner` chain, but enforcement requires exactly
+four chains and reports `HOOK_PRIORITY_MISMATCH`. Publication and the counted
+member prerequisite do not complete. Nonzero held usage and restored traffic
+therefore remain unproved. The harness leaves the marker and verifier intact;
+the owner is installer/enforcement (`packaging/installer/isolation.go` and
+`node/enforce/verify.go`), outside this lane's paths.
+[Actual marker and agent failure](runs/2026-10-31/followup17/a7c41436-82b3-4665-b75c-e2887f2e1009/installer-owner-chain.md).
+
+Authorized old-incarnation backlog delivery remains a separate unresolved
+usage/installer protocol. Disk preservation cannot establish once-only central
+totals or permission to send retired events under the new certificate. The
+full journaled installer upgrade also remains failed at the genuine missing
+meter checkpoint; no replacement checkpoint is supplied here.
+
+In [run a7c41436](runs/2026-10-31/followup17/README.md), controlled reinstall
+also exited 0 (`reenrolled`): same Node ID, different incarnation, retired mode
+0700, retained identity/bound-state digests, unchanged usage DB/WAL digests,
+and HTTP 403 for the retired certificate on both direct and proxy paths.
+Service restoration succeeded. Nonzero historical usage and forwarding after
+restoration are not claimed from those file/service results. The complete
+campaign remains exit 1 (8 pass / 1 blocked / 3 fail).
