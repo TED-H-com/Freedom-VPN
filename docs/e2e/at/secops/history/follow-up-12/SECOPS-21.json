@@ -1,0 +1,242 @@
+{
+  "schema_version": 1,
+  "follow_up": 12,
+  "application_base": "510a4ab7f73bdcfc28aaef53f8d1d6deef97ad67",
+  "source_revision": "bf21d111f0b334368441144145abca8f5d0c060a",
+  "run_id": "dd845a7f-2660-431c-a8e6-c513108cc07d",
+  "driver_run_id": "c8498f5b-455e-41a9-9804-2067690aec23",
+  "started_at": "2026-10-31T09:04:16Z",
+  "finished_at": "2026-10-31T09:23:05Z",
+  "hardware": "shared development host; not candidate hardware",
+  "probe_source_sha256": "16ff60b0f2f39a827de3953ea0b24818d41be6f8537854d9d9a0e797e01af425",
+  "record_renderer_sha256": "fca01192bfe08cc5e48c441e513937dd681e53eb57b5bd9dcc57704778e8e753",
+  "previous_run": "history/follow-up-11/",
+  "projector_owned_rows_written": [],
+  "id": "SECOPS-21",
+  "status": "blocked",
+  "request_status": "open",
+  "d099_roadmap_present": true,
+  "hold": {
+    "after": {
+      "utc": "2026-10-31T09:11:03.992661+00:00",
+      "drift": [
+        {
+          "field": "desired_state_restore_observation",
+          "desired": "observation received after 2026-10-31T09:11:03.286406129Z",
+          "observed": "pending fresh observation after restore"
+        }
+      ],
+      "applied": "9",
+      "desired": "10",
+      "envelope_md5": "c591cdd587284f1a6207c47248441aef",
+      "stored_count": 9,
+      "hold_operations": [
+        {
+          "steps": {
+            "fresh_observation": {
+              "order": 1,
+              "reason": "pending fresh observation after restore",
+              "status": "pending",
+              "required": true,
+              "updated_at": "2026-10-31T09:11:03.286406+00:00"
+            }
+          },
+          "status": "pending",
+          "created_at": "2026-10-31T09:11:03.286406+00:00"
+        }
+      ]
+    },
+    "agent_stopped_for_pre_observation_probe": true,
+    "before": {
+      "utc": "2026-10-31T09:11:03.86169+00:00",
+      "drift": [
+        {
+          "field": "desired_state_restore_observation",
+          "desired": "observation received after 2026-10-31T09:11:03.286406129Z",
+          "observed": "pending fresh observation after restore"
+        }
+      ],
+      "applied": "9",
+      "desired": "10",
+      "envelope_md5": "c591cdd587284f1a6207c47248441aef",
+      "stored_count": 9,
+      "hold_operations": [
+        {
+          "steps": {
+            "fresh_observation": {
+              "order": 1,
+              "reason": "pending fresh observation after restore",
+              "status": "pending",
+              "required": true,
+              "updated_at": "2026-10-31T09:11:03.286406+00:00"
+            }
+          },
+          "status": "pending",
+          "created_at": "2026-10-31T09:11:03.286406+00:00"
+        }
+      ]
+    },
+    "freeze_before_services_start": true,
+    "node_drift": [
+      {
+        "desired": "observation received after 2026-10-31T09:11:03.286406129Z",
+        "field": "desired_state_restore_observation",
+        "observed": "pending fresh observation after restore"
+      }
+    ],
+    "node_get_status": 200,
+    "passed": true,
+    "response": {
+      "command_ok": false,
+      "decoded": true,
+      "error_code": "DEPENDENCY_UNAVAILABLE",
+      "generation": "",
+      "http_200": false,
+      "http_503": true,
+      "message": "pending fresh observation after restore",
+      "retryable": true,
+      "utc": "2026-10-31T09:11:03.907502646Z"
+    }
+  },
+  "actual": {
+    "final": {
+      "applied": "19",
+      "captured_at": "2026-10-31T09:13:41.212038488Z",
+      "desired": "20",
+      "max_stored": "20",
+      "node_accepted_desired": "20",
+      "node_applied": "20",
+      "node_heartbeat": {
+        "baseline_ok": "1",
+        "generation": "20",
+        "mono_ns": "21557044633166",
+        "policy_expires_mono_ns": "28277512919301",
+        "reason": "serving",
+        "serving": "1",
+        "wall_unix_ns": "1793438019528262588"
+      }
+    },
+    "fix": "#245 w3-wire-policies-usage follow-up 5",
+    "log_limit": "node/agent/sync.go silently ignores ErrStaleGeneration; zero log matches alone is not closure proof",
+    "manual_generation_adjustment": false,
+    "observations": [
+      {
+        "errors": [],
+        "applied": "15",
+        "received_at": "2026-10-31T09:11:04.363723+00:00"
+      },
+      {
+        "errors": [],
+        "applied": "17",
+        "received_at": "2026-10-31T09:11:09.427318+00:00"
+      },
+      {
+        "errors": [],
+        "applied": "17",
+        "received_at": "2026-10-31T09:11:39.434124+00:00"
+      },
+      {
+        "errors": [],
+        "applied": "17",
+        "received_at": "2026-10-31T09:12:09.459392+00:00"
+      },
+      {
+        "errors": [],
+        "applied": "17",
+        "received_at": "2026-10-31T09:12:39.714966+00:00"
+      },
+      {
+        "errors": [],
+        "applied": "19",
+        "received_at": "2026-10-31T09:13:14.493777+00:00"
+      }
+    ],
+    "offers": [
+      {
+        "signed_at": "2026-10-31T09:11:04.502381+00:00",
+        "generation": "16"
+      },
+      {
+        "signed_at": "2026-10-31T09:11:06.861875+00:00",
+        "generation": "17"
+      },
+      {
+        "signed_at": "2026-10-31T09:12:41.442278+00:00",
+        "generation": "18"
+      },
+      {
+        "signed_at": "2026-10-31T09:12:42.884255+00:00",
+        "generation": "19"
+      },
+      {
+        "signed_at": "2026-10-31T09:13:29.575561+00:00",
+        "generation": "20"
+      }
+    ],
+    "restored_central": {
+      "applied": "9",
+      "captured_at": "2026-10-31T09:11:03.444523225Z",
+      "desired": "10",
+      "max_stored": "10",
+      "node_accepted_desired": "15",
+      "node_applied": "15",
+      "node_heartbeat": {
+        "baseline_ok": "1",
+        "generation": "15",
+        "mono_ns": "21390876086164",
+        "policy_expires_mono_ns": "28277513856895",
+        "reason": "serving",
+        "serving": "1",
+        "wall_unix_ns": "1793437853359715531"
+      }
+    },
+    "retained_at_t1": {
+      "applied": "12",
+      "captured_at": "2026-10-31T09:08:45.814808505Z",
+      "desired": "14",
+      "max_stored": "14",
+      "node_accepted_desired": "14",
+      "node_applied": "14",
+      "node_heartbeat": {
+        "baseline_ok": "1",
+        "generation": "14",
+        "mono_ns": "21259429551345",
+        "policy_expires_mono_ns": "28277513827147",
+        "reason": "serving",
+        "serving": "1",
+        "wall_unix_ns": "1793437721913180587"
+      }
+    },
+    "stale_generation_lines": [],
+    "stale_generation_log_count": 0,
+    "window_start": "2026-10-31T09:11:03.444552377Z"
+  },
+  "first_offer_analysis": {
+    "first_new_stored_offer": {
+      "signed_at": "2026-10-31T09:11:04.502381+00:00",
+      "generation": "16"
+    },
+    "retained_node_generation": "15",
+    "first_http_probe_after_fresh_observation": {
+      "command_ok": true,
+      "decoded": true,
+      "error_code": "",
+      "generation": "16",
+      "http_200": true,
+      "http_503": false,
+      "message": "",
+      "retryable": false,
+      "utc": "2026-10-31T09:11:04.521361985Z"
+    },
+    "first_new_stored_offer_is_above_retained": true,
+    "limitation": "Stored compiler rows and a timestamped HTTP probe are distinct. No response capture export proves the first envelope delivered to the running agent; no claim that absence of ErrStaleGeneration log lines proves acceptance.",
+    "closure_guards": {
+      "d099_on_measured_base": true,
+      "d095_hold_proved": true,
+      "first_stored_row_above_retained": true,
+      "first_delivered_http_response_proved": false,
+      "first_offer_local_store_accepted": false,
+      "first_stored_row_applied_ack": false
+    }
+  }
+}

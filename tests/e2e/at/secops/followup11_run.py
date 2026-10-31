@@ -26,8 +26,10 @@ def main(phase=None):
                   application_base=main_revision, phase=phase, started_at=utc(), d099_roadmap_present=d099,
                   prepare=dict(prefix=PREFIX,port_base=PORT_BASE,reset=True,grace_seconds=90))
     followup = os.environ.get('FVPN_SECOPS_EVIDENCE_FOLLOWUP', '11')
-    if followup not in ('11', '12'):
+    if followup not in ('11', '12', '13'):
         raise SystemExit('unsupported evidence follow-up')
+    if followup == '13' and phase != 'restore':
+        raise SystemExit('follow-up 13 authorizes only the restore campaign')
     record['follow_up'] = int(followup)
     label = 'followup'+followup+'-'+phase
     with tempfile.TemporaryDirectory(prefix=label+'.',dir=ROOT/'.agent/tmp') as scratch:
