@@ -90,6 +90,10 @@ type Engine struct {
 	loopCtx        context.Context
 	loopCancel     context.CancelFunc
 	loops          sync.WaitGroup
+	closeOnce      sync.Once
+	closeDone      chan struct{}
+	closeCtx       context.Context
+	closeErr       error
 
 	// usageStatus is the open store, read when an observation is built.
 	// Nil before the store opens and after it closes. usageStatusBound
@@ -151,6 +155,7 @@ type Engine struct {
 	outboxFull           bool
 	meterFailed          bool
 	applyError           *api.NodeError
+	failedCandidate      *failedCandidate
 	servingRead          *servingRead
 	tcReadback           *api.TCReadbackEvidence
 	measurementRun       uuid.UUID
@@ -159,6 +164,7 @@ type Engine struct {
 	leaseRetryAt         time.Duration
 	leaseAttempted       bool
 	leaseAttemptAt       time.Duration
+	staleHold            staleLeaseHold
 	provisionalStreak    int
 	provisionalRetryAt   time.Duration
 	decision             Decision
@@ -301,17 +307,38 @@ func (e *Engine) Close() error {
 	if e == nil {
 		return nil
 	}
-	e.shutdownUsage()
-	if e.client != nil {
-		e.client.Close()
-		e.client = nil
+	// Bound the whole close, including loop joins and synchronous filesystem
+	// work. A timed-out worker retains ledger ownership until it actually
+	// finishes or the process exits; never close a store under a live sampler.
+	e.closeOnce.Do(func() {
+		var cancel context.CancelFunc
+		e.closeCtx, cancel = newLocalBudget(context.Background(), 3*time.Second)
+		e.closeDone = make(chan struct{})
+		go func() {
+			defer cancel()
+			defer close(e.closeDone)
+			e.shutdownUsage(e.closeCtx)
+			if e.client != nil {
+				e.client.Close()
+				e.client = nil
+			}
+			if e.ownStore && e.store != nil {
+				e.closeErr = e.store.Close()
+				e.store = nil
+			}
+		}()
+	})
+	select {
+	case <-e.closeDone:
+		return e.closeErr
+	case <-e.closeCtx.Done():
+		select {
+		case <-e.closeDone:
+			return e.closeErr
+		default:
+			return e.closeCtx.Err()
+		}
 	}
-	if e.ownStore && e.store != nil {
-		err := e.store.Close()
-		e.store = nil
-		return err
-	}
-	return nil
 }
 
 func (e *Engine) clientCert(*tls.CertificateRequestInfo) (*tls.Certificate, error) {
@@ -492,16 +519,23 @@ func signaled(ch <-chan os.Signal) bool {
 // Step is one control pass. A 304 does not move the lease (§14.7). Member
 // forwarding stays off unless every gate in Decide passes.
 func (e *Engine) Step(ctx context.Context) error {
-	defer e.finishServingStep(ctx)
+	caller := ctx
 	// Leave time for live verification and heartbeat even during a control
 	// outage. A 30s HTTP timeout previously exceeded the watchdog's stale
 	// threshold before the next heartbeat (ISO-F6-03).
 	ioCtx, cancelIO := context.WithTimeout(ctx, e.controlPassTimeout())
 	defer cancelIO()
 	ctx = context.WithValue(ctx, controlBudgetKey{}, ioCtx)
+	// One local allowance starts at entry, including the initial/final reads,
+	// quarantine, baseline, persistence and observation. Nested cleanup may
+	// shorten it but cannot discard it or start another quarantine allowance.
+	ctx, cancelLocal := newLocalBudget(ctx, e.controlPassTimeout()+5*time.Second)
+	defer cancelLocal()
+	defer e.finishServingStep(ctx)
 	previousDesired, previousLease := e.desired, e.lease
+	e.staleHold.counted = false
 	e.leaseAttempted = false
-	if err := ctx.Err(); err != nil {
+	if err := caller.Err(); err != nil {
 		return err
 	}
 	e.latch()
@@ -531,18 +565,9 @@ func (e *Engine) Step(ctx context.Context) error {
 	// The independent live read can finish after SIGTERM. Stop here before
 	// canceled local store/meter reads manufacture a storage failure and
 	// prevent Close from checkpointing the still-valid same-boot rules.
-	if err := ctx.Err(); err != nil {
+	if err := caller.Err(); err != nil {
 		return err
 	}
-	// Control I/O still uses ioCtx and stops with the caller. Local work must
-	// finish its bounded transaction/readback after SIGTERM: canceling Apply
-	// or a path/store read would manufacture a failure and withdraw a valid
-	// lease before Close can checkpoint it. Leave the control budget plus the
-	// existing five-second cleanup allowance; inner install/read bounds and
-	// signed deadlines remain authoritative. Real failures still fail closed.
-	localCtx, cancelLocal := context.WithTimeout(context.WithoutCancel(ctx), e.controlPassTimeout()+5*time.Second)
-	defer cancelLocal()
-	ctx = localCtx
 	// Refresh the anchor before any 304. A wall jump must be visible to the
 	// lease renewal decision even when desired state is unchanged (§16.3).
 	_, _ = e.verifyTime()
@@ -1073,9 +1098,12 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 		e.setMeterBindings(model.Bindings)
 	}
 	if err != nil && !verifiedDelete {
+		e.failedCandidate = &failedCandidate{Generation: model.Generation}
 		e.rejectServing(ctx, model, res.Evidence, err)
+		e.failedCandidate.Error = *e.applyError
 		return nil
 	}
+	e.failedCandidate = nil
 	// Retain the model actually installed, including its class assignments,
 	// before any subsequent read can reject it.
 	e.appliedModel = &model

@@ -510,8 +510,13 @@ not a guard-only percentile. No cause is inferred from CPU/cgroup correlation.
 
 Acceptance requires no later revoked-source cutoff than paired A's permitted
 cutoff/old D, no new/additional/stale binding admitted, no larger allowed
-expiry bound, and improved sibling outage/loss distributions in both B legs. As a proposed
-trial acceptance rule, all four reported percentiles must be non-worse, with
+expiry bound, and improved sibling outage/loss distributions in both B legs.
+For every surviving member and the node, compare upload **and** download ceilings
+against the stricter of the authenticated old and new policies and paired A's
+ceiling. The rendered and read-back ceilings must be no higher than any of those
+limits. A higher sibling or node ceil fails that B leg even when every loss or
+outage percentile improves; a missing ceiling/read-back comparison also fails.
+As a proposed trial acceptance rule, all four reported percentiles must be non-worse, with
 strictly lower p90 and p99 for restrictive transitions in both B legs; retain
 normal and injected-failure populations separately and reject unmatched safety
 failures. This is a review criterion, not a new production SLA.

@@ -6,6 +6,7 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
 	"slices"
 	"strings"
@@ -25,7 +26,8 @@ func (e *Engine) observe(ctx context.Context) error {
 	}
 	wall := e.clock.Wall()
 	interval := time.Duration(e.cfg.ObservationSeconds) * time.Second
-	state := observationState(e.decision, e.serving, e.appliedGen)
+	e.updateStaleHold()
+	state := e.observationState()
 	due := e.lastObs.IsZero() || wall.Sub(e.lastObs) >= interval || e.serving != e.lastServing || state != e.lastObservationState
 	if !due || e.outboxFull {
 		return nil
@@ -90,7 +92,7 @@ func (e *Engine) report(ctx context.Context, at time.Time) (api.ObservationRepor
 	if reasons == nil {
 		reasons = []api.ForwardingBlockReason{}
 	}
-	errs := e.decision.Errors
+	errs := slices.Clone(e.decision.Errors)
 	if errs == nil {
 		errs = []api.NodeError{}
 	}
@@ -132,6 +134,13 @@ func (e *Engine) report(ctx context.Context, at time.Time) (api.ObservationRepor
 	rep.Netbird.Version = presence.NewNullNullable[string]()
 	e.attachServingRead(&rep)
 	e.attachContainment(&rep, at)
+	e.attachStaleHold(&rep)
+	if f := e.failedCandidate; f != nil {
+		err := f.Error
+		err.Stage = "apply_candidate"
+		err.Message = fmt.Sprintf("candidate_generation=%d verified=false", f.Generation)
+		rep.Errors = append(rep.Errors, err)
+	}
 	e.attachUsage(ctx, &rep)
 	e.attachUpdate(ctx, &rep)
 	if e.dnsEv != nil {
@@ -321,7 +330,8 @@ func observationJitter(wait time.Duration) time.Duration {
 
 // Timestamps and read-at detail change every tick. The semantic transition
 // includes every check status/code and block reason, including provisional.
-func observationState(d Decision, serving bool, generation uint64) string {
+func (e *Engine) observationState() string {
+	d := e.decision
 	type check struct {
 		Name   api.NodeCheckName
 		Status api.HealthCheckStatus
@@ -332,6 +342,27 @@ func observationState(d Decision, serving bool, generation uint64) string {
 		code, _ := c.ErrorCode.Get()
 		cs = append(cs, check{c.Name, c.Status, string(code)})
 	}
-	b, _ := json.Marshal([]any{serving, generation, d.Provisioning, d.Safety, d.Reasons, cs})
+	// A rejected candidate is not an applied ACK. Keep its transition even
+	// while older bodies await retry. Exclude read times/diagnostic durations
+	// so identical pending evidence is still coalesced.
+	var candidate uint64
+	var code api.ErrorCode
+	if f := e.failedCandidate; f != nil {
+		candidate, code = f.Generation, f.Error.Code
+	}
+	var readGeneration uint64
+	var verified bool
+	if r := e.servingRead; r != nil {
+		readGeneration, verified = r.Generation, r.Verified
+	}
+	b, _ := json.Marshal([]any{e.serving, e.appliedGen, d.Provisioning, d.Safety, d.Reasons, cs,
+		candidate, code, readGeneration, verified, e.staleHold.steps > 0, e.staleHold.alarm})
 	return string(b)
+}
+
+// An Apply failure can precede the verifier. Report the attempted generation
+// without pretending that a missing verifier read supplied fresh tc evidence.
+type failedCandidate struct {
+	Generation uint64
+	Error      api.NodeError
 }

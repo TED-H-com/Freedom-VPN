@@ -136,7 +136,7 @@ func (e *Engine) syncLease(ctx context.Context) error {
 			e.leaseRetryAt = e.clock.Mono() + remaining
 			e.decision = Decide(e.input())
 			if !e.decision.Serve {
-				e.withdraw(context.WithoutCancel(ctx))
+				e.withdraw(localContext(ctx))
 			}
 		}
 		e.log.Warn("lease", "err", safeErr(err))

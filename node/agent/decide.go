@@ -199,6 +199,12 @@ func Decide(in Input) Decision {
 	}
 
 	d := Decision{Publication: pub, Reasons: reasons}
+	if leaseStale {
+		// Retained Apply failures may outrank the lease check (D-126), but
+		// must never hide this independent generation mismatch in a report.
+		d.Errors = append(d.Errors, api.NodeError{Code: api.ErrorCodeSTALEGENERATION,
+			Stage: "lease", Message: "Serving lease is not for the desired generation.", ObservedAt: at})
+	}
 	model, expires, qerr := buildModel(in)
 	bindingOK := true
 	qosOK := false

@@ -156,7 +156,7 @@ func (e *Engine) installProbeException(ctx context.Context, ch healthattest.Chal
 	clear := func() {
 		bare := model
 		bare.Probe = nil
-		cleanupCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
+		cleanupCtx, cancel := context.WithTimeout(localContext(ctx), 5*time.Second)
 		defer cancel()
 		if err := e.baselineCall("probe_clear", func() error { return e.plane.BaselineModel(cleanupCtx, bare) }); err != nil {
 			e.baselineOK = false
