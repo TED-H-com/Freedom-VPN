@@ -326,3 +326,24 @@ loss counted and later verifier/heartbeat recovery required. Hold wire review
 checks `policy_missing` plus `STALE_GENERATION` at `stage=lease`, and retains
 actual streak/alarm summaries. The baseline stays. Operator AT11/AT13 rows
 remain blocked. No timeout inflation, loss waiver or retrospective promotion.
+
+
+Final follow-up 13 run `38074149-1137-4782-80fd-8669c36c6fcb`, runtime source
+`c521cb0018844eac1de24ee243c858518bb1a5e3`, source_dirty=false: full foreground
+command 1216.858 s, exit 2. AT10 9/0/0 and AT12 10/0/0 pass; AT11 2/1/0 and
+AT13 6/1/0 retain operator blocks. All six ISO-F6-01 assertions pass only for
+this new sample. Final statistics and proof limits are in summary.md.
+
+The offline hold reviewer (commit `2c51c176`) runs as:
+
+```sh
+python3 -B tests/e2e/at/isolation/review_core32.py docs/e2e/at/isolation
+```
+
+The full producer stream is available as lossless gzip both at the current
+root and under immutable `history/follow-up-13-stream/`. Its manifest pins
+compressed and decompressed SHA-256 forms; byte identity was checked against
+the original export. All 764 archive file pins verify. Root living evidence is
+not used as an immutable claim pin. The old observation-gap root is an explicit
+pointer to its historical blocked snapshot, preserving the agent-core design
+note's link without changing any outside-path document.

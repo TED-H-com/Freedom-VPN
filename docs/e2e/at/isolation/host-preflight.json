@@ -1,27 +1,13 @@
 {
-  "started_at": "2026-11-01T09:38:01.248939Z",
-  "vmstat_command": [
-    "vmstat",
-    "5",
-    "7"
+  "commands": [
+    "vmstat 5 7",
+    "pgrep -af 'gates.sh|mk/at-'"
   ],
-  "suite_command": [
-    "pgrep",
-    "-af",
-    "gates.sh|mk/at-"
-  ],
-  "vmstat": "procs -----------memory---------- ---swap-- -----io---- -system-- -------cpu-------\n r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st gu\n 1  7  51676 9161296 9933628 153474632    0    0  5267 28724 37186   34  8  3 79 11  0  0\n 0  8  51676 9338208 9933636 153475380    0    0     0  2726 10282 63573  1  1 85 12  0  0\n 0  8  51676 9436808 9933644 153475396    0    0     0   184 2973 4447  0  0 87 13  0  0\n 1  8  51676 9856688 9933656 153069744    0    0    26 12530 25690 42716  4  1 83 12  0  0\n 0  8  51676 9758768 9933684 153093792    0    0     4 53487 28100 35848  6  2 82 11  0  0\n 1  6  51676 9516028 9933700 153571176    0    0  5580 156693 27458 57833  5  2 84  9  0  0\n 1  6  51676 9349896 9935812 153776788    0    0   201 22056 31581 109478  7  2 83  8  0  0\n",
-  "completed_at": "2026-11-01T09:38:31.271705Z",
-  "suite_exit": 0,
-  "suites": [
-    {
-      "pid": 1835693,
-      "kind": "make at suite",
-      "command": "make -f mk/at-updates.mk at-updates"
-    }
-  ],
-  "baseline_commit": "5bd751026073444087b32ac2a7115f8566104f8b",
-  "source_commit": "99e58bff0cf7276e36cb04f35605835208c8638e",
-  "go_cache": "/data/ted-h-cache/go-build",
-  "note": "Host observation only; suite admission checked again before each stack and after startup. Raw process commands retained locally."
+  "vmstat": "procs -----------memory---------- ---swap-- -----io---- -system-- -------cpu-------\n r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st gu\n 5 12  51676 9899108 12266764 149333592    0    0  5121 29148 37612   34  8  3 79 11  0  0\n 1 12  51676 10163260 12266792 149358520    0    0    28 262494 47144 107250  3  3 77 17  0  0\n 1  7  51676 9958988 12266792 149406996    0    0     0 77605 30753 69802  2  2 81 15  0  0\n 1  7  51676 10014356 12266792 149563800    0    0   642 140298 24929 49410  2  1 84 12  0  0\n 0  7  51676 9380088 12266808 150194196    0    0     0 219636 34501 91024  3  2 83 12  0  0\n 3  6  51676 10496084 12267128 149242412    0    0    82 129498 47475 96778  5  3 80 12  0  0\n 5  7  51676 9205356 12267608 150090900    0    0     1 177190 75162 206231  8  4 76 12  0  0\n",
+  "suite_inventory": {
+    "other_suite_trees_before_assembled": 0,
+    "raw_output": "Retained privately in .agent/f13/suites-before-assembled.txt; command line contains the local wrapper. No external suite tree present."
+  },
+  "admission": "run.py checks pgrep before each stack and after startup; waits while two other suites are active",
+  "qualification": "Not a quiet-host qualification or causal attribution."
 }

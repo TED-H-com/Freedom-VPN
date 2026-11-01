@@ -1,42 +1,42 @@
 {
-  "applied_generation": "31",
+  "applied_generation": "33",
   "lease": {
-    "lease_id": "368825fd-65d2-426b-8aed-46965b522e9b",
-    "issued_at": "2026-11-01T09:56:26.030927627Z",
-    "expires_at": "2026-11-01T09:57:26.030927627Z",
-    "generation": "31",
+    "lease_id": "5d1423ef-7f9a-4d35-af1a-34f76c423a9b",
+    "issued_at": "2026-11-01T11:22:56.651667786Z",
+    "expires_at": "2026-11-01T11:23:56.651667786Z",
+    "generation": "33",
     "max_offline_seconds": 60,
     "member_count": 2,
     "source": "",
-    "mono_sent_ns": "110523545633766",
-    "deadline_mono_ns": "110583545633766",
+    "mono_sent_ns": "115714165981530",
+    "deadline_mono_ns": "115774165981530",
     "anchor": {
-      "mono_ns": "110523545633766",
-      "server_unix_ns": "1793526986030927627",
-      "wall_unix_ns": "1793526986029262607",
+      "mono_ns": "115714165981530",
+      "server_unix_ns": "1793532176651667786",
+      "wall_unix_ns": "1793532176649610554",
       "trusted": 1
     }
   },
   "member_path": {
-    "generation": "31",
+    "generation": "33",
     "interface": "fvmb0",
     "addresses": [
-      "e6570fae7425337066b9205219bf043ace0b62506fee87facba4f1fd05f24107"
+      "24b92f82d6524553840864ca6937faeac9cb59e640e00a33b0bda7560c227a30"
     ],
     "routes": [
-      "7045c39206c77ad13866ab0c55a5d5a2080f89ced8b2145561a7b0e168212b65",
-      "79085dd542ba2e95fb3cfdd7b640a87bb938048753396db47aaed231f5d865c9",
-      "4fabe8efc1458d21770039886e328ee8582393413306fe62f42c718d878af2fb",
+      "116594ae7c108577a4674383fd7292ba23e945e1cfcf3945667fa4cc9d59a1ea",
+      "fd531180946decbd1aac04ddb11210c08e6c9a221ca67cea5b424d752acc5b56",
+      "c7e23c937eeb4ba420e7b36f049912820998c453b22a9bb4267379752b9824f5",
       "4c531061c743132243c3420573a46d3eb3a1ff0dbc5b0c2bef91c952fcdc2ff9"
     ]
   },
-  "read_at": "2026-11-01T09:56:35.53838985Z",
+  "read_at": "2026-11-01T11:23:06.144566114Z",
   "retained_applied": {
     "model": {
-      "generation": 31,
+      "generation": 33,
       "ipv6_mode": "block",
-      "now": "2026-11-01T09:56:35.072079671Z",
-      "now_mono_ns": "110532586785810",
+      "now": "2026-11-01T11:23:05.706180328Z",
+      "now_mono_ns": "115723220494072",
       "datapath": {
         "member_ingress": "fvmb0",
         "uplink": "fvup0",
@@ -44,44 +44,44 @@
       },
       "bindings": [
         {
-          "member_id": "01a1967b-4772-71d9-b4d9-c1cc46a35498",
-          "device_id": "01a1967b-8211-7b3e-9e06-77d5e0347113",
-          "peer_id": "dbjgi3n8k4c000871vjg",
+          "member_id": "01a196ca-7658-7840-92db-b0dc21501ac4",
+          "device_id": "01a196ca-b622-7290-8692-edfb75d92d9b",
+          "peer_id": "dbjhqkv8k4c000e23mug",
           "allowed_v4": [
-            "100.89.196.184/32"
+            "100.81.77.141/32"
           ],
           "binding_revision": 1,
-          "valid_from": "2026-11-01T09:40:39.057737Z",
-          "valid_until": "2026-11-01T10:40:40.894754Z"
+          "valid_from": "2026-11-01T11:07:09.730168Z",
+          "valid_until": "2026-11-01T12:07:10.185084Z"
         },
         {
-          "member_id": "01a1967b-c414-778a-966f-7b9227fcdd55",
-          "device_id": "01a1967b-f816-75bd-83ac-7f75e74e6530",
-          "peer_id": "dbjgibf8k4c0008725j0",
+          "member_id": "01a196ca-f350-7cbe-8644-14ed38fb7f9a",
+          "device_id": "01a196cb-2c64-73ba-94a5-03ccdc84eb99",
+          "peer_id": "dbjhqt78k4c000e23t60",
           "allowed_v4": [
-            "100.89.170.238/32"
+            "100.81.47.125/32"
           ],
           "binding_revision": 1,
-          "valid_from": "2026-11-01T09:41:09.270376Z",
-          "valid_until": "2026-11-01T10:40:55.830768Z"
+          "valid_from": "2026-11-01T11:07:40.004244Z",
+          "valid_until": "2026-11-01T12:07:25.27709Z"
         }
       ],
       "leases": [
         {
-          "member_id": "01a1967b-4772-71d9-b4d9-c1cc46a35498",
-          "effective_service_end": "2026-11-01T09:57:26.030927627Z",
-          "node_lease_end": "2026-11-01T09:57:26.030927627Z",
-          "signed_server_time": "2026-11-01T09:56:26.030927627Z",
+          "member_id": "01a196ca-7658-7840-92db-b0dc21501ac4",
+          "effective_service_end": "2026-11-01T11:23:56.651667786Z",
+          "node_lease_end": "2026-11-01T11:23:56.651667786Z",
+          "signed_server_time": "2026-11-01T11:22:56.651667786Z",
           "max_offline_seconds": 60,
-          "deadline_mono_ns": "110583545633766"
+          "deadline_mono_ns": "115774165981530"
         },
         {
-          "member_id": "01a1967b-c414-778a-966f-7b9227fcdd55",
-          "effective_service_end": "2026-11-01T09:57:26.030927627Z",
-          "node_lease_end": "2026-11-01T09:57:26.030927627Z",
-          "signed_server_time": "2026-11-01T09:56:26.030927627Z",
+          "member_id": "01a196ca-f350-7cbe-8644-14ed38fb7f9a",
+          "effective_service_end": "2026-11-01T11:23:56.651667786Z",
+          "node_lease_end": "2026-11-01T11:23:56.651667786Z",
+          "signed_server_time": "2026-11-01T11:22:56.651667786Z",
           "max_offline_seconds": 60,
-          "deadline_mono_ns": "110583545633766"
+          "deadline_mono_ns": "115774165981530"
         }
       ],
       "resolvers": [
@@ -106,7 +106,7 @@
         },
         "members": [
           {
-            "member_id": "01a1967b-4772-71d9-b4d9-c1cc46a35498",
+            "member_id": "01a196ca-7658-7840-92db-b0dc21501ac4",
             "up": {
               "rate_bps": 99500000,
               "ceil_bps": 100000000
@@ -117,7 +117,7 @@
             }
           },
           {
-            "member_id": "01a1967b-c414-778a-966f-7b9227fcdd55",
+            "member_id": "01a196ca-f350-7cbe-8644-14ed38fb7f9a",
             "up": {
               "rate_bps": 99500000,
               "ceil_bps": 100000000
@@ -129,14 +129,14 @@
           }
         ],
         "assignments": {
-          "01a1967b-4772-71d9-b4d9-c1cc46a35498": 10867,
-          "01a1967b-c414-778a-966f-7b9227fcdd55": 11184
+          "01a196ca-7658-7840-92db-b0dc21501ac4": 43174,
+          "01a196ca-f350-7cbe-8644-14ed38fb7f9a": 51964
         }
       }
     },
     "assignments": {
-      "01a1967b-4772-71d9-b4d9-c1cc46a35498": 10867,
-      "01a1967b-c414-778a-966f-7b9227fcdd55": 11184
+      "01a196ca-7658-7840-92db-b0dc21501ac4": 43174,
+      "01a196ca-f350-7cbe-8644-14ed38fb7f9a": 51964
     }
   },
   "source": "read-only node SQLite snapshot; production persistence after verified Apply"
