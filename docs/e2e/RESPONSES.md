@@ -1233,3 +1233,15 @@ request. Both peers' status/endpoint/handshake samples and packet hops are kept.
 These fresh, reduced populations do not replay all of run 258ba504's preceding
 mutations. A successful first selection or re-grant does not close either
 historical finding. The original F14-01 report stays `cause_status: unproven`.
+
+Fresh [af718646 re-grant evidence](runs/2026-11-01/followup26/af718646-166a-4a3f-af55-3f7a3ee8e17b/regrant-analysis.md)
+does reproduce a five-second deadline failure after generation-7 readiness,
+with unchanged counters and serving intact. Native capture shows a loopback
+endpoint → IPv6 handover, a loopback-source type-2 response and one member
+IPv6 header error, then a later completed handshake. The five SYNs reach the
+node only after **5.671 seconds**; late origin TCP packets do not constitute an
+HTTP receipt. No failed Apply or baseline follows this re-grant's serving gate.
+This localizes the fresh delay to native handshake/data delivery, separately
+from the first-selection node-tracer closure. NetBird/native transport and
+members owners should assess the transition against 258ba504's full population;
+the historical cause and Ted's transport choice remain open.
