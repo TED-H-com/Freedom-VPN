@@ -127,7 +127,7 @@ type GenerationHoldAlarm struct {
 	LeaseID           uuid.UUID  `json:"lease_id"`
 	FirstSeenAt       time.Time  `json:"first_seen_at"`
 	LastSeenAt        time.Time  `json:"last_seen_at"`
-	AppliedGeneration string     `json:"applied_generation"`
+	AppliedGeneration *string    `json:"applied_generation"`
 	LeaseGeneration   string     `json:"lease_generation"`
 	ReportedSteps     *string    `json:"reported_steps"`
 	ReportedElapsedMS *string    `json:"reported_elapsed_ms"`

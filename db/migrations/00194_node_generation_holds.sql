@@ -29,7 +29,7 @@ CREATE TABLE node_generation_hold_reports (
  report_id UUID NOT NULL,
  boot_id UUID NOT NULL,
  lease_id UUID NOT NULL REFERENCES serving_leases(id),
- applied_generation NUMERIC(20,0) NOT NULL CHECK (applied_generation BETWEEN 0 AND 18446744073709551615),
+ applied_generation NUMERIC(20,0) CHECK (applied_generation BETWEEN 0 AND 18446744073709551615),
  lease_generation NUMERIC(20,0) NOT NULL CHECK (lease_generation BETWEEN 0 AND 18446744073709551615),
  reported_steps NUMERIC(20,0) CHECK (reported_steps BETWEEN 0 AND 18446744073709551615),
  reported_elapsed_ms NUMERIC(20,0) CHECK (reported_elapsed_ms BETWEEN 0 AND 18446744073709551615),

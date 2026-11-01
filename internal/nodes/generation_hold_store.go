@@ -41,7 +41,7 @@ func recordGenerationHoldTx(ctx context.Context, tx pgx.Tx, r api.ObservationRep
 		}
 		return nil
 	}
-	if marker && known && appliedErr == nil && applied != leaseGen && (current || (id != uuid.Nil && !r.ObservedAt.Before(firstObserved))) {
+	if marker && known && (current || (id != uuid.Nil && !r.ObservedAt.Before(firstObserved))) {
 		if id == uuid.Nil {
 			leaseID, _ := r.Lease.LeaseId.Get()
 			var revoked bool
@@ -72,13 +72,18 @@ func recordGenerationHoldTx(ctx context.Context, tx pgx.Tx, r api.ObservationRep
 			s, e := summary.Steps.String(), summary.ElapsedMS.String()
 			steps, elapsed, alarm = &s, &e, &summary.Alarm
 		}
-		valid := parsed && summary.Applied == applied && summary.Lease == leaseGen && summary.Steps > 0
+		valid := parsed && appliedErr == nil && summary.Applied == applied && summary.Lease == leaseGen && summary.Steps > 0
+		var appliedText *string
+		if appliedErr == nil {
+			v := applied.String()
+			appliedText = &v
+		}
 		leaseID, _ := r.Lease.LeaseId.Get()
 		if _, err := tx.Exec(ctx, `INSERT INTO node_generation_hold_reports
 			(hold_id,node_id,incarnation_id,report_id,boot_id,lease_id,applied_generation,lease_generation,
 			reported_steps,reported_elapsed_ms,reported_alarm,summary_valid)
 			VALUES($1,$2,$3,$4,$5,$6,$7::text::numeric,$8::text::numeric,$9::text::numeric,$10::text::numeric,$11,$12)`,
-			id, r.NodeId, r.NodeIncarnationId, r.ReportId, r.BootId, leaseID, applied.String(), leaseGen.String(), steps, elapsed, alarm, valid); err != nil {
+			id, r.NodeId, r.NodeIncarnationId, r.ReportId, r.BootId, leaseID, appliedText, leaseGen.String(), steps, elapsed, alarm, valid); err != nil {
 			return err
 		}
 		if _, err := tx.Exec(ctx, `UPDATE node_generation_holds SET last_seen_at=greatest(last_seen_at,$2),

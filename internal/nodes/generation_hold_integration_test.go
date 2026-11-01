@@ -137,7 +137,7 @@ func TestAT29_M3_HoldLeaseJoinAndOrdering(t *testing.T) {
 		{"unknown", 2, func(r *api.ObservationReport) { r.Lease.LeaseId.Set(uuid.New()) }, "lease_unconfirmed"},
 		{"unknown_below_desired", 3, func(r *api.ObservationReport) { r.Lease.LeaseId.Set(uuid.New()) }, "lease_unconfirmed"},
 		{"foreign_incarnation", 2, func(r *api.ObservationReport) { r.Lease.LeaseId.Set(foreign) }, "lease_unconfirmed"},
-		{"contradictory_match", 2, func(r *api.ObservationReport) { r.Lease.LeaseId.Set(matching) }, "lease_unconfirmed"},
+		{"matching_lease_with_hold_marker", 2, func(r *api.ObservationReport) { r.Lease.LeaseId.Set(matching) }, "stale_generation"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			r := f.report
@@ -149,7 +149,7 @@ func TestAT29_M3_HoldLeaseJoinAndOrdering(t *testing.T) {
 			}
 		})
 	}
-	for _, id := range []uuid.UUID{uuid.New(), foreign, matching} {
+	for _, id := range []uuid.UUID{uuid.New(), foreign} {
 		f.report.ReportId = uuid.New()
 		f.report.Lease.LeaseId.Set(id)
 		f.submit()
@@ -175,6 +175,40 @@ func TestAT29_M3_HoldLeaseJoinAndOrdering(t *testing.T) {
 	cause, err := PublicationDataPathFailure(t.Context(), f.pool, f.report, 3, f.now)
 	if err != nil || cause != "stale_generation" {
 		t.Fatalf("grace is not convergence: %s %v", cause, err)
+	}
+}
+
+func TestAT29_M3_HoldRecognitionDoesNotDependOnACK(t *testing.T) {
+	for _, ack := range []string{"same_as_lease", "unknown", "zero"} {
+		t.Run(ack, func(t *testing.T) {
+			f := newHoldFixture(t)
+			switch ack {
+			case "same_as_lease":
+				f.report.AppliedConfigGeneration.Set(1)
+			case "unknown":
+				f.report.AppliedConfigGeneration.SetNull()
+			case "zero":
+				f.report.AppliedConfigGeneration.Set(0)
+			}
+			cause, err := PublicationDataPathFailure(t.Context(), f.pool, f.report, 2, f.now)
+			if err != nil || cause != "stale_generation" {
+				t.Fatalf("marker lost: %s %v", cause, err)
+			}
+			f.submit()
+			f.counts(1, 1, 0)
+			var stored *string
+			if err := f.pool.QueryRow(t.Context(), `SELECT applied_generation::text FROM node_generation_hold_reports`).Scan(&stored); err != nil {
+				t.Fatal(err)
+			}
+			if ack == "unknown" && stored != nil {
+				t.Fatal("unknown ACK fabricated", *stored)
+			}
+			f.now = f.now.Add(30 * time.Second)
+			if err := f.svc.ReconcileGenerationHolds(t.Context(), uuid.Nil); err != nil {
+				t.Fatal(err)
+			}
+			f.counts(1, 1, 1)
+		})
 	}
 }
 

@@ -26,12 +26,11 @@ func PublicationDataPathFailure(ctx context.Context, q Querier, report api.Obser
 		if cause := generationHoldSafetyFailure(report); cause != "" {
 			return cause, nil
 		}
-		generation, known, err := reportedLeaseGeneration(ctx, q, report)
+		_, known, err := reportedLeaseGeneration(ctx, q, report)
 		if err != nil {
 			return "", err
 		}
-		applied, appliedErr := report.AppliedConfigGeneration.Get()
-		if !known || appliedErr != nil || generation == applied {
+		if !known {
 			return "lease_unconfirmed", nil
 		}
 		return "stale_generation", nil

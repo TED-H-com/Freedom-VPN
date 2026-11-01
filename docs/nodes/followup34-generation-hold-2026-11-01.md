@@ -18,10 +18,11 @@ that older case. No contract or existing admin field changes meaning.
 
 The reported lease ID must resolve to the same node's current incarnation. Its
 persisted `policy_generation` must agree with the signed envelope's lease ID,
-node ID, incarnation ID and generation, and differ from the reported applied
-generation. A missing, unknown, foreign-incarnation or contradictory matching
+node ID, incarnation ID and generation. A missing, unknown or foreign-incarnation
 lease returns `lease_unconfirmed`; it cannot borrow evidence from the latest
-issued lease. Issuing a newer matching lease does not prove the node served it.
+issued lease. A hold marker remains a hold even with a missing ACK or an ACK
+equal to the lease generation; neither condition proves the hold ended.
+Issuing a newer matching lease does not prove the node served it.
 The ordinary populated publication gate also checks the stored lease generation
 against the ACK, as well as the existing clamped expiry.
 
@@ -55,6 +56,7 @@ the complete history is joined by `hold_id`. All generation/counter numbers use
 exact numeric storage and decimal strings in JSON/audit. They never pass through
 floating-point conversion. Process restarts can retain the same kernel boot ID;
 central does not need to detect a process restart to retain the incident.
+An absent applied ACK stays SQL NULL / JSON null in the new diagnostic record.
 
 Only this exact lease-stage summary is parsed:
 
