@@ -1,6 +1,6 @@
 # Freedom VPN
 
-**Current cut — [follow-up 24](docs/handover/follow-up-24.md) (2026-11-01 EST):** Through #369: D-136 corrected; routed 1280 hop delivered; usage AT14–AT20 pass; members AT02 / AT04 fail (F13-01); graceful agent stop fixed. D-135 / D-136 / D-137 / D-138 remain provisional; historical failures stay failed.
+**Current cut — [follow-up 24](docs/handover/follow-up-24.md) (2026-11-01 EST):** Through #369: D-136 corrected; routed 1280 hop delivered; usage AT14–AT20 pass; members AT02 fails; AT04 fails on F13-01; graceful agent stop fixed. D-135 / D-136 / D-137 / D-138 remain provisional; historical failures stay failed.
 Previous cut: [follow-up 23](docs/handover/follow-up-23.md), through #362.
 
 Freedom VPN is a member-based, multi-region VPN platform for a small paid community, starting at about 20 members. Every exit node runs the same node package and joins one central control plane, whether it is a pre-installed box, a cloud Ubuntu VM or any other Ubuntu host.

@@ -1,6 +1,6 @@
 # Freedom VPN 會員使用手冊 / Member Guide (`docs/handover/member-guide.md`)
 
-**Current cut — [follow-up 24](follow-up-24.md) (2026-11-01 EST):** Through #369: D-136 corrected; routed 1280 hop delivered; usage AT14–AT20 pass; members AT02 / AT04 fail (F13-01); graceful agent stop fixed. D-135 / D-136 / D-137 / D-138 remain provisional; historical failures stay failed.
+**Current cut — [follow-up 24](follow-up-24.md) (2026-11-01 EST):** Through #369: D-136 corrected; routed 1280 hop delivered; usage AT14–AT20 pass; members AT02 fails; AT04 fails on F13-01; graceful agent stop fixed. D-135 / D-136 / D-137 / D-138 remain provisional; historical failures stay failed.
 Previous cut: [follow-up 23](follow-up-23.md), through #362.
 
 **2026-10-31 服務通知（#351 截止）：** DNS 的 TTL 是快取最長有效時間，

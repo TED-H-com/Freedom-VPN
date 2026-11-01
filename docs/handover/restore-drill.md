@@ -1,6 +1,6 @@
 # Backup and Restore Drill Record (`docs/handover/restore-drill.md`)
 
-**Current cut — [follow-up 24](follow-up-24.md) (2026-11-01 EST):** Through #369: D-136 corrected; routed 1280 hop delivered; usage AT14–AT20 pass; members AT02 / AT04 fail (F13-01); graceful agent stop fixed. D-135 / D-136 / D-137 / D-138 remain provisional; historical failures stay failed.
+**Current cut — [follow-up 24](follow-up-24.md) (2026-11-01 EST):** Through #369: D-136 corrected; routed 1280 hop delivered; usage AT14–AT20 pass; members AT02 fails; AT04 fails on F13-01; graceful agent stop fixed. D-135 / D-136 / D-137 / D-138 remain provisional; historical failures stay failed.
 Previous cut: [follow-up 23](follow-up-23.md), through #362.
 
 Historical follow-up 17 cutoff: [follow-up 17 operator evidence](follow-up-17.md). #313

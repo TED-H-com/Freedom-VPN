@@ -214,8 +214,8 @@ regression evidence, not a performance attribution or new outage guarantee.
 **D-138 (03:0x EST, 2026-11-01, orchestrator — provisional)** refines how a
 D-133 comparison is judged; **D-133 itself is unchanged**. Netlab 22's opt-in
 TEST ONLY observation is accepted without the qualified second B agent leg:
-disabled, one context lookup per call site; no B-only failure in either window;
-the only selected suite failures were unchanged main's TestLab04 (the mechanisms
+disabled, one context lookup per call site; no B-only failure in either window's
+qualified comparison; the only selected suite failures were unchanged main's TestLab04 (the mechanisms
 and fix are explained by #369, without retrospective per-run causality).
 Install-command failures: **4 on A and 4 on B**. B legs interleave with A across
 windows. The **two-leg envelope rule is withdrawn as underpowered**. A D-133
