@@ -4,6 +4,8 @@ Description=Freedom VPN node watchdog
 # or Requires on fvpn-agent. CAP_NET_ADMIN only: the watchdog installs the
 # nftables and tc baseline and does not open raw sockets.
 After=network-online.target
+# Reverse stop ordering keeps the watchdog alive through the agent's shutdown.
+Before=fvpn-agent.service
 Wants=network-online.target
 StartLimitIntervalSec=120
 StartLimitBurst=5

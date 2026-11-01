@@ -18,9 +18,10 @@ func testENR06Runtime(t *testing.T, c string) {
 	waitPath(t, c, "/run/vpn-node/heartbeat")
 	inode := mustExec(t, c, "stat", "-c", "%i", "/run/vpn-node")
 	for _, unit := range []string{"fvpn-agent", "fvpn-watchdog", "fvpn-updater", "fvpn-updater-recover", "fvpn-netbird"} {
-		mustExec(t, c, "systemctl", "stop", unit)
 		if unit == "fvpn-agent" {
-			mustExec(t, c, "systemctl", "is-active", "fvpn-watchdog")
+			testAT07AgentStop(t, c, false)
+		} else {
+			mustExec(t, c, "systemctl", "stop", unit)
 		}
 		if unit == "fvpn-netbird" {
 			mustExec(t, c, "test", "!", "-e", socket)
@@ -30,6 +31,7 @@ func testENR06Runtime(t *testing.T, c string) {
 		}
 		mustExec(t, c, "systemctl", "start", unit)
 	}
+	testAT07AgentStop(t, c, true)
 	mustExec(t, c, "systemctl", "start", "fvpn-node-netbird-up")
 	mustExec(t, c, "test", "-S", socket)
 	mustExec(t, c, "systemctl", "is-active", "fvpn-netbird", "fvpn-agent", "fvpn-watchdog")

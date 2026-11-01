@@ -19,6 +19,7 @@ RUN apt-get update \
         gpg \
         dbus \
         procps \
+        strace \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
     && printf '0123456789abcdef0123456789abcdef\n' > /etc/machine-id \
