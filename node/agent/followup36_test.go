@@ -1,12 +1,10 @@
 package agent
 
 import (
-	"context"
 	"encoding/json"
 	"net/netip"
 	"slices"
 	"testing"
-	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/node/enforce"
 	"github.com/TED-H-com/Freedom-VPN/node/internal/nodelock"
@@ -100,6 +98,9 @@ func TestAT13_F36_ChangedSetsControlTimeout(t *testing.T) {
 	serveBoundGeneration(t, r)
 	r.manualUsage(t)
 	r.eng.cfg.ExtraDeniedV4 = []string{"203.0.113.9/32"}
+	r.eng.cfg.WatchdogStaleSeconds = 3
+	r.eng.cfg.HeartbeatSeconds = 1
+	r.eng.cfg.PollSeconds = 1
 	restartEngine(t, r, r.plane)
 	if r.eng.serving || mustBeat(t, r).Serving {
 		t.Fatal("changed sets adopted")
@@ -107,9 +108,9 @@ func TestAT13_F36_ChangedSetsControlTimeout(t *testing.T) {
 	applies := r.plane.applies
 	r.srv.HoldLeases()
 	defer r.srv.ReleaseLeases()
-	ctx, cancel := context.WithTimeout(t.Context(), 50*time.Millisecond)
-	defer cancel()
-	_ = r.eng.Step(ctx)
+	// Let the real shared control-pass budget expire, without cancelling the
+	// caller: local persistence and baseline work must remain available.
+	_ = r.eng.Step(t.Context())
 	if r.eng.serving || mustBeat(t, r).Serving || r.plane.applies != applies || len(r.plane.last.Bindings) != 0 {
 		t.Fatal("control timeout served retained sets")
 	}
