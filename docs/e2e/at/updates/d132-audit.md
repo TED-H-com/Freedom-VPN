@@ -73,3 +73,17 @@ for the new agent-stop measurements. Its product baseline is
 The failed first attempt and every earlier archive remain untouched.
 New digest-dependent evidence consumers must pin history paths only.
 This archive and audit extension are committed before running any gate or lab.
+
+The follow-up 13 inventory has 1,090 references under `internal node packaging
+tests`, still exactly four product-path sites. Both fleetupdate fixtures again
+match their follow-up 9 archive bytes. The product sites remain provenance or
+frozen fixtures; `node/` and `packaging/` have no literal living AT reads.
+The new archive test reads all 44 follow-up 12 pins. The stop observer reads
+only its own running fixture's SQLite state, never AT documents as product input.
+
+The retained regular-fixture SQLite journals from run 2babf9b6 were additionally
+read before stack reset. Their four-field stage/time projection is pinned in
+[follow-up-12-stop-journal](history/follow-up-12-stop-journal/ARCHIVE.md).
+It is separate from the byte-identical root archive: stage brackets cannot be
+relabeled as direct command durations or termination evidence. The installer
+journal was not retained after teardown. All previous archives remain untouched.

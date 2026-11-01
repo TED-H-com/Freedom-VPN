@@ -1,6 +1,5 @@
-# Follow-up 12 pre-result
+# Follow-up 13 pre-result
 
-Run `2babf9b6-86a3-489d-a678-0bd447f2f8b0`. [Current records](summary.md) supply all pass claims.
-The [JSON readback](pre-result.json) extracts the named observations without changing their content.
-Installer product delivery is separately recorded in [installer-handoff.json](installer-handoff.json)
-and [the bounded transport capture](installer-delivery-transport.json).
+Run `759d244a-2dc4-460c-9f82-e37ce0ac7560`. [Current records](summary.md) supply all current claims.
+The [JSON readback](pre-result.json) extracts named observations without changing content.
+Installer delivery is separately recorded in [installer-handoff.json](installer-handoff.json).
