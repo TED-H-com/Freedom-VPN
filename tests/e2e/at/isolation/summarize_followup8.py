@@ -3,6 +3,7 @@
 import calendar
 from datetime import datetime
 import json
+from evidence_io import read_json
 from pathlib import Path
 import re
 import sys
@@ -10,7 +11,7 @@ import sys
 root = Path(sys.argv[1] if len(sys.argv)>1 else 'docs/e2e/at/isolation')
 def read(name, default=None):
     p=root/name
-    return json.loads(p.read_text()) if p.exists() else default
+    return read_json(p) if p.exists() or Path(str(p)+'.gz').exists() else default
 def write(name, value):
     (root/name).write_text(json.dumps(value,indent=2)+'\n')
 def ns(s):

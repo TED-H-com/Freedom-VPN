@@ -1,33 +1,24 @@
-# Updates requests — follow-up 13, 2026-11-01
+# Updates requests — follow-up 14, 2026-11-01
 
-Run `759d244a-2dc4-460c-9f82-e37ce0ac7560`, product main `5bd751026073444087b32ac2a7115f8566104f8b`.
+Run `2704600f-e076-4a59-9338-09befa2af70e`, product main `f680d6ddb8fd19979c0471a2ce06ffc6e16c7cd2`.
 
 ### Requests to orchestrator
 
-2026-11-01 — **F13-01 → devstack**: add a reliable TEST ONLY exit-status
-readback to `deploy/devstack/agent-service.sh` / `deploy/devstack/entrypoint-node.sh`
-(or an equivalent owner-supported observation API). The regular supervisor can
-reap the agent before a 1 ms `/proc` sampler sees the zombie. This run misses
-node stop 1 (final_sampled) despite recording command success and retained lease.
-The fixture owner should record the actual wait status and any SIGKILL escalation
-without changing shutdown limits or AT predicates. Those files are outside this
-lane, so only this measurement item is handed off; they were not edited.
-The row stays unobserved, and this run is never retried for a pass. This is an
-observation gap, not proof of agent-core or updater failure.
-
-Request count: **1**.
+2026-11-01 — **0 requests**. Devstack 25/26's retained parent receipt and
+aligned stop path are consumed; all current updater stops have their own
+agent outcome. Full [stop comparison](agent-stops.md) and [run report](follow-up-14.md).
 
 ### Owner closures and limits
 
-- **F11-01 CLOSED:** the shared wrapper installs with exit 0; 27/27 installer
-  checks, original generated reporting and the TEST ONLY loopback opt-in remain.
-- **F11-02 CLOSED by #351:** retained verified archive versus guarded absent-cache
-  fallback documentation remains aligned with installer 8. No new origin input.
-- **F18-01 intended negative:** stopped-producer 1/1/2 and CHECKPOINT_FAILED remain;
-  no failed checkpoint is relabeled as successful upgrade acceptance.
+- **F11-01 CLOSED:** shared-wrapper installed / exit 0, installer 27/27,
+  generated reporting unchanged and TEST ONLY loopback opt-in retained.
+- **F11-02 CLOSED:** #351's retained verified archive versus guarded uncached
+  fallback contract remains aligned; no new origin input.
+- **F18-01 intended negative:** stopped producer stays 1/1/2 and CHECKPOINT_FAILED.
+- **Updates F13-01 historical:** run 759d244a first AT23 exit stays unobserved in
+  the [immutable record](history/follow-up-13/requests.md). This run's matching
+  parent exit-0 receipt is a new sample; it cannot fill that old gap. Members'
+  F13-01 remains a different finding.
 
-Historical direct durations/exit statuses for run 2babf9b6 were never recorded.
-The [full comparison](agent-stops.md) gives every available larger-stage bracket
-and labels missing data. No source edit or rerun can repair that historical gap.
-All updater 19 deployment/fault/bound measurement gaps remain as listed in
-[Follow-up 13](follow-up-13.md#registers-and-remaining-measurements).
+All updater 19 measurement gaps remain under
+[remaining measurements](follow-up-14.md#registers-and-remaining-measurements).

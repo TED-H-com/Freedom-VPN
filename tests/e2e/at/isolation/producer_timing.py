@@ -5,6 +5,7 @@ Packet capture timestamps are userspace read observations. Command brackets
 bound kernel commits; neither an overlap nor a netlink receipt is a drop time.
 """
 import json
+from evidence_io import read_json
 import gzip
 from pathlib import Path
 import statistics
@@ -511,7 +512,7 @@ def correlate(packet, validated):
 
 def analyze(root):
     def read(name):
-        return json.loads((root/name).read_text())
+        return read_json(root/name)
     rows = read_operations(root)
     if 'measurement unavailable' in (root/'agent.log.txt').read_text():
         raise ValueError('producer reported a failed measurement write')
@@ -589,11 +590,11 @@ def replay_first_attempt(root):
     source = root/'history/follow-up-10-attempt-1'
     rows = read_operations(source)
     v = validate_operations(rows)
-    clock = json.loads((source/'producer-clock.json').read_text())
-    packets = packet_trace(json.loads((source/'renewal-probes.json').read_text()),
-                           json.loads((source/'renewal-packets.json').read_text()), clock)
+    clock = read_json(source/'producer-clock.json')
+    packets = packet_trace(read_json(source/'renewal-probes.json'),
+                           read_json(source/'renewal-packets.json'), clock)
     losses = [correlate(p, v) for p in packets if p['result'] != 'ok']
-    result = dict(run_id=json.loads((source/'AT10.json').read_text())['run_id'],
+    result = dict(run_id=read_json(source/'AT10.json')['run_id'],
                   review='Follow-up 11: agent-core 29 consumer replay; original archive unchanged',
                   source='history/follow-up-10-attempt-1/producer-operations.jsonl',
                   snapshots=v['snapshots'], source_counts=v['source_counts'], brackets=v['brackets'],

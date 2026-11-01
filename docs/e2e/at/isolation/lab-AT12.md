@@ -4,17 +4,17 @@ Mechanism: cross-member, management plane and DNS exceptions
 
 Status: pass
 
-Run: 56d20530-8042-4d0c-8156-de5a47ce8b61; started UTC: 2026-11-01T12:02:14Z; source dirty: false
+Run: 0b9e4510-776f-4c51-9e66-500404ce9f7e; started UTC: 2026-11-01T14:52:25Z; source dirty: false
 
 Spec: §19 AT12, ISO01, ISO04, DNS03
 
-UTC: 2026-11-01T12:02:19Z
+UTC: 2026-11-01T14:52:29Z
 
-Build: 716a16335cb5335473416740c76a75ce95536796
+Build: 9031ebd4044059db25ea4ea7a397b87e6d6c6aa5
 
 Image digests:
 
-- fvpn-w4-isolation-lab:lab sha256:2e27f7e3829f7866846d056bd934954c25a578b69d17957ca38d795e7ea29c2f
+- fvpn-w4-isolation-lab:lab sha256:e39a8077864f445c711cae35d3e1682ba266ddca5d145c1bd21b53bef7aeb005
 
 Policy revision: generation 12
 

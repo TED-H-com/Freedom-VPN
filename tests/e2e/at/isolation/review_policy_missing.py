@@ -1,5 +1,6 @@
 """D-135/D-136 producer windows, retaining loss and recovery availability."""
 import json
+from evidence_io import read_json
 from pathlib import Path
 from producer_timing import identity, ns, packet_trace, read_operations, validate_operations
 
@@ -60,7 +61,7 @@ def windows(rows, streams):
 
 
 def review(root):
-    read=lambda name:json.loads((root/name).read_text())
+    read=lambda name:read_json(root/name)
     rows=read_operations(root)
     validate_operations(rows)
     clock=read('producer-clock.json')
