@@ -19,6 +19,7 @@ CREATE TABLE node_generation_holds (
  CHECK ((ended_at IS NULL) = (end_reason IS NULL))
 );
 CREATE UNIQUE INDEX node_generation_holds_active ON node_generation_holds(node_id,incarnation_id) WHERE ended_at IS NULL;
+COMMENT ON TABLE node_generation_holds IS 'Project Spec §5.1, §5.2, §15.3, §16.3; retained serving-lease generation hold incidents and escalation; see docs/nodes/followup34-generation-hold-2026-11-01.md.';
 
 -- Each sample retains the local counters, including their reset on process
 -- restart. Raw summaries stay in the immutable observation, never in audit text.
@@ -42,6 +43,7 @@ CREATE TABLE node_generation_hold_reports (
  CHECK (NOT summary_valid OR reported_steps IS NOT NULL)
 );
 CREATE INDEX node_generation_hold_reports_history ON node_generation_hold_reports(hold_id);
+COMMENT ON TABLE node_generation_hold_reports IS 'Project Spec §5.1, §5.2, §15.3, §16.3; per-report generation hold and boot evidence; see docs/nodes/followup34-generation-hold-2026-11-01.md.';
 
 -- +goose Down
 DROP TABLE node_generation_hold_reports;
