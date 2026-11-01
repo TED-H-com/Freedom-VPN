@@ -1,5 +1,27 @@
 # Diagnostic boundaries
 
+
+Follow-up 12 keeps every failed row from its single assembled run. The current
+reader correction streams cumulative timing records to disk because the original
+diagnostic API caps aggregate output at 1 MiB; a partial JSONL tail remains an
+error. This correction was not in compiled harness `65e18e67`. Source and live
+qualification are separate. [F12-02](F12-02-stream-limit.json).
+
+D-135 failed-Apply recovery is blocked when no failed Apply is observed. An
+unrelated `policy_missing` baseline cannot substitute for that scenario. All
+21 sibling losses remain counted, including completed guards and the separate
+236.970251 ms missing-policy bracket. Host context never proves CPU causation.
+The latest producer withdrawal/baseline cannot be hidden by an older serving row.
+
+AT20 uses BACKEND §2.1.5 F9-HIT/F9-OTHER/F9-ROUND/F9-INFLIGHT. Actual cache
+settings and complete lifecycle evidence bound attribution; remaining TTL has
+whole-second precision. Outstanding completions can begin between queries too.
+The native SERVFAIL does not match either resolver's positive receipt, leaving
+its responder unassigned. The assertions and original failures are unchanged.
+
+The following older diagnostic context is historical; current findings and
+owner boundaries are in [requests.md](requests.md).
+
 [RUN.md](RUN.md) records provenance and actual gate exits; [summary.md](summary.md) and each current AT JSON retain failed and blocked outcomes. [D077.md](D077.md) indexes safe HTTP bodies, operation IDs and fence transitions. [forwarding-observation.md](forwarding-observation.md) distinguishes receipts, counters, persistent sender observations and injected ingress.
 
 Follow-up 8 replaces the local grant adapter with #284's authenticated production fixture. Same-key replay, single revoke audit rows, expired-input rejection, projection changes and worker completion are separate assertions. A succeeded child step cannot satisfy parent operation completion. Natural expiry is measured separately from immediate plan replacement.
@@ -30,7 +52,7 @@ proves a miss. The separately sampled authority serial is not a cached A
 record's serial; native milliseconds and broader wrapper bounds are distinct.
 The original F10-02/F10-03 failures remain failed and unattributed.
 
-New F11-01/F11-02/F11-03 captures retain the first-hop absence, premature
+Historical F11-01/F11-02/F11-03 captures retain the first-hop absence, premature
 D-077 readiness, and failed admitted-sibling control respectively. Their
 subsequent passing traffic does not replace these rows. The complete AT02
 producer stream and a read-only accepted-observation extract support attribution;

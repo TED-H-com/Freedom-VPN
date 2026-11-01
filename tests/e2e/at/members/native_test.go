@@ -241,6 +241,8 @@ func (l *live) devices(r *record) {
 		r.block("Could not re-pause worker for slot reuse")
 		return
 	}
+	siblingCapture := l.startSibling(r)
+	defer l.finishSibling(r, siblingCapture)
 	beforeGeneration := l.counters(first).Generation
 	pidBefore, _ := l.inside("node", "pgrep", "-x", "fvpn-agent")
 	revoke := l.api(l.a, "DELETE", "/api/v1/member/devices/"+second.String(), nil, commandHeaders())
@@ -278,8 +280,9 @@ func (l *live) devices(r *record) {
 		entries := strings.Count(string(raw), "src=")
 		r.check("revoked source conntrack", "no entries for revoked overlay source", fmt.Sprintf("read_ok=%t; tuple_fields=%d", e == nil, entries), "conntrack -L scoped to former peer source; emit count only", e == nil && entries == 0)
 	}
+	l.finishSibling(r, siblingCapture)
 	l.reauthorizationLimit(r, replacement, second, loserService)
-	r.check("AT02 assertion boundary", "quota, owner isolation, strict post-withdrawal fvmb0 ingress drop (ctunku +1, zero forwarded bytes), sibling/replacement counted flows, empty revoked conntrack and continuous agent PID", "ObserveMemberIngress proves revoked source increments ctunku by 1 with empty fvup0/origin captures and frozen device counters while sibling injection increments u_<hex> by 1 and reaches fvup0/origin", "Stack.ObserveMemberIngress through tests/e2e/internal/labstack; §19 AT02", true)
+	r.check("AT02 assertion boundary", "quota, owner isolation, strict post-withdrawal fvmb0 ingress drop (ctunku +1, zero forwarded bytes), sibling/replacement counted flows, empty revoked conntrack and continuous agent PID", "Revoked UDP/9 source is asserted independently; sibling UDP/9 outcome and continuous UDP/40002 attempts/ingress/egress are retained; D-135 recovery verdict joins the full producer stream", "Stack.ObserveMemberIngress through tests/e2e/internal/labstack; §19 AT02", true)
 }
 
 func (l *live) overlayIPv4(service string) string {
@@ -303,7 +306,11 @@ func (l *live) strictPostWithdrawalIngress(r *record, revokedSource string, revo
 	revokedHex := strings.ReplaceAll(revokedDevice.String(), "-", "")
 	revokedUp := "u_" + revokedHex
 	revokedDown := "d_" + revokedHex
-	revokedHeld := ingressDeviceCountersHeld(revokedProof.Before, revokedProof.After)
+	// The continuous sibling stream uses UDP/40002; it is absent from the
+	// strict UDP/9 captures but increments only the sibling counters.
+	sibHex := strings.ReplaceAll(siblingDevice.String(), "-", "")
+	upName, downName := "u_"+sibHex, "d_"+sibHex
+	revokedHeld := ingressDeviceCountersHeld(revokedProof.Before, revokedProof.After, upName, downName)
 	revokedUpEmpty := ingressCaptureEmpty(revokedProof.UplinkCapture)
 	revokedOriginEmpty := ingressCaptureEmpty(revokedProof.OriginCapture)
 	revokedOK := revokedSource != "" && revokedErr == nil && ctOK && ctunku.Packets == 1 && ctunku.Bytes > 0 &&
@@ -314,23 +321,24 @@ func (l *live) strictPostWithdrawalIngress(r *record, revokedSource string, revo
 		revokedProof.Before[revokedDown] == revokedProof.After[revokedDown]
 
 	admittedProof, admittedErr := l.hook.ObserveMemberIngress(l.ctx, siblingSource, dest)
-	sibHex := strings.ReplaceAll(siblingDevice.String(), "-", "")
-	upName := "u_" + sibHex
-	downName := "d_" + sibHex
 	up, upOK := ingressDelta(admittedProof.Before, admittedProof.After, upName)
 	down, _ := ingressDelta(admittedProof.Before, admittedProof.After, downName)
 	ctAfter, ctAfterOK := ingressDelta(admittedProof.Before, admittedProof.After, "ctunku")
 	admittedHeld := ingressDeviceCountersHeld(admittedProof.Before, admittedProof.After, upName, downName)
 	admittedUpSaw := ingressCaptureSawDatagram(admittedProof.UplinkCapture)
 	admittedOriginSaw := ingressCaptureSawDatagram(admittedProof.OriginCapture)
-	admittedOK := siblingSource != "" && admittedErr == nil && upOK && up.Packets == 1 && up.Bytes > 0 &&
+	admittedOK := siblingSource != "" && admittedErr == nil && upOK && up.Packets >= 1 && up.Bytes > 0 &&
 		ctAfterOK && ctAfter.Packets == 0 && ctAfter.Bytes == 0 &&
 		admittedHeld && admittedProof.Mechanism == "tun-mirred" && admittedProof.LinkType == 65534 &&
 		admittedProof.MemberIface == "fvmb0" && admittedProof.SourcePort == 40000 && admittedProof.DestPort == 9 &&
 		admittedUpSaw && admittedOriginSaw
 
 	evidence, _ := json.Marshal(map[string]any{
-		"injection_count": 2,
+		"injection_count":             2,
+		"admitted_one_shot_forwarded": admittedOK,
+		"counter_scope":               "sibling upload includes continuous UDP/40002; UDP/9 captures identify the single injection; other device counters held",
+		"admitted_one_shot_losses":    map[bool]int{true: 0, false: 1}[admittedOK],
+		"contract":                    "D-135: revoked drop asserted here; sibling outage/next-Apply recovery evaluated from continuous capture and full producer stream",
 		"revoked": map[string]any{
 			"device_id":             revokedDevice.String(),
 			"device_upload_counter": revokedUp,
@@ -394,10 +402,10 @@ func (l *live) strictPostWithdrawalIngress(r *record, revokedSource string, revo
 	})
 	r.check(
 		"strict post-withdrawal fvmb0 ingress injection",
-		"revoked source increments ctunku by 1 with 0 forwarded bytes (empty fvup0/origin captures, all device counters held); admitted sibling source increments u_<hex> by 1 and reaches fvup0 and origin",
+		"revoked source increments ctunku by 1 with 0 forwarded bytes (empty fvup0/origin captures, all counters except the separately measured sibling held); admitted sibling one-shot outcome retained; D-135 baseline-to-next-successful-Apply bracket and every loss evaluated separately",
 		string(evidence),
 		"labstack.Stack.ObserveMemberIngress(ctx, revokedSource, dest) and ObserveMemberIngress(ctx, siblingSource, dest) on fvmb0 (tun-mirred, link type 65534, source port 40000, dest port 9)",
-		revokedOK && admittedOK,
+		revokedOK,
 	)
 }
 

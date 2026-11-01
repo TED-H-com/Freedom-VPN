@@ -50,16 +50,77 @@ type forwardingObservation struct {
 	FirstUnconfirmedHop string                     `json:"first_unconfirmed_hop"`
 }
 
-func (l *live) forwardingGate(r *record) {
+// Readiness is evidence, not a forwarding assertion. The intended device is
+// mandatory for positive probes; generic callers only wait for serving.
+func (l *live) forwardingGate(r *record, devices ...uuid.UUID) bool {
+	device := uuid.Nil
+	if len(devices) > 0 {
+		device = devices[0]
+	}
 	var raw []byte
-	ready := l.wait(60*time.Second, func() bool {
-		var matched bool
-		err := l.pool.QueryRow(l.ctx, `SELECT n.desired_config_generation=n.applied_config_generation AND s.policy_generation=n.applied_config_generation AND s.expires_at>clock_timestamp() FROM nodes n JOIN LATERAL (SELECT policy_generation,expires_at FROM serving_leases WHERE node_id=n.id ORDER BY issued_at DESC LIMIT 1) s ON true WHERE n.id=$1`, l.node).Scan(&matched)
-		return err == nil && matched
+	var joined json.RawMessage
+	stage := "central_readiness"
+	var readerError string
+	ready := l.wait(90*time.Second, func() bool {
+		stage = "central_readiness"
+		readerError = ""
+		err := l.pool.QueryRow(l.ctx, `SELECT jsonb_build_object('desired',n.desired_config_generation::text,'applied',n.applied_config_generation::text,'lease_id',s.id,'lease_generation',s.policy_generation::text,'member_count',jsonb_array_length(s.envelope->'signed'->'members'),'expires_at',s.expires_at,'observation',o.report_payload,'device_id',($2::uuid)::text)
+ FROM nodes n JOIN LATERAL (SELECT * FROM node_observations WHERE node_id=n.id AND incarnation_id=n.current_incarnation_id ORDER BY received_at DESC LIMIT 1) o ON true
+ JOIN serving_leases s ON s.id::text=o.report_payload->'lease'->>'lease_id' AND s.node_id=n.id AND s.incarnation_id=n.current_incarnation_id
+ WHERE n.id=$1 AND n.desired_config_generation=n.applied_config_generation AND s.policy_generation=n.applied_config_generation AND o.applied_generation=n.applied_config_generation
+ AND s.expires_at>clock_timestamp() AND o.received_at>clock_timestamp()-interval '15 seconds'
+ AND o.report_payload->>'member_forwarding_enabled'='true' AND o.report_payload->'forwarding_block_reasons'='[]'::jsonb
+ AND jsonb_array_length(s.envelope->'signed'->'members')>0
+ AND ($2::uuid='00000000-0000-0000-0000-000000000000' OR EXISTS (SELECT 1 FROM device_bindings b JOIN member_devices d ON d.id=b.device_id JOIN serving_lease_members m ON m.lease_id=s.id AND m.member_id=b.member_id WHERE b.device_id=$2 AND d.status='authorized' AND b.valid_from<=clock_timestamp() AND b.valid_until>clock_timestamp() AND m.valid_from<=clock_timestamp() AND m.expires_at>clock_timestamp()))`, l.node, device).Scan(&raw)
+		if err != nil {
+			return false
+		}
+		var state struct {
+			LeaseID     uuid.UUID             `json:"lease_id"`
+			Generation  decstr.U64            `json:"applied"`
+			Observation api.ObservationReport `json:"observation"`
+		}
+		stage = "accepted_report_decode"
+		if json.Unmarshal(raw, &state) != nil {
+			return false
+		}
+		stage = "local_binding"
+		if device != uuid.Nil {
+			body, e := l.inside(l.nodeContainer(), "cat", "/var/lib/vpn-node/state/desired-state.json")
+			var desired struct {
+				Signed struct {
+					Generation decstr.U64 `json:"config_generation"`
+					Bindings   []struct {
+						Device uuid.UUID `json:"device_id"`
+					} `json:"device_bindings"`
+				} `json:"signed"`
+			}
+			if e != nil || json.Unmarshal(body, &desired) != nil || desired.Signed.Generation != state.Generation {
+				return false
+			}
+			found := false
+			for _, b := range desired.Signed.Bindings {
+				found = found || b.Device == device
+			}
+			if !found {
+				return false
+			}
+		}
+		// F10-02 discipline: retain the exact producer row, not an inferred clock.
+		stage = "producer_stream_export"
+		trace, e := l.readEnforcementTiming()
+		readerError = ""
+		if e != nil {
+			readerError = "producer_stream_unavailable"
+			return false
+		}
+		stage = "producer_serving_join"
+		joined = servingProducer(trace, state.Observation.BootId, state.LeaseID, state.Generation)
+		return joined != nil
 	})
-	err := l.pool.QueryRow(l.ctx, `SELECT jsonb_build_object('desired',n.desired_config_generation::text,'applied',n.applied_config_generation::text,'lease',(SELECT jsonb_build_object('generation',s.policy_generation::text,'member_count',jsonb_array_length(s.envelope->'signed'->'members'),'issued_at',s.issued_at,'expires_at',s.expires_at) FROM serving_leases s WHERE s.node_id=n.id ORDER BY s.issued_at DESC LIMIT 1),'observation',(SELECT jsonb_build_object('checks',o.report_payload->'checks','member_forwarding_enabled',o.report_payload->'member_forwarding_enabled','forwarding_block_reasons',o.report_payload->'forwarding_block_reasons') FROM node_observations o WHERE o.node_id=n.id ORDER BY received_at DESC LIMIT 1)) FROM nodes n WHERE n.id=$1`, l.node).Scan(&raw)
-	r.check("current-generation lease after desired change", "uninterrupted agent: desired=applied=latest lease generation, unexpired", string(raw), "poll nodes, latest serving_leases and accepted observation; no process restart or projection writes", ready && err == nil)
+	r.jsonCheck("populated-grant serving readiness", "fresh accepted serving observation; desired=applied=observed lease generation; unexpired populated lease, live intended binding and same-boot producer serving row", map[string]any{"ready": ready, "device_id": device, "accepted": json.RawMessage(raw), "producer_record": joined, "last_stage": stage, "reader_error": readerError}, "read-only SQL + local desired state + streamed ExportContainerFile; stop positive probe when unavailable", ready)
 	l.write(r)
+	return ready
 }
 
 func (l *live) counters(device uuid.UUID) counterObservation {
@@ -112,6 +173,10 @@ func (l *live) traceForwarding(r *record, service string, device uuid.UUID) bool
 }
 
 func (l *live) traceForwardingExpected(r *record, service string, device uuid.UUID, authorized bool) bool {
+	if authorized && (device == uuid.Nil || !l.forwardingGate(r, device)) {
+		r.block("Positive forwarding not launched: populated-grant serving readiness unavailable")
+		return false
+	}
 	o := forwardingObservation{At: time.Now().UTC().Format(time.RFC3339), Member: service, Node: l.nodeContainer(), NodeIncarnation: l.inc.String(), Packets: map[string]json.RawMessage{}}
 	if !l.installProbe() {
 		r.block("Bounded forwarding probe build/copy unavailable")

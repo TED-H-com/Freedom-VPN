@@ -35,7 +35,7 @@ func TestCommittedEvidenceHygiene(t *testing.T) {
 				Source string `json:"source_commit"`
 				Status string `json:"status"`
 			}
-			strict := filepath.Dir(path) == root || filepath.Dir(path) == filepath.Join(root, "history/follow-up-7") || filepath.Dir(path) == filepath.Join(root, "history/follow-up-8") || filepath.Dir(path) == filepath.Join(root, "history/follow-up-9") || filepath.Dir(path) == filepath.Join(root, "history/follow-up-10")
+			strict := filepath.Dir(path) == root || filepath.Dir(path) == filepath.Join(root, "history/follow-up-7") || filepath.Dir(path) == filepath.Join(root, "history/follow-up-8") || filepath.Dir(path) == filepath.Join(root, "history/follow-up-9") || filepath.Dir(path) == filepath.Join(root, "history/follow-up-10") || filepath.Dir(path) == filepath.Join(root, "history/follow-up-11")
 			if json.Unmarshal(raw, &rec) != nil || (strict && (rec.RunID == "" || len(rec.Source) != 40)) {
 				t.Errorf("missing provenance %s", path)
 			}
@@ -68,6 +68,10 @@ func TestD098_Followup9Archive(t *testing.T) {
 
 func TestD098_Followup10Archive(t *testing.T) {
 	verifyArchive(t, "follow-up-10", "2be2d32f-bfd9-46f5-bf29-afaa6617ae94", 35)
+}
+
+func TestD098_Followup11Archive(t *testing.T) {
+	verifyArchive(t, "follow-up-11", "7edb263f-1f6e-4f94-9e8e-26099f96a699", 43)
 }
 
 func verifyArchive(t *testing.T, followup, run string, count int) {

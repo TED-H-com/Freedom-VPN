@@ -23,6 +23,11 @@ func (l *live) secondExit(r *record) bool {
 		r.block("F4-02: shared StartSecondExit failed; owner tests/e2e/second_exit.go")
 		return false
 	}
+	timingStack, timingErr := l.hook.MemberTransportStack(l.name("member"), "node2")
+	if timingErr != nil || timingStack.EnableEnforcementTiming(l.ctx) != nil {
+		r.block("Second exit timing unavailable before enrollment")
+		return false
+	}
 	second, err := l.hook.EnrollAt(l.ctx, e2e.BrowserSession{Client: l.admin.client, CSRF: l.admin.csrf}, "TEST ONLY second acceptance exit", "node2")
 	r.check("second exit enrolled through shared hook", "distinct durable identity and incarnation", fmt.Sprintf("enrolled=%t; distinct=%t", err == nil, second.NodeID != l.node && second.IncarnationID != l.inc), "Stack.StartSecondExit; Stack.EnrollAt(admin, name, node2)", err == nil && second.NodeID != l.node && second.IncarnationID != l.inc)
 	if err != nil {

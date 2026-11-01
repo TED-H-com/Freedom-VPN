@@ -1,4 +1,6 @@
-# Follow-up 11 external blockers
+# Follow-up 12 external blockers
+
+This page retains older owner context below; current Follow-up 12 hand-offs are in the dated section of [requests.md](requests.md). F11-02 closes on the fresh populated-grant measurement. F11-03 stays blocked on no failed Apply observed. F11-01/F8-02 await devstack 22 and were not rerun. F12-01–F12-04 retain the policy-missing, reader-capacity, negative-cache and native SERVFAIL findings.
 
 The full-case outcomes and failed checks are in [summary.md](summary.md). Fixture availability closes only the named missing fixture; it does not certify a consuming case or a physical platform. [requests.md](requests.md) retains owner actions.
 
@@ -24,7 +26,7 @@ F8-02's historical native failure remains failed. [Devstack 20's instrumented
 capture](../../runs/2026-10-31/followup20/capture-cce1a688/README.md) supplies
 10,010/64,064 bytes in 12,011 ms at MTU 1280 on attempt 1 of 3; 19 reverse
 outer IPv4 datagrams of length 1,340 are absent at the member, while all 17 of
-length 1,132 arrive; no PTB. **Netlab 21 owns interpretation.** Members bulk
+length 1,132 arrive; no PTB. Netlab 21 has since reproduced the receive-link MTU mechanism on both underlays; devstack 22 owns the next native captures. Members bulk
 rows remain as measured; a later pass is no fix proof.
 
 F10-01 is closed by netlab 20 #336's immutable source pin. Devstack 20 #343
@@ -49,10 +51,10 @@ all 35 root files byte-identically with [SHA256SUMS](history/follow-up-10/SHA256
 Follow-up 8/9 archives and handover snapshots remain unchanged. The interrupted
 [follow-up 11 attempt](history/follow-up-11/attempt-1/RUN.md) is separate.
 
-Fresh follow-up 11: AT02 fails its D-077 readiness and admitted-sibling controls
+Historical follow-up 11: AT02 fails its D-077 readiness and admitted-sibling controls
 (F11-02/F11-03); AT01 retains the new initial missing-hop blocker (F11-01).
 AT09 recovers at generation 30 but fails the dual/1280 row at 13,013/64,064 bytes
 in 12,010 ms over a selected IPv6 underlay. Its five unavailable selectors are
-unchanged. Nine pending request groups remain: six carried groups plus the
+unchanged. That run had nine pending request groups: six carried groups plus the
 three new dated groups. Passing finite-expiry reads and before-TTL DNS do not
 pass either failed complete case.

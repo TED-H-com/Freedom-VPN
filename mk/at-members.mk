@@ -10,6 +10,7 @@ LINT_TARGETS += at-members-lint
 .PHONY: at-members at-members-test at-members-lint at-members-build at-members-readback
 
 at-members:
+	@python3 tests/e2e/at/members/admission.py
 	@$(at-members-disk) env FVPN_E2E=1 FVPN_E2E_PREFIX=w4-members FVPN_E2E_PORT_BASE=24000 go test -tags e2e -count=1 -p 1 -parallel 2 -timeout 55m -v ./tests/e2e/at/members/...
 
 at-members-test:

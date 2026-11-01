@@ -1,16 +1,15 @@
-# AT02 finite grant and device-to-usage trace — Follow-up 11
+# AT02 finite grant and device-to-usage trace — Follow-up 12
 
-Run `7edb263f-1f6e-4f94-9e8e-26099f96a699`, harness `33abb2fd2c2fc95826c6e69eb434045522d6f7ef`, product baseline `96ec0630e4834e13a3a14d65553ba8108bb5da55` (devstack 20 #343, agent-core 28 #344, netlab 20 #336; dns-publish 8 #309). Assigned `w4-members / 24000`, two resolvers. The full mutation order is unchanged.
+Run `b98b78ee`, harness `65e18e67`. Full AT02 is **blocked, 150 pass / 0 blocked / 0 fail checks**: F11-03 has no failed Apply to measure. API bodies, audits, device-to-usage joins and all original samples stay in [AT02.json](AT02.json).
 
-Safe HTTP bodies, audits, operation IDs and original device-to-usage steps remain in [AT02.json](AT02.json).
+| AT | Cohort | Event UTC | Last TCP / UDP reply delta (s) | Target (s) | Samples | Result |
+|---|---|---|---:|---:|---:|---|
+| AT02 | member-a3 | 2026-10-31T21:59:22.745247458Z | 0.326458120 / 0.326458120 | 5 | 28 | pass |
+| AT02 | member-a3 | 2026-10-31T22:01:26Z | -0.085203130 / -0.085203130 | 5 | 193 | pass |
+| AT04 | member-paid2 | 2026-10-31T22:09:19.760245577Z | 3.351259294 / 3.351259294 | 60 | 759 | pass |
 
-| Withdrawal event | Last TCP increment | Last UDP increment | Samples | Failed reads | Result |
-|---|---|---|---:|---:|---|
-| 2026-10-31T18:32:39.672151678Z | 2026-10-31T18:32:40.646777527Z | 2026-10-31T18:32:40.646777527Z | 28 | 0 | pass |
-| 2026-10-31T18:34:37Z | 2026-10-31T18:34:36.591993718Z | 2026-10-31T18:34:36.591993718Z | 186 | 0 | pass |
+AT02 has 221/221 successful reads and 442 before/after snapshots joined to the 812-record producer stream: 64 baseline, 364 heartbeat, 25 renewal, 89 Apply, 268 live-verification and two blocked-audit records. No failed Apply occurs; all 89 Applies retain host context. Finite expiry has 193 reads, last reply increments 85.203130 ms before the deadline. These are sampled observation bounds, not exact packet cutoff or kernel commit timestamps. D-134 preserves every pre-D and renewal loss; no fixed outer-guard ceiling is asserted.
 
-The finite-expiry row has 186 successful reads, both reader categories `none`, last TCP/UDP increments 408.006282 ms before deadline, active senders and stable/removed counters. Across both withdrawal rows, all 214 reads and 428 producer snapshots join the 798-record complete stream. [Counter diagnostics](F11-AT02-withdrawal.json), [producer records](AT02-enforcement-timing.json). These are command bounds, not exact kernel commit times. No failed read is retried or omitted.
+The continuous sibling capture separately records 21 losses from 3,976 attempts. D-135 is blocked, while a distinct policy-missing baseline bracket remains F12-01; neither disappears from totals. [Recovery/capture](F12-AT02-recovery.json), [withdrawal records](F12-AT02-withdrawal.json), [complete stream](AT02-enforcement-timing.json), [policy-missing window](F12-01-policy-missing.json).
 
-Natural expiry still yields 0/3, with three audit rows and 3/0 restoration. D-119 keeps this separate from immediate 3/0 → 2/1 → 3/0 replacement through `ReplaceFiniteGrant`; Plan v1.0 has no scheduled plan-change contract. Worker completion requires the succeeded parent operation. The current revoke action is `member.grant_revoke`; one audit per grant remains required.
-
-Full AT02 remains **fail, 121 pass / 0 blocked / 2 fail**, due to the D-077 readiness and admitted-sibling ingress controls (F11-02/F11-03). Their accepted-report extract is [retained](F11-AT02-observations.json). Historical F10-02 remains failed and unattributed in the [follow-up 10 capture](history/follow-up-10/F10-02-withdrawal.json). A successful finite-expiry reader measurement does not repair that sample or pass other failed assertions.
+D-119 retains immediate 3/0 → 2/1 → 3/0 replacement and independent finite expiry to 0/3. Worker completion requires the succeeded parent; one revoke audit per grant remains required. The two D-077 re-grants pass only after populated-grant serving. Historical F10-02 stays failed/unattributed, and F11-03's old expectation stays unchanged in [follow-up 11](history/follow-up-11/AT02.json).

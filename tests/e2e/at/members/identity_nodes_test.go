@@ -148,6 +148,10 @@ func (l *live) identity(r *record) {
 	r.check("browser sign-out", "session unauthenticated", fmt.Sprintf("logout=%d; authenticated=%t", logout.status, s.Authenticated), "POST /auth/logout; GET /auth/session", logout.status >= 200 && logout.status < 400 && !s.Authenticated)
 	before := l.count(`SELECT count(*) FROM member_devices WHERE member_id=$1`, l.a.member)
 	r.check("native device precondition", "observe real member device count", fmt.Sprintf("member_A_devices=%d", before), "SELECT count(*) FROM member_devices WHERE member_id=A", true)
+	// Follow-up 12 retains setup mutations for AT02; F11-01 waits for devstack 22.
+	if r.ID == "AT02" {
+		return
+	}
 	l.forwardingGate(r)
 	if l.traceForwarding(r, "member", id) {
 		_, pauseErr := l.docker("pause", l.name("member"))

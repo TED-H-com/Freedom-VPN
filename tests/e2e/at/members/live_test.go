@@ -83,6 +83,8 @@ type record struct {
 	Operator         string            `json:"operator_status,omitempty"`
 }
 type live struct {
+	siblingSent, siblingObserved json.RawMessage
+
 	probeSequence                            int
 	t                                        *testing.T
 	ctx                                      context.Context
@@ -168,9 +170,16 @@ func TestATMembers_Live(t *testing.T) {
 		{"AT05", l.enrollment}, {"AT01", l.identity}, {"AT02", l.devices}, {"AT03", l.payment}, {"AT04", l.entitlements}, {"AT08", l.publication}, {"AT20", l.dnsRules}, {"AT21", l.dnsFailure}, {"AT22", l.privacy}, {"AT09", l.exits},
 	} {
 		t.Run(task.id, func(t *testing.T) {
+			focused := os.Getenv("FVPN_AT_MEMBERS_FOLLOWUP12") == "1"
+			if focused && (task.id == "AT01" || task.id == "AT09") {
+				t.Skip("Follow-up 12: retain prior case; wait for devstack 22 exports/captures")
+			}
 			r := l.newRecord(task.id)
 			// Each independent case performs real OIDC reauthentication; never lengthen recent-auth policy.
 			l.admin = l.login("e2e-admin", "admin")
+			if focused && task.id == "AT02" {
+				l.identity(&r)
+			}
 			task.run(&r)
 			if task.id == "AT02" {
 				l.recordCounterTiming(&r)

@@ -14,7 +14,7 @@ import (
 )
 
 func (l *live) recordCounterTiming(r *record) {
-	trace, err := l.hook.EnforcementTiming(l.ctx)
+	trace, err := l.readEnforcementTiming()
 	reads := []counterread.Result{}
 	for _, step := range r.Steps {
 		if !strings.HasPrefix(step.Name, "persistent withdrawal ") {
@@ -31,6 +31,22 @@ func (l *live) recordCounterTiming(r *record) {
 		}
 	}
 	joinErr := validateCounterTiming(trace, reads)
+	recovery, recoveryOK, observed := siblingRecovery(trace, l.siblingObserved, l.siblingSent)
+	recovery["run_id"], recovery["source_commit"] = l.runID, l.build.Source
+	recovery["sender"] = l.siblingSent
+	evidence, _ := json.MarshalIndent(recovery, "", "  ")
+	if e := os.WriteFile(filepath.Join(l.root, "docs/e2e/at/members/F12-AT02-recovery.json"), append(evidence, '\n'), 0644); e != nil {
+		l.t.Fatal(e)
+	}
+	if !observed {
+		if recovery["failed_apply_total"].(int) > 0 {
+			r.block("F11-03: failed Applies outside the continuous sibling window are retained; their sibling recovery is unmeasured")
+		}
+		r.block("F11-03 D-135: no failed Apply observed in the continuous sibling window; recovery row blocked, not passed")
+	} else {
+		r.jsonCheck("F11-03 D-135 admitted sibling recovery", "revoked source dropped; every sibling loss counted; baseline-to-next-successful-Apply bracket reported; forwarding returns after that Apply", map[string]any{"artifact": "F12-AT02-recovery.json", "measurement": recovery}, "same boot/run/sequence producer records and continuous node ingress/egress; diagnostic labels never waive failures", recoveryOK && joinErr == nil && err == nil)
+	}
+
 	// A sidecar retains every original operation/renewal/source kind once. The
 	// existing shared result serialization retains both diagnoses on every tick.
 	artifact := map[string]any{"run_id": l.runID, "source_commit": l.build.Source, "records": trace}
@@ -41,7 +57,7 @@ func (l *live) recordCounterTiming(r *record) {
 	if e := os.WriteFile(filepath.Join(l.root, "docs/e2e/at/members/AT02-enforcement-timing.json"), append(raw, '\n'), 0644); e != nil {
 		l.t.Fatal(e)
 	}
-	r.jsonCheck("counter reader enforcement attribution", "same-boot nonzero ordered read brackets; every before/after record joins gap-free original producer stream", map[string]any{"trace_file": "AT02-enforcement-timing.json", "trace_records": len(trace), "counter_samples": len(reads), "export_error": safeError(err), "join_error": safeError(joinErr)}, "EnableEnforcementTiming before enrollment; EnforcementTiming after AT02; command brackets, not kernel commit times", err == nil && joinErr == nil)
+	r.jsonCheck("counter reader enforcement attribution", "same-boot nonzero ordered read brackets; every before/after record joins gap-free original producer stream", map[string]any{"trace_file": "AT02-enforcement-timing.json", "trace_records": len(trace), "counter_samples": len(reads), "export_error": safeError(err), "join_error": safeError(joinErr)}, "EnableEnforcementTiming before enrollment; streamed ExportContainerFile after AT02; command brackets, not kernel commit times", err == nil && joinErr == nil)
 }
 
 func TestAT02_AT20_SharedDiagnosticSerialization(t *testing.T) {

@@ -161,7 +161,9 @@ func (l *live) payment(r *record) {
 	if device == uuid.Nil {
 		r.block("Paid native device admission did not converge")
 	} else {
-		l.forwardingGate(r)
+		if !l.forwardingGate(r, device) {
+			return
+		}
 		l.traceForwarding(r, "member-paid", device)
 		l.reauthorization(r, l.c, device, "member-paid", false, false)
 	}
