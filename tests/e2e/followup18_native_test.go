@@ -45,6 +45,19 @@ func TestE2E_Followup18Native(t *testing.T) {
 	}
 	b := BrowserSession{Client: admin.http, CSRF: admin.csrf}
 	must(s.PrepareNativeUnderlay(ctx))
+	if os.Getenv("FVPN_E2E_FOLLOWUP24") == "1" {
+		family := os.Getenv("FVPN_E2E_FOLLOWUP24_FAMILY")
+		if family != "" {
+			selection, e := s.ApplyNativeInputs(ctx, NativeFixtureInputs{Underlay: family, MTU: 1500, Protocol: "tcp", Platform: "linux"})
+			input := Record{ID: "family-input", Title: "Separate first-selection family constraint", Status: StatusPass}
+			noteJSON(&input, "selection", selection)
+			if e != nil {
+				input.Status = StatusFail
+			}
+			r.record(input)
+			must(e)
+		}
+	}
 	must(s.InstallFixtureProbe(ctx))
 	must(s.StartFixtureTargets(ctx))
 	rev, _, err := s.ActivatePolicy(ctx, b, "domain_rule_set", "native18-rules", map[string]any{"rules": []any{map[string]any{"rule_id": uuid.New(), "domain": "feed-01.example.invalid", "include_subdomains": true, "action": "block", "profile_id": nil, "reason": "admin_rule", "revision": "1"}}})
@@ -624,6 +637,14 @@ transferring:
 	arrived := json.Unmarshal([]byte(arrival), &receipt) == nil && receipt.ID == probe && receipt.Requests == 1 && receipt.Source == r.nodeSNAT()
 	if c.Sample(ctx, "after-first-transfer") != nil {
 		return
+	}
+	if os.Getenv("FVPN_E2E_FOLLOWUP24") == "1" {
+		// Passive tail catches a handover response after a successful request.
+		// It does not send again or alter the already measured request result.
+		time.Sleep(2 * time.Second)
+		if c.Sample(ctx, "after-passive-tail") != nil {
+			return
+		}
 	}
 	if selected && arrived && be == nil && ae == nil && ge == nil && ce == nil && oe == nil && got.Available && after.Upload > before.Upload && after.Download > before.Download {
 		rec.Status = StatusPass

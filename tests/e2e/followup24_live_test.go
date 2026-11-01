@@ -29,6 +29,16 @@ func TestE2E_Followup24Native(t *testing.T) {
 func (r *runner) exportNative24(ctx context.Context, s *Stack) {
 	rec := Record{ID: "native-debug-export", Title: "Private native debug export", Status: StatusPass}
 	for _, role := range []string{"member", "node"} {
+		container := s.lab.member
+		if role == "node" {
+			container = s.lab.node
+		}
+		release, e := exec.CommandContext(ctx, "docker", "exec", container, "uname", "-r").Output()
+		if e != nil {
+			rec.Status = StatusFail
+		} else {
+			recPathNote(&rec)(role+"_kernel_release", string(release))
+		}
 		receipt, err := s.ExportContainerFile(ctx, role, "/var/lib/vpn-node/e2e/netbird-service.log", filepath.Join(r.lab.root, ".agent/tmp/followup24", r.runID, role+"-debug.log"))
 		noteJSON(&rec, role, receipt)
 		if err != nil {
