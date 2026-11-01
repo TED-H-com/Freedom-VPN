@@ -1,0 +1,35 @@
+{
+  "id": "stream-serving",
+  "title": "Populated lease and serving prerequisite before positive measurement",
+  "spec": null,
+  "status": "pass",
+  "observations": [
+    {
+      "name": "started_at",
+      "detail": "\"2026-11-01T15:28:22.750658971Z\""
+    },
+    {
+      "name": "last_counters",
+      "detail": "{\"upload_bytes\":\"2357\",\"download_bytes\":\"2460\",\"Present\":true,\"kernel_generation\":\"6\",\"read_diagnostic\":{\"boot_id\":\"97c018d7-a925-4723-9127-83c097de1c8a\",\"read_start_mono_ns\":\"130445736058796\",\"read_end_mono_ns\":\"130445738382529\",\"enforcement_before\":{\"available\":true,\"record\":{\"run_id\":\"e7eecc83-41a9-4538-8719-2c917968bd5d\",\"boot_id\":\"97c018d7-a925-4723-9127-83c097de1c8a\",\"sequence\":\"97\",\"source\":\"live\",\"anchor\":{\"mono_before_ns\":\"130445125466737\",\"wall\":\"2026-11-01T15:28:27.609095586Z\",\"mono_after_ns\":\"130445125466911\"},\"timing\":{\"version\":1,\"clock\":\"CLOCK_MONOTONIC\",\"operation\":\"verify\",\"candidate_generation\":\"6\",\"start_ns\":\"130445105118239\",\"end_ns\":\"130445125464082\",\"succeeded\":true,\"verified\":true,\"deadline\":{\"granularity_ns\":\"0\",\"install_bound_ns\":\"0\",\"apply_start_ns\":\"0\",\"render_start_ns\":\"0\",\"install_start_ns\":\"0\",\"installed_by_ns\":\"0\",\"install_ok\":false,\"release_start_ns\":\"0\",\"release_end_ns\":\"0\",\"guard_released\":false},\"verifications\":[{\"start_ns\":\"130445105118239\",\"end_ns\":\"130445125464082\",\"nft_read\":{\"start_ns\":\"130445105118389\",\"end_ns\":\"130445107285445\",\"ok\":true},\"tc_read\":{\"start_ns\":\"130445109732138\",\"end_ns\":\"130445123886656\",\"ok\":true},\"precision_read\":{\"start_ns\":\"130445108226782\",\"end_ns\":\"130445109722284\",\"elements\":1,\"read_ok\":true,\"verified\":true},\"tc_sha256\":\"72b42c42a79347c4789965e6f08dddc2cd6345b85610bd233f8237fb7232741d\",\"verified\":true}]},\"tc_sha256\":\"72b42c42a79347c4789965e6f08dddc2cd6345b85610bd233f8237fb7232741d\",\"lease\":{\"lease_id\":\"8592e31c-b793-4805-9898-48c62315817e\",\"generation\":\"6\",\"issued_at\":\"2026-11-01T15:28:27.404337758Z\",\"expires_at\":\"2026-11-02T15:28:27.404337758Z\",\"request_mono_ns\":\"130444918513109\",\"node_deadline_ns\":\"216844918513109\",\"members\":1}}},\"enforcement_after\":{\"available\":true,\"record\":{\"run_id\":\"e7eecc83-41a9-4538-8719-2c917968bd5d\",\"boot_id\":\"97c018d7-a925-4723-9127-83c097de1c8a\",\"sequence\":\"97\",\"source\":\"live\",\"anchor\":{\"mono_before_ns\":\"130445125466737\",\"wall\":\"2026-11-01T15:28:27.609095586Z\",\"mono_after_ns\":\"130445125466911\"},\"timing\":{\"version\":1,\"clock\":\"CLOCK_MONOTONIC\",\"operation\":\"verify\",\"candidate_generation\":\"6\",\"start_ns\":\"130445105118239\",\"end_ns\":\"130445125464082\",\"succeeded\":true,\"verified\":true,\"deadline\":{\"granularity_ns\":\"0\",\"install_bound_ns\":\"0\",\"apply_start_ns\":\"0\",\"render_start_ns\":\"0\",\"install_start_ns\":\"0\",\"installed_by_ns\":\"0\",\"install_ok\":false,\"release_start_ns\":\"0\",\"release_end_ns\":\"0\",\"guard_released\":false},\"verifications\":[{\"start_ns\":\"130445105118239\",\"end_ns\":\"130445125464082\",\"nft_read\":{\"start_ns\":\"130445105118389\",\"end_ns\":\"130445107285445\",\"ok\":true},\"tc_read\":{\"start_ns\":\"130445109732138\",\"end_ns\":\"130445123886656\",\"ok\":true},\"precision_read\":{\"start_ns\":\"130445108226782\",\"end_ns\":\"130445109722284\",\"elements\":1,\"read_ok\":true,\"verified\":true},\"tc_sha256\":\"72b42c42a79347c4789965e6f08dddc2cd6345b85610bd233f8237fb7232741d\",\"verified\":true}]},\"tc_sha256\":\"72b42c42a79347c4789965e6f08dddc2cd6345b85610bd233f8237fb7232741d\",\"lease\":{\"lease_id\":\"8592e31c-b793-4805-9898-48c62315817e\",\"generation\":\"6\",\"issued_at\":\"2026-11-01T15:28:27.404337758Z\",\"expires_at\":\"2026-11-02T15:28:27.404337758Z\",\"request_mono_ns\":\"130444918513109\",\"node_deadline_ns\":\"216844918513109\",\"members\":1}}},\"started\":\"2026-11-01T15:28:28.216958734Z\",\"completed\":\"2026-11-01T15:28:28.222011623Z\",\"stage\":\"nft_read\",\"category\":\"none\",\"exit\":0,\"heartbeat_before\":{\"read_at\":\"2026-11-01T15:28:28.21698543Z\",\"wall_unix_ns\":\"1793546907614905258\",\"serving\":true,\"read_ok\":true},\"heartbeat_after\":{\"read_at\":\"2026-11-01T15:28:28.222011773Z\",\"wall_unix_ns\":\"1793546907614905258\",\"serving\":true,\"read_ok\":true}}}"
+    },
+    {
+      "name": "counter_read_failed",
+      "detail": "false"
+    },
+    {
+      "name": "ready",
+      "detail": "true"
+    },
+    {
+      "name": "completed_at",
+      "detail": "\"2026-11-01T15:28:28.249417076Z\""
+    },
+    {
+      "name": "accepted",
+      "detail": "{\"lease_id\":\"8592e31c-b793-4805-9898-48c62315817e\",\"report_id\":\"01a197b9-efab-7cd7-9817-1336fde94ec1\",\"expires_at\":\"2026-11-02T15:28:27.404337+00:00\",\"generation\":\"6\",\"observed_at\":\"2026-11-01T15:28:27.56382+00:00\",\"received_at\":\"2026-11-01T15:28:27.575734+00:00\",\"member_count\":1}"
+    }
+  ],
+  "at": "2026-11-01T15:28:28Z",
+  "run_id": "e530b86a-ab8a-411a-bfbf-6130355c6721",
+  "source_commit": "cd190549aec32f8902c8b85d03f96ebd49a7dfa9"
+}
