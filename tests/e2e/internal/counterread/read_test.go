@@ -11,8 +11,66 @@ import (
 	"github.com/google/uuid"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
+
+// AT14 / §10.1–§10.2: diagnostic_v1 drops survive the real parser but
+// contribute neither member usage nor evidence that both member counters exist.
+func TestAT14_CtdenydExcludedFromMemberUsage(t *testing.T) {
+	id := uuid.New()
+	suffix := strings.ReplaceAll(id.String(), "-", "")
+	counter := func(name string, packets, bytes uint64) string {
+		return fmt.Sprintf(`{"counter":{"family":"inet","table":"fvpn","name":%q,"packets":%d,"bytes":%d}}`, name, packets, bytes)
+	}
+	up := counter("u_"+suffix, 3, 3000)
+	down := counter("d_"+suffix, 7, 7000)
+	denied := enforce.CounterValue{Packets: 80, Bytes: 80_000}
+	diagnostic := counter("ctdenyd", denied.Packets, denied.Bytes)
+	for _, tc := range []struct {
+		name     string
+		counters []string
+		upload   uint64
+		download uint64
+		present  bool
+	}{
+		{name: "diagnostic_alone"},
+		{name: "ordinary_member", counters: []string{up, down}, upload: 3000, download: 7000, present: true},
+		{name: "zero_member", counters: []string{counter("u_"+suffix, 0, 0), counter("d_"+suffix, 0, 0)}, present: true},
+		{name: "missing_download", counters: []string{up}},
+		{name: "missing_upload", counters: []string{down}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			for _, withDiagnostic := range []bool{false, true} {
+				t.Run(fmt.Sprintf("ctdenyd=%t", withDiagnostic), func(t *testing.T) {
+					counters := append([]string(nil), tc.counters...)
+					if withDiagnostic {
+						counters = append(counters, diagnostic)
+					}
+					raw := []byte(`{"nftables":[` + strings.Join(counters, ",") + `]}`)
+					st, err := enforce.ParseState(raw)
+					if err != nil {
+						t.Fatal(err)
+					}
+					got, present := st.Counters["ctdenyd"]
+					if present != withDiagnostic || (withDiagnostic && got != denied) {
+						t.Fatalf("ctdenyd parse: present=%t value=%+v", present, got)
+					}
+					result := read(t.Context(), id, t.TempDir(),
+						func() (Heartbeat, TimingSnapshot) { return Heartbeat{}, TimingSnapshot{} },
+						func(context.Context) ([]byte, error) { return raw, nil })
+					if result.Diagnostic.Exit != 0 || result.Diagnostic.Stage != "nft_read" || result.Diagnostic.Category != "none" || result.Diagnostic.Parse != nil {
+						t.Fatalf("successful counter read misclassified: %+v", result.Diagnostic)
+					}
+					if result.Upload != tc.upload || result.Download != tc.download || result.Present != tc.present {
+						t.Fatalf("member usage/presence: got %d/%d/%t, want %d/%d/%t",
+							result.Upload, result.Download, result.Present, tc.upload, tc.download, tc.present)
+					}
+				})
+			}
+		})
+	}
+}
 
 func TestAT02_ReadFailureCategories(t *testing.T) {
 	for _, v := range []struct{ stderr, want string }{{"Operation not permitted", "permission"}, {"Permission denied", "permission"}, {"Resource temporarily unavailable", "transient_io"}, {"Input/output error", "transient_io"}, {"No such file or directory", "nft_read"}} {
