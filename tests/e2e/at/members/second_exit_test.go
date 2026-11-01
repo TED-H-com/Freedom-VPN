@@ -80,7 +80,12 @@ func (l *live) twoExits(r *record) {
 	// Observe native failure behavior; do not presume automatic failover.
 	// Stop all holders of the exit namespace: stopping only the agent
 	// leaves kernel forwarding alive in node2-netns/adguard.
+	leaseBefore := l.storedLeaseReadback("node2", false)
+	stopStarted := time.Now().UTC()
 	_, stop := l.docker("stop", "--time", "5", l.name("node2"), l.name("node2-adguard"), l.name("node2-netns"))
+	stopEnded := time.Now().UTC()
+	leaseStopped := l.storedLeaseReadback("node2", true)
+	l.recordAgentTransition(r, "selected namespace stop", stopStarted, stopEnded, leaseBefore, leaseStopped, stop)
 	time.Sleep(3 * time.Second)
 	probeID := uuid.NewString()
 	l.request(nil, "PUT", "https://releases.example.invalid/e2e/traffic", map[string]string{"id": probeID}, map[string]string{"X-E2E-Secret": l.secret("origin.secret")})
@@ -140,6 +145,7 @@ func (l *live) twoExits(r *record) {
 	counted := l.traceForwarding(r, "member", device)
 	firstByteAt := l.lastFirstByteAt
 	capture := <-restartDone
+	l.recordAgentTransition(r, "selected namespace restart and 90-second observation", resumedAt, time.Now().UTC(), leaseStopped, l.storedLeaseReadback("node2", false), capture.err)
 	r.jsonCheck("second exit complete 90-second restart capture", "full window, unchanged generation; boot/final nft/tc, heartbeats, observations and agent log retained", map[string]any{"capture": capture.evidence, "error": safeError(capture.err)}, "RestartNodeNamespace90; no state, topology or generation repair", capture.err == nil && capture.evidence.GenerationBefore == desiredBefore.String() && capture.evidence.GenerationAfter == desiredBefore.String() && capture.evidence.Finished.Sub(capture.evidence.Started) >= 90*time.Second && len(capture.evidence.Samples) > 0)
 	if !capture.evidence.Started.IsZero() {
 		resumedAt = capture.evidence.Started

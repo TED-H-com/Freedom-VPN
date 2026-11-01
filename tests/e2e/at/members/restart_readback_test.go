@@ -3,7 +3,12 @@
 package members
 
 import (
+	"encoding/json"
 	"fmt"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -35,4 +40,55 @@ func (l *live) restartLeaseReadback(r *record) {
 	actual := l.counters(uuid.Nil)
 	r.check("later independent-generation kernel readback", "record later kernel state without replacing failed recovery probe", fmt.Sprintf("available=%t; generation=%s; member_accept_rules=%d", actual.Available, actual.Generation, actual.MemberAcceptRules), "read only nft table after AT20/21 policy inputs; no recovery action", actual.Available)
 	restore()
+}
+
+// Read stopped storage through docker cp, never start/reconfigure a container
+// to obtain evidence. A closed database is copied with any retained WAL.
+func (l *live) storedLeaseReadback(node string, stopped bool) map[string]any {
+	unavailable := map[string]any{"available": false}
+	if !l.installProbe() {
+		return unavailable
+	}
+	var raw []byte
+	var err error
+	if stopped {
+		dir, e := os.MkdirTemp(filepath.Join(l.root, ".agent/tmp"), "lease-readback-")
+		if e != nil {
+			return unavailable
+		}
+		defer os.RemoveAll(dir)
+		for _, suffix := range []string{"", "-wal", "-shm"} {
+			_, e = l.docker("cp", l.name(node)+":/var/lib/vpn-node/state/agent.db"+suffix, filepath.Join(dir, "agent.db"+suffix))
+			if suffix == "" && e != nil {
+				return unavailable
+			}
+		}
+		raw, err = exec.CommandContext(l.ctx, l.probePath(), "lease", filepath.Join(dir, "agent.db")).Output()
+	} else {
+		if _, e := l.docker("cp", l.probePath(), l.name(node)+":/tmp/at-members-probe"); e != nil {
+			return unavailable
+		}
+		raw, err = l.inside(node, "/tmp/at-members-probe", "lease", "/var/lib/vpn-node/state/agent.db")
+	}
+	var result map[string]any
+	if err != nil || json.Unmarshal(raw, &result) != nil {
+		return unavailable
+	}
+	return result
+}
+func (l *live) recordAgentTransition(r *record, label string, started, ended time.Time, before, after map[string]any, err error) {
+	status := "unavailable"
+	if before["available"] == true && after["available"] == true {
+		status = "absent before transition"
+		if before["present"] == true {
+			status = "lost"
+			if after["present"] == true {
+				status = "replaced; exact prior lease survival unproven"
+				if before["lease_id"] == after["lease_id"] && before["envelope_sha256"] == after["envelope_sha256"] && before["mono_sent_ns"] == after["mono_sent_ns"] {
+					status = "survived unchanged"
+				}
+			}
+		}
+	}
+	r.jsonCheck("agent transition "+label, "record command duration and stored lease continuity", map[string]any{"started_at": started, "ended_at": ended, "duration_ns": fmt.Sprint(ended.Sub(started).Nanoseconds()), "stored_lease_before": before, "stored_lease_after": after, "stored_lease_status": status, "command_ok": err == nil}, "read-only SQLite lease metadata before/after; no renewal or repair requested", err == nil && before["available"] == true && after["available"] == true)
 }

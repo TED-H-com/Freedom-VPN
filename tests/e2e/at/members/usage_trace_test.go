@@ -50,12 +50,20 @@ func (l *live) usageTrace(r *record) {
 		r.block("usage diagnostic selected release unavailable")
 		return
 	}
+	leaseBefore := l.storedLeaseReadback("node", false)
+	stopStarted := time.Now().UTC()
 	err = l.hook.Service(l.ctx, "stop", "")
+	stopEnded := time.Now().UTC()
+	leaseStopped := l.storedLeaseReadback("node", false)
+	l.recordAgentTransition(r, "usage stop", stopStarted, stopEnded, leaseBefore, leaseStopped, err)
 	r.check("usage diagnostic supervisor stop", "agent reaped before rejected sequence probe", fmt.Sprintf("stopped=%t", err == nil), "Stack.Service(stop); after the continuous-agent traffic assertions", err == nil)
 	defer func() {
 		ctx, cancel := context.WithTimeout(context.WithoutCancel(l.ctx), 30*time.Second)
 		defer cancel()
+		resumeStarted := time.Now().UTC()
 		resumed := l.hook.Service(ctx, "start", release)
+		resumeEnded := time.Now().UTC()
+		l.recordAgentTransition(r, "usage resume", resumeStarted, resumeEnded, leaseStopped, l.storedLeaseReadback("node", false), resumed)
 		r.check("usage diagnostic supervisor resume", "same selected release resumes", fmt.Sprintf("resumed=%t", resumed == nil), "Stack.Service(start, original selected release); no agent state/sequence changes", resumed == nil)
 	}()
 	if err != nil {

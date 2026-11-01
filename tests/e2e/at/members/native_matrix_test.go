@@ -78,6 +78,7 @@ func (l *live) nativeMatrix(r *record) {
 			l.knownPMTU1280(r, id)
 		}
 	}
+	l.routedPMTU1280(r, id)
 	for _, row := range []struct{ platform, protocol string }{{"linux", "quic"}, {"android", "tcp"}, {"ios", "tcp"}, {"windows", "tcp"}, {"macos", "tcp"}} {
 		selection, e := labstack.SelectNativeFixture(labstack.NativeFixtureInputs{Underlay: "dual", MTU: 1280, Protocol: row.protocol, Platform: row.platform})
 		if e != nil || selection.Available || selection.Reason == "" {
@@ -113,7 +114,6 @@ func (l *live) nativeMatrix(r *record) {
 		_, _ = l.hook.ForceMemberRelay(l.ctx, "", false)
 	}
 	r.block("D-123: v1.0 IPv6Block. IPv6 no-leak evidence is the independent rendered-policy netlab follow-up 18 measurement (docs/poc/G2-f802-mtu1280-2026-10-31.md); this native fixture measures IPv4 payload over the selected underlay, not end-to-end IPv6 MTU/PMTU. D-137 is provisional; historical F8-02 stays failed. Known route MTU is separate from reactive PTB.")
-	r.block("D-137 reactive PTB router-hop row pending devstack 23; no router-hop export on this product baseline")
 	r.block("F4-03: physical second NAT/roaming and ICMP-black-hole PMTU remain platform/operator work; finite TCP transfers at 1500/1280 are not a full PMTU campaign.")
 }
 

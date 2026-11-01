@@ -221,8 +221,11 @@ func (l *live) publication(r *record) {
 	if l.b != nil {
 		l.traceForwarding(r, "member-b1", uuid.Nil)
 	}
+	leaseBefore := l.storedLeaseReadback("node", false)
 	l.restartAfter = time.Now().UTC()
 	_, err := l.docker("restart", l.name("node"))
+	restartEnded := time.Now().UTC()
+	l.recordAgentTransition(r, "disabled node restart", l.restartAfter, restartEnded, leaseBefore, l.storedLeaseReadback("node", false), err)
 	r.check("node restart", "restart succeeds", fmt.Sprintf("restart_ok=%t", err == nil), "docker restart fvpn-w4-members-node", err == nil)
 	l.restartReadback(r)
 	intent, observed := l.publicationState()
