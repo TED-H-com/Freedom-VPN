@@ -1,7 +1,7 @@
 # Operator Guide (`docs/handover/operator-guide.md`)
 
-**Current cut — [follow-up 27](follow-up-27.md) (2026-11-01 EST):** Through #385: isolation F14-01 fails the D-104 boundary; members 15 adds serving-node ingress gaps; r19 archived with routed findings. D-140 permits boundary scheduling only. D-141 closes D-139: option (b) is not implemented; option (c) stays. Historical failures stay failed. No new operator guidance.
-**Previous cut — [follow-up 26](follow-up-26.md) (2026-11-01 EST):** Through #382, including the #381 row correction: r18 fixes landed; ISO-F6-01 fixed and AT10 passes; F11-01 closed-node cause unproven; members F14-01 new; members F13-01 origin unproven; updates receipt delivered. D-139 is a provisional design track, option (c) stays in production. Historical failures stay failed.
+**Current cut — [follow-up 28](follow-up-28.md) (2026-11-01 EST):** Through #390: r19 H-1 / M-2 / L-2 fixed; devstack 25 closure explained as tracer interference; native delivery delay remains. Updates 14 adopts parent receipts, AT23–AT27 5 / 5. D-135–D-138, D-140 and D-141 remain provisional. Node diagnostics and traceroute guidance added; RELATED ICMP owner question open. Historical failures stay failed.
+**Previous cut — [follow-up 27](follow-up-27.md) (2026-11-01 EST):** Through #385: isolation F14-01 fails the D-104 boundary; members 15 adds serving-node ingress gaps; r19 archived with routed findings. D-140 permits boundary scheduling only. D-141 closes D-139: option (b) is not implemented; option (c) stays. Historical failures stay failed. No new operator guidance.
 
 ## Operator changes at #369
 
@@ -435,6 +435,23 @@ Each node's observation report (`POST /api/v1/agent/observations`) includes thre
 - **Sanitized `NodeCheck.detail` and `probe_omitted` precedence (`D-058b`, `#168`, `#171`, `docs/node/README.md`, `node/agent/probeexc.go`, `node/agent/attest.go`)**: `NodeCheck.detail` is bounded to `1..500` single-line printable ASCII characters and sanitized on both agent and central ingest so URLs, tokens, secret keys, file paths, SQL, and stack traces never enter `node_observations` or the Admin Portal. Normally, `tunnel_probe.detail` reports which egress probe source ran (`"Egress probe used the signed targets."`, `"Egress probe used the local target."`, `"Egress probe used no extra target."`, or `"Signed egress probe was rejected."`). When a live matching `health-challenge.json` carries `probe_omitted {peer_id, reason}` (`#168`, `#171`, because the updater's D-063 issuer refused the configured `probe_peer`), `tunnel_probe.detail` instead reports `"probe_omitted: <reason>"` (taking precedence over the `ProbeSource` sentence, never containing the peer ID or any address, and retained across sidecar removal or consumption until a later challenge carrying `probe` or `probe_omitted` replaces it), while `tunnel_probe` remains `status: "not_run"` and `data_health` remains `"unknown"` with member forwarding closed (`ProbeRan = false`).
 
 Node detail also includes typed `dns_policy_evidence` from the selected current-incarnation observation. The admin node page labels it as node-reported and shows document ID, digest, generation, outcome, applied time, error code and per-feed evidence. `null` means not reported; neither a newer desired policy nor successful document delivery is substituted as proof of apply. Members see the explanation at `/member/dns-protection`; support must inspect the admin evidence for them.
+
+**2026-11-01 — Node diagnostics (#386).** Adding a trace, or another foreign
+nft table or rule, to a node closes that node by design when it fails the
+fail-closed verifier: `ISOLATION_POLICY_INVALID` makes the agent install the
+deny baseline until the rule is removed and serving verification succeeds.
+The TEST ONLY unscoped `meta nftrace set 1` in a foreign `mangle` table caused
+this in devstack 25; it was harness interference, not a product defect.
+Diagnose from the member side, or capture packets without touching the node's
+ruleset. See the [dated devstack 26 analysis](../e2e/runs/2026-11-01/followup26/analysis.md).
+
+**Known traceroute behaviour (#389).** The fail-closed download source guard
+drops RELATED ICMP errors (fragmentation needed or time exceeded) whose outer
+source is in the spec deny list, even when the quoted connection is allowed.
+That list includes 10/8, 172.16/12, 192.168/16 and 100.64/10. A member's
+traceroute therefore shows no reply for on-path hops with those addresses.
+No exception exists; the [owner question remains open](follow-up-28.md).
+This records current behaviour and promises no fix.
 
 ### 3.5 Revoking (`POST .../revoke`), Retiring (`DELETE /api/v1/admin/nodes/{node_id}`), Incarnation History (`GET /api/v1/admin/nodes/{node_id}/incarnations`), and Cloned-Identity Conflict Runbook (`D-072`, `#211`, `#213`, `#217`, `#223`)
 

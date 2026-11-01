@@ -25,11 +25,15 @@ func startReloadTrace(t *testing.T) {
 func finishReloadTrace(t *testing.T) {
 	t.Helper()
 	if scratchExists("/scratch/stream-a1.log.pid") {
-		mustExec(t, "python3", "/opt/netlab/scripts/trace_capture.py", "finish-stream", "/scratch/stream-a1.log")
+		out, errOut, err := dockerExec("python3", "/opt/netlab/scripts/trace_capture.py", "finish-stream", "/scratch/stream-a1.log", "/scratch/at10-apply.jsonl")
+		if err != nil {
+			// Keep the incomplete trace and let the unchanged analyzer fail it.
+			t.Errorf("stream end: %v %s%s", err, out, errOut)
+		}
 	}
 	mustExec(t, "python3", "/opt/netlab/scripts/trace_capture.py", "stop", "/scratch/at10")
 	mustExec(t, "touch", "/scratch/at10-trace.done")
-	for _, name := range []string{"at10-origin.txt", "at10-origin.err", "at10-node.txt", "at10-node.err", "at10-responder.txt", "at10-responder.err", "at10-apply.jsonl", "stream-a1.log", "stream-a1.log.jsonl"} {
+	for _, name := range []string{"at10-origin.txt", "at10-origin.err", "at10-node.txt", "at10-node.err", "at10-responder.txt", "at10-responder.err", "at10-apply.jsonl", "stream-a1.log", "stream-a1.log.jsonl", "stream-a1.log.trace-finish.json", "stream-a1.log.trace-done"} {
 		if scratchExists("/scratch/" + name) {
 			evidenceName := name
 			if strings.HasSuffix(name, ".log") {
