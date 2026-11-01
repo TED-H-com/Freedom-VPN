@@ -1,0 +1,15 @@
+{
+  "id": "initiation-origins",
+  "title": "Direction-qualified handshake initiation origins",
+  "spec": null,
+  "status": "pass",
+  "observations": [
+    {
+      "name": "analysis",
+      "detail": "{\"initiations\":[{\"wireguard\":{\"type\":1,\"length\":148,\"message_sha256\":\"ac041cbb3df72a376fcbbc225414c6fc82411d10001ff4fcaa50518b27f25842\",\"sender_index\":908412928,\"source_loopback\":true,\"destination_loopback\":true},\"origin\":{\"role\":\"member\",\"source_loopback\":true,\"destination_loopback\":true,\"packet\":386,\"timestamp\":\"1793546603.708984\",\"mono_lower_ns\":null,\"mono_upper_ns\":null,\"interface\":\"lo\",\"packet_type\":0,\"ip_version\":4,\"src\":\"addr-12ca17b49af22894\",\"dst\":\"addr-32bcd336456e1b8c\",\"udp\":{\"src_port\":51820,\"dst_port\":37175,\"length\":156}},\"response_hashes\":[\"d5da48234fdc9db83a7a9d96b6306df85fd462d2c528b501ffa1eefd17c2fa7c\"]},{\"wireguard\":{\"type\":1,\"length\":148,\"message_sha256\":\"3128e35fca20c0dd5fcaad0d650cdcaa9af4b1a9fdb3e3ac439309502786372c\",\"sender_index\":1668856001,\"source_loopback\":true,\"destination_loopback\":true},\"origin\":{\"role\":\"node\",\"source_loopback\":true,\"destination_loopback\":true,\"packet\":115,\"timestamp\":\"1793546603.711422\",\"mono_lower_ns\":null,\"mono_upper_ns\":null,\"interface\":\"lo\",\"packet_type\":0,\"ip_version\":4,\"src\":\"addr-12ca17b49af22894\",\"dst\":\"addr-32bcd336456e1b8c\",\"udp\":{\"src_port\":51820,\"dst_port\":35337,\"length\":156}},\"response_hashes\":[]},{\"wireguard\":{\"type\":1,\"length\":148,\"message_sha256\":\"edaff9efad4452b1f1f6509bf14d11eb7d890edbe15f207dce32a5bef15fd584\",\"sender_index\":160039702,\"source_loopback\":false,\"destination_loopback\":false},\"origin\":{\"role\":\"member\",\"source_loopback\":false,\"destination_loopback\":false,\"packet\":11179,\"timestamp\":\"1793546723.822254\",\"mono_lower_ns\":null,\"mono_upper_ns\":null,\"interface\":\"eth0\",\"packet_type\":4,\"ip_version\":4,\"src\":\"addr-129fe9318e066262\",\"dst\":\"addr-459868bfedca20a7\",\"udp\":{\"src_port\":51820,\"dst_port\":51820,\"length\":156}},\"response_hashes\":[\"80b5184e44e68e5e598e971e1a5a87c3314c73186dc41a54f522b3431abb8e4b\"],\"since_previous_same_origin_ns\":\"120113270000\"}],\"scope\":\"Supersedes the member_initiations convenience list in earlier measurement.json files, which also selected incoming loopback copies. Original packet/handshake timelines and all measured intervals remain unchanged. The pinned harness local WG port is 51820; SLL2 outgoing underlay or the local WG loopback source identifies origin.\"}"
+    }
+  ],
+  "at": "2026-11-01T15:26:32Z",
+  "run_id": "d992b04f-f83f-4393-b375-891cfb90cf7d",
+  "source_commit": "757052242f7a5beeb2526a44194af8e257dc99da"
+}

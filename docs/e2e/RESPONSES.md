@@ -1312,3 +1312,47 @@ later incident, and members' sole-member `members_revoked` rows. The fixture
 proof does not pass those combinations. A sole-member row must use its own
 one-member populated lease and original real member revocation; one revoked
 device or one revoked member among surviving members is insufficient.
+
+## 2026-11-01 — Follow-up 27 response to members 15's serving-node samples (D-102)
+
+Request: measure F15-F11-01's first selection after proven serving and
+F15-AT02's 249 missing ingresses / 5.0975 s gap, per IPv4 and IPv6, with the
+corrected member-only observer. Keep archived F14-01 `cause_status: unproven`.
+
+[All attempts and attribution limits](runs/2026-11-01/followup27/analysis.md)
+and [machine-readable joins](runs/2026-11-01/followup27/campaign.json) are ready.
+The predeclared **four fresh stacks per family** each retain first contact,
+first selection, and a 150-second stream. IPv4: 4/4 first selections, 29,300
+sends, zero missing node ingress; IPv6: 4/4, 29,319, zero missing node ingress.
+The largest consecutive ingress gap is 27.761 ms. The 93 IPv4 and 90 IPv6
+packets with ingress but no origin receipt remain losses; sender completion
+is not AT02 acceptance. No five-SYN failure or five-second ingress gap reproduced.
+
+The IPv6 joins distinguish three events:
+
+- `0876ef42`: eight `::1`-source **type-4 data** messages at both underlay ends,
+  with eight member header errors. Valid-source data resumes on the same
+  receiver index without an intervening handshake; member→node ingress continues.
+- `ae1a2829`: one `::1`-source **type-2 response** and one header error, arriving
+  after the concurrent node-originated handshake had already carried the first
+  request. The next member initiation is 15.600070 s later. The sustained stream
+  starts after that handshake, so the preceding idle interval is not a
+  continuous-forwarding proof.
+- `1ecee8fe`: another such response after the successful first request, with one
+  header error. No further member initiation is captured; the next initiation
+  is the node's normal rekey about 120 s later.
+
+Each run's `initiation-origins.json` supplies the direction-qualified origin
+join. It supersedes an earlier convenience list that also counted incoming
+loopback copies; original packets, timestamps and measured outcomes are intact.
+Full route tables, endpoint/status samples, both-end handshake hashes and every
+socket-write→ingress interval remain in the pinned archive. Private receipts,
+zero capture drops/read errors and member-only tracing were checked. No node
+ruleset observer was added.
+
+These fresh rows do not attribute a common cause to historical F15-F11-01,
+F15-AT02 or F14-01; all three historical files remain byte-identical. Members
+16's original send-time capture and the consumers' full loss attribution remain
+theirs. Ted retains the F11-01 repair choice. No transport, NAT, kernel, member
+validation, probe behavior or NetBird pin changed. The populated-hold arming
+sequence and exact consumer joins are in the preceding Follow-up 27 reply.
