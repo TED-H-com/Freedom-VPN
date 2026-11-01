@@ -1,0 +1,16 @@
+## Failure-specific joins
+
+The natural first-selection timeout [ce8ccbe1](ce8ccbe1-ed7d-4fc0-b1ed-786ef0e7578c/timeout-analysis.md) has proven generation-5 admission, a baseline closure at +1.650…1.704 seconds, a failed later generation-5 Apply while the observer remains, and recovery at the same generation after removal. Its first SYN reaches the node only after 10.444 seconds, beyond the 5.003-second request deadline. Closure is explained; closure alone is not a complete timeout attribution.
+
+The two separately declared held-tracer fault probes retain their failures and are detailed in [held-tracer-analysis.md](held-tracer-analysis.md). They are not first-selection acceptance rows.
+
+The separate passive re-grant timeout [af718646](af718646-166a-4a3f-af55-3f7a3ee8e17b/regrant-analysis.md) keeps generation 7 and serving intact. A loopback-source type-2 response, one member IPv6 header error, handshake 0 during the request and a later native handshake accompany first node delivery at 5.671 seconds. This localizes that fresh delay to native establishment/data delivery; it does not retroactively assign 258ba504 a cause.
+
+## What closed the reproduced nodes
+
+The TEST ONLY node nft observer can invalidate the safety property it is observing. Its broad IPv6 UDP `meta nftrace set 1` statements are unscoped foreign `mangle` operations under the unchanged verifier. The exact captured listing identifies the tracer table and `ISOLATION_POLICY_INVALID`; later projections identify netdev ingress as the first rejection. The isolated inet prerouting rule also fails the real verifier regression. This affects verification even when the measured request uses the IPv4 underlay.
+
+The accepted central reports retain `applied_config_generation=5` while forwarding becomes false with `safety_check_failed` and `ISOLATION_POLICY_INVALID` at stage `apply`. The producer stream distinguishes the failed live verification from subsequent enforcement attempts: stage `apply` alone does **not** prove a failed Apply transaction. The lease, QoS and source-binding checks can all carry that same rejection code; the exported lease/member windows remain live. Those failed checks are not evidence of lease expiry. The local baseline writer records `verification_ISOLATION_POLICY_INVALID`. That deny baseline explains a kernel counter generation of 0 without any central desired generation moving backwards to 0. The observer remains installed through the request and passive tail; later attempts cannot establish verified serving while the same foreign rule remains. The post-removal recovery gate is independent of the original request result.
+
+The owned fix is to remove node marking from ordinary observation, retain passive native captures, and require serving admission before the first request. The historical observer is available only through the explicit diagnostic flag. No product verifier, NAT, kernel, member validation, NetBird pin or `node/agent/probe.go` changed. This evidence identifies harness interference, not a demonstrated product defect requiring a product patch.
+
