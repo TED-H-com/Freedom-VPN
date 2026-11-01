@@ -1,0 +1,14 @@
+package main
+import("encoding/json";"os";"time";"net/netip";"github.com/google/uuid";"github.com/TED-H-com/Freedom-VPN/node/enforce")
+func main(){
+ now:=time.Now().UTC(); p:=netip.MustParsePrefix; a:=netip.MustParseAddr
+ m:=enforce.Model{Generation:42400,IPv6Mode:enforce.IPv6Block,Now:now,Datapath:enforce.Datapath{MemberIngress:"fv-fh",Uplink:"fv-ih",SNAT:a("192.0.2.37")},Resolvers:[]netip.Addr{a("198.51.100.53")},DeniedV4:enforce.Without(enforce.SpecDeniedV4(),p("203.0.113.0/24")),ExtraDeniedV4:[]netip.Prefix{p("192.0.2.200/32")},HostV4:[]netip.Prefix{p("192.0.2.33/32"),p("192.0.2.37/32")}}
+ wide:=enforce.Rate{RateBPS:200000000,CeilBPS:200000000};host:=enforce.Rate{RateBPS:5000000,CeilBPS:200000000};member:=enforce.Rate{RateBPS:50000000,CeilBPS:50000000}
+ m.QoS=enforce.QoS{Up:wide,Down:wide,HostUp:host,HostDown:host}
+ ids:=[]string{"019a0000-0000-7000-8000-00000000000a","019a0000-0000-7000-8000-00000000000b"}
+ devices:=[]string{"019a0000-0000-7000-8000-0000000000a1","019a0000-0000-7000-8000-0000000000a2","019a0000-0000-7000-8000-0000000000b1"}
+ ips:=[]string{"100.64.1.1/32","100.64.1.2/32","100.64.2.1/32"}
+ for i,id:=range devices{mi:=0;if i==2{mi=1};m.Bindings=append(m.Bindings,enforce.Binding{MemberID:uuid.MustParse(ids[mi]),DeviceID:uuid.MustParse(id),PeerID:"peer-test",AllowedV4:[]netip.Prefix{p(ips[i])},BindingRevision:1,ValidFrom:now.Add(-time.Minute),ValidUntil:now.Add(48*time.Hour)})}
+ for _,id:=range ids {u:=uuid.MustParse(id);m.Leases=append(m.Leases,enforce.MemberLease{MemberID:u,EffectiveServiceEnd:now.Add(48*time.Hour),NodeLeaseEnd:now.Add(48*time.Hour),SignedServerTime:now,MaxOfflineSeconds:3600});m.QoS.Members=append(m.QoS.Members,enforce.MemberQoS{MemberID:u,Up:member,Down:member})}
+ if err:=json.NewEncoder(os.Stdout).Encode(map[string]any{"test_only":true,"note":"Synthetic three-device fixture; doc-range Internet exemption only inside the lab.","model":m});err!=nil{panic(err)}
+}

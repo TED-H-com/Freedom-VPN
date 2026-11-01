@@ -218,7 +218,7 @@ def review(root):
         scope='Central row joins and classification, including reverse-array read-only replay. Poll snapshots are not ingestion transaction snapshots. Baseline writes, packet capture and publication completion are separate evidence; no inference from a counter read failure.',
         counter_read_failure_decision=dict(source='docs/poc/G2-followup23-evidence/decision.json',kind='duplicate_chain',error_type='*enforce.DuplicateChainError',duplicates=0,listings=3300,origin='unproven',historical_failures='unchanged; no retry waiver or reclassification'))
     result['coverage'] = dict(
-        exact_report_sample_incident_join='pass' if result['holds'] and not result['problems'] else 'fail',
+        exact_report_sample_incident_join=('fail' if result['problems'] else 'pass' if result['holds'] else 'not exercised: no accepted hold report'),
         stale_generation_before_generic_causes='pass' if any(h['classification']=='stale_generation' for h in result['holds']) else 'not exercised',
         applied_equals_desired='observed against the node latest delivered signed desired state' if result['applied_equals_delivered_desired'] else 'did not occur',
         unrelated_failure_precedence='pass' if any(h['unrelated_failure'] for h in result['holds']) and not result['problems'] else 'not exercised',

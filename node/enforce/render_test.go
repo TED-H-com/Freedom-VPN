@@ -852,6 +852,9 @@ func fixtureServing(m Model, assignments map[uuid.UUID]uint16) []byte {
 				map[string]any{"counter": map[string]any{"name": "ctnodn"}},
 				map[string]any{"drop": nil},
 			}}},
+			ruleExpr("forward", matchMetaIface("iifname", m.Datapath.Uplink), matchMetaIface("oifname", m.Datapath.MemberIngress), matchPayload("==", "saddr", "@resolver_v4"), namedCounter(counterDeniedDown), map[string]any{"drop": nil}),
+			ruleExpr("forward", matchMetaIface("iifname", m.Datapath.Uplink), matchMetaIface("oifname", m.Datapath.MemberIngress), matchPayload("==", "saddr", "@denied_v4"), namedCounter(counterDeniedDown), map[string]any{"drop": nil}),
+			ruleExpr("forward", matchMetaIface("iifname", m.Datapath.Uplink), matchMetaIface("oifname", m.Datapath.MemberIngress), matchPayload("==", "saddr", "@host_v4"), namedCounter(counterDeniedDown), map[string]any{"drop": nil}),
 			map[string]any{"rule": map[string]any{"family": "inet", "table": "fvpn", "chain": "forward", "expr": []any{
 				map[string]any{"match": map[string]any{"op": "==", "left": map[string]any{"meta": map[string]any{"key": "iifname"}}, "right": m.Datapath.Uplink}},
 				map[string]any{"match": map[string]any{"op": "==", "left": map[string]any{"meta": map[string]any{"key": "oifname"}}, "right": m.Datapath.MemberIngress}},
@@ -878,6 +881,7 @@ func fixtureServing(m Model, assignments map[uuid.UUID]uint16) []byte {
 			map[string]any{"counter": map[string]any{"family": "inet", "table": "fvpn", "name": up, "packets": 1, "bytes": 100}},
 			map[string]any{"counter": map[string]any{"family": "inet", "table": "fvpn", "name": dn, "packets": 1, "bytes": 100}},
 			map[string]any{"set": map[string]any{"family": "inet", "table": "fvpn", "name": "allowed_v4"}},
+			map[string]any{"counter": map[string]any{"table": "fvpn", "name": counterDeniedDown}},
 			resolverSetFixture(m),
 		},
 	}

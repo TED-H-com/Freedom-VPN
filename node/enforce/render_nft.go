@@ -180,13 +180,30 @@ func Render(m Model, state State, tcState TCState) (RenderPlan, error) {
 
 	// Download: the same allow set is checked before established/related
 	// traffic is accepted, so a timeout or revocation stops an existing flow
-	// (§16.3). Reverse NAT has already restored the member address (§10.2).
+	// (§16.3). Current remote-source denials also precede generic returns.
+	// Reverse NAT has already restored the member address (§10.2).
 	if m.Probe != nil {
 		rule(&b, "forward", fmt.Sprintf("iifname %q oifname %q ip daddr != @allowed_v4 ip daddr != @%s counter name %q drop", up, in, setProbeV4, counterUnkDown))
 	} else {
 		rule(&b, "forward", fmt.Sprintf("iifname %q oifname %q ip daddr != @allowed_v4 counter name %q drop", up, in, counterUnkDown))
 	}
 	rule(&b, "forward", fmt.Sprintf("iifname %q oifname %q ct state != { established, related } counter name %q drop", up, in, counterNoDown))
+	for _, d := range devices {
+		if !d.TimeoutOK() {
+			continue
+		}
+		prio := fmt.Sprintf("0x%08x", ClassID(d.Minor))
+		dnsDown := usageCounter(dirDNSDownload, d.Binding.DeviceID)
+		for _, addr := range d.Addrs {
+			rule(&b, "forward", fmt.Sprintf("iifname %q oifname %q ip saddr @resolver_v4 ip daddr %s tcp sport 53 counter name %q meta priority set %s accept", up, in, addr, dnsDown, prio))
+			rule(&b, "forward", fmt.Sprintf("iifname %q oifname %q ip saddr @resolver_v4 ip daddr %s udp sport 53 counter name %q meta priority set %s accept", up, in, addr, dnsDown, prio))
+		}
+	}
+
+	if m.Probe != nil && m.Probe.ResolverDNS {
+		writeProbeDNSDown(&b, in, up)
+	}
+	writeDownloadDenials(&b, in, up, true)
 	if m.Probe != nil {
 		writeProbeDown(&b, in, up)
 	}
@@ -195,11 +212,8 @@ func Render(m Model, state State, tcState TCState) (RenderPlan, error) {
 			continue
 		}
 		prio := fmt.Sprintf("0x%08x", ClassID(d.Minor))
-		dnsDown := usageCounter(dirDNSDownload, d.Binding.DeviceID)
 		useDown := usageCounter(dirDownload, d.Binding.DeviceID)
 		for _, addr := range d.Addrs {
-			rule(&b, "forward", fmt.Sprintf("iifname %q oifname %q ip saddr @resolver_v4 ip daddr %s tcp sport 53 counter name %q meta priority set %s accept", up, in, addr, dnsDown, prio))
-			rule(&b, "forward", fmt.Sprintf("iifname %q oifname %q ip saddr @resolver_v4 ip daddr %s udp sport 53 counter name %q meta priority set %s accept", up, in, addr, dnsDown, prio))
 			rule(&b, "forward", fmt.Sprintf("iifname %q oifname %q ip daddr %s counter name %q meta priority set %s accept", up, in, addr, useDown, prio))
 		}
 	}
@@ -264,7 +278,7 @@ func RenderBaseline(m Model, state State) (string, error) {
 	}
 	names := []string{counterBase, counterV6, counterInput}
 	if m.Probe != nil {
-		names = append(names, counterInvalid, counterDenied, counterHost, counterProbeUp, counterProbeDown)
+		names = append(names, counterInvalid, counterDenied, counterHost, counterDeniedDown, counterProbeUp, counterProbeDown)
 		if m.Probe.ResolverDNS {
 			names = append(names, counterBadDNS)
 		}
@@ -353,6 +367,10 @@ func RenderBaseline(m Model, state State) (string, error) {
 		if len(m.Probe.Destinations) > 0 {
 			writeProbeTuple(&b, in, up)
 		}
+		if m.Probe.ResolverDNS {
+			writeProbeDNSDown(&b, in, up)
+		}
+		writeDownloadDenials(&b, in, up, m.Probe.ResolverDNS)
 		writeProbeDown(&b, in, up)
 	}
 	rule(&b, "forward", fmt.Sprintf("iifname %q counter name %q drop", in, counterBase))
@@ -413,6 +431,25 @@ func writeProbeTuple(b *strings.Builder, in, up string) {
 	rule(b, "forward", fmt.Sprintf("iifname %q oifname %q ip saddr @%s ip daddr . meta l4proto . th dport @%s counter name %q accept", in, up, setProbeV4, setProbeDstV4, counterProbeUp))
 }
 
+// DNS replies are the only remote-source exception, matching the upload hole.
+// The explicit conntrack check also protects the baseline probe path.
+func writeProbeDNSDown(b *strings.Builder, in, up string) {
+	for _, proto := range []string{"tcp", "udp"} {
+		rule(b, "forward", fmt.Sprintf("iifname %q oifname %q ip saddr @resolver_v4 ip daddr @%s %s sport 53 ct state established,related counter name %q accept", up, in, setProbeV4, proto, counterProbeDown))
+	}
+}
+
+// Current destination restrictions apply to return sources even when conntrack
+// still holds the flow. Both serving and baseline probe returns use this guard.
+func writeDownloadDenials(b *strings.Builder, in, up string, resolver bool) {
+	for _, set := range []string{"resolver_v4", "denied_v4", "host_v4"} {
+		if set == "resolver_v4" && !resolver {
+			continue
+		}
+		rule(b, "forward", fmt.Sprintf("iifname %q oifname %q ip saddr @%s counter name %q drop", up, in, set, counterDeniedDown))
+	}
+}
+
 func writeProbeDown(b *strings.Builder, in, up string) {
 	rule(b, "forward", fmt.Sprintf("iifname %q oifname %q ip daddr @%s ct state established,related counter name %q accept", up, in, setProbeV4, counterProbeDown))
 }
@@ -466,7 +503,7 @@ func probeDestElements(dsts []ProbeDestination, sec uint32) string {
 
 func diagnosticCounters() []string {
 	return []string{
-		counterV6, counterUnknown, counterUnkDown, counterDenied, counterHost,
+		counterV6, counterUnknown, counterUnkDown, counterDenied, counterHost, counterDeniedDown,
 		counterBadDNS, counterInvalid, counterInput, counterBase, counterNoDown,
 	}
 }

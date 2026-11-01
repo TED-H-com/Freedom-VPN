@@ -5,6 +5,7 @@ from datetime import datetime
 import calendar
 import hashlib
 import json
+from evidence_io import read_json
 import sys
 
 
@@ -64,6 +65,6 @@ def validate(t, events):
 
 if __name__ == '__main__':
     root=Path(sys.argv[1] if len(sys.argv)>1 else 'docs/e2e/at/isolation')
-    result=validate(json.loads((root/'member-grants-transition.json').read_text()),
-                    json.loads((root/'member-grants-wire.json').read_text()))
+    result=validate(read_json(root/'member-grants-transition.json'),
+                    read_json(root/'member-grants-wire.json'))
     print(json.dumps(result,indent=2))

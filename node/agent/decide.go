@@ -287,9 +287,13 @@ func Decide(in Input) Decision {
 			Message: msg,
 		})
 	} else if in.RevocationPending {
+		message := "conntrack delete pending; reservation retained"
+		if d.Serve && in.ApplyError == nil {
+			message = "conntrack delete pending; serving ruleset verified"
+		}
 		d.Errors = append(d.Errors, api.NodeError{
 			Code: api.ErrorCode(enforce.ReasonIsolation), Stage: "apply", ObservedAt: at,
-			Message: "conntrack delete pending; serving ruleset verified",
+			Message: message,
 		})
 	}
 	if in.DependencyMissing {

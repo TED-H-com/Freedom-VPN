@@ -951,7 +951,9 @@ func (x *isolationRun) revoke() {
 		return
 	}
 	x.a = memberSession
+	deleteStarted := time.Now().UTC()
 	resp, err := x.a.call(x.ctx, "DELETE", r.lab.public+"/api/v1/member/devices/"+r.usageDevice.String(), nil, map[string]string{"Idempotency-Key": uuid.NewString()})
+	deleteCompleted := time.Now().UTC()
 	c.Observations = append(c.Observations, iso.Observation{Name: "delete", Detail: httpDetail(resp, err)})
 	wait, cancel := context.WithTimeout(x.ctx, 90*time.Second)
 	applied := waitUntil(wait, time.Second, func() bool {
@@ -962,6 +964,7 @@ func (x *isolationRun) revoke() {
 	time.Sleep(3 * time.Second)
 	after, _ := r.lab.docker(r.lab.member, "cat", path)
 	ctAfter, ctAfterErr := r.lab.docker(r.lab.node, "conntrack", "-L", "-s", source, "-d", r.originIP(), "-o", "extended")
+	x.extra("revocation-request.json", map[string]any{"run_id": x.records["AT13"].RunID, "device_id": r.usageDevice, "old_generation": old, "request_started": deleteStarted, "response_completed": deleteCompleted, "response_status": resp.Status, "stream_before": json.RawMessage(before), "stream_after": json.RawMessage(after), "conntrack_after_read": time.Now().UTC(), "scope": "HTTP request/response and established-flow failures; desired delivery and restricting install joined separately to producer, including pre-Apply reservation"})
 	var a, b struct {
 		TCP     int    `json:"tcp_ok"`
 		UDP     int    `json:"udp_ok"`
@@ -990,15 +993,80 @@ func (x *isolationRun) revoke() {
 	x.postRevokeIngress(source, r.usageDevice, x.a1)
 }
 
+// D-102: retain process identity before the original stop. Receipt reads use
+// docker cp even for a running clone source, so this also works while stopped.
+func (x *isolationRun) agentStopIdentity(container string) map[string]any {
+	row := map[string]any{"available": false, "captured_at": time.Now().UTC()}
+	raw, err := x.r.lab.docker(container, "sh", "-ec", `cat /var/lib/vpn-node/e2e/agent-process-id; cat /var/lib/vpn-node/e2e/agent.pid; cat /proc/$(cat /var/lib/vpn-node/e2e/agent.pid)/stat`)
+	lines := strings.Split(strings.TrimSpace(string(raw)), "\n")
+	if err != nil || len(lines) != 3 {
+		return row
+	}
+	launch := strings.TrimSpace(lines[0])
+	if _, err := uuid.Parse(launch); err != nil {
+		return row
+	}
+	pid, err := strconv.Atoi(strings.TrimSpace(lines[1]))
+	fields := strings.Fields(lines[2][strings.LastIndex(lines[2], ")")+1:])
+	if err != nil || pid <= 1 || len(fields) < 20 {
+		return row
+	}
+	row["available"], row["launch_id"], row["pid"], row["start_ticks"] = true, launch, pid, fields[19]
+	return row
+}
+
+func (x *isolationRun) agentStopReceipt(container string, identity map[string]any) map[string]any {
+	row := map[string]any{"identity_before_stop": identity, "parent_wait_available": false,
+		"scope": "Actual agent exit from matching parent wait receipt; container exit is shutdown-handler completion only; sigkill sidecar is an attempted escalation"}
+	if state, err := exec.Command("docker", "inspect", "--format={{json .State}}", container).Output(); err == nil && json.Valid(state) {
+		row["container_state_at_read"] = json.RawMessage(state)
+	}
+	if identity["available"] != true {
+		return row
+	}
+	launch := identity["launch_id"].(string)
+	for _, suffix := range []string{".json", ".sigkill.json"} {
+		path := filepath.Join(x.t.TempDir(), "receipt"+suffix)
+		err := exec.Command("docker", "cp", container+":/var/lib/vpn-node/e2e/agent-exits/"+launch+suffix, path).Run()
+		if err != nil {
+			continue
+		}
+		raw, err := os.ReadFile(path)
+		if err != nil || !json.Valid(raw) {
+			continue
+		}
+		if suffix == ".sigkill.json" {
+			row["attempted_escalation"] = json.RawMessage(raw)
+			continue
+		}
+		var receipt struct {
+			ID         string `json:"id"`
+			PID        int    `json:"pid"`
+			StartTicks string `json:"start_ticks"`
+			ExitCode   *int   `json:"exit_code"`
+			Signal     *int   `json:"signal"`
+		}
+		if json.Unmarshal(raw, &receipt) != nil {
+			continue
+		}
+		matched := receipt.ID == launch && receipt.PID == identity["pid"] && receipt.StartTicks == identity["start_ticks"]
+		row["parent_wait_receipt"], row["parent_wait_available"], row["parent_identity_matched"] = json.RawMessage(raw), true, matched
+		row["cooperative_exit"] = matched && receipt.Signal == nil && receipt.ExitCode != nil && *receipt.ExitCode == 0
+	}
+	return row
+}
+
 func (x *isolationRun) restart() {
 	c := iso.Check{Name: "node restart with durable identity", Positive: x.proof(x.a1), Owner: "w2-agent-core / w3-devstack-e2e"}
 	before, _ := x.r.lab.docker(x.r.lab.node, "cat", "/run/vpn-node/heartbeat")
 	boot := regexp.MustCompile(`(?m)^boot_id (\S+)$`).FindStringSubmatch(string(before))
 	x.retainReasonLogs("before-restart")
 	leaseBefore, beforeOK := x.readNodeLease()
+	agentIdentity := x.agentStopIdentity(x.r.lab.node)
 	start := time.Now()
-	out, e := exec.Command("docker", "stop", x.r.lab.node).CombinedOutput()
+	out, e := exec.Command("docker", "stop", "--time", "25", x.r.lab.node).CombinedOutput()
 	stopped := time.Now()
+	agentStop := x.agentStopReceipt(x.r.lab.node, agentIdentity)
 	leaseStopped, stoppedOK := x.readNodeLease()
 	startRequested := time.Now()
 	startOut, startErr := exec.Command("docker", "start", x.r.lab.node).CombinedOutput()
@@ -1010,6 +1078,7 @@ func (x *isolationRun) restart() {
 		"stopped_snapshot_duration_ns": strconv.FormatInt(startRequested.Sub(stopped).Nanoseconds(), 10),
 		"restart_duration_ns":          strconv.FormatInt(started.Sub(start).Nanoseconds(), 10),
 		"stop_ok":                      e == nil, "start_ok": startErr == nil,
+		"agent_stop": agentStop, "agent_budget_seconds": 15, "container_grace_seconds": 25,
 		"before": leaseBefore, "stopped": leaseStopped, "before_available": beforeOK, "stopped_available": stoppedOK,
 		"stored_lease_survived_stop": beforeOK && stoppedOK && leaseBefore.LeaseID == leaseStopped.LeaseID && leaseBefore.MonoSent == leaseStopped.MonoSent,
 		"scope":                      "Docker stop/start command brackets; stopped SQLite snapshot adds measured downtime. Same boot, not OS reboot or exact SIGTERM/exit timestamps.",
@@ -2256,7 +2325,29 @@ func (x *isolationRun) startContinuousExpiry(held leaseSnap) func() iso.Deadline
 	cap := x.continuousCapture(x.r.lab.node, "any", filter, "whole-node-node-capture.txt", 25)
 	_ = exec.Command("docker", "exec", "-d", x.r.lab.node, "/tmp/isolation-probe", "packet-clock", "24", "/tmp/isolation-packets.jsonl").Run()
 	time.Sleep(100 * time.Millisecond)
-	_ = exec.Command("docker", "exec", "-d", x.a1.lab.member, "/tmp/isolation-probe", "deadline-probes", x.a1.originIP(), strconv.FormatInt(held.DeadlineMono, 10), "/tmp/isolation-expiry-timed.jsonl").Run()
+	_ = exec.Command("docker", "exec", "-d", x.a1.lab.member, "/tmp/isolation-probe", "deadline-probes", x.a1.originIP(), strconv.FormatInt(held.DeadlineMono, 10), "/tmp/isolation-expiry-timed.jsonl", "/tmp/isolation-latency.jsonl").Run()
+	calibrationDone := make(chan struct{})
+	go func() {
+		defer close(calibrationDone)
+		// This is a copy of passive packet observations, not a node rule or a
+		// new probe. Complete the copy well before the member's D-1s planner.
+		if !x.sleep(time.Until(held.Expires.Add(-3 * time.Second))) {
+			return
+		}
+		raw, err := x.r.lab.docker(x.r.lab.node, "cat", "/tmp/isolation-packets.jsonl")
+		if err != nil {
+			x.t.Error("boundary latency capture unavailable")
+			return
+		}
+		path := filepath.Join(x.t.TempDir(), "latency.jsonl")
+		if err = os.WriteFile(path, raw, 0600); err != nil {
+			x.t.Error(err)
+			return
+		}
+		if err = exec.Command("docker", "cp", path, x.a1.lab.member+":/tmp/isolation-latency.jsonl").Run(); err != nil {
+			x.t.Error("boundary latency copy failed")
+		}
+	}()
 	stop, done := make(chan struct{}), make(chan struct{})
 	go func() {
 		defer close(done)
@@ -2291,6 +2382,14 @@ func (x *isolationRun) startContinuousExpiry(held leaseSnap) func() iso.Deadline
 			out, _ := json.Marshal(rows)
 			return out
 		}
+		<-calibrationDone
+		plan, planErr := x.a1.lab.docker(x.a1.lab.member, "cat", "/tmp/isolation-expiry-timed.jsonl.schedule.json")
+		if planErr == nil && json.Valid(plan) {
+			x.extra("boundary-schedule.json", json.RawMessage(plan))
+		} else {
+			x.t.Error("boundary schedule unavailable")
+		}
+		x.extra("boundary-calibration-packets.json", json.RawMessage(read(x.a1.lab.member, "/tmp/isolation-latency.jsonl")))
 		probes := read(x.a1.lab.member, "/tmp/isolation-expiry-timed.jsonl")
 		packets := read(x.r.lab.node, "/tmp/isolation-packets.jsonl")
 		x.extra("whole-node-probes.json", map[string]any{"lease": held, "probes": json.RawMessage(probes)})
@@ -2431,6 +2530,7 @@ func (x *isolationRun) foreignRedirect() {
 func (x *isolationRun) freezeIdentity() {
 	x.retainReasonLogs("before-clone")
 	leaseBefore, beforeOK := x.readNodeLease()
+	agentIdentity := x.agentStopIdentity(x.r.lab.node)
 	at := time.Now()
 	fixture, err := x.stack.StartClonedIdentityFixture(x.ctx, "node")
 	completed := time.Now()
@@ -2441,7 +2541,7 @@ func (x *isolationRun) freezeIdentity() {
 		FinishedAt time.Time `json:"FinishedAt"`
 	}
 	stateOK := stateErr == nil && json.Unmarshal(state, &lifecycle) == nil && lifecycle.FinishedAt.After(at) && lifecycle.StartedAt.After(lifecycle.FinishedAt)
-	evidence := map[string]any{"started_at": at.UTC().Format(time.RFC3339Nano), "completed_at": completed.UTC(), "fixture_duration_ns": strconv.FormatInt(completed.Sub(at).Nanoseconds(), 10), "before_lease": leaseBefore, "after_lease": leaseAfter, "before_available": beforeOK, "after_available": afterOK, "stored_lease_survived_restart": beforeOK && afterOK && leaseBefore.LeaseID == leaseAfter.LeaseID && leaseBefore.MonoSent == leaseAfter.MonoSent, "container_stop_available": stateOK, "owner": "ENR-02 / ENR-03; this is the consumer latch observation only"}
+	evidence := map[string]any{"agent_stop": x.agentStopReceipt(x.r.lab.node, agentIdentity), "agent_budget_seconds": 15, "container_grace_seconds": 25, "started_at": at.UTC().Format(time.RFC3339Nano), "completed_at": completed.UTC(), "fixture_duration_ns": strconv.FormatInt(completed.Sub(at).Nanoseconds(), 10), "before_lease": leaseBefore, "after_lease": leaseAfter, "before_available": beforeOK, "after_available": afterOK, "stored_lease_survived_restart": beforeOK && afterOK && leaseBefore.LeaseID == leaseAfter.LeaseID && leaseBefore.MonoSent == leaseAfter.MonoSent, "container_stop_available": stateOK, "owner": "ENR-02 / ENR-03; this is the consumer latch observation only"}
 	if stateOK {
 		evidence["container_finished_at"], evidence["container_started_at"] = lifecycle.FinishedAt, lifecycle.StartedAt
 		evidence["container_stopped_duration_ns"] = strconv.FormatInt(lifecycle.StartedAt.Sub(lifecycle.FinishedAt).Nanoseconds(), 10)

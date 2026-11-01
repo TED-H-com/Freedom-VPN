@@ -23,11 +23,10 @@ const (
 	conntrackBlockedKey   = "conntrack_blocked"
 )
 
-// maxConntrackDeleteAttempts is how many verified serving applies may fail
-// conntrack -D before isolation fails closed. The step interval defaults to
-// 10s, so twelve attempts are about two minutes: long enough that one
-// transient conntrack error does not drop every member, and short enough
-// that a broken binary cannot leave a revoked device's flows in place.
+// maxConntrackDeleteAttempts bounds reserved serving Apply delete batches.
+// A crash or pre-delete failure consumes the reservation conservatively.
+// This is an attempt bound, not a wall-clock guarantee. Baseline-only cleanup
+// may retry after exhaustion without authorizing member forwarding.
 // A missing binary does not use this count. LookPath fails closed at once.
 const maxConntrackDeleteAttempts = 12
 
@@ -244,6 +243,24 @@ func (e *Engine) persistConntrack(ctx context.Context) {
 	if err := e.store.SetMeta(ctx, conntrackBlockedKey, blocked); err != nil {
 		e.storageOK = false
 	}
+}
+
+func (e *Engine) reserveConntrack(ctx context.Context, model enforce.Model) error {
+	pending := pendingAfterFailure(e.pendingRevoke, e.addresses, model.Bindings, model.Revoke)
+	raw, err := json.Marshal(pending)
+	if err == nil {
+		err = e.store.SetMetaBatch(ctx, map[string]string{
+			pendingRevocationsKey: string(raw),
+			conntrackAttemptsKey:  strconv.Itoa(e.conntrackAttempts + 1),
+		})
+	}
+	if err != nil {
+		e.storageOK = false
+		return err
+	}
+	e.pendingRevoke = pending
+	e.conntrackAttempts++
+	return nil
 }
 
 func (e *Engine) conntrackMissing() bool {

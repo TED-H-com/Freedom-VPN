@@ -1,344 +1,50 @@
 {
-  "holds": [
-    {
-      "report_id": "01a196fd-f5e3-7211-89dd-2bb4b6b373d2",
-      "observation_id": "6c190e7a-1df0-4f86-aeeb-8589fbd17b7b",
-      "received_at": "2026-11-01T12:03:08.392762+00:00",
-      "observed_at": "2026-11-01T12:03:08.387118076Z",
-      "lease_id": "a0959dd8-d2bf-4592-9850-5a0a660ac264",
-      "signed_lease_generation": "2",
-      "applied_generation": "3",
-      "desired_generation_at_read": "5",
-      "applied_equals_desired_at_read": false,
-      "sample": {
-        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-        "hold_id": "01a196fd-f5e9-7e03-933e-de3166035e0d",
-        "node_id": "01a196fd-e69d-7514-98e5-88b1c941469d",
-        "lease_id": "a0959dd8-d2bf-4592-9850-5a0a660ac264",
-        "report_id": "01a196fd-f5e3-7211-89dd-2bb4b6b373d2",
-        "summary_valid": true,
-        "incarnation_id": "01a196fd-e8fa-7275-b8ce-67fe687b8181",
-        "reported_alarm": false,
-        "reported_steps": "1",
-        "lease_generation": "2",
-        "applied_generation": "3",
-        "reported_elapsed_ms": "0"
-      },
-      "incident": {
-        "id": "01a196fd-f5e9-7e03-933e-de3166035e0d",
-        "node_id": "01a196fd-e69d-7514-98e5-88b1c941469d",
-        "ended_at": "2026-11-01T12:03:09.449702+00:00",
-        "end_reason": "generation_matched",
-        "escalated_at": null,
-        "last_seen_at": "2026-11-01T12:03:08.392762+00:00",
-        "first_seen_at": "2026-11-01T12:03:08.392762+00:00",
-        "incarnation_id": "01a196fd-e8fa-7275-b8ce-67fe687b8181",
-        "latest_report_id": "01a196fd-f5e3-7211-89dd-2bb4b6b373d2",
-        "first_observed_at": "2026-11-01T12:03:08.387118+00:00"
-      },
-      "classification": "stale_generation",
-      "reverse_array_replay_cause": "stale_generation",
-      "unrelated_failure": false,
-      "reported_forwarding": false,
-      "publication_operation_snapshots": [
-        {
-          "id": "523f83a8-96f4-44f3-8e38-05dd007835bb",
-          "kind": "node.update",
-          "steps": {
-            "agent_policy": {
-              "order": 1,
-              "status": "succeeded",
-              "required": true,
-              "updated_at": "2026-11-01T12:03:08.392762Z",
-              "observed_at": "2026-11-01T12:03:08.392762Z",
-              "observed_ref": "agent_policy"
-            }
-          },
-          "status": "succeeded",
-          "created_at": "2026-11-01T12:03:07.608561+00:00",
-          "completed_at": "2026-11-01T12:03:08.392762+00:00",
-          "desired_generation": "2"
-        },
-        {
-          "id": "01a196fd-e90b-7259-87f9-54aa59f756e4",
-          "kind": "node.enroll",
-          "steps": {
-            "node_policy": {
-              "status": "succeeded",
-              "required": true,
-              "observed_at": "2026-11-01T12:03:07.511973519Z",
-              "observed_ref": "node_policy"
-            },
-            "netbird_setup": {
-              "status": "succeeded",
-              "required": true,
-              "observed_at": "2026-11-01T12:03:05.536217027Z",
-              "observed_ref": "netbird_setup"
-            },
-            "peer_readback": {
-              "status": "succeeded",
-              "required": true,
-              "observed_at": "2026-11-01T12:03:08.567225496Z",
-              "observed_ref": "peer_readback"
-            }
-          },
-          "status": "succeeded",
-          "created_at": "2026-11-01T12:03:05.09187+00:00",
-          "completed_at": "2026-11-01T12:03:08.567308+00:00",
-          "desired_generation": null
-        },
-        {
-          "id": "e16e11d1-2b3a-43f0-9783-4f207762086d",
-          "kind": "node.publish",
-          "steps": {
-            "agent_policy": {
-              "order": 1,
-              "status": "succeeded",
-              "required": true,
-              "updated_at": "2026-11-01T12:03:09.545896107Z",
-              "observed_at": "2026-11-01T12:03:09.545896107Z",
-              "observed_ref": "agent_policy"
-            },
-            "data_path_probe": {
-              "order": 3,
-              "status": "succeeded",
-              "required": true,
-              "updated_at": "2026-11-01T12:03:09.545896107Z",
-              "observed_at": "2026-11-01T12:03:09.545896107Z",
-              "observed_ref": "data_path_probe"
-            },
-            "netbird_route_readback": {
-              "order": 2,
-              "status": "succeeded",
-              "required": true,
-              "updated_at": "2026-11-01T12:03:09.545896107Z",
-              "observed_at": "2026-11-01T12:03:09.545896107Z",
-              "observed_ref": "netbird_route_readback"
-            }
-          },
-          "status": "succeeded",
-          "created_at": "2026-11-01T12:03:07.614551+00:00",
-          "completed_at": "2026-11-01T12:03:09.545896+00:00",
-          "desired_generation": "2"
-        },
-        {
-          "id": "52bf7001-29bc-4397-a762-ea9d4fffe841",
-          "kind": "node.publish",
-          "steps": {
-            "agent_policy": {
-              "order": 1,
-              "status": "succeeded",
-              "required": true,
-              "updated_at": "2026-11-01T12:03:12.645521926Z",
-              "observed_at": "2026-11-01T12:03:12.645521926Z",
-              "observed_ref": "agent_policy"
-            },
-            "data_path_probe": {
-              "order": 3,
-              "status": "succeeded",
-              "required": true,
-              "updated_at": "2026-11-01T12:03:12.645521926Z",
-              "observed_at": "2026-11-01T12:03:12.645521926Z",
-              "observed_ref": "data_path_probe"
-            },
-            "netbird_route_readback": {
-              "order": 2,
-              "status": "succeeded",
-              "required": true,
-              "updated_at": "2026-11-01T12:03:12.645521926Z",
-              "observed_at": "2026-11-01T12:03:12.645521926Z",
-              "observed_ref": "netbird_route_readback"
-            }
-          },
-          "status": "succeeded",
-          "created_at": "2026-11-01T12:03:11.908992+00:00",
-          "completed_at": "2026-11-01T12:03:12.645521+00:00",
-          "desired_generation": "4"
-        }
-      ],
-      "false_publication_credit": [],
-      "audit_ids": [],
-      "problems": [],
-      "desired_wire": {
-        "transaction_index": 9,
-        "transaction": {
-          "path": "/api/v1/agent/desired-state",
-          "received_at": "2026-11-01T12:03:08.325825663Z",
-          "response": {
-            "signatures": [
-              {
-                "algorithm": "ed25519",
-                "key_id": "01a196fd-53f3-734b-8f98-1f2d2faad087",
-                "signature_b64": "MYaAXJ+SN7rMg8KPugbDwt8Ew5L0fMlwze8Yc71Z8UP+TE1i4Z1H+7GhSyG/1iRYNRIRzcYKML1rUnLpVZU3DA=="
-              }
-            ],
-            "signed": {
-              "accounting_period": {
-                "period_end": "2026-12-01T00:00:00Z",
-                "period_id": "2026-11",
-                "period_start": "2026-11-01T00:00:00Z"
-              },
-              "binding_revision": "0",
-              "config_generation": "3",
-              "desired_release_id": null,
-              "device_bindings": [],
-              "dns": {
-                "resolver_document": {
-                  "content_sha256": "4d26f75889ee65de84d70d6db8f8b18b693d6d588a571fbf827b636f7ae7cf17",
-                  "document_id": "01a196fd-e6af-786d-b89e-9fa345f5c35a",
-                  "generation": "1",
-                  "profile_revision_id": "01a196fd-e661-7666-92ac-0f68acac0cca",
-                  "size_bytes": 521
-                },
-                "resolver_ipv4": [
-                  "192.0.6.53"
-                ],
-                "resolver_ipv6": []
-              },
-              "egress_probe": null,
-              "expires_at": "2026-11-01T12:13:08.327559906Z",
-              "issued_at": "2026-11-01T12:03:08.327559906Z",
-              "lease_renewal_endpoint": "/api/v1/agent/lease-renewals",
-              "member_rate_policies": [],
-              "node_capacity": {
-                "down_bps": 200000000,
-                "member_down_bps_cap": 100000000,
-                "member_up_bps_cap": 100000000,
-                "up_bps": 200000000
-              },
-              "node_id": "01a196fd-e69d-7514-98e5-88b1c941469d",
-              "node_incarnation_id": "01a196fd-e8fa-7275-b8ce-67fe687b8181",
-              "policy_refs": {
-                "authorization_generation": "1",
-                "dns_generation": "1",
-                "fup_generation": "1"
-              },
-              "publication_intent": "published",
-              "safety_profile": "internet-only-v1",
-              "schema_version": 1,
-              "serving_release_ids": [
-                "01a196fd-e1c2-73a1-b204-0f3abd4e7f75"
-              ],
-              "supported_release_policy_id": "01a196fd-e632-7803-a05e-f5397b9b5871",
-              "update": null
-            }
-          },
-          "response_at": "2026-11-01T12:03:08.331641613Z",
-          "status": 200
-        }
-      },
-      "desired_generation": "3",
-      "applied_equals_delivered_desired": true,
-      "desired_scope": "Latest original signed desired response completed before this report; central desired_generation_at_read is a separate later polling value.",
-      "producer_baselines": [
-        {
-          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
-          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-          "sequence": "15",
-          "baseline": {
-            "cause": "policy_missing",
-            "start_ns": "118125867819607",
-            "end_ns": "118125901355471",
-            "succeeded": true
-          },
-          "anchor": {
-            "mono_before_ns": "118125901380559",
-            "wall": "2026-11-01T12:03:08.385009403Z",
-            "mono_after_ns": "118125901380715"
-          }
-        }
-      ],
-      "producer_heartbeats": [
-        {
-          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
-          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-          "sequence": "16",
-          "heartbeat": {
-            "mono_ns": "118125918191870",
-            "policy_expires_mono_ns": "0",
-            "generation": "3",
-            "baseline_ok": true,
-            "serving": false,
-            "reason": "policy_missing",
-            "written": true
-          },
-          "anchor": {
-            "mono_before_ns": "118125920088643",
-            "wall": "2026-11-01T12:03:08.403717722Z",
-            "mono_after_ns": "118125920089074"
-          }
-        }
-      ],
-      "independent_packet_coverage": "not exercised for this hold unless separately retained in generation-hold-control-cut.json; report forwarding=false is not independent packet evidence"
-    }
-  ],
-  "incidents": [
-    {
-      "id": "01a196fd-f5e9-7e03-933e-de3166035e0d",
-      "node_id": "01a196fd-e69d-7514-98e5-88b1c941469d",
-      "ended_at": "2026-11-01T12:03:09.449702+00:00",
-      "end_reason": "generation_matched",
-      "escalated_at": null,
-      "last_seen_at": "2026-11-01T12:03:08.392762+00:00",
-      "first_seen_at": "2026-11-01T12:03:08.392762+00:00",
-      "incarnation_id": "01a196fd-e8fa-7275-b8ce-67fe687b8181",
-      "latest_report_id": "01a196fd-f5e3-7211-89dd-2bb4b6b373d2",
-      "first_observed_at": "2026-11-01T12:03:08.387118+00:00"
-    }
-  ],
+  "holds": [],
+  "incidents": [],
   "escalations": [],
-  "matching_ends": [
-    {
-      "incident_id": "01a196fd-f5e9-7e03-933e-de3166035e0d",
-      "ended_at": "2026-11-01T12:03:09.449702+00:00",
-      "matching_report_ids": [
-        "01a196fd-f9ff-7327-8feb-bf74771969b9"
-      ],
-      "later_distinct_incident_ids": []
-    }
-  ],
+  "matching_ends": [],
   "problems": [],
   "publication_completions": [
     {
       "operation": {
-        "id": "e16e11d1-2b3a-43f0-9783-4f207762086d",
+        "id": "6f20df62-3262-489f-936c-8dd796b1df97",
         "kind": "node.publish",
         "steps": {
           "agent_policy": {
             "order": 1,
             "status": "succeeded",
             "required": true,
-            "updated_at": "2026-11-01T12:03:09.545896107Z",
-            "observed_at": "2026-11-01T12:03:09.545896107Z",
+            "updated_at": "2026-11-01T14:53:18.50298679Z",
+            "observed_at": "2026-11-01T14:53:18.50298679Z",
             "observed_ref": "agent_policy"
           },
           "data_path_probe": {
             "order": 3,
             "status": "succeeded",
             "required": true,
-            "updated_at": "2026-11-01T12:03:09.545896107Z",
-            "observed_at": "2026-11-01T12:03:09.545896107Z",
+            "updated_at": "2026-11-01T14:53:18.50298679Z",
+            "observed_at": "2026-11-01T14:53:18.50298679Z",
             "observed_ref": "data_path_probe"
           },
           "netbird_route_readback": {
             "order": 2,
             "status": "succeeded",
             "required": true,
-            "updated_at": "2026-11-01T12:03:09.545896107Z",
-            "observed_at": "2026-11-01T12:03:09.545896107Z",
+            "updated_at": "2026-11-01T14:53:18.50298679Z",
+            "observed_at": "2026-11-01T14:53:18.50298679Z",
             "observed_ref": "netbird_route_readback"
           }
         },
         "status": "succeeded",
-        "created_at": "2026-11-01T12:03:07.614551+00:00",
-        "resource_id": "01a196fd-e69d-7514-98e5-88b1c941469d",
-        "completed_at": "2026-11-01T12:03:09.545896+00:00",
+        "created_at": "2026-11-01T14:53:16.668305+00:00",
+        "resource_id": "01a19799-adb6-7cd9-97d6-c49158f50128",
+        "completed_at": "2026-11-01T14:53:18.502986+00:00",
         "observed_refs": {
-          "agent_policy": "node:01a196fd-e69d-7514-98e5-88b1c941469d:gen:3:safety:passed",
-          "data_path_probe": "node:01a196fd-e69d-7514-98e5-88b1c941469d:probe:passed",
-          "netbird_route_readback": "netbird:route:dbjikvf8k4c000artsig",
+          "agent_policy": "node:01a19799-adb6-7cd9-97d6-c49158f50128:gen:3:safety:passed",
+          "data_path_probe": "node:01a19799-adb6-7cd9-97d6-c49158f50128:probe:passed",
+          "netbird_route_readback": "netbird:route:dbjl4nn8k4c000c1hah0",
           "publication_attachment_basis": "empty_exception",
-          "publication_attachment_state": "7244772b-c586-4855-bd72-363d0e58e824"
+          "publication_attachment_state": "314be80b-99a4-4eb2-82da-26e978109410"
         },
         "desired_generation": "2"
       },
@@ -347,44 +53,44 @@
     },
     {
       "operation": {
-        "id": "52bf7001-29bc-4397-a762-ea9d4fffe841",
+        "id": "eedf9073-183c-4c58-9cbf-041d8e84f85e",
         "kind": "node.publish",
         "steps": {
           "agent_policy": {
             "order": 1,
             "status": "succeeded",
             "required": true,
-            "updated_at": "2026-11-01T12:03:12.645521926Z",
-            "observed_at": "2026-11-01T12:03:12.645521926Z",
+            "updated_at": "2026-11-01T14:53:19.515820238Z",
+            "observed_at": "2026-11-01T14:53:19.515820238Z",
             "observed_ref": "agent_policy"
           },
           "data_path_probe": {
             "order": 3,
             "status": "succeeded",
             "required": true,
-            "updated_at": "2026-11-01T12:03:12.645521926Z",
-            "observed_at": "2026-11-01T12:03:12.645521926Z",
+            "updated_at": "2026-11-01T14:53:19.515820238Z",
+            "observed_at": "2026-11-01T14:53:19.515820238Z",
             "observed_ref": "data_path_probe"
           },
           "netbird_route_readback": {
             "order": 2,
             "status": "succeeded",
             "required": true,
-            "updated_at": "2026-11-01T12:03:12.645521926Z",
-            "observed_at": "2026-11-01T12:03:12.645521926Z",
+            "updated_at": "2026-11-01T14:53:19.515820238Z",
+            "observed_at": "2026-11-01T14:53:19.515820238Z",
             "observed_ref": "netbird_route_readback"
           }
         },
         "status": "succeeded",
-        "created_at": "2026-11-01T12:03:11.908992+00:00",
-        "resource_id": "01a196fd-e69d-7514-98e5-88b1c941469d",
-        "completed_at": "2026-11-01T12:03:12.645521+00:00",
+        "created_at": "2026-11-01T14:53:18.805397+00:00",
+        "resource_id": "01a19799-adb6-7cd9-97d6-c49158f50128",
+        "completed_at": "2026-11-01T14:53:19.51582+00:00",
         "observed_refs": {
-          "agent_policy": "node:01a196fd-e69d-7514-98e5-88b1c941469d:gen:5:safety:passed",
-          "data_path_probe": "node:01a196fd-e69d-7514-98e5-88b1c941469d:probe:passed",
-          "netbird_route_readback": "netbird:route:dbjikvf8k4c000artsig",
+          "agent_policy": "node:01a19799-adb6-7cd9-97d6-c49158f50128:gen:5:safety:passed",
+          "data_path_probe": "node:01a19799-adb6-7cd9-97d6-c49158f50128:probe:passed",
+          "netbird_route_readback": "netbird:route:dbjl4nn8k4c000c1hah0",
           "publication_attachment_basis": "empty_exception",
-          "publication_attachment_state": "a88f3025-7209-4bf8-8605-f549eac130bb"
+          "publication_attachment_state": "987e3764-6b34-4e40-9d48-80406b2786fd"
         },
         "desired_generation": "4"
       },
@@ -393,38 +99,45 @@
     },
     {
       "operation": {
-        "id": "de624efe-b1b3-492c-bb59-50e6ef837032",
+        "id": "335cc4a2-b59d-45c7-84a9-d9f32adda605",
         "kind": "node.publish",
         "steps": {
           "agent_policy": {
             "order": 1,
-            "reason": "stale_generation",
-            "status": "pending",
+            "status": "succeeded",
             "required": true,
-            "error_code": "NODE_NOT_SERVICEABLE",
-            "updated_at": "2026-11-01T12:03:28.737196764Z",
-            "error_message": "member_forwarding_unconfirmed"
+            "updated_at": "2026-11-01T14:53:38.629171137Z",
+            "observed_at": "2026-11-01T14:53:38.629171137Z",
+            "observed_ref": "agent_policy"
           },
           "data_path_probe": {
             "order": 3,
-            "status": "pending",
+            "status": "succeeded",
             "required": true,
-            "updated_at": "2026-11-01T12:03:28.737196764Z"
+            "updated_at": "2026-11-01T14:53:38.629171137Z",
+            "observed_at": "2026-11-01T14:53:38.629171137Z",
+            "observed_ref": "data_path_probe"
           },
           "netbird_route_readback": {
             "order": 2,
-            "reason": "stale_generation",
-            "status": "pending",
+            "status": "succeeded",
             "required": true,
-            "updated_at": "2026-11-01T12:03:28.738577+00:00"
+            "updated_at": "2026-11-01T14:53:38.629171137Z",
+            "observed_at": "2026-11-01T14:53:38.629171137Z",
+            "observed_ref": "netbird_route_readback"
           }
         },
-        "status": "superseded",
-        "created_at": "2026-11-01T12:03:28.707289+00:00",
-        "resource_id": "01a196fd-e69d-7514-98e5-88b1c941469d",
-        "completed_at": "2026-11-01T12:03:29.338546+00:00",
+        "status": "succeeded",
+        "created_at": "2026-11-01T14:53:37.678416+00:00",
+        "resource_id": "01a19799-adb6-7cd9-97d6-c49158f50128",
+        "completed_at": "2026-11-01T14:53:38.629171+00:00",
         "observed_refs": {
-          "publication_gate_withdrawal": "netbird:route:dbjikvf8k4c000artsig:withdrawn"
+          "agent_policy": "node:01a19799-adb6-7cd9-97d6-c49158f50128:gen:8:safety:passed",
+          "data_path_probe": "node:01a19799-adb6-7cd9-97d6-c49158f50128:probe:passed",
+          "netbird_route_readback": "netbird:route:dbjl4sn8k4c000c1hdkg",
+          "publication_gate_withdrawal": "netbird:route:dbjl4nn8k4c000c1hah0:withdrawn",
+          "publication_attachment_basis": "populated_verified",
+          "publication_attachment_state": "02cf7c65-f940-4e7d-8744-03e9c5d5f13f"
         },
         "desired_generation": "8"
       },
@@ -433,234 +146,188 @@
     },
     {
       "operation": {
-        "id": "08601bee-d6e5-4aec-9b0e-d31e86cecb01",
+        "id": "6d0d362a-352c-48fc-859d-160b29d294cd",
         "kind": "node.publish",
         "steps": {
           "agent_policy": {
             "order": 1,
             "status": "succeeded",
             "required": true,
-            "updated_at": "2026-11-01T12:03:29.671591585Z",
-            "observed_at": "2026-11-01T12:03:29.671591585Z",
+            "updated_at": "2026-11-01T15:01:03.973879522Z",
+            "observed_at": "2026-11-01T15:01:03.973879522Z",
             "observed_ref": "agent_policy"
           },
           "data_path_probe": {
             "order": 3,
             "status": "succeeded",
             "required": true,
-            "updated_at": "2026-11-01T12:03:29.671591585Z",
-            "observed_at": "2026-11-01T12:03:29.671591585Z",
+            "updated_at": "2026-11-01T15:01:03.973879522Z",
+            "observed_at": "2026-11-01T15:01:03.973879522Z",
             "observed_ref": "data_path_probe"
           },
           "netbird_route_readback": {
             "order": 2,
             "status": "succeeded",
             "required": true,
-            "updated_at": "2026-11-01T12:03:29.671591585Z",
-            "observed_at": "2026-11-01T12:03:29.671591585Z",
+            "updated_at": "2026-11-01T15:01:03.973879522Z",
+            "observed_at": "2026-11-01T15:01:03.973879522Z",
             "observed_ref": "netbird_route_readback"
           }
         },
         "status": "succeeded",
-        "created_at": "2026-11-01T12:03:29.338546+00:00",
-        "resource_id": "01a196fd-e69d-7514-98e5-88b1c941469d",
-        "completed_at": "2026-11-01T12:03:29.671591+00:00",
+        "created_at": "2026-11-01T15:01:02.569985+00:00",
+        "resource_id": "01a19799-adb6-7cd9-97d6-c49158f50128",
+        "completed_at": "2026-11-01T15:01:03.973879+00:00",
         "observed_refs": {
-          "agent_policy": "node:01a196fd-e69d-7514-98e5-88b1c941469d:gen:9:safety:passed",
-          "data_path_probe": "node:01a196fd-e69d-7514-98e5-88b1c941469d:probe:passed",
-          "netbird_route_readback": "netbird:route:dbjil4f8k4c000artvs0",
+          "agent_policy": "node:01a19799-adb6-7cd9-97d6-c49158f50128:gen:18:safety:passed",
+          "data_path_probe": "node:01a19799-adb6-7cd9-97d6-c49158f50128:probe:passed",
+          "netbird_route_readback": "netbird:route:dbjl4sn8k4c000c1hdkg",
           "publication_attachment_basis": "populated_verified",
-          "publication_attachment_state": "cc198ddf-6383-47cd-9187-9d50c56d260b"
+          "publication_attachment_state": "4b60a2b9-1c8f-4b32-b717-e6051cb46dc8"
         },
-        "desired_generation": "9"
+        "desired_generation": "17"
       },
       "open_incidents_at_completion": [],
       "hold_report_credits": []
     },
     {
       "operation": {
-        "id": "2c2f1fd6-8f7b-4369-b959-87a81ba0e6dc",
+        "id": "07665439-d228-44a0-9285-bce57fcf4340",
         "kind": "node.publish",
         "steps": {
           "agent_policy": {
             "order": 1,
             "status": "succeeded",
             "required": true,
-            "updated_at": "2026-11-01T12:10:57.120782454Z",
-            "observed_at": "2026-11-01T12:10:57.120782454Z",
+            "updated_at": "2026-11-01T15:01:23.078418189Z",
+            "observed_at": "2026-11-01T15:01:23.078418189Z",
             "observed_ref": "agent_policy"
           },
           "data_path_probe": {
             "order": 3,
             "status": "succeeded",
             "required": true,
-            "updated_at": "2026-11-01T12:10:57.120782454Z",
-            "observed_at": "2026-11-01T12:10:57.120782454Z",
+            "updated_at": "2026-11-01T15:01:23.078418189Z",
+            "observed_at": "2026-11-01T15:01:23.078418189Z",
             "observed_ref": "data_path_probe"
           },
           "netbird_route_readback": {
             "order": 2,
             "status": "succeeded",
             "required": true,
-            "updated_at": "2026-11-01T12:10:57.120782454Z",
-            "observed_at": "2026-11-01T12:10:57.120782454Z",
+            "updated_at": "2026-11-01T15:01:23.078418189Z",
+            "observed_at": "2026-11-01T15:01:23.078418189Z",
             "observed_ref": "netbird_route_readback"
           }
         },
         "status": "succeeded",
-        "created_at": "2026-11-01T12:10:54.758924+00:00",
-        "resource_id": "01a196fd-e69d-7514-98e5-88b1c941469d",
-        "completed_at": "2026-11-01T12:10:57.120782+00:00",
+        "created_at": "2026-11-01T15:01:22.411483+00:00",
+        "resource_id": "01a19799-adb6-7cd9-97d6-c49158f50128",
+        "completed_at": "2026-11-01T15:01:23.078418+00:00",
         "observed_refs": {
-          "agent_policy": "node:01a196fd-e69d-7514-98e5-88b1c941469d:gen:19:safety:passed",
-          "data_path_probe": "node:01a196fd-e69d-7514-98e5-88b1c941469d:probe:passed",
-          "netbird_route_readback": "netbird:route:dbjil4f8k4c000artvs0",
+          "agent_policy": "node:01a19799-adb6-7cd9-97d6-c49158f50128:gen:20:safety:passed",
+          "data_path_probe": "node:01a19799-adb6-7cd9-97d6-c49158f50128:probe:passed",
+          "netbird_route_readback": "netbird:route:dbjl4sn8k4c000c1hdkg",
           "publication_attachment_basis": "populated_verified",
-          "publication_attachment_state": "4c4d3790-1f92-4332-8446-23e935af6f55"
+          "publication_attachment_state": "2940beb4-1744-455e-b870-d7924ec89b0d"
         },
-        "desired_generation": "18"
+        "desired_generation": "19"
       },
       "open_incidents_at_completion": [],
       "hold_report_credits": []
     },
     {
       "operation": {
-        "id": "704709f0-d4c2-4aa4-9415-9534a4568b5c",
+        "id": "74b45018-0ac4-4676-8d04-2fd9b935ca7c",
         "kind": "node.publish",
         "steps": {
           "agent_policy": {
             "order": 1,
             "status": "succeeded",
             "required": true,
-            "updated_at": "2026-11-01T12:11:17.23769985Z",
-            "observed_at": "2026-11-01T12:11:17.23769985Z",
+            "updated_at": "2026-11-01T15:01:37.182443427Z",
+            "observed_at": "2026-11-01T15:01:37.182443427Z",
             "observed_ref": "agent_policy"
           },
           "data_path_probe": {
             "order": 3,
             "status": "succeeded",
             "required": true,
-            "updated_at": "2026-11-01T12:11:17.23769985Z",
-            "observed_at": "2026-11-01T12:11:17.23769985Z",
+            "updated_at": "2026-11-01T15:01:37.182443427Z",
+            "observed_at": "2026-11-01T15:01:37.182443427Z",
             "observed_ref": "data_path_probe"
           },
           "netbird_route_readback": {
             "order": 2,
             "status": "succeeded",
             "required": true,
-            "updated_at": "2026-11-01T12:11:17.23769985Z",
-            "observed_at": "2026-11-01T12:11:17.23769985Z",
+            "updated_at": "2026-11-01T15:01:37.182443427Z",
+            "observed_at": "2026-11-01T15:01:37.182443427Z",
             "observed_ref": "netbird_route_readback"
           }
         },
         "status": "succeeded",
-        "created_at": "2026-11-01T12:11:16.63647+00:00",
-        "resource_id": "01a196fd-e69d-7514-98e5-88b1c941469d",
-        "completed_at": "2026-11-01T12:11:17.237699+00:00",
+        "created_at": "2026-11-01T15:01:36.353662+00:00",
+        "resource_id": "01a19799-adb6-7cd9-97d6-c49158f50128",
+        "completed_at": "2026-11-01T15:01:37.182443+00:00",
         "observed_refs": {
-          "agent_policy": "node:01a196fd-e69d-7514-98e5-88b1c941469d:gen:21:safety:passed",
-          "data_path_probe": "node:01a196fd-e69d-7514-98e5-88b1c941469d:probe:passed",
-          "netbird_route_readback": "netbird:route:dbjil4f8k4c000artvs0",
+          "agent_policy": "node:01a19799-adb6-7cd9-97d6-c49158f50128:gen:24:safety:passed",
+          "data_path_probe": "node:01a19799-adb6-7cd9-97d6-c49158f50128:probe:passed",
+          "netbird_route_readback": "netbird:route:dbjl8kf8k4c000c1j8l0",
           "publication_attachment_basis": "populated_verified",
-          "publication_attachment_state": "1ab2301c-182b-491f-97ce-d51681dab739"
+          "publication_attachment_state": "e78df3c5-2833-4200-b7a9-c2ca24b76428"
         },
-        "desired_generation": "20"
-      },
-      "open_incidents_at_completion": [],
-      "hold_report_credits": []
-    },
-    {
-      "operation": {
-        "id": "7a8018f1-9a39-4afa-b9eb-8ea6c66438fc",
-        "kind": "node.publish",
-        "steps": {
-          "agent_policy": {
-            "order": 1,
-            "status": "succeeded",
-            "required": true,
-            "updated_at": "2026-11-01T12:11:31.325917878Z",
-            "observed_at": "2026-11-01T12:11:31.325917878Z",
-            "observed_ref": "agent_policy"
-          },
-          "data_path_probe": {
-            "order": 3,
-            "status": "succeeded",
-            "required": true,
-            "updated_at": "2026-11-01T12:11:31.325917878Z",
-            "observed_at": "2026-11-01T12:11:31.325917878Z",
-            "observed_ref": "data_path_probe"
-          },
-          "netbird_route_readback": {
-            "order": 2,
-            "status": "succeeded",
-            "required": true,
-            "updated_at": "2026-11-01T12:11:31.325917878Z",
-            "observed_at": "2026-11-01T12:11:31.325917878Z",
-            "observed_ref": "netbird_route_readback"
-          }
-        },
-        "status": "succeeded",
-        "created_at": "2026-11-01T12:11:30.590616+00:00",
-        "resource_id": "01a196fd-e69d-7514-98e5-88b1c941469d",
-        "completed_at": "2026-11-01T12:11:31.325917+00:00",
-        "observed_refs": {
-          "agent_policy": "node:01a196fd-e69d-7514-98e5-88b1c941469d:gen:25:safety:passed",
-          "data_path_probe": "node:01a196fd-e69d-7514-98e5-88b1c941469d:probe:passed",
-          "netbird_route_readback": "netbird:route:dbjiosv8k4c000arvrog",
-          "publication_attachment_basis": "populated_verified",
-          "publication_attachment_state": "0544fba6-b7a2-4550-af77-fae9a60ea440"
-        },
-        "desired_generation": "24"
+        "desired_generation": "23"
       },
       "open_incidents_at_completion": [],
       "hold_report_credits": []
     }
   ],
   "publication_snapshot_scope": {
-    "first_read": "2026-11-01T12:06:05.209721Z",
-    "final_read": "2026-11-01T12:21:26.082467Z",
+    "first_read": "2026-11-01T14:53:08.929050Z",
+    "final_read": "2026-11-01T15:11:01.187643Z",
     "end": "final read after the assembled central report export",
     "limitation": "The sidecar began during this assembled run; initial completed operations are retained state, not continuously observed earlier transitions."
   },
   "accepted_hold_reports_without_wire_receipt": [],
   "populated_generation_windows": [
     {
-      "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+      "run_id": "ad581ee6-a2ec-4765-aac9-3b6fb56dffdf",
       "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-      "sequence": "74",
-      "lease_id": "70b8e7a3-7cac-464f-a82e-b12aa2b86da7",
+      "sequence": "61",
+      "lease_id": "b7aa8a28-95fd-448f-bc05-5aad3022c88e",
       "lease_generation": "6",
-      "baseline_start_ns": "118132857796197",
-      "apply_end_ns": "118133062997632",
+      "baseline_start_ns": "128339751937976",
+      "apply_end_ns": "128339950611845",
       "accepted_hold_report_ids": [],
       "same_lease_hold_report_ids": [],
       "central_join": "not observed: no accepted hold report in this producer bracket",
       "baseline_rows": [
         {
-          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "run_id": "ad581ee6-a2ec-4765-aac9-3b6fb56dffdf",
           "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-          "sequence": "74",
+          "sequence": "61",
           "cause": "policy_missing",
-          "start_ns": "118132857796197",
-          "end_ns": "118132886807849",
+          "start_ns": "128339751937976",
+          "end_ns": "128339781250809",
           "succeeded": true
         },
         {
-          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "run_id": "ad581ee6-a2ec-4765-aac9-3b6fb56dffdf",
           "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-          "sequence": "75",
+          "sequence": "62",
           "cause": "policy_missing",
-          "start_ns": "118132889821689",
-          "end_ns": "118132915818340",
+          "start_ns": "128339784833310",
+          "end_ns": "128339812133471",
           "succeeded": true
         },
         {
-          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "run_id": "ad581ee6-a2ec-4765-aac9-3b6fb56dffdf",
           "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-          "sequence": "76",
+          "sequence": "63",
           "cause": "policy_missing",
-          "start_ns": "118132930220018",
-          "end_ns": "118132959695748",
+          "start_ns": "128339827559044",
+          "end_ns": "128339859778198",
           "succeeded": true
         }
       ],
@@ -686,42 +353,42 @@
       "wall_join": "producer wall/monotonic anchor, no allowance"
     },
     {
-      "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+      "run_id": "ad581ee6-a2ec-4765-aac9-3b6fb56dffdf",
       "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-      "sequence": "190",
-      "lease_id": "fa5bd208-7d17-4451-b6c3-85ac4988265b",
+      "sequence": "193",
+      "lease_id": "9a7f595c-6276-4fba-8349-1207bf7e322c",
       "lease_generation": "7",
-      "baseline_start_ns": "118146865227643",
-      "apply_end_ns": "118147093296868",
+      "baseline_start_ns": "128355768708426",
+      "apply_end_ns": "128355997316943",
       "accepted_hold_report_ids": [],
       "same_lease_hold_report_ids": [],
       "central_join": "not observed: no accepted hold report in this producer bracket",
       "baseline_rows": [
         {
-          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "run_id": "ad581ee6-a2ec-4765-aac9-3b6fb56dffdf",
           "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-          "sequence": "190",
+          "sequence": "193",
           "cause": "policy_missing",
-          "start_ns": "118146865227643",
-          "end_ns": "118146903234562",
+          "start_ns": "128355768708426",
+          "end_ns": "128355803594976",
           "succeeded": true
         },
         {
-          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "run_id": "ad581ee6-a2ec-4765-aac9-3b6fb56dffdf",
           "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-          "sequence": "191",
+          "sequence": "194",
           "cause": "policy_missing",
-          "start_ns": "118146906730493",
-          "end_ns": "118146933357803",
+          "start_ns": "128355807180563",
+          "end_ns": "128355835659714",
           "succeeded": true
         },
         {
-          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "run_id": "ad581ee6-a2ec-4765-aac9-3b6fb56dffdf",
           "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-          "sequence": "192",
+          "sequence": "195",
           "cause": "policy_missing",
-          "start_ns": "118146949050725",
-          "end_ns": "118146982201898",
+          "start_ns": "128355854011424",
+          "end_ns": "128355886132781",
           "succeeded": true
         }
       ],
@@ -747,42 +414,103 @@
       "wall_join": "producer wall/monotonic anchor, no allowance"
     },
     {
-      "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+      "run_id": "ad581ee6-a2ec-4765-aac9-3b6fb56dffdf",
       "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-      "sequence": "202",
-      "lease_id": "5585eca7-0577-4172-a0a3-bece6486845b",
+      "sequence": "205",
+      "lease_id": "6d44a01c-0108-4aa6-8ecb-6fc404c48a29",
+      "lease_generation": "8",
+      "baseline_start_ns": "128356776025916",
+      "apply_end_ns": "128356999779088",
+      "accepted_hold_report_ids": [],
+      "same_lease_hold_report_ids": [],
+      "central_join": "not observed: no accepted hold report in this producer bracket",
+      "baseline_rows": [
+        {
+          "run_id": "ad581ee6-a2ec-4765-aac9-3b6fb56dffdf",
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "sequence": "205",
+          "cause": "policy_missing",
+          "start_ns": "128356776025916",
+          "end_ns": "128356820618749",
+          "succeeded": true
+        },
+        {
+          "run_id": "ad581ee6-a2ec-4765-aac9-3b6fb56dffdf",
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "sequence": "206",
+          "cause": "policy_missing",
+          "start_ns": "128356824578844",
+          "end_ns": "128356854357719",
+          "succeeded": true
+        },
+        {
+          "run_id": "ad581ee6-a2ec-4765-aac9-3b6fb56dffdf",
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "sequence": "207",
+          "cause": "policy_missing",
+          "start_ns": "128356871608229",
+          "end_ns": "128356898760030",
+          "succeeded": true
+        }
+      ],
+      "packet_coverage": {
+        "renewal": {
+          "coverage": "unavailable: no ingress captured in this bracket",
+          "ingresses": 0,
+          "losses": [],
+          "ingress_losses_in_completed_guards": 0,
+          "ingress_losses_outside_completed_guards": 0,
+          "first_post_apply_ingress_with_egress": null
+        },
+        "expiry": {
+          "coverage": "unavailable: no ingress captured in this bracket",
+          "ingresses": 0,
+          "losses": [],
+          "ingress_losses_in_completed_guards": 0,
+          "ingress_losses_outside_completed_guards": 0,
+          "first_post_apply_ingress_with_egress": null
+        }
+      },
+      "later_recovery": "Apply plus later live verification and serving heartbeat observed",
+      "wall_join": "producer wall/monotonic anchor, no allowance"
+    },
+    {
+      "run_id": "ad581ee6-a2ec-4765-aac9-3b6fb56dffdf",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "217",
+      "lease_id": "bfd0873f-ac96-4f75-ba2a-b3405c0dbfed",
       "lease_generation": "9",
-      "baseline_start_ns": "118147868164648",
-      "apply_end_ns": "118148069710253",
+      "baseline_start_ns": "128357772581043",
+      "apply_end_ns": "128358001530946",
       "accepted_hold_report_ids": [],
       "same_lease_hold_report_ids": [],
       "central_join": "not observed: no accepted hold report in this producer bracket",
       "baseline_rows": [
         {
-          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "run_id": "ad581ee6-a2ec-4765-aac9-3b6fb56dffdf",
           "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-          "sequence": "202",
+          "sequence": "217",
           "cause": "policy_missing",
-          "start_ns": "118147868164648",
-          "end_ns": "118147902553518",
+          "start_ns": "128357772581043",
+          "end_ns": "128357822602929",
           "succeeded": true
         },
         {
-          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "run_id": "ad581ee6-a2ec-4765-aac9-3b6fb56dffdf",
           "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-          "sequence": "203",
+          "sequence": "218",
           "cause": "policy_missing",
-          "start_ns": "118147906138938",
-          "end_ns": "118147934404156",
+          "start_ns": "128357826112248",
+          "end_ns": "128357854380799",
           "succeeded": true
         },
         {
-          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "run_id": "ad581ee6-a2ec-4765-aac9-3b6fb56dffdf",
           "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-          "sequence": "204",
+          "sequence": "219",
           "cause": "policy_missing",
-          "start_ns": "118147950144178",
-          "end_ns": "118147978165935",
+          "start_ns": "128357870534148",
+          "end_ns": "128357900861718",
           "succeeded": true
         }
       ],
@@ -808,42 +536,42 @@
       "wall_join": "producer wall/monotonic anchor, no allowance"
     },
     {
-      "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+      "run_id": "ad581ee6-a2ec-4765-aac9-3b6fb56dffdf",
       "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-      "sequence": "318",
-      "lease_id": "65e7cfed-c03e-4350-8e40-600336969c54",
+      "sequence": "325",
+      "lease_id": "23558bee-ba6a-45a6-91d0-cc9902984d6b",
       "lease_generation": "10",
-      "baseline_start_ns": "118161880676125",
-      "apply_end_ns": "118162103104054",
+      "baseline_start_ns": "128370772925665",
+      "apply_end_ns": "128370997945226",
       "accepted_hold_report_ids": [],
       "same_lease_hold_report_ids": [],
       "central_join": "not observed: no accepted hold report in this producer bracket",
       "baseline_rows": [
         {
-          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "run_id": "ad581ee6-a2ec-4765-aac9-3b6fb56dffdf",
           "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-          "sequence": "318",
+          "sequence": "325",
           "cause": "policy_missing",
-          "start_ns": "118161880676125",
-          "end_ns": "118161917490609",
+          "start_ns": "128370772925665",
+          "end_ns": "128370811813509",
           "succeeded": true
         },
         {
-          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "run_id": "ad581ee6-a2ec-4765-aac9-3b6fb56dffdf",
           "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-          "sequence": "319",
+          "sequence": "326",
           "cause": "policy_missing",
-          "start_ns": "118161920500761",
-          "end_ns": "118161947299039",
+          "start_ns": "128370815373451",
+          "end_ns": "128370851554962",
           "succeeded": true
         },
         {
-          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "run_id": "ad581ee6-a2ec-4765-aac9-3b6fb56dffdf",
           "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-          "sequence": "320",
+          "sequence": "327",
           "cause": "policy_missing",
-          "start_ns": "118161961805199",
-          "end_ns": "118161993241291",
+          "start_ns": "128370867448079",
+          "end_ns": "128370896606957",
           "succeeded": true
         }
       ],
@@ -869,42 +597,42 @@
       "wall_join": "producer wall/monotonic anchor, no allowance"
     },
     {
-      "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+      "run_id": "ad581ee6-a2ec-4765-aac9-3b6fb56dffdf",
       "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-      "sequence": "330",
-      "lease_id": "fb93982e-a36f-4e69-8656-a8a5d72f96f7",
+      "sequence": "337",
+      "lease_id": "a43a1ae6-8923-4a6a-87d4-90945b20222b",
       "lease_generation": "11",
-      "baseline_start_ns": "118162881945051",
-      "apply_end_ns": "118163096448456",
+      "baseline_start_ns": "128371775764778",
+      "apply_end_ns": "128372001593589",
       "accepted_hold_report_ids": [],
       "same_lease_hold_report_ids": [],
       "central_join": "not observed: no accepted hold report in this producer bracket",
       "baseline_rows": [
         {
-          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "run_id": "ad581ee6-a2ec-4765-aac9-3b6fb56dffdf",
           "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-          "sequence": "330",
+          "sequence": "337",
           "cause": "policy_missing",
-          "start_ns": "118162881945051",
-          "end_ns": "118162915696901",
+          "start_ns": "128371775764778",
+          "end_ns": "128371817139922",
           "succeeded": true
         },
         {
-          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "run_id": "ad581ee6-a2ec-4765-aac9-3b6fb56dffdf",
           "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-          "sequence": "331",
+          "sequence": "338",
           "cause": "policy_missing",
-          "start_ns": "118162919311224",
-          "end_ns": "118162946523358",
+          "start_ns": "128371820932424",
+          "end_ns": "128371845709399",
           "succeeded": true
         },
         {
-          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "run_id": "ad581ee6-a2ec-4765-aac9-3b6fb56dffdf",
           "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-          "sequence": "332",
+          "sequence": "339",
           "cause": "policy_missing",
-          "start_ns": "118162963015009",
-          "end_ns": "118162996375014",
+          "start_ns": "128371862377468",
+          "end_ns": "128371891525816",
           "succeeded": true
         }
       ],
@@ -930,42 +658,42 @@
       "wall_join": "producer wall/monotonic anchor, no allowance"
     },
     {
-      "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+      "run_id": "ad581ee6-a2ec-4765-aac9-3b6fb56dffdf",
       "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-      "sequence": "342",
-      "lease_id": "748cab24-77ef-4010-8cbf-ab639f905bdb",
+      "sequence": "453",
+      "lease_id": "96c80eb9-c565-49bc-9e2b-f2a4e6c883c6",
       "lease_generation": "12",
-      "baseline_start_ns": "118163889313638",
-      "apply_end_ns": "118164106492786",
+      "baseline_start_ns": "128385780826589",
+      "apply_end_ns": "128386007402768",
       "accepted_hold_report_ids": [],
       "same_lease_hold_report_ids": [],
       "central_join": "not observed: no accepted hold report in this producer bracket",
       "baseline_rows": [
         {
-          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "run_id": "ad581ee6-a2ec-4765-aac9-3b6fb56dffdf",
           "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-          "sequence": "342",
+          "sequence": "453",
           "cause": "policy_missing",
-          "start_ns": "118163889313638",
-          "end_ns": "118163925755542",
+          "start_ns": "128385780826589",
+          "end_ns": "128385822092208",
           "succeeded": true
         },
         {
-          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "run_id": "ad581ee6-a2ec-4765-aac9-3b6fb56dffdf",
           "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-          "sequence": "343",
+          "sequence": "454",
           "cause": "policy_missing",
-          "start_ns": "118163929206700",
-          "end_ns": "118163951628263",
+          "start_ns": "128385825674021",
+          "end_ns": "128385859795634",
           "succeeded": true
         },
         {
-          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "run_id": "ad581ee6-a2ec-4765-aac9-3b6fb56dffdf",
           "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-          "sequence": "344",
+          "sequence": "455",
           "cause": "policy_missing",
-          "start_ns": "118163967386623",
-          "end_ns": "118163998671386",
+          "start_ns": "128385876312143",
+          "end_ns": "128385901558272",
           "succeeded": true
         }
       ],
@@ -991,42 +719,42 @@
       "wall_join": "producer wall/monotonic anchor, no allowance"
     },
     {
-      "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+      "run_id": "ad581ee6-a2ec-4765-aac9-3b6fb56dffdf",
       "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-      "sequence": "450",
-      "lease_id": "81c5d8a2-fff5-42d7-ab83-5bb596af1485",
+      "sequence": "505",
+      "lease_id": "0eda9c91-4cd6-4520-9bff-a8f247284ef6",
       "lease_generation": "13",
-      "baseline_start_ns": "118176885603440",
-      "apply_end_ns": "118177135950114",
+      "baseline_start_ns": "128391791039037",
+      "apply_end_ns": "128392030642223",
       "accepted_hold_report_ids": [],
       "same_lease_hold_report_ids": [],
       "central_join": "not observed: no accepted hold report in this producer bracket",
       "baseline_rows": [
         {
-          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "run_id": "ad581ee6-a2ec-4765-aac9-3b6fb56dffdf",
           "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-          "sequence": "450",
+          "sequence": "505",
           "cause": "policy_missing",
-          "start_ns": "118176885603440",
-          "end_ns": "118176928089523",
+          "start_ns": "128391791039037",
+          "end_ns": "128391839725044",
           "succeeded": true
         },
         {
-          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "run_id": "ad581ee6-a2ec-4765-aac9-3b6fb56dffdf",
           "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-          "sequence": "451",
+          "sequence": "506",
           "cause": "policy_missing",
-          "start_ns": "118176931788278",
-          "end_ns": "118176967759943",
+          "start_ns": "128391843792714",
+          "end_ns": "128391870654360",
           "succeeded": true
         },
         {
-          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "run_id": "ad581ee6-a2ec-4765-aac9-3b6fb56dffdf",
           "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-          "sequence": "452",
+          "sequence": "507",
           "cause": "policy_missing",
-          "start_ns": "118176983885529",
-          "end_ns": "118177017890173",
+          "start_ns": "128391886258488",
+          "end_ns": "128391914218452",
           "succeeded": true
         }
       ],
@@ -1052,42 +780,42 @@
       "wall_join": "producer wall/monotonic anchor, no allowance"
     },
     {
-      "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+      "run_id": "ad581ee6-a2ec-4765-aac9-3b6fb56dffdf",
       "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-      "sequence": "502",
-      "lease_id": "356ae128-6888-4a0f-88c1-bc72bfe20f2c",
+      "sequence": "2091",
+      "lease_id": "b6b7f471-6c0d-43c2-8e7b-7121fea8b1a6",
       "lease_generation": "14",
-      "baseline_start_ns": "118182898878614",
-      "apply_end_ns": "118183143668450",
+      "baseline_start_ns": "128588965064743",
+      "apply_end_ns": "128589194434289",
       "accepted_hold_report_ids": [],
       "same_lease_hold_report_ids": [],
       "central_join": "not observed: no accepted hold report in this producer bracket",
       "baseline_rows": [
         {
-          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "run_id": "ad581ee6-a2ec-4765-aac9-3b6fb56dffdf",
           "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-          "sequence": "502",
+          "sequence": "2091",
           "cause": "policy_missing",
-          "start_ns": "118182898878614",
-          "end_ns": "118182940417545",
+          "start_ns": "128588965064743",
+          "end_ns": "128589009894539",
           "succeeded": true
         },
         {
-          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "run_id": "ad581ee6-a2ec-4765-aac9-3b6fb56dffdf",
           "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-          "sequence": "503",
+          "sequence": "2092",
           "cause": "policy_missing",
-          "start_ns": "118182943773173",
-          "end_ns": "118182976027393",
+          "start_ns": "128589013265447",
+          "end_ns": "128589042085470",
           "succeeded": true
         },
         {
-          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "run_id": "ad581ee6-a2ec-4765-aac9-3b6fb56dffdf",
           "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-          "sequence": "504",
+          "sequence": "2093",
           "cause": "policy_missing",
-          "start_ns": "118182991799911",
-          "end_ns": "118183021737932",
+          "start_ns": "128589057712059",
+          "end_ns": "128589087279773",
           "succeeded": true
         }
       ],
@@ -1113,42 +841,42 @@
       "wall_join": "producer wall/monotonic anchor, no allowance"
     },
     {
-      "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+      "run_id": "ad581ee6-a2ec-4765-aac9-3b6fb56dffdf",
       "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-      "sequence": "2087",
-      "lease_id": "c14a9df4-694f-4841-a457-3ac61bcc4b9a",
+      "sequence": "3403",
+      "lease_id": "e2c92448-280f-41b4-a829-b493dcb5cfcb",
       "lease_generation": "15",
-      "baseline_start_ns": "118381081207539",
-      "apply_end_ns": "118381299135262",
+      "baseline_start_ns": "128752052857384",
+      "apply_end_ns": "128752331050567",
       "accepted_hold_report_ids": [],
       "same_lease_hold_report_ids": [],
       "central_join": "not observed: no accepted hold report in this producer bracket",
       "baseline_rows": [
         {
-          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "run_id": "ad581ee6-a2ec-4765-aac9-3b6fb56dffdf",
           "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-          "sequence": "2087",
+          "sequence": "3403",
           "cause": "policy_missing",
-          "start_ns": "118381081207539",
-          "end_ns": "118381118036072",
+          "start_ns": "128752052857384",
+          "end_ns": "128752096682857",
           "succeeded": true
         },
         {
-          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "run_id": "ad581ee6-a2ec-4765-aac9-3b6fb56dffdf",
           "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-          "sequence": "2088",
+          "sequence": "3404",
           "cause": "policy_missing",
-          "start_ns": "118381121783619",
-          "end_ns": "118381146512213",
+          "start_ns": "128752100091291",
+          "end_ns": "128752133720745",
           "succeeded": true
         },
         {
-          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "run_id": "ad581ee6-a2ec-4765-aac9-3b6fb56dffdf",
           "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-          "sequence": "2089",
+          "sequence": "3405",
           "cause": "policy_missing",
-          "start_ns": "118381161738533",
-          "end_ns": "118381194195693",
+          "start_ns": "128752148939363",
+          "end_ns": "128752177082166",
           "succeeded": true
         }
       ],
@@ -1174,42 +902,42 @@
       "wall_join": "producer wall/monotonic anchor, no allowance"
     },
     {
-      "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+      "run_id": "ad581ee6-a2ec-4765-aac9-3b6fb56dffdf",
       "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-      "sequence": "3391",
-      "lease_id": "c46023d3-425f-4f5c-98e6-63b6625602fc",
+      "sequence": "3800",
+      "lease_id": "578e5352-9929-4841-a4f5-4bf91395b623",
       "lease_generation": "16",
-      "baseline_start_ns": "118543170422852",
-      "apply_end_ns": "118543428117212",
+      "baseline_start_ns": "128801082011940",
+      "apply_end_ns": "128801324871726",
       "accepted_hold_report_ids": [],
       "same_lease_hold_report_ids": [],
       "central_join": "not observed: no accepted hold report in this producer bracket",
       "baseline_rows": [
         {
-          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "run_id": "ad581ee6-a2ec-4765-aac9-3b6fb56dffdf",
           "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-          "sequence": "3391",
+          "sequence": "3800",
           "cause": "policy_missing",
-          "start_ns": "118543170422852",
-          "end_ns": "118543212168677",
+          "start_ns": "128801082011940",
+          "end_ns": "128801125249387",
           "succeeded": true
         },
         {
-          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "run_id": "ad581ee6-a2ec-4765-aac9-3b6fb56dffdf",
           "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-          "sequence": "3392",
+          "sequence": "3801",
           "cause": "policy_missing",
-          "start_ns": "118543215729760",
-          "end_ns": "118543252652574",
+          "start_ns": "128801128613961",
+          "end_ns": "128801158263752",
           "succeeded": true
         },
         {
-          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "run_id": "ad581ee6-a2ec-4765-aac9-3b6fb56dffdf",
           "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-          "sequence": "3393",
+          "sequence": "3802",
           "cause": "policy_missing",
-          "start_ns": "118543268366565",
-          "end_ns": "118543308538789",
+          "start_ns": "128801174063958",
+          "end_ns": "128801205359063",
           "succeeded": true
         }
       ],
@@ -1235,42 +963,42 @@
       "wall_join": "producer wall/monotonic anchor, no allowance"
     },
     {
-      "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+      "run_id": "ad581ee6-a2ec-4765-aac9-3b6fb56dffdf",
       "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-      "sequence": "3796",
-      "lease_id": "d8af246e-2b5f-4271-8e61-7584732c8d4f",
-      "lease_generation": "17",
-      "baseline_start_ns": "118593648641165",
-      "apply_end_ns": "118593896949512",
+      "sequence": "3956",
+      "lease_id": "bc8dcb53-5a0b-41be-8f74-08a4e9e1c7f8",
+      "lease_generation": "18",
+      "baseline_start_ns": "128820092903342",
+      "apply_end_ns": "128820319218844",
       "accepted_hold_report_ids": [],
       "same_lease_hold_report_ids": [],
       "central_join": "not observed: no accepted hold report in this producer bracket",
       "baseline_rows": [
         {
-          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "run_id": "ad581ee6-a2ec-4765-aac9-3b6fb56dffdf",
           "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-          "sequence": "3796",
+          "sequence": "3956",
           "cause": "policy_missing",
-          "start_ns": "118593648641165",
-          "end_ns": "118593690284010",
+          "start_ns": "128820092903342",
+          "end_ns": "128820129255699",
           "succeeded": true
         },
         {
-          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "run_id": "ad581ee6-a2ec-4765-aac9-3b6fb56dffdf",
           "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-          "sequence": "3797",
+          "sequence": "3957",
           "cause": "policy_missing",
-          "start_ns": "118593694384877",
-          "end_ns": "118593732575290",
+          "start_ns": "128820132232850",
+          "end_ns": "128820163303266",
           "succeeded": true
         },
         {
-          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "run_id": "ad581ee6-a2ec-4765-aac9-3b6fb56dffdf",
           "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-          "sequence": "3798",
+          "sequence": "3958",
           "cause": "policy_missing",
-          "start_ns": "118593748983281",
-          "end_ns": "118593789085019",
+          "start_ns": "128820180391274",
+          "end_ns": "128820209435433",
           "succeeded": true
         }
       ],
@@ -1296,42 +1024,42 @@
       "wall_join": "producer wall/monotonic anchor, no allowance"
     },
     {
-      "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+      "run_id": "ad581ee6-a2ec-4765-aac9-3b6fb56dffdf",
       "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-      "sequence": "3968",
-      "lease_id": "21f7f944-0b0a-49a0-ad0c-c121f1fdce73",
-      "lease_generation": "19",
-      "baseline_start_ns": "118614216085963",
-      "apply_end_ns": "118614448273645",
+      "sequence": "4184",
+      "lease_id": "b22a55ef-8004-45ed-8a6c-0d744027de74",
+      "lease_generation": "24",
+      "baseline_start_ns": "128848279381267",
+      "apply_end_ns": "128848523551269",
       "accepted_hold_report_ids": [],
       "same_lease_hold_report_ids": [],
       "central_join": "not observed: no accepted hold report in this producer bracket",
       "baseline_rows": [
         {
-          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "run_id": "ad581ee6-a2ec-4765-aac9-3b6fb56dffdf",
           "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-          "sequence": "3968",
+          "sequence": "4184",
           "cause": "policy_missing",
-          "start_ns": "118614216085963",
-          "end_ns": "118614254330950",
+          "start_ns": "128848279381267",
+          "end_ns": "128848327633916",
           "succeeded": true
         },
         {
-          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "run_id": "ad581ee6-a2ec-4765-aac9-3b6fb56dffdf",
           "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-          "sequence": "3969",
+          "sequence": "4185",
           "cause": "policy_missing",
-          "start_ns": "118614257446954",
-          "end_ns": "118614284652862",
+          "start_ns": "128848331798352",
+          "end_ns": "128848361552333",
           "succeeded": true
         },
         {
-          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "run_id": "ad581ee6-a2ec-4765-aac9-3b6fb56dffdf",
           "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-          "sequence": "3970",
+          "sequence": "4186",
           "cause": "policy_missing",
-          "start_ns": "118614300959151",
-          "end_ns": "118614334413379",
+          "start_ns": "128848377605305",
+          "end_ns": "128848405792100",
           "succeeded": true
         }
       ],
@@ -1357,103 +1085,42 @@
       "wall_join": "producer wall/monotonic anchor, no allowance"
     },
     {
-      "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
-      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-      "sequence": "4196",
-      "lease_id": "3afc9b62-0835-43da-8c0d-f440c8a175d8",
-      "lease_generation": "25",
-      "baseline_start_ns": "118642398134129",
-      "apply_end_ns": "118642639603755",
-      "accepted_hold_report_ids": [],
-      "same_lease_hold_report_ids": [],
-      "central_join": "not observed: no accepted hold report in this producer bracket",
-      "baseline_rows": [
-        {
-          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
-          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-          "sequence": "4196",
-          "cause": "policy_missing",
-          "start_ns": "118642398134129",
-          "end_ns": "118642442715859",
-          "succeeded": true
-        },
-        {
-          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
-          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-          "sequence": "4197",
-          "cause": "policy_missing",
-          "start_ns": "118642445871235",
-          "end_ns": "118642476353381",
-          "succeeded": true
-        },
-        {
-          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
-          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-          "sequence": "4198",
-          "cause": "policy_missing",
-          "start_ns": "118642493028878",
-          "end_ns": "118642527063978",
-          "succeeded": true
-        }
-      ],
-      "packet_coverage": {
-        "renewal": {
-          "coverage": "unavailable: no ingress captured in this bracket",
-          "ingresses": 0,
-          "losses": [],
-          "ingress_losses_in_completed_guards": 0,
-          "ingress_losses_outside_completed_guards": 0,
-          "first_post_apply_ingress_with_egress": null
-        },
-        "expiry": {
-          "coverage": "unavailable: no ingress captured in this bracket",
-          "ingresses": 0,
-          "losses": [],
-          "ingress_losses_in_completed_guards": 0,
-          "ingress_losses_outside_completed_guards": 0,
-          "first_post_apply_ingress_with_egress": null
-        }
-      },
-      "later_recovery": "Apply plus later live verification and serving heartbeat observed",
-      "wall_join": "producer wall/monotonic anchor, no allowance"
-    },
-    {
-      "run_id": "665f4c6c-2768-45d5-98c3-ca4ddecb185a",
+      "run_id": "f66edc9d-3695-45db-970b-215da6a1a01d",
       "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
       "sequence": "80",
-      "lease_id": "f47d2129-e755-4722-abbd-7ceb3f8bfe49",
-      "lease_generation": "26",
-      "baseline_start_ns": "118730804585999",
-      "apply_end_ns": "118731018362167",
+      "lease_id": "cc0b2547-f9af-4098-8fdc-f42ade7d03c2",
+      "lease_generation": "25",
+      "baseline_start_ns": "128927988109285",
+      "apply_end_ns": "128928200822762",
       "accepted_hold_report_ids": [],
       "same_lease_hold_report_ids": [],
       "central_join": "not observed: no accepted hold report in this producer bracket",
       "baseline_rows": [
         {
-          "run_id": "665f4c6c-2768-45d5-98c3-ca4ddecb185a",
+          "run_id": "f66edc9d-3695-45db-970b-215da6a1a01d",
           "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
           "sequence": "80",
           "cause": "policy_missing",
-          "start_ns": "118730804585999",
-          "end_ns": "118730849410551",
+          "start_ns": "128927988109285",
+          "end_ns": "128928030862175",
           "succeeded": true
         },
         {
-          "run_id": "665f4c6c-2768-45d5-98c3-ca4ddecb185a",
+          "run_id": "f66edc9d-3695-45db-970b-215da6a1a01d",
           "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
           "sequence": "81",
           "cause": "policy_missing",
-          "start_ns": "118730852660890",
-          "end_ns": "118730883158997",
+          "start_ns": "128928034725132",
+          "end_ns": "128928064404851",
           "succeeded": true
         },
         {
-          "run_id": "665f4c6c-2768-45d5-98c3-ca4ddecb185a",
+          "run_id": "f66edc9d-3695-45db-970b-215da6a1a01d",
           "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
           "sequence": "82",
           "cause": "policy_missing",
-          "start_ns": "118730899327886",
-          "end_ns": "118730921817157",
+          "start_ns": "128928078576149",
+          "end_ns": "128928100493761",
           "succeeded": true
         }
       ],
@@ -1479,42 +1146,103 @@
       "wall_join": "producer wall/monotonic anchor, no allowance"
     },
     {
-      "run_id": "665f4c6c-2768-45d5-98c3-ca4ddecb185a",
+      "run_id": "f66edc9d-3695-45db-970b-215da6a1a01d",
       "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-      "sequence": "212",
-      "lease_id": "a17cc7f4-6619-4184-95fb-f8af450c83c2",
+      "sequence": "188",
+      "lease_id": "76342a1e-80df-4498-ba47-23e9704e47e6",
+      "lease_generation": "26",
+      "baseline_start_ns": "128940990367056",
+      "apply_end_ns": "128941228129179",
+      "accepted_hold_report_ids": [],
+      "same_lease_hold_report_ids": [],
+      "central_join": "not observed: no accepted hold report in this producer bracket",
+      "baseline_rows": [
+        {
+          "run_id": "f66edc9d-3695-45db-970b-215da6a1a01d",
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "sequence": "188",
+          "cause": "policy_missing",
+          "start_ns": "128940990367056",
+          "end_ns": "128941032236917",
+          "succeeded": true
+        },
+        {
+          "run_id": "f66edc9d-3695-45db-970b-215da6a1a01d",
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "sequence": "189",
+          "cause": "policy_missing",
+          "start_ns": "128941036921847",
+          "end_ns": "128941067499234",
+          "succeeded": true
+        },
+        {
+          "run_id": "f66edc9d-3695-45db-970b-215da6a1a01d",
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "sequence": "190",
+          "cause": "policy_missing",
+          "start_ns": "128941083065805",
+          "end_ns": "128941111381813",
+          "succeeded": true
+        }
+      ],
+      "packet_coverage": {
+        "renewal": {
+          "coverage": "unavailable: no ingress captured in this bracket",
+          "ingresses": 0,
+          "losses": [],
+          "ingress_losses_in_completed_guards": 0,
+          "ingress_losses_outside_completed_guards": 0,
+          "first_post_apply_ingress_with_egress": null
+        },
+        "expiry": {
+          "coverage": "unavailable: no ingress captured in this bracket",
+          "ingresses": 0,
+          "losses": [],
+          "ingress_losses_in_completed_guards": 0,
+          "ingress_losses_outside_completed_guards": 0,
+          "first_post_apply_ingress_with_egress": null
+        }
+      },
+      "later_recovery": "Apply plus later live verification and serving heartbeat observed",
+      "wall_join": "producer wall/monotonic anchor, no allowance"
+    },
+    {
+      "run_id": "f66edc9d-3695-45db-970b-215da6a1a01d",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "489",
+      "lease_id": "0aa5f186-421e-4569-81cc-a3298294ef61",
       "lease_generation": "27",
-      "baseline_start_ns": "118746819533350",
-      "apply_end_ns": "118747030313640",
+      "baseline_start_ns": "128978013488007",
+      "apply_end_ns": "128978245478022",
       "accepted_hold_report_ids": [],
       "same_lease_hold_report_ids": [],
       "central_join": "not observed: no accepted hold report in this producer bracket",
       "baseline_rows": [
         {
-          "run_id": "665f4c6c-2768-45d5-98c3-ca4ddecb185a",
+          "run_id": "f66edc9d-3695-45db-970b-215da6a1a01d",
           "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-          "sequence": "212",
+          "sequence": "489",
           "cause": "policy_missing",
-          "start_ns": "118746819533350",
-          "end_ns": "118746855961080",
+          "start_ns": "128978013488007",
+          "end_ns": "128978054278559",
           "succeeded": true
         },
         {
-          "run_id": "665f4c6c-2768-45d5-98c3-ca4ddecb185a",
+          "run_id": "f66edc9d-3695-45db-970b-215da6a1a01d",
           "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-          "sequence": "213",
+          "sequence": "490",
           "cause": "policy_missing",
-          "start_ns": "118746859509034",
-          "end_ns": "118746892126186",
+          "start_ns": "128978057452411",
+          "end_ns": "128978084484292",
           "succeeded": true
         },
         {
-          "run_id": "665f4c6c-2768-45d5-98c3-ca4ddecb185a",
+          "run_id": "f66edc9d-3695-45db-970b-215da6a1a01d",
           "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-          "sequence": "214",
+          "sequence": "491",
           "cause": "policy_missing",
-          "start_ns": "118746907678930",
-          "end_ns": "118746928570511",
+          "start_ns": "128978100086404",
+          "end_ns": "128978126790098",
           "succeeded": true
         }
       ],
@@ -1528,10 +1256,10 @@
           "first_post_apply_ingress_with_egress": {
             "packet_id": 1,
             "result": "ok",
-            "sent_ns": "118933044126612",
-            "read_completion_ns": "118933044933874",
-            "ingress_ns": "118933044391045",
-            "egress_ns": "118933045617914"
+            "sent_ns": "129131158952518",
+            "read_completion_ns": "129131159629233",
+            "ingress_ns": "129131159151785",
+            "egress_ns": "129131159185861"
           }
         },
         "expiry": {
@@ -1540,161 +1268,56 @@
           "losses": [],
           "ingress_losses_in_completed_guards": 0,
           "ingress_losses_outside_completed_guards": 0,
-          "first_post_apply_ingress_with_egress": null
+          "first_post_apply_ingress_with_egress": {
+            "packet_id": 1,
+            "result": "ok",
+            "sent_ns": "129248793137022",
+            "read_completion_ns": "129248793660157",
+            "ingress_ns": "129248793912395",
+            "egress_ns": "129248794134318"
+          }
         }
       },
       "later_recovery": "Apply plus later live verification and serving heartbeat observed",
       "wall_join": "producer wall/monotonic anchor, no allowance"
     },
     {
-      "run_id": "665f4c6c-2768-45d5-98c3-ca4ddecb185a",
+      "run_id": "f66edc9d-3695-45db-970b-215da6a1a01d",
       "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-      "sequence": "1534",
-      "lease_id": "36113f8d-4d8c-4b1b-ae17-6b1aab437b35",
+      "sequence": "2309",
+      "lease_id": "06c1eb17-0217-452f-9d84-5ec07ea40dcd",
       "lease_generation": "30",
-      "baseline_start_ns": "118933730020475",
-      "apply_end_ns": "118933956623990",
+      "baseline_start_ns": "129284545668452",
+      "apply_end_ns": "129284771187621",
       "accepted_hold_report_ids": [],
       "same_lease_hold_report_ids": [],
       "central_join": "not observed: no accepted hold report in this producer bracket",
       "baseline_rows": [
         {
-          "run_id": "665f4c6c-2768-45d5-98c3-ca4ddecb185a",
+          "run_id": "f66edc9d-3695-45db-970b-215da6a1a01d",
           "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-          "sequence": "1534",
+          "sequence": "2309",
           "cause": "policy_missing",
-          "start_ns": "118933730020475",
-          "end_ns": "118933769437750",
+          "start_ns": "129284545668452",
+          "end_ns": "129284584742836",
           "succeeded": true
         },
         {
-          "run_id": "665f4c6c-2768-45d5-98c3-ca4ddecb185a",
+          "run_id": "f66edc9d-3695-45db-970b-215da6a1a01d",
           "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-          "sequence": "1535",
+          "sequence": "2310",
           "cause": "policy_missing",
-          "start_ns": "118933773182954",
-          "end_ns": "118933801598236",
+          "start_ns": "129284588845597",
+          "end_ns": "129284610767913",
           "succeeded": true
         },
         {
-          "run_id": "665f4c6c-2768-45d5-98c3-ca4ddecb185a",
+          "run_id": "f66edc9d-3695-45db-970b-215da6a1a01d",
           "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-          "sequence": "1536",
+          "sequence": "2311",
           "cause": "policy_missing",
-          "start_ns": "118933816228880",
-          "end_ns": "118933844632042",
-          "succeeded": true
-        }
-      ],
-      "packet_coverage": {
-        "renewal": {
-          "coverage": "sampled",
-          "ingresses": 5,
-          "losses": [
-            {
-              "packet_id": 15,
-              "result": "timeout",
-              "sent_ns": "118933744388420",
-              "read_completion_ns": "118933824881743",
-              "ingress_ns": "118933745501925",
-              "egress_ns": "0",
-              "completed_guard_joins": []
-            },
-            {
-              "packet_id": 16,
-              "result": "timeout",
-              "sent_ns": "118933781677275",
-              "read_completion_ns": "118933862321570",
-              "ingress_ns": "118933781862590",
-              "egress_ns": "0",
-              "completed_guard_joins": []
-            },
-            {
-              "packet_id": 17,
-              "result": "timeout",
-              "sent_ns": "118933844065014",
-              "read_completion_ns": "118933925073182",
-              "ingress_ns": "118933844804268",
-              "egress_ns": "0",
-              "completed_guard_joins": []
-            },
-            {
-              "packet_id": 18,
-              "result": "timeout",
-              "sent_ns": "118933881497799",
-              "read_completion_ns": "118933962369120",
-              "ingress_ns": "118933881879450",
-              "egress_ns": "0",
-              "completed_guard_joins": []
-            }
-          ],
-          "ingress_losses_in_completed_guards": 0,
-          "ingress_losses_outside_completed_guards": 4,
-          "first_post_apply_ingress_with_egress": {
-            "packet_id": 20,
-            "result": "ok",
-            "sent_ns": "118933981594855",
-            "read_completion_ns": "118933982519869",
-            "ingress_ns": "118933982476972",
-            "egress_ns": "118933982520551"
-          }
-        },
-        "expiry": {
-          "coverage": "unavailable: no ingress captured in this bracket",
-          "ingresses": 0,
-          "losses": [],
-          "ingress_losses_in_completed_guards": 0,
-          "ingress_losses_outside_completed_guards": 0,
-          "first_post_apply_ingress_with_egress": {
-            "packet_id": 1,
-            "result": "ok",
-            "sent_ns": "119052664177069",
-            "read_completion_ns": "119052665264699",
-            "ingress_ns": "119052664819596",
-            "egress_ns": "119052665073449"
-          }
-        }
-      },
-      "later_recovery": "Apply plus later live verification and serving heartbeat observed",
-      "wall_join": "producer wall/monotonic anchor, no allowance"
-    },
-    {
-      "run_id": "665f4c6c-2768-45d5-98c3-ca4ddecb185a",
-      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-      "sequence": "2323",
-      "lease_id": "af368190-cb66-4893-8d19-0013198943cc",
-      "lease_generation": "32",
-      "baseline_start_ns": "119090201830144",
-      "apply_end_ns": "119090421790771",
-      "accepted_hold_report_ids": [],
-      "same_lease_hold_report_ids": [],
-      "central_join": "not observed: no accepted hold report in this producer bracket",
-      "baseline_rows": [
-        {
-          "run_id": "665f4c6c-2768-45d5-98c3-ca4ddecb185a",
-          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-          "sequence": "2323",
-          "cause": "policy_missing",
-          "start_ns": "119090201830144",
-          "end_ns": "119090243937568",
-          "succeeded": true
-        },
-        {
-          "run_id": "665f4c6c-2768-45d5-98c3-ca4ddecb185a",
-          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-          "sequence": "2324",
-          "cause": "policy_missing",
-          "start_ns": "119090247774646",
-          "end_ns": "119090275630878",
-          "succeeded": true
-        },
-        {
-          "run_id": "665f4c6c-2768-45d5-98c3-ca4ddecb185a",
-          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-          "sequence": "2325",
-          "cause": "policy_missing",
-          "start_ns": "119090290479479",
-          "end_ns": "119090314952820",
+          "start_ns": "129284626263621",
+          "end_ns": "129284654206852",
           "succeeded": true
         }
       ],
@@ -1720,15 +1343,15 @@
       "wall_join": "producer wall/monotonic anchor, no allowance"
     }
   ],
-  "applied_equals_delivered_desired": 1,
-  "run_id": "56d20530-8042-4d0c-8156-de5a47ce8b61",
+  "applied_equals_delivered_desired": 0,
+  "run_id": "0b9e4510-776f-4c51-9e66-500404ce9f7e",
   "status": "partial",
   "retention": {
     "status": "not exercised",
     "kernel_reboot": "not exercised: AT13 operator matrix",
     "cut_status": "not exercised"
   },
-  "accepted_hold_count": 1,
+  "accepted_hold_count": 0,
   "applied_equals_desired_at_read": 0,
   "scope": "Central row joins and classification, including reverse-array read-only replay. Poll snapshots are not ingestion transaction snapshots. Baseline writes, packet capture and publication completion are separate evidence; no inference from a counter read failure.",
   "counter_read_failure_decision": {
@@ -1741,12 +1364,12 @@
     "historical_failures": "unchanged; no retry waiver or reclassification"
   },
   "coverage": {
-    "exact_report_sample_incident_join": "pass",
-    "stale_generation_before_generic_causes": "pass",
-    "applied_equals_desired": "observed against the node latest delivered signed desired state",
+    "exact_report_sample_incident_join": "not exercised: no accepted hold report",
+    "stale_generation_before_generic_causes": "not exercised",
+    "applied_equals_desired": "did not occur",
     "unrelated_failure_precedence": "not exercised",
     "active_hold_direct_stop_and_local_counter_reset": "not exercised",
-    "matching_lease_end": "pass",
+    "matching_lease_end": "not exercised",
     "later_new_incident": "not exercised",
     "one_escalation": "not exercised",
     "kernel_reboot": "not exercised: AT13 operator matrix"

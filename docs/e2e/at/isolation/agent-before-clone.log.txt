@@ -1,342 +1,249 @@
-time=2026-11-01T12:13:03.180Z level=INFO msg="baseline write" writer=agent cause=boot_unverified phase=begin mono_ns=118720697235659 generation=26
-time=2026-11-01T12:13:03.230Z level=INFO msg="baseline write" writer=agent cause=boot_unverified phase=end mono_ns=118720747316685 succeeded=true
-time=2026-11-01T12:13:03.243Z level=INFO msg="usage checkpoint applied"
-time=2026-11-01T12:13:03.262Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:13:03.283Z level=INFO msg="baseline write" writer=agent cause=safety_check_failed phase=begin mono_ns=118720800245807 generation=26
-time=2026-11-01T12:13:03.312Z level=INFO msg="baseline write" writer=agent cause=safety_check_failed phase=end mono_ns=118720828783537 succeeded=true
-time=2026-11-01T12:13:03.315Z level=INFO msg="meter epoch closed" epoch_id=01a19705-d811-7c5b-b6fd-962f4adad515 reason=final_sample event_seq=0
-time=2026-11-01T12:13:03.315Z level=INFO msg="baseline write" writer=agent cause=safety_check_failed phase=begin mono_ns=118720832192965 generation=26
-time=2026-11-01T12:13:03.345Z level=INFO msg="baseline write" writer=agent cause=safety_check_failed phase=end mono_ns=118720861648413 succeeded=true
-time=2026-11-01T12:13:03.345Z level=INFO msg="usage status available"
-time=2026-11-01T12:13:04.275Z level=INFO msg="meter epoch opened" epoch_id=01a19707-0d92-7ca2-86af-38c3b3d3c673 reason=after_final_sample boot_id=97c018d7-a925-4723-9127-83c097de1c8a event_seq=0
-time=2026-11-01T12:13:13.288Z level=INFO msg="baseline write" writer=agent cause=policy_missing phase=begin mono_ns=118730804585999 generation=26
-time=2026-11-01T12:13:13.333Z level=INFO msg="baseline write" writer=agent cause=policy_missing phase=end mono_ns=118730849410551 succeeded=true
-time=2026-11-01T12:13:13.336Z level=INFO msg="meter epoch closed" epoch_id=01a19707-0d92-7ca2-86af-38c3b3d3c673 reason=final_sample event_seq=0
-time=2026-11-01T12:13:13.336Z level=INFO msg="baseline write" writer=agent cause=policy_missing phase=begin mono_ns=118730852660890 generation=26
-time=2026-11-01T12:13:13.366Z level=INFO msg="baseline write" writer=agent cause=policy_missing phase=end mono_ns=118730883158997 succeeded=true
-time=2026-11-01T12:13:13.382Z level=INFO msg="baseline write" writer=agent cause=policy_missing phase=begin mono_ns=118730899327886 generation=26
-time=2026-11-01T12:13:13.405Z level=INFO msg="baseline write" writer=agent cause=policy_missing phase=end mono_ns=118730921817157 succeeded=true
-time=2026-11-01T12:13:13.437Z level=INFO msg="meter epoch opened" epoch_id=01a19707-315c-7677-aeb6-e024ef72682a reason=after_final_sample boot_id=97c018d7-a925-4723-9127-83c097de1c8a event_seq=0
-time=2026-11-01T12:13:29.303Z level=INFO msg="baseline write" writer=agent cause=policy_missing phase=begin mono_ns=118746819533350 generation=27
-time=2026-11-01T12:13:29.339Z level=INFO msg="baseline write" writer=agent cause=policy_missing phase=end mono_ns=118746855961080 succeeded=true
-time=2026-11-01T12:13:29.343Z level=INFO msg="meter epoch closed" epoch_id=01a19707-315c-7677-aeb6-e024ef72682a reason=final_sample event_seq=0
-time=2026-11-01T12:13:29.343Z level=INFO msg="baseline write" writer=agent cause=policy_missing phase=begin mono_ns=118746859509034 generation=27
-time=2026-11-01T12:13:29.375Z level=INFO msg="baseline write" writer=agent cause=policy_missing phase=end mono_ns=118746892126186 succeeded=true
-time=2026-11-01T12:13:29.391Z level=INFO msg="baseline write" writer=agent cause=policy_missing phase=begin mono_ns=118746907678930 generation=27
-time=2026-11-01T12:13:29.412Z level=INFO msg="baseline write" writer=agent cause=policy_missing phase=end mono_ns=118746928570511 succeeded=true
-time=2026-11-01T12:13:29.446Z level=INFO msg="meter epoch opened" epoch_id=01a19707-6fe5-747e-a16c-a0b8197e123c reason=after_final_sample boot_id=97c018d7-a925-4723-9127-83c097de1c8a event_seq=0
-time=2026-11-01T12:14:03.282Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:15:03.289Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:16:03.295Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:16:13.597Z level=WARN msg="desired state" err="control request ended"
-time=2026-11-01T12:16:13.738Z level=INFO msg="meter epoch opened" epoch_id=01a19709-f1a8-7f22-a65b-43a9c2261b6d reason=counter_discontinuity boot_id=97c018d7-a925-4723-9127-83c097de1c8a event_seq=41
-time=2026-11-01T12:16:18.769Z level=WARN msg="desired state" err="control request ended"
-time=2026-11-01T12:16:18.769Z level=WARN msg=lease err="control request ended"
-time=2026-11-01T12:16:23.817Z level=WARN msg="desired state" err="control request ended"
-time=2026-11-01T12:16:23.818Z level=WARN msg=lease err="control request ended"
-time=2026-11-01T12:16:28.866Z level=WARN msg="desired state" err="control request ended"
-time=2026-11-01T12:16:28.867Z level=WARN msg=lease err="control request ended"
-time=2026-11-01T12:16:33.914Z level=WARN msg="desired state" err="control request ended"
-time=2026-11-01T12:16:33.915Z level=WARN msg=lease err="control request ended"
-time=2026-11-01T12:16:34.999Z level=WARN msg="desired state" err="controlclient: http 502"
-time=2026-11-01T12:16:35.001Z level=WARN msg=lease err="controlclient: http 502"
-time=2026-11-01T12:16:36.213Z level=INFO msg="baseline write" writer=agent cause=policy_missing phase=begin mono_ns=118933730020475 generation=30
-time=2026-11-01T12:16:36.253Z level=INFO msg="baseline write" writer=agent cause=policy_missing phase=end mono_ns=118933769437750 succeeded=true
-time=2026-11-01T12:16:36.256Z level=INFO msg="meter epoch closed" epoch_id=01a19709-f1a8-7f22-a65b-43a9c2261b6d reason=final_sample event_seq=42
-time=2026-11-01T12:16:36.256Z level=INFO msg="baseline write" writer=agent cause=policy_missing phase=begin mono_ns=118933773182954 generation=30
-time=2026-11-01T12:16:36.285Z level=INFO msg="baseline write" writer=agent cause=policy_missing phase=end mono_ns=118933801598236 succeeded=true
-time=2026-11-01T12:16:36.299Z level=INFO msg="baseline write" writer=agent cause=policy_missing phase=begin mono_ns=118933816228880 generation=30
-time=2026-11-01T12:16:36.328Z level=INFO msg="baseline write" writer=agent cause=policy_missing phase=end mono_ns=118933844632042 succeeded=true
-time=2026-11-01T12:16:36.359Z level=INFO msg="meter epoch opened" epoch_id=01a1970a-4a05-7aa7-a6c4-3daab86db340 reason=after_final_sample boot_id=97c018d7-a925-4723-9127-83c097de1c8a event_seq=0
-time=2026-11-01T12:17:03.365Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:17:56.225Z level=WARN msg="desired state" err="control request ended"
-time=2026-11-01T12:18:01.288Z level=WARN msg="desired state" err="control request ended"
-time=2026-11-01T12:18:06.338Z level=WARN msg="desired state" err="control request ended"
-time=2026-11-01T12:18:11.391Z level=WARN msg="desired state" err="control request ended"
-time=2026-11-01T12:18:16.439Z level=WARN msg="desired state" err="control request ended"
-time=2026-11-01T12:18:16.439Z level=WARN msg=lease err="control request ended"
-time=2026-11-01T12:18:21.493Z level=WARN msg="desired state" err="control request ended"
-time=2026-11-01T12:18:21.493Z level=WARN msg=lease err="control request ended"
-time=2026-11-01T12:18:26.548Z level=WARN msg="desired state" err="control request ended"
-time=2026-11-01T12:18:26.548Z level=WARN msg=lease err="control request ended"
-time=2026-11-01T12:18:31.600Z level=WARN msg="desired state" err="control request ended"
-time=2026-11-01T12:18:31.600Z level=WARN msg=lease err="control request ended"
-time=2026-11-01T12:18:33.368Z level=WARN msg="usage upload retry" backoff=1s err="Post \"https://127.0.0.1:9444/api/v1/agent/usage-batches\": context deadline exceeded (Client.Timeout exceeded while awaiting headers)"
-time=2026-11-01T12:18:36.654Z level=WARN msg="desired state" err="control request ended"
-time=2026-11-01T12:18:36.654Z level=WARN msg=lease err="control request ended"
-time=2026-11-01T12:18:41.702Z level=WARN msg="desired state" err="control request ended"
-time=2026-11-01T12:18:41.702Z level=WARN msg=lease err="control request ended"
-time=2026-11-01T12:18:46.764Z level=WARN msg="desired state" err="control request ended"
-time=2026-11-01T12:18:46.764Z level=WARN msg=lease err="control request ended"
-time=2026-11-01T12:18:46.765Z level=INFO msg="baseline write" writer=agent cause=policy_deadline phase=begin mono_ns=119064281413580 generation=32
-time=2026-11-01T12:18:46.796Z level=INFO msg="baseline write" writer=agent cause=policy_deadline phase=end mono_ns=119064312382456 succeeded=true
-time=2026-11-01T12:18:46.799Z level=INFO msg="meter epoch closed" epoch_id=01a1970a-4a05-7aa7-a6c4-3daab86db340 reason=final_sample event_seq=115
-time=2026-11-01T12:18:46.799Z level=INFO msg="baseline write" writer=agent cause=lease_expired phase=begin mono_ns=119064315862270 generation=32
-time=2026-11-01T12:18:46.828Z level=INFO msg="baseline write" writer=agent cause=lease_expired phase=end mono_ns=119064344653684 succeeded=true
-time=2026-11-01T12:18:46.844Z level=INFO msg="baseline write" writer=agent cause=lease_expired phase=begin mono_ns=119064360536180 generation=32
-time=2026-11-01T12:18:46.864Z level=INFO msg="baseline write" writer=agent cause=lease_expired phase=end mono_ns=119064380682944 succeeded=true
-time=2026-11-01T12:18:46.965Z level=WARN msg="usage upload retry" backoff=2s err="usageupload: status 502"
-time=2026-11-01T12:18:46.965Z level=WARN msg="desired state" err="controlclient: http 502"
-time=2026-11-01T12:18:50.037Z level=WARN msg="usage upload retry" backoff=4s err="usageupload: status 502"
-time=2026-11-01T12:18:50.037Z level=WARN msg=lease err="controlclient: http 502"
-time=2026-11-01T12:18:50.054Z level=INFO msg="baseline write" writer=agent cause=lease_expired phase=begin mono_ns=119067570981431 generation=32
-time=2026-11-01T12:18:50.089Z level=INFO msg="baseline write" writer=agent cause=lease_expired phase=end mono_ns=119067605659142 succeeded=true
-time=2026-11-01T12:18:53.173Z level=WARN msg="desired state" err="controlclient: http 502"
-time=2026-11-01T12:18:55.105Z level=WARN msg=lease err="control request ended"
-time=2026-11-01T12:18:55.123Z level=INFO msg="baseline write" writer=agent cause=lease_expired phase=begin mono_ns=119072639794118 generation=32
-time=2026-11-01T12:18:55.153Z level=INFO msg="baseline write" writer=agent cause=lease_expired phase=end mono_ns=119072669984907 succeeded=true
-time=2026-11-01T12:18:56.246Z level=WARN msg="desired state" err="controlclient: http 502"
-time=2026-11-01T12:18:56.246Z level=WARN msg="usage upload retry" backoff=8s err="usageupload: status 502"
-time=2026-11-01T12:18:58.586Z level=WARN msg=lease err="controlclient: http 502"
-time=2026-11-01T12:18:58.603Z level=INFO msg="baseline write" writer=agent cause=lease_expired phase=begin mono_ns=119076120040312 generation=32
-time=2026-11-01T12:18:58.626Z level=INFO msg="baseline write" writer=agent cause=lease_expired phase=end mono_ns=119076143142798 succeeded=true
-time=2026-11-01T12:18:58.642Z level=WARN msg="desired state" err="controlclient: http 502"
-time=2026-11-01T12:18:58.642Z level=WARN msg=lease err="controlclient: http 502"
-time=2026-11-01T12:18:58.658Z level=INFO msg="baseline write" writer=agent cause=lease_expired phase=begin mono_ns=119076175230798 generation=32
-time=2026-11-01T12:18:58.689Z level=INFO msg="baseline write" writer=agent cause=lease_expired phase=end mono_ns=119076205491288 succeeded=true
-time=2026-11-01T12:18:59.685Z level=INFO msg="meter epoch opened" epoch_id=01a1970c-79e4-72ee-b7d4-9cf7eda20624 reason=after_final_sample boot_id=97c018d7-a925-4723-9127-83c097de1c8a event_seq=0
-time=2026-11-01T12:19:04.384Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:19:12.685Z level=INFO msg="baseline write" writer=agent cause=policy_missing phase=begin mono_ns=119090201830144 generation=32
-time=2026-11-01T12:19:12.727Z level=INFO msg="baseline write" writer=agent cause=policy_missing phase=end mono_ns=119090243937568 succeeded=true
-time=2026-11-01T12:19:12.731Z level=INFO msg="meter epoch closed" epoch_id=01a1970c-79e4-72ee-b7d4-9cf7eda20624 reason=final_sample event_seq=0
-time=2026-11-01T12:19:12.731Z level=INFO msg="baseline write" writer=agent cause=policy_missing phase=begin mono_ns=119090247774646 generation=32
-time=2026-11-01T12:19:12.759Z level=INFO msg="baseline write" writer=agent cause=policy_missing phase=end mono_ns=119090275630878 succeeded=true
-time=2026-11-01T12:19:12.774Z level=INFO msg="baseline write" writer=agent cause=policy_missing phase=begin mono_ns=119090290479479 generation=32
-time=2026-11-01T12:19:12.798Z level=INFO msg="baseline write" writer=agent cause=policy_missing phase=end mono_ns=119090314952820 succeeded=true
-time=2026-11-01T12:19:12.830Z level=INFO msg="meter epoch opened" epoch_id=01a1970c-ad3d-78de-94f8-4dfe2e1f3d53 reason=after_final_sample boot_id=97c018d7-a925-4723-9127-83c097de1c8a event_seq=0
-time=2026-11-01T12:19:37.690Z level=WARN msg=apply err=TC_FOREIGN_FILTER
-time=2026-11-01T12:19:37.692Z level=INFO msg="baseline write" writer=agent cause=foreign_tc_quarantine phase=begin mono_ns=119115208872488 generation=33
-time=2026-11-01T12:19:37.741Z level=INFO msg="baseline write" writer=agent cause=foreign_tc_quarantine phase=end mono_ns=119115257700288 succeeded=true
-time=2026-11-01T12:19:37.741Z level=INFO msg="baseline write" writer=agent cause=verification_TC_FOREIGN_FILTER phase=begin mono_ns=119115257790454 generation=33
-time=2026-11-01T12:19:37.763Z level=INFO msg="baseline write" writer=agent cause=verification_TC_FOREIGN_FILTER phase=end mono_ns=119115280005730 succeeded=true
-time=2026-11-01T12:19:37.766Z level=INFO msg="meter epoch closed" epoch_id=01a1970c-ad3d-78de-94f8-4dfe2e1f3d53 reason=final_sample event_seq=118
-time=2026-11-01T12:19:37.767Z level=INFO msg="baseline write" writer=agent cause=verification_TC_FOREIGN_FILTER phase=begin mono_ns=119115283459977 generation=33
-time=2026-11-01T12:19:37.787Z level=INFO msg="baseline write" writer=agent cause=verification_TC_FOREIGN_FILTER phase=end mono_ns=119115304336263 succeeded=true
-time=2026-11-01T12:19:37.819Z level=WARN msg=apply err=TC_FOREIGN_FILTER
-time=2026-11-01T12:19:37.820Z level=INFO msg="baseline write" writer=agent cause=foreign_tc_quarantine phase=begin mono_ns=119115336619852 generation=33
-time=2026-11-01T12:19:37.842Z level=INFO msg="baseline write" writer=agent cause=foreign_tc_quarantine phase=end mono_ns=119115358706145 succeeded=true
-time=2026-11-01T12:19:38.755Z level=INFO msg="baseline write" writer=agent_apply cause=apply_quarantine start_mono_ns=119116249964722 end_mono_ns=119116269378176 succeeded=true
-time=2026-11-01T12:19:38.755Z level=WARN msg=apply err=TC_FOREIGN_FILTER
-time=2026-11-01T12:19:38.755Z level=INFO msg="baseline write" writer=agent cause=foreign_tc_quarantine phase=begin mono_ns=119116272180637 generation=33
-time=2026-11-01T12:19:38.781Z level=INFO msg="baseline write" writer=agent cause=foreign_tc_quarantine phase=end mono_ns=119116297547473 succeeded=true
-time=2026-11-01T12:19:38.781Z level=INFO msg="baseline write" writer=agent cause=verification_TC_FOREIGN_FILTER phase=begin mono_ns=119116297631798 generation=33
-time=2026-11-01T12:19:38.799Z level=INFO msg="baseline write" writer=agent cause=verification_TC_FOREIGN_FILTER phase=end mono_ns=119116316099711 succeeded=true
-time=2026-11-01T12:19:38.831Z level=WARN msg=apply err=TC_FOREIGN_FILTER
-time=2026-11-01T12:19:38.832Z level=INFO msg="baseline write" writer=agent cause=foreign_tc_quarantine phase=begin mono_ns=119116348738891 generation=33
-time=2026-11-01T12:19:38.854Z level=INFO msg="baseline write" writer=agent cause=foreign_tc_quarantine phase=end mono_ns=119116370617812 succeeded=true
-time=2026-11-01T12:19:40.688Z level=INFO msg="baseline write" writer=agent cause=awaiting_member_grants phase=begin mono_ns=119118205350642 generation=35
-time=2026-11-01T12:19:40.718Z level=INFO msg="baseline write" writer=agent cause=awaiting_member_grants phase=end mono_ns=119118234388924 succeeded=true
-time=2026-11-01T12:19:41.689Z level=INFO msg="baseline write" writer=agent cause=awaiting_member_grants phase=begin mono_ns=119119205601710 generation=35
-time=2026-11-01T12:19:41.709Z level=INFO msg="baseline write" writer=agent cause=awaiting_member_grants phase=end mono_ns=119119226345006 succeeded=true
-time=2026-11-01T12:19:41.767Z level=INFO msg="meter epoch opened" epoch_id=01a1970d-1e45-7c73-a661-4738fa54d419 reason=after_final_sample boot_id=97c018d7-a925-4723-9127-83c097de1c8a event_seq=0
-time=2026-11-01T12:20:04.536Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:04.544Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:04.550Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:04.557Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:04.564Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:04.571Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:04.578Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:04.584Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:04.589Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:04.596Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:04.598Z level=WARN msg="usage batch throttled" retry_after=1s
-time=2026-11-01T12:20:05.598Z level=WARN msg="usage upload retry" backoff=1s err="usageupload: throttled"
-time=2026-11-01T12:20:06.605Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:06.611Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:06.616Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:06.623Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:06.624Z level=WARN msg="usage batch throttled" retry_after=1s
-time=2026-11-01T12:20:07.625Z level=WARN msg="usage upload retry" backoff=1s err="usageupload: throttled"
-time=2026-11-01T12:20:08.632Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:08.638Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:08.643Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:08.647Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:08.649Z level=WARN msg="usage batch throttled" retry_after=1s
-time=2026-11-01T12:20:09.650Z level=WARN msg="usage upload retry" backoff=1s err="usageupload: throttled"
-time=2026-11-01T12:20:10.658Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:10.663Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:10.669Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:10.674Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:10.676Z level=WARN msg="usage batch throttled" retry_after=1s
-time=2026-11-01T12:20:11.677Z level=WARN msg="usage upload retry" backoff=1s err="usageupload: throttled"
-time=2026-11-01T12:20:12.683Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:12.688Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:12.693Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:12.700Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:12.702Z level=WARN msg="usage batch throttled" retry_after=1s
-time=2026-11-01T12:20:13.702Z level=WARN msg="usage upload retry" backoff=1s err="usageupload: throttled"
-time=2026-11-01T12:20:14.708Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:14.713Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:14.718Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:14.724Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:14.725Z level=WARN msg="usage batch throttled" retry_after=1s
-time=2026-11-01T12:20:15.725Z level=WARN msg="usage upload retry" backoff=1s err="usageupload: throttled"
-time=2026-11-01T12:20:16.734Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:16.741Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:16.746Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:16.751Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:16.752Z level=WARN msg="usage batch throttled" retry_after=1s
-time=2026-11-01T12:20:17.753Z level=WARN msg="usage upload retry" backoff=1s err="usageupload: throttled"
-time=2026-11-01T12:20:18.759Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:18.764Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:18.770Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:18.776Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:18.778Z level=WARN msg="usage batch throttled" retry_after=1s
-time=2026-11-01T12:20:19.778Z level=WARN msg="usage upload retry" backoff=1s err="usageupload: throttled"
-time=2026-11-01T12:20:20.785Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:20.792Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:20.797Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:20.801Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:20.803Z level=WARN msg="usage batch throttled" retry_after=1s
-time=2026-11-01T12:20:21.805Z level=WARN msg="usage upload retry" backoff=1s err="usageupload: throttled"
-time=2026-11-01T12:20:22.811Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:22.816Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:22.821Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:22.825Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:22.827Z level=WARN msg="usage batch throttled" retry_after=1s
-time=2026-11-01T12:20:23.827Z level=WARN msg="usage upload retry" backoff=1s err="usageupload: throttled"
-time=2026-11-01T12:20:24.834Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:24.840Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:24.844Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:24.851Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:24.853Z level=WARN msg="usage batch throttled" retry_after=1s
-time=2026-11-01T12:20:25.854Z level=WARN msg="usage upload retry" backoff=1s err="usageupload: throttled"
-time=2026-11-01T12:20:26.859Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:26.864Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:26.871Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:26.876Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:26.877Z level=WARN msg="usage batch throttled" retry_after=1s
-time=2026-11-01T12:20:27.878Z level=WARN msg="usage upload retry" backoff=1s err="usageupload: throttled"
-time=2026-11-01T12:20:28.884Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:28.890Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:28.895Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:28.901Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:28.907Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:28.909Z level=WARN msg="usage batch throttled" retry_after=1s
-time=2026-11-01T12:20:29.909Z level=WARN msg="usage upload retry" backoff=1s err="usageupload: throttled"
-time=2026-11-01T12:20:30.915Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:30.920Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:30.925Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:30.931Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:30.933Z level=WARN msg="usage batch throttled" retry_after=1s
-time=2026-11-01T12:20:31.933Z level=WARN msg="usage upload retry" backoff=1s err="usageupload: throttled"
-time=2026-11-01T12:20:32.941Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:32.947Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:32.953Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:32.959Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:32.960Z level=WARN msg="usage batch throttled" retry_after=1s
-time=2026-11-01T12:20:33.961Z level=WARN msg="usage upload retry" backoff=1s err="usageupload: throttled"
-time=2026-11-01T12:20:34.967Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:34.974Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:34.979Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:34.985Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:34.987Z level=WARN msg="usage batch throttled" retry_after=1s
-time=2026-11-01T12:20:35.988Z level=WARN msg="usage upload retry" backoff=1s err="usageupload: throttled"
-time=2026-11-01T12:20:36.996Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:37.003Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:37.008Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:37.014Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:37.016Z level=WARN msg="usage batch throttled" retry_after=1s
-time=2026-11-01T12:20:38.016Z level=WARN msg="usage upload retry" backoff=1s err="usageupload: throttled"
-time=2026-11-01T12:20:39.024Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:39.029Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:39.036Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:39.042Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:39.043Z level=WARN msg="usage batch throttled" retry_after=1s
-time=2026-11-01T12:20:40.044Z level=WARN msg="usage upload retry" backoff=1s err="usageupload: throttled"
-time=2026-11-01T12:20:41.051Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:41.058Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:41.064Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:41.070Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:41.072Z level=WARN msg="usage batch throttled" retry_after=1s
-time=2026-11-01T12:20:42.073Z level=WARN msg="usage upload retry" backoff=1s err="usageupload: throttled"
-time=2026-11-01T12:20:43.080Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:43.087Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:43.094Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:43.101Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:43.103Z level=WARN msg="usage batch throttled" retry_after=1s
-time=2026-11-01T12:20:44.103Z level=WARN msg="usage upload retry" backoff=1s err="usageupload: throttled"
-time=2026-11-01T12:20:45.112Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:45.119Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:45.124Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:45.132Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:45.134Z level=WARN msg="usage batch throttled" retry_after=1s
-time=2026-11-01T12:20:46.135Z level=WARN msg="usage upload retry" backoff=1s err="usageupload: throttled"
-time=2026-11-01T12:20:47.142Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:47.149Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:47.156Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:47.162Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:47.165Z level=WARN msg="usage batch throttled" retry_after=1s
-time=2026-11-01T12:20:48.165Z level=WARN msg="usage upload retry" backoff=1s err="usageupload: throttled"
-time=2026-11-01T12:20:49.173Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:49.178Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:49.184Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:49.189Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:49.191Z level=WARN msg="usage batch throttled" retry_after=1s
-time=2026-11-01T12:20:50.192Z level=WARN msg="usage upload retry" backoff=1s err="usageupload: throttled"
-time=2026-11-01T12:20:51.200Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:51.207Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:51.213Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:51.217Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:51.219Z level=WARN msg="usage batch throttled" retry_after=1s
-time=2026-11-01T12:20:52.220Z level=WARN msg="usage upload retry" backoff=1s err="usageupload: throttled"
-time=2026-11-01T12:20:53.255Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:53.264Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:53.272Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:53.278Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:53.280Z level=WARN msg="usage batch throttled" retry_after=1s
-time=2026-11-01T12:20:54.281Z level=WARN msg="usage upload retry" backoff=1s err="usageupload: throttled"
-time=2026-11-01T12:20:55.290Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:55.295Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:55.300Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:55.306Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:55.307Z level=WARN msg="usage batch throttled" retry_after=1s
-time=2026-11-01T12:20:56.308Z level=WARN msg="usage upload retry" backoff=1s err="usageupload: throttled"
-time=2026-11-01T12:20:57.315Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:57.321Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:57.393Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:57.398Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:57.404Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:57.406Z level=WARN msg="usage batch throttled" retry_after=1s
-time=2026-11-01T12:20:58.407Z level=WARN msg="usage upload retry" backoff=1s err="usageupload: throttled"
-time=2026-11-01T12:20:59.414Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:59.421Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:59.426Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:59.431Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:20:59.432Z level=WARN msg="usage batch throttled" retry_after=1s
-time=2026-11-01T12:21:00.432Z level=WARN msg="usage upload retry" backoff=1s err="usageupload: throttled"
-time=2026-11-01T12:21:01.440Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:21:01.445Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:21:01.451Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:21:01.456Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:21:01.458Z level=WARN msg="usage batch throttled" retry_after=1s
-time=2026-11-01T12:21:02.459Z level=WARN msg="usage upload retry" backoff=1s err="usageupload: throttled"
-time=2026-11-01T12:21:03.466Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:21:03.472Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:21:03.478Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:21:03.484Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:21:03.485Z level=WARN msg="usage batch throttled" retry_after=1s
-time=2026-11-01T12:21:04.486Z level=WARN msg="usage upload retry" backoff=1s err="usageupload: throttled"
-time=2026-11-01T12:21:05.492Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:21:05.499Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:21:05.506Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:21:05.511Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:21:05.513Z level=WARN msg="usage batch throttled" retry_after=1s
-time=2026-11-01T12:21:06.514Z level=WARN msg="usage upload retry" backoff=1s err="usageupload: throttled"
-time=2026-11-01T12:21:07.521Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:21:07.527Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:21:07.534Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:21:07.540Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:21:07.541Z level=WARN msg="usage batch throttled" retry_after=1s
-time=2026-11-01T12:21:08.542Z level=WARN msg="usage upload retry" backoff=1s err="usageupload: throttled"
-time=2026-11-01T12:21:09.551Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:21:09.558Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:21:09.564Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:21:09.568Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:21:09.570Z level=WARN msg="usage batch throttled" retry_after=1s
-time=2026-11-01T12:21:10.570Z level=WARN msg="usage upload retry" backoff=1s err="usageupload: throttled"
-time=2026-11-01T12:21:11.579Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:21:11.583Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:21:11.589Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:21:11.594Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=33
-time=2026-11-01T12:21:11.596Z level=WARN msg="usage batch throttled" retry_after=1s
+time=2026-11-01T15:03:00.369Z level=INFO msg="baseline write" writer=agent cause=boot_unverified phase=begin mono_ns=128917885812347 generation=25
+time=2026-11-01T15:03:00.410Z level=INFO msg="baseline write" writer=agent cause=boot_unverified phase=end mono_ns=128917926437667 succeeded=true
+time=2026-11-01T15:03:00.421Z level=INFO msg="usage checkpoint applied"
+time=2026-11-01T15:03:00.456Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:03:00.473Z level=INFO msg="baseline write" writer=agent cause=safety_check_failed phase=begin mono_ns=128917989551946 generation=25
+time=2026-11-01T15:03:00.503Z level=INFO msg="baseline write" writer=agent cause=safety_check_failed phase=end mono_ns=128918019656129 succeeded=true
+time=2026-11-01T15:03:00.506Z level=INFO msg="meter epoch closed" epoch_id=01a197a1-92ca-71f5-bd23-23e7d32df777 reason=final_sample event_seq=0
+time=2026-11-01T15:03:00.507Z level=INFO msg="baseline write" writer=agent cause=safety_check_failed phase=begin mono_ns=128918023424998 generation=25
+time=2026-11-01T15:03:00.539Z level=INFO msg="baseline write" writer=agent cause=safety_check_failed phase=end mono_ns=128918055806028 succeeded=true
+time=2026-11-01T15:03:00.539Z level=INFO msg="usage status available"
+time=2026-11-01T15:03:01.459Z level=INFO msg="meter epoch opened" epoch_id=01a197a2-a652-74d5-b1dc-fbbbeb0e280b reason=after_final_sample boot_id=97c018d7-a925-4723-9127-83c097de1c8a event_seq=0
+time=2026-11-01T15:03:10.471Z level=INFO msg="baseline write" writer=agent cause=policy_missing phase=begin mono_ns=128927988109285 generation=25
+time=2026-11-01T15:03:10.514Z level=INFO msg="baseline write" writer=agent cause=policy_missing phase=end mono_ns=128928030862175 succeeded=true
+time=2026-11-01T15:03:10.518Z level=INFO msg="meter epoch closed" epoch_id=01a197a2-a652-74d5-b1dc-fbbbeb0e280b reason=final_sample event_seq=0
+time=2026-11-01T15:03:10.518Z level=INFO msg="baseline write" writer=agent cause=policy_missing phase=begin mono_ns=128928034725132 generation=25
+time=2026-11-01T15:03:10.548Z level=INFO msg="baseline write" writer=agent cause=policy_missing phase=end mono_ns=128928064404851 succeeded=true
+time=2026-11-01T15:03:10.562Z level=INFO msg="baseline write" writer=agent cause=policy_missing phase=begin mono_ns=128928078576149 generation=25
+time=2026-11-01T15:03:10.584Z level=INFO msg="baseline write" writer=agent cause=policy_missing phase=end mono_ns=128928100493761 succeeded=true
+time=2026-11-01T15:03:10.619Z level=INFO msg="meter epoch opened" epoch_id=01a197a2-ca1a-7035-b0bc-3fdac9a22ab1 reason=after_final_sample boot_id=97c018d7-a925-4723-9127-83c097de1c8a event_seq=0
+time=2026-11-01T15:03:23.474Z level=INFO msg="baseline write" writer=agent cause=policy_missing phase=begin mono_ns=128940990367056 generation=26
+time=2026-11-01T15:03:23.515Z level=INFO msg="baseline write" writer=agent cause=policy_missing phase=end mono_ns=128941032236917 succeeded=true
+time=2026-11-01T15:03:23.520Z level=INFO msg="meter epoch closed" epoch_id=01a197a2-ca1a-7035-b0bc-3fdac9a22ab1 reason=final_sample event_seq=0
+time=2026-11-01T15:03:23.520Z level=INFO msg="baseline write" writer=agent cause=policy_missing phase=begin mono_ns=128941036921847 generation=26
+time=2026-11-01T15:03:23.551Z level=INFO msg="baseline write" writer=agent cause=policy_missing phase=end mono_ns=128941067499234 succeeded=true
+time=2026-11-01T15:03:23.566Z level=INFO msg="baseline write" writer=agent cause=policy_missing phase=begin mono_ns=128941083065805 generation=26
+time=2026-11-01T15:03:23.595Z level=INFO msg="baseline write" writer=agent cause=policy_missing phase=end mono_ns=128941111381813 succeeded=true
+time=2026-11-01T15:03:23.627Z level=INFO msg="meter epoch opened" epoch_id=01a197a2-fcea-7419-8fb8-a9eeb49ffe1e reason=after_final_sample boot_id=97c018d7-a925-4723-9127-83c097de1c8a event_seq=0
+time=2026-11-01T15:04:00.489Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:04:00.497Z level=INFO msg="baseline write" writer=agent cause=policy_missing phase=begin mono_ns=128978013488007 generation=27
+time=2026-11-01T15:04:00.537Z level=INFO msg="baseline write" writer=agent cause=policy_missing phase=end mono_ns=128978054278559 succeeded=true
+time=2026-11-01T15:04:00.541Z level=INFO msg="meter epoch closed" epoch_id=01a197a2-fcea-7419-8fb8-a9eeb49ffe1e reason=final_sample event_seq=0
+time=2026-11-01T15:04:00.541Z level=INFO msg="baseline write" writer=agent cause=policy_missing phase=begin mono_ns=128978057452411 generation=27
+time=2026-11-01T15:04:00.568Z level=INFO msg="baseline write" writer=agent cause=policy_missing phase=end mono_ns=128978084484292 succeeded=true
+time=2026-11-01T15:04:00.583Z level=INFO msg="baseline write" writer=agent cause=policy_missing phase=begin mono_ns=128978100086404 generation=27
+time=2026-11-01T15:04:00.610Z level=INFO msg="baseline write" writer=agent cause=policy_missing phase=end mono_ns=128978126790098 succeeded=true
+time=2026-11-01T15:04:00.643Z level=INFO msg="meter epoch opened" epoch_id=01a197a3-8d81-769b-be2a-b832da6a22f5 reason=after_final_sample boot_id=97c018d7-a925-4723-9127-83c097de1c8a event_seq=0
+time=2026-11-01T15:05:00.502Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:06:00.514Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:06:09.536Z level=WARN msg="desired state" err="control request ended"
+time=2026-11-01T15:06:14.735Z level=WARN msg="desired state" err="control request ended"
+time=2026-11-01T15:06:14.735Z level=WARN msg=lease err="control request ended"
+time=2026-11-01T15:06:19.786Z level=WARN msg="desired state" err="control request ended"
+time=2026-11-01T15:06:19.786Z level=WARN msg=lease err="control request ended"
+time=2026-11-01T15:06:24.848Z level=WARN msg="desired state" err="control request ended"
+time=2026-11-01T15:06:24.848Z level=WARN msg=lease err="control request ended"
+time=2026-11-01T15:06:29.894Z level=WARN msg="desired state" err="control request ended"
+time=2026-11-01T15:06:29.894Z level=WARN msg=lease err="control request ended"
+time=2026-11-01T15:07:00.587Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:07:54.356Z level=WARN msg="desired state" err="control request ended"
+time=2026-11-01T15:07:59.417Z level=WARN msg="desired state" err="control request ended"
+time=2026-11-01T15:08:04.471Z level=WARN msg="desired state" err="control request ended"
+time=2026-11-01T15:08:09.523Z level=WARN msg="desired state" err="control request ended"
+time=2026-11-01T15:08:14.580Z level=WARN msg="desired state" err="control request ended"
+time=2026-11-01T15:08:14.580Z level=WARN msg=lease err="control request ended"
+time=2026-11-01T15:08:19.632Z level=WARN msg="desired state" err="control request ended"
+time=2026-11-01T15:08:19.632Z level=WARN msg=lease err="control request ended"
+time=2026-11-01T15:08:24.683Z level=WARN msg="desired state" err="control request ended"
+time=2026-11-01T15:08:24.683Z level=WARN msg=lease err="control request ended"
+time=2026-11-01T15:08:29.742Z level=WARN msg="desired state" err="control request ended"
+time=2026-11-01T15:08:29.742Z level=WARN msg=lease err="control request ended"
+time=2026-11-01T15:08:30.597Z level=WARN msg="usage upload retry" backoff=1s err="Post \"https://127.0.0.1:9444/api/v1/agent/usage-batches\": context deadline exceeded (Client.Timeout exceeded while awaiting headers)"
+time=2026-11-01T15:08:30.901Z level=WARN msg="desired state" err="controlclient: http 502"
+time=2026-11-01T15:08:33.973Z level=WARN msg=lease err="controlclient: http 502"
+time=2026-11-01T15:08:33.973Z level=WARN msg="usage upload retry" backoff=2s err="usageupload: status 502"
+time=2026-11-01T15:08:37.237Z level=WARN msg="usage upload retry" backoff=4s err="usageupload: status 502"
+time=2026-11-01T15:08:37.237Z level=WARN msg="desired state" err="controlclient: http 502"
+time=2026-11-01T15:08:39.152Z level=WARN msg=lease err="control request ended"
+time=2026-11-01T15:08:43.381Z level=WARN msg="desired state" err="controlclient: http 502"
+time=2026-11-01T15:08:43.381Z level=WARN msg="usage upload retry" backoff=8s err="usageupload: status 502"
+time=2026-11-01T15:08:44.201Z level=WARN msg=lease err="control request ended"
+time=2026-11-01T15:08:44.202Z level=INFO msg="baseline write" writer=agent cause=policy_deadline phase=begin mono_ns=129261718794993 generation=30
+time=2026-11-01T15:08:44.231Z level=INFO msg="baseline write" writer=agent cause=policy_deadline phase=end mono_ns=129261748210325 succeeded=true
+time=2026-11-01T15:08:44.235Z level=INFO msg="meter epoch closed" epoch_id=01a197a3-8d81-769b-be2a-b832da6a22f5 reason=final_sample event_seq=0
+time=2026-11-01T15:08:44.235Z level=INFO msg="baseline write" writer=agent cause=lease_expired phase=begin mono_ns=129261752234288 generation=30
+time=2026-11-01T15:08:44.269Z level=INFO msg="baseline write" writer=agent cause=lease_expired phase=end mono_ns=129261785395584 succeeded=true
+time=2026-11-01T15:08:44.284Z level=INFO msg="baseline write" writer=agent cause=lease_expired phase=begin mono_ns=129261800947621 generation=30
+time=2026-11-01T15:08:44.312Z level=INFO msg="baseline write" writer=agent cause=lease_expired phase=end mono_ns=129261828607449 succeeded=true
+time=2026-11-01T15:08:46.453Z level=WARN msg="desired state" err="controlclient: http 502"
+time=2026-11-01T15:08:49.330Z level=WARN msg=lease err="control request ended"
+time=2026-11-01T15:08:49.347Z level=INFO msg="baseline write" writer=agent cause=lease_expired phase=begin mono_ns=129266863611701 generation=30
+time=2026-11-01T15:08:49.375Z level=INFO msg="baseline write" writer=agent cause=lease_expired phase=end mono_ns=129266891722052 succeeded=true
+time=2026-11-01T15:08:49.525Z level=WARN msg="desired state" err="controlclient: http 502"
+time=2026-11-01T15:08:52.598Z level=WARN msg="usage upload retry" backoff=16s err="usageupload: status 502"
+time=2026-11-01T15:08:52.598Z level=WARN msg=lease err="controlclient: http 502"
+time=2026-11-01T15:08:52.614Z level=INFO msg="baseline write" writer=agent cause=lease_expired phase=begin mono_ns=129270130395857 generation=30
+time=2026-11-01T15:08:52.645Z level=INFO msg="baseline write" writer=agent cause=lease_expired phase=end mono_ns=129270161698203 succeeded=true
+time=2026-11-01T15:08:54.927Z level=WARN msg="desired state" err="controlclient: http 502"
+time=2026-11-01T15:08:54.927Z level=WARN msg=lease err="controlclient: http 502"
+time=2026-11-01T15:08:54.944Z level=INFO msg="baseline write" writer=agent cause=lease_expired phase=begin mono_ns=129272461303257 generation=30
+time=2026-11-01T15:08:54.971Z level=INFO msg="baseline write" writer=agent cause=lease_expired phase=end mono_ns=129272487929093 succeeded=true
+time=2026-11-01T15:08:54.985Z level=WARN msg="desired state" err="controlclient: http 502"
+time=2026-11-01T15:08:54.986Z level=WARN msg=lease err="controlclient: http 502"
+time=2026-11-01T15:08:55.002Z level=INFO msg="baseline write" writer=agent cause=lease_expired phase=begin mono_ns=129272518755818 generation=30
+time=2026-11-01T15:08:55.027Z level=INFO msg="baseline write" writer=agent cause=lease_expired phase=end mono_ns=129272544064593 succeeded=true
+time=2026-11-01T15:08:56.044Z level=INFO msg="meter epoch opened" epoch_id=01a197a8-0f6b-7642-84c1-e43316f571c6 reason=after_final_sample boot_id=97c018d7-a925-4723-9127-83c097de1c8a event_seq=0
+time=2026-11-01T15:09:07.029Z level=INFO msg="baseline write" writer=agent cause=policy_missing phase=begin mono_ns=129284545668452 generation=30
+time=2026-11-01T15:09:07.068Z level=INFO msg="baseline write" writer=agent cause=policy_missing phase=end mono_ns=129284584742836 succeeded=true
+time=2026-11-01T15:09:07.072Z level=INFO msg="meter epoch closed" epoch_id=01a197a8-0f6b-7642-84c1-e43316f571c6 reason=final_sample event_seq=0
+time=2026-11-01T15:09:07.072Z level=INFO msg="baseline write" writer=agent cause=policy_missing phase=begin mono_ns=129284588845597 generation=30
+time=2026-11-01T15:09:07.094Z level=INFO msg="baseline write" writer=agent cause=policy_missing phase=end mono_ns=129284610767913 succeeded=true
+time=2026-11-01T15:09:07.109Z level=INFO msg="baseline write" writer=agent cause=policy_missing phase=begin mono_ns=129284626263621 generation=30
+time=2026-11-01T15:09:07.137Z level=INFO msg="baseline write" writer=agent cause=policy_missing phase=end mono_ns=129284654206852 succeeded=true
+time=2026-11-01T15:09:07.175Z level=INFO msg="meter epoch opened" epoch_id=01a197a8-3ae6-7bce-9862-f946e9c5ed8a reason=after_final_sample boot_id=97c018d7-a925-4723-9127-83c097de1c8a event_seq=0
+time=2026-11-01T15:09:08.724Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:09:32.028Z level=WARN msg=apply err=TC_FOREIGN_FILTER
+time=2026-11-01T15:09:32.036Z level=INFO msg="baseline write" writer=agent cause=foreign_tc_quarantine phase=begin mono_ns=129309553126407 generation=31
+time=2026-11-01T15:09:32.076Z level=INFO msg="baseline write" writer=agent cause=foreign_tc_quarantine phase=end mono_ns=129309593315126 succeeded=true
+time=2026-11-01T15:09:32.077Z level=INFO msg="baseline write" writer=agent cause=verification_TC_FOREIGN_FILTER phase=begin mono_ns=129309593404764 generation=31
+time=2026-11-01T15:09:32.098Z level=INFO msg="baseline write" writer=agent cause=verification_TC_FOREIGN_FILTER phase=end mono_ns=129309615196360 succeeded=true
+time=2026-11-01T15:09:32.102Z level=INFO msg="meter epoch closed" epoch_id=01a197a8-3ae6-7bce-9862-f946e9c5ed8a reason=final_sample event_seq=114
+time=2026-11-01T15:09:32.102Z level=INFO msg="baseline write" writer=agent cause=verification_TC_FOREIGN_FILTER phase=begin mono_ns=129309618797490 generation=31
+time=2026-11-01T15:09:32.117Z level=INFO msg="baseline write" writer=agent cause=verification_TC_FOREIGN_FILTER phase=end mono_ns=129309633859893 succeeded=true
+time=2026-11-01T15:09:32.149Z level=WARN msg=apply err=TC_FOREIGN_FILTER
+time=2026-11-01T15:09:32.150Z level=INFO msg="baseline write" writer=agent cause=foreign_tc_quarantine phase=begin mono_ns=129309666520778 generation=31
+time=2026-11-01T15:09:32.173Z level=INFO msg="baseline write" writer=agent cause=foreign_tc_quarantine phase=end mono_ns=129309689878656 succeeded=true
+time=2026-11-01T15:09:33.098Z level=INFO msg="baseline write" writer=agent_apply cause=apply_quarantine start_mono_ns=129310598241158 end_mono_ns=129310611445410 succeeded=true
+time=2026-11-01T15:09:33.098Z level=WARN msg=apply err=TC_FOREIGN_FILTER
+time=2026-11-01T15:09:33.098Z level=INFO msg="baseline write" writer=agent cause=foreign_tc_quarantine phase=begin mono_ns=129310614744052 generation=31
+time=2026-11-01T15:09:33.115Z level=INFO msg="baseline write" writer=agent cause=foreign_tc_quarantine phase=end mono_ns=129310631417870 succeeded=true
+time=2026-11-01T15:09:33.115Z level=INFO msg="baseline write" writer=agent cause=verification_TC_FOREIGN_FILTER phase=begin mono_ns=129310631669348 generation=31
+time=2026-11-01T15:09:33.138Z level=INFO msg="baseline write" writer=agent cause=verification_TC_FOREIGN_FILTER phase=end mono_ns=129310654427492 succeeded=true
+time=2026-11-01T15:09:33.168Z level=WARN msg=apply err=TC_FOREIGN_FILTER
+time=2026-11-01T15:09:33.169Z level=INFO msg="baseline write" writer=agent cause=foreign_tc_quarantine phase=begin mono_ns=129310685784674 generation=31
+time=2026-11-01T15:09:33.193Z level=INFO msg="baseline write" writer=agent cause=foreign_tc_quarantine phase=end mono_ns=129310709464924 succeeded=true
+time=2026-11-01T15:09:35.031Z level=INFO msg="baseline write" writer=agent cause=awaiting_member_grants phase=begin mono_ns=129312547659711 generation=33
+time=2026-11-01T15:09:35.066Z level=INFO msg="baseline write" writer=agent cause=awaiting_member_grants phase=end mono_ns=129312582639852 succeeded=true
+time=2026-11-01T15:09:36.057Z level=INFO msg="meter epoch opened" epoch_id=01a197a8-abb8-7419-887d-b67496ca72b5 reason=after_final_sample boot_id=97c018d7-a925-4723-9127-83c097de1c8a event_seq=0
+time=2026-11-01T15:10:08.854Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:08.862Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:08.868Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:08.873Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:08.881Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:08.887Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:08.893Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:08.900Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:08.908Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:08.915Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:08.917Z level=WARN msg="usage batch throttled" retry_after=1s
+time=2026-11-01T15:10:09.918Z level=WARN msg="usage upload retry" backoff=1s err="usageupload: throttled"
+time=2026-11-01T15:10:10.931Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:10.938Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:10.944Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:10.949Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:10.951Z level=WARN msg="usage batch throttled" retry_after=1s
+time=2026-11-01T15:10:11.951Z level=WARN msg="usage upload retry" backoff=1s err="usageupload: throttled"
+time=2026-11-01T15:10:12.966Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:12.971Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:12.976Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:12.981Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:12.983Z level=WARN msg="usage batch throttled" retry_after=1s
+time=2026-11-01T15:10:13.983Z level=WARN msg="usage upload retry" backoff=1s err="usageupload: throttled"
+time=2026-11-01T15:10:14.991Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:14.998Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:15.004Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:15.011Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:15.012Z level=WARN msg="usage batch throttled" retry_after=1s
+time=2026-11-01T15:10:16.013Z level=WARN msg="usage upload retry" backoff=1s err="usageupload: throttled"
+time=2026-11-01T15:10:17.019Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:17.025Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:17.030Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:17.035Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:17.037Z level=WARN msg="usage batch throttled" retry_after=1s
+time=2026-11-01T15:10:18.038Z level=WARN msg="usage upload retry" backoff=1s err="usageupload: throttled"
+time=2026-11-01T15:10:19.051Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:19.057Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:19.068Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:19.075Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:19.077Z level=WARN msg="usage batch throttled" retry_after=1s
+time=2026-11-01T15:10:20.078Z level=WARN msg="usage upload retry" backoff=1s err="usageupload: throttled"
+time=2026-11-01T15:10:21.085Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:21.090Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:21.097Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:21.101Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:21.103Z level=WARN msg="usage batch throttled" retry_after=1s
+time=2026-11-01T15:10:22.103Z level=WARN msg="usage upload retry" backoff=1s err="usageupload: throttled"
+time=2026-11-01T15:10:23.111Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:23.116Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:23.120Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:23.126Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:23.128Z level=WARN msg="usage batch throttled" retry_after=1s
+time=2026-11-01T15:10:24.128Z level=WARN msg="usage upload retry" backoff=1s err="usageupload: throttled"
+time=2026-11-01T15:10:25.134Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:25.139Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:25.144Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:25.150Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:25.151Z level=WARN msg="usage batch throttled" retry_after=1s
+time=2026-11-01T15:10:26.151Z level=WARN msg="usage upload retry" backoff=1s err="usageupload: throttled"
+time=2026-11-01T15:10:27.159Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:27.165Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:27.171Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:27.175Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:27.177Z level=WARN msg="usage batch throttled" retry_after=1s
+time=2026-11-01T15:10:28.178Z level=WARN msg="usage upload retry" backoff=1s err="usageupload: throttled"
+time=2026-11-01T15:10:29.185Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:29.191Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:29.197Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:29.203Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:29.206Z level=WARN msg="usage batch throttled" retry_after=1s
+time=2026-11-01T15:10:30.206Z level=WARN msg="usage upload retry" backoff=1s err="usageupload: throttled"
+time=2026-11-01T15:10:31.214Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:31.220Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:31.226Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:31.232Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:31.237Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:31.239Z level=WARN msg="usage batch throttled" retry_after=1s
+time=2026-11-01T15:10:32.239Z level=WARN msg="usage upload retry" backoff=1s err="usageupload: throttled"
+time=2026-11-01T15:10:33.245Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:33.251Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:33.256Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:33.262Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:33.264Z level=WARN msg="usage batch throttled" retry_after=1s
+time=2026-11-01T15:10:34.265Z level=WARN msg="usage upload retry" backoff=1s err="usageupload: throttled"
+time=2026-11-01T15:10:35.273Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:35.278Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:35.283Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:35.288Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:35.290Z level=WARN msg="usage batch throttled" retry_after=1s
+time=2026-11-01T15:10:36.291Z level=WARN msg="usage upload retry" backoff=1s err="usageupload: throttled"
+time=2026-11-01T15:10:37.298Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:37.303Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:37.307Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:37.312Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:37.314Z level=WARN msg="usage batch throttled" retry_after=1s
+time=2026-11-01T15:10:38.314Z level=WARN msg="usage upload retry" backoff=1s err="usageupload: throttled"
+time=2026-11-01T15:10:39.321Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:39.328Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:39.333Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:39.337Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:39.339Z level=WARN msg="usage batch throttled" retry_after=1s
+time=2026-11-01T15:10:40.339Z level=WARN msg="usage upload retry" backoff=1s err="usageupload: throttled"
+time=2026-11-01T15:10:41.347Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:41.354Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:41.358Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:41.365Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:41.366Z level=WARN msg="usage batch throttled" retry_after=1s
+time=2026-11-01T15:10:42.367Z level=WARN msg="usage upload retry" backoff=1s err="usageupload: throttled"
+time=2026-11-01T15:10:43.375Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:43.379Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:43.384Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:43.390Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:43.392Z level=WARN msg="usage batch throttled" retry_after=1s
+time=2026-11-01T15:10:44.392Z level=WARN msg="usage upload retry" backoff=1s err="usageupload: throttled"
+time=2026-11-01T15:10:45.400Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:45.405Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:45.410Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:45.416Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=28
+time=2026-11-01T15:10:45.418Z level=WARN msg="usage batch throttled" retry_after=1s
+time=2026-11-01T15:10:46.419Z level=WARN msg="usage upload retry" backoff=1s err="usageupload: throttled"
+time=2026-11-01T15:10:46.525Z level=INFO msg="serving rules retained for restart" generation=33 policy_expires_mono_ns=129439595855988

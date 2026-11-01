@@ -1,6 +1,7 @@
 package enforce
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/netip"
 	"strings"
@@ -108,6 +109,9 @@ func verifyServingRuleset(raw []byte, m Model, assignments map[uuid.UUID]uint16)
 			return err
 		}
 	}
+	if err := verifyDownloadIsolation(rs, m, true); err != nil {
+		return err
+	}
 	if err := verifyIsolationDrops(fwd, m); err != nil {
 		return err
 	}
@@ -212,7 +216,10 @@ func verifyProbe(rs Ruleset, m Model, baseline bool) error {
 	if _, ok := rs.Counters[counterProbeDown]; !ok {
 		return checkf(ReasonIsolation, "missing counter %s", counterProbeDown)
 	}
-	var tuple, dns, down, other, dnsTCP, dnsUDP int
+	if err := verifyDownloadIsolation(rs, m, !baseline || m.Probe.ResolverDNS); err != nil {
+		return err
+	}
+	var tuple, dns, down, other, dnsTCP, dnsUDP, dnsDownTCP, dnsDownUDP int
 	var v6Idx, denyIdx, hostIdx, tupleIdx, dnsIdx, downIdx, memberIdx = -1, -1, -1, -1, -1, -1, -1
 	for i, rule := range fwd.Rules {
 		if rule.Verdict == "drop" && rule.NFProto == "ipv6" && v6Idx < 0 {
@@ -239,6 +246,12 @@ func verifyProbe(rs Ruleset, m Model, baseline bool) error {
 			}
 			if hasProto(rule, "udp") {
 				dnsUDP++
+			}
+		case "dns-down":
+			if hasProto(rule, "tcp") {
+				dnsDownTCP++
+			} else {
+				dnsDownUDP++
 			}
 		case "down":
 			down++
@@ -270,6 +283,9 @@ func verifyProbe(rs Ruleset, m Model, baseline bool) error {
 	}
 	if wantDNS > 0 && (dnsTCP != 1 || dnsUDP != 1) {
 		return checkf(ReasonIsolation, "probe DNS accept is not one tcp and one udp port 53")
+	}
+	if dnsDownTCP+dnsDownUDP != wantDNS || (wantDNS > 0 && (dnsDownTCP != 1 || dnsDownUDP != 1)) {
+		return checkf(ReasonIsolation, "probe DNS reply accept is not the configured tcp/udp port 53 pair")
 	}
 	if other > 0 {
 		if baseline {
@@ -315,8 +331,15 @@ func classifyProbeRule(rule RuleView, m Model) string {
 	if rule.Verdict != "accept" {
 		return ""
 	}
-	if rule.Counter == counterProbeDown && exactNames(rule.IIF, up) && exactNames(rule.OIF, in) && exactNames(rule.DaddrSets, setProbeV4) && len(rule.SaddrSets) == 0 && len(rule.ConcatSets) == 0 && len(rule.Dports) == 0 && rule.CTEstablished {
+	if rule.Counter == counterProbeDown && exactNames(rule.IIF, up) && exactNames(rule.OIF, in) && exactNames(rule.DaddrSets, setProbeV4) && len(rule.SaddrSets) == 0 && len(rule.ConcatSets) == 0 && len(rule.Dports) == 0 && len(rule.Sports) == 0 && len(rule.L4Protos) == 0 && rule.CTEstablished {
 		return "down"
+	}
+	if rule.Counter == counterProbeDown && exactNames(rule.IIF, up) && exactNames(rule.OIF, in) &&
+		exactNames(rule.DaddrSets, setProbeV4) && exactNames(rule.SaddrSets, "resolver_v4") &&
+		len(rule.ConcatSets) == 0 && len(rule.Dports) == 0 && len(rule.Sports) == 1 && rule.Sports[0] == 53 &&
+		len(rule.L4Protos) == 1 && (rule.L4Protos[0] == "tcp" || rule.L4Protos[0] == "udp") &&
+		len(rule.Saddrs) == 0 && len(rule.Daddrs) == 0 && len(rule.NegSets) == 0 && rule.CTEstablished {
+		return "dns-down"
 	}
 	if rule.Counter != counterProbeUp || !exactNames(rule.IIF, in) || !exactNames(rule.OIF, up) || !exactNames(rule.SaddrSets, setProbeV4) || rule.CTEstablished {
 		return ""
@@ -872,6 +895,60 @@ func coversPrefix(got []netip.Prefix, want netip.Prefix) bool {
 
 // verifyIsolationDrops requires the deny, host, and non-53 resolver drops
 // whenever the model has bindings or resolvers, including when Probe is nil.
+// Require current source restrictions before every generic return accept, in
+// serving and probe baseline paths. Only the exact resolver reply hole precedes
+// them. Conntrack state alone is never evidence that a source remains allowed.
+func verifyDownloadIsolation(rs Ruleset, m Model, resolver bool) error {
+	if _, ok := rs.Counters[counterDeniedDown]; !ok {
+		return checkf(ReasonIsolation, "missing download denial counter")
+	}
+	sets := []string{"denied_v4", "host_v4"}
+	if resolver {
+		sets = append(sets, "resolver_v4")
+	}
+	seen := map[string]bool{}
+	for _, r := range rs.Chains["forward"].Rules {
+		for _, set := range sets {
+			if downloadSourceDrop(r, m, set) {
+				seen[set] = true
+			}
+		}
+		if r.Verdict != "accept" {
+			continue
+		}
+		_, download := acceptDirections(r, m)
+		if !download {
+			continue
+		}
+		if servingAcceptKind(r, m) == "dns-down" || (m.Probe != nil && m.Probe.ResolverDNS && classifyProbeRule(r, m) == "dns-down") {
+			if len(seen) > 0 {
+				return checkf(ReasonIsolation, "DNS reply accept is after a source denial")
+			}
+			continue
+		}
+		if len(seen) != len(sets) {
+			return checkf(ReasonIsolation, "download accept precedes current source denials")
+		}
+	}
+	if len(seen) != len(sets) {
+		return checkf(ReasonIsolation, "download source denial is missing or narrowed")
+	}
+	return nil
+}
+
+func downloadSourceDrop(r RuleView, m Model, set string) bool {
+	if r.Verdict != "drop" || r.Counter != counterDeniedDown ||
+		!exactNames(r.IIF, m.Datapath.Uplink) || !exactNames(r.OIF, m.Datapath.MemberIngress) ||
+		!exactNames(r.SaddrSets, set) || len(r.DaddrSets) != 0 || len(r.Saddrs) != 0 || len(r.Daddrs) != 0 ||
+		len(r.NegSets) != 0 || r.CTEstablished || r.CTNotEstablished || r.NFProto != "" || r.MatchMark {
+		return false
+	}
+	// Exactly interfaces, source set, named counter, drop. Extra predicates
+	// (including ct invalid, which has no RuleView flag) could narrow the guard.
+	var expr []json.RawMessage
+	return json.Unmarshal([]byte(r.Raw), &expr) == nil && len(expr) == 5
+}
+
 func verifyIsolationDrops(ch ChainView, m Model) error {
 	if len(m.Bindings) == 0 && len(m.Resolvers) == 0 {
 		return nil
