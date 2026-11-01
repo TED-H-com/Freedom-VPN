@@ -1,0 +1,24 @@
+{
+  "test_only": true,
+  "commands": [
+    [
+      "nft",
+      "-j",
+      "list",
+      "table",
+      "inet",
+      "fvpn"
+    ],
+    [
+      "nft",
+      "-j",
+      "list",
+      "ruleset"
+    ]
+  ],
+  "attempts_per_command_per_condition": 50,
+  "nft_version": "nftables v1.0.9 (Old Doc Yak #3)",
+  "packages": "libmnl0 1.0.5-2build1\nlibnftables1 1.0.9-1ubuntu0.1\nlibnftnl11 1.2.6-2build1\nnftables 1.0.9-1ubuntu0.1",
+  "kernel": "7.0.0-38-generic",
+  "arch": "x86_64"
+}

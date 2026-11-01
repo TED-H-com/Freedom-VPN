@@ -1,0 +1,498 @@
+[
+  {
+    "run": "lab",
+    "condition": "static-5-chains-48-rules",
+    "command": [
+      "nft",
+      "-j",
+      "list",
+      "table",
+      "inet",
+      "fvpn"
+    ],
+    "attempts": 200,
+    "nonzero_exit": 0,
+    "invalid_json": 0,
+    "duplicate_listings": 0,
+    "mixed_generation_listings": 0,
+    "writer": {},
+    "writer_bracket_overlaps": 0,
+    "writer_bracket_contained": 0
+  },
+  {
+    "run": "lab",
+    "condition": "static-5-chains-48-rules",
+    "command": [
+      "nft",
+      "-j",
+      "list",
+      "ruleset"
+    ],
+    "attempts": 200,
+    "nonzero_exit": 0,
+    "invalid_json": 0,
+    "duplicate_listings": 0,
+    "mixed_generation_listings": 0,
+    "writer": {},
+    "writer_bracket_overlaps": 0,
+    "writer_bracket_contained": 0
+  },
+  {
+    "run": "lab",
+    "condition": "rules-5-chains-48-rules",
+    "command": [
+      "nft",
+      "-j",
+      "list",
+      "table",
+      "inet",
+      "fvpn"
+    ],
+    "attempts": 200,
+    "nonzero_exit": 0,
+    "invalid_json": 0,
+    "duplicate_listings": 0,
+    "mixed_generation_listings": 0,
+    "writer": {
+      "attempts": 150
+    },
+    "writer_bracket_overlaps": 160,
+    "writer_bracket_contained": 12
+  },
+  {
+    "run": "lab",
+    "condition": "rules-5-chains-48-rules",
+    "command": [
+      "nft",
+      "-j",
+      "list",
+      "ruleset"
+    ],
+    "attempts": 200,
+    "nonzero_exit": 0,
+    "invalid_json": 0,
+    "duplicate_listings": 0,
+    "mixed_generation_listings": 0,
+    "writer": {
+      "attempts": 150
+    },
+    "writer_bracket_overlaps": 145,
+    "writer_bracket_contained": 3
+  },
+  {
+    "run": "lab",
+    "condition": "replace-5-chains-48-rules",
+    "command": [
+      "nft",
+      "-j",
+      "list",
+      "table",
+      "inet",
+      "fvpn"
+    ],
+    "attempts": 200,
+    "nonzero_exit": 0,
+    "invalid_json": 0,
+    "duplicate_listings": 0,
+    "mixed_generation_listings": 0,
+    "writer": {
+      "attempts": 135
+    },
+    "writer_bracket_overlaps": 177,
+    "writer_bracket_contained": 0
+  },
+  {
+    "run": "lab",
+    "condition": "replace-5-chains-48-rules",
+    "command": [
+      "nft",
+      "-j",
+      "list",
+      "ruleset"
+    ],
+    "attempts": 200,
+    "nonzero_exit": 0,
+    "invalid_json": 0,
+    "duplicate_listings": 0,
+    "mixed_generation_listings": 0,
+    "writer": {
+      "attempts": 135
+    },
+    "writer_bracket_overlaps": 181,
+    "writer_bracket_contained": 0
+  },
+  {
+    "run": "lab",
+    "condition": "rules-256-chains-512-rules",
+    "command": [
+      "nft",
+      "-j",
+      "list",
+      "table",
+      "inet",
+      "fvpn"
+    ],
+    "attempts": 200,
+    "nonzero_exit": 0,
+    "invalid_json": 0,
+    "duplicate_listings": 0,
+    "mixed_generation_listings": 0,
+    "writer": {
+      "attempts": 228
+    },
+    "writer_bracket_overlaps": 200,
+    "writer_bracket_contained": 20
+  },
+  {
+    "run": "lab",
+    "condition": "rules-256-chains-512-rules",
+    "command": [
+      "nft",
+      "-j",
+      "list",
+      "ruleset"
+    ],
+    "attempts": 200,
+    "nonzero_exit": 0,
+    "invalid_json": 0,
+    "duplicate_listings": 0,
+    "mixed_generation_listings": 0,
+    "writer": {
+      "attempts": 228
+    },
+    "writer_bracket_overlaps": 200,
+    "writer_bracket_contained": 16
+  },
+  {
+    "run": "lab",
+    "condition": "replace-256-chains-512-rules",
+    "command": [
+      "nft",
+      "-j",
+      "list",
+      "table",
+      "inet",
+      "fvpn"
+    ],
+    "attempts": 200,
+    "nonzero_exit": 0,
+    "invalid_json": 0,
+    "duplicate_listings": 0,
+    "mixed_generation_listings": 0,
+    "writer": {
+      "attempts": 202
+    },
+    "writer_bracket_overlaps": 200,
+    "writer_bracket_contained": 0
+  },
+  {
+    "run": "lab",
+    "condition": "replace-256-chains-512-rules",
+    "command": [
+      "nft",
+      "-j",
+      "list",
+      "ruleset"
+    ],
+    "attempts": 200,
+    "nonzero_exit": 0,
+    "invalid_json": 0,
+    "duplicate_listings": 0,
+    "mixed_generation_listings": 0,
+    "writer": {
+      "attempts": 202
+    },
+    "writer_bracket_overlaps": 200,
+    "writer_bracket_contained": 1
+  },
+  {
+    "run": "lab-guard",
+    "condition": "guard-5-chains-48-rules",
+    "command": [
+      "nft",
+      "-j",
+      "list",
+      "table",
+      "inet",
+      "fvpn"
+    ],
+    "attempts": 200,
+    "nonzero_exit": 0,
+    "invalid_json": 0,
+    "duplicate_listings": 0,
+    "mixed_generation_listings": 0,
+    "writer": {
+      "attempts": 156
+    },
+    "writer_bracket_overlaps": 155,
+    "writer_bracket_contained": 11
+  },
+  {
+    "run": "lab-guard",
+    "condition": "guard-5-chains-48-rules",
+    "command": [
+      "nft",
+      "-j",
+      "list",
+      "ruleset"
+    ],
+    "attempts": 200,
+    "nonzero_exit": 0,
+    "invalid_json": 0,
+    "duplicate_listings": 0,
+    "mixed_generation_listings": 0,
+    "writer": {
+      "attempts": 156
+    },
+    "writer_bracket_overlaps": 150,
+    "writer_bracket_contained": 12
+  },
+  {
+    "run": "lab-guard",
+    "condition": "guard-256-chains-512-rules",
+    "command": [
+      "nft",
+      "-j",
+      "list",
+      "table",
+      "inet",
+      "fvpn"
+    ],
+    "attempts": 200,
+    "nonzero_exit": 0,
+    "invalid_json": 0,
+    "duplicate_listings": 0,
+    "mixed_generation_listings": 0,
+    "writer": {
+      "attempts": 271
+    },
+    "writer_bracket_overlaps": 200,
+    "writer_bracket_contained": 62
+  },
+  {
+    "run": "lab-guard",
+    "condition": "guard-256-chains-512-rules",
+    "command": [
+      "nft",
+      "-j",
+      "list",
+      "ruleset"
+    ],
+    "attempts": 200,
+    "nonzero_exit": 0,
+    "invalid_json": 0,
+    "duplicate_listings": 0,
+    "mixed_generation_listings": 0,
+    "writer": {
+      "attempts": 271
+    },
+    "writer_bracket_overlaps": 200,
+    "writer_bracket_contained": 61
+  },
+  {
+    "run": "lab-final",
+    "condition": "static-5-chains-48-rules",
+    "command": [
+      "nft",
+      "-j",
+      "list",
+      "table",
+      "inet",
+      "fvpn"
+    ],
+    "attempts": 50,
+    "nonzero_exit": 0,
+    "invalid_json": 0,
+    "duplicate_listings": 0,
+    "mixed_generation_listings": 0,
+    "writer": {},
+    "writer_bracket_overlaps": 0,
+    "writer_bracket_contained": 0
+  },
+  {
+    "run": "lab-final",
+    "condition": "static-5-chains-48-rules",
+    "command": [
+      "nft",
+      "-j",
+      "list",
+      "ruleset"
+    ],
+    "attempts": 50,
+    "nonzero_exit": 0,
+    "invalid_json": 0,
+    "duplicate_listings": 0,
+    "mixed_generation_listings": 0,
+    "writer": {},
+    "writer_bracket_overlaps": 0,
+    "writer_bracket_contained": 0
+  },
+  {
+    "run": "lab-final",
+    "condition": "rules-5-chains-48-rules",
+    "command": [
+      "nft",
+      "-j",
+      "list",
+      "table",
+      "inet",
+      "fvpn"
+    ],
+    "attempts": 50,
+    "nonzero_exit": 0,
+    "invalid_json": 0,
+    "duplicate_listings": 0,
+    "mixed_generation_listings": 0,
+    "writer": {
+      "attempts": 38
+    },
+    "writer_bracket_overlaps": 42,
+    "writer_bracket_contained": 3
+  },
+  {
+    "run": "lab-final",
+    "condition": "rules-5-chains-48-rules",
+    "command": [
+      "nft",
+      "-j",
+      "list",
+      "ruleset"
+    ],
+    "attempts": 50,
+    "nonzero_exit": 0,
+    "invalid_json": 0,
+    "duplicate_listings": 0,
+    "mixed_generation_listings": 0,
+    "writer": {
+      "attempts": 38
+    },
+    "writer_bracket_overlaps": 43,
+    "writer_bracket_contained": 1
+  },
+  {
+    "run": "lab-final",
+    "condition": "replace-5-chains-48-rules",
+    "command": [
+      "nft",
+      "-j",
+      "list",
+      "table",
+      "inet",
+      "fvpn"
+    ],
+    "attempts": 50,
+    "nonzero_exit": 0,
+    "invalid_json": 0,
+    "duplicate_listings": 0,
+    "mixed_generation_listings": 0,
+    "writer": {
+      "attempts": 34
+    },
+    "writer_bracket_overlaps": 35,
+    "writer_bracket_contained": 0
+  },
+  {
+    "run": "lab-final",
+    "condition": "replace-5-chains-48-rules",
+    "command": [
+      "nft",
+      "-j",
+      "list",
+      "ruleset"
+    ],
+    "attempts": 50,
+    "nonzero_exit": 0,
+    "invalid_json": 0,
+    "duplicate_listings": 0,
+    "mixed_generation_listings": 0,
+    "writer": {
+      "attempts": 34
+    },
+    "writer_bracket_overlaps": 36,
+    "writer_bracket_contained": 0
+  },
+  {
+    "run": "lab-final",
+    "condition": "rules-256-chains-512-rules",
+    "command": [
+      "nft",
+      "-j",
+      "list",
+      "table",
+      "inet",
+      "fvpn"
+    ],
+    "attempts": 50,
+    "nonzero_exit": 0,
+    "invalid_json": 0,
+    "duplicate_listings": 0,
+    "mixed_generation_listings": 0,
+    "writer": {
+      "attempts": 71
+    },
+    "writer_bracket_overlaps": 50,
+    "writer_bracket_contained": 17
+  },
+  {
+    "run": "lab-final",
+    "condition": "rules-256-chains-512-rules",
+    "command": [
+      "nft",
+      "-j",
+      "list",
+      "ruleset"
+    ],
+    "attempts": 50,
+    "nonzero_exit": 0,
+    "invalid_json": 0,
+    "duplicate_listings": 0,
+    "mixed_generation_listings": 0,
+    "writer": {
+      "attempts": 71
+    },
+    "writer_bracket_overlaps": 50,
+    "writer_bracket_contained": 18
+  },
+  {
+    "run": "lab-final",
+    "condition": "replace-256-chains-512-rules",
+    "command": [
+      "nft",
+      "-j",
+      "list",
+      "table",
+      "inet",
+      "fvpn"
+    ],
+    "attempts": 50,
+    "nonzero_exit": 0,
+    "invalid_json": 0,
+    "duplicate_listings": 0,
+    "mixed_generation_listings": 0,
+    "writer": {
+      "attempts": 51
+    },
+    "writer_bracket_overlaps": 50,
+    "writer_bracket_contained": 0
+  },
+  {
+    "run": "lab-final",
+    "condition": "replace-256-chains-512-rules",
+    "command": [
+      "nft",
+      "-j",
+      "list",
+      "ruleset"
+    ],
+    "attempts": 50,
+    "nonzero_exit": 0,
+    "invalid_json": 0,
+    "duplicate_listings": 0,
+    "mixed_generation_listings": 0,
+    "writer": {
+      "attempts": 51
+    },
+    "writer_bracket_overlaps": 50,
+    "writer_bracket_contained": 0
+  }
+]

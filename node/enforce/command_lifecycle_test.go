@@ -49,6 +49,18 @@ func TestD133_CommandLifecycleOutcomes(t *testing.T) {
 				t.Fatal(records)
 			}
 			r := records[0]
+			for _, observation := range []struct {
+				state  string
+				sample CommandResources
+			}{{r.ContextBefore, r.Before}, {r.ContextAfter, r.After}} {
+				want := "install_bound"
+				if observation.state != "none" {
+					want = "context_" + observation.state
+				}
+				if observation.sample.SkipReason != want || observation.sample.Bracket.Before.Available || observation.sample.Bracket.After.Available {
+					t.Fatalf("install resource availability: %+v want %s", observation, want)
+				}
+			}
 			if r.OK != (mode == "ok") || (err == nil) != r.OK || r.Kind != "nft" || r.Phase != "install" {
 				t.Fatalf("%+v %v", r, err)
 			}
