@@ -1,6 +1,6 @@
 # Handover index
 
-**Current cut — [follow-up 28](follow-up-28.md) (2026-11-01 EST):** Through #390: r19 H-1 / M-2 / L-2 fixed; devstack 25 closure explained as tracer interference; native delivery delay remains. Updates 14 adopts parent receipts, AT23–AT27 5 / 5. Decisions through D-141 remain provisional. Node diagnostics and traceroute guidance added; RELATED ICMP owner question open. Historical failures stay failed.
+**Current cut — [follow-up 28](follow-up-28.md) (2026-11-01 EST):** Through #390: r19 H-1 / M-2 / L-2 fixed; devstack 25 closure explained as tracer interference; native delivery delay remains. Updates 14 adopts parent receipts, AT23–AT27 5 / 5. D-135–D-138, D-140 and D-141 remain provisional. Node diagnostics and traceroute guidance added; RELATED ICMP owner question open. Historical failures stay failed.
 **Previous cut — [follow-up 27](follow-up-27.md) (2026-11-01 EST):** Through #385: isolation F14-01 fails the D-104 boundary; members 15 adds serving-node ingress gaps; r19 archived with routed findings. D-140 permits boundary scheduling only. D-141 closes D-139: option (b) is not implemented; option (c) stays. Historical failures stay failed. No new operator guidance.
 
 Historical follow-up 17 cutoff: [follow-up 17 operator evidence](follow-up-17.md). #313
