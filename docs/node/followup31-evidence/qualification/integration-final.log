@@ -1,0 +1,3 @@
+TMPDIR='WORKTREE/.agent/tmp' GOTMPDIR='WORKTREE/.agent/tmp' CGO_ENABLED=0 GOTOOLCHAIN=local go test -count=1 -tags integration ./node/agent/...
+ok      github.com/TED-H-com/Freedom-VPN/node/agent     65.901s
+ok      github.com/TED-H-com/Freedom-VPN/node/agent/cmd/fvpn-agent      0.046s

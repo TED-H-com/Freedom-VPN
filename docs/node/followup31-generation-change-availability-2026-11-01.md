@@ -327,6 +327,14 @@ unqualified pre/post host samples; no quiet-host performance comparison is
 claimed. Final repository qualification is recorded in the hand-off and
 qualification artifacts.
 
+The first final node unit gate exposed a separate fixture clock mismatch:
+`TestReviewD056_HealthAnswerBeforeDNSApply/lease_revoke_before_evaluate` rejected
+`generated_in_future` after 3.09 s. Fake control used wall time while attestation
+validation used a stationary manual clock. Both subtests now use the existing
+`alignControlClock`; the validator and its two-second tolerance are unchanged.
+The failed receipt is retained; this test-only correction does not alter the
+qualified agent binary or generation experiment.
+
 ## Alternatives and invariants for review
 
 Let **D** be the earliest original same-boot monotonic cutoff over old node
@@ -502,7 +510,11 @@ not a guard-only percentile. No cause is inferred from CPU/cgroup correlation.
 
 Acceptance requires no later revoked-source cutoff than paired A's permitted
 cutoff/old D, no new/additional/stale binding admitted, no larger allowed
-expiry bound, and improved sibling outage/loss distributions in both B legs.
+expiry bound, and improved sibling outage/loss distributions in both B legs. As a proposed
+trial acceptance rule, all four reported percentiles must be non-worse, with
+strictly lower p90 and p99 for restrictive transitions in both B legs; retain
+normal and injected-failure populations separately and reject unmatched safety
+failures. This is a review criterion, not a new production SLA.
 A failed live timing gate triggers the D-133 comparison and remains unresolved
 until attributed; no threshold inflation. Also inject delayed/replayed/wrong-
 generation/empty leases, exhausted I/O budgets/Retry-After, desired supersession,
@@ -543,7 +555,8 @@ receipts are retained. Earlier 30-run populations used the original stop helper.
 `sha256.json` inventories the published native JSON/JSONL, derived summaries,
 source receipts, sanitized qualification logs and host records. Byte copies of
 members 12's inputs are pinned separately. Host process command text and absolute
-workspace paths are omitted from public logs; complete private originals remain
+workspace paths are omitted from public logs; tabs/trailing whitespace are
+normalized only in those log copies; complete private originals remain
 under `.agent/f31/`. The historical A1 producer excerpt retains selected values,
 not the original JSON byte formatting. No private keys or application payloads
 are collected. Docker containers, images, networks and volumes are lane-prefixed

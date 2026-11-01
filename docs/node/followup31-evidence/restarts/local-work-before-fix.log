@@ -1,0 +1,11 @@
+=== RUN   TestF31_AT13_CancellationDuringLocalWorkKeepsRestartAuthorization
+=== RUN   TestF31_AT13_CancellationDuringLocalWorkKeepsRestartAuthorization/apply
+    followup31_restart_test.go:82: cancellation interrupted local apply: storage=false persist=false serving=false error=&{HEALTH_CHECK_FAILED serving verification canceled 2026-11-01 08:50:59.96950774 +0000 UTC apply}
+=== RUN   TestF31_AT13_CancellationDuringLocalWorkKeepsRestartAuthorization/member_path
+    followup31_restart_test.go:82: cancellation interrupted local member_path: storage=false persist=false serving=false error=&{HEALTH_CHECK_FAILED member_path_unconfigured 2026-11-01 08:51:00.088055127 +0000 UTC apply}
+--- FAIL: TestF31_AT13_CancellationDuringLocalWorkKeepsRestartAuthorization (0.23s)
+    --- FAIL: TestF31_AT13_CancellationDuringLocalWorkKeepsRestartAuthorization/apply (0.12s)
+    --- FAIL: TestF31_AT13_CancellationDuringLocalWorkKeepsRestartAuthorization/member_path (0.11s)
+FAIL
+FAIL    github.com/TED-H-com/Freedom-VPN/node/agent     0.238s
+FAIL

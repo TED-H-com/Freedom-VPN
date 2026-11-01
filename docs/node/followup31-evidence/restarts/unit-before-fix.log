@@ -1,0 +1,45 @@
+=== RUN   TestF31_AT13_CancellationAfterLiveReadKeepsRestartAuthorization
+    followup31_restart_test.go:33: canceled Step poisoned healthy storage/serving: storage=false persist=true serving=false; time=2026-11-01T03:23:00.154-05:00 level=INFO msg="baseline write" writer=agent cause=boot_unverified phase=begin mono_ns=104917670419695 generation=0
+        time=2026-11-01T03:23:00.154-05:00 level=INFO msg="baseline write" writer=agent cause=boot_unverified phase=end mono_ns=104917670456090 succeeded=true
+        time=2026-11-01T03:23:00.163-05:00 level=INFO msg="meter epoch opened" epoch_id=01a19634-6b42-7536-867a-8e7a6acf41bc reason=baseline boot_id=01a19634-6b22-77a3-883a-d607e7c111b4 event_seq=0
+        time=2026-11-01T03:23:00.165-05:00 level=INFO msg="usage checkpoint applied"
+        time=2026-11-01T03:23:00.179-05:00 level=INFO msg="bootstrap stored"
+        time=2026-11-01T03:23:00.189-05:00 level=INFO msg="usage status available"
+        time=2026-11-01T03:23:00.189-05:00 level=WARN msg="updater journal snapshot" reason=missing
+        time=2026-11-01T03:23:00.202-05:00 level=INFO msg="baseline write" writer=agent cause=policy_missing phase=begin mono_ns=104917718699835 generation=1
+        time=2026-11-01T03:23:00.202-05:00 level=INFO msg="baseline write" writer=agent cause=policy_missing phase=end mono_ns=104917718707803 succeeded=true
+        time=2026-11-01T03:23:00.203-05:00 level=INFO msg="meter epoch closed" epoch_id=01a19634-6b42-7536-867a-8e7a6acf41bc reason=final_sample event_seq=0
+        time=2026-11-01T03:23:00.203-05:00 level=INFO msg="baseline write" writer=agent cause=policy_missing phase=begin mono_ns=104917719904808 generation=1
+        time=2026-11-01T03:23:00.203-05:00 level=INFO msg="baseline write" writer=agent cause=policy_missing phase=end mono_ns=104917719909312 succeeded=true
+        time=2026-11-01T03:23:00.203-05:00 level=INFO msg="baseline write" writer=agent cause=policy_missing phase=begin mono_ns=104917719994573 generation=1
+        time=2026-11-01T03:23:00.203-05:00 level=INFO msg="baseline write" writer=agent cause=policy_missing phase=end mono_ns=104917719997788 succeeded=true
+        time=2026-11-01T03:23:00.208-05:00 level=INFO msg="meter epoch opened" epoch_id=01a19634-6b6f-7a30-b206-3073cfb0827c reason=after_final_sample boot_id=01a19634-6b22-77a3-883a-d607e7c111b4 event_seq=0
+        time=2026-11-01T03:23:00.225-05:00 level=WARN msg="desired state" err="control request ended"
+        time=2026-11-01T03:23:00.225-05:00 level=INFO msg="baseline write" writer=agent cause=meter_storage_failed phase=begin mono_ns=104917741760473 generation=2
+        time=2026-11-01T03:23:00.225-05:00 level=INFO msg="baseline write" writer=agent cause=meter_storage_failed phase=end mono_ns=104917741765739 succeeded=true
+        time=2026-11-01T03:23:00.225-05:00 level=WARN msg="final sample" err="context canceled"
+        time=2026-11-01T03:23:00.225-05:00 level=INFO msg="baseline write" writer=agent cause=meter_storage_failed phase=begin mono_ns=104917741771814 generation=2
+        time=2026-11-01T03:23:00.225-05:00 level=INFO msg="baseline write" writer=agent cause=meter_storage_failed phase=end mono_ns=104917741775548 succeeded=true
+        time=2026-11-01T03:23:00.225-05:00 level=INFO msg="baseline write" writer=agent cause=meter_storage_failed phase=begin mono_ns=104917741825539 generation=2
+        time=2026-11-01T03:23:00.225-05:00 level=INFO msg="baseline write" writer=agent cause=meter_storage_failed phase=end mono_ns=104917741829735 succeeded=true
+        time=2026-11-01T03:23:00.225-05:00 level=WARN msg="final sample" err="context canceled"
+        time=2026-11-01T03:23:00.225-05:00 level=INFO msg="baseline write" writer=agent cause=meter_storage_failed phase=begin mono_ns=104917741833452 generation=2
+        time=2026-11-01T03:23:00.225-05:00 level=INFO msg="baseline write" writer=agent cause=meter_storage_failed phase=end mono_ns=104917741834944 succeeded=true
+        time=2026-11-01T03:23:00.225-05:00 level=WARN msg="usage status unavailable: canceled"
+--- FAIL: TestF31_AT13_CancellationAfterLiveReadKeepsRestartAuthorization (0.10s)
+=== RUN   TestF31_CommandLifecycleRequiresBothTimingGates
+=== RUN   TestF31_CommandLifecycleRequiresBothTimingGates/disabled
+=== RUN   TestF31_CommandLifecycleRequiresBothTimingGates/mode_only
+=== RUN   TestF31_CommandLifecycleRequiresBothTimingGates/path_only
+=== RUN   TestF31_CommandLifecycleRequiresBothTimingGates/enabled
+--- PASS: TestF31_CommandLifecycleRequiresBothTimingGates (0.52s)
+    --- PASS: TestF31_CommandLifecycleRequiresBothTimingGates/disabled (0.14s)
+    --- PASS: TestF31_CommandLifecycleRequiresBothTimingGates/mode_only (0.12s)
+    --- PASS: TestF31_CommandLifecycleRequiresBothTimingGates/path_only (0.13s)
+    --- PASS: TestF31_CommandLifecycleRequiresBothTimingGates/enabled (0.13s)
+=== RUN   TestF31_StaleGenerationBaselinePrecedesRenewalWithoutCandidateApply
+    followup31_test.go:97: matching renewal requires a subsequent serving Apply
+--- FAIL: TestF31_StaleGenerationBaselinePrecedesRenewalWithoutCandidateApply (0.10s)
+FAIL
+FAIL    github.com/TED-H-com/Freedom-VPN/node/agent     0.728s
+FAIL

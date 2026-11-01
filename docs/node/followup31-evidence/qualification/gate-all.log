@@ -1,0 +1,121 @@
+ok      github.com/TED-H-com/Freedom-VPN/apps/control   0.267s
+?       github.com/TED-H-com/Freedom-VPN/apps/control/cmd/fvpn-control  [no test files]
+?       github.com/TED-H-com/Freedom-VPN/apps/portal/node_modules/flatted/golang/pkg/flatted    [no test files]
+ok      github.com/TED-H-com/Freedom-VPN/apps/worker    0.012s
+?       github.com/TED-H-com/Freedom-VPN/apps/worker/cmd/fvpn-worker    [no test files]
+ok      github.com/TED-H-com/Freedom-VPN/contracts      (cached)
+?       github.com/TED-H-com/Freedom-VPN/contracts/internal/cmd/contractsgen    [no test files]
+?       github.com/TED-H-com/Freedom-VPN/contracts/internal/gen [no test files]
+?       github.com/TED-H-com/Freedom-VPN/db/migrations  [no test files]
+ok      github.com/TED-H-com/Freedom-VPN/internal/audit (cached)
+ok      github.com/TED-H-com/Freedom-VPN/internal/auth  (cached)
+ok      github.com/TED-H-com/Freedom-VPN/internal/billing       0.014s
+ok      github.com/TED-H-com/Freedom-VPN/internal/config        0.011s
+ok      github.com/TED-H-com/Freedom-VPN/internal/db    (cached)
+?       github.com/TED-H-com/Freedom-VPN/internal/db/cmd/fvpn-db-sweep  [no test files]
+?       github.com/TED-H-com/Freedom-VPN/internal/db/cmd/fvpn-migrate   [no test files]
+ok      github.com/TED-H-com/Freedom-VPN/internal/db/dbtest     (cached)
+ok      github.com/TED-H-com/Freedom-VPN/internal/desiredstate  (cached)
+ok      github.com/TED-H-com/Freedom-VPN/internal/devices       (cached)
+ok      github.com/TED-H-com/Freedom-VPN/internal/dnsfeeds      (cached)
+ok      github.com/TED-H-com/Freedom-VPN/internal/dnspolicy     (cached)
+?       github.com/TED-H-com/Freedom-VPN/internal/dnspolicy/cmd/bootstrap       [no test files]
+ok      github.com/TED-H-com/Freedom-VPN/internal/dnspublish    (cached)
+?       github.com/TED-H-com/Freedom-VPN/internal/dnspublish/operation  [no test files]
+ok      github.com/TED-H-com/Freedom-VPN/internal/dnspublish/store      (cached)
+ok      github.com/TED-H-com/Freedom-VPN/internal/enrollment    (cached)
+ok      github.com/TED-H-com/Freedom-VPN/internal/entitlement   (cached)
+ok      github.com/TED-H-com/Freedom-VPN/internal/exits (cached)
+ok      github.com/TED-H-com/Freedom-VPN/internal/fleetupdate   (cached)
+ok      github.com/TED-H-com/Freedom-VPN/internal/fup   (cached)
+ok      github.com/TED-H-com/Freedom-VPN/internal/httpapi       (cached)
+?       github.com/TED-H-com/Freedom-VPN/internal/httpapi/cmd/controlgen        [no test files]
+ok      github.com/TED-H-com/Freedom-VPN/internal/httpapi/gen   (cached)
+ok      github.com/TED-H-com/Freedom-VPN/internal/installerjob  0.058s
+ok      github.com/TED-H-com/Freedom-VPN/internal/leases        (cached)
+?       github.com/TED-H-com/Freedom-VPN/internal/members       [no test files]
+?       github.com/TED-H-com/Freedom-VPN/internal/members/httpadapter   [no test files]
+ok      github.com/TED-H-com/Freedom-VPN/internal/members/issuer        (cached)
+?       github.com/TED-H-com/Freedom-VPN/internal/members/runtime       [no test files]
+ok      github.com/TED-H-com/Freedom-VPN/internal/netbird       2.147s
+ok      github.com/TED-H-com/Freedom-VPN/internal/nodes (cached)
+?       github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx       [no test files]
+ok      github.com/TED-H-com/Freedom-VPN/internal/nodes/httpwire        (cached)
+ok      github.com/TED-H-com/Freedom-VPN/internal/nodes/nodestest       (cached)
+ok      github.com/TED-H-com/Freedom-VPN/internal/operations    (cached)
+ok      github.com/TED-H-com/Freedom-VPN/internal/pki   0.080s
+?       github.com/TED-H-com/Freedom-VPN/internal/pki/pkitest   [no test files]
+ok      github.com/TED-H-com/Freedom-VPN/internal/policies      (cached)
+?       github.com/TED-H-com/Freedom-VPN/internal/policies/policiestest [no test files]
+ok      github.com/TED-H-com/Freedom-VPN/internal/releases      (cached)
+?       github.com/TED-H-com/Freedom-VPN/internal/releases/releasetest  [no test files]
+ok      github.com/TED-H-com/Freedom-VPN/internal/signing       0.163s
+ok      github.com/TED-H-com/Freedom-VPN/internal/usage (cached)
+ok      github.com/TED-H-com/Freedom-VPN/internal/usage/cmd/fvpn-usage-admin    (cached)
+?       github.com/TED-H-com/Freedom-VPN/internal/usage/usagetest       [no test files]
+ok      github.com/TED-H-com/Freedom-VPN/node/agent     71.191s
+ok      github.com/TED-H-com/Freedom-VPN/node/agent/cmd/fvpn-agent      0.077s
+ok      github.com/TED-H-com/Freedom-VPN/node/dns       (cached)
+ok      github.com/TED-H-com/Freedom-VPN/node/enforce   0.851s
+ok      github.com/TED-H-com/Freedom-VPN/node/internal/agentstore       0.226s
+ok      github.com/TED-H-com/Freedom-VPN/node/internal/controlclient    (cached)
+ok      github.com/TED-H-com/Freedom-VPN/node/internal/fakecontrol      0.058s
+?       github.com/TED-H-com/Freedom-VPN/node/internal/fakecontrol/cmd/fvpn-labcontrol  [no test files]
+ok      github.com/TED-H-com/Freedom-VPN/node/internal/healthattest     0.075s
+ok      github.com/TED-H-com/Freedom-VPN/node/internal/meter    0.810s
+?       github.com/TED-H-com/Freedom-VPN/node/internal/nodelock [no test files]
+ok      github.com/TED-H-com/Freedom-VPN/node/internal/timeanchor       (cached)
+ok      github.com/TED-H-com/Freedom-VPN/node/internal/updatejournal    1.026s
+ok      github.com/TED-H-com/Freedom-VPN/node/internal/usagestore       1.369s
+ok      github.com/TED-H-com/Freedom-VPN/node/internal/usageupload      1.454s
+ok      github.com/TED-H-com/Freedom-VPN/node/nodelock  0.033s
+ok      github.com/TED-H-com/Freedom-VPN/node/updater   28.826s
+ok      github.com/TED-H-com/Freedom-VPN/node/updater/cmd/fvpn-updater  1.020s
+?       github.com/TED-H-com/Freedom-VPN/node/updater/fsutil    [no test files]
+ok      github.com/TED-H-com/Freedom-VPN/node/watchdog  0.153s
+?       github.com/TED-H-com/Freedom-VPN/node/watchdog/cmd/fvpn-watchdog        [no test files]
+ok      github.com/TED-H-com/Freedom-VPN/packaging/installer    8.111s
+?       github.com/TED-H-com/Freedom-VPN/packaging/installer/cmd/fvpn-node-install      [no test files]
+ok      github.com/TED-H-com/Freedom-VPN/packaging/release      0.015s
+?       github.com/TED-H-com/Freedom-VPN/packaging/release/cmd/fvpn-release     [no test files]
+ok      github.com/TED-H-com/Freedom-VPN/pkg/api        (cached)
+ok      github.com/TED-H-com/Freedom-VPN/pkg/api/presence       (cached)
+ok      github.com/TED-H-com/Freedom-VPN/pkg/apierr     (cached)
+ok      github.com/TED-H-com/Freedom-VPN/pkg/canonjson  (cached)
+ok      github.com/TED-H-com/Freedom-VPN/pkg/decstr     (cached)
+ok      github.com/TED-H-com/Freedom-VPN/pkg/envelope   (cached)
+ok      github.com/TED-H-com/Freedom-VPN/tests/backup   0.019s
+ok      github.com/TED-H-com/Freedom-VPN/tests/e2e      0.324s
+ok      github.com/TED-H-com/Freedom-VPN/tests/e2e/at/enrollment        (cached)
+ok      github.com/TED-H-com/Freedom-VPN/tests/e2e/at/isolation 2.515s
+ok      github.com/TED-H-com/Freedom-VPN/tests/e2e/at/members   (cached)
+ok      github.com/TED-H-com/Freedom-VPN/tests/e2e/at/members/cmd/probe (cached)
+?       github.com/TED-H-com/Freedom-VPN/tests/e2e/at/secops    [no test files]
+?       github.com/TED-H-com/Freedom-VPN/tests/e2e/at/secops/proxyprobe [no test files]
+ok      github.com/TED-H-com/Freedom-VPN/tests/e2e/at/updates   0.023s
+ok      github.com/TED-H-com/Freedom-VPN/tests/e2e/at/usage     3.022s
+?       github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-control [no test files]
+?       github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-fixture-probe   [no test files]
+ok      github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-idp     (cached)
+?       github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-member-session  [no test files]
+?       github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-native-observe  [no test files]
+?       github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-nbbootstrap     [no test files]
+ok      github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-nodeconfig      0.067s
+ok      github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-origin  (cached)
+ok      github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-payment 0.014s
+ok      github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-prepare 0.176s
+ok      github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/counterread (cached)
+ok      github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/dnsrelay    0.104s
+ok      github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/granttrace  (cached)
+ok      github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/idplogin    0.004s
+ok      github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/labtls      (cached)
+ok      github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/nativecapture       (cached)
+?       github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/offertrace  [no test files]
+ok      github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/probeauth   (cached)
+ok      github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/streamstats (cached)
+ok      github.com/TED-H-com/Freedom-VPN/tests/handover 0.711s
+ok      github.com/TED-H-com/Freedom-VPN/tests/netlab   (cached)
+?       github.com/TED-H-com/Freedom-VPN/tests/netlab/at        [no test files]
+?       github.com/TED-H-com/Freedom-VPN/tests/netlab/cmd/fvpn-netlab   [no test files]
+?       github.com/TED-H-com/Freedom-VPN/tests/netlab/dns/cmd/cache-authority   [no test files]
+?       github.com/TED-H-com/Freedom-VPN/tests/netlab/dns/internal/cachefixture [no test files]

@@ -1,0 +1,176 @@
+{
+  "scope": "Final required gates; original failures retained separately. Consumer/review receipts reused after test-only clock alignment.",
+  "source_commit": "4448ed1997d6298db946754fd5b39237a3903dd6",
+  "runtime_source": "98900942",
+  "gates": [
+    {
+      "name": "node-lint-test-build",
+      "command": [
+        "make",
+        "-f",
+        "mk/node.mk",
+        "node-lint",
+        "node-test",
+        "node-build"
+      ],
+      "exit": 0,
+      "elapsed_seconds": 68.1938379159983
+    },
+    {
+      "name": "consumers",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "./node/updater/...",
+        "./packaging/installer/..."
+      ],
+      "exit": 0,
+      "elapsed_seconds": 23.22070388800057,
+      "source_receipt": "gates-final/consumers.log; runtime source unchanged by fixture-clock repair"
+    },
+    {
+      "name": "review",
+      "command": [
+        "go",
+        "test",
+        "./node/agent",
+        "./node/enforce",
+        "-run",
+        "^TestReviewR1[67]_",
+        "-count=1"
+      ],
+      "exit": 0,
+      "elapsed_seconds": 10.426077397991321,
+      "source_receipt": "gates-final/review.log; runtime source unchanged by fixture-clock repair"
+    },
+    {
+      "name": "all",
+      "command": [
+        "go",
+        "test",
+        "./..."
+      ],
+      "exit": 0,
+      "elapsed_seconds": 72.45132749799814
+    },
+    {
+      "name": "root-lint",
+      "command": [
+        "make",
+        "go-lint",
+        "go-with-disk-tmp=set -eu;"
+      ],
+      "exit": 0,
+      "elapsed_seconds": 1.228871210012585
+    },
+    {
+      "name": "vet",
+      "command": [
+        "go",
+        "vet",
+        "./..."
+      ],
+      "exit": 0,
+      "elapsed_seconds": 0.28835581499151886
+    },
+    {
+      "name": "evidence",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "./tests/netlab",
+        "-run",
+        "^TestCommittedEvidenceFiles_ValidAndHygieneClean$",
+        "-v"
+      ],
+      "exit": 0,
+      "elapsed_seconds": 1.1476171340036672
+    }
+  ],
+  "prior_node_gate": {
+    "name": "node-lint-test-build",
+    "command": [
+      "make",
+      "-f",
+      "mk/node.mk",
+      "node-lint",
+      "node-test",
+      "node-build"
+    ],
+    "exit": 2,
+    "elapsed_seconds": 66.0370598330046
+  },
+  "docker_inventory": {
+    "containers": [],
+    "images": [],
+    "networks": [],
+    "volumes": []
+  },
+  "checks": {
+    "comparison_base": "de6d2e0246892b5744f68864c3d6d2854945c40a",
+    "gofmt_tracked_go": "empty",
+    "whitespace": "pass",
+    "hygiene": "zero matches",
+    "owned_paths": "pass",
+    "changed_files": [
+      "docs/node/followup31-evidence/generations-final/analysis.json",
+      "docs/node/followup31-evidence/generations-final/continuous.json",
+      "docs/node/followup31-evidence/generations-final/host.json",
+      "docs/node/followup31-evidence/generations-final/operations.jsonl",
+      "docs/node/followup31-evidence/generations-final/source.json",
+      "docs/node/followup31-evidence/generations-final/transitions.json",
+      "docs/node/followup31-evidence/generations/analysis.json",
+      "docs/node/followup31-evidence/generations/continuous.json",
+      "docs/node/followup31-evidence/generations/host.json",
+      "docs/node/followup31-evidence/generations/operations.jsonl",
+      "docs/node/followup31-evidence/generations/result.json",
+      "docs/node/followup31-evidence/generations/source.json",
+      "docs/node/followup31-evidence/generations/transitions.json",
+      "docs/node/followup31-evidence/inputs/members12-AT02-TRACE.md",
+      "docs/node/followup31-evidence/inputs/members12-policy-missing.json",
+      "docs/node/followup31-evidence/inputs/pins.json",
+      "docs/node/followup31-evidence/qualification/agent-final-host.json",
+      "docs/node/followup31-evidence/qualification/agent-final.log",
+      "docs/node/followup31-evidence/qualification/agent-qualified-host.json",
+      "docs/node/followup31-evidence/qualification/agent-qualified.log",
+      "docs/node/followup31-evidence/qualification/first-final-node-gate.log",
+      "docs/node/followup31-evidence/qualification/generations-final-host.json",
+      "docs/node/followup31-evidence/qualification/generations-final.log",
+      "docs/node/followup31-evidence/qualification/integration-final-host.json",
+      "docs/node/followup31-evidence/qualification/integration-final.log",
+      "docs/node/followup31-evidence/qualification/live-final-host.json",
+      "docs/node/followup31-evidence/qualification/live-final.log",
+      "docs/node/followup31-evidence/restarts/collector-after-fix.log",
+      "docs/node/followup31-evidence/restarts/collector-before-fix.log",
+      "docs/node/followup31-evidence/restarts/first-full-suite-failure.json",
+      "docs/node/followup31-evidence/restarts/first-full-suite-tests.log",
+      "docs/node/followup31-evidence/restarts/fixed-30.json",
+      "docs/node/followup31-evidence/restarts/fixed-source.json",
+      "docs/node/followup31-evidence/restarts/full-suite-pass.json",
+      "docs/node/followup31-evidence/restarts/historical-A1-producer-excerpt.json",
+      "docs/node/followup31-evidence/restarts/host.json",
+      "docs/node/followup31-evidence/restarts/local-work-before-fix.log",
+      "docs/node/followup31-evidence/restarts/local-work-qualified-unit.log",
+      "docs/node/followup31-evidence/restarts/main-30.json",
+      "docs/node/followup31-evidence/restarts/main-binary.json",
+      "docs/node/followup31-evidence/restarts/main-source.json",
+      "docs/node/followup31-evidence/restarts/unit-before-fix.log",
+      "docs/node/followup31-evidence/sha256.json",
+      "docs/node/followup31-generation-change-availability-2026-11-01.md",
+      "node/agent/engine.go",
+      "node/agent/followup21_netlab_test.go",
+      "node/agent/followup31_netlab_test.go",
+      "node/agent/followup31_restart_test.go",
+      "node/agent/followup31_test.go",
+      "node/agent/review_d056_test.go",
+      "tests/netlab/agent/generation-analysis.py",
+      "tests/netlab/agent/run-live.py",
+      "tests/netlab/agent/scenario_f31_test.go",
+      "tests/netlab/agent/scenario_test.go",
+      "tests/netlab/agent/timing-probes.py",
+      "tests/netlab/agent/timing_analysis_test.py"
+    ]
+  }
+}

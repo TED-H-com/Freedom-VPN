@@ -1,0 +1,364 @@
+python3 -B -m unittest discover -s tests/netlab/agent -p timing_analysis_test.py
+...
+----------------------------------------------------------------------
+Ran 3 tests in 0.001s
+
+OK
+make[1]: Entering directory 'WORKTREE'
+docker build -t fvpn-w2-agent-core-f31:lab WORKTREE/tests/netlab
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 965B done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/ubuntu:24.04
+#2 DONE 0.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [internal] load build context
+#4 transferring context: 1.07kB done
+#4 DONE 0.0s
+
+#5 [1/4] FROM docker.io/library/ubuntu:24.04@sha256:fe81560990fae86dc4743202b2cb4d3df98d0bcf949173cecef15ce1127ef852
+#5 resolve docker.io/library/ubuntu:24.04@sha256:fe81560990fae86dc4743202b2cb4d3df98d0bcf949173cecef15ce1127ef852 0.0s done
+#5 DONE 0.0s
+
+#6 [2/4] RUN apt-get update     && apt-get install -y --no-install-recommends         nftables         iproute2         wireguard-tools         conntrack         iperf3         tcpdump         ethtool         python3         iputils-ping         procps         ca-certificates     && rm -rf /var/lib/apt/lists/*
+#6 CACHED
+
+#7 [3/4] RUN cp -a /usr/bin/wg /usr/local/bin/wg
+#7 CACHED
+
+#8 [4/4] COPY scripts/ /opt/netlab/scripts/
+#8 CACHED
+
+#9 exporting to image
+#9 exporting layers done
+#9 exporting manifest sha256:79e39ff73c0b5c0756ea90d61ee53a398cfaedc4f7aac458a5ed688e61705f9e done
+#9 exporting config sha256:a1b56d64e3fd12d4119799c2037901a3e9d7017046315b6dc8530877b479ef79 done
+#9 exporting attestation manifest sha256:d16db7d6b96bd8042a063c77acba3852b067552ea922bcaa0d6575a8a7006dc3 done
+#9 exporting manifest list sha256:81c0966fa7d35fbdd8a654adaf11af2cb3316acc26f694209d9f8cebde6ab20b done
+#9 naming to docker.io/library/fvpn-w2-agent-core-f31:lab done
+#9 unpacking to docker.io/library/fvpn-w2-agent-core-f31:lab 0.0s done
+#9 DONE 0.1s
+docker rm -f fvpn-w2-agent-core-f31 >/dev/null 2>&1 || true
+make -f mk/netlab.mk netlab-wipe-scratch FVPN_LAB_PREFIX='fvpn-w2-agent-core-f31'
+make[2]: Entering directory 'WORKTREE'
+mkdir -p WORKTREE/.agent/tmp/fvpn-w2-agent-core-f31-scratch
+docker rm -f fvpn-w2-agent-core-f31-wipe >/dev/null 2>&1 || true
+docker run --rm --name fvpn-w2-agent-core-f31-wipe --network none \
+        -v WORKTREE/.agent/tmp/fvpn-w2-agent-core-f31-scratch:/scratch fvpn-w2-agent-core-f31:lab \
+        find /scratch -mindepth 1 -delete
+make[2]: Leaving directory 'WORKTREE'
+docker network inspect fvpn-w2-agent-core-f31-dns >/dev/null 2>&1 || docker network create fvpn-w2-agent-core-f31-dns
+2a2a81b76a21319160380e8fc019433690a1913163e39a929e4c56db8a10e47d
+docker run -d --name fvpn-w2-agent-core-f31 --privileged --network fvpn-w2-agent-core-f31-dns \
+        --cap-add NET_ADMIN --cap-add SYS_TIME \
+        -v WORKTREE:/work:ro \
+        -v WORKTREE/.agent/tmp/fvpn-w2-agent-core-f31-scratch:/scratch \
+        fvpn-w2-agent-core-f31:lab
+b5014474b914ad2c54c604bfba7e69a03681aaef46a60b272b34bb6cf0108517
+docker cp WORKTREE/.agent/tmp/fvpn-w2-agent-core-f31-fvpn-netlab fvpn-w2-agent-core-f31:/usr/local/bin/fvpn-netlab
+docker exec fvpn-w2-agent-core-f31 bash /work/tests/netlab/scripts/topology.sh
+topology: forwarding off before any path exists
+topology: underlay and transit links
+topology: routes
+topology: wireguard keys in /scratch (not the repo)
+topology: boot baseline before forwarding (§8.2)
+topology: listeners
+topology: wireguard handshakes
+topology: ready
+make[1]: Leaving directory 'WORKTREE'
+=== RUN   TestLabISO_F6_RecoveryAndEvidence
+    scenario_ab_recovery_test.go:163: ISO-F6-01/02: injection-to-contained-read=902.177202ms; removal-to-clean-link-up=620.477386ms; removal-to-counted-serving-observation=2.103633908s; applied=3 lease=3; original rejection rows retained; first counted observation qos=read_at=2026-11-01T08:59:03.846054107Z source=live candidate=2 verified=true {"generation":"2","phase":"verify","reads":20,"objects":6,"truncated":true,"sha256":"710fc38cc7614c2c283545f89e47f67147fd40d5ce16f7fef7c4cfd3922697c8"}
+--- PASS: TestLabISO_F6_RecoveryAndEvidence (7.76s)
+=== RUN   TestLabD087_D104_GrantRenewalExpiryCorrelation
+    scenario_ac_timing_test.go:114: D087 qualifying report=01a19655-8a8e-7d75-babf-e0155b148df3 generation=3; grant-ready to counted forwarding=2.856214268s counters=1404->12060; observation interval=3600s
+    scenario_ac_timing_test.go:160: docker exec python3 /work/tests/netlab/agent/timing-probes.py trace expiry_restart 107217364205328 /scratch/w2/expiry.json: exit status 1
+        Traceback (most recent call last):
+          File "/work/tests/netlab/agent/timing-probes.py", line 163, in <module>
+            restart_agent(sys.argv[2])
+          File "/work/tests/netlab/agent/timing-probes.py", line 146, in restart_agent
+            if Path(f'/proc/{pid}/stat').read_text().split()[2] == 'Z':
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+          File "/usr/lib/python3.12/pathlib.py", line 1030, in read_text
+            return f.read()
+                   ^^^^^^^^
+        ProcessLookupError: [Errno 3] No such process
+        Traceback (most recent call last):
+          File "/work/tests/netlab/agent/timing-probes.py", line 174, in <module>
+            trace(sys.argv[2], int(sys.argv[3]), sys.argv[4])
+          File "/work/tests/netlab/agent/timing-probes.py", line 114, in trace
+            raise RuntimeError('restart did not complete')
+        RuntimeError: restart did not complete
+    scenario_ac_timing_test.go:134: artifact unavailable: expiry.json
+    scenario_ac_timing_test.go:134: artifact unavailable: expiry.json.restart.json
+--- FAIL: TestLabD087_D104_GrantRenewalExpiryCorrelation (131.68s)
+=== RUN   TestLabUsageLedger
+SUMMARY usage counters=153400 final-sample=1
+SUMMARY usage acked_through=83 events=83
+SUMMARY usage watermark-refused=1
+SUMMARY usage watermark-new-epoch=01a19657-9be4-7f02-9f90-cb751d7f267a outbox=83
+--- PASS: TestLabUsageLedger (6.16s)
+=== RUN   TestLabExternalMeterReset
+SUMMARY external epoch=01a19657-95db-73ca-892b-1be5c0ca4c87->01a19657-ac73-77b4-a7f2-0483eba09e9d gap=1 restored=1 elapsed=1.022s
+--- PASS: TestLabExternalMeterReset (3.70s)
+=== RUN   TestD116_AT10_InstallerMarkerEnrollment
+    scenario_d116_test.go:59: set FVPN_D116_MARKER=1 before TestMain enrollment
+--- SKIP: TestD116_AT10_InstallerMarkerEnrollment (0.01s)
+=== RUN   TestLab08_HealthAttestationUnpublished
+--- PASS: TestLab08_HealthAttestationUnpublished (2.90s)
+=== RUN   TestLab01_ForwardOnlyAfterLease
+SUMMARY AT-agent forward-after-lease=1
+--- PASS: TestLab01_ForwardOnlyAfterLease (2.12s)
+=== RUN   TestLab02_WatchdogEnforces
+SUMMARY AT-agent watchdog-enforces=1
+--- PASS: TestLab02_WatchdogEnforces (4.90s)
+=== RUN   TestLab03_KernelTimeout
+SUMMARY AT29 stop_after=9.333s
+--- PASS: TestLab03_KernelTimeout (9.69s)
+=== RUN   TestLab04_RestartKeepsVerifiedLease
+    scenario_test.go:144: last probe expect allow observed timeout
+    scenario_test.go:145: restart lost the valid stored lease:
+        table inet fvpn {
+                counter ctbase {
+                        packets 28 bytes 1762
+                }
+
+                counter ctv6 {
+                        packets 0 bytes 0
+                }
+
+                counter ctin {
+                        packets 0 bytes 0
+                }
+
+                counter ctbadns {
+                        packets 0 bytes 0
+                }
+
+                counter ctdeny {
+                        packets 0 bytes 0
+                }
+
+                counter cthost {
+                        packets 0 bytes 0
+                }
+
+                counter ctinv {
+                        packets 0 bytes 0
+                }
+
+                counter ctnodn {
+                        packets 0 bytes 0
+                }
+
+                counter ctunkd {
+                        packets 0 bytes 0
+                }
+
+                counter ctunku {
+                        packets 15 bytes 653
+                }
+
+                counter d_019a00000000700080000000000000a1 {
+                        packets 1707 bytes 76736
+                }
+
+                counter d_019a00000000700080000000000000a2 {
+                        packets 0 bytes 0
+                }
+
+                counter d_019a00000000700080000000000000b1 {
+                        packets 0 bytes 0
+                }
+
+                counter nd_019a00000000700080000000000000a1 {
+                        packets 0 bytes 0
+                }
+
+                counter nd_019a00000000700080000000000000a2 {
+                        packets 0 bytes 0
+                }
+
+                counter nd_019a00000000700080000000000000b1 {
+                        packets 0 bytes 0
+                }
+
+                counter nu_019a00000000700080000000000000a1 {
+                        packets 0 bytes 0
+                }
+
+                counter nu_019a00000000700080000000000000a2 {
+                        packets 0 bytes 0
+                }
+
+                counter nu_019a00000000700080000000000000b1 {
+                        packets 0 bytes 0
+                }
+
+                counter u_019a00000000700080000000000000a1 {
+                        packets 1868 bytes 100276
+                }
+
+                counter u_019a00000000700080000000000000a2 {
+                        packets 0 bytes 0
+                }
+
+                counter u_019a00000000700080000000000000b1 {
+                        packets 0 bytes 0
+                }
+
+                set allowed_v4 {
+                        type ipv4_addr
+                        flags timeout
+                }
+
+                set denied_v4 {
+                        type ipv4_addr
+                        flags interval
+                        auto-merge
+                        elements = { 0.0.0.0/8, 10.0.0.0/8,
+                                     100.64.0.0/10, 127.0.0.0/8,
+                                     169.254.0.0/16, 172.16.0.0/12,
+                                     192.0.0.0/24, 192.0.2.0/24,
+                                     192.88.99.0/24, 192.168.0.0/16,
+                                     198.18.0.0/15, 198.51.100.0/24,
+                                     224.0.0.0/3 }
+                }
+
+                set host_v4 {
+                        type ipv4_addr
+                        flags interval
+                        auto-merge
+                        elements = { 192.0.2.33, 192.0.2.37,
+                                     192.168.0.1 }
+                }
+
+                set resolver_v4 {
+                        type ipv4_addr
+                        elements = { 198.51.100.53 }
+                }
+
+                chain forward {
+                        type filter hook forward priority mangle; policy drop;
+                        ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment "fvpn_generation=0 fvpn_baseline=1 fvpn_metering=forward_admission_v1"
+                        ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment "fvpn_class=019a0000-0000-7000-8000-00000000000a:2f"
+                        ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment "fvpn_class=019a0000-0000-7000-8000-00000000000b:30"
+                        iifname "fv-fh" counter name "ctbase" drop
+                        oifname "fv-fh" counter name "ctbase" drop
+                        iifname "fv-fh" meta nfproto ipv6 counter name "ctv6" drop
+                        oifname "fv-fh" meta nfproto ipv6 counter name "ctv6" drop
+                }
+
+                chain input {
+                        type filter hook input priority mangle; policy accept;
+                        iifname "fv-fh" counter name "ctin" drop
+                        ip saddr 100.64.0.0/10 counter name "ctin" drop
+                }
+
+                chain output {
+                        type filter hook output priority mangle; policy accept;
+                }
+
+                chain postrouting {
+                        type nat hook postrouting priority srcnat; policy accept;
+                }
+        }
+
+        ==> /scratch/w2/agent.log <==
+        time=2026-11-01T09:01:34.976Z level=INFO msg="usage checkpoint applied"
+        time=2026-11-01T09:01:36.024Z level=INFO msg="usage status available"
+        time=2026-11-01T09:01:36.024Z level=WARN msg="updater journal snapshot" reason=missing
+        time=2026-11-01T09:01:36.262Z level=INFO msg="serving rules retained for restart" generation=5 policy_expires_mono_ns=110832501450180
+        time=2026-11-01T09:01:37.001Z level=INFO msg="usage checkpoint applied"
+        time=2026-11-01T09:01:37.003Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=88
+        time=2026-11-01T09:01:37.026Z level=INFO msg="serving rules adopted" generation=5 policy_expires_mono_ns=110832501450180
+        time=2026-11-01T09:01:41.916Z level=INFO msg="baseline write" writer=agent cause=boot_unverified phase=begin mono_ns=107239433358247 generation=5
+        time=2026-11-01T09:01:41.950Z level=INFO msg="baseline write" writer=agent cause=boot_unverified phase=end mono_ns=107239466868921 succeeded=true
+        time=2026-11-01T09:01:41.957Z level=INFO msg="usage checkpoint applied"
+        time=2026-11-01T09:01:42.079Z level=INFO msg="usage status available"
+        time=2026-11-01T09:01:42.079Z level=WARN msg="updater journal snapshot" reason=missing
+        time=2026-11-01T09:01:52.070Z level=INFO msg="baseline write" writer=agent cause=boot_unverified phase=begin mono_ns=107249586614993 generation=5
+        time=2026-11-01T09:01:52.116Z level=INFO msg="baseline write" writer=agent cause=boot_unverified phase=end mono_ns=107249632907767 succeeded=true
+        time=2026-11-01T09:01:52.124Z level=INFO msg="usage checkpoint applied"
+        time=2026-11-01T09:01:52.126Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=89
+        time=2026-11-01T09:01:53.759Z level=INFO msg="baseline write" writer=agent cause=boot_unverified phase=begin mono_ns=107251275361282 generation=5
+        time=2026-11-01T09:01:53.797Z level=INFO msg="baseline write" writer=agent cause=boot_unverified phase=end mono_ns=107251313985360 succeeded=true
+        time=2026-11-01T09:01:53.804Z level=INFO msg="usage checkpoint applied"
+        time=2026-11-01T09:01:54.808Z level=WARN msg=lease err="control request ended"
+        time=2026-11-01T09:01:54.808Z level=INFO msg="baseline write" writer=agent cause=lease_expired phase=begin mono_ns=107252325348875 generation=5
+        time=2026-11-01T09:01:54.842Z level=INFO msg="baseline write" writer=agent cause=lease_expired phase=end mono_ns=107252358836757 succeeded=true
+        time=2026-11-01T09:01:54.852Z level=INFO msg="meter epoch closed" epoch_id=01a19657-bd7b-7b27-896d-c1df46dc5c32 reason=final_sample event_seq=90
+        time=2026-11-01T09:01:54.852Z level=INFO msg="baseline write" writer=agent cause=lease_expired phase=begin mono_ns=107252368847531 generation=5
+        time=2026-11-01T09:01:54.878Z level=INFO msg="baseline write" writer=agent cause=lease_expired phase=end mono_ns=107252394656117 succeeded=true
+        time=2026-11-01T09:01:54.878Z level=INFO msg="usage status available"
+        time=2026-11-01T09:01:54.878Z level=WARN msg="updater journal snapshot" reason=missing
+        time=2026-11-01T09:01:55.893Z level=WARN msg=lease err="control request ended"
+        time=2026-11-01T09:01:55.894Z level=INFO msg="baseline write" writer=agent cause=lease_expired phase=begin mono_ns=107253410815503 generation=5
+        time=2026-11-01T09:01:55.925Z level=INFO msg="baseline write" writer=agent cause=lease_expired phase=end mono_ns=107253442176835 succeeded=true
+        time=2026-11-01T09:01:56.947Z level=WARN msg=lease err="control request ended"
+        time=2026-11-01T09:01:56.948Z level=INFO msg="baseline write" writer=agent cause=lease_expired phase=begin mono_ns=107254464932804 generation=5
+        time=2026-11-01T09:01:56.975Z level=INFO msg="baseline write" writer=agent cause=lease_expired phase=end mono_ns=107254491502090 succeeded=true
+        time=2026-11-01T09:01:57.998Z level=WARN msg=lease err="control request ended"
+        time=2026-11-01T09:01:57.999Z level=INFO msg="baseline write" writer=agent cause=lease_expired phase=begin mono_ns=107255515681913 generation=5
+        time=2026-11-01T09:01:58.034Z level=INFO msg="baseline write" writer=agent cause=lease_expired phase=end mono_ns=107255550432490 succeeded=true
+        time=2026-11-01T09:01:59.056Z level=WARN msg=lease err="control request ended"
+        time=2026-11-01T09:01:59.057Z level=INFO msg="baseline write" writer=agent cause=lease_expired phase=begin mono_ns=107256573523144 generation=5
+        time=2026-11-01T09:01:59.084Z level=INFO msg="baseline write" writer=agent cause=lease_expired phase=end mono_ns=107256601139937 succeeded=true
+        time=2026-11-01T09:02:00.107Z level=WARN msg=lease err="control request ended"
+        time=2026-11-01T09:02:00.108Z level=INFO msg="baseline write" writer=agent cause=lease_expired phase=begin mono_ns=107257624915860 generation=5
+        time=2026-11-01T09:02:00.135Z level=INFO msg="baseline write" writer=agent cause=lease_expired phase=end mono_ns=107257651797813 succeeded=true
+        time=2026-11-01T09:02:01.158Z level=WARN msg=lease err="control request ended"
+        time=2026-11-01T09:02:01.159Z level=INFO msg="baseline write" writer=agent cause=lease_expired phase=begin mono_ns=107258676011047 generation=5
+        time=2026-11-01T09:02:01.191Z level=INFO msg="baseline write" writer=agent cause=lease_expired phase=end mono_ns=107258707917643 succeeded=true
+        time=2026-11-01T09:02:02.215Z level=WARN msg=lease err="control request ended"
+        time=2026-11-01T09:02:02.216Z level=INFO msg="baseline write" writer=agent cause=lease_expired phase=begin mono_ns=107259733051931 generation=5
+        time=2026-11-01T09:02:02.243Z level=INFO msg="baseline write" writer=agent cause=lease_expired phase=end mono_ns=107259759947885 succeeded=true
+        time=2026-11-01T09:02:03.259Z level=WARN msg=lease err="control request ended"
+        time=2026-11-01T09:02:03.260Z level=INFO msg="baseline write" writer=agent cause=lease_expired phase=begin mono_ns=107260776992588 generation=5
+        time=2026-11-01T09:02:03.282Z level=INFO msg="baseline write" writer=agent cause=lease_expired phase=end mono_ns=107260798981975 succeeded=true
+        time=2026-11-01T09:02:04.304Z level=WARN msg=lease err="control request ended"
+        time=2026-11-01T09:02:04.305Z level=INFO msg="baseline write" writer=agent cause=lease_expired phase=begin mono_ns=107261822212817 generation=5
+        time=2026-11-01T09:02:04.339Z level=INFO msg="baseline write" writer=agent cause=lease_expired phase=end mono_ns=107261856113169 succeeded=true
+        time=2026-11-01T09:02:05.360Z level=WARN msg=lease err="control request ended"
+        time=2026-11-01T09:02:05.361Z level=INFO msg="baseline write" writer=agent cause=lease_expired phase=begin mono_ns=107262878165579 generation=5
+        time=2026-11-01T09:02:05.393Z level=INFO msg="baseline write" writer=agent cause=lease_expired phase=end mono_ns=107262909908123 succeeded=true
+        time=2026-11-01T09:02:06.414Z level=WARN msg=lease err="control request ended"
+        time=2026-11-01T09:02:06.415Z level=INFO msg="baseline write" writer=agent cause=lease_expired phase=begin mono_ns=107263931746706 generation=5
+        time=2026-11-01T09:02:06.442Z level=INFO msg="baseline write" writer=agent cause=lease_expired phase=end mono_ns=107263958691073 succeeded=true
+
+        ==> /scratch/w2/labcontrol.log <==
+        labcontrol ready
+    scenario_f31_test.go:49: TEST ONLY restart evidence: iteration-173446279
+--- FAIL: TestLab04_RestartKeepsVerifiedLease (16.42s)
+=== RUN   TestLab05_NoAllowAllOnUpdate
+SUMMARY AT13 AT29 no-allow-all=1
+--- PASS: TestLab05_NoAllowAllOnUpdate (10.64s)
+=== RUN   TestLab07_UnpublishedBaselineAck
+SUMMARY unpublished baseline ack=1
+--- PASS: TestLab07_UnpublishedBaselineAck (3.20s)
+=== RUN   TestLab06_RevokedStopsForwarding
+SUMMARY AT-agent revoked-stops=1
+--- PASS: TestLab06_RevokedStopsForwarding (3.90s)
+FAIL
+FAIL    github.com/TED-H-com/Freedom-VPN/tests/netlab/agent     203.919s
+FAIL
+make[1]: Entering directory 'WORKTREE'
+docker rm -f fvpn-w2-agent-core-f31 >/dev/null 2>&1 || true
+docker network rm fvpn-w2-agent-core-f31-dns >/dev/null 2>&1 || true
+make -f mk/netlab.mk netlab-wipe-scratch FVPN_LAB_PREFIX='fvpn-w2-agent-core-f31'
+make[2]: Entering directory 'WORKTREE'
+mkdir -p WORKTREE/.agent/tmp/fvpn-w2-agent-core-f31-scratch
+docker rm -f fvpn-w2-agent-core-f31-wipe >/dev/null 2>&1 || true
+docker run --rm --name fvpn-w2-agent-core-f31-wipe --network none \
+        -v WORKTREE/.agent/tmp/fvpn-w2-agent-core-f31-scratch:/scratch fvpn-w2-agent-core-f31:lab \
+        find /scratch -mindepth 1 -delete
+make[2]: Leaving directory 'WORKTREE'
+rmdir WORKTREE/.agent/tmp/fvpn-w2-agent-core-f31-scratch 2>/dev/null || true
+make[1]: Leaving directory 'WORKTREE'
+make: *** [mk/node.mk:64: node-test-netlab] Error 1
