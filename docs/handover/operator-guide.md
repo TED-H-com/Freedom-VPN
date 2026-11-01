@@ -1,7 +1,7 @@
 # Operator Guide (`docs/handover/operator-guide.md`)
 
-**Current cut — [follow-up 25](follow-up-25.md) (2026-11-01 EST):** Through #373: F11-01 drop located; members F13-01 raw bytes kept; updates F13-01 exit unobserved; AT10 blocked on ISO-F6-01 assertion 6; r18 archived with five open findings. D-135 / D-136 / D-137 / D-138 stay provisional; historical failures stay failed. No new operator guidance.
-Previous cut: [follow-up 24](follow-up-24.md), through #369.
+**Current cut — [follow-up 26](follow-up-26.md) (2026-11-01 EST):** Through #382, including the #381 row correction: r18 fixes landed; ISO-F6-01 fixed and AT10 passes; F11-01 closed-node cause unproven; F14-01 new; members F13-01 origin unproven; updates receipt delivered. D-139 is a provisional design track, option (c) stays in production. Historical failures stay failed.
+Previous cut: [follow-up 25](follow-up-25.md), through #373.
 
 ## Operator changes at #369
 
@@ -301,6 +301,8 @@ Publication-gate cause stays in `Operation.steps[].message`, including
 Portal pointers: `/admin/groups` lists and creates member groups; `/admin/nodes/{node_id}` shows attached groups and submits replacement attachments with publication under `If-Match`. Its checks table shows sanitized `NodeCheck.detail`. `/admin/policies/dns` shows threat-feed refresh status and the revision cadence. [Portal README](../portal/README.md) and [portal operations](../portal/OPERATIONS.md) remain authoritative for portal behavior; group IDs/codes are admin-only.
 
 ### 3.1 Enrolling a New Node or Reinstalling an Existing Node (`POST /api/v1/admin/enrollments`)
+
+2026-11-01 — Installer follow-up 9 ([#378 roadmap row](../ROADMAP.md), [dated hand-off](../node/install-followup9-2026-11-01.md)): `fvpn-agent.service` sets `TimeoutStopSec=15s`; watchdog `Before=fvpn-agent.service` keeps it alive through a joint agent stop. Binary replacement waits up to 20 s per unit; a stop error or timeout journals `stop-failed` and rolls back before touching the candidate, `current` or units.
 
 - **New Node**: Omit `node_id`. Set `delivery: "installer"` (default 15-minute TTL / `900s`) or `"preinstalled"` (default 7-day TTL / `604800s`), plus optional `name`, `region`, `notes`, and `member_group_ids`.
 - **Enrollment Token Digest & Audit Trail (`Enrollment.token_sha256`, `ENR-02`, `#191`, `#195`, `#200`, `#210`, `internal/enrollment`, `internal/audit`)**:

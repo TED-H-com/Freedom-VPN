@@ -1,7 +1,7 @@
 # Backup and Restore Drill Record (`docs/handover/restore-drill.md`)
 
-**Current cut — [follow-up 25](follow-up-25.md) (2026-11-01 EST):** Through #373: F11-01 drop located; members F13-01 raw bytes kept; updates F13-01 exit unobserved; AT10 blocked on ISO-F6-01 assertion 6; r18 archived with five open findings. D-135 / D-136 / D-137 / D-138 stay provisional; historical failures stay failed. No new operator guidance.
-Previous cut: [follow-up 24](follow-up-24.md), through #369.
+**Current cut — [follow-up 26](follow-up-26.md) (2026-11-01 EST):** Through #382, including the #381 row correction: r18 fixes landed; ISO-F6-01 fixed and AT10 passes; F11-01 closed-node cause unproven; F14-01 new; members F13-01 origin unproven; updates receipt delivered. D-139 is a provisional design track, option (c) stays in production. Historical failures stay failed.
+Previous cut: [follow-up 25](follow-up-25.md), through #373.
 
 Historical follow-up 17 cutoff: [follow-up 17 operator evidence](follow-up-17.md). #313
 harness-proves the SECOPS-21 first-offer capture (2/0/0, delivery 4 > retained 3,
