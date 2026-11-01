@@ -1,0 +1,121 @@
+{
+  "run_id": "7edb263f-1f6e-4f94-9e8e-26099f96a699",
+  "source_commit": "33abb2fd2c2fc95826c6e69eb434045522d6f7ef",
+  "case_status": "blocked",
+  "forwarding": [
+    {
+      "node_container_role": "node",
+      "node_incarnation": "01a19336-c7b7-7cad-bb7c-6f5a09fb904c",
+      "origin_verified": true,
+      "origin_requests": 0,
+      "origin_snat_matches": false,
+      "probe_sha256": "4f60bee0e5e689151e65750d39f737766cc70608d06292d89b4802610e5393b9",
+      "at": "2026-10-31T18:27:29Z",
+      "member_container_role": "member",
+      "route_selected": true,
+      "route_before": [
+        {
+          "cache": [],
+          "dev": "eth0",
+          "flags": [],
+          "uid": 0
+        }
+      ],
+      "route_after": [
+        {
+          "cache": [],
+          "dev": "fvnb0",
+          "flags": [],
+          "table": "netbird",
+          "uid": 0
+        }
+      ],
+      "peer_status": {
+        "daemonStatus": "Connected",
+        "daemonVersion": "0.82.0",
+        "networks": null,
+        "usesKernelInterface": true
+      },
+      "node_before": {
+        "available": true,
+        "generation": "5",
+        "device_upload_bytes": "0",
+        "device_download_bytes": "0",
+        "member_accept_rules": 6,
+        "diagnostic_bytes": {
+          "ctbadns": "0",
+          "ctbase": "0",
+          "ctdeny": "0",
+          "cthost": "0",
+          "ctin": "0",
+          "ctinv": "0",
+          "ctnodn": "0",
+          "ctunkd": "0",
+          "ctunku": "0",
+          "ctv6": "0",
+          "nd_01a193376a647b11bbf39e22350dfad4": "0",
+          "nu_01a193376a647b11bbf39e22350dfad4": "0"
+        }
+      },
+      "node_after": {
+        "available": true,
+        "generation": "5",
+        "device_upload_bytes": "0",
+        "device_download_bytes": "0",
+        "member_accept_rules": 6,
+        "diagnostic_bytes": {
+          "ctbadns": "0",
+          "ctbase": "0",
+          "ctdeny": "0",
+          "cthost": "0",
+          "ctin": "0",
+          "ctinv": "0",
+          "ctnodn": "0",
+          "ctunkd": "0",
+          "ctunku": "0",
+          "ctv6": "0",
+          "nd_01a193376a647b11bbf39e22350dfad4": "0",
+          "nu_01a193376a647b11bbf39e22350dfad4": "0"
+        }
+      },
+      "packet_observations": {
+        "member": {
+          "available": true,
+          "duration_seconds": 9,
+          "elapsed_ms": 9016,
+          "filter": "controlled-origin TCP/443, client port 20001",
+          "interfaces": {
+            "fvnb0": {
+              "to_origin": 5
+            }
+          }
+        },
+        "node": {
+          "available": true,
+          "duration_seconds": 9,
+          "elapsed_ms": 9033,
+          "filter": "controlled-origin TCP/443, client port 20001",
+          "interfaces": {}
+        },
+        "origin": {
+          "available": true,
+          "duration_seconds": 9,
+          "elapsed_ms": 9094,
+          "filter": "controlled-origin TCP/443, client port 20001",
+          "interfaces": {}
+        }
+      },
+      "transfer": {
+        "body_bytes": 0,
+        "http_status": 0,
+        "origin_receipt": false
+      },
+      "counted": false,
+      "first_unconfirmed_hop": "selected route to node or later path; consult counters and packet observations"
+    }
+  ],
+  "blockers": [
+    "F4-01: bounded member transfer did not produce both an origin receipt and device upload/download counter increments. See forwarding-observation.md and this JSON forwarding field; owner to resolve from first missing hop.",
+    "AT01 platform sign-out/network change/sleep-wake scripts need operator run; Linux positive counted forwarding is recorded separately."
+  ]
+}

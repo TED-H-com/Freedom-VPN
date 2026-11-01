@@ -1,0 +1,1052 @@
+{
+  "after_ttl": {
+    "authority_serial": 0,
+    "dns_trace": {
+      "trace_streams": {
+        "authority": [
+          "3311184b-4c8d-416e-9024-8b449f537783"
+        ],
+        "primary": [
+          "a6cfdf93-57b7-4cef-81ab-6a8c8ecad624"
+        ],
+        "secondary": [
+          "2b5f6383-64ff-400d-b079-970281c3a7ab"
+        ]
+      },
+      "started": "2026-10-31T22:26:18.645080746Z",
+      "completed": "2026-10-31T22:26:18.686501216Z",
+      "responder": "primary",
+      "cache_state": "fetch_authority_request_observed",
+      "trace_complete": true,
+      "resolver_events": [
+        {
+          "request_id": "46982a02-1922-4032-8822-a0788767ebbf",
+          "stream_id": "a6cfdf93-57b7-4cef-81ab-6a8c8ecad624",
+          "sequence": "74",
+          "phase": "completed",
+          "started": "2026-10-31T22:26:18.682472292Z",
+          "completed": "2026-10-31T22:26:18.683569608Z",
+          "role": "primary",
+          "source_role": "native",
+          "fixture_case": "cache",
+          "rr_type": 1,
+          "protocol": "udp",
+          "rcode": 0,
+          "ttls": [
+            10
+          ],
+          "address_classes": [
+            "private_ipv4"
+          ],
+          "authority_serial": 0,
+          "success": true
+        }
+      ],
+      "authority_events": [
+        {
+          "request_id": "f0d1f720-0017-414c-a3d3-bb4dac00ed92",
+          "stream_id": "3311184b-4c8d-416e-9024-8b449f537783",
+          "sequence": "150",
+          "phase": "completed",
+          "started": "2026-10-31T22:26:04.71964124Z",
+          "completed": "2026-10-31T22:26:04.720079425Z",
+          "role": "authority",
+          "source_role": "primary",
+          "fixture_case": "cache",
+          "rr_type": 1,
+          "protocol": "udp",
+          "rcode": 0,
+          "ttls": [
+            10
+          ],
+          "address_classes": [
+            "other_ipv4"
+          ],
+          "authority_serial": 0,
+          "success": true
+        },
+        {
+          "request_id": "29ab4459-3e8c-454c-89b0-307fdc741405",
+          "stream_id": "3311184b-4c8d-416e-9024-8b449f537783",
+          "sequence": "168",
+          "phase": "completed",
+          "started": "2026-10-31T22:26:18.683065038Z",
+          "completed": "2026-10-31T22:26:18.683416103Z",
+          "role": "authority",
+          "source_role": "primary",
+          "fixture_case": "cache",
+          "rr_type": 1,
+          "protocol": "udp",
+          "rcode": 0,
+          "ttls": [
+            10
+          ],
+          "address_classes": [
+            "private_ipv4"
+          ],
+          "authority_serial": 0,
+          "success": true
+        }
+      ],
+      "authority_history": [
+        {
+          "start": {
+            "request_id": "f0d1f720-0017-414c-a3d3-bb4dac00ed92",
+            "stream_id": "3311184b-4c8d-416e-9024-8b449f537783",
+            "sequence": "149",
+            "phase": "started",
+            "started": "2026-10-31T22:26:04.71964124Z",
+            "completed": "0001-01-01T00:00:00Z",
+            "role": "authority",
+            "source_role": "primary",
+            "fixture_case": "cache",
+            "rr_type": 1,
+            "protocol": "udp",
+            "rcode": -1,
+            "ttls": [],
+            "address_classes": [],
+            "authority_serial": 0,
+            "success": false
+          },
+          "completion": {
+            "request_id": "f0d1f720-0017-414c-a3d3-bb4dac00ed92",
+            "stream_id": "3311184b-4c8d-416e-9024-8b449f537783",
+            "sequence": "150",
+            "phase": "completed",
+            "started": "2026-10-31T22:26:04.71964124Z",
+            "completed": "2026-10-31T22:26:04.720079425Z",
+            "role": "authority",
+            "source_role": "primary",
+            "fixture_case": "cache",
+            "rr_type": 1,
+            "protocol": "udp",
+            "rcode": 0,
+            "ttls": [
+              10
+            ],
+            "address_classes": [
+              "other_ipv4"
+            ],
+            "authority_serial": 0,
+            "success": true
+          }
+        },
+        {
+          "start": {
+            "request_id": "29ab4459-3e8c-454c-89b0-307fdc741405",
+            "stream_id": "3311184b-4c8d-416e-9024-8b449f537783",
+            "sequence": "167",
+            "phase": "started",
+            "started": "2026-10-31T22:26:18.683065038Z",
+            "completed": "0001-01-01T00:00:00Z",
+            "role": "authority",
+            "source_role": "primary",
+            "fixture_case": "cache",
+            "rr_type": 1,
+            "protocol": "udp",
+            "rcode": -1,
+            "ttls": [],
+            "address_classes": [],
+            "authority_serial": 0,
+            "success": false
+          },
+          "completion": {
+            "request_id": "29ab4459-3e8c-454c-89b0-307fdc741405",
+            "stream_id": "3311184b-4c8d-416e-9024-8b449f537783",
+            "sequence": "168",
+            "phase": "completed",
+            "started": "2026-10-31T22:26:18.683065038Z",
+            "completed": "2026-10-31T22:26:18.683416103Z",
+            "role": "authority",
+            "source_role": "primary",
+            "fixture_case": "cache",
+            "rr_type": 1,
+            "protocol": "udp",
+            "rcode": 0,
+            "ttls": [
+              10
+            ],
+            "address_classes": [
+              "private_ipv4"
+            ],
+            "authority_serial": 0,
+            "success": true
+          }
+        }
+      ],
+      "authority_outstanding_at_query_start": [],
+      "authority_outstanding_at_query_completion": [],
+      "authority_outstanding_at_trace_read": [],
+      "trace_read_at": {
+        "authority": "2026-10-31T22:26:18.803345103Z",
+        "primary": "2026-10-31T22:26:18.725888561Z",
+        "secondary": "2026-10-31T22:26:18.764796597Z"
+      },
+      "authority_serial_after_query": 1002,
+      "authority_read_at": "2026-10-31T22:26:18.824731757Z",
+      "answer_ttl_remaining": [
+        10
+      ]
+    },
+    "authority_ttl": 0,
+    "has_soa": false,
+    "available": true,
+    "rcode": 0,
+    "types": [
+      1
+    ],
+    "ttls": [
+      10
+    ],
+    "address_classes": [
+      "private_ipv4"
+    ],
+    "expected_answer": true,
+    "connected": false,
+    "bytes": 0,
+    "milliseconds": 1
+  },
+  "attribution": {
+    "assertion_scope": "same uniquely matched resolver",
+    "cause_status": "unproven",
+    "classification": "same-resolver inferred hit without new authority fetch (F9-HIT)",
+    "contract": "docs/dns/BACKEND.md §2.1.5: F9-HIT / F9-OTHER / F9-ROUND / F9-INFLIGHT",
+    "earliest_whole_second_expiry": "2026-10-31T22:26:13.72347907Z",
+    "elapsed_query_completion_ms": 1586,
+    "fallback": "not established",
+    "fetch_in_next_query": false,
+    "initial_responder": "primary",
+    "next_responder": "primary",
+    "older_outstanding_completions": [],
+    "subsecond_expiry_possible": false
+  },
+  "authority": {
+    "authority_serial": 0,
+    "authority_ttl": 0,
+    "has_soa": false,
+    "available": true,
+    "rcode": 0,
+    "types": [
+      1
+    ],
+    "ttls": [
+      10
+    ],
+    "address_classes": [
+      "private_ipv4"
+    ],
+    "expected_answer": true,
+    "connected": false,
+    "bytes": 0,
+    "milliseconds": 0
+  },
+  "authority_change_at": "2026-10-31T22:26:05.051532112Z",
+  "before_ttl": {
+    "authority_serial": 0,
+    "dns_trace": {
+      "trace_streams": {
+        "authority": [
+          "3311184b-4c8d-416e-9024-8b449f537783"
+        ],
+        "primary": [
+          "a6cfdf93-57b7-4cef-81ab-6a8c8ecad624"
+        ],
+        "secondary": [
+          "2b5f6383-64ff-400d-b079-970281c3a7ab"
+        ]
+      },
+      "started": "2026-10-31T22:26:06.269666922Z",
+      "completed": "2026-10-31T22:26:06.310059537Z",
+      "responder": "primary",
+      "cache_state": "inferred_hit_no_authority_exchange",
+      "trace_complete": true,
+      "resolver_events": [
+        {
+          "request_id": "cb7ade1f-c514-4a97-84b1-23d991378a02",
+          "stream_id": "a6cfdf93-57b7-4cef-81ab-6a8c8ecad624",
+          "sequence": "70",
+          "phase": "completed",
+          "started": "2026-10-31T22:26:06.306417194Z",
+          "completed": "2026-10-31T22:26:06.307084697Z",
+          "role": "primary",
+          "source_role": "native",
+          "fixture_case": "cache",
+          "rr_type": 1,
+          "protocol": "udp",
+          "rcode": 0,
+          "ttls": [
+            8
+          ],
+          "address_classes": [
+            "other_ipv4"
+          ],
+          "authority_serial": 0,
+          "success": true
+        }
+      ],
+      "authority_events": [
+        {
+          "request_id": "f0d1f720-0017-414c-a3d3-bb4dac00ed92",
+          "stream_id": "3311184b-4c8d-416e-9024-8b449f537783",
+          "sequence": "150",
+          "phase": "completed",
+          "started": "2026-10-31T22:26:04.71964124Z",
+          "completed": "2026-10-31T22:26:04.720079425Z",
+          "role": "authority",
+          "source_role": "primary",
+          "fixture_case": "cache",
+          "rr_type": 1,
+          "protocol": "udp",
+          "rcode": 0,
+          "ttls": [
+            10
+          ],
+          "address_classes": [
+            "other_ipv4"
+          ],
+          "authority_serial": 0,
+          "success": true
+        }
+      ],
+      "authority_history": [
+        {
+          "start": {
+            "request_id": "f0d1f720-0017-414c-a3d3-bb4dac00ed92",
+            "stream_id": "3311184b-4c8d-416e-9024-8b449f537783",
+            "sequence": "149",
+            "phase": "started",
+            "started": "2026-10-31T22:26:04.71964124Z",
+            "completed": "0001-01-01T00:00:00Z",
+            "role": "authority",
+            "source_role": "primary",
+            "fixture_case": "cache",
+            "rr_type": 1,
+            "protocol": "udp",
+            "rcode": -1,
+            "ttls": [],
+            "address_classes": [],
+            "authority_serial": 0,
+            "success": false
+          },
+          "completion": {
+            "request_id": "f0d1f720-0017-414c-a3d3-bb4dac00ed92",
+            "stream_id": "3311184b-4c8d-416e-9024-8b449f537783",
+            "sequence": "150",
+            "phase": "completed",
+            "started": "2026-10-31T22:26:04.71964124Z",
+            "completed": "2026-10-31T22:26:04.720079425Z",
+            "role": "authority",
+            "source_role": "primary",
+            "fixture_case": "cache",
+            "rr_type": 1,
+            "protocol": "udp",
+            "rcode": 0,
+            "ttls": [
+              10
+            ],
+            "address_classes": [
+              "other_ipv4"
+            ],
+            "authority_serial": 0,
+            "success": true
+          }
+        }
+      ],
+      "authority_outstanding_at_query_start": [],
+      "authority_outstanding_at_query_completion": [],
+      "authority_outstanding_at_trace_read": [],
+      "trace_read_at": {
+        "authority": "2026-10-31T22:26:06.425481489Z",
+        "primary": "2026-10-31T22:26:06.349624766Z",
+        "secondary": "2026-10-31T22:26:06.387976122Z"
+      },
+      "authority_serial_after_query": 1002,
+      "authority_read_at": "2026-10-31T22:26:06.447004312Z",
+      "answer_ttl_remaining": [
+        8
+      ]
+    },
+    "authority_ttl": 0,
+    "has_soa": false,
+    "available": true,
+    "rcode": 0,
+    "types": [
+      1
+    ],
+    "ttls": [
+      8
+    ],
+    "address_classes": [
+      "other_ipv4"
+    ],
+    "expected_answer": true,
+    "connected": false,
+    "bytes": 0,
+    "milliseconds": 1
+  },
+  "contract": "docs/dns/BACKEND.md §2.1.5: F9-HIT / F9-OTHER / F9-ROUND / F9-INFLIGHT",
+  "formerly_negative_after_ttl": {
+    "authority_serial": 0,
+    "dns_trace": {
+      "trace_streams": {
+        "authority": [
+          "3311184b-4c8d-416e-9024-8b449f537783"
+        ],
+        "primary": [
+          "a6cfdf93-57b7-4cef-81ab-6a8c8ecad624"
+        ],
+        "secondary": [
+          "2b5f6383-64ff-400d-b079-970281c3a7ab"
+        ]
+      },
+      "started": "2026-10-31T22:26:18.457801993Z",
+      "completed": "2026-10-31T22:26:18.502249242Z",
+      "responder": "primary",
+      "cache_state": "fetch_authority_request_observed",
+      "trace_complete": true,
+      "resolver_events": [
+        {
+          "request_id": "9f9de07f-d178-4c4a-ade9-304f9637e693",
+          "stream_id": "a6cfdf93-57b7-4cef-81ab-6a8c8ecad624",
+          "sequence": "72",
+          "phase": "completed",
+          "started": "2026-10-31T22:26:18.497989057Z",
+          "completed": "2026-10-31T22:26:18.498898107Z",
+          "role": "primary",
+          "source_role": "native",
+          "fixture_case": "absent",
+          "rr_type": 1,
+          "protocol": "udp",
+          "rcode": 0,
+          "ttls": [
+            5
+          ],
+          "address_classes": [
+            "other_ipv4"
+          ],
+          "authority_serial": 0,
+          "success": true
+        }
+      ],
+      "authority_events": [
+        {
+          "request_id": "e7e5d8b9-fa61-4f9d-a0de-b267fc667801",
+          "stream_id": "3311184b-4c8d-416e-9024-8b449f537783",
+          "sequence": "146",
+          "phase": "completed",
+          "started": "2026-10-31T22:26:01.418449592Z",
+          "completed": "2026-10-31T22:26:01.418692885Z",
+          "role": "authority",
+          "source_role": "primary",
+          "fixture_case": "absent",
+          "rr_type": 1,
+          "protocol": "udp",
+          "rcode": 3,
+          "ttls": [],
+          "address_classes": [],
+          "authority_serial": 1001,
+          "success": true
+        },
+        {
+          "request_id": "a9f97d54-4261-4d63-8062-ce61756e5221",
+          "stream_id": "3311184b-4c8d-416e-9024-8b449f537783",
+          "sequence": "154",
+          "phase": "completed",
+          "started": "2026-10-31T22:26:06.136580015Z",
+          "completed": "2026-10-31T22:26:06.136822308Z",
+          "role": "authority",
+          "source_role": "primary",
+          "fixture_case": "absent",
+          "rr_type": 1,
+          "protocol": "udp",
+          "rcode": 0,
+          "ttls": [
+            5
+          ],
+          "address_classes": [
+            "other_ipv4"
+          ],
+          "authority_serial": 0,
+          "success": true
+        },
+        {
+          "request_id": "9de0e0e4-b241-4df5-9d21-3a5119ed8a69",
+          "stream_id": "3311184b-4c8d-416e-9024-8b449f537783",
+          "sequence": "166",
+          "phase": "completed",
+          "started": "2026-10-31T22:26:18.498459103Z",
+          "completed": "2026-10-31T22:26:18.498726986Z",
+          "role": "authority",
+          "source_role": "primary",
+          "fixture_case": "absent",
+          "rr_type": 1,
+          "protocol": "udp",
+          "rcode": 0,
+          "ttls": [
+            5
+          ],
+          "address_classes": [
+            "other_ipv4"
+          ],
+          "authority_serial": 0,
+          "success": true
+        }
+      ],
+      "authority_history": [
+        {
+          "start": {
+            "request_id": "e7e5d8b9-fa61-4f9d-a0de-b267fc667801",
+            "stream_id": "3311184b-4c8d-416e-9024-8b449f537783",
+            "sequence": "145",
+            "phase": "started",
+            "started": "2026-10-31T22:26:01.418449592Z",
+            "completed": "0001-01-01T00:00:00Z",
+            "role": "authority",
+            "source_role": "primary",
+            "fixture_case": "absent",
+            "rr_type": 1,
+            "protocol": "udp",
+            "rcode": -1,
+            "ttls": [],
+            "address_classes": [],
+            "authority_serial": 0,
+            "success": false
+          },
+          "completion": {
+            "request_id": "e7e5d8b9-fa61-4f9d-a0de-b267fc667801",
+            "stream_id": "3311184b-4c8d-416e-9024-8b449f537783",
+            "sequence": "146",
+            "phase": "completed",
+            "started": "2026-10-31T22:26:01.418449592Z",
+            "completed": "2026-10-31T22:26:01.418692885Z",
+            "role": "authority",
+            "source_role": "primary",
+            "fixture_case": "absent",
+            "rr_type": 1,
+            "protocol": "udp",
+            "rcode": 3,
+            "ttls": [],
+            "address_classes": [],
+            "authority_serial": 1001,
+            "success": true
+          }
+        },
+        {
+          "start": {
+            "request_id": "a9f97d54-4261-4d63-8062-ce61756e5221",
+            "stream_id": "3311184b-4c8d-416e-9024-8b449f537783",
+            "sequence": "153",
+            "phase": "started",
+            "started": "2026-10-31T22:26:06.136580015Z",
+            "completed": "0001-01-01T00:00:00Z",
+            "role": "authority",
+            "source_role": "primary",
+            "fixture_case": "absent",
+            "rr_type": 1,
+            "protocol": "udp",
+            "rcode": -1,
+            "ttls": [],
+            "address_classes": [],
+            "authority_serial": 0,
+            "success": false
+          },
+          "completion": {
+            "request_id": "a9f97d54-4261-4d63-8062-ce61756e5221",
+            "stream_id": "3311184b-4c8d-416e-9024-8b449f537783",
+            "sequence": "154",
+            "phase": "completed",
+            "started": "2026-10-31T22:26:06.136580015Z",
+            "completed": "2026-10-31T22:26:06.136822308Z",
+            "role": "authority",
+            "source_role": "primary",
+            "fixture_case": "absent",
+            "rr_type": 1,
+            "protocol": "udp",
+            "rcode": 0,
+            "ttls": [
+              5
+            ],
+            "address_classes": [
+              "other_ipv4"
+            ],
+            "authority_serial": 0,
+            "success": true
+          }
+        },
+        {
+          "start": {
+            "request_id": "9de0e0e4-b241-4df5-9d21-3a5119ed8a69",
+            "stream_id": "3311184b-4c8d-416e-9024-8b449f537783",
+            "sequence": "165",
+            "phase": "started",
+            "started": "2026-10-31T22:26:18.498459103Z",
+            "completed": "0001-01-01T00:00:00Z",
+            "role": "authority",
+            "source_role": "primary",
+            "fixture_case": "absent",
+            "rr_type": 1,
+            "protocol": "udp",
+            "rcode": -1,
+            "ttls": [],
+            "address_classes": [],
+            "authority_serial": 0,
+            "success": false
+          },
+          "completion": {
+            "request_id": "9de0e0e4-b241-4df5-9d21-3a5119ed8a69",
+            "stream_id": "3311184b-4c8d-416e-9024-8b449f537783",
+            "sequence": "166",
+            "phase": "completed",
+            "started": "2026-10-31T22:26:18.498459103Z",
+            "completed": "2026-10-31T22:26:18.498726986Z",
+            "role": "authority",
+            "source_role": "primary",
+            "fixture_case": "absent",
+            "rr_type": 1,
+            "protocol": "udp",
+            "rcode": 0,
+            "ttls": [
+              5
+            ],
+            "address_classes": [
+              "other_ipv4"
+            ],
+            "authority_serial": 0,
+            "success": true
+          }
+        }
+      ],
+      "authority_outstanding_at_query_start": [],
+      "authority_outstanding_at_query_completion": [],
+      "authority_outstanding_at_trace_read": [],
+      "trace_read_at": {
+        "authority": "2026-10-31T22:26:18.622871485Z",
+        "primary": "2026-10-31T22:26:18.543023709Z",
+        "secondary": "2026-10-31T22:26:18.5829521Z"
+      },
+      "authority_serial_after_query": 1002,
+      "authority_read_at": "2026-10-31T22:26:18.645072476Z",
+      "answer_ttl_remaining": [
+        5
+      ]
+    },
+    "authority_ttl": 0,
+    "has_soa": false,
+    "available": true,
+    "rcode": 0,
+    "types": [
+      1
+    ],
+    "ttls": [
+      5
+    ],
+    "address_classes": [
+      "other_ipv4"
+    ],
+    "expected_answer": true,
+    "connected": false,
+    "bytes": 0,
+    "milliseconds": 1
+  },
+  "historical_F10_03": "run 2be2d32f remains failed/unattributed; immutable history/follow-up-10/F10-03-cache.json",
+  "initial": {
+    "authority_serial": 0,
+    "dns_trace": {
+      "trace_streams": {
+        "authority": [
+          "3311184b-4c8d-416e-9024-8b449f537783"
+        ],
+        "primary": [
+          "a6cfdf93-57b7-4cef-81ab-6a8c8ecad624"
+        ],
+        "secondary": [
+          "2b5f6383-64ff-400d-b079-970281c3a7ab"
+        ]
+      },
+      "started": "2026-10-31T22:26:04.681932201Z",
+      "completed": "2026-10-31T22:26:04.72347907Z",
+      "responder": "primary",
+      "cache_state": "fetch_authority_request_observed",
+      "trace_complete": true,
+      "resolver_events": [
+        {
+          "request_id": "d10aec01-dcb4-4caf-8247-d4df947d12fd",
+          "stream_id": "a6cfdf93-57b7-4cef-81ab-6a8c8ecad624",
+          "sequence": "64",
+          "phase": "completed",
+          "started": "2026-10-31T22:26:04.71915599Z",
+          "completed": "2026-10-31T22:26:04.720380544Z",
+          "role": "primary",
+          "source_role": "native",
+          "fixture_case": "cache",
+          "rr_type": 1,
+          "protocol": "udp",
+          "rcode": 0,
+          "ttls": [
+            10
+          ],
+          "address_classes": [
+            "other_ipv4"
+          ],
+          "authority_serial": 0,
+          "success": true
+        }
+      ],
+      "authority_events": [
+        {
+          "request_id": "f0d1f720-0017-414c-a3d3-bb4dac00ed92",
+          "stream_id": "3311184b-4c8d-416e-9024-8b449f537783",
+          "sequence": "150",
+          "phase": "completed",
+          "started": "2026-10-31T22:26:04.71964124Z",
+          "completed": "2026-10-31T22:26:04.720079425Z",
+          "role": "authority",
+          "source_role": "primary",
+          "fixture_case": "cache",
+          "rr_type": 1,
+          "protocol": "udp",
+          "rcode": 0,
+          "ttls": [
+            10
+          ],
+          "address_classes": [
+            "other_ipv4"
+          ],
+          "authority_serial": 0,
+          "success": true
+        }
+      ],
+      "authority_history": [
+        {
+          "start": {
+            "request_id": "f0d1f720-0017-414c-a3d3-bb4dac00ed92",
+            "stream_id": "3311184b-4c8d-416e-9024-8b449f537783",
+            "sequence": "149",
+            "phase": "started",
+            "started": "2026-10-31T22:26:04.71964124Z",
+            "completed": "0001-01-01T00:00:00Z",
+            "role": "authority",
+            "source_role": "primary",
+            "fixture_case": "cache",
+            "rr_type": 1,
+            "protocol": "udp",
+            "rcode": -1,
+            "ttls": [],
+            "address_classes": [],
+            "authority_serial": 0,
+            "success": false
+          },
+          "completion": {
+            "request_id": "f0d1f720-0017-414c-a3d3-bb4dac00ed92",
+            "stream_id": "3311184b-4c8d-416e-9024-8b449f537783",
+            "sequence": "150",
+            "phase": "completed",
+            "started": "2026-10-31T22:26:04.71964124Z",
+            "completed": "2026-10-31T22:26:04.720079425Z",
+            "role": "authority",
+            "source_role": "primary",
+            "fixture_case": "cache",
+            "rr_type": 1,
+            "protocol": "udp",
+            "rcode": 0,
+            "ttls": [
+              10
+            ],
+            "address_classes": [
+              "other_ipv4"
+            ],
+            "authority_serial": 0,
+            "success": true
+          }
+        }
+      ],
+      "authority_outstanding_at_query_start": [],
+      "authority_outstanding_at_query_completion": [],
+      "authority_outstanding_at_trace_read": [],
+      "trace_read_at": {
+        "authority": "2026-10-31T22:26:04.845220031Z",
+        "primary": "2026-10-31T22:26:04.7636227Z",
+        "secondary": "2026-10-31T22:26:04.804198284Z"
+      },
+      "authority_serial_after_query": 1001,
+      "authority_read_at": "2026-10-31T22:26:04.870265258Z",
+      "answer_ttl_remaining": [
+        10
+      ]
+    },
+    "authority_ttl": 0,
+    "has_soa": false,
+    "available": true,
+    "rcode": 0,
+    "types": [
+      1
+    ],
+    "ttls": [
+      10
+    ],
+    "address_classes": [
+      "other_ipv4"
+    ],
+    "expected_answer": true,
+    "connected": false,
+    "bytes": 0,
+    "milliseconds": 1
+  },
+  "negative_before_ttl": {
+    "authority_serial": 0,
+    "dns_trace": {
+      "trace_streams": {
+        "authority": [
+          "3311184b-4c8d-416e-9024-8b449f537783"
+        ],
+        "primary": [
+          "a6cfdf93-57b7-4cef-81ab-6a8c8ecad624"
+        ],
+        "secondary": [
+          "2b5f6383-64ff-400d-b079-970281c3a7ab"
+        ]
+      },
+      "started": "2026-10-31T22:26:06.09917758Z",
+      "completed": "2026-10-31T22:26:06.139668348Z",
+      "responder": "primary",
+      "cache_state": "fetch_authority_request_observed",
+      "trace_complete": true,
+      "resolver_events": [
+        {
+          "request_id": "39b7a060-710d-4daa-9eef-5e230f96cf6f",
+          "stream_id": "a6cfdf93-57b7-4cef-81ab-6a8c8ecad624",
+          "sequence": "68",
+          "phase": "completed",
+          "started": "2026-10-31T22:26:06.136026374Z",
+          "completed": "2026-10-31T22:26:06.136968263Z",
+          "role": "primary",
+          "source_role": "native",
+          "fixture_case": "absent",
+          "rr_type": 1,
+          "protocol": "udp",
+          "rcode": 0,
+          "ttls": [
+            5
+          ],
+          "address_classes": [
+            "other_ipv4"
+          ],
+          "authority_serial": 0,
+          "success": true
+        }
+      ],
+      "authority_events": [
+        {
+          "request_id": "e7e5d8b9-fa61-4f9d-a0de-b267fc667801",
+          "stream_id": "3311184b-4c8d-416e-9024-8b449f537783",
+          "sequence": "146",
+          "phase": "completed",
+          "started": "2026-10-31T22:26:01.418449592Z",
+          "completed": "2026-10-31T22:26:01.418692885Z",
+          "role": "authority",
+          "source_role": "primary",
+          "fixture_case": "absent",
+          "rr_type": 1,
+          "protocol": "udp",
+          "rcode": 3,
+          "ttls": [],
+          "address_classes": [],
+          "authority_serial": 1001,
+          "success": true
+        },
+        {
+          "request_id": "a9f97d54-4261-4d63-8062-ce61756e5221",
+          "stream_id": "3311184b-4c8d-416e-9024-8b449f537783",
+          "sequence": "154",
+          "phase": "completed",
+          "started": "2026-10-31T22:26:06.136580015Z",
+          "completed": "2026-10-31T22:26:06.136822308Z",
+          "role": "authority",
+          "source_role": "primary",
+          "fixture_case": "absent",
+          "rr_type": 1,
+          "protocol": "udp",
+          "rcode": 0,
+          "ttls": [
+            5
+          ],
+          "address_classes": [
+            "other_ipv4"
+          ],
+          "authority_serial": 0,
+          "success": true
+        }
+      ],
+      "authority_history": [
+        {
+          "start": {
+            "request_id": "e7e5d8b9-fa61-4f9d-a0de-b267fc667801",
+            "stream_id": "3311184b-4c8d-416e-9024-8b449f537783",
+            "sequence": "145",
+            "phase": "started",
+            "started": "2026-10-31T22:26:01.418449592Z",
+            "completed": "0001-01-01T00:00:00Z",
+            "role": "authority",
+            "source_role": "primary",
+            "fixture_case": "absent",
+            "rr_type": 1,
+            "protocol": "udp",
+            "rcode": -1,
+            "ttls": [],
+            "address_classes": [],
+            "authority_serial": 0,
+            "success": false
+          },
+          "completion": {
+            "request_id": "e7e5d8b9-fa61-4f9d-a0de-b267fc667801",
+            "stream_id": "3311184b-4c8d-416e-9024-8b449f537783",
+            "sequence": "146",
+            "phase": "completed",
+            "started": "2026-10-31T22:26:01.418449592Z",
+            "completed": "2026-10-31T22:26:01.418692885Z",
+            "role": "authority",
+            "source_role": "primary",
+            "fixture_case": "absent",
+            "rr_type": 1,
+            "protocol": "udp",
+            "rcode": 3,
+            "ttls": [],
+            "address_classes": [],
+            "authority_serial": 1001,
+            "success": true
+          }
+        },
+        {
+          "start": {
+            "request_id": "a9f97d54-4261-4d63-8062-ce61756e5221",
+            "stream_id": "3311184b-4c8d-416e-9024-8b449f537783",
+            "sequence": "153",
+            "phase": "started",
+            "started": "2026-10-31T22:26:06.136580015Z",
+            "completed": "0001-01-01T00:00:00Z",
+            "role": "authority",
+            "source_role": "primary",
+            "fixture_case": "absent",
+            "rr_type": 1,
+            "protocol": "udp",
+            "rcode": -1,
+            "ttls": [],
+            "address_classes": [],
+            "authority_serial": 0,
+            "success": false
+          },
+          "completion": {
+            "request_id": "a9f97d54-4261-4d63-8062-ce61756e5221",
+            "stream_id": "3311184b-4c8d-416e-9024-8b449f537783",
+            "sequence": "154",
+            "phase": "completed",
+            "started": "2026-10-31T22:26:06.136580015Z",
+            "completed": "2026-10-31T22:26:06.136822308Z",
+            "role": "authority",
+            "source_role": "primary",
+            "fixture_case": "absent",
+            "rr_type": 1,
+            "protocol": "udp",
+            "rcode": 0,
+            "ttls": [
+              5
+            ],
+            "address_classes": [
+              "other_ipv4"
+            ],
+            "authority_serial": 0,
+            "success": true
+          }
+        }
+      ],
+      "authority_outstanding_at_query_start": [],
+      "authority_outstanding_at_query_completion": [],
+      "authority_outstanding_at_trace_read": [],
+      "trace_read_at": {
+        "authority": "2026-10-31T22:26:06.248370683Z",
+        "primary": "2026-10-31T22:26:06.175222742Z",
+        "secondary": "2026-10-31T22:26:06.211909051Z"
+      },
+      "authority_serial_after_query": 1002,
+      "authority_read_at": "2026-10-31T22:26:06.269660045Z",
+      "answer_ttl_remaining": [
+        5
+      ]
+    },
+    "authority_ttl": 0,
+    "has_soa": false,
+    "available": true,
+    "rcode": 0,
+    "types": [
+      1
+    ],
+    "ttls": [
+      5
+    ],
+    "address_classes": [
+      "other_ipv4"
+    ],
+    "expected_answer": false,
+    "connected": false,
+    "bytes": 0,
+    "milliseconds": 1
+  },
+  "run_id": "b98b78ee-9162-419e-ae2f-d1d9a618a3e8",
+  "settings_after": {
+    "adguard": {
+      "available": true,
+      "blocked_response_ttl": 5,
+      "blocking_mode": "nxdomain",
+      "cache_optimistic": false,
+      "cache_size": 4096,
+      "cache_ttl_max": 0,
+      "cache_ttl_min": 0,
+      "fallback_dns": [],
+      "read_at": "2026-10-31T22:26:18.866743383Z",
+      "upstream_mode": "",
+      "upstream_timeout": 10
+    },
+    "node2-adguard": {
+      "available": true,
+      "blocked_response_ttl": 5,
+      "blocking_mode": "nxdomain",
+      "cache_optimistic": false,
+      "cache_size": 4096,
+      "cache_ttl_max": 0,
+      "cache_ttl_min": 0,
+      "fallback_dns": [],
+      "read_at": "2026-10-31T22:26:18.896691249Z",
+      "upstream_mode": "",
+      "upstream_timeout": 10
+    }
+  },
+  "settings_before": {
+    "adguard": {
+      "available": true,
+      "blocked_response_ttl": 5,
+      "blocking_mode": "nxdomain",
+      "cache_optimistic": false,
+      "cache_size": 4096,
+      "cache_ttl_max": 0,
+      "cache_ttl_min": 0,
+      "fallback_dns": [],
+      "read_at": "2026-10-31T22:26:04.639901751Z",
+      "upstream_mode": "",
+      "upstream_timeout": 10
+    },
+    "node2-adguard": {
+      "available": true,
+      "blocked_response_ttl": 5,
+      "blocking_mode": "nxdomain",
+      "cache_optimistic": false,
+      "cache_size": 4096,
+      "cache_ttl_max": 0,
+      "cache_ttl_min": 0,
+      "fallback_dns": [],
+      "read_at": "2026-10-31T22:26:04.68192793Z",
+      "upstream_mode": "",
+      "upstream_timeout": 10
+    }
+  },
+  "source_commit": "65e18e67f482d4c51dd3f86a8c7db08a1ab62f33"
+}
