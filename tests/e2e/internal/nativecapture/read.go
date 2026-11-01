@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"os"
 	"os/exec"
+	"strconv"
 	"strings"
 	"time"
 
@@ -122,20 +123,23 @@ type Command struct {
 	OK    bool  `json:"ok"`
 }
 type Snapshot struct {
-	Relay               Endpoint           `json:"relay_endpoint"`
-	UsesKernelInterface bool               `json:"uses_kernel_interface"`
-	Start               Clock              `json:"start"`
-	End                 Clock              `json:"end"`
-	Commands            map[string]Command `json:"commands"`
-	Links               []Link             `json:"links"`
-	Routes              map[string][]Route `json:"routes"`
-	PeerPresent         bool               `json:"peer_present"`
-	PeerConnected       bool               `json:"peer_connected"`
-	ConnectionType      string             `json:"connection_type"`
-	Overlay             string             `json:"overlay"`
-	Local               Endpoint           `json:"local"`
-	Remote              Endpoint           `json:"remote"`
-	WireGuard           Endpoint           `json:"wireguard_endpoint"`
+	Relay                Endpoint           `json:"relay_endpoint"`
+	UsesKernelInterface  bool               `json:"uses_kernel_interface"`
+	Start                Clock              `json:"start"`
+	End                  Clock              `json:"end"`
+	Commands             map[string]Command `json:"commands"`
+	Links                []Link             `json:"links"`
+	Routes               map[string][]Route `json:"routes"`
+	PeerPresent          bool               `json:"peer_present"`
+	PeerConnected        bool               `json:"peer_connected"`
+	ConnectionType       string             `json:"connection_type"`
+	Overlay              string             `json:"overlay"`
+	Local                Endpoint           `json:"local"`
+	Remote               Endpoint           `json:"remote"`
+	LatestHandshake      string             `json:"latest_handshake_unix_seconds,omitempty"`
+	Kernel               *KernelDiagnostics `json:"kernel,omitempty"`
+	WireGuardPeerMatched bool               `json:"wireguard_peer_matched"`
+	WireGuard            Endpoint           `json:"wireguard_endpoint"`
 }
 
 func Read(ctx context.Context, target, origin string) (Snapshot, error) {
@@ -211,7 +215,7 @@ func Read(ctx context.Context, target, origin string) (Snapshot, error) {
 			route("overlay_route", strings.Split(target, "/")[0])
 			// Query public allowed-IP/endpoint views only; never `wg show ... dump`
 			// (which includes the private key). Match the selected overlay /32.
-			var key string
+			key := selectedPublicKey(rawStatus, target)
 			tunnel := "fvnb0"
 			if routes := out.Routes["overlay_route"]; len(routes) == 1 {
 				tunnel = routes[0].Device
@@ -223,8 +227,17 @@ func Read(ctx context.Context, target, origin string) (Snapshot, error) {
 					continue
 				}
 				for _, prefix := range strings.Split(strings.Join(f[1:], ""), ",") {
-					if strings.Split(prefix, "/")[0] == strings.Split(target, "/")[0] {
+					if key == "" && strings.Split(prefix, "/")[0] == strings.Split(target, "/")[0] {
 						key = f[0]
+					}
+				}
+			}
+			handshakes := run("wg_latest_handshakes", "wg", "show", tunnel, "latest-handshakes")
+			for _, line := range strings.Split(string(handshakes), "\n") {
+				f := strings.Fields(line)
+				if len(f) == 2 && key != "" && f[0] == key {
+					if _, e := strconv.ParseUint(f[1], 10, 64); e == nil {
+						out.LatestHandshake = f[1]
 					}
 				}
 			}
@@ -232,6 +245,7 @@ func Read(ctx context.Context, target, origin string) (Snapshot, error) {
 			for _, line := range strings.Split(string(endpoints), "\n") {
 				f := strings.Fields(line)
 				if len(f) == 2 && key != "" && f[0] == key {
+					out.WireGuardPeerMatched = true
 					out.WireGuard = EndpointView(f[1])
 					host, _, _ := net.SplitHostPort(f[1])
 					route("wireguard_route", host)
@@ -240,6 +254,35 @@ func Read(ctx context.Context, target, origin string) (Snapshot, error) {
 
 		}
 	}
+	if os.Getenv("FVPN_E2E_KERNEL_OBSERVE") == "1" {
+		out.Kernel = &KernelDiagnostics{
+			SNMP6:             NumericCounters(run("snmp6", "cat", "/proc/net/snmp6")),
+			Nstat:             NumericCounters(run("nstat", "nstat", "-asz")),
+			LoopbackConntrack: LoopbackConntrack(run("conntrack6", "conntrack", "-L", "-f", "ipv6", "-p", "udp")),
+		}
+	}
 	out.End, err = Now()
 	return out, err
+}
+
+// A selected exit can replace its exact overlay /32 with broader allowed IPs.
+// Use its native status key only in memory for the wg join; never serialize it.
+func selectedPublicKey(raw []byte, target string) string {
+	var status struct {
+		Peers struct {
+			Details []struct {
+				IP  string `json:"netbirdIp"`
+				Key string `json:"publicKey"`
+			} `json:"details"`
+		} `json:"peers"`
+	}
+	if json.Unmarshal(raw, &status) != nil || target == "" {
+		return ""
+	}
+	for _, p := range status.Peers.Details {
+		if strings.Split(p.IP, "/")[0] == strings.Split(target, "/")[0] {
+			return p.Key
+		}
+	}
+	return ""
 }

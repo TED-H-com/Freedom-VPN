@@ -36,6 +36,7 @@ type Diagnostic struct {
 	Exit         int            `json:"exit"`
 	Before       Heartbeat      `json:"heartbeat_before"`
 	After        Heartbeat      `json:"heartbeat_after"`
+	Parse        *ParseFailure  `json:"parse_failure,omitempty"`
 }
 type Result struct {
 	Upload     uint64 `json:"upload_bytes,string"`
@@ -84,18 +85,23 @@ func Category(ctx context.Context, err error, stderr string) string {
 	}
 }
 func Read(ctx context.Context, id uuid.UUID) Result {
+	return read(ctx, id, PrivateDirectory, func() (Heartbeat, TimingSnapshot) { return heartbeat(), latestTiming() }, func(ctx context.Context) ([]byte, error) {
+		return exec.CommandContext(ctx, "nft", "-j", "list", "table", "inet", "fvpn").CombinedOutput()
+	})
+}
+
+func read(ctx context.Context, id uuid.UUID, directory string, sample func() (Heartbeat, TimingSnapshot), command func(context.Context) ([]byte, error)) Result {
 	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
 	defer cancel()
-	out := Result{Diagnostic: Diagnostic{Started: time.Now().UTC(), Stage: "nft_read", Category: "none", Before: heartbeat()}}
+	out := Result{Diagnostic: Diagnostic{Started: time.Now().UTC(), Stage: "nft_read", Category: "none"}}
 	boot, _ := os.ReadFile("/proc/sys/kernel/random/boot_id")
 	out.Diagnostic.BootID = strings.TrimSpace(string(boot))
-	out.Diagnostic.TimingBefore = latestTiming()
+	out.Diagnostic.Before, out.Diagnostic.TimingBefore = sample()
 	out.Diagnostic.MonoStart, _ = enforce.MonotonicNow()
-	raw, err := exec.CommandContext(ctx, "nft", "-j", "list", "table", "inet", "fvpn").CombinedOutput()
+	raw, err := command(ctx)
 	out.Diagnostic.MonoEnd, _ = enforce.MonotonicNow()
 	out.Diagnostic.Completed = time.Now().UTC()
-	out.Diagnostic.TimingAfter = latestTiming()
-	out.Diagnostic.After = heartbeat()
+	out.Diagnostic.After, out.Diagnostic.TimingAfter = sample()
 	out.Diagnostic.Category = Category(ctx, err, string(raw))
 	if err != nil {
 		out.Diagnostic.Exit = -1
@@ -109,6 +115,7 @@ func Read(ctx context.Context, id uuid.UUID) Result {
 	if err != nil {
 		out.Diagnostic.Stage = "nft_parse"
 		out.Diagnostic.Category = "parse"
+		out.Diagnostic.Parse = retainParseFailure(directory, raw, err)
 		return out
 	}
 	out.Generation = strconv.FormatUint(st.Generation, 10)

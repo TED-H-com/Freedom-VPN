@@ -388,3 +388,65 @@ response's `authority_ttl` remain the quiet-window evidence. A retained SOA TTL
 of 2 followed 1.229 seconds later is inside whole-second expiry uncertainty.
 Members/dns-publish own a quiet setup and a window with adequate remaining TTL
 and measurement margin; this lane exports no cache-clear or TTL extension.
+
+## Follow-up 24 — private parse evidence and IPv6 input observation (TEST ONLY)
+
+`DeviceByteCounters` retains the existing stage/category/exit contract. An exit-0
+`nft_parse` / `parse` sample adds `read_diagnostic.parse_failure`:
+
+- `id`: a unique sample directory, independent of device identity.
+- `class`: `empty`, `truncated`, `interleaved`, or `unexpected_format`.
+- `parser_error_kind`: a content-free error category.
+- `sha256`, decimal-string `bytes`, and `lines`: exact combined command bytes.
+  Lines count LF terminators plus a nonempty unterminated last line; empty is zero.
+- `private_retained`, `retention_error`, `private_exported`, `export_error`:
+  storage/export success is separate from the failed read.
+
+The helper writes exact bytes to `output.raw` and exact parser error text to
+`parser-error.txt`, mode 0600, in a mode-0700 UUID directory under the owned
+container's `/var/lib/vpn-node/e2e/counterread`. The stack method automatically
+exports both to `.agent/tmp/counterread/<id>/` before returning the original
+read error. It verifies the output's digest/size; export has a separate bounded
+five-second cleanup context and never repeats `nft`. Consumers must preserve
+the returned diagnostic even when the Go error is non-nil. Direct helper users
+must export both files before teardown. Keep these files private: parser errors
+can include nft object names or values, so exact error text is **also private**.
+Public evidence includes only the safe diagnostic, never raw nft data or the
+error's arbitrary text. Preserve failed rows; missing evidence is not a zero.
+
+Classification is structural, not causal: whitespace-only is empty; parser EOF
+is truncated; explicit warning/error lines mixed with an otherwise complete
+JSON document are interleaved; other syntax/type/semantic rejections are
+unexpected format. Unrecognized contamination remains unexpected format.
+`CombinedOutput` is unchanged, so the reader does not claim which descriptor
+produced interleaved bytes. No parser retry, normalization or enforcement change.
+F10-02 and F13-01's historical samples cannot be retroactively classified.
+
+The opt-in `TestE2E_Followup24Native` uses a fresh prepared stack and one bounded
+first-selection request. It enables native debug without reconnect, starts the
+existing all-interface member/node/origin captures, and installs temporary
+`fvtrace_<id>` tables in **owned containers only**. Netdev ingress, inet
+prerouting, input and output count loopback-source/destination IPv6 UDP and mark
+IPv6 UDP for nftrace. All rules continue; no accept/drop override, NAT, endpoint
+change or health override is installed. The tables and monitors are removed
+before teardown; raw trace (which can include packet bytes), logs and pcaps stay
+in `.agent/tmp/followup24/<run-id>/`. `decode_kernel_trace.py` never copies rule
+expressions or payload fields. Unknown lines fail derived analysis.
+
+`FVPN_E2E_KERNEL_OBSERVE=1` adds namespace `/proc/net/snmp6`, absolute `nstat -asz`
+and IPv6 UDP conntrack readbacks to capture samples. Only numeric counters and
+loopback tuple address tokens/ports are exported. WireGuard endpoints and latest
+handshakes match the selected peer by allowed IP; no `wg ... dump`, key, secret
+or unrelated peer row is exported. Each command retains its clock bounds and
+read status. An unavailable counter/conntrack read is not evidence of zero.
+A two-second passive tail catches handover after an already completed request;
+it does not retry or alter that request's result. Optional
+`FVPN_E2E_FOLLOWUP24_FAMILY=ipv6` labels a separate family-constrained diagnostic
+using `ApplyNativeInputs` before enrollment. It is not an original dual-path run
+or a production preference change.
+
+Run `analyze_kernel_capture.py --run <new-run> --private <private-run>` once,
+before pinning. It verifies exact raw receipts, complete captures, monitor stop
+and table removal. nft trace IDs join hook traversal, not pcap ciphertext; packet
+shape/count and bounded namespace counter changes are corroboration. Source-code
+interpretation remains separate from an observed kernel drop tracepoint.
