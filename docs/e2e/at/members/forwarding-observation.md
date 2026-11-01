@@ -1,15 +1,11 @@
-# First-selection forwarding observation — Follow-up 13
+# Forwarding observations — Follow-up 14
 
-- **F11-01:** first selection succeeds with one SYN, node/origin receipt and counted traffic. All three captures are complete (269 / 292 / 77 records, zero drops). Type-4 transport data appears before a loopback-source IPv6 response arrives after the successful request. This differs from devstack 22's five-SYN/no-type-4 reproduction; neither historical cause nor a fix is inferred. The original prehistory and sleep/wake branch remain. [Own capture and comparison](F13-F11-01-forwarding.json).
+AT01 keeps its own **BLOCKED** result: initial selection and sleep/wake transfers are counted; first selection has one SYN and complete zero-drop captures (**274 / 322 / 80** member/node/origin records). The captured type-2 response is IPv4 loopback; this run has no matching IPv6 `::1` response to diagnose. Devstack 24 located historical F11-01 before member IPv6 prerouting, with no repair on main. This fresh success proves neither historical cause nor repair. [Original first-selection analysis](history/follow-up-14-captures/258ba504-6ddf-4888-8633-9cfee8da6eea/initial-selection-analysis.json).
 
-The capture begins before the original route selection, samples during selection
-and before/after the original bounded transfer, then stops with a bounded cleanup
-context. It changes no route-selection logic, reconnect, serving state or traffic
-precondition. Export startup/build/copy overhead is observable and can affect
-first-use timing. Readbacks include routes, links, ICE/relay and WireGuard endpoints.
-Public headers contain no payloads or native keys. Historical five-SYN packet
-identities cannot be reconstructed from this fresh successful sample.
+**F14-01:** the first D-077 re-grant has populated generation-10 readiness and an intended-device producer join, but its original forwarding attempt fails: five member packets, no observed node/origin ingress, zero origin requests and unchanged device counters. The capture stops attribution between member inner egress and node inner ingress; no detailed native capture exists for this attempt. Cause remains unproven and is not assumed identical to F11-01. [Original failed row and preceding readiness](F14-01-regrant-forwarding.json).
 
-The initial selection's pending ICE candidate readbacks and loopback WireGuard
-endpoints do not establish whether that request used a direct or relayed
-transport. Later matrix P2P classifications are separate observations.
+AT09’s known-PMTU row transfers **64,064 bytes**, retains route MTU 1280 before/after traffic and exact removal, with **16 delivered reverse IPv6 fragment pairs**. Routed IPv6 transfers **64,064 bytes in 1 ms**: one 1,360-byte router ingress causes a type-2/code-0 PTB with MTU 1280; its identical packet digest appears at router and sender. The sender route changes from no MTU metric to learned **1280**, and all 20 subsequent fragment packets arrive. Routed IPv4 transfers **64,064 bytes in 2 ms**: 42 oversized **DF=0** datagrams become 84 fragments in 42 groups, all received, with no PTB. These are separate D-137 mechanisms over IPv4 overlay payloads; D-123 IPv6Block still applies. [Original rows and mechanism evidence](F14-D137-native-paths.json).
+
+Receive-only 1280 remains a **limitation, never PASS**: dual-family selection transfers 64,064 bytes but is BLOCKED; IPv6 returns only **12,012 bytes in 12,011 ms** and stays FAIL. Nineteen reverse 1,360-byte packets are absent at member ingress, with no PTB; the first missing TCP range is retained. Historical F8-02 rows remain failed.
+
+Readiness remains an independent prerequisite, not proof of delivery. All original attempts stay in their case records; no retry replaces a failed attempt. [Restart durations and stored leases](F14-agent-transitions.json).

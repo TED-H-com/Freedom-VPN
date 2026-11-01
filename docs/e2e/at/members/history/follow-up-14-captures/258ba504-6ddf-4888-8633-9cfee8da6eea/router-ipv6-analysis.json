@@ -1,0 +1,713 @@
+{
+  "transfer": {
+    "after_counters": {
+      "upload_bytes": "701818",
+      "download_bytes": "501317",
+      "Present": true,
+      "kernel_generation": "74",
+      "read_diagnostic": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "read_start_mono_ns": "112815237534017",
+        "read_end_mono_ns": "112815240352874",
+        "enforcement_before": {
+          "available": true,
+          "record": {
+            "run_id": "76bd16df-7df3-42c9-9432-f18fee2a7ada",
+            "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+            "sequence": "1215",
+            "source": "live",
+            "anchor": {
+              "mono_before_ns": "112812806119218",
+              "wall": "2026-11-01T10:34:35.289748058Z",
+              "mono_after_ns": "112812806119366"
+            },
+            "timing": {
+              "version": 1,
+              "clock": "CLOCK_MONOTONIC",
+              "operation": "verify",
+              "candidate_generation": "74",
+              "start_ns": "112812784782086",
+              "end_ns": "112812806117135",
+              "succeeded": true,
+              "verified": true,
+              "deadline": {
+                "granularity_ns": "0",
+                "install_bound_ns": "0",
+                "apply_start_ns": "0",
+                "render_start_ns": "0",
+                "install_start_ns": "0",
+                "installed_by_ns": "0",
+                "install_ok": false,
+                "release_start_ns": "0",
+                "release_end_ns": "0",
+                "guard_released": false
+              },
+              "verifications": [
+                {
+                  "start_ns": "112812784782086",
+                  "end_ns": "112812806117135",
+                  "nft_read": {
+                    "start_ns": "112812784782252",
+                    "end_ns": "112812787004440",
+                    "ok": true
+                  },
+                  "tc_read": {
+                    "start_ns": "112812790386209",
+                    "end_ns": "112812804554449",
+                    "ok": true
+                  },
+                  "precision_read": {
+                    "start_ns": "112812788962801",
+                    "end_ns": "112812790360656",
+                    "elements": 3,
+                    "read_ok": true,
+                    "verified": true
+                  },
+                  "tc_sha256": "d914c53ffa25c58e3ec2131e7e70e5aed3014ac6d7bf44e3f91d77844a8844c9",
+                  "verified": true
+                }
+              ]
+            },
+            "tc_sha256": "d914c53ffa25c58e3ec2131e7e70e5aed3014ac6d7bf44e3f91d77844a8844c9",
+            "lease": {
+              "lease_id": "f3eb39e1-5990-4aa5-af19-9c9dc62e338b",
+              "generation": "74",
+              "issued_at": "2026-11-01T10:30:35.159417571Z",
+              "expires_at": "2026-11-02T10:30:35.159417571Z",
+              "request_mono_ns": "112572672717151",
+              "node_deadline_ns": "198972672717151",
+              "members": 7
+            }
+          }
+        },
+        "enforcement_after": {
+          "available": true,
+          "record": {
+            "run_id": "76bd16df-7df3-42c9-9432-f18fee2a7ada",
+            "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+            "sequence": "1215",
+            "source": "live",
+            "anchor": {
+              "mono_before_ns": "112812806119218",
+              "wall": "2026-11-01T10:34:35.289748058Z",
+              "mono_after_ns": "112812806119366"
+            },
+            "timing": {
+              "version": 1,
+              "clock": "CLOCK_MONOTONIC",
+              "operation": "verify",
+              "candidate_generation": "74",
+              "start_ns": "112812784782086",
+              "end_ns": "112812806117135",
+              "succeeded": true,
+              "verified": true,
+              "deadline": {
+                "granularity_ns": "0",
+                "install_bound_ns": "0",
+                "apply_start_ns": "0",
+                "render_start_ns": "0",
+                "install_start_ns": "0",
+                "installed_by_ns": "0",
+                "install_ok": false,
+                "release_start_ns": "0",
+                "release_end_ns": "0",
+                "guard_released": false
+              },
+              "verifications": [
+                {
+                  "start_ns": "112812784782086",
+                  "end_ns": "112812806117135",
+                  "nft_read": {
+                    "start_ns": "112812784782252",
+                    "end_ns": "112812787004440",
+                    "ok": true
+                  },
+                  "tc_read": {
+                    "start_ns": "112812790386209",
+                    "end_ns": "112812804554449",
+                    "ok": true
+                  },
+                  "precision_read": {
+                    "start_ns": "112812788962801",
+                    "end_ns": "112812790360656",
+                    "elements": 3,
+                    "read_ok": true,
+                    "verified": true
+                  },
+                  "tc_sha256": "d914c53ffa25c58e3ec2131e7e70e5aed3014ac6d7bf44e3f91d77844a8844c9",
+                  "verified": true
+                }
+              ]
+            },
+            "tc_sha256": "d914c53ffa25c58e3ec2131e7e70e5aed3014ac6d7bf44e3f91d77844a8844c9",
+            "lease": {
+              "lease_id": "f3eb39e1-5990-4aa5-af19-9c9dc62e338b",
+              "generation": "74",
+              "issued_at": "2026-11-01T10:30:35.159417571Z",
+              "expires_at": "2026-11-02T10:30:35.159417571Z",
+              "request_mono_ns": "112572672717151",
+              "node_deadline_ns": "198972672717151",
+              "members": 7
+            }
+          }
+        },
+        "started": "2026-11-01T10:34:37.61965266Z",
+        "completed": "2026-11-01T10:34:37.723982129Z",
+        "stage": "nft_read",
+        "category": "none",
+        "exit": 0,
+        "heartbeat_before": {
+          "read_at": "2026-11-01T10:34:37.619678643Z",
+          "wall_unix_ns": "1793529275293005157",
+          "serving": true,
+          "read_ok": true
+        },
+        "heartbeat_after": {
+          "read_at": "2026-11-01T10:34:37.723982505Z",
+          "wall_unix_ns": "1793529275293005157",
+          "serving": true,
+          "read_ok": true
+        }
+      }
+    },
+    "before_counters": {
+      "upload_bytes": "633130",
+      "download_bytes": "432262",
+      "Present": true,
+      "kernel_generation": "74",
+      "read_diagnostic": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "read_start_mono_ns": "112814891343854",
+        "read_end_mono_ns": "112814893946466",
+        "enforcement_before": {
+          "available": true,
+          "record": {
+            "run_id": "76bd16df-7df3-42c9-9432-f18fee2a7ada",
+            "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+            "sequence": "1215",
+            "source": "live",
+            "anchor": {
+              "mono_before_ns": "112812806119218",
+              "wall": "2026-11-01T10:34:35.289748058Z",
+              "mono_after_ns": "112812806119366"
+            },
+            "timing": {
+              "version": 1,
+              "clock": "CLOCK_MONOTONIC",
+              "operation": "verify",
+              "candidate_generation": "74",
+              "start_ns": "112812784782086",
+              "end_ns": "112812806117135",
+              "succeeded": true,
+              "verified": true,
+              "deadline": {
+                "granularity_ns": "0",
+                "install_bound_ns": "0",
+                "apply_start_ns": "0",
+                "render_start_ns": "0",
+                "install_start_ns": "0",
+                "installed_by_ns": "0",
+                "install_ok": false,
+                "release_start_ns": "0",
+                "release_end_ns": "0",
+                "guard_released": false
+              },
+              "verifications": [
+                {
+                  "start_ns": "112812784782086",
+                  "end_ns": "112812806117135",
+                  "nft_read": {
+                    "start_ns": "112812784782252",
+                    "end_ns": "112812787004440",
+                    "ok": true
+                  },
+                  "tc_read": {
+                    "start_ns": "112812790386209",
+                    "end_ns": "112812804554449",
+                    "ok": true
+                  },
+                  "precision_read": {
+                    "start_ns": "112812788962801",
+                    "end_ns": "112812790360656",
+                    "elements": 3,
+                    "read_ok": true,
+                    "verified": true
+                  },
+                  "tc_sha256": "d914c53ffa25c58e3ec2131e7e70e5aed3014ac6d7bf44e3f91d77844a8844c9",
+                  "verified": true
+                }
+              ]
+            },
+            "tc_sha256": "d914c53ffa25c58e3ec2131e7e70e5aed3014ac6d7bf44e3f91d77844a8844c9",
+            "lease": {
+              "lease_id": "f3eb39e1-5990-4aa5-af19-9c9dc62e338b",
+              "generation": "74",
+              "issued_at": "2026-11-01T10:30:35.159417571Z",
+              "expires_at": "2026-11-02T10:30:35.159417571Z",
+              "request_mono_ns": "112572672717151",
+              "node_deadline_ns": "198972672717151",
+              "members": 7
+            }
+          }
+        },
+        "enforcement_after": {
+          "available": true,
+          "record": {
+            "run_id": "76bd16df-7df3-42c9-9432-f18fee2a7ada",
+            "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+            "sequence": "1215",
+            "source": "live",
+            "anchor": {
+              "mono_before_ns": "112812806119218",
+              "wall": "2026-11-01T10:34:35.289748058Z",
+              "mono_after_ns": "112812806119366"
+            },
+            "timing": {
+              "version": 1,
+              "clock": "CLOCK_MONOTONIC",
+              "operation": "verify",
+              "candidate_generation": "74",
+              "start_ns": "112812784782086",
+              "end_ns": "112812806117135",
+              "succeeded": true,
+              "verified": true,
+              "deadline": {
+                "granularity_ns": "0",
+                "install_bound_ns": "0",
+                "apply_start_ns": "0",
+                "render_start_ns": "0",
+                "install_start_ns": "0",
+                "installed_by_ns": "0",
+                "install_ok": false,
+                "release_start_ns": "0",
+                "release_end_ns": "0",
+                "guard_released": false
+              },
+              "verifications": [
+                {
+                  "start_ns": "112812784782086",
+                  "end_ns": "112812806117135",
+                  "nft_read": {
+                    "start_ns": "112812784782252",
+                    "end_ns": "112812787004440",
+                    "ok": true
+                  },
+                  "tc_read": {
+                    "start_ns": "112812790386209",
+                    "end_ns": "112812804554449",
+                    "ok": true
+                  },
+                  "precision_read": {
+                    "start_ns": "112812788962801",
+                    "end_ns": "112812790360656",
+                    "elements": 3,
+                    "read_ok": true,
+                    "verified": true
+                  },
+                  "tc_sha256": "d914c53ffa25c58e3ec2131e7e70e5aed3014ac6d7bf44e3f91d77844a8844c9",
+                  "verified": true
+                }
+              ]
+            },
+            "tc_sha256": "d914c53ffa25c58e3ec2131e7e70e5aed3014ac6d7bf44e3f91d77844a8844c9",
+            "lease": {
+              "lease_id": "f3eb39e1-5990-4aa5-af19-9c9dc62e338b",
+              "generation": "74",
+              "issued_at": "2026-11-01T10:30:35.159417571Z",
+              "expires_at": "2026-11-02T10:30:35.159417571Z",
+              "request_mono_ns": "112572672717151",
+              "node_deadline_ns": "198972672717151",
+              "members": 7
+            }
+          }
+        },
+        "started": "2026-11-01T10:34:37.260148265Z",
+        "completed": "2026-11-01T10:34:37.37757556Z",
+        "stage": "nft_read",
+        "category": "none",
+        "exit": 0,
+        "heartbeat_before": {
+          "read_at": "2026-11-01T10:34:37.26017381Z",
+          "wall_unix_ns": "1793529275293005157",
+          "serving": true,
+          "read_ok": true
+        },
+        "heartbeat_after": {
+          "read_at": "2026-11-01T10:34:37.37757577Z",
+          "wall_unix_ns": "1793529275293005157",
+          "serving": true,
+          "read_ok": true
+        }
+      }
+    },
+    "decision": "under provisional D-137",
+    "mechanism_required": "PTB received and learned PMTU 1280",
+    "scope": "sender-learnable routed hop",
+    "selected_exit_after": {
+      "connected": true,
+      "connection_type": "P2P",
+      "chosen_family": "ipv6"
+    },
+    "selected_exit_before": {
+      "connected": true,
+      "connection_type": "P2P",
+      "chosen_family": "ipv6"
+    },
+    "transfer": {
+      "dns_wire_id": 0,
+      "authority_serial": 0,
+      "endpoint": {
+        "at": "2026-11-01T10:34:37.592461577Z",
+        "local_port": 48974,
+        "remote_port": 9446,
+        "read_bytes": 64387,
+        "write_bytes": 64108,
+        "complete_lines": 64,
+        "partial_line_bytes": 0,
+        "error": "none",
+        "tcp_info": {
+          "bytes_acked": 64109,
+          "bytes_received": 64387,
+          "lost": 0,
+          "notsent_bytes": 0,
+          "rcv_mss": 1006,
+          "rcv_space": 12280,
+          "retrans": 0,
+          "rto_us": 201000,
+          "rtt_us": 205,
+          "sacked": 0,
+          "snd_cwnd": 63,
+          "snd_mss": 1228,
+          "snd_wnd": 68608,
+          "state": 1,
+          "total_retrans": 0,
+          "unacked": 0
+        }
+      },
+      "authority_ttl": 0,
+      "has_soa": false,
+      "available": true,
+      "rcode": -1,
+      "types": [],
+      "ttls": [],
+      "address_classes": [],
+      "expected_answer": false,
+      "connected": true,
+      "bytes": 64064,
+      "milliseconds": 1
+    },
+    "bulk": {
+      "dns_wire_id": 0,
+      "authority_serial": 0,
+      "endpoint": {
+        "at": "2026-11-01T10:34:37.592461577Z",
+        "local_port": 48974,
+        "remote_port": 9446,
+        "read_bytes": 64387,
+        "write_bytes": 64108,
+        "complete_lines": 64,
+        "partial_line_bytes": 0,
+        "error": "none",
+        "tcp_info": {
+          "bytes_acked": 64109,
+          "bytes_received": 64387,
+          "lost": 0,
+          "notsent_bytes": 0,
+          "rcv_mss": 1006,
+          "rcv_space": 12280,
+          "retrans": 0,
+          "rto_us": 201000,
+          "rtt_us": 205,
+          "sacked": 0,
+          "snd_cwnd": 63,
+          "snd_mss": 1228,
+          "snd_wnd": 68608,
+          "state": 1,
+          "total_retrans": 0,
+          "unacked": 0
+        }
+      },
+      "authority_ttl": 0,
+      "has_soa": false,
+      "available": true,
+      "rcode": -1,
+      "types": [],
+      "ttls": [],
+      "address_classes": [],
+      "expected_answer": false,
+      "connected": true,
+      "bytes": 64064,
+      "milliseconds": 1
+    }
+  },
+  "capture_checks": {
+    "member": {
+      "complete": true,
+      "records": 944,
+      "kernel_drops": 0
+    },
+    "node": {
+      "complete": true,
+      "records": 827,
+      "kernel_drops": 0
+    },
+    "origin": {
+      "complete": true,
+      "records": 180,
+      "kernel_drops": 0
+    },
+    "router": {
+      "complete": true,
+      "records": 787,
+      "kernel_drops": 0
+    }
+  },
+  "links": {
+    "member": [
+      {
+        "ifindex": 1,
+        "ifname": "lo",
+        "mtu": 65536,
+        "linkinfo": {
+          "info_kind": ""
+        }
+      },
+      {
+        "ifindex": 2,
+        "ifname": "eth0",
+        "mtu": 1500,
+        "linkinfo": {
+          "info_kind": ""
+        }
+      },
+      {
+        "ifindex": 3,
+        "ifname": "eth1",
+        "mtu": 1500,
+        "linkinfo": {
+          "info_kind": ""
+        }
+      },
+      {
+        "ifindex": 11,
+        "ifname": "eth2",
+        "mtu": 1280,
+        "linkinfo": {
+          "info_kind": ""
+        }
+      },
+      {
+        "ifindex": 12,
+        "ifname": "fvnb0",
+        "mtu": 1280,
+        "linkinfo": {
+          "info_kind": ""
+        }
+      }
+    ],
+    "node": [
+      {
+        "ifindex": 1,
+        "ifname": "lo",
+        "mtu": 65536,
+        "linkinfo": {
+          "info_kind": ""
+        }
+      },
+      {
+        "ifindex": 2,
+        "ifname": "eth0",
+        "mtu": 1500,
+        "linkinfo": {
+          "info_kind": ""
+        }
+      },
+      {
+        "ifindex": 3,
+        "ifname": "fvup0",
+        "mtu": 1500,
+        "linkinfo": {
+          "info_kind": ""
+        }
+      },
+      {
+        "ifindex": 4,
+        "ifname": "eth2",
+        "mtu": 1500,
+        "linkinfo": {
+          "info_kind": ""
+        }
+      },
+      {
+        "ifindex": 5,
+        "ifname": "fvfixture",
+        "mtu": 1500,
+        "linkinfo": {
+          "info_kind": ""
+        }
+      },
+      {
+        "ifindex": 6,
+        "ifname": "fvmb0",
+        "mtu": 1280,
+        "linkinfo": {
+          "info_kind": ""
+        }
+      }
+    ],
+    "origin": [
+      {
+        "ifindex": 1,
+        "ifname": "lo",
+        "mtu": 65536,
+        "linkinfo": {
+          "info_kind": ""
+        }
+      },
+      {
+        "ifindex": 2,
+        "ifname": "eth0",
+        "mtu": 1500,
+        "linkinfo": {
+          "info_kind": ""
+        }
+      }
+    ],
+    "router": [
+      {
+        "ifindex": 1,
+        "ifname": "lo",
+        "mtu": 65536,
+        "linkinfo": {
+          "info_kind": ""
+        }
+      },
+      {
+        "ifindex": 2,
+        "ifname": "eth0",
+        "mtu": 1500,
+        "linkinfo": {
+          "info_kind": ""
+        }
+      },
+      {
+        "ifindex": 3,
+        "ifname": "eth1",
+        "mtu": 1500,
+        "linkinfo": {
+          "info_kind": ""
+        }
+      },
+      {
+        "ifindex": 4,
+        "ifname": "eth2",
+        "mtu": 1280,
+        "linkinfo": {
+          "info_kind": ""
+        }
+      }
+    ]
+  },
+  "sender_route_before": [
+    {
+      "dst": "addr-02a980be820d3487",
+      "dev": "eth2",
+      "gateway": "addr-3bd76357e0da2506",
+      "prefsrc": "addr-d1439358dea1ea21"
+    }
+  ],
+  "sender_route_after": [
+    {
+      "dst": "addr-02a980be820d3487",
+      "dev": "eth2",
+      "gateway": "addr-3bd76357e0da2506",
+      "prefsrc": "addr-d1439358dea1ea21",
+      "metrics": [
+        {
+          "mtu": 1280
+        }
+      ]
+    }
+  ],
+  "ptb": {
+    "member": [],
+    "node": [
+      {
+        "packet": 451,
+        "icmp": {
+          "type": 2,
+          "code": 0,
+          "mtu": 1280
+        },
+        "ip_sha256": "fffd77da413cbd6ff45e44f62e7083d942a9e761fc53e4c7b23d857829b00297"
+      }
+    ],
+    "origin": [],
+    "router": [
+      {
+        "packet": 466,
+        "icmp": {
+          "type": 2,
+          "code": 0,
+          "mtu": 1280
+        },
+        "ip_sha256": "fffd77da413cbd6ff45e44f62e7083d942a9e761fc53e4c7b23d857829b00297"
+      }
+    ]
+  },
+  "fragmentation_needed": {
+    "member": [],
+    "node": [],
+    "origin": [],
+    "router": []
+  },
+  "clock_offsets": {
+    "member": {
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "pairs": 64,
+      "offset_lower_ns": "-1793416462483629456",
+      "offset_upper_ns": "-1793416462483628525",
+      "measured_offset_span_ns": "931",
+      "assumption": "No intervening wall-clock step; empirical offset envelope, not hardware packet timestamps. Pcap microsecond quantization adds 1000 ns."
+    },
+    "node": {
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "pairs": 64,
+      "offset_lower_ns": "-1793416462483629445",
+      "offset_upper_ns": "-1793416462483628538",
+      "measured_offset_span_ns": "907",
+      "assumption": "No intervening wall-clock step; empirical offset envelope, not hardware packet timestamps. Pcap microsecond quantization adds 1000 ns."
+    },
+    "origin": {
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "pairs": 22,
+      "offset_lower_ns": "-1793416462483629512",
+      "offset_upper_ns": "-1793416462483628578",
+      "measured_offset_span_ns": "934",
+      "assumption": "No intervening wall-clock step; empirical offset envelope, not hardware packet timestamps. Pcap microsecond quantization adds 1000 ns."
+    },
+    "router": {
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "pairs": 22,
+      "offset_lower_ns": "-1793416462483629321",
+      "offset_upper_ns": "-1793416462483628556",
+      "measured_offset_span_ns": "765",
+      "assumption": "No intervening wall-clock step; empirical offset envelope, not hardware packet timestamps. Pcap microsecond quantization adds 1000 ns."
+    }
+  },
+  "router_oversized_ingress": [
+    {
+      "packet": 456,
+      "length": 1360,
+      "df": null,
+      "identification": null
+    }
+  ],
+  "router_ingress_fragments": 20,
+  "router_egress_fragments": 20,
+  "egress_fragments_absent_at_member": [],
+  "bulk_local_port": 48974,
+  "first_missing_tcp_range": null,
+  "scope": "Virtual interface captures; GSO/GRO may coalesce inner TCP. No physical-wire frame count or authenticated ciphertext-to-inner mapping is inferred.",
+  "id": "router-ipv6"
+}

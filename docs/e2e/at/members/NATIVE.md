@@ -1,38 +1,15 @@
-# Native paths — Follow-up 13
+# Native paths — Follow-up 14
 
-AT09 verdict: **BLOCKED under provisional D-137**. Run `4182dd3d`,
-clean harness `d49b535a`, product baseline `de6d2e02`. IPv4 overlay payloads;
-D-123 IPv6Block remains. Underlay family is reported independently.
+Run `258ba504-6ddf-4888-8633-9cfee8da6eea`, clean compiled harness `e9a215f3c26484d92c0293d6070810a4b1d1e56d`, product baseline `8f3055b9fbbbc1e1522e57ce69d6eede5da9fa56` (devstack 23 #367, agent-core 31 #369, devstack 24 #370).
 
-| Row | Selected underlay | Bytes / requested | ms | Verdict |
-|---|---|---:|---:|---|
-| IPv4 / 1500 | IPv4 P2P | 64,064 / 64,064 | 1 | pass |
-| IPv6 / 1500 | IPv6 P2P | 64,064 / 64,064 | 1 | pass |
-| Dual / 1500 | IPv4 P2P | 64,064 / 64,064 | 1 | pass |
-| Dual / receive-only 1280 | IPv4 P2P | 64,064 / 64,064 | 1 | limitation, blocked; never PASS |
-| IPv6 / receive-only 1280 | IPv6 P2P | 64,064 / 64,064 | 1 | limitation, blocked; never PASS |
-| Selected-native-peer known PMTU 1280 | IPv6 P2P | 64,064 / 64,064 | 1 | supported row pass under provisional D-137 |
-| Reactive PTB router hop | unavailable on this baseline | — | — | pending devstack 23 |
+AT01 keeps its own **BLOCKED** result: initial selection and sleep/wake transfers are counted; first selection has one SYN and complete zero-drop captures (**274 / 322 / 80** member/node/origin records). The captured type-2 response is IPv4 loopback; this run has no matching IPv6 `::1` response to diagnose. Devstack 24 located historical F11-01 before member IPv6 prerouting, with no repair on main. This fresh success proves neither historical cause nor repair. [Original first-selection analysis](history/follow-up-14-captures/258ba504-6ddf-4888-8633-9cfee8da6eea/initial-selection-analysis.json).
 
-**AT09 verdict: BLOCKED under provisional D-137.** Known-PMTU 1280 completes **64,064 bytes in 1 ms**, with route metric 1280 before/after traffic, exact removal and **11 delivered reverse IPv6 fragment pairs**. Reactive PTB remains pending devstack 23 on this tested baseline. Both receive-only 1280 rows also transfer **64,064 bytes in 1 ms**, but remain explicit **PMTU black-hole limitation rows, never PASS**. Reverse data packets are only 1,132 bytes on IPv4 / 1,152 bytes on IPv6, so oversized loss was not reproduced; no PTB appears. Historical F8-02 failures stay failed. [Separate rows and captures](F13-D137-native-paths.json).
+AT09’s known-PMTU row transfers **64,064 bytes**, retains route MTU 1280 before/after traffic and exact removal, with **16 delivered reverse IPv6 fragment pairs**. Routed IPv6 transfers **64,064 bytes in 1 ms**: one 1,360-byte router ingress causes a type-2/code-0 PTB with MTU 1280; its identical packet digest appears at router and sender. The sender route changes from no MTU metric to learned **1280**, and all 20 subsequent fragment packets arrive. Routed IPv4 transfers **64,064 bytes in 2 ms**: 42 oversized **DF=0** datagrams become 84 fragments in 42 groups, all received, with no PTB. These are separate D-137 mechanisms over IPv4 overlay payloads; D-123 IPv6Block still applies. [Original rows and mechanism evidence](F14-D137-native-paths.json).
 
-[Eight complete capture sessions](history/follow-up-13-captures/4182dd3d-7f1f-453e-8c1f-265d097c3abc/README.md)
-have 24 zero-drop namespace captures. Known-PMTU sender fragmentation is measured;
-reactive PMTU is not. No global MTU/MSS clamp or production fix was introduced.
-The two successful receive-only probes send smaller reverse data packets, so this
-run does not reproduce historical oversized reverse loss and cannot close F8-02.
+Receive-only 1280 remains a **limitation, never PASS**: dual-family selection transfers 64,064 bytes but is BLOCKED; IPv6 returns only **12,012 bytes in 12,011 ms** and stays FAIL. Nineteen reverse 1,360-byte packets are absent at member ingress, with no PTB; the first missing TCP range is retained. Historical F8-02 rows remain failed.
 
-The complete original restart preserves generation 30, fresh serving at
-15.850473740 s and first counted byte at 21.440684604 s. See
-[fresh restart capture](F13-AT09-restart.json). Five platform/QUIC selectors remain
-blocked with their original resource reasons; physical roaming/NAT and end-to-end
-IPv6 PMTU are unclaimed. AT01 is a separate successful first-selection sample;
-[F11-01 comparison](F13-F11-01-forwarding.json) does not transfer devstack's cause.
+**Harness qualification limit:** the compiled harness adds the routed hop before the original eth0-only relay hold. The added member interface can bypass that hold; the original relay row fails with `relayed=1 direct=1`. This is a confounded harness result, not proof of a product relay regression. Commit `682d4434` moves the routed rows after the relay check. The correction passes offline gates but is **not live-qualified**; no second assembled run was made.
 
+**F12-04:** capture begins before the original readiness/RR query and preceding matrix mutations. The one original RR query succeeds (wire ID **62890**, RCODE 0, **1 ms**). Both resolvers retain complete lifecycle histories, outstanding sets and reply digests; the secondary is genuinely idle, not missing. Exact primary reply bytes join primary → node → member tunnel; the local stub response has the original wire ID. All five points are complete, zero-drop (**1,030 / 1,670 / 150 / 278 / 6** records for member/node/origin/primary/secondary). The positive IDNA probe also succeeds over UDP (**1 ms**) and TCP (**2 ms**). Historical F12-04 remains **unattributed**; this success does not explain its 5,001 ms SERVFAIL. [Original query, mutations and lifecycle](F14-F12-04-original-dns.json), [header analysis](history/follow-up-14-captures/258ba504-6ddf-4888-8633-9cfee8da6eea/native-dns-delivery-analysis.json). Devstack 24’s capture and lifecycle handoff is consumed; no additional independent positive query is requested.
 
-The lane's latest preserved receive-only failure remains **13,013 / 64,064 bytes
-in 12,010 ms**, `bulk_echo_incomplete`, in [run 7edb263f](history/follow-up-12/AT09.json).
-Separately, [devstack 22's owner run](../../runs/2026-10-31/followup22/9b3a89e7-fa86-426c-9737-ce55bf66aa77/analysis.md)
-records **16,016 / 64,064 bytes in 12,011 ms**, with 15 reverse 1,360-byte
-IPv6 packets lost and no PTB. Those historical failed rows remain failed;
-the fresh smaller-packet transfers do not replace them or transfer their cause.
+Eleven original capture sessions / 37 namespace capture points are complete with zero kernel drops. [108-file SHA-256 index](history/follow-up-14-captures/258ba504-6ddf-4888-8633-9cfee8da6eea/SHA256SUMS) pins payload-free headers, original captures, readbacks and derived analyses. Raw pcaps stay private. Clock offsets are empirical envelopes with microsecond packet quantization, not hardware or kernel-commit timestamps.
