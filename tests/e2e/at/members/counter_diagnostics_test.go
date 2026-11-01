@@ -35,17 +35,17 @@ func (l *live) recordCounterTiming(r *record) {
 	recovery["run_id"], recovery["source_commit"] = l.runID, l.build.Source
 	recovery["sender"] = l.siblingSent
 	evidence, _ := json.MarshalIndent(recovery, "", "  ")
-	if e := os.WriteFile(filepath.Join(l.root, "docs/e2e/at/members/F13-AT02-recovery.json"), append(evidence, '\n'), 0644); e != nil {
+	if e := os.WriteFile(filepath.Join(l.root, "docs/e2e/at/members/F14-AT02-recovery.json"), append(evidence, '\n'), 0644); e != nil {
 		l.t.Fatal(e)
 	}
-	r.jsonCheck("D-135 D-136 node-wide baseline transitions (provisional)", "every baseline to next successful Apply retained; every sibling loss counted; recovery required; no guard or baseline exclusion waives loss", map[string]any{"artifact": "F13-AT02-recovery.json", "measurement": recovery}, "original producer stream and continuous sibling capture; command bounds, not kernel commits", recoveryOK && joinErr == nil && err == nil)
+	r.jsonCheck("D-135 D-136 node-wide baseline transitions (provisional)", "every baseline to next successful Apply retained; every sibling loss counted; recovery required; no guard or baseline exclusion waives loss", map[string]any{"artifact": "F14-AT02-recovery.json", "measurement": recovery}, "original producer stream and continuous sibling capture; command bounds, not kernel commits", recoveryOK && joinErr == nil && err == nil)
 	if !observed {
 		if recovery["failed_apply_total"].(int) > 0 {
 			r.block("F11-03: failed Applies outside the continuous sibling window are retained; their sibling recovery is unmeasured")
 		}
 		r.block("F11-03 D-135: no failed Apply observed in the continuous sibling window; recovery row blocked, not passed")
 	} else {
-		r.jsonCheck("F11-03 D-135 admitted sibling recovery", "revoked source dropped; every sibling loss counted; baseline-to-next-successful-Apply bracket reported; forwarding returns after that Apply", map[string]any{"artifact": "F13-AT02-recovery.json", "measurement": recovery}, "same boot/run/sequence producer records and continuous node ingress/egress; diagnostic labels never waive failures", recoveryOK && joinErr == nil && err == nil)
+		r.jsonCheck("F11-03 D-135 admitted sibling recovery", "revoked source dropped; every sibling loss counted; baseline-to-next-successful-Apply bracket reported; forwarding returns after that Apply", map[string]any{"artifact": "F14-AT02-recovery.json", "measurement": recovery}, "same boot/run/sequence producer records and continuous node ingress/egress; diagnostic labels never waive failures", recoveryOK && joinErr == nil && err == nil)
 	}
 
 	// A sidecar retains every original operation/renewal/source kind once. The
@@ -66,7 +66,8 @@ func TestAT02_AT20_SharedDiagnosticSerialization(t *testing.T) {
 	// counter read and DNS metadata that must never be lost by a local projection.
 	var tick persistentTick
 	tick.Counters.Diagnostic.Category = "transient_io"
-	tick.Counters.Diagnostic.Stage = "nft_read"
+	tick.Counters.Diagnostic.Stage = "nft_parse"
+	tick.Counters.Diagnostic.Parse = &counterread.ParseFailure{ID: "TEST ONLY", Class: "unexpected_format", ParserErrorKind: "parser_rejected", Bytes: 123, Lines: 1, Retained: true, Exported: true}
 	tick.Counters.Diagnostic.MonoStart = 9007199254740993
 	tick.Counters.Diagnostic.MonoEnd = 9007199254740995
 	tick.Status.ReadDiagnostic.Category = "none"
@@ -87,6 +88,9 @@ func TestAT02_AT20_SharedDiagnosticSerialization(t *testing.T) {
 	}
 	if got.Sample.ReadOK || got.Sample.Counters.Diagnostic.MonoStart != tick.Counters.Diagnostic.MonoStart || got.Sample.Counters.Diagnostic.Category != "transient_io" || got.Sample.Status.ReadDiagnostic.Category != "none" || string(got.Sample.Counters.Diagnostic.TimingBefore.Record) != string(tick.Counters.Diagnostic.TimingBefore.Record) {
 		t.Fatal("reader diagnosis or decimal clock lost")
+	}
+	if got.Sample.Counters.Diagnostic.Parse == nil || *got.Sample.Counters.Diagnostic.Parse != *tick.Counters.Diagnostic.Parse {
+		t.Fatal("parse failure receipt lost")
 	}
 	before, _ := json.Marshal(dns)
 	after, _ := json.Marshal(got.Query)

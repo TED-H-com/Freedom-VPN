@@ -24,6 +24,13 @@ func (l *live) configureNativeDNS(r *record) bool {
 	l.nativeDNS = err == nil && len(cfg.Resolvers) == 2 && cfg.NativeResolversMatch && cfg.NativeDNSEnabled && cfg.SystemUsesNativeStub && cfg.SameAppliedDocument
 	r.jsonCheck("native two-resolver configuration", "exact issued pair, native enabled, one OS stub, identical applied documents", map[string]any{"configuration": cfg, "error": safeError(err)}, "ConfigureNativeDNS; TEST ONLY peer-restricted distribution of production-issued addresses", l.nativeDNS)
 	if l.nativeDNS {
+		handle, captureErr := l.hook.StartNativeDNSCapture(l.ctx)
+		if captureErr != nil {
+			r.block("F12-04 original DNS capture unavailable")
+		} else {
+			l.dnsCapture = l.captureSession(r, handle, "original-at20-dns")
+			l.dnsCapture.sample("after-configuration-before-readiness")
+		}
 		start := time.Now()
 		var attempts []labstack.FixtureProbeResult
 		ready := l.wait(30*time.Second, func() bool {
@@ -40,9 +47,16 @@ func (l *live) configureNativeDNS(r *record) bool {
 	return l.nativeDNS
 }
 func (l *live) nativeDNSMatrix(r *record) {
+	var original *labstack.FixtureProbeResult
+	var beforeHistory, afterHistory map[string]any
+	defer func() {
+		evidence := l.dnsCapture.stop()
+		l.originalDNSArtifact(r, original, evidence, beforeHistory, afterHistory)
+	}()
 	if !l.configureNativeDNS(r) {
 		return
 	}
+	l.dnsCapture.sample("before-original-preceding-mutations")
 	// AT08 restarted the node process; restore the independent private listener.
 	err := l.hook.StartFixtureTargets(l.ctx)
 	r.check("private fixture listeners", "ready", safeError(err), "StartFixtureTargets in owned node namespace", err == nil)
@@ -62,7 +76,16 @@ func (l *live) nativeDNSMatrix(r *record) {
 				control, e := l.fixture("node", "-mode", "dns", "-addr", l.stack.LabPrefix+".54:53", "-name", tc.name, "-type", fmt.Sprint(tc.typ))
 				r.jsonCheck(label+" authority control", "existing upstream RR", control, "direct owned authority positive control; no query contents exported", e == nil && control.Available && control.RCode == 0 && len(control.Types) > 0)
 			}
+			if index == 0 && !tcp {
+				l.dnsCapture.sample("before-original-query")
+				beforeHistory = l.dnsLifecycle("before-original")
+			}
 			got, e := l.hook.ProbeNativeDNS(l.ctx, "", tc.name, tc.typ, tcp, "")
+			if index == 0 && !tcp {
+				original = &got
+				afterHistory = l.dnsLifecycle("after-original")
+				l.dnsCapture.sample("after-original-query")
+			}
 			// dns-publish follow-up 8: synthetic filtering is type-specific.
 			// Absent upstream names and positive cache controls are separate.
 			tableRow, scope := "upstream control (not synthetic filtering)", ""
@@ -85,8 +108,13 @@ func (l *live) nativeDNSMatrix(r *record) {
 		got, e := l.hook.ProbeNativeDNS(l.ctx, "", name, 1, false, "")
 		r.jsonCheck("native case/dot normalization", "F8-A / F8-TTL5: RCODE 3, zero answers, SOA TTL 5", got, "ProbeNativeDNS mixed case/trailing dot synthetic blocked name; docs/dns/BACKEND.md §2.1", e == nil && blockedDNS5(got))
 	}
+	for _, tcp := range []bool{false, true} {
+		got, e := l.hook.ProbeNativeIDNA(l.ctx, tcp)
+		r.jsonCheck(fmt.Sprintf("positive IDNA TCP=%t", tcp), "U-label converted to controlled A-label; positive A answer through native stub", got, "ProbeNativeIDNA; TEST ONLY fixture; no platform Unicode UI claim", e == nil && got.Available && got.RCode == 0 && got.ExpectedAnswer && len(got.Types) > 0)
+	}
 	l.nativeDNSCache(r)
-	r.block("F4-07: IDNA wire-positive fixture is still absent (canonical A-label API input is tested). Owner: w3-devstack-e2e. DNS wording retired 2026-10-31 by docs/dns/BACKEND.md §2.1.1–§2.1.4; distribution/platform gaps remain separate.")
+	l.dnsCapture.sample("after-original-cache-mutations")
+	r.block("F4-05/F4-07: production nameserver distribution and platform Private DNS / browser DoH / Unicode UI still require owner resources; positive fixture IDNA is separate.")
 }
 func (l *live) nativeDNSCache(r *record) {
 	// F9-HIT/F9-OTHER/F9-ROUND/F9-INFLIGHT: attribution is separate

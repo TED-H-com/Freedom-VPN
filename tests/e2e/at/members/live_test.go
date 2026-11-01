@@ -83,6 +83,7 @@ type record struct {
 	Operator         string            `json:"operator_status,omitempty"`
 }
 type live struct {
+	dnsCapture                   *nativeCaptureSession
 	siblingSent, siblingObserved json.RawMessage
 
 	probeSequence                            int

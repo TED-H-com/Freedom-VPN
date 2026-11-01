@@ -20,6 +20,9 @@ func parseTimingStream(reader io.Reader) ([]json.RawMessage, error) {
 		if !json.Valid(raw) {
 			return nil, fmt.Errorf("incomplete producer record")
 		}
+		if err := validateProducerCommands(raw); err != nil {
+			return nil, err
+		}
 		rows = append(rows, append(json.RawMessage(nil), raw...))
 	}
 	if e := scanner.Err(); e != nil {

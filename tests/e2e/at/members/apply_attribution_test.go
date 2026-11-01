@@ -6,20 +6,23 @@ import (
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/node/agent"
+	"github.com/TED-H-com/Freedom-VPN/node/enforce"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 )
 
 type applyDiagnosis struct {
-	CommandLifecycleAvailable bool                   `json:"command_lifecycle_available"`
-	Run                       string                 `json:"producer_run_id"`
-	Sequence                  decstr.U64             `json:"sequence"`
-	FailureStage              string                 `json:"failure_stage"`
-	Verification              string                 `json:"verification_status"`
-	Label                     string                 `json:"label"`
-	Cause                     string                 `json:"cause_status"`
-	Idle                      *float64               `json:"interval_idle_percent"`
-	Host                      *agent.MeasurementHost `json:"host_context"`
-	Original                  json.RawMessage        `json:"original_record"`
+	CommandLifecycleStatus    string                     `json:"command_lifecycle_status"`
+	Commands                  []enforce.CommandLifecycle `json:"commands,omitempty"`
+	CommandLifecycleAvailable bool                       `json:"command_lifecycle_available"`
+	Run                       string                     `json:"producer_run_id"`
+	Sequence                  decstr.U64                 `json:"sequence"`
+	FailureStage              string                     `json:"failure_stage"`
+	Verification              string                     `json:"verification_status"`
+	Label                     string                     `json:"label"`
+	Cause                     string                     `json:"cause_status"`
+	Idle                      *float64                   `json:"interval_idle_percent"`
+	Host                      *agent.MeasurementHost     `json:"host_context"`
+	Original                  json.RawMessage            `json:"original_record"`
 }
 
 func diagnoseApply(raw json.RawMessage) (applyDiagnosis, error) {
@@ -31,9 +34,17 @@ func diagnoseApply(raw json.RawMessage) (applyDiagnosis, error) {
 		return applyDiagnosis{}, fmt.Errorf("not an Apply")
 	}
 	t := m.Timing
+	if err := validateCommandLifecycle(t); err != nil {
+		return applyDiagnosis{}, err
+	}
 	d := t.Deadline
 	out := applyDiagnosis{Run: m.RunID.String(), Sequence: m.Sequence, FailureStage: "none", Verification: "missing", Cause: "unproven", Host: m.Host, Original: raw, Label: "Apply"}
 	out.CommandLifecycleAvailable = len(t.Commands) > 0
+	out.CommandLifecycleStatus = "unavailable"
+	if out.CommandLifecycleAvailable {
+		out.CommandLifecycleStatus = "available"
+		out.Commands = t.Commands
+	}
 	if len(t.Verifications) > 0 {
 		out.Verification = "passed"
 		for _, v := range t.Verifications {
@@ -87,6 +98,9 @@ type siblingObservation struct {
 	Stats          struct{ Drops uint32 } `json:"capture_stats"`
 }
 type recoveryBracket struct {
+	LiveRecord          json.RawMessage `json:"later_live_verification,omitempty"`
+	HeartbeatRecord     json.RawMessage `json:"later_heartbeat,omitempty"`
+	MemberPath          string          `json:"member_path_evidence"`
 	RecoveryRun         string          `json:"recovery_producer_run_id"`
 	RecoveryRecord      json.RawMessage `json:"original_recovery_record"`
 	FirstEgress         time.Duration   `json:"first_egress_after_recovery_ns,string"`
@@ -158,6 +172,26 @@ func siblingRecovery(trace []json.RawMessage, observed json.RawMessage, sent ...
 				b.RecoveryRun = n.RunID.String()
 				b.RecoveryRecord = trace[i+1+offset]
 				b.Recovery = n.Sequence
+				b.MemberPath = "unavailable; no joined member-path sample"
+				for k, following := range rows[i+2+offset:] {
+					if following.BootID != m.BootID {
+						continue
+					}
+					original := trace[i+2+offset+k]
+					if following.Baseline != nil {
+						break
+					}
+					if b.LiveRecord == nil && following.Source == "live" && following.Timing != nil {
+						b.LiveRecord = original
+					}
+					if following.Heartbeat != nil {
+						b.HeartbeatRecord = original
+						if following.Heartbeat.Serving {
+							b.MemberPath = "serving heartbeat after local live verification; separate from captured egress"
+						}
+						break
+					}
+				}
 				b.End = n.Timing.End
 				b.Duration = b.End - b.Start
 				break
@@ -277,5 +311,5 @@ func siblingRecovery(trace []json.RawMessage, observed json.RawMessage, sent ...
 	// Bracket/guard membership explains location; it never excludes a loss.
 	measurementValid := valid && len(ingress) > 0 && len(egress) > 0
 	valid = measurementValid && attempts == len(egress)
-	return map[string]any{"contract": "provisional D-135 + D-136; every node-wide baseline call; overlapping brackets are not summed; baseline start/end to next successful Apply end are command bounds, not kernel commit timestamps; recovery sampled at 20 ms, first egress within 1 s; D-134 gives no fixed guard ceiling", "apply_records": diagnoses, "failed_apply_total": failedTotal, "failed_apply_in_capture": failedInCapture, "failed_apply_bracketed": failedBracketed, "baseline_transition_count": len(brackets), "measurement_valid": measurementValid, "brackets": brackets, "ingress_packets": len(ingress), "egress_packets": len(egress), "lost_admitted_packets": attempts - len(egress), "node_ingress_without_egress": losses, "sender_attempts": attempts, "send_errors": sendErrors, "not_observed_at_node_ingress": missingIngress, "losses_in_completed_guards": guardLoss, "losses_outside_completed_guards": losses - guardLoss, "losses_outside_baseline_or_completed_guard": outside, "observation": capture, "cause_status": "unproven"}, valid, failedInCapture > 0
+	return map[string]any{"contract": "provisional D-135 + D-136; every node-wide baseline call; overlapping brackets are not summed; baseline start/end to next successful Apply end are command bounds, not kernel commit timestamps; recovery sampled at 20 ms, first egress within 1 s; D-134 gives no fixed guard ceiling; corrected D-136 ordinary stale lease uses baseline then ACK/renew/Apply/verify/heartbeat, with no finite outage ceiling; verified deny-all candidate only when an Apply error is retained", "apply_records": diagnoses, "failed_apply_total": failedTotal, "failed_apply_in_capture": failedInCapture, "failed_apply_bracketed": failedBracketed, "baseline_transition_count": len(brackets), "measurement_valid": measurementValid, "brackets": brackets, "ingress_packets": len(ingress), "egress_packets": len(egress), "lost_admitted_packets": attempts - len(egress), "node_ingress_without_egress": losses, "sender_attempts": attempts, "send_errors": sendErrors, "not_observed_at_node_ingress": missingIngress, "losses_in_completed_guards": guardLoss, "losses_outside_completed_guards": losses - guardLoss, "losses_outside_baseline_or_completed_guard": outside, "observation": capture, "cause_status": "unproven"}, valid, failedInCapture > 0
 }

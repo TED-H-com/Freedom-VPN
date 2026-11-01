@@ -1,0 +1,4002 @@
+{
+  "run_id": "2be2d32f-bfd9-46f5-bf29-afaa6617ae94",
+  "source_commit": "731be5a7af7657660d96c240695747a23a3f5c96",
+  "case": "AT02",
+  "request": "F10-02",
+  "status": "fail",
+  "name": "persistent withdrawal member-a3",
+  "expected": "active TCP/UDP senders; no replies later than target; counters frozen or removed",
+  "command": "EstablishedStatus + DeviceByteCounters until target plus 4s; timestamps bound last observed increment, not packet capture",
+  "at": "2026-10-31T13:36:55Z",
+  "observation": {
+    "counters_stable_or_removed": true,
+    "event_at": "2026-10-31T13:36:39Z",
+    "last_tcp_reply_observed_at": "2026-10-31T13:36:38.987828874Z",
+    "last_udp_reply_observed_at": "2026-10-31T13:36:38.987828874Z",
+    "poll_interval_ms": 250,
+    "samples": [
+      {
+        "at": "2026-10-31T13:35:39.995461607Z",
+        "status": {
+          "tcp_echoes": 1,
+          "udp_replies": 1,
+          "tcp_attempts": 1,
+          "udp_attempts": 1,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "10499",
+          "download_bytes": "10491",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:35:40.309339232Z",
+        "status": {
+          "tcp_echoes": 2,
+          "udp_replies": 2,
+          "tcp_attempts": 2,
+          "udp_attempts": 2,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "10685",
+          "download_bytes": "10630",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:35:40.624028724Z",
+        "status": {
+          "tcp_echoes": 2,
+          "udp_replies": 2,
+          "tcp_attempts": 2,
+          "udp_attempts": 2,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "10685",
+          "download_bytes": "10630",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:35:40.937810183Z",
+        "status": {
+          "tcp_echoes": 3,
+          "udp_replies": 3,
+          "tcp_attempts": 3,
+          "udp_attempts": 3,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "10871",
+          "download_bytes": "10769",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:35:41.254687994Z",
+        "status": {
+          "tcp_echoes": 3,
+          "udp_replies": 3,
+          "tcp_attempts": 3,
+          "udp_attempts": 4,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "11057",
+          "download_bytes": "10908",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:35:41.566192216Z",
+        "status": {
+          "tcp_echoes": 4,
+          "udp_replies": 4,
+          "tcp_attempts": 4,
+          "udp_attempts": 4,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "11057",
+          "download_bytes": "10908",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:35:41.879968393Z",
+        "status": {
+          "tcp_echoes": 5,
+          "udp_replies": 5,
+          "tcp_attempts": 5,
+          "udp_attempts": 5,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "11243",
+          "download_bytes": "11047",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:35:42.192316515Z",
+        "status": {
+          "tcp_echoes": 5,
+          "udp_replies": 5,
+          "tcp_attempts": 5,
+          "udp_attempts": 5,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "11429",
+          "download_bytes": "11186",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:35:42.507057652Z",
+        "status": {
+          "tcp_echoes": 6,
+          "udp_replies": 6,
+          "tcp_attempts": 6,
+          "udp_attempts": 6,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "11429",
+          "download_bytes": "11186",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:35:42.820204529Z",
+        "status": {
+          "tcp_echoes": 7,
+          "udp_replies": 7,
+          "tcp_attempts": 7,
+          "udp_attempts": 7,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "11615",
+          "download_bytes": "11325",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:35:43.133534049Z",
+        "status": {
+          "tcp_echoes": 7,
+          "udp_replies": 7,
+          "tcp_attempts": 7,
+          "udp_attempts": 7,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "11615",
+          "download_bytes": "11325",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:35:43.446999128Z",
+        "status": {
+          "tcp_echoes": 8,
+          "udp_replies": 8,
+          "tcp_attempts": 8,
+          "udp_attempts": 8,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "11801",
+          "download_bytes": "11464",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:35:43.752813128Z",
+        "status": {
+          "tcp_echoes": 8,
+          "udp_replies": 8,
+          "tcp_attempts": 9,
+          "udp_attempts": 8,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "11987",
+          "download_bytes": "11603",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:35:44.066284977Z",
+        "status": {
+          "tcp_echoes": 9,
+          "udp_replies": 9,
+          "tcp_attempts": 9,
+          "udp_attempts": 9,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "11987",
+          "download_bytes": "11603",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:35:44.376188161Z",
+        "status": {
+          "tcp_echoes": 10,
+          "udp_replies": 10,
+          "tcp_attempts": 10,
+          "udp_attempts": 10,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "12173",
+          "download_bytes": "11742",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:35:44.690165781Z",
+        "status": {
+          "tcp_echoes": 10,
+          "udp_replies": 10,
+          "tcp_attempts": 10,
+          "udp_attempts": 10,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "12359",
+          "download_bytes": "11881",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:35:45.001296329Z",
+        "status": {
+          "tcp_echoes": 11,
+          "udp_replies": 11,
+          "tcp_attempts": 11,
+          "udp_attempts": 11,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "12359",
+          "download_bytes": "11881",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:35:45.333735552Z",
+        "status": {
+          "tcp_echoes": 12,
+          "udp_replies": 12,
+          "tcp_attempts": 12,
+          "udp_attempts": 12,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "0",
+          "download_bytes": "0",
+          "Present": false
+        },
+        "read_ok": false
+      },
+      {
+        "at": "2026-10-31T13:35:45.637405762Z",
+        "status": {
+          "tcp_echoes": 12,
+          "udp_replies": 12,
+          "tcp_attempts": 12,
+          "udp_attempts": 12,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "12545",
+          "download_bytes": "12020",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:35:45.950775065Z",
+        "status": {
+          "tcp_echoes": 13,
+          "udp_replies": 13,
+          "tcp_attempts": 13,
+          "udp_attempts": 13,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "12731",
+          "download_bytes": "12159",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:35:46.263380992Z",
+        "status": {
+          "tcp_echoes": 13,
+          "udp_replies": 13,
+          "tcp_attempts": 13,
+          "udp_attempts": 13,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "12917",
+          "download_bytes": "12298",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:35:46.580404086Z",
+        "status": {
+          "tcp_echoes": 14,
+          "udp_replies": 14,
+          "tcp_attempts": 14,
+          "udp_attempts": 14,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "12917",
+          "download_bytes": "12298",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:35:46.893010653Z",
+        "status": {
+          "tcp_echoes": 15,
+          "udp_replies": 15,
+          "tcp_attempts": 15,
+          "udp_attempts": 15,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "13103",
+          "download_bytes": "12437",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:35:47.212679141Z",
+        "status": {
+          "tcp_echoes": 15,
+          "udp_replies": 15,
+          "tcp_attempts": 16,
+          "udp_attempts": 16,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "13289",
+          "download_bytes": "12576",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:35:47.525792002Z",
+        "status": {
+          "tcp_echoes": 16,
+          "udp_replies": 16,
+          "tcp_attempts": 16,
+          "udp_attempts": 16,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "13289",
+          "download_bytes": "12576",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:35:47.840226411Z",
+        "status": {
+          "tcp_echoes": 17,
+          "udp_replies": 17,
+          "tcp_attempts": 17,
+          "udp_attempts": 17,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "13475",
+          "download_bytes": "12715",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:35:48.154999575Z",
+        "status": {
+          "tcp_echoes": 17,
+          "udp_replies": 17,
+          "tcp_attempts": 17,
+          "udp_attempts": 17,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "13475",
+          "download_bytes": "12715",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:35:48.469600022Z",
+        "status": {
+          "tcp_echoes": 18,
+          "udp_replies": 18,
+          "tcp_attempts": 18,
+          "udp_attempts": 18,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "13661",
+          "download_bytes": "12854",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:35:48.786381105Z",
+        "status": {
+          "tcp_echoes": 18,
+          "udp_replies": 18,
+          "tcp_attempts": 19,
+          "udp_attempts": 18,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "13847",
+          "download_bytes": "12993",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:35:49.099681732Z",
+        "status": {
+          "tcp_echoes": 19,
+          "udp_replies": 19,
+          "tcp_attempts": 19,
+          "udp_attempts": 19,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "13847",
+          "download_bytes": "12993",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:35:49.414239427Z",
+        "status": {
+          "tcp_echoes": 20,
+          "udp_replies": 20,
+          "tcp_attempts": 20,
+          "udp_attempts": 20,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "14033",
+          "download_bytes": "13132",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:35:49.719991605Z",
+        "status": {
+          "tcp_echoes": 20,
+          "udp_replies": 20,
+          "tcp_attempts": 21,
+          "udp_attempts": 21,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "14219",
+          "download_bytes": "13271",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:35:50.037082308Z",
+        "status": {
+          "tcp_echoes": 21,
+          "udp_replies": 21,
+          "tcp_attempts": 21,
+          "udp_attempts": 21,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "14219",
+          "download_bytes": "13271",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:35:50.354045052Z",
+        "status": {
+          "tcp_echoes": 22,
+          "udp_replies": 22,
+          "tcp_attempts": 22,
+          "udp_attempts": 22,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "14405",
+          "download_bytes": "13410",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:35:50.67121589Z",
+        "status": {
+          "tcp_echoes": 22,
+          "udp_replies": 22,
+          "tcp_attempts": 22,
+          "udp_attempts": 22,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "14405",
+          "download_bytes": "13410",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:35:50.987540727Z",
+        "status": {
+          "tcp_echoes": 23,
+          "udp_replies": 23,
+          "tcp_attempts": 23,
+          "udp_attempts": 23,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "14591",
+          "download_bytes": "13549",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:35:51.307200655Z",
+        "status": {
+          "tcp_echoes": 23,
+          "udp_replies": 23,
+          "tcp_attempts": 23,
+          "udp_attempts": 23,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "14777",
+          "download_bytes": "13688",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:35:51.621541803Z",
+        "status": {
+          "tcp_echoes": 24,
+          "udp_replies": 24,
+          "tcp_attempts": 24,
+          "udp_attempts": 24,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "14777",
+          "download_bytes": "13688",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:35:51.941128873Z",
+        "status": {
+          "tcp_echoes": 25,
+          "udp_replies": 25,
+          "tcp_attempts": 25,
+          "udp_attempts": 25,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "14963",
+          "download_bytes": "13827",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:35:52.252708579Z",
+        "status": {
+          "tcp_echoes": 25,
+          "udp_replies": 25,
+          "tcp_attempts": 26,
+          "udp_attempts": 25,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "15149",
+          "download_bytes": "13966",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:35:52.559499559Z",
+        "status": {
+          "tcp_echoes": 26,
+          "udp_replies": 26,
+          "tcp_attempts": 26,
+          "udp_attempts": 26,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "15149",
+          "download_bytes": "13966",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:35:52.873326027Z",
+        "status": {
+          "tcp_echoes": 27,
+          "udp_replies": 27,
+          "tcp_attempts": 27,
+          "udp_attempts": 27,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "15335",
+          "download_bytes": "14105",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:35:53.188623564Z",
+        "status": {
+          "tcp_echoes": 27,
+          "udp_replies": 27,
+          "tcp_attempts": 27,
+          "udp_attempts": 27,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "15521",
+          "download_bytes": "14244",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:35:53.501364405Z",
+        "status": {
+          "tcp_echoes": 28,
+          "udp_replies": 28,
+          "tcp_attempts": 28,
+          "udp_attempts": 28,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "15521",
+          "download_bytes": "14244",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:35:53.815949887Z",
+        "status": {
+          "tcp_echoes": 29,
+          "udp_replies": 29,
+          "tcp_attempts": 29,
+          "udp_attempts": 29,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "15707",
+          "download_bytes": "14383",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:35:54.129115387Z",
+        "status": {
+          "tcp_echoes": 29,
+          "udp_replies": 29,
+          "tcp_attempts": 29,
+          "udp_attempts": 29,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "15707",
+          "download_bytes": "14383",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:35:54.442595281Z",
+        "status": {
+          "tcp_echoes": 30,
+          "udp_replies": 30,
+          "tcp_attempts": 30,
+          "udp_attempts": 30,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "15893",
+          "download_bytes": "14522",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:35:54.758857912Z",
+        "status": {
+          "tcp_echoes": 30,
+          "udp_replies": 30,
+          "tcp_attempts": 30,
+          "udp_attempts": 31,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "16079",
+          "download_bytes": "14661",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:35:55.07416467Z",
+        "status": {
+          "tcp_echoes": 31,
+          "udp_replies": 31,
+          "tcp_attempts": 31,
+          "udp_attempts": 31,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "16079",
+          "download_bytes": "14661",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:35:55.386659684Z",
+        "status": {
+          "tcp_echoes": 32,
+          "udp_replies": 32,
+          "tcp_attempts": 32,
+          "udp_attempts": 32,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "16265",
+          "download_bytes": "14800",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:35:55.700905958Z",
+        "status": {
+          "tcp_echoes": 32,
+          "udp_replies": 32,
+          "tcp_attempts": 32,
+          "udp_attempts": 32,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "16451",
+          "download_bytes": "14939",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:35:56.015443976Z",
+        "status": {
+          "tcp_echoes": 33,
+          "udp_replies": 33,
+          "tcp_attempts": 33,
+          "udp_attempts": 33,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "16451",
+          "download_bytes": "14939",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:35:56.329528013Z",
+        "status": {
+          "tcp_echoes": 34,
+          "udp_replies": 34,
+          "tcp_attempts": 34,
+          "udp_attempts": 34,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "16637",
+          "download_bytes": "15078",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:35:56.643555596Z",
+        "status": {
+          "tcp_echoes": 34,
+          "udp_replies": 34,
+          "tcp_attempts": 34,
+          "udp_attempts": 34,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "16637",
+          "download_bytes": "15078",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:35:56.957727072Z",
+        "status": {
+          "tcp_echoes": 35,
+          "udp_replies": 35,
+          "tcp_attempts": 35,
+          "udp_attempts": 35,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "16823",
+          "download_bytes": "15217",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:35:57.272626843Z",
+        "status": {
+          "tcp_echoes": 35,
+          "udp_replies": 35,
+          "tcp_attempts": 35,
+          "udp_attempts": 35,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "17009",
+          "download_bytes": "15356",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:35:57.586695474Z",
+        "status": {
+          "tcp_echoes": 36,
+          "udp_replies": 36,
+          "tcp_attempts": 36,
+          "udp_attempts": 36,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "17009",
+          "download_bytes": "15356",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:35:57.901612865Z",
+        "status": {
+          "tcp_echoes": 37,
+          "udp_replies": 37,
+          "tcp_attempts": 37,
+          "udp_attempts": 37,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "17195",
+          "download_bytes": "15495",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:35:58.215693625Z",
+        "status": {
+          "tcp_echoes": 37,
+          "udp_replies": 37,
+          "tcp_attempts": 37,
+          "udp_attempts": 37,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "17381",
+          "download_bytes": "15634",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:35:58.528488056Z",
+        "status": {
+          "tcp_echoes": 38,
+          "udp_replies": 38,
+          "tcp_attempts": 38,
+          "udp_attempts": 38,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "17381",
+          "download_bytes": "15634",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:35:58.84412038Z",
+        "status": {
+          "tcp_echoes": 39,
+          "udp_replies": 39,
+          "tcp_attempts": 39,
+          "udp_attempts": 39,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "17567",
+          "download_bytes": "15773",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:35:59.155310628Z",
+        "status": {
+          "tcp_echoes": 39,
+          "udp_replies": 39,
+          "tcp_attempts": 39,
+          "udp_attempts": 39,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "17567",
+          "download_bytes": "15773",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:35:59.469871604Z",
+        "status": {
+          "tcp_echoes": 40,
+          "udp_replies": 40,
+          "tcp_attempts": 40,
+          "udp_attempts": 40,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "17753",
+          "download_bytes": "15912",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:35:59.789082804Z",
+        "status": {
+          "tcp_echoes": 40,
+          "udp_replies": 40,
+          "tcp_attempts": 40,
+          "udp_attempts": 40,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "17939",
+          "download_bytes": "16051",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:00.119384454Z",
+        "status": {
+          "tcp_echoes": 41,
+          "udp_replies": 41,
+          "tcp_attempts": 41,
+          "udp_attempts": 41,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "17939",
+          "download_bytes": "16051",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:00.43591271Z",
+        "status": {
+          "tcp_echoes": 42,
+          "udp_replies": 42,
+          "tcp_attempts": 42,
+          "udp_attempts": 42,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "18125",
+          "download_bytes": "16190",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:00.75385787Z",
+        "status": {
+          "tcp_echoes": 42,
+          "udp_replies": 42,
+          "tcp_attempts": 42,
+          "udp_attempts": 42,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "18311",
+          "download_bytes": "16329",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:01.067409928Z",
+        "status": {
+          "tcp_echoes": 43,
+          "udp_replies": 43,
+          "tcp_attempts": 43,
+          "udp_attempts": 43,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "18311",
+          "download_bytes": "16329",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:01.380468343Z",
+        "status": {
+          "tcp_echoes": 44,
+          "udp_replies": 44,
+          "tcp_attempts": 44,
+          "udp_attempts": 44,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "18497",
+          "download_bytes": "16468",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:01.694550238Z",
+        "status": {
+          "tcp_echoes": 44,
+          "udp_replies": 44,
+          "tcp_attempts": 44,
+          "udp_attempts": 44,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "18683",
+          "download_bytes": "16607",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:02.009926053Z",
+        "status": {
+          "tcp_echoes": 45,
+          "udp_replies": 45,
+          "tcp_attempts": 45,
+          "udp_attempts": 45,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "18683",
+          "download_bytes": "16607",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:02.31974627Z",
+        "status": {
+          "tcp_echoes": 46,
+          "udp_replies": 46,
+          "tcp_attempts": 46,
+          "udp_attempts": 46,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "18869",
+          "download_bytes": "16746",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:02.635518424Z",
+        "status": {
+          "tcp_echoes": 46,
+          "udp_replies": 46,
+          "tcp_attempts": 46,
+          "udp_attempts": 46,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "18869",
+          "download_bytes": "16746",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:02.954884309Z",
+        "status": {
+          "tcp_echoes": 47,
+          "udp_replies": 47,
+          "tcp_attempts": 47,
+          "udp_attempts": 47,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "19055",
+          "download_bytes": "16885",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:03.275177764Z",
+        "status": {
+          "tcp_echoes": 47,
+          "udp_replies": 47,
+          "tcp_attempts": 48,
+          "udp_attempts": 47,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "19241",
+          "download_bytes": "17024",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:03.588010594Z",
+        "status": {
+          "tcp_echoes": 48,
+          "udp_replies": 48,
+          "tcp_attempts": 48,
+          "udp_attempts": 48,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "19241",
+          "download_bytes": "17024",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:03.901755961Z",
+        "status": {
+          "tcp_echoes": 49,
+          "udp_replies": 49,
+          "tcp_attempts": 49,
+          "udp_attempts": 49,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "19427",
+          "download_bytes": "17163",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:04.216110305Z",
+        "status": {
+          "tcp_echoes": 49,
+          "udp_replies": 49,
+          "tcp_attempts": 50,
+          "udp_attempts": 49,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "19613",
+          "download_bytes": "17302",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:04.527805829Z",
+        "status": {
+          "tcp_echoes": 50,
+          "udp_replies": 50,
+          "tcp_attempts": 50,
+          "udp_attempts": 50,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "19613",
+          "download_bytes": "17302",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:04.839839534Z",
+        "status": {
+          "tcp_echoes": 51,
+          "udp_replies": 51,
+          "tcp_attempts": 51,
+          "udp_attempts": 51,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "19799",
+          "download_bytes": "17441",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:05.16816001Z",
+        "status": {
+          "tcp_echoes": 51,
+          "udp_replies": 51,
+          "tcp_attempts": 51,
+          "udp_attempts": 51,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "19799",
+          "download_bytes": "17441",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:05.480858231Z",
+        "status": {
+          "tcp_echoes": 52,
+          "udp_replies": 52,
+          "tcp_attempts": 52,
+          "udp_attempts": 52,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "19985",
+          "download_bytes": "17580",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:05.798670099Z",
+        "status": {
+          "tcp_echoes": 52,
+          "udp_replies": 52,
+          "tcp_attempts": 53,
+          "udp_attempts": 53,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "20171",
+          "download_bytes": "17719",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:06.100539214Z",
+        "status": {
+          "tcp_echoes": 53,
+          "udp_replies": 53,
+          "tcp_attempts": 53,
+          "udp_attempts": 53,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "20171",
+          "download_bytes": "17719",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:06.412589076Z",
+        "status": {
+          "tcp_echoes": 54,
+          "udp_replies": 54,
+          "tcp_attempts": 54,
+          "udp_attempts": 54,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "20357",
+          "download_bytes": "17858",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:06.726527191Z",
+        "status": {
+          "tcp_echoes": 54,
+          "udp_replies": 54,
+          "tcp_attempts": 54,
+          "udp_attempts": 54,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "20543",
+          "download_bytes": "17997",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:07.032852435Z",
+        "status": {
+          "tcp_echoes": 55,
+          "udp_replies": 55,
+          "tcp_attempts": 55,
+          "udp_attempts": 55,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "20543",
+          "download_bytes": "17997",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:07.347287576Z",
+        "status": {
+          "tcp_echoes": 56,
+          "udp_replies": 56,
+          "tcp_attempts": 56,
+          "udp_attempts": 56,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "20729",
+          "download_bytes": "18136",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:07.65961449Z",
+        "status": {
+          "tcp_echoes": 56,
+          "udp_replies": 56,
+          "tcp_attempts": 56,
+          "udp_attempts": 56,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "20729",
+          "download_bytes": "18136",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:07.964893418Z",
+        "status": {
+          "tcp_echoes": 57,
+          "udp_replies": 57,
+          "tcp_attempts": 57,
+          "udp_attempts": 57,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "20915",
+          "download_bytes": "18275",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:08.281891167Z",
+        "status": {
+          "tcp_echoes": 57,
+          "udp_replies": 57,
+          "tcp_attempts": 58,
+          "udp_attempts": 58,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "21101",
+          "download_bytes": "18414",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:08.595750713Z",
+        "status": {
+          "tcp_echoes": 58,
+          "udp_replies": 58,
+          "tcp_attempts": 58,
+          "udp_attempts": 58,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "21101",
+          "download_bytes": "18414",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:08.908286749Z",
+        "status": {
+          "tcp_echoes": 59,
+          "udp_replies": 59,
+          "tcp_attempts": 59,
+          "udp_attempts": 59,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "21287",
+          "download_bytes": "18553",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:09.221583094Z",
+        "status": {
+          "tcp_echoes": 59,
+          "udp_replies": 59,
+          "tcp_attempts": 60,
+          "udp_attempts": 59,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "21473",
+          "download_bytes": "18692",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:09.534294399Z",
+        "status": {
+          "tcp_echoes": 60,
+          "udp_replies": 60,
+          "tcp_attempts": 60,
+          "udp_attempts": 60,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "21473",
+          "download_bytes": "18692",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:09.851844714Z",
+        "status": {
+          "tcp_echoes": 61,
+          "udp_replies": 61,
+          "tcp_attempts": 61,
+          "udp_attempts": 61,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "21659",
+          "download_bytes": "18831",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:10.156310981Z",
+        "status": {
+          "tcp_echoes": 61,
+          "udp_replies": 61,
+          "tcp_attempts": 61,
+          "udp_attempts": 61,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "21659",
+          "download_bytes": "18831",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:10.471068027Z",
+        "status": {
+          "tcp_echoes": 62,
+          "udp_replies": 62,
+          "tcp_attempts": 62,
+          "udp_attempts": 62,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "21845",
+          "download_bytes": "18970",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:10.776782352Z",
+        "status": {
+          "tcp_echoes": 62,
+          "udp_replies": 62,
+          "tcp_attempts": 63,
+          "udp_attempts": 63,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "22031",
+          "download_bytes": "19109",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:11.092297172Z",
+        "status": {
+          "tcp_echoes": 63,
+          "udp_replies": 63,
+          "tcp_attempts": 63,
+          "udp_attempts": 63,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "22031",
+          "download_bytes": "19109",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:11.404111859Z",
+        "status": {
+          "tcp_echoes": 64,
+          "udp_replies": 64,
+          "tcp_attempts": 64,
+          "udp_attempts": 64,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "22217",
+          "download_bytes": "19248",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:11.717913303Z",
+        "status": {
+          "tcp_echoes": 64,
+          "udp_replies": 64,
+          "tcp_attempts": 64,
+          "udp_attempts": 65,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "22403",
+          "download_bytes": "19387",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:12.026819007Z",
+        "status": {
+          "tcp_echoes": 65,
+          "udp_replies": 65,
+          "tcp_attempts": 65,
+          "udp_attempts": 65,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "22403",
+          "download_bytes": "19387",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:12.345299869Z",
+        "status": {
+          "tcp_echoes": 66,
+          "udp_replies": 66,
+          "tcp_attempts": 66,
+          "udp_attempts": 66,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "22589",
+          "download_bytes": "19526",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:12.647908561Z",
+        "status": {
+          "tcp_echoes": 66,
+          "udp_replies": 66,
+          "tcp_attempts": 66,
+          "udp_attempts": 66,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "22589",
+          "download_bytes": "19526",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:12.959403828Z",
+        "status": {
+          "tcp_echoes": 67,
+          "udp_replies": 67,
+          "tcp_attempts": 67,
+          "udp_attempts": 67,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "22775",
+          "download_bytes": "19665",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:13.273737702Z",
+        "status": {
+          "tcp_echoes": 67,
+          "udp_replies": 67,
+          "tcp_attempts": 68,
+          "udp_attempts": 68,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "22961",
+          "download_bytes": "19804",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:13.585252686Z",
+        "status": {
+          "tcp_echoes": 68,
+          "udp_replies": 68,
+          "tcp_attempts": 68,
+          "udp_attempts": 68,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "22961",
+          "download_bytes": "19804",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:13.900432975Z",
+        "status": {
+          "tcp_echoes": 69,
+          "udp_replies": 69,
+          "tcp_attempts": 69,
+          "udp_attempts": 69,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "23147",
+          "download_bytes": "19943",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:14.213763311Z",
+        "status": {
+          "tcp_echoes": 69,
+          "udp_replies": 69,
+          "tcp_attempts": 70,
+          "udp_attempts": 70,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "23333",
+          "download_bytes": "20082",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:14.521293375Z",
+        "status": {
+          "tcp_echoes": 70,
+          "udp_replies": 70,
+          "tcp_attempts": 70,
+          "udp_attempts": 70,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "23333",
+          "download_bytes": "20082",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:14.834511054Z",
+        "status": {
+          "tcp_echoes": 71,
+          "udp_replies": 71,
+          "tcp_attempts": 71,
+          "udp_attempts": 71,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "23519",
+          "download_bytes": "20221",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:15.146658526Z",
+        "status": {
+          "tcp_echoes": 71,
+          "udp_replies": 71,
+          "tcp_attempts": 71,
+          "udp_attempts": 71,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "23519",
+          "download_bytes": "20221",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:15.468353987Z",
+        "status": {
+          "tcp_echoes": 72,
+          "udp_replies": 72,
+          "tcp_attempts": 72,
+          "udp_attempts": 72,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "23705",
+          "download_bytes": "20360",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:15.783505375Z",
+        "status": {
+          "tcp_echoes": 72,
+          "udp_replies": 72,
+          "tcp_attempts": 73,
+          "udp_attempts": 73,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "23891",
+          "download_bytes": "20499",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:16.103144557Z",
+        "status": {
+          "tcp_echoes": 73,
+          "udp_replies": 73,
+          "tcp_attempts": 73,
+          "udp_attempts": 73,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "23891",
+          "download_bytes": "20499",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:16.408351781Z",
+        "status": {
+          "tcp_echoes": 74,
+          "udp_replies": 74,
+          "tcp_attempts": 74,
+          "udp_attempts": 74,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "24077",
+          "download_bytes": "20638",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:16.712364861Z",
+        "status": {
+          "tcp_echoes": 74,
+          "udp_replies": 74,
+          "tcp_attempts": 75,
+          "udp_attempts": 74,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "24263",
+          "download_bytes": "20777",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:17.025693149Z",
+        "status": {
+          "tcp_echoes": 75,
+          "udp_replies": 75,
+          "tcp_attempts": 75,
+          "udp_attempts": 75,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "24263",
+          "download_bytes": "20777",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:17.341817147Z",
+        "status": {
+          "tcp_echoes": 76,
+          "udp_replies": 76,
+          "tcp_attempts": 76,
+          "udp_attempts": 76,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "24449",
+          "download_bytes": "20916",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:17.648369952Z",
+        "status": {
+          "tcp_echoes": 76,
+          "udp_replies": 76,
+          "tcp_attempts": 76,
+          "udp_attempts": 76,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "24449",
+          "download_bytes": "20916",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:17.961426622Z",
+        "status": {
+          "tcp_echoes": 77,
+          "udp_replies": 77,
+          "tcp_attempts": 77,
+          "udp_attempts": 77,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "24635",
+          "download_bytes": "21055",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:18.268231943Z",
+        "status": {
+          "tcp_echoes": 77,
+          "udp_replies": 77,
+          "tcp_attempts": 78,
+          "udp_attempts": 77,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "24821",
+          "download_bytes": "21194",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:18.582794542Z",
+        "status": {
+          "tcp_echoes": 78,
+          "udp_replies": 78,
+          "tcp_attempts": 78,
+          "udp_attempts": 78,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "24821",
+          "download_bytes": "21194",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:18.895528174Z",
+        "status": {
+          "tcp_echoes": 79,
+          "udp_replies": 79,
+          "tcp_attempts": 79,
+          "udp_attempts": 79,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "25007",
+          "download_bytes": "21333",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:19.207872529Z",
+        "status": {
+          "tcp_echoes": 79,
+          "udp_replies": 79,
+          "tcp_attempts": 80,
+          "udp_attempts": 80,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "25193",
+          "download_bytes": "21472",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:19.519259018Z",
+        "status": {
+          "tcp_echoes": 80,
+          "udp_replies": 80,
+          "tcp_attempts": 80,
+          "udp_attempts": 80,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "25193",
+          "download_bytes": "21472",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:19.834315923Z",
+        "status": {
+          "tcp_echoes": 81,
+          "udp_replies": 81,
+          "tcp_attempts": 81,
+          "udp_attempts": 81,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "25379",
+          "download_bytes": "21611",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:20.148421197Z",
+        "status": {
+          "tcp_echoes": 81,
+          "udp_replies": 81,
+          "tcp_attempts": 81,
+          "udp_attempts": 81,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "25379",
+          "download_bytes": "21611",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:20.461365733Z",
+        "status": {
+          "tcp_echoes": 82,
+          "udp_replies": 82,
+          "tcp_attempts": 82,
+          "udp_attempts": 82,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "25565",
+          "download_bytes": "21750",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:20.774456244Z",
+        "status": {
+          "tcp_echoes": 82,
+          "udp_replies": 82,
+          "tcp_attempts": 82,
+          "udp_attempts": 82,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "25751",
+          "download_bytes": "21889",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:21.09642636Z",
+        "status": {
+          "tcp_echoes": 83,
+          "udp_replies": 83,
+          "tcp_attempts": 83,
+          "udp_attempts": 83,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "25751",
+          "download_bytes": "21889",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:21.412682458Z",
+        "status": {
+          "tcp_echoes": 84,
+          "udp_replies": 84,
+          "tcp_attempts": 84,
+          "udp_attempts": 84,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "25937",
+          "download_bytes": "22028",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:21.73216227Z",
+        "status": {
+          "tcp_echoes": 84,
+          "udp_replies": 84,
+          "tcp_attempts": 85,
+          "udp_attempts": 85,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "26123",
+          "download_bytes": "22167",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:22.042328277Z",
+        "status": {
+          "tcp_echoes": 85,
+          "udp_replies": 85,
+          "tcp_attempts": 85,
+          "udp_attempts": 85,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "26123",
+          "download_bytes": "22167",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:22.355753359Z",
+        "status": {
+          "tcp_echoes": 86,
+          "udp_replies": 86,
+          "tcp_attempts": 86,
+          "udp_attempts": 86,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "26309",
+          "download_bytes": "22306",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:22.68732931Z",
+        "status": {
+          "tcp_echoes": 86,
+          "udp_replies": 86,
+          "tcp_attempts": 86,
+          "udp_attempts": 86,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "26309",
+          "download_bytes": "22306",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:23.004065215Z",
+        "status": {
+          "tcp_echoes": 87,
+          "udp_replies": 87,
+          "tcp_attempts": 87,
+          "udp_attempts": 87,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "26495",
+          "download_bytes": "22445",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:23.31722038Z",
+        "status": {
+          "tcp_echoes": 88,
+          "udp_replies": 88,
+          "tcp_attempts": 88,
+          "udp_attempts": 88,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "26681",
+          "download_bytes": "22584",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:23.6329397Z",
+        "status": {
+          "tcp_echoes": 88,
+          "udp_replies": 88,
+          "tcp_attempts": 88,
+          "udp_attempts": 88,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "26681",
+          "download_bytes": "22584",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:23.937145133Z",
+        "status": {
+          "tcp_echoes": 89,
+          "udp_replies": 89,
+          "tcp_attempts": 89,
+          "udp_attempts": 89,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "26867",
+          "download_bytes": "22723",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:24.252938887Z",
+        "status": {
+          "tcp_echoes": 89,
+          "udp_replies": 89,
+          "tcp_attempts": 89,
+          "udp_attempts": 90,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "27053",
+          "download_bytes": "22862",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:24.566385034Z",
+        "status": {
+          "tcp_echoes": 90,
+          "udp_replies": 90,
+          "tcp_attempts": 90,
+          "udp_attempts": 90,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "27053",
+          "download_bytes": "22862",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:24.879677367Z",
+        "status": {
+          "tcp_echoes": 91,
+          "udp_replies": 91,
+          "tcp_attempts": 91,
+          "udp_attempts": 91,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "27239",
+          "download_bytes": "23001",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:25.194035658Z",
+        "status": {
+          "tcp_echoes": 91,
+          "udp_replies": 91,
+          "tcp_attempts": 91,
+          "udp_attempts": 91,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "27425",
+          "download_bytes": "23140",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:25.497093802Z",
+        "status": {
+          "tcp_echoes": 92,
+          "udp_replies": 92,
+          "tcp_attempts": 92,
+          "udp_attempts": 92,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "27425",
+          "download_bytes": "23140",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:25.812247541Z",
+        "status": {
+          "tcp_echoes": 93,
+          "udp_replies": 93,
+          "tcp_attempts": 93,
+          "udp_attempts": 93,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "27611",
+          "download_bytes": "23279",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:26.125737746Z",
+        "status": {
+          "tcp_echoes": 93,
+          "udp_replies": 93,
+          "tcp_attempts": 93,
+          "udp_attempts": 93,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "27611",
+          "download_bytes": "23279",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:26.439610127Z",
+        "status": {
+          "tcp_echoes": 94,
+          "udp_replies": 94,
+          "tcp_attempts": 94,
+          "udp_attempts": 94,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "27797",
+          "download_bytes": "23418",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:26.755704645Z",
+        "status": {
+          "tcp_echoes": 94,
+          "udp_replies": 94,
+          "tcp_attempts": 95,
+          "udp_attempts": 94,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "27983",
+          "download_bytes": "23557",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:27.069527451Z",
+        "status": {
+          "tcp_echoes": 95,
+          "udp_replies": 95,
+          "tcp_attempts": 95,
+          "udp_attempts": 95,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "27983",
+          "download_bytes": "23557",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:27.388663343Z",
+        "status": {
+          "tcp_echoes": 96,
+          "udp_replies": 96,
+          "tcp_attempts": 96,
+          "udp_attempts": 96,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "28169",
+          "download_bytes": "23696",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:27.70067754Z",
+        "status": {
+          "tcp_echoes": 96,
+          "udp_replies": 96,
+          "tcp_attempts": 96,
+          "udp_attempts": 96,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "28355",
+          "download_bytes": "23835",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:28.01015399Z",
+        "status": {
+          "tcp_echoes": 97,
+          "udp_replies": 97,
+          "tcp_attempts": 97,
+          "udp_attempts": 97,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "28355",
+          "download_bytes": "23835",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:28.31820093Z",
+        "status": {
+          "tcp_echoes": 98,
+          "udp_replies": 98,
+          "tcp_attempts": 98,
+          "udp_attempts": 98,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "28541",
+          "download_bytes": "23974",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:28.634212574Z",
+        "status": {
+          "tcp_echoes": 98,
+          "udp_replies": 98,
+          "tcp_attempts": 98,
+          "udp_attempts": 98,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "28541",
+          "download_bytes": "23974",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:28.945795892Z",
+        "status": {
+          "tcp_echoes": 99,
+          "udp_replies": 99,
+          "tcp_attempts": 99,
+          "udp_attempts": 99,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "28727",
+          "download_bytes": "24113",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:29.264161214Z",
+        "status": {
+          "tcp_echoes": 99,
+          "udp_replies": 99,
+          "tcp_attempts": 99,
+          "udp_attempts": 99,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "28913",
+          "download_bytes": "24252",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:29.574905531Z",
+        "status": {
+          "tcp_echoes": 100,
+          "udp_replies": 100,
+          "tcp_attempts": 100,
+          "udp_attempts": 100,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "28913",
+          "download_bytes": "24252",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:29.88888622Z",
+        "status": {
+          "tcp_echoes": 101,
+          "udp_replies": 101,
+          "tcp_attempts": 101,
+          "udp_attempts": 101,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "29099",
+          "download_bytes": "24391",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:30.201592246Z",
+        "status": {
+          "tcp_echoes": 101,
+          "udp_replies": 101,
+          "tcp_attempts": 101,
+          "udp_attempts": 101,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "29285",
+          "download_bytes": "24530",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:30.515342455Z",
+        "status": {
+          "tcp_echoes": 102,
+          "udp_replies": 102,
+          "tcp_attempts": 102,
+          "udp_attempts": 102,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "29285",
+          "download_bytes": "24530",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:30.832264526Z",
+        "status": {
+          "tcp_echoes": 103,
+          "udp_replies": 103,
+          "tcp_attempts": 103,
+          "udp_attempts": 103,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "29471",
+          "download_bytes": "24669",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:31.148374269Z",
+        "status": {
+          "tcp_echoes": 103,
+          "udp_replies": 103,
+          "tcp_attempts": 103,
+          "udp_attempts": 103,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "29471",
+          "download_bytes": "24669",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:31.463664251Z",
+        "status": {
+          "tcp_echoes": 104,
+          "udp_replies": 104,
+          "tcp_attempts": 104,
+          "udp_attempts": 104,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "29657",
+          "download_bytes": "24808",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:31.777521845Z",
+        "status": {
+          "tcp_echoes": 104,
+          "udp_replies": 104,
+          "tcp_attempts": 105,
+          "udp_attempts": 105,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "29843",
+          "download_bytes": "24947",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:32.091286202Z",
+        "status": {
+          "tcp_echoes": 105,
+          "udp_replies": 105,
+          "tcp_attempts": 105,
+          "udp_attempts": 105,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "29843",
+          "download_bytes": "24947",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:32.409293689Z",
+        "status": {
+          "tcp_echoes": 106,
+          "udp_replies": 106,
+          "tcp_attempts": 106,
+          "udp_attempts": 106,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "30029",
+          "download_bytes": "25086",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:32.714944293Z",
+        "status": {
+          "tcp_echoes": 106,
+          "udp_replies": 106,
+          "tcp_attempts": 107,
+          "udp_attempts": 106,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "30215",
+          "download_bytes": "25225",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:33.030222412Z",
+        "status": {
+          "tcp_echoes": 107,
+          "udp_replies": 107,
+          "tcp_attempts": 107,
+          "udp_attempts": 107,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "30215",
+          "download_bytes": "25225",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:33.349969918Z",
+        "status": {
+          "tcp_echoes": 108,
+          "udp_replies": 108,
+          "tcp_attempts": 108,
+          "udp_attempts": 108,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "30401",
+          "download_bytes": "25364",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:33.655146097Z",
+        "status": {
+          "tcp_echoes": 108,
+          "udp_replies": 108,
+          "tcp_attempts": 108,
+          "udp_attempts": 108,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "30401",
+          "download_bytes": "25364",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:33.969865277Z",
+        "status": {
+          "tcp_echoes": 109,
+          "udp_replies": 109,
+          "tcp_attempts": 109,
+          "udp_attempts": 109,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "30587",
+          "download_bytes": "25503",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:34.283798671Z",
+        "status": {
+          "tcp_echoes": 109,
+          "udp_replies": 109,
+          "tcp_attempts": 110,
+          "udp_attempts": 110,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "30773",
+          "download_bytes": "25642",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:34.596755937Z",
+        "status": {
+          "tcp_echoes": 110,
+          "udp_replies": 110,
+          "tcp_attempts": 110,
+          "udp_attempts": 110,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "30773",
+          "download_bytes": "25642",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:34.910989695Z",
+        "status": {
+          "tcp_echoes": 111,
+          "udp_replies": 111,
+          "tcp_attempts": 111,
+          "udp_attempts": 111,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "30959",
+          "download_bytes": "25781",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:35.226102415Z",
+        "status": {
+          "tcp_echoes": 111,
+          "udp_replies": 111,
+          "tcp_attempts": 112,
+          "udp_attempts": 111,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "31145",
+          "download_bytes": "25920",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:35.54040972Z",
+        "status": {
+          "tcp_echoes": 112,
+          "udp_replies": 112,
+          "tcp_attempts": 112,
+          "udp_attempts": 112,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "31145",
+          "download_bytes": "25920",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:35.855616379Z",
+        "status": {
+          "tcp_echoes": 113,
+          "udp_replies": 113,
+          "tcp_attempts": 113,
+          "udp_attempts": 113,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "31331",
+          "download_bytes": "26059",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:36.169554896Z",
+        "status": {
+          "tcp_echoes": 113,
+          "udp_replies": 113,
+          "tcp_attempts": 113,
+          "udp_attempts": 113,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "31331",
+          "download_bytes": "26059",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:36.482180679Z",
+        "status": {
+          "tcp_echoes": 114,
+          "udp_replies": 114,
+          "tcp_attempts": 114,
+          "udp_attempts": 114,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "31517",
+          "download_bytes": "26198",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:36.798574328Z",
+        "status": {
+          "tcp_echoes": 114,
+          "udp_replies": 114,
+          "tcp_attempts": 115,
+          "udp_attempts": 114,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "31703",
+          "download_bytes": "26337",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:37.110725999Z",
+        "status": {
+          "tcp_echoes": 115,
+          "udp_replies": 115,
+          "tcp_attempts": 115,
+          "udp_attempts": 115,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "31703",
+          "download_bytes": "26337",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:37.425591584Z",
+        "status": {
+          "tcp_echoes": 116,
+          "udp_replies": 116,
+          "tcp_attempts": 116,
+          "udp_attempts": 116,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "31889",
+          "download_bytes": "26476",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:37.730935812Z",
+        "status": {
+          "tcp_echoes": 116,
+          "udp_replies": 116,
+          "tcp_attempts": 117,
+          "udp_attempts": 116,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "32075",
+          "download_bytes": "26615",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:38.050836832Z",
+        "status": {
+          "tcp_echoes": 117,
+          "udp_replies": 117,
+          "tcp_attempts": 117,
+          "udp_attempts": 117,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "32075",
+          "download_bytes": "26615",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:38.356506695Z",
+        "status": {
+          "tcp_echoes": 118,
+          "udp_replies": 118,
+          "tcp_attempts": 118,
+          "udp_attempts": 118,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "32261",
+          "download_bytes": "26754",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:38.67176861Z",
+        "status": {
+          "tcp_echoes": 118,
+          "udp_replies": 118,
+          "tcp_attempts": 118,
+          "udp_attempts": 118,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "32261",
+          "download_bytes": "26754",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:38.987828874Z",
+        "status": {
+          "tcp_echoes": 119,
+          "udp_replies": 119,
+          "tcp_attempts": 119,
+          "udp_attempts": 119,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "32447",
+          "download_bytes": "26893",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:39.292048471Z",
+        "status": {
+          "tcp_echoes": 119,
+          "udp_replies": 119,
+          "tcp_attempts": 120,
+          "udp_attempts": 119,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "32447",
+          "download_bytes": "26893",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:39.60564936Z",
+        "status": {
+          "tcp_echoes": 119,
+          "udp_replies": 119,
+          "tcp_attempts": 120,
+          "udp_attempts": 120,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "32447",
+          "download_bytes": "26893",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:39.909946415Z",
+        "status": {
+          "tcp_echoes": 119,
+          "udp_replies": 119,
+          "tcp_attempts": 120,
+          "udp_attempts": 121,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "32447",
+          "download_bytes": "26893",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:40.223200502Z",
+        "status": {
+          "tcp_echoes": 119,
+          "udp_replies": 119,
+          "tcp_attempts": 121,
+          "udp_attempts": 121,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "32447",
+          "download_bytes": "26893",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:40.53643285Z",
+        "status": {
+          "tcp_echoes": 119,
+          "udp_replies": 119,
+          "tcp_attempts": 121,
+          "udp_attempts": 122,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "32447",
+          "download_bytes": "26893",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:40.853271877Z",
+        "status": {
+          "tcp_echoes": 119,
+          "udp_replies": 119,
+          "tcp_attempts": 121,
+          "udp_attempts": 123,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "32447",
+          "download_bytes": "26893",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:41.169545656Z",
+        "status": {
+          "tcp_echoes": 119,
+          "udp_replies": 119,
+          "tcp_attempts": 121,
+          "udp_attempts": 123,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "32447",
+          "download_bytes": "26893",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:41.483891676Z",
+        "status": {
+          "tcp_echoes": 119,
+          "udp_replies": 119,
+          "tcp_attempts": 122,
+          "udp_attempts": 124,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "32447",
+          "download_bytes": "26893",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:41.799372574Z",
+        "status": {
+          "tcp_echoes": 119,
+          "udp_replies": 119,
+          "tcp_attempts": 122,
+          "udp_attempts": 124,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "32447",
+          "download_bytes": "26893",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:42.111529951Z",
+        "status": {
+          "tcp_echoes": 119,
+          "udp_replies": 119,
+          "tcp_attempts": 122,
+          "udp_attempts": 125,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "32447",
+          "download_bytes": "26893",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:42.427667036Z",
+        "status": {
+          "tcp_echoes": 119,
+          "udp_replies": 119,
+          "tcp_attempts": 123,
+          "udp_attempts": 126,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "32447",
+          "download_bytes": "26893",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:42.741040442Z",
+        "status": {
+          "tcp_echoes": 119,
+          "udp_replies": 119,
+          "tcp_attempts": 123,
+          "udp_attempts": 126,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "32447",
+          "download_bytes": "26893",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:43.056325339Z",
+        "status": {
+          "tcp_echoes": 119,
+          "udp_replies": 119,
+          "tcp_attempts": 123,
+          "udp_attempts": 127,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "32447",
+          "download_bytes": "26893",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:43.370552172Z",
+        "status": {
+          "tcp_echoes": 119,
+          "udp_replies": 119,
+          "tcp_attempts": 124,
+          "udp_attempts": 128,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "32447",
+          "download_bytes": "26893",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:43.683693695Z",
+        "status": {
+          "tcp_echoes": 119,
+          "udp_replies": 119,
+          "tcp_attempts": 124,
+          "udp_attempts": 128,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "32447",
+          "download_bytes": "26893",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:43.999371946Z",
+        "status": {
+          "tcp_echoes": 119,
+          "udp_replies": 119,
+          "tcp_attempts": 124,
+          "udp_attempts": 129,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "32447",
+          "download_bytes": "26893",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:44.312415936Z",
+        "status": {
+          "tcp_echoes": 119,
+          "udp_replies": 119,
+          "tcp_attempts": 125,
+          "udp_attempts": 130,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "32447",
+          "download_bytes": "26893",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:44.627520997Z",
+        "status": {
+          "tcp_echoes": 119,
+          "udp_replies": 119,
+          "tcp_attempts": 125,
+          "udp_attempts": 130,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "32447",
+          "download_bytes": "26893",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:44.940266603Z",
+        "status": {
+          "tcp_echoes": 119,
+          "udp_replies": 119,
+          "tcp_attempts": 125,
+          "udp_attempts": 131,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "32447",
+          "download_bytes": "26893",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:45.254324855Z",
+        "status": {
+          "tcp_echoes": 119,
+          "udp_replies": 119,
+          "tcp_attempts": 125,
+          "udp_attempts": 132,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "32447",
+          "download_bytes": "26893",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:45.5655999Z",
+        "status": {
+          "tcp_echoes": 119,
+          "udp_replies": 119,
+          "tcp_attempts": 126,
+          "udp_attempts": 132,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "32447",
+          "download_bytes": "26893",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:45.869763867Z",
+        "status": {
+          "tcp_echoes": 119,
+          "udp_replies": 119,
+          "tcp_attempts": 126,
+          "udp_attempts": 133,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "32447",
+          "download_bytes": "26893",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:46.183735953Z",
+        "status": {
+          "tcp_echoes": 119,
+          "udp_replies": 119,
+          "tcp_attempts": 126,
+          "udp_attempts": 133,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "32447",
+          "download_bytes": "26893",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:46.490266389Z",
+        "status": {
+          "tcp_echoes": 119,
+          "udp_replies": 119,
+          "tcp_attempts": 127,
+          "udp_attempts": 134,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "32447",
+          "download_bytes": "26893",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:46.802617754Z",
+        "status": {
+          "tcp_echoes": 119,
+          "udp_replies": 119,
+          "tcp_attempts": 127,
+          "udp_attempts": 135,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "32447",
+          "download_bytes": "26893",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:47.119233408Z",
+        "status": {
+          "tcp_echoes": 119,
+          "udp_replies": 119,
+          "tcp_attempts": 127,
+          "udp_attempts": 135,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "32447",
+          "download_bytes": "26893",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:47.433798422Z",
+        "status": {
+          "tcp_echoes": 119,
+          "udp_replies": 119,
+          "tcp_attempts": 128,
+          "udp_attempts": 136,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "32447",
+          "download_bytes": "26893",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:47.739510559Z",
+        "status": {
+          "tcp_echoes": 119,
+          "udp_replies": 119,
+          "tcp_attempts": 128,
+          "udp_attempts": 136,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "32447",
+          "download_bytes": "26893",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:48.05557472Z",
+        "status": {
+          "tcp_echoes": 119,
+          "udp_replies": 119,
+          "tcp_attempts": 128,
+          "udp_attempts": 137,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "32447",
+          "download_bytes": "26893",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:48.35978299Z",
+        "status": {
+          "tcp_echoes": 119,
+          "udp_replies": 119,
+          "tcp_attempts": 129,
+          "udp_attempts": 138,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "32447",
+          "download_bytes": "26893",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:48.676571195Z",
+        "status": {
+          "tcp_echoes": 119,
+          "udp_replies": 119,
+          "tcp_attempts": 129,
+          "udp_attempts": 138,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "32447",
+          "download_bytes": "26893",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:48.989903623Z",
+        "status": {
+          "tcp_echoes": 119,
+          "udp_replies": 119,
+          "tcp_attempts": 129,
+          "udp_attempts": 139,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "32447",
+          "download_bytes": "26893",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:49.302171899Z",
+        "status": {
+          "tcp_echoes": 119,
+          "udp_replies": 119,
+          "tcp_attempts": 129,
+          "udp_attempts": 140,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "32447",
+          "download_bytes": "26893",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:49.614896253Z",
+        "status": {
+          "tcp_echoes": 119,
+          "udp_replies": 119,
+          "tcp_attempts": 130,
+          "udp_attempts": 140,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "32447",
+          "download_bytes": "26893",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:49.931170077Z",
+        "status": {
+          "tcp_echoes": 119,
+          "udp_replies": 119,
+          "tcp_attempts": 130,
+          "udp_attempts": 141,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "32447",
+          "download_bytes": "26893",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:50.236213704Z",
+        "status": {
+          "tcp_echoes": 119,
+          "udp_replies": 119,
+          "tcp_attempts": 130,
+          "udp_attempts": 142,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "32447",
+          "download_bytes": "26893",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:50.549763341Z",
+        "status": {
+          "tcp_echoes": 119,
+          "udp_replies": 119,
+          "tcp_attempts": 131,
+          "udp_attempts": 142,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "32447",
+          "download_bytes": "26893",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:50.867749337Z",
+        "status": {
+          "tcp_echoes": 119,
+          "udp_replies": 119,
+          "tcp_attempts": 131,
+          "udp_attempts": 143,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "32447",
+          "download_bytes": "26893",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:51.182379492Z",
+        "status": {
+          "tcp_echoes": 119,
+          "udp_replies": 119,
+          "tcp_attempts": 131,
+          "udp_attempts": 143,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "32447",
+          "download_bytes": "26893",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:51.498727893Z",
+        "status": {
+          "tcp_echoes": 119,
+          "udp_replies": 119,
+          "tcp_attempts": 132,
+          "udp_attempts": 144,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "32447",
+          "download_bytes": "26893",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:51.804061601Z",
+        "status": {
+          "tcp_echoes": 119,
+          "udp_replies": 119,
+          "tcp_attempts": 132,
+          "udp_attempts": 144,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "32447",
+          "download_bytes": "26893",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:52.119098666Z",
+        "status": {
+          "tcp_echoes": 119,
+          "udp_replies": 119,
+          "tcp_attempts": 132,
+          "udp_attempts": 145,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "32447",
+          "download_bytes": "26893",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:52.429832629Z",
+        "status": {
+          "tcp_echoes": 119,
+          "udp_replies": 119,
+          "tcp_attempts": 133,
+          "udp_attempts": 146,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "32447",
+          "download_bytes": "26893",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:52.743824087Z",
+        "status": {
+          "tcp_echoes": 119,
+          "udp_replies": 119,
+          "tcp_attempts": 133,
+          "udp_attempts": 146,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "32447",
+          "download_bytes": "26893",
+          "Present": true
+        },
+        "read_ok": true
+      },
+      {
+        "at": "2026-10-31T13:36:53.057601506Z",
+        "status": {
+          "tcp_echoes": 119,
+          "udp_replies": 119,
+          "tcp_attempts": 133,
+          "udp_attempts": 147,
+          "running": true,
+          "error": ""
+        },
+        "counters": {
+          "upload_bytes": "32447",
+          "download_bytes": "26893",
+          "Present": true
+        },
+        "read_ok": true
+      }
+    ],
+    "sender_active": true,
+    "target_seconds": 5,
+    "tcp_seconds": -0.012171126,
+    "udp_seconds": -0.012171126
+  }
+}
