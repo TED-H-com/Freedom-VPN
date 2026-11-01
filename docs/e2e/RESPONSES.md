@@ -1067,3 +1067,64 @@ interfaces were not captured then. Members owns using the export around its
 original AT20 query and preceding mutations; a successful relay socket write
 is still not proof of client delivery or processing. No AdGuard/cache/transport
 cause is inferred, and no query is repeated to replace the failed row.
+
+## members 13 — 2026-11-01 (follow-up 24, D-102)
+
+**Request 7 / F11-01:** [follow-up 24's immutable analysis and owner options](runs/2026-11-01/followup24/analysis.md)
+retain each first-selection attempt separately. The IPv6 observation places the
+`::1`-source response at member underlay ingress, followed by a header-error
+counter increment and no inet prerouting/input traversal. The successful
+one-SYN request already has type-4 traffic before that response. This explains
+why a dropped handover response can coexist with members 13's success; it does
+not turn every first-selection timeout into this one cause. Read the exact
+packet/hash, trace and handshake bounds in the analysis. NetBird 0.82.0 and
+`node/agent/probe.go` are unchanged. Pin, daemon-setting, IPv4 preference and
+node-side proposals need the owner decision recorded there; none is deployed.
+
+**Request 9 / F12-04:** this is **members' original AT20 case**. #367 already
+exports `StartNativeDNSCapture`, `Sample`, `Stop`, private streaming export,
+`decode_capture.py --stable-addresses --dns-headers`, and reply-digest/wire-ID
+joins through the [DNS capture contract](scenarios/harness-exports.md#follow-up-23--routed-pmtu-native-debug-and-dns-delivery-test-only).
+There is no missing shared helper identified and no further independent positive
+query needed from devstack. Members must instrument its original query and
+preceding mutations in `tests/e2e/at/members/native_dns_test.go` and
+`dns_attribution_test.go`, after two-resolver configuration and native join.
+Start before the original query, retain that query's result once, sample both
+sides, stop/export all points even on failure, and retain complete resolver
+lifecycle histories/outstanding sets. Keep raw pcaps/debug logs private.
+
+For a devstack delivery diagnosis, hand back the immutable run/capture IDs,
+public header files plus capture receipts/statistics, original query wire ID and
+result, both resolver query/reply digests, and their completion times. Those are
+the concrete inputs devstack needs from members to locate a missing relay-send →
+node → member tunnel → local-stub boundary or a native error response. A successful
+socket write still proves neither client receipt nor parsing. The historical
+5,001 ms SERVFAIL remains unattributed; no new F12-04 query ran in follow-up 24.
+
+**Request 10 / F13-01:** the shared reader now preserves exit-0 parse failures
+without retry. [The contract](scenarios/harness-exports.md#follow-up-24--private-parse-evidence-and-ipv6-input-observation-test-only)
+defines `parse_failure` classification, digest, byte size, line count and storage/
+export status. Exact command bytes **and exact parser error text** are retained
+in private mode-0600 files and automatically exported by `DeviceByteCounters`
+to `.agent/tmp/counterread/<id>/` before container teardown. Error text stays
+private because the parser can embed nft names/values. The original devstack-20
+categories, command exit, timing/heartbeat fields and failed read remain intact.
+Synthetic empty/truncated/interleaved/semantic failures exercise the real parser
+and one exit-0 read; success/failure of private export is also covered.
+
+Members should preserve the returned diagnostic on a non-nil error and retain
+those private files on its next original withdrawal run. Both F13-01 rows stay
+failed; no replacement sample or weakened predicate is supplied. The old raw
+bytes/errors cannot be recovered, and no fresh production parser rejection is
+claimed here. There is no evidence-backed parser defect to assign to netlab yet.
+F10-02 may be an earlier member of this broad class but stays historically
+unattributed. `node/enforce/parse_nft.go` and members' request register are untouched.
+
+**Request 1 / D-137 and request 5 / positive IDNA:** these were already delivered
+by **#367**, which merged while members 13 ran its older baseline. Adopt
+`PrepareNativeRouter1280` → `Select` / `StartCapture` using the [routed-hop evidence](runs/2026-11-01/followup23/a26d9b0f-bd1b-48df-9546-4105f9b3f328/analysis.md)
+(IPv6 PTB/learned 1280; IPv4 DF=0/transit fragmentation). Adopt `ProbeNativeIDNA`
+with the [positive UDP/TCP wire evidence](runs/2026-11-01/followup23/9bb2098e-1c6f-48a8-9fbd-fd99bd9fc49e/analysis.md).
+The receive-only black-hole rows remain limitations, and production nameserver
+provisioning/platform Private DNS/DoH/UI checks remain separate. No new router,
+IDNA fixture, TTL or cache work is added here. All follow-up 23 pins remain intact.
