@@ -1,28 +1,36 @@
 # Operator Guide (`docs/handover/operator-guide.md`)
 
-**Current cut — [follow-up 23](follow-up-23.md) (2026-11-01 EDT):** Through #362: month-boundary fixture fixed; regular updates pass; members F11-02 closed; native IPv6 F8-02 and five-SYN pattern reproduced. D-135 / D-136 / D-137 remain provisional; historical failures stay failed.
-Previous cut: [follow-up 22](follow-up-22.md), through #356.
+**Current cut — [follow-up 24](follow-up-24.md) (2026-11-01 EST):** Through #369: D-136 corrected; routed 1280 hop delivered; usage AT14–AT20 pass; members AT02 / AT04 fail (F13-01); graceful agent stop fixed. D-135 / D-136 / D-137 / D-138 remain provisional; historical failures stay failed.
+Previous cut: [follow-up 23](follow-up-23.md), through #362.
 
-## Operator changes at #362
+## Operator changes at #369
 
-**D-136 stale lease — provisional, to be confirmed together with D-135:**
+**Graceful stop:** agent-core 31 lets in-flight local agent work finish for
+up to **10 s** after the safe boundary while control I/O stops with caller
+cancellation. A stop before that boundary returns without starting the local
+work. Real failures still fail closed; the bound does not extend a signed lease
+or promise an outage ceiling. The restart lab requires a recorded graceful
+exit; forced process death is a separate case.
+
+**D-136 correction — provisional, to be confirmed together with D-135:**
 a generation change can close every member on a node while its serving lease
-still names another generation. The reported reason is `policy_missing`;
-the node-wide baseline serves until renewal and the next successful Apply.
-This is designed fail-closed behaviour. D-135's bracket covers every node-wide
-baseline transition, failed Apply or stale lease: baseline → next successful
-Apply, every loss counted, recovery required, never waived. Repeated baseline
-transitions carry no outage ceiling. Stronger availability is agent-core
-design work under D-133 with an adversarial review. Historical failures stay
-failed. [Decision and evidence](follow-up-23.md#provisional-decisions-and-findings).
+still names another generation. The ordinary stale-lease path installs the
+node-wide baseline and ACKs, renews, then Applies, verifies and heartbeats.
+The verified deny-all candidate is used only when an Apply error is retained.
+The `policy_missing` reason alone does not prove that a generation mismatch
+caused a particular historical baseline. No finite outage ceiling is claimed.
+D-136's fail-closed reading and D-135's bracket rule are unchanged: baseline →
+next successful Apply, every loss counted, recovery required, never waived.
+Historical failures stay failed. [Decision and evidence](follow-up-24.md#provisional-decisions-and-findings).
 
-**D-137 AT09 scope — provisional:** the supported MTU-1280 path is
-sender-learnable: known PMTU or a reactive PTB from a router hop (§8.3, spec
-line 365; §19 AT09). A receive-only 1280 link dropping without PTB is a PMTU
-black hole, a clearly reported limitation, never a pass. Historical F8-02 rows
-stay failed. The sender control proves known-PMTU fragmentation only; reactive
-PTB remains unmeasured. No global MTU / MSS clamp is introduced. A lower
-tunnel MTU or an MSS clamp is an owner hardening option.
+**D-137 routed-hop scope — provisional:** #367 delivers a separate router with
+a 1280 member-facing link: IPv6 passes by PTB with learned PMTU 1280; IPv4
+passes by DF=0 fragmentation in transit, not measured IPv4 PMTU discovery.
+Known-PMTU controls also pass. Receive-only no-PTB links remain PMTU black-hole
+limitations, never a pass; historical F8-02 rows stay failed. Members adoption
+is pending. This is tested fixture scope, not complete real-platform or QUIC
+qualification. No global MTU / MSS clamp; lower tunnel MTU or an MSS clamp
+remains an owner hardening option (§8.3; §19 AT09).
 
 ## Operator changes at #356
 

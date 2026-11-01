@@ -1,7 +1,7 @@
 # Production Deployment Runbook (`docs/handover/deploy.md`)
 
-**Current cut — [follow-up 23](follow-up-23.md) (2026-11-01 EDT):** Through #362: month-boundary fixture fixed; regular updates pass; members F11-02 closed; native IPv6 F8-02 and five-SYN pattern reproduced. D-135 / D-136 / D-137 remain provisional; historical failures stay failed.
-Previous cut: [follow-up 22](follow-up-22.md), through #356.
+**Current cut — [follow-up 24](follow-up-24.md) (2026-11-01 EST):** Through #369: D-136 corrected; routed 1280 hop delivered; usage AT14–AT20 pass; members AT02 / AT04 fail (F13-01); graceful agent stop fixed. D-135 / D-136 / D-137 / D-138 remain provisional; historical failures stay failed.
+Previous cut: [follow-up 23](follow-up-23.md), through #362.
 
 Installer 7 reporting inputs are required: a validated HTTPS control origin
 (`--control-url`) and its readable server CA bundle (`--server-ca`). Generated
