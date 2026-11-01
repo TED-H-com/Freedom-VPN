@@ -1,0 +1,7 @@
+TEST ONLY R=20Mbit C=20Mbit warm=5s measure=20s reps=1
+shared_upload rep=1 mbps=20.00 ratio=1.000 drops=0 cpu=13.3 host_mbps=0.00
+shared_download rep=1 mbps=20.00 ratio=1.000 drops=0 cpu=13.8
+shared_both rep=1 up_mbps=20.00 up_ratio=1.000 down_mbps=20.00 down_ratio=1.000
+contend rep=1 a=0.500 b=0.500 sum=1.000 drops=0 cpu=14.5
+rate_change minor_a=1:2f minor_b=1:30 bytes_kept=177965143
+member_removed orphan_minor=1:30 absent=1

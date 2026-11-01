@@ -67,6 +67,7 @@ func IsConntrackDeleteFailure(err error) bool {
 // cleared by recreating counter objects (§10.7).
 func Apply(ctx context.Context, ex Executor, m Model, previous map[string]CounterValue) (result ApplyResult, err error) {
 	measurement := newTiming("apply", m.Generation)
+	ctx = beginCommandMeasurement(ctx, &measurement.Commands)
 	var timing DeadlineEvidence
 	defer func() {
 		result.Deadline = timing
@@ -94,7 +95,7 @@ func Apply(ctx context.Context, ex Executor, m Model, previous map[string]Counte
 			return ApplyResult{}, checkf(ReasonIsolation, "quarantined member path differs from applied model")
 		}
 		if _, err := lowerMemberLink(ctx, ex, m.Datapath.MemberIngress); err != nil {
-			q, qerr := Quarantine(ctx, ex, m)
+			q, qerr := Quarantine(commandPhase(ctx, "quarantine"), ex, m)
 			return ApplyResult{Quarantine: &q}, errors.Join(err, qerr)
 		}
 	}
@@ -102,7 +103,7 @@ func Apply(ctx context.Context, ex Executor, m Model, previous map[string]Counte
 	if err != nil {
 		evidence := ServingEvidence{TC: loadReads}
 		evidence.retainTC(m.Generation, "load", err)
-		q, qerr := Quarantine(ctx, ex, m)
+		q, qerr := Quarantine(commandPhase(ctx, "quarantine"), ex, m)
 		evidence.Quarantined, evidence.QuarantinedLinks = q.Recorded, quarantinedLinksFor(m, q)
 		return ApplyResult{Quarantine: &q, Evidence: evidence}, errors.Join(err, qerr)
 	}
@@ -141,13 +142,13 @@ func Apply(ctx context.Context, ex Executor, m Model, previous map[string]Counte
 	if tcErr != nil {
 		evidence := ServingEvidence{TC: reads}
 		evidence.retainTC(m.Generation, "pre_apply", tcErr)
-		q, qerr := Quarantine(ctx, ex, m)
+		q, qerr := Quarantine(commandPhase(ctx, "quarantine"), ex, m)
 		evidence.Quarantined, evidence.QuarantinedLinks = q.Recorded, quarantinedLinksFor(m, q)
 		return ApplyResult{Plan: plan, Resets: resets, Evidence: evidence, Quarantine: &q}, errors.Join(tcErr, qerr)
 	}
 	// Shape first, then open forwarding. A failed nft install still rolls
 	// back to the baseline, which removes the qdisc (§8.2, §11.5).
-	if err := ex.TCBatch(ctx, plan.TC); err != nil {
+	if err := ex.TCBatch(commandPhase(ctx, "shape"), plan.TC); err != nil {
 		_ = installBaseline(ctx, ex, m.Datapath, state)
 		return ApplyResult{}, err
 	}
@@ -175,8 +176,9 @@ func Apply(ctx context.Context, ex Executor, m Model, previous map[string]Counte
 	}
 	// The guard and candidate are one transaction. A late commit stays closed,
 	// including if the agent dies before it observes the overrun.
+	captureRenderForTest(ctx, m)
 	guarded := guardedNFT(plan.NFT, m)
-	installCtx, cancelInstall := context.WithTimeout(ctx, DeadlineInstallBound)
+	installCtx, cancelInstall := context.WithTimeout(commandPhase(ctx, "install"), DeadlineInstallBound)
 	timing.InstallStart = timingSample()
 	err = ex.NftBatch(installCtx, guarded)
 	timing.InstalledBy, _ = MonotonicNow()
@@ -194,7 +196,7 @@ func Apply(ctx context.Context, ex Executor, m Model, previous map[string]Counte
 		return ApplyResult{Plan: plan, Deadline: timing}, err
 	}
 	timing.ReleaseStart = timingSample()
-	err = releaseDeadlineGuard(ctx, ex)
+	err = releaseDeadlineGuard(commandPhase(ctx, "release"), ex)
 	timing.ReleaseEnd = timingSample()
 	if err != nil {
 		_ = installBaseline(ctx, ex, m.Datapath, state)
@@ -208,12 +210,12 @@ func Apply(ctx context.Context, ex Executor, m Model, previous map[string]Counte
 
 	// VerifyServing reads live nft and tc state together. A foreign filter is
 	// the same serving-gate failure as a flowtable bypass.
-	evidence, err := verifyServing(ctx, ex, m, plan.Assignments, len(quarantined) > 0)
+	evidence, err := verifyServing(commandPhase(ctx, "verify"), ex, m, plan.Assignments, len(quarantined) > 0)
 	measurement.Verifications = append(measurement.Verifications, evidence.timing.Verifications...)
 	if err != nil {
 		var check *CheckError
 		if (errors.As(err, &check) && check.Reason == ReasonTCForeignFilter) || len(quarantined) > 0 {
-			q, qerr := Quarantine(ctx, ex, m)
+			q, qerr := Quarantine(commandPhase(ctx, "quarantine"), ex, m)
 			evidence.Quarantined, evidence.QuarantinedLinks = q.Recorded, quarantinedLinksFor(m, q)
 			return ApplyResult{Plan: plan, Resets: resets, Evidence: evidence, Quarantine: &q}, errors.Join(err, qerr)
 		}
@@ -221,12 +223,12 @@ func Apply(ctx context.Context, ex Executor, m Model, previous map[string]Counte
 		return ApplyResult{Plan: plan, Resets: resets, Evidence: evidence}, err
 	}
 	if len(quarantined) > 0 {
-		evidence, err = releaseQuarantine(ctx, ex, m, plan.Assignments)
+		evidence, err = releaseQuarantine(commandPhase(ctx, "verify"), ex, m, plan.Assignments)
 		if evidence.timing != nil {
 			measurement.Verifications = append(measurement.Verifications, evidence.timing.Verifications...)
 		}
 		if err != nil {
-			q, qerr := Quarantine(ctx, ex, m)
+			q, qerr := Quarantine(commandPhase(ctx, "quarantine"), ex, m)
 			evidence.Quarantined, evidence.QuarantinedLinks = q.Recorded, quarantinedLinksFor(m, q)
 			return ApplyResult{Plan: plan, Resets: resets, Evidence: evidence, Quarantine: &q}, errors.Join(err, qerr)
 		}
@@ -250,7 +252,7 @@ func Apply(ctx context.Context, ex Executor, m Model, previous map[string]Counte
 	var other error
 	var failed []netip.Addr
 	for _, addr := range m.Revoke {
-		err := deleteConntrack(ctx, ex, addr)
+		err := deleteConntrack(commandPhase(ctx, "revoke"), ex, addr)
 		if err == nil {
 			continue
 		}
@@ -301,6 +303,7 @@ func installBaseline(ctx context.Context, ex Executor, dp Datapath, state State)
 }
 
 func installBaselineModel(ctx context.Context, ex Executor, m Model, state State) error {
+	ctx = commandPhase(ctx, "rollback")
 	if fresh, err := loadState(ctx, ex); err == nil {
 		state = fresh
 	}

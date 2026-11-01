@@ -1,0 +1,1111 @@
+{
+  "test_only": true,
+  "required": [
+    "R-A1-agent",
+    "R-A1-agent-trace",
+    "R-B1-agent",
+    "R-B1-agent-trace",
+    "R-A2-agent",
+    "R-A2-agent-trace",
+    "R-B2-agent",
+    "R-B2-agent-trace"
+  ],
+  "missing": [
+    "R-B2-agent",
+    "R-B2-agent-trace"
+  ],
+  "blocked": {
+    "status": "blocked: host not quiet",
+    "seconds": 5424.187047780011
+  },
+  "populations": [
+    {
+      "test_only": true,
+      "population": "R-A1-agent",
+      "cause_status_scope": "install-overrun causality only; not_applicable does not assert a cause for another failure",
+      "applies": 140,
+      "completed_guards": 137,
+      "failed_applies": 3,
+      "measured_guards": 0,
+      "percentiles_ms": {
+        "outer_ns": {
+          "p50": 28.396579,
+          "p90": 39.459996,
+          "p99": 46.354671,
+          "max": 48.094211
+        },
+        "install_ns": {
+          "p50": 14.925346,
+          "p90": 22.735286,
+          "p99": 27.029495,
+          "max": 28.411582
+        },
+        "render_to_installed_ns": {
+          "p50": 15.029781,
+          "p90": 22.816232,
+          "p99": 27.09249,
+          "max": 28.625166
+        }
+      },
+      "suite_status": {
+        "exit": 0,
+        "postflight_quiet": true,
+        "source": "A"
+      },
+      "tests": {
+        "TestLabISO_F6_RecoveryAndEvidence": "PASS",
+        "TestLabD087_D104_GrantRenewalExpiryCorrelation": "PASS",
+        "TestLabUsageLedger": "PASS",
+        "TestLabExternalMeterReset": "PASS",
+        "TestD116_AT10_InstallerMarkerEnrollment": "SKIP",
+        "TestLab08_HealthAttestationUnpublished": "PASS",
+        "TestLab01_ForwardOnlyAfterLease": "PASS",
+        "TestLab02_WatchdogEnforces": "PASS",
+        "TestLab03_KernelTimeout": "PASS",
+        "TestLab04_RestartKeepsVerifiedLease": "PASS",
+        "TestLab05_NoAllowAllOnUpdate": "PASS",
+        "TestLab07_UnpublishedBaselineAck": "PASS",
+        "TestLab06_RevokedStopsForwarding": "PASS"
+      }
+    },
+    {
+      "test_only": true,
+      "population": "R-A1-agent-trace",
+      "cause_status_scope": "install-overrun causality only; not_applicable does not assert a cause for another failure",
+      "applies": 23,
+      "completed_guards": 23,
+      "failed_applies": 0,
+      "measured_guards": 0,
+      "percentiles_ms": {
+        "outer_ns": {
+          "p50": 32.059055,
+          "p90": 38.202672,
+          "p99": 45.186285,
+          "max": 45.186285
+        },
+        "install_ns": {
+          "p50": 16.167351,
+          "p90": 19.009878,
+          "p99": 19.788954,
+          "max": 19.788954
+        },
+        "render_to_installed_ns": {
+          "p50": 16.327309,
+          "p90": 19.069095,
+          "p99": 19.862109,
+          "max": 19.862109
+        }
+      },
+      "suite_status": {
+        "exit": 0,
+        "postflight_quiet": true,
+        "source": "A"
+      },
+      "tests": {
+        "TestD116_AT10_InstallerMarkerEnrollment": "PASS"
+      }
+    },
+    {
+      "test_only": true,
+      "population": "R-B1-agent",
+      "cause_status_scope": "install-overrun causality only; not_applicable does not assert a cause for another failure",
+      "applies": 136,
+      "completed_guards": 134,
+      "failed_applies": 2,
+      "measured_guards": 0,
+      "percentiles_ms": {
+        "outer_ns": {
+          "p50": 30.875969,
+          "p90": 41.546862,
+          "p99": 49.166242,
+          "max": 52.345324
+        },
+        "install_ns": {
+          "p50": 15.529396,
+          "p90": 23.468851,
+          "p99": 28.07937,
+          "max": 28.242359
+        },
+        "render_to_installed_ns": {
+          "p50": 15.631968,
+          "p90": 23.558062,
+          "p99": 28.150005,
+          "max": 28.315393
+        }
+      },
+      "suite_status": {
+        "exit": 0,
+        "postflight_quiet": true,
+        "source": "B"
+      },
+      "tests": {
+        "TestLabISO_F6_RecoveryAndEvidence": "PASS",
+        "TestLabD087_D104_GrantRenewalExpiryCorrelation": "PASS",
+        "TestLabUsageLedger": "PASS",
+        "TestLabExternalMeterReset": "PASS",
+        "TestD116_AT10_InstallerMarkerEnrollment": "SKIP",
+        "TestLab08_HealthAttestationUnpublished": "PASS",
+        "TestLab01_ForwardOnlyAfterLease": "PASS",
+        "TestLab02_WatchdogEnforces": "PASS",
+        "TestLab03_KernelTimeout": "PASS",
+        "TestLab04_RestartKeepsVerifiedLease": "PASS",
+        "TestLab05_NoAllowAllOnUpdate": "PASS",
+        "TestLab07_UnpublishedBaselineAck": "PASS",
+        "TestLab06_RevokedStopsForwarding": "PASS"
+      }
+    },
+    {
+      "test_only": true,
+      "population": "R-B1-agent-trace",
+      "cause_status_scope": "install-overrun causality only; not_applicable does not assert a cause for another failure",
+      "applies": 23,
+      "completed_guards": 23,
+      "failed_applies": 0,
+      "measured_guards": 23,
+      "percentiles_ms": {
+        "outer_ns": {
+          "p50": 30.608828,
+          "p90": 41.265926,
+          "p99": 45.609007,
+          "max": 45.609007
+        },
+        "install_ns": {
+          "p50": 14.961846,
+          "p90": 23.702304,
+          "p99": 25.551837,
+          "max": 25.551837
+        },
+        "render_to_installed_ns": {
+          "p50": 15.039199,
+          "p90": 23.772157,
+          "p99": 25.776912,
+          "max": 25.776912
+        }
+      },
+      "suite_status": {
+        "exit": 0,
+        "postflight_quiet": true,
+        "source": "B"
+      },
+      "tests": {
+        "TestD116_AT10_InstallerMarkerEnrollment": "PASS"
+      }
+    },
+    {
+      "test_only": true,
+      "population": "R-A2-agent",
+      "cause_status_scope": "install-overrun causality only; not_applicable does not assert a cause for another failure",
+      "applies": 137,
+      "completed_guards": 134,
+      "failed_applies": 3,
+      "measured_guards": 0,
+      "percentiles_ms": {
+        "outer_ns": {
+          "p50": 30.14731,
+          "p90": 39.544397,
+          "p99": 48.341351,
+          "max": 52.903495
+        },
+        "install_ns": {
+          "p50": 16.091714,
+          "p90": 21.816662,
+          "p99": 25.783009,
+          "max": 30.391279
+        },
+        "render_to_installed_ns": {
+          "p50": 16.179747,
+          "p90": 21.888375,
+          "p99": 25.846919,
+          "max": 30.557965
+        }
+      },
+      "suite_status": {
+        "exit": 1,
+        "postflight_quiet": true,
+        "source": "A"
+      },
+      "tests": {
+        "TestLabISO_F6_RecoveryAndEvidence": "PASS",
+        "TestLabD087_D104_GrantRenewalExpiryCorrelation": "PASS",
+        "TestLabUsageLedger": "PASS",
+        "TestLabExternalMeterReset": "PASS",
+        "TestD116_AT10_InstallerMarkerEnrollment": "SKIP",
+        "TestLab08_HealthAttestationUnpublished": "PASS",
+        "TestLab01_ForwardOnlyAfterLease": "PASS",
+        "TestLab02_WatchdogEnforces": "PASS",
+        "TestLab03_KernelTimeout": "PASS",
+        "TestLab04_RestartKeepsVerifiedLease": "FAIL",
+        "TestLab05_NoAllowAllOnUpdate": "PASS",
+        "TestLab07_UnpublishedBaselineAck": "PASS",
+        "TestLab06_RevokedStopsForwarding": "PASS"
+      }
+    },
+    {
+      "test_only": true,
+      "population": "R-A2-agent-trace",
+      "cause_status_scope": "install-overrun causality only; not_applicable does not assert a cause for another failure",
+      "applies": 23,
+      "completed_guards": 23,
+      "failed_applies": 0,
+      "measured_guards": 0,
+      "percentiles_ms": {
+        "outer_ns": {
+          "p50": 28.842469,
+          "p90": 41.48806,
+          "p99": 47.655221,
+          "max": 47.655221
+        },
+        "install_ns": {
+          "p50": 14.830113,
+          "p90": 19.077435,
+          "p99": 25.770801,
+          "max": 25.770801
+        },
+        "render_to_installed_ns": {
+          "p50": 14.936035,
+          "p90": 19.162909,
+          "p99": 25.933116,
+          "max": 25.933116
+        }
+      },
+      "suite_status": {
+        "exit": 0,
+        "postflight_quiet": true,
+        "source": "A"
+      },
+      "tests": {
+        "TestD116_AT10_InstallerMarkerEnrollment": "PASS"
+      }
+    }
+  ],
+  "producer_joins": [
+    {
+      "population": "R-A1-agent-trace",
+      "start_ns": "98931534817935",
+      "run_id": "02258c98-634a-40fe-bef0-11e3a9a136ee",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "4"
+    },
+    {
+      "population": "R-A1-agent-trace",
+      "start_ns": "98932650978970",
+      "run_id": "02258c98-634a-40fe-bef0-11e3a9a136ee",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "16"
+    },
+    {
+      "population": "R-A1-agent-trace",
+      "start_ns": "98933658397316",
+      "run_id": "02258c98-634a-40fe-bef0-11e3a9a136ee",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "28"
+    },
+    {
+      "population": "R-A1-agent-trace",
+      "start_ns": "98934679977621",
+      "run_id": "02258c98-634a-40fe-bef0-11e3a9a136ee",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "40"
+    },
+    {
+      "population": "R-A1-agent-trace",
+      "start_ns": "98935673036507",
+      "run_id": "02258c98-634a-40fe-bef0-11e3a9a136ee",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "52"
+    },
+    {
+      "population": "R-A1-agent-trace",
+      "start_ns": "98936658646103",
+      "run_id": "02258c98-634a-40fe-bef0-11e3a9a136ee",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "64"
+    },
+    {
+      "population": "R-A1-agent-trace",
+      "start_ns": "98937680746929",
+      "run_id": "02258c98-634a-40fe-bef0-11e3a9a136ee",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "76"
+    },
+    {
+      "population": "R-A1-agent-trace",
+      "start_ns": "98938666031228",
+      "run_id": "02258c98-634a-40fe-bef0-11e3a9a136ee",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "88"
+    },
+    {
+      "population": "R-A1-agent-trace",
+      "start_ns": "98939679251482",
+      "run_id": "02258c98-634a-40fe-bef0-11e3a9a136ee",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "100"
+    },
+    {
+      "population": "R-A1-agent-trace",
+      "start_ns": "98940671847174",
+      "run_id": "02258c98-634a-40fe-bef0-11e3a9a136ee",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "112"
+    },
+    {
+      "population": "R-A1-agent-trace",
+      "start_ns": "98941671701917",
+      "run_id": "02258c98-634a-40fe-bef0-11e3a9a136ee",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "124"
+    },
+    {
+      "population": "R-A1-agent-trace",
+      "start_ns": "98942661642983",
+      "run_id": "02258c98-634a-40fe-bef0-11e3a9a136ee",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "136"
+    },
+    {
+      "population": "R-A1-agent-trace",
+      "start_ns": "98943669570242",
+      "run_id": "02258c98-634a-40fe-bef0-11e3a9a136ee",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "148"
+    },
+    {
+      "population": "R-A1-agent-trace",
+      "start_ns": "98944670812958",
+      "run_id": "02258c98-634a-40fe-bef0-11e3a9a136ee",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "160"
+    },
+    {
+      "population": "R-A1-agent-trace",
+      "start_ns": "98945661736835",
+      "run_id": "02258c98-634a-40fe-bef0-11e3a9a136ee",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "172"
+    },
+    {
+      "population": "R-A1-agent-trace",
+      "start_ns": "98946673825209",
+      "run_id": "02258c98-634a-40fe-bef0-11e3a9a136ee",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "184"
+    },
+    {
+      "population": "R-A1-agent-trace",
+      "start_ns": "98947659801351",
+      "run_id": "02258c98-634a-40fe-bef0-11e3a9a136ee",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "196"
+    },
+    {
+      "population": "R-A1-agent-trace",
+      "start_ns": "98948672892230",
+      "run_id": "02258c98-634a-40fe-bef0-11e3a9a136ee",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "208"
+    },
+    {
+      "population": "R-A1-agent-trace",
+      "start_ns": "98949683899345",
+      "run_id": "02258c98-634a-40fe-bef0-11e3a9a136ee",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "220"
+    },
+    {
+      "population": "R-A1-agent-trace",
+      "start_ns": "98950666846022",
+      "run_id": "02258c98-634a-40fe-bef0-11e3a9a136ee",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "232"
+    },
+    {
+      "population": "R-A1-agent-trace",
+      "start_ns": "98951661341464",
+      "run_id": "02258c98-634a-40fe-bef0-11e3a9a136ee",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "244"
+    },
+    {
+      "population": "R-A1-agent-trace",
+      "start_ns": "98952690259821",
+      "run_id": "02258c98-634a-40fe-bef0-11e3a9a136ee",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "256"
+    },
+    {
+      "population": "R-A1-agent-trace",
+      "start_ns": "98953564735337",
+      "run_id": "02258c98-634a-40fe-bef0-11e3a9a136ee",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "264"
+    },
+    {
+      "population": "R-B1-agent-trace",
+      "start_ns": "100406595936773",
+      "run_id": "661c31c2-21b0-46bf-9160-6012ea7d836f",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "4"
+    },
+    {
+      "population": "R-B1-agent-trace",
+      "start_ns": "100407724434172",
+      "run_id": "661c31c2-21b0-46bf-9160-6012ea7d836f",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "16"
+    },
+    {
+      "population": "R-B1-agent-trace",
+      "start_ns": "100408724144178",
+      "run_id": "661c31c2-21b0-46bf-9160-6012ea7d836f",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "28"
+    },
+    {
+      "population": "R-B1-agent-trace",
+      "start_ns": "100409736203390",
+      "run_id": "661c31c2-21b0-46bf-9160-6012ea7d836f",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "40"
+    },
+    {
+      "population": "R-B1-agent-trace",
+      "start_ns": "100410722852458",
+      "run_id": "661c31c2-21b0-46bf-9160-6012ea7d836f",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "52"
+    },
+    {
+      "population": "R-B1-agent-trace",
+      "start_ns": "100411715994875",
+      "run_id": "661c31c2-21b0-46bf-9160-6012ea7d836f",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "64"
+    },
+    {
+      "population": "R-B1-agent-trace",
+      "start_ns": "100412734533416",
+      "run_id": "661c31c2-21b0-46bf-9160-6012ea7d836f",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "76"
+    },
+    {
+      "population": "R-B1-agent-trace",
+      "start_ns": "100413714201314",
+      "run_id": "661c31c2-21b0-46bf-9160-6012ea7d836f",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "88"
+    },
+    {
+      "population": "R-B1-agent-trace",
+      "start_ns": "100414732087155",
+      "run_id": "661c31c2-21b0-46bf-9160-6012ea7d836f",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "100"
+    },
+    {
+      "population": "R-B1-agent-trace",
+      "start_ns": "100415723914424",
+      "run_id": "661c31c2-21b0-46bf-9160-6012ea7d836f",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "112"
+    },
+    {
+      "population": "R-B1-agent-trace",
+      "start_ns": "100416728236770",
+      "run_id": "661c31c2-21b0-46bf-9160-6012ea7d836f",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "124"
+    },
+    {
+      "population": "R-B1-agent-trace",
+      "start_ns": "100417750613510",
+      "run_id": "661c31c2-21b0-46bf-9160-6012ea7d836f",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "136"
+    },
+    {
+      "population": "R-B1-agent-trace",
+      "start_ns": "100418711632520",
+      "run_id": "661c31c2-21b0-46bf-9160-6012ea7d836f",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "148"
+    },
+    {
+      "population": "R-B1-agent-trace",
+      "start_ns": "100419721214750",
+      "run_id": "661c31c2-21b0-46bf-9160-6012ea7d836f",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "160"
+    },
+    {
+      "population": "R-B1-agent-trace",
+      "start_ns": "100420720915548",
+      "run_id": "661c31c2-21b0-46bf-9160-6012ea7d836f",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "172"
+    },
+    {
+      "population": "R-B1-agent-trace",
+      "start_ns": "100421724648249",
+      "run_id": "661c31c2-21b0-46bf-9160-6012ea7d836f",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "184"
+    },
+    {
+      "population": "R-B1-agent-trace",
+      "start_ns": "100422748346828",
+      "run_id": "661c31c2-21b0-46bf-9160-6012ea7d836f",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "196"
+    },
+    {
+      "population": "R-B1-agent-trace",
+      "start_ns": "100423741457645",
+      "run_id": "661c31c2-21b0-46bf-9160-6012ea7d836f",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "208"
+    },
+    {
+      "population": "R-B1-agent-trace",
+      "start_ns": "100424737415636",
+      "run_id": "661c31c2-21b0-46bf-9160-6012ea7d836f",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "220"
+    },
+    {
+      "population": "R-B1-agent-trace",
+      "start_ns": "100425724430280",
+      "run_id": "661c31c2-21b0-46bf-9160-6012ea7d836f",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "232"
+    },
+    {
+      "population": "R-B1-agent-trace",
+      "start_ns": "100426721570550",
+      "run_id": "661c31c2-21b0-46bf-9160-6012ea7d836f",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "244"
+    },
+    {
+      "population": "R-B1-agent-trace",
+      "start_ns": "100427733045417",
+      "run_id": "661c31c2-21b0-46bf-9160-6012ea7d836f",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "256"
+    },
+    {
+      "population": "R-B1-agent-trace",
+      "start_ns": "100428623611171",
+      "run_id": "661c31c2-21b0-46bf-9160-6012ea7d836f",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "264"
+    },
+    {
+      "population": "R-A2-agent-trace",
+      "start_ns": "102230692909995",
+      "run_id": "de6b5c7c-ebd0-4952-b07d-faa762597149",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "4"
+    },
+    {
+      "population": "R-A2-agent-trace",
+      "start_ns": "102231841154068",
+      "run_id": "de6b5c7c-ebd0-4952-b07d-faa762597149",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "16"
+    },
+    {
+      "population": "R-A2-agent-trace",
+      "start_ns": "102232813486544",
+      "run_id": "de6b5c7c-ebd0-4952-b07d-faa762597149",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "28"
+    },
+    {
+      "population": "R-A2-agent-trace",
+      "start_ns": "102233828354687",
+      "run_id": "de6b5c7c-ebd0-4952-b07d-faa762597149",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "40"
+    },
+    {
+      "population": "R-A2-agent-trace",
+      "start_ns": "102234819369907",
+      "run_id": "de6b5c7c-ebd0-4952-b07d-faa762597149",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "52"
+    },
+    {
+      "population": "R-A2-agent-trace",
+      "start_ns": "102235827088239",
+      "run_id": "de6b5c7c-ebd0-4952-b07d-faa762597149",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "64"
+    },
+    {
+      "population": "R-A2-agent-trace",
+      "start_ns": "102236834311323",
+      "run_id": "de6b5c7c-ebd0-4952-b07d-faa762597149",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "76"
+    },
+    {
+      "population": "R-A2-agent-trace",
+      "start_ns": "102237830022485",
+      "run_id": "de6b5c7c-ebd0-4952-b07d-faa762597149",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "88"
+    },
+    {
+      "population": "R-A2-agent-trace",
+      "start_ns": "102238844237394",
+      "run_id": "de6b5c7c-ebd0-4952-b07d-faa762597149",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "100"
+    },
+    {
+      "population": "R-A2-agent-trace",
+      "start_ns": "102239810784959",
+      "run_id": "de6b5c7c-ebd0-4952-b07d-faa762597149",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "112"
+    },
+    {
+      "population": "R-A2-agent-trace",
+      "start_ns": "102240834550974",
+      "run_id": "de6b5c7c-ebd0-4952-b07d-faa762597149",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "124"
+    },
+    {
+      "population": "R-A2-agent-trace",
+      "start_ns": "102241838030609",
+      "run_id": "de6b5c7c-ebd0-4952-b07d-faa762597149",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "136"
+    },
+    {
+      "population": "R-A2-agent-trace",
+      "start_ns": "102242810778261",
+      "run_id": "de6b5c7c-ebd0-4952-b07d-faa762597149",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "148"
+    },
+    {
+      "population": "R-A2-agent-trace",
+      "start_ns": "102243818636826",
+      "run_id": "de6b5c7c-ebd0-4952-b07d-faa762597149",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "160"
+    },
+    {
+      "population": "R-A2-agent-trace",
+      "start_ns": "102244834801207",
+      "run_id": "de6b5c7c-ebd0-4952-b07d-faa762597149",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "172"
+    },
+    {
+      "population": "R-A2-agent-trace",
+      "start_ns": "102245814593722",
+      "run_id": "de6b5c7c-ebd0-4952-b07d-faa762597149",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "184"
+    },
+    {
+      "population": "R-A2-agent-trace",
+      "start_ns": "102246816496582",
+      "run_id": "de6b5c7c-ebd0-4952-b07d-faa762597149",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "196"
+    },
+    {
+      "population": "R-A2-agent-trace",
+      "start_ns": "102247818819308",
+      "run_id": "de6b5c7c-ebd0-4952-b07d-faa762597149",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "208"
+    },
+    {
+      "population": "R-A2-agent-trace",
+      "start_ns": "102248837510728",
+      "run_id": "de6b5c7c-ebd0-4952-b07d-faa762597149",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "220"
+    },
+    {
+      "population": "R-A2-agent-trace",
+      "start_ns": "102249851956644",
+      "run_id": "de6b5c7c-ebd0-4952-b07d-faa762597149",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "232"
+    },
+    {
+      "population": "R-A2-agent-trace",
+      "start_ns": "102250840346779",
+      "run_id": "de6b5c7c-ebd0-4952-b07d-faa762597149",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "244"
+    },
+    {
+      "population": "R-A2-agent-trace",
+      "start_ns": "102251830605126",
+      "run_id": "de6b5c7c-ebd0-4952-b07d-faa762597149",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "256"
+    },
+    {
+      "population": "R-A2-agent-trace",
+      "start_ns": "102252721682324",
+      "run_id": "de6b5c7c-ebd0-4952-b07d-faa762597149",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "264"
+    }
+  ],
+  "baseline_test_failures": [
+    {
+      "population": "R-A2-agent",
+      "test": "TestLab04_RestartKeepsVerifiedLease"
+    }
+  ],
+  "B_only_test_failures": [],
+  "distribution_comparisons": [
+    {
+      "population": "R-B1-agent",
+      "metric": "outer_ns",
+      "percentile": "p50",
+      "A_values_ns": [
+        "28396579",
+        "30147310"
+      ],
+      "A_min_ns": "28396579",
+      "A_max_ns": "30147310",
+      "B_ns": "30875969",
+      "within": false,
+      "direction": "above"
+    },
+    {
+      "population": "R-B1-agent",
+      "metric": "outer_ns",
+      "percentile": "p90",
+      "A_values_ns": [
+        "39459996",
+        "39544397"
+      ],
+      "A_min_ns": "39459996",
+      "A_max_ns": "39544397",
+      "B_ns": "41546862",
+      "within": false,
+      "direction": "above"
+    },
+    {
+      "population": "R-B1-agent",
+      "metric": "outer_ns",
+      "percentile": "p99",
+      "A_values_ns": [
+        "46354671",
+        "48341351"
+      ],
+      "A_min_ns": "46354671",
+      "A_max_ns": "48341351",
+      "B_ns": "49166242",
+      "within": false,
+      "direction": "above"
+    },
+    {
+      "population": "R-B1-agent",
+      "metric": "outer_ns",
+      "percentile": "max",
+      "A_values_ns": [
+        "48094211",
+        "52903495"
+      ],
+      "A_min_ns": "48094211",
+      "A_max_ns": "52903495",
+      "B_ns": "52345324",
+      "within": true,
+      "direction": "inside"
+    },
+    {
+      "population": "R-B1-agent",
+      "metric": "install_ns",
+      "percentile": "p50",
+      "A_values_ns": [
+        "14925346",
+        "16091714"
+      ],
+      "A_min_ns": "14925346",
+      "A_max_ns": "16091714",
+      "B_ns": "15529396",
+      "within": true,
+      "direction": "inside"
+    },
+    {
+      "population": "R-B1-agent",
+      "metric": "install_ns",
+      "percentile": "p90",
+      "A_values_ns": [
+        "22735286",
+        "21816662"
+      ],
+      "A_min_ns": "21816662",
+      "A_max_ns": "22735286",
+      "B_ns": "23468851",
+      "within": false,
+      "direction": "above"
+    },
+    {
+      "population": "R-B1-agent",
+      "metric": "install_ns",
+      "percentile": "p99",
+      "A_values_ns": [
+        "27029495",
+        "25783009"
+      ],
+      "A_min_ns": "25783009",
+      "A_max_ns": "27029495",
+      "B_ns": "28079370",
+      "within": false,
+      "direction": "above"
+    },
+    {
+      "population": "R-B1-agent",
+      "metric": "install_ns",
+      "percentile": "max",
+      "A_values_ns": [
+        "28411582",
+        "30391279"
+      ],
+      "A_min_ns": "28411582",
+      "A_max_ns": "30391279",
+      "B_ns": "28242359",
+      "within": false,
+      "direction": "below"
+    },
+    {
+      "population": "R-B1-agent",
+      "metric": "render_to_installed_ns",
+      "percentile": "p50",
+      "A_values_ns": [
+        "15029781",
+        "16179747"
+      ],
+      "A_min_ns": "15029781",
+      "A_max_ns": "16179747",
+      "B_ns": "15631968",
+      "within": true,
+      "direction": "inside"
+    },
+    {
+      "population": "R-B1-agent",
+      "metric": "render_to_installed_ns",
+      "percentile": "p90",
+      "A_values_ns": [
+        "22816232",
+        "21888375"
+      ],
+      "A_min_ns": "21888375",
+      "A_max_ns": "22816232",
+      "B_ns": "23558062",
+      "within": false,
+      "direction": "above"
+    },
+    {
+      "population": "R-B1-agent",
+      "metric": "render_to_installed_ns",
+      "percentile": "p99",
+      "A_values_ns": [
+        "27092490",
+        "25846919"
+      ],
+      "A_min_ns": "25846919",
+      "A_max_ns": "27092490",
+      "B_ns": "28150005",
+      "within": false,
+      "direction": "above"
+    },
+    {
+      "population": "R-B1-agent",
+      "metric": "render_to_installed_ns",
+      "percentile": "max",
+      "A_values_ns": [
+        "28625166",
+        "30557965"
+      ],
+      "A_min_ns": "28625166",
+      "A_max_ns": "30557965",
+      "B_ns": "28315393",
+      "within": false,
+      "direction": "below"
+    },
+    {
+      "population": "R-B1-agent-trace",
+      "metric": "outer_ns",
+      "percentile": "p50",
+      "A_values_ns": [
+        "32059055",
+        "28842469"
+      ],
+      "A_min_ns": "28842469",
+      "A_max_ns": "32059055",
+      "B_ns": "30608828",
+      "within": true,
+      "direction": "inside"
+    },
+    {
+      "population": "R-B1-agent-trace",
+      "metric": "outer_ns",
+      "percentile": "p90",
+      "A_values_ns": [
+        "38202672",
+        "41488060"
+      ],
+      "A_min_ns": "38202672",
+      "A_max_ns": "41488060",
+      "B_ns": "41265926",
+      "within": true,
+      "direction": "inside"
+    },
+    {
+      "population": "R-B1-agent-trace",
+      "metric": "outer_ns",
+      "percentile": "p99",
+      "A_values_ns": [
+        "45186285",
+        "47655221"
+      ],
+      "A_min_ns": "45186285",
+      "A_max_ns": "47655221",
+      "B_ns": "45609007",
+      "within": true,
+      "direction": "inside"
+    },
+    {
+      "population": "R-B1-agent-trace",
+      "metric": "outer_ns",
+      "percentile": "max",
+      "A_values_ns": [
+        "45186285",
+        "47655221"
+      ],
+      "A_min_ns": "45186285",
+      "A_max_ns": "47655221",
+      "B_ns": "45609007",
+      "within": true,
+      "direction": "inside"
+    },
+    {
+      "population": "R-B1-agent-trace",
+      "metric": "install_ns",
+      "percentile": "p50",
+      "A_values_ns": [
+        "16167351",
+        "14830113"
+      ],
+      "A_min_ns": "14830113",
+      "A_max_ns": "16167351",
+      "B_ns": "14961846",
+      "within": true,
+      "direction": "inside"
+    },
+    {
+      "population": "R-B1-agent-trace",
+      "metric": "install_ns",
+      "percentile": "p90",
+      "A_values_ns": [
+        "19009878",
+        "19077435"
+      ],
+      "A_min_ns": "19009878",
+      "A_max_ns": "19077435",
+      "B_ns": "23702304",
+      "within": false,
+      "direction": "above"
+    },
+    {
+      "population": "R-B1-agent-trace",
+      "metric": "install_ns",
+      "percentile": "p99",
+      "A_values_ns": [
+        "19788954",
+        "25770801"
+      ],
+      "A_min_ns": "19788954",
+      "A_max_ns": "25770801",
+      "B_ns": "25551837",
+      "within": true,
+      "direction": "inside"
+    },
+    {
+      "population": "R-B1-agent-trace",
+      "metric": "install_ns",
+      "percentile": "max",
+      "A_values_ns": [
+        "19788954",
+        "25770801"
+      ],
+      "A_min_ns": "19788954",
+      "A_max_ns": "25770801",
+      "B_ns": "25551837",
+      "within": true,
+      "direction": "inside"
+    },
+    {
+      "population": "R-B1-agent-trace",
+      "metric": "render_to_installed_ns",
+      "percentile": "p50",
+      "A_values_ns": [
+        "16327309",
+        "14936035"
+      ],
+      "A_min_ns": "14936035",
+      "A_max_ns": "16327309",
+      "B_ns": "15039199",
+      "within": true,
+      "direction": "inside"
+    },
+    {
+      "population": "R-B1-agent-trace",
+      "metric": "render_to_installed_ns",
+      "percentile": "p90",
+      "A_values_ns": [
+        "19069095",
+        "19162909"
+      ],
+      "A_min_ns": "19069095",
+      "A_max_ns": "19162909",
+      "B_ns": "23772157",
+      "within": false,
+      "direction": "above"
+    },
+    {
+      "population": "R-B1-agent-trace",
+      "metric": "render_to_installed_ns",
+      "percentile": "p99",
+      "A_values_ns": [
+        "19862109",
+        "25933116"
+      ],
+      "A_min_ns": "19862109",
+      "A_max_ns": "25933116",
+      "B_ns": "25776912",
+      "within": true,
+      "direction": "inside"
+    },
+    {
+      "population": "R-B1-agent-trace",
+      "metric": "render_to_installed_ns",
+      "percentile": "max",
+      "A_values_ns": [
+        "19862109",
+        "25933116"
+      ],
+      "A_min_ns": "19862109",
+      "A_max_ns": "25933116",
+      "B_ns": "25776912",
+      "within": true,
+      "direction": "inside"
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "test_only": true,
+  "scope": [
+    "apps",
+    "node/agent",
+    "node/updater",
+    "node/watchdog",
+    "node/internal",
+    "internal",
+    "pkg",
+    "contracts",
+    "db",
+    "go.mod",
+    "go.sum",
+    "tests/netlab/agent",
+    "mk/netlab.mk"
+  ],
+  "exit": 0,
+  "diff": "",
+  "note": "Ordinary agent and supporting runtime inputs are identical between A and B; enforcement and trace helper changes are the measured intervention."
+}

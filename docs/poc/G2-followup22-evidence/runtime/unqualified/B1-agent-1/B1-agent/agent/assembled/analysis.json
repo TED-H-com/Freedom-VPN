@@ -1,0 +1,853 @@
+{
+  "scope": "TEST ONLY assembled agent/kernel/TLS fake control; 80ms dual-phase diagnostic; no D-120 tolerance",
+  "snapshots": 926,
+  "runs": [
+    {
+      "run_id": "a31d1aa4-7138-4e19-88de-73514aafb73a",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a"
+    },
+    {
+      "run_id": "d3daaf19-570b-4961-9ec2-6027b0c3cb75",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a"
+    },
+    {
+      "run_id": "d4c8e8f8-5af5-4048-b237-b430297b8cfe",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a"
+    }
+  ],
+  "brackets": {
+    "baseline": {
+      "count": 28,
+      "median_ns": "20855831",
+      "worst_ns": "45465559"
+    },
+    "apply": {
+      "count": 109,
+      "median_ns": "74416761",
+      "worst_ns": "124634731"
+    },
+    "verifier": {
+      "count": 444,
+      "median_ns": "22602938",
+      "worst_ns": "39838821"
+    },
+    "nft_read": {
+      "count": 444,
+      "median_ns": "2449352",
+      "worst_ns": "5515205"
+    },
+    "precision_read": {
+      "count": 435,
+      "median_ns": "1362979",
+      "worst_ns": "2179500"
+    },
+    "tc_read": {
+      "count": 444,
+      "median_ns": "15942062",
+      "worst_ns": "28428835"
+    },
+    "install_command": {
+      "count": 107,
+      "median_ns": "14400158",
+      "worst_ns": "26791635"
+    },
+    "release_command": {
+      "count": 107,
+      "median_ns": "12934396",
+      "worst_ns": "27994890"
+    },
+    "outer_guard": {
+      "count": 107,
+      "median_ns": "28054118",
+      "worst_ns": "51719113"
+    },
+    "inner_guard": {
+      "count": 107,
+      "median_ns": "2944",
+      "worst_ns": "11133"
+    },
+    "render_to_installed": {
+      "count": 107,
+      "median_ns": "14686692",
+      "worst_ns": "27070061"
+    },
+    "verify": {
+      "count": 336,
+      "median_ns": "22684526",
+      "worst_ns": "39838821"
+    }
+  },
+  "renewal": {
+    "probes": 1518,
+    "delivered": 1494,
+    "losses": [
+      {
+        "packet": {
+          "packet_id": 259,
+          "phase": "arbitrary_37ms",
+          "scheduled_ns": "94111516331251",
+          "sent_ns": "94111516453103",
+          "result": "timeout",
+          "read_completion_ns": "94111596511972",
+          "ingress_ns": "94111516657899"
+        },
+        "install_window_overlap": [],
+        "ingress_in_install": [],
+        "ingress_in_outer_guard": [
+          {
+            "run_id": "d3daaf19-570b-4961-9ec2-6027b0c3cb75",
+            "sequence": "135"
+          }
+        ],
+        "ingress_in_inner_guard": []
+      },
+      {
+        "packet": {
+          "packet_id": 339,
+          "phase": "arbitrary_37ms",
+          "scheduled_ns": "94115516331251",
+          "sent_ns": "94115516455847",
+          "result": "timeout",
+          "read_completion_ns": "94115596521434",
+          "ingress_ns": "94115516621584"
+        },
+        "install_window_overlap": [
+          {
+            "run_id": "d3daaf19-570b-4961-9ec2-6027b0c3cb75",
+            "sequence": "167"
+          }
+        ],
+        "ingress_in_install": [
+          {
+            "run_id": "d3daaf19-570b-4961-9ec2-6027b0c3cb75",
+            "sequence": "167"
+          }
+        ],
+        "ingress_in_outer_guard": [
+          {
+            "run_id": "d3daaf19-570b-4961-9ec2-6027b0c3cb75",
+            "sequence": "167"
+          }
+        ],
+        "ingress_in_inner_guard": []
+      },
+      {
+        "packet": {
+          "packet_id": 479,
+          "phase": "arbitrary_37ms",
+          "scheduled_ns": "94122516331251",
+          "sent_ns": "94122516415636",
+          "result": "timeout",
+          "read_completion_ns": "94122596476233",
+          "ingress_ns": "94122516837113"
+        },
+        "install_window_overlap": [
+          {
+            "run_id": "d3daaf19-570b-4961-9ec2-6027b0c3cb75",
+            "sequence": "223"
+          }
+        ],
+        "ingress_in_install": [
+          {
+            "run_id": "d3daaf19-570b-4961-9ec2-6027b0c3cb75",
+            "sequence": "223"
+          }
+        ],
+        "ingress_in_outer_guard": [
+          {
+            "run_id": "d3daaf19-570b-4961-9ec2-6027b0c3cb75",
+            "sequence": "223"
+          }
+        ],
+        "ingress_in_inner_guard": []
+      },
+      {
+        "packet": {
+          "packet_id": 519,
+          "phase": "arbitrary_37ms",
+          "scheduled_ns": "94124516331251",
+          "sent_ns": "94124516444240",
+          "result": "timeout",
+          "read_completion_ns": "94124596506846",
+          "ingress_ns": "94124516969388"
+        },
+        "install_window_overlap": [
+          {
+            "run_id": "d3daaf19-570b-4961-9ec2-6027b0c3cb75",
+            "sequence": "239"
+          }
+        ],
+        "ingress_in_install": [
+          {
+            "run_id": "d3daaf19-570b-4961-9ec2-6027b0c3cb75",
+            "sequence": "239"
+          }
+        ],
+        "ingress_in_outer_guard": [
+          {
+            "run_id": "d3daaf19-570b-4961-9ec2-6027b0c3cb75",
+            "sequence": "239"
+          }
+        ],
+        "ingress_in_inner_guard": []
+      },
+      {
+        "packet": {
+          "packet_id": 539,
+          "phase": "arbitrary_37ms",
+          "scheduled_ns": "94125516331251",
+          "sent_ns": "94125516427758",
+          "result": "timeout",
+          "read_completion_ns": "94125596495662",
+          "ingress_ns": "94125516875314"
+        },
+        "install_window_overlap": [
+          {
+            "run_id": "d3daaf19-570b-4961-9ec2-6027b0c3cb75",
+            "sequence": "247"
+          }
+        ],
+        "ingress_in_install": [
+          {
+            "run_id": "d3daaf19-570b-4961-9ec2-6027b0c3cb75",
+            "sequence": "247"
+          }
+        ],
+        "ingress_in_outer_guard": [
+          {
+            "run_id": "d3daaf19-570b-4961-9ec2-6027b0c3cb75",
+            "sequence": "247"
+          }
+        ],
+        "ingress_in_inner_guard": []
+      },
+      {
+        "packet": {
+          "packet_id": 579,
+          "phase": "arbitrary_37ms",
+          "scheduled_ns": "94127516331251",
+          "sent_ns": "94127516419294",
+          "result": "timeout",
+          "read_completion_ns": "94127596483058",
+          "ingress_ns": "94127516470486"
+        },
+        "install_window_overlap": [
+          {
+            "run_id": "d3daaf19-570b-4961-9ec2-6027b0c3cb75",
+            "sequence": "263"
+          }
+        ],
+        "ingress_in_install": [
+          {
+            "run_id": "d3daaf19-570b-4961-9ec2-6027b0c3cb75",
+            "sequence": "263"
+          }
+        ],
+        "ingress_in_outer_guard": [
+          {
+            "run_id": "d3daaf19-570b-4961-9ec2-6027b0c3cb75",
+            "sequence": "263"
+          }
+        ],
+        "ingress_in_inner_guard": []
+      },
+      {
+        "packet": {
+          "packet_id": 599,
+          "phase": "arbitrary_37ms",
+          "scheduled_ns": "94128516331251",
+          "sent_ns": "94128516419696",
+          "result": "timeout",
+          "read_completion_ns": "94128596482635",
+          "ingress_ns": "94128516529586"
+        },
+        "install_window_overlap": [
+          {
+            "run_id": "d3daaf19-570b-4961-9ec2-6027b0c3cb75",
+            "sequence": "271"
+          }
+        ],
+        "ingress_in_install": [
+          {
+            "run_id": "d3daaf19-570b-4961-9ec2-6027b0c3cb75",
+            "sequence": "271"
+          }
+        ],
+        "ingress_in_outer_guard": [
+          {
+            "run_id": "d3daaf19-570b-4961-9ec2-6027b0c3cb75",
+            "sequence": "271"
+          }
+        ],
+        "ingress_in_inner_guard": []
+      },
+      {
+        "packet": {
+          "packet_id": 619,
+          "phase": "arbitrary_37ms",
+          "scheduled_ns": "94129516331251",
+          "sent_ns": "94129516418280",
+          "result": "timeout",
+          "read_completion_ns": "94129596481707",
+          "ingress_ns": "94129516474507"
+        },
+        "install_window_overlap": [
+          {
+            "run_id": "d3daaf19-570b-4961-9ec2-6027b0c3cb75",
+            "sequence": "279"
+          }
+        ],
+        "ingress_in_install": [
+          {
+            "run_id": "d3daaf19-570b-4961-9ec2-6027b0c3cb75",
+            "sequence": "279"
+          }
+        ],
+        "ingress_in_outer_guard": [
+          {
+            "run_id": "d3daaf19-570b-4961-9ec2-6027b0c3cb75",
+            "sequence": "279"
+          }
+        ],
+        "ingress_in_inner_guard": []
+      },
+      {
+        "packet": {
+          "packet_id": 639,
+          "phase": "arbitrary_37ms",
+          "scheduled_ns": "94130516331251",
+          "sent_ns": "94130516424097",
+          "result": "timeout",
+          "read_completion_ns": "94130596485696",
+          "ingress_ns": "94130516575335"
+        },
+        "install_window_overlap": [
+          {
+            "run_id": "d3daaf19-570b-4961-9ec2-6027b0c3cb75",
+            "sequence": "288"
+          }
+        ],
+        "ingress_in_install": [
+          {
+            "run_id": "d3daaf19-570b-4961-9ec2-6027b0c3cb75",
+            "sequence": "288"
+          }
+        ],
+        "ingress_in_outer_guard": [
+          {
+            "run_id": "d3daaf19-570b-4961-9ec2-6027b0c3cb75",
+            "sequence": "288"
+          }
+        ],
+        "ingress_in_inner_guard": []
+      },
+      {
+        "packet": {
+          "packet_id": 659,
+          "phase": "arbitrary_37ms",
+          "scheduled_ns": "94131516331251",
+          "sent_ns": "94131516413414",
+          "result": "timeout",
+          "read_completion_ns": "94131596484157",
+          "ingress_ns": "94131516709486"
+        },
+        "install_window_overlap": [
+          {
+            "run_id": "d3daaf19-570b-4961-9ec2-6027b0c3cb75",
+            "sequence": "296"
+          }
+        ],
+        "ingress_in_install": [
+          {
+            "run_id": "d3daaf19-570b-4961-9ec2-6027b0c3cb75",
+            "sequence": "296"
+          }
+        ],
+        "ingress_in_outer_guard": [
+          {
+            "run_id": "d3daaf19-570b-4961-9ec2-6027b0c3cb75",
+            "sequence": "296"
+          }
+        ],
+        "ingress_in_inner_guard": []
+      },
+      {
+        "packet": {
+          "packet_id": 679,
+          "phase": "arbitrary_37ms",
+          "scheduled_ns": "94132516331251",
+          "sent_ns": "94132516514764",
+          "result": "timeout",
+          "read_completion_ns": "94132596671372",
+          "ingress_ns": "94132516774362"
+        },
+        "install_window_overlap": [
+          {
+            "run_id": "d3daaf19-570b-4961-9ec2-6027b0c3cb75",
+            "sequence": "304"
+          }
+        ],
+        "ingress_in_install": [
+          {
+            "run_id": "d3daaf19-570b-4961-9ec2-6027b0c3cb75",
+            "sequence": "304"
+          }
+        ],
+        "ingress_in_outer_guard": [
+          {
+            "run_id": "d3daaf19-570b-4961-9ec2-6027b0c3cb75",
+            "sequence": "304"
+          }
+        ],
+        "ingress_in_inner_guard": []
+      },
+      {
+        "packet": {
+          "packet_id": 699,
+          "phase": "arbitrary_37ms",
+          "scheduled_ns": "94133516331251",
+          "sent_ns": "94133516413524",
+          "result": "timeout",
+          "read_completion_ns": "94133596473977",
+          "ingress_ns": "94133516669740"
+        },
+        "install_window_overlap": [
+          {
+            "run_id": "d3daaf19-570b-4961-9ec2-6027b0c3cb75",
+            "sequence": "312"
+          }
+        ],
+        "ingress_in_install": [
+          {
+            "run_id": "d3daaf19-570b-4961-9ec2-6027b0c3cb75",
+            "sequence": "312"
+          }
+        ],
+        "ingress_in_outer_guard": [
+          {
+            "run_id": "d3daaf19-570b-4961-9ec2-6027b0c3cb75",
+            "sequence": "312"
+          }
+        ],
+        "ingress_in_inner_guard": []
+      },
+      {
+        "packet": {
+          "packet_id": 719,
+          "phase": "arbitrary_37ms",
+          "scheduled_ns": "94134516331251",
+          "sent_ns": "94134516410066",
+          "result": "timeout",
+          "read_completion_ns": "94134596472611",
+          "ingress_ns": "94134516576513"
+        },
+        "install_window_overlap": [
+          {
+            "run_id": "d3daaf19-570b-4961-9ec2-6027b0c3cb75",
+            "sequence": "320"
+          }
+        ],
+        "ingress_in_install": [
+          {
+            "run_id": "d3daaf19-570b-4961-9ec2-6027b0c3cb75",
+            "sequence": "320"
+          }
+        ],
+        "ingress_in_outer_guard": [
+          {
+            "run_id": "d3daaf19-570b-4961-9ec2-6027b0c3cb75",
+            "sequence": "320"
+          }
+        ],
+        "ingress_in_inner_guard": []
+      },
+      {
+        "packet": {
+          "packet_id": 739,
+          "phase": "arbitrary_37ms",
+          "scheduled_ns": "94135516331251",
+          "sent_ns": "94135516521892",
+          "result": "timeout",
+          "read_completion_ns": "94135596662862",
+          "ingress_ns": "94135516715374"
+        },
+        "install_window_overlap": [
+          {
+            "run_id": "d3daaf19-570b-4961-9ec2-6027b0c3cb75",
+            "sequence": "328"
+          }
+        ],
+        "ingress_in_install": [
+          {
+            "run_id": "d3daaf19-570b-4961-9ec2-6027b0c3cb75",
+            "sequence": "328"
+          }
+        ],
+        "ingress_in_outer_guard": [
+          {
+            "run_id": "d3daaf19-570b-4961-9ec2-6027b0c3cb75",
+            "sequence": "328"
+          }
+        ],
+        "ingress_in_inner_guard": []
+      },
+      {
+        "packet": {
+          "packet_id": 759,
+          "phase": "arbitrary_37ms",
+          "scheduled_ns": "94136516331251",
+          "sent_ns": "94136516497149",
+          "result": "timeout",
+          "read_completion_ns": "94136596565642",
+          "ingress_ns": "94136516884408"
+        },
+        "install_window_overlap": [
+          {
+            "run_id": "d3daaf19-570b-4961-9ec2-6027b0c3cb75",
+            "sequence": "336"
+          }
+        ],
+        "ingress_in_install": [
+          {
+            "run_id": "d3daaf19-570b-4961-9ec2-6027b0c3cb75",
+            "sequence": "336"
+          }
+        ],
+        "ingress_in_outer_guard": [
+          {
+            "run_id": "d3daaf19-570b-4961-9ec2-6027b0c3cb75",
+            "sequence": "336"
+          }
+        ],
+        "ingress_in_inner_guard": []
+      },
+      {
+        "packet": {
+          "packet_id": 779,
+          "phase": "arbitrary_37ms",
+          "scheduled_ns": "94137516331251",
+          "sent_ns": "94137516416750",
+          "result": "timeout",
+          "read_completion_ns": "94137596562046",
+          "ingress_ns": "94137516756803"
+        },
+        "install_window_overlap": [
+          {
+            "run_id": "d3daaf19-570b-4961-9ec2-6027b0c3cb75",
+            "sequence": "344"
+          }
+        ],
+        "ingress_in_install": [
+          {
+            "run_id": "d3daaf19-570b-4961-9ec2-6027b0c3cb75",
+            "sequence": "344"
+          }
+        ],
+        "ingress_in_outer_guard": [
+          {
+            "run_id": "d3daaf19-570b-4961-9ec2-6027b0c3cb75",
+            "sequence": "344"
+          }
+        ],
+        "ingress_in_inner_guard": []
+      },
+      {
+        "packet": {
+          "packet_id": 799,
+          "phase": "arbitrary_37ms",
+          "scheduled_ns": "94138516331251",
+          "sent_ns": "94138516519872",
+          "result": "timeout",
+          "read_completion_ns": "94138596693848",
+          "ingress_ns": "94138516770816"
+        },
+        "install_window_overlap": [
+          {
+            "run_id": "d3daaf19-570b-4961-9ec2-6027b0c3cb75",
+            "sequence": "352"
+          }
+        ],
+        "ingress_in_install": [
+          {
+            "run_id": "d3daaf19-570b-4961-9ec2-6027b0c3cb75",
+            "sequence": "352"
+          }
+        ],
+        "ingress_in_outer_guard": [
+          {
+            "run_id": "d3daaf19-570b-4961-9ec2-6027b0c3cb75",
+            "sequence": "352"
+          }
+        ],
+        "ingress_in_inner_guard": []
+      },
+      {
+        "packet": {
+          "packet_id": 819,
+          "phase": "arbitrary_37ms",
+          "scheduled_ns": "94139516331251",
+          "sent_ns": "94139516560816",
+          "result": "timeout",
+          "read_completion_ns": "94139596692631",
+          "ingress_ns": "94139516665032"
+        },
+        "install_window_overlap": [
+          {
+            "run_id": "d3daaf19-570b-4961-9ec2-6027b0c3cb75",
+            "sequence": "360"
+          }
+        ],
+        "ingress_in_install": [
+          {
+            "run_id": "d3daaf19-570b-4961-9ec2-6027b0c3cb75",
+            "sequence": "360"
+          }
+        ],
+        "ingress_in_outer_guard": [
+          {
+            "run_id": "d3daaf19-570b-4961-9ec2-6027b0c3cb75",
+            "sequence": "360"
+          }
+        ],
+        "ingress_in_inner_guard": []
+      },
+      {
+        "packet": {
+          "packet_id": 839,
+          "phase": "arbitrary_37ms",
+          "scheduled_ns": "94140516331251",
+          "sent_ns": "94140516534677",
+          "result": "timeout",
+          "read_completion_ns": "94140596670566",
+          "ingress_ns": "94140516744574"
+        },
+        "install_window_overlap": [
+          {
+            "run_id": "d3daaf19-570b-4961-9ec2-6027b0c3cb75",
+            "sequence": "368"
+          }
+        ],
+        "ingress_in_install": [
+          {
+            "run_id": "d3daaf19-570b-4961-9ec2-6027b0c3cb75",
+            "sequence": "368"
+          }
+        ],
+        "ingress_in_outer_guard": [
+          {
+            "run_id": "d3daaf19-570b-4961-9ec2-6027b0c3cb75",
+            "sequence": "368"
+          }
+        ],
+        "ingress_in_inner_guard": []
+      },
+      {
+        "packet": {
+          "packet_id": 919,
+          "phase": "arbitrary_37ms",
+          "scheduled_ns": "94144516331251",
+          "sent_ns": "94144516439018",
+          "result": "timeout",
+          "read_completion_ns": "94144596500437",
+          "ingress_ns": "94144516644639"
+        },
+        "install_window_overlap": [
+          {
+            "run_id": "d3daaf19-570b-4961-9ec2-6027b0c3cb75",
+            "sequence": "400"
+          }
+        ],
+        "ingress_in_install": [
+          {
+            "run_id": "d3daaf19-570b-4961-9ec2-6027b0c3cb75",
+            "sequence": "400"
+          }
+        ],
+        "ingress_in_outer_guard": [
+          {
+            "run_id": "d3daaf19-570b-4961-9ec2-6027b0c3cb75",
+            "sequence": "400"
+          }
+        ],
+        "ingress_in_inner_guard": []
+      },
+      {
+        "packet": {
+          "packet_id": 959,
+          "phase": "arbitrary_37ms",
+          "scheduled_ns": "94146516331251",
+          "sent_ns": "94146516449455",
+          "result": "timeout",
+          "read_completion_ns": "94146596521222",
+          "ingress_ns": "94146516512099"
+        },
+        "install_window_overlap": [
+          {
+            "run_id": "d3daaf19-570b-4961-9ec2-6027b0c3cb75",
+            "sequence": "416"
+          }
+        ],
+        "ingress_in_install": [
+          {
+            "run_id": "d3daaf19-570b-4961-9ec2-6027b0c3cb75",
+            "sequence": "416"
+          }
+        ],
+        "ingress_in_outer_guard": [
+          {
+            "run_id": "d3daaf19-570b-4961-9ec2-6027b0c3cb75",
+            "sequence": "416"
+          }
+        ],
+        "ingress_in_inner_guard": []
+      },
+      {
+        "packet": {
+          "packet_id": 1205,
+          "phase": "arbitrary_37ms",
+          "scheduled_ns": "94158816331251",
+          "sent_ns": "94158816451018",
+          "result": "timeout",
+          "read_completion_ns": "94158896523012",
+          "ingress_ns": "94158816572748"
+        },
+        "install_window_overlap": [
+          {
+            "run_id": "d3daaf19-570b-4961-9ec2-6027b0c3cb75",
+            "sequence": "512"
+          }
+        ],
+        "ingress_in_install": [
+          {
+            "run_id": "d3daaf19-570b-4961-9ec2-6027b0c3cb75",
+            "sequence": "512"
+          }
+        ],
+        "ingress_in_outer_guard": [
+          {
+            "run_id": "d3daaf19-570b-4961-9ec2-6027b0c3cb75",
+            "sequence": "512"
+          }
+        ],
+        "ingress_in_inner_guard": []
+      },
+      {
+        "packet": {
+          "packet_id": 1279,
+          "phase": "arbitrary_37ms",
+          "scheduled_ns": "94162516331251",
+          "sent_ns": "94162516448291",
+          "result": "timeout",
+          "read_completion_ns": "94162596532952",
+          "ingress_ns": "94162516540235"
+        },
+        "install_window_overlap": [
+          {
+            "run_id": "d3daaf19-570b-4961-9ec2-6027b0c3cb75",
+            "sequence": "544"
+          }
+        ],
+        "ingress_in_install": [
+          {
+            "run_id": "d3daaf19-570b-4961-9ec2-6027b0c3cb75",
+            "sequence": "544"
+          }
+        ],
+        "ingress_in_outer_guard": [
+          {
+            "run_id": "d3daaf19-570b-4961-9ec2-6027b0c3cb75",
+            "sequence": "544"
+          }
+        ],
+        "ingress_in_inner_guard": []
+      },
+      {
+        "packet": {
+          "packet_id": 1340,
+          "phase": "phased",
+          "scheduled_ns": "94165579331251",
+          "sent_ns": "94165579564039",
+          "result": "timeout",
+          "read_completion_ns": "94165659721799",
+          "ingress_ns": "94165579941066"
+        },
+        "install_window_overlap": [],
+        "ingress_in_install": [],
+        "ingress_in_outer_guard": [
+          {
+            "run_id": "d3daaf19-570b-4961-9ec2-6027b0c3cb75",
+            "sequence": "569"
+          }
+        ],
+        "ingress_in_inner_guard": []
+      }
+    ],
+    "actual_renewals": [
+      {
+        "run_id": "d3daaf19-570b-4961-9ec2-6027b0c3cb75",
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "sequence": "287",
+        "source": "renewal",
+        "anchor": {
+          "mono_before_ns": "94130484792382",
+          "wall": "2026-11-01T05:23:12.96842119Z",
+          "mono_after_ns": "94130484792515"
+        },
+        "lease": {
+          "lease_id": "01a1958f-d1c6-74e5-9948-71171440dcce",
+          "generation": "3",
+          "issued_at": "2026-11-01T05:23:12.966317957Z",
+          "expires_at": "2026-11-01T05:24:12.966317957Z",
+          "request_mono_ns": "94130481345626",
+          "node_deadline_ns": "94190481345626",
+          "members": 2
+        },
+        "renewal": {
+          "request_id": "01a1958f-d1c4-7ee0-a64b-a8320bbf5660",
+          "start_ns": "94130481345626",
+          "end_ns": "94130484792010",
+          "request_wall": "2026-11-01T05:23:12.964974451Z",
+          "new_lease": true
+        }
+      },
+      {
+        "run_id": "d3daaf19-570b-4961-9ec2-6027b0c3cb75",
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "sequence": "552",
+        "source": "renewal",
+        "anchor": {
+          "mono_before_ns": "94163503010551",
+          "wall": "2026-11-01T05:23:45.9866394Z",
+          "mono_after_ns": "94163503010730"
+        },
+        "lease": {
+          "lease_id": "01a19590-52c0-77a8-9f86-03313502963d",
+          "generation": "3",
+          "issued_at": "2026-11-01T05:23:45.984499057Z",
+          "expires_at": "2026-11-01T05:24:45.984499057Z",
+          "request_mono_ns": "94163499653155",
+          "node_deadline_ns": "94223499653155",
+          "members": 2
+        },
+        "renewal": {
+          "request_id": "01a19590-52bf-744f-9b27-ab6a1af0c5b0",
+          "start_ns": "94163499653155",
+          "end_ns": "94163503010161",
+          "request_wall": "2026-11-01T05:23:45.983282051Z",
+          "new_lease": true
+        }
+      }
+    ],
+    "loss_windows_overlapping_install": 22,
+    "ingress_in_outer_guard": 24,
+    "unresolved_ingress": 0
+  },
+  "expiry": {
+    "deadline_ns": "94223499653155",
+    "last_positive_offset_ns": "-100365602",
+    "first_drop_offset_ns": "-63807898",
+    "positives": 97,
+    "drops": 15,
+    "packet_predicate": "pass"
+  }
+}

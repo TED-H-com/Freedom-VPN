@@ -1,0 +1,43 @@
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 DONE 0.0s
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 965B done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/ubuntu:24.04
+#2 DONE 0.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [internal] load build context
+#4 transferring context: 125.35kB done
+#4 DONE 0.0s
+
+#5 [1/4] FROM docker.io/library/ubuntu:24.04@sha256:fe81560990fae86dc4743202b2cb4d3df98d0bcf949173cecef15ce1127ef852
+#5 resolve docker.io/library/ubuntu:24.04@sha256:fe81560990fae86dc4743202b2cb4d3df98d0bcf949173cecef15ce1127ef852 0.0s done
+#5 DONE 0.0s
+
+#6 [2/4] RUN apt-get update     && apt-get install -y --no-install-recommends         nftables         iproute2         wireguard-tools         conntrack         iperf3         tcpdump         ethtool         python3         iputils-ping         procps         ca-certificates     && rm -rf /var/lib/apt/lists/*
+#6 CACHED
+
+#7 [3/4] RUN cp -a /usr/bin/wg /usr/local/bin/wg
+#7 CACHED
+
+#8 [4/4] COPY scripts/ /opt/netlab/scripts/
+#8 DONE 0.1s
+
+#9 exporting to image
+#9 exporting layers 0.1s done
+#9 exporting manifest sha256:3bdf9e070507d49b20900caafb091569faca551a26e3e9d0d358ba5a674799a8 0.0s done
+#9 exporting config sha256:f9167bc779e2e35424d17cc66ceb10b6b5223baf59dc044a2a0975def9a22e2f 0.0s done
+#9 exporting attestation manifest sha256:8715837fd9e1fcee1f8ed3ee1010d0d96f3e702a1920289f7825b69a0964795e 0.0s done
+#9 exporting manifest list sha256:58278fd13d67acebe3d7d6216b9d1be46ffbdf37d7236867e528e7642e5781a3
+#9 exporting manifest list sha256:58278fd13d67acebe3d7d6216b9d1be46ffbdf37d7236867e528e7642e5781a3 0.0s done
+#9 naming to docker.io/library/fvpn-w1-netlab-f22-b:lab done
+#9 unpacking to docker.io/library/fvpn-w1-netlab-f22-b:lab 0.0s done
+#9 DONE 0.1s

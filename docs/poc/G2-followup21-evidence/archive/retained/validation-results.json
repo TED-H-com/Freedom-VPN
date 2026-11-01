@@ -1,0 +1,199 @@
+{
+  "test_only": true,
+  "required_gates": [
+    {
+      "gate": "lane-final2",
+      "command": [
+        "make",
+        "-f",
+        "mk/netlab.mk",
+        "netlab-lint",
+        "netlab-unit",
+        "netlab-build",
+        "FVPN_LAB_PREFIX=fvpn-w1-netlab-f21"
+      ],
+      "exit": 0,
+      "seconds": 1.376,
+      "completed": "2026-10-31T19:45:05.036381+00:00",
+      "output_tail": [
+        "ok  \tgithub.com/TED-H-com/Freedom-VPN/node/enforce\t(cached)",
+        "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab\t(cached)",
+        ".................",
+        "----------------------------------------------------------------------",
+        "Ran 17 tests in 0.004s",
+        "",
+        "OK"
+      ]
+    },
+    {
+      "gate": "lab-final",
+      "command": [
+        "python3",
+        "tests/netlab/scripts/disktmp.py",
+        "env",
+        "FVPN_NETLAB=1",
+        "FVPN_NETLAB_F21=1",
+        "FVPN_LAB_PREFIX=fvpn-w1-netlab-f21",
+        "FVPN_NETLAB_EVIDENCE_DIR=docs/poc/G2-followup21-evidence/lab",
+        "go",
+        "test",
+        "-tags",
+        "netlab",
+        "-count=1",
+        "-timeout",
+        "10m",
+        "-p",
+        "1",
+        "-parallel",
+        "1",
+        "-v",
+        "./tests/netlab",
+        "-run",
+        "TestAT10_AT13_ReloadRevokeBaseline|TestD104_AT13_DeadlineContinuity|TestF21_"
+      ],
+      "exit": 0,
+      "seconds": 40.546,
+      "completed": "2026-10-31T19:46:31.721480+00:00",
+      "output_tail": [
+        "        ",
+        "--- PASS: TestF21_AT02_RollbackSibling (2.71s)",
+        "=== RUN   TestF21_AT09_IPv6Underlay",
+        "    scenario_f21_test.go:59: {\"attempts\": 1, \"rows\": [{\"role\": \"member\", \"read_bytes\": 64387, \"write_bytes\": 64108, \"complete_lines\": 64, \"partial_line_bytes\": 0, \"error\": \"none\", \"local_port\": 33526, \"elapsed_ms\": 4.479, \"validated_bytes\": 64064, \"attempt\": 0, \"member_underlay_mtu\": 1500, \"underlay_family\": \"ipv6\", \"overlay_family\": \"ipv4\"}, {\"role\": \"member\", \"read_bytes\": 10063, \"write_bytes\": 64108, \"complete_lines\": 10, \"partial_line_bytes\": 0, \"error\": \"TimeoutError\", \"local_port\": 33530, \"elapsed_ms\": 12012.403, \"validated_bytes\": 10010, \"attempt\": 1, \"member_underlay_mtu\": 1280, \"underlay_family\": \"ipv6\", \"overlay_family\": \"ipv4\"}]}",
+        "        ",
+        "--- PASS: TestF21_AT09_IPv6Underlay (13.63s)",
+        "PASS",
+        "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab\t40.317s"
+      ]
+    },
+    {
+      "gate": "committed-evidence",
+      "command": [
+        "python3",
+        "tests/netlab/scripts/disktmp.py",
+        "go",
+        "test",
+        "-count=1",
+        "-v",
+        "./tests/netlab",
+        "-run",
+        "TestD098_|TestCommittedEvidenceFiles_ValidAndHygieneClean"
+      ],
+      "exit": 0,
+      "seconds": 0.256,
+      "completed": "2026-10-31T19:52:28.093451+00:00",
+      "output_tail": [
+        "    --- PASS: TestD098_EvidencePinValidation/absolute_path (0.00s)",
+        "    --- PASS: TestD098_EvidencePinValidation/empty_manifest (0.00s)",
+        "    --- PASS: TestD098_EvidencePinValidation/malformed_JSON (0.00s)",
+        "    --- PASS: TestD098_EvidencePinValidation/wrong_byte_length (0.00s)",
+        "    --- PASS: TestD098_EvidencePinValidation/duplicate_target (0.00s)",
+        "    --- PASS: TestD098_EvidencePinValidation/checks_later_entries (0.00s)",
+        "PASS",
+        "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab\t0.078s"
+      ]
+    },
+    {
+      "gate": "handover",
+      "command": [
+        "python3",
+        "tests/netlab/scripts/disktmp.py",
+        "go",
+        "test",
+        "-count=1",
+        "./tests/handover/..."
+      ],
+      "exit": 0,
+      "seconds": 1.647,
+      "completed": "2026-10-31T19:52:35.261302+00:00",
+      "output_tail": [
+        "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/handover\t0.435s"
+      ]
+    },
+    {
+      "gate": "root-go-lint",
+      "command": [
+        "python3",
+        "tests/netlab/scripts/disktmp.py",
+        "make",
+        "go-lint",
+        "go-with-disk-tmp="
+      ],
+      "exit": 0,
+      "seconds": 5.624,
+      "completed": "2026-10-31T19:53:02.488785+00:00",
+      "output_tail": []
+    },
+    {
+      "gate": "vet",
+      "command": [
+        "python3",
+        "tests/netlab/scripts/disktmp.py",
+        "go",
+        "vet",
+        "./..."
+      ],
+      "exit": 0,
+      "seconds": 0.63,
+      "completed": "2026-10-31T19:53:14.732471+00:00",
+      "output_tail": []
+    },
+    {
+      "gate": "format",
+      "command": [
+        "bash",
+        "-c",
+        "test -z \"$(gofmt -l $(git ls-files '*.go'))\""
+      ],
+      "exit": 0,
+      "seconds": 0.084,
+      "completed": "2026-10-31T19:53:19.860533+00:00",
+      "output_tail": []
+    },
+    {
+      "gate": "diff-check",
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit": 0,
+      "seconds": 0.004,
+      "completed": "2026-10-31T19:53:19.884125+00:00",
+      "output_tail": []
+    }
+  ],
+  "initial_failed_run": {
+    "gate": "lab",
+    "command": [
+      "python3",
+      "tests/netlab/scripts/disktmp.py",
+      "env",
+      "FVPN_NETLAB=1",
+      "FVPN_NETLAB_F21=1",
+      "FVPN_LAB_PREFIX=fvpn-w1-netlab-f21",
+      "FVPN_NETLAB_EVIDENCE_DIR=docs/poc/G2-followup21-evidence/lab",
+      "go",
+      "test",
+      "-tags",
+      "netlab",
+      "-count=1",
+      "-timeout",
+      "10m",
+      "-p",
+      "1",
+      "-parallel",
+      "1",
+      "-v",
+      "./tests/netlab",
+      "-run",
+      "TestAT10_AT13_ReloadRevokeBaseline|TestD104_AT13_DeadlineContinuity|TestF21_"
+    ],
+    "exit": 1,
+    "seconds": 28.403,
+    "completed": "2026-10-31T19:43:59.844098+00:00",
+    "interpretation": "Initial diagnostics rejected capture drops. Retained, not superseded as a pass; fresh capture instrumentation changed only buffer/snaplen/filter and packet matching metadata."
+  },
+  "final_required_gates_pass": true,
+  "cleanup": "cleanup-inventory.json",
+  "scratch": "Python-owned unique disk TMPDIR/GOTMPDIR under .agent/tmp; GOCACHE obtained from go env GOCACHE; no shell cleanup traps"
+}

@@ -1,0 +1,236 @@
+=== RUN   TestAT00_Topology
+SUMMARY AT00 handshakes=5 forward=1 baseline=1
+--- PASS: TestAT00_Topology (0.10s)
+=== RUN   TestAT10_AT13_ReloadRevokeBaseline
+AT10 regen 1025 a1=2054 a2=0
+AT10 regen 1050 a1=3874 a2=0
+AT10 regen 1075 a1=6870 a2=0
+AT10 regen 1100 a1=7914 a2=0
+    scenario_at10_test.go:96: ISO-F6-03: 101 Apply/guard/verifier/precision producer snapshots match executor brackets
+    scenario_at10_test.go:96:
+        AT10 PASS under D-120
+        datagram | generation | bracket start ns | bracket end ns | upper ms | render-installed ms | classification | next datagram | failures
+        49 | 1075 | 1793505747353028114 | 1793505747390187651 | 37.158492 | 20.352560 | boundary | ok | none
+
+AT10 after kill
+name                             ns       proto  dst                    port   expect   observed       ok
+a1-stays-revoked                 fv-a1    tcp    203.0.113.10           80     deny     timeout        true
+a2-stays-up                      fv-a2    tcp    203.0.113.10           80     allow    connected      true
+lan-stays-denied                 fv-a2    tcp    10.1.2.10              80     deny     timeout        true
+probes=3 failed=0
+AT10 baseline
+name                             ns       proto  dst                    port   expect   observed       ok
+baseline-a2                      fv-a2    tcp    203.0.113.10           80     deny     timeout        true
+baseline-a1                      fv-a1    tcp    203.0.113.10           80     deny     timeout        true
+probes=2 failed=0
+SUMMARY AT10 regens=100 revoke_stop=1.686s deny_loops=17 hits=0 baseline_forwarding=off
+--- PASS: TestAT10_AT13_ReloadRevokeBaseline (21.27s)
+=== RUN   TestAT11_IPv6Blocked
+AT11 native
+name                             ns       proto  dst                    port   expect   observed       ok
+a1-v6-global-tcp                 fv-a1    tcp6   2001:db8:203::10       80     deny     timeout        true
+a1-v6-global-icmp                fv-a1    icmp6  2001:db8:203::10       0      deny     timeout        true
+a1-v6-ula                        fv-a1    icmp6  fd00:db8:ffff::10      0      deny     timeout        true
+a1-v6-doc                        fv-a1    icmp6  2001:db8::10           0      deny     timeout        true
+a1-v6-linklocal                  fv-a1    icmp6  fe80::10               0      deny     timeout        true
+a1-v6-mapped-inet                fv-a1    tcp6   ::ffff:203.0.113.10    80     deny     unreachable    true
+a1-v6-mapped-lan                 fv-a1    tcp6   ::ffff:10.1.2.10       80     deny     unreachable    true
+probes=7 failed=0
+AT11 raw6
+name                             ns       proto  dst                    port   expect   observed       ok
+raw-global                       fv-fwd   raw6   2001:db8:203::10       9      sent     sent           true
+raw-ula                          fv-fwd   raw6   fd00:db8:ffff::10      9      sent     sent           true
+raw-linklocal                    fv-fwd   raw6   fe80::10               9      sent     sent           true
+raw-mapped-lan                   fv-fwd   raw6   ::ffff:10.1.2.10       9      sent     sent           true
+probes=4 failed=0
+SUMMARY AT11 ctv6_delta=3 targets_empty=1 mode=block
+--- PASS: TestAT11_IPv6Blocked (2.70s)
+=== RUN   TestAT12_ISO01_ISO04_AllowDeny
+AT12 deny
+name                             ns       proto  dst                    port   expect   observed       ok
+a1-to-a2                         fv-a1    tcp    100.64.1.2             8080   deny     timeout        true
+a1-to-b1                         fv-a1    tcp    100.64.2.1             8080   deny     timeout        true
+a1-to-overlay                    fv-a1    tcp    100.64.5.5             80     deny     timeout        true
+a1-ssh                           fv-a1    tcp    192.0.2.33             2222   deny     timeout        true
+a1-api                           fv-a1    tcp    192.0.2.37             8443   deny     timeout        true
+a1-lan-gw                        fv-a1    tcp    192.168.0.1            80     deny     timeout        true
+a1-rfc1918-192                   fv-a1    tcp    192.168.10.10          80     deny     timeout        true
+a1-rfc1918-10                    fv-a1    tcp    10.1.2.10              80     deny     timeout        true
+a1-rfc1918-172                   fv-a1    tcp    172.16.5.10            80     deny     timeout        true
+a1-metadata                      fv-a1    tcp    169.254.169.254        80     deny     timeout        true
+a1-linklocal                     fv-a1    tcp    169.254.1.50           80     deny     timeout        true
+a1-public-prefix-private         fv-a1    tcp    192.0.2.200            80     deny     timeout        true
+a1-resolver-http                 fv-a1    tcp    198.51.100.53          8080   deny     timeout        true
+a1-resolver-icmp                 fv-a1    icmp   198.51.100.53          0      deny     timeout        true
+rogue-internet                   fv-rogue tcp    203.0.113.10           80     deny     timeout        true
+spoof-internet                   fv-fwd   icmp   203.0.113.10           0      deny     timeout        true
+loopback-inject                  fv-fwd   raw4   127.0.0.1              9      sent     sent           true
+probes=17 failed=0
+AT12 dns
+name                             ns       proto  dst                    port   expect   observed       ok
+a1-dns-udp                       fv-a1    dns    198.51.100.53          53     allow    reply          true
+a1-dns-tcp                       fv-a1    tcp    198.51.100.53          53     allow    connected      true
+probes=2 failed=0
+AT12 allow
+name                             ns       proto  dst                    port   expect   observed       ok
+a1-tcp                           fv-a1    tcp    203.0.113.10           80     allow    connected      true
+a1-udp                           fv-a1    udp    203.0.113.10           9000   allow    reply          true
+a1-icmp                          fv-a1    icmp   203.0.113.10           0      allow    reply          true
+a2-tcp                           fv-a2    tcp    203.0.113.10           80     allow    connected      true
+b1-tcp                           fv-b1    tcp    203.0.113.10           80     allow    connected      true
+probes=5 failed=0
+SUMMARY AT12 deny_diag=8 dns_upload=271 a1_upload=8958 admitted=3
+--- PASS: TestAT12_ISO01_ISO04_AllowDeny (3.78s)
+=== RUN   TestAT14_MTR01_MTR02_CountOnce
+metering=forward_admission_v1 dns=dns_service_v1 diagnostic=diagnostic_v1
+reference=tcpdump -v on member fv-wg0, sum of IP total length (inner). ip -s link on fv-wg0 counts ciphertext on this kernel and is not the inner layer. underlay fv-a1u is not usage.
+udp payload_sent=480000 payload_got=480000 nft_up=491200 inner_up=491200 pkts_up=400 dev_up=0.0000 nft_down=491200 inner_down=491200 pkts_down=400 dev_down=0.0000 wg_up=505600 wg_down=505600 underlay_tx=522400
+tcp payload_sent=80000 payload_got=80000 nft_up=84064 inner_up=84064 pkts_up=78 dev_up=0.0000 nft_down=84012 inner_down=84012 pkts_down=77 dev_down=0.0000 wg_up=86796 wg_down=86696 underlay_tx=90114
+dns_upload_delta=381 usage_upload_delta=0
+deny_ctdeny_delta=0
+host_control_usage_delta=0
+reset_reported=u_019a00000000700080000000000000a1 reason=METER_EPOCH_CHANGE
+SUMMARY AT14 udp_up_dev=0.0000 udp_down_dev=0.0000 tcp_up_dev=0.0000 tcp_down_dev=0.0000 dns_separate=1 reset_reported=1
+--- PASS: TestAT14_MTR01_MTR02_CountOnce (4.28s)
+=== RUN   TestAT18_FUP02_QoS
+TEST ONLY R=20Mbit C=20Mbit warm=5s measure=20s reps=1
+shared_upload rep=1 mbps=20.00 ratio=1.000 drops=0 cpu=14.7 host_mbps=0.00
+shared_download rep=1 mbps=20.00 ratio=1.000 drops=0 cpu=13.4
+shared_both rep=1 up_mbps=20.00 up_ratio=1.000 down_mbps=20.00 down_ratio=1.000
+contend rep=1 a=0.500 b=0.500 sum=1.000 drops=0 cpu=13.3
+rate_change minor_a=1:2f minor_b=1:30 bytes_kept=177950057
+member_removed orphan_minor=1:30 absent=1
+SUMMARY AT18 qos windows passed R=20Mbit
+--- PASS: TestAT18_FUP02_QoS (117.76s)
+=== RUN   TestAT29_LeaseTimeout
+=== RUN   TestAT29_LeaseTimeout/offline_cap_is_earliest
+=== RUN   TestAT29_LeaseTimeout/timeout_ceil_clamps_backward_clock
+=== RUN   TestAT29_LeaseTimeout/kernel_set_timeout
+stop_after=8.811s admitted=3
+clock_step=skipped reason=child time namespace is not an isolated clock container=time:[4026534016] child=time:[4026533207]
+SUMMARY AT29 stop_after=8.811s resume=1
+--- PASS: TestAT29_LeaseTimeout (10.02s)
+    --- PASS: TestAT29_LeaseTimeout/offline_cap_is_earliest (0.00s)
+    --- PASS: TestAT29_LeaseTimeout/timeout_ceil_clamps_backward_clock (0.00s)
+    --- PASS: TestAT29_LeaseTimeout/kernel_set_timeout (10.02s)
+=== RUN   TestD104_AT13_DeadlineContinuity
+    scenario_deadline_test.go:78: D104: granularity=1ms bound=100ms Apply->installed<=23.498663ms render->installed<=9.638484ms last_positive=-100.737581ms first_drop=-757.368µs positives=26 drops=7 precise_read=1.21685ms
+--- PASS: TestD104_AT13_DeadlineContinuity (3.81s)
+=== RUN   TestProbe_DNSAcceptBound
+probe dns accept
+name                             ns       proto  dst                    port   expect   observed       ok
+dns-udp                          fv-probe dns    198.51.100.53          53     allow    reply          true
+dns-tcp                          fv-probe tcp    198.51.100.53          53     allow    connected      true
+resolver-tcp-80                  fv-probe tcp    198.51.100.53          80     deny     timeout        true
+resolver-udp-853                 fv-probe udp    198.51.100.53          853    deny     timeout        true
+lan-tcp-53                       fv-probe tcp    10.1.2.10              53     deny     timeout        true
+lan-tcp-9                        fv-probe tcp    10.1.2.10              9      deny     timeout        true
+lan-udp-53                       fv-probe dns    10.1.2.10              53     deny     timeout        true
+sixto4-tcp-53                    fv-probe tcp    192.88.99.1            53     deny     timeout        true
+sixto4-udp-80                    fv-probe udp    192.88.99.1            80     deny     timeout        true
+sibling-dns                      fv-probe dns    198.51.100.53          53     deny     timeout        true
+probes=10 failed=0
+probe dns while live
+name                             ns       proto  dst                    port   expect   observed       ok
+dns-while-live                   fv-probe dns    198.51.100.53          53     allow    reply          true
+probes=1 failed=0
+probe dns after expiry
+name                             ns       proto  dst                    port   expect   observed       ok
+dns-after-expiry                 fv-probe dns    198.51.100.53          53     deny     timeout        true
+dns-tcp-after-expiry             fv-probe tcp    198.51.100.53          53     deny     timeout        true
+probes=2 failed=0
+SUMMARY DNS-ACCEPT tcp53=1 udp53=1 other_port=2 other_denied=5 sibling=1 expired=1 ruleset_narrow=1 capture=0
+--- PASS: TestProbe_DNSAcceptBound (15.15s)
+=== RUN   TestAT09_F802_MTU1280Measurement
+    scenario_f802_test.go:17: F8-02: set FVPN_NETLAB_MTU=1 on a fresh topology for the MTU measurement
+--- SKIP: TestAT09_F802_MTU1280Measurement (0.01s)
+=== RUN   TestForeign_TableBeforeFvpn
+    scenario_foreign_test.go:92: SUMMARY FOREIGN accept_ctunku=1 accept_uplink=0 verdict=ISOLATION_POLICY_INVALID mangle_exit=3 table_kept=1 recovered=1
+SUMMARY FOREIGN accept_ctunku=1 accept_uplink=0 verdict=ISOLATION_POLICY_INVALID mangle_exit=3 table_kept=1 recovered=1
+--- PASS: TestForeign_TableBeforeFvpn (1.90s)
+=== RUN   TestIngress_InjectedMemberFrames
+SUMMARY INGRESS fv-fh=veth-mirred type=1 nonadmitted_ctunku=1 nonadmitted_uplink=0 admitted_u_019a00000000700080000000000000a1=1 admitted_uplink=1 afpacket_ctunku=0 raw_tun=1 raw_veth=1 wg_separate=2 wg_ctunku=0
+--- PASS: TestIngress_InjectedMemberFrames (4.82s)
+=== RUN   TestISO_F6_InterfaceApply
+--- PASS: TestISO_F6_InterfaceApply (2.96s)
+=== RUN   TestDockerDNS_LoopbackScopedServes
+    scenario_loopback_test.go:74: SUMMARY LOOPBACK dns=1 serving=1 class=loopback_scoped postrouting_saddr=2 postrouting_daddr=1 ctunku=1 uplink=0
+SUMMARY LOOPBACK dns=1 serving=1 class=loopback_scoped postrouting_saddr=2 postrouting_daddr=1 ctunku=1 uplink=0
+--- PASS: TestDockerDNS_LoopbackScopedServes (1.24s)
+=== RUN   TestNetBird_InterferenceFailClosed
+netbird accept-all inner
+name                             ns       proto  dst                    port   expect   observed       ok
+nb-allow                         fv-a1    tcp    203.0.113.10           80     allow    connected      true
+nb-member                        fv-a1    tcp    100.64.1.2             8080   deny     timeout        true
+nb-lan                           fv-a1    tcp    10.1.2.10              80     deny     timeout        true
+nb-meta                          fv-a1    tcp    169.254.169.254        80     deny     timeout        true
+nb-rogue                         fv-rogue tcp    203.0.113.10           80     deny     timeout        true
+probes=5 failed=0
+netbird masquerade
+name                             ns       proto  dst                    port   expect   observed       ok
+masq-a1                          fv-a1    tcp    203.0.113.10           80     deny     timeout        true
+masq-b1                          fv-b1    icmp   203.0.113.10           0      deny     timeout        true
+probes=2 failed=0
+netbird off
+name                             ns       proto  dst                    port   expect   observed       ok
+restored                         fv-a1    tcp    203.0.113.10           80     allow    connected      true
+probes=1 failed=0
+netbird accept-all inner
+name                             ns       proto  dst                    port   expect   observed       ok
+nb-allow                         fv-a1    tcp    203.0.113.10           80     allow    connected      true
+nb-member                        fv-a1    tcp    100.64.1.2             8080   deny     timeout        true
+nb-lan                           fv-a1    tcp    10.1.2.10              80     deny     timeout        true
+nb-meta                          fv-a1    tcp    169.254.169.254        80     deny     timeout        true
+nb-rogue                         fv-rogue tcp    203.0.113.10           80     deny     timeout        true
+probes=5 failed=0
+netbird masquerade
+name                             ns       proto  dst                    port   expect   observed       ok
+masq-a1                          fv-a1    tcp    203.0.113.10           80     deny     timeout        true
+masq-b1                          fv-b1    icmp   203.0.113.10           0      deny     timeout        true
+probes=2 failed=0
+netbird off
+name                             ns       proto  dst                    port   expect   observed       ok
+restored                         fv-a1    tcp    203.0.113.10           80     allow    connected      true
+probes=1 failed=0
+mark_pre=5 mark_post=5 preserved=1
+SUMMARY NetBird inner_accept_blocked=1 masquerade_fail_closed=1 marks=mark_pre=5 mark_post=5 preserved=1
+--- PASS: TestNetBird_InterferenceFailClosed (3.00s)
+=== RUN   TestProbe_BaselineException
+probe positive
+name                             ns       proto  dst                    port   expect   observed       ok
+probe-ok                         fv-probe tcp    203.0.113.10           80     allow    connected      true
+probes=1 failed=0
+probe negative
+name                             ns       proto  dst                    port   expect   observed       ok
+neg-a-sibling                    fv-probe tcp    203.0.113.10           80     deny     timeout        true
+neg-b-dest                       fv-probe tcp    203.0.113.20           80     deny     timeout        true
+neg-b-port                       fv-probe tcp    203.0.113.10           9001   deny     timeout        true
+neg-c-admin                      fv-probe tcp    192.0.2.37             22     deny     timeout        true
+probes=4 failed=0
+probe expired
+name                             ns       proto  dst                    port   expect   observed       ok
+neg-d-expired                    fv-probe tcp    203.0.113.10           80     deny     timeout        true
+probes=1 failed=0
+probe dns
+name                             ns       proto  dst                    port   expect   observed       ok
+dns-udp                          fv-probe dns    198.51.100.53          53     allow    reply          true
+dns-tcp                          fv-probe tcp    198.51.100.53          53     allow    connected      true
+dns-other-port                   fv-probe tcp    198.51.100.53          80     deny     timeout        true
+dns-other-dest                   fv-probe tcp    203.0.113.10           53     deny     timeout        true
+dns-other-udp                    fv-probe dns    203.0.113.10           53     deny     timeout        true
+probes=5 failed=0
+SUMMARY PROBE snat=1 up=5 down=3 neg=4 expired=1 dns_only_53=1
+--- PASS: TestProbe_BaselineException (14.16s)
+=== RUN   TestRevoke_RulesetStopsEstablished
+revoke flow neighbors
+name                             ns       proto  dst                    port   expect   observed       ok
+a2-still                         fv-a2    tcp    203.0.113.10           80     allow    connected      true
+a1-denied                        fv-a1    tcp    203.0.113.10           80     deny     timeout        true
+probes=2 failed=0
+SUMMARY REVOKE-FLOW decision=ruleset-stops serving=4101 conntrack_kept=1 uplink=0 return=0 ctunku=4 ctunkd=4 injected=4 sport=41547 reply=41547
+--- PASS: TestRevoke_RulesetStopsEstablished (4.17s)
+=== RUN   TestISO_F6_01_ForeignRemovalNewGeneration
+    scenario_tc_recovery_test.go:138: 31 rejected 2026-11-01T04:05:46.673542492Z -> foreign removed: GENERATION_MISMATCH -> Apply 32 verified 2026-11-01T04:05:47.698967161Z; TC_FOREIGN_FILTER absent, marker cleared, member probe passed after lab route reconciliation
+--- PASS: TestISO_F6_01_ForeignRemovalNewGeneration (1.89s)
+PASS
+ok  	github.com/TED-H-com/Freedom-VPN/tests/netlab	213.035s

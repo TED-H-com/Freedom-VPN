@@ -1,0 +1,618 @@
+docs/poc/G2-followup22-evidence/initial-rejected/A1-live/live/TestAT10_AT13_ReloadRevokeBaseline/at10-node.txt:483: new blank line at EOF.
+docs/poc/G2-followup22-evidence/initial-rejected/A1-live/live/TestAT10_AT13_ReloadRevokeBaseline/at10-origin.txt:243: new blank line at EOF.
+docs/poc/G2-followup22-evidence/initial-rejected/A1-live/live/TestAT10_AT13_ReloadRevokeBaseline/at10-responder.txt:241: new blank line at EOF.
+docs/poc/G2-followup22-evidence/initial-rejected/A1-live/live/TestAT12_ISO01_ISO04_AllowDeny/tc-ih.txt:1: trailing whitespace.
++class htb 1:1 root rate 200Mbit ceil 200Mbit burst 250000b cburst 250000b
+docs/poc/G2-followup22-evidence/initial-rejected/A1-live/live/TestAT12_ISO01_ISO04_AllowDeny/tc-ih.txt:2: trailing whitespace.
++class htb 1:fffe parent 1:1 prio 0 rate 5Mbit ceil 200Mbit burst 250000b cburst 250000b
+docs/poc/G2-followup22-evidence/initial-rejected/A1-live/live/TestAT12_ISO01_ISO04_AllowDeny/tc-ih.txt:3: trailing whitespace.
++class htb 1:30 parent 1:1 leaf 30: prio 1 rate 50Mbit ceil 50Mbit burst 62500b cburst 62500b
+docs/poc/G2-followup22-evidence/initial-rejected/A1-live/live/TestAT12_ISO01_ISO04_AllowDeny/tc-ih.txt:4: trailing whitespace.
++class htb 1:2f parent 1:1 leaf 2f: prio 1 rate 50Mbit ceil 50Mbit burst 62500b cburst 62500b
+docs/poc/G2-followup22-evidence/initial-rejected/A1-live/live/TestAT12_ISO01_ISO04_AllowDeny/tc-ih.txt:5: trailing whitespace.
++class fq_codel 2f:17f parent 2f:
+docs/poc/G2-followup22-evidence/initial-rejected/A1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:1: trailing whitespace.
++class htb 1:1 root rate 20Mbit ceil 20Mbit burst 25000b cburst 25000b
+docs/poc/G2-followup22-evidence/initial-rejected/A1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:2: trailing whitespace.
++ Sent 145132677 bytes 189424 pkt (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/initial-rejected/A1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:7: trailing whitespace.
++class htb 1:fffe parent 1:1 prio 0 rate 1Mbit ceil 20Mbit burst 25000b cburst 25000b
+docs/poc/G2-followup22-evidence/initial-rejected/A1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:8: trailing whitespace.
++ Sent 768 bytes 12 pkt (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/initial-rejected/A1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:13: trailing whitespace.
++class htb 1:2f parent 1:1 leaf 2f: prio 1 rate 10Mbit ceil 10Mbit burst 12500b cburst 12500b
+docs/poc/G2-followup22-evidence/initial-rejected/A1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:14: trailing whitespace.
++ Sent 144091319 bytes 174197 pkt (dropped 0, overlimits 124956 requeues 0)
+docs/poc/G2-followup22-evidence/initial-rejected/A1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:19: trailing whitespace.
++class fq_codel 2f:219 parent 2f:
+docs/poc/G2-followup22-evidence/initial-rejected/A1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:20: trailing whitespace.
++ (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/initial-rejected/A1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:23: trailing whitespace.
++class fq_codel 2f:2cb parent 2f:
+docs/poc/G2-followup22-evidence/initial-rejected/A1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:24: trailing whitespace.
++ (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/initial-rejected/A1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:27: trailing whitespace.
++class fq_codel 2f:3cb parent 2f:
+docs/poc/G2-followup22-evidence/initial-rejected/A1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:28: trailing whitespace.
++ (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/initial-rejected/A1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:31: trailing whitespace.
++class fq_codel 2f:3cf parent 2f:
+docs/poc/G2-followup22-evidence/initial-rejected/A1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:32: trailing whitespace.
++ (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/initial-rejected/A1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:1: trailing whitespace.
++class htb 1:1 root rate 20Mbit ceil 20Mbit burst 25000b cburst 25000b
+docs/poc/G2-followup22-evidence/initial-rejected/A1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:2: trailing whitespace.
++ Sent 212998089 bytes 206472 pkt (dropped 0, overlimits 4884 requeues 0)
+docs/poc/G2-followup22-evidence/initial-rejected/A1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:7: trailing whitespace.
++class htb 1:fffe parent 1:1 prio 0 rate 1Mbit ceil 20Mbit burst 25000b cburst 25000b
+docs/poc/G2-followup22-evidence/initial-rejected/A1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:8: trailing whitespace.
++ Sent 524 bytes 9 pkt (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/initial-rejected/A1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:13: trailing whitespace.
++class htb 1:2f parent 1:1 leaf 2f: prio 1 rate 10Mbit ceil 10Mbit burst 12500b cburst 12500b
+docs/poc/G2-followup22-evidence/initial-rejected/A1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:14: trailing whitespace.
++ Sent 177969991 bytes 182014 pkt (dropped 0, overlimits 125219 requeues 0)
+docs/poc/G2-followup22-evidence/initial-rejected/A1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:19: trailing whitespace.
++class fq_codel 2f:65 parent 2f:
+docs/poc/G2-followup22-evidence/initial-rejected/A1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:20: trailing whitespace.
++ (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/initial-rejected/A1-live/live/TestAT29_LeaseTimeout/kernel_set_timeout/lease.txt:2: trailing whitespace.
++clock_step=skipped reason=child time namespace is not an isolated clock container=time:[4026534017] child=time:[4026533208]
+docs/poc/G2-followup22-evidence/initial-rejected/A1-live/live/TestISO_F6_InterfaceApply/interface-apply.txt:39: new blank line at EOF.
+docs/poc/G2-followup22-evidence/initial-rejected/A1-live/live/TestProbe_BaselineException/snat.txt:6: new blank line at EOF.
+docs/poc/G2-followup22-evidence/prior-candidate/A1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/agent-at10-node.txt:681: new blank line at EOF.
+docs/poc/G2-followup22-evidence/prior-candidate/A1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/agent-at10-origin.txt:341: new blank line at EOF.
+docs/poc/G2-followup22-evidence/prior-candidate/A1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/agent-at10-responder.txt:341: new blank line at EOF.
+docs/poc/G2-followup22-evidence/prior-candidate/A1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/baseline-observation.json:2: new blank line at EOF.
+docs/poc/G2-followup22-evidence/prior-candidate/A1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/final-observation.json:2: new blank line at EOF.
+docs/poc/G2-followup22-evidence/prior-candidate/A1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/marker-observation.json:2: new blank line at EOF.
+docs/poc/G2-followup22-evidence/prior-candidate/A1-live/live/TestAT10_AT13_ReloadRevokeBaseline/at10-node.txt:451: new blank line at EOF.
+docs/poc/G2-followup22-evidence/prior-candidate/A1-live/live/TestAT10_AT13_ReloadRevokeBaseline/at10-origin.txt:227: new blank line at EOF.
+docs/poc/G2-followup22-evidence/prior-candidate/A1-live/live/TestAT10_AT13_ReloadRevokeBaseline/at10-responder.txt:225: new blank line at EOF.
+docs/poc/G2-followup22-evidence/prior-candidate/A1-live/live/TestAT12_ISO01_ISO04_AllowDeny/tc-ih.txt:1: trailing whitespace.
++class htb 1:1 root rate 200Mbit ceil 200Mbit burst 250000b cburst 250000b
+docs/poc/G2-followup22-evidence/prior-candidate/A1-live/live/TestAT12_ISO01_ISO04_AllowDeny/tc-ih.txt:2: trailing whitespace.
++class htb 1:fffe parent 1:1 prio 0 rate 5Mbit ceil 200Mbit burst 250000b cburst 250000b
+docs/poc/G2-followup22-evidence/prior-candidate/A1-live/live/TestAT12_ISO01_ISO04_AllowDeny/tc-ih.txt:3: trailing whitespace.
++class htb 1:30 parent 1:1 leaf 30: prio 1 rate 50Mbit ceil 50Mbit burst 62500b cburst 62500b
+docs/poc/G2-followup22-evidence/prior-candidate/A1-live/live/TestAT12_ISO01_ISO04_AllowDeny/tc-ih.txt:4: trailing whitespace.
++class htb 1:2f parent 1:1 leaf 2f: prio 1 rate 50Mbit ceil 50Mbit burst 62500b cburst 62500b
+docs/poc/G2-followup22-evidence/prior-candidate/A1-live/live/TestAT12_ISO01_ISO04_AllowDeny/tc-ih.txt:5: trailing whitespace.
++class fq_codel 2f:a9 parent 2f:
+docs/poc/G2-followup22-evidence/prior-candidate/A1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:1: trailing whitespace.
++class htb 1:1 root rate 20Mbit ceil 20Mbit burst 25000b cburst 25000b
+docs/poc/G2-followup22-evidence/prior-candidate/A1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:2: trailing whitespace.
++ Sent 145138395 bytes 189531 pkt (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/prior-candidate/A1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:7: trailing whitespace.
++class htb 1:fffe parent 1:1 prio 0 rate 1Mbit ceil 20Mbit burst 25000b cburst 25000b
+docs/poc/G2-followup22-evidence/prior-candidate/A1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:8: trailing whitespace.
++ Sent 642 bytes 9 pkt (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/prior-candidate/A1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:13: trailing whitespace.
++class htb 1:2f parent 1:1 leaf 2f: prio 1 rate 10Mbit ceil 10Mbit burst 12500b cburst 12500b
+docs/poc/G2-followup22-evidence/prior-candidate/A1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:14: trailing whitespace.
++ Sent 144091558 bytes 174229 pkt (dropped 0, overlimits 124763 requeues 0)
+docs/poc/G2-followup22-evidence/prior-candidate/A1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:19: trailing whitespace.
++class fq_codel 2f:21d parent 2f:
+docs/poc/G2-followup22-evidence/prior-candidate/A1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:20: trailing whitespace.
++ (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/prior-candidate/A1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:1: trailing whitespace.
++class htb 1:1 root rate 20Mbit ceil 20Mbit burst 25000b cburst 25000b
+docs/poc/G2-followup22-evidence/prior-candidate/A1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:2: trailing whitespace.
++ Sent 212979457 bytes 206442 pkt (dropped 0, overlimits 4884 requeues 0)
+docs/poc/G2-followup22-evidence/prior-candidate/A1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:7: trailing whitespace.
++class htb 1:fffe parent 1:1 prio 0 rate 1Mbit ceil 20Mbit burst 25000b cburst 25000b
+docs/poc/G2-followup22-evidence/prior-candidate/A1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:8: trailing whitespace.
++ Sent 524 bytes 9 pkt (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/prior-candidate/A1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:13: trailing whitespace.
++class htb 1:2f parent 1:1 leaf 2f: prio 1 rate 10Mbit ceil 10Mbit burst 12500b cburst 12500b
+docs/poc/G2-followup22-evidence/prior-candidate/A1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:14: trailing whitespace.
++ Sent 177950057 bytes 181985 pkt (dropped 0, overlimits 125514 requeues 0)
+docs/poc/G2-followup22-evidence/prior-candidate/A1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:19: trailing whitespace.
++class fq_codel 2f:51 parent 2f:
+docs/poc/G2-followup22-evidence/prior-candidate/A1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:20: trailing whitespace.
++ (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/prior-candidate/A1-live/live/TestAT29_LeaseTimeout/kernel_set_timeout/lease.txt:2: trailing whitespace.
++clock_step=skipped reason=child time namespace is not an isolated clock container=time:[4026534016] child=time:[4026533207]
+docs/poc/G2-followup22-evidence/prior-candidate/A1-live/live/TestISO_F6_InterfaceApply/interface-apply.txt:39: new blank line at EOF.
+docs/poc/G2-followup22-evidence/prior-candidate/A1-live/live/TestProbe_BaselineException/snat.txt:6: new blank line at EOF.
+docs/poc/G2-followup22-evidence/prior-candidate/B1-live/live/TestAT10_AT13_ReloadRevokeBaseline/at10-node.txt:593: new blank line at EOF.
+docs/poc/G2-followup22-evidence/prior-candidate/B1-live/live/TestAT10_AT13_ReloadRevokeBaseline/at10-origin.txt:297: new blank line at EOF.
+docs/poc/G2-followup22-evidence/prior-candidate/B1-live/live/TestAT10_AT13_ReloadRevokeBaseline/at10-responder.txt:297: new blank line at EOF.
+docs/poc/G2-followup22-evidence/prior-candidate/B1-live/live/TestAT12_ISO01_ISO04_AllowDeny/tc-ih.txt:1: trailing whitespace.
++class htb 1:1 root rate 200Mbit ceil 200Mbit burst 250000b cburst 250000b
+docs/poc/G2-followup22-evidence/prior-candidate/B1-live/live/TestAT12_ISO01_ISO04_AllowDeny/tc-ih.txt:2: trailing whitespace.
++class htb 1:fffe parent 1:1 prio 0 rate 5Mbit ceil 200Mbit burst 250000b cburst 250000b
+docs/poc/G2-followup22-evidence/prior-candidate/B1-live/live/TestAT12_ISO01_ISO04_AllowDeny/tc-ih.txt:3: trailing whitespace.
++class htb 1:30 parent 1:1 leaf 30: prio 1 rate 50Mbit ceil 50Mbit burst 62500b cburst 62500b
+docs/poc/G2-followup22-evidence/prior-candidate/B1-live/live/TestAT12_ISO01_ISO04_AllowDeny/tc-ih.txt:4: trailing whitespace.
++class htb 1:2f parent 1:1 leaf 2f: prio 1 rate 50Mbit ceil 50Mbit burst 62500b cburst 62500b
+docs/poc/G2-followup22-evidence/prior-candidate/B1-live/live/TestAT12_ISO01_ISO04_AllowDeny/tc-ih.txt:5: trailing whitespace.
++class fq_codel 2f:3d2 parent 2f:
+docs/poc/G2-followup22-evidence/prior-candidate/B1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:1: trailing whitespace.
++class htb 1:1 root rate 20Mbit ceil 20Mbit burst 25000b cburst 25000b
+docs/poc/G2-followup22-evidence/prior-candidate/B1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:2: trailing whitespace.
++ Sent 145148010 bytes 189560 pkt (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/prior-candidate/B1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:7: trailing whitespace.
++class htb 1:fffe parent 1:1 prio 0 rate 1Mbit ceil 20Mbit burst 25000b cburst 25000b
+docs/poc/G2-followup22-evidence/prior-candidate/B1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:8: trailing whitespace.
++ Sent 726 bytes 11 pkt (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/prior-candidate/B1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:13: trailing whitespace.
++class htb 1:2f parent 1:1 leaf 2f: prio 1 rate 10Mbit ceil 10Mbit burst 12500b cburst 12500b
+docs/poc/G2-followup22-evidence/prior-candidate/B1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:14: trailing whitespace.
++ Sent 144098289 bytes 174219 pkt (dropped 0, overlimits 124857 requeues 0)
+docs/poc/G2-followup22-evidence/prior-candidate/B1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:19: trailing whitespace.
++class fq_codel 2f:17 parent 2f:
+docs/poc/G2-followup22-evidence/prior-candidate/B1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:20: trailing whitespace.
++ (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/prior-candidate/B1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:23: trailing whitespace.
++class fq_codel 2f:5d parent 2f:
+docs/poc/G2-followup22-evidence/prior-candidate/B1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:24: trailing whitespace.
++ (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/prior-candidate/B1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:27: trailing whitespace.
++class fq_codel 2f:b2 parent 2f:
+docs/poc/G2-followup22-evidence/prior-candidate/B1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:28: trailing whitespace.
++ (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/prior-candidate/B1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:31: trailing whitespace.
++class fq_codel 2f:144 parent 2f:
+docs/poc/G2-followup22-evidence/prior-candidate/B1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:32: trailing whitespace.
++ (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/prior-candidate/B1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:35: trailing whitespace.
++class fq_codel 2f:1b8 parent 2f:
+docs/poc/G2-followup22-evidence/prior-candidate/B1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:36: trailing whitespace.
++ (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/prior-candidate/B1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:39: trailing whitespace.
++class fq_codel 2f:329 parent 2f:
+docs/poc/G2-followup22-evidence/prior-candidate/B1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:40: trailing whitespace.
++ (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/prior-candidate/B1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:1: trailing whitespace.
++class htb 1:1 root rate 20Mbit ceil 20Mbit burst 25000b cburst 25000b
+docs/poc/G2-followup22-evidence/prior-candidate/B1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:2: trailing whitespace.
++ Sent 212982789 bytes 206394 pkt (dropped 0, overlimits 4882 requeues 0)
+docs/poc/G2-followup22-evidence/prior-candidate/B1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:7: trailing whitespace.
++class htb 1:fffe parent 1:1 prio 0 rate 1Mbit ceil 20Mbit burst 25000b cburst 25000b
+docs/poc/G2-followup22-evidence/prior-candidate/B1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:8: trailing whitespace.
++ Sent 482 bytes 8 pkt (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/prior-candidate/B1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:13: trailing whitespace.
++class htb 1:2f parent 1:1 leaf 2f: prio 1 rate 10Mbit ceil 10Mbit burst 12500b cburst 12500b
+docs/poc/G2-followup22-evidence/prior-candidate/B1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:14: trailing whitespace.
++ Sent 177953429 bytes 181938 pkt (dropped 0, overlimits 125212 requeues 0)
+docs/poc/G2-followup22-evidence/prior-candidate/B1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:19: trailing whitespace.
++class fq_codel 2f:15 parent 2f:
+docs/poc/G2-followup22-evidence/prior-candidate/B1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:20: trailing whitespace.
++ (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/prior-candidate/B1-live/live/TestAT29_LeaseTimeout/kernel_set_timeout/lease.txt:2: trailing whitespace.
++clock_step=skipped reason=child time namespace is not an isolated clock container=time:[4026534013] child=time:[4026534148]
+docs/poc/G2-followup22-evidence/prior-candidate/B1-live/live/TestISO_F6_InterfaceApply/interface-apply.txt:39: new blank line at EOF.
+docs/poc/G2-followup22-evidence/prior-candidate/B1-live/live/TestProbe_BaselineException/snat.txt:6: new blank line at EOF.
+docs/poc/G2-followup22-evidence/runtime/A1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/agent-at10-node.txt:689: new blank line at EOF.
+docs/poc/G2-followup22-evidence/runtime/A1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/agent-at10-origin.txt:345: new blank line at EOF.
+docs/poc/G2-followup22-evidence/runtime/A1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/agent-at10-responder.txt:345: new blank line at EOF.
+docs/poc/G2-followup22-evidence/runtime/A1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/baseline-observation.json:2: new blank line at EOF.
+docs/poc/G2-followup22-evidence/runtime/A1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/final-observation.json:2: new blank line at EOF.
+docs/poc/G2-followup22-evidence/runtime/A1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/marker-observation.json:2: new blank line at EOF.
+docs/poc/G2-followup22-evidence/runtime/A1-live/live/TestAT10_AT13_ReloadRevokeBaseline/at10-node.txt:487: new blank line at EOF.
+docs/poc/G2-followup22-evidence/runtime/A1-live/live/TestAT10_AT13_ReloadRevokeBaseline/at10-origin.txt:243: new blank line at EOF.
+docs/poc/G2-followup22-evidence/runtime/A1-live/live/TestAT10_AT13_ReloadRevokeBaseline/at10-responder.txt:245: new blank line at EOF.
+docs/poc/G2-followup22-evidence/runtime/A1-live/live/TestAT12_ISO01_ISO04_AllowDeny/tc-ih.txt:1: trailing whitespace.
++class htb 1:1 root rate 200Mbit ceil 200Mbit burst 250000b cburst 250000b
+docs/poc/G2-followup22-evidence/runtime/A1-live/live/TestAT12_ISO01_ISO04_AllowDeny/tc-ih.txt:2: trailing whitespace.
++class htb 1:fffe parent 1:1 prio 0 rate 5Mbit ceil 200Mbit burst 250000b cburst 250000b
+docs/poc/G2-followup22-evidence/runtime/A1-live/live/TestAT12_ISO01_ISO04_AllowDeny/tc-ih.txt:3: trailing whitespace.
++class htb 1:30 parent 1:1 leaf 30: prio 1 rate 50Mbit ceil 50Mbit burst 62500b cburst 62500b
+docs/poc/G2-followup22-evidence/runtime/A1-live/live/TestAT12_ISO01_ISO04_AllowDeny/tc-ih.txt:4: trailing whitespace.
++class htb 1:2f parent 1:1 leaf 2f: prio 1 rate 50Mbit ceil 50Mbit burst 62500b cburst 62500b
+docs/poc/G2-followup22-evidence/runtime/A1-live/live/TestAT12_ISO01_ISO04_AllowDeny/tc-ih.txt:5: trailing whitespace.
++class fq_codel 2f:ea parent 2f:
+docs/poc/G2-followup22-evidence/runtime/A1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:1: trailing whitespace.
++class htb 1:1 root rate 20Mbit ceil 20Mbit burst 25000b cburst 25000b
+docs/poc/G2-followup22-evidence/runtime/A1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:2: trailing whitespace.
++ Sent 145094169 bytes 189076 pkt (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/A1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:7: trailing whitespace.
++class htb 1:fffe parent 1:1 prio 0 rate 1Mbit ceil 20Mbit burst 25000b cburst 25000b
+docs/poc/G2-followup22-evidence/runtime/A1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:8: trailing whitespace.
++ Sent 768 bytes 12 pkt (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/A1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:13: trailing whitespace.
++class htb 1:2f parent 1:1 leaf 2f: prio 1 rate 10Mbit ceil 10Mbit burst 12500b cburst 12500b
+docs/poc/G2-followup22-evidence/runtime/A1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:14: trailing whitespace.
++ Sent 144063211 bytes 173988 pkt (dropped 0, overlimits 124907 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/A1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:19: trailing whitespace.
++class fq_codel 2f:266 parent 2f:
+docs/poc/G2-followup22-evidence/runtime/A1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:20: trailing whitespace.
++ (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/A1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:1: trailing whitespace.
++class htb 1:1 root rate 20Mbit ceil 20Mbit burst 25000b cburst 25000b
+docs/poc/G2-followup22-evidence/runtime/A1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:2: trailing whitespace.
++ Sent 212979892 bytes 206191 pkt (dropped 0, overlimits 4883 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/A1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:7: trailing whitespace.
++class htb 1:fffe parent 1:1 prio 0 rate 1Mbit ceil 20Mbit burst 25000b cburst 25000b
+docs/poc/G2-followup22-evidence/runtime/A1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:8: trailing whitespace.
++ Sent 524 bytes 9 pkt (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/A1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:13: trailing whitespace.
++class htb 1:2f parent 1:1 leaf 2f: prio 1 rate 10Mbit ceil 10Mbit burst 12500b cburst 12500b
+docs/poc/G2-followup22-evidence/runtime/A1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:14: trailing whitespace.
++ Sent 177947557 bytes 181731 pkt (dropped 0, overlimits 125359 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/A1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:19: trailing whitespace.
++class fq_codel 2f:e6 parent 2f:
+docs/poc/G2-followup22-evidence/runtime/A1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:20: trailing whitespace.
++ (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/A1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:23: trailing whitespace.
++class fq_codel 2f:270 parent 2f:
+docs/poc/G2-followup22-evidence/runtime/A1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:24: trailing whitespace.
++ (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/A1-live/live/TestAT29_LeaseTimeout/kernel_set_timeout/lease.txt:2: trailing whitespace.
++clock_step=skipped reason=child time namespace is not an isolated clock container=time:[4026534011] child=time:[4026534605]
+docs/poc/G2-followup22-evidence/runtime/A1-live/live/TestISO_F6_InterfaceApply/interface-apply.txt:39: new blank line at EOF.
+docs/poc/G2-followup22-evidence/runtime/A1-live/live/TestProbe_BaselineException/snat.txt:6: new blank line at EOF.
+docs/poc/G2-followup22-evidence/runtime/A2-live/live/TestAT10_AT13_ReloadRevokeBaseline/at10-node.txt:505: new blank line at EOF.
+docs/poc/G2-followup22-evidence/runtime/A2-live/live/TestAT10_AT13_ReloadRevokeBaseline/at10-origin.txt:253: new blank line at EOF.
+docs/poc/G2-followup22-evidence/runtime/A2-live/live/TestAT10_AT13_ReloadRevokeBaseline/at10-responder.txt:253: new blank line at EOF.
+docs/poc/G2-followup22-evidence/runtime/A2-live/live/TestAT12_ISO01_ISO04_AllowDeny/tc-ih.txt:1: trailing whitespace.
++class htb 1:1 root rate 200Mbit ceil 200Mbit burst 250000b cburst 250000b
+docs/poc/G2-followup22-evidence/runtime/A2-live/live/TestAT12_ISO01_ISO04_AllowDeny/tc-ih.txt:2: trailing whitespace.
++class htb 1:fffe parent 1:1 prio 0 rate 5Mbit ceil 200Mbit burst 250000b cburst 250000b
+docs/poc/G2-followup22-evidence/runtime/A2-live/live/TestAT12_ISO01_ISO04_AllowDeny/tc-ih.txt:3: trailing whitespace.
++class htb 1:30 parent 1:1 leaf 30: prio 1 rate 50Mbit ceil 50Mbit burst 62500b cburst 62500b
+docs/poc/G2-followup22-evidence/runtime/A2-live/live/TestAT12_ISO01_ISO04_AllowDeny/tc-ih.txt:4: trailing whitespace.
++class htb 1:2f parent 1:1 leaf 2f: prio 1 rate 50Mbit ceil 50Mbit burst 62500b cburst 62500b
+docs/poc/G2-followup22-evidence/runtime/A2-live/live/TestAT12_ISO01_ISO04_AllowDeny/tc-ih.txt:5: trailing whitespace.
++class fq_codel 2f:326 parent 2f:
+docs/poc/G2-followup22-evidence/runtime/A2-live/live/TestAT18_FUP02_QoS/tc-fh.txt:1: trailing whitespace.
++class htb 1:1 root rate 20Mbit ceil 20Mbit burst 25000b cburst 25000b
+docs/poc/G2-followup22-evidence/runtime/A2-live/live/TestAT18_FUP02_QoS/tc-fh.txt:2: trailing whitespace.
++ Sent 145129415 bytes 189453 pkt (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/A2-live/live/TestAT18_FUP02_QoS/tc-fh.txt:7: trailing whitespace.
++class htb 1:fffe parent 1:1 prio 0 rate 1Mbit ceil 20Mbit burst 25000b cburst 25000b
+docs/poc/G2-followup22-evidence/runtime/A2-live/live/TestAT18_FUP02_QoS/tc-fh.txt:8: trailing whitespace.
++ Sent 726 bytes 11 pkt (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/A2-live/live/TestAT18_FUP02_QoS/tc-fh.txt:13: trailing whitespace.
++class htb 1:2f parent 1:1 leaf 2f: prio 1 rate 10Mbit ceil 10Mbit burst 12500b cburst 12500b
+docs/poc/G2-followup22-evidence/runtime/A2-live/live/TestAT18_FUP02_QoS/tc-fh.txt:14: trailing whitespace.
++ Sent 144080790 bytes 174127 pkt (dropped 0, overlimits 124944 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/A2-live/live/TestAT18_FUP02_QoS/tc-fh.txt:19: trailing whitespace.
++class fq_codel 2f:78 parent 2f:
+docs/poc/G2-followup22-evidence/runtime/A2-live/live/TestAT18_FUP02_QoS/tc-fh.txt:20: trailing whitespace.
++ (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/A2-live/live/TestAT18_FUP02_QoS/tc-fh.txt:23: trailing whitespace.
++class fq_codel 2f:2d3 parent 2f:
+docs/poc/G2-followup22-evidence/runtime/A2-live/live/TestAT18_FUP02_QoS/tc-fh.txt:24: trailing whitespace.
++ (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/A2-live/live/TestAT18_FUP02_QoS/tc-ih.txt:1: trailing whitespace.
++class htb 1:1 root rate 20Mbit ceil 20Mbit burst 25000b cburst 25000b
+docs/poc/G2-followup22-evidence/runtime/A2-live/live/TestAT18_FUP02_QoS/tc-ih.txt:2: trailing whitespace.
++ Sent 212980945 bytes 206285 pkt (dropped 0, overlimits 4888 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/A2-live/live/TestAT18_FUP02_QoS/tc-ih.txt:7: trailing whitespace.
++class htb 1:fffe parent 1:1 prio 0 rate 1Mbit ceil 20Mbit burst 25000b cburst 25000b
+docs/poc/G2-followup22-evidence/runtime/A2-live/live/TestAT18_FUP02_QoS/tc-ih.txt:8: trailing whitespace.
++ Sent 440 bytes 7 pkt (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/A2-live/live/TestAT18_FUP02_QoS/tc-ih.txt:13: trailing whitespace.
++class htb 1:2f parent 1:1 leaf 2f: prio 1 rate 10Mbit ceil 10Mbit burst 12500b cburst 12500b
+docs/poc/G2-followup22-evidence/runtime/A2-live/live/TestAT18_FUP02_QoS/tc-ih.txt:14: trailing whitespace.
++ Sent 177954497 bytes 181832 pkt (dropped 0, overlimits 125376 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/A2-live/live/TestAT18_FUP02_QoS/tc-ih.txt:19: trailing whitespace.
++class fq_codel 2f:2d parent 2f:
+docs/poc/G2-followup22-evidence/runtime/A2-live/live/TestAT18_FUP02_QoS/tc-ih.txt:20: trailing whitespace.
++ (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/A2-live/live/TestAT18_FUP02_QoS/tc-ih.txt:23: trailing whitespace.
++class fq_codel 2f:264 parent 2f:
+docs/poc/G2-followup22-evidence/runtime/A2-live/live/TestAT18_FUP02_QoS/tc-ih.txt:24: trailing whitespace.
++ (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/A2-live/live/TestAT29_LeaseTimeout/kernel_set_timeout/lease.txt:2: trailing whitespace.
++clock_step=skipped reason=child time namespace is not an isolated clock container=time:[4026534012] child=time:[4026534142]
+docs/poc/G2-followup22-evidence/runtime/A2-live/live/TestISO_F6_InterfaceApply/interface-apply.txt:39: new blank line at EOF.
+docs/poc/G2-followup22-evidence/runtime/A2-live/live/TestProbe_BaselineException/snat.txt:6: new blank line at EOF.
+docs/poc/G2-followup22-evidence/runtime/B1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/agent-at10-node.txt:697: new blank line at EOF.
+docs/poc/G2-followup22-evidence/runtime/B1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/agent-at10-origin.txt:349: new blank line at EOF.
+docs/poc/G2-followup22-evidence/runtime/B1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/agent-at10-responder.txt:349: new blank line at EOF.
+docs/poc/G2-followup22-evidence/runtime/B1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/baseline-observation.json:2: new blank line at EOF.
+docs/poc/G2-followup22-evidence/runtime/B1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/final-observation.json:2: new blank line at EOF.
+docs/poc/G2-followup22-evidence/runtime/B1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/marker-observation.json:2: new blank line at EOF.
+docs/poc/G2-followup22-evidence/runtime/B1-live/live/TestAT10_AT13_ReloadRevokeBaseline/at10-node.txt:569: new blank line at EOF.
+docs/poc/G2-followup22-evidence/runtime/B1-live/live/TestAT10_AT13_ReloadRevokeBaseline/at10-origin.txt:285: new blank line at EOF.
+docs/poc/G2-followup22-evidence/runtime/B1-live/live/TestAT10_AT13_ReloadRevokeBaseline/at10-responder.txt:285: new blank line at EOF.
+docs/poc/G2-followup22-evidence/runtime/B1-live/live/TestAT12_ISO01_ISO04_AllowDeny/tc-ih.txt:1: trailing whitespace.
++class htb 1:1 root rate 200Mbit ceil 200Mbit burst 250000b cburst 250000b
+docs/poc/G2-followup22-evidence/runtime/B1-live/live/TestAT12_ISO01_ISO04_AllowDeny/tc-ih.txt:2: trailing whitespace.
++class htb 1:fffe parent 1:1 prio 0 rate 5Mbit ceil 200Mbit burst 250000b cburst 250000b
+docs/poc/G2-followup22-evidence/runtime/B1-live/live/TestAT12_ISO01_ISO04_AllowDeny/tc-ih.txt:3: trailing whitespace.
++class htb 1:30 parent 1:1 leaf 30: prio 1 rate 50Mbit ceil 50Mbit burst 62500b cburst 62500b
+docs/poc/G2-followup22-evidence/runtime/B1-live/live/TestAT12_ISO01_ISO04_AllowDeny/tc-ih.txt:4: trailing whitespace.
++class htb 1:2f parent 1:1 leaf 2f: prio 1 rate 50Mbit ceil 50Mbit burst 62500b cburst 62500b
+docs/poc/G2-followup22-evidence/runtime/B1-live/live/TestAT12_ISO01_ISO04_AllowDeny/tc-ih.txt:5: trailing whitespace.
++class fq_codel 2f:97 parent 2f:
+docs/poc/G2-followup22-evidence/runtime/B1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:1: trailing whitespace.
++class htb 1:1 root rate 20Mbit ceil 20Mbit burst 25000b cburst 25000b
+docs/poc/G2-followup22-evidence/runtime/B1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:2: trailing whitespace.
++ Sent 145143755 bytes 189459 pkt (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/B1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:7: trailing whitespace.
++class htb 1:fffe parent 1:1 prio 0 rate 1Mbit ceil 20Mbit burst 25000b cburst 25000b
+docs/poc/G2-followup22-evidence/runtime/B1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:8: trailing whitespace.
++ Sent 642 bytes 9 pkt (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/B1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:13: trailing whitespace.
++class htb 1:2f parent 1:1 leaf 2f: prio 1 rate 10Mbit ceil 10Mbit burst 12500b cburst 12500b
+docs/poc/G2-followup22-evidence/runtime/B1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:14: trailing whitespace.
++ Sent 144092106 bytes 174089 pkt (dropped 0, overlimits 124641 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/B1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:19: trailing whitespace.
++class fq_codel 2f:41 parent 2f:
+docs/poc/G2-followup22-evidence/runtime/B1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:20: trailing whitespace.
++ (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/B1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:23: trailing whitespace.
++class fq_codel 2f:271 parent 2f:
+docs/poc/G2-followup22-evidence/runtime/B1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:24: trailing whitespace.
++ (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/B1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:27: trailing whitespace.
++class fq_codel 2f:400 parent 2f:
+docs/poc/G2-followup22-evidence/runtime/B1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:28: trailing whitespace.
++ (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/B1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:1: trailing whitespace.
++class htb 1:1 root rate 20Mbit ceil 20Mbit burst 25000b cburst 25000b
+docs/poc/G2-followup22-evidence/runtime/B1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:2: trailing whitespace.
++ Sent 212985475 bytes 206411 pkt (dropped 0, overlimits 4883 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/B1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:7: trailing whitespace.
++class htb 1:fffe parent 1:1 prio 0 rate 1Mbit ceil 20Mbit burst 25000b cburst 25000b
+docs/poc/G2-followup22-evidence/runtime/B1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:8: trailing whitespace.
++ Sent 566 bytes 10 pkt (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/B1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:13: trailing whitespace.
++class htb 1:2f parent 1:1 leaf 2f: prio 1 rate 10Mbit ceil 10Mbit burst 12500b cburst 12500b
+docs/poc/G2-followup22-evidence/runtime/B1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:14: trailing whitespace.
++ Sent 177958769 bytes 181953 pkt (dropped 0, overlimits 125337 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/B1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:19: trailing whitespace.
++class fq_codel 2f:48 parent 2f:
+docs/poc/G2-followup22-evidence/runtime/B1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:20: trailing whitespace.
++ (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/B1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:23: trailing whitespace.
++class fq_codel 2f:b6 parent 2f:
+docs/poc/G2-followup22-evidence/runtime/B1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:24: trailing whitespace.
++ (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/B1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:27: trailing whitespace.
++class fq_codel 2f:134 parent 2f:
+docs/poc/G2-followup22-evidence/runtime/B1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:28: trailing whitespace.
++ (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/B1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:31: trailing whitespace.
++class fq_codel 2f:32c parent 2f:
+docs/poc/G2-followup22-evidence/runtime/B1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:32: trailing whitespace.
++ (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/B1-live/live/TestAT29_LeaseTimeout/kernel_set_timeout/lease.txt:2: trailing whitespace.
++clock_step=skipped reason=child time namespace is not an isolated clock container=time:[4026534011] child=time:[4026534606]
+docs/poc/G2-followup22-evidence/runtime/B1-live/live/TestISO_F6_InterfaceApply/interface-apply.txt:39: new blank line at EOF.
+docs/poc/G2-followup22-evidence/runtime/B1-live/live/TestProbe_BaselineException/snat.txt:6: new blank line at EOF.
+docs/poc/G2-followup22-evidence/runtime/B2-live/live/TestAT10_AT13_ReloadRevokeBaseline/at10-node.txt:539: new blank line at EOF.
+docs/poc/G2-followup22-evidence/runtime/B2-live/live/TestAT10_AT13_ReloadRevokeBaseline/at10-origin.txt:271: new blank line at EOF.
+docs/poc/G2-followup22-evidence/runtime/B2-live/live/TestAT10_AT13_ReloadRevokeBaseline/at10-responder.txt:269: new blank line at EOF.
+docs/poc/G2-followup22-evidence/runtime/B2-live/live/TestAT12_ISO01_ISO04_AllowDeny/tc-ih.txt:1: trailing whitespace.
++class htb 1:1 root rate 200Mbit ceil 200Mbit burst 250000b cburst 250000b
+docs/poc/G2-followup22-evidence/runtime/B2-live/live/TestAT12_ISO01_ISO04_AllowDeny/tc-ih.txt:2: trailing whitespace.
++class htb 1:fffe parent 1:1 prio 0 rate 5Mbit ceil 200Mbit burst 250000b cburst 250000b
+docs/poc/G2-followup22-evidence/runtime/B2-live/live/TestAT12_ISO01_ISO04_AllowDeny/tc-ih.txt:3: trailing whitespace.
++class htb 1:30 parent 1:1 leaf 30: prio 1 rate 50Mbit ceil 50Mbit burst 62500b cburst 62500b
+docs/poc/G2-followup22-evidence/runtime/B2-live/live/TestAT12_ISO01_ISO04_AllowDeny/tc-ih.txt:4: trailing whitespace.
++class htb 1:2f parent 1:1 leaf 2f: prio 1 rate 50Mbit ceil 50Mbit burst 62500b cburst 62500b
+docs/poc/G2-followup22-evidence/runtime/B2-live/live/TestAT12_ISO01_ISO04_AllowDeny/tc-ih.txt:5: trailing whitespace.
++class fq_codel 2f:77 parent 2f:
+docs/poc/G2-followup22-evidence/runtime/B2-live/live/TestAT18_FUP02_QoS/tc-fh.txt:1: trailing whitespace.
++class htb 1:1 root rate 20Mbit ceil 20Mbit burst 25000b cburst 25000b
+docs/poc/G2-followup22-evidence/runtime/B2-live/live/TestAT18_FUP02_QoS/tc-fh.txt:2: trailing whitespace.
++ Sent 145119694 bytes 189361 pkt (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/B2-live/live/TestAT18_FUP02_QoS/tc-fh.txt:7: trailing whitespace.
++class htb 1:fffe parent 1:1 prio 0 rate 1Mbit ceil 20Mbit burst 25000b cburst 25000b
+docs/poc/G2-followup22-evidence/runtime/B2-live/live/TestAT18_FUP02_QoS/tc-fh.txt:8: trailing whitespace.
++ Sent 726 bytes 11 pkt (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/B2-live/live/TestAT18_FUP02_QoS/tc-fh.txt:13: trailing whitespace.
++class htb 1:2f parent 1:1 leaf 2f: prio 1 rate 10Mbit ceil 10Mbit burst 12500b cburst 12500b
+docs/poc/G2-followup22-evidence/runtime/B2-live/live/TestAT18_FUP02_QoS/tc-fh.txt:14: trailing whitespace.
++ Sent 144068286 bytes 173997 pkt (dropped 0, overlimits 124702 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/B2-live/live/TestAT18_FUP02_QoS/tc-fh.txt:19: trailing whitespace.
++class fq_codel 2f:c8 parent 2f:
+docs/poc/G2-followup22-evidence/runtime/B2-live/live/TestAT18_FUP02_QoS/tc-fh.txt:20: trailing whitespace.
++ (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/B2-live/live/TestAT18_FUP02_QoS/tc-fh.txt:23: trailing whitespace.
++class fq_codel 2f:36a parent 2f:
+docs/poc/G2-followup22-evidence/runtime/B2-live/live/TestAT18_FUP02_QoS/tc-fh.txt:24: trailing whitespace.
++ (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/B2-live/live/TestAT18_FUP02_QoS/tc-ih.txt:1: trailing whitespace.
++class htb 1:1 root rate 20Mbit ceil 20Mbit burst 25000b cburst 25000b
+docs/poc/G2-followup22-evidence/runtime/B2-live/live/TestAT18_FUP02_QoS/tc-ih.txt:2: trailing whitespace.
++ Sent 212997679 bytes 206380 pkt (dropped 0, overlimits 4888 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/B2-live/live/TestAT18_FUP02_QoS/tc-ih.txt:7: trailing whitespace.
++class htb 1:fffe parent 1:1 prio 0 rate 1Mbit ceil 20Mbit burst 25000b cburst 25000b
+docs/poc/G2-followup22-evidence/runtime/B2-live/live/TestAT18_FUP02_QoS/tc-ih.txt:8: trailing whitespace.
++ Sent 524 bytes 9 pkt (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/B2-live/live/TestAT18_FUP02_QoS/tc-ih.txt:13: trailing whitespace.
++class htb 1:2f parent 1:1 leaf 2f: prio 1 rate 10Mbit ceil 10Mbit burst 12500b cburst 12500b
+docs/poc/G2-followup22-evidence/runtime/B2-live/live/TestAT18_FUP02_QoS/tc-ih.txt:14: trailing whitespace.
++ Sent 177966845 bytes 181922 pkt (dropped 0, overlimits 125236 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/B2-live/live/TestAT18_FUP02_QoS/tc-ih.txt:19: trailing whitespace.
++class fq_codel 2f:154 parent 2f:
+docs/poc/G2-followup22-evidence/runtime/B2-live/live/TestAT18_FUP02_QoS/tc-ih.txt:20: trailing whitespace.
++ (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/B2-live/live/TestAT18_FUP02_QoS/tc-ih.txt:23: trailing whitespace.
++class fq_codel 2f:261 parent 2f:
+docs/poc/G2-followup22-evidence/runtime/B2-live/live/TestAT18_FUP02_QoS/tc-ih.txt:24: trailing whitespace.
++ (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/B2-live/live/TestAT18_FUP02_QoS/tc-ih.txt:27: trailing whitespace.
++class fq_codel 2f:34e parent 2f:
+docs/poc/G2-followup22-evidence/runtime/B2-live/live/TestAT18_FUP02_QoS/tc-ih.txt:28: trailing whitespace.
++ (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/B2-live/live/TestAT29_LeaseTimeout/kernel_set_timeout/lease.txt:2: trailing whitespace.
++clock_step=skipped reason=child time namespace is not an isolated clock container=time:[4026534012] child=time:[4026534607]
+docs/poc/G2-followup22-evidence/runtime/B2-live/live/TestISO_F6_InterfaceApply/interface-apply.txt:39: new blank line at EOF.
+docs/poc/G2-followup22-evidence/runtime/B2-live/live/TestProbe_BaselineException/snat.txt:6: new blank line at EOF.
+docs/poc/G2-followup22-evidence/runtime/unqualified/A1-agent-trace-1/A1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/agent-at10-node.txt:705: new blank line at EOF.
+docs/poc/G2-followup22-evidence/runtime/unqualified/A1-agent-trace-1/A1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/agent-at10-origin.txt:353: new blank line at EOF.
+docs/poc/G2-followup22-evidence/runtime/unqualified/A1-agent-trace-1/A1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/agent-at10-responder.txt:353: new blank line at EOF.
+docs/poc/G2-followup22-evidence/runtime/unqualified/A1-agent-trace-1/A1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/baseline-observation.json:2: new blank line at EOF.
+docs/poc/G2-followup22-evidence/runtime/unqualified/A1-agent-trace-1/A1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/final-observation.json:2: new blank line at EOF.
+docs/poc/G2-followup22-evidence/runtime/unqualified/A1-agent-trace-1/A1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/marker-observation.json:2: new blank line at EOF.
+docs/poc/G2-followup22-evidence/runtime/unqualified/A1-live-1/A1-live/live/TestAT10_AT13_ReloadRevokeBaseline/at10-node.txt:505: new blank line at EOF.
+docs/poc/G2-followup22-evidence/runtime/unqualified/A1-live-1/A1-live/live/TestAT10_AT13_ReloadRevokeBaseline/at10-origin.txt:253: new blank line at EOF.
+docs/poc/G2-followup22-evidence/runtime/unqualified/A1-live-1/A1-live/live/TestAT10_AT13_ReloadRevokeBaseline/at10-responder.txt:253: new blank line at EOF.
+docs/poc/G2-followup22-evidence/runtime/unqualified/A1-live-1/A1-live/live/TestAT12_ISO01_ISO04_AllowDeny/tc-ih.txt:1: trailing whitespace.
++class htb 1:1 root rate 200Mbit ceil 200Mbit burst 250000b cburst 250000b
+docs/poc/G2-followup22-evidence/runtime/unqualified/A1-live-1/A1-live/live/TestAT12_ISO01_ISO04_AllowDeny/tc-ih.txt:2: trailing whitespace.
++class htb 1:fffe parent 1:1 prio 0 rate 5Mbit ceil 200Mbit burst 250000b cburst 250000b
+docs/poc/G2-followup22-evidence/runtime/unqualified/A1-live-1/A1-live/live/TestAT12_ISO01_ISO04_AllowDeny/tc-ih.txt:3: trailing whitespace.
++class htb 1:30 parent 1:1 leaf 30: prio 1 rate 50Mbit ceil 50Mbit burst 62500b cburst 62500b
+docs/poc/G2-followup22-evidence/runtime/unqualified/A1-live-1/A1-live/live/TestAT12_ISO01_ISO04_AllowDeny/tc-ih.txt:4: trailing whitespace.
++class htb 1:2f parent 1:1 leaf 2f: prio 1 rate 50Mbit ceil 50Mbit burst 62500b cburst 62500b
+docs/poc/G2-followup22-evidence/runtime/unqualified/A1-live-1/A1-live/live/TestAT12_ISO01_ISO04_AllowDeny/tc-ih.txt:5: trailing whitespace.
++class fq_codel 2f:3d7 parent 2f:
+docs/poc/G2-followup22-evidence/runtime/unqualified/A1-live-1/A1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:1: trailing whitespace.
++class htb 1:1 root rate 20Mbit ceil 20Mbit burst 25000b cburst 25000b
+docs/poc/G2-followup22-evidence/runtime/unqualified/A1-live-1/A1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:2: trailing whitespace.
++ Sent 145134926 bytes 189519 pkt (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/unqualified/A1-live-1/A1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:7: trailing whitespace.
++class htb 1:fffe parent 1:1 prio 0 rate 1Mbit ceil 20Mbit burst 25000b cburst 25000b
+docs/poc/G2-followup22-evidence/runtime/unqualified/A1-live-1/A1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:8: trailing whitespace.
++ Sent 642 bytes 9 pkt (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/unqualified/A1-live-1/A1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:13: trailing whitespace.
++class htb 1:2f parent 1:1 leaf 2f: prio 1 rate 10Mbit ceil 10Mbit burst 12500b cburst 12500b
+docs/poc/G2-followup22-evidence/runtime/unqualified/A1-live-1/A1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:14: trailing whitespace.
++ Sent 144079721 bytes 174098 pkt (dropped 0, overlimits 125124 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/unqualified/A1-live-1/A1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:19: trailing whitespace.
++class fq_codel 2f:257 parent 2f:
+docs/poc/G2-followup22-evidence/runtime/unqualified/A1-live-1/A1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:20: trailing whitespace.
++ (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/unqualified/A1-live-1/A1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:23: trailing whitespace.
++class fq_codel 2f:36d parent 2f:
+docs/poc/G2-followup22-evidence/runtime/unqualified/A1-live-1/A1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:24: trailing whitespace.
++ (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/unqualified/A1-live-1/A1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:1: trailing whitespace.
++class htb 1:1 root rate 20Mbit ceil 20Mbit burst 25000b cburst 25000b
+docs/poc/G2-followup22-evidence/runtime/unqualified/A1-live-1/A1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:2: trailing whitespace.
++ Sent 212993007 bytes 206294 pkt (dropped 0, overlimits 4887 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/unqualified/A1-live-1/A1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:7: trailing whitespace.
++class htb 1:fffe parent 1:1 prio 0 rate 1Mbit ceil 20Mbit burst 25000b cburst 25000b
+docs/poc/G2-followup22-evidence/runtime/unqualified/A1-live-1/A1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:8: trailing whitespace.
++ Sent 440 bytes 7 pkt (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/unqualified/A1-live-1/A1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:13: trailing whitespace.
++class htb 1:2f parent 1:1 leaf 2f: prio 1 rate 10Mbit ceil 10Mbit burst 12500b cburst 12500b
+docs/poc/G2-followup22-evidence/runtime/unqualified/A1-live-1/A1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:14: trailing whitespace.
++ Sent 177965143 bytes 181840 pkt (dropped 0, overlimits 125221 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/unqualified/A1-live-1/A1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:19: trailing whitespace.
++class fq_codel 2f:178 parent 2f:
+docs/poc/G2-followup22-evidence/runtime/unqualified/A1-live-1/A1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:20: trailing whitespace.
++ (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/unqualified/A1-live-1/A1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:23: trailing whitespace.
++class fq_codel 2f:214 parent 2f:
+docs/poc/G2-followup22-evidence/runtime/unqualified/A1-live-1/A1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:24: trailing whitespace.
++ (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/unqualified/A1-live-1/A1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:27: trailing whitespace.
++class fq_codel 2f:3eb parent 2f:
+docs/poc/G2-followup22-evidence/runtime/unqualified/A1-live-1/A1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:28: trailing whitespace.
++ (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/unqualified/A1-live-1/A1-live/live/TestAT29_LeaseTimeout/kernel_set_timeout/lease.txt:2: trailing whitespace.
++clock_step=skipped reason=child time namespace is not an isolated clock container=time:[4026534012] child=time:[4026534607]
+docs/poc/G2-followup22-evidence/runtime/unqualified/A1-live-1/A1-live/live/TestISO_F6_InterfaceApply/interface-apply.txt:39: new blank line at EOF.
+docs/poc/G2-followup22-evidence/runtime/unqualified/A1-live-1/A1-live/live/TestProbe_BaselineException/snat.txt:6: new blank line at EOF.
+docs/poc/G2-followup22-evidence/runtime/unqualified/B1-live-1/B1-live/live/TestAT10_AT13_ReloadRevokeBaseline/at10-node.txt:527: new blank line at EOF.
+docs/poc/G2-followup22-evidence/runtime/unqualified/B1-live-1/B1-live/live/TestAT10_AT13_ReloadRevokeBaseline/at10-origin.txt:263: new blank line at EOF.
+docs/poc/G2-followup22-evidence/runtime/unqualified/B1-live-1/B1-live/live/TestAT10_AT13_ReloadRevokeBaseline/at10-responder.txt:265: new blank line at EOF.
+docs/poc/G2-followup22-evidence/runtime/unqualified/B1-live-1/B1-live/live/TestAT12_ISO01_ISO04_AllowDeny/tc-ih.txt:1: trailing whitespace.
++class htb 1:1 root rate 200Mbit ceil 200Mbit burst 250000b cburst 250000b
+docs/poc/G2-followup22-evidence/runtime/unqualified/B1-live-1/B1-live/live/TestAT12_ISO01_ISO04_AllowDeny/tc-ih.txt:2: trailing whitespace.
++class htb 1:fffe parent 1:1 prio 0 rate 5Mbit ceil 200Mbit burst 250000b cburst 250000b
+docs/poc/G2-followup22-evidence/runtime/unqualified/B1-live-1/B1-live/live/TestAT12_ISO01_ISO04_AllowDeny/tc-ih.txt:3: trailing whitespace.
++class htb 1:30 parent 1:1 leaf 30: prio 1 rate 50Mbit ceil 50Mbit burst 62500b cburst 62500b
+docs/poc/G2-followup22-evidence/runtime/unqualified/B1-live-1/B1-live/live/TestAT12_ISO01_ISO04_AllowDeny/tc-ih.txt:4: trailing whitespace.
++class htb 1:2f parent 1:1 leaf 2f: prio 1 rate 50Mbit ceil 50Mbit burst 62500b cburst 62500b
+docs/poc/G2-followup22-evidence/runtime/unqualified/B1-live-1/B1-live/live/TestAT12_ISO01_ISO04_AllowDeny/tc-ih.txt:5: trailing whitespace.
++class fq_codel 2f:1dc parent 2f:
+docs/poc/G2-followup22-evidence/runtime/unqualified/B1-live-1/B1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:1: trailing whitespace.
++class htb 1:1 root rate 20Mbit ceil 20Mbit burst 25000b cburst 25000b
+docs/poc/G2-followup22-evidence/runtime/unqualified/B1-live-1/B1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:2: trailing whitespace.
++ Sent 145132856 bytes 189646 pkt (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/unqualified/B1-live-1/B1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:7: trailing whitespace.
++class htb 1:fffe parent 1:1 prio 0 rate 1Mbit ceil 20Mbit burst 25000b cburst 25000b
+docs/poc/G2-followup22-evidence/runtime/unqualified/B1-live-1/B1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:8: trailing whitespace.
++ Sent 726 bytes 11 pkt (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/unqualified/B1-live-1/B1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:13: trailing whitespace.
++class htb 1:2f parent 1:1 leaf 2f: prio 1 rate 10Mbit ceil 10Mbit burst 12500b cburst 12500b
+docs/poc/G2-followup22-evidence/runtime/unqualified/B1-live-1/B1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:14: trailing whitespace.
++ Sent 144084232 bytes 174310 pkt (dropped 0, overlimits 124969 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/unqualified/B1-live-1/B1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:19: trailing whitespace.
++class fq_codel 2f:14a parent 2f:
+docs/poc/G2-followup22-evidence/runtime/unqualified/B1-live-1/B1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:20: trailing whitespace.
++ (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/unqualified/B1-live-1/B1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:23: trailing whitespace.
++class fq_codel 2f:1d2 parent 2f:
+docs/poc/G2-followup22-evidence/runtime/unqualified/B1-live-1/B1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:24: trailing whitespace.
++ (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/unqualified/B1-live-1/B1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:1: trailing whitespace.
++class htb 1:1 root rate 20Mbit ceil 20Mbit burst 25000b cburst 25000b
+docs/poc/G2-followup22-evidence/runtime/unqualified/B1-live-1/B1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:2: trailing whitespace.
++ Sent 212977702 bytes 206581 pkt (dropped 0, overlimits 4881 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/unqualified/B1-live-1/B1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:7: trailing whitespace.
++class htb 1:fffe parent 1:1 prio 0 rate 1Mbit ceil 20Mbit burst 25000b cburst 25000b
+docs/poc/G2-followup22-evidence/runtime/unqualified/B1-live-1/B1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:8: trailing whitespace.
++ Sent 482 bytes 8 pkt (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/unqualified/B1-live-1/B1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:13: trailing whitespace.
++class htb 1:2f parent 1:1 leaf 2f: prio 1 rate 10Mbit ceil 10Mbit burst 12500b cburst 12500b
+docs/poc/G2-followup22-evidence/runtime/unqualified/B1-live-1/B1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:14: trailing whitespace.
++ Sent 177944041 bytes 182122 pkt (dropped 0, overlimits 125216 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/unqualified/B1-live-1/B1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:19: trailing whitespace.
++class fq_codel 2f:160 parent 2f:
+docs/poc/G2-followup22-evidence/runtime/unqualified/B1-live-1/B1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:20: trailing whitespace.
++ (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/unqualified/B1-live-1/B1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:23: trailing whitespace.
++class fq_codel 2f:25d parent 2f:
+docs/poc/G2-followup22-evidence/runtime/unqualified/B1-live-1/B1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:24: trailing whitespace.
++ (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/unqualified/B1-live-1/B1-live/live/TestAT29_LeaseTimeout/kernel_set_timeout/lease.txt:2: trailing whitespace.
++clock_step=skipped reason=child time namespace is not an isolated clock container=time:[4026534009] child=time:[4026533192]
+docs/poc/G2-followup22-evidence/runtime/unqualified/B1-live-1/B1-live/live/TestISO_F6_InterfaceApply/interface-apply.txt:39: new blank line at EOF.
+docs/poc/G2-followup22-evidence/runtime/unqualified/B1-live-1/B1-live/live/TestProbe_BaselineException/snat.txt:6: new blank line at EOF.
+docs/poc/G2-followup22-evidence/runtime/unqualified/B1-live-2/B1-live/live/TestAT10_AT13_ReloadRevokeBaseline/at10-node.txt:395: new blank line at EOF.
+docs/poc/G2-followup22-evidence/runtime/unqualified/B1-live-2/B1-live/live/TestAT10_AT13_ReloadRevokeBaseline/at10-origin.txt:199: new blank line at EOF.
+docs/poc/G2-followup22-evidence/runtime/unqualified/B1-live-2/B1-live/live/TestAT10_AT13_ReloadRevokeBaseline/at10-responder.txt:197: new blank line at EOF.
+docs/poc/G2-followup22-evidence/runtime/unqualified/B1-live-2/B1-live/live/TestAT12_ISO01_ISO04_AllowDeny/tc-ih.txt:1: trailing whitespace.
++class htb 1:1 root rate 200Mbit ceil 200Mbit burst 250000b cburst 250000b
+docs/poc/G2-followup22-evidence/runtime/unqualified/B1-live-2/B1-live/live/TestAT12_ISO01_ISO04_AllowDeny/tc-ih.txt:2: trailing whitespace.
++class htb 1:fffe parent 1:1 prio 0 rate 5Mbit ceil 200Mbit burst 250000b cburst 250000b
+docs/poc/G2-followup22-evidence/runtime/unqualified/B1-live-2/B1-live/live/TestAT12_ISO01_ISO04_AllowDeny/tc-ih.txt:3: trailing whitespace.
++class htb 1:30 parent 1:1 leaf 30: prio 1 rate 50Mbit ceil 50Mbit burst 62500b cburst 62500b
+docs/poc/G2-followup22-evidence/runtime/unqualified/B1-live-2/B1-live/live/TestAT12_ISO01_ISO04_AllowDeny/tc-ih.txt:4: trailing whitespace.
++class htb 1:2f parent 1:1 leaf 2f: prio 1 rate 50Mbit ceil 50Mbit burst 62500b cburst 62500b
+docs/poc/G2-followup22-evidence/runtime/unqualified/B1-live-2/B1-live/live/TestAT12_ISO01_ISO04_AllowDeny/tc-ih.txt:5: trailing whitespace.
++class fq_codel 2f:1b6 parent 2f:
+docs/poc/G2-followup22-evidence/runtime/unqualified/B1-live-2/B1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:1: trailing whitespace.
++class htb 1:1 root rate 20Mbit ceil 20Mbit burst 25000b cburst 25000b
+docs/poc/G2-followup22-evidence/runtime/unqualified/B1-live-2/B1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:2: trailing whitespace.
++ Sent 145143434 bytes 189657 pkt (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/unqualified/B1-live-2/B1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:7: trailing whitespace.
++class htb 1:fffe parent 1:1 prio 0 rate 1Mbit ceil 20Mbit burst 25000b cburst 25000b
+docs/poc/G2-followup22-evidence/runtime/unqualified/B1-live-2/B1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:8: trailing whitespace.
++ Sent 726 bytes 11 pkt (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/unqualified/B1-live-2/B1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:13: trailing whitespace.
++class htb 1:2f parent 1:1 leaf 2f: prio 1 rate 10Mbit ceil 10Mbit burst 12500b cburst 12500b
+docs/poc/G2-followup22-evidence/runtime/unqualified/B1-live-2/B1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:14: trailing whitespace.
++ Sent 144093455 bytes 174309 pkt (dropped 0, overlimits 125084 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/unqualified/B1-live-2/B1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:19: trailing whitespace.
++class fq_codel 2f:c7 parent 2f:
+docs/poc/G2-followup22-evidence/runtime/unqualified/B1-live-2/B1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:20: trailing whitespace.
++ (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/unqualified/B1-live-2/B1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:23: trailing whitespace.
++class fq_codel 2f:1a6 parent 2f:
+docs/poc/G2-followup22-evidence/runtime/unqualified/B1-live-2/B1-live/live/TestAT18_FUP02_QoS/tc-fh.txt:24: trailing whitespace.
++ (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/unqualified/B1-live-2/B1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:1: trailing whitespace.
++class htb 1:1 root rate 20Mbit ceil 20Mbit burst 25000b cburst 25000b
+docs/poc/G2-followup22-evidence/runtime/unqualified/B1-live-2/B1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:2: trailing whitespace.
++ Sent 212991609 bytes 206245 pkt (dropped 0, overlimits 4889 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/unqualified/B1-live-2/B1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:7: trailing whitespace.
++class htb 1:fffe parent 1:1 prio 0 rate 1Mbit ceil 20Mbit burst 25000b cburst 25000b
+docs/poc/G2-followup22-evidence/runtime/unqualified/B1-live-2/B1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:8: trailing whitespace.
++ Sent 440 bytes 7 pkt (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/unqualified/B1-live-2/B1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:13: trailing whitespace.
++class htb 1:2f parent 1:1 leaf 2f: prio 1 rate 10Mbit ceil 10Mbit burst 12500b cburst 12500b
+docs/poc/G2-followup22-evidence/runtime/unqualified/B1-live-2/B1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:14: trailing whitespace.
++ Sent 177960860 bytes 181789 pkt (dropped 0, overlimits 125190 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/unqualified/B1-live-2/B1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:19: trailing whitespace.
++class fq_codel 2f:31 parent 2f:
+docs/poc/G2-followup22-evidence/runtime/unqualified/B1-live-2/B1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:20: trailing whitespace.
++ (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/unqualified/B1-live-2/B1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:23: trailing whitespace.
++class fq_codel 2f:62 parent 2f:
+docs/poc/G2-followup22-evidence/runtime/unqualified/B1-live-2/B1-live/live/TestAT18_FUP02_QoS/tc-ih.txt:24: trailing whitespace.
++ (dropped 0, overlimits 0 requeues 0)
+docs/poc/G2-followup22-evidence/runtime/unqualified/B1-live-2/B1-live/live/TestAT29_LeaseTimeout/kernel_set_timeout/lease.txt:2: trailing whitespace.
++clock_step=skipped reason=child time namespace is not an isolated clock container=time:[4026534009] child=time:[4026534143]
+docs/poc/G2-followup22-evidence/runtime/unqualified/B1-live-2/B1-live/live/TestISO_F6_InterfaceApply/interface-apply.txt:39: new blank line at EOF.
+docs/poc/G2-followup22-evidence/runtime/unqualified/B1-live-2/B1-live/live/TestProbe_BaselineException/snat.txt:6: new blank line at EOF.

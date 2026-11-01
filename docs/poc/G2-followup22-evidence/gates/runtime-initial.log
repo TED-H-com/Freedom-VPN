@@ -1,0 +1,63 @@
+START build-A-fvpn-netlab
+END build-A-fvpn-netlab exit 0
+START build-A-fvpn-agent
+END build-A-fvpn-agent exit 0
+START build-A-fvpn-watchdog
+END build-A-fvpn-watchdog exit 0
+START build-A-fvpn-labcontrol
+END build-A-fvpn-labcontrol exit 0
+START image-A
+END image-A exit 0
+START build-B-fvpn-netlab
+END build-B-fvpn-netlab exit 0
+START build-B-fvpn-agent
+END build-B-fvpn-agent exit 0
+START build-B-fvpn-watchdog
+END build-B-fvpn-watchdog exit 0
+START build-B-fvpn-labcontrol
+END build-B-fvpn-labcontrol exit 0
+START image-B
+END image-B exit 0
+HOST A1-live-preflight-1 quiet True r 1 idle 81 suites False
+START A1-live-up
+END A1-live-up exit 0
+START A1-live-copy-fvpn-agent
+END A1-live-copy-fvpn-agent exit 0
+START A1-live-copy-fvpn-labcontrol
+END A1-live-copy-fvpn-labcontrol exit 0
+START A1-live-copy-fvpn-watchdog
+END A1-live-copy-fvpn-watchdog exit 0
+START A1-live-copy-fvpn-netlab
+END A1-live-copy-fvpn-netlab exit 0
+START A1-live-collector
+END A1-live-collector exit 0
+START A1-live-chmod
+END A1-live-chmod exit 0
+HOST A1-live-ready-1 quiet True r 1 idle 84 suites False
+START A1-live-suite
+END A1-live-suite exit 1
+START A1-live-down
+END A1-live-down exit 0
+START remove-image-a
+END remove-image-a exit 0
+START remove-image-b
+END remove-image-b exit 0
+Traceback (most recent call last):
+  File "<worktree>/.agent/f22-run.py", line 124, in <module>
+    for which in ['live','agent']:suite(leg,leg[0],configs[leg[0]],which)
+                                  ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<worktree>/.agent/f22-run.py", line 107, in suite
+    post=host(name+'-postflight')
+  File "<worktree>/.agent/f22-run.py", line 36, in host
+    p=subprocess.run(['vmstat','5','7'],text=True,capture_output=True,check=True)
+  File "/usr/lib/python3.14/subprocess.py", line 557, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.14/subprocess.py", line 1221, in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+                     ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.14/subprocess.py", line 2153, in _communicate
+    ready = selector.select(timeout)
+  File "/usr/lib/python3.14/selectors.py", line 398, in select
+    fd_event_list = self._selector.poll(timeout)
+KeyboardInterrupt

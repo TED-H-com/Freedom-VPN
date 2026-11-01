@@ -1,0 +1,2721 @@
+{
+  "test_only": true,
+  "note": "New resume evidence only. Original first-window evidence and pins remain unchanged.",
+  "files": [
+    {
+      "path": "analysis/R-A1-agent-trace.json",
+      "bytes": 15720,
+      "sha256": "174955d2d97d24b4484f64ef3e490bc2b4b086872e9d604b4ca3327acf2fef2a"
+    },
+    {
+      "path": "analysis/R-A1-agent.json",
+      "bytes": 97749,
+      "sha256": "ea77a560ffab2f5b3e027b1842b72442f2ab832504d7f311ac88b3968334e7f4"
+    },
+    {
+      "path": "analysis/R-A2-agent-trace.json",
+      "bytes": 15855,
+      "sha256": "76a6ffdd6e2b915d9faafac64f6bc3affe5cafd994b18ebfc348428e5bb328f3"
+    },
+    {
+      "path": "analysis/R-A2-agent.json",
+      "bytes": 96659,
+      "sha256": "183963871b9c8a78f13eebdf0f2f2b4ca84788851d86e92bebd523ca2f8ce1c5"
+    },
+    {
+      "path": "analysis/R-B1-agent-trace.json",
+      "bytes": 15882,
+      "sha256": "35bb68fdafb75c3c617d33658bcb1e01ee7c246651008ff0329e75a4e80d4860"
+    },
+    {
+      "path": "analysis/R-B1-agent.json",
+      "bytes": 94124,
+      "sha256": "44a16383d1813f5d6fa34cd1be6efc3bde45d325481b1281718fcfe1225f4582"
+    },
+    {
+      "path": "analysis/excluded-R-A1-agent-1.json",
+      "bytes": 97103,
+      "sha256": "c18a8f96971ad5df5ec8e2347e488174c0121f55fc35a88e13e193200a63e960"
+    },
+    {
+      "path": "analysis/excluded-R-A2-agent-1.json",
+      "bytes": 97292,
+      "sha256": "aeeb06a9177b32fc291d629b5c78cdfa73d87b9a6a366bfd19410c4c55326950"
+    },
+    {
+      "path": "analysis/excluded-R-A2-agent-2.json",
+      "bytes": 97333,
+      "sha256": "c8c10a04a5c7da14099193a0c3b0b5dfdc285fed49bfe1b917b8c68449d44579"
+    },
+    {
+      "path": "analysis/excluded-R-A2-agent-3.json",
+      "bytes": 97291,
+      "sha256": "5cbc0b5b114a20ce1aa559203660bfd345ad4a192a673773e8e29287e3f239e4"
+    },
+    {
+      "path": "analysis/excluded-R-A2-agent-4.json",
+      "bytes": 96659,
+      "sha256": "642f65830f1a01a509297725a75d99641ae117a6d4c93ebab0b1d4f0984a684f"
+    },
+    {
+      "path": "analysis/excluded-R-B1-agent-1.json",
+      "bytes": 95183,
+      "sha256": "55d5284edec25400645a8f41610decca557b49fcd539bdbbf12201d1137e47cb"
+    },
+    {
+      "path": "analysis/excluded-R-B1-agent-2.json",
+      "bytes": 96459,
+      "sha256": "a93b5bbb48b47f936dc28ba6e5c9c649fc652e2b3ee582ad78cae24837fa89ff"
+    },
+    {
+      "path": "analysis/excluded-R-B2-agent-1.json",
+      "bytes": 97329,
+      "sha256": "f993f3573020baed468ebb26c3cefbca625afd4d1e8d75d98e41a5039fe0ef8b"
+    },
+    {
+      "path": "analysis/excluded-R-B2-agent-2.json",
+      "bytes": 97330,
+      "sha256": "67968351b15936a38ead9a8ced58914ebbeb22bd13663a2170f422f84a844f53"
+    },
+    {
+      "path": "command-audit.json",
+      "bytes": 5389,
+      "sha256": "82cbc6f02ce130ba20d37275c50098ccc0c4887bee8fd0648bc1ea2383f41d42"
+    },
+    {
+      "path": "comparison.json",
+      "bytes": 31524,
+      "sha256": "d40808c4ae07a2c8a5ede94ecd7b4ad46e12719b850fdb9181fa9bbd688311f7"
+    },
+    {
+      "path": "distribution-table.md",
+      "bytes": 1256,
+      "sha256": "20f8f8c811814e3c72f99889c7b5ad2da9d0796ac1d47dd2af512a328bc91e9c"
+    },
+    {
+      "path": "failed-apply-index.json",
+      "bytes": 29545,
+      "sha256": "a8ab776589f7271adc7e3b3cdd931f66238e780f9217ad9f11dbb7940e22e3dd"
+    },
+    {
+      "path": "gates/agent-consumers.log",
+      "bytes": 336,
+      "sha256": "72b08f83d57dc4ad1ab6333873528de387f73546e2091dd158b404b59d7b0a41"
+    },
+    {
+      "path": "gates/committed-evidence.log",
+      "bytes": 3007,
+      "sha256": "d19a8be09354a06440cfbd75275a371b74621462d644f7f5b8ad22624b52f7c3"
+    },
+    {
+      "path": "gates/diff-replay.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "gates/diff.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "gates/evidence-replay.log",
+      "bytes": 3007,
+      "sha256": "8d8e1484100675fc700066168a035d0f4dcc6619a7130fdf6513d55fd92a3905"
+    },
+    {
+      "path": "gates/final-results.json",
+      "bytes": 2391,
+      "sha256": "7d51e211ab2d5a69b8c35fbe2955408e2bfe640551cf7496d08963833c73ddd5"
+    },
+    {
+      "path": "gates/go-lint.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "gates/gofmt.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "gates/handover.log",
+      "bytes": 60,
+      "sha256": "47c2fb2b8b0ca2091f4b2a8f971a1889af7691ebce45aa4e064b064cf7ccbebd"
+    },
+    {
+      "path": "gates/lane.log",
+      "bytes": 232,
+      "sha256": "2a89a90f4d94d96df687649384bb1b41f22448e27de321ff4af7e9190fb9255b"
+    },
+    {
+      "path": "gates/replay-results.json",
+      "bytes": 781,
+      "sha256": "1df3ff75ee26d1a23c7416c936abbb155b30a02ac155517e3bd25eda0d6fe555"
+    },
+    {
+      "path": "gates/runtime-driver.log",
+      "bytes": 17387,
+      "sha256": "f8cd4a6f2f19bbd3940ac81da206724931a01c48197e980e50b63ff2b0f65b7d"
+    },
+    {
+      "path": "gates/staged-diff-replay.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "gates/staged-diff.log",
+      "bytes": 372,
+      "sha256": "c343065c4867bacd24f5dfcee84354e23a80a1dd291de4d78d0a4c26b4487098"
+    },
+    {
+      "path": "gates/vet.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "harness/f22-resume-analyze.py",
+      "bytes": 7198,
+      "sha256": "062f652ec450ba2d7f619945ad826dfb50a69a7e397b9cf701549055d88f7427"
+    },
+    {
+      "path": "harness/f22-resume-audit.py",
+      "bytes": 4015,
+      "sha256": "4aceac1403e7487cfc9783056807116b4f4a0d72f8b496aa5629a8b4fc0f5bc1"
+    },
+    {
+      "path": "harness/f22-resume-gates.py",
+      "bytes": 1371,
+      "sha256": "85f4175f9501e20acda2c39c1fcce8bc993d6097795c247c60eb587eb6189693"
+    },
+    {
+      "path": "harness/f22-resume-hosts.py",
+      "bytes": 2562,
+      "sha256": "685e35b51cdb76de800e9f51d92ce3d4bb87bcd4036d574fcf8da81a94092483"
+    },
+    {
+      "path": "harness/f22-resume-run.py",
+      "bytes": 9329,
+      "sha256": "d506a935a817a6a80d178b872d0a349428a3c9e1507f8180d148547b846c0a89"
+    },
+    {
+      "path": "host-summary.json",
+      "bytes": 9712,
+      "sha256": "f0a37b8a6ac62208a49208a1c3d0aa5f0999dfe95b9ebf868e4af0bb6cf8c794"
+    },
+    {
+      "path": "qualification-summary.json",
+      "bytes": 20041,
+      "sha256": "efaf933ab44adf4c798a2fbc1d20c873240218f2c9ed0ff0f3483f8ea11b8a2a"
+    },
+    {
+      "path": "runtime/R-A1-agent/admission-after-start.json",
+      "bytes": 22,
+      "sha256": "094eac9d7d69a458263bb5ff5c67343d839345014b73b5d742c88aeed23bd882"
+    },
+    {
+      "path": "runtime/R-A1-agent/agent/assembled/agent.log",
+      "bytes": 13255,
+      "sha256": "94c789eb78ca49a509cf436dddf668fb8c053f24d089bd79e0e08ad2fa16338f"
+    },
+    {
+      "path": "runtime/R-A1-agent/agent/assembled/analysis.json",
+      "bytes": 23160,
+      "sha256": "6803b05249e5cffc50185cd4e48c04e5859a0c18ffa55d81683fc52b911965b1"
+    },
+    {
+      "path": "runtime/R-A1-agent/agent/assembled/expiry.json",
+      "bytes": 31702,
+      "sha256": "546c87833f72db4634a48e2bea259dee5934c4571ae1aa08926d6d3e45bcacdd"
+    },
+    {
+      "path": "runtime/R-A1-agent/agent/assembled/expiry.json.restart.json",
+      "bytes": 103,
+      "sha256": "05125fe2835ba3718cae81d4e4ec8f72e7e4e36ee3e0675bc41cb5cb6b9512e6"
+    },
+    {
+      "path": "runtime/R-A1-agent/agent/assembled/observations.json",
+      "bytes": 18507,
+      "sha256": "2b7217cbcc1063b79803ee0c720f074d01f1eefcdc4f97d61a41ff1dad95e113"
+    },
+    {
+      "path": "runtime/R-A1-agent/agent/assembled/operations.jsonl",
+      "bytes": 1025273,
+      "sha256": "3dca3231f67a5587e6d8f1baeea2b6fecee3bf58477df5e367d4da65e56140df"
+    },
+    {
+      "path": "runtime/R-A1-agent/agent/assembled/renewal.json",
+      "bytes": 429844,
+      "sha256": "f10b727ab24d18847729558fe5731125f0dd374b231e7ccbd934c752d3aba132"
+    },
+    {
+      "path": "runtime/R-A1-agent/agent/assembled/watchdog.log",
+      "bytes": 763,
+      "sha256": "a3095004ace10081dab68b65a4453facf4ea477141ac97b1b3e29d6560e383e3"
+    },
+    {
+      "path": "runtime/R-A1-agent/agent/suite/agent.log",
+      "bytes": 37903,
+      "sha256": "794222f6bf28c59142560a71a2d2d144d5a06d8bbd3030b6d43da85986bd904f"
+    },
+    {
+      "path": "runtime/R-A1-agent/agent/suite/operations.jsonl",
+      "bytes": 1377652,
+      "sha256": "6baefa2d564d6610e44bff25dd14c5513b41b5f6d26913c4f7e61a6acff2e31e"
+    },
+    {
+      "path": "runtime/R-A1-agent/agent/suite/watchdog.log",
+      "bytes": 3051,
+      "sha256": "5c3895a207c54c253b61ac513aa403994619744b16c05dc0b027d965b927b50b"
+    },
+    {
+      "path": "runtime/R-A1-agent/status.json",
+      "bytes": 61,
+      "sha256": "6bfcd99df47cf6ddc37da47974bec8e3e733e061b434bfd8da44247ca586232f"
+    },
+    {
+      "path": "runtime/R-A1-agent-chmod.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/R-A1-agent-collector-dir.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/R-A1-agent-collector.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/R-A1-agent-commands.log",
+      "bytes": 113,
+      "sha256": "1acc26ef377de14971a458a185a1e9caeb63a7a9dbcd2cff90ba707ca3a0ded2"
+    },
+    {
+      "path": "runtime/R-A1-agent-copy-fvpn-agent.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/R-A1-agent-copy-fvpn-labcontrol.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/R-A1-agent-copy-fvpn-netlab.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/R-A1-agent-copy-fvpn-watchdog.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/R-A1-agent-down.log",
+      "bytes": 851,
+      "sha256": "b924ad8417d6469e6e3c2558dc106aa25539b5e63e3108c4e33e6ac5df89b25e"
+    },
+    {
+      "path": "runtime/R-A1-agent-postflight.json",
+      "bytes": 1745,
+      "sha256": "66021b0df3c156074116b67d9aff6f198c3244aa18ccd64489db47d44882190c"
+    },
+    {
+      "path": "runtime/R-A1-agent-preflight-1.json",
+      "bytes": 1738,
+      "sha256": "678d92e44f9267cf3953a23691c4c4877bb897a293766faecf3b10d16fbd7361"
+    },
+    {
+      "path": "runtime/R-A1-agent-ready-1.json",
+      "bytes": 1740,
+      "sha256": "7e2b7e5e57705d71dd1959360227752f75d1ea380fec82ea1d8a5eb9352add92"
+    },
+    {
+      "path": "runtime/R-A1-agent-suite.log",
+      "bytes": 5673,
+      "sha256": "e5e2002ac4797d3eee1bd05496551caf7e181c429677d096e0e25a88edbd0bf7"
+    },
+    {
+      "path": "runtime/R-A1-agent-trace/admission-after-start.json",
+      "bytes": 22,
+      "sha256": "094eac9d7d69a458263bb5ff5c67343d839345014b73b5d742c88aeed23bd882"
+    },
+    {
+      "path": "runtime/R-A1-agent-trace/agent/suite/agent.log",
+      "bytes": 68589,
+      "sha256": "894c8e2e4c35d699684a3f6dfa72fbcdea119853607374ff84b4f5a1a5546fcd"
+    },
+    {
+      "path": "runtime/R-A1-agent-trace/agent/suite/operations.jsonl",
+      "bytes": 258660,
+      "sha256": "78ecd4c16fcb4ad8d917ffabedbebd6274c93f622bb456bec3ddedc8b06d2a22"
+    },
+    {
+      "path": "runtime/R-A1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/agent-at10-node.err",
+      "bytes": 207,
+      "sha256": "110360cadca79556d9cff630942ca26e1912c0561b795e75fb34ed0f59e93ce4"
+    },
+    {
+      "path": "runtime/R-A1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/agent-at10-node.txt",
+      "bytes": 57072,
+      "sha256": "2dec6ddd8705c840f70b7554bc3ebeda30a91bb5c5fd367d6a9983c0ce24f3d7"
+    },
+    {
+      "path": "runtime/R-A1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/agent-at10-origin.err",
+      "bytes": 207,
+      "sha256": "e80d1bc2c6a3942538e351f1278780e692d6b611057c9beef3886f5f50b6ff98"
+    },
+    {
+      "path": "runtime/R-A1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/agent-at10-origin.txt",
+      "bytes": 28710,
+      "sha256": "51677bd2967806eafecee0b34bbe565af1ffa2918664e59e8716eb4545c858d4"
+    },
+    {
+      "path": "runtime/R-A1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/agent-at10-responder.err",
+      "bytes": 207,
+      "sha256": "e80d1bc2c6a3942538e351f1278780e692d6b611057c9beef3886f5f50b6ff98"
+    },
+    {
+      "path": "runtime/R-A1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/agent-at10-responder.txt",
+      "bytes": 28536,
+      "sha256": "7960e842ab8417bb6a4d08ce0f7a7fc494777409270b1aa62750223ab7369888"
+    },
+    {
+      "path": "runtime/R-A1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/agent-stream.txt",
+      "bytes": 1584,
+      "sha256": "1b5dfeb00d576a6663e5120f4a640c5b3c4b7519cfc74440c40f8c3528f4f0f2"
+    },
+    {
+      "path": "runtime/R-A1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/agent-stream.txt.jsonl",
+      "bytes": 48570,
+      "sha256": "56d3b8cba52c8a65bd39120ca55b29d8c5abcdc3b3bd5bde30792c59d68e5649"
+    },
+    {
+      "path": "runtime/R-A1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/agent.txt",
+      "bytes": 68589,
+      "sha256": "894c8e2e4c35d699684a3f6dfa72fbcdea119853607374ff84b4f5a1a5546fcd"
+    },
+    {
+      "path": "runtime/R-A1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/baseline-observation.json",
+      "bytes": 4127,
+      "sha256": "3cd61e7edf40006f42779d1cf0dac4259188c9a354c0c0dba52d848f38651f39"
+    },
+    {
+      "path": "runtime/R-A1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/baseline-serving.json",
+      "bytes": 24842,
+      "sha256": "44f9b79c3d7ef1cca365dc358776d600bb0e854fe132f1104a31c688bfbd88e7"
+    },
+    {
+      "path": "runtime/R-A1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/baseline-serving.txt",
+      "bytes": 8149,
+      "sha256": "98981ee0e9a8c6fccb872f9dd187d4b43e720f38eb80dbde4da722838c0e73d5"
+    },
+    {
+      "path": "runtime/R-A1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/before-enrollment.json",
+      "bytes": 5944,
+      "sha256": "eb11966bbd8c717554ad5e6b93f3dc77194f806da9660a4b7afb3c7c278c759c"
+    },
+    {
+      "path": "runtime/R-A1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/before-enrollment.txt",
+      "bytes": 1326,
+      "sha256": "d9e738014f654b5ef81dacc81c28b753f37756c5c476f3707418079e9376e619"
+    },
+    {
+      "path": "runtime/R-A1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/final-observation.json",
+      "bytes": 4134,
+      "sha256": "55bc94313b84ff513fab5389f3215ac931f91dea032b23da15c2e53be830932b"
+    },
+    {
+      "path": "runtime/R-A1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/final-serving.json",
+      "bytes": 25086,
+      "sha256": "35a002f3ad5bababf5d822012d0a16eeb729e66947f253e42132ccdc5dda8048"
+    },
+    {
+      "path": "runtime/R-A1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/final-serving.txt",
+      "bytes": 8158,
+      "sha256": "f582d80d7514067926ba09a58ae544ecc04abad1b0893c449c9d5c1ce9aa3c9c"
+    },
+    {
+      "path": "runtime/R-A1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/marker-observation.json",
+      "bytes": 4087,
+      "sha256": "c06cd52df3577a08edfbbdebf12fd6aa61c9d38bb3552a22afbb43ecb2f3330e"
+    },
+    {
+      "path": "runtime/R-A1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/marker-serving.json",
+      "bytes": 25000,
+      "sha256": "809db0e6c4c105fe714af734139aef5871a12b5aab09cf8bf996d03c61174ff0"
+    },
+    {
+      "path": "runtime/R-A1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/marker-serving.txt",
+      "bytes": 8148,
+      "sha256": "05957d9650c4985c1da70800dcc296da22b16d9e4eb0436840e861619f0fd7a0"
+    },
+    {
+      "path": "runtime/R-A1-agent-trace/status.json",
+      "bytes": 61,
+      "sha256": "6bfcd99df47cf6ddc37da47974bec8e3e733e061b434bfd8da44247ca586232f"
+    },
+    {
+      "path": "runtime/R-A1-agent-trace-chmod.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/R-A1-agent-trace-collector-dir.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/R-A1-agent-trace-collector.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/R-A1-agent-trace-commands.log",
+      "bytes": 113,
+      "sha256": "1acc26ef377de14971a458a185a1e9caeb63a7a9dbcd2cff90ba707ca3a0ded2"
+    },
+    {
+      "path": "runtime/R-A1-agent-trace-copy-fvpn-agent.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/R-A1-agent-trace-copy-fvpn-labcontrol.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/R-A1-agent-trace-copy-fvpn-netlab.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/R-A1-agent-trace-copy-fvpn-watchdog.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/R-A1-agent-trace-down.log",
+      "bytes": 851,
+      "sha256": "b924ad8417d6469e6e3c2558dc106aa25539b5e63e3108c4e33e6ac5df89b25e"
+    },
+    {
+      "path": "runtime/R-A1-agent-trace-postflight.json",
+      "bytes": 1743,
+      "sha256": "1dd235c9bb3d965c096bc7b89d9c0fc8cda038c9e1a4cb5fa7b77962c867a7ac"
+    },
+    {
+      "path": "runtime/R-A1-agent-trace-preflight-1.json",
+      "bytes": 1753,
+      "sha256": "8bd544a507ae2c74bdc2188a262259c222a8b359de92df1ddcacbd2bbb869b02"
+    },
+    {
+      "path": "runtime/R-A1-agent-trace-preflight-2.json",
+      "bytes": 1742,
+      "sha256": "ed9ddc62b8eb4660ff0a7fac1e7c3246debb00913b50e4b77d5bd282bd2097eb"
+    },
+    {
+      "path": "runtime/R-A1-agent-trace-preflight-3.json",
+      "bytes": 1743,
+      "sha256": "9c6efe9ff6226cb2cb3c7e72d4f23f6094754b7c60e07a89c61cbe67fc3c36e2"
+    },
+    {
+      "path": "runtime/R-A1-agent-trace-ready-1.json",
+      "bytes": 1736,
+      "sha256": "f4440d0653363e6610358face006e383c7dee52ca9cbc123b57bbc613fc8b24d"
+    },
+    {
+      "path": "runtime/R-A1-agent-trace-suite.log",
+      "bytes": 390,
+      "sha256": "7ec20b8861a85aeb1ee0f6e33670eca8a0459be177fb4f781ca736e8f52fbbb4"
+    },
+    {
+      "path": "runtime/R-A1-agent-trace-up.log",
+      "bytes": 3539,
+      "sha256": "ea5530c6bad2019516364ee3b38e87fd35fbab7a71a1a49bc25de4eed8c1869f"
+    },
+    {
+      "path": "runtime/R-A1-agent-up.log",
+      "bytes": 3544,
+      "sha256": "4332bce374b6711316d05981a8c9f7f83f847650cb44aede3aa4b03aec8a9a1d"
+    },
+    {
+      "path": "runtime/R-A2-agent/admission-after-start.json",
+      "bytes": 22,
+      "sha256": "094eac9d7d69a458263bb5ff5c67343d839345014b73b5d742c88aeed23bd882"
+    },
+    {
+      "path": "runtime/R-A2-agent/agent/assembled/agent.log",
+      "bytes": 13313,
+      "sha256": "524e84f4c89683124f95bb0b206a08e014f23d231c75daa211a9df7ed7072a88"
+    },
+    {
+      "path": "runtime/R-A2-agent/agent/assembled/analysis.json",
+      "bytes": 30983,
+      "sha256": "48a459b423a663a073e4f6c21e38382c3453179156b05fdc4492678fb96f9247"
+    },
+    {
+      "path": "runtime/R-A2-agent/agent/assembled/expiry.json",
+      "bytes": 32252,
+      "sha256": "4e523293725befb461989e0845ae5cb9a1c0bc7c3aaf9bdf6e583877341aebd0"
+    },
+    {
+      "path": "runtime/R-A2-agent/agent/assembled/expiry.json.restart.json",
+      "bytes": 106,
+      "sha256": "8c18b2be9a31fedea451812601e815b094c5f0a545182047d4df6035100e4307"
+    },
+    {
+      "path": "runtime/R-A2-agent/agent/assembled/observations.json",
+      "bytes": 18506,
+      "sha256": "e9a8c0c230dccc43d4de1aaf6d58a2fa84d049dcb9b09f99081076048011f54c"
+    },
+    {
+      "path": "runtime/R-A2-agent/agent/assembled/operations.jsonl",
+      "bytes": 1026264,
+      "sha256": "020750b5f0d611bdbceb6f5e54cb59b381b800f6386f724ea18d583b9d0fa0fe"
+    },
+    {
+      "path": "runtime/R-A2-agent/agent/assembled/renewal.json",
+      "bytes": 437118,
+      "sha256": "21765b51474e8b7a56a9a922c6235227a46e5a9b3824b1278ce02a4d77b3ddc7"
+    },
+    {
+      "path": "runtime/R-A2-agent/agent/assembled/watchdog.log",
+      "bytes": 768,
+      "sha256": "dd5b8e9cd55f035633c24e56a402f1cc64576adb03f4e698935a756cf025fb83"
+    },
+    {
+      "path": "runtime/R-A2-agent/agent/suite/agent.log",
+      "bytes": 41161,
+      "sha256": "5c575eeae48824f41e1e932563f4f967863cbd0da4d5b66c4d674776da9b3a63"
+    },
+    {
+      "path": "runtime/R-A2-agent/agent/suite/operations.jsonl",
+      "bytes": 1400260,
+      "sha256": "09dfe6cabfcb2d9e5046dbff1efcbfecfe2571bf9bc875b394d7d8ef8eb227fc"
+    },
+    {
+      "path": "runtime/R-A2-agent/agent/suite/watchdog.log",
+      "bytes": 3073,
+      "sha256": "0f3fc60661025f67daefb73302c59f78af6d0029035b11a5603c75cf5e2d0ccd"
+    },
+    {
+      "path": "runtime/R-A2-agent/status.json",
+      "bytes": 61,
+      "sha256": "1f1b38418c3578b7f04fb4cc5a5f54c98f03ebcd71cd4212b965681a4b9e83bf"
+    },
+    {
+      "path": "runtime/R-A2-agent-chmod.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/R-A2-agent-collector-dir.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/R-A2-agent-collector.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/R-A2-agent-commands.log",
+      "bytes": 113,
+      "sha256": "1acc26ef377de14971a458a185a1e9caeb63a7a9dbcd2cff90ba707ca3a0ded2"
+    },
+    {
+      "path": "runtime/R-A2-agent-copy-fvpn-agent.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/R-A2-agent-copy-fvpn-labcontrol.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/R-A2-agent-copy-fvpn-netlab.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/R-A2-agent-copy-fvpn-watchdog.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/R-A2-agent-down.log",
+      "bytes": 851,
+      "sha256": "b924ad8417d6469e6e3c2558dc106aa25539b5e63e3108c4e33e6ac5df89b25e"
+    },
+    {
+      "path": "runtime/R-A2-agent-postflight.json",
+      "bytes": 1730,
+      "sha256": "357b17e3c466a36777a08e6545d60b912b8fff6789489a6a769ffa3213a35a0f"
+    },
+    {
+      "path": "runtime/R-A2-agent-preflight-1.json",
+      "bytes": 1735,
+      "sha256": "bf97ee8253ed8185a53c3364ac52607855c0caa6ed502141a16051e219f52057"
+    },
+    {
+      "path": "runtime/R-A2-agent-preflight-2.json",
+      "bytes": 1729,
+      "sha256": "ff53d6322c01130b7ae021a7f956bf16588d3335314931d96a17fdad94f93eb8"
+    },
+    {
+      "path": "runtime/R-A2-agent-ready-1.json",
+      "bytes": 1730,
+      "sha256": "931e0ac3c6cc482c71e47d293e74e6cb43c0f983a94b01f2f7915ade10b6e40a"
+    },
+    {
+      "path": "runtime/R-A2-agent-suite.log",
+      "bytes": 18897,
+      "sha256": "47d5adba78eb9782f2324f3183bd094ad71efc3f755de18bb08e2220f1918ef6"
+    },
+    {
+      "path": "runtime/R-A2-agent-trace/admission-after-start.json",
+      "bytes": 22,
+      "sha256": "094eac9d7d69a458263bb5ff5c67343d839345014b73b5d742c88aeed23bd882"
+    },
+    {
+      "path": "runtime/R-A2-agent-trace/agent/suite/agent.log",
+      "bytes": 69365,
+      "sha256": "50ce6d8654b3e867ff2d815efbb2c0888eb9cff5f73afcc43cd5fb1b5b1a0d0f"
+    },
+    {
+      "path": "runtime/R-A2-agent-trace/agent/suite/operations.jsonl",
+      "bytes": 260908,
+      "sha256": "e3a3fbfe8e09ae6aba63674ab2efdfbe03de66f2692ffb9d78fbf0a7ddbbb840"
+    },
+    {
+      "path": "runtime/R-A2-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/agent-at10-node.err",
+      "bytes": 207,
+      "sha256": "110360cadca79556d9cff630942ca26e1912c0561b795e75fb34ed0f59e93ce4"
+    },
+    {
+      "path": "runtime/R-A2-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/agent-at10-node.txt",
+      "bytes": 56884,
+      "sha256": "a5f3764d576caa8abb76a76a8ff21fe058dffb16ab8e993dbf8c7740057d4a49"
+    },
+    {
+      "path": "runtime/R-A2-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/agent-at10-origin.err",
+      "bytes": 207,
+      "sha256": "e80d1bc2c6a3942538e351f1278780e692d6b611057c9beef3886f5f50b6ff98"
+    },
+    {
+      "path": "runtime/R-A2-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/agent-at10-origin.txt",
+      "bytes": 28616,
+      "sha256": "f6ba439bd208d43996e3771794e26a60716c7a74eff8677f58f8345edd199644"
+    },
+    {
+      "path": "runtime/R-A2-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/agent-at10-responder.err",
+      "bytes": 207,
+      "sha256": "e80d1bc2c6a3942538e351f1278780e692d6b611057c9beef3886f5f50b6ff98"
+    },
+    {
+      "path": "runtime/R-A2-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/agent-at10-responder.txt",
+      "bytes": 28442,
+      "sha256": "eec533071eb3032f90d8598d3684f82ccfb430eaa786c260aca92b508f61c373"
+    },
+    {
+      "path": "runtime/R-A2-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/agent-stream.txt",
+      "bytes": 1584,
+      "sha256": "d74dd4846718de88d6bd72167270f48e47f787c808b1749ccb4a86bad05b0027"
+    },
+    {
+      "path": "runtime/R-A2-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/agent-stream.txt.jsonl",
+      "bytes": 49001,
+      "sha256": "dbe92fea66e79a1ca2694666ac5d8431f9b555718db7d3b8cdd0763c9058bc2f"
+    },
+    {
+      "path": "runtime/R-A2-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/agent.txt",
+      "bytes": 69365,
+      "sha256": "50ce6d8654b3e867ff2d815efbb2c0888eb9cff5f73afcc43cd5fb1b5b1a0d0f"
+    },
+    {
+      "path": "runtime/R-A2-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/baseline-observation.json",
+      "bytes": 4126,
+      "sha256": "dfc9ff4f10460475b1d6d38cecc6f3bf8e665bfe056acd053d2087134d9f6679"
+    },
+    {
+      "path": "runtime/R-A2-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/baseline-serving.json",
+      "bytes": 24842,
+      "sha256": "6b32642bf5d0fea2ff0a201e057aae12f6912571eb055ed543d8283f3c67cc38"
+    },
+    {
+      "path": "runtime/R-A2-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/baseline-serving.txt",
+      "bytes": 8149,
+      "sha256": "90f3e07aaee9947892db684adfa07b95a1a7a12ed334d8829998fabd8d87f056"
+    },
+    {
+      "path": "runtime/R-A2-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/before-enrollment.json",
+      "bytes": 5944,
+      "sha256": "a4de898d38af118c8e52f8077fda21ca56779590963561a9d6586a696a71a865"
+    },
+    {
+      "path": "runtime/R-A2-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/before-enrollment.txt",
+      "bytes": 1326,
+      "sha256": "d9e738014f654b5ef81dacc81c28b753f37756c5c476f3707418079e9376e619"
+    },
+    {
+      "path": "runtime/R-A2-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/final-observation.json",
+      "bytes": 4125,
+      "sha256": "4fa74d7c3b332c8aacd60f3863fa99fc46e608bd8b203b89c34e91d8530c796e"
+    },
+    {
+      "path": "runtime/R-A2-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/final-serving.json",
+      "bytes": 25086,
+      "sha256": "c058286ec14d99db4140b9f82810558acde2716e4720979ed388dbc7ba2c4a13"
+    },
+    {
+      "path": "runtime/R-A2-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/final-serving.txt",
+      "bytes": 8158,
+      "sha256": "1a23531924c14797a64494b644eb0aa58f85b138692e9e2270a18e6c8b4541ca"
+    },
+    {
+      "path": "runtime/R-A2-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/marker-observation.json",
+      "bytes": 4097,
+      "sha256": "2265007a20382abd7dda1e94564625262ccad33e1a06ad8ecd70f8570b7c42ef"
+    },
+    {
+      "path": "runtime/R-A2-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/marker-serving.json",
+      "bytes": 25000,
+      "sha256": "d0d528554f1ee605485b6f6aa646680375b68a7f142a87332b782ad9809d923d"
+    },
+    {
+      "path": "runtime/R-A2-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/marker-serving.txt",
+      "bytes": 8148,
+      "sha256": "328cf5f2cd156ff5789a84e04f77b993ec5236d9f869fd615a18bc8f9f8f5940"
+    },
+    {
+      "path": "runtime/R-A2-agent-trace/status.json",
+      "bytes": 61,
+      "sha256": "6bfcd99df47cf6ddc37da47974bec8e3e733e061b434bfd8da44247ca586232f"
+    },
+    {
+      "path": "runtime/R-A2-agent-trace-chmod.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/R-A2-agent-trace-collector-dir.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/R-A2-agent-trace-collector.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/R-A2-agent-trace-commands.log",
+      "bytes": 113,
+      "sha256": "1acc26ef377de14971a458a185a1e9caeb63a7a9dbcd2cff90ba707ca3a0ded2"
+    },
+    {
+      "path": "runtime/R-A2-agent-trace-copy-fvpn-agent.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/R-A2-agent-trace-copy-fvpn-labcontrol.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/R-A2-agent-trace-copy-fvpn-netlab.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/R-A2-agent-trace-copy-fvpn-watchdog.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/R-A2-agent-trace-down.log",
+      "bytes": 851,
+      "sha256": "b924ad8417d6469e6e3c2558dc106aa25539b5e63e3108c4e33e6ac5df89b25e"
+    },
+    {
+      "path": "runtime/R-A2-agent-trace-postflight.json",
+      "bytes": 1735,
+      "sha256": "1b291356f850c8e0ac533bd3f5ecb300ac0af12dfa36c5eb5f1f0f0723720485"
+    },
+    {
+      "path": "runtime/R-A2-agent-trace-preflight-1.json",
+      "bytes": 1736,
+      "sha256": "1d76d45982801a80ada8b433b76fce056a5554198565717a9570d5bf19377c76"
+    },
+    {
+      "path": "runtime/R-A2-agent-trace-ready-1.json",
+      "bytes": 1734,
+      "sha256": "6dc3bd69071b613d53260f70db5cfd6ad99f57d28a077b1eb7ce7f8bf3b08900"
+    },
+    {
+      "path": "runtime/R-A2-agent-trace-suite.log",
+      "bytes": 390,
+      "sha256": "10523859cbe1e60a8733ba1f49ab3ffd7d8fcf8a7ed11a4a21c534f2109af94d"
+    },
+    {
+      "path": "runtime/R-A2-agent-trace-up.log",
+      "bytes": 3648,
+      "sha256": "96f1ebd06a78aacc07641f06ec6144fd0c12cc403c2feb59e19c21f34c92b921"
+    },
+    {
+      "path": "runtime/R-A2-agent-up.log",
+      "bytes": 3539,
+      "sha256": "23eb2da0a112a15f3fcadff5031e71433479dd3b75341847181d3571c9bf59f6"
+    },
+    {
+      "path": "runtime/R-B1-agent/admission-after-start.json",
+      "bytes": 22,
+      "sha256": "094eac9d7d69a458263bb5ff5c67343d839345014b73b5d742c88aeed23bd882"
+    },
+    {
+      "path": "runtime/R-B1-agent/agent/assembled/agent.log",
+      "bytes": 13313,
+      "sha256": "48159ef73cb8a2bc6ed743384d9b5d2b84b990aa7dcf6377b978289beeea2537"
+    },
+    {
+      "path": "runtime/R-B1-agent/agent/assembled/analysis.json",
+      "bytes": 20261,
+      "sha256": "c92dd44759188b20c4c32ef6976a9cc8a0081ef4f7ca895f16dc941d939e88e4"
+    },
+    {
+      "path": "runtime/R-B1-agent/agent/assembled/expiry.json",
+      "bytes": 32252,
+      "sha256": "0f7de3ea67a951054782524998c8372da4d200385e929a5bfab33ab05530b398"
+    },
+    {
+      "path": "runtime/R-B1-agent/agent/assembled/expiry.json.restart.json",
+      "bytes": 106,
+      "sha256": "40275760b4522de805f7ea6ebdf6d08b8e560f1bef640349269abbaabc91c5a3"
+    },
+    {
+      "path": "runtime/R-B1-agent/agent/assembled/observations.json",
+      "bytes": 18503,
+      "sha256": "311e9918e1d0257daf630b76df2c9eb76398df849450921977ebab7b56ed751f"
+    },
+    {
+      "path": "runtime/R-B1-agent/agent/assembled/operations.jsonl",
+      "bytes": 1026482,
+      "sha256": "11cd7982fefb78f39e43e3816d813be3bce61a6750886348919bc04d99b45cd6"
+    },
+    {
+      "path": "runtime/R-B1-agent/agent/assembled/renewal.json",
+      "bytes": 437547,
+      "sha256": "7655a10049dcd689336a9d3f6ed5e0640bcad7efdb8cd1b550e85957ee2e6730"
+    },
+    {
+      "path": "runtime/R-B1-agent/agent/assembled/watchdog.log",
+      "bytes": 769,
+      "sha256": "758b85b3c6272dc821fa1a0add096abef4565e7ae1fff4e29a1d933a7b462245"
+    },
+    {
+      "path": "runtime/R-B1-agent/agent/suite/agent.log",
+      "bytes": 37041,
+      "sha256": "9096de7be22e529f28d760771bbdea10048edd648703258ec318eff798855b92"
+    },
+    {
+      "path": "runtime/R-B1-agent/agent/suite/operations.jsonl",
+      "bytes": 1366238,
+      "sha256": "3284f56255fcb593c507ebc497d6151b6ef593d3e676e42c3659c60e45808a51"
+    },
+    {
+      "path": "runtime/R-B1-agent/agent/suite/watchdog.log",
+      "bytes": 2300,
+      "sha256": "e7d71a5412174a3a259ca4d1bacf59e8da07dc5605298eb6209cabb10c45bb45"
+    },
+    {
+      "path": "runtime/R-B1-agent/status.json",
+      "bytes": 61,
+      "sha256": "df09a6058fee84e03aab156cc2b0fb943c8e4b9121afb276109f80db2f4d2587"
+    },
+    {
+      "path": "runtime/R-B1-agent-chmod.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/R-B1-agent-collector-dir.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/R-B1-agent-collector.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/R-B1-agent-commands.log",
+      "bytes": 113,
+      "sha256": "1acc26ef377de14971a458a185a1e9caeb63a7a9dbcd2cff90ba707ca3a0ded2"
+    },
+    {
+      "path": "runtime/R-B1-agent-copy-fvpn-agent.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/R-B1-agent-copy-fvpn-labcontrol.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/R-B1-agent-copy-fvpn-netlab.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/R-B1-agent-copy-fvpn-watchdog.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/R-B1-agent-down.log",
+      "bytes": 851,
+      "sha256": "5e71da0a01190ebca0e74303322db261a5c7f057f5361cc99ba9c4661c9cacad"
+    },
+    {
+      "path": "runtime/R-B1-agent-postflight.json",
+      "bytes": 1741,
+      "sha256": "b1e00e397d31cac9ec10afd67b790af68f41beb70667b20a81365c1718970230"
+    },
+    {
+      "path": "runtime/R-B1-agent-preflight-1.json",
+      "bytes": 1747,
+      "sha256": "49891b14fbc5f98f82948138b1cdb756c664424b1dff401e165f579551292a2c"
+    },
+    {
+      "path": "runtime/R-B1-agent-preflight-2.json",
+      "bytes": 1739,
+      "sha256": "54b0a6f6ee548bb0e1cdc4d8735577c72321769b5a8b798bf55b65de0329ac57"
+    },
+    {
+      "path": "runtime/R-B1-agent-preflight-3.json",
+      "bytes": 1752,
+      "sha256": "a123c5ddd58647175b36b976e31f22c04bd79c9c52cdd2a74cfce7ad295c6884"
+    },
+    {
+      "path": "runtime/R-B1-agent-preflight-4.json",
+      "bytes": 1748,
+      "sha256": "60580d00198f1bd917afc854ad4dd909547677fa1b5fde2e12114808dd180784"
+    },
+    {
+      "path": "runtime/R-B1-agent-preflight-5.json",
+      "bytes": 1745,
+      "sha256": "87323e985d4a380165699264687b17a1e4f09ff9f17242b852e250e530480b44"
+    },
+    {
+      "path": "runtime/R-B1-agent-ready-1.json",
+      "bytes": 1752,
+      "sha256": "c2be6929309d81caf55d327595210c56f241516c35e8ae277f0b2c409bf321b4"
+    },
+    {
+      "path": "runtime/R-B1-agent-ready-2.json",
+      "bytes": 1753,
+      "sha256": "f057b63c2969dbeb620ebdae38a133dcbd65b346dc8273778585af9ed82a59cc"
+    },
+    {
+      "path": "runtime/R-B1-agent-suite.log",
+      "bytes": 5676,
+      "sha256": "8cab7397bd4273c0b6f0d394ed2132f2c542f85f47a9d0e40beb8d783662ac08"
+    },
+    {
+      "path": "runtime/R-B1-agent-trace/admission-after-start.json",
+      "bytes": 22,
+      "sha256": "094eac9d7d69a458263bb5ff5c67343d839345014b73b5d742c88aeed23bd882"
+    },
+    {
+      "path": "runtime/R-B1-agent-trace/agent/suite/agent.log",
+      "bytes": 2587037,
+      "sha256": "d2438de34053e62597b558fc3e1983e8c3bb9f98890e0403d6a901d9b6b80ead"
+    },
+    {
+      "path": "runtime/R-B1-agent-trace/agent/suite/operations.jsonl",
+      "bytes": 2486778,
+      "sha256": "c253394d4d71502de58ce767cf59c05c161edb875b0be2ed67a5d0f2cdf8fc14"
+    },
+    {
+      "path": "runtime/R-B1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/agent-at10-node.err",
+      "bytes": 207,
+      "sha256": "b8fbfae15d10b6b23e85fb1b843963249c4ee33bf02b1ec1f6ab4a2b74c86a9a"
+    },
+    {
+      "path": "runtime/R-B1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/agent-at10-node.txt",
+      "bytes": 58880,
+      "sha256": "703912ce47d12db8d1adeb22b27ad2ca2c79e64602def7a7c3e4fb9dbbdeead9"
+    },
+    {
+      "path": "runtime/R-B1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/agent-at10-origin.err",
+      "bytes": 207,
+      "sha256": "34b6b72fc4f3efbc48350f2b0f31fa8c4df3a6fd9af1a96f508141a147265c15"
+    },
+    {
+      "path": "runtime/R-B1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/agent-at10-origin.txt",
+      "bytes": 29620,
+      "sha256": "3c72c79489086e05948475c747b5448c21e4bd731e13724ed75876e6b442466e"
+    },
+    {
+      "path": "runtime/R-B1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/agent-at10-responder.err",
+      "bytes": 207,
+      "sha256": "34b6b72fc4f3efbc48350f2b0f31fa8c4df3a6fd9af1a96f508141a147265c15"
+    },
+    {
+      "path": "runtime/R-B1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/agent-at10-responder.txt",
+      "bytes": 29440,
+      "sha256": "ce1b8633418c7d5f0ec557c08067738f5dbcb4bdc768491b15ba31f6ff72e5cd"
+    },
+    {
+      "path": "runtime/R-B1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/agent-stream.txt",
+      "bytes": 1638,
+      "sha256": "b31a3553d60c9794a47858211014e7513f89d0c499e0078e07f73568eb1f08d9"
+    },
+    {
+      "path": "runtime/R-B1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/agent-stream.txt.jsonl",
+      "bytes": 50708,
+      "sha256": "eba291691240441f4c33ca20617a92f02c8255dae969d7e5ed73f1df0b0e3e79"
+    },
+    {
+      "path": "runtime/R-B1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/agent.txt",
+      "bytes": 2587037,
+      "sha256": "d2438de34053e62597b558fc3e1983e8c3bb9f98890e0403d6a901d9b6b80ead"
+    },
+    {
+      "path": "runtime/R-B1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/baseline-observation.json",
+      "bytes": 4127,
+      "sha256": "03c1e4f83ba1e71fdd45682f6495d17d2c79555477499f08f190498c0182b4f6"
+    },
+    {
+      "path": "runtime/R-B1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/baseline-serving.json",
+      "bytes": 24842,
+      "sha256": "3cc5422052af45b9426eeff91e07ec4182e3c0a9782ab0c0ac5ccf7e265775d0"
+    },
+    {
+      "path": "runtime/R-B1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/baseline-serving.txt",
+      "bytes": 8149,
+      "sha256": "f6f6de107ef38c73c53d297f24f34567c156866997557f5643e80d2b71108497"
+    },
+    {
+      "path": "runtime/R-B1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/before-enrollment.json",
+      "bytes": 5944,
+      "sha256": "8caa7253ec7baa97f78ed69902ffbeee2a1ee50b7e46a0c06e530f57ba7eb7ec"
+    },
+    {
+      "path": "runtime/R-B1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/before-enrollment.txt",
+      "bytes": 1326,
+      "sha256": "d9e738014f654b5ef81dacc81c28b753f37756c5c476f3707418079e9376e619"
+    },
+    {
+      "path": "runtime/R-B1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/final-observation.json",
+      "bytes": 4135,
+      "sha256": "e5303573522e715e63065f1da0765826f2d83275a616c5516bb04331c0b63742"
+    },
+    {
+      "path": "runtime/R-B1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/final-serving.json",
+      "bytes": 25085,
+      "sha256": "8ea191660f5cf970c1e81417d1a25ab9489af74745754ea21531350173c743b4"
+    },
+    {
+      "path": "runtime/R-B1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/final-serving.txt",
+      "bytes": 8157,
+      "sha256": "5665a8456212ad9abc9b89a66310ae7c6361989aa5f248ad4303dfff076a7f6f"
+    },
+    {
+      "path": "runtime/R-B1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/marker-observation.json",
+      "bytes": 4087,
+      "sha256": "ceb6b2ffbabca3d04f4bba537a7f808332ee9275f91b292844f590114541310f"
+    },
+    {
+      "path": "runtime/R-B1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/marker-serving.json",
+      "bytes": 25000,
+      "sha256": "c968ad87086d4189981fa64e3339a497fdf2b687ba348fc73c85a5993964bf51"
+    },
+    {
+      "path": "runtime/R-B1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/marker-serving.txt",
+      "bytes": 8148,
+      "sha256": "ce4cb1fab47a7f44a561eead617c8a3c5e052f52476846e11d7122815ec8f522"
+    },
+    {
+      "path": "runtime/R-B1-agent-trace/status.json",
+      "bytes": 61,
+      "sha256": "df09a6058fee84e03aab156cc2b0fb943c8e4b9121afb276109f80db2f4d2587"
+    },
+    {
+      "path": "runtime/R-B1-agent-trace-chmod.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/R-B1-agent-trace-collector-dir.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/R-B1-agent-trace-collector.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/R-B1-agent-trace-commands.log",
+      "bytes": 113,
+      "sha256": "1acc26ef377de14971a458a185a1e9caeb63a7a9dbcd2cff90ba707ca3a0ded2"
+    },
+    {
+      "path": "runtime/R-B1-agent-trace-copy-fvpn-agent.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/R-B1-agent-trace-copy-fvpn-labcontrol.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/R-B1-agent-trace-copy-fvpn-netlab.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/R-B1-agent-trace-copy-fvpn-watchdog.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/R-B1-agent-trace-down.log",
+      "bytes": 851,
+      "sha256": "5e71da0a01190ebca0e74303322db261a5c7f057f5361cc99ba9c4661c9cacad"
+    },
+    {
+      "path": "runtime/R-B1-agent-trace-postflight.json",
+      "bytes": 1749,
+      "sha256": "8dd4d756b68405836818b17de2ecbf099f40bbec5e80c3dc11c180cb8f068e93"
+    },
+    {
+      "path": "runtime/R-B1-agent-trace-preflight-1.json",
+      "bytes": 1741,
+      "sha256": "ccf53fa09ad62d0356dac256de18b76a66e78c6540cd63c6574e57b2eb2c2a88"
+    },
+    {
+      "path": "runtime/R-B1-agent-trace-preflight-2.json",
+      "bytes": 1747,
+      "sha256": "baa3f310e75052f7a5c92fac57b14ac91647c0c902e3f94001c099be9bf79213"
+    },
+    {
+      "path": "runtime/R-B1-agent-trace-ready-1.json",
+      "bytes": 1748,
+      "sha256": "ec6ad22b317260695957b1ab74e8863dca6ef1e2b4255672384ed383aed40947"
+    },
+    {
+      "path": "runtime/R-B1-agent-trace-suite.log",
+      "bytes": 390,
+      "sha256": "1ce4bbb81f22a44957864646bf5596b72668be9f99ba544c7225e8c0403b312b"
+    },
+    {
+      "path": "runtime/R-B1-agent-trace-up.log",
+      "bytes": 3546,
+      "sha256": "61609f08217acf5b38ab6c3a2323cdf9743e25358d7ea0571890dbf16b6b3c8b"
+    },
+    {
+      "path": "runtime/R-B1-agent-up.log",
+      "bytes": 3546,
+      "sha256": "bc74e596d0e2a1ef805fbbcc22a473bd5c25f41e31d31bfc2b1e338f9ccd8988"
+    },
+    {
+      "path": "runtime/R-B2-agent/admission-after-start.json",
+      "bytes": 22,
+      "sha256": "094eac9d7d69a458263bb5ff5c67343d839345014b73b5d742c88aeed23bd882"
+    },
+    {
+      "path": "runtime/R-B2-agent-chmod.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/R-B2-agent-collector-dir.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/R-B2-agent-collector.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/R-B2-agent-copy-fvpn-agent.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/R-B2-agent-copy-fvpn-labcontrol.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/R-B2-agent-copy-fvpn-netlab.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/R-B2-agent-copy-fvpn-watchdog.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/R-B2-agent-down.log",
+      "bytes": 851,
+      "sha256": "5e71da0a01190ebca0e74303322db261a5c7f057f5361cc99ba9c4661c9cacad"
+    },
+    {
+      "path": "runtime/R-B2-agent-preflight-1.json",
+      "bytes": 1740,
+      "sha256": "400914012f3808d4f84b48557bc1c2b11fe90268dc601dd3594cfa42a0aa0745"
+    },
+    {
+      "path": "runtime/R-B2-agent-up.log",
+      "bytes": 3541,
+      "sha256": "0613619470b0bd8e7d7febb8572ca3f0482bb882556fd756228b2d63874066e6"
+    },
+    {
+      "path": "runtime/blocked.json",
+      "bytes": 74,
+      "sha256": "617e16feee5036e3ac8a8fbbe82aca9c48cb68cbf3913332927c17c974e079c2"
+    },
+    {
+      "path": "runtime/build-A-fvpn-agent.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/build-A-fvpn-labcontrol.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/build-A-fvpn-netlab.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/build-A-fvpn-watchdog.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/build-B-fvpn-agent.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/build-B-fvpn-labcontrol.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/build-B-fvpn-netlab.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/build-B-fvpn-watchdog.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/build-info.json",
+      "bytes": 10766,
+      "sha256": "40a33b7232ca70bdd3bf2704ee64a1ae754f78ffdfb4914a4083afa4ea7d0473"
+    },
+    {
+      "path": "runtime/cleanup.json",
+      "bytes": 74,
+      "sha256": "ca09511e89eaa1b6d2f82b759369e67bc07758575560bf497ce2c87cedc5af39"
+    },
+    {
+      "path": "runtime/common-inputs.json",
+      "bytes": 445,
+      "sha256": "ec4a3a9a3f07b35cc8a0c13b32e3a19db3d264c5c14a1611dc1f1c915fdfdabd"
+    },
+    {
+      "path": "runtime/comparison.json",
+      "bytes": 449,
+      "sha256": "555260a2766e0ed2e9ec317d36f180eca6e2b308f3dee8001a172b8a22568b25"
+    },
+    {
+      "path": "runtime/driver-delta.json",
+      "bytes": 4867,
+      "sha256": "c98153855b02f63580c7e573a28b111c3ee09cfae3daeb598848f349f971d3fd"
+    },
+    {
+      "path": "runtime/environment.json",
+      "bytes": 187,
+      "sha256": "8475766ed0f6d6b7cb72d7a9825eac3a16380b3c01439ff7918e97f07a785a8f"
+    },
+    {
+      "path": "runtime/gates.jsonl",
+      "bytes": 43172,
+      "sha256": "d0f3871874bacfdb9a2fcaf09806c7daab58dd98f003dce15588fc7ff80cd811"
+    },
+    {
+      "path": "runtime/image-A.log",
+      "bytes": 1703,
+      "sha256": "032b3b0140bd7182d848d8131527ee93d4f6bd1d3ba4b69e2d4a69d3fe107fa4"
+    },
+    {
+      "path": "runtime/image-B.log",
+      "bytes": 1762,
+      "sha256": "7eb348cc3b2c999698402640b8249db47369dbfb27d9b7eca14a5553952b566f"
+    },
+    {
+      "path": "runtime/postrun-source-audit.json",
+      "bytes": 362,
+      "sha256": "3d3d7c9cd7913cbbd1777ef24b678d265b679fca5c942f4147383176347e4a37"
+    },
+    {
+      "path": "runtime/preservation.json",
+      "bytes": 283,
+      "sha256": "b558ca055893a0b4092ca2203e4283fb965a6f858af44bc95f6a51ddef5d96f9"
+    },
+    {
+      "path": "runtime/protocol.json",
+      "bytes": 478,
+      "sha256": "c3aaa0c884e99d8a6d0cc385d0507724bf1de9c7e4774a0d242398734e8d46d9"
+    },
+    {
+      "path": "runtime/remove-image-a.log",
+      "bytes": 116,
+      "sha256": "9af9beee69c151ae18d1805e05d5970a6108e2e52bd7b4b7df9a98aa05108584"
+    },
+    {
+      "path": "runtime/remove-image-b.log",
+      "bytes": 116,
+      "sha256": "1f6f776a54f2828ddb8e5311a3286c813768ed9dfea3dbd43745a24d68b6e4c4"
+    },
+    {
+      "path": "runtime/scratch-cleanup.json",
+      "bytes": 265,
+      "sha256": "f1094250eeee25f615259e41c1db4505ec62872bfeb83cf9aa28f00c0513030c"
+    },
+    {
+      "path": "runtime/source-A.json",
+      "bytes": 453,
+      "sha256": "3284ab43346d02eadbcae6efb6804cf34520ff746191779312e2580250ebaa42"
+    },
+    {
+      "path": "runtime/source-B.json",
+      "bytes": 453,
+      "sha256": "17262ba96bb7779c94a3cd74904267515db13a4a106a3b828c12c5873b1467a2"
+    },
+    {
+      "path": "runtime/source-audit.json",
+      "bytes": 450,
+      "sha256": "a138c008197519bc19cea95464576b45dedcd234f9f1645835c108eec9506c54"
+    },
+    {
+      "path": "runtime/unqualified/R-A1-agent-1/R-A1-agent/admission-after-start.json",
+      "bytes": 22,
+      "sha256": "094eac9d7d69a458263bb5ff5c67343d839345014b73b5d742c88aeed23bd882"
+    },
+    {
+      "path": "runtime/unqualified/R-A1-agent-1/R-A1-agent/agent/assembled/agent.log",
+      "bytes": 13255,
+      "sha256": "ef164f8bffeda88197a3611986743729cbfa5360f560405eae1bf45787cc6062"
+    },
+    {
+      "path": "runtime/unqualified/R-A1-agent-1/R-A1-agent/agent/assembled/analysis.json",
+      "bytes": 30043,
+      "sha256": "4f11873a068ab0c4a8b7554999863c98d728304c0bdbb7bb5ab819036a5a1633"
+    },
+    {
+      "path": "runtime/unqualified/R-A1-agent-1/R-A1-agent/agent/assembled/expiry.json",
+      "bytes": 31702,
+      "sha256": "25811923044fa08214a26f780bcc4bb5997e37b14ffb3c8463edec5fba8e413c"
+    },
+    {
+      "path": "runtime/unqualified/R-A1-agent-1/R-A1-agent/agent/assembled/expiry.json.restart.json",
+      "bytes": 103,
+      "sha256": "29ad26e50fa5154c4a0d6f587b051bb76c6ba48543d56272be69834c36857bc0"
+    },
+    {
+      "path": "runtime/unqualified/R-A1-agent-1/R-A1-agent/agent/assembled/observations.json",
+      "bytes": 18516,
+      "sha256": "6581c06afba5ef51beeeb9a264711cfe195b474826b0d9b8aefb59e13b097e70"
+    },
+    {
+      "path": "runtime/unqualified/R-A1-agent-1/R-A1-agent/agent/assembled/operations.jsonl",
+      "bytes": 1024287,
+      "sha256": "3ecb92f48c02ce98eabfa7b19684618b5017685470e41f41cce3c91ddc2a2f67"
+    },
+    {
+      "path": "runtime/unqualified/R-A1-agent-1/R-A1-agent/agent/assembled/renewal.json",
+      "bytes": 429556,
+      "sha256": "50117f947008b3e220465d6b82bd67ce8f2518e612d20c758c975d4bb21de4ef"
+    },
+    {
+      "path": "runtime/unqualified/R-A1-agent-1/R-A1-agent/agent/assembled/watchdog.log",
+      "bytes": 763,
+      "sha256": "f37ead4a7bd8084afd58592d4ba3ca195f22992ca7256ce1852ad210650f26cc"
+    },
+    {
+      "path": "runtime/unqualified/R-A1-agent-1/R-A1-agent/agent/suite/agent.log",
+      "bytes": 37831,
+      "sha256": "174fcc3cb2073ac0e73833dd4ccab4292939e5f2314fa49f397728dfb5e57ac8"
+    },
+    {
+      "path": "runtime/unqualified/R-A1-agent-1/R-A1-agent/agent/suite/operations.jsonl",
+      "bytes": 1372217,
+      "sha256": "fa7af553baca0427be64eb167faa0f856370105e30dcde81ab89e6f8cfd7a3c6"
+    },
+    {
+      "path": "runtime/unqualified/R-A1-agent-1/R-A1-agent/agent/suite/watchdog.log",
+      "bytes": 3053,
+      "sha256": "a54b8fb258383e196f4223f215010e727d64c8df296535beff158a6205a401b8"
+    },
+    {
+      "path": "runtime/unqualified/R-A1-agent-1/R-A1-agent/status.json",
+      "bytes": 62,
+      "sha256": "eddbfce996c45868ff58789f6849e3b9b53e2c747ab6b4a3af52d45c89504a24"
+    },
+    {
+      "path": "runtime/unqualified/R-A1-agent-1/R-A1-agent-chmod.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/unqualified/R-A1-agent-1/R-A1-agent-collector-dir.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/unqualified/R-A1-agent-1/R-A1-agent-collector.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/unqualified/R-A1-agent-1/R-A1-agent-commands.log",
+      "bytes": 113,
+      "sha256": "1acc26ef377de14971a458a185a1e9caeb63a7a9dbcd2cff90ba707ca3a0ded2"
+    },
+    {
+      "path": "runtime/unqualified/R-A1-agent-1/R-A1-agent-copy-fvpn-agent.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/unqualified/R-A1-agent-1/R-A1-agent-copy-fvpn-labcontrol.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/unqualified/R-A1-agent-1/R-A1-agent-copy-fvpn-netlab.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/unqualified/R-A1-agent-1/R-A1-agent-copy-fvpn-watchdog.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/unqualified/R-A1-agent-1/R-A1-agent-down.log",
+      "bytes": 851,
+      "sha256": "b924ad8417d6469e6e3c2558dc106aa25539b5e63e3108c4e33e6ac5df89b25e"
+    },
+    {
+      "path": "runtime/unqualified/R-A1-agent-1/R-A1-agent-postflight.json",
+      "bytes": 1751,
+      "sha256": "fe2b89fae5d17fe1c45dc119121062638a1ecd81575b486c07363182da8a74f0"
+    },
+    {
+      "path": "runtime/unqualified/R-A1-agent-1/R-A1-agent-preflight-1.json",
+      "bytes": 1740,
+      "sha256": "fc0189ff2acc8db59b0d12554d305c7a51ecc00530be7030866018b8d629254f"
+    },
+    {
+      "path": "runtime/unqualified/R-A1-agent-1/R-A1-agent-preflight-2.json",
+      "bytes": 1736,
+      "sha256": "7af23f76d069784fadebfa328e521727923f3b92cbe58d2720db3b959e01780a"
+    },
+    {
+      "path": "runtime/unqualified/R-A1-agent-1/R-A1-agent-ready-1.json",
+      "bytes": 1745,
+      "sha256": "e141977bcfb6292678998927b8967ae356753aa0e84b176b289ec190e6e0a988"
+    },
+    {
+      "path": "runtime/unqualified/R-A1-agent-1/R-A1-agent-ready-2.json",
+      "bytes": 1748,
+      "sha256": "3d513e0f171446b8dc1d6055aab2e17877316bd0532bcd27b57f56c628f1802d"
+    },
+    {
+      "path": "runtime/unqualified/R-A1-agent-1/R-A1-agent-ready-3.json",
+      "bytes": 1749,
+      "sha256": "03bec507aae36cf8482ef7eb7bcfa7eb83de10b9b3b1e9906341255c41e91363"
+    },
+    {
+      "path": "runtime/unqualified/R-A1-agent-1/R-A1-agent-ready-4.json",
+      "bytes": 1744,
+      "sha256": "f6d491880e78347ca011aa186cdd04fb6be86bc6450213152a3356af91c0a2ca"
+    },
+    {
+      "path": "runtime/unqualified/R-A1-agent-1/R-A1-agent-ready-5.json",
+      "bytes": 1740,
+      "sha256": "a3268ca9dbb1fdbe2e5089cebdb783666a7129455ac92010f151624b382c3ebc"
+    },
+    {
+      "path": "runtime/unqualified/R-A1-agent-1/R-A1-agent-ready-6.json",
+      "bytes": 1731,
+      "sha256": "4d834ecc7e7dbdbcd71ad19850892f5f486a9fc0a5211319fedd3468e05d0c42"
+    },
+    {
+      "path": "runtime/unqualified/R-A1-agent-1/R-A1-agent-suite.log",
+      "bytes": 5673,
+      "sha256": "a8e32143bb59db0bf4eded7f7110997f045a67343fe8ea705033f0cb66951c6e"
+    },
+    {
+      "path": "runtime/unqualified/R-A1-agent-1/R-A1-agent-up.log",
+      "bytes": 3647,
+      "sha256": "49656122d039142e6fa6319e780abf2ab894d57f8ea9bf14edc4fe2822f0253a"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-1/R-A2-agent/admission-after-start.json",
+      "bytes": 22,
+      "sha256": "094eac9d7d69a458263bb5ff5c67343d839345014b73b5d742c88aeed23bd882"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-1/R-A2-agent/agent/assembled/agent.log",
+      "bytes": 13313,
+      "sha256": "21afcbde9068d4754ee581ef0c70cb83094efdcc8583799eb495765115cd8bf6"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-1/R-A2-agent/agent/assembled/analysis.json",
+      "bytes": 28714,
+      "sha256": "9dfacfc325b9a0c8f5d93c156abb1ae22da56c7dada7c701e3fd8b3e1ff4dab9"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-1/R-A2-agent/agent/assembled/expiry.json",
+      "bytes": 32252,
+      "sha256": "cda70997f1ab830d0faff4c926a148eb6917cd667d33cffcaa9f1553e7ce0fe5"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-1/R-A2-agent/agent/assembled/expiry.json.restart.json",
+      "bytes": 106,
+      "sha256": "b0ac179c1e00283e6069d9b7b7d129ab0673cef87200044c067ba9b2cbb31eae"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-1/R-A2-agent/agent/assembled/observations.json",
+      "bytes": 18505,
+      "sha256": "cda59d22797ddb02672ef09d38669ed26d568477ee8204dbb9710024df88ced3"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-1/R-A2-agent/agent/assembled/operations.jsonl",
+      "bytes": 1026351,
+      "sha256": "75184ce1d87d2fcc605806dc801aec2c293cd3f95deba27d8601c1068874b10d"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-1/R-A2-agent/agent/assembled/renewal.json",
+      "bytes": 437184,
+      "sha256": "62198bb38495278f92ba1820b4e632dd6076ea2c70780c2c0f3c33839757ebef"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-1/R-A2-agent/agent/assembled/watchdog.log",
+      "bytes": 770,
+      "sha256": "afd2d10296eec7274890b185aba9bc32ae6a7a5982615b6f44f79f4bf6fb8033"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-1/R-A2-agent/agent/suite/agent.log",
+      "bytes": 39094,
+      "sha256": "ed93cbbc8f7e9dc4105b76739bc52cef8faca3a1b1c98e7599a1e1560a45b392"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-1/R-A2-agent/agent/suite/operations.jsonl",
+      "bytes": 1370557,
+      "sha256": "2f6b73cc14cdb0d57c95ed2029b313d821a513815c9eb0472f9c1ef7fa810ae1"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-1/R-A2-agent/agent/suite/watchdog.log",
+      "bytes": 2302,
+      "sha256": "171166f9e51f013fcd3e0a88ffa321186cede78d9757a631eed5eb912fd993df"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-1/R-A2-agent/status.json",
+      "bytes": 62,
+      "sha256": "eddbfce996c45868ff58789f6849e3b9b53e2c747ab6b4a3af52d45c89504a24"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-1/R-A2-agent-chmod.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-1/R-A2-agent-collector-dir.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-1/R-A2-agent-collector.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-1/R-A2-agent-commands.log",
+      "bytes": 113,
+      "sha256": "1acc26ef377de14971a458a185a1e9caeb63a7a9dbcd2cff90ba707ca3a0ded2"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-1/R-A2-agent-copy-fvpn-agent.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-1/R-A2-agent-copy-fvpn-labcontrol.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-1/R-A2-agent-copy-fvpn-netlab.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-1/R-A2-agent-copy-fvpn-watchdog.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-1/R-A2-agent-down.log",
+      "bytes": 851,
+      "sha256": "b924ad8417d6469e6e3c2558dc106aa25539b5e63e3108c4e33e6ac5df89b25e"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-1/R-A2-agent-postflight.json",
+      "bytes": 1753,
+      "sha256": "c7130f45ce51ace9aa3c9921b14ea280dc9f9e5c51a6b03d5d76a94b64de178c"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-1/R-A2-agent-preflight-1.json",
+      "bytes": 1748,
+      "sha256": "a726f83c913f219235fef089b8136e763957a9dac35fd99145e1c9bde2e33d35"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-1/R-A2-agent-ready-1.json",
+      "bytes": 1744,
+      "sha256": "f72ea838346bfaaaf0501d9d7f500b262fca2ec7060120152a74c14b35d724ab"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-1/R-A2-agent-suite.log",
+      "bytes": 5676,
+      "sha256": "cd0aaf706b6f51f8e26c332e6f45f607a55b89136056b5866ea8fe4df0b79225"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-1/R-A2-agent-up.log",
+      "bytes": 3543,
+      "sha256": "1d926e485228637b48dc63eaa3df9149c181742e162822fa42fd231c6f8b7b6f"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-2/R-A2-agent/admission-after-start.json",
+      "bytes": 22,
+      "sha256": "094eac9d7d69a458263bb5ff5c67343d839345014b73b5d742c88aeed23bd882"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-2/R-A2-agent/agent/assembled/agent.log",
+      "bytes": 13313,
+      "sha256": "4f62b2332134ff3d263f01e8309c54c5e427e1c63371edafed0da50553aa9683"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-2/R-A2-agent/agent/assembled/analysis.json",
+      "bytes": 23632,
+      "sha256": "a1d259817d2f64530d26e5eace8a9120cbdfc3ca3c5ee2565764ad3d34e00460"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-2/R-A2-agent/agent/assembled/expiry.json",
+      "bytes": 32252,
+      "sha256": "026389bbf077b4b495e3f4143960d0d4be783735e31657485b6c61ab82ed5d1d"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-2/R-A2-agent/agent/assembled/expiry.json.restart.json",
+      "bytes": 106,
+      "sha256": "0ba01eb2d83e0e70f2609ad442965b2f4e33f9d14c4dee4a7aabbac861a1836c"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-2/R-A2-agent/agent/assembled/observations.json",
+      "bytes": 18515,
+      "sha256": "0a5c50e0f4ed6fa39348cf0f5c420e3d8ad711092fe4be1d1d0981c49c2c2cb2"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-2/R-A2-agent/agent/assembled/operations.jsonl",
+      "bytes": 1026368,
+      "sha256": "0d5b687c8222a03e91f00bca4df2d35c3137288180e6fe9ae5c4293b9f1ee410"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-2/R-A2-agent/agent/assembled/renewal.json",
+      "bytes": 437415,
+      "sha256": "0f16137f6e701675adad358ba8f2a416f4efb63bccab8daf0cc1b56c8cb9a3f0"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-2/R-A2-agent/agent/assembled/watchdog.log",
+      "bytes": 770,
+      "sha256": "bbcc089e9cc519035611ffd6eac10d7176e3ddb3e7ba5d2e668d59842cec39a2"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-2/R-A2-agent/agent/suite/agent.log",
+      "bytes": 36375,
+      "sha256": "c2ede0c24f4dd8b777714eef3f4016a38a3bf0895a29cc0077c5c39f883b0314"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-2/R-A2-agent/agent/suite/operations.jsonl",
+      "bytes": 1371171,
+      "sha256": "9ba69bf1fb11179298e9cb7b13ddcd05241e21f2cf41b61f540adf4bab12a641"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-2/R-A2-agent/agent/suite/watchdog.log",
+      "bytes": 3076,
+      "sha256": "073158a405b02bc7bc40ee2eb71adbbf108050870bedd5945bdf515b3baeaa0c"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-2/R-A2-agent/status.json",
+      "bytes": 62,
+      "sha256": "eddbfce996c45868ff58789f6849e3b9b53e2c747ab6b4a3af52d45c89504a24"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-2/R-A2-agent-chmod.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-2/R-A2-agent-collector-dir.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-2/R-A2-agent-collector.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-2/R-A2-agent-commands.log",
+      "bytes": 113,
+      "sha256": "1acc26ef377de14971a458a185a1e9caeb63a7a9dbcd2cff90ba707ca3a0ded2"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-2/R-A2-agent-copy-fvpn-agent.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-2/R-A2-agent-copy-fvpn-labcontrol.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-2/R-A2-agent-copy-fvpn-netlab.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-2/R-A2-agent-copy-fvpn-watchdog.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-2/R-A2-agent-down.log",
+      "bytes": 851,
+      "sha256": "b924ad8417d6469e6e3c2558dc106aa25539b5e63e3108c4e33e6ac5df89b25e"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-2/R-A2-agent-postflight.json",
+      "bytes": 1740,
+      "sha256": "1ab3dd9d2f28201a249e2dda5b037ef992cc7a596d9a75337de1e89183f0eefe"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-2/R-A2-agent-preflight-1.json",
+      "bytes": 1749,
+      "sha256": "60c2ab9546a1e11c6dc99deaae2ed0e638c9beffa76daf00315f7f5155010ed9"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-2/R-A2-agent-preflight-2.json",
+      "bytes": 1750,
+      "sha256": "0880b5b286d43481d5bc2bd7fab162621cdbbeadcc7569f22cd2bf6c47bb11a6"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-2/R-A2-agent-preflight-3.json",
+      "bytes": 1752,
+      "sha256": "c13d5e32ab166ad2e58719ae67806f67ebc2d4a64df38f12056d7d46c071d483"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-2/R-A2-agent-preflight-4.json",
+      "bytes": 1737,
+      "sha256": "e9048ef3954133facfb353f154a1d85bad2c4b3e9c52b503477b56218851c34f"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-2/R-A2-agent-ready-1.json",
+      "bytes": 1743,
+      "sha256": "44ae9e93482617c825c1a4d0d53ab7655932ad788625af0d5f5128276e69ad89"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-2/R-A2-agent-suite.log",
+      "bytes": 5676,
+      "sha256": "4c9d2c8850c045f9c8b4cdb9351200689118725f8e725e3f97293cdb060aba7c"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-2/R-A2-agent-up.log",
+      "bytes": 3678,
+      "sha256": "2247ac1cf3bff21f22bf9d16f0fa9e9cffac7ce8cf83ab49028c32f2baf5f525"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-3/R-A2-agent/admission-after-start.json",
+      "bytes": 22,
+      "sha256": "094eac9d7d69a458263bb5ff5c67343d839345014b73b5d742c88aeed23bd882"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-3/R-A2-agent/agent/assembled/agent.log",
+      "bytes": 13313,
+      "sha256": "1c6daa6392e7d806580294a4c52414fc49128a84704153cf67f21f07ef71a140"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-3/R-A2-agent/agent/assembled/analysis.json",
+      "bytes": 24810,
+      "sha256": "8ad3185909f2fce725f3bd867d21239240de9a9d70a1096799bcd9528efdd00f"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-3/R-A2-agent/agent/assembled/expiry.json",
+      "bytes": 32252,
+      "sha256": "76d28ef7f655709c04e19ea3344fd985850a6d97eff88ce61d761b38a618c6d0"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-3/R-A2-agent/agent/assembled/expiry.json.restart.json",
+      "bytes": 106,
+      "sha256": "d4d82214fa3fd0189c31707f53e16a7fbc58a5d4d8f140e19e3bf5227a4fceb8"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-3/R-A2-agent/agent/assembled/observations.json",
+      "bytes": 18516,
+      "sha256": "15adfc924d59b4da21fd0f09cc635db6ba98d5ecf14b46014e8ff84fc638e31f"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-3/R-A2-agent/agent/assembled/operations.jsonl",
+      "bytes": 1022257,
+      "sha256": "89719910669b389be6c67180655869a1ed96567a5b5c6d531ba6cae07d18d3e6"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-3/R-A2-agent/agent/assembled/renewal.json",
+      "bytes": 437349,
+      "sha256": "f7a421e512a3dc5ac24d40d51187fd46d82c260c0b7866e9598a5183638b66df"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-3/R-A2-agent/agent/assembled/watchdog.log",
+      "bytes": 770,
+      "sha256": "df3f7b86c4343a5948fb9bfb3f4d4dc1edb05b74cf956a57bdbc1c2709e8172f"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-3/R-A2-agent/agent/suite/agent.log",
+      "bytes": 39037,
+      "sha256": "7712e4f8ccf588534f555f1ea9baa60abc180694cdc5a2c01aab4fd6d88524f4"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-3/R-A2-agent/agent/suite/operations.jsonl",
+      "bytes": 1378253,
+      "sha256": "95782362ffe965061bb4ae30aac2d58c1fd86eb60714d920774c2b8824ecfba6"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-3/R-A2-agent/agent/suite/watchdog.log",
+      "bytes": 3074,
+      "sha256": "ff1232c443a46ab4e24b2211989fc10566200e0bc89e115e42564f7c824c04ce"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-3/R-A2-agent/status.json",
+      "bytes": 62,
+      "sha256": "eddbfce996c45868ff58789f6849e3b9b53e2c747ab6b4a3af52d45c89504a24"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-3/R-A2-agent-chmod.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-3/R-A2-agent-collector-dir.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-3/R-A2-agent-collector.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-3/R-A2-agent-commands.log",
+      "bytes": 113,
+      "sha256": "1acc26ef377de14971a458a185a1e9caeb63a7a9dbcd2cff90ba707ca3a0ded2"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-3/R-A2-agent-copy-fvpn-agent.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-3/R-A2-agent-copy-fvpn-labcontrol.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-3/R-A2-agent-copy-fvpn-netlab.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-3/R-A2-agent-copy-fvpn-watchdog.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-3/R-A2-agent-down.log",
+      "bytes": 851,
+      "sha256": "b924ad8417d6469e6e3c2558dc106aa25539b5e63e3108c4e33e6ac5df89b25e"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-3/R-A2-agent-postflight.json",
+      "bytes": 1742,
+      "sha256": "b8c4563c12d754eab34881476e02ef1e7b823ea224f9e505dde30fae6983c9fe"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-3/R-A2-agent-preflight-1.json",
+      "bytes": 1736,
+      "sha256": "07f189bf6f03557b3f9f7775a9f5e2646744c4a4422bfce3b102b865e4d073dd"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-3/R-A2-agent-ready-1.json",
+      "bytes": 1738,
+      "sha256": "9a16944b87c0ebb9ec2feeaf27d43bce831c6d0f1c53d01a0912e8db76c801d0"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-3/R-A2-agent-suite.log",
+      "bytes": 5676,
+      "sha256": "ede4245ef706b10051e8a8f4c300db8076b399e507acd918686cd77aad77f4dd"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-3/R-A2-agent-up.log",
+      "bytes": 3544,
+      "sha256": "df0091ebd768e3311bdf890993f8540a4a17eb897c58545ad3085de91c02ab28"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-4/R-A2-agent/admission-after-start.json",
+      "bytes": 22,
+      "sha256": "094eac9d7d69a458263bb5ff5c67343d839345014b73b5d742c88aeed23bd882"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-4/R-A2-agent/agent/assembled/agent.log",
+      "bytes": 13313,
+      "sha256": "25e961edf78b01748f49cd427082c6888debdc6acb7dbe14c6932711ff5e803a"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-4/R-A2-agent/agent/assembled/analysis.json",
+      "bytes": 32916,
+      "sha256": "e8fa8f01e858917d4877c8a1f000221e640ce9bf0ec91760c42749dca88c090a"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-4/R-A2-agent/agent/assembled/expiry.json",
+      "bytes": 32252,
+      "sha256": "d2041bb02eb757de6e82fb0db865dab3162e22ad403203428000876dbb67bdbe"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-4/R-A2-agent/agent/assembled/expiry.json.restart.json",
+      "bytes": 106,
+      "sha256": "0e5f84f354791d132c3c8464b3a27fe2ab9baf5e68f32611db4693a072ec57b8"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-4/R-A2-agent/agent/assembled/observations.json",
+      "bytes": 18505,
+      "sha256": "94afd27abe5e8d980a5aef2002bb95db893a8ec38666144c79122138f087db5b"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-4/R-A2-agent/agent/assembled/operations.jsonl",
+      "bytes": 1026289,
+      "sha256": "6a150b2dc1c0c0a1bfe7b6b0c2992d8ed1f6c4ae230e7f41708822e2afb5e6f3"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-4/R-A2-agent/agent/assembled/renewal.json",
+      "bytes": 437057,
+      "sha256": "98d0dbdd7d887098397afbcaf86ef97984cbf849538f9db01a348f255841128a"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-4/R-A2-agent/agent/assembled/watchdog.log",
+      "bytes": 770,
+      "sha256": "1d162d8ba9f9f21ca50fb11b81069c4270b40df83ebdd5105c60e872dfe06613"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-4/R-A2-agent/agent/suite/agent.log",
+      "bytes": 35264,
+      "sha256": "1b3debd5a251fd47578d9caee01ee3ca28346cf1fa5c0147523ac81c59163eba"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-4/R-A2-agent/agent/suite/operations.jsonl",
+      "bytes": 1371458,
+      "sha256": "b1b8c4346e5a5827348085c2213606840d873c2a0d5b03a062837117f27b14f5"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-4/R-A2-agent/agent/suite/watchdog.log",
+      "bytes": 3073,
+      "sha256": "dc4952b0056b6414115c6fd2e071b099b21ce27d1c9f35b785f66e71d34135b6"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-4/R-A2-agent/status.json",
+      "bytes": 62,
+      "sha256": "eddbfce996c45868ff58789f6849e3b9b53e2c747ab6b4a3af52d45c89504a24"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-4/R-A2-agent-chmod.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-4/R-A2-agent-collector-dir.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-4/R-A2-agent-collector.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-4/R-A2-agent-commands.log",
+      "bytes": 113,
+      "sha256": "1acc26ef377de14971a458a185a1e9caeb63a7a9dbcd2cff90ba707ca3a0ded2"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-4/R-A2-agent-copy-fvpn-agent.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-4/R-A2-agent-copy-fvpn-labcontrol.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-4/R-A2-agent-copy-fvpn-netlab.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-4/R-A2-agent-copy-fvpn-watchdog.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-4/R-A2-agent-down.log",
+      "bytes": 851,
+      "sha256": "b924ad8417d6469e6e3c2558dc106aa25539b5e63e3108c4e33e6ac5df89b25e"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-4/R-A2-agent-postflight.json",
+      "bytes": 1738,
+      "sha256": "647ac162c3024ae6e4cb668ede17ab70472b03264536c5cfbd881a3f2985a23e"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-4/R-A2-agent-preflight-1.json",
+      "bytes": 1741,
+      "sha256": "1a001bcf4beae0bbff7acbd123557f2e6013abf0ffeafb01519e1d7bd13928c3"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-4/R-A2-agent-ready-1.json",
+      "bytes": 1736,
+      "sha256": "e727cd3bcc7a1d03463a0aa983d7b87aeaefbca8f04ae6179f2434703889a9f1"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-4/R-A2-agent-suite.log",
+      "bytes": 5675,
+      "sha256": "6f84ca097e8e712ca81fe8771734857bac02899bf3fa7085ecbc66c2a9787871"
+    },
+    {
+      "path": "runtime/unqualified/R-A2-agent-4/R-A2-agent-up.log",
+      "bytes": 3544,
+      "sha256": "1abb4dc9b4e7325e8edb6a91829485ccd5e59a5883e2ce8bd1c5c925ae20f9d9"
+    },
+    {
+      "path": "runtime/unqualified/R-B1-agent-1/R-B1-agent/admission-after-start.json",
+      "bytes": 22,
+      "sha256": "094eac9d7d69a458263bb5ff5c67343d839345014b73b5d742c88aeed23bd882"
+    },
+    {
+      "path": "runtime/unqualified/R-B1-agent-1/R-B1-agent/agent/assembled/agent.log",
+      "bytes": 13255,
+      "sha256": "053d1e92676072ca80bd49d24f31382518be4f42f9842b6b163daf2f9d0d39d4"
+    },
+    {
+      "path": "runtime/unqualified/R-B1-agent-1/R-B1-agent/agent/assembled/analysis.json",
+      "bytes": 20993,
+      "sha256": "1054fc5ad422ae3ba32a37cdb7dd541ebca81f817be9ffa355cd299399a30235"
+    },
+    {
+      "path": "runtime/unqualified/R-B1-agent-1/R-B1-agent/agent/assembled/expiry.json",
+      "bytes": 31702,
+      "sha256": "583d26171c9e1f2a37875740fa6c3adf3ff788bd5b6a112a00f6fff9b17b9c4c"
+    },
+    {
+      "path": "runtime/unqualified/R-B1-agent-1/R-B1-agent/agent/assembled/expiry.json.restart.json",
+      "bytes": 103,
+      "sha256": "36576be30a028eb427ca92dee0e1e031c15ae08f77ad11a8c5b29d4fa66fb04a"
+    },
+    {
+      "path": "runtime/unqualified/R-B1-agent-1/R-B1-agent/agent/assembled/observations.json",
+      "bytes": 18517,
+      "sha256": "0d75abf7be2af6a94c1a1673655ebaa4401e2b5a4563030eb41e4acff93c028a"
+    },
+    {
+      "path": "runtime/unqualified/R-B1-agent-1/R-B1-agent/agent/assembled/operations.jsonl",
+      "bytes": 1016282,
+      "sha256": "75266b1ad0801a44217540f6e685be7425710b811a0fefd24deba5214851a35e"
+    },
+    {
+      "path": "runtime/unqualified/R-B1-agent-1/R-B1-agent/agent/assembled/renewal.json",
+      "bytes": 429940,
+      "sha256": "1b4dbbca5a019fd3aacc667785349c74db1408e36a0f5fe491efb5fa5011593e"
+    },
+    {
+      "path": "runtime/unqualified/R-B1-agent-1/R-B1-agent/agent/assembled/watchdog.log",
+      "bytes": 763,
+      "sha256": "f53d002725bcd8574c4927d8483de7a82b8abc0768549ea00e9c2ab908aa451b"
+    },
+    {
+      "path": "runtime/unqualified/R-B1-agent-1/R-B1-agent/agent/suite/agent.log",
+      "bytes": 35123,
+      "sha256": "0ef0b271ff6f1443732339ff98a944642d89d861d2be403b38ed09508b7d2e47"
+    },
+    {
+      "path": "runtime/unqualified/R-B1-agent-1/R-B1-agent/agent/suite/operations.jsonl",
+      "bytes": 1349607,
+      "sha256": "e0610472ca829d696916771d0956f291179cd9baf2a777dc93ed743da8fbafbe"
+    },
+    {
+      "path": "runtime/unqualified/R-B1-agent-1/R-B1-agent/agent/suite/watchdog.log",
+      "bytes": 3051,
+      "sha256": "a1061c024e96b864223dacf288a90905b76aa839fb0ef50ce3b0f3c95a2307e6"
+    },
+    {
+      "path": "runtime/unqualified/R-B1-agent-1/R-B1-agent/status.json",
+      "bytes": 62,
+      "sha256": "753f6945b65b329ec97e59e1ad39b30d98fad8c0e56e2ffb9e3bb8d13cacb4b0"
+    },
+    {
+      "path": "runtime/unqualified/R-B1-agent-1/R-B1-agent-chmod.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/unqualified/R-B1-agent-1/R-B1-agent-collector-dir.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/unqualified/R-B1-agent-1/R-B1-agent-collector.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/unqualified/R-B1-agent-1/R-B1-agent-commands.log",
+      "bytes": 113,
+      "sha256": "1acc26ef377de14971a458a185a1e9caeb63a7a9dbcd2cff90ba707ca3a0ded2"
+    },
+    {
+      "path": "runtime/unqualified/R-B1-agent-1/R-B1-agent-copy-fvpn-agent.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/unqualified/R-B1-agent-1/R-B1-agent-copy-fvpn-labcontrol.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/unqualified/R-B1-agent-1/R-B1-agent-copy-fvpn-netlab.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/unqualified/R-B1-agent-1/R-B1-agent-copy-fvpn-watchdog.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/unqualified/R-B1-agent-1/R-B1-agent-down.log",
+      "bytes": 851,
+      "sha256": "5e71da0a01190ebca0e74303322db261a5c7f057f5361cc99ba9c4661c9cacad"
+    },
+    {
+      "path": "runtime/unqualified/R-B1-agent-1/R-B1-agent-postflight.json",
+      "bytes": 1737,
+      "sha256": "ba231bc21fbefa34689edcf766a491cd87d52cfbc54b2105f0f5dd4dfd710953"
+    },
+    {
+      "path": "runtime/unqualified/R-B1-agent-1/R-B1-agent-preflight-1.json",
+      "bytes": 1745,
+      "sha256": "ee306074ac436a242696699ed451c20faaf8e07c475e23b668b2a8c3cf3d1a96"
+    },
+    {
+      "path": "runtime/unqualified/R-B1-agent-1/R-B1-agent-preflight-2.json",
+      "bytes": 1747,
+      "sha256": "4473d2c80a22148cb5883f15b7eca023bf1f0a7dcc9e21da807f1e2f05ff221b"
+    },
+    {
+      "path": "runtime/unqualified/R-B1-agent-1/R-B1-agent-preflight-3.json",
+      "bytes": 1746,
+      "sha256": "b3f8b36782ff23e5b6970a596422cf3ff8032d7f2b8e5372ba7cde98c57202b1"
+    },
+    {
+      "path": "runtime/unqualified/R-B1-agent-1/R-B1-agent-ready-1.json",
+      "bytes": 1743,
+      "sha256": "ee363cc66d192cf6d12913a68ed260f71c8e4ff628e09da7bce1457be1de40e1"
+    },
+    {
+      "path": "runtime/unqualified/R-B1-agent-1/R-B1-agent-suite.log",
+      "bytes": 5674,
+      "sha256": "808bcc7f075cfffaff6416a03c58af67012099fe78e638bfc695763c3962d6bf"
+    },
+    {
+      "path": "runtime/unqualified/R-B1-agent-1/R-B1-agent-up.log",
+      "bytes": 3543,
+      "sha256": "34ee57bffce61c0a78ffa9d9eed53b58e971b8f11a087cdc3a331acb1e313f28"
+    },
+    {
+      "path": "runtime/unqualified/R-B1-agent-2/R-B1-agent/admission-after-start.json",
+      "bytes": 22,
+      "sha256": "094eac9d7d69a458263bb5ff5c67343d839345014b73b5d742c88aeed23bd882"
+    },
+    {
+      "path": "runtime/unqualified/R-B1-agent-2/R-B1-agent/agent/assembled/agent.log",
+      "bytes": 13255,
+      "sha256": "ff67038d63a265c483d8ca7e9eb993f68c3b62d3dc0ad13e088bf6e59e0053c6"
+    },
+    {
+      "path": "runtime/unqualified/R-B1-agent-2/R-B1-agent/agent/assembled/analysis.json",
+      "bytes": 37224,
+      "sha256": "1c1912a6b4b532225323f122676eb4623a2ca8be88c79ef54a058552755167b3"
+    },
+    {
+      "path": "runtime/unqualified/R-B1-agent-2/R-B1-agent/agent/assembled/expiry.json",
+      "bytes": 31702,
+      "sha256": "de19df7986d2c9cec5617198699c3ceac85b4c3c61bc52f1f62bfc07f37ef569"
+    },
+    {
+      "path": "runtime/unqualified/R-B1-agent-2/R-B1-agent/agent/assembled/expiry.json.restart.json",
+      "bytes": 103,
+      "sha256": "fce3244913d681d3f4af22b34d6286a477cfa301cb7c1d146695cf7337e638f3"
+    },
+    {
+      "path": "runtime/unqualified/R-B1-agent-2/R-B1-agent/agent/assembled/observations.json",
+      "bytes": 18514,
+      "sha256": "9642e16f7846bfb069e1555fbb3579e43bb04d608f68e098f62666485c441ccd"
+    },
+    {
+      "path": "runtime/unqualified/R-B1-agent-2/R-B1-agent/agent/assembled/operations.jsonl",
+      "bytes": 1015844,
+      "sha256": "82600aeba29d24ac42351841817f55dff99056329916e629e72e7ddc3d985d83"
+    },
+    {
+      "path": "runtime/unqualified/R-B1-agent-2/R-B1-agent/agent/assembled/renewal.json",
+      "bytes": 429268,
+      "sha256": "842775d7b00c69e041a6152761f932d02c4de15e4e4acf6aeab5e1788a87cfd3"
+    },
+    {
+      "path": "runtime/unqualified/R-B1-agent-2/R-B1-agent/agent/assembled/watchdog.log",
+      "bytes": 763,
+      "sha256": "45bf5e20340da529299212cdb01e9433ee1fd0789d955c05248f355366ec1c9f"
+    },
+    {
+      "path": "runtime/unqualified/R-B1-agent-2/R-B1-agent/agent/suite/agent.log",
+      "bytes": 38954,
+      "sha256": "dd0714aedddc4745a186eccf374c03cbb14b243506c63a63ce0937bf66e28661"
+    },
+    {
+      "path": "runtime/unqualified/R-B1-agent-2/R-B1-agent/agent/suite/operations.jsonl",
+      "bytes": 1357098,
+      "sha256": "5c609399387f5d35b6bcadcddece230ba1868c3b018b231cf29fff02d1f0c08f"
+    },
+    {
+      "path": "runtime/unqualified/R-B1-agent-2/R-B1-agent/agent/suite/watchdog.log",
+      "bytes": 3053,
+      "sha256": "c0b6138e9e90af62879607d02898ca8ace830cce25859865f293ee1648b76f91"
+    },
+    {
+      "path": "runtime/unqualified/R-B1-agent-2/R-B1-agent/status.json",
+      "bytes": 62,
+      "sha256": "753f6945b65b329ec97e59e1ad39b30d98fad8c0e56e2ffb9e3bb8d13cacb4b0"
+    },
+    {
+      "path": "runtime/unqualified/R-B1-agent-2/R-B1-agent-chmod.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/unqualified/R-B1-agent-2/R-B1-agent-collector-dir.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/unqualified/R-B1-agent-2/R-B1-agent-collector.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/unqualified/R-B1-agent-2/R-B1-agent-commands.log",
+      "bytes": 113,
+      "sha256": "1acc26ef377de14971a458a185a1e9caeb63a7a9dbcd2cff90ba707ca3a0ded2"
+    },
+    {
+      "path": "runtime/unqualified/R-B1-agent-2/R-B1-agent-copy-fvpn-agent.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/unqualified/R-B1-agent-2/R-B1-agent-copy-fvpn-labcontrol.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/unqualified/R-B1-agent-2/R-B1-agent-copy-fvpn-netlab.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/unqualified/R-B1-agent-2/R-B1-agent-copy-fvpn-watchdog.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/unqualified/R-B1-agent-2/R-B1-agent-down.log",
+      "bytes": 851,
+      "sha256": "5e71da0a01190ebca0e74303322db261a5c7f057f5361cc99ba9c4661c9cacad"
+    },
+    {
+      "path": "runtime/unqualified/R-B1-agent-2/R-B1-agent-postflight.json",
+      "bytes": 1745,
+      "sha256": "d46269de28b09581c9e783314ec979d17990b26b4fd661481f05857d81d34180"
+    },
+    {
+      "path": "runtime/unqualified/R-B1-agent-2/R-B1-agent-preflight-1.json",
+      "bytes": 1751,
+      "sha256": "656ab998719bb2114a7f389d4b976594f82a84d3d6de59a9ef64d48f3fc4f56e"
+    },
+    {
+      "path": "runtime/unqualified/R-B1-agent-2/R-B1-agent-ready-1.json",
+      "bytes": 1743,
+      "sha256": "815a3d788eb03080cf9cccbbcfff76bc479fb8dd50de359622ed89541aeeaa3c"
+    },
+    {
+      "path": "runtime/unqualified/R-B1-agent-2/R-B1-agent-suite.log",
+      "bytes": 5673,
+      "sha256": "be7b437ebd28c70710ad24316c410a02871539d2326cbb0f0b8b3b244be88c99"
+    },
+    {
+      "path": "runtime/unqualified/R-B1-agent-2/R-B1-agent-up.log",
+      "bytes": 3551,
+      "sha256": "6b114b48bd983f80f8372fcd1f1076f535d725725502ccf94bb891f0291dced2"
+    },
+    {
+      "path": "runtime/unqualified/R-B2-agent-1/R-B2-agent/admission-after-start.json",
+      "bytes": 22,
+      "sha256": "094eac9d7d69a458263bb5ff5c67343d839345014b73b5d742c88aeed23bd882"
+    },
+    {
+      "path": "runtime/unqualified/R-B2-agent-1/R-B2-agent/agent/assembled/agent.log",
+      "bytes": 13313,
+      "sha256": "05ca9286794802cee57ef3d4a8ed85c0a771ccfac32b17fec28b6b28c84b038d"
+    },
+    {
+      "path": "runtime/unqualified/R-B2-agent-1/R-B2-agent/agent/assembled/analysis.json",
+      "bytes": 20601,
+      "sha256": "3cbe96c9c1af85afef581d4a58c8baf0a83b124e7a3509fe3ee32fa527486567"
+    },
+    {
+      "path": "runtime/unqualified/R-B2-agent-1/R-B2-agent/agent/assembled/expiry.json",
+      "bytes": 32252,
+      "sha256": "8eaab90734504b0dca913f4ecc6ebb312bc43386fc46ca57ba4ba20ac60d7816"
+    },
+    {
+      "path": "runtime/unqualified/R-B2-agent-1/R-B2-agent/agent/assembled/expiry.json.restart.json",
+      "bytes": 106,
+      "sha256": "1b738026e61d25fb3aaee3739834857371ca639535bc8e002c46fe0805746acc"
+    },
+    {
+      "path": "runtime/unqualified/R-B2-agent-1/R-B2-agent/agent/assembled/observations.json",
+      "bytes": 18515,
+      "sha256": "284ab766e5152f9135e8d0f091d62590d5868e2164740df84f346a91a075f262"
+    },
+    {
+      "path": "runtime/unqualified/R-B2-agent-1/R-B2-agent/agent/assembled/operations.jsonl",
+      "bytes": 1026428,
+      "sha256": "313836c17ba8e878c4fd5e3ce6e5e339033556acf986c7fe45e1f9748d188529"
+    },
+    {
+      "path": "runtime/unqualified/R-B2-agent-1/R-B2-agent/agent/assembled/renewal.json",
+      "bytes": 437514,
+      "sha256": "697b14972072cb9e4de7c8b098f3e477b6884cbf5d731e734db6682ced775616"
+    },
+    {
+      "path": "runtime/unqualified/R-B2-agent-1/R-B2-agent/agent/assembled/watchdog.log",
+      "bytes": 770,
+      "sha256": "3a2928ae02a2a8f02b2d4e14f4fc8e695bcd4604a899aff6be05aba6d2be0853"
+    },
+    {
+      "path": "runtime/unqualified/R-B2-agent-1/R-B2-agent/agent/suite/agent.log",
+      "bytes": 36332,
+      "sha256": "f21fc02ce62181179e7d9d1fda43c1063442c14e0a4e4812cffebdd15521cf9c"
+    },
+    {
+      "path": "runtime/unqualified/R-B2-agent-1/R-B2-agent/agent/suite/operations.jsonl",
+      "bytes": 1373295,
+      "sha256": "29b03f02e8a3946b2e3b389ea72ed5c38ce41f0d98e399fad39de29a1610b0a0"
+    },
+    {
+      "path": "runtime/unqualified/R-B2-agent-1/R-B2-agent/agent/suite/watchdog.log",
+      "bytes": 3861,
+      "sha256": "567c6a6afa5a25f4f2f0232d911854ba821ce0d14647f6c7e787f71480f35423"
+    },
+    {
+      "path": "runtime/unqualified/R-B2-agent-1/R-B2-agent/status.json",
+      "bytes": 62,
+      "sha256": "753f6945b65b329ec97e59e1ad39b30d98fad8c0e56e2ffb9e3bb8d13cacb4b0"
+    },
+    {
+      "path": "runtime/unqualified/R-B2-agent-1/R-B2-agent-chmod.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/unqualified/R-B2-agent-1/R-B2-agent-collector-dir.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/unqualified/R-B2-agent-1/R-B2-agent-collector.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/unqualified/R-B2-agent-1/R-B2-agent-commands.log",
+      "bytes": 113,
+      "sha256": "1acc26ef377de14971a458a185a1e9caeb63a7a9dbcd2cff90ba707ca3a0ded2"
+    },
+    {
+      "path": "runtime/unqualified/R-B2-agent-1/R-B2-agent-copy-fvpn-agent.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/unqualified/R-B2-agent-1/R-B2-agent-copy-fvpn-labcontrol.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/unqualified/R-B2-agent-1/R-B2-agent-copy-fvpn-netlab.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/unqualified/R-B2-agent-1/R-B2-agent-copy-fvpn-watchdog.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/unqualified/R-B2-agent-1/R-B2-agent-down.log",
+      "bytes": 851,
+      "sha256": "5e71da0a01190ebca0e74303322db261a5c7f057f5361cc99ba9c4661c9cacad"
+    },
+    {
+      "path": "runtime/unqualified/R-B2-agent-1/R-B2-agent-postflight.json",
+      "bytes": 1751,
+      "sha256": "2a2b2f726e013447260e2282bcbb0272e7101bb6bde6d9ede764b29ae2f4cf50"
+    },
+    {
+      "path": "runtime/unqualified/R-B2-agent-1/R-B2-agent-preflight-1.json",
+      "bytes": 1732,
+      "sha256": "acf3a68d9397e38d630a543d2b1c1203a5aebfc981296d62528104ce70daa7b7"
+    },
+    {
+      "path": "runtime/unqualified/R-B2-agent-1/R-B2-agent-ready-1.json",
+      "bytes": 1734,
+      "sha256": "154fa6158b969735d47af2b29827b8c15c7ce63edadf266f553258a46b5ba3b2"
+    },
+    {
+      "path": "runtime/unqualified/R-B2-agent-1/R-B2-agent-suite.log",
+      "bytes": 5677,
+      "sha256": "d897629931966d75f73f2d7c9f5868cb2c861b87cdef0a7358facbc8fd931c03"
+    },
+    {
+      "path": "runtime/unqualified/R-B2-agent-1/R-B2-agent-up.log",
+      "bytes": 3553,
+      "sha256": "03e528f472d12d378f915ee529020d14126d7fcf9e81f940dff6942866ca7eba"
+    },
+    {
+      "path": "runtime/unqualified/R-B2-agent-2/R-B2-agent/admission-after-start.json",
+      "bytes": 22,
+      "sha256": "094eac9d7d69a458263bb5ff5c67343d839345014b73b5d742c88aeed23bd882"
+    },
+    {
+      "path": "runtime/unqualified/R-B2-agent-2/R-B2-agent/agent/assembled/agent.log",
+      "bytes": 13313,
+      "sha256": "c7fff21b8d499e1bd7528a9959436efecaca8dfacdb8cc8d3ebaa99e725f3106"
+    },
+    {
+      "path": "runtime/unqualified/R-B2-agent-2/R-B2-agent/agent/assembled/analysis.json",
+      "bytes": 18199,
+      "sha256": "4559bb6d38ee63535eff102f46fb4b8531b1c68ff2dc92e689e7a789cce6f4dd"
+    },
+    {
+      "path": "runtime/unqualified/R-B2-agent-2/R-B2-agent/agent/assembled/expiry.json",
+      "bytes": 32252,
+      "sha256": "2288c1b3850bd2bb8a458b1b3ef802f18d5818704fb507e01483667ce71b3198"
+    },
+    {
+      "path": "runtime/unqualified/R-B2-agent-2/R-B2-agent/agent/assembled/expiry.json.restart.json",
+      "bytes": 106,
+      "sha256": "a393907804ad906a15eb90c2b5fc7043b4164a53f48c56bc5be53e98b00e260e"
+    },
+    {
+      "path": "runtime/unqualified/R-B2-agent-2/R-B2-agent/agent/assembled/observations.json",
+      "bytes": 18506,
+      "sha256": "24a15dd4743176f72f2820381777876384c411fdd636a225f2b57e159badf8e2"
+    },
+    {
+      "path": "runtime/unqualified/R-B2-agent-2/R-B2-agent/agent/assembled/operations.jsonl",
+      "bytes": 1026348,
+      "sha256": "de97bf1f4220ce831bf796aab203940f48c0d2bb88ca8e461fd25cdf49bd0dc1"
+    },
+    {
+      "path": "runtime/unqualified/R-B2-agent-2/R-B2-agent/agent/assembled/renewal.json",
+      "bytes": 437613,
+      "sha256": "c49aa47152dc064b158f395889666441cb42f43ebbf9acdd361eda8632268713"
+    },
+    {
+      "path": "runtime/unqualified/R-B2-agent-2/R-B2-agent/agent/assembled/watchdog.log",
+      "bytes": 769,
+      "sha256": "467c93f6d81ecfc0cebfe2626de49f9aea114f0f9bc25360bacf5a7b75405361"
+    },
+    {
+      "path": "runtime/unqualified/R-B2-agent-2/R-B2-agent/agent/suite/agent.log",
+      "bytes": 36331,
+      "sha256": "0a8770f82b71dd46645f2d5fba5641cd90e2f4f4ed7388a437aa30fc2cc0a8b8"
+    },
+    {
+      "path": "runtime/unqualified/R-B2-agent-2/R-B2-agent/agent/suite/operations.jsonl",
+      "bytes": 1376631,
+      "sha256": "1e91c97b0fddced7a57bb73b1d5d2bcc17e38b534d741a0d391d18a97d675034"
+    },
+    {
+      "path": "runtime/unqualified/R-B2-agent-2/R-B2-agent/agent/suite/watchdog.log",
+      "bytes": 3072,
+      "sha256": "3fd5816ce57c2b751dcea733bd1337d1b84756f61e3d2776877ca8e02529be16"
+    },
+    {
+      "path": "runtime/unqualified/R-B2-agent-2/R-B2-agent/status.json",
+      "bytes": 62,
+      "sha256": "753f6945b65b329ec97e59e1ad39b30d98fad8c0e56e2ffb9e3bb8d13cacb4b0"
+    },
+    {
+      "path": "runtime/unqualified/R-B2-agent-2/R-B2-agent-chmod.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/unqualified/R-B2-agent-2/R-B2-agent-collector-dir.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/unqualified/R-B2-agent-2/R-B2-agent-collector.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/unqualified/R-B2-agent-2/R-B2-agent-commands.log",
+      "bytes": 113,
+      "sha256": "1acc26ef377de14971a458a185a1e9caeb63a7a9dbcd2cff90ba707ca3a0ded2"
+    },
+    {
+      "path": "runtime/unqualified/R-B2-agent-2/R-B2-agent-copy-fvpn-agent.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/unqualified/R-B2-agent-2/R-B2-agent-copy-fvpn-labcontrol.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/unqualified/R-B2-agent-2/R-B2-agent-copy-fvpn-netlab.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/unqualified/R-B2-agent-2/R-B2-agent-copy-fvpn-watchdog.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/unqualified/R-B2-agent-2/R-B2-agent-down.log",
+      "bytes": 851,
+      "sha256": "5e71da0a01190ebca0e74303322db261a5c7f057f5361cc99ba9c4661c9cacad"
+    },
+    {
+      "path": "runtime/unqualified/R-B2-agent-2/R-B2-agent-postflight.json",
+      "bytes": 1752,
+      "sha256": "6796dc32d5710284eb41d6a2dfc830539849c4e04d7d0c6498352e4ba9fca37a"
+    },
+    {
+      "path": "runtime/unqualified/R-B2-agent-2/R-B2-agent-preflight-1.json",
+      "bytes": 1741,
+      "sha256": "a3db0406c13c3a770bc621b18b2d87ec38ae960bb8606389c31f13bf41a195ef"
+    },
+    {
+      "path": "runtime/unqualified/R-B2-agent-2/R-B2-agent-ready-1.json",
+      "bytes": 1747,
+      "sha256": "e0bc9e4e75c2d360add22a0e663c444f4e1b36849bcc3179c827bc6c36c72210"
+    },
+    {
+      "path": "runtime/unqualified/R-B2-agent-2/R-B2-agent-ready-2.json",
+      "bytes": 1759,
+      "sha256": "0621143676a9205239e8d61f486f7b140a79a76736d99788a2f40fc9c99fa746"
+    },
+    {
+      "path": "runtime/unqualified/R-B2-agent-2/R-B2-agent-ready-3.json",
+      "bytes": 1738,
+      "sha256": "8452c48f29ce3e8d521437387918b2a7e6b03a1bc59d6e658de97a3dcba973e0"
+    },
+    {
+      "path": "runtime/unqualified/R-B2-agent-2/R-B2-agent-ready-4.json",
+      "bytes": 1731,
+      "sha256": "f7020da5a746883625d203d2978557deae883bb09b6650e339718f3ab3d1e59a"
+    },
+    {
+      "path": "runtime/unqualified/R-B2-agent-2/R-B2-agent-suite.log",
+      "bytes": 5676,
+      "sha256": "c7d2c44fe071fc7fedb5dc04dab16ed1ad093e6fcbfc0451c5feacf7e6d3fec4"
+    },
+    {
+      "path": "runtime/unqualified/R-B2-agent-2/R-B2-agent-up.log",
+      "bytes": 3541,
+      "sha256": "3c492ae551012e7968d041d03d01b01ac01860047dba545d2ec3edad33993885"
+    },
+    {
+      "path": "runtime/window.json",
+      "bytes": 272,
+      "sha256": "1f088bd33b87961658ae317fdce0ac3bba699971e8e1b7c9e2aa38f20e40b845"
+    },
+    {
+      "path": "source-pins.json",
+      "bytes": 13692,
+      "sha256": "b6d9add5621e157f3fc3c70bdde225c67d392b233523d37e4494f8e6de80f7c0"
+    },
+    {
+      "path": "text-normalization.json",
+      "bytes": 140573,
+      "sha256": "25ce75e4ab2f3c15ace1c72994fcf0a710b15c4e3dc12d7e6a32eb1943577c80"
+    }
+  ]
+}

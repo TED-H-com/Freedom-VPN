@@ -1,0 +1,59 @@
+{
+  "test_only": true,
+  "start_ns": "88964974813650",
+  "end_ns": "88995055516193",
+  "load_before": "13.69 13.26 13.15 1/3036 1923314",
+  "load_after": "13.26 13.20 13.13 1/2687 1930712",
+  "d_state_before": 8,
+  "d_state_after": 12,
+  "suite_processes_before": "1 matching process command lines withheld; raw receipt retained privately",
+  "suite_processes_after": "1 matching process command lines withheld; raw receipt retained privately",
+  "vmstat": "procs -----------memory---------- ---swap-- -----io---- -system-- -------cpu-------\n r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st gu\n14  8  43776 4256344 9830588 158564992    0    0  6226 33340 41157   35  9  3 77 10  0  0\n13  8  43776 4719168 9831020 158565284    0    0     0  1547 62119 68262  5  2 80 12  0  0\n 3  9  43776 4312536 9831060 158625956    0    0  8521  1722 96520 100278 12  4 73 12  0  0\n 5  8  43776 3935640 9831072 158642348    0    0  2843  8538 141775 508635 12  5 72 11  0  0\n 1  8  43776 4228740 9831080 158635700    0    0     0  1038 100122 531104  7  3 78 12  0  0\n 1  6  43776 5027208 9831080 158688520    0    0  6246  3430 35990 245846  3  1 83 12  0  0\n 1 12  43776 5315860 9831088 158734416    0    0     0  6845 9163 22619  1  0 87 12  0  0\n",
+  "since_boot": {
+    "r": 14,
+    "b": 8,
+    "id": 77,
+    "wa": 10
+  },
+  "intervals": [
+    {
+      "r": 13,
+      "b": 8,
+      "id": 80,
+      "wa": 12
+    },
+    {
+      "r": 3,
+      "b": 9,
+      "id": 73,
+      "wa": 12
+    },
+    {
+      "r": 5,
+      "b": 8,
+      "id": 72,
+      "wa": 11
+    },
+    {
+      "r": 1,
+      "b": 8,
+      "id": 78,
+      "wa": 12
+    },
+    {
+      "r": 1,
+      "b": 6,
+      "id": 83,
+      "wa": 12
+    },
+    {
+      "r": 1,
+      "b": 12,
+      "id": 87,
+      "wa": 12
+    }
+  ],
+  "quiet": false,
+  "suite_processes_before_count": 1,
+  "suite_processes_after_count": 1
+}

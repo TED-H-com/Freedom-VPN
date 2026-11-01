@@ -1,0 +1,560 @@
+{
+  "test_only": true,
+  "invocation": "apply",
+  "start_ns": "89422455090939",
+  "end_ns": "89422517202521",
+  "exit": 0,
+  "input_sha256": "a981199c38b3cc2aff7129341589a66f4beeed40a1beb63318ffa164830206ec",
+  "input_model": {
+    "generation": 21,
+    "ipv6_mode": "block",
+    "now": "2026-11-01T04:04:44.901985982Z",
+    "now_mono_ns": "0",
+    "datapath": {
+      "member_ingress": "fv-fh",
+      "uplink": "fv-ih",
+      "snat": "192.0.2.37"
+    },
+    "bindings": [
+      {
+        "member_id": "019a0000-0000-7000-8000-00000000000a",
+        "device_id": "019a0000-0000-7000-8000-0000000000a1",
+        "peer_id": "peer-a1",
+        "allowed_v4": [
+          "100.64.1.1/32"
+        ],
+        "binding_revision": 1,
+        "valid_from": "2026-11-01T04:03:15.431019404Z",
+        "valid_until": "2026-11-03T04:04:15.431019404Z"
+      },
+      {
+        "member_id": "019a0000-0000-7000-8000-00000000000a",
+        "device_id": "019a0000-0000-7000-8000-0000000000a2",
+        "peer_id": "peer-a2",
+        "allowed_v4": [
+          "100.64.1.2/32"
+        ],
+        "binding_revision": 1,
+        "valid_from": "2026-11-01T04:03:15.431019404Z",
+        "valid_until": "2026-11-03T04:04:15.431019404Z"
+      }
+    ],
+    "leases": [
+      {
+        "member_id": "019a0000-0000-7000-8000-00000000000a",
+        "effective_service_end": "2026-11-03T04:04:44.901985982Z",
+        "node_lease_end": "2026-11-03T04:04:44.901985982Z",
+        "signed_server_time": "2026-11-01T04:04:44.901985982Z",
+        "max_offline_seconds": 3600
+      }
+    ],
+    "resolvers": [
+      "198.51.100.53"
+    ],
+    "denied_v4": [
+      "0.0.0.0/8",
+      "10.0.0.0/8",
+      "100.64.0.0/10",
+      "127.0.0.0/8",
+      "169.254.0.0/16",
+      "172.16.0.0/12",
+      "192.0.0.0/24",
+      "192.0.2.0/24",
+      "192.88.99.0/24",
+      "192.168.0.0/16",
+      "198.18.0.0/15",
+      "198.51.100.0/24",
+      "224.0.0.0/4",
+      "240.0.0.0/4",
+      "255.255.255.255/32"
+    ],
+    "extra_denied_v4": [
+      "192.0.2.200/32"
+    ],
+    "host_v4": [
+      "192.0.2.33/32",
+      "192.0.2.37/32",
+      "192.168.0.1/32"
+    ],
+    "qos": {
+      "up": {
+        "rate_bps": 20000000,
+        "ceil_bps": 20000000
+      },
+      "down": {
+        "rate_bps": 20000000,
+        "ceil_bps": 20000000
+      },
+      "host_up": {
+        "rate_bps": 1000000,
+        "ceil_bps": 20000000
+      },
+      "host_down": {
+        "rate_bps": 1000000,
+        "ceil_bps": 20000000
+      },
+      "members": [
+        {
+          "member_id": "019a0000-0000-7000-8000-00000000000a",
+          "up": {
+            "rate_bps": 10000000,
+            "ceil_bps": 10000000
+          },
+          "down": {
+            "rate_bps": 10000000,
+            "ceil_bps": 10000000
+          }
+        }
+      ]
+    }
+  },
+  "result": {
+    "leases": [
+      {
+        "member_id": "019a0000-0000-7000-8000-00000000000a",
+        "effective_service_end": "2026-11-03T04:04:44.901985982Z",
+        "node_lease_end": "2026-11-03T04:04:44.901985982Z",
+        "signed_server_time": "2026-11-01T04:04:44.901985982Z",
+        "max_offline_seconds": 3600
+      }
+    ],
+    "deadline": {
+      "granularity_ns": "1000000",
+      "install_bound_ns": "100000000",
+      "apply_start_ns": "89422457206944",
+      "render_start_ns": "89422478111762",
+      "install_start_ns": "89422478193252",
+      "installed_by_ns": "89422489396686",
+      "install_ok": true,
+      "release_start_ns": "89422489398808",
+      "release_end_ns": "89422498275813",
+      "guard_released": true
+    },
+    "verified": true,
+    "evidence": {
+      "deadline_read": {
+        "start_ns": "89422502144064",
+        "end_ns": "89422503456619",
+        "elements": 2,
+        "read_ok": true,
+        "verified": true
+      },
+      "quarantined": false,
+      "tc": [
+        {
+          "interface": "fv-fh",
+          "attachment": "qdisc",
+          "objects": [
+            {
+              "kind": "fq_codel",
+              "handle": "2f:",
+              "parent": "1:2f"
+            },
+            {
+              "kind": "htb",
+              "handle": "1:",
+              "root": true
+            }
+          ]
+        },
+        {
+          "interface": "fv-ih",
+          "attachment": "qdisc",
+          "objects": [
+            {
+              "kind": "fq_codel",
+              "handle": "2f:",
+              "parent": "1:2f"
+            },
+            {
+              "kind": "htb",
+              "handle": "1:",
+              "root": true
+            }
+          ]
+        },
+        {
+          "interface": "fv-fh",
+          "attachment": "1:1",
+          "objects": []
+        },
+        {
+          "interface": "fv-fh",
+          "attachment": "1:2f",
+          "objects": []
+        },
+        {
+          "interface": "fv-fh",
+          "attachment": "1:fffe",
+          "objects": []
+        },
+        {
+          "interface": "fv-fh",
+          "attachment": "2f:",
+          "objects": []
+        },
+        {
+          "interface": "fv-fh",
+          "attachment": "egress",
+          "objects": []
+        },
+        {
+          "interface": "fv-fh",
+          "attachment": "ingress",
+          "objects": []
+        },
+        {
+          "interface": "fv-fh",
+          "attachment": "root",
+          "objects": []
+        },
+        {
+          "interface": "fv-ih",
+          "attachment": "1:1",
+          "objects": []
+        },
+        {
+          "interface": "fv-ih",
+          "attachment": "1:2f",
+          "objects": []
+        },
+        {
+          "interface": "fv-ih",
+          "attachment": "1:fffe",
+          "objects": []
+        },
+        {
+          "interface": "fv-ih",
+          "attachment": "2f:",
+          "objects": []
+        },
+        {
+          "interface": "fv-ih",
+          "attachment": "egress",
+          "objects": []
+        },
+        {
+          "interface": "fv-ih",
+          "attachment": "ingress",
+          "objects": []
+        },
+        {
+          "interface": "fv-ih",
+          "attachment": "root",
+          "objects": []
+        }
+      ],
+      "tc_summary": {
+        "generation": "21",
+        "phase": "verify",
+        "reads": 16,
+        "objects": 4,
+        "truncated": false,
+        "sha256": "77729db9f550d542bbdfc4508c1b137481f4d6be99b320bf39e74979d65053f9"
+      },
+      "policy_rules": [
+        {
+          "family": "4",
+          "count": 3
+        },
+        {
+          "family": "6",
+          "count": 2
+        }
+      ]
+    },
+    "tc_evidence": {
+      "attachments": [
+        {
+          "attachment": "qdisc",
+          "interface": "fv-fh",
+          "objects": [
+            {
+              "handle": "2f:",
+              "kind": "fq_codel",
+              "parent": "1:2f"
+            },
+            {
+              "handle": "1:",
+              "kind": "htb",
+              "root": true
+            }
+          ]
+        },
+        {
+          "attachment": "qdisc",
+          "interface": "fv-ih",
+          "objects": [
+            {
+              "handle": "2f:",
+              "kind": "fq_codel",
+              "parent": "1:2f"
+            },
+            {
+              "handle": "1:",
+              "kind": "htb",
+              "root": true
+            }
+          ]
+        },
+        {
+          "attachment": "1:1",
+          "interface": "fv-fh",
+          "objects": []
+        },
+        {
+          "attachment": "1:2f",
+          "interface": "fv-fh",
+          "objects": []
+        },
+        {
+          "attachment": "1:fffe",
+          "interface": "fv-fh",
+          "objects": []
+        },
+        {
+          "attachment": "2f:",
+          "interface": "fv-fh",
+          "objects": []
+        },
+        {
+          "attachment": "egress",
+          "interface": "fv-fh",
+          "objects": []
+        },
+        {
+          "attachment": "ingress",
+          "interface": "fv-fh",
+          "objects": []
+        },
+        {
+          "attachment": "root",
+          "interface": "fv-fh",
+          "objects": []
+        },
+        {
+          "attachment": "1:1",
+          "interface": "fv-ih",
+          "objects": []
+        },
+        {
+          "attachment": "1:2f",
+          "interface": "fv-ih",
+          "objects": []
+        },
+        {
+          "attachment": "1:fffe",
+          "interface": "fv-ih",
+          "objects": []
+        },
+        {
+          "attachment": "2f:",
+          "interface": "fv-ih",
+          "objects": []
+        },
+        {
+          "attachment": "egress",
+          "interface": "fv-ih",
+          "objects": []
+        },
+        {
+          "attachment": "ingress",
+          "interface": "fv-ih",
+          "objects": []
+        },
+        {
+          "attachment": "root",
+          "interface": "fv-ih",
+          "objects": []
+        }
+      ],
+      "candidate_generation": "21",
+      "error_code": null,
+      "objects_total": 4,
+      "phase": "verify",
+      "read_at": "2026-11-01T04:04:44.999978013Z",
+      "reads_total": 16,
+      "rejected": null,
+      "sha256": "77729db9f550d542bbdfc4508c1b137481f4d6be99b320bf39e74979d65053f9",
+      "truncated": false,
+      "verified": true
+    },
+    "timing": {
+      "version": 1,
+      "clock": "CLOCK_MONOTONIC",
+      "operation": "apply",
+      "candidate_generation": "21",
+      "start_ns": "89422457206944",
+      "end_ns": "89422516476875",
+      "succeeded": true,
+      "verified": true,
+      "deadline": {
+        "granularity_ns": "1000000",
+        "install_bound_ns": "100000000",
+        "apply_start_ns": "89422457206944",
+        "render_start_ns": "89422478111762",
+        "install_start_ns": "89422478193252",
+        "installed_by_ns": "89422489396686",
+        "install_ok": true,
+        "release_start_ns": "89422489398808",
+        "release_end_ns": "89422498275813",
+        "guard_released": true
+      },
+      "verifications": [
+        {
+          "start_ns": "89422498278760",
+          "end_ns": "89422516468606",
+          "nft_read": {
+            "start_ns": "89422498279172",
+            "end_ns": "89422500581603",
+            "ok": true
+          },
+          "tc_read": {
+            "start_ns": "89422503465605",
+            "end_ns": "89422515121252",
+            "ok": true
+          },
+          "precision_read": {
+            "start_ns": "89422502144064",
+            "end_ns": "89422503456619",
+            "elements": 2,
+            "read_ok": true,
+            "verified": true
+          },
+          "tc_sha256": "77729db9f550d542bbdfc4508c1b137481f4d6be99b320bf39e74979d65053f9",
+          "verified": true
+        }
+      ]
+    },
+    "generation": 21,
+    "admitted": 2,
+    "resets": [],
+    "finals": [
+      {
+        "device_id": "019a0000-0000-7000-8000-0000000000b1",
+        "member_id": "00000000-0000-0000-0000-000000000000",
+        "peer_id": "",
+        "binding_revision": 0,
+        "direction": "dns_download",
+        "packets": 0,
+        "bytes": 0,
+        "namespace": "dns_service_v1"
+      },
+      {
+        "device_id": "019a0000-0000-7000-8000-0000000000b1",
+        "member_id": "00000000-0000-0000-0000-000000000000",
+        "peer_id": "",
+        "binding_revision": 0,
+        "direction": "dns_upload",
+        "packets": 0,
+        "bytes": 0,
+        "namespace": "dns_service_v1"
+      },
+      {
+        "device_id": "019a0000-0000-7000-8000-0000000000b1",
+        "member_id": "00000000-0000-0000-0000-000000000000",
+        "peer_id": "",
+        "binding_revision": 0,
+        "direction": "download",
+        "packets": 15293,
+        "bytes": 832093,
+        "namespace": "forward_admission_v1"
+      },
+      {
+        "device_id": "019a0000-0000-7000-8000-0000000000b1",
+        "member_id": "00000000-0000-0000-0000-000000000000",
+        "peer_id": "",
+        "binding_revision": 0,
+        "direction": "upload",
+        "packets": 24755,
+        "bytes": 35122544,
+        "namespace": "forward_admission_v1"
+      }
+    ],
+    "samples": [
+      {
+        "device_id": "019a0000-0000-7000-8000-0000000000a1",
+        "member_id": "019a0000-0000-7000-8000-00000000000a",
+        "peer_id": "peer-a1",
+        "binding_revision": 1,
+        "direction": "dns_download",
+        "packets": 8,
+        "bytes": 508,
+        "namespace": "dns_service_v1"
+      },
+      {
+        "device_id": "019a0000-0000-7000-8000-0000000000a1",
+        "member_id": "019a0000-0000-7000-8000-00000000000a",
+        "peer_id": "peer-a1",
+        "binding_revision": 1,
+        "direction": "dns_upload",
+        "packets": 12,
+        "bytes": 652,
+        "namespace": "dns_service_v1"
+      },
+      {
+        "device_id": "019a0000-0000-7000-8000-0000000000a1",
+        "member_id": "019a0000-0000-7000-8000-00000000000a",
+        "peer_id": "peer-a1",
+        "binding_revision": 1,
+        "direction": "download",
+        "packets": 96584,
+        "bytes": 72512796,
+        "namespace": "forward_admission_v1"
+      },
+      {
+        "device_id": "019a0000-0000-7000-8000-0000000000a1",
+        "member_id": "019a0000-0000-7000-8000-00000000000a",
+        "peer_id": "peer-a1",
+        "binding_revision": 1,
+        "direction": "upload",
+        "packets": 106200,
+        "bytes": 109223562,
+        "namespace": "forward_admission_v1"
+      },
+      {
+        "device_id": "019a0000-0000-7000-8000-0000000000a2",
+        "member_id": "019a0000-0000-7000-8000-00000000000a",
+        "peer_id": "peer-a2",
+        "binding_revision": 1,
+        "direction": "dns_download",
+        "packets": 0,
+        "bytes": 0,
+        "namespace": "dns_service_v1"
+      },
+      {
+        "device_id": "019a0000-0000-7000-8000-0000000000a2",
+        "member_id": "019a0000-0000-7000-8000-00000000000a",
+        "peer_id": "peer-a2",
+        "binding_revision": 1,
+        "direction": "dns_upload",
+        "packets": 0,
+        "bytes": 0,
+        "namespace": "dns_service_v1"
+      },
+      {
+        "device_id": "019a0000-0000-7000-8000-0000000000a2",
+        "member_id": "019a0000-0000-7000-8000-00000000000a",
+        "peer_id": "peer-a2",
+        "binding_revision": 1,
+        "direction": "download",
+        "packets": 78991,
+        "bytes": 70885814,
+        "namespace": "forward_admission_v1"
+      },
+      {
+        "device_id": "019a0000-0000-7000-8000-0000000000a2",
+        "member_id": "019a0000-0000-7000-8000-00000000000a",
+        "peer_id": "peer-a2",
+        "binding_revision": 1,
+        "direction": "upload",
+        "packets": 79009,
+        "bytes": 70875253,
+        "namespace": "forward_admission_v1"
+      }
+    ],
+    "assignments": {
+      "019a0000-0000-7000-8000-00000000000a": "2f"
+    }
+  }
+}

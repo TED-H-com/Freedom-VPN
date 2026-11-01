@@ -1,0 +1,341 @@
+{
+  "test_only": true,
+  "note": "References immutable first-window source captures and retained driver; none is rewritten by the resume.",
+  "files": [
+    {
+      "path": "docs/poc/G2-followup22-evidence/harness/f22-run.py",
+      "bytes": 9621,
+      "sha256": "ec365f93324533ff8c8321e734c00ad6129899a90834a2db6bc7b4f1b8fc0055"
+    },
+    {
+      "path": "docs/poc/G2-followup22-evidence/sources/A/archive.json",
+      "bytes": 6473,
+      "sha256": "1e2658004cabb918aaa429d4322ad6d372118899a6cdeceaca25c370c0714a09"
+    },
+    {
+      "path": "docs/poc/G2-followup22-evidence/sources/A/node/enforce/apply.go",
+      "bytes": 18034,
+      "sha256": "3355ee170ee6f6ab8577378218084e1c23c3f00961a3e68473e4b59ced7cfcbb"
+    },
+    {
+      "path": "docs/poc/G2-followup22-evidence/sources/A/node/enforce/classid.go",
+      "bytes": 2764,
+      "sha256": "b0b2c664c239174108e1df1639a48568478a149eb19d0b711324012ad517056b"
+    },
+    {
+      "path": "docs/poc/G2-followup22-evidence/sources/A/node/enforce/counter.go",
+      "bytes": 3847,
+      "sha256": "45f85a5fe0e41694df5fe4ccb825b28d3a785870fbb94f1414c602c72b882622"
+    },
+    {
+      "path": "docs/poc/G2-followup22-evidence/sources/A/node/enforce/deadline.go",
+      "bytes": 2830,
+      "sha256": "5eb45aa470572833c7fc79f6de8e9000b9a9926d1e3961fef1ce6ebf5a790f92"
+    },
+    {
+      "path": "docs/poc/G2-followup22-evidence/sources/A/node/enforce/deadline_install.go",
+      "bytes": 2270,
+      "sha256": "79cc2676742c3a07eea2d732282b756cff8581c0fa57a3094381350650855ab0"
+    },
+    {
+      "path": "docs/poc/G2-followup22-evidence/sources/A/node/enforce/deadline_read.go",
+      "bytes": 4579,
+      "sha256": "f812d93b75717644ac1e672e4bed2698fb580bcc3647401377b7bd3eaadb6589"
+    },
+    {
+      "path": "docs/poc/G2-followup22-evidence/sources/A/node/enforce/doc.go",
+      "bytes": 4299,
+      "sha256": "cc218cfacb2f661dd20a29e1801e501ccfb35d96fd98ead0888f2e08ca2a6e51"
+    },
+    {
+      "path": "docs/poc/G2-followup22-evidence/sources/A/node/enforce/evidence.go",
+      "bytes": 6790,
+      "sha256": "fb37a5aba4f3112446e5c0f4443512d8c1dfdb4a196e19d3d3a1727caeaea073"
+    },
+    {
+      "path": "docs/poc/G2-followup22-evidence/sources/A/node/enforce/evidence_contract.go",
+      "bytes": 3765,
+      "sha256": "79b7ff36e15cd3803cc428ceb2e4cf5b08692a95f6887affcdb14c7e46318835"
+    },
+    {
+      "path": "docs/poc/G2-followup22-evidence/sources/A/node/enforce/executor.go",
+      "bytes": 2965,
+      "sha256": "922e35776e0eb113f88bf9db31cda59ec7a826b72443c73c2de5a73b03519325"
+    },
+    {
+      "path": "docs/poc/G2-followup22-evidence/sources/A/node/enforce/model.go",
+      "bytes": 10553,
+      "sha256": "c65166e6c48cc186915bf0db86242cf94a94a06fcaa5286f6f040d6ddd798160"
+    },
+    {
+      "path": "docs/poc/G2-followup22-evidence/sources/A/node/enforce/parse_nft.go",
+      "bytes": 36310,
+      "sha256": "7301625462b61a806fd1d6335e35b7d257a60232b77d410f768585f37ce34558"
+    },
+    {
+      "path": "docs/poc/G2-followup22-evidence/sources/A/node/enforce/parse_tc.go",
+      "bytes": 5803,
+      "sha256": "8cc1316a7e657e4fff7dbe240e81bf78a91275cf1739fecdf6e850cb36258aca"
+    },
+    {
+      "path": "docs/poc/G2-followup22-evidence/sources/A/node/enforce/prefixes.go",
+      "bytes": 2218,
+      "sha256": "7fde4100e20963581e15363d1b034c78ce7aaef9bf8e82e2067ed8f87551b303"
+    },
+    {
+      "path": "docs/poc/G2-followup22-evidence/sources/A/node/enforce/quarantine.go",
+      "bytes": 6958,
+      "sha256": "c05266c3d6390f8dcbc94caf94e7b6db8a466e614657c8ac7eb7f46b5f6045fe"
+    },
+    {
+      "path": "docs/poc/G2-followup22-evidence/sources/A/node/enforce/reason.go",
+      "bytes": 2820,
+      "sha256": "821a6ad5bd7f071eb26a159dc1c8c4f73c1a2035e120ed39f4f731a6d1666554"
+    },
+    {
+      "path": "docs/poc/G2-followup22-evidence/sources/A/node/enforce/render_nft.go",
+      "bytes": 22527,
+      "sha256": "e779d2960df908ea16b4a3068809f8e6c9ab7b3cd7e1dfd0349234d982a1601f"
+    },
+    {
+      "path": "docs/poc/G2-followup22-evidence/sources/A/node/enforce/render_tc.go",
+      "bytes": 6618,
+      "sha256": "eaf8bdcf6f120ad74edc9084520734b2b087286ed8895cdec35bd6724299f1f2"
+    },
+    {
+      "path": "docs/poc/G2-followup22-evidence/sources/A/node/enforce/state.go",
+      "bytes": 1514,
+      "sha256": "b3c1235a67d8f002d4609cdc6c37ddd01b46b87df1b987cbd211e2375de9d9f3"
+    },
+    {
+      "path": "docs/poc/G2-followup22-evidence/sources/A/node/enforce/timing.go",
+      "bytes": 3171,
+      "sha256": "6cdecc45522d01f031148630345dda27eb4331a49db7942f03bbcf4ecc1cedc9"
+    },
+    {
+      "path": "docs/poc/G2-followup22-evidence/sources/A/node/enforce/validate.go",
+      "bytes": 12761,
+      "sha256": "25e77fa93cbb097048cfa3035fcc5eaf167a211f464d94a689a87b986d2d352d"
+    },
+    {
+      "path": "docs/poc/G2-followup22-evidence/sources/A/node/enforce/verify.go",
+      "bytes": 33681,
+      "sha256": "d71aa7c7a348410f5864aa1cf7e1ed451a4e900d8b17a6bdeba3d12f31f87e60"
+    },
+    {
+      "path": "docs/poc/G2-followup22-evidence/sources/A/node/enforce/verify_foreign.go",
+      "bytes": 6746,
+      "sha256": "330f5fffd48776b70b585034e045c68be506df6e77ee22b6a1886ad2ddc78862"
+    },
+    {
+      "path": "docs/poc/G2-followup22-evidence/sources/A/node/enforce/verify_loopback.go",
+      "bytes": 7355,
+      "sha256": "23e74e4c8f029c210857f3df33f8f4f807667bcdc54ae641ee6ce707fd5ffb48"
+    },
+    {
+      "path": "docs/poc/G2-followup22-evidence/sources/A/node/enforce/verify_tc.go",
+      "bytes": 11377,
+      "sha256": "8b9b702bb2b69cecce652b9b94942f60c6ecbf7201c64a2297d74e6aaac4bfca"
+    },
+    {
+      "path": "docs/poc/G2-followup22-evidence/sources/A/tests/netlab/cmd/fvpn-netlab/inject.go",
+      "bytes": 1276,
+      "sha256": "9a26df36cc30a3d3b2fe9f2d7f696df389633b5bc7ebb3d637479bad870f8e3c"
+    },
+    {
+      "path": "docs/poc/G2-followup22-evidence/sources/A/tests/netlab/cmd/fvpn-netlab/main.go",
+      "bytes": 10228,
+      "sha256": "d594f1d2132efa29106e220e33a24f07bf4845e56607e1fb2fddefeaa03adbe2"
+    },
+    {
+      "path": "docs/poc/G2-followup22-evidence/sources/A/tests/netlab/cmd/fvpn-netlab/trace.go",
+      "bytes": 4960,
+      "sha256": "47cb3ada97c33518b214922455cdd7aaaa1d9f2eb11a7450c3475cb61c53aae8"
+    },
+    {
+      "path": "docs/poc/G2-followup22-evidence/sources/A/go.mod",
+      "bytes": 2104,
+      "sha256": "46c0a14ee2b1f8013fbbb684db433bef031e5d809d7c5b3cdfe1a13feb849fe3"
+    },
+    {
+      "path": "docs/poc/G2-followup22-evidence/sources/A/go.sum",
+      "bytes": 13295,
+      "sha256": "d270cc6d149992b8720c6dce959df1fff06d79fd93ca77129816d28625f9bb1c"
+    },
+    {
+      "path": "docs/poc/G2-followup22-evidence/sources/B/archive.json",
+      "bytes": 7318,
+      "sha256": "7ff7f0bea9832a15f029a7aaebfcfda3debc69b8c2723670a280c6c7a45a2c65"
+    },
+    {
+      "path": "docs/poc/G2-followup22-evidence/sources/B/node/enforce/apply.go",
+      "bytes": 18445,
+      "sha256": "c94aa020ccda3d446062d93ca74bb7fcbb1b1c302d12207f0d12534039a0959a"
+    },
+    {
+      "path": "docs/poc/G2-followup22-evidence/sources/B/node/enforce/apply_capture.go",
+      "bytes": 1045,
+      "sha256": "c39950e78ea75abb300529c50e2c4559b8aa226f9cfc3b17f088ebeeaa8de14a"
+    },
+    {
+      "path": "docs/poc/G2-followup22-evidence/sources/B/node/enforce/classid.go",
+      "bytes": 2764,
+      "sha256": "b0b2c664c239174108e1df1639a48568478a149eb19d0b711324012ad517056b"
+    },
+    {
+      "path": "docs/poc/G2-followup22-evidence/sources/B/node/enforce/command_lifecycle.go",
+      "bytes": 7060,
+      "sha256": "572921c31f9f0f756c52c81c1b733379ae2bf7637943c7ed71d4ba8133622014"
+    },
+    {
+      "path": "docs/poc/G2-followup22-evidence/sources/B/node/enforce/command_resources_linux.go",
+      "bytes": 3001,
+      "sha256": "4a16f302b05b1229a956dc361f4443681dc70fec91a69ff066b8da9dbada3d93"
+    },
+    {
+      "path": "docs/poc/G2-followup22-evidence/sources/B/node/enforce/command_resources_other.go",
+      "bytes": 214,
+      "sha256": "b3443147f7a16ea43ff7d2eb552ab368ae0e6a935497d35b2864066cb2adf415"
+    },
+    {
+      "path": "docs/poc/G2-followup22-evidence/sources/B/node/enforce/counter.go",
+      "bytes": 3847,
+      "sha256": "45f85a5fe0e41694df5fe4ccb825b28d3a785870fbb94f1414c602c72b882622"
+    },
+    {
+      "path": "docs/poc/G2-followup22-evidence/sources/B/node/enforce/deadline.go",
+      "bytes": 2830,
+      "sha256": "5eb45aa470572833c7fc79f6de8e9000b9a9926d1e3961fef1ce6ebf5a790f92"
+    },
+    {
+      "path": "docs/poc/G2-followup22-evidence/sources/B/node/enforce/deadline_install.go",
+      "bytes": 2270,
+      "sha256": "79cc2676742c3a07eea2d732282b756cff8581c0fa57a3094381350650855ab0"
+    },
+    {
+      "path": "docs/poc/G2-followup22-evidence/sources/B/node/enforce/deadline_read.go",
+      "bytes": 4579,
+      "sha256": "f812d93b75717644ac1e672e4bed2698fb580bcc3647401377b7bd3eaadb6589"
+    },
+    {
+      "path": "docs/poc/G2-followup22-evidence/sources/B/node/enforce/doc.go",
+      "bytes": 4299,
+      "sha256": "cc218cfacb2f661dd20a29e1801e501ccfb35d96fd98ead0888f2e08ca2a6e51"
+    },
+    {
+      "path": "docs/poc/G2-followup22-evidence/sources/B/node/enforce/evidence.go",
+      "bytes": 6790,
+      "sha256": "fb37a5aba4f3112446e5c0f4443512d8c1dfdb4a196e19d3d3a1727caeaea073"
+    },
+    {
+      "path": "docs/poc/G2-followup22-evidence/sources/B/node/enforce/evidence_contract.go",
+      "bytes": 3765,
+      "sha256": "79b7ff36e15cd3803cc428ceb2e4cf5b08692a95f6887affcdb14c7e46318835"
+    },
+    {
+      "path": "docs/poc/G2-followup22-evidence/sources/B/node/enforce/executor.go",
+      "bytes": 2999,
+      "sha256": "79d330a80bc9db7e5198062a18498c168900fb2d43baf9221a08c8140e92a713"
+    },
+    {
+      "path": "docs/poc/G2-followup22-evidence/sources/B/node/enforce/model.go",
+      "bytes": 10553,
+      "sha256": "c65166e6c48cc186915bf0db86242cf94a94a06fcaa5286f6f040d6ddd798160"
+    },
+    {
+      "path": "docs/poc/G2-followup22-evidence/sources/B/node/enforce/parse_nft.go",
+      "bytes": 36310,
+      "sha256": "7301625462b61a806fd1d6335e35b7d257a60232b77d410f768585f37ce34558"
+    },
+    {
+      "path": "docs/poc/G2-followup22-evidence/sources/B/node/enforce/parse_tc.go",
+      "bytes": 5803,
+      "sha256": "8cc1316a7e657e4fff7dbe240e81bf78a91275cf1739fecdf6e850cb36258aca"
+    },
+    {
+      "path": "docs/poc/G2-followup22-evidence/sources/B/node/enforce/prefixes.go",
+      "bytes": 2218,
+      "sha256": "7fde4100e20963581e15363d1b034c78ce7aaef9bf8e82e2067ed8f87551b303"
+    },
+    {
+      "path": "docs/poc/G2-followup22-evidence/sources/B/node/enforce/quarantine.go",
+      "bytes": 6958,
+      "sha256": "c05266c3d6390f8dcbc94caf94e7b6db8a466e614657c8ac7eb7f46b5f6045fe"
+    },
+    {
+      "path": "docs/poc/G2-followup22-evidence/sources/B/node/enforce/reason.go",
+      "bytes": 2820,
+      "sha256": "821a6ad5bd7f071eb26a159dc1c8c4f73c1a2035e120ed39f4f731a6d1666554"
+    },
+    {
+      "path": "docs/poc/G2-followup22-evidence/sources/B/node/enforce/render_nft.go",
+      "bytes": 22527,
+      "sha256": "e779d2960df908ea16b4a3068809f8e6c9ab7b3cd7e1dfd0349234d982a1601f"
+    },
+    {
+      "path": "docs/poc/G2-followup22-evidence/sources/B/node/enforce/render_tc.go",
+      "bytes": 6618,
+      "sha256": "eaf8bdcf6f120ad74edc9084520734b2b087286ed8895cdec35bd6724299f1f2"
+    },
+    {
+      "path": "docs/poc/G2-followup22-evidence/sources/B/node/enforce/state.go",
+      "bytes": 1514,
+      "sha256": "b3c1235a67d8f002d4609cdc6c37ddd01b46b87df1b987cbd211e2375de9d9f3"
+    },
+    {
+      "path": "docs/poc/G2-followup22-evidence/sources/B/node/enforce/timing.go",
+      "bytes": 3514,
+      "sha256": "0abb6e0e638afbb76839a9ec64031f496555c1e6c9e8651ad6ad82a0a58dc736"
+    },
+    {
+      "path": "docs/poc/G2-followup22-evidence/sources/B/node/enforce/validate.go",
+      "bytes": 12761,
+      "sha256": "25e77fa93cbb097048cfa3035fcc5eaf167a211f464d94a689a87b986d2d352d"
+    },
+    {
+      "path": "docs/poc/G2-followup22-evidence/sources/B/node/enforce/verify.go",
+      "bytes": 33681,
+      "sha256": "d71aa7c7a348410f5864aa1cf7e1ed451a4e900d8b17a6bdeba3d12f31f87e60"
+    },
+    {
+      "path": "docs/poc/G2-followup22-evidence/sources/B/node/enforce/verify_foreign.go",
+      "bytes": 6746,
+      "sha256": "330f5fffd48776b70b585034e045c68be506df6e77ee22b6a1886ad2ddc78862"
+    },
+    {
+      "path": "docs/poc/G2-followup22-evidence/sources/B/node/enforce/verify_loopback.go",
+      "bytes": 7355,
+      "sha256": "23e74e4c8f029c210857f3df33f8f4f807667bcdc54ae641ee6ce707fd5ffb48"
+    },
+    {
+      "path": "docs/poc/G2-followup22-evidence/sources/B/node/enforce/verify_tc.go",
+      "bytes": 11377,
+      "sha256": "8b9b702bb2b69cecce652b9b94942f60c6ecbf7201c64a2297d74e6aaac4bfca"
+    },
+    {
+      "path": "docs/poc/G2-followup22-evidence/sources/B/tests/netlab/cmd/fvpn-netlab/inject.go",
+      "bytes": 1276,
+      "sha256": "9a26df36cc30a3d3b2fe9f2d7f696df389633b5bc7ebb3d637479bad870f8e3c"
+    },
+    {
+      "path": "docs/poc/G2-followup22-evidence/sources/B/tests/netlab/cmd/fvpn-netlab/main.go",
+      "bytes": 10228,
+      "sha256": "d594f1d2132efa29106e220e33a24f07bf4845e56607e1fb2fddefeaa03adbe2"
+    },
+    {
+      "path": "docs/poc/G2-followup22-evidence/sources/B/tests/netlab/cmd/fvpn-netlab/trace.go",
+      "bytes": 6282,
+      "sha256": "60890cd7d8769e5f244b35c4f412cd1cd1f1d76d084f69acb22b2e337ea81d4c"
+    },
+    {
+      "path": "docs/poc/G2-followup22-evidence/sources/B/go.mod",
+      "bytes": 2104,
+      "sha256": "46c0a14ee2b1f8013fbbb684db433bef031e5d809d7c5b3cdfe1a13feb849fe3"
+    },
+    {
+      "path": "docs/poc/G2-followup22-evidence/sources/B/go.sum",
+      "bytes": 13295,
+      "sha256": "d270cc6d149992b8720c6dce959df1fff06d79fd93ca77129816d28625f9bb1c"
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "test_only": true,
+  "results": [
+    {
+      "manifest": "docs/poc/G2-followup21-evidence/archive/archive.json",
+      "source_commit": "8f74bc8b884e3a9a69924f791c7938e3dea09908",
+      "files": 132,
+      "byte_and_source_match": true
+    },
+    {
+      "manifest": "docs/poc/G2-followup22-evidence/inputs/archive.json",
+      "source_commit": "bc011b6f0fb8324d78ad5540c698a15f568fa079",
+      "files": 4,
+      "byte_and_source_match": true
+    },
+    {
+      "manifest": "docs/poc/G2-followup22-evidence/sources/A/archive.json",
+      "source_commit": "1b25757bf4651be80f48b78150eab988832c7d2a",
+      "files": 30,
+      "byte_and_source_match": true
+    },
+    {
+      "manifest": "docs/poc/G2-followup22-evidence/sources/B/archive.json",
+      "source_commit": "c6994eff40d9a98fffcf36b53dd3356f0360a31d",
+      "files": 34,
+      "byte_and_source_match": true
+    },
+    {
+      "manifest": "docs/poc/G2-followup22-evidence/sources/B-prior/archive.json",
+      "source_commit": "77b489f27b54cced841da1781018c3f84cb883ad",
+      "files": 34,
+      "byte_and_source_match": true
+    },
+    {
+      "fixture": "f22_rollback.py",
+      "only_change": "synthetic probe port 40022 to existing decoder format 40021",
+      "passed": true
+    }
+  ]
+}

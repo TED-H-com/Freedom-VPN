@@ -1,0 +1,187 @@
+{
+  "test_only": true,
+  "maximum_1280_attempts": 3,
+  "rows": [
+    {
+      "directory": "control-1500",
+      "endpoint": {
+        "role": "member",
+        "read_bytes": 64387,
+        "write_bytes": 64108,
+        "complete_lines": 64,
+        "partial_line_bytes": 0,
+        "error": "none",
+        "local_port": 33526,
+        "elapsed_ms": 4.479,
+        "validated_bytes": 64064,
+        "attempt": 0,
+        "member_underlay_mtu": 1500,
+        "underlay_family": "ipv6",
+        "overlay_family": "ipv4"
+      },
+      "datagrams": {
+        "reverse": {
+          "sizes": {
+            "144": {
+              "sent": 9,
+              "arrived": 9,
+              "absent": 0
+            },
+            "1152": {
+              "sent": 53,
+              "arrived": 53,
+              "absent": 0
+            },
+            "1360": {
+              "sent": 9,
+              "arrived": 9,
+              "absent": 0
+            }
+          },
+          "absent_sender_packets": [],
+          "unmatched_receiver_packets": 0
+        },
+        "forward": {
+          "sizes": {
+            "144": {
+              "sent": 22,
+              "arrived": 22,
+              "absent": 0
+            },
+            "176": {
+              "sent": 1,
+              "arrived": 1,
+              "absent": 0
+            },
+            "1360": {
+              "sent": 52,
+              "arrived": 52,
+              "absent": 0
+            },
+            "352": {
+              "sent": 1,
+              "arrived": 1,
+              "absent": 0
+            },
+            "160": {
+              "sent": 4,
+              "arrived": 4,
+              "absent": 0
+            }
+          },
+          "absent_sender_packets": [],
+          "unmatched_receiver_packets": 0
+        },
+        "ptb": {
+          "member": [],
+          "tunnel": [],
+          "node": [],
+          "origin": []
+        }
+      }
+    },
+    {
+      "directory": "attempt-1",
+      "endpoint": {
+        "role": "member",
+        "read_bytes": 10063,
+        "write_bytes": 64108,
+        "complete_lines": 10,
+        "partial_line_bytes": 0,
+        "error": "TimeoutError",
+        "local_port": 33530,
+        "elapsed_ms": 12012.403,
+        "validated_bytes": 10010,
+        "attempt": 1,
+        "member_underlay_mtu": 1280,
+        "underlay_family": "ipv6",
+        "overlay_family": "ipv4"
+      },
+      "datagrams": {
+        "reverse": {
+          "sizes": {
+            "144": {
+              "sent": 11,
+              "arrived": 11,
+              "absent": 0
+            },
+            "1152": {
+              "sent": 36,
+              "arrived": 36,
+              "absent": 0
+            },
+            "1360": {
+              "sent": 19,
+              "arrived": 0,
+              "absent": 19
+            },
+            "928": {
+              "sent": 1,
+              "arrived": 1,
+              "absent": 0
+            }
+          },
+          "absent_sender_packets": [
+            170,
+            321,
+            369,
+            386,
+            388,
+            391,
+            392,
+            395,
+            396,
+            399,
+            400,
+            403,
+            404,
+            405,
+            409,
+            412,
+            415,
+            418,
+            423
+          ],
+          "unmatched_receiver_packets": 0
+        },
+        "forward": {
+          "sizes": {
+            "144": {
+              "sent": 17,
+              "arrived": 17,
+              "absent": 0
+            },
+            "176": {
+              "sent": 1,
+              "arrived": 1,
+              "absent": 0
+            },
+            "1280": {
+              "sent": 52,
+              "arrived": 52,
+              "absent": 0
+            },
+            "136": {
+              "sent": 52,
+              "arrived": 52,
+              "absent": 0
+            },
+            "624": {
+              "sent": 1,
+              "arrived": 1,
+              "absent": 0
+            }
+          },
+          "absent_sender_packets": [],
+          "unmatched_receiver_packets": 0
+        },
+        "ptb": {
+          "member": [],
+          "tunnel": [],
+          "node": [],
+          "origin": []
+        }
+      }
+    }
+  ]
+}

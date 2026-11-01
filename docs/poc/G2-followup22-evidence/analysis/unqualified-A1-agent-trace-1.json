@@ -1,0 +1,515 @@
+{
+  "test_only": true,
+  "population": "unqualified-A1-agent-trace-1",
+  "cause_status_scope": "install-overrun causality only; not_applicable does not assert a cause for another failure",
+  "applies": 23,
+  "completed_guards": 23,
+  "failed_applies": 0,
+  "measured_guards": 0,
+  "percentiles_ms": {
+    "outer_ns": {
+      "p50": 31.51489,
+      "p90": 38.097589,
+      "p99": 52.963492,
+      "max": 52.963492
+    },
+    "install_ns": {
+      "p50": 14.706208,
+      "p90": 18.612508,
+      "p99": 23.970604,
+      "max": 23.970604
+    },
+    "render_to_installed_ns": {
+      "p50": 14.785646,
+      "p90": 18.708431,
+      "p99": 24.059318,
+      "max": 24.059318
+    }
+  },
+  "guards": [
+    {
+      "index": 3,
+      "sequence": "4",
+      "generation": "1",
+      "deadline": {
+        "granularity_ns": "1000000",
+        "install_bound_ns": "100000000",
+        "apply_start_ns": "92606483036474",
+        "render_start_ns": "92606495777736",
+        "install_start_ns": "92606495857174",
+        "installed_by_ns": "92606510563382",
+        "install_ok": true,
+        "release_start_ns": "92606510567315",
+        "release_end_ns": "92606528414514",
+        "guard_released": true
+      },
+      "commands_observed": 0,
+      "outer_ns": "32557340",
+      "install_ns": "14706208",
+      "render_to_installed_ns": "14785646"
+    },
+    {
+      "index": 15,
+      "sequence": "16",
+      "generation": "2",
+      "deadline": {
+        "granularity_ns": "1000000",
+        "install_bound_ns": "100000000",
+        "apply_start_ns": "92607613735981",
+        "render_start_ns": "92607627554731",
+        "install_start_ns": "92607627678681",
+        "installed_by_ns": "92607642315924",
+        "install_ok": true,
+        "release_start_ns": "92607642317852",
+        "release_end_ns": "92607660294800",
+        "guard_released": true
+      },
+      "commands_observed": 0,
+      "outer_ns": "32616119",
+      "install_ns": "14637243",
+      "render_to_installed_ns": "14761193"
+    },
+    {
+      "index": 27,
+      "sequence": "28",
+      "generation": "3",
+      "deadline": {
+        "granularity_ns": "1000000",
+        "install_bound_ns": "100000000",
+        "apply_start_ns": "92608626886983",
+        "render_start_ns": "92608639367499",
+        "install_start_ns": "92608639456213",
+        "installed_by_ns": "92608663426817",
+        "install_ok": true,
+        "release_start_ns": "92608663431873",
+        "release_end_ns": "92608692419705",
+        "guard_released": true
+      },
+      "commands_observed": 0,
+      "outer_ns": "52963492",
+      "install_ns": "23970604",
+      "render_to_installed_ns": "24059318"
+    },
+    {
+      "index": 39,
+      "sequence": "40",
+      "generation": "4",
+      "deadline": {
+        "granularity_ns": "1000000",
+        "install_bound_ns": "100000000",
+        "apply_start_ns": "92609625255405",
+        "render_start_ns": "92609639034509",
+        "install_start_ns": "92609639092190",
+        "installed_by_ns": "92609658489328",
+        "install_ok": true,
+        "release_start_ns": "92609658492859",
+        "release_end_ns": "92609678480403",
+        "guard_released": true
+      },
+      "commands_observed": 0,
+      "outer_ns": "39388213",
+      "install_ns": "19397138",
+      "render_to_installed_ns": "19454819"
+    },
+    {
+      "index": 51,
+      "sequence": "52",
+      "generation": "5",
+      "deadline": {
+        "granularity_ns": "1000000",
+        "install_bound_ns": "100000000",
+        "apply_start_ns": "92610597764185",
+        "render_start_ns": "92610610528950",
+        "install_start_ns": "92610610875962",
+        "installed_by_ns": "92610628459644",
+        "install_ok": true,
+        "release_start_ns": "92610628464695",
+        "release_end_ns": "92610640464247",
+        "guard_released": true
+      },
+      "commands_observed": 0,
+      "outer_ns": "29588285",
+      "install_ns": "17583682",
+      "render_to_installed_ns": "17930694"
+    },
+    {
+      "index": 63,
+      "sequence": "64",
+      "generation": "6",
+      "deadline": {
+        "granularity_ns": "1000000",
+        "install_bound_ns": "100000000",
+        "apply_start_ns": "92611624217068",
+        "render_start_ns": "92611637377859",
+        "install_start_ns": "92611637456932",
+        "installed_by_ns": "92611654409119",
+        "install_ok": true,
+        "release_start_ns": "92611654411093",
+        "release_end_ns": "92611672427260",
+        "guard_released": true
+      },
+      "commands_observed": 0,
+      "outer_ns": "34970328",
+      "install_ns": "16952187",
+      "render_to_installed_ns": "17031260"
+    },
+    {
+      "index": 75,
+      "sequence": "76",
+      "generation": "7",
+      "deadline": {
+        "granularity_ns": "1000000",
+        "install_bound_ns": "100000000",
+        "apply_start_ns": "92612611952033",
+        "render_start_ns": "92612624378323",
+        "install_start_ns": "92612624542496",
+        "installed_by_ns": "92612637457515",
+        "install_ok": true,
+        "release_start_ns": "92612637461025",
+        "release_end_ns": "92612658296840",
+        "guard_released": true
+      },
+      "commands_observed": 0,
+      "outer_ns": "33754344",
+      "install_ns": "12915019",
+      "render_to_installed_ns": "13079192"
+    },
+    {
+      "index": 87,
+      "sequence": "88",
+      "generation": "8",
+      "deadline": {
+        "granularity_ns": "1000000",
+        "install_bound_ns": "100000000",
+        "apply_start_ns": "92613621642006",
+        "render_start_ns": "92613634796489",
+        "install_start_ns": "92613634913436",
+        "installed_by_ns": "92613650351014",
+        "install_ok": true,
+        "release_start_ns": "92613650356275",
+        "release_end_ns": "92613662367447",
+        "guard_released": true
+      },
+      "commands_observed": 0,
+      "outer_ns": "27454011",
+      "install_ns": "15437578",
+      "render_to_installed_ns": "15554525"
+    },
+    {
+      "index": 99,
+      "sequence": "100",
+      "generation": "9",
+      "deadline": {
+        "granularity_ns": "1000000",
+        "install_bound_ns": "100000000",
+        "apply_start_ns": "92614611807545",
+        "render_start_ns": "92614624882169",
+        "install_start_ns": "92614624965320",
+        "installed_by_ns": "92614636493427",
+        "install_ok": true,
+        "release_start_ns": "92614636497452",
+        "release_end_ns": "92614648431337",
+        "guard_released": true
+      },
+      "commands_observed": 0,
+      "outer_ns": "23466017",
+      "install_ns": "11528107",
+      "render_to_installed_ns": "11611258"
+    },
+    {
+      "index": 111,
+      "sequence": "112",
+      "generation": "10",
+      "deadline": {
+        "granularity_ns": "1000000",
+        "install_bound_ns": "100000000",
+        "apply_start_ns": "92615611084138",
+        "render_start_ns": "92615624955441",
+        "install_start_ns": "92615625051364",
+        "installed_by_ns": "92615643663872",
+        "install_ok": true,
+        "release_start_ns": "92615643670531",
+        "release_end_ns": "92615659411238",
+        "guard_released": true
+      },
+      "commands_observed": 0,
+      "outer_ns": "34359874",
+      "install_ns": "18612508",
+      "render_to_installed_ns": "18708431"
+    },
+    {
+      "index": 123,
+      "sequence": "124",
+      "generation": "11",
+      "deadline": {
+        "granularity_ns": "1000000",
+        "install_bound_ns": "100000000",
+        "apply_start_ns": "92616617396426",
+        "render_start_ns": "92616630865473",
+        "install_start_ns": "92616630933407",
+        "installed_by_ns": "92616647483614",
+        "install_ok": true,
+        "release_start_ns": "92616647492059",
+        "release_end_ns": "92616663453474",
+        "guard_released": true
+      },
+      "commands_observed": 0,
+      "outer_ns": "32520067",
+      "install_ns": "16550207",
+      "render_to_installed_ns": "16618141"
+    },
+    {
+      "index": 135,
+      "sequence": "136",
+      "generation": "12",
+      "deadline": {
+        "granularity_ns": "1000000",
+        "install_bound_ns": "100000000",
+        "apply_start_ns": "92617604374551",
+        "render_start_ns": "92617617397726",
+        "install_start_ns": "92617617638891",
+        "installed_by_ns": "92617632527683",
+        "install_ok": true,
+        "release_start_ns": "92617632531807",
+        "release_end_ns": "92617644410060",
+        "guard_released": true
+      },
+      "commands_observed": 0,
+      "outer_ns": "26771169",
+      "install_ns": "14888792",
+      "render_to_installed_ns": "15129957"
+    },
+    {
+      "index": 147,
+      "sequence": "148",
+      "generation": "13",
+      "deadline": {
+        "granularity_ns": "1000000",
+        "install_bound_ns": "100000000",
+        "apply_start_ns": "92618602702609",
+        "render_start_ns": "92618616695357",
+        "install_start_ns": "92618616845446",
+        "installed_by_ns": "92618632538216",
+        "install_ok": true,
+        "release_start_ns": "92618632544055",
+        "release_end_ns": "92618643475777",
+        "guard_released": true
+      },
+      "commands_observed": 0,
+      "outer_ns": "26630331",
+      "install_ns": "15692770",
+      "render_to_installed_ns": "15842859"
+    },
+    {
+      "index": 159,
+      "sequence": "160",
+      "generation": "14",
+      "deadline": {
+        "granularity_ns": "1000000",
+        "install_bound_ns": "100000000",
+        "apply_start_ns": "92619614919524",
+        "render_start_ns": "92619627911026",
+        "install_start_ns": "92619627975999",
+        "installed_by_ns": "92619639501435",
+        "install_ok": true,
+        "release_start_ns": "92619639503242",
+        "release_end_ns": "92619652277932",
+        "guard_released": true
+      },
+      "commands_observed": 0,
+      "outer_ns": "24301933",
+      "install_ns": "11525436",
+      "render_to_installed_ns": "11590409"
+    },
+    {
+      "index": 171,
+      "sequence": "172",
+      "generation": "15",
+      "deadline": {
+        "granularity_ns": "1000000",
+        "install_bound_ns": "100000000",
+        "apply_start_ns": "92620611683594",
+        "render_start_ns": "92620624959878",
+        "install_start_ns": "92620625056947",
+        "installed_by_ns": "92620637404788",
+        "install_ok": true,
+        "release_start_ns": "92620637410041",
+        "release_end_ns": "92620655469199",
+        "guard_released": true
+      },
+      "commands_observed": 0,
+      "outer_ns": "30412252",
+      "install_ns": "12347841",
+      "render_to_installed_ns": "12444910"
+    },
+    {
+      "index": 183,
+      "sequence": "184",
+      "generation": "16",
+      "deadline": {
+        "granularity_ns": "1000000",
+        "install_bound_ns": "100000000",
+        "apply_start_ns": "92621598645544",
+        "render_start_ns": "92621611996743",
+        "install_start_ns": "92621612099438",
+        "installed_by_ns": "92621622627344",
+        "install_ok": true,
+        "release_start_ns": "92621622630393",
+        "release_end_ns": "92621635269720",
+        "guard_released": true
+      },
+      "commands_observed": 0,
+      "outer_ns": "23170282",
+      "install_ns": "10527906",
+      "render_to_installed_ns": "10630601"
+    },
+    {
+      "index": 195,
+      "sequence": "196",
+      "generation": "17",
+      "deadline": {
+        "granularity_ns": "1000000",
+        "install_bound_ns": "100000000",
+        "apply_start_ns": "92622625830516",
+        "render_start_ns": "92622639053211",
+        "install_start_ns": "92622639130254",
+        "installed_by_ns": "92622650525315",
+        "install_ok": true,
+        "release_start_ns": "92622650529691",
+        "release_end_ns": "92622666432402",
+        "guard_released": true
+      },
+      "commands_observed": 0,
+      "outer_ns": "27302148",
+      "install_ns": "11395061",
+      "render_to_installed_ns": "11472104"
+    },
+    {
+      "index": 207,
+      "sequence": "208",
+      "generation": "18",
+      "deadline": {
+        "granularity_ns": "1000000",
+        "install_bound_ns": "100000000",
+        "apply_start_ns": "92623614374530",
+        "render_start_ns": "92623626561181",
+        "install_start_ns": "92623626848523",
+        "installed_by_ns": "92623639538184",
+        "install_ok": true,
+        "release_start_ns": "92623639547969",
+        "release_end_ns": "92623654572566",
+        "guard_released": true
+      },
+      "commands_observed": 0,
+      "outer_ns": "27724043",
+      "install_ns": "12689661",
+      "render_to_installed_ns": "12977003"
+    },
+    {
+      "index": 219,
+      "sequence": "220",
+      "generation": "19",
+      "deadline": {
+        "granularity_ns": "1000000",
+        "install_bound_ns": "100000000",
+        "apply_start_ns": "92624640482439",
+        "render_start_ns": "92624655235776",
+        "install_start_ns": "92624655391500",
+        "installed_by_ns": "92624668466394",
+        "install_ok": true,
+        "release_start_ns": "92624668471189",
+        "release_end_ns": "92624693489089",
+        "guard_released": true
+      },
+      "commands_observed": 0,
+      "outer_ns": "38097589",
+      "install_ns": "13074894",
+      "render_to_installed_ns": "13230618"
+    },
+    {
+      "index": 231,
+      "sequence": "232",
+      "generation": "20",
+      "deadline": {
+        "granularity_ns": "1000000",
+        "install_bound_ns": "100000000",
+        "apply_start_ns": "92625637586949",
+        "render_start_ns": "92625651570791",
+        "install_start_ns": "92625651651798",
+        "installed_by_ns": "92625666648638",
+        "install_ok": true,
+        "release_start_ns": "92625666655868",
+        "release_end_ns": "92625684541203",
+        "guard_released": true
+      },
+      "commands_observed": 0,
+      "outer_ns": "32889405",
+      "install_ns": "14996840",
+      "render_to_installed_ns": "15077847"
+    },
+    {
+      "index": 243,
+      "sequence": "244",
+      "generation": "21",
+      "deadline": {
+        "granularity_ns": "1000000",
+        "install_bound_ns": "100000000",
+        "apply_start_ns": "92626635332488",
+        "render_start_ns": "92626649881661",
+        "install_start_ns": "92626649977835",
+        "installed_by_ns": "92626658616145",
+        "install_ok": true,
+        "release_start_ns": "92626658622912",
+        "release_end_ns": "92626681492725",
+        "guard_released": true
+      },
+      "commands_observed": 0,
+      "outer_ns": "31514890",
+      "install_ns": "8638310",
+      "render_to_installed_ns": "8734484"
+    },
+    {
+      "index": 255,
+      "sequence": "256",
+      "generation": "22",
+      "deadline": {
+        "granularity_ns": "1000000",
+        "install_bound_ns": "100000000",
+        "apply_start_ns": "92627631106295",
+        "render_start_ns": "92627644474480",
+        "install_start_ns": "92627644558778",
+        "installed_by_ns": "92627662497149",
+        "install_ok": true,
+        "release_start_ns": "92627662503770",
+        "release_end_ns": "92627675581584",
+        "guard_released": true
+      },
+      "commands_observed": 0,
+      "outer_ns": "31022806",
+      "install_ns": "17938371",
+      "render_to_installed_ns": "18022669"
+    },
+    {
+      "index": 263,
+      "sequence": "264",
+      "generation": "22",
+      "deadline": {
+        "granularity_ns": "1000000",
+        "install_bound_ns": "100000000",
+        "apply_start_ns": "92628514739663",
+        "render_start_ns": "92628540876206",
+        "install_start_ns": "92628540985954",
+        "installed_by_ns": "92628551767468",
+        "install_ok": true,
+        "release_start_ns": "92628551774389",
+        "release_end_ns": "92628573816412",
+        "guard_released": true
+      },
+      "commands_observed": 0,
+      "outer_ns": "32830458",
+      "install_ns": "10781514",
+      "render_to_installed_ns": "10891262"
+    }
+  ],
+  "failures": []
+}

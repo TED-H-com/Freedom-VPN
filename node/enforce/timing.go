@@ -45,6 +45,7 @@ type TimingEvidence struct {
 	Verified            bool                 `json:"verified"`
 	Deadline            DeadlineEvidence     `json:"deadline"`
 	Verifications       []VerificationTiming `json:"verifications"`
+	Commands            []CommandLifecycle   `json:"commands,omitempty"`
 }
 
 // TimingEvidence returns a detached snapshot without I/O or resampling. Nil
@@ -57,6 +58,11 @@ func (ev ServingEvidence) TimingEvidence() *TimingEvidence {
 	}
 	v := *ev.timing
 	v.Verifications = append([]VerificationTiming{}, v.Verifications...)
+	v.Commands = append([]CommandLifecycle(nil), v.Commands...)
+	for i := range v.Commands {
+		v.Commands[i].Before.Cgroups = append([]CgroupCPU(nil), v.Commands[i].Before.Cgroups...)
+		v.Commands[i].After.Cgroups = append([]CgroupCPU(nil), v.Commands[i].After.Cgroups...)
+	}
 	return &v
 }
 

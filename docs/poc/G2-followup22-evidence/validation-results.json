@@ -1,0 +1,96 @@
+[
+  {
+    "gate": "agent-consumers",
+    "command": [
+      "python3",
+      "tests/netlab/scripts/disktmp.py",
+      "go",
+      "test",
+      "-count=1",
+      "./node/agent/...",
+      "./node/updater/..."
+    ],
+    "exit": 0,
+    "seconds": 69.364,
+    "completed": "2026-11-01T06:10:53.471072+00:00"
+  },
+  {
+    "gate": "committed-evidence",
+    "command": [
+      "python3",
+      "tests/netlab/scripts/disktmp.py",
+      "go",
+      "test",
+      "-count=1",
+      "-v",
+      "./tests/netlab",
+      "-run",
+      "TestD098_|TestCommittedEvidenceFiles_ValidAndHygieneClean"
+    ],
+    "exit": 0,
+    "seconds": 0.93,
+    "completed": "2026-11-01T06:10:54.401602+00:00"
+  },
+  {
+    "gate": "handover",
+    "command": [
+      "python3",
+      "tests/netlab/scripts/disktmp.py",
+      "go",
+      "test",
+      "-count=1",
+      "./tests/handover/..."
+    ],
+    "exit": 0,
+    "seconds": 1.024,
+    "completed": "2026-11-01T06:10:55.426199+00:00"
+  },
+  {
+    "gate": "go-lint",
+    "command": [
+      "python3",
+      "tests/netlab/scripts/disktmp.py",
+      "make",
+      "go-lint",
+      "go-with-disk-tmp="
+    ],
+    "exit": 0,
+    "seconds": 3.19,
+    "completed": "2026-11-01T06:10:58.616155+00:00"
+  },
+  {
+    "gate": "vet",
+    "command": [
+      "python3",
+      "tests/netlab/scripts/disktmp.py",
+      "go",
+      "vet",
+      "./..."
+    ],
+    "exit": 0,
+    "seconds": 0.329,
+    "completed": "2026-11-01T06:10:58.945125+00:00"
+  },
+  {
+    "gate": "gofmt",
+    "command": [
+      "bash",
+      "-c",
+      "test -z \"$(gofmt -l $(git ls-files '*.go'))\""
+    ],
+    "exit": 0,
+    "seconds": 0.207,
+    "completed": "2026-11-01T06:10:59.152306+00:00"
+  },
+  {
+    "gate": "diff",
+    "command": [
+      "git",
+      "diff",
+      "--check"
+    ],
+    "exit": 0,
+    "seconds": 0.005,
+    "completed": "2026-11-01T06:10:59.157930+00:00"
+  }
+]

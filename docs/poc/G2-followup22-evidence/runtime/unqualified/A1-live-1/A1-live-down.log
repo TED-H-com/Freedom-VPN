@@ -1,0 +1,11 @@
+docker rm -f fvpn-w1-netlab-f22 >/dev/null 2>&1 || true
+docker network rm fvpn-w1-netlab-f22-dns >/dev/null 2>&1 || true
+make -f mk/netlab.mk netlab-wipe-scratch FVPN_LAB_PREFIX='fvpn-w1-netlab-f22'
+make[1]: Entering directory '<worktree>/.agent/f22-runtime/source-A'
+mkdir -p <worktree>/.agent/f22-runtime/source-A/.agent/tmp/fvpn-w1-netlab-f22-scratch
+docker rm -f fvpn-w1-netlab-f22-wipe >/dev/null 2>&1 || true
+docker run --rm --name fvpn-w1-netlab-f22-wipe --network none \
+        -v <worktree>/.agent/f22-runtime/source-A/.agent/tmp/fvpn-w1-netlab-f22-scratch:/scratch fvpn-w1-netlab-f22-a:lab \
+        find /scratch -mindepth 1 -delete
+make[1]: Leaving directory '<worktree>/.agent/f22-runtime/source-A'
+rmdir <worktree>/.agent/f22-runtime/source-A/.agent/tmp/fvpn-w1-netlab-f22-scratch 2>/dev/null || true

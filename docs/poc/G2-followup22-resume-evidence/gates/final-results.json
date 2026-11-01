@@ -1,0 +1,124 @@
+[
+  {
+    "gate": "lane",
+    "command": [
+      "python3",
+      "tests/netlab/scripts/disktmp.py",
+      "make",
+      "-f",
+      "mk/netlab.mk",
+      "netlab-lint",
+      "netlab-unit",
+      "netlab-build"
+    ],
+    "exit": 0,
+    "seconds": 3.223,
+    "completed": "2026-11-01T07:52:48.770854+00:00"
+  },
+  {
+    "gate": "agent-consumers",
+    "command": [
+      "python3",
+      "tests/netlab/scripts/disktmp.py",
+      "go",
+      "test",
+      "-count=1",
+      "./node/agent/...",
+      "./node/updater/..."
+    ],
+    "exit": 0,
+    "seconds": 68.676,
+    "completed": "2026-11-01T07:53:57.446842+00:00"
+  },
+  {
+    "gate": "committed-evidence",
+    "command": [
+      "python3",
+      "tests/netlab/scripts/disktmp.py",
+      "go",
+      "test",
+      "-count=1",
+      "-v",
+      "./tests/netlab",
+      "-run",
+      "TestD098_|TestCommittedEvidenceFiles_ValidAndHygieneClean"
+    ],
+    "exit": 0,
+    "seconds": 1.073,
+    "completed": "2026-11-01T07:53:58.520386+00:00"
+  },
+  {
+    "gate": "handover",
+    "command": [
+      "python3",
+      "tests/netlab/scripts/disktmp.py",
+      "go",
+      "test",
+      "-count=1",
+      "./tests/handover/..."
+    ],
+    "exit": 0,
+    "seconds": 0.823,
+    "completed": "2026-11-01T07:53:59.344091+00:00"
+  },
+  {
+    "gate": "go-lint",
+    "command": [
+      "python3",
+      "tests/netlab/scripts/disktmp.py",
+      "make",
+      "go-lint",
+      "go-with-disk-tmp="
+    ],
+    "exit": 0,
+    "seconds": 1.335,
+    "completed": "2026-11-01T07:54:00.679641+00:00"
+  },
+  {
+    "gate": "vet",
+    "command": [
+      "python3",
+      "tests/netlab/scripts/disktmp.py",
+      "go",
+      "vet",
+      "./..."
+    ],
+    "exit": 0,
+    "seconds": 0.337,
+    "completed": "2026-11-01T07:54:01.016563+00:00"
+  },
+  {
+    "gate": "gofmt",
+    "command": [
+      "bash",
+      "-c",
+      "test -z \"$(gofmt -l $(git ls-files '*.go'))\""
+    ],
+    "exit": 0,
+    "seconds": 0.211,
+    "completed": "2026-11-01T07:54:01.228213+00:00"
+  },
+  {
+    "gate": "diff",
+    "command": [
+      "git",
+      "diff",
+      "--check"
+    ],
+    "exit": 0,
+    "seconds": 0.007,
+    "completed": "2026-11-01T07:54:01.235511+00:00"
+  },
+  {
+    "gate": "staged-diff",
+    "command": [
+      "git",
+      "diff",
+      "--cached",
+      "--check"
+    ],
+    "exit": 2,
+    "seconds": 0.047,
+    "completed": "2026-11-01T07:54:01.282781+00:00"
+  }
+]

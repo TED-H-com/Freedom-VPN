@@ -1,0 +1,235 @@
+{
+  "test_only": true,
+  "trace_applies": 232,
+  "verified_byte_hashes": 932,
+  "commands": 12717,
+  "phases": {
+    "prepare": 5928,
+    "shape": 232,
+    "install": 232,
+    "release": 232,
+    "verify": 6009,
+    "rollback": 78,
+    "quarantine": 6
+  },
+  "cgroup_before_available": 12717,
+  "child_cpu_available": 12709,
+  "child_switches_available": 12709,
+  "exact_child_start_available": 0,
+  "outcomes": [
+    {
+      "started": false,
+      "ok": false,
+      "context_before": "canceled",
+      "context_after": "canceled",
+      "signal": 0,
+      "count": 8
+    },
+    {
+      "started": true,
+      "ok": false,
+      "context_before": "none",
+      "context_after": "canceled",
+      "signal": 9,
+      "count": 1
+    },
+    {
+      "started": true,
+      "ok": true,
+      "context_before": "none",
+      "context_after": "none",
+      "signal": 0,
+      "count": 12708
+    }
+  ],
+  "producer_joins": [
+    {
+      "leg": "B1",
+      "run_id": "8cbb0b24-f957-4102-9022-50378a16ed2e",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "4",
+      "start_ns": "95515131439790"
+    },
+    {
+      "leg": "B1",
+      "run_id": "8cbb0b24-f957-4102-9022-50378a16ed2e",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "16",
+      "start_ns": "95516279840100"
+    },
+    {
+      "leg": "B1",
+      "run_id": "8cbb0b24-f957-4102-9022-50378a16ed2e",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "28",
+      "start_ns": "95517257944615"
+    },
+    {
+      "leg": "B1",
+      "run_id": "8cbb0b24-f957-4102-9022-50378a16ed2e",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "40",
+      "start_ns": "95518278395618"
+    },
+    {
+      "leg": "B1",
+      "run_id": "8cbb0b24-f957-4102-9022-50378a16ed2e",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "52",
+      "start_ns": "95519252682504"
+    },
+    {
+      "leg": "B1",
+      "run_id": "8cbb0b24-f957-4102-9022-50378a16ed2e",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "64",
+      "start_ns": "95520271342347"
+    },
+    {
+      "leg": "B1",
+      "run_id": "8cbb0b24-f957-4102-9022-50378a16ed2e",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "76",
+      "start_ns": "95521262683577"
+    },
+    {
+      "leg": "B1",
+      "run_id": "8cbb0b24-f957-4102-9022-50378a16ed2e",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "88",
+      "start_ns": "95522264958774"
+    },
+    {
+      "leg": "B1",
+      "run_id": "8cbb0b24-f957-4102-9022-50378a16ed2e",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "100",
+      "start_ns": "95523268662710"
+    },
+    {
+      "leg": "B1",
+      "run_id": "8cbb0b24-f957-4102-9022-50378a16ed2e",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "112",
+      "start_ns": "95524282961349"
+    },
+    {
+      "leg": "B1",
+      "run_id": "8cbb0b24-f957-4102-9022-50378a16ed2e",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "124",
+      "start_ns": "95525269091492"
+    },
+    {
+      "leg": "B1",
+      "run_id": "8cbb0b24-f957-4102-9022-50378a16ed2e",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "136",
+      "start_ns": "95526284776286"
+    },
+    {
+      "leg": "B1",
+      "run_id": "8cbb0b24-f957-4102-9022-50378a16ed2e",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "148",
+      "start_ns": "95527253878558"
+    },
+    {
+      "leg": "B1",
+      "run_id": "8cbb0b24-f957-4102-9022-50378a16ed2e",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "160",
+      "start_ns": "95528267793135"
+    },
+    {
+      "leg": "B1",
+      "run_id": "8cbb0b24-f957-4102-9022-50378a16ed2e",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "172",
+      "start_ns": "95529272049822"
+    },
+    {
+      "leg": "B1",
+      "run_id": "8cbb0b24-f957-4102-9022-50378a16ed2e",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "184",
+      "start_ns": "95530252036786"
+    },
+    {
+      "leg": "B1",
+      "run_id": "8cbb0b24-f957-4102-9022-50378a16ed2e",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "196",
+      "start_ns": "95531276468105"
+    },
+    {
+      "leg": "B1",
+      "run_id": "8cbb0b24-f957-4102-9022-50378a16ed2e",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "208",
+      "start_ns": "95532268647663"
+    },
+    {
+      "leg": "B1",
+      "run_id": "8cbb0b24-f957-4102-9022-50378a16ed2e",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "220",
+      "start_ns": "95533272226936"
+    },
+    {
+      "leg": "B1",
+      "run_id": "8cbb0b24-f957-4102-9022-50378a16ed2e",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "232",
+      "start_ns": "95534271830933"
+    },
+    {
+      "leg": "B1",
+      "run_id": "8cbb0b24-f957-4102-9022-50378a16ed2e",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "244",
+      "start_ns": "95535264721183"
+    },
+    {
+      "leg": "B1",
+      "run_id": "8cbb0b24-f957-4102-9022-50378a16ed2e",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "256",
+      "start_ns": "95536275152083"
+    },
+    {
+      "leg": "B1",
+      "run_id": "8cbb0b24-f957-4102-9022-50378a16ed2e",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "264",
+      "start_ns": "95537160305199"
+    }
+  ],
+  "two_source_capture_checks": {
+    "admitted": {
+      "decoded": 1330,
+      "captured": 1330,
+      "kernel_drops": 0,
+      "complete": true
+    },
+    "revoked": {
+      "decoded": 848,
+      "captured": 848,
+      "kernel_drops": 0,
+      "complete": true
+    },
+    "node": {
+      "decoded": 1569,
+      "captured": 1569,
+      "kernel_drops": 0,
+      "complete": true
+    },
+    "origin": {
+      "decoded": 480,
+      "captured": 480,
+      "kernel_drops": 0,
+      "complete": true
+    }
+  },
+  "passed": true
+}

@@ -1,0 +1,70 @@
+docker build -t fvpn-w1-netlab-f22-b:lab <worktree>/tests/netlab
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 DONE 0.0s
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 965B done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/ubuntu:24.04
+#2 DONE 0.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [internal] load build context
+#4 transferring context: 1.07kB done
+#4 DONE 0.0s
+
+#5 [1/4] FROM docker.io/library/ubuntu:24.04@sha256:fe81560990fae86dc4743202b2cb4d3df98d0bcf949173cecef15ce1127ef852
+#5 resolve docker.io/library/ubuntu:24.04@sha256:fe81560990fae86dc4743202b2cb4d3df98d0bcf949173cecef15ce1127ef852 0.0s done
+#5 DONE 0.0s
+
+#6 [2/4] RUN apt-get update     && apt-get install -y --no-install-recommends         nftables         iproute2         wireguard-tools         conntrack         iperf3         tcpdump         ethtool         python3         iputils-ping         procps         ca-certificates     && rm -rf /var/lib/apt/lists/*
+#6 CACHED
+
+#7 [3/4] RUN cp -a /usr/bin/wg /usr/local/bin/wg
+#7 CACHED
+
+#8 [4/4] COPY scripts/ /opt/netlab/scripts/
+#8 CACHED
+
+#9 exporting to image
+#9 exporting layers done
+#9 exporting manifest sha256:79e39ff73c0b5c0756ea90d61ee53a398cfaedc4f7aac458a5ed688e61705f9e done
+#9 exporting config sha256:a1b56d64e3fd12d4119799c2037901a3e9d7017046315b6dc8530877b479ef79 done
+#9 exporting attestation manifest sha256:541299e9c84b4b6869050420d353c4006f194ec829a49328ea9494608bc8e847 done
+#9 exporting manifest list sha256:97187728624040b92644456b8d72ff002af2b5e3425e6ca8608730094d649a56 done
+#9 naming to docker.io/library/fvpn-w1-netlab-f22-b:lab done
+#9 unpacking to docker.io/library/fvpn-w1-netlab-f22-b:lab done
+#9 DONE 0.0s
+docker rm -f fvpn-w1-netlab-f22 >/dev/null 2>&1 || true
+make -f mk/netlab.mk netlab-wipe-scratch FVPN_LAB_PREFIX='fvpn-w1-netlab-f22'
+make[1]: Entering directory '<worktree>'
+mkdir -p <worktree>/.agent/tmp/fvpn-w1-netlab-f22-scratch
+docker rm -f fvpn-w1-netlab-f22-wipe >/dev/null 2>&1 || true
+docker run --rm --name fvpn-w1-netlab-f22-wipe --network none \
+        -v <worktree>/.agent/tmp/fvpn-w1-netlab-f22-scratch:/scratch fvpn-w1-netlab-f22-b:lab \
+        find /scratch -mindepth 1 -delete
+make[1]: Leaving directory '<worktree>'
+docker network inspect fvpn-w1-netlab-f22-dns >/dev/null 2>&1 || docker network create fvpn-w1-netlab-f22-dns
+80a12c7049ac9a267017370cc09b78b7188a5ce1bc7da74a8c953db142cef3b6
+docker run -d --name fvpn-w1-netlab-f22 --privileged --network fvpn-w1-netlab-f22-dns \
+        --cap-add NET_ADMIN --cap-add SYS_TIME \
+        -v <worktree>:/work:ro \
+        -v <worktree>/.agent/tmp/fvpn-w1-netlab-f22-scratch:/scratch \
+        fvpn-w1-netlab-f22-b:lab
+2924299f303a7b68405c91d250dda6b23ad47e176e144627e6fc5b8655d6a5f7
+docker cp <worktree>/.agent/tmp/fvpn-w1-netlab-f22-fvpn-netlab fvpn-w1-netlab-f22:/usr/local/bin/fvpn-netlab
+docker exec fvpn-w1-netlab-f22 bash /work/tests/netlab/scripts/topology.sh
+topology: forwarding off before any path exists
+topology: underlay and transit links
+topology: routes
+topology: wireguard keys in /scratch (not the repo)
+topology: boot baseline before forwarding (§8.2)
+topology: listeners
+topology: wireguard handshakes
+topology: ready

@@ -1,0 +1,674 @@
+[
+  {
+    "agent_version": "0.0.0-test",
+    "applied_binding_revision": "1",
+    "applied_config_generation": "3",
+    "applied_policy_refs": {
+      "authorization_generation": "1",
+      "dns_generation": "1",
+      "fup_generation": "1"
+    },
+    "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+    "checks": [
+      {
+        "error_code": null,
+        "name": "dns_policy",
+        "observed_at": "2026-11-01T04:08:36.395199463Z",
+        "status": "passed"
+      },
+      {
+        "error_code": null,
+        "name": "internet_only",
+        "observed_at": "2026-11-01T04:08:36.395199463Z",
+        "status": "passed"
+      },
+      {
+        "detail": "Serving lease has no member grants yet.",
+        "error_code": "AWAITING_MEMBER_GRANTS",
+        "name": "lease",
+        "observed_at": "2026-11-01T04:08:36.395199463Z",
+        "status": "failed"
+      },
+      {
+        "error_code": null,
+        "name": "meter_path",
+        "observed_at": "2026-11-01T04:08:36.395199463Z",
+        "status": "passed"
+      },
+      {
+        "error_code": null,
+        "name": "policy_signature",
+        "observed_at": "2026-11-01T04:08:36.395199463Z",
+        "status": "passed"
+      },
+      {
+        "detail": "read_at=2026-11-01T04:08:36.317604851Z source=live candidate=3 verified=true {\"generation\":\"3\",\"phase\":\"verify\",\"reads\":20,\"objects\":6,\"truncated\":true,\"sha256\":\"710fc38cc7614c2c283545f89e47f67147fd40d5ce16f7fef7c4cfd3922697c8\"}",
+        "error_code": "AWAITING_MEMBER_GRANTS",
+        "name": "qos",
+        "observed_at": "2026-11-01T04:08:36.395199463Z",
+        "status": "failed"
+      },
+      {
+        "error_code": null,
+        "name": "release_supported",
+        "observed_at": "2026-11-01T04:08:36.395199463Z",
+        "status": "passed"
+      },
+      {
+        "detail": "No member binding was admitted.",
+        "error_code": "AWAITING_MEMBER_GRANTS",
+        "name": "source_binding",
+        "observed_at": "2026-11-01T04:08:36.395199463Z",
+        "status": "failed"
+      },
+      {
+        "error_code": null,
+        "name": "storage",
+        "observed_at": "2026-11-01T04:08:36.395199463Z",
+        "status": "passed"
+      },
+      {
+        "detail": "Egress probe used no extra target.",
+        "error_code": null,
+        "name": "tunnel_probe",
+        "observed_at": "2026-11-01T04:08:36.395199463Z",
+        "status": "passed"
+      }
+    ],
+    "current_release_id": "019a0000-0000-7000-8000-0000000000c1",
+    "data_health": "healthy",
+    "errors": [
+      {
+        "code": "AWAITING_MEMBER_GRANTS",
+        "message": "Serving lease has no member grants yet.",
+        "observed_at": "2026-11-01T04:08:36.395199463Z",
+        "stage": "lease"
+      }
+    ],
+    "forwarding_block_reasons": [
+      "awaiting_member_grants"
+    ],
+    "last_good_release_id": "019a0000-0000-7000-8000-0000000000c1",
+    "lease": {
+      "expires_at": "2026-11-01T04:09:36.326364281Z",
+      "lease_id": "01a1954b-82e6-7592-9dd7-cd62e9467394"
+    },
+    "member_forwarding_enabled": false,
+    "netbird": {
+      "backend": "kernel",
+      "peer_id": null,
+      "version": null
+    },
+    "node_id": "01a1954b-6121-7ba4-b52c-0a135ad8684f",
+    "node_incarnation_id": "01a1954b-6119-70a1-a9bf-7a61713b6259",
+    "observed_at": "2026-11-01T04:08:36.419419366Z",
+    "provisioning_state": "ready",
+    "report_id": "01a1954b-8343-76bb-835f-64dc4925a8bf",
+    "safety_status": "passed",
+    "tc_evidence": {
+      "attachments": [
+        {
+          "attachment": "qdisc",
+          "interface": "fv-fh",
+          "objects": [
+            {
+              "handle": "2f:",
+              "kind": "fq_codel",
+              "parent": "1:2f"
+            },
+            {
+              "handle": "30:",
+              "kind": "fq_codel",
+              "parent": "1:30"
+            },
+            {
+              "handle": "1:",
+              "kind": "htb",
+              "root": true
+            }
+          ]
+        },
+        {
+          "attachment": "qdisc",
+          "interface": "fv-ih",
+          "objects": [
+            {
+              "handle": "2f:",
+              "kind": "fq_codel",
+              "parent": "1:2f"
+            },
+            {
+              "handle": "30:",
+              "kind": "fq_codel",
+              "parent": "1:30"
+            },
+            {
+              "handle": "1:",
+              "kind": "htb",
+              "root": true
+            }
+          ]
+        },
+        {
+          "attachment": "1:1",
+          "interface": "fv-fh",
+          "objects": []
+        },
+        {
+          "attachment": "1:2f",
+          "interface": "fv-fh",
+          "objects": []
+        },
+        {
+          "attachment": "1:30",
+          "interface": "fv-fh",
+          "objects": []
+        },
+        {
+          "attachment": "1:fffe",
+          "interface": "fv-fh",
+          "objects": []
+        },
+        {
+          "attachment": "2f:",
+          "interface": "fv-fh",
+          "objects": []
+        },
+        {
+          "attachment": "30:",
+          "interface": "fv-fh",
+          "objects": []
+        },
+        {
+          "attachment": "egress",
+          "interface": "fv-fh",
+          "objects": []
+        },
+        {
+          "attachment": "ingress",
+          "interface": "fv-fh",
+          "objects": []
+        },
+        {
+          "attachment": "root",
+          "interface": "fv-fh",
+          "objects": []
+        },
+        {
+          "attachment": "1:1",
+          "interface": "fv-ih",
+          "objects": []
+        },
+        {
+          "attachment": "1:2f",
+          "interface": "fv-ih",
+          "objects": []
+        },
+        {
+          "attachment": "1:30",
+          "interface": "fv-ih",
+          "objects": []
+        },
+        {
+          "attachment": "1:fffe",
+          "interface": "fv-ih",
+          "objects": []
+        },
+        {
+          "attachment": "2f:",
+          "interface": "fv-ih",
+          "objects": []
+        }
+      ],
+      "candidate_generation": "3",
+      "error_code": null,
+      "objects_total": 6,
+      "phase": "verify",
+      "read_at": "2026-11-01T04:08:36.317472349Z",
+      "reads_total": 20,
+      "rejected": null,
+      "sha256": "710fc38cc7614c2c283545f89e47f67147fd40d5ce16f7fef7c4cfd3922697c8",
+      "truncated": true,
+      "verified": true
+    },
+    "update": {
+      "generation": null,
+      "job_id": null,
+      "stage": null,
+      "state": null
+    },
+    "usage": {
+      "acked_archive_bytes": "1292",
+      "blocked_seq": null,
+      "central_acked_through": "2",
+      "last_durable_event_seq": "2",
+      "ledger_epoch": "01a1954b-5eb0-7445-b286-1e8326b1038b",
+      "meter_epoch_id": null,
+      "oldest_unacked_at": null,
+      "unacked_event_count": 0,
+      "unacked_payload_bytes": "0"
+    }
+  },
+  {
+    "agent_version": "0.0.0-test",
+    "applied_binding_revision": "1",
+    "applied_config_generation": "3",
+    "applied_policy_refs": {
+      "authorization_generation": "1",
+      "dns_generation": "1",
+      "fup_generation": "1"
+    },
+    "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+    "checks": [
+      {
+        "error_code": null,
+        "name": "dns_policy",
+        "observed_at": "2026-11-01T04:08:39.367464582Z",
+        "status": "passed"
+      },
+      {
+        "error_code": null,
+        "name": "internet_only",
+        "observed_at": "2026-11-01T04:08:39.367464582Z",
+        "status": "passed"
+      },
+      {
+        "error_code": null,
+        "name": "lease",
+        "observed_at": "2026-11-01T04:08:39.367464582Z",
+        "status": "passed"
+      },
+      {
+        "error_code": null,
+        "name": "meter_path",
+        "observed_at": "2026-11-01T04:08:39.367464582Z",
+        "status": "passed"
+      },
+      {
+        "error_code": null,
+        "name": "policy_signature",
+        "observed_at": "2026-11-01T04:08:39.367464582Z",
+        "status": "passed"
+      },
+      {
+        "detail": "read_at=2026-11-01T04:08:39.463664955Z source=live candidate=3 verified=true {\"generation\":\"3\",\"phase\":\"verify\",\"reads\":20,\"objects\":6,\"truncated\":true,\"sha256\":\"710fc38cc7614c2c283545f89e47f67147fd40d5ce16f7fef7c4cfd3922697c8\"}",
+        "error_code": null,
+        "name": "qos",
+        "observed_at": "2026-11-01T04:08:39.367464582Z",
+        "status": "passed"
+      },
+      {
+        "error_code": null,
+        "name": "release_supported",
+        "observed_at": "2026-11-01T04:08:39.367464582Z",
+        "status": "passed"
+      },
+      {
+        "error_code": null,
+        "name": "source_binding",
+        "observed_at": "2026-11-01T04:08:39.367464582Z",
+        "status": "passed"
+      },
+      {
+        "error_code": null,
+        "name": "storage",
+        "observed_at": "2026-11-01T04:08:39.367464582Z",
+        "status": "passed"
+      },
+      {
+        "detail": "Egress probe used no extra target.",
+        "error_code": null,
+        "name": "tunnel_probe",
+        "observed_at": "2026-11-01T04:08:39.367464582Z",
+        "status": "passed"
+      }
+    ],
+    "current_release_id": "019a0000-0000-7000-8000-0000000000c1",
+    "data_health": "healthy",
+    "errors": [],
+    "forwarding_block_reasons": [],
+    "last_good_release_id": "019a0000-0000-7000-8000-0000000000c1",
+    "lease": {
+      "expires_at": "2026-11-01T04:09:39.351686723Z",
+      "lease_id": "01a1954b-8eb7-7a8a-87cc-271cb2c573b0"
+    },
+    "member_forwarding_enabled": true,
+    "netbird": {
+      "backend": "kernel",
+      "peer_id": null,
+      "version": null
+    },
+    "node_id": "01a1954b-6121-7ba4-b52c-0a135ad8684f",
+    "node_incarnation_id": "01a1954b-6119-70a1-a9bf-7a61713b6259",
+    "observed_at": "2026-11-01T04:08:39.475997066Z",
+    "provisioning_state": "ready",
+    "report_id": "01a1954b-8f34-701f-b9fc-f552cce923a4",
+    "safety_status": "passed",
+    "tc_evidence": {
+      "attachments": [
+        {
+          "attachment": "qdisc",
+          "interface": "fv-fh",
+          "objects": [
+            {
+              "handle": "2f:",
+              "kind": "fq_codel",
+              "parent": "1:2f"
+            },
+            {
+              "handle": "30:",
+              "kind": "fq_codel",
+              "parent": "1:30"
+            },
+            {
+              "handle": "1:",
+              "kind": "htb",
+              "root": true
+            }
+          ]
+        },
+        {
+          "attachment": "qdisc",
+          "interface": "fv-ih",
+          "objects": [
+            {
+              "handle": "2f:",
+              "kind": "fq_codel",
+              "parent": "1:2f"
+            },
+            {
+              "handle": "30:",
+              "kind": "fq_codel",
+              "parent": "1:30"
+            },
+            {
+              "handle": "1:",
+              "kind": "htb",
+              "root": true
+            }
+          ]
+        },
+        {
+          "attachment": "1:1",
+          "interface": "fv-fh",
+          "objects": []
+        },
+        {
+          "attachment": "1:2f",
+          "interface": "fv-fh",
+          "objects": []
+        },
+        {
+          "attachment": "1:30",
+          "interface": "fv-fh",
+          "objects": []
+        },
+        {
+          "attachment": "1:fffe",
+          "interface": "fv-fh",
+          "objects": []
+        },
+        {
+          "attachment": "2f:",
+          "interface": "fv-fh",
+          "objects": []
+        },
+        {
+          "attachment": "30:",
+          "interface": "fv-fh",
+          "objects": []
+        },
+        {
+          "attachment": "egress",
+          "interface": "fv-fh",
+          "objects": []
+        },
+        {
+          "attachment": "ingress",
+          "interface": "fv-fh",
+          "objects": []
+        },
+        {
+          "attachment": "root",
+          "interface": "fv-fh",
+          "objects": []
+        },
+        {
+          "attachment": "1:1",
+          "interface": "fv-ih",
+          "objects": []
+        },
+        {
+          "attachment": "1:2f",
+          "interface": "fv-ih",
+          "objects": []
+        },
+        {
+          "attachment": "1:30",
+          "interface": "fv-ih",
+          "objects": []
+        },
+        {
+          "attachment": "1:fffe",
+          "interface": "fv-ih",
+          "objects": []
+        },
+        {
+          "attachment": "2f:",
+          "interface": "fv-ih",
+          "objects": []
+        }
+      ],
+      "candidate_generation": "3",
+      "error_code": null,
+      "objects_total": 6,
+      "phase": "verify",
+      "read_at": "2026-11-01T04:08:39.463546479Z",
+      "reads_total": 20,
+      "rejected": null,
+      "sha256": "710fc38cc7614c2c283545f89e47f67147fd40d5ce16f7fef7c4cfd3922697c8",
+      "truncated": true,
+      "verified": true
+    },
+    "update": {
+      "generation": null,
+      "job_id": null,
+      "stage": null,
+      "state": null
+    },
+    "usage": {
+      "acked_archive_bytes": "1292",
+      "blocked_seq": null,
+      "central_acked_through": "2",
+      "last_durable_event_seq": "2",
+      "ledger_epoch": "01a1954b-5eb0-7445-b286-1e8326b1038b",
+      "meter_epoch_id": "01a1954b-8eca-7a57-9236-e21a506fe1ed",
+      "oldest_unacked_at": null,
+      "unacked_event_count": 0,
+      "unacked_payload_bytes": "0"
+    }
+  },
+  {
+    "agent_version": "0.0.0-test",
+    "applied_binding_revision": "1",
+    "applied_config_generation": "3",
+    "applied_policy_refs": {
+      "authorization_generation": "1",
+      "dns_generation": "1",
+      "fup_generation": "1"
+    },
+    "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+    "checks": [
+      {
+        "error_code": null,
+        "name": "dns_policy",
+        "observed_at": "2026-11-01T04:10:46.289376252Z",
+        "status": "passed"
+      },
+      {
+        "error_code": null,
+        "name": "internet_only",
+        "observed_at": "2026-11-01T04:10:46.289376252Z",
+        "status": "passed"
+      },
+      {
+        "detail": "Serving lease is not in force.",
+        "error_code": "LEASE_EXPIRED",
+        "name": "lease",
+        "observed_at": "2026-11-01T04:10:46.289376252Z",
+        "status": "failed"
+      },
+      {
+        "error_code": null,
+        "name": "meter_path",
+        "observed_at": "2026-11-01T04:10:46.289376252Z",
+        "status": "passed"
+      },
+      {
+        "error_code": null,
+        "name": "policy_signature",
+        "observed_at": "2026-11-01T04:10:46.289376252Z",
+        "status": "passed"
+      },
+      {
+        "detail": "read_at=2026-11-01T04:10:42.685874198Z source=live candidate=3 verified=true {\"generation\":\"3\",\"phase\":\"verify\",\"reads\":20,\"objects\":6,\"truncated\":true,\"sha256\":\"710fc38cc7614c2c283545f89e47f67147fd40d5ce16f7fef7c4cfd3922697c8\"}",
+        "error_code": "VALIDATION_FAILED",
+        "name": "qos",
+        "observed_at": "2026-11-01T04:10:46.289376252Z",
+        "status": "failed"
+      },
+      {
+        "error_code": null,
+        "name": "release_supported",
+        "observed_at": "2026-11-01T04:10:46.289376252Z",
+        "status": "passed"
+      },
+      {
+        "detail": "No member binding was admitted.",
+        "error_code": "VALIDATION_FAILED",
+        "name": "source_binding",
+        "observed_at": "2026-11-01T04:10:46.289376252Z",
+        "status": "failed"
+      },
+      {
+        "error_code": null,
+        "name": "storage",
+        "observed_at": "2026-11-01T04:10:46.289376252Z",
+        "status": "passed"
+      },
+      {
+        "detail": "Egress probe used no extra target.",
+        "error_code": null,
+        "name": "tunnel_probe",
+        "observed_at": "2026-11-01T04:10:46.289376252Z",
+        "status": "passed"
+      }
+    ],
+    "current_release_id": "019a0000-0000-7000-8000-0000000000c1",
+    "data_health": "healthy",
+    "errors": [],
+    "forwarding_block_reasons": [
+      "lease_expired"
+    ],
+    "last_good_release_id": "019a0000-0000-7000-8000-0000000000c1",
+    "lease": {
+      "expires_at": "2026-11-01T04:10:45.447160657Z",
+      "lease_id": "01a1954c-90e7-727a-b10a-8f60af80e571"
+    },
+    "member_forwarding_enabled": false,
+    "netbird": {
+      "backend": "kernel",
+      "peer_id": null,
+      "version": null
+    },
+    "node_id": "01a1954b-6121-7ba4-b52c-0a135ad8684f",
+    "node_incarnation_id": "01a1954b-6119-70a1-a9bf-7a61713b6259",
+    "observed_at": "2026-11-01T04:10:46.300833059Z",
+    "provisioning_state": "ready",
+    "report_id": "01a1954d-7e9c-7dd9-ad5d-2351ca298538",
+    "safety_status": "passed",
+    "tc_evidence": {
+      "attachments": [
+        {
+          "attachment": "qdisc",
+          "interface": "fv-fh",
+          "objects": [
+            {
+              "handle": "0:",
+              "kind": "noqueue",
+              "root": true
+            }
+          ]
+        },
+        {
+          "attachment": "qdisc",
+          "interface": "fv-ih",
+          "objects": [
+            {
+              "handle": "0:",
+              "kind": "noqueue",
+              "root": true
+            }
+          ]
+        },
+        {
+          "attachment": "egress",
+          "interface": "fv-fh",
+          "objects": []
+        },
+        {
+          "attachment": "ingress",
+          "interface": "fv-fh",
+          "objects": []
+        },
+        {
+          "attachment": "root",
+          "interface": "fv-fh",
+          "objects": []
+        },
+        {
+          "attachment": "egress",
+          "interface": "fv-ih",
+          "objects": []
+        },
+        {
+          "attachment": "ingress",
+          "interface": "fv-ih",
+          "objects": []
+        },
+        {
+          "attachment": "root",
+          "interface": "fv-ih",
+          "objects": []
+        }
+      ],
+      "candidate_generation": "3",
+      "error_code": "GENERATION_MISMATCH",
+      "objects_total": 2,
+      "phase": "verify",
+      "read_at": "2026-11-01T04:10:46.298768745Z",
+      "reads_total": 8,
+      "rejected": null,
+      "sha256": "396214fb4d6375ed13c5f64b2e37f6f4e43246b0fc1e28ee9c3996dec8a34131",
+      "truncated": false,
+      "verified": false
+    },
+    "update": {
+      "generation": null,
+      "job_id": null,
+      "stage": null,
+      "state": null
+    },
+    "usage": {
+      "acked_archive_bytes": "51747",
+      "blocked_seq": null,
+      "central_acked_through": "80",
+      "last_durable_event_seq": "82",
+      "ledger_epoch": "01a1954b-5eb0-7445-b286-1e8326b1038b",
+      "meter_epoch_id": null,
+      "oldest_unacked_at": "2026-11-01T04:10:42.666706975Z",
+      "unacked_event_count": 2,
+      "unacked_payload_bytes": "1294"
+    }
+  }
+]

@@ -1,0 +1,509 @@
+{
+  "test_only": true,
+  "invocation": "apply",
+  "start_ns": "93550402137736",
+  "end_ns": "93550459850364",
+  "exit": 3,
+  "input_sha256": "65cba97d07699f3bb092db8a5e0795c95b2df4ac2c5a085689231303a4408797",
+  "input_model": {
+    "generation": 31,
+    "ipv6_mode": "block",
+    "now": "2026-11-01T05:13:32.604927241Z",
+    "now_mono_ns": "0",
+    "datapath": {
+      "member_ingress": "fv-fh",
+      "uplink": "fv-ih",
+      "snat": "192.0.2.37"
+    },
+    "bindings": [
+      {
+        "member_id": "019a0000-0000-7000-8000-00000000000a",
+        "device_id": "019a0000-0000-7000-8000-0000000000a1",
+        "peer_id": "peer-a1",
+        "allowed_v4": [
+          "100.64.1.1/32"
+        ],
+        "binding_revision": 1,
+        "valid_from": "2026-11-01T05:12:32.604927241Z",
+        "valid_until": "2026-11-03T05:13:32.604927241Z"
+      },
+      {
+        "member_id": "019a0000-0000-7000-8000-00000000000a",
+        "device_id": "019a0000-0000-7000-8000-0000000000a2",
+        "peer_id": "peer-a2",
+        "allowed_v4": [
+          "100.64.1.2/32"
+        ],
+        "binding_revision": 1,
+        "valid_from": "2026-11-01T05:12:32.604927241Z",
+        "valid_until": "2026-11-03T05:13:32.604927241Z"
+      },
+      {
+        "member_id": "019a0000-0000-7000-8000-00000000000b",
+        "device_id": "019a0000-0000-7000-8000-0000000000b1",
+        "peer_id": "peer-b1",
+        "allowed_v4": [
+          "100.64.2.1/32"
+        ],
+        "binding_revision": 1,
+        "valid_from": "2026-11-01T05:12:32.604927241Z",
+        "valid_until": "2026-11-03T05:13:32.604927241Z"
+      }
+    ],
+    "leases": [
+      {
+        "member_id": "019a0000-0000-7000-8000-00000000000a",
+        "effective_service_end": "2026-11-03T05:13:32.604927241Z",
+        "node_lease_end": "2026-11-03T05:13:32.604927241Z",
+        "signed_server_time": "2026-11-01T05:13:32.604927241Z",
+        "max_offline_seconds": 3600
+      },
+      {
+        "member_id": "019a0000-0000-7000-8000-00000000000b",
+        "effective_service_end": "2026-11-03T05:13:32.604927241Z",
+        "node_lease_end": "2026-11-03T05:13:32.604927241Z",
+        "signed_server_time": "2026-11-01T05:13:32.604927241Z",
+        "max_offline_seconds": 3600
+      }
+    ],
+    "resolvers": [
+      "198.51.100.53"
+    ],
+    "denied_v4": [
+      "0.0.0.0/8",
+      "10.0.0.0/8",
+      "100.64.0.0/10",
+      "127.0.0.0/8",
+      "169.254.0.0/16",
+      "172.16.0.0/12",
+      "192.0.0.0/24",
+      "192.0.2.0/24",
+      "192.88.99.0/24",
+      "192.168.0.0/16",
+      "198.18.0.0/15",
+      "198.51.100.0/24",
+      "224.0.0.0/4",
+      "240.0.0.0/4",
+      "255.255.255.255/32"
+    ],
+    "extra_denied_v4": [
+      "192.0.2.200/32"
+    ],
+    "host_v4": [
+      "192.0.2.33/32",
+      "192.0.2.37/32",
+      "192.168.0.1/32"
+    ],
+    "qos": {
+      "up": {
+        "rate_bps": 200000000,
+        "ceil_bps": 200000000
+      },
+      "down": {
+        "rate_bps": 200000000,
+        "ceil_bps": 200000000
+      },
+      "host_up": {
+        "rate_bps": 5000000,
+        "ceil_bps": 200000000
+      },
+      "host_down": {
+        "rate_bps": 5000000,
+        "ceil_bps": 200000000
+      },
+      "members": [
+        {
+          "member_id": "019a0000-0000-7000-8000-00000000000a",
+          "up": {
+            "rate_bps": 50000000,
+            "ceil_bps": 50000000
+          },
+          "down": {
+            "rate_bps": 50000000,
+            "ceil_bps": 50000000
+          }
+        },
+        {
+          "member_id": "019a0000-0000-7000-8000-00000000000b",
+          "up": {
+            "rate_bps": 50000000,
+            "ceil_bps": 50000000
+          },
+          "down": {
+            "rate_bps": 50000000,
+            "ceil_bps": 50000000
+          }
+        }
+      ]
+    }
+  },
+  "result": {
+    "leases": [
+      {
+        "member_id": "019a0000-0000-7000-8000-00000000000a",
+        "effective_service_end": "2026-11-03T05:13:32.604927241Z",
+        "node_lease_end": "2026-11-03T05:13:32.604927241Z",
+        "signed_server_time": "2026-11-01T05:13:32.604927241Z",
+        "max_offline_seconds": 3600
+      },
+      {
+        "member_id": "019a0000-0000-7000-8000-00000000000b",
+        "effective_service_end": "2026-11-03T05:13:32.604927241Z",
+        "node_lease_end": "2026-11-03T05:13:32.604927241Z",
+        "signed_server_time": "2026-11-01T05:13:32.604927241Z",
+        "max_offline_seconds": 3600
+      }
+    ],
+    "deadline": {
+      "granularity_ns": "1000000",
+      "install_bound_ns": "100000000",
+      "apply_start_ns": "93550404246963",
+      "render_start_ns": "0",
+      "install_start_ns": "0",
+      "installed_by_ns": "0",
+      "install_ok": false,
+      "release_start_ns": "0",
+      "release_end_ns": "0",
+      "guard_released": false
+    },
+    "verified": false,
+    "evidence": {
+      "deadline_read": {
+        "start_ns": "0",
+        "end_ns": "0",
+        "elements": 0,
+        "read_ok": false,
+        "verified": false
+      },
+      "quarantined": true,
+      "quarantined_links": [
+        "fv-fh"
+      ],
+      "tc": [
+        {
+          "interface": "fv-fh",
+          "attachment": "qdisc",
+          "objects": [
+            {
+              "kind": "clsact",
+              "handle": "ffff:",
+              "parent": "ffff:fff1"
+            }
+          ]
+        },
+        {
+          "interface": "fv-fh",
+          "attachment": "ingress",
+          "objects": [
+            {
+              "kind": "matchall",
+              "handle": "1",
+              "actions": [
+                "mirred"
+              ]
+            },
+            {
+              "kind": "matchall"
+            }
+          ]
+        },
+        {
+          "interface": "fv-ih",
+          "attachment": "qdisc",
+          "objects": [
+            {
+              "kind": "fq_codel",
+              "handle": "2f:",
+              "parent": "1:2f"
+            },
+            {
+              "kind": "fq_codel",
+              "handle": "30:",
+              "parent": "1:30"
+            },
+            {
+              "kind": "htb",
+              "handle": "1:",
+              "root": true
+            }
+          ]
+        },
+        {
+          "interface": "fv-fh",
+          "attachment": "1:1",
+          "objects": []
+        },
+        {
+          "interface": "fv-fh",
+          "attachment": "1:2f",
+          "objects": []
+        },
+        {
+          "interface": "fv-fh",
+          "attachment": "1:30",
+          "objects": []
+        },
+        {
+          "interface": "fv-fh",
+          "attachment": "1:fffe",
+          "objects": []
+        },
+        {
+          "interface": "fv-fh",
+          "attachment": "2f:",
+          "objects": []
+        },
+        {
+          "interface": "fv-fh",
+          "attachment": "30:",
+          "objects": []
+        },
+        {
+          "interface": "fv-fh",
+          "attachment": "egress",
+          "objects": []
+        },
+        {
+          "interface": "fv-fh",
+          "attachment": "root",
+          "objects": []
+        },
+        {
+          "interface": "fv-ih",
+          "attachment": "1:1",
+          "objects": []
+        },
+        {
+          "interface": "fv-ih",
+          "attachment": "1:2f",
+          "objects": []
+        },
+        {
+          "interface": "fv-ih",
+          "attachment": "1:30",
+          "objects": []
+        },
+        {
+          "interface": "fv-ih",
+          "attachment": "1:fffe",
+          "objects": []
+        },
+        {
+          "interface": "fv-ih",
+          "attachment": "2f:",
+          "objects": []
+        }
+      ],
+      "tc_summary": {
+        "generation": "31",
+        "phase": "pre_apply",
+        "reads": 20,
+        "objects": 9,
+        "truncated": true,
+        "sha256": "e8bb129adbbb8f1ca8baa59fdf487a95a970dda5e4893adef26eff0f0a38bbd0",
+        "rejected": {
+          "interface": "fv-fh",
+          "attachment": "qdisc",
+          "objects": [
+            {
+              "kind": "clsact",
+              "handle": "ffff:",
+              "parent": "ffff:fff1"
+            }
+          ]
+        }
+      },
+      "policy_rules": null
+    },
+    "tc_evidence": {
+      "attachments": [
+        {
+          "attachment": "qdisc",
+          "interface": "fv-fh",
+          "objects": [
+            {
+              "handle": "ffff:",
+              "kind": "clsact",
+              "parent": "ffff:fff1"
+            }
+          ]
+        },
+        {
+          "attachment": "ingress",
+          "interface": "fv-fh",
+          "objects": [
+            {
+              "actions": [
+                "mirred"
+              ],
+              "handle": "1",
+              "kind": "matchall"
+            },
+            {
+              "kind": "matchall"
+            }
+          ]
+        },
+        {
+          "attachment": "qdisc",
+          "interface": "fv-ih",
+          "objects": [
+            {
+              "handle": "2f:",
+              "kind": "fq_codel",
+              "parent": "1:2f"
+            },
+            {
+              "handle": "30:",
+              "kind": "fq_codel",
+              "parent": "1:30"
+            },
+            {
+              "handle": "1:",
+              "kind": "htb",
+              "root": true
+            }
+          ]
+        },
+        {
+          "attachment": "1:1",
+          "interface": "fv-fh",
+          "objects": []
+        },
+        {
+          "attachment": "1:2f",
+          "interface": "fv-fh",
+          "objects": []
+        },
+        {
+          "attachment": "1:30",
+          "interface": "fv-fh",
+          "objects": []
+        },
+        {
+          "attachment": "1:fffe",
+          "interface": "fv-fh",
+          "objects": []
+        },
+        {
+          "attachment": "2f:",
+          "interface": "fv-fh",
+          "objects": []
+        },
+        {
+          "attachment": "30:",
+          "interface": "fv-fh",
+          "objects": []
+        },
+        {
+          "attachment": "egress",
+          "interface": "fv-fh",
+          "objects": []
+        },
+        {
+          "attachment": "root",
+          "interface": "fv-fh",
+          "objects": []
+        },
+        {
+          "attachment": "1:1",
+          "interface": "fv-ih",
+          "objects": []
+        },
+        {
+          "attachment": "1:2f",
+          "interface": "fv-ih",
+          "objects": []
+        },
+        {
+          "attachment": "1:30",
+          "interface": "fv-ih",
+          "objects": []
+        },
+        {
+          "attachment": "1:fffe",
+          "interface": "fv-ih",
+          "objects": []
+        },
+        {
+          "attachment": "2f:",
+          "interface": "fv-ih",
+          "objects": []
+        }
+      ],
+      "candidate_generation": "31",
+      "error_code": "TC_FOREIGN_FILTER",
+      "objects_total": 9,
+      "phase": "pre_apply",
+      "read_at": "2026-11-01T05:13:32.913700951Z",
+      "reads_total": 20,
+      "rejected": {
+        "attachment": "qdisc",
+        "interface": "fv-fh",
+        "objects": [
+          {
+            "handle": "ffff:",
+            "kind": "clsact",
+            "parent": "ffff:fff1"
+          }
+        ]
+      },
+      "sha256": "e8bb129adbbb8f1ca8baa59fdf487a95a970dda5e4893adef26eff0f0a38bbd0",
+      "truncated": true,
+      "verified": false
+    },
+    "timing": {
+      "version": 1,
+      "clock": "CLOCK_MONOTONIC",
+      "operation": "apply",
+      "candidate_generation": "31",
+      "start_ns": "93550404246963",
+      "end_ns": "93550458540884",
+      "succeeded": false,
+      "verified": false,
+      "deadline": {
+        "granularity_ns": "1000000",
+        "install_bound_ns": "100000000",
+        "apply_start_ns": "93550404246963",
+        "render_start_ns": "0",
+        "install_start_ns": "0",
+        "installed_by_ns": "0",
+        "install_ok": false,
+        "release_start_ns": "0",
+        "release_end_ns": "0",
+        "guard_released": false
+      },
+      "verifications": []
+    },
+    "quarantine": {
+      "quarantined": true,
+      "recorded": true,
+      "links": [
+        {
+          "interface": "fv-fh",
+          "before": {
+            "admin_up": true,
+            "operstate": "UP"
+          },
+          "after": {
+            "admin_up": false,
+            "operstate": "DOWN"
+          }
+        }
+      ],
+      "baseline": {
+        "installed": true,
+        "verified": true
+      }
+    },
+    "generation": 31,
+    "admitted": 3,
+    "resets": [],
+    "finals": [],
+    "samples": [],
+    "assignments": {
+      "019a0000-0000-7000-8000-00000000000a": "2f",
+      "019a0000-0000-7000-8000-00000000000b": "30"
+    }
+  }
+}
