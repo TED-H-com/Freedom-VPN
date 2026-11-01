@@ -37,6 +37,9 @@ func validateCounterTiming(trace []json.RawMessage, reads []counterread.Result) 
 	index := map[string]json.RawMessage{}
 	key := func(v producerRecord) string { return fmt.Sprintf("%s/%s/%s", v.Boot, v.Run, v.Sequence.String()) }
 	for i, raw := range trace {
+		if err := validateProducerCommands(raw); err != nil {
+			return fmt.Errorf("producer row %d: %w", i, err)
+		}
 		var v producerRecord
 		if json.Unmarshal(raw, &v) != nil || v.Boot == "" || v.Run == "" || v.Sequence == 0 || v.Anchor.Before <= 0 || v.Anchor.After < v.Anchor.Before {
 			return fmt.Errorf("producer row %d missing identity or ordered clocks", i)

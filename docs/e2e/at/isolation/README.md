@@ -1,22 +1,22 @@
 # AT10–AT13 isolation evidence
 
-Follow-up 10 run **`bfcc3880-dc02-485d-990c-13811d6e8835`**:
-**AT10 pass, AT11 blocked, AT12 pass, AT13 blocked.**
+Follow-up 13 run **`38074149-1137-4782-80fd-8669c36c6fcb`** on the #376 baseline:
+AT10 **pass 9/0/0**, AT11 **blocked 2/1/0**, AT12 **pass 10/0/0**,
+AT13 **blocked 6/1/0** (pass/blocked/fail).
 
-The real D-087 transition passes at **962 ms** true→accepted serving, followed
-by counted native forwarding at unchanged generation 13. All 297 original wire
-hashes verify. D-104 passes with 161 positives / 41 drops, including one pre-D
-ingress loss. Renewal retains 30 losses among 1,396 probes; none is forgiven.
-ISO-F6-01 passes six assertions; all 654 D-106 digests match producer reads.
+ISO-F6-01 passes all six assertions, including the accepted dirty-candidate
+report joined to its original pre-install command trace. D-087, D-104 and
+D-120 pass. Every renewal/expiry loss remains counted. Direct source/clone
+agent stops are within the 13 s cooperative bound and preserve stored leases.
+Hold reports carry the required signal; no alarm was observed. M-1 cancellation
+is not observable here. Two carried operator rows remain.
 
-[Summary](summary.md), [procedure](RUN.md), [requests](requests.md#follow-up-10-requests--2026-10-31),
-[grant audit](member-grants-audit.json), [producer analysis](producer-timing-analysis.json),
+[Summary](summary.md), [procedure](RUN.md),
+[requests](requests.md#follow-up-13-requests--2026-11-01),
+[producer analysis](producer-timing-analysis.json),
+[immutable producer pins](history/follow-up-13-stream/archive.json),
 [validation](validation-results.json).
 
-Historical follow-up 9 expiry remains failed and unattributed in its
-[86-file immutable archive](history/follow-up-9/archive.json). The
-[first attempt](first-attempt.md) retains its install-bound failure;
-the [second attempt](second-attempt.md) retains its AT10 setup failure.
-Earlier archives and netlab's follow-up 8 pins are untouched. Handover needed
-no pin move. Operator platform coverage remains open; no physical arm64 result
-is inferred from helper cross-compilation.
+Run `1c25ee44` remains blocked on its missing report in the byte-identical
+[follow-up 12 archive](history/follow-up-12/archive.json). Earlier archives and
+failures are unchanged. No timeout inflation, loss waiver or historical promotion.

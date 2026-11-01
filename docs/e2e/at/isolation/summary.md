@@ -1,12 +1,11 @@
-# Isolation follow-up 11 — 2026-10-31
+# Isolation follow-up 13 — 2026-11-01
 
-One assembled run **`edd986c4-16d2-4aab-b92f-baa19f8bd829`**, live source **`2304f77a733978405a35eea3b8d0a075027ce88e`**,
-source dirty **false**, product baseline
-**`45209609d33d567c5f04d49441799cdd3efac59b`** (main after agent-core 29 / #356
-and netlab 21 / #355). Full foreground command: **1199.88 s**,
-exit **2**. This is the next independent sample after follow-up 10
-and agent-core 29's quiet legs, not a controlled A/B or a qualified quiet run.
-No production code or acceptance predicate changed.
+One assembled run **`38074149-1137-4782-80fd-8669c36c6fcb`**, runtime source
+**`c521cb0018844eac1de24ee243c858518bb1a5e3`**, source dirty **false**.
+Product baseline **`334d56e466c7689fdbf16e078041afbfbd9bf4fb`**, including
+agent-core 32 (#376). Driver **1079.13 s**; full foreground command
+**1216.858 s**, exit **2** because operator rows remain blocked.
+This is the next independent sample after `1c25ee44`, not an A/B comparison.
 
 | Case | Result: pass / blocked / fail |
 |---|---|
@@ -15,189 +14,168 @@ No production code or acceptance predicate changed.
 | [AT12](AT12.json) | **pass: 10 / 0 / 0** |
 | [AT13](AT13.json) | **blocked: 6 / 1 / 0** |
 
-Spec §19 AT10–AT13, §8.2–8.3, §16.3; ISO01–ISO04, ENT02, SEC01, DNS03.
-AT11's native platform matrix and AT13's full continuous fault/platform matrix
-remain blocked, with [two dated hand-offs](requests.md#follow-up-11-requests--2026-10-31).
-Cross-compilation does not establish physical arm64 execution.
+Spec §19 AT10–AT13; §8.2–8.3, §10.3, §16.3; ISO01–ISO04, ENT02, SEC01,
+DNS03. AT11's native platform matrix and AT13's full continuous fault matrix
+remain [carried operator rows](requests.md#follow-up-13-requests--2026-11-01).
+No production code or acceptance requirement changed in this lane.
 
-## Archive and source identity
+## D-098, baseline and evidence identity
 
-D-098 was the first commit, **`0a9cd15b`**. All **100** root files from run
-`bfcc3880` match baseline-main bytes and their SHA-256 pins in the immutable
-[follow-up 10 archive](history/follow-up-10/archive.json). Both earlier attempt
-directories and all earlier archives are unchanged. Handover uses immutable
-claims; its mutable root path strings are rejection-test inputs, not reads.
-The D-132 one-file exception was unnecessary. Evidence pins remain at history paths.
+First commit **`822d56b0`** archives all **108** root files from run `1c25ee44`,
+byte-identical to the baseline, in [history/follow-up-12](history/follow-up-12/archive.json).
+The new manifest pins the compressed producer and its decompressed bytes.
+Earlier archives are untouched. Handover reads immutable snapshots; mutable
+root path strings are rejection inputs. No D-132 one-file exception edit was
+needed. Historical `1c25ee44` remains **blocked on assertion 6**.
 
-[Preflight](host-preflight.json) retains `vmstat 5 7` and sanitized
-`pgrep -af 'gates.sh|mk/at-'` inventory. Six interval rows: runnable **1–7**,
-idle **78–85%**, iowait **0–12%**; one other suite was active. Suite admission
-was checked before both stacks and again after startup. The raw commands
-remain locally retained. `go env GOCACHE` and the product baseline are recorded
-in [RUN.md](RUN.md). These observations do not identify any failure's cause.
+[Preflight](host-preflight.json) retains `vmstat 5 7` and the sanitized suite
+inventory. Six intervals: runnable **0–5**, idle **76–84%**, I/O wait **12–17%**;
+no other suite tree was present before admission. The runner rechecked before
+each stack and after startup. This is not a quiet-host qualification or causal
+explanation. [RUN.md](RUN.md) records the exact baseline and `go env GOCACHE`.
+The runtime remained on this baseline while main advanced independently.
 
-## Real D-087 transition and D-120
+## ISO-F6-01: all six assertions pass in this sample
 
-The exported TEST ONLY grant seam runs with the fixed 60-second fleet window
-set before enrollment. Initial counted traffic precedes the 65-second invariant
-stability wait. False → natural signed empty lease → actual HTTP 202
-ready/passed receipt, forwarding false, exactly `awaiting_member_grants`,
-`AWAITING_MEMBER_GRANTS` on lease/qos/source_binding and one lease-stage error
-→ true → distinct accepted serving receipt joined to a new populated signed
-lease → independently counted native forwarding.
+The [readiness boundary](control-observation-readiness.json) took
+**4.592933845 s** within the existing 90-second restoration budget: an accepted
+current generation-31 serving report, then a read-only outbox count of **0**.
+No timeout was increased. Injection began at **11:22:51.990023802 UTC**;
+removal began at **11:22:54.035207731 UTC**. All **three** dirty kernel samples
+retained the foreign flower/mirred objects, link down and `serving 0`.
 
-Fixed generation **12** and all invariants remain byte-equal.
-The [original-wire audit](member-grants-audit.json) verifies
-**254** hashes and **33**
-desired responses during the transition. True completed
-**2026-10-31T21:50:01.907097266Z**, serving receipt
-**2026-10-31T21:50:02.286280336Z**: **379.183070 ms**.
-Native admission bytes **2631→5302**.
-[Original wire](member-grants-wire.json), [transition](member-grants-transition.json)
-and [node acceptance joins](member-grants-timing.json) retain the independent
-server/report/node/counter samples. No synthetic observation, lease, forced
-generation, projection stop, freeze, unpublish or transport hold drives D-087.
+Two actual HTTP **202** receipts identify dirty candidate **32**, with applied
+ACK **31**, forwarding **false**, and observation times
+**11:22:53.710206071** and **11:22:53.779398728 UTC**. Their accepted times are
+**11:22:53.727447807** and **11:22:53.791570583 UTC**, both before removal.
+Each has `stage=apply_candidate`, code `TC_FOREIGN_FILTER`,
+`candidate_generation=32 verified=false`, and original failure time
+**11:22:53.664950190 UTC**.
 
-Historical true→serving samples remain: isolation **4,767 / 5,021 / 5,025 ms**,
-devstack **3,980 / 4,112 ms**, first attempt **2,035 ms**, and follow-up 10
-`bfcc3880` **962.448080 ms**. The second attempt has no qualifying transition.
+[Original-command join](candidate-rejection-join.json): receiver transactions
+**1498/1499**, desired transaction **1496**, producer process
+`7a5c4424-c702-4c90-ba3a-e207319e33ff`, sequence **2329**, commands **0–36**.
+This is a failed **pre-install** candidate; its installed verifier is unavailable.
+It is used only for the candidate-rejection requirement. The retained rejected
+read/quarantine and the later clean Apply/live-verifier/digest/topology/packet
+requirements keep their separate evidence. All six original assertion names
+and requirements remain in [recovery-verdict.json](recovery-verdict.json).
+The harness removed the filter only after the accepted boundary; the maximum
+12 samples at 500 ms was unchanged. No restart or topology repair assisted recovery.
 
-D-120 **AT10 PASS under D-120**, unchanged: **101** verified Applies,
-**43** datagrams, **1** retained UDP losses,
-**0** TCP timeouts. Every eligible loss still
-requires all original conditions, including exactly one guard, bounded install,
-and next datagram success. [Original verdict](reload-stream/TestAT10_AT13_ReloadRevokeBaseline/d120-verdict.txt).
-This tolerance never applies to the separate 80 ms renewal/expiry diagnostics.
+The observation-key defect was independently reproduced and fixed by agent-core
+32; this run does not attribute its introduction to #369. No local failure or
+later recovery substitutes for a central receipt. The old missing report is
+not retrospectively supplied by this run.
 
-## D-134 expiry window, counting and atomic guard
+## D-087, D-120, D-104 and renewal
 
-The conservative transition is **[D−101 ms, D]**: 100 ms installation reserve
-plus 1 ms truncation. Original D is unchanged. The D-104 D+100 ms first-drop
-observation bound never permits a positive at/after D. No new tolerance is
-introduced. Require qualifying positives through the D−101 ms boundary and
-continuous denial thereafter without a new valid authorization. Every pre-D
-loss and every renewal loss stays counted; literal zero pre-D loss is not claimed.
+D-087 passes on the exported lease-only seam, fixed generation **15**, with
+byte-equal invariants, natural empty/populated signed leases, accepted reports
+and independent counted forwarding **2578→5208 bytes**. True→accepted serving
+is **760.594944 ms**. [Wire audit](member-grants-audit.json): **270** original
+hashes and **34** desired responses. No generation forcing, fabricated report
+or lease, projector stop or transport substitute drove this transition.
 
-New whole-node D-104 **pass**: D=`67713545711930` ns,
-**161 positives / 41 drops**;
-last positive **D-99.871612 ms**, first drop
-**D-62.925070 ms**.
-Pre-D ingress losses **1** remain counted;
-literal zero-pre-D-loss assertion **false**.
-[Packet verdict](deadline-verdict.json), [producer correlation](expiry-failure-correlation.json),
-and [all loss brackets](expiry-timing-analysis.json) retain the evidence.
-Historical follow-up 9 **96 early drops / 65 subsequent positives / 41 final
-drops** remains failed; its initial baseline writer remains **unattributed**.
-A fresh pass or restart adoption cannot resolve that event.
+[D-120](reload-stream/TestAT10_AT13_ReloadRevokeBaseline/d120-verdict.txt)
+passes unchanged: **101** verified Applies, **62** datagrams, **0 UDP losses**,
+**0 TCP timeouts**. It does not waive any renewal or expiry diagnostic loss.
 
-Renewal: **1396 probes / 1378 positives / 18 losses**,
-**2** actual accepted renewals,
-**70** completed guards. **18** lost
-ingresses overlap completed guard brackets; **0** are outside.
-All remain losses. These overlaps are capture/command correlations, not exact
-kernel drop instants or causal attribution. [Continuity analysis](continuity-analysis.json).
+[Whole-node D-104](deadline-verdict.json) passes: **161 positives / 41 drops**;
+last positive **D−99.528349 ms**, first drop **D−62.521970 ms**. **One pre-D
+loss** remains counted; literal zero pre-D loss is false. The conservative
+[D−101 ms, D] transition retains the 100 ms installation reserve and 1 ms
+truncation; no post-D positive is permitted. Finite-member expiry also passed
+while its longer node lease remained valid.
 
-The atomic outer guard is the measured mechanism. Its distributions are the
-cost measured in this run; **52.596424 ms is a historical measurement, not a
-fixed ceiling**. An install overrun never opens the guard. Baseline can replace
-it atomically while member forwarding remains closed.
+[Renewal](continuity-analysis.json): **1396 probes / 1369 positives / 27 losses**,
+**two** actual renewals and **70** completed guards. Every lost ingress overlaps
+a completed outer guard; **0** are outside. All **27 losses remain losses**;
+overlap is not an exact kernel drop timestamp or causal proof. Historical
+renewal losses and follow-up 9's unattributed early outage remain unchanged.
 
-## Per-Apply host consumer and completed distributions
+## Completed guards and per-Apply commands
 
-The [original stream](producer-operations.jsonl) has **7885** contiguous
-producer records: baseline=131, heartbeat=3847, renewal=71, apply=952, live=2854, blocked_audit=30.
-Every Apply's host samples and sanitized command status join by process run ID,
-boot ID and sequence. Host contexts: **952 available / 0 unavailable**. Install overruns:
-**0**. Full per-Apply contexts, brackets, command status and
-failed records are in [producer-timing-analysis.json](producer-timing-analysis.json).
+**7879** contiguous source records, **952 Applies**, **one failed pre-install
+Apply**, **zero install overruns**. All **952** Apply host/lifecycle contexts
+are available. **53,632** commands join by original run/boot/sequence/index;
+**53,625** report `ok=true`. The seven other commands are conntrack revoke
+exit-1 results within successful Applies, retained separately from the failed
+candidate. Exit/signal/CPU/switch samples are available for all commands;
+no cancellation callback was observed. Exact child-start and hidden host
+ancestors remain unavailable. No scheduler or failure cause is inferred from
+these observations. D-106: **627/627** canonical digests recompute and match
+producer reads.
 
-Nearest-rank **p50 / p90 / p99 / max**, milliseconds, completed guards only:
+Nearest-rank milliseconds over completed guards, p50 / p90 / p99 / max:
 
-| Sample / population | n | p50 | p90 | p99 | max |
+| Independent sample / measure | n | p50 | p90 | p99 | max |
 |---|---:|---:|---:|---:|---:|
-| Follow-up 11 / Outer guard | 945 | 31.545345 | 41.568870 | 48.385975 | 56.774935 |
-| Follow-up 11 / Install command | 945 | 16.520153 | 22.588465 | 28.098082 | 30.353789 |
-| Follow-up 11 / Render→installed | 945 | 16.615574 | 22.743450 | 28.185461 | 30.431648 |
-| Follow-up 10 first attempt / Outer guard | 678 | 31.634581 | 41.827776 | 51.362069 | 57.630034 |
-| Follow-up 10 first attempt / Install command | 678 | 16.459780 | 22.524217 | 28.101933 | 30.792366 |
-| Follow-up 10 first attempt / Render→installed | 678 | 16.539935 | 22.623136 | 28.161463 | 30.882274 |
-| Follow-up 10 second attempt / Outer guard | 931 | 30.749663 | 38.828002 | 46.306456 | 49.844866 |
-| Follow-up 10 second attempt / Install command | 931 | 15.779444 | 21.512728 | 26.901864 | 30.439422 |
-| Follow-up 10 second attempt / Render→installed | 931 | 15.911599 | 21.591510 | 27.015158 | 30.531122 |
-| Follow-up 10 bfcc3880 / Outer guard | 968 | 31.085118 | 40.528987 | 48.851468 | 52.927957 |
-| Follow-up 10 bfcc3880 / Install command | 968 | 16.109632 | 22.319402 | 27.699284 | 30.619698 |
-| Follow-up 10 bfcc3880 / Render→installed | 968 | 16.234853 | 22.432804 | 27.918874 | 30.691559 |
+| Follow-up 13 outer | 951 | 31.476965 | 40.656124 | 48.912754 | 55.460784 |
+| Follow-up 13 install | 951 | 16.201976 | 22.493861 | 27.189380 | 29.107159 |
+| Follow-up 13 render→installed | 951 | 16.302182 | 22.578520 | 27.277997 | 29.208894 |
+| Follow-up 12 outer | 949 | 31.733360 | 41.314613 | 49.795099 | 54.955270 |
+| Follow-up 12 install | 949 | 16.616649 | 22.812681 | 28.987567 | 31.429430 |
+| Follow-up 12 render→installed | 949 | 16.747072 | 22.945306 | 29.084397 | 31.716162 |
 
-Completion does not itself imply later verification success. Failed operations
-are retained separately; incomplete guards never enter these populations.
-All **seven failed Applies** reject before install during the labelled foreign-tc
-scenario; their host samples and missing verifier state remain retained.
+Incomplete/failed operations remain in totals, outside completed-guard
+populations. The historical maximum is not a ceiling. See
+[producer analysis](producer-timing-analysis.json) and [command summary](command-lifecycle-summary.json).
+The **127,502,155-byte** producer export is published losslessly as a
+**6,495,737-byte** gzip, byte-compared with the original export. Both SHA-256
+forms are pinned only at [the immutable stream archive](history/follow-up-13-stream/archive.json).
+No record is sampled away.
 
-- Process `6131959d-7ae2-438d-8f42-e404c030d279`, sequence **2307**, Apply `67741524033260`–`67741568610198` ns; stage `pre_install`, verification `unavailable`, host `available`, cause `unproven`, completed guard=false.
-- Process `6131959d-7ae2-438d-8f42-e404c030d279`, sequence **2315**, Apply `67742526653725`–`67742569501555` ns; stage `pre_install`, verification `unavailable`, host `available`, cause `unproven`, completed guard=false.
-- Process `6131959d-7ae2-438d-8f42-e404c030d279`, sequence **2322**, Apply `67743514372144`–`67743564567025` ns; stage `pre_install`, verification `unavailable`, host `available`, cause `unproven`, completed guard=false.
-- Process `6131959d-7ae2-438d-8f42-e404c030d279`, sequence **2329**, Apply `67744516491104`–`67744572440268` ns; stage `pre_install`, verification `unavailable`, host `available`, cause `unproven`, completed guard=false.
-- Process `6131959d-7ae2-438d-8f42-e404c030d279`, sequence **2337**, Apply `67744716512501`–`67744761301657` ns; stage `pre_install`, verification `unavailable`, host `available`, cause `unproven`, completed guard=false.
-- Process `6131959d-7ae2-438d-8f42-e404c030d279`, sequence **2344**, Apply `67745701467459`–`67745745477269` ns; stage `pre_install`, verification `unavailable`, host `available`, cause `unproven`, completed guard=false.
-- Process `6131959d-7ae2-438d-8f42-e404c030d279`, sequence **2351**, Apply `67746703740690`–`67746754507742` ns; stage `pre_install`, verification `unavailable`, host `available`, cause `unproven`, completed guard=false.
+## Agent-core 32 regressions and D-135 / corrected D-136
 
-Missing verification is **unavailable**, never failed verification. A baseline
-cause named `verification_HEALTH_CHECK_FAILED` cannot supply absent verifier
-records. Missing command status means unknown, not exit zero. Missing or
-invalid host samples never mean quiet. The conservative diagnostic rule and
-its kernel-aggregate/cgroup limits are explicit in [RUN.md](RUN.md).
-Even “fail-closed install overrun with recorded host contention” leaves
-`cause_status=unproven`; coincident observations are not a scheduler cause.
+[Hold review](agent-core32-regression.json): **two** unique accepted generation-
+mismatch reports, both forwarding=false with `policy_missing` and
+`STALE_GENERATION` at `stage=lease`. One is before the ACK catches up; the other
+has ACK **25** / signed lease **24**, with **steps=1, elapsed_ms=0, alarm=false**.
+**No alarm was observed**. The retained streak never demonstrates the 3-Step
+or 30-second trigger; this run does not claim that threshold was exercised.
+The baseline remains. Another `policy_missing` report alone is explicitly
+unclassified rather than assumed to be a stale-lease hold.
 
-The [new first-attempt replay](first-attempt-host-review.json) preserves all
-**49** failed installs, each with host label **unavailable**, verification
-**unavailable** and cause **unproven**. Apply 712's render→installed remains
-**215.890796 ms**, population maximum **340.349614 ms**. All **279** renewal
-losses remain: **29** overlapping completed guards, **250** outside. Original
-[archive](history/follow-up-10-attempt-1/archive.json) and failure analysis are
-unchanged. Agent-core 29's controlled interventions up to 384 workers at 0%
-idle did not reproduce an install overrun (maximum 53.133468 ms); chain-gate
-correlation is not cause. Its independent quiet/loaded populations remain in
-[agent-core 29's assessment](../../../node/followup29-install-contention-2026-10-31.md).
+[Baseline review](policy-missing-analysis.json): **18** policy-missing windows;
+**15** populated old/new-generation windows are consistent with stale leases.
+Baseline→next successful Apply ranges **202.758066–1078.354515 ms**. Every one
+has a later successful live verifier and serving heartbeat. No diagnostic
+packet ingresses cover these 15 brackets, so their packet loss and independent
+egress are **unavailable, not zero**. Every separately captured **27 renewal /
+41 expiry loss** stays counted. Ordinary handling is baseline→ACK→renewal→
+Apply→verify→heartbeat; only retained Apply-error recovery uses a verified
+deny-all candidate. Recovery is required, and the install budget does not
+bound the outage. Desired-accept/branch events are not exported, so per-call
+cause labels remain unproven.
 
-## D-135 rollback and recovery
+Direct terminal agent stops use pidfd SIGTERM and exit readiness. Source
+SIGTERM→exit upper bound **9.117561 ms**; clone **13.659497 ms**, both below the
+**13 s cooperative bound**. Both retained the same stored lease ID and original
+monotonic anchor. Exit status was already unavailable when /proc was sampled;
+no exit code is invented. These are two sampled stops, not a worst-case-budget
+proof or a lease-eligibility claim. [Raw closure](receiver-closure.json).
 
-Failed Apply installs the **node-wide generation-0 baseline**. It preserves
-revocation and does **not restore the previous generation**. Admitted siblings
-also lose forwarding; recovery requires the next successful Apply and live
-checks using current authorization. A completed guard bounds an operation,
-not the entire outage, and the 100 ms install budget supplies no retry/outage
-ceiling. This wording changes no predicate or historical measured row.
+Ordinary Docker stop→start completion **10.247527346 s** retained the lease
+and recovered counted forwarding. Its container SIGTERM→die was
+**10.086659773 s**, with SIGKILL and exit **137**. The clone fixture's container
+SIGTERM→die was **20.152971455 s**, also SIGKILL / **137**, with stored lease
+survival. These are container PID1 events, separate from agent-process stop
+qualification; later events are teardown after terminal agent stops.
+[Container events](container-lifecycle-events.json), [stop summary](container-stop-summary.json).
 
-ISO-F6-01: **pass**, **6/6** assertions
-(the full assertion outcomes are in the [recovery verdict](recovery-verdict.json)).
-Assistance **false**; containment upper bound
-**1157.112943 ms**, removal→link
-**647.708049 ms**, removal→serving
-**3420.111504 ms**, removal→counted completion
-**12579.963359 ms**. These are observed upper bounds.
-Rejected reports **16**, including **two outside the redirect injection window**.
-Those two repeat a single `qdisc/read_failed` observation at
-22:04:59.126691364 UTC, during the later identity-frozen phase, with zero
-foreign objects recorded. [Exact producer/report join](post-freeze-tc-read.json)
-retains process `95b1ada3-c652-4ce4-a274-87c27f4fbd00`, blocked-audit sequence 9,
-its neighbors and both original reports. The read-error cause remains unproven;
-no creator or host-contention cause is inferred. Both reports stay in the
-original outside-window list; ISO-F6-01 completed earlier.
-Original normal agent/watchdog log segments and baseline writer rows describe
-only this run; the unretained historical foreign-tc creator remains unknown.
+**No control I/O after cancel (M-1): not observable here.** There were no proxy
+observation completions in the measured terminal signal→exit intervals, but
+the stream lacks the actual Step-context cancellation and agent-side POST
+completion timestamps. Zero proxy completions cannot establish that contract.
 
-D-106: **639/639** canonical digests recompute;
-**639** match producer reads. [D-093 reconciliation](d093-reconciliation.md)
-keeps all 15 agreements (13 open, two retired only in simulator scope).
+## Validation and remaining scope
 
-## Validation and cleanup
-
-Exact command results and actual output tails: [validation-results.json](validation-results.json).
-The assembled exit preserves blocked operator coverage. Final owned-prefix
-[inventory](cleanup-inventory.json) shows **zero containers, images, networks
-and volumes**. Owned lint/test/build, handover, root lint, formatting, diff and
-committed-evidence hygiene pass. The diff check initially found terminal blank
-lines in five text captures; only those trailing lines were normalized, with
-original copies retained locally. D-120 replay is byte-identical afterward;
-original producer JSONL, wire JSON and all archives are untouched. No push, PR or tag; all work remains on the assigned branch.
+Area lint/tests/build, amd64/arm64 cross-compilation, handover claims, whole-
+module lint, formatting, diff and decompressed-evidence hygiene are recorded
+in [validation-results.json](validation-results.json). The assembled exit 2
+retains both operator blocks. No physical arm64, native platform matrix or
+full fault-matrix pass is inferred. Four text captures have only terminal
+blank lines normalized, with originals private; JSON/JSONL producer and wire
+bytes and D-120 verdict are retained. The final and independent owned-prefix
+inventories show **zero containers, images, networks and volumes**.

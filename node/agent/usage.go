@@ -409,13 +409,11 @@ func (e *Engine) invalidateMeterCheckpoint() error {
 // shutdownUsage checkpoints a healthy restart without closing its epoch;
 // blocked/stale nodes still take the withdrawal hand-off. Both loops and the
 // store close before another process can own the ledger.
-func (e *Engine) shutdownUsage() {
+func (e *Engine) shutdownUsage(ctx context.Context) {
 	if e.shutUsage {
 		return
 	}
 	e.shutUsage = true
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
 	if e.sampleOn && !e.preserveServingOnStop(ctx) {
 		e.handoff(ctx)
 	}

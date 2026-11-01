@@ -168,3 +168,11 @@ members 52, devstack 154. A normalized whole-function hash proves follow-up
 D-135 through D-138 stay provisional; D-136 correction and D-138 acceptance
 never rewrite historical failures. Live owned-document hashes in secops
 scope-review remain integrity checks only.
+
+Follow-up 25 freezes #370–#373 at 9cd7a053: four exact roadmap rows and 15
+byte-exact snapshots/excerpts (source commit, full-source digest, offset and
+length). Updates 13 and isolation 12 use merged-PR hand-offs, never living root
+records. Owner history inventories and the dated devstack 24 captures are
+checked directly. r18 is an exact archive from 1a65598f, with no adopted proof
+files or acceptance promotion. Follow-up 24's live register/entrypoints are
+frozen; its normalized whole-function hash preserves every original assertion.

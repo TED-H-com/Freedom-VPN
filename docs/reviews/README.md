@@ -23,6 +23,7 @@
 | `r15-d072-d075-review` | [`r15-d072-d075-review.md`](r15-d072-d075-review.md) | 2026-10-30 | `grok/grok-4.7` (commit `dfafae0` trailer) | D-072–D-075 clone detection, lock order, revoke fence, gated publication, Fair-Use ACK, tc bypass and anonymous reserve | 8 (1 High, 6 Medium, 1 Low) — owner fixes adopted in #254/#259/#263/#256/#262/#252; packet-stop and agent quarantine integration remain qualified | [Adopted main proofs](r15-d072-d075-review.md#adopted-proof-files-on-main) |
 | `r16-rev13-d089-d099-review` | [`r16-rev13-d089-d099-review.md`](r16-rev13-d089-d099-review.md) | 2026-10-31 | `grok/grok-4.7` | Revision 13, D-089 / D-097 installer results, D-088 freeze, D-090 / D-096 containment, D-095 / D-099 restore hold; base `5575470` | 4 (1 High, 2 Medium, 1 Low); H-1 fixed #291, M-2/L-1 fixed #300, M-1 pending; two known HTTP defects fixed #277 | Owners adopt `TestReviewR16_*`; only the report is archived here. |
 | `r17-rev14-d104-d117-review` | [r17-rev14-d104-d117-review.md](r17-rev14-d104-d117-review.md) | 2026-10-31 | `grok/grok-4.7`, base `62f24e6d` | Revision 14, D-104–D-118 | 1 Medium: M-1 → fleet-update 12 (#322), D-127; r16 H-1 / M-1 / M-2 / L-1 re-run and held | [installer correction proof](../../internal/fleetupdate/review_r17_installer_integration_test.go) |
+| `r18-generation-change-review` | [r18-generation-change-review.md](r18-generation-change-review.md) | 2026-11-01 | `grok/grok-4.7`, base `5bd75102` | D-135 / corrected D-136, agent-core 31 shutdown and D-138 TEST ONLY observation | 5 OPEN: 3 Medium / 2 Low; M-1/M-2/M-3/L-2 → agent-core 32; L-1 → netlab | Only the report is archived; proof files remain on the review branch. |
 
 ## What Held Across the Reviews
 
@@ -106,3 +107,27 @@ The [current handover](../handover/follow-up-19.md) and
 [findings register](../handover/README.md#findings-register-at-the-follow-up-19-cutoff)
 record ENR-07 / F9-01 closure and ISO-F6-03 OPEN. Agent-core 28 is in flight,
 not on main at #337. D-129–D-132 do not change the archived review verdicts.
+
+## r18 dispositions at the follow-up 25 cutoff
+
+Exact source: `origin/r18-generation-change-review:.agent/REVIEW.md`, commit
+`1a65598fe6ebc5ba394284857ece59d0a572458b`, reviewed base #369 / `5bd75102`.
+The [raw archive](r18-generation-change-review.md) is byte-for-byte, SHA-256
+`f266a0705292975f5416bda5a082a3f7e779f45e82cb9b9ce54843ce0cb8e33d`.
+No proof files were adopted. At #373, all five findings remain OPEN.
+
+| Finding | Owner / status (2026-11-01) |
+|---|---|
+| M-1: control observation POST after SIGTERM | Agent-core 32 running; deferred context does not carry the cancellable control budget. |
+| M-2: stacked shutdown budgets exceed 10 s | Agent-core 32 running; review measured 14.021 s. The unit has no TimeoutStopSec; installer sets the value after agent-core 32 establishes the budget. |
+| M-3: replayed lease holds node on baseline without cap or distinct alarm | Agent-core 32 running; wire-nodes handles central's stale-hold reading after agent-core 32. |
+| L-1: TEST ONLY sample ignores install deadline | Netlab; disabled production path unaffected in the review. |
+| L-2: D-133 rule omits stricter ceiling comparison | Agent-core 32 running; member/node ceilings must be considered before any intersection-serving implementation. |
+
+What held is the review's statement, not an acceptance result: no removed grant
+forwarded on any reviewed stale path, observation keys out of production, torn
+checkpoints fail closed. No live lab or PostgreSQL suite ran in this review;
+the 80-transition population, physical arm64 and live mid-write process death
+were not verified. M-1 / M-2 qualify #369's shutdown claims; its historical
+cancellation fix remains recorded. D-135 / D-136 / D-137 / D-138 remain
+provisional; intersection serving is not implemented by this handover.

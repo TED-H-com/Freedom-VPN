@@ -34,7 +34,11 @@ func (l *live) startNativeCapture(r *record, member, label string) *nativeCaptur
 		r.block("Native capture start unavailable: " + label)
 		return nil
 	}
-	c := &nativeCaptureSession{l: l, r: r, handle: handle, label: label, directory: filepath.Join(l.root, ".agent/tmp/f13-native", l.runID, label+"-"+uuid.NewString())}
+	return l.captureSession(r, handle, label)
+}
+
+func (l *live) captureSession(r *record, handle *e2e.NativeCapture, label string) *nativeCaptureSession {
+	c := &nativeCaptureSession{l: l, r: r, handle: handle, label: label, directory: filepath.Join(l.root, ".agent/tmp/f14-native", l.runID, label+"-"+uuid.NewString())}
 	l.t.Cleanup(func() { c.stop() })
 	return c
 }

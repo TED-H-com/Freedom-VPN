@@ -14,6 +14,8 @@ Type=simple
 # The agent invokes netbird status for its live tunnel probe.
 Environment=NB_DAEMON_ADDR=unix:///run/fvpn-netbird/netbird.sock
 ExecStart=/opt/vpn-node/current/fvpn-agent run -config /etc/vpn-node/agent.json
+# Cooperative shutdown: 13 s budget plus 2 s margin before forced stop.
+TimeoutStopSec=15s
 Restart=on-failure
 RestartSec=2s
 RestartMaxDelaySec=30s

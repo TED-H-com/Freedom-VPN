@@ -4,6 +4,10 @@ package members
 
 import (
 	"context"
+	"crypto/sha256"
+	"fmt"
+	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/labstack"
@@ -43,7 +47,7 @@ func (l *live) startPersistent(r *record, service string, id uuid.UUID) *persist
 		return nil
 	}
 	ctx, cancel := context.WithCancel(l.ctx)
-	f := &persistentFlow{stack: s, service: service, cancel: cancel, done: make(chan struct{}), ticks: []persistentTick{{time.Now().UTC(), status, after, true}}}
+	f := &persistentFlow{stack: s, service: service, cancel: cancel, done: make(chan struct{}), ticks: []persistentTick{{time.Now().UTC(), status, after, se == nil && ae == nil}}}
 	go func() {
 		defer close(f.done)
 		for {
@@ -92,7 +96,7 @@ func (l *live) finishPersistent(r *record, f *persistentFlow, event time.Time, t
 		return
 	}
 	lastTCP, lastUDP := ticks[0].At, ticks[0].At
-	valid := true
+	valid := ticks[0].ReadOK
 	for i := 1; i < len(ticks); i++ {
 		a, b := ticks[i-1], ticks[i]
 		valid = valid && b.ReadOK
@@ -114,5 +118,34 @@ func (l *live) finishPersistent(r *record, f *persistentFlow, event time.Time, t
 			break
 		}
 	}
-	r.jsonCheck("persistent withdrawal "+f.service, "active TCP/UDP senders; no replies later than target; counters frozen or removed", map[string]any{"event_at": event, "target_seconds": target.Seconds(), "last_tcp_reply_observed_at": lastTCP, "last_udp_reply_observed_at": lastUDP, "tcp_seconds": lastTCP.Sub(event).Seconds(), "udp_seconds": lastUDP.Sub(event).Seconds(), "poll_interval_ms": 250, "sender_active": active, "counters_stable_or_removed": stable, "samples": ticks}, "EstablishedStatus + DeviceByteCounters until target plus 4s; timestamps bound last observed increment, not packet capture", valid && active && stable && lastTCP.Sub(event) <= target && lastUDP.Sub(event) <= target && final.At.After(event.Add(target)))
+	r.jsonCheck("persistent withdrawal "+f.service, "active TCP/UDP senders; no replies later than target; counters frozen or removed", map[string]any{"event_at": event, "target_seconds": target.Seconds(), "last_tcp_reply_observed_at": lastTCP, "last_udp_reply_observed_at": lastUDP, "tcp_seconds": lastTCP.Sub(event).Seconds(), "udp_seconds": lastUDP.Sub(event).Seconds(), "poll_interval_ms": 250, "sender_active": active, "counters_stable_or_removed": stable, "samples": ticks, "parse_failure_receipts": l.parseFailureReceipts(ticks)}, "EstablishedStatus + DeviceByteCounters until target plus 4s; timestamps bound last observed increment, not packet capture", valid && active && stable && lastTCP.Sub(event) <= target && lastUDP.Sub(event) <= target && final.At.After(event.Add(target)))
+}
+
+func (l *live) parseFailureReceipts(ticks []persistentTick) []map[string]any {
+	receipts := []map[string]any{}
+	for _, tick := range ticks {
+		d := tick.Counters.Diagnostic
+		if d.Parse == nil {
+			continue
+		}
+		p := d.Parse
+		id, e := uuid.Parse(p.ID)
+		if e != nil {
+			receipts = append(receipts, map[string]any{"metadata": p, "private_verified": false})
+			continue
+		}
+		dir := filepath.Join(l.root, ".agent/tmp/counterread", id.String())
+		raw, re := os.ReadFile(filepath.Join(dir, "output.raw"))
+		parser, pe := os.ReadFile(filepath.Join(dir, "parser-error.txt"))
+		modeOK := true
+		for _, name := range []string{"output.raw", "parser-error.txt"} {
+			st, e := os.Stat(filepath.Join(dir, name))
+			modeOK = modeOK && e == nil
+			if e == nil {
+				modeOK = modeOK && st.Mode().Perm() == 0600
+			}
+		}
+		receipts = append(receipts, map[string]any{"at": tick.At, "metadata": p, "read_ok": tick.ReadOK, "stage": d.Stage, "category": d.Category, "exit": d.Exit, "private_verified": p.Exported && re == nil && pe == nil && len(parser) > 0 && len(raw) == p.Bytes && fmt.Sprintf("%x", sha256.Sum256(raw)) == p.SHA256 && modeOK})
+	}
+	return receipts
 }

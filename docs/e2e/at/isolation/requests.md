@@ -447,3 +447,90 @@ instrumentation proposal is tracked in their own assessment; it is not
 implemented by this consumer lane. The historical first-attempt install cause
 and ISO-F6-03 baseline writer remain known gaps, without a new attribution or
 a claim that those historical failures have passed.
+
+## Follow-up 12 requests — 2026-11-01
+
+Run `1c25ee44-1872-4cce-a9f5-d52491d87095`, runtime source `99e58bff`, baseline
+`5bd751026073444087b32ac2a7115f8566104f8b` (#365 / #369). Command lifecycle
+consumption is delivered: 956 Applies / 53,754 records, zero install overruns;
+all seven pre-install failures and every loss remain counted. D-098 archived
+all 103 edd986c4 root files first. No D-132 handover exception was needed.
+
+### Requests to orchestrator
+
+1. **2026-11-01 — AT11, devstack and platform operators (carried).** Supply
+   native dual-stack/member-platform routes and packet captures. Metadata,
+   6to4 and mechanism tests do not establish the platform matrix. Outside this
+   lane; only this item remains stopped.
+2. **2026-11-01 — AT13, acceptance/operators (carried).** Execute the full
+   continuous crash/NetBird restart/OS reboot/updater/physical-arm64 matrix.
+   Include qualified process-stop evidence: this run's clone fixture sends
+   SIGTERM then SIGKILL after 20.007193 s (exit 137); its surviving stored lease
+   and counted ordinary restart do not verify graceful agent shutdown.
+   Shared clone lifecycle is `tests/e2e/second_exit.go`; no outside edit made.
+3. **2026-11-01 — ISO-F6-01 observation convergence, agent-core / devstack,
+   with isolation follow-up.** AT10 is now **8/1/0**, not the previous run's
+   pass. Five assertions pass; the sixth requires a dirty-newer-generation
+   rejection report which this run did not retain. All 12 kernel samples keep
+   forwarding closed and foreign objects present. Generation-30 failed Applies
+   2311/2320/2329/2338/2347/2356/2365 are retained, but the central samples all
+   show generation 29 at 09:55:00.452272372 UTC. The old-generation rejection
+   is accepted at 09:56:41.080290184, after removal at 09:56:25.090642995.
+   No generation-30 rejection appears anywhere in the receiver. See
+   [exact indexed evidence](iso-f6-01-observation-gap.json). Assess observation
+   retry/first-deciding-body retention in `node/agent/observe.go` (`observe`,
+   `flush`, `observationState`) after control restoration and provide a
+   qualifying current observation/readiness boundary for the next independent
+   sample. An owned harness readiness change can follow that assessment; no
+   timeout inflation, substitute assertion or product change is made here.
+   Those agent paths are outside this lane, so that item is stopped and routed.
+
+There are **three requests**: two carried operator gaps and one new observation
+evidence gap. The latter is not evidence of forbidden forwarding. Historical
+install-overrun causes, the old ISO-F6-03 baseline writer, the original foreign-tc
+creator and this run's later qdisc/read_failed cause remain unproven.
+
+
+## Follow-up 13 requests — 2026-11-01
+
+Run `38074149-1137-4782-80fd-8669c36c6fcb`, runtime `c521cb00`, product
+baseline `334d56e466c7689fdbf16e078041afbfbd9bf4fb` including agent-core 32
+(#376). AT10 **9/0/0 PASS**, AT12 **10/0/0 PASS**; AT11 **2/1/0 BLOCKED**,
+AT13 **6/1/0 BLOCKED**. One assembled run; no replacement run or loss waiver.
+
+D-098 was first: `822d56b0`, all 108 root files of run `1c25ee44` byte-identical
+under [history/follow-up-12](history/follow-up-12/archive.json). That historical
+run remains blocked. No handover D-132 exception was needed.
+
+Follow-up 12 request 3 is satisfied for the new independent sample: current
+accepted observations and an empty retry queue preceded injection; two
+accepted generation-32 `TC_FOREIGN_FILTER` reports identify `apply_candidate`
+with `verified=false`, ACK 31 and in-window timestamps. Both join original
+Apply sequence 2329 and commands 0–36. All six assertions pass, with separate
+installed-verifier evidence preserved. No timeout inflation or retrospective
+promotion; the coalescing defect is not attributed to #369.
+
+Direct source/clone agent SIGTERM→exit upper bounds are 9.117561 / 13.659497 ms,
+both within 13 s, with stored leases preserved. Exact exit statuses were
+unavailable. Docker container forced stops remain separate. Two accepted hold
+reports carry the required lease-stage signal; no alarm was observed (the
+retained acknowledged hold says steps=1, elapsed_ms=0, alarm=false). M-1 is
+**not observable here** because actual Step cancellation is not exported.
+D-135 / corrected D-136 retain every loss and require later recovery.
+
+### Requests to orchestrator
+
+1. **2026-11-01 — AT11 native platform matrix, carried operator row.**
+   Existing devstack/platform assignment remains: native dual-stack and
+   member-platform routes/captures. No renewed ask or claim of completion.
+   This outside-path item remains stopped; the other deliverables are complete.
+2. **2026-11-01 — AT13 full fault matrix, carried operator row.**
+   Existing acceptance/operator assignment remains: continuous crash, NetBird
+   restart, OS reboot, updater and physical-arm64 coverage. Direct process
+   stops measured here do not supply that matrix. Ordinary/clone container
+   stops still show SIGKILL / exit 137; shared lifecycle paths are unchanged.
+   No renewed ask or new production-change request.
+
+**Two carried requests; no new request.** See [summary](summary.md),
+[candidate join](candidate-rejection-join.json), [agent-core regression](agent-core32-regression.json)
+and [corrected baseline brackets](policy-missing-analysis.json).

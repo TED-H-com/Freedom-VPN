@@ -1,9 +1,34 @@
-# Follow-up 13 execution note
+# Follow-up 14 execution note
 
-`assembled.py` now runs all ten regular cases, including AT01 and AT09, and
-clears the old Follow-up 12 skip flag. Pre-start, post-start and target admission
-checks remain hard stops at two other active suites. One authorized run was used;
-see [RUN.md](RUN.md) for actual outcomes, baseline, cache path and sequential gates.
+One assembled ten-case run uses compiled harness `e9a215f3`, product baseline
+`8f3055b9` (#369 and #370). See [RUN.md](RUN.md) for the final rows and gates.
+The subsequent harness correction moves the new routed hop after the existing
+eth0-only relay fault; it is not live-qualified by this run. No second run is
+claimed or authorized here.
+
+`assembled.py` performs admission checks before and after startup and invokes
+`make -f mk/at-members.mk at-members` in the foreground, then tears down through
+Python `finally`. It clears the retired follow-up 12 skip flag. All scratch is
+on disk through `disktmp.py`; the actual cache is read with `go env GOCACHE`.
+
+The original AT20 query is captured once, after two-resolver configuration and
+before readiness/listener/RR/cache operations. Both complete resolver lifecycle
+histories, wire IDs, reply digests, capture receipts and payload-free headers are
+retained. Positive IDNA UDP/TCP controls follow the RR matrix. Raw captures and
+exact counter parser errors remain private. These commands derive evidence from
+that run's retained files and send no traffic:
+
+```sh
+python3 -B tests/e2e/at/members/followup14_evidence.py
+python3 -B tests/e2e/at/members/followup14_receipts.py
+python3 -B tests/e2e/at/members/followup14_transitions.py
+```
+
+Command-lifecycle absence is unavailable. Present records must have valid
+Apply/command bounds and join the original producer identity. Withdrawal reads
+retain non-nil error results and their `parse_failure` receipts; no retry replaces
+a failed sample. Repeated chain declarations are an owner diagnosis, not permission
+to change parser or acceptance predicates.
 
 # Member acceptance execution procedures
 

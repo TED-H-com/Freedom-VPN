@@ -31,7 +31,7 @@ func (e *Engine) verifyServingModel(ctx context.Context, model enforce.Model, as
 	// Liveness cancellation may stop control work, but cannot itself prove a
 	// kernel defect. This independent bounded read still fails on real drift
 	// or its own timeout, including when shutdown interrupts a Step read.
-	readCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), e.servingReadTimeout())
+	readCtx, cancel := context.WithTimeout(localContext(ctx), e.servingReadTimeout())
 	defer cancel()
 	evidence, err := e.plane.VerifyServing(readCtx, model, assignments)
 	// Even an executor that returns success at the deadline cannot supply
@@ -114,7 +114,7 @@ func (e *Engine) expireServing(ctx context.Context) bool {
 	if !e.serving || (e.policyExpires > 0 && e.clock.Mono() < e.policyExpires) {
 		return false
 	}
-	cleanup, cancel := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
+	cleanup, cancel := context.WithTimeout(localContext(ctx), 5*time.Second)
 	defer cancel()
 	e.withdraw(cleanup)
 	e.decision = Decide(e.input())
@@ -133,7 +133,7 @@ func (e *Engine) rejectServing(ctx context.Context, model enforce.Model, evidenc
 		e.kernel.rejectedGeneration()
 	}
 	// A failed/canceled read must still be able to install the baseline.
-	cleanupCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
+	cleanupCtx, cancel := cleanupBudget(ctx)
 	defer cancel()
 	if errors.As(err, &check) && check.Reason == enforce.ReasonTCForeignFilter {
 		e.quarantinePending = true
@@ -162,24 +162,21 @@ func (e *Engine) finishServingStep(ctx context.Context) {
 	// SIGTERM can interrupt control I/O mid-Step. A canceled command is not
 	// a kernel observation: perform the bounded final read independently so
 	// normal process replacement cannot manufacture a foreign-tc quarantine.
-	ctx = context.WithoutCancel(ctx)
+	ctx = localContext(ctx)
 	ok := e.verifyCurrentServing(ctx)
 	if !e.serving {
 		e.auditBlocked(ctx)
 	}
 	if !e.serving && e.quarantinePending {
-		cleanup, cancel := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
-		e.quarantine(cleanup)
-		cancel()
+		e.quarantine(ctx)
 		e.decision = Decide(e.input())
 		ok = false
 	}
+	changed := e.updateStaleHold()
 	e.beat()
-	if !ok || (e.identityFrozen && e.lastObs.IsZero()) {
-		reportCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
-		defer cancel()
-		_ = e.observe(reportCtx)
-		_ = e.flush(reportCtx)
+	if !ok || changed || (e.identityFrozen && e.lastObs.IsZero()) {
+		_ = e.observe(ctx)
+		_ = e.flush(ctx)
 	}
 }
 
@@ -189,7 +186,7 @@ func (e *Engine) auditBlocked(ctx context.Context) {
 	if e.appliedModel == nil {
 		return
 	}
-	readCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), e.servingReadTimeout())
+	readCtx, cancel := context.WithTimeout(localContext(ctx), e.servingReadTimeout())
 	defer cancel()
 	ev, err := e.plane.VerifyServing(readCtx, *e.appliedModel, e.appliedAssignments)
 	e.measureTiming(ev, "blocked_audit")

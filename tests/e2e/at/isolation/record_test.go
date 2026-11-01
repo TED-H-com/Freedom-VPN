@@ -1,7 +1,10 @@
 package isolation
 
 import (
+	"bytes"
+	"compress/gzip"
 	"encoding/json"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -94,8 +97,29 @@ func TestCommittedEvidenceFiles_ValidAndHygieneClean(t *testing.T) {
 		if err != nil {
 			return err
 		}
-		if filepath.Ext(path) == ".json" && !json.Valid(raw) {
+		logicalPath := path
+		if strings.HasSuffix(path, ".gz") {
+			reader, err := gzip.NewReader(bytes.NewReader(raw))
+			if err != nil {
+				return err
+			}
+			raw, err = io.ReadAll(reader)
+			_ = reader.Close()
+			if err != nil {
+				return err
+			}
+			logicalPath = strings.TrimSuffix(path, ".gz")
+		}
+		if filepath.Ext(logicalPath) == ".json" && !json.Valid(raw) {
 			t.Errorf("invalid JSON: %s", path)
+		}
+		if filepath.Ext(logicalPath) == ".jsonl" {
+			for _, line := range bytes.Split(bytes.TrimSpace(raw), []byte("\n")) {
+				if !json.Valid(line) {
+					t.Errorf("invalid JSONL: %s", path)
+					break
+				}
+			}
 		}
 		for _, bad := range []string{"/ho" + "me/", "BEGIN " + "EC PRIVATE KEY", "BEGIN " + "RSA PRIVATE KEY", "BEGIN " + "OPENSSH PRIVATE KEY", "sk_" + "live_", "gh" + "p_", "gh" + "o_"} {
 			if strings.Contains(string(raw), bad) {

@@ -178,12 +178,24 @@ func TestD085_ReadTimeoutAndCanceledStep(t *testing.T) {
 				// kernel read. This deliberately stalled read times out.
 			}
 			started := time.Now()
+			posts := r.srv.ObservationPosts()
 			err := r.eng.Step(ctx)
 			if (canceled && !errors.Is(err, context.Canceled)) || (!canceled && err != nil) {
 				t.Fatal(err)
 			}
 			if time.Since(started) > 2*time.Second {
 				t.Fatal("verification did not respect timeout")
+			}
+			if canceled {
+				// Shutdown queues the same truthful rejection locally; its
+				// canceled caller must not deliver it (r18 M-1). A successor
+				// with a live control context can drain that retained body.
+				if r.srv.ObservationPosts() != posts {
+					t.Fatal("canceled Step performed control I/O")
+				}
+				if err := r.eng.flush(t.Context()); err != nil {
+					t.Fatal(err)
+				}
 			}
 			assertLiveWithdrawn(t, r, 2, message)
 		})

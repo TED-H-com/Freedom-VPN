@@ -1,0 +1,13 @@
+docker rm -f fvpn-w1-netlab-f23 >/dev/null 2>&1 || true
+docker network rm fvpn-w1-netlab-f23-dns >/dev/null 2>&1 || true
+make -f mk/netlab.mk netlab-wipe-scratch FVPN_LAB_PREFIX='fvpn-w1-netlab-f23'
+make[1]: Entering directory '<worktree>'
+mkdir -p <worktree>/.agent/tmp/fvpn-w1-netlab-f23-scratch
+docker rm -f fvpn-w1-netlab-f23-wipe >/dev/null 2>&1 || true
+docker run --rm --name fvpn-w1-netlab-f23-wipe --network none \
+	-v <worktree>/.agent/tmp/fvpn-w1-netlab-f23-scratch:/scratch fvpn-w1-netlab-f23:lab \
+	find /scratch -mindepth 1 -delete
+make[1]: Leaving directory '<worktree>'
+rmdir <worktree>/.agent/tmp/fvpn-w1-netlab-f23-scratch 2>/dev/null || true
+Untagged: fvpn-w1-netlab-f23:lab
+Deleted: sha256:ea43388c08bb120c6f4a7e39ac1744510e19c4569794691dd486cd6c2e1221b4
