@@ -4,17 +4,17 @@ Mechanism: host and upstream isolation during apply and interface change
 
 Status: pass
 
-Run: bfcc3880-dc02-485d-990c-13811d6e8835; started UTC: 2026-10-31T19:05:25Z; source dirty: false
+Run: edd986c4-16d2-4aab-b92f-baa19f8bd829; started UTC: 2026-10-31T21:46:21Z; source dirty: false
 
 Spec: §19 AT10, ISO01, ISO02
 
-UTC: 2026-10-31T19:05:32Z
+UTC: 2026-10-31T21:46:28Z
 
-Build: cd2e89746b710eda1580d2c822ceff3f636fb013
+Build: 2304f77a733978405a35eea3b8d0a075027ce88e
 
 Image digests:
 
-- fvpn-w4-isolation-lab:lab sha256:60b275ba558796e79084deadb6becf660f7a94da475052d91c5c33114ae9a8c8
+- fvpn-w4-isolation-lab:lab sha256:dc7e12368cae0512b0f84a1d614de232a3713bcb37409e7db8e4fe93bca9de74
 
 Policy revision: generation 3000-3020
 
@@ -22,7 +22,7 @@ Node incarnation: mechanism-lab
 
 Expected: Protected IPv4 destinations stay denied while the ruleset is regenerated and a lab veth appears. The controlled Internet endpoint stays reachable. The probe holds at least ten attempts per second and records no allow.
 
-Actual: 20 regenerations, interface flap, rate 85.0 attempts/s, protected destinations denied, 203.0.113.10:80 allowed, captures empty. This is the mechanism lab, not the assembled stack.
+Actual: 20 regenerations, interface flap, rate 86.4 attempts/s, protected destinations denied, 203.0.113.10:80 allowed, captures empty. This is the mechanism lab, not the assembled stack.
 
 Commands:
 
@@ -31,8 +31,8 @@ Commands:
 
 - tc_readback: [{"interface":"fv-fh","attachment":"qdisc","objects":[{"kind":"fq_codel","handle":"2f:","parent":"1:2f"},{"kind":"fq_codel","handle":"30:","parent":"1:30"},{"kind":"htb","handle":"1:","root":true}]},{"interface":"fv-ih","attachment":"qdisc","objects":[{"kind":"fq_codel","handle":"2f:","parent":"1:2f"},{"kind":"fq_codel","handle":"30:","parent":"1:30"},{"kind":"htb","handle":"1:","root":true}]},{"interface":"fv-fh","attachment":"1:1","objects":[]},{"interface":"fv-fh","attachment":"1:2f","objects":[]},{"interface":"fv-fh","attachment":"1:30","objects":[]},{"interface":"fv-fh","attachment":"1:fffe","objects":[]},{"interface":"fv-fh","attachment":"2f:","objects":[]},{"interface":"fv-fh","attachment":"30:","objects":[]},{"interface":"fv-fh","attachment":"egress","objects":[]},{"interface":"fv-fh","attachment":"ingress","objects":[]},{"interface":"fv-fh","attachment":"root","objects":[]},{"interface":"fv-ih","attachment":"1:1","objects":[]},{"interface":"fv-ih","attachment":"1:2f","objects":[]},{"interface":"fv-ih","attachment":"1:30","objects":[]},{"interface":"fv-ih","attachment":"1:fffe","objects":[]},{"interface":"fv-ih","attachment":"2f:","objects":[]}]
 - attempts: 350
-- seconds: 4.116
-- rate_per_s: 85.03
+- seconds: 4.053
+- rate_per_s: 86.36
 - regenerations: 20
 - flap: veth fv-px 198.18.0.0/30 inside the lab container
 - internet: 203.0.113.10:80 allowed

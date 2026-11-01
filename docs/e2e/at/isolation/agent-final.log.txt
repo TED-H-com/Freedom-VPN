@@ -1,32 +1,47 @@
-time=2026-10-31T19:24:30.806Z level=INFO msg="baseline write" writer=agent cause=boot_unverified phase=begin mono_ns=58208322485348 generation=32
-time=2026-10-31T19:24:30.854Z level=INFO msg="baseline write" writer=agent cause=boot_unverified phase=end mono_ns=58208370683895 succeeded=true
-time=2026-10-31T19:24:30.866Z level=INFO msg="usage checkpoint applied"
-time=2026-10-31T19:24:30.874Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=31
-time=2026-10-31T19:24:30.880Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=31
-time=2026-10-31T19:24:30.882Z level=WARN msg="usage batch throttled" retry_after=1s
-time=2026-10-31T19:24:30.906Z level=INFO msg="baseline write" writer=agent cause=awaiting_member_grants phase=begin mono_ns=58208422984191 generation=32
-time=2026-10-31T19:24:30.937Z level=INFO msg="baseline write" writer=agent cause=awaiting_member_grants phase=end mono_ns=58208454179393 succeeded=true
-time=2026-10-31T19:24:30.941Z level=INFO msg="meter epoch closed" epoch_id=01a1936a-7481-7e18-a528-95c2b63ff3f7 reason=final_sample event_seq=0
-time=2026-10-31T19:24:30.941Z level=INFO msg="baseline write" writer=agent cause=awaiting_member_grants phase=begin mono_ns=58208457993614 generation=32
-time=2026-10-31T19:24:30.967Z level=INFO msg="baseline write" writer=agent cause=awaiting_member_grants phase=end mono_ns=58208483565887 succeeded=true
-time=2026-10-31T19:24:30.967Z level=INFO msg="usage status available"
-time=2026-10-31T19:24:30.978Z level=INFO msg="baseline write" writer=agent cause=identity_frozen phase=begin mono_ns=58208495323837 generation=32
-time=2026-10-31T19:24:31.001Z level=INFO msg="baseline write" writer=agent cause=identity_frozen phase=end mono_ns=58208517507551 succeeded=true
-time=2026-10-31T19:24:31.882Z level=WARN msg="usage upload retry" backoff=1s err="usageupload: throttled"
-time=2026-10-31T19:24:31.897Z level=INFO msg="baseline write" writer=agent cause=identity_frozen phase=begin mono_ns=58209413471989 generation=32
-time=2026-10-31T19:24:31.923Z level=INFO msg="baseline write" writer=agent cause=identity_frozen phase=end mono_ns=58209440348074 succeeded=true
-time=2026-10-31T19:24:32.038Z level=INFO msg="baseline write" writer=agent cause=identity_frozen phase=begin mono_ns=58209554952189 generation=32
-time=2026-10-31T19:24:32.070Z level=INFO msg="baseline write" writer=agent cause=identity_frozen phase=end mono_ns=58209586784246 succeeded=true
-time=2026-10-31T19:24:32.892Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=31
-time=2026-10-31T19:24:32.898Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=31
-time=2026-10-31T19:24:32.901Z level=WARN msg="usage batch throttled" retry_after=1s
-time=2026-10-31T19:24:33.040Z level=INFO msg="baseline write" writer=agent cause=identity_frozen phase=begin mono_ns=58210556823410 generation=32
-time=2026-10-31T19:24:33.072Z level=INFO msg="baseline write" writer=agent cause=identity_frozen phase=end mono_ns=58210588912542 succeeded=true
-time=2026-10-31T19:24:33.902Z level=WARN msg="usage upload retry" backoff=1s err="usageupload: throttled"
-time=2026-10-31T19:24:34.049Z level=INFO msg="baseline write" writer=agent cause=identity_frozen phase=begin mono_ns=58211565493817 generation=32
-time=2026-10-31T19:24:34.078Z level=INFO msg="baseline write" writer=agent cause=identity_frozen phase=end mono_ns=58211595289803 succeeded=true
-time=2026-10-31T19:24:34.908Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=31
-time=2026-10-31T19:24:34.914Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=31
-time=2026-10-31T19:24:34.916Z level=WARN msg="usage batch throttled" retry_after=1s
-time=2026-10-31T19:24:35.033Z level=INFO msg="baseline write" writer=agent cause=identity_frozen phase=begin mono_ns=58212549626358 generation=32
-time=2026-10-31T19:24:35.061Z level=INFO msg="baseline write" writer=agent cause=identity_frozen phase=end mono_ns=58212577950821 succeeded=true
+time=2026-10-31T22:04:58.856Z level=INFO msg="baseline write" writer=agent cause=boot_unverified phase=begin mono_ns=67836372419998 generation=31
+time=2026-10-31T22:04:58.904Z level=INFO msg="baseline write" writer=agent cause=boot_unverified phase=end mono_ns=67836421317457 succeeded=true
+time=2026-10-31T22:04:58.920Z level=INFO msg="usage checkpoint applied"
+time=2026-10-31T22:04:58.924Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=31
+time=2026-10-31T22:04:58.933Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=31
+time=2026-10-31T22:04:58.940Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=31
+time=2026-10-31T22:04:58.945Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=31
+time=2026-10-31T22:04:58.946Z level=WARN msg="usage batch throttled" retry_after=1s
+time=2026-10-31T22:04:58.968Z level=INFO msg="baseline write" writer=agent cause=safety_check_failed phase=begin mono_ns=67836484870072 generation=31
+time=2026-10-31T22:04:58.995Z level=INFO msg="baseline write" writer=agent cause=safety_check_failed phase=end mono_ns=67836511382965 succeeded=true
+time=2026-10-31T22:04:58.998Z level=INFO msg="meter epoch closed" epoch_id=01a193fd-47e5-76cd-a862-6e2f069a4801 reason=final_sample event_seq=0
+time=2026-10-31T22:04:58.998Z level=INFO msg="baseline write" writer=agent cause=safety_check_failed phase=begin mono_ns=67836514656411 generation=31
+time=2026-10-31T22:04:59.031Z level=INFO msg="baseline write" writer=agent cause=safety_check_failed phase=end mono_ns=67836547756722 succeeded=true
+time=2026-10-31T22:04:59.031Z level=INFO msg="usage status available"
+time=2026-10-31T22:04:59.044Z level=INFO msg="baseline write" writer=agent cause=identity_frozen phase=begin mono_ns=67836561132284 generation=31
+time=2026-10-31T22:04:59.071Z level=INFO msg="baseline write" writer=agent cause=identity_frozen phase=end mono_ns=67836587876160 succeeded=true
+time=2026-10-31T22:04:59.126Z level=WARN msg=apply err=TC_FOREIGN_FILTER
+time=2026-10-31T22:04:59.128Z level=INFO msg="baseline write" writer=agent cause=foreign_tc_quarantine phase=begin mono_ns=67836644548292 generation=31
+time=2026-10-31T22:04:59.156Z level=INFO msg="baseline write" writer=agent cause=foreign_tc_quarantine phase=end mono_ns=67836673219423 succeeded=false
+time=2026-10-31T22:04:59.947Z level=WARN msg="usage upload retry" backoff=1s err="usageupload: throttled"
+time=2026-10-31T22:04:59.953Z level=INFO msg="baseline write" writer=agent cause=identity_frozen phase=begin mono_ns=67837470012391 generation=31
+time=2026-10-31T22:04:59.983Z level=INFO msg="baseline write" writer=agent cause=identity_frozen phase=end mono_ns=67837499866149 succeeded=true
+time=2026-10-31T22:05:00.009Z level=INFO msg="baseline write" writer=agent cause=foreign_tc_quarantine phase=begin mono_ns=67837525964060 generation=31
+time=2026-10-31T22:05:00.086Z level=INFO msg="baseline write" writer=agent cause=foreign_tc_quarantine phase=end mono_ns=67837602375017 succeeded=true
+time=2026-10-31T22:05:00.133Z level=INFO msg="baseline write" writer=agent cause=identity_frozen phase=begin mono_ns=67837650169648 generation=31
+time=2026-10-31T22:05:00.156Z level=INFO msg="baseline write" writer=agent cause=identity_frozen phase=end mono_ns=67837673306299 succeeded=true
+time=2026-10-31T22:05:00.169Z level=INFO msg="baseline write" writer=agent cause=foreign_tc_quarantine phase=begin mono_ns=67837686357419 generation=31
+time=2026-10-31T22:05:00.192Z level=INFO msg="baseline write" writer=agent cause=foreign_tc_quarantine phase=end mono_ns=67837709265851 succeeded=true
+time=2026-10-31T22:05:00.962Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=31
+time=2026-10-31T22:05:00.967Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=31
+time=2026-10-31T22:05:00.968Z level=WARN msg="usage batch throttled" retry_after=1s
+time=2026-10-31T22:05:01.124Z level=INFO msg="baseline write" writer=agent cause=identity_frozen phase=begin mono_ns=67838640515675 generation=31
+time=2026-10-31T22:05:01.144Z level=INFO msg="baseline write" writer=agent cause=identity_frozen phase=end mono_ns=67838660456184 succeeded=true
+time=2026-10-31T22:05:01.159Z level=INFO msg="baseline write" writer=agent cause=foreign_tc_quarantine phase=begin mono_ns=67838675833836 generation=31
+time=2026-10-31T22:05:01.181Z level=INFO msg="baseline write" writer=agent cause=foreign_tc_quarantine phase=end mono_ns=67838698155065 succeeded=true
+time=2026-10-31T22:05:01.969Z level=WARN msg="usage upload retry" backoff=1s err="usageupload: throttled"
+time=2026-10-31T22:05:02.138Z level=INFO msg="baseline write" writer=agent cause=identity_frozen phase=begin mono_ns=67839654658599 generation=31
+time=2026-10-31T22:05:02.161Z level=INFO msg="baseline write" writer=agent cause=identity_frozen phase=end mono_ns=67839678158999 succeeded=true
+time=2026-10-31T22:05:02.178Z level=INFO msg="baseline write" writer=agent cause=foreign_tc_quarantine phase=begin mono_ns=67839694837966 generation=31
+time=2026-10-31T22:05:02.201Z level=INFO msg="baseline write" writer=agent cause=foreign_tc_quarantine phase=end mono_ns=67839717698293 succeeded=true
+time=2026-10-31T22:05:02.978Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=31
+time=2026-10-31T22:05:02.983Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=31
+time=2026-10-31T22:05:02.985Z level=WARN msg="usage batch throttled" retry_after=1s
+time=2026-10-31T22:05:03.125Z level=INFO msg="baseline write" writer=agent cause=identity_frozen phase=begin mono_ns=67840641563553 generation=31
+time=2026-10-31T22:05:03.139Z level=INFO msg="baseline write" writer=agent cause=identity_frozen phase=end mono_ns=67840656235116 succeeded=false
+time=2026-10-31T22:05:03.152Z level=INFO msg="baseline write" writer=agent cause=foreign_tc_quarantine phase=begin mono_ns=67840668668571 generation=31
+time=2026-10-31T22:05:03.177Z level=INFO msg="baseline write" writer=agent cause=foreign_tc_quarantine phase=end mono_ns=67840694305390 succeeded=true

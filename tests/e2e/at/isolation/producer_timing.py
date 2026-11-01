@@ -29,6 +29,91 @@ def identity(row):
     return {k: row[k] for k in ('run_id', 'boot_id', 'sequence')}
 
 
+HOST_COUNTERS = ('cpu_total_ticks', 'cpu_idle_ticks', 'cpu_iowait_ticks',
+                 'procs_running', 'procs_blocked')
+HOST_CONTENTION_RULE = ('TEST ONLY diagnostic: positive aggregate tick delta, zero idle and iowait '
+                        'tick deltas, and more than one runnable process in both samples; '
+                        'kernel aggregate, not cgroup entitlement or causal proof')
+
+
+def host_context(row):
+    """Validate the additive producer block; never borrow another Apply's host."""
+    host = row.get('host')
+    result = dict(status='unavailable', reason='host block absent', samples=host,
+                  idle_percent=None, contention='unavailable', contention_rule=HOST_CONTENTION_RULE,
+                  command_status=dict(failed_command=None, exit_code=None, signal=None))
+    if host is None:
+        return result
+    if not isinstance(host, dict) or set(host) - {'before_apply', 'after_apply', 'failed_command', 'exit_code', 'signal'}:
+        raise ValueError('invalid/unsanitized host block')
+    if 'failed_command' in host and host['failed_command'] not in ('nft', 'tc', 'other'):
+        raise ValueError('unsanitized failed command')
+    for key, lo, hi in (('exit_code', -1, 255), ('signal', 1, 64)):
+        if key in host and (type(host[key]) is not int or not lo <= host[key] <= hi):
+            raise ValueError('invalid command status: ' + key)
+    result['command_status'] = {k: host.get(k) for k in result['command_status']}
+    if row['timing']['succeeded'] and any(k in host for k in result['command_status']):
+        raise ValueError('successful Apply has failed command status')
+    samples = [host[k] for k in ('before_apply', 'after_apply')]
+    for s in samples:
+        if not isinstance(s, dict) or set(s) != {'start_ns', 'end_ns', 'ok', *HOST_COUNTERS} or type(s['ok']) is not bool:
+            raise ValueError('invalid host sample')
+        for key in ('start_ns', 'end_ns', *HOST_COUNTERS):
+            value = ns(s, key)
+            if str(value) != s[key] or value > 18446744073709551615:
+                raise ValueError('invalid host decimal: ' + key)
+        if s['ok']:
+            interval(s)
+            if ns(s, 'cpu_idle_ticks') + ns(s, 'cpu_iowait_ticks') > ns(s, 'cpu_total_ticks'):
+                raise ValueError('host CPU counters exceed total')
+    before, after = samples
+    start, end = interval(row['timing'])
+    if ((before['ok'] and ns(before, 'end_ns') > start) or
+        (after['ok'] and not end <= ns(after, 'start_ns') <= ns(after, 'end_ns') <= ns(row['anchor'], 'mono_before_ns'))):
+        raise ValueError('host samples do not bracket their Apply')
+    if not all(s['ok'] for s in samples):
+        result['reason'] = 'producer host sample unavailable'
+        return result
+    deltas = {k: ns(after, k) - ns(before, k) for k in HOST_COUNTERS[:3]}
+    if any(v < 0 for v in deltas.values()) or deltas['cpu_total_ticks'] == 0:
+        result['reason'] = 'non-monotone or zero CPU tick delta'
+        return result
+    if deltas['cpu_idle_ticks'] + deltas['cpu_iowait_ticks'] > deltas['cpu_total_ticks']:
+        raise ValueError('host CPU delta exceeds total')
+    # Float is presentation only. The diagnostic decision uses exact integers.
+    recorded = (deltas['cpu_idle_ticks'] == deltas['cpu_iowait_ticks'] == 0 and
+                all(ns(s, 'procs_running') > 1 for s in samples))
+    result.update(status='available', reason=None, tick_deltas={k: str(v) for k,v in deltas.items()},
+                  idle_percent=100*deltas['cpu_idle_ticks']/deltas['cpu_total_ticks'],
+                  contention='recorded' if recorded else 'not_established')
+    return result
+
+
+def apply_diagnostic(row):
+    t, d = row['timing'], row['timing']['deadline']
+    host = host_context(row)
+    checks = t['verifications']
+    verification = ('passed' if checks[-1]['verified'] else 'failed') if checks else 'unavailable'
+    stage = None
+    if not t['succeeded']:
+        stage = ('pre_install' if not ns(d, 'install_start_ns') else
+                 'install' if not d['install_ok'] else
+                 'release' if not d['guard_released'] else
+                 'verification' if verification == 'failed' else
+                 'post_verification' if verification == 'passed' else 'unavailable')
+    render, installed, bound = (ns(d, k) for k in ('render_start_ns', 'installed_by_ns', 'install_bound_ns'))
+    elapsed = installed-render if render and installed and bound else None
+    overrun = elapsed > bound if elapsed is not None else None
+    label = 'unavailable' if host['status'] == 'unavailable' else 'no recorded install-overrun/contention conjunction'
+    if stage == 'install' and overrun and not d['guard_released'] and host['contention'] == 'recorded':
+        label = 'fail-closed install overrun with recorded host contention'
+    return dict(host_context=host, failure_stage=stage, verification_status=verification,
+                render_to_installed_ns=str(elapsed) if elapsed is not None else None,
+                install_bound_met=not overrun if overrun is not None else None,
+                install_overrun=overrun, diagnostic_label=label,
+                cause_status='unproven' if not t['succeeded'] else 'not_applicable')
+
+
 def validate_operations(rows):
     seen, boots, spans, applies, verifiers = {}, {}, {}, [], []
     def span(name, a, b):
@@ -46,6 +131,8 @@ def validate_operations(rows):
         a, b = interval(row['anchor'], 'mono_before_ns', 'mono_after_ns')
         if not row['anchor']['wall'].endswith('Z'):
             raise ValueError('non-UTC anchor')
+        if 'host' in row and (row['source'] != 'apply' or row.get('timing', {}).get('operation') != 'apply'):
+            raise ValueError('host context outside Apply')
         if 'timing' not in row:
             kind = row['source']
             if kind in ('renewal', 'baseline'):
@@ -109,10 +196,13 @@ def validate_operations(rows):
                     span(name, x, y)
                     if not start <= x <= y <= end:
                         raise ValueError('command outside Apply')
+            render, installed = ns(d, 'render_start_ns'), ns(d, 'installed_by_ns')
+            if installed:
+                if not start <= render <= ns(d, 'install_start_ns') <= installed <= end or ns(d, 'install_bound_ns') <= 0:
+                    raise ValueError('invalid render/install bracket or bound')
+            item.update(apply_diagnostic(row))
             if d['install_ok']:
-                render, installed = ns(d, 'render_start_ns'), ns(d, 'installed_by_ns')
                 span('render_to_installed', render, installed)
-                item['install_bound_met'] = installed-render <= ns(d, 'install_bound_ns')
             if d['install_ok'] and d['guard_released']:
                 render, install, installed, release, released = [ns(d, k) for k in
                     ('render_start_ns', 'install_start_ns', 'installed_by_ns', 'release_start_ns', 'release_end_ns')]
@@ -123,10 +213,11 @@ def validate_operations(rows):
                 span('outer_guard', install, released)
                 span('inner_guard', installed, release)
                 span('completed_guard_install_command', install, installed)
+                span('completed_guard_render_to_installed', render, installed)
                 item['complete_guard'] = True
             applies.append(item)
-    if not rows or not applies or not verifiers:
-        raise ValueError('missing Apply/verifier evidence')
+    if not rows or not applies:
+        raise ValueError('missing Apply evidence')
     def distribution(values):
         ordered = sorted(values)
         return dict(count=len(values), median_ns=str(int(statistics.median(values))), worst_ns=str(max(values)),
@@ -278,6 +369,7 @@ def analyze(root):
                   clock=clock, snapshots=validated['snapshots'], runs=validated['runs'], brackets=validated['brackets'],
                   clock_after_restart=after, source_counts=validated['source_counts'],
                   producer_rows=validated['producer_rows'], failed_applies=validated['failed_applies'],
+                  apply_contexts=[{k:v for k,v in a.items() if k not in ('operation','lease')} for a in validated['applies']],
                   clock_basis='Same kernel boot, exact zero monotonic/boottime offsets to the initial namespace. Namespace inodes are retained, not assumed identical across Docker restarts or member containers.',
                   capture_scope='Source node timing retained across every process restart; clone wire bodies remain separate and do not supply source timing.',
                   failed_operations=validated['failed_operations'], recovery_double_verifiers=validated['recovery_double_verifiers'],
@@ -294,11 +386,40 @@ def analyze(root):
                               literal_zero_pre_deadline_loss=not any(p['expiry_region']=='before deadline' for p in expiry_losses)),
                   interpretation='Outer bracket is install-start through release-end; inner is installed-by through release-start. Capture reads and command overlaps do not locate the kernel commit/drop instant. All loss counts remain unchanged.')
     (root/'producer-timing-analysis.json').write_text(json.dumps(result,indent=2)+'\n')
-    compact = dict({k:v for k,v in result.items() if k not in ('producer_rows','failed_applies')}, renewal={k:v for k,v in result['renewal'].items() if k not in ('losses','actual_renewals')},
+    compact = dict({k:v for k,v in result.items() if k not in ('producer_rows','failed_applies','apply_contexts')}, renewal={k:v for k,v in result['renewal'].items() if k not in ('losses','actual_renewals')},
                    expiry={k:v for k,v in result['expiry'].items() if k not in ('losses','last_accepted_renewal')})
     print(json.dumps(compact,indent=2))
     return result
 
 
+def replay_first_attempt(root):
+    """Read the immutable attempt; write only a new, separately dated review."""
+    source = root/'history/follow-up-10-attempt-1'
+    rows = [json.loads(s) for s in (source/'producer-operations.jsonl').read_text().splitlines()]
+    v = validate_operations(rows)
+    clock = json.loads((source/'producer-clock.json').read_text())
+    packets = packet_trace(json.loads((source/'renewal-probes.json').read_text()),
+                           json.loads((source/'renewal-packets.json').read_text()), clock)
+    losses = [correlate(p, v) for p in packets if p['result'] != 'ok']
+    result = dict(run_id=json.loads((source/'AT10.json').read_text())['run_id'],
+                  review='Follow-up 11: agent-core 29 consumer replay; original archive unchanged',
+                  source='history/follow-up-10-attempt-1/producer-operations.jsonl',
+                  snapshots=v['snapshots'], source_counts=v['source_counts'], brackets=v['brackets'],
+                  failed_applies=v['failed_applies'],
+                  host_context='unavailable', cause_status='unproven',
+                  verification_rule='No verifier records means unavailable, not failed verification; baseline cause names do not supply verifier records.',
+                  renewal=dict(probes=len(packets), delivered=sum(p['result']=='ok' for p in packets),
+                               loss_count=len(losses), ingress_in_outer_guard=sum(bool(p['ingress_in_outer_guard']) for p in losses),
+                               unresolved_ingress=sum(not p['ingress_in_outer_guard'] for p in losses), losses=losses),
+                  expiry='unavailable: no current whole-node window was executed in this attempt')
+    if any(a['host_context']['status'] != 'unavailable' for a in v['applies']):
+        raise ValueError('historical replay unexpectedly contains host samples')
+    (root/'first-attempt-host-review.json').write_text(json.dumps(result, indent=2)+'\n')
+    return result
+
+
 if __name__ == '__main__':
-    analyze(Path(sys.argv[1] if len(sys.argv)>1 else 'docs/e2e/at/isolation'))
+    if sys.argv[1:] == ['--replay-first-attempt']:
+        replay_first_attempt(Path('docs/e2e/at/isolation'))
+    else:
+        analyze(Path(sys.argv[1] if len(sys.argv)>1 else 'docs/e2e/at/isolation'))

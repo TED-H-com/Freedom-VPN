@@ -418,3 +418,32 @@ There are **four routed requests**. The [current summary](summary.md) and
 [validation](validation-results.json) retain the exact assembled result and
 completed-guard distributions. The two earlier follow-up 10 attempts are
 independently archived, including their failures; no later row reclassifies them.
+
+## Follow-up 11 requests — 2026-10-31
+
+Agent-core 29 (#356) answered both follow-up 10 product/documentation requests:
+the four historical Sources links now point at the byte-identical follow-up 9
+archive; controlled CPU contention did not reproduce the install overrun.
+The 49 first-attempt failures remain `cause_status=unproven`, with host context
+**unavailable**, and all 279 renewal losses remain counted. New per-Apply host
+samples and sanitized command status are consumed by run ID / sequence. D-134
+and D-135 wording is adopted without changing packet predicates or historical
+outcomes. No historical writer is identified by a fresh successful run.
+
+### Requests to orchestrator
+
+1. **2026-10-31 — AT11, devstack and platform operators (carried).** Supply the
+   native dual-stack/member-platform routes and packet-capture matrix.
+   Mechanism tests, metadata and 6to4 results do not establish real platform
+   support. This work is outside the isolation lane and remains blocked.
+2. **2026-10-31 — AT13, acceptance and operators (carried).** Execute the full
+   continuous fault/platform matrix: agent crash, NetBird restart, OS reboot,
+   updater transition and physical arm64. Ordinary process restart, bounded
+   expiry and arm64 cross-compilation do not establish those windows. This
+   outside-scope item remains blocked independently.
+
+There are **two routed requests**. Agent-core/netlab's further command-lifecycle
+instrumentation proposal is tracked in their own assessment; it is not
+implemented by this consumer lane. The historical first-attempt install cause
+and ISO-F6-03 baseline writer remain known gaps, without a new attribution or
+a claim that those historical failures have passed.

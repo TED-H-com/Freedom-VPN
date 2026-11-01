@@ -1,0 +1,4464 @@
+{
+  "lease": {
+    "issued_at": "2026-10-31T19:21:28.112874435Z",
+    "expires_at": "2026-10-31T19:22:28.112874435Z",
+    "generation": "30",
+    "max_offline_seconds": 60,
+    "member_count": 2,
+    "source": "node-store",
+    "mono_sent_ns": "58025626424739",
+    "deadline_mono_ns": "58085626424739",
+    "anchor": {
+      "mono_ns": "58025626424739",
+      "server_unix_ns": "1793474488112874435",
+      "wall_unix_ns": "1793474488110053564",
+      "trusted": 1
+    }
+  },
+  "probes": [
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 1,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58077526860476",
+        "wall": "2026-10-31T19:22:20.010490648Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58077525424739",
+      "send": {
+        "mono_ns": "58077526185884",
+        "wall": "2026-10-31T19:22:20.009815707Z"
+      },
+      "source_port": 42001,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 2,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58077564376955",
+        "wall": "2026-10-31T19:22:20.048006627Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58077562424739",
+      "send": {
+        "mono_ns": "58077563267432",
+        "wall": "2026-10-31T19:22:20.046896811Z"
+      },
+      "source_port": 42002,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 3,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58077626618256",
+        "wall": "2026-10-31T19:22:20.110247965Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58077625424739",
+      "send": {
+        "mono_ns": "58077625759783",
+        "wall": "2026-10-31T19:22:20.109389284Z"
+      },
+      "source_port": 42003,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 4,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58077664342011",
+        "wall": "2026-10-31T19:22:20.147971773Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58077662424739",
+      "send": {
+        "mono_ns": "58077662945205",
+        "wall": "2026-10-31T19:22:20.146574996Z"
+      },
+      "source_port": 42004,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 5,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58077726937134",
+        "wall": "2026-10-31T19:22:20.210567727Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58077725424739",
+      "send": {
+        "mono_ns": "58077725592874",
+        "wall": "2026-10-31T19:22:20.209222066Z"
+      },
+      "source_port": 42005,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 6,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58077764459496",
+        "wall": "2026-10-31T19:22:20.24809357Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58077762424739",
+      "send": {
+        "mono_ns": "58077763246629",
+        "wall": "2026-10-31T19:22:20.246875988Z"
+      },
+      "source_port": 42006,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 7,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58077826961127",
+        "wall": "2026-10-31T19:22:20.310590778Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58077825424739",
+      "send": {
+        "mono_ns": "58077825854034",
+        "wall": "2026-10-31T19:22:20.309483603Z"
+      },
+      "source_port": 42007,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 8,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58077864299101",
+        "wall": "2026-10-31T19:22:20.347928544Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58077862424739",
+      "send": {
+        "mono_ns": "58077863361659",
+        "wall": "2026-10-31T19:22:20.346991114Z"
+      },
+      "source_port": 42008,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 9,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58077926231655",
+        "wall": "2026-10-31T19:22:20.409861373Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58077925424739",
+      "send": {
+        "mono_ns": "58077925573857",
+        "wall": "2026-10-31T19:22:20.409203319Z"
+      },
+      "source_port": 42009,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 10,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58077963284488",
+        "wall": "2026-10-31T19:22:20.44691412Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58077962424739",
+      "send": {
+        "mono_ns": "58077962572663",
+        "wall": "2026-10-31T19:22:20.446202032Z"
+      },
+      "source_port": 42010,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 11,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58078026343712",
+        "wall": "2026-10-31T19:22:20.509973257Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58078025424739",
+      "send": {
+        "mono_ns": "58078025518413",
+        "wall": "2026-10-31T19:22:20.509147771Z"
+      },
+      "source_port": 42011,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 12,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58078063312405",
+        "wall": "2026-10-31T19:22:20.546943022Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58078062424739",
+      "send": {
+        "mono_ns": "58078062561556",
+        "wall": "2026-10-31T19:22:20.546190932Z"
+      },
+      "source_port": 42012,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 13,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58078125970195",
+        "wall": "2026-10-31T19:22:20.609599357Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58078125424739",
+      "send": {
+        "mono_ns": "58078125577135",
+        "wall": "2026-10-31T19:22:20.609206676Z"
+      },
+      "source_port": 42013,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 14,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58078163907927",
+        "wall": "2026-10-31T19:22:20.64753785Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58078162424739",
+      "send": {
+        "mono_ns": "58078163273653",
+        "wall": "2026-10-31T19:22:20.646903552Z"
+      },
+      "source_port": 42014,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 15,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58078227049847",
+        "wall": "2026-10-31T19:22:20.710679908Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58078225424739",
+      "send": {
+        "mono_ns": "58078226190298",
+        "wall": "2026-10-31T19:22:20.709820101Z"
+      },
+      "source_port": 42015,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 16,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58078264158607",
+        "wall": "2026-10-31T19:22:20.747788517Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58078262424739",
+      "send": {
+        "mono_ns": "58078263357929",
+        "wall": "2026-10-31T19:22:20.746987335Z"
+      },
+      "source_port": 42016,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 17,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58078326962769",
+        "wall": "2026-10-31T19:22:20.810592325Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58078325424739",
+      "send": {
+        "mono_ns": "58078326436424",
+        "wall": "2026-10-31T19:22:20.810065857Z"
+      },
+      "source_port": 42017,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 18,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58078364031323",
+        "wall": "2026-10-31T19:22:20.847660526Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58078362424739",
+      "send": {
+        "mono_ns": "58078363209063",
+        "wall": "2026-10-31T19:22:20.84683835Z"
+      },
+      "source_port": 42018,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 19,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58078427567080",
+        "wall": "2026-10-31T19:22:20.91119663Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58078425424739",
+      "send": {
+        "mono_ns": "58078426336044",
+        "wall": "2026-10-31T19:22:20.909965578Z"
+      },
+      "source_port": 42019,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 20,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58078464055703",
+        "wall": "2026-10-31T19:22:20.947686368Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58078462424739",
+      "send": {
+        "mono_ns": "58078463015075",
+        "wall": "2026-10-31T19:22:20.946644605Z"
+      },
+      "source_port": 42020,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 21,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58078527255577",
+        "wall": "2026-10-31T19:22:21.010885673Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58078525424739",
+      "send": {
+        "mono_ns": "58078526364790",
+        "wall": "2026-10-31T19:22:21.009994414Z"
+      },
+      "source_port": 42021,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 22,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58078564416057",
+        "wall": "2026-10-31T19:22:21.048046169Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58078562424739",
+      "send": {
+        "mono_ns": "58078563528996",
+        "wall": "2026-10-31T19:22:21.047158736Z"
+      },
+      "source_port": 42022,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 23,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58078626341166",
+        "wall": "2026-10-31T19:22:21.109970732Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58078625424739",
+      "send": {
+        "mono_ns": "58078625779476",
+        "wall": "2026-10-31T19:22:21.109409034Z"
+      },
+      "source_port": 42023,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 24,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58078663799836",
+        "wall": "2026-10-31T19:22:21.14742914Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58078662424739",
+      "send": {
+        "mono_ns": "58078662538511",
+        "wall": "2026-10-31T19:22:21.146167654Z"
+      },
+      "source_port": 42024,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 25,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58078726756933",
+        "wall": "2026-10-31T19:22:21.210386693Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58078725424739",
+      "send": {
+        "mono_ns": "58078726055223",
+        "wall": "2026-10-31T19:22:21.209684608Z"
+      },
+      "source_port": 42025,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 26,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58078764192230",
+        "wall": "2026-10-31T19:22:21.247822261Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58078762424739",
+      "send": {
+        "mono_ns": "58078763088726",
+        "wall": "2026-10-31T19:22:21.246718262Z"
+      },
+      "source_port": 42026,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 27,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58078828666849",
+        "wall": "2026-10-31T19:22:21.312296293Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58078825424739",
+      "send": {
+        "mono_ns": "58078826477522",
+        "wall": "2026-10-31T19:22:21.310106983Z"
+      },
+      "source_port": 42027,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 28,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58078864186969",
+        "wall": "2026-10-31T19:22:21.347818367Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58078862424739",
+      "send": {
+        "mono_ns": "58078862964691",
+        "wall": "2026-10-31T19:22:21.346594079Z"
+      },
+      "source_port": 42028,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 29,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58078927013930",
+        "wall": "2026-10-31T19:22:21.410643624Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58078925424739",
+      "send": {
+        "mono_ns": "58078925567128",
+        "wall": "2026-10-31T19:22:21.409196735Z"
+      },
+      "source_port": 42029,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 30,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58078963815853",
+        "wall": "2026-10-31T19:22:21.447445661Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58078962424739",
+      "send": {
+        "mono_ns": "58078963276601",
+        "wall": "2026-10-31T19:22:21.446906157Z"
+      },
+      "source_port": 42030,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 31,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58079027665769",
+        "wall": "2026-10-31T19:22:21.5112958Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58079025424739",
+      "send": {
+        "mono_ns": "58079026144367",
+        "wall": "2026-10-31T19:22:21.509774531Z"
+      },
+      "source_port": 42031,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 32,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58079064474712",
+        "wall": "2026-10-31T19:22:21.548116002Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58079062424739",
+      "send": {
+        "mono_ns": "58079063179783",
+        "wall": "2026-10-31T19:22:21.546808905Z"
+      },
+      "source_port": 42032,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 33,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58079126391846",
+        "wall": "2026-10-31T19:22:21.610020948Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58079125424739",
+      "send": {
+        "mono_ns": "58079125747456",
+        "wall": "2026-10-31T19:22:21.609376918Z"
+      },
+      "source_port": 42033,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 34,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58079163156683",
+        "wall": "2026-10-31T19:22:21.646786889Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58079162424739",
+      "send": {
+        "mono_ns": "58079162612009",
+        "wall": "2026-10-31T19:22:21.646241053Z"
+      },
+      "source_port": 42034,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 35,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58079228741132",
+        "wall": "2026-10-31T19:22:21.712371602Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58079225424739",
+      "send": {
+        "mono_ns": "58079226435463",
+        "wall": "2026-10-31T19:22:21.71006496Z"
+      },
+      "source_port": 42035,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 36,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58079263643664",
+        "wall": "2026-10-31T19:22:21.747273136Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58079262424739",
+      "send": {
+        "mono_ns": "58079263068348",
+        "wall": "2026-10-31T19:22:21.7466979Z"
+      },
+      "source_port": 42036,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 37,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58079327109406",
+        "wall": "2026-10-31T19:22:21.810739072Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58079325424739",
+      "send": {
+        "mono_ns": "58079326130618",
+        "wall": "2026-10-31T19:22:21.809760133Z"
+      },
+      "source_port": 42037,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 38,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58079364250149",
+        "wall": "2026-10-31T19:22:21.847879877Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58079362424739",
+      "send": {
+        "mono_ns": "58079363384457",
+        "wall": "2026-10-31T19:22:21.847014246Z"
+      },
+      "source_port": 42038,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 39,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58079427224308",
+        "wall": "2026-10-31T19:22:21.910853569Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58079425424739",
+      "send": {
+        "mono_ns": "58079426555874",
+        "wall": "2026-10-31T19:22:21.910185444Z"
+      },
+      "source_port": 42039,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 40,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58079464022794",
+        "wall": "2026-10-31T19:22:21.947651998Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58079462424739",
+      "send": {
+        "mono_ns": "58079463458807",
+        "wall": "2026-10-31T19:22:21.947087827Z"
+      },
+      "source_port": 42040,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 41,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58079526936254",
+        "wall": "2026-10-31T19:22:22.010565464Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58079525424739",
+      "send": {
+        "mono_ns": "58079526290769",
+        "wall": "2026-10-31T19:22:22.009920215Z"
+      },
+      "source_port": 42041,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 42,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58079563563977",
+        "wall": "2026-10-31T19:22:22.047193527Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58079562424739",
+      "send": {
+        "mono_ns": "58079563181199",
+        "wall": "2026-10-31T19:22:22.046810816Z"
+      },
+      "source_port": 42042,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 43,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58079626738791",
+        "wall": "2026-10-31T19:22:22.110368331Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58079625424739",
+      "send": {
+        "mono_ns": "58079625851747",
+        "wall": "2026-10-31T19:22:22.109481166Z"
+      },
+      "source_port": 42043,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 44,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58079664163566",
+        "wall": "2026-10-31T19:22:22.147793171Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58079662424739",
+      "send": {
+        "mono_ns": "58079663113204",
+        "wall": "2026-10-31T19:22:22.146742774Z"
+      },
+      "source_port": 42044,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 45,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58079727117176",
+        "wall": "2026-10-31T19:22:22.210746766Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58079725424739",
+      "send": {
+        "mono_ns": "58079726486121",
+        "wall": "2026-10-31T19:22:22.21011538Z"
+      },
+      "source_port": 42045,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 46,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58079764295873",
+        "wall": "2026-10-31T19:22:22.247925189Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58079762424739",
+      "send": {
+        "mono_ns": "58079763431259",
+        "wall": "2026-10-31T19:22:22.247060608Z"
+      },
+      "source_port": 42046,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 47,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58079825965344",
+        "wall": "2026-10-31T19:22:22.309594378Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58079825424739",
+      "send": {
+        "mono_ns": "58079825536120",
+        "wall": "2026-10-31T19:22:22.309165692Z"
+      },
+      "source_port": 42047,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 48,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58079864230606",
+        "wall": "2026-10-31T19:22:22.34786093Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58079862424739",
+      "send": {
+        "mono_ns": "58079863249465",
+        "wall": "2026-10-31T19:22:22.346878957Z"
+      },
+      "source_port": 42048,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 49,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58079926904545",
+        "wall": "2026-10-31T19:22:22.410534187Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58079925424739",
+      "send": {
+        "mono_ns": "58079926558921",
+        "wall": "2026-10-31T19:22:22.410188299Z"
+      },
+      "source_port": 42049,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 50,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58079963647046",
+        "wall": "2026-10-31T19:22:22.447276605Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58079962424739",
+      "send": {
+        "mono_ns": "58079963168812",
+        "wall": "2026-10-31T19:22:22.446797858Z"
+      },
+      "source_port": 42050,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 51,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58080026542674",
+        "wall": "2026-10-31T19:22:22.510171762Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58080025424739",
+      "send": {
+        "mono_ns": "58080025907578",
+        "wall": "2026-10-31T19:22:22.50953721Z"
+      },
+      "source_port": 42051,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 52,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58080063288955",
+        "wall": "2026-10-31T19:22:22.546918029Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58080062424739",
+      "send": {
+        "mono_ns": "58080062766190",
+        "wall": "2026-10-31T19:22:22.546395691Z"
+      },
+      "source_port": 42052,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 53,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58080126884418",
+        "wall": "2026-10-31T19:22:22.610513769Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58080125424739",
+      "send": {
+        "mono_ns": "58080126493620",
+        "wall": "2026-10-31T19:22:22.610122963Z"
+      },
+      "source_port": 42053,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 54,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58080163701982",
+        "wall": "2026-10-31T19:22:22.64733129Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58080162424739",
+      "send": {
+        "mono_ns": "58080163088842",
+        "wall": "2026-10-31T19:22:22.646718182Z"
+      },
+      "source_port": 42054,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 55,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58080226847138",
+        "wall": "2026-10-31T19:22:22.710477081Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58080225424739",
+      "send": {
+        "mono_ns": "58080226020503",
+        "wall": "2026-10-31T19:22:22.709649937Z"
+      },
+      "source_port": 42055,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 56,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58080263894284",
+        "wall": "2026-10-31T19:22:22.74752486Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58080262424739",
+      "send": {
+        "mono_ns": "58080263034095",
+        "wall": "2026-10-31T19:22:22.74666345Z"
+      },
+      "source_port": 42056,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 57,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58080326756387",
+        "wall": "2026-10-31T19:22:22.810385883Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58080325424739",
+      "send": {
+        "mono_ns": "58080326152760",
+        "wall": "2026-10-31T19:22:22.809783372Z"
+      },
+      "source_port": 42057,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 58,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58080363380977",
+        "wall": "2026-10-31T19:22:22.847010514Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58080362424739",
+      "send": {
+        "mono_ns": "58080363012090",
+        "wall": "2026-10-31T19:22:22.846641325Z"
+      },
+      "source_port": 42058,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 59,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58080426070677",
+        "wall": "2026-10-31T19:22:22.909700127Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58080425424739",
+      "send": {
+        "mono_ns": "58080425607988",
+        "wall": "2026-10-31T19:22:22.90923763Z"
+      },
+      "source_port": 42059,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 60,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58080463733774",
+        "wall": "2026-10-31T19:22:22.947362889Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58080462424739",
+      "send": {
+        "mono_ns": "58080463346537",
+        "wall": "2026-10-31T19:22:22.946976158Z"
+      },
+      "source_port": 42060,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 61,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58080526541956",
+        "wall": "2026-10-31T19:22:23.010171639Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58080525424739",
+      "send": {
+        "mono_ns": "58080525936462",
+        "wall": "2026-10-31T19:22:23.009565859Z"
+      },
+      "source_port": 42061,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 62,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58080563285434",
+        "wall": "2026-10-31T19:22:23.046915124Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58080562424739",
+      "send": {
+        "mono_ns": "58080562757081",
+        "wall": "2026-10-31T19:22:23.046386438Z"
+      },
+      "source_port": 42062,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 63,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58080627073513",
+        "wall": "2026-10-31T19:22:23.110702695Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58080625424739",
+      "send": {
+        "mono_ns": "58080626535423",
+        "wall": "2026-10-31T19:22:23.110165317Z"
+      },
+      "source_port": 42063,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 64,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58080663844400",
+        "wall": "2026-10-31T19:22:23.147473801Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58080662424739",
+      "send": {
+        "mono_ns": "58080663280438",
+        "wall": "2026-10-31T19:22:23.146909799Z"
+      },
+      "source_port": 42064,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 65,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58080726311983",
+        "wall": "2026-10-31T19:22:23.209941705Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58080725424739",
+      "send": {
+        "mono_ns": "58080726113177",
+        "wall": "2026-10-31T19:22:23.209742549Z"
+      },
+      "source_port": 42065,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 66,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58080762647267",
+        "wall": "2026-10-31T19:22:23.24627649Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58080762424739",
+      "send": {
+        "mono_ns": "58080762498493",
+        "wall": "2026-10-31T19:22:23.246127579Z"
+      },
+      "source_port": 42066,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 67,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58080826227759",
+        "wall": "2026-10-31T19:22:23.30985707Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58080825424739",
+      "send": {
+        "mono_ns": "58080825909912",
+        "wall": "2026-10-31T19:22:23.309539372Z"
+      },
+      "source_port": 42067,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 68,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58080863592479",
+        "wall": "2026-10-31T19:22:23.34722167Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58080862424739",
+      "send": {
+        "mono_ns": "58080863441193",
+        "wall": "2026-10-31T19:22:23.347070461Z"
+      },
+      "source_port": 42068,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 69,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58080926091042",
+        "wall": "2026-10-31T19:22:23.409721207Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58080925424739",
+      "send": {
+        "mono_ns": "58080925845151",
+        "wall": "2026-10-31T19:22:23.409477761Z"
+      },
+      "source_port": 42069,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 70,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58080963963704",
+        "wall": "2026-10-31T19:22:23.447594005Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58080962424739",
+      "send": {
+        "mono_ns": "58080963415557",
+        "wall": "2026-10-31T19:22:23.447045039Z"
+      },
+      "source_port": 42070,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 71,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58081026951860",
+        "wall": "2026-10-31T19:22:23.510590307Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58081025424739",
+      "send": {
+        "mono_ns": "58081026323615",
+        "wall": "2026-10-31T19:22:23.509952859Z"
+      },
+      "source_port": 42071,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 72,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58081063532431",
+        "wall": "2026-10-31T19:22:23.54716307Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58081062424739",
+      "send": {
+        "mono_ns": "58081063204511",
+        "wall": "2026-10-31T19:22:23.546833774Z"
+      },
+      "source_port": 42072,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 73,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58081126247102",
+        "wall": "2026-10-31T19:22:23.609880544Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58081125424739",
+      "send": {
+        "mono_ns": "58081125828529",
+        "wall": "2026-10-31T19:22:23.609457678Z"
+      },
+      "source_port": 42073,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 74,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58081163073734",
+        "wall": "2026-10-31T19:22:23.646703716Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58081162424739",
+      "send": {
+        "mono_ns": "58081162523866",
+        "wall": "2026-10-31T19:22:23.646152879Z"
+      },
+      "source_port": 42074,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 75,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58081227391782",
+        "wall": "2026-10-31T19:22:23.711021985Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58081225424739",
+      "send": {
+        "mono_ns": "58081226338793",
+        "wall": "2026-10-31T19:22:23.709968167Z"
+      },
+      "source_port": 42075,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 76,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58081263554231",
+        "wall": "2026-10-31T19:22:23.747183514Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58081262424739",
+      "send": {
+        "mono_ns": "58081262730986",
+        "wall": "2026-10-31T19:22:23.746360076Z"
+      },
+      "source_port": 42076,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 77,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58081326417105",
+        "wall": "2026-10-31T19:22:23.810052704Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58081325424739",
+      "send": {
+        "mono_ns": "58081325817634",
+        "wall": "2026-10-31T19:22:23.809455503Z"
+      },
+      "source_port": 42077,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 78,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58081363644191",
+        "wall": "2026-10-31T19:22:23.847275576Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58081362424739",
+      "send": {
+        "mono_ns": "58081362830080",
+        "wall": "2026-10-31T19:22:23.846459084Z"
+      },
+      "source_port": 42078,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 79,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58081427327200",
+        "wall": "2026-10-31T19:22:23.910958243Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58081425424739",
+      "send": {
+        "mono_ns": "58081426095385",
+        "wall": "2026-10-31T19:22:23.909724826Z"
+      },
+      "source_port": 42079,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 80,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58081463139923",
+        "wall": "2026-10-31T19:22:23.94677322Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58081462424739",
+      "send": {
+        "mono_ns": "58081462552132",
+        "wall": "2026-10-31T19:22:23.946181618Z"
+      },
+      "source_port": 42080,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 81,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58081527908582",
+        "wall": "2026-10-31T19:22:24.011538631Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58081525424739",
+      "send": {
+        "mono_ns": "58081526501212",
+        "wall": "2026-10-31T19:22:24.0101308Z"
+      },
+      "source_port": 42081,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 82,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58081563896079",
+        "wall": "2026-10-31T19:22:24.047525855Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58081562424739",
+      "send": {
+        "mono_ns": "58081563255556",
+        "wall": "2026-10-31T19:22:24.046885032Z"
+      },
+      "source_port": 42082,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 83,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58081626938276",
+        "wall": "2026-10-31T19:22:24.110568114Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58081625424739",
+      "send": {
+        "mono_ns": "58081626206065",
+        "wall": "2026-10-31T19:22:24.109835512Z"
+      },
+      "source_port": 42083,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 84,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58081663874103",
+        "wall": "2026-10-31T19:22:24.147503972Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58081662424739",
+      "send": {
+        "mono_ns": "58081663278185",
+        "wall": "2026-10-31T19:22:24.146907325Z"
+      },
+      "source_port": 42084,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 85,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58081726558731",
+        "wall": "2026-10-31T19:22:24.210192568Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58081725424739",
+      "send": {
+        "mono_ns": "58081726170735",
+        "wall": "2026-10-31T19:22:24.209799967Z"
+      },
+      "source_port": 42085,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 86,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58081763042742",
+        "wall": "2026-10-31T19:22:24.246674416Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58081762424739",
+      "send": {
+        "mono_ns": "58081762835080",
+        "wall": "2026-10-31T19:22:24.246464151Z"
+      },
+      "source_port": 42086,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 87,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58081826687587",
+        "wall": "2026-10-31T19:22:24.310317067Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58081825424739",
+      "send": {
+        "mono_ns": "58081826391268",
+        "wall": "2026-10-31T19:22:24.310020698Z"
+      },
+      "source_port": 42087,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 88,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58081863470636",
+        "wall": "2026-10-31T19:22:24.347099834Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58081862424739",
+      "send": {
+        "mono_ns": "58081862970672",
+        "wall": "2026-10-31T19:22:24.346600405Z"
+      },
+      "source_port": 42088,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 89,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58081926673999",
+        "wall": "2026-10-31T19:22:24.410304683Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58081925424739",
+      "send": {
+        "mono_ns": "58081925757935",
+        "wall": "2026-10-31T19:22:24.409387628Z"
+      },
+      "source_port": 42089,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 90,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58081963200503",
+        "wall": "2026-10-31T19:22:24.446830757Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58081962424739",
+      "send": {
+        "mono_ns": "58081962942743",
+        "wall": "2026-10-31T19:22:24.446572362Z"
+      },
+      "source_port": 42090,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 91,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58082027410344",
+        "wall": "2026-10-31T19:22:24.511040071Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58082025424739",
+      "send": {
+        "mono_ns": "58082026642828",
+        "wall": "2026-10-31T19:22:24.510272603Z"
+      },
+      "source_port": 42091,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 92,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58082063048330",
+        "wall": "2026-10-31T19:22:24.546678399Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58082062424739",
+      "send": {
+        "mono_ns": "58082062658308",
+        "wall": "2026-10-31T19:22:24.546287672Z"
+      },
+      "source_port": 42092,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 93,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58082127111785",
+        "wall": "2026-10-31T19:22:24.610741958Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58082125424739",
+      "send": {
+        "mono_ns": "58082126298913",
+        "wall": "2026-10-31T19:22:24.609928226Z"
+      },
+      "source_port": 42093,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 94,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58082163758766",
+        "wall": "2026-10-31T19:22:24.64738986Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58082162424739",
+      "send": {
+        "mono_ns": "58082163364099",
+        "wall": "2026-10-31T19:22:24.646993534Z"
+      },
+      "source_port": 42094,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 95,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58082226582704",
+        "wall": "2026-10-31T19:22:24.710212595Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58082225424739",
+      "send": {
+        "mono_ns": "58082226035822",
+        "wall": "2026-10-31T19:22:24.709665144Z"
+      },
+      "source_port": 42095,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 96,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58082263518681",
+        "wall": "2026-10-31T19:22:24.747149292Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58082262424739",
+      "send": {
+        "mono_ns": "58082262995484",
+        "wall": "2026-10-31T19:22:24.74662493Z"
+      },
+      "source_port": 42096,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 97,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58082326581441",
+        "wall": "2026-10-31T19:22:24.810212298Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58082325424739",
+      "send": {
+        "mono_ns": "58082326063816",
+        "wall": "2026-10-31T19:22:24.809693473Z"
+      },
+      "source_port": 42097,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 98,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58082364051055",
+        "wall": "2026-10-31T19:22:24.847680407Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58082362424739",
+      "send": {
+        "mono_ns": "58082362813014",
+        "wall": "2026-10-31T19:22:24.846442946Z"
+      },
+      "source_port": 42098,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 99,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58082427043032",
+        "wall": "2026-10-31T19:22:24.910672417Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58082425424739",
+      "send": {
+        "mono_ns": "58082426336908",
+        "wall": "2026-10-31T19:22:24.909966684Z"
+      },
+      "source_port": 42099,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 100,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58082463542670",
+        "wall": "2026-10-31T19:22:24.947173241Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58082462424739",
+      "send": {
+        "mono_ns": "58082463291853",
+        "wall": "2026-10-31T19:22:24.946921389Z"
+      },
+      "source_port": 42100,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 101,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58082526402324",
+        "wall": "2026-10-31T19:22:25.010031416Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58082525424739",
+      "send": {
+        "mono_ns": "58082525828776",
+        "wall": "2026-10-31T19:22:25.009458184Z"
+      },
+      "source_port": 42101,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 102,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58082563371337",
+        "wall": "2026-10-31T19:22:25.047000559Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58082562424739",
+      "send": {
+        "mono_ns": "58082562669867",
+        "wall": "2026-10-31T19:22:25.046299677Z"
+      },
+      "source_port": 42102,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 103,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58082625820016",
+        "wall": "2026-10-31T19:22:25.109449726Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58082625424739",
+      "send": {
+        "mono_ns": "58082625582377",
+        "wall": "2026-10-31T19:22:25.109211883Z"
+      },
+      "source_port": 42103,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 104,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58082663610439",
+        "wall": "2026-10-31T19:22:25.147240828Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58082662424739",
+      "send": {
+        "mono_ns": "58082663091617",
+        "wall": "2026-10-31T19:22:25.146721374Z"
+      },
+      "source_port": 42104,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 105,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58082726638077",
+        "wall": "2026-10-31T19:22:25.210268016Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58082725424739",
+      "send": {
+        "mono_ns": "58082725880623",
+        "wall": "2026-10-31T19:22:25.209510178Z"
+      },
+      "source_port": 42105,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 106,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58082763468176",
+        "wall": "2026-10-31T19:22:25.247097292Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58082762424739",
+      "send": {
+        "mono_ns": "58082762904512",
+        "wall": "2026-10-31T19:22:25.24653392Z"
+      },
+      "source_port": 42106,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 107,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58082826543078",
+        "wall": "2026-10-31T19:22:25.310172835Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58082825424739",
+      "send": {
+        "mono_ns": "58082825873839",
+        "wall": "2026-10-31T19:22:25.309503126Z"
+      },
+      "source_port": 42107,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 108,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58082863089108",
+        "wall": "2026-10-31T19:22:25.346718336Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58082862424739",
+      "send": {
+        "mono_ns": "58082862805011",
+        "wall": "2026-10-31T19:22:25.346434673Z"
+      },
+      "source_port": 42108,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 109,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58082926971385",
+        "wall": "2026-10-31T19:22:25.410600924Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58082925424739",
+      "send": {
+        "mono_ns": "58082926397825",
+        "wall": "2026-10-31T19:22:25.41002727Z"
+      },
+      "source_port": 42109,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 110,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58082964119743",
+        "wall": "2026-10-31T19:22:25.447749161Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58082962424739",
+      "send": {
+        "mono_ns": "58082963199470",
+        "wall": "2026-10-31T19:22:25.446828757Z"
+      },
+      "source_port": 42110,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 111,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58083026671923",
+        "wall": "2026-10-31T19:22:25.510301036Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58083025424739",
+      "send": {
+        "mono_ns": "58083026402882",
+        "wall": "2026-10-31T19:22:25.51003273Z"
+      },
+      "source_port": 42111,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 112,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58083063477425",
+        "wall": "2026-10-31T19:22:25.547106434Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58083062424739",
+      "send": {
+        "mono_ns": "58083062901077",
+        "wall": "2026-10-31T19:22:25.546530545Z"
+      },
+      "source_port": 42112,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 113,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58083125968206",
+        "wall": "2026-10-31T19:22:25.609597956Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58083125424739",
+      "send": {
+        "mono_ns": "58083125721535",
+        "wall": "2026-10-31T19:22:25.609351419Z"
+      },
+      "source_port": 42113,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 114,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58083163862610",
+        "wall": "2026-10-31T19:22:25.647493939Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58083162424739",
+      "send": {
+        "mono_ns": "58083163218278",
+        "wall": "2026-10-31T19:22:25.646847657Z"
+      },
+      "source_port": 42114,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 115,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58083226759035",
+        "wall": "2026-10-31T19:22:25.71038844Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58083225424739",
+      "send": {
+        "mono_ns": "58083226109385",
+        "wall": "2026-10-31T19:22:25.709738826Z"
+      },
+      "source_port": 42115,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 116,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58083263282233",
+        "wall": "2026-10-31T19:22:25.746911668Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58083262424739",
+      "send": {
+        "mono_ns": "58083262991491",
+        "wall": "2026-10-31T19:22:25.746620862Z"
+      },
+      "source_port": 42116,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 117,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58083327467430",
+        "wall": "2026-10-31T19:22:25.811108369Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58083325424739",
+      "send": {
+        "mono_ns": "58083326552048",
+        "wall": "2026-10-31T19:22:25.810181312Z"
+      },
+      "source_port": 42117,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 118,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58083362965676",
+        "wall": "2026-10-31T19:22:25.846596306Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58083362424739",
+      "send": {
+        "mono_ns": "58083362708600",
+        "wall": "2026-10-31T19:22:25.846338247Z"
+      },
+      "source_port": 42118,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 119,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58083426835808",
+        "wall": "2026-10-31T19:22:25.910465367Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58083425424739",
+      "send": {
+        "mono_ns": "58083426236413",
+        "wall": "2026-10-31T19:22:25.909865839Z"
+      },
+      "source_port": 42119,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 120,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58083463780077",
+        "wall": "2026-10-31T19:22:25.947409328Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58083462424739",
+      "send": {
+        "mono_ns": "58083463153909",
+        "wall": "2026-10-31T19:22:25.946783236Z"
+      },
+      "source_port": 42120,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 121,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58083526416932",
+        "wall": "2026-10-31T19:22:26.010046541Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58083525424739",
+      "send": {
+        "mono_ns": "58083526034950",
+        "wall": "2026-10-31T19:22:26.009680892Z"
+      },
+      "source_port": 42121,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 122,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58083562932255",
+        "wall": "2026-10-31T19:22:26.046561707Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58083562424739",
+      "send": {
+        "mono_ns": "58083562687055",
+        "wall": "2026-10-31T19:22:26.046316715Z"
+      },
+      "source_port": 42122,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 123,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58083626473127",
+        "wall": "2026-10-31T19:22:26.110102761Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58083625424739",
+      "send": {
+        "mono_ns": "58083626165052",
+        "wall": "2026-10-31T19:22:26.109794717Z"
+      },
+      "source_port": 42123,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 124,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58083663048969",
+        "wall": "2026-10-31T19:22:26.146678097Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58083662424739",
+      "send": {
+        "mono_ns": "58083662716558",
+        "wall": "2026-10-31T19:22:26.146346024Z"
+      },
+      "source_port": 42124,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 125,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58083726729443",
+        "wall": "2026-10-31T19:22:26.210358483Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58083725424739",
+      "send": {
+        "mono_ns": "58083726250913",
+        "wall": "2026-10-31T19:22:26.209880038Z"
+      },
+      "source_port": 42125,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 126,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58083763330872",
+        "wall": "2026-10-31T19:22:26.246960125Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58083762424739",
+      "send": {
+        "mono_ns": "58083762959803",
+        "wall": "2026-10-31T19:22:26.246589379Z"
+      },
+      "source_port": 42126,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 127,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58083825897915",
+        "wall": "2026-10-31T19:22:26.30952734Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58083825424739",
+      "send": {
+        "mono_ns": "58083825540062",
+        "wall": "2026-10-31T19:22:26.309179247Z"
+      },
+      "source_port": 42127,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 128,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58083863538601",
+        "wall": "2026-10-31T19:22:26.347167888Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58083862424739",
+      "send": {
+        "mono_ns": "58083863153811",
+        "wall": "2026-10-31T19:22:26.346783213Z"
+      },
+      "source_port": 42128,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 129,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58083926045410",
+        "wall": "2026-10-31T19:22:26.409674909Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58083925424739",
+      "send": {
+        "mono_ns": "58083925832329",
+        "wall": "2026-10-31T19:22:26.409462036Z"
+      },
+      "source_port": 42129,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 130,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58083963707486",
+        "wall": "2026-10-31T19:22:26.447337856Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58083962424739",
+      "send": {
+        "mono_ns": "58083963304287",
+        "wall": "2026-10-31T19:22:26.446934006Z"
+      },
+      "source_port": 42130,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 131,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58084026619139",
+        "wall": "2026-10-31T19:22:26.510249658Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58084025424739",
+      "send": {
+        "mono_ns": "58084026086944",
+        "wall": "2026-10-31T19:22:26.509716156Z"
+      },
+      "source_port": 42131,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 132,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58084063186345",
+        "wall": "2026-10-31T19:22:26.546815886Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58084062424739",
+      "send": {
+        "mono_ns": "58084062915361",
+        "wall": "2026-10-31T19:22:26.546544513Z"
+      },
+      "source_port": 42132,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 133,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58084129251706",
+        "wall": "2026-10-31T19:22:26.612881311Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58084125424739",
+      "send": {
+        "mono_ns": "58084126450329",
+        "wall": "2026-10-31T19:22:26.610079787Z"
+      },
+      "source_port": 42133,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 134,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58084163773221",
+        "wall": "2026-10-31T19:22:26.647402369Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58084162424739",
+      "send": {
+        "mono_ns": "58084163516259",
+        "wall": "2026-10-31T19:22:26.647148352Z"
+      },
+      "source_port": 42134,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 135,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58084226571405",
+        "wall": "2026-10-31T19:22:26.710201387Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58084225424739",
+      "send": {
+        "mono_ns": "58084226107948",
+        "wall": "2026-10-31T19:22:26.709737494Z"
+      },
+      "source_port": 42135,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 136,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58084263159705",
+        "wall": "2026-10-31T19:22:26.746790279Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58084262424739",
+      "send": {
+        "mono_ns": "58084262786814",
+        "wall": "2026-10-31T19:22:26.746416148Z"
+      },
+      "source_port": 42136,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 137,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58084326785914",
+        "wall": "2026-10-31T19:22:26.810416176Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58084325424739",
+      "send": {
+        "mono_ns": "58084326448504",
+        "wall": "2026-10-31T19:22:26.810078218Z"
+      },
+      "source_port": 42137,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 138,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58084363544115",
+        "wall": "2026-10-31T19:22:26.847174Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58084362424739",
+      "send": {
+        "mono_ns": "58084363054514",
+        "wall": "2026-10-31T19:22:26.846683978Z"
+      },
+      "source_port": 42138,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 139,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58084426195234",
+        "wall": "2026-10-31T19:22:26.909824399Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58084425424739",
+      "send": {
+        "mono_ns": "58084425823827",
+        "wall": "2026-10-31T19:22:26.909453511Z"
+      },
+      "source_port": 42139,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 140,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58084463780287",
+        "wall": "2026-10-31T19:22:26.947409794Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58084462424739",
+      "send": {
+        "mono_ns": "58084463424634",
+        "wall": "2026-10-31T19:22:26.947054033Z"
+      },
+      "source_port": 42140,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 141,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58084526534695",
+        "wall": "2026-10-31T19:22:27.010163984Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58084525424739",
+      "send": {
+        "mono_ns": "58084526008494",
+        "wall": "2026-10-31T19:22:27.009637886Z"
+      },
+      "source_port": 42141,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 142,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58084563287184",
+        "wall": "2026-10-31T19:22:27.046916842Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58084562424739",
+      "send": {
+        "mono_ns": "58084562796316",
+        "wall": "2026-10-31T19:22:27.046426131Z"
+      },
+      "source_port": 42142,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 143,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58084625938477",
+        "wall": "2026-10-31T19:22:27.109578471Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58084625424739",
+      "send": {
+        "mono_ns": "58084625507847",
+        "wall": "2026-10-31T19:22:27.109137186Z"
+      },
+      "source_port": 42143,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 144,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58084663630266",
+        "wall": "2026-10-31T19:22:27.147260863Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58084662424739",
+      "send": {
+        "mono_ns": "58084663211188",
+        "wall": "2026-10-31T19:22:27.146840637Z"
+      },
+      "source_port": 42144,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 145,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58084726574493",
+        "wall": "2026-10-31T19:22:27.210204557Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58084725424739",
+      "send": {
+        "mono_ns": "58084725887558",
+        "wall": "2026-10-31T19:22:27.209516806Z"
+      },
+      "source_port": 42145,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 146,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58084763104968",
+        "wall": "2026-10-31T19:22:27.246734103Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58084762424739",
+      "send": {
+        "mono_ns": "58084762762216",
+        "wall": "2026-10-31T19:22:27.246391309Z"
+      },
+      "source_port": 42146,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 147,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58084826622358",
+        "wall": "2026-10-31T19:22:27.310251509Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58084825424739",
+      "send": {
+        "mono_ns": "58084826346111",
+        "wall": "2026-10-31T19:22:27.309975584Z"
+      },
+      "source_port": 42147,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 148,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58084863246225",
+        "wall": "2026-10-31T19:22:27.346876606Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58084862424739",
+      "send": {
+        "mono_ns": "58084862840468",
+        "wall": "2026-10-31T19:22:27.346469868Z"
+      },
+      "source_port": 42148,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 149,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58084926746380",
+        "wall": "2026-10-31T19:22:27.410375445Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58084925424739",
+      "send": {
+        "mono_ns": "58084926505858",
+        "wall": "2026-10-31T19:22:27.410135263Z"
+      },
+      "source_port": 42149,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 150,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58084963104400",
+        "wall": "2026-10-31T19:22:27.446738412Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58084962424739",
+      "send": {
+        "mono_ns": "58084962961336",
+        "wall": "2026-10-31T19:22:27.446590765Z"
+      },
+      "source_port": 42150,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 151,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58085028221889",
+        "wall": "2026-10-31T19:22:27.511852535Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58085025424739",
+      "send": {
+        "mono_ns": "58085026371171",
+        "wall": "2026-10-31T19:22:27.510000709Z"
+      },
+      "source_port": 42151,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 152,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58085063780645",
+        "wall": "2026-10-31T19:22:27.547410392Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58085062424739",
+      "send": {
+        "mono_ns": "58085063512290",
+        "wall": "2026-10-31T19:22:27.547141677Z"
+      },
+      "source_port": 42152,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 153,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58085126551195",
+        "wall": "2026-10-31T19:22:27.610180737Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58085125424739",
+      "send": {
+        "mono_ns": "58085126142170",
+        "wall": "2026-10-31T19:22:27.609772499Z"
+      },
+      "source_port": 42153,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 154,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58085164322521",
+        "wall": "2026-10-31T19:22:27.647952128Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58085162424739",
+      "send": {
+        "mono_ns": "58085162797949",
+        "wall": "2026-10-31T19:22:27.64642732Z"
+      },
+      "source_port": 42154,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 155,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58085225801752",
+        "wall": "2026-10-31T19:22:27.709431144Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58085225424739",
+      "send": {
+        "mono_ns": "58085225553981",
+        "wall": "2026-10-31T19:22:27.709183379Z"
+      },
+      "source_port": 42155,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 156,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58085263231005",
+        "wall": "2026-10-31T19:22:27.746860572Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58085262424739",
+      "send": {
+        "mono_ns": "58085262979924",
+        "wall": "2026-10-31T19:22:27.74660904Z"
+      },
+      "source_port": 42156,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 157,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58085326883171",
+        "wall": "2026-10-31T19:22:27.810512785Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58085325424739",
+      "send": {
+        "mono_ns": "58085326480594",
+        "wall": "2026-10-31T19:22:27.810110101Z"
+      },
+      "source_port": 42157,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 158,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58085364413807",
+        "wall": "2026-10-31T19:22:27.848045491Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58085362424739",
+      "send": {
+        "mono_ns": "58085363132455",
+        "wall": "2026-10-31T19:22:27.846779574Z"
+      },
+      "source_port": 42158,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 159,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58085426344012",
+        "wall": "2026-10-31T19:22:27.909975721Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58085425424739",
+      "send": {
+        "mono_ns": "58085425822981",
+        "wall": "2026-10-31T19:22:27.90945268Z"
+      },
+      "source_port": 42159,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 160,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58085462964326",
+        "wall": "2026-10-31T19:22:27.946594602Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58085462424739",
+      "send": {
+        "mono_ns": "58085462563358",
+        "wall": "2026-10-31T19:22:27.946193023Z"
+      },
+      "source_port": 42160,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 161,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58085526456820",
+        "wall": "2026-10-31T19:22:28.010085794Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "58085525424739",
+      "send": {
+        "mono_ns": "58085526200472",
+        "wall": "2026-10-31T19:22:28.009829639Z"
+      },
+      "source_port": 42161,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 162,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58085643301624",
+        "wall": "2026-10-31T19:22:28.126932935Z"
+      },
+      "result": "timeout",
+      "scheduled_mono_ns": "58085562424739",
+      "send": {
+        "mono_ns": "58085562688781",
+        "wall": "2026-10-31T19:22:28.046318253Z"
+      },
+      "source_port": 42162,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 163,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58085706808426",
+        "wall": "2026-10-31T19:22:28.190440987Z"
+      },
+      "result": "timeout",
+      "scheduled_mono_ns": "58085625424739",
+      "send": {
+        "mono_ns": "58085625989658",
+        "wall": "2026-10-31T19:22:28.109619706Z"
+      },
+      "source_port": 42163,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 164,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58085743237782",
+        "wall": "2026-10-31T19:22:28.226868975Z"
+      },
+      "result": "timeout",
+      "scheduled_mono_ns": "58085662424739",
+      "send": {
+        "mono_ns": "58085662514109",
+        "wall": "2026-10-31T19:22:28.146143354Z"
+      },
+      "source_port": 42164,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 165,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58085806645601",
+        "wall": "2026-10-31T19:22:28.290279241Z"
+      },
+      "result": "timeout",
+      "scheduled_mono_ns": "58085725424739",
+      "send": {
+        "mono_ns": "58085726037994",
+        "wall": "2026-10-31T19:22:28.20966784Z"
+      },
+      "source_port": 42165,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 166,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58085843985203",
+        "wall": "2026-10-31T19:22:28.32761722Z"
+      },
+      "result": "timeout",
+      "scheduled_mono_ns": "58085762424739",
+      "send": {
+        "mono_ns": "58085763410225",
+        "wall": "2026-10-31T19:22:28.247039537Z"
+      },
+      "source_port": 42166,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 167,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58085906278657",
+        "wall": "2026-10-31T19:22:28.389910474Z"
+      },
+      "result": "timeout",
+      "scheduled_mono_ns": "58085825424739",
+      "send": {
+        "mono_ns": "58085825804255",
+        "wall": "2026-10-31T19:22:28.309433712Z"
+      },
+      "source_port": 42167,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 168,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58085943701161",
+        "wall": "2026-10-31T19:22:28.427333087Z"
+      },
+      "result": "timeout",
+      "scheduled_mono_ns": "58085862424739",
+      "send": {
+        "mono_ns": "58085863093799",
+        "wall": "2026-10-31T19:22:28.346722883Z"
+      },
+      "source_port": 42168,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 169,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58086007082607",
+        "wall": "2026-10-31T19:22:28.490715662Z"
+      },
+      "result": "timeout",
+      "scheduled_mono_ns": "58085925424739",
+      "send": {
+        "mono_ns": "58085926448328",
+        "wall": "2026-10-31T19:22:28.410078032Z"
+      },
+      "source_port": 42169,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 170,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58086043471450",
+        "wall": "2026-10-31T19:22:28.52710345Z"
+      },
+      "result": "timeout",
+      "scheduled_mono_ns": "58085962424739",
+      "send": {
+        "mono_ns": "58085962908090",
+        "wall": "2026-10-31T19:22:28.446537399Z"
+      },
+      "source_port": 42170,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 171,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58086106947660",
+        "wall": "2026-10-31T19:22:28.590579652Z"
+      },
+      "result": "timeout",
+      "scheduled_mono_ns": "58086025424739",
+      "send": {
+        "mono_ns": "58086026272532",
+        "wall": "2026-10-31T19:22:28.509902027Z"
+      },
+      "source_port": 42171,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 172,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58086143446441",
+        "wall": "2026-10-31T19:22:28.627078402Z"
+      },
+      "result": "timeout",
+      "scheduled_mono_ns": "58086062424739",
+      "send": {
+        "mono_ns": "58086062645130",
+        "wall": "2026-10-31T19:22:28.546274634Z"
+      },
+      "source_port": 42172,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 173,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58086206845601",
+        "wall": "2026-10-31T19:22:28.690480764Z"
+      },
+      "result": "timeout",
+      "scheduled_mono_ns": "58086125424739",
+      "send": {
+        "mono_ns": "58086126115877",
+        "wall": "2026-10-31T19:22:28.609745121Z"
+      },
+      "source_port": 42173,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 174,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58086243637686",
+        "wall": "2026-10-31T19:22:28.727269722Z"
+      },
+      "result": "timeout",
+      "scheduled_mono_ns": "58086162424739",
+      "send": {
+        "mono_ns": "58086162636885",
+        "wall": "2026-10-31T19:22:28.64626639Z"
+      },
+      "source_port": 42174,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 175,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58086306107565",
+        "wall": "2026-10-31T19:22:28.789755321Z"
+      },
+      "result": "timeout",
+      "scheduled_mono_ns": "58086225424739",
+      "send": {
+        "mono_ns": "58086226082743",
+        "wall": "2026-10-31T19:22:28.709712311Z"
+      },
+      "source_port": 42175,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 176,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58086343351336",
+        "wall": "2026-10-31T19:22:28.826983392Z"
+      },
+      "result": "timeout",
+      "scheduled_mono_ns": "58086262424739",
+      "send": {
+        "mono_ns": "58086262873452",
+        "wall": "2026-10-31T19:22:28.746503063Z"
+      },
+      "source_port": 42176,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 177,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58086406821302",
+        "wall": "2026-10-31T19:22:28.890454743Z"
+      },
+      "result": "timeout",
+      "scheduled_mono_ns": "58086325424739",
+      "send": {
+        "mono_ns": "58086326321775",
+        "wall": "2026-10-31T19:22:28.809951227Z"
+      },
+      "source_port": 42177,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 178,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58086444219609",
+        "wall": "2026-10-31T19:22:28.927850479Z"
+      },
+      "result": "timeout",
+      "scheduled_mono_ns": "58086362424739",
+      "send": {
+        "mono_ns": "58086363554382",
+        "wall": "2026-10-31T19:22:28.847183757Z"
+      },
+      "source_port": 42178,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 179,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58086506593731",
+        "wall": "2026-10-31T19:22:28.990225227Z"
+      },
+      "result": "timeout",
+      "scheduled_mono_ns": "58086425424739",
+      "send": {
+        "mono_ns": "58086426054891",
+        "wall": "2026-10-31T19:22:28.909684369Z"
+      },
+      "source_port": 42179,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 180,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58086543991789",
+        "wall": "2026-10-31T19:22:29.027622165Z"
+      },
+      "result": "timeout",
+      "scheduled_mono_ns": "58086462424739",
+      "send": {
+        "mono_ns": "58086463410194",
+        "wall": "2026-10-31T19:22:28.947039557Z"
+      },
+      "source_port": 42180,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 181,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58086606346033",
+        "wall": "2026-10-31T19:22:29.089979273Z"
+      },
+      "result": "timeout",
+      "scheduled_mono_ns": "58086525424739",
+      "send": {
+        "mono_ns": "58086525744791",
+        "wall": "2026-10-31T19:22:29.009373998Z"
+      },
+      "source_port": 42181,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 182,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58086643722285",
+        "wall": "2026-10-31T19:22:29.127353603Z"
+      },
+      "result": "timeout",
+      "scheduled_mono_ns": "58086562424739",
+      "send": {
+        "mono_ns": "58086563088917",
+        "wall": "2026-10-31T19:22:29.04671803Z"
+      },
+      "source_port": 42182,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 183,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58086707161374",
+        "wall": "2026-10-31T19:22:29.190792159Z"
+      },
+      "result": "timeout",
+      "scheduled_mono_ns": "58086625424739",
+      "send": {
+        "mono_ns": "58086626525148",
+        "wall": "2026-10-31T19:22:29.110155823Z"
+      },
+      "source_port": 42183,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 184,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58086743759379",
+        "wall": "2026-10-31T19:22:29.22739035Z"
+      },
+      "result": "timeout",
+      "scheduled_mono_ns": "58086662424739",
+      "send": {
+        "mono_ns": "58086662922929",
+        "wall": "2026-10-31T19:22:29.146552172Z"
+      },
+      "source_port": 42184,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 185,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58086807127622",
+        "wall": "2026-10-31T19:22:29.290759985Z"
+      },
+      "result": "timeout",
+      "scheduled_mono_ns": "58086725424739",
+      "send": {
+        "mono_ns": "58086726408713",
+        "wall": "2026-10-31T19:22:29.210038231Z"
+      },
+      "source_port": 42185,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 186,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58086843424564",
+        "wall": "2026-10-31T19:22:29.327054767Z"
+      },
+      "result": "timeout",
+      "scheduled_mono_ns": "58086762424739",
+      "send": {
+        "mono_ns": "58086762954352",
+        "wall": "2026-10-31T19:22:29.246583727Z"
+      },
+      "source_port": 42186,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 187,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58086906821320",
+        "wall": "2026-10-31T19:22:29.390453762Z"
+      },
+      "result": "timeout",
+      "scheduled_mono_ns": "58086825424739",
+      "send": {
+        "mono_ns": "58086826283738",
+        "wall": "2026-10-31T19:22:29.309912837Z"
+      },
+      "source_port": 42187,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 188,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58086943224756",
+        "wall": "2026-10-31T19:22:29.426854802Z"
+      },
+      "result": "timeout",
+      "scheduled_mono_ns": "58086862424739",
+      "send": {
+        "mono_ns": "58086862633260",
+        "wall": "2026-10-31T19:22:29.3462626Z"
+      },
+      "source_port": 42188,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 189,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58087006751179",
+        "wall": "2026-10-31T19:22:29.490384622Z"
+      },
+      "result": "timeout",
+      "scheduled_mono_ns": "58086925424739",
+      "send": {
+        "mono_ns": "58086926060093",
+        "wall": "2026-10-31T19:22:29.409689454Z"
+      },
+      "source_port": 42189,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 190,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58087044276420",
+        "wall": "2026-10-31T19:22:29.527907424Z"
+      },
+      "result": "timeout",
+      "scheduled_mono_ns": "58086962424739",
+      "send": {
+        "mono_ns": "58086963451764",
+        "wall": "2026-10-31T19:22:29.447081478Z"
+      },
+      "source_port": 42190,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 191,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58087106631350",
+        "wall": "2026-10-31T19:22:29.59026264Z"
+      },
+      "result": "timeout",
+      "scheduled_mono_ns": "58087025424739",
+      "send": {
+        "mono_ns": "58087025927432",
+        "wall": "2026-10-31T19:22:29.509556646Z"
+      },
+      "source_port": 42191,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 192,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58087144081832",
+        "wall": "2026-10-31T19:22:29.627713208Z"
+      },
+      "result": "timeout",
+      "scheduled_mono_ns": "58087062424739",
+      "send": {
+        "mono_ns": "58087063461247",
+        "wall": "2026-10-31T19:22:29.547090488Z"
+      },
+      "source_port": 42192,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 193,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58087206601946",
+        "wall": "2026-10-31T19:22:29.69023197Z"
+      },
+      "result": "timeout",
+      "scheduled_mono_ns": "58087125424739",
+      "send": {
+        "mono_ns": "58087125871607",
+        "wall": "2026-10-31T19:22:29.609501575Z"
+      },
+      "source_port": 42193,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 194,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58087244341486",
+        "wall": "2026-10-31T19:22:29.727973271Z"
+      },
+      "result": "timeout",
+      "scheduled_mono_ns": "58087162424739",
+      "send": {
+        "mono_ns": "58087163288479",
+        "wall": "2026-10-31T19:22:29.646918435Z"
+      },
+      "source_port": 42194,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 195,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58087305991218",
+        "wall": "2026-10-31T19:22:29.789644579Z"
+      },
+      "result": "timeout",
+      "scheduled_mono_ns": "58087225424739",
+      "send": {
+        "mono_ns": "58087225814614",
+        "wall": "2026-10-31T19:22:29.709443794Z"
+      },
+      "source_port": 42195,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 196,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58087344478528",
+        "wall": "2026-10-31T19:22:29.828108434Z"
+      },
+      "result": "timeout",
+      "scheduled_mono_ns": "58087262424739",
+      "send": {
+        "mono_ns": "58087263516195",
+        "wall": "2026-10-31T19:22:29.747145738Z"
+      },
+      "source_port": 42196,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 197,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58087407024990",
+        "wall": "2026-10-31T19:22:29.890659653Z"
+      },
+      "result": "timeout",
+      "scheduled_mono_ns": "58087325424739",
+      "send": {
+        "mono_ns": "58087326181543",
+        "wall": "2026-10-31T19:22:29.809810786Z"
+      },
+      "source_port": 42197,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 198,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58087443537428",
+        "wall": "2026-10-31T19:22:29.927169923Z"
+      },
+      "result": "timeout",
+      "scheduled_mono_ns": "58087362424739",
+      "send": {
+        "mono_ns": "58087362752498",
+        "wall": "2026-10-31T19:22:29.846381886Z"
+      },
+      "source_port": 42198,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 199,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58087506843260",
+        "wall": "2026-10-31T19:22:29.990474421Z"
+      },
+      "result": "timeout",
+      "scheduled_mono_ns": "58087425424739",
+      "send": {
+        "mono_ns": "58087426204336",
+        "wall": "2026-10-31T19:22:29.909833801Z"
+      },
+      "source_port": 42199,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 200,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58087543574651",
+        "wall": "2026-10-31T19:22:30.027205034Z"
+      },
+      "result": "timeout",
+      "scheduled_mono_ns": "58087462424739",
+      "send": {
+        "mono_ns": "58087462684824",
+        "wall": "2026-10-31T19:22:29.946313924Z"
+      },
+      "source_port": 42200,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 201,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "58087606934007",
+        "wall": "2026-10-31T19:22:30.09056396Z"
+      },
+      "result": "timeout",
+      "scheduled_mono_ns": "58087525424739",
+      "send": {
+        "mono_ns": "58087526220933",
+        "wall": "2026-10-31T19:22:30.009850332Z"
+      },
+      "source_port": 42201,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    },
+    {
+      "deadline_mono_ns": "58085626424739",
+      "packet_id": 202,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "58087643091775",
+        "wall": "2026-10-31T19:22:30.126723777Z"
+      },
+      "result": "timeout",
+      "scheduled_mono_ns": "58087562424739",
+      "send": {
+        "mono_ns": "58087562792495",
+        "wall": "2026-10-31T19:22:30.046421543Z"
+      },
+      "source_port": 42202,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535067]"
+      }
+    }
+  ]
+}
