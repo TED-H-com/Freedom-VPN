@@ -74,7 +74,7 @@ func TestCommittedFixtureEvidence_ValidAndHygieneClean(t *testing.T) {
 			return err
 		}
 		if d.IsDir() {
-			if strings.HasPrefix(filepath.Base(filepath.Dir(path)), "2026-") && d.Name() != "followup16" && d.Name() != "followup17" && d.Name() != "followup18" && d.Name() != "followup19" && d.Name() != "followup20" && d.Name() != "followup21" && d.Name() != "followup22" && d.Name() != "followup23" {
+			if strings.HasPrefix(filepath.Base(filepath.Dir(path)), "2026-") && d.Name() != "followup16" && d.Name() != "followup17" && d.Name() != "followup18" && d.Name() != "followup19" && d.Name() != "followup20" && d.Name() != "followup21" && d.Name() != "followup22" && d.Name() != "followup23" && d.Name() != "followup24" {
 				return filepath.SkipDir
 			}
 			return nil
@@ -86,7 +86,10 @@ func TestCommittedFixtureEvidence_ValidAndHygieneClean(t *testing.T) {
 		if err != nil {
 			return err
 		}
-		if filepath.Ext(path) == ".jsonl" && (strings.Contains(path, "/followup22/") || strings.Contains(path, "/followup23/")) {
+		if filepath.Ext(path) == ".jsonl" && (strings.Contains(path, "/followup22/") || strings.Contains(path, "/followup23/") || strings.Contains(path, "/followup24/")) {
+			if len(raw) == 0 && emptyCaptureCertified(path) {
+				return nil
+			}
 			for _, line := range strings.Split(strings.TrimSpace(string(raw)), "\n") {
 				var header map[string]json.RawMessage
 				if json.Unmarshal([]byte(line), &header) != nil || header["packet"] == nil || header["timestamp"] == nil || header["header_error"] != nil {
@@ -99,7 +102,7 @@ func TestCommittedFixtureEvidence_ValidAndHygieneClean(t *testing.T) {
 				}
 			}
 		}
-		if filepath.Ext(path) == ".json" && filepath.Base(path) == "analysis.json" && (strings.Contains(path, "/followup22/") || strings.Contains(path, "/followup23/")) {
+		if filepath.Ext(path) == ".json" && filepath.Base(path) == "analysis.json" && (strings.Contains(path, "/followup22/") || strings.Contains(path, "/followup23/") || strings.Contains(path, "/followup24/")) {
 			var a struct {
 				Schema string            `json:"schema"`
 				Rows   []json.RawMessage `json:"rows"`
@@ -132,4 +135,44 @@ func TestCommittedFixtureEvidence_ValidAndHygieneClean(t *testing.T) {
 	if records == 0 {
 		t.Fatal("no fixture records scanned")
 	}
+}
+
+// A stopped zero-packet capture is valid evidence, including an attempt that
+// failed before its first request. Require its original capture receipt;
+// arbitrary empty JSONL files must not silently pass hygiene.
+func emptyCaptureCertified(path string) bool {
+	role := strings.Split(filepath.Base(path), ".")[0]
+	id := filepath.Base(filepath.Dir(path))
+	root := filepath.Dir(filepath.Dir(filepath.Dir(path)))
+	raw, err := os.ReadFile(filepath.Join(root, id+".json"))
+	if err != nil {
+		return false
+	}
+	var record Record
+	if json.Unmarshal(raw, &record) != nil {
+		return false
+	}
+	for _, o := range record.Observations {
+		if o.Name != "capture" {
+			continue
+		}
+		var capture struct {
+			Points map[string]struct {
+				Captured int  `json:"captured"`
+				Drops    int  `json:"kernel_drops"`
+				OK       bool `json:"statistics_ok"`
+				Stopped  bool `json:"process_stopped"`
+				Receipt  struct {
+					Bytes string `json:"bytes"`
+					SHA   string `json:"sha256"`
+				} `json:"private_pcap_receipt"`
+			} `json:"points"`
+		}
+		if json.Unmarshal([]byte(o.Detail), &capture) != nil {
+			return false
+		}
+		point, ok := capture.Points[role]
+		return ok && point.Captured == 0 && point.Drops == 0 && point.OK && point.Stopped && point.Receipt.Bytes == "24" && len(point.Receipt.SHA) == 64
+	}
+	return false
 }
