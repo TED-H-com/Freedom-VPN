@@ -1,62 +1,62 @@
 {
-  "run_id": "56d20530-8042-4d0c-8156-de5a47ce8b61",
-  "applies": 980,
+  "run_id": "0b9e4510-776f-4c51-9e66-500404ce9f7e",
+  "applies": 950,
   "counts": {
-    "applies_with_available": 980,
-    "records": 55164,
-    "started": 55164,
-    "ok": 55157,
-    "exit_available": 55164,
-    "signal_available": 55164,
-    "cpu_available": 55164,
-    "switches_available": 55164,
+    "applies_with_available": 950,
+    "records": 53520,
+    "started": 53520,
+    "ok": 53513,
+    "exit_available": 53520,
+    "signal_available": 53520,
+    "cpu_available": 53520,
+    "switches_available": 53520,
     "child_start_exact": 0,
     "cancel_observed": 0,
     "before_host_ancestors_available": 0,
     "after_host_ancestors_available": 0
   },
   "phases": {
-    "prepare": 26474,
-    "shape": 979,
-    "install": 979,
-    "release": 979,
-    "verify": 25736,
+    "prepare": 25688,
+    "shape": 949,
+    "install": 949,
+    "release": 949,
+    "verify": 24968,
     "revoke": 10,
     "quarantine": 7
   },
   "resource_sampling_omissions": {
-    "before:install_bound": 979,
-    "after:install_bound": 979
+    "before:install_bound": 949,
+    "after:install_bound": 949
   },
   "failed_commands": [
     {
-      "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+      "run_id": "ad581ee6-a2ec-4765-aac9-3b6fb56dffdf",
       "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-      "sequence": "3800",
+      "sequence": "3804",
       "index": 41,
       "record": {
         "kind": "conntrack",
         "phase": "revoke",
         "context_deadline": {
           "before": {
-            "ns": "118603170215948",
+            "ns": "128811043720954",
             "available": true
           },
           "after": {
-            "ns": "118603170216240",
+            "ns": "128811043721226",
             "available": true
           }
         },
         "start_attempt": {
-          "ns": "118593893857595",
+          "ns": "128801322302644",
           "available": true
         },
         "start_return": {
-          "ns": "118593894042775",
+          "ns": "128801322439301",
           "available": true
         },
         "child_started_by": {
-          "ns": "118593894042775",
+          "ns": "128801322439301",
           "available": true
         },
         "child_start_exact": {
@@ -68,7 +68,7 @@
           "available": false
         },
         "wait_return": {
-          "ns": "118593896840883",
+          "ns": "128801324790284",
           "available": true
         },
         "context_before": "none",
@@ -82,18 +82,18 @@
         "signal": 0,
         "cpu_available": true,
         "user_cpu_ns": "0",
-        "system_cpu_ns": "2919000",
+        "system_cpu_ns": "2317000",
         "switches_available": true,
-        "voluntary_switches": "0",
-        "involuntary_switches": "1",
+        "voluntary_switches": "1",
+        "involuntary_switches": "0",
         "before": {
           "bracket": {
             "before": {
-              "ns": "118593893801706",
+              "ns": "128801322259530",
               "available": true
             },
             "after": {
-              "ns": "118593893857331",
+              "ns": "128801322302395",
               "available": true
             }
           },
@@ -113,11 +113,11 @@
               },
               "cpu_stat": {
                 "available": true,
-                "value": "usage_usec 134326782\nuser_usec 45397542\nsystem_usec 88929239\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                "value": "usage_usec 136664346\nuser_usec 45930286\nsystem_usec 90734060\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
               },
               "cpu_pressure": {
                 "available": true,
-                "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=335405\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=309149"
+                "value": "some avg10=0.00 avg60=0.02 avg300=0.00 total=413426\nfull avg10=0.00 avg60=0.01 avg300=0.00 total=353212"
               }
             }
           ]
@@ -125,11 +125,11 @@
         "after": {
           "bracket": {
             "before": {
-              "ns": "118593896841468",
+              "ns": "128801324791032",
               "available": true
             },
             "after": {
-              "ns": "118593896932405",
+              "ns": "128801324860707",
               "available": true
             }
           },
@@ -149,11 +149,11 @@
               },
               "cpu_stat": {
                 "available": true,
-                "value": "usage_usec 134330077\nuser_usec 45397633\nsystem_usec 88932443\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                "value": "usage_usec 136669734\nuser_usec 45931750\nsystem_usec 90737983\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
               },
               "cpu_pressure": {
                 "available": true,
-                "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=335415\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=309159"
+                "value": "some avg10=0.00 avg60=0.02 avg300=0.00 total=413431\nfull avg10=0.00 avg60=0.01 avg300=0.00 total=353218"
               }
             }
           ]
@@ -161,33 +161,33 @@
       }
     },
     {
-      "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+      "run_id": "ad581ee6-a2ec-4765-aac9-3b6fb56dffdf",
       "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-      "sequence": "4200",
+      "sequence": "4188",
       "index": 45,
       "record": {
         "kind": "conntrack",
         "phase": "revoke",
         "context_deadline": {
           "before": {
-            "ns": "118652365606198",
+            "ns": "128858231126182",
             "available": true
           },
           "after": {
-            "ns": "118652365606589",
+            "ns": "128858231126606",
             "available": true
           }
         },
         "start_attempt": {
-          "ns": "118642636518390",
+          "ns": "128848520706951",
           "available": true
         },
         "start_return": {
-          "ns": "118642636719385",
+          "ns": "128848520854252",
           "available": true
         },
         "child_started_by": {
-          "ns": "118642636719385",
+          "ns": "128848520854252",
           "available": true
         },
         "child_start_exact": {
@@ -199,7 +199,7 @@
           "available": false
         },
         "wait_return": {
-          "ns": "118642639473398",
+          "ns": "128848523429010",
           "available": true
         },
         "context_before": "none",
@@ -212,19 +212,19 @@
         "signal_available": true,
         "signal": 0,
         "cpu_available": true,
-        "user_cpu_ns": "0",
-        "system_cpu_ns": "2779000",
+        "user_cpu_ns": "889000",
+        "system_cpu_ns": "1779000",
         "switches_available": true,
         "voluntary_switches": "1",
         "involuntary_switches": "0",
         "before": {
           "bracket": {
             "before": {
-              "ns": "118642636458277",
+              "ns": "128848520635962",
               "available": true
             },
             "after": {
-              "ns": "118642636518035",
+              "ns": "128848520706690",
               "available": true
             }
           },
@@ -244,11 +244,11 @@
               },
               "cpu_stat": {
                 "available": true,
-                "value": "usage_usec 147841605\nuser_usec 50016751\nsystem_usec 97824854\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                "value": "usage_usec 149598581\nuser_usec 50310117\nsystem_usec 99288463\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
               },
               "cpu_pressure": {
                 "available": true,
-                "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=384905\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=343126"
+                "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=440681\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=380313"
               }
             }
           ]
@@ -256,11 +256,11 @@
         "after": {
           "bracket": {
             "before": {
-              "ns": "118642639475342",
+              "ns": "128848523429786",
               "available": true
             },
             "after": {
-              "ns": "118642639593280",
+              "ns": "128848523539723",
               "available": true
             }
           },
@@ -280,11 +280,11 @@
               },
               "cpu_stat": {
                 "available": true,
-                "value": "usage_usec 147844829\nuser_usec 50017341\nsystem_usec 97827487\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                "value": "usage_usec 149604510\nuser_usec 50311086\nsystem_usec 99293424\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
               },
               "cpu_pressure": {
                 "available": true,
-                "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=384906\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=343127"
+                "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=440682\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=380314"
               }
             }
           ]
@@ -292,33 +292,33 @@
       }
     },
     {
-      "run_id": "665f4c6c-2768-45d5-98c3-ca4ddecb185a",
+      "run_id": "f66edc9d-3695-45db-970b-215da6a1a01d",
       "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-      "sequence": "1484",
-      "index": 44,
+      "sequence": "1488",
+      "index": 60,
       "record": {
         "kind": "conntrack",
         "phase": "revoke",
         "context_deadline": {
           "before": {
-            "ns": "118916112703641",
+            "ns": "129112049110776",
             "available": true
           },
           "after": {
-            "ns": "118916112703893",
+            "ns": "129112049111008",
             "available": true
           }
         },
         "start_attempt": {
-          "ns": "118911210247694",
+          "ns": "129107166176861",
           "available": true
         },
         "start_return": {
-          "ns": "118911210396114",
+          "ns": "129107166288374",
           "available": true
         },
         "child_started_by": {
-          "ns": "118911210396114",
+          "ns": "129107166288374",
           "available": true
         },
         "child_start_exact": {
@@ -330,7 +330,7 @@
           "available": false
         },
         "wait_return": {
-          "ns": "118911213532288",
+          "ns": "129107168977476",
           "available": true
         },
         "context_before": "none",
@@ -344,18 +344,18 @@
         "signal": 0,
         "cpu_available": true,
         "user_cpu_ns": "0",
-        "system_cpu_ns": "3154000",
+        "system_cpu_ns": "2633000",
         "switches_available": true,
         "voluntary_switches": "1",
         "involuntary_switches": "0",
         "before": {
           "bracket": {
             "before": {
-              "ns": "118911210190036",
+              "ns": "129107166122950",
               "available": true
             },
             "after": {
-              "ns": "118911210247480",
+              "ns": "129107166176638",
               "available": true
             }
           },
@@ -375,11 +375,11 @@
               },
               "cpu_stat": {
                 "available": true,
-                "value": "usage_usec 53603861\nuser_usec 18254273\nsystem_usec 35349588\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                "value": "usage_usec 53842807\nuser_usec 18293840\nsystem_usec 35548966\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
               },
               "cpu_pressure": {
                 "available": true,
-                "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=94722\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=92974"
+                "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=138762\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=132012"
               }
             }
           ]
@@ -387,11 +387,11 @@
         "after": {
           "bracket": {
             "before": {
-              "ns": "118911213532932",
+              "ns": "129107168978281",
               "available": true
             },
             "after": {
-              "ns": "118911213633442",
+              "ns": "129107169068120",
               "available": true
             }
           },
@@ -411,11 +411,11 @@
               },
               "cpu_stat": {
                 "available": true,
-                "value": "usage_usec 53607394\nuser_usec 18254415\nsystem_usec 35352979\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                "value": "usage_usec 53845744\nuser_usec 18293840\nsystem_usec 35551903\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
               },
               "cpu_pressure": {
                 "available": true,
-                "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=94723\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=92975"
+                "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=138763\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=132013"
               }
             }
           ]
@@ -423,33 +423,33 @@
       }
     },
     {
-      "run_id": "665f4c6c-2768-45d5-98c3-ca4ddecb185a",
+      "run_id": "f66edc9d-3695-45db-970b-215da6a1a01d",
       "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-      "sequence": "1484",
-      "index": 45,
+      "sequence": "1488",
+      "index": 61,
       "record": {
         "kind": "conntrack",
         "phase": "revoke",
         "context_deadline": {
           "before": {
-            "ns": "118916112703592",
+            "ns": "129112049110760",
             "available": true
           },
           "after": {
-            "ns": "118916112703900",
+            "ns": "129112049111025",
             "available": true
           }
         },
         "start_attempt": {
-          "ns": "118911213713672",
+          "ns": "129107169136870",
           "available": true
         },
         "start_return": {
-          "ns": "118911213869131",
+          "ns": "129107169418240",
           "available": true
         },
         "child_started_by": {
-          "ns": "118911213869131",
+          "ns": "129107169418240",
           "available": true
         },
         "child_start_exact": {
@@ -461,7 +461,7 @@
           "available": false
         },
         "wait_return": {
-          "ns": "118911216657267",
+          "ns": "129107171743818",
           "available": true
         },
         "context_before": "none",
@@ -475,18 +475,18 @@
         "signal": 0,
         "cpu_available": true,
         "user_cpu_ns": "0",
-        "system_cpu_ns": "2806000",
+        "system_cpu_ns": "2465000",
         "switches_available": true,
         "voluntary_switches": "1",
         "involuntary_switches": "0",
         "before": {
           "bracket": {
             "before": {
-              "ns": "118911213656544",
+              "ns": "129107169082962",
               "available": true
             },
             "after": {
-              "ns": "118911213713419",
+              "ns": "129107169136643",
               "available": true
             }
           },
@@ -506,11 +506,11 @@
               },
               "cpu_stat": {
                 "available": true,
-                "value": "usage_usec 53607407\nuser_usec 18254419\nsystem_usec 35352987\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                "value": "usage_usec 53845754\nuser_usec 18293840\nsystem_usec 35551913\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
               },
               "cpu_pressure": {
                 "available": true,
-                "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=94723\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=92975"
+                "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=138763\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=132013"
               }
             }
           ]
@@ -518,11 +518,11 @@
         "after": {
           "bracket": {
             "before": {
-              "ns": "118911216657764",
+              "ns": "129107171744731",
               "available": true
             },
             "after": {
-              "ns": "118911216740462",
+              "ns": "129107171834897",
               "available": true
             }
           },
@@ -542,11 +542,11 @@
               },
               "cpu_stat": {
                 "available": true,
-                "value": "usage_usec 53610561\nuser_usec 18254466\nsystem_usec 35356094\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                "value": "usage_usec 53848469\nuser_usec 18293840\nsystem_usec 35554629\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
               },
               "cpu_pressure": {
                 "available": true,
-                "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=94724\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=92976"
+                "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=138835\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=132085"
               }
             }
           ]
@@ -554,164 +554,33 @@
       }
     },
     {
-      "run_id": "665f4c6c-2768-45d5-98c3-ca4ddecb185a",
+      "run_id": "f66edc9d-3695-45db-970b-215da6a1a01d",
       "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-      "sequence": "2541",
-      "index": 73,
-      "record": {
-        "kind": "conntrack",
-        "phase": "revoke",
-        "context_deadline": {
-          "before": {
-            "ns": "119127182325643",
-            "available": true
-          },
-          "after": {
-            "ns": "119127182326010",
-            "available": true
-          }
-        },
-        "start_attempt": {
-          "ns": "119117331979926",
-          "available": true
-        },
-        "start_return": {
-          "ns": "119117332283193",
-          "available": true
-        },
-        "child_started_by": {
-          "ns": "119117332283193",
-          "available": true
-        },
-        "child_start_exact": {
-          "ns": "0",
-          "available": false
-        },
-        "cancel_observed": {
-          "ns": "0",
-          "available": false
-        },
-        "wait_return": {
-          "ns": "119117335171319",
-          "available": true
-        },
-        "context_before": "none",
-        "context_after": "none",
-        "context_at_cancel": "unavailable",
-        "started": true,
-        "ok": false,
-        "exit_available": true,
-        "exit_code": 1,
-        "signal_available": true,
-        "signal": 0,
-        "cpu_available": true,
-        "user_cpu_ns": "0",
-        "system_cpu_ns": "3035000",
-        "switches_available": true,
-        "voluntary_switches": "1",
-        "involuntary_switches": "0",
-        "before": {
-          "bracket": {
-            "before": {
-              "ns": "119117331919604",
-              "available": true
-            },
-            "after": {
-              "ns": "119117331979573",
-              "available": true
-            }
-          },
-          "cgroup_v2_available": true,
-          "visible_ancestors_complete": true,
-          "host_ancestors_available": false,
-          "cgroups": [
-            {
-              "depth": 0,
-              "cpu_max": {
-                "available": true,
-                "value": "max 100000"
-              },
-              "cpu_weight": {
-                "available": true,
-                "value": "100"
-              },
-              "cpu_stat": {
-                "available": true,
-                "value": "usage_usec 104133392\nuser_usec 36518628\nsystem_usec 67614763\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
-              },
-              "cpu_pressure": {
-                "available": true,
-                "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=187997\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=184658"
-              }
-            }
-          ]
-        },
-        "after": {
-          "bracket": {
-            "before": {
-              "ns": "119117335171821",
-              "available": true
-            },
-            "after": {
-              "ns": "119117335255453",
-              "available": true
-            }
-          },
-          "cgroup_v2_available": true,
-          "visible_ancestors_complete": true,
-          "host_ancestors_available": false,
-          "cgroups": [
-            {
-              "depth": 0,
-              "cpu_max": {
-                "available": true,
-                "value": "max 100000"
-              },
-              "cpu_weight": {
-                "available": true,
-                "value": "100"
-              },
-              "cpu_stat": {
-                "available": true,
-                "value": "usage_usec 104137101\nuser_usec 36518628\nsystem_usec 67618472\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
-              },
-              "cpu_pressure": {
-                "available": true,
-                "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=188065\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=184726"
-              }
-            }
-          ]
-        }
-      }
-    },
-    {
-      "run_id": "665f4c6c-2768-45d5-98c3-ca4ddecb185a",
-      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-      "sequence": "2541",
+      "sequence": "2527",
       "index": 74,
       "record": {
         "kind": "conntrack",
         "phase": "revoke",
         "context_deadline": {
           "before": {
-            "ns": "119127182325734",
+            "ns": "129321523467803",
             "available": true
           },
           "after": {
-            "ns": "119127182326007",
+            "ns": "129321523468233",
             "available": true
           }
         },
         "start_attempt": {
-          "ns": "119117335340394",
+          "ns": "129311682824123",
           "available": true
         },
         "start_return": {
-          "ns": "119117335595395",
+          "ns": "129311682974787",
           "available": true
         },
         "child_started_by": {
-          "ns": "119117335595395",
+          "ns": "129311682974787",
           "available": true
         },
         "child_start_exact": {
@@ -723,7 +592,7 @@
           "available": false
         },
         "wait_return": {
-          "ns": "119117338309807",
+          "ns": "129311685365408",
           "available": true
         },
         "context_before": "none",
@@ -737,18 +606,18 @@
         "signal": 0,
         "cpu_available": true,
         "user_cpu_ns": "0",
-        "system_cpu_ns": "2866000",
+        "system_cpu_ns": "2489000",
         "switches_available": true,
         "voluntary_switches": "0",
         "involuntary_switches": "0",
         "before": {
           "bracket": {
             "before": {
-              "ns": "119117335277035",
+              "ns": "129311682618600",
               "available": true
             },
             "after": {
-              "ns": "119117335340168",
+              "ns": "129311682823308",
               "available": true
             }
           },
@@ -768,11 +637,11 @@
               },
               "cpu_stat": {
                 "available": true,
-                "value": "usage_usec 104137136\nuser_usec 36518628\nsystem_usec 67618507\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                "value": "usage_usec 103446205\nuser_usec 35355712\nsystem_usec 68090493\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
               },
               "cpu_pressure": {
                 "available": true,
-                "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=188065\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=184726"
+                "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=254410\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=246081"
               }
             }
           ]
@@ -780,11 +649,11 @@
         "after": {
           "bracket": {
             "before": {
-              "ns": "119117338310810",
+              "ns": "129311685365989",
               "available": true
             },
             "after": {
-              "ns": "119117338419222",
+              "ns": "129311685456700",
               "available": true
             }
           },
@@ -804,11 +673,11 @@
               },
               "cpu_stat": {
                 "available": true,
-                "value": "usage_usec 104140337\nuser_usec 36518628\nsystem_usec 67621709\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                "value": "usage_usec 103449008\nuser_usec 35355712\nsystem_usec 68093295\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
               },
               "cpu_pressure": {
                 "available": true,
-                "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=188164\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=184826"
+                "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=254411\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=246082"
               }
             }
           ]
@@ -816,33 +685,33 @@
       }
     },
     {
-      "run_id": "665f4c6c-2768-45d5-98c3-ca4ddecb185a",
+      "run_id": "f66edc9d-3695-45db-970b-215da6a1a01d",
       "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-      "sequence": "2541",
-      "index": 76,
+      "sequence": "2527",
+      "index": 75,
       "record": {
         "kind": "conntrack",
         "phase": "revoke",
         "context_deadline": {
           "before": {
-            "ns": "119127182325711",
+            "ns": "129321523467685",
             "available": true
           },
           "after": {
-            "ns": "119127182326031",
+            "ns": "129321523468216",
             "available": true
           }
         },
         "start_attempt": {
-          "ns": "119117341494823",
+          "ns": "129311685535623",
           "available": true
         },
         "start_return": {
-          "ns": "119117341669232",
+          "ns": "129311685721625",
           "available": true
         },
         "child_started_by": {
-          "ns": "119117341669232",
+          "ns": "129311685721625",
           "available": true
         },
         "child_start_exact": {
@@ -854,7 +723,7 @@
           "available": false
         },
         "wait_return": {
-          "ns": "119117344146014",
+          "ns": "129311688045466",
           "available": true
         },
         "context_before": "none",
@@ -868,18 +737,18 @@
         "signal": 0,
         "cpu_available": true,
         "user_cpu_ns": "0",
-        "system_cpu_ns": "2602000",
+        "system_cpu_ns": "2460000",
         "switches_available": true,
-        "voluntary_switches": "1",
+        "voluntary_switches": "0",
         "involuntary_switches": "0",
         "before": {
           "bracket": {
             "before": {
-              "ns": "119117341430556",
+              "ns": "129311685479321",
               "available": true
             },
             "after": {
-              "ns": "119117341494453",
+              "ns": "129311685535247",
               "available": true
             }
           },
@@ -899,11 +768,11 @@
               },
               "cpu_stat": {
                 "available": true,
-                "value": "usage_usec 104143409\nuser_usec 36518628\nsystem_usec 67624780\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                "value": "usage_usec 103449030\nuser_usec 35355712\nsystem_usec 68093317\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
               },
               "cpu_pressure": {
                 "available": true,
-                "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=188165\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=184827"
+                "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=254411\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=246082"
               }
             }
           ]
@@ -911,11 +780,11 @@
         "after": {
           "bracket": {
             "before": {
-              "ns": "119117344146512",
+              "ns": "129311688047151",
               "available": true
             },
             "after": {
-              "ns": "119117344227024",
+              "ns": "129311688148628",
               "available": true
             }
           },
@@ -935,11 +804,142 @@
               },
               "cpu_stat": {
                 "available": true,
-                "value": "usage_usec 104146396\nuser_usec 36518628\nsystem_usec 67627767\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                "value": "usage_usec 103451873\nuser_usec 35356237\nsystem_usec 68095635\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
               },
               "cpu_pressure": {
                 "available": true,
-                "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=188167\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=184828"
+                "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=254412\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=246083"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "run_id": "f66edc9d-3695-45db-970b-215da6a1a01d",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "2527",
+      "index": 76,
+      "record": {
+        "kind": "conntrack",
+        "phase": "revoke",
+        "context_deadline": {
+          "before": {
+            "ns": "129321523467883",
+            "available": true
+          },
+          "after": {
+            "ns": "129321523468196",
+            "available": true
+          }
+        },
+        "start_attempt": {
+          "ns": "129311688225064",
+          "available": true
+        },
+        "start_return": {
+          "ns": "129311688377349",
+          "available": true
+        },
+        "child_started_by": {
+          "ns": "129311688377349",
+          "available": true
+        },
+        "child_start_exact": {
+          "ns": "0",
+          "available": false
+        },
+        "cancel_observed": {
+          "ns": "0",
+          "available": false
+        },
+        "wait_return": {
+          "ns": "129311690496349",
+          "available": true
+        },
+        "context_before": "none",
+        "context_after": "none",
+        "context_at_cancel": "unavailable",
+        "started": true,
+        "ok": false,
+        "exit_available": true,
+        "exit_code": 1,
+        "signal_available": true,
+        "signal": 0,
+        "cpu_available": true,
+        "user_cpu_ns": "0",
+        "system_cpu_ns": "2221000",
+        "switches_available": true,
+        "voluntary_switches": "0",
+        "involuntary_switches": "0",
+        "before": {
+          "bracket": {
+            "before": {
+              "ns": "129311688162523",
+              "available": true
+            },
+            "after": {
+              "ns": "129311688224681",
+              "available": true
+            }
+          },
+          "cgroup_v2_available": true,
+          "visible_ancestors_complete": true,
+          "host_ancestors_available": false,
+          "cgroups": [
+            {
+              "depth": 0,
+              "cpu_max": {
+                "available": true,
+                "value": "max 100000"
+              },
+              "cpu_weight": {
+                "available": true,
+                "value": "100"
+              },
+              "cpu_stat": {
+                "available": true,
+                "value": "usage_usec 103451889\nuser_usec 35356243\nsystem_usec 68095645\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+              },
+              "cpu_pressure": {
+                "available": true,
+                "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=254412\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=246083"
+              }
+            }
+          ]
+        },
+        "after": {
+          "bracket": {
+            "before": {
+              "ns": "129311690496883",
+              "available": true
+            },
+            "after": {
+              "ns": "129311690587170",
+              "available": true
+            }
+          },
+          "cgroup_v2_available": true,
+          "visible_ancestors_complete": true,
+          "host_ancestors_available": false,
+          "cgroups": [
+            {
+              "depth": 0,
+              "cpu_max": {
+                "available": true,
+                "value": "max 100000"
+              },
+              "cpu_weight": {
+                "available": true,
+                "value": "100"
+              },
+              "cpu_stat": {
+                "available": true,
+                "value": "usage_usec 103454485\nuser_usec 35356437\nsystem_usec 68098047\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+              },
+              "cpu_pressure": {
+                "available": true,
+                "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=254414\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=246085"
               }
             }
           ]

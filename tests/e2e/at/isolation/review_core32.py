@@ -1,5 +1,6 @@
 """Read-only wire/stop review of agent-core 32 in one assembled run."""
 import json
+from evidence_io import read_json
 from pathlib import Path
 import re
 from candidate_evidence import wall_ns
@@ -47,7 +48,7 @@ def hold_reports(transactions):
 
 
 def review(root):
-    read=lambda name:json.loads((root/name).read_text())
+    read=lambda name:read_json(root/name)
     transactions=read('receiver-capture.json')['transactions']
     holds=hold_reports(transactions)
     stops=[]
@@ -62,7 +63,7 @@ def review(root):
             lease_id_before=row['before']['lease_id'],lease_id_after=row['after']['lease_id'],
             receiver_completions_during_signal_to_exit=during,no_control_io_after_cancel='not observable here: Step cancellation timestamp and agent-side POST completion are not exported; proxy completion alone cannot prove it'))
     result=dict(run_id=read('AT10.json')['run_id'],hold=holds,terminal_process_stops=stops,
-        cooperative_bound_ns='13000000000',stored_lease_scope='Survival does not establish adoption or current serving eligibility.',
+        cooperative_bound_ns='15000000000',stored_lease_scope='Survival does not establish adoption or current serving eligibility.',
         container_lifecycle='container-lifecycle-events.json; distinct from directly signalled agent process exits',
         baseline_brackets='policy-missing-analysis.json: baseline to next successful Apply, every loss counted, later recovery required')
     (root/'agent-core32-regression.json').write_text(json.dumps(result,indent=2)+'\n')

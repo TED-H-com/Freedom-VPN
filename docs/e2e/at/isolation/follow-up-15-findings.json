@@ -1,0 +1,24 @@
+{
+  "run_id": "0b9e4510-776f-4c51-9e66-500404ce9f7e",
+  "status": "unqualified: one retained interleaving",
+  "measured_consumer": "9031ebd4044059db25ea4ea7a397b87e6d6c6aa5",
+  "unchanged_evaluator_passed": true,
+  "schedule_qualified": false,
+  "interleavings": [
+    {
+      "positive_packet": 171,
+      "next_packet": 172,
+      "positive_egress_ns": "129256794179117",
+      "next_ingress_ns": "129256794175296"
+    }
+  ],
+  "measured_spacing_ns": "600000",
+  "post_run_schedule_correction": {
+    "formula": "ceil_0.1ms(max(0.5ms, latency_spread + 2*max_transit + 0.1ms))",
+    "would_choose_ns_from_this_calibration": "4300000",
+    "minimum_ingress_gap_if_latency_stays_in_calibration_range_ns": "624302",
+    "maximum_calibration_transit_ns": "221923",
+    "validation": "build/lint only; no second assembled run; future capture must independently qualify"
+  },
+  "historical_isolation_F14_01": "Run 56d20530 stays failed, distinct from members F14-01. No retry waiver; its four outside-guard renewal losses stay counted."
+}
