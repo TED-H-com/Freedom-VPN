@@ -1,7 +1,10 @@
 package e2e
 
 import (
+	"bytes"
+	"compress/gzip"
 	"encoding/json"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -85,6 +88,26 @@ func TestCommittedFixtureEvidence_ValidAndHygieneClean(t *testing.T) {
 		raw, err := os.ReadFile(path)
 		if err != nil {
 			return err
+		}
+		// Follow-up 27 keeps large captures losslessly compressed. Scan the
+		// original bytes under their logical extension, never compressed noise.
+		if strings.Contains(path, "/followup27/") && strings.HasSuffix(path, ".gz") {
+			reader, err := gzip.NewReader(bytes.NewReader(raw))
+			if err != nil {
+				return err
+			}
+			raw, err = io.ReadAll(io.LimitReader(reader, (256<<20)+1))
+			closeErr := reader.Close()
+			if err != nil {
+				return err
+			}
+			if closeErr != nil {
+				return closeErr
+			}
+			if len(raw) > 256<<20 {
+				t.Fatalf("oversized compressed capture: %s", path)
+			}
+			path = strings.TrimSuffix(path, ".gz")
 		}
 		if filepath.Ext(path) == ".jsonl" && (strings.Contains(path, "/followup22/") || strings.Contains(path, "/followup23/") || strings.Contains(path, "/followup24/") || strings.Contains(path, "/followup25/") || strings.Contains(path, "/followup26/") || strings.Contains(path, "/followup27/")) {
 			if len(raw) == 0 && emptyCaptureCertified(path) {

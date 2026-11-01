@@ -1,9 +1,14 @@
 """TEST ONLY checks for loss accounting and content-free stream decoding."""
 import struct
+import json
+from pathlib import Path
+import tempfile
 import unittest
 
 from analyze_followup27 import interval, sequence_ranges, handshake_groups
 from decode_capture import decode_ip
+from archive_followup27 import archive
+from followup27_io import read, INDEX
 
 
 class Followup27Analysis(unittest.TestCase):
@@ -39,6 +44,32 @@ class Followup27Analysis(unittest.TestCase):
         groups = handshake_groups({'member':[p], 'node':[dict(p,packet=2)], 'origin':[]})
         self.assertEqual(len(groups),1)
         self.assertEqual({h['role'] for h in groups[0]['hops']},{'member','node'})
+
+    def test_lossless_archive_rejects_tampering_and_document_indexes(self):
+        with tempfile.TemporaryDirectory() as scratch:
+            run=Path(scratch)/'followup27'/'test-only-run'
+            run.mkdir(parents=True)
+            (run/'measurement.json').write_text(json.dumps(dict(id='measurement',run_id='test-only-run',status='pass',source_commit='0'*40)))
+            raw=b'Status: fail\n'+b'TEST ONLY\n'*110000
+            path=run/'capture.md'
+            path.write_bytes(raw)
+            archive(run)
+            self.assertTrue(path.read_text().startswith(INDEX))
+            self.assertIn('**fail**',path.read_text())
+            with self.assertRaisesRegex(AssertionError,'document index'):read(path)
+            archived=path.with_suffix('.md.gz')
+            self.assertEqual(read(archived),raw)
+            saved=archived.read_bytes()
+            archived.write_bytes(saved+b'changed')
+            with self.assertRaisesRegex(AssertionError,'compressed receipt'):read(archived)
+            archived.write_bytes(saved)
+            manifest=run/'archive.json'
+            doc=json.loads(manifest.read_text())
+            entries=json.loads(doc['observations'][0]['detail'])
+            entries['files'][0]['original']['sha256']='0'*64
+            doc['observations'][0]['detail']=json.dumps(entries)
+            manifest.write_text(json.dumps(doc))
+            with self.assertRaisesRegex(AssertionError,'original receipt'):read(archived)
 
 
 if __name__=='__main__':

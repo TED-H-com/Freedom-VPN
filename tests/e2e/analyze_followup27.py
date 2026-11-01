@@ -12,6 +12,7 @@ from analyze_kernel_capture import publish
 from analyze_native_capture import bound, offsets, wall_ns
 from decode_kernel_trace import decode as trace_decode
 from decode_native_debug import decode as debug_decode
+from followup27_io import read
 
 
 def sequence_ranges(values):
@@ -43,7 +44,7 @@ def handshake_groups(packets):
                 continue
             key = wg['message_sha256']
             item = groups.setdefault(key, dict(wireguard=wg, hops=[]))
-            item['hops'].append(dict(role=role, **{k:p.get(k) for k in
+            item['hops'].append(dict(role=role, source_loopback=wg.get('source_loopback'), destination_loopback=wg.get('destination_loopback'), **{k:p.get(k) for k in
                 ('packet','timestamp','mono_lower_ns','mono_upper_ns','interface','packet_type','ip_version','src','dst','udp')}))
     return sorted(groups.values(), key=lambda g:min(stamp(h) for h in g['hops']))
 
@@ -51,7 +52,7 @@ def handshake_groups(packets):
 def main(run, private):
     destination = run/'measurement.json'
     assert not destination.exists(), 'immutable measurement already exists'
-    source = json.loads((run/'native-session.json').read_text())
+    source = json.loads(read(run/'native-session.json'))
     n = notes(source)
     capture = json.loads(n['capture'])
     decoded = json.loads(n['decode'])
@@ -61,7 +62,7 @@ def main(run, private):
         p = capture['points'][role]
         verify_file(private/'native-session'/(role+'.pcap'),p['private_pcap_receipt'])
         verified += 1
-        rows = [json.loads(line) for line in (run/'headers/native-session'/(role+'.headers.jsonl')).read_text().splitlines()]
+        rows = [json.loads(line) for line in read(run/'headers/native-session'/(role+'.headers.jsonl')).splitlines()]
         complete = p['statistics_ok'] and p['process_stopped'] and p['kernel_drops']==0 and p['captured']==decode['records']==len(rows) and decode['header_errors']==0 and decode['snap_truncated_records']==0 and decode['file_complete']
         checks[role] = dict(complete=complete, captured=p['captured'], kernel_drops=p['kernel_drops'], header_errors=decode['header_errors'], truncations=decode['snap_truncated_records'])
         assert complete, f'{role}: incomplete capture; retain original instead of attributing absence'
@@ -92,7 +93,7 @@ def main(run, private):
         member_inits[i]['since_previous_initiation_ns']=str(stamp(member_inits[i]['first'])-stamp(member_inits[i-1]['first']))
 
     stream_path = run/'member-stream.json'
-    stream_record = json.loads(stream_path.read_text()) if stream_path.exists() else None
+    stream_record = json.loads(read(stream_path)) if stream_path.exists() or stream_path.with_suffix('.json.gz').exists() else None
     sends = json.loads(notes(stream_record).get('sends','[]')) if stream_record else []
     stream_packets = {role:defaultdict(list) for role in packets}
     for role,rows in packets.items():
