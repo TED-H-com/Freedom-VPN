@@ -1,0 +1,679 @@
+{
+  "restarts-main-run2": {
+    "samples": [
+      {
+        "label": "preflight-0",
+        "start_ns": "106201987685080",
+        "end_ns": "106232012528533",
+        "vmstat": "procs -----------memory---------- ---swap-- -----io---- -system-- -------cpu-------\n r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st gu\n 1  6  43316 7463564 9841844 154620324    0    0  5381 29020 37356   34  8  3 79 11  0  0\n 1  6  43316 7560520 9841844 154620364    0    0     0  1983 61870 129137  6  2 81 12  0  0\n 2 12  43316 7571548 9841844 154622536    0    0     0  5562 57020 116331  6  1 81 12  0  0\n 1  9  43316 7800256 9841844 154626304    0    0     2   893 58299 118723  5  1 81 12  0  0\n 2  9  43316 7749840 9841844 154629292    0    0   148 19210 62834 129801  8  2 80 11  0  0\n 2  9  43316 8000220 9841844 154631636    0    0     0   395 93423 198612 10  4 76 10  0  0\n 1  9  43316 8009820 9841844 154633812    0    0     0 14904 63559 132460  7  2 80 12  0  0\n",
+        "loadavg": "9.93 10.18 10.37 2/3895 909656",
+        "r_max": 2,
+        "idle_min": 76,
+        "suite_groups_before": 1,
+        "suite_groups_after": 1,
+        "quiet": false,
+        "suites_before_matches": 1,
+        "suites_before_sha256": "7fbe4f7f5d8e85a88b5aff3cf68ceb001eb978e305525e4160adb6cdd73059c2",
+        "suites_after_matches": 1,
+        "suites_after_sha256": "7fbe4f7f5d8e85a88b5aff3cf68ceb001eb978e305525e4160adb6cdd73059c2"
+      },
+      {
+        "label": "postflight",
+        "start_ns": "106393093471653",
+        "end_ns": "106423118511370",
+        "vmstat": "procs -----------memory---------- ---swap-- -----io---- -system-- -------cpu-------\n r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st gu\n 1  6  43316 7772468 9843920 154930652    0    0  5384 28977 37425   34  8  3 79 11  0  0\n 4  6  43316 7998348 9843920 154947956    0    0     8  1828 55553 207064  6  2 79 12  0  0\n 2  6  43316 7371128 9843920 154900800    0    0    11 19605 56344 295751 12  5 72 11  0  0\n 1  9  43316 7459448 9843920 154902464    0    0    11   226 56625 342658 10  5 73 11  0  0\n 1 11  43316 7552492 9843920 154905572    0    0    11  3636 56641 118738  6  1 80 12  0  0\n 1  7  43316 7871124 9843920 154906048    0    0    10   182 54153 112456  5  1 81 12  0  0\n 1  7  43316 8073944 9843920 154906180    0    0    20  3509 53398 110588  5  1 81 12  0  0\n",
+        "loadavg": "9.14 9.90 10.25 4/3835 1069464",
+        "r_max": 4,
+        "idle_min": 72,
+        "suite_groups_before": 1,
+        "suite_groups_after": 1,
+        "quiet": false,
+        "suites_before_matches": 1,
+        "suites_before_sha256": "7fbe4f7f5d8e85a88b5aff3cf68ceb001eb978e305525e4160adb6cdd73059c2",
+        "suites_after_matches": 1,
+        "suites_after_sha256": "7fbe4f7f5d8e85a88b5aff3cf68ceb001eb978e305525e4160adb6cdd73059c2"
+      }
+    ],
+    "runtime": [
+      {
+        "mono_ns": "106234060950516",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106236098830629",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106238136014323",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106240173490538",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106242212927755",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106244251135879",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106246288645191",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106248327018499",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106250366380789",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106252404513221",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106254442455742",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106256480429793",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106258518896682",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106260557195315",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106262594827357",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106264632356618",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106266669468328",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106268705811127",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106270743031825",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106272781208981",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106274820331532",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106276857654964",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106278895723033",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106280934142511",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106282971673377",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106285009392799",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106287047044768",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106289085406359",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106291123369416",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106293163629688",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106295201640816",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106297238691926",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106299276736464",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106301313178393",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106303350352580",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106305389137842",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106307427784996",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106309464990669",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106311501469335",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106313538619843",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106315575563025",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106317612032164",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106319648651882",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106321685451300",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106323721518794",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106325757283034",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106327793749514",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106329830080160",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106331865923865",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106333902276609",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106335938936260",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106337975977427",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106340012115794",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106342048697184",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106344084739906",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106346121766551",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106348158853785",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106350195419174",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106352231712443",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106354267941703",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106356305011146",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106358341313084",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106360378651331",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106362416706814",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106364455350982",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106366493369028",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106368533360489",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106370573253486",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106372612037573",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106374649842117",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106376688197028",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106378726827513",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106380764601290",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106382802838181",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106384840270140",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106386878014080",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106388916273388",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106390954505503",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106392991952093",
+        "suite_groups": 1,
+        "suite_matches": 1
+      }
+    ],
+    "result": {
+      "command": [
+        "make",
+        "-f",
+        "mk/node.mk",
+        "node-test-netlab",
+        "NODE_GO=python3 .agent/f31/harness/go-baseline.py",
+        "NODE_NETLAB_TEST_ARGS=-run=^TestLab04_RestartKeepsVerifiedLease -count=30 -timeout=15m"
+      ],
+      "start_ns": "106232037293191",
+      "end_ns": "106423143895709",
+      "exit": 2,
+      "postflight_admitted": true,
+      "admission_mode": "slot"
+    },
+    "private_process_text": "Withheld; matching process tree counts retained. No contention cause inferred."
+  },
+  "restarts-fixed": {
+    "samples": [
+      {
+        "label": "preflight-0",
+        "start_ns": "106738792075459",
+        "end_ns": "106768817800879",
+        "vmstat": "procs -----------memory---------- ---swap-- -----io---- -system-- -------cpu-------\n r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st gu\n 0  9  43316 7968904 9844104 155032220    0    0  5368 28896 37478   34  8  3 79 11  0  0\n 3  9  43316 7959492 9844104 155032740    0    0    74  3962 10727 15431  1  1 86 12  0  0\n 1  9  43316 7889008 9844104 155033396    0    0    50   814 14735 22746  1  1 85 12  0  0\n 1  8  43316 7809404 9844104 155033580    0    0     8  4458 24867 76651  2  2 84 12  0  0\n 0  8  43316 7846492 9844104 155033656    0    0    11   213 18432 71269  1  1 85 12  0  0\n 0  8  43316 7776844 9844104 155033824    0    0     6  4653 18772 31989  1  1 85 12  0  0\n 1  8  43316 7667548 9844104 155035400    0    0     6   281 13717 18475  2  1 87 10  0  0\n",
+        "loadavg": "9.63 9.49 9.91 4/3931 1246528",
+        "r_max": 3,
+        "idle_min": 84,
+        "suite_groups_before": 1,
+        "suite_groups_after": 1,
+        "quiet": false,
+        "suites_before_matches": 1,
+        "suites_before_sha256": "7fbe4f7f5d8e85a88b5aff3cf68ceb001eb978e305525e4160adb6cdd73059c2",
+        "suites_after_matches": 1,
+        "suites_after_sha256": "7fbe4f7f5d8e85a88b5aff3cf68ceb001eb978e305525e4160adb6cdd73059c2"
+      },
+      {
+        "label": "postflight",
+        "start_ns": "106841981543292",
+        "end_ns": "106872006116918",
+        "vmstat": "procs -----------memory---------- ---swap-- -----io---- -system-- -------cpu-------\n r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st gu\n 1  8  44596 9091768 9842728 153833764    0    0  5362 28877 37472   34  8  3 79 11  0  0\n 0  8  44596 9165948 9842728 153833660    0    0    17   493 13877 16524  1  1 86 12  0  0\n 1  8  44596 9319564 9842728 153834728    0    0    14  3646 10279 13983  1  1 86 13  0  0\n 1  8  48932 9609312 9842724 153374836    0  846    26  1675 24912 40948  2  2 84 12  0  0\n 1  8  48932 9679072 9842724 153377912    0    0   210  3915 21950 34900  2  2 85 12  0  0\n 1  8  48932 9486408 9842724 153378128    0    0     8   466 19242 29969  1  1 85 12  0  0\n 0  7  48932 9411180 9842724 153380228    0    0    10  4310 31523 55738  3  2 83 12  0  0\n",
+        "loadavg": "8.08 8.84 9.62 1/3820 1359541",
+        "r_max": 1,
+        "idle_min": 83,
+        "suite_groups_before": 1,
+        "suite_groups_after": 1,
+        "quiet": false,
+        "suites_before_matches": 1,
+        "suites_before_sha256": "7fbe4f7f5d8e85a88b5aff3cf68ceb001eb978e305525e4160adb6cdd73059c2",
+        "suites_after_matches": 1,
+        "suites_after_sha256": "7fbe4f7f5d8e85a88b5aff3cf68ceb001eb978e305525e4160adb6cdd73059c2"
+      }
+    ],
+    "runtime": [
+      {
+        "mono_ns": "106770866511686",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106772906120353",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106774943758212",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106776979924399",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106779016550567",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106781052967024",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106783089374870",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106785125601498",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106787162041906",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106789199536266",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106791236363588",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106793272959039",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106795308905317",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106797344689906",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106799381391168",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106801418334548",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106803454903722",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106805490921945",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106807526933326",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106809561769910",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106811597572264",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106813633005332",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106815669533466",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106817704836631",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106819740399774",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106821776588144",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106823811984670",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106825848003056",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106827885079616",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106829922007830",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106831958266795",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106833994780207",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106836031061141",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106838066953022",
+        "suite_groups": 1,
+        "suite_matches": 1
+      },
+      {
+        "mono_ns": "106840102683504",
+        "suite_groups": 1,
+        "suite_matches": 1
+      }
+    ],
+    "result": {
+      "command": [
+        "make",
+        "-f",
+        "mk/node.mk",
+        "node-test-netlab",
+        "NODE_NETLAB_TEST_ARGS=-run=^TestLab04_RestartKeepsVerifiedLease -count=30 -timeout=15m"
+      ],
+      "start_ns": "106768843013825",
+      "end_ns": "106872029954018",
+      "exit": 0,
+      "postflight_admitted": true,
+      "admission_mode": "slot"
+    },
+    "private_process_text": "Withheld; matching process tree counts retained. No contention cause inferred."
+  }
+}
