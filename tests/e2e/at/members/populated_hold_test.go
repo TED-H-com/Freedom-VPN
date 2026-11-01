@@ -40,6 +40,14 @@ func (l *live) populatedHolds(r *record) {
 		if i > 0 {
 			l.patchMember(r, l.b, map[string]any{"admin_suspended": false, "suspension_reason": "TEST ONLY next independent hold"})
 		}
+		// Suspension can withdraw its devices. Restore the original binding
+		// through the real explicit authorization API before the next incident.
+		var device uuid.UUID
+		var status string
+		if l.pool.QueryRow(l.ctx, `SELECT id,status FROM member_devices WHERE member_id=$1 ORDER BY created_at,id LIMIT 1`, l.b.member).Scan(&device, &status) == nil && status != "authorized" {
+			got := l.api(l.admin, "POST", authorizePath(l.b.member, device), nil, commandHeaders())
+			r.check("populated hold restore original B binding "+row.name, "202 explicit device authorization", detail(got), "POST admin member device authorize; no device or binding row edits", got.status == 202)
+		}
 		if !l.publish(r, row.groups) {
 			r.block(row.name + " hold not exercised: publication unavailable")
 			continue
@@ -79,10 +87,10 @@ func (l *live) populatedHold(r *record, name string, count, capacity int) {
 	}()
 	var before json.RawMessage
 	ready := l.wait(60*time.Second, func() bool {
-		err := l.pool.QueryRow(l.ctx, `SELECT s.policy_generation::text,s.id::text,jsonb_build_object('node_id',n.id,'incarnation_id',o.incarnation_id,'report_id',o.report_id,'received_at',o.received_at,'lease_id',s.id,'generation',s.policy_generation::text,'expires_at',s.expires_at,'members',(SELECT jsonb_agg(member_id ORDER BY member_id) FROM serving_lease_members WHERE lease_id=s.id))
+		err := l.pool.QueryRow(l.ctx, `SELECT s.policy_generation::text,s.id::text,jsonb_build_object('node_id',n.id,'incarnation_id',o.incarnation_id,'report_id',o.report_id,'received_at',o.received_at,'lease_id',s.id,'generation',s.policy_generation::text,'desired_generation',n.desired_config_generation::text,'applied_generation',o.applied_generation::text,'expires_at',s.expires_at,'members',(SELECT jsonb_agg(member_id ORDER BY member_id) FROM serving_lease_members WHERE lease_id=s.id))
  FROM nodes n JOIN LATERAL(SELECT * FROM node_observations WHERE node_id=n.id AND incarnation_id=n.current_incarnation_id ORDER BY received_at DESC,id DESC LIMIT 1)o ON true
  JOIN serving_leases s ON s.id::text=o.report_payload->'lease'->>'lease_id'
- WHERE n.id=$1 AND o.member_forwarding_enabled AND o.received_at>clock_timestamp()-interval '15 seconds' AND s.policy_generation=o.applied_generation AND (SELECT count(DISTINCT member_id) FROM serving_lease_members WHERE lease_id=s.id)=$2 AND s.expires_at>clock_timestamp()+interval '150 seconds'`, node, count).Scan(&gen, &lease, &before)
+ WHERE n.id=$1 AND n.desired_config_generation=n.applied_config_generation AND n.applied_config_generation=o.applied_generation AND s.node_id=n.id AND s.incarnation_id=n.current_incarnation_id AND o.member_forwarding_enabled AND o.received_at>clock_timestamp()-interval '15 seconds' AND s.policy_generation=o.applied_generation AND (SELECT count(DISTINCT member_id) FROM serving_lease_members WHERE lease_id=s.id)=$2 AND s.expires_at>clock_timestamp()+interval '150 seconds' AND NOT EXISTS(SELECT 1 FROM serving_lease_members lm WHERE lm.lease_id=s.id AND NOT EXISTS(SELECT 1 FROM device_bindings b JOIN member_devices d ON d.id=b.device_id WHERE b.member_id=lm.member_id AND d.status='authorized' AND b.valid_from<=clock_timestamp() AND b.valid_until>clock_timestamp()))`, node, count).Scan(&gen, &lease, &before)
 		return err == nil
 	})
 	ev["before"], ev["populated_prerequisite"] = before, ready
@@ -129,6 +137,7 @@ func (l *live) populatedHold(r *record, name string, count, capacity int) {
 		at := time.Now().UTC()
 		mutation := l.patchMember(r, l.b, map[string]any{"admin_suspended": true, "suspension_reason": "TEST ONLY populated hold member revocation"})
 		completed := time.Now().UTC()
+		l.holdSnapshot("after populated " + name + " real member revocation")
 		ev["member_revocation"] = map[string]any{"member_id": l.b.member, "started_at": at, "completed_at": completed, "status": mutation.status, "body": json.RawMessage(mutation.body)}
 		if name == "sole-member" {
 			closed := l.wait(15*time.Second, func() bool {
