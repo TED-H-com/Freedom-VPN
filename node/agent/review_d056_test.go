@@ -120,6 +120,7 @@ func TestReviewD056_HealthAnswerBeforeDNSApply(t *testing.T) {
 	// again, and a lease revoke before evaluate has not Applied at all.
 	t.Run("revoked step", func(t *testing.T) {
 		r := newRig(t)
+		alignControlClock(r)
 		r.eng.prober = &verProbe{version: "0.76.2"}
 		body := []byte(exampleResolverBody)
 		ref := exampleRef(body)
@@ -150,6 +151,9 @@ func TestReviewD056_HealthAnswerBeforeDNSApply(t *testing.T) {
 
 	t.Run("lease revoke before evaluate", func(t *testing.T) {
 		r := newRig(t)
+		// Attestation validation uses the manual clock too. Real elapsed
+		// fixture time must not become a future signed server anchor.
+		alignControlClock(r)
 		r.eng.prober = &verProbe{version: "0.76.2"}
 		enrollBoot(t, r)
 		stepOK(t, r)

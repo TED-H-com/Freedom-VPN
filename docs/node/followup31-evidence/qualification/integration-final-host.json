@@ -1,0 +1,217 @@
+{
+  "samples": [
+    {
+      "label": "preflight-0",
+      "start_ns": "107971578163700",
+      "end_ns": "108001599310365",
+      "vmstat": "procs -----------memory---------- ---swap-- -----io---- -system-- -------cpu-------\n r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st gu\n10  9  48924 9512832 9844448 153761628    0    0  5316 28707 37298   34  8  3 79 11  0  0\n 2 11  48924 9516184 9844452 153801252    0    0     0 63507 94219 185938  9  5 74 12  0  0\n 1  6  48924 9712552 9844472 153757200    0    0     0 55472 37975 64286  6  3 77 13  0  0\n 4  4  48924 10085916 9844496 153751804    0    0     0 50334 47818 72325  9  4 74 13  0  0\n 1  6  48924 10110892 9844516 153740428    0    0     0 28945 51787 61732  5  3 79 12  0  0\n 1  6  48924 10543376 9844516 153731860    0    0     0 22658 14918 40899  2  2 83 13  0  0\n 1  5  48924 9484980 9844524 153739252    0    0     2 26938 63479 487523  9  7 76  9  0  0\n",
+      "loadavg": "11.24 9.27 9.12 2/3004 1578636",
+      "r_max": 4,
+      "idle_min": 74,
+      "suite_groups_before": 1,
+      "suite_groups_after": 1,
+      "quiet": false,
+      "suites_before_matches": 1,
+      "suites_before_sha256": "7c1fc997eecdc2a6848675d4a47fc6b7ddc7d582f4b959ee86b2fa8a4d79ae63",
+      "suites_after_matches": 1,
+      "suites_after_sha256": "7c1fc997eecdc2a6848675d4a47fc6b7ddc7d582f4b959ee86b2fa8a4d79ae63"
+    },
+    {
+      "label": "postflight",
+      "start_ns": "108068941271474",
+      "end_ns": "108098961957501",
+      "vmstat": "procs -----------memory---------- ---swap-- -----io---- -system-- -------cpu-------\n r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st gu\n 1  7  48924 9914660 9845252 153781956    0    0  5311 28718 37324   34  8  3 79 11  0  0\n 0 11  48924 10102616 9845256 153784904    0    0    19  6571 4942 6458  1  0 87 12  0  0\n 0  9  48924 10180576 9845264 153787712    0    0     0  2037 4333 6368  1  0 86 12  0  0\n 0  9  48924 10164428 9845272 153789328    0    0     0  4910 4251 6063  1  0 88 11  0  0\n 1 10  48924 9937596 9845284 153852236    0    0     2 21170 6869 8584  2  1 86 12  0  0\n 0  8  48924 10275360 9845292 153854952    0    0     0  2756 6651 10690  1  0 87 12  0  0\n 3  6  48924 9168776 9845300 153855244    0    0     0  2970 49479 314137  6  4 78 12  0  0\n",
+      "loadavg": "9.48 9.33 9.16 5/2967 1593772",
+      "r_max": 3,
+      "idle_min": 78,
+      "suite_groups_before": 0,
+      "suite_groups_after": 0,
+      "quiet": false,
+      "suites_before_matches": 0,
+      "suites_before_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "suites_after_matches": 0,
+      "suites_after_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "runtime": [
+    {
+      "mono_ns": "108003638193913",
+      "suite_groups": 1,
+      "suite_matches": 1
+    },
+    {
+      "mono_ns": "108005666176655",
+      "suite_groups": 1,
+      "suite_matches": 1
+    },
+    {
+      "mono_ns": "108007694900102",
+      "suite_groups": 1,
+      "suite_matches": 1
+    },
+    {
+      "mono_ns": "108009723395237",
+      "suite_groups": 1,
+      "suite_matches": 1
+    },
+    {
+      "mono_ns": "108011752579845",
+      "suite_groups": 1,
+      "suite_matches": 1
+    },
+    {
+      "mono_ns": "108013780634509",
+      "suite_groups": 1,
+      "suite_matches": 1
+    },
+    {
+      "mono_ns": "108015809064519",
+      "suite_groups": 1,
+      "suite_matches": 1
+    },
+    {
+      "mono_ns": "108017836770766",
+      "suite_groups": 1,
+      "suite_matches": 1
+    },
+    {
+      "mono_ns": "108019864522093",
+      "suite_groups": 1,
+      "suite_matches": 1
+    },
+    {
+      "mono_ns": "108021892029924",
+      "suite_groups": 1,
+      "suite_matches": 1
+    },
+    {
+      "mono_ns": "108023919191022",
+      "suite_groups": 1,
+      "suite_matches": 1
+    },
+    {
+      "mono_ns": "108025946718374",
+      "suite_groups": 1,
+      "suite_matches": 1
+    },
+    {
+      "mono_ns": "108027974971595",
+      "suite_groups": 1,
+      "suite_matches": 1
+    },
+    {
+      "mono_ns": "108030003717169",
+      "suite_groups": 1,
+      "suite_matches": 2
+    },
+    {
+      "mono_ns": "108032032539522",
+      "suite_groups": 1,
+      "suite_matches": 2
+    },
+    {
+      "mono_ns": "108034061779756",
+      "suite_groups": 1,
+      "suite_matches": 2
+    },
+    {
+      "mono_ns": "108036089752953",
+      "suite_groups": 1,
+      "suite_matches": 2
+    },
+    {
+      "mono_ns": "108038117924743",
+      "suite_groups": 1,
+      "suite_matches": 2
+    },
+    {
+      "mono_ns": "108040146847647",
+      "suite_groups": 1,
+      "suite_matches": 2
+    },
+    {
+      "mono_ns": "108042175713861",
+      "suite_groups": 1,
+      "suite_matches": 1
+    },
+    {
+      "mono_ns": "108044204233021",
+      "suite_groups": 1,
+      "suite_matches": 1
+    },
+    {
+      "mono_ns": "108046233181736",
+      "suite_groups": 1,
+      "suite_matches": 1
+    },
+    {
+      "mono_ns": "108048261419446",
+      "suite_groups": 1,
+      "suite_matches": 1
+    },
+    {
+      "mono_ns": "108050289964782",
+      "suite_groups": 1,
+      "suite_matches": 1
+    },
+    {
+      "mono_ns": "108052318676075",
+      "suite_groups": 1,
+      "suite_matches": 1
+    },
+    {
+      "mono_ns": "108054347442468",
+      "suite_groups": 1,
+      "suite_matches": 1
+    },
+    {
+      "mono_ns": "108056376069071",
+      "suite_groups": 1,
+      "suite_matches": 1
+    },
+    {
+      "mono_ns": "108058403942978",
+      "suite_groups": 1,
+      "suite_matches": 1
+    },
+    {
+      "mono_ns": "108060432121522",
+      "suite_groups": 1,
+      "suite_matches": 1
+    },
+    {
+      "mono_ns": "108062460823728",
+      "suite_groups": 0,
+      "suite_matches": 0
+    },
+    {
+      "mono_ns": "108064489676679",
+      "suite_groups": 0,
+      "suite_matches": 0
+    },
+    {
+      "mono_ns": "108066517729926",
+      "suite_groups": 0,
+      "suite_matches": 0
+    },
+    {
+      "mono_ns": "108068545151920",
+      "suite_groups": 0,
+      "suite_matches": 0
+    }
+  ],
+  "result": {
+    "command": [
+      "make",
+      "-f",
+      "mk/node.mk",
+      "node-test-integration"
+    ],
+    "start_ns": "108001619706933",
+    "end_ns": "108098981808056",
+    "exit": 0,
+    "postflight_admitted": true,
+    "admission_mode": "slot"
+  },
+  "private_process_text": "Withheld; process-tree counts retained. No contention cause inferred."
+}

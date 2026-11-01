@@ -1,0 +1,55 @@
+=== RUN   TestAT13_ISOF603_ProcessCancellationStillReadsKernel
+--- PASS: TestAT13_ISOF603_ProcessCancellationStillReadsKernel (0.17s)
+=== RUN   TestAT13_ISOF603_ExactProducerReplay955To961
+=== RUN   TestAT13_ISOF603_ExactProducerReplay955To961/same_lease_repair
+=== RUN   TestAT13_ISOF603_ExactProducerReplay955To961/repair_fails_closed
+--- PASS: TestAT13_ISOF603_ExactProducerReplay955To961 (0.22s)
+    --- PASS: TestAT13_ISOF603_ExactProducerReplay955To961/same_lease_repair (0.12s)
+    --- PASS: TestAT13_ISOF603_ExactProducerReplay955To961/repair_fails_closed (0.10s)
+=== RUN   TestAT13_ISOF603_SameBootRestartKeepsRulesAndDeadline
+--- PASS: TestAT13_ISOF603_SameBootRestartKeepsRulesAndDeadline (0.12s)
+=== RUN   TestAT13_ISOF603_ControlStallKeepsVerifiedRules
+    followup28_test.go:250: two bounded control passes including local persistence: 2.018425583s
+--- PASS: TestAT13_ISOF603_ControlStallKeepsVerifiedRules (2.12s)
+=== RUN   TestAT13_ISOF603_RestartWaitsForHealthyWatchdogRead
+=== RUN   TestAT13_ISOF603_RestartWaitsForHealthyWatchdogRead/stop
+=== RUN   TestAT13_ISOF603_RestartWaitsForHealthyWatchdogRead/boot
+--- PASS: TestAT13_ISOF603_RestartWaitsForHealthyWatchdogRead (0.36s)
+    --- PASS: TestAT13_ISOF603_RestartWaitsForHealthyWatchdogRead/stop (0.18s)
+    --- PASS: TestAT13_ISOF603_RestartWaitsForHealthyWatchdogRead/boot (0.18s)
+=== RUN   TestAT13_ISOF603_RestartInvalidAuthorizationCloses
+=== RUN   TestAT13_ISOF603_RestartInvalidAuthorizationCloses/reboot
+=== RUN   TestAT13_ISOF603_RestartInvalidAuthorizationCloses/expired
+=== RUN   TestAT13_ISOF603_RestartInvalidAuthorizationCloses/clock_jump
+=== RUN   TestAT13_ISOF603_RestartInvalidAuthorizationCloses/frozen
+=== RUN   TestAT13_ISOF603_RestartInvalidAuthorizationCloses/barrier
+--- PASS: TestAT13_ISOF603_RestartInvalidAuthorizationCloses (0.66s)
+    --- PASS: TestAT13_ISOF603_RestartInvalidAuthorizationCloses/reboot (0.12s)
+    --- PASS: TestAT13_ISOF603_RestartInvalidAuthorizationCloses/expired (0.16s)
+    --- PASS: TestAT13_ISOF603_RestartInvalidAuthorizationCloses/clock_jump (0.12s)
+    --- PASS: TestAT13_ISOF603_RestartInvalidAuthorizationCloses/frozen (0.14s)
+    --- PASS: TestAT13_ISOF603_RestartInvalidAuthorizationCloses/barrier (0.12s)
+=== RUN   TestF31_AT13_CancellationAfterLiveReadKeepsRestartAuthorization
+--- PASS: TestF31_AT13_CancellationAfterLiveReadKeepsRestartAuthorization (0.14s)
+=== RUN   TestF31_AT13_CancellationDuringLocalWorkKeepsRestartAuthorization
+=== RUN   TestF31_AT13_CancellationDuringLocalWorkKeepsRestartAuthorization/apply
+=== RUN   TestF31_AT13_CancellationDuringLocalWorkKeepsRestartAuthorization/member_path
+--- PASS: TestF31_AT13_CancellationDuringLocalWorkKeepsRestartAuthorization (0.28s)
+    --- PASS: TestF31_AT13_CancellationDuringLocalWorkKeepsRestartAuthorization/apply (0.14s)
+    --- PASS: TestF31_AT13_CancellationDuringLocalWorkKeepsRestartAuthorization/member_path (0.14s)
+=== RUN   TestF31_AT13_CancellationDoesNotMaskRealApplyFailure
+--- PASS: TestF31_AT13_CancellationDoesNotMaskRealApplyFailure (0.12s)
+=== RUN   TestF31_CommandLifecycleRequiresBothTimingGates
+=== RUN   TestF31_CommandLifecycleRequiresBothTimingGates/disabled
+=== RUN   TestF31_CommandLifecycleRequiresBothTimingGates/mode_only
+=== RUN   TestF31_CommandLifecycleRequiresBothTimingGates/path_only
+=== RUN   TestF31_CommandLifecycleRequiresBothTimingGates/enabled
+--- PASS: TestF31_CommandLifecycleRequiresBothTimingGates (0.52s)
+    --- PASS: TestF31_CommandLifecycleRequiresBothTimingGates/disabled (0.13s)
+    --- PASS: TestF31_CommandLifecycleRequiresBothTimingGates/mode_only (0.13s)
+    --- PASS: TestF31_CommandLifecycleRequiresBothTimingGates/path_only (0.13s)
+    --- PASS: TestF31_CommandLifecycleRequiresBothTimingGates/enabled (0.14s)
+=== RUN   TestF31_StaleGenerationBaselinePrecedesRenewalWithoutCandidateApply
+--- PASS: TestF31_StaleGenerationBaselinePrecedesRenewalWithoutCandidateApply (0.12s)
+PASS
+ok      github.com/TED-H-com/Freedom-VPN/node/agent     4.842s

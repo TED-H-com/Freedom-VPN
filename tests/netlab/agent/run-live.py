@@ -28,6 +28,7 @@ def main():
             run("docker", "run", "--rm", "--name", name, "--privileged", "--network", "none", "--workdir", "/scratch",
                 "-e", "FVPN_AGENT_LIVE_NETLAB=1", "-e", "FVPN_AGENT_EVIDENCE_DIR=/evidence",
                 "-e", "FVPN_F29_SIBLING",
+                "-e", "FVPN_F31_GENERATIONS",
                 "-v", str(evidence) + ":/evidence", "-e", "GOMAXPROCS=4", "-e", "TMPDIR=/scratch",
                 "-v", binary + ":/agent.test:ro", image, "/agent.test", "-test.run",
                 "^TestD085_LiveReadNetlab$", "-test.v", "-test.timeout=3m")

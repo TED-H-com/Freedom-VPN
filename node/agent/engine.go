@@ -528,6 +528,21 @@ func (e *Engine) Step(ctx context.Context) error {
 		_ = e.flush(ctx)
 		return nil
 	}
+	// The independent live read can finish after SIGTERM. Stop here before
+	// canceled local store/meter reads manufacture a storage failure and
+	// prevent Close from checkpointing the still-valid same-boot rules.
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+	// Control I/O still uses ioCtx and stops with the caller. Local work must
+	// finish its bounded transaction/readback after SIGTERM: canceling Apply
+	// or a path/store read would manufacture a failure and withdraw a valid
+	// lease before Close can checkpoint it. Leave the control budget plus the
+	// existing five-second cleanup allowance; inner install/read bounds and
+	// signed deadlines remain authoritative. Real failures still fail closed.
+	localCtx, cancelLocal := context.WithTimeout(context.WithoutCancel(ctx), e.controlPassTimeout()+5*time.Second)
+	defer cancelLocal()
+	ctx = localCtx
 	// Refresh the anchor before any 304. A wall jump must be visible to the
 	// lease renewal decision even when desired state is unchanged (§16.3).
 	_, _ = e.verifyTime()
@@ -1021,7 +1036,13 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 	}
 	timing := &applyReadTiming{now: e.clock.Wall}
 	host := e.measureHostBeforeApply()
-	res, err := e.plane.Apply(context.WithValue(ctx, applyReadKey{}, timing), model, prev)
+	applyCtx := context.WithValue(ctx, applyReadKey{}, timing)
+	if e.measurementEnabled() {
+		// TEST ONLY command observations use the existing local timing gate.
+		// They do not enter the wire evidence or its D-106 digest.
+		applyCtx = enforce.WithCommandLifecycleForTest(applyCtx)
+	}
+	res, err := e.plane.Apply(applyCtx, model, prev)
 	host.finish(err)
 	e.measureTiming(res.Evidence, "apply", host)
 	for _, b := range timing.baselines {
