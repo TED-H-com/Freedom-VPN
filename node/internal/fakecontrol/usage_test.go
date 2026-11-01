@@ -125,6 +125,11 @@ func TestUsageContiguousAndConflict(t *testing.T) {
 
 func TestUsageCheckpointRoundTrip(t *testing.T) {
 	s := startUsage(t)
+	// Pin checkpoint time at a UTC month boundary; the usage interval stays
+	// wholly in the previous month, regardless of when the test runs.
+	now := time.Date(2026, 11, 1, 0, 0, 0, 0, time.UTC)
+	clock := func() time.Time { return now }
+	s.SetClock(clock)
 	node := uuid.Must(uuid.NewV7())
 	inc := uuid.Must(uuid.NewV7())
 	ctx := context.Background()
@@ -132,14 +137,13 @@ func TestUsageCheckpointRoundTrip(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	store, err := usagestore.Open(filepath.Join(t.TempDir(), "usage.db"), node, inc, usagestore.Options{Trust: trust})
+	store, err := usagestore.Open(filepath.Join(t.TempDir(), "usage.db"), node, inc, usagestore.Options{Trust: trust, Now: clock})
 	if err != nil {
 		t.Fatal(err)
 	}
 	t.Cleanup(func() { _ = store.Close() })
 
 	raw := getCheckpoint(t, s, node, inc)
-	now := time.Now().UTC()
 	if err := store.ApplyCheckpoint(ctx, raw, now); err != nil {
 		t.Fatal(err)
 	}
@@ -169,7 +173,7 @@ func TestUsageCheckpointRoundTrip(t *testing.T) {
 		Event: &usagestore.Draft{
 			EpochID: epoch, Start: at, End: at.Add(10 * time.Second), Quality: "complete",
 			Records: []usagestore.DraftRecord{{
-				MemberID: mem, DeviceID: dev, BindingRevision: 1, PeriodID: "2026-10", Upload: 20,
+				MemberID: mem, DeviceID: dev, BindingRevision: 1, PeriodID: at.UTC().Format("2006-01"), Upload: 20,
 			}},
 		},
 	})
@@ -205,7 +209,7 @@ func TestUsageCheckpointRoundTrip(t *testing.T) {
 		t.Fatal(err)
 	}
 	low := getCheckpoint(t, s, node, inc)
-	if err := store.ApplyCheckpoint(ctx, low, time.Now().UTC()); !errors.Is(err, usagestore.ErrAckRegress) {
+	if err := store.ApplyCheckpoint(ctx, low, now); !errors.Is(err, usagestore.ErrAckRegress) {
 		t.Fatalf("same epoch: %v", err)
 	}
 	if got, _ := store.AckedThrough(ctx); got != 1 {
@@ -217,7 +221,7 @@ func TestUsageCheckpointRoundTrip(t *testing.T) {
 		t.Fatal(err)
 	}
 	fresh := getCheckpoint(t, s, node, inc)
-	if err := store.ApplyCheckpoint(ctx, fresh, time.Now().UTC()); err != nil {
+	if err := store.ApplyCheckpoint(ctx, fresh, now); err != nil {
 		t.Fatal(err)
 	}
 	if got, _ := store.AckedThrough(ctx); got != 0 {
