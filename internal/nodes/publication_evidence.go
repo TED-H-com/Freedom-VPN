@@ -22,6 +22,20 @@ func PublicationForwardingEvidence(report api.ObservationReport, now time.Time) 
 // The zero-binding exception requires the current incarnation's issued published
 // generation, never live device counts or an absent/unknown envelope (§5.2).
 func PublicationDataPathFailure(ctx context.Context, q Querier, report api.ObservationReport, minimumGeneration uint64, now time.Time) (string, error) {
+	if reportsGenerationHold(report) {
+		if cause := generationHoldSafetyFailure(report); cause != "" {
+			return cause, nil
+		}
+		generation, known, err := reportedLeaseGeneration(ctx, q, report)
+		if err != nil {
+			return "", err
+		}
+		applied, appliedErr := report.AppliedConfigGeneration.Get()
+		if !known || appliedErr != nil || generation == applied {
+			return "lease_unconfirmed", nil
+		}
+		return "stale_generation", nil
+	}
 	applied, err := report.AppliedConfigGeneration.Get()
 	if err != nil || applied == 0 || uint64(applied) < minimumGeneration {
 		return "stale_generation", nil
@@ -58,7 +72,8 @@ func PublicationDataPathFailure(ctx context.Context, q Querier, report api.Obser
 		var valid bool
 		if err := q.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM serving_leases
 			WHERE id=$1 AND node_id=$2 AND incarnation_id=$3
-			AND issued_at <= $4 AND expires_at > $4)`, leaseID, report.NodeId, report.NodeIncarnationId, now).Scan(&valid); err != nil {
+			AND issued_at <= $4 AND expires_at > $4
+			AND policy_generation=$5::text::numeric)`, leaseID, report.NodeId, report.NodeIncarnationId, now, applied.String()).Scan(&valid); err != nil {
 			return "", err
 		}
 		if !valid {
@@ -69,6 +84,12 @@ func PublicationDataPathFailure(ctx context.Context, q Querier, report api.Obser
 }
 
 func publicationForwardingFailure(report api.ObservationReport, now time.Time, emptyBindings bool) string {
+	if reportsGenerationHold(report) {
+		if cause := generationHoldSafetyFailure(report); cause != "" {
+			return cause
+		}
+		return "stale_generation"
+	}
 	generation, err := report.AppliedConfigGeneration.Get()
 	if err != nil || generation == 0 {
 		return "stale_generation"
