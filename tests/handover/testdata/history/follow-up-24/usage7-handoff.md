@@ -39,4 +39,3 @@ period-overlap inequalities, and exercises a +08 display timezone. Negative
 cases reject invalid summary bounds/months and empty/gap/other-member held
 snapshots; multi-month selection and incarnation-wide sums are checked.
 The fixed-clock October/November mechanism files are byte-unchanged.
-

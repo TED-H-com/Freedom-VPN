@@ -28,4 +28,3 @@ unattributed, including F8-02's receive-only silent-drop limitation. The
 incident lesson is to derive a half-open interval's month from its own start,
 never pair a calendar literal with the wall clock. Earlier snapshots below
 retain their cutoffs.
-

@@ -6,5 +6,3 @@
 8. F11-03 → still blocked on no failed Apply; agent-core 31 wires the TEST ONLY lifecycle caller.
 9. F12-04 → members follow-up 14 instruments its own original query with devstack's `StartNativeDNSCapture` (D-102: the case is members', the tooling devstack's).
 10. F13-01 → devstack follow-up 24 retains the raw bytes and parser error in `tests/e2e/internal/counterread`; a parser change in `node/enforce/parse_nft.go` only if that evidence shows a defect (netlab).
-
-

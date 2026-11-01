@@ -39,4 +39,3 @@ reuse, freeze during each stage, same-boot restart and reboot, and crash between
 every kernel commit and durable write. Verify meter continuity, no duplicated
 accounting, exact revocation cleanup, control access and honest observations.
 Cross-compile amd64/arm64 and record real arm64 qualification separately.
-

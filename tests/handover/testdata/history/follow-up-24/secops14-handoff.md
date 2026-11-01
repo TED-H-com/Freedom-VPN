@@ -17,4 +17,3 @@ One offline table test proves 44 one-second intervals: ten PITR events plus one 
 - MTR03 / DATA01, §10.4, §10.9, §17.3 and §19 AT30: synthetic source attribution and retained replay assertions respect UTC month boundaries. This is offline harness regression coverage, not a new live AT30 result.
 - `TestMTR03_UsagePeriodOverlapsInterval`, build tag `e2e`, needs no stack, database, Docker or root. It uses `usage.ParseMonth` and the exact predicate `period.Start.Before(intervalEnd) && period.End.After(intervalStart)` from ingestion.
 - Table instants: `2026-11-01T00:00:00Z`, `2026-11-01T00:00:05Z`, `2026-11-15T12:00:00Z`, and `2027-01-01T00:00:00Z`. The year case includes `[2026-12-31T23:59:59Z, 2027-01-01T00:00:00Z)`. The first-ten-seconds PITR case has five intervals in each month; exclusive-end boundary events require the preceding month. Mid-month is the normal control.
-

@@ -111,4 +111,3 @@ D-133 design and adversarial review. AT11 real platform routes, AT13 full
 fault matrix / physical arm64, AT29 / AT31 resources, power loss, QUIC and
 reactive PTB remain open. No later lane's results enter this #362 cut.
 See [the full current evidence](follow-up-23.md).
-

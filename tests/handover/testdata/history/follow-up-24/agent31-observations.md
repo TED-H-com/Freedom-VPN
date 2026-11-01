@@ -334,4 +334,3 @@ validation used a stationary manual clock. Both subtests now use the existing
 `alignControlClock`; the validator and its two-second tolerance are unchanged.
 The failed receipt is retained; this test-only correction does not alter the
 qualified agent binary or generation experiment.
-
