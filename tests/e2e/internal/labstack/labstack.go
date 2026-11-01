@@ -88,3 +88,5 @@ type SelectedNativeExit = e2e.SelectedNativeExit
 type NativeCapture = e2e.NativeCapture
 type NativeCaptureEvidence = e2e.NativeCaptureEvidence
 type NativePathSample = e2e.NativePathSample
+
+type NativeRouter1280 = e2e.NativeRouter1280

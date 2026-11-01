@@ -1,0 +1,20 @@
+{
+  "id": "derivation-tools",
+  "title": "Post-run metadata derivation provenance",
+  "spec": [
+    "AT20",
+    "F12-04",
+    "F4-05",
+    "F4-07"
+  ],
+  "status": "pass",
+  "observations": [
+    {
+      "name": "tools",
+      "detail": "{\"source_commit\": \"68e427a633e422db98ba0fbd010c964924e9d15d\", \"files\": {\"tests/e2e/decode_capture.py\": \"6130dff971e10ebe32acf9a5cb38f518c0cede64ae8ddffd85a63e58a9def352\", \"tests/e2e/decode_native_debug.py\": \"fc46fc997310e49395d47508a1e0f91476d6a7a0d9d9f9e5d7a8b16ca98505b8\", \"tests/e2e/analyze_native_capture.py\": \"ba5382899c1a77fec3a207e2791885726fb9feef8f32fde8708b25f5a65dc67f\", \"tests/e2e/analyze_router_capture.py\": \"8f2567cdd94fa78062059e8d4602e73b9b80998fe33abf995f99297ce13dafc6\", \"tests/e2e/analyze_dns_capture.py\": \"570498f315057306857a0c2bc32d6052af7197278a8c1fa5b842f690a07e34ae\"}, \"scope\": \"Metadata derivations only; runner source stays on each original record; private pcaps unchanged.\"}"
+    }
+  ],
+  "at": "2026-11-01T08:29:36Z",
+  "run_id": "9bb2098e-1c6f-48a8-9fbd-fd99bd9fc49e",
+  "source_commit": "1d396065c432485875add24a00761608afb293cc"
+}

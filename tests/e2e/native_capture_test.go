@@ -14,3 +14,10 @@ func TestAT01_CaptureMissingStatsNeverMeansZeroDrops(t *testing.T) {
 		t.Fatal("missing stats treated as no loss")
 	}
 }
+
+func TestAT01_CaptureSingularStatistics(t *testing.T) {
+	a, b, c, ok := parseNativeCaptureStats("1 packet captured\n1 packet received by filter\n0 packets dropped by kernel\n")
+	if !ok || a != 1 || b != 1 || c != 0 {
+		t.Fatal("singular tcpdump statistics rejected")
+	}
+}

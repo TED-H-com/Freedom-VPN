@@ -46,7 +46,37 @@ def wireguard_header(message):
     return out
 
 
-def decode_ip(b, address, wireguard=False):
+def dns_header(message):
+    """Closed synthetic cases only. No names, answer RDATA or packet bytes."""
+    if len(message) < 12 or u16(message, 4) != 1:
+        return None
+    labels, pos = [], 12
+    while pos < len(message):
+        size = message[pos]; pos += 1
+        if size == 0:
+            break
+        if size > 63 or pos+size > len(message):
+            return None
+        labels.append(message[pos:pos+size].decode('ascii', errors='replace').lower()); pos += size
+    else:
+        return None
+    if pos+4 > len(message):
+        return None
+    name = '.'.join(labels)
+    cases = {label+'.example.invalid': label.replace('.', '_') for label in
+             ('rr', 'cache', 'absent', 'rebind', 'alias', 'service', 'feed-01',
+              'blocked-cname', 'blocked-alias', 'sub.feed-01', 'notfeed-01')}
+    cases['xn--bcher-kva.example.invalid'] = 'idna_positive'
+    if name not in cases:
+        return None
+    flags = u16(message, 2)
+    return dict(fixture_case=cases[name], wire_id=u16(message, 0), response=bool(flags & 0x8000),
+                rcode=flags & 15, rr_type=u16(message, pos), answers=u16(message, 6),
+                authority=u16(message, 8), additional=u16(message, 10), length=len(message),
+                message_sha256=hashlib.sha256(message).hexdigest())
+
+
+def decode_ip(b, address, wireguard=False, dns=False):
     version = b[0] >> 4
     out = {'ip_version': version}
     if version == 4:
@@ -115,11 +145,19 @@ def decode_ip(b, address, wireguard=False):
             tcp['options'].append(option)
             i += length
         out['tcp'] = tcp
+        if dns and 53 in (tcp['src_port'], tcp['dst_port']) and len(transport) >= th+2:
+            length = u16(transport, th)
+            if len(transport) >= th+2+length:
+                header = dns_header(transport[th+2:th+2+length])
+                if header: out['dns'] = header
     elif proto == 17:
         if len(transport) < 8:
             raise ValueError('short UDP header')
         out['udp'] = dict(src_port=u16(transport, 0), dst_port=u16(transport, 2), length=u16(transport, 4))
         length = out['udp']['length']
+        if dns and 53 in (out['udp']['src_port'], out['udp']['dst_port']) and 8 <= length <= len(transport):
+            header = dns_header(transport[8:length])
+            if header: out['dns'] = header
         if wireguard and 51820 in (out['udp']['src_port'], out['udp']['dst_port']) and 8 <= length <= len(transport):
             header = wireguard_header(transport[8:length])
             if header:
@@ -138,7 +176,7 @@ def decode_ip(b, address, wireguard=False):
     return out
 
 
-def decode(path, output, addresses, stable_addresses=False, wireguard=False):
+def decode(path, output, addresses, stable_addresses=False, wireguard=False, dns=False):
     raw = path.read_bytes()
     formats = {b'\xd4\xc3\xb2\xa1': ('<', 1000000), b'\xa1\xb2\xc3\xd4': ('>', 1000000),
                b'\x4d\x3c\xb2\xa1': ('<', 1000000000), b'\xa1\xb2\x3c\x4d': ('>', 1000000000)}
@@ -184,7 +222,7 @@ def decode(path, output, addresses, stable_addresses=False, wireguard=False):
                 else:
                     raise ValueError('unsupported link type')
                 if proto in (0x800, 0x86dd):
-                    row.update(decode_ip(b[offset:], address, wireguard))
+                    row.update(decode_ip(b[offset:], address, wireguard, dns))
                     size = row.get('ip_length', 0)
                     if size and len(b)-offset >= size:
                         row['ip_sha256'] = hashlib.sha256(b[offset:offset+size]).hexdigest()
@@ -204,12 +242,13 @@ def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--out', type=Path, required=True)
     p.add_argument('--stable-addresses', action='store_true', help='match native-observe address tokens')
+    p.add_argument('--dns-headers', action='store_true', help='closed synthetic DNS cases; digests/IDs only')
     p.add_argument('--wireguard-headers', action='store_true', help='optional fixed public handshake/data headers; no keys or ciphertext')
     p.add_argument('captures', nargs='+', type=Path)
     args = p.parse_args(); args.out.mkdir(parents=True, exist_ok=True)
     addresses = {}; results = []
     for source in args.captures:
-        results.append(decode(source, args.out/(source.stem+'.headers.jsonl'), addresses, args.stable_addresses, args.wireguard_headers))
+        results.append(decode(source, args.out/(source.stem+'.headers.jsonl'), addresses, args.stable_addresses, args.wireguard_headers, args.dns_headers))
     # Address map stays private; only headers with campaign-stable tokens escape.
     print(json.dumps(results, indent=2))
 
