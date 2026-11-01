@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """TEST ONLY: immutable serving/packet joins; preserve missing evidence as missing."""
 import argparse
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 import hashlib
 import json
@@ -18,7 +18,8 @@ def notes(record):
 def seconds(value):
     # PostgreSQL receipt precision is microseconds; packet timestamps are also
     # wall-clock observations. Never label this an exact kernel close instant.
-    return Decimal(str(datetime.fromisoformat(value.replace('Z', '+00:00')).timestamp()))
+    delta=datetime.fromisoformat(value.replace('Z', '+00:00'))-datetime(1970,1,1,tzinfo=timezone.utc)
+    return Decimal(delta.days*86400+delta.seconds)+Decimal(delta.microseconds)/Decimal(1000000)
 
 
 def relative_ms(value, syn):
@@ -42,6 +43,13 @@ def main(run, private):
     central = json.loads((run/'central-record.json').read_text())
     cn = {k: json.loads(v) for k, v in notes(central).items() if k != 'producer_export_error'}
     result = dict(rows=[], receipts_verified=0, limitations=[])
+    prior={}
+    for row in cn.get('producer_timing',[]):
+        key=row['run_id'];seq=int(row['sequence'])
+        assert seq==prior.get(key,0)+1, 'producer sequence gap'
+        prior[key]=seq
+    result['producer_sequences']=prior
+    if not prior:result['limitations'].append('No producer timing stream in this first attempt.')
     if 'producer_receipt' in cn and cn['producer_receipt'].get('sha256'):
         verify_file(private/'producer.jsonl', cn['producer_receipt']); result['receipts_verified'] += 1
     debug_path = run/'native-debug-export.json'
