@@ -109,7 +109,7 @@ func (r *runner) exportCentral26(ctx context.Context) {
 	rec.Status = StatusPass
 }
 
-func (r *runner) servingGate26(ctx context.Context, id string) bool {
+func (r *runner) servingGate26(ctx context.Context, id string, captures ...*NativeCapture) bool {
 	rec := Record{ID: id, Title: "Populated lease and serving prerequisite before positive measurement", Status: StatusFail}
 	defer func() { r.record(rec) }()
 	start := time.Now().UTC()
@@ -122,7 +122,14 @@ func (r *runner) servingGate26(ctx context.Context, id string) bool {
 	wait, cancel := context.WithTimeout(ctx, 90*time.Second)
 	defer cancel()
 	var accepted []byte
+	sample := 0
 	ready := waitUntil(wait, time.Second, func() bool {
+		if len(captures) > 0 {
+			sample++
+			if captures[0].Sample(wait, fmt.Sprintf("%s-%d", id, sample)) != nil {
+				return false
+			}
+		}
 		err = db.QueryRow(wait, `SELECT jsonb_build_object('report_id',o.report_id,'received_at',o.received_at,'observed_at',o.observed_at,'generation',o.applied_generation::text,'lease_id',s.id,'expires_at',s.expires_at,'member_count',cardinality(s.member_grant_refs))
  FROM nodes n JOIN LATERAL (SELECT * FROM node_observations WHERE node_id=n.id AND incarnation_id=n.current_incarnation_id ORDER BY received_at DESC,id DESC LIMIT 1) o ON true
  JOIN serving_leases s ON s.id::text=o.report_payload->'lease'->>'lease_id' AND s.node_id=n.id AND s.incarnation_id=n.current_incarnation_id
@@ -197,7 +204,12 @@ func (r *runner) regrant26(ctx context.Context, admin *session) {
 		return
 	}
 	wait, cancel := context.WithTimeout(ctx, 90*time.Second)
+	sample := 0
 	withdrawn := waitUntil(wait, time.Second, func() bool {
+		sample++
+		if c.Sample(wait, fmt.Sprintf("withdrawal-%d", sample)) != nil {
+			return false
+		}
 		var yes bool
 		return db.QueryRow(wait, `SELECT EXISTS(SELECT 1 FROM device_authorization_observations WHERE device_id=$1 AND NOT observed_authorized)`, r.usageDevice).Scan(&yes) == nil && yes
 	})
@@ -230,7 +242,7 @@ func (r *runner) regrant26(ctx context.Context, admin *session) {
 	if c.Sample(ctx, "after-authorize") != nil {
 		return
 	}
-	if !r.servingGate26(ctx, "regrant-serving") {
+	if !r.servingGate26(ctx, "regrant-serving", c) {
 		return
 	}
 	r.nativeTransfer26(ctx, s, &rec, c)

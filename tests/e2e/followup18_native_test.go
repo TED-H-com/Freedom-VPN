@@ -609,7 +609,7 @@ func (r *runner) nativeTransfer26(ctx context.Context, s *Stack, record *Record,
 	if os.Getenv("FVPN_E2E_FOLLOWUP26") == "1" {
 		reproduce := os.Getenv("FVPN_E2E_REPRODUCE_TRACE26") == "1" && rec.ID == "initial-selection"
 		noteJSON(&rec, "historical_node_tracer_reproduction", reproduce)
-		if !reproduce && !r.servingGate26(ctx, rec.ID+"-ready") {
+		if !reproduce && !r.servingGate26(ctx, rec.ID+"-ready", c) {
 			return
 		}
 	}
