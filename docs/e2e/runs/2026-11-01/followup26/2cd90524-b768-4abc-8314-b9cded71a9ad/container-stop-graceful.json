@@ -1,0 +1,27 @@
+{
+  "id": "container-stop-graceful",
+  "title": "TEST ONLY PID1 forwarding and 15 second agent stop budget",
+  "spec": null,
+  "status": "pass",
+  "observations": [
+    {
+      "name": "stop_started_at",
+      "detail": "\"2026-11-01T13:09:51.149963355Z\""
+    },
+    {
+      "name": "stop_duration_ms",
+      "detail": "509"
+    },
+    {
+      "name": "container",
+      "detail": "{\"Running\":false,\"ExitCode\":0,\"OOMKilled\":false,\"StartedAt\":\"2026-11-01T13:08:49.055007534Z\",\"FinishedAt\":\"2026-11-01T13:09:51.624887722Z\"}"
+    },
+    {
+      "name": "agent_wait",
+      "detail": "{\"id\":\"ebcc6a07-eb3b-41b2-987e-120a7abeb31f\",\"pid\":1213,\"start_ticks\":\"12207212\",\"started_at\":\"2026-11-01T13:08:54.607644419Z\",\"wait_observed_at\":\"2026-11-01T13:09:51.217582032Z\",\"wait_status\":0,\"exit_code\":0,\"signal\":null,\"core_dump\":false}"
+    }
+  ],
+  "at": "2026-11-01T13:09:51Z",
+  "run_id": "2cd90524-b768-4abc-8314-b9cded71a9ad",
+  "source_commit": "4d7163379f80ab0630a78353c7ab10de24387c32"
+}
