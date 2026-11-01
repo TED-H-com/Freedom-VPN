@@ -108,13 +108,18 @@ func (e *Engine) recordApplyQuarantine(res enforce.ApplyResult, err error) {
 
 func (e *Engine) quarantine(ctx context.Context) {
 	if budget, ok := ctx.Value(localBudgetKey{}).(*localBudget); ok {
-		if budget.quarantined {
+		if budget.quarantine == nil {
+			budget.quarantine, budget.cancelQuarantine = context.WithTimeout(localContext(ctx), 5*time.Second)
+		}
+		ctx = budget.quarantine
+		if ctx.Err() != nil {
 			return
 		}
-		budget.quarantined = true
+	} else {
+		var cancel context.CancelFunc
+		ctx, cancel = context.WithTimeout(localContext(ctx), 5*time.Second)
+		defer cancel()
 	}
-	ctx, cancel := context.WithTimeout(localContext(ctx), 5*time.Second)
-	defer cancel()
 	e.serving, e.policyExpires = false, 0
 	e.expectServing.Store(false)
 	if e.containment == nil {

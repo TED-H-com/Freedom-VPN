@@ -22,9 +22,10 @@ maximum is `min(5s, watchdog_stale/3) + 5s`, **10 seconds** with the default 30s
 watchdog setting. Initial/final serving reads, quarantine, baseline, persistence
 and final observation all consume that one allowance. A read additionally has
 its existing at-most-one-second bound. Quarantine gets at most five seconds
-within the shared allowance and runs at most once per Step. Its pending latch
-stays set for a subsequent Step; a second cleanup caller in the current Step
-cannot create a fresh quarantine allowance. Other cleanup helpers preserve the
+within the shared allowance. Repeated quarantine callers reuse the same
+subdeadline; after it expires they cannot start another attempt. A final audit
+can still re-contain newly observed drift while that allowance remains. The
+pending latch stays set for subsequent Steps, each with its own bounded retry. Other cleanup helpers preserve the
 same enclosing deadline too.
 
 `Close` waits at most **three seconds**, including checkpoint/handoff, both
@@ -115,8 +116,10 @@ failure codes could hide generation 30 behind generation 29 indefinitely until
 recovery. This defect reproduces independently with seven failed pre-install
 Applies, a retained old rejection and a 60-second Retry-After.
 
-The key now includes failed candidate generation/code and retained serving-read
-generation/verification outcome. A failed Apply adds an existing `NodeError`
+The key now includes failed candidate generation/code, retained serving-read
+generation/verification outcome and sanitized containment changes. A blocked
+audit that first discovers foreign objects must publish that evidence even
+when a quarantine already ran earlier in the Step. A failed Apply adds an existing `NodeError`
 summary with `stage=apply_candidate`, its actual error code, the failure time,
 and `candidate_generation=<decimal> verified=false`. This identifies the attempt
 without inventing a verifier read or changing the applied ACK. Existing qos read

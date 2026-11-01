@@ -50,6 +50,38 @@ type f32BudgetPlane struct {
 	reads    int
 }
 
+type f32QuarantineBudgetPlane struct {
+	*memPlane
+	deadlines []time.Time
+}
+
+func (p *f32QuarantineBudgetPlane) Quarantine(ctx context.Context, m enforce.Model) (enforce.QuarantineEvidence, error) {
+	d, _ := ctx.Deadline()
+	p.deadlines = append(p.deadlines, d)
+	return p.memPlane.Quarantine(ctx, m)
+}
+
+func TestF32_AT13_QuarantineRetriesShareAllowance(t *testing.T) {
+	r := newRig(t)
+	alignControlClock(r)
+	serveBoundGeneration(t, r)
+	r.manualUsage(t)
+	p := &f32QuarantineBudgetPlane{memPlane: r.plane}
+	r.eng.plane = p
+	ctx, cancel := newLocalBudget(t.Context(), 10*time.Second)
+	defer cancel()
+	r.eng.quarantine(ctx)
+	r.eng.quarantine(ctx) // a final audit can re-contain while time remains
+	if len(p.deadlines) != 2 || !p.deadlines[0].Equal(p.deadlines[1]) {
+		t.Fatal("quarantine retry refreshed its deadline")
+	}
+	ctx.Value(localBudgetKey{}).(*localBudget).cancelQuarantine()
+	r.eng.quarantine(ctx)
+	if len(p.deadlines) != 2 {
+		t.Fatal("spent allowance allowed another quarantine")
+	}
+}
+
 func (p *f32BudgetPlane) VerifyServing(ctx context.Context, _ enforce.Model, _ map[uuid.UUID]uint16) (enforce.ServingEvidence, error) {
 	p.reads++
 	p.deadline, _ = ctx.Deadline()
@@ -126,6 +158,27 @@ func TestF32_AT13_StaleCodeSurvivesSafetyPrecedence(t *testing.T) {
 		if !stale || d.Serve || !hasReason(d.Reasons, api.ForwardingBlockReasonPolicyMissing) {
 			t.Fatalf("safety failure hid mismatch: %+v", d)
 		}
+	}
+}
+
+func TestF32_AT13_HoldStartsAtACKBeforeObservation(t *testing.T) {
+	r := newRig(t)
+	alignControlClock(r)
+	serveBoundGeneration(t, r)
+	r.manualUsage(t)
+	r.eng.serving = false
+	r.srv.SetFixture(generationFixture(r.eng.appliedGen+1, oneBinding(r.clock.Wall())))
+	if err := r.eng.syncDesired(t.Context()); err != nil {
+		t.Fatal(err)
+	}
+	r.eng.refreshDesired()
+	r.eng.staleHold.counted = false
+	ackedAt := r.clock.Mono()
+	r.eng.ackApplied(t.Context(), uint64(r.eng.desired.ConfigGeneration))
+	r.clock.Advance(4 * time.Second) // a delayed matching-lease request
+	r.eng.updateStaleHold()
+	if r.eng.staleHold.since != ackedAt || r.eng.staleHold.elapsed != 4*time.Second || r.eng.staleHold.steps != 1 {
+		t.Fatalf("hold omitted time between ACK and observation: %+v", r.eng.staleHold)
 	}
 }
 

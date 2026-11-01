@@ -355,8 +355,14 @@ func (e *Engine) observationState() string {
 	if r := e.servingRead; r != nil {
 		readGeneration, verified = r.Generation, r.Verified
 	}
+	var containment any
+	if c := e.containment; c != nil {
+		v := *c
+		v.ReadAt = time.Time{}
+		containment = []any{c.Generation, v}
+	}
 	b, _ := json.Marshal([]any{e.serving, e.appliedGen, d.Provisioning, d.Safety, d.Reasons, cs,
-		candidate, code, readGeneration, verified, e.staleHold.steps > 0, e.staleHold.alarm})
+		candidate, code, readGeneration, verified, containment, e.staleHold.steps > 0, e.staleHold.alarm})
 	return string(b)
 }
 

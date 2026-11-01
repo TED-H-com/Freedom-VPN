@@ -696,7 +696,7 @@ func TestReviewR18_Q4_CanceledApplyIsThePreFixWithdrawal(t *testing.T) {
 	defer stop()
 	live := false
 	r.eng.leaseRefreshPending = true
-	r.eng.plane = cancelThenApply{memPlane: r.plane, cancel: stop, live: &live}
+	r.eng.plane = &cancelThenApply{memPlane: r.plane, cancel: stop, live: &live}
 	if err := r.eng.Step(parent); err != nil && parent.Err() == nil {
 		t.Fatal(err)
 	}
@@ -712,7 +712,7 @@ type cancelThenApply struct {
 	live   *bool
 }
 
-func (p cancelThenApply) Apply(ctx context.Context, m enforce.Model, prev map[string]enforce.CounterValue) (enforce.ApplyResult, error) {
+func (p *cancelThenApply) Apply(ctx context.Context, m enforce.Model, prev map[string]enforce.CounterValue) (enforce.ApplyResult, error) {
 	if p.cancel != nil {
 		p.cancel()
 		p.cancel = nil

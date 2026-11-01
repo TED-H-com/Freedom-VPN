@@ -5,12 +5,13 @@ import (
 	"time"
 )
 
-// A pass owns one deadline and one quarantine attempt. Keep its context even
+// A pass owns one deadline and one quarantine allowance. Keep its context even
 // through cancellation-independent helpers. Engine.Step is single-threaded.
 type localBudgetKey struct{}
 type localBudget struct {
-	ctx         context.Context
-	quarantined bool
+	ctx              context.Context
+	quarantine       context.Context
+	cancelQuarantine context.CancelFunc
 }
 
 func newLocalBudget(parent context.Context, timeout time.Duration) (context.Context, context.CancelFunc) {
@@ -18,7 +19,12 @@ func newLocalBudget(parent context.Context, timeout time.Duration) (context.Cont
 	budget := &localBudget{}
 	ctx = context.WithValue(ctx, localBudgetKey{}, budget)
 	budget.ctx = ctx
-	return ctx, cancel
+	return ctx, func() {
+		if budget.cancelQuarantine != nil {
+			budget.cancelQuarantine()
+		}
+		cancel()
+	}
 }
 
 func localContext(ctx context.Context) context.Context {

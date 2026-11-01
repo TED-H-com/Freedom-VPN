@@ -1225,6 +1225,9 @@ func (e *Engine) ackApplied(ctx context.Context, gen uint64) {
 		return
 	}
 	e.appliedGen = gen
+	// Start elapsed hold time at the ACK, before a matching-lease request can
+	// spend the rest of the control allowance. Observation is not its origin.
+	e.updateStaleHold()
 }
 
 func (e *Engine) noteApply(err error) {
