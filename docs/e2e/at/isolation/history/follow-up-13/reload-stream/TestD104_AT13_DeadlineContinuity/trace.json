@@ -1,0 +1,872 @@
+{
+  "test_only": true,
+  "clock": "CLOCK_MONOTONIC",
+  "cadence_ms": 100,
+  "observation_window_ms": 80,
+  "kernel": "7.0.0-38-generic",
+  "nft": "nftables v1.0.9 (Old Doc Yak #3)",
+  "nft_package": "1.0.9-1ubuntu0.1",
+  "precision": {
+    "read_start_ns": "114679954248019",
+    "read_end_ns": "114679955785301",
+    "timeout_expires_ms": [
+      [
+        1001,
+        700
+      ],
+      [
+        1002,
+        701
+      ],
+      [
+        1003,
+        702
+      ],
+      [
+        1004,
+        703
+      ],
+      [
+        1005,
+        704
+      ],
+      [
+        1006,
+        705
+      ],
+      [
+        1007,
+        706
+      ],
+      [
+        1008,
+        707
+      ]
+    ],
+    "text": "table inet fvpn {\n\tset fv_granularity {\n\t\ttype ipv4_addr\n\t\tflags timeout\n\t\telements = { 192.0.2.1 timeout 1s1ms expires 700ms, 192.0.2.2 timeout 1s2ms expires 701ms,\n\t\t\t     192.0.2.3 timeout 1s3ms expires 702ms, 192.0.2.4 timeout 1s4ms expires 703ms,\n\t\t\t     192.0.2.5 timeout 1s5ms expires 704ms, 192.0.2.6 timeout 1s6ms expires 705ms,\n\t\t\t     192.0.2.7 timeout 1s7ms expires 706ms, 192.0.2.8 timeout 1s8ms expires 707ms }\n\t}\n}\n",
+    "json": {
+      "nftables": [
+        {
+          "metainfo": {
+            "version": "1.0.9",
+            "release_name": "Old Doc Yak #3",
+            "json_schema_version": 1
+          }
+        },
+        {
+          "set": {
+            "family": "inet",
+            "name": "fv_granularity",
+            "table": "fvpn",
+            "type": "ipv4_addr",
+            "handle": 4318,
+            "flags": [
+              "timeout"
+            ],
+            "elem": [
+              {
+                "elem": {
+                  "val": "192.0.2.1",
+                  "timeout": 1,
+                  "expires": 0
+                }
+              },
+              {
+                "elem": {
+                  "val": "192.0.2.2",
+                  "timeout": 1,
+                  "expires": 0
+                }
+              },
+              {
+                "elem": {
+                  "val": "192.0.2.3",
+                  "timeout": 1,
+                  "expires": 0
+                }
+              },
+              {
+                "elem": {
+                  "val": "192.0.2.4",
+                  "timeout": 1,
+                  "expires": 0
+                }
+              },
+              {
+                "elem": {
+                  "val": "192.0.2.5",
+                  "timeout": 1,
+                  "expires": 0
+                }
+              },
+              {
+                "elem": {
+                  "val": "192.0.2.6",
+                  "timeout": 1,
+                  "expires": 0
+                }
+              },
+              {
+                "elem": {
+                  "val": "192.0.2.7",
+                  "timeout": 1,
+                  "expires": 0
+                }
+              },
+              {
+                "elem": {
+                  "val": "192.0.2.8",
+                  "timeout": 1,
+                  "expires": 0
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "deadline_ns": "114682908117898",
+  "apply": {
+    "leases": [
+      {
+        "member_id": "019a0000-0000-7000-8000-00000000000a",
+        "effective_service_end": "2026-11-01T12:05:42.401619946Z",
+        "node_lease_end": "2026-11-01T12:05:42.401619946Z",
+        "signed_server_time": "2026-11-01T11:05:42.401619946Z",
+        "max_offline_seconds": 3600,
+        "deadline_mono_ns": "114682908117898"
+      }
+    ],
+    "deadline": {
+      "granularity_ns": "1000000",
+      "install_bound_ns": "100000000",
+      "apply_start_ns": "114680008119197",
+      "render_start_ns": "114680019489023",
+      "install_start_ns": "114680019561615",
+      "installed_by_ns": "114680030313923",
+      "install_ok": true,
+      "release_start_ns": "114680030315385",
+      "release_end_ns": "114680042284775",
+      "guard_released": true
+    },
+    "verified": true,
+    "evidence": {
+      "deadline_read": {
+        "start_ns": "114680045365601",
+        "end_ns": "114680046668108",
+        "elements": 1,
+        "read_ok": true,
+        "verified": true
+      },
+      "quarantined": false,
+      "tc": [
+        {
+          "interface": "fv-fh",
+          "attachment": "qdisc",
+          "objects": [
+            {
+              "kind": "fq_codel",
+              "handle": "2f:",
+              "parent": "1:2f"
+            },
+            {
+              "kind": "fq_codel",
+              "handle": "30:",
+              "parent": "1:30"
+            },
+            {
+              "kind": "htb",
+              "handle": "1:",
+              "root": true
+            }
+          ]
+        },
+        {
+          "interface": "fv-ih",
+          "attachment": "qdisc",
+          "objects": [
+            {
+              "kind": "fq_codel",
+              "handle": "2f:",
+              "parent": "1:2f"
+            },
+            {
+              "kind": "fq_codel",
+              "handle": "30:",
+              "parent": "1:30"
+            },
+            {
+              "kind": "htb",
+              "handle": "1:",
+              "root": true
+            }
+          ]
+        },
+        {
+          "interface": "fv-fh",
+          "attachment": "1:1",
+          "objects": []
+        },
+        {
+          "interface": "fv-fh",
+          "attachment": "1:2f",
+          "objects": []
+        },
+        {
+          "interface": "fv-fh",
+          "attachment": "1:30",
+          "objects": []
+        },
+        {
+          "interface": "fv-fh",
+          "attachment": "1:fffe",
+          "objects": []
+        },
+        {
+          "interface": "fv-fh",
+          "attachment": "2f:",
+          "objects": []
+        },
+        {
+          "interface": "fv-fh",
+          "attachment": "30:",
+          "objects": []
+        },
+        {
+          "interface": "fv-fh",
+          "attachment": "egress",
+          "objects": []
+        },
+        {
+          "interface": "fv-fh",
+          "attachment": "ingress",
+          "objects": []
+        },
+        {
+          "interface": "fv-fh",
+          "attachment": "root",
+          "objects": []
+        },
+        {
+          "interface": "fv-ih",
+          "attachment": "1:1",
+          "objects": []
+        },
+        {
+          "interface": "fv-ih",
+          "attachment": "1:2f",
+          "objects": []
+        },
+        {
+          "interface": "fv-ih",
+          "attachment": "1:30",
+          "objects": []
+        },
+        {
+          "interface": "fv-ih",
+          "attachment": "1:fffe",
+          "objects": []
+        },
+        {
+          "interface": "fv-ih",
+          "attachment": "2f:",
+          "objects": []
+        }
+      ],
+      "tc_summary": {
+        "generation": "104",
+        "phase": "verify",
+        "reads": 20,
+        "objects": 6,
+        "truncated": true,
+        "sha256": "710fc38cc7614c2c283545f89e47f67147fd40d5ce16f7fef7c4cfd3922697c8"
+      },
+      "policy_rules": [
+        {
+          "family": "4",
+          "count": 3
+        },
+        {
+          "family": "6",
+          "count": 2
+        }
+      ]
+    },
+    "tc_evidence": {
+      "attachments": [
+        {
+          "attachment": "qdisc",
+          "interface": "fv-fh",
+          "objects": [
+            {
+              "handle": "2f:",
+              "kind": "fq_codel",
+              "parent": "1:2f"
+            },
+            {
+              "handle": "30:",
+              "kind": "fq_codel",
+              "parent": "1:30"
+            },
+            {
+              "handle": "1:",
+              "kind": "htb",
+              "root": true
+            }
+          ]
+        },
+        {
+          "attachment": "qdisc",
+          "interface": "fv-ih",
+          "objects": [
+            {
+              "handle": "2f:",
+              "kind": "fq_codel",
+              "parent": "1:2f"
+            },
+            {
+              "handle": "30:",
+              "kind": "fq_codel",
+              "parent": "1:30"
+            },
+            {
+              "handle": "1:",
+              "kind": "htb",
+              "root": true
+            }
+          ]
+        },
+        {
+          "attachment": "1:1",
+          "interface": "fv-fh",
+          "objects": []
+        },
+        {
+          "attachment": "1:2f",
+          "interface": "fv-fh",
+          "objects": []
+        },
+        {
+          "attachment": "1:30",
+          "interface": "fv-fh",
+          "objects": []
+        },
+        {
+          "attachment": "1:fffe",
+          "interface": "fv-fh",
+          "objects": []
+        },
+        {
+          "attachment": "2f:",
+          "interface": "fv-fh",
+          "objects": []
+        },
+        {
+          "attachment": "30:",
+          "interface": "fv-fh",
+          "objects": []
+        },
+        {
+          "attachment": "egress",
+          "interface": "fv-fh",
+          "objects": []
+        },
+        {
+          "attachment": "ingress",
+          "interface": "fv-fh",
+          "objects": []
+        },
+        {
+          "attachment": "root",
+          "interface": "fv-fh",
+          "objects": []
+        },
+        {
+          "attachment": "1:1",
+          "interface": "fv-ih",
+          "objects": []
+        },
+        {
+          "attachment": "1:2f",
+          "interface": "fv-ih",
+          "objects": []
+        },
+        {
+          "attachment": "1:30",
+          "interface": "fv-ih",
+          "objects": []
+        },
+        {
+          "attachment": "1:fffe",
+          "interface": "fv-ih",
+          "objects": []
+        },
+        {
+          "attachment": "2f:",
+          "interface": "fv-ih",
+          "objects": []
+        }
+      ],
+      "candidate_generation": "104",
+      "error_code": null,
+      "objects_total": 6,
+      "phase": "verify",
+      "read_at": "2026-11-01T11:05:42.545616821Z",
+      "reads_total": 20,
+      "rejected": null,
+      "sha256": "710fc38cc7614c2c283545f89e47f67147fd40d5ce16f7fef7c4cfd3922697c8",
+      "truncated": true,
+      "verified": true
+    },
+    "timing": {
+      "version": 1,
+      "clock": "CLOCK_MONOTONIC",
+      "operation": "apply",
+      "candidate_generation": "104",
+      "start_ns": "114680008119197",
+      "end_ns": "114680062181166",
+      "succeeded": true,
+      "verified": true,
+      "deadline": {
+        "granularity_ns": "1000000",
+        "install_bound_ns": "100000000",
+        "apply_start_ns": "114680008119197",
+        "render_start_ns": "114680019489023",
+        "install_start_ns": "114680019561615",
+        "installed_by_ns": "114680030313923",
+        "install_ok": true,
+        "release_start_ns": "114680030315385",
+        "release_end_ns": "114680042284775",
+        "guard_released": true
+      },
+      "verifications": [
+        {
+          "start_ns": "114680042287275",
+          "end_ns": "114680062175755",
+          "nft_read": {
+            "start_ns": "114680042287696",
+            "end_ns": "114680044252530",
+            "ok": true
+          },
+          "tc_read": {
+            "start_ns": "114680046682775",
+            "end_ns": "114680060388675",
+            "ok": true
+          },
+          "precision_read": {
+            "start_ns": "114680045365601",
+            "end_ns": "114680046668108",
+            "elements": 1,
+            "read_ok": true,
+            "verified": true
+          },
+          "tc_sha256": "710fc38cc7614c2c283545f89e47f67147fd40d5ce16f7fef7c4cfd3922697c8",
+          "verified": true
+        }
+      ]
+    },
+    "generation": 104,
+    "admitted": 1,
+    "resets": [],
+    "finals": [
+      {
+        "device_id": "019a0000-0000-7000-8000-0000000000a2",
+        "member_id": "00000000-0000-0000-0000-000000000000",
+        "peer_id": "",
+        "binding_revision": 0,
+        "direction": "dns_download",
+        "packets": 0,
+        "bytes": 0,
+        "namespace": "dns_service_v1"
+      },
+      {
+        "device_id": "019a0000-0000-7000-8000-0000000000a2",
+        "member_id": "00000000-0000-0000-0000-000000000000",
+        "peer_id": "",
+        "binding_revision": 0,
+        "direction": "dns_upload",
+        "packets": 0,
+        "bytes": 0,
+        "namespace": "dns_service_v1"
+      },
+      {
+        "device_id": "019a0000-0000-7000-8000-0000000000a2",
+        "member_id": "00000000-0000-0000-0000-000000000000",
+        "peer_id": "",
+        "binding_revision": 0,
+        "direction": "download",
+        "packets": 6,
+        "bytes": 448,
+        "namespace": "forward_admission_v1"
+      },
+      {
+        "device_id": "019a0000-0000-7000-8000-0000000000a2",
+        "member_id": "00000000-0000-0000-0000-000000000000",
+        "peer_id": "",
+        "binding_revision": 0,
+        "direction": "upload",
+        "packets": 10,
+        "bytes": 488,
+        "namespace": "forward_admission_v1"
+      },
+      {
+        "device_id": "019a0000-0000-7000-8000-0000000000b1",
+        "member_id": "00000000-0000-0000-0000-000000000000",
+        "peer_id": "",
+        "binding_revision": 0,
+        "direction": "dns_download",
+        "packets": 0,
+        "bytes": 0,
+        "namespace": "dns_service_v1"
+      },
+      {
+        "device_id": "019a0000-0000-7000-8000-0000000000b1",
+        "member_id": "00000000-0000-0000-0000-000000000000",
+        "peer_id": "",
+        "binding_revision": 0,
+        "direction": "dns_upload",
+        "packets": 0,
+        "bytes": 0,
+        "namespace": "dns_service_v1"
+      },
+      {
+        "device_id": "019a0000-0000-7000-8000-0000000000b1",
+        "member_id": "00000000-0000-0000-0000-000000000000",
+        "peer_id": "",
+        "binding_revision": 0,
+        "direction": "download",
+        "packets": 0,
+        "bytes": 0,
+        "namespace": "forward_admission_v1"
+      },
+      {
+        "device_id": "019a0000-0000-7000-8000-0000000000b1",
+        "member_id": "00000000-0000-0000-0000-000000000000",
+        "peer_id": "",
+        "binding_revision": 0,
+        "direction": "upload",
+        "packets": 0,
+        "bytes": 0,
+        "namespace": "forward_admission_v1"
+      }
+    ],
+    "samples": [
+      {
+        "device_id": "019a0000-0000-7000-8000-0000000000a1",
+        "member_id": "019a0000-0000-7000-8000-00000000000a",
+        "peer_id": "peer-a1",
+        "binding_revision": 1,
+        "direction": "dns_download",
+        "packets": 0,
+        "bytes": 0,
+        "namespace": "dns_service_v1"
+      },
+      {
+        "device_id": "019a0000-0000-7000-8000-0000000000a1",
+        "member_id": "019a0000-0000-7000-8000-00000000000a",
+        "peer_id": "peer-a1",
+        "binding_revision": 1,
+        "direction": "dns_upload",
+        "packets": 0,
+        "bytes": 0,
+        "namespace": "dns_service_v1"
+      },
+      {
+        "device_id": "019a0000-0000-7000-8000-0000000000a1",
+        "member_id": "019a0000-0000-7000-8000-00000000000a",
+        "peer_id": "peer-a1",
+        "binding_revision": 1,
+        "direction": "download",
+        "packets": 138,
+        "bytes": 6078,
+        "namespace": "forward_admission_v1"
+      },
+      {
+        "device_id": "019a0000-0000-7000-8000-0000000000a1",
+        "member_id": "019a0000-0000-7000-8000-00000000000a",
+        "peer_id": "peer-a1",
+        "binding_revision": 1,
+        "direction": "upload",
+        "packets": 206,
+        "bytes": 9614,
+        "namespace": "forward_admission_v1"
+      }
+    ],
+    "assignments": {
+      "019a0000-0000-7000-8000-00000000000a": "2f",
+      "019a0000-0000-7000-8000-00000000000b": "30"
+    }
+  },
+  "packets": [
+    {
+      "packet_id": 0,
+      "target_ns": "114680307117898",
+      "sent_ns": "114680307282730",
+      "ingress_ns": "114680307400260",
+      "egress_ns": "114680307406824",
+      "end_ns": "114680387396348"
+    },
+    {
+      "packet_id": 1,
+      "target_ns": "114680407117898",
+      "sent_ns": "114680407223767",
+      "ingress_ns": "114680407329242",
+      "egress_ns": "114680407333744",
+      "end_ns": "114680487350480"
+    },
+    {
+      "packet_id": 2,
+      "target_ns": "114680507117898",
+      "sent_ns": "114680507291139",
+      "ingress_ns": "114680507384429",
+      "egress_ns": "114680507386950",
+      "end_ns": "114680587500162"
+    },
+    {
+      "packet_id": 3,
+      "target_ns": "114680607117898",
+      "sent_ns": "114680607193465",
+      "ingress_ns": "114680607266571",
+      "egress_ns": "114680607269491",
+      "end_ns": "114680687290545"
+    },
+    {
+      "packet_id": 4,
+      "target_ns": "114680707117898",
+      "sent_ns": "114680707302972",
+      "ingress_ns": "114680707399479",
+      "egress_ns": "114680707404290",
+      "end_ns": "114680787485176"
+    },
+    {
+      "packet_id": 5,
+      "target_ns": "114680807117898",
+      "sent_ns": "114680807315849",
+      "ingress_ns": "114680807365751",
+      "egress_ns": "114680807369660",
+      "end_ns": "114680887427337"
+    },
+    {
+      "packet_id": 6,
+      "target_ns": "114680907117898",
+      "sent_ns": "114680907204853",
+      "ingress_ns": "114680907278383",
+      "egress_ns": "114680907283930",
+      "end_ns": "114680987387084"
+    },
+    {
+      "packet_id": 7,
+      "target_ns": "114681007117898",
+      "sent_ns": "114681007195290",
+      "ingress_ns": "114681007238346",
+      "egress_ns": "114681007242288",
+      "end_ns": "114681087291219"
+    },
+    {
+      "packet_id": 8,
+      "target_ns": "114681107117898",
+      "sent_ns": "114681107210597",
+      "ingress_ns": "114681107296452",
+      "egress_ns": "114681107304242",
+      "end_ns": "114681187303198"
+    },
+    {
+      "packet_id": 9,
+      "target_ns": "114681207117898",
+      "sent_ns": "114681207272662",
+      "ingress_ns": "114681207360673",
+      "egress_ns": "114681207366191",
+      "end_ns": "114681287459781"
+    },
+    {
+      "packet_id": 10,
+      "target_ns": "114681307117898",
+      "sent_ns": "114681307213208",
+      "ingress_ns": "114681307299039",
+      "egress_ns": "114681307301738",
+      "end_ns": "114681387387112"
+    },
+    {
+      "packet_id": 11,
+      "target_ns": "114681407117898",
+      "sent_ns": "114681407280905",
+      "ingress_ns": "114681407335569",
+      "egress_ns": "114681407348158",
+      "end_ns": "114681487466477"
+    },
+    {
+      "packet_id": 12,
+      "target_ns": "114681507117898",
+      "sent_ns": "114681507340260",
+      "ingress_ns": "114681507414891",
+      "egress_ns": "114681507418266",
+      "end_ns": "114681587541538"
+    },
+    {
+      "packet_id": 13,
+      "target_ns": "114681607117898",
+      "sent_ns": "114681607321315",
+      "ingress_ns": "114681607400411",
+      "egress_ns": "114681607403146",
+      "end_ns": "114681687412444"
+    },
+    {
+      "packet_id": 14,
+      "target_ns": "114681707117898",
+      "sent_ns": "114681707361486",
+      "ingress_ns": "114681707417712",
+      "egress_ns": "114681707420485",
+      "end_ns": "114681787528118"
+    },
+    {
+      "packet_id": 15,
+      "target_ns": "114681807117898",
+      "sent_ns": "114681807309602",
+      "ingress_ns": "114681807371148",
+      "egress_ns": "114681807373708",
+      "end_ns": "114681887484337"
+    },
+    {
+      "packet_id": 16,
+      "target_ns": "114681907117898",
+      "sent_ns": "114681907312569",
+      "ingress_ns": "114681907382710",
+      "egress_ns": "114681907388139",
+      "end_ns": "114681987519456"
+    },
+    {
+      "packet_id": 17,
+      "target_ns": "114682007117898",
+      "sent_ns": "114682007198055",
+      "ingress_ns": "114682007257205",
+      "egress_ns": "114682007260254",
+      "end_ns": "114682087298308"
+    },
+    {
+      "packet_id": 18,
+      "target_ns": "114682107117898",
+      "sent_ns": "114682107340217",
+      "ingress_ns": "114682107403910",
+      "egress_ns": "114682107406805",
+      "end_ns": "114682187437046"
+    },
+    {
+      "packet_id": 19,
+      "target_ns": "114682207117898",
+      "sent_ns": "114682207282060",
+      "ingress_ns": "114682207337237",
+      "egress_ns": "114682207339535",
+      "end_ns": "114682287452531"
+    },
+    {
+      "packet_id": 20,
+      "target_ns": "114682307117898",
+      "sent_ns": "114682307289056",
+      "ingress_ns": "114682307387084",
+      "egress_ns": "114682307390210",
+      "end_ns": "114682387466698"
+    },
+    {
+      "packet_id": 21,
+      "target_ns": "114682407117898",
+      "sent_ns": "114682407318093",
+      "ingress_ns": "114682407391239",
+      "egress_ns": "114682407393577",
+      "end_ns": "114682487489974"
+    },
+    {
+      "packet_id": 22,
+      "target_ns": "114682507117898",
+      "sent_ns": "114682507313344",
+      "ingress_ns": "114682507364149",
+      "egress_ns": "114682507366359",
+      "end_ns": "114682587513063"
+    },
+    {
+      "packet_id": 23,
+      "target_ns": "114682607117898",
+      "sent_ns": "114682607335812",
+      "ingress_ns": "114682607405468",
+      "egress_ns": "114682607412765",
+      "end_ns": "114682687552621"
+    },
+    {
+      "packet_id": 24,
+      "target_ns": "114682707117898",
+      "sent_ns": "114682707266002",
+      "ingress_ns": "114682707336157",
+      "egress_ns": "114682707341629",
+      "end_ns": "114682787358292"
+    },
+    {
+      "packet_id": 25,
+      "target_ns": "114682807117898",
+      "sent_ns": "114682807260056",
+      "ingress_ns": "114682807325782",
+      "egress_ns": "114682807331004",
+      "end_ns": "114682887424375"
+    },
+    {
+      "packet_id": 26,
+      "target_ns": "114682907117898",
+      "sent_ns": "114682907191477",
+      "ingress_ns": "114682907246329",
+      "egress_ns": "0",
+      "end_ns": "114682987403292"
+    },
+    {
+      "packet_id": 27,
+      "target_ns": "114683007117898",
+      "sent_ns": "114683007288133",
+      "ingress_ns": "114683007328890",
+      "egress_ns": "0",
+      "end_ns": "114683087466711"
+    },
+    {
+      "packet_id": 28,
+      "target_ns": "114683107117898",
+      "sent_ns": "114683107282723",
+      "ingress_ns": "114683107326099",
+      "egress_ns": "0",
+      "end_ns": "114683187474471"
+    },
+    {
+      "packet_id": 29,
+      "target_ns": "114683207117898",
+      "sent_ns": "114683207286791",
+      "ingress_ns": "114683207333610",
+      "egress_ns": "0",
+      "end_ns": "114683287384632"
+    },
+    {
+      "packet_id": 30,
+      "target_ns": "114683307117898",
+      "sent_ns": "114683307322260",
+      "ingress_ns": "114683307381682",
+      "egress_ns": "0",
+      "end_ns": "114683387511646"
+    },
+    {
+      "packet_id": 31,
+      "target_ns": "114683407117898",
+      "sent_ns": "114683407289531",
+      "ingress_ns": "114683407341856",
+      "egress_ns": "0",
+      "end_ns": "114683487463357"
+    },
+    {
+      "packet_id": 32,
+      "target_ns": "114683507117898",
+      "sent_ns": "114683507296368",
+      "ingress_ns": "114683507350493",
+      "egress_ns": "0",
+      "end_ns": "114683587497369"
+    }
+  ],
+  "installed_member_read": {
+    "start_ns": "114680063304893",
+    "end_ns": "114680064659052",
+    "text": "table inet fvpn {\n\tset allowed_v4 {\n\t\ttype ipv4_addr\n\t\tflags timeout\n\t\telements = { 100.64.1.1 timeout 2s788ms expires 2s744ms }\n\t}\n}\n"
+  }
+}
