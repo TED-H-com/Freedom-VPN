@@ -84,7 +84,7 @@ func TestPKG01_StopWaitsThroughUnitBudget(t *testing.T) {
 					return nil, nil
 				}}
 				start := time.Now()
-				err := (systemdManager{env: env}).Stop(ctx, UnitAgent)
+				err := stopForBinaryReplace(ctx, systemdManager{env: env}, UnitAgent)
 				wantDuration := 16 * time.Second
 				var wantErr error
 				switch mode {

@@ -37,7 +37,7 @@ func (e *Env) services() ServiceManager {
 type systemdManager struct{ env *Env }
 
 // Allow the agent's 15 s forced-stop backstop plus 5 s for systemctl to return.
-const serviceStopTimeout = 20 * time.Second
+const replaceStopTimeout = 20 * time.Second
 
 func (s systemdManager) DaemonReload(ctx context.Context) error {
 	return s.env.run(ctx, "systemctl", "daemon-reload")
@@ -72,14 +72,20 @@ func oneLine(s string) string {
 }
 
 func (s systemdManager) Stop(ctx context.Context, unit string) error {
+	return s.env.run(ctx, "systemctl", "stop", unit)
+}
+
+// stopForBinaryReplace bounds the critical stop before any binary or unit is
+// replaced. Its caller journals and aborts on every error, including timeout.
+func stopForBinaryReplace(ctx context.Context, services ServiceManager, unit string) error {
 	if err := ctx.Err(); err != nil {
 		return err
 	}
 	// Once submitted, wait for the stop even if the caller cancels. Killing
 	// systemctl does not cancel systemd's job; replacement must not race it.
-	stopCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), serviceStopTimeout)
+	stopCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), replaceStopTimeout)
 	defer cancel()
-	err := s.env.run(stopCtx, "systemctl", "stop", unit)
+	err := services.Stop(stopCtx, unit)
 	return errors.Join(err, stopCtx.Err(), ctx.Err())
 }
 

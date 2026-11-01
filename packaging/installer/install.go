@@ -165,7 +165,7 @@ func Install(ctx context.Context, env *Env, req InstallRequest) (*Result, error)
 			if err := j.Note("stop", unit, unit, "stop requested for binary replace"); err != nil {
 				return fail(err)
 			}
-			if err := env.services().Stop(ctx, unit); err != nil {
+			if err := stopForBinaryReplace(ctx, env.services(), unit); err != nil {
 				stopErr := errf(ExitFailed, "failed", "stopping %s for binary replace failed: %s", unit, oneLine(err.Error()))
 				journalErr := j.Note("stop-failed", unit, unit, stopErr.Error())
 				return fail(errors.Join(stopErr, journalErr))
