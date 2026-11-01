@@ -23,4 +23,3 @@ capture without changing the node ruleset; the verifier closes an invalidated
 node. Traceroute gets no reply from spec-denied on-path sources under the new
 source guard; owner question open, no fix promised. Historical failures stay
 failed. Older snapshots below retain their own cutoff.
-
