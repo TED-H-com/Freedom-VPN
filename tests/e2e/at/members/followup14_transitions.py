@@ -1,7 +1,8 @@
+from evidence_io import load
 from pathlib import Path
 import json,hashlib,datetime
 root=Path('docs/e2e/at/members')
-run=json.loads((root/'AT02.json').read_text())['run_id']
+run=load(root/'AT02.json')['run_id']
 streams={};receipts={}
 for node,name in [('node','f14-parser-producer.jsonl'),('node2','f14-node2-producer.jsonl')]:
  path=Path('.agent/tmp')/name
@@ -11,7 +12,7 @@ for node,name in [('node','f14-parser-producer.jsonl'),('node2','f14-node2-produ
 rows=[]
 parse=lambda s:datetime.datetime.fromisoformat(s.replace('Z','+00:00'))
 for case in ['AT02','AT08','AT09']:
- v=json.loads((root/(case+'.json')).read_text())
+ v=load(root/(case+'.json'))
  if v['run_id']!=run:continue
  for s in v['steps']:
   if not s['name'].startswith('agent transition '):continue
@@ -30,5 +31,5 @@ for case in ['AT02','AT08','AT09']:
     prior=old[-2:]
     interpretation='new producer retains a prior-run lease before its first renewal; original command snapshots remain unchanged'
   rows.append({'case':case,'original_check':s,'duration_seconds':int(a['duration_ns'])/1e9,'additional_interpretation':interpretation,'prior_producer_records':prior,'first_new_producer_records':initial,'limit':'command intervals and sampled stored state; namespace restart interval includes the owner 90-second observation window; no outage ceiling or repeated-restart reliability claim'})
-(root/'F14-agent-transitions.json').write_text(json.dumps({'run_id':run,'source_commit':json.loads((root/'AT02.json').read_text())['source_commit'],'producer_exports':receipts,'transitions':rows},indent=2)+'\n')
+(root/'F14-agent-transitions.json').write_text(json.dumps({'run_id':run,'source_commit':load(root/'AT02.json')['source_commit'],'producer_exports':receipts,'transitions':rows},indent=2)+'\n')
 print('agent transition rows',len(rows))

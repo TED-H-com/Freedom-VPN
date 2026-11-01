@@ -20,7 +20,7 @@ func TestCommittedEvidenceHygiene(t *testing.T) {
 		if d.IsDir() {
 			return nil
 		}
-		raw, err := os.ReadFile(path)
+		raw, err := readEvidence(path)
 		if err != nil {
 			return err
 		}
@@ -29,7 +29,8 @@ func TestCommittedEvidenceHygiene(t *testing.T) {
 				t.Errorf("unsafe evidence %s", path)
 			}
 		}
-		if filepath.Ext(path) == ".json" && len(filepath.Base(path)) == len("AT01.json") && strings.HasPrefix(filepath.Base(path), "AT") {
+		name := strings.TrimSuffix(filepath.Base(path), ".gz")
+		if filepath.Ext(name) == ".json" && len(name) == len("AT01.json") && strings.HasPrefix(name, "AT") {
 			var rec struct {
 				RunID  string `json:"run_id"`
 				Source string `json:"source_commit"`

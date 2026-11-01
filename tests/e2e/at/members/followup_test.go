@@ -39,7 +39,7 @@ func TestATMembers_FollowupReadback(t *testing.T) {
 	ids := []string{"AT02", "AT03", "AT04", "AT08", "AT09", "AT20", "AT22"}
 	for _, id := range ids {
 		var r record
-		raw, err := os.ReadFile(filepath.Join(l.root, "docs/e2e/at/members", id+".json"))
+		raw, err := readEvidence(filepath.Join(l.root, "docs/e2e/at/members", id+".json"))
 		if err != nil || json.Unmarshal(raw, &r) != nil {
 			t.Fatal("prior acceptance record unavailable")
 		}

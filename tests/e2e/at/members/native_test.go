@@ -245,7 +245,9 @@ func (l *live) devices(r *record) {
 	defer l.finishSibling(r, siblingCapture)
 	beforeGeneration := l.counters(first).Generation
 	pidBefore, _ := l.inside("node", "pgrep", "-x", "fvpn-agent")
+	l.holdSnapshot("before AT02 device revoke with sibling")
 	revoke := l.api(l.a, "DELETE", "/api/v1/member/devices/"+second.String(), nil, commandHeaders())
+	l.holdSnapshot("after AT02 device revoke with sibling")
 	freed := l.count(`SELECT count(*) FROM member_devices WHERE member_id=$1 AND status='authorized'`, l.a.member)
 	_, err = svc.ObserveAndAuthorize(l.ctx, admissionCommand(), "e2e", loser)
 	restored := l.count(`SELECT count(*) FROM member_devices WHERE member_id=$1 AND status='authorized'`, l.a.member)
