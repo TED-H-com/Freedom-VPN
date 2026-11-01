@@ -528,6 +528,12 @@ func (e *Engine) Step(ctx context.Context) error {
 		_ = e.flush(ctx)
 		return nil
 	}
+	// The independent live read can finish after SIGTERM. Stop here before
+	// canceled local store/meter reads manufacture a storage failure and
+	// prevent Close from checkpointing the still-valid same-boot rules.
+	if err := ctx.Err(); err != nil {
+		return err
+	}
 	// Refresh the anchor before any 304. A wall jump must be visible to the
 	// lease renewal decision even when desired state is unchanged (§16.3).
 	_, _ = e.verifyTime()

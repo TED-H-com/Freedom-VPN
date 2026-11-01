@@ -68,3 +68,33 @@ func TestF31_CommandLifecycleRequiresBothTimingGates(t *testing.T) {
 		})
 	}
 }
+
+func TestF31_StaleGenerationBaselinePrecedesRenewalWithoutCandidateApply(t *testing.T) {
+	r := newRig(t)
+	alignControlClock(r)
+	serveBoundGeneration(t, r)
+	r.manualUsage(t)
+	oldLease, applies, baselines := r.eng.lease.LeaseId, r.plane.applies, r.plane.baselines
+	r.eng.leaseAttempted = false // beginning of the next Step
+	r.srv.SetFixture(generationFixture(3, oneBinding(r.clock.Wall())))
+	if err := r.eng.syncDesired(t.Context()); err != nil {
+		t.Fatal(err)
+	}
+	if r.eng.needRenew() {
+		t.Fatal("fixture must exercise desired-ahead-of-applied renewal ordering")
+	}
+	r.eng.evaluate(t.Context())
+	if err := r.eng.enforce(t.Context(), r.eng.decision); err != nil {
+		t.Fatal(err)
+	}
+	if r.eng.serving || r.eng.appliedGen != 3 || r.eng.lease.LeaseId != oldLease ||
+		r.plane.applies != applies || r.plane.baselines <= baselines || r.eng.applyError != nil {
+		t.Fatal("ordinary stale generation must baseline and ACK without candidate Apply")
+	}
+	if err := r.eng.renewAppliedLease(t.Context()); err != nil {
+		t.Fatal(err)
+	}
+	if !r.eng.serving || r.eng.lease.LeaseId == oldLease || r.eng.lease.ConfigGeneration != 3 || r.plane.applies != applies+1 {
+		t.Fatal("matching renewal requires a subsequent serving Apply")
+	}
+}
