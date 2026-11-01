@@ -59,3 +59,17 @@ preserved byte-identically under
 before the owned relative-symlink probe fix. Its make failure and the incorrect
 unconditional narrative are explicitly retained and explained. The later run
 must supply all current claims independently. No prior archive was rewritten.
+
+## Follow-up 13 archive — 2026-11-01
+
+Before any follow-up 13 execution, all **44** root files on main
+`5bd751026073444087b32ac2a7115f8566104f8b` were copied byte-identically to
+[follow-up 12](history/follow-up-12/ARCHIVE.md), with the same
+[SHA256SUMS](history/follow-up-12/SHA256SUMS) manifest shape as follow-up 11.
+Every copy was compared with its source main blob. Run
+`2babf9b6-86a3-489d-a678-0bd447f2f8b0` is the immutable comparison baseline
+for the new agent-stop measurements. Its product baseline is
+`45209609d33d567c5f04d49441799cdd3efac59b`.
+The failed first attempt and every earlier archive remain untouched.
+New digest-dependent evidence consumers must pin history paths only.
+This archive and audit extension are committed before running any gate or lab.
