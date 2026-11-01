@@ -1,0 +1,15 @@
+{
+  "id": "loopback-underlay",
+  "title": "All loopback-source underlay packets and independent error-counter windows",
+  "spec": null,
+  "status": "pass",
+  "observations": [
+    {
+      "name": "analysis",
+      "detail": "{\"messages\":[],\"types\":{},\"joined_both_ends\":0,\"member_ipv6_header_error_increment\":\"0\",\"counter_windows\":[],\"following_non_loopback_data\":[],\"scope\":\"Same opaque WireGuard bytes join node and member underlay captures. Header-error increments are bounded observations, not exact drop callsites. Type 4 data is distinct from a type 2 handshake response; this artifact does not infer a handshake retry or historical cause.\"}"
+    }
+  ],
+  "at": "2026-11-01T15:12:00Z",
+  "run_id": "e4c58b1d-505d-40b1-b899-e929f3d20846",
+  "source_commit": "9d7df53501ee798b6cbe954771dccfda3640ca43"
+}
