@@ -3,6 +3,17 @@
 # this container. Never prints the enrollment token or the setup key.
 set -eu
 umask 077
+# TEST ONLY PID1 signal forwarding, not scratch cleanup. Keep the supervisor,
+# parent waiter and watchdog alive while the normal pause/stop path gives the
+# agent its shipped 15 s budget and persists the actual wait receipt.
+stop_container() {
+    trap '' TERM INT
+    if agent-service.sh stop; then
+        exit 0
+    fi
+    exit 1
+}
+trap stop_container TERM INT
 mkdir -p /run/vpn-node /var/lib/vpn-node/state /var/lib/vpn-node/identity \
     /var/lib/vpn-node/update-journal /var/lib/vpn-node/e2e /opt/vpn-node /var/log/netbird /etc/vpn-node
 # Rename only this container's origin-facing interface. The real NetBird

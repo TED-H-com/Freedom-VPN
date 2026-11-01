@@ -148,7 +148,7 @@ func (s *Stack) startExitSlot(ctx context.Context, slot, lastOctet string, clone
 	// The copied file already names the lab /24. The clone rewrites
 	// agent.example.invalid to the presentation control address first.
 	netbirdDest := "/etc/netbird"
-	args := []string{"run", "-d", "--name", name, "--privileged", "--network", "container:" + ns}
+	args := []string{"run", "-d", "--name", name, "--stop-timeout", "25", "--privileged", "--network", "container:" + ns}
 	if clone {
 		netbirdDest = "/var/lib/netbird"
 		pres, attachErr := s.AttachClonePresentationNetwork(ctx, ns)

@@ -196,6 +196,10 @@ func (r *runner) fixtureServingMember(ctx context.Context, admin *session) {
 	if !r.usageReady {
 		return
 	}
+	if os.Getenv("FVPN_E2E_FOLLOWUP26") == "1" && !r.servingGate26(ctx, "admission-serving") {
+		note("measurement", "admission failed; no first-selection request launched")
+		return
+	}
 	if os.Getenv("FVPN_E2E_FOLLOWUP22") == "1" || os.Getenv("FVPN_E2E_FOLLOWUP23") == "1" || os.Getenv("FVPN_E2E_FOLLOWUP24") == "1" {
 		r.nativeInitial22(ctx, &Stack{lab: r.lab})
 	}

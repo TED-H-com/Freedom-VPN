@@ -74,7 +74,7 @@ func TestCommittedFixtureEvidence_ValidAndHygieneClean(t *testing.T) {
 			return err
 		}
 		if d.IsDir() {
-			if strings.HasPrefix(filepath.Base(filepath.Dir(path)), "2026-") && d.Name() != "followup16" && d.Name() != "followup17" && d.Name() != "followup18" && d.Name() != "followup19" && d.Name() != "followup20" && d.Name() != "followup21" && d.Name() != "followup22" && d.Name() != "followup23" && d.Name() != "followup24" && d.Name() != "followup25" {
+			if strings.HasPrefix(filepath.Base(filepath.Dir(path)), "2026-") && d.Name() != "followup16" && d.Name() != "followup17" && d.Name() != "followup18" && d.Name() != "followup19" && d.Name() != "followup20" && d.Name() != "followup21" && d.Name() != "followup22" && d.Name() != "followup23" && d.Name() != "followup24" && d.Name() != "followup25" && d.Name() != "followup26" {
 				return filepath.SkipDir
 			}
 			return nil
@@ -86,7 +86,7 @@ func TestCommittedFixtureEvidence_ValidAndHygieneClean(t *testing.T) {
 		if err != nil {
 			return err
 		}
-		if filepath.Ext(path) == ".jsonl" && (strings.Contains(path, "/followup22/") || strings.Contains(path, "/followup23/") || strings.Contains(path, "/followup24/") || strings.Contains(path, "/followup25/")) {
+		if filepath.Ext(path) == ".jsonl" && (strings.Contains(path, "/followup22/") || strings.Contains(path, "/followup23/") || strings.Contains(path, "/followup24/") || strings.Contains(path, "/followup25/") || strings.Contains(path, "/followup26/")) {
 			if len(raw) == 0 && emptyCaptureCertified(path) {
 				return nil
 			}
@@ -102,7 +102,7 @@ func TestCommittedFixtureEvidence_ValidAndHygieneClean(t *testing.T) {
 				}
 			}
 		}
-		if filepath.Ext(path) == ".json" && filepath.Base(path) == "analysis.json" && (strings.Contains(path, "/followup22/") || strings.Contains(path, "/followup23/") || strings.Contains(path, "/followup24/") || strings.Contains(path, "/followup25/")) {
+		if filepath.Ext(path) == ".json" && filepath.Base(path) == "analysis.json" && (strings.Contains(path, "/followup22/") || strings.Contains(path, "/followup23/") || strings.Contains(path, "/followup24/") || strings.Contains(path, "/followup25/") || strings.Contains(path, "/followup26/")) {
 			var a struct {
 				Schema string            `json:"schema"`
 				Rows   []json.RawMessage `json:"rows"`

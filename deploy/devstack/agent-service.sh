@@ -19,6 +19,9 @@ set -eu
 base=/var/lib/vpn-node/e2e
 pause=$base/pause-agent
 poll=0.2
+# Match the shipped TimeoutStopSec. Use a monotonic deadline so scanning /proc
+# does not add its duration 75 times to the cooperative budget.
+monotonic_ms() { awk '{printf "%.0f\n", $1 * 1000}' /proc/uptime; }
 
 agent_state() {
     _state_rest=${1#*)}
@@ -54,7 +57,7 @@ each_agent() {
             # the supervisor attempted escalation and whether kill accepted it.
             if [ -s "$base/agent.pid" ] && [ "$(cat "$base/agent.pid")" = "$_each_p" ] && [ -s "$base/agent-process-id" ]; then
                 _kill_id=$(cat "$base/agent-process-id")
-                (umask 077; printf '{"pid":%s,"signal":9,"requested_at":"%s","kill_accepted":%s}\n' "$_each_p" "$_kill_at" "$_kill_delivered" > "$base/agent-exits/$_kill_id.sigkill.tmp" && mv "$base/agent-exits/$_kill_id.sigkill.tmp" "$base/agent-exits/$_kill_id.sigkill.json") || true
+                (umask 077; printf '{"pid":%s,"signal":9,"requested_at":"%s","kill_accepted":%s,"term_requested_at":"%s","waited_ms":%s}\n' "$_each_p" "$_kill_at" "$_kill_delivered" "$_reap_started_at" "$(( $(monotonic_ms) - _reap_started_ms ))" > "$base/agent-exits/$_kill_id.sigkill.tmp" && mv "$base/agent-exits/$_kill_id.sigkill.tmp" "$base/agent-exits/$_kill_id.sigkill.json") || true
             fi
         fi
     done
@@ -71,11 +74,11 @@ count_agents() {
 }
 
 reap_agents() {
+    _reap_started_at=$(date -u +%Y-%m-%dT%H:%M:%S.%NZ)
+    _reap_started_ms=$(monotonic_ms)
     each_agent kill
-    _reap_i=0
-    while [ "$(count_agents)" -ne 0 ] && [ "$_reap_i" -lt 25 ]; do
+    while [ "$(count_agents)" -ne 0 ] && [ "$(( $(monotonic_ms) - _reap_started_ms ))" -lt 15000 ]; do
         sleep "$poll"
-        _reap_i=$((_reap_i + 1))
     done
     if [ "$(count_agents)" -ne 0 ]; then
         each_agent kill9

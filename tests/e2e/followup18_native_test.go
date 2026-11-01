@@ -32,6 +32,9 @@ func TestE2E_Followup18Native(t *testing.T) {
 	id := uuid.NewString()
 	r := &runner{t: t, lab: l, runID: id, sourceCommit: strings.TrimSpace(string(head)), dir: filepath.Join(l.root, "docs/e2e/runs", time.Now().UTC().Format("2006-01-02"), nativeCampaignDirectory(), id)}
 	defer r.finish()
+	if os.Getenv("FVPN_E2E_FOLLOWUP26") == "1" {
+		defer r.exportCentral26(context.WithoutCancel(ctx))
+	}
 	s := &Stack{lab: l}
 	must := func(e error) {
 		t.Helper()
@@ -76,6 +79,9 @@ func TestE2E_Followup18Native(t *testing.T) {
 	r.desired(ctx)
 	r.publish(ctx, admin, r.nodeID)
 	r.fixtureServingMember(ctx, admin)
+	if os.Getenv("FVPN_E2E_FOLLOWUP26") == "1" {
+		r.regrant26(ctx, admin)
+	}
 	if os.Getenv("FVPN_E2E_FOLLOWUP24") == "1" {
 		r.exportNative24(ctx, s)
 		return
@@ -387,6 +393,9 @@ func (r *runner) nativeMTU18(ctx context.Context, s *Stack) {
 }
 
 func nativeCampaignDirectory() string {
+	if os.Getenv("FVPN_E2E_FOLLOWUP26") == "1" {
+		return "followup26"
+	}
 	if os.Getenv("FVPN_E2E_FOLLOWUP25") == "1" {
 		return "followup25"
 	}
@@ -561,6 +570,14 @@ func (r *runner) nativeInitial22(ctx context.Context, s *Stack) {
 		return
 	}
 	defer r.finishNativeCapture22(ctx, &rec, c)
+	r.nativeTransfer26(ctx, s, &rec, c)
+}
+
+// Shared single-request measurement. Re-grant callers start capture before
+// mutation and retain its whole session; neither path retries the request.
+func (r *runner) nativeTransfer26(ctx context.Context, s *Stack, record *Record, c *NativeCapture) {
+	rec := *record
+	defer func() { *record = rec }()
 	if os.Getenv("FVPN_E2E_FOLLOWUP24") == "1" {
 		k, err := s.startKernelTrace(ctx)
 		if err != nil {
