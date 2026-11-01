@@ -155,7 +155,7 @@ func (c *NativeCapture) Sample(ctx context.Context, label string) error {
 	var errs []error
 	for role, container := range c.containers {
 		wg.Go(func() {
-			raw, e := exec.CommandContext(ctx, "docker", "exec", container, nativeObserve, "-peer", c.targets[role], "-origin", c.stack.lab.originIP).Output()
+			raw, e := exec.CommandContext(ctx, "docker", "exec", "-e", "FVPN_E2E_KERNEL_OBSERVE="+os.Getenv("FVPN_E2E_KERNEL_OBSERVE"), container, nativeObserve, "-peer", c.targets[role], "-origin", c.stack.lab.originIP).Output()
 			var out nativecapture.Snapshot
 			if e == nil {
 				e = json.Unmarshal(raw, &out)
