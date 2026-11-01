@@ -1,0 +1,19 @@
+{
+  "command": [
+    "python3",
+    "-B",
+    "tests/netlab/scripts/reload_analysis.py",
+    "--stream",
+    "docs/poc/G2-followup24-evidence/comparison/A2-attempt2/reload/TestAT10_AT13_ReloadRevokeBaseline/stream-a1.log.jsonl",
+    "--stream-log",
+    "docs/poc/G2-followup24-evidence/comparison/A2-attempt2/reload/TestAT10_AT13_ReloadRevokeBaseline/stream-a1.txt",
+    "--apply",
+    "docs/poc/G2-followup24-evidence/comparison/A2-attempt2/reload/TestAT10_AT13_ReloadRevokeBaseline/at10-apply.jsonl",
+    "--trace-base",
+    "docs/poc/G2-followup24-evidence/comparison/A2-attempt2/reload/TestAT10_AT13_ReloadRevokeBaseline/at10",
+    "--output",
+    "docs/poc/G2-followup25-evidence/a2-before.json",
+    "--d120"
+  ],
+  "exit": 1
+}
