@@ -28,14 +28,6 @@ import (
 // AT20 is this lane's ENR-05 extension, not the DNS acceptance case §19 AT20.
 // Read-only ledger exports and public APIs are the evidence sources. The
 // historical stream must never be reconstructed under the presenting identity.
-type handoffEvent struct {
-	Event            api.UsageEvent  `json:"event"`
-	Raw              json.RawMessage `json:"-"`
-	CentralCount     int             `json:"central_count_by_payload_sha256"`
-	PayloadUnchanged bool            `json:"canonical_payload_unchanged"`
-	SamplesUnchanged bool            `json:"historical_samples_unchanged"`
-}
-
 type handoffBatch struct {
 	Key            string          `json:"idempotency_key"`
 	Body           json.RawMessage `json:"request"`
@@ -98,19 +90,6 @@ func (s *liveSuite) heldEvents(db *sql.DB) []handoffEvent {
 		s.t.Fatal(err)
 	}
 	return events
-}
-
-func heldMemberBytes(events []handoffEvent, member, period string) (string, string) {
-	up, down := new(big.Int), new(big.Int)
-	for _, ev := range events {
-		for _, r := range ev.Event.Records {
-			if r.MemberId.String() == member && r.PeriodId == period {
-				up.Add(up, new(big.Int).SetUint64(uint64(r.UploadBytes)))
-				down.Add(down, new(big.Int).SetUint64(uint64(r.DownloadBytes)))
-			}
-		}
-	}
-	return up.String(), down.String()
 }
 
 func decimalSum(a, b string) string {
@@ -426,7 +405,8 @@ func (s *liveSuite) evalAT20(t *testing.T) (rec Record) {
 	if len(events) == 0 {
 		t.Fatal("AT20 held stream empty")
 	}
-	period := time.Now().UTC().Format("2006-01")
+	period, err := heldMemberPeriod(events, s.memberA.memberID)
+	must(err)
 	up, down := heldMemberBytes(events, s.memberA.memberID, period)
 	if up == "0" || down == "0" {
 		t.Fatal("AT20 held member bytes empty")
@@ -619,7 +599,8 @@ func (s *liveSuite) evalAT20(t *testing.T) (rec Record) {
 			currentUsage = row.Usage
 		}
 	}
-	if originUsage.UploadBytes.String() != decimalSum(beforeInc.Items[0].Usage.UploadBytes.String(), up) || originUsage.DownloadBytes.String() != decimalSum(beforeInc.Items[0].Usage.DownloadBytes.String(), down) || uint64(currentUsage.UploadBytes) != 0 || uint64(currentUsage.DownloadBytes) != 0 {
+	allUp, allDown := heldMemberBytes(events, s.memberA.memberID, "")
+	if originUsage.UploadBytes.String() != decimalSum(beforeInc.Items[0].Usage.UploadBytes.String(), allUp) || originUsage.DownloadBytes.String() != decimalSum(beforeInc.Items[0].Usage.DownloadBytes.String(), allDown) || uint64(currentUsage.UploadBytes) != 0 || uint64(currentUsage.DownloadBytes) != 0 {
 		t.Fatal("AT20 incarnation view moved historical bytes or double-minted usage")
 	}
 	rec.Observations["origin_incarnation_usage_before_plus_held"] = true
@@ -726,7 +707,7 @@ func (s *liveSuite) evalAT20(t *testing.T) (rec Record) {
 		}
 	}
 	stage("D-130 fresh counted event ACK 2, exact attribution and stored replays")
-	freshSummary := s.verifyFreshCountedStream(&rec, node, current, origin, oldACK, period, states, presenter, after, freshBeforeInc)
+	freshSummary := s.verifyFreshCountedStream(&rec, node, current, origin, oldACK, states, presenter, freshBeforeInc)
 	rec.Status = StatusPass
 	for _, check := range []string{"BeforePlusHeldByteEquality", "OriginalPayloadAndHistoricalAttribution", "AgentSameKeyStoredResultReplay", "OriginACKAndIndependentCurrentACK", "D112ConfiguredIntervalWithinBound", "LiveLateEventRejectedAndAudited", "RetiredCertificateRefused", "D130FreshGapACK1", "D130CountedACK2ExactAttribution", "D130MicrosecondProjection", "D130SameKeyStoredACK1AndACK2Replay"} {
 		s.addHandoffCheck(&rec, check, true, "Live assertion completed; deciding API, ledger and byte evidence retained in observations.")

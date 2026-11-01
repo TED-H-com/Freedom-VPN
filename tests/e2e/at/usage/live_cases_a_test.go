@@ -374,7 +374,6 @@ func (s *liveSuite) evalAT15(t *testing.T) Record {
 			baseTime = nowUTC.Add(-15 * time.Second)
 		}
 	}
-	curPeriod := fmt.Sprintf("%04d-%02d", baseTime.Year(), int(baseTime.Month()))
 	epochUUID := uuid.MustParse("0195f000-0000-7000-8000-000000000150")
 	epochOne := presence.NewNullableWithValue(cp0Signed.LedgerEpoch)
 
@@ -384,7 +383,7 @@ func (s *liveSuite) evalAT15(t *testing.T) Record {
 			MemberId:        memAUUID,
 			DeviceId:        s.deviceA,
 			BindingRevision: decstr.U64(bindingRev),
-			PeriodId:        curPeriod,
+			PeriodId:        intervalPeriod(baseTime),
 			UploadBytes:     decstr.U64(512),
 			DownloadBytes:   decstr.U64(1024),
 		},
@@ -394,7 +393,7 @@ func (s *liveSuite) evalAT15(t *testing.T) Record {
 			MemberId:        memAUUID,
 			DeviceId:        s.deviceA,
 			BindingRevision: decstr.U64(bindingRev),
-			PeriodId:        curPeriod,
+			PeriodId:        intervalPeriod(baseTime.Add(4 * time.Second)),
 			UploadBytes:     decstr.U64(256),
 			DownloadBytes:   decstr.U64(512),
 		},
@@ -424,7 +423,7 @@ func (s *liveSuite) evalAT15(t *testing.T) Record {
 
 	// 3. Same Idempotency-Key batch replay + new Idempotency-Key duplicate event retry (zero double-counting)
 	var rollupBeforeReplay uint64
-	_ = s.pool.QueryRow(s.ctx, `SELECT COALESCE(SUM(total_bytes),0)::bigint FROM usage_rollups WHERE member_id = $1 AND period = $2`, memAUUID, curPeriod).Scan(&rollupBeforeReplay)
+	_ = s.pool.QueryRow(s.ctx, `SELECT COALESCE(SUM(total_bytes),0)::bigint FROM usage_rollups WHERE member_id = $1 AND period IN ($2, $3)`, memAUUID, ev1.Records[0].PeriodId, ev3.Records[0].PeriodId).Scan(&rollupBeforeReplay)
 	b1ReplayResp := s.agentCall(http.MethodPost, "/api/v1/agent/usage-batches", api.UsageBatchRequest{
 		NodeId:            s.nodeID,
 		NodeIncarnationId: s.incarnationID,
@@ -440,7 +439,7 @@ func (s *liveSuite) evalAT15(t *testing.T) Record {
 	var b1DupAck api.UsageBatchResult
 	_ = json.Unmarshal(b1DupResp.body, &b1DupAck)
 	var rollupAfterReplay uint64
-	_ = s.pool.QueryRow(s.ctx, `SELECT COALESCE(SUM(total_bytes),0)::bigint FROM usage_rollups WHERE member_id = $1 AND period = $2`, memAUUID, curPeriod).Scan(&rollupAfterReplay)
+	_ = s.pool.QueryRow(s.ctx, `SELECT COALESCE(SUM(total_bytes),0)::bigint FROM usage_rollups WHERE member_id = $1 AND period IN ($2, $3)`, memAUUID, ev1.Records[0].PeriodId, ev3.Records[0].PeriodId).Scan(&rollupAfterReplay)
 	if b1ReplayResp.status != http.StatusOK || !bytes.Equal(b1ReplayResp.body, b1Resp.body) ||
 		b1DupResp.status != http.StatusOK || len(b1DupAck.Results) != 1 || b1DupAck.Results[0].Status != api.UsageEventResultStatusDuplicate ||
 		rollupAfterReplay != rollupBeforeReplay {
@@ -490,7 +489,7 @@ func (s *liveSuite) evalAT15(t *testing.T) Record {
 			MemberId:        memAUUID,
 			DeviceId:        uuid.MustParse("0195f000-0000-7000-8000-000000000555"),
 			BindingRevision: decstr.U64(1),
-			PeriodId:        curPeriod,
+			PeriodId:        intervalPeriod(baseTime.Add(8 * time.Second)),
 			UploadBytes:     decstr.U64(9007199254740993), // 2^53 + 1 large uint64 decimal string
 			DownloadBytes:   decstr.U64(4096),
 		},
