@@ -73,17 +73,22 @@ The [follow-up 25 register](../../tests/handover/testdata/history/follow-up-26/r
 
 The [follow-up 26 register](../../tests/handover/testdata/history/follow-up-27/register26.md) is frozen at #382.
 
-## Follow-up 27 decisions register (2026-11-01 EST)
+<a id="follow-up-27-decisions-register-2026-11-01-est"></a>
 
-Verified against main **37db5405** through **#385**, covering **#383–#385**.
-[Evidence cut](follow-up-27.md) and
-[acceptance snapshot](../ops/README.md#follow-up-27-acceptance-snapshot-2026-11-01-est).
-`TestHandover_Followup27Claims` pins three exact roadmap rows, 14 immutable
-snapshots and 182 owner archive files under D-098 / D-109 / D-132.
-**D-135, D-136, D-137 and D-138 stay provisional and unchanged.**
-D-140 permits only isolation's boundary schedule change. D-141 closes D-139's
-design track: option (b) is not implemented; option (c) stays in production.
-F11-01's repair direction still waits on devstack 26. No new operator procedure.
+The [follow-up 27 register](../../tests/handover/testdata/history/follow-up-28/register27.md) is frozen at #385.
+
+## Follow-up 28 decisions register (2026-11-01 EST)
+
+Verified against main **aae6763f** through **#390**, covering **#386–#390**.
+[Evidence cut](follow-up-28.md) and
+[acceptance snapshot](../ops/README.md#follow-up-28-acceptance-snapshot-2026-11-01-est).
+`TestHandover_Followup28Claims` pins five exact roadmap rows, 16 immutable
+snapshots and 1,644 archive and run files under D-098 / D-109 / D-132.
+**No new decision since D-141. D-135, D-136, D-137, D-138, D-140 and D-141 stay
+provisional.** D-141 keeps option (c) in production. F11-01's repair direction
+and upstream report are now unblocked by #386. RELATED ICMP is an open owner
+question, not a defect or a decision. Node diagnostic guidance is in §3.4 of
+the operator guide; no production policy or acceptance predicate changes.
 
 | Decision | Operator meaning and delivery boundary |
 |---|---|
@@ -156,9 +161,11 @@ the SQL shortcut stays labelled.
 
 <a id="findings-register-at-the-follow-up-26-cutoff"></a>
 
-## Findings register at the follow-up 27 cutoff
+<a id="findings-register-at-the-follow-up-27-cutoff"></a>
 
-| Finding | Status at #385 | Evidence / next owner |
+## Findings register at the follow-up 28 cutoff
+
+| Finding | Status at #390 | Evidence / next owner |
 |---|---|---|
 | ENR-07 | CLOSED | D-130 #330/#331 plus enrollment #333: AT06 662/0/0, AT07 48/0/0, fresh gap ACK 1 then sequence 2 ACK 2, 908 bytes; planBaseline attribution corrected. |
 | Members F9-01 | CLOSED | #325 / #328 under D-126 / D-128; deliberate cumulative report accepted. Full AT09 fails in #348; provisional acceptance is a separate row. |
@@ -180,7 +187,7 @@ the SQL shortcut stays labelled.
 | Updates F11-02 | CLOSED | #351 corrects offline-install documentation: retained verified archive on initial / same-release installs; only absence downloads the signed URL. |
 | Updates F11-01 | CLOSED — fix + regular-run result | #352 fixes the shared TEST ONLY loopback gate; #359 run 2babf9b6 passes regular AT23–AT27 5 / 5 and installer 27 / 27 through that wrapper, unchanged generated config, no adapter. |
 | F9-INFLIGHT | OPEN — inherent backend finding, documented | #345 late upstream reply before the 10 s timeout replaces newer cache data. No exposed setting fixes insertion ordering; TTL is a maximum lifetime. |
-| Members F11-01 | OPEN — closed-node signature, cause unproven | #381 corrected by 5f4b455c: 32 attempts, 26 pass / 6 timeout. All timeouts end generation 0 / serving=false; four already sampled that before the request, 1d253f8d had an earlier true heartbeat, 0c27cac0 goes 5 / true → 0 / false. ::1-source response only on two successful kernel IPv6 requests; userspace IPv6 lacks it but times out 3 / 8. Devstack 26 investigates; owner repair direction waits. Historical d556673b remains unattributed. #385 adds a first-selection failure after proven generation-5 serving readiness: five member SYNs, zero node or origin packets; three D-077 re-grants pass. See the separate members 15 serving-node signature below; no shared cause is established. |
+| Members F11-01 | OPEN — native handshake / delivery delay | #386 removes the closed-node confounder: devstack 25’s TEST ONLY foreign nft tracer caused ISOLATION_POLICY_INVALID, deny baseline and kernel generation 0 while central applied generation stayed 5; harness artifact, not a product defect. Corrected member-only 4 / 0; F14-style passive re-grants 17 / 1. af718646 first delivery 5.671 s late behind a loopback-source response. About five seconds of native handshake / delivery delay remain (devstack 24’s ::1 mechanism); repair direction and upstream report are the owner’s, now unblocked. Historical d556673b stays unattributed; members 15’s signature remains separately unproven. |
 | Members F11-02 | CLOSED — fresh populated-grant rows | #361 run b98b78ee qualifies generations 10 / 21 with fresh accepted reports, populated lease, live grants and serving heartbeat. Historical generation-10 zero-grant / AWAITING failure stays failed. |
 | Members F11-03 | BLOCKED — no failed Apply observed | #368: 95 Applies succeeded, none failed. AT02 remains failed on 61 baseline brackets / 21 losses; the first bracket is 219.395 ms with nine losses. Historical failed-install cause stays unproven. |
 | Install-overrun cause | OPEN — unproven | #356 controlled interventions did not reproduce the overrun. #365 lifecycle observation and #369 TEST ONLY caller add evidence capacity, not retrospective causality. TestLab04 cancellation mechanisms are a separate finding; historical overrun cause stays unproven. |
@@ -190,7 +197,7 @@ the SQL shortcut stays labelled.
 | Members F12-04 | OPEN — not reproduced by #367 | Fresh joined DNS delivery succeeds; historical native UDP SERVFAIL stays unattributed. Members instruments its original query next using StartNativeDNSCapture. |
 | Members F13-01 | OPEN — origin unproven; typed rejection | #375 fresh AT04 failure: four duplicated identical chain definitions, raw bytes private / public digest. #377 lab 0 / 3,300 duplicates; every duplicate owned-chain definition stays rejected as *enforce.DuplicateChainError (duplicate_chain). No historical row reclassified; distinct from updates F13-01. |
 | TestLab04_RestartKeepsVerifiedLease | CAUSE / FIX — #369, historical failures retained | Unchanged main fails 5 of 30 with leases about 3,599 s from expiry. Deterministic cancellation regressions establish manufactured Apply/member-path/storage failures. Step stops at the safe boundary then finishes bounded local work (at most 10 s); control I/O stays cancellable, real failures fail closed. Lab restart requires recorded graceful exit. Exact historical A1/R-A2 cancellation points remain unproven. |
-| Updates F13-01 | RECEIPT DELIVERED — adoption pending | #381 delivers TEST ONLY parent-owned unique-launch wait receipt and D-102 answer; updates adopts it next. #372 AT23 historical unobserved exit stays unobserved. Distinct from members F13-01; no agent/updater defect inferred. |
+| Updates F13-01 | HISTORICAL GAP — receipt adopted in #390 | Run 759d244a’s first AT23 exit remains unobserved and was not filled. Run 2704600f is a new sample: all 11 stop commands returned 0; six terminations have parent receipts, including AT23’s first, and five repeats reuse them. No SIGKILL attempt; stored lease present at every stop/start. Distinct from members F13-01; no agent/updater defect inferred. |
 | ISO-F6-01 assertion 6 | FIXED — AT10 passes in new run | #376 fixes observationState omitting the rejected candidate generation. #380 run 38074149 AT10 PASS 9 / 0 / 0, ISO-F6-01 6 / 6, assertion 6 met by accepted reports. Historical 1c25ee44 block stays blocked. |
 | r18 M-1 | FIXED — #376 | No observation POST after caller cancellation; deferred finalizer carries the control budget. |
 | r18 M-2 | FIXED on both sides — #376 + #378 | One Step-local deadline plus Close: 13 s cooperative worst case. Agent TimeoutStopSec=15s; watchdog Before=fvpn-agent.service. Replacement stop 20 s per unit, stop-failed journal and rollback before candidate/current/units. |
@@ -198,36 +205,24 @@ the SQL shortcut stays labelled.
 | r18 L-1 | FIXED — #377 | Corrected TestReviewR18_EnabledSampleIgnoresInstallDeadline proves install-phase resource sampling skipped. |
 | r18 L-2 | FIXED — #376 | D-133 candidate rule fails a leg on any higher or missing member/node ceiling in either direction. |
 | Members F14-01 | OPEN — new #375 | First D-077 re-grant forwarding attempt failed after valid readiness; cause unproven. Routed to devstack 26. |
-| Harness stop-path gap | TEST ONLY — not a product finding | #380 container stops ended SIGKILL / exit 137; #381 supervisor escalates after about 5 s. Devstack 26 owns signal forwarding and alignment with the shipped stop budget. |
+| Harness stop-path gap | FIXED — TEST ONLY, #386; adoption #390 | Supervisor waits the shipped 15 s after TERM, PID1 forwards TERM / INT, compose grace 25 s. Parent receipt distinguishes agent outcome from container exit. Updates adopts this support. Historical SIGKILL / exit-137 and missing first-exit observations remain unchanged. |
 | Isolation F14-01 | FAIL — new #383; routed under D-140 to isolation 15 | Distinct from members F14-01. AT13 5 / 1 / 1: last positive D−162.220 ms; packet 161 scheduled D−101 ms arrived D−97.638 ms and dropped. Closure (D−162.2, D−97.6] ms straddles D−101 ms, undecided and failed; no retry waiver. |
-| Members 15 serving-node signature | OPEN — new #385; cause unproven | AT01 first selection at generation 5: five member SYNs, zero node or origin packets. AT02: 249 absent ingresses, sequences 1108–1356, 5.0975 s gap, zero capture drops. Together with members F14-01 these are three samples of serving readiness proven, member packets absent at node ingress, distinct from devstack 25’s closed-node timeouts. Routed to devstack 27 (collected); devstack 26 remains in progress. |
-| r19 H-1 | ROUTED; IN PROGRESS — netlab 24 | Established download from a destination newly added to denied_v4 keeps flowing. Not fixed at this cut. |
-| r19 M-2 | ROUTED; IN PROGRESS — agent-core 34 | Report stamps live desired document refs on an ACK of the applied generation; production reachability unknown. Not fixed at this cut. |
-| r19 L-2 | ROUTED; IN PROGRESS — agent-core 34 | Conntrack attempt persisted after the delete. Not fixed at this cut. |
+| Members 15 serving-node signature | OPEN — #385; cause unproven | AT01 first selection at generation 5: five member SYNs, zero node or origin packets. AT02: 249 absent ingresses, sequences 1108–1356, 5.0975 s gap, zero capture drops. Together with members F14-01 these are three serving-ready missing-ingress samples. Routed to devstack 27, measuring at this cutoff. #386 explains the separate devstack 25 tracer-induced closures; a shared native cause is unproven. |
+| r19 H-1 | FIXED — #389 | Current denied, host or resolver download sources drop before generic established / related accepts; exact designated-resolver TCP / UDP source-port-53 replies stay ahead. ctdenyd is diagnostic_v1, never usage; exact guards verified on member, serving-probe and baseline-probe paths. |
+| r19 M-2 | FIXED — #388; production-reachable | A due renewal signs h while busy Apply retains g; ACK g carried h’s live refs. Minimal applied snapshot is committed atomically with the ACK; refs reported only when matching the applied generation, including restart; unknown legacy refs stay null. |
+| r19 L-2 | FIXED — #388 | Conntrack delete batch reserved in one transaction before Apply; crash/pre-delete failure spends the reservation. About 1.1 ms (p99 1.59 ms) before restricting install on Steps with queued deletes, accepted under D-138 with cost explicit. |
 | r19 design-only | D-141 RECONSIDERATION CONDITIONS | H-2, M-1, M-3–M-8, L-1, L-3 and L-4. Design-only findings must close before reconsidering option (b); no implementation or fix claimed. |
+| Netlab D-120 missing successor | OPEN — measurement-end gap; netlab 25 | #389 A2 on unchanged main and the earlier branch full-suite attempt lost a final datagram without a recorded successor. No B-only failure; A,B,A,B accepted under D-138. Both failed runs stay failed, clause (iii) unchanged. |
+| RELATED ICMP outer source | OPEN OWNER QUESTION — #389 | SpecDeniedV4 includes 10/8, 172.16/12, 192.168/16 and 100.64/10. Fragmentation-needed or time-exceeded errors from a denied outer source drop even when the quoted connection is allowed; no exception. Traceroute has no reply from those hops. Not a defect, not decided, no fix promised. |
 
-Every historical failure stays failed. Every other follow-up 26 finding is unchanged.
-Members F14-01 stays failed historically. Install-overrun cause remains unproven;
-F9-INFLIGHT, intended-negative F18-01, ISO-F6-03 writer unattributed, Dependabot
-#22 open for owner disposition and blocked_response_ttl owner value retain their
-boundaries. #383 joined one bootstrap zero-member hold ending generation_matched;
-no populated hold was produced, so alarm, escalation and active-stop retention
-remain unexercised. Owner decisions: **D-135 + D-136 confirmation** (now carrying
-AT02’s sibling outage given D-141), **D-137 hardening option**, **D-138 overturn
-option**, **D-140 overturn option**, **D-141 overturn option**, **F11-01 repair
-direction** (waiting on devstack 26). AT11 / AT13 operator rows, AT29 / AT31
-resources, physical arm64, power loss and QUIC remain open. No later lane's
-results enter this #385 cut. See [the full current evidence](follow-up-27.md).
-
-[r17](../reviews/r17-rev14-d104-d117-review.md) and
-[r16](../reviews/r16-rev13-d089-d099-review.md) remain byte-identical archives.
-[r17 M-1](../reviews/README.md#r17-disposition-at-the-follow-up-18-cutoff) is
-fixed by #322 under D-127; #337 supplies its scoped HTTP correction. #346 now
-supplies regular AT26 physical rollback with AT27's same-run witness.
-
-[r18](../reviews/r18-generation-change-review.md) is archived byte-for-byte;
-its What held statements are review evidence, not acceptance results.
-
-[r19](../reviews/r19-intersection-design-review.md) is archived byte-for-byte;
-its routed findings are in progress and its design-only findings are D-141
-reconsideration conditions. Review evidence does not promote acceptance.
+Every historical failure stays failed. Every other follow-up 27 finding is unchanged.
+Members F14-01 stays failed historically; its original cause remains unproven.
+The r19 design-only findings remain D-141 reconsideration conditions. #383 joined
+one bootstrap zero-member hold ending generation_matched; no populated hold was
+produced, so alarm, escalation and active-stop retention remain unexercised.
+Owner requests: **D-135 + D-136 confirmation**, **D-137 hardening option**,
+**D-138 / D-140 / D-141 overturn options**, **F11-01 repair direction and upstream
+report** (now unblocked by #386), and the **RELATED ICMP question**. AT11 / AT13
+operator rows, AT29 / AT31 resources, physical arm64, power loss and QUIC remain
+open. No later lane's results enter this #390 cut. See [the full current
+evidence and dated requests](follow-up-28.md).
