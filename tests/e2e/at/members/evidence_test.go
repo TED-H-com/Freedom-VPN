@@ -74,6 +74,10 @@ func TestD098_Followup11Archive(t *testing.T) {
 	verifyArchive(t, "follow-up-11", "7edb263f-1f6e-4f94-9e8e-26099f96a699", 43)
 }
 
+func TestD098_Followup12Archive(t *testing.T) {
+	verifyArchive(t, "follow-up-12", "b98b78ee-9162-419e-ae2f-d1d9a618a3e8", 52)
+}
+
 func verifyArchive(t *testing.T, followup, run string, count int) {
 	t.Helper()
 	root := filepath.Join("../../../..", "docs/e2e/at/members/history", followup)
@@ -102,7 +106,12 @@ func verifyArchive(t *testing.T, followup, run string, count int) {
 			var rec struct {
 				RunID string `json:"run_id"`
 			}
-			if json.Unmarshal(raw, &rec) != nil || rec.RunID != run {
+			wantRun := run
+			// Follow-up 12 deliberately retained AT01/AT09 from follow-up 11.
+			if followup == "follow-up-12" && (fields[1] == "AT01.json" || strings.HasPrefix(fields[1], "AT09")) {
+				wantRun = "7edb263f-1f6e-4f94-9e8e-26099f96a699"
+			}
+			if json.Unmarshal(raw, &rec) != nil || rec.RunID != wantRun {
 				t.Errorf("wrong archive run: %s", fields[1])
 			}
 		}

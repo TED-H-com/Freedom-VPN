@@ -92,11 +92,18 @@ func (l *live) nativeDNSCache(r *record) {
 	// F9-HIT/F9-OTHER/F9-ROUND/F9-INFLIGHT: attribution is separate
 	// from this unchanged assertion; preserve actual settings and whole history.
 	settingsBefore := l.cacheSettings()
-	// Refresh the negative within its five-second window immediately before change.
+	// The RR matrix already used absent. Let the documented five-second
+	// negative lifetime elapse without any fixture queries; no flush or retry.
+	quietStart := time.Now().UTC()
+	time.Sleep(6 * time.Second)
+	quietEnd := time.Now().UTC()
 	first, e := l.hook.ProbeNativeDNS(l.ctx, "", "cache.example.invalid", 1, false, l.originIP())
 	negative, ne := l.hook.ProbeNativeDNS(l.ctx, "", "absent.example.invalid", 1, false, "")
 	r.jsonCheck("cache initial", "positive TTL <=10, negative SOA TTL <=5", map[string]any{"positive": first, "negative": negative}, "native DNS before authority-only change", e == nil && ne == nil && first.ExpectedAnswer && len(first.TTLs) > 0 && first.TTLs[0] <= 10 && negative.RCode == 3 && negative.HasSOA && negative.AuthorityTTL <= 5)
 	initialNegative := negative
+	window := negativeCacheWindow(negative)
+	window["quiet_start"], window["quiet_end"] = quietStart, quietEnd
+	r.jsonCheck("negative cache quiet setup", "quiet for >5 s; fresh NXDOMAIN and remaining TTL with a conservative whole-second window", window, "six seconds without fixture queries; first negative query once; no flush/retry", quietEnd.Sub(quietStart) > 5*time.Second && window["available"] == true)
 	changedAt := time.Now().UTC()
 	err := l.hook.SetDNSFixturePhase("private")
 	defer func() { _ = l.hook.SetDNSFixturePhase("initial") }()
@@ -109,6 +116,8 @@ func (l *live) nativeDNSCache(r *record) {
 	negative, ne = l.hook.ProbeNativeDNS(l.ctx, "", "absent.example.invalid", 1, false, "")
 	cached, e := l.hook.ProbeNativeDNS(l.ctx, "", "cache.example.invalid", 1, false, l.originIP())
 	r.jsonCheck("positive/negative cache before TTL", "old positive and NXDOMAIN persist with remaining TTL", map[string]any{"positive": cached, "negative": negative, "observed_at": time.Now().UTC()}, "ProbeNativeDNS without flushing either cache", e == nil && ne == nil && cached.ExpectedAnswer && len(cached.TTLs) > 0 && cached.TTLs[0] > 0 && cached.TTLs[0] <= 10 && negative.RCode == 3 && negative.HasSOA && negative.AuthorityTTL <= 5)
+	within := negativeWindowContains(initialNegative, negative)
+	r.jsonCheck("negative cache before precision boundary", "same unique resolver; no outstanding authority completion; query completed before initial receipt plus (remaining TTL minus 1 second)", map[string]any{"window": window, "initial": initialNegative, "next": negative}, "whole-second TTL uncertainty is reserved, never used to waive the unchanged before-TTL assertion", within)
 	beforeTTL := cached
 	negativeBeforeTTL := negative
 	attribution := attributeCache(first, beforeTTL)
@@ -118,7 +127,7 @@ func (l *live) nativeDNSCache(r *record) {
 	negative, ne = l.hook.ProbeNativeDNS(l.ctx, "", "absent.example.invalid", 1, false, l.originIP())
 	cached, e = l.hook.ProbeNativeDNS(l.ctx, "", "cache.example.invalid", 1, false, "10.203.0.30")
 	r.jsonCheck("positive/negative cache after TTL", "both new authority answers visible", map[string]any{"positive": cached, "formerly_negative": negative, "observed_at": time.Now().UTC()}, "ProbeNativeDNS after real TTL elapses", e == nil && ne == nil && cached.ExpectedAnswer && negative.ExpectedAnswer)
-	l.cacheArtifact(map[string]any{"run_id": l.runID, "source_commit": l.build.Source, "contract": dnsCacheContract, "settings_before": settingsBefore, "settings_after": l.cacheSettings(), "initial": first, "initial_negative": initialNegative, "negative_attribution": negativeAttribution, "authority_change_at": changedAt, "authority": authority, "before_ttl": beforeTTL, "negative_before_ttl": negativeBeforeTTL, "after_ttl": cached, "formerly_negative_after_ttl": negative, "attribution": attribution, "historical_F10_03": "run 2be2d32f remains failed/unattributed; immutable history/follow-up-10/F10-03-cache.json"})
+	l.cacheArtifact(map[string]any{"run_id": l.runID, "source_commit": l.build.Source, "contract": dnsCacheContract, "settings_before": settingsBefore, "settings_after": l.cacheSettings(), "initial": first, "initial_negative": initialNegative, "quiet_window": window, "within_precision_window": within, "negative_attribution": negativeAttribution, "authority_change_at": changedAt, "authority": authority, "before_ttl": beforeTTL, "negative_before_ttl": negativeBeforeTTL, "after_ttl": cached, "formerly_negative_after_ttl": negative, "attribution": attribution, "historical_F10_03": "run 2be2d32f remains failed/unattributed; immutable history/follow-up-10/F10-03-cache.json"})
 	for _, tc := range []struct {
 		typ      uint16
 		ip, addr string

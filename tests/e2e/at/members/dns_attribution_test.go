@@ -100,7 +100,7 @@ func (l *live) cacheArtifact(value any) {
 	if err != nil {
 		l.t.Fatal(err)
 	}
-	if err = os.WriteFile(filepath.Join(l.root, "docs/e2e/at/members/F12-AT20-cache.json"), append(raw, '\n'), 0644); err != nil {
+	if err = os.WriteFile(filepath.Join(l.root, "docs/e2e/at/members/F13-AT20-cache.json"), append(raw, '\n'), 0644); err != nil {
 		l.t.Fatal(err)
 	}
 }

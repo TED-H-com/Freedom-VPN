@@ -22,7 +22,7 @@ at-members-lint:
 	@$(at-members-disk) go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 -tags e2e ./tests/e2e/at/members/...
 
 at-members-build:
-	@$(at-members-disk) sh -ec 'for arch in amd64 arm64; do for pkg in ./tests/e2e/at/members/cmd/probe ./tests/e2e/cmd/fvpn-e2e-fixture-probe ./tests/e2e/cmd/fvpn-e2e-member-session; do GOOS=linux GOARCH=$$arch go build -o "$$AT_MEMBERS_TMP/$${pkg##*/}-$$arch" $$pkg; done; done'
+	@$(at-members-disk) sh -ec 'for arch in amd64 arm64; do for pkg in ./tests/e2e/at/members/cmd/probe ./tests/e2e/cmd/fvpn-e2e-fixture-probe ./tests/e2e/cmd/fvpn-e2e-member-session ./tests/e2e/cmd/fvpn-e2e-native-observe; do GOOS=linux GOARCH=$$arch go build -o "$$AT_MEMBERS_TMP/$${pkg##*/}-$$arch" $$pkg; done; done'
 
 # Supplements evidence from the same live run; leaves complete AT status blocked.
 at-members-readback:
