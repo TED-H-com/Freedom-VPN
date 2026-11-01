@@ -362,3 +362,56 @@ working node listeners and failing member controls. AT21 stops the primary
 resolver transport, then both, and measures normal system lookup and recovery.
 The exact resolver list comes from product desired state; the peer-restricted
 NetBird nameserver group is TEST ONLY distribution plumbing.
+
+## Follow-up 15 evidence and regression readback
+
+Run the foreground gates in RUN.md. `assembled.py` enforces admission before
+startup and after startup, runs the exact ten-case target, retains private
+producer exports and tears down the owned stack. Record `vmstat 5 7`,
+`pgrep -af 'gates.sh|mk/at-'` and `go env GOCACHE` before starting.
+
+New files larger than 20,000,000 bytes use lossless `.gz` and a
+`.gz.sha256.json` sidecar with compressed/uncompressed byte counts and SHA-256.
+The Go `readEvidence` and Python `evidence_io.read` / `load` readers accept a
+logical plain filename and fall back to the compressed form when the plain
+file is absent, validating both byte pins. Historical
+archives remain byte-identical. To inspect a large artifact directly, use
+`gzip -dc <artifact>.gz`; do not replace the retained file.
+
+[AT02.md](AT02.md) is a small navigation document marked
+`<!-- at-members: document-index -->`, separate from the pinned original
+[Markdown capture](AT02.md.gz) and [JSON capture](AT02.json.gz). The readers
+reject a document index as evidence: use the explicit `.md.gz` path for the
+capture. The hygiene test scans plain Markdown as documentation and separately
+decompresses and verifies gzip captures. The index has no capture pin; its
+listed hashes apply only to the linked captures. Keep this plain document path
+available when publishing future runs so external Markdown links still resolve.
+
+At the existing AT02 service-stop point, the TEST ONLY probe requests the
+supervisor pause and SIGTERM for the retained agent PID, observes process exit,
+and joins its parent wait receipt by launch ID/PID/start ticks. The measured
+interval starts before either the helper or supervisor can signal: it is an
+upper bound, not a kernel exit instant. The existing Service stop/start follows
+and retains the selected release and stored lease. Docker restart/namespace
+command durations remain distinct from process shutdown intervals. Control I/O
+after Step cancellation is not observable on this stream.
+
+Central hold readbacks retain all incident/report/lease/audit IDs and cumulative
+history at case end, plus member-state snapshots around original AT02
+revocations. Original reports are replayed through the central publication
+classifier; these replays are labeled separately from observed operation
+transitions. Missing sole-member, sibling-member or retained-safety scenarios
+are `not exercised`, not successful tests. No hold or alarm is manufactured.
+
+Every D-077 re-grant keeps its original readiness and existing member/node/origin
+packet and counter evidence. A missing launched transfer stays empty rather
+than borrowing a previous attempt. `cause_status` remains `unproven`.
+Withdrawal parser failures retain mode-0600 private raw/error files. Netlab
+23's typed duplicate-chain rejection is accepted as fail-closed policy; no
+retry, counter substitution or relaxed predicate is allowed.
+
+After the run, execute `followup15_index.py`, `followup15_evidence.py`,
+`followup15_receipts.py` and `followup15_transitions.py` with `python3 -B` from
+the repository root. They read the original records/private captures and write
+public diagnostic indexes; they neither send traffic nor replace live verdicts.
+Compress any new oversized derived files and regenerate that new run's pins.

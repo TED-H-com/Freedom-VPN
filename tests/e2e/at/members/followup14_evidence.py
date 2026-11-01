@@ -1,3 +1,4 @@
+from evidence_io import load
 """Derive public, payload-free evidence from this lane's original captures."""
 from pathlib import Path
 import sys,json,subprocess,hashlib,copy
@@ -7,7 +8,7 @@ sys.path.insert(0,str(root/'tests/e2e'))
 import analyze_native_capture as native
 import analyze_router_capture as router
 import analyze_dns_capture as dns
-cases={p.stem:json.loads(p.read_text()) for p in (root/'docs/e2e/at/members').glob('AT??.json')}
+cases={case:load(root/'docs/e2e/at/members'/(case+'.json')) for case in ['AT01','AT02','AT03','AT04','AT05','AT08','AT09','AT20','AT21','AT22']}
 run=cases['AT01']['run_id'];source=cases['AT01']['source_commit']
 base=root/'docs/e2e/at/members/history/follow-up-14-captures'/run
 base.mkdir(parents=True,exist_ok=True)

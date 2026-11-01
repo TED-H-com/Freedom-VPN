@@ -1,92 +1,116 @@
-# Follow-up 14 run ledger
+# Follow-up 15 run ledger
 
-Run `258ba504-6ddf-4888-8633-9cfee8da6eea`, clean compiled harness `e9a215f3c26484d92c0293d6070810a4b1d1e56d`, product baseline `8f3055b9fbbbc1e1522e57ce69d6eede5da9fa56` (devstack 23 #367, agent-core 31 #369, devstack 24 #370).
+Run `e80bb592-27ed-4ab5-a8c3-6433e7278938`, compiled harness `cc6e0298a791ed6c41b268f1634f543446f8c562`, baseline `9dde5eeb60a6cb6b9b10974c3100ef1ea1352698` (current main at admission; #375, #376, #377, #381 and #382 included).
 
-`go env GOCACHE` returned `/data/ted-h-cache/go-build`; no cache override or purge. Assigned prefix `w4-members`, port base `24000`, two resolvers.
+**2 PASS / 6 BLOCKED / 2 FAIL**, with **644 passed / 6 blocked / 2 failed subchecks**. One assembled ten-case run; live make exit **2**.
 
-**2 PASS / 5 BLOCKED / 3 FAIL**, with **628 passed / 6 blocked / 5 failed subchecks**. One assembled ten-case run; live make exit **2**.
+D-098 was the first, separate commit `90cf72cf`: all **70 root files** of run 258ba504 are byte-identical under [follow-up 14](history/follow-up-14/RUN.md), with [SHA-256 pins](history/follow-up-14/SHA256SUMS). Earlier archives are untouched. Handover claim tests read frozen evidence; no D-132 outside-owned pointer edit was needed.
 
-| Case | Requirements | Status | Pass / blocked / fail |
-|---|---|---|---:|
-| [AT05](AT05.json) | §19.1 §19 AT05 NODE01 NODE04 ENR01 ENR04 PKG01 | blocked | 30 / 0 / 0 |
-| [AT01](AT01.json) | §19.1 §19 AT01 APP01 ID01 MEM01 | blocked | 22 / 0 / 0 |
-| [AT02](AT02.json) | §19.1 §19 AT02 MEM01 MEM02 MEM03 SEC01 | fail | 137 / 0 / 2 |
-| [AT03](AT03.json) | §19.1 §19 AT03 BILL01 BILL03 ENT01 | pass | 95 / 0 / 0 |
-| [AT04](AT04.json) | §19.1 §19 AT04 BILL02 ENT02 MEM03 | fail | 116 / 0 / 1 |
-| [AT08](AT08.json) | §19.1 §19 AT08 NODE02 NODE03 EXIT01 EXIT03 | pass | 34 / 0 / 0 |
-| [AT20](AT20.json) | §19.1 §19 AT20 DNS01 DNS02 ISO04 | blocked | 88 / 0 / 0 |
-| [AT21](AT21.json) | §19.1 §19 AT21 DNS03 DNS04 APP01 | blocked | 12 / 0 / 0 |
-| [AT22](AT22.json) | §19.1 §19 AT22 SEC02 DNS01 DNS04 | blocked | 39 / 0 / 0 |
-| [AT09](AT09.json) | §19.1 §19 AT09 EXIT02 APP01 NFR01 | fail | 55 / 6 / 2 |
+`go env GOCACHE` returned `/data/ted-h-cache/go-build`; no cache override or purge. Scratch is disk-backed under `.agent/tmp`. Prefix `w4-members`, port base `24000`, two resolvers.
 
-D-098 was the first, separate commit `cc04d0c2`: all **61 root files** from run 4182dd3d are byte-identical in [follow-up 13](history/follow-up-13/RUN.md), with [SHA-256 pins](history/follow-up-13/SHA256SUMS). The retained AT09-restart.json still belongs to run 7edb263f. Follow-up-13-captures, follow-up-13-stream and every earlier archive are untouched. Handover claims were checked: tests already read frozen history files; no outside-owned D-132 exception was needed.
+Preflight `2026-11-01T12:02:25.968996+00:00`; teardown finished `2026-11-01T12:40:15.495141+00:00`. Full wrapper time 2269.509 s, live test 2190.00 s. All three admission checks saw exactly one other suite. Original pgrep output remains private because it includes other lanes' command paths. The [host receipt](F15-host-preflight.json) records the commands and sanitized inventory.
 
-**Harness qualification limit:** the compiled harness adds the routed hop before the original eth0-only relay hold. The added member interface can bypass that hold; the original relay row fails with `relayed=1 direct=1`. This is a confounded harness result, not proof of a product relay regression. Commit `682d4434` moves the routed rows after the relay check. The correction passes offline gates but is **not live-qualified**; no second assembled run was made.
+Host state from `vmstat 5 7`:
 
-**D-136, corrected:** a verified deny-all candidate is used only while an Apply error is retained. The ordinary stale-lease path installs the node-wide baseline, ACKs, renews, then Applies, verifies and heartbeats. No finite outage ceiling follows. F12-01 is labeled **policy_missing baseline during generation 11→13; stale-lease path consistent with code; no failed Apply**. `cause_status=unproven` until the desired input is joined. Netlab 21 request 3 is settled by D-135; this is a cross-reference, not a renewed request.
-
-AT02 retains **96 successful Applies, zero failed Applies**, with validated `commands` on all 96. Missing historical fields read **unavailable**; original run/sequence identities and historical replay remain intact. F11-03 stays blocked on no failed Apply observed. All **58 baseline calls** are paired to successful recovery: 55 outside the sibling capture and three fully covered. The continuous stream has **3,941 attempts / 3,941 ingresses / 3,920 egresses / 21 losses**, **14 inside completed guards / seven outside**. Nothing is excluded or waived. Baseline 410 → Apply 414 spans **215.189032 ms**, with eight losses (one inside / seven outside); nested baselines 411/412 overlap and are never summed as unique losses. Renewal 413 moves lease 11→13; live 415 and heartbeat 416 follow. First post-Apply egress is **15.068322 ms** later, not a claimed outage ceiling or first recovery packet. [Accounting and exact records](F14-AT02-recovery.json), [transition](F14-AT02-policy-missing.json).
-
-**F14-01:** the first D-077 re-grant has populated generation-10 readiness and an intended-device producer join, but its original forwarding attempt fails: five member packets, no observed node/origin ingress, zero origin requests and unchanged device counters. The capture stops attribution between member inner egress and node inner ingress; no detailed native capture exists for this attempt. Cause remains unproven and is not assumed identical to F11-01. [Original failed row and preceding readiness](F14-01-regrant-forwarding.json).
-
-**F13-01 fresh sample:** primary member-expiry1 has one exit-0 `nft_parse` / `parse` rejection among 266 withdrawal samples. Raw output and exact parser error are retained privately (0600); public receipt: **34,273 bytes / one line**, SHA-256 `2e13a93c901408906614345c7e2be3457751c7877835b991d115285f284ccc3a`. The raw output is valid JSON with four duplicated, identical chain definitions, including handles. `node/enforce/parse_nft.go` rejects repeated chain identity. This is a parser compatibility candidate for netlab, not a proven parser defect: why the snapshot contains duplicates and whether they are allowed remain unproven. Successful Apply 942 overlaps the 18.668818 ms read; that overlap does not establish cause. Active senders, stable counters and the observed 0.148039349 s last reply increment cannot repair an incomplete read. No retry or predicate relaxation. Both historical F13-01 failed rows stay failed and cannot be attributed using this new raw sample. [Safe receipts, exact failed tick and producer window](F14-F13-01-private-receipts.json).
-
-AT09’s known-PMTU row transfers **64,064 bytes**, retains route MTU 1280 before/after traffic and exact removal, with **16 delivered reverse IPv6 fragment pairs**. Routed IPv6 transfers **64,064 bytes in 1 ms**: one 1,360-byte router ingress causes a type-2/code-0 PTB with MTU 1280; its identical packet digest appears at router and sender. The sender route changes from no MTU metric to learned **1280**, and all 20 subsequent fragment packets arrive. Routed IPv4 transfers **64,064 bytes in 2 ms**: 42 oversized **DF=0** datagrams become 84 fragments in 42 groups, all received, with no PTB. These are separate D-137 mechanisms over IPv4 overlay payloads; D-123 IPv6Block still applies. [Original rows and mechanism evidence](F14-D137-native-paths.json).
-
-Receive-only 1280 remains a **limitation, never PASS**: dual-family selection transfers 64,064 bytes but is BLOCKED; IPv6 returns only **12,012 bytes in 12,011 ms** and stays FAIL. Nineteen reverse 1,360-byte packets are absent at member ingress, with no PTB; the first missing TCP range is retained. Historical F8-02 rows remain failed.
-
-**F12-04:** capture begins before the original readiness/RR query and preceding matrix mutations. The one original RR query succeeds (wire ID **62890**, RCODE 0, **1 ms**). Both resolvers retain complete lifecycle histories, outstanding sets and reply digests; the secondary is genuinely idle, not missing. Exact primary reply bytes join primary → node → member tunnel; the local stub response has the original wire ID. All five points are complete, zero-drop (**1,030 / 1,670 / 150 / 278 / 6** records for member/node/origin/primary/secondary). The positive IDNA probe also succeeds over UDP (**1 ms**) and TCP (**2 ms**). Historical F12-04 remains **unattributed**; this success does not explain its 5,001 ms SERVFAIL. [Original query, mutations and lifecycle](F14-F12-04-original-dns.json), [header analysis](history/follow-up-14-captures/258ba504-6ddf-4888-8633-9cfee8da6eea/native-dns-delivery-analysis.json). Devstack 24’s capture and lifecycle handoff is consumed; no additional independent positive query is requested.
-
-F12-03’s quiet window lasts **6.006144294 s**, followed by fresh negative SOA TTL **5** and a before-TTL query inside the receipt-plus-four-second conservative boundary. The unchanged combined assertion passes. [Original cache evidence](F14-AT20-cache.json). Historical F12-03 and F10-03 stay failed/unattributed. F12-02’s large-stream reader remains accepted with additive lifecycle records; AT02 alone exports **20,533,943 bytes / 858 records**.
-
-AT01 keeps its own **BLOCKED** result: initial selection and sleep/wake transfers are counted; first selection has one SYN and complete zero-drop captures (**274 / 322 / 80** member/node/origin records). The captured type-2 response is IPv4 loopback; this run has no matching IPv6 `::1` response to diagnose. Devstack 24 located historical F11-01 before member IPv6 prerouting, with no repair on main. This fresh success proves neither historical cause nor repair. [Original first-selection analysis](history/follow-up-14-captures/258ba504-6ddf-4888-8633-9cfee8da6eea/initial-selection-analysis.json).
-
-| Original action | Recorded duration | Stored lease evidence |
-|---|---:|---|
-| AT02 supervisor stop | 0.467624715 s | unchanged closed-storage readback |
-| AT02 supervisor resume | 0.471370722 s | immediate snapshot renewed; new producer first retains the prior lease before renewal |
-| AT08 disabled-node docker restart | 10.110052517 s | old process renews during stop; new producer first retains that prior-run lease before renewal |
-| AT09 selected namespace stop | 5.437043416 s | unchanged closed-storage readback |
-| AT09 namespace restart + observation | 90.470845850 s | includes the required 90-second capture; new producer first retains prior-run lease before renewal |
-
-[Original command timestamps, stored readbacks and joined producer windows](F14-agent-transitions.json).
-These bounded observations do not prove repeated-restart reliability or an exact graceful-shutdown duration.
-AT09 keeps desired/applied **30→30**, fresh serving **6.111632611 s** and first counted byte
-**11.624517030 s** after the owner capture start. Original provisional and tc errors remain
-in [restart evidence](F14-AT09-restart.json); recovery does not erase them.
-
-Startup `2026-11-01T09:57:50.549514+00:00`; assembled teardown completed `2026-11-01T10:37:15.397373+00:00`. Admission initially saw two other suites and waited; pre-start, post-start and live-target checks accepted with at most one other suite. Sequence AT05 → AT01 → AT02 → AT03 → AT04 → AT08 → AT20 → AT21 → AT22 → AT09. No second assembled attempt, manufactured failed Apply, predicate relaxation, or host network change.
-
-All gates ran sequentially in the foreground. Area lint, package tests, whole-module `make go-lint`, `go vet ./...`, tracked gofmt, diff checks, four helpers for linux/amd64 + linux/arm64, historical replay and committed-evidence hygiene exited **0**. Live make exited **2**. Area lint was repeated after the ordering correction. The final evidence hygiene/diff check is repeated after this documentation update. No dependency changed.
+```text
+procs -----------memory---------- ---swap-- -----io---- -system-- -------cpu-------
+ r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st gu
+ 4  8  51604 12247360 11370916 148539392    0    0  4997 30018 37960   35  8  3 79 11  0  0
+ 2 12  51604 12444176 11370936 148704292    0    0     8 107150 50016 66314 12  3 79  6  0  0
+ 4 12  51604 11798392 11370936 149126632    0    0    26 118211 43441 117735  6  2 79 13  0  0
+ 2 13  51604 11594052 11370944 149288784    0    0    33 111413 44680 101114  7  4 76 13  0  0
+ 1 12  51604 11622116 11370944 149317076    0    0     0 12820 22655 42116  2  1 84 12  0  0
+ 0 12  51604 11666776 11371004 149329080    0    0     0  1630 24708 46092  2  2 84 12  0  0
+ 2 12  51604 11651780 11371076 149300512    0    0     0 13259 78259 60986  6  3 80 11  0  0
+```
 
 ```sh
 make -f mk/at-members.mk at-members-lint
-python3 tests/e2e/at/members/disktmp.py python3 -B tests/e2e/at/members/assembled.py
-python3 tests/e2e/at/members/disktmp.py go test ./tests/e2e/at/members/...
-python3 tests/e2e/at/members/disktmp.py make go-lint
-python3 tests/e2e/at/members/disktmp.py go vet ./...
+# Preflight: vmstat 5 7; pgrep -af 'gates.sh|mk/at-'; go env GOCACHE
+python3 -B tests/e2e/at/members/disktmp.py python3 -B tests/e2e/at/members/assembled.py
+# assembled.py runs: make -f mk/at-members.mk at-members
+# Remaining commands run with a unique disk TMPDIR/GOTMPDIR under .agent/tmp.
+go test ./tests/e2e/at/members/...
+make go-lint
+go vet ./...
 test -z "$(gofmt -l $(git ls-files '*.go'))"
 git diff --check
 make -f mk/at-members.mk at-members-build
-python3 tests/e2e/at/members/disktmp.py go test -count=1 -v -run '^(TestCommittedEvidenceHygiene|TestD098_.*|TestAT02_F14.*|TestAT02_F13.*|TestAT04_F13.*)$' ./tests/e2e/at/members
+go test ./tests/e2e/at/members -run '^TestCommittedEvidenceHygiene$' -count=1 -v
 ```
 
-Actual live case output:
+All gates run sequentially in the requested foreground order. Area lint and gates 3–8 exit 0; live make exits 2. Final committed-evidence hygiene also exits 0 (200 acceptance JSON records scanned after decompression). No dependency change. Helper cross-builds cover the lane probe and the existing fixture-probe, member-session and native-observe helpers for linux/amd64 and linux/arm64; physical arm64 remains unmeasured.
+
+Actual live output tail:
 
 ```text
---- FAIL: TestATMembers_Live (2289.53s)
-    --- FAIL: TestATMembers_Live/AT05 (15.39s)
-    --- FAIL: TestATMembers_Live/AT01 (75.04s)
-    --- FAIL: TestATMembers_Live/AT02 (426.92s)
-    --- PASS: TestATMembers_Live/AT03 (199.81s)
-    --- FAIL: TestATMembers_Live/AT04 (612.31s)
-    --- PASS: TestATMembers_Live/AT08 (110.38s)
-    --- FAIL: TestATMembers_Live/AT20 (81.59s)
-    --- FAIL: TestATMembers_Live/AT21 (32.07s)
-    --- FAIL: TestATMembers_Live/AT22 (368.76s)
-    --- FAIL: TestATMembers_Live/AT09 (361.33s)
+--- FAIL: TestATMembers_Live (2190.00s)
+    --- FAIL: TestATMembers_Live/AT05 (15.36s)
+    --- FAIL: TestATMembers_Live/AT01 (53.52s)
+    --- FAIL: TestATMembers_Live/AT02 (434.44s)
+    --- PASS: TestATMembers_Live/AT03 (179.54s)
+    --- FAIL: TestATMembers_Live/AT04 (615.56s)
+    --- PASS: TestATMembers_Live/AT08 (109.81s)
+    --- FAIL: TestATMembers_Live/AT20 (82.03s)
+    --- FAIL: TestATMembers_Live/AT21 (32.11s)
+    --- FAIL: TestATMembers_Live/AT22 (369.57s)
+    --- FAIL: TestATMembers_Live/AT09 (291.87s)
+FAIL	github.com/TED-H-com/Freedom-VPN/tests/e2e/at/members	2193.094s
+make: *** [mk/at-members.mk:14: at-members] Error 1
+Owned stack teardown exit: 0
 ```
 
-Teardown returned 0; final owned inventory is **0 containers / 0 networks / 0 volumes / 0 images**. Intermediate network-in-use notices were followed by cleanup. Owned stack state was deleted using a self-removing `fvpn-w4-members-cleanup` container, existing public PostgreSQL image, no network and only the owned state mount. Shared PostgreSQL, other lanes, host networking and toolchain caches were untouched. No sudo, tmpfs or shell cleanup traps. Private pcaps and parser output/error files intentionally remain in ignored disk scratch.
+Package output:
 
-Eleven captures / 37 points are complete and zero-drop. [108-file header archive](history/follow-up-14-captures/258ba504-6ddf-4888-8633-9cfee8da6eea/SHA256SUMS); [nine dated requests](requests.md). No push, PR, merge or tag.
+```text
+ok  	github.com/TED-H-com/Freedom-VPN/tests/e2e/at/members	3.624s
+ok  	github.com/TED-H-com/Freedom-VPN/tests/e2e/at/members/cmd/probe	0.002s
+```
+
+New evidence larger than **20,000,000 bytes** is lossless gzip with SHA-256 and byte counts for both forms in `.gz.sha256.json`. The readers and hygiene scan decompress and verify both pins. AT02 JSON is **62,234,933 bytes** uncompressed and **3,371,553 bytes** compressed. Historical archives remain byte-identical, including the original large files. [Compression contract and derivation](PROCEDURES.md#follow-up-15-evidence-and-regression-readback).
+
+The direct AT02 pause/SIGTERM request-to-observed-exit upper bound is **33.548444 ms**, within **13 s**. The retained launch ID/PID/start-ticks join resolves to parent wait status **0**, exit code **0**, no signal; the stopped lease survives unchanged. This is one cooperative sample, not a worst-case or hard scheduling guarantee. The existing supervisor stop/start follows the observed signal and retains the selected release. **No control I/O after cancel: not observable here**; this stream does not expose the Step cancellation / observation-POST completion boundary.
+
+Across the assembled run, **three accepted hold samples / three incidents** carry `policy_missing` and `STALE_GENERATION` at `stage=lease`, with forwarding false, valid summaries (`steps=1`, `alarm=false`), and publication replay cause `stale_generation`. All end on `generation_matched`; **zero alarm reports and zero escalation audit events**. Alarm triggering and retained-safety precedence are **not exercised**, never passed by absence. [Cumulative final incidents, exact reports and lease IDs](F15-AT09-generation-holds.json).
+
+**AT02 / wire-nodes 34 request 2:** its cumulative snapshot contains only the earlier bootstrap incident `01a196fe-5ac5-7a68-ade3-aebefed4bd4c`, report `01a196fe-5abe-7786-a1f4-2b254d4fbd74`, lease `5ce8d59c-9878-41c1-966a-624896cca11d` (applied 3 / lease 2, empty leased-member set). It ended before AT02 began. **No accepted stale-lease hold intersects AT02's revocations.** Sole-member `members_revoked` closure, removal of one member while an eligible sibling survives, and retained source-binding/TC priority during a hold are each **not exercised**. Fifteen original revocation/withdrawal audit rows retain resource/member IDs and surrounding member-state snapshots. Device/grant withdrawal is not member suspension/closure. [Central join and coverage](F15-AT02-central-hold-join.json), [revocation/member joins](F15-AT02-revocation-members.json).
+
+The rows are consistent with a **node-wide** hold and the contract's absence of a per-member hold field; they do not prove the unexercised revocation combinations. Incident closure alone never claims service recovered. The two later samples (including one lease with eight members) likewise report node-wide forwarding false.
+
+| Original action | Command duration | Stored lease evidence |
+|---|---:|---|
+| AT02 supervisor stop after direct signal | 0.315547960 s | unchanged closed storage |
+| AT02 supervisor resume | 0.470609069 s | new producer retains prior-run lease before renewal |
+| AT08 disabled-node Docker restart | 10.107214827 s | new producer retains prior-run lease before renewal |
+| AT09 selected namespace stop | 5.157674441 s | unchanged closed storage |
+| AT09 namespace restart + observation | 90.551346091 s | includes required 90-second capture; prior-run lease retained before renewal |
+
+[Exact original transitions and producer joins](F15-agent-transitions.json). Docker restart/namespace-stop SIGTERM-to-agent-exit intervals are **not observable here**: the retained parent receipt is unavailable. Their command durations are not graceful shutdown measurements or comparisons against the 13 s process budget.
+
+**682d4434 is now live-qualified:** the forced relay row passes with **Relayed=2 / Direct=0**, followed by same-socket relay-to-direct recovery. The routed hop is added only afterward. Follow-up 14's relay FAIL remains recorded and confounded; it is not reclassified.
+
+The routed IPv6 row passes **64,064 bytes in 1 ms**, with one oversized ingress, one type-2/code-0 PTB seen at router and sender, learned PMTU 1280, and **16** router fragment egresses received. The routed IPv4 row passes **64,064 bytes in 1 ms**: **25 DF=0 oversized datagrams → 50 fragments / 25 groups**, all received, no PTB. The known-PMTU IPv6 row separately passes **64,064 bytes in 1 ms**.
+
+Receive-only rows remain limitations: dual-underlay MTU 1280 is **FAIL**, with **12,012 bytes in 12,011 ms**; IPv6 receive-only transfers **64,064 bytes in 1 ms** but remains **BLOCKED**. Neither is upgraded to a supported-PMTU pass. [Original independent rows](F15-D137-native-paths.json), [packet analyses](history/follow-up-15-captures/e80bb592-27ed-4ab5-a8c3-6433e7278938/analysis.json). Historical F8-02 failures remain unattributed; IPv4 overlay payloads do not prove IPv6 overlay support (D-123).
+
+AT01 remains **BLOCKED**. Its original first selection has **five member SYNs, zero node/origin inner packets, zero origin requests**, with generation **5** and **six member accept rules** before and after. Captures are complete and zero-drop (**201 / 200 / 45** member/node/origin records). Cause is **unproven**; neither the node's sampled generation nor this failure locates the missing native hop. Devstack 25's campaign is consumed as evidence, not a repair on main. [Original attempt/readiness](F15-F11-01-first-selection.json), [native analysis](history/follow-up-15-captures/e80bb592-27ed-4ab5-a8c3-6433e7278938/initial-selection-analysis.json).
+
+All **three D-077 re-grant attempts** pass this run. Every attempt retains its original readiness, member/node/origin packet observations, origin receipt and device counters. These are the captures the harness already made; detailed new WireGuard captures are not invented. `cause_status=unproven`; the earlier F14-01 remains failed and assigned to devstack's native investigation. A passing first selection or re-grant closes neither F11-01 nor F14-01. [All attempts](F15-D077-regrant-attempts.json).
+
+AT04 retains **1,377 withdrawal samples with zero fresh parse-failure receipts**. Retention remains enabled: a rejection keeps `parse_failure` plus private raw/error files at mode 0600, never counter evidence and never published. Netlab 23's decision is consumed: every duplicate owned-chain definition, identical or not, is rejected as typed `DuplicateChainError`; its **0 / 3,300** lab result leaves origin unproven. Counterread's content-free `duplicate_chain` surface remains assigned to devstack's next follow-up. Both historical F13-01 failures stay failed, with no retry or predicate relaxation. [Fresh receipt index](F15-F13-01-private-receipts.json), [prior original receipt](history/follow-up-14/F14-F13-01-private-receipts.json).
+
+Teardown exit 0. Final inventory: **0 owned containers / 0 networks / 0 volumes / 0 images**. Generated state and helper artifacts removed; required private pcaps, producer streams and parser files remain in ignored disk scratch. Root-owned state cleanup used an owned self-removing container, existing public PostgreSQL image, no network and only the owned state mount. Shared PostgreSQL, other lanes, host networking and caches were untouched. No sudo or new shell cleanup trap.
+
+[Results](summary.md); [seven carried groups, no new requests](requests.md).
+
+Final hygiene output:
+
+```text
+=== RUN   TestCommittedEvidenceHygiene
+    evidence_test.go:56: scanned 200 acceptance JSON records plus documentation
+--- PASS: TestCommittedEvidenceHygiene (2.82s)
+PASS
+ok  	github.com/TED-H-com/Freedom-VPN/tests/e2e/at/members	2.826s
+```
+
+Archive verification: all 70 root files match their baseline bytes and SHA-256 pins; all earlier archives unchanged. The 102 new capture pins verify. Python gzip round-trip, corrupted-pin rejection and stale-file cleanup pass. New published evidence has no uncompressed file above 20,000,000 bytes.

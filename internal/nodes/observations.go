@@ -280,6 +280,9 @@ func (s *Service) SubmitObservation(
 		}
 		// 4. Update node state. An older observed_at NEVER overrides newer observed state!
 		isNewerOrEqual := lastObservedAt == nil || !observedAt.Before(lastObservedAt.UTC())
+		if err := recordGenerationHoldTx(ctx, tx, report, receivedAt, isNewerOrEqual, mappingFrozen); err != nil {
+			return err
+		}
 		if isNewerOrEqual {
 			const updateNode = `
 				UPDATE nodes
@@ -502,6 +505,10 @@ func evaluateObservationEvidence(report api.ObservationReport) (api.SafetyStatus
 	safety := report.SafetyStatus
 	health := report.DataHealth
 	forwarding := report.MemberForwardingEnabled
+	if reportsGenerationHold(report) {
+		// An ACK cannot prove convergence while the serving document is held.
+		forwarding = false
+	}
 
 	// §10.3: Userspace NetBird backend cannot provide reliable kernel per-peer metering.
 	if report.Netbird.Backend == api.ObservationReportNetbirdBackendUserspace {

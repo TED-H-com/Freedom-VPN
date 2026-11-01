@@ -77,6 +77,23 @@ def command(shape='success', phase='install', kind='nft', base=115):
 
 
 class CorrelationTests(unittest.TestCase):
+    def test_L1_skipped_resources_keep_commands_and_reject_fake_samples(self):
+        rows = fixture()
+        c = command()
+        for side in ('before', 'after'):
+            c[side].update(skip_reason='install_bound', bracket=dict(
+                before=dict(ns='0', available=False), after=dict(ns='0', available=False)))
+        rows[0]['timing']['commands'] = [c]
+        result = p.command_lifecycle(rows[0])
+        self.assertEqual(result['records'][0]['record'], c)
+        for change in ('stamp', 'phase', 'reason'):
+            bad = copy.deepcopy(rows[0])
+            sample = bad['timing']['commands'][0]
+            if change == 'stamp': sample['before']['bracket']['before'] = dict(ns='115', available=True)
+            if change == 'phase': sample['phase'] = 'prepare'
+            if change == 'reason': sample['before']['skip_reason'] = 'invented'
+            with self.assertRaises(ValueError): p.command_lifecycle(bad)
+
     def test_ISO_F6_01_candidate_acceptance_and_original_command_join(self):
         from candidate_evidence import candidate_rejections
         rows = failed_install()

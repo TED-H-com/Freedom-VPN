@@ -13,6 +13,7 @@ import (
 func TestCommittedEvidenceHygiene(t *testing.T) {
 	root := filepath.Join("../../../..", "docs/e2e/at/members")
 	records := 0
+	documents := 0
 	err := filepath.WalkDir(root, func(path string, d os.DirEntry, err error) error {
 		if err != nil {
 			return err
@@ -20,7 +21,15 @@ func TestCommittedEvidenceHygiene(t *testing.T) {
 		if d.IsDir() {
 			return nil
 		}
-		raw, err := os.ReadFile(path)
+		var raw []byte
+		if filepath.Ext(path) == ".md" {
+			// Plain Markdown includes navigation indexes, not pinned captures.
+			// Scan the document itself; .md.gz captures still use both byte pins.
+			raw, err = os.ReadFile(path)
+			documents++
+		} else {
+			raw, err = readEvidence(path)
+		}
 		if err != nil {
 			return err
 		}
@@ -29,7 +38,8 @@ func TestCommittedEvidenceHygiene(t *testing.T) {
 				t.Errorf("unsafe evidence %s", path)
 			}
 		}
-		if filepath.Ext(path) == ".json" && len(filepath.Base(path)) == len("AT01.json") && strings.HasPrefix(filepath.Base(path), "AT") {
+		name := strings.TrimSuffix(filepath.Base(path), ".gz")
+		if filepath.Ext(name) == ".json" && len(name) == len("AT01.json") && strings.HasPrefix(name, "AT") {
 			var rec struct {
 				RunID  string `json:"run_id"`
 				Source string `json:"source_commit"`
@@ -52,7 +62,7 @@ func TestCommittedEvidenceHygiene(t *testing.T) {
 	if records < 10 {
 		t.Fatal("missing case records")
 	}
-	t.Logf("scanned %d acceptance JSON records plus documentation", records)
+	t.Logf("scanned %d acceptance JSON records plus %d Markdown documents", records, documents)
 }
 func TestD098_Followup7Archive(t *testing.T) {
 	verifyArchive(t, "follow-up-7", "297faa31-2f90-4aab-8cf0-6818629f46c8", 31)
@@ -80,6 +90,10 @@ func TestD098_Followup12Archive(t *testing.T) {
 
 func TestD098_Followup13Archive(t *testing.T) {
 	verifyArchive(t, "follow-up-13", "4182dd3d-7f1f-453e-8c1f-265d097c3abc", 61)
+}
+
+func TestD098_Followup14Archive(t *testing.T) {
+	verifyArchive(t, "follow-up-14", "258ba504-6ddf-4888-8633-9cfee8da6eea", 70)
 }
 
 func verifyArchive(t *testing.T, followup, run string, count int) {
@@ -111,7 +125,7 @@ func verifyArchive(t *testing.T, followup, run string, count int) {
 				RunID string `json:"run_id"`
 			}
 			wantRun := run
-			if followup == "follow-up-13" && fields[1] == "AT09-restart.json" {
+			if (followup == "follow-up-13" || followup == "follow-up-14") && fields[1] == "AT09-restart.json" {
 				wantRun = "7edb263f-1f6e-4f94-9e8e-26099f96a699"
 			}
 			// Follow-up 12 deliberately retained AT01/AT09 from follow-up 11.

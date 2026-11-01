@@ -83,6 +83,7 @@ type record struct {
 	Operator         string            `json:"operator_status,omitempty"`
 }
 type live struct {
+	holdSnapshots                []map[string]any
 	dnsCapture                   *nativeCaptureSession
 	siblingSent, siblingObserved json.RawMessage
 
@@ -181,7 +182,10 @@ func TestATMembers_Live(t *testing.T) {
 			if focused && task.id == "AT02" {
 				l.identity(&r)
 			}
+			l.holdSnapshots = nil
+			l.holdSnapshot(task.id + " start")
 			task.run(&r)
+			l.recordGenerationHolds(&r)
 			if task.id == "AT02" {
 				l.recordCounterTiming(&r)
 			}
@@ -516,7 +520,7 @@ func (l *live) write(r *record) {
 	if err != nil {
 		l.t.Fatal(err)
 	}
-	if err = os.WriteFile(filepath.Join(dir, r.ID+".json"), append(raw, '\n'), 0644); err != nil {
+	if err = writeEvidence(filepath.Join(dir, r.ID+".json"), append(raw, '\n')); err != nil {
 		l.t.Fatal(err)
 	}
 	page := filepath.Join(dir, r.ID+".md")
@@ -524,7 +528,7 @@ func (l *live) write(r *record) {
 	if err != nil {
 		l.t.Fatal(err)
 	}
-	if err = os.WriteFile(page, []byte(strings.TrimRight(string(raw), "\n")+"\n"), 0644); err != nil {
+	if err = writeEvidence(page, []byte(strings.TrimRight(string(raw), "\n")+"\n")); err != nil {
 		l.t.Fatal(err)
 	}
 }

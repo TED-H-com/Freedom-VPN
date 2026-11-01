@@ -1,0 +1,1754 @@
+{
+  "holds": [
+    {
+      "report_id": "01a196fd-f5e3-7211-89dd-2bb4b6b373d2",
+      "observation_id": "6c190e7a-1df0-4f86-aeeb-8589fbd17b7b",
+      "received_at": "2026-11-01T12:03:08.392762+00:00",
+      "observed_at": "2026-11-01T12:03:08.387118076Z",
+      "lease_id": "a0959dd8-d2bf-4592-9850-5a0a660ac264",
+      "signed_lease_generation": "2",
+      "applied_generation": "3",
+      "desired_generation_at_read": "5",
+      "applied_equals_desired_at_read": false,
+      "sample": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "hold_id": "01a196fd-f5e9-7e03-933e-de3166035e0d",
+        "node_id": "01a196fd-e69d-7514-98e5-88b1c941469d",
+        "lease_id": "a0959dd8-d2bf-4592-9850-5a0a660ac264",
+        "report_id": "01a196fd-f5e3-7211-89dd-2bb4b6b373d2",
+        "summary_valid": true,
+        "incarnation_id": "01a196fd-e8fa-7275-b8ce-67fe687b8181",
+        "reported_alarm": false,
+        "reported_steps": "1",
+        "lease_generation": "2",
+        "applied_generation": "3",
+        "reported_elapsed_ms": "0"
+      },
+      "incident": {
+        "id": "01a196fd-f5e9-7e03-933e-de3166035e0d",
+        "node_id": "01a196fd-e69d-7514-98e5-88b1c941469d",
+        "ended_at": "2026-11-01T12:03:09.449702+00:00",
+        "end_reason": "generation_matched",
+        "escalated_at": null,
+        "last_seen_at": "2026-11-01T12:03:08.392762+00:00",
+        "first_seen_at": "2026-11-01T12:03:08.392762+00:00",
+        "incarnation_id": "01a196fd-e8fa-7275-b8ce-67fe687b8181",
+        "latest_report_id": "01a196fd-f5e3-7211-89dd-2bb4b6b373d2",
+        "first_observed_at": "2026-11-01T12:03:08.387118+00:00"
+      },
+      "classification": "stale_generation",
+      "reverse_array_replay_cause": "stale_generation",
+      "unrelated_failure": false,
+      "reported_forwarding": false,
+      "publication_operation_snapshots": [
+        {
+          "id": "523f83a8-96f4-44f3-8e38-05dd007835bb",
+          "kind": "node.update",
+          "steps": {
+            "agent_policy": {
+              "order": 1,
+              "status": "succeeded",
+              "required": true,
+              "updated_at": "2026-11-01T12:03:08.392762Z",
+              "observed_at": "2026-11-01T12:03:08.392762Z",
+              "observed_ref": "agent_policy"
+            }
+          },
+          "status": "succeeded",
+          "created_at": "2026-11-01T12:03:07.608561+00:00",
+          "completed_at": "2026-11-01T12:03:08.392762+00:00",
+          "desired_generation": "2"
+        },
+        {
+          "id": "01a196fd-e90b-7259-87f9-54aa59f756e4",
+          "kind": "node.enroll",
+          "steps": {
+            "node_policy": {
+              "status": "succeeded",
+              "required": true,
+              "observed_at": "2026-11-01T12:03:07.511973519Z",
+              "observed_ref": "node_policy"
+            },
+            "netbird_setup": {
+              "status": "succeeded",
+              "required": true,
+              "observed_at": "2026-11-01T12:03:05.536217027Z",
+              "observed_ref": "netbird_setup"
+            },
+            "peer_readback": {
+              "status": "succeeded",
+              "required": true,
+              "observed_at": "2026-11-01T12:03:08.567225496Z",
+              "observed_ref": "peer_readback"
+            }
+          },
+          "status": "succeeded",
+          "created_at": "2026-11-01T12:03:05.09187+00:00",
+          "completed_at": "2026-11-01T12:03:08.567308+00:00",
+          "desired_generation": null
+        },
+        {
+          "id": "e16e11d1-2b3a-43f0-9783-4f207762086d",
+          "kind": "node.publish",
+          "steps": {
+            "agent_policy": {
+              "order": 1,
+              "status": "succeeded",
+              "required": true,
+              "updated_at": "2026-11-01T12:03:09.545896107Z",
+              "observed_at": "2026-11-01T12:03:09.545896107Z",
+              "observed_ref": "agent_policy"
+            },
+            "data_path_probe": {
+              "order": 3,
+              "status": "succeeded",
+              "required": true,
+              "updated_at": "2026-11-01T12:03:09.545896107Z",
+              "observed_at": "2026-11-01T12:03:09.545896107Z",
+              "observed_ref": "data_path_probe"
+            },
+            "netbird_route_readback": {
+              "order": 2,
+              "status": "succeeded",
+              "required": true,
+              "updated_at": "2026-11-01T12:03:09.545896107Z",
+              "observed_at": "2026-11-01T12:03:09.545896107Z",
+              "observed_ref": "netbird_route_readback"
+            }
+          },
+          "status": "succeeded",
+          "created_at": "2026-11-01T12:03:07.614551+00:00",
+          "completed_at": "2026-11-01T12:03:09.545896+00:00",
+          "desired_generation": "2"
+        },
+        {
+          "id": "52bf7001-29bc-4397-a762-ea9d4fffe841",
+          "kind": "node.publish",
+          "steps": {
+            "agent_policy": {
+              "order": 1,
+              "status": "succeeded",
+              "required": true,
+              "updated_at": "2026-11-01T12:03:12.645521926Z",
+              "observed_at": "2026-11-01T12:03:12.645521926Z",
+              "observed_ref": "agent_policy"
+            },
+            "data_path_probe": {
+              "order": 3,
+              "status": "succeeded",
+              "required": true,
+              "updated_at": "2026-11-01T12:03:12.645521926Z",
+              "observed_at": "2026-11-01T12:03:12.645521926Z",
+              "observed_ref": "data_path_probe"
+            },
+            "netbird_route_readback": {
+              "order": 2,
+              "status": "succeeded",
+              "required": true,
+              "updated_at": "2026-11-01T12:03:12.645521926Z",
+              "observed_at": "2026-11-01T12:03:12.645521926Z",
+              "observed_ref": "netbird_route_readback"
+            }
+          },
+          "status": "succeeded",
+          "created_at": "2026-11-01T12:03:11.908992+00:00",
+          "completed_at": "2026-11-01T12:03:12.645521+00:00",
+          "desired_generation": "4"
+        }
+      ],
+      "false_publication_credit": [],
+      "audit_ids": [],
+      "problems": [],
+      "desired_wire": {
+        "transaction_index": 9,
+        "transaction": {
+          "path": "/api/v1/agent/desired-state",
+          "received_at": "2026-11-01T12:03:08.325825663Z",
+          "response": {
+            "signatures": [
+              {
+                "algorithm": "ed25519",
+                "key_id": "01a196fd-53f3-734b-8f98-1f2d2faad087",
+                "signature_b64": "MYaAXJ+SN7rMg8KPugbDwt8Ew5L0fMlwze8Yc71Z8UP+TE1i4Z1H+7GhSyG/1iRYNRIRzcYKML1rUnLpVZU3DA=="
+              }
+            ],
+            "signed": {
+              "accounting_period": {
+                "period_end": "2026-12-01T00:00:00Z",
+                "period_id": "2026-11",
+                "period_start": "2026-11-01T00:00:00Z"
+              },
+              "binding_revision": "0",
+              "config_generation": "3",
+              "desired_release_id": null,
+              "device_bindings": [],
+              "dns": {
+                "resolver_document": {
+                  "content_sha256": "4d26f75889ee65de84d70d6db8f8b18b693d6d588a571fbf827b636f7ae7cf17",
+                  "document_id": "01a196fd-e6af-786d-b89e-9fa345f5c35a",
+                  "generation": "1",
+                  "profile_revision_id": "01a196fd-e661-7666-92ac-0f68acac0cca",
+                  "size_bytes": 521
+                },
+                "resolver_ipv4": [
+                  "192.0.6.53"
+                ],
+                "resolver_ipv6": []
+              },
+              "egress_probe": null,
+              "expires_at": "2026-11-01T12:13:08.327559906Z",
+              "issued_at": "2026-11-01T12:03:08.327559906Z",
+              "lease_renewal_endpoint": "/api/v1/agent/lease-renewals",
+              "member_rate_policies": [],
+              "node_capacity": {
+                "down_bps": 200000000,
+                "member_down_bps_cap": 100000000,
+                "member_up_bps_cap": 100000000,
+                "up_bps": 200000000
+              },
+              "node_id": "01a196fd-e69d-7514-98e5-88b1c941469d",
+              "node_incarnation_id": "01a196fd-e8fa-7275-b8ce-67fe687b8181",
+              "policy_refs": {
+                "authorization_generation": "1",
+                "dns_generation": "1",
+                "fup_generation": "1"
+              },
+              "publication_intent": "published",
+              "safety_profile": "internet-only-v1",
+              "schema_version": 1,
+              "serving_release_ids": [
+                "01a196fd-e1c2-73a1-b204-0f3abd4e7f75"
+              ],
+              "supported_release_policy_id": "01a196fd-e632-7803-a05e-f5397b9b5871",
+              "update": null
+            }
+          },
+          "response_at": "2026-11-01T12:03:08.331641613Z",
+          "status": 200
+        }
+      },
+      "desired_generation": "3",
+      "applied_equals_delivered_desired": true,
+      "desired_scope": "Latest original signed desired response completed before this report; central desired_generation_at_read is a separate later polling value.",
+      "producer_baselines": [
+        {
+          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "sequence": "15",
+          "baseline": {
+            "cause": "policy_missing",
+            "start_ns": "118125867819607",
+            "end_ns": "118125901355471",
+            "succeeded": true
+          },
+          "anchor": {
+            "mono_before_ns": "118125901380559",
+            "wall": "2026-11-01T12:03:08.385009403Z",
+            "mono_after_ns": "118125901380715"
+          }
+        }
+      ],
+      "producer_heartbeats": [
+        {
+          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "sequence": "16",
+          "heartbeat": {
+            "mono_ns": "118125918191870",
+            "policy_expires_mono_ns": "0",
+            "generation": "3",
+            "baseline_ok": true,
+            "serving": false,
+            "reason": "policy_missing",
+            "written": true
+          },
+          "anchor": {
+            "mono_before_ns": "118125920088643",
+            "wall": "2026-11-01T12:03:08.403717722Z",
+            "mono_after_ns": "118125920089074"
+          }
+        }
+      ],
+      "independent_packet_coverage": "not exercised for this hold unless separately retained in generation-hold-control-cut.json; report forwarding=false is not independent packet evidence"
+    }
+  ],
+  "incidents": [
+    {
+      "id": "01a196fd-f5e9-7e03-933e-de3166035e0d",
+      "node_id": "01a196fd-e69d-7514-98e5-88b1c941469d",
+      "ended_at": "2026-11-01T12:03:09.449702+00:00",
+      "end_reason": "generation_matched",
+      "escalated_at": null,
+      "last_seen_at": "2026-11-01T12:03:08.392762+00:00",
+      "first_seen_at": "2026-11-01T12:03:08.392762+00:00",
+      "incarnation_id": "01a196fd-e8fa-7275-b8ce-67fe687b8181",
+      "latest_report_id": "01a196fd-f5e3-7211-89dd-2bb4b6b373d2",
+      "first_observed_at": "2026-11-01T12:03:08.387118+00:00"
+    }
+  ],
+  "escalations": [],
+  "matching_ends": [
+    {
+      "incident_id": "01a196fd-f5e9-7e03-933e-de3166035e0d",
+      "ended_at": "2026-11-01T12:03:09.449702+00:00",
+      "matching_report_ids": [
+        "01a196fd-f9ff-7327-8feb-bf74771969b9"
+      ],
+      "later_distinct_incident_ids": []
+    }
+  ],
+  "problems": [],
+  "publication_completions": [
+    {
+      "operation": {
+        "id": "e16e11d1-2b3a-43f0-9783-4f207762086d",
+        "kind": "node.publish",
+        "steps": {
+          "agent_policy": {
+            "order": 1,
+            "status": "succeeded",
+            "required": true,
+            "updated_at": "2026-11-01T12:03:09.545896107Z",
+            "observed_at": "2026-11-01T12:03:09.545896107Z",
+            "observed_ref": "agent_policy"
+          },
+          "data_path_probe": {
+            "order": 3,
+            "status": "succeeded",
+            "required": true,
+            "updated_at": "2026-11-01T12:03:09.545896107Z",
+            "observed_at": "2026-11-01T12:03:09.545896107Z",
+            "observed_ref": "data_path_probe"
+          },
+          "netbird_route_readback": {
+            "order": 2,
+            "status": "succeeded",
+            "required": true,
+            "updated_at": "2026-11-01T12:03:09.545896107Z",
+            "observed_at": "2026-11-01T12:03:09.545896107Z",
+            "observed_ref": "netbird_route_readback"
+          }
+        },
+        "status": "succeeded",
+        "created_at": "2026-11-01T12:03:07.614551+00:00",
+        "resource_id": "01a196fd-e69d-7514-98e5-88b1c941469d",
+        "completed_at": "2026-11-01T12:03:09.545896+00:00",
+        "observed_refs": {
+          "agent_policy": "node:01a196fd-e69d-7514-98e5-88b1c941469d:gen:3:safety:passed",
+          "data_path_probe": "node:01a196fd-e69d-7514-98e5-88b1c941469d:probe:passed",
+          "netbird_route_readback": "netbird:route:dbjikvf8k4c000artsig",
+          "publication_attachment_basis": "empty_exception",
+          "publication_attachment_state": "7244772b-c586-4855-bd72-363d0e58e824"
+        },
+        "desired_generation": "2"
+      },
+      "open_incidents_at_completion": [],
+      "hold_report_credits": []
+    },
+    {
+      "operation": {
+        "id": "52bf7001-29bc-4397-a762-ea9d4fffe841",
+        "kind": "node.publish",
+        "steps": {
+          "agent_policy": {
+            "order": 1,
+            "status": "succeeded",
+            "required": true,
+            "updated_at": "2026-11-01T12:03:12.645521926Z",
+            "observed_at": "2026-11-01T12:03:12.645521926Z",
+            "observed_ref": "agent_policy"
+          },
+          "data_path_probe": {
+            "order": 3,
+            "status": "succeeded",
+            "required": true,
+            "updated_at": "2026-11-01T12:03:12.645521926Z",
+            "observed_at": "2026-11-01T12:03:12.645521926Z",
+            "observed_ref": "data_path_probe"
+          },
+          "netbird_route_readback": {
+            "order": 2,
+            "status": "succeeded",
+            "required": true,
+            "updated_at": "2026-11-01T12:03:12.645521926Z",
+            "observed_at": "2026-11-01T12:03:12.645521926Z",
+            "observed_ref": "netbird_route_readback"
+          }
+        },
+        "status": "succeeded",
+        "created_at": "2026-11-01T12:03:11.908992+00:00",
+        "resource_id": "01a196fd-e69d-7514-98e5-88b1c941469d",
+        "completed_at": "2026-11-01T12:03:12.645521+00:00",
+        "observed_refs": {
+          "agent_policy": "node:01a196fd-e69d-7514-98e5-88b1c941469d:gen:5:safety:passed",
+          "data_path_probe": "node:01a196fd-e69d-7514-98e5-88b1c941469d:probe:passed",
+          "netbird_route_readback": "netbird:route:dbjikvf8k4c000artsig",
+          "publication_attachment_basis": "empty_exception",
+          "publication_attachment_state": "a88f3025-7209-4bf8-8605-f549eac130bb"
+        },
+        "desired_generation": "4"
+      },
+      "open_incidents_at_completion": [],
+      "hold_report_credits": []
+    },
+    {
+      "operation": {
+        "id": "de624efe-b1b3-492c-bb59-50e6ef837032",
+        "kind": "node.publish",
+        "steps": {
+          "agent_policy": {
+            "order": 1,
+            "reason": "stale_generation",
+            "status": "pending",
+            "required": true,
+            "error_code": "NODE_NOT_SERVICEABLE",
+            "updated_at": "2026-11-01T12:03:28.737196764Z",
+            "error_message": "member_forwarding_unconfirmed"
+          },
+          "data_path_probe": {
+            "order": 3,
+            "status": "pending",
+            "required": true,
+            "updated_at": "2026-11-01T12:03:28.737196764Z"
+          },
+          "netbird_route_readback": {
+            "order": 2,
+            "reason": "stale_generation",
+            "status": "pending",
+            "required": true,
+            "updated_at": "2026-11-01T12:03:28.738577+00:00"
+          }
+        },
+        "status": "superseded",
+        "created_at": "2026-11-01T12:03:28.707289+00:00",
+        "resource_id": "01a196fd-e69d-7514-98e5-88b1c941469d",
+        "completed_at": "2026-11-01T12:03:29.338546+00:00",
+        "observed_refs": {
+          "publication_gate_withdrawal": "netbird:route:dbjikvf8k4c000artsig:withdrawn"
+        },
+        "desired_generation": "8"
+      },
+      "open_incidents_at_completion": [],
+      "hold_report_credits": []
+    },
+    {
+      "operation": {
+        "id": "08601bee-d6e5-4aec-9b0e-d31e86cecb01",
+        "kind": "node.publish",
+        "steps": {
+          "agent_policy": {
+            "order": 1,
+            "status": "succeeded",
+            "required": true,
+            "updated_at": "2026-11-01T12:03:29.671591585Z",
+            "observed_at": "2026-11-01T12:03:29.671591585Z",
+            "observed_ref": "agent_policy"
+          },
+          "data_path_probe": {
+            "order": 3,
+            "status": "succeeded",
+            "required": true,
+            "updated_at": "2026-11-01T12:03:29.671591585Z",
+            "observed_at": "2026-11-01T12:03:29.671591585Z",
+            "observed_ref": "data_path_probe"
+          },
+          "netbird_route_readback": {
+            "order": 2,
+            "status": "succeeded",
+            "required": true,
+            "updated_at": "2026-11-01T12:03:29.671591585Z",
+            "observed_at": "2026-11-01T12:03:29.671591585Z",
+            "observed_ref": "netbird_route_readback"
+          }
+        },
+        "status": "succeeded",
+        "created_at": "2026-11-01T12:03:29.338546+00:00",
+        "resource_id": "01a196fd-e69d-7514-98e5-88b1c941469d",
+        "completed_at": "2026-11-01T12:03:29.671591+00:00",
+        "observed_refs": {
+          "agent_policy": "node:01a196fd-e69d-7514-98e5-88b1c941469d:gen:9:safety:passed",
+          "data_path_probe": "node:01a196fd-e69d-7514-98e5-88b1c941469d:probe:passed",
+          "netbird_route_readback": "netbird:route:dbjil4f8k4c000artvs0",
+          "publication_attachment_basis": "populated_verified",
+          "publication_attachment_state": "cc198ddf-6383-47cd-9187-9d50c56d260b"
+        },
+        "desired_generation": "9"
+      },
+      "open_incidents_at_completion": [],
+      "hold_report_credits": []
+    },
+    {
+      "operation": {
+        "id": "2c2f1fd6-8f7b-4369-b959-87a81ba0e6dc",
+        "kind": "node.publish",
+        "steps": {
+          "agent_policy": {
+            "order": 1,
+            "status": "succeeded",
+            "required": true,
+            "updated_at": "2026-11-01T12:10:57.120782454Z",
+            "observed_at": "2026-11-01T12:10:57.120782454Z",
+            "observed_ref": "agent_policy"
+          },
+          "data_path_probe": {
+            "order": 3,
+            "status": "succeeded",
+            "required": true,
+            "updated_at": "2026-11-01T12:10:57.120782454Z",
+            "observed_at": "2026-11-01T12:10:57.120782454Z",
+            "observed_ref": "data_path_probe"
+          },
+          "netbird_route_readback": {
+            "order": 2,
+            "status": "succeeded",
+            "required": true,
+            "updated_at": "2026-11-01T12:10:57.120782454Z",
+            "observed_at": "2026-11-01T12:10:57.120782454Z",
+            "observed_ref": "netbird_route_readback"
+          }
+        },
+        "status": "succeeded",
+        "created_at": "2026-11-01T12:10:54.758924+00:00",
+        "resource_id": "01a196fd-e69d-7514-98e5-88b1c941469d",
+        "completed_at": "2026-11-01T12:10:57.120782+00:00",
+        "observed_refs": {
+          "agent_policy": "node:01a196fd-e69d-7514-98e5-88b1c941469d:gen:19:safety:passed",
+          "data_path_probe": "node:01a196fd-e69d-7514-98e5-88b1c941469d:probe:passed",
+          "netbird_route_readback": "netbird:route:dbjil4f8k4c000artvs0",
+          "publication_attachment_basis": "populated_verified",
+          "publication_attachment_state": "4c4d3790-1f92-4332-8446-23e935af6f55"
+        },
+        "desired_generation": "18"
+      },
+      "open_incidents_at_completion": [],
+      "hold_report_credits": []
+    },
+    {
+      "operation": {
+        "id": "704709f0-d4c2-4aa4-9415-9534a4568b5c",
+        "kind": "node.publish",
+        "steps": {
+          "agent_policy": {
+            "order": 1,
+            "status": "succeeded",
+            "required": true,
+            "updated_at": "2026-11-01T12:11:17.23769985Z",
+            "observed_at": "2026-11-01T12:11:17.23769985Z",
+            "observed_ref": "agent_policy"
+          },
+          "data_path_probe": {
+            "order": 3,
+            "status": "succeeded",
+            "required": true,
+            "updated_at": "2026-11-01T12:11:17.23769985Z",
+            "observed_at": "2026-11-01T12:11:17.23769985Z",
+            "observed_ref": "data_path_probe"
+          },
+          "netbird_route_readback": {
+            "order": 2,
+            "status": "succeeded",
+            "required": true,
+            "updated_at": "2026-11-01T12:11:17.23769985Z",
+            "observed_at": "2026-11-01T12:11:17.23769985Z",
+            "observed_ref": "netbird_route_readback"
+          }
+        },
+        "status": "succeeded",
+        "created_at": "2026-11-01T12:11:16.63647+00:00",
+        "resource_id": "01a196fd-e69d-7514-98e5-88b1c941469d",
+        "completed_at": "2026-11-01T12:11:17.237699+00:00",
+        "observed_refs": {
+          "agent_policy": "node:01a196fd-e69d-7514-98e5-88b1c941469d:gen:21:safety:passed",
+          "data_path_probe": "node:01a196fd-e69d-7514-98e5-88b1c941469d:probe:passed",
+          "netbird_route_readback": "netbird:route:dbjil4f8k4c000artvs0",
+          "publication_attachment_basis": "populated_verified",
+          "publication_attachment_state": "1ab2301c-182b-491f-97ce-d51681dab739"
+        },
+        "desired_generation": "20"
+      },
+      "open_incidents_at_completion": [],
+      "hold_report_credits": []
+    },
+    {
+      "operation": {
+        "id": "7a8018f1-9a39-4afa-b9eb-8ea6c66438fc",
+        "kind": "node.publish",
+        "steps": {
+          "agent_policy": {
+            "order": 1,
+            "status": "succeeded",
+            "required": true,
+            "updated_at": "2026-11-01T12:11:31.325917878Z",
+            "observed_at": "2026-11-01T12:11:31.325917878Z",
+            "observed_ref": "agent_policy"
+          },
+          "data_path_probe": {
+            "order": 3,
+            "status": "succeeded",
+            "required": true,
+            "updated_at": "2026-11-01T12:11:31.325917878Z",
+            "observed_at": "2026-11-01T12:11:31.325917878Z",
+            "observed_ref": "data_path_probe"
+          },
+          "netbird_route_readback": {
+            "order": 2,
+            "status": "succeeded",
+            "required": true,
+            "updated_at": "2026-11-01T12:11:31.325917878Z",
+            "observed_at": "2026-11-01T12:11:31.325917878Z",
+            "observed_ref": "netbird_route_readback"
+          }
+        },
+        "status": "succeeded",
+        "created_at": "2026-11-01T12:11:30.590616+00:00",
+        "resource_id": "01a196fd-e69d-7514-98e5-88b1c941469d",
+        "completed_at": "2026-11-01T12:11:31.325917+00:00",
+        "observed_refs": {
+          "agent_policy": "node:01a196fd-e69d-7514-98e5-88b1c941469d:gen:25:safety:passed",
+          "data_path_probe": "node:01a196fd-e69d-7514-98e5-88b1c941469d:probe:passed",
+          "netbird_route_readback": "netbird:route:dbjiosv8k4c000arvrog",
+          "publication_attachment_basis": "populated_verified",
+          "publication_attachment_state": "0544fba6-b7a2-4550-af77-fae9a60ea440"
+        },
+        "desired_generation": "24"
+      },
+      "open_incidents_at_completion": [],
+      "hold_report_credits": []
+    }
+  ],
+  "publication_snapshot_scope": {
+    "first_read": "2026-11-01T12:06:05.209721Z",
+    "final_read": "2026-11-01T12:21:26.082467Z",
+    "end": "final read after the assembled central report export",
+    "limitation": "The sidecar began during this assembled run; initial completed operations are retained state, not continuously observed earlier transitions."
+  },
+  "accepted_hold_reports_without_wire_receipt": [],
+  "populated_generation_windows": [
+    {
+      "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "74",
+      "lease_id": "70b8e7a3-7cac-464f-a82e-b12aa2b86da7",
+      "lease_generation": "6",
+      "baseline_start_ns": "118132857796197",
+      "apply_end_ns": "118133062997632",
+      "accepted_hold_report_ids": [],
+      "same_lease_hold_report_ids": [],
+      "central_join": "not observed: no accepted hold report in this producer bracket",
+      "baseline_rows": [
+        {
+          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "sequence": "74",
+          "cause": "policy_missing",
+          "start_ns": "118132857796197",
+          "end_ns": "118132886807849",
+          "succeeded": true
+        },
+        {
+          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "sequence": "75",
+          "cause": "policy_missing",
+          "start_ns": "118132889821689",
+          "end_ns": "118132915818340",
+          "succeeded": true
+        },
+        {
+          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "sequence": "76",
+          "cause": "policy_missing",
+          "start_ns": "118132930220018",
+          "end_ns": "118132959695748",
+          "succeeded": true
+        }
+      ],
+      "packet_coverage": {
+        "renewal": {
+          "coverage": "unavailable: no ingress captured in this bracket",
+          "ingresses": 0,
+          "losses": [],
+          "ingress_losses_in_completed_guards": 0,
+          "ingress_losses_outside_completed_guards": 0,
+          "first_post_apply_ingress_with_egress": null
+        },
+        "expiry": {
+          "coverage": "unavailable: no ingress captured in this bracket",
+          "ingresses": 0,
+          "losses": [],
+          "ingress_losses_in_completed_guards": 0,
+          "ingress_losses_outside_completed_guards": 0,
+          "first_post_apply_ingress_with_egress": null
+        }
+      },
+      "later_recovery": "Apply plus later live verification and serving heartbeat observed",
+      "wall_join": "producer wall/monotonic anchor, no allowance"
+    },
+    {
+      "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "190",
+      "lease_id": "fa5bd208-7d17-4451-b6c3-85ac4988265b",
+      "lease_generation": "7",
+      "baseline_start_ns": "118146865227643",
+      "apply_end_ns": "118147093296868",
+      "accepted_hold_report_ids": [],
+      "same_lease_hold_report_ids": [],
+      "central_join": "not observed: no accepted hold report in this producer bracket",
+      "baseline_rows": [
+        {
+          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "sequence": "190",
+          "cause": "policy_missing",
+          "start_ns": "118146865227643",
+          "end_ns": "118146903234562",
+          "succeeded": true
+        },
+        {
+          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "sequence": "191",
+          "cause": "policy_missing",
+          "start_ns": "118146906730493",
+          "end_ns": "118146933357803",
+          "succeeded": true
+        },
+        {
+          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "sequence": "192",
+          "cause": "policy_missing",
+          "start_ns": "118146949050725",
+          "end_ns": "118146982201898",
+          "succeeded": true
+        }
+      ],
+      "packet_coverage": {
+        "renewal": {
+          "coverage": "unavailable: no ingress captured in this bracket",
+          "ingresses": 0,
+          "losses": [],
+          "ingress_losses_in_completed_guards": 0,
+          "ingress_losses_outside_completed_guards": 0,
+          "first_post_apply_ingress_with_egress": null
+        },
+        "expiry": {
+          "coverage": "unavailable: no ingress captured in this bracket",
+          "ingresses": 0,
+          "losses": [],
+          "ingress_losses_in_completed_guards": 0,
+          "ingress_losses_outside_completed_guards": 0,
+          "first_post_apply_ingress_with_egress": null
+        }
+      },
+      "later_recovery": "Apply plus later live verification and serving heartbeat observed",
+      "wall_join": "producer wall/monotonic anchor, no allowance"
+    },
+    {
+      "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "202",
+      "lease_id": "5585eca7-0577-4172-a0a3-bece6486845b",
+      "lease_generation": "9",
+      "baseline_start_ns": "118147868164648",
+      "apply_end_ns": "118148069710253",
+      "accepted_hold_report_ids": [],
+      "same_lease_hold_report_ids": [],
+      "central_join": "not observed: no accepted hold report in this producer bracket",
+      "baseline_rows": [
+        {
+          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "sequence": "202",
+          "cause": "policy_missing",
+          "start_ns": "118147868164648",
+          "end_ns": "118147902553518",
+          "succeeded": true
+        },
+        {
+          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "sequence": "203",
+          "cause": "policy_missing",
+          "start_ns": "118147906138938",
+          "end_ns": "118147934404156",
+          "succeeded": true
+        },
+        {
+          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "sequence": "204",
+          "cause": "policy_missing",
+          "start_ns": "118147950144178",
+          "end_ns": "118147978165935",
+          "succeeded": true
+        }
+      ],
+      "packet_coverage": {
+        "renewal": {
+          "coverage": "unavailable: no ingress captured in this bracket",
+          "ingresses": 0,
+          "losses": [],
+          "ingress_losses_in_completed_guards": 0,
+          "ingress_losses_outside_completed_guards": 0,
+          "first_post_apply_ingress_with_egress": null
+        },
+        "expiry": {
+          "coverage": "unavailable: no ingress captured in this bracket",
+          "ingresses": 0,
+          "losses": [],
+          "ingress_losses_in_completed_guards": 0,
+          "ingress_losses_outside_completed_guards": 0,
+          "first_post_apply_ingress_with_egress": null
+        }
+      },
+      "later_recovery": "Apply plus later live verification and serving heartbeat observed",
+      "wall_join": "producer wall/monotonic anchor, no allowance"
+    },
+    {
+      "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "318",
+      "lease_id": "65e7cfed-c03e-4350-8e40-600336969c54",
+      "lease_generation": "10",
+      "baseline_start_ns": "118161880676125",
+      "apply_end_ns": "118162103104054",
+      "accepted_hold_report_ids": [],
+      "same_lease_hold_report_ids": [],
+      "central_join": "not observed: no accepted hold report in this producer bracket",
+      "baseline_rows": [
+        {
+          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "sequence": "318",
+          "cause": "policy_missing",
+          "start_ns": "118161880676125",
+          "end_ns": "118161917490609",
+          "succeeded": true
+        },
+        {
+          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "sequence": "319",
+          "cause": "policy_missing",
+          "start_ns": "118161920500761",
+          "end_ns": "118161947299039",
+          "succeeded": true
+        },
+        {
+          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "sequence": "320",
+          "cause": "policy_missing",
+          "start_ns": "118161961805199",
+          "end_ns": "118161993241291",
+          "succeeded": true
+        }
+      ],
+      "packet_coverage": {
+        "renewal": {
+          "coverage": "unavailable: no ingress captured in this bracket",
+          "ingresses": 0,
+          "losses": [],
+          "ingress_losses_in_completed_guards": 0,
+          "ingress_losses_outside_completed_guards": 0,
+          "first_post_apply_ingress_with_egress": null
+        },
+        "expiry": {
+          "coverage": "unavailable: no ingress captured in this bracket",
+          "ingresses": 0,
+          "losses": [],
+          "ingress_losses_in_completed_guards": 0,
+          "ingress_losses_outside_completed_guards": 0,
+          "first_post_apply_ingress_with_egress": null
+        }
+      },
+      "later_recovery": "Apply plus later live verification and serving heartbeat observed",
+      "wall_join": "producer wall/monotonic anchor, no allowance"
+    },
+    {
+      "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "330",
+      "lease_id": "fb93982e-a36f-4e69-8656-a8a5d72f96f7",
+      "lease_generation": "11",
+      "baseline_start_ns": "118162881945051",
+      "apply_end_ns": "118163096448456",
+      "accepted_hold_report_ids": [],
+      "same_lease_hold_report_ids": [],
+      "central_join": "not observed: no accepted hold report in this producer bracket",
+      "baseline_rows": [
+        {
+          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "sequence": "330",
+          "cause": "policy_missing",
+          "start_ns": "118162881945051",
+          "end_ns": "118162915696901",
+          "succeeded": true
+        },
+        {
+          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "sequence": "331",
+          "cause": "policy_missing",
+          "start_ns": "118162919311224",
+          "end_ns": "118162946523358",
+          "succeeded": true
+        },
+        {
+          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "sequence": "332",
+          "cause": "policy_missing",
+          "start_ns": "118162963015009",
+          "end_ns": "118162996375014",
+          "succeeded": true
+        }
+      ],
+      "packet_coverage": {
+        "renewal": {
+          "coverage": "unavailable: no ingress captured in this bracket",
+          "ingresses": 0,
+          "losses": [],
+          "ingress_losses_in_completed_guards": 0,
+          "ingress_losses_outside_completed_guards": 0,
+          "first_post_apply_ingress_with_egress": null
+        },
+        "expiry": {
+          "coverage": "unavailable: no ingress captured in this bracket",
+          "ingresses": 0,
+          "losses": [],
+          "ingress_losses_in_completed_guards": 0,
+          "ingress_losses_outside_completed_guards": 0,
+          "first_post_apply_ingress_with_egress": null
+        }
+      },
+      "later_recovery": "Apply plus later live verification and serving heartbeat observed",
+      "wall_join": "producer wall/monotonic anchor, no allowance"
+    },
+    {
+      "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "342",
+      "lease_id": "748cab24-77ef-4010-8cbf-ab639f905bdb",
+      "lease_generation": "12",
+      "baseline_start_ns": "118163889313638",
+      "apply_end_ns": "118164106492786",
+      "accepted_hold_report_ids": [],
+      "same_lease_hold_report_ids": [],
+      "central_join": "not observed: no accepted hold report in this producer bracket",
+      "baseline_rows": [
+        {
+          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "sequence": "342",
+          "cause": "policy_missing",
+          "start_ns": "118163889313638",
+          "end_ns": "118163925755542",
+          "succeeded": true
+        },
+        {
+          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "sequence": "343",
+          "cause": "policy_missing",
+          "start_ns": "118163929206700",
+          "end_ns": "118163951628263",
+          "succeeded": true
+        },
+        {
+          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "sequence": "344",
+          "cause": "policy_missing",
+          "start_ns": "118163967386623",
+          "end_ns": "118163998671386",
+          "succeeded": true
+        }
+      ],
+      "packet_coverage": {
+        "renewal": {
+          "coverage": "unavailable: no ingress captured in this bracket",
+          "ingresses": 0,
+          "losses": [],
+          "ingress_losses_in_completed_guards": 0,
+          "ingress_losses_outside_completed_guards": 0,
+          "first_post_apply_ingress_with_egress": null
+        },
+        "expiry": {
+          "coverage": "unavailable: no ingress captured in this bracket",
+          "ingresses": 0,
+          "losses": [],
+          "ingress_losses_in_completed_guards": 0,
+          "ingress_losses_outside_completed_guards": 0,
+          "first_post_apply_ingress_with_egress": null
+        }
+      },
+      "later_recovery": "Apply plus later live verification and serving heartbeat observed",
+      "wall_join": "producer wall/monotonic anchor, no allowance"
+    },
+    {
+      "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "450",
+      "lease_id": "81c5d8a2-fff5-42d7-ab83-5bb596af1485",
+      "lease_generation": "13",
+      "baseline_start_ns": "118176885603440",
+      "apply_end_ns": "118177135950114",
+      "accepted_hold_report_ids": [],
+      "same_lease_hold_report_ids": [],
+      "central_join": "not observed: no accepted hold report in this producer bracket",
+      "baseline_rows": [
+        {
+          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "sequence": "450",
+          "cause": "policy_missing",
+          "start_ns": "118176885603440",
+          "end_ns": "118176928089523",
+          "succeeded": true
+        },
+        {
+          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "sequence": "451",
+          "cause": "policy_missing",
+          "start_ns": "118176931788278",
+          "end_ns": "118176967759943",
+          "succeeded": true
+        },
+        {
+          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "sequence": "452",
+          "cause": "policy_missing",
+          "start_ns": "118176983885529",
+          "end_ns": "118177017890173",
+          "succeeded": true
+        }
+      ],
+      "packet_coverage": {
+        "renewal": {
+          "coverage": "unavailable: no ingress captured in this bracket",
+          "ingresses": 0,
+          "losses": [],
+          "ingress_losses_in_completed_guards": 0,
+          "ingress_losses_outside_completed_guards": 0,
+          "first_post_apply_ingress_with_egress": null
+        },
+        "expiry": {
+          "coverage": "unavailable: no ingress captured in this bracket",
+          "ingresses": 0,
+          "losses": [],
+          "ingress_losses_in_completed_guards": 0,
+          "ingress_losses_outside_completed_guards": 0,
+          "first_post_apply_ingress_with_egress": null
+        }
+      },
+      "later_recovery": "Apply plus later live verification and serving heartbeat observed",
+      "wall_join": "producer wall/monotonic anchor, no allowance"
+    },
+    {
+      "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "502",
+      "lease_id": "356ae128-6888-4a0f-88c1-bc72bfe20f2c",
+      "lease_generation": "14",
+      "baseline_start_ns": "118182898878614",
+      "apply_end_ns": "118183143668450",
+      "accepted_hold_report_ids": [],
+      "same_lease_hold_report_ids": [],
+      "central_join": "not observed: no accepted hold report in this producer bracket",
+      "baseline_rows": [
+        {
+          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "sequence": "502",
+          "cause": "policy_missing",
+          "start_ns": "118182898878614",
+          "end_ns": "118182940417545",
+          "succeeded": true
+        },
+        {
+          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "sequence": "503",
+          "cause": "policy_missing",
+          "start_ns": "118182943773173",
+          "end_ns": "118182976027393",
+          "succeeded": true
+        },
+        {
+          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "sequence": "504",
+          "cause": "policy_missing",
+          "start_ns": "118182991799911",
+          "end_ns": "118183021737932",
+          "succeeded": true
+        }
+      ],
+      "packet_coverage": {
+        "renewal": {
+          "coverage": "unavailable: no ingress captured in this bracket",
+          "ingresses": 0,
+          "losses": [],
+          "ingress_losses_in_completed_guards": 0,
+          "ingress_losses_outside_completed_guards": 0,
+          "first_post_apply_ingress_with_egress": null
+        },
+        "expiry": {
+          "coverage": "unavailable: no ingress captured in this bracket",
+          "ingresses": 0,
+          "losses": [],
+          "ingress_losses_in_completed_guards": 0,
+          "ingress_losses_outside_completed_guards": 0,
+          "first_post_apply_ingress_with_egress": null
+        }
+      },
+      "later_recovery": "Apply plus later live verification and serving heartbeat observed",
+      "wall_join": "producer wall/monotonic anchor, no allowance"
+    },
+    {
+      "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "2087",
+      "lease_id": "c14a9df4-694f-4841-a457-3ac61bcc4b9a",
+      "lease_generation": "15",
+      "baseline_start_ns": "118381081207539",
+      "apply_end_ns": "118381299135262",
+      "accepted_hold_report_ids": [],
+      "same_lease_hold_report_ids": [],
+      "central_join": "not observed: no accepted hold report in this producer bracket",
+      "baseline_rows": [
+        {
+          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "sequence": "2087",
+          "cause": "policy_missing",
+          "start_ns": "118381081207539",
+          "end_ns": "118381118036072",
+          "succeeded": true
+        },
+        {
+          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "sequence": "2088",
+          "cause": "policy_missing",
+          "start_ns": "118381121783619",
+          "end_ns": "118381146512213",
+          "succeeded": true
+        },
+        {
+          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "sequence": "2089",
+          "cause": "policy_missing",
+          "start_ns": "118381161738533",
+          "end_ns": "118381194195693",
+          "succeeded": true
+        }
+      ],
+      "packet_coverage": {
+        "renewal": {
+          "coverage": "unavailable: no ingress captured in this bracket",
+          "ingresses": 0,
+          "losses": [],
+          "ingress_losses_in_completed_guards": 0,
+          "ingress_losses_outside_completed_guards": 0,
+          "first_post_apply_ingress_with_egress": null
+        },
+        "expiry": {
+          "coverage": "unavailable: no ingress captured in this bracket",
+          "ingresses": 0,
+          "losses": [],
+          "ingress_losses_in_completed_guards": 0,
+          "ingress_losses_outside_completed_guards": 0,
+          "first_post_apply_ingress_with_egress": null
+        }
+      },
+      "later_recovery": "Apply plus later live verification and serving heartbeat observed",
+      "wall_join": "producer wall/monotonic anchor, no allowance"
+    },
+    {
+      "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "3391",
+      "lease_id": "c46023d3-425f-4f5c-98e6-63b6625602fc",
+      "lease_generation": "16",
+      "baseline_start_ns": "118543170422852",
+      "apply_end_ns": "118543428117212",
+      "accepted_hold_report_ids": [],
+      "same_lease_hold_report_ids": [],
+      "central_join": "not observed: no accepted hold report in this producer bracket",
+      "baseline_rows": [
+        {
+          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "sequence": "3391",
+          "cause": "policy_missing",
+          "start_ns": "118543170422852",
+          "end_ns": "118543212168677",
+          "succeeded": true
+        },
+        {
+          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "sequence": "3392",
+          "cause": "policy_missing",
+          "start_ns": "118543215729760",
+          "end_ns": "118543252652574",
+          "succeeded": true
+        },
+        {
+          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "sequence": "3393",
+          "cause": "policy_missing",
+          "start_ns": "118543268366565",
+          "end_ns": "118543308538789",
+          "succeeded": true
+        }
+      ],
+      "packet_coverage": {
+        "renewal": {
+          "coverage": "unavailable: no ingress captured in this bracket",
+          "ingresses": 0,
+          "losses": [],
+          "ingress_losses_in_completed_guards": 0,
+          "ingress_losses_outside_completed_guards": 0,
+          "first_post_apply_ingress_with_egress": null
+        },
+        "expiry": {
+          "coverage": "unavailable: no ingress captured in this bracket",
+          "ingresses": 0,
+          "losses": [],
+          "ingress_losses_in_completed_guards": 0,
+          "ingress_losses_outside_completed_guards": 0,
+          "first_post_apply_ingress_with_egress": null
+        }
+      },
+      "later_recovery": "Apply plus later live verification and serving heartbeat observed",
+      "wall_join": "producer wall/monotonic anchor, no allowance"
+    },
+    {
+      "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "3796",
+      "lease_id": "d8af246e-2b5f-4271-8e61-7584732c8d4f",
+      "lease_generation": "17",
+      "baseline_start_ns": "118593648641165",
+      "apply_end_ns": "118593896949512",
+      "accepted_hold_report_ids": [],
+      "same_lease_hold_report_ids": [],
+      "central_join": "not observed: no accepted hold report in this producer bracket",
+      "baseline_rows": [
+        {
+          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "sequence": "3796",
+          "cause": "policy_missing",
+          "start_ns": "118593648641165",
+          "end_ns": "118593690284010",
+          "succeeded": true
+        },
+        {
+          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "sequence": "3797",
+          "cause": "policy_missing",
+          "start_ns": "118593694384877",
+          "end_ns": "118593732575290",
+          "succeeded": true
+        },
+        {
+          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "sequence": "3798",
+          "cause": "policy_missing",
+          "start_ns": "118593748983281",
+          "end_ns": "118593789085019",
+          "succeeded": true
+        }
+      ],
+      "packet_coverage": {
+        "renewal": {
+          "coverage": "unavailable: no ingress captured in this bracket",
+          "ingresses": 0,
+          "losses": [],
+          "ingress_losses_in_completed_guards": 0,
+          "ingress_losses_outside_completed_guards": 0,
+          "first_post_apply_ingress_with_egress": null
+        },
+        "expiry": {
+          "coverage": "unavailable: no ingress captured in this bracket",
+          "ingresses": 0,
+          "losses": [],
+          "ingress_losses_in_completed_guards": 0,
+          "ingress_losses_outside_completed_guards": 0,
+          "first_post_apply_ingress_with_egress": null
+        }
+      },
+      "later_recovery": "Apply plus later live verification and serving heartbeat observed",
+      "wall_join": "producer wall/monotonic anchor, no allowance"
+    },
+    {
+      "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "3968",
+      "lease_id": "21f7f944-0b0a-49a0-ad0c-c121f1fdce73",
+      "lease_generation": "19",
+      "baseline_start_ns": "118614216085963",
+      "apply_end_ns": "118614448273645",
+      "accepted_hold_report_ids": [],
+      "same_lease_hold_report_ids": [],
+      "central_join": "not observed: no accepted hold report in this producer bracket",
+      "baseline_rows": [
+        {
+          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "sequence": "3968",
+          "cause": "policy_missing",
+          "start_ns": "118614216085963",
+          "end_ns": "118614254330950",
+          "succeeded": true
+        },
+        {
+          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "sequence": "3969",
+          "cause": "policy_missing",
+          "start_ns": "118614257446954",
+          "end_ns": "118614284652862",
+          "succeeded": true
+        },
+        {
+          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "sequence": "3970",
+          "cause": "policy_missing",
+          "start_ns": "118614300959151",
+          "end_ns": "118614334413379",
+          "succeeded": true
+        }
+      ],
+      "packet_coverage": {
+        "renewal": {
+          "coverage": "unavailable: no ingress captured in this bracket",
+          "ingresses": 0,
+          "losses": [],
+          "ingress_losses_in_completed_guards": 0,
+          "ingress_losses_outside_completed_guards": 0,
+          "first_post_apply_ingress_with_egress": null
+        },
+        "expiry": {
+          "coverage": "unavailable: no ingress captured in this bracket",
+          "ingresses": 0,
+          "losses": [],
+          "ingress_losses_in_completed_guards": 0,
+          "ingress_losses_outside_completed_guards": 0,
+          "first_post_apply_ingress_with_egress": null
+        }
+      },
+      "later_recovery": "Apply plus later live verification and serving heartbeat observed",
+      "wall_join": "producer wall/monotonic anchor, no allowance"
+    },
+    {
+      "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "4196",
+      "lease_id": "3afc9b62-0835-43da-8c0d-f440c8a175d8",
+      "lease_generation": "25",
+      "baseline_start_ns": "118642398134129",
+      "apply_end_ns": "118642639603755",
+      "accepted_hold_report_ids": [],
+      "same_lease_hold_report_ids": [],
+      "central_join": "not observed: no accepted hold report in this producer bracket",
+      "baseline_rows": [
+        {
+          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "sequence": "4196",
+          "cause": "policy_missing",
+          "start_ns": "118642398134129",
+          "end_ns": "118642442715859",
+          "succeeded": true
+        },
+        {
+          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "sequence": "4197",
+          "cause": "policy_missing",
+          "start_ns": "118642445871235",
+          "end_ns": "118642476353381",
+          "succeeded": true
+        },
+        {
+          "run_id": "8ba0e32d-25b3-4152-b58a-88ba49f1d5e3",
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "sequence": "4198",
+          "cause": "policy_missing",
+          "start_ns": "118642493028878",
+          "end_ns": "118642527063978",
+          "succeeded": true
+        }
+      ],
+      "packet_coverage": {
+        "renewal": {
+          "coverage": "unavailable: no ingress captured in this bracket",
+          "ingresses": 0,
+          "losses": [],
+          "ingress_losses_in_completed_guards": 0,
+          "ingress_losses_outside_completed_guards": 0,
+          "first_post_apply_ingress_with_egress": null
+        },
+        "expiry": {
+          "coverage": "unavailable: no ingress captured in this bracket",
+          "ingresses": 0,
+          "losses": [],
+          "ingress_losses_in_completed_guards": 0,
+          "ingress_losses_outside_completed_guards": 0,
+          "first_post_apply_ingress_with_egress": null
+        }
+      },
+      "later_recovery": "Apply plus later live verification and serving heartbeat observed",
+      "wall_join": "producer wall/monotonic anchor, no allowance"
+    },
+    {
+      "run_id": "665f4c6c-2768-45d5-98c3-ca4ddecb185a",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "80",
+      "lease_id": "f47d2129-e755-4722-abbd-7ceb3f8bfe49",
+      "lease_generation": "26",
+      "baseline_start_ns": "118730804585999",
+      "apply_end_ns": "118731018362167",
+      "accepted_hold_report_ids": [],
+      "same_lease_hold_report_ids": [],
+      "central_join": "not observed: no accepted hold report in this producer bracket",
+      "baseline_rows": [
+        {
+          "run_id": "665f4c6c-2768-45d5-98c3-ca4ddecb185a",
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "sequence": "80",
+          "cause": "policy_missing",
+          "start_ns": "118730804585999",
+          "end_ns": "118730849410551",
+          "succeeded": true
+        },
+        {
+          "run_id": "665f4c6c-2768-45d5-98c3-ca4ddecb185a",
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "sequence": "81",
+          "cause": "policy_missing",
+          "start_ns": "118730852660890",
+          "end_ns": "118730883158997",
+          "succeeded": true
+        },
+        {
+          "run_id": "665f4c6c-2768-45d5-98c3-ca4ddecb185a",
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "sequence": "82",
+          "cause": "policy_missing",
+          "start_ns": "118730899327886",
+          "end_ns": "118730921817157",
+          "succeeded": true
+        }
+      ],
+      "packet_coverage": {
+        "renewal": {
+          "coverage": "unavailable: no ingress captured in this bracket",
+          "ingresses": 0,
+          "losses": [],
+          "ingress_losses_in_completed_guards": 0,
+          "ingress_losses_outside_completed_guards": 0,
+          "first_post_apply_ingress_with_egress": null
+        },
+        "expiry": {
+          "coverage": "unavailable: no ingress captured in this bracket",
+          "ingresses": 0,
+          "losses": [],
+          "ingress_losses_in_completed_guards": 0,
+          "ingress_losses_outside_completed_guards": 0,
+          "first_post_apply_ingress_with_egress": null
+        }
+      },
+      "later_recovery": "Apply plus later live verification and serving heartbeat observed",
+      "wall_join": "producer wall/monotonic anchor, no allowance"
+    },
+    {
+      "run_id": "665f4c6c-2768-45d5-98c3-ca4ddecb185a",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "212",
+      "lease_id": "a17cc7f4-6619-4184-95fb-f8af450c83c2",
+      "lease_generation": "27",
+      "baseline_start_ns": "118746819533350",
+      "apply_end_ns": "118747030313640",
+      "accepted_hold_report_ids": [],
+      "same_lease_hold_report_ids": [],
+      "central_join": "not observed: no accepted hold report in this producer bracket",
+      "baseline_rows": [
+        {
+          "run_id": "665f4c6c-2768-45d5-98c3-ca4ddecb185a",
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "sequence": "212",
+          "cause": "policy_missing",
+          "start_ns": "118746819533350",
+          "end_ns": "118746855961080",
+          "succeeded": true
+        },
+        {
+          "run_id": "665f4c6c-2768-45d5-98c3-ca4ddecb185a",
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "sequence": "213",
+          "cause": "policy_missing",
+          "start_ns": "118746859509034",
+          "end_ns": "118746892126186",
+          "succeeded": true
+        },
+        {
+          "run_id": "665f4c6c-2768-45d5-98c3-ca4ddecb185a",
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "sequence": "214",
+          "cause": "policy_missing",
+          "start_ns": "118746907678930",
+          "end_ns": "118746928570511",
+          "succeeded": true
+        }
+      ],
+      "packet_coverage": {
+        "renewal": {
+          "coverage": "unavailable: no ingress captured in this bracket",
+          "ingresses": 0,
+          "losses": [],
+          "ingress_losses_in_completed_guards": 0,
+          "ingress_losses_outside_completed_guards": 0,
+          "first_post_apply_ingress_with_egress": {
+            "packet_id": 1,
+            "result": "ok",
+            "sent_ns": "118933044126612",
+            "read_completion_ns": "118933044933874",
+            "ingress_ns": "118933044391045",
+            "egress_ns": "118933045617914"
+          }
+        },
+        "expiry": {
+          "coverage": "unavailable: no ingress captured in this bracket",
+          "ingresses": 0,
+          "losses": [],
+          "ingress_losses_in_completed_guards": 0,
+          "ingress_losses_outside_completed_guards": 0,
+          "first_post_apply_ingress_with_egress": null
+        }
+      },
+      "later_recovery": "Apply plus later live verification and serving heartbeat observed",
+      "wall_join": "producer wall/monotonic anchor, no allowance"
+    },
+    {
+      "run_id": "665f4c6c-2768-45d5-98c3-ca4ddecb185a",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "1534",
+      "lease_id": "36113f8d-4d8c-4b1b-ae17-6b1aab437b35",
+      "lease_generation": "30",
+      "baseline_start_ns": "118933730020475",
+      "apply_end_ns": "118933956623990",
+      "accepted_hold_report_ids": [],
+      "same_lease_hold_report_ids": [],
+      "central_join": "not observed: no accepted hold report in this producer bracket",
+      "baseline_rows": [
+        {
+          "run_id": "665f4c6c-2768-45d5-98c3-ca4ddecb185a",
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "sequence": "1534",
+          "cause": "policy_missing",
+          "start_ns": "118933730020475",
+          "end_ns": "118933769437750",
+          "succeeded": true
+        },
+        {
+          "run_id": "665f4c6c-2768-45d5-98c3-ca4ddecb185a",
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "sequence": "1535",
+          "cause": "policy_missing",
+          "start_ns": "118933773182954",
+          "end_ns": "118933801598236",
+          "succeeded": true
+        },
+        {
+          "run_id": "665f4c6c-2768-45d5-98c3-ca4ddecb185a",
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "sequence": "1536",
+          "cause": "policy_missing",
+          "start_ns": "118933816228880",
+          "end_ns": "118933844632042",
+          "succeeded": true
+        }
+      ],
+      "packet_coverage": {
+        "renewal": {
+          "coverage": "sampled",
+          "ingresses": 5,
+          "losses": [
+            {
+              "packet_id": 15,
+              "result": "timeout",
+              "sent_ns": "118933744388420",
+              "read_completion_ns": "118933824881743",
+              "ingress_ns": "118933745501925",
+              "egress_ns": "0",
+              "completed_guard_joins": []
+            },
+            {
+              "packet_id": 16,
+              "result": "timeout",
+              "sent_ns": "118933781677275",
+              "read_completion_ns": "118933862321570",
+              "ingress_ns": "118933781862590",
+              "egress_ns": "0",
+              "completed_guard_joins": []
+            },
+            {
+              "packet_id": 17,
+              "result": "timeout",
+              "sent_ns": "118933844065014",
+              "read_completion_ns": "118933925073182",
+              "ingress_ns": "118933844804268",
+              "egress_ns": "0",
+              "completed_guard_joins": []
+            },
+            {
+              "packet_id": 18,
+              "result": "timeout",
+              "sent_ns": "118933881497799",
+              "read_completion_ns": "118933962369120",
+              "ingress_ns": "118933881879450",
+              "egress_ns": "0",
+              "completed_guard_joins": []
+            }
+          ],
+          "ingress_losses_in_completed_guards": 0,
+          "ingress_losses_outside_completed_guards": 4,
+          "first_post_apply_ingress_with_egress": {
+            "packet_id": 20,
+            "result": "ok",
+            "sent_ns": "118933981594855",
+            "read_completion_ns": "118933982519869",
+            "ingress_ns": "118933982476972",
+            "egress_ns": "118933982520551"
+          }
+        },
+        "expiry": {
+          "coverage": "unavailable: no ingress captured in this bracket",
+          "ingresses": 0,
+          "losses": [],
+          "ingress_losses_in_completed_guards": 0,
+          "ingress_losses_outside_completed_guards": 0,
+          "first_post_apply_ingress_with_egress": {
+            "packet_id": 1,
+            "result": "ok",
+            "sent_ns": "119052664177069",
+            "read_completion_ns": "119052665264699",
+            "ingress_ns": "119052664819596",
+            "egress_ns": "119052665073449"
+          }
+        }
+      },
+      "later_recovery": "Apply plus later live verification and serving heartbeat observed",
+      "wall_join": "producer wall/monotonic anchor, no allowance"
+    },
+    {
+      "run_id": "665f4c6c-2768-45d5-98c3-ca4ddecb185a",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "2323",
+      "lease_id": "af368190-cb66-4893-8d19-0013198943cc",
+      "lease_generation": "32",
+      "baseline_start_ns": "119090201830144",
+      "apply_end_ns": "119090421790771",
+      "accepted_hold_report_ids": [],
+      "same_lease_hold_report_ids": [],
+      "central_join": "not observed: no accepted hold report in this producer bracket",
+      "baseline_rows": [
+        {
+          "run_id": "665f4c6c-2768-45d5-98c3-ca4ddecb185a",
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "sequence": "2323",
+          "cause": "policy_missing",
+          "start_ns": "119090201830144",
+          "end_ns": "119090243937568",
+          "succeeded": true
+        },
+        {
+          "run_id": "665f4c6c-2768-45d5-98c3-ca4ddecb185a",
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "sequence": "2324",
+          "cause": "policy_missing",
+          "start_ns": "119090247774646",
+          "end_ns": "119090275630878",
+          "succeeded": true
+        },
+        {
+          "run_id": "665f4c6c-2768-45d5-98c3-ca4ddecb185a",
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "sequence": "2325",
+          "cause": "policy_missing",
+          "start_ns": "119090290479479",
+          "end_ns": "119090314952820",
+          "succeeded": true
+        }
+      ],
+      "packet_coverage": {
+        "renewal": {
+          "coverage": "unavailable: no ingress captured in this bracket",
+          "ingresses": 0,
+          "losses": [],
+          "ingress_losses_in_completed_guards": 0,
+          "ingress_losses_outside_completed_guards": 0,
+          "first_post_apply_ingress_with_egress": null
+        },
+        "expiry": {
+          "coverage": "unavailable: no ingress captured in this bracket",
+          "ingresses": 0,
+          "losses": [],
+          "ingress_losses_in_completed_guards": 0,
+          "ingress_losses_outside_completed_guards": 0,
+          "first_post_apply_ingress_with_egress": null
+        }
+      },
+      "later_recovery": "Apply plus later live verification and serving heartbeat observed",
+      "wall_join": "producer wall/monotonic anchor, no allowance"
+    }
+  ],
+  "applied_equals_delivered_desired": 1,
+  "run_id": "56d20530-8042-4d0c-8156-de5a47ce8b61",
+  "status": "partial",
+  "retention": {
+    "status": "not exercised",
+    "kernel_reboot": "not exercised: AT13 operator matrix",
+    "cut_status": "not exercised"
+  },
+  "accepted_hold_count": 1,
+  "applied_equals_desired_at_read": 0,
+  "scope": "Central row joins and classification, including reverse-array read-only replay. Poll snapshots are not ingestion transaction snapshots. Baseline writes, packet capture and publication completion are separate evidence; no inference from a counter read failure.",
+  "counter_read_failure_decision": {
+    "source": "docs/poc/G2-followup23-evidence/decision.json",
+    "kind": "duplicate_chain",
+    "error_type": "*enforce.DuplicateChainError",
+    "duplicates": 0,
+    "listings": 3300,
+    "origin": "unproven",
+    "historical_failures": "unchanged; no retry waiver or reclassification"
+  },
+  "coverage": {
+    "exact_report_sample_incident_join": "pass",
+    "stale_generation_before_generic_causes": "pass",
+    "applied_equals_desired": "observed against the node latest delivered signed desired state",
+    "unrelated_failure_precedence": "not exercised",
+    "active_hold_direct_stop_and_local_counter_reset": "not exercised",
+    "matching_lease_end": "pass",
+    "later_new_incident": "not exercised",
+    "one_escalation": "not exercised",
+    "kernel_reboot": "not exercised: AT13 operator matrix"
+  }
+}

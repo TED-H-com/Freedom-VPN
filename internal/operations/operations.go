@@ -116,6 +116,39 @@ type CreateRequest struct {
 }
 type Store struct{ Pool *pgxpool.Pool }
 
+// GenerationHoldAlarm is central diagnostic evidence, not a serving grant or a
+// new Operation status. Nullable counters stay unknown after a malformed summary.
+type GenerationHoldAlarm struct {
+	IncidentID        uuid.UUID  `json:"incident_id"`
+	NodeID            uuid.UUID  `json:"node_id"`
+	IncarnationID     uuid.UUID  `json:"incarnation_id"`
+	ReportID          uuid.UUID  `json:"report_id"`
+	BootID            uuid.UUID  `json:"boot_id"`
+	LeaseID           uuid.UUID  `json:"lease_id"`
+	FirstSeenAt       time.Time  `json:"first_seen_at"`
+	LastSeenAt        time.Time  `json:"last_seen_at"`
+	AppliedGeneration *string    `json:"applied_generation"`
+	LeaseGeneration   string     `json:"lease_generation"`
+	ReportedSteps     *string    `json:"reported_steps"`
+	ReportedElapsedMS *string    `json:"reported_elapsed_ms"`
+	ReportedAlarm     *bool      `json:"reported_alarm"`
+	SummaryValid      bool       `json:"summary_valid"`
+	AlarmReportID     *uuid.UUID `json:"alarm_report_id"`
+}
+
+// RecordGenerationHoldAlarm appends the existing admin audit surface. The caller
+// locks the durable incident and marks escalated_at in this same transaction,
+// so a rollback/retry or another replica cannot duplicate the escalation.
+func RecordGenerationHoldAlarm(ctx context.Context, tx pgx.Tx, alarm GenerationHoldAlarm) error {
+	raw, err := json.Marshal(alarm)
+	if err != nil {
+		return err
+	}
+	return db.AppendAudit(ctx, tx, db.AuditEvent{ID: uuid.Must(uuid.NewV7()), Actor: "generation-hold-monitor", ActorType: "system",
+		Action: "node.generation_hold.escalated", Resource: "node:" + alarm.NodeID.String(), Result: "succeeded",
+		SchemaVersion: 1, Before: []byte(`{}`), After: raw})
+}
+
 func (s Store) Get(ctx context.Context, id uuid.UUID, p auth.Principal) (op api.Operation, err error) {
 	if p.Role != auth.Admin && p.Role != auth.Member {
 		return op, apierr.New(apierr.Forbidden, "Role is not allowed.")

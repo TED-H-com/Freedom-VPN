@@ -1,0 +1,38 @@
+# Follow-up 14 acceptance results
+
+Run `258ba504-6ddf-4888-8633-9cfee8da6eea`, clean compiled harness `e9a215f3c26484d92c0293d6070810a4b1d1e56d`, product baseline `8f3055b9fbbbc1e1522e57ce69d6eede5da9fa56` (devstack 23 #367, agent-core 31 #369, devstack 24 #370).
+
+**2 PASS / 5 BLOCKED / 3 FAIL**, with **628 passed / 6 blocked / 5 failed subchecks**. One assembled ten-case run; live make exit **2**.
+
+| Case | Requirements | Status | Pass / blocked / fail |
+|---|---|---|---:|
+| [AT05](AT05.json) | §19.1 §19 AT05 NODE01 NODE04 ENR01 ENR04 PKG01 | blocked | 30 / 0 / 0 |
+| [AT01](AT01.json) | §19.1 §19 AT01 APP01 ID01 MEM01 | blocked | 22 / 0 / 0 |
+| [AT02](AT02.json) | §19.1 §19 AT02 MEM01 MEM02 MEM03 SEC01 | fail | 137 / 0 / 2 |
+| [AT03](AT03.json) | §19.1 §19 AT03 BILL01 BILL03 ENT01 | pass | 95 / 0 / 0 |
+| [AT04](AT04.json) | §19.1 §19 AT04 BILL02 ENT02 MEM03 | fail | 116 / 0 / 1 |
+| [AT08](AT08.json) | §19.1 §19 AT08 NODE02 NODE03 EXIT01 EXIT03 | pass | 34 / 0 / 0 |
+| [AT20](AT20.json) | §19.1 §19 AT20 DNS01 DNS02 ISO04 | blocked | 88 / 0 / 0 |
+| [AT21](AT21.json) | §19.1 §19 AT21 DNS03 DNS04 APP01 | blocked | 12 / 0 / 0 |
+| [AT22](AT22.json) | §19.1 §19 AT22 SEC02 DNS01 DNS04 | blocked | 39 / 0 / 0 |
+| [AT09](AT09.json) | §19.1 §19 AT09 EXIT02 APP01 NFR01 | fail | 55 / 6 / 2 |
+
+**Harness qualification limit:** the compiled harness adds the routed hop before the original eth0-only relay hold. The added member interface can bypass that hold; the original relay row fails with `relayed=1 direct=1`. This is a confounded harness result, not proof of a product relay regression. Commit `682d4434` moves the routed rows after the relay check. The correction passes offline gates but is **not live-qualified**; no second assembled run was made.
+
+AT01 keeps its own **BLOCKED** result: initial selection and sleep/wake transfers are counted; first selection has one SYN and complete zero-drop captures (**274 / 322 / 80** member/node/origin records). The captured type-2 response is IPv4 loopback; this run has no matching IPv6 `::1` response to diagnose. Devstack 24 located historical F11-01 before member IPv6 prerouting, with no repair on main. This fresh success proves neither historical cause nor repair. [Original first-selection analysis](history/follow-up-14-captures/258ba504-6ddf-4888-8633-9cfee8da6eea/initial-selection-analysis.json).
+
+AT02 retains **96 successful Applies, zero failed Applies**, with validated `commands` on all 96. Missing historical fields read **unavailable**; original run/sequence identities and historical replay remain intact. F11-03 stays blocked on no failed Apply observed. All **58 baseline calls** are paired to successful recovery: 55 outside the sibling capture and three fully covered. The continuous stream has **3,941 attempts / 3,941 ingresses / 3,920 egresses / 21 losses**, **14 inside completed guards / seven outside**. Nothing is excluded or waived. Baseline 410 → Apply 414 spans **215.189032 ms**, with eight losses (one inside / seven outside); nested baselines 411/412 overlap and are never summed as unique losses. Renewal 413 moves lease 11→13; live 415 and heartbeat 416 follow. First post-Apply egress is **15.068322 ms** later, not a claimed outage ceiling or first recovery packet. [Accounting and exact records](F14-AT02-recovery.json), [transition](F14-AT02-policy-missing.json).
+
+**F14-01:** the first D-077 re-grant has populated generation-10 readiness and an intended-device producer join, but its original forwarding attempt fails: five member packets, no observed node/origin ingress, zero origin requests and unchanged device counters. The capture stops attribution between member inner egress and node inner ingress; no detailed native capture exists for this attempt. Cause remains unproven and is not assumed identical to F11-01. [Original failed row and preceding readiness](F14-01-regrant-forwarding.json).
+
+**F13-01 fresh sample:** primary member-expiry1 has one exit-0 `nft_parse` / `parse` rejection among 266 withdrawal samples. Raw output and exact parser error are retained privately (0600); public receipt: **34,273 bytes / one line**, SHA-256 `2e13a93c901408906614345c7e2be3457751c7877835b991d115285f284ccc3a`. The raw output is valid JSON with four duplicated, identical chain definitions, including handles. `node/enforce/parse_nft.go` rejects repeated chain identity. This is a parser compatibility candidate for netlab, not a proven parser defect: why the snapshot contains duplicates and whether they are allowed remain unproven. Successful Apply 942 overlaps the 18.668818 ms read; that overlap does not establish cause. Active senders, stable counters and the observed 0.148039349 s last reply increment cannot repair an incomplete read. No retry or predicate relaxation. Both historical F13-01 failed rows stay failed and cannot be attributed using this new raw sample. [Safe receipts, exact failed tick and producer window](F14-F13-01-private-receipts.json).
+
+AT09’s known-PMTU row transfers **64,064 bytes**, retains route MTU 1280 before/after traffic and exact removal, with **16 delivered reverse IPv6 fragment pairs**. Routed IPv6 transfers **64,064 bytes in 1 ms**: one 1,360-byte router ingress causes a type-2/code-0 PTB with MTU 1280; its identical packet digest appears at router and sender. The sender route changes from no MTU metric to learned **1280**, and all 20 subsequent fragment packets arrive. Routed IPv4 transfers **64,064 bytes in 2 ms**: 42 oversized **DF=0** datagrams become 84 fragments in 42 groups, all received, with no PTB. These are separate D-137 mechanisms over IPv4 overlay payloads; D-123 IPv6Block still applies. [Original rows and mechanism evidence](F14-D137-native-paths.json).
+
+Receive-only 1280 remains a **limitation, never PASS**: dual-family selection transfers 64,064 bytes but is BLOCKED; IPv6 returns only **12,012 bytes in 12,011 ms** and stays FAIL. Nineteen reverse 1,360-byte packets are absent at member ingress, with no PTB; the first missing TCP range is retained. Historical F8-02 rows remain failed.
+
+**F12-04:** capture begins before the original readiness/RR query and preceding matrix mutations. The one original RR query succeeds (wire ID **62890**, RCODE 0, **1 ms**). Both resolvers retain complete lifecycle histories, outstanding sets and reply digests; the secondary is genuinely idle, not missing. Exact primary reply bytes join primary → node → member tunnel; the local stub response has the original wire ID. All five points are complete, zero-drop (**1,030 / 1,670 / 150 / 278 / 6** records for member/node/origin/primary/secondary). The positive IDNA probe also succeeds over UDP (**1 ms**) and TCP (**2 ms**). Historical F12-04 remains **unattributed**; this success does not explain its 5,001 ms SERVFAIL. [Original query, mutations and lifecycle](F14-F12-04-original-dns.json), [header analysis](history/follow-up-14-captures/258ba504-6ddf-4888-8633-9cfee8da6eea/native-dns-delivery-analysis.json). Devstack 24’s capture and lifecycle handoff is consumed; no additional independent positive query is requested.
+
+D-098 was the first, separate commit `cc04d0c2`: all **61 root files** from run 4182dd3d are byte-identical in [follow-up 13](history/follow-up-13/RUN.md), with [SHA-256 pins](history/follow-up-13/SHA256SUMS). The retained AT09-restart.json still belongs to run 7edb263f. Follow-up-13-captures, follow-up-13-stream and every earlier archive are untouched. Handover claims were checked: tests already read frozen history files; no outside-owned D-132 exception was needed.
+
+[Nine dated handoffs](requests.md); [full ledger and gates](RUN.md).

@@ -20,6 +20,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/TED-H-com/Freedom-VPN/internal/nodes"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	iso "github.com/TED-H-com/Freedom-VPN/tests/e2e/at/isolation"
 	"github.com/google/uuid"
@@ -47,6 +48,9 @@ type isolationRun struct {
 	convStopped    chan struct{}
 	firstCounted   string
 	fleetRequestID string
+	holdStop       chan struct{}
+	holdDone       chan struct{}
+	holdRows       []map[string]any
 }
 
 func TestIsolationAssembled(t *testing.T) {
@@ -126,6 +130,7 @@ func TestIsolationAssembled(t *testing.T) {
 	if !x.prepare() {
 		return
 	}
+	x.startHoldCapture()
 	x.a1 = x.join("iso-a", x.r.planRevID, "a1", time.Now().UTC().Add(time.Hour))
 	x.a2 = x.join("iso-a", x.r.planRevID, "a2", time.Now().UTC().Add(time.Hour))
 	x.b1 = x.join("iso-b", x.planB, "b1", time.Now().UTC().Add(time.Hour))
@@ -152,6 +157,7 @@ func TestIsolationAssembled(t *testing.T) {
 	x.revoke()
 	x.restart()
 	x.deadline()
+	x.generationHoldCut()
 	x.foreignRedirect()
 	x.freezeIdentity()
 }
@@ -168,6 +174,7 @@ func (x *isolationRun) finish() {
 	x.stopConvergence()
 	x.writeConvergence()
 	x.archiveReceiver()
+	x.finishHoldCapture()
 	if x.r != nil {
 		raw, _ := exec.Command("docker", "logs", x.r.lab.node).CombinedOutput()
 		_ = iso.WriteExtra(x.dir, "node-events.txt", iso.Redact(string(raw)))
@@ -2112,12 +2119,15 @@ func (x *isolationRun) retainReasonLogs(label string) {
 			}
 			continue
 		}
-		for _, segment := range []string{"before-restart", "before-clone", "final"} {
+		for _, segment := range []string{"before-restart", "before-hold-stop", "before-clone", "final"} {
 			path := source
 			if segment != "final" {
 				path += "." + segment
 			}
 			raw, err := exec.Command("docker", "exec", x.r.lab.node, "cat", path).Output()
+			if err != nil && segment == "before-hold-stop" {
+				continue
+			}
 			if err != nil {
 				x.t.Errorf("reason log retention %s/%s failed", name, segment)
 				continue
@@ -2170,7 +2180,7 @@ func (x *isolationRun) archiveReceiver() {
 	x.retainReasonLogs("final")
 	for _, name := range []string{"agent", "watchdog"} {
 		var all bytes.Buffer
-		for _, label := range []string{"before-restart", "before-clone", "final"} {
+		for _, label := range []string{"before-restart", "before-hold-stop", "before-clone", "final"} {
 			raw, err := os.ReadFile(filepath.Join(x.dir, name+"-"+label+".log.txt"))
 			if err == nil {
 				all.Write(raw)
@@ -2520,4 +2530,265 @@ func (x *isolationRun) captureApplied() {
 		result["lease"] = lease
 	}
 	x.extra("recovery-applied-state.json", result)
+}
+
+// Read-only central consumer. Every accepted report is retained, including
+// ones missed by the HTTP receiver; the report's own lease supplies its join.
+func (x *isolationRun) startHoldCapture() {
+	x.holdStop, x.holdDone = make(chan struct{}), make(chan struct{})
+	go func() {
+		defer close(x.holdDone)
+		conn, err := x.r.lab.db(x.ctx)
+		if err != nil {
+			x.t.Error("hold capture connection", err)
+			return
+		}
+		defer conn.Close(x.ctx)
+		seen := map[string]bool{}
+		since := time.Time{}
+		capture := func() {
+			rows, err := conn.Query(x.ctx, `SELECT o.report_id::text,o.received_at,jsonb_build_object(
+    'report',o.report_payload,'observation_id',o.id,'received_at',o.received_at,
+    'desired_generation_at_read',n.desired_config_generation::text,
+    'applied_generation_at_read',n.applied_config_generation::text,
+    'lease',s.envelope,'stored_lease_generation',s.policy_generation::text,
+    'sample',CASE WHEN h.report_id IS NULL THEN NULL ELSE to_jsonb(h) || jsonb_build_object(
+      'applied_generation',h.applied_generation::text,'lease_generation',h.lease_generation::text,
+      'reported_steps',h.reported_steps::text,'reported_elapsed_ms',h.reported_elapsed_ms::text) END,
+    'incident',to_jsonb(i))
+    FROM node_observations o JOIN nodes n ON n.id=o.node_id
+    LEFT JOIN serving_leases s ON s.id::text=o.report_payload#>>'{lease,lease_id}' AND s.node_id=o.node_id AND s.incarnation_id=o.incarnation_id
+    LEFT JOIN node_generation_hold_reports h ON h.node_id=o.node_id AND h.incarnation_id=o.incarnation_id AND h.report_id=o.report_id
+    LEFT JOIN node_generation_holds i ON i.id=h.hold_id
+    WHERE o.node_id=$1 AND o.received_at >= $2 ORDER BY o.received_at,o.report_id`, x.r.nodeID, since)
+			if err != nil {
+				x.t.Error("hold capture query", err)
+				return
+			}
+			var batch []map[string]any
+			for rows.Next() {
+				var id string
+				var at time.Time
+				var raw []byte
+				if err = rows.Scan(&id, &at, &raw); err != nil {
+					x.t.Error(err)
+					break
+				}
+				if at.After(since) {
+					since = at
+				}
+				if seen[id] {
+					continue
+				}
+				seen[id] = true
+				var row map[string]any
+				if err = json.Unmarshal(raw, &row); err != nil {
+					x.t.Error(err)
+					continue
+				}
+				batch = append(batch, row)
+			}
+			err = rows.Err()
+			rows.Close()
+			if err != nil {
+				x.t.Error(err)
+			}
+			for _, row := range batch {
+				row["read_at"] = time.Now().UTC().Format(time.RFC3339Nano)
+				raw, _ := json.Marshal(row["report"])
+				var report api.ObservationReport
+				if json.Unmarshal(raw, &report) != nil {
+					x.t.Error("hold report decode")
+					continue
+				}
+				if isolationHoldMarker(report) {
+					gen, _ := strconv.ParseUint(row["desired_generation_at_read"].(string), 10, 64)
+					cause, e := nodes.PublicationDataPathFailure(x.ctx, conn, report, gen, time.Now().UTC())
+					row["publication_data_path_failure"], row["classification_available"] = cause, e == nil
+					// Read-only replay of the same original checks/errors in reverse order.
+					// Never posted to central and never called an additional observation.
+					for a, b := 0, len(report.Checks)-1; a < b; a, b = a+1, b-1 {
+						report.Checks[a], report.Checks[b] = report.Checks[b], report.Checks[a]
+					}
+					for a, b := 0, len(report.Errors)-1; a < b; a, b = a+1, b-1 {
+						report.Errors[a], report.Errors[b] = report.Errors[b], report.Errors[a]
+					}
+					reverse, re := nodes.PublicationDataPathFailure(x.ctx, conn, report, gen, time.Now().UTC())
+					row["reverse_array_replay_cause"], row["reverse_array_replay_available"] = reverse, re == nil
+					var ops []byte
+					e = conn.QueryRow(x.ctx, `SELECT coalesce(jsonb_agg(jsonb_build_object('id',id,'kind',kind,'status',status,'desired_generation',desired_generation::text,'steps',steps,'created_at',created_at,'completed_at',completed_at)),'[]'::jsonb) FROM operations WHERE resource_id=$1 OR resource_id IN (SELECT id FROM exits WHERE node_id=$1)`, x.r.nodeID).Scan(&ops)
+					if e == nil {
+						row["operations_at_read"] = json.RawMessage(ops)
+					} else {
+						x.t.Error("hold operations", e)
+					}
+				}
+				x.holdRows = append(x.holdRows, row)
+			}
+		}
+		ticker := time.NewTicker(25 * time.Millisecond)
+		defer ticker.Stop()
+		for {
+			capture()
+			select {
+			case <-x.ctx.Done():
+				return
+			case <-x.holdStop:
+				capture()
+				return
+			case <-ticker.C:
+			}
+		}
+	}()
+}
+
+func isolationHoldMarker(r api.ObservationReport) bool {
+	missing := false
+	for _, v := range r.ForwardingBlockReasons {
+		if v == api.ForwardingBlockReasonPolicyMissing {
+			missing = true
+		}
+	}
+	if !missing {
+		return false
+	}
+	for _, c := range r.Checks {
+		code, _ := c.ErrorCode.Get()
+		if c.Name == api.NodeCheckNameLease && code == api.ErrorCodeSTALEGENERATION {
+			return true
+		}
+	}
+	for _, e := range r.Errors {
+		if e.Stage == "lease" && e.Code == api.ErrorCodeSTALEGENERATION {
+			return true
+		}
+	}
+	return false
+}
+
+func (x *isolationRun) holdSnapshot() json.RawMessage {
+	conn, err := x.r.lab.db(x.ctx)
+	if err != nil {
+		x.t.Error(err)
+		return nil
+	}
+	defer conn.Close(x.ctx)
+	var raw []byte
+	err = conn.QueryRow(x.ctx, `SELECT jsonb_build_object('read_at',clock_timestamp(),
+  'incidents',coalesce((SELECT jsonb_agg(to_jsonb(h) ORDER BY first_seen_at) FROM node_generation_holds h WHERE node_id=$1),'[]'::jsonb),
+  'samples',coalesce((SELECT jsonb_agg(to_jsonb(r) || jsonb_build_object('applied_generation',applied_generation::text,'lease_generation',lease_generation::text,'reported_steps',reported_steps::text,'reported_elapsed_ms',reported_elapsed_ms::text)) FROM node_generation_hold_reports r WHERE node_id=$1),'[]'::jsonb),
+  'audits',coalesce((SELECT jsonb_agg(jsonb_build_object('id',id,'action',action,'occurred_at',occurred_at,'result',result,'evidence',after_diff) ORDER BY occurred_at) FROM audit_events WHERE action='node.generation_hold.escalated' AND resource='node:'||$1::text),'[]'::jsonb))`, x.r.nodeID).Scan(&raw)
+	if err != nil {
+		x.t.Error("hold snapshot", err)
+		return nil
+	}
+	return raw
+}
+
+func (x *isolationRun) finishHoldCapture() {
+	if x.holdStop == nil {
+		return
+	}
+	close(x.holdStop)
+	<-x.holdDone
+	x.extra("generation-holds-central.json", map[string]any{"run_id": x.records["AT10"].RunID, "reports": x.holdRows, "final": x.holdSnapshot(),
+		"scope": "Immutable accepted reports and own signed leases, read-only live classification and reverse-array replay. desired_generation_at_read and operations_at_read are polling snapshots, not transaction-time values. No report is manufactured or replayed into ingestion."})
+}
+
+// One attempt using the existing admin capacity change, Docker control cut,
+// direct pidfd stop and supervisor start. No lease/desired fault hook is added.
+func (x *isolationRun) generationHoldCut() {
+	evidence := map[string]any{"run_id": x.records["AT10"].RunID, "status": "not exercised", "kernel_reboot": "not exercised: AT13 operator matrix"}
+	defer func() { x.extra("generation-hold-control-cut.json", evidence) }()
+	positive := x.proof(x.a1)
+	evidence["positive"] = positive
+	if !positive.Valid() {
+		evidence["reason"] = "no counted control before the attempt"
+		return
+	}
+	conn, err := x.r.lab.db(x.ctx)
+	if err != nil {
+		x.t.Error(err)
+		return
+	}
+	defer conn.Close(x.ctx)
+	admin, err := x.r.lab.login(x.ctx, "e2e-admin", "admin")
+	if err != nil {
+		return
+	}
+	x.admin = admin
+	path := x.r.lab.public + "/api/v1/admin/nodes/" + x.r.nodeID.String()
+	get, e := admin.call(x.ctx, "GET", path, nil, nil)
+	if e != nil || get.Status != 200 {
+		return
+	}
+	start := time.Now().UTC()
+	patch, e := admin.call(x.ctx, "PATCH", path, map[string]any{"capacity": map[string]any{"down_bps": 205000000, "up_bps": 200000000, "member_down_bps_cap": 100000000, "member_up_bps_cap": 100000000}}, map[string]string{"If-Match": get.Header.Get("ETag"), "Idempotency-Key": uuid.NewString()})
+	evidence["patch"] = map[string]any{"at": start, "response": json.RawMessage(patch.Body), "status": patch.Status, "ok": e == nil}
+	if e != nil || patch.Status >= 300 {
+		return
+	}
+	var incident, reportID, leaseID, leaseGen string
+	deadline := time.Now().Add(15 * time.Second)
+	found := false
+	for time.Now().Before(deadline) {
+		err = conn.QueryRow(x.ctx, `SELECT h.id::text,r.report_id::text,r.lease_id::text,r.lease_generation::text FROM node_generation_holds h JOIN node_generation_hold_reports r ON r.hold_id=h.id WHERE h.node_id=$1 AND h.first_seen_at >= $2 AND h.ended_at IS NULL ORDER BY h.first_seen_at DESC LIMIT 1`, x.r.nodeID, start).Scan(&incident, &reportID, &leaseID, &leaseGen)
+		if err == nil {
+			found = true
+			break
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+	if !found {
+		evidence["reason"] = "no new accepted open hold in the single 15-second attempt; no transport seam or retry added"
+		return
+	}
+	pausedAt := time.Now().UTC()
+	out, err := exec.Command("docker", "pause", x.r.lab.control, x.r.lab.prefix+"-worker").CombinedOutput()
+	evidence["cut"] = map[string]any{"start": pausedAt, "end": time.Now().UTC(), "ok": err == nil, "output": string(out)}
+	restored := false
+	defer func() {
+		if !restored {
+			_ = exec.Command("docker", "unpause", x.r.lab.control, x.r.lab.prefix+"-worker").Run()
+			x.waitControl()
+		}
+	}()
+	if err != nil {
+		return
+	}
+	evidence["incident_id"], evidence["report_id"], evidence["lease_id"], evidence["lease_generation"] = incident, reportID, leaseID, leaseGen
+	held, ok := x.readNodeLease()
+	evidence["held_lease"], evidence["held_available"] = held, ok
+	evidence["before_cut_snapshot"] = x.holdSnapshot()
+	if !ok || held.LeaseID != leaseID {
+		evidence["reason"] = "node renewed before the existing cut completed; long hold not exercised"
+		return
+	}
+	evidence["status"] = "attempted"
+	// Collect independent denial; unavailable counters never become a zero.
+	denial := iso.Check{}
+	route, result, ingress, delivered := x.capturedConnect(x.a1, x.a1.lab.prefix+"-origin", x.a1.originIP(), 443, &denial)
+	evidence["denial"] = map[string]any{"route": route, "result": result, "ingress": ingress, "delivered": delivered, "observations": denial.Observations}
+	evidence["kernel_during_cut"] = x.networkSnapshot("generation hold during control loss")
+	x.sleep(time.Until(pausedAt.Add(35 * time.Second)))
+	evidence["before_direct_stop"] = x.holdSnapshot()
+	x.retainReasonLogs("before-hold-stop")
+	stoppedAt := time.Now().UTC()
+	raw, stopErr := x.r.lab.docker(x.r.lab.node, "/tmp/isolation-probe", "agent-stop-sample")
+	evidence["direct_stop"] = map[string]any{"start": stoppedAt, "end": time.Now().UTC(), "ok": stopErr == nil, "output": iso.Redact(string(raw))}
+	evidence["after_direct_stop"] = x.holdSnapshot()
+	stored, storedOK := x.readNodeLease()
+	evidence["stored_after_stop"], evidence["stored_after_stop_available"] = stored, storedOK
+	restartAt := time.Now().UTC()
+	err = x.stack.Service(x.ctx, "start", "/usr/local")
+	evidence["process_restart"] = map[string]any{"start": restartAt, "end": time.Now().UTC(), "ok": err == nil}
+	x.sleep(4 * time.Second)
+	restoredAt := time.Now().UTC()
+	err = exec.Command("docker", "unpause", x.r.lab.control, x.r.lab.prefix+"-worker").Run()
+	restored = err == nil
+	evidence["restoration"] = map[string]any{"start": restoredAt, "end": time.Now().UTC(), "ok": err == nil}
+	ready := x.waitControl()
+	evidence["restored_ready"] = ready
+	evidence["after_restoration"] = x.holdSnapshot()
+	evidence["recovered_counted"] = x.proof(x.a1)
 }

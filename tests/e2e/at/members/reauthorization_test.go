@@ -176,8 +176,11 @@ func (l *live) fenceGrant(r *record, b *browser, id uuid.UUID, service string, e
 	})
 	r.check("D-077 worker re-grant confirmed from member list", "authorized and explicit false after worker sync", string(final.body), "poll GET /member/devices; do not poll old operation step transitions", ready)
 	l.fenceList(r, b, id, "authorized", false, false)
+	attemptStart := len(r.Steps)
+	forwardStart := len(r.Forwarding)
 	l.forwardingGate(r)
 	counted := l.traceForwarding(r, service, id)
+	r.jsonCheck("F14-01 original re-grant attempt retained", "every attempt retained; cause unproven", map[string]any{"device_id": id, "service": service, "cause_status": "unproven", "readiness_and_attempt_steps": append([]step(nil), r.Steps[attemptStart:]...), "forwarding_attempts": append([]forwardingObservation(nil), r.Forwarding[forwardStart:]...)}, "original readiness, member/node/origin packets and device counters; no replacement attempt", true)
 	r.check("D-077 re-grant counted forwarding", "origin HTTP receipt and both device counters increase", fmt.Sprintf("device_id=%s; counted=%t", id, counted), "CA-verified HTTPS through fvmb0 with named device counter attribution", counted)
 }
 func (l *live) reauthorization(r *record, b *browser, id uuid.UUID, service string, siblings, negatives bool) {
@@ -185,6 +188,7 @@ func (l *live) reauthorization(r *record, b *browser, id uuid.UUID, service stri
 	l.forwardingGate(r)
 	before := l.traceForwarding(r, service, id)
 	r.check("D-077 admitted positive control", "counted forwarding before fence", fmt.Sprintf("device_id=%s; counted=%t", id, before), "same native device and controlled HTTPS origin", before)
+	l.holdSnapshot("before D-077 fence withdrawal")
 	if !l.fenceInsert(r, id) {
 		return
 	}
@@ -192,6 +196,7 @@ func (l *live) reauthorization(r *record, b *browser, id uuid.UUID, service stri
 		return l.count(`SELECT count(*) FROM device_authorization_observations WHERE device_id=$1 AND NOT observed_authorized`, id) == 1
 	})
 	r.check("D-077 worker withdrawal", "fenced device observed withdrawn", fmt.Sprintf("device_id=%s; withdrawn=%t; fence_count=%d", id, withdrawn, l.fenceCount(id)), "wait running worker sync; read observation only", withdrawn)
+	l.holdSnapshot("after D-077 worker withdrawal")
 	l.fenceList(r, b, id, "pending", true, siblings)
 	if negatives {
 		l.fenceAdminPages(r, b, id)
@@ -257,6 +262,7 @@ func (l *live) reauthorizationLimit(r *record, id, revoked uuid.UUID, service st
 	})
 	r.check("D-081 limit precondition", "two authorized of limit two; replacement pending", fmt.Sprintf("ready=%t", pending), "real plan downgrade -> entitlement worker reconciliation; no row fixtures", pending)
 	l.traceForwarding(r, "member", l.awaitDevice(l.nativePeer))
+	l.holdSnapshot("before D-077 fence withdrawal")
 	if !l.fenceInsert(r, id) {
 		return
 	}
