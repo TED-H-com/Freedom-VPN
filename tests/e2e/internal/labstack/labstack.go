@@ -83,3 +83,8 @@ type FirstOfferEvidence = e2e.FirstOfferEvidence
 type NamespaceRestartEvidence = e2e.NamespaceRestartEvidence
 
 type SelectedNativeExit = e2e.SelectedNativeExit
+
+// TEST ONLY capture lifecycle; methods are inherited through the Stack alias.
+type NativeCapture = e2e.NativeCapture
+type NativeCaptureEvidence = e2e.NativeCaptureEvidence
+type NativePathSample = e2e.NativePathSample

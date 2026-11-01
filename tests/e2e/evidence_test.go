@@ -74,7 +74,7 @@ func TestCommittedFixtureEvidence_ValidAndHygieneClean(t *testing.T) {
 			return err
 		}
 		if d.IsDir() {
-			if path != root && filepath.Dir(path) == root && d.Name() != "followup16" && d.Name() != "followup17" && d.Name() != "followup18" && d.Name() != "followup19" && d.Name() != "followup20" && d.Name() != "followup21" {
+			if path != root && filepath.Dir(path) == root && d.Name() != "followup16" && d.Name() != "followup17" && d.Name() != "followup18" && d.Name() != "followup19" && d.Name() != "followup20" && d.Name() != "followup21" && d.Name() != "followup22" {
 				return filepath.SkipDir
 			}
 			return nil
@@ -83,7 +83,28 @@ func TestCommittedFixtureEvidence_ValidAndHygieneClean(t *testing.T) {
 		if err != nil {
 			return err
 		}
-		if filepath.Ext(path) == ".json" {
+		if filepath.Ext(path) == ".jsonl" && strings.Contains(path, "/followup22/") {
+			for _, line := range strings.Split(strings.TrimSpace(string(raw)), "\n") {
+				var header map[string]json.RawMessage
+				if json.Unmarshal([]byte(line), &header) != nil || header["packet"] == nil || header["timestamp"] == nil || header["header_error"] != nil {
+					t.Errorf("invalid header evidence: %s", path)
+				}
+				for _, key := range []string{"payload", "data", "publicKey", "privateKey", "hostname", "mac"} {
+					if header[key] != nil {
+						t.Errorf("non-header evidence: %s", path)
+					}
+				}
+			}
+		}
+		if filepath.Ext(path) == ".json" && filepath.Base(path) == "analysis.json" && strings.Contains(path, "/followup22/") {
+			var a struct {
+				Schema string            `json:"schema"`
+				Rows   []json.RawMessage `json:"rows"`
+			}
+			if json.Unmarshal(raw, &a) != nil || a.Schema != "native-capture-analysis-v1" || len(a.Rows) < 7 {
+				t.Errorf("invalid native analysis: %s", path)
+			}
+		} else if filepath.Ext(path) == ".json" {
 			var rec Record
 			if json.Unmarshal(raw, &rec) != nil || rec.ID == "" || rec.RunID == "" || len(rec.SourceCommit) != 40 {
 				t.Errorf("invalid fixture record: %s", path)

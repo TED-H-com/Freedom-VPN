@@ -219,3 +219,87 @@ F10-03 and the later passing follow-up 20 run retain their verdicts; no product
 TTL fix is claimed. The [members fixture analysis](followup21-members.md)
 separately identifies F11-01's unobserved transport segment and F11-03's original
 guarded installation failures without changing either acceptance row.
+
+## Follow-up 22 — selected native path capture (TEST ONLY)
+
+Members 12 can use the following through `labstack.Stack` on the stack returned
+by `MemberTransportStack(memberContainer, selectedNodeSlot)`. The selected node
+and member must already have joined. Start before the **first** route selection;
+no positive traffic prerequisite is inserted by this export.
+
+```go
+capture, err := stack.StartNativeCapture(ctx)
+// Check err. All three tcpdump processes are ready before this returns.
+err = capture.Sample(ctx, "before-selection")
+// Perform the existing route selection, unchanged; sample during its polling.
+err = capture.Sample(ctx, "after-selection")
+// Perform the original bounded transfer; retain counters and origin receipt.
+err = capture.Sample(ctx, "after-transfer")
+evidence, err := capture.Stop(cleanupContext, privateDiskDirectory)
+```
+
+`Sample` and `Stop` are serial methods on one handle; the original selection or
+transfer may run concurrently with sampling. Always stop, including on failure,
+with a noncancelled bounded cleanup context. Use a unique ignored disk directory
+under `.agent/tmp`. `StartNativeCapture` builds/copies a small read-only observer
+before starting capture; this overhead is observable and can affect first-use
+timing. It neither selects a route nor reconnects, waits for serving, or repairs
+transport. Existing `ApplyNativeInputs` still lowers **only member** eth0/eth1.
+
+Each namespace capture is `any` with SLL2 interface index/direction: member
+underlay and `fvnb0`; selected node underlay, its native `fvmb0` tunnel and `fvup0`; origin.
+The closed filter is ICMP/ICMPv6, UDP (including fragments) and TCP 443/9446.
+Raw full-snaplen pcaps are private (mode 0600 export); 32 MiB capture buffers
+reduce observer drops. Retained capture counts, received-by-filter counts,
+kernel drops, readiness/stop bounds and complete byte/SHA receipts are explicit.
+Unknown statistics are `-1`/`statistics_ok=false`, never zero. Any kernel drop,
+header/file truncation or decoded-count mismatch invalidates loss attribution.
+Raw receipts identify ignored files; they are not public retained-tree pins.
+
+`Samples[].points` includes independently bracketed command reads at member,
+node and origin: link names/indexes/MTUs; origin, overlay and selected endpoint
+route-get results; connection type; selected local/remote ICE endpoint family,
+port and address token. `relay_endpoint`/`relay_route` resolve a selected relay
+address only inside the controlled fixture; an absent ICE endpoint is not proof
+of missing relay transport. The native `uses_kernel_interface` flag and link
+kind are read back. WireGuard public allowed-IP/endpoint views are matched
+by the selected peer overlay address; peer keys are used only in memory. No
+private-key dump is read. `wireguard_endpoint` and `wireguard_route` distinguish
+an actual outer peer endpoint from a local userspace proxy. Missing peers and
+failed commands remain visible and cannot establish transport readiness.
+
+All clock pairs retain boot ID, UTC wall sample, and decimal CLOCK_MONOTONIC
+bounds around that sample. Every command and capture lifecycle has its own
+bounds. Samples are **not simultaneous**, nor exact kernel route-commit times.
+Pcap timestamps remain kernel wall timestamps, not hardware or native monotonic
+packet timestamps. Only derive monotonic packet intervals against the retained
+clock pairs when the same boot and measured wall/monotonic offset are stable;
+state that interpolation assumption and its measured error. Packet hashes join
+outer datagrams across endpoints; a time-adjacent encrypted datagram alone does
+not prove which inner packet it carries.
+
+Decode with `tests/e2e/decode_capture.py --stable-addresses --out <archive>` and
+the three pcaps. It emits headers, opaque full-IP-packet hashes and `addr-…`
+tokens matching snapshots, never payload/MAC/native keys. Preserve original
+private receipts and publicly pin only immutable run/archive files (D-132).
+For first-selection forensics, optional `--wireguard-headers` adds only message
+type, public sender/receiver indexes, decimal counter, length, loopback address
+classification and an opaque message hash. It checks fixed WireGuard layouts
+and reserved bytes on UDP port 51820; it exports no ephemeral key, MAC or
+ciphertext. Classification does not authenticate a handshake or prove kernel
+acceptance. The message hash can join a handshake through a local proxy even
+when its outer IP header changes. Retain the decoder revision for post-run
+derivations. Start/stop are bracketed separately per role; a sender tail after
+the receiver stopped cannot establish loss. `analyze_native_capture.py` joins
+headers with the retained readbacks and derives the stated empirical packet
+clock bounds. Run it before pinning a new immutable evidence subtree.
+
+`ConstrainSelectedNativePeer1280(ctx)` is a **separate control**, returning a
+cleanup function. It requires the connected selected sender's P2P IPv6 endpoint
+to be this fixture's member `::41`, then adds one new `/128` route with MTU 1280
+on the route-read-back underlay interface. It refuses an existing route rather
+than replacing it. Cleanup deletes precisely that route. Sample before/after
+and prove the actual route metric; no global interface/tunnel MTU or MSS changes.
+This represents prior knowledge of a 1280 path. It does not emulate a router,
+create PTB or prove reactive ICMP PMTU discovery. Keep the original asymmetric
+receive-link failure and the explicit-path result as separate evidence.
