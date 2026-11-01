@@ -65,6 +65,7 @@ func (m *memPlane) Apply(_ context.Context, model enforce.Model, _ map[string]en
 		res.Counters = map[string]enforce.CounterValue{
 			"probe_up":   {Packets: 1, Bytes: 1},
 			"probe_down": {Packets: 1, Bytes: 1},
+			"ctdenyd":    {Packets: 7, Bytes: 700},
 		}
 	}
 	return res, nil
