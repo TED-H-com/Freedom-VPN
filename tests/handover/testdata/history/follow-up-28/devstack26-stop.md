@@ -9,5 +9,3 @@ The dated [D-102 replies](../../../RESPONSES.md) name updates' `tests/e2e/at/upd
 The serving gates change measurement sequencing and timing. These small diagnostic populations do not estimate a transport reliability rate or demonstrate that either historical finding is fixed.
 
 Displayed millisecond intervals are rounded to 0.001 ms; the exact nanosecond bounds remain in the JSON joins.
-
-

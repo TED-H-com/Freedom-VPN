@@ -25,4 +25,3 @@ D-138 / D-140 / D-141 overturn options, F11-01 repair direction awaiting devstac
 26. Serving-node missing-ingress samples route to devstack separately from the
 closed-node timeouts; cause unproven. Historical failures stay failed.
 **No new operator guidance.** Older snapshots below retain their own cutoff.
-

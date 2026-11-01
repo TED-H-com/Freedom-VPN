@@ -7004,7 +7004,7 @@ func TestHandover_Followup28Claims(t *testing.T) {
 	})
 	t.Run("D098_D109_D132_16_snapshots_no_living_roots", func(t *testing.T) {
 		checkHash(t, rows, "f51a4bb2323b7fe71e8d5af82b108ffc3c7a664e3b78f0cb0991b234b7e606f1")
-		checkHash(t, fixture+"followup28-snapshots.json", "4cb9f0906ca8914becf99838e3c19beb894d8526d995985eb40441691a439c13")
+		checkHash(t, fixture+"followup28-snapshots.json", "e3129b05f907d3d0c3376f4b14ea9d012039867e07f2acc4cc6eb0d8182010bf")
 		var pins []struct {
 			Path, Source, SHA256 string
 			Commit               string `json:"source_commit"`
