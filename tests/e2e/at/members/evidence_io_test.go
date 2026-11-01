@@ -5,11 +5,12 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
 func TestEvidenceGzipLosslessAndPins(t *testing.T) {
-	path := filepath.Join(t.TempDir(), "AT02.json")
+	path := filepath.Join(t.TempDir(), "AT02.md")
 	raw := bytes.Repeat([]byte("0123456789\n"), evidenceGzipThreshold/11+1)
 	if err := writeEvidence(path, raw); err != nil {
 		t.Fatal(err)
@@ -20,6 +21,24 @@ func TestEvidenceGzipLosslessAndPins(t *testing.T) {
 	got, err := readEvidence(path)
 	if err != nil || !bytes.Equal(got, raw) {
 		t.Fatal("lossless round trip", err)
+	}
+	index := []byte(documentIndexMarker + "\n# Evidence index\n")
+	if err = os.WriteFile(path, index, 0644); err != nil {
+		t.Fatal(err)
+	}
+	if _, err = readEvidence(path); err == nil || !strings.Contains(err.Error(), "document index") {
+		t.Fatal("document index accepted as evidence", err)
+	}
+	got, err = os.ReadFile(path)
+	if err != nil || !bytes.Equal(got, index) {
+		t.Fatal("plain document unavailable", err)
+	}
+	got, err = readEvidence(path + ".gz")
+	if err != nil || !bytes.Equal(got, raw) {
+		t.Fatal("explicit capture unavailable alongside index", err)
+	}
+	if err = os.Remove(path); err != nil {
+		t.Fatal(err)
 	}
 	meta, err := os.ReadFile(path + ".gz.sha256.json")
 	if err != nil {

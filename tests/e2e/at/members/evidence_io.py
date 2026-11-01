@@ -5,6 +5,7 @@ import hashlib
 import json
 
 THRESHOLD = 20_000_000
+DOCUMENT_INDEX_MARKER = b'<!-- at-members: document-index -->'
 
 def read(path):
     path = Path(path)
@@ -12,6 +13,8 @@ def read(path):
         path = Path(str(path) + '.gz')
     raw = path.read_bytes()
     if path.suffix != '.gz':
+        if raw.startswith(DOCUMENT_INDEX_MARKER):
+            raise ValueError('document index: read the linked .gz evidence explicitly')
         return raw
     pin = json.loads(Path(str(path) + '.sha256.json').read_text())
     assert hashlib.sha256(raw).hexdigest() == pin['compressed_sha256']

@@ -13,6 +13,8 @@ import (
 
 const evidenceGzipThreshold = 20_000_000
 
+const documentIndexMarker = "<!-- at-members: document-index -->"
+
 type evidenceDigest struct {
 	CompressedSHA256   string `json:"compressed_sha256"`
 	UncompressedSHA256 string `json:"uncompressed_sha256"`
@@ -63,7 +65,13 @@ func readEvidence(path string) ([]byte, error) {
 	if os.IsNotExist(err) && !strings.HasSuffix(path, ".gz") {
 		return readEvidence(path + ".gz")
 	}
-	if err != nil || !strings.HasSuffix(path, ".gz") {
+	if err != nil {
+		return nil, err
+	}
+	if !strings.HasSuffix(path, ".gz") {
+		if bytes.HasPrefix(raw, []byte(documentIndexMarker)) {
+			return nil, fmt.Errorf("document index: read the linked .gz evidence explicitly")
+		}
 		return raw, err
 	}
 	meta, err := os.ReadFile(path + ".sha256.json")

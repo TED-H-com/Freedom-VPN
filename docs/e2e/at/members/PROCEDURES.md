@@ -372,10 +372,20 @@ producer exports and tears down the owned stack. Record `vmstat 5 7`,
 
 New files larger than 20,000,000 bytes use lossless `.gz` and a
 `.gz.sha256.json` sidecar with compressed/uncompressed byte counts and SHA-256.
-The Go `readEvidence` and Python `evidence_io.load` readers accept a logical
-plain filename and validate the compressed form when present. Historical
+The Go `readEvidence` and Python `evidence_io.read` / `load` readers accept a
+logical plain filename and fall back to the compressed form when the plain
+file is absent, validating both byte pins. Historical
 archives remain byte-identical. To inspect a large artifact directly, use
 `gzip -dc <artifact>.gz`; do not replace the retained file.
+
+[AT02.md](AT02.md) is a small navigation document marked
+`<!-- at-members: document-index -->`, separate from the pinned original
+[Markdown capture](AT02.md.gz) and [JSON capture](AT02.json.gz). The readers
+reject a document index as evidence: use the explicit `.md.gz` path for the
+capture. The hygiene test scans plain Markdown as documentation and separately
+decompresses and verifies gzip captures. The index has no capture pin; its
+listed hashes apply only to the linked captures. Keep this plain document path
+available when publishing future runs so external Markdown links still resolve.
 
 At the existing AT02 service-stop point, the TEST ONLY probe requests the
 supervisor pause and SIGTERM for the retained agent PID, observes process exit,

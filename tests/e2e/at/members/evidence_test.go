@@ -13,6 +13,7 @@ import (
 func TestCommittedEvidenceHygiene(t *testing.T) {
 	root := filepath.Join("../../../..", "docs/e2e/at/members")
 	records := 0
+	documents := 0
 	err := filepath.WalkDir(root, func(path string, d os.DirEntry, err error) error {
 		if err != nil {
 			return err
@@ -20,7 +21,15 @@ func TestCommittedEvidenceHygiene(t *testing.T) {
 		if d.IsDir() {
 			return nil
 		}
-		raw, err := readEvidence(path)
+		var raw []byte
+		if filepath.Ext(path) == ".md" {
+			// Plain Markdown includes navigation indexes, not pinned captures.
+			// Scan the document itself; .md.gz captures still use both byte pins.
+			raw, err = os.ReadFile(path)
+			documents++
+		} else {
+			raw, err = readEvidence(path)
+		}
 		if err != nil {
 			return err
 		}
@@ -53,7 +62,7 @@ func TestCommittedEvidenceHygiene(t *testing.T) {
 	if records < 10 {
 		t.Fatal("missing case records")
 	}
-	t.Logf("scanned %d acceptance JSON records plus documentation", records)
+	t.Logf("scanned %d acceptance JSON records plus %d Markdown documents", records, documents)
 }
 func TestD098_Followup7Archive(t *testing.T) {
 	verifyArchive(t, "follow-up-7", "297faa31-2f90-4aab-8cf0-6818629f46c8", 31)
