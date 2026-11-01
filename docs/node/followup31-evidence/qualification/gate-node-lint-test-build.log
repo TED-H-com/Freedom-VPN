@@ -1,0 +1,21 @@
+TMPDIR='WORKTREE/.agent/tmp' GOTMPDIR='WORKTREE/.agent/tmp' CGO_ENABLED=0 GOTOOLCHAIN=local go vet ./node/agent/... ./node/watchdog/... ./node/internal/agentstore/... ./node/internal/controlclient/... ./node/internal/timeanchor/... ./node/internal/fakecontrol/... ./node/internal/nodelock/... ./node/internal/usagestore/... ./node/internal/meter/...
+TMPDIR='WORKTREE/.agent/tmp' GOTMPDIR='WORKTREE/.agent/tmp' CGO_ENABLED=0 GOTOOLCHAIN=local go vet -tags netlab ./node/agent/... ./tests/netlab/agent/...
+TMPDIR='WORKTREE/.agent/tmp' GOTMPDIR='WORKTREE/.agent/tmp' CGO_ENABLED=0 GOTOOLCHAIN=local go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 ./node/agent/... ./node/watchdog/... ./node/internal/agentstore/... ./node/internal/controlclient/... ./node/internal/timeanchor/... ./node/internal/fakecontrol/... ./node/internal/nodelock/... ./node/internal/usagestore/... ./node/internal/meter/...
+TMPDIR='WORKTREE/.agent/tmp' GOTMPDIR='WORKTREE/.agent/tmp' CGO_ENABLED=0 GOTOOLCHAIN=local go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 -tags netlab ./node/agent/... ./tests/netlab/agent/...
+TMPDIR='WORKTREE/.agent/tmp' GOTMPDIR='WORKTREE/.agent/tmp' CGO_ENABLED=0 GOTOOLCHAIN=local go test ./node/agent/... ./node/watchdog/... ./node/internal/agentstore/... ./node/internal/controlclient/... ./node/internal/timeanchor/... ./node/internal/fakecontrol/... ./node/internal/nodelock/... ./node/internal/usagestore/... ./node/internal/meter/...
+ok      github.com/TED-H-com/Freedom-VPN/node/agent     63.175s
+ok      github.com/TED-H-com/Freedom-VPN/node/agent/cmd/fvpn-agent      2.236s
+ok      github.com/TED-H-com/Freedom-VPN/node/watchdog  2.304s
+?       github.com/TED-H-com/Freedom-VPN/node/watchdog/cmd/fvpn-watchdog        [no test files]
+ok      github.com/TED-H-com/Freedom-VPN/node/internal/agentstore       2.344s
+ok      github.com/TED-H-com/Freedom-VPN/node/internal/controlclient    (cached)
+ok      github.com/TED-H-com/Freedom-VPN/node/internal/timeanchor       (cached)
+ok      github.com/TED-H-com/Freedom-VPN/node/internal/fakecontrol      2.221s
+?       github.com/TED-H-com/Freedom-VPN/node/internal/fakecontrol/cmd/fvpn-labcontrol  [no test files]
+?       github.com/TED-H-com/Freedom-VPN/node/internal/nodelock [no test files]
+ok      github.com/TED-H-com/Freedom-VPN/node/internal/usagestore       3.224s
+ok      github.com/TED-H-com/Freedom-VPN/node/internal/meter    2.773s
+TMPDIR='WORKTREE/.agent/tmp' GOTMPDIR='WORKTREE/.agent/tmp' CGO_ENABLED=0 GOTOOLCHAIN=local GOOS=linux GOARCH=amd64 go build -trimpath -o bin/linux_amd64/fvpn-agent ./node/agent/cmd/fvpn-agent
+TMPDIR='WORKTREE/.agent/tmp' GOTMPDIR='WORKTREE/.agent/tmp' CGO_ENABLED=0 GOTOOLCHAIN=local GOOS=linux GOARCH=arm64 go build -trimpath -o bin/linux_arm64/fvpn-agent ./node/agent/cmd/fvpn-agent
+TMPDIR='WORKTREE/.agent/tmp' GOTMPDIR='WORKTREE/.agent/tmp' CGO_ENABLED=0 GOTOOLCHAIN=local GOOS=linux GOARCH=amd64 go build -trimpath -o bin/linux_amd64/fvpn-watchdog ./node/watchdog/cmd/fvpn-watchdog
+TMPDIR='WORKTREE/.agent/tmp' GOTMPDIR='WORKTREE/.agent/tmp' CGO_ENABLED=0 GOTOOLCHAIN=local GOOS=linux GOARCH=arm64 go build -trimpath -o bin/linux_arm64/fvpn-watchdog ./node/watchdog/cmd/fvpn-watchdog

@@ -1,0 +1,25 @@
+...E.
+======================================================================
+ERROR: test_process_disappearing_during_proc_read_completes_restart (timing_analysis_test.RestartCollector.test_process_disappearing_during_proc_read_completes_restart)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "WORKTREE/tests/netlab/agent/timing_analysis_test.py", line 26, in test_process_disappearing_during_proc_read_completes_restart
+    probes.restart_agent('TEST ONLY output')
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "WORKTREE/tests/netlab/agent/timing-probes.py", line 146, in restart_agent
+    if Path(f'/proc/{pid}/stat').read_text().split()[2] == 'Z':
+       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/usr/lib/python3.14/unittest/mock.py", line 1176, in __call__
+    return self._mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.14/unittest/mock.py", line 1180, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.14/unittest/mock.py", line 1245, in _execute_mock_call
+    raise result
+ProcessLookupError
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.003s
+
+FAILED (errors=1)

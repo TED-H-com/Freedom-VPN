@@ -3,10 +3,50 @@ import copy
 import importlib.util
 from pathlib import Path
 import unittest
+from unittest import mock
 
 spec = importlib.util.spec_from_file_location('analysis',Path(__file__).with_name('timing-analysis.py'))
 analysis = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(analysis)
+
+probe_spec = importlib.util.spec_from_file_location('probes', Path(__file__).with_name('timing-probes.py'))
+probes = importlib.util.module_from_spec(probe_spec)
+probe_spec.loader.exec_module(probes)
+
+
+class RestartCollector(unittest.TestCase):
+    def test_process_disappearing_during_proc_read_completes_restart(self):
+        with mock.patch.object(probes, 'Path') as path, \
+                mock.patch.object(probes.os, 'kill'), \
+                mock.patch.object(probes.subprocess, 'Popen') as child, \
+                mock.patch('builtins.open', mock.mock_open()):
+            path.return_value.exists.return_value = True
+            path.return_value.read_text.side_effect = ['123', ProcessLookupError()]
+            child.return_value.pid = 456
+            probes.restart_agent('TEST ONLY output')
+            child.assert_called_once()
+
+    def test_unreadable_proc_is_not_proof_of_exit(self):
+        with mock.patch.object(probes, 'Path') as path, \
+                mock.patch.object(probes.os, 'kill'), \
+                mock.patch.object(probes.subprocess, 'Popen') as child:
+            path.return_value.exists.return_value = True
+            path.return_value.read_text.side_effect = ['123', PermissionError()]
+            with self.assertRaises(PermissionError):
+                probes.restart_agent('TEST ONLY output')
+            child.assert_not_called()
+
+    def test_shutdown_timeout_does_not_start_successor(self):
+        with mock.patch.object(probes, 'Path') as path, \
+                mock.patch.object(probes.os, 'kill') as kill, \
+                mock.patch.object(probes.time, 'monotonic', side_effect=[0, 3]), \
+                mock.patch.object(probes.subprocess, 'Popen') as child:
+            path.return_value.exists.return_value = True
+            path.return_value.read_text.return_value = '123'
+            with self.assertRaisesRegex(RuntimeError, 'failed to stop gracefully'):
+                probes.restart_agent('TEST ONLY output')
+            kill.assert_called_once_with(123, probes.signal.SIGTERM)
+            child.assert_not_called()
 
 
 def fixtures():

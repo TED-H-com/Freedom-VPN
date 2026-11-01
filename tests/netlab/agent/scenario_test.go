@@ -120,6 +120,7 @@ func crashProc(name, pidFile string) {
 
 func TestLab04_RestartKeepsVerifiedLease(t *testing.T) {
 	skipLab(t)
+	capture := followup31RestartCapture(t)
 	stopAgent()
 	stopWatch()
 	flushConntrack(t)
@@ -130,10 +131,19 @@ func TestLab04_RestartKeepsVerifiedLease(t *testing.T) {
 		stopAgent()
 		t.Fatalf("precondition: not forwarding:\n%s", debugPlane(t))
 	}
-	stopAgent()
+	capture("before_stop")
+	// A process replacement needs confirmed graceful completion. stopAgent's
+	// generic cleanup sends SIGKILL after 200 ms, which can interrupt local
+	// verification/checkpointing after packets already forward. A timeout here
+	// fails the test; it neither refreshes the lease nor waits for a new grant.
+	t.Log("TEST ONLY graceful restart stop:", mustExec(t, "python3", "/work/tests/netlab/agent/timing-probes.py", "stop", labDir+"/restart-stop.json", "10"))
+	mustExec(t, "python3", "/work/tests/netlab/agent/topology-owner.py", "stop")
+	capture("after_stop")
 	admin(t, "/hold", "")
 	defer admin(t, "/release", "")
+	capture("before_restart")
 	startAgent(t)
+	capture("after_start")
 	defer stopAgent()
 	// Same-boot process replacement retains the signed original deadline.
 	if !waitProbe(t, "allow", 12*time.Second) {

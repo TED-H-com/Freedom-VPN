@@ -156,6 +156,10 @@ while True:
 		followup29Sibling(t, r, p)
 		return
 	}
+	if os.Getenv("FVPN_F31_GENERATIONS") == "1" {
+		followup31Generations(t, r)
+		return
+	}
 	p.reads = nil
 	p.paths = nil
 	const steps = 30
