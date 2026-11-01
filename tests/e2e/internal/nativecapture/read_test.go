@@ -8,6 +8,9 @@ import (
 
 func TestAT01_SelectedPeerDoesNotLeakOtherKeys(t *testing.T) {
 	raw := []byte(`{"netbirdIp":"100.64.0.1/16","peers":{"details":[{"netbirdIp":"100.64.0.2/16","publicKey":"TEST-ONLY-KEY","status":"Connected","connectionType":"P2P","iceCandidateEndpoint":{"local":"[2001:db8::1]:1234","remote":"[2001:db8::2]:4321"}},{"netbirdIp":"100.64.0.3/16","status":"Disconnected"}]}}`)
+	if selectedPublicKey(raw, "100.64.0.2") != "TEST-ONLY-KEY" || selectedPublicKey(raw, "100.64.0.9") != "" {
+		t.Fatal("private key join selected wrong peer")
+	}
 	p, e := Select(raw, "100.64.0.2")
 	if e != nil || p.Status != "Connected" {
 		t.Fatalf("selected peer: %+v %v", p, e)

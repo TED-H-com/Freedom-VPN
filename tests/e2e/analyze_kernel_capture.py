@@ -45,7 +45,7 @@ def main(run, private):
         row = dict(label=sample['label'], points={})
         for role in ['member', 'node']:
             point = sample['points'][role]
-            row['points'][role] = {k: point.get(k) for k in ['start', 'end', 'wireguard_endpoint', 'latest_handshake_unix_seconds', 'local', 'remote']}
+            row['points'][role] = {k: point.get(k) for k in ['start', 'end', 'wireguard_endpoint', 'wireguard_peer_matched', 'latest_handshake_unix_seconds', 'local', 'remote']}
             row['points'][role]['read_ok'] = {k: point['commands'].get(k, {}).get('ok', False) for k in ['snmp6', 'nstat', 'conntrack6', 'wg_latest_handshakes', 'wg_endpoints']}
             row['points'][role]['snmp6'] = {k: point['kernel']['snmp6'].get(k) for k in ['Ip6InReceives', 'Ip6InHdrErrors', 'Ip6InAddrErrors', 'Ip6InDiscards', 'Ip6InDelivers', 'Udp6InDatagrams', 'Udp6InErrors', 'Udp6InCsumErrors', 'Udp6NoPorts']}
             row['points'][role]['nstat_hdr_errors'] = point['kernel']['nstat'].get('Ip6InHdrErrors')
