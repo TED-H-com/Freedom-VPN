@@ -128,7 +128,9 @@ func contextState(ctx context.Context) string {
 
 func contextDeadline(ctx context.Context) LifecycleBracket {
 	deadline, ok := ctx.Deadline()
-	if !ok {
+	if !ok || deadline == deadline.Round(0) {
+		// Round(0) strips the monotonic component. A wall-only Deadline cannot
+		// reveal the context timer's monotonic target after a wall correction.
 		return LifecycleBracket{}
 	}
 	// time.Until uses Go's monotonic component when the context has one. The

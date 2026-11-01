@@ -162,3 +162,14 @@ func TestD133_AT02_CommandLifecycleJoinsApplyAndRollback(t *testing.T) {
 		}
 	}
 }
+
+func TestD133_WallOnlyContextDeadlineUnavailable(t *testing.T) {
+	// UTC strips time.Time's monotonic component. The context timer still runs
+	// monotonically, but its actual timer deadline cannot be recovered from the
+	// public wall-only Deadline after a wall-clock correction.
+	ctx, cancel := context.WithDeadline(t.Context(), time.Now().Add(time.Second).UTC())
+	defer cancel()
+	if got := contextDeadline(ctx); got.Before.Available || got.After.Available {
+		t.Fatalf("wall-only timer deadline was invented: %+v", got)
+	}
+}
