@@ -228,3 +228,72 @@ func (s *Stack) ConstrainSelectedNativePeer1280(ctx context.Context) (func(conte
 		return exec.CommandContext(clean, "docker", "exec", s.lab.node, "ip", "-6", "route", "del", host+"/128", "dev", routes[0].Dev, "mtu", "1280").Run()
 	}, nil
 }
+
+// NativeRouter1280 is a TEST ONLY routed underlay. Existing member-only and
+// known-PMTU controls are independent. Both bridge links have matching MTUs.
+type NativeRouter1280 struct {
+	stack     *Stack
+	Container string `json:"container"`
+	Member4   string `json:"member_ipv4"`
+	Member6   string `json:"member_ipv6"`
+	Router4   string `json:"router_ipv4"`
+	Router6   string `json:"router_ipv6"`
+}
+
+// PrepareNativeRouter1280 adds no node interface and changes no host networking.
+// The new member link is 1280; router ingress and node links remain 1500. Routes
+// are specific to fixture peers and contain no MTU metric. e2e-down owns cleanup.
+func (s *Stack) PrepareNativeRouter1280(ctx context.Context) (*NativeRouter1280, error) {
+	slot := strings.TrimPrefix(s.lab.labPrefix, "172.28.")
+	left6 := "2001:db8:" + slot + "::"
+	right6 := "2001:db8:" + slot + ":23::"
+	h := &NativeRouter1280{stack: s, Container: s.lab.prefix + "-node-router", Member4: "192.0.2.131", Router4: "192.0.2.130", Member6: right6 + "3", Router6: right6 + "2"}
+	network := s.lab.prefix + "-node-router-link"
+	image, err := exec.CommandContext(ctx, "docker", "inspect", "--format={{.Image}}", s.lab.node).Output()
+	if err != nil {
+		return nil, err
+	}
+	steps := [][]string{
+		{"network", "create", "--ipv6", "--subnet", "192.0.2.128/28", "--subnet", right6 + "/64", "--opt", "com.docker.network.bridge.enable_ip_masquerade=false", "--opt", "com.docker.network.driver.mtu=1280", network},
+		{"run", "-d", "--name", h.Container, "--privileged", "--network", s.lab.prefix, "--ip", s.lab.labPrefix + ".60", "--entrypoint", "sleep", strings.TrimSpace(string(image)), "infinity"},
+		{"network", "connect", "--ip6", left6 + "60", s.lab.prefix + "-node-underlay", h.Container},
+		{"network", "connect", "--ip", h.Router4, "--ip6", h.Router6, network, h.Container},
+		{"network", "connect", "--ip", h.Member4, "--ip6", h.Member6, network, s.lab.member},
+		{"exec", h.Container, "sysctl", "-w", "net.ipv4.ip_forward=1", "net.ipv6.conf.all.forwarding=1"},
+		{"exec", s.lab.node, "ip", "route", "add", h.Member4 + "/32", "via", s.lab.labPrefix + ".60"},
+		{"exec", s.lab.node, "ip", "-6", "route", "add", h.Member6 + "/128", "via", left6 + "60"},
+		{"exec", s.lab.member, "ip", "route", "add", s.lab.labPrefix + ".40/32", "via", h.Router4},
+		{"exec", s.lab.member, "ip", "-6", "route", "add", left6 + "40/128", "via", h.Router6},
+	}
+	for i, args := range steps {
+		if err = exec.CommandContext(ctx, "docker", args...).Run(); err != nil {
+			return nil, fmt.Errorf("router step %d: %w", i, err)
+		}
+	}
+	return h, nil
+}
+
+// Select forces native peer UDP through the new member link, with bounded rules.
+// It does not reconnect or transfer. Call the consumer's original down/up next.
+func (h *NativeRouter1280) Select(ctx context.Context, family string) error {
+	if family != "ipv4" && family != "ipv6" {
+		return fmt.Errorf("router family must be ipv4 or ipv6")
+	}
+	s := h.stack
+	_, err := s.ApplyNativeInputs(ctx, NativeFixtureInputs{Underlay: family, MTU: 1500, Protocol: "tcp", Platform: "linux"})
+	if err != nil {
+		return err
+	}
+	other := "ipv4"
+	if family == "ipv4" {
+		other = "ipv6"
+	}
+	script := "add set inet fvfixture routed { type ifname; flags timeout; elements = { \"eth2\" timeout 180s }; }\n"
+	for _, d := range []struct{ chain, iface string }{{"out", "oifname"}, {"in", "iifname"}} {
+		script += fmt.Sprintf("add rule inet fvfixture %s %s @held meta l4proto udp counter drop\n", d.chain, d.iface)
+		script += fmt.Sprintf("add rule inet fvfixture %s %s @routed meta nfproto %s meta l4proto udp counter drop\n", d.chain, d.iface, other)
+	}
+	cmd := exec.CommandContext(ctx, "docker", "exec", "-i", s.lab.member, "nft", "-f", "-")
+	cmd.Stdin = strings.NewReader(script)
+	return cmd.Run()
+}

@@ -192,7 +192,7 @@ func (r *runner) fixtureServingMember(ctx context.Context, admin *session) {
 	if !r.usageReady {
 		return
 	}
-	if os.Getenv("FVPN_E2E_FOLLOWUP22") == "1" {
+	if os.Getenv("FVPN_E2E_FOLLOWUP22") == "1" || os.Getenv("FVPN_E2E_FOLLOWUP23") == "1" {
 		r.nativeInitial22(ctx, &Stack{lab: r.lab})
 	}
 	wait, cancel := context.WithTimeout(ctx, 90*time.Second)
@@ -571,6 +571,9 @@ func (r *runner) fixtureFiniteGrant(ctx context.Context, s *Stack, admin Browser
 }
 
 func fixtureCampaignDirectory() string {
+	if os.Getenv("FVPN_E2E_FOLLOWUP23") == "1" {
+		return "followup23"
+	}
 	if os.Getenv("FVPN_E2E_FOLLOWUP21") == "1" {
 		return "followup21"
 	}

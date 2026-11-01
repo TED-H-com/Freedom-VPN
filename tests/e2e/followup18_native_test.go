@@ -61,7 +61,9 @@ func TestE2E_Followup18Native(t *testing.T) {
 	r.publish(ctx, admin, r.nodeID)
 	r.fixtureServingMember(ctx, admin)
 	if r.flowCounted {
-		if os.Getenv("FVPN_E2E_FOLLOWUP22") == "1" {
+		if os.Getenv("FVPN_E2E_FOLLOWUP23") == "1" {
+			r.nativeRouter23(ctx, s)
+		} else if os.Getenv("FVPN_E2E_FOLLOWUP22") == "1" {
 			r.nativeMTU22(ctx, s)
 		} else if os.Getenv("FVPN_E2E_FOLLOWUP19") == "1" {
 			r.nativeMTU19(ctx, s)
@@ -71,7 +73,7 @@ func TestE2E_Followup18Native(t *testing.T) {
 	} else {
 		r.record(Record{ID: "native-mtu-comparison", Title: "MTU comparison requires counted path", Status: StatusBlocked})
 	}
-	if os.Getenv("FVPN_E2E_FOLLOWUP19") == "1" || os.Getenv("FVPN_E2E_FOLLOWUP22") == "1" {
+	if os.Getenv("FVPN_E2E_FOLLOWUP23") == "1" || os.Getenv("FVPN_E2E_FOLLOWUP19") == "1" || os.Getenv("FVPN_E2E_FOLLOWUP22") == "1" {
 		return
 	}
 	r.firstOffer18(ctx, s, admin)
@@ -365,6 +367,9 @@ func (r *runner) nativeMTU18(ctx context.Context, s *Stack) {
 }
 
 func nativeCampaignDirectory() string {
+	if os.Getenv("FVPN_E2E_FOLLOWUP23") == "1" {
+		return "followup23"
+	}
 	if os.Getenv("FVPN_E2E_FOLLOWUP22") == "1" {
 		return "followup22"
 	}
@@ -479,7 +484,7 @@ func (r *runner) finishNativeCapture22(ctx context.Context, rec *Record, c *Nati
 	clean, cancel := context.WithTimeout(context.WithoutCancel(ctx), 20*time.Second)
 	defer cancel()
 	_ = c.Sample(clean, "final")
-	private := filepath.Join(r.lab.root, ".agent/tmp/followup22", r.runID, rec.ID)
+	private := filepath.Join(r.lab.root, ".agent/tmp/"+nativeCampaignDirectory(), r.runID, rec.ID)
 	got, e := c.Stop(clean, private)
 	noteJSON(rec, "capture", got)
 	if e != nil {
@@ -487,8 +492,8 @@ func (r *runner) finishNativeCapture22(ctx context.Context, rec *Record, c *Nati
 		recPathNote(rec)("capture_error", e.Error())
 	}
 	out := filepath.Join(r.dir, "headers", rec.ID)
-	args := []string{filepath.Join(r.lab.root, "tests/e2e/decode_capture.py"), "--stable-addresses", "--out", out}
-	for _, role := range []string{"member", "node", "origin"} {
+	args := []string{filepath.Join(r.lab.root, "tests/e2e/decode_capture.py"), "--stable-addresses", "--wireguard-headers", "--out", out}
+	for _, role := range c.roles() {
 		args = append(args, filepath.Join(private, role+".pcap"))
 	}
 	summary, e := exec.CommandContext(clean, "python3", args...).Output()
@@ -504,11 +509,11 @@ func (r *runner) finishNativeCapture22(ctx context.Context, rec *Record, c *Nati
 		Truncated int  `json:"snap_truncated_records"`
 		Complete  bool `json:"file_complete"`
 	}
-	if json.Unmarshal(summary, &checks) != nil || len(checks) != 3 {
+	if json.Unmarshal(summary, &checks) != nil || len(checks) != len(c.roles()) {
 		rec.Status = StatusFail
 		return
 	}
-	for i, role := range []string{"member", "node", "origin"} {
+	for i, role := range c.roles() {
 		check := checks[i]
 		if !check.Complete || check.Errors != 0 || check.Truncated != 0 || got.Points[role] == nil || check.Records != got.Points[role].Captured {
 			rec.Status = StatusFail
