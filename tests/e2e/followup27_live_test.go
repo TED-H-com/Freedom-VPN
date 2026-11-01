@@ -4,17 +4,12 @@ package e2e
 
 import (
 	"context"
-	"crypto/sha256"
-	"database/sql"
 	"encoding/json"
-	"fmt"
 	"os"
-	"path/filepath"
 	"testing"
 	"time"
 
 	"github.com/google/uuid"
-	_ "modernc.org/sqlite"
 )
 
 func TestE2E_Followup27(t *testing.T) {
@@ -173,24 +168,19 @@ func (r *runner) populatedHold27(ctx context.Context, s *Stack, admin *session) 
 	if err != nil {
 		return
 	}
-	local, err := sql.Open("sqlite", "file:"+filepath.Join(r.lab.state, "node/var/state/agent.db")+"?mode=ro&_pragma=query_only(1)&_pragma=busy_timeout(1000)")
+	local, err := s.LocalLeaseReadback(ctx, "node")
 	if err != nil {
+		recPathNote(&rec)("local_read_error", "unavailable")
 		return
 	}
-	defer local.Close()
-	var leaseID string
-	var raw []byte
-	if local.QueryRowContext(ctx, `SELECT lease_id,envelope FROM lease WHERE id=1`).Scan(&leaseID, &raw) != nil {
-		return
-	}
-	hash := fmt.Sprintf("%x", sha256.Sum256(raw))
 	exact := false
 	for _, e := range ev.Events {
-		if e.Kind == "matching_lease_forwarded" && e.LeaseID == leaseID && e.SHA256 == hash {
+		if e.Kind == "matching_lease_forwarded" && e.LeaseID == local.LeaseID && e.SHA256 == local.SHA256 {
 			exact = true
 		}
 	}
-	noteJSON(&rec, "released_local_lease", map[string]any{"lease_id": leaseID, "body_sha256": hash, "bytes": len(raw), "exact_forwarded_body": exact})
+	noteJSON(&rec, "released_local_lease", local)
+	noteJSON(&rec, "exact_forwarded_body", exact)
 	if exact && r.servingGate26(ctx, "matching-lease-serving") {
 		rec.Status = StatusPass
 	}

@@ -5,10 +5,43 @@ package e2e
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"os/exec"
+	"path/filepath"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
+
+type LocalLeaseReceipt struct {
+	LeaseID string `json:"lease_id"`
+	SHA256  string `json:"body_sha256"`
+	Bytes   int    `json:"bytes"`
+	ReadAt  string `json:"read_at"`
+}
+
+// LocalLeaseReadback reads in the node namespace: private root-owned state stays
+// protected. No chmod, host SQLite access or incoherent DB/WAL copy is needed.
+func (s *Stack) LocalLeaseReadback(ctx context.Context, slot string) (LocalLeaseReceipt, error) {
+	var out LocalLeaseReceipt
+	if slot != "node" && slot != "node2" {
+		return out, fmt.Errorf("invalid node slot")
+	}
+	bin := filepath.Join(s.lab.root, ".agent/tmp/lease-read")
+	if err := exec.CommandContext(ctx, "go", "build", "-o", bin, "./tests/e2e/cmd/fvpn-e2e-lease-read").Run(); err != nil {
+		return out, err
+	}
+	c := s.lab.prefix + "-" + slot
+	path := "/var/lib/vpn-node/e2e/lease-read"
+	if err := exec.CommandContext(ctx, "docker", "cp", bin, c+":"+path).Run(); err != nil {
+		return out, err
+	}
+	raw, err := exec.CommandContext(ctx, "docker", "exec", c, path).Output()
+	if err == nil {
+		err = json.Unmarshal(raw, &out)
+	}
+	return out, err
+}
 
 // GenerationHoldSnapshot reads one consistent content-free central snapshot.
 // Accepted reports are selected by the same node/incarnation/report keys as the
