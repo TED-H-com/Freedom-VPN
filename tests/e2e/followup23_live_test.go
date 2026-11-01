@@ -4,6 +4,7 @@ package e2e
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -148,5 +149,23 @@ func (r *runner) nativeDNS23(ctx context.Context, s *Stack) {
 	_, err = s.ExportContainerFile(ctx, "member", "/var/lib/vpn-node/e2e/netbird-service.log", filepath.Join(r.lab.root, ".agent/tmp/followup23", r.runID, "dns-member-debug.log"))
 	if err != nil {
 		rec.Status = StatusFail
+	}
+}
+
+func TestAT09_RouterSlotsDoNotOverlap(t *testing.T) {
+	seen := map[string]bool{}
+	for slot := 30; slot <= 39; slot++ {
+		n, _, _, err := nativeRouterIPv4(fmt.Sprint(slot))
+		if err != nil || seen[n] {
+			t.Fatal("overlapping router slot")
+		}
+		seen[n] = true
+	}
+	n, r, m, err := nativeRouterIPv4("30")
+	if err != nil || n != "192.0.2.128/28" || r != "192.0.2.130" || m != "192.0.2.131" {
+		t.Fatal("default slot changed")
+	}
+	if _, _, _, err = nativeRouterIPv4("40"); err == nil {
+		t.Fatal("unknown slot accepted")
 	}
 }

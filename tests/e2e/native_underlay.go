@@ -9,6 +9,7 @@ import (
 	"net"
 	"os/exec"
 	"regexp"
+	"strconv"
 
 	"github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/nativecapture"
 	"strings"
@@ -250,14 +251,18 @@ func (s *Stack) PrepareNativeRouter1280(ctx context.Context) (*NativeRouter1280,
 	slot := strings.TrimPrefix(s.lab.labPrefix, "172.28.")
 	left6 := "2001:db8:" + slot + "::"
 	right6 := "2001:db8:" + slot + ":23::"
-	h := &NativeRouter1280{stack: s, Container: s.lab.prefix + "-node-router", Member4: "192.0.2.131", Router4: "192.0.2.130", Member6: right6 + "3", Router6: right6 + "2"}
+	network4, router4, member4, err := nativeRouterIPv4(slot)
+	if err != nil {
+		return nil, err
+	}
+	h := &NativeRouter1280{stack: s, Container: s.lab.prefix + "-node-router", Member4: member4, Router4: router4, Member6: right6 + "3", Router6: right6 + "2"}
 	network := s.lab.prefix + "-node-router-link"
 	image, err := exec.CommandContext(ctx, "docker", "inspect", "--format={{.Image}}", s.lab.node).Output()
 	if err != nil {
 		return nil, err
 	}
 	steps := [][]string{
-		{"network", "create", "--ipv6", "--subnet", "192.0.2.128/28", "--subnet", right6 + "/64", "--opt", "com.docker.network.bridge.enable_ip_masquerade=false", "--opt", "com.docker.network.driver.mtu=1280", network},
+		{"network", "create", "--ipv6", "--subnet", network4, "--subnet", right6 + "/64", "--opt", "com.docker.network.bridge.enable_ip_masquerade=false", "--opt", "com.docker.network.driver.mtu=1280", network},
 		{"run", "-d", "--name", h.Container, "--privileged", "--network", s.lab.prefix, "--ip", s.lab.labPrefix + ".60", "--entrypoint", "sleep", strings.TrimSpace(string(image)), "infinity"},
 		{"network", "connect", "--ip6", left6 + "60", s.lab.prefix + "-node-underlay", h.Container},
 		{"network", "connect", "--ip", h.Router4, "--ip6", h.Router6, network, h.Container},
@@ -304,4 +309,14 @@ func (h *NativeRouter1280) Select(ctx context.Context, family string) error {
 // StartCapture includes both router interfaces in the ready/stop evidence.
 func (h *NativeRouter1280) StartCapture(ctx context.Context) (*NativeCapture, error) {
 	return h.stack.startNativeCapture(ctx, map[string]string{"router": h.Container})
+}
+
+// Preserve the default lane's .128/28 and reserve a disjoint /28 per port slot.
+func nativeRouterIPv4(slot string) (network, router, member string, err error) {
+	n, e := strconv.Atoi(slot)
+	if e != nil || n < 30 || n > 39 {
+		return "", "", "", fmt.Errorf("unknown native lab slot")
+	}
+	base := ((n - 30 + 8) % 16) * 16
+	return fmt.Sprintf("192.0.2.%d/28", base), fmt.Sprintf("192.0.2.%d", base+2), fmt.Sprintf("192.0.2.%d", base+3), nil
 }

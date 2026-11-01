@@ -303,3 +303,88 @@ and prove the actual route metric; no global interface/tunnel MTU or MSS changes
 This represents prior knowledge of a 1280 path. It does not emulate a router,
 create PTB or prove reactive ICMP PMTU discovery. Keep the original asymmetric
 receive-link failure and the explicit-path result as separate evidence.
+
+## Follow-up 23 — routed PMTU, native debug and DNS delivery (TEST ONLY)
+
+D-137 is provisional. §8.3 / AT09's 1280 scope is a sender-learnable path;
+historical receive-only black holes stay failed. No global MTU or MSS clamp.
+
+```go
+hop, err := stack.PrepareNativeRouter1280(ctx)
+// Canonical member + primary node after PrepareNativeUnderlay; check err.
+err = hop.Select(ctx, "ipv6") // or ipv4; does not reconnect or send traffic
+capture, err := hop.StartCapture(ctx)
+err = capture.Sample(ctx, "before-reconnect")
+// Run the existing native down/up, selected-family readback and bounded bulk.
+err = capture.Sample(ctx, "before-bulk")
+// Preserve 64,064 bytes / original 12-second deadline and independent counters.
+err = capture.Sample(ctx, "after-bulk")
+evidence, err := capture.Stop(cleanupContext, privateDiskDirectory)
+```
+
+The router is an owned `node-router` container on the existing 1500-byte node
+underlays. Its new bridge/member link has MTU 1280 at both ends; each legal port
+slot reserves a distinct documentation-range /28 and IPv6 subnet. Only exact
+fixture peer routes are added; no configured route MTU. IPv4/IPv6 forwarding is
+enabled inside that container; its fresh namespace has no ICMP-blocking filter.
+`Select` restores old member links to 1500, then applies 180-second family/UDP
+filters that force native candidates through the new link. The member-facing
+interface must be the canonical new eth2; the API refuses a noncanonical
+member/node pair before mutation. One hop per fresh stack. Always run e2e-down
+on exit, including partial setup errors; it removes routes with the namespaces
+and all owned router objects. Do not reuse the fixture as a production router.
+
+Capture includes a fourth `router` point. All samples/stop completeness rules
+from follow-up 22 apply. Decode and run `analyze_router_capture.py <new-run>`
+before pinning. Read sender `peer_route` before/after and correlate PTB at router
+and sender. IPv4 DF=false plus matching router fragments is transit fragmentation,
+not learned PMTU. The [native run](../runs/2026-11-01/followup23/a26d9b0f-bd1b-48df-9546-4105f9b3f328/analysis.md)
+records both families. `ApplyNativeInputs` and `ConstrainSelectedNativePeer1280`
+retain their original semantics; the routed rows are separate controls.
+
+The pinned daemon supports `netbird debug log level debug` without reconnect.
+Enable node debug **after enrollment starts its daemon**, and member debug
+before native join. Export `netbird-service.log` privately. Run
+`decode_native_debug.py --record <record.json> --out <new-archive.json> <logs>`
+to retain only allowlisted timestamp/source/event/family/address-token fields.
+It exports no arbitrary log text, peer keys, DNS names or session identifiers.
+Status and all-interface captures remain independent evidence. Debug logging
+and capture setup add observable timing overhead; they do not prove reproducibility
+without instrumentation or a private kernel acceptance reason.
+
+```go
+capture, err := stack.StartNativeDNSCapture(ctx)
+// Check readiness; run the original query once, retaining its result.
+result, err := stack.ProbeNativeDNS(ctx, "", "rr.example.invalid", 1, false, expected)
+evidence, err := capture.Stop(cleanupContext, privateDiskDirectory)
+```
+
+This adds primary/secondary relay namespace captures to member/node/origin.
+It requires `ConfigureNativeDNS`'s two resolvers and joined peers. The packet
+filter now also includes TCP/53. `--dns-headers` decodes only the closed synthetic
+case list: wire ID, QR/RCODE, counts, RR type, length and opaque message digest.
+It exports no qname or answer RDATA; arbitrary names are omitted. TCP DNS is
+decoded only when one complete length-prefixed message is in a captured segment;
+no TCP stream reassembly or missing-message inference is implied.
+
+Resolver lifecycle events now carry `query_sha256`, `reply_sha256`, `wire_id`
+and `reply_bytes`; the probe carries `dns_wire_id`. Exact hashes join successful
+relay writes to packets without relying on adjacent timestamps. A successful
+relay `completed` event means **socket write completed**, not native receipt,
+client parsing or cache insertion. `resolver_observation_boundary` states this
+explicitly. Missing matches and ambiguous responders remain unattributed.
+Older receipt schemas and F12-04's original failure are unchanged.
+
+`ProbeNativeIDNA(ctx, tcp)` converts the closed U-label `bücher.example.invalid`
+with `idna.Lookup`, checks `xn--bcher-kva.example.invalid`, then uses the native
+stub for A over UDP or TCP. The controlled authority has a positive A record
+at the controlled origin; case mapping is `idna_positive`. This tests wire
+A-label behavior and fixture conversion, not a browser/platform's Unicode UI.
+It changes no block response, cache TTL, cache size or nameserver distribution.
+
+F12-03 requires no new zone/cache fixture. Existing `authority_history`, all
+three `authority_outstanding_at_*` arrays, per-stream IDs/read times and the
+response's `authority_ttl` remain the quiet-window evidence. A retained SOA TTL
+of 2 followed 1.229 seconds later is inside whole-second expiry uncertainty.
+Members/dns-publish own a quiet setup and a window with adequate remaining TTL
+and measurement margin; this lane exports no cache-clear or TTL extension.
