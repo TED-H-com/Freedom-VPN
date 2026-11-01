@@ -1,0 +1,16 @@
+# native-debug-export
+
+Private native debug export
+
+Status: pass
+
+Run: c1f20cc7-a51c-48dc-9c55-e538603169b5
+
+Source: 49ba792aa1bc705f67377860f36379be34860afb
+
+- member_kernel_release: 7.0.0-38-generic
+
+- member: {"bytes":"78076","sha256":"df6f68e6037847901c608bc299e5b544aed23703229f63a2a2dfb19b9d941ce1"}
+- node_kernel_release: 7.0.0-38-generic
+
+- node: {"bytes":"60315","sha256":"c79011689ecea4f99dccb7466ee497385393c5422daee3eb4c6de7503644b48a"}

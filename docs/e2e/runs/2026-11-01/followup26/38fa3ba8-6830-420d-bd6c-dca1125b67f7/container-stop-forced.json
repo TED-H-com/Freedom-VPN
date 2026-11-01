@@ -1,0 +1,31 @@
+{
+  "id": "container-stop-forced",
+  "title": "TEST ONLY PID1 forwarding and 15 second agent stop budget",
+  "spec": null,
+  "status": "pass",
+  "observations": [
+    {
+      "name": "stop_started_at",
+      "detail": "\"2026-11-01T11:57:27.618096389Z\""
+    },
+    {
+      "name": "stop_duration_ms",
+      "detail": "15723"
+    },
+    {
+      "name": "container",
+      "detail": "{\"Running\":false,\"ExitCode\":0,\"OOMKilled\":false,\"StartedAt\":\"2026-11-01T11:57:26.810297041Z\",\"FinishedAt\":\"2026-11-01T11:57:43.304149871Z\"}"
+    },
+    {
+      "name": "agent_wait",
+      "detail": "{\"id\":\"7096b309-6858-4602-bc9a-4f8e7a56a769\",\"pid\":972,\"start_ticks\":\"11778463\",\"started_at\":\"2026-11-01T11:57:27.115281678Z\",\"wait_observed_at\":\"2026-11-01T11:57:42.89691775Z\",\"wait_status\":9,\"exit_code\":null,\"signal\":9,\"core_dump\":false}"
+    },
+    {
+      "name": "supervisor_sigkill",
+      "detail": "{\"pid\":972,\"signal\":9,\"kill_accepted\":true,\"waited_ms\":15150,\"requested_at\":\"2026-11-01T11:57:42.895581738Z\",\"term_requested_at\":\"2026-11-01T11:57:27.746865643Z\"}"
+    }
+  ],
+  "at": "2026-11-01T11:57:43Z",
+  "run_id": "38fa3ba8-6830-420d-bd6c-dca1125b67f7",
+  "source_commit": "71eb3fd81fae1767fe43b128812b9941e6d605ed"
+}
