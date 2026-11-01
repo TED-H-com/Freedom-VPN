@@ -1,7 +1,28 @@
 # Operator Guide (`docs/handover/operator-guide.md`)
 
-**Current cut — [follow-up 22](follow-up-22.md) (2026-10-31 EDT):** Through #356: shared installer loopback fixed; F8-02 mechanism captured on both underlays; install-overrun cause unproven. D-134 expiry semantics and provisional D-135 node-wide rollback are recorded; historical failures stay failed.
-Previous cut: [follow-up 21](follow-up-21.md), through #351.
+**Current cut — [follow-up 23](follow-up-23.md) (2026-11-01 EDT):** Through #362: month-boundary fixture fixed; regular updates pass; members F11-02 closed; native IPv6 F8-02 and five-SYN pattern reproduced. D-135 / D-136 / D-137 remain provisional; historical failures stay failed.
+Previous cut: [follow-up 22](follow-up-22.md), through #356.
+
+## Operator changes at #362
+
+**D-136 stale lease — provisional, to be confirmed together with D-135:**
+a generation change can close every member on a node while its serving lease
+still names another generation. The reported reason is `policy_missing`;
+the node-wide baseline serves until renewal and the next successful Apply.
+This is designed fail-closed behaviour. D-135's bracket covers every node-wide
+baseline transition, failed Apply or stale lease: baseline → next successful
+Apply, every loss counted, recovery required, never waived. Repeated baseline
+transitions carry no outage ceiling. Stronger availability is agent-core
+design work under D-133 with an adversarial review. Historical failures stay
+failed. [Decision and evidence](follow-up-23.md#provisional-decisions-and-findings).
+
+**D-137 AT09 scope — provisional:** the supported MTU-1280 path is
+sender-learnable: known PMTU or a reactive PTB from a router hop (§8.3, spec
+line 365; §19 AT09). A receive-only 1280 link dropping without PTB is a PMTU
+black hole, a clearly reported limitation, never a pass. Historical F8-02 rows
+stay failed. The sender control proves known-PMTU fragmentation only; reactive
+PTB remains unmeasured. No global MTU / MSS clamp is introduced. A lower
+tunnel MTU or an MSS clamp is an owner hardening option.
 
 ## Operator changes at #356
 

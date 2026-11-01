@@ -904,3 +904,93 @@ failures remain unattributed, while members 11's fresh diagnostics remain passes
 no candidate success. The old 13/0/1 campaign stays failed and archived. Future
 negative D-125 coverage must require those facts separately from the unchanged
 positive upgrade assertions. No updater behavior or assertion is relaxed.
+
+## netlab / members — 2026-10-31 (follow-up 22, F8-02, D-102)
+
+> **2026-10-31 — native transport owner, F8-02:**
+
+The original members IPv4/1500 → IPv6/1500 → dual/1500 → dual/1280 mutation
+and down/up sequence now retains member underlay/tunnel, selected node
+underlay/tunnel/uplink and origin captures. Both fresh campaigns' original
+four rows pass; selected family and packet sizing are reported per row. The
+member-only MTU mutation is unchanged. Devstack 20 `cce1a688` and members 11
+IPv6 history remain untouched. Supplemental asymmetric IPv6 rows retain the
+failure: first run **10,010 / 64,064 bytes, 12,007 ms**; final run **16,016 /
+64,064 bytes, 12,011 ms**. Process exits stay **1**; criteria were not weakened.
+
+[Final capture analysis](runs/2026-10-31/followup22/9b3a89e7-fa86-426c-9737-ce55bf66aa77/analysis.md)
+finds all **15** reverse outer IPv6 packets of **1,360 bytes** absent at member
+underlay, while every smaller selected-endpoint packet arrives. First absent
+TCP range **[3005476689,3005477917)** is at origin and node tunnel egress,
+not member tunnel ingress. All 52 upload fragment pairs arrive. The first
+campaign independently lost all **23** oversized reverse packets. Captures
+have zero drops/truncations. Loss is beyond enforcement; receive-link MTU
+rejection is an inference, not a recorded kernel drop reason.
+
+A separate fixture-only selected sender `/128` route with **MTU 1280** makes
+the path constraint explicit. Same peer, no reconnect or global MTU/MSS change.
+Route readbacks prove installation and exact removal. The final three controls
+receive **64,064 bytes in 1 ms** each; controls 1 and 3 deliver respectively
+**7 and 44 reverse fragment pairs**, joined across the underlay, with complete
+current-bulk TCP byte coverage. This strengthens the first campaign's separate
+old-flow fragment receipt and new-flow success. **No PTB is seen at node,
+tunnel or any other capture point**: sender fragmentation follows known route
+MTU, not measured reactive PMTU discovery. A route constraint was chosen to
+isolate sender sizing without introducing router/ICMP behavior.
+
+This member-only topology is an **asymmetric receive-link fixture artifact**;
+it has no router or sender signal and does not certify a real platform link.
+If a real known-1280 receiver is established, peer MTU/packetization belongs
+to pinned NetBird/WireGuard integration (`deploy/devstack/Dockerfile.node`),
+not an enforcement MSS clamp. No production default or repair is inferred.
+
+D-098 was first, commit `716f8144`: [63 immutable pins](followup21-archive.sha256).
+The DNS third-node / installer `.24` collision remains handled by **separate
+reset stacks**; slot layout is unchanged.
+
+## members / netlab — 2026-10-31 (follow-up 22, F11-01, D-102)
+
+> **2026-10-31 — members 12 and native transport owner, F11-01:**
+
+`StartNativeCapture`, `Sample`, `Stop` and selected-peer readbacks are available
+through `labstack` / `MemberTransportStack`. The [export contract](scenarios/harness-exports.md#follow-up-22--selected-native-path-capture-test-only)
+specifies ready/stop and per-command monotonic bounds, route/link/ICE/relay/
+WireGuard endpoint readbacks, private pcap receipts and payload-free joins.
+Start before the existing route selection; sample during selection and the
+original transfer. It does not reconnect, select an exit, wait for serving or
+repair transport. Members 12 owns adoption in
+`tests/e2e/at/members/forwarding_test.go`; that file is unchanged.
+
+The [final fresh reproduction](runs/2026-10-31/followup22/9b3a89e7-fa86-426c-9737-ce55bf66aa77/analysis.md)
+has **five SYNs**, sequence **1392714787**, source port 20001: member tunnel
+packets **8, 144, 155, 160, 163**. None reaches node inner ingress or origin.
+The HTTP attempt fails after **5,004 ms**; origin requests = 0, node upload /
+download remain **0 → 0**, generation **5**, heartbeat serving=true. It runs
+before the ordinary counted-flow retry. No node health repair is applied.
+
+The first SYN's WireGuard initiation (member lo packet 9) has the same message
+hash/index as node lo packet 133. Node eth2 packet 134 responds; the identical
+response reaches member eth1 packet 137. Its IPv6 **source is loopback**, token
+`addr-eff8e7ca506627fe`, distinct from the selected node endpoint. No structurally
+valid WireGuard type-4 transport-data message appears at member (including lo)
+or node during the request. Readbacks transition from local endpoint/pending
+to IPv6 P2P connected while all subsequent inner SYNs still fail. The first
+unconfirmed data step in this reproduction is **member inner tunnel egress →
+observable WireGuard transport-data emission**, before node inner ingress.
+The handshake response reaching member underlay does not prove kernel/session
+acceptance. This is not evidence of an enforcement fault.
+
+All three captures are complete (167 / 172 / 30 records), zero drops/truncation;
+metadata reads now succeed. Every packet has an empirical monotonic interval
+with explicit wall-clock stability assumptions. Node's later handshake tail
+is after the member capture stopped and cannot prove receiver loss/recovery.
+The loopback-source response and endpoint transition are handed to the
+**native NetBird/WireGuard integration owner** (NetBird 0.82.0 binary pin in
+`deploy/devstack/Dockerfile.node`; `node/agent/probe.go` only observes status).
+Please trace handshake/session acceptance before assigning a fault or repair.
+
+The first campaign's one-SYN success and missing origin/WireGuard readbacks
+remain retained as history. The final run reproduces the failure pattern on
+a fresh stack; it does not replay all members 11 history or identify those
+historical packet identities. Members 12 should compare its own original
+sequence using these exports before transferring a root-cause conclusion.

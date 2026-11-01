@@ -1,7 +1,7 @@
 # Freedom VPN
 
-**Current cut — [follow-up 22](docs/handover/follow-up-22.md) (2026-10-31 EDT):** Through #356: shared installer loopback fixed; F8-02 mechanism captured on both underlays; install-overrun cause unproven. D-134 expiry semantics and provisional D-135 node-wide rollback are recorded; historical failures stay failed.
-Previous cut: [follow-up 21](docs/handover/follow-up-21.md), through #351.
+**Current cut — [follow-up 23](docs/handover/follow-up-23.md) (2026-11-01 EDT):** Through #362: month-boundary fixture fixed; regular updates pass; members F11-02 closed; native IPv6 F8-02 and five-SYN pattern reproduced. D-135 / D-136 / D-137 remain provisional; historical failures stay failed.
+Previous cut: [follow-up 22](docs/handover/follow-up-22.md), through #356.
 
 Freedom VPN is a member-based, multi-region VPN platform for a small paid community, starting at about 20 members. Every exit node runs the same node package and joins one central control plane, whether it is a pre-installed box, a cloud Ubuntu VM or any other Ubuntu host.
 

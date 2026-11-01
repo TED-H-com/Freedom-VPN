@@ -8,6 +8,9 @@ import (
 	"fmt"
 	"net"
 	"os/exec"
+	"regexp"
+
+	"github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/nativecapture"
 	"strings"
 	"time"
 )
@@ -185,4 +188,43 @@ func (s *Stack) ObserveSelectedNativeExit(ctx context.Context) (SelectedNativeEx
 		return out, nil
 	}
 	return SelectedNativeExit{}, fmt.Errorf("selected exit absent")
+}
+
+// ConstrainSelectedNativePeer1280 adds a TEST ONLY /128 route on the selected
+// sender, never a global MTU/MSS or product change. ApplyNativeInputs deliberately
+// remains asymmetric. This control models known path MTU without inventing PTB.
+// The returned cleanup removes only the new route; an existing host route is
+// refused by `route add`, never replaced. It requires this fixture's IPv6 link.
+func (s *Stack) ConstrainSelectedNativePeer1280(ctx context.Context) (func(context.Context) error, error) {
+	addresses, err := s.nativeAddresses(ctx)
+	if err != nil {
+		return nil, err
+	}
+	raw, err := exec.CommandContext(ctx, "docker", "exec", s.lab.node, "netbird", "status", "--json").Output()
+	if err != nil {
+		return nil, fmt.Errorf("sender status unavailable")
+	}
+	p, err := nativecapture.Select(raw, addresses["member"])
+	if err != nil {
+		return nil, err
+	}
+	host, _, err := net.SplitHostPort(p.Endpoint.Remote)
+	expected := "2001:db8:" + strings.TrimPrefix(s.lab.labPrefix, "172.28.") + "::41"
+	if err != nil || host != expected || !strings.EqualFold(p.Status, "Connected") || p.Type != "P2P" {
+		return nil, fmt.Errorf("selected sender is not the fixture IPv6 member endpoint")
+	}
+	raw, err = exec.CommandContext(ctx, "docker", "exec", s.lab.node, "ip", "-j", "-6", "route", "get", host).Output()
+	var routes []struct {
+		Dev string `json:"dev"`
+	}
+	if err != nil || json.Unmarshal(raw, &routes) != nil || len(routes) != 1 || !regexp.MustCompile(`^eth[0-9]+$`).MatchString(routes[0].Dev) {
+		return nil, fmt.Errorf("selected sender underlay route unavailable")
+	}
+	route := []string{"-6", "route", "add", host + "/128", "dev", routes[0].Dev, "mtu", "1280"}
+	if err = exec.CommandContext(ctx, "docker", append([]string{"exec", s.lab.node, "ip"}, route...)...).Run(); err != nil {
+		return nil, fmt.Errorf("add isolated peer route: %w", err)
+	}
+	return func(clean context.Context) error {
+		return exec.CommandContext(clean, "docker", "exec", s.lab.node, "ip", "-6", "route", "del", host+"/128", "dev", routes[0].Dev, "mtu", "1280").Run()
+	}, nil
 }

@@ -132,3 +132,21 @@ files are checked by their manifests (four unscoped devstack prose files use
 exact owned snapshots); the manifest's provenance paths are never read.
 D-134 and provisional D-135 are registered separately from historical outcomes.
 Current owned-document digests in scope-review remain live integrity checks.
+
+## Follow-up 23 provenance
+
+`followup23-main.json` pins the six #357–#362 roadmap rows at `bc011b6f`.
+No listed follow-on delivery or security-ops 14 was on main at start. The
+18-entry `followup23-snapshots.json` holds exact dated hand-offs and PR body
+excerpts, prior owned register/entrypoint excerpts, and devstack manifests.
+Each records its source commit, full-source SHA-256, byte offset, length and
+excerpt SHA-256. The PR message excerpts are from #357 and #361's immutable
+merge commits; no living AT root is copied or read by the claims test.
+Members/updates/isolation current measurements use roadmap rows only.
+
+Archive integrity covers updates 43 + its first attempt 17, isolation 100,
+members 43, devstack 63 prior files and 155 UUID-scoped capture files.
+Follow-up 22's 19 subtests, original assertions, source manifests and prior
+redirects are unchanged except exact frozen-input redirects; a whole-function
+hash enforces this. D-135 stays provisional, D-136/D-137 are the orchestrator's
+provisional interpretations. Live owned-document integrity is separate.

@@ -59,17 +59,17 @@ Historical status at main `c6e3eca`, superseded where stated by follow-up 15 bel
 
 The [follow-up 19 register](../../tests/handover/testdata/history/follow-up-20/register19.md) is frozen at #337.
 
-## Follow-up 22 decisions register (2026-10-31 EDT)
+## Follow-up 23 decisions register (2026-11-01 EDT)
 
-Verified against main `45209609` through #356. The [operator evidence](follow-up-22.md)
-and [acceptance snapshot](../ops/README.md#follow-up-22-acceptance-snapshot-2026-10-31-edt)
-pin all five deliveries #352–#356. The [follow-up 21 register](../../tests/handover/testdata/history/follow-up-22/register21.md)
-retains its #351 cutoff; original claims, source inventories and earlier frozen
-reads stay unchanged. `TestHandover_Followup22Claims` checks this cut separately.
-D-134 records netlab 21's assessments; **D-135 is provisional — pending the
-owner's confirmation**. Earlier decision rows stay frozen. D-133's attribution
-process does not establish the cause of historical overruns: #356 did not
-reproduce an install overrun under controlled CPU contention.
+Verified against main `bc011b6f` through #362, including all #357–#362.
+The [operator evidence](follow-up-23.md) and [acceptance snapshot](../ops/README.md#follow-up-23-acceptance-snapshot-2026-11-01-edt)
+pin six exact roadmap rows. The [follow-up 22 register](../../tests/handover/testdata/history/follow-up-23/register22.md)
+retains its #356 cutoff. `TestHandover_Followup23Claims` checks the new cut;
+earlier assertions remain intact through frozen-input redirects.
+D-135 stays provisional. D-136 is provisional, to be confirmed together with
+D-135; D-137 is provisional. Both new interpretations were instructed at
+23:15 on 2026-10-31 and registered by this handover, not claimed as merged
+product changes. Earlier decision rows are unchanged.
 
 | Decision | Operator meaning and delivery boundary |
 |---|---|
@@ -111,6 +111,8 @@ reproduce an install overrun under controlled CPU contention.
 | D-133 | A failed live timing gate is attributed before a delivery is accepted. The lane runs back-to-back A/B on the same host: unchanged main vs the branch, in order A, B, A, B, on a CPU-quiet host defined by runnable queue and idle, never by load average. Retain full p50 / p90 / p99 / max over completed guards, list failed operations separately, and record host state per leg. If the branch is worse, the lane fixes its own regression; “outside my ownership” is accepted only with that A/B and routes to the owner with both distributions. If both pass under equal quiet conditions, attribute the failure to host contention and proceed with the distributions retained. A product change never merges on an ownership claim alone. Decided 12:4x EDT, applied 14:0x EDT on #344; process / test-acceptance decision, no product value changed. See the [retained application and measured limits](follow-up-20.md#agent-core-28--344-historical-writer-still-unattributed). |
 | D-134 | Decided 16:0x EDT, 2026-10-31, from netlab 21 (#355). Absolute expiry reserves 100 ms for installation plus 1 ms truncation: conservative transition window [D−101 ms, D]. Every pre-D and renewal loss stays counted; never claim literal zero pre-D loss. Retain the atomic outer guard and report the full p50 / p90 / p99 / max distribution per run; historical 52.596 ms is a measurement, not a guarantee. An install overrun never opens the guard: baseline atomically replaces it with closed generation-0 rules. D-104 / D-120 / AT13 / AT29 predicates unchanged. |
 | D-135 | 17:2x EDT, 2026-10-31 — **provisional — pending the owner's confirmation**, from agent-core 29 request 2 (#356). A failed Apply installs the node-wide generation-0 baseline by design; no previous-generation restoration, revocation always preserved. Every member closes, and the admitted sibling returns with the next successful Apply. Repeated failures keep baseline indefinitely; 100 ms is an install budget, not an outage ceiling. Proposed AT02 positive control asserts revoked-source drop and brackets the sibling outage baseline→recovery ending at the next successful Apply, every loss counted; the bracket is reported, never waived. Historical AT02 stays failed. Any stronger availability guarantee is a separate enforcement design under D-133. Owner confirmation remains required. |
+| D-136 | 23:15, 2026-10-31 — **provisional — to be confirmed together with D-135**, from members 12 F12-01 (#361) and `node/agent/decide.go` `leaseGenerationStale`. A serving lease naming another generation blocks with `policy_missing`; the node-wide baseline serves until renewal and the next successful Apply. Designed fail-closed behaviour, not a defect. D-135's bracket rule covers every node-wide baseline transition (failed Apply or stale lease): baseline → next successful Apply, every loss counted, recovery required, never waived. Stronger availability is agent-core design work under D-133 with an adversarial review. Historical failures stay failed. |
+| D-137 | 23:15, 2026-10-31 — **provisional**. §8.3 spec line 365 and §19 AT09 judge usability within the supported scope or a clearly reported limitation. Supported scope: sender-learnable 1280 path (known PMTU or reactive PTB from a router hop). A receive-only 1280 link dropping without PTB is a PMTU black hole: report a clearly stated limitation, never a pass; historical F8-02 rows stay failed. #362 proves the known-PMTU sender-fragmentation control, not reactive PTB discovery. No global MTU / MSS clamp; lower tunnel MTU or an MSS clamp is an owner hardening option. |
 
 Current contract is revision 14: OpenAPI `1.10.0`, `50` operations (#289).
 Wire-members follow-up 11 (#297) registers `revokeMemberGrant` at
@@ -128,9 +130,9 @@ retired, D093-12 stays open because the harness still writes
 selector compiled only into a dev-tag worker. Design advice, not implemented;
 the SQL shortcut stays labelled.
 
-## Findings register at the follow-up 21 cutoff
+## Findings register at the follow-up 23 cutoff
 
-| Finding | Status at #351 | Evidence / next owner |
+| Finding | Status at #362 | Evidence / next owner |
 |---|---|---|
 | ENR-07 | CLOSED | D-130 #330/#331 plus enrollment #333: AT06 662/0/0, AT07 48/0/0, fresh gap ACK 1 then sequence 2 ACK 2, 908 bytes; planBaseline attribution corrected. |
 | Members F9-01 | CLOSED | #325 / #328 under D-126 / D-128; deliberate cumulative report accepted. Full AT09 fails in #348; provisional acceptance is a separate row. |
@@ -144,26 +146,32 @@ the SQL shortcut stays labelled.
 | Updates F10-02 | CLOSED | #341 generated reporting, #346 no-adapter installer 27 / 27 and 13 result POSTs; #351 config-shape proof. No reporting-field divergence. |
 | Members F10-02 | HISTORICAL FAIL — unattributed | #348 new finite-expiry row passes 186 / 186; the unreadable historical sample stays failed in the follow-up 10 archive. Re-measurement delivered; no retrospective fix. |
 | Members F10-03 | HISTORICAL FAIL — unattributed | #348 new cache row passes, AT20 blocked 81 / 0 / 0 with 39 / 39 traces; #345 documents positive-cache semantics. Historical missing responder remains unrecoverable. |
-| F8-02 / native MTU 1280 | OPEN — common mechanism established | #355 captures IPv6 reverse oversized-datagram loss beyond enforcement, consistent with #343 IPv4: 1,340 + 20 = 1,360 bytes. Receive-link rejection is the supported inference; native capture pending devstack 22. No global MTU / MSS fix. Historical native failure remains failed. |
+| F8-02 / native MTU 1280 | OPEN — D-137 limitation, rows stay failed | #362 native IPv6 reproduction: 16,016 / 64,064 bytes in 12,011 ms; 15 reverse 1,360-byte packets lost, no PTB. Sender constraint passes by fragmentation. Provisional D-137 classifies the receive-only PMTU black hole; no historical pass or global clamp. |
 | F18-01 | INTENDED D-125 NEGATIVE | #346 / #351 retain 1 / 1 / 2; #352 explicitly documents stopped-producer negative coverage. Historical failed candidate-success row stays failed; no passing upgrade. |
 | D-133 measured limits | ASSESSED — D-134 | #355 records [D−101 ms, D] reserve and full guard distributions; every pre-D / renewal loss counted, no fixed historical 52.596 ms ceiling. Predicates unchanged; no tolerance or retrospective pass. |
 | Dependabot #22 | OPEN — dependency hygiene | #349: minimatch < 11.0.1 / GHSA-g3hv-75wg-m249, development only, no production-bundle path. Audit fix changes nothing; 11.0.3 blanket override breaks jsx-a11y after clean npm ci. Dependency files byte-identical; owner disposition pending, not a product defect. |
 | Artifact-origin question | CLOSED by measurement | #346 no rejection; private / CGNAT exceptions only, measured non-private origin needs no exception. No policy or hosting change. |
 | Updates F11-02 | CLOSED | #351 corrects offline-install documentation: retained verified archive on initial / same-release installs; only absence downloads the signed URL. |
-| Updates F11-01 | CLOSED — fix + measurement | #352 shared installerSpec.AllowLoopback plus exact local ControlURL gate; TEST ONLY, false elsewhere. Run 33b9621a 3 / 0 / 0, install exit 0, generated result_url unchanged, certificate-free 403 / authenticated invalid body 400. Updates 11 27 / 27 stands. |
+| Updates F11-01 | CLOSED — fix + regular-run result | #352 fixes the shared TEST ONLY loopback gate; #359 run 2babf9b6 passes regular AT23–AT27 5 / 5 and installer 27 / 27 through that wrapper, unchanged generated config, no adapter. |
 | F9-INFLIGHT | OPEN — inherent backend finding, documented | #345 late upstream reply before the 10 s timeout replaces newer cache data. No exposed setting fixes insertion ordering; TTL is a maximum lifetime. |
-| Members F11-01 | OPEN — bounded transport gap | #352 / #355 bound after inner member egress and before observable inner node ingress; native AT01 route is outside the kernel fixture. Route correlation pending devstack / members. |
-| Members F11-02 | OPEN — readiness gate | #348 generation-10 zero grants / AWAITING positive probe remains failed; #352 D-102 serving/populated-lease prerequisite documented. Members 12 harness gate pending. |
-| Members F11-03 | OPEN — stage established, cause unproven | #352 eight over-budget install_ok=false Applies, no verification; #355 node-wide rollback/sibling loss measured; #356 controlled contention does not reproduce overrun. AT02 remains failed. Expectation rewrite under provisional D-135 pending members 12 and owner confirmation. |
+| Members F11-01 | OPEN — five-SYN pattern reproduced, cause open | #362 records a loopback-source handshake response and no WireGuard type-4 data. Member inner egress → transport-data emission is the first unconfirmed step. Historical packet identities remain unknown; capture adoption to members, pinned-client trace to devstack 23. |
+| Members F11-02 | CLOSED — fresh populated-grant rows | #361 run b98b78ee qualifies generations 10 / 21 with fresh accepted reports, populated lease, live grants and serving heartbeat. Historical generation-10 zero-grant / AWAITING failure stays failed. |
+| Members F11-03 | BLOCKED — no failed Apply observed | #361: 89 Applies succeeded. The new stale-lease baseline is F12-01, classified by D-136; it does not reproduce the historical eight failed installs. Their cause stays unproven. |
 | Install-overrun cause | OPEN — unproven | #356 six interventions, 40 loaded Applies each, up to 384 workers / 24 CPUs / 0 % idle; max render→installed 53.133 ms. Historical correlation is not causation; loaded meter / restart / expiry failures remain undiagnosed. Command-lifecycle evidence → netlab 22. |
+| Members F12-01 | CLASSIFIED — provisional D-136 | #361 stale-lease policy_missing baseline → renewal → successful Apply: 236.970 ms / nine sibling losses. Designed fail-closed semantics; bracket, every loss and recovery retained, not a historical pass. |
+| Members F12-02 | OPEN — streamed reader not live-qualified | #361 1 MiB timing-export limit caused 11 readiness failures; AT04 monitor ended before delayed refund. Correction 7b949b68 has offline/read-only coverage, needs assembled qualification. |
+| Members F12-03 | OPEN — negative-cache attribution | #361 SOA TTL 2 followed by same-primary positive refetch after 1.229 s; exact cause unproven. Production blocked_response_ttl remains the owner's value. |
+| Members F12-04 | OPEN — native UDP attribution | #361 SERVFAIL after 5,001 ms with positive receipts from both resolvers; responder/delivery cause unattributed. |
 
-AT11 real platform routes, AT13 full fault matrix including physical arm64,
-AT29 / AT31 resources, OS reboot, power loss, real platform clients and
-QUIC / PMTU tooling remain open. Production blocked_response_ttl and commercial
-feed approval remain the owner's decisions. D-135 confirmation is an explicit
-owner decision; native capture, readiness and consumer labelling remain with
-devstack 22 / members 12 / isolation 11 / netlab 22. No later lane's results
-enter this #356 cut. See [the full current evidence](follow-up-22.md).
+Every historical failure stays failed and unattributed. Install-overrun cause,
+F9-INFLIGHT, intended-negative F18-01, ISO-F6-03 writer, Dependabot #22 and
+production blocked_response_ttl retain their boundaries. Owner decisions:
+**D-135 + D-136 confirmation together**, and **D-137 scope / lower-tunnel-MTU
+or MSS-clamp hardening option**. Stronger availability requires agent-core
+D-133 design and adversarial review. AT11 real platform routes, AT13 full
+fault matrix / physical arm64, AT29 / AT31 resources, power loss, QUIC and
+reactive PTB remain open. No later lane's results enter this #362 cut.
+See [the full current evidence](follow-up-23.md).
 
 [r17](../reviews/r17-rev14-d104-d117-review.md) and
 [r16](../reviews/r16-rev13-d089-d099-review.md) remain byte-identical archives.

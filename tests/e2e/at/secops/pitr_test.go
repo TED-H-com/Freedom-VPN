@@ -109,7 +109,8 @@ func (p *liveProbe) physicalSource(admin, node *liveSession, b api.EnrollRespons
 	batch := api.UsageBatchRequest{NodeId: b.NodeId, NodeIncarnationId: b.NodeIncarnationId, LedgerEpoch: presence.NewNullNullable[uuid.UUID](), Events: []api.UsageEvent{}}
 	meter := uuid.New()
 	for n := 1; n <= 10; n++ {
-		ev, err := usage.WithComputedHash(api.UsageEvent{SchemaVersion: 1, NodeId: b.NodeId, NodeIncarnationId: b.NodeIncarnationId, MeterEpochId: meter, EventSeq: decstr.U64(n), IntervalStart: now.Add(time.Duration(n-11) * time.Second), IntervalEnd: now.Add(time.Duration(n-10) * time.Second), MeteringVersion: api.MeteringVersionForwardAdmissionV1, Quality: api.UsageQualityComplete, Records: []api.UsageRecord{{MemberId: uuid.MustParse(member.member), DeviceId: device, BindingRevision: binding.BindingRevision, PeriodId: api.PeriodId(now.Format("2006-01")), UploadBytes: 100, DownloadBytes: 200}}})
+		start := now.Add(time.Duration(n-11) * time.Second)
+		ev, err := usage.WithComputedHash(api.UsageEvent{SchemaVersion: 1, NodeId: b.NodeId, NodeIncarnationId: b.NodeIncarnationId, MeterEpochId: meter, EventSeq: decstr.U64(n), IntervalStart: start, IntervalEnd: now.Add(time.Duration(n-10) * time.Second), MeteringVersion: api.MeteringVersionForwardAdmissionV1, Quality: api.UsageQualityComplete, Records: []api.UsageRecord{{MemberId: uuid.MustParse(member.member), DeviceId: device, BindingRevision: binding.BindingRevision, PeriodId: usagePeriodForStart(start), UploadBytes: 100, DownloadBytes: 200}}})
 		if err != nil {
 			p.t.Fatal("usage hash")
 		}

@@ -4,11 +4,14 @@ package main
 import (
 	"bufio"
 	"context"
+	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
 	"flag"
 	"fmt"
 	"io"
 	"net"
+	"net/http"
 	"net/netip"
 	"os"
 	"strings"
@@ -170,6 +173,34 @@ func main() {
 		} else {
 			out.Error = "connect_unavailable"
 		}
+	case "http":
+		// Same bounded first-use request as members: source port 20001, 5s dial,
+		// 6s HTTP bound, owned origin and real CA. No retries or route repair.
+		raw, e := os.ReadFile("/etc/vpn-node/ca.pem")
+		roots := x509.NewCertPool()
+		if e != nil || !roots.AppendCertsFromPEM(raw) {
+			out.Error = "http_ca"
+			break
+		}
+		tr := &http.Transport{TLSClientConfig: &tls.Config{RootCAs: roots, MinVersion: tls.VersionTLS12}, DialContext: func(ctx context.Context, network, target string) (net.Conn, error) {
+			if target != "releases.example.invalid:443" {
+				return nil, fmt.Errorf("outside lab")
+			}
+			return (&net.Dialer{Timeout: 5 * time.Second, LocalAddr: &net.TCPAddr{Port: 20001}}).DialContext(ctx, "tcp4", *addr)
+		}}
+		defer tr.CloseIdleConnections()
+		req, _ := http.NewRequestWithContext(ctx, "GET", "https://releases.example.invalid/healthz", nil)
+		req.Header.Set("X-E2E-Probe", *device)
+		response, e := (&http.Client{Transport: tr, Timeout: 6 * time.Second, CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}).Do(req)
+		if e != nil {
+			out.Error = "http_unavailable"
+			break
+		}
+		body, e := io.ReadAll(io.LimitReader(response.Body, 4096))
+		_ = response.Body.Close()
+		out.Connected = true
+		out.Bytes = len(body)
+		out.Available = e == nil && response.StatusCode == 200 && string(body) == "ok\n"
 	case "bulk":
 		c, e := (&net.Dialer{}).DialContext(ctx, "tcp", *addr)
 		if e != nil {

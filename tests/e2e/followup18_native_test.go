@@ -30,7 +30,7 @@ func TestE2E_Followup18Native(t *testing.T) {
 	defer cancel()
 	head, _ := exec.CommandContext(ctx, "git", "rev-parse", "HEAD").Output()
 	id := uuid.NewString()
-	r := &runner{t: t, lab: l, runID: id, sourceCommit: strings.TrimSpace(string(head)), dir: filepath.Join(l.root, "docs/e2e/runs", time.Now().UTC().Format("2006-01-02"), installerCampaignDirectory(), id)}
+	r := &runner{t: t, lab: l, runID: id, sourceCommit: strings.TrimSpace(string(head)), dir: filepath.Join(l.root, "docs/e2e/runs", time.Now().UTC().Format("2006-01-02"), nativeCampaignDirectory(), id)}
 	defer r.finish()
 	s := &Stack{lab: l}
 	must := func(e error) {
@@ -61,7 +61,9 @@ func TestE2E_Followup18Native(t *testing.T) {
 	r.publish(ctx, admin, r.nodeID)
 	r.fixtureServingMember(ctx, admin)
 	if r.flowCounted {
-		if os.Getenv("FVPN_E2E_FOLLOWUP19") == "1" {
+		if os.Getenv("FVPN_E2E_FOLLOWUP22") == "1" {
+			r.nativeMTU22(ctx, s)
+		} else if os.Getenv("FVPN_E2E_FOLLOWUP19") == "1" {
 			r.nativeMTU19(ctx, s)
 		} else {
 			r.nativeMTU18(ctx, s)
@@ -69,7 +71,7 @@ func TestE2E_Followup18Native(t *testing.T) {
 	} else {
 		r.record(Record{ID: "native-mtu-comparison", Title: "MTU comparison requires counted path", Status: StatusBlocked})
 	}
-	if os.Getenv("FVPN_E2E_FOLLOWUP19") == "1" {
+	if os.Getenv("FVPN_E2E_FOLLOWUP19") == "1" || os.Getenv("FVPN_E2E_FOLLOWUP22") == "1" {
 		return
 	}
 	r.firstOffer18(ctx, s, admin)
@@ -118,7 +120,7 @@ func TestE2E_Followup18FirstOffer(t *testing.T) {
 	defer cancel()
 	head, _ := exec.CommandContext(ctx, "git", "rev-parse", "HEAD").Output()
 	id := uuid.NewString()
-	r := &runner{t: t, lab: l, runID: id, sourceCommit: strings.TrimSpace(string(head)), dir: filepath.Join(l.root, "docs/e2e/runs", time.Now().UTC().Format("2006-01-02"), installerCampaignDirectory(), id)}
+	r := &runner{t: t, lab: l, runID: id, sourceCommit: strings.TrimSpace(string(head)), dir: filepath.Join(l.root, "docs/e2e/runs", time.Now().UTC().Format("2006-01-02"), nativeCampaignDirectory(), id)}
 	defer r.finish()
 	raw, err := l.docker(l.node, "cat", "/var/lib/vpn-node/identity/node.json")
 	var identity struct {
@@ -237,7 +239,7 @@ func (r *runner) firstOffer18(ctx context.Context, s *Stack, admin *session) {
 
 // Select the published route belonging to this incarnation when both exits are
 // available. The provider and central reads only identify the real API route.
-func (r *runner) selectCurrentExit18(ctx context.Context, note func(string, string)) bool {
+func (r *runner) selectCurrentExit18(ctx context.Context, note func(string, string), settle ...time.Duration) bool {
 	db, err := r.lab.db(ctx)
 	if err != nil {
 		return false
@@ -265,7 +267,11 @@ func (r *runner) selectCurrentExit18(ctx context.Context, note func(string, stri
 		}
 		return false
 	})
-	time.Sleep(3 * time.Second)
+	delay := 3 * time.Second
+	if len(settle) > 0 {
+		delay = settle[0]
+	}
+	time.Sleep(delay)
 	return ok
 }
 
@@ -355,5 +361,239 @@ func (r *runner) nativeMTU18(ctx context.Context, s *Stack) {
 				rec.Status = StatusFail
 			}
 		}
+	}
+}
+
+func nativeCampaignDirectory() string {
+	if os.Getenv("FVPN_E2E_FOLLOWUP22") == "1" {
+		return "followup22"
+	}
+	return installerCampaignDirectory()
+}
+func TestE2E_Followup22Native(t *testing.T) {
+	if os.Getenv("FVPN_E2E_FOLLOWUP22") != "1" {
+		t.Skip("set FVPN_E2E_FOLLOWUP22=1 with a fresh owned stack")
+	}
+	t.Setenv("FVPN_E2E_NATIVE18", "1")
+	TestE2E_Followup18Native(t)
+}
+
+// Retain the original members four-row mutation/reconnect ordering, then measure
+// explicit IPv6 controls separately. None replaces the original dual/1280 row.
+func (r *runner) nativeMTU22(ctx context.Context, s *Stack) {
+	defer func() {
+		_, _ = s.ApplyNativeInputs(context.WithoutCancel(ctx), NativeFixtureInputs{Underlay: "dual", MTU: 1500, Protocol: "tcp", Platform: "linux"})
+	}()
+	origin := r.lab.prefix + "-origin"
+	_, _ = r.lab.docker(origin, "mkdir", "-p", "/var/lib/fvpn-evidence")
+	_, _ = r.lab.docker(origin, "touch", "/var/lib/fvpn-evidence/enable")
+	for _, row := range []struct {
+		name, family        string
+		mtu                 int
+		reconnect, explicit bool
+	}{
+		{"matrix4", "ipv4", 1500, true, false},
+		{"matrix6", "ipv6", 1500, true, false},
+		{"matrixDual", "dual", 1500, true, false},
+		{"matrix1280", "dual", 1280, true, false},
+		{"ipv6-asymmetric", "ipv6", 1280, true, false},
+		{"ipv6-explicit1280", "ipv6", 1280, false, true},
+		{"ipv6-explicit-repeat1", "ipv6", 1280, false, true},
+		{"ipv6-explicit-repeat2", "ipv6", 1280, false, true},
+	} {
+		rec := Record{ID: row.name, Title: "F8-02 native endpoint captures: " + row.name, Spec: []string{"AT09", "AT11", "F8-02"}, Status: StatusFail}
+		func() {
+			selection, e := s.ApplyNativeInputs(ctx, NativeFixtureInputs{Underlay: row.family, MTU: row.mtu, Protocol: "tcp", Platform: "linux"})
+			noteJSON(&rec, "input", selection)
+			if e != nil {
+				recPathNote(&rec)("error", e.Error())
+				return
+			}
+			capture, e := s.StartNativeCapture(ctx)
+			if e != nil {
+				recPathNote(&rec)("capture_error", e.Error())
+				return
+			}
+			defer r.finishNativeCapture22(ctx, &rec, capture)
+			if e = capture.Sample(ctx, "before-reconnect"); e != nil {
+				return
+			}
+			if row.reconnect {
+				if _, e = r.lab.docker(r.lab.member, "netbird", "down"); e != nil {
+					return
+				}
+				if _, e = r.lab.docker(r.lab.member, "netbird", "up"); e != nil {
+					return
+				}
+				wait, cancel := context.WithTimeout(ctx, 60*time.Second)
+				ready := waitUntil(wait, time.Second, func() bool {
+					path, pe := s.ObserveNativeUnderlay(wait)
+					chosen, ce := s.ObserveSelectedNativeExit(wait)
+					return pe == nil && ce == nil && chosen.Connected && path.Path.Direct+path.Path.Relayed > 0
+				})
+				cancel()
+				if !ready {
+					return
+				}
+				time.Sleep(3 * time.Second)
+			}
+			if row.explicit {
+				cleanup, ce := s.ConstrainSelectedNativePeer1280(ctx)
+				if ce != nil {
+					recPathNote(&rec)("constraint_error", ce.Error())
+					return
+				}
+				defer func() {
+					if e := cleanup(context.WithoutCancel(ctx)); e != nil {
+						rec.Status = StatusFail
+						recPathNote(&rec)("cleanup_error", e.Error())
+					}
+				}()
+			}
+			if e = capture.Sample(ctx, "before-bulk"); e != nil {
+				return
+			}
+			before, be := s.DeviceByteCounters(ctx, r.usageDevice)
+			chosen, ce := s.ObserveSelectedNativeExit(ctx)
+			got, ge := s.fixtureProbe(ctx, r.lab.member, "-mode", "bulk", "-addr", r.lab.originIP+":9446", "-device", r.usageDevice.String())
+			after, ae := s.DeviceByteCounters(ctx, r.usageDevice)
+			end, ee := s.ObserveSelectedNativeExit(ctx)
+			noteJSON(&rec, "transfer", map[string]any{"before": before, "after": after, "selected_before": chosen, "selected_after": end, "bulk": got})
+			if e = capture.Sample(ctx, "after-bulk"); e != nil {
+				return
+			}
+			endpoint, e := r.lab.docker(origin, "cat", "/var/lib/fvpn-evidence/echo.jsonl")
+			if e != nil {
+				return
+			}
+			recPathNote(&rec)("origin_endpoint_samples", string(endpoint))
+			familyOK := (row.family == "dual" || chosen.Family == row.family) && chosen.Family == end.Family
+			if ge == nil && be == nil && ae == nil && ce == nil && ee == nil && familyOK && chosen.Connected && end.Connected && got.Available && got.Bytes == 64064 && after.Upload > before.Upload && after.Download > before.Download {
+				rec.Status = StatusPass
+			}
+		}()
+		r.record(rec)
+	}
+}
+func (r *runner) finishNativeCapture22(ctx context.Context, rec *Record, c *NativeCapture) {
+	clean, cancel := context.WithTimeout(context.WithoutCancel(ctx), 20*time.Second)
+	defer cancel()
+	_ = c.Sample(clean, "final")
+	private := filepath.Join(r.lab.root, ".agent/tmp/followup22", r.runID, rec.ID)
+	got, e := c.Stop(clean, private)
+	noteJSON(rec, "capture", got)
+	if e != nil {
+		rec.Status = StatusFail
+		recPathNote(rec)("capture_error", e.Error())
+	}
+	out := filepath.Join(r.dir, "headers", rec.ID)
+	args := []string{filepath.Join(r.lab.root, "tests/e2e/decode_capture.py"), "--stable-addresses", "--out", out}
+	for _, role := range []string{"member", "node", "origin"} {
+		args = append(args, filepath.Join(private, role+".pcap"))
+	}
+	summary, e := exec.CommandContext(clean, "python3", args...).Output()
+	if e != nil {
+		rec.Status = StatusFail
+		recPathNote(rec)("decode_error", "header decode failed")
+		return
+	}
+	recPathNote(rec)("decode", string(summary))
+	var checks []struct {
+		Records   int  `json:"records"`
+		Errors    int  `json:"header_errors"`
+		Truncated int  `json:"snap_truncated_records"`
+		Complete  bool `json:"file_complete"`
+	}
+	if json.Unmarshal(summary, &checks) != nil || len(checks) != 3 {
+		rec.Status = StatusFail
+		return
+	}
+	for i, role := range []string{"member", "node", "origin"} {
+		check := checks[i]
+		if !check.Complete || check.Errors != 0 || check.Truncated != 0 || got.Points[role] == nil || check.Records != got.Points[role].Captured {
+			rec.Status = StatusFail
+			recPathNote(rec)("decode_incomplete", role)
+		}
+	}
+}
+
+func (r *runner) nativeInitial22(ctx context.Context, s *Stack) {
+	rec := Record{ID: "initial-selection", Title: "F11-01 first selected native route with all transport hops", Spec: []string{"AT01", "EXIT02", "F11-01"}, Status: StatusFail}
+	defer func() { r.record(rec) }()
+	c, e := s.StartNativeCapture(ctx)
+	if e != nil {
+		recPathNote(&rec)("error", e.Error())
+		return
+	}
+	defer r.finishNativeCapture22(ctx, &rec, c)
+	if c.Sample(ctx, "before-selection") != nil {
+		return
+	}
+	done := make(chan bool, 1)
+	go func() { done <- r.selectCurrentExit18(ctx, func(string, string) {}, 0) }()
+	selected := false
+selecting:
+	for i := 0; ; i++ {
+		if c.Sample(ctx, fmt.Sprintf("selection-%d", i)) != nil {
+			return
+		}
+		select {
+		case selected = <-done:
+			break selecting
+		case <-ctx.Done():
+			return
+		case <-time.After(200 * time.Millisecond):
+		}
+	}
+	noteJSON(&rec, "route_selected", selected)
+	// Original members wait after local route selection; no counted-flow gate,
+	// reconnect, transport repair or forced health result is inserted.
+	time.Sleep(2 * time.Second)
+	if c.Sample(ctx, "before-first-transfer") != nil {
+		return
+	}
+	before, be := s.DeviceByteCounters(ctx, r.usageDevice)
+	probe := uuid.NewString()
+	_, ae := r.originProbe(ctx, "PUT", probe)
+	type reply struct {
+		got FixtureProbeResult
+		err error
+	}
+	replies := make(chan reply, 1)
+	go func() {
+		got, e := s.fixtureProbe(ctx, r.lab.member, "-mode", "http", "-addr", r.lab.originIP+":443", "-device", probe)
+		replies <- reply{got, e}
+	}()
+	var got FixtureProbeResult
+	var ge error
+transferring:
+	for i := 0; ; i++ {
+		if e = c.Sample(ctx, fmt.Sprintf("first-transfer-%d", i)); e != nil {
+			return
+		}
+		select {
+		case v := <-replies:
+			got, ge = v.got, v.err
+			break transferring
+		case <-ctx.Done():
+			return
+		case <-time.After(200 * time.Millisecond):
+		}
+	}
+	after, ce := s.DeviceByteCounters(ctx, r.usageDevice)
+	noteJSON(&rec, "transfer", map[string]any{"before": before, "after": after, "http": got})
+	arrival, oe := r.originProbe(ctx, "GET", probe)
+	recPathNote(&rec)("origin_arrival", arrival)
+	var receipt struct {
+		ID       string `json:"probe_id"`
+		Requests int    `json:"requests"`
+		Source   string `json:"source_address"`
+	}
+	arrived := json.Unmarshal([]byte(arrival), &receipt) == nil && receipt.ID == probe && receipt.Requests == 1 && receipt.Source == r.nodeSNAT()
+	if c.Sample(ctx, "after-first-transfer") != nil {
+		return
+	}
+	if selected && arrived && be == nil && ae == nil && ge == nil && ce == nil && oe == nil && got.Available && after.Upload > before.Upload && after.Download > before.Download {
+		rec.Status = StatusPass
 	}
 }

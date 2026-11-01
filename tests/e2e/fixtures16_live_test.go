@@ -192,6 +192,9 @@ func (r *runner) fixtureServingMember(ctx context.Context, admin *session) {
 	if !r.usageReady {
 		return
 	}
+	if os.Getenv("FVPN_E2E_FOLLOWUP22") == "1" {
+		r.nativeInitial22(ctx, &Stack{lab: r.lab})
+	}
 	wait, cancel := context.WithTimeout(ctx, 90*time.Second)
 	defer cancel()
 	attempt := 0
