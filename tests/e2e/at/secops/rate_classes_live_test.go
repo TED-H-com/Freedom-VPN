@@ -107,7 +107,8 @@ func (p *liveProbe) rateClasses(node *liveSession, b api.EnrollResponse, members
 	}
 	binding := p.bindings[devices[0][0]]
 	now := time.Now().UTC().Truncate(time.Second)
-	event, e := usage.WithComputedHash(api.UsageEvent{SchemaVersion: 1, NodeId: b.NodeId, NodeIncarnationId: b.NodeIncarnationId, MeterEpochId: uuid.New(), EventSeq: 1, IntervalStart: now.Add(-time.Second), IntervalEnd: now, MeteringVersion: api.MeteringVersionForwardAdmissionV1, Quality: api.UsageQualityComplete, Records: []api.UsageRecord{{MemberId: uuid.MustParse(members[0].member), DeviceId: devices[0][0], BindingRevision: binding.BindingRevision, PeriodId: api.PeriodId(now.Format("2006-01")), UploadBytes: 100, DownloadBytes: 200}}})
+	start := now.Add(-time.Second)
+	event, e := usage.WithComputedHash(api.UsageEvent{SchemaVersion: 1, NodeId: b.NodeId, NodeIncarnationId: b.NodeIncarnationId, MeterEpochId: uuid.New(), EventSeq: 1, IntervalStart: start, IntervalEnd: now, MeteringVersion: api.MeteringVersionForwardAdmissionV1, Quality: api.UsageQualityComplete, Records: []api.UsageRecord{{MemberId: uuid.MustParse(members[0].member), DeviceId: devices[0][0], BindingRevision: binding.BindingRevision, PeriodId: usagePeriodForStart(start), UploadBytes: 100, DownloadBytes: 200}}})
 	if e != nil {
 		p.t.Fatal("usage class hash")
 	}
