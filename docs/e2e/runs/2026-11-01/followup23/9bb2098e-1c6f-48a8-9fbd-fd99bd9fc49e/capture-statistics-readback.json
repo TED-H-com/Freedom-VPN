@@ -1,0 +1,20 @@
+{
+  "id": "capture-statistics-readback",
+  "title": "Same stopped capture singular tcpdump statistics readback",
+  "spec": [
+    "AT20",
+    "F12-04",
+    "F4-05",
+    "F4-07"
+  ],
+  "status": "pass",
+  "observations": [
+    {
+      "name": "secondary",
+      "detail": "{\"capture_id\": \"69dc5f71-c6d4-42e8-8172-e32658bc0628\", \"sha256\": \"919264d24c196eeba3131c3fb5127f44f540c5b5c78899e1a93b4013a1201739\", \"bytes\": 204, \"statistics\": \"tcpdump: data link type LINUX_SLL2\\ntcpdump: listening on any, link-type LINUX_SLL2 (Linux cooked v2), snapshot length 65535 bytes\\n1 packet captured\\n1 packet received by filter\\n0 packets dropped by kernel\\n\", \"captured\": 1, \"received_by_filter\": 1, \"kernel_drops\": 0, \"readback_completed_at\": \"2026-11-01T08:30:26.872363Z\", \"original_record_at\": \"2026-11-01T08:29:36Z\"}"
+    }
+  ],
+  "at": "2026-11-01T08:30:26.872363Z",
+  "run_id": "9bb2098e-1c6f-48a8-9fbd-fd99bd9fc49e",
+  "source_commit": "1d396065c432485875add24a00761608afb293cc"
+}
