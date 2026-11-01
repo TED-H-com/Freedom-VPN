@@ -5,7 +5,7 @@ from pathlib import Path
 import tempfile
 import unittest
 
-from analyze_followup27 import interval, sequence_ranges, handshake_groups
+from analyze_followup27 import interval, sequence_ranges, handshake_groups, initiation_origin
 from decode_capture import decode_ip
 from archive_followup27 import archive
 from followup27_io import read, INDEX
@@ -44,6 +44,14 @@ class Followup27Analysis(unittest.TestCase):
         groups = handshake_groups({'member':[p], 'node':[dict(p,packet=2)], 'origin':[]})
         self.assertEqual(len(groups),1)
         self.assertEqual({h['role'] for h in groups[0]['hops']},{'member','node'})
+
+    def test_incoming_loopback_copy_is_not_a_member_initiation(self):
+        node=dict(role='node',packet_type=0,interface='lo',src='addr-12ca17b49af22894',udp={'src_port':51820},timestamp='1.0')
+        incoming=dict(role='member',packet_type=0,interface='lo',src='addr-test-relay',udp={'src_port':3128},timestamp='1.001')
+        self.assertEqual(initiation_origin({'hops':[incoming,node]})['role'],'node')
+        self.assertIsNone(initiation_origin({'hops':[incoming]}))
+        direct=dict(incoming,packet_type=4,interface='eth1')
+        self.assertEqual(initiation_origin({'hops':[direct]})['role'],'member')
 
     def test_lossless_archive_rejects_tampering_and_document_indexes(self):
         with tempfile.TemporaryDirectory() as scratch:

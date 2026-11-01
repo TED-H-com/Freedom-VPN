@@ -49,6 +49,16 @@ def handshake_groups(packets):
     return sorted(groups.values(), key=lambda g:min(stamp(h) for h in g['hops']))
 
 
+def initiation_origin(group):
+    # SLL2 marks local loopback copies as incoming too. The pinned harness uses
+    # local WG port 51820; relay-delivered loopback copies must not become a
+    # second local initiation. Underlay outgoing direction is unambiguous.
+    local = {'addr-12ca17b49af22894', 'addr-eff8e7ca506627fe'}  # 127.0.0.1, ::1
+    outgoing = [h for h in group['hops'] if h['packet_type']==4 or
+                (h['interface']=='lo' and h['src'] in local and h['udp']['src_port']==51820)]
+    return min(outgoing,key=stamp) if outgoing else None
+
+
 def main(run, private):
     destination = run/'measurement.json'
     assert not destination.exists(), 'immutable measurement already exists'
@@ -83,9 +93,8 @@ def main(run, private):
     member_inits = []
     for g in groups:
         if g['wireguard']['type']!=1:continue
-        hops = [h for h in g['hops'] if h['role']=='member' and (h['packet_type']==4 or h['interface']=='lo')]
-        if not hops:continue
-        first_hop = min(hops,key=stamp)
+        first_hop = initiation_origin(g)
+        if first_hop is None or first_hop['role']!='member':continue
         responses = [r for r in groups if r['wireguard']['type']==2 and r['wireguard']['receiver_index']==g['wireguard']['sender_index']]
         member_inits.append(dict(first=first_hop,sender_index=g['wireguard']['sender_index'],message_sha256=g['wireguard']['message_sha256'],response_hashes=[r['wireguard']['message_sha256'] for r in responses]))
     member_inits.sort(key=lambda x:stamp(x['first']))
