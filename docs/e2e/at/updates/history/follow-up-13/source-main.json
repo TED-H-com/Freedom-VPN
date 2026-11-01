@@ -1,0 +1,57 @@
+{
+  "run_id": "759d244a-2dc4-460c-9f82-e37ce0ac7560",
+  "source_commit": "20d1f6e83d4a0dce97e2cf87e4ccd4a31dc580a5",
+  "product_main": "5bd751026073444087b32ac2a7115f8566104f8b",
+  "at": "2026-11-01T09:49:16Z",
+  "prefix": "w4-updates",
+  "port_base": 54000,
+  "harness_source": {
+    "differs_from_source_commit": false,
+    "files_sha256": {
+      "archive_test.go": "3477637da880c0975b7ce7cbad62da2387699bf69582dabe08ead6d69a45a5e3",
+      "authority_test.go": "64c1e1bbb6994589f6d1fbc236e020fd085c57cbb1751c71566f26743bc97ddc",
+      "doc.go": "a43799934c9463e13de1e43c2e0f4373410be7c31421ceee8a3eb963717f6382",
+      "evidence.go": "5f77f6740ded1f0561fd8e7496b04ca3b240f501b7146cc684aaa6d033588e85",
+      "evidence_test.go": "eaa999300a284ba220deacae957eaab01f73fda21aab0d07481ccb958bd469cd",
+      "installer_receipts_test.go": "d394145432282963364f92d40fc95d238a329810f01b73a00c92b606f72ee749",
+      "installer_test.go": "b6f83ab210b23b8fc834d2874e3a3a462e54cb720d26a89ef8af82015fb9f43b",
+      "lab_test.go": "fc7c87390b17b118879dfd5da57a20901f081f8c14e22b45e40d2aa8e844ade5",
+      "live_test.go": "1cacb3b68d2f90c816795acb5f30cec8bcab59119a2fe5ce20d037a7c257e5b8",
+      "main.go": "f2396103aa7e9a9115f0917eee8df32609ba71cfb9fa29d3acc2e274718a2437",
+      "preresult_test.go": "530332759bdecdde7924f3d5cf95def55682a11b13293410cd59e62a22f6bfdf",
+      "probe_test.go": "12efbb020d4d241cd5a3738e58173988b851fb80091b404e11067c3f940d2214",
+      "restated_test.go": "82d9393eaefea7e3ba78db59cea0492f3a68dfc2dd4b970e0e324601438a5708",
+      "run.py": "76c2f017ff3590a2cfd4b46a5a013ef87e60c82988cd2bbb7f19d3415ffea19c",
+      "stop_observation_test.go": "3255d8ad43886bde9fb780bc3eb42df685cc2bc7d9ec21218b3898e9360644ea",
+      "stops.py": "1f157bf89f3d1acc146cc3a5b044875e90b6eb756f4192f6484ff5aacf54911c",
+      "supplemental.py": "531d9fef5ed0721c4d8214b200435b18acfd5d3f9360b1bd6b26364789788958"
+    }
+  },
+  "roadmap_rows": [
+    "| w1-netlab follow-up 22 | D-098 archive of follow-up 21 (132 files, SHA-256 pins). Opt-in TEST ONLY command-lifecycle observation in the enforcement executor (`enforce.WithCommandLifecycleForTest`; disabled it costs one context lookup per call site), accepted by D-138 over two comparison windows: the live A,B,A,B quartet passes; agent suites show no B-only failure (unchanged main fails `TestLab04_RestartKeepsVerifiedLease` in A1 and R-A2), install-command failures 4 A / 4 B, B timing interleaving A across windows; a qualified R-B2 agent leg never ran (host not quiet). D-135 assessment: fail-closed rollback to the generation-0 baseline, never infallible cleanup; fresh two-source rollback brackets 312.9 / 323.5 / 319.0 ms (admitted source 185 losses, 167 outside guards; denied source 0 egress). 3 requests: TEST ONLY engine caller and TestLab04 → agent-core 31; the R-B2 leg closed by D-138. | done (#365) |",
+    "| w2-agent-core follow-up 31 | D-136 confirmed with one correction: the verified deny-all candidate applies only when an Apply error is retained; the ordinary stale-lease transition installs the baseline and ACKs, renews, then Applies, verifies and heartbeats, with no finite outage ceiling. 80 desired-first generation changes measured (final population: baseline→Apply p50 / p99 173.8 / 195.6 ms; 501 sibling losses counted, 435 outside completed guards). `TestLab04_RestartKeepsVerifiedLease` failed 5 in 30 on unchanged main with leases about 3,599 s from expiry: cancelling the caller after SIGTERM manufactured Apply and member-path failures. `Engine.Step` now stops at the safe boundary, then finishes bounded local work (at most 10 s) while control I/O stays cancellable; real failures still fail closed; the lab restart requires a graceful exit. Netlab 22 request 1: the TEST ONLY lifecycle caller, only under `TestMode` and `TestTimingPath`. The design note recommends intersection serving, for the r18 review only. | done (#369) |",
+    "| w4-at-updates follow-up 12 | D-098 first (all 43 root files of run daddad24 byte-identical under `history/follow-up-11/`). Final live run 2babf9b6 on #356's tree through the **shared** installer wrapper with devstack 21's explicit TEST ONLY loopback opt-in (installed, exit 0, no adapter): **regular AT23–AT27 PASS 5 / 5** including physical rollback, installer 27 / 27; the generated `result_url`, origin, enrollment server CA and client paths read back unchanged; 13 result POSTs (11 explicit stimuli + one automatic success + one automatic stopped-producer failure); the uncached-origin fallback exits 0 with the unchanged config and signed release URL. **F11-01 CLOSED** by this result, **F11-02 CLOSED** by #351; F18-01 stays the intended D-125 negative 1 / 1 / 2. A first attempt (a path bug in the lane's new uncached-seed probe: make exit 2 despite 5 / 5) is retained under `history/follow-up-12-first-attempt/` with an erratum; no pass row is carried across runs. 0 requests. | done (#359) |"
+  ],
+  "followup12_product_main": "45209609d33d567c5f04d49441799cdd3efac59b",
+  "product_diff_since_followup12": " node/agent/engine.go                         |  23 +++-\n node/agent/followup21_netlab_test.go         |   4 +\n node/agent/followup31_netlab_test.go         | 123 ++++++++++++++++++\n node/agent/followup31_restart_test.go        | 115 ++++++++++++++++\n node/agent/followup31_test.go                | 100 ++++++++++++++\n node/agent/review_d056_test.go               |   4 +\n node/enforce/apply.go                        |  25 ++--\n node/enforce/apply_capture.go                |  29 +++++\n node/enforce/command_lifecycle.go            | 187 +++++++++++++++++++++++++++\n node/enforce/command_lifecycle_test.go       | 175 +++++++++++++++++++++++++\n node/enforce/command_resources_linux.go      |  97 ++++++++++++++\n node/enforce/command_resources_linux_test.go |  51 ++++++++\n node/enforce/command_resources_other.go      |   8 ++\n node/enforce/executor.go                     |   4 +-\n node/enforce/timing.go                       |   6 +\n node/internal/fakecontrol/usage_test.go      |  14 +-\n 16 files changed, 946 insertions(+), 19 deletions(-)\n",
+  "product_diff_command": "git diff --stat 45209609d33d567c5f04d49441799cdd3efac59b..HEAD -- node packaging internal",
+  "agent_core31_scope": "Safe boundary after cancellation; bounded local completion controlPassTimeout()+5s, at most 10s; control I/O remains cancellable. This run does not claim worst-case bounds.",
+  "netlab22_scope": "TEST ONLY enforcement observation remains disabled without TestTimingPath; regular fixture config has test_mode=true and no test_timing_path.",
+  "enforcement_observation_gates": {
+    "node": {
+      "test_mode": true,
+      "test_timing_path_present": false
+    },
+    "installer-node": {
+      "test_mode": false,
+      "test_timing_path_present": false
+    }
+  },
+  "archive": "docs/e2e/at/updates/history/follow-up-12/",
+  "archive_commit": "6f1eb10c",
+  "immutable_evidence_pins": {
+    "docs/e2e/at/updates/history/follow-up-12/SHA256SUMS": "75f5cb80931eef16399517042cfaaa599906240ff32b466ecd78ed70d6caca18",
+    "docs/e2e/at/updates/history/follow-up-12-stop-journal/stages.json": "8f4271c013a392aa3646ceea57539f7e2f1e5f924bf052a8f8980bcd23e53638",
+    "docs/e2e/at/updates/history/follow-up-13-startup/startup.json": "481c44f88a188662d4a77fab0ffaa01d9ce81c802a5181f4a01cc25fc46fd2e8"
+  }
+}

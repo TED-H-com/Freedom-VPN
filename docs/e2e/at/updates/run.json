@@ -1,8 +1,8 @@
 {
-  "run_id": "759d244a-2dc4-460c-9f82-e37ce0ac7560",
-  "source_commit": "20d1f6e83d4a0dce97e2cf87e4ccd4a31dc580a5",
-  "product_main": "5bd751026073444087b32ac2a7115f8566104f8b",
-  "at": "2026-11-01T09:49:16Z",
+  "run_id": "2704600f-e076-4a59-9338-09befa2af70e",
+  "source_commit": "64893bb3de8e81ea3ca13e07871ca0cdc2455b85",
+  "product_main": "f680d6ddb8fd19979c0471a2ce06ffc6e16c7cd2",
+  "at": "2026-11-01T14:55:40Z",
   "prefix": "w4-updates",
   "port_base": 54000,
   "regular_cases": {
@@ -16,17 +16,19 @@
   "installer_required_checks": 27,
   "installer_passing_checks": 27,
   "live_make_exit": 0,
-  "live_go_test_exit": 0,
-  "live_go_test_seconds": 517.66,
+  "live_go_test_seconds": 514.704,
   "product_sources_changed_by_this_lane": false,
   "install_path": "shared Stack.RerunInstaller only",
   "shared_wrapper_exit": 0,
   "regular_test_invocations": 1,
-  "startup_failure_archive": "docs/e2e/at/updates/history/follow-up-13-startup/",
   "stop_commands": 11,
   "stop_findings": [],
-  "baseline_command_timing_available": false,
-  "requests": [
-    "F13-01"
-  ]
+  "stop_measurement_gaps": [],
+  "baseline_command_timing_available": true,
+  "admission": {
+    "wait_seconds": 0,
+    "other_suites_before": 0,
+    "other_suites_after_startup": 0
+  },
+  "requests": []
 }
