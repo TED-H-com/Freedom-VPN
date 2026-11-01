@@ -136,6 +136,7 @@ type Engine struct {
 	appliedModel         *enforce.Model
 	appliedAssignments   map[uuid.UUID]uint16
 	appliedGen           uint64
+	appliedSnapshot      *appliedSnapshot
 	planeLocked          bool
 	repairing            bool
 	quarantinePending    bool
@@ -697,6 +698,9 @@ func (e *Engine) loadRuntime(ctx context.Context) error {
 	if err := e.migrateMemberPath(ctx); err != nil {
 		return err
 	}
+	if err := e.loadAppliedSnapshot(ctx); err != nil {
+		return err
+	}
 	if l, ok, err := e.store.Lease(ctx); err != nil {
 		return err
 	} else if ok {
@@ -942,6 +946,10 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 			}
 		}
 	}()
+	if e.conntrackAttempts >= maxConntrackDeleteAttempts {
+		e.conntrackBlocked = true
+		e.conntrackDetail = conntrackBoundDetail
+	}
 	if e.conntrackBlocked && !e.conntrackMissing() && e.flushPendingConntrack(ctx) {
 		e.clearConntrackBlock(ctx)
 		d = Decide(e.input())
@@ -1067,6 +1075,15 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 		// They do not enter the wire evidence or its D-106 digest.
 		applyCtx = enforce.WithCommandLifecycleForTest(applyCtx)
 	}
+	// Reserve the whole delete batch durably before Apply can execute any of
+	// it. A crash (or an earlier Apply failure) may consume an unused slot,
+	// but can never repeat an uncounted serving attempt after restart.
+	if len(queued) > 0 {
+		if err := e.reserveConntrack(ctx, model); err != nil {
+			e.withdraw(ctx)
+			return err
+		}
+	}
 	res, err := e.plane.Apply(applyCtx, model, prev)
 	host.finish(err)
 	e.measureTiming(res.Evidence, "apply", host)
@@ -1143,10 +1160,6 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 	}
 	e.ackApplied(ctx, model.Generation)
 	if pending {
-		e.conntrackAttempts++
-		if e.conntrackAttempts > maxConntrackDeleteAttempts {
-			e.conntrackAttempts = maxConntrackDeleteAttempts
-		}
 		e.saveRevocations(ctx, pendingAfterFailure(e.pendingRevoke, e.addresses, model.Bindings, ctErr.Failed))
 		if e.conntrackAttempts >= maxConntrackDeleteAttempts {
 			e.markConntrackBlocked(ctx, conntrackBoundDetail)
@@ -1156,7 +1169,6 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 			_ = e.baseline(ctx)
 			return nil
 		}
-		e.persistConntrack(ctx)
 	} else {
 		e.saveRevocations(ctx, nil)
 		if e.conntrackAttempts != 0 || e.conntrackBlocked {
@@ -1216,15 +1228,24 @@ func (e *Engine) ackApplied(ctx context.Context, gen uint64) {
 	if e.identityFrozen || e.freezeUncertain || gen == 0 || e.desired == nil || !e.desiredOK || e.applyError != nil || e.dependencyMissing {
 		return
 	}
-	if e.appliedGen == gen {
+	if gen != uint64(e.desired.ConfigGeneration) {
 		return
 	}
-	if err := e.store.MarkApplied(ctx, gen); err != nil {
+	if e.appliedGen == gen && e.appliedSnapshot != nil {
+		return
+	}
+	snapshot := snapshotOf(e.desired)
+	raw, err := json.Marshal(snapshot)
+	if err == nil {
+		err = e.store.MarkAppliedSnapshot(ctx, gen, string(raw))
+	}
+	if err != nil {
 		e.storageOK = false
 		e.log.Warn("applied generation", "err", err.Error())
 		return
 	}
 	e.appliedGen = gen
+	e.appliedSnapshot = &snapshot
 	// Start elapsed hold time at the ACK, before a matching-lease request can
 	// spend the rest of the control allowance. Observation is not its origin.
 	e.updateStaleHold()
