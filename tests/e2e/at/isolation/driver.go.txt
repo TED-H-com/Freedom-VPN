@@ -2989,6 +2989,13 @@ func (x *isolationRun) populatedHold(n int, row map[string]any) bool {
 		row["reason"] = "capacity command not accepted"
 		return false
 	}
+	var operation struct {
+		ID uuid.UUID `json:"operation_id"`
+	}
+	if json.Unmarshal(patch.Body, &operation) == nil && operation.ID != uuid.Nil {
+		readback, e := x.admin.call(x.ctx, "GET", x.r.lab.public+"/api/v1/admin/operations/"+operation.ID.String(), nil, nil)
+		row["command_readback"] = map[string]any{"at": time.Now().UTC(), "status": readback.Status, "ok": e == nil, "response": json.RawMessage(readback.Body)}
+	}
 	var incident string
 	found := waitFor(15, func() bool {
 		return conn.QueryRow(x.ctx, `SELECT h.id::text FROM node_generation_holds h JOIN node_generation_hold_reports r ON r.hold_id=h.id WHERE h.node_id=$1 AND h.ended_at IS NULL AND h.first_seen_at >= $2 AND r.lease_id=$3 ORDER BY h.first_seen_at DESC LIMIT 1`, x.r.nodeID, start, oldLease).Scan(&incident) == nil
