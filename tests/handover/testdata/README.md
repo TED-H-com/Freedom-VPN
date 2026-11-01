@@ -150,3 +150,21 @@ Follow-up 22's 19 subtests, original assertions, source manifests and prior
 redirects are unchanged except exact frozen-input redirects; a whole-function
 hash enforces this. D-135 stays provisional, D-136/D-137 are the orchestrator's
 provisional interpretations. Live owned-document integrity is separate.
+
+## Follow-up 24 provenance
+
+`followup24-main.json` pins seven #363–#369 roadmap rows at `5bd75102`.
+Nothing merged after cutoff at task start; r18 and devstack 24 have no results
+in this cut. The 21-entry `followup24-snapshots.json` retains exact dated notes,
+immutable PR message excerpts and devstack run analyses/manifest, plus eight
+owned excerpts freezing follow-up 23's register and seven entrypoints.
+Full-source hash, source commit, byte offset, length and excerpt hash permit
+an independent Git-object audit. No living members F13 or usage 7 root is
+copied or read. Results use roadmap/PR pins, not those provenance-only paths.
+
+The claim test checks 357 owner archive/run files: netlab 132, usage 19,
+members 52, devstack 154. A normalized whole-function hash proves follow-up
+23's original assertions are unchanged apart from frozen document inputs.
+D-135 through D-138 stay provisional; D-136 correction and D-138 acceptance
+never rewrite historical failures. Live owned-document hashes in secops
+scope-review remain integrity checks only.

@@ -9,13 +9,13 @@
 AT_UPDATES_MK := $(lastword $(MAKEFILE_LIST))
 AT_UPDATES_ROOT := $(abspath $(dir $(AT_UPDATES_MK))/..)
 AT_UPDATES_PREFIX := w4-updates
-AT_UPDATES_PORT_BASE := 42000
+AT_UPDATES_PORT_BASE ?= 42000
 # Reuse a healthy, freshly prepared owned stack (before its first enrollment).
 AT_UPDATES_REUSE ?= 0
 
 export GOTOOLCHAIN := local
 export CGO_ENABLED := 0
-export AT_UPDATES_REUSE
+export AT_UPDATES_REUSE AT_UPDATES_PORT_BASE
 
 LINT_TARGETS += at-updates-lint
 

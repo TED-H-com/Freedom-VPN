@@ -109,7 +109,7 @@ func (s *updatesFollowup) installerHandoff(stack *e2e.Stack, baseline e2e.Servin
 	h := &handoffRun{s: s, stack: stack, checks: map[string]bool{}}
 	h.rec = *s.rec["AT24"]
 	h.rec.ID, h.rec.Title = "installer-handoff", "D-110/D-111/D-125/D-127 installer hand-off"
-	h.rec.Status, h.rec.Scope = at.StatusBlocked, "Follow-up 12 systemd hand-off and central receipt acceptance; serving traffic proof cited from devstack 19"
+	h.rec.Status, h.rec.Scope = at.StatusBlocked, "Follow-up 13 systemd hand-off and central receipt acceptance; serving traffic proof cited from devstack 19"
 	h.rec.Spec = []string{"UPD02", "UPD03", "UPD05", "§13.5", "§13.6", "§13.9", "D-080", "D-098", "D-110", "D-111", "D-125", "D-127"}
 	h.rec.Expected = "Install, seed, stage and real correlated apply; central baseline/promotion/replay/correction; tamper, checkpoint and downgrade refusals"
 	h.rec.Actual = "Installer prerequisites not reached"
@@ -145,10 +145,11 @@ func (s *updatesFollowup) installerHandoff(stack *e2e.Stack, baseline e2e.Servin
 		return true
 	}
 	h.note("consumed_devstack19", "docs/e2e/runs/2026-10-31/followup19/d6aaa798-6c39-49f1-8fa9-5f84f696ac91/installer-journaled-upgrade.md: serving withdrawal, five-field correlation and nonzero durable watermark; this run uses a quiet unpublished agent and separately tests central acceptance")
-	s.r.t.Log("follow-up 12: systemd installer hand-off")
+	s.r.t.Log("follow-up 13: systemd installer hand-off")
 	if !must(stack.PrepareInstallerNode(s.ctx)) {
 		return
 	}
+	s.installStopObserver(s.r.lab.prefix+"-installer-node", true)
 	admin := e2e.BrowserSession{Client: s.admin.http, CSRF: s.admin.csrf}
 	releases, err := stack.RegisterInstallerReleases(s.ctx, admin)
 	if !must(err) {
@@ -160,7 +161,7 @@ func (s *updatesFollowup) installerHandoff(stack *e2e.Stack, baseline e2e.Servin
 			return
 		}
 		defer os.RemoveAll(dir)
-		b, err := stack.BuildInstallerRelease(s.ctx, dir, spec.version, spec.seq, "TEST-ONLY-updates-followup12", e2e.ReleaseOptions{})
+		b, err := stack.BuildInstallerRelease(s.ctx, dir, spec.version, spec.seq, "TEST-ONLY-updates-followup13", e2e.ReleaseOptions{})
 		if !must(err) || !must(stack.RegisterRelease(s.ctx, admin, b)) {
 			return
 		}

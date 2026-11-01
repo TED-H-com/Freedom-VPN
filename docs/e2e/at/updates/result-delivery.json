@@ -1,10 +1,10 @@
 {
-  "run_id": "2babf9b6-86a3-489d-a678-0bd447f2f8b0",
-  "source_commit": "5b2ae0748bbbffb0d370d4842bb0623e74e844b7",
-  "product_main": "45209609d33d567c5f04d49441799cdd3efac59b",
-  "at": "2026-10-31T22:15:49Z",
+  "run_id": "759d244a-2dc4-460c-9f82-e37ce0ac7560",
+  "source_commit": "20d1f6e83d4a0dce97e2cf87e4ccd4a31dc580a5",
+  "product_main": "5bd751026073444087b32ac2a7115f8566104f8b",
+  "at": "2026-11-01T09:49:16Z",
   "prefix": "w4-updates",
-  "port_base": 42000,
+  "port_base": 54000,
   "status": "pass within current scoped sequence",
   "observations": {
     "AT23": [
@@ -18,14 +18,14 @@
           "state": "succeeded",
           "unconfirmed": false,
           "needs_attention": false,
-          "current_release": "01a19400-e1dc-739f-a697-cc3bc2f47004",
+          "current_release": "01a1967b-9313-7895-afeb-71db6f20adaf",
           "error_code": ""
         }
       },
       {
         "name": "batch_api_response",
         "detail": {
-          "batch_id": "01a19402-3c30-7db7-a104-4380401b2df2",
+          "batch_id": "01a1967d-0eea-75b6-9628-6bff98c20e57",
           "counts": {
             "already_current": 0,
             "applying": 0,
@@ -40,12 +40,12 @@
             "verifying": 0,
             "waiting_online": 0
           },
-          "created_at": "2026-10-31T22:08:56.879459Z",
-          "created_by": "01a19400-d122-7f27-ae4e-528b480bbb15",
+          "created_at": "2026-11-01T09:42:20.64909Z",
+          "created_by": "01a1967b-8140-7ae8-b636-6be90dd548cd",
           "next_cursor": null,
-          "operation_id": "01a19402-3c31-7257-9e76-99c4f7aecd84",
-          "reason": "TEST ONLY updates follow-up 12",
-          "release_id": "01a19400-e1dc-739f-a697-cc3bc2f47004",
+          "operation_id": "01a1967d-0eea-7c6e-8f70-d31b6cb10e1e",
+          "reason": "TEST ONLY updates follow-up 13",
+          "release_id": "01a1967b-9313-7895-afeb-71db6f20adaf",
           "requires_service_restart": true,
           "state": "completed",
           "target_count": 1,
@@ -56,15 +56,15 @@
               "current_job": {
                 "attempt": 1,
                 "error_code": null,
-                "finished_at": "2026-10-31T22:09:48.779536Z",
-                "job_id": "01a19402-3c32-7a71-a66b-d0fa07ba7a9f",
+                "finished_at": "2026-11-01T09:43:10.580969Z",
+                "job_id": "01a1967d-0eec-79ea-b50f-3f26f532fc86",
                 "recovery_required": false,
                 "stage": "report",
-                "started_at": "2026-10-31T22:09:48.779536Z",
+                "started_at": "2026-11-01T09:43:10.580969Z",
                 "state": "succeeded"
               },
-              "current_release_id": "01a19400-e1dc-739f-a697-cc3bc2f47004",
-              "execution_incarnation_id": "01a19402-1d7d-7712-a992-5c163f4a8b97",
+              "current_release_id": "01a1967b-9313-7895-afeb-71db6f20adaf",
+              "execution_incarnation_id": "01a1967c-d3b5-79b7-99ff-f378c89ee0f1",
               "generation": "1",
               "health": {
                 "dns_policy": "passed",
@@ -73,27 +73,27 @@
                 "processes": "passed",
                 "tunnel_probe": "passed"
               },
-              "incarnation_at_snapshot": "01a19402-1d7d-7712-a992-5c163f4a8b97",
-              "last_observed_at": "2026-10-31T22:09:53.615158Z",
-              "last_result_at": "2026-10-31T22:09:48.779536Z",
+              "incarnation_at_snapshot": "01a1967c-d3b5-79b7-99ff-f378c89ee0f1",
+              "last_observed_at": "2026-11-01T09:43:15.407116Z",
+              "last_result_at": "2026-11-01T09:43:10.580969Z",
               "needs_attention": false,
-              "node_id": "01a19402-1ab6-749f-ab2e-4b3446e709c9",
+              "node_id": "01a1967c-d1a2-76e8-9b40-9c9f8a082ffe",
               "node_name": "TEST ONLY updates",
               "online_at_snapshot": true,
-              "policy_generation": "3",
+              "policy_generation": "4",
               "policy_refs": [
-                "01a19400-ee97-70f9-9a20-2de1325438f1",
-                "01a19401-3eed-7c5c-bb19-94c8273b8af2"
+                "01a1967b-a01c-74b9-acf1-bd673c8b710a",
+                "01a1967b-f308-77c6-8d62-3522016648d0"
               ],
               "previous_release_id": null,
               "retryable": false,
               "state": "succeeded",
-              "target_id": "01a19402-3c31-7eec-ab7b-35cfdc24c471",
+              "target_id": "01a1967d-0eeb-7e61-a0da-ac2850f81c76",
               "unconfirmed": false
             }
           ],
-          "targets_url": "/api/v1/admin/update-batches/01a19402-3c30-7db7-a104-4380401b2df2",
-          "updated_at": "2026-10-31T22:09:48.781494Z"
+          "targets_url": "/api/v1/admin/update-batches/01a1967d-0eea-75b6-9628-6bff98c20e57",
+          "updated_at": "2026-11-01T09:43:10.582567Z"
         }
       },
       {
@@ -110,44 +110,44 @@
                 "internet_only": "passed",
                 "identity_and_state": "passed"
               },
-              "job_id": "01a19402-3c32-7a71-a66b-d0fa07ba7a9f",
+              "job_id": "01a1967d-0eec-79ea-b50f-3f26f532fc86",
               "attempt": 1,
               "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-              "node_id": "01a19402-1ab6-749f-ab2e-4b3446e709c9",
-              "batch_id": "01a19402-3c30-7db7-a104-4380401b2df2",
-              "result_id": "97a59058-e45f-506b-847c-9dd5644e5f3d",
-              "target_id": "01a19402-3c31-7eec-ab7b-35cfdc24c471",
+              "node_id": "01a1967c-d1a2-76e8-9b40-9c9f8a082ffe",
+              "batch_id": "01a1967d-0eea-75b6-9628-6bff98c20e57",
+              "result_id": "0f52cd43-12f9-5c79-8415-de0387cee675",
+              "target_id": "01a1967d-0eeb-7e61-a0da-ac2850f81c76",
               "error_code": null,
               "generation": "1",
-              "started_at": "2026-10-31T22:09:37Z",
-              "finished_at": "2026-10-31T22:09:48Z",
-              "payload_hash": "14bab1d2e41db8956b435bec51ba4e825079922aa5f38d9ff43e26171cd58f82",
-              "incarnation_id": "01a19402-1d7d-7712-a992-5c163f4a8b97",
-              "manifest_sha256": "e940e9061db054678e41eb0e242ac6b63e85b43494c7198d25b6ea3d1fd063cf",
+              "started_at": "2026-11-01T09:42:59Z",
+              "finished_at": "2026-11-01T09:43:10Z",
+              "payload_hash": "3b26b10f5c50a3dc7ff02066b585a810482a1d1660ca09742c2b8920c147a3dc",
+              "incarnation_id": "01a1967c-d3b5-79b7-99ff-f378c89ee0f1",
+              "manifest_sha256": "17e1a4084e68cb7f770c05889a6d018e50e625e87197344c4dacf4d8c1a65c23",
               "usage_checkpoint": {
-                "new_meter_epoch_id": "01a19402-f33f-7f33-a7fb-c97eedb6efaa",
+                "new_meter_epoch_id": "01a1967d-be38-71cb-b4b0-79f445c9fad7",
                 "central_acked_through": "0",
-                "closed_meter_epoch_id": "01a19402-c69f-7487-b970-4976fe30d2db",
+                "closed_meter_epoch_id": "01a1967d-9153-73f3-8c74-bfbf714deb0e",
                 "last_durable_event_seq": "0"
               },
-              "policy_generation": "3",
+              "policy_generation": "4",
               "recovery_required": false,
-              "current_release_id": "01a19400-e1dc-739f-a697-cc3bc2f47004",
+              "current_release_id": "01a1967b-9313-7895-afeb-71db6f20adaf",
               "publication_intent": "unpublished",
               "previous_release_id": null,
-              "requested_release_id": "01a19400-e1dc-739f-a697-cc3bc2f47004",
+              "requested_release_id": "01a1967b-9313-7895-afeb-71db6f20adaf",
               "state_schema_version": 1,
               "member_forwarding_enabled": false
             },
             "response": {
               "accepted": true,
-              "result_id": "97a59058-e45f-506b-847c-9dd5644e5f3d",
-              "received_at": "2026-10-31T22:09:48.780761336Z",
+              "result_id": "0f52cd43-12f9-5c79-8415-de0387cee675",
+              "received_at": "2026-11-01T09:43:10.581983999Z",
               "accepted_as_history": false,
               "observed_update_generation": "1",
               "applied_to_current_observation": true
             },
-            "payload_sha256": "14bab1d2e41db8956b435bec51ba4e825079922aa5f38d9ff43e26171cd58f82"
+            "payload_sha256": "3b26b10f5c50a3dc7ff02066b585a810482a1d1660ca09742c2b8920c147a3dc"
           }
         ]
       }
@@ -167,44 +167,44 @@
                 "internet_only": "passed",
                 "identity_and_state": "passed"
               },
-              "job_id": "01a19402-3c32-7a71-a66b-d0fa07ba7a9f",
+              "job_id": "01a1967d-0eec-79ea-b50f-3f26f532fc86",
               "attempt": 1,
               "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-              "node_id": "01a19402-1ab6-749f-ab2e-4b3446e709c9",
-              "batch_id": "01a19402-3c30-7db7-a104-4380401b2df2",
-              "result_id": "97a59058-e45f-506b-847c-9dd5644e5f3d",
-              "target_id": "01a19402-3c31-7eec-ab7b-35cfdc24c471",
+              "node_id": "01a1967c-d1a2-76e8-9b40-9c9f8a082ffe",
+              "batch_id": "01a1967d-0eea-75b6-9628-6bff98c20e57",
+              "result_id": "0f52cd43-12f9-5c79-8415-de0387cee675",
+              "target_id": "01a1967d-0eeb-7e61-a0da-ac2850f81c76",
               "error_code": null,
               "generation": "1",
-              "started_at": "2026-10-31T22:09:37Z",
-              "finished_at": "2026-10-31T22:09:48Z",
-              "payload_hash": "14bab1d2e41db8956b435bec51ba4e825079922aa5f38d9ff43e26171cd58f82",
-              "incarnation_id": "01a19402-1d7d-7712-a992-5c163f4a8b97",
-              "manifest_sha256": "e940e9061db054678e41eb0e242ac6b63e85b43494c7198d25b6ea3d1fd063cf",
+              "started_at": "2026-11-01T09:42:59Z",
+              "finished_at": "2026-11-01T09:43:10Z",
+              "payload_hash": "3b26b10f5c50a3dc7ff02066b585a810482a1d1660ca09742c2b8920c147a3dc",
+              "incarnation_id": "01a1967c-d3b5-79b7-99ff-f378c89ee0f1",
+              "manifest_sha256": "17e1a4084e68cb7f770c05889a6d018e50e625e87197344c4dacf4d8c1a65c23",
               "usage_checkpoint": {
-                "new_meter_epoch_id": "01a19402-f33f-7f33-a7fb-c97eedb6efaa",
+                "new_meter_epoch_id": "01a1967d-be38-71cb-b4b0-79f445c9fad7",
                 "central_acked_through": "0",
-                "closed_meter_epoch_id": "01a19402-c69f-7487-b970-4976fe30d2db",
+                "closed_meter_epoch_id": "01a1967d-9153-73f3-8c74-bfbf714deb0e",
                 "last_durable_event_seq": "0"
               },
-              "policy_generation": "3",
+              "policy_generation": "4",
               "recovery_required": false,
-              "current_release_id": "01a19400-e1dc-739f-a697-cc3bc2f47004",
+              "current_release_id": "01a1967b-9313-7895-afeb-71db6f20adaf",
               "publication_intent": "unpublished",
               "previous_release_id": null,
-              "requested_release_id": "01a19400-e1dc-739f-a697-cc3bc2f47004",
+              "requested_release_id": "01a1967b-9313-7895-afeb-71db6f20adaf",
               "state_schema_version": 1,
               "member_forwarding_enabled": false
             },
             "response": {
               "accepted": true,
-              "result_id": "97a59058-e45f-506b-847c-9dd5644e5f3d",
-              "received_at": "2026-10-31T22:09:48.780761336Z",
+              "result_id": "0f52cd43-12f9-5c79-8415-de0387cee675",
+              "received_at": "2026-11-01T09:43:10.581983999Z",
               "accepted_as_history": false,
               "observed_update_generation": "1",
               "applied_to_current_observation": true
             },
-            "payload_sha256": "14bab1d2e41db8956b435bec51ba4e825079922aa5f38d9ff43e26171cd58f82"
+            "payload_sha256": "3b26b10f5c50a3dc7ff02066b585a810482a1d1660ca09742c2b8920c147a3dc"
           }
         ]
       },
@@ -226,44 +226,44 @@
                 "internet_only": "passed",
                 "identity_and_state": "passed"
               },
-              "job_id": "01a19407-5436-7cd5-a994-63056559b4c9",
+              "job_id": "01a19682-1e0a-7778-b75c-fab98d02914b",
               "attempt": 1,
               "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-              "node_id": "01a19402-1ab6-749f-ab2e-4b3446e709c9",
-              "batch_id": "01a19407-5434-7dbc-af71-faf73b9ff9a5",
-              "result_id": "f251643a-5df8-5d5a-a7a6-f2b237999a4d",
-              "target_id": "01a19407-5435-7d13-9ff6-340ed42e5f54",
+              "node_id": "01a1967c-d1a2-76e8-9b40-9c9f8a082ffe",
+              "batch_id": "01a19682-1e09-7042-b4dd-c15ebb6f9cd1",
+              "result_id": "638e45c7-87b4-5986-b4be-9700302a7714",
+              "target_id": "01a19682-1e09-7c23-9196-ba3ea4020396",
               "error_code": null,
               "generation": "5",
-              "started_at": "2026-10-31T22:15:08Z",
-              "finished_at": "2026-10-31T22:15:19Z",
-              "payload_hash": "20003d018517e43b36efc28594c425f5b618b5afd0bbad16ce121ec50205bb6d",
-              "incarnation_id": "01a19402-1d7d-7712-a992-5c163f4a8b97",
-              "manifest_sha256": "238e16e205691faea7ebeccf7b80014d63934f1895f02f6814cb194003d6dd23",
+              "started_at": "2026-11-01T09:48:30Z",
+              "finished_at": "2026-11-01T09:48:41Z",
+              "payload_hash": "00f696b9f0c5ee8dfb515b28789772f1e7eed362c64530dbe3358a110e87c0d5",
+              "incarnation_id": "01a1967c-d3b5-79b7-99ff-f378c89ee0f1",
+              "manifest_sha256": "958d92d642bcc02de81bb1c0bbbbdc10676dd7ad666b08e8ff2c45dc3c9f8947",
               "usage_checkpoint": {
-                "new_meter_epoch_id": "01a19407-fe40-7d7c-8c02-fd4b1d172248",
+                "new_meter_epoch_id": "01a19682-c851-7a88-a643-4abbbfe234a6",
                 "central_acked_through": "0",
-                "closed_meter_epoch_id": "01a19402-c69f-7487-b970-4976fe30d2db",
+                "closed_meter_epoch_id": "01a1967d-9153-73f3-8c74-bfbf714deb0e",
                 "last_durable_event_seq": "0"
               },
               "policy_generation": "27",
               "recovery_required": false,
-              "current_release_id": "01a19400-ea2c-7d9b-8104-559ace94567e",
+              "current_release_id": "01a1967b-9b81-7675-8035-9220b0a7c982",
               "publication_intent": "unpublished",
-              "previous_release_id": "01a19400-e1dc-739f-a697-cc3bc2f47004",
-              "requested_release_id": "01a19400-ea2c-7d9b-8104-559ace94567e",
+              "previous_release_id": "01a1967b-9313-7895-afeb-71db6f20adaf",
+              "requested_release_id": "01a1967b-9b81-7675-8035-9220b0a7c982",
               "state_schema_version": 1,
               "member_forwarding_enabled": false
             },
             "response": {
               "accepted": true,
-              "result_id": "f251643a-5df8-5d5a-a7a6-f2b237999a4d",
-              "received_at": "2026-10-31T22:15:19.521706761Z",
+              "result_id": "638e45c7-87b4-5986-b4be-9700302a7714",
+              "received_at": "2026-11-01T09:48:41.102334881Z",
               "accepted_as_history": false,
               "observed_update_generation": "5",
               "applied_to_current_observation": true
             },
-            "payload_sha256": "20003d018517e43b36efc28594c425f5b618b5afd0bbad16ce121ec50205bb6d"
+            "payload_sha256": "00f696b9f0c5ee8dfb515b28789772f1e7eed362c64530dbe3358a110e87c0d5"
           }
         ]
       },
@@ -281,44 +281,44 @@
                 "internet_only": "passed",
                 "identity_and_state": "passed"
               },
-              "job_id": "01a19408-3207-77b3-bff6-ca3dc2c1e5e9",
+              "job_id": "01a19682-fc6d-71b0-88f2-244efe899f27",
               "attempt": 1,
               "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-              "node_id": "01a19408-30ae-7106-9fa8-83f44997fa3d",
-              "batch_id": "01a19408-3206-7a97-9e36-fe7dcff475d5",
-              "result_id": "773444b0-a6d1-5b75-81e6-c0aa3d5c917d",
-              "target_id": "01a19408-3206-7a98-859c-272b86eba0f2",
+              "node_id": "01a19682-fb4c-763e-b257-d9192d01628a",
+              "batch_id": "01a19682-fc6c-74a9-912f-d6946c305502",
+              "result_id": "fd4df937-f373-5311-a6c1-a69975f63a85",
+              "target_id": "01a19682-fc6c-74aa-b051-3a7e973691b5",
               "error_code": null,
               "generation": "1",
-              "started_at": "2026-10-31T22:15:33Z",
-              "finished_at": "2026-10-31T22:15:43Z",
-              "payload_hash": "a44f3aaa092508cc48b6dbbf287ec4f4d2c2a667ab1eb387d2c80176deb618f2",
-              "incarnation_id": "01a19408-316c-7b8d-af60-a8b1ef66f86c",
-              "manifest_sha256": "238e16e205691faea7ebeccf7b80014d63934f1895f02f6814cb194003d6dd23",
+              "started_at": "2026-11-01T09:49:01Z",
+              "finished_at": "2026-11-01T09:49:10Z",
+              "payload_hash": "ba134fcac34efed4c68e3826bc128e79f47bc9d8b0c1af75bc431d0d7b8ad00c",
+              "incarnation_id": "01a19682-fbcc-70f1-9a96-a21f8b5cd8b6",
+              "manifest_sha256": "958d92d642bcc02de81bb1c0bbbbdc10676dd7ad666b08e8ff2c45dc3c9f8947",
               "usage_checkpoint": {
-                "new_meter_epoch_id": "01a19408-5e09-79ca-99b0-3bf48336b6e9",
+                "new_meter_epoch_id": "01a19683-3c20-7869-b5d0-425e52e6730b",
                 "central_acked_through": "0",
-                "closed_meter_epoch_id": "01a19408-31f5-7c21-a8da-da54a6c5b1af",
+                "closed_meter_epoch_id": "01a19682-fc5e-7910-aa9e-65451ce715e6",
                 "last_durable_event_seq": "0"
               },
-              "policy_generation": "2",
+              "policy_generation": "3",
               "recovery_required": false,
-              "current_release_id": "01a19400-ea2c-7d9b-8104-559ace94567e",
+              "current_release_id": "01a1967b-9b81-7675-8035-9220b0a7c982",
               "publication_intent": "unpublished",
               "previous_release_id": null,
-              "requested_release_id": "01a19400-ea2c-7d9b-8104-559ace94567e",
+              "requested_release_id": "01a1967b-9b81-7675-8035-9220b0a7c982",
               "state_schema_version": 1,
               "member_forwarding_enabled": false
             },
             "response": {
               "accepted": true,
-              "result_id": "773444b0-a6d1-5b75-81e6-c0aa3d5c917d",
-              "received_at": "2026-10-31T22:15:43.794866736Z",
+              "result_id": "fd4df937-f373-5311-a6c1-a69975f63a85",
+              "received_at": "2026-11-01T09:49:10.490282468Z",
               "accepted_as_history": false,
               "observed_update_generation": "1",
               "applied_to_current_observation": true
             },
-            "payload_sha256": "a44f3aaa092508cc48b6dbbf287ec4f4d2c2a667ab1eb387d2c80176deb618f2"
+            "payload_sha256": "ba134fcac34efed4c68e3826bc128e79f47bc9d8b0c1af75bc431d0d7b8ad00c"
           }
         ]
       }
@@ -331,7 +331,7 @@
       {
         "name": "result_delivery_http",
         "detail": {
-          "at": "2026-10-31T22:10:05.989259508Z",
+          "at": "2026-11-01T09:43:27.568514001Z",
           "status": 202
         }
       },
@@ -341,14 +341,14 @@
           "state": "failed",
           "unconfirmed": false,
           "needs_attention": true,
-          "current_release": "01a19400-e1dc-739f-a697-cc3bc2f47004",
+          "current_release": "01a1967b-9313-7895-afeb-71db6f20adaf",
           "error_code": "ARTIFACT_INVALID"
         }
       },
       {
         "name": "batch_api_response",
         "detail": {
-          "batch_id": "01a19403-20e5-7b06-9695-7d07b43791a2",
+          "batch_id": "01a1967d-eb03-7199-8013-8bb17c097e00",
           "counts": {
             "already_current": 0,
             "applying": 0,
@@ -363,12 +363,12 @@
             "verifying": 0,
             "waiting_online": 0
           },
-          "created_at": "2026-10-31T22:09:55.428971Z",
-          "created_by": "01a19400-d122-7f27-ae4e-528b480bbb15",
+          "created_at": "2026-11-01T09:43:16.993883Z",
+          "created_by": "01a1967b-8140-7ae8-b636-6be90dd548cd",
           "next_cursor": null,
-          "operation_id": "01a19403-20e5-7d89-8703-614b9e678bea",
-          "reason": "TEST ONLY updates follow-up 12",
-          "release_id": "01a19400-ea2c-7d9b-8104-559ace94567e",
+          "operation_id": "01a1967d-eb03-7596-acfd-8e80386b93e1",
+          "reason": "TEST ONLY updates follow-up 13",
+          "release_id": "01a1967b-9b81-7675-8035-9220b0a7c982",
           "requires_service_restart": true,
           "state": "completed_with_exceptions",
           "target_count": 1,
@@ -379,38 +379,38 @@
               "current_job": {
                 "attempt": 1,
                 "error_code": "ARTIFACT_INVALID",
-                "finished_at": "2026-10-31T22:10:05.986638Z",
-                "job_id": "01a19403-20e6-781a-bcf7-5ccd76f1ce54",
+                "finished_at": "2026-11-01T09:43:27.565781Z",
+                "job_id": "01a1967d-eb04-7b74-bbbc-cbb617cc68a8",
                 "recovery_required": false,
                 "stage": "download",
-                "started_at": "2026-10-31T22:10:05.986638Z",
+                "started_at": "2026-11-01T09:43:27.565781Z",
                 "state": "failed"
               },
-              "current_release_id": "01a19400-e1dc-739f-a697-cc3bc2f47004",
-              "execution_incarnation_id": "01a19402-1d7d-7712-a992-5c163f4a8b97",
+              "current_release_id": "01a1967b-9313-7895-afeb-71db6f20adaf",
+              "execution_incarnation_id": "01a1967c-d3b5-79b7-99ff-f378c89ee0f1",
               "generation": "2",
               "health": null,
-              "incarnation_at_snapshot": "01a19402-1d7d-7712-a992-5c163f4a8b97",
-              "last_observed_at": "2026-10-31T22:10:08.638663Z",
-              "last_result_at": "2026-10-31T22:10:05.986638Z",
+              "incarnation_at_snapshot": "01a1967c-d3b5-79b7-99ff-f378c89ee0f1",
+              "last_observed_at": "2026-11-01T09:43:30.420789Z",
+              "last_result_at": "2026-11-01T09:43:27.565781Z",
               "needs_attention": true,
-              "node_id": "01a19402-1ab6-749f-ab2e-4b3446e709c9",
+              "node_id": "01a1967c-d1a2-76e8-9b40-9c9f8a082ffe",
               "node_name": "TEST ONLY updates",
               "online_at_snapshot": true,
               "policy_generation": "10",
               "policy_refs": [
-                "01a19400-ee97-70f9-9a20-2de1325438f1",
-                "01a19401-3eed-7c5c-bb19-94c8273b8af2"
+                "01a1967b-a01c-74b9-acf1-bd673c8b710a",
+                "01a1967b-f308-77c6-8d62-3522016648d0"
               ],
-              "previous_release_id": "01a19400-e1dc-739f-a697-cc3bc2f47004",
+              "previous_release_id": "01a1967b-9313-7895-afeb-71db6f20adaf",
               "retryable": false,
               "state": "failed",
-              "target_id": "01a19403-20e6-745d-8470-35ae15babd28",
+              "target_id": "01a1967d-eb04-7005-8401-a21fed44827a",
               "unconfirmed": false
             }
           ],
-          "targets_url": "/api/v1/admin/update-batches/01a19403-20e5-7b06-9695-7d07b43791a2",
-          "updated_at": "2026-10-31T22:10:05.988201Z"
+          "targets_url": "/api/v1/admin/update-batches/01a1967d-eb03-7199-8013-8bb17c097e00",
+          "updated_at": "2026-11-01T09:43:27.567346Z"
         }
       },
       {
@@ -421,39 +421,39 @@
               "stage": "download",
               "state": "failed",
               "health": null,
-              "job_id": "01a19403-20e6-781a-bcf7-5ccd76f1ce54",
+              "job_id": "01a1967d-eb04-7b74-bbbc-cbb617cc68a8",
               "attempt": 1,
               "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-              "node_id": "01a19402-1ab6-749f-ab2e-4b3446e709c9",
-              "batch_id": "01a19403-20e5-7b06-9695-7d07b43791a2",
-              "result_id": "7523ee10-b427-56ab-a960-ddd558ca3892",
-              "target_id": "01a19403-20e6-745d-8470-35ae15babd28",
+              "node_id": "01a1967c-d1a2-76e8-9b40-9c9f8a082ffe",
+              "batch_id": "01a1967d-eb03-7199-8013-8bb17c097e00",
+              "result_id": "4570341e-1698-596a-ad5c-f1b4b5b04f07",
+              "target_id": "01a1967d-eb04-7005-8401-a21fed44827a",
               "error_code": "ARTIFACT_INVALID",
               "generation": "2",
-              "started_at": "2026-10-31T22:10:04Z",
-              "finished_at": "2026-10-31T22:10:04Z",
-              "payload_hash": "39252eed15fc6ab6286540bcb8700c5cdf81f9bbaacee50e5e4c8074596cbee6",
-              "incarnation_id": "01a19402-1d7d-7712-a992-5c163f4a8b97",
-              "manifest_sha256": "238e16e205691faea7ebeccf7b80014d63934f1895f02f6814cb194003d6dd23",
+              "started_at": "2026-11-01T09:43:26Z",
+              "finished_at": "2026-11-01T09:43:26Z",
+              "payload_hash": "a6ff6666b3ec1a43221d7a4bba3af05d0eb88e94644b308a1921d119f07ed13d",
+              "incarnation_id": "01a1967c-d3b5-79b7-99ff-f378c89ee0f1",
+              "manifest_sha256": "958d92d642bcc02de81bb1c0bbbbdc10676dd7ad666b08e8ff2c45dc3c9f8947",
               "usage_checkpoint": null,
               "policy_generation": "10",
               "recovery_required": false,
-              "current_release_id": "01a19400-e1dc-739f-a697-cc3bc2f47004",
+              "current_release_id": "01a1967b-9313-7895-afeb-71db6f20adaf",
               "publication_intent": "unpublished",
-              "previous_release_id": "01a19400-e1dc-739f-a697-cc3bc2f47004",
-              "requested_release_id": "01a19400-ea2c-7d9b-8104-559ace94567e",
+              "previous_release_id": "01a1967b-9313-7895-afeb-71db6f20adaf",
+              "requested_release_id": "01a1967b-9b81-7675-8035-9220b0a7c982",
               "state_schema_version": 1,
               "member_forwarding_enabled": false
             },
             "response": {
               "accepted": true,
-              "result_id": "7523ee10-b427-56ab-a960-ddd558ca3892",
-              "received_at": "2026-10-31T22:10:05.987544048Z",
+              "result_id": "4570341e-1698-596a-ad5c-f1b4b5b04f07",
+              "received_at": "2026-11-01T09:43:27.566710302Z",
               "accepted_as_history": false,
               "observed_update_generation": "2",
               "applied_to_current_observation": true
             },
-            "payload_sha256": "39252eed15fc6ab6286540bcb8700c5cdf81f9bbaacee50e5e4c8074596cbee6"
+            "payload_sha256": "a6ff6666b3ec1a43221d7a4bba3af05d0eb88e94644b308a1921d119f07ed13d"
           }
         ]
       }
@@ -469,14 +469,14 @@
           "state": "rolled_back",
           "unconfirmed": false,
           "needs_attention": true,
-          "current_release": "01a19400-e1dc-739f-a697-cc3bc2f47004",
+          "current_release": "01a1967b-9313-7895-afeb-71db6f20adaf",
           "error_code": "HEALTH_CHECK_FAILED"
         }
       },
       {
         "name": "batch_api_response",
         "detail": {
-          "batch_id": "01a19403-5a72-7414-8321-87d6bf9436dc",
+          "batch_id": "01a1967e-24b9-7ac6-b21f-35d071f61a18",
           "counts": {
             "already_current": 0,
             "applying": 0,
@@ -491,12 +491,12 @@
             "verifying": 0,
             "waiting_online": 0
           },
-          "created_at": "2026-10-31T22:10:10.161216Z",
-          "created_by": "01a19400-d122-7f27-ae4e-528b480bbb15",
+          "created_at": "2026-11-01T09:43:31.768223Z",
+          "created_by": "01a1967b-8140-7ae8-b636-6be90dd548cd",
           "next_cursor": null,
-          "operation_id": "01a19403-5a72-7783-a960-4549f4e96051",
-          "reason": "TEST ONLY updates follow-up 12",
-          "release_id": "01a19400-d95c-7069-8a77-3fac92c50e90",
+          "operation_id": "01a1967e-24b9-7df1-9e1b-8bb6b81e5cf6",
+          "reason": "TEST ONLY updates follow-up 13",
+          "release_id": "01a1967b-8a41-7284-981c-b690b4dd3eb9",
           "requires_service_restart": true,
           "state": "completed_with_exceptions",
           "target_count": 1,
@@ -513,15 +513,15 @@
               "current_job": {
                 "attempt": 1,
                 "error_code": "HEALTH_CHECK_FAILED",
-                "finished_at": "2026-10-31T22:10:56.056685Z",
-                "job_id": "01a19403-5a73-7595-bc66-7fa3d56e1b1e",
+                "finished_at": "2026-11-01T09:44:17.770289Z",
+                "job_id": "01a1967e-24ba-7cda-a35e-ac898a05dd2b",
                 "recovery_required": false,
                 "stage": "report",
-                "started_at": "2026-10-31T22:10:56.056685Z",
+                "started_at": "2026-11-01T09:44:17.770289Z",
                 "state": "rolled_back"
               },
-              "current_release_id": "01a19400-e1dc-739f-a697-cc3bc2f47004",
-              "execution_incarnation_id": "01a19402-1d7d-7712-a992-5c163f4a8b97",
+              "current_release_id": "01a1967b-9313-7895-afeb-71db6f20adaf",
+              "execution_incarnation_id": "01a1967c-d3b5-79b7-99ff-f378c89ee0f1",
               "generation": "3",
               "health": {
                 "dns_policy": "passed",
@@ -530,27 +530,27 @@
                 "processes": "passed",
                 "tunnel_probe": "passed"
               },
-              "incarnation_at_snapshot": "01a19402-1d7d-7712-a992-5c163f4a8b97",
-              "last_observed_at": "2026-10-31T22:11:00.953474Z",
-              "last_result_at": "2026-10-31T22:10:56.056685Z",
+              "incarnation_at_snapshot": "01a1967c-d3b5-79b7-99ff-f378c89ee0f1",
+              "last_observed_at": "2026-11-01T09:44:22.763372Z",
+              "last_result_at": "2026-11-01T09:44:17.770289Z",
               "needs_attention": true,
-              "node_id": "01a19402-1ab6-749f-ab2e-4b3446e709c9",
+              "node_id": "01a1967c-d1a2-76e8-9b40-9c9f8a082ffe",
               "node_name": "TEST ONLY updates",
               "online_at_snapshot": true,
               "policy_generation": "13",
               "policy_refs": [
-                "01a19400-ee97-70f9-9a20-2de1325438f1",
-                "01a19401-3eed-7c5c-bb19-94c8273b8af2"
+                "01a1967b-a01c-74b9-acf1-bd673c8b710a",
+                "01a1967b-f308-77c6-8d62-3522016648d0"
               ],
-              "previous_release_id": "01a19400-d95c-7069-8a77-3fac92c50e90",
+              "previous_release_id": "01a1967b-8a41-7284-981c-b690b4dd3eb9",
               "retryable": false,
               "state": "rolled_back",
-              "target_id": "01a19403-5a73-703c-8aac-421aa11b5f65",
+              "target_id": "01a1967e-24ba-7685-aa82-8b3549b0ae6f",
               "unconfirmed": false
             }
           ],
-          "targets_url": "/api/v1/admin/update-batches/01a19403-5a72-7414-8321-87d6bf9436dc",
-          "updated_at": "2026-10-31T22:10:56.058009Z"
+          "targets_url": "/api/v1/admin/update-batches/01a1967e-24b9-7ac6-b21f-35d071f61a18",
+          "updated_at": "2026-11-01T09:44:17.77192Z"
         }
       },
       {
@@ -567,20 +567,20 @@
                 "internet_only": "passed",
                 "identity_and_state": "passed"
               },
-              "job_id": "01a19403-5a73-7595-bc66-7fa3d56e1b1e",
+              "job_id": "01a1967e-24ba-7cda-a35e-ac898a05dd2b",
               "attempt": 1,
               "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-              "node_id": "01a19402-1ab6-749f-ab2e-4b3446e709c9",
-              "batch_id": "01a19403-5a72-7414-8321-87d6bf9436dc",
-              "result_id": "e2bb42c4-cc64-542c-b7f9-6b25b67cb8f5",
-              "target_id": "01a19403-5a73-703c-8aac-421aa11b5f65",
+              "node_id": "01a1967c-d1a2-76e8-9b40-9c9f8a082ffe",
+              "batch_id": "01a1967e-24b9-7ac6-b21f-35d071f61a18",
+              "result_id": "ce9544d4-810d-504c-96e6-037ab0bbcc8c",
+              "target_id": "01a1967e-24ba-7685-aa82-8b3549b0ae6f",
               "error_code": "HEALTH_CHECK_FAILED",
               "generation": "3",
-              "started_at": "2026-10-31T22:10:19Z",
-              "finished_at": "2026-10-31T22:10:56Z",
-              "payload_hash": "e3c7ed3c6af61f5bfcca9dba619a5a5ac681bc323a0cb3b8ca2792e9e243a346",
-              "incarnation_id": "01a19402-1d7d-7712-a992-5c163f4a8b97",
-              "manifest_sha256": "b33ee2cc785cac12b28917f49ec2bd5671f179d9cb97f0bd816c0e43bba88836",
+              "started_at": "2026-11-01T09:43:41Z",
+              "finished_at": "2026-11-01T09:44:17Z",
+              "payload_hash": "a765f129950f22b598174a2122e66d8b984631fc662da49a7bbcbaf997412e32",
+              "incarnation_id": "01a1967c-d3b5-79b7-99ff-f378c89ee0f1",
+              "manifest_sha256": "2b15a5803d0fcb6bc22be79ef9c872b70d351d130e4c22ffe929f17b6fc81c84",
               "candidate_health": {
                 "processes": "passed",
                 "dns_policy": "passed",
@@ -589,29 +589,29 @@
                 "identity_and_state": "passed"
               },
               "usage_checkpoint": {
-                "new_meter_epoch_id": "01a19403-93b5-7345-b793-76c46e1c3fbb",
+                "new_meter_epoch_id": "01a1967e-5e78-7016-adb0-e90bcdad454f",
                 "central_acked_through": "0",
-                "closed_meter_epoch_id": "01a19402-c69f-7487-b970-4976fe30d2db",
+                "closed_meter_epoch_id": "01a1967d-9153-73f3-8c74-bfbf714deb0e",
                 "last_durable_event_seq": "0"
               },
               "policy_generation": "13",
               "recovery_required": false,
-              "current_release_id": "01a19400-e1dc-739f-a697-cc3bc2f47004",
+              "current_release_id": "01a1967b-9313-7895-afeb-71db6f20adaf",
               "publication_intent": "unpublished",
-              "previous_release_id": "01a19400-d95c-7069-8a77-3fac92c50e90",
-              "requested_release_id": "01a19400-d95c-7069-8a77-3fac92c50e90",
+              "previous_release_id": "01a1967b-8a41-7284-981c-b690b4dd3eb9",
+              "requested_release_id": "01a1967b-8a41-7284-981c-b690b4dd3eb9",
               "state_schema_version": 1,
               "member_forwarding_enabled": false
             },
             "response": {
               "accepted": true,
-              "result_id": "e2bb42c4-cc64-542c-b7f9-6b25b67cb8f5",
-              "received_at": "2026-10-31T22:10:56.057192025Z",
+              "result_id": "ce9544d4-810d-504c-96e6-037ab0bbcc8c",
+              "received_at": "2026-11-01T09:44:17.77076462Z",
               "accepted_as_history": false,
               "observed_update_generation": "3",
               "applied_to_current_observation": false
             },
-            "payload_sha256": "e3c7ed3c6af61f5bfcca9dba619a5a5ac681bc323a0cb3b8ca2792e9e243a346"
+            "payload_sha256": "a765f129950f22b598174a2122e66d8b984631fc662da49a7bbcbaf997412e32"
           }
         ]
       }
