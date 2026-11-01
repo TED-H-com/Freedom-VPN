@@ -73,6 +73,11 @@ func TestAT10_AT13_ReloadRevokeBaseline(t *testing.T) {
 		doc := applyAt(t, m)
 		a1 := sampleBytes(doc.Samples, devA1, "upload")
 		a2 := sampleBytes(doc.Samples, devA2, "upload")
+		if i%10 == 0 {
+			// The removed device is represented by Finals, not Samples.
+			// Earlier scenarios may have already populated its stable counter.
+			a2 = sampleBytes(doc.Finals, devA2, "upload")
+		}
 		if a1 < lowA1 {
 			t.Fatalf("generation %d a1 upload went backwards %d -> %d", gen, lowA1, a1)
 		}
