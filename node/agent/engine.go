@@ -534,6 +534,15 @@ func (e *Engine) Step(ctx context.Context) error {
 	if err := ctx.Err(); err != nil {
 		return err
 	}
+	// Control I/O still uses ioCtx and stops with the caller. Local work must
+	// finish its bounded transaction/readback after SIGTERM: canceling Apply
+	// or a path/store read would manufacture a failure and withdraw a valid
+	// lease before Close can checkpoint it. Leave the control budget plus the
+	// existing five-second cleanup allowance; inner install/read bounds and
+	// signed deadlines remain authoritative. Real failures still fail closed.
+	localCtx, cancelLocal := context.WithTimeout(context.WithoutCancel(ctx), e.controlPassTimeout()+5*time.Second)
+	defer cancelLocal()
+	ctx = localCtx
 	// Refresh the anchor before any 304. A wall jump must be visible to the
 	// lease renewal decision even when desired state is unchanged (§16.3).
 	_, _ = e.verifyTime()
