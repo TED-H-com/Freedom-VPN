@@ -244,6 +244,9 @@ type NativeRouter1280 struct {
 // The new member link is 1280; router ingress and node links remain 1500. Routes
 // are specific to fixture peers and contain no MTU metric. e2e-down owns cleanup.
 func (s *Stack) PrepareNativeRouter1280(ctx context.Context) (*NativeRouter1280, error) {
+	if s.lab.node != s.lab.prefix+"-node" || s.lab.member != s.lab.prefix+"-member" {
+		return nil, fmt.Errorf("router requires the canonical prepared native node/member pair")
+	}
 	slot := strings.TrimPrefix(s.lab.labPrefix, "172.28.")
 	left6 := "2001:db8:" + slot + "::"
 	right6 := "2001:db8:" + slot + ":23::"
@@ -296,4 +299,9 @@ func (h *NativeRouter1280) Select(ctx context.Context, family string) error {
 	cmd := exec.CommandContext(ctx, "docker", "exec", "-i", s.lab.member, "nft", "-f", "-")
 	cmd.Stdin = strings.NewReader(script)
 	return cmd.Run()
+}
+
+// StartCapture includes both router interfaces in the ready/stop evidence.
+func (h *NativeRouter1280) StartCapture(ctx context.Context) (*NativeCapture, error) {
+	return h.stack.startNativeCapture(ctx, map[string]string{"router": h.Container})
 }

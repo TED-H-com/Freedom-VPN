@@ -45,7 +45,7 @@ func (r *runner) nativeRouter23(ctx context.Context, s *Stack) {
 				recPathNote(&rec)("error", err.Error())
 				return
 			}
-			c, e := s.startNativeCapture(ctx, map[string]string{"router": h.Container})
+			c, e := h.StartCapture(ctx)
 			if e != nil {
 				recPathNote(&rec)("error", e.Error())
 				return
