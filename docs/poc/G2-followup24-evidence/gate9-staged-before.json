@@ -1,0 +1,11 @@
+{
+  "test_only": true,
+  "command": [
+    "git",
+    "diff",
+    "--cached",
+    "--check"
+  ],
+  "exit": 2,
+  "note": "Raw command-output trailing whitespace; exact bytes archived before readable copies are normalized."
+}

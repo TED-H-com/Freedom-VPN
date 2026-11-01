@@ -1,0 +1,25 @@
+=== RUN   TestAT10_AT13_ReloadRevokeBaseline
+AT10 regen 1025 a1=2194 a2=0
+AT10 regen 1050 a1=4014 a2=0
+AT10 regen 1075 a1=6394 a2=0
+AT10 regen 1100 a1=8074 a2=0
+    scenario_at10_test.go:101: ISO-F6-03: 101 Apply/guard/verifier/precision producer snapshots match executor brackets
+    scenario_at10_test.go:101:
+        AT10 PASS under D-120
+        datagram | generation | bracket start ns | bracket end ns | upper ms | render-installed ms | classification | next datagram | failures
+        (no UDP losses)
+
+AT10 after kill
+name                             ns       proto  dst                    port   expect   observed       ok
+a1-stays-revoked                 fv-a1    tcp    203.0.113.10           80     deny     timeout        true
+a2-stays-up                      fv-a2    tcp    203.0.113.10           80     allow    connected      true
+lan-stays-denied                 fv-a2    tcp    10.1.2.10              80     deny     timeout        true
+probes=3 failed=0
+AT10 baseline
+name                             ns       proto  dst                    port   expect   observed       ok
+baseline-a2                      fv-a2    tcp    203.0.113.10           80     deny     timeout        true
+baseline-a1                      fv-a1    tcp    203.0.113.10           80     deny     timeout        true
+probes=2 failed=0
+SUMMARY AT10 regens=100 revoke_stop=1.684s deny_loops=16 hits=0 baseline_forwarding=off
+--- PASS: TestAT10_AT13_ReloadRevokeBaseline (20.14s)
+PASS
