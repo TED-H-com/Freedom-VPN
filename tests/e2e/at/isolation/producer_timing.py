@@ -7,6 +7,7 @@ bound kernel commits; neither an overlap nor a netlink receipt is a drop time.
 import json
 from pathlib import Path
 import statistics
+import re
 from collections import Counter
 import sys
 
@@ -89,9 +90,157 @@ def host_context(row):
     return result
 
 
+COMMAND_PHASES = ('prepare', 'shape', 'install', 'release', 'verify', 'quarantine', 'revoke', 'rollback')
+COMMAND_STAMPS = ('start_attempt', 'start_return', 'child_started_by', 'child_start_exact',
+                  'cancel_observed', 'wait_return')
+
+
+def command_lifecycle(row):
+    """Validate detached command observations, always scoped to this Apply.
+
+    Availability is authoritative. Start is a bracket, deadline is a conversion
+    bracket, and resource deltas cannot establish scheduler causality.
+    """
+    commands = row['timing'].get('commands')
+    result = dict(identity(row), status='unavailable', records=[], phases=[],
+                  reason='command lifecycle records absent')
+    if commands is None or commands == []:
+        return result
+    if not isinstance(commands, list):
+        raise ValueError('commands must be an array')
+    start, end = interval(row['timing'])
+
+    def decimal(obj, key, signed=False):
+        value = obj[key]
+        if (not isinstance(value, str) or
+            not re.fullmatch(r'-?(0|[1-9][0-9]*)' if signed else r'(0|[1-9][0-9]*)', value) or
+            str(int(value)) != value or not -(2**63) <= int(value) < 2**63):
+            raise ValueError('invalid lifecycle decimal: ' + key)
+        return int(value)
+
+    def boolean(obj, key):
+        if type(obj[key]) is not bool:
+            raise ValueError('invalid lifecycle boolean: ' + key)
+        return obj[key]
+
+    def stamp(s, deadline=False):
+        if not isinstance(s, dict) or set(s) != {'ns', 'available'}:
+            raise ValueError('invalid lifecycle stamp')
+        n, available = decimal(s, 'ns', signed=deadline), boolean(s, 'available')
+        if not available:
+            if n != 0:
+                raise ValueError('unavailable lifecycle stamp has a value')
+            return None
+        if not deadline and not start <= n <= end:
+            raise ValueError('command stamp outside its Apply')
+        return n
+
+    def ordered(*values):
+        known = [v for v in values if v is not None]
+        if known != sorted(known):
+            raise ValueError('unordered lifecycle stamps')
+
+    def bracket(b, deadline=False):
+        if not isinstance(b, dict) or set(b) != {'before', 'after'}:
+            raise ValueError('invalid lifecycle bracket')
+        a, b = stamp(b['before'], deadline), stamp(b['after'], deadline)
+        ordered(a, b)
+        return a, b
+
+    def resources(r):
+        if not isinstance(r, dict) or set(r) != {'bracket', 'cgroup_v2_available', 'visible_ancestors_complete', 'host_ancestors_available', 'cgroups'}:
+            raise ValueError('invalid lifecycle resource block')
+        bounds = bracket(r['bracket'])
+        for k in ('cgroup_v2_available', 'visible_ancestors_complete', 'host_ancestors_available'):
+            boolean(r, k)
+        groups = r['cgroups']
+        if groups is None:
+            groups = []  # Go's unavailable nil slice.
+        if not isinstance(groups, list) or len(groups) > 64:
+            raise ValueError('invalid lifecycle cgroups')
+        if not r['cgroup_v2_available'] and (groups or r['visible_ancestors_complete']):
+            raise ValueError('unavailable cgroups have observations')
+        for depth, group in enumerate(groups):
+            if set(group) != {'depth', 'cpu_max', 'cpu_weight', 'cpu_stat', 'cpu_pressure'} or type(group['depth']) is not int or group['depth'] != depth:
+                raise ValueError('invalid lifecycle cgroup depth/fields')
+            for key in ('cpu_max', 'cpu_weight', 'cpu_stat', 'cpu_pressure'):
+                field = group[key]
+                if not isinstance(field, dict) or set(field) != {'available', 'value'}:
+                    raise ValueError('invalid lifecycle resource field')
+                available = boolean(field, 'available')
+                value = field['value']
+                if not isinstance(value, str) or len(value) > 16384 or (not available and value):
+                    raise ValueError('invalid lifecycle resource value')
+                if value and not re.fullmatch(r'[a-z0-9_=. \n]+', value):
+                    raise ValueError('unsanitized lifecycle resource text')
+        return bounds
+
+    flags = ('started', 'ok', 'exit_available', 'signal_available', 'cpu_available', 'switches_available')
+    counters = ('user_cpu_ns', 'system_cpu_ns', 'voluntary_switches', 'involuntary_switches')
+    contexts = ('context_before', 'context_after', 'context_at_cancel')
+    fields = {'kind', 'phase', 'context_deadline', *COMMAND_STAMPS, *flags, *counters,
+              *contexts, 'exit_code', 'signal', 'before', 'after'}
+    previous = start
+    for index, c in enumerate(commands):
+        if not isinstance(c, dict) or set(c) != fields:
+            raise ValueError('invalid/unsanitized command lifecycle fields')
+        if c['kind'] not in ('nft', 'tc', 'conntrack', 'ip', 'other') or c['phase'] not in COMMAND_PHASES:
+            raise ValueError('invalid command kind/phase')
+        for k in flags:
+            boolean(c, k)
+        for k in contexts:
+            if c[k] not in ('none', 'canceled', 'deadline_exceeded', 'other', 'unavailable') or (k != 'context_at_cancel' and c[k] == 'unavailable'):
+                raise ValueError('invalid command context state')
+        for k in counters:
+            decimal(c, k)
+        for k, lo, hi in (('exit_code', -1, 255), ('signal', 0, 64)):
+            if type(c[k]) is not int or not lo <= c[k] <= hi:
+                raise ValueError('invalid lifecycle exit status')
+        for flag, keys in (('exit_available', ('exit_code',)), ('signal_available', ('signal',)),
+                           ('cpu_available', counters[:2]), ('switches_available', counters[2:])):
+            if not c[flag] and any(int(c[k]) != 0 for k in keys):
+                raise ValueError('unavailable command status has a value')
+        times = {k: stamp(c[k]) for k in COMMAND_STAMPS}
+        bracket(c['context_deadline'], deadline=True)
+        before, after = resources(c['before']), resources(c['after'])
+        ordered(previous, *before, times['start_attempt'], times['start_return'], times['wait_return'], *after)
+        previous = next((v for v in reversed(after) if v is not None), times['wait_return'] or times['start_return'] or previous)
+        ordered(times['start_attempt'], times['child_start_exact'], times['child_started_by'], times['wait_return'])
+        ordered(times['start_attempt'], times['cancel_observed'], times['wait_return'], *after)
+        if c['started']:
+            if c['child_started_by'] != c['start_return']:
+                raise ValueError('child-start bound differs from Start return')
+        elif c['ok'] or any(times[k] is not None for k in ('child_started_by', 'child_start_exact', 'wait_return', 'cancel_observed')) or any(c[k] for k in flags[2:]):
+            raise ValueError('unstarted command has child/exit observations')
+        if c['context_at_cancel'] == 'unavailable' and times['cancel_observed'] is not None:
+            raise ValueError('cancel stamp without callback context')
+        if c['ok'] and ((c['exit_available'] and c['exit_code'] != 0) or (c['signal_available'] and c['signal'] != 0)):
+            raise ValueError('successful command has failed exit status')
+        d = row['timing']['deadline']
+        if c['phase'] in ('install', 'release'):
+            left, right = ('install_start_ns', 'installed_by_ns') if c['phase'] == 'install' else ('release_start_ns', 'release_end_ns')
+            a, b = interval(d, left, right)
+            for value in (*before, *times.values(), *after):
+                if value is not None and not a <= value <= b:
+                    raise ValueError('lifecycle outside its phase command bracket')
+        result['records'].append(dict(identity(row), index=index, record=c))
+    for phase in COMMAND_PHASES:
+        indices = [i for i, c in enumerate(commands) if c['phase'] == phase]
+        if indices:
+            result['phases'].append(dict(phase=phase, command_indices=indices,
+                description='; '.join(f"{commands[i]['kind']}: started={commands[i]['started']}, ok={commands[i]['ok']}, "
+                    f"exit={commands[i]['exit_code'] if commands[i]['exit_available'] else 'unavailable'}, "
+                    f"signal={commands[i]['signal'] if commands[i]['signal_available'] else 'unavailable'}, "
+                    f"context={commands[i]['context_before']}→{commands[i]['context_after']}, "
+                    f"cancel={commands[i]['context_at_cancel']}" for i in indices)))
+    result.update(status='available', reason=None)
+    return result
+
+
 def apply_diagnostic(row):
     t, d = row['timing'], row['timing']['deadline']
     host = host_context(row)
+    commands = command_lifecycle(row)
     checks = t['verifications']
     verification = ('passed' if checks[-1]['verified'] else 'failed') if checks else 'unavailable'
     stage = None
@@ -104,10 +253,13 @@ def apply_diagnostic(row):
     render, installed, bound = (ns(d, k) for k in ('render_start_ns', 'installed_by_ns', 'install_bound_ns'))
     elapsed = installed-render if render and installed and bound else None
     overrun = elapsed > bound if elapsed is not None else None
+    if overrun and not t['succeeded']:
+        stage = 'install'
     label = 'unavailable' if host['status'] == 'unavailable' else 'no recorded install-overrun/contention conjunction'
     if stage == 'install' and overrun and not d['guard_released'] and host['contention'] == 'recorded':
         label = 'fail-closed install overrun with recorded host contention'
-    return dict(host_context=host, failure_stage=stage, verification_status=verification,
+    return dict(host_context=host, command_lifecycle=commands, failure_stage=stage, verification_status=verification,
+                install_phase_description=next((p['description'] for p in commands['phases'] if p['phase'] == 'install'), 'unavailable'),
                 render_to_installed_ns=str(elapsed) if elapsed is not None else None,
                 install_bound_met=not overrun if overrun is not None else None,
                 install_overrun=overrun, diagnostic_label=label,
@@ -152,6 +304,8 @@ def validate_operations(rows):
                 raise ValueError('missing producer timing')
             continue
         t = row['timing']
+        if 'commands' in t and (t['operation'] != 'apply' or row['source'] != 'apply'):
+            raise ValueError('command lifecycle outside Apply')
         if t['version'] != 1 or t['clock'] != 'CLOCK_MONOTONIC':
             raise ValueError('unsupported timing clock/version')
         start, end = interval(t)

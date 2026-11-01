@@ -988,7 +988,29 @@ func (x *isolationRun) restart() {
 	before, _ := x.r.lab.docker(x.r.lab.node, "cat", "/run/vpn-node/heartbeat")
 	boot := regexp.MustCompile(`(?m)^boot_id (\S+)$`).FindStringSubmatch(string(before))
 	x.retainReasonLogs("before-restart")
-	out, e := exec.Command("docker", "restart", x.r.lab.node).CombinedOutput()
+	leaseBefore, beforeOK := x.readNodeLease()
+	start := time.Now()
+	out, e := exec.Command("docker", "stop", x.r.lab.node).CombinedOutput()
+	stopped := time.Now()
+	leaseStopped, stoppedOK := x.readNodeLease()
+	startRequested := time.Now()
+	startOut, startErr := exec.Command("docker", "start", x.r.lab.node).CombinedOutput()
+	started := time.Now()
+	x.extra("restart-lifecycle.json", map[string]any{
+		"run_id": x.records["AT13"].RunID, "stop_started": start.UTC(), "stop_completed": stopped.UTC(),
+		"start_requested": startRequested.UTC(), "start_completed": started.UTC(),
+		"stop_duration_ns":             strconv.FormatInt(stopped.Sub(start).Nanoseconds(), 10),
+		"stopped_snapshot_duration_ns": strconv.FormatInt(startRequested.Sub(stopped).Nanoseconds(), 10),
+		"restart_duration_ns":          strconv.FormatInt(started.Sub(start).Nanoseconds(), 10),
+		"stop_ok":                      e == nil, "start_ok": startErr == nil,
+		"before": leaseBefore, "stopped": leaseStopped, "before_available": beforeOK, "stopped_available": stoppedOK,
+		"stored_lease_survived_stop": beforeOK && stoppedOK && leaseBefore.LeaseID == leaseStopped.LeaseID && leaseBefore.MonoSent == leaseStopped.MonoSent,
+		"scope":                      "Docker stop/start command brackets; stopped SQLite snapshot adds measured downtime. Same boot, not OS reboot or exact SIGTERM/exit timestamps.",
+	})
+	if startErr != nil {
+		e = startErr
+	}
+	out = append(out, startOut...)
 	_ = exec.Command("docker", "exec", "-d", x.r.lab.node, "/tmp/isolation-probe", "nft-clock").Run()
 	wait, cancel := context.WithTimeout(x.ctx, 90*time.Second)
 	ready := waitUntil(wait, 2*time.Second, func() bool {
@@ -1138,6 +1160,7 @@ func (x *isolationRun) deadline() {
 const forgedMemberSource = "100.64.7.7"
 
 type leaseSnap struct {
+	LeaseID      string          `json:"lease_id,omitempty"`
 	Issued       time.Time       `json:"issued_at"`
 	Expires      time.Time       `json:"expires_at"`
 	Generation   string          `json:"generation"`
@@ -1391,9 +1414,13 @@ func (x *isolationRun) centralLeaseAfter(after time.Time) (leaseSnap, bool) {
 }
 
 func (x *isolationRun) readNodeLease() (leaseSnap, bool) {
+	return x.readContainerLease(x.r.lab.node)
+}
+
+func (x *isolationRun) readContainerLease(container string) (leaseSnap, bool) {
 	dir := x.t.TempDir()
 	for _, name := range []string{"agent.db", "agent.db-wal", "agent.db-shm"} {
-		_ = exec.Command("docker", "cp", x.r.lab.node+":/var/lib/vpn-node/state/"+name, filepath.Join(dir, name)).Run()
+		_ = exec.Command("docker", "cp", container+":/var/lib/vpn-node/state/"+name, filepath.Join(dir, name)).Run()
 	}
 	db, err := sql.Open("sqlite", "file:"+filepath.Join(dir, "agent.db")+"?mode=ro")
 	if err != nil {
@@ -1408,6 +1435,7 @@ func (x *isolationRun) readNodeLease() (leaseSnap, bool) {
 	}
 	var doc struct {
 		Signed struct {
+			LeaseID    string            `json:"lease_id"`
 			Max        int               `json:"max_offline_seconds"`
 			Members    []json.RawMessage `json:"members"`
 			Generation string            `json:"config_generation"`
@@ -1422,7 +1450,7 @@ func (x *isolationRun) readNodeLease() (leaseSnap, bool) {
 		return leaseSnap{}, false
 	}
 	_ = db.QueryRow(`SELECT json_object('mono_ns',cast(mono_ns as text),'server_unix_ns',cast(server_unix_ns as text),'wall_unix_ns',cast(wall_unix_ns as text),'trusted',trusted) FROM anchor WHERE id=1`).Scan(&anchor)
-	return leaseSnap{MonoSent: mono, DeadlineMono: mono + int64(ex.Sub(is)), Anchor: anchor, Issued: is.UTC(), Expires: ex.UTC(), Generation: doc.Signed.Generation, Max: doc.Signed.Max, Members: len(doc.Signed.Members)}, true
+	return leaseSnap{LeaseID: doc.Signed.LeaseID, MonoSent: mono, DeadlineMono: mono + int64(ex.Sub(is)), Anchor: anchor, Issued: is.UTC(), Expires: ex.UTC(), Generation: doc.Signed.Generation, Max: doc.Signed.Max, Members: len(doc.Signed.Members)}, true
 }
 
 func (x *isolationRun) countedForward(r *runner) (bool, uint64, uint64, string) {
@@ -2082,9 +2110,12 @@ func (x *isolationRun) archiveReceiver() {
 	// shared stream exporter, then let the receiver finish its 100ms drain.
 	closure := []map[string]any{}
 	for _, container := range []string{x.r.lab.node, x.r.lab.prefix + "-node-clone"} {
+		before, beforeOK := x.readContainerLease(container)
 		start := time.Now()
 		out, err := exec.Command("docker", "exec", container, "agent-service.sh", "stop").CombinedOutput()
-		closure = append(closure, map[string]any{"container": container, "start": start.UTC().Format(time.RFC3339Nano), "end": time.Now().UTC().Format(time.RFC3339Nano), "ok": err == nil, "output": iso.Redact(string(out))})
+		end := time.Now()
+		after, afterOK := x.readContainerLease(container)
+		closure = append(closure, map[string]any{"container": container, "start": start.UTC().Format(time.RFC3339Nano), "end": end.UTC().Format(time.RFC3339Nano), "duration_ns": strconv.FormatInt(end.Sub(start).Nanoseconds(), 10), "ok": err == nil, "output": iso.Redact(string(out)), "before": before, "after": after, "before_available": beforeOK, "after_available": afterOK, "stored_lease_survived_stop": beforeOK && afterOK && before.LeaseID == after.LeaseID && before.MonoSent == after.MonoSent})
 	}
 	time.Sleep(300 * time.Millisecond)
 	x.extra("receiver-closure.json", closure)
@@ -2320,9 +2351,22 @@ func (x *isolationRun) foreignRedirect() {
 }
 func (x *isolationRun) freezeIdentity() {
 	x.retainReasonLogs("before-clone")
+	leaseBefore, beforeOK := x.readNodeLease()
 	at := time.Now()
 	fixture, err := x.stack.StartClonedIdentityFixture(x.ctx, "node")
-	evidence := map[string]any{"started_at": at.UTC().Format(time.RFC3339Nano), "owner": "ENR-02 / ENR-03; this is the consumer latch observation only"}
+	completed := time.Now()
+	leaseAfter, afterOK := x.readNodeLease()
+	state, stateErr := exec.Command("docker", "inspect", "--format={{json .State}}", x.r.lab.node).Output()
+	var lifecycle struct {
+		StartedAt  time.Time `json:"StartedAt"`
+		FinishedAt time.Time `json:"FinishedAt"`
+	}
+	stateOK := stateErr == nil && json.Unmarshal(state, &lifecycle) == nil && lifecycle.FinishedAt.After(at) && lifecycle.StartedAt.After(lifecycle.FinishedAt)
+	evidence := map[string]any{"started_at": at.UTC().Format(time.RFC3339Nano), "completed_at": completed.UTC(), "fixture_duration_ns": strconv.FormatInt(completed.Sub(at).Nanoseconds(), 10), "before_lease": leaseBefore, "after_lease": leaseAfter, "before_available": beforeOK, "after_available": afterOK, "stored_lease_survived_restart": beforeOK && afterOK && leaseBefore.LeaseID == leaseAfter.LeaseID && leaseBefore.MonoSent == leaseAfter.MonoSent, "container_stop_available": stateOK, "owner": "ENR-02 / ENR-03; this is the consumer latch observation only"}
+	if stateOK {
+		evidence["container_finished_at"], evidence["container_started_at"] = lifecycle.FinishedAt, lifecycle.StartedAt
+		evidence["container_stopped_duration_ns"] = strconv.FormatInt(lifecycle.StartedAt.Sub(lifecycle.FinishedAt).Nanoseconds(), 10)
+	}
 	defer func() { x.extra("identity-freeze.json", evidence) }()
 	if err != nil {
 		evidence["status"] = "blocked"
