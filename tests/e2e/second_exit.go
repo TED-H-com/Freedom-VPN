@@ -47,7 +47,7 @@ func (s *Stack) startExitSlot(ctx context.Context, slot, lastOctet string, clone
 		return nil
 	}
 	if clone {
-		if err := run("stop", "-t", "20", s.lab.node); err != nil {
+		if err := run("stop", "-t", "25", s.lab.node); err != nil {
 			return err
 		}
 		defer func() {

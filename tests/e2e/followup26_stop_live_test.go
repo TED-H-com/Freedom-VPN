@@ -56,6 +56,7 @@ func TestE2E_ContainerStop26(t *testing.T) {
 	defer r.finish()
 	ctx := t.Context()
 	s := &Stack{lab: l}
+	previousID := ""
 	for _, mode := range []string{"graceful", "forced"} {
 		rec := Record{ID: "container-stop-" + mode, Title: "TEST ONLY PID1 forwarding and 15 second agent stop budget", Status: StatusFail}
 		func() {
@@ -63,8 +64,21 @@ func TestE2E_ContainerStop26(t *testing.T) {
 			if exec.CommandContext(ctx, "docker", "start", l.node).Run() != nil {
 				return
 			}
-			if s.Service(ctx, "start", "/usr/local") != nil {
-				return
+			if previousID == "" {
+				if s.Service(ctx, "start", "/usr/local") != nil {
+					return
+				}
+			} else {
+				wait, cancel := context.WithTimeout(ctx, 20*time.Second)
+				resumed := waitUntil(wait, 200*time.Millisecond, func() bool {
+					current, e := l.docker(l.node, "cat", "/var/lib/vpn-node/e2e/agent-process-id")
+					return e == nil && strings.TrimSpace(string(current)) != "" && strings.TrimSpace(string(current)) != previousID
+				})
+				cancel()
+				noteJSON(&rec, "automatic_resume", resumed)
+				if !resumed {
+					return
+				}
 			}
 			processID, e := l.docker(l.node, "cat", "/var/lib/vpn-node/e2e/agent-process-id")
 			if e != nil {
@@ -112,6 +126,7 @@ func TestE2E_ContainerStop26(t *testing.T) {
 				return
 			}
 			noteJSON(&rec, "agent_wait", result)
+			previousID = result.ID
 			wantPID, _ := strconv.Atoi(strings.TrimSpace(string(pid)))
 			ok := e == nil && !st.Running && st.ExitCode == 0 && !st.OOMKilled && result.ID == strings.TrimSpace(string(processID)) && result.PID == wantPID && result.StartTicks == startTicks && !result.WaitObservedAt.Before(start)
 			if mode == "graceful" {

@@ -106,7 +106,7 @@ def analyze(run, record):
         bounds.write_text(''.join(json.dumps(bound(p,result['clock_offsets'][role]),separators=(',', ':'))+'\n' for p in packets[role]))
         result['ptb'][role] = [r['packet'] for r in packets[role] if r.get('protocol') == 58 and r.get('icmp', {}).get('type') == 2]
         result['fragmentation_needed'][role] = [r['packet'] for r in packets[role] if r.get('protocol') == 1 and r.get('icmp', {}).get('type') == 3 and r.get('icmp', {}).get('code') == 4]
-    if doc['id'] == 'initial-selection':
+    if doc['id'] in ('initial-selection', 'regrant-session'):
         samples = evidence['samples']
         result['selection_samples'] = [s['label'] for s in samples]
         result['hops'] = {}

@@ -8,6 +8,11 @@ umask 077
 # agent its shipped 15 s budget and persists the actual wait receipt.
 stop_container() {
     trap '' TERM INT
+    # Remember running intent separately: a deliberate service pause survives a
+    # container restart, while a container stop must not create a durable pause.
+    if [ ! -f /var/lib/vpn-node/e2e/pause-agent ]; then
+        : > /var/lib/vpn-node/e2e/container-stop-resume
+    fi
     if agent-service.sh stop; then
         exit 0
     fi
@@ -16,6 +21,9 @@ stop_container() {
 trap stop_container TERM INT
 mkdir -p /run/vpn-node /var/lib/vpn-node/state /var/lib/vpn-node/identity \
     /var/lib/vpn-node/update-journal /var/lib/vpn-node/e2e /opt/vpn-node /var/log/netbird /etc/vpn-node
+if [ -f /var/lib/vpn-node/e2e/container-stop-resume ]; then
+    rm -f /var/lib/vpn-node/e2e/pause-agent /var/lib/vpn-node/e2e/container-stop-resume
+fi
 # Rename only this container's origin-facing interface. The real NetBird
 # interface is fvmb0; no dummy interface can prove member forwarding.
 if ! ip link show fvup0 >/dev/null 2>&1; then
