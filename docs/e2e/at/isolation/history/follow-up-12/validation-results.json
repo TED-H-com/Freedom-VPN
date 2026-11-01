@@ -1,0 +1,134 @@
+{
+  "run_id": "1c25ee44-1872-4cce-a9f5-d52491d87095",
+  "gates": {
+    "area-final": {
+      "command": [
+        "make",
+        "-f",
+        "mk/at-isolation.mk",
+        "at-isolation-lint",
+        "at-isolation-test",
+        "at-isolation-build"
+      ],
+      "exit": 0,
+      "elapsed_seconds": 7.244,
+      "tail": "+ go vet ./tests/e2e/at/isolation/... ./tests/netlab/at/...\n+ go vet -tags netlab ./tests/netlab/at/...\n+ go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 ./tests/e2e/at/isolation/... ./tests/netlab/at/...\n+ go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 -tags netlab ./tests/netlab/at/...\n+ go vet tests/e2e/at/isolation/probe_main.go tests/e2e/at/isolation/observer_main.go\n+ go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 tests/e2e/at/isolation/probe_main.go tests/e2e/at/isolation/observer_main.go\n+ go test -count=1 ./tests/e2e/at/isolation/... ./tests/netlab/at/...\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/isolation\t3.394s\n?   \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab/at\t[no test files]\n+ python3 tests/e2e/at/isolation/driver.py build\n+ sh -ec for arch in amd64 arm64; do GOOS=linux GOARCH=$arch go build -o \"$GOTMPDIR/probe-$arch\" tests/e2e/at/isolation/probe_main.go tests/e2e/at/isolation/observer_main.go; done\n"
+    },
+    "assembled": {
+      "command": [
+        "make",
+        "-f",
+        "mk/at-isolation.mk",
+        "at-isolation"
+      ],
+      "exit": 2,
+      "elapsed_seconds": 1207.405,
+      "tail": " Container fvpn-w4-isolation-node-netns Removed \n Container fvpn-w4-isolation-netbird Stopped \n Container fvpn-w4-isolation-netbird Removing \n Container fvpn-w4-isolation-netbird Removed \n Network fvpn-w4-isolation Removing \n Volume fvpn-w4-isolation-nb Removing \n Volume fvpn-w4-isolation-pgbackrest-repo Removing \n Network fvpn-w4-isolation-origin Removing \n Volume fvpn-w4-isolation-pg Removing \n Network fvpn-w4-isolation-origin Resource is still in use \n Network fvpn-w4-isolation Resource is still in use \n Volume fvpn-w4-isolation-pgbackrest-repo Removed \n Volume fvpn-w4-isolation-nb Removed \n Volume fvpn-w4-isolation-pg Removed \ne2e stack is down\nowned-prefix inventory: {\"containers\": [], \"images\": [], \"networks\": [], \"volumes\": []}\nat-isolation lab=0 stack=1\nmake: *** [mk/at-isolation.mk:57: at-isolation] Error 2\n"
+    },
+    "replay": {
+      "command": [
+        "python3",
+        "-B",
+        "tests/e2e/at/isolation/review_followup10.py",
+        "docs/e2e/at/isolation"
+      ],
+      "exit": 0,
+      "elapsed_seconds": 4.879,
+      "tail": "  \"expiry\": {\n    \"deadline_ns\": \"110488811839293\",\n    \"packet_verdict\": {\n      \"passed\": true,\n      \"deadline_mono_ns\": \"110488811839293\",\n      \"last_positive_mono_ns\": \"110488712234930\",\n      \"first_drop_mono_ns\": \"110488749228802\",\n      \"last_positive_offset_ns\": \"-99604363\",\n      \"first_drop_offset_ns\": \"-62610491\",\n      \"positives\": 161,\n      \"drops\": 41,\n      \"errors\": []\n    },\n    \"pre_deadline_losses\": 1,\n    \"literal_zero_pre_deadline_loss\": false\n  },\n  \"interpretation\": \"Outer bracket is install-start through release-end; inner is installed-by through release-start. Capture reads and command overlaps do not locate the kernel commit/drop instant. All loss counts remain unchanged.\"\n}\n"
+    },
+    "policy-review": {
+      "command": [
+        "python3",
+        "-B",
+        "tests/e2e/at/isolation/review_policy_missing.py",
+        "docs/e2e/at/isolation"
+      ],
+      "exit": 0,
+      "elapsed_seconds": 2.152,
+      "tail": "(no output)\n"
+    },
+    "handover-final": {
+      "command": [
+        "python3",
+        "tests/e2e/at/isolation/run.py",
+        "go",
+        "test",
+        "-count=1",
+        "./tests/handover/..."
+      ],
+      "exit": 0,
+      "elapsed_seconds": 1.014,
+      "tail": "+ go test -count=1 ./tests/handover/...\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/handover\t0.695s\n"
+    },
+    "root-lint-final": {
+      "command": [
+        "python3",
+        "tests/e2e/at/isolation/run.py",
+        "make",
+        "go-lint",
+        "go-with-disk-tmp="
+      ],
+      "exit": 0,
+      "elapsed_seconds": 1.209,
+      "tail": "+ make go-lint go-with-disk-tmp=\n"
+    },
+    "gofmt": {
+      "command": [
+        "bash",
+        "-c",
+        "test -z \"$(gofmt -l $(git ls-files \"*.go\"))\""
+      ],
+      "exit": 0,
+      "elapsed_seconds": 0.126,
+      "tail": "(no output)\n"
+    },
+    "diff-check": {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit": 0,
+      "elapsed_seconds": 0.87,
+      "tail": "(no output)\n"
+    },
+    "hygiene-final": {
+      "command": [
+        "python3",
+        "tests/e2e/at/isolation/run.py",
+        "go",
+        "test",
+        "-count=1",
+        "-v",
+        "-run",
+        "^TestCommittedEvidenceFiles_ValidAndHygieneClean$",
+        "./tests/e2e/at/isolation"
+      ],
+      "exit": 0,
+      "elapsed_seconds": 1.687,
+      "tail": "+ go test -count=1 -v -run ^TestCommittedEvidenceFiles_ValidAndHygieneClean$ ./tests/e2e/at/isolation\n=== RUN   TestCommittedEvidenceFiles_ValidAndHygieneClean\n--- PASS: TestCommittedEvidenceFiles_ValidAndHygieneClean (1.50s)\nPASS\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/isolation\t1.525s\n"
+    }
+  },
+  "audit": {
+    "archive_pins": {
+      "follow-up-10": 100,
+      "follow-up-10-attempt-1": 92,
+      "follow-up-10-attempt-2": 98,
+      "follow-up-11": 103,
+      "follow-up-6": 44,
+      "follow-up-7": 52,
+      "follow-up-8": 80,
+      "follow-up-9": 86
+    },
+    "archive_total": 655,
+    "new_archive_baseline_bytes": 103,
+    "producer_gzip_byte_identical": true,
+    "owned_prefix_inventory": {
+      "containers": [],
+      "images": [],
+      "networks": [],
+      "volumes": []
+    }
+  },
+  "note": "Assembled exit 2 is retained: AT10 8/1/0 due to ISO-F6-01 observation gap, AT11 and AT13 operator blocks. Other required gates pass. Root go-lint uses the same pinned vet/staticcheck through the disk-temp runner, overriding only its shell cleanup-trap wrapper. Five text captures had only terminal blank lines normalized; originals retained privately. No raw JSON/JSONL producer or wire data changed."
+}

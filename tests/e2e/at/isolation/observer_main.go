@@ -10,11 +10,13 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
+	"database/sql"
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
 	"golang.org/x/sys/unix"
 	"io"
+	_ "modernc.org/sqlite"
 	"net"
 	"net/http"
 	"net/http/httputil"
@@ -345,4 +347,70 @@ func nftClock() {
 		}
 	}
 	_ = cmd.Wait()
+}
+
+// Read the live SQLite outbox without copying a WAL in flight or changing it.
+func observationPending() {
+	db, err := sql.Open("sqlite", "file:/var/lib/vpn-node/state/agent.db?mode=ro")
+	must(err)
+	defer db.Close()
+	var pending int
+	must(db.QueryRow("SELECT count(*) FROM outbox WHERE status = 'pending'").Scan(&pending))
+	must(json.NewEncoder(os.Stdout).Encode(map[string]any{"pending": pending, "at": time.Now().UTC().Format(time.RFC3339Nano)}))
+}
+
+// TEST ONLY terminal stop sample inside the lab. Preserve the supervisor pause
+// contract, signal the exact process through pidfd, and observe its exit. The
+// supervisor retains its existing forced-stop policy; record exit status when
+// /proc still exposes it, never infer graceful exit from elapsed time alone.
+func agentStopSample() {
+	raw, err := os.ReadFile("/var/lib/vpn-node/e2e/agent.pid")
+	must(err)
+	pid, err := strconv.Atoi(strings.TrimSpace(string(raw)))
+	must(err)
+	fd, err := unix.PidfdOpen(pid, 0)
+	must(err)
+	defer unix.Close(fd)
+	row := map[string]any{"pid": pid, "scope": "TEST ONLY terminal stop; pidfd SIGTERM send and exit readiness brackets; supervisor pause and escalation retained", "step_cancel": "not observable here"}
+	must(os.WriteFile("/var/lib/vpn-node/e2e/pause-agent", nil, 0600))
+	start := monoNS()
+	row["signal_start"] = clockSample()
+	err = unix.PidfdSendSignal(fd, unix.SIGTERM, nil, 0)
+	row["signal_return"] = clockSample()
+	row["signal_ok"] = err == nil
+	fds := []unix.PollFd{{Fd: int32(fd), Events: unix.POLLIN}}
+	lastAlive := start
+	exited := false
+	for monoNS()-start < int64(13*time.Second) {
+		n, e := unix.Poll(fds, 10)
+		if e == unix.EINTR {
+			continue
+		}
+		if e != nil {
+			break
+		}
+		if n > 0 && fds[0].Revents&unix.POLLIN != 0 {
+			exited = true
+			break
+		}
+		lastAlive = monoNS()
+	}
+	end := monoNS()
+	row["exit_observed"], row["exit_sample"] = exited, clockSample()
+	row["signal_to_exit_upper_ns"], row["last_alive_since_signal_ns"] = strconv.FormatInt(end-start, 10), strconv.FormatInt(lastAlive-start, 10)
+	row["within_13s"] = err == nil && exited && end-start <= int64(13*time.Second)
+	row["exit_status_available"] = false
+	if stat, e := os.ReadFile(fmt.Sprintf("/proc/%d/stat", pid)); e == nil {
+		// stat fields after the parenthesized comm start at field 3; exit_code=52.
+		rest := strings.Fields(string(stat)[strings.LastIndex(string(stat), ")")+1:])
+		if len(rest) >= 50 && rest[0] == "Z" {
+			if code, e := strconv.Atoi(rest[49]); e == nil {
+				row["exit_status_available"], row["exit_status_raw"] = true, code
+				row["exit_signal"], row["exit_code"] = code&127, (code>>8)&255
+			}
+		}
+	}
+	cleanup, e := exec.Command("agent-service.sh", "stop").CombinedOutput()
+	row["supervisor_stop_ok"], row["supervisor_stop_output"] = e == nil, strings.TrimSpace(string(cleanup))
+	must(json.NewEncoder(os.Stdout).Encode(row))
 }
