@@ -545,3 +545,112 @@ means its handler completed, and is not evidence that the agent exited 0: the
 forced test has container 0 and agent signal 9. The sidecar's `term_requested_at`
 is the supervisor's signal-request bound and `waited_ms` measures the monotonic
 post-delivery wait. Historical exit 137 rows cannot be reconstructed or replaced.
+
+## Follow-up 27 — bounded populated generation hold (TEST ONLY)
+
+The ordinary `node` / `node2` mTLS proxy exports
+`ArmMatchingLeaseHold`, `MatchingLeaseHold`, `ReleaseMatchingLeaseHold`,
+`GenerationHoldSnapshot`, and `LocalLeaseReadback` through `labstack.Stack`.
+Rebuild the stack to include the proxy seam. Default is off; every use needs a
+new UUID arm. The installer proxy is not included.
+
+On current main, `GetDesiredState` returns only a signed desired document.
+`RenewServingLease` returns the signed lease on
+`POST /api/v1/agent/lease-renewals`; the agent consumes these independently in
+`node/agent/sync.go`. The seam forwards desired state and observations, selects
+its target from the first real desired response above the caller's retained
+generation, and replaces **only successful matching-generation renewal
+responses** with prompt 503 transport errors. Blocking the synchronous HTTP
+request for the whole hold would suppress the Steps that must report the alarm.
+
+No signed body is edited, cached, replayed or synthesized. Each renewal still
+reaches central. Withheld responses are discarded. Release forwards the next
+fresh central-issued matching response byte-for-byte; its lease ID is distinct
+from the withheld lease IDs. `LocalLeaseReadback` reads SQLite inside the node
+and returns only lease ID, byte count, SHA-256 and read time, so its digest can
+be compared with the forwarded response without exposing the envelope.
+
+1. Establish real eligible members, grants and bindings. Wait for a fresh
+   accepted serving report whose applied generation equals desired and its
+   own populated signed lease generation. Save node/incarnation/report/lease
+   IDs and the generation string. Let unrelated initial compilation settle.
+   For this fixture proof the old lease has two members and at least 90 seconds
+   remaining; choose sufficient remaining lifetime for the consumer's row.
+2. Call `arm, err := stack.ArmMatchingLeaseHold(ctx, "node", generation, 90*time.Second)`.
+   The example duration is TEST ONLY, not a product timeout. Whole seconds
+   from 1 through 120 are allowed. An existing arm/hold refuses overlap.
+   The arm expires after three minutes if no qualifying transition arrives.
+3. GET the node's public admin detail, then make the real capacity PATCH with
+   its ETag in `If-Match` and a new `Idempotency-Key`. Read back the accepted
+   command; do not write a desired-state row or generation. A changed desired
+   document is compiled/delivered by the agent GET. No service stop or desired
+   hold is needed. Do not inject diagnostic desired/renewal calls through the
+   proxy while armed: this boundary belongs to the agent's own requests.
+4. Poll `MatchingLeaseHold(ctx, "node", arm.ID)` for `target_generation`,
+   `hold_started_at`, `hold_until` and `withheld` events. These are transport
+   receipts, not proof of agent consumption. Join `GenerationHoldSnapshot(ctx,
+   nodeID)` to the **old** populated lease ID and accepted report ID. Require
+   applied g+1 / lease g, `policy_missing` and `STALE_GENERATION`, forwarding
+   false, and the expected incident. Unknown/missing evidence cannot pass.
+5. Observe the original reports and audit throughout the required window.
+   The agent alarm is three Steps or 30 seconds. Central escalates once on a
+   validated reported alarm or 30 seconds of central incident age. Use
+   `alarm_report_id`, `reported_alarm`, `summary_valid`, `first_seen_at` and
+   audit/incident times to distinguish the trigger. Count audit rows by the
+   exact `after_diff.incident_id`, never by node alone.
+6. Call `ReleaseMatchingLeaseHold(ctx, "node", arm.ID)` before the bound, or
+   let the configured bound expire. The release marker alone is not recovery:
+   wait for the `released` and `matching_lease_forwarded` receipts, the
+   corresponding accepted matching-lease report, and incident
+   `end_reason="generation_matched"`. Read the local lease digest and recheck
+   serving separately. Incident closure alone is not a serving assertion.
+
+The deadline stops withholding even if no request occurs at that instant.
+The recorded release is the next proxy response; normal five-second polling
+can make incident duration longer than the configured 45-second proof hold.
+Every withheld response is recorded with UTC time, status, generation, lease
+ID, body size and digest; no response content or authorization header is kept.
+The receipt marks `desired_forwarded` at the proxy response boundary; central
+accepted reports establish application. A newer lease generation ends the
+fixture as `generation_superseded`, which is not successful target recovery.
+A proxy restart releases a consumed fixture as `proxy_restarted`; an ordinary
+agent-only `Stack.Service(stop/start)` leaves the proxy and bound intact.
+
+`GenerationHoldSnapshot` uses a read-only repeatable-read central transaction:
+incidents; `node_generation_hold_reports` samples with nullable decimal-string
+steps/elapsed/generations; accepted reports with code/stage/check fields;
+issued lease/member windows; and the escalation audit's exact evidence.
+Join samples by `(node_id, incarnation_id, report_id)` and `hold_id`; join the
+reported lease by its own ID. The recovery report is in `reports`, not an extra
+hold sample. Local process counters can reset while that central incident
+persists. Free-form report messages and signed documents are not exported.
+
+The consumers own unrelated-failure precedence within the same incident,
+agent-stop retention/counter reset, a distinct later incident, and sole-member
+revocation ending `members_revoked`. Use a new explicit arm for the later
+incident. Members' sole-member row needs its own one-member populated lease
+and original real member revocation; withdrawing a device or one member of a
+multi-member lease does not establish that all leased members were revoked.
+The shared proof exercises only the alarm, single escalation and matching
+recovery; it does not pass these consumer rows.
+
+## Follow-up 27 — first contact and every member send
+
+`StartNativeFirstContactCapture` starts the existing passive member/node/origin
+pcaps before native member join. `BindPeers` after genuine admission enables
+selected-peer status, endpoint and independent WireGuard handshake samples.
+`Sample` now also exports tokenized IPv4/IPv6 route tables. No node nft object
+is added. The historical node tracer remains explicit diagnostic-only and the
+follow-up 27 measured runner rejects that flag.
+
+The focused runner retains one first-selection request after serving admission,
+then independently checks serving before a 150-second UDP/40002 stream at
+20 ms spacing. Every socket write has before/after CLOCK_MONOTONIC and UTC
+bounds and a synthetic sequence. `decode_capture.py --fixture-sequences`
+exports only sequences bearing the exact TEST ONLY marker. The original raw
+pcaps remain private, complete and hash-pinned through their receipts.
+`analyze_followup27.py` joins every send to member tunnel, node ingress and
+origin headers, writes `stream-intervals.csv`, and retains all missing sequences,
+large gaps, handshake message/hash/index joins and allowlisted native debug
+metadata. One-second diagnostic views do not waive shorter gaps or losses.
+Observed packet/handshake times are not internal kernel timer/drop callsites.
