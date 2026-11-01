@@ -218,7 +218,7 @@ func (f *matchingLeaseHold) modify(resp *http.Response) error {
 			}
 			id, ie := uuid.Parse(arm.ID)
 			base, ge := decstr.Parse(arm.BaseGeneration)
-			if ie != nil || id == uuid.Nil || ge != nil || base == 0 || arm.HoldSeconds < 1 || arm.HoldSeconds > 120 || arm.ArmedAt.IsZero() || arm.ExpiresAt.After(arm.ArmedAt.Add(3*time.Minute)) || !arm.ExpiresAt.After(arm.ArmedAt) {
+			if ie != nil || id == uuid.Nil || ge != nil || base == 0 || arm.HoldSeconds < 1 || arm.HoldSeconds > 120 || arm.ArmedAt.IsZero() || arm.ExpiresAt.After(now.Add(3*time.Minute)) || arm.ExpiresAt.After(arm.ArmedAt.Add(3*time.Minute)) || !arm.ExpiresAt.After(arm.ArmedAt) {
 				return errors.New("lease hold arm invalid")
 			}
 			// Atomic consume: restarting this proxy cannot re-arm the same file.

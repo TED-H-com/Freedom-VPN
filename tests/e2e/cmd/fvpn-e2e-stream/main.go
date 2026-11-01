@@ -30,9 +30,9 @@ func main() {
 	if err != nil || target.Port != 40002 || *duration < 1 || *duration > 180 {
 		os.Exit(2)
 	}
-	// The harness supplies only its documentation-range controlled origin.
-	_, allowed, _ := net.ParseCIDR("192.0.0.0/16")
-	if !allowed.Contains(target.IP) {
+	// Existing devstack slots use only these isolated controlled origin IPs.
+	ip := target.IP.To4()
+	if ip == nil || ip[0] != 192 || ip[1] != 0 || ip[2] < 3 || ip[2] > 12 || ip[3] != 10 {
 		os.Exit(2)
 	}
 	c, err := net.ListenUDP("udp4", &net.UDPAddr{Port: 40001})

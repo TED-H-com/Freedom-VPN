@@ -227,7 +227,12 @@ func (s *Stack) ReleaseMatchingLeaseHold(ctx context.Context, slot, id string) e
 	if _, err := uuid.Parse(id); err != nil || (slot != "node" && slot != "node2") {
 		return fmt.Errorf("invalid lease hold identity")
 	}
-	return writeContainerFile(ctx, s.lab.prefix+"-"+slot, leasehold.Directory+"/active/release", "600", []byte(id))
+	if ev, err := s.MatchingLeaseHold(ctx, slot, id); err == nil && ev.ReleasedAt != nil {
+		return nil
+	}
+	c := exec.CommandContext(ctx, "docker", "exec", "-i", s.lab.prefix+"-"+slot, "sh", "-c", `umask 077; test -d "$1" && cat > "$1/release.tmp" && mv "$1/release.tmp" "$1/release"`, "release", leasehold.Directory+"/active")
+	c.Stdin = strings.NewReader(id)
+	return c.Run()
 }
 
 func (s *Stack) MatchingLeaseHold(ctx context.Context, slot, id string) (MatchingLeaseHoldEvidence, error) {
