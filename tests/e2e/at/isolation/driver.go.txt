@@ -2192,13 +2192,13 @@ func (x *isolationRun) retainReasonLogs(label string) {
 			}
 			continue
 		}
-		for _, segment := range []string{"before-restart", "before-hold-stop", "before-clone", "final"} {
+		for _, segment := range []string{"before-populated-hold-stop", "before-restart", "before-hold-stop", "before-clone", "final"} {
 			path := source
 			if segment != "final" {
 				path += "." + segment
 			}
 			raw, err := exec.Command("docker", "exec", x.r.lab.node, "cat", path).Output()
-			if err != nil && segment == "before-hold-stop" {
+			if err != nil && (segment == "before-hold-stop" || segment == "before-populated-hold-stop") {
 				continue
 			}
 			if err != nil {
@@ -2253,7 +2253,7 @@ func (x *isolationRun) archiveReceiver() {
 	x.retainReasonLogs("final")
 	for _, name := range []string{"agent", "watchdog"} {
 		var all bytes.Buffer
-		for _, label := range []string{"before-restart", "before-hold-stop", "before-clone", "final"} {
+		for _, label := range []string{"before-populated-hold-stop", "before-restart", "before-hold-stop", "before-clone", "final"} {
 			raw, err := os.ReadFile(filepath.Join(x.dir, name+"-"+label+".log.txt"))
 			if err == nil {
 				all.Write(raw)
@@ -3038,7 +3038,7 @@ func (x *isolationRun) populatedHold(n int, row map[string]any) bool {
 		snapshot("unrelated_failure")
 		restore()
 		snapshot("before_stop")
-		x.retainReasonLogs("before-hold-stop")
+		x.retainReasonLogs("before-populated-hold-stop")
 		stopStart := time.Now().UTC()
 		out, stopErr := x.r.lab.docker(x.r.lab.node, "/tmp/isolation-probe", "agent-stop-sample")
 		row["stop"] = map[string]any{"start": stopStart, "end": time.Now().UTC(), "ok": stopErr == nil, "output": iso.Redact(string(out))}
