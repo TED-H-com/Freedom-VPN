@@ -1,0 +1,270 @@
+{
+  "test_only": true,
+  "legs": [
+    {
+      "leg": "A1",
+      "attempt": "A1-attempt5",
+      "reload_exit": 0,
+      "reload_timings": {
+        "applies": 101,
+        "completed_guards": 101,
+        "failed_indices": [],
+        "guard_ms": {
+          "p50": 28.927351,
+          "p90": 34.746016,
+          "p99": 42.728124,
+          "max": 45.880737
+        },
+        "install_ms": {
+          "p50": 14.97703,
+          "p90": 19.910674,
+          "p99": 23.836268,
+          "max": 29.092336
+        },
+        "verify_ms": {
+          "p50": 29.103665,
+          "p90": 31.899812,
+          "p99": 33.431321,
+          "max": 33.843903
+        }
+      },
+      "fresh_rule_count": 34,
+      "fresh_script_bytes": 9053,
+      "guarded_rule_count": 36,
+      "guarded_script_bytes": 6603,
+      "script_sha256": "c6d2ccdd1f04adabf98ed1ab7b3e69d7702f9ed1481d270f114c89f3cd4039cd",
+      "applies": 60,
+      "completed_guards": 60,
+      "failed_indices": [],
+      "guard_ms": {
+        "p50": 30.403067,
+        "p90": 40.190941,
+        "p99": 46.649338,
+        "max": 46.649338
+      },
+      "install_ms": {
+        "p50": 14.94362,
+        "p90": 20.979384,
+        "p99": 23.971073,
+        "max": 23.971073
+      },
+      "verify_ms": {
+        "p50": 23.188534,
+        "p90": 25.0611,
+        "p99": 27.885902,
+        "max": 27.885902
+      }
+    },
+    {
+      "leg": "B1",
+      "attempt": "B1-attempt2",
+      "reload_exit": 0,
+      "reload_timings": {
+        "applies": 101,
+        "completed_guards": 101,
+        "failed_indices": [],
+        "guard_ms": {
+          "p50": 32.468849,
+          "p90": 41.122209,
+          "p99": 44.141139,
+          "max": 46.99526
+        },
+        "install_ms": {
+          "p50": 16.270745,
+          "p90": 20.498718,
+          "p99": 24.388018,
+          "max": 24.614694
+        },
+        "verify_ms": {
+          "p50": 27.852993,
+          "p90": 30.969836,
+          "p99": 33.624818,
+          "max": 34.0432
+        }
+      },
+      "fresh_rule_count": 37,
+      "fresh_script_bytes": 9404,
+      "guarded_rule_count": 39,
+      "guarded_script_bytes": 6924,
+      "script_sha256": "ef8978f6b879e1cef064b34cd3083c5cef9d40dc6b9feadf368d7b08e816d65d",
+      "applies": 60,
+      "completed_guards": 60,
+      "failed_indices": [],
+      "guard_ms": {
+        "p50": 31.337349,
+        "p90": 40.027815,
+        "p99": 43.953964,
+        "max": 43.953964
+      },
+      "install_ms": {
+        "p50": 15.553471,
+        "p90": 21.594934,
+        "p99": 25.939133,
+        "max": 25.939133
+      },
+      "verify_ms": {
+        "p50": 23.050937,
+        "p90": 24.451931,
+        "p99": 26.141381,
+        "max": 26.141381
+      }
+    },
+    {
+      "leg": "A2",
+      "attempt": "A2-attempt2",
+      "reload_exit": 1,
+      "reload_timings": {
+        "applies": 101,
+        "completed_guards": 101,
+        "failed_indices": [],
+        "guard_ms": {
+          "p50": 29.578335,
+          "p90": 37.812708,
+          "p99": 42.792863,
+          "max": 42.960477
+        },
+        "install_ms": {
+          "p50": 14.98097,
+          "p90": 19.813531,
+          "p99": 27.832179,
+          "max": 27.980324
+        },
+        "verify_ms": {
+          "p50": 29.132794,
+          "p90": 31.176347,
+          "p99": 32.544976,
+          "max": 32.600299
+        }
+      },
+      "fresh_rule_count": 34,
+      "fresh_script_bytes": 9053,
+      "guarded_rule_count": 36,
+      "guarded_script_bytes": 6603,
+      "script_sha256": "74210b71a8ef4cd6beaa80d7ecf5707c7eb2450d56d80f58d4e21f4d8affcc45",
+      "applies": 60,
+      "completed_guards": 60,
+      "failed_indices": [],
+      "guard_ms": {
+        "p50": 28.867912,
+        "p90": 38.537643,
+        "p99": 47.178223,
+        "max": 47.178223
+      },
+      "install_ms": {
+        "p50": 15.110898,
+        "p90": 20.837038,
+        "p99": 27.264298,
+        "max": 27.264298
+      },
+      "verify_ms": {
+        "p50": 21.987913,
+        "p90": 23.998843,
+        "p99": 25.716264,
+        "max": 25.716264
+      }
+    },
+    {
+      "leg": "B2",
+      "attempt": "B2-attempt4",
+      "reload_exit": 0,
+      "reload_timings": {
+        "applies": 101,
+        "completed_guards": 101,
+        "failed_indices": [],
+        "guard_ms": {
+          "p50": 28.055506,
+          "p90": 38.163188,
+          "p99": 44.097674,
+          "max": 44.216423
+        },
+        "install_ms": {
+          "p50": 14.051995,
+          "p90": 20.486991,
+          "p99": 25.915906,
+          "max": 27.250934
+        },
+        "verify_ms": {
+          "p50": 28.221089,
+          "p90": 30.520147,
+          "p99": 32.466959,
+          "max": 33.544652
+        }
+      },
+      "fresh_rule_count": 37,
+      "fresh_script_bytes": 9404,
+      "guarded_rule_count": 39,
+      "guarded_script_bytes": 6924,
+      "script_sha256": "210bd4fee5eacee4c2bdb4d6b18ef837943efde0afda4e4f389c65bd2f863f15",
+      "applies": 60,
+      "completed_guards": 60,
+      "failed_indices": [],
+      "guard_ms": {
+        "p50": 31.580475,
+        "p90": 43.669101,
+        "p99": 51.585848,
+        "max": 51.585848
+      },
+      "install_ms": {
+        "p50": 16.419068,
+        "p90": 23.816763,
+        "p99": 31.490439,
+        "max": 31.490439
+      },
+      "verify_ms": {
+        "p50": 25.562783,
+        "p90": 27.846571,
+        "p99": 28.977177,
+        "max": 28.977177
+      }
+    }
+  ],
+  "pooled": {
+    "A": {
+      "applies": 120,
+      "completed_guards": 120,
+      "failed_indices": [],
+      "guard_ms": {
+        "p50": 29.901606,
+        "p90": 38.934684,
+        "p99": 46.649338,
+        "max": 47.178223
+      },
+      "install_ms": {
+        "p50": 15.096602,
+        "p90": 20.979384,
+        "p99": 24.704528,
+        "max": 27.264298
+      },
+      "verify_ms": {
+        "p50": 22.476009,
+        "p90": 24.550725,
+        "p99": 26.56471,
+        "max": 27.885902
+      }
+    },
+    "B": {
+      "applies": 120,
+      "completed_guards": 120,
+      "failed_indices": [],
+      "guard_ms": {
+        "p50": 31.508098,
+        "p90": 42.460707,
+        "p99": 47.866758,
+        "max": 51.585848
+      },
+      "install_ms": {
+        "p50": 16.294109,
+        "p90": 23.301995,
+        "p99": 30.526718,
+        "max": 31.490439
+      },
+      "verify_ms": {
+        "p50": 24.205123,
+        "p90": 27.125583,
+        "p99": 28.629683,
+        "max": 28.977177
+      }
+    }
+  },
+  "judging": "D-138: all qualified legs pooled per arm; no two-leg envelope or attribution from one window. Failures and excluded attempts remain retained."
+}

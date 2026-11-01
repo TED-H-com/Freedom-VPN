@@ -1,0 +1,14 @@
+=== RUN   TestAT10_AT13_ReloadRevokeBaseline
+AT10 regen 1025 a1=2054 a2=0
+AT10 regen 1050 a1=4014 a2=0
+AT10 regen 1075 a1=7094 a2=0
+AT10 regen 1100 a1=8054 a2=0
+    scenario_at10_test.go:96: ISO-F6-03: 101 Apply/guard/verifier/precision producer snapshots match executor brackets
+    scenario_at10_test.go:96:
+        AT10 FAIL
+        datagram | generation | bracket start ns | bracket end ns | upper ms | render-installed ms | classification | next datagram | failures
+        57 | 1087 | 1793542616409197088 | 1793542616443238997 | 34.041643 | 14.037061 | boundary | missing | (iii): next datagram missing
+
+    scenario_at10_test.go:96: AT10 FAIL: D-120 verdict or evidence check: exit status 1
+--- FAIL: TestAT10_AT13_ReloadRevokeBaseline (15.82s)
+FAIL

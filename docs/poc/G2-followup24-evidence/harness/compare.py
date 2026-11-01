@@ -2,8 +2,8 @@
 """TEST ONLY D-133: same-host A,B,A,B, fresh lab each leg; no host networking.
 
 Run from the worktree root after the required gates. All writes are follow-up 24
-or ignored disk scratch. Quiet admission checks every vmstat row, including the since-boot row;
-the six interval rows are also retained separately. Every rejected attempt is retained.
+or ignored disk scratch. Quiet admission checks every measured vmstat interval; the first row is a
+since-boot summary and is retained separately, as in the existing D-133 harness. Every rejected attempt is retained.
 """
 import datetime, hashlib, json, math, os, pathlib, re, shutil, subprocess, tarfile, time
 ROOT=pathlib.Path.cwd()
@@ -45,14 +45,14 @@ def host(name):
   f=line.split()
   if len(f)>=17 and f[0].isdigit():rows.append(dict(r=int(f[0]),b=int(f[1]),id=int(f[14]),wa=int(f[15])))
  after=processes();intervals=rows[1:]
- quiet=len(rows)==7 and not before and not after and all(r['r']<=3 and r['id']>=80 for r in rows)
+ quiet=len(intervals)==6 and not before and not after and all(r['r']<=3 and r['id']>=80 for r in intervals)
  row=dict(test_only=True,start_ns=str(start),end_ns=str(time.monotonic_ns()),load_before=load0,load_after=pathlib.Path('/proc/loadavg').read_text().split()[:3],d_state_before=d0,d_state_after=dstate(),processes_before=before,processes_after=after,vmstat=p.stdout,since_boot=rows[0],intervals=intervals,quiet=quiet)
  write(OUT/'host'/(name+'.json'),row)
  print('HOST',name,'quiet',quiet,'max_r',max(x['r'] for x in intervals),'min_idle',min(x['id'] for x in intervals),'suites',len(before),len(after),flush=True)
  return quiet
 
 def await_quiet(name):
- attempt=0
+ attempt=max([int(p.stem.rsplit('-',1)[1]) for p in (OUT/'host').glob(name+'-*.json')] or [0])
  while time.monotonic()-START<90*60:
   attempt+=1;tick=time.monotonic()
   if host(name+'-'+str(attempt)) and time.monotonic()-START<90*60:return True
@@ -60,7 +60,7 @@ def await_quiet(name):
  return False
 
 def prepare():
- TMP.mkdir(parents=True,exist_ok=True);OUT.mkdir(parents=True,exist_ok=False)
+ TMP.mkdir(parents=True,exist_ok=True);OUT.mkdir(parents=True,exist_ok=os.environ.get('FVPN_F24_RESUME')=='1')
  archive=TMP/'main.tar'
  with archive.open('wb') as f:subprocess.run(['git','archive',BASE],stdout=f,check=True)
  source=TMP/'main';source.mkdir()
@@ -71,13 +71,14 @@ def prepare():
   if p.returncode:raise RuntimeError(p.stderr.decode())
   p=run(['go','test','-c','-buildvcs=false','-tags','netlab','-o',str(TMP/('tests-'+label)),'./tests/netlab'],cwd=cwd)
   if p.returncode:raise RuntimeError(p.stderr.decode())
- write(OUT/'sources.json',dict(test_only=True,A=BASE,B=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),binaries={kind+'-'+label:hashlib.sha256((TMP/(kind+'-'+label)).read_bytes()).hexdigest() for kind in ['binary','tests'] for label in ['A','B']},go_version=subprocess.check_output(['go','version'],text=True).strip(),cache_selected_by='go env GOCACHE',samples_per_leg=COUNT))
+ write(OUT/('sources-resume.json' if os.environ.get('FVPN_F24_RESUME')=='1' else 'sources.json'),dict(test_only=True,A=BASE,B=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),binaries={kind+'-'+label:hashlib.sha256((TMP/(kind+'-'+label)).read_bytes()).hexdigest() for kind in ['binary','tests'] for label in ['A','B']},go_version=subprocess.check_output(['go','version'],text=True).strip(),cache_selected_by='go env GOCACHE',samples_per_leg=COUNT))
  shutil.rmtree(source)
 
 def leg(name,label):
  attempt=0
  while time.monotonic()-START<90*60:
-  attempt+=1;key=name+'-attempt'+str(attempt);dest=OUT/key;dest.mkdir()
+  attempt+=1;key=name+'-attempt'+str(attempt);dest=OUT/key;dest.mkdir(exist_ok=True)
+  if (dest/'status.json').exists():raise RuntimeError('refusing to overwrite a completed attempt')
   if not await_quiet(key+'-prestart'):return None
   make=['make','-f','mk/netlab.mk','FVPN_LAB_PREFIX='+PREFIX]
   try:
@@ -116,7 +117,7 @@ def leg(name,label):
    (dest/'fresh-render.txt').write_bytes(p.stdout)
    for iface in ['fv-ih','fv-fh']:
     p=run(['docker','exec',PREFIX,'tc','-j','class','show','dev',iface],check=True)
-    (dest/('tc-'+iface+'.json')).write_bytes(p.stdout)
+    (dest/('tc-'+iface+'.txt')).write_bytes(p.stdout)
    testenv=dict(ENV,FVPN_NETLAB='1',FVPN_LAB_PREFIX=PREFIX,FVPN_NETLAB_EVIDENCE_DIR=str(dest/'reload'))
    p=run([str(TMP/('tests-'+label)),'-test.v','-test.timeout=10m','-test.run=^TestAT10_AT13_ReloadRevokeBaseline$'],cwd=ROOT/'tests/netlab',env=testenv)
    (dest/'reload-test.txt').write_text((p.stdout+p.stderr).decode(errors='replace').replace(str(ROOT),'<worktree>'))
@@ -141,7 +142,8 @@ def summarize(completed):
   reload_trace=OUT/key/'reload/TestAT10_AT13_ReloadRevokeBaseline/at10-apply.jsonl'
   reload_rows=[dict(index=i,exit=0 if r['timing']['succeeded'] else 1,result=r) for i,r in enumerate(json.loads(line) for line in reload_trace.read_text().splitlines())] if reload_trace.exists() else []
   status=json.loads((OUT/key/'status.json').read_text())
-  rows.append(dict(leg=name,attempt=key,reload_exit=status['reload_exit'],reload_timings=stats(reload_rows),guarded_rule_count=sum(l.startswith('add rule ') for l in batch['script'].splitlines()),guarded_script_bytes=len(batch['script'].encode()),script_sha256=batch['sha256'],**stats(d)))
+  fresh=(OUT/key/'fresh-render.txt').read_bytes()
+  rows.append(dict(leg=name,attempt=key,reload_exit=status['reload_exit'],reload_timings=stats(reload_rows),fresh_rule_count=sum(l.startswith(b'add rule ') for l in fresh.splitlines()),fresh_script_bytes=len(fresh),guarded_rule_count=sum(l.startswith('add rule ') for l in batch['test_only_script'].splitlines()),guarded_script_bytes=len(batch['test_only_script'].encode()),script_sha256=batch['test_only_sha256'],**stats(d)))
  write(OUT/'summary.json',dict(test_only=True,legs=rows,pooled={k:stats(v) for k,v in pooled.items()},judging='D-138: all qualified legs pooled per arm; no two-leg envelope or attribution from one window. Failures and excluded attempts remain retained.'))
 
 def stats(rows):
@@ -157,8 +159,12 @@ def stats(rows):
  return dict(applies=len(rows),completed_guards=len(guards),failed_indices=failed,guard_ms=pct(guards),install_ms=pct(installs),verify_ms=pct(verify))
 
 if __name__=='__main__':
- prepare();START=time.monotonic();completed={}
- write(OUT/'window.json',dict(test_only=True,start_ns=str(time.monotonic_ns()),limit_seconds=5400,poll_seconds=60))
+ prepare();completed={}
+ if (OUT/'window.json').exists():
+  START=int(json.loads((OUT/'window.json').read_text())['start_ns'])/1e9
+ else:
+  START=time.monotonic()
+  write(OUT/'window.json',dict(test_only=True,start_ns=str(time.monotonic_ns()),limit_seconds=5400,poll_seconds=60))
  try:
   for name,label in [('A1','A'),('B1','B'),('A2','A'),('B2','B')]:
    key=leg(name,label)
@@ -167,5 +173,5 @@ if __name__=='__main__':
    completed[name]=key
   summarize(completed)
  finally:
-  execute('image-cleanup',['docker','image','rm',PREFIX+':lab'],check=False)
+  execute('image-cleanup-resume' if os.environ.get('FVPN_F24_RESUME')=='1' else 'image-cleanup',['docker','image','rm',PREFIX+':lab'],check=False)
   shutil.rmtree(TMP)

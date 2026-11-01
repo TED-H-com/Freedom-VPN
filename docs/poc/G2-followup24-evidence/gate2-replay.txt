@@ -194,12 +194,12 @@ AT10 regen 1050 a1=4603 a2=244
 AT10 regen 1075 a1=7403 a2=244
 AT10 regen 1100 a1=8643 a2=244
     scenario_at10_test.go:101: ISO-F6-03: 101 Apply/guard/verifier/precision producer snapshots match executor brackets
-    scenario_at10_test.go:101: 
+    scenario_at10_test.go:101:
         AT10 FAIL
         datagram | generation | bracket start ns | bracket end ns | upper ms | render-installed ms | classification | next datagram | failures
         57 | 1093 | 1793539092675266076 | 1793539092697986340 | 22.720234 | 12.843881 | boundary | missing | (iii): next datagram missing
-        
-    scenario_at10_test.go:101: AT10 FAIL: D-120 verdict or evidence check: exit status 1 
+
+    scenario_at10_test.go:101: AT10 FAIL: D-120 verdict or evidence check: exit status 1
 --- FAIL: TestAT10_AT13_ReloadRevokeBaseline (16.00s)
 === RUN   TestAT11_IPv6Blocked
 AT11 native
@@ -285,7 +285,7 @@ SUMMARY AT18 qos windows passed R=20Mbit
 === RUN   TestAT29_LeaseTimeout/timeout_ceil_clamps_backward_clock
 === RUN   TestAT29_LeaseTimeout/kernel_set_timeout
 stop_after=8.802s admitted=3
-clock_step=skipped reason=child time namespace is not an isolated clock container=time:[4026534004] child=time:[4026535208] 
+clock_step=skipped reason=child time namespace is not an isolated clock container=time:[4026534004] child=time:[4026535208]
 SUMMARY AT29 stop_after=8.802s resume=1
 --- PASS: TestAT29_LeaseTimeout (10.01s)
     --- PASS: TestAT29_LeaseTimeout/offline_cap_is_earliest (0.00s)
