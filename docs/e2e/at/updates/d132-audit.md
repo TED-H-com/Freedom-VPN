@@ -101,3 +101,15 @@ Updates F13-01 stays unobserved in that run. Follow-up-13-startup and all earlie
 archives remain untouched. No source file is moved or compressed: existing
 links keep their plain-file targets. New digest-dependent consumers must pin
 history paths only. This archive and audit are committed before any gate or lab.
+
+The follow-up 14 source inventory has 1,152 references under `internal node
+packaging tests`, still exactly four product-path sites. Both fleetupdate
+fixtures match their immutable follow-up 9 source bytes. The product sites
+remain provenance or frozen fixtures; `node/` and `packaging/` contain no
+literal living AT reads. The new archive test reads all 48 follow-up 13 pins.
+The TEST ONLY observer reads its own running fixture's identity, parent wait
+receipts and SQLite state. Its collector reads retained receipt paths with
+`docker cp`, including when a container is stopped, and compares only immutable
+follow-up 13 evidence. It does not feed living AT documents into product tests.
+All 478 pre-existing history files were compared with the source main blobs
+and remain byte-identical. No files were moved or compressed.
