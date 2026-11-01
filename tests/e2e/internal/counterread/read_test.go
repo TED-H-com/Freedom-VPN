@@ -47,7 +47,7 @@ func TestAT04_ParseFailureEvidence(t *testing.T) {
 			}
 			dir := t.TempDir()
 			calls := 0
-			result := read(t.Context(), uuid.New(), dir, func(context.Context) ([]byte, error) { calls++; return []byte(tc.raw), nil })
+			result := read(t.Context(), uuid.New(), dir, func() (Heartbeat, TimingSnapshot) { return Heartbeat{}, TimingSnapshot{} }, func(context.Context) ([]byte, error) { calls++; return []byte(tc.raw), nil })
 			got := result.Diagnostic.Parse
 			if calls != 1 || result.Diagnostic.Exit != 0 || result.Diagnostic.Stage != "nft_parse" || result.Diagnostic.Category != "parse" || result.Present || got == nil {
 				t.Fatalf("failed sample lost: %+v", result)
