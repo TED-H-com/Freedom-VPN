@@ -1160,3 +1160,74 @@ retain receipts across restarts. The agent's command, stop signals, five-second
 escalation threshold and product shutdown limits are unchanged. Your observer
 file remains untouched for lane-owned adoption. Historical run 759d244a's first
 exit stays unobserved; this export cannot reconstruct it.
+
+## netlab 23 / members / isolation — 2026-11-01 (follow-up 26, D-102)
+
+> counterread's `duplicate_chain` kind (netlab 23, #377, request 1)
+
+The shared `counterread` helper now matches `*enforce.DuplicateChainError`
+through `errors.As` and publishes `parser_error_kind="duplicate_chain"`,
+`class="ambiguous_listing"`. Exact and differing duplicate definitions have
+separate real-parser tests; syntax and type errors keep their own kinds.
+`stage="nft_parse"`, failed read, absent counter observation, private raw/error
+retention, SHA/length/line receipts and single-attempt behavior are unchanged.
+The parser error string is never published. This classification does not prove
+the origin of F13-01 or change netlab's 0/3,300 reproduction result. Existing
+members/isolation failed rows remain failed. No parser tolerance or retry was
+added.
+
+## updates 13 / isolation 13 — 2026-11-01 (follow-up 26, D-102)
+
+> # Updates requests — follow-up 13, 2026-11-01
+>
+> ## Follow-up 13 requests — 2026-11-01
+
+The TEST ONLY supervisor now allows the shipped **15-second** agent stop
+budget; PID1 forwards container TERM/INT through that same supervised stop
+path. Compose and secondary/clone node containers allow **25 seconds**.
+Shared namespace-restart, clone-source and retained-fleet stop wrappers also
+allow the agent its full budget. The handler keeps the waiter and watchdog
+alive through agent completion. It is signal-forwarding behavior, not a shell
+scratch-cleanup trap. Automatically running agents resume on container boot;
+a deliberate service pause stays paused.
+
+Consumers include updates' `tests/e2e/at/updates/stopobserve/main.go`, isolation's
+whole-node and clone lifecycle rows in `tests/e2e/at/isolation/driver.go.txt`,
+and its direct-agent sampler in `observer_main.go`. Capture the launch ID,
+PID and start ticks before the original stop. After a stopped container, read
+`agent-exits/<id>.json` with `docker cp` or its private bind-mounted state;
+`docker exec` cannot run there. After a service-only stop, the existing read
+sequence still applies. The matching `.sigkill.json` is an attempted escalation;
+the actual exit code or signal comes from the parent wait receipt.
+
+The [follow-up 26 results](runs/2026-11-01/followup26/analysis.md) retain ordinary
+exit-0 and deliberately SIGSTOP-held/SIGKILL proofs. Container exit 0 records
+completion of its shutdown handler, **not** agent exit 0; forced agent signal 9
+remains explicit. Later successful measurements do not replace updates' missed
+first exit or isolation's historical 10.087/20.153-second exit-137 rows. No
+product shutdown deadline, updater assertion or historical row is changed.
+
+## members 14 — 2026-11-01 (follow-up 26, D-102)
+
+> # Follow-up 14 requests — 2026-11-01
+
+**Request 6 / F11-01 and F14-01:** the [bounded campaign](runs/2026-11-01/followup26/analysis.md)
+exports central desired/lease/report histories before teardown and distinguishes
+admission, traced first selection, and the D-077 re-grant population. The old
+`fixture-member-admission` failure reused the original request result; it did
+not prove that serving admission had failed before measurement. The new
+prerequisite is independent and keeps a non-serving node as its own failed row.
+
+The old node nft observer can itself trigger `ISOLATION_POLICY_INVALID`:
+foreign prerouting `nftrace` is an unscoped `mangle` under the unchanged
+verifier. Normal observation now traces only the member; the explicit historical
+reproduction flag is diagnostic. The retained original IPv6 generation-5,
+serving=true five-SYN failures remain distinct from the generation-0 closed-node
+samples. Historical central causes cannot be retroactively recovered.
+
+F14-01 uses native capture from before fencing through withdrawal, explicit
+re-authorization, serving readiness, route selection and the first re-grant
+request. Both peers' status/endpoint/handshake samples and packet hops are kept.
+These fresh, reduced populations do not replay all of run 258ba504's preceding
+mutations. A successful first selection or re-grant does not close either
+historical finding. The original F14-01 report stays `cause_status: unproven`.

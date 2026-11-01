@@ -32,3 +32,10 @@ After the 16 reproductions, run **four separate corrected controls**, two fresh
 stacks per family, with member-only trace and serving rechecked after observer
 setup before route selection. Keep the first attempt's older instrumentation
 and both original trace receipts; document its distinct private retention path.
+
+The scheduled ipv4-02 stack started and tore down, but a compile error prevented
+the runner from creating an attempt or sending a packet. Retain that gate and
+stack in the ledger. Schedule **one additional fresh ipv4-09 diagnostic** after
+the corrected controls so there are eight actual IPv4 reproduction requests.
+The first stack's earlier compile-only command is also retained. Neither
+compile failure is counted as a network pass or replaced failed HTTP request.
