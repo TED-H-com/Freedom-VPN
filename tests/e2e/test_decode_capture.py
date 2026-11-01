@@ -42,3 +42,15 @@ class HeaderOnly(unittest.TestCase):
 
 if __name__=='__main__':
     unittest.main()
+
+class DNSHeaderOnly(unittest.TestCase):
+    def test_closed_idna_wire_and_nonfixture_rejection(self):
+        from decode_capture import dns_header
+        import json
+        def message(labels):
+            return struct.pack('!6H',42,0x8180,1,0,0,0)+b''.join(bytes([len(x)])+x for x in labels)+b'\0'+struct.pack('!HH',1,1)
+        got=dns_header(message([b'xn--bcher-kva',b'example',b'invalid']))
+        self.assertEqual((got['fixture_case'],got['wire_id'],got['rcode']),('idna_positive',42,0))
+        self.assertNotIn('xn--',json.dumps(got))
+        self.assertIsNone(dns_header(message([b'private',b'example',b'invalid'])))
+        self.assertIsNone(dns_header(message([b'rr',b'example',b'invalid'])[:-1]))

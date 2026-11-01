@@ -134,6 +134,10 @@ func runFixtureCampaign(t *testing.T, dnsOnly bool) {
 	}
 	r.record(rec)
 	if dnsErr == nil {
+		if os.Getenv("FVPN_E2E_FOLLOWUP23") == "1" {
+			r.nativeDNS23(ctx, s)
+			return
+		}
 		r.fixtureFallback(ctx, s)
 		r.fixtureDNSNegative(ctx, s)
 		if dnsOnly {

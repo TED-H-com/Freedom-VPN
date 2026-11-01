@@ -3,7 +3,9 @@ package dnsrelay
 // TEST ONLY metadata for a closed set of synthetic fixture cases. No full
 // query names, addresses, packet bodies or resolver history are retained.
 import (
+	"crypto/sha256"
 	"encoding/json"
+	"fmt"
 	"github.com/google/uuid"
 	"golang.org/x/net/dns/dnsmessage"
 	"net"
@@ -15,6 +17,10 @@ import (
 )
 
 type Event struct {
+	QuerySHA256     string    `json:"query_sha256,omitempty"`
+	ReplySHA256     string    `json:"reply_sha256,omitempty"`
+	WireID          uint16    `json:"wire_id"`
+	ReplyBytes      int       `json:"reply_bytes,omitempty"`
 	RequestID       string    `json:"request_id"`
 	StreamID        string    `json:"stream_id"`
 	Sequence        uint64    `json:"sequence,string"`
@@ -40,6 +46,9 @@ type Trace struct {
 }
 
 func FixtureCase(name string) string {
+	if strings.EqualFold(strings.TrimSuffix(name, "."), "xn--bcher-kva.example.invalid") {
+		return "idna_positive"
+	}
 	name = strings.TrimSuffix(strings.ToLower(name), ".")
 	for _, label := range []string{"cache", "absent", "rebind", "rr", "alias", "service", "feed-01", "blocked-cname", "blocked-alias", "sub.feed-01", "notfeed-01"} {
 		if name == label+".example.invalid" {
@@ -53,7 +62,7 @@ func FixtureCase(name string) string {
 }
 
 // Begin writes before dispatch, so an abandoned client cannot hide a fetch.
-// The returned metadata carries a random identity, never a wire ID or qname.
+// The returned metadata carries a random identity, a wire ID and opaque digests for joins, never a qname.
 func (t *Trace) Begin(request []byte, peer net.Addr, proto string, started time.Time) Event {
 	if t == nil {
 		return Event{}
@@ -66,7 +75,7 @@ func (t *Trace) Begin(request []byte, peer net.Addr, proto string, started time.
 	if fixture == "" {
 		return Event{}
 	}
-	e := Event{RequestID: uuid.NewString(), Phase: "started", Started: started, Role: t.Role, Source: "native", Case: fixture, Type: uint16(q.Questions[0].Type), Protocol: proto, RCode: -1, TTLs: []uint32{}, Classes: []string{}}
+	e := Event{WireID: q.ID, QuerySHA256: fmt.Sprintf("%x", sha256.Sum256(request)), RequestID: uuid.NewString(), Phase: "started", Started: started, Role: t.Role, Source: "native", Case: fixture, Type: uint16(q.Questions[0].Type), Protocol: proto, RCode: -1, TTLs: []uint32{}, Classes: []string{}}
 	if t.Role == "authority" {
 		host, _, _ := net.SplitHostPort(peer.String())
 		e.Source = "other_fixture"
@@ -89,6 +98,8 @@ func (t *Trace) Complete(e Event, response []byte, err error) {
 	var a dnsmessage.Message
 	if err == nil && a.Unpack(response) == nil {
 		e.Success = true
+		e.ReplySHA256 = fmt.Sprintf("%x", sha256.Sum256(response))
+		e.ReplyBytes = len(response)
 		e.RCode = int(a.RCode)
 		for _, v := range a.Answers {
 			e.TTLs = append(e.TTLs, v.Header.TTL)

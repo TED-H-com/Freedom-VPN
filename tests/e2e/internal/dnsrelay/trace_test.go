@@ -1,6 +1,8 @@
 package dnsrelay
 
 import (
+	"crypto/sha256"
+	"fmt"
 	"golang.org/x/net/dns/dnsmessage"
 	"net"
 	"os"
@@ -28,6 +30,9 @@ func TestAT20_TraceRetainsMetadataWithoutQueryOrAddress(t *testing.T) {
 		t.Fatalf("incomplete lifecycle: %s", raw)
 	}
 	e := *history[0].Completion
+	if e.QuerySHA256 != fmt.Sprintf("%x", sha256.Sum256(request)) || e.ReplySHA256 != fmt.Sprintf("%x", sha256.Sum256(response)) || e.ReplyBytes != len(response) {
+		t.Fatal("wire digest boundary lost")
+	}
 	if e.Case != "cache" || e.Role != "primary" || !e.Success || len(e.TTLs) != 1 || e.TTLs[0] != 10 || len(e.Classes) != 1 || e.Classes[0] != "private_ipv4" {
 		t.Fatalf("lost trace: %s", raw)
 	}
@@ -82,5 +87,11 @@ func TestAT20_RestartRetainsStreamsAndPendingRequest(t *testing.T) {
 	history, ok := History(raw)
 	if !ok || len(history) != 2 || history[0].Start.RequestID != pending.RequestID || history[0].Completion != nil || history[1].Completion == nil || history[0].Start.StreamID == history[1].Start.StreamID {
 		t.Fatal("restart erased an unresolved request or stream boundary")
+	}
+}
+
+func TestAT20_IDNAPositiveCaseMapping(t *testing.T) {
+	if FixtureCase("XN--BCHER-KVA.example.invalid.") != "idna_positive" || FixtureCase("bücher.example.invalid") != "" || FixtureCase("xn--other.example.invalid") != "" {
+		t.Fatal("IDNA wire case must be closed and A-label only")
 	}
 }

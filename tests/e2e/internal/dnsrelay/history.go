@@ -50,6 +50,7 @@ func History(raw []byte) ([]Request, bool) {
 			}
 			start := requests[i].Start
 			identity := e
+			identity.ReplySHA256, identity.ReplyBytes = start.ReplySHA256, start.ReplyBytes
 			identity.Phase, identity.Sequence, identity.Completed = start.Phase, start.Sequence, start.Completed
 			identity.RCode, identity.TTLs, identity.Classes = start.RCode, start.TTLs, start.Classes
 			identity.AuthoritySerial, identity.Success = start.AuthoritySerial, start.Success

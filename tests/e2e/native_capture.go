@@ -117,7 +117,7 @@ func (s *Stack) startNativeCapture(ctx context.Context, extra map[string]string)
 		}
 		// Fixed filter excludes application contents from public output, but raw
 		// pcaps are private. Full snaplen permits opaque outer-datagram hash joins.
-		script := `umask 077; echo $$ > "$1/pid"; exec tcpdump --immediate-mode -U -B 32768 -nn -s 65535 -i any -w "$1/raw.pcap" 'icmp or icmp6 or udp or tcp port 443 or tcp port 9446' 2>"$1/stats"`
+		script := `umask 077; echo $$ > "$1/pid"; exec tcpdump --immediate-mode -U -B 32768 -nn -s 65535 -i any -w "$1/raw.pcap" 'icmp or icmp6 or udp or tcp port 443 or tcp port 9446 or tcp port 53' 2>"$1/stats"`
 		err = exec.CommandContext(ctx, "docker", "exec", "-d", container, "sh", "-c", script, "capture", c.directory).Run()
 		if err != nil {
 			return nil, err

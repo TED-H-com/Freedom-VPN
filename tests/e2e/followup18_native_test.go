@@ -495,7 +495,7 @@ func (r *runner) finishNativeCapture22(ctx context.Context, rec *Record, c *Nati
 		recPathNote(rec)("capture_error", e.Error())
 	}
 	out := filepath.Join(r.dir, "headers", rec.ID)
-	args := []string{filepath.Join(r.lab.root, "tests/e2e/decode_capture.py"), "--stable-addresses", "--wireguard-headers", "--out", out}
+	args := []string{filepath.Join(r.lab.root, "tests/e2e/decode_capture.py"), "--stable-addresses", "--wireguard-headers", "--dns-headers", "--out", out}
 	for _, role := range c.roles() {
 		args = append(args, filepath.Join(private, role+".pcap"))
 	}

@@ -96,3 +96,57 @@ func (r *runner) nativeRouter23(ctx context.Context, s *Stack) {
 		}
 	}
 }
+
+func TestE2E_Followup23DNS(t *testing.T) {
+	if os.Getenv("FVPN_E2E_FOLLOWUP23") != "1" {
+		t.Skip("set FVPN_E2E_FOLLOWUP23=1 with a fresh two-resolver stack")
+	}
+	runFixtureCampaign(t, true)
+}
+
+func (r *runner) nativeDNS23(ctx context.Context, s *Stack) {
+	rec := Record{ID: "native-dns-delivery", Title: "F12-04 native wire delivery and positive IDNA", Spec: []string{"AT20", "F12-04", "F4-05", "F4-07"}, Status: StatusPass}
+	defer func() { r.record(rec) }()
+	for _, container := range []string{r.lab.node, r.lab.member} {
+		if err := exec.CommandContext(ctx, "docker", "exec", container, "netbird", "debug", "log", "level", "debug").Run(); err != nil {
+			rec.Status = StatusFail
+			return
+		}
+	}
+	c, err := s.StartNativeDNSCapture(ctx)
+	if err != nil {
+		rec.Status = StatusFail
+		recPathNote(&rec)("error", err.Error())
+		return
+	}
+	defer r.finishNativeCapture22(ctx, &rec, c)
+	if c.Sample(ctx, "before-dns") != nil {
+		rec.Status = StatusFail
+		return
+	}
+	// One original-order positive A query, then independent IDNA UDP/TCP controls.
+	// No retry replaces a failed query. Previous full campaign remains immutable.
+	for _, row := range []struct {
+		name string
+		tcp  bool
+	}{{"rr", false}, {"idna-udp", false}, {"idna-tcp", true}} {
+		var got FixtureProbeResult
+		var e error
+		if row.name == "rr" {
+			got, e = s.ProbeNativeDNS(ctx, "", "rr.example.invalid", 1, false, r.lab.originIP)
+		} else {
+			got, e = s.ProbeNativeIDNA(ctx, row.tcp)
+		}
+		noteJSON(&rec, row.name, got)
+		if e != nil || !got.Available || got.RCode != 0 || !got.ExpectedAnswer || len(got.Types) == 0 {
+			rec.Status = StatusFail
+		}
+	}
+	if c.Sample(ctx, "after-dns") != nil {
+		rec.Status = StatusFail
+	}
+	_, err = s.ExportContainerFile(ctx, "member", "/var/lib/vpn-node/e2e/netbird-service.log", filepath.Join(r.lab.root, ".agent/tmp/followup23", r.runID, "dns-member-debug.log"))
+	if err != nil {
+		rec.Status = StatusFail
+	}
+}
