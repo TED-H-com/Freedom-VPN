@@ -1,7 +1,7 @@
 # Backup and Restore Drill Record (`docs/handover/restore-drill.md`)
 
-**Current cut — [follow-up 22](follow-up-22.md) (2026-10-31 EDT):** Through #356: shared installer loopback fixed; F8-02 mechanism captured on both underlays; install-overrun cause unproven. D-134 expiry semantics and provisional D-135 node-wide rollback are recorded; historical failures stay failed.
-Previous cut: [follow-up 21](follow-up-21.md), through #351.
+**Current cut — [follow-up 23](follow-up-23.md) (2026-11-01 EDT):** Through #362: month-boundary fixture fixed; regular updates pass; members F11-02 closed; native IPv6 F8-02 and five-SYN pattern reproduced. D-135 / D-136 / D-137 remain provisional; historical failures stay failed.
+Previous cut: [follow-up 22](follow-up-22.md), through #356.
 
 Historical follow-up 17 cutoff: [follow-up 17 operator evidence](follow-up-17.md). #313
 harness-proves the SECOPS-21 first-offer capture (2/0/0, delivery 4 > retained 3,
