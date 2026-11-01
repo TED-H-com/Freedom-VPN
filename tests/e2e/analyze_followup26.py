@@ -38,6 +38,41 @@ def verify_file(path, expected):
     return raw
 
 
+def syn_interval(member, nodes):
+    if member is None:
+        return None
+    matched = next((p for p in nodes if p['interface'] == 'fvmb0'
+                    and p['packet_type'] != 4 and p['tcp'] == member['tcp']), None)
+    if matched is None:
+        return None
+    return dict(member_packet=member['packet'], node_packet=matched['packet'],
+                lower_ns=str(int(matched['mono_lower_ns'])-int(member['mono_upper_ns'])),
+                upper_ns=str(int(matched['mono_upper_ns'])-int(member['mono_lower_ns'])))
+
+
+def session_summary(run):
+    """Supplement earlier derived joins without changing their original bytes."""
+    output = run/'session-intervals.json'
+    assert not output.exists(), 'already summarized; immutable'
+    central = json.loads((run/'central-record.json').read_text())
+    joins = json.loads(notes(json.loads((run/'serving-packet-joins.json').read_text()))['analysis'])
+    rows = []
+    keys = ['peer_present', 'peer_connected', 'connection_type', 'wireguard_peer_matched',
+            'wireguard_endpoint', 'latest_handshake_unix_seconds', 'native_latest_handshake_at',
+            'uses_kernel_interface', 'local', 'remote', 'routes']
+    for row in joins['rows']:
+        if not row.get('measured') or 'capture' not in row:
+            continue
+        original = json.loads((run/(row['id']+'.json')).read_text())
+        capture = json.loads(notes(original)['capture'])
+        samples = [dict(label=s['label'], points={r:{k:s['points'][r].get(k) for k in keys}
+                    for r in ['member','node']}) for s in capture['samples']]
+        rows.append(dict(id=row['id'], session_samples=samples,
+                    member_egress_to_node_ingress=syn_interval(row.get('first_syn'),row['capture']['hops']['node'])))
+    publish(output,central,'session-intervals','Native peer state and first SYN transit interval',
+            dict(rows=rows,scope='TCP header equality joins the first inner SYN. Bounds include measured clock offsets and pcap quantization. Null means no matching receipt, not a diagnosed transport cause. peer_connected is the original NetBird field; older derived peer_status/connected null aliases are not observations.'))
+
+
 def main(run, private):
     assert not (run/'serving-packet-joins.json').exists(), 'already analyzed; immutable'
     central = json.loads((run/'central-record.json').read_text())
@@ -89,7 +124,7 @@ def main(run, private):
         row['origin_packets']=len(capture['hops']['origin'])
         row['origin_receipt']=json.loads(n['origin_arrival'])
         row['transfer']=json.loads(n['transfer'])
-        row['session_samples']=[dict(label=s['label'],points={role:{k:s['points'][role].get(k) for k in ['start','end','peer_present','peer_status','connected','wireguard_peer_matched','wireguard_endpoint','latest_handshake_unix_seconds','native_latest_handshake_at','uses_kernel_interface','local','remote','routes']} for role in ['member','node']}) for s in cap['samples']]
+        row['session_samples']=[dict(label=s['label'],points={role:{k:s['points'][role].get(k) for k in ['start','end','peer_present','peer_connected','connection_type','wireguard_peer_matched','wireguard_endpoint','latest_handshake_unix_seconds','native_latest_handshake_at','uses_kernel_interface','local','remote','routes']} for role in ['member','node']}) for s in cap['samples']]
         gp=run/(gate+'.json')
         if gp.exists():
             gn=notes(json.loads(gp.read_text())); row['serving_gate']=dict(status=json.loads(gp.read_text())['status'],completed_at=json.loads(gn['completed_at']),accepted=json.loads(gn.get('accepted','null')))
@@ -122,7 +157,10 @@ def main(run, private):
         row['reported_cause_status']='accepted report plus producer timing when present; exact dropping rule is not inferred'
     result['scope']='Central rows are accepted reports, not continuous node state. Producer baseline brackets are direct local writer observations; packet clocks retain measured offset bounds. Fresh reproduction never rewrites historical attribution. F14-01 remains distinct from first selection.'
     publish(run/'serving-packet-joins.json',central,'serving-packet-joins','Follow-up 26 central, baseline and native session joins',result)
+    session_summary(run)
     return result
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser(description=__doc__);p.add_argument('run',type=Path);p.add_argument('private',type=Path);a=p.parse_args();main(a.run,a.private)
+    p=argparse.ArgumentParser(description=__doc__);p.add_argument('run',type=Path);p.add_argument('private',type=Path);p.add_argument('--session-only',action='store_true');a=p.parse_args()
+    if a.session_only:session_summary(a.run)
+    else:main(a.run,a.private)
