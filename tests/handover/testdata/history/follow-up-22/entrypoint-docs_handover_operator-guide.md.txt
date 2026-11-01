@@ -1,0 +1,70 @@
+# Operator Guide (`docs/handover/operator-guide.md`)
+
+**Current cut — [follow-up 21](follow-up-21.md) (2026-10-31 EDT):** Through #351: positive-cache limits, retained verified install archives and Dependabot #22 status are documented. Regular AT23–AT27 and assembled D-087 AT10 pass; historical failures remain frozen.
+Previous cut: [follow-up 20](follow-up-20.md), through #344.
+
+## Operator changes at #351
+
+**Positive DNS cache:** AdGuard v0.107.59 can replace a newer cached answer
+with an older outstanding upstream reply that completes after client
+abandonment but before its 10 s upstream timeout (F9-INFLIGHT, #345).
+TTL is a maximum lifetime, not a minimum retention or cross-query consistency
+promise. Independent resolver caches and whole-second expiry also matter.
+No exposed setting orders these replies by authority version. When choosing
+production `blocked_response_ttl`, retain this limitation; the value remains
+the owner's decision. A cache setting is not a fix for this ordering behavior.
+[Attribution and measured defaults](../dns/BACKEND.md#215-f10-03--positive-cache-and-ttl-measured-2026-10-31).
+
+**Offline seed:** initial and same-release installs retain the verified archive
+and envelope (#351's corrected guide). Seed verifies a private copy and the
+whole installed tree without fetching the artifact while that archive exists.
+Only an absent archive chooses the guarded signed-URL download. A corrupt or
+unreadable archive fails closed; restore the signed package and rerun the
+same-release installer. This is seed's offline capability, not offline
+enrollment. [Installer hand-off](../updates/node-updater.md#installer-hand-off-d-080-d-089-d-110).
+
+**Dependabot #22:** remains open for owner disposition (#349). All minimatch
+paths are development tooling; no production-bundle path was found.
+`npm audit fix` changes nothing, and the complete 11.0.3 override breaks
+jsx-a11y's nested-label rule after clean `npm ci`. Both dependency files stay
+byte-identical. Do not apply that override or dismiss the alert as a repair.
+This is a dependency-hygiene item, not a product defect.
+[Portal investigation](../portal/DEV.md#development-dependency-advisory--2026-10-31-follow-up-19).
+
+## Reporting and restart changes at #344
+
+Installer 7 requires `--control-url` as a validated HTTPS origin and a readable
+`--server-ca`. It generates `result_url` at
+`POST /api/v1/agent/update-results`, server trust from that enrollment CA, and
+the enrolled node's mTLS certificate/key paths. `allowed_artifact_origins` is
+exactly the control origin. Invalid inputs fail before host changes. A
+same-release rerun repairs reporting fields/server CA and preserves identity,
+usage, updater journal and unrelated settings. `install --allow-loopback` is
+an explicit **TEST ONLY** opt-in for an isolated HTTPS lab, false in production.
+Updates 11 (#346) closes the artifact-origin question by measurement, with no
+rejection: this list grants private / CGNAT exceptions, not an exclusive host
+allowlist. The measured non-private artifact origin needs no exception. See [installer configuration](../node/install.md#authenticated-updater-reporting-f10-02-136-13103).
+
+If sealing logs `result_url_missing`, the receipt remains **pending**, with its
+original bytes and no ACK. Explicit `Engine.Flush` without a sink returns
+`VALIDATION_FAILED`; local apply success is not central delivery. Repair the
+reporting configuration, then run `fvpn-updater flush --config /etc/vpn-node/updater.json`
+to transmit the identical pending receipt once. Verify the central ACK; do not
+rebuild the receipt or rerun the update to manufacture a new result.
+[Updater 18 evidence](follow-up-20.md#installer-7-and-updater-18--341--342).
+
+After a short agent process restart on the same OS boot, a still-valid original
+signed lease can retain serving without a new control response, intermediate
+baseline or Apply. Adoption requires matching desired/applied generation,
+the original clock anchor, a fresh serving heartbeat, eligible release,
+fresh DNS/probe checks, full kernel/topology verification, healthy meter
+ownership and clear identity/updater barriers. Operators can see retained then
+adopted serving under the **same absolute deadline**. Ordinary stop checkpoints
+the last usage delta and leaves its epoch open; updater withdrawal still
+finalizes it. Failed qualification closes forwarding while keeping control
+access; OS reboot or a lost anchor cannot adopt the old lease. Same-generation
+repair queues the failed verifier report before repairing with the original
+lease; recovery does not erase that observation. Retain agent/watchdog reason
+logs and all baseline/heartbeat producer rows for isolation 10. This contract
+does not identify ISO-F6-03's historical writer or establish zero pre-D loss.
+[Agent 28 evidence and D-133](follow-up-20.md#agent-core-28--344-historical-writer-still-unattributed).
