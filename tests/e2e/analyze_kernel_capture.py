@@ -33,7 +33,7 @@ def main(run, private):
         receipt((private/'initial-selection'/(role+'.pcap')).read_bytes(), point['private_pcap_receipt'])
     analysis = analyze(run, run/'initial-selection.json')
     result = dict(syns=len(analysis['member_syns']), capture=analysis, trace={}, samples=[])
-    for role in ['member', 'node']:
+    for role in trace['roles']:
         raw = (private/'kernel'/(role+'-trace.txt')).read_bytes()
         receipt(raw, trace['roles'][role]['trace_receipt'])
         errors = (private/'kernel'/(role+'-trace-errors.txt')).read_bytes()

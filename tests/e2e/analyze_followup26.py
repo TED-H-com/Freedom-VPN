@@ -38,6 +38,7 @@ def verify_file(path, expected):
 
 
 def main(run, private):
+    assert not (run/'serving-packet-joins.json').exists(), 'already analyzed; immutable'
     central = json.loads((run/'central-record.json').read_text())
     cn = {k: json.loads(v) for k, v in notes(central).items() if k != 'producer_export_error'}
     result = dict(rows=[], receipts_verified=0, limitations=[])

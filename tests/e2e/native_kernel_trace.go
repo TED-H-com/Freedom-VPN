@@ -16,7 +16,8 @@ import (
 )
 
 // kernelTrace is TEST ONLY. All commands execute in owned namespaces. Its
-// distinct tables only count/mark UDP for nftrace; they never change a verdict.
+// distinct tables count/mark UDP for nftrace without changing packet verdicts.
+// Node marking can still invalidate serving verification; it is opt-in only.
 // netdev ingress precedes ipv6_rcv_core, unlike inet prerouting.
 type kernelTrace struct {
 	stack          *Stack
