@@ -28,6 +28,7 @@ type counterObservation struct {
 	Counters          map[string]decstr.U64 `json:"diagnostic_bytes"`
 }
 type forwardingObservation struct {
+	NativeCapture       json.RawMessage            `json:"native_capture,omitempty"`
 	Node                string                     `json:"node_container_role"`
 	NodeIncarnation     string                     `json:"node_incarnation"`
 	OriginVerified      bool                       `json:"origin_verified"`
@@ -61,6 +62,7 @@ func (l *live) forwardingGate(r *record, devices ...uuid.UUID) bool {
 	var joined json.RawMessage
 	stage := "central_readiness"
 	var readerError string
+	var stream timingStreamReceipt
 	ready := l.wait(90*time.Second, func() bool {
 		stage = "central_readiness"
 		readerError = ""
@@ -108,7 +110,8 @@ func (l *live) forwardingGate(r *record, devices ...uuid.UUID) bool {
 		}
 		// F10-02 discipline: retain the exact producer row, not an inferred clock.
 		stage = "producer_stream_export"
-		trace, e := l.readEnforcementTiming()
+		trace, receipt, e := l.readEnforcementTimingAt(l.nodeContainer())
+		stream = receipt
 		readerError = ""
 		if e != nil {
 			readerError = "producer_stream_unavailable"
@@ -118,7 +121,7 @@ func (l *live) forwardingGate(r *record, devices ...uuid.UUID) bool {
 		joined = servingProducer(trace, state.Observation.BootId, state.LeaseID, state.Generation)
 		return joined != nil
 	})
-	r.jsonCheck("populated-grant serving readiness", "fresh accepted serving observation; desired=applied=observed lease generation; unexpired populated lease, live intended binding and same-boot producer serving row", map[string]any{"ready": ready, "device_id": device, "accepted": json.RawMessage(raw), "producer_record": joined, "last_stage": stage, "reader_error": readerError}, "read-only SQL + local desired state + streamed ExportContainerFile; stop positive probe when unavailable", ready)
+	r.jsonCheck("populated-grant serving readiness", "fresh accepted serving observation; desired=applied=observed lease generation; unexpired populated lease, live intended binding and same-boot producer serving row", map[string]any{"ready": ready, "device_id": device, "accepted": json.RawMessage(raw), "producer_record": joined, "last_stage": stage, "reader_error": readerError, "producer_stream": stream}, "read-only SQL + local desired state + streamed ExportContainerFile; stop positive probe when unavailable", ready)
 	l.write(r)
 	return ready
 }
@@ -194,10 +197,17 @@ func (l *live) traceForwardingExpected(r *record, service string, device uuid.UU
 		hash := sha256.Sum256(raw)
 		o.ProbeSHA256 = hex.EncodeToString(hash[:])
 	}
+	var capture *nativeCaptureSession
+	if r.ID == "AT01" {
+		capture = l.startNativeCapture(r, service, "initial-selection")
+		defer capture.stop()
+	}
+	capture.sample("before-selection")
 	o.RouteBefore = l.routeObservation(service)
 	// Native distribution can lag central publication; poll the advertised
 	// network before selecting it. Negative peers are probed once, never enrolled.
 	selectRoute := func() bool {
+		capture.sample("selection-poll")
 		got := l.nb("GET", "/routes", nil)
 		var routes []netbird.Route
 		_ = json.Unmarshal(got.body, &routes)
@@ -220,6 +230,7 @@ func (l *live) traceForwardingExpected(r *record, service string, device uuid.UU
 	} else {
 		o.RouteSelected = selectRoute()
 	}
+	capture.sample("after-selection")
 	time.Sleep(2 * time.Second)
 	o.RouteAfter = l.routeObservation(service)
 	status, _ := l.inside(service, "netbird", "status", "--json")
@@ -255,7 +266,9 @@ func (l *live) traceForwardingExpected(r *record, service string, device uuid.UU
 	time.Sleep(time.Second)
 	probeID := uuid.NewString()
 	armed := l.request(nil, "PUT", "https://releases.example.invalid/e2e/traffic", map[string]string{"id": probeID}, map[string]string{"X-E2E-Secret": l.secret("origin.secret")})
+	capture.sample("before-transfer")
 	raw, err := l.inside(service, "/tmp/at-members-probe", "transfer", probeID, port)
+	capture.sample("after-transfer")
 	if err != nil || !json.Valid(raw) {
 		raw = []byte(`{"origin_receipt":false,"probe_error":true}`)
 	}
@@ -301,6 +314,7 @@ func (l *live) traceForwardingExpected(r *record, service string, device uuid.UU
 	if o.Counted {
 		o.FirstUnconfirmedHop = "none: origin HTTP response and both device admission counters increased"
 	}
+	o.NativeCapture = capture.stop()
 	r.Forwarding = append(r.Forwarding, o)
 	encoded, _ := json.Marshal(o)
 	r.check("bounded member transfer observation", "record selected route, node counters, packet hops and origin receipt", string(encoded), "netbird routes select; ip -j route get controlled origin; concurrent 9-second AF_PACKET aggregate observers; bounded CA-verified HTTPS GET; nft counters before/after", true)

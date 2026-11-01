@@ -74,7 +74,7 @@ func TestAT02_F12RecoveryRequiresNextApplyAndCountsEveryLoss(t *testing.T) {
 	cap := siblingObservation{Boot: boot.String(), Start: 50, End: 500, StatsAvailable: true, Packets: []siblingPacket{{1, 80, "fvmb0"}, {1, 81, "fvup0"}, {2, 220, "fvmb0"}, {3, 320, "fvmb0"}, {3, 321, "fvup0"}}}
 	raw, _ := json.Marshal(cap)
 	out, ok, observed := siblingRecovery(trace, raw)
-	if !ok || !observed || out["lost_admitted_packets"] != 1 {
+	if ok || !observed || out["measurement_valid"] != true || out["lost_admitted_packets"] != 1 {
 		t.Fatal("valid bracket lost", out)
 	}
 	cap.Packets = append(cap.Packets, siblingPacket{4, 400, "fvmb0"})
@@ -87,5 +87,46 @@ func TestAT02_F12RecoveryRequiresNextApplyAndCountsEveryLoss(t *testing.T) {
 	_, ok, _ = siblingRecovery(trace[:2], raw)
 	if ok {
 		t.Fatal("missing next Apply passed")
+	}
+}
+
+func TestAT02_F13D136HistoricalPolicyMissingCountsLosses(t *testing.T) {
+	root := "../../../../docs/e2e/at/members/history/follow-up-12/"
+	raw, err := os.ReadFile(root + "AT02-enforcement-timing.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var trace struct {
+		Records []json.RawMessage `json:"records"`
+	}
+	if err = json.Unmarshal(raw, &trace); err != nil {
+		t.Fatal(err)
+	}
+	raw, err = os.ReadFile(root + "F12-AT02-recovery.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var capture struct {
+		Observation json.RawMessage `json:"observation"`
+		Sender      json.RawMessage `json:"sender"`
+	}
+	if err = json.Unmarshal(raw, &capture); err != nil {
+		t.Fatal(err)
+	}
+	out, ok, failed := siblingRecovery(trace.Records, capture.Observation, capture.Sender)
+	if ok || failed || out["lost_admitted_packets"] != 21 || out["losses_in_completed_guards"] != 13 || out["losses_outside_completed_guards"] != 8 {
+		t.Fatalf("historical loss/failed-Apply facts changed: ok=%v failed=%v losses=%v", ok, failed, out["lost_admitted_packets"])
+	}
+	found := false
+	for _, b := range out["brackets"].([]recoveryBracket) {
+		if b.Baseline == 362 && b.Run == "3065df99-331a-47ba-b867-cf29550a5ea6" {
+			found = true
+			if b.Cause != "policy_missing" || b.Duration != 236970251 || b.Losses != 9 || b.LossesInGuards != 1 || b.LossesOutsideGuards != 8 || !b.Recovered || b.Recovery != 366 {
+				t.Fatalf("D-136 bracket changed: %+v", b)
+			}
+		}
+	}
+	if !found {
+		t.Fatal("policy_missing baseline omitted")
 	}
 }

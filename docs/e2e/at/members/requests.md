@@ -8,6 +8,43 @@ Current full-case status and evidence: [summary.md](summary.md). Follow-up 10 ru
 run `69f92f49` and its requests are immutable in [follow-up 8](history/follow-up-8/requests.md),
 with [32-file checksum index](history/follow-up-8/SHA256SUMS) (D-098).
 
+## Follow-up 13 — 2026-11-01 (provisional D-135, D-136, D-137)
+
+D-098 first: all 52 root files for run b98b78ee are byte-identical in
+[follow-up 12](history/follow-up-12/RUN.md), with [SHA-256 pins](history/follow-up-12/SHA256SUMS).
+AT01/AT09 within that archive still belong to run 7edb263f, as recorded then.
+
+**F12-01 interpretation under provisional D-136:** the generation-11 lease
+while policy advances to generation 13 causes the designed node-wide
+`policy_missing` baseline until renewal and the next successful Apply.
+Original producer sequences **362–364 baseline, 365 renewal, 366 Apply**,
+**236.970251 ms**, **nine losses** (one inside a completed guard, eight outside)
+are unchanged. The complete sibling stream retains **3,976 attempts / 21 losses**
+(13 inside completed guards, eight outside). No failed Apply occurred.
+The bracket rule covers every node-wide baseline call; overlapping calls are
+reported separately and never summed as unique losses. Recovery is required;
+no bracket or guard excludes a loss or turns a failed availability row into PASS.
+Stronger availability is agent-core design under D-133, outside this lane.
+[F12-01 immutable records](history/follow-up-12/F12-01-policy-missing.json).
+
+F11-03 remains blocked on **no failed Apply observed** until this assembled run
+actually records one. Netlab 22's executor lifecycle is merged, but its hand-off
+and roadmap leave the engine opt-in to agent-core 31; unavailable command
+records must not be invented. Baseline call success is retained separately
+from a failed Apply: failed cleanup is not proof of a committed baseline.
+
+**AT09 under provisional D-137:** the separate selected-native-peer route-MTU
+1280 control measures known PMTU. Receive-only 1280 without PTB remains an
+explicit PMTU black-hole limitation, never a supported-path PASS, even if a
+particular bounded transfer completes. Historical F8-02 rows remain failed.
+Reactive PTB is pending devstack 23; no router-hop export exists on this baseline.
+
+F12-02's streamed reader receives its first live full-sequence qualification
+in this run. F12-03 uses a six-second quiet window, then a fresh negative and
+its observed remaining SOA TTL minus one second of precision uncertainty.
+The existing combined before-TTL assertion is unchanged. F12-04 remains with
+devstack; the old native SERVFAIL and both positive resolver receipts stay recorded.
+
 ## Follow-up 12 — 2026-10-31 (D-098, D-134, D-135)
 
 Run 7edb263f is preserved byte-identically in [follow-up 11](history/follow-up-11/RUN.md),
