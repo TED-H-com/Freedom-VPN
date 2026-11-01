@@ -150,6 +150,23 @@ type setElement struct {
 	Window  uint32
 }
 
+// DuplicateChainError identifies an ambiguous listing with a repeated owned
+// (family, table, chain) definition. ParseRuleset and ParseState reject both
+// identical and differing definitions; equality does not establish a consistent
+// snapshot of the rules, sets or counters. This is distinct from malformed JSON.
+//
+// Callers can classify it with errors.As as "duplicate_chain", without logging
+// Error(), which retains the existing identity-bearing diagnostic. This kind
+// does not prove a torn read or its origin and does not authorize a retry or
+// acceptance. Verifiers retain their existing CheckError reasons and rejection.
+type DuplicateChainError struct {
+	family, table, name string
+}
+
+func (e *DuplicateChainError) Error() string {
+	return fmt.Sprintf("duplicate chain %s %s %s", e.family, e.table, e.name)
+}
+
 // ParseRuleset reads an nft -j listing. Apply verifies `nft -j list ruleset`
 // so every table is in the bytes. The inet fvpn model is still keyed by
 // family, table, and name: an ip fvpn chain or a chain in another table is
@@ -398,7 +415,7 @@ func noteChain(rs *Ruleset, foreign *foreignBuild, seen map[string]struct{}, raw
 	}
 	key := fam + "\x00" + table + "\x00" + c.Name
 	if _, dup := seen[key]; dup {
-		return fmt.Errorf("duplicate chain %s %s %s", fam, table, c.Name)
+		return &DuplicateChainError{family: fam, table: table, name: c.Name}
 	}
 	seen[key] = struct{}{}
 	cv := rs.Chains[c.Name]

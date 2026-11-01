@@ -1,0 +1,14 @@
+=== RUN   TestReviewR18_DisabledLifecycleDoesNotAllocate
+--- PASS: TestReviewR18_DisabledLifecycleDoesNotAllocate (0.00s)
+=== RUN   TestReviewR18_DisabledRunCommandMatchesRun
+--- PASS: TestReviewR18_DisabledRunCommandMatchesRun (0.01s)
+=== RUN   TestReviewR18_RenderCaptureStaysInMemory
+--- PASS: TestReviewR18_RenderCaptureStaysInMemory (0.00s)
+=== RUN   TestReviewR18_EnabledSampleIgnoresInstallDeadline
+    review_r18_lifecycle_test.go:104: resource sample taken against a finished install context: before=deadline_exceeded syscr=121 before_available=true after_available=true
+--- FAIL: TestReviewR18_EnabledSampleIgnoresInstallDeadline (0.12s)
+=== RUN   TestReviewR18_EnabledCancelReapsChild
+--- PASS: TestReviewR18_EnabledCancelReapsChild (0.05s)
+FAIL
+FAIL	github.com/TED-H-com/Freedom-VPN/node/enforce	0.193s
+FAIL

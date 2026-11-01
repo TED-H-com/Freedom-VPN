@@ -1,0 +1,39 @@
+=== RUN   TestF13_01_DuplicateChainKind
+=== RUN   TestF13_01_DuplicateChainKind/identical
+    followup23_listing_test.go:59: got interface "" must match ^fv[a-z0-9_-]{1,13}$, want reason ISOLATION_BASELINE_MISSING
+=== RUN   TestF13_01_DuplicateChainKind/handle
+    followup23_listing_test.go:59: got interface "" must match ^fv[a-z0-9_-]{1,13}$, want reason ISOLATION_BASELINE_MISSING
+=== RUN   TestF13_01_DuplicateChainKind/policy
+    followup23_listing_test.go:59: got interface "" must match ^fv[a-z0-9_-]{1,13}$, want reason ISOLATION_BASELINE_MISSING
+=== RUN   TestF13_01_DuplicateChainKind/hook
+    followup23_listing_test.go:59: got interface "" must match ^fv[a-z0-9_-]{1,13}$, want reason ISOLATION_BASELINE_MISSING
+=== RUN   TestF13_01_DuplicateChainKind/prio
+    followup23_listing_test.go:59: got interface "" must match ^fv[a-z0-9_-]{1,13}$, want reason ISOLATION_BASELINE_MISSING
+=== RUN   TestF13_01_DuplicateChainKind/type
+    followup23_listing_test.go:59: got interface "" must match ^fv[a-z0-9_-]{1,13}$, want reason ISOLATION_BASELINE_MISSING
+=== RUN   TestF13_01_DuplicateChainKind/comment
+    followup23_listing_test.go:59: got interface "" must match ^fv[a-z0-9_-]{1,13}$, want reason ISOLATION_BASELINE_MISSING
+=== RUN   TestF13_01_DuplicateChainKind/unknown_field
+    followup23_listing_test.go:59: got interface "" must match ^fv[a-z0-9_-]{1,13}$, want reason ISOLATION_BASELINE_MISSING
+--- FAIL: TestF13_01_DuplicateChainKind (0.00s)
+    --- FAIL: TestF13_01_DuplicateChainKind/identical (0.00s)
+    --- FAIL: TestF13_01_DuplicateChainKind/handle (0.00s)
+    --- FAIL: TestF13_01_DuplicateChainKind/policy (0.00s)
+    --- FAIL: TestF13_01_DuplicateChainKind/hook (0.00s)
+    --- FAIL: TestF13_01_DuplicateChainKind/prio (0.00s)
+    --- FAIL: TestF13_01_DuplicateChainKind/type (0.00s)
+    --- FAIL: TestF13_01_DuplicateChainKind/comment (0.00s)
+    --- FAIL: TestF13_01_DuplicateChainKind/unknown_field (0.00s)
+=== RUN   TestF13_01_UniqueChainAndOtherParseErrors
+=== RUN   TestF13_01_UniqueChainAndOtherParseErrors/single
+=== RUN   TestF13_01_UniqueChainAndOtherParseErrors/family
+=== RUN   TestF13_01_UniqueChainAndOtherParseErrors/table
+=== RUN   TestF13_01_UniqueChainAndOtherParseErrors/name
+--- PASS: TestF13_01_UniqueChainAndOtherParseErrors (0.00s)
+    --- PASS: TestF13_01_UniqueChainAndOtherParseErrors/single (0.00s)
+    --- PASS: TestF13_01_UniqueChainAndOtherParseErrors/family (0.00s)
+    --- PASS: TestF13_01_UniqueChainAndOtherParseErrors/table (0.00s)
+    --- PASS: TestF13_01_UniqueChainAndOtherParseErrors/name (0.00s)
+FAIL
+FAIL	github.com/TED-H-com/Freedom-VPN/node/enforce	0.006s
+FAIL
