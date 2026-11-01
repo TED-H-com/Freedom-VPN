@@ -520,7 +520,7 @@ request's origin/counter assertion. Default measurement rechecks readiness after
 observer setup. Historical rows remain unchanged.
 
 The historical node tracer is **not passive** with respect to verification:
-its unscoped prerouting `meta nftrace set 1` is a foreign `mangle` statement,
+its broad ingress/prerouting `meta nftrace set 1` is a foreign `mangle` statement,
 rejected by the unchanged node verifier. Normal kernel tracing now marks only
 member packets. `FVPN_E2E_REPRODUCE_TRACE26=1` explicitly reenables the old node
 tracer for retained diagnostics; its rows are confounded experiments, never

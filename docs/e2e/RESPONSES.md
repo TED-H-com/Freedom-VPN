@@ -1219,8 +1219,10 @@ not prove that serving admission had failed before measurement. The new
 prerequisite is independent and keeps a non-serving node as its own failed row.
 
 The old node nft observer can itself trigger `ISOLATION_POLICY_INVALID`:
-foreign prerouting `nftrace` is an unscoped `mangle` under the unchanged
-verifier. Normal observation now traces only the member; the explicit historical
+its broad IPv6 UDP `nftrace` rules are unscoped foreign `mangle` statements.
+The exact captured listing first rejects a netdev ingress rule; the isolated
+inet prerouting rule also fails the unchanged verifier. Normal observation now
+traces only the member; the explicit historical
 reproduction flag is diagnostic. The retained original IPv6 generation-5,
 serving=true five-SYN failures remain distinct from the generation-0 closed-node
 samples. Historical central causes cannot be retroactively recovered.

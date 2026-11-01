@@ -283,6 +283,8 @@ func (r *runner) traceRejection26(ctx context.Context, k *kernelTrace, rec *Reco
 		got["error_code"] = string(check.Reason)
 		got["deciding_table_is_tracer"] = strings.Contains(check.Detail, "table "+k.table+" ")
 		got["deciding_hook_is_prerouting"] = strings.Contains(check.Detail, "hook prerouting ")
+		got["deciding_hook_is_ingress"] = strings.Contains(check.Detail, "hook ingress ")
+		got["deciding_family_is_netdev"] = strings.Contains(check.Detail, "family netdev ")
 		got["deciding_statement_is_mangle"] = strings.Contains(check.Detail, "statement mangle")
 	}
 	noteJSON(rec, "tracer_verifier_replay", got)
