@@ -47,7 +47,7 @@ func TestRender_ProbeGolden(t *testing.T) {
 	}
 	assertGolden(t, "probe-baseline.nft", base)
 	brules := base[strings.Index(base, "add rule"):]
-	if strings.Count(brules, " accept") != 4 {
+	if strings.Count(brules, " accept") != 6 {
 		t.Fatalf("baseline probe accepts:\n%s", base)
 	}
 	if strings.Contains(base, "ip saddr 100.64.1.1") {
@@ -241,6 +241,11 @@ func probeServingFixture(m Model, assignments map[uuid.UUID]uint16, bounded bool
 			ruleExpr("forward", matchMetaIface("iifname", in), matchMetaIface("oifname", ul), matchPayload("==", "saddr", addr), namedCounter(up), manglePriority(classid), map[string]any{"accept": nil}),
 			ruleExpr("forward", matchPayload("!=", "daddr", "@allowed_v4"), map[string]any{"drop": nil}),
 			ruleExpr("forward", matchCTState("!=", "established", "related"), namedCounter(counterNoDown), map[string]any{"drop": nil}),
+			ruleExpr("forward", matchMetaIface("iifname", ul), matchMetaIface("oifname", in), matchPayload("==", "saddr", "@resolver_v4"), matchPayload("==", "daddr", "@probe_v4"), matchSport("tcp", 53), matchEstablished(), namedCounter(counterProbeDown), map[string]any{"accept": nil}),
+			ruleExpr("forward", matchMetaIface("iifname", ul), matchMetaIface("oifname", in), matchPayload("==", "saddr", "@resolver_v4"), matchPayload("==", "daddr", "@probe_v4"), matchSport("udp", 53), matchEstablished(), namedCounter(counterProbeDown), map[string]any{"accept": nil}),
+			ruleExpr("forward", matchMetaIface("iifname", ul), matchMetaIface("oifname", in), matchPayload("==", "saddr", "@resolver_v4"), namedCounter(counterDeniedDown), map[string]any{"drop": nil}),
+			ruleExpr("forward", matchMetaIface("iifname", ul), matchMetaIface("oifname", in), matchPayload("==", "saddr", "@denied_v4"), namedCounter(counterDeniedDown), map[string]any{"drop": nil}),
+			ruleExpr("forward", matchMetaIface("iifname", ul), matchMetaIface("oifname", in), matchPayload("==", "saddr", "@host_v4"), namedCounter(counterDeniedDown), map[string]any{"drop": nil}),
 			ruleExpr("forward", matchMetaIface("iifname", ul), matchMetaIface("oifname", in), matchPayload("==", "daddr", "@probe_v4"), matchEstablished(), namedCounter(counterProbeDown), map[string]any{"accept": nil}),
 			ruleExpr("forward", matchMetaIface("iifname", ul), matchMetaIface("oifname", in), matchPayload("==", "daddr", addr), namedCounter(dn), manglePriority(classid), map[string]any{"accept": nil}),
 			map[string]any{"chain": map[string]any{"family": "inet", "table": "fvpn", "name": "input", "type": "filter", "hook": "input", "prio": -150, "policy": "accept"}},
@@ -256,6 +261,7 @@ func probeServingFixture(m Model, assignments map[uuid.UUID]uint16, bounded bool
 			map[string]any{"counter": map[string]any{"table": "fvpn", "name": counterProbeDown, "packets": 0, "bytes": 0}},
 			map[string]any{"set": map[string]any{"table": "fvpn", "name": "probe_v4", "elem": []any{elemVal("100.64.8.1", timeout)}}},
 			map[string]any{"set": map[string]any{"table": "fvpn", "name": "probe_dst_v4", "elem": []any{elemVal(map[string]any{"concat": []any{"1.2.3.4", "tcp", 80}}, timeout)}}},
+			map[string]any{"counter": map[string]any{"table": "fvpn", "name": counterDeniedDown}},
 			resolverSetFixture(m),
 		},
 	}
@@ -283,6 +289,11 @@ func probeBaselineFixture(m Model, bounded bool) []byte {
 			ruleExpr("forward", matchPayload("==", "daddr", "@denied_v4"), map[string]any{"drop": nil}),
 			ruleExpr("forward", matchPayload("==", "daddr", "@host_v4"), map[string]any{"drop": nil}),
 			ruleExpr("forward", matchMetaIface("iifname", in), matchMetaIface("oifname", ul), matchPayload("==", "saddr", "@probe_v4"), matchConcat("@probe_dst_v4"), namedCounter(counterProbeUp), map[string]any{"accept": nil}),
+			ruleExpr("forward", matchMetaIface("iifname", ul), matchMetaIface("oifname", in), matchPayload("==", "saddr", "@resolver_v4"), matchPayload("==", "daddr", "@probe_v4"), matchSport("tcp", 53), matchEstablished(), namedCounter(counterProbeDown), map[string]any{"accept": nil}),
+			ruleExpr("forward", matchMetaIface("iifname", ul), matchMetaIface("oifname", in), matchPayload("==", "saddr", "@resolver_v4"), matchPayload("==", "daddr", "@probe_v4"), matchSport("udp", 53), matchEstablished(), namedCounter(counterProbeDown), map[string]any{"accept": nil}),
+			ruleExpr("forward", matchMetaIface("iifname", ul), matchMetaIface("oifname", in), matchPayload("==", "saddr", "@resolver_v4"), namedCounter(counterDeniedDown), map[string]any{"drop": nil}),
+			ruleExpr("forward", matchMetaIface("iifname", ul), matchMetaIface("oifname", in), matchPayload("==", "saddr", "@denied_v4"), namedCounter(counterDeniedDown), map[string]any{"drop": nil}),
+			ruleExpr("forward", matchMetaIface("iifname", ul), matchMetaIface("oifname", in), matchPayload("==", "saddr", "@host_v4"), namedCounter(counterDeniedDown), map[string]any{"drop": nil}),
 			ruleExpr("forward", matchMetaIface("iifname", ul), matchMetaIface("oifname", in), matchPayload("==", "daddr", "@probe_v4"), matchEstablished(), namedCounter(counterProbeDown), map[string]any{"accept": nil}),
 			map[string]any{"chain": map[string]any{"family": "inet", "table": "fvpn", "name": "input", "type": "filter", "hook": "input", "prio": -150, "policy": "accept"}},
 			ruleExpr("input", matchMetaIface("iifname", in), map[string]any{"drop": nil}),
@@ -293,6 +304,7 @@ func probeBaselineFixture(m Model, bounded bool) []byte {
 			map[string]any{"counter": map[string]any{"table": "fvpn", "name": counterProbeDown, "packets": 0, "bytes": 0}},
 			map[string]any{"set": map[string]any{"table": "fvpn", "name": "probe_v4", "elem": []any{elemVal("100.64.8.1", timeout)}}},
 			map[string]any{"set": map[string]any{"table": "fvpn", "name": "probe_dst_v4", "elem": []any{elemVal(map[string]any{"concat": []any{"1.2.3.4", "tcp", 80}}, timeout)}}},
+			map[string]any{"counter": map[string]any{"table": "fvpn", "name": counterDeniedDown}},
 			resolverSetFixture(m),
 		},
 	}
@@ -342,6 +354,10 @@ func matchPayload(op, field, right string) map[string]any {
 
 func matchDport(proto string, port int) map[string]any {
 	return map[string]any{"match": map[string]any{"op": "==", "left": map[string]any{"payload": map[string]any{"protocol": proto, "field": "dport"}}, "right": port}}
+}
+
+func matchSport(proto string, port int) map[string]any {
+	return map[string]any{"match": map[string]any{"op": "==", "left": map[string]any{"payload": map[string]any{"protocol": proto, "field": "sport"}}, "right": port}}
 }
 
 func matchConcat(set string) map[string]any {
@@ -425,7 +441,7 @@ func TestVerify_ProbeDNSAcceptIsNarrow(t *testing.T) {
 	if ReasonCode(err) != ReasonIsolation || !strings.Contains(err.Error(), "resolver_v4 is not exactly the configured resolvers") || strings.Contains(err.Error(), "198.51.100") {
 		t.Fatalf("resolver mismatch: %v", err)
 	}
-	if strings.Count(string(base), `"udp"`) != 1 {
+	if strings.Count(string(base), `"udp"`) != 2 {
 		t.Fatalf("udp markers=%d", strings.Count(string(base), `"udp"`))
 	}
 	bothTCP := []byte(strings.Replace(string(base), `"udp"`, `"tcp"`, 1))

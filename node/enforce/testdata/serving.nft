@@ -4,6 +4,7 @@ add table inet fvpn
 add counter inet fvpn ctbadns
 add counter inet fvpn ctbase
 add counter inet fvpn ctdeny
+add counter inet fvpn ctdenyd
 add counter inet fvpn cthost
 add counter inet fvpn ctin
 add counter inet fvpn ctinv
@@ -59,12 +60,15 @@ add rule inet fvpn forward iifname "fv-ih" oifname "fv-fh" ip daddr != @allowed_
 add rule inet fvpn forward iifname "fv-ih" oifname "fv-fh" ct state != { established, related } counter name "ctnodn" drop
 add rule inet fvpn forward iifname "fv-ih" oifname "fv-fh" ip saddr @resolver_v4 ip daddr 100.64.1.1 tcp sport 53 counter name "nd_019a00000000700080000000000000a1" meta priority set 0x0001002f accept
 add rule inet fvpn forward iifname "fv-ih" oifname "fv-fh" ip saddr @resolver_v4 ip daddr 100.64.1.1 udp sport 53 counter name "nd_019a00000000700080000000000000a1" meta priority set 0x0001002f accept
-add rule inet fvpn forward iifname "fv-ih" oifname "fv-fh" ip daddr 100.64.1.1 counter name "d_019a00000000700080000000000000a1" meta priority set 0x0001002f accept
 add rule inet fvpn forward iifname "fv-ih" oifname "fv-fh" ip saddr @resolver_v4 ip daddr 100.64.1.2 tcp sport 53 counter name "nd_019a00000000700080000000000000a2" meta priority set 0x0001002f accept
 add rule inet fvpn forward iifname "fv-ih" oifname "fv-fh" ip saddr @resolver_v4 ip daddr 100.64.1.2 udp sport 53 counter name "nd_019a00000000700080000000000000a2" meta priority set 0x0001002f accept
-add rule inet fvpn forward iifname "fv-ih" oifname "fv-fh" ip daddr 100.64.1.2 counter name "d_019a00000000700080000000000000a2" meta priority set 0x0001002f accept
 add rule inet fvpn forward iifname "fv-ih" oifname "fv-fh" ip saddr @resolver_v4 ip daddr 100.64.2.1 tcp sport 53 counter name "nd_019a00000000700080000000000000b1" meta priority set 0x00010030 accept
 add rule inet fvpn forward iifname "fv-ih" oifname "fv-fh" ip saddr @resolver_v4 ip daddr 100.64.2.1 udp sport 53 counter name "nd_019a00000000700080000000000000b1" meta priority set 0x00010030 accept
+add rule inet fvpn forward iifname "fv-ih" oifname "fv-fh" ip saddr @resolver_v4 counter name "ctdenyd" drop
+add rule inet fvpn forward iifname "fv-ih" oifname "fv-fh" ip saddr @denied_v4 counter name "ctdenyd" drop
+add rule inet fvpn forward iifname "fv-ih" oifname "fv-fh" ip saddr @host_v4 counter name "ctdenyd" drop
+add rule inet fvpn forward iifname "fv-ih" oifname "fv-fh" ip daddr 100.64.1.1 counter name "d_019a00000000700080000000000000a1" meta priority set 0x0001002f accept
+add rule inet fvpn forward iifname "fv-ih" oifname "fv-fh" ip daddr 100.64.1.2 counter name "d_019a00000000700080000000000000a2" meta priority set 0x0001002f accept
 add rule inet fvpn forward iifname "fv-ih" oifname "fv-fh" ip daddr 100.64.2.1 counter name "d_019a00000000700080000000000000b1" meta priority set 0x00010030 accept
 add rule inet fvpn input iifname "fv-fh" counter name "ctin" drop
 add rule inet fvpn input ip saddr 100.64.0.0/10 counter name "ctin" drop

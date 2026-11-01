@@ -300,6 +300,19 @@ func (s *Store) Desired(ctx context.Context) (Desired, bool, error) {
 
 // MarkApplied records the generation that enforce verified.
 func (s *Store) MarkApplied(ctx context.Context, generation uint64) error {
+	return s.markApplied(ctx, generation, nil)
+}
+
+// AppliedSnapshotKey holds the agent's observation provenance for the ACK.
+const AppliedSnapshotKey = "applied_snapshot"
+
+// MarkAppliedSnapshot commits the ACK and its observation provenance together.
+// The snapshot is opaque to the store; the agent validates its generation.
+func (s *Store) MarkAppliedSnapshot(ctx context.Context, generation uint64, snapshot string) error {
+	return s.markApplied(ctx, generation, &snapshot)
+}
+
+func (s *Store) markApplied(ctx context.Context, generation uint64, snapshot *string) error {
 	return s.tx(ctx, func(tx *sql.Tx) error {
 		res, err := tx.ExecContext(ctx, `UPDATE desired SET applied_generation = ? WHERE id = 1 AND accepted_generation >= ?`, generation, generation)
 		if err != nil {
@@ -311,6 +324,9 @@ func (s *Store) MarkApplied(ctx context.Context, generation uint64) error {
 		}
 		if n != 1 {
 			return errors.New("agentstore: applied generation was not stored")
+		}
+		if snapshot != nil {
+			return setMetaTx(ctx, tx, AppliedSnapshotKey, *snapshot)
 		}
 		return nil
 	})
@@ -627,8 +643,27 @@ func (s *Store) SetMeta(ctx context.Context, key, value string) error {
 		return errors.New("agentstore: empty meta key")
 	}
 	return s.tx(ctx, func(tx *sql.Tx) error {
-		_, err := tx.ExecContext(ctx, `INSERT INTO meta (key, value) VALUES (?, ?)
-			ON CONFLICT(key) DO UPDATE SET value = excluded.value`, key, value)
-		return err
+		return setMetaTx(ctx, tx, key, value)
 	})
+}
+
+// SetMetaBatch commits related metadata in one durable transaction.
+func (s *Store) SetMetaBatch(ctx context.Context, values map[string]string) error {
+	return s.tx(ctx, func(tx *sql.Tx) error {
+		for key, value := range values {
+			if key == "" {
+				return errors.New("agentstore: empty meta key")
+			}
+			if err := setMetaTx(ctx, tx, key, value); err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+}
+
+func setMetaTx(ctx context.Context, tx *sql.Tx, key, value string) error {
+	_, err := tx.ExecContext(ctx, `INSERT INTO meta (key, value) VALUES (?, ?)
+		ON CONFLICT(key) DO UPDATE SET value = excluded.value`, key, value)
+	return err
 }

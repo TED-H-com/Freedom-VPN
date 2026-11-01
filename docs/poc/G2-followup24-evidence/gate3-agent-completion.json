@@ -1,0 +1,17 @@
+{
+  "test_only": true,
+  "command": [
+    "python3",
+    "tests/netlab/scripts/disktmp.py",
+    "go",
+    "test",
+    "-count=1",
+    "./node/agent/...",
+    "./node/updater/..."
+  ],
+  "started_utc": "2026-11-01T14:43:12.882246+00:00",
+  "elapsed_seconds": 85.0968573709979,
+  "exit": 0,
+  "raw_sha256": "6adf1ad0bbf603b3238c775161600cdc7130ea906058d36c0aba7712d504a010",
+  "public_sha256": "6adf1ad0bbf603b3238c775161600cdc7130ea906058d36c0aba7712d504a010"
+}

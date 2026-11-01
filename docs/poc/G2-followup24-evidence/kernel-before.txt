@@ -1,0 +1,12 @@
+=== RUN   TestReviewR19_Q4_EstablishedDownloadSurvivesDestinationDeny
+destination deny controls
+name                             ns       proto  dst                    port   expect   observed       ok
+a2-other-destination             fv-a2    tcp    203.0.113.20           80     allow    connected      true
+resolver-udp                     fv-a1    dns    198.51.100.53          53     allow    reply          true
+resolver-tcp                     fv-a1    tcp    198.51.100.53          53     allow    connected      true
+probes=3 failed=0
+    review_r19_destination_test.go:78: established return still forwarded (uplink=0 return=4 ctdeny=4 injected=4). The new denial must stop it without conntrack deletion
+--- FAIL: TestReviewR19_Q4_EstablishedDownloadSurvivesDestinationDeny (3.55s)
+FAIL
+FAIL	github.com/TED-H-com/Freedom-VPN/tests/netlab	3.553s
+FAIL

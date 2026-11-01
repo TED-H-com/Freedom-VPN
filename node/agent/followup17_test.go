@@ -342,8 +342,9 @@ func TestFollowup17_RestartRetriesOnlyThePersistedSet(t *testing.T) {
 }
 
 // TestFollowup17_InvalidRevokeAddressIsNotAConntrackAttempt is case (e):
-// an invalid revoke address is the plain CheckError and does not spend a
-// conntrack bound attempt or write a pending set.
+// an invalid revoke address is the plain CheckError, not a completed delete.
+// The pre-Apply reservation is retained conservatively: the engine cannot
+// infer from a generic Apply error whether a delete ran before it failed.
 func TestFollowup17_InvalidRevokeAddressIsNotAConntrackAttempt(t *testing.T) {
 	r := newRig(t)
 	serveBoundGeneration(t, r)
@@ -369,7 +370,7 @@ func TestFollowup17_InvalidRevokeAddressIsNotAConntrackAttempt(t *testing.T) {
 	if len(p.ex.deletes) != 0 {
 		t.Fatalf("conntrack ran: %v", p.ex.deletes)
 	}
-	if r.eng.serving || r.eng.decision.Serve || r.eng.conntrackAttempts != 0 || r.eng.conntrackBlocked || len(r.eng.pendingRevoke) != 0 || len(persistedPending(t, r)) != 0 {
+	if r.eng.serving || r.eng.decision.Serve || r.eng.conntrackAttempts != 1 || r.eng.conntrackBlocked || len(r.eng.pendingRevoke) != 1 || len(persistedPending(t, r)) != 1 {
 		t.Fatalf("serving=%v attempts=%d blocked=%v pending=%+v", r.eng.serving, r.eng.conntrackAttempts, r.eng.conntrackBlocked, r.eng.pendingRevoke)
 	}
 	if r.plane.baselines <= baselines {

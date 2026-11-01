@@ -1,0 +1,698 @@
+{
+  "test_only": true,
+  "completed": {
+    "A1": "A1-attempt5",
+    "B1": "B1-attempt2",
+    "A2": "A2-attempt2",
+    "B2": "B2-attempt4"
+  },
+  "complete_quartet": true,
+  "host_checks": 85,
+  "measured_window_seconds": 4432.181031292,
+  "ordinary_samples_without_lifecycle_commands": 240,
+  "distinct_tc_shapes": [
+    "6071e1ebf05096ea3c32d199df3f9d102ad9d5b320cf60238fe94d2c79b9ec45"
+  ],
+  "qualified_functional_failures": [
+    "A2-attempt2"
+  ],
+  "attempts": [
+    {
+      "attempt": "A1-attempt1",
+      "test_only": true,
+      "leg": "A1",
+      "arm": "A",
+      "postflight_quiet": false,
+      "reload_exit": 0,
+      "failures": 0,
+      "postflight": {
+        "receipt": "A1-attempt1-postflight.json",
+        "quiet": false,
+        "max_r": 6,
+        "min_idle": 71,
+        "load_before": [
+          "12.08",
+          "10.88",
+          "11.38"
+        ],
+        "load_after": [
+          "11.93",
+          "10.94",
+          "11.39"
+        ],
+        "d_state_before": 10,
+        "d_state_after": 6,
+        "process_count_before": 2,
+        "process_count_after": 2
+      }
+    },
+    {
+      "attempt": "A1-attempt2",
+      "test_only": true,
+      "leg": "A1",
+      "arm": "A",
+      "postflight_quiet": false,
+      "reload_exit": 0,
+      "failures": 0,
+      "postflight": {
+        "receipt": "A1-attempt2-postflight.json",
+        "quiet": false,
+        "max_r": 3,
+        "min_idle": 78,
+        "load_before": [
+          "11.12",
+          "10.97",
+          "11.24"
+        ],
+        "load_after": [
+          "10.53",
+          "10.86",
+          "11.19"
+        ],
+        "d_state_before": 11,
+        "d_state_after": 10,
+        "process_count_before": 0,
+        "process_count_after": 0
+      }
+    },
+    {
+      "attempt": "A1-attempt3",
+      "test_only": true,
+      "leg": "A1",
+      "arm": "A",
+      "postflight_quiet": false,
+      "reload_exit": 0,
+      "failures": 0,
+      "postflight": {
+        "receipt": "A1-attempt3-postflight.json",
+        "quiet": false,
+        "max_r": 4,
+        "min_idle": 83,
+        "load_before": [
+          "9.47",
+          "10.45",
+          "11.01"
+        ],
+        "load_after": [
+          "8.97",
+          "10.23",
+          "10.92"
+        ],
+        "d_state_before": 8,
+        "d_state_after": 8,
+        "process_count_before": 0,
+        "process_count_after": 2
+      }
+    },
+    {
+      "attempt": "A1-attempt4",
+      "test_only": true,
+      "leg": "A1",
+      "arm": "A",
+      "postflight_quiet": false,
+      "reload_exit": 0,
+      "failures": 0,
+      "postflight": {
+        "receipt": "A1-attempt4-postflight.json",
+        "quiet": false,
+        "max_r": 3,
+        "min_idle": 74,
+        "load_before": [
+          "10.17",
+          "9.63",
+          "10.34"
+        ],
+        "load_after": [
+          "11.00",
+          "9.89",
+          "10.41"
+        ],
+        "d_state_before": 7,
+        "d_state_after": 11,
+        "process_count_before": 0,
+        "process_count_after": 0
+      }
+    },
+    {
+      "attempt": "A1-attempt5",
+      "test_only": true,
+      "leg": "A1",
+      "arm": "A",
+      "postflight_quiet": true,
+      "reload_exit": 0,
+      "failures": 0,
+      "postflight": {
+        "receipt": "A1-attempt5-postflight.json",
+        "quiet": true,
+        "max_r": 3,
+        "min_idle": 81,
+        "load_before": [
+          "10.36",
+          "10.15",
+          "10.43"
+        ],
+        "load_after": [
+          "10.10",
+          "10.12",
+          "10.41"
+        ],
+        "d_state_before": 5,
+        "d_state_after": 9,
+        "process_count_before": 0,
+        "process_count_after": 0
+      }
+    },
+    {
+      "attempt": "B1-attempt1",
+      "test_only": true,
+      "leg": "B1",
+      "arm": "B",
+      "postflight_quiet": false,
+      "reload_exit": 0,
+      "failures": 0,
+      "postflight": {
+        "receipt": "B1-attempt1-postflight.json",
+        "quiet": false,
+        "max_r": 4,
+        "min_idle": 82,
+        "load_before": [
+          "9.97",
+          "9.72",
+          "10.09"
+        ],
+        "load_after": [
+          "10.04",
+          "9.75",
+          "10.08"
+        ],
+        "d_state_before": 8,
+        "d_state_after": 8,
+        "process_count_before": 0,
+        "process_count_after": 0
+      }
+    },
+    {
+      "attempt": "B1-attempt2",
+      "test_only": true,
+      "leg": "B1",
+      "arm": "B",
+      "postflight_quiet": true,
+      "reload_exit": 0,
+      "failures": 0,
+      "postflight": {
+        "receipt": "B1-attempt2-postflight.json",
+        "quiet": true,
+        "max_r": 2,
+        "min_idle": 82,
+        "load_before": [
+          "10.88",
+          "9.95",
+          "10.11"
+        ],
+        "load_after": [
+          "11.69",
+          "10.24",
+          "10.20"
+        ],
+        "d_state_before": 5,
+        "d_state_after": 12,
+        "process_count_before": 0,
+        "process_count_after": 0
+      }
+    },
+    {
+      "attempt": "A2-attempt1",
+      "test_only": true,
+      "leg": "A2",
+      "arm": "A",
+      "postflight_quiet": false,
+      "reload_exit": 0,
+      "failures": 0,
+      "postflight": {
+        "receipt": "A2-attempt1-postflight.json",
+        "quiet": false,
+        "max_r": 2,
+        "min_idle": 79,
+        "load_before": [
+          "11.78",
+          "10.88",
+          "10.47"
+        ],
+        "load_after": [
+          "9.41",
+          "10.40",
+          "10.32"
+        ],
+        "d_state_before": 5,
+        "d_state_after": 5,
+        "process_count_before": 0,
+        "process_count_after": 0
+      }
+    },
+    {
+      "attempt": "A2-attempt2",
+      "test_only": true,
+      "leg": "A2",
+      "arm": "A",
+      "postflight_quiet": true,
+      "reload_exit": 1,
+      "failures": 0,
+      "postflight": {
+        "receipt": "A2-attempt2-postflight.json",
+        "quiet": true,
+        "max_r": 0,
+        "min_idle": 86,
+        "load_before": [
+          "9.96",
+          "10.24",
+          "10.27"
+        ],
+        "load_after": [
+          "9.63",
+          "10.14",
+          "10.23"
+        ],
+        "d_state_before": 10,
+        "d_state_after": 9,
+        "process_count_before": 0,
+        "process_count_after": 0
+      }
+    },
+    {
+      "attempt": "B2-attempt1",
+      "test_only": true,
+      "leg": "B2",
+      "arm": "B",
+      "postflight_quiet": false,
+      "reload_exit": 0,
+      "failures": 0,
+      "postflight": {
+        "receipt": "B2-attempt1-postflight.json",
+        "quiet": false,
+        "max_r": 13,
+        "min_idle": 77,
+        "load_before": [
+          "10.52",
+          "10.84",
+          "10.60"
+        ],
+        "load_after": [
+          "11.42",
+          "11.03",
+          "10.67"
+        ],
+        "d_state_before": 11,
+        "d_state_after": 11,
+        "process_count_before": 0,
+        "process_count_after": 0
+      }
+    },
+    {
+      "attempt": "B2-attempt2",
+      "test_only": true,
+      "leg": "B2",
+      "arm": "B",
+      "postflight_quiet": false,
+      "reload_exit": 0,
+      "failures": 0,
+      "postflight": {
+        "receipt": "B2-attempt2-postflight.json",
+        "quiet": false,
+        "max_r": 2,
+        "min_idle": 79,
+        "load_before": [
+          "9.14",
+          "10.49",
+          "10.63"
+        ],
+        "load_after": [
+          "8.46",
+          "10.20",
+          "10.53"
+        ],
+        "d_state_before": 7,
+        "d_state_after": 6,
+        "process_count_before": 0,
+        "process_count_after": 0
+      }
+    },
+    {
+      "attempt": "B2-attempt3",
+      "test_only": true,
+      "leg": "B2",
+      "arm": "B",
+      "postflight_quiet": false,
+      "reload_exit": 0,
+      "failures": 0,
+      "postflight": {
+        "receipt": "B2-attempt3-postflight.json",
+        "quiet": false,
+        "max_r": 5,
+        "min_idle": 93,
+        "load_before": [
+          "7.01",
+          "9.22",
+          "10.14"
+        ],
+        "load_after": [
+          "5.96",
+          "8.76",
+          "9.96"
+        ],
+        "d_state_before": 4,
+        "d_state_after": 4,
+        "process_count_before": 0,
+        "process_count_after": 0
+      }
+    },
+    {
+      "attempt": "B2-attempt4",
+      "test_only": true,
+      "leg": "B2",
+      "arm": "B",
+      "postflight_quiet": true,
+      "reload_exit": 0,
+      "failures": 0,
+      "postflight": {
+        "receipt": "B2-attempt4-postflight.json",
+        "quiet": true,
+        "max_r": 1,
+        "min_idle": 93,
+        "load_before": [
+          "6.04",
+          "7.91",
+          "9.53"
+        ],
+        "load_after": [
+          "5.88",
+          "7.70",
+          "9.41"
+        ],
+        "d_state_before": 4,
+        "d_state_after": 9,
+        "process_count_before": 0,
+        "process_count_after": 0
+      }
+    }
+  ],
+  "qualified_host_checks": {
+    "A1": [
+      {
+        "receipt": "A1-attempt5-prestart-2.json",
+        "quiet": true,
+        "max_r": 2,
+        "min_idle": 86,
+        "load_before": [
+          "10.71",
+          "10.01",
+          "10.42"
+        ],
+        "load_after": [
+          "11.28",
+          "10.22",
+          "10.48"
+        ],
+        "d_state_before": 12,
+        "d_state_after": 11,
+        "process_count_before": 0,
+        "process_count_after": 0
+      },
+      {
+        "receipt": "A1-attempt5-ready-1.json",
+        "quiet": true,
+        "max_r": 3,
+        "min_idle": 86,
+        "load_before": [
+          "11.26",
+          "10.23",
+          "10.48"
+        ],
+        "load_after": [
+          "10.49",
+          "10.15",
+          "10.44"
+        ],
+        "d_state_before": 7,
+        "d_state_after": 9,
+        "process_count_before": 0,
+        "process_count_after": 0
+      },
+      {
+        "receipt": "A1-attempt5-postflight.json",
+        "quiet": true,
+        "max_r": 3,
+        "min_idle": 81,
+        "load_before": [
+          "10.36",
+          "10.15",
+          "10.43"
+        ],
+        "load_after": [
+          "10.10",
+          "10.12",
+          "10.41"
+        ],
+        "d_state_before": 5,
+        "d_state_after": 9,
+        "process_count_before": 0,
+        "process_count_after": 0
+      }
+    ],
+    "B1": [
+      {
+        "receipt": "B1-attempt2-prestart-1.json",
+        "quiet": true,
+        "max_r": 3,
+        "min_idle": 84,
+        "load_before": [
+          "10.04",
+          "9.75",
+          "10.08"
+        ],
+        "load_after": [
+          "9.03",
+          "9.53",
+          "10.00"
+        ],
+        "d_state_before": 8,
+        "d_state_after": 7,
+        "process_count_before": 0,
+        "process_count_after": 0
+      },
+      {
+        "receipt": "B1-attempt2-ready-1.json",
+        "quiet": true,
+        "max_r": 1,
+        "min_idle": 82,
+        "load_before": [
+          "9.26",
+          "9.57",
+          "10.01"
+        ],
+        "load_after": [
+          "9.70",
+          "9.65",
+          "10.02"
+        ],
+        "d_state_before": 9,
+        "d_state_after": 10,
+        "process_count_before": 0,
+        "process_count_after": 0
+      },
+      {
+        "receipt": "B1-attempt2-postflight.json",
+        "quiet": true,
+        "max_r": 2,
+        "min_idle": 82,
+        "load_before": [
+          "10.88",
+          "9.95",
+          "10.11"
+        ],
+        "load_after": [
+          "11.69",
+          "10.24",
+          "10.20"
+        ],
+        "d_state_before": 5,
+        "d_state_after": 12,
+        "process_count_before": 0,
+        "process_count_after": 0
+      }
+    ],
+    "A2": [
+      {
+        "receipt": "A2-attempt2-prestart-2.json",
+        "quiet": true,
+        "max_r": 3,
+        "min_idle": 84,
+        "load_before": [
+          "9.67",
+          "10.16",
+          "10.24"
+        ],
+        "load_after": [
+          "9.80",
+          "10.15",
+          "10.23"
+        ],
+        "d_state_before": 11,
+        "d_state_after": 11,
+        "process_count_before": 0,
+        "process_count_after": 0
+      },
+      {
+        "receipt": "A2-attempt2-ready-2.json",
+        "quiet": true,
+        "max_r": 1,
+        "min_idle": 85,
+        "load_before": [
+          "10.31",
+          "10.33",
+          "10.30"
+        ],
+        "load_after": [
+          "10.25",
+          "10.32",
+          "10.29"
+        ],
+        "d_state_before": 10,
+        "d_state_after": 10,
+        "process_count_before": 0,
+        "process_count_after": 0
+      },
+      {
+        "receipt": "A2-attempt2-postflight.json",
+        "quiet": true,
+        "max_r": 0,
+        "min_idle": 86,
+        "load_before": [
+          "9.96",
+          "10.24",
+          "10.27"
+        ],
+        "load_after": [
+          "9.63",
+          "10.14",
+          "10.23"
+        ],
+        "d_state_before": 10,
+        "d_state_after": 9,
+        "process_count_before": 0,
+        "process_count_after": 0
+      }
+    ],
+    "B2": [
+      {
+        "receipt": "B2-attempt4-prestart-1.json",
+        "quiet": true,
+        "max_r": 3,
+        "min_idle": 87,
+        "load_before": [
+          "5.96",
+          "8.76",
+          "9.96"
+        ],
+        "load_after": [
+          "5.58",
+          "8.40",
+          "9.80"
+        ],
+        "d_state_before": 4,
+        "d_state_after": 4,
+        "process_count_before": 0,
+        "process_count_after": 0
+      },
+      {
+        "receipt": "B2-attempt4-ready-1.json",
+        "quiet": true,
+        "max_r": 3,
+        "min_idle": 86,
+        "load_before": [
+          "5.53",
+          "8.34",
+          "9.77"
+        ],
+        "load_after": [
+          "5.23",
+          "7.99",
+          "9.61"
+        ],
+        "d_state_before": 4,
+        "d_state_after": 1,
+        "process_count_before": 0,
+        "process_count_after": 0
+      },
+      {
+        "receipt": "B2-attempt4-postflight.json",
+        "quiet": true,
+        "max_r": 1,
+        "min_idle": 93,
+        "load_before": [
+          "6.04",
+          "7.91",
+          "9.53"
+        ],
+        "load_after": [
+          "5.88",
+          "7.70",
+          "9.41"
+        ],
+        "d_state_before": 4,
+        "d_state_after": 9,
+        "process_count_before": 0,
+        "process_count_after": 0
+      }
+    ]
+  },
+  "pooled_reload": {
+    "A": {
+      "applies": 202,
+      "completed_guards": 202,
+      "failed_indices": [],
+      "guard_ms": {
+        "p50": 29.107434,
+        "p90": 36.200556,
+        "p99": 42.792863,
+        "max": 45.880737
+      },
+      "install_ms": {
+        "p50": 14.97703,
+        "p90": 19.910674,
+        "p99": 27.832179,
+        "max": 29.092336
+      },
+      "verify_ms": {
+        "p50": 29.103665,
+        "p90": 31.554122,
+        "p99": 32.964198,
+        "max": 33.843903
+      }
+    },
+    "B": {
+      "applies": 202,
+      "completed_guards": 202,
+      "failed_indices": [],
+      "guard_ms": {
+        "p50": 30.583366,
+        "p90": 40.468041,
+        "p99": 44.141139,
+        "max": 46.99526
+      },
+      "install_ms": {
+        "p50": 15.252577,
+        "p90": 20.498718,
+        "p99": 24.858657,
+        "max": 27.250934
+      },
+      "verify_ms": {
+        "p50": 28.016048,
+        "p90": 30.715219,
+        "p99": 33.544652,
+        "max": 34.0432
+      }
+    }
+  },
+  "result": "complete; qualified functional failure",
+  "interpretation": "D-138: pool every qualified leg per arm. This is one window; no causal timing shift is attributed. Excluded attempts remain excluded, and historical failures remain failed."
+}

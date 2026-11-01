@@ -1,0 +1,24 @@
+{
+  "test_only": true,
+  "command": [
+    "python3",
+    "tests/netlab/scripts/disktmp.py",
+    "env",
+    "FVPN_NETLAB=1",
+    "FVPN_LAB_PREFIX=fvpn-w1-netlab-f24",
+    "go",
+    "test",
+    "-tags",
+    "netlab",
+    "-count=1",
+    "-v",
+    "./tests/netlab",
+    "-run",
+    "^TestReviewR19_Q4_EstablishedDownloadSurvivesDestinationDeny$"
+  ],
+  "started_utc": "2026-11-01T13:09:26.245545+00:00",
+  "elapsed_seconds": 3.737794053988182,
+  "exit": 1,
+  "raw_sha256": "a408b042f3db2e216581f8336fbe75d4bfe1dcdafccaf9a6a25ed40e50b7a3a4",
+  "public_sha256": "a408b042f3db2e216581f8336fbe75d4bfe1dcdafccaf9a6a25ed40e50b7a3a4"
+}

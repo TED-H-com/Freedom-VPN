@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/TED-H-com/Freedom-VPN/node/internal/agentstore"
 	"github.com/TED-H-com/Freedom-VPN/node/internal/controlclient"
 	"github.com/TED-H-com/Freedom-VPN/node/internal/updatejournal"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
@@ -69,10 +70,12 @@ func (e *Engine) report(ctx context.Context, at time.Time) (api.ObservationRepor
 	appliedGen := presence.NewNullNullable[decstr.U64]()
 	appliedBind := presence.NewNullNullable[decstr.U64]()
 	appliedPol := presence.NewNullNullable[api.PolicyRefs]()
-	if !e.identityFrozen && !e.freezeUncertain && e.appliedGen > 0 && e.desired != nil {
+	if !e.identityFrozen && !e.freezeUncertain && e.appliedGen > 0 {
 		appliedGen = presence.NewNullableWithValue(decstr.U64(e.appliedGen))
-		appliedBind = presence.NewNullableWithValue(e.desired.BindingRevision)
-		appliedPol = presence.NewNullableWithValue(e.desired.PolicyRefs)
+		if s := e.appliedSnapshot; s != nil && uint64(s.Generation) == e.appliedGen {
+			appliedBind = presence.NewNullableWithValue(s.BindingRevision)
+			appliedPol = presence.NewNullableWithValue(s.PolicyRefs)
+		}
 	}
 	release := presence.NewNullNullable[uuid.UUID]()
 	if rid := e.cfg.ReleaseUUID(); rid != uuid.Nil {
@@ -147,6 +150,48 @@ func (e *Engine) report(ctx context.Context, at time.Time) (api.ObservationRepor
 		rep.DnsPolicyEvidence = presence.NewNullableWithValue(*e.dnsEv)
 	}
 	return rep, nil
+}
+
+// The ACK describes the last completed Apply or baseline. Keep its document
+// refs even when a newer desired document has replaced the live input. This is
+// observation provenance, never authorization to serve or to adopt a model.
+type appliedSnapshot struct {
+	Generation      decstr.U64     `json:"generation"`
+	BindingRevision decstr.U64     `json:"binding_revision"`
+	PolicyRefs      api.PolicyRefs `json:"policy_refs"`
+}
+
+func snapshotOf(ds *api.DesiredState) appliedSnapshot {
+	return appliedSnapshot{ds.ConfigGeneration, ds.BindingRevision, ds.PolicyRefs}
+}
+
+func (e *Engine) loadAppliedSnapshot(ctx context.Context) error {
+	raw, ok, err := e.store.Meta(ctx, agentstore.AppliedSnapshotKey)
+	if err != nil {
+		return err
+	}
+	if ok {
+		var s appliedSnapshot
+		if err := json.Unmarshal([]byte(raw), &s); err != nil {
+			return err
+		}
+		if uint64(s.Generation) == e.appliedGen {
+			e.appliedSnapshot = &s
+		}
+	} else if e.appliedGen > 0 && e.desired != nil && uint64(e.desired.ConfigGeneration) == e.appliedGen {
+		// Upgrade: only an authenticated matching document can reconstruct
+		// the old ACK. A newer document cannot supply missing historical refs.
+		s := snapshotOf(e.desired)
+		raw, err := json.Marshal(s)
+		if err != nil {
+			return err
+		}
+		if err := e.store.MarkAppliedSnapshot(ctx, e.appliedGen, string(raw)); err != nil {
+			return err
+		}
+		e.appliedSnapshot = &s
+	}
+	return nil
 }
 
 // attachUpdate reads the updater journal once for this report. A null
