@@ -21,7 +21,9 @@ func (r *runner) native27(ctx context.Context, s *Stack, c *NativeCapture) {
 		return
 	}
 	program := filepath.Join(r.lab.root, ".agent/tmp/followup27/stream")
-	if exec.CommandContext(ctx, "go", "build", "-o", program, "./tests/e2e/cmd/fvpn-e2e-stream").Run() != nil {
+	build := exec.CommandContext(ctx, "go", "build", "-o", program, "./tests/e2e/cmd/fvpn-e2e-stream")
+	build.Dir = r.lab.root
+	if build.Run() != nil {
 		return
 	}
 	if exec.CommandContext(ctx, "docker", "cp", program, r.lab.member+":/var/lib/vpn-node/e2e/stream").Run() != nil {

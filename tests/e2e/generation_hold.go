@@ -28,7 +28,9 @@ func (s *Stack) LocalLeaseReadback(ctx context.Context, slot string) (LocalLease
 		return out, fmt.Errorf("invalid node slot")
 	}
 	bin := filepath.Join(s.lab.root, ".agent/tmp/lease-read")
-	if err := exec.CommandContext(ctx, "go", "build", "-o", bin, "./tests/e2e/cmd/fvpn-e2e-lease-read").Run(); err != nil {
+	build := exec.CommandContext(ctx, "go", "build", "-o", bin, "./tests/e2e/cmd/fvpn-e2e-lease-read")
+	build.Dir = s.lab.root
+	if err := build.Run(); err != nil {
 		return out, err
 	}
 	c := s.lab.prefix + "-" + slot
