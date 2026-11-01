@@ -96,6 +96,10 @@ func TestD098_Followup14Archive(t *testing.T) {
 	verifyArchive(t, "follow-up-14", "258ba504-6ddf-4888-8633-9cfee8da6eea", 70)
 }
 
+func TestD098_Followup15Archive(t *testing.T) {
+	verifyArchive(t, "follow-up-15", "e80bb592-27ed-4ab5-a8c3-6433e7278938", 64)
+}
+
 func verifyArchive(t *testing.T, followup, run string, count int) {
 	t.Helper()
 	root := filepath.Join("../../../..", "docs/e2e/at/members/history", followup)
@@ -125,7 +129,7 @@ func verifyArchive(t *testing.T, followup, run string, count int) {
 				RunID string `json:"run_id"`
 			}
 			wantRun := run
-			if (followup == "follow-up-13" || followup == "follow-up-14") && fields[1] == "AT09-restart.json" {
+			if (followup == "follow-up-13" || followup == "follow-up-14" || followup == "follow-up-15") && fields[1] == "AT09-restart.json" {
 				wantRun = "7edb263f-1f6e-4f94-9e8e-26099f96a699"
 			}
 			// Follow-up 12 deliberately retained AT01/AT09 from follow-up 11.

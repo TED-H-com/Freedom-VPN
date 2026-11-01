@@ -1,0 +1,85 @@
+{
+  "run_id": "e80bb592-27ed-4ab5-a8c3-6433e7278938",
+  "source_commit": "cc6e0298a791ed6c41b268f1634f543446f8c562",
+  "area_lint": {
+    "exit": 0,
+    "output": "empty"
+  },
+  "live": {
+    "exit": 2,
+    "elapsed_seconds": 2269.509,
+    "finished_at": "2026-11-01T12:40:15.495141+00:00"
+  },
+  "offline_gates": [
+    {
+      "gate": "03-package",
+      "command": [
+        "go",
+        "test",
+        "./tests/e2e/at/members/..."
+      ],
+      "exit": 0,
+      "seconds": 3.978
+    },
+    {
+      "gate": "04-go-lint",
+      "command": [
+        "make",
+        "go-lint"
+      ],
+      "exit": 0,
+      "seconds": 5.388
+    },
+    {
+      "gate": "05-vet",
+      "command": [
+        "go",
+        "vet",
+        "./..."
+      ],
+      "exit": 0,
+      "seconds": 0.327
+    },
+    {
+      "gate": "06-gofmt",
+      "command": [
+        "sh",
+        "-c",
+        "test -z \"$(gofmt -l $(git ls-files '*.go'))\""
+      ],
+      "exit": 0,
+      "seconds": 0.104
+    },
+    {
+      "gate": "07-diff",
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit": 0,
+      "seconds": 0.502
+    },
+    {
+      "gate": "08-build",
+      "command": [
+        "make",
+        "-f",
+        "mk/at-members.mk",
+        "at-members-build"
+      ],
+      "exit": 0,
+      "seconds": 5.51
+    }
+  ],
+  "hygiene": {
+    "exit": 0,
+    "output": "=== RUN   TestCommittedEvidenceHygiene\n    evidence_test.go:56: scanned 200 acceptance JSON records plus documentation\n--- PASS: TestCommittedEvidenceHygiene (2.82s)\nPASS\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/members\t2.826s\n"
+  },
+  "docker_inventory": {
+    "containers": 0,
+    "networks": 0,
+    "volumes": 0,
+    "images": 0
+  }
+}

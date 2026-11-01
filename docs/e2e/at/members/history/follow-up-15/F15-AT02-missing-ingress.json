@@ -1,0 +1,22 @@
+{
+  "run_id": "e80bb592-27ed-4ab5-a8c3-6433e7278938",
+  "source_commit": "cc6e0298a791ed6c41b268f1634f543446f8c562",
+  "missing_ingress_count": 249,
+  "ranges": [
+    {
+      "first_sequence": "1108",
+      "last_sequence": "1356",
+      "count": 249,
+      "preceding_ingress_mono_ns": "118381788959261",
+      "next_ingress_mono_ns": "118386886506179"
+    }
+  ],
+  "total_without_egress": 277,
+  "captured_ingress_without_egress": 28,
+  "capture_stats": {
+    "Drops": 0
+  },
+  "read_errors": 0,
+  "cause_status": "unproven",
+  "limit": "Sequence gaps are original sender attempts absent from node ingress capture. Neighbor timestamps are observed arrivals, not missing packet send times. Those attempts remain counted; guard attribution is unavailable, not excluded."
+}

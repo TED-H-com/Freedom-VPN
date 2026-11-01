@@ -1,0 +1,115 @@
+{
+  "run_id": "e80bb592-27ed-4ab5-a8c3-6433e7278938",
+  "source_commit": "cc6e0298a791ed6c41b268f1634f543446f8c562",
+  "cases": [
+    {
+      "case": "AT05",
+      "status": "blocked",
+      "subchecks": {
+        "pass": 31
+      },
+      "failures": []
+    },
+    {
+      "case": "AT01",
+      "status": "blocked",
+      "subchecks": {
+        "pass": 19
+      },
+      "failures": []
+    },
+    {
+      "case": "AT02",
+      "status": "fail",
+      "subchecks": {
+        "pass": 142,
+        "fail": 1
+      },
+      "failures": [
+        {
+          "name": "D-135 D-136 node-wide baseline transitions (provisional)",
+          "status": "fail",
+          "at": "2026-11-01T12:11:27Z",
+          "expected": "every baseline to next successful Apply retained; every sibling loss counted; recovery required; no guard or baseline exclusion waives loss",
+          "command": "original producer stream and continuous sibling capture; command bounds, not kernel commits"
+        }
+      ]
+    },
+    {
+      "case": "AT03",
+      "status": "pass",
+      "subchecks": {
+        "pass": 97
+      },
+      "failures": []
+    },
+    {
+      "case": "AT04",
+      "status": "blocked",
+      "subchecks": {
+        "pass": 118
+      },
+      "failures": []
+    },
+    {
+      "case": "AT08",
+      "status": "pass",
+      "subchecks": {
+        "pass": 35
+      },
+      "failures": []
+    },
+    {
+      "case": "AT20",
+      "status": "blocked",
+      "subchecks": {
+        "pass": 89
+      },
+      "failures": []
+    },
+    {
+      "case": "AT21",
+      "status": "blocked",
+      "subchecks": {
+        "pass": 13
+      },
+      "failures": []
+    },
+    {
+      "case": "AT22",
+      "status": "blocked",
+      "subchecks": {
+        "pass": 40
+      },
+      "failures": []
+    },
+    {
+      "case": "AT09",
+      "status": "fail",
+      "subchecks": {
+        "pass": 60,
+        "fail": 1,
+        "blocked": 6
+      },
+      "failures": [
+        {
+          "name": "native dual MTU 1280 transfer",
+          "status": "fail",
+          "at": "2026-11-01T12:38:27Z",
+          "expected": "IPv4 overlay: 64064 TCP bytes and upload/download counters increase; selected underlay family recorded; D-123 IPv6Block, no IPv6 end-to-end MTU/PMTU claim",
+          "command": "native down/up; ObserveNativeUnderlay; fixture bulk; DeviceByteCounters"
+        }
+      ]
+    }
+  ],
+  "subchecks": {
+    "pass": 644,
+    "fail": 2,
+    "blocked": 6
+  },
+  "complete_cases": {
+    "blocked": 6,
+    "fail": 2,
+    "pass": 2
+  }
+}
