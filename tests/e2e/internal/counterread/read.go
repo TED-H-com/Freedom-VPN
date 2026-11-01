@@ -85,6 +85,12 @@ func Category(ctx context.Context, err error, stderr string) string {
 	}
 }
 func Read(ctx context.Context, id uuid.UUID) Result {
+	return read(ctx, id, PrivateDirectory, func(ctx context.Context) ([]byte, error) {
+		return exec.CommandContext(ctx, "nft", "-j", "list", "table", "inet", "fvpn").CombinedOutput()
+	})
+}
+
+func read(ctx context.Context, id uuid.UUID, directory string, command func(context.Context) ([]byte, error)) Result {
 	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
 	defer cancel()
 	out := Result{Diagnostic: Diagnostic{Started: time.Now().UTC(), Stage: "nft_read", Category: "none", Before: heartbeat()}}
@@ -92,7 +98,7 @@ func Read(ctx context.Context, id uuid.UUID) Result {
 	out.Diagnostic.BootID = strings.TrimSpace(string(boot))
 	out.Diagnostic.TimingBefore = latestTiming()
 	out.Diagnostic.MonoStart, _ = enforce.MonotonicNow()
-	raw, err := exec.CommandContext(ctx, "nft", "-j", "list", "table", "inet", "fvpn").CombinedOutput()
+	raw, err := command(ctx)
 	out.Diagnostic.MonoEnd, _ = enforce.MonotonicNow()
 	out.Diagnostic.Completed = time.Now().UTC()
 	out.Diagnostic.TimingAfter = latestTiming()
@@ -110,7 +116,7 @@ func Read(ctx context.Context, id uuid.UUID) Result {
 	if err != nil {
 		out.Diagnostic.Stage = "nft_parse"
 		out.Diagnostic.Category = "parse"
-		out.Diagnostic.Parse = retainParseFailure(PrivateDirectory, raw, err)
+		out.Diagnostic.Parse = retainParseFailure(directory, raw, err)
 		return out
 	}
 	out.Generation = strconv.FormatUint(st.Generation, 10)

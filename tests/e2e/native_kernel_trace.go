@@ -52,7 +52,7 @@ func (s *Stack) startKernelTrace(ctx context.Context) (_ *kernelTrace, err error
 			script += fmt.Sprintf("add rule %s %s %s meta l4proto udp ip6 saddr ::1 counter name %s_source meta nftrace set 1\n", family, k.table, chain, chain)
 			script += fmt.Sprintf("add rule %s %s %s meta l4proto udp ip6 daddr ::1 counter name %s_destination meta nftrace set 1\n", family, k.table, chain, chain)
 			// A normal IPv6 UDP control demonstrates that the later hooks work.
-			script += fmt.Sprintf("add rule %s %s %s meta nfproto ipv6 meta l4proto udp meta nftrace set 1\n", family, k.table, chain)
+			script += fmt.Sprintf("add rule %s %s %s ip6 nexthdr udp meta nftrace set 1\n", family, k.table, chain)
 		}
 		for _, link := range links {
 			if link.Name == "lo" || strings.HasPrefix(link.Name, "eth") {

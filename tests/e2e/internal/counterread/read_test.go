@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/TED-H-com/Freedom-VPN/node/enforce"
+	"github.com/google/uuid"
 	"os"
 	"path/filepath"
 	"testing"
@@ -45,7 +46,12 @@ func TestAT04_ParseFailureEvidence(t *testing.T) {
 				t.Fatal("fixture did not fail real parser")
 			}
 			dir := t.TempDir()
-			got := retainParseFailure(dir, []byte(tc.raw), err)
+			calls := 0
+			result := read(t.Context(), uuid.New(), dir, func(context.Context) ([]byte, error) { calls++; return []byte(tc.raw), nil })
+			got := result.Diagnostic.Parse
+			if calls != 1 || result.Diagnostic.Exit != 0 || result.Diagnostic.Stage != "nft_parse" || result.Diagnostic.Category != "parse" || result.Present || got == nil {
+				t.Fatalf("failed sample lost: %+v", result)
+			}
 			if got.Class != tc.class || !got.Retained || got.Bytes != len(tc.raw) || got.SHA256 != fmt.Sprintf("%x", sha256.Sum256([]byte(tc.raw))) {
 				t.Fatalf("metadata: %+v", got)
 			}
