@@ -156,8 +156,9 @@ def decode_ip(b, address, wireguard=False, dns=False, fixture_sequences=False):
         out['udp'] = dict(src_port=u16(transport, 0), dst_port=u16(transport, 2), length=u16(transport, 4))
         length = out['udp']['length']
         # Explicit TEST ONLY stream marker; no arbitrary payload is exported.
-        if fixture_sequences and out['udp']['dst_port'] == 40002 and length == 32 and transport[8:24] == b'FVPN TEST ONLY 27':
-            out['fixture_sequence'] = str(struct.unpack_from('!Q', transport, 24)[0])
+        marker = b'FVPN TEST ONLY 27'
+        if fixture_sequences and out['udp']['dst_port'] == 40002 and length == 16+len(marker) and transport[8:8+len(marker)] == marker:
+            out['fixture_sequence'] = str(struct.unpack_from('!Q', transport, 8+len(marker))[0])
         if dns and 53 in (out['udp']['src_port'], out['udp']['dst_port']) and 8 <= length <= len(transport):
             header = dns_header(transport[8:length])
             if header: out['dns'] = header
