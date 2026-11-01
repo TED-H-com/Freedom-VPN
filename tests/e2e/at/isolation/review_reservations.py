@@ -53,6 +53,24 @@ def review(root):
             if baselines:
                 p=baselines[0]
                 join['first_baseline_after_receipt']=dict(identity(p),baseline=p['baseline'],receipt_to_baseline_start=elapsed_from_wall(p,p['baseline']['start_ns'],receipt),receipt_to_baseline_end=elapsed_from_wall(p,p['baseline']['end_ns'],receipt))
+        process=[p for p in rows if p['run_id']==r['run_id']]
+        previous=next((p for p in reversed(process) if int(p['sequence'])<int(r['sequence']) and p.get('timing',{}).get('operation')=='apply' and p['timing']['succeeded']),None)
+        since=int(previous['sequence']) if previous else 0
+        recovery_rows=[p for p in process if since<int(p['sequence'])<int(r['sequence'])]
+        baselines=[p for p in recovery_rows if p['source']=='baseline']
+        following=[]
+        for p in process:
+            if int(p['sequence'])<=int(r['sequence']):continue
+            if p['source']=='baseline':break
+            following.append(p)
+        live=next((p for p in following if p['source']=='live' and p['timing']['succeeded'] and p['timing']['verified']),None)
+        heartbeat=next((p for p in following if p.get('heartbeat',{}).get('written') and p['heartbeat']['serving']),None)
+        join['preceding_recovery']=dict(previous_successful_apply=identity(previous) if previous else None,
+            baseline_writes=[dict(identity(p),baseline=p['baseline']) for p in baselines],
+            failed_applies=[identity(p) for p in recovery_rows if p.get('timing',{}).get('operation')=='apply' and not p['timing']['succeeded']],
+            baseline_to_apply_end_ns=str(int(t['end_ns'])-int(baselines[0]['baseline']['start_ns'])) if baselines else None,
+            next_verified_live=identity(live) if live else None,next_serving_heartbeat=identity(heartbeat) if heartbeat else None,
+            scope='All baseline causes since the preceding successful Apply, including quarantine/rollback recovery; not only policy_missing. Full interval includes pre-Apply reservation. Desired delivery may precede a finite member expiry and is not necessarily the trigger of this batch.')
         pending.append(join)
     recovery=[]
     policy=read('policy-missing-analysis.json')

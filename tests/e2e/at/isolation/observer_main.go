@@ -274,16 +274,17 @@ func deadlineProbes() {
 			if len(latencies) >= 20 {
 				sort.Slice(latencies, func(i, j int) bool { return latencies[i] < latencies[j] })
 				lo, hi, median := latencies[0], latencies[len(latencies)-1], latencies[len(latencies)/2]
-				// At least 0.5ms and > twice the largest observed node transit.
-				// Round upward to 0.1ms. Actual noninterleaving is checked offline.
-				spacing := ((max(int64(500000), 2*maxTransit+100000) + 99999) / 100000) * 100000
+				// Include arrival-latency spread: a fast following packet can catch
+				// a slow predecessor even when send spacing exceeds node transit.
+				// Round upward to 0.1ms; actual noninterleaving still needs capture.
+				spacing := ((max(int64(500000), (hi-lo)+2*maxTransit+100000) + 99999) / 100000) * 100000
 				margin := hi - lo + 3*spacing
 				first, last := deadline-101000000-margin, deadline+100000000+margin
 				plan["qualified"] = true
 				plan["latency_min_ns"], plan["latency_median_ns"], plan["latency_max_ns"] = fmt.Sprint(lo), fmt.Sprint(median), fmt.Sprint(hi)
 				plan["latency_spread_ns"], plan["max_transit_ns"], plan["spacing_ns"] = fmt.Sprint(hi-lo), fmt.Sprint(maxTransit), fmt.Sprint(spacing)
 				plan["predicted_first_ingress_ns"], plan["predicted_last_ingress_ns"] = fmt.Sprint(first), fmt.Sprint(last)
-				plan["spacing_reason"] = "max(0.5ms, twice measured maximum transit + 0.1ms), rounded up to 0.1ms; avoid existing cadence sends within one spacing; verify actual ingress/egress order"
+				plan["spacing_reason"] = "max(0.5ms, measured latency spread + twice measured maximum transit + 0.1ms), rounded up to 0.1ms; avoid existing cadence sends within one spacing; verify actual ingress/egress order"
 				var added []string
 				for predicted := first; predicted <= last; predicted += spacing {
 					at := predicted - median

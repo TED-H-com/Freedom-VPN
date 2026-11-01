@@ -1,19 +1,20 @@
-# Isolation run procedure — Follow-up 14
+# Isolation run procedure — Follow-up 15
 
-Product baseline **`9dde5eeb60a6cb6b9b10974c3100ef1ea1352698`**, including
-isolation 13 (#380), wire-nodes 34 (#382) and netlab 23 (#377).
-Runtime consumer **`716a16335cb5335473416740c76a75ce95536796`**.
-`go env GOCACHE` returned **`/data/ted-h-cache/go-build`**. The runner queries
-Go's environment; it does not hard-code that path.
+Product baseline **`aa7f306c008d8021b3921d083b70e19db7c8f865`**, including
+isolation 14 (#383), devstack 26 (#386), handover 27 (#387) and agent-core 34 (#388).
+Runtime consumer **`9031ebd4`**. `go env GOCACHE` returned
+**`/data/ted-h-cache/go-build`**; no cache path is hard-coded in commands.
+Offline consumer changes after runtime compilation are separate from the measured binaries.
 
-D-098 was the first commit, **`5e66101c`**: all 112 living root files from run
-`38074149-1137-4782-80fd-8669c36c6fcb` were copied byte-identically to
-[history/follow-up-13](history/follow-up-13/archive.json), with SHA-256 pins.
-The new archive manifest uses the same compressed/decompressed fields as
-follow-up 12. Earlier archives are untouched. Handover's living-root strings
-are rejection-test inputs, so the D-132 one-file exception was not needed.
+D-098 first commit **`877ea4e3`** copied all **117** run-56d20530 root files,
+including subtrees, byte-identically to
+[follow-up 14](history/follow-up-14/archive.json). Every byte was compared with
+the baseline Git blob; all compressed/decompressed forms have SHA-256 pins.
+Earlier archives, including `history/follow-up-14-stream/`, are untouched.
+Handover claims already read immutable snapshots; living-root strings are
+rejection inputs. No D-132 one-file exception edit was needed.
 
-Run from the worktree root:
+Run from the worktree root, in the foreground:
 
 ```sh
 make -f mk/at-isolation.mk at-isolation-lint at-isolation-test at-isolation-build
@@ -21,10 +22,13 @@ vmstat 5 7
 pgrep -af 'gates.sh|mk/at-'
 go env GOCACHE
 make -f mk/at-isolation.mk at-isolation
+python3 -B tests/e2e/at/isolation/review_boundary.py docs/e2e/at/isolation
 python3 -B tests/e2e/at/isolation/review_policy_missing.py docs/e2e/at/isolation
+python3 -B tests/e2e/at/isolation/review_reservations.py docs/e2e/at/isolation
 python3 -B tests/e2e/at/isolation/review_core32.py docs/e2e/at/isolation
 python3 -B tests/e2e/at/isolation/review_holds.py docs/e2e/at/isolation
 python3 -B tests/e2e/at/isolation/review_commands.py docs/e2e/at/isolation
+python3 -B tests/e2e/at/isolation/review_stops.py docs/e2e/at/isolation
 python3 tests/e2e/at/isolation/run.py go test -count=1 ./tests/handover/...
 python3 tests/e2e/at/isolation/run.py make go-lint go-with-disk-tmp=
 test -z "$(gofmt -l $(git ls-files '*.go'))"
@@ -32,112 +36,104 @@ git diff --check
 python3 tests/e2e/at/isolation/run.py go test -count=1 -v -run '^TestCommittedEvidenceFiles_ValidAndHygieneClean$' ./tests/e2e/at/isolation
 ```
 
-All gates run in the foreground. `run.py` provides disk TMPDIR/GOTMPDIR under
-`.agent/tmp`, uses explicit teardown without shell cleanup traps, checks suite
-process trees before each stack and after startup, and waits while two other
-suites are active. Only `fvpn-w4-isolation-*` Docker objects are owned. The
-final inventory must show zero containers, images, networks and volumes.
-The root lint override changes only the temporary-directory wrapper; the
-pinned gofmt, vet and staticcheck gates remain the root gate.
+`run.py` provides disk TMPDIR/GOTMPDIR under `.agent/tmp`, explicit teardown
+without shell cleanup traps, and suite-tree admission before each stack and
+after startup. It waits while two other suite trees are active. The root lint
+override removes only its temporary-directory shell trap; the same gofmt, vet
+and pinned staticcheck gates run. Only `fvpn-w4-isolation-*` objects are owned;
+teardown must leave containers, images, networks and volumes at zero.
 
-[host-preflight.json](host-preflight.json) records the seven `vmstat` rows and
-sanitized process inventory; the exact original stdout is retained privately
-under `.agent/f14`. This is host context, not attribution or a quiet-host claim.
-The run's source identity remains fixed while other lanes advance main.
+[Preflight](host-preflight.json) retains all seven `vmstat 5 7` rows and load
+averages. The six interval rows have r=0–4 and id=83–90%; **not quiet** because
+two rows have r=4. The first, since-boot row has id=79%. Host state is context,
+not a criterion or an explanation for a failure. Exact process output remains
+private; public process entries retain only PID and suite kind.
 
-## Unchanged acceptance measurements
+## D-140: measure first, add a boundary schedule
 
-D-087 runs first on `FVPN_E2E_GRANT_SEAM=1`: initial counted forwarding, 65
-seconds of stable invariants, false/true eligibility, natural signed leases,
-original wire bytes and actual accepted reports. The fleet's TEST ONLY
-60-second offline window is set before enrollment and is unchanged thereafter.
-No generation forcing, projector stop, transport fault or manufactured report
-is used for D-087.
+`EvaluateDeadline` and its tests remain byte-identical. It requires a positive
+leaving at or after D−101 ms, no positive after the first drop, and first drop
+by D+100 ms; egress at/after D also fails. A straddling closure interval remains
+failed. Historical **isolation F14-01** in run 56d20530 remains failed and is
+distinct from **members F14-01**. No attempt or loss is waived.
 
-AT10–AT13 retain protected destinations, peer/management/DNS/source-binding
-checks, publication groups, revoke, ordinary restart, finite-member expiry,
-whole-node D-104 expiry, the 70-second renewal diagnostic, ISO-F6-01 and the
-identity-freeze fixture. AT11's native platform matrix and AT13's full fault
-matrix remain operator rows. Physical arm64 and kernel reboot are not exercised.
+The original `phased` and `arbitrary_37ms` sends are unchanged. At D−3 s the
+driver copies the existing passive node packet capture to the member. At D−1 s,
+`deadlineProbes` joins that capture to its own completed original-cadence sends.
+It records every calibration sample and the minimum, median, maximum and spread
+of member-send → ingress capture-read latency. At least 20 samples are required.
 
-D-120 keeps its original stream, verdict and allowance: at most five eligible
-losses, each with ingress in exactly one verified guard, guard and
-render-to-install within 100 ms, the next datagram succeeding, and zero TCP
-timeouts. That allowance never applies to the separate 80 ms diagnostic.
-Every renewal/expiry loss remains counted. D-104 keeps `[D−101 ms,D]` and
-rejects positives at/after D; no cadence allowance or timeout inflation.
+Added probes use median latency to predict ingress. Predicted ingress spans
+D−101 ms minus the latency spread and three spacings, through D+100 ms plus
+that margin. The measured binary used max(0.5 ms, twice the largest measured ingress→egress
+transit plus 0.1 ms), rounded upward to 0.1 ms. That selected 0.6 ms and
+produced one interleaving, so this attempt is not D-140 qualified. The final
+source adds the measured latency spread to the spacing expression; it would
+select 4.3 ms from this calibration. This correction was made after the run
+and has no assembled qualification yet. The sample remains unchanged. Added sends within one spacing
+of an original scheduled send are omitted; original sends never move. A short
+member-side scheduling spin avoids timer coalescing for added probes only.
+Actual scheduled/send/ingress/egress times and every transit are retained;
+[qualification](boundary-review.json) checks actual ordering and reports any
+positive whose egress interleaves the next ingress. Prediction is not proof.
+The unchanged Go evaluator alone supplies the packet verdict. The final runner
+also runs the independent schedule qualifier; its nonzero exit retains an
+interleaving failure without editing that verdict. This wiring was added after
+the measured run. The sole attempt’s offline qualifier exits 1.
 
-ISO-F6-01 uses the existing 90-second restored-control readiness budget and
-maximum twelve dirty samples at 500 ms. Assertion 6 requires a current accepted
-`apply_candidate` rejection joined to desired wire and original failed Apply
-commands. Installed-verifier requirements retain separate original evidence.
-The six original assertion expressions are unchanged.
+Observation uses member sends and passive AF_PACKET captures. The existing
+read-only `nft monitor` receipts may accompany producer evidence but never
+replace packet evidence. No node nft table/rule or `nftrace` statement is added.
+Devstack 26 established that a foreign tracer can itself close the node under
+the unchanged verifier; this observer leaves the ruleset unchanged.
 
-## Central generation holds and the one control-cut attempt
+## D-102 stops and core 34 reservation
 
-The owned driver polls accepted observations read-only throughout the run.
-`generation-holds-central.json` retains each original report and observation
-row ID, its own signed lease, decimal applied/lease generations, the central
-desired generation at read time, per-report sample, incident, and final audit
-history. `PublicationDataPathFailure` evaluates genuine reports against the
-live database. A read-only replay reverses their checks/errors to test order
-independence; no replay is ingested. Poll-time values are labelled separately
-from receipt-time values.
+Before the original whole-container restart and clone-source stop, retain
+launch ID, PID and `/proc` start ticks. The ordinary stop explicitly gives the
+container 25 seconds; devstack's clone wrapper also gives 25 seconds. The
+supervisor's agent budget and direct pidfd sampler use **15 seconds**.
 
-`publication-operation-history.json` retains actual operation steps and
-`observed_refs`. In this run the owned read-only sidecar was started during the
-assembled driver, before interface-change completion, and made a final read
-after central export. Initial already-completed operations are retained state,
-not continuously observed earlier transitions. The final runner starts this
-same sidecar and the Docker lifecycle observer before the driver on future invocations; that startup wiring was
-added after this run's binaries started and is not retroactively claimed here.
+After the whole-container stop, use `docker cp` for the matching
+`agent-exits/<id>.json` before restart. The clone source uses the same receipt
+copy after its original fixture stop/start. The direct sampler reads the
+parent receipt after the service stop. Each checks all three identity fields.
+The parent's exit code/signal is the agent result; container exit records only
+PID1 handler completion. `.sigkill.json` records attempted escalation, never
+its outcome. Historical 10.087 s and 20.153 s exit-137 rows remain as recorded.
+Step cancellation time is not exported and is not inferred.
 
-After the unchanged D-104 window, the harness makes exactly one public capacity
-change. For at most 15 seconds it looks for a new accepted open hold, then uses
-the existing Docker control/worker pause boundary. If the node has already
-renewed, the attempt is labelled not exercised; it never retries or adds a
-lease interception hook. If the old lease is still held, it records independent
-packet denial and a kernel snapshot, holds control loss for 35 seconds, invokes
-the existing pidfd terminal-stop helper, reads durable incident state, restarts
-through the existing supervisor, and restores control. All original bodies,
-local counters and escalation IDs decide the outcome. No alarm is inferred
-from elapsed time or forwarding denial.
+[Reservation timelines](pre-apply-reservation-review.json) read
+`host.before_apply.end_ns` → `timing.start_ns` for every Apply, including failed
+Applies. For Steps with original conntrack revoke commands, this bracket contains
+the durable reservation plus small common setup before the restricting install.
+Receipt-to-revocation and baseline-to-recovery retain that elapsed time, outside
+the guard percentiles. Desired response completion is a proxy delivery receipt,
+not an exact node parse timestamp; producer wall/monotonic anchor bounds are
+preserved. A pure renewal/expiry Step with no queued deletes adds no reservation.
+A failed preparation without delete commands cannot prove the queue was empty.
 
-`generation-holds-review.json` joins every accepted hold and every populated
-old/new producer window. A window without a reported hold retains that gap;
-`policy_missing` alone never creates a central incident. Matching-lease endings
-join the exact receipt time and report ID. A later incident must have a distinct
-ID. A kernel reboot is **not exercised**, under AT13's carried operator matrix.
-The original terminal source/clone stop samples remain separate from this
-control-cut attempt and from Docker PID1 SIGKILL/exit-137 events.
+## Retained rows and limits
 
-## Producer commands, recovery and counter-read failures
+D-087 uses the exported seam, fixed generation and pre-enrollment 60-second
+TEST ONLY fleet setting. ISO-F6-01 keeps its 90-second readiness budget, twelve
+samples at 500 ms and all six assertions. AT10–AT13 retain all previous normal
+and failure paths. AT11's native platform matrix and AT13's full fault matrix
+remain carried operator rows, including physical arm64 and kernel reboot.
 
-The full original producer stream retains all processes, sequences, failed
-Applies, command indices, verifiers, baseline writes and heartbeats. Completed
-guard distributions are a new independent sample after follow-up 13, not A/B
-attribution or a new ceiling. Netlab 23's `skip_reason=install_bound` is retained:
-resource sampling is unavailable in that phase, while command timestamps,
-exit/signal and process CPU/switch evidence remain separate. The offline reader
-accepts the documented skip kinds and rejects a skipped sample carrying values.
+The renewal diagnostic retains every loss, including run 56d20530's packets
+15–18 outside guards in the 30→31 baseline bracket. D-120's bounded allowance
+applies only to its separate mechanism stream. Completed guards are the next
+independent distribution sample; no historical ceiling or A/B attribution is
+invented. All original per-Apply command indices and failed commands remain.
 
-D-135 / corrected D-136 retain baseline→next successful Apply and later
-verification/heartbeat evidence. Only retained Apply-error recovery uses the
-verified deny-all candidate. Neither the 100 ms install budget nor a completed
-baseline bracket supplies a recovery SLA. Unsampled packet intervals stay
-unavailable, never zero-loss.
+Every accepted stale-lease hold is joined to wire-nodes 34's central report,
+lease, sample and incident; poll-time desired state is separate from delivered
+desired state. Populated hold: **not exercised — devstack 27's fixture pending**.
+No alarm, escalation, active-stop retention or populated packet proof is inferred.
+The previously authorized single existing-seam attempt remains retained; it is
+not the pending populated-hold fixture.
 
-At every counter-read failure, apply
-[netlab 23's decision](../../../poc/G2-followup23-evidence/decision.json):
-`*enforce.DuplicateChainError` / `duplicate_chain` denotes an ambiguous owned-chain
-listing. The [0 / 3,300 experiment](../../../poc/G2-followup23-evidence/reproduction-summary.json)
-did not establish its origin. The shared counter reader may still publish a
-generic `parser_rejected`; this lane does not relabel an untyped historical
-failure. A failed read never proves counters frozen, counters removed, or
-forwarding closed. No retry waiver, acceptance change or historical
-reclassification is made.
-
-Large producer JSONL is published as lossless gzip. Immutable `history/` pins
-record SHA-256 and sizes for compressed and decompressed forms, independently
-compared to the original export. Living root paths are never evidence pins.
-All historical failures and unproven causes remain in their original archives.
+Large JSON/JSONL is published losslessly as gzip, with both-form hashes only
+at immutable `history/` paths. Offline consumers accept either form. Markdown
+links remain navigable, and historical archives are not recompressed.

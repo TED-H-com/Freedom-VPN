@@ -28,6 +28,10 @@ def timeline(verdict):
 
 def review(root):
     read=lambda name:read_json(root/name)
+    current=read('AT13.json')
+    expiry=next((c for c in current.get('checks',[]) if c['name']=='short whole-node lease expiry'),{})
+    if 'D-104 exact packet deadline verdict=' not in expiry.get('actual',''):
+        raise ValueError('Current attempt did not execute expiry; refusing inherited boundary evidence')
     verdict=read('deadline-verdict.json');plan=read('boundary-schedule.json')
     rows,interleavings=timeline(verdict);errors=[]
     if not plan['qualified']:errors.append('same-run latency calibration unavailable')
@@ -68,3 +72,4 @@ def review(root):
 if __name__=='__main__':
     import sys
     r=review(Path(sys.argv[1]));print(json.dumps({k:v for k,v in r.items() if k!='packets'},indent=2))
+    raise SystemExit(0 if r['schedule_qualified'] else 1)

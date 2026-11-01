@@ -1,129 +1,128 @@
 {
-  "run_id": "56d20530-8042-4d0c-8156-de5a47ce8b61",
+  "run_id": "0b9e4510-776f-4c51-9e66-500404ce9f7e",
   "hold": {
-    "unique_hold_reports": 1,
-    "all_hold_reports_qualified": true,
-    "accepted_hold_reports": 1,
-    "holds": [
-      {
-        "report_id": "01a196fd-f5e3-7211-89dd-2bb4b6b373d2",
-        "observed_at": "2026-11-01T12:03:08.387118076Z",
-        "attempt_indices": [
-          10
-        ],
-        "statuses": [
-          202
-        ],
-        "accepted": true,
-        "applied_generation": "3",
-        "signed_lease_generation": "2",
-        "forwarding": false,
-        "reasons": [
-          "policy_missing"
-        ],
-        "lease_errors": [
-          {
-            "code": "STALE_GENERATION",
-            "message": "Serving lease is not for the desired generation.",
-            "observed_at": "2026-11-01T12:03:08.355797633Z",
-            "stage": "lease"
-          },
-          {
-            "code": "STALE_GENERATION",
-            "message": "Serving lease generation hold: applied=3 lease=2 steps=1 elapsed_ms=0 alarm=false.",
-            "observed_at": "2026-11-01T12:03:08.387118076Z",
-            "stage": "lease"
-          }
-        ],
-        "qualifies": true,
-        "streak_summaries": [
-          {
-            "applied": "3",
-            "lease": "2",
-            "steps": "1",
-            "elapsed_ms": "0",
-            "alarm": false,
-            "threshold_reached": false,
-            "summary_consistent": true
-          }
-        ]
-      }
-    ],
+    "unique_hold_reports": 0,
+    "all_hold_reports_qualified": false,
+    "accepted_hold_reports": 0,
+    "holds": [],
     "alarms": [],
     "alarm_observed": false,
     "all_summary_thresholds_consistent": true,
-    "other_policy_missing_reports": [],
+    "other_policy_missing_reports": [
+      {
+        "report_id": "01a19799-b0b1-7990-9802-e49cf1c4d81a",
+        "observation_at": "2026-11-01T14:53:14.28958691Z",
+        "reason": "policy_missing alone does not establish an acknowledged stale-lease hold",
+        "attempt_indices": [
+          2
+        ]
+      }
+    ],
     "interpretation": "Every observed hold must carry policy_missing and STALE_GENERATION at stage=lease with forwarding false. Signed lease generations resolve the ACK comparison; baseline alone is not a hold classification. Alarm is observed only when the original summary says true; 3 Steps or 30 seconds is diagnostic, never a forwarding grace. Missing Step events prevent independently reconstructing every unreported increment."
   },
   "terminal_process_stops": [
     {
       "container": "fvpn-w4-isolation-node",
       "sample": {
+        "agent_budget_seconds": 15,
+        "cooperative_exit": false,
         "exit_observed": true,
         "exit_sample": {
-          "mono_ns": "119215723863844",
-          "wall": "2026-11-01T12:21:18.207497061Z"
+          "mono_ns": "129390429841135",
+          "wall": "2026-11-01T15:10:52.913479463Z"
         },
-        "exit_status_available": false,
-        "last_alive_since_signal_ns": "0",
-        "pid": 886,
+        "last_alive_since_signal_ns": "70470081",
+        "launch_id": "e3b4b9cd-51e0-4e50-b0b7-7901104b265c",
+        "outcome_source": "parent wait receipt; escalation sidecar is intent only; pidfd timestamps bound observation, not exact kernel exit",
+        "parent_identity_matched": true,
+        "parent_wait_available": true,
+        "parent_wait_receipt": {
+          "id": "e3b4b9cd-51e0-4e50-b0b7-7901104b265c",
+          "pid": 901,
+          "start_ticks": "12938608",
+          "started_at": "2026-11-01T15:10:48.570546932Z",
+          "wait_observed_at": "2026-11-01T15:10:52.913515766Z",
+          "wait_status": 15,
+          "exit_code": null,
+          "signal": 15,
+          "core_dump": false
+        },
+        "pid": 901,
         "scope": "TEST ONLY terminal stop; pidfd SIGTERM send and exit readiness brackets; supervisor pause and escalation retained",
         "signal_ok": true,
         "signal_return": {
-          "mono_ns": "119215716141347",
-          "wall": "2026-11-01T12:21:18.199770318Z"
+          "mono_ns": "129390358293453",
+          "wall": "2026-11-01T15:10:52.841922408Z"
         },
         "signal_start": {
-          "mono_ns": "119215716135689",
-          "wall": "2026-11-01T12:21:18.199765653Z"
+          "mono_ns": "129390358287819",
+          "wall": "2026-11-01T15:10:52.841917494Z"
         },
-        "signal_to_exit_upper_ns": "7725929",
+        "signal_to_exit_upper_ns": "71529909",
+        "start_ticks": "12938608",
         "step_cancel": "not observable here",
         "supervisor_stop_ok": true,
         "supervisor_stop_output": "0",
-        "within_13s": true
+        "within_15s": true
       },
       "stored_lease_survived": true,
-      "lease_id_before": "4544d44f-3779-48fe-9437-f1047e909d5d",
-      "lease_id_after": "4544d44f-3779-48fe-9437-f1047e909d5d",
+      "lease_id_before": "b5aa3d88-4ec5-40dc-82ed-c08c9f1cd77f",
+      "lease_id_after": "b5aa3d88-4ec5-40dc-82ed-c08c9f1cd77f",
       "receiver_completions_during_signal_to_exit": [],
       "no_control_io_after_cancel": "not observable here: Step cancellation timestamp and agent-side POST completion are not exported; proxy completion alone cannot prove it"
     },
     {
       "container": "fvpn-w4-isolation-node-clone",
       "sample": {
+        "agent_budget_seconds": 15,
+        "cooperative_exit": true,
         "exit_observed": true,
         "exit_sample": {
-          "mono_ns": "119216093066518",
-          "wall": "2026-11-01T12:21:18.576696029Z"
+          "mono_ns": "129390811767019",
+          "wall": "2026-11-01T15:10:53.295399069Z"
         },
-        "exit_status_available": false,
         "last_alive_since_signal_ns": "0",
-        "pid": 1133,
+        "launch_id": "5b83396c-00b2-4972-852f-7b643174341f",
+        "outcome_source": "parent wait receipt; escalation sidecar is intent only; pidfd timestamps bound observation, not exact kernel exit",
+        "parent_identity_matched": true,
+        "parent_wait_available": true,
+        "parent_wait_receipt": {
+          "id": "5b83396c-00b2-4972-852f-7b643174341f",
+          "pid": 1139,
+          "start_ticks": "12938614",
+          "started_at": "2026-11-01T15:10:48.624113116Z",
+          "wait_observed_at": "2026-11-01T15:10:53.295451181Z",
+          "wait_status": 0,
+          "exit_code": 0,
+          "signal": null,
+          "core_dump": false
+        },
+        "pid": 1139,
         "scope": "TEST ONLY terminal stop; pidfd SIGTERM send and exit readiness brackets; supervisor pause and escalation retained",
         "signal_ok": true,
         "signal_return": {
-          "mono_ns": "119216086550442",
-          "wall": "2026-11-01T12:21:18.570179406Z"
+          "mono_ns": "129390805466174",
+          "wall": "2026-11-01T15:10:53.289095126Z"
         },
         "signal_start": {
-          "mono_ns": "119216086544288",
-          "wall": "2026-11-01T12:21:18.570174065Z"
+          "mono_ns": "129390805460818",
+          "wall": "2026-11-01T15:10:53.289090504Z"
         },
-        "signal_to_exit_upper_ns": "6522051",
+        "signal_to_exit_upper_ns": "6304797",
+        "start_ticks": "12938614",
         "step_cancel": "not observable here",
         "supervisor_stop_ok": true,
         "supervisor_stop_output": "0",
-        "within_13s": true
+        "within_15s": true
       },
       "stored_lease_survived": true,
-      "lease_id_before": "4734a919-d68d-4f18-ae62-3152d8edb59c",
-      "lease_id_after": "4734a919-d68d-4f18-ae62-3152d8edb59c",
+      "lease_id_before": "cc47ca9d-147a-4477-9be9-b6aebab0fb89",
+      "lease_id_after": "cc47ca9d-147a-4477-9be9-b6aebab0fb89",
       "receiver_completions_during_signal_to_exit": [],
       "no_control_io_after_cancel": "not observable here: Step cancellation timestamp and agent-side POST completion are not exported; proxy completion alone cannot prove it"
     }
   ],
-  "cooperative_bound_ns": "13000000000",
+  "cooperative_bound_ns": "15000000000",
   "stored_lease_scope": "Survival does not establish adoption or current serving eligibility.",
   "container_lifecycle": "container-lifecycle-events.json; distinct from directly signalled agent process exits",
   "baseline_brackets": "policy-missing-analysis.json: baseline to next successful Apply, every loss counted, later recovery required"

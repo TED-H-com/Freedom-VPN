@@ -51,7 +51,7 @@ def call(args, env):
 
 (ROOT / '.agent/tmp').mkdir(parents=True, exist_ok=True)
 with tempfile.TemporaryDirectory(prefix='at-isolation.', dir=ROOT / '.agent/tmp') as temp:
-    env = dict(os.environ, TMPDIR=temp, GOTMPDIR=temp, GOTOOLCHAIN='local', CGO_ENABLED='0')
+    env = dict(os.environ, TMPDIR=temp, GOTMPDIR=temp, GOTOOLCHAIN='local', CGO_ENABLED='0', PYTHONDONTWRITEBYTECODE='1')
     if sys.argv[1:] != ['assembled']:
         raise SystemExit(call(sys.argv[1:], env))
     import uuid
@@ -85,6 +85,8 @@ with tempfile.TemporaryDirectory(prefix='at-isolation.', dir=ROOT / '.agent/tmp'
             stack = call(['python3', 'tests/e2e/at/isolation/driver.py', 'run'], env)
             review = call(['python3', '-B', 'tests/e2e/at/isolation/review_followup10.py', evidence], env)
             stack = stack or review
+            boundary = call(['python3', '-B', 'tests/e2e/at/isolation/review_boundary.py', evidence], env)
+            stack = stack or boundary
     finally:
         lab = call(['sh', 'tests/e2e/at/isolation/lab.sh', 'down'], env) or lab
         stack = call(['python3', 'tests/e2e/at/isolation/stack.py', 'down'], env) or stack
