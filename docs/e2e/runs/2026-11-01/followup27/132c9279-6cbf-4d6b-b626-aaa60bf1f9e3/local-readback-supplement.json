@@ -1,0 +1,20 @@
+{
+  "id": "local-readback-supplement",
+  "title": "Separate read-only container receipt after the original failed host read",
+  "spec": [
+    "AT13",
+    "AT02",
+    "D-126",
+    "\u00a716.3"
+  ],
+  "status": "pass",
+  "observations": [
+    {
+      "name": "readback",
+      "detail": "{\"local\": {\"body_sha256\": \"2534e7ef84245b0414b52a5ecc7c0a86c8acd3ec51e74b8d3a18b66f55e6a101\", \"bytes\": 924, \"lease_id\": \"31a94b2c-7f8c-4f91-b400-ff68e412d4e0\", \"read_at\": \"2026-11-01T14:54:26.814529718Z\"}, \"exact_forwarded_body\": true, \"original_status\": \"fail\", \"scope\": \"original evidence unchanged; no new traffic, report or lease\"}"
+    }
+  ],
+  "at": "2026-11-01T14:53:24Z",
+  "run_id": "132c9279-6cbf-4d6b-b626-aaa60bf1f9e3",
+  "source_commit": "1327d8bdbfd4fc9e29b86dddf212725ad1cfa2a2"
+}

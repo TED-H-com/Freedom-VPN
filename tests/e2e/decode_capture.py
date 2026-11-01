@@ -76,7 +76,7 @@ def dns_header(message):
                 message_sha256=hashlib.sha256(message).hexdigest())
 
 
-def decode_ip(b, address, wireguard=False, dns=False):
+def decode_ip(b, address, wireguard=False, dns=False, fixture_sequences=False):
     version = b[0] >> 4
     out = {'ip_version': version}
     if version == 4:
@@ -155,6 +155,10 @@ def decode_ip(b, address, wireguard=False, dns=False):
             raise ValueError('short UDP header')
         out['udp'] = dict(src_port=u16(transport, 0), dst_port=u16(transport, 2), length=u16(transport, 4))
         length = out['udp']['length']
+        # Explicit TEST ONLY stream marker; no arbitrary payload is exported.
+        marker = b'FVPN TEST ONLY 27'
+        if fixture_sequences and out['udp']['dst_port'] == 40002 and length == 16+len(marker) and transport[8:8+len(marker)] == marker:
+            out['fixture_sequence'] = str(struct.unpack_from('!Q', transport, 8+len(marker))[0])
         if dns and 53 in (out['udp']['src_port'], out['udp']['dst_port']) and 8 <= length <= len(transport):
             header = dns_header(transport[8:length])
             if header: out['dns'] = header
@@ -176,7 +180,7 @@ def decode_ip(b, address, wireguard=False, dns=False):
     return out
 
 
-def decode(path, output, addresses, stable_addresses=False, wireguard=False, dns=False):
+def decode(path, output, addresses, stable_addresses=False, wireguard=False, dns=False, fixture_sequences=False):
     raw = path.read_bytes()
     formats = {b'\xd4\xc3\xb2\xa1': ('<', 1000000), b'\xa1\xb2\xc3\xd4': ('>', 1000000),
                b'\x4d\x3c\xb2\xa1': ('<', 1000000000), b'\xa1\xb2\x3c\x4d': ('>', 1000000000)}
@@ -222,7 +226,7 @@ def decode(path, output, addresses, stable_addresses=False, wireguard=False, dns
                 else:
                     raise ValueError('unsupported link type')
                 if proto in (0x800, 0x86dd):
-                    row.update(decode_ip(b[offset:], address, wireguard, dns))
+                    row.update(decode_ip(b[offset:], address, wireguard, dns, fixture_sequences))
                     size = row.get('ip_length', 0)
                     if size and len(b)-offset >= size:
                         row['ip_sha256'] = hashlib.sha256(b[offset:offset+size]).hexdigest()
@@ -242,13 +246,14 @@ def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--out', type=Path, required=True)
     p.add_argument('--stable-addresses', action='store_true', help='match native-observe address tokens')
+    p.add_argument('--fixture-sequences', action='store_true', help='TEST ONLY 27 stream sequence IDs only')
     p.add_argument('--dns-headers', action='store_true', help='closed synthetic DNS cases; digests/IDs only')
     p.add_argument('--wireguard-headers', action='store_true', help='optional fixed public handshake/data headers; no keys or ciphertext')
     p.add_argument('captures', nargs='+', type=Path)
     args = p.parse_args(); args.out.mkdir(parents=True, exist_ok=True)
     addresses = {}; results = []
     for source in args.captures:
-        results.append(decode(source, args.out/(source.stem+'.headers.jsonl'), addresses, args.stable_addresses, args.wireguard_headers, args.dns_headers))
+        results.append(decode(source, args.out/(source.stem+'.headers.jsonl'), addresses, args.stable_addresses, args.wireguard_headers, args.dns_headers, args.fixture_sequences))
     # Address map stays private; only headers with campaign-stable tokens escape.
     print(json.dumps(results, indent=2))
 

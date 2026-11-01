@@ -192,8 +192,39 @@ func (r *runner) fixtureServingMember(ctx context.Context, admin *session) {
 		return
 	}
 	sub := r.notePortalSubject(ctx, member.memberID, note)
+	var contact *NativeCapture
+	if os.Getenv("FVPN_E2E_FOLLOWUP27") == "native" {
+		contact, err = (&Stack{lab: r.lab}).StartNativeFirstContactCapture(ctx)
+		if err != nil {
+			note("first_contact_capture", "unavailable")
+			return
+		}
+		defer func() {
+			capture := Record{ID: "native-session", Title: "First contact through sustained stream passive capture", Status: StatusPass}
+			r.finishNativeCapture22(ctx, &capture, contact)
+			r.record(capture)
+		}()
+	}
 	r.memberNetBird(ctx, member, sub, note)
 	if !r.usageReady {
+		return
+	}
+	if os.Getenv("FVPN_E2E_FOLLOWUP27") == "hold" {
+		if r.servingGate26(ctx, "admission-serving") {
+			rec.Status = StatusPass
+		}
+		return
+	}
+	if contact != nil {
+		if err = contact.BindPeers(ctx); err != nil {
+			return
+		}
+		if !r.servingGate26(ctx, "admission-serving", contact) {
+			return
+		}
+		r.native27(ctx, &Stack{lab: r.lab}, contact)
+		// Admission is independent of the measured first request.
+		rec.Status = StatusPass
 		return
 	}
 	if os.Getenv("FVPN_E2E_FOLLOWUP22") == "1" || os.Getenv("FVPN_E2E_FOLLOWUP23") == "1" || os.Getenv("FVPN_E2E_FOLLOWUP24") == "1" {

@@ -1,0 +1,20 @@
+{
+  "id": "local-readback-supplement",
+  "title": "Separate read-only container receipt after original helper build failure",
+  "spec": [
+    "AT13",
+    "AT02",
+    "D-126",
+    "\u00a716.3"
+  ],
+  "status": "pass",
+  "observations": [
+    {
+      "name": "readback",
+      "detail": "{\"local\": {\"body_sha256\": \"1f6d8dbaa1c2498dc29894fdd88826a91c8e493512553f925fb6516cf6c07c55\", \"bytes\": 924, \"lease_id\": \"5e89394e-4f9e-409a-9865-a6053b7058c0\", \"read_at\": \"2026-11-01T15:02:00.293820649Z\"}, \"exact_forwarded_body\": true, \"original_status\": \"fail\", \"scope\": \"original evidence unchanged; no new traffic, report or lease\"}"
+    }
+  ],
+  "at": "2026-11-01T15:01:00Z",
+  "run_id": "ff177856-14b8-4c58-9880-2e5d8f9a0d16",
+  "source_commit": "8a4738f73bcc2c7a47140147c9a8138945f67f23"
+}
