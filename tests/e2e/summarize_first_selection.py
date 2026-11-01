@@ -27,6 +27,7 @@ def data_around(packets, response):
 def summary(source, analysis):
     notes = {o['name']: o['detail'] for o in source['observations']}
     cap = analysis['capture']
+    original = json.loads(notes['capture'])
     syns = cap['member_syns']
     start = syns[0] if syns else None
     origin = [p for p in cap['hops']['origin'] if p['tcp']['src_port'] == 20001 and p['packet_type'] != 4]
@@ -47,7 +48,9 @@ def summary(source, analysis):
                   loopback_source_response_records=len(loopback),
                   type4_around_first_response={r:data_around(headers[r],first_response) for r in ['member','node']},
                   type4_around_loopback_response={r:data_around(headers[r],first_loopback) for r in ['member','node']},
-                  selected_peer_timeline={}, namespace_counters={}, loopback_response_member_joins=[])
+                  selected_peer_timeline={}, namespace_counters={}, loopback_response_member_joins=[],
+                  observed_kernel_modes={r:sorted({s['points'][r]['uses_kernel_interface'] for s in original['samples']}) for r in ['member','node']},
+                  peer_status_reads_ok={r:all(s['points'][r]['commands'].get('peer_status',{}).get('ok',False) and s['points'][r]['peer_present'] for s in original['samples']) for r in ['member','node']})
     for response in loopback:
         digest=response['wireguard']['message_sha256']
         result['loopback_response_member_joins'].append(dict(node_packet=response['packet'],message_sha256=digest,
