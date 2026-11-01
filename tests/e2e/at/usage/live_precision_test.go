@@ -166,15 +166,26 @@ func (s *liveSuite) replayCurrentBatches(db *sql.DB, node, current uuid.UUID, cl
 	return batches
 }
 
-func (s *liveSuite) verifyFreshCountedStream(rec *Record, node, current, origin uuid.UUID, originACK, period string, states map[string]string, presenter *http.Client, before api.MemberUsage, beforeInc api.NodeIncarnationList) string {
+func (s *liveSuite) verifyFreshCountedStream(rec *Record, node, current, origin uuid.UUID, originACK string, states map[string]string, presenter *http.Client, beforeInc api.NodeIncarnationList) string {
 	rec.Observations["d130_incarnations_before"] = beforeInc
-	rec.Observations["d130_member_period_before"] = before
 	// Respect the shipped systemd start limit after deliberate fixture restarts.
 	s.t.Log("AT20 waiting beyond the unchanged 120-second systemd start window")
 	startAfter := time.Now().Add(121 * time.Second)
 	if !s.waitFor(125*time.Second, func() bool { return time.Now().After(startAfter) }) {
 		s.t.Fatal("D-130 restart pacing interrupted")
 	}
+	// The retained origin may belong to last month. Capture fresh baselines
+	// while the node is still stopped, including next month if startup/traffic
+	// crosses midnight, then select by the counted event's own period.
+	start, err := time.Parse("2006-01", intervalPeriod(time.Now()))
+	if err != nil {
+		s.t.Fatal(err)
+	}
+	baselines := make(map[string]api.MemberUsage)
+	for _, period := range []string{intervalPeriod(start), intervalPeriod(start.AddDate(0, 1, 0))} {
+		baselines[period] = s.memberPeriodUsage(period)
+	}
+	rec.Observations["d130_member_period_baselines"] = baselines
 	if err := s.hook.RestoreInstallerServices(s.ctx, "installer-node", states); err != nil {
 		s.t.Fatal(err)
 	}
@@ -230,6 +241,12 @@ func (s *liveSuite) verifyFreshCountedStream(rec *Record, node, current, origin 
 		s.t.Fatal("D-130 expected exactly one original member/device record")
 	}
 	r := counted.Event.Records[0]
+	period := intervalPeriod(counted.Event.IntervalStart)
+	before, ok := baselines[period]
+	if !ok {
+		s.t.Fatal("D-130 counted period has no pre-traffic baseline")
+	}
+	rec.Observations["d130_member_period_before"] = before
 	if r.MemberId.String() != s.memberA.memberID || r.DeviceId != s.deviceA || r.PeriodId != period || r.UploadBytes != traffic.DeltaUp || r.DownloadBytes != traffic.DeltaDown {
 		s.t.Fatal("D-130 counted event differs from exact measured direction counters or original member/device/period")
 	}
