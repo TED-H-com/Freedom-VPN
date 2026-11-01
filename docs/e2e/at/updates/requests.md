@@ -1,45 +1,33 @@
-# Updates requests — follow-up 11, 2026-10-31
+# Updates requests — follow-up 12, 2026-10-31
 
-Run `daddad24-b6f7-4c32-ba8e-1c7d24f76ea2`, product main
-`96ec0630e4834e13a3a14d65553ba8108bb5da55`, measured harness
-`3ac13f7e115edf22e2ec9d3a6450733ec1fb7b6a`. The generated-reporting
-extension passes without editing the generated configuration. Prior requests
-remain [archived with follow-up 10](history/follow-up-10/requests.md).
+Run `2babf9b6-86a3-489d-a678-0bd447f2f8b0`, product main
+`45209609d33d567c5f04d49441799cdd3efac59b`, measured harness `5b2ae074`.
+Follow-up 11's complete request record and measurement are preserved in
+[history/follow-up-11](history/follow-up-11/ARCHIVE.md).
 
 ### Requests to orchestrator
 
-| ID / date | Owner | Deciding observation | Requested change outside this lane |
-| --- | --- | --- | --- |
-| F11-01 / 2026-10-31 | Devstack | [Installer hand-off](installer-handoff.json), `install_wrapper`: exit **64**, `usage`, explicit loopback-opt-in diagnostic; before/after key, cert, identity, usage and current remain absent. The shared spec uses `https://127.0.0.1:9444`. Repeating the same install through `ProbeInstallerExit` with **TEST ONLY `--allow-loopback`** succeeds, exit **0**. | In `tests/e2e/installer_exports.go`, let `installArgs`/the installer spec supply the explicit TEST ONLY loopback opt-in for its existing local proxy. Do not change production defaults or generated reporting fields. Publish the D-102 answer in `docs/e2e/RESPONSES.md`. This lane supplies the documented input only in its own harness; no shared file was edited. |
-| F11-02 / 2026-10-31 | Updater, installer consult | Initial install/seed succeeds using the retained archive. `packaging/installer/install.go` calls `retainArchive` on initial and same-release installs. The [uncached probe](artifact-origin.json), run after deliberately withholding that cache, succeeds and adds a verified current baseline while preserving transaction state. | Correct the **Offline installation** paragraph in `docs/updates/node-updater.md`, which still says initial install retains only the envelope and needs a reachable artifact URL unless already staged. Describe the current installer's retained verified archive and the distinct missing-cache fallback. This is a documentation mismatch, not an updater failure. |
+2026-10-31: **No new requests.** Request count: **0**.
 
-### F10 closure and artifact-origin decision
+### Owner closures
 
-F10-01's shared layout correction is consumed from devstack 20 / #343 and
-its [D-102 answer](../../RESPONSES.md#updates--2026-10-31-follow-up-20-f10-01-d-102).
-The two owned executable checks now use the release root. See the current
-[AT table](follow-up-11.md) for this lane's independent sequence.
+| Item | Disposition | Evidence |
+| --- | --- | --- |
+| F11-01 | **CLOSED** | Devstack 21 / #352 added shared `installerSpec.AllowLoopback`, gated with the exact local `ControlURL`. This lane's actual `Stack.RerunInstaller` returns **installed / exit 0**, with all 27 installer checks passing. See `shared_installer_spec`, `install_arguments_from_shared_spec`, `install_path` and `install_wrapper` in [installer-handoff.json](installer-handoff.json). No install fallback is invoked. The [D-102 answer](../../RESPONSES.md#updates--2026-10-31-follow-up-21-f11-01-d-102) is consumed. |
+| F11-02 | **CLOSED by #351** | [Updater 19](../../../updates/node-followup19-2026-10-31.md#f11-02-retained-archive-and-missing-cache-fallback) corrects initial/same-release retained verified archives versus absent-cache guarded downloads. [Installer 8 / #353](../../../node/install-followup8-2026-10-31.md) reconciles the producer fields and documentation. No product or outside-owned edit is needed here. |
+| F18-01 | Intended D-125 negative retained | Stop the real producer and withdraw its checkpoint: apply/replay/recover **1/1/2**, sealed `CHECKPOINT_FAILED`, unchanged current and failure seal, blocked forwarding. This is never a successful upgrade. The old failed campaign stays archived. See the [D-102 response](../../RESPONSES.md#updater--2026-10-31-follow-up-21-f18-01-d-102). |
 
-F10-02 closes within the measured installer extension: generated URL/server
-CA/client identity/exact origin policy, unchanged config hash, real sealed
-receipt and matching local/central ACK, `NodeUpdateSummary.source=installer`,
-D-110 recomputation, and [one automatic POST per receipt](installer-delivery-transport.json).
-The existing lab enrollment proxy forwards authenticated requests to the real
-central; no endpoint/CA/origin reporting adapter remains.
+Updater 19 / #351 accepts updates 11's generated reporting and physical rollback;
+installer 8 / #353 pins the same reporting fields independently. Their tests
+read no living AT evidence. All 43 former root files are now available under
+immutable history paths before any follow-up 12 publication (D-098/D-132).
+Agent-core 29 / #356 adds opt-in TEST ONLY host context around Apply without
+changing production ordering or deadlines. This follow-up is the first regular AT23–AT27
+campaign on that tree; no install-contention cause or worst-case bound is
+claimed.
 
-The anticipated artifact-origin rejection **did not occur**. Normal hand-off
-uses verified staged archives; the separate uncached probe also exits **0**.
-The shared release hostname resolves to an owned **non-private** Docker origin.
-`allowed_artifact_origins` grants private/CGNAT exceptions; it is not an exclusive
-list of every downloadable host. This matches `node/updater/verify.go` and the
-D-046 paragraphs in `docs/updates/node-updater.md`. Release-process documentation
-permits immutable separate HTTPS artifact URLs. Neither hosting nor generated
-policy was changed, and no artifact-origin installer input is requested on an
-unobserved rejection. Private mirror deployment remains outside this result.
-
-F18-01 is retained as an intended negative: stopped producer apply/replay/recover
-**1/1/2**, `CHECKPOINT_FAILED`, original sealed failure and blocked forwarding;
-it is never reported as a passing upgrade. The old failure row is unchanged.
-
-Request count: **2**, neither blocks the measured acceptance sequence. The
-wrapper request has an explicit owned-harness input; the other is documentation.
+No new artifact-origin input is requested. The [uncached probe](artifact-origin.json)
+uses the original generated policy and signed artifact URL; the lab's owned
+non-private origin needs no private/CGNAT exception. Distinct-endpoint CA and
+private-mirror deployments remain unmeasured. The full remaining measurement
+list is in [follow-up 12](follow-up-12.md#remaining-measurements).

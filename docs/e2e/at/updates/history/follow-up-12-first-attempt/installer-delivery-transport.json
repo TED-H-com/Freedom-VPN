@@ -1,0 +1,135 @@
+{
+  "run_id": "1f2b57de-de94-470b-a88c-b462b676b710",
+  "source_commit": "c80701f25bc37a6686a455a72c83e35750fa1396",
+  "at": "2026-10-31T21:45:15.651919955Z",
+  "scope": "Route logs through installer completion, before regular enrollment; only installer result producer",
+  "logs": [
+    {
+      "time": "2026-10-31T21:44:42.046132215Z",
+      "msg": "http request",
+      "request_id": "01a193ec-0939-75e2-8b04-8a54cf2b1f0b",
+      "route": "POST /api/v1/agent/update-results",
+      "status": 202
+    },
+    {
+      "time": "2026-10-31T21:44:42.951806828Z",
+      "msg": "http request",
+      "request_id": "01a193ec-0cc5-71ab-94ce-d104a8245092",
+      "route": "POST /api/v1/agent/update-results",
+      "status": 202
+    },
+    {
+      "time": "2026-10-31T21:44:43.032065703Z",
+      "msg": "http request",
+      "request_id": "01a193ec-0d15-7a50-80ad-5f9ac7a55491",
+      "route": "POST /api/v1/agent/update-results",
+      "status": 202
+    },
+    {
+      "time": "2026-10-31T21:44:43.116962812Z",
+      "msg": "http request",
+      "request_id": "01a193ec-0d6a-7768-b109-7479f44e8a38",
+      "route": "POST /api/v1/agent/update-results",
+      "status": 202
+    },
+    {
+      "time": "2026-10-31T21:44:43.192707379Z",
+      "msg": "http request",
+      "request_id": "01a193ec-0db7-707f-b951-5a3f367137ef",
+      "route": "POST /api/v1/agent/update-results",
+      "status": 409
+    },
+    {
+      "time": "2026-10-31T21:44:43.273794598Z",
+      "msg": "http request",
+      "request_id": "01a193ec-0e07-78f2-b86c-8de5613b9a6c",
+      "route": "POST /api/v1/agent/update-results",
+      "status": 409
+    },
+    {
+      "time": "2026-10-31T21:45:13.86332747Z",
+      "msg": "http request",
+      "request_id": "01a193ec-857f-7dd8-a7c2-5c4633132c0f",
+      "route": "POST /api/v1/agent/update-results",
+      "status": 202
+    },
+    {
+      "time": "2026-10-31T21:45:14.438519216Z",
+      "msg": "http request",
+      "request_id": "01a193ec-87c3-71b5-a03b-d50b81c8072c",
+      "route": "POST /api/v1/agent/update-results",
+      "status": 202
+    },
+    {
+      "time": "2026-10-31T21:45:14.594876834Z",
+      "msg": "http request",
+      "request_id": "01a193ec-8854-7119-9c5d-69bd9456eff1",
+      "route": "POST /api/v1/agent/update-results",
+      "status": 202
+    },
+    {
+      "time": "2026-10-31T21:45:14.704302926Z",
+      "msg": "http request",
+      "request_id": "01a193ec-88cd-7bc7-b08a-7696aa40aa60",
+      "route": "POST /api/v1/agent/update-results",
+      "status": 202
+    },
+    {
+      "time": "2026-10-31T21:45:14.787780331Z",
+      "msg": "http request",
+      "request_id": "01a193ec-8921-7434-88a1-01148cdc1131",
+      "route": "POST /api/v1/agent/update-results",
+      "status": 202
+    },
+    {
+      "time": "2026-10-31T21:45:14.859566669Z",
+      "msg": "http request",
+      "request_id": "01a193ec-8968-73a2-a9f2-219d46a724b1",
+      "route": "POST /api/v1/agent/update-results",
+      "status": 202
+    },
+    {
+      "time": "2026-10-31T21:45:14.955710302Z",
+      "msg": "http request",
+      "request_id": "01a193ec-89c9-79f5-81d7-c1edb831e985",
+      "route": "POST /api/v1/agent/update-results",
+      "status": 409
+    }
+  ],
+  "manual_contract_stimuli": {
+    "success_submission": 202,
+    "keyed_exact_replay": 202,
+    "new_key_exact_replay": 202,
+    "modified_replay": 409,
+    "wrong_job_id": 409,
+    "failure_submission": 202,
+    "rollback_correction": 202,
+    "first_receipt_after_correction": 202,
+    "correction_exact_replay": 202,
+    "correction_new_key_replay": 202,
+    "third_outcome_conflict": 409
+  },
+  "automatic_result_posts": 2,
+  "automatic_success_posts": 1,
+  "automatic_failure_posts": 1,
+  "local_counts_before_manual_replays": {
+    "history": 1,
+    "outbox": 0
+  },
+  "success_ack": {
+    "accepted": true,
+    "accepted_as_history": false,
+    "applied_to_current_observation": true,
+    "observed_update_generation": "0",
+    "received_at": "2026-10-31T21:44:42.04398Z",
+    "result_id": "9c27d4bd-9a79-577f-95d7-2c2ae51945b7"
+  },
+  "repeat_flush_route_counts": {
+    "after": 1,
+    "before": 1
+  },
+  "no_repeat_flush_post": true,
+  "passed": true,
+  "capture": "docker logs fvpn-w4-updates-control; whitelist time/msg/request_id/route/status; cutoff is installer evidence timestamp",
+  "explanation": "11 explicit curl stimuli plus one automatic success and one automatic stopped-producer failure; repeated product flush adds no POST."
+}

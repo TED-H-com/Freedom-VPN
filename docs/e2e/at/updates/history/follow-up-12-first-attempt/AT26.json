@@ -1,0 +1,195 @@
+{
+  "run_id": "1f2b57de-de94-470b-a88c-b462b676b710",
+  "prefix": "w4-updates",
+  "port_base": 42000,
+  "scope": "Follow-up 12 regular-lab requested scenario; not complete original §19 acceptance or physical arm64 proof",
+  "id": "AT26",
+  "title": "Genuine candidate health failure rolls back",
+  "spec": [
+    "UPD01",
+    "UPD02",
+    "§13.4",
+    "§13.9",
+    "§13.10",
+    "§13.12"
+  ],
+  "status": "pass",
+  "at": "2026-10-31T21:52:22Z",
+  "expected": "Genuine candidate health failure rolls back",
+  "actual": "Candidate tunnel_probe failed; healthy last-good restored; one terminal rollback received a current ACK; central rolled_back, needs_attention=true and unconfirmed=false",
+  "git": "c80701f25bc37a6686a455a72c83e35750fa1396",
+  "node_incarnation": "01a193ec-99f0-7274-9e9c-3cbeb5b6afbd",
+  "commands": [
+    "make -f mk/at-updates.mk at-updates"
+  ],
+  "observations": [
+    {
+      "name": "harness_source",
+      "detail": "{\"differs_from_source_commit\":false,\"files_sha256\":{\"archive_test.go\":\"b389ec02292d56e46dd7c640520a84e5b83344bd9a0a70eb264bde50e0c00120\",\"authority_test.go\":\"64c1e1bbb6994589f6d1fbc236e020fd085c57cbb1751c71566f26743bc97ddc\",\"doc.go\":\"a43799934c9463e13de1e43c2e0f4373410be7c31421ceee8a3eb963717f6382\",\"evidence.go\":\"5f77f6740ded1f0561fd8e7496b04ca3b240f501b7146cc684aaa6d033588e85\",\"evidence_test.go\":\"eaa999300a284ba220deacae957eaab01f73fda21aab0d07481ccb958bd469cd\",\"installer_receipts_test.go\":\"d394145432282963364f92d40fc95d238a329810f01b73a00c92b606f72ee749\",\"installer_test.go\":\"1787d1d40c9f6b58d734c4108519f40145259283b7525f64ced660e5efbef64f\",\"lab_test.go\":\"fc7c87390b17b118879dfd5da57a20901f081f8c14e22b45e40d2aa8e844ade5\",\"live_test.go\":\"5cf2d38886d7f2ec3dc9054a72cffff485d1e181dc260cefc785a8e29c885b57\",\"preresult_test.go\":\"530332759bdecdde7924f3d5cf95def55682a11b13293410cd59e62a22f6bfdf\",\"probe_test.go\":\"12efbb020d4d241cd5a3738e58173988b851fb80091b404e11067c3f940d2214\",\"restated_test.go\":\"11c962259a120e5dce1045265fabdfbc87a96bae83e91ed92a2c4ef0d0b63679\"}}"
+    },
+    {
+      "name": "manifest_and_artifact_digests",
+      "detail": "{\"artifact_sha256_0.1.0_amd64\":\"cd51a2a94d7a500bdfdf2788c19210f0b54be608c27664ae2e5793b3f782dab9\",\"artifact_sha256_0.1.0_arm64\":\"837a397d43f5953b8b689fa59c662ed8f257613f3d5b4eabf77304b3d0957f24\",\"artifact_sha256_1.0.1_amd64\":\"f814cf272a5152c79bc0833c5089232d44e9a66f2a4c628f6ff5d3c55b298653\",\"artifact_sha256_1.0.1_arm64\":\"186b0808b65e160b70977213380022baed625ff86730a4294058db0183ab115b\",\"artifact_sha256_1.0.2_amd64\":\"5587e4f0bc433a880843fe7f994ddd9f1e726dd6a251c74df4eaacb5fe59a3fd\",\"artifact_sha256_1.0.2_arm64\":\"7946b8774d4b14f987ed55dd1493a91d2aea0805005cc49ee5bc15c21e244197\",\"manifest_sha256_0.1.0\":\"b88a6c5dd85f896860bb7dc54921c0df2265bb1c8317e9c0403cb8dabbe26762\",\"manifest_sha256_1.0.1\":\"94e0dbc7b7ea4bb55bb79578243c9c6ef2201bc95e532cfd5a7d311e625df4e9\",\"manifest_sha256_1.0.2\":\"a4b670cf2d2783089c9929411ed76933c6cda1aa8b0fb41df031c29944b70a55\",\"signed_manifest_sha256_0.1.0\":\"947bef6bc8093a67ef931defac8217cd21d28f803987cc78ae27cd9501e1a3f7\",\"signed_manifest_sha256_1.0.1\":\"e0dbb053213aa2a9456f857a901293c2726f1d45248049b97f3fccd9bb4996b0\",\"signed_manifest_sha256_1.0.2\":\"14ed0f1d8bcb5dbaf46dfb8283fd6d6faf26d227a293c801e85be18d4610c19f\"}"
+    },
+    {
+      "name": "support_policy_revision",
+      "detail": "\"01a193eb-886a-7e52-8ebb-095ed0aa45e9\""
+    },
+    {
+      "name": "unrelated_release",
+      "detail": "{\"digests\":{\"artifact_sha256_1.0.3_amd64\":\"571e4020446423886f1305605e7bc61e2f0748c7e85331e21e155af81c7757a1\",\"artifact_sha256_1.0.3_arm64\":\"0681a419c5b5b66e2cd475903aee17eb8659f3ad130676f1d233408980044a4a\",\"manifest_sha256_1.0.3\":\"56bb745b0752d9ea2998f49f31cdd1f5d21e3e3116c0a8eb092afb6fc1b448e4\",\"signed_manifest_sha256_1.0.3\":\"d32cffdc60b092603364c86d91c3261e2dbf2acf7f5dffbbc5ce909736aeb4f0\"},\"purpose\":\"TEST ONLY registered, never installed or made fleet default\",\"release_id\":\"01a193ec-9433-72a8-9262-385d2d2e4bf3\",\"version\":\"1.0.3\"}"
+    },
+    {
+      "name": "kernel_boot_verified",
+      "detail": "\"Read-only comparison: devstack agent boot-id input equals kernel boot_id before enrollment; updater config omits boot_id (F9-06)\""
+    },
+    {
+      "name": "accepted_unpublished_baseline",
+      "detail": "true"
+    },
+    {
+      "name": "netbird_manifest_version",
+      "detail": "\"0.82.0\""
+    },
+    {
+      "name": "release_ids",
+      "detail": "{\"boot\":\"01a193eb-7358-7378-810f-07ff3f97d3cb\",\"good\":\"01a193eb-7ba1-7042-ac75-b3a9405275ec\",\"negative\":\"01a193eb-83cd-70b6-888a-0b853f848bd5\"}"
+    },
+    {
+      "name": "batch_response",
+      "detail": "\"202\""
+    },
+    {
+      "name": "batch_id",
+      "detail": "\"01a193ed-e6ec-7711-856b-aef28ca66c62\""
+    },
+    {
+      "name": "generation",
+      "detail": "\"5\""
+    },
+    {
+      "name": "signed_intent_for_this_batch",
+      "detail": "true"
+    },
+    {
+      "name": "batch_api_without_receipt",
+      "detail": "{\"batch_id\":\"01a193ed-e6ec-7711-856b-aef28ca66c62\",\"counts\":{\"already_current\":0,\"applying\":0,\"cancelled\":0,\"checking\":0,\"downloading\":0,\"failed\":0,\"queued\":1,\"rolled_back\":0,\"succeeded\":0,\"superseded\":0,\"verifying\":0,\"waiting_online\":0},\"created_at\":\"2026-10-31T21:46:44.331517Z\",\"created_by\":\"01a193eb-69e0-72dd-ab55-69d0ec8b8b9b\",\"next_cursor\":null,\"operation_id\":\"01a193ed-e6ec-7a17-af1b-366c11ab9cd2\",\"reason\":\"TEST ONLY updates follow-up 12\",\"release_id\":\"01a193eb-7358-7378-810f-07ff3f97d3cb\",\"requires_service_restart\":true,\"state\":\"running\",\"target_count\":1,\"targets\":[{\"attempts\":1,\"candidate_health\":null,\"current_job\":{\"attempt\":1,\"error_code\":null,\"finished_at\":null,\"job_id\":\"01a193ed-e6ed-767b-a297-39941d8d0ae7\",\"recovery_required\":false,\"stage\":null,\"started_at\":null,\"state\":\"queued\"},\"current_release_id\":\"01a193eb-7ba1-7042-ac75-b3a9405275ec\",\"execution_incarnation_id\":\"01a193ec-99f0-7274-9e9c-3cbeb5b6afbd\",\"generation\":\"3\",\"health\":null,\"incarnation_at_snapshot\":\"01a193ec-99f0-7274-9e9c-3cbeb5b6afbd\",\"last_observed_at\":\"2026-10-31T21:46:43.827265Z\",\"last_result_at\":null,\"needs_attention\":false,\"node_id\":\"01a193ec-98b6-791a-8739-3b3f6192abb1\",\"node_name\":\"TEST ONLY updates\",\"online_at_snapshot\":true,\"policy_generation\":null,\"policy_refs\":null,\"previous_release_id\":null,\"retryable\":false,\"state\":\"queued\",\"target_id\":\"01a193ed-e6ed-71c9-9725-4b2bf993d502\",\"unconfirmed\":true}],\"targets_url\":\"/api/v1/admin/update-batches/01a193ed-e6ec-7711-856b-aef28ca66c62\",\"updated_at\":\"2026-10-31T21:46:44.334567Z\"}"
+    },
+    {
+      "name": "check_revision7_empty_target",
+      "detail": "true"
+    },
+    {
+      "name": "failure_stimulus",
+      "detail": "\"TEST ONLY: candidate TCP egress probe dials its own closed loopback port; no forced health values or journal writes\""
+    },
+    {
+      "name": "updater_finished",
+      "detail": "true"
+    },
+    {
+      "name": "process_updater.out",
+      "detail": "\"\""
+    },
+    {
+      "name": "process_agent.log",
+      "detail": "\"time=2026-10-31T21:47:31.124Z level=ERROR msg=\\\"updater recover\\\" err=\\\"forwarding stays blocked\\\"\\ntime=2026-10-31T21:47:31.124Z level=INFO msg=\\\"baseline write\\\" writer=agent cause=boot_unverified phase=begin mono_ns=66788640506241 generation=20\\ntime=2026-10-31T21:47:31.151Z level=INFO msg=\\\"baseline write\\\" writer=agent cause=boot_unverified phase=end mono_ns=66788667581285 succeeded=true\\ntime=2026-10-31T21:47:31.160Z level=INFO msg=\\\"usage checkpoint applied\\\"\\ntime=2026-10-31T21:47:31.160Z level=INFO msg=\\\"baseline write\\\" writer=agent cause=updater_barrier phase=begin mono_ns=66788676622533 generation=20\\ntime=2026-10-31T21:47:31.184Z level=INFO msg=\\\"baseline write\\\" writer=agent cause=updater_barrier phase=end mono_ns=66788701075602 succeeded=true\\ntime=2026-10-31T21:47:31.194Z level=INFO msg=\\\"baseline write\\\" writer=agent cause=probe_install phase=begin mono_ns=66788710780841 generation=20\\ntime=2026-10-31T21:47:31.233Z level=INFO msg=\\\"baseline write\\\" writer=agent cause=probe_install phase=end mono_ns=66788749469475 succeeded=true\\ntime=2026-10-31T21:47:31.242Z level=INFO msg=\\\"baseline write\\\" writer=agent cause=probe_clear phase=begin mono_ns=66788759303252 generation=20\\ntime=2026-10-31T21:47:31.266Z level=INFO msg=\\\"baseline write\\\" writer=agent cause=probe_clear phase=end mono_ns=66788783166896 succeeded=true\\ntime=2026-10-31T21:47:31.298Z level=INFO msg=\\\"baseline write\\\" writer=agent cause=updater_barrier phase=begin mono_ns=66788815098525 generation=20\\ntime=2026-10-31T21:47:31.329Z level=INFO msg=\\\"baseline write\\\" writer=agent cause=updater_barrier phase=end mono_ns=66788846346140 succeeded=true\\ntime=2026-10-31T21:47:31.331Z level=INFO msg=\\\"usage status available\\\"\\n\""
+    },
+    {
+      "name": "process_watchdog.log",
+      "detail": "\"{\\\"time\\\":\\\"2026-10-31T21:45:19.126153856Z\\\",\\\"level\\\":\\\"INFO\\\",\\\"msg\\\":\\\"baseline decision\\\",\\\"writer\\\":\\\"watchdog\\\",\\\"cause\\\":\\\"heartbeat_unreadable\\\",\\\"boot_id\\\":\\\"97c018d7-a925-4723-9127-83c097de1c8a\\\",\\\"mono_ns\\\":66656642511831,\\\"heartbeat_mono_ns\\\":0,\\\"policy_expires_mono_ns\\\":0,\\\"generation\\\":0,\\\"serving\\\":false,\\\"baseline_ok\\\":false}\\n{\\\"time\\\":\\\"2026-10-31T21:45:19.126214946Z\\\",\\\"level\\\":\\\"INFO\\\",\\\"msg\\\":\\\"baseline write\\\",\\\"writer\\\":\\\"watchdog\\\",\\\"phase\\\":\\\"begin\\\",\\\"cause\\\":\\\"heartbeat_unreadable\\\",\\\"mono_ns\\\":66656642584884,\\\"heartbeat_mono_ns\\\":0,\\\"policy_expires_mono_ns\\\":0,\\\"generation\\\":0}\\n{\\\"time\\\":\\\"2026-10-31T21:45:19.135572909Z\\\",\\\"level\\\":\\\"INFO\\\",\\\"msg\\\":\\\"baseline write\\\",\\\"writer\\\":\\\"watchdog\\\",\\\"phase\\\":\\\"end\\\",\\\"cause\\\":\\\"heartbeat_unreadable\\\",\\\"mono_ns\\\":66656651940415,\\\"succeeded\\\":true}\\n\""
+    },
+    {
+      "name": "executable_layout",
+      "detail": "{\"both_paths_present\":false,\"output\":\"ls: cannot access '/opt/vpn-node/current/bin/fvpn-agent': No such file or directory\\n-rwxr-xr-x 1 root root 20636105 Oct 31 21:46 /opt/vpn-node/current/fvpn-agent\\n\"}"
+    },
+    {
+      "name": "product_outbox_flush_success",
+      "detail": "true"
+    },
+    {
+      "name": "product_outbox_flush_output",
+      "detail": "\"\""
+    },
+    {
+      "name": "journal",
+      "detail": "{\"txn_id\":\"01a193ee-1182-7c23-89de-6caf4110605e\",\"stage\":\"rolled_back\",\"error\":\"HEALTH_CHECK_FAILED\",\"error_stage\":\"check\",\"events\":[\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"{\\\"kind\\\":\\\"health_attest\\\",\\\"phase\\\":\\\"candidate\\\",\\\"statuses\\\":{\\\"dns_policy\\\":\\\"passed\\\",\\\"identity_and_state\\\":\\\"passed\\\",\\\"internet_only\\\":\\\"passed\\\",\\\"processes\\\":\\\"passed\\\",\\\"tunnel_probe\\\":\\\"failed\\\"},\\\"internet_only_reason\\\":\\\"baseline held\\\",\\\"dns_policy_reason\\\":\\\"policy in force\\\",\\\"tunnel_probe_reason\\\":\\\"overlay_partial\\\",\\\"agent_internet_only\\\":\\\"passed\\\",\\\"agent_dns_policy\\\":\\\"passed\\\",\\\"agent_tunnel_probe\\\":\\\"failed\\\",\\\"agent_version\\\":\\\"0.1.0\\\",\\\"netbird_version\\\":\\\"0.82.0\\\",\\\"published\\\":\\\"unpublished\\\",\\\"updater_version_check\\\":\\\"tree_hash_only\\\",\\\"enforcement_version_check\\\":\\\"tree_hash_only\\\"}\",\"\",\"{\\\"kind\\\":\\\"health_attest\\\",\\\"phase\\\":\\\"rollback\\\",\\\"statuses\\\":{\\\"dns_policy\\\":\\\"passed\\\",\\\"identity_and_state\\\":\\\"passed\\\",\\\"internet_only\\\":\\\"passed\\\",\\\"processes\\\":\\\"passed\\\",\\\"tunnel_probe\\\":\\\"passed\\\"},\\\"internet_only_reason\\\":\\\"baseline held\\\",\\\"dns_policy_reason\\\":\\\"policy in force\\\",\\\"tunnel_probe_reason\\\":\\\"overlay_up\\\",\\\"agent_internet_only\\\":\\\"passed\\\",\\\"agent_dns_policy\\\":\\\"passed\\\",\\\"agent_tunnel_probe\\\":\\\"passed\\\",\\\"agent_version\\\":\\\"1.0.1\\\",\\\"netbird_version\\\":\\\"0.82.0\\\",\\\"published\\\":\\\"unpublished\\\",\\\"updater_version_check\\\":\\\"tree_hash_only\\\",\\\"enforcement_version_check\\\":\\\"tree_hash_only\\\"}\",\"\"],\"job_error\":\"HEALTH_CHECK_FAILED\",\"current\":\"01a193eb-7ba1-7042-ac75-b3a9405275ec\",\"last_good\":\"01a193eb-7ba1-7042-ac75-b3a9405275ec\",\"health\":{\"dns_policy\":\"passed\",\"identity_and_state\":\"passed\",\"internet_only\":\"passed\",\"processes\":\"passed\",\"tunnel_probe\":\"passed\"},\"candidate_health\":{\"dns_policy\":\"passed\",\"identity_and_state\":\"passed\",\"internet_only\":\"passed\",\"processes\":\"passed\",\"tunnel_probe\":\"failed\"},\"attestations\":[{\"agent_dns_policy\":\"passed\",\"agent_internet_only\":\"passed\",\"agent_tunnel_probe\":\"failed\",\"agent_version\":\"0.1.0\",\"dns_policy_reason\":\"policy in force\",\"internet_only_reason\":\"baseline held\",\"kind\":\"health_attest\",\"netbird_version\":\"0.82.0\",\"phase\":\"candidate\",\"published\":\"unpublished\",\"tunnel_probe_reason\":\"overlay_partial\"},{\"agent_dns_policy\":\"passed\",\"agent_internet_only\":\"passed\",\"agent_tunnel_probe\":\"passed\",\"agent_version\":\"1.0.1\",\"dns_policy_reason\":\"policy in force\",\"internet_only_reason\":\"baseline held\",\"kind\":\"health_attest\",\"netbird_version\":\"0.82.0\",\"phase\":\"rollback\",\"published\":\"unpublished\",\"tunnel_probe_reason\":\"overlay_up\"}],\"outbox_state\":\"\",\"outbox_status\":\"\",\"outbox_error\":\"\"}"
+    },
+    {
+      "name": "expected_last_good_release",
+      "detail": "\"01a193eb-7ba1-7042-ac75-b3a9405275ec\""
+    },
+    {
+      "name": "last_good_process_restored",
+      "detail": "true"
+    },
+    {
+      "name": "central",
+      "detail": "{\"state\":\"rolled_back\",\"unconfirmed\":false,\"needs_attention\":true,\"current_release\":\"01a193eb-7ba1-7042-ac75-b3a9405275ec\",\"error_code\":\"HEALTH_CHECK_FAILED\"}"
+    },
+    {
+      "name": "batch_api_status",
+      "detail": "200"
+    },
+    {
+      "name": "batch_api_response",
+      "detail": "{\"batch_id\":\"01a193ed-e6ec-7711-856b-aef28ca66c62\",\"counts\":{\"already_current\":0,\"applying\":0,\"cancelled\":0,\"checking\":0,\"downloading\":0,\"failed\":0,\"queued\":0,\"rolled_back\":1,\"succeeded\":0,\"superseded\":0,\"verifying\":0,\"waiting_online\":0},\"created_at\":\"2026-10-31T21:46:44.331517Z\",\"created_by\":\"01a193eb-69e0-72dd-ab55-69d0ec8b8b9b\",\"next_cursor\":null,\"operation_id\":\"01a193ed-e6ec-7a17-af1b-366c11ab9cd2\",\"reason\":\"TEST ONLY updates follow-up 12\",\"release_id\":\"01a193eb-7358-7378-810f-07ff3f97d3cb\",\"requires_service_restart\":true,\"state\":\"completed_with_exceptions\",\"target_count\":1,\"targets\":[{\"attempts\":1,\"candidate_health\":{\"dns_policy\":\"passed\",\"identity_and_state\":\"passed\",\"internet_only\":\"passed\",\"processes\":\"passed\",\"tunnel_probe\":\"failed\"},\"current_job\":{\"attempt\":1,\"error_code\":\"HEALTH_CHECK_FAILED\",\"finished_at\":\"2026-10-31T21:47:31.455593Z\",\"job_id\":\"01a193ed-e6ed-767b-a297-39941d8d0ae7\",\"recovery_required\":false,\"stage\":\"report\",\"started_at\":\"2026-10-31T21:47:31.455593Z\",\"state\":\"rolled_back\"},\"current_release_id\":\"01a193eb-7ba1-7042-ac75-b3a9405275ec\",\"execution_incarnation_id\":\"01a193ec-99f0-7274-9e9c-3cbeb5b6afbd\",\"generation\":\"3\",\"health\":{\"dns_policy\":\"passed\",\"identity_and_state\":\"passed\",\"internet_only\":\"passed\",\"processes\":\"passed\",\"tunnel_probe\":\"passed\"},\"incarnation_at_snapshot\":\"01a193ec-99f0-7274-9e9c-3cbeb5b6afbd\",\"last_observed_at\":\"2026-10-31T21:47:36.351193Z\",\"last_result_at\":\"2026-10-31T21:47:31.455593Z\",\"needs_attention\":true,\"node_id\":\"01a193ec-98b6-791a-8739-3b3f6192abb1\",\"node_name\":\"TEST ONLY updates\",\"online_at_snapshot\":true,\"policy_generation\":\"12\",\"policy_refs\":[\"01a193eb-886a-7e52-8ebb-095ed0aa45e9\",\"01a193eb-e00e-7e8a-83dc-30ae12e051af\"],\"previous_release_id\":\"01a193eb-7358-7378-810f-07ff3f97d3cb\",\"retryable\":false,\"state\":\"rolled_back\",\"target_id\":\"01a193ed-e6ed-71c9-9725-4b2bf993d502\",\"unconfirmed\":false}],\"targets_url\":\"/api/v1/admin/update-batches/01a193ed-e6ec-7711-856b-aef28ca66c62\",\"updated_at\":\"2026-10-31T21:47:31.457763Z\"}"
+    },
+    {
+      "name": "confirmation_projection",
+      "detail": "{\"current_job\":{\"state\":\"rolled_back\",\"generation\":\"3\",\"last_result_at\":\"2026-10-31T21:47:31.455593+00:00\"},\"fleet_observed_at\":\"2026-10-31T21:47:36.351193+00:00\",\"fleet_received_at\":\"2026-10-31T21:47:36.356509+00:00\",\"fleet_update_generation\":\"3\",\"latest_node_observation\":{\"update\":{\"stage\":\"report\",\"state\":\"rolled_back\",\"job_id\":\"01a193ed-e6ed-767b-a297-39941d8d0ae7\",\"generation\":\"3\"},\"observed_at\":\"2026-10-31T21:47:36.351193+00:00\",\"received_at\":\"2026-10-31T21:47:36.356509+00:00\"}}"
+    },
+    {
+      "name": "central_result_receipts",
+      "detail": "[{\"payload\":{\"stage\":\"report\",\"state\":\"rolled_back\",\"health\":{\"processes\":\"passed\",\"dns_policy\":\"passed\",\"tunnel_probe\":\"passed\",\"internet_only\":\"passed\",\"identity_and_state\":\"passed\"},\"job_id\":\"01a193ed-e6ed-767b-a297-39941d8d0ae7\",\"attempt\":1,\"boot_id\":\"97c018d7-a925-4723-9127-83c097de1c8a\",\"node_id\":\"01a193ec-98b6-791a-8739-3b3f6192abb1\",\"batch_id\":\"01a193ed-e6ec-7711-856b-aef28ca66c62\",\"result_id\":\"047d88aa-9743-561d-b16e-ca1cd68c3967\",\"target_id\":\"01a193ed-e6ed-71c9-9725-4b2bf993d502\",\"error_code\":\"HEALTH_CHECK_FAILED\",\"generation\":\"3\",\"started_at\":\"2026-10-31T21:46:55Z\",\"finished_at\":\"2026-10-31T21:47:31Z\",\"payload_hash\":\"dcb4146eb8926aa60e4f648632b2506dd68e42a003d8dd545255c1ad687fc3ff\",\"incarnation_id\":\"01a193ec-99f0-7274-9e9c-3cbeb5b6afbd\",\"manifest_sha256\":\"b88a6c5dd85f896860bb7dc54921c0df2265bb1c8317e9c0403cb8dabbe26762\",\"candidate_health\":{\"processes\":\"passed\",\"dns_policy\":\"passed\",\"tunnel_probe\":\"failed\",\"internet_only\":\"passed\",\"identity_and_state\":\"passed\"},\"usage_checkpoint\":{\"new_meter_epoch_id\":\"01a193ee-2430-7347-a533-9456a51dabc7\",\"central_acked_through\":\"0\",\"closed_meter_epoch_id\":\"01a193ed-6a67-7db1-86ec-12632debbd41\",\"last_durable_event_seq\":\"0\"},\"policy_generation\":\"12\",\"recovery_required\":false,\"current_release_id\":\"01a193eb-7ba1-7042-ac75-b3a9405275ec\",\"publication_intent\":\"unpublished\",\"previous_release_id\":\"01a193eb-7358-7378-810f-07ff3f97d3cb\",\"requested_release_id\":\"01a193eb-7358-7378-810f-07ff3f97d3cb\",\"state_schema_version\":1,\"member_forwarding_enabled\":false},\"response\":{\"accepted\":true,\"result_id\":\"047d88aa-9743-561d-b16e-ca1cd68c3967\",\"received_at\":\"2026-10-31T21:47:31.456358194Z\",\"accepted_as_history\":false,\"observed_update_generation\":\"3\",\"applied_to_current_observation\":false},\"payload_sha256\":\"dcb4146eb8926aa60e4f648632b2506dd68e42a003d8dd545255c1ad687fc3ff\"}]"
+    },
+    {
+      "name": "product_journal_snapshot",
+      "detail": "{\"generation\":\"3\",\"job_id\":\"01a193ed-e6ed-767b-a297-39941d8d0ae7\",\"requested_release_id\":\"01a193eb-7358-7378-810f-07ff3f97d3cb\",\"stage\":\"report\",\"state\":\"rolled_back\",\"journal_stage\":\"rolled_back\",\"current_release_id\":\"01a193eb-7ba1-7042-ac75-b3a9405275ec\",\"last_good_release_id\":\"01a193eb-7ba1-7042-ac75-b3a9405275ec\",\"recovery_required\":false,\"last_result_state\":\"rolled_back\",\"last_rejection\":null,\"health\":{\"dns_policy\":\"passed\",\"identity_and_state\":\"passed\",\"internet_only\":\"passed\",\"processes\":\"passed\",\"tunnel_probe\":\"passed\"},\"candidate_health_json\":{\"dns_policy\":\"passed\",\"identity_and_state\":\"passed\",\"internet_only\":\"passed\",\"processes\":\"passed\",\"tunnel_probe\":\"failed\"},\"candidate_health\":{\"dns_policy\":\"passed\",\"identity_and_state\":\"passed\",\"internet_only\":\"passed\",\"processes\":\"passed\",\"tunnel_probe\":\"failed\"}}"
+    },
+    {
+      "name": "rollback_allowed_release_ids",
+      "detail": "[]"
+    },
+    {
+      "name": "revision7_batch_api_response",
+      "detail": "{\"batch_id\":\"01a193ed-e6ec-7711-856b-aef28ca66c62\",\"counts\":{\"already_current\":0,\"applying\":0,\"cancelled\":0,\"checking\":0,\"downloading\":0,\"failed\":0,\"queued\":0,\"rolled_back\":1,\"succeeded\":0,\"superseded\":0,\"verifying\":0,\"waiting_online\":0},\"created_at\":\"2026-10-31T21:46:44.331517Z\",\"created_by\":\"01a193eb-69e0-72dd-ab55-69d0ec8b8b9b\",\"next_cursor\":null,\"operation_id\":\"01a193ed-e6ec-7a17-af1b-366c11ab9cd2\",\"reason\":\"TEST ONLY updates follow-up 12\",\"release_id\":\"01a193eb-7358-7378-810f-07ff3f97d3cb\",\"requires_service_restart\":true,\"state\":\"completed_with_exceptions\",\"target_count\":1,\"targets\":[{\"attempts\":1,\"candidate_health\":{\"dns_policy\":\"passed\",\"identity_and_state\":\"passed\",\"internet_only\":\"passed\",\"processes\":\"passed\",\"tunnel_probe\":\"failed\"},\"current_job\":{\"attempt\":1,\"error_code\":\"HEALTH_CHECK_FAILED\",\"finished_at\":\"2026-10-31T21:47:31.455593Z\",\"job_id\":\"01a193ed-e6ed-767b-a297-39941d8d0ae7\",\"recovery_required\":false,\"stage\":\"report\",\"started_at\":\"2026-10-31T21:47:31.455593Z\",\"state\":\"rolled_back\"},\"current_release_id\":\"01a193eb-7ba1-7042-ac75-b3a9405275ec\",\"execution_incarnation_id\":\"01a193ec-99f0-7274-9e9c-3cbeb5b6afbd\",\"generation\":\"3\",\"health\":{\"dns_policy\":\"passed\",\"identity_and_state\":\"passed\",\"internet_only\":\"passed\",\"processes\":\"passed\",\"tunnel_probe\":\"passed\"},\"incarnation_at_snapshot\":\"01a193ec-99f0-7274-9e9c-3cbeb5b6afbd\",\"last_observed_at\":\"2026-10-31T21:47:36.351193Z\",\"last_result_at\":\"2026-10-31T21:47:31.455593Z\",\"needs_attention\":true,\"node_id\":\"01a193ec-98b6-791a-8739-3b3f6192abb1\",\"node_name\":\"TEST ONLY updates\",\"online_at_snapshot\":true,\"policy_generation\":\"12\",\"policy_refs\":[\"01a193eb-886a-7e52-8ebb-095ed0aa45e9\",\"01a193eb-e00e-7e8a-83dc-30ae12e051af\"],\"previous_release_id\":\"01a193eb-7358-7378-810f-07ff3f97d3cb\",\"retryable\":false,\"state\":\"rolled_back\",\"target_id\":\"01a193ed-e6ed-71c9-9725-4b2bf993d502\",\"unconfirmed\":false}],\"targets_url\":\"/api/v1/admin/update-batches/01a193ed-e6ec-7711-856b-aef28ca66c62\",\"updated_at\":\"2026-10-31T21:47:31.457763Z\"}"
+    },
+    {
+      "name": "check_revision7_rollback_target",
+      "detail": "true"
+    },
+    {
+      "name": "conflict_1_replay_0",
+      "detail": "{\"http_status\":409,\"request\":{\"attempt\":1,\"batch_id\":\"01a193ed-e6ec-7711-856b-aef28ca66c62\",\"boot_id\":\"ea6d33f4-0162-4f11-942b-a913cb0d96be\",\"candidate_health\":{\"processes\":\"passed\",\"dns_policy\":\"passed\",\"tunnel_probe\":\"failed\",\"internet_only\":\"passed\",\"identity_and_state\":\"passed\"},\"current_release_id\":\"01a193eb-7ba1-7042-ac75-b3a9405275ec\",\"error_code\":\"HEALTH_CHECK_FAILED\",\"finished_at\":\"2026-10-31T21:47:31Z\",\"generation\":\"3\",\"health\":{\"processes\":\"passed\",\"dns_policy\":\"passed\",\"tunnel_probe\":\"passed\",\"internet_only\":\"passed\",\"identity_and_state\":\"passed\"},\"incarnation_id\":\"01a193ec-99f0-7274-9e9c-3cbeb5b6afbd\",\"job_id\":\"01a193ed-e6ed-767b-a297-39941d8d0ae7\",\"manifest_sha256\":\"b88a6c5dd85f896860bb7dc54921c0df2265bb1c8317e9c0403cb8dabbe26762\",\"member_forwarding_enabled\":false,\"node_id\":\"01a193ec-98b6-791a-8739-3b3f6192abb1\",\"payload_hash\":\"76d4d84950a0c34a15eb3b9f925c1aaedc08d4ad70a7b8c9ea501d84933f27bd\",\"policy_generation\":\"12\",\"previous_release_id\":\"01a193eb-7358-7378-810f-07ff3f97d3cb\",\"publication_intent\":\"unpublished\",\"recovery_required\":false,\"requested_release_id\":\"01a193eb-7358-7378-810f-07ff3f97d3cb\",\"result_id\":\"047d88aa-9743-561d-b16e-ca1cd68c3967\",\"stage\":\"report\",\"started_at\":\"2026-10-31T21:46:55Z\",\"state\":\"rolled_back\",\"state_schema_version\":1,\"target_id\":\"01a193ed-e6ed-71c9-9725-4b2bf993d502\",\"usage_checkpoint\":{\"new_meter_epoch_id\":\"01a193ee-2430-7347-a533-9456a51dabc7\",\"central_acked_through\":\"0\",\"closed_meter_epoch_id\":\"01a193ed-6a67-7db1-86ec-12632debbd41\",\"last_durable_event_seq\":\"0\"}},\"response\":{\"error\":{\"code\":\"ACK_CONFLICT\",\"message\":\"Result ID already has different content\",\"request_id\":\"01a193ee-ef51-75c7-94b5-e3766128530d\",\"retryable\":true,\"details\":{}}}}"
+    },
+    {
+      "name": "conflict_2_replay_0",
+      "detail": "{\"http_status\":409,\"request\":{\"attempt\":1,\"batch_id\":\"01a193ed-e6ec-7711-856b-aef28ca66c62\",\"boot_id\":\"42bfa576-7f7b-4a17-89e7-bcceba398958\",\"candidate_health\":{\"processes\":\"passed\",\"dns_policy\":\"passed\",\"tunnel_probe\":\"failed\",\"internet_only\":\"passed\",\"identity_and_state\":\"passed\"},\"current_release_id\":\"01a193eb-7ba1-7042-ac75-b3a9405275ec\",\"error_code\":\"HEALTH_CHECK_FAILED\",\"finished_at\":\"2026-10-31T21:47:31Z\",\"generation\":\"3\",\"health\":{\"processes\":\"passed\",\"dns_policy\":\"passed\",\"tunnel_probe\":\"passed\",\"internet_only\":\"passed\",\"identity_and_state\":\"passed\"},\"incarnation_id\":\"01a193ec-99f0-7274-9e9c-3cbeb5b6afbd\",\"job_id\":\"01a193ed-e6ed-767b-a297-39941d8d0ae7\",\"manifest_sha256\":\"b88a6c5dd85f896860bb7dc54921c0df2265bb1c8317e9c0403cb8dabbe26762\",\"member_forwarding_enabled\":false,\"node_id\":\"01a193ec-98b6-791a-8739-3b3f6192abb1\",\"payload_hash\":\"39d42e71c6bba9647195887af50a8acb35358d036d7d6d11c23c53b85e589dc6\",\"policy_generation\":\"12\",\"previous_release_id\":\"01a193eb-7358-7378-810f-07ff3f97d3cb\",\"publication_intent\":\"unpublished\",\"recovery_required\":false,\"requested_release_id\":\"01a193eb-7358-7378-810f-07ff3f97d3cb\",\"result_id\":\"047d88aa-9743-561d-b16e-ca1cd68c3967\",\"stage\":\"report\",\"started_at\":\"2026-10-31T21:46:55Z\",\"state\":\"rolled_back\",\"state_schema_version\":1,\"target_id\":\"01a193ed-e6ed-71c9-9725-4b2bf993d502\",\"usage_checkpoint\":{\"new_meter_epoch_id\":\"01a193ee-2430-7347-a533-9456a51dabc7\",\"central_acked_through\":\"0\",\"closed_meter_epoch_id\":\"01a193ed-6a67-7db1-86ec-12632debbd41\",\"last_durable_event_seq\":\"0\"}},\"response\":{\"error\":{\"code\":\"ACK_CONFLICT\",\"message\":\"Result ID already has different content\",\"request_id\":\"01a193ee-f74d-744b-887a-ff55624366a1\",\"retryable\":true,\"details\":{}}}}"
+    },
+    {
+      "name": "conflict_2_replay_1",
+      "detail": "{\"http_status\":409,\"request\":{\"attempt\":1,\"batch_id\":\"01a193ed-e6ec-7711-856b-aef28ca66c62\",\"boot_id\":\"42bfa576-7f7b-4a17-89e7-bcceba398958\",\"candidate_health\":{\"processes\":\"passed\",\"dns_policy\":\"passed\",\"tunnel_probe\":\"failed\",\"internet_only\":\"passed\",\"identity_and_state\":\"passed\"},\"current_release_id\":\"01a193eb-7ba1-7042-ac75-b3a9405275ec\",\"error_code\":\"HEALTH_CHECK_FAILED\",\"finished_at\":\"2026-10-31T21:47:31Z\",\"generation\":\"3\",\"health\":{\"processes\":\"passed\",\"dns_policy\":\"passed\",\"tunnel_probe\":\"passed\",\"internet_only\":\"passed\",\"identity_and_state\":\"passed\"},\"incarnation_id\":\"01a193ec-99f0-7274-9e9c-3cbeb5b6afbd\",\"job_id\":\"01a193ed-e6ed-767b-a297-39941d8d0ae7\",\"manifest_sha256\":\"b88a6c5dd85f896860bb7dc54921c0df2265bb1c8317e9c0403cb8dabbe26762\",\"member_forwarding_enabled\":false,\"node_id\":\"01a193ec-98b6-791a-8739-3b3f6192abb1\",\"payload_hash\":\"39d42e71c6bba9647195887af50a8acb35358d036d7d6d11c23c53b85e589dc6\",\"policy_generation\":\"12\",\"previous_release_id\":\"01a193eb-7358-7378-810f-07ff3f97d3cb\",\"publication_intent\":\"unpublished\",\"recovery_required\":false,\"requested_release_id\":\"01a193eb-7358-7378-810f-07ff3f97d3cb\",\"result_id\":\"047d88aa-9743-561d-b16e-ca1cd68c3967\",\"stage\":\"report\",\"started_at\":\"2026-10-31T21:46:55Z\",\"state\":\"rolled_back\",\"state_schema_version\":1,\"target_id\":\"01a193ed-e6ed-71c9-9725-4b2bf993d502\",\"usage_checkpoint\":{\"new_meter_epoch_id\":\"01a193ee-2430-7347-a533-9456a51dabc7\",\"central_acked_through\":\"0\",\"closed_meter_epoch_id\":\"01a193ed-6a67-7db1-86ec-12632debbd41\",\"last_durable_event_seq\":\"0\"}},\"response\":{\"error\":{\"code\":\"ACK_CONFLICT\",\"message\":\"Result ID already has different content\",\"request_id\":\"01a193ee-ff4f-79d4-87bf-848d1bc5ca59\",\"retryable\":true,\"details\":{}}}}"
+    },
+    {
+      "name": "conflict_2_replay_2",
+      "detail": "{\"http_status\":409,\"request\":{\"attempt\":1,\"batch_id\":\"01a193ed-e6ec-7711-856b-aef28ca66c62\",\"boot_id\":\"42bfa576-7f7b-4a17-89e7-bcceba398958\",\"candidate_health\":{\"processes\":\"passed\",\"dns_policy\":\"passed\",\"tunnel_probe\":\"failed\",\"internet_only\":\"passed\",\"identity_and_state\":\"passed\"},\"current_release_id\":\"01a193eb-7ba1-7042-ac75-b3a9405275ec\",\"error_code\":\"HEALTH_CHECK_FAILED\",\"finished_at\":\"2026-10-31T21:47:31Z\",\"generation\":\"3\",\"health\":{\"processes\":\"passed\",\"dns_policy\":\"passed\",\"tunnel_probe\":\"passed\",\"internet_only\":\"passed\",\"identity_and_state\":\"passed\"},\"incarnation_id\":\"01a193ec-99f0-7274-9e9c-3cbeb5b6afbd\",\"job_id\":\"01a193ed-e6ed-767b-a297-39941d8d0ae7\",\"manifest_sha256\":\"b88a6c5dd85f896860bb7dc54921c0df2265bb1c8317e9c0403cb8dabbe26762\",\"member_forwarding_enabled\":false,\"node_id\":\"01a193ec-98b6-791a-8739-3b3f6192abb1\",\"payload_hash\":\"39d42e71c6bba9647195887af50a8acb35358d036d7d6d11c23c53b85e589dc6\",\"policy_generation\":\"12\",\"previous_release_id\":\"01a193eb-7358-7378-810f-07ff3f97d3cb\",\"publication_intent\":\"unpublished\",\"recovery_required\":false,\"requested_release_id\":\"01a193eb-7358-7378-810f-07ff3f97d3cb\",\"result_id\":\"047d88aa-9743-561d-b16e-ca1cd68c3967\",\"stage\":\"report\",\"started_at\":\"2026-10-31T21:46:55Z\",\"state\":\"rolled_back\",\"state_schema_version\":1,\"target_id\":\"01a193ed-e6ed-71c9-9725-4b2bf993d502\",\"usage_checkpoint\":{\"new_meter_epoch_id\":\"01a193ee-2430-7347-a533-9456a51dabc7\",\"central_acked_through\":\"0\",\"closed_meter_epoch_id\":\"01a193ed-6a67-7db1-86ec-12632debbd41\",\"last_durable_event_seq\":\"0\"}},\"response\":{\"error\":{\"code\":\"ACK_CONFLICT\",\"message\":\"Result ID already has different content\",\"request_id\":\"01a193ef-074f-7cca-9811-255d43ee4aef\",\"retryable\":true,\"details\":{}}}}"
+    },
+    {
+      "name": "conflict_2_replay_3",
+      "detail": "{\"http_status\":409,\"request\":{\"attempt\":1,\"batch_id\":\"01a193ed-e6ec-7711-856b-aef28ca66c62\",\"boot_id\":\"42bfa576-7f7b-4a17-89e7-bcceba398958\",\"candidate_health\":{\"processes\":\"passed\",\"dns_policy\":\"passed\",\"tunnel_probe\":\"failed\",\"internet_only\":\"passed\",\"identity_and_state\":\"passed\"},\"current_release_id\":\"01a193eb-7ba1-7042-ac75-b3a9405275ec\",\"error_code\":\"HEALTH_CHECK_FAILED\",\"finished_at\":\"2026-10-31T21:47:31Z\",\"generation\":\"3\",\"health\":{\"processes\":\"passed\",\"dns_policy\":\"passed\",\"tunnel_probe\":\"passed\",\"internet_only\":\"passed\",\"identity_and_state\":\"passed\"},\"incarnation_id\":\"01a193ec-99f0-7274-9e9c-3cbeb5b6afbd\",\"job_id\":\"01a193ed-e6ed-767b-a297-39941d8d0ae7\",\"manifest_sha256\":\"b88a6c5dd85f896860bb7dc54921c0df2265bb1c8317e9c0403cb8dabbe26762\",\"member_forwarding_enabled\":false,\"node_id\":\"01a193ec-98b6-791a-8739-3b3f6192abb1\",\"payload_hash\":\"39d42e71c6bba9647195887af50a8acb35358d036d7d6d11c23c53b85e589dc6\",\"policy_generation\":\"12\",\"previous_release_id\":\"01a193eb-7358-7378-810f-07ff3f97d3cb\",\"publication_intent\":\"unpublished\",\"recovery_required\":false,\"requested_release_id\":\"01a193eb-7358-7378-810f-07ff3f97d3cb\",\"result_id\":\"047d88aa-9743-561d-b16e-ca1cd68c3967\",\"stage\":\"report\",\"started_at\":\"2026-10-31T21:46:55Z\",\"state\":\"rolled_back\",\"state_schema_version\":1,\"target_id\":\"01a193ed-e6ed-71c9-9725-4b2bf993d502\",\"usage_checkpoint\":{\"new_meter_epoch_id\":\"01a193ee-2430-7347-a533-9456a51dabc7\",\"central_acked_through\":\"0\",\"closed_meter_epoch_id\":\"01a193ed-6a67-7db1-86ec-12632debbd41\",\"last_durable_event_seq\":\"0\"}},\"response\":{\"error\":{\"code\":\"ACK_CONFLICT\",\"message\":\"Result ID already has different content\",\"request_id\":\"01a193ef-0f4f-768f-973c-a3a61a47996b\",\"retryable\":true,\"details\":{}}}}"
+    },
+    {
+      "name": "conflict_persistence_counts",
+      "detail": "{\"audits\":{\"39d42e71c6bba9647195887af50a8acb35358d036d7d6d11c23c53b85e589dc6\":1,\"76d4d84950a0c34a15eb3b9f925c1aaedc08d4ad70a7b8c9ea501d84933f27bd\":1},\"conflicts\":{\"39d42e71c6bba9647195887af50a8acb35358d036d7d6d11c23c53b85e589dc6\":1,\"76d4d84950a0c34a15eb3b9f925c1aaedc08d4ad70a7b8c9ea501d84933f27bd\":1}}"
+    },
+    {
+      "name": "accepted_receipt_unchanged",
+      "detail": "true"
+    },
+    {
+      "name": "check_conflict_bounds",
+      "detail": "true"
+    }
+  ]
+}

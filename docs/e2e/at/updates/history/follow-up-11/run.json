@@ -1,0 +1,26 @@
+{
+  "run_id": "daddad24-b6f7-4c32-ba8e-1c7d24f76ea2",
+  "source_commit": "3ac13f7e115edf22e2ec9d3a6450733ec1fb7b6a",
+  "product_main": "96ec0630e4834e13a3a14d65553ba8108bb5da55",
+  "at": "2026-10-31T18:24:55Z",
+  "prefix": "w4-updates",
+  "port_base": 42000,
+  "regular_cases": {
+    "AT23": "pass",
+    "AT24": "pass",
+    "AT25": "pass",
+    "AT26": "pass",
+    "AT27": "pass"
+  },
+  "installer_extension": "pass",
+  "installer_required_checks": 27,
+  "live_make_exit": 0,
+  "live_go_test_exit": 0,
+  "live_go_test_seconds": 511.968,
+  "product_sources_changed": false,
+  "pass_claims": "Only this live run; scoped regular sequence plus generated installer reporting. Physical rollback witness in AT27 is the real AT26 transaction, not the TEST ONLY installer HTTP correction.",
+  "requests": [
+    "F11-01",
+    "F11-02"
+  ]
+}

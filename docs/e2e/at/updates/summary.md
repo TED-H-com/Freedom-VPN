@@ -1,8 +1,8 @@
-# Updates follow-up 11
+# Updates follow-up 12
 
-Run: daddad24-b6f7-4c32-ba8e-1c7d24f76ea2
+Run: 2babf9b6-86a3-489d-a678-0bd447f2f8b0
 
-Source: 3ac13f7e115edf22e2ec9d3a6450733ec1fb7b6a
+Source: 5b2ae0748bbbffb0d370d4842bb0623e74e844b7
 
 These labels follow the orchestrator's follow-up scenario list. They do not redefine the broader §19 cases. Physical arm64 execution and the full original §19 population remain outside this run. Both architectures contain compiled real binaries.
 
@@ -14,4 +14,4 @@ These labels follow the orchestrator's follow-up scenario list. They do not rede
 | [AT26](AT26.md) | pass | Candidate tunnel_probe failed; healthy last-good restored; one terminal rollback received a current ACK; central rolled_back, needs_attention=true and unconfirmed=false |
 | [AT27](AT27.md) | pass | Fresh unexpected release audited once; accepted releases never seeded or audited by that path; mismatches withhold confirmation; stale ACK replay preserves the newer job |
 
-See [current requests](requests.md) and the [follow-up 10 archive](history/follow-up-10/ARCHIVE.md).
+See [current requests](requests.md) and the [follow-up 11 archive](history/follow-up-11/ARCHIVE.md).

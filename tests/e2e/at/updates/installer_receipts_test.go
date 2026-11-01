@@ -7,6 +7,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"os/exec"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -215,8 +216,14 @@ func (h *handoffRun) resultAcceptance(node string, candidate e2e.BuiltRelease, r
 		h.note("generated_local_ack", document([]byte(ackJSON)))
 		h.note("generated_central_receipt_and_ack", central)
 		h.note("generated_delivery_counts", map[string]int{"outbox": outboxCount, "history": historyCount})
+		postsBefore := h.resultRouteCount()
 		flush := h.run("generated_repeat_flush", installedUpdater, "flush", "--config", installerConfig)
 		afterGenerated := h.central("central_generated_after_flush", node)
+		postsAfter := h.resultRouteCount()
+		h.note("generated_repeat_flush_route_counts", map[string]int{"before": postsBefore, "after": postsAfter})
+		if postsBefore != 1 || postsAfter != postsBefore {
+			h.s.r.t.Error("repeat flush route count differs from the single automatic success POST")
+		}
 		h.check("generated_delivery", err == nil && errOutbox == nil && errHistory == nil && outboxCount == 0 && historyCount == 1 && hash == result.text("payload_hash") && sameJSON(marshalDoc(result), central["payload"]) && sameJSON([]byte(ackJSON), central["ack"]) && installerCentralSuccess(beforeGenerated, candidate.ID.String()) && flush.Exit == 0 && sameJSON(marshalDoc(beforeGenerated), marshalDoc(afterGenerated)))
 	}
 	key := uuid.NewString()
@@ -241,6 +248,22 @@ func (h *handoffRun) resultAcceptance(node string, candidate e2e.BuiltRelease, r
 	afterWrong := h.central("central_after_wrong_job", node)
 	h.check("wrong_job", wrongAck.status == 409 && errDoc.text("code") == "STATE_CONFLICT" && document(errDoc["details"]).text("reason") == "job_id_mismatch" && beforeReplay.text("resource_version") == afterWrong.text("resource_version"))
 	return ack, key
+}
+
+// Count transport requests independently from central's idempotent storage.
+// Before regular enrollment, only this installer can submit update results.
+func (h *handoffRun) resultRouteCount() int {
+	raw, err := exec.CommandContext(h.s.ctx, "docker", "logs", h.s.r.lab.prefix+"-control").CombinedOutput()
+	if err != nil {
+		return -1
+	}
+	count := 0
+	for _, line := range strings.Split(string(raw), "\n") {
+		if document([]byte(line)).text("route") == "POST /api/v1/agent/update-results" {
+			count++
+		}
+	}
+	return count
 }
 
 func (h *handoffRun) resultCorrection(node string, baseline, candidate e2e.BuiltRelease, result updateDocument, ack installerHTTP, key string) {

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Foreground acceptance runner; disk scratch and cleanup without shell traps."""
 import os
+import time
 from pathlib import Path
 import shutil
 import subprocess
@@ -32,17 +33,23 @@ def main():
                 code = run(['make', '-f', 'mk/e2e.mk', 'e2e-up', 'E2E_RESET=1'], env)
                 if code:
                     return code
+            # Recheck shared-host admission immediately after startup.
+            run(['pgrep', '-af', 'gates.sh|mk/at-'], env)
             env['FVPN_E2E'] = '1'
+            started = str(time.time())
             code = run(['go', 'test', '-tags', 'e2e', '-count=1', '-v',
                         '-timeout', '45m', '-p', '1', './tests/e2e/at/updates',
                         '-run', '^TestUpdatesFollowup$'], env)
+            supplemental = run(['python3', 'tests/e2e/at/updates/supplemental.py', started], env)
+            if supplemental:
+                code = code or supplemental
         else:
             for args in [
                 ['go', 'vet', './tests/e2e/at/updates'],
                 ['go', 'vet', '-tags', 'e2e', './tests/e2e/at/updates'],
                 ['go', 'run', 'honnef.co/go/tools/cmd/staticcheck@v0.8.2', './tests/e2e/at/updates'],
                 ['go', 'run', 'honnef.co/go/tools/cmd/staticcheck@v0.8.2', '-tags', 'e2e', './tests/e2e/at/updates'],
-                ['go', 'test', '-tags', 'e2e', './tests/e2e/at/updates', '-run', '^(TestUpdatesFollowupEvidence|TestD098_Followup9ArchivePins|TestD132_Followup10ArchivePins)$'],
+                ['go', 'test', '-tags', 'e2e', './tests/e2e/at/updates', '-run', '^(TestUpdatesFollowupEvidence|TestD098_Followup9ArchivePins|TestD132_Followup10ArchivePins|TestD132_Followup11ArchivePins|TestD098_Followup12FirstAttemptArchivePins)$'],
             ]:
                 code = run(args, env)
                 if code:

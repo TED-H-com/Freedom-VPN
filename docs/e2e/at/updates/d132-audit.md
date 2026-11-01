@@ -26,3 +26,36 @@ with [SHA-256 pins](history/follow-up-10/SHA256SUMS). Product tests may pin only
 history paths, never the new living root. Existing F10 diagnostic archives
 remain unchanged. The audit's full grep output is retained in the worktree
 report logs; no private runtime state is part of that inventory.
+
+## Follow-up 12 archive and consumer closures — 2026-10-31
+
+Before any follow-up 12 run, all **43** root files on main `45209609d33d567c5f04d49441799cdd3efac59b`
+were copied byte-identically to [follow-up 11](history/follow-up-11/ARCHIVE.md).
+Every copied byte was compared with its original main blob; the manifest keeps
+the follow-up 10 `SHA256SUMS` shape. Earlier archives are untouched.
+
+Updater 19 / #351 accepted run `daddad24-b6f7-4c32-ba8e-1c7d24f76ea2`
+and deliberately cited living paths without digests. Its installer hand-off,
+transport capture and uncached-origin observation now have immutable paths under
+`history/follow-up-11/`. Installer 8 / #353's producer test and updater 19's
+consumer test construct fixtures themselves; neither reads AT evidence.
+Devstack 21 / #352 answers F11-01 in `docs/e2e/RESPONSES.md` under D-102.
+The four `internal/` reference sites above remain unchanged; `node/` and
+`packaging/` still contain no literal `docs/e2e/at/` references. Documentation
+citations are not runtime reads. Any new digest-dependent consumer must use
+this archive, never a new living-root digest. No outside-owned file was edited.
+
+The follow-up 12 reference inventory has 1,064 matches under `internal node
+packaging tests`, still exactly four in product paths. Both fleetupdate-owned
+JSON copies were compared byte-for-byte with their follow-up 9 archives again.
+The new archive test reads only `history/follow-up-11/`; the supplemental
+capture reads this lane's just-written live evidence to assemble the same-run
+report, not as a product behavior fixture. Source metadata pins evidence only
+at `history/` paths. The raw inventory is retained in the ignored hand-off logs.
+
+The first follow-up 12 attempt's 17 directly measured files are additionally
+preserved byte-identically under
+[history/follow-up-12-first-attempt](history/follow-up-12-first-attempt/ARCHIVE.md)
+before the owned relative-symlink probe fix. Its make failure and the incorrect
+unconditional narrative are explicitly retained and explained. The later run
+must supply all current claims independently. No prior archive was rewritten.
