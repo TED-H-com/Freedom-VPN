@@ -60,11 +60,12 @@ type Status struct {
 	} `json:"peers"`
 }
 type Peer struct {
-	Relay    string `json:"relayServerAddress"`
-	IP       string `json:"netbirdIp"`
-	Status   string `json:"status"`
-	Type     string `json:"connectionType"`
-	Endpoint struct {
+	LastHandshake time.Time `json:"lastWireguardHandshake"`
+	Relay         string    `json:"relayServerAddress"`
+	IP            string    `json:"netbirdIp"`
+	Status        string    `json:"status"`
+	Type          string    `json:"connectionType"`
+	Endpoint      struct {
 		Local  string `json:"local"`
 		Remote string `json:"remote"`
 	} `json:"iceCandidateEndpoint"`
@@ -123,23 +124,24 @@ type Command struct {
 	OK    bool  `json:"ok"`
 }
 type Snapshot struct {
-	Relay                Endpoint           `json:"relay_endpoint"`
-	UsesKernelInterface  bool               `json:"uses_kernel_interface"`
-	Start                Clock              `json:"start"`
-	End                  Clock              `json:"end"`
-	Commands             map[string]Command `json:"commands"`
-	Links                []Link             `json:"links"`
-	Routes               map[string][]Route `json:"routes"`
-	PeerPresent          bool               `json:"peer_present"`
-	PeerConnected        bool               `json:"peer_connected"`
-	ConnectionType       string             `json:"connection_type"`
-	Overlay              string             `json:"overlay"`
-	Local                Endpoint           `json:"local"`
-	Remote               Endpoint           `json:"remote"`
-	LatestHandshake      string             `json:"latest_handshake_unix_seconds,omitempty"`
-	Kernel               *KernelDiagnostics `json:"kernel,omitempty"`
-	WireGuardPeerMatched bool               `json:"wireguard_peer_matched"`
-	WireGuard            Endpoint           `json:"wireguard_endpoint"`
+	NativeLatestHandshake *time.Time         `json:"native_latest_handshake_at,omitempty"`
+	Relay                 Endpoint           `json:"relay_endpoint"`
+	UsesKernelInterface   bool               `json:"uses_kernel_interface"`
+	Start                 Clock              `json:"start"`
+	End                   Clock              `json:"end"`
+	Commands              map[string]Command `json:"commands"`
+	Links                 []Link             `json:"links"`
+	Routes                map[string][]Route `json:"routes"`
+	PeerPresent           bool               `json:"peer_present"`
+	PeerConnected         bool               `json:"peer_connected"`
+	ConnectionType        string             `json:"connection_type"`
+	Overlay               string             `json:"overlay"`
+	Local                 Endpoint           `json:"local"`
+	Remote                Endpoint           `json:"remote"`
+	LatestHandshake       string             `json:"latest_handshake_unix_seconds,omitempty"`
+	Kernel                *KernelDiagnostics `json:"kernel,omitempty"`
+	WireGuardPeerMatched  bool               `json:"wireguard_peer_matched"`
+	WireGuard             Endpoint           `json:"wireguard_endpoint"`
 }
 
 func Read(ctx context.Context, target, origin string) (Snapshot, error) {
@@ -186,6 +188,14 @@ func Read(ctx context.Context, target, origin string) (Snapshot, error) {
 		out.UsesKernelInterface = status.UsesKernelInterface
 		p, e := Select(rawStatus, target)
 		if e == nil {
+			// Native daemon telemetry is separate from wg's independent readback.
+			// Keep an unavailable userspace CLI sample explicitly unavailable.
+			// A missing/zero daemon timestamp stays absent, never a fabricated
+			// successful handshake or a replacement for a failed wg command.
+			if !p.LastHandshake.IsZero() {
+				stamp := p.LastHandshake.UTC()
+				out.NativeLatestHandshake = &stamp
+			}
 			out.PeerPresent = true
 			out.PeerConnected = strings.EqualFold(p.Status, "Connected")
 			out.ConnectionType = p.Type

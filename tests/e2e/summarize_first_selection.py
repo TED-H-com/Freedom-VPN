@@ -59,7 +59,7 @@ def summary(source, analysis):
         prior=None; timeline=[]
         for sample in analysis['samples']:
             p=sample['points'][role]
-            state={k:p.get(k) for k in ['wireguard_endpoint','wireguard_peer_matched','latest_handshake_unix_seconds','uses_kernel_interface','local','remote']}
+            state={k:p.get(k) for k in ['wireguard_endpoint','wireguard_peer_matched','latest_handshake_unix_seconds','native_latest_handshake_at','uses_kernel_interface','local','remote']}
             if state!=prior:
                 timeline.append(dict(label=sample['label'],start=p['start'],end=p['end'],**state));prior=state
         result['selected_peer_timeline'][role]=timeline
