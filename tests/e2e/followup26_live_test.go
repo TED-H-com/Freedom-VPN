@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 )
 
 func TestE2E_Followup26Native(t *testing.T) {
@@ -36,6 +37,11 @@ func (r *runner) exportCentral26(ctx context.Context) {
 		return
 	}
 	defer db.Close(ctx)
+	tx, err := db.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.RepeatableRead, AccessMode: pgx.ReadOnly})
+	if err != nil {
+		return
+	}
+	defer tx.Rollback(ctx)
 	queries := []struct{ name, sql string }{
 		{"desired", `SELECT coalesce(jsonb_agg(jsonb_build_object('generation',generation::text,'signed_at',signed_at,'binding_revision',binding_revision::text) ORDER BY generation),'[]') FROM desired_states WHERE node_id=$1`},
 		{"leases", `SELECT coalesce(jsonb_agg(jsonb_build_object('lease_id',s.id,'generation',s.policy_generation::text,'authorization_generation',s.authorization_generation::text,'issued_at',s.issued_at,'expires_at',s.expires_at,'signed_expires_at',s.envelope->'signed'->'expires_at','members',coalesce((SELECT jsonb_agg(jsonb_build_object('member_id',m.member_id,'entitlement_revision',m.entitlement_revision::text,'valid_from',m.valid_from,'expires_at',m.expires_at)) FROM serving_lease_members m WHERE m.lease_id=s.id),'[]')) ORDER BY s.issued_at,s.id),'[]') FROM serving_leases s WHERE s.node_id=$1`},
@@ -44,11 +50,14 @@ func (r *runner) exportCentral26(ctx context.Context) {
 	noteJSON(&rec, "node_id", r.nodeID)
 	for _, q := range queries {
 		var raw []byte
-		if db.QueryRow(ctx, q.sql, r.nodeID).Scan(&raw) != nil {
+		if tx.QueryRow(ctx, q.sql, r.nodeID).Scan(&raw) != nil {
 			recPathNote(&rec)("export_error", q.name)
 			return
 		}
 		noteJSON(&rec, q.name, json.RawMessage(raw))
+	}
+	if tx.Commit(ctx) != nil {
+		return
 	}
 	private := filepath.Join(r.lab.root, ".agent/tmp/followup26", r.runID, "producer.jsonl")
 	receipt, e := (&Stack{lab: r.lab}).ExportContainerFile(ctx, "node", "/var/lib/vpn-node/e2e/enforcement-timing.jsonl", private)
