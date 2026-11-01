@@ -3,11 +3,14 @@ package agent
 import (
 	"context"
 	"encoding/json"
+	"net/netip"
+	"strconv"
 	"testing"
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/node/internal/agentstore"
 	"github.com/TED-H-com/Freedom-VPN/node/internal/nodelock"
+	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 )
 
 // A real Step can report g while desired/lease h are ready: a due renewal
@@ -112,5 +115,25 @@ func TestF34_ReservationFailurePreventsApply(t *testing.T) {
 	}
 	if r.eng.serving || r.eng.storageOK || r.plane.applies != applies || r.plane.baselines <= baselines {
 		t.Fatal("failed reservation reached Apply or kept forwarding")
+	}
+}
+
+func TestF34_GenerationChangeKeepsPendingReservationCount(t *testing.T) {
+	r := newRig(t)
+	keep, drop := servePair(t, r)
+	addr := netip.MustParsePrefix(drop.AllowedIpv4[0]).Addr()
+	p := &failedSubsetPlane{memPlane: r.plane, fail: map[netip.Addr]bool{addr: true}}
+	r.eng.plane = p
+	for gen := uint64(4); gen <= 5; gen++ {
+		r.srv.SetFixture(fixtureWithBindings(gen, []api.DeviceBinding{keep}))
+		stepOK(t, r)
+		raw, ok, err := r.eng.store.Meta(context.Background(), conntrackAttemptsKey)
+		if err != nil || !ok || raw != strconv.FormatUint(gen-3, 10) || r.eng.conntrackAttempts != int(gen-3) || len(r.eng.pendingRevoke) != 1 || r.eng.pendingRevoke[0].Addr != addr {
+			t.Fatalf("generation=%d attempts=%d durable=%q pending=%v err=%v", gen, r.eng.conntrackAttempts, raw, r.eng.pendingRevoke, err)
+		}
+	}
+	restartEngine(t, r, p)
+	if r.eng.conntrackAttempts != 2 || len(r.eng.pendingRevoke) != 1 {
+		t.Fatal("restart lost cross-generation accounting")
 	}
 }
