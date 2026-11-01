@@ -10,4 +10,4 @@ All 43 root files have SHA-256 pins. Earlier archives remain unchanged.
 Updater 19 (#351) accepted this measurement before these stable paths existed.
 Product tests must use immutable history paths (D-132).
 
-Current measurements are in [follow-up 13](follow-up-13.md).
+Current measurements are in [follow-up 14](follow-up-14.md).

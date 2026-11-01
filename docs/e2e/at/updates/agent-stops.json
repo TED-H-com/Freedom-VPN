@@ -1,951 +1,204 @@
 {
-  "run_id": "759d244a-2dc4-460c-9f82-e37ce0ac7560",
-  "source_commit": "20d1f6e83d4a0dce97e2cf87e4ccd4a31dc580a5",
+  "run_id": "2704600f-e076-4a59-9338-09befa2af70e",
+  "source_commit": "64893bb3de8e81ea3ca13e07871ca0cdc2455b85",
   "scope": "TEST ONLY service-command observation; no generated config, deadline or product binary change",
-  "baseline_run": "2babf9b6-86a3-489d-a678-0bd447f2f8b0",
-  "baseline_direct_timing_available": false,
+  "baseline_run": "759d244a-2dc4-460c-9f82-e37ce0ac7560",
+  "baseline_direct_timing_available": true,
   "rows": [
     {
       "action": "stop",
-      "agent_pid_before": "2283",
-      "agent_wait_status": 0,
+      "agent_identity_before": {
+        "id": "29922bbaf65d48ecb9fd669c2d4b53b1",
+        "pid": 2266,
+        "start_ticks": "12800871",
+        "already_stopped": false
+      },
+      "agent_pid_before": "2266",
       "command": [
         "/usr/bin/systemctl",
         "stop",
         "fvpn-agent.service",
         "fvpn-watchdog.service"
       ],
-      "duration_ns": 8499183,
+      "duration_ns": 52687997,
       "exit_code": 0,
-      "finished_at": "2026-11-01T09:41:27.524414452Z",
+      "finished_at": "2026-11-01T14:47:56.838344168Z",
       "lease_after": {
-        "expires_at": "2026-11-02T09:41:27.362624896Z",
-        "lease_id": "b211425a-2c7a-47af-879d-fafacbc3a81b",
+        "expires_at": "2026-11-02T14:47:56.77844901Z",
+        "lease_id": "2a422874-c7fa-473c-a64f-e45c28df5ead",
         "present": true
       },
       "lease_before": {
-        "expires_at": "2026-11-02T09:41:27.362624896Z",
-        "lease_id": "b211425a-2c7a-47af-879d-fafacbc3a81b",
+        "expires_at": "2026-11-02T14:47:51.281076661Z",
+        "lease_id": "b80599b8-c237-4906-8ec4-00011836814c",
         "present": true
       },
       "parent": "fvpn-updater",
-      "started_at": "2026-11-01T09:41:27.515908401Z",
-      "systemd_after": "TimeoutStopUSec=1min 30s\nMainPID=0\nResult=success\nExecMainCode=1\nExecMainStatus=0",
-      "systemd_before": "TimeoutStopUSec=1min 30s\nMainPID=2283\nResult=success\nExecMainCode=0\nExecMainStatus=0",
+      "sampled_raw_wait_status": 0,
+      "started_at": "2026-11-01T14:47:56.785653573Z",
+      "systemd_after": "TimeoutStopUSec=15s\nMainPID=0\nResult=success\nExecMainExitTimestamp=Sun 2026-11-01 14:47:56 UTC\nExecMainPID=2266\nExecMainCode=1\nExecMainStatus=0\nInvocationID=29922bbaf65d48ecb9fd669c2d4b53b1",
+      "systemd_before": "TimeoutStopUSec=15s\nMainPID=2266\nResult=success\nExecMainExitTimestamp=\nExecMainPID=2266\nExecMainCode=0\nExecMainStatus=0\nInvocationID=29922bbaf65d48ecb9fd669c2d4b53b1",
+      "systemd_parent_wait_receipt": {
+        "encoded_wait_status": 0,
+        "exit_code": 0,
+        "id": "29922bbaf65d48ecb9fd669c2d4b53b1",
+        "pid": 2266,
+        "signal": null,
+        "source": "systemd parent waitid",
+        "start_ticks": "12800871",
+        "timestamp_precision": "1 second (systemctl show)",
+        "wait_observed_at": "2026-11-01T14:47:56Z",
+        "waitid_code": 1,
+        "waitid_status": 0
+      },
       "transaction": {
         "stage": "final_sampled",
-        "txn_id": "01a1967c-2e71-763f-b1a9-135f6fc090d6"
+        "txn_id": "01a19794-c6b5-7d86-a83b-1d1f92e7e2ea"
       },
       "role": "installer-node",
       "ordinal": 1,
-      "duration_ms": 8.499,
+      "duration_ms": 52.688,
       "baseline": {
-        "command_duration_ms": null,
-        "stage_bracket_ms": null,
-        "outcome": "success inferred from archived installer success",
-        "termination": "not recorded"
+        "action": "stop",
+        "agent_pid_before": "2283",
+        "agent_wait_status": 0,
+        "command": [
+          "/usr/bin/systemctl",
+          "stop",
+          "fvpn-agent.service",
+          "fvpn-watchdog.service"
+        ],
+        "duration_ns": 8499183,
+        "exit_code": 0,
+        "finished_at": "2026-11-01T09:41:27.524414452Z",
+        "lease_after": {
+          "expires_at": "2026-11-02T09:41:27.362624896Z",
+          "lease_id": "b211425a-2c7a-47af-879d-fafacbc3a81b",
+          "present": true
+        },
+        "lease_before": {
+          "expires_at": "2026-11-02T09:41:27.362624896Z",
+          "lease_id": "b211425a-2c7a-47af-879d-fafacbc3a81b",
+          "present": true
+        },
+        "parent": "fvpn-updater",
+        "started_at": "2026-11-01T09:41:27.515908401Z",
+        "systemd_after": "TimeoutStopUSec=1min 30s\nMainPID=0\nResult=success\nExecMainCode=1\nExecMainStatus=0",
+        "systemd_before": "TimeoutStopUSec=1min 30s\nMainPID=2283\nResult=success\nExecMainCode=0\nExecMainStatus=0",
+        "transaction": {
+          "stage": "final_sampled",
+          "txn_id": "01a1967c-2e71-763f-b1a9-135f6fc090d6"
+        },
+        "role": "installer-node",
+        "ordinal": 1,
+        "duration_ms": 8.499,
+        "baseline": {
+          "command_duration_ms": null,
+          "stage_bracket_ms": null,
+          "outcome": "success inferred from archived installer success",
+          "termination": "not recorded"
+        },
+        "current_stage_bracket": {
+          "txn_id": "01a1967c-2e71-763f-b1a9-135f6fc090d6",
+          "stage": "final_sampled",
+          "start": "2026-11-01T09:41:27.505745269Z",
+          "end": "2026-11-01T09:41:27.52848609Z",
+          "stage_bracket_ms": 22.741,
+          "command_duration_ms": null,
+          "outcome": "stop returned success",
+          "termination": "not recorded"
+        },
+        "agent_exit_code": 0,
+        "termination": "exited",
+        "command_timeout_observed": false,
+        "lease_lost": false
       },
       "current_stage_bracket": {
-        "txn_id": "01a1967c-2e71-763f-b1a9-135f6fc090d6",
+        "txn_id": "01a19794-c6b5-7d86-a83b-1d1f92e7e2ea",
         "stage": "final_sampled",
-        "start": "2026-11-01T09:41:27.505745269Z",
-        "end": "2026-11-01T09:41:27.52848609Z",
-        "stage_bracket_ms": 22.741,
+        "start": "2026-11-01T14:47:56.773421708Z",
+        "end": "2026-11-01T14:47:56.843336051Z",
+        "stage_bracket_ms": 69.915,
         "command_duration_ms": null,
         "outcome": "stop returned success",
         "termination": "not recorded"
       },
+      "new_exit_observed": true,
       "agent_exit_code": 0,
+      "agent_signal": null,
       "termination": "exited",
+      "command_failed": false,
       "command_timeout_observed": false,
-      "lease_lost": false
+      "reached_15s_budget": false,
+      "lease_lost": false,
+      "status": "measured"
     },
     {
       "action": "stop",
+      "agent_identity_before": {
+        "id": "29922bbaf65d48ecb9fd669c2d4b53b1",
+        "pid": 2266,
+        "start_ticks": "12800871",
+        "already_stopped": true
+      },
       "agent_pid_before": "0",
-      "agent_wait_status": -1,
       "command": [
         "/usr/bin/systemctl",
         "stop",
         "fvpn-agent.service",
         "fvpn-watchdog.service"
       ],
-      "duration_ns": 2986211,
+      "duration_ns": 3028352,
       "exit_code": 0,
-      "finished_at": "2026-11-01T09:41:27.540422565Z",
+      "finished_at": "2026-11-01T14:47:56.858185438Z",
       "lease_after": {
-        "expires_at": "2026-11-02T09:41:27.362624896Z",
-        "lease_id": "b211425a-2c7a-47af-879d-fafacbc3a81b",
+        "expires_at": "2026-11-02T14:47:56.77844901Z",
+        "lease_id": "2a422874-c7fa-473c-a64f-e45c28df5ead",
         "present": true
       },
       "lease_before": {
-        "expires_at": "2026-11-02T09:41:27.362624896Z",
-        "lease_id": "b211425a-2c7a-47af-879d-fafacbc3a81b",
+        "expires_at": "2026-11-02T14:47:56.77844901Z",
+        "lease_id": "2a422874-c7fa-473c-a64f-e45c28df5ead",
         "present": true
       },
       "parent": "fvpn-updater",
-      "started_at": "2026-11-01T09:41:27.537431636Z",
-      "systemd_after": "TimeoutStopUSec=1min 30s\nMainPID=0\nResult=success\nExecMainCode=1\nExecMainStatus=0",
-      "systemd_before": "TimeoutStopUSec=1min 30s\nMainPID=0\nResult=success\nExecMainCode=1\nExecMainStatus=0",
+      "sampled_raw_wait_status": -1,
+      "started_at": "2026-11-01T14:47:56.855156048Z",
+      "systemd_after": "TimeoutStopUSec=15s\nMainPID=0\nResult=success\nExecMainExitTimestamp=Sun 2026-11-01 14:47:56 UTC\nExecMainPID=2266\nExecMainCode=1\nExecMainStatus=0\nInvocationID=29922bbaf65d48ecb9fd669c2d4b53b1",
+      "systemd_before": "TimeoutStopUSec=15s\nMainPID=0\nResult=success\nExecMainExitTimestamp=Sun 2026-11-01 14:47:56 UTC\nExecMainPID=2266\nExecMainCode=1\nExecMainStatus=0\nInvocationID=29922bbaf65d48ecb9fd669c2d4b53b1",
+      "systemd_parent_wait_receipt": {
+        "encoded_wait_status": 0,
+        "exit_code": 0,
+        "id": "29922bbaf65d48ecb9fd669c2d4b53b1",
+        "pid": 2266,
+        "signal": null,
+        "source": "systemd parent waitid",
+        "start_ticks": "12800871",
+        "timestamp_precision": "1 second (systemctl show)",
+        "wait_observed_at": "2026-11-01T14:47:56Z",
+        "waitid_code": 1,
+        "waitid_status": 0
+      },
       "transaction": {
         "stage": "stopped",
-        "txn_id": "01a1967c-2e71-763f-b1a9-135f6fc090d6"
+        "txn_id": "01a19794-c6b5-7d86-a83b-1d1f92e7e2ea"
       },
       "role": "installer-node",
       "ordinal": 2,
-      "duration_ms": 2.986,
+      "duration_ms": 3.028,
       "baseline": {
-        "command_duration_ms": null,
-        "stage_bracket_ms": null,
-        "outcome": "success inferred from archived installer success",
-        "termination": "not recorded"
-      },
-      "current_stage_bracket": {
-        "txn_id": "01a1967c-2e71-763f-b1a9-135f6fc090d6",
-        "stage": "stopped",
-        "start": "2026-11-01T09:41:27.52848609Z",
-        "end": "2026-11-01T09:41:27.54400554Z",
-        "stage_bracket_ms": 15.519,
-        "command_duration_ms": null,
-        "outcome": "stop returned success",
-        "termination": "not recorded"
-      },
-      "termination": "already stopped",
-      "command_timeout_observed": false,
-      "lease_lost": false
-    },
-    {
-      "action": "stop",
-      "agent_pid_before": "18038",
-      "agent_wait_status": -1,
-      "command": [
-        "/usr/local/bin/agent-service.original.sh",
-        "stop"
-      ],
-      "duration_ns": 443555863,
-      "exit_code": 0,
-      "finished_at": "2026-11-01T09:43:04.611892255Z",
-      "lease_after": {
-        "expires_at": "2026-11-02T09:43:04.13363853Z",
-        "lease_id": "4fde3958-ecac-4ba8-9ac4-ac8f228521e9",
-        "present": true
-      },
-      "lease_before": {
-        "expires_at": "2026-11-02T09:43:04.13363853Z",
-        "lease_id": "4fde3958-ecac-4ba8-9ac4-ac8f228521e9",
-        "present": true
-      },
-      "parent": "fvpn-updater",
-      "started_at": "2026-11-01T09:43:04.168334378Z",
-      "transaction": {
-        "stage": "final_sampled",
-        "txn_id": "01a1967d-a806-70c6-9764-a8ecab9c5032"
-      },
-      "role": "node",
-      "ordinal": 1,
-      "duration_ms": 443.556,
-      "baseline": {
-        "txn_id": "01a19402-da5e-7e5f-b195-bb57c04d3355",
-        "stage": "final_sampled",
-        "start": "2026-10-31T22:09:42.395381851Z",
-        "end": "2026-10-31T22:09:42.83788523Z",
-        "stage_bracket_ms": 442.504,
-        "command_duration_ms": null,
-        "outcome": "stop returned success",
-        "termination": "not recorded"
-      },
-      "current_stage_bracket": {
-        "txn_id": "01a1967d-a806-70c6-9764-a8ecab9c5032",
-        "stage": "final_sampled",
-        "start": "2026-11-01T09:43:04.164649949Z",
-        "end": "2026-11-01T09:43:04.613077445Z",
-        "stage_bracket_ms": 448.428,
-        "command_duration_ms": null,
-        "outcome": "stop returned success",
-        "termination": "not recorded"
-      },
-      "termination": "unobserved",
-      "command_timeout_observed": false,
-      "lease_lost": false
-    },
-    {
-      "action": "stop",
-      "agent_pid_before": "",
-      "agent_wait_status": -1,
-      "command": [
-        "/usr/local/bin/agent-service.original.sh",
-        "stop"
-      ],
-      "duration_ns": 229330481,
-      "exit_code": 0,
-      "finished_at": "2026-11-01T09:43:04.845859917Z",
-      "lease_after": {
-        "expires_at": "2026-11-02T09:43:04.13363853Z",
-        "lease_id": "4fde3958-ecac-4ba8-9ac4-ac8f228521e9",
-        "present": true
-      },
-      "lease_before": {
-        "expires_at": "2026-11-02T09:43:04.13363853Z",
-        "lease_id": "4fde3958-ecac-4ba8-9ac4-ac8f228521e9",
-        "present": true
-      },
-      "parent": "fvpn-updater",
-      "started_at": "2026-11-01T09:43:04.616526651Z",
-      "transaction": {
-        "stage": "stopped",
-        "txn_id": "01a1967d-a806-70c6-9764-a8ecab9c5032"
-      },
-      "role": "node",
-      "ordinal": 2,
-      "duration_ms": 229.33,
-      "baseline": {
-        "txn_id": "01a19402-da5e-7e5f-b195-bb57c04d3355",
-        "stage": "stopped",
-        "start": "2026-10-31T22:09:42.83788523Z",
-        "end": "2026-10-31T22:09:43.065591445Z",
-        "stage_bracket_ms": 227.706,
-        "command_duration_ms": null,
-        "outcome": "stop returned success",
-        "termination": "not recorded"
-      },
-      "current_stage_bracket": {
-        "txn_id": "01a1967d-a806-70c6-9764-a8ecab9c5032",
-        "stage": "stopped",
-        "start": "2026-11-01T09:43:04.613077445Z",
-        "end": "2026-11-01T09:43:04.846916419Z",
-        "stage_bracket_ms": 233.839,
-        "command_duration_ms": null,
-        "outcome": "stop returned success",
-        "termination": "not recorded"
-      },
-      "termination": "already stopped",
-      "command_timeout_observed": false,
-      "lease_lost": false
-    },
-    {
-      "action": "stop",
-      "agent_pid_before": "22999",
-      "agent_wait_status": 0,
-      "command": [
-        "/usr/local/bin/agent-service.original.sh",
-        "stop"
-      ],
-      "duration_ns": 441713213,
-      "exit_code": 0,
-      "finished_at": "2026-11-01T09:43:45.856314468Z",
-      "lease_after": {
-        "expires_at": "2026-11-02T09:43:45.425796931Z",
-        "lease_id": "d7304a0c-d1c0-4e3e-b411-baf09dbb89e2",
-        "present": true
-      },
-      "lease_before": {
-        "expires_at": "2026-11-02T09:43:40.384624445Z",
-        "lease_id": "731eb642-6cc8-4ca3-b75b-8c17ca76c4ed",
-        "present": true
-      },
-      "parent": "fvpn-updater",
-      "started_at": "2026-11-01T09:43:45.414598414Z",
-      "transaction": {
-        "stage": "final_sampled",
-        "txn_id": "01a1967e-4a4f-74fb-82d1-452ec3c4a454"
-      },
-      "role": "node",
-      "ordinal": 3,
-      "duration_ms": 441.713,
-      "baseline": {
-        "txn_id": "01a19403-7f30-7790-a987-751842a77782",
-        "stage": "final_sampled",
-        "start": "2026-10-31T22:10:23.688470897Z",
-        "end": "2026-10-31T22:10:24.130507842Z",
-        "stage_bracket_ms": 442.037,
-        "command_duration_ms": null,
-        "outcome": "stop returned success",
-        "termination": "not recorded"
-      },
-      "current_stage_bracket": {
-        "txn_id": "01a1967e-4a4f-74fb-82d1-452ec3c4a454",
-        "stage": "final_sampled",
-        "start": "2026-11-01T09:43:45.410314968Z",
-        "end": "2026-11-01T09:43:45.857420356Z",
-        "stage_bracket_ms": 447.106,
-        "command_duration_ms": null,
-        "outcome": "stop returned success",
-        "termination": "not recorded"
-      },
-      "agent_exit_code": 0,
-      "agent_signal": 0,
-      "termination": "exited",
-      "command_timeout_observed": false,
-      "lease_lost": false
-    },
-    {
-      "action": "stop",
-      "agent_pid_before": "",
-      "agent_wait_status": -1,
-      "command": [
-        "/usr/local/bin/agent-service.original.sh",
-        "stop"
-      ],
-      "duration_ns": 227498748,
-      "exit_code": 0,
-      "finished_at": "2026-11-01T09:43:46.088343153Z",
-      "lease_after": {
-        "expires_at": "2026-11-02T09:43:45.425796931Z",
-        "lease_id": "d7304a0c-d1c0-4e3e-b411-baf09dbb89e2",
-        "present": true
-      },
-      "lease_before": {
-        "expires_at": "2026-11-02T09:43:45.425796931Z",
-        "lease_id": "d7304a0c-d1c0-4e3e-b411-baf09dbb89e2",
-        "present": true
-      },
-      "parent": "fvpn-updater",
-      "started_at": "2026-11-01T09:43:45.86084152Z",
-      "transaction": {
-        "stage": "stopped",
-        "txn_id": "01a1967e-4a4f-74fb-82d1-452ec3c4a454"
-      },
-      "role": "node",
-      "ordinal": 4,
-      "duration_ms": 227.499,
-      "baseline": {
-        "txn_id": "01a19403-7f30-7790-a987-751842a77782",
-        "stage": "stopped",
-        "start": "2026-10-31T22:10:24.130507842Z",
-        "end": "2026-10-31T22:10:24.360101363Z",
-        "stage_bracket_ms": 229.594,
-        "command_duration_ms": null,
-        "outcome": "stop returned success",
-        "termination": "not recorded"
-      },
-      "current_stage_bracket": {
-        "txn_id": "01a1967e-4a4f-74fb-82d1-452ec3c4a454",
-        "stage": "stopped",
-        "start": "2026-11-01T09:43:45.857420356Z",
-        "end": "2026-11-01T09:43:46.089513673Z",
-        "stage_bracket_ms": 232.093,
-        "command_duration_ms": null,
-        "outcome": "stop returned success",
-        "termination": "not recorded"
-      },
-      "termination": "already stopped",
-      "command_timeout_observed": false,
-      "lease_lost": false
-    },
-    {
-      "action": "stop",
-      "agent_pid_before": "35222",
-      "agent_wait_status": 0,
-      "command": [
-        "/usr/local/bin/agent-service.original.sh",
-        "stop"
-      ],
-      "duration_ns": 435179083,
-      "exit_code": 0,
-      "finished_at": "2026-11-01T09:44:17.281998829Z",
-      "lease_after": {
-        "expires_at": "2026-11-02T09:44:16.421501053Z",
-        "lease_id": "3a2d04d5-522c-46af-bd87-12554eceee1c",
-        "present": true
-      },
-      "lease_before": {
-        "expires_at": "2026-11-02T09:44:16.421501053Z",
-        "lease_id": "3a2d04d5-522c-46af-bd87-12554eceee1c",
-        "present": true
-      },
-      "parent": "fvpn-updater",
-      "started_at": "2026-11-01T09:44:16.846816482Z",
-      "transaction": {
-        "stage": "rolling_back",
-        "txn_id": "01a1967e-4a4f-74fb-82d1-452ec3c4a454"
-      },
-      "role": "node",
-      "ordinal": 5,
-      "duration_ms": 435.179,
-      "baseline": {
-        "txn_id": "01a19403-7f30-7790-a987-751842a77782",
-        "stage": "rolling_back",
-        "start": "2026-10-31T22:10:55.09742689Z",
-        "end": "2026-10-31T22:10:56.046511623Z",
-        "stage_bracket_ms": 949.085,
-        "command_duration_ms": null,
-        "outcome": "rollback completed; Stop error is discarded by product",
-        "termination": "not recorded"
-      },
-      "current_stage_bracket": {
-        "txn_id": "01a1967e-4a4f-74fb-82d1-452ec3c4a454",
-        "stage": "rolling_back",
-        "start": "2026-11-01T09:44:16.82133456Z",
-        "end": "2026-11-01T09:44:17.754640104Z",
-        "stage_bracket_ms": 933.306,
-        "command_duration_ms": null,
-        "outcome": "rollback completed; Stop error is discarded by product",
-        "termination": "not recorded"
-      },
-      "agent_exit_code": 0,
-      "agent_signal": 0,
-      "termination": "exited",
-      "command_timeout_observed": false,
-      "lease_lost": false
-    },
-    {
-      "action": "stop",
-      "agent_pid_before": "138885",
-      "agent_wait_status": 0,
-      "command": [
-        "/usr/local/bin/agent-service.original.sh",
-        "stop"
-      ],
-      "duration_ns": 439400020,
-      "exit_code": 0,
-      "finished_at": "2026-11-01T09:48:35.053375912Z",
-      "lease_after": {
-        "expires_at": "2026-11-02T09:48:34.614806882Z",
-        "lease_id": "c3e67dd5-0961-4ee1-892f-0dc7cdfb81ae",
-        "present": true
-      },
-      "lease_before": {
-        "expires_at": "2026-11-02T09:48:29.583056938Z",
-        "lease_id": "ea3e4381-1487-4f2c-9548-ff377cbf1415",
-        "present": true
-      },
-      "parent": "fvpn-updater",
-      "started_at": "2026-11-01T09:48:34.61397344Z",
-      "transaction": {
-        "stage": "final_sampled",
-        "txn_id": "01a19682-b26a-7165-b159-632d773e5459"
-      },
-      "role": "node",
-      "ordinal": 6,
-      "duration_ms": 439.4,
-      "baseline": {
-        "txn_id": "01a19407-e7c4-73af-89bc-a1afde2fe0af",
-        "stage": "final_sampled",
-        "start": "2026-10-31T22:15:13.106940637Z",
-        "end": "2026-10-31T22:15:13.545520151Z",
-        "stage_bracket_ms": 438.58,
-        "command_duration_ms": null,
-        "outcome": "stop returned success",
-        "termination": "not recorded"
-      },
-      "current_stage_bracket": {
-        "txn_id": "01a19682-b26a-7165-b159-632d773e5459",
-        "stage": "final_sampled",
-        "start": "2026-11-01T09:48:34.608682751Z",
-        "end": "2026-11-01T09:48:35.054424406Z",
-        "stage_bracket_ms": 445.742,
-        "command_duration_ms": null,
-        "outcome": "stop returned success",
-        "termination": "not recorded"
-      },
-      "agent_exit_code": 0,
-      "agent_signal": 0,
-      "termination": "exited",
-      "command_timeout_observed": false,
-      "lease_lost": false
-    },
-    {
-      "action": "stop",
-      "agent_pid_before": "",
-      "agent_wait_status": -1,
-      "command": [
-        "/usr/local/bin/agent-service.original.sh",
-        "stop"
-      ],
-      "duration_ns": 229106638,
-      "exit_code": 0,
-      "finished_at": "2026-11-01T09:48:35.289620769Z",
-      "lease_after": {
-        "expires_at": "2026-11-02T09:48:34.614806882Z",
-        "lease_id": "c3e67dd5-0961-4ee1-892f-0dc7cdfb81ae",
-        "present": true
-      },
-      "lease_before": {
-        "expires_at": "2026-11-02T09:48:34.614806882Z",
-        "lease_id": "c3e67dd5-0961-4ee1-892f-0dc7cdfb81ae",
-        "present": true
-      },
-      "parent": "fvpn-updater",
-      "started_at": "2026-11-01T09:48:35.06050471Z",
-      "transaction": {
-        "stage": "stopped",
-        "txn_id": "01a19682-b26a-7165-b159-632d773e5459"
-      },
-      "role": "node",
-      "ordinal": 7,
-      "duration_ms": 229.107,
-      "baseline": {
-        "txn_id": "01a19407-e7c4-73af-89bc-a1afde2fe0af",
-        "stage": "stopped",
-        "start": "2026-10-31T22:15:13.545520151Z",
-        "end": "2026-10-31T22:15:13.777141678Z",
-        "stage_bracket_ms": 231.621,
-        "command_duration_ms": null,
-        "outcome": "stop returned success",
-        "termination": "not recorded"
-      },
-      "current_stage_bracket": {
-        "txn_id": "01a19682-b26a-7165-b159-632d773e5459",
-        "stage": "stopped",
-        "start": "2026-11-01T09:48:35.054424406Z",
-        "end": "2026-11-01T09:48:35.290748642Z",
-        "stage_bracket_ms": 236.324,
-        "command_duration_ms": null,
-        "outcome": "stop returned success",
-        "termination": "not recorded"
-      },
-      "termination": "already stopped",
-      "command_timeout_observed": false,
-      "lease_lost": false
-    },
-    {
-      "action": "stop",
-      "agent_pid_before": "1141",
-      "agent_wait_status": 0,
-      "command": [
-        "/usr/local/bin/agent-service.original.sh",
-        "stop"
-      ],
-      "duration_ns": 437477471,
-      "exit_code": 0,
-      "finished_at": "2026-11-01T09:49:04.725421973Z",
-      "lease_after": {
-        "expires_at": "2026-11-02T09:49:04.230817381Z",
-        "lease_id": "23509350-75d8-40e5-8661-982b5162f81e",
-        "present": true
-      },
-      "lease_before": {
-        "expires_at": "2026-11-02T09:49:04.230817381Z",
-        "lease_id": "23509350-75d8-40e5-8661-982b5162f81e",
-        "present": true
-      },
-      "parent": "fvpn-updater",
-      "started_at": "2026-11-01T09:49:04.287935635Z",
-      "transaction": {
-        "stage": "final_sampled",
-        "txn_id": "01a19683-2c2d-7abe-982c-6882cb507bfa"
-      },
-      "role": "node2",
-      "ordinal": 1,
-      "duration_ms": 437.477,
-      "baseline": {
-        "txn_id": "01a19408-4a47-7173-93f8-853c2bfa610d",
-        "stage": "final_sampled",
-        "start": "2026-10-31T22:15:37.622831856Z",
-        "end": "2026-10-31T22:15:38.059889672Z",
-        "stage_bracket_ms": 437.058,
-        "command_duration_ms": null,
-        "outcome": "stop returned success",
-        "termination": "not recorded"
-      },
-      "current_stage_bracket": {
-        "txn_id": "01a19683-2c2d-7abe-982c-6882cb507bfa",
-        "stage": "final_sampled",
-        "start": "2026-11-01T09:49:04.280992044Z",
-        "end": "2026-11-01T09:49:04.726579237Z",
-        "stage_bracket_ms": 445.587,
-        "command_duration_ms": null,
-        "outcome": "stop returned success",
-        "termination": "not recorded"
-      },
-      "agent_exit_code": 0,
-      "agent_signal": 0,
-      "termination": "exited",
-      "command_timeout_observed": false,
-      "lease_lost": false
-    },
-    {
-      "action": "stop",
-      "agent_pid_before": "",
-      "agent_wait_status": -1,
-      "command": [
-        "/usr/local/bin/agent-service.original.sh",
-        "stop"
-      ],
-      "duration_ns": 225726847,
-      "exit_code": 0,
-      "finished_at": "2026-11-01T09:49:04.957499658Z",
-      "lease_after": {
-        "expires_at": "2026-11-02T09:49:04.230817381Z",
-        "lease_id": "23509350-75d8-40e5-8661-982b5162f81e",
-        "present": true
-      },
-      "lease_before": {
-        "expires_at": "2026-11-02T09:49:04.230817381Z",
-        "lease_id": "23509350-75d8-40e5-8661-982b5162f81e",
-        "present": true
-      },
-      "parent": "fvpn-updater",
-      "started_at": "2026-11-01T09:49:04.731761836Z",
-      "transaction": {
-        "stage": "stopped",
-        "txn_id": "01a19683-2c2d-7abe-982c-6882cb507bfa"
-      },
-      "role": "node2",
-      "ordinal": 2,
-      "duration_ms": 225.727,
-      "baseline": {
-        "txn_id": "01a19408-4a47-7173-93f8-853c2bfa610d",
-        "stage": "stopped",
-        "start": "2026-10-31T22:15:38.059889672Z",
-        "end": "2026-10-31T22:15:38.292836957Z",
-        "stage_bracket_ms": 232.947,
-        "command_duration_ms": null,
-        "outcome": "stop returned success",
-        "termination": "not recorded"
-      },
-      "current_stage_bracket": {
-        "txn_id": "01a19683-2c2d-7abe-982c-6882cb507bfa",
-        "stage": "stopped",
-        "start": "2026-11-01T09:49:04.726579237Z",
-        "end": "2026-11-01T09:49:04.958544298Z",
-        "stage_bracket_ms": 231.965,
-        "command_duration_ms": null,
-        "outcome": "stop returned success",
-        "termination": "not recorded"
-      },
-      "termination": "already stopped",
-      "command_timeout_observed": false,
-      "lease_lost": false
-    }
-  ],
-  "journals": {
-    "installer-node": [
-      {
-        "txn_id": "01a1967c-2e71-763f-b1a9-135f6fc090d6",
-        "seq": 1,
-        "stage": "prepared",
-        "at": "2026-11-01T09:41:23.185436501Z"
-      },
-      {
-        "txn_id": "01a1967c-2e71-763f-b1a9-135f6fc090d6",
-        "seq": 2,
-        "stage": "blocked",
-        "at": "2026-11-01T09:41:23.190934834Z"
-      },
-      {
-        "txn_id": "01a1967c-2e71-763f-b1a9-135f6fc090d6",
-        "seq": 3,
-        "stage": "final_sampled",
-        "at": "2026-11-01T09:41:27.505745269Z"
-      },
-      {
-        "txn_id": "01a1967c-2e71-763f-b1a9-135f6fc090d6",
-        "seq": 4,
-        "stage": "stopped",
-        "at": "2026-11-01T09:41:27.52848609Z"
-      },
-      {
-        "txn_id": "01a1967c-2e71-763f-b1a9-135f6fc090d6",
-        "seq": 5,
-        "stage": "migrated",
-        "at": "2026-11-01T09:41:27.54400554Z"
-      },
-      {
-        "txn_id": "01a1967c-2e71-763f-b1a9-135f6fc090d6",
-        "seq": 6,
-        "stage": "switched",
-        "at": "2026-11-01T09:41:27.556313466Z"
-      },
-      {
-        "txn_id": "01a1967c-2e71-763f-b1a9-135f6fc090d6",
-        "seq": 7,
-        "stage": "checking",
-        "at": "2026-11-01T09:41:27.599052872Z"
-      },
-      {
-        "txn_id": "01a1967c-2e71-763f-b1a9-135f6fc090d6",
-        "seq": 8,
-        "stage": "checking",
-        "at": "2026-11-01T09:41:27.895912537Z"
-      },
-      {
-        "txn_id": "01a1967c-2e71-763f-b1a9-135f6fc090d6",
-        "seq": 9,
-        "stage": "locally_succeeded",
-        "at": "2026-11-01T09:41:27.89691514Z"
-      },
-      {
-        "txn_id": "01a1967c-4823-72b5-9aa6-989380c663fc",
-        "seq": 1,
-        "stage": "prepared",
-        "at": "2026-11-01T09:41:29.763231845Z"
-      },
-      {
-        "txn_id": "01a1967c-4823-72b5-9aa6-989380c663fc",
-        "seq": 2,
-        "stage": "blocked",
-        "at": "2026-11-01T09:41:29.76828452Z"
-      },
-      {
-        "txn_id": "01a1967c-4823-72b5-9aa6-989380c663fc",
-        "seq": 3,
-        "stage": "rolling_back",
-        "at": "2026-11-01T09:41:59.765568841Z"
-      },
-      {
-        "txn_id": "01a1967c-4823-72b5-9aa6-989380c663fc",
-        "seq": 4,
-        "stage": "rolled_back",
-        "at": "2026-11-01T09:41:59.767268713Z"
-      }
-    ],
-    "node": [
-      {
-        "txn_id": "01a1967d-a806-70c6-9764-a8ecab9c5032",
-        "seq": 1,
-        "stage": "prepared",
-        "at": "2026-11-01T09:42:59.846077179Z"
-      },
-      {
-        "txn_id": "01a1967d-a806-70c6-9764-a8ecab9c5032",
-        "seq": 2,
-        "stage": "blocked",
-        "at": "2026-11-01T09:42:59.851282822Z"
-      },
-      {
-        "txn_id": "01a1967d-a806-70c6-9764-a8ecab9c5032",
-        "seq": 3,
-        "stage": "final_sampled",
-        "at": "2026-11-01T09:43:04.164649949Z"
-      },
-      {
-        "txn_id": "01a1967d-a806-70c6-9764-a8ecab9c5032",
-        "seq": 4,
-        "stage": "stopped",
-        "at": "2026-11-01T09:43:04.613077445Z"
-      },
-      {
-        "txn_id": "01a1967d-a806-70c6-9764-a8ecab9c5032",
-        "seq": 5,
-        "stage": "migrated",
-        "at": "2026-11-01T09:43:04.846916419Z"
-      },
-      {
-        "txn_id": "01a1967d-a806-70c6-9764-a8ecab9c5032",
-        "seq": 6,
-        "stage": "switched",
-        "at": "2026-11-01T09:43:04.853097234Z"
-      },
-      {
-        "txn_id": "01a1967d-a806-70c6-9764-a8ecab9c5032",
-        "seq": 7,
-        "stage": "checking",
-        "at": "2026-11-01T09:43:05.537436681Z"
-      },
-      {
-        "txn_id": "01a1967d-a806-70c6-9764-a8ecab9c5032",
-        "seq": 8,
-        "stage": "checking",
-        "at": "2026-11-01T09:43:10.570110805Z"
-      },
-      {
-        "txn_id": "01a1967d-a806-70c6-9764-a8ecab9c5032",
-        "seq": 9,
-        "stage": "locally_succeeded",
-        "at": "2026-11-01T09:43:10.571455166Z"
-      },
-      {
-        "txn_id": "01a1967e-4a4f-74fb-82d1-452ec3c4a454",
-        "seq": 1,
-        "stage": "prepared",
-        "at": "2026-11-01T09:43:41.391371838Z"
-      },
-      {
-        "txn_id": "01a1967e-4a4f-74fb-82d1-452ec3c4a454",
-        "seq": 2,
-        "stage": "blocked",
-        "at": "2026-11-01T09:43:41.396511532Z"
-      },
-      {
-        "txn_id": "01a1967e-4a4f-74fb-82d1-452ec3c4a454",
-        "seq": 3,
-        "stage": "final_sampled",
-        "at": "2026-11-01T09:43:45.410314968Z"
-      },
-      {
-        "txn_id": "01a1967e-4a4f-74fb-82d1-452ec3c4a454",
-        "seq": 4,
-        "stage": "stopped",
-        "at": "2026-11-01T09:43:45.857420356Z"
-      },
-      {
-        "txn_id": "01a1967e-4a4f-74fb-82d1-452ec3c4a454",
-        "seq": 5,
-        "stage": "migrated",
-        "at": "2026-11-01T09:43:46.089513673Z"
-      },
-      {
-        "txn_id": "01a1967e-4a4f-74fb-82d1-452ec3c4a454",
-        "seq": 6,
-        "stage": "switched",
-        "at": "2026-11-01T09:43:46.095559405Z"
-      },
-      {
-        "txn_id": "01a1967e-4a4f-74fb-82d1-452ec3c4a454",
-        "seq": 7,
-        "stage": "checking",
-        "at": "2026-11-01T09:43:46.555383432Z"
-      },
-      {
-        "txn_id": "01a1967e-4a4f-74fb-82d1-452ec3c4a454",
-        "seq": 8,
-        "stage": "checking",
-        "at": "2026-11-01T09:44:16.820352382Z"
-      },
-      {
-        "txn_id": "01a1967e-4a4f-74fb-82d1-452ec3c4a454",
-        "seq": 9,
-        "stage": "rolling_back",
-        "at": "2026-11-01T09:44:16.82133456Z"
-      },
-      {
-        "txn_id": "01a1967e-4a4f-74fb-82d1-452ec3c4a454",
-        "seq": 10,
-        "stage": "rolling_back",
-        "at": "2026-11-01T09:44:17.754640104Z"
-      },
-      {
-        "txn_id": "01a1967e-4a4f-74fb-82d1-452ec3c4a454",
-        "seq": 11,
-        "stage": "rolled_back",
-        "at": "2026-11-01T09:44:17.756369955Z"
-      },
-      {
-        "txn_id": "01a19682-b26a-7165-b159-632d773e5459",
-        "seq": 1,
-        "stage": "prepared",
-        "at": "2026-11-01T09:48:30.186138401Z"
-      },
-      {
-        "txn_id": "01a19682-b26a-7165-b159-632d773e5459",
-        "seq": 2,
-        "stage": "blocked",
-        "at": "2026-11-01T09:48:30.193083053Z"
-      },
-      {
-        "txn_id": "01a19682-b26a-7165-b159-632d773e5459",
-        "seq": 3,
-        "stage": "final_sampled",
-        "at": "2026-11-01T09:48:34.608682751Z"
-      },
-      {
-        "txn_id": "01a19682-b26a-7165-b159-632d773e5459",
-        "seq": 4,
-        "stage": "stopped",
-        "at": "2026-11-01T09:48:35.054424406Z"
-      },
-      {
-        "txn_id": "01a19682-b26a-7165-b159-632d773e5459",
-        "seq": 5,
-        "stage": "migrated",
-        "at": "2026-11-01T09:48:35.290748642Z"
-      },
-      {
-        "txn_id": "01a19682-b26a-7165-b159-632d773e5459",
-        "seq": 6,
-        "stage": "switched",
-        "at": "2026-11-01T09:48:35.313384069Z"
-      },
-      {
-        "txn_id": "01a19682-b26a-7165-b159-632d773e5459",
-        "seq": 7,
-        "stage": "checking",
-        "at": "2026-11-01T09:48:35.798311934Z"
-      },
-      {
-        "txn_id": "01a19682-b26a-7165-b159-632d773e5459",
-        "seq": 8,
-        "stage": "checking",
-        "at": "2026-11-01T09:48:41.084622516Z"
-      },
-      {
-        "txn_id": "01a19682-b26a-7165-b159-632d773e5459",
-        "seq": 9,
-        "stage": "locally_succeeded",
-        "at": "2026-11-01T09:48:41.086618615Z"
-      }
-    ],
-    "node2": [
-      {
-        "txn_id": "01a19683-2c2d-7abe-982c-6882cb507bfa",
-        "seq": 1,
-        "stage": "prepared",
-        "at": "2026-11-01T09:49:01.357744254Z"
-      },
-      {
-        "txn_id": "01a19683-2c2d-7abe-982c-6882cb507bfa",
-        "seq": 2,
-        "stage": "blocked",
-        "at": "2026-11-01T09:49:01.369887415Z"
-      },
-      {
-        "txn_id": "01a19683-2c2d-7abe-982c-6882cb507bfa",
-        "seq": 3,
-        "stage": "final_sampled",
-        "at": "2026-11-01T09:49:04.280992044Z"
-      },
-      {
-        "txn_id": "01a19683-2c2d-7abe-982c-6882cb507bfa",
-        "seq": 4,
-        "stage": "stopped",
-        "at": "2026-11-01T09:49:04.726579237Z"
-      },
-      {
-        "txn_id": "01a19683-2c2d-7abe-982c-6882cb507bfa",
-        "seq": 5,
-        "stage": "migrated",
-        "at": "2026-11-01T09:49:04.958544298Z"
-      },
-      {
-        "txn_id": "01a19683-2c2d-7abe-982c-6882cb507bfa",
-        "seq": 6,
-        "stage": "switched",
-        "at": "2026-11-01T09:49:04.971687826Z"
-      },
-      {
-        "txn_id": "01a19683-2c2d-7abe-982c-6882cb507bfa",
-        "seq": 7,
-        "stage": "checking",
-        "at": "2026-11-01T09:49:05.444844737Z"
-      },
-      {
-        "txn_id": "01a19683-2c2d-7abe-982c-6882cb507bfa",
-        "seq": 8,
-        "stage": "checking",
-        "at": "2026-11-01T09:49:10.473581203Z"
-      },
-      {
-        "txn_id": "01a19683-2c2d-7abe-982c-6882cb507bfa",
-        "seq": 9,
-        "stage": "locally_succeeded",
-        "at": "2026-11-01T09:49:10.476739283Z"
-      }
-    ]
-  },
-  "findings": [],
-  "gaps": [
-    "node stop 1: process wait status not observed",
-    "Run 2babf9b6 has no direct stop command durations, timeouts or wait statuses. Regular retained journal brackets are comparisons of larger stages, not exact command durations; installer journal was not retained after teardown."
-  ],
-  "baseline_pins": {
-    "docs/e2e/at/updates/history/follow-up-12-stop-journal/stages.json": "8f4271c013a392aa3646ceea57539f7e2f1e5f924bf052a8f8980bcd23e53638"
-  },
-  "start_observations": {
-    "installer-node": [
-      {
-        "action": "start",
+        "action": "stop",
         "agent_pid_before": "0",
         "agent_wait_status": -1,
         "command": [
           "/usr/bin/systemctl",
-          "start",
-          "fvpn-watchdog.service",
-          "fvpn-agent.service"
+          "stop",
+          "fvpn-agent.service",
+          "fvpn-watchdog.service"
         ],
-        "duration_ns": 19759844,
+        "duration_ns": 2986211,
         "exit_code": 0,
-        "finished_at": "2026-11-01T09:41:27.591325038Z",
+        "finished_at": "2026-11-01T09:41:27.540422565Z",
         "lease_after": {
           "expires_at": "2026-11-02T09:41:27.362624896Z",
           "lease_id": "b211425a-2c7a-47af-879d-fafacbc3a81b",
@@ -957,63 +210,117 @@
           "present": true
         },
         "parent": "fvpn-updater",
-        "started_at": "2026-11-01T09:41:27.571546253Z",
-        "systemd_after": "TimeoutStopUSec=1min 30s\nMainPID=2631\nResult=success\nExecMainCode=0\nExecMainStatus=0",
+        "started_at": "2026-11-01T09:41:27.537431636Z",
+        "systemd_after": "TimeoutStopUSec=1min 30s\nMainPID=0\nResult=success\nExecMainCode=1\nExecMainStatus=0",
         "systemd_before": "TimeoutStopUSec=1min 30s\nMainPID=0\nResult=success\nExecMainCode=1\nExecMainStatus=0",
         "transaction": {
-          "stage": "switched",
+          "stage": "stopped",
           "txn_id": "01a1967c-2e71-763f-b1a9-135f6fc090d6"
-        }
+        },
+        "role": "installer-node",
+        "ordinal": 2,
+        "duration_ms": 2.986,
+        "baseline": {
+          "command_duration_ms": null,
+          "stage_bracket_ms": null,
+          "outcome": "success inferred from archived installer success",
+          "termination": "not recorded"
+        },
+        "current_stage_bracket": {
+          "txn_id": "01a1967c-2e71-763f-b1a9-135f6fc090d6",
+          "stage": "stopped",
+          "start": "2026-11-01T09:41:27.52848609Z",
+          "end": "2026-11-01T09:41:27.54400554Z",
+          "stage_bracket_ms": 15.519,
+          "command_duration_ms": null,
+          "outcome": "stop returned success",
+          "termination": "not recorded"
+        },
+        "termination": "already stopped",
+        "command_timeout_observed": false,
+        "lease_lost": false
       },
-      {
-        "action": "start",
-        "agent_pid_before": "2631",
-        "agent_wait_status": -1,
-        "command": [
-          "/usr/bin/systemctl",
-          "start",
-          "fvpn-watchdog.service",
-          "fvpn-agent.service"
-        ],
-        "duration_ns": 2548405,
+      "current_stage_bracket": {
+        "txn_id": "01a19794-c6b5-7d86-a83b-1d1f92e7e2ea",
+        "stage": "stopped",
+        "start": "2026-11-01T14:47:56.843336051Z",
+        "end": "2026-11-01T14:47:56.862523687Z",
+        "stage_bracket_ms": 19.187,
+        "command_duration_ms": null,
+        "outcome": "stop returned success",
+        "termination": "not recorded"
+      },
+      "new_exit_observed": false,
+      "agent_exit_code": 0,
+      "agent_signal": null,
+      "termination": "already stopped",
+      "command_failed": false,
+      "command_timeout_observed": false,
+      "reached_15s_budget": false,
+      "lease_lost": false,
+      "status": "measured"
+    },
+    {
+      "action": "stop",
+      "agent_identity_before": {
+        "id": "8f159491-bf4b-4b31-bbf5-1b5d5db15973",
+        "pid": 18338,
+        "start_ticks": "12810102",
+        "already_stopped": false
+      },
+      "agent_pid_before": "18338",
+      "command": [
+        "/usr/local/bin/agent-service.original.sh",
+        "stop"
+      ],
+      "duration_ns": 448123614,
+      "exit_code": 0,
+      "finished_at": "2026-11-01T14:49:34.167824017Z",
+      "lease_after": {
+        "expires_at": "2026-11-02T14:49:33.6909543Z",
+        "lease_id": "cabdcca5-e935-404f-b7cd-462f5db88b2a",
+        "present": true
+      },
+      "lease_before": {
+        "expires_at": "2026-11-02T14:49:33.6909543Z",
+        "lease_id": "cabdcca5-e935-404f-b7cd-462f5db88b2a",
+        "present": true
+      },
+      "parent": "fvpn-updater",
+      "parent_wait_receipt": {
+        "id": "8f159491-bf4b-4b31-bbf5-1b5d5db15973",
+        "pid": 18338,
+        "start_ticks": "12810102",
+        "started_at": "2026-11-01T14:49:23.507908449Z",
+        "wait_observed_at": "2026-11-01T14:49:33.759333325Z",
+        "wait_status": 0,
         "exit_code": 0,
-        "finished_at": "2026-11-01T09:41:27.61678945Z",
-        "lease_after": {
-          "expires_at": "2026-11-02T09:41:27.362624896Z",
-          "lease_id": "b211425a-2c7a-47af-879d-fafacbc3a81b",
-          "present": true
-        },
-        "lease_before": {
-          "expires_at": "2026-11-02T09:41:27.362624896Z",
-          "lease_id": "b211425a-2c7a-47af-879d-fafacbc3a81b",
-          "present": true
-        },
-        "parent": "fvpn-updater",
-        "started_at": "2026-11-01T09:41:27.614236764Z",
-        "systemd_after": "TimeoutStopUSec=1min 30s\nMainPID=2631\nResult=success\nExecMainCode=0\nExecMainStatus=0",
-        "systemd_before": "TimeoutStopUSec=1min 30s\nMainPID=2631\nResult=success\nExecMainCode=0\nExecMainStatus=0",
-        "transaction": {
-          "stage": "checking",
-          "txn_id": "01a1967c-2e71-763f-b1a9-135f6fc090d6"
-        }
-      }
-    ],
-    "node": [
-      {
-        "action": "start",
-        "agent_pid_before": "",
+        "signal": null,
+        "core_dump": false
+      },
+      "sampled_raw_wait_status": -1,
+      "started_at": "2026-11-01T14:49:33.719684002Z",
+      "transaction": {
+        "stage": "final_sampled",
+        "txn_id": "01a19796-44ea-7757-a70e-666a4fd50df4"
+      },
+      "role": "node",
+      "ordinal": 1,
+      "duration_ms": 448.124,
+      "baseline": {
+        "action": "stop",
+        "agent_pid_before": "18038",
         "agent_wait_status": -1,
         "command": [
           "/usr/local/bin/agent-service.original.sh",
-          "start",
-          "/opt/vpn-node/releases/01a1967b-9313-7895-afeb-71db6f20adaf"
+          "stop"
         ],
-        "duration_ns": 665201748,
+        "duration_ns": 443555863,
         "exit_code": 0,
-        "finished_at": "2026-11-01T09:43:05.527308581Z",
+        "finished_at": "2026-11-01T09:43:04.611892255Z",
         "lease_after": {
-          "expires_at": "2026-11-02T09:43:05.321327952Z",
-          "lease_id": "0266efe0-ce4d-4097-8ce4-836af23905c3",
+          "expires_at": "2026-11-02T09:43:04.13363853Z",
+          "lease_id": "4fde3958-ecac-4ba8-9ac4-ac8f228521e9",
           "present": true
         },
         "lease_before": {
@@ -1022,56 +329,366 @@
           "present": true
         },
         "parent": "fvpn-updater",
-        "started_at": "2026-11-01T09:43:04.862104182Z",
+        "started_at": "2026-11-01T09:43:04.168334378Z",
         "transaction": {
-          "stage": "switched",
+          "stage": "final_sampled",
           "txn_id": "01a1967d-a806-70c6-9764-a8ecab9c5032"
-        }
+        },
+        "role": "node",
+        "ordinal": 1,
+        "duration_ms": 443.556,
+        "baseline": {
+          "txn_id": "01a19402-da5e-7e5f-b195-bb57c04d3355",
+          "stage": "final_sampled",
+          "start": "2026-10-31T22:09:42.395381851Z",
+          "end": "2026-10-31T22:09:42.83788523Z",
+          "stage_bracket_ms": 442.504,
+          "command_duration_ms": null,
+          "outcome": "stop returned success",
+          "termination": "not recorded"
+        },
+        "current_stage_bracket": {
+          "txn_id": "01a1967d-a806-70c6-9764-a8ecab9c5032",
+          "stage": "final_sampled",
+          "start": "2026-11-01T09:43:04.164649949Z",
+          "end": "2026-11-01T09:43:04.613077445Z",
+          "stage_bracket_ms": 448.428,
+          "command_duration_ms": null,
+          "outcome": "stop returned success",
+          "termination": "not recorded"
+        },
+        "termination": "unobserved",
+        "command_timeout_observed": false,
+        "lease_lost": false
       },
-      {
-        "action": "start",
-        "agent_pid_before": "22999",
-        "agent_wait_status": -1,
-        "command": [
-          "/usr/local/bin/agent-service.original.sh",
-          "start",
-          "/opt/vpn-node/releases/01a1967b-9313-7895-afeb-71db6f20adaf"
-        ],
-        "duration_ns": 237036224,
+      "current_stage_bracket": {
+        "txn_id": "01a19796-44ea-7757-a70e-666a4fd50df4",
+        "stage": "final_sampled",
+        "start": "2026-11-01T14:49:33.707711649Z",
+        "end": "2026-11-01T14:49:34.16925143Z",
+        "stage_bracket_ms": 461.54,
+        "command_duration_ms": null,
+        "outcome": "stop returned success",
+        "termination": "not recorded"
+      },
+      "new_exit_observed": true,
+      "agent_exit_code": 0,
+      "agent_signal": null,
+      "termination": "exited",
+      "receipt_retained_after_restarts": true,
+      "command_failed": false,
+      "command_timeout_observed": false,
+      "reached_15s_budget": false,
+      "lease_lost": false,
+      "status": "measured"
+    },
+    {
+      "action": "stop",
+      "agent_identity_before": {
+        "id": "8f159491-bf4b-4b31-bbf5-1b5d5db15973",
+        "pid": 18338,
+        "start_ticks": "12810102",
+        "already_stopped": true
+      },
+      "agent_pid_before": "",
+      "command": [
+        "/usr/local/bin/agent-service.original.sh",
+        "stop"
+      ],
+      "duration_ns": 231254045,
+      "exit_code": 0,
+      "finished_at": "2026-11-01T14:49:34.40816338Z",
+      "lease_after": {
+        "expires_at": "2026-11-02T14:49:33.6909543Z",
+        "lease_id": "cabdcca5-e935-404f-b7cd-462f5db88b2a",
+        "present": true
+      },
+      "lease_before": {
+        "expires_at": "2026-11-02T14:49:33.6909543Z",
+        "lease_id": "cabdcca5-e935-404f-b7cd-462f5db88b2a",
+        "present": true
+      },
+      "parent": "fvpn-updater",
+      "parent_wait_receipt": {
+        "id": "8f159491-bf4b-4b31-bbf5-1b5d5db15973",
+        "pid": 18338,
+        "start_ticks": "12810102",
+        "started_at": "2026-11-01T14:49:23.507908449Z",
+        "wait_observed_at": "2026-11-01T14:49:33.759333325Z",
+        "wait_status": 0,
         "exit_code": 0,
-        "finished_at": "2026-11-01T09:43:05.782382022Z",
-        "lease_after": {
-          "expires_at": "2026-11-02T09:43:05.321327952Z",
-          "lease_id": "0266efe0-ce4d-4097-8ce4-836af23905c3",
-          "present": true
-        },
-        "lease_before": {
-          "expires_at": "2026-11-02T09:43:05.321327952Z",
-          "lease_id": "0266efe0-ce4d-4097-8ce4-836af23905c3",
-          "present": true
-        },
-        "parent": "fvpn-updater",
-        "started_at": "2026-11-01T09:43:05.545342838Z",
-        "transaction": {
-          "stage": "checking",
-          "txn_id": "01a1967d-a806-70c6-9764-a8ecab9c5032"
-        }
+        "signal": null,
+        "core_dump": false
       },
-      {
-        "action": "start",
+      "sampled_raw_wait_status": -1,
+      "started_at": "2026-11-01T14:49:34.176902367Z",
+      "transaction": {
+        "stage": "stopped",
+        "txn_id": "01a19796-44ea-7757-a70e-666a4fd50df4"
+      },
+      "role": "node",
+      "ordinal": 2,
+      "duration_ms": 231.254,
+      "baseline": {
+        "action": "stop",
         "agent_pid_before": "",
         "agent_wait_status": -1,
         "command": [
           "/usr/local/bin/agent-service.original.sh",
-          "start",
-          "/opt/vpn-node/releases/01a1967b-8a41-7284-981c-b690b4dd3eb9"
+          "stop"
         ],
-        "duration_ns": 446179560,
+        "duration_ns": 229330481,
         "exit_code": 0,
-        "finished_at": "2026-11-01T09:43:46.550947999Z",
+        "finished_at": "2026-11-01T09:43:04.845859917Z",
         "lease_after": {
-          "expires_at": "2026-11-02T09:43:46.355198165Z",
-          "lease_id": "c415fc44-dfef-468d-9de0-70a0f4be2f6f",
+          "expires_at": "2026-11-02T09:43:04.13363853Z",
+          "lease_id": "4fde3958-ecac-4ba8-9ac4-ac8f228521e9",
+          "present": true
+        },
+        "lease_before": {
+          "expires_at": "2026-11-02T09:43:04.13363853Z",
+          "lease_id": "4fde3958-ecac-4ba8-9ac4-ac8f228521e9",
+          "present": true
+        },
+        "parent": "fvpn-updater",
+        "started_at": "2026-11-01T09:43:04.616526651Z",
+        "transaction": {
+          "stage": "stopped",
+          "txn_id": "01a1967d-a806-70c6-9764-a8ecab9c5032"
+        },
+        "role": "node",
+        "ordinal": 2,
+        "duration_ms": 229.33,
+        "baseline": {
+          "txn_id": "01a19402-da5e-7e5f-b195-bb57c04d3355",
+          "stage": "stopped",
+          "start": "2026-10-31T22:09:42.83788523Z",
+          "end": "2026-10-31T22:09:43.065591445Z",
+          "stage_bracket_ms": 227.706,
+          "command_duration_ms": null,
+          "outcome": "stop returned success",
+          "termination": "not recorded"
+        },
+        "current_stage_bracket": {
+          "txn_id": "01a1967d-a806-70c6-9764-a8ecab9c5032",
+          "stage": "stopped",
+          "start": "2026-11-01T09:43:04.613077445Z",
+          "end": "2026-11-01T09:43:04.846916419Z",
+          "stage_bracket_ms": 233.839,
+          "command_duration_ms": null,
+          "outcome": "stop returned success",
+          "termination": "not recorded"
+        },
+        "termination": "already stopped",
+        "command_timeout_observed": false,
+        "lease_lost": false
+      },
+      "current_stage_bracket": {
+        "txn_id": "01a19796-44ea-7757-a70e-666a4fd50df4",
+        "stage": "stopped",
+        "start": "2026-11-01T14:49:34.16925143Z",
+        "end": "2026-11-01T14:49:34.409378386Z",
+        "stage_bracket_ms": 240.127,
+        "command_duration_ms": null,
+        "outcome": "stop returned success",
+        "termination": "not recorded"
+      },
+      "new_exit_observed": false,
+      "agent_exit_code": 0,
+      "agent_signal": null,
+      "termination": "already stopped",
+      "receipt_retained_after_restarts": true,
+      "command_failed": false,
+      "command_timeout_observed": false,
+      "reached_15s_budget": false,
+      "lease_lost": false,
+      "status": "measured"
+    },
+    {
+      "action": "stop",
+      "agent_identity_before": {
+        "id": "09e966f4-4d2b-4369-a266-042c7578a629",
+        "pid": 23276,
+        "start_ticks": "12811201",
+        "already_stopped": false
+      },
+      "agent_pid_before": "23276",
+      "command": [
+        "/usr/local/bin/agent-service.original.sh",
+        "stop"
+      ],
+      "duration_ns": 449260981,
+      "exit_code": 0,
+      "finished_at": "2026-11-01T14:50:15.232676335Z",
+      "lease_after": {
+        "expires_at": "2026-11-02T14:50:14.795553103Z",
+        "lease_id": "c1e10add-06fa-49e8-a978-8c7b139fc435",
+        "present": true
+      },
+      "lease_before": {
+        "expires_at": "2026-11-02T14:50:09.748320205Z",
+        "lease_id": "b8ba1c7d-ce5d-4a62-880c-0ad3bc552308",
+        "present": true
+      },
+      "parent": "fvpn-updater",
+      "parent_wait_receipt": {
+        "id": "09e966f4-4d2b-4369-a266-042c7578a629",
+        "pid": 23276,
+        "start_ticks": "12811201",
+        "started_at": "2026-11-01T14:49:34.50091895Z",
+        "wait_observed_at": "2026-11-01T14:50:14.850504038Z",
+        "wait_status": 0,
+        "exit_code": 0,
+        "signal": null,
+        "core_dump": false
+      },
+      "sampled_raw_wait_status": -1,
+      "started_at": "2026-11-01T14:50:14.783407995Z",
+      "transaction": {
+        "stage": "final_sampled",
+        "txn_id": "01a19796-e3c5-7a78-b649-ed92dcd112c4"
+      },
+      "role": "node",
+      "ordinal": 3,
+      "duration_ms": 449.261,
+      "baseline": {
+        "action": "stop",
+        "agent_pid_before": "22999",
+        "agent_wait_status": 0,
+        "command": [
+          "/usr/local/bin/agent-service.original.sh",
+          "stop"
+        ],
+        "duration_ns": 441713213,
+        "exit_code": 0,
+        "finished_at": "2026-11-01T09:43:45.856314468Z",
+        "lease_after": {
+          "expires_at": "2026-11-02T09:43:45.425796931Z",
+          "lease_id": "d7304a0c-d1c0-4e3e-b411-baf09dbb89e2",
+          "present": true
+        },
+        "lease_before": {
+          "expires_at": "2026-11-02T09:43:40.384624445Z",
+          "lease_id": "731eb642-6cc8-4ca3-b75b-8c17ca76c4ed",
+          "present": true
+        },
+        "parent": "fvpn-updater",
+        "started_at": "2026-11-01T09:43:45.414598414Z",
+        "transaction": {
+          "stage": "final_sampled",
+          "txn_id": "01a1967e-4a4f-74fb-82d1-452ec3c4a454"
+        },
+        "role": "node",
+        "ordinal": 3,
+        "duration_ms": 441.713,
+        "baseline": {
+          "txn_id": "01a19403-7f30-7790-a987-751842a77782",
+          "stage": "final_sampled",
+          "start": "2026-10-31T22:10:23.688470897Z",
+          "end": "2026-10-31T22:10:24.130507842Z",
+          "stage_bracket_ms": 442.037,
+          "command_duration_ms": null,
+          "outcome": "stop returned success",
+          "termination": "not recorded"
+        },
+        "current_stage_bracket": {
+          "txn_id": "01a1967e-4a4f-74fb-82d1-452ec3c4a454",
+          "stage": "final_sampled",
+          "start": "2026-11-01T09:43:45.410314968Z",
+          "end": "2026-11-01T09:43:45.857420356Z",
+          "stage_bracket_ms": 447.106,
+          "command_duration_ms": null,
+          "outcome": "stop returned success",
+          "termination": "not recorded"
+        },
+        "agent_exit_code": 0,
+        "agent_signal": 0,
+        "termination": "exited",
+        "command_timeout_observed": false,
+        "lease_lost": false
+      },
+      "current_stage_bracket": {
+        "txn_id": "01a19796-e3c5-7a78-b649-ed92dcd112c4",
+        "stage": "final_sampled",
+        "start": "2026-11-01T14:50:14.778867805Z",
+        "end": "2026-11-01T14:50:15.233907426Z",
+        "stage_bracket_ms": 455.04,
+        "command_duration_ms": null,
+        "outcome": "stop returned success",
+        "termination": "not recorded"
+      },
+      "new_exit_observed": true,
+      "agent_exit_code": 0,
+      "agent_signal": null,
+      "termination": "exited",
+      "receipt_retained_after_restarts": true,
+      "command_failed": false,
+      "command_timeout_observed": false,
+      "reached_15s_budget": false,
+      "lease_lost": false,
+      "status": "measured"
+    },
+    {
+      "action": "stop",
+      "agent_identity_before": {
+        "id": "09e966f4-4d2b-4369-a266-042c7578a629",
+        "pid": 23276,
+        "start_ticks": "12811201",
+        "already_stopped": true
+      },
+      "agent_pid_before": "",
+      "command": [
+        "/usr/local/bin/agent-service.original.sh",
+        "stop"
+      ],
+      "duration_ns": 227978095,
+      "exit_code": 0,
+      "finished_at": "2026-11-01T14:50:15.466215382Z",
+      "lease_after": {
+        "expires_at": "2026-11-02T14:50:14.795553103Z",
+        "lease_id": "c1e10add-06fa-49e8-a978-8c7b139fc435",
+        "present": true
+      },
+      "lease_before": {
+        "expires_at": "2026-11-02T14:50:14.795553103Z",
+        "lease_id": "c1e10add-06fa-49e8-a978-8c7b139fc435",
+        "present": true
+      },
+      "parent": "fvpn-updater",
+      "parent_wait_receipt": {
+        "id": "09e966f4-4d2b-4369-a266-042c7578a629",
+        "pid": 23276,
+        "start_ticks": "12811201",
+        "started_at": "2026-11-01T14:49:34.50091895Z",
+        "wait_observed_at": "2026-11-01T14:50:14.850504038Z",
+        "wait_status": 0,
+        "exit_code": 0,
+        "signal": null,
+        "core_dump": false
+      },
+      "sampled_raw_wait_status": -1,
+      "started_at": "2026-11-01T14:50:15.238219239Z",
+      "transaction": {
+        "stage": "stopped",
+        "txn_id": "01a19796-e3c5-7a78-b649-ed92dcd112c4"
+      },
+      "role": "node",
+      "ordinal": 4,
+      "duration_ms": 227.978,
+      "baseline": {
+        "action": "stop",
+        "agent_pid_before": "",
+        "agent_wait_status": -1,
+        "command": [
+          "/usr/local/bin/agent-service.original.sh",
+          "stop"
+        ],
+        "duration_ns": 227498748,
+        "exit_code": 0,
+        "finished_at": "2026-11-01T09:43:46.088343153Z",
+        "lease_after": {
+          "expires_at": "2026-11-02T09:43:45.425796931Z",
+          "lease_id": "d7304a0c-d1c0-4e3e-b411-baf09dbb89e2",
           "present": true
         },
         "lease_before": {
@@ -1080,56 +697,120 @@
           "present": true
         },
         "parent": "fvpn-updater",
-        "started_at": "2026-11-01T09:43:46.104756526Z",
+        "started_at": "2026-11-01T09:43:45.86084152Z",
         "transaction": {
-          "stage": "switched",
+          "stage": "stopped",
           "txn_id": "01a1967e-4a4f-74fb-82d1-452ec3c4a454"
-        }
+        },
+        "role": "node",
+        "ordinal": 4,
+        "duration_ms": 227.499,
+        "baseline": {
+          "txn_id": "01a19403-7f30-7790-a987-751842a77782",
+          "stage": "stopped",
+          "start": "2026-10-31T22:10:24.130507842Z",
+          "end": "2026-10-31T22:10:24.360101363Z",
+          "stage_bracket_ms": 229.594,
+          "command_duration_ms": null,
+          "outcome": "stop returned success",
+          "termination": "not recorded"
+        },
+        "current_stage_bracket": {
+          "txn_id": "01a1967e-4a4f-74fb-82d1-452ec3c4a454",
+          "stage": "stopped",
+          "start": "2026-11-01T09:43:45.857420356Z",
+          "end": "2026-11-01T09:43:46.089513673Z",
+          "stage_bracket_ms": 232.093,
+          "command_duration_ms": null,
+          "outcome": "stop returned success",
+          "termination": "not recorded"
+        },
+        "termination": "already stopped",
+        "command_timeout_observed": false,
+        "lease_lost": false
       },
-      {
-        "action": "start",
+      "current_stage_bracket": {
+        "txn_id": "01a19796-e3c5-7a78-b649-ed92dcd112c4",
+        "stage": "stopped",
+        "start": "2026-11-01T14:50:15.233907426Z",
+        "end": "2026-11-01T14:50:15.467544885Z",
+        "stage_bracket_ms": 233.637,
+        "command_duration_ms": null,
+        "outcome": "stop returned success",
+        "termination": "not recorded"
+      },
+      "new_exit_observed": false,
+      "agent_exit_code": 0,
+      "agent_signal": null,
+      "termination": "already stopped",
+      "receipt_retained_after_restarts": true,
+      "command_failed": false,
+      "command_timeout_observed": false,
+      "reached_15s_budget": false,
+      "lease_lost": false,
+      "status": "measured"
+    },
+    {
+      "action": "stop",
+      "agent_identity_before": {
+        "id": "e70d9d16-69b7-45c4-bdbd-c174ad4ec22b",
+        "pid": 35598,
+        "start_ticks": "12815308",
+        "already_stopped": false
+      },
+      "agent_pid_before": "35598",
+      "command": [
+        "/usr/local/bin/agent-service.original.sh",
+        "stop"
+      ],
+      "duration_ns": 433314368,
+      "exit_code": 0,
+      "finished_at": "2026-11-01T14:50:46.692952995Z",
+      "lease_after": {
+        "expires_at": "2026-11-02T14:50:45.826718674Z",
+        "lease_id": "83f7a7ce-1928-4f00-a2a4-69ec7b20e6fe",
+        "present": true
+      },
+      "lease_before": {
+        "expires_at": "2026-11-02T14:50:45.826718674Z",
+        "lease_id": "83f7a7ce-1928-4f00-a2a4-69ec7b20e6fe",
+        "present": true
+      },
+      "parent": "fvpn-updater",
+      "parent_wait_receipt": {
+        "id": "e70d9d16-69b7-45c4-bdbd-c174ad4ec22b",
+        "pid": 35598,
+        "start_ticks": "12815308",
+        "started_at": "2026-11-01T14:50:15.57266052Z",
+        "wait_observed_at": "2026-11-01T14:50:46.379240341Z",
+        "wait_status": 0,
+        "exit_code": 0,
+        "signal": null,
+        "core_dump": false
+      },
+      "sampled_raw_wait_status": -1,
+      "started_at": "2026-11-01T14:50:46.259619761Z",
+      "transaction": {
+        "stage": "rolling_back",
+        "txn_id": "01a19796-e3c5-7a78-b649-ed92dcd112c4"
+      },
+      "role": "node",
+      "ordinal": 5,
+      "duration_ms": 433.314,
+      "baseline": {
+        "action": "stop",
         "agent_pid_before": "35222",
-        "agent_wait_status": -1,
+        "agent_wait_status": 0,
         "command": [
           "/usr/local/bin/agent-service.original.sh",
-          "start",
-          "/opt/vpn-node/releases/01a1967b-8a41-7284-981c-b690b4dd3eb9"
+          "stop"
         ],
-        "duration_ns": 233095753,
+        "duration_ns": 435179083,
         "exit_code": 0,
-        "finished_at": "2026-11-01T09:43:46.796551828Z",
+        "finished_at": "2026-11-01T09:44:17.281998829Z",
         "lease_after": {
-          "expires_at": "2026-11-02T09:43:46.355198165Z",
-          "lease_id": "c415fc44-dfef-468d-9de0-70a0f4be2f6f",
-          "present": true
-        },
-        "lease_before": {
-          "expires_at": "2026-11-02T09:43:46.355198165Z",
-          "lease_id": "c415fc44-dfef-468d-9de0-70a0f4be2f6f",
-          "present": true
-        },
-        "parent": "fvpn-updater",
-        "started_at": "2026-11-01T09:43:46.563452453Z",
-        "transaction": {
-          "stage": "checking",
-          "txn_id": "01a1967e-4a4f-74fb-82d1-452ec3c4a454"
-        }
-      },
-      {
-        "action": "start",
-        "agent_pid_before": "",
-        "agent_wait_status": -1,
-        "command": [
-          "/usr/local/bin/agent-service.original.sh",
-          "start",
-          "/opt/vpn-node/releases/01a1967b-9313-7895-afeb-71db6f20adaf"
-        ],
-        "duration_ns": 443409246,
-        "exit_code": 0,
-        "finished_at": "2026-11-01T09:44:17.731421518Z",
-        "lease_after": {
-          "expires_at": "2026-11-02T09:44:17.716689611Z",
-          "lease_id": "1cb2b45f-a319-4db8-81d7-50730cb5932a",
+          "expires_at": "2026-11-02T09:44:16.421501053Z",
+          "lease_id": "3a2d04d5-522c-46af-bd87-12554eceee1c",
           "present": true
         },
         "lease_before": {
@@ -1138,27 +819,246 @@
           "present": true
         },
         "parent": "fvpn-updater",
-        "started_at": "2026-11-01T09:44:17.288001058Z",
+        "started_at": "2026-11-01T09:44:16.846816482Z",
         "transaction": {
           "stage": "rolling_back",
           "txn_id": "01a1967e-4a4f-74fb-82d1-452ec3c4a454"
-        }
+        },
+        "role": "node",
+        "ordinal": 5,
+        "duration_ms": 435.179,
+        "baseline": {
+          "txn_id": "01a19403-7f30-7790-a987-751842a77782",
+          "stage": "rolling_back",
+          "start": "2026-10-31T22:10:55.09742689Z",
+          "end": "2026-10-31T22:10:56.046511623Z",
+          "stage_bracket_ms": 949.085,
+          "command_duration_ms": null,
+          "outcome": "rollback completed; Stop error is discarded by product",
+          "termination": "not recorded"
+        },
+        "current_stage_bracket": {
+          "txn_id": "01a1967e-4a4f-74fb-82d1-452ec3c4a454",
+          "stage": "rolling_back",
+          "start": "2026-11-01T09:44:16.82133456Z",
+          "end": "2026-11-01T09:44:17.754640104Z",
+          "stage_bracket_ms": 933.306,
+          "command_duration_ms": null,
+          "outcome": "rollback completed; Stop error is discarded by product",
+          "termination": "not recorded"
+        },
+        "agent_exit_code": 0,
+        "agent_signal": 0,
+        "termination": "exited",
+        "command_timeout_observed": false,
+        "lease_lost": false
       },
-      {
-        "action": "start",
+      "current_stage_bracket": {
+        "txn_id": "01a19796-e3c5-7a78-b649-ed92dcd112c4",
+        "stage": "rolling_back",
+        "start": "2026-11-01T14:50:46.230128473Z",
+        "end": "2026-11-01T14:50:47.173939855Z",
+        "stage_bracket_ms": 943.811,
+        "command_duration_ms": null,
+        "outcome": "rollback completed; Stop error is discarded by product",
+        "termination": "not recorded"
+      },
+      "new_exit_observed": true,
+      "agent_exit_code": 0,
+      "agent_signal": null,
+      "termination": "exited",
+      "receipt_retained_after_restarts": true,
+      "command_failed": false,
+      "command_timeout_observed": false,
+      "reached_15s_budget": false,
+      "lease_lost": false,
+      "status": "measured"
+    },
+    {
+      "action": "stop",
+      "agent_identity_before": {
+        "id": "ec212d6c-01ba-4163-ba33-8fe24ad82820",
+        "pid": 141112,
+        "start_ticks": "12842598",
+        "already_stopped": false
+      },
+      "agent_pid_before": "141112",
+      "command": [
+        "/usr/local/bin/agent-service.original.sh",
+        "stop"
+      ],
+      "duration_ns": 439985351,
+      "exit_code": 0,
+      "finished_at": "2026-11-01T14:54:59.155393883Z",
+      "lease_after": {
+        "expires_at": "2026-11-02T14:54:58.662254607Z",
+        "lease_id": "acce3d25-b2c7-41fe-bf24-bf090137364e",
+        "present": true
+      },
+      "lease_before": {
+        "expires_at": "2026-11-02T14:54:58.662254607Z",
+        "lease_id": "acce3d25-b2c7-41fe-bf24-bf090137364e",
+        "present": true
+      },
+      "parent": "fvpn-updater",
+      "parent_wait_receipt": {
+        "id": "ec212d6c-01ba-4163-ba33-8fe24ad82820",
+        "pid": 141112,
+        "start_ticks": "12842598",
+        "started_at": "2026-11-01T14:54:48.471737707Z",
+        "wait_observed_at": "2026-11-01T14:54:58.892957702Z",
+        "wait_status": 0,
+        "exit_code": 0,
+        "signal": null,
+        "core_dump": false
+      },
+      "sampled_raw_wait_status": -1,
+      "started_at": "2026-11-01T14:54:58.715388804Z",
+      "transaction": {
+        "stage": "final_sampled",
+        "txn_id": "01a1979b-3491-7ec4-bd4e-9156f0d27f05"
+      },
+      "role": "node",
+      "ordinal": 6,
+      "duration_ms": 439.985,
+      "baseline": {
+        "action": "stop",
+        "agent_pid_before": "138885",
+        "agent_wait_status": 0,
+        "command": [
+          "/usr/local/bin/agent-service.original.sh",
+          "stop"
+        ],
+        "duration_ns": 439400020,
+        "exit_code": 0,
+        "finished_at": "2026-11-01T09:48:35.053375912Z",
+        "lease_after": {
+          "expires_at": "2026-11-02T09:48:34.614806882Z",
+          "lease_id": "c3e67dd5-0961-4ee1-892f-0dc7cdfb81ae",
+          "present": true
+        },
+        "lease_before": {
+          "expires_at": "2026-11-02T09:48:29.583056938Z",
+          "lease_id": "ea3e4381-1487-4f2c-9548-ff377cbf1415",
+          "present": true
+        },
+        "parent": "fvpn-updater",
+        "started_at": "2026-11-01T09:48:34.61397344Z",
+        "transaction": {
+          "stage": "final_sampled",
+          "txn_id": "01a19682-b26a-7165-b159-632d773e5459"
+        },
+        "role": "node",
+        "ordinal": 6,
+        "duration_ms": 439.4,
+        "baseline": {
+          "txn_id": "01a19407-e7c4-73af-89bc-a1afde2fe0af",
+          "stage": "final_sampled",
+          "start": "2026-10-31T22:15:13.106940637Z",
+          "end": "2026-10-31T22:15:13.545520151Z",
+          "stage_bracket_ms": 438.58,
+          "command_duration_ms": null,
+          "outcome": "stop returned success",
+          "termination": "not recorded"
+        },
+        "current_stage_bracket": {
+          "txn_id": "01a19682-b26a-7165-b159-632d773e5459",
+          "stage": "final_sampled",
+          "start": "2026-11-01T09:48:34.608682751Z",
+          "end": "2026-11-01T09:48:35.054424406Z",
+          "stage_bracket_ms": 445.742,
+          "command_duration_ms": null,
+          "outcome": "stop returned success",
+          "termination": "not recorded"
+        },
+        "agent_exit_code": 0,
+        "agent_signal": 0,
+        "termination": "exited",
+        "command_timeout_observed": false,
+        "lease_lost": false
+      },
+      "current_stage_bracket": {
+        "txn_id": "01a1979b-3491-7ec4-bd4e-9156f0d27f05",
+        "stage": "final_sampled",
+        "start": "2026-11-01T14:54:58.710502392Z",
+        "end": "2026-11-01T14:54:59.156634252Z",
+        "stage_bracket_ms": 446.132,
+        "command_duration_ms": null,
+        "outcome": "stop returned success",
+        "termination": "not recorded"
+      },
+      "new_exit_observed": true,
+      "agent_exit_code": 0,
+      "agent_signal": null,
+      "termination": "exited",
+      "receipt_retained_after_restarts": true,
+      "command_failed": false,
+      "command_timeout_observed": false,
+      "reached_15s_budget": false,
+      "lease_lost": false,
+      "status": "measured"
+    },
+    {
+      "action": "stop",
+      "agent_identity_before": {
+        "id": "ec212d6c-01ba-4163-ba33-8fe24ad82820",
+        "pid": 141112,
+        "start_ticks": "12842598",
+        "already_stopped": true
+      },
+      "agent_pid_before": "",
+      "command": [
+        "/usr/local/bin/agent-service.original.sh",
+        "stop"
+      ],
+      "duration_ns": 226091342,
+      "exit_code": 0,
+      "finished_at": "2026-11-01T14:54:59.386853177Z",
+      "lease_after": {
+        "expires_at": "2026-11-02T14:54:58.662254607Z",
+        "lease_id": "acce3d25-b2c7-41fe-bf24-bf090137364e",
+        "present": true
+      },
+      "lease_before": {
+        "expires_at": "2026-11-02T14:54:58.662254607Z",
+        "lease_id": "acce3d25-b2c7-41fe-bf24-bf090137364e",
+        "present": true
+      },
+      "parent": "fvpn-updater",
+      "parent_wait_receipt": {
+        "id": "ec212d6c-01ba-4163-ba33-8fe24ad82820",
+        "pid": 141112,
+        "start_ticks": "12842598",
+        "started_at": "2026-11-01T14:54:48.471737707Z",
+        "wait_observed_at": "2026-11-01T14:54:58.892957702Z",
+        "wait_status": 0,
+        "exit_code": 0,
+        "signal": null,
+        "core_dump": false
+      },
+      "sampled_raw_wait_status": -1,
+      "started_at": "2026-11-01T14:54:59.160753491Z",
+      "transaction": {
+        "stage": "stopped",
+        "txn_id": "01a1979b-3491-7ec4-bd4e-9156f0d27f05"
+      },
+      "role": "node",
+      "ordinal": 7,
+      "duration_ms": 226.091,
+      "baseline": {
+        "action": "stop",
         "agent_pid_before": "",
         "agent_wait_status": -1,
         "command": [
           "/usr/local/bin/agent-service.original.sh",
-          "start",
-          "/opt/vpn-node/releases/01a1967b-9b81-7675-8035-9220b0a7c982"
+          "stop"
         ],
-        "duration_ns": 454968687,
+        "duration_ns": 229106638,
         "exit_code": 0,
-        "finished_at": "2026-11-01T09:48:35.792904002Z",
+        "finished_at": "2026-11-01T09:48:35.289620769Z",
         "lease_after": {
-          "expires_at": "2026-11-02T09:48:35.694729944Z",
-          "lease_id": "d1031b4e-bc0a-4b3a-977c-2b167fe3a26b",
+          "expires_at": "2026-11-02T09:48:34.614806882Z",
+          "lease_id": "c3e67dd5-0961-4ee1-892f-0dc7cdfb81ae",
           "present": true
         },
         "lease_before": {
@@ -1167,58 +1067,120 @@
           "present": true
         },
         "parent": "fvpn-updater",
-        "started_at": "2026-11-01T09:48:35.337930253Z",
+        "started_at": "2026-11-01T09:48:35.06050471Z",
         "transaction": {
-          "stage": "switched",
+          "stage": "stopped",
           "txn_id": "01a19682-b26a-7165-b159-632d773e5459"
-        }
+        },
+        "role": "node",
+        "ordinal": 7,
+        "duration_ms": 229.107,
+        "baseline": {
+          "txn_id": "01a19407-e7c4-73af-89bc-a1afde2fe0af",
+          "stage": "stopped",
+          "start": "2026-10-31T22:15:13.545520151Z",
+          "end": "2026-10-31T22:15:13.777141678Z",
+          "stage_bracket_ms": 231.621,
+          "command_duration_ms": null,
+          "outcome": "stop returned success",
+          "termination": "not recorded"
+        },
+        "current_stage_bracket": {
+          "txn_id": "01a19682-b26a-7165-b159-632d773e5459",
+          "stage": "stopped",
+          "start": "2026-11-01T09:48:35.054424406Z",
+          "end": "2026-11-01T09:48:35.290748642Z",
+          "stage_bracket_ms": 236.324,
+          "command_duration_ms": null,
+          "outcome": "stop returned success",
+          "termination": "not recorded"
+        },
+        "termination": "already stopped",
+        "command_timeout_observed": false,
+        "lease_lost": false
       },
-      {
-        "action": "start",
-        "agent_pid_before": "142045",
-        "agent_wait_status": -1,
+      "current_stage_bracket": {
+        "txn_id": "01a1979b-3491-7ec4-bd4e-9156f0d27f05",
+        "stage": "stopped",
+        "start": "2026-11-01T14:54:59.156634252Z",
+        "end": "2026-11-01T14:54:59.388209958Z",
+        "stage_bracket_ms": 231.575,
+        "command_duration_ms": null,
+        "outcome": "stop returned success",
+        "termination": "not recorded"
+      },
+      "new_exit_observed": false,
+      "agent_exit_code": 0,
+      "agent_signal": null,
+      "termination": "already stopped",
+      "receipt_retained_after_restarts": true,
+      "command_failed": false,
+      "command_timeout_observed": false,
+      "reached_15s_budget": false,
+      "lease_lost": false,
+      "status": "measured"
+    },
+    {
+      "action": "stop",
+      "agent_identity_before": {
+        "id": "8051b988-bd76-4e34-b3c3-b0d5d6c6dec9",
+        "pid": 1152,
+        "start_ticks": "12845056",
+        "already_stopped": false
+      },
+      "agent_pid_before": "1152",
+      "command": [
+        "/usr/local/bin/agent-service.original.sh",
+        "stop"
+      ],
+      "duration_ns": 434169436,
+      "exit_code": 0,
+      "finished_at": "2026-11-01T14:55:28.697542271Z",
+      "lease_after": {
+        "expires_at": "2026-11-02T14:55:28.208312726Z",
+        "lease_id": "6a51f40b-1229-4546-be11-c97ac950d4f8",
+        "present": true
+      },
+      "lease_before": {
+        "expires_at": "2026-11-02T14:55:28.208312726Z",
+        "lease_id": "6a51f40b-1229-4546-be11-c97ac950d4f8",
+        "present": true
+      },
+      "parent": "fvpn-updater",
+      "parent_wait_receipt": {
+        "id": "8051b988-bd76-4e34-b3c3-b0d5d6c6dec9",
+        "pid": 1152,
+        "start_ticks": "12845056",
+        "started_at": "2026-11-01T14:55:13.044538972Z",
+        "wait_observed_at": "2026-11-01T14:55:28.415011886Z",
+        "wait_status": 0,
+        "exit_code": 0,
+        "signal": null,
+        "core_dump": false
+      },
+      "sampled_raw_wait_status": -1,
+      "started_at": "2026-11-01T14:55:28.263358067Z",
+      "transaction": {
+        "stage": "final_sampled",
+        "txn_id": "01a1979b-b09e-70d8-b3da-67deb726c7ec"
+      },
+      "role": "node2",
+      "ordinal": 1,
+      "duration_ms": 434.169,
+      "baseline": {
+        "action": "stop",
+        "agent_pid_before": "1141",
+        "agent_wait_status": 0,
         "command": [
           "/usr/local/bin/agent-service.original.sh",
-          "start",
-          "/opt/vpn-node/releases/01a1967b-9b81-7675-8035-9220b0a7c982"
+          "stop"
         ],
-        "duration_ns": 235429643,
+        "duration_ns": 437477471,
         "exit_code": 0,
-        "finished_at": "2026-11-01T09:48:36.048958666Z",
+        "finished_at": "2026-11-01T09:49:04.725421973Z",
         "lease_after": {
-          "expires_at": "2026-11-02T09:48:35.694729944Z",
-          "lease_id": "d1031b4e-bc0a-4b3a-977c-2b167fe3a26b",
-          "present": true
-        },
-        "lease_before": {
-          "expires_at": "2026-11-02T09:48:35.694729944Z",
-          "lease_id": "d1031b4e-bc0a-4b3a-977c-2b167fe3a26b",
-          "present": true
-        },
-        "parent": "fvpn-updater",
-        "started_at": "2026-11-01T09:48:35.813526173Z",
-        "transaction": {
-          "stage": "checking",
-          "txn_id": "01a19682-b26a-7165-b159-632d773e5459"
-        }
-      }
-    ],
-    "node2": [
-      {
-        "action": "start",
-        "agent_pid_before": "",
-        "agent_wait_status": -1,
-        "command": [
-          "/usr/local/bin/agent-service.original.sh",
-          "start",
-          "/opt/vpn-node/releases/01a1967b-9b81-7675-8035-9220b0a7c982"
-        ],
-        "duration_ns": 448928937,
-        "exit_code": 0,
-        "finished_at": "2026-11-01T09:49:05.439755073Z",
-        "lease_after": {
-          "expires_at": "2026-11-02T09:49:05.34543164Z",
-          "lease_id": "57dc7e8c-ba8a-4355-b708-588ae3c50dad",
+          "expires_at": "2026-11-02T09:49:04.230817381Z",
+          "lease_id": "23509350-75d8-40e5-8661-982b5162f81e",
           "present": true
         },
         "lease_before": {
@@ -1227,56 +1189,1028 @@
           "present": true
         },
         "parent": "fvpn-updater",
-        "started_at": "2026-11-01T09:49:04.990823768Z",
+        "started_at": "2026-11-01T09:49:04.287935635Z",
+        "transaction": {
+          "stage": "final_sampled",
+          "txn_id": "01a19683-2c2d-7abe-982c-6882cb507bfa"
+        },
+        "role": "node2",
+        "ordinal": 1,
+        "duration_ms": 437.477,
+        "baseline": {
+          "txn_id": "01a19408-4a47-7173-93f8-853c2bfa610d",
+          "stage": "final_sampled",
+          "start": "2026-10-31T22:15:37.622831856Z",
+          "end": "2026-10-31T22:15:38.059889672Z",
+          "stage_bracket_ms": 437.058,
+          "command_duration_ms": null,
+          "outcome": "stop returned success",
+          "termination": "not recorded"
+        },
+        "current_stage_bracket": {
+          "txn_id": "01a19683-2c2d-7abe-982c-6882cb507bfa",
+          "stage": "final_sampled",
+          "start": "2026-11-01T09:49:04.280992044Z",
+          "end": "2026-11-01T09:49:04.726579237Z",
+          "stage_bracket_ms": 445.587,
+          "command_duration_ms": null,
+          "outcome": "stop returned success",
+          "termination": "not recorded"
+        },
+        "agent_exit_code": 0,
+        "agent_signal": 0,
+        "termination": "exited",
+        "command_timeout_observed": false,
+        "lease_lost": false
+      },
+      "current_stage_bracket": {
+        "txn_id": "01a1979b-b09e-70d8-b3da-67deb726c7ec",
+        "stage": "final_sampled",
+        "start": "2026-11-01T14:55:28.259252021Z",
+        "end": "2026-11-01T14:55:28.698883536Z",
+        "stage_bracket_ms": 439.631,
+        "command_duration_ms": null,
+        "outcome": "stop returned success",
+        "termination": "not recorded"
+      },
+      "new_exit_observed": true,
+      "agent_exit_code": 0,
+      "agent_signal": null,
+      "termination": "exited",
+      "receipt_retained_after_restarts": true,
+      "command_failed": false,
+      "command_timeout_observed": false,
+      "reached_15s_budget": false,
+      "lease_lost": false,
+      "status": "measured"
+    },
+    {
+      "action": "stop",
+      "agent_identity_before": {
+        "id": "8051b988-bd76-4e34-b3c3-b0d5d6c6dec9",
+        "pid": 1152,
+        "start_ticks": "12845056",
+        "already_stopped": true
+      },
+      "agent_pid_before": "",
+      "command": [
+        "/usr/local/bin/agent-service.original.sh",
+        "stop"
+      ],
+      "duration_ns": 222130158,
+      "exit_code": 0,
+      "finished_at": "2026-11-01T14:55:28.931385854Z",
+      "lease_after": {
+        "expires_at": "2026-11-02T14:55:28.208312726Z",
+        "lease_id": "6a51f40b-1229-4546-be11-c97ac950d4f8",
+        "present": true
+      },
+      "lease_before": {
+        "expires_at": "2026-11-02T14:55:28.208312726Z",
+        "lease_id": "6a51f40b-1229-4546-be11-c97ac950d4f8",
+        "present": true
+      },
+      "parent": "fvpn-updater",
+      "parent_wait_receipt": {
+        "id": "8051b988-bd76-4e34-b3c3-b0d5d6c6dec9",
+        "pid": 1152,
+        "start_ticks": "12845056",
+        "started_at": "2026-11-01T14:55:13.044538972Z",
+        "wait_observed_at": "2026-11-01T14:55:28.415011886Z",
+        "wait_status": 0,
+        "exit_code": 0,
+        "signal": null,
+        "core_dump": false
+      },
+      "sampled_raw_wait_status": -1,
+      "started_at": "2026-11-01T14:55:28.709239915Z",
+      "transaction": {
+        "stage": "stopped",
+        "txn_id": "01a1979b-b09e-70d8-b3da-67deb726c7ec"
+      },
+      "role": "node2",
+      "ordinal": 2,
+      "duration_ms": 222.13,
+      "baseline": {
+        "action": "stop",
+        "agent_pid_before": "",
+        "agent_wait_status": -1,
+        "command": [
+          "/usr/local/bin/agent-service.original.sh",
+          "stop"
+        ],
+        "duration_ns": 225726847,
+        "exit_code": 0,
+        "finished_at": "2026-11-01T09:49:04.957499658Z",
+        "lease_after": {
+          "expires_at": "2026-11-02T09:49:04.230817381Z",
+          "lease_id": "23509350-75d8-40e5-8661-982b5162f81e",
+          "present": true
+        },
+        "lease_before": {
+          "expires_at": "2026-11-02T09:49:04.230817381Z",
+          "lease_id": "23509350-75d8-40e5-8661-982b5162f81e",
+          "present": true
+        },
+        "parent": "fvpn-updater",
+        "started_at": "2026-11-01T09:49:04.731761836Z",
+        "transaction": {
+          "stage": "stopped",
+          "txn_id": "01a19683-2c2d-7abe-982c-6882cb507bfa"
+        },
+        "role": "node2",
+        "ordinal": 2,
+        "duration_ms": 225.727,
+        "baseline": {
+          "txn_id": "01a19408-4a47-7173-93f8-853c2bfa610d",
+          "stage": "stopped",
+          "start": "2026-10-31T22:15:38.059889672Z",
+          "end": "2026-10-31T22:15:38.292836957Z",
+          "stage_bracket_ms": 232.947,
+          "command_duration_ms": null,
+          "outcome": "stop returned success",
+          "termination": "not recorded"
+        },
+        "current_stage_bracket": {
+          "txn_id": "01a19683-2c2d-7abe-982c-6882cb507bfa",
+          "stage": "stopped",
+          "start": "2026-11-01T09:49:04.726579237Z",
+          "end": "2026-11-01T09:49:04.958544298Z",
+          "stage_bracket_ms": 231.965,
+          "command_duration_ms": null,
+          "outcome": "stop returned success",
+          "termination": "not recorded"
+        },
+        "termination": "already stopped",
+        "command_timeout_observed": false,
+        "lease_lost": false
+      },
+      "current_stage_bracket": {
+        "txn_id": "01a1979b-b09e-70d8-b3da-67deb726c7ec",
+        "stage": "stopped",
+        "start": "2026-11-01T14:55:28.698883536Z",
+        "end": "2026-11-01T14:55:28.932651751Z",
+        "stage_bracket_ms": 233.768,
+        "command_duration_ms": null,
+        "outcome": "stop returned success",
+        "termination": "not recorded"
+      },
+      "new_exit_observed": false,
+      "agent_exit_code": 0,
+      "agent_signal": null,
+      "termination": "already stopped",
+      "receipt_retained_after_restarts": true,
+      "command_failed": false,
+      "command_timeout_observed": false,
+      "reached_15s_budget": false,
+      "lease_lost": false,
+      "status": "measured"
+    }
+  ],
+  "journals": {
+    "installer-node": [
+      {
+        "txn_id": "01a19794-c6b5-7d86-a83b-1d1f92e7e2ea",
+        "seq": 1,
+        "stage": "prepared",
+        "at": "2026-11-01T14:47:52.245930035Z"
+      },
+      {
+        "txn_id": "01a19794-c6b5-7d86-a83b-1d1f92e7e2ea",
+        "seq": 2,
+        "stage": "blocked",
+        "at": "2026-11-01T14:47:52.254633446Z"
+      },
+      {
+        "txn_id": "01a19794-c6b5-7d86-a83b-1d1f92e7e2ea",
+        "seq": 3,
+        "stage": "final_sampled",
+        "at": "2026-11-01T14:47:56.773421708Z"
+      },
+      {
+        "txn_id": "01a19794-c6b5-7d86-a83b-1d1f92e7e2ea",
+        "seq": 4,
+        "stage": "stopped",
+        "at": "2026-11-01T14:47:56.843336051Z"
+      },
+      {
+        "txn_id": "01a19794-c6b5-7d86-a83b-1d1f92e7e2ea",
+        "seq": 5,
+        "stage": "migrated",
+        "at": "2026-11-01T14:47:56.862523687Z"
+      },
+      {
+        "txn_id": "01a19794-c6b5-7d86-a83b-1d1f92e7e2ea",
+        "seq": 6,
+        "stage": "switched",
+        "at": "2026-11-01T14:47:56.881974471Z"
+      },
+      {
+        "txn_id": "01a19794-c6b5-7d86-a83b-1d1f92e7e2ea",
+        "seq": 7,
+        "stage": "checking",
+        "at": "2026-11-01T14:47:56.92903012Z"
+      },
+      {
+        "txn_id": "01a19794-c6b5-7d86-a83b-1d1f92e7e2ea",
+        "seq": 8,
+        "stage": "checking",
+        "at": "2026-11-01T14:47:57.235790334Z"
+      },
+      {
+        "txn_id": "01a19794-c6b5-7d86-a83b-1d1f92e7e2ea",
+        "seq": 9,
+        "stage": "locally_succeeded",
+        "at": "2026-11-01T14:47:57.237369161Z"
+      },
+      {
+        "txn_id": "01a19794-e44f-713b-ac70-d30f4b29e7bf",
+        "seq": 1,
+        "stage": "prepared",
+        "at": "2026-11-01T14:47:59.823133471Z"
+      },
+      {
+        "txn_id": "01a19794-e44f-713b-ac70-d30f4b29e7bf",
+        "seq": 2,
+        "stage": "blocked",
+        "at": "2026-11-01T14:47:59.830687801Z"
+      },
+      {
+        "txn_id": "01a19794-e44f-713b-ac70-d30f4b29e7bf",
+        "seq": 3,
+        "stage": "rolling_back",
+        "at": "2026-11-01T14:48:29.826214272Z"
+      },
+      {
+        "txn_id": "01a19794-e44f-713b-ac70-d30f4b29e7bf",
+        "seq": 4,
+        "stage": "rolled_back",
+        "at": "2026-11-01T14:48:29.834534422Z"
+      }
+    ],
+    "node": [
+      {
+        "txn_id": "01a19796-44ea-7757-a70e-666a4fd50df4",
+        "seq": 1,
+        "stage": "prepared",
+        "at": "2026-11-01T14:49:30.090521359Z"
+      },
+      {
+        "txn_id": "01a19796-44ea-7757-a70e-666a4fd50df4",
+        "seq": 2,
+        "stage": "blocked",
+        "at": "2026-11-01T14:49:30.096331245Z"
+      },
+      {
+        "txn_id": "01a19796-44ea-7757-a70e-666a4fd50df4",
+        "seq": 3,
+        "stage": "final_sampled",
+        "at": "2026-11-01T14:49:33.707711649Z"
+      },
+      {
+        "txn_id": "01a19796-44ea-7757-a70e-666a4fd50df4",
+        "seq": 4,
+        "stage": "stopped",
+        "at": "2026-11-01T14:49:34.16925143Z"
+      },
+      {
+        "txn_id": "01a19796-44ea-7757-a70e-666a4fd50df4",
+        "seq": 5,
+        "stage": "migrated",
+        "at": "2026-11-01T14:49:34.409378386Z"
+      },
+      {
+        "txn_id": "01a19796-44ea-7757-a70e-666a4fd50df4",
+        "seq": 6,
+        "stage": "switched",
+        "at": "2026-11-01T14:49:34.424499281Z"
+      },
+      {
+        "txn_id": "01a19796-44ea-7757-a70e-666a4fd50df4",
+        "seq": 7,
+        "stage": "checking",
+        "at": "2026-11-01T14:49:34.893729324Z"
+      },
+      {
+        "txn_id": "01a19796-44ea-7757-a70e-666a4fd50df4",
+        "seq": 8,
+        "stage": "checking",
+        "at": "2026-11-01T14:49:39.921291151Z"
+      },
+      {
+        "txn_id": "01a19796-44ea-7757-a70e-666a4fd50df4",
+        "seq": 9,
+        "stage": "locally_succeeded",
+        "at": "2026-11-01T14:49:39.922404073Z"
+      },
+      {
+        "txn_id": "01a19796-e3c5-7a78-b649-ed92dcd112c4",
+        "seq": 1,
+        "stage": "prepared",
+        "at": "2026-11-01T14:50:10.757723034Z"
+      },
+      {
+        "txn_id": "01a19796-e3c5-7a78-b649-ed92dcd112c4",
+        "seq": 2,
+        "stage": "blocked",
+        "at": "2026-11-01T14:50:10.762908291Z"
+      },
+      {
+        "txn_id": "01a19796-e3c5-7a78-b649-ed92dcd112c4",
+        "seq": 3,
+        "stage": "final_sampled",
+        "at": "2026-11-01T14:50:14.778867805Z"
+      },
+      {
+        "txn_id": "01a19796-e3c5-7a78-b649-ed92dcd112c4",
+        "seq": 4,
+        "stage": "stopped",
+        "at": "2026-11-01T14:50:15.233907426Z"
+      },
+      {
+        "txn_id": "01a19796-e3c5-7a78-b649-ed92dcd112c4",
+        "seq": 5,
+        "stage": "migrated",
+        "at": "2026-11-01T14:50:15.467544885Z"
+      },
+      {
+        "txn_id": "01a19796-e3c5-7a78-b649-ed92dcd112c4",
+        "seq": 6,
+        "stage": "switched",
+        "at": "2026-11-01T14:50:15.481752768Z"
+      },
+      {
+        "txn_id": "01a19796-e3c5-7a78-b649-ed92dcd112c4",
+        "seq": 7,
+        "stage": "checking",
+        "at": "2026-11-01T14:50:15.953387065Z"
+      },
+      {
+        "txn_id": "01a19796-e3c5-7a78-b649-ed92dcd112c4",
+        "seq": 8,
+        "stage": "checking",
+        "at": "2026-11-01T14:50:46.228998302Z"
+      },
+      {
+        "txn_id": "01a19796-e3c5-7a78-b649-ed92dcd112c4",
+        "seq": 9,
+        "stage": "rolling_back",
+        "at": "2026-11-01T14:50:46.230128473Z"
+      },
+      {
+        "txn_id": "01a19796-e3c5-7a78-b649-ed92dcd112c4",
+        "seq": 10,
+        "stage": "rolling_back",
+        "at": "2026-11-01T14:50:47.173939855Z"
+      },
+      {
+        "txn_id": "01a19796-e3c5-7a78-b649-ed92dcd112c4",
+        "seq": 11,
+        "stage": "rolled_back",
+        "at": "2026-11-01T14:50:47.175160408Z"
+      },
+      {
+        "txn_id": "01a1979b-3491-7ec4-bd4e-9156f0d27f05",
+        "seq": 1,
+        "stage": "prepared",
+        "at": "2026-11-01T14:54:53.586014099Z"
+      },
+      {
+        "txn_id": "01a1979b-3491-7ec4-bd4e-9156f0d27f05",
+        "seq": 2,
+        "stage": "blocked",
+        "at": "2026-11-01T14:54:53.591919767Z"
+      },
+      {
+        "txn_id": "01a1979b-3491-7ec4-bd4e-9156f0d27f05",
+        "seq": 3,
+        "stage": "final_sampled",
+        "at": "2026-11-01T14:54:58.710502392Z"
+      },
+      {
+        "txn_id": "01a1979b-3491-7ec4-bd4e-9156f0d27f05",
+        "seq": 4,
+        "stage": "stopped",
+        "at": "2026-11-01T14:54:59.156634252Z"
+      },
+      {
+        "txn_id": "01a1979b-3491-7ec4-bd4e-9156f0d27f05",
+        "seq": 5,
+        "stage": "migrated",
+        "at": "2026-11-01T14:54:59.388209958Z"
+      },
+      {
+        "txn_id": "01a1979b-3491-7ec4-bd4e-9156f0d27f05",
+        "seq": 6,
+        "stage": "switched",
+        "at": "2026-11-01T14:54:59.396158047Z"
+      },
+      {
+        "txn_id": "01a1979b-3491-7ec4-bd4e-9156f0d27f05",
+        "seq": 7,
+        "stage": "checking",
+        "at": "2026-11-01T14:55:00.081664027Z"
+      },
+      {
+        "txn_id": "01a1979b-3491-7ec4-bd4e-9156f0d27f05",
+        "seq": 8,
+        "stage": "checking",
+        "at": "2026-11-01T14:55:05.118099141Z"
+      },
+      {
+        "txn_id": "01a1979b-3491-7ec4-bd4e-9156f0d27f05",
+        "seq": 9,
+        "stage": "locally_succeeded",
+        "at": "2026-11-01T14:55:05.119190408Z"
+      }
+    ],
+    "node2": [
+      {
+        "txn_id": "01a1979b-b09e-70d8-b3da-67deb726c7ec",
+        "seq": 1,
+        "stage": "prepared",
+        "at": "2026-11-01T14:55:25.342092808Z"
+      },
+      {
+        "txn_id": "01a1979b-b09e-70d8-b3da-67deb726c7ec",
+        "seq": 2,
+        "stage": "blocked",
+        "at": "2026-11-01T14:55:25.34849301Z"
+      },
+      {
+        "txn_id": "01a1979b-b09e-70d8-b3da-67deb726c7ec",
+        "seq": 3,
+        "stage": "final_sampled",
+        "at": "2026-11-01T14:55:28.259252021Z"
+      },
+      {
+        "txn_id": "01a1979b-b09e-70d8-b3da-67deb726c7ec",
+        "seq": 4,
+        "stage": "stopped",
+        "at": "2026-11-01T14:55:28.698883536Z"
+      },
+      {
+        "txn_id": "01a1979b-b09e-70d8-b3da-67deb726c7ec",
+        "seq": 5,
+        "stage": "migrated",
+        "at": "2026-11-01T14:55:28.932651751Z"
+      },
+      {
+        "txn_id": "01a1979b-b09e-70d8-b3da-67deb726c7ec",
+        "seq": 6,
+        "stage": "switched",
+        "at": "2026-11-01T14:55:28.939380742Z"
+      },
+      {
+        "txn_id": "01a1979b-b09e-70d8-b3da-67deb726c7ec",
+        "seq": 7,
+        "stage": "checking",
+        "at": "2026-11-01T14:55:29.396792978Z"
+      },
+      {
+        "txn_id": "01a1979b-b09e-70d8-b3da-67deb726c7ec",
+        "seq": 8,
+        "stage": "checking",
+        "at": "2026-11-01T14:55:34.416662562Z"
+      },
+      {
+        "txn_id": "01a1979b-b09e-70d8-b3da-67deb726c7ec",
+        "seq": 9,
+        "stage": "locally_succeeded",
+        "at": "2026-11-01T14:55:34.417922581Z"
+      }
+    ]
+  },
+  "findings": [],
+  "gaps": [],
+  "baseline_pins": {
+    "docs/e2e/at/updates/history/follow-up-13/agent-stops.json": "d84a26795315a1317b33a6941321475e3761d4169cd13da405955219fda9132c"
+  },
+  "start_observations": {
+    "installer-node": [
+      {
+        "action": "start",
+        "agent_identity_before": {
+          "id": "29922bbaf65d48ecb9fd669c2d4b53b1",
+          "pid": 2266,
+          "start_ticks": "12800871",
+          "already_stopped": false
+        },
+        "agent_pid_before": "0",
+        "command": [
+          "/usr/bin/systemctl",
+          "start",
+          "fvpn-watchdog.service",
+          "fvpn-agent.service"
+        ],
+        "duration_ns": 15122644,
+        "exit_code": 0,
+        "finished_at": "2026-11-01T14:47:56.919628201Z",
+        "lease_after": {
+          "expires_at": "2026-11-02T14:47:56.77844901Z",
+          "lease_id": "2a422874-c7fa-473c-a64f-e45c28df5ead",
+          "present": true
+        },
+        "lease_before": {
+          "expires_at": "2026-11-02T14:47:56.77844901Z",
+          "lease_id": "2a422874-c7fa-473c-a64f-e45c28df5ead",
+          "present": true
+        },
+        "parent": "fvpn-updater",
+        "retained_systemd_parent_wait_receipt": {
+          "encoded_wait_status": 0,
+          "exit_code": 0,
+          "id": "29922bbaf65d48ecb9fd669c2d4b53b1",
+          "pid": 2266,
+          "signal": null,
+          "source": "systemd parent waitid",
+          "start_ticks": "12800871",
+          "timestamp_precision": "1 second (systemctl show)",
+          "wait_observed_at": "2026-11-01T14:47:56Z",
+          "waitid_code": 1,
+          "waitid_status": 0
+        },
+        "sampled_raw_wait_status": -1,
+        "started_at": "2026-11-01T14:47:56.904503109Z",
+        "systemd_after": "TimeoutStopUSec=15s\nMainPID=2634\nResult=success\nExecMainExitTimestamp=\nExecMainPID=2634\nExecMainCode=0\nExecMainStatus=0\nInvocationID=6af9e98c201843a2bde5ba743182d1bc",
+        "systemd_before": "TimeoutStopUSec=15s\nMainPID=0\nResult=success\nExecMainExitTimestamp=Sun 2026-11-01 14:47:56 UTC\nExecMainPID=2266\nExecMainCode=1\nExecMainStatus=0\nInvocationID=29922bbaf65d48ecb9fd669c2d4b53b1",
         "transaction": {
           "stage": "switched",
-          "txn_id": "01a19683-2c2d-7abe-982c-6882cb507bfa"
+          "txn_id": "01a19794-c6b5-7d86-a83b-1d1f92e7e2ea"
         }
       },
       {
         "action": "start",
-        "agent_pid_before": "5448",
-        "agent_wait_status": -1,
+        "agent_identity_before": {
+          "id": "29922bbaf65d48ecb9fd669c2d4b53b1",
+          "pid": 2266,
+          "start_ticks": "12800871",
+          "already_stopped": false
+        },
+        "agent_pid_before": "2634",
         "command": [
-          "/usr/local/bin/agent-service.original.sh",
+          "/usr/bin/systemctl",
           "start",
-          "/opt/vpn-node/releases/01a1967b-9b81-7675-8035-9220b0a7c982"
+          "fvpn-watchdog.service",
+          "fvpn-agent.service"
         ],
-        "duration_ns": 235158069,
+        "duration_ns": 3162563,
         "exit_code": 0,
-        "finished_at": "2026-11-01T09:49:05.692279568Z",
+        "finished_at": "2026-11-01T14:47:56.950410073Z",
         "lease_after": {
-          "expires_at": "2026-11-02T09:49:05.34543164Z",
-          "lease_id": "57dc7e8c-ba8a-4355-b708-588ae3c50dad",
+          "expires_at": "2026-11-02T14:47:56.77844901Z",
+          "lease_id": "2a422874-c7fa-473c-a64f-e45c28df5ead",
           "present": true
         },
         "lease_before": {
-          "expires_at": "2026-11-02T09:49:05.34543164Z",
-          "lease_id": "57dc7e8c-ba8a-4355-b708-588ae3c50dad",
+          "expires_at": "2026-11-02T14:47:56.77844901Z",
+          "lease_id": "2a422874-c7fa-473c-a64f-e45c28df5ead",
           "present": true
         },
         "parent": "fvpn-updater",
-        "started_at": "2026-11-01T09:49:05.457116034Z",
+        "retained_systemd_parent_wait_receipt": {
+          "encoded_wait_status": 0,
+          "exit_code": 0,
+          "id": "29922bbaf65d48ecb9fd669c2d4b53b1",
+          "pid": 2266,
+          "signal": null,
+          "source": "systemd parent waitid",
+          "start_ticks": "12800871",
+          "timestamp_precision": "1 second (systemctl show)",
+          "wait_observed_at": "2026-11-01T14:47:56Z",
+          "waitid_code": 1,
+          "waitid_status": 0
+        },
+        "sampled_raw_wait_status": -1,
+        "started_at": "2026-11-01T14:47:56.947243547Z",
+        "systemd_after": "TimeoutStopUSec=15s\nMainPID=2634\nResult=success\nExecMainExitTimestamp=\nExecMainPID=2634\nExecMainCode=0\nExecMainStatus=0\nInvocationID=6af9e98c201843a2bde5ba743182d1bc",
+        "systemd_before": "TimeoutStopUSec=15s\nMainPID=2634\nResult=success\nExecMainExitTimestamp=\nExecMainPID=2634\nExecMainCode=0\nExecMainStatus=0\nInvocationID=6af9e98c201843a2bde5ba743182d1bc",
         "transaction": {
           "stage": "checking",
-          "txn_id": "01a19683-2c2d-7abe-982c-6882cb507bfa"
+          "txn_id": "01a19794-c6b5-7d86-a83b-1d1f92e7e2ea"
+        }
+      }
+    ],
+    "node": [
+      {
+        "action": "start",
+        "agent_identity_before": {
+          "id": "8f159491-bf4b-4b31-bbf5-1b5d5db15973",
+          "pid": 18338,
+          "start_ticks": "12810102",
+          "already_stopped": true
+        },
+        "agent_pid_before": "",
+        "command": [
+          "/usr/local/bin/agent-service.original.sh",
+          "start",
+          "/opt/vpn-node/releases/01a19794-24ff-739e-9610-45a8aa7928fc"
+        ],
+        "duration_ns": 452586948,
+        "exit_code": 0,
+        "finished_at": "2026-11-01T14:49:34.889550861Z",
+        "lease_after": {
+          "expires_at": "2026-11-02T14:49:34.707524206Z",
+          "lease_id": "be41fa25-c2f8-4396-aae8-0c7a08094e40",
+          "present": true
+        },
+        "lease_before": {
+          "expires_at": "2026-11-02T14:49:33.6909543Z",
+          "lease_id": "cabdcca5-e935-404f-b7cd-462f5db88b2a",
+          "present": true
+        },
+        "parent": "fvpn-updater",
+        "parent_wait_receipt": {
+          "id": "8f159491-bf4b-4b31-bbf5-1b5d5db15973",
+          "pid": 18338,
+          "start_ticks": "12810102",
+          "started_at": "2026-11-01T14:49:23.507908449Z",
+          "wait_observed_at": "2026-11-01T14:49:33.759333325Z",
+          "wait_status": 0,
+          "exit_code": 0,
+          "signal": null,
+          "core_dump": false
+        },
+        "sampled_raw_wait_status": -1,
+        "started_at": "2026-11-01T14:49:34.436957055Z",
+        "transaction": {
+          "stage": "switched",
+          "txn_id": "01a19796-44ea-7757-a70e-666a4fd50df4"
+        }
+      },
+      {
+        "action": "start",
+        "agent_identity_before": {
+          "id": "8f159491-bf4b-4b31-bbf5-1b5d5db15973",
+          "pid": 18338,
+          "start_ticks": "12810102",
+          "already_stopped": true
+        },
+        "agent_pid_before": "23276",
+        "command": [
+          "/usr/local/bin/agent-service.original.sh",
+          "start",
+          "/opt/vpn-node/releases/01a19794-24ff-739e-9610-45a8aa7928fc"
+        ],
+        "duration_ns": 235895378,
+        "exit_code": 0,
+        "finished_at": "2026-11-01T14:49:35.137145043Z",
+        "lease_after": {
+          "expires_at": "2026-11-02T14:49:34.707524206Z",
+          "lease_id": "be41fa25-c2f8-4396-aae8-0c7a08094e40",
+          "present": true
+        },
+        "lease_before": {
+          "expires_at": "2026-11-02T14:49:34.707524206Z",
+          "lease_id": "be41fa25-c2f8-4396-aae8-0c7a08094e40",
+          "present": true
+        },
+        "parent": "fvpn-updater",
+        "parent_wait_receipt": {
+          "id": "8f159491-bf4b-4b31-bbf5-1b5d5db15973",
+          "pid": 18338,
+          "start_ticks": "12810102",
+          "started_at": "2026-11-01T14:49:23.507908449Z",
+          "wait_observed_at": "2026-11-01T14:49:33.759333325Z",
+          "wait_status": 0,
+          "exit_code": 0,
+          "signal": null,
+          "core_dump": false
+        },
+        "sampled_raw_wait_status": -1,
+        "started_at": "2026-11-01T14:49:34.901234894Z",
+        "transaction": {
+          "stage": "checking",
+          "txn_id": "01a19796-44ea-7757-a70e-666a4fd50df4"
+        }
+      },
+      {
+        "action": "start",
+        "agent_identity_before": {
+          "id": "09e966f4-4d2b-4369-a266-042c7578a629",
+          "pid": 23276,
+          "start_ticks": "12811201",
+          "already_stopped": true
+        },
+        "agent_pid_before": "",
+        "command": [
+          "/usr/local/bin/agent-service.original.sh",
+          "start",
+          "/opt/vpn-node/releases/01a19794-1b83-71b1-a877-930c6898d81e"
+        ],
+        "duration_ns": 454509140,
+        "exit_code": 0,
+        "finished_at": "2026-11-01T14:50:15.945971977Z",
+        "lease_after": {
+          "expires_at": "2026-11-02T14:50:15.773103479Z",
+          "lease_id": "1b6e9553-a505-4e59-b4da-38d79ef998fc",
+          "present": true
+        },
+        "lease_before": {
+          "expires_at": "2026-11-02T14:50:14.795553103Z",
+          "lease_id": "c1e10add-06fa-49e8-a978-8c7b139fc435",
+          "present": true
+        },
+        "parent": "fvpn-updater",
+        "parent_wait_receipt": {
+          "id": "09e966f4-4d2b-4369-a266-042c7578a629",
+          "pid": 23276,
+          "start_ticks": "12811201",
+          "started_at": "2026-11-01T14:49:34.50091895Z",
+          "wait_observed_at": "2026-11-01T14:50:14.850504038Z",
+          "wait_status": 0,
+          "exit_code": 0,
+          "signal": null,
+          "core_dump": false
+        },
+        "sampled_raw_wait_status": -1,
+        "started_at": "2026-11-01T14:50:15.491447383Z",
+        "transaction": {
+          "stage": "switched",
+          "txn_id": "01a19796-e3c5-7a78-b649-ed92dcd112c4"
+        }
+      },
+      {
+        "action": "start",
+        "agent_identity_before": {
+          "id": "09e966f4-4d2b-4369-a266-042c7578a629",
+          "pid": 23276,
+          "start_ticks": "12811201",
+          "already_stopped": true
+        },
+        "agent_pid_before": "35598",
+        "command": [
+          "/usr/local/bin/agent-service.original.sh",
+          "start",
+          "/opt/vpn-node/releases/01a19794-1b83-71b1-a877-930c6898d81e"
+        ],
+        "duration_ns": 237130843,
+        "exit_code": 0,
+        "finished_at": "2026-11-01T14:50:16.199176174Z",
+        "lease_after": {
+          "expires_at": "2026-11-02T14:50:15.773103479Z",
+          "lease_id": "1b6e9553-a505-4e59-b4da-38d79ef998fc",
+          "present": true
+        },
+        "lease_before": {
+          "expires_at": "2026-11-02T14:50:15.773103479Z",
+          "lease_id": "1b6e9553-a505-4e59-b4da-38d79ef998fc",
+          "present": true
+        },
+        "parent": "fvpn-updater",
+        "parent_wait_receipt": {
+          "id": "09e966f4-4d2b-4369-a266-042c7578a629",
+          "pid": 23276,
+          "start_ticks": "12811201",
+          "started_at": "2026-11-01T14:49:34.50091895Z",
+          "wait_observed_at": "2026-11-01T14:50:14.850504038Z",
+          "wait_status": 0,
+          "exit_code": 0,
+          "signal": null,
+          "core_dump": false
+        },
+        "sampled_raw_wait_status": -1,
+        "started_at": "2026-11-01T14:50:15.962028422Z",
+        "transaction": {
+          "stage": "checking",
+          "txn_id": "01a19796-e3c5-7a78-b649-ed92dcd112c4"
+        }
+      },
+      {
+        "action": "start",
+        "agent_identity_before": {
+          "id": "e70d9d16-69b7-45c4-bdbd-c174ad4ec22b",
+          "pid": 35598,
+          "start_ticks": "12815308",
+          "already_stopped": false
+        },
+        "agent_pid_before": "",
+        "command": [
+          "/usr/local/bin/agent-service.original.sh",
+          "start",
+          "/opt/vpn-node/releases/01a19794-24ff-739e-9610-45a8aa7928fc"
+        ],
+        "duration_ns": 441468066,
+        "exit_code": 0,
+        "finished_at": "2026-11-01T14:50:47.146820805Z",
+        "lease_after": {
+          "expires_at": "2026-11-02T14:50:47.144195362Z",
+          "lease_id": "46cff8a7-e7ea-4371-b485-fac02e3c2fe5",
+          "present": true
+        },
+        "lease_before": {
+          "expires_at": "2026-11-02T14:50:45.826718674Z",
+          "lease_id": "83f7a7ce-1928-4f00-a2a4-69ec7b20e6fe",
+          "present": true
+        },
+        "parent": "fvpn-updater",
+        "parent_wait_receipt": {
+          "id": "e70d9d16-69b7-45c4-bdbd-c174ad4ec22b",
+          "pid": 35598,
+          "start_ticks": "12815308",
+          "started_at": "2026-11-01T14:50:15.57266052Z",
+          "wait_observed_at": "2026-11-01T14:50:46.379240341Z",
+          "wait_status": 0,
+          "exit_code": 0,
+          "signal": null,
+          "core_dump": false
+        },
+        "sampled_raw_wait_status": -1,
+        "started_at": "2026-11-01T14:50:46.705336968Z",
+        "transaction": {
+          "stage": "rolling_back",
+          "txn_id": "01a19796-e3c5-7a78-b649-ed92dcd112c4"
+        }
+      },
+      {
+        "action": "start",
+        "agent_identity_before": {
+          "id": "ec212d6c-01ba-4163-ba33-8fe24ad82820",
+          "pid": 141112,
+          "start_ticks": "12842598",
+          "already_stopped": true
+        },
+        "agent_pid_before": "",
+        "command": [
+          "/usr/local/bin/agent-service.original.sh",
+          "start",
+          "/opt/vpn-node/releases/01a19794-2e70-7444-b83d-e95acef194cb"
+        ],
+        "duration_ns": 664630624,
+        "exit_code": 0,
+        "finished_at": "2026-11-01T14:55:00.070236328Z",
+        "lease_after": {
+          "expires_at": "2026-11-02T14:54:59.844955074Z",
+          "lease_id": "f92b6126-bcb4-4ebd-b8af-5918f80ae333",
+          "present": true
+        },
+        "lease_before": {
+          "expires_at": "2026-11-02T14:54:58.662254607Z",
+          "lease_id": "acce3d25-b2c7-41fe-bf24-bf090137364e",
+          "present": true
+        },
+        "parent": "fvpn-updater",
+        "parent_wait_receipt": {
+          "id": "ec212d6c-01ba-4163-ba33-8fe24ad82820",
+          "pid": 141112,
+          "start_ticks": "12842598",
+          "started_at": "2026-11-01T14:54:48.471737707Z",
+          "wait_observed_at": "2026-11-01T14:54:58.892957702Z",
+          "wait_status": 0,
+          "exit_code": 0,
+          "signal": null,
+          "core_dump": false
+        },
+        "sampled_raw_wait_status": -1,
+        "started_at": "2026-11-01T14:54:59.40558639Z",
+        "transaction": {
+          "stage": "switched",
+          "txn_id": "01a1979b-3491-7ec4-bd4e-9156f0d27f05"
+        }
+      },
+      {
+        "action": "start",
+        "agent_identity_before": {
+          "id": "ec212d6c-01ba-4163-ba33-8fe24ad82820",
+          "pid": 141112,
+          "start_ticks": "12842598",
+          "already_stopped": true
+        },
+        "agent_pid_before": "144450",
+        "command": [
+          "/usr/local/bin/agent-service.original.sh",
+          "start",
+          "/opt/vpn-node/releases/01a19794-2e70-7444-b83d-e95acef194cb"
+        ],
+        "duration_ns": 238504048,
+        "exit_code": 0,
+        "finished_at": "2026-11-01T14:55:00.330022027Z",
+        "lease_after": {
+          "expires_at": "2026-11-02T14:54:59.844955074Z",
+          "lease_id": "f92b6126-bcb4-4ebd-b8af-5918f80ae333",
+          "present": true
+        },
+        "lease_before": {
+          "expires_at": "2026-11-02T14:54:59.844955074Z",
+          "lease_id": "f92b6126-bcb4-4ebd-b8af-5918f80ae333",
+          "present": true
+        },
+        "parent": "fvpn-updater",
+        "parent_wait_receipt": {
+          "id": "ec212d6c-01ba-4163-ba33-8fe24ad82820",
+          "pid": 141112,
+          "start_ticks": "12842598",
+          "started_at": "2026-11-01T14:54:48.471737707Z",
+          "wait_observed_at": "2026-11-01T14:54:58.892957702Z",
+          "wait_status": 0,
+          "exit_code": 0,
+          "signal": null,
+          "core_dump": false
+        },
+        "sampled_raw_wait_status": -1,
+        "started_at": "2026-11-01T14:55:00.091508483Z",
+        "transaction": {
+          "stage": "checking",
+          "txn_id": "01a1979b-3491-7ec4-bd4e-9156f0d27f05"
+        }
+      }
+    ],
+    "node2": [
+      {
+        "action": "start",
+        "agent_identity_before": {
+          "id": "8051b988-bd76-4e34-b3c3-b0d5d6c6dec9",
+          "pid": 1152,
+          "start_ticks": "12845056",
+          "already_stopped": true
+        },
+        "agent_pid_before": "",
+        "command": [
+          "/usr/local/bin/agent-service.original.sh",
+          "start",
+          "/opt/vpn-node/releases/01a19794-2e70-7444-b83d-e95acef194cb"
+        ],
+        "duration_ns": 443642178,
+        "exit_code": 0,
+        "finished_at": "2026-11-01T14:55:29.391996753Z",
+        "lease_after": {
+          "expires_at": "2026-11-02T14:55:29.335891232Z",
+          "lease_id": "bb409ea9-9c41-4d71-98a4-b0874c721186",
+          "present": true
+        },
+        "lease_before": {
+          "expires_at": "2026-11-02T14:55:28.208312726Z",
+          "lease_id": "6a51f40b-1229-4546-be11-c97ac950d4f8",
+          "present": true
+        },
+        "parent": "fvpn-updater",
+        "parent_wait_receipt": {
+          "id": "8051b988-bd76-4e34-b3c3-b0d5d6c6dec9",
+          "pid": 1152,
+          "start_ticks": "12845056",
+          "started_at": "2026-11-01T14:55:13.044538972Z",
+          "wait_observed_at": "2026-11-01T14:55:28.415011886Z",
+          "wait_status": 0,
+          "exit_code": 0,
+          "signal": null,
+          "core_dump": false
+        },
+        "sampled_raw_wait_status": -1,
+        "started_at": "2026-11-01T14:55:28.948340776Z",
+        "transaction": {
+          "stage": "switched",
+          "txn_id": "01a1979b-b09e-70d8-b3da-67deb726c7ec"
+        }
+      },
+      {
+        "action": "start",
+        "agent_identity_before": {
+          "id": "8051b988-bd76-4e34-b3c3-b0d5d6c6dec9",
+          "pid": 1152,
+          "start_ticks": "12845056",
+          "already_stopped": true
+        },
+        "agent_pid_before": "5693",
+        "command": [
+          "/usr/local/bin/agent-service.original.sh",
+          "start",
+          "/opt/vpn-node/releases/01a19794-2e70-7444-b83d-e95acef194cb"
+        ],
+        "duration_ns": 233521282,
+        "exit_code": 0,
+        "finished_at": "2026-11-01T14:55:29.637624423Z",
+        "lease_after": {
+          "expires_at": "2026-11-02T14:55:29.335891232Z",
+          "lease_id": "bb409ea9-9c41-4d71-98a4-b0874c721186",
+          "present": true
+        },
+        "lease_before": {
+          "expires_at": "2026-11-02T14:55:29.335891232Z",
+          "lease_id": "bb409ea9-9c41-4d71-98a4-b0874c721186",
+          "present": true
+        },
+        "parent": "fvpn-updater",
+        "parent_wait_receipt": {
+          "id": "8051b988-bd76-4e34-b3c3-b0d5d6c6dec9",
+          "pid": 1152,
+          "start_ticks": "12845056",
+          "started_at": "2026-11-01T14:55:13.044538972Z",
+          "wait_observed_at": "2026-11-01T14:55:28.415011886Z",
+          "wait_status": 0,
+          "exit_code": 0,
+          "signal": null,
+          "core_dump": false
+        },
+        "sampled_raw_wait_status": -1,
+        "started_at": "2026-11-01T14:55:29.404077551Z",
+        "transaction": {
+          "stage": "checking",
+          "txn_id": "01a1979b-b09e-70d8-b3da-67deb726c7ec"
         }
       }
     ]
   },
-  "status": "measured with historical comparison gap",
-  "termination_evidence_complete": false,
-  "historical_direct_comparison_complete": false,
-  "configured_stop_commands": {
-    "regular": [
-      "/usr/local/bin/agent-service.sh",
-      "stop"
-    ],
-    "installer": [
-      "systemctl",
-      "stop",
-      "fvpn-agent.service",
-      "fvpn-watchdog.service"
-    ]
-  }
+  "historical_gap": "Updates F13-01: run 759d244a AT23 first exit stays unobserved; the new receipt is a new sample, never a retrospective fill.",
+  "systemd_scope": "Installer uses systemd parent waitid code/status and its UTC exit observation; encoded_wait_status is derived, sampled_raw_wait_status is an independent kernel sample. Devstack parent receipts apply to regular nodes.",
+  "status": "measured"
 }

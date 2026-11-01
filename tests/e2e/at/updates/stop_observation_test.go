@@ -12,7 +12,7 @@ import (
 // original argv, service deadlines and product binaries remain unchanged.
 func (s *updatesFollowup) installStopObserver(container string, systemd bool) {
 	s.r.t.Helper()
-	binary := filepath.Join(s.r.lab.root, ".agent/tmp/f13-stop-observer")
+	binary := filepath.Join(s.r.lab.root, ".agent/tmp/f14-stop-observer")
 	if _, err := os.Stat(binary); err != nil {
 		s.r.t.Fatal("stop observer binary missing")
 	}

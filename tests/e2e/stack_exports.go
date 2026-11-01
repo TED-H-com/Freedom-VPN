@@ -15,6 +15,8 @@ import (
 
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
+	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
+	"github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/leasehold"
 	"github.com/google/uuid"
 )
 
@@ -180,4 +182,68 @@ func (s *Stack) PauseAgent(ctx context.Context, pause bool) error {
 		action = "rm"
 	}
 	return exec.CommandContext(ctx, "docker", "exec", s.lab.node, action, "/var/lib/vpn-node/e2e/pause-agent").Run()
+}
+
+type MatchingLeaseHoldEvidence = leasehold.Evidence
+type MatchingLeaseHoldArm = leasehold.Arm
+
+// ArmMatchingLeaseHold is TEST ONLY and default off. Call on a stable serving
+// node, before a real desired-generation command. No agent stop is needed.
+// Only node/node2 use this proxy. Each use needs a fresh arm; overlap is refused.
+func (s *Stack) ArmMatchingLeaseHold(ctx context.Context, slot, baseGeneration string, duration time.Duration) (MatchingLeaseHoldArm, error) {
+	var out leasehold.Arm
+	base, err := decstr.Parse(baseGeneration)
+	if err != nil || base == 0 || duration < time.Second || duration > 120*time.Second || duration%time.Second != 0 || (slot != "node" && slot != "node2") {
+		return out, fmt.Errorf("invalid TEST ONLY lease hold input")
+	}
+	c := s.lab.prefix + "-" + slot
+	if err = exec.CommandContext(ctx, "docker", "exec", c, "mkdir", "-p", leasehold.Directory).Run(); err != nil {
+		return out, err
+	}
+	active := leasehold.Directory + "/active"
+	if err = exec.CommandContext(ctx, "docker", "exec", c, "mkdir", active).Run(); err != nil {
+		return out, fmt.Errorf("lease hold already armed or active: %w", err)
+	}
+	now := time.Now().UTC()
+	out = leasehold.Arm{ID: uuid.NewString(), BaseGeneration: baseGeneration, HoldSeconds: int(duration / time.Second), ArmedAt: now, ExpiresAt: now.Add(3 * time.Minute)}
+	raw, err := json.Marshal(out)
+	if err == nil {
+		err = writeContainerFile(ctx, c, active+"/arm.tmp", "600", raw)
+	}
+	if err == nil {
+		err = exec.CommandContext(ctx, "docker", "exec", c, "mv", active+"/arm.tmp", active+"/arm.json").Run()
+	}
+	if err != nil {
+		clean, cancel := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
+		defer cancel()
+		_ = exec.CommandContext(clean, "docker", "exec", c, "rm", "-rf", active).Run()
+	}
+	return out, err
+}
+
+// ReleaseMatchingLeaseHold requests release at the next proxy response. Read the
+// receipt for the observed release and matching forwarded lease; a marker write
+// alone does not prove recovery. An expired bounded hold also releases itself.
+func (s *Stack) ReleaseMatchingLeaseHold(ctx context.Context, slot, id string) error {
+	if _, err := uuid.Parse(id); err != nil || (slot != "node" && slot != "node2") {
+		return fmt.Errorf("invalid lease hold identity")
+	}
+	if ev, err := s.MatchingLeaseHold(ctx, slot, id); err == nil && ev.ReleasedAt != nil {
+		return nil
+	}
+	c := exec.CommandContext(ctx, "docker", "exec", "-i", s.lab.prefix+"-"+slot, "sh", "-c", `umask 077; test -d "$1" && cat > "$1/release.tmp" && mv "$1/release.tmp" "$1/release"`, "release", leasehold.Directory+"/active")
+	c.Stdin = strings.NewReader(id)
+	return c.Run()
+}
+
+func (s *Stack) MatchingLeaseHold(ctx context.Context, slot, id string) (MatchingLeaseHoldEvidence, error) {
+	var out MatchingLeaseHoldEvidence
+	if _, err := uuid.Parse(id); err != nil || (slot != "node" && slot != "node2") {
+		return out, fmt.Errorf("invalid lease hold identity")
+	}
+	raw, err := exec.CommandContext(ctx, "docker", "exec", s.lab.prefix+"-"+slot, "cat", leasehold.Directory+"/"+id+".json").Output()
+	if err == nil {
+		err = json.Unmarshal(raw, &out)
+	}
+	return out, err
 }

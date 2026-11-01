@@ -75,7 +75,7 @@ on teardown. This attempt stays retained regardless of later outcomes.
 
 ## Follow-up 11 consumer replay — 2026-10-31
 
-The [new replay](first-attempt-host-review.json) reads the immutable first
+The [new replay](history/follow-up-14/first-attempt-host-review.json) reads the immutable first
 attempt with agent-core 29's consumer contract. All **49** failures have
 `failure_stage=install`, `verification_status=unavailable`, host label
 **unavailable** and `cause_status=unproven`. No historical host or command

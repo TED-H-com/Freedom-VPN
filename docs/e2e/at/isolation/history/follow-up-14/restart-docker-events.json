@@ -1,0 +1,17 @@
+{
+  "run_id": "56d20530-8042-4d0c-8156-de5a47ce8b61",
+  "captured_at": "2026-11-01T12:17:37.309881Z",
+  "events": [],
+  "events_available": false,
+  "reason": "The lifecycle observer began after this ordinary restart; daemon retained-event backfill returned no matching event. No signal or terminal exit status is inferred from the stop/start duration.",
+  "container_state_at_read": {
+    "StartedAt": "2026-11-01T12:13:02.777102912Z",
+    "FinishedAt": "2026-11-01T12:13:02.66317286Z",
+    "Running": true,
+    "ExitCode": 0,
+    "OOMKilled": false
+  },
+  "state_scope": "Current running-container state; ExitCode is not a retained prior-stop exit result.",
+  "restart_brackets": "restart-lifecycle.json",
+  "prior_run": "history/follow-up-13/restart-docker-events.json"
+}

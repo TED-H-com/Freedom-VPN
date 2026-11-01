@@ -135,7 +135,7 @@ func TestProbeException_BaselineThenClear(t *testing.T) {
 		t.Fatal(err)
 	}
 	for name := range raw {
-		if name == "probe_up" || name == "probe_down" {
+		if name == "probe_up" || name == "probe_down" || name == "ctdenyd" {
 			t.Fatalf("stored diagnostic counter %s", name)
 		}
 	}
@@ -156,7 +156,7 @@ func TestProbeException_ServingApplyThenClear(t *testing.T) {
 			t.Fatal("probe ran without the baseline exception")
 		}
 		for name := range r.eng.counters {
-			if name == "probe_up" || name == "probe_down" {
+			if name == "probe_up" || name == "probe_down" || name == "ctdenyd" {
 				t.Fatalf("counter %s was copied during the probe", name)
 			}
 		}
@@ -188,6 +188,7 @@ func TestProbeException_ServingApplyThenClear(t *testing.T) {
 	samples, err := enforce.Samples(r.plane.last, map[string]enforce.CounterValue{
 		"probe_up":   {Packets: 3, Bytes: 30},
 		"probe_down": {Packets: 2, Bytes: 20},
+		"ctdenyd":    {Packets: 7, Bytes: 700},
 	})
 	if err != nil || len(samples) != 0 {
 		t.Fatalf("probe counters entered usage samples: %+v %v", samples, err)

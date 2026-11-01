@@ -1,0 +1,118 @@
+{
+  "run_id": "56d20530-8042-4d0c-8156-de5a47ce8b61",
+  "assembled": {
+    "exit": 2,
+    "seconds": 1242.433
+  },
+  "gates": [
+    {
+      "name": "area",
+      "command": [
+        "make",
+        "-f",
+        "mk/at-isolation.mk",
+        "at-isolation-lint",
+        "at-isolation-test",
+        "at-isolation-build"
+      ],
+      "exit": 0,
+      "seconds": 9.991,
+      "tail": "+ go vet ./tests/e2e/at/isolation/... ./tests/netlab/at/...\n+ go vet -tags netlab ./tests/netlab/at/...\n+ go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 ./tests/e2e/at/isolation/... ./tests/netlab/at/...\n+ go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 -tags netlab ./tests/netlab/at/...\n+ go vet tests/e2e/at/isolation/probe_main.go tests/e2e/at/isolation/observer_main.go\n+ go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 tests/e2e/at/isolation/probe_main.go tests/e2e/at/isolation/observer_main.go\n+ go test -count=1 ./tests/e2e/at/isolation/... ./tests/netlab/at/...\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/isolation\t5.859s\n?   \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab/at\t[no test files]\n+ python3 tests/e2e/at/isolation/driver.py build\n+ sh -ec for arch in amd64 arm64; do GOOS=linux GOARCH=$arch go build -o \"$GOTMPDIR/probe-$arch\" tests/e2e/at/isolation/probe_main.go tests/e2e/at/isolation/observer_main.go; done"
+    },
+    {
+      "name": "handover",
+      "command": [
+        "python3",
+        "tests/e2e/at/isolation/run.py",
+        "go",
+        "test",
+        "-count=1",
+        "./tests/handover/..."
+      ],
+      "exit": 0,
+      "seconds": 1.294,
+      "tail": "+ go test -count=1 ./tests/handover/...\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/handover\t0.833s"
+    },
+    {
+      "name": "root-lint",
+      "command": [
+        "python3",
+        "tests/e2e/at/isolation/run.py",
+        "make",
+        "go-lint",
+        "go-with-disk-tmp="
+      ],
+      "exit": 0,
+      "seconds": 3.567,
+      "tail": "+ make go-lint go-with-disk-tmp="
+    },
+    {
+      "name": "format",
+      "command": [
+        "bash",
+        "-c",
+        "test -z \"$(gofmt -l $(git ls-files '*.go'))\""
+      ],
+      "exit": 0,
+      "seconds": 0.102,
+      "tail": ""
+    },
+    {
+      "name": "diff-check",
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit": 0,
+      "seconds": 0.715,
+      "tail": "",
+      "previous_failure": "Six capture-text EOF blank-line findings; exact originals kept privately before normalization. No verdict changed."
+    },
+    {
+      "name": "committed-evidence-hygiene",
+      "command": [
+        "python3",
+        "tests/e2e/at/isolation/run.py",
+        "go",
+        "test",
+        "-count=1",
+        "-v",
+        "-run",
+        "^TestCommittedEvidenceFiles_ValidAndHygieneClean$",
+        "./tests/e2e/at/isolation"
+      ],
+      "exit": 0,
+      "seconds": 4.135,
+      "tail": "+ go test -count=1 -v -run ^TestCommittedEvidenceFiles_ValidAndHygieneClean$ ./tests/e2e/at/isolation\n=== RUN   TestCommittedEvidenceFiles_ValidAndHygieneClean\n--- PASS: TestCommittedEvidenceFiles_ValidAndHygieneClean (3.98s)\nPASS\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/isolation\t4.004s"
+    },
+    {
+      "name": "central-review",
+      "command": [
+        "python3",
+        "tests/e2e/at/isolation/run.py",
+        "python3",
+        "-B",
+        "tests/e2e/at/isolation/review_holds.py",
+        "docs/e2e/at/isolation"
+      ],
+      "exit": 0,
+      "seconds": 1.146,
+      "tail": "+ python3 -B tests/e2e/at/isolation/review_holds.py docs/e2e/at/isolation\n{\n  \"run_id\": \"56d20530-8042-4d0c-8156-de5a47ce8b61\",\n  \"status\": \"partial\",\n  \"accepted_hold_count\": 1,\n  \"applied_equals_desired_at_read\": 0,\n  \"problems\": []\n}"
+    }
+  ],
+  "assembled_interpretation": "One run only: AT13 D-104 failed; AT11 and AT13 operator rows blocked. Central hold extended exercise partial.",
+  "cleanup": {
+    "containers": [],
+    "images": [],
+    "networks": [],
+    "volumes": []
+  },
+  "archive_verification": {
+    "file_pins": 878,
+    "followup13_byte_identical_files": 112,
+    "two_form_gzip_entries_checked": 5,
+    "earlier_archives_unchanged": true
+  },
+  "post_compression_central_replay": "+ python3 -B tests/e2e/at/isolation/review_holds.py docs/e2e/at/isolation\n{\n  \"run_id\": \"56d20530-8042-4d0c-8156-de5a47ce8b61\",\n  \"status\": \"partial\",\n  \"accepted_hold_count\": 1,\n  \"applied_equals_delivered_desired\": 1,\n  \"applied_equals_desired_at_read\": 0,\n  \"problems\": []\n}\n"
+}

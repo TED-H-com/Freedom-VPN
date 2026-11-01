@@ -24,7 +24,7 @@ def main():
     code = 1
     try:
         if live:
-            code = run(['go', 'build', '-o', str(ROOT / '.agent/tmp/f13-stop-observer'), './tests/e2e/at/updates/stopobserve'], env)
+            code = run(['go', 'build', '-o', str(ROOT / '.agent/tmp/f14-stop-observer'), './tests/e2e/at/updates/stopobserve'], env)
             if code:
                 return code
             env.update(FVPN_E2E_PREFIX='w4-updates', FVPN_E2E_PORT_BASE=os.environ.get('AT_UPDATES_PORT_BASE', '42000'),
@@ -55,7 +55,7 @@ def main():
                 ['go', 'vet', '-tags', 'e2e', './tests/e2e/at/updates/...'],
                 ['go', 'run', 'honnef.co/go/tools/cmd/staticcheck@v0.8.2', './tests/e2e/at/updates/...'],
                 ['go', 'run', 'honnef.co/go/tools/cmd/staticcheck@v0.8.2', '-tags', 'e2e', './tests/e2e/at/updates/...'],
-                ['go', 'test', '-tags', 'e2e', './tests/e2e/at/updates', '-run', '^(TestUpdatesFollowupEvidence|TestD098_Followup9ArchivePins|TestD132_Followup10ArchivePins|TestD132_Followup11ArchivePins|TestD098_Followup12FirstAttemptArchivePins|TestD098_Followup12ArchivePins)$'],
+                ['go', 'test', '-tags', 'e2e', './tests/e2e/at/updates', '-run', '^(TestUpdatesFollowupEvidence|TestD098_Followup9ArchivePins|TestD132_Followup10ArchivePins|TestD132_Followup11ArchivePins|TestD098_Followup12FirstAttemptArchivePins|TestD098_Followup12ArchivePins|TestD098_Followup13ArchivePins)$'],
             ]:
                 code = run(args, env)
                 if code:

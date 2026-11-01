@@ -16,6 +16,8 @@ import (
 	_ "modernc.org/sqlite"
 )
 
+const base = "/var/lib/vpn-node/e2e"
+
 const evidence = "/var/lib/vpn-node/e2e/stop-observation.jsonl"
 
 func lease() map[string]any {
@@ -71,7 +73,7 @@ func procExit(pid string) (string, int) {
 }
 
 func systemd() string {
-	b, _ := exec.Command("/usr/bin/systemctl", "show", "fvpn-agent.service", "-p", "ExecMainCode", "-p", "ExecMainStatus", "-p", "Result", "-p", "TimeoutStopUSec", "-p", "MainPID").Output()
+	b, _ := exec.Command("/usr/bin/systemctl", "show", "fvpn-agent.service", "-p", "ExecMainCode", "-p", "ExecMainStatus", "-p", "Result", "-p", "TimeoutStopUSec", "-p", "MainPID", "-p", "InvocationID", "-p", "ExecMainPID", "-p", "ExecMainExitTimestamp").Output()
 	return strings.TrimSpace(string(b))
 }
 
@@ -96,20 +98,53 @@ func main() {
 	row := map[string]any{"command": append([]string{target}, args...), "parent": filepath.Base(parent), "action": args[0], "transaction": transaction(), "lease_before": lease()}
 	isSystemd := target == "/usr/bin/systemctl"
 	var pid string
+	var id identity
+	var identityErr error
 	if isSystemd {
 		b, _ := exec.Command(target, "show", "-p", "MainPID", "--value", "fvpn-agent.service").Output()
 		pid = strings.TrimSpace(string(b))
-		row["systemd_before"] = systemd()
+		before := systemd()
+		row["systemd_before"] = before
+		if args[0] == "stop" && pid != "" && pid != "0" {
+			id.PID, _ = strconv.Atoi(pid)
+			raw, e := os.ReadFile("/proc/" + pid + "/stat")
+			if e == nil {
+				id.StartTicks, e = startTicks(raw)
+			}
+			identityErr = e
+			for _, line := range strings.Split(before, "\n") {
+				if v, ok := strings.CutPrefix(line, "InvocationID="); ok {
+					id.ID = v
+				}
+			}
+		} else {
+			id, identityErr = retained(base)
+			id.AlreadyStopped = args[0] == "stop"
+		}
 	} else {
 		b, _ := os.ReadFile("/var/lib/vpn-node/e2e/agent.pid")
 		pid = strings.TrimSpace(string(b))
+		if args[0] == "stop" {
+			id, identityErr = capture(base)
+		} else {
+			id, identityErr = retained(base)
+		}
+	}
+	row["agent_identity_before"] = id
+	if identityErr != nil {
+		row["identity_error"] = identityErr.Error()
+	}
+	if args[0] == "stop" && identityErr == nil {
+		if err := retain(base, id); err != nil {
+			row["identity_error"] = "identity retention failed"
+		}
 	}
 	row["agent_pid_before"] = pid
 	done := make(chan struct{})
 	observed := make(chan int, 1)
 	go func() {
 		code := -1
-		if pid != "" && pid != "0" {
+		if isSystemd && pid != "" && pid != "0" {
 			ticker := time.NewTicker(time.Millisecond)
 			defer ticker.Stop()
 			for {
@@ -148,10 +183,30 @@ func main() {
 		}
 	}
 	row["exit_code"] = code
-	row["agent_wait_status"] = <-observed
+	row["sampled_raw_wait_status"] = <-observed
 	row["lease_after"] = lease()
 	if isSystemd {
-		row["systemd_after"] = systemd()
+		after := systemd()
+		row["systemd_after"] = after
+		if args[0] == "stop" {
+			r, e := systemdReceipt(id, after)
+			if e != nil {
+				row["receipt_error"] = e.Error()
+			} else {
+				row["systemd_parent_wait_receipt"] = r
+				raw, _ := json.Marshal(r)
+				if e := os.WriteFile(filepath.Join(base, "stop-observer-systemd-receipt.json"), raw, 0600); e != nil {
+					row["receipt_error"] = "systemd receipt retention failed"
+				}
+			}
+		} else {
+			raw, e := os.ReadFile(filepath.Join(base, "stop-observer-systemd-receipt.json"))
+			if e == nil && json.Valid(raw) {
+				row["retained_systemd_parent_wait_receipt"] = json.RawMessage(raw)
+			}
+		}
+	} else if identityErr == nil {
+		observeReceipt(base, id, row)
 	}
 	f, e := os.OpenFile(evidence, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0600)
 	if e != nil {

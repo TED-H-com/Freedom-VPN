@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Offline follow-up 10 review; preserves printed AT and D-120 verdicts."""
 import json
+from evidence_io import read_json
 from pathlib import Path
 import runpy
 import sys
@@ -8,7 +9,7 @@ from producer_timing import analyze, read_operations
 
 root=Path(sys.argv[1] if len(sys.argv)>1 else 'docs/e2e/at/isolation')
 # Refuse inherited packet files when this attempt did not execute expiry.
-current=json.loads((root/'AT13.json').read_text())
+current=read_json(root/'AT13.json')
 expiry=next((c for c in current.get('checks',[]) if c['name']=='short whole-node lease expiry'),{})
 if 'D-104 exact packet deadline verdict=' not in expiry.get('actual',''):
     from producer_timing import validate_operations
@@ -26,7 +27,7 @@ def write(name,value):
     (root/name).write_text(json.dumps(value,indent=2)+'\n')
 write('continuity-analysis.json',dict(run_id=r['run_id'],scope=r['scope'],historical=r['historical'],
     **r['renewal'],producer_timing='producer-timing-analysis.json',timing_limit=r['interpretation']))
-old=json.loads((root/'expiry-timing-analysis.json').read_text())
+old=read_json(root/'expiry-timing-analysis.json')
 old.update(missing_producer_samples=[],available='Exact producer snapshots plus signed envelopes, node SQLite anchor, same-boot/time-namespace packet clocks and periodic precision/heartbeat reads',
            producer_timing='producer-timing-analysis.json',producer_brackets=r['brackets'],
            last_accepted_renewal=r['expiry']['last_accepted_renewal'],loss_correlation=r['expiry']['losses'])
@@ -34,7 +35,7 @@ write('expiry-timing-analysis.json',old)
 
 # Focused failure index, derived only from this run. Baseline source rows name
 # agent writes; the separate watchdog log retains its own decisions and writes.
-verdict=json.loads((root/'deadline-verdict.json').read_text())
+verdict=read_json(root/'deadline-verdict.json')
 positives=[p for p in verdict['packets'] if int(p['egress_mono_ns'])>0]
 first_positive=min((int(p['ingress_mono_ns']) for p in positives),default=0)
 losses=r['expiry']['losses']; deadline=int(r['expiry']['deadline_ns'])
@@ -51,7 +52,7 @@ if early:
     after=[i for i,p in applies if int(p['timing']['start_ns'])>=start]
     if before and after:
         selected=process[max(before[-1]-2,0):after[0]+3]
-wire=json.loads((root/'receiver-capture.json').read_text())['transactions']
+wire=read_json(root/'receiver-capture.json')['transactions']
 reports={}
 if selected:
     begin,end=selected[0]['anchor']['wall'],selected[-1]['anchor']['wall']
@@ -60,7 +61,7 @@ if selected:
         if b.get('report_id') and begin<=b.get('observed_at','')<=end:
             item=reports.setdefault(b['report_id'],dict(report=b,attempts=[]))
             item['attempts'].append({k:w[k] for k in ('received_at','response_at','status')})
-reads=json.loads((root/'whole-node-continuous-reads.json').read_text())['reads']
+reads=read_json(root/'whole-node-continuous-reads.json')['reads']
 baselines=[p for p in reads if 'fvpn_generation=0 fvpn_baseline=1' in p['readback']]
 write('expiry-failure-correlation.json',dict(run_id=r['run_id'],status='pass' if verdict['passed'] else 'fail',
     owner='w2-agent-core: node/agent/engine.go Step/finishServingStep/verifyCurrentServing and node/watchdog/watch.go Watch.needsBaseline; netlab supports verifier diagnostics' if early else None,
@@ -83,8 +84,8 @@ write('expiry-failure-correlation.json',dict(run_id=r['run_id'],status='pass' if
 # Independently recheck original D-087 wire bytes and acceptance ordering.
 from grant_evidence import validate as validate_grants
 try:
-    grant_audit=validate_grants(json.loads((root/'member-grants-transition.json').read_text()),
-                               json.loads((root/'member-grants-wire.json').read_text()))
+    grant_audit=validate_grants(read_json(root/'member-grants-transition.json'),
+                               read_json(root/'member-grants-wire.json'))
 except (AssertionError,KeyError,ValueError,IndexError) as error:
     write('member-grants-audit.json',dict(run_id=r['run_id'],status='fail',error_kind=type(error).__name__,
         reason='The captured transition does not qualify. Retain its AT10 failure, invariant snapshots and original wire; incidental reports cannot supply a fixed-generation transition.'))
@@ -92,7 +93,7 @@ except (AssertionError,KeyError,ValueError,IndexError) as error:
 write('member-grants-audit.json',grant_audit)
 
 # Join original node acceptance records to both genuine response/report pairs.
-transition=json.loads((root/'member-grants-transition.json').read_text())
+transition=read_json(root/'member-grants-transition.json')
 joined={}
 for phase,lease_key,report_key,flip_key in [
     ('empty','empty_lease','provisional_receipt','false_flip'),
