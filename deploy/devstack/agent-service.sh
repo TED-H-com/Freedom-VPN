@@ -75,8 +75,9 @@ count_agents() {
 
 reap_agents() {
     _reap_started_at=$(date -u +%Y-%m-%dT%H:%M:%S.%NZ)
-    _reap_started_ms=$(monotonic_ms)
     each_agent kill
+    # Start the budget after TERM delivery, not before the process scan.
+    _reap_started_ms=$(monotonic_ms)
     while [ "$(count_agents)" -ne 0 ] && [ "$(( $(monotonic_ms) - _reap_started_ms ))" -lt 15000 ]; do
         sleep "$poll"
     done
