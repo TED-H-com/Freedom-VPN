@@ -205,7 +205,7 @@ func (f *matchingLeaseHold) modify(resp *http.Response) error {
 				}
 				return f.release(now, "proxy_restarted")
 			}
-			if n := len(f.evidence.Events); n > 0 && f.evidence.Events[n-1].Kind == "matching_lease_forwarded" {
+			if !now.Before(f.evidence.Arm.ExpiresAt) {
 				return nil
 			}
 		} else {

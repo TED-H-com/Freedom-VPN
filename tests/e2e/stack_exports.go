@@ -207,7 +207,15 @@ func (s *Stack) ArmMatchingLeaseHold(ctx context.Context, slot, baseGeneration s
 	out = leasehold.Arm{ID: uuid.NewString(), BaseGeneration: baseGeneration, HoldSeconds: int(duration / time.Second), ArmedAt: now, ExpiresAt: now.Add(3 * time.Minute)}
 	raw, err := json.Marshal(out)
 	if err == nil {
-		err = writeContainerFile(ctx, c, active+"/arm.json", "600", raw)
+		err = writeContainerFile(ctx, c, active+"/arm.tmp", "600", raw)
+	}
+	if err == nil {
+		err = exec.CommandContext(ctx, "docker", "exec", c, "mv", active+"/arm.tmp", active+"/arm.json").Run()
+	}
+	if err != nil {
+		clean, cancel := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
+		defer cancel()
+		_ = exec.CommandContext(clean, "docker", "exec", c, "rm", "-rf", active).Run()
 	}
 	return out, err
 }

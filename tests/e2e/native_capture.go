@@ -82,6 +82,24 @@ func (s *Stack) startNativeCapture(ctx context.Context, extra map[string]string)
 	if err != nil {
 		return nil, err
 	}
+	return s.startNativeCaptureAddresses(ctx, addresses, extra)
+}
+
+// StartNativeFirstContactCapture starts passive capture before the member joins.
+// BindPeers after genuine admission enables selected-peer metadata sampling.
+func (s *Stack) StartNativeFirstContactCapture(ctx context.Context) (*NativeCapture, error) {
+	return s.startNativeCaptureAddresses(ctx, map[string]string{}, nil)
+}
+
+func (c *NativeCapture) BindPeers(ctx context.Context) error {
+	addresses, err := c.stack.nativeAddresses(ctx)
+	if err == nil {
+		c.targets = map[string]string{"member": addresses["node"], "node": addresses["member"]}
+	}
+	return err
+}
+
+func (s *Stack) startNativeCaptureAddresses(ctx context.Context, addresses, extra map[string]string) (_ *NativeCapture, err error) {
 	c := &NativeCapture{stack: s, targets: map[string]string{"member": addresses["node"], "node": addresses["member"]}, containers: map[string]string{"member": s.lab.member, "node": s.lab.node, "origin": s.lab.prefix + "-origin"}, evidence: NativeCaptureEvidence{ID: uuid.NewString(), Points: map[string]*NativeCapturePoint{}}}
 	for role, container := range extra {
 		c.containers[role] = container
