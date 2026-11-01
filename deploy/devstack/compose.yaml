@@ -345,6 +345,7 @@ services:
     restart: "no"
 
   node:
+    stop_grace_period: 25s
     image: ${FVPN_E2E_IMAGE_NODE:-fvpn-devstack-node:local}
     container_name: fvpn-${FVPN_E2E_PREFIX:-e2e}-node
     privileged: true

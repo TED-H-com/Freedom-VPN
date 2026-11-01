@@ -33,12 +33,15 @@ func TestAT02_ReadFailureCategories(t *testing.T) {
 // Synthetic failures exercise the real enforcement parser and exact private
 // retention. No retry replaces the failed observation (F13-01 / AT04 / SEC02).
 func TestAT04_ParseFailureEvidence(t *testing.T) {
-	for _, tc := range []struct{ name, raw, class string }{
-		{"empty", " \n", "empty"},
-		{"truncated", `{"nftables":[`, "truncated"},
-		{"interleaved", "Warning: TEST ONLY diagnostic\n{\"nftables\":[]}\n", "interleaved"},
-		{"unexpected", `{"nftables":"TEST ONLY private value"}`, "unexpected_format"},
-		{"semantic", `{"nftables":[{"chain":{"family":"inet","table":"fvpn","name":"TEST ONLY private name","prio":"private-value"}}]}`, "unexpected_format"},
+	for _, tc := range []struct{ name, raw, class, kind string }{
+		{"empty", " \n", "empty", "empty_document"},
+		{"truncated", `{"nftables":[`, "truncated", "unexpected_eof"},
+		{"interleaved", "Warning: TEST ONLY diagnostic\n{\"nftables\":[]}\n", "interleaved", "diagnostic_and_json"},
+		{"unexpected", `{"nftables":"TEST ONLY private value"}`, "unexpected_format", "json_type"},
+		{"semantic", `{"nftables":[{"chain":{"family":"inet","table":"fvpn","name":"TEST ONLY private name","prio":"private-value"}}]}`, "unexpected_format", "parser_rejected"},
+		{"syntax", `{"nftables":!]}`, "unexpected_format", "json_syntax"},
+		{"duplicate_exact", `{"nftables":[{"chain":{"family":"inet","table":"fvpn","name":"TEST ONLY private name"}},{"chain":{"family":"inet","table":"fvpn","name":"TEST ONLY private name"}}]}`, "ambiguous_listing", "duplicate_chain"},
+		{"duplicate_different", `{"nftables":[{"chain":{"family":"inet","table":"fvpn","name":"TEST ONLY private name","prio":0}},{"chain":{"family":"inet","table":"fvpn","name":"TEST ONLY private name","prio":1}}]}`, "ambiguous_listing", "duplicate_chain"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			_, err := enforce.ParseState([]byte(tc.raw))
@@ -52,7 +55,7 @@ func TestAT04_ParseFailureEvidence(t *testing.T) {
 			if calls != 1 || result.Diagnostic.Exit != 0 || result.Diagnostic.Stage != "nft_parse" || result.Diagnostic.Category != "parse" || result.Present || got == nil {
 				t.Fatalf("failed sample lost: %+v", result)
 			}
-			if got.Class != tc.class || !got.Retained || got.Bytes != len(tc.raw) || got.SHA256 != fmt.Sprintf("%x", sha256.Sum256([]byte(tc.raw))) {
+			if got.Class != tc.class || got.ParserErrorKind != tc.kind || !got.Retained || got.Bytes != len(tc.raw) || got.SHA256 != fmt.Sprintf("%x", sha256.Sum256([]byte(tc.raw))) {
 				t.Fatalf("metadata: %+v", got)
 			}
 			for name, want := range map[string]string{"output.raw": tc.raw, "parser-error.txt": err.Error()} {
@@ -91,5 +94,13 @@ func TestAT04_ParseRetentionFailureAndLines(t *testing.T) {
 		if got.Retained || got.RetentionError == "" || got.Lines != tc.lines {
 			t.Fatalf("metadata: %+v", got)
 		}
+	}
+}
+
+func TestAT04_WrappedDuplicateClassification(t *testing.T) {
+	_, err := enforce.ParseState([]byte(`{"nftables":[{"chain":{"family":"inet","table":"fvpn","name":"forward"}},{"chain":{"family":"inet","table":"fvpn","name":"forward"}}]}`))
+	class, kind := parseClass([]byte(`{}`), fmt.Errorf("TEST ONLY wrapper: %w", err))
+	if class != "ambiguous_listing" || kind != "duplicate_chain" {
+		t.Fatalf("%s %s", class, kind)
 	}
 }
