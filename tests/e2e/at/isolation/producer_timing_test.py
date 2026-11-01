@@ -77,6 +77,72 @@ def command(shape='success', phase='install', kind='nft', base=115):
 
 
 class CorrelationTests(unittest.TestCase):
+    def test_ISO_F6_01_candidate_acceptance_and_original_command_join(self):
+        from candidate_evidence import candidate_rejections
+        rows = failed_install()
+        rows[0]['timing'].update(candidate_generation='30', commands=[command(phase='prepare', kind='tc')])
+        error = dict(stage='apply_candidate', code='TC_FOREIGN_FILTER',
+                     message='candidate_generation=30 verified=false', observed_at='2026-10-31T00:00:00.000000001Z')
+        wire = [dict(path='/desired-state', status=200, response_at='2026-10-30T23:59:59.5Z',
+                     response=dict(signed=dict(config_generation='30'))),
+                dict(path='/observations', status=202, received_at='2026-10-31T00:00:00.2Z', response_at='2026-10-31T00:00:00.3Z',
+                     body=dict(report_id='report', observed_at='2026-10-31T00:00:00.1Z',
+                               applied_config_generation='29', member_forwarding_enabled=False, errors=[error]))]
+        def review(w=wire, r=rows):
+            return candidate_rejections(w, r, 29, '2026-10-30T23:59:59Z', '2026-10-31T00:00:01Z')
+        joined = review()
+        self.assertEqual(len(joined), 1)
+        self.assertEqual(joined[0]['attempt'], p.identity(rows[0]))
+        self.assertEqual(joined[0]['original_command_indices'], [0])
+        self.assertIn('verifier unavailable', joined[0]['evidence_kind'])
+        for mutate in (
+            lambda w: w[1].update(status=502),
+            lambda w: w[1].update(response_at='2026-10-31T00:00:02Z'),
+            lambda w: w[1]['body'].update(member_forwarding_enabled=True),
+            lambda w: w[1]['body']['errors'][0].update(message='candidate_generation=29 verified=false'),
+            lambda w: w[1]['body']['errors'][0].update(message='candidate_generation=30 verified=true'),
+            lambda w: w[1]['body']['errors'][0].update(code='HEALTH_CHECK_FAILED'),
+            lambda w: w[1]['body']['errors'][0].update(observed_at='2026-10-30T23:59:59.9Z'),
+            lambda w: w[0]['response']['signed'].update(config_generation='29'),
+        ):
+            bad=copy.deepcopy(wire); mutate(bad)
+            self.assertEqual(review(w=bad), [])
+        bad=copy.deepcopy(rows); bad[0]['timing']['commands']=[]
+        self.assertEqual(review(r=bad), [])
+        bad=copy.deepcopy(rows); bad[0]['timing']['verified']=True
+        self.assertEqual(review(r=bad), [])
+
+    def test_Core32_hold_signal_and_alarm_threshold(self):
+        from review_core32 import hold_reports
+        lease=dict(path='/lease', response=dict(signed=dict(lease_id='old', config_generation='29')))
+        body=dict(report_id='hold',observed_at='2026-11-01T12:00:00Z',applied_config_generation='30',
+                  lease=dict(lease_id='old'),member_forwarding_enabled=False,forwarding_block_reasons=['policy_missing'],
+                  errors=[dict(stage='lease',code='STALE_GENERATION',
+                  message='Serving lease generation hold: applied=30 lease=29 steps=1 elapsed_ms=0 alarm=false.')])
+        wire=[lease,dict(path='/observations',status=202,body=body)]
+        result=hold_reports(wire)
+        self.assertTrue(result['all_hold_reports_qualified'])
+        self.assertTrue(result['all_summary_thresholds_consistent'])
+        self.assertFalse(result['alarm_observed'])
+        for message in ('applied=30 lease=29 steps=3 elapsed_ms=1200 alarm=true.',
+                        'applied=30 lease=29 steps=2 elapsed_ms=30000 alarm=true.'):
+            alarm=copy.deepcopy(wire)
+            alarm[1]['body']['errors'][0]['message']='Serving lease generation hold: '+message
+            result=hold_reports(alarm)
+            self.assertTrue(result['alarm_observed'])
+            self.assertTrue(result['all_summary_thresholds_consistent'])
+        for mutate in (lambda b: b.update(errors=[]),
+                       lambda b: b.update(forwarding_block_reasons=[]),
+                       lambda b: b['errors'][0].update(stage='apply')):
+            bad=copy.deepcopy(wire);mutate(bad[1]['body'])
+            self.assertFalse(hold_reports(bad)['all_hold_reports_qualified'])
+        # Retried bodies keep their counters and are one report, not new Steps.
+        retry=copy.deepcopy(wire);retry.append(copy.deepcopy(wire[1]));retry[1]['status']=502
+        result=hold_reports(retry)
+        self.assertEqual(result['unique_hold_reports'],1)
+        self.assertEqual(result['holds'][0]['statuses'],[502,202])
+        self.assertFalse(result['alarm_observed'])
+
     def test_D136_baseline_to_apply_requires_later_recovery_and_counts_losses(self):
         baseline = dict(run_id='run', boot_id='boot', sequence='1', source='baseline',
             baseline=dict(cause='policy_missing', start_ns='80', end_ns='90', succeeded=True),

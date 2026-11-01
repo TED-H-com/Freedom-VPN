@@ -1,0 +1,15 @@
+{
+  "id": "native-debug-events",
+  "title": "Pinned native client allowlisted events",
+  "spec": null,
+  "status": "pass",
+  "observations": [
+    {
+      "name": "analysis",
+      "detail": "{\"member\":{\"bytes\":\"48491\",\"sha256\":\"bbe0e87f77ec1e4702eef0df15a08b0551db201361a1e2ba65d47a2009841539\",\"events\":[{\"line\":70,\"at\":\"2026-11-01T10:47:30.791Z\",\"level\":\"INFO\",\"source\":\"client/iface/wgproxy/factory_kernel.go:45\",\"event\":\"loopback_factory\"},{\"line\":272,\"at\":\"2026-11-01T10:47:48.295Z\",\"level\":\"INFO\",\"source\":\"client/iface/wgproxy/loopback/proxy.go:170\",\"event\":\"relay_proxy_added\"},{\"line\":322,\"at\":\"2026-11-01T10:47:48.497Z\",\"level\":\"INFO\",\"source\":\"client/internal/peer/conn.go:472\",\"event\":\"p2p_endpoint_configure\",\"family\":\"ipv6\",\"address\":\"addr-837a7935ba5539b1\",\"port\":51820},{\"line\":330,\"at\":\"2026-11-01T10:47:48.598Z\",\"level\":\"DEBG\",\"source\":\"client/internal/peer/conn.go:484\",\"event\":\"relay_redirect_as_endpoint\"}]},\"node\":{\"bytes\":\"30976\",\"sha256\":\"cb8fc6269597dfacdd03af072da40377985b9a00a0d6df2be45dfce2ad071439\",\"events\":[{\"line\":167,\"at\":\"2026-11-01T10:47:48.295Z\",\"level\":\"INFO\",\"source\":\"client/iface/wgproxy/loopback/proxy.go:170\",\"event\":\"relay_proxy_added\"},{\"line\":171,\"at\":\"2026-11-01T10:47:48.295Z\",\"level\":\"DEBG\",\"source\":\"client/internal/peer/endpoint.go:87\",\"event\":\"wg_configure_wait\"},{\"line\":204,\"at\":\"2026-11-01T10:47:48.497Z\",\"level\":\"INFO\",\"source\":\"client/internal/peer/conn.go:472\",\"event\":\"p2p_endpoint_configure\",\"family\":\"ipv6\",\"address\":\"addr-5f910114cdbd19f5\",\"port\":51820},{\"line\":206,\"at\":\"2026-11-01T10:47:48.497Z\",\"level\":\"DEBG\",\"source\":\"client/internal/peer/endpoint.go:87\",\"event\":\"wg_configure_wait\"},{\"line\":211,\"at\":\"2026-11-01T10:47:48.597Z\",\"level\":\"DEBG\",\"source\":\"client/internal/peer/conn.go:484\",\"event\":\"relay_redirect_as_endpoint\"}]}}"
+    }
+  ],
+  "at": "2026-11-01T10:47:51Z",
+  "run_id": "5a0cc305-d25f-4582-b297-f0724cd79079",
+  "source_commit": "6b075f9904315b890c5510f75889a0ef099028b7"
+}

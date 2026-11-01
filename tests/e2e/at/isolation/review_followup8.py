@@ -78,7 +78,16 @@ for r in clean:
         matching.append(r)
 negative = labelled('dirty newer generation')
 dirty_reports = [r.get('observation', {}) for r in negative]
-dirty_tc = [b for b in dirty_reports if not b.get('member_forwarding_enabled') and tc(b).get('error_code') == 'TC_FOREIGN_FILTER' and int(tc(b).get('candidate_generation') or 0) > initial_gen]
+# Agent-core 32 identifies a rejected candidate separately from the installed
+# verifier. Only assertion 6 consumes this pre-install evidence; 1 and 3–4 keep
+# their original installed/read requirements above and below.
+from candidate_evidence import candidate_rejections
+from producer_timing import read_operations
+dirty_tc = candidate_rejections(transactions, read_operations(root), initial_gen,
+    first('publish dirty newer generation').get('at', start), removal.get('start', end))
+write('candidate-rejection-join.json', dict(run_id=trace.get('run_id'),
+    evidence_kind='pre-install only; no substitution for installed-verifier assertions',
+    accepted_candidates=dirty_tc))
 negative_preserved = bool(negative) and all('flower' in current_tc(r) and 'mirred' in current_tc(r) and 'serving 0' in r.get('readback', '') and member_up(r) is False for r in negative)
 removed = current_tc(first('fresh removal read'))
 final = first('final recovered state')

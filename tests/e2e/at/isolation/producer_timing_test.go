@@ -155,3 +155,31 @@ func TestD087_OriginalWireAndAcceptedTransition(t *testing.T) {
 	}
 	t.Log(string(out))
 }
+
+func TestD098_Followup12ArchivePins(t *testing.T) {
+	root := "../../../../docs/e2e/at/isolation/history/follow-up-12"
+	raw, err := os.ReadFile(filepath.Join(root, "archive.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var manifest struct {
+		RunID string `json:"run_id"`
+		Files []struct{ Path, SHA256 string }
+	}
+	if err = json.Unmarshal(raw, &manifest); err != nil {
+		t.Fatal(err)
+	}
+	if manifest.RunID != "1c25ee44-1872-4cce-a9f5-d52491d87095" || len(manifest.Files) != 108 {
+		t.Fatal("wrong archived run")
+	}
+	for _, f := range manifest.Files {
+		body, e := os.ReadFile(filepath.Join(root, f.Path))
+		if e != nil {
+			t.Fatal(e)
+		}
+		sum := sha256.Sum256(body)
+		if hex.EncodeToString(sum[:]) != f.SHA256 {
+			t.Errorf("archive changed: %s", f.Path)
+		}
+	}
+}

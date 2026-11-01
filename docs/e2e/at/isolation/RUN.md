@@ -1,14 +1,14 @@
-# Isolation run procedure — Follow-up 12
+# Isolation run procedure — Follow-up 13
 
-Product baseline: `5bd751026073444087b32ac2a7115f8566104f8b` (main after
-agent-core 31 / PR #369 and netlab 22 / PR #365). The preflight command
+Product baseline: `334d56e466c7689fdbf16e078041afbfbd9bf4fb` (main including
+agent-core 32 / PR #376 and isolation 12 / PR #373). The preflight command
 `go env GOCACHE` returned `/data/ted-h-cache/go-build`; no cache path is
 hard-coded in the runner. Runtime source identity is recorded in each AT row.
 
 Before the one assembled run, retain `vmstat 5 7` and
 `pgrep -af 'gates.sh|mk/at-'`. The public `host-preflight.json` keeps the CPU
 samples and sanitized suite inventory; original command output remains in
-`.agent/f12/`. These host observations do not attribute a failure.
+`.agent/f13/`. These host observations do not attribute a failure.
 
 Run from the worktree root:
 
@@ -289,3 +289,61 @@ Ordinary stop/start retains the lease, but exact signal/exit events were
 unavailable. The later clone fixture's event observer records SIGTERM then
 SIGKILL after 20.007193 s, exit 137. It is not a graceful-stop qualification.
 See `summary.md`, `iso-f6-01-observation-gap.json`, and the three dated hand-offs.
+
+
+## Follow-up 13 observation boundary and regression sample
+
+D-098 commit `822d56b0` archives all 108 root files of run `1c25ee44`
+byte-identically under `history/follow-up-12/`, with SHA-256 pins. Earlier
+archives are untouched. Handover reads immutable evidence; its root paths are
+rejection inputs, so no D-132 exception edit is needed. The historical sixth
+assertion remains blocked.
+
+The existing 90-second control-restoration budget now includes a current
+accepted serving report and a read-only SQLite outbox count of zero. The
+readiness samples are retained. ISO-F6-01 refuses injection if this boundary
+was not reached. The foreign filter remains until an accepted dirty-candidate
+`TC_FOREIGN_FILTER` report with forwarding=false and an in-window observation
+arrives. The existing maximum twelve samples at 500ms is unchanged; exhaustion
+permits cleanup only, not a passing boundary. All six assertion names and
+requirements remain. Assertions requiring an installed verifier continue to
+consume that verifier. Assertion 6 separately joins `stage=apply_candidate`,
+`verified=false`, generation and failure time to the original desired wire
+and failed Apply command trace; an old applied ACK is allowed.
+
+Terminal source/clone stops use an owned TEST ONLY helper inside each lab
+container. It opens the agent's pidfd, sets the existing supervisor pause
+marker, sends SIGTERM to that pidfd and polls exit readiness. It records send
+and exit brackets, the 13-second comparison, and /proc zombie exit status when
+available. The supervisor's escalation policy is unchanged. Stored leases are
+read before and after. Exact Step-context cancellation is not exported, so
+r18 M-1 is **not observable here**; receiver completion alone is not a caller
+cancellation timestamp. Docker container stop/restart and terminal process
+stop measurements remain separate.
+
+D-135 / corrected D-136 use baseline→next successful Apply, with every captured
+loss counted and later verifier/heartbeat recovery required. Hold wire review
+checks `policy_missing` plus `STALE_GENERATION` at `stage=lease`, and retains
+actual streak/alarm summaries. The baseline stays. Operator AT11/AT13 rows
+remain blocked. No timeout inflation, loss waiver or retrospective promotion.
+
+
+Final follow-up 13 run `38074149-1137-4782-80fd-8669c36c6fcb`, runtime source
+`c521cb0018844eac1de24ee243c858518bb1a5e3`, source_dirty=false: full foreground
+command 1216.858 s, exit 2. AT10 9/0/0 and AT12 10/0/0 pass; AT11 2/1/0 and
+AT13 6/1/0 retain operator blocks. All six ISO-F6-01 assertions pass only for
+this new sample. Final statistics and proof limits are in summary.md.
+
+The offline hold reviewer (commit `2c51c176`) runs as:
+
+```sh
+python3 -B tests/e2e/at/isolation/review_core32.py docs/e2e/at/isolation
+```
+
+The full producer stream is available as lossless gzip both at the current
+root and under immutable `history/follow-up-13-stream/`. Its manifest pins
+compressed and decompressed SHA-256 forms; byte identity was checked against
+the original export. All 764 archive file pins verify. Root living evidence is
+not used as an immutable claim pin. The old observation-gap root is an explicit
+pointer to its historical blocked snapshot, preserving the agent-core design
+note's link without changing any outside-path document.

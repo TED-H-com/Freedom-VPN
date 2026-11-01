@@ -45,3 +45,15 @@ func TestAT01_KernelReadbacksAreContentFree(t *testing.T) {
 		t.Fatal("address leaked")
 	}
 }
+
+func TestF1101_NativeHandshakeRemainsSeparate(t *testing.T) {
+	raw := []byte(`{"peers":{"details":[{"netbirdIp":"100.64.0.2/32","lastWireguardHandshake":"2026-11-01T10:00:00.123Z"},{"netbirdIp":"100.64.0.3/32","lastWireguardHandshake":"0001-01-01T00:00:00Z"}]}}`)
+	p, err := Select(raw, "100.64.0.2")
+	if err != nil || p.LastHandshake.Unix() != 1793527200 || p.LastHandshake.Nanosecond() != 123000000 {
+		t.Fatalf("timestamp: %v %v", p.LastHandshake, err)
+	}
+	p, err = Select(raw, "100.64.0.3")
+	if err != nil || !p.LastHandshake.IsZero() {
+		t.Fatal("unknown handshake became nonzero")
+	}
+}

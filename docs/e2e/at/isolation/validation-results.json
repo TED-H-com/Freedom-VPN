@@ -1,7 +1,10 @@
 {
-  "run_id": "1c25ee44-1872-4cce-a9f5-d52491d87095",
+  "run_id": "38074149-1137-4782-80fd-8669c36c6fcb",
+  "baseline": "334d56e466c7689fdbf16e078041afbfbd9bf4fb",
+  "runtime_source": "c521cb0018844eac1de24ee243c858518bb1a5e3",
   "gates": {
     "area-final": {
+      "name": "area-final",
       "command": [
         "make",
         "-f",
@@ -10,44 +13,57 @@
         "at-isolation-test",
         "at-isolation-build"
       ],
-      "exit": 0,
-      "elapsed_seconds": 7.244,
-      "tail": "+ go vet ./tests/e2e/at/isolation/... ./tests/netlab/at/...\n+ go vet -tags netlab ./tests/netlab/at/...\n+ go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 ./tests/e2e/at/isolation/... ./tests/netlab/at/...\n+ go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 -tags netlab ./tests/netlab/at/...\n+ go vet tests/e2e/at/isolation/probe_main.go tests/e2e/at/isolation/observer_main.go\n+ go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 tests/e2e/at/isolation/probe_main.go tests/e2e/at/isolation/observer_main.go\n+ go test -count=1 ./tests/e2e/at/isolation/... ./tests/netlab/at/...\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/isolation\t3.394s\n?   \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab/at\t[no test files]\n+ python3 tests/e2e/at/isolation/driver.py build\n+ sh -ec for arch in amd64 arm64; do GOOS=linux GOARCH=$arch go build -o \"$GOTMPDIR/probe-$arch\" tests/e2e/at/isolation/probe_main.go tests/e2e/at/isolation/observer_main.go; done\n"
+      "start": "2026-11-01T11:29:30Z",
+      "seconds": 8.998,
+      "exit_code": 0,
+      "tail": [
+        "+ go vet ./tests/e2e/at/isolation/... ./tests/netlab/at/...",
+        "+ go vet -tags netlab ./tests/netlab/at/...",
+        "+ go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 ./tests/e2e/at/isolation/... ./tests/netlab/at/...",
+        "+ go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 -tags netlab ./tests/netlab/at/...",
+        "+ go vet tests/e2e/at/isolation/probe_main.go tests/e2e/at/isolation/observer_main.go",
+        "+ go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 tests/e2e/at/isolation/probe_main.go tests/e2e/at/isolation/observer_main.go",
+        "+ go test -count=1 ./tests/e2e/at/isolation/... ./tests/netlab/at/...",
+        "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/isolation\t4.751s",
+        "?   \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab/at\t[no test files]",
+        "+ python3 tests/e2e/at/isolation/driver.py build",
+        "+ sh -ec for arch in amd64 arm64; do GOOS=linux GOARCH=$arch go build -o \"$GOTMPDIR/probe-$arch\" tests/e2e/at/isolation/probe_main.go tests/e2e/at/isolation/observer_main.go; done"
+      ]
     },
     "assembled": {
+      "name": "assembled",
       "command": [
         "make",
         "-f",
         "mk/at-isolation.mk",
         "at-isolation"
       ],
-      "exit": 2,
-      "elapsed_seconds": 1207.405,
-      "tail": " Container fvpn-w4-isolation-node-netns Removed \n Container fvpn-w4-isolation-netbird Stopped \n Container fvpn-w4-isolation-netbird Removing \n Container fvpn-w4-isolation-netbird Removed \n Network fvpn-w4-isolation Removing \n Volume fvpn-w4-isolation-nb Removing \n Volume fvpn-w4-isolation-pgbackrest-repo Removing \n Network fvpn-w4-isolation-origin Removing \n Volume fvpn-w4-isolation-pg Removing \n Network fvpn-w4-isolation-origin Resource is still in use \n Network fvpn-w4-isolation Resource is still in use \n Volume fvpn-w4-isolation-pgbackrest-repo Removed \n Volume fvpn-w4-isolation-nb Removed \n Volume fvpn-w4-isolation-pg Removed \ne2e stack is down\nowned-prefix inventory: {\"containers\": [], \"images\": [], \"networks\": [], \"volumes\": []}\nat-isolation lab=0 stack=1\nmake: *** [mk/at-isolation.mk:57: at-isolation] Error 2\n"
-    },
-    "replay": {
-      "command": [
-        "python3",
-        "-B",
-        "tests/e2e/at/isolation/review_followup10.py",
-        "docs/e2e/at/isolation"
-      ],
-      "exit": 0,
-      "elapsed_seconds": 4.879,
-      "tail": "  \"expiry\": {\n    \"deadline_ns\": \"110488811839293\",\n    \"packet_verdict\": {\n      \"passed\": true,\n      \"deadline_mono_ns\": \"110488811839293\",\n      \"last_positive_mono_ns\": \"110488712234930\",\n      \"first_drop_mono_ns\": \"110488749228802\",\n      \"last_positive_offset_ns\": \"-99604363\",\n      \"first_drop_offset_ns\": \"-62610491\",\n      \"positives\": 161,\n      \"drops\": 41,\n      \"errors\": []\n    },\n    \"pre_deadline_losses\": 1,\n    \"literal_zero_pre_deadline_loss\": false\n  },\n  \"interpretation\": \"Outer bracket is install-start through release-end; inner is installed-by through release-start. Capture reads and command overlaps do not locate the kernel commit/drop instant. All loss counts remain unchanged.\"\n}\n"
-    },
-    "policy-review": {
-      "command": [
-        "python3",
-        "-B",
-        "tests/e2e/at/isolation/review_policy_missing.py",
-        "docs/e2e/at/isolation"
-      ],
-      "exit": 0,
-      "elapsed_seconds": 2.152,
-      "tail": "(no output)\n"
+      "start": "2026-11-01T11:05:14Z",
+      "seconds": 1216.858,
+      "exit_code": 2,
+      "tail": [
+        " Container fvpn-w4-isolation-node-netns Removed ",
+        " Container fvpn-w4-isolation-netbird Stopped ",
+        " Container fvpn-w4-isolation-netbird Removing ",
+        " Container fvpn-w4-isolation-netbird Removed ",
+        " Volume fvpn-w4-isolation-pg Removing ",
+        " Volume fvpn-w4-isolation-nb Removing ",
+        " Volume fvpn-w4-isolation-pgbackrest-repo Removing ",
+        " Network fvpn-w4-isolation Removing ",
+        " Network fvpn-w4-isolation-origin Removing ",
+        " Network fvpn-w4-isolation-origin Resource is still in use ",
+        " Network fvpn-w4-isolation Resource is still in use ",
+        " Volume fvpn-w4-isolation-pg Removed ",
+        " Volume fvpn-w4-isolation-nb Removed ",
+        " Volume fvpn-w4-isolation-pgbackrest-repo Removed ",
+        "e2e stack is down",
+        "owned-prefix inventory: {\"containers\": [], \"images\": [], \"networks\": [], \"volumes\": []}",
+        "at-isolation lab=0 stack=1",
+        "make: *** [mk/at-isolation.mk:57: at-isolation] Error 2"
+      ]
     },
     "handover-final": {
+      "name": "handover-final",
       "command": [
         "python3",
         "tests/e2e/at/isolation/run.py",
@@ -56,11 +72,16 @@
         "-count=1",
         "./tests/handover/..."
       ],
-      "exit": 0,
-      "elapsed_seconds": 1.014,
-      "tail": "+ go test -count=1 ./tests/handover/...\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/handover\t0.695s\n"
+      "start": "2026-11-01T11:29:30Z",
+      "seconds": 1.357,
+      "exit_code": 0,
+      "tail": [
+        "+ go test -count=1 ./tests/handover/...",
+        "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/handover\t0.839s"
+      ]
     },
     "root-lint-final": {
+      "name": "root-lint-final",
       "command": [
         "python3",
         "tests/e2e/at/isolation/run.py",
@@ -68,31 +89,39 @@
         "go-lint",
         "go-with-disk-tmp="
       ],
-      "exit": 0,
-      "elapsed_seconds": 1.209,
-      "tail": "+ make go-lint go-with-disk-tmp=\n"
+      "start": "2026-11-01T11:29:58Z",
+      "seconds": 2.819,
+      "exit_code": 0,
+      "tail": [
+        "+ make go-lint go-with-disk-tmp="
+      ]
     },
-    "gofmt": {
+    "formatting": {
+      "name": "formatting",
       "command": [
         "bash",
         "-c",
         "test -z \"$(gofmt -l $(git ls-files \"*.go\"))\""
       ],
-      "exit": 0,
-      "elapsed_seconds": 0.126,
-      "tail": "(no output)\n"
+      "start": "2026-11-01T11:30:52Z",
+      "seconds": 0.106,
+      "exit_code": 0,
+      "tail": []
     },
     "diff-check": {
+      "name": "diff-check",
       "command": [
         "git",
         "diff",
         "--check"
       ],
-      "exit": 0,
-      "elapsed_seconds": 0.87,
-      "tail": "(no output)\n"
+      "start": "2026-11-01T11:30:52Z",
+      "seconds": 0.797,
+      "exit_code": 0,
+      "tail": []
     },
-    "hygiene-final": {
+    "committed-hygiene": {
+      "name": "committed-hygiene",
       "command": [
         "python3",
         "tests/e2e/at/isolation/run.py",
@@ -104,25 +133,64 @@
         "^TestCommittedEvidenceFiles_ValidAndHygieneClean$",
         "./tests/e2e/at/isolation"
       ],
-      "exit": 0,
-      "elapsed_seconds": 1.687,
-      "tail": "+ go test -count=1 -v -run ^TestCommittedEvidenceFiles_ValidAndHygieneClean$ ./tests/e2e/at/isolation\n=== RUN   TestCommittedEvidenceFiles_ValidAndHygieneClean\n--- PASS: TestCommittedEvidenceFiles_ValidAndHygieneClean (1.50s)\nPASS\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/isolation\t1.525s\n"
+      "start": "2026-11-01T11:30:53Z",
+      "seconds": 3.113,
+      "exit_code": 0,
+      "tail": [
+        "+ go test -count=1 -v -run ^TestCommittedEvidenceFiles_ValidAndHygieneClean$ ./tests/e2e/at/isolation",
+        "=== RUN   TestCommittedEvidenceFiles_ValidAndHygieneClean",
+        "--- PASS: TestCommittedEvidenceFiles_ValidAndHygieneClean (2.96s)",
+        "PASS",
+        "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/isolation\t2.975s"
+      ]
+    },
+    "policy-review": {
+      "name": "policy-review",
+      "command": [
+        "python3",
+        "-B",
+        "tests/e2e/at/isolation/review_policy_missing.py",
+        "docs/e2e/at/isolation"
+      ],
+      "start": "2026-11-01T11:25:37Z",
+      "seconds": 2.1,
+      "exit_code": 0,
+      "tail": []
+    },
+    "core32-review": {
+      "name": "core32-review",
+      "command": [
+        "python3",
+        "-B",
+        "tests/e2e/at/isolation/review_core32.py",
+        "docs/e2e/at/isolation"
+      ],
+      "start": "2026-11-01T11:25:39Z",
+      "seconds": 0.059,
+      "exit_code": 0,
+      "tail": []
     }
   },
   "audit": {
+    "six_assertion_expressions_unchanged": true,
     "archive_pins": {
       "follow-up-10": 100,
       "follow-up-10-attempt-1": 92,
       "follow-up-10-attempt-2": 98,
       "follow-up-11": 103,
+      "follow-up-12": 108,
+      "follow-up-13-stream": 1,
       "follow-up-6": 44,
       "follow-up-7": 52,
       "follow-up-8": 80,
       "follow-up-9": 86
     },
-    "archive_total": 655,
-    "new_archive_baseline_bytes": 103,
-    "producer_gzip_byte_identical": true,
+    "total": 764,
+    "new_archive_baseline_bytes": 108,
+    "two_form_gzip_pins_verified": 2,
+    "prior_archives_unchanged": true,
+    "all_paths_owned": true,
+    "raw_gzip_export_byte_identical": true,
     "owned_prefix_inventory": {
       "containers": [],
       "images": [],
@@ -130,5 +198,5 @@
       "volumes": []
     }
   },
-  "note": "Assembled exit 2 is retained: AT10 8/1/0 due to ISO-F6-01 observation gap, AT11 and AT13 operator blocks. Other required gates pass. Root go-lint uses the same pinned vet/staticcheck through the disk-temp runner, overriding only its shell cleanup-trap wrapper. Five text captures had only terminal blank lines normalized; originals retained privately. No raw JSON/JSONL producer or wire data changed."
+  "note": "One assembled run exits 2 solely for AT11 and AT13 operator blocks. AT10 9/0/0 and AT12 10/0/0 pass. All other required gates pass. Same pinned root lint uses the disk-temp runner with only the shell cleanup-trap wrapper overridden. Four text captures have terminal blank lines normalized; original captures are private. Producer gzip is byte-identical to the original export, with both SHA-256 forms pinned only under history. Main advanced during the run; scope compares the branch merge base/fixed baseline, not the moving main tip."
 }

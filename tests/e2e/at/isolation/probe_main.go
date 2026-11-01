@@ -32,6 +32,10 @@ func main() {
 		observeProxy()
 	case "configure-observation":
 		configureObservation()
+	case "agent-stop-sample":
+		agentStopSample()
+	case "observation-pending":
+		observationPending()
 	case "producer-clock":
 		producerClock()
 	case "timed":

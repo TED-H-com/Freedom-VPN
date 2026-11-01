@@ -1128,3 +1128,35 @@ with the [positive UDP/TCP wire evidence](runs/2026-11-01/followup23/9bb2098e-1c
 The receive-only black-hole rows remain limitations, and production nameserver
 provisioning/platform Private DNS/DoH/UI checks remain separate. No new router,
 IDNA fixture, TTL or cache work is added here. All follow-up 23 pins remain intact.
+
+## updates 13 — 2026-11-01 (follow-up 25, D-102)
+
+> # Updates requests — follow-up 13, 2026-11-01
+
+**F13-01 / missed first AT23 exit:** the TEST ONLY lab parent now persists the
+actual wait status independently of the 1 ms `/proc` observer. In
+`tests/e2e/at/updates/stopobserve/main.go`, retain the current
+`/var/lib/vpn-node/e2e/agent-process-id` before invoking the original service
+stop command. After it returns, read
+`/var/lib/vpn-node/e2e/agent-exits/<retained-id>.json`. Match its PID to the
+pre-stop PID and use `start_ticks` plus the unique ID to avoid PID reuse. The
+public stop waits for the completed receipt. Read this same retained ID after
+a subsequent start; the current ID will then refer to a different process.
+
+The [export contract](scenarios/harness-exports.md#follow-up-25--persistent-agent-wait-status-test-only)
+defines nullable `exit_code` versus numeric `signal`, raw `wait_status`, and
+UTC `wait_observed_at`. This time is the parent's wait completion observation,
+not the kernel's exact exit instant. A supervisor SIGKILL attempt additionally
+has `<id>.sigkill.json`, with `requested_at` and `kill_accepted`; actual termination
+still comes from the wait receipt. Missing evidence is unavailable, never an
+inferred successful exit. Repeated stop of an already stopped process preserves
+the old receipt and must not be counted as a new exit.
+
+The [live graceful receipt](runs/2026-11-01/followup25/d513a413-4597-423c-9dd3-7c0669f03eca/agent-exit-graceful.json)
+and [live SIGKILL receipt](runs/2026-11-01/followup25/d513a413-4597-423c-9dd3-7c0669f03eca/agent-exit-sigkill.json)
+were read after the agent was reaped and remained byte-identical after repeated
+stop. Unit tests additionally distinguish normal exit 137 from SIGKILL and
+retain receipts across restarts. The agent's command, stop signals, five-second
+escalation threshold and product shutdown limits are unchanged. Your observer
+file remains untouched for lane-owned adoption. Historical run 759d244a's first
+exit stays unobserved; this export cannot reconstruct it.

@@ -1,0 +1,15 @@
+{
+  "id": "native-debug-events",
+  "title": "Pinned native client allowlisted events",
+  "spec": null,
+  "status": "pass",
+  "observations": [
+    {
+      "name": "analysis",
+      "detail": "{\"member\":{\"bytes\":\"48708\",\"sha256\":\"3c939690261a60dfd6b3381452c0f608ca827e10e1cb04f1b8e96bf82b9fa8a7\",\"events\":[{\"line\":69,\"at\":\"2026-11-01T10:57:12.547Z\",\"level\":\"INFO\",\"source\":\"client/iface/wgproxy/factory_kernel.go:45\",\"event\":\"loopback_factory\"},{\"line\":276,\"at\":\"2026-11-01T10:57:29.744Z\",\"level\":\"INFO\",\"source\":\"client/iface/wgproxy/loopback/proxy.go:170\",\"event\":\"relay_proxy_added\"},{\"line\":281,\"at\":\"2026-11-01T10:57:29.745Z\",\"level\":\"DEBG\",\"source\":\"client/internal/peer/endpoint.go:87\",\"event\":\"wg_configure_wait\"},{\"line\":325,\"at\":\"2026-11-01T10:57:29.947Z\",\"level\":\"INFO\",\"source\":\"client/internal/peer/conn.go:472\",\"event\":\"p2p_endpoint_configure\",\"family\":\"ipv4\",\"address\":\"addr-459868bfedca20a7\",\"port\":51820},{\"line\":329,\"at\":\"2026-11-01T10:57:29.947Z\",\"level\":\"DEBG\",\"source\":\"client/internal/peer/endpoint.go:87\",\"event\":\"wg_configure_wait\"},{\"line\":332,\"at\":\"2026-11-01T10:57:30.047Z\",\"level\":\"DEBG\",\"source\":\"client/internal/peer/conn.go:484\",\"event\":\"relay_redirect_as_endpoint\"}]},\"node\":{\"bytes\":\"32588\",\"sha256\":\"64aee4289753903ef9905fd63b4affa6c5089d31cb9643bebb68a72fc010dac0\",\"events\":[{\"line\":221,\"at\":\"2026-11-01T10:57:29.947Z\",\"level\":\"INFO\",\"source\":\"client/internal/peer/conn.go:472\",\"event\":\"p2p_endpoint_configure\",\"family\":\"ipv4\",\"address\":\"addr-129fe9318e066262\",\"port\":51820},{\"line\":224,\"at\":\"2026-11-01T10:57:30.047Z\",\"level\":\"DEBG\",\"source\":\"client/internal/peer/conn.go:484\",\"event\":\"relay_redirect_as_endpoint\"}]}}"
+    }
+  ],
+  "at": "2026-11-01T10:57:33Z",
+  "run_id": "b25453a7-c8c2-4a4e-93ec-70477bddd342",
+  "source_commit": "6b075f9904315b890c5510f75889a0ef099028b7"
+}

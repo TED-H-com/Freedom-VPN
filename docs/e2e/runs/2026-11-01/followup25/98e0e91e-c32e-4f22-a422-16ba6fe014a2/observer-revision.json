@@ -1,0 +1,23 @@
+{
+  "id": "observer-revision",
+  "title": "TEST ONLY observer source transition and private binary receipt",
+  "spec": [
+    "AT01",
+    "EXIT02",
+    "F11-01"
+  ],
+  "status": "fail",
+  "observations": [
+    {
+      "name": "observer",
+      "detail": "{\"run_id\":\"98e0e91e\",\"sha256\":\"43ff43d29a36010047c59f386adf032f685d08d48bc1e14cd1c3a3dc827b8c57\",\"bytes\":\"7438052\",\"build_vcs\":[\"build\\tvcs=git\",\"build\\tvcs.revision=d06bdb489b123093040061eb2a0e9c2e4f65f024\",\"build\\tvcs.time=2026-11-01T10:58:41Z\",\"build\\tvcs.modified=true\"]}"
+    },
+    {
+      "name": "scope",
+      "detail": "The runner started at 6b075f99. Its separately built native-observe sampler used d06bdb48 (VCS readback above), adding only separately labelled native handshake telemetry. The working tree contained new untracked evidence. This mixed instrumentation revision is explicit; no attempt or original result is replaced. First three userspace attempts retain missing daemon handshake fields."
+    }
+  ],
+  "at": "2026-11-01T10:59:24Z",
+  "run_id": "98e0e91e-c32e-4f22-a422-16ba6fe014a2",
+  "source_commit": "6b075f9904315b890c5510f75889a0ef099028b7"
+}

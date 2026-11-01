@@ -1357,17 +1357,42 @@ func (x *isolationRun) putFleet(seconds int, reason string) (int, string, string
 }
 
 func (x *isolationRun) waitControl() bool {
+	// Same existing 90s restoration budget; readiness now includes accepted
+	// current observations and a drained outbox, not just an HTTP health check.
+	start := time.Now().UTC()
 	wait, cancel := context.WithTimeout(x.ctx, 90*time.Second)
 	defer cancel()
-	return waitUntil(wait, 2*time.Second, func() bool {
+	samples := []map[string]any{}
+	ready := waitUntil(wait, 2*time.Second, func() bool {
 		admin, err := x.r.lab.login(wait, "e2e-admin", "admin")
 		if err != nil {
 			return false
 		}
 		x.admin = admin
 		resp, err := admin.call(wait, "GET", x.r.lab.public+"/api/v1/admin/fleet-config", nil, nil)
-		return err == nil && resp.Status == 200
+		if err != nil || resp.Status != 200 {
+			return false
+		}
+		row := x.networkSnapshot("control restoration readiness")
+		var pending struct {
+			Pending int       `json:"pending"`
+			At      time.Time `json:"at"`
+		}
+		raw, e := x.r.lab.docker(x.r.lab.node, "/tmp/isolation-probe", "observation-pending")
+		queueOK := e == nil && json.Unmarshal(raw, &pending) == nil && !pending.At.IsZero()
+		row["queue_available"], row["queue"] = queueOK, pending
+		samples = append(samples, row)
+		var report struct {
+			Observed   time.Time `json:"observed_at"`
+			Applied    string    `json:"applied_config_generation"`
+			Forwarding bool      `json:"member_forwarding_enabled"`
+		}
+		body, _ := row["observation"].(json.RawMessage)
+		_, _, _, generation := x.r.desiredMemberView()
+		return json.Unmarshal(body, &report) == nil && report.Observed.After(start) && report.Applied == generation && report.Forwarding && queueOK && pending.Pending == 0
 	})
+	x.extra("control-observation-readiness.json", map[string]any{"started_at": start, "completed_at": time.Now().UTC(), "ready": ready, "timeout_seconds": 90, "samples": samples})
+	return ready
 }
 
 func (x *isolationRun) fleetAudits(c *iso.Check, ids ...string) bool {
@@ -2110,9 +2135,12 @@ func (x *isolationRun) archiveReceiver() {
 	// shared stream exporter, then let the receiver finish its 100ms drain.
 	closure := []map[string]any{}
 	for _, container := range []string{x.r.lab.node, x.r.lab.prefix + "-node-clone"} {
+		if !x.install(container) {
+			continue
+		}
 		before, beforeOK := x.readContainerLease(container)
 		start := time.Now()
-		out, err := exec.Command("docker", "exec", container, "agent-service.sh", "stop").CombinedOutput()
+		out, err := exec.Command("docker", "exec", container, "/tmp/isolation-probe", "agent-stop-sample").CombinedOutput()
 		end := time.Now()
 		after, afterOK := x.readContainerLease(container)
 		closure = append(closure, map[string]any{"container": container, "start": start.UTC().Format(time.RFC3339Nano), "end": end.UTC().Format(time.RFC3339Nano), "duration_ns": strconv.FormatInt(end.Sub(start).Nanoseconds(), 10), "ok": err == nil, "output": iso.Redact(string(out)), "before": before, "after": after, "before_available": beforeOK, "after_available": afterOK, "stored_lease_survived_stop": beforeOK && afterOK && before.LeaseID == after.LeaseID && before.MonoSent == after.MonoSent})
@@ -2288,11 +2316,26 @@ func (x *isolationRun) capacityGeneration(down int) string {
 func (x *isolationRun) foreignRedirect() {
 	c := iso.Check{Name: "foreign ingress redirect containment and D-096 recovery", Positive: x.proof(x.a1), Status: iso.StatusBlocked, Owner: "w2-agent-core / w1-netlab"}
 	defer func() { x.add("AT10", c) }()
+	var readiness struct {
+		Ready bool `json:"ready"`
+	}
+	rawReadiness, _ := os.ReadFile(filepath.Join(x.dir, "control-observation-readiness.json"))
+	if json.Unmarshal(rawReadiness, &readiness) != nil || !readiness.Ready {
+		c.Actual = "current accepted observation and drained retry queue not established after control restoration; no injection"
+		return
+	}
 	if !c.Positive.Valid() {
 		c.Actual = "pre-injection counted control unavailable; no injection"
 		return
 	}
-	rows := []map[string]any{x.networkSnapshot("before injection")}
+	initial := x.networkSnapshot("before injection")
+	var initialReport struct {
+		Applied string `json:"applied_config_generation"`
+	}
+	initialBody, _ := initial["observation"].(json.RawMessage)
+	_ = json.Unmarshal(initialBody, &initialReport)
+	initialGeneration, _ := strconv.ParseUint(initialReport.Applied, 10, 64)
+	rows := []map[string]any{initial}
 	cap := x.continuousCapture(x.r.lab.node, "any", "udp port 9 or tcp port 443", "redirect-node-capture.txt", 75)
 	defer func() {
 		x.finishCapture(cap)
@@ -2314,11 +2357,37 @@ func (x *isolationRun) foreignRedirect() {
 		}
 		time.Sleep(300 * time.Millisecond)
 	}
-	rows = append(rows, map[string]any{"label": "publish dirty newer generation", "at": time.Now().UTC().Format(time.RFC3339Nano), "response": x.capacityGeneration(206000000)})
+	dirtyAt := time.Now().UTC()
+	response := x.capacityGeneration(206000000)
+	rows = append(rows, map[string]any{"label": "publish dirty newer generation", "at": dirtyAt.Format(time.RFC3339Nano), "response": response})
+	dirtyAccepted := false
 	for range 12 {
-		rows = append(rows, x.networkSnapshot("dirty newer generation"))
+		row := x.networkSnapshot("dirty newer generation")
+		rows = append(rows, row)
+		var report struct {
+			Observed   time.Time `json:"observed_at"`
+			Forwarding bool      `json:"member_forwarding_enabled"`
+			Errors     []struct {
+				Stage, Code, Message string
+				At                   time.Time `json:"observed_at"`
+			} `json:"errors"`
+		}
+		body, _ := row["observation"].(json.RawMessage)
+		_, _, _, generation := x.r.desiredMemberView()
+		candidateGeneration, _ := strconv.ParseUint(generation, 10, 64)
+		if candidateGeneration > initialGeneration && json.Unmarshal(body, &report) == nil && !report.Forwarding && report.Observed.After(dirtyAt) {
+			for _, failure := range report.Errors {
+				if failure.Stage == "apply_candidate" && failure.Code == "TC_FOREIGN_FILTER" && failure.Message == "candidate_generation="+generation+" verified=false" {
+					dirtyAccepted = true
+				}
+			}
+		}
+		if dirtyAccepted {
+			break
+		}
 		time.Sleep(500 * time.Millisecond)
 	}
+	rows = append(rows, map[string]any{"label": "dirty acceptance boundary", "at": time.Now().UTC(), "accepted": dirtyAccepted, "budget": "unchanged maximum 12 samples at 500ms; cleanup on exhaustion does not qualify"})
 	at = time.Now()
 	out, e = x.r.lab.docker(x.r.lab.node, "tc", "qdisc", "del", "dev", "fvmb0", "clsact")
 	rows = append(rows, map[string]any{"label": "remove all injected objects", "start": at.UTC().Format(time.RFC3339Nano), "end": time.Now().UTC().Format(time.RFC3339Nano), "output": string(out), "ok": e == nil})
@@ -2344,7 +2413,7 @@ func (x *isolationRun) foreignRedirect() {
 	rows = append(rows, x.networkSnapshot("final recovered state"))
 	x.captureApplied()
 	c.Observations = append(c.Observations, iso.Observation{Name: "recovered_counted_control", Detail: mustJSON(after)})
-	c.Actual = fmt.Sprintf("contained=%t recovered=%t counted=%t; unattended native topology recovery; six-assertion review follows receiver export", contained, recovered, after.Valid())
+	c.Actual = fmt.Sprintf("contained=%t dirty_accepted=%t recovered=%t counted=%t; unattended native topology recovery; six-assertion review follows receiver export", contained, dirtyAccepted, recovered, after.Valid())
 	if !contained || !recovered || !after.Valid() {
 		c.Status = iso.StatusFail
 	}

@@ -1,0 +1,382 @@
+{
+  "run_id": "1c25ee44-1872-4cce-a9f5-d52491d87095",
+  "status": "blocked",
+  "assertions_passed": 5,
+  "assertions_total": 6,
+  "failed_assertion": 6,
+  "injection_start": "2026-11-01T09:56:17.55402025Z",
+  "removal_end": "2026-11-01T09:56:25.090642995Z",
+  "source_files": [
+    "foreign-redirect.json",
+    "receiver-capture.json",
+    "producer-operations.jsonl.gz",
+    "agent.log.txt"
+  ],
+  "dirty_snapshots": [
+    {
+      "row_index": 6,
+      "read_start": "2026-11-01T09:56:18.402512689Z",
+      "read_end": "2026-11-01T09:56:18.428679866Z",
+      "report_id": "01a19688-a6e4-7b6b-9d29-672c3e33a1f2",
+      "observation_at": "2026-11-01T09:55:00.452272372Z",
+      "member_forwarding_enabled": true,
+      "candidate_generation": "29",
+      "error_code": null,
+      "kernel_serving_zero": true,
+      "member_link_down": true,
+      "foreign_objects_preserved": true
+    },
+    {
+      "row_index": 7,
+      "read_start": "2026-11-01T09:56:18.955624534Z",
+      "read_end": "2026-11-01T09:56:18.983990093Z",
+      "report_id": "01a19688-a6e4-7b6b-9d29-672c3e33a1f2",
+      "observation_at": "2026-11-01T09:55:00.452272372Z",
+      "member_forwarding_enabled": true,
+      "candidate_generation": "29",
+      "error_code": null,
+      "kernel_serving_zero": true,
+      "member_link_down": true,
+      "foreign_objects_preserved": true
+    },
+    {
+      "row_index": 8,
+      "read_start": "2026-11-01T09:56:19.510651327Z",
+      "read_end": "2026-11-01T09:56:19.538611039Z",
+      "report_id": "01a19688-a6e4-7b6b-9d29-672c3e33a1f2",
+      "observation_at": "2026-11-01T09:55:00.452272372Z",
+      "member_forwarding_enabled": true,
+      "candidate_generation": "29",
+      "error_code": null,
+      "kernel_serving_zero": true,
+      "member_link_down": true,
+      "foreign_objects_preserved": true
+    },
+    {
+      "row_index": 9,
+      "read_start": "2026-11-01T09:56:20.065393457Z",
+      "read_end": "2026-11-01T09:56:20.092582424Z",
+      "report_id": "01a19688-a6e4-7b6b-9d29-672c3e33a1f2",
+      "observation_at": "2026-11-01T09:55:00.452272372Z",
+      "member_forwarding_enabled": true,
+      "candidate_generation": "29",
+      "error_code": null,
+      "kernel_serving_zero": true,
+      "member_link_down": true,
+      "foreign_objects_preserved": true
+    },
+    {
+      "row_index": 10,
+      "read_start": "2026-11-01T09:56:20.620583308Z",
+      "read_end": "2026-11-01T09:56:20.64660286Z",
+      "report_id": "01a19688-a6e4-7b6b-9d29-672c3e33a1f2",
+      "observation_at": "2026-11-01T09:55:00.452272372Z",
+      "member_forwarding_enabled": true,
+      "candidate_generation": "29",
+      "error_code": null,
+      "kernel_serving_zero": true,
+      "member_link_down": true,
+      "foreign_objects_preserved": true
+    },
+    {
+      "row_index": 11,
+      "read_start": "2026-11-01T09:56:21.173706715Z",
+      "read_end": "2026-11-01T09:56:21.199548283Z",
+      "report_id": "01a19688-a6e4-7b6b-9d29-672c3e33a1f2",
+      "observation_at": "2026-11-01T09:55:00.452272372Z",
+      "member_forwarding_enabled": true,
+      "candidate_generation": "29",
+      "error_code": null,
+      "kernel_serving_zero": true,
+      "member_link_down": true,
+      "foreign_objects_preserved": true
+    },
+    {
+      "row_index": 12,
+      "read_start": "2026-11-01T09:56:21.737363528Z",
+      "read_end": "2026-11-01T09:56:21.765957326Z",
+      "report_id": "01a19688-a6e4-7b6b-9d29-672c3e33a1f2",
+      "observation_at": "2026-11-01T09:55:00.452272372Z",
+      "member_forwarding_enabled": true,
+      "candidate_generation": "29",
+      "error_code": null,
+      "kernel_serving_zero": true,
+      "member_link_down": true,
+      "foreign_objects_preserved": true
+    },
+    {
+      "row_index": 13,
+      "read_start": "2026-11-01T09:56:22.293737305Z",
+      "read_end": "2026-11-01T09:56:22.321271618Z",
+      "report_id": "01a19688-a6e4-7b6b-9d29-672c3e33a1f2",
+      "observation_at": "2026-11-01T09:55:00.452272372Z",
+      "member_forwarding_enabled": true,
+      "candidate_generation": "29",
+      "error_code": null,
+      "kernel_serving_zero": true,
+      "member_link_down": true,
+      "foreign_objects_preserved": true
+    },
+    {
+      "row_index": 14,
+      "read_start": "2026-11-01T09:56:22.848243305Z",
+      "read_end": "2026-11-01T09:56:22.877276095Z",
+      "report_id": "01a19688-a6e4-7b6b-9d29-672c3e33a1f2",
+      "observation_at": "2026-11-01T09:55:00.452272372Z",
+      "member_forwarding_enabled": true,
+      "candidate_generation": "29",
+      "error_code": null,
+      "kernel_serving_zero": true,
+      "member_link_down": true,
+      "foreign_objects_preserved": true
+    },
+    {
+      "row_index": 15,
+      "read_start": "2026-11-01T09:56:23.404038873Z",
+      "read_end": "2026-11-01T09:56:23.434672144Z",
+      "report_id": "01a19688-a6e4-7b6b-9d29-672c3e33a1f2",
+      "observation_at": "2026-11-01T09:55:00.452272372Z",
+      "member_forwarding_enabled": true,
+      "candidate_generation": "29",
+      "error_code": null,
+      "kernel_serving_zero": true,
+      "member_link_down": true,
+      "foreign_objects_preserved": true
+    },
+    {
+      "row_index": 16,
+      "read_start": "2026-11-01T09:56:23.962288479Z",
+      "read_end": "2026-11-01T09:56:23.988903089Z",
+      "report_id": "01a19688-a6e4-7b6b-9d29-672c3e33a1f2",
+      "observation_at": "2026-11-01T09:55:00.452272372Z",
+      "member_forwarding_enabled": true,
+      "candidate_generation": "29",
+      "error_code": null,
+      "kernel_serving_zero": true,
+      "member_link_down": true,
+      "foreign_objects_preserved": true
+    },
+    {
+      "row_index": 17,
+      "read_start": "2026-11-01T09:56:24.515689925Z",
+      "read_end": "2026-11-01T09:56:24.542663867Z",
+      "report_id": "01a19688-a6e4-7b6b-9d29-672c3e33a1f2",
+      "observation_at": "2026-11-01T09:55:00.452272372Z",
+      "member_forwarding_enabled": true,
+      "candidate_generation": "29",
+      "error_code": null,
+      "kernel_serving_zero": true,
+      "member_link_down": true,
+      "foreign_objects_preserved": true
+    }
+  ],
+  "observation_attempts": [
+    {
+      "transaction_index": 1459,
+      "received_at": "2026-11-01T09:55:00.456762605Z",
+      "status": 202,
+      "report_id": "01a19688-a6e4-7b6b-9d29-672c3e33a1f2",
+      "observed_at": "2026-11-01T09:55:00.452272372Z",
+      "candidate_generation": "29",
+      "error_code": null,
+      "member_forwarding_enabled": true
+    },
+    {
+      "transaction_index": 1461,
+      "received_at": "2026-11-01T09:55:01.506652668Z",
+      "status": 502,
+      "report_id": "01a19688-aaff-7253-a37a-5dc078362f38",
+      "observed_at": "2026-11-01T09:55:01.502613645Z",
+      "candidate_generation": "29",
+      "error_code": null,
+      "member_forwarding_enabled": true
+    },
+    {
+      "transaction_index": 1463,
+      "received_at": "2026-11-01T09:55:11.382806781Z",
+      "status": 502,
+      "report_id": "01a19688-aaff-7253-a37a-5dc078362f38",
+      "observed_at": "2026-11-01T09:55:01.502613645Z",
+      "candidate_generation": "29",
+      "error_code": null,
+      "member_forwarding_enabled": true
+    },
+    {
+      "transaction_index": 1465,
+      "received_at": "2026-11-01T09:55:21.490486059Z",
+      "status": 502,
+      "report_id": "01a19688-aaff-7253-a37a-5dc078362f38",
+      "observed_at": "2026-11-01T09:55:01.502613645Z",
+      "candidate_generation": "29",
+      "error_code": null,
+      "member_forwarding_enabled": true
+    },
+    {
+      "transaction_index": 1467,
+      "received_at": "2026-11-01T09:55:31.600172597Z",
+      "status": 502,
+      "report_id": "01a19688-aaff-7253-a37a-5dc078362f38",
+      "observed_at": "2026-11-01T09:55:01.502613645Z",
+      "candidate_generation": "29",
+      "error_code": null,
+      "member_forwarding_enabled": true
+    },
+    {
+      "transaction_index": 1470,
+      "received_at": "2026-11-01T09:55:46.762053927Z",
+      "status": 502,
+      "report_id": "01a19688-aaff-7253-a37a-5dc078362f38",
+      "observed_at": "2026-11-01T09:55:01.502613645Z",
+      "candidate_generation": "29",
+      "error_code": null,
+      "member_forwarding_enabled": true
+    },
+    {
+      "transaction_index": 1479,
+      "received_at": "2026-11-01T09:56:06.005824909Z",
+      "status": 502,
+      "report_id": "01a19688-aaff-7253-a37a-5dc078362f38",
+      "observed_at": "2026-11-01T09:55:01.502613645Z",
+      "candidate_generation": "29",
+      "error_code": null,
+      "member_forwarding_enabled": true
+    },
+    {
+      "transaction_index": 1518,
+      "received_at": "2026-11-01T09:56:41.054422986Z",
+      "status": 202,
+      "report_id": "01a19688-aaff-7253-a37a-5dc078362f38",
+      "observed_at": "2026-11-01T09:55:01.502613645Z",
+      "candidate_generation": "29",
+      "error_code": null,
+      "member_forwarding_enabled": true
+    },
+    {
+      "transaction_index": 1519,
+      "received_at": "2026-11-01T09:56:41.064640507Z",
+      "status": 202,
+      "report_id": "01a19689-6fb3-71a2-bfa9-5d0e4ffe2a21",
+      "observed_at": "2026-11-01T09:55:51.859097545Z",
+      "candidate_generation": "29",
+      "error_code": null,
+      "member_forwarding_enabled": false
+    },
+    {
+      "transaction_index": 1520,
+      "received_at": "2026-11-01T09:56:41.073375332Z",
+      "status": 202,
+      "report_id": "01a19689-ab7d-79dd-8f0c-91177460d8f6",
+      "observed_at": "2026-11-01T09:56:07.165618616Z",
+      "candidate_generation": "29",
+      "error_code": null,
+      "member_forwarding_enabled": true
+    },
+    {
+      "transaction_index": 1521,
+      "received_at": "2026-11-01T09:56:41.080290184Z",
+      "status": 202,
+      "report_id": "01a19689-d669-730e-903e-392b421635c5",
+      "observed_at": "2026-11-01T09:56:18.153188288Z",
+      "candidate_generation": "29",
+      "error_code": "TC_FOREIGN_FILTER",
+      "member_forwarding_enabled": false
+    },
+    {
+      "transaction_index": 1522,
+      "received_at": "2026-11-01T09:56:41.090102518Z",
+      "status": 202,
+      "report_id": "01a19689-f602-7ac3-8e5b-2eb2ead45dc3",
+      "observed_at": "2026-11-01T09:56:26.242696102Z",
+      "candidate_generation": "31",
+      "error_code": null,
+      "member_forwarding_enabled": true
+    },
+    {
+      "transaction_index": 1524,
+      "received_at": "2026-11-01T09:56:41.272045826Z",
+      "status": 429,
+      "report_id": "01a1968a-30b4-762b-97fb-438725df6b88",
+      "observed_at": "2026-11-01T09:56:41.268031548Z",
+      "candidate_generation": "31",
+      "error_code": null,
+      "member_forwarding_enabled": true
+    },
+    {
+      "transaction_index": 1650,
+      "received_at": "2026-11-01T09:57:54.514740182Z",
+      "status": 202,
+      "report_id": "01a1968b-4ece-7468-b98b-69bc886e5caa",
+      "observed_at": "2026-11-01T09:57:54.510277621Z",
+      "candidate_generation": "31",
+      "error_code": "TC_FOREIGN_FILTER",
+      "member_forwarding_enabled": false
+    }
+  ],
+  "failed_applies": [
+    {
+      "run_id": "252fd542-4dae-4f26-89fd-e06c870c72c0",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "2311",
+      "candidate_generation": "30",
+      "failure_stage": "pre_install",
+      "commands": 37,
+      "cause_status": "unproven"
+    },
+    {
+      "run_id": "252fd542-4dae-4f26-89fd-e06c870c72c0",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "2320",
+      "candidate_generation": "30",
+      "failure_stage": "pre_install",
+      "commands": 37,
+      "cause_status": "unproven"
+    },
+    {
+      "run_id": "252fd542-4dae-4f26-89fd-e06c870c72c0",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "2329",
+      "candidate_generation": "30",
+      "failure_stage": "pre_install",
+      "commands": 37,
+      "cause_status": "unproven"
+    },
+    {
+      "run_id": "252fd542-4dae-4f26-89fd-e06c870c72c0",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "2338",
+      "candidate_generation": "30",
+      "failure_stage": "pre_install",
+      "commands": 37,
+      "cause_status": "unproven"
+    },
+    {
+      "run_id": "252fd542-4dae-4f26-89fd-e06c870c72c0",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "2347",
+      "candidate_generation": "30",
+      "failure_stage": "pre_install",
+      "commands": 37,
+      "cause_status": "unproven"
+    },
+    {
+      "run_id": "252fd542-4dae-4f26-89fd-e06c870c72c0",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "2356",
+      "candidate_generation": "30",
+      "failure_stage": "pre_install",
+      "commands": 37,
+      "cause_status": "unproven"
+    },
+    {
+      "run_id": "252fd542-4dae-4f26-89fd-e06c870c72c0",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "2365",
+      "candidate_generation": "30",
+      "failure_stage": "pre_install",
+      "commands": 37,
+      "cause_status": "unproven"
+    }
+  ],
+  "interpretation": "All twelve dirty snapshots retain foreign objects, member link down and serving 0, but their central observation remains the pre-injection generation-29 report. Generation-30 failed Applies are retained; there is no generation-30 TC_FOREIGN_FILTER observation in the original receiver. The generation-29 rejection is accepted after removal. Do not substitute later recovery or local failure for the missing sixth predicate.",
+  "scope": "Missing evidence for the existing acceptance assertion, not evidence of forbidden forwarding. Observation backoff/coalescing is consistent with node/agent/observe.go; its exact runtime queue state was not exported, so no stronger cause claim."
+}
