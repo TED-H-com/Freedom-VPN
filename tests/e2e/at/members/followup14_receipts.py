@@ -1,8 +1,9 @@
+from evidence_io import load
 """Publish safe receipts for original failed withdrawal reads; never re-read nft."""
 from pathlib import Path
 import json,collections,hashlib,uuid
 root=Path('docs/e2e/at/members')
-case=json.loads((root/'AT04.json').read_text())
+case=load(root/'AT04.json')
 failures=[];samples={}
 for step in case['steps']:
  if not step['name'].startswith('persistent withdrawal '):continue

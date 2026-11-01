@@ -1,0 +1,4 @@
+# Operations Runbooks Index (`docs/ops/`)
+
+**Current cut — [follow-up 26](../handover/follow-up-26.md) (2026-11-01 EST):** Through #382, including the #381 row correction: r18 fixes landed; ISO-F6-01 fixed and AT10 passes; F11-01 closed-node cause unproven; F14-01 new; members F13-01 origin unproven; updates receipt delivered. D-139 is a provisional design track, option (c) stays in production. Historical failures stay failed.
+Previous cut: [follow-up 25](../handover/follow-up-25.md), through #373.

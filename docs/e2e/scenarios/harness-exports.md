@@ -498,3 +498,50 @@ Unknown or zero daemon timestamps remain absent. Public keys remain in memory
 only for the selected-peer join. Per-run command success, clock bounds and
 missing samples remain visible. See the [complete bounded campaign](../runs/2026-11-01/followup25/analysis.md)
 for every attempt, partial observation gap, original failure and scope limit.
+
+## Follow-up 26 — serving prerequisites, central history and stop budgets (TEST ONLY)
+
+`TestE2E_Followup26Native` is a fresh kernel-only successor. Set
+`FVPN_E2E_FOLLOWUP26=1` and an explicit `FVPN_E2E_FOLLOWUP26_FAMILY=ipv4|ipv6`.
+It keeps every original request and exports `central-record.json` before
+teardown: all immutable desired generation/signing times, issued lease and
+member windows, and every accepted report's generation, forwarding, block
+reasons, checks and errors (code/stage/time only). Free-form messages, signed
+envelopes and keys are excluded. Later snapshots use one repeatable-read,
+read-only transaction. The detached producer stream has a private byte/hash
+receipt and content-free baseline, lease, heartbeat and operation timing rows.
+
+The fixture's new 90-second serving gate joins the latest accepted report to
+its populated unexpired same-generation lease and the intended live authorized
+binding. It also requires matching local desired and kernel generations and a
+fresh serving heartbeat. A failed gate gets its own failed admission row; no
+first-selection request is launched. Readiness is independent of the original
+request's origin/counter assertion. Default measurement rechecks readiness after
+observer setup. Historical rows remain unchanged.
+
+The historical node tracer is **not passive** with respect to verification:
+its broad ingress/prerouting `meta nftrace set 1` is a foreign `mangle` statement,
+rejected by the unchanged node verifier. Normal kernel tracing now marks only
+member packets. `FVPN_E2E_REPRODUCE_TRACE26=1` explicitly reenables the old node
+tracer for retained diagnostics; its rows are confounded experiments, never
+transport acceptance. The exact private listing replay identifies the tracer
+as the deciding rejection separately from the actual central report. F14-01
+D-077 captures start before fencing and use passive pcap/session observation
+without nft tracing, followed by a fresh serving gate and one original request.
+
+The supervisor starts a monotonic **15-second** cooperative budget after TERM
+delivery, then records its existing SIGKILL sidecar and actual parent wait
+receipt. PID1 handles TERM/INT by calling the supervised stop path; the waiter
+and watchdog outlive agent shutdown. Ordinary compose and secondary/clone
+containers allow **25 seconds**. Shared namespace/fleet/clone stop wrappers do
+not cut the agent budget short. Container-stop intent restores an automatically
+running agent on the next boot; an explicit service pause stays paused.
+
+Before stopping, retain `agent-process-id`, PID and start ticks. After a whole
+container stop use `docker cp <container>:/var/lib/vpn-node/e2e/agent-exits/<id>.json -`
+(the tar stream) or the private bind-mounted state; `docker exec` is unavailable.
+The receipt distinguishes exit code from signal. The container's exit code 0
+means its handler completed, and is not evidence that the agent exited 0: the
+forced test has container 0 and agent signal 9. The sidecar's `term_requested_at`
+is the supervisor's signal-request bound and `waited_ms` measures the monotonic
+post-delivery wait. Historical exit 137 rows cannot be reconstructed or replaced.

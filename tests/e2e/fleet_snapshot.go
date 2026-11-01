@@ -115,7 +115,7 @@ func (s *Stack) RetainEnrollingThirdNode(ctx context.Context, admin BrowserSessi
 	if out.BeforeState != "pending" || out.BeforeLifecycle != "enrolling" || !out.IncarnationUnboundAtSnapshot {
 		return out, fmt.Errorf("fleet snapshot: unexpected central enrollment state")
 	}
-	if err = exec.CommandContext(ctx, "docker", "stop", "-t", "10", container).Run(); err != nil {
+	if err = exec.CommandContext(ctx, "docker", "stop", "-t", "25", container).Run(); err != nil {
 		return out, fmt.Errorf("fleet snapshot: stop failed")
 	}
 	out.RetainedAt = time.Now().UTC()
