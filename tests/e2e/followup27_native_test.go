@@ -15,7 +15,7 @@ func (r *runner) native27(ctx context.Context, s *Stack, c *NativeCapture) {
 	initial := Record{ID: "initial-selection", Title: "First selection after proven serving; corrected member-only observer", Spec: []string{"AT01", "F11-01"}, Status: StatusFail}
 	r.nativeTransfer26(ctx, s, &initial, c)
 	r.record(initial)
-	stream := Record{ID: "member-stream", Title: "90-second serving member stream with every socket-write timestamp", Spec: []string{"AT02"}, Status: StatusFail}
+	stream := Record{ID: "member-stream", Title: "150-second serving member stream with every socket-write timestamp", Spec: []string{"AT02"}, Status: StatusFail}
 	defer func() { r.record(stream) }()
 	if !r.servingGate26(ctx, "stream-serving", c) {
 		return
@@ -36,7 +36,7 @@ func (r *runner) native27(ctx context.Context, s *Stack, c *NativeCapture) {
 	}
 	done := make(chan result, 1)
 	go func() {
-		raw, e := exec.CommandContext(ctx, "docker", "exec", r.lab.member, "/var/lib/vpn-node/e2e/stream", "-addr", r.lab.originIP+":40002", "-seconds", "90").Output()
+		raw, e := exec.CommandContext(ctx, "docker", "exec", r.lab.member, "/var/lib/vpn-node/e2e/stream", "-addr", r.lab.originIP+":40002", "-seconds", "150").Output()
 		done <- result{raw, e}
 	}()
 	var out result
