@@ -185,11 +185,12 @@ func (s *Stack) PauseAgent(ctx context.Context, pause bool) error {
 }
 
 type MatchingLeaseHoldEvidence = leasehold.Evidence
+type MatchingLeaseHoldArm = leasehold.Arm
 
 // ArmMatchingLeaseHold is TEST ONLY and default off. Call on a stable serving
 // node, before a real desired-generation command. No agent stop is needed.
 // Only node/node2 use this proxy. Each use needs a fresh arm; overlap is refused.
-func (s *Stack) ArmMatchingLeaseHold(ctx context.Context, slot, baseGeneration string, duration time.Duration) (leasehold.Arm, error) {
+func (s *Stack) ArmMatchingLeaseHold(ctx context.Context, slot, baseGeneration string, duration time.Duration) (MatchingLeaseHoldArm, error) {
 	var out leasehold.Arm
 	base, err := decstr.Parse(baseGeneration)
 	if err != nil || base == 0 || duration < time.Second || duration > 120*time.Second || duration%time.Second != 0 || (slot != "node" && slot != "node2") {
