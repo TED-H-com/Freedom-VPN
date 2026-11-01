@@ -1,7 +1,32 @@
 # Operations Runbooks Index (`docs/ops/`)
 
-**Current cut — [follow-up 25](../handover/follow-up-25.md) (2026-11-01 EST):** Through #373: F11-01 drop located; members F13-01 raw bytes kept; updates F13-01 exit unobserved; AT10 blocked on ISO-F6-01 assertion 6; r18 archived with five open findings. D-135 / D-136 / D-137 / D-138 stay provisional; historical failures stay failed. No new operator guidance.
-Previous cut: [follow-up 24](../handover/follow-up-24.md), through #369.
+**Current cut — [follow-up 26](../handover/follow-up-26.md) (2026-11-01 EST):** Through #382, including the #381 row correction: r18 fixes landed; ISO-F6-01 fixed and AT10 passes; F11-01 closed-node cause unproven; F14-01 new; members F13-01 origin unproven; updates receipt delivered. D-139 is a provisional design track, option (c) stays in production. Historical failures stay failed.
+Previous cut: [follow-up 25](../handover/follow-up-25.md), through #373.
+
+## Follow-up 26 acceptance snapshot (2026-11-01 EST)
+
+Fixed main **9dde5eeb**, #374–#382, including **5f4b455c** correcting #381.
+Nothing merged after the cutoff at task start. r19, isolation 14, members 15
+and devstack 26 were running; no results imported. Handover ran no new live
+acceptance. [Evidence and dated hand-offs](../handover/follow-up-26.md).
+
+| Lane | Delivery and remaining boundary |
+|---|---|
+| Handover 25 (#374) | Previous #370–#373 cut at 9cd7a053: 18 subtests / 4 rows / 15 snapshots / 270 file checks; r18 archived. |
+| Members 14 (#375) | 4182dd3d archived. 258ba504: AT03 / AT08 pass; AT02 fails, 58 brackets / 21 losses; AT04 duplicate chains fails; AT09 relay confounded by harness order, reorder not live-qualified. F14-01 new, cause unproven. Living roots cited only by row / PR. |
+| Agent-core 32 (#376) | r18 M-1 / M-2 / M-3 / L-2 and ISO-F6-01 fixed; cooperative shutdown 13 s, distinct stale hold and alarm. |
+| Netlab 23 (#377) | r18 L-1 fixed; members F13-01 origin unproven after 0 / 3,300 duplicates, typed rejection remains. |
+| Installer 9 (#378) | Agent TimeoutStopSec=15s, watchdog stop ordering; 20 s per-unit replacement stop, stop-failed journal / rollback. One dated operator-guide §3.1 line; no other new operator guidance. |
+| Agent-core 33 (#379) | D-139 option (b) design, 7 tests / 558 table subtests; signed constraints or baseline; final Apply and feature-enabled restart baseline. Option (c) stays in production; no acceptance result. |
+| Isolation 13 (#380) | 1c25ee44 archived. 38074149: AT10 PASS 9 / 0 / 0, ISO-F6-01 6 / 6 by accepted reports; AT12 PASS 10 / 0 / 0; AT11 / AT13 operator blocks. Alarm unexercised, historical block retained. Living roots cited only by row / PR. |
+| Devstack 25 (#381) | 32 attempts, 26 pass / 6 timeout, all end closed. Four already sampled 0 / false before request; 0c27cac0 5 / true → 0 / false. Cause unproven. TEST ONLY receipt delivered; updates adopts next, historical AT23 unchanged. |
+| Wire-nodes 34 (#382) | r18 M-3 central recognition independent of ACK, own signed lease only; specific classification, migration 00194 boot retention, one audit escalation per incident. Assembled assertions pending; no AT pass. |
+
+D-135 / D-136 / D-137 / D-138 stay provisional; **D-139 is a provisional design
+track pending r19 and a recorded representation decision before implementation**.
+F11-01 repair direction waits on devstack 26; F14-01 and the TEST ONLY harness
+stop-path gap also route there. Alarm / central escalation need an assembled run.
+[Current findings and owner decisions](../handover/README.md#findings-register-at-the-follow-up-26-cutoff).
 
 ## Follow-up 25 acceptance snapshot (2026-11-01 EST)
 

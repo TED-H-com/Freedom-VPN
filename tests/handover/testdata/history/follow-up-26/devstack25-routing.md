@@ -1,0 +1,3 @@
+first, devstack's next follow-up names the reported reason the node was closed in each timeout (central desired / lease / accepted-observation joins on a fresh bounded reproduction, since torn-down stacks kept no central state). Agent-core only if that reason is a node defect.
+2. Updates: adopt the unique-ID wait receipt in `tests/e2e/at/updates/stopobserve/main.go` (D-102 answer in `docs/e2e/RESPONSES.md`); AT23's historical unobserved exit stays unobserved → updates' next follow-up.
+3. Orchestrator: align the harness stop path with the shipped 15 s budget (supervisor escalation and container SIGTERM forwarding) → devstack's next follow-up.
