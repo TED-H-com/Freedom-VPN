@@ -1,0 +1,2533 @@
+{
+  "id": "cb0d66b1-8ab5-406e-b688-74bb865b498e",
+  "points": {
+    "member": {
+      "launch_before": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "mono_before_ns": "112774373704866",
+        "wall": "2026-11-01T10:33:56.857333996Z",
+        "mono_after_ns": "112774373705500"
+      },
+      "ready_after": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "mono_before_ns": "112774481195133",
+        "wall": "2026-11-01T10:33:56.964824277Z",
+        "mono_after_ns": "112774481195750"
+      },
+      "stop_before": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "mono_before_ns": "112781930824480",
+        "wall": "2026-11-01T10:34:04.41445364Z",
+        "mono_after_ns": "112781930825101"
+      },
+      "stopped_after": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "mono_before_ns": "112782127196678",
+        "wall": "2026-11-01T10:34:04.610826105Z",
+        "mono_after_ns": "112782127197530"
+      },
+      "process_stopped": true,
+      "captured": 987,
+      "received_by_filter": 996,
+      "kernel_drops": 0,
+      "statistics_ok": true,
+      "private_pcap_receipt": {
+        "bytes": "447340",
+        "sha256": "2fa41d63867f25fd8e44ca2d4461f85880103037dffb8693bc219eacf30ad55c"
+      }
+    },
+    "node": {
+      "launch_before": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "mono_before_ns": "112774545489006",
+        "wall": "2026-11-01T10:33:57.029118272Z",
+        "mono_after_ns": "112774545489687"
+      },
+      "ready_after": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "mono_before_ns": "112774683396085",
+        "wall": "2026-11-01T10:33:57.167025245Z",
+        "mono_after_ns": "112774683396703"
+      },
+      "stop_before": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "mono_before_ns": "112782231167475",
+        "wall": "2026-11-01T10:34:04.714796852Z",
+        "mono_after_ns": "112782231168244"
+      },
+      "stopped_after": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "mono_before_ns": "112782314436265",
+        "wall": "2026-11-01T10:34:04.798065453Z",
+        "mono_after_ns": "112782314436838"
+      },
+      "process_stopped": true,
+      "captured": 886,
+      "received_by_filter": 893,
+      "kernel_drops": 0,
+      "statistics_ok": true,
+      "private_pcap_receipt": {
+        "bytes": "522606",
+        "sha256": "3ada9b7ec7a15ec1f8254be4c2acdea6728bbd28b5a44e4ce80bcffb536efab3"
+      }
+    },
+    "origin": {
+      "launch_before": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "mono_before_ns": "112774779738324",
+        "wall": "2026-11-01T10:33:57.263367428Z",
+        "mono_after_ns": "112774779738919"
+      },
+      "ready_after": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "mono_before_ns": "112774885493748",
+        "wall": "2026-11-01T10:33:57.369123012Z",
+        "mono_after_ns": "112774885494416"
+      },
+      "stop_before": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "mono_before_ns": "112782409975547",
+        "wall": "2026-11-01T10:34:04.893604861Z",
+        "mono_after_ns": "112782409976266"
+      },
+      "stopped_after": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "mono_before_ns": "112782522505447",
+        "wall": "2026-11-01T10:34:05.006134682Z",
+        "mono_after_ns": "112782522506157"
+      },
+      "process_stopped": true,
+      "captured": 185,
+      "received_by_filter": 215,
+      "kernel_drops": 0,
+      "statistics_ok": true,
+      "private_pcap_receipt": {
+        "bytes": "148245",
+        "sha256": "4584395fa861ac091a383286c326410d1ff89b2f41d82657962cce4813b1e559"
+      }
+    }
+  },
+  "samples": [
+    {
+      "label": "before-input",
+      "points": {
+        "member": {
+          "relay_endpoint": {
+            "address": "",
+            "port": "",
+            "family": ""
+          },
+          "uses_kernel_interface": true,
+          "start": {
+            "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+            "mono_before_ns": "112774924218509",
+            "wall": "2026-11-01T10:33:57.407847567Z",
+            "mono_after_ns": "112774924218952"
+          },
+          "end": {
+            "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+            "mono_before_ns": "112774939614437",
+            "wall": "2026-11-01T10:33:57.423243309Z",
+            "mono_after_ns": "112774939614649"
+          },
+          "commands": {
+            "links": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112774924226140",
+                "wall": "2026-11-01T10:33:57.407854992Z",
+                "mono_after_ns": "112774924226335"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112774925075003",
+                "wall": "2026-11-01T10:33:57.408703944Z",
+                "mono_after_ns": "112774925075302"
+              },
+              "ok": true
+            },
+            "origin_route": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112774925175561",
+                "wall": "2026-11-01T10:33:57.408804448Z",
+                "mono_after_ns": "112774925175795"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112774925907949",
+                "wall": "2026-11-01T10:33:57.40953695Z",
+                "mono_after_ns": "112774925908341"
+              },
+              "ok": true
+            },
+            "overlay_route": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112774936766370",
+                "wall": "2026-11-01T10:33:57.420395243Z",
+                "mono_after_ns": "112774936766583"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112774937620598",
+                "wall": "2026-11-01T10:33:57.421249581Z",
+                "mono_after_ns": "112774937620959"
+              },
+              "ok": true
+            },
+            "peer_route": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112774935938604",
+                "wall": "2026-11-01T10:33:57.419567483Z",
+                "mono_after_ns": "112774935938824"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112774936722484",
+                "wall": "2026-11-01T10:33:57.420351535Z",
+                "mono_after_ns": "112774936722932"
+              },
+              "ok": true
+            },
+            "peer_status": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112774925956602",
+                "wall": "2026-11-01T10:33:57.409585492Z",
+                "mono_after_ns": "112774925956865"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112774935848925",
+                "wall": "2026-11-01T10:33:57.419477888Z",
+                "mono_after_ns": "112774935849259"
+              },
+              "ok": true
+            },
+            "wg_allowed_ips": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112774937688518",
+                "wall": "2026-11-01T10:33:57.421317399Z",
+                "mono_after_ns": "112774937688775"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112774938255289",
+                "wall": "2026-11-01T10:33:57.421884267Z",
+                "mono_after_ns": "112774938255634"
+              },
+              "ok": true
+            },
+            "wg_endpoints": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112774938608387",
+                "wall": "2026-11-01T10:33:57.422237241Z",
+                "mono_after_ns": "112774938608579"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112774938957098",
+                "wall": "2026-11-01T10:33:57.422585974Z",
+                "mono_after_ns": "112774938957325"
+              },
+              "ok": true
+            },
+            "wg_latest_handshakes": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112774938263955",
+                "wall": "2026-11-01T10:33:57.421892814Z",
+                "mono_after_ns": "112774938264180"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112774938601026",
+                "wall": "2026-11-01T10:33:57.422229923Z",
+                "mono_after_ns": "112774938601264"
+              },
+              "ok": true
+            },
+            "wireguard_route": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112774938969382",
+                "wall": "2026-11-01T10:33:57.422598234Z",
+                "mono_after_ns": "112774938969572"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112774939595938",
+                "wall": "2026-11-01T10:33:57.423224922Z",
+                "mono_after_ns": "112774939596309"
+              },
+              "ok": true
+            }
+          },
+          "links": [
+            {
+              "ifindex": 1,
+              "ifname": "lo",
+              "mtu": 65536,
+              "linkinfo": {
+                "info_kind": ""
+              }
+            },
+            {
+              "ifindex": 2,
+              "ifname": "eth0",
+              "mtu": 1500,
+              "linkinfo": {
+                "info_kind": ""
+              }
+            },
+            {
+              "ifindex": 3,
+              "ifname": "eth1",
+              "mtu": 1500,
+              "linkinfo": {
+                "info_kind": ""
+              }
+            },
+            {
+              "ifindex": 8,
+              "ifname": "fvnb0",
+              "mtu": 1280,
+              "linkinfo": {
+                "info_kind": ""
+              }
+            }
+          ],
+          "routes": {
+            "origin_route": [
+              {
+                "dst": "addr-57ec18e83681ee2f",
+                "dev": "fvnb0",
+                "prefsrc": "addr-cd0c65b7bcc372a6",
+                "table": "netbird"
+              }
+            ],
+            "overlay_route": [
+              {
+                "dst": "addr-80dfa331b773a95e",
+                "dev": "fvnb0",
+                "prefsrc": "addr-cd0c65b7bcc372a6"
+              }
+            ],
+            "peer_route": [
+              {
+                "dst": "addr-156910cb925246e0",
+                "dev": "eth0",
+                "prefsrc": "addr-beec7c00603ab8bb"
+              }
+            ],
+            "wireguard_route": [
+              {
+                "dst": "addr-156910cb925246e0",
+                "dev": "eth0",
+                "prefsrc": "addr-beec7c00603ab8bb"
+              }
+            ]
+          },
+          "peer_present": true,
+          "peer_connected": true,
+          "connection_type": "P2P",
+          "overlay": "addr-80dfa331b773a95e",
+          "local": {
+            "address": "addr-beec7c00603ab8bb",
+            "port": "51820",
+            "family": "ipv4"
+          },
+          "remote": {
+            "address": "addr-156910cb925246e0",
+            "port": "60015",
+            "family": "ipv4"
+          },
+          "latest_handshake_unix_seconds": "1793529229",
+          "wireguard_peer_matched": true,
+          "wireguard_endpoint": {
+            "address": "addr-156910cb925246e0",
+            "port": "60015",
+            "family": "ipv4"
+          }
+        },
+        "node": {
+          "relay_endpoint": {
+            "address": "",
+            "port": "",
+            "family": ""
+          },
+          "uses_kernel_interface": true,
+          "start": {
+            "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+            "mono_before_ns": "112774908170713",
+            "wall": "2026-11-01T10:33:57.391799699Z",
+            "mono_after_ns": "112774908171058"
+          },
+          "end": {
+            "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+            "mono_before_ns": "112774924308805",
+            "wall": "2026-11-01T10:33:57.40793763Z",
+            "mono_after_ns": "112774924308942"
+          },
+          "commands": {
+            "links": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112774908177064",
+                "wall": "2026-11-01T10:33:57.391805918Z",
+                "mono_after_ns": "112774908177266"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112774909263812",
+                "wall": "2026-11-01T10:33:57.39289279Z",
+                "mono_after_ns": "112774909264132"
+              },
+              "ok": true
+            },
+            "origin_route": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112774909356933",
+                "wall": "2026-11-01T10:33:57.392985814Z",
+                "mono_after_ns": "112774909357164"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112774910010696",
+                "wall": "2026-11-01T10:33:57.39363965Z",
+                "mono_after_ns": "112774910010987"
+              },
+              "ok": true
+            },
+            "overlay_route": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112774921107828",
+                "wall": "2026-11-01T10:33:57.404736695Z",
+                "mono_after_ns": "112774921108018"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112774921892779",
+                "wall": "2026-11-01T10:33:57.405521863Z",
+                "mono_after_ns": "112774921893217"
+              },
+              "ok": true
+            },
+            "peer_route": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112774920227833",
+                "wall": "2026-11-01T10:33:57.403856711Z",
+                "mono_after_ns": "112774920228064"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112774921092929",
+                "wall": "2026-11-01T10:33:57.404721813Z",
+                "mono_after_ns": "112774921093154"
+              },
+              "ok": true
+            },
+            "peer_status": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112774910042205",
+                "wall": "2026-11-01T10:33:57.393671095Z",
+                "mono_after_ns": "112774910042444"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112774920132028",
+                "wall": "2026-11-01T10:33:57.403761281Z",
+                "mono_after_ns": "112774920132633"
+              },
+              "ok": true
+            },
+            "wg_allowed_ips": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112774921975394",
+                "wall": "2026-11-01T10:33:57.405604269Z",
+                "mono_after_ns": "112774921975604"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112774922496082",
+                "wall": "2026-11-01T10:33:57.406125076Z",
+                "mono_after_ns": "112774922496437"
+              },
+              "ok": true
+            },
+            "wg_endpoints": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112774922926870",
+                "wall": "2026-11-01T10:33:57.406555727Z",
+                "mono_after_ns": "112774922927050"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112774923557249",
+                "wall": "2026-11-01T10:33:57.407186284Z",
+                "mono_after_ns": "112774923557649"
+              },
+              "ok": true
+            },
+            "wg_latest_handshakes": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112774922506898",
+                "wall": "2026-11-01T10:33:57.406135761Z",
+                "mono_after_ns": "112774922507084"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112774922917446",
+                "wall": "2026-11-01T10:33:57.406546401Z",
+                "mono_after_ns": "112774922917731"
+              },
+              "ok": true
+            },
+            "wireguard_route": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112774923567214",
+                "wall": "2026-11-01T10:33:57.407196087Z",
+                "mono_after_ns": "112774923567410"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112774924286947",
+                "wall": "2026-11-01T10:33:57.407915969Z",
+                "mono_after_ns": "112774924287315"
+              },
+              "ok": true
+            }
+          },
+          "links": [
+            {
+              "ifindex": 1,
+              "ifname": "lo",
+              "mtu": 65536,
+              "linkinfo": {
+                "info_kind": ""
+              }
+            },
+            {
+              "ifindex": 2,
+              "ifname": "eth0",
+              "mtu": 1500,
+              "linkinfo": {
+                "info_kind": ""
+              }
+            },
+            {
+              "ifindex": 3,
+              "ifname": "fvup0",
+              "mtu": 1500,
+              "linkinfo": {
+                "info_kind": ""
+              }
+            },
+            {
+              "ifindex": 4,
+              "ifname": "eth2",
+              "mtu": 1500,
+              "linkinfo": {
+                "info_kind": ""
+              }
+            },
+            {
+              "ifindex": 5,
+              "ifname": "fvfixture",
+              "mtu": 1500,
+              "linkinfo": {
+                "info_kind": ""
+              }
+            },
+            {
+              "ifindex": 6,
+              "ifname": "fvmb0",
+              "mtu": 1280,
+              "linkinfo": {
+                "info_kind": ""
+              }
+            }
+          ],
+          "routes": {
+            "origin_route": [
+              {
+                "dst": "addr-57ec18e83681ee2f",
+                "dev": "fvup0",
+                "prefsrc": "addr-5ae8cd8dcbfe2329"
+              }
+            ],
+            "overlay_route": [
+              {
+                "dst": "addr-cd0c65b7bcc372a6",
+                "dev": "fvmb0",
+                "prefsrc": "addr-80dfa331b773a95e"
+              }
+            ],
+            "peer_route": [
+              {
+                "dst": "addr-beec7c00603ab8bb",
+                "dev": "eth0",
+                "prefsrc": "addr-156910cb925246e0"
+              }
+            ],
+            "wireguard_route": [
+              {
+                "dst": "addr-beec7c00603ab8bb",
+                "dev": "eth0",
+                "prefsrc": "addr-156910cb925246e0"
+              }
+            ]
+          },
+          "peer_present": true,
+          "peer_connected": true,
+          "connection_type": "P2P",
+          "overlay": "addr-cd0c65b7bcc372a6",
+          "local": {
+            "address": "addr-156910cb925246e0",
+            "port": "60015",
+            "family": "ipv4"
+          },
+          "remote": {
+            "address": "addr-beec7c00603ab8bb",
+            "port": "51820",
+            "family": "ipv4"
+          },
+          "latest_handshake_unix_seconds": "1793529229",
+          "wireguard_peer_matched": true,
+          "wireguard_endpoint": {
+            "address": "addr-beec7c00603ab8bb",
+            "port": "51820",
+            "family": "ipv4"
+          }
+        },
+        "origin": {
+          "relay_endpoint": {
+            "address": "",
+            "port": "",
+            "family": ""
+          },
+          "uses_kernel_interface": false,
+          "start": {
+            "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+            "mono_before_ns": "112774924321321",
+            "wall": "2026-11-01T10:33:57.407950349Z",
+            "mono_after_ns": "112774924321738"
+          },
+          "end": {
+            "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+            "mono_before_ns": "112774925967250",
+            "wall": "2026-11-01T10:33:57.40959612Z",
+            "mono_after_ns": "112774925967488"
+          },
+          "commands": {
+            "links": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112774924328373",
+                "wall": "2026-11-01T10:33:57.407957232Z",
+                "mono_after_ns": "112774924328571"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112774925136967",
+                "wall": "2026-11-01T10:33:57.408765903Z",
+                "mono_after_ns": "112774925137270"
+              },
+              "ok": true
+            },
+            "origin_route": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112774925229664",
+                "wall": "2026-11-01T10:33:57.408858541Z",
+                "mono_after_ns": "112774925229892"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112774925926956",
+                "wall": "2026-11-01T10:33:57.409555854Z",
+                "mono_after_ns": "112774925927207"
+              },
+              "ok": true
+            }
+          },
+          "links": [
+            {
+              "ifindex": 1,
+              "ifname": "lo",
+              "mtu": 65536,
+              "linkinfo": {
+                "info_kind": ""
+              }
+            },
+            {
+              "ifindex": 2,
+              "ifname": "eth0",
+              "mtu": 1500,
+              "linkinfo": {
+                "info_kind": ""
+              }
+            }
+          ],
+          "routes": {
+            "origin_route": [
+              {
+                "dst": "addr-57ec18e83681ee2f",
+                "dev": "lo",
+                "prefsrc": "addr-57ec18e83681ee2f"
+              }
+            ]
+          },
+          "peer_present": false,
+          "peer_connected": false,
+          "connection_type": "",
+          "overlay": "",
+          "local": {
+            "address": "",
+            "port": "",
+            "family": ""
+          },
+          "remote": {
+            "address": "",
+            "port": "",
+            "family": ""
+          },
+          "wireguard_peer_matched": false,
+          "wireguard_endpoint": {
+            "address": "",
+            "port": "",
+            "family": ""
+          }
+        }
+      }
+    },
+    {
+      "label": "before-reconnect",
+      "points": {
+        "member": {
+          "relay_endpoint": {
+            "address": "",
+            "port": "",
+            "family": ""
+          },
+          "uses_kernel_interface": true,
+          "start": {
+            "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+            "mono_before_ns": "112775150747572",
+            "wall": "2026-11-01T10:33:57.634376595Z",
+            "mono_after_ns": "112775150747955"
+          },
+          "end": {
+            "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+            "mono_before_ns": "112775166193629",
+            "wall": "2026-11-01T10:33:57.649822493Z",
+            "mono_after_ns": "112775166193836"
+          },
+          "commands": {
+            "links": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112775150755216",
+                "wall": "2026-11-01T10:33:57.634384073Z",
+                "mono_after_ns": "112775150755423"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112775151522304",
+                "wall": "2026-11-01T10:33:57.635151231Z",
+                "mono_after_ns": "112775151522588"
+              },
+              "ok": true
+            },
+            "origin_route": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112775151612291",
+                "wall": "2026-11-01T10:33:57.63524118Z",
+                "mono_after_ns": "112775151612543"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112775152256098",
+                "wall": "2026-11-01T10:33:57.635884987Z",
+                "mono_after_ns": "112775152256344"
+              },
+              "ok": true
+            },
+            "overlay_route": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112775163483039",
+                "wall": "2026-11-01T10:33:57.647111908Z",
+                "mono_after_ns": "112775163483258"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112775164327024",
+                "wall": "2026-11-01T10:33:57.647956039Z",
+                "mono_after_ns": "112775164327405"
+              },
+              "ok": true
+            },
+            "peer_route": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112775162712161",
+                "wall": "2026-11-01T10:33:57.646341055Z",
+                "mono_after_ns": "112775162712423"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112775163465738",
+                "wall": "2026-11-01T10:33:57.647094638Z",
+                "mono_after_ns": "112775163466022"
+              },
+              "ok": true
+            },
+            "peer_status": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112775152295095",
+                "wall": "2026-11-01T10:33:57.635923966Z",
+                "mono_after_ns": "112775152295321"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112775162603017",
+                "wall": "2026-11-01T10:33:57.646232221Z",
+                "mono_after_ns": "112775162603611"
+              },
+              "ok": true
+            },
+            "wg_allowed_ips": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112775164371807",
+                "wall": "2026-11-01T10:33:57.648000673Z",
+                "mono_after_ns": "112775164372044"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112775164750414",
+                "wall": "2026-11-01T10:33:57.64837932Z",
+                "mono_after_ns": "112775164750681"
+              },
+              "ok": true
+            },
+            "wg_endpoints": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112775165198603",
+                "wall": "2026-11-01T10:33:57.648827476Z",
+                "mono_after_ns": "112775165198830"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112775165529665",
+                "wall": "2026-11-01T10:33:57.649158554Z",
+                "mono_after_ns": "112775165529914"
+              },
+              "ok": true
+            },
+            "wg_latest_handshakes": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112775164760011",
+                "wall": "2026-11-01T10:33:57.648388869Z",
+                "mono_after_ns": "112775164760208"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112775165183337",
+                "wall": "2026-11-01T10:33:57.648812344Z",
+                "mono_after_ns": "112775165183719"
+              },
+              "ok": true
+            },
+            "wireguard_route": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112775165538339",
+                "wall": "2026-11-01T10:33:57.649167208Z",
+                "mono_after_ns": "112775165538548"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112775166179336",
+                "wall": "2026-11-01T10:33:57.649808241Z",
+                "mono_after_ns": "112775166179601"
+              },
+              "ok": true
+            }
+          },
+          "links": [
+            {
+              "ifindex": 1,
+              "ifname": "lo",
+              "mtu": 65536,
+              "linkinfo": {
+                "info_kind": ""
+              }
+            },
+            {
+              "ifindex": 2,
+              "ifname": "eth0",
+              "mtu": 1280,
+              "linkinfo": {
+                "info_kind": ""
+              }
+            },
+            {
+              "ifindex": 3,
+              "ifname": "eth1",
+              "mtu": 1280,
+              "linkinfo": {
+                "info_kind": ""
+              }
+            },
+            {
+              "ifindex": 8,
+              "ifname": "fvnb0",
+              "mtu": 1280,
+              "linkinfo": {
+                "info_kind": ""
+              }
+            }
+          ],
+          "routes": {
+            "origin_route": [
+              {
+                "dst": "addr-57ec18e83681ee2f",
+                "dev": "fvnb0",
+                "prefsrc": "addr-cd0c65b7bcc372a6",
+                "table": "netbird"
+              }
+            ],
+            "overlay_route": [
+              {
+                "dst": "addr-80dfa331b773a95e",
+                "dev": "fvnb0",
+                "prefsrc": "addr-cd0c65b7bcc372a6"
+              }
+            ],
+            "peer_route": [
+              {
+                "dst": "addr-156910cb925246e0",
+                "dev": "eth0",
+                "prefsrc": "addr-beec7c00603ab8bb"
+              }
+            ],
+            "wireguard_route": [
+              {
+                "dst": "addr-156910cb925246e0",
+                "dev": "eth0",
+                "prefsrc": "addr-beec7c00603ab8bb"
+              }
+            ]
+          },
+          "peer_present": true,
+          "peer_connected": true,
+          "connection_type": "P2P",
+          "overlay": "addr-80dfa331b773a95e",
+          "local": {
+            "address": "addr-beec7c00603ab8bb",
+            "port": "51820",
+            "family": "ipv4"
+          },
+          "remote": {
+            "address": "addr-156910cb925246e0",
+            "port": "60015",
+            "family": "ipv4"
+          },
+          "latest_handshake_unix_seconds": "1793529229",
+          "wireguard_peer_matched": true,
+          "wireguard_endpoint": {
+            "address": "addr-156910cb925246e0",
+            "port": "60015",
+            "family": "ipv4"
+          }
+        },
+        "node": {
+          "relay_endpoint": {
+            "address": "",
+            "port": "",
+            "family": ""
+          },
+          "uses_kernel_interface": true,
+          "start": {
+            "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+            "mono_before_ns": "112775134698815",
+            "wall": "2026-11-01T10:33:57.61832788Z",
+            "mono_after_ns": "112775134699247"
+          },
+          "end": {
+            "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+            "mono_before_ns": "112775152045931",
+            "wall": "2026-11-01T10:33:57.635674818Z",
+            "mono_after_ns": "112775152046149"
+          },
+          "commands": {
+            "links": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112775134705080",
+                "wall": "2026-11-01T10:33:57.618333929Z",
+                "mono_after_ns": "112775134705291"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112775135830958",
+                "wall": "2026-11-01T10:33:57.61946003Z",
+                "mono_after_ns": "112775135831420"
+              },
+              "ok": true
+            },
+            "origin_route": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112775135926141",
+                "wall": "2026-11-01T10:33:57.619555033Z",
+                "mono_after_ns": "112775135926385"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112775136776495",
+                "wall": "2026-11-01T10:33:57.620405417Z",
+                "mono_after_ns": "112775136776751"
+              },
+              "ok": true
+            },
+            "overlay_route": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112775149061075",
+                "wall": "2026-11-01T10:33:57.632689969Z",
+                "mono_after_ns": "112775149061298"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112775149885612",
+                "wall": "2026-11-01T10:33:57.633514763Z",
+                "mono_after_ns": "112775149886133"
+              },
+              "ok": true
+            },
+            "peer_route": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112775148139369",
+                "wall": "2026-11-01T10:33:57.631768288Z",
+                "mono_after_ns": "112775148139618"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112775149034722",
+                "wall": "2026-11-01T10:33:57.632663704Z",
+                "mono_after_ns": "112775149035085"
+              },
+              "ok": true
+            },
+            "peer_status": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112775136807294",
+                "wall": "2026-11-01T10:33:57.620436175Z",
+                "mono_after_ns": "112775136807509"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112775148036283",
+                "wall": "2026-11-01T10:33:57.631665419Z",
+                "mono_after_ns": "112775148036859"
+              },
+              "ok": true
+            },
+            "wg_allowed_ips": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112775149990256",
+                "wall": "2026-11-01T10:33:57.63361915Z",
+                "mono_after_ns": "112775149990518"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112775150509517",
+                "wall": "2026-11-01T10:33:57.634138467Z",
+                "mono_after_ns": "112775150509812"
+              },
+              "ok": true
+            },
+            "wg_endpoints": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112775150874816",
+                "wall": "2026-11-01T10:33:57.634503677Z",
+                "mono_after_ns": "112775150875005"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112775151344686",
+                "wall": "2026-11-01T10:33:57.634973619Z",
+                "mono_after_ns": "112775151344953"
+              },
+              "ok": true
+            },
+            "wg_latest_handshakes": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112775150519228",
+                "wall": "2026-11-01T10:33:57.634148093Z",
+                "mono_after_ns": "112775150519417"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112775150864654",
+                "wall": "2026-11-01T10:33:57.634493581Z",
+                "mono_after_ns": "112775150864953"
+              },
+              "ok": true
+            },
+            "wireguard_route": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112775151353089",
+                "wall": "2026-11-01T10:33:57.634982019Z",
+                "mono_after_ns": "112775151353341"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112775152003800",
+                "wall": "2026-11-01T10:33:57.635632725Z",
+                "mono_after_ns": "112775152004059"
+              },
+              "ok": true
+            }
+          },
+          "links": [
+            {
+              "ifindex": 1,
+              "ifname": "lo",
+              "mtu": 65536,
+              "linkinfo": {
+                "info_kind": ""
+              }
+            },
+            {
+              "ifindex": 2,
+              "ifname": "eth0",
+              "mtu": 1500,
+              "linkinfo": {
+                "info_kind": ""
+              }
+            },
+            {
+              "ifindex": 3,
+              "ifname": "fvup0",
+              "mtu": 1500,
+              "linkinfo": {
+                "info_kind": ""
+              }
+            },
+            {
+              "ifindex": 4,
+              "ifname": "eth2",
+              "mtu": 1500,
+              "linkinfo": {
+                "info_kind": ""
+              }
+            },
+            {
+              "ifindex": 5,
+              "ifname": "fvfixture",
+              "mtu": 1500,
+              "linkinfo": {
+                "info_kind": ""
+              }
+            },
+            {
+              "ifindex": 6,
+              "ifname": "fvmb0",
+              "mtu": 1280,
+              "linkinfo": {
+                "info_kind": ""
+              }
+            }
+          ],
+          "routes": {
+            "origin_route": [
+              {
+                "dst": "addr-57ec18e83681ee2f",
+                "dev": "fvup0",
+                "prefsrc": "addr-5ae8cd8dcbfe2329"
+              }
+            ],
+            "overlay_route": [
+              {
+                "dst": "addr-cd0c65b7bcc372a6",
+                "dev": "fvmb0",
+                "prefsrc": "addr-80dfa331b773a95e"
+              }
+            ],
+            "peer_route": [
+              {
+                "dst": "addr-beec7c00603ab8bb",
+                "dev": "eth0",
+                "prefsrc": "addr-156910cb925246e0"
+              }
+            ],
+            "wireguard_route": [
+              {
+                "dst": "addr-beec7c00603ab8bb",
+                "dev": "eth0",
+                "prefsrc": "addr-156910cb925246e0"
+              }
+            ]
+          },
+          "peer_present": true,
+          "peer_connected": true,
+          "connection_type": "P2P",
+          "overlay": "addr-cd0c65b7bcc372a6",
+          "local": {
+            "address": "addr-156910cb925246e0",
+            "port": "60015",
+            "family": "ipv4"
+          },
+          "remote": {
+            "address": "addr-beec7c00603ab8bb",
+            "port": "51820",
+            "family": "ipv4"
+          },
+          "latest_handshake_unix_seconds": "1793529229",
+          "wireguard_peer_matched": true,
+          "wireguard_endpoint": {
+            "address": "addr-beec7c00603ab8bb",
+            "port": "51820",
+            "family": "ipv4"
+          }
+        },
+        "origin": {
+          "relay_endpoint": {
+            "address": "",
+            "port": "",
+            "family": ""
+          },
+          "uses_kernel_interface": false,
+          "start": {
+            "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+            "mono_before_ns": "112775150632756",
+            "wall": "2026-11-01T10:33:57.634261728Z",
+            "mono_after_ns": "112775150633113"
+          },
+          "end": {
+            "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+            "mono_before_ns": "112775152374391",
+            "wall": "2026-11-01T10:33:57.63600326Z",
+            "mono_after_ns": "112775152374602"
+          },
+          "commands": {
+            "links": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112775150639809",
+                "wall": "2026-11-01T10:33:57.634268665Z",
+                "mono_after_ns": "112775150640055"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112775151523209",
+                "wall": "2026-11-01T10:33:57.635152202Z",
+                "mono_after_ns": "112775151523564"
+              },
+              "ok": true
+            },
+            "origin_route": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112775151613187",
+                "wall": "2026-11-01T10:33:57.635242086Z",
+                "mono_after_ns": "112775151613449"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112775152334274",
+                "wall": "2026-11-01T10:33:57.635963206Z",
+                "mono_after_ns": "112775152334560"
+              },
+              "ok": true
+            }
+          },
+          "links": [
+            {
+              "ifindex": 1,
+              "ifname": "lo",
+              "mtu": 65536,
+              "linkinfo": {
+                "info_kind": ""
+              }
+            },
+            {
+              "ifindex": 2,
+              "ifname": "eth0",
+              "mtu": 1500,
+              "linkinfo": {
+                "info_kind": ""
+              }
+            }
+          ],
+          "routes": {
+            "origin_route": [
+              {
+                "dst": "addr-57ec18e83681ee2f",
+                "dev": "lo",
+                "prefsrc": "addr-57ec18e83681ee2f"
+              }
+            ]
+          },
+          "peer_present": false,
+          "peer_connected": false,
+          "connection_type": "",
+          "overlay": "",
+          "local": {
+            "address": "",
+            "port": "",
+            "family": ""
+          },
+          "remote": {
+            "address": "",
+            "port": "",
+            "family": ""
+          },
+          "wireguard_peer_matched": false,
+          "wireguard_endpoint": {
+            "address": "",
+            "port": "",
+            "family": ""
+          }
+        }
+      }
+    },
+    {
+      "label": "before-bulk",
+      "points": {
+        "member": {
+          "relay_endpoint": {
+            "address": "",
+            "port": "",
+            "family": ""
+          },
+          "uses_kernel_interface": true,
+          "start": {
+            "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+            "mono_before_ns": "112781778170360",
+            "wall": "2026-11-01T10:34:04.261799497Z",
+            "mono_after_ns": "112781778170917"
+          },
+          "end": {
+            "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+            "mono_before_ns": "112781793615731",
+            "wall": "2026-11-01T10:34:04.277244541Z",
+            "mono_after_ns": "112781793615868"
+          },
+          "commands": {
+            "links": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781778175491",
+                "wall": "2026-11-01T10:34:04.261804305Z",
+                "mono_after_ns": "112781778175643"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781778959162",
+                "wall": "2026-11-01T10:34:04.262588028Z",
+                "mono_after_ns": "112781778959364"
+              },
+              "ok": true
+            },
+            "origin_route": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781779046112",
+                "wall": "2026-11-01T10:34:04.262674939Z",
+                "mono_after_ns": "112781779046296"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781779723348",
+                "wall": "2026-11-01T10:34:04.263352237Z",
+                "mono_after_ns": "112781779723582"
+              },
+              "ok": true
+            },
+            "overlay_route": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781790514040",
+                "wall": "2026-11-01T10:34:04.274142852Z",
+                "mono_after_ns": "112781790514176"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781791270363",
+                "wall": "2026-11-01T10:34:04.274899371Z",
+                "mono_after_ns": "112781791270752"
+              },
+              "ok": true
+            },
+            "peer_route": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781789816475",
+                "wall": "2026-11-01T10:34:04.273445307Z",
+                "mono_after_ns": "112781789816626"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781790500581",
+                "wall": "2026-11-01T10:34:04.274129421Z",
+                "mono_after_ns": "112781790500745"
+              },
+              "ok": true
+            },
+            "peer_status": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781779751365",
+                "wall": "2026-11-01T10:34:04.263380192Z",
+                "mono_after_ns": "112781779751534"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781789747776",
+                "wall": "2026-11-01T10:34:04.273376875Z",
+                "mono_after_ns": "112781789748228"
+              },
+              "ok": true
+            },
+            "wg_allowed_ips": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781791323765",
+                "wall": "2026-11-01T10:34:04.274952657Z",
+                "mono_after_ns": "112781791324034"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781792012137",
+                "wall": "2026-11-01T10:34:04.275641157Z",
+                "mono_after_ns": "112781792012515"
+              },
+              "ok": true
+            },
+            "wg_endpoints": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781792436632",
+                "wall": "2026-11-01T10:34:04.276065446Z",
+                "mono_after_ns": "112781792436778"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781792830105",
+                "wall": "2026-11-01T10:34:04.276458919Z",
+                "mono_after_ns": "112781792830239"
+              },
+              "ok": true
+            },
+            "wg_latest_handshakes": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781792021348",
+                "wall": "2026-11-01T10:34:04.275650154Z",
+                "mono_after_ns": "112781792021477"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781792429736",
+                "wall": "2026-11-01T10:34:04.276058726Z",
+                "mono_after_ns": "112781792430094"
+              },
+              "ok": true
+            },
+            "wireguard_route": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781792836542",
+                "wall": "2026-11-01T10:34:04.276465347Z",
+                "mono_after_ns": "112781792836665"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781793599350",
+                "wall": "2026-11-01T10:34:04.277228366Z",
+                "mono_after_ns": "112781793599728"
+              },
+              "ok": true
+            }
+          },
+          "links": [
+            {
+              "ifindex": 1,
+              "ifname": "lo",
+              "mtu": 65536,
+              "linkinfo": {
+                "info_kind": ""
+              }
+            },
+            {
+              "ifindex": 2,
+              "ifname": "eth0",
+              "mtu": 1280,
+              "linkinfo": {
+                "info_kind": ""
+              }
+            },
+            {
+              "ifindex": 3,
+              "ifname": "eth1",
+              "mtu": 1280,
+              "linkinfo": {
+                "info_kind": ""
+              }
+            },
+            {
+              "ifindex": 9,
+              "ifname": "fvnb0",
+              "mtu": 1280,
+              "linkinfo": {
+                "info_kind": ""
+              }
+            }
+          ],
+          "routes": {
+            "origin_route": [
+              {
+                "dst": "addr-57ec18e83681ee2f",
+                "dev": "fvnb0",
+                "prefsrc": "addr-cd0c65b7bcc372a6",
+                "table": "netbird"
+              }
+            ],
+            "overlay_route": [
+              {
+                "dst": "addr-80dfa331b773a95e",
+                "dev": "fvnb0",
+                "prefsrc": "addr-cd0c65b7bcc372a6"
+              }
+            ],
+            "peer_route": [
+              {
+                "dst": "addr-156910cb925246e0",
+                "dev": "eth0",
+                "prefsrc": "addr-beec7c00603ab8bb"
+              }
+            ],
+            "wireguard_route": [
+              {
+                "dst": "addr-156910cb925246e0",
+                "dev": "eth0",
+                "prefsrc": "addr-beec7c00603ab8bb"
+              }
+            ]
+          },
+          "peer_present": true,
+          "peer_connected": true,
+          "connection_type": "P2P",
+          "overlay": "addr-80dfa331b773a95e",
+          "local": {
+            "address": "addr-beec7c00603ab8bb",
+            "port": "51820",
+            "family": "ipv4"
+          },
+          "remote": {
+            "address": "addr-156910cb925246e0",
+            "port": "60015",
+            "family": "ipv4"
+          },
+          "latest_handshake_unix_seconds": "1793529238",
+          "wireguard_peer_matched": true,
+          "wireguard_endpoint": {
+            "address": "addr-156910cb925246e0",
+            "port": "60015",
+            "family": "ipv4"
+          }
+        },
+        "node": {
+          "relay_endpoint": {
+            "address": "",
+            "port": "",
+            "family": ""
+          },
+          "uses_kernel_interface": true,
+          "start": {
+            "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+            "mono_before_ns": "112781761831513",
+            "wall": "2026-11-01T10:34:04.245460533Z",
+            "mono_after_ns": "112781761831885"
+          },
+          "end": {
+            "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+            "mono_before_ns": "112781778484983",
+            "wall": "2026-11-01T10:34:04.262113855Z",
+            "mono_after_ns": "112781778485178"
+          },
+          "commands": {
+            "links": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781761837673",
+                "wall": "2026-11-01T10:34:04.245466527Z",
+                "mono_after_ns": "112781761837883"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781762942895",
+                "wall": "2026-11-01T10:34:04.246572256Z",
+                "mono_after_ns": "112781762943803"
+              },
+              "ok": true
+            },
+            "origin_route": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781763076908",
+                "wall": "2026-11-01T10:34:04.246705808Z",
+                "mono_after_ns": "112781763077179"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781763872872",
+                "wall": "2026-11-01T10:34:04.247502038Z",
+                "mono_after_ns": "112781763873418"
+              },
+              "ok": true
+            },
+            "overlay_route": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781775404083",
+                "wall": "2026-11-01T10:34:04.259032949Z",
+                "mono_after_ns": "112781775404283"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781776156916",
+                "wall": "2026-11-01T10:34:04.25978596Z",
+                "mono_after_ns": "112781776157358"
+              },
+              "ok": true
+            },
+            "peer_route": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781774410871",
+                "wall": "2026-11-01T10:34:04.258039768Z",
+                "mono_after_ns": "112781774411111"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781775384282",
+                "wall": "2026-11-01T10:34:04.259013267Z",
+                "mono_after_ns": "112781775384625"
+              },
+              "ok": true
+            },
+            "peer_status": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781763917177",
+                "wall": "2026-11-01T10:34:04.247546057Z",
+                "mono_after_ns": "112781763917406"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781774294358",
+                "wall": "2026-11-01T10:34:04.257923785Z",
+                "mono_after_ns": "112781774295160"
+              },
+              "ok": true
+            },
+            "wg_allowed_ips": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781776220385",
+                "wall": "2026-11-01T10:34:04.259849356Z",
+                "mono_after_ns": "112781776220768"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781776739493",
+                "wall": "2026-11-01T10:34:04.260368497Z",
+                "mono_after_ns": "112781776739892"
+              },
+              "ok": true
+            },
+            "wg_endpoints": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781777252982",
+                "wall": "2026-11-01T10:34:04.260881855Z",
+                "mono_after_ns": "112781777253179"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781777676103",
+                "wall": "2026-11-01T10:34:04.261304984Z",
+                "mono_after_ns": "112781777676314"
+              },
+              "ok": true
+            },
+            "wg_latest_handshakes": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781776759477",
+                "wall": "2026-11-01T10:34:04.260388353Z",
+                "mono_after_ns": "112781776759677"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781777238425",
+                "wall": "2026-11-01T10:34:04.260867336Z",
+                "mono_after_ns": "112781777238671"
+              },
+              "ok": true
+            },
+            "wireguard_route": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781777683254",
+                "wall": "2026-11-01T10:34:04.261312115Z",
+                "mono_after_ns": "112781777683438"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781778441651",
+                "wall": "2026-11-01T10:34:04.262070579Z",
+                "mono_after_ns": "112781778441916"
+              },
+              "ok": true
+            }
+          },
+          "links": [
+            {
+              "ifindex": 1,
+              "ifname": "lo",
+              "mtu": 65536,
+              "linkinfo": {
+                "info_kind": ""
+              }
+            },
+            {
+              "ifindex": 2,
+              "ifname": "eth0",
+              "mtu": 1500,
+              "linkinfo": {
+                "info_kind": ""
+              }
+            },
+            {
+              "ifindex": 3,
+              "ifname": "fvup0",
+              "mtu": 1500,
+              "linkinfo": {
+                "info_kind": ""
+              }
+            },
+            {
+              "ifindex": 4,
+              "ifname": "eth2",
+              "mtu": 1500,
+              "linkinfo": {
+                "info_kind": ""
+              }
+            },
+            {
+              "ifindex": 5,
+              "ifname": "fvfixture",
+              "mtu": 1500,
+              "linkinfo": {
+                "info_kind": ""
+              }
+            },
+            {
+              "ifindex": 6,
+              "ifname": "fvmb0",
+              "mtu": 1280,
+              "linkinfo": {
+                "info_kind": ""
+              }
+            }
+          ],
+          "routes": {
+            "origin_route": [
+              {
+                "dst": "addr-57ec18e83681ee2f",
+                "dev": "fvup0",
+                "prefsrc": "addr-5ae8cd8dcbfe2329"
+              }
+            ],
+            "overlay_route": [
+              {
+                "dst": "addr-cd0c65b7bcc372a6",
+                "dev": "fvmb0",
+                "prefsrc": "addr-80dfa331b773a95e"
+              }
+            ],
+            "peer_route": [
+              {
+                "dst": "addr-beec7c00603ab8bb",
+                "dev": "eth0",
+                "prefsrc": "addr-156910cb925246e0"
+              }
+            ],
+            "wireguard_route": [
+              {
+                "dst": "addr-1e6645702d821645",
+                "dev": "lo",
+                "prefsrc": "addr-12ca17b49af22894",
+                "table": "local"
+              }
+            ]
+          },
+          "peer_present": true,
+          "peer_connected": true,
+          "connection_type": "P2P",
+          "overlay": "addr-cd0c65b7bcc372a6",
+          "local": {
+            "address": "addr-156910cb925246e0",
+            "port": "60015",
+            "family": "ipv4"
+          },
+          "remote": {
+            "address": "addr-beec7c00603ab8bb",
+            "port": "51820",
+            "family": "ipv4"
+          },
+          "latest_handshake_unix_seconds": "1793529238",
+          "wireguard_peer_matched": true,
+          "wireguard_endpoint": {
+            "address": "addr-1e6645702d821645",
+            "port": "3128",
+            "family": "ipv4"
+          }
+        },
+        "origin": {
+          "relay_endpoint": {
+            "address": "",
+            "port": "",
+            "family": ""
+          },
+          "uses_kernel_interface": false,
+          "start": {
+            "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+            "mono_before_ns": "112781769461027",
+            "wall": "2026-11-01T10:34:04.253090021Z",
+            "mono_after_ns": "112781769461397"
+          },
+          "end": {
+            "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+            "mono_before_ns": "112781771455150",
+            "wall": "2026-11-01T10:34:04.255084022Z",
+            "mono_after_ns": "112781771455376"
+          },
+          "commands": {
+            "links": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781769468864",
+                "wall": "2026-11-01T10:34:04.253097722Z",
+                "mono_after_ns": "112781769469060"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781770451561",
+                "wall": "2026-11-01T10:34:04.254080569Z",
+                "mono_after_ns": "112781770451945"
+              },
+              "ok": true
+            },
+            "origin_route": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781770568545",
+                "wall": "2026-11-01T10:34:04.254197421Z",
+                "mono_after_ns": "112781770568806"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781771411905",
+                "wall": "2026-11-01T10:34:04.255040881Z",
+                "mono_after_ns": "112781771412262"
+              },
+              "ok": true
+            }
+          },
+          "links": [
+            {
+              "ifindex": 1,
+              "ifname": "lo",
+              "mtu": 65536,
+              "linkinfo": {
+                "info_kind": ""
+              }
+            },
+            {
+              "ifindex": 2,
+              "ifname": "eth0",
+              "mtu": 1500,
+              "linkinfo": {
+                "info_kind": ""
+              }
+            }
+          ],
+          "routes": {
+            "origin_route": [
+              {
+                "dst": "addr-57ec18e83681ee2f",
+                "dev": "lo",
+                "prefsrc": "addr-57ec18e83681ee2f"
+              }
+            ]
+          },
+          "peer_present": false,
+          "peer_connected": false,
+          "connection_type": "",
+          "overlay": "",
+          "local": {
+            "address": "",
+            "port": "",
+            "family": ""
+          },
+          "remote": {
+            "address": "",
+            "port": "",
+            "family": ""
+          },
+          "wireguard_peer_matched": false,
+          "wireguard_endpoint": {
+            "address": "",
+            "port": "",
+            "family": ""
+          }
+        }
+      }
+    },
+    {
+      "label": "after-bulk",
+      "points": {
+        "member": {
+          "relay_endpoint": {
+            "address": "",
+            "port": "",
+            "family": ""
+          },
+          "uses_kernel_interface": true,
+          "start": {
+            "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+            "mono_before_ns": "112781875019709",
+            "wall": "2026-11-01T10:34:04.35864879Z",
+            "mono_after_ns": "112781875020185"
+          },
+          "end": {
+            "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+            "mono_before_ns": "112781891531471",
+            "wall": "2026-11-01T10:34:04.375160292Z",
+            "mono_after_ns": "112781891531637"
+          },
+          "commands": {
+            "links": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781875027156",
+                "wall": "2026-11-01T10:34:04.358656009Z",
+                "mono_after_ns": "112781875027347"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781875945688",
+                "wall": "2026-11-01T10:34:04.359574913Z",
+                "mono_after_ns": "112781875946333"
+              },
+              "ok": true
+            },
+            "origin_route": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781876041087",
+                "wall": "2026-11-01T10:34:04.359669981Z",
+                "mono_after_ns": "112781876041365"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781876775813",
+                "wall": "2026-11-01T10:34:04.36040472Z",
+                "mono_after_ns": "112781876776077"
+              },
+              "ok": true
+            },
+            "overlay_route": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781888512377",
+                "wall": "2026-11-01T10:34:04.372141239Z",
+                "mono_after_ns": "112781888512578"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781889443067",
+                "wall": "2026-11-01T10:34:04.373072041Z",
+                "mono_after_ns": "112781889443414"
+              },
+              "ok": true
+            },
+            "peer_route": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781887630436",
+                "wall": "2026-11-01T10:34:04.371259319Z",
+                "mono_after_ns": "112781887630717"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781888476774",
+                "wall": "2026-11-01T10:34:04.372105696Z",
+                "mono_after_ns": "112781888477045"
+              },
+              "ok": true
+            },
+            "peer_status": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781876812939",
+                "wall": "2026-11-01T10:34:04.360441833Z",
+                "mono_after_ns": "112781876813217"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781887521655",
+                "wall": "2026-11-01T10:34:04.371150822Z",
+                "mono_after_ns": "112781887522212"
+              },
+              "ok": true
+            },
+            "wg_allowed_ips": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781889504506",
+                "wall": "2026-11-01T10:34:04.37313339Z",
+                "mono_after_ns": "112781889504753"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781889927256",
+                "wall": "2026-11-01T10:34:04.373556289Z",
+                "mono_after_ns": "112781889927672"
+              },
+              "ok": true
+            },
+            "wg_endpoints": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781890446663",
+                "wall": "2026-11-01T10:34:04.374075473Z",
+                "mono_after_ns": "112781890446805"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781890814079",
+                "wall": "2026-11-01T10:34:04.374442892Z",
+                "mono_after_ns": "112781890814213"
+              },
+              "ok": true
+            },
+            "wg_latest_handshakes": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781889943450",
+                "wall": "2026-11-01T10:34:04.373572319Z",
+                "mono_after_ns": "112781889943659"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781890434952",
+                "wall": "2026-11-01T10:34:04.374063978Z",
+                "mono_after_ns": "112781890435344"
+              },
+              "ok": true
+            },
+            "wireguard_route": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781890824082",
+                "wall": "2026-11-01T10:34:04.37445289Z",
+                "mono_after_ns": "112781890824207"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781891503878",
+                "wall": "2026-11-01T10:34:04.375132898Z",
+                "mono_after_ns": "112781891504255"
+              },
+              "ok": true
+            }
+          },
+          "links": [
+            {
+              "ifindex": 1,
+              "ifname": "lo",
+              "mtu": 65536,
+              "linkinfo": {
+                "info_kind": ""
+              }
+            },
+            {
+              "ifindex": 2,
+              "ifname": "eth0",
+              "mtu": 1280,
+              "linkinfo": {
+                "info_kind": ""
+              }
+            },
+            {
+              "ifindex": 3,
+              "ifname": "eth1",
+              "mtu": 1280,
+              "linkinfo": {
+                "info_kind": ""
+              }
+            },
+            {
+              "ifindex": 9,
+              "ifname": "fvnb0",
+              "mtu": 1280,
+              "linkinfo": {
+                "info_kind": ""
+              }
+            }
+          ],
+          "routes": {
+            "origin_route": [
+              {
+                "dst": "addr-57ec18e83681ee2f",
+                "dev": "fvnb0",
+                "prefsrc": "addr-cd0c65b7bcc372a6",
+                "table": "netbird"
+              }
+            ],
+            "overlay_route": [
+              {
+                "dst": "addr-80dfa331b773a95e",
+                "dev": "fvnb0",
+                "prefsrc": "addr-cd0c65b7bcc372a6"
+              }
+            ],
+            "peer_route": [
+              {
+                "dst": "addr-156910cb925246e0",
+                "dev": "eth0",
+                "prefsrc": "addr-beec7c00603ab8bb"
+              }
+            ],
+            "wireguard_route": [
+              {
+                "dst": "addr-156910cb925246e0",
+                "dev": "eth0",
+                "prefsrc": "addr-beec7c00603ab8bb"
+              }
+            ]
+          },
+          "peer_present": true,
+          "peer_connected": true,
+          "connection_type": "P2P",
+          "overlay": "addr-80dfa331b773a95e",
+          "local": {
+            "address": "addr-beec7c00603ab8bb",
+            "port": "51820",
+            "family": "ipv4"
+          },
+          "remote": {
+            "address": "addr-156910cb925246e0",
+            "port": "60015",
+            "family": "ipv4"
+          },
+          "latest_handshake_unix_seconds": "1793529238",
+          "wireguard_peer_matched": true,
+          "wireguard_endpoint": {
+            "address": "addr-156910cb925246e0",
+            "port": "60015",
+            "family": "ipv4"
+          }
+        },
+        "node": {
+          "relay_endpoint": {
+            "address": "",
+            "port": "",
+            "family": ""
+          },
+          "uses_kernel_interface": true,
+          "start": {
+            "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+            "mono_before_ns": "112781858549637",
+            "wall": "2026-11-01T10:34:04.34217867Z",
+            "mono_after_ns": "112781858550050"
+          },
+          "end": {
+            "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+            "mono_before_ns": "112781874681875",
+            "wall": "2026-11-01T10:34:04.358310742Z",
+            "mono_after_ns": "112781874682076"
+          },
+          "commands": {
+            "links": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781858555930",
+                "wall": "2026-11-01T10:34:04.342184784Z",
+                "mono_after_ns": "112781858556107"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781859640910",
+                "wall": "2026-11-01T10:34:04.343270025Z",
+                "mono_after_ns": "112781859641421"
+              },
+              "ok": true
+            },
+            "origin_route": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781859742364",
+                "wall": "2026-11-01T10:34:04.343371235Z",
+                "mono_after_ns": "112781859742609"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781860442120",
+                "wall": "2026-11-01T10:34:04.344071177Z",
+                "mono_after_ns": "112781860442562"
+              },
+              "ok": true
+            },
+            "overlay_route": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781871487939",
+                "wall": "2026-11-01T10:34:04.35511681Z",
+                "mono_after_ns": "112781871488138"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781872199645",
+                "wall": "2026-11-01T10:34:04.35582857Z",
+                "mono_after_ns": "112781872199928"
+              },
+              "ok": true
+            },
+            "peer_route": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781870570764",
+                "wall": "2026-11-01T10:34:04.354199655Z",
+                "mono_after_ns": "112781870571019"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781871456492",
+                "wall": "2026-11-01T10:34:04.355085427Z",
+                "mono_after_ns": "112781871456763"
+              },
+              "ok": true
+            },
+            "peer_status": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781860485809",
+                "wall": "2026-11-01T10:34:04.344114713Z",
+                "mono_after_ns": "112781860486079"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781870481399",
+                "wall": "2026-11-01T10:34:04.354110468Z",
+                "mono_after_ns": "112781870481855"
+              },
+              "ok": true
+            },
+            "wg_allowed_ips": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781872250299",
+                "wall": "2026-11-01T10:34:04.355879197Z",
+                "mono_after_ns": "112781872250526"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781872738251",
+                "wall": "2026-11-01T10:34:04.356367159Z",
+                "mono_after_ns": "112781872738492"
+              },
+              "ok": true
+            },
+            "wg_endpoints": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781873132446",
+                "wall": "2026-11-01T10:34:04.356761306Z",
+                "mono_after_ns": "112781873132641"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781873494327",
+                "wall": "2026-11-01T10:34:04.357123254Z",
+                "mono_after_ns": "112781873494596"
+              },
+              "ok": true
+            },
+            "wg_latest_handshakes": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781872746718",
+                "wall": "2026-11-01T10:34:04.356375579Z",
+                "mono_after_ns": "112781872746902"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781873119930",
+                "wall": "2026-11-01T10:34:04.356749002Z",
+                "mono_after_ns": "112781873120401"
+              },
+              "ok": true
+            },
+            "wireguard_route": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781873508825",
+                "wall": "2026-11-01T10:34:04.357137714Z",
+                "mono_after_ns": "112781873509038"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781874658550",
+                "wall": "2026-11-01T10:34:04.358287581Z",
+                "mono_after_ns": "112781874658933"
+              },
+              "ok": true
+            }
+          },
+          "links": [
+            {
+              "ifindex": 1,
+              "ifname": "lo",
+              "mtu": 65536,
+              "linkinfo": {
+                "info_kind": ""
+              }
+            },
+            {
+              "ifindex": 2,
+              "ifname": "eth0",
+              "mtu": 1500,
+              "linkinfo": {
+                "info_kind": ""
+              }
+            },
+            {
+              "ifindex": 3,
+              "ifname": "fvup0",
+              "mtu": 1500,
+              "linkinfo": {
+                "info_kind": ""
+              }
+            },
+            {
+              "ifindex": 4,
+              "ifname": "eth2",
+              "mtu": 1500,
+              "linkinfo": {
+                "info_kind": ""
+              }
+            },
+            {
+              "ifindex": 5,
+              "ifname": "fvfixture",
+              "mtu": 1500,
+              "linkinfo": {
+                "info_kind": ""
+              }
+            },
+            {
+              "ifindex": 6,
+              "ifname": "fvmb0",
+              "mtu": 1280,
+              "linkinfo": {
+                "info_kind": ""
+              }
+            }
+          ],
+          "routes": {
+            "origin_route": [
+              {
+                "dst": "addr-57ec18e83681ee2f",
+                "dev": "fvup0",
+                "prefsrc": "addr-5ae8cd8dcbfe2329"
+              }
+            ],
+            "overlay_route": [
+              {
+                "dst": "addr-cd0c65b7bcc372a6",
+                "dev": "fvmb0",
+                "prefsrc": "addr-80dfa331b773a95e"
+              }
+            ],
+            "peer_route": [
+              {
+                "dst": "addr-beec7c00603ab8bb",
+                "dev": "eth0",
+                "prefsrc": "addr-156910cb925246e0"
+              }
+            ],
+            "wireguard_route": [
+              {
+                "dst": "addr-beec7c00603ab8bb",
+                "dev": "eth0",
+                "prefsrc": "addr-156910cb925246e0"
+              }
+            ]
+          },
+          "peer_present": true,
+          "peer_connected": true,
+          "connection_type": "P2P",
+          "overlay": "addr-cd0c65b7bcc372a6",
+          "local": {
+            "address": "addr-156910cb925246e0",
+            "port": "60015",
+            "family": "ipv4"
+          },
+          "remote": {
+            "address": "addr-beec7c00603ab8bb",
+            "port": "51820",
+            "family": "ipv4"
+          },
+          "latest_handshake_unix_seconds": "1793529238",
+          "wireguard_peer_matched": true,
+          "wireguard_endpoint": {
+            "address": "addr-beec7c00603ab8bb",
+            "port": "51820",
+            "family": "ipv4"
+          }
+        },
+        "origin": {
+          "relay_endpoint": {
+            "address": "",
+            "port": "",
+            "family": ""
+          },
+          "uses_kernel_interface": false,
+          "start": {
+            "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+            "mono_before_ns": "112781875046539",
+            "wall": "2026-11-01T10:34:04.358675689Z",
+            "mono_after_ns": "112781875047069"
+          },
+          "end": {
+            "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+            "mono_before_ns": "112781876809510",
+            "wall": "2026-11-01T10:34:04.360438415Z",
+            "mono_after_ns": "112781876809798"
+          },
+          "commands": {
+            "links": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781875053812",
+                "wall": "2026-11-01T10:34:04.35868268Z",
+                "mono_after_ns": "112781875054018"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781875930461",
+                "wall": "2026-11-01T10:34:04.359559439Z",
+                "mono_after_ns": "112781875930800"
+              },
+              "ok": true
+            },
+            "origin_route": {
+              "start": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781876025824",
+                "wall": "2026-11-01T10:34:04.359654724Z",
+                "mono_after_ns": "112781876026086"
+              },
+              "end": {
+                "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+                "mono_before_ns": "112781876758406",
+                "wall": "2026-11-01T10:34:04.36038744Z",
+                "mono_after_ns": "112781876758837"
+              },
+              "ok": true
+            }
+          },
+          "links": [
+            {
+              "ifindex": 1,
+              "ifname": "lo",
+              "mtu": 65536,
+              "linkinfo": {
+                "info_kind": ""
+              }
+            },
+            {
+              "ifindex": 2,
+              "ifname": "eth0",
+              "mtu": 1500,
+              "linkinfo": {
+                "info_kind": ""
+              }
+            }
+          ],
+          "routes": {
+            "origin_route": [
+              {
+                "dst": "addr-57ec18e83681ee2f",
+                "dev": "lo",
+                "prefsrc": "addr-57ec18e83681ee2f"
+              }
+            ]
+          },
+          "peer_present": false,
+          "peer_connected": false,
+          "connection_type": "",
+          "overlay": "",
+          "local": {
+            "address": "",
+            "port": "",
+            "family": ""
+          },
+          "remote": {
+            "address": "",
+            "port": "",
+            "family": ""
+          },
+          "wireguard_peer_matched": false,
+          "wireguard_endpoint": {
+            "address": "",
+            "port": "",
+            "family": ""
+          }
+        }
+      }
+    }
+  ]
+}

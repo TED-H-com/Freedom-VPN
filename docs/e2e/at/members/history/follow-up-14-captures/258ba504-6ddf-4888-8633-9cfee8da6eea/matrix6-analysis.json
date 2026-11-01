@@ -1,0 +1,856 @@
+{
+  "id": "matrix6",
+  "run_id": "258ba504-6ddf-4888-8633-9cfee8da6eea",
+  "source_commit": "e9a215f3c26484d92c0293d6070810a4b1d1e56d",
+  "status": "pass",
+  "clock_offsets": {
+    "member": {
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "pairs": 84,
+      "offset_lower_ns": "-1793416462483629935",
+      "offset_upper_ns": "-1793416462483628301",
+      "measured_offset_span_ns": "1634",
+      "assumption": "No intervening wall-clock step; empirical offset envelope, not hardware packet timestamps. Pcap microsecond quantization adds 1000 ns."
+    },
+    "node": {
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "pairs": 84,
+      "offset_lower_ns": "-1793416462483629393",
+      "offset_upper_ns": "-1793416462483628535",
+      "measured_offset_span_ns": "858",
+      "assumption": "No intervening wall-clock step; empirical offset envelope, not hardware packet timestamps. Pcap microsecond quantization adds 1000 ns."
+    },
+    "origin": {
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "pairs": 28,
+      "offset_lower_ns": "-1793416462483629400",
+      "offset_upper_ns": "-1793416462483628513",
+      "measured_offset_span_ns": "887",
+      "assumption": "No intervening wall-clock step; empirical offset envelope, not hardware packet timestamps. Pcap microsecond quantization adds 1000 ns."
+    }
+  },
+  "capture_checks": {
+    "member": {
+      "complete": true,
+      "decoded": 706,
+      "captured": 706,
+      "kernel_drops": 0
+    },
+    "node": {
+      "complete": true,
+      "decoded": 610,
+      "captured": 610,
+      "kernel_drops": 0
+    },
+    "origin": {
+      "complete": true,
+      "decoded": 152,
+      "captured": 152,
+      "kernel_drops": 0
+    }
+  },
+  "metadata_checks": {
+    "member": {
+      "links_and_origin_route": true,
+      "native_implementation_recorded": true
+    },
+    "node": {
+      "links_and_origin_route": true,
+      "native_implementation_recorded": true
+    },
+    "origin": {
+      "links_and_origin_route": true,
+      "native_implementation_recorded": true
+    }
+  },
+  "ptb": {
+    "member": [],
+    "node": [],
+    "origin": []
+  },
+  "fragmentation_needed": {
+    "member": [],
+    "node": [],
+    "origin": []
+  },
+  "selected_before": {
+    "member": {
+      "local": {
+        "address": "addr-ab8283067e853f4e",
+        "port": "51820",
+        "family": "ipv6"
+      },
+      "remote": {
+        "address": "addr-d1439358dea1ea21",
+        "port": "60015",
+        "family": "ipv6"
+      },
+      "wireguard_endpoint": {
+        "address": "addr-d1439358dea1ea21",
+        "port": "60015",
+        "family": "ipv6"
+      },
+      "routes": {
+        "origin_route": [
+          {
+            "dst": "addr-57ec18e83681ee2f",
+            "dev": "fvnb0",
+            "prefsrc": "addr-cd0c65b7bcc372a6",
+            "table": "netbird"
+          }
+        ],
+        "overlay_route": [
+          {
+            "dst": "addr-80dfa331b773a95e",
+            "dev": "fvnb0",
+            "prefsrc": "addr-cd0c65b7bcc372a6"
+          }
+        ],
+        "peer_route": [
+          {
+            "dst": "addr-d1439358dea1ea21",
+            "dev": "eth1",
+            "prefsrc": "addr-ab8283067e853f4e"
+          }
+        ],
+        "wireguard_route": [
+          {
+            "dst": "addr-d1439358dea1ea21",
+            "dev": "eth1",
+            "prefsrc": "addr-ab8283067e853f4e"
+          }
+        ]
+      }
+    },
+    "node": {
+      "local": {
+        "address": "addr-d1439358dea1ea21",
+        "port": "60015",
+        "family": "ipv6"
+      },
+      "remote": {
+        "address": "addr-ab8283067e853f4e",
+        "port": "51820",
+        "family": "ipv6"
+      },
+      "wireguard_endpoint": {
+        "address": "addr-affc91dd15c7d447",
+        "port": "3128",
+        "family": "ipv4"
+      },
+      "routes": {
+        "origin_route": [
+          {
+            "dst": "addr-57ec18e83681ee2f",
+            "dev": "fvup0",
+            "prefsrc": "addr-5ae8cd8dcbfe2329"
+          }
+        ],
+        "overlay_route": [
+          {
+            "dst": "addr-cd0c65b7bcc372a6",
+            "dev": "fvmb0",
+            "prefsrc": "addr-80dfa331b773a95e"
+          }
+        ],
+        "peer_route": [
+          {
+            "dst": "addr-ab8283067e853f4e",
+            "dev": "eth2",
+            "prefsrc": "addr-d1439358dea1ea21"
+          }
+        ],
+        "wireguard_route": [
+          {
+            "dst": "addr-affc91dd15c7d447",
+            "dev": "lo",
+            "prefsrc": "addr-12ca17b49af22894",
+            "table": "local"
+          }
+        ]
+      }
+    }
+  },
+  "transfer": {
+    "after_counters": {
+      "upload_bytes": "363302",
+      "download_bytes": "165766",
+      "Present": true,
+      "kernel_generation": "74",
+      "read_diagnostic": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "read_start_mono_ns": "112763925719200",
+        "read_end_mono_ns": "112763928633620",
+        "enforcement_before": {
+          "available": true,
+          "record": {
+            "run_id": "76bd16df-7df3-42c9-9432-f18fee2a7ada",
+            "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+            "sequence": "1135",
+            "source": "live",
+            "anchor": {
+              "mono_before_ns": "112762760141323",
+              "wall": "2026-11-01T10:33:45.24377021Z",
+              "mono_after_ns": "112762760141566"
+            },
+            "timing": {
+              "version": 1,
+              "clock": "CLOCK_MONOTONIC",
+              "operation": "verify",
+              "candidate_generation": "74",
+              "start_ns": "112762740332540",
+              "end_ns": "112762760137159",
+              "succeeded": true,
+              "verified": true,
+              "deadline": {
+                "granularity_ns": "0",
+                "install_bound_ns": "0",
+                "apply_start_ns": "0",
+                "render_start_ns": "0",
+                "install_start_ns": "0",
+                "installed_by_ns": "0",
+                "install_ok": false,
+                "release_start_ns": "0",
+                "release_end_ns": "0",
+                "guard_released": false
+              },
+              "verifications": [
+                {
+                  "start_ns": "112762740332540",
+                  "end_ns": "112762760137159",
+                  "nft_read": {
+                    "start_ns": "112762740332654",
+                    "end_ns": "112762742708607",
+                    "ok": true
+                  },
+                  "tc_read": {
+                    "start_ns": "112762745530716",
+                    "end_ns": "112762758766148",
+                    "ok": true
+                  },
+                  "precision_read": {
+                    "start_ns": "112762744127864",
+                    "end_ns": "112762745522654",
+                    "elements": 3,
+                    "read_ok": true,
+                    "verified": true
+                  },
+                  "tc_sha256": "d914c53ffa25c58e3ec2131e7e70e5aed3014ac6d7bf44e3f91d77844a8844c9",
+                  "verified": true
+                }
+              ]
+            },
+            "tc_sha256": "d914c53ffa25c58e3ec2131e7e70e5aed3014ac6d7bf44e3f91d77844a8844c9",
+            "lease": {
+              "lease_id": "f3eb39e1-5990-4aa5-af19-9c9dc62e338b",
+              "generation": "74",
+              "issued_at": "2026-11-01T10:30:35.159417571Z",
+              "expires_at": "2026-11-02T10:30:35.159417571Z",
+              "request_mono_ns": "112572672717151",
+              "node_deadline_ns": "198972672717151",
+              "members": 7
+            }
+          }
+        },
+        "enforcement_after": {
+          "available": true,
+          "record": {
+            "run_id": "76bd16df-7df3-42c9-9432-f18fee2a7ada",
+            "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+            "sequence": "1135",
+            "source": "live",
+            "anchor": {
+              "mono_before_ns": "112762760141323",
+              "wall": "2026-11-01T10:33:45.24377021Z",
+              "mono_after_ns": "112762760141566"
+            },
+            "timing": {
+              "version": 1,
+              "clock": "CLOCK_MONOTONIC",
+              "operation": "verify",
+              "candidate_generation": "74",
+              "start_ns": "112762740332540",
+              "end_ns": "112762760137159",
+              "succeeded": true,
+              "verified": true,
+              "deadline": {
+                "granularity_ns": "0",
+                "install_bound_ns": "0",
+                "apply_start_ns": "0",
+                "render_start_ns": "0",
+                "install_start_ns": "0",
+                "installed_by_ns": "0",
+                "install_ok": false,
+                "release_start_ns": "0",
+                "release_end_ns": "0",
+                "guard_released": false
+              },
+              "verifications": [
+                {
+                  "start_ns": "112762740332540",
+                  "end_ns": "112762760137159",
+                  "nft_read": {
+                    "start_ns": "112762740332654",
+                    "end_ns": "112762742708607",
+                    "ok": true
+                  },
+                  "tc_read": {
+                    "start_ns": "112762745530716",
+                    "end_ns": "112762758766148",
+                    "ok": true
+                  },
+                  "precision_read": {
+                    "start_ns": "112762744127864",
+                    "end_ns": "112762745522654",
+                    "elements": 3,
+                    "read_ok": true,
+                    "verified": true
+                  },
+                  "tc_sha256": "d914c53ffa25c58e3ec2131e7e70e5aed3014ac6d7bf44e3f91d77844a8844c9",
+                  "verified": true
+                }
+              ]
+            },
+            "tc_sha256": "d914c53ffa25c58e3ec2131e7e70e5aed3014ac6d7bf44e3f91d77844a8844c9",
+            "lease": {
+              "lease_id": "f3eb39e1-5990-4aa5-af19-9c9dc62e338b",
+              "generation": "74",
+              "issued_at": "2026-11-01T10:30:35.159417571Z",
+              "expires_at": "2026-11-02T10:30:35.159417571Z",
+              "request_mono_ns": "112572672717151",
+              "node_deadline_ns": "198972672717151",
+              "members": 7
+            }
+          }
+        },
+        "started": "2026-11-01T10:33:46.311779566Z",
+        "completed": "2026-11-01T10:33:46.412262889Z",
+        "stage": "nft_read",
+        "category": "none",
+        "exit": 0,
+        "heartbeat_before": {
+          "read_at": "2026-11-01T10:33:46.311804491Z",
+          "wall_unix_ns": "1793529225247950840",
+          "serving": true,
+          "read_ok": true
+        },
+        "heartbeat_after": {
+          "read_at": "2026-11-01T10:33:46.412263195Z",
+          "wall_unix_ns": "1793529225247950840",
+          "serving": true,
+          "read_ok": true
+        }
+      }
+    },
+    "after_path": {
+      "path": {
+        "Relayed": 1,
+        "Direct": 1,
+        "Forced": false
+      },
+      "candidate_families": {
+        "ipv6": 2
+      }
+    },
+    "before_counters": {
+      "upload_bytes": "296118",
+      "download_bytes": "97523",
+      "Present": true,
+      "kernel_generation": "74",
+      "read_diagnostic": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "read_start_mono_ns": "112762883282184",
+        "read_end_mono_ns": "112762886466317",
+        "enforcement_before": {
+          "available": true,
+          "record": {
+            "run_id": "76bd16df-7df3-42c9-9432-f18fee2a7ada",
+            "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+            "sequence": "1135",
+            "source": "live",
+            "anchor": {
+              "mono_before_ns": "112762760141323",
+              "wall": "2026-11-01T10:33:45.24377021Z",
+              "mono_after_ns": "112762760141566"
+            },
+            "timing": {
+              "version": 1,
+              "clock": "CLOCK_MONOTONIC",
+              "operation": "verify",
+              "candidate_generation": "74",
+              "start_ns": "112762740332540",
+              "end_ns": "112762760137159",
+              "succeeded": true,
+              "verified": true,
+              "deadline": {
+                "granularity_ns": "0",
+                "install_bound_ns": "0",
+                "apply_start_ns": "0",
+                "render_start_ns": "0",
+                "install_start_ns": "0",
+                "installed_by_ns": "0",
+                "install_ok": false,
+                "release_start_ns": "0",
+                "release_end_ns": "0",
+                "guard_released": false
+              },
+              "verifications": [
+                {
+                  "start_ns": "112762740332540",
+                  "end_ns": "112762760137159",
+                  "nft_read": {
+                    "start_ns": "112762740332654",
+                    "end_ns": "112762742708607",
+                    "ok": true
+                  },
+                  "tc_read": {
+                    "start_ns": "112762745530716",
+                    "end_ns": "112762758766148",
+                    "ok": true
+                  },
+                  "precision_read": {
+                    "start_ns": "112762744127864",
+                    "end_ns": "112762745522654",
+                    "elements": 3,
+                    "read_ok": true,
+                    "verified": true
+                  },
+                  "tc_sha256": "d914c53ffa25c58e3ec2131e7e70e5aed3014ac6d7bf44e3f91d77844a8844c9",
+                  "verified": true
+                }
+              ]
+            },
+            "tc_sha256": "d914c53ffa25c58e3ec2131e7e70e5aed3014ac6d7bf44e3f91d77844a8844c9",
+            "lease": {
+              "lease_id": "f3eb39e1-5990-4aa5-af19-9c9dc62e338b",
+              "generation": "74",
+              "issued_at": "2026-11-01T10:30:35.159417571Z",
+              "expires_at": "2026-11-02T10:30:35.159417571Z",
+              "request_mono_ns": "112572672717151",
+              "node_deadline_ns": "198972672717151",
+              "members": 7
+            }
+          }
+        },
+        "enforcement_after": {
+          "available": true,
+          "record": {
+            "run_id": "76bd16df-7df3-42c9-9432-f18fee2a7ada",
+            "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+            "sequence": "1135",
+            "source": "live",
+            "anchor": {
+              "mono_before_ns": "112762760141323",
+              "wall": "2026-11-01T10:33:45.24377021Z",
+              "mono_after_ns": "112762760141566"
+            },
+            "timing": {
+              "version": 1,
+              "clock": "CLOCK_MONOTONIC",
+              "operation": "verify",
+              "candidate_generation": "74",
+              "start_ns": "112762740332540",
+              "end_ns": "112762760137159",
+              "succeeded": true,
+              "verified": true,
+              "deadline": {
+                "granularity_ns": "0",
+                "install_bound_ns": "0",
+                "apply_start_ns": "0",
+                "render_start_ns": "0",
+                "install_start_ns": "0",
+                "installed_by_ns": "0",
+                "install_ok": false,
+                "release_start_ns": "0",
+                "release_end_ns": "0",
+                "guard_released": false
+              },
+              "verifications": [
+                {
+                  "start_ns": "112762740332540",
+                  "end_ns": "112762760137159",
+                  "nft_read": {
+                    "start_ns": "112762740332654",
+                    "end_ns": "112762742708607",
+                    "ok": true
+                  },
+                  "tc_read": {
+                    "start_ns": "112762745530716",
+                    "end_ns": "112762758766148",
+                    "ok": true
+                  },
+                  "precision_read": {
+                    "start_ns": "112762744127864",
+                    "end_ns": "112762745522654",
+                    "elements": 3,
+                    "read_ok": true,
+                    "verified": true
+                  },
+                  "tc_sha256": "d914c53ffa25c58e3ec2131e7e70e5aed3014ac6d7bf44e3f91d77844a8844c9",
+                  "verified": true
+                }
+              ]
+            },
+            "tc_sha256": "d914c53ffa25c58e3ec2131e7e70e5aed3014ac6d7bf44e3f91d77844a8844c9",
+            "lease": {
+              "lease_id": "f3eb39e1-5990-4aa5-af19-9c9dc62e338b",
+              "generation": "74",
+              "issued_at": "2026-11-01T10:30:35.159417571Z",
+              "expires_at": "2026-11-02T10:30:35.159417571Z",
+              "request_mono_ns": "112572672717151",
+              "node_deadline_ns": "198972672717151",
+              "members": 7
+            }
+          }
+        },
+        "started": "2026-11-01T10:33:45.264002249Z",
+        "completed": "2026-11-01T10:33:45.370095542Z",
+        "stage": "nft_read",
+        "category": "none",
+        "exit": 0,
+        "heartbeat_before": {
+          "read_at": "2026-11-01T10:33:45.264027995Z",
+          "wall_unix_ns": "1793529225247950840",
+          "serving": true,
+          "read_ok": true
+        },
+        "heartbeat_after": {
+          "read_at": "2026-11-01T10:33:45.370095862Z",
+          "wall_unix_ns": "1793529225247950840",
+          "serving": true,
+          "read_ok": true
+        }
+      }
+    },
+    "before_path": {
+      "path": {
+        "Relayed": 1,
+        "Direct": 1,
+        "Forced": false
+      },
+      "candidate_families": {
+        "ipv6": 2
+      }
+    },
+    "decision": "under provisional D-137",
+    "ipv6_mode": "block",
+    "ipv6_no_leak_evidence": "docs/poc/G2-f802-mtu1280-2026-10-31.md (independent netlab measurement; ctv6 drops in both directions, no member class dequeue)",
+    "overlay_family": "ipv4",
+    "scope": "1500 baseline",
+    "selected_exit_after": {
+      "connected": true,
+      "connection_type": "P2P",
+      "chosen_family": "ipv6"
+    },
+    "selected_exit_before": {
+      "connected": true,
+      "connection_type": "P2P",
+      "chosen_family": "ipv6"
+    },
+    "selection": {
+      "input": {
+        "underlay": "ipv6",
+        "mtu": 1500,
+        "protocol": "tcp",
+        "platform": "linux"
+      },
+      "available": true,
+      "reason": ""
+    },
+    "transfer": {
+      "dns_wire_id": 0,
+      "authority_serial": 0,
+      "endpoint": {
+        "at": "2026-11-01T10:33:45.564245266Z",
+        "local_port": 40542,
+        "remote_port": 9446,
+        "read_bytes": 64387,
+        "write_bytes": 64108,
+        "complete_lines": 64,
+        "partial_line_bytes": 0,
+        "error": "none",
+        "tcp_info": {
+          "bytes_acked": 64109,
+          "bytes_received": 64387,
+          "lost": 0,
+          "notsent_bytes": 0,
+          "rcv_mss": 1006,
+          "rcv_space": 12280,
+          "retrans": 0,
+          "rto_us": 201000,
+          "rtt_us": 121,
+          "sacked": 0,
+          "snd_cwnd": 63,
+          "snd_mss": 1228,
+          "snd_wnd": 68608,
+          "state": 1,
+          "total_retrans": 0,
+          "unacked": 0
+        }
+      },
+      "authority_ttl": 0,
+      "has_soa": false,
+      "available": true,
+      "rcode": -1,
+      "types": [],
+      "ttls": [],
+      "address_classes": [],
+      "expected_answer": false,
+      "connected": true,
+      "bytes": 64064,
+      "milliseconds": 1
+    },
+    "bulk": {
+      "dns_wire_id": 0,
+      "authority_serial": 0,
+      "endpoint": {
+        "at": "2026-11-01T10:33:45.564245266Z",
+        "local_port": 40542,
+        "remote_port": 9446,
+        "read_bytes": 64387,
+        "write_bytes": 64108,
+        "complete_lines": 64,
+        "partial_line_bytes": 0,
+        "error": "none",
+        "tcp_info": {
+          "bytes_acked": 64109,
+          "bytes_received": 64387,
+          "lost": 0,
+          "notsent_bytes": 0,
+          "rcv_mss": 1006,
+          "rcv_space": 12280,
+          "retrans": 0,
+          "rto_us": 201000,
+          "rtt_us": 121,
+          "sacked": 0,
+          "snd_cwnd": 63,
+          "snd_mss": 1228,
+          "snd_wnd": 68608,
+          "state": 1,
+          "total_retrans": 0,
+          "unacked": 0
+        }
+      },
+      "authority_ttl": 0,
+      "has_soa": false,
+      "available": true,
+      "rcode": -1,
+      "types": [],
+      "ttls": [],
+      "address_classes": [],
+      "expected_answer": false,
+      "connected": true,
+      "bytes": 64064,
+      "milliseconds": 1
+    }
+  },
+  "reverse": {
+    "sizes": {
+      "144": {
+        "sent": 10,
+        "arrived": 10,
+        "absent": 0
+      },
+      "1152": {
+        "sent": 64,
+        "arrived": 64,
+        "absent": 0
+      }
+    },
+    "absent_sender_packets": [],
+    "unmatched_receiver_packets": 0,
+    "sender_interface": "eth2",
+    "receiver_interface": "eth1",
+    "absent_bounds": []
+  },
+  "forward": {
+    "sizes": {
+      "144": {
+        "sent": 30,
+        "arrived": 30,
+        "absent": 0
+      },
+      "176": {
+        "sent": 1,
+        "arrived": 1,
+        "absent": 0
+      },
+      "1360": {
+        "sent": 52,
+        "arrived": 52,
+        "absent": 0
+      },
+      "352": {
+        "sent": 1,
+        "arrived": 1,
+        "absent": 0
+      }
+    },
+    "absent_sender_packets": [],
+    "unmatched_receiver_packets": 0,
+    "sender_interface": "eth1",
+    "receiver_interface": "eth2",
+    "absent_bounds": []
+  },
+  "bulk_local_port": 40542,
+  "reverse_streams": {
+    "40542": {
+      "current_bulk": true,
+      "first_gap": null,
+      "sent_packets": [
+        21,
+        24,
+        25,
+        29,
+        30,
+        35,
+        36,
+        37,
+        38,
+        40,
+        42,
+        45,
+        47,
+        50,
+        52,
+        54,
+        58,
+        61,
+        63,
+        66,
+        68,
+        71,
+        74,
+        76,
+        78,
+        79,
+        81,
+        82,
+        84,
+        85,
+        86,
+        87,
+        88,
+        90,
+        93,
+        94,
+        95,
+        96,
+        98,
+        99,
+        101,
+        102,
+        104,
+        105,
+        106,
+        108,
+        109,
+        110,
+        111,
+        113,
+        115,
+        116,
+        118,
+        119,
+        120,
+        122,
+        123,
+        124,
+        125,
+        128,
+        130,
+        131,
+        132,
+        133,
+        134,
+        135,
+        138,
+        139,
+        142,
+        143,
+        144,
+        145,
+        147,
+        151
+      ],
+      "received_packets": [
+        427,
+        433,
+        435,
+        452,
+        455,
+        456,
+        470,
+        471,
+        473,
+        478,
+        485,
+        493,
+        500,
+        501,
+        512,
+        514,
+        521,
+        533,
+        534,
+        535,
+        540,
+        541,
+        544,
+        548,
+        550,
+        553,
+        556,
+        560,
+        562,
+        564,
+        569,
+        570,
+        574,
+        576,
+        580,
+        582,
+        584,
+        589,
+        590,
+        593,
+        597,
+        598,
+        601,
+        605,
+        606,
+        609,
+        612,
+        616,
+        618,
+        622,
+        624,
+        629,
+        630,
+        633,
+        637,
+        638,
+        641,
+        644,
+        648,
+        650,
+        654,
+        656,
+        658,
+        662,
+        665,
+        667,
+        670,
+        675,
+        676,
+        680,
+        682,
+        686,
+        688,
+        694
+      ]
+    }
+  },
+  "datagram_scope": "All selected endpoint datagrams within the command window, including control packets and older TCP streams. Stream ports above keep current bulk separate. Encrypted packets are not assigned to inner streams by time alone.",
+  "first_missing_tcp_range": null
+}

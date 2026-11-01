@@ -367,3 +367,47 @@ func (l *live) revocationReadback(r *record) {
 	evidence, _ := json.Marshal(map[string]any{"checks": safe["checks"], "forwarding": safe["member_forwarding_enabled"], "reasons": safe["forwarding_block_reasons"], "errors": safe["errors"]})
 	r.check("post-revoke enforcement dependency and health", "conntrack present; typed accepted observation retained", fmt.Sprintf("conntrack_present=%t; observation=%s", missing == nil, evidence), "command -v conntrack; read latest accepted api.ObservationReport (generated enum)", missing == nil && err == nil && decode == nil)
 }
+
+// D-137: the owner supplies the routed hop. IPv6 can learn from PTB; IPv4
+// may fragment DF=0 in transit. Capture establishes the mechanism separately
+// from the unchanged bounded transfer assertion, never by family inference.
+func (l *live) routedPMTU1280(r *record, id uuid.UUID) {
+	hop, err := l.hook.PrepareNativeRouter1280(l.ctx)
+	r.check("D-137 routed hop setup", "dedicated 1280 router/member link", safeError(err), "PrepareNativeRouter1280", err == nil)
+	if err != nil {
+		return
+	}
+	for _, family := range []string{"ipv6", "ipv4"} {
+		func() {
+			err := hop.Select(l.ctx, family)
+			r.check("D-137 routed "+family+" selection", "peer UDP uses routed hop", safeError(err), "NativeRouter1280.Select", err == nil)
+			if err != nil {
+				return
+			}
+			handle, e := hop.StartCapture(l.ctx)
+			if e != nil {
+				r.block("D-137 router capture unavailable: " + family)
+				return
+			}
+			capture := l.captureSession(r, handle, "routed-"+family+"-1280")
+			defer capture.stop()
+			capture.sample("before-reconnect")
+			_, down := l.inside("member", "netbird", "down")
+			_, up := l.inside("member", "netbird", "up")
+			ready := l.wait(60*time.Second, func() bool {
+				p, e := l.hook.ObserveSelectedNativeExit(l.ctx)
+				return e == nil && p.Connected && p.Type == "P2P" && p.Family == family
+			})
+			time.Sleep(3 * time.Second)
+			capture.sample("before-bulk")
+			before, be := l.hook.DeviceByteCounters(l.ctx, id)
+			chosen, ce := l.hook.ObserveSelectedNativeExit(l.ctx)
+			got, ge := l.fixture("member", "-mode", "bulk", "-addr", l.originIP()+":9446", "-device", id.String())
+			after, ae := l.hook.DeviceByteCounters(l.ctx, id)
+			end, ee := l.hook.ObserveSelectedNativeExit(l.ctx)
+			capture.sample("after-bulk")
+			evidence := capture.stop()
+			r.jsonCheck("D-137 routed "+family+" 1280 transfer", "64064 TCP bytes, both device counters increase, selected family preserved; captured PTB/PMTU or DF=0 fragmentation analyzed separately", map[string]any{"decision": "under provisional D-137", "scope": "sender-learnable routed hop", "mechanism_required": map[string]string{"ipv6": "PTB received and learned PMTU 1280", "ipv4": "DF=0 transit fragmentation"}[family], "native_capture": evidence, "selected_exit_before": chosen, "selected_exit_after": end, "before_counters": before, "after_counters": after, "transfer": got}, "NativeRouter1280.Select/StartCapture; original reconnect and one bounded bulk", down == nil && up == nil && ready && be == nil && ce == nil && ge == nil && ae == nil && ee == nil && chosen.Family == family && end.Family == family && chosen.Connected && end.Connected && got.Available && got.Bytes == 64064 && before.Present && after.Present && after.Upload > before.Upload && after.Download > before.Download)
+		}()
+	}
+}

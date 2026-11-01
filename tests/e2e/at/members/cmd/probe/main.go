@@ -24,6 +24,8 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	switch os.Args[1] {
+	case "lease":
+		storedLease()
 	case "sibling-send":
 		siblingSend()
 	case "sibling-observe":

@@ -1,0 +1,577 @@
+{
+  "node_incarnations": {
+    "node": "01a19632-da08-769c-a514-10bbfaa90ff3",
+    "node2": "01a1963d-73a1-7c73-97e2-74488b403e9a"
+  },
+  "complete": true,
+  "id": "AT22",
+  "title": "Privacy, feed sources and retention",
+  "spec": [
+    "§19.1",
+    "§19 AT22",
+    "SEC02 DNS01 DNS04"
+  ],
+  "status": "blocked",
+  "observations": [
+    {
+      "name": "privacy native stub in use",
+      "detail": "pass; expected: native two-resolver configuration available; actual: native_configured=true; probe_ok=true; command: AT20 native DNS configuration and member OS stub"
+    },
+    {
+      "name": "privacy sentinel query",
+      "detail": "pass; expected: F8-A scope W / F8-TTL5: RCODE 3, zero answers, SOA TTL 5; actual: {\"authority_serial\":0,\"dns_trace\":{\"trace_streams\":{\"authority\":[\"7c4e9334-a745-49cc-92fb-ed7333fb60bb\"],\"primary\":[\"6c56f624-d8d7-4a80-a267-01ba0a904792\",\"0fae99a6-25b8-4fa9-84d0-cee560501c84\"],\"secondary\":[\"0ed06675-0cfa-4741-9f83-6dd21feb3489\"]},\"started\":\"2026-11-01T08:46:06.439705233Z\",\"completed\":\"2026-11-01T08:46:06.48129525Z\",\"responder\":\"unattributed\",\"cache_state\":\"unknown\",\"trace_complete\":false,\"resolver_events\":[],\"authority_events\":[],\"authority_history\":[],\"authority_outstanding_at_query_start\":[],\"authority_outstanding_at_query_completion\":[],\"authority_outstanding_at_trace_read\":[],\"trace_read_at\":{\"authority\":\"2026-11-01T08:46:06.600532679Z\",\"primary\":\"2026-11-01T08:46:06.521760303Z\",\"secondary\":\"2026-11-01T08:46:06.561960148Z\"},\"authority_serial_after_query\":1001,\"authority_read_at\":\"2026-11-01T08:46:06.6247401Z\",\"answer_ttl_remaining\":[]},\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1}; command: native OS stub sentinel under explicit lab block; docs/dns/BACKEND.md §2.1.4"
+    },
+    {
+      "name": "/control/querylog/config",
+      "detail": "pass; expected: disabled; actual: read_ok=true; enabled=false; file_enabled=false; command: AdGuard GET /control/querylog/config"
+    },
+    {
+      "name": "/control/stats/config",
+      "detail": "pass; expected: disabled; actual: read_ok=true; enabled=false; file_enabled=false; command: AdGuard GET /control/stats/config"
+    },
+    {
+      "name": "/control/querylog sentinel scan",
+      "detail": "pass; expected: no sentinel retained; actual: read_ok=true; sentinel_matches=0; command: scan actual resolver API response in memory"
+    },
+    {
+      "name": "/control/stats sentinel scan",
+      "detail": "pass; expected: no sentinel retained; actual: read_ok=true; sentinel_matches=0; command: scan actual resolver API response in memory"
+    },
+    {
+      "name": "on-disk privacy config",
+      "detail": "pass; expected: query history and statistics disabled; actual: read_ok=true; querylog=false; querylog_file=false; statistics=false; command: read assigned AdGuardHome.yaml; emit only booleans"
+    },
+    {
+      "name": "service log scan",
+      "detail": "pass; expected: 12 services; no sentinel; actual: services_scanned=12; sentinel_matches=0; command: docker logs assigned containers; count sentinel in memory"
+    },
+    {
+      "name": "metrics scan",
+      "detail": "pass; expected: record endpoint availability and sentinel matches; actual: read_ok=true; sentinel_matches=0; command: control loopback /metrics via probe"
+    },
+    {
+      "name": "database backup scan",
+      "detail": "pass; expected: dump succeeds; no query sentinel; actual: dump_ok=true; sentinel_matches=0; command: pg_dump own lab DB into memory only; scan sentinel"
+    },
+    {
+      "name": "audit scan",
+      "detail": "pass; expected: no query sentinel; actual: sentinel_rows=0; command: SELECT count audit JSON containing sentinel"
+    },
+    {
+      "name": "bounded audit retention",
+      "detail": "pass; expected: reject early cutoff; delete only expired synthetic row; actual: early_rejected=true; purge_ok=true; deleted=1; old_remaining=0; young_remaining=1; command: SELECT purge_retained audit_events; inspect old/young IDs"
+    },
+    {
+      "name": "feed inventory",
+      "detail": "pass; expected: record actual active feed count; actual: active_feed_definitions=0; command: SELECT active threat_feed policies"
+    },
+    {
+      "name": "second resolver privacy sample",
+      "detail": "pass; expected: controlled DNS response; actual: {\"answers\":0,\"authority_ttl\":5,\"available\":true,\"has_soa\":true,\"rcode\":3,\"ttl\":5,\"types\":[]}\n; command: node2 loopback synthetic DNS sample"
+    },
+    {
+      "name": "second resolver on-disk privacy",
+      "detail": "pass; expected: query log/file and statistics disabled; actual: read_ok=true; querylog=false; file=false; statistics=false; command: parse second resolver config in memory; no credentials retained"
+    },
+    {
+      "name": "node2 service log privacy",
+      "detail": "pass; expected: zero synthetic qname matches; actual: read_ok=true; matches=0; command: scan assigned secondary service logs in memory"
+    },
+    {
+      "name": "node2-adguard service log privacy",
+      "detail": "pass; expected: zero synthetic qname matches; actual: read_ok=true; matches=0; command: scan assigned secondary service logs in memory"
+    },
+    {
+      "name": "TEST ONLY feed cadence",
+      "detail": "pass; expected: 300 seconds through normal settings; restored afterwards; actual: worker restarted; cadence=300; command: set generated DNS config feed_update_cadence_seconds=300; restart own worker"
+    },
+    {
+      "name": "controlled feed input",
+      "detail": "pass; expected: 204 uploaded to existing controlled origin; actual: HTTP 204 ; command: PUT lab origin /e2e/object with synthetic feed bytes"
+    },
+    {
+      "name": "blank attribution rejected",
+      "detail": "pass; expected: 422 for blank or whitespace notes; actual: HTTP 422 VALIDATION_FAILED; command: POST threat_feed with blank attribution"
+    },
+    {
+      "name": "blank attribution rejected",
+      "detail": "pass; expected: 422 for blank or whitespace notes; actual: HTTP 422 VALIDATION_FAILED; command: POST threat_feed with blank attribution"
+    },
+    {
+      "name": "feed source and licensing record",
+      "detail": "pass; expected: 201 with attribution:null, TEST ONLY basis and pin; actual: HTTP 201 ; command: POST /admin/policies threat_feed"
+    },
+    {
+      "name": "feed approval activation",
+      "detail": "pass; expected: 202, normal worker fetch; actual: HTTP 202 ; command: POST policy activate with If-Match"
+    },
+    {
+      "name": "production feed bootstrap",
+      "detail": "pass; expected: record verified content or exact fetch precondition; actual: hash_matches_pin=true; last_error=; failures=0; command: poll dns_feed_refresh_state written by running worker"
+    },
+    {
+      "name": "feed positive rules",
+      "detail": "pass; expected: 201 nonempty synthetic control rules; actual: HTTP 201 ; command: POST domain_rule_set with explicit controlled-name allow"
+    },
+    {
+      "name": "feed positive profile",
+      "detail": "pass; expected: 201; actual: HTTP 201 ; command: POST DNS profile referencing nonempty control rules"
+    },
+    {
+      "name": "feed positive activation",
+      "detail": "pass; expected: 202; actual: HTTP 202 ; command: POST policy activation; completion is observed separately"
+    },
+    {
+      "name": "typed DNS evidence",
+      "detail": "pass; expected: record exact issued-document application, or explicit null; actual: HTTP=200; decoded=true; specified=true; null=false; present=true; outcome=applied; error_code=; issued_document_matches=true; command: GET NodeDetail.dns_policy_evidence using generated 1.2.0 type; read issued document"
+    },
+    {
+      "name": "issued resolver document mTLS fetch",
+      "detail": "pass; expected: 200 canonical bytes match node evidence digest; actual: HTTP=200; hash_matches=true; bytes=696; command: GET /agent/resolver-documents/{issued_id} using actual node mTLS; hash in memory"
+    },
+    {
+      "name": "current desired-state DNS selection",
+      "detail": "pass; expected: record response independently of previously issued document; actual: HTTP=200; code=; ambiguous_active_profiles=false; command: GET /agent/desired-state via actual mTLS; retain only allowlisted error"
+    },
+    {
+      "name": "feed positive DNS control",
+      "detail": "pass; expected: known controlled upstream name resolves before feed profile; actual: {\"answers\":1,\"authority_ttl\":0,\"available\":true,\"has_soa\":false,\"rcode\":0,\"ttl\":54,\"types\":[1]}; command: node loopback query after explicit positive-control profile"
+    },
+    {
+      "name": "feed profile creation",
+      "detail": "pass; expected: record reference validation result; actual: HTTP 201 ; command: POST DNS profile referencing approved feed"
+    },
+    {
+      "name": "feed document publication",
+      "detail": "pass; expected: worker compiles approved last-good into resolver document; actual: published=true; command: activate DNS profile referencing feed; poll dns_resolver_documents"
+    },
+    {
+      "name": "controlled bad update",
+      "detail": "pass; expected: 204; no product projection modified; actual: HTTP 204 ; command: PUT same origin object with comment-only content"
+    },
+    {
+      "name": "real scheduled last-good retention",
+      "detail": "pass; expected: empty/invalid-list failure preserves original hash and one content row; actual: failure_observed=true; error=zero_rules; hash_preserved=true; content_rows=1; failures=1; command: wait actual 300-second cadence plus worker sweep; poll product refresh projection"
+    },
+    {
+      "name": "typed DNS evidence",
+      "detail": "pass; expected: record exact issued-document application, or explicit null; actual: HTTP=200; decoded=true; specified=true; null=false; present=true; outcome=applied; error_code=; issued_document_matches=true; command: GET NodeDetail.dns_policy_evidence using generated 1.2.0 type; read issued document"
+    },
+    {
+      "name": "issued resolver document mTLS fetch",
+      "detail": "pass; expected: 200 canonical bytes match node evidence digest; actual: HTTP=200; hash_matches=true; bytes=670; command: GET /agent/resolver-documents/{issued_id} using actual node mTLS; hash in memory"
+    },
+    {
+      "name": "current desired-state DNS selection",
+      "detail": "pass; expected: record response independently of previously issued document; actual: HTTP=200; code=; ambiguous_active_profiles=false; command: GET /agent/desired-state via actual mTLS; retain only allowlisted error"
+    },
+    {
+      "name": "node last-good block response",
+      "detail": "pass; expected: F8-A / F8-TTL5: RCODE 3, zero answers, SOA TTL 5 after invalid feed update; actual: {\"authority_serial\":0,\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":0}; command: node loopback DNS after actual 300-second failed refresh; docs/dns/BACKEND.md §2.1.4; not native member DNS"
+    },
+    {
+      "name": "blocked",
+      "detail": "D-054 central feed bootstrap/publication/last-good are exercised using self-authored TEST ONLY data. Complete AT22 still needs member URL traffic and remaining file/raw-usage/backup retention coverage; typed resolver application is recorded separately above. Commercial feed approval remains a business decision."
+    },
+    {
+      "name": "blocked",
+      "detail": "F4-06: raw usage/rollup purge, file-content scans, retained backup expiry, representative URL privacy and commercial feed approval remain with devstack/usage/database/backup owners. TEST ONLY self-authored feed last-good evidence does not approve a commercial source."
+    },
+    {
+      "name": "provenance",
+      "detail": "source=d49b535adf831b6823cd05bb47495437fbf6ee63; applied generation=72; incarnation=01a19632-da08-769c-a514-10bbfaa90ff3; image/binary digests in JSON"
+    }
+  ],
+  "at": "2026-11-01T08:46:05Z",
+  "run_id": "4182dd3d-7f1f-453e-8c1f-265d097c3abc",
+  "source_commit": "d49b535adf831b6823cd05bb47495437fbf6ee63",
+  "release_digests": {
+    "artifact_sha256_0.1.0_amd64": "5a436f6a51cf575135edccd35c5bdb6b221869e9460164343d8289425a4448af",
+    "artifact_sha256_0.1.0_arm64": "06519ce5db60c0ed68cd2e001624dacb4a73e032cf5c2562ae5661e56f4e279a",
+    "manifest_sha256_0.1.0": "9fd43b0874ebaf54c418f38e0f4961f244d43fd7c2d827b7b3eda7d2ee8ef6d4",
+    "signed_manifest_sha256_0.1.0": "a48b8e73e73beda400e7ff48abc9c1fb092d193df3bc0681071e6c9f2af318c1"
+  },
+  "build": {
+    "test_binary_sha256": "08e21cc2e9ca84bb8c198977e4f65cfcb57b8e81f6972368735e3fa8bd14a13e",
+    "source_commit": "d49b535adf831b6823cd05bb47495437fbf6ee63",
+    "source_dirty": false,
+    "image_digests": {
+      "adguard": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
+      "control": "sha256:d8858d46745f09e8c027777b18ea01190673033a9d44b42bbc1f1155e5a68252",
+      "coredns": "sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97",
+      "gateway": "sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce",
+      "idp": "sha256:8136192f823f0e70a3935f3f416d82bc5fe3ab380de9184e31855d5ec612738c",
+      "member": "sha256:5c943c39a5f9ed8d31949556bcd0891e66b2640a218d3cde7f23b632abb2548a",
+      "netbird": "sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c",
+      "node": "sha256:5c943c39a5f9ed8d31949556bcd0891e66b2640a218d3cde7f23b632abb2548a",
+      "node-netns": "sha256:5c943c39a5f9ed8d31949556bcd0891e66b2640a218d3cde7f23b632abb2548a",
+      "node2": "sha256:5c943c39a5f9ed8d31949556bcd0891e66b2640a218d3cde7f23b632abb2548a",
+      "node2-adguard": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
+      "node2-netns": "sha256:5c943c39a5f9ed8d31949556bcd0891e66b2640a218d3cde7f23b632abb2548a",
+      "origin": "sha256:ee62833e8799101b724da2ee99b4f834a43ad1a299a0492c678f99330dc93336",
+      "payment": "sha256:5d3a9b079dc0c06d81892c2f92c37b7226d41742d6c9f408c1066b8982af2496",
+      "postgres": "sha256:23c29f45b07d4da35cd24585324eb2c0c5845dff8f16f74f8acb44bfb9f5ac7f",
+      "worker": "sha256:ec7295f3f29f3154a26d76f61719818e7d3b09a556d37762e7b5363518dacb15"
+    },
+    "binary_sha256": {
+      "fvpn-agent": "08e7781e506a2fc3ce3be3ea7e1fc5a5ddd8a07839aab7fb2bebcf647da49e0b",
+      "fvpn-control": "dcedfc1159a19761ebe799a20bfcef8bf021f816d274ef3fed900ebf4d1fa344",
+      "fvpn-updater": "930758c6def867c318dd7f3399245afca42ed61fe3aa73f02b8406d4ace7625c",
+      "fvpn-worker": "3d5a5c5943337973298a60c36de57636d297664db615fbb226b9d4bc01753053"
+    },
+    "binary_vcs": {
+      "fvpn-agent": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "false",
+        "vcs.revision": "d49b535adf831b6823cd05bb47495437fbf6ee63",
+        "vcs.time": "2026-11-01T08:20:29Z"
+      },
+      "fvpn-control": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "false",
+        "vcs.revision": "d49b535adf831b6823cd05bb47495437fbf6ee63",
+        "vcs.time": "2026-11-01T08:20:29Z"
+      },
+      "fvpn-updater": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "false",
+        "vcs.revision": "d49b535adf831b6823cd05bb47495437fbf6ee63",
+        "vcs.time": "2026-11-01T08:20:29Z"
+      },
+      "fvpn-worker": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "false",
+        "vcs.revision": "d49b535adf831b6823cd05bb47495437fbf6ee63",
+        "vcs.time": "2026-11-01T08:20:29Z"
+      }
+    }
+  },
+  "policy_revision": "72",
+  "active_policy_revisions": {
+    "dns_profile": "01a19649-d0ee-71dc-af26-313eb12d0415",
+    "domain_rule_set": "01a19632-c21c-7617-be10-09f905615024",
+    "fair_use": "01a19632-bd4f-7e81-b7f8-a132f9a0a1c1",
+    "plan": "01a19637-c1a2-7385-b35c-4c4f942c5b2e",
+    "release_support": "01a19632-b5f4-709d-ae11-f6fd7edc6c69",
+    "threat_feed": "01a19649-9fe8-73f4-a731-d5f4cd6520a7"
+  },
+  "node_incarnation": "01a19632-da08-769c-a514-10bbfaa90ff3",
+  "steps": [
+    {
+      "name": "privacy native stub in use",
+      "status": "pass",
+      "expected": "native two-resolver configuration available",
+      "actual": "native_configured=true; probe_ok=true",
+      "command": "AT20 native DNS configuration and member OS stub",
+      "at": "2026-11-01T08:46:06Z"
+    },
+    {
+      "name": "privacy sentinel query",
+      "status": "pass",
+      "expected": "F8-A scope W / F8-TTL5: RCODE 3, zero answers, SOA TTL 5",
+      "actual": "{\"authority_serial\":0,\"dns_trace\":{\"trace_streams\":{\"authority\":[\"7c4e9334-a745-49cc-92fb-ed7333fb60bb\"],\"primary\":[\"6c56f624-d8d7-4a80-a267-01ba0a904792\",\"0fae99a6-25b8-4fa9-84d0-cee560501c84\"],\"secondary\":[\"0ed06675-0cfa-4741-9f83-6dd21feb3489\"]},\"started\":\"2026-11-01T08:46:06.439705233Z\",\"completed\":\"2026-11-01T08:46:06.48129525Z\",\"responder\":\"unattributed\",\"cache_state\":\"unknown\",\"trace_complete\":false,\"resolver_events\":[],\"authority_events\":[],\"authority_history\":[],\"authority_outstanding_at_query_start\":[],\"authority_outstanding_at_query_completion\":[],\"authority_outstanding_at_trace_read\":[],\"trace_read_at\":{\"authority\":\"2026-11-01T08:46:06.600532679Z\",\"primary\":\"2026-11-01T08:46:06.521760303Z\",\"secondary\":\"2026-11-01T08:46:06.561960148Z\"},\"authority_serial_after_query\":1001,\"authority_read_at\":\"2026-11-01T08:46:06.6247401Z\",\"answer_ttl_remaining\":[]},\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1}",
+      "command": "native OS stub sentinel under explicit lab block; docs/dns/BACKEND.md §2.1.4",
+      "at": "2026-11-01T08:46:06Z"
+    },
+    {
+      "name": "/control/querylog/config",
+      "status": "pass",
+      "expected": "disabled",
+      "actual": "read_ok=true; enabled=false; file_enabled=false",
+      "command": "AdGuard GET /control/querylog/config",
+      "at": "2026-11-01T08:46:06Z"
+    },
+    {
+      "name": "/control/stats/config",
+      "status": "pass",
+      "expected": "disabled",
+      "actual": "read_ok=true; enabled=false; file_enabled=false",
+      "command": "AdGuard GET /control/stats/config",
+      "at": "2026-11-01T08:46:06Z"
+    },
+    {
+      "name": "/control/querylog sentinel scan",
+      "status": "pass",
+      "expected": "no sentinel retained",
+      "actual": "read_ok=true; sentinel_matches=0",
+      "command": "scan actual resolver API response in memory",
+      "at": "2026-11-01T08:46:06Z"
+    },
+    {
+      "name": "/control/stats sentinel scan",
+      "status": "pass",
+      "expected": "no sentinel retained",
+      "actual": "read_ok=true; sentinel_matches=0",
+      "command": "scan actual resolver API response in memory",
+      "at": "2026-11-01T08:46:06Z"
+    },
+    {
+      "name": "on-disk privacy config",
+      "status": "pass",
+      "expected": "query history and statistics disabled",
+      "actual": "read_ok=true; querylog=false; querylog_file=false; statistics=false",
+      "command": "read assigned AdGuardHome.yaml; emit only booleans",
+      "at": "2026-11-01T08:46:06Z"
+    },
+    {
+      "name": "service log scan",
+      "status": "pass",
+      "expected": "12 services; no sentinel",
+      "actual": "services_scanned=12; sentinel_matches=0",
+      "command": "docker logs assigned containers; count sentinel in memory",
+      "at": "2026-11-01T08:46:06Z"
+    },
+    {
+      "name": "metrics scan",
+      "status": "pass",
+      "expected": "record endpoint availability and sentinel matches",
+      "actual": "read_ok=true; sentinel_matches=0",
+      "command": "control loopback /metrics via probe",
+      "at": "2026-11-01T08:46:07Z"
+    },
+    {
+      "name": "database backup scan",
+      "status": "pass",
+      "expected": "dump succeeds; no query sentinel",
+      "actual": "dump_ok=true; sentinel_matches=0",
+      "command": "pg_dump own lab DB into memory only; scan sentinel",
+      "at": "2026-11-01T08:46:07Z"
+    },
+    {
+      "name": "audit scan",
+      "status": "pass",
+      "expected": "no query sentinel",
+      "actual": "sentinel_rows=0",
+      "command": "SELECT count audit JSON containing sentinel",
+      "at": "2026-11-01T08:46:07Z"
+    },
+    {
+      "name": "bounded audit retention",
+      "status": "pass",
+      "expected": "reject early cutoff; delete only expired synthetic row",
+      "actual": "early_rejected=true; purge_ok=true; deleted=1; old_remaining=0; young_remaining=1",
+      "command": "SELECT purge_retained audit_events; inspect old/young IDs",
+      "at": "2026-11-01T08:46:07Z"
+    },
+    {
+      "name": "feed inventory",
+      "status": "pass",
+      "expected": "record actual active feed count",
+      "actual": "active_feed_definitions=0",
+      "command": "SELECT active threat_feed policies",
+      "at": "2026-11-01T08:46:07Z"
+    },
+    {
+      "name": "second resolver privacy sample",
+      "status": "pass",
+      "expected": "controlled DNS response",
+      "actual": "{\"answers\":0,\"authority_ttl\":5,\"available\":true,\"has_soa\":true,\"rcode\":3,\"ttl\":5,\"types\":[]}\n",
+      "command": "node2 loopback synthetic DNS sample",
+      "at": "2026-11-01T08:46:07Z"
+    },
+    {
+      "name": "second resolver on-disk privacy",
+      "status": "pass",
+      "expected": "query log/file and statistics disabled",
+      "actual": "read_ok=true; querylog=false; file=false; statistics=false",
+      "command": "parse second resolver config in memory; no credentials retained",
+      "at": "2026-11-01T08:46:07Z"
+    },
+    {
+      "name": "node2 service log privacy",
+      "status": "pass",
+      "expected": "zero synthetic qname matches",
+      "actual": "read_ok=true; matches=0",
+      "command": "scan assigned secondary service logs in memory",
+      "at": "2026-11-01T08:46:07Z"
+    },
+    {
+      "name": "node2-adguard service log privacy",
+      "status": "pass",
+      "expected": "zero synthetic qname matches",
+      "actual": "read_ok=true; matches=0",
+      "command": "scan assigned secondary service logs in memory",
+      "at": "2026-11-01T08:46:07Z"
+    },
+    {
+      "name": "TEST ONLY feed cadence",
+      "status": "pass",
+      "expected": "300 seconds through normal settings; restored afterwards",
+      "actual": "worker restarted; cadence=300",
+      "command": "set generated DNS config feed_update_cadence_seconds=300; restart own worker",
+      "at": "2026-11-01T08:46:07Z"
+    },
+    {
+      "name": "controlled feed input",
+      "status": "pass",
+      "expected": "204 uploaded to existing controlled origin",
+      "actual": "HTTP 204 ",
+      "command": "PUT lab origin /e2e/object with synthetic feed bytes",
+      "at": "2026-11-01T08:46:08Z"
+    },
+    {
+      "name": "blank attribution rejected",
+      "status": "pass",
+      "expected": "422 for blank or whitespace notes",
+      "actual": "HTTP 422 VALIDATION_FAILED",
+      "command": "POST threat_feed with blank attribution",
+      "at": "2026-11-01T08:46:08Z"
+    },
+    {
+      "name": "blank attribution rejected",
+      "status": "pass",
+      "expected": "422 for blank or whitespace notes",
+      "actual": "HTTP 422 VALIDATION_FAILED",
+      "command": "POST threat_feed with blank attribution",
+      "at": "2026-11-01T08:46:09Z"
+    },
+    {
+      "name": "feed source and licensing record",
+      "status": "pass",
+      "expected": "201 with attribution:null, TEST ONLY basis and pin",
+      "actual": "HTTP 201 ",
+      "command": "POST /admin/policies threat_feed",
+      "at": "2026-11-01T08:46:09Z"
+    },
+    {
+      "name": "feed approval activation",
+      "status": "pass",
+      "expected": "202, normal worker fetch",
+      "actual": "HTTP 202 ",
+      "command": "POST policy activate with If-Match",
+      "at": "2026-11-01T08:46:10Z"
+    },
+    {
+      "name": "production feed bootstrap",
+      "status": "pass",
+      "expected": "record verified content or exact fetch precondition",
+      "actual": "hash_matches_pin=true; last_error=; failures=0",
+      "command": "poll dns_feed_refresh_state written by running worker",
+      "at": "2026-11-01T08:46:11Z"
+    },
+    {
+      "name": "feed positive rules",
+      "status": "pass",
+      "expected": "201 nonempty synthetic control rules",
+      "actual": "HTTP 201 ",
+      "command": "POST domain_rule_set with explicit controlled-name allow",
+      "at": "2026-11-01T08:46:12Z"
+    },
+    {
+      "name": "feed positive profile",
+      "status": "pass",
+      "expected": "201",
+      "actual": "HTTP 201 ",
+      "command": "POST DNS profile referencing nonempty control rules",
+      "at": "2026-11-01T08:46:12Z"
+    },
+    {
+      "name": "feed positive activation",
+      "status": "pass",
+      "expected": "202",
+      "actual": "HTTP 202 ",
+      "command": "POST policy activation; completion is observed separately",
+      "at": "2026-11-01T08:46:13Z"
+    },
+    {
+      "name": "typed DNS evidence",
+      "status": "pass",
+      "expected": "record exact issued-document application, or explicit null",
+      "actual": "HTTP=200; decoded=true; specified=true; null=false; present=true; outcome=applied; error_code=; issued_document_matches=true",
+      "command": "GET NodeDetail.dns_policy_evidence using generated 1.2.0 type; read issued document",
+      "at": "2026-11-01T08:46:17Z"
+    },
+    {
+      "name": "issued resolver document mTLS fetch",
+      "status": "pass",
+      "expected": "200 canonical bytes match node evidence digest",
+      "actual": "HTTP=200; hash_matches=true; bytes=696",
+      "command": "GET /agent/resolver-documents/{issued_id} using actual node mTLS; hash in memory",
+      "at": "2026-11-01T08:46:19Z"
+    },
+    {
+      "name": "current desired-state DNS selection",
+      "status": "pass",
+      "expected": "record response independently of previously issued document",
+      "actual": "HTTP=200; code=; ambiguous_active_profiles=false",
+      "command": "GET /agent/desired-state via actual mTLS; retain only allowlisted error",
+      "at": "2026-11-01T08:46:21Z"
+    },
+    {
+      "name": "feed positive DNS control",
+      "status": "pass",
+      "expected": "known controlled upstream name resolves before feed profile",
+      "actual": "{\"answers\":1,\"authority_ttl\":0,\"available\":true,\"has_soa\":false,\"rcode\":0,\"ttl\":54,\"types\":[1]}",
+      "command": "node loopback query after explicit positive-control profile",
+      "at": "2026-11-01T08:46:21Z"
+    },
+    {
+      "name": "feed profile creation",
+      "status": "pass",
+      "expected": "record reference validation result",
+      "actual": "HTTP 201 ",
+      "command": "POST DNS profile referencing approved feed",
+      "at": "2026-11-01T08:46:22Z"
+    },
+    {
+      "name": "feed document publication",
+      "status": "pass",
+      "expected": "worker compiles approved last-good into resolver document",
+      "actual": "published=true",
+      "command": "activate DNS profile referencing feed; poll dns_resolver_documents",
+      "at": "2026-11-01T08:46:24Z"
+    },
+    {
+      "name": "controlled bad update",
+      "status": "pass",
+      "expected": "204; no product projection modified",
+      "actual": "HTTP 204 ",
+      "command": "PUT same origin object with comment-only content",
+      "at": "2026-11-01T08:46:24Z"
+    },
+    {
+      "name": "real scheduled last-good retention",
+      "status": "pass",
+      "expected": "empty/invalid-list failure preserves original hash and one content row",
+      "actual": "failure_observed=true; error=zero_rules; hash_preserved=true; content_rows=1; failures=1",
+      "command": "wait actual 300-second cadence plus worker sweep; poll product refresh projection",
+      "at": "2026-11-01T08:52:09Z"
+    },
+    {
+      "name": "typed DNS evidence",
+      "status": "pass",
+      "expected": "record exact issued-document application, or explicit null",
+      "actual": "HTTP=200; decoded=true; specified=true; null=false; present=true; outcome=applied; error_code=; issued_document_matches=true",
+      "command": "GET NodeDetail.dns_policy_evidence using generated 1.2.0 type; read issued document",
+      "at": "2026-11-01T08:52:10Z"
+    },
+    {
+      "name": "issued resolver document mTLS fetch",
+      "status": "pass",
+      "expected": "200 canonical bytes match node evidence digest",
+      "actual": "HTTP=200; hash_matches=true; bytes=670",
+      "command": "GET /agent/resolver-documents/{issued_id} using actual node mTLS; hash in memory",
+      "at": "2026-11-01T08:52:12Z"
+    },
+    {
+      "name": "current desired-state DNS selection",
+      "status": "pass",
+      "expected": "record response independently of previously issued document",
+      "actual": "HTTP=200; code=; ambiguous_active_profiles=false",
+      "command": "GET /agent/desired-state via actual mTLS; retain only allowlisted error",
+      "at": "2026-11-01T08:52:14Z"
+    },
+    {
+      "name": "node last-good block response",
+      "status": "pass",
+      "expected": "F8-A / F8-TTL5: RCODE 3, zero answers, SOA TTL 5 after invalid feed update",
+      "actual": "{\"authority_serial\":0,\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":0}",
+      "command": "node loopback DNS after actual 300-second failed refresh; docs/dns/BACKEND.md §2.1.4; not native member DNS",
+      "at": "2026-11-01T08:52:14Z"
+    }
+  ],
+  "blockers": [
+    "D-054 central feed bootstrap/publication/last-good are exercised using self-authored TEST ONLY data. Complete AT22 still needs member URL traffic and remaining file/raw-usage/backup retention coverage; typed resolver application is recorded separately above. Commercial feed approval remains a business decision.",
+    "F4-06: raw usage/rollup purge, file-content scans, retained backup expiry, representative URL privacy and commercial feed approval remain with devstack/usage/database/backup owners. TEST ONLY self-authored feed last-good evidence does not approve a commercial source."
+  ]
+}
