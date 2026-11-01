@@ -637,7 +637,7 @@ selecting:
 	var ge error
 transferring:
 	for i := 0; ; i++ {
-		if e = c.Sample(ctx, fmt.Sprintf("first-transfer-%d", i)); e != nil {
+		if e := c.Sample(ctx, fmt.Sprintf("first-transfer-%d", i)); e != nil {
 			return
 		}
 		select {
