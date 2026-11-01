@@ -64,7 +64,7 @@ func TestSEC02_WriteRedactsIdentitySubjects(t *testing.T) {
 
 // The follow-up campaign's archived failures are part of the public artifact.
 func TestCommittedFixtureEvidence_ValidAndHygieneClean(t *testing.T) {
-	root := "../../docs/e2e/runs/2026-10-31"
+	root := "../../docs/e2e/runs"
 	if _, err := os.Stat(root); os.IsNotExist(err) {
 		t.Skip("no committed follow-up fixture records")
 	}
@@ -74,16 +74,19 @@ func TestCommittedFixtureEvidence_ValidAndHygieneClean(t *testing.T) {
 			return err
 		}
 		if d.IsDir() {
-			if path != root && filepath.Dir(path) == root && d.Name() != "followup16" && d.Name() != "followup17" && d.Name() != "followup18" && d.Name() != "followup19" && d.Name() != "followup20" && d.Name() != "followup21" && d.Name() != "followup22" {
+			if strings.HasPrefix(filepath.Base(filepath.Dir(path)), "2026-") && d.Name() != "followup16" && d.Name() != "followup17" && d.Name() != "followup18" && d.Name() != "followup19" && d.Name() != "followup20" && d.Name() != "followup21" && d.Name() != "followup22" && d.Name() != "followup23" {
 				return filepath.SkipDir
 			}
+			return nil
+		}
+		if !strings.Contains(path, "/followup") {
 			return nil
 		}
 		raw, err := os.ReadFile(path)
 		if err != nil {
 			return err
 		}
-		if filepath.Ext(path) == ".jsonl" && strings.Contains(path, "/followup22/") {
+		if filepath.Ext(path) == ".jsonl" && (strings.Contains(path, "/followup22/") || strings.Contains(path, "/followup23/")) {
 			for _, line := range strings.Split(strings.TrimSpace(string(raw)), "\n") {
 				var header map[string]json.RawMessage
 				if json.Unmarshal([]byte(line), &header) != nil || header["packet"] == nil || header["timestamp"] == nil || header["header_error"] != nil {
@@ -96,7 +99,7 @@ func TestCommittedFixtureEvidence_ValidAndHygieneClean(t *testing.T) {
 				}
 			}
 		}
-		if filepath.Ext(path) == ".json" && filepath.Base(path) == "analysis.json" && strings.Contains(path, "/followup22/") {
+		if filepath.Ext(path) == ".json" && filepath.Base(path) == "analysis.json" && (strings.Contains(path, "/followup22/") || strings.Contains(path, "/followup23/")) {
 			var a struct {
 				Schema string            `json:"schema"`
 				Rows   []json.RawMessage `json:"rows"`

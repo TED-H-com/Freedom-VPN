@@ -21,3 +21,5 @@ cache 10 IN A 192.0.3.10
 rebind 5 IN A 192.0.3.10
 rebind 5 IN AAAA 2001:db8:30::10
 blocked-cname 5 IN CNAME rr.example.invalid.
+; TEST ONLY positive IDNA A-label for Bücher (case-insensitive lookup).
+xn--bcher-kva 5 IN A 192.0.3.10

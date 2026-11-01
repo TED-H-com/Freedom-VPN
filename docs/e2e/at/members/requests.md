@@ -8,7 +8,75 @@ Current full-case status and evidence: [summary.md](summary.md). Follow-up 10 ru
 run `69f92f49` and its requests are immutable in [follow-up 8](history/follow-up-8/requests.md),
 with [32-file checksum index](history/follow-up-8/SHA256SUMS) (D-098).
 
-## Follow-up 12 — 2026-10-31 (D-098, D-134, D-135)
+## Follow-up 13 — 2026-11-01 (provisional D-135, D-136, D-137)
+
+D-098 first: all 52 root files for run b98b78ee are byte-identical in
+[follow-up 12](history/follow-up-12/RUN.md), with [SHA-256 pins](history/follow-up-12/SHA256SUMS).
+AT01/AT09 within that archive still belong to run 7edb263f, as recorded then.
+
+**F12-01 interpretation under provisional D-136:** the generation-11 lease
+while policy advances to generation 13 causes the designed node-wide
+`policy_missing` baseline until renewal and the next successful Apply.
+Original producer sequences **362–364 baseline, 365 renewal, 366 Apply**,
+**236.970251 ms**, **nine losses** (one inside a completed guard, eight outside)
+are unchanged. The complete sibling stream retains **3,976 attempts / 21 losses**
+(13 inside completed guards, eight outside). No failed Apply occurred.
+The bracket rule covers every node-wide baseline call; overlapping calls are
+reported separately and never summed as unique losses. Recovery is required;
+no bracket or guard excludes a loss or turns a failed availability row into PASS.
+Stronger availability is agent-core design under D-133, outside this lane.
+[F12-01 immutable records](history/follow-up-12/F12-01-policy-missing.json).
+
+F11-03 remains blocked on **no failed Apply observed**: all 95 AT02 Applies
+in this assembled run succeeded. Netlab 22's executor lifecycle is merged, but its hand-off
+and roadmap leave the engine opt-in to agent-core 31; unavailable command
+records must not be invented. Baseline call success is retained separately
+from a failed Apply: failed cleanup is not proof of a committed baseline.
+
+**AT09 under provisional D-137:** the separate selected-native-peer route-MTU
+1280 control measures known PMTU. Receive-only 1280 without PTB remains an
+explicit PMTU black-hole limitation, never a supported-path PASS, even if a
+particular bounded transfer completes. Historical F8-02 rows remain failed.
+Reactive PTB is pending devstack 23; no router-hop export exists on this baseline.
+
+F12-02's streamed reader is now live-qualified across all 22 readiness and
+12 monitor stream checks. F12-03 uses a six-second quiet window, then a fresh negative and
+its observed remaining SOA TTL minus one second of precision uncertainty.
+The existing combined before-TTL assertion is unchanged. F12-04 remains with
+devstack; the old native SERVFAIL and both positive resolver receipts stay recorded.
+
+### Fresh results
+
+- **F11-01:** first selection succeeds with one SYN, node/origin receipt and counted traffic. All three captures are complete (269 / 292 / 77 records, zero drops). Type-4 transport data appears before a loopback-source IPv6 response arrives after the successful request. This differs from devstack 22's five-SYN/no-type-4 reproduction; neither historical cause nor a fix is inferred. The original prehistory and sleep/wake branch remain. [Own capture and comparison](F13-F11-01-forwarding.json).
+- **AT02 under provisional D-135 + D-136:** 95 successful Applies, zero failed Applies; F11-03 stays **blocked on no failed Apply observed**. All 61 baseline calls are paired to the next successful Apply, with original rows/run identities. Three overlap the sibling window; the other 58 have command recovery evidence and explicitly unavailable sibling coverage. **4,029 attempts / 4,029 ingresses / 4,008 egresses / 21 losses**; 13 inside completed guards, eight outside. No losses are excluded. Sequences **402–404** are successful `policy_missing` baselines on the generation-11 lease, **405** renews to 13, **406** applies successfully. The first bracket is **219.395230 ms**, contains nine losses (one inside a guard, eight outside), and has first subsequent egress **14.828914 ms** after Apply. Repeated baseline brackets overlap and are never summed as unique losses. The no-loss row stays FAIL, even though recovery is measured. [Full accounting](F13-AT02-recovery.json), [original transition](F13-AT02-policy-missing.json).
+- **F12-02 live-qualified:** all **22 readiness checks** across AT03/AT04/AT08 and **12 monitor stream checks** pass. AT03 streams 1,160,894–1,277,148 bytes; AT08 reaches **2,455,378 bytes / 2,262 records**. AT04's primary refund monitor has 196 samples with **392 exact producer identities beyond 1 MiB**, cumulative offsets 1,407,676–1,527,951. Secondary streams are reported at their actual smaller sizes when applicable, never padded. [Qualification](F13-F12-02-stream-qualification.json), [immutable stream and failed monitor](history/follow-up-13-stream/4182dd3d-7f1f-453e-8c1f-265d097c3abc/SHA256SUMS). Run b98b78ee's eleven readiness failures and early-finished monitor remain failed in history.
+- **F13-01:** AT04 has two separate failed persistent-withdrawal checks: primary refund and secondary suspension each contain one `nft_parse` / `parse` sample with command exit 0. The remaining status reads succeed; observed reply cutoffs are 3.558769767 s and 2.596756019 s, with active senders and stable counters. Incomplete reads keep both rows failed. Raw nft output/parser errors were not retained, so their cause is unproven. [Failed rows, neighbors and producer windows](F13-01-counter-parse.json); shared reader/parser changes are handed off.
+- **F12-03 quiet window passes:** six seconds without fixture queries (measured 6.004276509 s), then fresh negative SOA TTL **5 → 3**, same uniquely matched primary, approximately **1.221 s** between query completions, before the receipt-plus-four-second conservative boundary. No new authority fetch or outstanding completion is recorded. The combined before-TTL assertion is unchanged and passes. No shared fixture, cache setting or flush changed. [Exact window](F13-F12-03-negative-cache.json). Historical TTL 2 / 1.228672687 s F12-03 stays failed. F12-04's original SERVFAIL and positive resolver receipts remain unchanged and owned by devstack; this run does not diagnose them.
+- **AT09 verdict: BLOCKED under provisional D-137.** Known-PMTU 1280 completes **64,064 bytes in 1 ms**, with route metric 1280 before/after traffic, exact removal and **11 delivered reverse IPv6 fragment pairs**. Reactive PTB remains pending devstack 23 on this tested baseline. Both receive-only 1280 rows also transfer **64,064 bytes in 1 ms**, but remain explicit **PMTU black-hole limitation rows, never PASS**. Reverse data packets are only 1,132 bytes on IPv4 / 1,152 bytes on IPv6, so oversized loss was not reproduced; no PTB appears. Historical F8-02 failures stay failed. [Separate rows and captures](F13-D137-native-paths.json).
+
+### Pending request groups — 2026-11-01
+
+**Current count: ten groups.** Work outside the owned lane stops for these items;
+no outside-owned file was modified.
+
+1. **F8-02 / D-137 — devstack 23:** reactive PTB router-hop export/evidence remains pending (`tests/e2e/native_underlay.go` and shared native harness). Known-PMTU passes; receive-only rows are limitations, never PASS. No global MTU/MSS clamp is requested.
+2. **F4-03 — platform/operator:** real platform/QUIC, physical second NAT/roaming and PMTU resources; `tests/e2e` native fixture/platform integrations are outside this lane.
+3. **F4-04 — portal/devstack/operator:** rendered expired/suspended screens (`apps/portal`); API/traffic evidence does not certify UI.
+4. **F4-10 — packaging/devstack/operator:** boot-flavour provenance and physical arm64; `packaging` and shared boot fixtures. Cross-build is separate.
+5. **F4-05/F4-07 — devstack/native integration/operator:** positive IDNA wire fixture and production nameserver distribution / Private DNS / browser DoH (`tests/e2e/native_dns_fixture.go`, platform integrations).
+6. **F4-06 — usage/database/backup/business:** representative URL/privacy and remaining raw/rollup/file/backup retention surfaces and commercial feed approval; `internal/usage`, retention/backup components and operator resources.
+7. **F11-01 — native NetBird/WireGuard integration:** fresh first selection succeeds with one SYN/type-4 data; no historical cause or repair is proven. Retain devstack 22's handshake/session-acceptance investigation (`deploy/devstack/Dockerfile.node`, shared native capture/transport fixtures). [Own comparison](F13-F11-01-forwarding.json).
+8. **F11-03 — orchestrator / agent-core 31 / netlab:** **no failed Apply observed** in AT02; retain the blocked failed-Apply measurement. The TEST ONLY engine caller for netlab 22's lifecycle instrumentation is outside scope (`node/agent/engine.go`); no failed Apply is manufactured. Stronger admitted-sibling availability under D-133 is separate design work.
+9. **F12-04 — devstack/native integration:** original native SERVFAIL with positive primary/secondary receipts remains unattributed (`tests/e2e/native_dns_fixture.go`, `tests/e2e/dns_trace.go`). New successful RR rows do not diagnose the original delivery/client-processing segment.
+10. **F13-01 — devstack / enforcement owner:** diagnose two `nft_parse` / `parse` samples with exit 0, primary refund and secondary suspension. [Original failures and producer windows](F13-01-counter-parse.json). `tests/e2e/internal/counterread/read.go` calls `node/enforce/parse_nft.go` but retains neither raw failed bytes nor the parser error. Any safe diagnostic/classification expansion belongs to those owners. No retry or predicate relaxation replaces either failed row; underlying cause remains unproven.
+
+F12-01's interpretation question is answered by provisional D-136; old numbers
+stay unchanged. F12-02 is live-qualified. F12-03 has a fresh quiet-window pass
+without shared fixture changes. F11-02 stays closed by populated-grant evidence.
+D-135 / D-136 / D-137 remain provisional pending owner confirmation; no stronger
+availability or hardening choice is inferred.
+
+## Historical follow-up 12 — 2026-10-31 (D-098, D-134, D-135)
 
 Run 7edb263f is preserved byte-identically in [follow-up 11](history/follow-up-11/RUN.md),
 with [43-file SHA-256 index](history/follow-up-11/SHA256SUMS); attempt-1 stays.

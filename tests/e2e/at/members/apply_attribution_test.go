@@ -10,15 +10,16 @@ import (
 )
 
 type applyDiagnosis struct {
-	Run          string                 `json:"producer_run_id"`
-	Sequence     decstr.U64             `json:"sequence"`
-	FailureStage string                 `json:"failure_stage"`
-	Verification string                 `json:"verification_status"`
-	Label        string                 `json:"label"`
-	Cause        string                 `json:"cause_status"`
-	Idle         *float64               `json:"interval_idle_percent"`
-	Host         *agent.MeasurementHost `json:"host_context"`
-	Original     json.RawMessage        `json:"original_record"`
+	CommandLifecycleAvailable bool                   `json:"command_lifecycle_available"`
+	Run                       string                 `json:"producer_run_id"`
+	Sequence                  decstr.U64             `json:"sequence"`
+	FailureStage              string                 `json:"failure_stage"`
+	Verification              string                 `json:"verification_status"`
+	Label                     string                 `json:"label"`
+	Cause                     string                 `json:"cause_status"`
+	Idle                      *float64               `json:"interval_idle_percent"`
+	Host                      *agent.MeasurementHost `json:"host_context"`
+	Original                  json.RawMessage        `json:"original_record"`
 }
 
 func diagnoseApply(raw json.RawMessage) (applyDiagnosis, error) {
@@ -32,6 +33,7 @@ func diagnoseApply(raw json.RawMessage) (applyDiagnosis, error) {
 	t := m.Timing
 	d := t.Deadline
 	out := applyDiagnosis{Run: m.RunID.String(), Sequence: m.Sequence, FailureStage: "none", Verification: "missing", Cause: "unproven", Host: m.Host, Original: raw, Label: "Apply"}
+	out.CommandLifecycleAvailable = len(t.Commands) > 0
 	if len(t.Verifications) > 0 {
 		out.Verification = "passed"
 		for _, v := range t.Verifications {
@@ -85,16 +87,25 @@ type siblingObservation struct {
 	Stats          struct{ Drops uint32 } `json:"capture_stats"`
 }
 type recoveryBracket struct {
-	Run         string        `json:"producer_run_id"`
-	Failed      decstr.U64    `json:"failed_apply_sequence"`
-	Baseline    decstr.U64    `json:"baseline_sequence"`
-	Recovery    decstr.U64    `json:"next_successful_apply_sequence"`
-	Start       time.Duration `json:"baseline_start_ns,string"`
-	BaselineEnd time.Duration `json:"baseline_end_ns,string"`
-	End         time.Duration `json:"recovery_end_ns,string"`
-	Duration    time.Duration `json:"baseline_to_recovery_ns,string"`
-	Losses      int           `json:"admitted_losses"`
-	Recovered   bool          `json:"forwarding_observed_after_next_successful_apply"`
+	RecoveryRun         string          `json:"recovery_producer_run_id"`
+	RecoveryRecord      json.RawMessage `json:"original_recovery_record"`
+	FirstEgress         time.Duration   `json:"first_egress_after_recovery_ns,string"`
+	Cause               string          `json:"baseline_cause"`
+	BaselineSucceeded   bool            `json:"baseline_succeeded"`
+	Coverage            string          `json:"sibling_coverage"`
+	LossesInGuards      int             `json:"losses_in_completed_guards"`
+	LossesOutsideGuards int             `json:"losses_outside_completed_guards"`
+	Original            json.RawMessage `json:"original_baseline_record"`
+	Run                 string          `json:"producer_run_id"`
+	Failed              decstr.U64      `json:"failed_apply_sequence"`
+	Baseline            decstr.U64      `json:"baseline_sequence"`
+	Recovery            decstr.U64      `json:"next_successful_apply_sequence"`
+	Start               time.Duration   `json:"baseline_start_ns,string"`
+	BaselineEnd         time.Duration   `json:"baseline_end_ns,string"`
+	End                 time.Duration   `json:"recovery_end_ns,string"`
+	Duration            time.Duration   `json:"baseline_to_recovery_ns,string"`
+	Losses              int             `json:"admitted_losses"`
+	Recovered           bool            `json:"forwarding_observed_after_next_successful_apply"`
 }
 
 func siblingRecovery(trace []json.RawMessage, observed json.RawMessage, sent ...json.RawMessage) (map[string]any, bool, bool) {
@@ -120,32 +131,66 @@ func siblingRecovery(trace []json.RawMessage, observed json.RawMessage, sent ...
 			}
 		}
 	}
+	failedInCapture := 0
 	for i, m := range rows {
-		if m.Timing == nil || m.Timing.Operation != "apply" || m.Timing.Succeeded || m.Timing.End < capture.Start || m.Timing.Start > capture.End {
+		if m.Timing != nil && m.Timing.Operation == "apply" && !m.Timing.Succeeded && m.BootID.String() == capture.Boot && m.Timing.End >= capture.Start && m.Timing.Start <= capture.End {
+			failedInCapture++
+		}
+		if m.Baseline == nil {
 			continue
 		}
-		b := recoveryBracket{Run: m.RunID.String(), Failed: m.Sequence}
-		for j := i + 1; j < len(rows); j++ {
-			n := rows[j]
-			if n.RunID != m.RunID || n.BootID != m.BootID {
-				continue
+		b := recoveryBracket{Run: m.RunID.String(), Baseline: m.Sequence, Cause: m.Baseline.Cause, BaselineSucceeded: m.Baseline.Succeeded, Start: m.Baseline.Start, BaselineEnd: m.Baseline.End, Original: trace[i], Coverage: "outside continuous sibling window"}
+		// Failed Apply alone is not proof of successful baseline installation.
+		// Preserve every writer call, including repeated or failed calls.
+		if m.Baseline.Cause == "apply_rollback" {
+			for j := i - 1; j >= 0; j-- {
+				n := rows[j]
+				if n.RunID == m.RunID && n.BootID == m.BootID && n.Timing != nil && n.Timing.Operation == "apply" {
+					if !n.Timing.Succeeded {
+						b.Failed = n.Sequence
+					}
+					break
+				}
 			}
-			if b.Start == 0 && n.Baseline != nil && n.Baseline.Cause == "apply_rollback" && n.Baseline.Succeeded {
-				b.Baseline = n.Sequence
-				b.Start = n.Baseline.Start
-				b.BaselineEnd = n.Baseline.End
-			}
-			if n.Timing != nil && n.Timing.Operation == "apply" && n.Timing.Succeeded {
+		}
+		for offset, n := range rows[i+1:] {
+			if n.BootID == m.BootID && n.Timing != nil && n.Timing.Operation == "apply" && n.Timing.Succeeded && n.Timing.Start >= b.BaselineEnd {
+				b.RecoveryRun = n.RunID.String()
+				b.RecoveryRecord = trace[i+1+offset]
 				b.Recovery = n.Sequence
 				b.End = n.Timing.End
 				b.Duration = b.End - b.Start
 				break
 			}
 		}
-		if m.BootID.String() != capture.Boot || b.Start == 0 || b.End <= b.BaselineEnd || b.End > capture.End {
-			valid = false
+		if m.BootID.String() == capture.Boot && b.Start <= capture.End && (b.End == 0 || b.End >= capture.Start) {
+			b.Coverage = "complete"
+			if b.Start < capture.Start || b.End == 0 || b.End > capture.End {
+				b.Coverage = "partial"
+				valid = false
+			}
+			if !b.BaselineSucceeded || b.End <= b.BaselineEnd {
+				valid = false
+			}
 		}
 		brackets = append(brackets, b)
+	}
+	failedBracketed := 0
+	for _, m := range rows {
+		if m.Timing == nil || m.Timing.Operation != "apply" || m.Timing.Succeeded || m.BootID.String() != capture.Boot || m.Timing.End < capture.Start || m.Timing.Start > capture.End {
+			continue
+		}
+		found := false
+		for _, b := range brackets {
+			if b.Run == m.RunID.String() && b.Failed == m.Sequence && b.Coverage == "complete" {
+				found = true
+			}
+		}
+		if found {
+			failedBracketed++
+		} else {
+			valid = false
+		}
 	}
 	ingress, egress := map[decstr.U64]time.Duration{}, map[decstr.U64]time.Duration{}
 	for _, p := range capture.Packets {
@@ -164,8 +209,11 @@ func siblingRecovery(trace []json.RawMessage, observed json.RawMessage, sent ...
 		if _, ok := egress[seq]; ok {
 			for j := range brackets {
 				b := &brackets[j]
-				if at >= b.End && at <= b.End+time.Second {
+				if b.Coverage == "complete" && b.End > 0 && at >= b.End && at <= b.End+time.Second {
 					b.Recovered = true
+					if b.FirstEgress == 0 || egress[seq] < b.FirstEgress {
+						b.FirstEgress = egress[seq]
+					}
 				}
 			}
 			continue
@@ -174,7 +222,7 @@ func siblingRecovery(trace []json.RawMessage, observed json.RawMessage, sent ...
 		covered := false
 		for j := range brackets {
 			b := &brackets[j]
-			if at >= b.Start && at <= b.End {
+			if b.Coverage != "outside continuous sibling window" && at >= b.Start && (b.End == 0 || at <= b.End) {
 				b.Losses++
 				covered = true
 			}
@@ -191,12 +239,24 @@ func siblingRecovery(trace []json.RawMessage, observed json.RawMessage, sent ...
 		if inGuard {
 			guardLoss++
 		}
+		for j := range brackets {
+			b := &brackets[j]
+			if b.Coverage != "outside continuous sibling window" && at >= b.Start && (b.End == 0 || at <= b.End) {
+				if inGuard {
+					b.LossesInGuards++
+				} else {
+					b.LossesOutsideGuards++
+				}
+			}
+		}
 		if !covered && !inGuard {
 			outside++
 		}
 	}
 	for _, b := range brackets {
-		valid = valid && b.Recovered
+		if b.Coverage != "outside continuous sibling window" {
+			valid = valid && b.Recovered
+		}
 	}
 
 	attempts := len(ingress)
@@ -214,7 +274,8 @@ func siblingRecovery(trace []json.RawMessage, observed json.RawMessage, sent ...
 	}
 	missingIngress := attempts - len(ingress)
 	valid = valid && missingIngress == 0 && sendErrors == 0
-	// A recorded contention label never enters this acceptance predicate.
-	valid = valid && len(ingress) > 0 && len(egress) > 0 && outside == 0
-	return map[string]any{"contract": "D-135; baseline start/end to next successful Apply end are command bounds, not kernel commit timestamps; recovery sampled at 20 ms, first egress within 1 s; D-134 gives no fixed guard ceiling", "apply_records": diagnoses, "failed_apply_total": failedTotal, "failed_apply_bracketed": len(brackets), "brackets": brackets, "ingress_packets": len(ingress), "egress_packets": len(egress), "lost_admitted_packets": attempts - len(egress), "node_ingress_without_egress": losses, "sender_attempts": attempts, "send_errors": sendErrors, "not_observed_at_node_ingress": missingIngress, "losses_in_completed_guards": guardLoss, "losses_outside_baseline_or_completed_guard": outside, "observation": capture, "cause_status": "unproven"}, valid, len(brackets) > 0
+	// Bracket/guard membership explains location; it never excludes a loss.
+	measurementValid := valid && len(ingress) > 0 && len(egress) > 0
+	valid = measurementValid && attempts == len(egress)
+	return map[string]any{"contract": "provisional D-135 + D-136; every node-wide baseline call; overlapping brackets are not summed; baseline start/end to next successful Apply end are command bounds, not kernel commit timestamps; recovery sampled at 20 ms, first egress within 1 s; D-134 gives no fixed guard ceiling", "apply_records": diagnoses, "failed_apply_total": failedTotal, "failed_apply_in_capture": failedInCapture, "failed_apply_bracketed": failedBracketed, "baseline_transition_count": len(brackets), "measurement_valid": measurementValid, "brackets": brackets, "ingress_packets": len(ingress), "egress_packets": len(egress), "lost_admitted_packets": attempts - len(egress), "node_ingress_without_egress": losses, "sender_attempts": attempts, "send_errors": sendErrors, "not_observed_at_node_ingress": missingIngress, "losses_in_completed_guards": guardLoss, "losses_outside_completed_guards": losses - guardLoss, "losses_outside_baseline_or_completed_guard": outside, "observation": capture, "cause_status": "unproven"}, valid, failedInCapture > 0
 }

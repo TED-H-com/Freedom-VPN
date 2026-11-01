@@ -3,6 +3,7 @@
 ```bash
 mkdir -p .agent/tmp
 export TMPDIR="$PWD/.agent/tmp" GOTMPDIR="$PWD/.agent/tmp"
+go env GOCACHE
 # Before stack startup and the live suite, wait while two other suites are active.
 pgrep -af 'gates.sh|mk/at-' || true
 make -f mk/at-usage.mk at-usage-lint at-usage-test at-usage-build
@@ -17,19 +18,23 @@ PostgreSQL access to the live stack is read-only. The existing mechanism fixture
 
 Follow-up 3's synthetic ACK workaround is removed: Fair-Use convergence now waits for actual agent apply and kernel tc read-back. Counted traffic is sampled/uploaded by the agent, including both incarnations. AT14 uses the shared ingress injector plus a temporary node-netns private-destination /32 route over fvup0 (removed immediately) to exercise ctdeny; no default route or foreign nft table is changed. The same component checks remain; deterministic month-boundary/clock fixtures do not change the host clock.
 
-# Usage acceptance — Follow-up 6
+go env GOCACHE returned `<external-disk-cache>/go-build` (host-specific parent redacted; exact output retained in the ignored hand-off report). The cache path was discovered, never hard-coded.
 
-Run `71b1a160`; harness `7ccaabade8efc5074cfde5dcae84c6b4a27fd8c0` (dirty `false`); image build `7ccaabade8efc5074cfde5dcae84c6b4a27fd8c0`; origin/main product source `fb5e002549f79e8ef61bebcf42cce1678ab65cb1`. Stack `fvpn-w4-usage-*`, port base `48000`.
+Follow-up 7 fixes live fixture period selection: AT17 pins daily reads/bounds to the summary period; AT15 assigns each record its interval-start UTC month; AT20 selects held traffic from snapshot records and keeps fresh traffic baselines separate. Offline boundary tables cover month start, the first seconds, mid-month and 2026-12-31 → 2027-01-01, including invalid/empty evidence. The production period-overlap rule and fixed-clock October/November mechanisms are unchanged.
+
+# Usage acceptance — Follow-up 7
+
+Run `b8a6e9e1`; harness `c38a042246d193114cd26aa9cd49b780ecb207f3` (dirty `false`); image build `c38a042246d193114cd26aa9cd49b780ecb207f3`; origin/main product source `de6d2e0246892b5744f68864c3d6d2854945c40a`. Stack `fvpn-w4-usage-*`, port base `48000`.
 
 | Case | Status | Evidence | Live result |
 |---|---|---|---|
-| AT14 | pass | [AT14.json](AT14.json) / [AT14.md](AT14.md) | Live serving exit 01a192ae-1201-70bf-b380-a6dfdbc2724c (incarnation 01a192ae-1361-7d54-a603-22b10f2ac4a6, exit 01a192ae-1201-70c0-9ca3-8470b302d19d) metered admitted HTTPS traffic for memberA device 01a192ae-6f45-72b9-ad7c-e02298bacbcc and uploaded 3 UsageEvents to PostgreSQL with GET /api/v1/member/usage reporting exact total_bytes=23415. |
-| AT15 | pass | [AT15.json](AT15.json) / [AT15.md](AT15.md) | Live mTLS /api/v1/agent/usage-checkpoint and /api/v1/agent/usage-batches on serving node 01a192ae-1201-70bf-b380-a6dfdbc2724c (incarnation 01a192ae-1361-7d54-a603-22b10f2ac4a6, initial real agent seq=5) verified Ed25519 recovery signature, out-of-order seq {6,8} -> gap fill seq 7 advancing highest_contiguous_seq to 8, batch replay and duplicate retry with zero double-counted bytes, payload_sha256 conflict audit (usage_event_conflicts=1), rejected seq 10 (>2^53 decimal string 9007199254740993) reporting blocked_seq=10 then advancing to 11, 409/403 error guards, and live fvpn-usage-admin freeze/begin-recovery/complete-recovery rotating ledger_epoch 3b3d68b0-fc62-4d15-9d83-f0aea976d52e -> 01a192b8-b497-7a3e-80a7-af6da7effaf8 with replay_unavailable reconciliation to seq 12. |
-| AT16 | pass | [AT16.json](AT16.json) / [AT16.md](AT16.md) | Live node fvpn-w4-usage-node verified sampler restart continuity (event_seq 1->2), D-067 provisional-lease recovery across bring_up (5786ms/6925ms) and agent_restart (6414ms/6712ms), and live fail-closed withdrawal via fvpn-watchdog. |
-| AT17 | pass | [AT17.json](AT17.json) / [AT17.md](AT17.md) | Live GET /api/v1/member/usage and ?period_id=2026-10&granularity=day returned real counted memberA traffic totals (upload=13032, download=18163, total=31195) within half-open UTC month bounds [2026-10-01T00:00:00Z, 2026-11-01T00:00:00Z), while central and node mechanisms verified 00:00:00Z UTC month-boundary splitting, late-arriving previous-month event attribution within the 24h watermark, and >5s wall-clock rollback protection. |
-| AT18 | pass | [AT18.json](AT18.json) / [AT18.md](AT18.md) | Live serving exit fvpn-w4-usage-node installed kernel tc HTB + fq_codel on fvmb0 and fvup0 with host reserve class 1:fffe (100Mbit) and per-member classes at effective_rate = min(plan=80M/40M, tier0=100M/50M, exit=60M/30M) = 60Mbit down / 30Mbit up, shaped concurrent memberA (+1106/+1513 B) and memberB (+1066/+1515 B) flows, and preserved mTLS control-plane responsiveness (HTTP 200). |
-| AT19 | pass | [AT19.json](AT19.json) / [AT19.md](AT19.md) | Live multi-node test enrolled second exit 01a192b0-2fb8-719f-9818-d04e4237ed6f (node2) and non-carrying node 01a192b1-8199-7ef2-8edf-1bcb771d17a6, routed memberA traffic across both carrying exits (aggregating 28614 bytes across 2 exits), verified shadow mode (60Mbit on node, 15Mbit on node2), proved Transition 1 (policy.activated mode=enforce: carrying gens node 7->8, node2 4->5, non-carrying 0->0; Tier 2 5Mbit/2Mbit tc classes on both exits; fair_use.applying true->false in 6533 ms via observation 01a192b1-bd70-76df-b761-30054c9a5e34; replay no double bump) and Transition 2 (fup.member_generation_changed via usage threshold crossing: carrying gens node 9->10, node2 6->7, non-carrying 0->0; Tier 2 5Mbit/2Mbit tc classes on both exits; fair_use.applying true->false in 54453 ms via observation 01a192b2-bdcf-7c42-9349-1b50d8c8f913; replay no double bump), and verified ENR-03 per-incarnation retained usage across node2 re-enrollment (01a192b0-311f-7e4f-b1ad-d6b7f7de5a94 -> 01a192b2-f8a4-7eda-bf06-f55aba2ea13d). |
-| AT20 | pass | [AT20.json](AT20.json) / [AT20.md](AT20.md) | Same node 01a192b4-46ef-7509-96da-98696f249696 reenrolled 01a192b4-6629-7435-a77f-2b0290fe4560 -> 01a192b5-8940-78fe-b6f0-b266ba63d5b8 through ControlledReinstall. Member period 2026-10: before 33775 + held 7780 = after 41555 bytes; 1 original events retained once, 1 agent batches returned the identical stored canonical result, origin ACK 2, independent current ACK 1. Meter interval 10s <= central bound 10s. Live late event rejected/audited and retired certificate refused with 403 IDENTITY_REVOKED. Member API provides period totals; incarnation attribution is read through central samples and admin incarnation history. D-130 fresh unknown gap accepted at ACK 1, followed by counted event 2 at ACK 2: measured 1066 upload + 1513 download = 2579 bytes, exactly attributed to the original member/device/period once. All stored event/sample/gap endpoints equal the canonical UTC microsecond projection; same-key replays retain stored ACK 1 and ACK 2 results without changing attribution. |
+| AT14 | pass | [AT14.json](AT14.json) / [AT14.md](AT14.md) | Live serving exit 01a1962d-cf63-7872-883e-fd4e6d9dbd0f (incarnation 01a1962d-d142-7ee5-a86f-045b8774d67e, exit 01a1962d-cf63-7873-ab66-07d9214df1c2) metered admitted HTTPS traffic for memberA device 01a1962e-21a6-775a-8fba-146baf20d5ab and uploaded 3 UsageEvents to PostgreSQL with GET /api/v1/member/usage reporting exact total_bytes=23326. |
+| AT15 | pass | [AT15.json](AT15.json) / [AT15.md](AT15.md) | Live mTLS /api/v1/agent/usage-checkpoint and /api/v1/agent/usage-batches on serving node 01a1962d-cf63-7872-883e-fd4e6d9dbd0f (incarnation 01a1962d-d142-7ee5-a86f-045b8774d67e, initial real agent seq=5) verified Ed25519 recovery signature, out-of-order seq {6,8} -> gap fill seq 7 advancing highest_contiguous_seq to 8, batch replay and duplicate retry with zero double-counted bytes, payload_sha256 conflict audit (usage_event_conflicts=1), rejected seq 10 (>2^53 decimal string 9007199254740993) reporting blocked_seq=10 then advancing to 11, 409/403 error guards, and live fvpn-usage-admin freeze/begin-recovery/complete-recovery rotating ledger_epoch 24f58a61-72e1-4f33-b641-4c1f430818fc -> 01a19638-365e-7ac4-a729-c4d3d513da02 with replay_unavailable reconciliation to seq 12. |
+| AT16 | pass | [AT16.json](AT16.json) / [AT16.md](AT16.md) | Live node fvpn-w4-usage-node verified sampler restart continuity (event_seq 1->2), D-067 provisional-lease recovery across bring_up (5860ms/6786ms) and agent_restart (5944ms/6248ms), and live fail-closed withdrawal via fvpn-watchdog. |
+| AT17 | pass | [AT17.json](AT17.json) / [AT17.md](AT17.md) | Live GET /api/v1/member/usage and ?period_id=2026-11&granularity=day returned real counted memberA traffic totals (upload=12952, download=18151, total=31103) within half-open UTC month bounds [2026-11-01T00:00:00Z, 2026-12-01T00:00:00Z), while central and node mechanisms verified 00:00:00Z UTC month-boundary splitting, late-arriving previous-month event attribution within the 24h watermark, and >5s wall-clock rollback protection. |
+| AT18 | pass | [AT18.json](AT18.json) / [AT18.md](AT18.md) | Live serving exit fvpn-w4-usage-node installed kernel tc HTB + fq_codel on fvmb0 and fvup0 with host reserve class 1:fffe (100Mbit) and per-member classes at effective_rate = min(plan=80M/40M, tier0=100M/50M, exit=60M/30M) = 60Mbit down / 30Mbit up, shaped concurrent memberA (+1106/+1514 B) and memberB (+1106/+1513 B) flows, and preserved mTLS control-plane responsiveness (HTTP 200). |
+| AT19 | pass | [AT19.json](AT19.json) / [AT19.md](AT19.md) | Live multi-node test enrolled second exit 01a1962f-dd43-7e35-9236-b2f1ec60a0d2 (node2) and non-carrying node 01a19631-0ca3-759d-8349-0cf22128574a, routed memberA traffic across both carrying exits (aggregating 28524 bytes across 2 exits), verified shadow mode (60Mbit on node, 15Mbit on node2), proved Transition 1 (policy.activated mode=enforce: carrying gens node 8->10, node2 4->5, non-carrying 0->0; Tier 2 5Mbit/2Mbit tc classes on both exits; fair_use.applying true->false in 6305 ms via observation 01a19631-3bd6-7cc0-b063-d95ffe5049e0; replay no double bump) and Transition 2 (fup.member_generation_changed via usage threshold crossing: carrying gens node 11->12, node2 6->7, non-carrying 0->0; Tier 2 5Mbit/2Mbit tc classes on both exits; fair_use.applying true->false in 50167 ms via observation 01a19632-2cb8-7dc0-becd-9f348c3a3b07; replay no double bump), and verified ENR-03 per-incarnation retained usage across node2 re-enrollment (01a1962f-de8d-702b-a312-d3a0f023a729 -> 01a19632-68fd-7300-96a5-04840565d789). |
+| AT20 | pass | [AT20.json](AT20.json) / [AT20.md](AT20.md) | Same node 01a19633-b721-7028-a6db-023c4b337ade reenrolled 01a19633-bcf7-7dfb-a64e-50036b5891db -> 01a19635-0720-7af1-b709-67d12e572248 through ControlledReinstall. Member period 2026-11: before 33681 + held 7736 = after 41417 bytes; 1 original events retained once, 1 agent batches returned the identical stored canonical result, origin ACK 2, independent current ACK 1. Meter interval 10s <= central bound 10s. Live late event rejected/audited and retired certificate refused with 403 IDENTITY_REVOKED. Member API provides period totals; incarnation attribution is read through central samples and admin incarnation history. D-130 fresh unknown gap accepted at ACK 1, followed by counted event 2 at ACK 2: measured 1066 upload + 1514 download = 2580 bytes, exactly attributed to the original member/device/period once. All stored event/sample/gap endpoints equal the canonical UTC microsecond projection; same-key replays retain stored ACK 1 and ACK 2 results without changing attribution. |
 
 ## D-067 comparison
 
@@ -37,8 +42,8 @@ The previous blocked run measured lease issuance because serving never applied. 
 
 | Cycle | Follow-up 3 ready → lease issued | This run ready → lease issued | Ready → serving read-back | Ready → counted flow | Ready observation | Populated lease |
 |---|---|---|---|---|---|---|
-| bring_up | 5021 ms | 4906 ms | 5786 ms | 6925 ms | `01a192ae-cfa2-70c4-84b9-d23904520b8d` at `2026-10-31T15:58:12.39275Z` | `45cdabe0-75f3-49b9-b647-dd0050c41bac` at `2026-10-31T15:58:17.298767Z` |
-| agent_restart | 5025 ms | 6006 ms | 6414 ms | 6712 ms | `01a192af-0ae2-7046-b817-84e3ed580db3` at `2026-10-31T15:58:27.55995Z` | `2d00acc0-0d5a-4be2-aba3-1bbed614fcf7` at `2026-10-31T15:58:33.56613Z` |
+| bring_up | 5021 ms | 4922 ms | 5860 ms | 6786 ms | `01a1962e-8369-7e46-9266-9587ee3a8beb` at `2026-11-01T08:16:33.135196Z` | `cabe9999-9cd1-4352-b2c7-f376b063a640` at `2026-11-01T08:16:38.057453Z` |
+| agent_restart | 5025 ms | 4919 ms | 5944 ms | 6248 ms | `01a1962e-bab9-7866-9156-69121f5a2a6e` at `2026-11-01T08:16:47.29578Z` | `fe4c7cdd-bfd1-4809-b675-66f94f2807f1` at `2026-11-01T08:16:52.215652Z` |
 
 Both provisional observations require `AWAITING_MEMBER_GRANTS` on `lease`, `qos`, and `source_binding`, exactly one `errors[]` entry (`stage=lease`), and zero `LEASE_EXPIRED`. Full lease/observation IDs and checks are in [AT16.json](AT16.json).
 
@@ -46,20 +51,20 @@ Both provisional observations require `AWAITING_MEMBER_GRANTS` on `lease`, `qos`
 
 | Trigger | Clearing observation | Trigger → applying false | Tier 2 installed on both exits |
 |---|---|---|---|
-| policy_activated_enforce_tier2 | `01a192b1-bd70-76df-b761-30054c9a5e34` | 6533 ms | true |
-| fup_member_generation_changed_tier0_to_tier2 | `01a192b2-bdcf-7c42-9349-1b50d8c8f913` | 54453 ms | true |
+| policy_activated_enforce_tier2 | `01a19631-3bd6-7cc0-b063-d95ffe5049e0` | 6305 ms | true |
+| fup_member_generation_changed_tier0_to_tier2 | `01a19632-2cb8-7dc0-becd-9f348c3a3b07` | 50167 ms | true |
 
 The usage-threshold timer starts with real traffic and includes the normal sample/upload cadence; the activation timer starts with policy activation. Follow-up 3 used synthetic batch/ACK fixtures (5387 / 6151 ms), so those timings are not identical paths.
 
 ## ENR-03 and UTC boundary
 
-Node `01a192b0-2fb8-719f-9818-d04e4237ed6f`: retired incarnation `01a192b0-311f-7e4f-b1ad-d6b7f7de5a94`, new incarnation `01a192b2-f8a4-7eda-bf06-f55aba2ea13d`; old usage fixed `true`; member total unchanged at reinstall `true`; new traffic accumulated `true`. Member totals: `28614` → `28614` → `31195` bytes. Detailed per-incarnation bytes and timestamps are in [AT19.json](AT19.json). [AT17.json](AT17.json) re-runs the UTC split (1001/2003 bytes → October 500/1001 and November 501/1002), late events and clock rollback.
+Node `01a1962f-dd43-7e35-9236-b2f1ec60a0d2`: retired incarnation `01a1962f-de8d-702b-a312-d3a0f023a729`, new incarnation `01a19632-68fd-7300-96a5-04840565d789`; old usage fixed `true`; member total unchanged at reinstall `true`; new traffic accumulated `true`. Member totals: `28524` → `28524` → `31103` bytes. Detailed per-incarnation bytes and timestamps are in [AT19.json](AT19.json). [AT17.json](AT17.json) re-runs the UTC split (1001/2003 bytes → October 500/1001 and November 501/1002), late events and clock rollback.
 
-Prior runs: [Follow-up 5](history/follow-up-5/ARCHIVE.md), [Follow-up 4](history/follow-up-4/ARCHIVE.md), [Follow-up 3](history/followup3/summary.md), [Follow-up 2](history/followup2/summary.md), [initial](history/initial/).
+Prior runs: [Follow-up 6](history/follow-up-6/ARCHIVE.md), [Follow-up 5](history/follow-up-5/ARCHIVE.md), [Follow-up 4](history/follow-up-4/ARCHIVE.md), [Follow-up 3](history/followup3/summary.md), [Follow-up 2](history/followup2/summary.md), [initial](history/initial/).
 
 ## Which serving fix engaged
 
-no foreign rules; Docker DNS NAT absent; #240 lab cleanup made this node serve; D-079 present but not exercised. The first real serving observation `01a192ae-e3bf-70a8-a75c-e79f4a504873` (received `2026-10-31T15:58:17.547466Z`) is preserved in each case's `first_serving_apply.observation`, alongside `serving 1`, the admitted-device counter deltas and the ruleset read-back. absent: ObservationReport has no foreign-rule classification field on this tree; classification above is enforce.LoopbackEvidence over the live read-back.
+no foreign rules; Docker DNS NAT absent; #240 lab cleanup made this node serve; D-079 present but not exercised. The first real serving observation `01a1962e-9736-7bab-8275-94e126217cbf` (received `2026-11-01T08:16:38.207535Z`) is preserved in each case's `first_serving_apply.observation`, alongside `serving 1`, the admitted-device counter deltas and the ruleset read-back. absent: ObservationReport has no foreign-rule classification field on this tree; classification above is enforce.LoopbackEvidence over the live read-back.
 
 ```nft
 table inet fvpn {
@@ -103,42 +108,42 @@ table inet fvpn {
 		packets 0 bytes 0
 	}
 
-	counter d_01a192ae6f4572b9ad7ce02298bacbcc {
-		packets 8 bytes 1514
+	counter d_01a1962e21a6775a8fba146baf20d5ab {
+		packets 8 bytes 1513
 	}
 
-	counter d_01a192aeaa4e7791b0c77b3d5974b528 {
+	counter d_01a1962e5e197246b6f4b22c46702df1 {
 		packets 0 bytes 0
 	}
 
-	counter nd_01a192ae6f4572b9ad7ce02298bacbcc {
+	counter nd_01a1962e21a6775a8fba146baf20d5ab {
 		packets 0 bytes 0
 	}
 
-	counter nd_01a192aeaa4e7791b0c77b3d5974b528 {
+	counter nd_01a1962e5e197246b6f4b22c46702df1 {
 		packets 0 bytes 0
 	}
 
-	counter nu_01a192ae6f4572b9ad7ce02298bacbcc {
+	counter nu_01a1962e21a6775a8fba146baf20d5ab {
 		packets 0 bytes 0
 	}
 
-	counter nu_01a192aeaa4e7791b0c77b3d5974b528 {
+	counter nu_01a1962e5e197246b6f4b22c46702df1 {
 		packets 0 bytes 0
 	}
 
-	counter u_01a192ae6f4572b9ad7ce02298bacbcc {
+	counter u_01a1962e21a6775a8fba146baf20d5ab {
 		packets 8 bytes 1066
 	}
 
-	counter u_01a192aeaa4e7791b0c77b3d5974b528 {
+	counter u_01a1962e5e197246b6f4b22c46702df1 {
 		packets 0 bytes 0
 	}
 
 	set allowed_v4 {
 		type ipv4_addr
 		flags timeout
-		elements = { 100.68.183.201 timeout 9m54s805ms expires 9m52s817ms, 100.68.243.111 timeout 9m54s805ms expires 9m52s817ms }
+		elements = { 100.76.35.174 timeout 9m54s834ms expires 9m52s972ms, 100.76.143.104 timeout 9m54s834ms expires 9m52s972ms }
 	}
 
 	set denied_v4 {
@@ -169,30 +174,30 @@ table inet fvpn {
 	chain forward {
 		type filter hook forward priority mangle; policy drop;
 		ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment "fvpn_generation=6 fvpn_metering=forward_admission_v1"
-		ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment "fvpn_class=01a192ad-e9a0-79d7-9490-c3c5320fcacf:955e"
-		ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment "fvpn_class=01a192ad-ec27-74ff-891f-09d9c0668310:87c5"
+		ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment "fvpn_class=01a1962d-a6e8-731a-abd1-f5afd32576fb:642a"
+		ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment "fvpn_class=01a1962d-a772-7bd0-87eb-506a7e5a948c:ac52"
 		iifname "fvmb0" oifname "fvup0" meta nfproto ipv6 counter name "ctv6" drop
 		iifname "fvup0" oifname "fvmb0" meta nfproto ipv6 counter name "ctv6" drop
 		iifname "fvmb0" oifname "fvup0" ct state invalid counter name "ctinv" drop
 		iifname "fvup0" oifname "fvmb0" ct state invalid counter name "ctinv" drop
 		iifname "fvmb0" oifname "fvup0" ip saddr != @allowed_v4 counter name "ctunku" drop
-		iifname "fvmb0" oifname "fvup0" ip saddr 100.68.243.111 ip daddr @resolver_v4 tcp dport 53 counter name "nu_01a192ae6f4572b9ad7ce02298bacbcc" meta priority set 1:955e accept
-		iifname "fvmb0" oifname "fvup0" ip saddr 100.68.243.111 ip daddr @resolver_v4 udp dport 53 counter name "nu_01a192ae6f4572b9ad7ce02298bacbcc" meta priority set 1:955e accept
-		iifname "fvmb0" oifname "fvup0" ip saddr 100.68.183.201 ip daddr @resolver_v4 tcp dport 53 counter name "nu_01a192aeaa4e7791b0c77b3d5974b528" meta priority set 1:87c5 accept
-		iifname "fvmb0" oifname "fvup0" ip saddr 100.68.183.201 ip daddr @resolver_v4 udp dport 53 counter name "nu_01a192aeaa4e7791b0c77b3d5974b528" meta priority set 1:87c5 accept
+		iifname "fvmb0" oifname "fvup0" ip saddr 100.76.143.104 ip daddr @resolver_v4 tcp dport 53 counter name "nu_01a1962e21a6775a8fba146baf20d5ab" meta priority set 1:642a accept
+		iifname "fvmb0" oifname "fvup0" ip saddr 100.76.143.104 ip daddr @resolver_v4 udp dport 53 counter name "nu_01a1962e21a6775a8fba146baf20d5ab" meta priority set 1:642a accept
+		iifname "fvmb0" oifname "fvup0" ip saddr 100.76.35.174 ip daddr @resolver_v4 tcp dport 53 counter name "nu_01a1962e5e197246b6f4b22c46702df1" meta priority set 1:ac52 accept
+		iifname "fvmb0" oifname "fvup0" ip saddr 100.76.35.174 ip daddr @resolver_v4 udp dport 53 counter name "nu_01a1962e5e197246b6f4b22c46702df1" meta priority set 1:ac52 accept
 		iifname "fvmb0" oifname "fvup0" ip daddr @resolver_v4 counter name "ctbadns" drop
 		iifname "fvmb0" oifname "fvup0" ip daddr @denied_v4 counter name "ctdeny" drop
 		iifname "fvmb0" oifname "fvup0" ip daddr @host_v4 counter name "cthost" drop
-		iifname "fvmb0" oifname "fvup0" ip saddr 100.68.243.111 counter name "u_01a192ae6f4572b9ad7ce02298bacbcc" meta priority set 1:955e accept
-		iifname "fvmb0" oifname "fvup0" ip saddr 100.68.183.201 counter name "u_01a192aeaa4e7791b0c77b3d5974b528" meta priority set 1:87c5 accept
+		iifname "fvmb0" oifname "fvup0" ip saddr 100.76.143.104 counter name "u_01a1962e21a6775a8fba146baf20d5ab" meta priority set 1:642a accept
+		iifname "fvmb0" oifname "fvup0" ip saddr 100.76.35.174 counter name "u_01a1962e5e197246b6f4b22c46702df1" meta priority set 1:ac52 accept
 		iifname "fvup0" oifname "fvmb0" ip daddr != @allowed_v4 counter name "ctunkd" drop
 		iifname "fvup0" oifname "fvmb0" ct state != { established, related } counter name "ctnodn" drop
-		iifname "fvup0" oifname "fvmb0" ip saddr @resolver_v4 ip daddr 100.68.243.111 tcp sport 53 counter name "nd_01a192ae6f4572b9ad7ce02298bacbcc" meta priority set 1:955e accept
-		iifname "fvup0" oifname "fvmb0" ip saddr @resolver_v4 ip daddr 100.68.243.111 udp sport 53 counter name "nd_01a192ae6f4572b9ad7ce02298bacbcc" meta priority set 1:955e accept
-		iifname "fvup0" oifname "fvmb0" ip daddr 100.68.243.111 counter name "d_01a192ae6f4572b9ad7ce02298bacbcc" meta priority set 1:955e accept
-		iifname "fvup0" oifname "fvmb0" ip saddr @resolver_v4 ip daddr 100.68.183.201 tcp sport 53 counter name "nd_01a192aeaa4e7791b0c77b3d5974b528" meta priority set 1:87c5 accept
-		iifname "fvup0" oifname "fvmb0" ip saddr @resolver_v4 ip daddr 100.68.183.201 udp sport 53 counter name "nd_01a192aeaa4e7791b0c77b3d5974b528" meta priority set 1:87c5 accept
-		iifname "fvup0" oifname "fvmb0" ip daddr 100.68.183.201 counter name "d_01a192aeaa4e7791b0c77b3d5974b528" meta priority set 1:87c5 accept
+		iifname "fvup0" oifname "fvmb0" ip saddr @resolver_v4 ip daddr 100.76.143.104 tcp sport 53 counter name "nd_01a1962e21a6775a8fba146baf20d5ab" meta priority set 1:642a accept
+		iifname "fvup0" oifname "fvmb0" ip saddr @resolver_v4 ip daddr 100.76.143.104 udp sport 53 counter name "nd_01a1962e21a6775a8fba146baf20d5ab" meta priority set 1:642a accept
+		iifname "fvup0" oifname "fvmb0" ip daddr 100.76.143.104 counter name "d_01a1962e21a6775a8fba146baf20d5ab" meta priority set 1:642a accept
+		iifname "fvup0" oifname "fvmb0" ip saddr @resolver_v4 ip daddr 100.76.35.174 tcp sport 53 counter name "nd_01a1962e5e197246b6f4b22c46702df1" meta priority set 1:ac52 accept
+		iifname "fvup0" oifname "fvmb0" ip saddr @resolver_v4 ip daddr 100.76.35.174 udp sport 53 counter name "nd_01a1962e5e197246b6f4b22c46702df1" meta priority set 1:ac52 accept
+		iifname "fvup0" oifname "fvmb0" ip daddr 100.76.35.174 counter name "d_01a1962e5e197246b6f4b22c46702df1" meta priority set 1:ac52 accept
 	}
 
 	chain input {
@@ -214,7 +219,7 @@ table inet fvpn {
 
 ### For the enrollment lane
 
-Same node 01a192b4-46ef-7509-96da-98696f249696 reenrolled 01a192b4-6629-7435-a77f-2b0290fe4560 -> 01a192b5-8940-78fe-b6f0-b266ba63d5b8 through ControlledReinstall. Member period 2026-10: before 33775 + held 7780 = after 41555 bytes; 1 original events retained once, 1 agent batches returned the identical stored canonical result, origin ACK 2, independent current ACK 1. Meter interval 10s <= central bound 10s. Live late event rejected/audited and retired certificate refused with 403 IDENTITY_REVOKED. Member API provides period totals; incarnation attribution is read through central samples and admin incarnation history. D-130 fresh unknown gap accepted at ACK 1, followed by counted event 2 at ACK 2: measured 1066 upload + 1513 download = 2579 bytes, exactly attributed to the original member/device/period once. All stored event/sample/gap endpoints equal the canonical UTC microsecond projection; same-key replays retain stored ACK 1 and ACK 2 results without changing attribution. See [AT20.json](AT20.json) for the original CLI, controlled reinstall outcome, immutable payloads, central samples, stored batch replay, independent ACKs, configuration and refusal audit. This follows the devstack follow-up 19 corrected path in [RESPONSES.md](../../RESPONSES.md#usage--2026-10-31). The systemd installer node is quiesced in documented unit order; pause-agent applies only to ordinary supervised nodes. No ledger rows or retirement timestamps are edited.
+Same node 01a19633-b721-7028-a6db-023c4b337ade reenrolled 01a19633-bcf7-7dfb-a64e-50036b5891db -> 01a19635-0720-7af1-b709-67d12e572248 through ControlledReinstall. Member period 2026-11: before 33681 + held 7736 = after 41417 bytes; 1 original events retained once, 1 agent batches returned the identical stored canonical result, origin ACK 2, independent current ACK 1. Meter interval 10s <= central bound 10s. Live late event rejected/audited and retired certificate refused with 403 IDENTITY_REVOKED. Member API provides period totals; incarnation attribution is read through central samples and admin incarnation history. D-130 fresh unknown gap accepted at ACK 1, followed by counted event 2 at ACK 2: measured 1066 upload + 1514 download = 2580 bytes, exactly attributed to the original member/device/period once. All stored event/sample/gap endpoints equal the canonical UTC microsecond projection; same-key replays retain stored ACK 1 and ACK 2 results without changing attribution. See [AT20.json](AT20.json) for the original CLI, controlled reinstall outcome, immutable payloads, central samples, stored batch replay, independent ACKs, configuration and refusal audit. This follows the devstack follow-up 19 corrected path in [RESPONSES.md](../../RESPONSES.md#usage--2026-10-31). The systemd installer node is quiesced in documented unit order; pause-agent applies only to ordinary supervised nodes. No ledger rows or retirement timestamps are edited.
 
 ### D-130 scope and known gaps
 

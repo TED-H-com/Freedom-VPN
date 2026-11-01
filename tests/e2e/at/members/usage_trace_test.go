@@ -68,7 +68,8 @@ func (l *live) usageTrace(r *record) {
 		return
 	}
 	now := time.Now().UTC().Truncate(time.Second)
-	event, err := usage.WithComputedHash(api.UsageEvent{SchemaVersion: 1, NodeId: l.node, NodeIncarnationId: l.inc, MeterEpochId: uuid.New(), EventSeq: seq, IntervalStart: now.Add(-time.Minute), IntervalEnd: now, MeteringVersion: api.MeteringVersionForwardAdmissionV1, Quality: api.UsageQualityComplete, Records: []api.UsageRecord{{MemberId: uuid.MustParse(l.a.member), DeviceId: uuid.New(), BindingRevision: decstr.U64(1), PeriodId: now.Format("2006-01"), UploadBytes: decstr.U64(1), DownloadBytes: decstr.U64(1)}}})
+	start := now.Add(-time.Minute)
+	event, err := usage.WithComputedHash(api.UsageEvent{SchemaVersion: 1, NodeId: l.node, NodeIncarnationId: l.inc, MeterEpochId: uuid.New(), EventSeq: seq, IntervalStart: start, IntervalEnd: now, MeteringVersion: api.MeteringVersionForwardAdmissionV1, Quality: api.UsageQualityComplete, Records: []api.UsageRecord{{MemberId: uuid.MustParse(l.a.member), DeviceId: uuid.New(), BindingRevision: decstr.U64(1), PeriodId: start.Format("2006-01"), UploadBytes: decstr.U64(1), DownloadBytes: decstr.U64(1)}}})
 	if err != nil {
 		r.block("usage negative-control canonical hash unavailable")
 		return

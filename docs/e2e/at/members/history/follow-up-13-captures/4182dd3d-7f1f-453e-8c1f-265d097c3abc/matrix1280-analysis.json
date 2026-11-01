@@ -1,0 +1,424 @@
+{
+  "id": "matrix1280",
+  "run_id": "4182dd3d-7f1f-453e-8c1f-265d097c3abc",
+  "source_commit": "d49b535adf831b6823cd05bb47495437fbf6ee63",
+  "status": "blocked",
+  "clock_offsets": {
+    "member": {
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "pairs": 68,
+      "offset_lower_ns": "-1793416462483629280",
+      "offset_upper_ns": "-1793416462483628536",
+      "measured_offset_span_ns": "744",
+      "assumption": "No intervening wall-clock step; empirical offset envelope, not hardware packet timestamps. Pcap microsecond quantization adds 1000 ns."
+    },
+    "node": {
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "pairs": 76,
+      "offset_lower_ns": "-1793416462483629439",
+      "offset_upper_ns": "-1793416462483628348",
+      "measured_offset_span_ns": "1091",
+      "assumption": "No intervening wall-clock step; empirical offset envelope, not hardware packet timestamps. Pcap microsecond quantization adds 1000 ns."
+    },
+    "origin": {
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "pairs": 28,
+      "offset_lower_ns": "-1793416462483629222",
+      "offset_upper_ns": "-1793416462483628514",
+      "measured_offset_span_ns": "708",
+      "assumption": "No intervening wall-clock step; empirical offset envelope, not hardware packet timestamps. Pcap microsecond quantization adds 1000 ns."
+    }
+  },
+  "capture_checks": {
+    "member": {
+      "complete": true,
+      "decoded": 961,
+      "captured": 961,
+      "kernel_drops": 0
+    },
+    "node": {
+      "complete": true,
+      "decoded": 724,
+      "captured": 724,
+      "kernel_drops": 0
+    },
+    "origin": {
+      "complete": true,
+      "decoded": 180,
+      "captured": 180,
+      "kernel_drops": 0
+    }
+  },
+  "metadata_checks": {
+    "member": {
+      "links_and_origin_route": true,
+      "native_implementation_recorded": true
+    },
+    "node": {
+      "links_and_origin_route": true,
+      "native_implementation_recorded": true
+    },
+    "origin": {
+      "links_and_origin_route": true,
+      "native_implementation_recorded": true
+    }
+  },
+  "ptb": {
+    "member": [],
+    "node": [],
+    "origin": []
+  },
+  "fragmentation_needed": {
+    "member": [],
+    "node": [],
+    "origin": []
+  },
+  "selected_before": {
+    "member": {
+      "local": {
+        "address": "addr-beec7c00603ab8bb",
+        "port": "51820",
+        "family": "ipv4"
+      },
+      "remote": {
+        "address": "addr-156910cb925246e0",
+        "port": "36160",
+        "family": "ipv4"
+      },
+      "wireguard_endpoint": {
+        "address": "",
+        "port": "",
+        "family": ""
+      },
+      "routes": {
+        "origin_route": [
+          {
+            "dst": "addr-57ec18e83681ee2f",
+            "dev": "fvnb0",
+            "prefsrc": "addr-73bdd2c1b6517a05",
+            "table": "netbird"
+          }
+        ],
+        "overlay_route": [
+          {
+            "dst": "addr-3b33a1f2f87d62e5",
+            "dev": "fvnb0",
+            "prefsrc": "addr-73bdd2c1b6517a05"
+          }
+        ],
+        "peer_route": [
+          {
+            "dst": "addr-156910cb925246e0",
+            "dev": "eth0",
+            "prefsrc": "addr-beec7c00603ab8bb"
+          }
+        ]
+      }
+    },
+    "node": {
+      "local": {
+        "address": "addr-863b282f8542980b",
+        "port": "36160",
+        "family": "ipv4"
+      },
+      "remote": {
+        "address": "addr-beec7c00603ab8bb",
+        "port": "51820",
+        "family": "ipv4"
+      },
+      "wireguard_endpoint": {
+        "address": "addr-beec7c00603ab8bb",
+        "port": "51820",
+        "family": "ipv4"
+      },
+      "routes": {
+        "origin_route": [
+          {
+            "dst": "addr-57ec18e83681ee2f",
+            "dev": "fvup0",
+            "prefsrc": "addr-5ae8cd8dcbfe2329"
+          }
+        ],
+        "overlay_route": [
+          {
+            "dst": "addr-73bdd2c1b6517a05",
+            "dev": "fvmb0",
+            "prefsrc": "addr-3b33a1f2f87d62e5"
+          }
+        ],
+        "peer_route": [
+          {
+            "dst": "addr-beec7c00603ab8bb",
+            "dev": "eth1",
+            "prefsrc": "addr-156910cb925246e0"
+          }
+        ],
+        "wireguard_route": [
+          {
+            "dst": "addr-beec7c00603ab8bb",
+            "dev": "eth1",
+            "prefsrc": "addr-156910cb925246e0"
+          }
+        ]
+      }
+    }
+  },
+  "transfer": {
+    "bulk": {
+      "authority_serial": 0,
+      "endpoint": {
+        "at": "2026-11-01T08:55:49.540397895Z",
+        "local_port": 43338,
+        "remote_port": 9446,
+        "read_bytes": 64387,
+        "write_bytes": 64108,
+        "complete_lines": 64,
+        "partial_line_bytes": 0,
+        "error": "none",
+        "tcp_info": {
+          "bytes_acked": 64109,
+          "bytes_received": 64387,
+          "lost": 0,
+          "notsent_bytes": 0,
+          "rcv_mss": 1006,
+          "rcv_space": 12280,
+          "retrans": 0,
+          "rto_us": 201000,
+          "rtt_us": 152,
+          "sacked": 0,
+          "snd_cwnd": 63,
+          "snd_mss": 1228,
+          "snd_wnd": 68608,
+          "state": 1,
+          "total_retrans": 0,
+          "unacked": 0
+        }
+      },
+      "authority_ttl": 0,
+      "has_soa": false,
+      "available": true,
+      "rcode": -1,
+      "types": [],
+      "ttls": [],
+      "address_classes": [],
+      "expected_answer": false,
+      "connected": true,
+      "bytes": 64064,
+      "milliseconds": 1
+    }
+  },
+  "reverse": {
+    "sizes": {
+      "124": {
+        "sent": 10,
+        "arrived": 10,
+        "absent": 0
+      },
+      "1132": {
+        "sent": 64,
+        "arrived": 64,
+        "absent": 0
+      }
+    },
+    "absent_sender_packets": [],
+    "unmatched_receiver_packets": 0,
+    "sender_interface": "eth1",
+    "receiver_interface": "eth0",
+    "absent_bounds": []
+  },
+  "forward": {
+    "sizes": {
+      "124": {
+        "sent": 31,
+        "arrived": 31,
+        "absent": 0
+      },
+      "156": {
+        "sent": 1,
+        "arrived": 1,
+        "absent": 0
+      },
+      "1276": {
+        "sent": 52,
+        "arrived": 52,
+        "absent": 0
+      },
+      "84": {
+        "sent": 52,
+        "arrived": 52,
+        "absent": 0
+      },
+      "332": {
+        "sent": 1,
+        "arrived": 1,
+        "absent": 0
+      }
+    },
+    "absent_sender_packets": [],
+    "unmatched_receiver_packets": 0,
+    "sender_interface": "eth0",
+    "receiver_interface": "eth1",
+    "absent_bounds": []
+  },
+  "bulk_local_port": 43338,
+  "reverse_streams": {
+    "43338": {
+      "current_bulk": true,
+      "first_gap": null,
+      "sent_packets": [
+        37,
+        40,
+        41,
+        45,
+        49,
+        52,
+        55,
+        56,
+        57,
+        59,
+        62,
+        63,
+        64,
+        68,
+        69,
+        71,
+        74,
+        76,
+        79,
+        82,
+        85,
+        88,
+        90,
+        94,
+        96,
+        99,
+        101,
+        103,
+        106,
+        108,
+        112,
+        114,
+        117,
+        118,
+        119,
+        120,
+        121,
+        123,
+        124,
+        125,
+        127,
+        128,
+        129,
+        132,
+        133,
+        135,
+        136,
+        138,
+        139,
+        140,
+        142,
+        144,
+        145,
+        147,
+        148,
+        149,
+        150,
+        153,
+        154,
+        156,
+        157,
+        159,
+        160,
+        161,
+        163,
+        164,
+        166,
+        167,
+        168,
+        169,
+        170,
+        173,
+        175,
+        179
+      ],
+      "received_packets": [
+        638,
+        645,
+        646,
+        673,
+        675,
+        679,
+        686,
+        692,
+        700,
+        702,
+        710,
+        715,
+        718,
+        730,
+        736,
+        743,
+        744,
+        752,
+        763,
+        764,
+        777,
+        780,
+        786,
+        788,
+        803,
+        804,
+        818,
+        823,
+        824,
+        827,
+        832,
+        833,
+        835,
+        841,
+        842,
+        844,
+        845,
+        848,
+        852,
+        854,
+        857,
+        861,
+        866,
+        867,
+        869,
+        874,
+        878,
+        879,
+        883,
+        885,
+        890,
+        891,
+        894,
+        897,
+        901,
+        903,
+        906,
+        909,
+        912,
+        916,
+        917,
+        921,
+        923,
+        927,
+        929,
+        932,
+        934,
+        937,
+        941,
+        944,
+        947,
+        951,
+        953,
+        959
+      ]
+    }
+  },
+  "datagram_scope": "All selected endpoint datagrams within the command window, including control packets and older TCP streams. Stream ports above keep current bulk separate. Encrypted packets are not assigned to inner streams by time alone.",
+  "first_missing_tcp_range": null
+}
