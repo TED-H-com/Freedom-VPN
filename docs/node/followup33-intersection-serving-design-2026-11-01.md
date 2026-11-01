@@ -227,6 +227,9 @@ existing 1 ms granularity, and omit nonpositive allowances. The verifier checks
 the absolute signed D without a second reserve subtraction. Preserve existing
 earlier kernel expiration where possible; recreating an element must prove
 its resulting expiration is no later than the retained old expiration and D.
+Expiry readbacks are conservative bounds from the read bracket, not exact
+kernel commit times; a late read-end timestamp cannot become a fresh timeout
+anchor. If that bound is unavailable, the candidate is ineligible.
 The reference models signed D and reserve eligibility; real kernel timeout
 read/conversion and install-overrun behavior belong to netlab's proof.
 
@@ -502,9 +505,22 @@ issuer lease ID/hash/generation, desired hashes, nonzero count, matching actual
 read context, and a fresh accepted report. Monotonic values are boot-local:
 central cannot compare them to its wall clock; it uses receipt freshness plus
 the signed document expiry and never independently extends authorization.
+The issuer's stored expiry clamp/tombstone and current identity/publication
+state take precedence over L's original signed expiry, as in D-088.
 Central classification is node-reported proof, not independent packet evidence.
 Per-member AT acceptance also needs the local exact subset and packet joins;
 a count/hash alone does not prove a particular member is admitted.
+
+Separate preservation of an already published path from permission to create
+or complete a publication: valid I may retain the existing route needed by S,
+but cannot add a route, expand peer grants, or complete the h operation.
+`PublicationDataPathFailure` must return the specific partial-service cause
+before its ordinary applied<desired early return; it must never return success
+for I. `ServingReadiness.IsServing` remains the full-convergence predicate;
+callers that preserve existing routing need an explicitly validated partial
+predicate. No healthy partial report may mask a real revocation, freeze,
+publication withdrawal or isolation failure. Wire-nodes must test these
+different consumers, not just rename a reason in the UI.
 
 Wire-nodes follow-up 34's stale-lease hold remains distinct: baseline reports
 with `policy_missing` plus lease-check **or lease-stage-error**
@@ -547,8 +563,8 @@ does not revoke S by itself; old anchored limits and all local gates still do.
    mode=intersection, transition ID, target h and subset hash markers. An
    ordinary full-g verifier must reject that mode. Full h's guarded install
    removes those markers and installs its ordinary h marker; baseline clears
-   them with member admission. E records a separate transition/subset marker;
-   never make `fvpn_generation=h` alone look like a completed h Apply. Preserve
+   them with member admission. Never make `fvpn_generation=h` alone look like
+   a completed h Apply. Preserve
    kernel timeouts without extension, including late/uncertain commits and
    process death. Existing reserve/granularity/guard bounds are unchanged. If
    an nft plan cannot safely shrink timeout and policy at E without a broader
