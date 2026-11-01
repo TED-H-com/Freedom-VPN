@@ -5,12 +5,17 @@ package e2e
 import (
 	"bufio"
 	"context"
+	"crypto/sha256"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
+	"github.com/TED-H-com/Freedom-VPN/node/enforce"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
@@ -229,4 +234,37 @@ func (r *runner) regrant26(ctx context.Context, admin *session) {
 		return
 	}
 	r.nativeTransfer26(ctx, s, &rec, c)
+}
+
+// Replay the exact live NFT listing through the unchanged verifier, with empty
+// TC fixture reads to isolate the NFT decision. This is not a runtime Apply or
+// a forged agent observation. The actual report and writer timing remain separate.
+func (r *runner) traceRejection26(ctx context.Context, k *kernelTrace, rec *Record) {
+	raw, err := r.lab.docker(r.lab.node, "nft", "-j", "list", "ruleset")
+	if err != nil {
+		return
+	}
+	path := filepath.Join(r.lab.root, ".agent/tmp/followup26", r.runID, "traced-node-ruleset.raw")
+	if os.MkdirAll(filepath.Dir(path), 0700) != nil {
+		return
+	}
+	f, err := os.OpenFile(path, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0600)
+	if err != nil {
+		return
+	}
+	_, we := f.Write(raw)
+	ce := f.Close()
+	if we != nil || ce != nil {
+		return
+	}
+	_, err = enforce.VerifyServing(ctx, traceListing26{string(raw)}, enforce.Model{Datapath: enforce.Datapath{MemberIngress: "fvmb0", Uplink: "fvup0"}}, nil)
+	var check *enforce.CheckError
+	got := map[string]any{"read_at": time.Now().UTC(), "bytes": fmt.Sprint(len(raw)), "sha256": fmt.Sprintf("%x", sha256.Sum256(raw)), "private_retained": true, "scope": "offline exact NFT listing replay; empty TC fixture isolates NFT rejection; runtime observation is separate"}
+	if errors.As(err, &check) {
+		got["error_code"] = string(check.Reason)
+		got["deciding_table_is_tracer"] = strings.Contains(check.Detail, "table "+k.table+" ")
+		got["deciding_hook_is_prerouting"] = strings.Contains(check.Detail, "hook prerouting ")
+		got["deciding_statement_is_mangle"] = strings.Contains(check.Detail, "statement mangle")
+	}
+	noteJSON(rec, "tracer_verifier_replay", got)
 }

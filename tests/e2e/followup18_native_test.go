@@ -588,6 +588,9 @@ func (r *runner) nativeTransfer26(ctx context.Context, s *Stack, record *Record,
 			recPathNote(&rec)("kernel_trace_error", err.Error())
 			return
 		}
+		if os.Getenv("FVPN_E2E_FOLLOWUP26") == "1" && os.Getenv("FVPN_E2E_REPRODUCE_TRACE26") == "1" {
+			r.traceRejection26(ctx, k, &rec)
+		}
 		defer func() {
 			clean, cancel := context.WithTimeout(context.WithoutCancel(ctx), 15*time.Second)
 			defer cancel()
