@@ -1,0 +1,9 @@
+# F14-01 and af718646 — follow-up 16
+
+Devstack 26's [af718646 evidence](../../runs/2026-11-01/followup26/af718646-166a-4a3f-af55-3f7a3ee8e17b/regrant-analysis.md) reproduces the five-second re-grant deadline symptom with serving generation 7 intact. Its first five SYNs reach the node only after 5.671 seconds. Both peers had handshake 0 during the original request; native capture joins a loopback-source type-2 response with one member IPv6 header-error increment, followed by a completed native IPv6 handshake. No failed Apply or baseline follows its serving gate. Late origin TCP packets are not an HTTP receipt.
+
+This is relevant to members' [original F14-01](history/follow-up-14/F14-01-regrant-forwarding.json): both retain serving readiness and an original request that has no timely node/origin delivery. It localizes **af718646** to the native handshake/data-delivery interval. It does not establish that 258ba504 experienced the same transition: devstack used a reduced population and did not replay all preceding members mutations. There is no exact kernel discard trace, and the structural WireGuard header join is not cryptographic authentication.
+
+The follow-up 16 assembled run keeps the original AT02 re-grant sequence (including its preceding member/device mutations) and starts passive member/node/origin capture before fencing through explicit reauthorization, readiness, selection and the first re-grant request. Periodic samples retain both peers' native status, WireGuard latest-handshake, endpoints and routes. No node nft observer rule is installed. The new populated-hold scenarios follow those original AT02 mutations.
+
+Historical `cause_status: unproven` remains byte-identical. A successful fresh first selection or re-grant closes neither F11-01 nor F14-01. New observations will be indexed with their original outcomes and capture IDs; no successful retry replaces a failed attempt.

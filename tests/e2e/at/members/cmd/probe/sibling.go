@@ -17,7 +17,7 @@ import (
 
 const siblingStop = "/tmp/fvpn-members-sibling-stop"
 
-const siblingMagic = "FVPN TEST ONLY 12"
+const siblingMagic = "FVPN TEST ONLY 27"
 
 func monoNS() int64 {
 	var t unix.Timespec

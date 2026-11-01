@@ -85,6 +85,7 @@ type record struct {
 type live struct {
 	holdSnapshots                []map[string]any
 	dnsCapture                   *nativeCaptureSession
+	regrantCapture               *nativeCaptureSession
 	siblingSent, siblingObserved json.RawMessage
 
 	probeSequence                            int
