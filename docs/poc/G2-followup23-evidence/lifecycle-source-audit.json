@@ -1,0 +1,17 @@
+{
+  "base": "932c09cb0852f72bc4f92dcf3579396d3a206a07",
+  "checks": {
+    "beginCommandMeasurement": "byte-identical",
+    "commandPhase": "byte-identical",
+    "runCommand_disabled_prefix": "byte-identical",
+    "apply.go": "byte-identical",
+    "apply_capture.go": "byte-identical",
+    "executor.go": "byte-identical",
+    "TestReviewR18_DisabledLifecycleDoesNotAllocate": "unchanged from review",
+    "TestReviewR18_DisabledRunCommandMatchesRun": "unchanged from review",
+    "TestReviewR18_RenderCaptureStaysInMemory": "unchanged from review",
+    "TestReviewR18_EnabledCancelReapsChild": "unchanged from review"
+  },
+  "before": "review-before.txt: converted test with all production sources unchanged from base",
+  "after": "review-after.txt"
+}

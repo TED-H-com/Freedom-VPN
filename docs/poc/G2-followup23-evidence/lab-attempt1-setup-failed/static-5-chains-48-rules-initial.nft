@@ -1,0 +1,99 @@
+destroy table inet fvpn
+add table inet fvpn
+add chain inet fvpn fv0 { type filter hook input priority 0; policy accept; }
+add chain inet fvpn fv1 { type filter hook output priority 0; policy accept; }
+add chain inet fvpn fv2 { type filter hook forward priority 0; policy accept; }
+add chain inet fvpn fv3 { type filter hook prerouting priority 0; policy accept; }
+add chain inet fvpn fv4 { type filter hook postrouting priority 0; policy accept; }
+add set inet fvpn fvmarker { type integer; }
+add element inet fvpn fvmarker { 1 }
+add counter inet fvpn fvcount0
+add counter inet fvpn fvcount1
+add counter inet fvpn fvcount2
+add counter inet fvpn fvcount3
+add counter inet fvpn fvcount4
+add counter inet fvpn fvcount5
+add counter inet fvpn fvcount6
+add counter inet fvpn fvcount7
+add counter inet fvpn fvcount8
+add counter inet fvpn fvcount9
+add counter inet fvpn fvcount10
+add counter inet fvpn fvcount11
+add counter inet fvpn fvcount12
+add counter inet fvpn fvcount13
+add counter inet fvpn fvcount14
+add counter inet fvpn fvcount15
+add counter inet fvpn fvcount16
+add counter inet fvpn fvcount17
+add counter inet fvpn fvcount18
+add counter inet fvpn fvcount19
+add counter inet fvpn fvcount20
+add counter inet fvpn fvcount21
+add counter inet fvpn fvcount22
+add counter inet fvpn fvcount23
+add counter inet fvpn fvcount24
+add counter inet fvpn fvcount25
+add counter inet fvpn fvcount26
+add counter inet fvpn fvcount27
+add counter inet fvpn fvcount28
+add counter inet fvpn fvcount29
+add counter inet fvpn fvcount30
+add counter inet fvpn fvcount31
+add counter inet fvpn fvcount32
+add counter inet fvpn fvcount33
+add counter inet fvpn fvcount34
+add counter inet fvpn fvcount35
+add counter inet fvpn fvcount36
+add counter inet fvpn fvcount37
+add counter inet fvpn fvcount38
+add counter inet fvpn fvcount39
+add counter inet fvpn fvcount40
+add counter inet fvpn fvcount41
+add rule inet fvpn fv0 counter comment "TEST ONLY generation 1"
+add rule inet fvpn fv1 counter comment "TEST ONLY generation 1"
+add rule inet fvpn fv2 counter comment "TEST ONLY generation 1"
+add rule inet fvpn fv3 counter comment "TEST ONLY generation 1"
+add rule inet fvpn fv4 counter comment "TEST ONLY generation 1"
+add rule inet fvpn fv0 counter comment "TEST ONLY generation 1"
+add rule inet fvpn fv1 counter comment "TEST ONLY generation 1"
+add rule inet fvpn fv2 counter comment "TEST ONLY generation 1"
+add rule inet fvpn fv3 counter comment "TEST ONLY generation 1"
+add rule inet fvpn fv4 counter comment "TEST ONLY generation 1"
+add rule inet fvpn fv0 counter comment "TEST ONLY generation 1"
+add rule inet fvpn fv1 counter comment "TEST ONLY generation 1"
+add rule inet fvpn fv2 counter comment "TEST ONLY generation 1"
+add rule inet fvpn fv3 counter comment "TEST ONLY generation 1"
+add rule inet fvpn fv4 counter comment "TEST ONLY generation 1"
+add rule inet fvpn fv0 counter comment "TEST ONLY generation 1"
+add rule inet fvpn fv1 counter comment "TEST ONLY generation 1"
+add rule inet fvpn fv2 counter comment "TEST ONLY generation 1"
+add rule inet fvpn fv3 counter comment "TEST ONLY generation 1"
+add rule inet fvpn fv4 counter comment "TEST ONLY generation 1"
+add rule inet fvpn fv0 counter comment "TEST ONLY generation 1"
+add rule inet fvpn fv1 counter comment "TEST ONLY generation 1"
+add rule inet fvpn fv2 counter comment "TEST ONLY generation 1"
+add rule inet fvpn fv3 counter comment "TEST ONLY generation 1"
+add rule inet fvpn fv4 counter comment "TEST ONLY generation 1"
+add rule inet fvpn fv0 counter comment "TEST ONLY generation 1"
+add rule inet fvpn fv1 counter comment "TEST ONLY generation 1"
+add rule inet fvpn fv2 counter comment "TEST ONLY generation 1"
+add rule inet fvpn fv3 counter comment "TEST ONLY generation 1"
+add rule inet fvpn fv4 counter comment "TEST ONLY generation 1"
+add rule inet fvpn fv0 counter comment "TEST ONLY generation 1"
+add rule inet fvpn fv1 counter comment "TEST ONLY generation 1"
+add rule inet fvpn fv2 counter comment "TEST ONLY generation 1"
+add rule inet fvpn fv3 counter comment "TEST ONLY generation 1"
+add rule inet fvpn fv4 counter comment "TEST ONLY generation 1"
+add rule inet fvpn fv0 counter comment "TEST ONLY generation 1"
+add rule inet fvpn fv1 counter comment "TEST ONLY generation 1"
+add rule inet fvpn fv2 counter comment "TEST ONLY generation 1"
+add rule inet fvpn fv3 counter comment "TEST ONLY generation 1"
+add rule inet fvpn fv4 counter comment "TEST ONLY generation 1"
+add rule inet fvpn fv0 counter comment "TEST ONLY generation 1"
+add rule inet fvpn fv1 counter comment "TEST ONLY generation 1"
+add rule inet fvpn fv2 counter comment "TEST ONLY generation 1"
+add rule inet fvpn fv3 counter comment "TEST ONLY generation 1"
+add rule inet fvpn fv4 counter comment "TEST ONLY generation 1"
+add rule inet fvpn fv0 counter comment "TEST ONLY generation 1"
+add rule inet fvpn fv1 counter comment "TEST ONLY generation 1"
+add rule inet fvpn fv2 counter comment "TEST ONLY generation 1"

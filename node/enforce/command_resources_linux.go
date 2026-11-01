@@ -3,6 +3,7 @@
 package enforce
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 	"strings"
@@ -61,11 +62,24 @@ func cgroupLocation(membership, mounts string) (string, string, bool) {
 	return "", "", false
 }
 
-func commandResources() CommandResources {
-	return readCommandResources(os.ReadFile)
+func commandResources(ctx context.Context) CommandResources {
+	return readCommandResources(ctx, os.ReadFile)
 }
 
-func readCommandResources(read func(string) ([]byte, error)) CommandResources {
+func readCommandResources(ctx context.Context, readFile func(string) ([]byte, error)) CommandResources {
+	if state := contextState(ctx); state != "none" {
+		return CommandResources{SkipReason: "context_" + state}
+	}
+	// A synchronous kernel read already in flight cannot be interrupted by
+	// context cancellation. Check before every read and discard the entire
+	// sample if cancellation is observed before it completes. Never run this
+	// walk in the install phase.
+	read := func(path string) ([]byte, error) {
+		if err := ctx.Err(); err != nil {
+			return nil, err
+		}
+		return readFile(path)
+	}
 	r := CommandResources{Bracket: LifecycleBracket{Before: lifecycleNow()}}
 	membership, e1 := read("/proc/self/cgroup")
 	mounts, e2 := read("/proc/self/mountinfo")
@@ -93,5 +107,8 @@ func readCommandResources(read func(string) ([]byte, error)) CommandResources {
 		}
 	}
 	r.Bracket.After = lifecycleNow()
+	if state := contextState(ctx); state != "none" {
+		return CommandResources{SkipReason: "context_" + state}
+	}
 	return r
 }
