@@ -36,6 +36,7 @@ type Diagnostic struct {
 	Exit         int            `json:"exit"`
 	Before       Heartbeat      `json:"heartbeat_before"`
 	After        Heartbeat      `json:"heartbeat_after"`
+	Parse        *ParseFailure  `json:"parse_failure,omitempty"`
 }
 type Result struct {
 	Upload     uint64 `json:"upload_bytes,string"`
@@ -109,6 +110,7 @@ func Read(ctx context.Context, id uuid.UUID) Result {
 	if err != nil {
 		out.Diagnostic.Stage = "nft_parse"
 		out.Diagnostic.Category = "parse"
+		out.Diagnostic.Parse = retainParseFailure(PrivateDirectory, raw, err)
 		return out
 	}
 	out.Generation = strconv.FormatUint(st.Generation, 10)

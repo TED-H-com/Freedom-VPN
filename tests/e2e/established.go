@@ -53,6 +53,24 @@ func (s *Stack) DeviceByteCounters(ctx context.Context, device uuid.UUID) (Devic
 		return out, fmt.Errorf("counter helper parse")
 	}
 	if out.Diagnostic.Category != "none" {
+		if p := out.Diagnostic.Parse; p != nil && p.Retained {
+			// Preserve this sample outside the container before teardown. Export
+			// failure remains explicit and never retries the counter command.
+			if _, e := uuid.Parse(p.ID); e != nil {
+				p.ExportError = "invalid_evidence_id"
+			} else {
+				clean, cancel := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
+				defer cancel()
+				p.Exported = true
+				for _, name := range []string{"output.raw", "parser-error.txt"} {
+					cmd := exec.CommandContext(clean, "docker", "exec", s.lab.node, "cat", filepath.Join(counterread.PrivateDirectory, p.ID, name))
+					receipt, e := exportCommand(cmd, filepath.Join(s.lab.root, ".agent/tmp/counterread", p.ID, name))
+					if e != nil || (name == "output.raw" && (receipt.SHA256 != p.SHA256 || receipt.Bytes != fmt.Sprint(p.Bytes))) {
+						p.Exported, p.ExportError = false, "private_export_failed"
+					}
+				}
+			}
+		}
 		return out, fmt.Errorf("counter %s: %s", out.Diagnostic.Stage, out.Diagnostic.Category)
 	}
 	return out, nil

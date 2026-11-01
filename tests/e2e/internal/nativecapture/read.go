@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"os"
 	"os/exec"
+	"strconv"
 	"strings"
 	"time"
 
@@ -135,6 +136,8 @@ type Snapshot struct {
 	Overlay             string             `json:"overlay"`
 	Local               Endpoint           `json:"local"`
 	Remote              Endpoint           `json:"remote"`
+	LatestHandshake     string             `json:"latest_handshake_unix_seconds,omitempty"`
+	Kernel              *KernelDiagnostics `json:"kernel,omitempty"`
 	WireGuard           Endpoint           `json:"wireguard_endpoint"`
 }
 
@@ -228,6 +231,15 @@ func Read(ctx context.Context, target, origin string) (Snapshot, error) {
 					}
 				}
 			}
+			handshakes := run("wg_latest_handshakes", "wg", "show", tunnel, "latest-handshakes")
+			for _, line := range strings.Split(string(handshakes), "\n") {
+				f := strings.Fields(line)
+				if len(f) == 2 && key != "" && f[0] == key {
+					if _, e := strconv.ParseUint(f[1], 10, 64); e == nil {
+						out.LatestHandshake = f[1]
+					}
+				}
+			}
 			endpoints := run("wg_endpoints", "wg", "show", tunnel, "endpoints")
 			for _, line := range strings.Split(string(endpoints), "\n") {
 				f := strings.Fields(line)
@@ -238,6 +250,13 @@ func Read(ctx context.Context, target, origin string) (Snapshot, error) {
 				}
 			}
 
+		}
+	}
+	if os.Getenv("FVPN_E2E_KERNEL_OBSERVE") == "1" {
+		out.Kernel = &KernelDiagnostics{
+			SNMP6:             NumericCounters(run("snmp6", "cat", "/proc/net/snmp6")),
+			Nstat:             NumericCounters(run("nstat", "nstat", "-asz")),
+			LoopbackConntrack: LoopbackConntrack(run("conntrack6", "conntrack", "-L", "-f", "ipv6", "-p", "udp")),
 		}
 	}
 	out.End, err = Now()
