@@ -40,7 +40,7 @@ the corrected controls so there are eight actual IPv4 reproduction requests.
 The first stack's earlier compile-only command is also retained. Neither
 compile failure is counted as a network pass or replaced failed HTTP request.
 
-## Two additional causal fault probes, declared 12:35 UTC
+## Two additional causal fault probes, declared 12:30 UTC
 
 The early requests pass before the next serving check rejects the historical
 tracer. After the scheduled campaign, add **one fresh stack per family** with
