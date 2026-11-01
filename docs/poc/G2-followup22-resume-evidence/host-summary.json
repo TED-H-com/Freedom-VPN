@@ -1,0 +1,313 @@
+{
+  "test_only": true,
+  "window": {
+    "test_only": true,
+    "start_ns": 97657516374680,
+    "deadline_ns": 103057516374680,
+    "start_utc": "2026-11-01T06:22:00Z",
+    "deadline_utc": "2026-11-01T07:52:00Z",
+    "reason": "Conservative minute of orchestrator resume; setup and restarts do not extend the window"
+  },
+  "rows": [
+    {
+      "population": "R-A1-agent",
+      "status": {
+        "exit": 0,
+        "postflight_quiet": true,
+        "source": "A"
+      },
+      "after_startup_matching_suites": 0,
+      "samples": [
+        {
+          "path": "runtime/R-A1-agent-preflight-1.json",
+          "start_ns": "98449818262664",
+          "end_ns": "98479891946245",
+          "max_r": 0,
+          "min_idle": 80,
+          "load_before": "10.92 10.51 10.36 2/2717 2861459",
+          "load_after": "10.54 10.46 10.35 1/2667 2861718",
+          "D_state_before": 10,
+          "D_state_after": 9,
+          "matched_before": 0,
+          "matched_after": 0
+        },
+        {
+          "path": "runtime/R-A1-agent-ready-1.json",
+          "start_ns": "98487920186481",
+          "end_ns": "98517993603075",
+          "max_r": 2,
+          "min_idle": 87,
+          "load_before": "10.45 10.45 10.34 2/2731 2862642",
+          "load_after": "10.29 10.42 10.34 1/2720 2862783",
+          "D_state_before": 12,
+          "D_state_after": 9,
+          "matched_before": 0,
+          "matched_after": 0
+        },
+        {
+          "path": "runtime/R-A1-agent-postflight.json",
+          "start_ns": "98711965983733",
+          "end_ns": "98742038883046",
+          "max_r": 0,
+          "min_idle": 87,
+          "load_before": "10.14 10.31 10.32 1/2755 2908631",
+          "load_after": "10.77 10.45 10.36 1/2727 2908780",
+          "D_state_before": 10,
+          "D_state_after": 12,
+          "matched_before": 0,
+          "matched_after": 0
+        }
+      ]
+    },
+    {
+      "population": "R-A1-agent-trace",
+      "status": {
+        "exit": 0,
+        "postflight_quiet": true,
+        "source": "A"
+      },
+      "after_startup_matching_suites": 0,
+      "samples": [
+        {
+          "path": "runtime/R-A1-agent-trace-preflight-3.json",
+          "start_ns": "98862611191710",
+          "end_ns": "98892687914523",
+          "max_r": 0,
+          "min_idle": 80,
+          "load_before": "10.06 10.36 10.35 9/2901 2911777",
+          "load_after": "10.39 10.42 10.37 1/2652 2912163",
+          "D_state_before": 13,
+          "D_state_after": 9,
+          "matched_before": 0,
+          "matched_after": 0
+        },
+        {
+          "path": "runtime/R-A1-agent-trace-ready-1.json",
+          "start_ns": "98900172843774",
+          "end_ns": "98930251113018",
+          "max_r": 0,
+          "min_idle": 84,
+          "load_before": "10.52 10.45 10.38 1/2990 2913966",
+          "load_after": "9.89 10.34 10.35 1/2815 2914333",
+          "D_state_before": 9,
+          "D_state_after": 7,
+          "matched_before": 0,
+          "matched_after": 0
+        },
+        {
+          "path": "runtime/R-A1-agent-trace-postflight.json",
+          "start_ns": "98954002778704",
+          "end_ns": "98984078817068",
+          "max_r": 0,
+          "min_idle": 82,
+          "load_before": "9.22 10.15 10.28 1/2906 2928672",
+          "load_after": "9.05 10.00 10.23 1/2888 2929279",
+          "D_state_before": 6,
+          "D_state_after": 10,
+          "matched_before": 0,
+          "matched_after": 0
+        }
+      ]
+    },
+    {
+      "population": "R-B1-agent",
+      "status": {
+        "exit": 0,
+        "postflight_quiet": true,
+        "source": "B"
+      },
+      "after_startup_matching_suites": 0,
+      "samples": [
+        {
+          "path": "runtime/R-B1-agent-preflight-5.json",
+          "start_ns": "99927037747421",
+          "end_ns": "99957114690973",
+          "max_r": 2,
+          "min_idle": 83,
+          "load_before": "11.65 11.04 10.70 3/2967 3033929",
+          "load_after": "11.91 11.15 10.75 1/2662 3034178",
+          "D_state_before": 11,
+          "D_state_after": 13,
+          "matched_before": 0,
+          "matched_after": 0
+        },
+        {
+          "path": "runtime/R-B1-agent-ready-2.json",
+          "start_ns": "100024274608684",
+          "end_ns": "100054348648792",
+          "max_r": 2,
+          "min_idle": 82,
+          "load_before": "11.98 11.40 10.87 1/2712 3040883",
+          "load_after": "11.64 11.36 10.88 1/2735 3041137",
+          "D_state_before": 11,
+          "D_state_after": 12,
+          "matched_before": 0,
+          "matched_after": 0
+        },
+        {
+          "path": "runtime/R-B1-agent-postflight.json",
+          "start_ns": "100246684718317",
+          "end_ns": "100276757966658",
+          "max_r": 0,
+          "min_idle": 87,
+          "load_before": "10.52 11.22 10.94 1/2743 3085154",
+          "load_after": "10.16 11.07 10.90 1/2729 3085349",
+          "D_state_before": 10,
+          "D_state_after": 9,
+          "matched_before": 0,
+          "matched_after": 0
+        }
+      ]
+    },
+    {
+      "population": "R-B1-agent-trace",
+      "status": {
+        "exit": 0,
+        "postflight_quiet": true,
+        "source": "B"
+      },
+      "after_startup_matching_suites": 0,
+      "samples": [
+        {
+          "path": "runtime/R-B1-agent-trace-preflight-2.json",
+          "start_ns": "100338252549868",
+          "end_ns": "100368323826438",
+          "max_r": 1,
+          "min_idle": 85,
+          "load_before": "10.10 10.93 10.86 1/2678 3086080",
+          "load_after": "10.65 10.99 10.89 2/2744 3086446",
+          "D_state_before": 12,
+          "D_state_after": 11,
+          "matched_before": 0,
+          "matched_after": 0
+        },
+        {
+          "path": "runtime/R-B1-agent-trace-ready-1.json",
+          "start_ns": "100375259779083",
+          "end_ns": "100405334393187",
+          "max_r": 1,
+          "min_idle": 81,
+          "load_before": "10.76 11.01 10.89 2/2789 3087344",
+          "load_after": "11.09 11.07 10.92 2/2770 3087809",
+          "D_state_before": 11,
+          "D_state_after": 12,
+          "matched_before": 0,
+          "matched_after": 0
+        },
+        {
+          "path": "runtime/R-B1-agent-trace-postflight.json",
+          "start_ns": "100429106341417",
+          "end_ns": "100459182606172",
+          "max_r": 1,
+          "min_idle": 84,
+          "load_before": "11.54 11.18 10.96 1/2816 3101446",
+          "load_after": "11.65 11.24 10.99 1/2812 3102047",
+          "D_state_before": 13,
+          "D_state_after": 11,
+          "matched_before": 0,
+          "matched_after": 0
+        }
+      ]
+    },
+    {
+      "population": "R-A2-agent",
+      "status": {
+        "exit": 1,
+        "postflight_quiet": true,
+        "source": "A"
+      },
+      "after_startup_matching_suites": 0,
+      "samples": [
+        {
+          "path": "runtime/R-A2-agent-preflight-2.json",
+          "start_ns": "101860269574704",
+          "end_ns": "101890342735893",
+          "max_r": 0,
+          "min_idle": 85,
+          "load_before": "8.96 9.26 9.89 1/2666 3303816",
+          "load_after": "7.93 8.98 9.77 1/2664 3303914",
+          "D_state_before": 6,
+          "D_state_after": 5,
+          "matched_before": 0,
+          "matched_after": 0
+        },
+        {
+          "path": "runtime/R-A2-agent-ready-1.json",
+          "start_ns": "101897337415381",
+          "end_ns": "101927411094878",
+          "max_r": 0,
+          "min_idle": 86,
+          "load_before": "7.62 8.88 9.73 1/2715 3304826",
+          "load_after": "7.65 8.78 9.67 1/2715 3305055",
+          "D_state_before": 5,
+          "D_state_after": 6,
+          "matched_before": 0,
+          "matched_after": 0
+        },
+        {
+          "path": "runtime/R-A2-agent-postflight.json",
+          "start_ns": "102130729846627",
+          "end_ns": "102160806681037",
+          "max_r": 1,
+          "min_idle": 85,
+          "load_before": "9.29 9.21 9.67 2/2758 3350060",
+          "load_after": "9.12 9.19 9.65 2/2734 3350315",
+          "D_state_before": 7,
+          "D_state_after": 8,
+          "matched_before": 0,
+          "matched_after": 0
+        }
+      ]
+    },
+    {
+      "population": "R-A2-agent-trace",
+      "status": {
+        "exit": 0,
+        "postflight_quiet": true,
+        "source": "A"
+      },
+      "after_startup_matching_suites": 0,
+      "samples": [
+        {
+          "path": "runtime/R-A2-agent-trace-preflight-1.json",
+          "start_ns": "102161412954250",
+          "end_ns": "102191483111557",
+          "max_r": 1,
+          "min_idle": 83,
+          "load_before": "9.35 9.24 9.66 1/2671 3350486",
+          "load_after": "9.02 9.17 9.62 2/2741 3351111",
+          "D_state_before": 8,
+          "D_state_after": 9,
+          "matched_before": 0,
+          "matched_after": 0
+        },
+        {
+          "path": "runtime/R-A2-agent-trace-ready-1.json",
+          "start_ns": "102199339017251",
+          "end_ns": "102229412631217",
+          "max_r": 2,
+          "min_idle": 84,
+          "load_before": "9.02 9.16 9.62 2/2834 3352281",
+          "load_after": "8.87 9.11 9.59 1/2782 3352940",
+          "D_state_before": 9,
+          "D_state_after": 10,
+          "matched_before": 0,
+          "matched_after": 0
+        },
+        {
+          "path": "runtime/R-A2-agent-trace-postflight.json",
+          "start_ns": "102253156440605",
+          "end_ns": "102283232313921",
+          "max_r": 1,
+          "min_idle": 86,
+          "load_before": "9.02 9.14 9.58 1/2731 3366346",
+          "load_after": "9.83 9.33 9.64 1/2736 3366581",
+          "D_state_before": 6,
+          "D_state_after": 9,
+          "matched_before": 0,
+          "matched_after": 0
+        }
+      ]
+    }
+  ]
+}

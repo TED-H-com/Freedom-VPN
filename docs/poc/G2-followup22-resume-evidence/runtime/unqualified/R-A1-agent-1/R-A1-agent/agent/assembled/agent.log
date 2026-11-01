@@ -1,0 +1,100 @@
+time=2026-11-01T06:31:30.466Z level=INFO msg="baseline write" writer=agent cause=boot_unverified phase=begin mono_ns=98227982706209 generation=0
+time=2026-11-01T06:31:30.500Z level=INFO msg="baseline write" writer=agent cause=boot_unverified phase=end mono_ns=98228016769095 succeeded=true
+time=2026-11-01T06:31:30.519Z level=INFO msg="meter epoch opened" epoch_id=01a195ce-57d6-772f-9f35-6290332a6006 reason=baseline boot_id=97c018d7-a925-4723-9127-83c097de1c8a event_seq=0
+time=2026-11-01T06:31:30.522Z level=INFO msg="usage checkpoint applied"
+time=2026-11-01T06:31:30.539Z level=INFO msg="bootstrap stored"
+time=2026-11-01T06:31:30.640Z level=INFO msg="usage status available"
+time=2026-11-01T06:31:30.640Z level=WARN msg="updater journal snapshot" reason=missing
+time=2026-11-01T06:31:32.552Z level=WARN msg=apply err=TC_FOREIGN_FILTER
+time=2026-11-01T06:31:32.554Z level=INFO msg="baseline write" writer=agent cause=foreign_tc_quarantine phase=begin mono_ns=98230070413132 generation=2
+time=2026-11-01T06:31:32.573Z level=INFO msg="baseline write" writer=agent cause=foreign_tc_quarantine phase=end mono_ns=98230089790753 succeeded=true
+time=2026-11-01T06:31:32.573Z level=INFO msg="baseline write" writer=agent cause=verification_TC_FOREIGN_FILTER phase=begin mono_ns=98230089851263 generation=2
+time=2026-11-01T06:31:32.591Z level=INFO msg="baseline write" writer=agent cause=verification_TC_FOREIGN_FILTER phase=end mono_ns=98230107681045 succeeded=true
+time=2026-11-01T06:31:32.595Z level=INFO msg="meter epoch closed" epoch_id=01a195ce-57d6-772f-9f35-6290332a6006 reason=final_sample event_seq=1
+time=2026-11-01T06:31:32.595Z level=INFO msg="baseline write" writer=agent cause=verification_TC_FOREIGN_FILTER phase=begin mono_ns=98230112112268 generation=2
+time=2026-11-01T06:31:32.617Z level=INFO msg="baseline write" writer=agent cause=verification_TC_FOREIGN_FILTER phase=end mono_ns=98230133615188 succeeded=true
+time=2026-11-01T06:31:32.645Z level=WARN msg=apply err=TC_FOREIGN_FILTER
+time=2026-11-01T06:31:32.646Z level=INFO msg="baseline write" writer=agent cause=foreign_tc_quarantine phase=begin mono_ns=98230162734636 generation=2
+time=2026-11-01T06:31:32.664Z level=INFO msg="baseline write" writer=agent cause=foreign_tc_quarantine phase=end mono_ns=98230180762005 succeeded=true
+time=2026-11-01T06:31:33.545Z level=WARN msg=apply err="apply failed"
+time=2026-11-01T06:31:33.545Z level=INFO msg="baseline write" writer=agent cause=verification_HEALTH_CHECK_FAILED phase=begin mono_ns=98231061838965 generation=2
+time=2026-11-01T06:31:33.566Z level=INFO msg="baseline write" writer=agent cause=verification_HEALTH_CHECK_FAILED phase=end mono_ns=98231082760521 succeeded=true
+time=2026-11-01T06:31:33.570Z level=INFO msg="meter epoch opened" epoch_id=01a195ce-63c0-7a0d-a0fa-58f936b114f7 reason=after_final_sample boot_id=97c018d7-a925-4723-9127-83c097de1c8a event_seq=0
+time=2026-11-01T06:31:33.617Z level=INFO msg="baseline write" writer=agent_apply cause=apply_quarantine start_mono_ns=98231118184955 end_mono_ns=98231131404049 succeeded=true
+time=2026-11-01T06:31:33.617Z level=WARN msg=apply err=TC_FOREIGN_FILTER
+time=2026-11-01T06:31:33.618Z level=INFO msg="baseline write" writer=agent cause=foreign_tc_quarantine phase=begin mono_ns=98231134370832 generation=2
+time=2026-11-01T06:31:33.642Z level=INFO msg="baseline write" writer=agent cause=foreign_tc_quarantine phase=end mono_ns=98231158504231 succeeded=true
+time=2026-11-01T06:31:33.642Z level=INFO msg="baseline write" writer=agent cause=verification_TC_FOREIGN_FILTER phase=begin mono_ns=98231158545115 generation=2
+time=2026-11-01T06:31:33.657Z level=INFO msg="baseline write" writer=agent cause=verification_TC_FOREIGN_FILTER phase=end mono_ns=98231174362941 succeeded=true
+time=2026-11-01T06:31:33.662Z level=INFO msg="meter epoch closed" epoch_id=01a195ce-63c0-7a0d-a0fa-58f936b114f7 reason=final_sample event_seq=0
+time=2026-11-01T06:31:33.662Z level=INFO msg="baseline write" writer=agent cause=verification_TC_FOREIGN_FILTER phase=begin mono_ns=98231178754198 generation=2
+time=2026-11-01T06:31:33.690Z level=INFO msg="baseline write" writer=agent cause=verification_TC_FOREIGN_FILTER phase=end mono_ns=98231206445587 succeeded=true
+time=2026-11-01T06:31:33.715Z level=WARN msg=apply err=TC_FOREIGN_FILTER
+time=2026-11-01T06:31:33.716Z level=INFO msg="baseline write" writer=agent cause=foreign_tc_quarantine phase=begin mono_ns=98231233315886 generation=2
+time=2026-11-01T06:31:33.739Z level=INFO msg="baseline write" writer=agent cause=foreign_tc_quarantine phase=end mono_ns=98231255418910 succeeded=true
+time=2026-11-01T06:31:34.543Z level=WARN msg=apply err="apply failed"
+time=2026-11-01T06:31:34.543Z level=INFO msg="baseline write" writer=agent cause=verification_HEALTH_CHECK_FAILED phase=begin mono_ns=98232059690449 generation=2
+time=2026-11-01T06:31:34.561Z level=INFO msg="baseline write" writer=agent cause=verification_HEALTH_CHECK_FAILED phase=end mono_ns=98232077634720 succeeded=true
+time=2026-11-01T06:31:34.564Z level=INFO msg="meter epoch opened" epoch_id=01a195ce-67a3-73ea-96c1-5f8d0705fb0b reason=after_final_sample boot_id=97c018d7-a925-4723-9127-83c097de1c8a event_seq=0
+time=2026-11-01T06:31:34.612Z level=INFO msg="baseline write" writer=agent_apply cause=apply_quarantine start_mono_ns=98232113983730 end_mono_ns=98232126315446 succeeded=true
+time=2026-11-01T06:31:34.612Z level=WARN msg=apply err=TC_FOREIGN_FILTER
+time=2026-11-01T06:31:34.612Z level=INFO msg="baseline write" writer=agent cause=foreign_tc_quarantine phase=begin mono_ns=98232128841545 generation=2
+time=2026-11-01T06:31:34.631Z level=INFO msg="baseline write" writer=agent cause=foreign_tc_quarantine phase=end mono_ns=98232148310256 succeeded=true
+time=2026-11-01T06:31:34.631Z level=INFO msg="baseline write" writer=agent cause=verification_TC_FOREIGN_FILTER phase=begin mono_ns=98232148356446 generation=2
+time=2026-11-01T06:31:34.648Z level=INFO msg="baseline write" writer=agent cause=verification_TC_FOREIGN_FILTER phase=end mono_ns=98232164583952 succeeded=true
+time=2026-11-01T06:31:34.651Z level=INFO msg="meter epoch closed" epoch_id=01a195ce-67a3-73ea-96c1-5f8d0705fb0b reason=final_sample event_seq=0
+time=2026-11-01T06:31:34.651Z level=INFO msg="baseline write" writer=agent cause=verification_TC_FOREIGN_FILTER phase=begin mono_ns=98232167807757 generation=2
+time=2026-11-01T06:31:34.672Z level=INFO msg="baseline write" writer=agent cause=verification_TC_FOREIGN_FILTER phase=end mono_ns=98232188435881 succeeded=true
+time=2026-11-01T06:31:34.696Z level=WARN msg=apply err=TC_FOREIGN_FILTER
+time=2026-11-01T06:31:34.697Z level=INFO msg="baseline write" writer=agent cause=foreign_tc_quarantine phase=begin mono_ns=98232213797287 generation=2
+time=2026-11-01T06:31:34.716Z level=INFO msg="baseline write" writer=agent cause=foreign_tc_quarantine phase=end mono_ns=98232232550784 succeeded=true
+time=2026-11-01T06:31:35.540Z level=WARN msg=apply err="apply failed"
+time=2026-11-01T06:31:35.540Z level=INFO msg="baseline write" writer=agent cause=verification_HEALTH_CHECK_FAILED phase=begin mono_ns=98233056835639 generation=2
+time=2026-11-01T06:31:35.556Z level=INFO msg="baseline write" writer=agent cause=verification_HEALTH_CHECK_FAILED phase=end mono_ns=98233072545143 succeeded=true
+time=2026-11-01T06:31:35.559Z level=INFO msg="meter epoch opened" epoch_id=01a195ce-6b86-71ea-9ec7-2d3c6a81b0e5 reason=after_final_sample boot_id=97c018d7-a925-4723-9127-83c097de1c8a event_seq=0
+time=2026-11-01T06:31:35.715Z level=WARN msg=apply err="apply failed"
+time=2026-11-01T06:31:35.715Z level=INFO msg="baseline write" writer=agent cause=verification_HEALTH_CHECK_FAILED phase=begin mono_ns=98233232098781 generation=2
+time=2026-11-01T06:31:35.754Z level=INFO msg="baseline write" writer=agent cause=verification_HEALTH_CHECK_FAILED phase=end mono_ns=98233270660427 succeeded=true
+time=2026-11-01T06:31:35.757Z level=INFO msg="meter epoch closed" epoch_id=01a195ce-6b86-71ea-9ec7-2d3c6a81b0e5 reason=final_sample event_seq=0
+time=2026-11-01T06:31:35.757Z level=INFO msg="baseline write" writer=agent cause=verification_HEALTH_CHECK_FAILED phase=begin mono_ns=98233274216494 generation=2
+time=2026-11-01T06:31:35.782Z level=INFO msg="baseline write" writer=agent cause=verification_HEALTH_CHECK_FAILED phase=end mono_ns=98233298676674 succeeded=true
+time=2026-11-01T06:31:36.552Z level=INFO msg="meter epoch opened" epoch_id=01a195ce-6f67-7340-9ecb-f776e00db042 reason=after_final_sample boot_id=97c018d7-a925-4723-9127-83c097de1c8a event_seq=0
+time=2026-11-01T06:31:37.416Z level=INFO msg="serving rules retained for restart" generation=3 policy_expires_mono_ns=101831055933359
+time=2026-11-01T06:31:38.493Z level=INFO msg="usage checkpoint applied"
+time=2026-11-01T06:31:38.494Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=2
+time=2026-11-01T06:31:38.517Z level=INFO msg="serving rules adopted" generation=3 policy_expires_mono_ns=101831055933359
+time=2026-11-01T06:31:38.552Z level=INFO msg="baseline write" writer=agent cause=awaiting_member_grants phase=begin mono_ns=98236069273248 generation=3
+time=2026-11-01T06:31:38.597Z level=INFO msg="baseline write" writer=agent cause=awaiting_member_grants phase=end mono_ns=98236113546862 succeeded=true
+time=2026-11-01T06:31:38.600Z level=INFO msg="meter epoch closed" epoch_id=01a195ce-6f67-7340-9ecb-f776e00db042 reason=final_sample event_seq=0
+time=2026-11-01T06:31:38.600Z level=INFO msg="baseline write" writer=agent cause=awaiting_member_grants phase=begin mono_ns=98236117252945 generation=3
+time=2026-11-01T06:31:38.625Z level=INFO msg="baseline write" writer=agent cause=awaiting_member_grants phase=end mono_ns=98236142048396 succeeded=true
+time=2026-11-01T06:31:38.625Z level=INFO msg="baseline write" writer=agent cause=awaiting_member_grants phase=begin mono_ns=98236142305536 generation=3
+time=2026-11-01T06:31:38.647Z level=INFO msg="baseline write" writer=agent cause=awaiting_member_grants phase=end mono_ns=98236163978893 succeeded=true
+time=2026-11-01T06:31:38.648Z level=INFO msg="usage status available"
+time=2026-11-01T06:31:38.648Z level=WARN msg="updater journal snapshot" reason=missing
+time=2026-11-01T06:31:39.534Z level=INFO msg="baseline write" writer=agent cause=awaiting_member_grants phase=begin mono_ns=98237051355400 generation=3
+time=2026-11-01T06:31:39.557Z level=INFO msg="baseline write" writer=agent cause=awaiting_member_grants phase=end mono_ns=98237073652313 succeeded=true
+time=2026-11-01T06:31:39.575Z level=INFO msg="baseline write" writer=agent cause=awaiting_member_grants phase=begin mono_ns=98237092277307 generation=3
+time=2026-11-01T06:31:39.614Z level=INFO msg="baseline write" writer=agent cause=awaiting_member_grants phase=end mono_ns=98237130589791 succeeded=true
+time=2026-11-01T06:31:40.580Z level=INFO msg="baseline write" writer=agent cause=awaiting_member_grants phase=begin mono_ns=98238096929297 generation=3
+time=2026-11-01T06:31:40.611Z level=INFO msg="baseline write" writer=agent cause=awaiting_member_grants phase=end mono_ns=98238127424134 succeeded=true
+time=2026-11-01T06:31:41.589Z level=INFO msg="meter epoch opened" epoch_id=01a195ce-8314-706c-b5c3-aa859c2d3035 reason=after_final_sample boot_id=97c018d7-a925-4723-9127-83c097de1c8a event_seq=0
+time=2026-11-01T06:32:38.500Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=58
+time=2026-11-01T06:33:26.624Z level=WARN msg=lease err="control request ended"
+time=2026-11-01T06:33:31.777Z level=WARN msg=lease err="control request ended"
+time=2026-11-01T06:33:36.921Z level=WARN msg=lease err="control request ended"
+time=2026-11-01T06:33:38.513Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=79
+time=2026-11-01T06:33:42.072Z level=WARN msg=lease err="control request ended"
+time=2026-11-01T06:33:44.830Z level=WARN msg=lease err="control request ended"
+time=2026-11-01T06:33:44.895Z level=INFO msg="serving rules retained for restart" generation=3 policy_expires_mono_ns=98365294049474
+time=2026-11-01T06:33:44.944Z level=INFO msg="usage checkpoint applied"
+time=2026-11-01T06:33:44.945Z level=INFO msg="usage batch acknowledged" highest_contiguous_seq=80
+time=2026-11-01T06:33:44.966Z level=INFO msg="serving rules adopted" generation=3 policy_expires_mono_ns=98365294049474
+time=2026-11-01T06:33:48.556Z level=WARN msg=lease err="control request ended"
+time=2026-11-01T06:33:48.556Z level=INFO msg="baseline write" writer=agent cause=policy_deadline phase=begin mono_ns=98366072966728 generation=3
+time=2026-11-01T06:33:48.588Z level=INFO msg="baseline write" writer=agent cause=policy_deadline phase=end mono_ns=98366104520545 succeeded=true
+time=2026-11-01T06:33:48.597Z level=INFO msg="meter epoch closed" epoch_id=01a195ce-8314-706c-b5c3-aa859c2d3035 reason=final_sample event_seq=82
+time=2026-11-01T06:33:48.598Z level=INFO msg="baseline write" writer=agent cause=non_serving phase=begin mono_ns=98366114398959 generation=3
+time=2026-11-01T06:33:48.625Z level=INFO msg="baseline write" writer=agent cause=non_serving phase=end mono_ns=98366141474211 succeeded=true
+time=2026-11-01T06:33:48.640Z level=INFO msg="usage status available"
+time=2026-11-01T06:33:48.640Z level=WARN msg="updater journal snapshot" reason=missing

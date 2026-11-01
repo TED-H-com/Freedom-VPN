@@ -1,0 +1,6 @@
+{
+  "test_only": true,
+  "measurement_rule": "Each B p50/p90/p99/max must be in the inclusive interval between corresponding A1 and A2 values, separately for ordinary agent and trace-agent; no tolerance. Both A legs are controls for B2 as well; no extra A3 is added.",
+  "failure_rule": "A-observed failures are retained for agent-core; a B-only test failure where both A tests pass rejects the change.",
+  "first_window_immutable": "c67977b752cfff9dc75e806388fb001e1d9cceb3"
+}

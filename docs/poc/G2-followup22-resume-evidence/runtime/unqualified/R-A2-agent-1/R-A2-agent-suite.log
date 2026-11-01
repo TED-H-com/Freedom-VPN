@@ -1,0 +1,139 @@
+=== RUN   TestLabISO_F6_RecoveryAndEvidence
+    scenario_ab_recovery_test.go:163: ISO-F6-01/02: injection-to-contained-read=908.446043ms; removal-to-clean-link-up=621.75854ms; removal-to-counted-serving-observation=2.095247619s; applied=3 lease=3; original rejection rows retained; first counted observation qos=read_at=2026-11-01T07:09:51.957653425Z source=live candidate=2 verified=true {"generation":"2","phase":"verify","reads":20,"objects":6,"truncated":true,"sha256":"710fc38cc7614c2c283545f89e47f67147fd40d5ce16f7fef7c4cfd3922697c8"}
+--- PASS: TestLabISO_F6_RecoveryAndEvidence (7.74s)
+=== RUN   TestLabD087_D104_GrantRenewalExpiryCorrelation
+    scenario_ac_timing_test.go:114: D087 qualifying report=01a195f1-9115-7332-b24f-95c22b28526b generation=3; grant-ready to counted forwarding=2.852016983s counters=1404->12060; observation interval=3600s
+    scenario_ac_timing_test.go:171: D104 producer correlation:
+        {
+          "scope": "TEST ONLY assembled agent/kernel/TLS fake control; 80ms dual-phase diagnostic; no D-120 tolerance",
+          "snapshots": 926,
+          "runs": [
+            {
+              "run_id": "574a5a43-18c2-4a59-bee4-6232f049c2c9",
+              "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a"
+            },
+            {
+              "run_id": "69475e03-5944-4a58-8dc5-ebaab8b61a9f",
+              "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a"
+            },
+            {
+              "run_id": "70753204-7f97-4b21-b2a7-dd641e573313",
+              "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a"
+            }
+          ],
+          "brackets": {
+            "baseline": {
+              "count": 28,
+              "median_ns": "25288164",
+              "worst_ns": "43071279"
+            },
+            "apply": {
+              "count": 109,
+              "median_ns": "76509584",
+              "worst_ns": "124302024"
+            },
+            "verifier": {
+              "count": 444,
+              "median_ns": "22867785",
+              "worst_ns": "30616805"
+            },
+            "nft_read": {
+              "count": 444,
+              "median_ns": "2457326",
+              "worst_ns": "4189508"
+            },
+            "precision_read": {
+              "count": 435,
+              "median_ns": "1357642",
+              "worst_ns": "1909248"
+            },
+            "tc_read": {
+              "count": 444,
+              "median_ns": "16021227",
+              "worst_ns": "21058438"
+            },
+            "install_command": {
+              "count": 107,
+              "median_ns": "15477613",
+              "worst_ns": "26760203"
+            },
+            "release_command": {
+              "count": 107,
+              "median_ns": "14030772",
+              "worst_ns": "24986439"
+            },
+            "outer_guard": {
+              "count": 107,
+              "median_ns": "30694382",
+              "worst_ns": "44776711"
+            },
+            "inner_guard": {
+              "count": 107,
+              "median_ns": "3262",
+              "worst_ns": "11641"
+            },
+            "render_to_installed": {
+              "count": 107,
+              "median_ns": "15565880",
+              "worst_ns": "26870347"
+            },
+            "verify": {
+              "count": 336,
+              "median_ns": "22805091",
+              "worst_ns": "30616805"
+            }
+          },
+          "renewal": {
+            "probes": 1518,
+            "delivered": 1488,
+            "loss_windows_overlapping_install": 28,
+            "ingress_in_outer_guard": 30,
+            "unresolved_ingress": 0
+          },
+          "expiry": {
+            "deadline_ns": "100665440462296",
+            "last_positive_offset_ns": "-100373510",
+            "first_drop_offset_ns": "-63830223",
+            "positives": 97,
+            "drops": 15,
+            "packet_predicate": "pass"
+          }
+        }
+--- PASS: TestLabD087_D104_GrantRenewalExpiryCorrelation (131.93s)
+=== RUN   TestLabUsageLedger
+SUMMARY usage counters=153154 final-sample=1
+SUMMARY usage acked_through=83 events=83
+SUMMARY usage watermark-refused=1
+SUMMARY usage watermark-new-epoch=01a195f3-a384-7338-b2cb-ea7498eb46fe outbox=83
+--- PASS: TestLabUsageLedger (6.15s)
+=== RUN   TestLabExternalMeterReset
+SUMMARY external epoch=01a195f3-9d59-74a3-a32a-f99d8655bf36->01a195f3-b3ff-7b87-89f0-76ce6d3359b7 gap=1 restored=1 elapsed=1.014s
+--- PASS: TestLabExternalMeterReset (3.68s)
+=== RUN   TestD116_AT10_InstallerMarkerEnrollment
+    scenario_d116_test.go:59: set FVPN_D116_MARKER=1 before TestMain enrollment
+--- SKIP: TestD116_AT10_InstallerMarkerEnrollment (0.01s)
+=== RUN   TestLab08_HealthAttestationUnpublished
+--- PASS: TestLab08_HealthAttestationUnpublished (2.95s)
+=== RUN   TestLab01_ForwardOnlyAfterLease
+SUMMARY AT-agent forward-after-lease=1
+--- PASS: TestLab01_ForwardOnlyAfterLease (2.11s)
+=== RUN   TestLab02_WatchdogEnforces
+SUMMARY AT-agent watchdog-enforces=1
+--- PASS: TestLab02_WatchdogEnforces (7.31s)
+=== RUN   TestLab03_KernelTimeout
+SUMMARY AT29 stop_after=9.282s
+--- PASS: TestLab03_KernelTimeout (9.64s)
+=== RUN   TestLab04_RestartKeepsVerifiedLease
+SUMMARY AT-agent restart-keeps-verified-lease=1
+--- PASS: TestLab04_RestartKeepsVerifiedLease (3.14s)
+=== RUN   TestLab05_NoAllowAllOnUpdate
+SUMMARY AT13 AT29 no-allow-all=1
+--- PASS: TestLab05_NoAllowAllOnUpdate (10.50s)
+=== RUN   TestLab07_UnpublishedBaselineAck
+SUMMARY unpublished baseline ack=1
+--- PASS: TestLab07_UnpublishedBaselineAck (3.11s)
+=== RUN   TestLab06_RevokedStopsForwarding
+SUMMARY AT-agent revoked-stops=1
+--- PASS: TestLab06_RevokedStopsForwarding (3.11s)
+PASS
+ok  	github.com/TED-H-com/Freedom-VPN/tests/netlab/agent	191.843s

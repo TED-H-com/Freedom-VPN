@@ -1,0 +1,464 @@
+START build-A-fvpn-netlab
+END build-A-fvpn-netlab exit 0
+START build-A-fvpn-agent
+END build-A-fvpn-agent exit 0
+START build-A-fvpn-watchdog
+END build-A-fvpn-watchdog exit 0
+START build-A-fvpn-labcontrol
+END build-A-fvpn-labcontrol exit 0
+START image-A
+END image-A exit 0
+START build-B-fvpn-netlab
+END build-B-fvpn-netlab exit 0
+START build-B-fvpn-agent
+END build-B-fvpn-agent exit 0
+START build-B-fvpn-watchdog
+END build-B-fvpn-watchdog exit 0
+START build-B-fvpn-labcontrol
+END build-B-fvpn-labcontrol exit 0
+START image-B
+END image-B exit 0
+HOST R-A1-agent-preflight-1 quiet False r 1 idle 79 suites False
+HOST R-A1-agent-preflight-2 quiet True r 0 idle 86 suites False
+START R-A1-agent-up
+END R-A1-agent-up exit 0
+START R-A1-agent-collector-dir
+END R-A1-agent-collector-dir exit 0
+START R-A1-agent-copy-fvpn-agent
+END R-A1-agent-copy-fvpn-agent exit 0
+START R-A1-agent-copy-fvpn-labcontrol
+END R-A1-agent-copy-fvpn-labcontrol exit 0
+START R-A1-agent-copy-fvpn-watchdog
+END R-A1-agent-copy-fvpn-watchdog exit 0
+START R-A1-agent-copy-fvpn-netlab
+END R-A1-agent-copy-fvpn-netlab exit 0
+START R-A1-agent-collector
+END R-A1-agent-collector exit 0
+START R-A1-agent-chmod
+END R-A1-agent-chmod exit 0
+HOST R-A1-agent-ready-1 quiet False r 1 idle 76 suites False
+HOST R-A1-agent-ready-2 quiet False r 9 idle 77 suites False
+HOST R-A1-agent-ready-3 quiet False r 4 idle 80 suites False
+HOST R-A1-agent-ready-4 quiet False r 5 idle 72 suites False
+HOST R-A1-agent-ready-5 quiet False r 4 idle 80 suites False
+HOST R-A1-agent-ready-6 quiet True r 2 idle 86 suites False
+START R-A1-agent-suite
+END R-A1-agent-suite exit 0
+START R-A1-agent-commands
+END R-A1-agent-commands exit 1
+HOST R-A1-agent-postflight quiet False r 1 idle 76 suites False
+START R-A1-agent-down
+END R-A1-agent-down exit 0
+RETAINED UNQUALIFIED POSTFLIGHT R-A1-agent 1
+HOST R-A1-agent-preflight-1 quiet True r 0 idle 80 suites False
+START R-A1-agent-up
+END R-A1-agent-up exit 0
+START R-A1-agent-collector-dir
+END R-A1-agent-collector-dir exit 0
+START R-A1-agent-copy-fvpn-agent
+END R-A1-agent-copy-fvpn-agent exit 0
+START R-A1-agent-copy-fvpn-labcontrol
+END R-A1-agent-copy-fvpn-labcontrol exit 0
+START R-A1-agent-copy-fvpn-watchdog
+END R-A1-agent-copy-fvpn-watchdog exit 0
+START R-A1-agent-copy-fvpn-netlab
+END R-A1-agent-copy-fvpn-netlab exit 0
+START R-A1-agent-collector
+END R-A1-agent-collector exit 0
+START R-A1-agent-chmod
+END R-A1-agent-chmod exit 0
+HOST R-A1-agent-ready-1 quiet True r 2 idle 87 suites False
+START R-A1-agent-suite
+END R-A1-agent-suite exit 0
+START R-A1-agent-commands
+END R-A1-agent-commands exit 1
+HOST R-A1-agent-postflight quiet True r 0 idle 87 suites False
+START R-A1-agent-down
+END R-A1-agent-down exit 0
+HOST R-A1-agent-trace-preflight-1 quiet False r 5 idle 70 suites False
+HOST R-A1-agent-trace-preflight-2 quiet False r 2 idle 79 suites False
+HOST R-A1-agent-trace-preflight-3 quiet True r 0 idle 80 suites False
+START R-A1-agent-trace-up
+END R-A1-agent-trace-up exit 0
+START R-A1-agent-trace-collector-dir
+END R-A1-agent-trace-collector-dir exit 0
+START R-A1-agent-trace-copy-fvpn-agent
+END R-A1-agent-trace-copy-fvpn-agent exit 0
+START R-A1-agent-trace-copy-fvpn-labcontrol
+END R-A1-agent-trace-copy-fvpn-labcontrol exit 0
+START R-A1-agent-trace-copy-fvpn-watchdog
+END R-A1-agent-trace-copy-fvpn-watchdog exit 0
+START R-A1-agent-trace-copy-fvpn-netlab
+END R-A1-agent-trace-copy-fvpn-netlab exit 0
+START R-A1-agent-trace-collector
+END R-A1-agent-trace-collector exit 0
+START R-A1-agent-trace-chmod
+END R-A1-agent-trace-chmod exit 0
+HOST R-A1-agent-trace-ready-1 quiet True r 0 idle 84 suites False
+START R-A1-agent-trace-suite
+END R-A1-agent-trace-suite exit 0
+START R-A1-agent-trace-commands
+END R-A1-agent-trace-commands exit 1
+HOST R-A1-agent-trace-postflight quiet True r 0 idle 82 suites False
+START R-A1-agent-trace-down
+END R-A1-agent-trace-down exit 0
+HOST R-B1-agent-preflight-1 quiet False r 3 idle 79 suites False
+HOST R-B1-agent-preflight-2 quiet False r 2 idle 76 suites False
+HOST R-B1-agent-preflight-3 quiet True r 1 idle 85 suites False
+START R-B1-agent-up
+END R-B1-agent-up exit 0
+START R-B1-agent-collector-dir
+END R-B1-agent-collector-dir exit 0
+START R-B1-agent-copy-fvpn-agent
+END R-B1-agent-copy-fvpn-agent exit 0
+START R-B1-agent-copy-fvpn-labcontrol
+END R-B1-agent-copy-fvpn-labcontrol exit 0
+START R-B1-agent-copy-fvpn-watchdog
+END R-B1-agent-copy-fvpn-watchdog exit 0
+START R-B1-agent-copy-fvpn-netlab
+END R-B1-agent-copy-fvpn-netlab exit 0
+START R-B1-agent-collector
+END R-B1-agent-collector exit 0
+START R-B1-agent-chmod
+END R-B1-agent-chmod exit 0
+HOST R-B1-agent-ready-1 quiet True r 0 idle 87 suites False
+START R-B1-agent-suite
+END R-B1-agent-suite exit 0
+START R-B1-agent-commands
+END R-B1-agent-commands exit 1
+HOST R-B1-agent-postflight quiet False r 5 idle 87 suites False
+START R-B1-agent-down
+END R-B1-agent-down exit 0
+RETAINED UNQUALIFIED POSTFLIGHT R-B1-agent 1
+HOST R-B1-agent-preflight-1 quiet True r 2 idle 82 suites False
+START R-B1-agent-up
+END R-B1-agent-up exit 0
+START R-B1-agent-collector-dir
+END R-B1-agent-collector-dir exit 0
+START R-B1-agent-copy-fvpn-agent
+END R-B1-agent-copy-fvpn-agent exit 0
+START R-B1-agent-copy-fvpn-labcontrol
+END R-B1-agent-copy-fvpn-labcontrol exit 0
+START R-B1-agent-copy-fvpn-watchdog
+END R-B1-agent-copy-fvpn-watchdog exit 0
+START R-B1-agent-copy-fvpn-netlab
+END R-B1-agent-copy-fvpn-netlab exit 0
+START R-B1-agent-collector
+END R-B1-agent-collector exit 0
+START R-B1-agent-chmod
+END R-B1-agent-chmod exit 0
+HOST R-B1-agent-ready-1 quiet True r 2 idle 86 suites False
+START R-B1-agent-suite
+END R-B1-agent-suite exit 0
+START R-B1-agent-commands
+END R-B1-agent-commands exit 1
+HOST R-B1-agent-postflight quiet False r 1 idle 77 suites False
+START R-B1-agent-down
+END R-B1-agent-down exit 0
+RETAINED UNQUALIFIED POSTFLIGHT R-B1-agent 2
+HOST R-B1-agent-preflight-1 quiet False r 3 idle 74 suites False
+HOST R-B1-agent-preflight-2 quiet False r 1 idle 75 suites False
+HOST R-B1-agent-preflight-3 quiet False r 5 idle 76 suites False
+HOST R-B1-agent-preflight-4 quiet False r 0 idle 78 suites False
+HOST R-B1-agent-preflight-5 quiet True r 2 idle 83 suites False
+START R-B1-agent-up
+END R-B1-agent-up exit 0
+START R-B1-agent-collector-dir
+END R-B1-agent-collector-dir exit 0
+START R-B1-agent-copy-fvpn-agent
+END R-B1-agent-copy-fvpn-agent exit 0
+START R-B1-agent-copy-fvpn-labcontrol
+END R-B1-agent-copy-fvpn-labcontrol exit 0
+START R-B1-agent-copy-fvpn-watchdog
+END R-B1-agent-copy-fvpn-watchdog exit 0
+START R-B1-agent-copy-fvpn-netlab
+END R-B1-agent-copy-fvpn-netlab exit 0
+START R-B1-agent-collector
+END R-B1-agent-collector exit 0
+START R-B1-agent-chmod
+END R-B1-agent-chmod exit 0
+HOST R-B1-agent-ready-1 quiet False r 4 idle 70 suites False
+HOST R-B1-agent-ready-2 quiet True r 2 idle 82 suites False
+START R-B1-agent-suite
+END R-B1-agent-suite exit 0
+START R-B1-agent-commands
+END R-B1-agent-commands exit 1
+HOST R-B1-agent-postflight quiet True r 0 idle 87 suites False
+START R-B1-agent-down
+END R-B1-agent-down exit 0
+HOST R-B1-agent-trace-preflight-1 quiet False r 1 idle 79 suites False
+HOST R-B1-agent-trace-preflight-2 quiet True r 1 idle 85 suites False
+START R-B1-agent-trace-up
+END R-B1-agent-trace-up exit 0
+START R-B1-agent-trace-collector-dir
+END R-B1-agent-trace-collector-dir exit 0
+START R-B1-agent-trace-copy-fvpn-agent
+END R-B1-agent-trace-copy-fvpn-agent exit 0
+START R-B1-agent-trace-copy-fvpn-labcontrol
+END R-B1-agent-trace-copy-fvpn-labcontrol exit 0
+START R-B1-agent-trace-copy-fvpn-watchdog
+END R-B1-agent-trace-copy-fvpn-watchdog exit 0
+START R-B1-agent-trace-copy-fvpn-netlab
+END R-B1-agent-trace-copy-fvpn-netlab exit 0
+START R-B1-agent-trace-collector
+END R-B1-agent-trace-collector exit 0
+START R-B1-agent-trace-chmod
+END R-B1-agent-trace-chmod exit 0
+HOST R-B1-agent-trace-ready-1 quiet True r 1 idle 81 suites False
+START R-B1-agent-trace-suite
+END R-B1-agent-trace-suite exit 0
+START R-B1-agent-trace-commands
+END R-B1-agent-trace-commands exit 1
+HOST R-B1-agent-trace-postflight quiet True r 1 idle 84 suites False
+START R-B1-agent-trace-down
+END R-B1-agent-trace-down exit 0
+HOST R-A2-agent-preflight-1 quiet True r 1 idle 85 suites False
+START R-A2-agent-up
+END R-A2-agent-up exit 0
+START R-A2-agent-collector-dir
+END R-A2-agent-collector-dir exit 0
+START R-A2-agent-copy-fvpn-agent
+END R-A2-agent-copy-fvpn-agent exit 0
+START R-A2-agent-copy-fvpn-labcontrol
+END R-A2-agent-copy-fvpn-labcontrol exit 0
+START R-A2-agent-copy-fvpn-watchdog
+END R-A2-agent-copy-fvpn-watchdog exit 0
+START R-A2-agent-copy-fvpn-netlab
+END R-A2-agent-copy-fvpn-netlab exit 0
+START R-A2-agent-collector
+END R-A2-agent-collector exit 0
+START R-A2-agent-chmod
+END R-A2-agent-chmod exit 0
+HOST R-A2-agent-ready-1 quiet True r 0 idle 87 suites False
+START R-A2-agent-suite
+END R-A2-agent-suite exit 0
+START R-A2-agent-commands
+END R-A2-agent-commands exit 1
+HOST R-A2-agent-postflight quiet False r 4 idle 78 suites False
+START R-A2-agent-down
+END R-A2-agent-down exit 0
+RETAINED UNQUALIFIED POSTFLIGHT R-A2-agent 1
+HOST R-A2-agent-preflight-1 quiet False r 0 idle 78 suites False
+HOST R-A2-agent-preflight-2 quiet False r 1 idle 73 suites False
+HOST R-A2-agent-preflight-3 quiet False r 3 idle 76 suites False
+HOST R-A2-agent-preflight-4 quiet True r 1 idle 86 suites False
+START R-A2-agent-up
+END R-A2-agent-up exit 0
+START R-A2-agent-collector-dir
+END R-A2-agent-collector-dir exit 0
+START R-A2-agent-copy-fvpn-agent
+END R-A2-agent-copy-fvpn-agent exit 0
+START R-A2-agent-copy-fvpn-labcontrol
+END R-A2-agent-copy-fvpn-labcontrol exit 0
+START R-A2-agent-copy-fvpn-watchdog
+END R-A2-agent-copy-fvpn-watchdog exit 0
+START R-A2-agent-copy-fvpn-netlab
+END R-A2-agent-copy-fvpn-netlab exit 0
+START R-A2-agent-collector
+END R-A2-agent-collector exit 0
+START R-A2-agent-chmod
+END R-A2-agent-chmod exit 0
+HOST R-A2-agent-ready-1 quiet True r 1 idle 86 suites False
+START R-A2-agent-suite
+END R-A2-agent-suite exit 0
+START R-A2-agent-commands
+END R-A2-agent-commands exit 1
+HOST R-A2-agent-postflight quiet False r 2 idle 79 suites False
+START R-A2-agent-down
+END R-A2-agent-down exit 0
+RETAINED UNQUALIFIED POSTFLIGHT R-A2-agent 2
+HOST R-A2-agent-preflight-1 quiet True r 1 idle 87 suites False
+START R-A2-agent-up
+END R-A2-agent-up exit 0
+START R-A2-agent-collector-dir
+END R-A2-agent-collector-dir exit 0
+START R-A2-agent-copy-fvpn-agent
+END R-A2-agent-copy-fvpn-agent exit 0
+START R-A2-agent-copy-fvpn-labcontrol
+END R-A2-agent-copy-fvpn-labcontrol exit 0
+START R-A2-agent-copy-fvpn-watchdog
+END R-A2-agent-copy-fvpn-watchdog exit 0
+START R-A2-agent-copy-fvpn-netlab
+END R-A2-agent-copy-fvpn-netlab exit 0
+START R-A2-agent-collector
+END R-A2-agent-collector exit 0
+START R-A2-agent-chmod
+END R-A2-agent-chmod exit 0
+HOST R-A2-agent-ready-1 quiet True r 2 idle 85 suites False
+START R-A2-agent-suite
+END R-A2-agent-suite exit 0
+START R-A2-agent-commands
+END R-A2-agent-commands exit 1
+HOST R-A2-agent-postflight quiet False r 5 idle 70 suites False
+START R-A2-agent-down
+END R-A2-agent-down exit 0
+RETAINED UNQUALIFIED POSTFLIGHT R-A2-agent 3
+HOST R-A2-agent-preflight-1 quiet True r 0 idle 85 suites False
+START R-A2-agent-up
+END R-A2-agent-up exit 0
+START R-A2-agent-collector-dir
+END R-A2-agent-collector-dir exit 0
+START R-A2-agent-copy-fvpn-agent
+END R-A2-agent-copy-fvpn-agent exit 0
+START R-A2-agent-copy-fvpn-labcontrol
+END R-A2-agent-copy-fvpn-labcontrol exit 0
+START R-A2-agent-copy-fvpn-watchdog
+END R-A2-agent-copy-fvpn-watchdog exit 0
+START R-A2-agent-copy-fvpn-netlab
+END R-A2-agent-copy-fvpn-netlab exit 0
+START R-A2-agent-collector
+END R-A2-agent-collector exit 0
+START R-A2-agent-chmod
+END R-A2-agent-chmod exit 0
+HOST R-A2-agent-ready-1 quiet True r 0 idle 86 suites False
+START R-A2-agent-suite
+END R-A2-agent-suite exit 0
+START R-A2-agent-commands
+END R-A2-agent-commands exit 1
+HOST R-A2-agent-postflight quiet False r 19 idle 75 suites False
+START R-A2-agent-down
+END R-A2-agent-down exit 0
+RETAINED UNQUALIFIED POSTFLIGHT R-A2-agent 4
+HOST R-A2-agent-preflight-1 quiet False r 5 idle 68 suites False
+HOST R-A2-agent-preflight-2 quiet True r 0 idle 85 suites False
+START R-A2-agent-up
+END R-A2-agent-up exit 0
+START R-A2-agent-collector-dir
+END R-A2-agent-collector-dir exit 0
+START R-A2-agent-copy-fvpn-agent
+END R-A2-agent-copy-fvpn-agent exit 0
+START R-A2-agent-copy-fvpn-labcontrol
+END R-A2-agent-copy-fvpn-labcontrol exit 0
+START R-A2-agent-copy-fvpn-watchdog
+END R-A2-agent-copy-fvpn-watchdog exit 0
+START R-A2-agent-copy-fvpn-netlab
+END R-A2-agent-copy-fvpn-netlab exit 0
+START R-A2-agent-collector
+END R-A2-agent-collector exit 0
+START R-A2-agent-chmod
+END R-A2-agent-chmod exit 0
+HOST R-A2-agent-ready-1 quiet True r 0 idle 86 suites False
+START R-A2-agent-suite
+END R-A2-agent-suite exit 1
+START R-A2-agent-commands
+END R-A2-agent-commands exit 1
+HOST R-A2-agent-postflight quiet True r 1 idle 85 suites False
+START R-A2-agent-down
+END R-A2-agent-down exit 0
+RETAINED SUITE FAILURE R-A2-agent
+HOST R-A2-agent-trace-preflight-1 quiet True r 1 idle 83 suites False
+START R-A2-agent-trace-up
+END R-A2-agent-trace-up exit 0
+START R-A2-agent-trace-collector-dir
+END R-A2-agent-trace-collector-dir exit 0
+START R-A2-agent-trace-copy-fvpn-agent
+END R-A2-agent-trace-copy-fvpn-agent exit 0
+START R-A2-agent-trace-copy-fvpn-labcontrol
+END R-A2-agent-trace-copy-fvpn-labcontrol exit 0
+START R-A2-agent-trace-copy-fvpn-watchdog
+END R-A2-agent-trace-copy-fvpn-watchdog exit 0
+START R-A2-agent-trace-copy-fvpn-netlab
+END R-A2-agent-trace-copy-fvpn-netlab exit 0
+START R-A2-agent-trace-collector
+END R-A2-agent-trace-collector exit 0
+START R-A2-agent-trace-chmod
+END R-A2-agent-trace-chmod exit 0
+HOST R-A2-agent-trace-ready-1 quiet True r 2 idle 84 suites False
+START R-A2-agent-trace-suite
+END R-A2-agent-trace-suite exit 0
+START R-A2-agent-trace-commands
+END R-A2-agent-trace-commands exit 1
+HOST R-A2-agent-trace-postflight quiet True r 1 idle 86 suites False
+START R-A2-agent-trace-down
+END R-A2-agent-trace-down exit 0
+HOST R-B2-agent-preflight-1 quiet True r 0 idle 87 suites False
+START R-B2-agent-up
+END R-B2-agent-up exit 0
+START R-B2-agent-collector-dir
+END R-B2-agent-collector-dir exit 0
+START R-B2-agent-copy-fvpn-agent
+END R-B2-agent-copy-fvpn-agent exit 0
+START R-B2-agent-copy-fvpn-labcontrol
+END R-B2-agent-copy-fvpn-labcontrol exit 0
+START R-B2-agent-copy-fvpn-watchdog
+END R-B2-agent-copy-fvpn-watchdog exit 0
+START R-B2-agent-copy-fvpn-netlab
+END R-B2-agent-copy-fvpn-netlab exit 0
+START R-B2-agent-collector
+END R-B2-agent-collector exit 0
+START R-B2-agent-chmod
+END R-B2-agent-chmod exit 0
+HOST R-B2-agent-ready-1 quiet True r 1 idle 86 suites False
+START R-B2-agent-suite
+END R-B2-agent-suite exit 0
+START R-B2-agent-commands
+END R-B2-agent-commands exit 1
+HOST R-B2-agent-postflight quiet False r 5 idle 77 suites False
+START R-B2-agent-down
+END R-B2-agent-down exit 0
+RETAINED UNQUALIFIED POSTFLIGHT R-B2-agent 1
+HOST R-B2-agent-preflight-1 quiet True r 3 idle 80 suites False
+START R-B2-agent-up
+END R-B2-agent-up exit 0
+START R-B2-agent-collector-dir
+END R-B2-agent-collector-dir exit 0
+START R-B2-agent-copy-fvpn-agent
+END R-B2-agent-copy-fvpn-agent exit 0
+START R-B2-agent-copy-fvpn-labcontrol
+END R-B2-agent-copy-fvpn-labcontrol exit 0
+START R-B2-agent-copy-fvpn-watchdog
+END R-B2-agent-copy-fvpn-watchdog exit 0
+START R-B2-agent-copy-fvpn-netlab
+END R-B2-agent-copy-fvpn-netlab exit 0
+START R-B2-agent-collector
+END R-B2-agent-collector exit 0
+START R-B2-agent-chmod
+END R-B2-agent-chmod exit 0
+HOST R-B2-agent-ready-1 quiet False r 5 idle 81 suites False
+HOST R-B2-agent-ready-2 quiet False r 2 idle 79 suites False
+HOST R-B2-agent-ready-3 quiet False r 2 idle 77 suites False
+HOST R-B2-agent-ready-4 quiet True r 1 idle 87 suites False
+START R-B2-agent-suite
+END R-B2-agent-suite exit 0
+START R-B2-agent-commands
+END R-B2-agent-commands exit 1
+HOST R-B2-agent-postflight quiet False r 2 idle 79 suites False
+START R-B2-agent-down
+END R-B2-agent-down exit 0
+RETAINED UNQUALIFIED POSTFLIGHT R-B2-agent 2
+HOST R-B2-agent-preflight-1 quiet True r 2 idle 85 suites False
+START R-B2-agent-up
+END R-B2-agent-up exit 0
+START R-B2-agent-collector-dir
+END R-B2-agent-collector-dir exit 0
+START R-B2-agent-copy-fvpn-agent
+END R-B2-agent-copy-fvpn-agent exit 0
+START R-B2-agent-copy-fvpn-labcontrol
+END R-B2-agent-copy-fvpn-labcontrol exit 0
+START R-B2-agent-copy-fvpn-watchdog
+END R-B2-agent-copy-fvpn-watchdog exit 0
+START R-B2-agent-copy-fvpn-netlab
+END R-B2-agent-copy-fvpn-netlab exit 0
+START R-B2-agent-collector
+END R-B2-agent-collector exit 0
+START R-B2-agent-chmod
+END R-B2-agent-chmod exit 0
+START R-B2-agent-down
+END R-B2-agent-down exit 0
+START remove-image-a
+END remove-image-a exit 0
+START remove-image-b
+END remove-image-b exit 0
+Traceback (most recent call last):
+  File "<worktree>/.agent/f22-resume-run.py", line 157, in <module>
+    for which in ['agent','agent-trace']:suite(leg,leg[2],configs[leg[2]],which)
+                                         ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<worktree>/.agent/f22-resume-run.py", line 140, in suite
+    while not suite_once(leg,label,config,which):
+              ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<worktree>/.agent/f22-resume-run.py", line 99, in suite_once
+    await_quiet(name+'-ready')
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "<worktree>/.agent/f22-resume-run.py", line 62, in await_quiet
+    raise RuntimeError('blocked: host not quiet')
+RuntimeError: blocked: host not quiet

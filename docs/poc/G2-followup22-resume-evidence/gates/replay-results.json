@@ -1,0 +1,42 @@
+[
+  {
+    "gate": "evidence-replay",
+    "command": [
+      "python3",
+      "tests/netlab/scripts/disktmp.py",
+      "go",
+      "test",
+      "-count=1",
+      "-v",
+      "./tests/netlab",
+      "-run",
+      "TestD098_|TestCommittedEvidenceFiles_ValidAndHygieneClean"
+    ],
+    "exit": 0,
+    "seconds": 1.068,
+    "completed": "2026-11-01T07:55:44.990414+00:00"
+  },
+  {
+    "gate": "diff-replay",
+    "command": [
+      "git",
+      "diff",
+      "--check"
+    ],
+    "exit": 0,
+    "seconds": 0.069,
+    "completed": "2026-11-01T07:55:45.059063+00:00"
+  },
+  {
+    "gate": "staged-diff-replay",
+    "command": [
+      "git",
+      "diff",
+      "--cached",
+      "--check"
+    ],
+    "exit": 0,
+    "seconds": 0.1,
+    "completed": "2026-11-01T07:55:45.158591+00:00"
+  }
+]

@@ -1,0 +1,916 @@
+{
+  "test_only": true,
+  "cause_status_scope": "install-overrun causality only",
+  "rows": [
+    {
+      "population": "R-A1-agent",
+      "analysis_path": "analysis/R-A1-agent.json",
+      "row_index": 26,
+      "run_id": "b7cca13f-4d9f-4be2-9727-c86ea943f661",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "27",
+      "failure_stage": "pre_install",
+      "cause_status": "not_applicable",
+      "apply_bracket": {
+        "start_ns": "98522197209132",
+        "end_ns": "98522246610352"
+      },
+      "deadline": {
+        "granularity_ns": "1000000",
+        "install_bound_ns": "100000000",
+        "apply_start_ns": "98522197209132",
+        "render_start_ns": "0",
+        "install_start_ns": "0",
+        "installed_by_ns": "0",
+        "install_ok": false,
+        "release_start_ns": "0",
+        "release_end_ns": "0",
+        "guard_released": false
+      }
+    },
+    {
+      "population": "R-A1-agent",
+      "analysis_path": "analysis/R-A1-agent.json",
+      "row_index": 35,
+      "run_id": "b7cca13f-4d9f-4be2-9727-c86ea943f661",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "36",
+      "failure_stage": "pre_install",
+      "cause_status": "not_applicable",
+      "apply_bracket": {
+        "start_ns": "98523194274415",
+        "end_ns": "98523234752316"
+      },
+      "deadline": {
+        "granularity_ns": "1000000",
+        "install_bound_ns": "100000000",
+        "apply_start_ns": "98523194274415",
+        "render_start_ns": "0",
+        "install_start_ns": "0",
+        "installed_by_ns": "0",
+        "install_ok": false,
+        "release_start_ns": "0",
+        "release_end_ns": "0",
+        "guard_released": false
+      }
+    },
+    {
+      "population": "R-A1-agent",
+      "analysis_path": "analysis/R-A1-agent.json",
+      "row_index": 1061,
+      "run_id": "a1faeb9e-0d8c-4b36-9bc8-7382c2ab4f79",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "12",
+      "failure_stage": "pre_install",
+      "cause_status": "not_applicable",
+      "apply_bracket": {
+        "start_ns": "98673912839839",
+        "end_ns": "98673936234389"
+      },
+      "deadline": {
+        "granularity_ns": "1000000",
+        "install_bound_ns": "100000000",
+        "apply_start_ns": "98673912839839",
+        "render_start_ns": "0",
+        "install_start_ns": "0",
+        "installed_by_ns": "0",
+        "install_ok": false,
+        "release_start_ns": "0",
+        "release_end_ns": "0",
+        "guard_released": false
+      }
+    },
+    {
+      "population": "R-A2-agent",
+      "analysis_path": "analysis/R-A2-agent.json",
+      "row_index": 26,
+      "run_id": "e6bb8c2a-73df-48aa-b28c-18510c3b6153",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "27",
+      "failure_stage": "pre_install",
+      "cause_status": "not_applicable",
+      "apply_bracket": {
+        "start_ns": "101931603731093",
+        "end_ns": "101931650619554"
+      },
+      "deadline": {
+        "granularity_ns": "1000000",
+        "install_bound_ns": "100000000",
+        "apply_start_ns": "101931603731093",
+        "render_start_ns": "0",
+        "install_start_ns": "0",
+        "installed_by_ns": "0",
+        "install_ok": false,
+        "release_start_ns": "0",
+        "release_end_ns": "0",
+        "guard_released": false
+      }
+    },
+    {
+      "population": "R-A2-agent",
+      "analysis_path": "analysis/R-A2-agent.json",
+      "row_index": 35,
+      "run_id": "e6bb8c2a-73df-48aa-b28c-18510c3b6153",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "36",
+      "failure_stage": "pre_install",
+      "cause_status": "not_applicable",
+      "apply_bracket": {
+        "start_ns": "101932600611189",
+        "end_ns": "101932645539612"
+      },
+      "deadline": {
+        "granularity_ns": "1000000",
+        "install_bound_ns": "100000000",
+        "apply_start_ns": "101932600611189",
+        "render_start_ns": "0",
+        "install_start_ns": "0",
+        "installed_by_ns": "0",
+        "install_ok": false,
+        "release_start_ns": "0",
+        "release_end_ns": "0",
+        "guard_released": false
+      }
+    },
+    {
+      "population": "R-A2-agent",
+      "analysis_path": "analysis/R-A2-agent.json",
+      "row_index": 1053,
+      "run_id": "2b64bacc-fc96-457c-924d-7638a5042245",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "12",
+      "failure_stage": "install_command",
+      "cause_status": "unproven",
+      "apply_bracket": {
+        "start_ns": "102082164363712",
+        "end_ns": "102082203567403"
+      },
+      "deadline": {
+        "granularity_ns": "1000000",
+        "install_bound_ns": "100000000",
+        "apply_start_ns": "102082164363712",
+        "render_start_ns": "102082189860404",
+        "install_start_ns": "102082189970083",
+        "installed_by_ns": "102082203490938",
+        "install_ok": false,
+        "release_start_ns": "0",
+        "release_end_ns": "0",
+        "guard_released": false
+      }
+    },
+    {
+      "population": "R-B1-agent",
+      "analysis_path": "analysis/R-B1-agent.json",
+      "row_index": 26,
+      "run_id": "c77689c5-32b6-4f1f-9369-5ad8c5d264c7",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "27",
+      "failure_stage": "pre_install",
+      "cause_status": "not_applicable",
+      "apply_bracket": {
+        "start_ns": "100058570034162",
+        "end_ns": "100058613816328"
+      },
+      "deadline": {
+        "granularity_ns": "1000000",
+        "install_bound_ns": "100000000",
+        "apply_start_ns": "100058570034162",
+        "render_start_ns": "0",
+        "install_start_ns": "0",
+        "installed_by_ns": "0",
+        "install_ok": false,
+        "release_start_ns": "0",
+        "release_end_ns": "0",
+        "guard_released": false
+      }
+    },
+    {
+      "population": "R-B1-agent",
+      "analysis_path": "analysis/R-B1-agent.json",
+      "row_index": 35,
+      "run_id": "c77689c5-32b6-4f1f-9369-5ad8c5d264c7",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "36",
+      "failure_stage": "pre_install",
+      "cause_status": "not_applicable",
+      "apply_bracket": {
+        "start_ns": "100059564670428",
+        "end_ns": "100059610712009"
+      },
+      "deadline": {
+        "granularity_ns": "1000000",
+        "install_bound_ns": "100000000",
+        "apply_start_ns": "100059564670428",
+        "render_start_ns": "0",
+        "install_start_ns": "0",
+        "installed_by_ns": "0",
+        "install_ok": false,
+        "release_start_ns": "0",
+        "release_end_ns": "0",
+        "guard_released": false
+      }
+    },
+    {
+      "population": "excluded-R-A1-agent-1",
+      "analysis_path": "analysis/excluded-R-A1-agent-1.json",
+      "row_index": 26,
+      "run_id": "1ec0ade3-7de4-44c6-aba8-86e7729501fd",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "27",
+      "failure_stage": "pre_install",
+      "cause_status": "not_applicable",
+      "apply_bracket": {
+        "start_ns": "98231086612256",
+        "end_ns": "98231134192542"
+      },
+      "deadline": {
+        "granularity_ns": "1000000",
+        "install_bound_ns": "100000000",
+        "apply_start_ns": "98231086612256",
+        "render_start_ns": "0",
+        "install_start_ns": "0",
+        "installed_by_ns": "0",
+        "install_ok": false,
+        "release_start_ns": "0",
+        "release_end_ns": "0",
+        "guard_released": false
+      }
+    },
+    {
+      "population": "excluded-R-A1-agent-1",
+      "analysis_path": "analysis/excluded-R-A1-agent-1.json",
+      "row_index": 35,
+      "run_id": "1ec0ade3-7de4-44c6-aba8-86e7729501fd",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "36",
+      "failure_stage": "pre_install",
+      "cause_status": "not_applicable",
+      "apply_bracket": {
+        "start_ns": "98232081296885",
+        "end_ns": "98232128616526"
+      },
+      "deadline": {
+        "granularity_ns": "1000000",
+        "install_bound_ns": "100000000",
+        "apply_start_ns": "98232081296885",
+        "render_start_ns": "0",
+        "install_start_ns": "0",
+        "installed_by_ns": "0",
+        "install_ok": false,
+        "release_start_ns": "0",
+        "release_end_ns": "0",
+        "guard_released": false
+      }
+    },
+    {
+      "population": "excluded-R-A1-agent-1",
+      "analysis_path": "analysis/excluded-R-A1-agent-1.json",
+      "row_index": 1061,
+      "run_id": "e4a9ecd5-3523-48b4-8f87-69fb28ba8fe7",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "12",
+      "failure_stage": "pre_install",
+      "cause_status": "not_applicable",
+      "apply_bracket": {
+        "start_ns": "98382292868159",
+        "end_ns": "98382311075055"
+      },
+      "deadline": {
+        "granularity_ns": "1000000",
+        "install_bound_ns": "100000000",
+        "apply_start_ns": "98382292868159",
+        "render_start_ns": "0",
+        "install_start_ns": "0",
+        "installed_by_ns": "0",
+        "install_ok": false,
+        "release_start_ns": "0",
+        "release_end_ns": "0",
+        "guard_released": false
+      }
+    },
+    {
+      "population": "excluded-R-A2-agent-1",
+      "analysis_path": "analysis/excluded-R-A2-agent-1.json",
+      "row_index": 26,
+      "run_id": "69475e03-5944-4a58-8dc5-ebaab8b61a9f",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "27",
+      "failure_stage": "pre_install",
+      "cause_status": "not_applicable",
+      "apply_bracket": {
+        "start_ns": "100531380669180",
+        "end_ns": "100531424591616"
+      },
+      "deadline": {
+        "granularity_ns": "1000000",
+        "install_bound_ns": "100000000",
+        "apply_start_ns": "100531380669180",
+        "render_start_ns": "0",
+        "install_start_ns": "0",
+        "installed_by_ns": "0",
+        "install_ok": false,
+        "release_start_ns": "0",
+        "release_end_ns": "0",
+        "guard_released": false
+      }
+    },
+    {
+      "population": "excluded-R-A2-agent-1",
+      "analysis_path": "analysis/excluded-R-A2-agent-1.json",
+      "row_index": 35,
+      "run_id": "69475e03-5944-4a58-8dc5-ebaab8b61a9f",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "36",
+      "failure_stage": "pre_install",
+      "cause_status": "not_applicable",
+      "apply_bracket": {
+        "start_ns": "100532374075829",
+        "end_ns": "100532424765207"
+      },
+      "deadline": {
+        "granularity_ns": "1000000",
+        "install_bound_ns": "100000000",
+        "apply_start_ns": "100532374075829",
+        "render_start_ns": "0",
+        "install_start_ns": "0",
+        "installed_by_ns": "0",
+        "install_ok": false,
+        "release_start_ns": "0",
+        "release_end_ns": "0",
+        "guard_released": false
+      }
+    },
+    {
+      "population": "excluded-R-A2-agent-1",
+      "analysis_path": "analysis/excluded-R-A2-agent-1.json",
+      "row_index": 1053,
+      "run_id": "a4b604a0-7a79-48ff-9b15-8aaf0576f9bb",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "12",
+      "failure_stage": "pre_install",
+      "cause_status": "not_applicable",
+      "apply_bracket": {
+        "start_ns": "100681964989279",
+        "end_ns": "100681982800072"
+      },
+      "deadline": {
+        "granularity_ns": "1000000",
+        "install_bound_ns": "100000000",
+        "apply_start_ns": "100681964989279",
+        "render_start_ns": "0",
+        "install_start_ns": "0",
+        "installed_by_ns": "0",
+        "install_ok": false,
+        "release_start_ns": "0",
+        "release_end_ns": "0",
+        "guard_released": false
+      }
+    },
+    {
+      "population": "excluded-R-A2-agent-2",
+      "analysis_path": "analysis/excluded-R-A2-agent-2.json",
+      "row_index": 26,
+      "run_id": "05bf9807-b75f-4eb5-a08d-50e63178284b",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "27",
+      "failure_stage": "pre_install",
+      "cause_status": "not_applicable",
+      "apply_bracket": {
+        "start_ns": "101002148282263",
+        "end_ns": "101002199593790"
+      },
+      "deadline": {
+        "granularity_ns": "1000000",
+        "install_bound_ns": "100000000",
+        "apply_start_ns": "101002148282263",
+        "render_start_ns": "0",
+        "install_start_ns": "0",
+        "installed_by_ns": "0",
+        "install_ok": false,
+        "release_start_ns": "0",
+        "release_end_ns": "0",
+        "guard_released": false
+      }
+    },
+    {
+      "population": "excluded-R-A2-agent-2",
+      "analysis_path": "analysis/excluded-R-A2-agent-2.json",
+      "row_index": 35,
+      "run_id": "05bf9807-b75f-4eb5-a08d-50e63178284b",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "36",
+      "failure_stage": "pre_install",
+      "cause_status": "not_applicable",
+      "apply_bracket": {
+        "start_ns": "101003150386325",
+        "end_ns": "101003202547747"
+      },
+      "deadline": {
+        "granularity_ns": "1000000",
+        "install_bound_ns": "100000000",
+        "apply_start_ns": "101003150386325",
+        "render_start_ns": "0",
+        "install_start_ns": "0",
+        "installed_by_ns": "0",
+        "install_ok": false,
+        "release_start_ns": "0",
+        "release_end_ns": "0",
+        "guard_released": false
+      }
+    },
+    {
+      "population": "excluded-R-A2-agent-2",
+      "analysis_path": "analysis/excluded-R-A2-agent-2.json",
+      "row_index": 1053,
+      "run_id": "a18ca532-3117-46a0-8ec5-fd916f472428",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "12",
+      "failure_stage": "install_command",
+      "cause_status": "unproven",
+      "apply_bracket": {
+        "start_ns": "101153103660005",
+        "end_ns": "101153127772270"
+      },
+      "deadline": {
+        "granularity_ns": "1000000",
+        "install_bound_ns": "100000000",
+        "apply_start_ns": "101153103660005",
+        "render_start_ns": "101153127471097",
+        "install_start_ns": "101153127577619",
+        "installed_by_ns": "101153127742720",
+        "install_ok": false,
+        "release_start_ns": "0",
+        "release_end_ns": "0",
+        "guard_released": false
+      }
+    },
+    {
+      "population": "excluded-R-A2-agent-3",
+      "analysis_path": "analysis/excluded-R-A2-agent-3.json",
+      "row_index": 26,
+      "run_id": "fceb1224-dad4-4db0-a037-2d7ca5dbbae0",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "27",
+      "failure_stage": "pre_install",
+      "cause_status": "not_applicable",
+      "apply_bracket": {
+        "start_ns": "101292528876713",
+        "end_ns": "101292579465227"
+      },
+      "deadline": {
+        "granularity_ns": "1000000",
+        "install_bound_ns": "100000000",
+        "apply_start_ns": "101292528876713",
+        "render_start_ns": "0",
+        "install_start_ns": "0",
+        "installed_by_ns": "0",
+        "install_ok": false,
+        "release_start_ns": "0",
+        "release_end_ns": "0",
+        "guard_released": false
+      }
+    },
+    {
+      "population": "excluded-R-A2-agent-3",
+      "analysis_path": "analysis/excluded-R-A2-agent-3.json",
+      "row_index": 35,
+      "run_id": "fceb1224-dad4-4db0-a037-2d7ca5dbbae0",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "36",
+      "failure_stage": "pre_install",
+      "cause_status": "not_applicable",
+      "apply_bracket": {
+        "start_ns": "101293513062643",
+        "end_ns": "101293554138989"
+      },
+      "deadline": {
+        "granularity_ns": "1000000",
+        "install_bound_ns": "100000000",
+        "apply_start_ns": "101293513062643",
+        "render_start_ns": "0",
+        "install_start_ns": "0",
+        "installed_by_ns": "0",
+        "install_ok": false,
+        "release_start_ns": "0",
+        "release_end_ns": "0",
+        "guard_released": false
+      }
+    },
+    {
+      "population": "excluded-R-A2-agent-3",
+      "analysis_path": "analysis/excluded-R-A2-agent-3.json",
+      "row_index": 1050,
+      "run_id": "86d3b1c0-dca2-4c7c-821b-163c0db617ce",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "12",
+      "failure_stage": "pre_install",
+      "cause_status": "not_applicable",
+      "apply_bracket": {
+        "start_ns": "101443111569064",
+        "end_ns": "101443133629681"
+      },
+      "deadline": {
+        "granularity_ns": "1000000",
+        "install_bound_ns": "100000000",
+        "apply_start_ns": "101443111569064",
+        "render_start_ns": "0",
+        "install_start_ns": "0",
+        "installed_by_ns": "0",
+        "install_ok": false,
+        "release_start_ns": "0",
+        "release_end_ns": "0",
+        "guard_released": false
+      }
+    },
+    {
+      "population": "excluded-R-A2-agent-4",
+      "analysis_path": "analysis/excluded-R-A2-agent-4.json",
+      "row_index": 26,
+      "run_id": "56b56314-c85d-4f6d-8a30-d163d70e2471",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "27",
+      "failure_stage": "pre_install",
+      "cause_status": "not_applicable",
+      "apply_bracket": {
+        "start_ns": "101583385764273",
+        "end_ns": "101583430467450"
+      },
+      "deadline": {
+        "granularity_ns": "1000000",
+        "install_bound_ns": "100000000",
+        "apply_start_ns": "101583385764273",
+        "render_start_ns": "0",
+        "install_start_ns": "0",
+        "installed_by_ns": "0",
+        "install_ok": false,
+        "release_start_ns": "0",
+        "release_end_ns": "0",
+        "guard_released": false
+      }
+    },
+    {
+      "population": "excluded-R-A2-agent-4",
+      "analysis_path": "analysis/excluded-R-A2-agent-4.json",
+      "row_index": 35,
+      "run_id": "56b56314-c85d-4f6d-8a30-d163d70e2471",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "36",
+      "failure_stage": "pre_install",
+      "cause_status": "not_applicable",
+      "apply_bracket": {
+        "start_ns": "101584370250423",
+        "end_ns": "101584413515470"
+      },
+      "deadline": {
+        "granularity_ns": "1000000",
+        "install_bound_ns": "100000000",
+        "apply_start_ns": "101584370250423",
+        "render_start_ns": "0",
+        "install_start_ns": "0",
+        "installed_by_ns": "0",
+        "install_ok": false,
+        "release_start_ns": "0",
+        "release_end_ns": "0",
+        "guard_released": false
+      }
+    },
+    {
+      "population": "excluded-R-A2-agent-4",
+      "analysis_path": "analysis/excluded-R-A2-agent-4.json",
+      "row_index": 1053,
+      "run_id": "66eed0c6-5df9-4e08-8880-274714ae6008",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "12",
+      "failure_stage": "install_command",
+      "cause_status": "unproven",
+      "apply_bracket": {
+        "start_ns": "101733904848860",
+        "end_ns": "101733944632164"
+      },
+      "deadline": {
+        "granularity_ns": "1000000",
+        "install_bound_ns": "100000000",
+        "apply_start_ns": "101733904848860",
+        "render_start_ns": "101733930035436",
+        "install_start_ns": "101733930140847",
+        "installed_by_ns": "101733944579163",
+        "install_ok": false,
+        "release_start_ns": "0",
+        "release_end_ns": "0",
+        "guard_released": false
+      }
+    },
+    {
+      "population": "excluded-R-B1-agent-1",
+      "analysis_path": "analysis/excluded-R-B1-agent-1.json",
+      "row_index": 26,
+      "run_id": "30664a4f-a99d-477e-a08c-22cb1b20d47d",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "27",
+      "failure_stage": "pre_install",
+      "cause_status": "not_applicable",
+      "apply_bracket": {
+        "start_ns": "99177867234794",
+        "end_ns": "99177911752284"
+      },
+      "deadline": {
+        "granularity_ns": "1000000",
+        "install_bound_ns": "100000000",
+        "apply_start_ns": "99177867234794",
+        "render_start_ns": "0",
+        "install_start_ns": "0",
+        "installed_by_ns": "0",
+        "install_ok": false,
+        "release_start_ns": "0",
+        "release_end_ns": "0",
+        "guard_released": false
+      }
+    },
+    {
+      "population": "excluded-R-B1-agent-1",
+      "analysis_path": "analysis/excluded-R-B1-agent-1.json",
+      "row_index": 35,
+      "run_id": "30664a4f-a99d-477e-a08c-22cb1b20d47d",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "36",
+      "failure_stage": "pre_install",
+      "cause_status": "not_applicable",
+      "apply_bracket": {
+        "start_ns": "99178860799192",
+        "end_ns": "99178902876620"
+      },
+      "deadline": {
+        "granularity_ns": "1000000",
+        "install_bound_ns": "100000000",
+        "apply_start_ns": "99178860799192",
+        "render_start_ns": "0",
+        "install_start_ns": "0",
+        "installed_by_ns": "0",
+        "install_ok": false,
+        "release_start_ns": "0",
+        "release_end_ns": "0",
+        "guard_released": false
+      }
+    },
+    {
+      "population": "excluded-R-B1-agent-1",
+      "analysis_path": "analysis/excluded-R-B1-agent-1.json",
+      "row_index": 1053,
+      "run_id": "e44210e1-ab4d-4a8a-9e88-402dd5ea53fd",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "12",
+      "failure_stage": "install_command",
+      "cause_status": "unproven",
+      "apply_bracket": {
+        "start_ns": "99328507532882",
+        "end_ns": "99328555445142"
+      },
+      "deadline": {
+        "granularity_ns": "1000000",
+        "install_bound_ns": "100000000",
+        "apply_start_ns": "99328507532882",
+        "render_start_ns": "99328530128867",
+        "install_start_ns": "99328530257467",
+        "installed_by_ns": "99328555400759",
+        "install_ok": false,
+        "release_start_ns": "0",
+        "release_end_ns": "0",
+        "guard_released": false
+      }
+    },
+    {
+      "population": "excluded-R-B1-agent-2",
+      "analysis_path": "analysis/excluded-R-B1-agent-2.json",
+      "row_index": 26,
+      "run_id": "aa3aec8d-adc1-4dd3-abf8-50c65436c90c",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "27",
+      "failure_stage": "pre_install",
+      "cause_status": "not_applicable",
+      "apply_bracket": {
+        "start_ns": "99466991360624",
+        "end_ns": "99467037480898"
+      },
+      "deadline": {
+        "granularity_ns": "1000000",
+        "install_bound_ns": "100000000",
+        "apply_start_ns": "99466991360624",
+        "render_start_ns": "0",
+        "install_start_ns": "0",
+        "installed_by_ns": "0",
+        "install_ok": false,
+        "release_start_ns": "0",
+        "release_end_ns": "0",
+        "guard_released": false
+      }
+    },
+    {
+      "population": "excluded-R-B1-agent-2",
+      "analysis_path": "analysis/excluded-R-B1-agent-2.json",
+      "row_index": 35,
+      "run_id": "aa3aec8d-adc1-4dd3-abf8-50c65436c90c",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "36",
+      "failure_stage": "pre_install",
+      "cause_status": "not_applicable",
+      "apply_bracket": {
+        "start_ns": "99467987424146",
+        "end_ns": "99468037590678"
+      },
+      "deadline": {
+        "granularity_ns": "1000000",
+        "install_bound_ns": "100000000",
+        "apply_start_ns": "99467987424146",
+        "render_start_ns": "0",
+        "install_start_ns": "0",
+        "installed_by_ns": "0",
+        "install_ok": false,
+        "release_start_ns": "0",
+        "release_end_ns": "0",
+        "guard_released": false
+      }
+    },
+    {
+      "population": "excluded-R-B1-agent-2",
+      "analysis_path": "analysis/excluded-R-B1-agent-2.json",
+      "row_index": 1053,
+      "run_id": "d94eccac-e6cf-4fff-9ecc-1a0b54e1e93c",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "12",
+      "failure_stage": "pre_install",
+      "cause_status": "not_applicable",
+      "apply_bracket": {
+        "start_ns": "99617717488208",
+        "end_ns": "99617730757782"
+      },
+      "deadline": {
+        "granularity_ns": "1000000",
+        "install_bound_ns": "100000000",
+        "apply_start_ns": "99617717488208",
+        "render_start_ns": "0",
+        "install_start_ns": "0",
+        "installed_by_ns": "0",
+        "install_ok": false,
+        "release_start_ns": "0",
+        "release_end_ns": "0",
+        "guard_released": false
+      }
+    },
+    {
+      "population": "excluded-R-B2-agent-1",
+      "analysis_path": "analysis/excluded-R-B2-agent-1.json",
+      "row_index": 26,
+      "run_id": "4e403073-e1ea-405b-b45c-00be13ea7ba3",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "27",
+      "failure_stage": "pre_install",
+      "cause_status": "not_applicable",
+      "apply_bracket": {
+        "start_ns": "102355417608463",
+        "end_ns": "102355458961379"
+      },
+      "deadline": {
+        "granularity_ns": "1000000",
+        "install_bound_ns": "100000000",
+        "apply_start_ns": "102355417608463",
+        "render_start_ns": "0",
+        "install_start_ns": "0",
+        "installed_by_ns": "0",
+        "install_ok": false,
+        "release_start_ns": "0",
+        "release_end_ns": "0",
+        "guard_released": false
+      }
+    },
+    {
+      "population": "excluded-R-B2-agent-1",
+      "analysis_path": "analysis/excluded-R-B2-agent-1.json",
+      "row_index": 35,
+      "run_id": "4e403073-e1ea-405b-b45c-00be13ea7ba3",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "36",
+      "failure_stage": "pre_install",
+      "cause_status": "not_applicable",
+      "apply_bracket": {
+        "start_ns": "102356409825071",
+        "end_ns": "102356454601048"
+      },
+      "deadline": {
+        "granularity_ns": "1000000",
+        "install_bound_ns": "100000000",
+        "apply_start_ns": "102356409825071",
+        "render_start_ns": "0",
+        "install_start_ns": "0",
+        "installed_by_ns": "0",
+        "install_ok": false,
+        "release_start_ns": "0",
+        "release_end_ns": "0",
+        "guard_released": false
+      }
+    },
+    {
+      "population": "excluded-R-B2-agent-1",
+      "analysis_path": "analysis/excluded-R-B2-agent-1.json",
+      "row_index": 1053,
+      "run_id": "4de92636-4b24-48c2-bfda-8e6c90859622",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "12",
+      "failure_stage": "install_command",
+      "cause_status": "unproven",
+      "apply_bracket": {
+        "start_ns": "102506004739723",
+        "end_ns": "102506041445107"
+      },
+      "deadline": {
+        "granularity_ns": "1000000",
+        "install_bound_ns": "100000000",
+        "apply_start_ns": "102506004739723",
+        "render_start_ns": "102506029296164",
+        "install_start_ns": "102506029553465",
+        "installed_by_ns": "102506041371864",
+        "install_ok": false,
+        "release_start_ns": "0",
+        "release_end_ns": "0",
+        "guard_released": false
+      }
+    },
+    {
+      "population": "excluded-R-B2-agent-2",
+      "analysis_path": "analysis/excluded-R-B2-agent-2.json",
+      "row_index": 26,
+      "run_id": "1cbcbf2b-d7e0-47c0-a234-32d4893c4da7",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "27",
+      "failure_stage": "pre_install",
+      "cause_status": "not_applicable",
+      "apply_bracket": {
+        "start_ns": "102826309278038",
+        "end_ns": "102826352019281"
+      },
+      "deadline": {
+        "granularity_ns": "1000000",
+        "install_bound_ns": "100000000",
+        "apply_start_ns": "102826309278038",
+        "render_start_ns": "0",
+        "install_start_ns": "0",
+        "installed_by_ns": "0",
+        "install_ok": false,
+        "release_start_ns": "0",
+        "release_end_ns": "0",
+        "guard_released": false
+      }
+    },
+    {
+      "population": "excluded-R-B2-agent-2",
+      "analysis_path": "analysis/excluded-R-B2-agent-2.json",
+      "row_index": 35,
+      "run_id": "1cbcbf2b-d7e0-47c0-a234-32d4893c4da7",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "36",
+      "failure_stage": "pre_install",
+      "cause_status": "not_applicable",
+      "apply_bracket": {
+        "start_ns": "102827303700429",
+        "end_ns": "102827345391353"
+      },
+      "deadline": {
+        "granularity_ns": "1000000",
+        "install_bound_ns": "100000000",
+        "apply_start_ns": "102827303700429",
+        "render_start_ns": "0",
+        "install_start_ns": "0",
+        "installed_by_ns": "0",
+        "install_ok": false,
+        "release_start_ns": "0",
+        "release_end_ns": "0",
+        "guard_released": false
+      }
+    },
+    {
+      "population": "excluded-R-B2-agent-2",
+      "analysis_path": "analysis/excluded-R-B2-agent-2.json",
+      "row_index": 1053,
+      "run_id": "bfccce9a-fdc6-450b-b808-5aa415f227ad",
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "sequence": "12",
+      "failure_stage": "install_command",
+      "cause_status": "unproven",
+      "apply_bracket": {
+        "start_ns": "102976920501529",
+        "end_ns": "102976959352136"
+      },
+      "deadline": {
+        "granularity_ns": "1000000",
+        "install_bound_ns": "100000000",
+        "apply_start_ns": "102976920501529",
+        "render_start_ns": "102976943627805",
+        "install_start_ns": "102976943736452",
+        "installed_by_ns": "102976959314995",
+        "install_ok": false,
+        "release_start_ns": "0",
+        "release_end_ns": "0",
+        "guard_released": false
+      }
+    }
+  ]
+}
