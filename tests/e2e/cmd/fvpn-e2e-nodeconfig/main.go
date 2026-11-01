@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/agentwait"
 	"github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/counterread"
 	"github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/dnsrelay"
 	"net"
@@ -19,6 +20,9 @@ import (
 
 func main() {
 	run := prepare
+	if len(os.Args) == 4 && os.Args[1] == "agent-wait" {
+		run = func() error { return agentwait.Run("/var/lib/vpn-node/e2e", os.Args[2], "run", "-config", os.Args[3]) }
+	}
 	if len(os.Args) == 2 && os.Args[1] == "dns-readback" {
 		run = dnsReadback
 	}

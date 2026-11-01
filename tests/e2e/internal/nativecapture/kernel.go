@@ -9,6 +9,7 @@ import (
 // KernelDiagnostics contains only counters and loopback UDP tuple metadata.
 // Commands retain read success independently; an unavailable read is not zero.
 type KernelDiagnostics struct {
+	SNMP4             map[string]string `json:"snmp4"`
 	SNMP6             map[string]string `json:"snmp6"`
 	Nstat             map[string]string `json:"nstat"`
 	LoopbackConntrack []ConntrackTuple  `json:"loopback_conntrack"`
@@ -80,6 +81,26 @@ func LoopbackConntrack(raw []byte) []ConntrackTuple {
 				if loopback && tuple.Source != "" && tuple.Destination != "" && tuple.SourcePort != "" && tuple.DestinationPort != "" {
 					out = append(out, tuple)
 				}
+			}
+		}
+	}
+	return out
+}
+
+// SNMP4Counters joins the paired /proc/net/snmp name/value rows. Only numeric
+// counters escape; malformed pairs remain unavailable instead of becoming zero.
+func SNMP4Counters(raw []byte) map[string]string {
+	out := map[string]string{}
+	lines := strings.Split(strings.TrimSpace(string(raw)), "\n")
+	for i := 0; i+1 < len(lines); i += 2 {
+		names, values := strings.Fields(lines[i]), strings.Fields(lines[i+1])
+		if len(names) < 2 || len(names) != len(values) || names[0] != values[0] {
+			continue
+		}
+		prefix := strings.TrimSuffix(names[0], ":")
+		for j := 1; j < len(names); j++ {
+			if _, err := strconv.ParseUint(values[j], 10, 64); err == nil {
+				out[prefix+names[j]] = values[j]
 			}
 		}
 	}

@@ -387,6 +387,9 @@ func (r *runner) nativeMTU18(ctx context.Context, s *Stack) {
 }
 
 func nativeCampaignDirectory() string {
+	if os.Getenv("FVPN_E2E_FOLLOWUP25") == "1" {
+		return "followup25"
+	}
 	if os.Getenv("FVPN_E2E_FOLLOWUP24") == "1" {
 		return "followup24"
 	}
@@ -548,6 +551,10 @@ func (r *runner) finishNativeCapture22(ctx context.Context, rec *Record, c *Nati
 func (r *runner) nativeInitial22(ctx context.Context, s *Stack) {
 	rec := Record{ID: "initial-selection", Title: "F11-01 first selected native route with all transport hops", Spec: []string{"AT01", "EXIT02", "F11-01"}, Status: StatusFail}
 	defer func() { r.record(rec) }()
+	if os.Getenv("FVPN_E2E_FOLLOWUP25") == "1" {
+		recPathNote(&rec)("test_only_arm", os.Getenv("FVPN_E2E_FOLLOWUP25_ARM"))
+		recPathNote(&rec)("test_only_family", os.Getenv("FVPN_E2E_FOLLOWUP25_FAMILY"))
+	}
 	c, e := s.StartNativeCapture(ctx)
 	if e != nil {
 		recPathNote(&rec)("error", e.Error())
@@ -563,7 +570,7 @@ func (r *runner) nativeInitial22(ctx context.Context, s *Stack) {
 		defer func() {
 			clean, cancel := context.WithTimeout(context.WithoutCancel(ctx), 15*time.Second)
 			defer cancel()
-			result, e := k.stop(clean, filepath.Join(r.lab.root, ".agent/tmp/followup24", r.runID, "kernel"))
+			result, e := k.stop(clean, filepath.Join(r.lab.root, ".agent/tmp/"+nativeCampaignDirectory(), r.runID, "kernel"))
 			noteJSON(&rec, "kernel_trace", result)
 			if e != nil {
 				rec.Status = StatusFail
