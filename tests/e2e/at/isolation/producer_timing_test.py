@@ -124,6 +124,12 @@ class CorrelationTests(unittest.TestCase):
             self.assertEqual(p.identity(ref), p.identity(rows[0]))
             self.assertEqual(rows[0]['timing']['commands'][ref['index']], command())
             self.assertNotIn('record', ref)
+            joined = p.correlated_apply(a)
+            self.assertNotIn('commands', joined['operation'])
+            self.assertEqual(joined['operation']['deadline'], rows[0]['timing']['deadline'])
+            self.assertEqual(joined['command_lifecycle']['records'], context['records'])
+            a['operation']['succeeded'] = False
+            self.assertIs(p.correlated_apply(a), a)  # Failed Apply keeps full records.
             (root/'producer-operations.jsonl').write_bytes(raw)
             self.assertEqual(p.read_operations(root), rows)
 

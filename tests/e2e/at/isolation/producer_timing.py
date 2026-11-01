@@ -54,6 +54,13 @@ def apply_context(item):
     return context
 
 
+def correlated_apply(item):
+    if item['operation']['succeeded'] and item['command_lifecycle']['status'] == 'available':
+        return dict(apply_context(item), lease=item['lease'],
+                    operation={k:v for k,v in item['operation'].items() if k != 'commands'})
+    return item
+
+
 HOST_COUNTERS = ('cpu_total_ticks', 'cpu_idle_ticks', 'cpu_iowait_ticks',
                  'procs_running', 'procs_blocked')
 HOST_CONTENTION_RULE = ('TEST ONLY diagnostic: positive aggregate tick delta, zero idle and iowait '
@@ -475,9 +482,9 @@ def correlate(packet, validated):
     if validated['applies']:
         # Full nearest Apply carries its render, install/release, both verifiers
         # and every executor read. References above disambiguate other overlaps.
-        result['nearest_apply'] = min(validated['applies'], key=lambda a: abs(ingress-ns(a['operation'],'start_ns')))
+        result['nearest_apply'] = correlated_apply(min(validated['applies'], key=lambda a: abs(ingress-ns(a['operation'],'start_ns'))))
         prior = [a for a in validated['applies'] if ns(a['operation'],'end_ns') <= ingress]
-        result['last_completed_apply'] = max(prior, key=lambda a: ns(a['operation'],'end_ns')) if prior else None
+        result['last_completed_apply'] = correlated_apply(max(prior, key=lambda a: ns(a['operation'],'end_ns'))) if prior else None
     prior = [v for v in validated['verifiers'] if ns(v['timing'],'end_ns') <= ingress]
     result['last_completed_verifier'] = max(prior, key=lambda v: ns(v['timing'],'end_ns')) if prior else None
     producers = validated.get('producer_rows', [])

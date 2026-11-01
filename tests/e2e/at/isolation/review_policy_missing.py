@@ -23,16 +23,19 @@ def windows(rows, streams):
             # A later baseline can reopen the outage; do not skip it to find a
             # convenient serving heartbeat. These are later endpoints, not egress.
             following=[]
+            recovery_limit = ns(process[-1]['anchor'], 'mono_after_ns') if 'anchor' in process[-1] else None
             if k is not None:
                 for r in process[k+1:]:
-                    if r['source']=='baseline':break
+                    if r['source']=='baseline':
+                        recovery_limit=ns(r['baseline'], 'start_ns')
+                        break
                     following.append(r)
             live=next((r for r in following if r['source']=='live' and r['timing']['succeeded'] and r['timing']['verified'] and r['timing']['candidate_generation']==new),None)
             heartbeat=next((r for r in following if r.get('heartbeat',{}).get('written') and r['heartbeat']['serving'] and r['heartbeat']['generation']==new),None)
             packets={}
             for name,trace in streams.items():
                 inside=[p for p in trace if start<=ns(p,'ingress_ns') and (end is None or ns(p,'ingress_ns')<=end)]
-                after=[p for p in trace if end is not None and ns(p,'ingress_ns')>end and ns(p,'egress_ns')>0]
+                after=[p for p in trace if end is not None and ns(p,'ingress_ns')>end and ns(p,'egress_ns')>0 and (recovery_limit is None or ns(p,'egress_ns')<recovery_limit)]
                 lost=[p for p in inside if p['result']!='ok' or not ns(p,'egress_ns')]
                 guards=[r for r in process if r.get('timing',{}).get('operation')=='apply' and r['timing']['deadline']['install_ok'] and r['timing']['deadline']['guard_released']]
                 losses=[dict(p,completed_guard_joins=[identity(g) for g in guards if ns(g['timing']['deadline'],'install_start_ns')<=ns(p,'ingress_ns')<=ns(g['timing']['deadline'],'release_end_ns')]) for p in lost]
@@ -50,6 +53,7 @@ def windows(rows, streams):
                 classification='policy_missing baseline during populated lease generation '+old['generation']+'→'+new+'; stale-lease path consistent with code' if stale else 'policy_missing; stale populated lease transition not established',
                 stale_populated_lease_candidate=stale,cause_status='unproven',
                 next_live=live,next_serving_heartbeat=heartbeat,packets=packets,
+                recovery_observation_limit_ns=str(recovery_limit) if recovery_limit is not None else None,
                 recovery='Apply plus later live verification and serving heartbeat observed' if live and heartbeat else 'later serving recovery unavailable within this baseline-free interval'))
             i=k+1 if k is not None else len(process)
     return result
