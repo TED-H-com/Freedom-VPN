@@ -172,6 +172,27 @@ func TestAT29_M3_HoldLeaseJoinAndOrdering(t *testing.T) {
 		t.Fatalf("D-075 grace=%v err=%v", grace, err)
 	}
 	f.counts(0, 0, 0)
+	cause, err := PublicationDataPathFailure(t.Context(), f.pool, f.report, 3, f.now)
+	if err != nil || cause != "stale_generation" {
+		t.Fatalf("grace is not convergence: %s %v", cause, err)
+	}
+}
+
+func TestAT29_M3_DelayedAlarmEscalatesWithoutRegressingLatestSample(t *testing.T) {
+	f := newHoldFixture(t)
+	f.submit()
+	f.next(10*time.Second, 1, 0, false)
+	f.report.BootId = uuid.New()
+	f.submit()
+	latest := f.report.ReportId
+	f.next(time.Second, 3, 1, true)
+	f.report.ObservedAt = f.now.Add(-5 * time.Second)
+	f.submit()
+	f.counts(1, 3, 1)
+	var snapshot, alarm uuid.UUID
+	if err := f.pool.QueryRow(t.Context(), `SELECT (after_diff->>'report_id')::uuid,(after_diff->>'alarm_report_id')::uuid FROM audit_events WHERE action='node.generation_hold.escalated'`).Scan(&snapshot, &alarm); err != nil || snapshot != latest || alarm != f.report.ReportId {
+		t.Fatalf("delayed alarm evidence: %s %s %v", snapshot, alarm, err)
+	}
 }
 
 func TestAT29_M3_RestartsRetainIncidentAndCentralDeadline(t *testing.T) {

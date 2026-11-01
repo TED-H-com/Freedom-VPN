@@ -123,12 +123,14 @@ func reconcileGenerationHoldsTx(ctx context.Context, tx pgx.Tx, node uuid.UUID, 
 	}
 	rows, err := tx.Query(ctx, `SELECT h.id,h.node_id,h.incarnation_id,h.first_seen_at,h.last_seen_at,
 		r.report_id,r.boot_id,r.lease_id,r.applied_generation::text,r.lease_generation::text,
-		r.reported_steps::text,r.reported_elapsed_ms::text,r.reported_alarm,r.summary_valid
+		r.reported_steps::text,r.reported_elapsed_ms::text,r.reported_alarm,r.summary_valid,alarm.report_id
 		FROM node_generation_holds h JOIN node_generation_hold_reports r
 		ON r.node_id=h.node_id AND r.incarnation_id=h.incarnation_id AND r.report_id=h.latest_report_id
+		LEFT JOIN LATERAL (SELECT report_id FROM node_generation_hold_reports
+		 WHERE hold_id=h.id AND summary_valid AND reported_alarm ORDER BY report_id LIMIT 1) alarm ON true
 		WHERE h.ended_at IS NULL AND h.escalated_at IS NULL
 		AND ($1::uuid='00000000-0000-0000-0000-000000000000' OR h.node_id=$1)
-		AND (h.first_seen_at <= $2 OR (r.summary_valid AND r.reported_alarm)) FOR UPDATE OF h`, node, now.Add(-generationHoldAlarmAfter))
+		AND (h.first_seen_at <= $2 OR alarm.report_id IS NOT NULL) FOR UPDATE OF h`, node, now.Add(-generationHoldAlarmAfter))
 	if err != nil {
 		return err
 	}
@@ -137,7 +139,7 @@ func reconcileGenerationHoldsTx(ctx context.Context, tx pgx.Tx, node uuid.UUID, 
 		var a operations.GenerationHoldAlarm
 		if err := rows.Scan(&a.IncidentID, &a.NodeID, &a.IncarnationID, &a.FirstSeenAt, &a.LastSeenAt,
 			&a.ReportID, &a.BootID, &a.LeaseID, &a.AppliedGeneration, &a.LeaseGeneration,
-			&a.ReportedSteps, &a.ReportedElapsedMS, &a.ReportedAlarm, &a.SummaryValid); err != nil {
+			&a.ReportedSteps, &a.ReportedElapsedMS, &a.ReportedAlarm, &a.SummaryValid, &a.AlarmReportID); err != nil {
 			rows.Close()
 			return err
 		}

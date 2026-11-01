@@ -87,6 +87,10 @@ recorded; it makes no claim that forwarding recovered. Audit insertion and
 central restart and concurrent replicas cannot multiply the escalation. The
 worker's normal claim fence applies.
 
+A delayed alarm report associated with the active incident also escalates it
+without replacing a newer report's counters. The audit's `alarm_report_id`
+identifies that trigger; it is null when only central age triggered escalation.
+
 ## Ending an incident
 
 A newer or equal-time report without the hold marker that names a corroborated

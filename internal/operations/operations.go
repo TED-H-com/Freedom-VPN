@@ -119,20 +119,21 @@ type Store struct{ Pool *pgxpool.Pool }
 // GenerationHoldAlarm is central diagnostic evidence, not a serving grant or a
 // new Operation status. Nullable counters stay unknown after a malformed summary.
 type GenerationHoldAlarm struct {
-	IncidentID        uuid.UUID `json:"incident_id"`
-	NodeID            uuid.UUID `json:"node_id"`
-	IncarnationID     uuid.UUID `json:"incarnation_id"`
-	ReportID          uuid.UUID `json:"report_id"`
-	BootID            uuid.UUID `json:"boot_id"`
-	LeaseID           uuid.UUID `json:"lease_id"`
-	FirstSeenAt       time.Time `json:"first_seen_at"`
-	LastSeenAt        time.Time `json:"last_seen_at"`
-	AppliedGeneration string    `json:"applied_generation"`
-	LeaseGeneration   string    `json:"lease_generation"`
-	ReportedSteps     *string   `json:"reported_steps"`
-	ReportedElapsedMS *string   `json:"reported_elapsed_ms"`
-	ReportedAlarm     *bool     `json:"reported_alarm"`
-	SummaryValid      bool      `json:"summary_valid"`
+	IncidentID        uuid.UUID  `json:"incident_id"`
+	NodeID            uuid.UUID  `json:"node_id"`
+	IncarnationID     uuid.UUID  `json:"incarnation_id"`
+	ReportID          uuid.UUID  `json:"report_id"`
+	BootID            uuid.UUID  `json:"boot_id"`
+	LeaseID           uuid.UUID  `json:"lease_id"`
+	FirstSeenAt       time.Time  `json:"first_seen_at"`
+	LastSeenAt        time.Time  `json:"last_seen_at"`
+	AppliedGeneration string     `json:"applied_generation"`
+	LeaseGeneration   string     `json:"lease_generation"`
+	ReportedSteps     *string    `json:"reported_steps"`
+	ReportedElapsedMS *string    `json:"reported_elapsed_ms"`
+	ReportedAlarm     *bool      `json:"reported_alarm"`
+	SummaryValid      bool       `json:"summary_valid"`
+	AlarmReportID     *uuid.UUID `json:"alarm_report_id"`
 }
 
 // RecordGenerationHoldAlarm appends the existing admin audit surface. The caller
