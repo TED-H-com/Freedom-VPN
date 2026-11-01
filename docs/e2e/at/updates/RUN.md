@@ -146,3 +146,27 @@ any Go AT or installer test: port 42443 was occupied. Its original note proposed
 waiting for that port; the final admission decision instead selected the free,
 shared-harness-supported 54000 slot. The failed startup remains exit 2. There is
 only one measured AT invocation; no failed predicate is rerun or weakened.
+
+## Follow-up 14 receipt observation
+
+The TEST ONLY observer retains the devstack launch ID, child PID and kernel
+start ticks before the original service stop. After it returns, it validates
+that launch's parent wait receipt, including raw status, nullable exit versus
+signal and UTC wait-observation time. Repeated stops reuse the same receipt;
+subsequent starts reread the retained ID, never the new current launch ID.
+The separate `.sigkill.json` records an attempted escalation, not its outcome.
+The collector uses `docker cp`, including after a whole-container stop; Docker
+exit 0 means the container handler completed and cannot prove agent exit 0.
+
+Devstack 26 supplies the 15 s post-TERM supervisor budget, PID1 TERM/INT forwarding
+and 25 s compose/clone grace. The observer changes none of those limits.
+The systemd installer retains InvocationID/PID/start ticks and systemd's parent
+waitid code/status and exit timestamp separately. Its encoded status is labeled
+derived; an available raw `/proc` status is a separate sample. Systemd is the
+parent there, not devstack's waiter. No installer service/config adapter is added.
+
+All direct command durations are compared against the immutable follow-up 13
+archive, including repeated stops and rollback. Durations at least 15 s, failed
+stops, SIGKILL or lost leases remain failed observations. A slower successful
+stop within budget is a measurement. Missing receipts remain unavailable.
+Run 759d244a's updates F13-01 stays unobserved regardless of the new sample.

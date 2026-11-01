@@ -87,3 +87,29 @@ read before stack reset. Their four-field stage/time projection is pinned in
 It is separate from the byte-identical root archive: stage brackets cannot be
 relabeled as direct command durations or termination evidence. The installer
 journal was not retained after teardown. All previous archives remain untouched.
+
+## Follow-up 14 archive — 2026-11-01
+
+Before any follow-up 14 gate or lab execution, all **48** root files on main
+`f680d6ddb8fd19979c0471a2ce06ffc6e16c7cd2` were copied byte-identically to
+[follow-up 13](history/follow-up-13/ARCHIVE.md), with the same
+[SHA256SUMS](history/follow-up-13/SHA256SUMS) manifest shape as follow-up 12.
+Every copy was compared with its source main blob. Run
+`759d244a-2dc4-460c-9f82-e37ce0ac7560` is the immutable stop comparison baseline;
+its product baseline is `5bd751026073444087b32ac2a7115f8566104f8b`.
+Updates F13-01 stays unobserved in that run. Follow-up-13-startup and all earlier
+archives remain untouched. No source file is moved or compressed: existing
+links keep their plain-file targets. New digest-dependent consumers must pin
+history paths only. This archive and audit are committed before any gate or lab.
+
+The follow-up 14 source inventory has 1,152 references under `internal node
+packaging tests`, still exactly four product-path sites. Both fleetupdate
+fixtures match their immutable follow-up 9 source bytes. The product sites
+remain provenance or frozen fixtures; `node/` and `packaging/` contain no
+literal living AT reads. The new archive test reads all 48 follow-up 13 pins.
+The TEST ONLY observer reads its own running fixture's identity, parent wait
+receipts and SQLite state. Its collector reads retained receipt paths with
+`docker cp`, including when a container is stopped, and compares only immutable
+follow-up 13 evidence. It does not feed living AT documents into product tests.
+All 478 pre-existing history files were compared with the source main blobs
+and remain byte-identical. No files were moved or compressed.

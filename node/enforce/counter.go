@@ -14,12 +14,15 @@ const (
 	counterUnknown = "ctunku"
 	counterUnkDown = "ctunkd"
 	counterDenied  = "ctdeny"
-	counterHost    = "cthost"
-	counterBadDNS  = "ctbadns"
-	counterInvalid = "ctinv"
-	counterInput   = "ctin"
-	counterBase    = "ctbase"
-	counterNoDown  = "ctnodn"
+	// counterDeniedDown counts denied remote sources (deny/host/resolver sets)
+	// after the exact DNS reply exception. It contains no destination identity.
+	counterDeniedDown = "ctdenyd"
+	counterHost       = "cthost"
+	counterBadDNS     = "ctbadns"
+	counterInvalid    = "ctinv"
+	counterInput      = "ctin"
+	counterBase       = "ctbase"
+	counterNoDown     = "ctnodn"
 	// Probe counters are diagnostic. They are not device usage (§13.9).
 	counterProbeUp   = "probe_up"
 	counterProbeDown = "probe_down"
@@ -67,7 +70,7 @@ func parseDeviceCounter(name string) (device uuid.UUID, direction, namespace str
 
 func diagnosticNamespace(name string) bool {
 	switch name {
-	case counterV6, counterUnknown, counterUnkDown, counterDenied, counterHost,
+	case counterV6, counterUnknown, counterUnkDown, counterDenied, counterHost, counterDeniedDown,
 		counterBadDNS, counterInvalid, counterInput, counterBase, counterNoDown,
 		counterProbeUp, counterProbeDown:
 		return true

@@ -3,10 +3,12 @@ package usage
 import (
 	"context"
 	"fmt"
+	"maps"
 	"net/netip"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -140,9 +142,10 @@ func RunAT14Mechanisms(t *testing.T) ([]MechanismCheck, map[string]any) {
 
 	// Verify §10.2 rule ordering in chain forward:
 	// 1. IPv6 drop (ctv6), invalid ct drop (ctinv), unknown peer drop (ctunku),
-	//    DNS exception (nu_<dev> / nd_<dev> accept), bad DNS drop (ctbadns),
-	//    denied_v4 drop (ctdeny), and host_v4 drop (cthost) all appear BEFORE
-	//    per-device u_<dev> / d_<dev> accept rules.
+	//    DNS upload exception (nu_<dev> accept), bad DNS drop (ctbadns),
+	//    denied_v4 drop (ctdeny), and host_v4 drop (cthost) precede upload admission.
+	// 2. Download DNS replies precede all source guards (ctdenyd), which precede
+	//    every per-device d_<dev> accept rule.
 	uA1 := deviceCounterName("u", devA1)
 	dA1 := deviceCounterName("d", devA1)
 	uA2 := deviceCounterName("u", devA2)
@@ -167,12 +170,40 @@ func RunAT14Mechanisms(t *testing.T) ([]MechanismCheck, map[string]any) {
 		t.Fatalf("AT14 ordering violation: drops and DNS exceptions must precede u_/d_ forward admission counters:\n%s", plan.NFT)
 	}
 
+	// Match complete rendered statements, including direction and verdict.
+	for _, sourceSet := range []string{"denied_v4", "host_v4", "resolver_v4"} {
+		guard := fmt.Sprintf("add rule inet fvpn forward iifname %q oifname %q ip saddr @%s counter name \"ctdenyd\" drop\n",
+			model.Datapath.Uplink, model.Datapath.MemberIngress, sourceSet)
+		idxGuard := strings.Index(plan.NFT, guard)
+		if idxGuard < 0 {
+			t.Fatalf("AT14 missing download source guard %q:\n%s", guard, plan.NFT)
+		}
+		for _, binding := range bindings {
+			priority := enforce.ClassID(plan.Assignments[binding.MemberID])
+			for _, prefix := range binding.AllowedV4 {
+				admit := fmt.Sprintf("add rule inet fvpn forward iifname %q oifname %q ip daddr %s counter name %q meta priority set 0x%08x accept\n",
+					model.Datapath.Uplink, model.Datapath.MemberIngress, prefix.Addr(), deviceCounterName("d", binding.DeviceID), priority)
+				if idxAdmit := strings.Index(plan.NFT, admit); idxAdmit < 0 || idxGuard >= idxAdmit {
+					t.Fatalf("AT14 download source guard %s must precede admission for device %s:\n%s", sourceSet, binding.DeviceID, plan.NFT)
+				}
+				for _, proto := range []string{"tcp", "udp"} {
+					dnsReply := fmt.Sprintf("add rule inet fvpn forward iifname %q oifname %q ip saddr @resolver_v4 ip daddr %s %s sport 53 counter name %q meta priority set 0x%08x accept\n",
+						model.Datapath.Uplink, model.Datapath.MemberIngress, prefix.Addr(), proto, deviceCounterName("nd", binding.DeviceID), priority)
+					if idxReply := strings.Index(plan.NFT, dnsReply); idxReply < 0 || idxReply >= idxGuard {
+						t.Fatalf("AT14 %s DNS reply for device %s must precede download source guard %s:\n%s", proto, binding.DeviceID, sourceSet, plan.NFT)
+					}
+				}
+			}
+		}
+	}
+
 	// Verify ParseRuleset + canonical UsageEvent hash for admitted L3 deltas across:
 	// - Member A Device 1 upload (10,485,760 B + 65,536 B TCP retransmit = 10,551,296 B) & download (20,971,520 B)
 	// - Member A Device 2 UDP/QUIC upload (4,194,304 B) & download (8,388,608 B)
 	// - Member B Device 1 upload (1,048,576 B) & download (2,097,152 B)
 	// - Excluded traffic: DNS queries (nu_/nd_ = 1,150,000 B), IPv6 drops (ctv6 = 900,000 B),
-	//   RFC1918/metadata refused destinations (ctdeny = 750,000 B), node-self (cthost = 120,000 B).
+	//   RFC1918/metadata refused destinations (ctdeny = 750,000 B), node-self (cthost = 120,000 B),
+	//   denied/host/resolver return sources (ctdenyd = 80,000 B).
 	wantUpA1 := uint64(10_485_760 + 65_536)
 	wantDownA1 := uint64(20_971_520)
 	wantUpA2 := uint64(4_194_304)
@@ -191,6 +222,7 @@ func RunAT14Mechanisms(t *testing.T) ([]MechanismCheck, map[string]any) {
 		{"counter":{"table":"fvpn","name":%q,"packets":1000,"bytes":650000}},
 		{"counter":{"table":"fvpn","name":"ctv6","packets":900,"bytes":900000}},
 		{"counter":{"table":"fvpn","name":"ctdeny","packets":750,"bytes":750000}},
+		{"counter":{"table":"fvpn","name":"ctdenyd","packets":80,"bytes":80000}},
 		{"counter":{"table":"fvpn","name":"cthost","packets":120,"bytes":120000}}
 	]}`, uA1, wantUpA1, dA1, wantDownA1, uA2, wantUpA2, dA2, wantDownA2, uB1, wantUpB1, dB1, wantDownB1, nuA1, ndA1)
 
@@ -202,6 +234,23 @@ func RunAT14Mechanisms(t *testing.T) ([]MechanismCheck, map[string]any) {
 		rs.Counters[uA2].Bytes != wantUpA2 || rs.Counters[dA2].Bytes != wantDownA2 ||
 		rs.Counters[uB1].Bytes != wantUpB1 || rs.Counters[dB1].Bytes != wantDownB1 {
 		t.Fatalf("AT14 ParseRuleset counter mismatch: %+v", rs.Counters)
+	}
+	if got, present := rs.Counters["ctdenyd"]; !present || got != (enforce.CounterValue{Packets: 80, Bytes: 80_000}) {
+		t.Fatalf("AT14 missing or incorrect ctdenyd diagnostic: present=%v value=%+v", present, got)
+	}
+	withoutDeniedDown := maps.Clone(rs.Counters)
+	delete(withoutDeniedDown, "ctdenyd")
+	before, err := enforce.Samples(model, withoutDeniedDown)
+	if err != nil || len(before) != 8 { // Six usage directions and two separate DNS readings.
+		t.Fatalf("AT14 baseline device samples: got %+v err=%v", before, err)
+	}
+	after, err := enforce.Samples(model, rs.Counters)
+	if err != nil || !slices.Equal(before, after) {
+		t.Fatalf("AT14 ctdenyd changed member usage or sample presence: before=%+v after=%+v err=%v", before, after, err)
+	}
+	diagnosticOnly, err := enforce.Samples(model, map[string]enforce.CounterValue{"ctdenyd": rs.Counters["ctdenyd"]})
+	if err != nil || len(diagnosticOnly) != 0 {
+		t.Fatalf("AT14 ctdenyd alone created member samples: %+v err=%v", diagnosticOnly, err)
 	}
 
 	ev := makeSignedUsageEvent(t, nodeID, incID, epochID, 1, now, now.Add(10*time.Second), api.UsageQualityComplete, nil, []api.UsageRecord{
@@ -219,13 +268,13 @@ func RunAT14Mechanisms(t *testing.T) ([]MechanismCheck, map[string]any) {
 			Name:    "ForwardAdmissionRuleOrderAndExclusions",
 			SpecRef: "§10.1, §10.2, MTR01, MTR02",
 			Status:  StatusPass,
-			Summary: "enforce.Render places IPv6 (ctv6), invalid conntrack (ctinv), unknown peer (ctunku), DNS resolver exception (nu_/nd_), RFC1918/metadata deny (ctdeny), and host_v4 (cthost) rules before per-device forward_admission_v1 counters (u_/d_).",
+			Summary: "enforce.Render places IPv6 (ctv6), invalid conntrack (ctinv), unknown peer (ctunku), DNS resolver exception (nu_), RFC1918/metadata deny (ctdeny), and host_v4 (cthost) before upload admission (u_); download TCP/UDP resolver DNS replies (nd_) precede all denied/host/resolver source guards (ctdenyd), which precede every download admission (d_).",
 		},
 		{
 			Name:    "TwoDevicesSameMemberAndSecondMemberAttribution",
 			SpecRef: "§10.2, §10.4, MTR01, MTR04",
 			Status:  StatusPass,
-			Summary: "enforce.ParseRuleset + canonical UsageEvent attribution records upload (including L3 TCP retransmit and UDP/QUIC) and download bytes per device with 0.00% error while excluding 2,920,000 B of DNS, IPv6, refused, and host-targeted traffic.",
+			Summary: "enforce.ParseRuleset + canonical UsageEvent attribution records upload (including L3 TCP retransmit and UDP/QUIC) and download bytes per device with 0.00% error while excluding 3,000,000 B of DNS, IPv6, refused, host-targeted, and denied return traffic; enforce.Samples proves ctdenyd changes neither member usage nor sample presence.",
 			Details: map[string]any{
 				"dev_a1_upload_bytes":   fmt.Sprintf("%d", wantUpA1),
 				"dev_a1_download_bytes": fmt.Sprintf("%d", wantDownA1),
@@ -234,7 +283,7 @@ func RunAT14Mechanisms(t *testing.T) ([]MechanismCheck, map[string]any) {
 				"dev_b1_upload_bytes":   fmt.Sprintf("%d", wantUpB1),
 				"dev_b1_download_bytes": fmt.Sprintf("%d", wantDownB1),
 				"excluded_dns_bytes":    "1150000",
-				"excluded_drop_bytes":   "1770000",
+				"excluded_drop_bytes":   "1850000",
 			},
 		},
 	}
@@ -244,7 +293,7 @@ func RunAT14Mechanisms(t *testing.T) ([]MechanismCheck, map[string]any) {
 		"payload_sha256":         ev.PayloadSha256,
 		"member_a_total_bytes":   fmt.Sprintf("%d", wantUpA1+wantDownA1+wantUpA2+wantDownA2),
 		"member_b_total_bytes":   fmt.Sprintf("%d", wantUpB1+wantDownB1),
-		"excluded_non_usage_sum": "2920000",
+		"excluded_non_usage_sum": "3000000",
 	}
 	return checks, obs
 }
