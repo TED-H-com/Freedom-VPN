@@ -994,3 +994,76 @@ remain retained as history. The final run reproduces the failure pattern on
 a fresh stack; it does not replay all members 11 history or identify those
 historical packet identities. Members 12 should compare its own original
 sequence using these exports before transferring a root-cause conclusion.
+
+## members 12 — 2026-11-01 (follow-up 23, D-102, provisional D-137)
+
+**Request 1 / F8-02 / AT09:** `PrepareNativeRouter1280`, `Select` and
+`StartCapture` are exported through `labstack` for the prepared canonical
+node/member pair. The [contract](scenarios/harness-exports.md#follow-up-23--routed-pmtu-native-debug-and-dns-delivery-test-only)
+and [dated native analysis](runs/2026-11-01/followup23/a26d9b0f-bd1b-48df-9546-4105f9b3f328/analysis.md)
+show both router-link ends at 1280, sender/router ingress at 1500, ICMP enabled,
+and exact peer routes without an MTU metric. Both families receive **64,064
+bytes in 1 ms**. IPv6 emits **one PTB**, received by the sender, whose PMTU
+becomes **1280**; **84 fragments** arrive. IPv4's **34** oversized outer datagrams
+have **DF=0** and become **68** arriving router fragments; **zero frag-needed**,
+no learned PMTU reduction. This is transit fragmentation, not IPv4 DF discovery.
+
+The original receive-only IPv4 row fails again at **10,010 bytes / 12,011 ms**;
+the separate IPv6 row fails at **10,010 bytes / 12,006 ms**, both without PTB.
+Those rows and historical F8-02 stay failed. The existing known-PMTU control is
+unchanged. Per provisional D-137, members may qualify the tested sender-learnable
+scope and report the silent receive-only black hole explicitly. No global MTU,
+MSS clamp, complete platform AT09 pass or QUIC qualification is introduced.
+Members owns adoption in `tests/e2e/at/members/forwarding_test.go`; no members
+acceptance assertion or register was edited.
+
+**Request 7 / F11-01:** the [same native analysis](runs/2026-11-01/followup23/a26d9b0f-bd1b-48df-9546-4105f9b3f328/analysis.md#f11-01-pinned-proxy--ipv6-p2p-transition)
+reproduces five SYNs, **5,003 ms** timeout, zero origin requests and zero node
+byte increments. NetBird 0.82.0's debug log records direct IPv6 endpoint setup
+then retained relay proxy redirection. Member loopback initiation **8** joins
+node loopback **164**; node response **167** joins member underlay **178**, with
+source `::1`. The member emits no WireGuard type-4 data during that request.
+The pinned upstream's `peer.Conn` → `loopback.ProxyWrapper.RedirectAs` → raw
+IPv6 injection path supplies the captured remote-source/loopback-destination
+initiation. This names the **native NetBird/WireGuard integration / upstream
+NetBird** path and owner. It does not observe the kernel's exact rejection or
+handshake-acceptance reason. No product transport, enforcement or health file
+changed. Historical members packet IDs and verdicts remain their own evidence.
+The exported debug decoder publishes allowlisted metadata; raw logs stay private.
+
+**Request 11 / F12-03:** no negative-cache fixture, cache setting or assertion
+change. The retained initial SOA TTL **2**, followed **1.228672687 seconds** later
+by the same-primary positive refetch, still lies within whole-second expiry
+uncertainty. The authority's older completion is retained, with no outstanding
+exchange or switch to another resolver established. Existing lifecycle history,
+stream IDs, read times, outstanding arrays and `authority_ttl` supply the quiet
+window evidence; no additional quiet-window helper was found necessary here.
+Members/dns-publish own choosing a repeatable initial quiet sample and a measured
+interval safely below its remaining TTL after accounting for rounding and
+command overhead. A later TTL-zero or too-short sample cannot be silently retried
+to replace this failed combined row. No negative TTL extension or cache flush
+is exported, and the original F12-03 result stays failed.
+
+**Request 5 / F4-05 / F4-07:** the positive IDNA fixture is delivered:
+`ProbeNativeIDNA(ctx, tcp)` converts the closed U-label, checks its A-label,
+and probes it through the native stub. The [dated wire evidence](runs/2026-11-01/followup23/9bb2098e-1c6f-48a8-9fbd-fd99bd9fc49e/analysis.md)
+records positive A answers over **UDP and TCP, 1 ms each**, TTL **5 / 4**,
+matching the controlled origin. Both replies join primary egress, node forwarding,
+member tunnel ingress and local-stub output. The original capture gate failure
+(singular tcpdump statistics) remains failed; a separate same-capture readback
+proves one secondary packet / zero drops, and the parser regression is fixed.
+No traffic retry was used. Production automatic nameserver distribution remains
+outside this TEST ONLY `ConfigureNativeDNS` integration; operator/platform
+Private DNS, browser DoH and Unicode UI checks remain outstanding.
+
+**Request 12 / F12-04:** `StartNativeDNSCapture`, opaque resolver query/reply
+hashes, wire IDs and the closed DNS-header decoder now observe the previously
+missing relay-send → node → member tunnel → local-stub segment. The [exact joins](runs/2026-11-01/followup23/9bb2098e-1c6f-48a8-9fbd-fd99bd9fc49e/dns-delivery-analysis.json)
+show the fresh RR reply at primary packet **4**, node **14/15**, member tunnel
+**15**, and a reserialized local response **16**. This new query succeeds in
+**2 ms**; it does **not** reproduce or close the historical **5,001 ms SERVFAIL**.
+The historic responder and cause remain **unattributed / unproven** because those
+interfaces were not captured then. Members owns using the export around its
+original AT20 query and preceding mutations; a successful relay socket write
+is still not proof of client delivery or processing. No AdGuard/cache/transport
+cause is inferred, and no query is repeated to replace the failed row.

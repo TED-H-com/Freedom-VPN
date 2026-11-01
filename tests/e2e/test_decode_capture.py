@@ -40,5 +40,31 @@ class HeaderOnly(unittest.TestCase):
         ptb=bytes([0x60,0,0,0])+struct.pack('!H',8)+bytes([58,64])+bytes(32)+bytes([2,0,0,0])+struct.pack('!I',1280)
         self.assertEqual(decode_ip(ptb,lambda _: 'endpoint')['icmp']['mtu'],1280)
 
+
+class DNSHeaderOnly(unittest.TestCase):
+    def test_closed_idna_wire_and_nonfixture_rejection(self):
+        from decode_capture import dns_header
+        import json
+        def message(labels):
+            return struct.pack('!6H',42,0x8180,1,0,0,0)+b''.join(bytes([len(x)])+x for x in labels)+b'\0'+struct.pack('!HH',1,1)
+        got=dns_header(message([b'xn--bcher-kva',b'example',b'invalid']))
+        self.assertEqual((got['fixture_case'],got['wire_id'],got['rcode']),('idna_positive',42,0))
+        self.assertNotIn('xn--',json.dumps(got))
+        self.assertIsNone(dns_header(message([b'private',b'example',b'invalid'])))
+        self.assertIsNone(dns_header(message([b'rr',b'example',b'invalid'])[:-1]))
+
+class NativeDebugAllowlist(unittest.TestCase):
+    def test_no_arbitrary_log_or_identity_export(self):
+        import json
+        from decode_native_debug import decode
+        raw=(b'2026-11-01T08:18:15.195Z INFO [peer: PRIVATE] client/internal/peer/conn.go:472: configure WireGuard endpoint to: [2001:db8::1]:51820\n'
+             b'2026-11-01T08:18:15.196Z DEBG client/internal/peer/conn.go:484: redirect packets from relayed conn to WireGuard PRIVATE\n'
+             b'2026-11-01T08:18:15.197Z INFO client/unknown.go:1: PRIVATE\n')
+        got=decode(raw)
+        self.assertEqual(len(got),2)
+        self.assertEqual(got[0]['family'],'ipv6')
+        self.assertNotIn('PRIVATE',json.dumps(got))
+        self.assertNotIn('2001:db8',json.dumps(got))
+
 if __name__=='__main__':
     unittest.main()

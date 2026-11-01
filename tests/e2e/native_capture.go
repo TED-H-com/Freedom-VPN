@@ -11,6 +11,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -73,11 +74,18 @@ func (s *Stack) nativeAddresses(ctx context.Context) (map[string]string, error) 
 // directory; use decode_capture.py before publishing. On error, started captures
 // are stopped and exported too. It requires already joined member/node peers.
 func (s *Stack) StartNativeCapture(ctx context.Context) (_ *NativeCapture, err error) {
+	return s.startNativeCapture(ctx, nil)
+}
+
+func (s *Stack) startNativeCapture(ctx context.Context, extra map[string]string) (_ *NativeCapture, err error) {
 	addresses, err := s.nativeAddresses(ctx)
 	if err != nil {
 		return nil, err
 	}
 	c := &NativeCapture{stack: s, targets: map[string]string{"member": addresses["node"], "node": addresses["member"]}, containers: map[string]string{"member": s.lab.member, "node": s.lab.node, "origin": s.lab.prefix + "-origin"}, evidence: NativeCaptureEvidence{ID: uuid.NewString(), Points: map[string]*NativeCapturePoint{}}}
+	for role, container := range extra {
+		c.containers[role] = container
+	}
 	c.directory = "/var/lib/vpn-node/e2e/native-" + c.evidence.ID
 	build := filepath.Join(s.lab.root, ".agent/tmp/native-observe")
 	if err = os.MkdirAll(filepath.Dir(build), 0700); err != nil {
@@ -93,7 +101,7 @@ func (s *Stack) StartNativeCapture(ctx context.Context) (_ *NativeCapture, err e
 			_, _ = c.Stop(context.WithoutCancel(ctx), filepath.Join(s.lab.root, ".agent/tmp/native-incomplete", c.evidence.ID))
 		}
 	}()
-	for _, role := range []string{"member", "node", "origin"} {
+	for _, role := range c.roles() {
 		container := c.containers[role]
 		if err = exec.CommandContext(ctx, "docker", "exec", container, "mkdir", "-p", c.directory).Run(); err != nil {
 			return nil, err
@@ -109,7 +117,7 @@ func (s *Stack) StartNativeCapture(ctx context.Context) (_ *NativeCapture, err e
 		}
 		// Fixed filter excludes application contents from public output, but raw
 		// pcaps are private. Full snaplen permits opaque outer-datagram hash joins.
-		script := `umask 077; echo $$ > "$1/pid"; exec tcpdump --immediate-mode -U -B 32768 -nn -s 65535 -i any -w "$1/raw.pcap" 'icmp or icmp6 or udp or tcp port 443 or tcp port 9446' 2>"$1/stats"`
+		script := `umask 077; echo $$ > "$1/pid"; exec tcpdump --immediate-mode -U -B 32768 -nn -s 65535 -i any -w "$1/raw.pcap" 'icmp or icmp6 or udp or tcp port 443 or tcp port 9446 or tcp port 53' 2>"$1/stats"`
 		err = exec.CommandContext(ctx, "docker", "exec", "-d", container, "sh", "-c", script, "capture", c.directory).Run()
 		if err != nil {
 			return nil, err
@@ -169,7 +177,7 @@ func (c *NativeCapture) Sample(ctx context.Context, label string) error {
 // ignored private disk path. Statistics are explicit; unknown is never zero.
 func (c *NativeCapture) Stop(ctx context.Context, directory string) (NativeCaptureEvidence, error) {
 	var errs []error
-	for _, role := range []string{"member", "node", "origin"} {
+	for _, role := range c.roles() {
 		p := c.evidence.Points[role]
 		if p == nil {
 			continue
@@ -202,11 +210,20 @@ func (c *NativeCapture) Stop(ctx context.Context, directory string) (NativeCaptu
 func parseNativeCaptureStats(raw string) (int, int, int, bool) {
 	counts := []int{-1, -1, -1}
 	for i, label := range []string{"packets captured", "packets received by filter", "packets dropped by kernel"} {
-		match := regexp.MustCompile(`(?m)^(\d+) ` + label + `$`).FindStringSubmatch(raw)
+		match := regexp.MustCompile(`(?m)^(\d+) ` + strings.Replace(label, "packets", "packets?", 1) + `$`).FindStringSubmatch(raw)
 		if len(match) != 2 {
 			return counts[0], counts[1], counts[2], false
 		}
 		counts[i], _ = strconv.Atoi(match[1])
 	}
 	return counts[0], counts[1], counts[2], true
+}
+
+func (c *NativeCapture) roles() []string {
+	roles := []string{}
+	for role := range c.containers {
+		roles = append(roles, role)
+	}
+	slices.Sort(roles)
+	return roles
 }

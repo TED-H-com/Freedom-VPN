@@ -1,0 +1,20 @@
+{
+  "id": "fleet-retained",
+  "title": "Third pre-existing enrolling identity retained before bootstrap",
+  "spec": [
+    "§6.2",
+    "AT24",
+    "AT26",
+    "D-089"
+  ],
+  "status": "pass",
+  "observations": [
+    {
+      "name": "snapshot",
+      "detail": "{\"pending_request_id\":\"01a19639-67ae-7c6a-b387-0a2bf17abd00\",\"key_sha256\":\"40cf7e3c4dcd3a694833d8353f983d6fe252a36f8bb30000314c0395f507cefd\",\"offline_attempt_failed\":true,\"incarnation_unbound_at_snapshot\":true,\"local_stage\":\"enrolling_snapshot\",\"before_lifecycle\":\"enrolling\",\"node_id\":\"01a19639-6379-733f-b2f7-3cc0bd27b811\",\"incarnation_id\":\"01a19639-67ae-7c6b-8cc0-988330f857c2\",\"retained_at\":\"2026-11-01T08:28:40.050411397Z\",\"booted_at\":\"0001-01-01T00:00:00Z\",\"eligible_at\":\"0001-01-01T00:00:00Z\",\"before_state\":\"pending\",\"after_state\":\"\",\"same_identity\":false,\"eligibility\":\"first admin API observation of provisioning_state=ready with the retained incarnation; publication/update assignment is separate\"}"
+    }
+  ],
+  "at": "2026-11-01T08:28:40Z",
+  "run_id": "9bb2098e-1c6f-48a8-9fbd-fd99bd9fc49e",
+  "source_commit": "1d396065c432485875add24a00761608afb293cc"
+}

@@ -24,6 +24,7 @@ import (
 )
 
 type result struct {
+	DNSWireID       uint16              `json:"dns_wire_id"`
 	AuthoritySerial uint32              `json:"authority_serial"`
 	Endpoint        *streamstats.Sample `json:"endpoint,omitempty"`
 	AuthorityTTL    uint32              `json:"authority_ttl"`
@@ -132,6 +133,7 @@ func main() {
 			break
 		}
 		out.Available = true
+		out.DNSWireID = response.ID
 		out.RCode = int(response.RCode)
 		out.AuthorityTTL = response.AuthorityTTL
 		out.HasSOA = response.HasSOA

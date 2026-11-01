@@ -17,11 +17,13 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/dnsrelay"
 	"github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/streamstats"
 	"github.com/google/uuid"
+	"golang.org/x/net/idna"
 )
 
 const fixtureProbe = "/usr/local/bin/fvpn-e2e-fixture-probe"
 
 type FixtureProbeResult struct {
+	DNSWireID       uint16              `json:"dns_wire_id"`
 	AuthoritySerial uint32              `json:"authority_serial"`
 	DNS             *DNSQueryTrace      `json:"dns_trace,omitempty"`
 	Endpoint        *streamstats.Sample `json:"endpoint,omitempty"`
@@ -257,4 +259,21 @@ func (s *Stack) SetDNSFixturePhase(phase string) error {
 		text = strings.Replace(text, "rebind 5 IN AAAA 2001:db8:30::10", "rebind 5 IN AAAA fd00::30", 1)
 	}
 	return os.WriteFile(filepath.Join(s.lab.state, "render/coredns/example.invalid.zone"), []byte(text), 0600)
+}
+
+// ProbeNativeIDNA converts the TEST ONLY U-label with the lookup profile and
+// sends its A-label on the native wire. This is no browser/OS IDNA assertion.
+func (s *Stack) ProbeNativeIDNA(ctx context.Context, tcp bool) (FixtureProbeResult, error) {
+	wire, err := idna.Lookup.ToASCII("bücher.example.invalid")
+	if err != nil || wire != "xn--bcher-kva.example.invalid" {
+		return FixtureProbeResult{}, fmt.Errorf("IDNA fixture conversion failed")
+	}
+	return s.ProbeNativeDNS(ctx, "", wire, 1, tcp, s.lab.originIP)
+}
+
+// StartNativeDNSCapture observes relay egress, selected node, native tunnel and
+// local stub delivery. Lifecycle receipts prove send completion, not receipt.
+// Start before the original query; always Stop with a private disk directory.
+func (s *Stack) StartNativeDNSCapture(ctx context.Context) (*NativeCapture, error) {
+	return s.startNativeCapture(ctx, map[string]string{"primary": s.lab.prefix + "-origin-dns", "secondary": s.lab.prefix + "-origin-dns-secondary"})
 }
