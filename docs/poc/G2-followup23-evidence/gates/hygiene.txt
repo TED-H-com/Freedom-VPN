@@ -1,0 +1,49 @@
+=== RUN   TestD098_Followup18ArchivePins
+    evidence_test.go:70: D-098: 122 byte/SHA-256 pins match
+--- PASS: TestD098_Followup18ArchivePins (0.00s)
+=== RUN   TestCommittedEvidenceFiles_ValidAndHygieneClean
+--- PASS: TestCommittedEvidenceFiles_ValidAndHygieneClean (1.05s)
+=== RUN   TestD098_EvidencePinValidation
+=== RUN   TestD098_EvidencePinValidation/history_snapshot
+=== RUN   TestD098_EvidencePinValidation/run-ID_snapshot
+=== RUN   TestD098_EvidencePinValidation/owned_source
+=== RUN   TestD098_EvidencePinValidation/relative_retention
+=== RUN   TestD098_EvidencePinValidation/relative_archive
+=== RUN   TestD098_EvidencePinValidation/mutable_matching_bytes
+=== RUN   TestD098_EvidencePinValidation/dated_directory_alone
+=== RUN   TestD098_EvidencePinValidation/history_lookalike
+=== RUN   TestD098_EvidencePinValidation/history_lacks_snapshot
+=== RUN   TestD098_EvidencePinValidation/changed_source
+=== RUN   TestD098_EvidencePinValidation/changed_retained_bytes
+=== RUN   TestD098_EvidencePinValidation/missing_target
+=== RUN   TestD098_EvidencePinValidation/traversal
+=== RUN   TestD098_EvidencePinValidation/relative_traversal
+=== RUN   TestD098_EvidencePinValidation/absolute_path
+=== RUN   TestD098_EvidencePinValidation/empty_manifest
+=== RUN   TestD098_EvidencePinValidation/malformed_JSON
+=== RUN   TestD098_EvidencePinValidation/wrong_byte_length
+=== RUN   TestD098_EvidencePinValidation/duplicate_target
+=== RUN   TestD098_EvidencePinValidation/checks_later_entries
+--- PASS: TestD098_EvidencePinValidation (0.00s)
+    --- PASS: TestD098_EvidencePinValidation/history_snapshot (0.00s)
+    --- PASS: TestD098_EvidencePinValidation/run-ID_snapshot (0.00s)
+    --- PASS: TestD098_EvidencePinValidation/owned_source (0.00s)
+    --- PASS: TestD098_EvidencePinValidation/relative_retention (0.00s)
+    --- PASS: TestD098_EvidencePinValidation/relative_archive (0.00s)
+    --- PASS: TestD098_EvidencePinValidation/mutable_matching_bytes (0.00s)
+    --- PASS: TestD098_EvidencePinValidation/dated_directory_alone (0.00s)
+    --- PASS: TestD098_EvidencePinValidation/history_lookalike (0.00s)
+    --- PASS: TestD098_EvidencePinValidation/history_lacks_snapshot (0.00s)
+    --- PASS: TestD098_EvidencePinValidation/changed_source (0.00s)
+    --- PASS: TestD098_EvidencePinValidation/changed_retained_bytes (0.00s)
+    --- PASS: TestD098_EvidencePinValidation/missing_target (0.00s)
+    --- PASS: TestD098_EvidencePinValidation/traversal (0.00s)
+    --- PASS: TestD098_EvidencePinValidation/relative_traversal (0.00s)
+    --- PASS: TestD098_EvidencePinValidation/absolute_path (0.00s)
+    --- PASS: TestD098_EvidencePinValidation/empty_manifest (0.00s)
+    --- PASS: TestD098_EvidencePinValidation/malformed_JSON (0.00s)
+    --- PASS: TestD098_EvidencePinValidation/wrong_byte_length (0.00s)
+    --- PASS: TestD098_EvidencePinValidation/duplicate_target (0.00s)
+    --- PASS: TestD098_EvidencePinValidation/checks_later_entries (0.00s)
+PASS
+ok  	github.com/TED-H-com/Freedom-VPN/tests/netlab	1.052s

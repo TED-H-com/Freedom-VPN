@@ -1,0 +1,6 @@
+/dev/stdin:8:28-42: Error: unqualified type integer specified in set definition. Try "typeof expression" instead of "type datatype".
+add set inet fvpn fvmarker { type integer; }
+                           ^^^^^^^^^^^^^^^
+/dev/stdin:9:34-34: Error: Value 1 exceeds valid range 0-0
+add element inet fvpn fvmarker { 1 }
+                                 ^

@@ -162,10 +162,14 @@ func Install(ctx context.Context, env *Env, req InstallRequest) (*Result, error)
 	}
 	if has && !same {
 		for _, unit := range stopOrder {
-			if err := j.Note("stop", unit, unit, "stopped for binary replace"); err != nil {
+			if err := j.Note("stop", unit, unit, "stop requested for binary replace"); err != nil {
 				return fail(err)
 			}
-			_ = env.services().Stop(ctx, unit)
+			if err := stopForBinaryReplace(ctx, env.services(), unit); err != nil {
+				stopErr := errf(ExitFailed, "failed", "stopping %s for binary replace failed: %s", unit, oneLine(err.Error()))
+				journalErr := j.Note("stop-failed", unit, unit, stopErr.Error())
+				return fail(errors.Join(stopErr, journalErr))
+			}
 		}
 	}
 	dest := l.releaseDir(id)

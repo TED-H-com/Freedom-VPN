@@ -216,6 +216,8 @@ Member units are disabled so a clone does not start `fvpn-node-netbird-up` befor
 
 Templates are `deploy/node/systemd/`. They are ordered after `network-online.target`. Long-running units use `Restart=on-failure`, `RestartSec=2s`, `RestartMaxDelaySec=30s`, `RestartSteps=5`, and start-limit `120s` / burst 5 in the `[Unit]` section. Hardening is `NoNewPrivileges=yes`, `ProtectSystem=strict`, `ProtectHome=yes`, `PrivateTmp=yes`, `UMask=0077`.
 
+The agent has `TimeoutStopSec=15s`: its cooperative shutdown budget is at most 10 s for the remaining Step plus 3 s for Close, with 2 s margin before systemd's forced-stop backstop. Binary replacement allows 20 s per installer `systemctl stop` call; it records and reports a failed or timed-out stop and aborts before changing binaries or units. In a joint stop, the watchdog stays up until the agent has stopped (`Before=fvpn-agent.service` gives reverse stop ordering); stopping the agent alone leaves the watchdog running. See the [dated stop-path audit and measurements](install-followup9-2026-11-01.md).
+
 | Unit | Capabilities | Why |
 |---|---|---|
 | `fvpn-agent.service` | `CAP_NET_ADMIN`, `CAP_NET_RAW` (ambient too) | nftables, tc, ip, and raw sockets / conntrack. After NetBird and update recovery. Not `Requires=` on recovery. |
