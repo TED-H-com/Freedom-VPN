@@ -59,6 +59,8 @@ func (l *live) replaceFiniteGrant(r *record, b *browser, plan uuid.UUID, until t
 	client.Transport = capture
 	beforeAuth := l.count(`SELECT count(*) FROM member_devices WHERE member_id=$1 AND status='authorized'`, b.member)
 	beforePending := l.count(`SELECT count(*) FROM member_devices WHERE member_id=$1 AND status='pending'`, b.member)
+	l.holdSnapshot("before finite grant revocations")
+	defer l.holdSnapshot("after finite grant revocations and projection")
 	result, err := l.hook.ReplaceFiniteGrant(l.ctx, labstack.BrowserSession{Client: &client, CSRF: l.admin.csrf}, uuid.MustParse(b.member), plan, until)
 	r.jsonCheck("finite grant production transition", "accepted, replayed and worker projected; finite deadline; export partial result on error", map[string]any{"before_authorized": beforeAuth, "before_pending": beforePending, "transition": result, "error": safeError(err), "http": capture.rows}, "Stack.ReplaceFiniteGrant: authenticated domain revoke + public grant POST + worker operation GET; no projection writes", err == nil && result.Projected && result.RevokeReplayVerified && result.CreateReplayVerified && result.Authorized == result.DeviceLimit && result.Pending == 3-result.DeviceLimit)
 	for _, id := range result.Revoked {

@@ -38,7 +38,7 @@ func (l *live) startNativeCapture(r *record, member, label string) *nativeCaptur
 }
 
 func (l *live) captureSession(r *record, handle *e2e.NativeCapture, label string) *nativeCaptureSession {
-	c := &nativeCaptureSession{l: l, r: r, handle: handle, label: label, directory: filepath.Join(l.root, ".agent/tmp/f14-native", l.runID, label+"-"+uuid.NewString())}
+	c := &nativeCaptureSession{l: l, r: r, handle: handle, label: label, directory: filepath.Join(l.root, ".agent/tmp/f15-native", l.runID, label+"-"+uuid.NewString())}
 	l.t.Cleanup(func() { c.stop() })
 	return c
 }

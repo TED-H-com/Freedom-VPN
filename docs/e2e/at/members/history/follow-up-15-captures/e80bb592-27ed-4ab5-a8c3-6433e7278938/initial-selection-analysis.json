@@ -1,0 +1,823 @@
+{
+  "id": "initial-selection",
+  "run_id": "e80bb592-27ed-4ab5-a8c3-6433e7278938",
+  "source_commit": "cc6e0298a791ed6c41b268f1634f543446f8c562",
+  "status": "blocked",
+  "clock_offsets": {
+    "member": {
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "pairs": 96,
+      "offset_lower_ns": "-1793416462483629559",
+      "offset_upper_ns": "-1793416462483628503",
+      "measured_offset_span_ns": "1056",
+      "assumption": "No intervening wall-clock step; empirical offset envelope, not hardware packet timestamps. Pcap microsecond quantization adds 1000 ns."
+    },
+    "node": {
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "pairs": 96,
+      "offset_lower_ns": "-1793416462483629569",
+      "offset_upper_ns": "-1793416462483628422",
+      "measured_offset_span_ns": "1147",
+      "assumption": "No intervening wall-clock step; empirical offset envelope, not hardware packet timestamps. Pcap microsecond quantization adds 1000 ns."
+    },
+    "origin": {
+      "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+      "pairs": 34,
+      "offset_lower_ns": "-1793416462483629292",
+      "offset_upper_ns": "-1793416462483628499",
+      "measured_offset_span_ns": "793",
+      "assumption": "No intervening wall-clock step; empirical offset envelope, not hardware packet timestamps. Pcap microsecond quantization adds 1000 ns."
+    }
+  },
+  "capture_checks": {
+    "member": {
+      "complete": true,
+      "decoded": 201,
+      "captured": 201,
+      "kernel_drops": 0
+    },
+    "node": {
+      "complete": true,
+      "decoded": 200,
+      "captured": 200,
+      "kernel_drops": 0
+    },
+    "origin": {
+      "complete": true,
+      "decoded": 45,
+      "captured": 45,
+      "kernel_drops": 0
+    }
+  },
+  "metadata_checks": {
+    "member": {
+      "links_and_origin_route": true,
+      "native_implementation_recorded": true
+    },
+    "node": {
+      "links_and_origin_route": true,
+      "native_implementation_recorded": true
+    },
+    "origin": {
+      "links_and_origin_route": true,
+      "native_implementation_recorded": true
+    }
+  },
+  "ptb": {
+    "member": [],
+    "node": [],
+    "origin": []
+  },
+  "fragmentation_needed": {
+    "member": [],
+    "node": [],
+    "origin": []
+  },
+  "selection_samples": [
+    "before-selection",
+    "selection-poll",
+    "after-selection",
+    "before-first-transfer",
+    "after-transfer"
+  ],
+  "hops": {
+    "member": [
+      {
+        "packet": 20,
+        "timestamp": "1793534646.137209",
+        "mono_lower_ns": "118183653579441",
+        "mono_upper_ns": "118183653581497",
+        "interface": "fvnb0",
+        "packet_type": 4,
+        "tcp": {
+          "src_port": 20001,
+          "dst_port": 443,
+          "seq": 3728311854,
+          "ack": 0,
+          "flags": 2,
+          "window": 64480,
+          "header_length": 40,
+          "length": 0,
+          "options": [
+            {
+              "kind": 2,
+              "length": 4,
+              "mss": 1240
+            },
+            {
+              "kind": 4,
+              "length": 2
+            },
+            {
+              "kind": 8,
+              "length": 10,
+              "tsval": 4187211746,
+              "tsecr": 0
+            },
+            {
+              "kind": 3,
+              "length": 3,
+              "window_scale": 10
+            }
+          ]
+        }
+      },
+      {
+        "packet": 159,
+        "timestamp": "1793534647.157667",
+        "mono_lower_ns": "118184674037441",
+        "mono_upper_ns": "118184674039497",
+        "interface": "fvnb0",
+        "packet_type": 4,
+        "tcp": {
+          "src_port": 20001,
+          "dst_port": 443,
+          "seq": 3728311854,
+          "ack": 0,
+          "flags": 2,
+          "window": 64480,
+          "header_length": 40,
+          "length": 0,
+          "options": [
+            {
+              "kind": 2,
+              "length": 4,
+              "mss": 1240
+            },
+            {
+              "kind": 4,
+              "length": 2
+            },
+            {
+              "kind": 8,
+              "length": 10,
+              "tsval": 4187212767,
+              "tsecr": 0
+            },
+            {
+              "kind": 3,
+              "length": 3,
+              "window_scale": 10
+            }
+          ]
+        }
+      },
+      {
+        "packet": 163,
+        "timestamp": "1793534648.181647",
+        "mono_lower_ns": "118185698017441",
+        "mono_upper_ns": "118185698019497",
+        "interface": "fvnb0",
+        "packet_type": 4,
+        "tcp": {
+          "src_port": 20001,
+          "dst_port": 443,
+          "seq": 3728311854,
+          "ack": 0,
+          "flags": 2,
+          "window": 64480,
+          "header_length": 40,
+          "length": 0,
+          "options": [
+            {
+              "kind": 2,
+              "length": 4,
+              "mss": 1240
+            },
+            {
+              "kind": 4,
+              "length": 2
+            },
+            {
+              "kind": 8,
+              "length": 10,
+              "tsval": 4187213791,
+              "tsecr": 0
+            },
+            {
+              "kind": 3,
+              "length": 3,
+              "window_scale": 10
+            }
+          ]
+        }
+      },
+      {
+        "packet": 168,
+        "timestamp": "1793534649.204646",
+        "mono_lower_ns": "118186721016441",
+        "mono_upper_ns": "118186721018497",
+        "interface": "fvnb0",
+        "packet_type": 4,
+        "tcp": {
+          "src_port": 20001,
+          "dst_port": 443,
+          "seq": 3728311854,
+          "ack": 0,
+          "flags": 2,
+          "window": 64480,
+          "header_length": 40,
+          "length": 0,
+          "options": [
+            {
+              "kind": 2,
+              "length": 4,
+              "mss": 1240
+            },
+            {
+              "kind": 4,
+              "length": 2
+            },
+            {
+              "kind": 8,
+              "length": 10,
+              "tsval": 4187214814,
+              "tsecr": 0
+            },
+            {
+              "kind": 3,
+              "length": 3,
+              "window_scale": 10
+            }
+          ]
+        }
+      },
+      {
+        "packet": 171,
+        "timestamp": "1793534650.228643",
+        "mono_lower_ns": "118187745013441",
+        "mono_upper_ns": "118187745015497",
+        "interface": "fvnb0",
+        "packet_type": 4,
+        "tcp": {
+          "src_port": 20001,
+          "dst_port": 443,
+          "seq": 3728311854,
+          "ack": 0,
+          "flags": 2,
+          "window": 64480,
+          "header_length": 40,
+          "length": 0,
+          "options": [
+            {
+              "kind": 2,
+              "length": 4,
+              "mss": 1240
+            },
+            {
+              "kind": 4,
+              "length": 2
+            },
+            {
+              "kind": 8,
+              "length": 10,
+              "tsval": 4187215838,
+              "tsecr": 0
+            },
+            {
+              "kind": 3,
+              "length": 3,
+              "window_scale": 10
+            }
+          ]
+        }
+      }
+    ],
+    "node": [],
+    "origin": []
+  },
+  "member_syns": [
+    {
+      "packet": 20,
+      "timestamp": "1793534646.137209",
+      "mono_lower_ns": "118183653579441",
+      "mono_upper_ns": "118183653581497",
+      "interface": "fvnb0",
+      "packet_type": 4,
+      "tcp": {
+        "src_port": 20001,
+        "dst_port": 443,
+        "seq": 3728311854,
+        "ack": 0,
+        "flags": 2,
+        "window": 64480,
+        "header_length": 40,
+        "length": 0,
+        "options": [
+          {
+            "kind": 2,
+            "length": 4,
+            "mss": 1240
+          },
+          {
+            "kind": 4,
+            "length": 2
+          },
+          {
+            "kind": 8,
+            "length": 10,
+            "tsval": 4187211746,
+            "tsecr": 0
+          },
+          {
+            "kind": 3,
+            "length": 3,
+            "window_scale": 10
+          }
+        ]
+      }
+    },
+    {
+      "packet": 159,
+      "timestamp": "1793534647.157667",
+      "mono_lower_ns": "118184674037441",
+      "mono_upper_ns": "118184674039497",
+      "interface": "fvnb0",
+      "packet_type": 4,
+      "tcp": {
+        "src_port": 20001,
+        "dst_port": 443,
+        "seq": 3728311854,
+        "ack": 0,
+        "flags": 2,
+        "window": 64480,
+        "header_length": 40,
+        "length": 0,
+        "options": [
+          {
+            "kind": 2,
+            "length": 4,
+            "mss": 1240
+          },
+          {
+            "kind": 4,
+            "length": 2
+          },
+          {
+            "kind": 8,
+            "length": 10,
+            "tsval": 4187212767,
+            "tsecr": 0
+          },
+          {
+            "kind": 3,
+            "length": 3,
+            "window_scale": 10
+          }
+        ]
+      }
+    },
+    {
+      "packet": 163,
+      "timestamp": "1793534648.181647",
+      "mono_lower_ns": "118185698017441",
+      "mono_upper_ns": "118185698019497",
+      "interface": "fvnb0",
+      "packet_type": 4,
+      "tcp": {
+        "src_port": 20001,
+        "dst_port": 443,
+        "seq": 3728311854,
+        "ack": 0,
+        "flags": 2,
+        "window": 64480,
+        "header_length": 40,
+        "length": 0,
+        "options": [
+          {
+            "kind": 2,
+            "length": 4,
+            "mss": 1240
+          },
+          {
+            "kind": 4,
+            "length": 2
+          },
+          {
+            "kind": 8,
+            "length": 10,
+            "tsval": 4187213791,
+            "tsecr": 0
+          },
+          {
+            "kind": 3,
+            "length": 3,
+            "window_scale": 10
+          }
+        ]
+      }
+    },
+    {
+      "packet": 168,
+      "timestamp": "1793534649.204646",
+      "mono_lower_ns": "118186721016441",
+      "mono_upper_ns": "118186721018497",
+      "interface": "fvnb0",
+      "packet_type": 4,
+      "tcp": {
+        "src_port": 20001,
+        "dst_port": 443,
+        "seq": 3728311854,
+        "ack": 0,
+        "flags": 2,
+        "window": 64480,
+        "header_length": 40,
+        "length": 0,
+        "options": [
+          {
+            "kind": 2,
+            "length": 4,
+            "mss": 1240
+          },
+          {
+            "kind": 4,
+            "length": 2
+          },
+          {
+            "kind": 8,
+            "length": 10,
+            "tsval": 4187214814,
+            "tsecr": 0
+          },
+          {
+            "kind": 3,
+            "length": 3,
+            "window_scale": 10
+          }
+        ]
+      }
+    },
+    {
+      "packet": 171,
+      "timestamp": "1793534650.228643",
+      "mono_lower_ns": "118187745013441",
+      "mono_upper_ns": "118187745015497",
+      "interface": "fvnb0",
+      "packet_type": 4,
+      "tcp": {
+        "src_port": 20001,
+        "dst_port": 443,
+        "seq": 3728311854,
+        "ack": 0,
+        "flags": 2,
+        "window": 64480,
+        "header_length": 40,
+        "length": 0,
+        "options": [
+          {
+            "kind": 2,
+            "length": 4,
+            "mss": 1240
+          },
+          {
+            "kind": 4,
+            "length": 2
+          },
+          {
+            "kind": 8,
+            "length": 10,
+            "tsval": 4187215838,
+            "tsecr": 0
+          },
+          {
+            "kind": 3,
+            "length": 3,
+            "window_scale": 10
+          }
+        ]
+      }
+    }
+  ],
+  "wireguard_headers": {
+    "member": [
+      {
+        "packet": 21,
+        "timestamp": "1793534646.137298",
+        "mono_lower_ns": "118183653668441",
+        "mono_upper_ns": "118183653670497",
+        "interface": "lo",
+        "packet_type": 0,
+        "ip_version": 4,
+        "src": "addr-12ca17b49af22894",
+        "dst": "addr-32bcd336456e1b8c",
+        "udp": {
+          "src_port": 51820,
+          "dst_port": 40404,
+          "length": 156
+        },
+        "wireguard": {
+          "type": 1,
+          "length": 148,
+          "message_sha256": "c1eff66815a1eddc031bdbc3925566408594da841fa45996c512cd486d8c3bbc",
+          "sender_index": 1533601605,
+          "source_loopback": true,
+          "destination_loopback": true
+        }
+      },
+      {
+        "packet": 152,
+        "timestamp": "1793534646.340609",
+        "mono_lower_ns": "118183856979441",
+        "mono_upper_ns": "118183856981497",
+        "interface": "eth1",
+        "packet_type": 0,
+        "ip_version": 6,
+        "src": "addr-eff8e7ca506627fe",
+        "dst": "addr-ab8283067e853f4e",
+        "udp": {
+          "src_port": 51820,
+          "dst_port": 51820,
+          "length": 100
+        },
+        "wireguard": {
+          "type": 2,
+          "length": 92,
+          "message_sha256": "0e38868d2fa772ff588cfba5bd9545f8aec5d2b73b5cfd0b89c9719c9a43375c",
+          "sender_index": 343131065,
+          "receiver_index": 1533601605,
+          "source_loopback": true,
+          "destination_loopback": false
+        }
+      },
+      {
+        "packet": 186,
+        "timestamp": "1793534651.445785",
+        "mono_lower_ns": "118188962155441",
+        "mono_upper_ns": "118188962157497",
+        "interface": "eth1",
+        "packet_type": 0,
+        "ip_version": 6,
+        "src": "addr-d1439358dea1ea21",
+        "dst": "addr-ab8283067e853f4e",
+        "udp": {
+          "src_port": 51820,
+          "dst_port": 51820,
+          "length": 156
+        },
+        "wireguard": {
+          "type": 1,
+          "length": 148,
+          "message_sha256": "cba20e654119a5076fb982203b2216a46de0218a5956cb47fe1b33eb47f8413f",
+          "sender_index": 4163641054,
+          "source_loopback": false,
+          "destination_loopback": false
+        }
+      },
+      {
+        "packet": 187,
+        "timestamp": "1793534651.445805",
+        "mono_lower_ns": "118188962175441",
+        "mono_upper_ns": "118188962177497",
+        "interface": "eth1",
+        "packet_type": 4,
+        "ip_version": 6,
+        "src": "addr-ab8283067e853f4e",
+        "dst": "addr-d1439358dea1ea21",
+        "udp": {
+          "src_port": 51820,
+          "dst_port": 51820,
+          "length": 156
+        },
+        "wireguard": {
+          "type": 1,
+          "length": 148,
+          "message_sha256": "1a8d1af79d35e27599cdb4a55bf32c2d658f41bf30c2821a126ac0377d7a87ac",
+          "sender_index": 4280018861,
+          "source_loopback": false,
+          "destination_loopback": false
+        }
+      },
+      {
+        "packet": 188,
+        "timestamp": "1793534651.445901",
+        "mono_lower_ns": "118188962271441",
+        "mono_upper_ns": "118188962273497",
+        "interface": "eth1",
+        "packet_type": 4,
+        "ip_version": 6,
+        "src": "addr-ab8283067e853f4e",
+        "dst": "addr-d1439358dea1ea21",
+        "udp": {
+          "src_port": 51820,
+          "dst_port": 51820,
+          "length": 100
+        },
+        "wireguard": {
+          "type": 2,
+          "length": 92,
+          "message_sha256": "7de2d1d0fd47d6cc075614447e456ac34747a7d19f1919cfb2237dcc0bc1955c",
+          "sender_index": 2049209572,
+          "receiver_index": 4163641054,
+          "source_loopback": false,
+          "destination_loopback": false
+        }
+      },
+      {
+        "packet": 189,
+        "timestamp": "1793534651.446204",
+        "mono_lower_ns": "118188962574441",
+        "mono_upper_ns": "118188962576497",
+        "interface": "eth1",
+        "packet_type": 0,
+        "ip_version": 6,
+        "src": "addr-d1439358dea1ea21",
+        "dst": "addr-ab8283067e853f4e",
+        "udp": {
+          "src_port": 51820,
+          "dst_port": 51820,
+          "length": 100
+        },
+        "wireguard": {
+          "type": 2,
+          "length": 92,
+          "message_sha256": "83366d5373e343ae4ea49471bbbff0e3b5731357414d41f44b0b95e4f9c83ee9",
+          "sender_index": 2338734535,
+          "receiver_index": 4280018861,
+          "source_loopback": false,
+          "destination_loopback": false
+        }
+      }
+    ],
+    "node": [
+      {
+        "packet": 29,
+        "timestamp": "1793534646.139499",
+        "mono_lower_ns": "118183655869431",
+        "mono_upper_ns": "118183655871578",
+        "interface": "lo",
+        "packet_type": 0,
+        "ip_version": 4,
+        "src": "addr-12ca17b49af22894",
+        "dst": "addr-32bcd336456e1b8c",
+        "udp": {
+          "src_port": 51820,
+          "dst_port": 57878,
+          "length": 156
+        },
+        "wireguard": {
+          "type": 1,
+          "length": 148,
+          "message_sha256": "e205fe2feb70a7ee3d1c032278ef83d1478ee3a8af8c35a6fd0ed813531841b0",
+          "sender_index": 240000202,
+          "source_loopback": true,
+          "destination_loopback": true
+        }
+      },
+      {
+        "packet": 148,
+        "timestamp": "1793534646.340489",
+        "mono_lower_ns": "118183856859431",
+        "mono_upper_ns": "118183856861578",
+        "interface": "lo",
+        "packet_type": 0,
+        "ip_version": 6,
+        "src": "addr-ab8283067e853f4e",
+        "dst": "addr-eff8e7ca506627fe",
+        "udp": {
+          "src_port": 51820,
+          "dst_port": 51820,
+          "length": 156
+        },
+        "wireguard": {
+          "type": 1,
+          "length": 148,
+          "message_sha256": "c1eff66815a1eddc031bdbc3925566408594da841fa45996c512cd486d8c3bbc",
+          "sender_index": 1533601605,
+          "source_loopback": false,
+          "destination_loopback": true
+        }
+      },
+      {
+        "packet": 149,
+        "timestamp": "1793534646.340601",
+        "mono_lower_ns": "118183856971431",
+        "mono_upper_ns": "118183856973578",
+        "interface": "eth2",
+        "packet_type": 4,
+        "ip_version": 6,
+        "src": "addr-eff8e7ca506627fe",
+        "dst": "addr-ab8283067e853f4e",
+        "udp": {
+          "src_port": 51820,
+          "dst_port": 51820,
+          "length": 100
+        },
+        "wireguard": {
+          "type": 2,
+          "length": 92,
+          "message_sha256": "0e38868d2fa772ff588cfba5bd9545f8aec5d2b73b5cfd0b89c9719c9a43375c",
+          "sender_index": 343131065,
+          "receiver_index": 1533601605,
+          "source_loopback": true,
+          "destination_loopback": false
+        }
+      },
+      {
+        "packet": 183,
+        "timestamp": "1793534651.445778",
+        "mono_lower_ns": "118188962148431",
+        "mono_upper_ns": "118188962150578",
+        "interface": "eth2",
+        "packet_type": 4,
+        "ip_version": 6,
+        "src": "addr-d1439358dea1ea21",
+        "dst": "addr-ab8283067e853f4e",
+        "udp": {
+          "src_port": 51820,
+          "dst_port": 51820,
+          "length": 156
+        },
+        "wireguard": {
+          "type": 1,
+          "length": 148,
+          "message_sha256": "cba20e654119a5076fb982203b2216a46de0218a5956cb47fe1b33eb47f8413f",
+          "sender_index": 4163641054,
+          "source_loopback": false,
+          "destination_loopback": false
+        }
+      },
+      {
+        "packet": 184,
+        "timestamp": "1793534651.445808",
+        "mono_lower_ns": "118188962178431",
+        "mono_upper_ns": "118188962180578",
+        "interface": "eth2",
+        "packet_type": 0,
+        "ip_version": 6,
+        "src": "addr-ab8283067e853f4e",
+        "dst": "addr-d1439358dea1ea21",
+        "udp": {
+          "src_port": 51820,
+          "dst_port": 51820,
+          "length": 156
+        },
+        "wireguard": {
+          "type": 1,
+          "length": 148,
+          "message_sha256": "1a8d1af79d35e27599cdb4a55bf32c2d658f41bf30c2821a126ac0377d7a87ac",
+          "sender_index": 4280018861,
+          "source_loopback": false,
+          "destination_loopback": false
+        }
+      },
+      {
+        "packet": 185,
+        "timestamp": "1793534651.445904",
+        "mono_lower_ns": "118188962274431",
+        "mono_upper_ns": "118188962276578",
+        "interface": "eth2",
+        "packet_type": 0,
+        "ip_version": 6,
+        "src": "addr-ab8283067e853f4e",
+        "dst": "addr-d1439358dea1ea21",
+        "udp": {
+          "src_port": 51820,
+          "dst_port": 51820,
+          "length": 100
+        },
+        "wireguard": {
+          "type": 2,
+          "length": 92,
+          "message_sha256": "7de2d1d0fd47d6cc075614447e456ac34747a7d19f1919cfb2237dcc0bc1955c",
+          "sender_index": 2049209572,
+          "receiver_index": 4163641054,
+          "source_loopback": false,
+          "destination_loopback": false
+        }
+      },
+      {
+        "packet": 186,
+        "timestamp": "1793534651.446198",
+        "mono_lower_ns": "118188962568431",
+        "mono_upper_ns": "118188962570578",
+        "interface": "eth2",
+        "packet_type": 4,
+        "ip_version": 6,
+        "src": "addr-d1439358dea1ea21",
+        "dst": "addr-ab8283067e853f4e",
+        "udp": {
+          "src_port": 51820,
+          "dst_port": 51820,
+          "length": 100
+        },
+        "wireguard": {
+          "type": 2,
+          "length": 92,
+          "message_sha256": "83366d5373e343ae4ea49471bbbff0e3b5731357414d41f44b0b95e4f9c83ee9",
+          "sender_index": 2338734535,
+          "receiver_index": 4280018861,
+          "source_loopback": false,
+          "destination_loopback": false
+        }
+      }
+    ],
+    "origin": []
+  },
+  "wireguard_scope": "Optional structural header decode, not authentication. Message hashes join proxy hops without exporting encrypted content. Capture stop times differ: do not treat a later sender tail as loss at an already stopped receiver.",
+  "transfer": {
+    "body_bytes": 0,
+    "http_status": 0,
+    "origin_receipt": false
+  },
+  "scope": "Fresh first-use observation only. Historical five packets cannot be reconstructed. See inner/outer capture and readback bounds before assigning any fault."
+}

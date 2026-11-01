@@ -4,7 +4,6 @@ package members
 
 import (
 	"encoding/json"
-	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -35,17 +34,17 @@ func (l *live) recordCounterTiming(r *record) {
 	recovery["run_id"], recovery["source_commit"] = l.runID, l.build.Source
 	recovery["sender"] = l.siblingSent
 	evidence, _ := json.MarshalIndent(recovery, "", "  ")
-	if e := os.WriteFile(filepath.Join(l.root, "docs/e2e/at/members/F14-AT02-recovery.json"), append(evidence, '\n'), 0644); e != nil {
+	if e := writeEvidence(filepath.Join(l.root, "docs/e2e/at/members/F15-AT02-recovery.json"), append(evidence, '\n')); e != nil {
 		l.t.Fatal(e)
 	}
-	r.jsonCheck("D-135 D-136 node-wide baseline transitions (provisional)", "every baseline to next successful Apply retained; every sibling loss counted; recovery required; no guard or baseline exclusion waives loss", map[string]any{"artifact": "F14-AT02-recovery.json", "measurement": recovery}, "original producer stream and continuous sibling capture; command bounds, not kernel commits", recoveryOK && joinErr == nil && err == nil)
+	r.jsonCheck("D-135 D-136 node-wide baseline transitions (provisional)", "every baseline to next successful Apply retained; every sibling loss counted; recovery required; no guard or baseline exclusion waives loss", map[string]any{"artifact": "F15-AT02-recovery.json", "measurement": recovery}, "original producer stream and continuous sibling capture; command bounds, not kernel commits", recoveryOK && joinErr == nil && err == nil)
 	if !observed {
 		if recovery["failed_apply_total"].(int) > 0 {
 			r.block("F11-03: failed Applies outside the continuous sibling window are retained; their sibling recovery is unmeasured")
 		}
 		r.block("F11-03 D-135: no failed Apply observed in the continuous sibling window; recovery row blocked, not passed")
 	} else {
-		r.jsonCheck("F11-03 D-135 admitted sibling recovery", "revoked source dropped; every sibling loss counted; baseline-to-next-successful-Apply bracket reported; forwarding returns after that Apply", map[string]any{"artifact": "F14-AT02-recovery.json", "measurement": recovery}, "same boot/run/sequence producer records and continuous node ingress/egress; diagnostic labels never waive failures", recoveryOK && joinErr == nil && err == nil)
+		r.jsonCheck("F11-03 D-135 admitted sibling recovery", "revoked source dropped; every sibling loss counted; baseline-to-next-successful-Apply bracket reported; forwarding returns after that Apply", map[string]any{"artifact": "F15-AT02-recovery.json", "measurement": recovery}, "same boot/run/sequence producer records and continuous node ingress/egress; diagnostic labels never waive failures", recoveryOK && joinErr == nil && err == nil)
 	}
 
 	// A sidecar retains every original operation/renewal/source kind once. The
@@ -55,7 +54,7 @@ func (l *live) recordCounterTiming(r *record) {
 	if marshalErr != nil {
 		l.t.Fatal(marshalErr)
 	}
-	if e := os.WriteFile(filepath.Join(l.root, "docs/e2e/at/members/AT02-enforcement-timing.json"), append(raw, '\n'), 0644); e != nil {
+	if e := writeEvidence(filepath.Join(l.root, "docs/e2e/at/members/AT02-enforcement-timing.json"), append(raw, '\n')); e != nil {
 		l.t.Fatal(e)
 	}
 	r.jsonCheck("counter reader enforcement attribution", "same-boot nonzero ordered read brackets; every before/after record joins gap-free original producer stream", map[string]any{"trace_file": "AT02-enforcement-timing.json", "trace_records": len(trace), "counter_samples": len(reads), "export_error": safeError(err), "join_error": safeError(joinErr)}, "EnableEnforcementTiming before enrollment; streamed ExportContainerFile after AT02; command brackets, not kernel commit times", err == nil && joinErr == nil)
