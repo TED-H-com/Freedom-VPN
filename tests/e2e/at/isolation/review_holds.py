@@ -132,6 +132,20 @@ def review(root):
     central = read(root, 'generation-holds-central.json')
     result = joins(central)
     wire = read(root, 'receiver-capture.json')['transactions']
+    for hold in result['holds']:
+        report=next(row['report'] for row in central['reports'] if row['report']['report_id']==hold['report_id'])
+        delivered=[]
+        for i, transaction in enumerate(wire):
+            signed=(transaction.get('response') or {}).get('signed',{})
+            if ('desired-state' in transaction.get('path','') and transaction.get('status')==200 and
+                signed.get('node_id')==report['node_id'] and signed.get('node_incarnation_id')==report['node_incarnation_id'] and
+                ns(transaction['response_at'])<=ns(report['observed_at'])):
+                delivered.append((i,transaction))
+        latest=max(delivered,key=lambda item:ns(item[1]['response_at'])) if delivered else None
+        hold['desired_wire']=dict(transaction_index=latest[0],transaction=latest[1]) if latest else None
+        hold['desired_generation']=latest[1]['response']['signed']['config_generation'] if latest else None
+        hold['applied_equals_delivered_desired']=bool(latest and hold['applied_generation']==hold['desired_generation'])
+        hold['desired_scope']='Latest original signed desired response completed before this report; central desired_generation_at_read is a separate later polling value.'
     accepted = {w['body']['report_id'] for w in wire if w.get('status') == 202 and (w.get('body') or {}).get('report_id')}
     operations = read(root, 'publication-operation-history.json')
     if operations['run_id'] != central['run_id']:
@@ -157,6 +171,11 @@ def review(root):
     result['accepted_hold_reports_without_wire_receipt'] = [h['report_id'] for h in result['holds'] if h['report_id'] not in accepted]
     windows = read(root, 'policy-missing-analysis.json')['windows']
     producer = {(r['run_id'], r['sequence']): r for r in read_operations(root)}
+    for hold in result['holds']:
+        matching=[r for r in producer.values() if r.get('lease',{}).get('lease_id')==hold['lease_id']]
+        hold['producer_baselines']=[dict(**identity(r),baseline=r['baseline'],anchor=r['anchor']) for r in matching if r.get('baseline',{}).get('cause')=='policy_missing']
+        hold['producer_heartbeats']=[dict(**identity(r),heartbeat=r['heartbeat'],anchor=r['anchor']) for r in matching if r.get('heartbeat',{}).get('reason')=='policy_missing']
+        hold['independent_packet_coverage']='not exercised for this hold unless separately retained in generation-hold-control-cut.json; report forwarding=false is not independent packet evidence'
     joined = []
     for w in windows:
         if not w['stale_populated_lease_candidate']:
@@ -193,10 +212,23 @@ def review(root):
             direct_stop=cut['direct_stop'], process_restart=cut['process_restart'])
         if retention['status'] == 'fail':
             result['problems'].append(dict(incident_id=hid, problem='incident/first_seen lost across direct stop'))
+    result['applied_equals_delivered_desired']=sum(h['applied_equals_delivered_desired'] for h in result['holds'])
     result.update(run_id=central['run_id'], status='fail' if result['problems'] else 'pass', retention=retention,
         accepted_hold_count=len(result['holds']), applied_equals_desired_at_read=sum(h['applied_equals_desired_at_read'] for h in result['holds']),
         scope='Central row joins and classification, including reverse-array read-only replay. Poll snapshots are not ingestion transaction snapshots. Baseline writes, packet capture and publication completion are separate evidence; no inference from a counter read failure.',
         counter_read_failure_decision=dict(source='docs/poc/G2-followup23-evidence/decision.json',kind='duplicate_chain',error_type='*enforce.DuplicateChainError',duplicates=0,listings=3300,origin='unproven',historical_failures='unchanged; no retry waiver or reclassification'))
+    result['coverage'] = dict(
+        exact_report_sample_incident_join='pass' if result['holds'] and not result['problems'] else 'fail',
+        stale_generation_before_generic_causes='pass' if any(h['classification']=='stale_generation' for h in result['holds']) else 'not exercised',
+        applied_equals_desired='observed against the node latest delivered signed desired state' if result['applied_equals_delivered_desired'] else 'did not occur',
+        unrelated_failure_precedence='pass' if any(h['unrelated_failure'] for h in result['holds']) and not result['problems'] else 'not exercised',
+        active_hold_direct_stop_and_local_counter_reset='pass' if retention.get('local_counters_reset')=='observed' and retention['status']=='observed' else 'not exercised',
+        matching_lease_end='pass' if result['matching_ends'] and not result['problems'] else 'not exercised',
+        later_new_incident='pass' if any(e['later_distinct_incident_ids'] for e in result['matching_ends']) else 'not exercised',
+        one_escalation='pass' if result['escalations'] and not result['problems'] else 'not exercised',
+        kernel_reboot='not exercised: AT13 operator matrix')
+    if not result['problems'] and any(v.startswith('not exercised') for v in result['coverage'].values()):
+        result['status']='partial'
     (root/'generation-holds-review.json').write_text(json.dumps(result,indent=2)+'\n')
     return result
 
@@ -204,5 +236,5 @@ def review(root):
 if __name__ == '__main__':
     import sys
     result = review(Path(sys.argv[1]))
-    print(json.dumps({k:result[k] for k in ('run_id','status','accepted_hold_count','applied_equals_desired_at_read','problems')},indent=2))
+    print(json.dumps({k:result[k] for k in ('run_id','status','accepted_hold_count','applied_equals_delivered_desired','applied_equals_desired_at_read','problems')},indent=2))
     raise SystemExit(bool(result['problems']))

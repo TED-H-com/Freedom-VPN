@@ -62,6 +62,8 @@ with tempfile.TemporaryDirectory(prefix='at-isolation.', dir=ROOT / '.agent/tmp'
     env['FVPN_NETLAB_EVIDENCE_DIR'] = evidence + '/reload-stream'
     lab = stack = 1
     operation_observer = None
+    lifecycle_observer = None
+    import lifecycle_events
     try:
         slots()
         lab = call(['sh', 'tests/e2e/at/isolation/lab.sh', 'up'], env)
@@ -76,6 +78,7 @@ with tempfile.TemporaryDirectory(prefix='at-isolation.', dir=ROOT / '.agent/tmp'
         stack = call(['python3', 'tests/e2e/at/isolation/stack.py', 'up'], env)
         if stack == 0:
             slots()
+            lifecycle_observer = lifecycle_events.start(temp)
             operation_observer = subprocess.Popen(['python3', '-B', 'tests/e2e/at/isolation/capture_hold_operations.py', evidence], env=env)
             stack = call(['python3', 'tests/e2e/at/isolation/driver.py', 'run'], env)
             review = call(['python3', '-B', 'tests/e2e/at/isolation/review_followup10.py', evidence], env)
@@ -83,6 +86,8 @@ with tempfile.TemporaryDirectory(prefix='at-isolation.', dir=ROOT / '.agent/tmp'
     finally:
         lab = call(['sh', 'tests/e2e/at/isolation/lab.sh', 'down'], env) or lab
         stack = call(['python3', 'tests/e2e/at/isolation/stack.py', 'down'], env) or stack
+        if lifecycle_observer is not None:
+            lifecycle_events.finish(lifecycle_observer, Path(evidence))
         if operation_observer is not None:
             try:
                 operation_observer.wait(timeout=5)

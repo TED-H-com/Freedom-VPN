@@ -4,17 +4,17 @@ Mechanism: host and upstream isolation during apply and interface change
 
 Status: pass
 
-Run: 38074149-1137-4782-80fd-8669c36c6fcb; started UTC: 2026-11-01T11:05:46Z; source dirty: false
+Run: 56d20530-8042-4d0c-8156-de5a47ce8b61; started UTC: 2026-11-01T12:02:05Z; source dirty: false
 
 Spec: §19 AT10, ISO01, ISO02
 
-UTC: 2026-11-01T11:05:52Z
+UTC: 2026-11-01T12:02:11Z
 
-Build: c521cb0018844eac1de24ee243c858518bb1a5e3
+Build: 716a16335cb5335473416740c76a75ce95536796
 
 Image digests:
 
-- fvpn-w4-isolation-lab:lab sha256:988bff2032573870968c8eeca7f816edda35c15b5643f5c1616fe70049694f47
+- fvpn-w4-isolation-lab:lab sha256:2e27f7e3829f7866846d056bd934954c25a578b69d17957ca38d795e7ea29c2f
 
 Policy revision: generation 3000-3020
 
@@ -30,9 +30,9 @@ Commands:
 - `FVPN_NETLAB=1 FVPN_LAB_PREFIX=fvpn-w4-isolation-lab FVPN_AT_EVIDENCE_DIR=docs/e2e/at/isolation go test -tags netlab -count=1 -timeout 40m -p 1 -parallel 1 ./tests/netlab/at`
 
 - tc_readback: [{"interface":"fv-fh","attachment":"qdisc","objects":[{"kind":"fq_codel","handle":"2f:","parent":"1:2f"},{"kind":"fq_codel","handle":"30:","parent":"1:30"},{"kind":"htb","handle":"1:","root":true}]},{"interface":"fv-ih","attachment":"qdisc","objects":[{"kind":"fq_codel","handle":"2f:","parent":"1:2f"},{"kind":"fq_codel","handle":"30:","parent":"1:30"},{"kind":"htb","handle":"1:","root":true}]},{"interface":"fv-fh","attachment":"1:1","objects":[]},{"interface":"fv-fh","attachment":"1:2f","objects":[]},{"interface":"fv-fh","attachment":"1:30","objects":[]},{"interface":"fv-fh","attachment":"1:fffe","objects":[]},{"interface":"fv-fh","attachment":"2f:","objects":[]},{"interface":"fv-fh","attachment":"30:","objects":[]},{"interface":"fv-fh","attachment":"egress","objects":[]},{"interface":"fv-fh","attachment":"ingress","objects":[]},{"interface":"fv-fh","attachment":"root","objects":[]},{"interface":"fv-ih","attachment":"1:1","objects":[]},{"interface":"fv-ih","attachment":"1:2f","objects":[]},{"interface":"fv-ih","attachment":"1:30","objects":[]},{"interface":"fv-ih","attachment":"1:fffe","objects":[]},{"interface":"fv-ih","attachment":"2f:","objects":[]}]
-- attempts: 364
-- seconds: 4.207
-- rate_per_s: 86.52
+- attempts: 357
+- seconds: 4.128
+- rate_per_s: 86.48
 - regenerations: 20
 - flap: veth fv-px 198.18.0.0/30 inside the lab container
 - internet: 203.0.113.10:80 allowed
