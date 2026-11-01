@@ -28,6 +28,8 @@ def publish(path):
     path = Path(path)
     raw = path.read_bytes()
     if len(raw) <= THRESHOLD:
+        for suffix in ['.gz', '.gz.sha256.json']:
+            Path(str(path) + suffix).unlink(missing_ok=True)
         return
     compressed = gzip.compress(raw, mtime=0)
     dest = Path(str(path) + '.gz')

@@ -36,7 +36,7 @@ for sample_id,metadata in samples.items():
    duplicates.append({'object_indices_zero_based':[i for i,c in cs],'family':key[0],'owned_table':key[1]=='fvpn','chain_class':key[2] if key[2] in ['input','output','forward','prerouting','postrouting'] else 'other_fixture_chain','identical':all(c==cs[0][1] for i,c in cs)})
   row.update(duplicate_chain_identities=duplicates,safe_parser_reason='duplicate chain identity' if error.startswith(b'duplicate chain ') else 'unclassified')
  except OSError:row['private_error']='retained private files unavailable'
- row.update(parser_site=('node/enforce/parse_nft.go:400 noteChain rejects a second (family, table, name), including identical definitions' if row.get('safe_parser_reason')=='duplicate chain identity' else 'unattributed'),parser_defect_status='netlab 23 rejects every duplicate; origin unproven (0 / 3,300 lab listings); no retry or acceptance change',no_retry=True,raw_and_exact_error='private .agent/tmp/counterread/<id>/output.raw and parser-error.txt; not published')
+ row.update(parser_site=('node/enforce/parse_nft.go noteChain rejects a second (family, table, name), including identical definitions, as typed DuplicateChainError' if row.get('safe_parser_reason')=='duplicate chain identity' else 'unattributed'),parser_defect_status='netlab 23 rejects every duplicate; origin unproven (0 / 3,300 lab listings); no retry or acceptance change',no_retry=True,raw_and_exact_error='private .agent/tmp/counterread/<id>/output.raw and parser-error.txt; not published')
  rows.append(row)
 producer_path=Path('.agent/tmp/f15-parser-producer.jsonl')
 producer_export=None;windows=[]
