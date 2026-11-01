@@ -11,6 +11,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -33,6 +34,10 @@ func TestUpdatesFollowup(t *testing.T) {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 40*time.Minute)
 	defer cancel()
+	portBase, err := strconv.Atoi(os.Getenv("FVPN_E2E_PORT_BASE"))
+	if err != nil {
+		t.Fatal("invalid port base")
+	}
 	records := map[string]*at.Record{}
 	titles := []string{"Good candidate and central confirmation", "Offline catch-up and new-node inheritance", "Tampered archive never executes", "Genuine candidate health failure rolls back", "Stale acknowledgement and observation authority"}
 	runID := uuid.NewString()
@@ -42,7 +47,7 @@ func TestUpdatesFollowup(t *testing.T) {
 	}
 	for i, title := range titles {
 		id := fmt.Sprintf("AT%d", 23+i)
-		records[id] = &at.Record{ID: id, Title: title, Status: at.StatusBlocked, RunID: runID, Prefix: "w4-updates", PortBase: 42000, Git: strings.TrimSpace(string(commit)), Scope: "Follow-up 13 regular-lab requested scenario; not complete original §19 acceptance or physical arm64 proof", Spec: []string{"UPD01", "UPD02", "§13.4", "§13.9", "§13.10", "§13.12"}, Expected: title, Actual: "Prerequisite not reached; see suite summary", Commands: []string{"make -f mk/at-updates.mk at-updates"}}
+		records[id] = &at.Record{ID: id, Title: title, Status: at.StatusBlocked, RunID: runID, Prefix: "w4-updates", PortBase: portBase, Git: strings.TrimSpace(string(commit)), Scope: "Follow-up 13 regular-lab requested scenario; not complete original §19 acceptance or physical arm64 proof", Spec: []string{"UPD01", "UPD02", "§13.4", "§13.9", "§13.10", "§13.12"}, Expected: title, Actual: "Prerequisite not reached; see suite summary", Commands: []string{"make -f mk/at-updates.mk at-updates"}}
 	}
 	// Record exact harness bytes as well as the product source commit. This
 	// remains reproducible when evidence and a capture fix share a final commit.

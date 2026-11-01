@@ -27,7 +27,7 @@ def main():
             code = run(['go', 'build', '-o', str(ROOT / '.agent/tmp/f13-stop-observer'), './tests/e2e/at/updates/stopobserve'], env)
             if code:
                 return code
-            env.update(FVPN_E2E_PREFIX='w4-updates', FVPN_E2E_PORT_BASE='42000',
+            env.update(FVPN_E2E_PREFIX='w4-updates', FVPN_E2E_PORT_BASE=os.environ.get('AT_UPDATES_PORT_BASE', '42000'),
                        FVPN_E2E_STATE=str(ROOT / '.agent/e2e-state-w4-updates'))
             if os.environ.get('AT_UPDATES_REUSE') != '1':
                 code = run(['make', '-f', 'mk/e2e.mk', 'e2e-down'], env)
