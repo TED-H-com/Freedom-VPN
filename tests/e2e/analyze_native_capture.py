@@ -106,7 +106,7 @@ def analyze(run, record):
         bounds.write_text(''.join(json.dumps(bound(p,result['clock_offsets'][role]),separators=(',', ':'))+'\n' for p in packets[role]))
         result['ptb'][role] = [r['packet'] for r in packets[role] if r.get('protocol') == 58 and r.get('icmp', {}).get('type') == 2]
         result['fragmentation_needed'][role] = [r['packet'] for r in packets[role] if r.get('protocol') == 1 and r.get('icmp', {}).get('type') == 3 and r.get('icmp', {}).get('code') == 4]
-    if doc['id'] == 'initial-selection':
+    if doc['id'] in ('initial-selection', 'regrant-session'):
         samples = evidence['samples']
         result['selection_samples'] = [s['label'] for s in samples]
         result['hops'] = {}
@@ -114,6 +114,11 @@ def analyze(run, record):
         for role in role_order:
             indexes = {p['ifindex']: p['ifname'] for p in (before['points'][role]['links'] or [])}
             selected = [p for p in packets[role] if p.get('tcp', {}).get('src_port') == 20001 or p.get('tcp', {}).get('dst_port') == 20001]
+            if doc['id'] == 'regrant-session':
+                # The session starts before fencing; old-flow tails are not
+                # packets from the later original re-grant request.
+                request_start = wall_ns(before['points'][role]['start']['wall'])
+                selected = [p for p in selected if int(Decimal(p['timestamp'])*10**9) >= request_start]
             result['hops'][role] = [dict(bound(p, result['clock_offsets'][role]), interface=indexes.get(p['interface_index'], 'unknown'), packet_type=p['packet_type'], tcp=p['tcp']) for p in selected]
         result['member_syns'] = [p for p in result['hops']['member'] if p['interface'] == 'fvnb0' and p['packet_type'] == 4 and p['tcp']['flags'] == 2]
         result['wireguard_headers'] = {}
@@ -122,7 +127,7 @@ def analyze(run, record):
             result['wireguard_headers'][role] = [dict(bound(p, result['clock_offsets'][role]), interface=indexes.get(p['interface_index'], 'unknown'), packet_type=p['packet_type'], ip_version=p['ip_version'], src=p['src'], dst=p['dst'], udp=p['udp'], wireguard=p['wireguard']) for p in packets[role] if 'wireguard' in p]
         result['wireguard_scope'] = 'Optional structural header decode, not authentication. Message hashes join proxy hops without exporting encrypted content. Capture stop times differ: do not treat a later sender tail as loss at an already stopped receiver.'
         result['transfer'] = json.loads(notes['transfer'])
-        result['scope'] = 'Fresh first-use observation only. Historical five packets cannot be reconstructed. See inner/outer capture and readback bounds before assigning any fault.'
+        result['scope'] = 'One original request; re-grant inner hops exclude pre-request session tails. Historical five packets cannot be reconstructed. See inner/outer capture and readback bounds before assigning any fault.'
         return result
     before = next(s for s in evidence['samples'] if s['label'] == 'before-bulk')['points']
     after = next(s for s in evidence['samples'] if s['label'] == 'after-bulk')['points']

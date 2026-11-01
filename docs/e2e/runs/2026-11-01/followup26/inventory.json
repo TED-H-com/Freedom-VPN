@@ -1,0 +1,21 @@
+{
+  "id": "inventory",
+  "title": "Owned Docker inventory after final teardown",
+  "run_id": "followup26-inventory",
+  "source_commit": "2e1151a8c98671236de39ce3f16b25c60fae9980",
+  "status": "pass",
+  "observations": [
+    {
+      "name": "checked_at",
+      "detail": "2026-11-01T13:13:07.316347+00:00"
+    },
+    {
+      "name": "owned_counts",
+      "detail": "{\"containers\": 0, \"networks\": 0, \"volumes\": 0, \"images\": 0}"
+    },
+    {
+      "name": "scope",
+      "detail": "Existing prefix.sh ownership filter e2e; other prefixes and shared PostgreSQL untouched."
+    }
+  ]
+}
