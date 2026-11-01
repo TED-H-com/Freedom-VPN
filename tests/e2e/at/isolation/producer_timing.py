@@ -178,15 +178,22 @@ def command_lifecycle(row):
         ordered(a, b)
         return a, b
 
-    def resources(r):
-        if not isinstance(r, dict) or set(r) != {'bracket', 'cgroup_v2_available', 'visible_ancestors_complete', 'host_ancestors_available', 'cgroups'}:
+    def resources(r, phase):
+        if not isinstance(r, dict) or set(r) - {'skip_reason'} != {'bracket', 'cgroup_v2_available', 'visible_ancestors_complete', 'host_ancestors_available', 'cgroups'}:
             raise ValueError('invalid lifecycle resource block')
+        skipped = r.get('skip_reason')
+        if skipped is not None and skipped not in ('install_bound', 'context_canceled', 'context_deadline_exceeded', 'context_other', 'unsupported_platform'):
+            raise ValueError('invalid lifecycle resource skip reason')
+        if skipped == 'install_bound' and phase != 'install':
+            raise ValueError('install resource skip outside install phase')
         bounds = bracket(r['bracket'])
         for k in ('cgroup_v2_available', 'visible_ancestors_complete', 'host_ancestors_available'):
             boolean(r, k)
         groups = r['cgroups']
         if groups is None:
             groups = []  # Go's unavailable nil slice.
+        if skipped and (any(b is not None for b in bounds) or groups or any(r[k] for k in ('cgroup_v2_available', 'visible_ancestors_complete', 'host_ancestors_available'))):
+            raise ValueError('skipped resource sample carries observations')
         if not isinstance(groups, list) or len(groups) > 64:
             raise ValueError('invalid lifecycle cgroups')
         if not r['cgroup_v2_available'] and (groups or r['visible_ancestors_complete']):
@@ -233,7 +240,7 @@ def command_lifecycle(row):
                 raise ValueError('unavailable command status has a value')
         times = {k: stamp(c[k]) for k in COMMAND_STAMPS}
         bracket(c['context_deadline'], deadline=True)
-        before, after = resources(c['before']), resources(c['after'])
+        before, after = resources(c['before'], c['phase']), resources(c['after'], c['phase'])
         ordered(previous, *before, times['start_attempt'], times['start_return'], times['wait_return'], *after)
         previous = next((v for v in reversed(after) if v is not None), times['wait_return'] or times['start_return'] or previous)
         ordered(times['start_attempt'], times['child_start_exact'], times['child_started_by'], times['wait_return'])
