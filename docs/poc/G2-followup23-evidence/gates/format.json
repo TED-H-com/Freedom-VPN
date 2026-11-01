@@ -1,0 +1,15 @@
+{
+  "command": [
+    "sh",
+    "-ec",
+    "test -z \"$(gofmt -l $(git ls-files '*.go'))\""
+  ],
+  "started_utc": "2026-11-01T11:05:36Z",
+  "exit": 0,
+  "elapsed_seconds": 0.113,
+  "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "public_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "normalization": "worktree and queried GOCACHE path replaced only",
+  "disk_temp": "disktmp.py under .agent/tmp",
+  "gocache_queried": true
+}
