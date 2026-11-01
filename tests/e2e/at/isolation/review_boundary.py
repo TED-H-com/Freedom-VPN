@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """D-140 schedule qualification; the unchanged Go evaluator owns the verdict."""
 import json
+from evidence_io import read_json
 from pathlib import Path
 
 
@@ -26,7 +27,7 @@ def timeline(verdict):
 
 
 def review(root):
-    read=lambda name:json.loads((root/name).read_text())
+    read=lambda name:read_json(root/name)
     verdict=read('deadline-verdict.json');plan=read('boundary-schedule.json')
     rows,interleavings=timeline(verdict);errors=[]
     if not plan['qualified']:errors.append('same-run latency calibration unavailable')

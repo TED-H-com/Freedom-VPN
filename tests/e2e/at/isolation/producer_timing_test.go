@@ -255,3 +255,11 @@ func TestAT13_D140InterleavingQualification(t *testing.T) {
 	}
 	t.Log(string(out))
 }
+
+func TestAT13_Core34ReservationTimeline(t *testing.T) {
+	out, err := exec.Command("python3", "-B", "-m", "unittest", "-v", "reservation_evidence_test.py").CombinedOutput()
+	if err != nil {
+		t.Fatalf("reservation timeline: %v\n%s", err, out)
+	}
+	t.Log(string(out))
+}

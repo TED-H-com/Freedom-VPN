@@ -1,5 +1,6 @@
 """Read-only wire/stop review of agent-core 32 in one assembled run."""
 import json
+from evidence_io import read_json
 from pathlib import Path
 import re
 from candidate_evidence import wall_ns
@@ -47,7 +48,7 @@ def hold_reports(transactions):
 
 
 def review(root):
-    read=lambda name:json.loads((root/name).read_text())
+    read=lambda name:read_json(root/name)
     transactions=read('receiver-capture.json')['transactions']
     holds=hold_reports(transactions)
     stops=[]

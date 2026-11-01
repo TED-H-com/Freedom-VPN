@@ -7,6 +7,8 @@ import sys
 import tempfile
 import time
 
+sys.dont_write_bytecode = True
+
 ROOT = Path(__file__).resolve().parents[4]
 os.chdir(ROOT)
 
