@@ -70,8 +70,8 @@ func (l *live) recordGenerationHolds(r *record) {
 		"interpretation":          "Node-wide hold; the observation contract has no per-member hold field. Grant or device withdrawal while members remain eligible cannot prove members_revoked. Incident closure is not service recovery.",
 		"control_io_after_cancel": "not observable here", "classification_scope": "Replay original accepted reports through PublicationDataPathFailure at their receipt time; current signed-lease identity lookup. This is not a captured operation transition."}
 	raw, marshalErr := json.MarshalIndent(evidence, "", "  ")
-	if marshalErr != nil || writeEvidence(filepath.Join(l.root, "docs/e2e/at/members/F15-"+r.ID+"-generation-holds.json"), append(raw, '\n')) != nil {
+	if marshalErr != nil || writeEvidence(filepath.Join(l.root, "docs/e2e/at/members/F16-"+r.ID+"-generation-holds.json"), append(raw, '\n')) != nil {
 		l.t.Fatal("hold evidence writer")
 	}
-	r.check("r18 M-3 accepted hold and central ID join", "retain incidents, exact reports, lease members, revocation and escalation IDs; markers and retained safety precedence when exercised", fmt.Sprintf("samples=%d; valid=%t; details=F15-%s-generation-holds.json; no matching scenario is not exercised", len(checks), ok, r.ID), "read-only own-stack durable holds/audits; replay publication classification, no new observation", ok)
+	r.check("r18 M-3 accepted hold and central ID join", "retain incidents, exact reports, lease members, revocation and escalation IDs; markers and retained safety precedence when exercised", fmt.Sprintf("samples=%d; valid=%t; details=F16-%s-generation-holds.json; no matching scenario is not exercised", len(checks), ok, r.ID), "read-only own-stack durable holds/audits; replay publication classification, no new observation", ok)
 }
