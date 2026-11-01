@@ -41,7 +41,7 @@ def main():
                                  complete_cases=dict(Counter(c['status'] for c in cases.values()))))
     save('F16-D077-regrant-attempts.json', dict(provenance, attempts=attempts, cause_status='unproven',
          historical_F14_01='Failed original remains failed; no common cause inferred with F11-01.',
-         historical_F11_01='Devstack 25 is a campaign, not a repair; first-selection success cannot close either finding.'))
+         historical_F11_01='Devstack 27 is a campaign, not a repair; first-selection success cannot close either finding.'))
     save('F16-F11-01-first-selection.json', dict(provenance, original_forwarding=cases['AT01'].get('forwarding', []), original_readiness=[s for s in cases['AT01']['steps'] if 'readiness' in s['name']], cause_status='unproven', historical_status='F11-01 and F14-01 remain unresolved; no cause or fix inferred.'))
     recovery = load(ROOT / 'F16-AT02-recovery.json')
     trace = load(ROOT / 'AT02-enforcement-timing.json')['records']
@@ -53,7 +53,7 @@ def main():
         window = [x for x in trace if x['run_id'] == b['producer_run_id'] and a-1 <= int(x['sequence']) <= z+2]
         policy.append(dict(original_bracket=b, producer_window=window))
     save('F16-AT02-policy-missing.json', dict(provenance, windows=policy, cause_status='unproven',
-         correction='Ordinary stale lease: baseline, ACK, renew, Apply, verify, heartbeat. Verified deny-all only with a retained Apply error. No finite outage ceiling. D-139 option (b) is a design track only.',
+         correction='Ordinary stale lease: baseline, ACK, renew, Apply, verify, heartbeat. Verified deny-all only with a retained Apply error. No finite outage ceiling. D-141 closes D-139 as design-only; this tree does not implement retained-generation service.',
          all_sibling_losses=recovery['lost_admitted_packets'], guard_losses=recovery['losses_in_completed_guards'],
          outside_guard_losses=recovery['losses_outside_completed_guards'],
          accounting='Every loss counted; overlapping baseline brackets are never summed as unique losses.'))
@@ -61,6 +61,8 @@ def main():
     # supplementary; it cannot substitute for an incident/report/lease join.
     h = load(ROOT / 'F16-AT02-generation-holds.json')
     joined = h['joined']
+    save('F16-AT02-revocation-members.json', dict(provenance, rows=joined['revocations'],
+         method='Original audit resource UUID joined read-only to member_devices or entitlement_grants in the owned stack; member resources carry their exact member UUID. Null means no ID join, never inferred from timing.'))
     incidents = []
     for incident in joined['incidents']:
         samples = [s for s in joined['samples'] if s['hold_id'] == incident['id']]
@@ -97,7 +99,7 @@ def main():
          revocations=joined['revocations'], revocation_member_ID_joins=load(ROOT / 'F16-AT02-revocation-members.json'), mutation_snapshots=h['snapshots'],
          coverage=dict(sole_member_revocation='exercised' if sole else 'not exercised',
                        sole_member_incident_ids=[i['incident']['id'] for i in sole],
-                       sibling_member_revocation='not exercised: classify from retained member-state snapshots; device/grant withdrawal is not member suspension or closure',
+                       sibling_member_revocation='See F16-populated-hold-joins.json for exact original post-member-revocation survivor samples; device/grant withdrawal is insufficient',
                        retained_safety_precedence='exercised' if safety else 'not exercised',
                        retained_safety_checks=safety),
          interpretation='Node-wide; no per-member hold field. Eligible siblings remain affected until matching-lease evidence. A members_revoked closure never claims recovered service.',

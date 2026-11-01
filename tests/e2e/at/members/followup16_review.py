@@ -31,7 +31,7 @@ def ident(row):
 def preapply(row):
     t = row['timing']
     before = row.get('host', {}).get('before_apply', {})
-    commands = [c for c in t.get('commands', []) if c['phase'] == 'revoke']
+    commands = [c for c in (t.get('commands') or []) if c['phase'] == 'revoke']
     out = dict(available=bool(before.get('ok')), queued_delete_proven=bool(commands), revoke_commands=commands)
     if out['available']:
         a, b = int(before['end_ns']), int(t['start_ns'])
@@ -114,7 +114,7 @@ def reservation_review(cases, recovery, holds, data, pins):
             inventory.append(dict(node_role=role, **ident(row), original_record=row, pre_apply=b))
     windows=[]
     for b in recovery['brackets']:
-        r=b['original_recovery_record']
+        r=b.get('original_recovery_record')
         if not r:continue
         p=preapply(r)
         windows.append(dict(producer_run_id=b['producer_run_id'],baseline_sequence=b['baseline_sequence'],baseline_start_ns=b['baseline_start_ns'],recovery_sequence=b['next_successful_apply_sequence'],recovery_end_ns=b['recovery_end_ns'],baseline_to_recovery_ns=b['baseline_to_recovery_ns'],pre_apply=p,entire_reservation_inside_baseline_outage=(p['available'] and int(b['baseline_start_ns'])<=int(p['start_ns'])<=int(p['end_ns'])<=int(b['recovery_end_ns'])),losses=b['admitted_losses']))
