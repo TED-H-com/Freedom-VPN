@@ -11,4 +11,3 @@ cancellation. A stop before that boundary returns without starting the local
 work. Real failures still fail closed; the bound does not extend a signed lease
 or promise an outage ceiling. The restart lab requires a recorded graceful
 exit; forced process death is a separate case.
-

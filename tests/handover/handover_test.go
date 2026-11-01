@@ -6027,7 +6027,7 @@ func TestHandover_Followup25Claims(t *testing.T) {
 		checkHash(t, "tests/handover/testdata/followup24-main.json", "606adc66f1d7924658567b8fc3da313ed6d39c364e58de3babbf720971af0f25")
 		checkHash(t, "tests/handover/testdata/followup24-snapshots.json", "3d9a4b7372420707c1fbfd636fcff49270f27b7717d5b5b4aaf7deed6479aa73")
 		checkHash(t, "tests/handover/testdata/followup25-main.json", "9f9488e21aae1cd84455ba309f1e52893d1853e8ae55bb87e3a42fc2f8dd5b2b")
-		checkHash(t, "tests/handover/testdata/followup25-snapshots.json", "3c343092320cff924789918ee9fc5370393393894ee6e3c9333f1aec57ae7660")
+		checkHash(t, "tests/handover/testdata/followup25-snapshots.json", "9e4039c9d90dbdb323d15f2d1ea1b2c500d472091db65f7f24d1168885334c9d")
 		for path, want := range map[string]string{
 			"README.md":                       "33cd7c4c211ac070f3f72f24ec5f257667bc4195825418f4a421bf7b21cbe223",
 			"docs/handover/00-index.md":       "92c1ca425f333cc83e7b32d8d05cad19cdd970a201e7cf4e59deb4de5f5cd612",

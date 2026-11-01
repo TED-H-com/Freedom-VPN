@@ -152,4 +152,3 @@ baseline. This lane modifies none of the product files.
   complete stop table/JSON, restart-lease readbacks, current report/requests,
   procedure, historical forwarding links and D-132 audit.
 - `.agent/REPORT.md`, `.agent/last.md` and logs are ignored, never committed.
-

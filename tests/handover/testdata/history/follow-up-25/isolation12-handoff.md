@@ -119,4 +119,3 @@ and validation. Root producer-operations.jsonl becomes lossless .jsonl.gz;
 old raw stream and post-freeze review are preserved in history/follow-up-11.
 No production, shared harness, dependencies, handover test, earlier archive,
 README at repository root, spec or AGENTS edit. 207 changed paths, all owned.
-
