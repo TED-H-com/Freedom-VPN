@@ -122,6 +122,7 @@ func (r *runner) servingGate26(ctx context.Context, id string, captures ...*Nati
 	wait, cancel := context.WithTimeout(ctx, 90*time.Second)
 	defer cancel()
 	var accepted []byte
+	counterReadFailed := false
 	sample := 0
 	ready := waitUntil(wait, time.Second, func() bool {
 		if len(captures) > 0 {
@@ -158,9 +159,15 @@ func (r *runner) servingGate26(ctx context.Context, id string, captures ...*Nati
 		}
 		counters, e := (&Stack{lab: r.lab}).DeviceByteCounters(wait, r.usageDevice)
 		noteJSON(&rec, "last_counters", counters)
+		if e != nil {
+			counterReadFailed = true
+			return true
+		} // End this gate; never replace a failed counter read.
 		beat, e2 := r.lab.docker(r.lab.node, "cat", "/run/vpn-node/heartbeat")
 		return e == nil && e2 == nil && counters.Present && counters.Generation == a.Generation && servingHeartbeatSince(beat, start)
 	})
+	ready = ready && !counterReadFailed
+	noteJSON(&rec, "counter_read_failed", counterReadFailed)
 	noteJSON(&rec, "ready", ready)
 	noteJSON(&rec, "completed_at", time.Now().UTC())
 	if len(accepted) > 0 {
