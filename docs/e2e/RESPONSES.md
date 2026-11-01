@@ -1245,3 +1245,70 @@ This localizes the fresh delay to native handshake/data delivery, separately
 from the first-selection node-tracer closure. NetBird/native transport and
 members owners should assess the transition against 258ba504's full population;
 the historical cause and Ted's transport choice remain open.
+
+## isolation 14 / members 15 — 2026-11-01 (follow-up 27, D-102)
+
+> ## Follow-up 14 requests — 2026-11-01
+>
+> # Follow-up 15 owner assignments — 2026-11-01
+
+**Isolation request 4 / wire-nodes 34 request 1, and members' populated-hold
+rows:** the TEST ONLY transport seam is available through `labstack.Stack`.
+[Exact arming/release sequence and export fields](scenarios/harness-exports.md#follow-up-27--bounded-populated-generation-hold-test-only).
+The matching lease arrives only on `POST /api/v1/agent/lease-renewals`, not in
+the desired-state envelope. After the real capacity command, the proxy forwards
+desired g+1 and all observations, returning prompt 503s only for successful
+renewal responses whose signed generation matches that new desired document.
+It never edits, saves for replay, or synthesizes a signed lease or report.
+At release it forwards the next genuine central-issued matching response.
+
+Rebuild the ordinary node image; establish the real populated serving lease;
+save its report/node/incarnation/lease IDs and generation string; call
+`ArmMatchingLeaseHold(ctx, "node", generation, 90*time.Second)` once; perform
+the genuine node PATCH with the current ETag and idempotency key. Poll
+`MatchingLeaseHold` and `GenerationHoldSnapshot` for accepted applied g+1 /
+old lease g and its exact incident. After the required observation window,
+call `ReleaseMatchingLeaseHold`, then join the forwarded lease, accepted
+matching report and incident ending. `LocalLeaseReadback` supplies the stored
+lease digest inside the node. Use a fresh arm UUID for each later incident.
+The 90-second example is a TEST ONLY duration; the measured proof uses 45.
+The bounded hold does not require stopping the agent or holding desired state.
+
+[Final fresh proof and all attempts](runs/2026-11-01/followup27/hold-fixture.md):
+**13 / 0 / 0**, two members, applied 8 / signed lease 7, incident **50.000298 s**.
+The node's Step-3 report has `elapsed_ms=9891`, `alarm=true`. Central escalates
+once at incident age **9.887144 s**, so **the reported alarm triggered it**;
+central's 30-second age fallback did not. A later alarm sample adds no second
+audit. The matching-generation report ends the same incident
+`generation_matched`, and the actual local lease body equals the forwarded
+central response. The two earlier original runner failures stay failed (host
+permission, then helper build directory); separate read-only supplements retain
+their exact local-byte proof. No product defect was demonstrated.
+
+The final joins are:
+
+- Node `01a197a3-6e35-7ad4-b222-6a74240ce7b5`, incarnation
+  `01a197a3-7148-769d-8dc7-65242aac1194`;
+  arm `141d6ebb-f2f0-48bf-a540-5ad27e7c2595`.
+- Old populated lease `6bcc30f4-b55b-4111-9e62-08c94c0906a9`, generation 7;
+  incident `01a197a5-5b5d-76c7-a866-c359da0703a8`.
+- Hold reports `01a197a5-5b57-79bb-a1bb-0db65382757c` (Step 1),
+  `01a197a5-81f4-7284-8fc3-5e2c8712547f` (Step 3/alarm), and
+  `01a197a6-0aab-706a-8a3a-949162e94f16` (Step 10/alarm).
+- Single audit `01a197a5-81fd-7151-b4ab-d77111a39d0b`;
+  released generation-8 lease `d6075d26-1b48-4bfc-b0fa-4b93f4b9fd2c`;
+  matching report `01a197a6-1ea5-78a5-845e-01ac2ab5e520`.
+
+[The immutable joins](runs/2026-11-01/followup27/hold-joins.json) include first /
+last seen, end reason, every accepted hold sample, all lease/member windows and
+the audit. Join samples by node/incarnation/report and incident, and audit by
+its `incident_id`. Recovery is a distinct accepted report, not a fabricated
+extra hold sample. An agent-only supervised stop keeps the proxy armed while
+local counters reset; restarting the proxy itself releases the test seam.
+
+Isolation and members still own their original unrelated-failure precedence,
+active-stop retention/counter reset, matching-recovery acceptance, distinct
+later incident, and members' sole-member `members_revoked` rows. The fixture
+proof does not pass those combinations. A sole-member row must use its own
+one-member populated lease and original real member revocation; one revoked
+device or one revoked member among surviving members is insufficient.
