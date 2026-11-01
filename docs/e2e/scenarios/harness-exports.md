@@ -479,3 +479,22 @@ receipt. A missing wait receipt is unavailable evidence, never inferred exit 0.
 Killing the whole container or the waiter can prevent publication; this export
 covers an agent stop while its lab supervisor remains alive. It adds no product
 API or production supervisor behavior.
+
+
+## Follow-up 25 — native diagnostic arms (TEST ONLY)
+
+`TestE2E_Followup25Native` accepts explicit `FVPN_E2E_FOLLOWUP25_ARM=kernel` or
+`userspace` and `FVPN_E2E_FOLLOWUP25_FAMILY=ipv4` or `ipv6`, on a fresh reset
+stack. The userspace arm sets a one-use node marker before enrollment; only the
+lab daemon command receives `NB_WG_KERNEL_DISABLED=true`. The marker is consumed
+and cleaned up. This never changes the default fixture or NetBird Dockerfile
+pin, and is not a production preference or architecture recommendation.
+
+The selected-peer observer retains IPv4 `/proc/net/snmp` counters alongside
+SNMP6 and nstat. `native_latest_handshake_at`, when present, is the native
+daemon's separately reported handshake timestamp. It never fills the independent
+`latest_handshake_unix_seconds` or `wireguard_endpoint` after a failed `wg` read.
+Unknown or zero daemon timestamps remain absent. Public keys remain in memory
+only for the selected-peer join. Per-run command success, clock bounds and
+missing samples remain visible. See the [complete bounded campaign](../runs/2026-11-01/followup25/analysis.md)
+for every attempt, partial observation gap, original failure and scope limit.
