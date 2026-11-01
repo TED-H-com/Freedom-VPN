@@ -1,0 +1,7 @@
+{
+  "test_only": true,
+  "scope": "fixture port correction only; enforcement and compiled A/B binaries unchanged",
+  "old_sha256": "72501cdafb9ea4befe194ce01dae42d568bb8c3c673c345bf1c4f80afa822e2b",
+  "new_sha256": "94d292ea60fed49e7161716b5a79356e8e3782d5d3d8fa2721065b1694d80667",
+  "reason": "existing pcap_headers decoder recognizes synthetic sequence at port 40021; no decoder or predicate change"
+}

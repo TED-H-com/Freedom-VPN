@@ -1,0 +1,34 @@
+class htb 1:1 root rate 20Mbit ceil 20Mbit burst 25000b cburst 25000b
+ Sent 212985475 bytes 206411 pkt (dropped 0, overlimits 4883 requeues 0)
+ backlog 0b 0p requeues 0
+ lended: 4882 borrowed: 0 giants: 0
+ tokens: 155987 ctokens: 155987
+
+class htb 1:fffe parent 1:1 prio 0 rate 1Mbit ceil 20Mbit burst 25000b cburst 25000b
+ Sent 566 bytes 10 pkt (dropped 0, overlimits 0 requeues 0)
+ backlog 0b 0p requeues 0
+ lended: 10 borrowed: 0 giants: 0
+ tokens: 3119750 ctokens: 155987
+
+class htb 1:2f parent 1:1 leaf 2f: prio 1 rate 10Mbit ceil 10Mbit burst 12500b cburst 12500b
+ Sent 177958769 bytes 181953 pkt (dropped 0, overlimits 125337 requeues 0)
+ backlog 0b 0p requeues 0
+ lended: 179503 borrowed: 2450 giants: 0
+ tokens: -9913 ctokens: 147287
+
+class fq_codel 2f:48 parent 2f:
+ (dropped 0, overlimits 0 requeues 0)
+ backlog 0b 0p requeues 0
+  deficit -234 count 2 lastcount 2 ldelay 32.3ms
+class fq_codel 2f:b6 parent 2f:
+ (dropped 0, overlimits 0 requeues 0)
+ backlog 0b 0p requeues 0
+  deficit 480 count 5 lastcount 2 ldelay 17.6ms
+class fq_codel 2f:134 parent 2f:
+ (dropped 0, overlimits 0 requeues 0)
+ backlog 0b 0p requeues 0
+  deficit 166 count 2 lastcount 2 ldelay 6.5ms
+class fq_codel 2f:32c parent 2f:
+ (dropped 0, overlimits 0 requeues 0)
+ backlog 0b 0p requeues 0
+  deficit 640 count 4 lastcount 3 ldelay 25.5ms

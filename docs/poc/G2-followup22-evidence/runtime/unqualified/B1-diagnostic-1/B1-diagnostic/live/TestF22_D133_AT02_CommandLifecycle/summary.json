@@ -1,0 +1,121 @@
+{
+  "test_only": true,
+  "hold_ms": 200,
+  "counts": {
+    "admitted": {
+      "ingresses": 0,
+      "egresses": 0,
+      "losses": 0
+    },
+    "revoked": {
+      "ingresses": 0,
+      "egresses": 0,
+      "losses": 0
+    }
+  },
+  "losses": [],
+  "windows": [
+    {
+      "failed_apply_index": 1,
+      "baseline_command": {
+        "kind": "baseline",
+        "start": {
+          "wall_ns": "1793511174293473799",
+          "mono_ns": "94711809844648"
+        },
+        "end": {
+          "wall_ns": "1793511174308236759",
+          "mono_ns": "94711824607821"
+        },
+        "ok": true,
+        "test_only_script": "# inet fvpn boot baseline. Member forwarding is off (\u00a78.2).\nadd table inet fvpn\nflush set inet fvpn allowed_v4\ndelete chain inet fvpn forward\nadd chain inet fvpn forward { type filter hook forward priority -150; policy drop; }\ndelete chain inet fvpn input\nadd chain inet fvpn input { type filter hook input priority -150; policy accept; }\ndelete chain inet fvpn output\nadd chain inet fvpn output { type filter hook output priority -150; policy accept; }\ndelete chain inet fvpn postrouting\nadd chain inet fvpn postrouting { type nat hook postrouting priority 100; policy accept; }\nadd rule inet fvpn forward ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=0 fvpn_baseline=1 fvpn_metering=forward_admission_v1\"\nadd rule inet fvpn forward ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=019a0000-0000-7000-8000-00000000000a:2f\"\nadd rule inet fvpn forward ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=019a0000-0000-7000-8000-00000000000b:30\"\nadd rule inet fvpn forward iifname \"fv-fh\" counter name \"ctbase\" drop\nadd rule inet fvpn forward oifname \"fv-fh\" counter name \"ctbase\" drop\nadd rule inet fvpn forward iifname \"fv-fh\" meta nfproto ipv6 counter name \"ctv6\" drop\nadd rule inet fvpn forward oifname \"fv-fh\" meta nfproto ipv6 counter name \"ctv6\" drop\nadd rule inet fvpn input iifname \"fv-fh\" counter name \"ctin\" drop\nadd rule inet fvpn input ip saddr 100.64.0.0/10 counter name \"ctin\" drop\n",
+        "test_only_sha256": "aae47d6a42134a5853725bb04f8c3d4664683b5f3b674aeef22fc6f3908a633d"
+      },
+      "recovery_release": {
+        "kind": "guard_release",
+        "start": {
+          "wall_ns": "1793511174596362815",
+          "mono_ns": "94712112733984"
+        },
+        "end": {
+          "wall_ns": "1793511174607126749",
+          "mono_ns": "94712123497799"
+        },
+        "ok": true,
+        "test_only_script": "delete chain inet fvpn fv_deadline_guard\n",
+        "test_only_sha256": "7d4fd845783bf1387277b226008507b2ccd0d647405fa90700c33936533bea53"
+      },
+      "outer_ns": "313653151",
+      "closed_ns": "288126163",
+      "lost_admitted": 0
+    },
+    {
+      "failed_apply_index": 3,
+      "baseline_command": {
+        "kind": "baseline",
+        "start": {
+          "wall_ns": "1793511174953589955",
+          "mono_ns": "94712469960825"
+        },
+        "end": {
+          "wall_ns": "1793511174969343559",
+          "mono_ns": "94712485714659"
+        },
+        "ok": true,
+        "test_only_script": "# inet fvpn boot baseline. Member forwarding is off (\u00a78.2).\nadd table inet fvpn\nflush set inet fvpn allowed_v4\ndelete chain inet fvpn forward\nadd chain inet fvpn forward { type filter hook forward priority -150; policy drop; }\ndelete chain inet fvpn input\nadd chain inet fvpn input { type filter hook input priority -150; policy accept; }\ndelete chain inet fvpn output\nadd chain inet fvpn output { type filter hook output priority -150; policy accept; }\ndelete chain inet fvpn postrouting\nadd chain inet fvpn postrouting { type nat hook postrouting priority 100; policy accept; }\nadd rule inet fvpn forward ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=0 fvpn_baseline=1 fvpn_metering=forward_admission_v1\"\nadd rule inet fvpn forward ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=019a0000-0000-7000-8000-00000000000a:2f\"\nadd rule inet fvpn forward ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=019a0000-0000-7000-8000-00000000000b:30\"\nadd rule inet fvpn forward iifname \"fv-fh\" counter name \"ctbase\" drop\nadd rule inet fvpn forward oifname \"fv-fh\" counter name \"ctbase\" drop\nadd rule inet fvpn forward iifname \"fv-fh\" meta nfproto ipv6 counter name \"ctv6\" drop\nadd rule inet fvpn forward oifname \"fv-fh\" meta nfproto ipv6 counter name \"ctv6\" drop\nadd rule inet fvpn input iifname \"fv-fh\" counter name \"ctin\" drop\nadd rule inet fvpn input ip saddr 100.64.0.0/10 counter name \"ctin\" drop\n",
+        "test_only_sha256": "aae47d6a42134a5853725bb04f8c3d4664683b5f3b674aeef22fc6f3908a633d"
+      },
+      "recovery_release": {
+        "kind": "guard_release",
+        "start": {
+          "wall_ns": "1793511175262222829",
+          "mono_ns": "94712778593993"
+        },
+        "end": {
+          "wall_ns": "1793511175270114772",
+          "mono_ns": "94712786485799"
+        },
+        "ok": true,
+        "test_only_script": "delete chain inet fvpn fv_deadline_guard\n",
+        "test_only_sha256": "7d4fd845783bf1387277b226008507b2ccd0d647405fa90700c33936533bea53"
+      },
+      "outer_ns": "316524974",
+      "closed_ns": "292879334",
+      "lost_admitted": 0
+    },
+    {
+      "failed_apply_index": 5,
+      "baseline_command": {
+        "kind": "baseline",
+        "start": {
+          "wall_ns": "1793511175605726516",
+          "mono_ns": "94713122097338"
+        },
+        "end": {
+          "wall_ns": "1793511175615981945",
+          "mono_ns": "94713132353013"
+        },
+        "ok": true,
+        "test_only_script": "# inet fvpn boot baseline. Member forwarding is off (\u00a78.2).\nadd table inet fvpn\nflush set inet fvpn allowed_v4\ndelete chain inet fvpn forward\nadd chain inet fvpn forward { type filter hook forward priority -150; policy drop; }\ndelete chain inet fvpn input\nadd chain inet fvpn input { type filter hook input priority -150; policy accept; }\ndelete chain inet fvpn output\nadd chain inet fvpn output { type filter hook output priority -150; policy accept; }\ndelete chain inet fvpn postrouting\nadd chain inet fvpn postrouting { type nat hook postrouting priority 100; policy accept; }\nadd rule inet fvpn forward ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=0 fvpn_baseline=1 fvpn_metering=forward_admission_v1\"\nadd rule inet fvpn forward ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=019a0000-0000-7000-8000-00000000000a:2f\"\nadd rule inet fvpn forward ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=019a0000-0000-7000-8000-00000000000b:30\"\nadd rule inet fvpn forward iifname \"fv-fh\" counter name \"ctbase\" drop\nadd rule inet fvpn forward oifname \"fv-fh\" counter name \"ctbase\" drop\nadd rule inet fvpn forward iifname \"fv-fh\" meta nfproto ipv6 counter name \"ctv6\" drop\nadd rule inet fvpn forward oifname \"fv-fh\" meta nfproto ipv6 counter name \"ctv6\" drop\nadd rule inet fvpn input iifname \"fv-fh\" counter name \"ctin\" drop\nadd rule inet fvpn input ip saddr 100.64.0.0/10 counter name \"ctin\" drop\n",
+        "test_only_sha256": "aae47d6a42134a5853725bb04f8c3d4664683b5f3b674aeef22fc6f3908a633d"
+      },
+      "recovery_release": {
+        "kind": "guard_release",
+        "start": {
+          "wall_ns": "1793511175903299298",
+          "mono_ns": "94713419670489"
+        },
+        "end": {
+          "wall_ns": "1793511175925197720",
+          "mono_ns": "94713441568798"
+        },
+        "ok": true,
+        "test_only_script": "delete chain inet fvpn fv_deadline_guard\n",
+        "test_only_sha256": "7d4fd845783bf1387277b226008507b2ccd0d647405fa90700c33936533bea53"
+      },
+      "outer_ns": "319471460",
+      "closed_ns": "287317476",
+      "lost_admitted": 0
+    }
+  ]
+}

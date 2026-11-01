@@ -1,0 +1,357 @@
+{
+  "test_only": true,
+  "required_populations": [
+    "A1-live",
+    "A1-agent",
+    "B1-live",
+    "B1-agent",
+    "A2-live",
+    "A2-agent",
+    "B2-live",
+    "B2-agent"
+  ],
+  "missing_qualified_populations": [
+    "B2-agent"
+  ],
+  "blocked": {
+    "status": "blocked: host not quiet",
+    "seconds": 5404.459726345987
+  },
+  "populations": [
+    {
+      "test_only": true,
+      "population": "A1-live",
+      "cause_status_scope": "install-overrun causality only; not_applicable does not assert a cause for another failure",
+      "applies": 138,
+      "completed_guards": 137,
+      "failed_applies": 2,
+      "measured_guards": 0,
+      "percentiles_ms": {
+        "outer_ns": {
+          "p50": 30.218767,
+          "p90": 40.484455,
+          "p99": 49.285496,
+          "max": 52.533127
+        },
+        "install_ns": {
+          "p50": 14.962917,
+          "p90": 23.011785,
+          "p99": 29.310054,
+          "max": 29.634719
+        },
+        "render_to_installed_ns": {
+          "p50": 15.041772,
+          "p90": 23.133039,
+          "p99": 29.435089,
+          "max": 29.766487
+        }
+      },
+      "suite_status": {
+        "exit": 0,
+        "postflight_quiet": true,
+        "source": "A"
+      }
+    },
+    {
+      "test_only": true,
+      "population": "A1-agent",
+      "cause_status_scope": "install-overrun causality only; not_applicable does not assert a cause for another failure",
+      "applies": 138,
+      "completed_guards": 135,
+      "failed_applies": 3,
+      "measured_guards": 0,
+      "percentiles_ms": {
+        "outer_ns": {
+          "p50": 29.651227,
+          "p90": 40.91986,
+          "p99": 50.62354,
+          "max": 50.939721
+        },
+        "install_ns": {
+          "p50": 14.806233,
+          "p90": 22.007141,
+          "p99": 29.981965,
+          "max": 30.84134
+        },
+        "render_to_installed_ns": {
+          "p50": 14.887575,
+          "p90": 22.171828,
+          "p99": 30.098342,
+          "max": 30.909662
+        }
+      },
+      "suite_status": {
+        "exit": 1,
+        "postflight_quiet": true,
+        "source": "A"
+      }
+    },
+    {
+      "test_only": true,
+      "population": "A1-agent-trace",
+      "cause_status_scope": "install-overrun causality only; not_applicable does not assert a cause for another failure",
+      "applies": 23,
+      "completed_guards": 23,
+      "failed_applies": 0,
+      "measured_guards": 0,
+      "percentiles_ms": {
+        "outer_ns": {
+          "p50": 32.979477,
+          "p90": 39.498207,
+          "p99": 45.955402,
+          "max": 45.955402
+        },
+        "install_ns": {
+          "p50": 15.576078,
+          "p90": 21.64883,
+          "p99": 23.0345,
+          "max": 23.0345
+        },
+        "render_to_installed_ns": {
+          "p50": 15.665614,
+          "p90": 21.706932,
+          "p99": 23.143003,
+          "max": 23.143003
+        }
+      },
+      "suite_status": {
+        "exit": 0,
+        "postflight_quiet": true,
+        "source": "A"
+      }
+    },
+    {
+      "test_only": true,
+      "population": "B1-live",
+      "cause_status_scope": "install-overrun causality only; not_applicable does not assert a cause for another failure",
+      "applies": 138,
+      "completed_guards": 137,
+      "failed_applies": 2,
+      "measured_guards": 102,
+      "percentiles_ms": {
+        "outer_ns": {
+          "p50": 30.293684,
+          "p90": 40.866305,
+          "p99": 50.882349,
+          "max": 52.860299
+        },
+        "install_ns": {
+          "p50": 16.145908,
+          "p90": 22.5411,
+          "p99": 26.909355,
+          "max": 28.090277
+        },
+        "render_to_installed_ns": {
+          "p50": 16.22971,
+          "p90": 22.642165,
+          "p99": 26.999323,
+          "max": 28.18253
+        }
+      },
+      "suite_status": {
+        "exit": 0,
+        "postflight_quiet": true,
+        "source": "B"
+      }
+    },
+    {
+      "test_only": true,
+      "population": "B1-agent",
+      "cause_status_scope": "install-overrun causality only; not_applicable does not assert a cause for another failure",
+      "applies": 138,
+      "completed_guards": 135,
+      "failed_applies": 3,
+      "measured_guards": 0,
+      "percentiles_ms": {
+        "outer_ns": {
+          "p50": 30.077815,
+          "p90": 40.732984,
+          "p99": 46.061634,
+          "max": 46.214033
+        },
+        "install_ns": {
+          "p50": 14.557328,
+          "p90": 21.596318,
+          "p99": 26.373941,
+          "max": 27.35068
+        },
+        "render_to_installed_ns": {
+          "p50": 14.64381,
+          "p90": 21.675187,
+          "p99": 26.61157,
+          "max": 27.436425
+        }
+      },
+      "suite_status": {
+        "exit": 0,
+        "postflight_quiet": true,
+        "source": "B"
+      }
+    },
+    {
+      "test_only": true,
+      "population": "B1-agent-trace",
+      "cause_status_scope": "install-overrun causality only; not_applicable does not assert a cause for another failure",
+      "applies": 23,
+      "completed_guards": 23,
+      "failed_applies": 1,
+      "measured_guards": 23,
+      "percentiles_ms": {
+        "outer_ns": {
+          "p50": 34.292599,
+          "p90": 44.810593,
+          "p99": 54.110261,
+          "max": 54.110261
+        },
+        "install_ns": {
+          "p50": 15.985031,
+          "p90": 27.201435,
+          "p99": 29.934308,
+          "max": 29.934308
+        },
+        "render_to_installed_ns": {
+          "p50": 16.055255,
+          "p90": 27.297278,
+          "p99": 30.03911,
+          "max": 30.03911
+        }
+      },
+      "suite_status": {
+        "exit": 0,
+        "postflight_quiet": true,
+        "source": "B"
+      }
+    },
+    {
+      "test_only": true,
+      "population": "A2-live",
+      "cause_status_scope": "install-overrun causality only; not_applicable does not assert a cause for another failure",
+      "applies": 138,
+      "completed_guards": 137,
+      "failed_applies": 2,
+      "measured_guards": 0,
+      "percentiles_ms": {
+        "outer_ns": {
+          "p50": 27.563664,
+          "p90": 37.740059,
+          "p99": 44.365668,
+          "max": 45.98348
+        },
+        "install_ns": {
+          "p50": 14.13206,
+          "p90": 21.596473,
+          "p99": 26.995971,
+          "max": 28.893651
+        },
+        "render_to_installed_ns": {
+          "p50": 14.232089,
+          "p90": 21.736268,
+          "p99": 27.065263,
+          "max": 29.02462
+        }
+      },
+      "suite_status": {
+        "exit": 0,
+        "postflight_quiet": true,
+        "source": "A"
+      }
+    },
+    {
+      "test_only": true,
+      "population": "A2-agent",
+      "cause_status_scope": "install-overrun causality only; not_applicable does not assert a cause for another failure",
+      "applies": 138,
+      "completed_guards": 135,
+      "failed_applies": 3,
+      "measured_guards": 0,
+      "percentiles_ms": {
+        "outer_ns": {
+          "p50": 30.030849,
+          "p90": 41.108341,
+          "p99": 46.615981,
+          "max": 48.194191
+        },
+        "install_ns": {
+          "p50": 15.307332,
+          "p90": 22.609308,
+          "p99": 27.92544,
+          "max": 28.968468
+        },
+        "render_to_installed_ns": {
+          "p50": 15.394795,
+          "p90": 22.687553,
+          "p99": 28.201652,
+          "max": 29.027697
+        }
+      },
+      "suite_status": {
+        "exit": 0,
+        "postflight_quiet": true,
+        "source": "A"
+      }
+    },
+    {
+      "test_only": true,
+      "population": "B2-live",
+      "cause_status_scope": "install-overrun causality only; not_applicable does not assert a cause for another failure",
+      "applies": 138,
+      "completed_guards": 137,
+      "failed_applies": 2,
+      "measured_guards": 102,
+      "percentiles_ms": {
+        "outer_ns": {
+          "p50": 31.189132,
+          "p90": 40.956407,
+          "p99": 50.161712,
+          "max": 56.630295
+        },
+        "install_ns": {
+          "p50": 16.747348,
+          "p90": 23.494631,
+          "p99": 28.269935,
+          "max": 29.835215
+        },
+        "render_to_installed_ns": {
+          "p50": 16.850169,
+          "p90": 23.578644,
+          "p99": 28.359817,
+          "max": 29.9304
+        }
+      },
+      "suite_status": {
+        "exit": 0,
+        "postflight_quiet": true,
+        "source": "B"
+      }
+    },
+    {
+      "test_only": true,
+      "population": "B1-diagnostic",
+      "cause_status_scope": "install-overrun causality only; not_applicable does not assert a cause for another failure",
+      "applies": 7,
+      "completed_guards": 7,
+      "failed_applies": 3,
+      "measured_guards": 7,
+      "percentiles_ms": {
+        "outer_ns": {
+          "p50": 26.049546,
+          "p90": 34.692832,
+          "p99": 34.692832,
+          "max": 34.692832
+        },
+        "install_ns": {
+          "p50": 13.334974,
+          "p90": 18.753833,
+          "p99": 18.753833,
+          "max": 18.753833
+        },
+        "render_to_installed_ns": {
+          "p50": 13.41182,
+          "p90": 18.837484,
+          "p99": 18.837484,
+          "max": 18.837484
+        }
+      }
+    }
+  ]
+}

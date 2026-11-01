@@ -19,7 +19,7 @@ def sender(source):
     admitted = source == 'admitted'
     addr = '100.64.1.1' if admitted else '100.64.1.2'
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    s.bind((addr, 40022))
+    s.bind((addr, 40021))
     s.setblocking(False)
     rows = []
     seq = 0 if admitted else 1 << 32

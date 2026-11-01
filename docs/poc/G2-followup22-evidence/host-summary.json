@@ -1,0 +1,525 @@
+{
+  "test_only": true,
+  "rows": [
+    {
+      "population": "A1-agent",
+      "status": {
+        "exit": 1,
+        "postflight_quiet": true,
+        "source": "A"
+      },
+      "host_samples": [
+        {
+          "path": "A1-agent-preflight-1.json",
+          "start_ns": "92172203300762",
+          "end_ns": "92202275856883",
+          "max_r": 1,
+          "min_idle": 86,
+          "load_before": "10.20 10.50 10.34 2/2673 2267864",
+          "load_after": "10.24 10.47 10.33 2/2663 2268084",
+          "d_state_before": 10,
+          "d_state_after": 12,
+          "quiet": true,
+          "matching_processes_before": 0,
+          "matching_processes_after": 0
+        },
+        {
+          "path": "A1-agent-ready-1.json",
+          "start_ns": "92209942719403",
+          "end_ns": "92240016505598",
+          "max_r": 1,
+          "min_idle": 86,
+          "load_before": "10.95 10.62 10.38 2/2715 2268999",
+          "load_after": "11.14 10.70 10.42 1/2695 2269111",
+          "d_state_before": 12,
+          "d_state_after": 11,
+          "quiet": true,
+          "matching_processes_before": 0,
+          "matching_processes_after": 0
+        },
+        {
+          "path": "A1-agent-postflight.json",
+          "start_ns": "92446346856407",
+          "end_ns": "92476419623443",
+          "max_r": 0,
+          "min_idle": 86,
+          "load_before": "11.00 10.80 10.52 1/2717 2316061",
+          "load_after": "10.60 10.72 10.50 1/2719 2316210",
+          "d_state_before": 10,
+          "d_state_after": 10,
+          "quiet": true,
+          "matching_processes_before": 0,
+          "matching_processes_after": 0
+        }
+      ]
+    },
+    {
+      "population": "A1-agent-trace",
+      "status": {
+        "exit": 0,
+        "postflight_quiet": true,
+        "source": "A"
+      },
+      "host_samples": [
+        {
+          "path": "A1-agent-trace-preflight-2.json",
+          "start_ns": "92719653800819",
+          "end_ns": "92749732345710",
+          "max_r": 1,
+          "min_idle": 84,
+          "load_before": "9.74 10.06 10.26 1/2945 2339605",
+          "load_after": "10.01 10.08 10.26 1/2725 2340107",
+          "d_state_before": 7,
+          "d_state_after": 11,
+          "quiet": true,
+          "matching_processes_before": 0,
+          "matching_processes_after": 0
+        },
+        {
+          "path": "A1-agent-trace-ready-2.json",
+          "start_ns": "92816905167633",
+          "end_ns": "92846980578010",
+          "max_r": 0,
+          "min_idle": 87,
+          "load_before": "11.35 10.44 10.37 1/2783 2343377",
+          "load_after": "11.24 10.51 10.40 1/2734 2343514",
+          "d_state_before": 12,
+          "d_state_after": 12,
+          "quiet": true,
+          "matching_processes_before": 0,
+          "matching_processes_after": 0
+        },
+        {
+          "path": "A1-agent-trace-postflight.json",
+          "start_ns": "92871043523805",
+          "end_ns": "92901116973965",
+          "max_r": 1,
+          "min_idle": 87,
+          "load_before": "12.48 10.86 10.52 1/2734 2360583",
+          "load_after": "12.15 10.94 10.56 1/2735 2360687",
+          "d_state_before": 12,
+          "d_state_after": 11,
+          "quiet": true,
+          "matching_processes_before": 0,
+          "matching_processes_after": 0
+        }
+      ]
+    },
+    {
+      "population": "A1-live",
+      "status": {
+        "exit": 0,
+        "postflight_quiet": true,
+        "source": "A"
+      },
+      "host_samples": [
+        {
+          "path": "A1-live-preflight-2.json",
+          "start_ns": "91800936283448",
+          "end_ns": "91831012837670",
+          "max_r": 2,
+          "min_idle": 86,
+          "load_before": "10.32 10.61 10.24 1/2959 2231278",
+          "load_after": "10.15 10.52 10.22 1/2749 2231445",
+          "d_state_before": 8,
+          "d_state_after": 11,
+          "quiet": true,
+          "matching_processes_before": 0,
+          "matching_processes_after": 0
+        },
+        {
+          "path": "A1-live-ready-2.json",
+          "start_ns": "91898002202124",
+          "end_ns": "91928076812016",
+          "max_r": 2,
+          "min_idle": 82,
+          "load_before": "10.59 10.60 10.27 1/2781 2234787",
+          "load_after": "10.75 10.64 10.30 2/2719 2234914",
+          "d_state_before": 11,
+          "d_state_after": 5,
+          "quiet": true,
+          "matching_processes_before": 0,
+          "matching_processes_after": 0
+        },
+        {
+          "path": "A1-live-postflight.json",
+          "start_ns": "92141553096165",
+          "end_ns": "92171627156810",
+          "max_r": 1,
+          "min_idle": 87,
+          "load_before": "10.09 10.52 10.34 1/2741 2267586",
+          "load_after": "10.20 10.50 10.34 1/2725 2267695",
+          "d_state_before": 10,
+          "d_state_after": 10,
+          "quiet": true,
+          "matching_processes_before": 0,
+          "matching_processes_after": 0
+        }
+      ]
+    },
+    {
+      "population": "A2-agent",
+      "status": {
+        "exit": 0,
+        "postflight_quiet": true,
+        "source": "A"
+      },
+      "host_samples": [
+        {
+          "path": "A2-agent-preflight-2.json",
+          "start_ns": "96227990623859",
+          "end_ns": "96258068355827",
+          "max_r": 1,
+          "min_idle": 85,
+          "load_before": "8.93 9.35 9.82 1/2948 2697885",
+          "load_after": "8.55 9.22 9.76 1/2657 2698431",
+          "d_state_before": 8,
+          "d_state_after": 7,
+          "quiet": true,
+          "matching_processes_before": 0,
+          "matching_processes_after": 0
+        },
+        {
+          "path": "A2-agent-ready-1.json",
+          "start_ns": "96265101041352",
+          "end_ns": "96295177222315",
+          "max_r": 3,
+          "min_idle": 84,
+          "load_before": "8.90 9.27 9.78 1/3016 2700218",
+          "load_after": "8.88 9.24 9.75 4/2759 2700519",
+          "d_state_before": 7,
+          "d_state_after": 8,
+          "quiet": true,
+          "matching_processes_before": 0,
+          "matching_processes_after": 0
+        },
+        {
+          "path": "A2-agent-postflight.json",
+          "start_ns": "96486801339357",
+          "end_ns": "96516874212984",
+          "max_r": 1,
+          "min_idle": 86,
+          "load_before": "8.66 9.26 9.68 1/2728 2747958",
+          "load_after": "8.68 9.19 9.65 1/2739 2748101",
+          "d_state_before": 6,
+          "d_state_after": 8,
+          "quiet": true,
+          "matching_processes_before": 0,
+          "matching_processes_after": 0
+        }
+      ]
+    },
+    {
+      "population": "A2-live",
+      "status": {
+        "exit": 0,
+        "postflight_quiet": true,
+        "source": "A"
+      },
+      "host_samples": [
+        {
+          "path": "A2-live-preflight-1.json",
+          "start_ns": "95568300024359",
+          "end_ns": "95598371644058",
+          "max_r": 0,
+          "min_idle": 86,
+          "load_before": "10.92 10.46 10.27 2/2669 2612701",
+          "load_after": "10.12 10.32 10.23 1/2668 2612941",
+          "d_state_before": 10,
+          "d_state_after": 10,
+          "quiet": true,
+          "matching_processes_before": 0,
+          "matching_processes_after": 0
+        },
+        {
+          "path": "A2-live-ready-1.json",
+          "start_ns": "95605635087353",
+          "end_ns": "95635708668239",
+          "max_r": 0,
+          "min_idle": 87,
+          "load_before": "10.31 10.36 10.25 1/2740 2613866",
+          "load_after": "8.71 9.98 10.13 1/2714 2614092",
+          "d_state_before": 10,
+          "d_state_after": 4,
+          "quiet": true,
+          "matching_processes_before": 0,
+          "matching_processes_after": 0
+        },
+        {
+          "path": "A2-live-postflight.json",
+          "start_ns": "95848567267960",
+          "end_ns": "95878643728047",
+          "max_r": 0,
+          "min_idle": 85,
+          "load_before": "9.82 10.23 10.22 1/2759 2646797",
+          "load_after": "9.30 10.06 10.16 1/2798 2647258",
+          "d_state_before": 8,
+          "d_state_after": 8,
+          "quiet": true,
+          "matching_processes_before": 0,
+          "matching_processes_after": 0
+        }
+      ]
+    },
+    {
+      "population": "B1-agent",
+      "status": {
+        "exit": 0,
+        "postflight_quiet": true,
+        "source": "B"
+      },
+      "host_samples": [
+        {
+          "path": "B1-agent-preflight-3.json",
+          "start_ns": "94974320070340",
+          "end_ns": "95004392658681",
+          "max_r": 1,
+          "min_idle": 85,
+          "load_before": "10.93 10.31 10.12 1/2748 2540872",
+          "load_after": "11.26 10.46 10.17 1/2728 2541202",
+          "d_state_before": 12,
+          "d_state_after": 11,
+          "quiet": true,
+          "matching_processes_before": 0,
+          "matching_processes_after": 0
+        },
+        {
+          "path": "B1-agent-ready-1.json",
+          "start_ns": "95011404177742",
+          "end_ns": "95041480043600",
+          "max_r": 1,
+          "min_idle": 81,
+          "load_before": "11.29 10.49 10.19 5/2744 2542133",
+          "load_after": "10.57 10.40 10.16 1/2709 2542585",
+          "d_state_before": 9,
+          "d_state_after": 10,
+          "quiet": true,
+          "matching_processes_before": 0,
+          "matching_processes_after": 0
+        },
+        {
+          "path": "B1-agent-postflight.json",
+          "start_ns": "95235950998722",
+          "end_ns": "95266029352690",
+          "max_r": 1,
+          "min_idle": 84,
+          "load_before": "10.38 10.28 10.16 2/2963 2587999",
+          "load_after": "10.35 10.28 10.17 1/2739 2588386",
+          "d_state_before": 10,
+          "d_state_after": 10,
+          "quiet": true,
+          "matching_processes_before": 0,
+          "matching_processes_after": 0
+        }
+      ]
+    },
+    {
+      "population": "B1-agent-trace",
+      "status": {
+        "exit": 0,
+        "postflight_quiet": true,
+        "source": "B"
+      },
+      "host_samples": [
+        {
+          "path": "B1-agent-trace-preflight-4.json",
+          "start_ns": "95446696637858",
+          "end_ns": "95476771423620",
+          "max_r": 1,
+          "min_idle": 85,
+          "load_before": "9.74 10.32 10.22 1/2935 2596224",
+          "load_after": "8.98 10.08 10.14 2/2713 2596715",
+          "d_state_before": 8,
+          "d_state_after": 8,
+          "quiet": true,
+          "matching_processes_before": 0,
+          "matching_processes_after": 0
+        },
+        {
+          "path": "B1-agent-trace-ready-1.json",
+          "start_ns": "95483754765347",
+          "end_ns": "95513834195180",
+          "max_r": 1,
+          "min_idle": 81,
+          "load_before": "8.90 10.04 10.13 5/3003 2598592",
+          "load_after": "10.24 10.24 10.19 1/2776 2599079",
+          "d_state_before": 7,
+          "d_state_after": 12,
+          "quiet": true,
+          "matching_processes_before": 0,
+          "matching_processes_after": 0
+        },
+        {
+          "path": "B1-agent-trace-postflight.json",
+          "start_ns": "95537611745123",
+          "end_ns": "95567687269006",
+          "max_r": 0,
+          "min_idle": 86,
+          "load_before": "11.08 10.44 10.26 1/2730 2612388",
+          "load_after": "10.92 10.46 10.27 1/2731 2612528",
+          "d_state_before": 11,
+          "d_state_after": 10,
+          "quiet": true,
+          "matching_processes_before": 0,
+          "matching_processes_after": 0
+        }
+      ]
+    },
+    {
+      "population": "B1-diagnostic",
+      "status": {
+        "exit": 0,
+        "postflight_quiet": true,
+        "source": "B"
+      },
+      "host_samples": [
+        {
+          "path": "B1-diagnostic-preflight-2.json",
+          "start_ns": "94872706246048",
+          "end_ns": "94902777960131",
+          "max_r": 0,
+          "min_idle": 86,
+          "load_before": "8.62 9.95 9.99 1/2665 2537717",
+          "load_after": "9.01 9.89 9.97 1/2657 2537860",
+          "d_state_before": 7,
+          "d_state_after": 12,
+          "quiet": true,
+          "matching_processes_before": 0,
+          "matching_processes_after": 0
+        },
+        {
+          "path": "B1-diagnostic-ready-2.json",
+          "start_ns": "94910323976491",
+          "end_ns": "94940397671959",
+          "max_r": 1,
+          "min_idle": 87,
+          "load_before": "9.77 10.03 10.02 1/2707 2538845",
+          "load_after": "10.43 10.17 10.06 1/2728 2538967",
+          "d_state_before": 12,
+          "d_state_after": 11,
+          "quiet": true,
+          "matching_processes_before": 0,
+          "matching_processes_after": 0
+        },
+        {
+          "path": "B1-diagnostic-postflight.json",
+          "start_ns": "94943649032408",
+          "end_ns": "94973722568199",
+          "max_r": 0,
+          "min_idle": 85,
+          "load_before": "10.43 10.17 10.06 2/2729 2540198",
+          "load_after": "10.93 10.31 10.12 1/2793 2540690",
+          "d_state_before": 11,
+          "d_state_after": 12,
+          "quiet": true,
+          "matching_processes_before": 0,
+          "matching_processes_after": 0
+        }
+      ]
+    },
+    {
+      "population": "B1-live",
+      "status": {
+        "exit": 0,
+        "postflight_quiet": true,
+        "source": "B"
+      },
+      "host_samples": [
+        {
+          "path": "B1-live-preflight-3.json",
+          "start_ns": "93704219827251",
+          "end_ns": "93734296598036",
+          "max_r": 0,
+          "min_idle": 87,
+          "load_before": "10.38 10.10 10.04 2/2906 2439357",
+          "load_after": "9.50 9.91 9.98 1/2662 2439462",
+          "d_state_before": 8,
+          "d_state_after": 8,
+          "quiet": true,
+          "matching_processes_before": 0,
+          "matching_processes_after": 0
+        },
+        {
+          "path": "B1-live-ready-1.json",
+          "start_ns": "93742101584432",
+          "end_ns": "93772174553748",
+          "max_r": 0,
+          "min_idle": 87,
+          "load_before": "9.30 9.87 9.96 1/2716 2440366",
+          "load_after": "7.82 9.46 9.82 1/2722 2440617",
+          "d_state_before": 7,
+          "d_state_after": 6,
+          "quiet": true,
+          "matching_processes_before": 0,
+          "matching_processes_after": 0
+        },
+        {
+          "path": "B1-live-postflight.json",
+          "start_ns": "93987310801158",
+          "end_ns": "94017384161571",
+          "max_r": 1,
+          "min_idle": 86,
+          "load_before": "10.32 9.31 9.62 1/2751 2473323",
+          "load_after": "10.76 9.52 9.68 1/2741 2473670",
+          "d_state_before": 10,
+          "d_state_after": 11,
+          "quiet": true,
+          "matching_processes_before": 0,
+          "matching_processes_after": 0
+        }
+      ]
+    },
+    {
+      "population": "B2-live",
+      "status": {
+        "exit": 0,
+        "postflight_quiet": true,
+        "source": "B"
+      },
+      "host_samples": [
+        {
+          "path": "B2-live-preflight-1.json",
+          "start_ns": "96517832109299",
+          "end_ns": "96547903095909",
+          "max_r": 0,
+          "min_idle": 91,
+          "load_before": "8.68 9.19 9.65 1/2677 2748272",
+          "load_after": "8.02 8.98 9.56 1/2670 2748482",
+          "d_state_before": 7,
+          "d_state_after": 6,
+          "quiet": true,
+          "matching_processes_before": 0,
+          "matching_processes_after": 0
+        },
+        {
+          "path": "B2-live-ready-1.json",
+          "start_ns": "96554838796199",
+          "end_ns": "96584912604798",
+          "max_r": 3,
+          "min_idle": 86,
+          "load_before": "7.86 8.91 9.53 2/2721 2749419",
+          "load_after": "9.03 9.08 9.57 1/2696 2749559",
+          "d_state_before": 6,
+          "d_state_after": 11,
+          "quiet": true,
+          "matching_processes_before": 0,
+          "matching_processes_after": 0
+        },
+        {
+          "path": "B2-live-postflight.json",
+          "start_ns": "96799664326802",
+          "end_ns": "96829741111721",
+          "max_r": 0,
+          "min_idle": 85,
+          "load_before": "11.25 10.07 9.86 1/2808 2783033",
+          "load_after": "11.41 10.22 9.92 1/2820 2783422",
+          "d_state_before": 10,
+          "d_state_after": 12,
+          "quiet": true,
+          "matching_processes_before": 0,
+          "matching_processes_after": 0
+        }
+      ]
+    }
+  ]
+}

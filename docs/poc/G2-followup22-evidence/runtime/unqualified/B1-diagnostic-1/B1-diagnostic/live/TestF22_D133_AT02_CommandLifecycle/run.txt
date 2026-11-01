@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "/opt/netlab/scripts/f22_rollback.py", line 106, in <module>
+    else: measure(sys.argv[2])
+          ^^^^^^^^^^^^^^^^^^^^
+  File "/opt/netlab/scripts/f22_rollback.py", line 99, in measure
+    assert counts['admitted']['egresses']>0 and counts['revoked']['ingresses']>0 and counts['revoked']['egresses']==0
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError

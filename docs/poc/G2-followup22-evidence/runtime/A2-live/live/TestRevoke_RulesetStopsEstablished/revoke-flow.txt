@@ -1,0 +1,6 @@
+REVOKE-FLOW decision=ruleset-stops serving=4101 conntrack_kept=1 uplink=0 return=0 ctunku=4 ctunkd=4 injected=4 sport=51213 reply=51213
+revoke flow neighbors
+name                             ns       proto  dst                    port   expect   observed       ok
+a2-still                         fv-a2    tcp    203.0.113.10           80     allow    connected      true
+a1-denied                        fv-a1    tcp    203.0.113.10           80     deny     timeout        true
+probes=2 failed=0
