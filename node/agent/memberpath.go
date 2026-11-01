@@ -136,7 +136,7 @@ func (e *Engine) rejectMemberPath(ctx context.Context) {
 	e.memberPathPending = true
 	e.noteApply(errMemberPath)
 	e.applyError.Message = "member_path_unconfigured"
-	cleanup, done := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
+	cleanup, done := context.WithTimeout(localContext(ctx), 5*time.Second)
 	defer done()
 	e.withdraw(cleanup)
 	e.decision = Decide(e.input())

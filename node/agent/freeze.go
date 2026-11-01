@@ -19,7 +19,7 @@ func (e *Engine) freezeIdentity(ctx context.Context) {
 		return
 	}
 	e.identityFrozen = true
-	cleanup, cancel := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
+	cleanup, cancel := context.WithTimeout(localContext(ctx), 5*time.Second)
 	defer cancel()
 	// Stop the member path before persistence or control I/O can block.
 	e.withdraw(cleanup)
