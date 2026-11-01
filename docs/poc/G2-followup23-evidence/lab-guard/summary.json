@@ -1,0 +1,74 @@
+[
+  {
+    "condition": "guard-5-chains-48-rules",
+    "command": [
+      "nft",
+      "-j",
+      "list",
+      "table",
+      "inet",
+      "fvpn"
+    ],
+    "attempts": 200,
+    "nonzero_exit": 0,
+    "invalid_json": 0,
+    "duplicate_listings": 0,
+    "mixed_generation_listings": 0,
+    "writer": {
+      "attempts": 156
+    }
+  },
+  {
+    "condition": "guard-5-chains-48-rules",
+    "command": [
+      "nft",
+      "-j",
+      "list",
+      "ruleset"
+    ],
+    "attempts": 200,
+    "nonzero_exit": 0,
+    "invalid_json": 0,
+    "duplicate_listings": 0,
+    "mixed_generation_listings": 0,
+    "writer": {
+      "attempts": 156
+    }
+  },
+  {
+    "condition": "guard-256-chains-512-rules",
+    "command": [
+      "nft",
+      "-j",
+      "list",
+      "table",
+      "inet",
+      "fvpn"
+    ],
+    "attempts": 200,
+    "nonzero_exit": 0,
+    "invalid_json": 0,
+    "duplicate_listings": 0,
+    "mixed_generation_listings": 0,
+    "writer": {
+      "attempts": 271
+    }
+  },
+  {
+    "condition": "guard-256-chains-512-rules",
+    "command": [
+      "nft",
+      "-j",
+      "list",
+      "ruleset"
+    ],
+    "attempts": 200,
+    "nonzero_exit": 0,
+    "invalid_json": 0,
+    "duplicate_listings": 0,
+    "mixed_generation_listings": 0,
+    "writer": {
+      "attempts": 271
+    }
+  }
+]

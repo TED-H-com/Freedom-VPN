@@ -69,6 +69,11 @@ type CgroupCPU struct {
 }
 
 type CommandResources struct {
+	// SkipReason is nonempty when no sample is retained: install_bound,
+	// context_canceled, context_deadline_exceeded, context_other, or
+	// unsupported_platform. Cancellation during a sample discards it; no
+	// partial counters or substitute timestamps are presented as a sample.
+	SkipReason               string           `json:"skip_reason,omitempty"`
 	Bracket                  LifecycleBracket `json:"bracket"`
 	CgroupV2Available        bool             `json:"cgroup_v2_available"`
 	VisibleAncestorsComplete bool             `json:"visible_ancestors_complete"`
@@ -156,7 +161,7 @@ func runCommand(ctx context.Context, cmd *exec.Cmd, name string) error {
 		r.Kind = name
 	}
 	r.ContextDeadline = contextDeadline(ctx)
-	r.Before = commandResources()
+	r.Before = sampleCommandResources(ctx, scope.phase)
 	r.ContextBefore = contextState(ctx)
 	cancel := cmd.Cancel
 	if cancel != nil {
@@ -181,7 +186,21 @@ func runCommand(ctx context.Context, cmd *exec.Cmd, name string) error {
 		}
 	}
 	r.ContextAfter, r.OK = contextState(ctx), err == nil
-	r.After = commandResources()
+	r.After = sampleCommandResources(ctx, scope.phase)
 	*scope.records = append(*scope.records, r)
 	return err
+}
+
+// Only the enabled branch calls this. The install phase never walks proc or
+// cgroups, even while live: both command samples would consume the 100 ms
+// render/install budget. Other phases retain their own observations; they
+// are not substituted for the missing install samples.
+func sampleCommandResources(ctx context.Context, phase string) CommandResources {
+	if state := contextState(ctx); state != "none" {
+		return CommandResources{SkipReason: "context_" + state}
+	}
+	if phase == "install" {
+		return CommandResources{SkipReason: "install_bound"}
+	}
+	return commandResources(ctx)
 }

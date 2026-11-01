@@ -1,0 +1,28 @@
+{
+  "test_only": true,
+  "origin": "origin unproven",
+  "decision": "conservative rejection of every duplicate owned-chain definition, including exact duplicates",
+  "error_type": "*enforce.DuplicateChainError",
+  "public_error_kind": "duplicate_chain",
+  "classification": "ambiguous listing, distinct from malformed JSON; does not prove a torn read or cause",
+  "acceptance_or_retry_change": false,
+  "d133_ab_required": false,
+  "d133_reason": "disabled observation branch unchanged; only opt-in resource sampling and duplicate-error type change",
+  "listing_attempts": 3300,
+  "duplicates": 0,
+  "mixed_generation_markers": 0,
+  "listing_failures": 0,
+  "contained_writer_brackets": 237,
+  "contained_bracket_limit": "Successful writer invocation entirely inside listing invocation establishes a transaction within that outer interval, not an exact kernel dump or commit timestamp.",
+  "initial_setup_failure": "lab-attempt1-setup-failed: unqualified synthetic integer set type rejected; no listing attempted. Changed fixture to sized mark type.",
+  "unit_fixture_failure": "parser-tests-initial-fixture-error.txt: baseline verifier rejected empty synthetic Datapath before parsing. Fixed test to use existing valid smallModel; assertion unchanged.",
+  "historical_at_rows": "remain failed; no reclassification",
+  "private_input": "Only digests, byte lengths and structural counts/index/equality facts retained in private-structural-receipt.json; no raw/private field values used in fixtures.",
+  "limitations": [
+    "No duplicate reproduction. Equal chain bodies cannot establish a consistent snapshot of every rule, set and counter.",
+    "Lab Ubuntu package provenance retained; exact installed package revision of the private historical container was not supplied.",
+    "No real arm64 run; cross-build only.",
+    "Outer writer/listing brackets are not exact kernel event timestamps.",
+    "No production acceptance or automatic retry changes; verifier CheckError wrappers retain existing reason and text rather than exposing the new parser type."
+  ]
+}
