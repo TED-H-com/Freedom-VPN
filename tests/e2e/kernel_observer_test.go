@@ -2,6 +2,7 @@ package e2e
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"testing"
@@ -30,7 +31,8 @@ func (x traceListing26) Output(_ context.Context, name string, _ ...string) ([]b
 func TestAT01_HistoricalNodeTraceRejectedByServingVerifier(t *testing.T) {
 	raw := `{"nftables":[{"chain":{"family":"inet","table":"fvtrace_test","name":"prerouting","type":"filter","hook":"prerouting","prio":-500,"policy":"accept"}},{"rule":{"family":"inet","table":"fvtrace_test","chain":"prerouting","expr":[{"match":{"op":"==","left":{"payload":{"protocol":"ip6","field":"nexthdr"}},"right":"udp"}},{"mangle":{"key":{"meta":{"key":"nftrace"}},"value":1}}]}}]}`
 	_, err := enforce.VerifyServing(t.Context(), traceListing26{raw}, enforce.Model{Datapath: enforce.Datapath{MemberIngress: "fvmb0", Uplink: "fvup0"}}, nil)
-	if err == nil || enforce.ReasonCode(err) != enforce.ReasonIsolation || !strings.Contains(err.Error(), "table fvtrace_test family inet hook prerouting priority -500 chain prerouting statement mangle") {
+	var check *enforce.CheckError
+	if !errors.As(err, &check) || check.Reason != enforce.ReasonIsolation || !strings.Contains(err.Error(), "table fvtrace_test family inet hook prerouting priority -500 chain prerouting statement mangle") {
 		t.Fatalf("historical tracer was not the deciding rejection: %v", err)
 	}
 }
