@@ -25,6 +25,10 @@ func TestD098_Followup12FirstAttemptArchivePins(t *testing.T) {
 	checkArchivePins(t, "follow-up-12-first-attempt", 17)
 }
 
+func TestD098_Followup12ArchivePins(t *testing.T) {
+	checkArchivePins(t, "follow-up-12", 44)
+}
+
 func checkArchivePins(t *testing.T, followup string, count int) {
 	t.Helper()
 	root := filepath.Join("..", "..", "..", "..", "docs/e2e/at/updates/history", followup)

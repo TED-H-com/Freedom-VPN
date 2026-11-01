@@ -1,0 +1,34 @@
+{
+  "run_id": "2babf9b6-86a3-489d-a678-0bd447f2f8b0",
+  "source_commit": "5b2ae0748bbbffb0d370d4842bb0623e74e844b7",
+  "product_main": "45209609d33d567c5f04d49441799cdd3efac59b",
+  "at": "2026-10-31T22:15:49Z",
+  "prefix": "w4-updates",
+  "port_base": 42000,
+  "regular_cases": {
+    "AT23": "pass",
+    "AT24": "pass",
+    "AT25": "pass",
+    "AT26": "pass",
+    "AT27": "pass"
+  },
+  "installer_extension": "pass",
+  "installer_required_checks": 27,
+  "installer_passing_checks": 27,
+  "live_make_exit": 0,
+  "live_go_test_exit": 0,
+  "live_go_test_seconds": 505.765,
+  "product_sources_changed_by_this_lane": false,
+  "product_differs_from_followup11": true,
+  "install_path": "shared Stack.RerunInstaller only",
+  "shared_wrapper_exit": 0,
+  "pass_claims": "This live run only; scoped regular sequence plus generated installer reporting. AT27 physical witness is AT26, never the TEST ONLY installer HTTP correction.",
+  "requests": [],
+  "attempt_count": 2,
+  "prior_attempt": {
+    "run_id": "1f2b57de-de94-470b-a88c-b462b676b710",
+    "live_make_exit": 2,
+    "archive": "docs/e2e/at/updates/history/follow-up-12-first-attempt/",
+    "reason": "Owned supplemental probe supplied relative seed tree; corrected before complete rerun"
+  }
+}
