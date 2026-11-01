@@ -61,6 +61,7 @@ with tempfile.TemporaryDirectory(prefix='at-isolation.', dir=ROOT / '.agent/tmp'
     env['FVPN_AT_EVIDENCE_DIR'] = evidence
     env['FVPN_NETLAB_EVIDENCE_DIR'] = evidence + '/reload-stream'
     lab = stack = 1
+    operation_observer = None
     try:
         slots()
         lab = call(['sh', 'tests/e2e/at/isolation/lab.sh', 'up'], env)
@@ -75,12 +76,19 @@ with tempfile.TemporaryDirectory(prefix='at-isolation.', dir=ROOT / '.agent/tmp'
         stack = call(['python3', 'tests/e2e/at/isolation/stack.py', 'up'], env)
         if stack == 0:
             slots()
+            operation_observer = subprocess.Popen(['python3', '-B', 'tests/e2e/at/isolation/capture_hold_operations.py', evidence], env=env)
             stack = call(['python3', 'tests/e2e/at/isolation/driver.py', 'run'], env)
             review = call(['python3', '-B', 'tests/e2e/at/isolation/review_followup10.py', evidence], env)
             stack = stack or review
     finally:
         lab = call(['sh', 'tests/e2e/at/isolation/lab.sh', 'down'], env) or lab
         stack = call(['python3', 'tests/e2e/at/isolation/stack.py', 'down'], env) or stack
+        if operation_observer is not None:
+            try:
+                operation_observer.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                operation_observer.terminate()
+                operation_observer.wait(timeout=5)
     inventory = {}
     for kind, args in {'containers':['ps','-a'], 'images':['images'], 'networks':['network','ls'], 'volumes':['volume','ls']}.items():
         fmt = '{{.Repository}}:{{.Tag}}' if kind == 'images' else '{{.Names}}' if kind == 'containers' else '{{.Name}}'
