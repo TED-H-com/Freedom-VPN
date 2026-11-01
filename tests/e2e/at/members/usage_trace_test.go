@@ -52,6 +52,10 @@ func (l *live) usageTrace(r *record) {
 	}
 	leaseBefore := l.storedLeaseReadback("node", false)
 	stopStarted := time.Now().UTC()
+	stopRaw, stopReadErr := l.inside("node", "/tmp/at-members-probe", "stop-observe", "bounded")
+	var stopEvidence map[string]any
+	stopDecoded := json.Unmarshal(stopRaw, &stopEvidence) == nil
+	r.jsonCheck("r18 M-2 SIGTERM to process exit", "cooperative process exit observed within 13 seconds; retain parent wait receipt", stopEvidence, "owned-node helper: pause supervisor, SIGTERM exact PID, poll process identity; original Service stop/start follows", stopReadErr == nil && stopDecoded && stopEvidence["available"] == true && stopEvidence["within_13s"] == true && stopEvidence["cooperative_exit"] == true)
 	err = l.hook.Service(l.ctx, "stop", "")
 	stopEnded := time.Now().UTC()
 	leaseStopped := l.storedLeaseReadback("node", false)

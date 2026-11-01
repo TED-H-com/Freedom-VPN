@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/TED-H-com/Freedom-VPN/node/enforce"
 	"github.com/google/uuid"
 )
 
@@ -35,6 +36,10 @@ type ParseFailure struct {
 }
 
 func parseClass(raw []byte, err error) (string, string) {
+	var duplicate *enforce.DuplicateChainError
+	if errors.As(err, &duplicate) {
+		return "ambiguous_listing", "duplicate_chain"
+	}
 	if len(bytes.TrimSpace(raw)) == 0 {
 		return "empty", "empty_document"
 	}

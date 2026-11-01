@@ -1,0 +1,1 @@
+The D-139 design was reviewed by r19, and the recorded decision is **D-141**: option (b) is not implemented and option (c) stays in production

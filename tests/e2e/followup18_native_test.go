@@ -32,6 +32,9 @@ func TestE2E_Followup18Native(t *testing.T) {
 	id := uuid.NewString()
 	r := &runner{t: t, lab: l, runID: id, sourceCommit: strings.TrimSpace(string(head)), dir: filepath.Join(l.root, "docs/e2e/runs", time.Now().UTC().Format("2006-01-02"), nativeCampaignDirectory(), id)}
 	defer r.finish()
+	if os.Getenv("FVPN_E2E_FOLLOWUP26") == "1" {
+		defer r.exportCentral26(context.WithoutCancel(ctx))
+	}
 	s := &Stack{lab: l}
 	must := func(e error) {
 		t.Helper()
@@ -44,6 +47,9 @@ func TestE2E_Followup18Native(t *testing.T) {
 		return
 	}
 	b := BrowserSession{Client: admin.http, CSRF: admin.csrf}
+	if os.Getenv("FVPN_E2E_FOLLOWUP26") == "1" {
+		must(s.EnableEnforcementTiming(ctx))
+	}
 	must(s.PrepareNativeUnderlay(ctx))
 	if os.Getenv("FVPN_E2E_FOLLOWUP24") == "1" {
 		family := os.Getenv("FVPN_E2E_FOLLOWUP24_FAMILY")
@@ -76,6 +82,10 @@ func TestE2E_Followup18Native(t *testing.T) {
 	r.desired(ctx)
 	r.publish(ctx, admin, r.nodeID)
 	r.fixtureServingMember(ctx, admin)
+	if os.Getenv("FVPN_E2E_FOLLOWUP26") == "1" {
+		r.servingGate26(ctx, "post-capture-recovery")
+		r.regrant26(ctx, admin)
+	}
 	if os.Getenv("FVPN_E2E_FOLLOWUP24") == "1" {
 		r.exportNative24(ctx, s)
 		return
@@ -387,6 +397,9 @@ func (r *runner) nativeMTU18(ctx context.Context, s *Stack) {
 }
 
 func nativeCampaignDirectory() string {
+	if os.Getenv("FVPN_E2E_FOLLOWUP26") == "1" {
+		return "followup26"
+	}
 	if os.Getenv("FVPN_E2E_FOLLOWUP25") == "1" {
 		return "followup25"
 	}
@@ -561,22 +574,61 @@ func (r *runner) nativeInitial22(ctx context.Context, s *Stack) {
 		return
 	}
 	defer r.finishNativeCapture22(ctx, &rec, c)
-	if os.Getenv("FVPN_E2E_FOLLOWUP24") == "1" {
+	r.nativeTransfer26(ctx, s, &rec, c)
+}
+
+// Shared single-request measurement. Re-grant callers start capture before
+// mutation and retain its whole session; neither path retries the request.
+func (r *runner) nativeTransfer26(ctx context.Context, s *Stack, record *Record, c *NativeCapture) {
+	rec := *record
+	defer func() { *record = rec }()
+	if os.Getenv("FVPN_E2E_FOLLOWUP24") == "1" && rec.ID == "initial-selection" {
 		k, err := s.startKernelTrace(ctx)
 		if err != nil {
 			recPathNote(&rec)("kernel_trace_error", err.Error())
 			return
 		}
+		if os.Getenv("FVPN_E2E_FOLLOWUP26") == "1" && os.Getenv("FVPN_E2E_REPRODUCE_TRACE26") == "1" {
+			r.traceRejection26(ctx, k, &rec)
+		}
 		defer func() {
 			clean, cancel := context.WithTimeout(context.WithoutCancel(ctx), 15*time.Second)
 			defer cancel()
-			result, e := k.stop(clean, filepath.Join(r.lab.root, ".agent/tmp/"+nativeCampaignDirectory(), r.runID, "kernel"))
+			traceDir := filepath.Join(r.lab.root, ".agent/tmp/"+nativeCampaignDirectory(), r.runID, "kernel")
+			if os.Getenv("FVPN_E2E_FOLLOWUP26") == "1" {
+				traceDir = filepath.Join(traceDir, rec.ID)
+			}
+			result, e := k.stop(clean, traceDir)
 			noteJSON(&rec, "kernel_trace", result)
 			if e != nil {
 				rec.Status = StatusFail
 				recPathNote(&rec)("kernel_trace_error", e.Error())
 			}
 		}()
+	}
+	if os.Getenv("FVPN_E2E_FOLLOWUP26") == "1" {
+		reproduce := os.Getenv("FVPN_E2E_REPRODUCE_TRACE26") == "1" && rec.ID == "initial-selection"
+		noteJSON(&rec, "historical_node_tracer_reproduction", reproduce)
+		if reproduce && os.Getenv("FVPN_E2E_TRACE_HOLD26") == "1" {
+			rec.Title = "Historical node tracer hold fault probe; not first-selection acceptance"
+			noteJSON(&rec, "trace_hold_started_at", time.Now().UTC())
+			// Explicit diagnostic only: cross two fixture poll intervals with
+			// the old observer installed. Never delay the normal control arm.
+			for i := 0; i < 12; i++ {
+				if c.Sample(ctx, fmt.Sprintf("trace-hold-%d", i)) != nil {
+					return
+				}
+				select {
+				case <-ctx.Done():
+					return
+				case <-time.After(time.Second):
+				}
+			}
+			noteJSON(&rec, "trace_hold_completed_at", time.Now().UTC())
+		}
+		if !reproduce && !r.servingGate26(ctx, rec.ID+"-ready", c) {
+			return
+		}
 	}
 	if c.Sample(ctx, "before-selection") != nil {
 		return
@@ -620,7 +672,7 @@ selecting:
 	var ge error
 transferring:
 	for i := 0; ; i++ {
-		if e = c.Sample(ctx, fmt.Sprintf("first-transfer-%d", i)); e != nil {
+		if e := c.Sample(ctx, fmt.Sprintf("first-transfer-%d", i)); e != nil {
 			return
 		}
 		select {

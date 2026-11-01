@@ -104,7 +104,7 @@ func (l *live) cacheArtifact(value any) {
 	if err != nil {
 		l.t.Fatal(err)
 	}
-	if err = os.WriteFile(filepath.Join(l.root, "docs/e2e/at/members/F14-AT20-cache.json"), append(raw, '\n'), 0644); err != nil {
+	if err = writeEvidence(filepath.Join(l.root, "docs/e2e/at/members/F15-AT20-cache.json"), append(raw, '\n')); err != nil {
 		l.t.Fatal(err)
 	}
 }
@@ -114,7 +114,7 @@ func (l *live) cacheArtifact(value any) {
 func (l *live) dnsLifecycle(label string) map[string]any {
 	out := map[string]any{}
 	for role, slot := range map[string]string{"primary": "origin-dns", "secondary": "origin-dns-secondary", "authority": "authority-dns"} {
-		dir := filepath.Join(l.root, ".agent/tmp/f14-dns", l.runID, label)
+		dir := filepath.Join(l.root, ".agent/tmp/f15-dns", l.runID, label)
 		if os.MkdirAll(dir, 0700) != nil {
 			out[role] = map[string]any{"available": false}
 			continue
@@ -146,7 +146,7 @@ func (l *live) dnsLifecycle(label string) map[string]any {
 func (l *live) originalDNSArtifact(r *record, original *labstack.FixtureProbeResult, capture json.RawMessage, before, after map[string]any) {
 	value := map[string]any{"run_id": l.runID, "source_commit": l.build.Source, "original_query": original, "native_capture": capture, "lifecycle_before": before, "lifecycle_after": after, "cause_status": "unproven", "historical_F12_04": "5,001 ms SERVFAIL remains failed and unattributed; this is the new original query, never a replacement"}
 	raw, e := json.MarshalIndent(value, "", "  ")
-	if e != nil || os.WriteFile(filepath.Join(l.root, "docs/e2e/at/members/F14-F12-04-original-dns.json"), append(raw, '\n'), 0644) != nil {
+	if e != nil || writeEvidence(filepath.Join(l.root, "docs/e2e/at/members/F15-F12-04-original-dns.json"), append(raw, '\n')) != nil {
 		l.t.Fatal("write original DNS evidence")
 	}
 	r.jsonCheck("F12-04 original query evidence", "original one-shot RR query and both resolver lifecycles retained; capture completion is separate", value, "StartNativeDNSCapture after two-resolver configuration, before readiness and original RR/listener/cache sequence", original != nil && before != nil && after != nil && capture != nil)

@@ -1,0 +1,11 @@
+# family-input
+
+Separate first-selection family constraint
+
+Status: pass
+
+Run: 85c2169c-5aac-4f45-b0f6-4ebc9659f208
+
+Source: 9a28772ba6e56d86c30522230643c2daea13cfca
+
+- selection: {"input":{"underlay":"ipv4","mtu":1500,"protocol":"tcp","platform":"linux"},"available":true,"reason":""}

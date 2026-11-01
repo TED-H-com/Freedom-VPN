@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -74,6 +75,12 @@ func (l *live) storedLeaseReadback(node string, stopped bool) map[string]any {
 	if err != nil || json.Unmarshal(raw, &result) != nil {
 		return unavailable
 	}
+	if !stopped {
+		id, e := l.inside(node, "cat", "/var/lib/vpn-node/e2e/agent-process-id")
+		if e == nil {
+			result["process_id"] = strings.TrimSpace(string(id))
+		}
+	}
 	return result
 }
 func (l *live) recordAgentTransition(r *record, label string, started, ended time.Time, before, after map[string]any, err error) {
@@ -90,5 +97,19 @@ func (l *live) recordAgentTransition(r *record, label string, started, ended tim
 			}
 		}
 	}
-	r.jsonCheck("agent transition "+label, "record command duration and stored lease continuity", map[string]any{"started_at": started, "ended_at": ended, "duration_ns": fmt.Sprint(ended.Sub(started).Nanoseconds()), "stored_lease_before": before, "stored_lease_after": after, "stored_lease_status": status, "command_ok": err == nil}, "read-only SQLite lease metadata before/after; no renewal or repair requested", err == nil && before["available"] == true && after["available"] == true)
+	var receipt json.RawMessage
+	if id, ok := before["process_id"].(string); ok && id != "" && filepath.Base(id) == id && id != "." {
+		dir, e := os.MkdirTemp(filepath.Join(l.root, ".agent/tmp"), "exit-readback-")
+		if e == nil {
+			defer os.RemoveAll(dir)
+			path := filepath.Join(dir, "exit.json")
+			if _, e = l.docker("cp", l.name(l.nodeContainer())+":/var/lib/vpn-node/e2e/agent-exits/"+id+".json", path); e == nil {
+				raw, e := os.ReadFile(path)
+				if e == nil && json.Valid(raw) {
+					receipt = raw
+				}
+			}
+		}
+	}
+	r.jsonCheck("agent transition "+label, "record command duration and stored lease continuity", map[string]any{"parent_wait_receipt": receipt, "sigterm_to_exit": "see separate r18 M-2 direct stop if present; otherwise exact signal/exit interval not observable here", "control_io_after_cancel": "not observable here", "started_at": started, "ended_at": ended, "duration_ns": fmt.Sprint(ended.Sub(started).Nanoseconds()), "stored_lease_before": before, "stored_lease_after": after, "stored_lease_status": status, "command_ok": err == nil}, "read-only SQLite lease metadata before/after; no renewal or repair requested", err == nil && before["available"] == true && after["available"] == true)
 }

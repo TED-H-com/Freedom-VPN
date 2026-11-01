@@ -1,10 +1,11 @@
+from evidence_io import load
 """Derive header-only evidence; preserve original capture snapshots separately."""
 from pathlib import Path
 import importlib.util,json,subprocess,hashlib
 root=Path.cwd()
 spec=importlib.util.spec_from_file_location('native_analysis',root/'tests/e2e/analyze_native_capture.py')
 mod=importlib.util.module_from_spec(spec);spec.loader.exec_module(mod)
-cases={p.stem:json.loads(p.read_text()) for p in (root/'docs/e2e/at/members').glob('AT??.json')}
+cases={case:load(root/'docs/e2e/at/members'/(case+'.json')) for case in ['AT01','AT02','AT03','AT04','AT05','AT08','AT09','AT20','AT21','AT22']}
 run=cases['AT01']['run_id']
 assert cases['AT01']['source_commit'].startswith('d49b535a')
 base=root/'.agent/tmp/f13-derived'/run

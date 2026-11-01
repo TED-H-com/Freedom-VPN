@@ -1,0 +1,14 @@
+{
+  "at": "2026-11-01T12:02:25.968996+00:00",
+  "baseline_commit": "9dde5eeb60a6cb6b9b10974c3100ef1ea1352698",
+  "harness_commit": "cc6e0298a791ed6c41b268f1634f543446f8c562",
+  "source_clean": true,
+  "commands": [
+    "vmstat 5 7",
+    "pgrep -af 'gates.sh|mk/at-'",
+    "go env GOCACHE"
+  ],
+  "vmstat": "procs -----------memory---------- ---swap-- -----io---- -system-- -------cpu-------\n r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st gu\n 4  8  51604 12247360 11370916 148539392    0    0  4997 30018 37960   35  8  3 79 11  0  0\n 2 12  51604 12444176 11370936 148704292    0    0     8 107150 50016 66314 12  3 79  6  0  0\n 4 12  51604 11798392 11370936 149126632    0    0    26 118211 43441 117735  6  2 79 13  0  0\n 2 13  51604 11594052 11370944 149288784    0    0    33 111413 44680 101114  7  4 76 13  0  0\n 1 12  51604 11622116 11370944 149317076    0    0     0 12820 22655 42116  2  1 84 12  0  0\n 0 12  51604 11666776 11371004 149329080    0    0     0  1630 24708 46092  2  2 84 12  0  0\n 2 12  51604 11651780 11371076 149300512    0    0     0 13259 78259 60986  6  3 80 11  0  0\n",
+  "suite_inventory": "One other integration suite root (isolation) before startup; full process commands retained privately. Admission is rechecked after stack startup and in the live target.",
+  "gocache": "Recorded exactly in RUN.md; no override or purge."
+}
