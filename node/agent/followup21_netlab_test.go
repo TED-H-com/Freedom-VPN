@@ -152,6 +152,10 @@ while True:
 	if !r.eng.serving {
 		t.Fatalf("real Apply failed: %+v %s", r.eng.decision.Errors, r.log.String())
 	}
+	if os.Getenv("FVPN_F29_SIBLING") == "1" {
+		followup29Sibling(t, r, p)
+		return
+	}
 	p.reads = nil
 	p.paths = nil
 	const steps = 30
