@@ -120,6 +120,7 @@ func crashProc(name, pidFile string) {
 
 func TestLab04_RestartKeepsVerifiedLease(t *testing.T) {
 	skipLab(t)
+	capture := followup31RestartCapture(t)
 	stopAgent()
 	stopWatch()
 	flushConntrack(t)
@@ -130,10 +131,14 @@ func TestLab04_RestartKeepsVerifiedLease(t *testing.T) {
 		stopAgent()
 		t.Fatalf("precondition: not forwarding:\n%s", debugPlane(t))
 	}
+	capture("before_stop")
 	stopAgent()
+	capture("after_stop")
 	admin(t, "/hold", "")
 	defer admin(t, "/release", "")
+	capture("before_restart")
 	startAgent(t)
+	capture("after_start")
 	defer stopAgent()
 	// Same-boot process replacement retains the signed original deadline.
 	if !waitProbe(t, "allow", 12*time.Second) {
