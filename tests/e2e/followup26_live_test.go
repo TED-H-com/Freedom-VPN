@@ -3,9 +3,11 @@
 package e2e
 
 import (
+	"bufio"
 	"context"
 	"encoding/json"
 	"os"
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -47,6 +49,47 @@ func (r *runner) exportCentral26(ctx context.Context) {
 			return
 		}
 		noteJSON(&rec, q.name, json.RawMessage(raw))
+	}
+	private := filepath.Join(r.lab.root, ".agent/tmp/followup26", r.runID, "producer.jsonl")
+	receipt, e := (&Stack{lab: r.lab}).ExportContainerFile(ctx, "node", "/var/lib/vpn-node/e2e/enforcement-timing.jsonl", private)
+	noteJSON(&rec, "producer_receipt", receipt)
+	if e == nil {
+		f, e := os.Open(private)
+		if e != nil {
+			return
+		}
+		defer f.Close()
+		scanner := bufio.NewScanner(f)
+		scanner.Buffer(make([]byte, 4096), 4<<20)
+		rows := []map[string]json.RawMessage{}
+		for scanner.Scan() {
+			var original map[string]json.RawMessage
+			if json.Unmarshal(scanner.Bytes(), &original) != nil {
+				return
+			}
+			row := map[string]json.RawMessage{}
+			for _, key := range []string{"run_id", "boot_id", "sequence", "source", "anchor", "lease", "renewal", "baseline", "heartbeat"} {
+				if v, ok := original[key]; ok {
+					row[key] = v
+				}
+			}
+			if v, ok := original["timing"]; ok {
+				var timing map[string]json.RawMessage
+				if json.Unmarshal(v, &timing) != nil {
+					return
+				}
+				delete(timing, "commands")
+				raw, _ := json.Marshal(timing)
+				row["timing"] = raw
+			}
+			rows = append(rows, row)
+		}
+		if scanner.Err() != nil {
+			return
+		}
+		noteJSON(&rec, "producer_timing", rows)
+	} else {
+		recPathNote(&rec)("producer_export_error", "unavailable")
 	}
 	noteJSON(&rec, "exported_at", time.Now().UTC())
 	rec.Status = StatusPass

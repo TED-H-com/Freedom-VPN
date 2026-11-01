@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -24,7 +25,13 @@ type kernelTrace struct {
 }
 
 func (s *Stack) startKernelTrace(ctx context.Context) (_ *kernelTrace, err error) {
-	k := &kernelTrace{stack: s, id: uuid.NewString(), roles: []string{"member", "node"}}
+	k := &kernelTrace{stack: s, id: uuid.NewString(), roles: []string{"member"}}
+	// Node-wide nftrace mangle is rejected by its foreign-chain verifier.
+	// Historical reproduction must be explicit; normal observation only marks
+	// member packets. Never weaken the node verifier to accommodate a tracer.
+	if os.Getenv("FVPN_E2E_REPRODUCE_TRACE26") == "1" {
+		k.roles = append(k.roles, "node")
+	}
 	k.table = "fvtrace_" + strings.ReplaceAll(k.id, "-", "")[:12]
 	k.dir = "/var/lib/vpn-node/e2e/" + k.table
 	defer func() {

@@ -47,6 +47,9 @@ func TestE2E_Followup18Native(t *testing.T) {
 		return
 	}
 	b := BrowserSession{Client: admin.http, CSRF: admin.csrf}
+	if os.Getenv("FVPN_E2E_FOLLOWUP26") == "1" {
+		must(s.EnableEnforcementTiming(ctx))
+	}
 	must(s.PrepareNativeUnderlay(ctx))
 	if os.Getenv("FVPN_E2E_FOLLOWUP24") == "1" {
 		family := os.Getenv("FVPN_E2E_FOLLOWUP24_FAMILY")
@@ -80,6 +83,7 @@ func TestE2E_Followup18Native(t *testing.T) {
 	r.publish(ctx, admin, r.nodeID)
 	r.fixtureServingMember(ctx, admin)
 	if os.Getenv("FVPN_E2E_FOLLOWUP26") == "1" {
+		r.servingGate26(ctx, "post-capture-recovery")
 		r.regrant26(ctx, admin)
 	}
 	if os.Getenv("FVPN_E2E_FOLLOWUP24") == "1" {
@@ -578,7 +582,7 @@ func (r *runner) nativeInitial22(ctx context.Context, s *Stack) {
 func (r *runner) nativeTransfer26(ctx context.Context, s *Stack, record *Record, c *NativeCapture) {
 	rec := *record
 	defer func() { *record = rec }()
-	if os.Getenv("FVPN_E2E_FOLLOWUP24") == "1" {
+	if os.Getenv("FVPN_E2E_FOLLOWUP24") == "1" && rec.ID == "initial-selection" {
 		k, err := s.startKernelTrace(ctx)
 		if err != nil {
 			recPathNote(&rec)("kernel_trace_error", err.Error())
@@ -587,13 +591,24 @@ func (r *runner) nativeTransfer26(ctx context.Context, s *Stack, record *Record,
 		defer func() {
 			clean, cancel := context.WithTimeout(context.WithoutCancel(ctx), 15*time.Second)
 			defer cancel()
-			result, e := k.stop(clean, filepath.Join(r.lab.root, ".agent/tmp/"+nativeCampaignDirectory(), r.runID, "kernel"))
+			traceDir := filepath.Join(r.lab.root, ".agent/tmp/"+nativeCampaignDirectory(), r.runID, "kernel")
+			if os.Getenv("FVPN_E2E_FOLLOWUP26") == "1" {
+				traceDir = filepath.Join(traceDir, rec.ID)
+			}
+			result, e := k.stop(clean, traceDir)
 			noteJSON(&rec, "kernel_trace", result)
 			if e != nil {
 				rec.Status = StatusFail
 				recPathNote(&rec)("kernel_trace_error", e.Error())
 			}
 		}()
+	}
+	if os.Getenv("FVPN_E2E_FOLLOWUP26") == "1" {
+		reproduce := os.Getenv("FVPN_E2E_REPRODUCE_TRACE26") == "1" && rec.ID == "initial-selection"
+		noteJSON(&rec, "historical_node_tracer_reproduction", reproduce)
+		if !reproduce && !r.servingGate26(ctx, rec.ID+"-ready") {
+			return
+		}
 	}
 	if c.Sample(ctx, "before-selection") != nil {
 		return
