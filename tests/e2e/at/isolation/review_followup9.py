@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 import runpy
 import sys
-from producer_timing import analyze
+from producer_timing import analyze, read_operations
 
 root=Path(sys.argv[1] if len(sys.argv)>1 else 'docs/e2e/at/isolation')
 sys.argv=[sys.argv[0],str(root)]
@@ -29,7 +29,7 @@ losses=r['expiry']['losses']; deadline=int(r['expiry']['deadline_ns'])
 early=[p for p in losses if first_positive and int(p['packet']['ingress_ns'])<first_positive]
 final=[p for p in losses if int(p['packet']['ingress_ns'])>int(verdict['last_positive_mono_ns'])]
 producer_run=r['expiry']['last_accepted_renewal']['run_id']
-rows=[json.loads(s) for s in (root/'producer-operations.jsonl').read_text().splitlines()]
+rows=read_operations(root)
 process=[p for p in rows if p['run_id']==producer_run]
 selected=[]
 if early:

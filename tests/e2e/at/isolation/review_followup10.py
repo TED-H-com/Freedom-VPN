@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 import runpy
 import sys
-from producer_timing import analyze
+from producer_timing import analyze, read_operations
 
 root=Path(sys.argv[1] if len(sys.argv)>1 else 'docs/e2e/at/isolation')
 # Refuse inherited packet files when this attempt did not execute expiry.
@@ -12,7 +12,7 @@ current=json.loads((root/'AT13.json').read_text())
 expiry=next((c for c in current.get('checks',[]) if c['name']=='short whole-node lease expiry'),{})
 if 'D-104 exact packet deadline verdict=' not in expiry.get('actual',''):
     from producer_timing import validate_operations
-    rows=[json.loads(line) for line in (root/'producer-operations.jsonl').read_text().splitlines()]
+    rows=read_operations(root)
     v=validate_operations(rows)
     incomplete=dict(run_id=current['run_id'],status='unavailable',reason='This attempt did not execute the whole-node packet window; inherited packet files are not evidence for it.',
         check=expiry,source_counts=v['source_counts'],snapshots=v['snapshots'],brackets=v['brackets'],failed_applies=v['failed_applies'])
@@ -41,7 +41,7 @@ losses=r['expiry']['losses']; deadline=int(r['expiry']['deadline_ns'])
 early=[p for p in losses if first_positive and int(p['packet']['ingress_ns'])<first_positive]
 final=[p for p in losses if int(p['packet']['ingress_ns'])>int(verdict['last_positive_mono_ns'])]
 producer_run=r['expiry']['last_accepted_renewal']['run_id']
-rows=[json.loads(s) for s in (root/'producer-operations.jsonl').read_text().splitlines()]
+rows=read_operations(root)
 process=[p for p in rows if p['run_id']==producer_run]
 selected=[]
 if early:

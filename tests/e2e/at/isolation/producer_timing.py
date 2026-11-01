@@ -5,6 +5,7 @@ Packet capture timestamps are userspace read observations. Command brackets
 bound kernel commits; neither an overlap nor a netlink receipt is a drop time.
 """
 import json
+import gzip
 from pathlib import Path
 import statistics
 import re
@@ -28,6 +29,29 @@ def interval(row, start='start_ns', end='end_ns'):
 
 def identity(row):
     return {k: row[k] for k in ('run_id', 'boot_id', 'sequence')}
+
+
+def read_operations(root):
+    """Lossless gzip keeps the expanded diagnostic stream publishable."""
+    path = root/'producer-operations.jsonl'
+    if path.exists():
+        with path.open() as stream:
+            return [json.loads(line) for line in stream]
+    with gzip.open(str(path)+'.gz', 'rt') as stream:
+        return [json.loads(line) for line in stream]
+
+
+def apply_context(item):
+    context = {k:v for k,v in item.items() if k not in ('operation', 'lease')}
+    commands = context['command_lifecycle']
+    if commands['status'] == 'available':
+        # Full raw records remain in the original producer and failed/nearest
+        # Apply details. This inventory joins by identity + command index;
+        # duplicating every cgroup sample here adds hundreds of MB, no evidence.
+        context['command_lifecycle'] = dict(commands,
+            source='producer-operations.jsonl (or its lossless .gz)',
+            records=[{k:v for k,v in r.items() if k != 'record'} for r in commands['records']])
+    return context
 
 
 HOST_COUNTERS = ('cpu_total_ticks', 'cpu_idle_ticks', 'cpu_iowait_ticks',
@@ -474,7 +498,7 @@ def correlate(packet, validated):
 def analyze(root):
     def read(name):
         return json.loads((root/name).read_text())
-    rows = [json.loads(line) for line in (root/'producer-operations.jsonl').read_text().splitlines()]
+    rows = read_operations(root)
     if 'measurement unavailable' in (root/'agent.log.txt').read_text():
         raise ValueError('producer reported a failed measurement write')
     validated = validate_operations(rows)
@@ -523,7 +547,7 @@ def analyze(root):
                   clock=clock, snapshots=validated['snapshots'], runs=validated['runs'], brackets=validated['brackets'],
                   clock_after_restart=after, source_counts=validated['source_counts'],
                   producer_rows=validated['producer_rows'], failed_applies=validated['failed_applies'],
-                  apply_contexts=[{k:v for k,v in a.items() if k not in ('operation','lease')} for a in validated['applies']],
+                  apply_contexts=[apply_context(a) for a in validated['applies']],
                   clock_basis='Same kernel boot, exact zero monotonic/boottime offsets to the initial namespace. Namespace inodes are retained, not assumed identical across Docker restarts or member containers.',
                   capture_scope='Source node timing retained across every process restart; clone wire bodies remain separate and do not supply source timing.',
                   failed_operations=validated['failed_operations'], recovery_double_verifiers=validated['recovery_double_verifiers'],
@@ -549,7 +573,7 @@ def analyze(root):
 def replay_first_attempt(root):
     """Read the immutable attempt; write only a new, separately dated review."""
     source = root/'history/follow-up-10-attempt-1'
-    rows = [json.loads(s) for s in (source/'producer-operations.jsonl').read_text().splitlines()]
+    rows = read_operations(source)
     v = validate_operations(rows)
     clock = json.loads((source/'producer-clock.json').read_text())
     packets = packet_trace(json.loads((source/'renewal-probes.json').read_text()),

@@ -1,9 +1,12 @@
 """Regression checks for attribution, incomplete evidence and clock domains."""
 import copy
 import json
+import gzip
+import tempfile
 from pathlib import Path
 import unittest
 import producer_timing as p
+from review_policy_missing import windows
 
 
 def fixture():
@@ -74,6 +77,56 @@ def command(shape='success', phase='install', kind='nft', base=115):
 
 
 class CorrelationTests(unittest.TestCase):
+    def test_D136_baseline_to_apply_requires_later_recovery_and_counts_losses(self):
+        baseline = dict(run_id='run', boot_id='boot', sequence='1', source='baseline',
+            baseline=dict(cause='policy_missing', start_ns='80', end_ns='90', succeeded=True),
+            lease=dict(generation='1', members=1))
+        apply = fixture()[0]; apply['sequence'] = '2'; apply['timing']['candidate_generation'] = '2'
+        live = copy.deepcopy(apply); live.update(sequence='3', source='live')
+        live['timing']['operation'] = 'verify'
+        heartbeat = dict(run_id='run', boot_id='boot', sequence='4', source='heartbeat',
+                         heartbeat=dict(written=True, serving=True, generation='2'))
+        trace = [packet(84), packet(120), dict(packet(209), egress_ns='211', result='ok')]
+        w = windows([baseline, apply, live, heartbeat], dict(renewal=trace))[0]
+        self.assertTrue(w['stale_populated_lease_candidate'])
+        self.assertEqual(w['baseline_to_apply_ns'], '120')
+        self.assertEqual(w['cause_status'], 'unproven')
+        self.assertEqual(w['next_live'], live)
+        self.assertEqual(w['next_serving_heartbeat'], heartbeat)
+        self.assertEqual(len(w['packets']['renewal']['losses']), 2)
+        self.assertEqual(w['packets']['renewal']['ingress_losses_in_completed_guards'], 1)
+        self.assertEqual(w['packets']['renewal']['ingress_losses_outside_completed_guards'], 1)
+        # A later withdrawal prevents borrowing a still later recovery report.
+        reopen = copy.deepcopy(baseline); reopen['sequence'] = '3'
+        reopen['baseline']['cause'] = 'member_path_unconfigured'
+        w = windows([baseline, apply, reopen, live, heartbeat], dict(renewal=trace))[0]
+        self.assertIsNone(w['next_serving_heartbeat'])
+        self.assertIn('unavailable', w['recovery'])
+        w = windows([baseline], dict(renewal=[]))[0]
+        self.assertIsNone(w['apply_end_ns'])
+        self.assertFalse(w['stale_populated_lease_candidate'])
+        self.assertIn('unavailable', w['packets']['renewal']['coverage'])
+
+    def test_lossless_compressed_stream_and_index_join(self):
+        rows = fixture(); rows[0]['timing']['commands'] = [command()]
+        raw = (json.dumps(rows[0])+'\n').encode()
+        disk = Path(__file__).resolve().parents[4]/'.agent/tmp'
+        disk.mkdir(parents=True, exist_ok=True)
+        with tempfile.TemporaryDirectory(dir=disk) as temp:
+            root = Path(temp)
+            (root/'producer-operations.jsonl.gz').write_bytes(gzip.compress(raw, mtime=0))
+            self.assertEqual(p.read_operations(root), rows)
+            with gzip.open(root/'producer-operations.jsonl.gz','rb') as stream:
+                self.assertEqual(stream.read(), raw)
+            a = p.validate_operations(p.read_operations(root))['applies'][0]
+            context = p.apply_context(a)['command_lifecycle']
+            ref = context['records'][0]
+            self.assertEqual(p.identity(ref), p.identity(rows[0]))
+            self.assertEqual(rows[0]['timing']['commands'][ref['index']], command())
+            self.assertNotIn('record', ref)
+            (root/'producer-operations.jsonl').write_bytes(raw)
+            self.assertEqual(p.read_operations(root), rows)
+
     def test_lifecycle_each_shape_is_joined_and_cause_not_inferred(self):
         for shape in ('success', 'start_failure', 'canceled', 'deadline', 'exit_failure', 'unknown_exit'):
             with self.subTest(shape=shape):
