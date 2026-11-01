@@ -26,7 +26,7 @@ type ParseFailure struct {
 	Class           string `json:"class"`
 	ParserErrorKind string `json:"parser_error_kind"`
 	SHA256          string `json:"sha256"`
-	Bytes           int    `json:"bytes"`
+	Bytes           int    `json:"bytes,string"`
 	Lines           int    `json:"lines"`
 	Retained        bool   `json:"private_retained"`
 	RetentionError  string `json:"retention_error,omitempty"`
