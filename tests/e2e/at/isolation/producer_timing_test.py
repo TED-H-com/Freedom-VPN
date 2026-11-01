@@ -112,6 +112,37 @@ class CorrelationTests(unittest.TestCase):
         bad=copy.deepcopy(rows); bad[0]['timing']['verified']=True
         self.assertEqual(review(r=bad), [])
 
+    def test_Core32_hold_signal_and_alarm_threshold(self):
+        from review_core32 import hold_reports
+        lease=dict(path='/lease', response=dict(signed=dict(lease_id='old', config_generation='29')))
+        body=dict(report_id='hold',observed_at='2026-11-01T12:00:00Z',applied_config_generation='30',
+                  lease=dict(lease_id='old'),member_forwarding_enabled=False,forwarding_block_reasons=['policy_missing'],
+                  errors=[dict(stage='lease',code='STALE_GENERATION',
+                  message='Serving lease generation hold: applied=30 lease=29 steps=1 elapsed_ms=0 alarm=false.')])
+        wire=[lease,dict(path='/observations',status=202,body=body)]
+        result=hold_reports(wire)
+        self.assertTrue(result['all_hold_reports_qualified'])
+        self.assertTrue(result['all_summary_thresholds_consistent'])
+        self.assertFalse(result['alarm_observed'])
+        for message in ('applied=30 lease=29 steps=3 elapsed_ms=1200 alarm=true.',
+                        'applied=30 lease=29 steps=2 elapsed_ms=30000 alarm=true.'):
+            alarm=copy.deepcopy(wire)
+            alarm[1]['body']['errors'][0]['message']='Serving lease generation hold: '+message
+            result=hold_reports(alarm)
+            self.assertTrue(result['alarm_observed'])
+            self.assertTrue(result['all_summary_thresholds_consistent'])
+        for mutate in (lambda b: b.update(errors=[]),
+                       lambda b: b.update(forwarding_block_reasons=[]),
+                       lambda b: b['errors'][0].update(stage='apply')):
+            bad=copy.deepcopy(wire);mutate(bad[1]['body'])
+            self.assertFalse(hold_reports(bad)['all_hold_reports_qualified'])
+        # Retried bodies keep their counters and are one report, not new Steps.
+        retry=copy.deepcopy(wire);retry.append(copy.deepcopy(wire[1]));retry[1]['status']=502
+        result=hold_reports(retry)
+        self.assertEqual(result['unique_hold_reports'],1)
+        self.assertEqual(result['holds'][0]['statuses'],[502,202])
+        self.assertFalse(result['alarm_observed'])
+
     def test_D136_baseline_to_apply_requires_later_recovery_and_counts_losses(self):
         baseline = dict(run_id='run', boot_id='boot', sequence='1', source='baseline',
             baseline=dict(cause='policy_missing', start_ns='80', end_ns='90', succeeded=True),
