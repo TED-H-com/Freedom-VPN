@@ -1,0 +1,33 @@
+# at23-arm64
+
+arm64 artifact and operator hardware
+
+Status: needs_operator_run
+
+Spec: §3.2, §13.4, §19 AT23, NODE01
+
+At: 2026-10-30T00:28:30Z
+
+Expected: arm64 is packaged and manifest-listed. A physical arm64 node and the three join sources need an operator.
+
+Actual: arm64 updater cross-built; node image in this lab is amd64 only
+
+Git: 80c2971e3ad964f4cdb097da61aec80cbb08dab6
+
+Images: fvpn-w4-updates-node:local a59961894d3a; fvpn-w4-updates-worker:local 37db66b36e2c; fvpn-w4-updates-control:local 831cbd9da1b1; fvpn-w4-updates-origin:local a284069da6c8; fvpn-w4-updates-idp:local 51e3274256ee; fvpn-w4-updates-payment:local 740e16c55514; fvpn-w4-updates-netbird:0.82.0 7b5b53b2dc8b; fvpn-w4-updates-postgres:17 31ba9c94a03a; fvpn-w4-updates-nginx:1.30.0 55d1fb0944aa; fvpn-w4-updates-adguard:v0.107.59 5d5e3aef39a8; fvpn-w4-updates-coredns:1.12.0 40384aa1f5ea
+
+Policy revision: unset
+
+Node incarnation: 01a18a33-cc39-7585-8deb-a50b5f93b1fc
+
+Commands:
+
+- GOOS=linux GOARCH=arm64 go build ./node/updater/cmd/fvpn-updater
+- see docs/e2e/at/updates/operator-run.md
+
+- manifest_arm64_sha: eb5d03bcea96fc50155a402270646ba8dba4cc443182e40669319f3235317777
+- manifest_amd64_sha: f47af399eabe3fe03c8b2715e42de60fe00056d508728619d68dfda202d107ca
+- updater_arm64_sha256: 9eaf078d259bf6d0c39d2772b642e73a2c2280d9d6fdcd2fe72d8ce5d80a1a74
+- emulation: exec /fvpn-updater: exec format error exit status 255
+- hardware: needs operator run; this host did not execute the arm64 binary
+- sources: preinstalled box, cloud Ubuntu and coordinated third-party Ubuntu are operator-run.md; the lab container is one Ubuntu 24.04 amd64 source
