@@ -534,3 +534,65 @@ D-135 / corrected D-136 retain every loss and require later recovery.
 **Two carried requests; no new request.** See [summary](summary.md),
 [candidate join](candidate-rejection-join.json), [agent-core regression](agent-core32-regression.json)
 and [corrected baseline brackets](policy-missing-analysis.json).
+
+## Follow-up 14 requests — 2026-11-01
+
+Run `56d20530-8042-4d0c-8156-de5a47ce8b61`, runtime `716a1633`, baseline
+`9dde5eeb` (#380 / #382 / #377). One assembled run, exit 2. AT10 **9/0/0**
+with ISO-F6-01 **6/6**; AT12 **10/0/0**; AT11 **2/1/0 blocked**;
+AT13 **5/1/1 failed**. D-098 first: `5e66101c`, 112 byte-identical root files
+from run 38074149 under `history/follow-up-13/`. Earlier archives untouched;
+no D-132 handover exception edit.
+
+### Requests to orchestrator
+
+1. **2026-11-01 — AT11 native platform matrix, carried operator row.** Existing
+   devstack/platform assignment remains: native dual-stack/member-platform
+   routes and captures. No renewed ask; this outside-path item remains blocked.
+2. **2026-11-01 — AT13 full fault matrix, carried operator row.** Existing
+   acceptance/operator assignment remains: continuous crash, NetBird restart,
+   kernel reboot, updater and physical-arm64 coverage. Kernel reboot is not
+   exercised here. Direct pidfd stop samples do not supply this matrix.
+3. **2026-11-01 — F14-01, agent-core / netlab / acceptance decision.** Keep the
+   new whole-node D-104 row failed. Last positive **D−162.220103 ms**;
+   first drop **D−97.638039 ms**; 160 positives / 42 drops, two pre-D losses,
+   no post-D positive. Boundary packet 161 was scheduled D−101 ms, sent
+   D−100.700360 ms and captured at ingress D−97.638039 ms with no egress.
+   The ingress lies inside the allowed conservative transition; this does
+   not prove an early kernel drop, and does not satisfy the last-positive
+   predicate. Review the deadline contract and precise kernel/packet boundary
+   before proposing a change to `node/enforce/deadline*.go` or the shared
+   `tests/netlab/scenario_deadline_test.go`. Those paths and decision ownership
+   are outside this lane. No tolerance, assertion change or retry was made.
+   [Finding](follow-up-14-findings.json), [verdict](deadline-verdict.json),
+   [producer correlation](producer-timing-analysis.json). Renewal's four
+   outside-guard losses (packets 15–18) remain losses in the 30→31 baseline
+   bracket; their exact kernel cause is unproven.
+4. **2026-11-01 — wire-nodes / agent-core / devstack: controlled populated-hold
+   fixture still needed for request 1 of wire-nodes 34.** The one existing-seam
+   attempt received capacity PATCH 202 at 12:19:12.562216187 UTC but observed
+   no accepted new open hold in 15 seconds; no cut, extra stop or retry followed.
+   The only accepted hold is an empty-member bootstrap lease: ACK/delivered
+   desired 3, signed lease 2, one Step, alarm=false, exact incident and matching
+   end retained. All 17 populated producer windows have no accepted hold report
+   to join. Their absent samples/incident IDs are not manufactured. Supply or
+   approve an owner-supported deterministic boundary between accepted desired
+   change and matching lease, with accepted observations still available, in
+   `tests/e2e/cmd/fvpn-e2e-nodeconfig/proxy.go` / `tests/e2e/stack_exports.go`, or
+   an agent-owned exported checkpoint. Those files are outside this lane;
+   only that item is stopped. The follow-up must exercise a populated hold with
+   unrelated TC/meter failure, the existing pidfd stop with local-counter reset,
+   one alarm/30-second escalation, matching recovery and a new incident. The
+   baseline must stay installed; independent ingress/egress and counter evidence
+   are required. Current alarm, active-hold retention, later new incident and
+   live precedence remain **not exercised**, not passed.
+
+**Four requests: two carried operator rows and two new hand-offs.** The ordinary
+restart's Docker signal/exit trace is also unavailable because the passive
+observer began afterward; original command brackets and counted recovery remain
+valid. Future owned runner wiring starts that observer before the driver, but
+no extra run is claimed. F13-01 follows
+[netlab 23's typed duplicate decision](../../../poc/G2-followup23-evidence/decision.json):
+0 / 3,300 reproduced, origin unproven. Read failures prove neither frozen/removed
+counters nor closed forwarding. Historical failures stay failed, without a
+retry waiver or reclassification.

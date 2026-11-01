@@ -1,0 +1,4 @@
+# Operations Runbooks Index (`docs/ops/`)
+
+**Current cut — [follow-up 25](../handover/follow-up-25.md) (2026-11-01 EST):** Through #373: F11-01 drop located; members F13-01 raw bytes kept; updates F13-01 exit unobserved; AT10 blocked on ISO-F6-01 assertion 6; r18 archived with five open findings. D-135 / D-136 / D-137 / D-138 stay provisional; historical failures stay failed. No new operator guidance.
+Previous cut: [follow-up 24](../handover/follow-up-24.md), through #369.

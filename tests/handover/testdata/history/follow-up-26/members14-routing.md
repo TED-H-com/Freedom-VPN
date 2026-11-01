@@ -1,0 +1,1 @@
+6. F11-01 and the new F14-01 → devstack follow-up 26 (collected): diagnose F14-01's failed first re-grant after valid readiness with detailed native capture; no common cause with F11-01 assumed. Devstack 25 (running) gathers F11-01's first-selection evidence.

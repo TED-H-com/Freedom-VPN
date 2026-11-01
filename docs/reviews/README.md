@@ -131,3 +131,20 @@ the 80-transition population, physical arm64 and live mid-write process death
 were not verified. M-1 / M-2 qualify #369's shutdown claims; its historical
 cancellation fix remains recorded. D-135 / D-136 / D-137 / D-138 remain
 provisional; intersection serving is not implemented by this handover.
+
+## r18 dispositions at the follow-up 26 cutoff
+
+At #382, the raw r18 archive remains byte-identical. The previous #373 table
+is historical. [Follow-up 26](../handover/follow-up-26.md) pins these fixes:
+
+| Finding | Disposition |
+|---|---|
+| M-1 | Fixed #376: no observation POST after caller cancellation. |
+| M-2 | Fixed on both sides #376 + #378: one Step budget, 13 s cooperative shutdown, 15 s agent unit stop budget, watchdog ordering and bounded replacement stop. |
+| M-3 | Fixed on both sides #376 + #382: distinct hold, node alarm, central own-lease recognition independent of ACK, incident retention and one escalation. Alarm and central escalation not yet exercised in an assembled run. |
+| L-1 | Fixed #377: install-phase sample skipped; adopted proof asserts corrected behavior. |
+| L-2 | Fixed #376: any higher or missing member/node ceiling fails the D-133 leg. |
+
+D-139 is a provisional option (b) design track, with r19 running at task start.
+#379's reference passing is not an acceptance result. A recorded representation
+decision follows review before any implementation; option (c) stays in production.

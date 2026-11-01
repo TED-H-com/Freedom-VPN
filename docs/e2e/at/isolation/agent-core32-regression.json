@@ -1,22 +1,22 @@
 {
-  "run_id": "38074149-1137-4782-80fd-8669c36c6fcb",
+  "run_id": "56d20530-8042-4d0c-8156-de5a47ce8b61",
   "hold": {
-    "unique_hold_reports": 2,
+    "unique_hold_reports": 1,
     "all_hold_reports_qualified": true,
-    "accepted_hold_reports": 2,
+    "accepted_hold_reports": 1,
     "holds": [
       {
-        "report_id": "01a196ca-773c-7b77-a647-10809736edca",
-        "observed_at": "2026-11-01T11:06:53.62873801Z",
+        "report_id": "01a196fd-f5e3-7211-89dd-2bb4b6b373d2",
+        "observed_at": "2026-11-01T12:03:08.387118076Z",
         "attempt_indices": [
-          19
+          10
         ],
         "statuses": [
           202
         ],
         "accepted": true,
-        "applied_generation": "6",
-        "signed_lease_generation": "7",
+        "applied_generation": "3",
+        "signed_lease_generation": "2",
         "forwarding": false,
         "reasons": [
           "policy_missing"
@@ -25,48 +25,21 @@
           {
             "code": "STALE_GENERATION",
             "message": "Serving lease is not for the desired generation.",
-            "observed_at": "2026-11-01T11:06:53.589536952Z",
-            "stage": "lease"
-          }
-        ],
-        "qualifies": true,
-        "streak_summaries": []
-      },
-      {
-        "report_id": "01a196d2-073c-7224-92b5-7ac07d0a4aaf",
-        "observed_at": "2026-11-01T11:15:09.244102727Z",
-        "attempt_indices": [
-          858
-        ],
-        "statuses": [
-          202
-        ],
-        "accepted": true,
-        "applied_generation": "25",
-        "signed_lease_generation": "24",
-        "forwarding": false,
-        "reasons": [
-          "policy_missing"
-        ],
-        "lease_errors": [
-          {
-            "code": "STALE_GENERATION",
-            "message": "Serving lease is not for the desired generation.",
-            "observed_at": "2026-11-01T11:15:09.212666243Z",
+            "observed_at": "2026-11-01T12:03:08.355797633Z",
             "stage": "lease"
           },
           {
             "code": "STALE_GENERATION",
-            "message": "Serving lease generation hold: applied=25 lease=24 steps=1 elapsed_ms=0 alarm=false.",
-            "observed_at": "2026-11-01T11:15:09.244102727Z",
+            "message": "Serving lease generation hold: applied=3 lease=2 steps=1 elapsed_ms=0 alarm=false.",
+            "observed_at": "2026-11-01T12:03:08.387118076Z",
             "stage": "lease"
           }
         ],
         "qualifies": true,
         "streak_summaries": [
           {
-            "applied": "25",
-            "lease": "24",
+            "applied": "3",
+            "lease": "2",
             "steps": "1",
             "elapsed_ms": "0",
             "alarm": false,
@@ -79,16 +52,7 @@
     "alarms": [],
     "alarm_observed": false,
     "all_summary_thresholds_consistent": true,
-    "other_policy_missing_reports": [
-      {
-        "report_id": "01a196ca-5b9b-701b-ba01-f1b14ebff784",
-        "observation_at": "2026-11-01T11:06:46.554968688Z",
-        "reason": "policy_missing alone does not establish an acknowledged stale-lease hold",
-        "attempt_indices": [
-          2
-        ]
-      }
-    ],
+    "other_policy_missing_reports": [],
     "interpretation": "Every observed hold must carry policy_missing and STALE_GENERATION at stage=lease with forwarding false. Signed lease generations resolve the ACK comparison; baseline alone is not a hold classification. Alarm is observed only when the original summary says true; 3 Steps or 30 seconds is diagnostic, never a forwarding grace. Missing Step events prevent independently reconstructing every unreported increment."
   },
   "terminal_process_stops": [
@@ -97,31 +61,31 @@
       "sample": {
         "exit_observed": true,
         "exit_sample": {
-          "mono_ns": "115810622329434",
-          "wall": "2026-11-01T11:24:33.105960714Z"
+          "mono_ns": "119215723863844",
+          "wall": "2026-11-01T12:21:18.207497061Z"
         },
         "exit_status_available": false,
         "last_alive_since_signal_ns": "0",
-        "pid": 882,
+        "pid": 886,
         "scope": "TEST ONLY terminal stop; pidfd SIGTERM send and exit readiness brackets; supervisor pause and escalation retained",
         "signal_ok": true,
         "signal_return": {
-          "mono_ns": "115810613216602",
-          "wall": "2026-11-01T11:24:33.096845555Z"
+          "mono_ns": "119215716141347",
+          "wall": "2026-11-01T12:21:18.199770318Z"
         },
         "signal_start": {
-          "mono_ns": "115810613210687",
-          "wall": "2026-11-01T11:24:33.096840651Z"
+          "mono_ns": "119215716135689",
+          "wall": "2026-11-01T12:21:18.199765653Z"
         },
-        "signal_to_exit_upper_ns": "9117561",
+        "signal_to_exit_upper_ns": "7725929",
         "step_cancel": "not observable here",
         "supervisor_stop_ok": true,
         "supervisor_stop_output": "0",
         "within_13s": true
       },
       "stored_lease_survived": true,
-      "lease_id_before": "d307ca82-91f5-4878-a76b-27ddef2fa97a",
-      "lease_id_after": "d307ca82-91f5-4878-a76b-27ddef2fa97a",
+      "lease_id_before": "4544d44f-3779-48fe-9437-f1047e909d5d",
+      "lease_id_after": "4544d44f-3779-48fe-9437-f1047e909d5d",
       "receiver_completions_during_signal_to_exit": [],
       "no_control_io_after_cancel": "not observable here: Step cancellation timestamp and agent-side POST completion are not exported; proxy completion alone cannot prove it"
     },
@@ -130,31 +94,31 @@
       "sample": {
         "exit_observed": true,
         "exit_sample": {
-          "mono_ns": "115810999938365",
-          "wall": "2026-11-01T11:24:33.483568854Z"
+          "mono_ns": "119216093066518",
+          "wall": "2026-11-01T12:21:18.576696029Z"
         },
         "exit_status_available": false,
-        "last_alive_since_signal_ns": "10070359",
-        "pid": 1114,
+        "last_alive_since_signal_ns": "0",
+        "pid": 1133,
         "scope": "TEST ONLY terminal stop; pidfd SIGTERM send and exit readiness brackets; supervisor pause and escalation retained",
         "signal_ok": true,
         "signal_return": {
-          "mono_ns": "115810986284751",
-          "wall": "2026-11-01T11:24:33.46991374Z"
+          "mono_ns": "119216086550442",
+          "wall": "2026-11-01T12:21:18.570179406Z"
         },
         "signal_start": {
-          "mono_ns": "115810986278377",
-          "wall": "2026-11-01T11:24:33.469908281Z"
+          "mono_ns": "119216086544288",
+          "wall": "2026-11-01T12:21:18.570174065Z"
         },
-        "signal_to_exit_upper_ns": "13659497",
+        "signal_to_exit_upper_ns": "6522051",
         "step_cancel": "not observable here",
         "supervisor_stop_ok": true,
         "supervisor_stop_output": "0",
         "within_13s": true
       },
       "stored_lease_survived": true,
-      "lease_id_before": "d6e2a642-c95c-4665-999f-58b4a9696d62",
-      "lease_id_after": "d6e2a642-c95c-4665-999f-58b4a9696d62",
+      "lease_id_before": "4734a919-d68d-4f18-ae62-3152d8edb59c",
+      "lease_id_after": "4734a919-d68d-4f18-ae62-3152d8edb59c",
       "receiver_completions_during_signal_to_exit": [],
       "no_control_io_after_cancel": "not observable here: Step cancellation timestamp and agent-side POST completion are not exported; proxy completion alone cannot prove it"
     }

@@ -176,3 +176,15 @@ records. Owner history inventories and the dated devstack 24 captures are
 checked directly. r18 is an exact archive from 1a65598f, with no adopted proof
 files or acceptance promotion. Follow-up 24's live register/entrypoints are
 frozen; its normalized whole-function hash preserves every original assertion.
+
+## Follow-up 26
+
+`followup26-main.json` pins the nine #374–#382 roadmap rows at `9dde5eeb`,
+including the #381 correction `5f4b455c`; #369 is supporting historical context.
+`followup26-snapshots.json` records 17 immutable source excerpts with source
+commit / full hash / offset / length / excerpt hash. Members 14 and isolation
+13 living roots are neither read nor copied by the claims test. Their new-run
+claims use only the exact roadmap rows. D-098 owner archives and the dated
+906-file devstack capture inventory have independent hash checks. The previous
+cut's register and entrypoint inputs are frozen; its body-content check permits
+only removal of the single pinned installer note added by this cut.

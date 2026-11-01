@@ -1,0 +1,44 @@
+{
+  "run_id": "38074149-1137-4782-80fd-8669c36c6fcb",
+  "scope": "Contemporaneously streamed events during the ordinary Docker stop/start bracket; container exit is not agent exit.",
+  "events": [
+    {
+      "action": "kill",
+      "time_ns": "1793531792504389179",
+      "attributes": {
+        "name": "fvpn-w4-isolation-node",
+        "signal": "15"
+      }
+    },
+    {
+      "action": "kill",
+      "time_ns": "1793531802517483709",
+      "attributes": {
+        "name": "fvpn-w4-isolation-node",
+        "signal": "9"
+      }
+    },
+    {
+      "action": "stop",
+      "time_ns": "1793531802586878226",
+      "attributes": {
+        "name": "fvpn-w4-isolation-node"
+      }
+    },
+    {
+      "action": "die",
+      "time_ns": "1793531802591048952",
+      "attributes": {
+        "name": "fvpn-w4-isolation-node",
+        "exitCode": "137"
+      }
+    },
+    {
+      "action": "start",
+      "time_ns": "1793531802731898826",
+      "attributes": {
+        "name": "fvpn-w4-isolation-node"
+      }
+    }
+  ]
+}
