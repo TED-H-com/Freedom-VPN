@@ -80,7 +80,9 @@ else
     fi
 fi
 # PIDs belong to the old container process tree, not the durable identity.
-rm -f /var/lib/vpn-node/e2e/agent.pid
+# The previous container may have killed the waiter too. Keep historical exit
+# receipts, but never make a stop before this boot's first start wait on that ID.
+rm -f /var/lib/vpn-node/e2e/agent.pid /var/lib/vpn-node/e2e/agent-process-id
 fvpn-e2e-nodeconfig
 # TEST ONLY loopback mTLS transport; corrupts only when the private local marker is armed.
 fvpn-e2e-nodeconfig dns-relay >/var/lib/vpn-node/e2e/dns-relay.log 2>&1 &
