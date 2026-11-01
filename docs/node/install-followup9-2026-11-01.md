@@ -66,15 +66,16 @@ Measured on 2026-11-01, linux/amd64, Ubuntu 24.04 / systemd 255:
 
 | Installed-unit stop | SIGTERM → main process exit (status 0) | `systemctl stop` return |
 |---|---|---|
-| Agent only | 8.652 ms | 14.395356 ms |
-| Agent and watchdog | 13.384 ms | 19.951860 ms |
+| Agent only | 7.826 ms | 11.769100 ms |
+| Agent and watchdog | 7.999 ms | 17.908902 ms |
 
-The joint-stop watchdog transition began **1.046 ms after** agent exit, using
+The joint-stop watchdog transition began **1.035 ms after** agent exit, using
 systemd's monotonic timestamps. Agent-only stop left the watchdog active.
 Both services reported `Result=success`; the agent's loaded `TimeoutStopUSec`
 was `15s`. Command timing excludes Docker exec startup, but includes the local
-shell/date measurement overhead. The earlier suite pass measured the
-`exit_group(0)` syscall; the table uses the rerun's confirmed process exit.
+shell/date measurement overhead. The table uses the final implementation's
+confirmed process-exit measurements, after scoping the installer deadline to
+binary replacement.
 
 These are normal stops in the enrollment-only fixture, with tracer overhead and wall-clock
 measurement resolution. They do not exercise the worst-case Step plus Close,
