@@ -81,7 +81,6 @@ def main():
             match=next((p for p in syns['node'] if first and p['tcp']==first['tcp']),None)
             transit=dict(lower_ns=str(int(match['mono_lower_ns'])-int(first['mono_upper_ns'])),upper_ns=str(int(match['mono_upper_ns'])-int(first['mono_lower_ns']))) if match else None
             # Port belongs to one original transfer; don't borrow an earlier receipt.
-            attempts=[o for o in cases[case].get('forwarding',[]) if any(str(port) in json.dumps(p) for p in o.get('packet_observations',{}).values())]
             requests.append(dict(source_port=port,before_sample=sample['label'],after_sample=after['label'],request_window_start_wall_ns=str(lo),request_window_end_wall_ns=str(hi),syns=syns,first_syn_transit=transit,scope='Window includes command/readback overhead. Late SYNs remain late; origin HTTP receipt is taken only from the original forwarding record, never inferred from TCP headers.'))
         result['requests']=requests
         if label=='AT02-sibling':

@@ -136,6 +136,7 @@ def reservation_review(cases, recovery, holds, data, pins):
 
 def hold_review(cases):
     rows=[]
+    central_joins=load(ROOT/'F16-AT02-generation-holds.json')['joined']
     for name in ['alarm-recovery','sibling-removal','sole-member','retained-safety']:
         v=load(ROOT/('F16-hold-'+name+'.json'))
         central=v.get('central') or {}
@@ -162,6 +163,9 @@ def hold_review(cases):
         if incident and name=='sole-member' and v.get('members_revoked_closure'):
             assert all(len(x['members'])==1 for x in leases)
             assert {x['members'][0]['member_id'] for x in leases}=={v['member_revocation']['member_id']}
+        mutation=v.get('member_revocation')
+        row['member_revocation_audits']=[a for a in central_joins['revocations'] if mutation and a['resource']=='member:'+mutation['member_id'] and ns(mutation['started_at'])<=ns(a['occurred_at'])<=ns(mutation['completed_at'])]
+        row['publication_classification_replays']=[c for c in load(ROOT/'F16-AT02-generation-holds.json')['checks'] if incident and c['hold_id']==incident['id']]
         rows.append(row)
     save('F16-populated-hold-joins.json',dict(run_id=cases['AT02']['run_id'],source_commit=cases['AT02']['source_commit'],rows=rows,scope='Join accepted samples by node/incarnation/report and incident_id; join audits by exact incident_id, never node alone. Each scenario has a fresh transport arm and its original lease population. No incident ending is a service-recovery assertion. Missing failed-Apply or safety combinations remain not exercised.'))
 
