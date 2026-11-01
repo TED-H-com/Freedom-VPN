@@ -6,6 +6,7 @@ add counter inet fvpn ctin
 add counter inet fvpn ctinv
 add counter inet fvpn ctdeny
 add counter inet fvpn cthost
+add counter inet fvpn ctdenyd
 add counter inet fvpn probe_up
 add counter inet fvpn probe_down
 add counter inet fvpn ctbadns
@@ -35,6 +36,11 @@ add rule inet fvpn forward iifname "fv-fh" oifname "fv-ih" ip daddr @resolver_v4
 add rule inet fvpn forward iifname "fv-fh" ip daddr @denied_v4 counter name "ctdeny" drop
 add rule inet fvpn forward iifname "fv-fh" ip daddr @host_v4 counter name "cthost" drop
 add rule inet fvpn forward iifname "fv-fh" oifname "fv-ih" ip saddr @probe_v4 ip daddr . meta l4proto . th dport @probe_dst_v4 counter name "probe_up" accept
+add rule inet fvpn forward iifname "fv-ih" oifname "fv-fh" ip saddr @resolver_v4 ip daddr @probe_v4 tcp sport 53 ct state established,related counter name "probe_down" accept
+add rule inet fvpn forward iifname "fv-ih" oifname "fv-fh" ip saddr @resolver_v4 ip daddr @probe_v4 udp sport 53 ct state established,related counter name "probe_down" accept
+add rule inet fvpn forward iifname "fv-ih" oifname "fv-fh" ip saddr @resolver_v4 counter name "ctdenyd" drop
+add rule inet fvpn forward iifname "fv-ih" oifname "fv-fh" ip saddr @denied_v4 counter name "ctdenyd" drop
+add rule inet fvpn forward iifname "fv-ih" oifname "fv-fh" ip saddr @host_v4 counter name "ctdenyd" drop
 add rule inet fvpn forward iifname "fv-ih" oifname "fv-fh" ip daddr @probe_v4 ct state established,related counter name "probe_down" accept
 add rule inet fvpn forward iifname "fv-fh" counter name "ctbase" drop
 add rule inet fvpn forward oifname "fv-fh" counter name "ctbase" drop
