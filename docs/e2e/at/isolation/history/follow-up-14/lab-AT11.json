@@ -1,0 +1,45 @@
+{
+  "run_id": "56d20530-8042-4d0c-8156-de5a47ce8b61",
+  "started_at": "2026-11-01T12:02:12Z",
+  "source_dirty": false,
+  "id": "lab-AT11",
+  "title": "Mechanism: IPv6 block mode, metadata and special addresses",
+  "spec": [
+    "§19 AT11",
+    "ISO01",
+    "ISO03",
+    "§8.3"
+  ],
+  "status": "pass",
+  "at": "2026-11-01T12:02:14Z",
+  "build": "716a16335cb5335473416740c76a75ce95536796",
+  "image_digests": [
+    "fvpn-w4-isolation-lab:lab sha256:2e27f7e3829f7866846d056bd934954c25a578b69d17957ca38d795e7ea29c2f"
+  ],
+  "policy_revision": "generation 11",
+  "node_incarnation": "mechanism-lab",
+  "expected": "IPv6 mode block drops member IPv6, including ULA, link-local, loopback and IPv4-mapped. Metadata stays unreachable. There is no route mode in v1.",
+  "actual": "mode block, ctv6 +3, special-address probes denied, target captures empty. Route mode was not claimed (§8.3).",
+  "commands": [
+    "FVPN_LAB_PREFIX=fvpn-w4-isolation-lab make -f mk/at-isolation.mk at-isolation-lab-up",
+    "FVPN_NETLAB=1 FVPN_LAB_PREFIX=fvpn-w4-isolation-lab FVPN_AT_EVIDENCE_DIR=docs/e2e/at/isolation go test -tags netlab -count=1 -timeout 40m -p 1 -parallel 1 ./tests/netlab/at"
+  ],
+  "observations": [
+    {
+      "name": "ipv6_mode",
+      "detail": "block"
+    },
+    {
+      "name": "ctv6_delta",
+      "detail": "3"
+    },
+    {
+      "name": "route_mode",
+      "detail": "not implemented in v1"
+    },
+    {
+      "name": "scope",
+      "detail": "mechanism lab; product status is AT11.json"
+    }
+  ]
+}
