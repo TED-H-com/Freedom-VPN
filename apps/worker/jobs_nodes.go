@@ -34,6 +34,13 @@ func NodeJobs(r *httpwire.Runtime, nb *netbird.Client, fetch releases.Fetcher, a
 
 func nodeJobs(r *httpwire.Runtime, nb *netbird.Client, fetch releases.Fetcher, attempts int, compiler *desiredstate.Compiler, publicationAdapter ...exits.NetBirdAdapter) Registry {
 	jobs := Registry{}
+	jobs.Register(nodelib.EventGenerationHoldCheck, func(ctx context.Context, event db.ClaimedEvent) (string, error) {
+		if err := nodelib.ValidateGenerationHoldEvent(event); err != nil {
+			return "", err
+		}
+		err := r.Nodes.ReconcileGenerationHolds(commandtx.WithClaim(ctx, event), event.AggregateID)
+		return "generation-hold:" + event.AggregateID.String(), err
+	})
 	jobs.Register("node.resolver_documents.reconcile", func(ctx context.Context, event db.ClaimedEvent) (string, error) {
 		ctx = commandtx.WithClaim(ctx, event)
 		if err := r.ReconcileResolverDocuments(ctx); err != nil {
@@ -260,6 +267,9 @@ func nodeJobs(r *httpwire.Runtime, nb *netbird.Client, fetch releases.Fetcher, a
 	})
 	reconcile := func(ctx context.Context, event db.ClaimedEvent) (string, error) {
 		ctx = commandtx.WithClaim(ctx, event)
+		if e := r.Nodes.ReconcileGenerationHolds(ctx, uuid.Nil); e != nil {
+			return "", e
+		}
 		if e := r.Fleet.Reconcile(ctx); e != nil {
 			return "", e
 		}
@@ -495,6 +505,9 @@ func recordDiscoveryFailure(ctx context.Context, tx pgx.Tx, p nodeDiscovery, cau
 			return err
 		}
 		if _, err = tx.Exec(ctx, `INSERT INTO node_identity_endpoints(incarnation_id,endpoint_hash,last_seen_at,mapping_frozen) VALUES($1,$2,clock_timestamp(),true) ON CONFLICT(incarnation_id) DO UPDATE SET mapping_frozen=true WHERE NOT node_identity_endpoints.mapping_frozen`, p.IncarnationID, hash[:]); err != nil {
+			return err
+		}
+		if err := nodelib.CloseInactiveGenerationHoldsTx(ctx, tx, p.NodeID, time.Now().UTC()); err != nil {
 			return err
 		}
 	}

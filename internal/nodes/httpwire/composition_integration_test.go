@@ -196,7 +196,7 @@ func TestAPI01_NodeRunnerSeedsCoalescesAndStops(t *testing.T) {
 	if e != nil {
 		t.Fatal(e)
 	}
-	if len(built.Runners) != 1 || len(built.Jobs) != 12 || built.Jobs["node.publication_changed"] == nil || built.Jobs["node.resolver_documents.reconcile"] == nil {
+	if len(built.Runners) != 1 || len(built.Jobs) != 13 || built.Jobs["node.publication_changed"] == nil || built.Jobs["node.resolver_documents.reconcile"] == nil || built.Jobs["node.generation_hold.check"] == nil {
 		t.Fatal("incomplete node build")
 	}
 	for _, legacy := range []string{"node.routes.withdraw", "node.peer.withdraw"} {

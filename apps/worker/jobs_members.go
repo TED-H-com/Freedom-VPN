@@ -13,6 +13,8 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/internal/devices"
 	"github.com/TED-H-com/Freedom-VPN/internal/entitlement"
 	membersruntime "github.com/TED-H-com/Freedom-VPN/internal/members/runtime"
+	nodelib "github.com/TED-H-com/Freedom-VPN/internal/nodes"
+	"github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx"
 	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -113,6 +115,11 @@ func memberJob(ctx context.Context, event db.ClaimedEvent) (string, error) {
 		}
 		if !current {
 			return "", errors.New("future entitlement event")
+		}
+		if err := commandtx.InTx(commandtx.WithClaim(ctx, event), pool, db.TxOptions{}, func(tx pgx.Tx) error {
+			return nodelib.CloseInactiveGenerationHoldsTx(ctx, tx, uuid.Nil, time.Now().UTC())
+		}); err != nil {
+			return "", err
 		}
 		// Grant withdrawal uses this same path, including when a future grant's
 		// removal leaves the projection unchanged. SyncMember observes the

@@ -106,6 +106,9 @@ func (s *Service) revokeNode(ctx context.Context, cmd Command, node uuid.UUID, e
 		if _, e = tx.Exec(ctx, `UPDATE node_incarnations SET revoked_at=coalesce(revoked_at,clock_timestamp()) WHERE node_id=$1`, node); e != nil {
 			return e
 		}
+		if e = nodes.CloseInactiveGenerationHoldsTx(ctx, tx, node, time.Now().UTC()); e != nil {
+			return e
+		}
 		if _, e = tx.Exec(ctx, `UPDATE node_certificates SET revoked_at=coalesce(revoked_at,clock_timestamp()) WHERE incarnation_id IN (SELECT id FROM node_incarnations WHERE node_id=$1)`, node); e != nil {
 			return e
 		}
@@ -397,6 +400,9 @@ func (s *Service) recordIdentityConflict(ctx context.Context, tx pgx.Tx, id pki.
 		return err
 	}
 	if tag.RowsAffected() > 0 || freezeTag.RowsAffected() > 0 {
+		if err := nodes.CloseInactiveGenerationHoldsTx(ctx, tx, id.NodeID, now); err != nil {
+			return err
+		}
 		// D-084: the detecting renewal must see a not-ready incarnation in
 		// this transaction, before the next observation arrives.
 		if _, err = tx.Exec(ctx, `UPDATE nodes SET provisioning_state='failed', safety_status='failed', resource_version=resource_version+1 WHERE id=$1`, id.NodeID); err != nil {
