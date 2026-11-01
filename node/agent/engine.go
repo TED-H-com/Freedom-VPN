@@ -1021,7 +1021,13 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 	}
 	timing := &applyReadTiming{now: e.clock.Wall}
 	host := e.measureHostBeforeApply()
-	res, err := e.plane.Apply(context.WithValue(ctx, applyReadKey{}, timing), model, prev)
+	applyCtx := context.WithValue(ctx, applyReadKey{}, timing)
+	if e.measurementEnabled() {
+		// TEST ONLY command observations use the existing local timing gate.
+		// They do not enter the wire evidence or its D-106 digest.
+		applyCtx = enforce.WithCommandLifecycleForTest(applyCtx)
+	}
+	res, err := e.plane.Apply(applyCtx, model, prev)
 	host.finish(err)
 	e.measureTiming(res.Evidence, "apply", host)
 	for _, b := range timing.baselines {
