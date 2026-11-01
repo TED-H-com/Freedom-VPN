@@ -47,7 +47,15 @@ each_agent() {
         if [ "$_each_mode" = kill ]; then
             kill "$_each_p" 2>/dev/null || true
         elif [ "$_each_mode" = kill9 ]; then
-            kill -KILL "$_each_p" 2>/dev/null || true
+            _kill_at=$(date -u +%Y-%m-%dT%H:%M:%S.%NZ)
+            _kill_delivered=false
+            if kill -KILL "$_each_p" 2>/dev/null; then _kill_delivered=true; fi
+            # Separate from the actual parent wait result: this says only that
+            # the supervisor attempted escalation and whether kill accepted it.
+            if [ -s "$base/agent.pid" ] && [ "$(cat "$base/agent.pid")" = "$_each_p" ] && [ -s "$base/agent-process-id" ]; then
+                _kill_id=$(cat "$base/agent-process-id")
+                (umask 077; printf '{"pid":%s,"signal":9,"requested_at":"%s","kill_accepted":%s}\n' "$_each_p" "$_kill_at" "$_kill_delivered" > "$base/agent-exits/$_kill_id.sigkill.tmp" && mv "$base/agent-exits/$_kill_id.sigkill.tmp" "$base/agent-exits/$_kill_id.sigkill.json") || true
+            fi
         fi
     done
     if [ "$_each_mode" = count ]; then

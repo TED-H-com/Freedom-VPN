@@ -450,3 +450,32 @@ before pinning. It verifies exact raw receipts, complete captures, monitor stop
 and table removal. nft trace IDs join hook traversal, not pcap ciphertext; packet
 shape/count and bounded namespace counter changes are corroboration. Source-code
 interpretation remains separate from an observed kernel drop tracepoint.
+
+## Follow-up 25 — persistent agent wait status (TEST ONLY)
+
+The lab service manager still owns start, TERM, its 25 × 0.2-second wait,
+SIGKILL escalation and restart. A small parent (`fvpn-e2e-nodeconfig agent-wait`)
+now starts the identical agent command and calls Wait. `agent.pid` is still the
+agent PID. Read `/var/lib/vpn-node/e2e/agent-process-id` **before** stopping or
+killing it. After `agent-service.sh stop` returns, read
+`/var/lib/vpn-node/e2e/agent-exits/<id>.json`. The public stop waits for that
+receipt as well as process disappearance. Repeated stops preserve it; restarts
+create a new ID and never overwrite earlier receipts. Keep the ID, not a PID
+alone, across a restart.
+
+The mode-0600, atomically published JSON contains `id`, `pid`, `/proc` identity
+`start_ticks`, `started_at` (before launch), `wait_observed_at` (UTC RFC3339Nano,
+when the parent returned from Wait), raw `wait_status`, nullable `exit_code` and
+nullable numeric `signal`, and `core_dump`. Exit zero has `exit_code:0` and
+`signal:null`; SIGKILL has `exit_code:null` and `signal:9`. Exit 137 is a distinct
+normal exit. The observation timestamp is an upper observation bound on exit,
+not an exact kernel event timestamp. No log parsing or zombie polling is needed.
+
+If the supervisor reaches its existing SIGKILL branch it also writes
+`agent-exits/<id>.sigkill.json`: PID, signal 9, `requested_at`, and
+`kill_accepted`. This records a signal attempt, independently of the child's
+actual wait result. An externally injected SIGKILL has no supervisor escalation
+receipt. A missing wait receipt is unavailable evidence, never inferred exit 0.
+Killing the whole container or the waiter can prevent publication; this export
+covers an agent stop while its lab supervisor remains alive. It adds no product
+API or production supervisor behavior.
