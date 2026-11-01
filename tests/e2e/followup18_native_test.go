@@ -57,6 +57,9 @@ func TestE2E_Followup18Native(t *testing.T) {
 	if r.enroll(ctx, admin) == uuid.Nil {
 		return
 	}
+	if os.Getenv("FVPN_E2E_FOLLOWUP23") == "1" {
+		must(exec.CommandContext(ctx, "docker", "exec", l.node, "netbird", "debug", "log", "level", "debug").Run())
+	}
 	r.desired(ctx)
 	r.publish(ctx, admin, r.nodeID)
 	r.fixtureServingMember(ctx, admin)

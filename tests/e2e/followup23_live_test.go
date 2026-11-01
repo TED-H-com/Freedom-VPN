@@ -20,7 +20,7 @@ func TestE2E_Followup23Native(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer l.transport.CloseIdleConnections()
-	for _, c := range []string{l.member, l.node} {
+	for _, c := range []string{l.member} {
 		if err = exec.CommandContext(t.Context(), "docker", "exec", c, "netbird", "debug", "log", "level", "debug").Run(); err != nil {
 			t.Fatal(err)
 		}
