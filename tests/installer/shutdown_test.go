@@ -88,9 +88,9 @@ exit "$code"`, "stop-timing"}, units...)
 	}
 	observed := mustExec(t, c, "cat", tracePath)
 	signal := regexp.MustCompile(`(?m)^\d+\s+([0-9]+\.[0-9]+)\s+--- SIGTERM`).FindStringSubmatch(observed)
-	exit := regexp.MustCompile(`(?m)^\d+\s+([0-9]+\.[0-9]+)\s+exit_group\(0\)`).FindStringSubmatch(observed)
+	exit := regexp.MustCompile(`(?m)^` + pid + `\s+([0-9]+\.[0-9]+)\s+\+\+\+ exited with 0 \+\+\+`).FindStringSubmatch(observed)
 	if len(signal) != 2 || len(exit) != 2 {
-		t.Fatalf("missing real SIGTERM or successful exit_group observation: %s", observed)
+		t.Fatalf("missing real SIGTERM or successful process exit observation: %s", observed)
 	}
 	signalAt, err := time.ParseDuration(signal[1] + "s")
 	if err != nil {
@@ -125,7 +125,7 @@ exit "$code"`, "stop-timing"}, units...)
 	} else {
 		mustExec(t, c, "systemctl", "is-active", watchdog)
 	}
-	t.Logf("AT07 real installed agent stop (pair=%t): SIGTERM -> exit_group(0)=%s; systemctl stop return=%s; strace attached, wall-clock observations, enrollment-only fixture", pair, exitAt-signalAt, time.Duration(ended-started))
+	t.Logf("AT07 real installed agent stop (pair=%t): SIGTERM -> process exit(0)=%s; systemctl stop return=%s; strace attached, wall-clock observations, enrollment-only fixture", pair, exitAt-signalAt, time.Duration(ended-started))
 	if pair {
 		mustExec(t, c, "systemctl", "start", watchdog, agent)
 	}
