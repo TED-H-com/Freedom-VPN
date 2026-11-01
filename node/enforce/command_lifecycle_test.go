@@ -4,8 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
 	"os/exec"
+	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -50,7 +52,7 @@ func TestD133_CommandLifecycleOutcomes(t *testing.T) {
 			if r.OK != (mode == "ok") || (err == nil) != r.OK || r.Kind != "nft" || r.Phase != "install" {
 				t.Fatalf("%+v %v", r, err)
 			}
-			if !r.ContextDeadline.Before.Available || r.ContextDeadline.Before.NS > r.ContextDeadline.After.NS || !r.StartAttempt.Available || r.StartAttempt.NS > r.StartReturn.NS || r.Before.Bracket.After.NS > r.StartAttempt.NS || r.After.Bracket.Before.NS < r.StartReturn.NS {
+			if !r.ContextDeadline.Before.Available || r.ContextDeadline.Before.NS > r.ContextDeadline.After.NS || !r.StartAttempt.Available || r.StartAttempt.NS > r.StartReturn.NS {
 				t.Fatalf("invalid brackets: %+v", r)
 			}
 			if r.ChildStartExact.Available {
@@ -60,7 +62,7 @@ func TestD133_CommandLifecycleOutcomes(t *testing.T) {
 			if r.Started != started || r.CPUAvailable != started || r.ExitAvailable != started || r.WaitReturn.Available != started || r.ChildStartedBy.Available != started {
 				t.Fatalf("start failure/child exit confused: %+v", r)
 			}
-			if started && (r.ChildStartedBy.NS < r.StartAttempt.NS || r.WaitReturn.NS < r.ChildStartedBy.NS || r.After.Bracket.Before.NS < r.WaitReturn.NS) {
+			if started && (r.ChildStartedBy.NS < r.StartAttempt.NS || r.WaitReturn.NS < r.ChildStartedBy.NS) {
 				t.Fatalf("unordered child: %+v", r)
 			}
 			switch mode {
@@ -171,5 +173,46 @@ func TestD133_WallOnlyContextDeadlineUnavailable(t *testing.T) {
 	defer cancel()
 	if got := contextDeadline(ctx); got.Before.Available || got.After.Available {
 		t.Fatalf("wall-only timer deadline was invented: %+v", got)
+	}
+}
+
+func TestReviewR18_ResourceSampleAvailability(t *testing.T) {
+	t.Setenv("FVPN_TEST_COMMAND_HELPER", "ok")
+	for _, phase := range []string{"prepare", "shape", "install", "release", "verify", "rollback"} {
+		for _, canceled := range []bool{false, true} {
+			t.Run(fmt.Sprintf("%s/canceled=%t", phase, canceled), func(t *testing.T) {
+				ctx, cancel := context.WithCancel(t.Context())
+				defer cancel()
+				if canceled {
+					cancel()
+				}
+				var records []CommandLifecycle
+				ctx = commandPhase(beginCommandMeasurement(WithCommandLifecycleForTest(ctx), &records), phase)
+				err := runCommand(ctx, helperCommand(ctx), "nft")
+				if (err != nil) != canceled || len(records) != 1 {
+					t.Fatalf("run: %v records=%d", err, len(records))
+				}
+				want := ""
+				if canceled {
+					want = "context_canceled"
+				} else if phase == "install" {
+					want = "install_bound"
+				} else if runtime.GOOS != "linux" {
+					want = "unsupported_platform"
+				}
+				r := records[0]
+				for _, sample := range []CommandResources{r.Before, r.After} {
+					if sample.SkipReason != want || sample.Bracket.Before.Available != (want == "") || sample.Bracket.After.Available != (want == "") {
+						t.Fatalf("sample=%+v want skip=%q", sample, want)
+					}
+					if want != "" && (sample.CgroupV2Available || len(sample.Cgroups) != 0) {
+						t.Fatal("skipped sample fabricated resource data")
+					}
+				}
+				if want == "" && (r.Before.Bracket.After.NS > r.StartAttempt.NS || r.After.Bracket.Before.NS < r.WaitReturn.NS) {
+					t.Fatal("sample does not bracket command")
+				}
+			})
+		}
 	}
 }

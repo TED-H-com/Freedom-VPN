@@ -2,7 +2,12 @@
 
 package enforce
 
-import "os"
+import (
+	"context"
+	"os"
+)
 
 func commandProcessState(_ *os.ProcessState, _ *CommandLifecycle) {}
-func commandResources() CommandResources                          { return CommandResources{} }
+func commandResources(_ context.Context) CommandResources {
+	return CommandResources{SkipReason: "unsupported_platform"}
+}

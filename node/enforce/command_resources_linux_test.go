@@ -3,6 +3,8 @@
 package enforce
 
 import (
+	"context"
+	"fmt"
 	"os"
 	"strings"
 	"testing"
@@ -39,13 +41,43 @@ func TestD133_CgroupVisibilityAndMissingFields(t *testing.T) {
 		}
 		return []byte(s), nil
 	}
-	r := readCommandResources(read)
+	r := readCommandResources(t.Context(), read)
 	if !r.CgroupV2Available || !r.VisibleAncestorsComplete || r.HostAncestorsAvailable || len(r.Cgroups) != 3 || r.Cgroups[0].Max.Value != "max 100000" || r.Cgroups[1].Max.Value != "50000 100000" || r.Cgroups[0].Weight.Available || !r.Cgroups[2].Pressure.Available || r.Bracket.After.NS < r.Bracket.Before.NS {
 		t.Fatalf("missing vs hidden vs unlimited: %+v", r)
 	}
 	delete(files, "/sys/fs/cgroup/lab/leaf/cgroup.controllers")
-	r = readCommandResources(read)
+	r = readCommandResources(t.Context(), read)
 	if r.CgroupV2Available || r.VisibleAncestorsComplete || len(r.Cgroups) != 0 {
 		t.Fatal("invented cgroup on failed lookup")
+	}
+}
+
+func TestReviewR18_ResourceReadsStopOnCancellation(t *testing.T) {
+	for _, cancelAt := range []int{0, 1, 2, 3, 5} {
+		t.Run(fmt.Sprint(cancelAt), func(t *testing.T) {
+			ctx, cancel := context.WithCancel(t.Context())
+			defer cancel()
+			if cancelAt == 0 {
+				cancel()
+			}
+			reads := 0
+			r := readCommandResources(ctx, func(path string) ([]byte, error) {
+				reads++
+				if reads == cancelAt {
+					cancel()
+				}
+				switch path {
+				case "/proc/self/cgroup":
+					return []byte("0::/lab/leaf\n"), nil
+				case "/proc/self/mountinfo":
+					return []byte("20 19 0:1 / /sys/fs/cgroup rw - cgroup2 cgroup rw\n"), nil
+				default:
+					return []byte("100"), nil
+				}
+			})
+			if reads != cancelAt || r.SkipReason != "context_canceled" || r.Bracket.Before.Available || r.Bracket.After.Available || r.CgroupV2Available || len(r.Cgroups) != 0 {
+				t.Fatalf("canceled sample retained or reads continued: reads=%d sample=%+v", reads, r)
+			}
+		})
 	}
 }
