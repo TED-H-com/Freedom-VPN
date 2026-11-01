@@ -1,7 +1,27 @@
 # Operations Runbooks Index (`docs/ops/`)
 
-**Current cut — [follow-up 24](../handover/follow-up-24.md) (2026-11-01 EST):** Through #369: D-136 corrected; routed 1280 hop delivered; usage AT14–AT20 pass; members AT02 fails; AT04 fails on F13-01; graceful agent stop fixed. D-135 / D-136 / D-137 / D-138 remain provisional; historical failures stay failed.
-Previous cut: [follow-up 23](../handover/follow-up-23.md), through #362.
+**Current cut — [follow-up 25](../handover/follow-up-25.md) (2026-11-01 EST):** Through #373: F11-01 drop located; members F13-01 raw bytes kept; updates F13-01 exit unobserved; AT10 blocked on ISO-F6-01 assertion 6; r18 archived with five open findings. D-135 / D-136 / D-137 / D-138 stay provisional; historical failures stay failed. No new operator guidance.
+Previous cut: [follow-up 24](../handover/follow-up-24.md), through #369.
+
+## Follow-up 25 acceptance snapshot (2026-11-01 EST)
+
+Fixed main **9cd7a053**, through **#373**, all #370–#373. Nothing merged after
+the cutoff at task start. Agent-core 32, members 14 and devstack 25 are running;
+no results imported. [Full evidence and dated hand-offs](../handover/follow-up-25.md).
+No new operator guidance or live acceptance run by handover.
+
+| Lane | Delivery and remaining boundary |
+|---|---|
+| Devstack 24 (#370) | F11-01 located before IPv6 prerouting, Ip6InHdrErrors 0→1; loopback-source validation consistent, no drop tracepoint. Same request succeeds with one SYN; old IPv6 timeout not reproduced in four attempts; separate IPv4 d556673b timeout failed/unattributed. Members F13-01 raw bytes/parser error retained privately with public digest, cause unproven. NetBird 0.82.0 pinned; owner repair choice. |
+| Handover 24 (#371) | #363–#369 at 5bd75102; 21 subtests / 7 rows / 21 snapshots / 357 file checks. Historical cutoff stays frozen. |
+| Updates 13 (#372) | 44-file 2babf9b6 archive; 759d244a regular AT23–AT27 5 / 5, installer 27 / 27. Eleven successful stop commands, lease kept; AT23's first process exit unobserved (updates F13-01 → devstack 25, distinct from members F13-01). Startup port collision retained; configurable slot. |
+| Isolation 12 (#373) | 103-file edd986c4 archive; 1c25ee44 AT12 10 / 0 / 0 pass, AT10 8 / 1 / 0 blocked on ISO-F6-01 assertion 6: kernel denial held, no generation-30 report at central. Earlier #360 pass is history. AT11 / AT13 operator-blocked; per-Apply commands joined, producer stream lossless gzip. |
+| r18 review | Exact archive, five OPEN findings: M-1 / M-2 / M-3 / L-2 → agent-core 32; L-1 → netlab. TimeoutStopSec → installer and central stale-hold reading → wire-nodes, both after agent-core 32. What held is the review's statement, not acceptance. |
+
+No new decision since D-138; D-135 / D-136 (04:3x correction) / D-137 / D-138
+stay provisional. Owner decisions: D-135 + D-136 confirmation, D-137 hardening,
+D-138 overturn option and F11-01 repair direction. Every historical failure
+stays failed; every other open finding retains follow-up 24's status.
 
 ## Follow-up 24 acceptance snapshot (2026-11-01 EST)
 
