@@ -41,7 +41,7 @@ def main(run, private):
     central = json.loads((run/'central-record.json').read_text())
     cn = {k: json.loads(v) for k, v in notes(central).items() if k != 'producer_export_error'}
     result = dict(rows=[], receipts_verified=0, limitations=[])
-    if 'producer_receipt' in cn and cn['producer_receipt'].get('complete'):
+    if 'producer_receipt' in cn and cn['producer_receipt'].get('sha256'):
         verify_file(private/'producer.jsonl', cn['producer_receipt']); result['receipts_verified'] += 1
     debug_path = run/'native-debug-export.json'
     if debug_path.exists():
@@ -56,6 +56,10 @@ def main(run, private):
             continue
         doc=json.loads(path.read_text());n=notes(doc)
         row=dict(id=identity, status=doc['status'], measured='transfer' in n)
+        if 'tracer_verifier_replay' in n:
+            replay=json.loads(n['tracer_verifier_replay'])
+            verify_file(private/'traced-node-ruleset.raw',replay);result['receipts_verified']+=1
+            row['tracer_verifier_replay']=replay
         result['rows'].append(row)
         if 'capture' in n:
             cap=json.loads(n['capture'])

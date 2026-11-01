@@ -61,7 +61,10 @@ func (s *Stack) RestartNodeNamespace90(ctx context.Context, slot string, node uu
 		dns = s.lab.prefix + "-adguard"
 	}
 	ns := c + "-netns"
-	if err = exec.CommandContext(ctx, "docker", "stop", "--time", "25", c, dns, ns).Run(); err != nil {
+	if err = exec.CommandContext(ctx, "docker", "stop", "--time", "25", c).Run(); err != nil {
+		return out, err
+	}
+	if err = exec.CommandContext(ctx, "docker", "stop", "--time", "5", dns, ns).Run(); err != nil {
 		return out, err
 	}
 	out.Started = time.Now().UTC()
