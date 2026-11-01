@@ -77,6 +77,41 @@ def command(shape='success', phase='install', kind='nft', base=115):
 
 
 class CorrelationTests(unittest.TestCase):
+    def test_ISO_F6_01_candidate_acceptance_and_original_command_join(self):
+        from candidate_evidence import candidate_rejections
+        rows = failed_install()
+        rows[0]['timing'].update(candidate_generation='30', commands=[command(phase='prepare', kind='tc')])
+        error = dict(stage='apply_candidate', code='TC_FOREIGN_FILTER',
+                     message='candidate_generation=30 verified=false', observed_at='2026-10-31T00:00:00.000000001Z')
+        wire = [dict(path='/desired-state', status=200, response_at='2026-10-30T23:59:59.5Z',
+                     response=dict(signed=dict(config_generation='30'))),
+                dict(path='/observations', status=202, received_at='2026-10-31T00:00:00.2Z', response_at='2026-10-31T00:00:00.3Z',
+                     body=dict(report_id='report', observed_at='2026-10-31T00:00:00.1Z',
+                               applied_config_generation='29', member_forwarding_enabled=False, errors=[error]))]
+        def review(w=wire, r=rows):
+            return candidate_rejections(w, r, 29, '2026-10-30T23:59:59Z', '2026-10-31T00:00:01Z')
+        joined = review()
+        self.assertEqual(len(joined), 1)
+        self.assertEqual(joined[0]['attempt'], p.identity(rows[0]))
+        self.assertEqual(joined[0]['original_command_indices'], [0])
+        self.assertIn('verifier unavailable', joined[0]['evidence_kind'])
+        for mutate in (
+            lambda w: w[1].update(status=502),
+            lambda w: w[1].update(response_at='2026-10-31T00:00:02Z'),
+            lambda w: w[1]['body'].update(member_forwarding_enabled=True),
+            lambda w: w[1]['body']['errors'][0].update(message='candidate_generation=29 verified=false'),
+            lambda w: w[1]['body']['errors'][0].update(message='candidate_generation=30 verified=true'),
+            lambda w: w[1]['body']['errors'][0].update(code='HEALTH_CHECK_FAILED'),
+            lambda w: w[1]['body']['errors'][0].update(observed_at='2026-10-30T23:59:59.9Z'),
+            lambda w: w[0]['response']['signed'].update(config_generation='29'),
+        ):
+            bad=copy.deepcopy(wire); mutate(bad)
+            self.assertEqual(review(w=bad), [])
+        bad=copy.deepcopy(rows); bad[0]['timing']['commands']=[]
+        self.assertEqual(review(r=bad), [])
+        bad=copy.deepcopy(rows); bad[0]['timing']['verified']=True
+        self.assertEqual(review(r=bad), [])
+
     def test_D136_baseline_to_apply_requires_later_recovery_and_counts_losses(self):
         baseline = dict(run_id='run', boot_id='boot', sequence='1', source='baseline',
             baseline=dict(cause='policy_missing', start_ns='80', end_ns='90', succeeded=True),
