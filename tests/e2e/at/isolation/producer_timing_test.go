@@ -291,3 +291,11 @@ func TestAT13_Core34ReservationTimeline(t *testing.T) {
 	}
 	t.Log(string(out))
 }
+
+func TestAT13_D102PopulatedHoldRetention(t *testing.T) {
+	out, err := exec.Command("python3", "-B", "-m", "unittest", "-v", "populated_holds_test.py").CombinedOutput()
+	if err != nil {
+		t.Fatalf("populated hold joins: %v\n%s", err, out)
+	}
+	t.Log(string(out))
+}

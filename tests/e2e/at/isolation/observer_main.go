@@ -44,7 +44,7 @@ func observeProxy() {
 	}
 	cert, e := tls.LoadX509KeyPair("/var/lib/vpn-node/identity/cert.pem", "/var/lib/vpn-node/identity/key.pem")
 	must(e)
-	target, _ := url.Parse("https://agent.example.invalid:9443")
+	target, _ := url.Parse("https://127.0.0.1:9444")
 	proxy := httputil.NewSingleHostReverseProxy(target)
 	proxy.Transport = &http.Transport{TLSClientConfig: &tls.Config{MinVersion: tls.VersionTLS12, RootCAs: roots("/etc/vpn-node/ca.pem"), Certificates: []tls.Certificate{cert}}, ResponseHeaderTimeout: 15 * time.Second}
 	file, e := os.OpenFile("/var/lib/vpn-node/e2e/isolation-observations.jsonl", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0600)
@@ -91,7 +91,7 @@ func observeProxy() {
 		queue = append(queue, row)
 		mu.Unlock()
 	})
-	srv := &http.Server{Addr: "127.0.0.1:9444", Handler: handler, ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 30 * time.Second, WriteTimeout: 30 * time.Second, TLSConfig: &tls.Config{MinVersion: tls.VersionTLS12, ClientCAs: roots("/etc/vpn-node/agent-ca.pem"), ClientAuth: tls.RequireAndVerifyClientCert}}
+	srv := &http.Server{Addr: "127.0.0.1:9445", Handler: handler, ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 30 * time.Second, WriteTimeout: 30 * time.Second, TLSConfig: &tls.Config{MinVersion: tls.VersionTLS12, ClientCAs: roots("/etc/vpn-node/agent-ca.pem"), ClientAuth: tls.RequireAndVerifyClientCert}}
 	must(srv.ListenAndServeTLS("/etc/vpn-node/fault-proxy.crt", "/etc/vpn-node/fault-proxy.key"))
 }
 
@@ -120,6 +120,8 @@ func configureObservation() {
 		cfg[k] = 1
 	}
 	// Agent-core 27's opt-in, detached producer timing; no product wire change.
+	// Observe downstream of the unchanged devstack proxy, including its hold seam.
+	cfg["control_url"] = "https://127.0.0.1:9445"
 	cfg["test_timing_path"] = "/var/lib/vpn-node/e2e/isolation-operations.jsonl"
 	if cfg["test_mode"] != true {
 		panic("producer timing requires the existing TEST ONLY node")
@@ -279,11 +281,17 @@ func deadlineProbes() {
 				// Round upward to 0.1ms; actual noninterleaving still needs capture.
 				spacing := ((max(int64(500000), (hi-lo)+2*maxTransit+100000) + 99999) / 100000) * 100000
 				margin := hi - lo + 3*spacing
-				first, last := deadline-101000000-margin, deadline+100000000+margin
+				// Anchor the added grid at D-100ms; original cadence exclusion still wins.
+				anchor := deadline - 100000000
+				first := anchor - ((margin+1000000+spacing-1)/spacing)*spacing
+				last := deadline + 100000000 + margin
 				plan["qualified"] = true
 				plan["latency_min_ns"], plan["latency_median_ns"], plan["latency_max_ns"] = fmt.Sprint(lo), fmt.Sprint(median), fmt.Sprint(hi)
 				plan["latency_spread_ns"], plan["max_transit_ns"], plan["spacing_ns"] = fmt.Sprint(hi-lo), fmt.Sprint(maxTransit), fmt.Sprint(spacing)
 				plan["predicted_first_ingress_ns"], plan["predicted_last_ingress_ns"] = fmt.Sprint(first), fmt.Sprint(last)
+				plan["grid_anchor_offset_ns"] = "-100000000"
+				plan["decision_tradeoff"] = "one whole-node boundary; spacing protects observed-range separation but cannot guarantee a sample in a roughly 3ms positive window; original D-101ms send remains; every attempt counts"
+				plan["original_boundary_predicted_ingress_offset_ns"] = fmt.Sprint(-101000000 + median)
 				plan["spacing_reason"] = "max(0.5ms, measured latency spread + twice measured maximum transit + 0.1ms), rounded up to 0.1ms; avoid existing cadence sends within one spacing; verify actual ingress/egress order"
 				var added []string
 				for predicted := first; predicted <= last; predicted += spacing {

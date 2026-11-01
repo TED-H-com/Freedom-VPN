@@ -1,24 +1,75 @@
-# Isolation run procedure — Follow-up 15
+# Isolation run procedure — Follow-up 16
 
-Product baseline **`aa7f306c008d8021b3921d083b70e19db7c8f865`**, including
-isolation 14 (#383), devstack 26 (#386), handover 27 (#387) and agent-core 34 (#388).
-Runtime consumer **`9031ebd4`**. `go env GOCACHE` returned
-**`/data/ted-h-cache/go-build`**; no cache path is hard-coded in commands.
-Offline consumer changes after runtime compilation are separate from the measured binaries.
+Product baseline **`9efe9773e67d35839649e9f21e1c3a9b680633b2`**, including #392
+and devstack 27 (#394). `go env GOCACHE` returned **`/data/ted-h-cache/go-build`**.
+Commands query the cache; none hard-codes it. The measured consumer commit and
+run outcome will be recorded in [summary.md](summary.md).
 
-D-098 first commit **`877ea4e3`** copied all **117** run-56d20530 root files,
-including subtrees, byte-identically to
-[follow-up 14](history/follow-up-14/archive.json). Every byte was compared with
-the baseline Git blob; all compressed/decompressed forms have SHA-256 pins.
-Earlier archives, including `history/follow-up-14-stream/`, are untouched.
-Handover claims already read immutable snapshots; living-root strings are
-rejection inputs. No D-132 one-file exception edit was needed.
+D-098 first commit **`3005c383`** copied all **123** root files and subtrees of
+run 0b9e4510 byte-identically to [follow-up 15](history/follow-up-15/archive.json).
+All files were compared to baseline Git blobs; gzip pins include both forms.
+Follow-up-15-stream and every earlier archive stay unchanged. Handover claims
+already read immutable archives; its living-root strings are rejection inputs.
+No D-132 exception edit is required. Existing files remain accessible until
+fresh replacements are published; historical links use immutable snapshots.
 
-Run from the worktree root, in the foreground:
+## Predeclared D-140 decision
+
+Exactly **one whole-node sweep** in one assembled run. The existing driver
+has one whole-node expiry boundary; the separate finite-member expiry is not
+another whole-node boundary. Repeating the lifecycle to phase another sweep
+would extend the change beyond the boundary schedule. No retries and no merged
+traces. `EvaluateDeadline`, its tests, `phased` and `arbitrary_37ms` are unchanged.
+
+Calibrate from this run's original cadence, copy passive capture at D−3 s,
+and plan at D−1 s. Use at least 20 samples and
+`ceil_0.1ms(max(0.5ms, spread + 2*max_transit + 0.1ms))`. Record all inputs,
+scheduled and actual sends, ingress and egress. Anchor the added grid at D−100 ms,
+extend it beyond [D−101 ms,D+100 ms] by spread plus three spacings, and omit
+added sends within one spacing of either unchanged original cadence.
+
+**The trade-off is declared before running:** one sweep cannot guarantee both
+noninterleaving and a deciding probe in the roughly 3 ms historical positive
+window. Prior calibration would choose 4.3 ms; a grid that coarse can miss it.
+The unchanged D−101 ms original send predicts ingress at D−101 ms plus this
+run's median latency. It can land in the window if latency and closure permit,
+but neither prediction nor historical closure is a guarantee. The added anchor
+can also be omitted by the original-cadence exclusion. Qualification checks
+actual ingress→egress ordering; the unchanged evaluator decides the result.
+A qualified trace missing the requisite positive **fails**, even if lack of
+resolution is plausible. Run 56d20530 isolation F14-01 and run 0b9e4510's
+3.821 µs interleaving stay failed; all losses and attempts remain counted.
+
+Only member sends and passive packet captures observe this boundary. No node
+ruleset observer is added. Existing passive netlink receipts are supplemental.
+
+## Populated incidents
+
+Before any member revocation, require a latest accepted serving report joined
+to its matching desired/applied/signed generation, at least two leased members,
+and more than 50 seconds remaining on the unchanged 60-second TEST ONLY lease.
+Use devstack 27's `ArmMatchingLeaseHold` once per incident, each a new UUID and
+a 45-second TEST ONLY bound, followed by a genuine ETag/idempotent capacity PATCH.
+No signed body or report is synthesized, edited or replayed. The existing owned
+observer now forwards to the **unchanged shared proxy**, so that implementation
+owns withholding/release; observation stays downstream of the seam.
+
+First incident: retain alarm and single escalation, independent packet denial,
+temporarily move the node container's conntrack executable to cause an unrelated
+failure, restore it, then supervise an agent-only stop/start while the proxy
+remains armed. Read all incident snapshots and local counters. Release before
+the bound when possible, join the fresh forwarded lease to the local digest and
+accepted matching report, and separately prove counted serving recovery.
+Only after recovery, arm a second capacity transition and join its distinct
+incident, alarm, escalation and matching recovery. A missing row remains
+**not exercised**. These explicit attempts supplement the earlier single
+opportunistic control-cut row; they do not replace or retry it.
+
+## Foreground commands and host admission
 
 ```sh
 make -f mk/at-isolation.mk at-isolation-lint at-isolation-test at-isolation-build
-vmstat 5 7
+python3 -B tests/e2e/at/isolation/host_preflight.py
 pgrep -af 'gates.sh|mk/at-'
 go env GOCACHE
 make -f mk/at-isolation.mk at-isolation
@@ -27,6 +78,7 @@ python3 -B tests/e2e/at/isolation/review_policy_missing.py docs/e2e/at/isolation
 python3 -B tests/e2e/at/isolation/review_reservations.py docs/e2e/at/isolation
 python3 -B tests/e2e/at/isolation/review_core32.py docs/e2e/at/isolation
 python3 -B tests/e2e/at/isolation/review_holds.py docs/e2e/at/isolation
+python3 -B tests/e2e/at/isolation/review_populated_holds.py docs/e2e/at/isolation
 python3 -B tests/e2e/at/isolation/review_commands.py docs/e2e/at/isolation
 python3 -B tests/e2e/at/isolation/review_stops.py docs/e2e/at/isolation
 python3 tests/e2e/at/isolation/run.py go test -count=1 ./tests/handover/...
@@ -36,104 +88,18 @@ git diff --check
 python3 tests/e2e/at/isolation/run.py go test -count=1 -v -run '^TestCommittedEvidenceFiles_ValidAndHygieneClean$' ./tests/e2e/at/isolation
 ```
 
-`run.py` provides disk TMPDIR/GOTMPDIR under `.agent/tmp`, explicit teardown
-without shell cleanup traps, and suite-tree admission before each stack and
-after startup. It waits while two other suite trees are active. The root lint
-override removes only its temporary-directory shell trap; the same gofmt, vet
-and pinned staticcheck gates run. Only `fvpn-w4-isolation-*` objects are owned;
-teardown must leave containers, images, networks and volumes at zero.
+The preflight records `vmstat 5 7`, load averages and suite inventory, repeating
+for up to 30 minutes until all six current rows have r≤3 and id≥80; the first
+since-boot row is ignored. At the limit, run and disclose the host state. This
+is context, never a pass criterion. Private process commands stay in `.agent`;
+public evidence records PIDs and suite kinds without private paths.
 
-[Preflight](host-preflight.json) retains all seven `vmstat 5 7` rows and load
-averages. The six interval rows have r=0–4 and id=83–90%; **not quiet** because
-two rows have r=4. The first, since-boot row has id=79%. Host state is context,
-not a criterion or an explanation for a failure. Exact process output remains
-private; public process entries retain only PID and suite kind.
-
-## D-140: measure first, add a boundary schedule
-
-`EvaluateDeadline` and its tests remain byte-identical. It requires a positive
-leaving at or after D−101 ms, no positive after the first drop, and first drop
-by D+100 ms; egress at/after D also fails. A straddling closure interval remains
-failed. Historical **isolation F14-01** in run 56d20530 remains failed and is
-distinct from **members F14-01**. No attempt or loss is waived.
-
-The original `phased` and `arbitrary_37ms` sends are unchanged. At D−3 s the
-driver copies the existing passive node packet capture to the member. At D−1 s,
-`deadlineProbes` joins that capture to its own completed original-cadence sends.
-It records every calibration sample and the minimum, median, maximum and spread
-of member-send → ingress capture-read latency. At least 20 samples are required.
-
-Added probes use median latency to predict ingress. Predicted ingress spans
-D−101 ms minus the latency spread and three spacings, through D+100 ms plus
-that margin. The measured binary used max(0.5 ms, twice the largest measured ingress→egress
-transit plus 0.1 ms), rounded upward to 0.1 ms. That selected 0.6 ms and
-produced one interleaving, so this attempt is not D-140 qualified. The final
-source adds the measured latency spread to the spacing expression; it would
-select 4.3 ms from this calibration. This correction was made after the run
-and has no assembled qualification yet. The sample remains unchanged. Added sends within one spacing
-of an original scheduled send are omitted; original sends never move. A short
-member-side scheduling spin avoids timer coalescing for added probes only.
-Actual scheduled/send/ingress/egress times and every transit are retained;
-[qualification](boundary-review.json) checks actual ordering and reports any
-positive whose egress interleaves the next ingress. Prediction is not proof.
-The unchanged Go evaluator alone supplies the packet verdict. The final runner
-also runs the independent schedule qualifier; its nonzero exit retains an
-interleaving failure without editing that verdict. This wiring was added after
-the measured run. The sole attempt’s offline qualifier exits 1.
-
-Observation uses member sends and passive AF_PACKET captures. The existing
-read-only `nft monitor` receipts may accompany producer evidence but never
-replace packet evidence. No node nft table/rule or `nftrace` statement is added.
-Devstack 26 established that a foreign tracer can itself close the node under
-the unchanged verifier; this observer leaves the ruleset unchanged.
-
-## D-102 stops and core 34 reservation
-
-Before the original whole-container restart and clone-source stop, retain
-launch ID, PID and `/proc` start ticks. The ordinary stop explicitly gives the
-container 25 seconds; devstack's clone wrapper also gives 25 seconds. The
-supervisor's agent budget and direct pidfd sampler use **15 seconds**.
-
-After the whole-container stop, use `docker cp` for the matching
-`agent-exits/<id>.json` before restart. The clone source uses the same receipt
-copy after its original fixture stop/start. The direct sampler reads the
-parent receipt after the service stop. Each checks all three identity fields.
-The parent's exit code/signal is the agent result; container exit records only
-PID1 handler completion. `.sigkill.json` records attempted escalation, never
-its outcome. Historical 10.087 s and 20.153 s exit-137 rows remain as recorded.
-Step cancellation time is not exported and is not inferred.
-
-[Reservation timelines](pre-apply-reservation-review.json) read
-`host.before_apply.end_ns` → `timing.start_ns` for every Apply, including failed
-Applies. For Steps with original conntrack revoke commands, this bracket contains
-the durable reservation plus small common setup before the restricting install.
-Receipt-to-revocation and baseline-to-recovery retain that elapsed time, outside
-the guard percentiles. Desired response completion is a proxy delivery receipt,
-not an exact node parse timestamp; producer wall/monotonic anchor bounds are
-preserved. A pure renewal/expiry Step with no queued deletes adds no reservation.
-A failed preparation without delete commands cannot prove the queue was empty.
-
-## Retained rows and limits
-
-D-087 uses the exported seam, fixed generation and pre-enrollment 60-second
-TEST ONLY fleet setting. ISO-F6-01 keeps its 90-second readiness budget, twelve
-samples at 500 ms and all six assertions. AT10–AT13 retain all previous normal
-and failure paths. AT11's native platform matrix and AT13's full fault matrix
-remain carried operator rows, including physical arm64 and kernel reboot.
-
-The renewal diagnostic retains every loss, including run 56d20530's packets
-15–18 outside guards in the 30→31 baseline bracket. D-120's bounded allowance
-applies only to its separate mechanism stream. Completed guards are the next
-independent distribution sample; no historical ceiling or A/B attribution is
-invented. All original per-Apply command indices and failed commands remain.
-
-Every accepted stale-lease hold is joined to wire-nodes 34's central report,
-lease, sample and incident; poll-time desired state is separate from delivered
-desired state. Populated hold: **not exercised — devstack 27's fixture pending**.
-No alarm, escalation, active-stop retention or populated packet proof is inferred.
-The previously authorized single existing-seam attempt remains retained; it is
-not the pending populated-hold fixture.
-
-Large JSON/JSONL is published losslessly as gzip, with both-form hashes only
-at immutable `history/` paths. Offline consumers accept either form. Markdown
-links remain navigable, and historical archives are not recompressed.
+`run.py` supplies disk TMPDIR/GOTMPDIR under `.agent/tmp`, waits while two other
+suite trees are active, and rechecks after each stack startup. It reports the
+wait. No shell cleanup trap. Root lint overrides only its trap wrapper, retaining
+the same formatting/vet/pinned-staticcheck commands. Docker names stay under
+`fvpn-w4-isolation-*`; teardown requires containers/images/networks/volumes zero.
+Stop receipts retain actual agent exit/signal and separate PID1 outcomes.
+AT11 native platforms and AT13's full fault matrix remain carried operator rows.
+Large JSON is published as lossless gzip with both-form SHA-256 pins only at
+immutable history paths. Older archives are never rewritten.
