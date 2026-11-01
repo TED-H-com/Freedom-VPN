@@ -1,0 +1,432 @@
+{
+  "run_id": "4182dd3d-7f1f-453e-8c1f-265d097c3abc",
+  "source_commit": "d49b535adf831b6823cd05bb47495437fbf6ee63",
+  "historical_failure": "history/follow-up-12/F12-03-negative-cache.json stays failed; 2-second SOA TTL and 1.228672687-second refetch unchanged",
+  "setup": "Six-second quiet interval after RR matrix; no cache flush, setting change, repeated negative prime, or shared fixture edit",
+  "quiet_window": {
+    "available": true,
+    "earliest_expiry": "2026-11-01T08:45:00.800586255Z",
+    "precision_reserve_seconds": 1,
+    "quiet_end": "2026-11-01T08:44:56.575650871Z",
+    "quiet_start": "2026-11-01T08:44:50.571374362Z",
+    "receipt_at": "2026-11-01T08:44:56.800586255Z",
+    "remaining_soa_ttl_seconds": 5
+  },
+  "within_precision_window": true,
+  "initial_negative": {
+    "authority_serial": 0,
+    "dns_trace": {
+      "trace_streams": {
+        "authority": [
+          "7c4e9334-a745-49cc-92fb-ed7333fb60bb"
+        ],
+        "primary": [
+          "6c56f624-d8d7-4a80-a267-01ba0a904792"
+        ]
+      },
+      "started": "2026-11-01T08:44:56.760507625Z",
+      "completed": "2026-11-01T08:44:56.800586255Z",
+      "responder": "primary",
+      "cache_state": "unknown",
+      "trace_complete": true,
+      "resolver_events": [
+        {
+          "request_id": "bfd6e02b-01e6-4e98-a371-290330ea9ab1",
+          "stream_id": "6c56f624-d8d7-4a80-a267-01ba0a904792",
+          "sequence": "66",
+          "phase": "completed",
+          "started": "2026-11-01T08:44:56.796969663Z",
+          "completed": "2026-11-01T08:44:56.79768933Z",
+          "role": "primary",
+          "source_role": "native",
+          "fixture_case": "absent",
+          "rr_type": 1,
+          "protocol": "udp",
+          "rcode": 3,
+          "ttls": [],
+          "address_classes": [],
+          "authority_serial": 1001,
+          "success": true
+        }
+      ],
+      "authority_events": [
+        {
+          "request_id": "ba138fd3-e3e3-4cf4-b8be-e8846ecf974c",
+          "stream_id": "7c4e9334-a745-49cc-92fb-ed7333fb60bb",
+          "sequence": "106",
+          "phase": "completed",
+          "started": "2026-11-01T08:44:47.361983764Z",
+          "completed": "2026-11-01T08:44:47.362212546Z",
+          "role": "authority",
+          "source_role": "primary",
+          "fixture_case": "absent",
+          "rr_type": 1,
+          "protocol": "udp",
+          "rcode": 3,
+          "ttls": [],
+          "address_classes": [],
+          "authority_serial": 1001,
+          "success": true
+        },
+        {
+          "request_id": "0a3a7d97-4761-42f8-92ec-bc24f52e7887",
+          "stream_id": "7c4e9334-a745-49cc-92fb-ed7333fb60bb",
+          "sequence": "118",
+          "phase": "completed",
+          "started": "2026-11-01T08:44:56.797358983Z",
+          "completed": "2026-11-01T08:44:56.797557858Z",
+          "role": "authority",
+          "source_role": "primary",
+          "fixture_case": "absent",
+          "rr_type": 1,
+          "protocol": "udp",
+          "rcode": 3,
+          "ttls": [],
+          "address_classes": [],
+          "authority_serial": 1001,
+          "success": true
+        }
+      ],
+      "authority_history": [
+        {
+          "start": {
+            "request_id": "ba138fd3-e3e3-4cf4-b8be-e8846ecf974c",
+            "stream_id": "7c4e9334-a745-49cc-92fb-ed7333fb60bb",
+            "sequence": "105",
+            "phase": "started",
+            "started": "2026-11-01T08:44:47.361983764Z",
+            "completed": "0001-01-01T00:00:00Z",
+            "role": "authority",
+            "source_role": "primary",
+            "fixture_case": "absent",
+            "rr_type": 1,
+            "protocol": "udp",
+            "rcode": -1,
+            "ttls": [],
+            "address_classes": [],
+            "authority_serial": 0,
+            "success": false
+          },
+          "completion": {
+            "request_id": "ba138fd3-e3e3-4cf4-b8be-e8846ecf974c",
+            "stream_id": "7c4e9334-a745-49cc-92fb-ed7333fb60bb",
+            "sequence": "106",
+            "phase": "completed",
+            "started": "2026-11-01T08:44:47.361983764Z",
+            "completed": "2026-11-01T08:44:47.362212546Z",
+            "role": "authority",
+            "source_role": "primary",
+            "fixture_case": "absent",
+            "rr_type": 1,
+            "protocol": "udp",
+            "rcode": 3,
+            "ttls": [],
+            "address_classes": [],
+            "authority_serial": 1001,
+            "success": true
+          }
+        },
+        {
+          "start": {
+            "request_id": "0a3a7d97-4761-42f8-92ec-bc24f52e7887",
+            "stream_id": "7c4e9334-a745-49cc-92fb-ed7333fb60bb",
+            "sequence": "117",
+            "phase": "started",
+            "started": "2026-11-01T08:44:56.797358983Z",
+            "completed": "0001-01-01T00:00:00Z",
+            "role": "authority",
+            "source_role": "primary",
+            "fixture_case": "absent",
+            "rr_type": 1,
+            "protocol": "udp",
+            "rcode": -1,
+            "ttls": [],
+            "address_classes": [],
+            "authority_serial": 0,
+            "success": false
+          },
+          "completion": {
+            "request_id": "0a3a7d97-4761-42f8-92ec-bc24f52e7887",
+            "stream_id": "7c4e9334-a745-49cc-92fb-ed7333fb60bb",
+            "sequence": "118",
+            "phase": "completed",
+            "started": "2026-11-01T08:44:56.797358983Z",
+            "completed": "2026-11-01T08:44:56.797557858Z",
+            "role": "authority",
+            "source_role": "primary",
+            "fixture_case": "absent",
+            "rr_type": 1,
+            "protocol": "udp",
+            "rcode": 3,
+            "ttls": [],
+            "address_classes": [],
+            "authority_serial": 1001,
+            "success": true
+          }
+        }
+      ],
+      "authority_outstanding_at_query_start": [],
+      "authority_outstanding_at_query_completion": [],
+      "authority_outstanding_at_trace_read": [],
+      "trace_read_at": {
+        "authority": "2026-11-01T08:44:56.91183685Z",
+        "primary": "2026-11-01T08:44:56.840654724Z",
+        "secondary": "2026-11-01T08:44:56.879344195Z"
+      },
+      "authority_serial_after_query": 1001,
+      "authority_read_at": "2026-11-01T08:44:56.933300483Z",
+      "answer_ttl_remaining": []
+    },
+    "authority_ttl": 5,
+    "has_soa": true,
+    "available": true,
+    "rcode": 3,
+    "types": [],
+    "ttls": [],
+    "address_classes": [],
+    "expected_answer": false,
+    "connected": false,
+    "bytes": 0,
+    "milliseconds": 1
+  },
+  "before_ttl_negative": {
+    "authority_serial": 0,
+    "dns_trace": {
+      "trace_streams": {
+        "authority": [
+          "7c4e9334-a745-49cc-92fb-ed7333fb60bb"
+        ],
+        "primary": [
+          "6c56f624-d8d7-4a80-a267-01ba0a904792"
+        ]
+      },
+      "started": "2026-11-01T08:44:57.980533164Z",
+      "completed": "2026-11-01T08:44:58.022547909Z",
+      "responder": "primary",
+      "cache_state": "unknown",
+      "trace_complete": true,
+      "resolver_events": [
+        {
+          "request_id": "0918f366-5305-4fb2-8e7b-0e300215a029",
+          "stream_id": "6c56f624-d8d7-4a80-a267-01ba0a904792",
+          "sequence": "68",
+          "phase": "completed",
+          "started": "2026-11-01T08:44:58.01889971Z",
+          "completed": "2026-11-01T08:44:58.019363783Z",
+          "role": "primary",
+          "source_role": "native",
+          "fixture_case": "absent",
+          "rr_type": 1,
+          "protocol": "udp",
+          "rcode": 3,
+          "ttls": [],
+          "address_classes": [],
+          "authority_serial": 1001,
+          "success": true
+        }
+      ],
+      "authority_events": [
+        {
+          "request_id": "ba138fd3-e3e3-4cf4-b8be-e8846ecf974c",
+          "stream_id": "7c4e9334-a745-49cc-92fb-ed7333fb60bb",
+          "sequence": "106",
+          "phase": "completed",
+          "started": "2026-11-01T08:44:47.361983764Z",
+          "completed": "2026-11-01T08:44:47.362212546Z",
+          "role": "authority",
+          "source_role": "primary",
+          "fixture_case": "absent",
+          "rr_type": 1,
+          "protocol": "udp",
+          "rcode": 3,
+          "ttls": [],
+          "address_classes": [],
+          "authority_serial": 1001,
+          "success": true
+        },
+        {
+          "request_id": "0a3a7d97-4761-42f8-92ec-bc24f52e7887",
+          "stream_id": "7c4e9334-a745-49cc-92fb-ed7333fb60bb",
+          "sequence": "118",
+          "phase": "completed",
+          "started": "2026-11-01T08:44:56.797358983Z",
+          "completed": "2026-11-01T08:44:56.797557858Z",
+          "role": "authority",
+          "source_role": "primary",
+          "fixture_case": "absent",
+          "rr_type": 1,
+          "protocol": "udp",
+          "rcode": 3,
+          "ttls": [],
+          "address_classes": [],
+          "authority_serial": 1001,
+          "success": true
+        }
+      ],
+      "authority_history": [
+        {
+          "start": {
+            "request_id": "ba138fd3-e3e3-4cf4-b8be-e8846ecf974c",
+            "stream_id": "7c4e9334-a745-49cc-92fb-ed7333fb60bb",
+            "sequence": "105",
+            "phase": "started",
+            "started": "2026-11-01T08:44:47.361983764Z",
+            "completed": "0001-01-01T00:00:00Z",
+            "role": "authority",
+            "source_role": "primary",
+            "fixture_case": "absent",
+            "rr_type": 1,
+            "protocol": "udp",
+            "rcode": -1,
+            "ttls": [],
+            "address_classes": [],
+            "authority_serial": 0,
+            "success": false
+          },
+          "completion": {
+            "request_id": "ba138fd3-e3e3-4cf4-b8be-e8846ecf974c",
+            "stream_id": "7c4e9334-a745-49cc-92fb-ed7333fb60bb",
+            "sequence": "106",
+            "phase": "completed",
+            "started": "2026-11-01T08:44:47.361983764Z",
+            "completed": "2026-11-01T08:44:47.362212546Z",
+            "role": "authority",
+            "source_role": "primary",
+            "fixture_case": "absent",
+            "rr_type": 1,
+            "protocol": "udp",
+            "rcode": 3,
+            "ttls": [],
+            "address_classes": [],
+            "authority_serial": 1001,
+            "success": true
+          }
+        },
+        {
+          "start": {
+            "request_id": "0a3a7d97-4761-42f8-92ec-bc24f52e7887",
+            "stream_id": "7c4e9334-a745-49cc-92fb-ed7333fb60bb",
+            "sequence": "117",
+            "phase": "started",
+            "started": "2026-11-01T08:44:56.797358983Z",
+            "completed": "0001-01-01T00:00:00Z",
+            "role": "authority",
+            "source_role": "primary",
+            "fixture_case": "absent",
+            "rr_type": 1,
+            "protocol": "udp",
+            "rcode": -1,
+            "ttls": [],
+            "address_classes": [],
+            "authority_serial": 0,
+            "success": false
+          },
+          "completion": {
+            "request_id": "0a3a7d97-4761-42f8-92ec-bc24f52e7887",
+            "stream_id": "7c4e9334-a745-49cc-92fb-ed7333fb60bb",
+            "sequence": "118",
+            "phase": "completed",
+            "started": "2026-11-01T08:44:56.797358983Z",
+            "completed": "2026-11-01T08:44:56.797557858Z",
+            "role": "authority",
+            "source_role": "primary",
+            "fixture_case": "absent",
+            "rr_type": 1,
+            "protocol": "udp",
+            "rcode": 3,
+            "ttls": [],
+            "address_classes": [],
+            "authority_serial": 1001,
+            "success": true
+          }
+        }
+      ],
+      "authority_outstanding_at_query_start": [],
+      "authority_outstanding_at_query_completion": [],
+      "authority_outstanding_at_trace_read": [],
+      "trace_read_at": {
+        "authority": "2026-11-01T08:44:58.140866933Z",
+        "primary": "2026-11-01T08:44:58.062066267Z",
+        "secondary": "2026-11-01T08:44:58.101351154Z"
+      },
+      "authority_serial_after_query": 1002,
+      "authority_read_at": "2026-11-01T08:44:58.163652427Z",
+      "answer_ttl_remaining": []
+    },
+    "authority_ttl": 3,
+    "has_soa": true,
+    "available": true,
+    "rcode": 3,
+    "types": [],
+    "ttls": [],
+    "address_classes": [],
+    "expected_answer": false,
+    "connected": false,
+    "bytes": 0,
+    "milliseconds": 1
+  },
+  "negative_attribution": {
+    "assertion_scope": "same uniquely matched resolver",
+    "cause_status": "unproven",
+    "classification": "negative response without new authority fetch; cache state remains unknown (local synthesis is separate)",
+    "contract": "docs/dns/BACKEND.md \u00a72.1.5: F9-HIT / F9-OTHER / F9-ROUND / F9-INFLIGHT",
+    "earliest_whole_second_expiry": "2026-11-01T08:45:00.800586255Z",
+    "elapsed_query_completion_ms": 1221,
+    "fallback": "not established",
+    "fetch_in_next_query": false,
+    "initial_responder": "primary",
+    "next_responder": "primary",
+    "older_outstanding_completions": [],
+    "subsecond_expiry_possible": false
+  },
+  "original_checks": [
+    {
+      "name": "cache initial",
+      "status": "pass",
+      "expected": "positive TTL <=10, negative SOA TTL <=5",
+      "actual": "{\"negative\":{\"authority_serial\":0,\"dns_trace\":{\"trace_streams\":{\"authority\":[\"7c4e9334-a745-49cc-92fb-ed7333fb60bb\"],\"primary\":[\"6c56f624-d8d7-4a80-a267-01ba0a904792\"]},\"started\":\"2026-11-01T08:44:56.760507625Z\",\"completed\":\"2026-11-01T08:44:56.800586255Z\",\"responder\":\"primary\",\"cache_state\":\"unknown\",\"trace_complete\":true,\"resolver_events\":[{\"request_id\":\"bfd6e02b-01e6-4e98-a371-290330ea9ab1\",\"stream_id\":\"6c56f624-d8d7-4a80-a267-01ba0a904792\",\"sequence\":\"66\",\"phase\":\"completed\",\"started\":\"2026-11-01T08:44:56.796969663Z\",\"completed\":\"2026-11-01T08:44:56.79768933Z\",\"role\":\"primary\",\"source_role\":\"native\",\"fixture_case\":\"absent\",\"rr_type\":1,\"protocol\":\"udp\",\"rcode\":3,\"ttls\":[],\"address_classes\":[],\"authority_serial\":1001,\"success\":true}],\"authority_events\":[{\"request_id\":\"ba138fd3-e3e3-4cf4-b8be-e8846ecf974c\",\"stream_id\":\"7c4e9334-a745-49cc-92fb-ed7333fb60bb\",\"sequence\":\"106\",\"phase\":\"completed\",\"started\":\"2026-11-01T08:44:47.361983764Z\",\"completed\":\"2026-11-01T08:44:47.362212546Z\",\"role\":\"authority\",\"source_role\":\"primary\",\"fixture_case\":\"absent\",\"rr_type\":1,\"protocol\":\"udp\",\"rcode\":3,\"ttls\":[],\"address_classes\":[],\"authority_serial\":1001,\"success\":true},{\"request_id\":\"0a3a7d97-4761-42f8-92ec-bc24f52e7887\",\"stream_id\":\"7c4e9334-a745-49cc-92fb-ed7333fb60bb\",\"sequence\":\"118\",\"phase\":\"completed\",\"started\":\"2026-11-01T08:44:56.797358983Z\",\"completed\":\"2026-11-01T08:44:56.797557858Z\",\"role\":\"authority\",\"source_role\":\"primary\",\"fixture_case\":\"absent\",\"rr_type\":1,\"protocol\":\"udp\",\"rcode\":3,\"ttls\":[],\"address_classes\":[],\"authority_serial\":1001,\"success\":true}],\"authority_history\":[{\"start\":{\"request_id\":\"ba138fd3-e3e3-4cf4-b8be-e8846ecf974c\",\"stream_id\":\"7c4e9334-a745-49cc-92fb-ed7333fb60bb\",\"sequence\":\"105\",\"phase\":\"started\",\"started\":\"2026-11-01T08:44:47.361983764Z\",\"completed\":\"0001-01-01T00:00:00Z\",\"role\":\"authority\",\"source_role\":\"primary\",\"fixture_case\":\"absent\",\"rr_type\":1,\"protocol\":\"udp\",\"rcode\":-1,\"ttls\":[],\"address_classes\":[],\"authority_serial\":0,\"success\":false},\"completion\":{\"request_id\":\"ba138fd3-e3e3-4cf4-b8be-e8846ecf974c\",\"stream_id\":\"7c4e9334-a745-49cc-92fb-ed7333fb60bb\",\"sequence\":\"106\",\"phase\":\"completed\",\"started\":\"2026-11-01T08:44:47.361983764Z\",\"completed\":\"2026-11-01T08:44:47.362212546Z\",\"role\":\"authority\",\"source_role\":\"primary\",\"fixture_case\":\"absent\",\"rr_type\":1,\"protocol\":\"udp\",\"rcode\":3,\"ttls\":[],\"address_classes\":[],\"authority_serial\":1001,\"success\":true}},{\"start\":{\"request_id\":\"0a3a7d97-4761-42f8-92ec-bc24f52e7887\",\"stream_id\":\"7c4e9334-a745-49cc-92fb-ed7333fb60bb\",\"sequence\":\"117\",\"phase\":\"started\",\"started\":\"2026-11-01T08:44:56.797358983Z\",\"completed\":\"0001-01-01T00:00:00Z\",\"role\":\"authority\",\"source_role\":\"primary\",\"fixture_case\":\"absent\",\"rr_type\":1,\"protocol\":\"udp\",\"rcode\":-1,\"ttls\":[],\"address_classes\":[],\"authority_serial\":0,\"success\":false},\"completion\":{\"request_id\":\"0a3a7d97-4761-42f8-92ec-bc24f52e7887\",\"stream_id\":\"7c4e9334-a745-49cc-92fb-ed7333fb60bb\",\"sequence\":\"118\",\"phase\":\"completed\",\"started\":\"2026-11-01T08:44:56.797358983Z\",\"completed\":\"2026-11-01T08:44:56.797557858Z\",\"role\":\"authority\",\"source_role\":\"primary\",\"fixture_case\":\"absent\",\"rr_type\":1,\"protocol\":\"udp\",\"rcode\":3,\"ttls\":[],\"address_classes\":[],\"authority_serial\":1001,\"success\":true}}],\"authority_outstanding_at_query_start\":[],\"authority_outstanding_at_query_completion\":[],\"authority_outstanding_at_trace_read\":[],\"trace_read_at\":{\"authority\":\"2026-11-01T08:44:56.91183685Z\",\"primary\":\"2026-11-01T08:44:56.840654724Z\",\"secondary\":\"2026-11-01T08:44:56.879344195Z\"},\"authority_serial_after_query\":1001,\"authority_read_at\":\"2026-11-01T08:44:56.933300483Z\",\"answer_ttl_remaining\":[]},\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"positive\":{\"authority_serial\":0,\"dns_trace\":{\"trace_streams\":{\"authority\":[\"7c4e9334-a745-49cc-92fb-ed7333fb60bb\"],\"primary\":[\"6c56f624-d8d7-4a80-a267-01ba0a904792\"]},\"started\":\"2026-11-01T08:44:56.575651419Z\",\"completed\":\"2026-11-01T08:44:56.617069103Z\",\"responder\":\"primary\",\"cache_state\":\"fetch_authority_request_observed\",\"trace_complete\":true,\"resolver_events\":[{\"request_id\":\"c7d4fe87-4da4-4648-bf42-e84977f13595\",\"stream_id\":\"6c56f624-d8d7-4a80-a267-01ba0a904792\",\"sequence\":\"64\",\"phase\":\"completed\",\"started\":\"2026-11-01T08:44:56.613712784Z\",\"completed\":\"2026-11-01T08:44:56.614514809Z\",\"role\":\"primary\",\"source_role\":\"native\",\"fixture_case\":\"cache\",\"rr_type\":1,\"protocol\":\"udp\",\"rcode\":0,\"ttls\":[10],\"address_classes\":[\"other_ipv4\"],\"authority_serial\":0,\"success\":true}],\"authority_events\":[{\"request_id\":\"8e8a7386-425b-4514-8a88-0c89e285776e\",\"stream_id\":\"7c4e9334-a745-49cc-92fb-ed7333fb60bb\",\"sequence\":\"116\",\"phase\":\"completed\",\"started\":\"2026-11-01T08:44:56.614132431Z\",\"completed\":\"2026-11-01T08:44:56.614395795Z\",\"role\":\"authority\",\"source_role\":\"primary\",\"fixture_case\":\"cache\",\"rr_type\":1,\"protocol\":\"udp\",\"rcode\":0,\"ttls\":[10],\"address_classes\":[\"other_ipv4\"],\"authority_serial\":0,\"success\":true}],\"authority_history\":[{\"start\":{\"request_id\":\"8e8a7386-425b-4514-8a88-0c89e285776e\",\"stream_id\":\"7c4e9334-a745-49cc-92fb-ed7333fb60bb\",\"sequence\":\"115\",\"phase\":\"started\",\"started\":\"2026-11-01T08:44:56.614132431Z\",\"completed\":\"0001-01-01T00:00:00Z\",\"role\":\"authority\",\"source_role\":\"primary\",\"fixture_case\":\"cache\",\"rr_type\":1,\"protocol\":\"udp\",\"rcode\":-1,\"ttls\":[],\"address_classes\":[],\"authority_serial\":0,\"success\":false},\"completion\":{\"request_id\":\"8e8a7386-425b-4514-8a88-0c89e285776e\",\"stream_id\":\"7c4e9334-a745-49cc-92fb-ed7333fb60bb\",\"sequence\":\"116\",\"phase\":\"completed\",\"started\":\"2026-11-01T08:44:56.614132431Z\",\"completed\":\"2026-11-01T08:44:56.614395795Z\",\"role\":\"authority\",\"source_role\":\"primary\",\"fixture_case\":\"cache\",\"rr_type\":1,\"protocol\":\"udp\",\"rcode\":0,\"ttls\":[10],\"address_classes\":[\"other_ipv4\"],\"authority_serial\":0,\"success\":true}}],\"authority_outstanding_at_query_start\":[],\"authority_outstanding_at_query_completion\":[],\"authority_outstanding_at_trace_read\":[],\"trace_read_at\":{\"authority\":\"2026-11-01T08:44:56.738205475Z\",\"primary\":\"2026-11-01T08:44:56.656280845Z\",\"secondary\":\"2026-11-01T08:44:56.69698824Z\"},\"authority_serial_after_query\":1001,\"authority_read_at\":\"2026-11-01T08:44:56.760495704Z\",\"answer_ttl_remaining\":[10]},\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[1],\"ttls\":[10],\"address_classes\":[\"other_ipv4\"],\"expected_answer\":true,\"connected\":false,\"bytes\":0,\"milliseconds\":1}}",
+      "command": "native DNS before authority-only change",
+      "at": "2026-11-01T08:44:56Z"
+    },
+    {
+      "name": "negative cache quiet setup",
+      "status": "pass",
+      "expected": "quiet for >5 s; fresh NXDOMAIN and remaining TTL with a conservative whole-second window",
+      "actual": "{\"available\":true,\"earliest_expiry\":\"2026-11-01T08:45:00.800586255Z\",\"precision_reserve_seconds\":1,\"quiet_end\":\"2026-11-01T08:44:56.575650871Z\",\"quiet_start\":\"2026-11-01T08:44:50.571374362Z\",\"receipt_at\":\"2026-11-01T08:44:56.800586255Z\",\"remaining_soa_ttl_seconds\":5}",
+      "command": "six seconds without fixture queries; first negative query once; no flush/retry",
+      "at": "2026-11-01T08:44:56Z"
+    },
+    {
+      "name": "positive/negative cache before TTL",
+      "status": "pass",
+      "expected": "old positive and NXDOMAIN persist with remaining TTL",
+      "actual": "{\"negative\":{\"authority_serial\":0,\"dns_trace\":{\"trace_streams\":{\"authority\":[\"7c4e9334-a745-49cc-92fb-ed7333fb60bb\"],\"primary\":[\"6c56f624-d8d7-4a80-a267-01ba0a904792\"]},\"started\":\"2026-11-01T08:44:57.980533164Z\",\"completed\":\"2026-11-01T08:44:58.022547909Z\",\"responder\":\"primary\",\"cache_state\":\"unknown\",\"trace_complete\":true,\"resolver_events\":[{\"request_id\":\"0918f366-5305-4fb2-8e7b-0e300215a029\",\"stream_id\":\"6c56f624-d8d7-4a80-a267-01ba0a904792\",\"sequence\":\"68\",\"phase\":\"completed\",\"started\":\"2026-11-01T08:44:58.01889971Z\",\"completed\":\"2026-11-01T08:44:58.019363783Z\",\"role\":\"primary\",\"source_role\":\"native\",\"fixture_case\":\"absent\",\"rr_type\":1,\"protocol\":\"udp\",\"rcode\":3,\"ttls\":[],\"address_classes\":[],\"authority_serial\":1001,\"success\":true}],\"authority_events\":[{\"request_id\":\"ba138fd3-e3e3-4cf4-b8be-e8846ecf974c\",\"stream_id\":\"7c4e9334-a745-49cc-92fb-ed7333fb60bb\",\"sequence\":\"106\",\"phase\":\"completed\",\"started\":\"2026-11-01T08:44:47.361983764Z\",\"completed\":\"2026-11-01T08:44:47.362212546Z\",\"role\":\"authority\",\"source_role\":\"primary\",\"fixture_case\":\"absent\",\"rr_type\":1,\"protocol\":\"udp\",\"rcode\":3,\"ttls\":[],\"address_classes\":[],\"authority_serial\":1001,\"success\":true},{\"request_id\":\"0a3a7d97-4761-42f8-92ec-bc24f52e7887\",\"stream_id\":\"7c4e9334-a745-49cc-92fb-ed7333fb60bb\",\"sequence\":\"118\",\"phase\":\"completed\",\"started\":\"2026-11-01T08:44:56.797358983Z\",\"completed\":\"2026-11-01T08:44:56.797557858Z\",\"role\":\"authority\",\"source_role\":\"primary\",\"fixture_case\":\"absent\",\"rr_type\":1,\"protocol\":\"udp\",\"rcode\":3,\"ttls\":[],\"address_classes\":[],\"authority_serial\":1001,\"success\":true}],\"authority_history\":[{\"start\":{\"request_id\":\"ba138fd3-e3e3-4cf4-b8be-e8846ecf974c\",\"stream_id\":\"7c4e9334-a745-49cc-92fb-ed7333fb60bb\",\"sequence\":\"105\",\"phase\":\"started\",\"started\":\"2026-11-01T08:44:47.361983764Z\",\"completed\":\"0001-01-01T00:00:00Z\",\"role\":\"authority\",\"source_role\":\"primary\",\"fixture_case\":\"absent\",\"rr_type\":1,\"protocol\":\"udp\",\"rcode\":-1,\"ttls\":[],\"address_classes\":[],\"authority_serial\":0,\"success\":false},\"completion\":{\"request_id\":\"ba138fd3-e3e3-4cf4-b8be-e8846ecf974c\",\"stream_id\":\"7c4e9334-a745-49cc-92fb-ed7333fb60bb\",\"sequence\":\"106\",\"phase\":\"completed\",\"started\":\"2026-11-01T08:44:47.361983764Z\",\"completed\":\"2026-11-01T08:44:47.362212546Z\",\"role\":\"authority\",\"source_role\":\"primary\",\"fixture_case\":\"absent\",\"rr_type\":1,\"protocol\":\"udp\",\"rcode\":3,\"ttls\":[],\"address_classes\":[],\"authority_serial\":1001,\"success\":true}},{\"start\":{\"request_id\":\"0a3a7d97-4761-42f8-92ec-bc24f52e7887\",\"stream_id\":\"7c4e9334-a745-49cc-92fb-ed7333fb60bb\",\"sequence\":\"117\",\"phase\":\"started\",\"started\":\"2026-11-01T08:44:56.797358983Z\",\"completed\":\"0001-01-01T00:00:00Z\",\"role\":\"authority\",\"source_role\":\"primary\",\"fixture_case\":\"absent\",\"rr_type\":1,\"protocol\":\"udp\",\"rcode\":-1,\"ttls\":[],\"address_classes\":[],\"authority_serial\":0,\"success\":false},\"completion\":{\"request_id\":\"0a3a7d97-4761-42f8-92ec-bc24f52e7887\",\"stream_id\":\"7c4e9334-a745-49cc-92fb-ed7333fb60bb\",\"sequence\":\"118\",\"phase\":\"completed\",\"started\":\"2026-11-01T08:44:56.797358983Z\",\"completed\":\"2026-11-01T08:44:56.797557858Z\",\"role\":\"authority\",\"source_role\":\"primary\",\"fixture_case\":\"absent\",\"rr_type\":1,\"protocol\":\"udp\",\"rcode\":3,\"ttls\":[],\"address_classes\":[],\"authority_serial\":1001,\"success\":true}}],\"authority_outstanding_at_query_start\":[],\"authority_outstanding_at_query_completion\":[],\"authority_outstanding_at_trace_read\":[],\"trace_read_at\":{\"authority\":\"2026-11-01T08:44:58.140866933Z\",\"primary\":\"2026-11-01T08:44:58.062066267Z\",\"secondary\":\"2026-11-01T08:44:58.101351154Z\"},\"authority_serial_after_query\":1002,\"authority_read_at\":\"2026-11-01T08:44:58.163652427Z\",\"answer_ttl_remaining\":[]},\"authority_ttl\":3,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"observed_at\":\"2026-11-01T08:44:58.34633395Z\",\"positive\":{\"authority_serial\":0,\"dns_trace\":{\"trace_streams\":{\"authority\":[\"7c4e9334-a745-49cc-92fb-ed7333fb60bb\"],\"primary\":[\"6c56f624-d8d7-4a80-a267-01ba0a904792\"]},\"started\":\"2026-11-01T08:44:58.163659927Z\",\"completed\":\"2026-11-01T08:44:58.205221562Z\",\"responder\":\"primary\",\"cache_state\":\"inferred_hit_no_authority_exchange\",\"trace_complete\":true,\"resolver_events\":[{\"request_id\":\"7c6c290b-5f64-4798-99dc-e51d0be5d618\",\"stream_id\":\"6c56f624-d8d7-4a80-a267-01ba0a904792\",\"sequence\":\"70\",\"phase\":\"completed\",\"started\":\"2026-11-01T08:44:58.20148153Z\",\"completed\":\"2026-11-01T08:44:58.201884038Z\",\"role\":\"primary\",\"source_role\":\"native\",\"fixture_case\":\"cache\",\"rr_type\":1,\"protocol\":\"udp\",\"rcode\":0,\"ttls\":[8],\"address_classes\":[\"other_ipv4\"],\"authority_serial\":0,\"success\":true}],\"authority_events\":[{\"request_id\":\"8e8a7386-425b-4514-8a88-0c89e285776e\",\"stream_id\":\"7c4e9334-a745-49cc-92fb-ed7333fb60bb\",\"sequence\":\"116\",\"phase\":\"completed\",\"started\":\"2026-11-01T08:44:56.614132431Z\",\"completed\":\"2026-11-01T08:44:56.614395795Z\",\"role\":\"authority\",\"source_role\":\"primary\",\"fixture_case\":\"cache\",\"rr_type\":1,\"protocol\":\"udp\",\"rcode\":0,\"ttls\":[10],\"address_classes\":[\"other_ipv4\"],\"authority_serial\":0,\"success\":true}],\"authority_history\":[{\"start\":{\"request_id\":\"8e8a7386-425b-4514-8a88-0c89e285776e\",\"stream_id\":\"7c4e9334-a745-49cc-92fb-ed7333fb60bb\",\"sequence\":\"115\",\"phase\":\"started\",\"started\":\"2026-11-01T08:44:56.614132431Z\",\"completed\":\"0001-01-01T00:00:00Z\",\"role\":\"authority\",\"source_role\":\"primary\",\"fixture_case\":\"cache\",\"rr_type\":1,\"protocol\":\"udp\",\"rcode\":-1,\"ttls\":[],\"address_classes\":[],\"authority_serial\":0,\"success\":false},\"completion\":{\"request_id\":\"8e8a7386-425b-4514-8a88-0c89e285776e\",\"stream_id\":\"7c4e9334-a745-49cc-92fb-ed7333fb60bb\",\"sequence\":\"116\",\"phase\":\"completed\",\"started\":\"2026-11-01T08:44:56.614132431Z\",\"completed\":\"2026-11-01T08:44:56.614395795Z\",\"role\":\"authority\",\"source_role\":\"primary\",\"fixture_case\":\"cache\",\"rr_type\":1,\"protocol\":\"udp\",\"rcode\":0,\"ttls\":[10],\"address_classes\":[\"other_ipv4\"],\"authority_serial\":0,\"success\":true}}],\"authority_outstanding_at_query_start\":[],\"authority_outstanding_at_query_completion\":[],\"authority_outstanding_at_trace_read\":[],\"trace_read_at\":{\"authority\":\"2026-11-01T08:44:58.324222103Z\",\"primary\":\"2026-11-01T08:44:58.245395064Z\",\"secondary\":\"2026-11-01T08:44:58.285399791Z\"},\"authority_serial_after_query\":1002,\"authority_read_at\":\"2026-11-01T08:44:58.346322182Z\",\"answer_ttl_remaining\":[8]},\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[1],\"ttls\":[8],\"address_classes\":[\"other_ipv4\"],\"expected_answer\":true,\"connected\":false,\"bytes\":0,\"milliseconds\":1}}",
+      "command": "ProbeNativeDNS without flushing either cache",
+      "at": "2026-11-01T08:44:58Z"
+    },
+    {
+      "name": "negative cache before precision boundary",
+      "status": "pass",
+      "expected": "same unique resolver; no outstanding authority completion; query completed before initial receipt plus (remaining TTL minus 1 second)",
+      "actual": "{\"initial\":{\"authority_serial\":0,\"dns_trace\":{\"trace_streams\":{\"authority\":[\"7c4e9334-a745-49cc-92fb-ed7333fb60bb\"],\"primary\":[\"6c56f624-d8d7-4a80-a267-01ba0a904792\"]},\"started\":\"2026-11-01T08:44:56.760507625Z\",\"completed\":\"2026-11-01T08:44:56.800586255Z\",\"responder\":\"primary\",\"cache_state\":\"unknown\",\"trace_complete\":true,\"resolver_events\":[{\"request_id\":\"bfd6e02b-01e6-4e98-a371-290330ea9ab1\",\"stream_id\":\"6c56f624-d8d7-4a80-a267-01ba0a904792\",\"sequence\":\"66\",\"phase\":\"completed\",\"started\":\"2026-11-01T08:44:56.796969663Z\",\"completed\":\"2026-11-01T08:44:56.79768933Z\",\"role\":\"primary\",\"source_role\":\"native\",\"fixture_case\":\"absent\",\"rr_type\":1,\"protocol\":\"udp\",\"rcode\":3,\"ttls\":[],\"address_classes\":[],\"authority_serial\":1001,\"success\":true}],\"authority_events\":[{\"request_id\":\"ba138fd3-e3e3-4cf4-b8be-e8846ecf974c\",\"stream_id\":\"7c4e9334-a745-49cc-92fb-ed7333fb60bb\",\"sequence\":\"106\",\"phase\":\"completed\",\"started\":\"2026-11-01T08:44:47.361983764Z\",\"completed\":\"2026-11-01T08:44:47.362212546Z\",\"role\":\"authority\",\"source_role\":\"primary\",\"fixture_case\":\"absent\",\"rr_type\":1,\"protocol\":\"udp\",\"rcode\":3,\"ttls\":[],\"address_classes\":[],\"authority_serial\":1001,\"success\":true},{\"request_id\":\"0a3a7d97-4761-42f8-92ec-bc24f52e7887\",\"stream_id\":\"7c4e9334-a745-49cc-92fb-ed7333fb60bb\",\"sequence\":\"118\",\"phase\":\"completed\",\"started\":\"2026-11-01T08:44:56.797358983Z\",\"completed\":\"2026-11-01T08:44:56.797557858Z\",\"role\":\"authority\",\"source_role\":\"primary\",\"fixture_case\":\"absent\",\"rr_type\":1,\"protocol\":\"udp\",\"rcode\":3,\"ttls\":[],\"address_classes\":[],\"authority_serial\":1001,\"success\":true}],\"authority_history\":[{\"start\":{\"request_id\":\"ba138fd3-e3e3-4cf4-b8be-e8846ecf974c\",\"stream_id\":\"7c4e9334-a745-49cc-92fb-ed7333fb60bb\",\"sequence\":\"105\",\"phase\":\"started\",\"started\":\"2026-11-01T08:44:47.361983764Z\",\"completed\":\"0001-01-01T00:00:00Z\",\"role\":\"authority\",\"source_role\":\"primary\",\"fixture_case\":\"absent\",\"rr_type\":1,\"protocol\":\"udp\",\"rcode\":-1,\"ttls\":[],\"address_classes\":[],\"authority_serial\":0,\"success\":false},\"completion\":{\"request_id\":\"ba138fd3-e3e3-4cf4-b8be-e8846ecf974c\",\"stream_id\":\"7c4e9334-a745-49cc-92fb-ed7333fb60bb\",\"sequence\":\"106\",\"phase\":\"completed\",\"started\":\"2026-11-01T08:44:47.361983764Z\",\"completed\":\"2026-11-01T08:44:47.362212546Z\",\"role\":\"authority\",\"source_role\":\"primary\",\"fixture_case\":\"absent\",\"rr_type\":1,\"protocol\":\"udp\",\"rcode\":3,\"ttls\":[],\"address_classes\":[],\"authority_serial\":1001,\"success\":true}},{\"start\":{\"request_id\":\"0a3a7d97-4761-42f8-92ec-bc24f52e7887\",\"stream_id\":\"7c4e9334-a745-49cc-92fb-ed7333fb60bb\",\"sequence\":\"117\",\"phase\":\"started\",\"started\":\"2026-11-01T08:44:56.797358983Z\",\"completed\":\"0001-01-01T00:00:00Z\",\"role\":\"authority\",\"source_role\":\"primary\",\"fixture_case\":\"absent\",\"rr_type\":1,\"protocol\":\"udp\",\"rcode\":-1,\"ttls\":[],\"address_classes\":[],\"authority_serial\":0,\"success\":false},\"completion\":{\"request_id\":\"0a3a7d97-4761-42f8-92ec-bc24f52e7887\",\"stream_id\":\"7c4e9334-a745-49cc-92fb-ed7333fb60bb\",\"sequence\":\"118\",\"phase\":\"completed\",\"started\":\"2026-11-01T08:44:56.797358983Z\",\"completed\":\"2026-11-01T08:44:56.797557858Z\",\"role\":\"authority\",\"source_role\":\"primary\",\"fixture_case\":\"absent\",\"rr_type\":1,\"protocol\":\"udp\",\"rcode\":3,\"ttls\":[],\"address_classes\":[],\"authority_serial\":1001,\"success\":true}}],\"authority_outstanding_at_query_start\":[],\"authority_outstanding_at_query_completion\":[],\"authority_outstanding_at_trace_read\":[],\"trace_read_at\":{\"authority\":\"2026-11-01T08:44:56.91183685Z\",\"primary\":\"2026-11-01T08:44:56.840654724Z\",\"secondary\":\"2026-11-01T08:44:56.879344195Z\"},\"authority_serial_after_query\":1001,\"authority_read_at\":\"2026-11-01T08:44:56.933300483Z\",\"answer_ttl_remaining\":[]},\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"next\":{\"authority_serial\":0,\"dns_trace\":{\"trace_streams\":{\"authority\":[\"7c4e9334-a745-49cc-92fb-ed7333fb60bb\"],\"primary\":[\"6c56f624-d8d7-4a80-a267-01ba0a904792\"]},\"started\":\"2026-11-01T08:44:57.980533164Z\",\"completed\":\"2026-11-01T08:44:58.022547909Z\",\"responder\":\"primary\",\"cache_state\":\"unknown\",\"trace_complete\":true,\"resolver_events\":[{\"request_id\":\"0918f366-5305-4fb2-8e7b-0e300215a029\",\"stream_id\":\"6c56f624-d8d7-4a80-a267-01ba0a904792\",\"sequence\":\"68\",\"phase\":\"completed\",\"started\":\"2026-11-01T08:44:58.01889971Z\",\"completed\":\"2026-11-01T08:44:58.019363783Z\",\"role\":\"primary\",\"source_role\":\"native\",\"fixture_case\":\"absent\",\"rr_type\":1,\"protocol\":\"udp\",\"rcode\":3,\"ttls\":[],\"address_classes\":[],\"authority_serial\":1001,\"success\":true}],\"authority_events\":[{\"request_id\":\"ba138fd3-e3e3-4cf4-b8be-e8846ecf974c\",\"stream_id\":\"7c4e9334-a745-49cc-92fb-ed7333fb60bb\",\"sequence\":\"106\",\"phase\":\"completed\",\"started\":\"2026-11-01T08:44:47.361983764Z\",\"completed\":\"2026-11-01T08:44:47.362212546Z\",\"role\":\"authority\",\"source_role\":\"primary\",\"fixture_case\":\"absent\",\"rr_type\":1,\"protocol\":\"udp\",\"rcode\":3,\"ttls\":[],\"address_classes\":[],\"authority_serial\":1001,\"success\":true},{\"request_id\":\"0a3a7d97-4761-42f8-92ec-bc24f52e7887\",\"stream_id\":\"7c4e9334-a745-49cc-92fb-ed7333fb60bb\",\"sequence\":\"118\",\"phase\":\"completed\",\"started\":\"2026-11-01T08:44:56.797358983Z\",\"completed\":\"2026-11-01T08:44:56.797557858Z\",\"role\":\"authority\",\"source_role\":\"primary\",\"fixture_case\":\"absent\",\"rr_type\":1,\"protocol\":\"udp\",\"rcode\":3,\"ttls\":[],\"address_classes\":[],\"authority_serial\":1001,\"success\":true}],\"authority_history\":[{\"start\":{\"request_id\":\"ba138fd3-e3e3-4cf4-b8be-e8846ecf974c\",\"stream_id\":\"7c4e9334-a745-49cc-92fb-ed7333fb60bb\",\"sequence\":\"105\",\"phase\":\"started\",\"started\":\"2026-11-01T08:44:47.361983764Z\",\"completed\":\"0001-01-01T00:00:00Z\",\"role\":\"authority\",\"source_role\":\"primary\",\"fixture_case\":\"absent\",\"rr_type\":1,\"protocol\":\"udp\",\"rcode\":-1,\"ttls\":[],\"address_classes\":[],\"authority_serial\":0,\"success\":false},\"completion\":{\"request_id\":\"ba138fd3-e3e3-4cf4-b8be-e8846ecf974c\",\"stream_id\":\"7c4e9334-a745-49cc-92fb-ed7333fb60bb\",\"sequence\":\"106\",\"phase\":\"completed\",\"started\":\"2026-11-01T08:44:47.361983764Z\",\"completed\":\"2026-11-01T08:44:47.362212546Z\",\"role\":\"authority\",\"source_role\":\"primary\",\"fixture_case\":\"absent\",\"rr_type\":1,\"protocol\":\"udp\",\"rcode\":3,\"ttls\":[],\"address_classes\":[],\"authority_serial\":1001,\"success\":true}},{\"start\":{\"request_id\":\"0a3a7d97-4761-42f8-92ec-bc24f52e7887\",\"stream_id\":\"7c4e9334-a745-49cc-92fb-ed7333fb60bb\",\"sequence\":\"117\",\"phase\":\"started\",\"started\":\"2026-11-01T08:44:56.797358983Z\",\"completed\":\"0001-01-01T00:00:00Z\",\"role\":\"authority\",\"source_role\":\"primary\",\"fixture_case\":\"absent\",\"rr_type\":1,\"protocol\":\"udp\",\"rcode\":-1,\"ttls\":[],\"address_classes\":[],\"authority_serial\":0,\"success\":false},\"completion\":{\"request_id\":\"0a3a7d97-4761-42f8-92ec-bc24f52e7887\",\"stream_id\":\"7c4e9334-a745-49cc-92fb-ed7333fb60bb\",\"sequence\":\"118\",\"phase\":\"completed\",\"started\":\"2026-11-01T08:44:56.797358983Z\",\"completed\":\"2026-11-01T08:44:56.797557858Z\",\"role\":\"authority\",\"source_role\":\"primary\",\"fixture_case\":\"absent\",\"rr_type\":1,\"protocol\":\"udp\",\"rcode\":3,\"ttls\":[],\"address_classes\":[],\"authority_serial\":1001,\"success\":true}}],\"authority_outstanding_at_query_start\":[],\"authority_outstanding_at_query_completion\":[],\"authority_outstanding_at_trace_read\":[],\"trace_read_at\":{\"authority\":\"2026-11-01T08:44:58.140866933Z\",\"primary\":\"2026-11-01T08:44:58.062066267Z\",\"secondary\":\"2026-11-01T08:44:58.101351154Z\"},\"authority_serial_after_query\":1002,\"authority_read_at\":\"2026-11-01T08:44:58.163652427Z\",\"answer_ttl_remaining\":[]},\"authority_ttl\":3,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1},\"window\":{\"available\":true,\"earliest_expiry\":\"2026-11-01T08:45:00.800586255Z\",\"precision_reserve_seconds\":1,\"quiet_end\":\"2026-11-01T08:44:56.575650871Z\",\"quiet_start\":\"2026-11-01T08:44:50.571374362Z\",\"receipt_at\":\"2026-11-01T08:44:56.800586255Z\",\"remaining_soa_ttl_seconds\":5}}",
+      "command": "whole-second TTL uncertainty is reserved, never used to waive the unchanged before-TTL assertion",
+      "at": "2026-11-01T08:44:58Z"
+    },
+    {
+      "name": "cache attribution (not a verdict waiver)",
+      "status": "pass",
+      "expected": "docs/dns/BACKEND.md \u00a72.1.5: F9-HIT / F9-OTHER / F9-ROUND / F9-INFLIGHT",
+      "actual": "{\"negative\":{\"assertion_scope\":\"same uniquely matched resolver\",\"cause_status\":\"unproven\",\"classification\":\"negative response without new authority fetch; cache state remains unknown (local synthesis is separate)\",\"contract\":\"docs/dns/BACKEND.md \u00a72.1.5: F9-HIT / F9-OTHER / F9-ROUND / F9-INFLIGHT\",\"earliest_whole_second_expiry\":\"2026-11-01T08:45:00.800586255Z\",\"elapsed_query_completion_ms\":1221,\"fallback\":\"not established\",\"fetch_in_next_query\":false,\"initial_responder\":\"primary\",\"next_responder\":\"primary\",\"older_outstanding_completions\":[],\"subsecond_expiry_possible\":false},\"positive\":{\"assertion_scope\":\"same uniquely matched resolver\",\"cause_status\":\"unproven\",\"classification\":\"same-resolver inferred hit without new authority fetch (F9-HIT)\",\"contract\":\"docs/dns/BACKEND.md \u00a72.1.5: F9-HIT / F9-OTHER / F9-ROUND / F9-INFLIGHT\",\"earliest_whole_second_expiry\":\"2026-11-01T08:45:05.617069103Z\",\"elapsed_query_completion_ms\":1588,\"fallback\":\"not established\",\"fetch_in_next_query\":false,\"initial_responder\":\"primary\",\"next_responder\":\"primary\",\"older_outstanding_completions\":[],\"subsecond_expiry_possible\":false}}",
+      "command": "compare unique responder, query completion/TTL and older outstanding completions",
+      "at": "2026-11-01T08:44:58Z"
+    },
+    {
+      "name": "positive/negative cache after TTL",
+      "status": "pass",
+      "expected": "both new authority answers visible",
+      "actual": "{\"formerly_negative\":{\"authority_serial\":0,\"dns_trace\":{\"trace_streams\":{\"authority\":[\"7c4e9334-a745-49cc-92fb-ed7333fb60bb\"],\"primary\":[\"6c56f624-d8d7-4a80-a267-01ba0a904792\"]},\"started\":\"2026-11-01T08:45:10.356557915Z\",\"completed\":\"2026-11-01T08:45:10.400095163Z\",\"responder\":\"primary\",\"cache_state\":\"fetch_authority_request_observed\",\"trace_complete\":true,\"resolver_events\":[{\"request_id\":\"92046481-5ab0-4d1e-82d3-7f4238cf0453\",\"stream_id\":\"6c56f624-d8d7-4a80-a267-01ba0a904792\",\"sequence\":\"72\",\"phase\":\"completed\",\"started\":\"2026-11-01T08:45:10.396215535Z\",\"completed\":\"2026-11-01T08:45:10.397013202Z\",\"role\":\"primary\",\"source_role\":\"native\",\"fixture_case\":\"absent\",\"rr_type\":1,\"protocol\":\"udp\",\"rcode\":0,\"ttls\":[5],\"address_classes\":[\"other_ipv4\"],\"authority_serial\":0,\"success\":true}],\"authority_events\":[{\"request_id\":\"ba138fd3-e3e3-4cf4-b8be-e8846ecf974c\",\"stream_id\":\"7c4e9334-a745-49cc-92fb-ed7333fb60bb\",\"sequence\":\"106\",\"phase\":\"completed\",\"started\":\"2026-11-01T08:44:47.361983764Z\",\"completed\":\"2026-11-01T08:44:47.362212546Z\",\"role\":\"authority\",\"source_role\":\"primary\",\"fixture_case\":\"absent\",\"rr_type\":1,\"protocol\":\"udp\",\"rcode\":3,\"ttls\":[],\"address_classes\":[],\"authority_serial\":1001,\"success\":true},{\"request_id\":\"0a3a7d97-4761-42f8-92ec-bc24f52e7887\",\"stream_id\":\"7c4e9334-a745-49cc-92fb-ed7333fb60bb\",\"sequence\":\"118\",\"phase\":\"completed\",\"started\":\"2026-11-01T08:44:56.797358983Z\",\"completed\":\"2026-11-01T08:44:56.797557858Z\",\"role\":\"authority\",\"source_role\":\"primary\",\"fixture_case\":\"absent\",\"rr_type\":1,\"protocol\":\"udp\",\"rcode\":3,\"ttls\":[],\"address_classes\":[],\"authority_serial\":1001,\"success\":true},{\"request_id\":\"0be5b786-08c9-4b6e-975e-a53a92fa2a19\",\"stream_id\":\"7c4e9334-a745-49cc-92fb-ed7333fb60bb\",\"sequence\":\"128\",\"phase\":\"completed\",\"started\":\"2026-11-01T08:45:10.396609213Z\",\"completed\":\"2026-11-01T08:45:10.39681327Z\",\"role\":\"authority\",\"source_role\":\"primary\",\"fixture_case\":\"absent\",\"rr_type\":1,\"protocol\":\"udp\",\"rcode\":0,\"ttls\":[5],\"address_classes\":[\"other_ipv4\"],\"authority_serial\":0,\"success\":true}],\"authority_history\":[{\"start\":{\"request_id\":\"ba138fd3-e3e3-4cf4-b8be-e8846ecf974c\",\"stream_id\":\"7c4e9334-a745-49cc-92fb-ed7333fb60bb\",\"sequence\":\"105\",\"phase\":\"started\",\"started\":\"2026-11-01T08:44:47.361983764Z\",\"completed\":\"0001-01-01T00:00:00Z\",\"role\":\"authority\",\"source_role\":\"primary\",\"fixture_case\":\"absent\",\"rr_type\":1,\"protocol\":\"udp\",\"rcode\":-1,\"ttls\":[],\"address_classes\":[],\"authority_serial\":0,\"success\":false},\"completion\":{\"request_id\":\"ba138fd3-e3e3-4cf4-b8be-e8846ecf974c\",\"stream_id\":\"7c4e9334-a745-49cc-92fb-ed7333fb60bb\",\"sequence\":\"106\",\"phase\":\"completed\",\"started\":\"2026-11-01T08:44:47.361983764Z\",\"completed\":\"2026-11-01T08:44:47.362212546Z\",\"role\":\"authority\",\"source_role\":\"primary\",\"fixture_case\":\"absent\",\"rr_type\":1,\"protocol\":\"udp\",\"rcode\":3,\"ttls\":[],\"address_classes\":[],\"authority_serial\":1001,\"success\":true}},{\"start\":{\"request_id\":\"0a3a7d97-4761-42f8-92ec-bc24f52e7887\",\"stream_id\":\"7c4e9334-a745-49cc-92fb-ed7333fb60bb\",\"sequence\":\"117\",\"phase\":\"started\",\"started\":\"2026-11-01T08:44:56.797358983Z\",\"completed\":\"0001-01-01T00:00:00Z\",\"role\":\"authority\",\"source_role\":\"primary\",\"fixture_case\":\"absent\",\"rr_type\":1,\"protocol\":\"udp\",\"rcode\":-1,\"ttls\":[],\"address_classes\":[],\"authority_serial\":0,\"success\":false},\"completion\":{\"request_id\":\"0a3a7d97-4761-42f8-92ec-bc24f52e7887\",\"stream_id\":\"7c4e9334-a745-49cc-92fb-ed7333fb60bb\",\"sequence\":\"118\",\"phase\":\"completed\",\"started\":\"2026-11-01T08:44:56.797358983Z\",\"completed\":\"2026-11-01T08:44:56.797557858Z\",\"role\":\"authority\",\"source_role\":\"primary\",\"fixture_case\":\"absent\",\"rr_type\":1,\"protocol\":\"udp\",\"rcode\":3,\"ttls\":[],\"address_classes\":[],\"authority_serial\":1001,\"success\":true}},{\"start\":{\"request_id\":\"0be5b786-08c9-4b6e-975e-a53a92fa2a19\",\"stream_id\":\"7c4e9334-a745-49cc-92fb-ed7333fb60bb\",\"sequence\":\"127\",\"phase\":\"started\",\"started\":\"2026-11-01T08:45:10.396609213Z\",\"completed\":\"0001-01-01T00:00:00Z\",\"role\":\"authority\",\"source_role\":\"primary\",\"fixture_case\":\"absent\",\"rr_type\":1,\"protocol\":\"udp\",\"rcode\":-1,\"ttls\":[],\"address_classes\":[],\"authority_serial\":0,\"success\":false},\"completion\":{\"request_id\":\"0be5b786-08c9-4b6e-975e-a53a92fa2a19\",\"stream_id\":\"7c4e9334-a745-49cc-92fb-ed7333fb60bb\",\"sequence\":\"128\",\"phase\":\"completed\",\"started\":\"2026-11-01T08:45:10.396609213Z\",\"completed\":\"2026-11-01T08:45:10.39681327Z\",\"role\":\"authority\",\"source_role\":\"primary\",\"fixture_case\":\"absent\",\"rr_type\":1,\"protocol\":\"udp\",\"rcode\":0,\"ttls\":[5],\"address_classes\":[\"other_ipv4\"],\"authority_serial\":0,\"success\":true}}],\"authority_outstanding_at_query_start\":[],\"authority_outstanding_at_query_completion\":[],\"authority_outstanding_at_trace_read\":[],\"trace_read_at\":{\"authority\":\"2026-11-01T08:45:10.513554303Z\",\"primary\":\"2026-11-01T08:45:10.440664529Z\",\"secondary\":\"2026-11-01T08:45:10.480973096Z\"},\"authority_serial_after_query\":1002,\"authority_read_at\":\"2026-11-01T08:45:10.536372776Z\",\"answer_ttl_remaining\":[5]},\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[1],\"ttls\":[5],\"address_classes\":[\"other_ipv4\"],\"expected_answer\":true,\"connected\":false,\"bytes\":0,\"milliseconds\":2},\"observed_at\":\"2026-11-01T08:45:10.710468932Z\",\"positive\":{\"authority_serial\":0,\"dns_trace\":{\"trace_streams\":{\"authority\":[\"7c4e9334-a745-49cc-92fb-ed7333fb60bb\"],\"primary\":[\"6c56f624-d8d7-4a80-a267-01ba0a904792\"]},\"started\":\"2026-11-01T08:45:10.536381784Z\",\"completed\":\"2026-11-01T08:45:10.568682394Z\",\"responder\":\"primary\",\"cache_state\":\"fetch_authority_request_observed\",\"trace_complete\":true,\"resolver_events\":[{\"request_id\":\"280c6952-b60f-4779-a192-25d45a893ecf\",\"stream_id\":\"6c56f624-d8d7-4a80-a267-01ba0a904792\",\"sequence\":\"74\",\"phase\":\"completed\",\"started\":\"2026-11-01T08:45:10.565199656Z\",\"completed\":\"2026-11-01T08:45:10.565937533Z\",\"role\":\"primary\",\"source_role\":\"native\",\"fixture_case\":\"cache\",\"rr_type\":1,\"protocol\":\"udp\",\"rcode\":0,\"ttls\":[10],\"address_classes\":[\"private_ipv4\"],\"authority_serial\":0,\"success\":true}],\"authority_events\":[{\"request_id\":\"8e8a7386-425b-4514-8a88-0c89e285776e\",\"stream_id\":\"7c4e9334-a745-49cc-92fb-ed7333fb60bb\",\"sequence\":\"116\",\"phase\":\"completed\",\"started\":\"2026-11-01T08:44:56.614132431Z\",\"completed\":\"2026-11-01T08:44:56.614395795Z\",\"role\":\"authority\",\"source_role\":\"primary\",\"fixture_case\":\"cache\",\"rr_type\":1,\"protocol\":\"udp\",\"rcode\":0,\"ttls\":[10],\"address_classes\":[\"other_ipv4\"],\"authority_serial\":0,\"success\":true},{\"request_id\":\"3e352968-a4fb-4b02-820b-ddc70ca3b04f\",\"stream_id\":\"7c4e9334-a745-49cc-92fb-ed7333fb60bb\",\"sequence\":\"130\",\"phase\":\"completed\",\"started\":\"2026-11-01T08:45:10.565611555Z\",\"completed\":\"2026-11-01T08:45:10.565792602Z\",\"role\":\"authority\",\"source_role\":\"primary\",\"fixture_case\":\"cache\",\"rr_type\":1,\"protocol\":\"udp\",\"rcode\":0,\"ttls\":[10],\"address_classes\":[\"private_ipv4\"],\"authority_serial\":0,\"success\":true}],\"authority_history\":[{\"start\":{\"request_id\":\"8e8a7386-425b-4514-8a88-0c89e285776e\",\"stream_id\":\"7c4e9334-a745-49cc-92fb-ed7333fb60bb\",\"sequence\":\"115\",\"phase\":\"started\",\"started\":\"2026-11-01T08:44:56.614132431Z\",\"completed\":\"0001-01-01T00:00:00Z\",\"role\":\"authority\",\"source_role\":\"primary\",\"fixture_case\":\"cache\",\"rr_type\":1,\"protocol\":\"udp\",\"rcode\":-1,\"ttls\":[],\"address_classes\":[],\"authority_serial\":0,\"success\":false},\"completion\":{\"request_id\":\"8e8a7386-425b-4514-8a88-0c89e285776e\",\"stream_id\":\"7c4e9334-a745-49cc-92fb-ed7333fb60bb\",\"sequence\":\"116\",\"phase\":\"completed\",\"started\":\"2026-11-01T08:44:56.614132431Z\",\"completed\":\"2026-11-01T08:44:56.614395795Z\",\"role\":\"authority\",\"source_role\":\"primary\",\"fixture_case\":\"cache\",\"rr_type\":1,\"protocol\":\"udp\",\"rcode\":0,\"ttls\":[10],\"address_classes\":[\"other_ipv4\"],\"authority_serial\":0,\"success\":true}},{\"start\":{\"request_id\":\"3e352968-a4fb-4b02-820b-ddc70ca3b04f\",\"stream_id\":\"7c4e9334-a745-49cc-92fb-ed7333fb60bb\",\"sequence\":\"129\",\"phase\":\"started\",\"started\":\"2026-11-01T08:45:10.565611555Z\",\"completed\":\"0001-01-01T00:00:00Z\",\"role\":\"authority\",\"source_role\":\"primary\",\"fixture_case\":\"cache\",\"rr_type\":1,\"protocol\":\"udp\",\"rcode\":-1,\"ttls\":[],\"address_classes\":[],\"authority_serial\":0,\"success\":false},\"completion\":{\"request_id\":\"3e352968-a4fb-4b02-820b-ddc70ca3b04f\",\"stream_id\":\"7c4e9334-a745-49cc-92fb-ed7333fb60bb\",\"sequence\":\"130\",\"phase\":\"completed\",\"started\":\"2026-11-01T08:45:10.565611555Z\",\"completed\":\"2026-11-01T08:45:10.565792602Z\",\"role\":\"authority\",\"source_role\":\"primary\",\"fixture_case\":\"cache\",\"rr_type\":1,\"protocol\":\"udp\",\"rcode\":0,\"ttls\":[10],\"address_classes\":[\"private_ipv4\"],\"authority_serial\":0,\"success\":true}}],\"authority_outstanding_at_query_start\":[],\"authority_outstanding_at_query_completion\":[],\"authority_outstanding_at_trace_read\":[],\"trace_read_at\":{\"authority\":\"2026-11-01T08:45:10.688165795Z\",\"primary\":\"2026-11-01T08:45:10.608936566Z\",\"secondary\":\"2026-11-01T08:45:10.648598105Z\"},\"authority_serial_after_query\":1002,\"authority_read_at\":\"2026-11-01T08:45:10.710455514Z\",\"answer_ttl_remaining\":[10]},\"authority_ttl\":0,\"has_soa\":false,\"available\":true,\"rcode\":0,\"types\":[1],\"ttls\":[10],\"address_classes\":[\"private_ipv4\"],\"expected_answer\":true,\"connected\":false,\"bytes\":0,\"milliseconds\":1}}",
+      "command": "ProbeNativeDNS after real TTL elapses",
+      "at": "2026-11-01T08:45:10Z"
+    }
+  ]
+}

@@ -1,3 +1,10 @@
+# Follow-up 13 execution note
+
+`assembled.py` now runs all ten regular cases, including AT01 and AT09, and
+clears the old Follow-up 12 skip flag. Pre-start, post-start and target admission
+checks remain hard stops at two other active suites. One authorized run was used;
+see [RUN.md](RUN.md) for actual outcomes, baseline, cache path and sequential gates.
+
 # Member acceptance execution procedures
 
 The JSON records are the authority for executed subchecks. These procedures
