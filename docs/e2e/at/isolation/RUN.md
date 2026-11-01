@@ -1,9 +1,14 @@
 # Isolation run procedure — Follow-up 16
 
 Product baseline **`9efe9773e67d35839649e9f21e1c3a9b680633b2`**, including #392
-and devstack 27 (#394). `go env GOCACHE` returned **`/data/ted-h-cache/go-build`**.
-Commands query the cache; none hard-codes it. The measured consumer commit and
-run outcome will be recorded in [summary.md](summary.md).
+and devstack 27 (#394). The final `go env GOCACHE` query returned
+**`$HOME/.cache/go-build`** (the home prefix is redacted for repository hygiene;
+raw output is retained privately). The pre-run note recorded
+`/data/ted-h-cache/go-build`, but the assembled log retained no separate runtime
+cache receipt. The discrepancy is unresolved; the run-time cache path is
+**unproven**. The runner inherits GOCACHE and never hard-codes or overrides it.
+The measured consumer commit and
+run outcome are recorded below and in [summary.md](summary.md).
 
 D-098 first commit **`3005c383`** copied all **123** root files and subtrees of
 run 0b9e4510 byte-identically to [follow-up 15](history/follow-up-15/archive.json).
@@ -103,3 +108,28 @@ Stop receipts retain actual agent exit/signal and separate PID1 outcomes.
 AT11 native platforms and AT13's full fault matrix remain carried operator rows.
 Large JSON is published as lossless gzip with both-form SHA-256 pins only at
 immutable history paths. Older archives are never rewritten.
+
+## Recorded outcome
+
+Run **83b457ef-ea16-490b-9923-1fea0df86b36**, consumer
+**a8394027002771be64f023d062ea47b2da1447d8**, source dirty **false**.
+Started **2026-11-01T16:54:27.108813Z**, full foreground duration **1406.378 s**,
+exit **2**; driver **1272.20 s**. This was the only assembled attempt.
+Host became quiet after **1561.452 s**, within the 30-minute bound, with 52
+vmstat windows retained. Suite checks saw no other suite roots and waited
+0.084/0.088/0.092/0.129 s respectively. All owned Docker inventories are zero.
+
+103 calibration packets selected **2.2 ms**, yielding90 dense plus202 unchanged
+cadence probes. The unchanged evaluator passes; D-140 qualification fails one
+**3.609 µs** overlap. F16-01 separately retains the shared D-104 fixture failure
+before trace production. Two populated incidents cover all seven requested
+categories. Five agent parent receipts record exit 0. AT11/AT13 remain blocked
+on their carried operator matrices. No failed row was retried or reclassified.
+
+Publication uses12 immutable lossless gzip streams with compressed and expanded
+SHA-256 pins. Six capture text files drop only surplus terminal blank lines, and the D-104
+assertion excerpt drops trailing whitespace, to
+satisfy diff whitespace checks; original capture bytes remain in private run
+artifacts. The inherited D-104 trace and appended mechanism-summary prefix are
+preserved in follow-up 15, not presented as fresh observations. Only offline hold
+review scoping and evidence/documentation changed after the measured consumer.

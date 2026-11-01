@@ -1,19 +1,39 @@
 {
-  "run_id": "0b9e4510-776f-4c51-9e66-500404ce9f7e",
-  "baseline_commit": "aa7f306c008d8021b3921d083b70e19db7c8f865",
-  "runtime_consumer": "9031ebd4044059db25ea4ea7a397b87e6d6c6aa5",
+  "run_id": "83b457ef-ea16-490b-9923-1fea0df86b36",
+  "baseline_commit": "9efe9773e67d35839649e9f21e1c3a9b680633b2",
+  "runtime_consumer": "a8394027002771be64f023d062ea47b2da1447d8",
   "runtime_source_dirty": false,
   "assembled": {
-    "exit": 2,
-    "seconds": 1210.5520288944244,
-    "started_at": "2026-11-01T14:51:43Z",
-    "completed_at": "2026-11-01T15:11:53Z",
-    "tail": " Volume fvpn-w4-isolation-nb Removing \n Network fvpn-w4-isolation Removing \n Network fvpn-w4-isolation-origin Removing \n Network fvpn-w4-isolation-origin Resource is still in use \n Network fvpn-w4-isolation Resource is still in use \n Volume fvpn-w4-isolation-pg Removed \n Volume fvpn-w4-isolation-pgbackrest-repo Removed \n Volume fvpn-w4-isolation-nb Removed \ne2e stack is down\nowned-prefix inventory: {\"containers\": [], \"images\": [], \"networks\": [], \"volumes\": []}\nat-isolation lab=0 stack=1\nmake: *** [mk/at-isolation.mk:57: at-isolation] Error 2",
-    "driver_seconds": 1072.06
+    "exit_code": 2,
+    "seconds": 1406.378,
+    "driver_seconds": 1272.2,
+    "attempts": 1
   },
+  "boundary_qualification": "failed: positive162 overlaps ingress163 by3609ns; unchanged evaluator passes separately",
+  "populated_holds": "pass: seven requested categories across two explicit incidents",
+  "mechanism_d104": "failed precision-fixture assertion before packet window",
+  "notes": [
+    "No retry, waiver or historical reclassification.",
+    "AT11 and AT13 operator matrices remain blocked.",
+    "Five parent agent receipts: exit0, no signal; earlier signal15 remains as observed.",
+    "Quiet host after1561.452 seconds; all earlier preflight samples retained; no causal inference.",
+    "Offline hold review scopes the seam retention separately from the absent opportunistic cut."
+  ],
   "gates": [
     {
-      "name": "area",
+      "name": "assembled",
+      "command": [
+        "make",
+        "-f",
+        "mk/at-isolation.mk",
+        "at-isolation"
+      ],
+      "started_at": "2026-11-01T16:54:27.108813+00:00",
+      "seconds": 1406.378,
+      "exit_code": 2
+    },
+    {
+      "name": "final-area",
       "command": [
         "make",
         "-f",
@@ -22,12 +42,12 @@
         "at-isolation-test",
         "at-isolation-build"
       ],
-      "exit": 0,
-      "seconds": 13.122,
-      "tail": "+ go vet ./tests/e2e/at/isolation/... ./tests/netlab/at/...\n+ go vet -tags netlab ./tests/netlab/at/...\n+ go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 ./tests/e2e/at/isolation/... ./tests/netlab/at/...\n+ go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 -tags netlab ./tests/netlab/at/...\n+ go vet tests/e2e/at/isolation/probe_main.go tests/e2e/at/isolation/observer_main.go\n+ go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 tests/e2e/at/isolation/probe_main.go tests/e2e/at/isolation/observer_main.go\n+ go test -count=1 ./tests/e2e/at/isolation/... ./tests/netlab/at/...\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/isolation\t8.685s\n?   \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab/at\t[no test files]\n+ python3 tests/e2e/at/isolation/driver.py build\n+ sh -ec for arch in amd64 arm64; do GOOS=linux GOARCH=$arch go build -o \"$GOTMPDIR/probe-$arch\" tests/e2e/at/isolation/probe_main.go tests/e2e/at/isolation/observer_main.go; done"
+      "started_at": "2026-11-01T17:27:44.086469+00:00",
+      "seconds": 19.209,
+      "exit_code": 0
     },
     {
-      "name": "handover",
+      "name": "final-handover",
       "command": [
         "python3",
         "tests/e2e/at/isolation/run.py",
@@ -36,12 +56,12 @@
         "-count=1",
         "./tests/handover/..."
       ],
-      "exit": 0,
-      "seconds": 1.636,
-      "tail": "+ go test -count=1 ./tests/handover/...\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/handover\t1.355s"
+      "started_at": "2026-11-01T17:28:31.065646+00:00",
+      "seconds": 2.514,
+      "exit_code": 0
     },
     {
-      "name": "root-lint",
+      "name": "final-root-lint",
       "command": [
         "python3",
         "tests/e2e/at/isolation/run.py",
@@ -49,34 +69,34 @@
         "go-lint",
         "go-with-disk-tmp="
       ],
-      "exit": 0,
-      "seconds": 1.162,
-      "tail": "+ make go-lint go-with-disk-tmp="
+      "started_at": "2026-11-01T17:28:31.065341+00:00",
+      "seconds": 4.586,
+      "exit_code": 0
     },
     {
-      "name": "format",
+      "name": "final-format",
       "command": [
         "bash",
         "-c",
-        "test -z \"$(gofmt -l $(git ls-files '*.go'))\""
+        "test -z \"$(gofmt -l $(git ls-files \"*.go\"))\""
       ],
-      "exit": 0,
-      "seconds": 0.089,
-      "tail": ""
+      "started_at": "2026-11-01T17:29:26.104085+00:00",
+      "seconds": 0.115,
+      "exit_code": 0
     },
     {
-      "name": "diff-check",
+      "name": "final-diff",
       "command": [
         "git",
         "diff",
         "--check"
       ],
-      "exit": 0,
-      "seconds": 0.253,
-      "tail": ""
+      "started_at": "2026-11-01T17:29:26.238721+00:00",
+      "seconds": 0.166,
+      "exit_code": 0
     },
     {
-      "name": "committed-evidence-hygiene",
+      "name": "final-hygiene",
       "command": [
         "python3",
         "tests/e2e/at/isolation/run.py",
@@ -88,40 +108,44 @@
         "^TestCommittedEvidenceFiles_ValidAndHygieneClean$",
         "./tests/e2e/at/isolation"
       ],
-      "exit": 0,
-      "seconds": 5.412,
-      "tail": "+ go test -count=1 -v -run ^TestCommittedEvidenceFiles_ValidAndHygieneClean$ ./tests/e2e/at/isolation\n=== RUN   TestCommittedEvidenceFiles_ValidAndHygieneClean\n--- PASS: TestCommittedEvidenceFiles_ValidAndHygieneClean (5.26s)\nPASS\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/isolation\t5.285s"
+      "started_at": "2026-11-01T17:29:39.279471+00:00",
+      "seconds": 7.802,
+      "exit_code": 0
     },
     {
-      "name": "archive-pins",
+      "name": "final-published",
       "command": [
-        "python3",
-        ".agent/f15/check_pins.py"
+        "go",
+        "test",
+        "-count=1",
+        "-v",
+        "-run",
+        "^(TestCommittedEvidenceFiles_ValidAndHygieneClean|TestHandover_MarkdownLinks)$",
+        "./tests/e2e/at/isolation",
+        "./tests/handover"
       ],
-      "exit": 0,
-      "seconds": 1.743,
-      "tail": "1003 archive file pins; 15 dual-form gzip pins; 117 baseline byte comparisons; earlier archives unchanged"
+      "started_at": "2026-11-01T17:31:26.166318+00:00",
+      "seconds": 7.758,
+      "exit_code": 0
     }
   ],
-  "boundary_qualification": {
-    "name": "D-140 schedule qualification",
-    "command": [
-      "python3",
-      "-B",
-      "tests/e2e/at/isolation/review_boundary.py",
-      "docs/e2e/at/isolation"
-    ],
-    "exit": 1,
-    "seconds": 0.026464223861694336,
-    "scope": "offline qualification of the sole assembled attempt; failure retained separately from unchanged EvaluateDeadline PASS"
+  "archive_verification": {
+    "earlier_files_unchanged": 1241,
+    "followup15_byte_identical_files": 123,
+    "followup16_lossless_streams": 12,
+    "evaluator_and_tests_unchanged": true
   },
-  "notes": [
-    "Exactly one assembled run; exit 2 preserves the carried operator blocks.",
-    "Unchanged packet evaluator passes; D-140 schedule qualification fails on one retained interleaving.",
-    "Final spacing correction includes latency spread and is not assembled-qualified; final runner enforces the independent qualifier.",
-    "Five text captures had terminal blank lines normalized; exact original text remains privately retained.",
-    "Eight large JSON/JSONL files published losslessly as gzip with both-form pins at immutable history paths.",
-    "Earlier archives untouched; 117 archived baseline byte comparisons and all archive pins pass.",
-    "Only owned paths changed; no handover exception edit, push, PR or tag."
-  ]
+  "gzip_replay": {
+    "review_holds": 0,
+    "review_populated_holds": 0,
+    "review_stops": 0,
+    "review_boundary": 1,
+    "identical": true
+  },
+  "cache_readback": {
+    "final_go_env_gocache": "$HOME/.cache/go-build",
+    "pre_run_documented": "/data/ted-h-cache/go-build",
+    "runtime_receipt": "not retained; discrepancy unresolved",
+    "override": false
+  }
 }
