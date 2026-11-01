@@ -447,3 +447,45 @@ instrumentation proposal is tracked in their own assessment; it is not
 implemented by this consumer lane. The historical first-attempt install cause
 and ISO-F6-03 baseline writer remain known gaps, without a new attribution or
 a claim that those historical failures have passed.
+
+## Follow-up 12 requests — 2026-11-01
+
+Run `1c25ee44-1872-4cce-a9f5-d52491d87095`, runtime source `99e58bff`, baseline
+`5bd751026073444087b32ac2a7115f8566104f8b` (#365 / #369). Command lifecycle
+consumption is delivered: 956 Applies / 53,754 records, zero install overruns;
+all seven pre-install failures and every loss remain counted. D-098 archived
+all 103 edd986c4 root files first. No D-132 handover exception was needed.
+
+### Requests to orchestrator
+
+1. **2026-11-01 — AT11, devstack and platform operators (carried).** Supply
+   native dual-stack/member-platform routes and packet captures. Metadata,
+   6to4 and mechanism tests do not establish the platform matrix. Outside this
+   lane; only this item remains stopped.
+2. **2026-11-01 — AT13, acceptance/operators (carried).** Execute the full
+   continuous crash/NetBird restart/OS reboot/updater/physical-arm64 matrix.
+   Include qualified process-stop evidence: this run's clone fixture sends
+   SIGTERM then SIGKILL after 20.007193 s (exit 137); its surviving stored lease
+   and counted ordinary restart do not verify graceful agent shutdown.
+   Shared clone lifecycle is `tests/e2e/second_exit.go`; no outside edit made.
+3. **2026-11-01 — ISO-F6-01 observation convergence, agent-core / devstack,
+   with isolation follow-up.** AT10 is now **8/1/0**, not the previous run's
+   pass. Five assertions pass; the sixth requires a dirty-newer-generation
+   rejection report which this run did not retain. All 12 kernel samples keep
+   forwarding closed and foreign objects present. Generation-30 failed Applies
+   2311/2320/2329/2338/2347/2356/2365 are retained, but the central samples all
+   show generation 29 at 09:55:00.452272372 UTC. The old-generation rejection
+   is accepted at 09:56:41.080290184, after removal at 09:56:25.090642995.
+   No generation-30 rejection appears anywhere in the receiver. See
+   [exact indexed evidence](iso-f6-01-observation-gap.json). Assess observation
+   retry/first-deciding-body retention in `node/agent/observe.go` (`observe`,
+   `flush`, `observationState`) after control restoration and provide a
+   qualifying current observation/readiness boundary for the next independent
+   sample. An owned harness readiness change can follow that assessment; no
+   timeout inflation, substitute assertion or product change is made here.
+   Those agent paths are outside this lane, so that item is stopped and routed.
+
+There are **three requests**: two carried operator gaps and one new observation
+evidence gap. The latter is not evidence of forbidden forwarding. Historical
+install-overrun causes, the old ISO-F6-03 baseline writer, the original foreign-tc
+creator and this run's later qdisc/read_failed cause remain unproven.

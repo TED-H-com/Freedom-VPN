@@ -1,9 +1,12 @@
 """Regression checks for attribution, incomplete evidence and clock domains."""
 import copy
 import json
+import gzip
+import tempfile
 from pathlib import Path
 import unittest
 import producer_timing as p
+from review_policy_missing import windows
 
 
 def fixture():
@@ -44,7 +47,190 @@ def failed_install():
     return rows
 
 
+def command(shape='success', phase='install', kind='nft', base=115):
+    def stamp(n=None):
+        return dict(ns=str(n or 0), available=n is not None)
+    def resources(n):
+        return dict(bracket=dict(before=stamp(n), after=stamp(n+1)), cgroup_v2_available=False,
+                    visible_ancestors_complete=False, host_ancestors_available=False, cgroups=None)
+    c = dict(kind=kind, phase=phase, context_deadline=dict(before=stamp(1000), after=stamp(1001)),
+             start_attempt=stamp(base+2), start_return=stamp(base+3), child_started_by=stamp(base+3),
+             child_start_exact=stamp(), cancel_observed=stamp(), wait_return=stamp(base+8),
+             context_before='none', context_after='none', context_at_cancel='unavailable',
+             started=True, ok=True, exit_available=True, exit_code=0, signal_available=True, signal=0,
+             cpu_available=True, user_cpu_ns='1', system_cpu_ns='2', switches_available=True,
+             voluntary_switches='1', involuntary_switches='0', before=resources(base), after=resources(base+9))
+    if shape == 'start_failure':
+        c.update(started=False, ok=False, child_started_by=stamp(), wait_return=stamp(), exit_available=False,
+                 signal_available=False, cpu_available=False, switches_available=False,
+                 user_cpu_ns='0', system_cpu_ns='0', voluntary_switches='0')
+    if shape in ('canceled', 'deadline'):
+        state = 'canceled' if shape == 'canceled' else 'deadline_exceeded'
+        c.update(ok=False, exit_code=-1, signal=9, cancel_observed=stamp(base+5),
+                 context_at_cancel=state, context_after=state)
+    if shape == 'exit_failure':
+        c.update(ok=False, exit_code=1)
+    if shape == 'unknown_exit':
+        c.update(exit_available=False, signal_available=False, cpu_available=False, switches_available=False,
+                 user_cpu_ns='0', system_cpu_ns='0', voluntary_switches='0')
+    return c
+
+
 class CorrelationTests(unittest.TestCase):
+    def test_D136_baseline_to_apply_requires_later_recovery_and_counts_losses(self):
+        baseline = dict(run_id='run', boot_id='boot', sequence='1', source='baseline',
+            baseline=dict(cause='policy_missing', start_ns='80', end_ns='90', succeeded=True),
+            lease=dict(generation='1', members=1))
+        apply = fixture()[0]; apply['sequence'] = '2'; apply['timing']['candidate_generation'] = '2'
+        live = copy.deepcopy(apply); live.update(sequence='3', source='live')
+        live['timing']['operation'] = 'verify'
+        heartbeat = dict(run_id='run', boot_id='boot', sequence='4', source='heartbeat',
+                         heartbeat=dict(written=True, serving=True, generation='2'))
+        trace = [packet(84), packet(120), dict(packet(209), egress_ns='211', result='ok')]
+        w = windows([baseline, apply, live, heartbeat], dict(renewal=trace))[0]
+        self.assertTrue(w['stale_populated_lease_candidate'])
+        self.assertEqual(w['baseline_to_apply_ns'], '120')
+        self.assertEqual(w['cause_status'], 'unproven')
+        self.assertEqual(w['next_live'], live)
+        self.assertEqual(w['next_serving_heartbeat'], heartbeat)
+        self.assertEqual(len(w['packets']['renewal']['losses']), 2)
+        self.assertEqual(w['packets']['renewal']['ingress_losses_in_completed_guards'], 1)
+        self.assertEqual(w['packets']['renewal']['ingress_losses_outside_completed_guards'], 1)
+        # A later withdrawal prevents borrowing a still later recovery report.
+        reopen = copy.deepcopy(baseline); reopen['sequence'] = '3'
+        reopen['baseline']['cause'] = 'member_path_unconfigured'
+        w = windows([baseline, apply, reopen, live, heartbeat], dict(renewal=trace))[0]
+        self.assertIsNone(w['next_serving_heartbeat'])
+        self.assertIn('unavailable', w['recovery'])
+        w = windows([baseline], dict(renewal=[]))[0]
+        self.assertIsNone(w['apply_end_ns'])
+        self.assertFalse(w['stale_populated_lease_candidate'])
+        self.assertIn('unavailable', w['packets']['renewal']['coverage'])
+
+    def test_lossless_compressed_stream_and_index_join(self):
+        rows = fixture(); rows[0]['timing']['commands'] = [command()]
+        raw = (json.dumps(rows[0])+'\n').encode()
+        disk = Path(__file__).resolve().parents[4]/'.agent/tmp'
+        disk.mkdir(parents=True, exist_ok=True)
+        with tempfile.TemporaryDirectory(dir=disk) as temp:
+            root = Path(temp)
+            (root/'producer-operations.jsonl.gz').write_bytes(gzip.compress(raw, mtime=0))
+            self.assertEqual(p.read_operations(root), rows)
+            with gzip.open(root/'producer-operations.jsonl.gz','rb') as stream:
+                self.assertEqual(stream.read(), raw)
+            a = p.validate_operations(p.read_operations(root))['applies'][0]
+            context = p.apply_context(a)['command_lifecycle']
+            ref = context['records'][0]
+            self.assertEqual(p.identity(ref), p.identity(rows[0]))
+            self.assertEqual(rows[0]['timing']['commands'][ref['index']], command())
+            self.assertNotIn('record', ref)
+            joined = p.correlated_apply(a)
+            self.assertNotIn('commands', joined['operation'])
+            self.assertEqual(joined['operation']['deadline'], rows[0]['timing']['deadline'])
+            self.assertEqual(joined['command_lifecycle']['records'], context['records'])
+            a['operation']['succeeded'] = False
+            self.assertIs(p.correlated_apply(a), a)  # Failed Apply keeps full records.
+            (root/'producer-operations.jsonl').write_bytes(raw)
+            self.assertEqual(p.read_operations(root), rows)
+
+    def test_lifecycle_each_shape_is_joined_and_cause_not_inferred(self):
+        for shape in ('success', 'start_failure', 'canceled', 'deadline', 'exit_failure', 'unknown_exit'):
+            with self.subTest(shape=shape):
+                rows = failed_install()
+                rows[0]['timing']['commands'] = [command(shape)]
+                a = p.validate_operations(rows)['failed_applies'][0]
+                self.assertEqual(a['cause_status'], 'unproven')
+                self.assertIn('nft: started=', a['install_phase_description'])
+                joined = a['command_lifecycle']['records'][0]
+                self.assertEqual(p.identity(joined), p.identity(rows[0]))
+                self.assertEqual(joined['record'], command(shape))
+                self.assertFalse(a['complete_guard'])
+                other = copy.deepcopy(rows[0]); other.update(run_id='other', boot_id='other-boot')
+                del other['timing']['commands']
+                v = p.validate_operations(rows+[other])
+                self.assertEqual(v['applies'][1]['install_phase_description'], 'unavailable')
+                self.assertEqual(v['applies'][1]['command_lifecycle']['status'], 'unavailable')
+                # Command records alone do not supply host samples or cause.
+                del rows[0]['host']
+                a = p.validate_operations(rows)['applies'][0]
+                self.assertEqual(a['diagnostic_label'], 'unavailable')
+                self.assertEqual(a['cause_status'], 'unproven')
+
+    def test_lifecycle_all_phases_kinds_resources_and_missing_stamps(self):
+        for phase in p.COMMAND_PHASES:
+            for kind in ('nft', 'tc', 'conntrack', 'ip', 'other'):
+                rows = fixture()
+                c = command(phase=phase, kind=kind, base=132 if phase == 'release' else 115)
+                c['before'].update(cgroup_v2_available=True, visible_ancestors_complete=True,
+                    cgroups=[dict(depth=0, **{k:dict(available=True,value=v) for k,v in
+                        [('cpu_max','max 100000'),('cpu_weight','100'),('cpu_stat','usage_usec 4\nnr_throttled 0'),
+                         ('cpu_pressure','some avg10=0.00 avg60=0.00 avg300=0.00 total=0') ]})])
+                rows[0]['timing']['commands'] = [c]
+                self.assertEqual(p.validate_operations(rows)['applies'][0]['command_lifecycle']['status'], 'available')
+                # Unavailable timestamps remain absent; no invented time bounds.
+                for k in p.COMMAND_STAMPS:
+                    c[k] = dict(ns='0', available=False)
+                p.validate_operations(rows)
+
+    def test_successful_install_command_over_100ms_still_fails_closed(self):
+        rows = failed_install(); del rows[0]['host']
+        t = rows[0]['timing']; t['commands'] = [command()]
+        # Scale the synthetic mono clock, preserving every enclosing bracket.
+        def scale(value):
+            for k, v in value.items():
+                if isinstance(v, dict): scale(v)
+                elif isinstance(v, str) and (k.endswith('_ns') or k == 'ns'):
+                    value[k] = str(int(v)*10000000)
+        scale(rows[0]['anchor']); scale(t)
+        for c in t['commands']: scale(c)
+        t['deadline'].update(install_bound_ns='100000000', install_ok=True)
+        a = p.validate_operations(rows)['failed_applies'][0]
+        self.assertEqual(a['failure_stage'], 'install')
+        self.assertTrue(a['install_overrun'])
+        self.assertFalse(a['complete_guard'])
+        self.assertIn('ok=True', a['install_phase_description'])
+        self.assertEqual(a['cause_status'], 'unproven')
+
+    def test_invalid_lifecycle_records_are_rejected(self):
+        changes = [
+            lambda c: c.update(kind='nft -f secret'), lambda c: c.update(phase='unknown'),
+            lambda c: c.update(started=1), lambda c: c.update(ok='true'),
+            lambda c: c.update(exit_code=True), lambda c: c.update(signal=65),
+            lambda c: c.update(exit_available=False, exit_code=1),
+            lambda c: c.update(exit_code=1), lambda c: c.update(context_after='raw error'),
+            lambda c: c.update(output='sensitive'), lambda c: c['start_attempt'].update(ns=117),
+            lambda c: c['start_return'].update(ns='0118'), lambda c: c['wait_return'].update(ns='90'),
+            lambda c: c['start_attempt'].update(available=False),
+            lambda c: c['child_started_by'].update(ns='119'), lambda c: c.update(started=False),
+            lambda c: c['before']['bracket']['after'].update(ns='130'),
+            lambda c: c['after']['bracket']['after'].update(ns='131'),
+            lambda c: c['context_deadline']['after'].update(ns='999'),
+            lambda c: c.update(user_cpu_ns='-1'), lambda c: c.update(voluntary_switches='9223372036854775808'),
+            lambda c: c['after'].update(visible_ancestors_complete=True),
+        ]
+        for change in changes:
+            with self.subTest(change=changes.index(change)):
+                rows = fixture(); c = command(); change(c); rows[0]['timing']['commands'] = [c]
+                with self.assertRaises(ValueError): p.validate_operations(rows)
+        rows = fixture(); rows[0]['timing']['commands'] = 'unavailable'
+        with self.assertRaises(ValueError): p.validate_operations(rows)
+
+    def test_historical_followup11_replays_unchanged_except_additive_unavailable(self):
+        root = Path(__file__).resolve().parents[4]/'docs/e2e/at/isolation/history/follow-up-11'
+        rows = [json.loads(s) for s in (root/'producer-operations.jsonl').read_text().splitlines()]
+        before = copy.deepcopy(rows)
+        v = p.validate_operations(rows)
+        old = json.loads((root/'producer-timing-analysis.json').read_text())
+        self.assertEqual(rows, before)
+        for key in ('snapshots', 'runs', 'source_counts', 'brackets', 'failed_operations', 'recovery_double_verifiers'):
+            self.assertEqual(v[key], old[key])
+        def historical(a):
+            self.assertEqual(a['command_lifecycle']['status'], 'unavailable')
+            self.assertEqual(a['install_phase_description'], 'unavailable')
+            return {k:v for k,v in a.items() if k not in ('command_lifecycle', 'install_phase_description')}
+        self.assertEqual([historical(a) for a in v['failed_applies']], old['failed_applies'])
+        self.assertEqual([historical({k:v for k,v in a.items() if k not in ('operation','lease')}) for a in v['applies']], old['apply_contexts'])
+
     def test_host_join_overrun_is_not_causal_or_failed_verification(self):
         rows = failed_install()
         rows[0]['host'].update(failed_command='nft', exit_code=-1, signal=9)

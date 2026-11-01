@@ -1,22 +1,18 @@
 # AT10–AT13 isolation evidence
 
-Follow-up 10 run **`bfcc3880-dc02-485d-990c-13811d6e8835`**:
-**AT10 pass, AT11 blocked, AT12 pass, AT13 blocked.**
+Follow-up 12 run **`1c25ee44-1872-4cce-a9f5-d52491d87095`** on main after #369:
+AT10 **blocked 8/1/0**, AT11 **blocked 2/1/0**, AT12 **pass 10/0/0**,
+AT13 **blocked 6/1/0** (pass/blocked/fail).
 
-The real D-087 transition passes at **962 ms** true→accepted serving, followed
-by counted native forwarding at unchanged generation 13. All 297 original wire
-hashes verify. D-104 passes with 161 positives / 41 drops, including one pre-D
-ingress loss. Renewal retains 30 losses among 1,396 probes; none is forgiven.
-ISO-F6-01 passes six assertions; all 654 D-106 digests match producer reads.
+D-087 passes at 243.154 ms. Whole-node D-104 passes; renewal retains all 36
+losses. ISO-F6-01 is 5/6: missing dirty-generation central observation evidence.
+956 Applies / 53,754 lifecycle records / zero install overruns; every failure
+and unavailable field is retained. Three dated requests remain.
 
-[Summary](summary.md), [procedure](RUN.md), [requests](requests.md#follow-up-10-requests--2026-10-31),
-[grant audit](member-grants-audit.json), [producer analysis](producer-timing-analysis.json),
+[Summary](summary.md), [procedure](RUN.md), [requests](requests.md#follow-up-12-requests--2026-11-01),
+[producer analysis](producer-timing-analysis.json), [original stream](producer-operations.jsonl.gz),
 [validation](validation-results.json).
 
-Historical follow-up 9 expiry remains failed and unattributed in its
-[86-file immutable archive](history/follow-up-9/archive.json). The
-[first attempt](first-attempt.md) retains its install-bound failure;
-the [second attempt](second-attempt.md) retains its AT10 setup failure.
-Earlier archives and netlab's follow-up 8 pins are untouched. Handover needed
-no pin move. Operator platform coverage remains open; no physical arm64 result
-is inferred from helper cross-compilation.
+Run edd986c4 is byte-identically archived in [history/follow-up-11](history/follow-up-11/archive.json).
+Earlier failures and archives remain unchanged. This independent sample does
+not establish an A/B cause or physical-platform qualification.
