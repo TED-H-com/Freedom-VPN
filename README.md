@@ -1,7 +1,7 @@
 # Freedom VPN
 
-**Current cut — [follow-up 28](docs/handover/follow-up-28.md) (2026-11-01 EST):** Through #390: r19 H-1 / M-2 / L-2 fixed; devstack 25 closure explained as tracer interference; native delivery delay remains. Updates 14 adopts parent receipts, AT23–AT27 5 / 5. D-135–D-138, D-140 and D-141 remain provisional. Node diagnostics and traceroute guidance added; RELATED ICMP owner question open. Historical failures stay failed.
-**Previous cut — [follow-up 27](docs/handover/follow-up-27.md) (2026-11-01 EST):** Through #385: isolation F14-01 fails the D-104 boundary; members 15 adds serving-node ingress gaps; r19 archived with routed findings. D-140 permits boundary scheduling only. D-141 closes D-139: option (b) is not implemented; option (c) stays. Historical failures stay failed. No new operator guidance.
+**Current cut — [follow-up 29](docs/handover/follow-up-29.md) (2026-11-01 EST):** Through #396: same-boot deny-set adoption gap open; isolation 15 unqualified on a 3.821 µs interleave, signal-15 cause unproven. Devstack 27 proves the TEST ONLY populated hold; consumer rows remain open. D-120 measurement end fixed; every failed run stays failed. D-135–D-138, D-140 and D-141 remain provisional. Seven owner decisions retained.
+**Previous cut — [follow-up 28](docs/handover/follow-up-28.md):** #386–#390 at aae6763f; 19 subtests, five rows, 16 snapshots, 1,644 checks and 47 findings. Historical failures stay failed.
 
 Freedom VPN is a member-based, multi-region VPN platform for a small paid community, starting at about 20 members. Every exit node runs the same node package and joins one central control plane, whether it is a pre-installed box, a cloud Ubuntu VM or any other Ubuntu host.
 
