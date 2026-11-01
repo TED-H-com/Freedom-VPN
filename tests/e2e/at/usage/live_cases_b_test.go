@@ -33,9 +33,16 @@ func (s *liveSuite) evalAT17(t *testing.T) Record {
 
 	uSummaryResp := s.apiCall(s.memberA, http.MethodGet, "/api/v1/member/usage", nil, nil)
 	var uSummary api.MemberUsage
-	_ = json.Unmarshal(uSummaryResp.body, &uSummary)
+	if err := json.Unmarshal(uSummaryResp.body, &uSummary); err != nil || uSummaryResp.status != http.StatusOK {
+		t.Fatalf("AT17 member summary: HTTP %d, decode %v", uSummaryResp.status, err)
+	}
+	period, err := summaryPeriod(uSummary)
+	if err != nil {
+		t.Fatal(err)
+	}
+	dailyPath := "/api/v1/member/usage?period_id=" + period.ID + "&granularity=day"
 
-	uDailyResp := s.apiCall(s.memberA, http.MethodGet, "/api/v1/member/usage?period_id=2026-10&granularity=day", nil, nil)
+	uDailyResp := s.apiCall(s.memberA, http.MethodGet, dailyPath, nil, nil)
 	var uDaily api.MemberUsage
 	_ = json.Unmarshal(uDailyResp.body, &uDaily)
 
@@ -49,9 +56,9 @@ func (s *liveSuite) evalAT17(t *testing.T) Record {
 
 	if uSummaryResp.status != http.StatusOK || uSummary.MeteringVersion != api.MeteringVersionForwardAdmissionV1 ||
 		uint64(uSummary.Totals.TotalBytes) == 0 || uint64(uSummary.Totals.UploadBytes) == 0 || uint64(uSummary.Totals.DownloadBytes) == 0 ||
-		uDailyResp.status != http.StatusOK || uDaily.PeriodId != "2026-10" || seriesCount == 0 || seriesTotal != uint64(uSummary.Totals.TotalBytes) ||
-		!uDaily.PeriodStart.Equal(time.Date(2026, 10, 1, 0, 0, 0, 0, time.UTC)) ||
-		!uDaily.PeriodEnd.Equal(time.Date(2026, 11, 1, 0, 0, 0, 0, time.UTC)) ||
+		uDailyResp.status != http.StatusOK || uDaily.PeriodId != period.ID || seriesCount == 0 || seriesTotal != uint64(uSummary.Totals.TotalBytes) ||
+		!uDaily.PeriodStart.Equal(period.Start) ||
+		!uDaily.PeriodEnd.Equal(period.End) ||
 		uInvalidResp.status != http.StatusUnprocessableEntity || uInvalidResp.code != "VALIDATION_FAILED" {
 		t.Fatalf("AT17 live GET /api/v1/member/usage checks failed: summary=%d/%s daily=%d/%s invalid=%d/%s",
 			uSummaryResp.status, string(uSummaryResp.body), uDailyResp.status, string(uDailyResp.body), uInvalidResp.status, string(uInvalidResp.body))
@@ -65,7 +72,7 @@ func (s *liveSuite) evalAT17(t *testing.T) Record {
 			At:       time.Now().UTC().Format(time.RFC3339),
 		},
 		CommandRecord{
-			Command:  "GET /api/v1/member/usage?period_id=2026-10&granularity=day & ?period_id=2026-13",
+			Command:  "GET " + dailyPath + " & ?period_id=2026-13",
 			ExitCode: 0,
 			Output:   fmt.Sprintf("daily=HTTP %d [%s, %s) buckets=%d series_total=%d; invalid_period=HTTP %d %s", uDailyResp.status, uDaily.PeriodStart.Format(time.RFC3339), uDaily.PeriodEnd.Format(time.RFC3339), seriesCount, seriesTotal, uInvalidResp.status, uInvalidResp.code),
 			At:       time.Now().UTC().Format(time.RFC3339),
@@ -75,7 +82,7 @@ func (s *liveSuite) evalAT17(t *testing.T) Record {
 		Name:    "LiveMemberUsageAPITotalsDailySeriesAndUTCMonthBounds",
 		SpecRef: "§10.5, §14.3, MTR04, API01",
 		Status:  StatusPass,
-		Summary: fmt.Sprintf("Live GET /api/v1/member/usage and ?period_id=2026-10&granularity=day returned memberA totals (up=%s, down=%s, total=%s across %d daily buckets) with half-open UTC bounds [2026-10-01T00:00:00Z, 2026-11-01T00:00:00Z) and rejected ?period_id=2026-13 with 422 VALIDATION_FAILED.", uSummary.Totals.UploadBytes, uSummary.Totals.DownloadBytes, uSummary.Totals.TotalBytes, seriesCount),
+		Summary: fmt.Sprintf("Live GET /api/v1/member/usage and ?period_id=%s&granularity=day returned memberA totals (up=%s, down=%s, total=%s across %d daily buckets) with half-open UTC bounds [%s, %s) and rejected ?period_id=2026-13 with 422 VALIDATION_FAILED.", period.ID, uSummary.Totals.UploadBytes, uSummary.Totals.DownloadBytes, uSummary.Totals.TotalBytes, seriesCount, period.Start.Format(time.RFC3339), period.End.Format(time.RFC3339)),
 	})
 
 	mechPool := optionalTestPool(t)
@@ -90,11 +97,11 @@ func (s *liveSuite) evalAT17(t *testing.T) Record {
 	if !s.bootstrapTransfer.Counted {
 		rec.Status = StatusBlocked
 		rec.Blockers = []string{flowtableBypassBlocker}
-		rec.Actual = fmt.Sprintf("Live GET /api/v1/member/usage and ?period_id=2026-10&granularity=day returned memberA totals (upload=%s, download=%s, total=%s) within half-open UTC month bounds [2026-10-01T00:00:00Z, 2026-11-01T00:00:00Z), and central/node mechanisms verified 00:00:00Z UTC month-boundary splitting, late-arriving previous-month event attribution within the 24h watermark, and >5s wall-clock rollback protection. End-to-end live data-plane traffic counting is blocked by VerifyServing FLOWTABLE_BYPASS on Docker's ip nat POSTROUTING chain (obs=%s).",
-			uSummary.Totals.UploadBytes, uSummary.Totals.DownloadBytes, uSummary.Totals.TotalBytes, s.d067BringUp.ApplyBlockerObservationReportID)
+		rec.Actual = fmt.Sprintf("Live GET /api/v1/member/usage and ?period_id=%s&granularity=day returned memberA totals (upload=%s, download=%s, total=%s) within half-open UTC month bounds [%s, %s), and central/node mechanisms verified 00:00:00Z UTC month-boundary splitting, late-arriving previous-month event attribution within the 24h watermark, and >5s wall-clock rollback protection. End-to-end live data-plane traffic counting is blocked by VerifyServing FLOWTABLE_BYPASS on Docker's ip nat POSTROUTING chain (obs=%s).",
+			period.ID, uSummary.Totals.UploadBytes, uSummary.Totals.DownloadBytes, uSummary.Totals.TotalBytes, period.Start.Format(time.RFC3339), period.End.Format(time.RFC3339), s.d067BringUp.ApplyBlockerObservationReportID)
 	} else {
-		rec.Actual = fmt.Sprintf("Live GET /api/v1/member/usage and ?period_id=2026-10&granularity=day returned real counted memberA traffic totals (upload=%s, download=%s, total=%s) within half-open UTC month bounds [2026-10-01T00:00:00Z, 2026-11-01T00:00:00Z), while central and node mechanisms verified 00:00:00Z UTC month-boundary splitting, late-arriving previous-month event attribution within the 24h watermark, and >5s wall-clock rollback protection.",
-			uSummary.Totals.UploadBytes, uSummary.Totals.DownloadBytes, uSummary.Totals.TotalBytes)
+		rec.Actual = fmt.Sprintf("Live GET /api/v1/member/usage and ?period_id=%s&granularity=day returned real counted memberA traffic totals (upload=%s, download=%s, total=%s) within half-open UTC month bounds [%s, %s), while central and node mechanisms verified 00:00:00Z UTC month-boundary splitting, late-arriving previous-month event attribution within the 24h watermark, and >5s wall-clock rollback protection.",
+			period.ID, uSummary.Totals.UploadBytes, uSummary.Totals.DownloadBytes, uSummary.Totals.TotalBytes, period.Start.Format(time.RFC3339), period.End.Format(time.RFC3339))
 	}
 	return rec
 }
