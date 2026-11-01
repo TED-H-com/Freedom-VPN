@@ -1,0 +1,9 @@
+Traceback (most recent call last):
+  File "/opt/netlab/scripts/ipv6_underlay.py", line 198, in <module>
+    {'measure':measure,'serve':lambda:endpoint(True),'client':endpoint}[sys.argv[1]]()
+  File "/opt/netlab/scripts/ipv6_underlay.py", line 177, in measure
+    headers=capture_stop(folder,captures)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/netlab/scripts/ipv6_underlay.py", line 127, in capture_stop
+    raise RuntimeError('capture incomplete')
+RuntimeError: capture incomplete
