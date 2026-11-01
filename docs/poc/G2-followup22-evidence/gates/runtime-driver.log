@@ -1,0 +1,595 @@
+START image-resume-A
+END image-resume-A exit 0
+START build-B-fvpn-netlab
+END build-B-fvpn-netlab exit 0
+START build-B-fvpn-agent
+END build-B-fvpn-agent exit 0
+START build-B-fvpn-watchdog
+END build-B-fvpn-watchdog exit 0
+START build-B-fvpn-labcontrol
+END build-B-fvpn-labcontrol exit 0
+START image-B
+END image-B exit 0
+HOST A1-live-preflight-1 quiet True r 1 idle 88 suites False
+START A1-live-up
+END A1-live-up exit 0
+START A1-live-collector-dir
+END A1-live-collector-dir exit 0
+START A1-live-copy-fvpn-agent
+END A1-live-copy-fvpn-agent exit 0
+START A1-live-copy-fvpn-labcontrol
+END A1-live-copy-fvpn-labcontrol exit 0
+START A1-live-copy-fvpn-watchdog
+END A1-live-copy-fvpn-watchdog exit 0
+START A1-live-copy-fvpn-netlab
+END A1-live-copy-fvpn-netlab exit 0
+START A1-live-collector
+END A1-live-collector exit 0
+START A1-live-chmod
+END A1-live-chmod exit 0
+HOST A1-live-ready-1 quiet True r 0 idle 86 suites False
+START A1-live-suite
+END A1-live-suite exit 0
+START A1-live-commands
+END A1-live-commands exit 0
+HOST A1-live-postflight quiet False r 17 idle 75 suites False
+START A1-live-down
+END A1-live-down exit 0
+RETAINED UNQUALIFIED POSTFLIGHT A1-live 1
+HOST A1-live-preflight-1 quiet False r 8 idle 81 suites False
+HOST A1-live-preflight-2 quiet True r 2 idle 86 suites False
+START A1-live-up
+END A1-live-up exit 0
+START A1-live-collector-dir
+END A1-live-collector-dir exit 0
+START A1-live-copy-fvpn-agent
+END A1-live-copy-fvpn-agent exit 0
+START A1-live-copy-fvpn-labcontrol
+END A1-live-copy-fvpn-labcontrol exit 0
+START A1-live-copy-fvpn-watchdog
+END A1-live-copy-fvpn-watchdog exit 0
+START A1-live-copy-fvpn-netlab
+END A1-live-copy-fvpn-netlab exit 0
+START A1-live-collector
+END A1-live-collector exit 0
+START A1-live-chmod
+END A1-live-chmod exit 0
+HOST A1-live-ready-1 quiet False r 0 idle 75 suites False
+HOST A1-live-ready-2 quiet True r 2 idle 82 suites False
+START A1-live-suite
+END A1-live-suite exit 0
+START A1-live-commands
+END A1-live-commands exit 0
+HOST A1-live-postflight quiet True r 1 idle 87 suites False
+START A1-live-down
+END A1-live-down exit 0
+HOST A1-agent-preflight-1 quiet True r 1 idle 86 suites False
+START A1-agent-up
+END A1-agent-up exit 0
+START A1-agent-collector-dir
+END A1-agent-collector-dir exit 0
+START A1-agent-copy-fvpn-agent
+END A1-agent-copy-fvpn-agent exit 0
+START A1-agent-copy-fvpn-labcontrol
+END A1-agent-copy-fvpn-labcontrol exit 0
+START A1-agent-copy-fvpn-watchdog
+END A1-agent-copy-fvpn-watchdog exit 0
+START A1-agent-copy-fvpn-netlab
+END A1-agent-copy-fvpn-netlab exit 0
+START A1-agent-collector
+END A1-agent-collector exit 0
+START A1-agent-chmod
+END A1-agent-chmod exit 0
+HOST A1-agent-ready-1 quiet True r 1 idle 86 suites False
+START A1-agent-suite
+END A1-agent-suite exit 1
+START A1-agent-commands
+END A1-agent-commands exit 1
+HOST A1-agent-postflight quiet True r 0 idle 86 suites False
+START A1-agent-down
+END A1-agent-down exit 0
+RETAINED SUITE FAILURE A1-agent
+HOST A1-agent-trace-preflight-1 quiet True r 1 idle 85 suites False
+START A1-agent-trace-up
+END A1-agent-trace-up exit 0
+START A1-agent-trace-collector-dir
+END A1-agent-trace-collector-dir exit 0
+START A1-agent-trace-copy-fvpn-agent
+END A1-agent-trace-copy-fvpn-agent exit 0
+START A1-agent-trace-copy-fvpn-labcontrol
+END A1-agent-trace-copy-fvpn-labcontrol exit 0
+START A1-agent-trace-copy-fvpn-watchdog
+END A1-agent-trace-copy-fvpn-watchdog exit 0
+START A1-agent-trace-copy-fvpn-netlab
+END A1-agent-trace-copy-fvpn-netlab exit 0
+START A1-agent-trace-collector
+END A1-agent-trace-collector exit 0
+START A1-agent-trace-chmod
+END A1-agent-trace-chmod exit 0
+HOST A1-agent-trace-ready-1 quiet False r 1 idle 76 suites False
+HOST A1-agent-trace-ready-2 quiet True r 2 idle 84 suites False
+START A1-agent-trace-suite
+END A1-agent-trace-suite exit 0
+START A1-agent-trace-commands
+END A1-agent-trace-commands exit 1
+HOST A1-agent-trace-postflight quiet False r 1 idle 71 suites False
+START A1-agent-trace-down
+END A1-agent-trace-down exit 0
+RETAINED UNQUALIFIED POSTFLIGHT A1-agent-trace 1
+HOST A1-agent-trace-preflight-1 quiet False r 14 idle 78 suites False
+HOST A1-agent-trace-preflight-2 quiet True r 1 idle 84 suites False
+START A1-agent-trace-up
+END A1-agent-trace-up exit 0
+START A1-agent-trace-collector-dir
+END A1-agent-trace-collector-dir exit 0
+START A1-agent-trace-copy-fvpn-agent
+END A1-agent-trace-copy-fvpn-agent exit 0
+START A1-agent-trace-copy-fvpn-labcontrol
+END A1-agent-trace-copy-fvpn-labcontrol exit 0
+START A1-agent-trace-copy-fvpn-watchdog
+END A1-agent-trace-copy-fvpn-watchdog exit 0
+START A1-agent-trace-copy-fvpn-netlab
+END A1-agent-trace-copy-fvpn-netlab exit 0
+START A1-agent-trace-collector
+END A1-agent-trace-collector exit 0
+START A1-agent-trace-chmod
+END A1-agent-trace-chmod exit 0
+HOST A1-agent-trace-ready-1 quiet False r 0 idle 76 suites False
+HOST A1-agent-trace-ready-2 quiet True r 0 idle 87 suites False
+START A1-agent-trace-suite
+END A1-agent-trace-suite exit 0
+START A1-agent-trace-commands
+END A1-agent-trace-commands exit 1
+HOST A1-agent-trace-postflight quiet True r 1 idle 87 suites False
+START A1-agent-trace-down
+END A1-agent-trace-down exit 0
+HOST B1-live-preflight-1 quiet True r 1 idle 82 suites False
+START B1-live-up
+END B1-live-up exit 0
+START B1-live-collector-dir
+END B1-live-collector-dir exit 0
+START B1-live-copy-fvpn-agent
+END B1-live-copy-fvpn-agent exit 0
+START B1-live-copy-fvpn-labcontrol
+END B1-live-copy-fvpn-labcontrol exit 0
+START B1-live-copy-fvpn-watchdog
+END B1-live-copy-fvpn-watchdog exit 0
+START B1-live-copy-fvpn-netlab
+END B1-live-copy-fvpn-netlab exit 0
+START B1-live-collector
+END B1-live-collector exit 0
+START B1-live-chmod
+END B1-live-chmod exit 0
+HOST B1-live-ready-1 quiet False r 2 idle 78 suites False
+HOST B1-live-ready-2 quiet True r 1 idle 86 suites False
+START B1-live-suite
+END B1-live-suite exit 1
+START B1-live-commands
+END B1-live-commands exit 0
+HOST B1-live-postflight quiet False r 1 idle 77 suites False
+START B1-live-down
+END B1-live-down exit 0
+RETAINED SUITE FAILURE B1-live
+RETAINED UNQUALIFIED POSTFLIGHT B1-live 1
+HOST B1-live-preflight-1 quiet True r 0 idle 86 suites False
+START B1-live-up
+END B1-live-up exit 0
+START B1-live-collector-dir
+END B1-live-collector-dir exit 0
+START B1-live-copy-fvpn-agent
+END B1-live-copy-fvpn-agent exit 0
+START B1-live-copy-fvpn-labcontrol
+END B1-live-copy-fvpn-labcontrol exit 0
+START B1-live-copy-fvpn-watchdog
+END B1-live-copy-fvpn-watchdog exit 0
+START B1-live-copy-fvpn-netlab
+END B1-live-copy-fvpn-netlab exit 0
+START B1-live-collector
+END B1-live-collector exit 0
+START B1-live-chmod
+END B1-live-chmod exit 0
+HOST B1-live-ready-1 quiet True r 1 idle 86 suites False
+START B1-live-suite
+END B1-live-suite exit 0
+START B1-live-commands
+END B1-live-commands exit 0
+HOST B1-live-postflight quiet False r 1 idle 76 suites False
+START B1-live-down
+END B1-live-down exit 0
+RETAINED UNQUALIFIED POSTFLIGHT B1-live 2
+HOST B1-live-preflight-1 quiet False r 1 idle 78 suites False
+HOST B1-live-preflight-2 quiet False r 5 idle 80 suites False
+HOST B1-live-preflight-3 quiet True r 0 idle 87 suites False
+START B1-live-up
+END B1-live-up exit 0
+START B1-live-collector-dir
+END B1-live-collector-dir exit 0
+START B1-live-copy-fvpn-agent
+END B1-live-copy-fvpn-agent exit 0
+START B1-live-copy-fvpn-labcontrol
+END B1-live-copy-fvpn-labcontrol exit 0
+START B1-live-copy-fvpn-watchdog
+END B1-live-copy-fvpn-watchdog exit 0
+START B1-live-copy-fvpn-netlab
+END B1-live-copy-fvpn-netlab exit 0
+START B1-live-collector
+END B1-live-collector exit 0
+START B1-live-chmod
+END B1-live-chmod exit 0
+HOST B1-live-ready-1 quiet True r 0 idle 87 suites False
+START B1-live-suite
+END B1-live-suite exit 0
+START B1-live-commands
+END B1-live-commands exit 0
+HOST B1-live-postflight quiet True r 1 idle 86 suites False
+START B1-live-down
+END B1-live-down exit 0
+HOST B1-agent-preflight-1 quiet True r 1 idle 87 suites False
+START B1-agent-up
+END B1-agent-up exit 0
+START B1-agent-collector-dir
+END B1-agent-collector-dir exit 0
+START B1-agent-copy-fvpn-agent
+END B1-agent-copy-fvpn-agent exit 0
+START B1-agent-copy-fvpn-labcontrol
+END B1-agent-copy-fvpn-labcontrol exit 0
+START B1-agent-copy-fvpn-watchdog
+END B1-agent-copy-fvpn-watchdog exit 0
+START B1-agent-copy-fvpn-netlab
+END B1-agent-copy-fvpn-netlab exit 0
+START B1-agent-collector
+END B1-agent-collector exit 0
+START B1-agent-chmod
+END B1-agent-chmod exit 0
+HOST B1-agent-ready-1 quiet True r 1 idle 93 suites False
+START B1-agent-suite
+END B1-agent-suite exit 0
+START B1-agent-commands
+END B1-agent-commands exit 1
+HOST B1-agent-postflight quiet False r 4 idle 73 suites False
+START B1-agent-down
+END B1-agent-down exit 0
+RETAINED UNQUALIFIED POSTFLIGHT B1-agent 1
+HOST B1-agent-preflight-1 quiet False r 4 idle 81 suites False
+HOST B1-agent-preflight-2 quiet False r 0 idle 75 suites False
+START remove-image-a
+END remove-image-a exit 0
+START remove-image-b
+END remove-image-b exit 0
+Traceback (most recent call last):
+  File "<worktree>/.agent/f22-run.py", line 157, in <module>
+    for leg in ['A1','B1','A2','B2']:
+
+  File "<worktree>/.agent/f22-run.py", line 141, in suite
+    while not suite_once(leg,label,config,which):
+              ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<worktree>/.agent/f22-run.py", line 85, in suite_once
+    await_quiet(leg+'-'+which+'-preflight')
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<worktree>/.agent/f22-run.py", line 60, in await_quiet
+    time.sleep(max(0,60-(time.monotonic()-start)))
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt
+START image-resume-A
+END image-resume-A exit 0
+START image-resume-B
+END image-resume-B exit 0
+KEEP QUALIFIED A1-live
+KEEP QUALIFIED A1-agent
+KEEP QUALIFIED A1-agent-trace
+KEEP QUALIFIED B1-live
+START remove-image-a
+END remove-image-a exit 0
+START remove-image-b
+END remove-image-b exit 0
+Traceback (most recent call last):
+  File "<worktree>/.agent/f22-run.py", line 160, in <module>
+    if leg=='B1' and which=='live':suite('B1','B',configs['B'],'diagnostic')
+                                   ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<worktree>/.agent/f22-run.py", line 141, in suite
+    while not suite_once(leg,label,config,which):
+              ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<worktree>/.agent/f22-run.py", line 85, in suite_once
+    await_quiet(leg+'-'+which+'-preflight')
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<worktree>/.agent/f22-run.py", line 59, in await_quiet
+    if host(name+'-'+str(attempt)): return
+       ~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "<worktree>/.agent/f22-run.py", line 36, in host
+    p=subprocess.run(['vmstat','5','7'],text=True,capture_output=True,check=True)
+  File "/usr/lib/python3.14/subprocess.py", line 557, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.14/subprocess.py", line 1221, in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+                     ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.14/subprocess.py", line 2153, in _communicate
+    ready = selector.select(timeout)
+  File "/usr/lib/python3.14/selectors.py", line 398, in select
+    fd_event_list = self._selector.poll(timeout)
+KeyboardInterrupt
+START image-resume-A
+END image-resume-A exit 0
+START image-resume-B
+END image-resume-B exit 0
+KEEP QUALIFIED A1-live
+KEEP QUALIFIED A1-agent
+KEEP QUALIFIED A1-agent-trace
+KEEP QUALIFIED B1-live
+HOST B1-diagnostic-preflight-1 quiet False r 10 idle 60 suites False
+HOST B1-diagnostic-preflight-2 quiet False r 0 idle 76 suites False
+HOST B1-diagnostic-preflight-3 quiet False r 4 idle 80 suites False
+HOST B1-diagnostic-preflight-4 quiet True r 1 idle 83 suites False
+START B1-diagnostic-up
+END B1-diagnostic-up exit 0
+START B1-diagnostic-collector-dir
+END B1-diagnostic-collector-dir exit 0
+START B1-diagnostic-copy-fvpn-agent
+END B1-diagnostic-copy-fvpn-agent exit 0
+START B1-diagnostic-copy-fvpn-labcontrol
+END B1-diagnostic-copy-fvpn-labcontrol exit 0
+START B1-diagnostic-copy-fvpn-watchdog
+END B1-diagnostic-copy-fvpn-watchdog exit 0
+START B1-diagnostic-copy-fvpn-netlab
+END B1-diagnostic-copy-fvpn-netlab exit 0
+START B1-diagnostic-collector
+END B1-diagnostic-collector exit 0
+START B1-diagnostic-chmod
+END B1-diagnostic-chmod exit 0
+HOST B1-diagnostic-ready-1 quiet True r 1 idle 84 suites False
+START B1-diagnostic-suite
+END B1-diagnostic-suite exit 1
+START B1-diagnostic-commands
+END B1-diagnostic-commands exit 0
+HOST B1-diagnostic-postflight quiet False r 5 idle 85 suites False
+START B1-diagnostic-pcaps
+END B1-diagnostic-pcaps exit 0
+START B1-diagnostic-down
+END B1-diagnostic-down exit 0
+RETAINED SUITE FAILURE B1-diagnostic
+RETAINED UNQUALIFIED POSTFLIGHT B1-diagnostic 1
+HOST B1-diagnostic-preflight-1 quiet True r 1 idle 86 suites False
+START B1-diagnostic-up
+END B1-diagnostic-up exit 0
+START B1-diagnostic-collector-dir
+END B1-diagnostic-collector-dir exit 0
+START B1-diagnostic-copy-fvpn-agent
+END B1-diagnostic-copy-fvpn-agent exit 0
+START B1-diagnostic-copy-fvpn-labcontrol
+END B1-diagnostic-copy-fvpn-labcontrol exit 0
+START B1-diagnostic-copy-fvpn-watchdog
+END B1-diagnostic-copy-fvpn-watchdog exit 0
+START B1-diagnostic-copy-fvpn-netlab
+END B1-diagnostic-copy-fvpn-netlab exit 0
+START B1-diagnostic-collector
+END B1-diagnostic-collector exit 0
+START B1-diagnostic-chmod
+END B1-diagnostic-chmod exit 0
+HOST B1-diagnostic-ready-1 quiet False r 1 idle 78 suites False
+START B1-diagnostic-down
+END B1-diagnostic-down exit 0
+START remove-image-a
+END remove-image-a exit 0
+START remove-image-b
+END remove-image-b exit 0
+Traceback (most recent call last):
+  File "<worktree>/.agent/f22-run.py", line 160, in <module>
+    suite(leg,leg[0],configs[leg[0]],which)
+                                   ^^^^^^^^
+  File "<worktree>/.agent/f22-run.py", line 141, in suite
+    archive_unqualified(name)
+             ~~~~~~~~~~^^^^^^
+  File "<worktree>/.agent/f22-run.py", line 101, in suite_once
+    await_quiet(name+'-ready')
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "<worktree>/.agent/f22-run.py", line 60, in await_quiet
+    time.sleep(max(0,60-(time.monotonic()-start)))
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt
+START image-resume-A
+END image-resume-A exit 0
+START image-resume-B
+END image-resume-B exit 0
+KEEP QUALIFIED A1-live
+KEEP QUALIFIED A1-agent
+KEEP QUALIFIED A1-agent-trace
+KEEP QUALIFIED B1-live
+HOST B1-diagnostic-preflight-2 quiet True r 0 idle 86 suites False
+START B1-diagnostic-up
+END B1-diagnostic-up exit 0
+START B1-diagnostic-collector-dir
+END B1-diagnostic-collector-dir exit 0
+START B1-diagnostic-copy-fvpn-agent
+END B1-diagnostic-copy-fvpn-agent exit 0
+START B1-diagnostic-copy-fvpn-labcontrol
+END B1-diagnostic-copy-fvpn-labcontrol exit 0
+START B1-diagnostic-copy-fvpn-watchdog
+END B1-diagnostic-copy-fvpn-watchdog exit 0
+START B1-diagnostic-copy-fvpn-netlab
+END B1-diagnostic-copy-fvpn-netlab exit 0
+START B1-diagnostic-collector
+END B1-diagnostic-collector exit 0
+START B1-diagnostic-chmod
+END B1-diagnostic-chmod exit 0
+HOST B1-diagnostic-ready-2 quiet True r 1 idle 87 suites False
+START B1-diagnostic-suite
+END B1-diagnostic-suite exit 0
+START B1-diagnostic-commands
+END B1-diagnostic-commands exit 0
+HOST B1-diagnostic-postflight quiet True r 0 idle 85 suites False
+START B1-diagnostic-pcaps
+END B1-diagnostic-pcaps exit 0
+START B1-diagnostic-down
+END B1-diagnostic-down exit 0
+HOST B1-agent-preflight-3 quiet True r 1 idle 85 suites False
+START B1-agent-up
+END B1-agent-up exit 0
+START B1-agent-collector-dir
+END B1-agent-collector-dir exit 0
+START B1-agent-copy-fvpn-agent
+END B1-agent-copy-fvpn-agent exit 0
+START B1-agent-copy-fvpn-labcontrol
+END B1-agent-copy-fvpn-labcontrol exit 0
+START B1-agent-copy-fvpn-watchdog
+END B1-agent-copy-fvpn-watchdog exit 0
+START B1-agent-copy-fvpn-netlab
+END B1-agent-copy-fvpn-netlab exit 0
+START B1-agent-collector
+END B1-agent-collector exit 0
+START B1-agent-chmod
+END B1-agent-chmod exit 0
+HOST B1-agent-ready-1 quiet True r 1 idle 81 suites False
+START B1-agent-suite
+END B1-agent-suite exit 0
+START B1-agent-commands
+END B1-agent-commands exit 1
+HOST B1-agent-postflight quiet True r 1 idle 84 suites False
+START B1-agent-down
+END B1-agent-down exit 0
+HOST B1-agent-trace-preflight-1 quiet False r 4 idle 80 suites False
+HOST B1-agent-trace-preflight-2 quiet False r 5 idle 76 suites False
+HOST B1-agent-trace-preflight-3 quiet False r 4 idle 76 suites False
+HOST B1-agent-trace-preflight-4 quiet True r 1 idle 85 suites False
+START B1-agent-trace-up
+END B1-agent-trace-up exit 0
+START B1-agent-trace-collector-dir
+END B1-agent-trace-collector-dir exit 0
+START B1-agent-trace-copy-fvpn-agent
+END B1-agent-trace-copy-fvpn-agent exit 0
+START B1-agent-trace-copy-fvpn-labcontrol
+END B1-agent-trace-copy-fvpn-labcontrol exit 0
+START B1-agent-trace-copy-fvpn-watchdog
+END B1-agent-trace-copy-fvpn-watchdog exit 0
+START B1-agent-trace-copy-fvpn-netlab
+END B1-agent-trace-copy-fvpn-netlab exit 0
+START B1-agent-trace-collector
+END B1-agent-trace-collector exit 0
+START B1-agent-trace-chmod
+END B1-agent-trace-chmod exit 0
+HOST B1-agent-trace-ready-1 quiet True r 1 idle 81 suites False
+START B1-agent-trace-suite
+END B1-agent-trace-suite exit 0
+START B1-agent-trace-commands
+END B1-agent-trace-commands exit 1
+HOST B1-agent-trace-postflight quiet True r 0 idle 86 suites False
+START B1-agent-trace-down
+END B1-agent-trace-down exit 0
+HOST A2-live-preflight-1 quiet True r 0 idle 86 suites False
+START A2-live-up
+END A2-live-up exit 0
+START A2-live-collector-dir
+END A2-live-collector-dir exit 0
+START A2-live-copy-fvpn-agent
+END A2-live-copy-fvpn-agent exit 0
+START A2-live-copy-fvpn-labcontrol
+END A2-live-copy-fvpn-labcontrol exit 0
+START A2-live-copy-fvpn-watchdog
+END A2-live-copy-fvpn-watchdog exit 0
+START A2-live-copy-fvpn-netlab
+END A2-live-copy-fvpn-netlab exit 0
+START A2-live-collector
+END A2-live-collector exit 0
+START A2-live-chmod
+END A2-live-chmod exit 0
+HOST A2-live-ready-1 quiet True r 0 idle 87 suites False
+START A2-live-suite
+END A2-live-suite exit 0
+START A2-live-commands
+END A2-live-commands exit 0
+HOST A2-live-postflight quiet True r 0 idle 85 suites False
+START A2-live-down
+END A2-live-down exit 0
+HOST A2-agent-preflight-1 quiet True r 0 idle 85 suites False
+START A2-agent-up
+END A2-agent-up exit 0
+START A2-agent-collector-dir
+END A2-agent-collector-dir exit 0
+START A2-agent-copy-fvpn-agent
+END A2-agent-copy-fvpn-agent exit 0
+START A2-agent-copy-fvpn-labcontrol
+END A2-agent-copy-fvpn-labcontrol exit 0
+START A2-agent-copy-fvpn-watchdog
+END A2-agent-copy-fvpn-watchdog exit 0
+START A2-agent-copy-fvpn-netlab
+END A2-agent-copy-fvpn-netlab exit 0
+START A2-agent-collector
+END A2-agent-collector exit 0
+START A2-agent-chmod
+END A2-agent-chmod exit 0
+HOST A2-agent-ready-1 quiet True r 1 idle 89 suites False
+START A2-agent-suite
+END A2-agent-suite exit 0
+START A2-agent-commands
+END A2-agent-commands exit 1
+HOST A2-agent-postflight quiet False r 3 idle 77 suites False
+START A2-agent-down
+END A2-agent-down exit 0
+RETAINED UNQUALIFIED POSTFLIGHT A2-agent 1
+HOST A2-agent-preflight-1 quiet False r 4 idle 79 suites False
+HOST A2-agent-preflight-2 quiet True r 1 idle 85 suites False
+START A2-agent-up
+END A2-agent-up exit 0
+START A2-agent-collector-dir
+END A2-agent-collector-dir exit 0
+START A2-agent-copy-fvpn-agent
+END A2-agent-copy-fvpn-agent exit 0
+START A2-agent-copy-fvpn-labcontrol
+END A2-agent-copy-fvpn-labcontrol exit 0
+START A2-agent-copy-fvpn-watchdog
+END A2-agent-copy-fvpn-watchdog exit 0
+START A2-agent-copy-fvpn-netlab
+END A2-agent-copy-fvpn-netlab exit 0
+START A2-agent-collector
+END A2-agent-collector exit 0
+START A2-agent-chmod
+END A2-agent-chmod exit 0
+HOST A2-agent-ready-1 quiet True r 3 idle 84 suites False
+START A2-agent-suite
+END A2-agent-suite exit 0
+START A2-agent-commands
+END A2-agent-commands exit 1
+HOST A2-agent-postflight quiet True r 1 idle 86 suites False
+START A2-agent-down
+END A2-agent-down exit 0
+HOST B2-live-preflight-1 quiet True r 0 idle 91 suites False
+START B2-live-up
+END B2-live-up exit 0
+START B2-live-collector-dir
+END B2-live-collector-dir exit 0
+START B2-live-copy-fvpn-agent
+END B2-live-copy-fvpn-agent exit 0
+START B2-live-copy-fvpn-labcontrol
+END B2-live-copy-fvpn-labcontrol exit 0
+START B2-live-copy-fvpn-watchdog
+END B2-live-copy-fvpn-watchdog exit 0
+START B2-live-copy-fvpn-netlab
+END B2-live-copy-fvpn-netlab exit 0
+START B2-live-collector
+END B2-live-collector exit 0
+START B2-live-chmod
+END B2-live-chmod exit 0
+HOST B2-live-ready-1 quiet True r 3 idle 86 suites False
+START B2-live-suite
+END B2-live-suite exit 0
+START B2-live-commands
+END B2-live-commands exit 0
+HOST B2-live-postflight quiet True r 0 idle 85 suites False
+START B2-live-down
+END B2-live-down exit 0
+START remove-image-a
+END remove-image-a exit 0
+START remove-image-b
+END remove-image-b exit 0
+Traceback (most recent call last):
+  File "<worktree>/.agent/f22-run.py", line 160, in <module>
+    suite(leg,leg[0],configs[leg[0]],which)
+    ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<worktree>/.agent/f22-run.py", line 142, in suite
+    while not suite_once(leg,label,config,which):
+              ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<worktree>/.agent/f22-run.py", line 85, in suite_once
+    await_quiet(leg+'-'+which+'-preflight')
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<worktree>/.agent/f22-run.py", line 62, in await_quiet
+    raise RuntimeError('blocked: host not quiet')
+RuntimeError: blocked: host not quiet

@@ -1,0 +1,13 @@
+=== RUN   TestF22_D133_AT02_CommandLifecycle
+    scenario_f22_test.go:26: command lifecycle rollback fixture: exit status 1 Traceback (most recent call last):
+          File "/opt/netlab/scripts/f22_rollback.py", line 106, in <module>
+            else: measure(sys.argv[2])
+                  ^^^^^^^^^^^^^^^^^^^^
+          File "/opt/netlab/scripts/f22_rollback.py", line 99, in measure
+            assert counts['admitted']['egresses']>0 and counts['revoked']['ingresses']>0 and counts['revoked']['egresses']==0
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AssertionError
+--- FAIL: TestF22_D133_AT02_CommandLifecycle (3.49s)
+FAIL
+FAIL	github.com/TED-H-com/Freedom-VPN/tests/netlab	3.488s
+FAIL

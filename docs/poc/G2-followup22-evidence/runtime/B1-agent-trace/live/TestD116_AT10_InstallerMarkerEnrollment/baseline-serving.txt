@@ -1,173 +1,173 @@
 table inet fvpn {
-	comment "managed-by=fvpn-node-install"
-	counter ctbase {
-		packets 5 bytes 420
-	}
+        comment "managed-by=fvpn-node-install"
+        counter ctbase {
+                packets 5 bytes 420
+        }
 
-	counter ctv6 {
-		packets 0 bytes 0
-	}
+        counter ctv6 {
+                packets 0 bytes 0
+        }
 
-	counter ctin {
-		packets 0 bytes 0
-	}
+        counter ctin {
+                packets 0 bytes 0
+        }
 
-	counter ctbadns {
-		packets 0 bytes 0
-	}
+        counter ctbadns {
+                packets 0 bytes 0
+        }
 
-	counter ctdeny {
-		packets 0 bytes 0
-	}
+        counter ctdeny {
+                packets 0 bytes 0
+        }
 
-	counter cthost {
-		packets 0 bytes 0
-	}
+        counter cthost {
+                packets 0 bytes 0
+        }
 
-	counter ctinv {
-		packets 0 bytes 0
-	}
+        counter ctinv {
+                packets 0 bytes 0
+        }
 
-	counter ctnodn {
-		packets 0 bytes 0
-	}
+        counter ctnodn {
+                packets 0 bytes 0
+        }
 
-	counter ctunkd {
-		packets 0 bytes 0
-	}
+        counter ctunkd {
+                packets 0 bytes 0
+        }
 
-	counter ctunku {
-		packets 0 bytes 0
-	}
+        counter ctunku {
+                packets 0 bytes 0
+        }
 
-	counter d_019a00000000700080000000000000a1 {
-		packets 6 bytes 448
-	}
+        counter d_019a00000000700080000000000000a1 {
+                packets 6 bytes 448
+        }
 
-	counter d_019a00000000700080000000000000a2 {
-		packets 0 bytes 0
-	}
+        counter d_019a00000000700080000000000000a2 {
+                packets 0 bytes 0
+        }
 
-	counter d_019a00000000700080000000000000b1 {
-		packets 0 bytes 0
-	}
+        counter d_019a00000000700080000000000000b1 {
+                packets 0 bytes 0
+        }
 
-	counter nd_019a00000000700080000000000000a1 {
-		packets 0 bytes 0
-	}
+        counter nd_019a00000000700080000000000000a1 {
+                packets 0 bytes 0
+        }
 
-	counter nd_019a00000000700080000000000000a2 {
-		packets 0 bytes 0
-	}
+        counter nd_019a00000000700080000000000000a2 {
+                packets 0 bytes 0
+        }
 
-	counter nd_019a00000000700080000000000000b1 {
-		packets 0 bytes 0
-	}
+        counter nd_019a00000000700080000000000000b1 {
+                packets 0 bytes 0
+        }
 
-	counter nu_019a00000000700080000000000000a1 {
-		packets 0 bytes 0
-	}
+        counter nu_019a00000000700080000000000000a1 {
+                packets 0 bytes 0
+        }
 
-	counter nu_019a00000000700080000000000000a2 {
-		packets 0 bytes 0
-	}
+        counter nu_019a00000000700080000000000000a2 {
+                packets 0 bytes 0
+        }
 
-	counter nu_019a00000000700080000000000000b1 {
-		packets 0 bytes 0
-	}
+        counter nu_019a00000000700080000000000000b1 {
+                packets 0 bytes 0
+        }
 
-	counter u_019a00000000700080000000000000a1 {
-		packets 10 bytes 488
-	}
+        counter u_019a00000000700080000000000000a1 {
+                packets 10 bytes 488
+        }
 
-	counter u_019a00000000700080000000000000a2 {
-		packets 0 bytes 0
-	}
+        counter u_019a00000000700080000000000000a2 {
+                packets 0 bytes 0
+        }
 
-	counter u_019a00000000700080000000000000b1 {
-		packets 0 bytes 0
-	}
+        counter u_019a00000000700080000000000000b1 {
+                packets 0 bytes 0
+        }
 
-	set allowed_v4 {
-		type ipv4_addr
-		flags timeout
-		elements = { 100.64.1.1 timeout 59m59s744ms expires 59m59s492ms, 100.64.1.2 timeout 59m59s744ms expires 59m59s492ms,
-			     100.64.2.1 timeout 59m59s744ms expires 59m59s492ms }
-	}
+        set allowed_v4 {
+                type ipv4_addr
+                flags timeout
+                elements = { 100.64.1.1 timeout 59m59s744ms expires 59m59s492ms, 100.64.1.2 timeout 59m59s744ms expires 59m59s492ms,
+                             100.64.2.1 timeout 59m59s744ms expires 59m59s492ms }
+        }
 
-	set denied_v4 {
-		type ipv4_addr
-		flags interval
-		auto-merge
-		elements = { 0.0.0.0/8, 10.0.0.0/8,
-			     100.64.0.0/10, 127.0.0.0/8,
-			     169.254.0.0/16, 172.16.0.0/12,
-			     192.0.0.0/24, 192.0.2.0/24,
-			     192.88.99.0/24, 192.168.0.0/16,
-			     198.18.0.0/15, 198.51.100.0/24,
-			     224.0.0.0/3 }
-	}
+        set denied_v4 {
+                type ipv4_addr
+                flags interval
+                auto-merge
+                elements = { 0.0.0.0/8, 10.0.0.0/8,
+                             100.64.0.0/10, 127.0.0.0/8,
+                             169.254.0.0/16, 172.16.0.0/12,
+                             192.0.0.0/24, 192.0.2.0/24,
+                             192.88.99.0/24, 192.168.0.0/16,
+                             198.18.0.0/15, 198.51.100.0/24,
+                             224.0.0.0/3 }
+        }
 
-	set host_v4 {
-		type ipv4_addr
-		flags interval
-		auto-merge
-		elements = { 192.0.2.33, 192.0.2.37,
-			     192.168.0.1 }
-	}
+        set host_v4 {
+                type ipv4_addr
+                flags interval
+                auto-merge
+                elements = { 192.0.2.33, 192.0.2.37,
+                             192.168.0.1 }
+        }
 
-	set resolver_v4 {
-		type ipv4_addr
-		elements = { 198.51.100.53 }
-	}
+        set resolver_v4 {
+                type ipv4_addr
+                elements = { 198.51.100.53 }
+        }
 
-	chain forward {
-		type filter hook forward priority mangle; policy drop;
-		ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment "fvpn_generation=2 fvpn_metering=forward_admission_v1"
-		ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment "fvpn_class=019a0000-0000-7000-8000-00000000000a:2f"
-		ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment "fvpn_class=019a0000-0000-7000-8000-00000000000b:30"
-		iifname "fv-fh" oifname "fv-ih" meta nfproto ipv6 counter name "ctv6" drop
-		iifname "fv-ih" oifname "fv-fh" meta nfproto ipv6 counter name "ctv6" drop
-		iifname "fv-fh" oifname "fv-ih" ct state invalid counter name "ctinv" drop
-		iifname "fv-ih" oifname "fv-fh" ct state invalid counter name "ctinv" drop
-		iifname "fv-fh" oifname "fv-ih" ip saddr != @allowed_v4 counter name "ctunku" drop
-		iifname "fv-fh" oifname "fv-ih" ip saddr 100.64.1.1 ip daddr @resolver_v4 tcp dport 53 counter name "nu_019a00000000700080000000000000a1" meta priority set 1:2f accept
-		iifname "fv-fh" oifname "fv-ih" ip saddr 100.64.1.1 ip daddr @resolver_v4 udp dport 53 counter name "nu_019a00000000700080000000000000a1" meta priority set 1:2f accept
-		iifname "fv-fh" oifname "fv-ih" ip saddr 100.64.1.2 ip daddr @resolver_v4 tcp dport 53 counter name "nu_019a00000000700080000000000000a2" meta priority set 1:2f accept
-		iifname "fv-fh" oifname "fv-ih" ip saddr 100.64.1.2 ip daddr @resolver_v4 udp dport 53 counter name "nu_019a00000000700080000000000000a2" meta priority set 1:2f accept
-		iifname "fv-fh" oifname "fv-ih" ip saddr 100.64.2.1 ip daddr @resolver_v4 tcp dport 53 counter name "nu_019a00000000700080000000000000b1" meta priority set 1:30 accept
-		iifname "fv-fh" oifname "fv-ih" ip saddr 100.64.2.1 ip daddr @resolver_v4 udp dport 53 counter name "nu_019a00000000700080000000000000b1" meta priority set 1:30 accept
-		iifname "fv-fh" oifname "fv-ih" ip daddr @resolver_v4 counter name "ctbadns" drop
-		iifname "fv-fh" oifname "fv-ih" ip daddr @denied_v4 counter name "ctdeny" drop
-		iifname "fv-fh" oifname "fv-ih" ip daddr @host_v4 counter name "cthost" drop
-		iifname "fv-fh" oifname "fv-ih" ip saddr 100.64.1.1 counter name "u_019a00000000700080000000000000a1" meta priority set 1:2f accept
-		iifname "fv-fh" oifname "fv-ih" ip saddr 100.64.1.2 counter name "u_019a00000000700080000000000000a2" meta priority set 1:2f accept
-		iifname "fv-fh" oifname "fv-ih" ip saddr 100.64.2.1 counter name "u_019a00000000700080000000000000b1" meta priority set 1:30 accept
-		iifname "fv-ih" oifname "fv-fh" ip daddr != @allowed_v4 counter name "ctunkd" drop
-		iifname "fv-ih" oifname "fv-fh" ct state != { established, related } counter name "ctnodn" drop
-		iifname "fv-ih" oifname "fv-fh" ip saddr @resolver_v4 ip daddr 100.64.1.1 tcp sport 53 counter name "nd_019a00000000700080000000000000a1" meta priority set 1:2f accept
-		iifname "fv-ih" oifname "fv-fh" ip saddr @resolver_v4 ip daddr 100.64.1.1 udp sport 53 counter name "nd_019a00000000700080000000000000a1" meta priority set 1:2f accept
-		iifname "fv-ih" oifname "fv-fh" ip daddr 100.64.1.1 counter name "d_019a00000000700080000000000000a1" meta priority set 1:2f accept
-		iifname "fv-ih" oifname "fv-fh" ip saddr @resolver_v4 ip daddr 100.64.1.2 tcp sport 53 counter name "nd_019a00000000700080000000000000a2" meta priority set 1:2f accept
-		iifname "fv-ih" oifname "fv-fh" ip saddr @resolver_v4 ip daddr 100.64.1.2 udp sport 53 counter name "nd_019a00000000700080000000000000a2" meta priority set 1:2f accept
-		iifname "fv-ih" oifname "fv-fh" ip daddr 100.64.1.2 counter name "d_019a00000000700080000000000000a2" meta priority set 1:2f accept
-		iifname "fv-ih" oifname "fv-fh" ip saddr @resolver_v4 ip daddr 100.64.2.1 tcp sport 53 counter name "nd_019a00000000700080000000000000b1" meta priority set 1:30 accept
-		iifname "fv-ih" oifname "fv-fh" ip saddr @resolver_v4 ip daddr 100.64.2.1 udp sport 53 counter name "nd_019a00000000700080000000000000b1" meta priority set 1:30 accept
-		iifname "fv-ih" oifname "fv-fh" ip daddr 100.64.2.1 counter name "d_019a00000000700080000000000000b1" meta priority set 1:30 accept
-	}
+        chain forward {
+                type filter hook forward priority mangle; policy drop;
+                ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment "fvpn_generation=2 fvpn_metering=forward_admission_v1"
+                ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment "fvpn_class=019a0000-0000-7000-8000-00000000000a:2f"
+                ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment "fvpn_class=019a0000-0000-7000-8000-00000000000b:30"
+                iifname "fv-fh" oifname "fv-ih" meta nfproto ipv6 counter name "ctv6" drop
+                iifname "fv-ih" oifname "fv-fh" meta nfproto ipv6 counter name "ctv6" drop
+                iifname "fv-fh" oifname "fv-ih" ct state invalid counter name "ctinv" drop
+                iifname "fv-ih" oifname "fv-fh" ct state invalid counter name "ctinv" drop
+                iifname "fv-fh" oifname "fv-ih" ip saddr != @allowed_v4 counter name "ctunku" drop
+                iifname "fv-fh" oifname "fv-ih" ip saddr 100.64.1.1 ip daddr @resolver_v4 tcp dport 53 counter name "nu_019a00000000700080000000000000a1" meta priority set 1:2f accept
+                iifname "fv-fh" oifname "fv-ih" ip saddr 100.64.1.1 ip daddr @resolver_v4 udp dport 53 counter name "nu_019a00000000700080000000000000a1" meta priority set 1:2f accept
+                iifname "fv-fh" oifname "fv-ih" ip saddr 100.64.1.2 ip daddr @resolver_v4 tcp dport 53 counter name "nu_019a00000000700080000000000000a2" meta priority set 1:2f accept
+                iifname "fv-fh" oifname "fv-ih" ip saddr 100.64.1.2 ip daddr @resolver_v4 udp dport 53 counter name "nu_019a00000000700080000000000000a2" meta priority set 1:2f accept
+                iifname "fv-fh" oifname "fv-ih" ip saddr 100.64.2.1 ip daddr @resolver_v4 tcp dport 53 counter name "nu_019a00000000700080000000000000b1" meta priority set 1:30 accept
+                iifname "fv-fh" oifname "fv-ih" ip saddr 100.64.2.1 ip daddr @resolver_v4 udp dport 53 counter name "nu_019a00000000700080000000000000b1" meta priority set 1:30 accept
+                iifname "fv-fh" oifname "fv-ih" ip daddr @resolver_v4 counter name "ctbadns" drop
+                iifname "fv-fh" oifname "fv-ih" ip daddr @denied_v4 counter name "ctdeny" drop
+                iifname "fv-fh" oifname "fv-ih" ip daddr @host_v4 counter name "cthost" drop
+                iifname "fv-fh" oifname "fv-ih" ip saddr 100.64.1.1 counter name "u_019a00000000700080000000000000a1" meta priority set 1:2f accept
+                iifname "fv-fh" oifname "fv-ih" ip saddr 100.64.1.2 counter name "u_019a00000000700080000000000000a2" meta priority set 1:2f accept
+                iifname "fv-fh" oifname "fv-ih" ip saddr 100.64.2.1 counter name "u_019a00000000700080000000000000b1" meta priority set 1:30 accept
+                iifname "fv-ih" oifname "fv-fh" ip daddr != @allowed_v4 counter name "ctunkd" drop
+                iifname "fv-ih" oifname "fv-fh" ct state != { established, related } counter name "ctnodn" drop
+                iifname "fv-ih" oifname "fv-fh" ip saddr @resolver_v4 ip daddr 100.64.1.1 tcp sport 53 counter name "nd_019a00000000700080000000000000a1" meta priority set 1:2f accept
+                iifname "fv-ih" oifname "fv-fh" ip saddr @resolver_v4 ip daddr 100.64.1.1 udp sport 53 counter name "nd_019a00000000700080000000000000a1" meta priority set 1:2f accept
+                iifname "fv-ih" oifname "fv-fh" ip daddr 100.64.1.1 counter name "d_019a00000000700080000000000000a1" meta priority set 1:2f accept
+                iifname "fv-ih" oifname "fv-fh" ip saddr @resolver_v4 ip daddr 100.64.1.2 tcp sport 53 counter name "nd_019a00000000700080000000000000a2" meta priority set 1:2f accept
+                iifname "fv-ih" oifname "fv-fh" ip saddr @resolver_v4 ip daddr 100.64.1.2 udp sport 53 counter name "nd_019a00000000700080000000000000a2" meta priority set 1:2f accept
+                iifname "fv-ih" oifname "fv-fh" ip daddr 100.64.1.2 counter name "d_019a00000000700080000000000000a2" meta priority set 1:2f accept
+                iifname "fv-ih" oifname "fv-fh" ip saddr @resolver_v4 ip daddr 100.64.2.1 tcp sport 53 counter name "nd_019a00000000700080000000000000b1" meta priority set 1:30 accept
+                iifname "fv-ih" oifname "fv-fh" ip saddr @resolver_v4 ip daddr 100.64.2.1 udp sport 53 counter name "nd_019a00000000700080000000000000b1" meta priority set 1:30 accept
+                iifname "fv-ih" oifname "fv-fh" ip daddr 100.64.2.1 counter name "d_019a00000000700080000000000000b1" meta priority set 1:30 accept
+        }
 
-	chain input {
-		type filter hook input priority mangle; policy accept;
-		iifname "fv-fh" counter name "ctin" drop
-		ip saddr 100.64.0.0/10 counter name "ctin" drop
-	}
+        chain input {
+                type filter hook input priority mangle; policy accept;
+                iifname "fv-fh" counter name "ctin" drop
+                ip saddr 100.64.0.0/10 counter name "ctin" drop
+        }
 
-	chain output {
-		type filter hook output priority mangle; policy accept;
-	}
+        chain output {
+                type filter hook output priority mangle; policy accept;
+        }
 
-	chain postrouting {
-		type nat hook postrouting priority srcnat; policy accept;
-		oifname "fv-ih" ip saddr @allowed_v4 snat ip to 192.0.2.37
-	}
+        chain postrouting {
+                type nat hook postrouting priority srcnat; policy accept;
+                oifname "fv-ih" ip saddr @allowed_v4 snat ip to 192.0.2.37
+        }
 }

@@ -123,6 +123,11 @@
       "sha256": "38d38e9b5c2feae0765fb69e8b3e4cd7db2e7d7a82ba019e53cee4a5e0aeba6c"
     },
     {
+      "path": "gates/commit.log",
+      "bytes": 248338,
+      "sha256": "ece19989b7f147926ddfd241178f4f3275e786d96f1b138a41d026741fc4d2c0"
+    },
+    {
       "path": "gates/committed-evidence.log",
       "bytes": 3007,
       "sha256": "73e9caf3bf3f46d157cd5143ee89c55ec730a07544ef24d229dc329b04eae4bb"
@@ -160,7 +165,12 @@
     {
       "path": "gates/hygiene-final-replay.log",
       "bytes": 3007,
-      "sha256": "7969c66b96e47efe4b6457a227e091fe4ab6cce0df933283191ae7c2fa62852f"
+      "sha256": "31d9862c7a757ecfba5f99c548e1030ae3456cad1a45ca39429487e62a739591"
+    },
+    {
+      "path": "gates/hygiene-git-complete.log",
+      "bytes": 3007,
+      "sha256": "73e9caf3bf3f46d157cd5143ee89c55ec730a07544ef24d229dc329b04eae4bb"
     },
     {
       "path": "gates/lane-final.log",
@@ -221,6 +231,11 @@
       "path": "gates/staged-diff-before-normalization.log",
       "bytes": 60549,
       "sha256": "47942cb729677e45b95e310963c5072f1fab5209ed2f83eb3f8470807fbd01ba"
+    },
+    {
+      "path": "gates/staged-diff-final.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     {
       "path": "gates/unit-final.log",
@@ -554,8 +569,8 @@
     },
     {
       "path": "initial-rejected/A1-live-down.log",
-      "bytes": 802,
-      "sha256": "38c7fdf4dec83f1918189bc12fea873e46955c279783344fbf0d41ee843128a3"
+      "bytes": 816,
+      "sha256": "8bd959e1ea643b854d8f7d53f8fa660a464c20ec34bee8981c8c37d281f11f25"
     },
     {
       "path": "initial-rejected/A1-live-preflight-1.json",
@@ -574,8 +589,8 @@
     },
     {
       "path": "initial-rejected/A1-live-up.log",
-      "bytes": 3450,
-      "sha256": "10a172904e986102871db3487caa991da685e035685c475338952dcf4ee39640"
+      "bytes": 3492,
+      "sha256": "9c666653b47223743208446266220734c5a7edd2105266c92c37d1563e6f9d71"
     },
     {
       "path": "initial-rejected/build-A-fvpn-agent.log",
@@ -794,8 +809,8 @@
     },
     {
       "path": "prior-candidate/A1-agent-down.log",
-      "bytes": 802,
-      "sha256": "38c7fdf4dec83f1918189bc12fea873e46955c279783344fbf0d41ee843128a3"
+      "bytes": 816,
+      "sha256": "8bd959e1ea643b854d8f7d53f8fa660a464c20ec34bee8981c8c37d281f11f25"
     },
     {
       "path": "prior-candidate/A1-agent-postflight.json",
@@ -904,8 +919,8 @@
     },
     {
       "path": "prior-candidate/A1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/baseline-serving.txt",
-      "bytes": 6532,
-      "sha256": "9d20bb80edd89770a3aa9414cbf40fb7f163c29f07ce0cfae7dff62e1afd1f6b"
+      "bytes": 8149,
+      "sha256": "65b5e4ebe4c4823fc25319eae0124886544423baf5526e2af9b394ca664f3675"
     },
     {
       "path": "prior-candidate/A1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/before-enrollment.json",
@@ -914,8 +929,8 @@
     },
     {
       "path": "prior-candidate/A1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/before-enrollment.txt",
-      "bytes": 983,
-      "sha256": "d0174f3af4a6a4956e613ee2d074bf639f71f695419610ac4bf02eb639e8577b"
+      "bytes": 1326,
+      "sha256": "d9e738014f654b5ef81dacc81c28b753f37756c5c476f3707418079e9376e619"
     },
     {
       "path": "prior-candidate/A1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/final-observation.json",
@@ -929,8 +944,8 @@
     },
     {
       "path": "prior-candidate/A1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/final-serving.txt",
-      "bytes": 6541,
-      "sha256": "fd07e467becfda5442d77cad436946c8f27952a9207394be4eec6239f9674d6d"
+      "bytes": 8158,
+      "sha256": "0b8fe0a6dd9ba315628b1cc45ace6ac443ca00a52929f7a86722e5a07ed62d92"
     },
     {
       "path": "prior-candidate/A1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/marker-observation.json",
@@ -944,8 +959,8 @@
     },
     {
       "path": "prior-candidate/A1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/marker-serving.txt",
-      "bytes": 6531,
-      "sha256": "63fabdd29d91c40b46e5babae8e91a6c1ff023d159ecfbd484d8674cf8386e64"
+      "bytes": 8148,
+      "sha256": "ee14964a9d96f7ee0ab1c6ba7c35c9dfbfcd032fa9e028145ee05a9585c27de0"
     },
     {
       "path": "prior-candidate/A1-agent-trace/status.json",
@@ -994,8 +1009,8 @@
     },
     {
       "path": "prior-candidate/A1-agent-trace-down.log",
-      "bytes": 802,
-      "sha256": "38c7fdf4dec83f1918189bc12fea873e46955c279783344fbf0d41ee843128a3"
+      "bytes": 816,
+      "sha256": "8bd959e1ea643b854d8f7d53f8fa660a464c20ec34bee8981c8c37d281f11f25"
     },
     {
       "path": "prior-candidate/A1-agent-trace-postflight.json",
@@ -1024,13 +1039,13 @@
     },
     {
       "path": "prior-candidate/A1-agent-trace-up.log",
-      "bytes": 3446,
-      "sha256": "863567c76602c0dfcfd931179db97fb9bf2995a794439c5a69573b2b978cb423"
+      "bytes": 3488,
+      "sha256": "652724ce150e379d350bf27e1c2ad309a467a4177b9670a10847142db98d08e8"
     },
     {
       "path": "prior-candidate/A1-agent-up.log",
-      "bytes": 3450,
-      "sha256": "dbef4d8c8dd766bf4429d3155aa7264eb25765122af85a0195ea7ce3e557738a"
+      "bytes": 3492,
+      "sha256": "e65479255314ec354f3441e109ff16e0fb64b2b10fe8ae2aa3889d5ae70353f3"
     },
     {
       "path": "prior-candidate/A1-live/admission-after-start.json",
@@ -2019,8 +2034,8 @@
     },
     {
       "path": "prior-candidate/A1-live-down.log",
-      "bytes": 802,
-      "sha256": "38c7fdf4dec83f1918189bc12fea873e46955c279783344fbf0d41ee843128a3"
+      "bytes": 816,
+      "sha256": "8bd959e1ea643b854d8f7d53f8fa660a464c20ec34bee8981c8c37d281f11f25"
     },
     {
       "path": "prior-candidate/A1-live-postflight.json",
@@ -2074,8 +2089,8 @@
     },
     {
       "path": "prior-candidate/A1-live-up.log",
-      "bytes": 3549,
-      "sha256": "992d9324f44c8ae67b45818910432fc6bfdde963b8d6599e55e76321e2ffda97"
+      "bytes": 3591,
+      "sha256": "2f416cd69a323740c0a1779e8621d00ff7093c409a44cc88b55f4f0230ae3b89"
     },
     {
       "path": "prior-candidate/B1-agent/admission-after-start.json",
@@ -2184,8 +2199,8 @@
     },
     {
       "path": "prior-candidate/B1-agent-down.log",
-      "bytes": 662,
-      "sha256": "268e7f4c657ecaf97bfbea10311743a520a0940223eb6c1257b8266f9de9c5c9"
+      "bytes": 676,
+      "sha256": "e0e2ddf687bc3f4cb77e2f7aad85e5ab65342f649d458b92ff94257831ad558d"
     },
     {
       "path": "prior-candidate/B1-agent-postflight.json",
@@ -2224,8 +2239,8 @@
     },
     {
       "path": "prior-candidate/B1-agent-up.log",
-      "bytes": 3358,
-      "sha256": "f6948bd41b5ec57b9df1e8ee876e8c0225845a15efeeaa1d9929e8293dc2ddad"
+      "bytes": 3400,
+      "sha256": "9cbfb5e0ef6e5d593a20d3d633582f654dc4cf0d8e07927ef3c17ffa35162c29"
     },
     {
       "path": "prior-candidate/B1-live/admission-after-start.json",
@@ -3214,8 +3229,8 @@
     },
     {
       "path": "prior-candidate/B1-live-down.log",
-      "bytes": 662,
-      "sha256": "268e7f4c657ecaf97bfbea10311743a520a0940223eb6c1257b8266f9de9c5c9"
+      "bytes": 676,
+      "sha256": "e0e2ddf687bc3f4cb77e2f7aad85e5ab65342f649d458b92ff94257831ad558d"
     },
     {
       "path": "prior-candidate/B1-live-postflight.json",
@@ -3239,8 +3254,8 @@
     },
     {
       "path": "prior-candidate/B1-live-up.log",
-      "bytes": 3226,
-      "sha256": "9273e5631d4f09f593e8581d803faf7c4c0e5163836ac7e4a49b09253075310a"
+      "bytes": 3268,
+      "sha256": "814fb8c5285759f79f220bb5f60ffe08778abf303880dd5a525ffe575f10a99e"
     },
     {
       "path": "prior-candidate/build-A-fvpn-agent.log",
@@ -3444,8 +3459,8 @@
     },
     {
       "path": "prior-candidate/unqualified/A1-agent-1/A1-agent-down.log",
-      "bytes": 802,
-      "sha256": "38c7fdf4dec83f1918189bc12fea873e46955c279783344fbf0d41ee843128a3"
+      "bytes": 816,
+      "sha256": "8bd959e1ea643b854d8f7d53f8fa660a464c20ec34bee8981c8c37d281f11f25"
     },
     {
       "path": "prior-candidate/unqualified/A1-agent-1/A1-agent-postflight.json",
@@ -3474,8 +3489,8 @@
     },
     {
       "path": "prior-candidate/unqualified/A1-agent-1/A1-agent-up.log",
-      "bytes": 3446,
-      "sha256": "f6cc37f5dc3a5e3a40698e2b78b84ca89746d92b0c0ac2d064d3170069058b43"
+      "bytes": 3488,
+      "sha256": "7ff8932488892e97c8c6cf791bb55d13e88988b26c3ea60b88be5d4dd34ee907"
     },
     {
       "path": "prior-candidate-analysis/A1-agent-trace.json",
@@ -3614,8 +3629,8 @@
     },
     {
       "path": "runtime/A1-agent-down.log",
-      "bytes": 802,
-      "sha256": "38c7fdf4dec83f1918189bc12fea873e46955c279783344fbf0d41ee843128a3"
+      "bytes": 816,
+      "sha256": "8bd959e1ea643b854d8f7d53f8fa660a464c20ec34bee8981c8c37d281f11f25"
     },
     {
       "path": "runtime/A1-agent-postflight.json",
@@ -3634,8 +3649,8 @@
     },
     {
       "path": "runtime/A1-agent-suite.log",
-      "bytes": 17489,
-      "sha256": "f67eee4182d2f5d1188304c8185ef839e6781b7ecfa4cbd256de134d24124265"
+      "bytes": 18714,
+      "sha256": "da00ea5573188ee10aed1987cc06cea7b8b8114db4f34d3d3a7597cab79a556c"
     },
     {
       "path": "runtime/A1-agent-trace/admission-after-start.json",
@@ -3709,8 +3724,8 @@
     },
     {
       "path": "runtime/A1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/baseline-serving.txt",
-      "bytes": 6532,
-      "sha256": "a87bdf933bb00870c21b0c6cb6c2126138f8c790a0323d218ddbbd5e8bf689cc"
+      "bytes": 8149,
+      "sha256": "0670b0c7c31f8ee9ea500516c0714b46b4c8cc2890a1442c8594fd9305b68f95"
     },
     {
       "path": "runtime/A1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/before-enrollment.json",
@@ -3719,8 +3734,8 @@
     },
     {
       "path": "runtime/A1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/before-enrollment.txt",
-      "bytes": 983,
-      "sha256": "d0174f3af4a6a4956e613ee2d074bf639f71f695419610ac4bf02eb639e8577b"
+      "bytes": 1326,
+      "sha256": "d9e738014f654b5ef81dacc81c28b753f37756c5c476f3707418079e9376e619"
     },
     {
       "path": "runtime/A1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/final-observation.json",
@@ -3734,8 +3749,8 @@
     },
     {
       "path": "runtime/A1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/final-serving.txt",
-      "bytes": 6541,
-      "sha256": "f73747c1c94e8d9e1b406c19a3aba0cdcd039ea66ac89919a1eca80183906e8d"
+      "bytes": 8158,
+      "sha256": "48bd672d0d691393c94200b215a48d9c5a8363d461333024c1f38b76c6c5598f"
     },
     {
       "path": "runtime/A1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/marker-observation.json",
@@ -3749,8 +3764,8 @@
     },
     {
       "path": "runtime/A1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/marker-serving.txt",
-      "bytes": 6531,
-      "sha256": "75785d8387491806ee22233c9180c47e3663808e43d2b36ad84d7cd5620a2f68"
+      "bytes": 8148,
+      "sha256": "2d446c9470bad18c7ca0e86fe4c03746c59dcd92cd4f8bf71e5c3abbd27ae4e3"
     },
     {
       "path": "runtime/A1-agent-trace/status.json",
@@ -3799,8 +3814,8 @@
     },
     {
       "path": "runtime/A1-agent-trace-down.log",
-      "bytes": 802,
-      "sha256": "38c7fdf4dec83f1918189bc12fea873e46955c279783344fbf0d41ee843128a3"
+      "bytes": 816,
+      "sha256": "8bd959e1ea643b854d8f7d53f8fa660a464c20ec34bee8981c8c37d281f11f25"
     },
     {
       "path": "runtime/A1-agent-trace-postflight.json",
@@ -3834,13 +3849,13 @@
     },
     {
       "path": "runtime/A1-agent-trace-up.log",
-      "bytes": 3512,
-      "sha256": "9fb99bd267e14e2356f9f1229a018d57c2b9374754c7f4347e63e1e467085906"
+      "bytes": 3554,
+      "sha256": "15b0168b8ac06015858504bf41946a54f1ba1eb142626847c91a8e27a94ad417"
     },
     {
       "path": "runtime/A1-agent-up.log",
-      "bytes": 3451,
-      "sha256": "50fa97523c1dac1c0ebc54741f96cb08d43692a4fa71135d4ff04286588b1f2e"
+      "bytes": 3493,
+      "sha256": "9028bdd124cef8c47b9a9b4da32665efba9a2b1f8d632d63f44fd704976ecab0"
     },
     {
       "path": "runtime/A1-live/admission-after-start.json",
@@ -4829,8 +4844,8 @@
     },
     {
       "path": "runtime/A1-live-down.log",
-      "bytes": 802,
-      "sha256": "38c7fdf4dec83f1918189bc12fea873e46955c279783344fbf0d41ee843128a3"
+      "bytes": 816,
+      "sha256": "8bd959e1ea643b854d8f7d53f8fa660a464c20ec34bee8981c8c37d281f11f25"
     },
     {
       "path": "runtime/A1-live-postflight.json",
@@ -4864,8 +4879,8 @@
     },
     {
       "path": "runtime/A1-live-up.log",
-      "bytes": 3446,
-      "sha256": "2e1f96912a09521b8a8b35919e3d60a40bc763872ca77f14930ac1071c542e31"
+      "bytes": 3488,
+      "sha256": "fc6429567bc89fc5b569be4bdb3b628122a38a110adaf043cfa04dc05d049494"
     },
     {
       "path": "runtime/A2-agent/admission-after-start.json",
@@ -4974,8 +4989,8 @@
     },
     {
       "path": "runtime/A2-agent-down.log",
-      "bytes": 802,
-      "sha256": "38c7fdf4dec83f1918189bc12fea873e46955c279783344fbf0d41ee843128a3"
+      "bytes": 816,
+      "sha256": "8bd959e1ea643b854d8f7d53f8fa660a464c20ec34bee8981c8c37d281f11f25"
     },
     {
       "path": "runtime/A2-agent-postflight.json",
@@ -5004,8 +5019,8 @@
     },
     {
       "path": "runtime/A2-agent-up.log",
-      "bytes": 3446,
-      "sha256": "36b8a727e96344a7a7e7b2e5dc24af1516168a6afff7e4b8d4743928e98e122b"
+      "bytes": 3488,
+      "sha256": "30d9655dcb09385cb6121d1154718c61a34a8c5ed293788f24a11ce099b7aed2"
     },
     {
       "path": "runtime/A2-live/admission-after-start.json",
@@ -5994,8 +6009,8 @@
     },
     {
       "path": "runtime/A2-live-down.log",
-      "bytes": 802,
-      "sha256": "38c7fdf4dec83f1918189bc12fea873e46955c279783344fbf0d41ee843128a3"
+      "bytes": 816,
+      "sha256": "8bd959e1ea643b854d8f7d53f8fa660a464c20ec34bee8981c8c37d281f11f25"
     },
     {
       "path": "runtime/A2-live-postflight.json",
@@ -6019,8 +6034,8 @@
     },
     {
       "path": "runtime/A2-live-up.log",
-      "bytes": 3450,
-      "sha256": "d41bd969098848369d20ef9185b0c1c3078fd72d8d4d53665d794c978e498a98"
+      "bytes": 3492,
+      "sha256": "d992d21f32cc4d240540ca19b1d91a22a463c7a3ff6d38d068be6333d072df14"
     },
     {
       "path": "runtime/B1-agent/admission-after-start.json",
@@ -6129,8 +6144,8 @@
     },
     {
       "path": "runtime/B1-agent-down.log",
-      "bytes": 662,
-      "sha256": "268e7f4c657ecaf97bfbea10311743a520a0940223eb6c1257b8266f9de9c5c9"
+      "bytes": 676,
+      "sha256": "e0e2ddf687bc3f4cb77e2f7aad85e5ab65342f649d458b92ff94257831ad558d"
     },
     {
       "path": "runtime/B1-agent-postflight.json",
@@ -6234,8 +6249,8 @@
     },
     {
       "path": "runtime/B1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/baseline-serving.txt",
-      "bytes": 6532,
-      "sha256": "6c967629302630f679df560bccb7a504167160e1fcfee06cf6bcf0fcd8804598"
+      "bytes": 8149,
+      "sha256": "209c127f9c430f56b25e2a671f389f9f6a60c302235f8e72fb41e1a19ba830ed"
     },
     {
       "path": "runtime/B1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/before-enrollment.json",
@@ -6244,8 +6259,8 @@
     },
     {
       "path": "runtime/B1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/before-enrollment.txt",
-      "bytes": 983,
-      "sha256": "d0174f3af4a6a4956e613ee2d074bf639f71f695419610ac4bf02eb639e8577b"
+      "bytes": 1326,
+      "sha256": "d9e738014f654b5ef81dacc81c28b753f37756c5c476f3707418079e9376e619"
     },
     {
       "path": "runtime/B1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/final-observation.json",
@@ -6259,8 +6274,8 @@
     },
     {
       "path": "runtime/B1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/final-serving.txt",
-      "bytes": 6541,
-      "sha256": "e6530c81606900890c9a10a009e31668463f93e7ade86757843d78bc196a17eb"
+      "bytes": 8158,
+      "sha256": "8dad78e6f3411a408b2b95d55a11682456dbf8d8ea5818658615dc5897f1a582"
     },
     {
       "path": "runtime/B1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/marker-observation.json",
@@ -6274,8 +6289,8 @@
     },
     {
       "path": "runtime/B1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/marker-serving.txt",
-      "bytes": 6531,
-      "sha256": "a9dec8f58c69709df4b34e9172750029a1b34a65f0ff653f6a49b6cf123c3fdd"
+      "bytes": 8148,
+      "sha256": "c68b8bc2ba3b3940a8f2414678c9ec19b2264c012b06e95318cde842f05ef151"
     },
     {
       "path": "runtime/B1-agent-trace/status.json",
@@ -6324,8 +6339,8 @@
     },
     {
       "path": "runtime/B1-agent-trace-down.log",
-      "bytes": 662,
-      "sha256": "268e7f4c657ecaf97bfbea10311743a520a0940223eb6c1257b8266f9de9c5c9"
+      "bytes": 676,
+      "sha256": "e0e2ddf687bc3f4cb77e2f7aad85e5ab65342f649d458b92ff94257831ad558d"
     },
     {
       "path": "runtime/B1-agent-trace-postflight.json",
@@ -6364,13 +6379,13 @@
     },
     {
       "path": "runtime/B1-agent-trace-up.log",
-      "bytes": 3224,
-      "sha256": "71487958f7c64625aa8cfe75a0de5166d546df432650caa5d27feab3fc8743e1"
+      "bytes": 3266,
+      "sha256": "f899f26b1e18bfeec6247daa5776a427b04aa5c73033aeca335206ba1dce3b2e"
     },
     {
       "path": "runtime/B1-agent-up.log",
-      "bytes": 3224,
-      "sha256": "cee2bd8671f78e291f3058aea39bb125b6b7fbc5c0e97c1d219eb511f477582c"
+      "bytes": 3266,
+      "sha256": "777690f7fb58193c86d5d458afd63d01848e580d0f759de71a9c51be7030051d"
     },
     {
       "path": "runtime/B1-diagnostic/admission-after-start.json",
@@ -6559,8 +6574,8 @@
     },
     {
       "path": "runtime/B1-diagnostic-down.log",
-      "bytes": 662,
-      "sha256": "268e7f4c657ecaf97bfbea10311743a520a0940223eb6c1257b8266f9de9c5c9"
+      "bytes": 676,
+      "sha256": "e0e2ddf687bc3f4cb77e2f7aad85e5ab65342f649d458b92ff94257831ad558d"
     },
     {
       "path": "runtime/B1-diagnostic-pcaps.log",
@@ -6599,8 +6614,8 @@
     },
     {
       "path": "runtime/B1-diagnostic-up.log",
-      "bytes": 3285,
-      "sha256": "a5481b29c38bb831d25458e981227e31143bbd653ab6fbe676f6fe2a57483524"
+      "bytes": 3327,
+      "sha256": "55eefa663369f909b0e098abc9d6e2a53f9acb264c17502f92043cfd5e0a7d94"
     },
     {
       "path": "runtime/B1-live/admission-after-start.json",
@@ -7589,8 +7604,8 @@
     },
     {
       "path": "runtime/B1-live-down.log",
-      "bytes": 662,
-      "sha256": "268e7f4c657ecaf97bfbea10311743a520a0940223eb6c1257b8266f9de9c5c9"
+      "bytes": 676,
+      "sha256": "e0e2ddf687bc3f4cb77e2f7aad85e5ab65342f649d458b92ff94257831ad558d"
     },
     {
       "path": "runtime/B1-live-postflight.json",
@@ -7624,8 +7639,8 @@
     },
     {
       "path": "runtime/B1-live-up.log",
-      "bytes": 3219,
-      "sha256": "28c5efec027fc5276a9bd1a73c83087b0005ee3de5fec4b9e0d58b6208caefac"
+      "bytes": 3261,
+      "sha256": "15aafd9b52f5351503ecd7ca650ede284cbd4b8f228e5acb68d4b5d4272b8fba"
     },
     {
       "path": "runtime/B2-live/admission-after-start.json",
@@ -8614,8 +8629,8 @@
     },
     {
       "path": "runtime/B2-live-down.log",
-      "bytes": 662,
-      "sha256": "268e7f4c657ecaf97bfbea10311743a520a0940223eb6c1257b8266f9de9c5c9"
+      "bytes": 676,
+      "sha256": "e0e2ddf687bc3f4cb77e2f7aad85e5ab65342f649d458b92ff94257831ad558d"
     },
     {
       "path": "runtime/B2-live-postflight.json",
@@ -8639,8 +8654,8 @@
     },
     {
       "path": "runtime/B2-live-up.log",
-      "bytes": 3221,
-      "sha256": "2c0087583a8cb8e928d65ce7a2d26e6b99f7fa0b4a3bce5a568b8a4f5144f956"
+      "bytes": 3263,
+      "sha256": "f5ef2811b2a9fa76197a34337dce98a5790d0b4479708c6544d0d62aebd7cb26"
     },
     {
       "path": "runtime/blocked.json",
@@ -8824,8 +8839,8 @@
     },
     {
       "path": "runtime/unqualified/A1-agent-trace-1/A1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/baseline-serving.txt",
-      "bytes": 6532,
-      "sha256": "92a445d60c0e0a35b3d0e700352398e683a41d96dc00bf24103c9e217030c4d0"
+      "bytes": 8149,
+      "sha256": "3918b43d4f44dd7c97d9965b6d634648ea160b14d666c39ec00f7236475f6f77"
     },
     {
       "path": "runtime/unqualified/A1-agent-trace-1/A1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/before-enrollment.json",
@@ -8834,8 +8849,8 @@
     },
     {
       "path": "runtime/unqualified/A1-agent-trace-1/A1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/before-enrollment.txt",
-      "bytes": 983,
-      "sha256": "d0174f3af4a6a4956e613ee2d074bf639f71f695419610ac4bf02eb639e8577b"
+      "bytes": 1326,
+      "sha256": "d9e738014f654b5ef81dacc81c28b753f37756c5c476f3707418079e9376e619"
     },
     {
       "path": "runtime/unqualified/A1-agent-trace-1/A1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/final-observation.json",
@@ -8849,8 +8864,8 @@
     },
     {
       "path": "runtime/unqualified/A1-agent-trace-1/A1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/final-serving.txt",
-      "bytes": 6541,
-      "sha256": "cd3ddc6be7db08483c21cafa23efbd1091f3634deb514798c2d39d0f4cdbb1f9"
+      "bytes": 8158,
+      "sha256": "8d4dec34052e436f1bc27b4d33448f287b36569fdbdc43f229b770e6fcf5f48d"
     },
     {
       "path": "runtime/unqualified/A1-agent-trace-1/A1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/marker-observation.json",
@@ -8864,8 +8879,8 @@
     },
     {
       "path": "runtime/unqualified/A1-agent-trace-1/A1-agent-trace/live/TestD116_AT10_InstallerMarkerEnrollment/marker-serving.txt",
-      "bytes": 6531,
-      "sha256": "02827010a8c6d69fbf37a7ed2dcedf3c5e59b10fbb0aa1e4f5d87a3195463e91"
+      "bytes": 8148,
+      "sha256": "ce4cb1fab47a7f44a561eead617c8a3c5e052f52476846e11d7122815ec8f522"
     },
     {
       "path": "runtime/unqualified/A1-agent-trace-1/A1-agent-trace/status.json",
@@ -8914,8 +8929,8 @@
     },
     {
       "path": "runtime/unqualified/A1-agent-trace-1/A1-agent-trace-down.log",
-      "bytes": 802,
-      "sha256": "38c7fdf4dec83f1918189bc12fea873e46955c279783344fbf0d41ee843128a3"
+      "bytes": 816,
+      "sha256": "8bd959e1ea643b854d8f7d53f8fa660a464c20ec34bee8981c8c37d281f11f25"
     },
     {
       "path": "runtime/unqualified/A1-agent-trace-1/A1-agent-trace-postflight.json",
@@ -8944,8 +8959,8 @@
     },
     {
       "path": "runtime/unqualified/A1-agent-trace-1/A1-agent-trace-up.log",
-      "bytes": 3446,
-      "sha256": "dd62a6c611504e123772efd462c98df5991fb5e85fa37a54a0f3f2700a525228"
+      "bytes": 3488,
+      "sha256": "94760b375f0e6ea477f4cf925a601d39531d2dd8eb0dab95cb94942e1f6df8f2"
     },
     {
       "path": "runtime/unqualified/A1-live-1/A1-live/admission-after-start.json",
@@ -9934,8 +9949,8 @@
     },
     {
       "path": "runtime/unqualified/A1-live-1/A1-live-down.log",
-      "bytes": 802,
-      "sha256": "38c7fdf4dec83f1918189bc12fea873e46955c279783344fbf0d41ee843128a3"
+      "bytes": 816,
+      "sha256": "8bd959e1ea643b854d8f7d53f8fa660a464c20ec34bee8981c8c37d281f11f25"
     },
     {
       "path": "runtime/unqualified/A1-live-1/A1-live-postflight.json",
@@ -9959,8 +9974,8 @@
     },
     {
       "path": "runtime/unqualified/A1-live-1/A1-live-up.log",
-      "bytes": 3475,
-      "sha256": "c92d4ee5022e4994bf87eece68eb3687eaae56b29533d5da01b17f0ebb5b0d34"
+      "bytes": 3517,
+      "sha256": "f9316118b0cde3428086b2d65d4dcd2cddd58fee281bc3dcd67b0454b6f54dc1"
     },
     {
       "path": "runtime/unqualified/A2-agent-1/A2-agent/admission-after-start.json",
@@ -10069,8 +10084,8 @@
     },
     {
       "path": "runtime/unqualified/A2-agent-1/A2-agent-down.log",
-      "bytes": 802,
-      "sha256": "38c7fdf4dec83f1918189bc12fea873e46955c279783344fbf0d41ee843128a3"
+      "bytes": 816,
+      "sha256": "8bd959e1ea643b854d8f7d53f8fa660a464c20ec34bee8981c8c37d281f11f25"
     },
     {
       "path": "runtime/unqualified/A2-agent-1/A2-agent-postflight.json",
@@ -10094,8 +10109,8 @@
     },
     {
       "path": "runtime/unqualified/A2-agent-1/A2-agent-up.log",
-      "bytes": 3446,
-      "sha256": "a69d5f386e2a3a2bddbd2141b88ff0fbd061998687dd116b9f9a220c342a9eb9"
+      "bytes": 3488,
+      "sha256": "56ad70da3484e38d0bcd77866283268b8164605fe5304ef2507581a5fec64ea4"
     },
     {
       "path": "runtime/unqualified/B1-agent-1/B1-agent/admission-after-start.json",
@@ -10204,8 +10219,8 @@
     },
     {
       "path": "runtime/unqualified/B1-agent-1/B1-agent-down.log",
-      "bytes": 662,
-      "sha256": "268e7f4c657ecaf97bfbea10311743a520a0940223eb6c1257b8266f9de9c5c9"
+      "bytes": 676,
+      "sha256": "e0e2ddf687bc3f4cb77e2f7aad85e5ab65342f649d458b92ff94257831ad558d"
     },
     {
       "path": "runtime/unqualified/B1-agent-1/B1-agent-postflight.json",
@@ -10229,8 +10244,8 @@
     },
     {
       "path": "runtime/unqualified/B1-agent-1/B1-agent-up.log",
-      "bytes": 3224,
-      "sha256": "d67c17552ee21f92e924caff97f31d0b73c84a00afc463f9d3096e69fc10af5a"
+      "bytes": 3266,
+      "sha256": "40baf179362fd93b8cdf35b3134f8e5c9521385f5cfc9fe5c100c0fd2c7839fd"
     },
     {
       "path": "runtime/unqualified/B1-diagnostic-1/B1-diagnostic/admission-after-start.json",
@@ -10419,8 +10434,8 @@
     },
     {
       "path": "runtime/unqualified/B1-diagnostic-1/B1-diagnostic-down.log",
-      "bytes": 662,
-      "sha256": "268e7f4c657ecaf97bfbea10311743a520a0940223eb6c1257b8266f9de9c5c9"
+      "bytes": 676,
+      "sha256": "e0e2ddf687bc3f4cb77e2f7aad85e5ab65342f649d458b92ff94257831ad558d"
     },
     {
       "path": "runtime/unqualified/B1-diagnostic-1/B1-diagnostic-pcaps.log",
@@ -10464,8 +10479,8 @@
     },
     {
       "path": "runtime/unqualified/B1-diagnostic-1/B1-diagnostic-up.log",
-      "bytes": 3219,
-      "sha256": "0a610f276b5274c7ae04e5b635acae68ece1c952a34a737e9aa466db513b15b5"
+      "bytes": 3261,
+      "sha256": "30f596ee1f49d2c5e2089aa7eba61cfbbc44dfeb67055fc7148fdbe287b1fb46"
     },
     {
       "path": "runtime/unqualified/B1-live-1/B1-live/admission-after-start.json",
@@ -11429,8 +11444,8 @@
     },
     {
       "path": "runtime/unqualified/B1-live-1/B1-live-down.log",
-      "bytes": 662,
-      "sha256": "268e7f4c657ecaf97bfbea10311743a520a0940223eb6c1257b8266f9de9c5c9"
+      "bytes": 676,
+      "sha256": "e0e2ddf687bc3f4cb77e2f7aad85e5ab65342f649d458b92ff94257831ad558d"
     },
     {
       "path": "runtime/unqualified/B1-live-1/B1-live-postflight.json",
@@ -11459,8 +11474,8 @@
     },
     {
       "path": "runtime/unqualified/B1-live-1/B1-live-up.log",
-      "bytes": 3221,
-      "sha256": "d6edbc73f0c205889c25d5ce6c7fd72c2c9f65f0bdfb874ded8903b5c44fddf1"
+      "bytes": 3263,
+      "sha256": "cd90a7d2862bd9d4541e4fc9a4e545228b12a0bd2bc88d07721fc28704b3a400"
     },
     {
       "path": "runtime/unqualified/B1-live-2/B1-live/admission-after-start.json",
@@ -12449,8 +12464,8 @@
     },
     {
       "path": "runtime/unqualified/B1-live-2/B1-live-down.log",
-      "bytes": 662,
-      "sha256": "268e7f4c657ecaf97bfbea10311743a520a0940223eb6c1257b8266f9de9c5c9"
+      "bytes": 676,
+      "sha256": "e0e2ddf687bc3f4cb77e2f7aad85e5ab65342f649d458b92ff94257831ad558d"
     },
     {
       "path": "runtime/unqualified/B1-live-2/B1-live-postflight.json",
@@ -12474,8 +12489,8 @@
     },
     {
       "path": "runtime/unqualified/B1-live-2/B1-live-up.log",
-      "bytes": 3285,
-      "sha256": "5f725a9fab13b8a3904bd483d9edf78cc0c3c325b2a036e62c2e8e5864dae8f7"
+      "bytes": 3327,
+      "sha256": "51d48fcf02e5d51c36c9f1190ae36fd1e2ff63eaafacd1f6c084afe49a0884d2"
     },
     {
       "path": "runtime/wait-window.json",
@@ -12999,8 +13014,8 @@
     },
     {
       "path": "text-normalization.json",
-      "bytes": 602155,
-      "sha256": "f040e41293f787d3d230b7f9e451e1e2961bff30b59a52dcf8e60fbd80b0418a"
+      "bytes": 608789,
+      "sha256": "9c319790473c54048cf89b96f8a43f7cad78f28e76e98f5c842745d7ae2001f8"
     },
     {
       "path": "validation-results.json",

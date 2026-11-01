@@ -1,0 +1,235 @@
+START build-A-fvpn-netlab
+END build-A-fvpn-netlab exit 0
+START build-A-fvpn-agent
+END build-A-fvpn-agent exit 0
+START build-A-fvpn-watchdog
+END build-A-fvpn-watchdog exit 0
+START build-A-fvpn-labcontrol
+END build-A-fvpn-labcontrol exit 0
+START image-A
+END image-A exit 0
+START build-B-fvpn-netlab
+END build-B-fvpn-netlab exit 0
+START build-B-fvpn-agent
+END build-B-fvpn-agent exit 0
+START build-B-fvpn-watchdog
+END build-B-fvpn-watchdog exit 0
+START build-B-fvpn-labcontrol
+END build-B-fvpn-labcontrol exit 0
+START image-B
+END image-B exit 0
+HOST A1-live-preflight-1 quiet False r 5 idle 73 suites True
+HOST A1-live-preflight-2 quiet False r 5 idle 72 suites True
+HOST A1-live-preflight-3 quiet False r 13 idle 72 suites True
+HOST A1-live-preflight-4 quiet False r 1 idle 75 suites False
+HOST A1-live-preflight-5 quiet False r 4 idle 79 suites False
+HOST A1-live-preflight-6 quiet True r 3 idle 81 suites False
+START A1-live-up
+END A1-live-up exit 0
+START A1-live-collector-dir
+END A1-live-collector-dir exit 0
+START A1-live-copy-fvpn-agent
+END A1-live-copy-fvpn-agent exit 0
+START A1-live-copy-fvpn-labcontrol
+END A1-live-copy-fvpn-labcontrol exit 0
+START A1-live-copy-fvpn-watchdog
+END A1-live-copy-fvpn-watchdog exit 0
+START A1-live-copy-fvpn-netlab
+END A1-live-copy-fvpn-netlab exit 0
+START A1-live-collector
+END A1-live-collector exit 0
+START A1-live-chmod
+END A1-live-chmod exit 0
+HOST A1-live-ready-1 quiet False r 4 idle 78 suites False
+HOST A1-live-ready-2 quiet True r 1 idle 87 suites False
+START A1-live-suite
+END A1-live-suite exit 0
+START A1-live-commands
+END A1-live-commands exit 0
+HOST A1-live-postflight quiet True r 0 idle 87 suites False
+START A1-live-down
+END A1-live-down exit 0
+HOST A1-agent-preflight-1 quiet True r 1 idle 86 suites False
+START A1-agent-up
+END A1-agent-up exit 0
+START A1-agent-collector-dir
+END A1-agent-collector-dir exit 0
+START A1-agent-copy-fvpn-agent
+END A1-agent-copy-fvpn-agent exit 0
+START A1-agent-copy-fvpn-labcontrol
+END A1-agent-copy-fvpn-labcontrol exit 0
+START A1-agent-copy-fvpn-watchdog
+END A1-agent-copy-fvpn-watchdog exit 0
+START A1-agent-copy-fvpn-netlab
+END A1-agent-copy-fvpn-netlab exit 0
+START A1-agent-collector
+END A1-agent-collector exit 0
+START A1-agent-chmod
+END A1-agent-chmod exit 0
+HOST A1-agent-ready-1 quiet False r 4 idle 86 suites False
+HOST A1-agent-ready-2 quiet True r 3 idle 82 suites False
+START A1-agent-suite
+END A1-agent-suite exit 0
+START A1-agent-commands
+END A1-agent-commands exit 1
+HOST A1-agent-postflight quiet False r 1 idle 75 suites False
+START A1-agent-down
+END A1-agent-down exit 0
+HOST A1-agent-trace-preflight-1 quiet False r 10 idle 76 suites False
+START remove-image-a
+END remove-image-a exit 0
+START remove-image-b
+END remove-image-b exit 0
+Traceback (most recent call last):
+  File "<worktree>/.agent/f22-run.py", line 127, in <module>
+    for which in ['live','agent','agent-trace']:suite(leg,leg[0],configs[leg[0]],which)
+                                                ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<worktree>/.agent/f22-run.py", line 83, in suite
+    await_quiet(leg+'-'+which+'-preflight')
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<worktree>/.agent/f22-run.py", line 58, in await_quiet
+    time.sleep(max(0,60-(time.monotonic()-start)))
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt
+START image-resume-A
+END image-resume-A exit 0
+START image-resume-B
+END image-resume-B exit 0
+KEEP QUALIFIED A1-live
+RETAINED UNQUALIFIED POSTFLIGHT A1-agent 1
+HOST A1-agent-preflight-1 quiet False r 1 idle 78 suites False
+HOST A1-agent-preflight-2 quiet False r 0 idle 76 suites False
+HOST A1-agent-preflight-3 quiet False r 4 idle 76 suites False
+HOST A1-agent-preflight-4 quiet True r 1 idle 86 suites False
+START A1-agent-up
+END A1-agent-up exit 0
+START A1-agent-collector-dir
+END A1-agent-collector-dir exit 0
+START A1-agent-copy-fvpn-agent
+END A1-agent-copy-fvpn-agent exit 0
+START A1-agent-copy-fvpn-labcontrol
+END A1-agent-copy-fvpn-labcontrol exit 0
+START A1-agent-copy-fvpn-watchdog
+END A1-agent-copy-fvpn-watchdog exit 0
+START A1-agent-copy-fvpn-netlab
+END A1-agent-copy-fvpn-netlab exit 0
+START A1-agent-collector
+END A1-agent-collector exit 0
+START A1-agent-chmod
+END A1-agent-chmod exit 0
+HOST A1-agent-ready-1 quiet True r 1 idle 80 suites False
+START A1-agent-suite
+END A1-agent-suite exit 0
+START A1-agent-commands
+END A1-agent-commands exit 1
+HOST A1-agent-postflight quiet True r 1 idle 87 suites False
+START A1-agent-down
+END A1-agent-down exit 0
+HOST A1-agent-trace-preflight-2 quiet True r 0 idle 86 suites False
+START A1-agent-trace-up
+END A1-agent-trace-up exit 0
+START A1-agent-trace-collector-dir
+END A1-agent-trace-collector-dir exit 0
+START A1-agent-trace-copy-fvpn-agent
+END A1-agent-trace-copy-fvpn-agent exit 0
+START A1-agent-trace-copy-fvpn-labcontrol
+END A1-agent-trace-copy-fvpn-labcontrol exit 0
+START A1-agent-trace-copy-fvpn-watchdog
+END A1-agent-trace-copy-fvpn-watchdog exit 0
+START A1-agent-trace-copy-fvpn-netlab
+END A1-agent-trace-copy-fvpn-netlab exit 0
+START A1-agent-trace-collector
+END A1-agent-trace-collector exit 0
+START A1-agent-trace-chmod
+END A1-agent-trace-chmod exit 0
+HOST A1-agent-trace-ready-1 quiet True r 1 idle 85 suites False
+START A1-agent-trace-suite
+END A1-agent-trace-suite exit 0
+START A1-agent-trace-commands
+END A1-agent-trace-commands exit 1
+HOST A1-agent-trace-postflight quiet True r 0 idle 84 suites False
+START A1-agent-trace-down
+END A1-agent-trace-down exit 0
+HOST B1-live-preflight-1 quiet True r 2 idle 87 suites False
+START B1-live-up
+END B1-live-up exit 0
+START B1-live-collector-dir
+END B1-live-collector-dir exit 0
+START B1-live-copy-fvpn-agent
+END B1-live-copy-fvpn-agent exit 0
+START B1-live-copy-fvpn-labcontrol
+END B1-live-copy-fvpn-labcontrol exit 0
+START B1-live-copy-fvpn-watchdog
+END B1-live-copy-fvpn-watchdog exit 0
+START B1-live-copy-fvpn-netlab
+END B1-live-copy-fvpn-netlab exit 0
+START B1-live-collector
+END B1-live-collector exit 0
+START B1-live-chmod
+END B1-live-chmod exit 0
+HOST B1-live-ready-1 quiet True r 2 idle 82 suites False
+START B1-live-suite
+END B1-live-suite exit 0
+START B1-live-commands
+END B1-live-commands exit 0
+HOST B1-live-postflight quiet True r 1 idle 87 suites False
+START B1-live-down
+END B1-live-down exit 0
+HOST B1-agent-preflight-1 quiet False r 0 idle 76 suites False
+HOST B1-agent-preflight-2 quiet False r 1 idle 74 suites False
+HOST B1-agent-preflight-3 quiet False r 1 idle 75 suites False
+HOST B1-agent-preflight-4 quiet True r 2 idle 86 suites False
+START B1-agent-up
+END B1-agent-up exit 0
+START B1-agent-collector-dir
+END B1-agent-collector-dir exit 0
+START B1-agent-copy-fvpn-agent
+END B1-agent-copy-fvpn-agent exit 0
+START B1-agent-copy-fvpn-labcontrol
+END B1-agent-copy-fvpn-labcontrol exit 0
+START B1-agent-copy-fvpn-watchdog
+END B1-agent-copy-fvpn-watchdog exit 0
+START B1-agent-copy-fvpn-netlab
+END B1-agent-copy-fvpn-netlab exit 0
+START B1-agent-collector
+END B1-agent-collector exit 0
+START B1-agent-chmod
+END B1-agent-chmod exit 0
+HOST B1-agent-ready-1 quiet True r 1 idle 86 suites False
+START B1-agent-suite
+END B1-agent-suite exit 0
+START B1-agent-commands
+END B1-agent-commands exit 1
+HOST B1-agent-postflight quiet True r 0 idle 87 suites False
+START B1-agent-down
+END B1-agent-down exit 0
+START remove-image-a
+END remove-image-a exit 0
+START remove-image-b
+END remove-image-b exit 0
+Traceback (most recent call last):
+  File "<worktree>/.agent/f22-run.py", line 157, in <module>
+    for which in ['live','agent','agent-trace']:suite(leg,leg[0],configs[leg[0]],which)
+                                                ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<worktree>/.agent/f22-run.py", line 141, in suite
+    while not suite_once(leg,label,config,which):
+              ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<worktree>/.agent/f22-run.py", line 85, in suite_once
+    await_quiet(leg+'-'+which+'-preflight')
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<worktree>/.agent/f22-run.py", line 59, in await_quiet
+    if host(name+'-'+str(attempt)): return
+       ~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "<worktree>/.agent/f22-run.py", line 36, in host
+    p=subprocess.run(['vmstat','5','7'],text=True,capture_output=True,check=True)
+  File "/usr/lib/python3.14/subprocess.py", line 557, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.14/subprocess.py", line 1221, in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+                     ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.14/subprocess.py", line 2153, in _communicate
+    ready = selector.select(timeout)
+  File "/usr/lib/python3.14/selectors.py", line 398, in select
+    fd_event_list = self._selector.poll(timeout)
+KeyboardInterrupt

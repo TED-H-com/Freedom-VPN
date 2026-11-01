@@ -1,0 +1,21 @@
+START build-A-fvpn-netlab
+END build-A-fvpn-netlab exit 0
+START build-A-fvpn-agent
+END build-A-fvpn-agent exit 0
+START build-A-fvpn-watchdog
+END build-A-fvpn-watchdog exit 1
+START remove-image-a
+END remove-image-a exit 1
+START remove-image-b
+END remove-image-b exit 1
+Traceback (most recent call last):
+  File "<worktree>/.agent/f22-run.py", line 122, in <module>
+    for label in ['A','B']:configs[label]=prepare(label,commits[label])
+                                          ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "<worktree>/.agent/f22-run.py", line 74, in prepare
+    run('build-'+label+'-'+binary,['go','build','-o',str(binaries/binary),pkg],cwd=dest)
+    ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<worktree>/.agent/f22-run.py", line 23, in run
+    if check and p.returncode: raise RuntimeError(name+' failed')
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: build-A-fvpn-watchdog failed
