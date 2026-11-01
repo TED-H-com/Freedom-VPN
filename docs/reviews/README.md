@@ -24,6 +24,7 @@
 | `r16-rev13-d089-d099-review` | [`r16-rev13-d089-d099-review.md`](r16-rev13-d089-d099-review.md) | 2026-10-31 | `grok/grok-4.7` | Revision 13, D-089 / D-097 installer results, D-088 freeze, D-090 / D-096 containment, D-095 / D-099 restore hold; base `5575470` | 4 (1 High, 2 Medium, 1 Low); H-1 fixed #291, M-2/L-1 fixed #300, M-1 pending; two known HTTP defects fixed #277 | Owners adopt `TestReviewR16_*`; only the report is archived here. |
 | `r17-rev14-d104-d117-review` | [r17-rev14-d104-d117-review.md](r17-rev14-d104-d117-review.md) | 2026-10-31 | `grok/grok-4.7`, base `62f24e6d` | Revision 14, D-104–D-118 | 1 Medium: M-1 → fleet-update 12 (#322), D-127; r16 H-1 / M-1 / M-2 / L-1 re-run and held | [installer correction proof](../../internal/fleetupdate/review_r17_installer_integration_test.go) |
 | `r18-generation-change-review` | [r18-generation-change-review.md](r18-generation-change-review.md) | 2026-11-01 | `grok/grok-4.7`, base `5bd75102` | D-135 / corrected D-136, agent-core 31 shutdown and D-138 TEST ONLY observation | 5 OPEN: 3 Medium / 2 Low; M-1/M-2/M-3/L-2 → agent-core 32; L-1 → netlab | Only the report is archived; proof files remain on the review branch. |
+| `r19-intersection-design-review` | [r19-intersection-design-review.md](r19-intersection-design-review.md) | 2026-11-01 | `grok/grok-4.7`, base `6eda25d0` | Agent-core 33 option (b) intersection-serving design, D-139 | H-1 → netlab 24; M-2/L-2 → agent-core 34: routed; in progress. Eleven design-only findings → D-141 reconsideration conditions. | Only the report is archived; proof files remain on the review branch. |
 
 ## What Held Across the Reviews
 
@@ -148,3 +149,31 @@ is historical. [Follow-up 26](../handover/follow-up-26.md) pins these fixes:
 D-139 is a provisional option (b) design track, with r19 running at task start.
 #379's reference passing is not an acceptance result. A recorded representation
 decision follows review before any implementation; option (c) stays in production.
+
+## r19 dispositions at the follow-up 27 cutoff
+
+Exact source: `origin/r19-intersection-design-review:.agent/REVIEW.md`, commit
+`6048e099984ee03b69fec961309cd3eabe0e2b65`, delivered 2026-11-01 07:47 EST.
+The [raw archive](r19-intersection-design-review.md) is byte-for-byte:
+**41,050 bytes**, SHA-256
+`14caf0193b256d6f090e8d53ff77e0d5a5c9dab4d025794a6812e15e83228913`.
+No proof files were adopted. Findings and What held are review evidence, not
+assembled acceptance. [Follow-up 27](../handover/follow-up-27.md) pins this cut.
+
+| Finding | Disposition at #385 |
+|---|---|
+| H-1 | Routed; in progress — netlab 24. Established download from a newly denied_v4 destination keeps flowing. |
+| M-2 | Routed; in progress — agent-core 34. Live desired refs stamped on the applied-generation ACK; production reachability unknown. |
+| L-2 | Routed; in progress — agent-core 34. Conntrack attempt persisted after the delete. |
+| H-2, M-1, M-3–M-8, L-1, L-3, L-4 | Design-only: D-141 reconsideration conditions, not fixed or implemented. |
+
+**D-141 closes D-139**: option (b) is not implemented on this evidence; option
+(c) stays in production. 0 / 80 merged restrictive changes qualify, promotion's
+baseline is the same order as 173.8 / 195.6 ms p50 / p99 baseline-to-Apply,
+and the representation lacks a signed intersection witness, v2 heartbeat,
+partial-service cause, baseline-on-422 and nft-only revocation transaction.
+Reconsideration requires a desired-state intersection witness, a measured
+qualifying share above zero whose promotion costs less than (c), and the
+design-only findings closed. Agent-core 33's note and test-only reference stay
+on main as history. D-135 / D-136 / D-137 / D-138 remain provisional; historical
+failures stay failed. Earlier review disposition tables retain their cutoff.
