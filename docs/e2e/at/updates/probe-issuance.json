@@ -1,10 +1,10 @@
 {
-  "run_id": "2babf9b6-86a3-489d-a678-0bd447f2f8b0",
-  "source_commit": "5b2ae0748bbbffb0d370d4842bb0623e74e844b7",
-  "product_main": "45209609d33d567c5f04d49441799cdd3efac59b",
-  "at": "2026-10-31T22:15:49Z",
+  "run_id": "759d244a-2dc4-460c-9f82-e37ce0ac7560",
+  "source_commit": "20d1f6e83d4a0dce97e2cf87e4ccd4a31dc580a5",
+  "product_main": "5bd751026073444087b32ac2a7115f8566104f8b",
+  "at": "2026-11-01T09:49:16Z",
   "prefix": "w4-updates",
-  "port_base": 42000,
+  "port_base": 54000,
   "status": "pass within current scoped sequence",
   "observations": {
     "AT23": [
@@ -18,12 +18,12 @@
             ],
             "desired_state": "/var/lib/vpn-node/state/desired-state.json",
             "desired_trust": "/etc/vpn-node/trust.json",
-            "incarnation_id": "01a19402-1d7d-7712-a992-5c163f4a8b97",
+            "incarnation_id": "01a1967c-d3b5-79b7-99ff-f378c89ee0f1",
             "meter_checkpoint": "/var/lib/vpn-node/state/meter.checkpoint",
             "mtls_ca": "/etc/vpn-node/ca.pem",
             "mtls_cert": "/var/lib/vpn-node/identity/cert.pem",
             "mtls_key": "/var/lib/vpn-node/identity/key.pem",
-            "node_id": "01a19402-1ab6-749f-ab2e-4b3446e709c9",
+            "node_id": "01a1967c-d1a2-76e8-9b40-9c9f8a082ffe",
             "platform": {
               "architecture": "amd64",
               "control_api_major": 1,
@@ -37,13 +37,13 @@
             "probe_peer": {
               "destinations": [
                 {
-                  "addr_v4": "192.0.7.10/32",
+                  "addr_v4": "192.0.9.10/32",
                   "port": 4443,
                   "proto": "udp"
                 }
               ],
               "peer_id": "[redacted]",
-              "source_v4": "100.85.243.53/32"
+              "source_v4": "100.69.201.54/32"
             },
             "release_trust": "/etc/vpn-node/trust.json",
             "result_url": "https://agent.example.invalid:9443/api/v1/agent/update-results",
@@ -64,15 +64,15 @@
           "authority_source": "node/agent/probeexc.go:66-71,125-127: matching challenge and another lock holder required; no probe installs nothing",
           "candidate_attestations": [
             {
-              "txn_id": "01a19402-da5e-7e5f-b195-bb57c04d3355",
-              "nonce": "31418db7d88f73b931378a63b3b1a0fe0fb75047b69c3e517e3f72886ba3b418",
-              "release_id": "01a19400-e1dc-739f-a697-cc3bc2f47004",
-              "node_id": "01a19402-1ab6-749f-ab2e-4b3446e709c9",
+              "txn_id": "01a1967d-a806-70c6-9764-a8ecab9c5032",
+              "nonce": "2ce1c52c758e8e8b90e8c111c6a7b9dc4674919469defd716ed78ced821b7825",
+              "release_id": "01a1967b-9313-7895-afeb-71db6f20adaf",
+              "node_id": "01a1967c-d1a2-76e8-9b40-9c9f8a082ffe",
               "agent_version": "1.0.1",
               "netbird_version": "0.82.0",
               "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-              "incarnation_id": "01a19402-1d7d-7712-a992-5c163f4a8b97",
-              "generated_at": "2026-10-31T22:09:48.684638359Z",
+              "incarnation_id": "01a1967c-d3b5-79b7-99ff-f378c89ee0f1",
+              "generated_at": "2026-11-01T09:43:10.45083854Z",
               "published": "unpublished",
               "checks": {
                 "internet_only": {
@@ -103,12 +103,12 @@
                 "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
                 "desired_state": "/var/lib/vpn-node/state/desired-state.json",
                 "desired_trust": "/etc/vpn-node/trust.json",
-                "incarnation_id": "01a19402-1d7d-7712-a992-5c163f4a8b97",
+                "incarnation_id": "01a1967c-d3b5-79b7-99ff-f378c89ee0f1",
                 "meter_checkpoint": "/var/lib/vpn-node/state/meter.checkpoint",
                 "mtls_ca": "/etc/vpn-node/ca.pem",
                 "mtls_cert": "/var/lib/vpn-node/identity/cert.pem",
                 "mtls_key": "/var/lib/vpn-node/identity/key.pem",
-                "node_id": "01a19402-1ab6-749f-ab2e-4b3446e709c9",
+                "node_id": "01a1967c-d1a2-76e8-9b40-9c9f8a082ffe",
                 "platform": {
                   "os_id": "ubuntu",
                   "os_version": "24.04",
@@ -143,12 +143,12 @@
                 ],
                 "desired_state": "/var/lib/vpn-node/state/desired-state.json",
                 "desired_trust": "/etc/vpn-node/trust.json",
-                "incarnation_id": "01a19402-1d7d-7712-a992-5c163f4a8b97",
+                "incarnation_id": "01a1967c-d3b5-79b7-99ff-f378c89ee0f1",
                 "meter_checkpoint": "/var/lib/vpn-node/state/meter.checkpoint",
                 "mtls_ca": "/etc/vpn-node/ca.pem",
                 "mtls_cert": "/var/lib/vpn-node/identity/cert.pem",
                 "mtls_key": "/var/lib/vpn-node/identity/key.pem",
-                "node_id": "01a19402-1ab6-749f-ab2e-4b3446e709c9",
+                "node_id": "01a1967c-d1a2-76e8-9b40-9c9f8a082ffe",
                 "platform": {
                   "architecture": "amd64",
                   "control_api_major": 1,
@@ -162,13 +162,13 @@
                 "probe_peer": {
                   "destinations": [
                     {
-                      "addr_v4": "192.0.7.10/32",
+                      "addr_v4": "192.0.9.10/32",
                       "port": 4443,
                       "proto": "udp"
                     }
                   ],
                   "peer_id": "[redacted]",
-                  "source_v4": "100.85.243.53/32"
+                  "source_v4": "100.69.201.54/32"
                 },
                 "release_trust": "/etc/vpn-node/trust.json",
                 "result_url": "https://agent.example.invalid:9443/api/v1/agent/update-results",
@@ -195,24 +195,24 @@
                 "node_updater": "1.0.0",
                 "enforcement": "1.0.0"
               },
-              "expires_at": "2026-10-31T22:10:28.752871053Z",
-              "incarnation_id": "01a19402-1d7d-7712-a992-5c163f4a8b97",
-              "issued_at": "2026-10-31T22:09:43.752871053Z",
-              "node_id": "01a19402-1ab6-749f-ab2e-4b3446e709c9",
-              "nonce": "31418db7d88f73b931378a63b3b1a0fe0fb75047b69c3e517e3f72886ba3b418",
+              "expires_at": "2026-11-01T09:43:50.540925644Z",
+              "incarnation_id": "01a1967c-d3b5-79b7-99ff-f378c89ee0f1",
+              "issued_at": "2026-11-01T09:43:05.540925644Z",
+              "node_id": "01a1967c-d1a2-76e8-9b40-9c9f8a082ffe",
+              "nonce": "2ce1c52c758e8e8b90e8c111c6a7b9dc4674919469defd716ed78ced821b7825",
               "probe": {
                 "destinations": [
                   {
-                    "addr_v4": "192.0.7.10/32",
+                    "addr_v4": "192.0.9.10/32",
                     "proto": "udp",
                     "port": 4443
                   }
                 ],
                 "peer_id": "[redacted]",
-                "source_v4": "100.85.243.53/32"
+                "source_v4": "100.69.201.54/32"
               },
-              "release_id": "01a19400-e1dc-739f-a697-cc3bc2f47004",
-              "txn_id": "01a19402-da5e-7e5f-b195-bb57c04d3355"
+              "release_id": "01a1967b-9313-7895-afeb-71db6f20adaf",
+              "txn_id": "01a1967d-a806-70c6-9764-a8ecab9c5032"
             }
           ],
           "has_probe_peer": true,
@@ -223,15 +223,15 @@
             "observations": [
               {
                 "name": "probe_traffic",
-                "detail": "{\"attempts\":1950,\"authenticated_udp_replies\":25}"
+                "detail": "{\"attempts\":2267,\"authenticated_udp_replies\":29}"
               },
               {
                 "name": "probe_window",
-                "detail": "{\"samples\":1792,\"grant_samples\":4,\"source_elements\":1,\"destination_elements\":1,\"max_timeout_seconds\":40,\"probe_up_bytes\":2002,\"probe_down_bytes\":1925,\"member_bytes_before\":0,\"member_bytes_after\":0,\"elements_after\":0}"
+                "detail": "{\"samples\":2064,\"grant_samples\":4,\"source_elements\":1,\"destination_elements\":1,\"max_timeout_seconds\":40,\"probe_up_bytes\":2233,\"probe_down_bytes\":2233,\"member_bytes_before\":0,\"member_bytes_after\":0,\"elements_after\":0}"
               },
               {
                 "name": "probe_origin_receipt",
-                "detail": "{\"probe_id\":\"6014e8a1-6c67-4fb8-859c-056788af45a0\",\"requests\":26,\"source_address\":\"192.0.7.20\"}"
+                "detail": "{\"probe_id\":\"9d64c4a7-43f4-4665-a5cd-8c90a1da46e2\",\"requests\":29,\"source_address\":\"192.0.9.20\"}"
               },
               {
                 "name": "probe_traversal_verified",
@@ -264,15 +264,15 @@
           "observations": [
             {
               "name": "probe_traffic",
-              "detail": "{\"attempts\":1950,\"authenticated_udp_replies\":25}"
+              "detail": "{\"attempts\":2267,\"authenticated_udp_replies\":29}"
             },
             {
               "name": "probe_window",
-              "detail": "{\"samples\":1792,\"grant_samples\":4,\"source_elements\":1,\"destination_elements\":1,\"max_timeout_seconds\":40,\"probe_up_bytes\":2002,\"probe_down_bytes\":1925,\"member_bytes_before\":0,\"member_bytes_after\":0,\"elements_after\":0}"
+              "detail": "{\"samples\":2064,\"grant_samples\":4,\"source_elements\":1,\"destination_elements\":1,\"max_timeout_seconds\":40,\"probe_up_bytes\":2233,\"probe_down_bytes\":2233,\"member_bytes_before\":0,\"member_bytes_after\":0,\"elements_after\":0}"
             },
             {
               "name": "probe_origin_receipt",
-              "detail": "{\"probe_id\":\"6014e8a1-6c67-4fb8-859c-056788af45a0\",\"requests\":26,\"source_address\":\"192.0.7.20\"}"
+              "detail": "{\"probe_id\":\"9d64c4a7-43f4-4665-a5cd-8c90a1da46e2\",\"requests\":29,\"source_address\":\"192.0.9.20\"}"
             },
             {
               "name": "probe_traversal_verified",
@@ -306,12 +306,12 @@
             ],
             "desired_state": "/var/lib/vpn-node/state/desired-state.json",
             "desired_trust": "/etc/vpn-node/trust.json",
-            "incarnation_id": "01a19402-1d7d-7712-a992-5c163f4a8b97",
+            "incarnation_id": "01a1967c-d3b5-79b7-99ff-f378c89ee0f1",
             "meter_checkpoint": "/var/lib/vpn-node/state/meter.checkpoint",
             "mtls_ca": "/etc/vpn-node/ca.pem",
             "mtls_cert": "/var/lib/vpn-node/identity/cert.pem",
             "mtls_key": "/var/lib/vpn-node/identity/key.pem",
-            "node_id": "01a19402-1ab6-749f-ab2e-4b3446e709c9",
+            "node_id": "01a1967c-d1a2-76e8-9b40-9c9f8a082ffe",
             "platform": {
               "architecture": "amd64",
               "control_api_major": 1,
@@ -325,13 +325,13 @@
             "probe_peer": {
               "destinations": [
                 {
-                  "addr_v4": "192.0.7.10/32",
+                  "addr_v4": "192.0.9.10/32",
                   "port": 4443,
                   "proto": "udp"
                 }
               ],
               "peer_id": "[redacted]",
-              "source_v4": "100.85.243.53/32"
+              "source_v4": "100.69.201.54/32"
             },
             "release_trust": "/etc/vpn-node/trust.json",
             "result_url": "https://agent.example.invalid:9443/api/v1/agent/update-results",
@@ -365,12 +365,12 @@
                 "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
                 "desired_state": "/var/lib/vpn-node/state/desired-state.json",
                 "desired_trust": "/etc/vpn-node/trust.json",
-                "incarnation_id": "01a19402-1d7d-7712-a992-5c163f4a8b97",
+                "incarnation_id": "01a1967c-d3b5-79b7-99ff-f378c89ee0f1",
                 "meter_checkpoint": "/var/lib/vpn-node/state/meter.checkpoint",
                 "mtls_ca": "/etc/vpn-node/ca.pem",
                 "mtls_cert": "/var/lib/vpn-node/identity/cert.pem",
                 "mtls_key": "/var/lib/vpn-node/identity/key.pem",
-                "node_id": "01a19402-1ab6-749f-ab2e-4b3446e709c9",
+                "node_id": "01a1967c-d1a2-76e8-9b40-9c9f8a082ffe",
                 "platform": {
                   "os_id": "ubuntu",
                   "os_version": "24.04",
@@ -405,12 +405,12 @@
                 ],
                 "desired_state": "/var/lib/vpn-node/state/desired-state.json",
                 "desired_trust": "/etc/vpn-node/trust.json",
-                "incarnation_id": "01a19402-1d7d-7712-a992-5c163f4a8b97",
+                "incarnation_id": "01a1967c-d3b5-79b7-99ff-f378c89ee0f1",
                 "meter_checkpoint": "/var/lib/vpn-node/state/meter.checkpoint",
                 "mtls_ca": "/etc/vpn-node/ca.pem",
                 "mtls_cert": "/var/lib/vpn-node/identity/cert.pem",
                 "mtls_key": "/var/lib/vpn-node/identity/key.pem",
-                "node_id": "01a19402-1ab6-749f-ab2e-4b3446e709c9",
+                "node_id": "01a1967c-d1a2-76e8-9b40-9c9f8a082ffe",
                 "platform": {
                   "architecture": "amd64",
                   "control_api_major": 1,
@@ -424,13 +424,13 @@
                 "probe_peer": {
                   "destinations": [
                     {
-                      "addr_v4": "192.0.7.10/32",
+                      "addr_v4": "192.0.9.10/32",
                       "port": 4443,
                       "proto": "udp"
                     }
                   ],
                   "peer_id": "[redacted]",
-                  "source_v4": "100.85.243.53/32"
+                  "source_v4": "100.69.201.54/32"
                 },
                 "release_trust": "/etc/vpn-node/trust.json",
                 "result_url": "https://agent.example.invalid:9443/api/v1/agent/update-results",
@@ -457,15 +457,15 @@
             "observations": [
               {
                 "name": "probe_traffic",
-                "detail": "{\"attempts\":333,\"authenticated_udp_replies\":0}"
+                "detail": "{\"attempts\":332,\"authenticated_udp_replies\":0}"
               },
               {
                 "name": "probe_window",
-                "detail": "{\"samples\":310,\"grant_samples\":0,\"source_elements\":0,\"destination_elements\":0,\"max_timeout_seconds\":0,\"probe_up_bytes\":2002,\"probe_down_bytes\":1925,\"member_bytes_before\":0,\"member_bytes_after\":0,\"elements_after\":0}"
+                "detail": "{\"samples\":302,\"grant_samples\":0,\"source_elements\":0,\"destination_elements\":0,\"max_timeout_seconds\":0,\"probe_up_bytes\":2233,\"probe_down_bytes\":2233,\"member_bytes_before\":0,\"member_bytes_after\":0,\"elements_after\":0}"
               },
               {
                 "name": "probe_origin_receipt",
-                "detail": "{\"probe_id\":\"8573b21c-cb3c-4e9e-a1dd-0fc68d1c9b5d\",\"requests\":0,\"source_address\":\"\"}"
+                "detail": "{\"probe_id\":\"d6114caf-5369-4bce-a6e6-19dd972755a1\",\"requests\":0,\"source_address\":\"\"}"
               },
               {
                 "name": "probe_traversal_verified",
@@ -498,15 +498,15 @@
           "observations": [
             {
               "name": "probe_traffic",
-              "detail": "{\"attempts\":333,\"authenticated_udp_replies\":0}"
+              "detail": "{\"attempts\":332,\"authenticated_udp_replies\":0}"
             },
             {
               "name": "probe_window",
-              "detail": "{\"samples\":310,\"grant_samples\":0,\"source_elements\":0,\"destination_elements\":0,\"max_timeout_seconds\":0,\"probe_up_bytes\":2002,\"probe_down_bytes\":1925,\"member_bytes_before\":0,\"member_bytes_after\":0,\"elements_after\":0}"
+              "detail": "{\"samples\":302,\"grant_samples\":0,\"source_elements\":0,\"destination_elements\":0,\"max_timeout_seconds\":0,\"probe_up_bytes\":2233,\"probe_down_bytes\":2233,\"member_bytes_before\":0,\"member_bytes_after\":0,\"elements_after\":0}"
             },
             {
               "name": "probe_origin_receipt",
-              "detail": "{\"probe_id\":\"8573b21c-cb3c-4e9e-a1dd-0fc68d1c9b5d\",\"requests\":0,\"source_address\":\"\"}"
+              "detail": "{\"probe_id\":\"d6114caf-5369-4bce-a6e6-19dd972755a1\",\"requests\":0,\"source_address\":\"\"}"
             },
             {
               "name": "probe_traversal_verified",

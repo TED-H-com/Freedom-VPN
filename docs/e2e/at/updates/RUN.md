@@ -1,6 +1,8 @@
-# Follow-up 12 run procedure
+# Follow-up 13 run procedure
 
-Use branch `w4-at-updates`, prefix `w4-updates` and port base `42000`.
+Use branch `w4-at-updates`, prefix `w4-updates`. Port base defaults to `42000`; this run uses
+`AT_UPDATES_PORT_BASE=54000` because an unrelated host listener occupies 42443.
+Only the owned harness slot changes; no host listener or other suite is modified.
 Before starting the stack, run `pgrep -af 'gates.sh|mk/at-'` and wait while two
 other integration suites are active. Run foreground commands only. The Python
 runner owns disk scratch under `.agent/tmp` and calls the shared `e2e-down`
@@ -8,7 +10,7 @@ harness in `finally`; it uses no shell cleanup trap.
 
 ```sh
 make -f mk/at-updates.mk at-updates-lint
-make -f mk/at-updates.mk at-updates
+AT_UPDATES_PORT_BASE=54000 make -f mk/at-updates.mk at-updates
 ```
 
 The live target builds the current checkout, runs all five regular AT scenarios
@@ -110,26 +112,37 @@ The root lint override removes only its shell cleanup trap; its gofmt, vet and
 pinned staticcheck commands remain unchanged. These are engineering acceptance
 fixtures with generated TEST ONLY identities and signing material.
 
-All 43 prior root records are pinned in the
-[follow-up 11 archive](history/follow-up-11/ARCHIVE.md) (D-098/D-132). The older diagnostic archives remain unchanged. Current claims
-must name the new run ID; historical failures stay historical failures.
+All 44 prior root records are pinned in the
+[follow-up 12 archive](history/follow-up-12/ARCHIVE.md) (D-098/D-132).
+Every earlier archive, including the failed first attempt, remains unchanged.
+Use the actual `go env GOCACHE`; scratch stays under `.agent/tmp`.
 
-Use the current `go env GOCACHE`; do not hard-code the cache location. All
-scratch stays under `.agent/tmp`. Recheck suite admission after startup. This
-run consumes updater 19 (#351), devstack 21 (#352), installer 8 (#353) and
-agent-core 29 (#356) on product main `45209609`. It is the first regular
-AT23–AT27 measurement on the tree containing agent-core 29's additive TEST ONLY
-Apply host samples. This is not a contention-cause or worst-case bound test.
+Follow-up 13 consumes agent-core 31 (#369) and netlab 22 (#365) on product main
+`5bd751026073444087b32ac2a7115f8566104f8b`. The enforcement lifecycle hook remains
+opt-in; this run does not enable its timing gate. The agent's safe-boundary
+shutdown may finish bounded local work after SIGTERM while control I/O cancels.
+This is a regression observation, not a worst-case shutdown-bound experiment.
 
-The [first follow-up 12 attempt](history/follow-up-12-first-attempt/ARCHIVE.md)
-is retained separately: all regular and installer checks passed, but the new
-supplemental probe incorrectly passed a relative symlink as `seed --tree`.
-Its make exit 2 is preserved. The corrected probe uses the resolved directory;
-final claims must come from a complete fresh run, with no rows carried over.
+The lane compiles its TEST ONLY stop observer and installs it only inside its
+owned containers. The regular service script delegates public commands through
+the observer to a byte-identical original; supervisor calls still exec that
+original directly. The installer fixture uses a PATH shim forwarding to the
+original `/usr/bin/systemctl`. Generated updater JSON, argv, service timeouts,
+and product binaries are unchanged. Monotonic duration surrounds the delegated
+command, excluding SQLite readback. Only updater-parent stop/start commands are
+recorded. A 1 ms read-only `/proc` sampler captures the prior agent's wait status;
+systemd also exposes its retained exit status and stop timeout. Unobserved exits
+remain explicit gaps. Lease row presence/identity/expiry is read before/after
+commands without publishing envelopes or keys.
 
-The corrected measured invocation used two-stage admission: wait for fewer than
-two other suites, start the shared stack with `make -f mk/e2e.mk e2e-up E2E_RESET=1`
-using the same prefix/port/state bindings, recheck admission, then invoke
-`AT_UPDATES_REUSE=1 make -f mk/at-updates.mk at-updates`. This reuses only the
-fresh reset stack before its first enrollment, never the failed attempt's state.
-The live runner still performs all ATs, supplemental probes and final teardown.
+`stops.py` collects every command and transaction stage before teardown. It
+includes the repeated `stepMigrate` stop, checks inventory, flags command errors,
+killed agents and lost stored leases, and pairs all stops with the archived run.
+The old journal's stage brackets include other work and are not direct timings.
+See [agent-stops.json](agent-stops.json) and [the comparison](agent-stops.md).
+
+The [startup failure](history/follow-up-13-startup/startup.json) happened before
+any Go AT or installer test: port 42443 was occupied. Its original note proposed
+waiting for that port; the final admission decision instead selected the free,
+shared-harness-supported 54000 slot. The failed startup remains exit 2. There is
+only one measured AT invocation; no failed predicate is rerun or weakened.

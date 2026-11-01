@@ -1,0 +1,32 @@
+{
+  "started_at": "2026-10-31T21:45:20.588465Z",
+  "completed_at": "2026-10-31T21:45:50.617337Z",
+  "vmstat_command": [
+    "vmstat",
+    "5",
+    "7"
+  ],
+  "vmstat": "procs -----------memory---------- ---swap-- -----io---- -system-- -------cpu-------\n r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st gu\n 0  9  43456 11324572 9970020 150351540    0    0  7890 41600 47027   37 11  3 76 10  0  0\n 1  9  43456 11738124 9970020 150351804    0    0     0  5318 22741 49043  2  2 85 12  0  0\n 2  8  43456 11890236 9970036 150328664    0    0     6 64213 56865 274008  6  4 78 12  0  0\n 3  2  43456 11355484 9970036 150415216    0    0    33  1526 26969 63519  9  3 84  4  0  0\n 3  1  43456 11497304 9970036 150491768    0    0     0   226 18391 20465 12  2 85  0  0  0\n 3  2  43456 11850024 9970036 150550964    0    0     0   512 18579 19687 12  2 84  2  0  0\n 7  1  43456 12096708 9970044 150294732    0    0    30  7797 32394 56403 15  4 82  0  0  0\n",
+  "suite_command": [
+    "pgrep",
+    "-af",
+    "gates.sh|mk/at-"
+  ],
+  "suite_exit": 0,
+  "suites": [
+    {
+      "pid": 3104358,
+      "kind": "make at suite",
+      "command": "make -f mk/at-updates.mk at-updates"
+    },
+    {
+      "pid": 3104359,
+      "kind": "make at suite",
+      "command": "make -f mk/at-updates.mk at-updates"
+    }
+  ],
+  "baseline_commit": "45209609d33d567c5f04d49441799cdd3efac59b",
+  "source_commit": "2304f77a733978405a35eea3b8d0a075027ce88e",
+  "go_cache": "/data/ted-h-cache/go-build",
+  "note": "Observed host state, not historical attribution. Suite admission is checked again before each stack and after startup; original commands retained locally."
+}

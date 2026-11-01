@@ -1,0 +1,185 @@
+{
+  "run_id": "edd986c4-16d2-4aab-b92f-baa19f8bd829",
+  "baseline_commit": "45209609d33d567c5f04d49441799cdd3efac59b",
+  "run_source": "2304f77a733978405a35eea3b8d0a075027ce88e",
+  "gates": [
+    {
+      "gate": "area",
+      "command": [
+        "make",
+        "-f",
+        "mk/at-isolation.mk",
+        "at-isolation-lint",
+        "at-isolation-test",
+        "at-isolation-build"
+      ],
+      "exit": 0,
+      "output_tail": [
+        "+ go vet ./tests/e2e/at/isolation/... ./tests/netlab/at/...",
+        "+ go vet -tags netlab ./tests/netlab/at/...",
+        "+ go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 ./tests/e2e/at/isolation/... ./tests/netlab/at/...",
+        "+ go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 -tags netlab ./tests/netlab/at/...",
+        "+ go vet tests/e2e/at/isolation/probe_main.go tests/e2e/at/isolation/observer_main.go",
+        "+ go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 tests/e2e/at/isolation/probe_main.go tests/e2e/at/isolation/observer_main.go",
+        "+ go test -count=1 ./tests/e2e/at/isolation/... ./tests/netlab/at/...",
+        "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/isolation\t2.727s",
+        "?   \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab/at\t[no test files]",
+        "+ python3 tests/e2e/at/isolation/driver.py build",
+        "+ sh -ec for arch in amd64 arm64; do GOOS=linux GOARCH=$arch go build -o \"$GOTMPDIR/probe-$arch\" tests/e2e/at/isolation/probe_main.go tests/e2e/at/isolation/observer_main.go; done"
+      ]
+    },
+    {
+      "gate": "assembled",
+      "command": [
+        "make",
+        "-f",
+        "mk/at-isolation.mk",
+        "at-isolation"
+      ],
+      "exit": 2,
+      "elapsed_seconds": 1199.88,
+      "completed_at": "2026-10-31T22:05:50.502067Z",
+      "output_tail": [
+        " Container fvpn-w4-isolation-netbird Removing ",
+        " Container fvpn-w4-isolation-netbird Removed ",
+        " Volume fvpn-w4-isolation-nb Removing ",
+        " Volume fvpn-w4-isolation-pg Removing ",
+        " Volume fvpn-w4-isolation-pgbackrest-repo Removing ",
+        " Network fvpn-w4-isolation-origin Removing ",
+        " Network fvpn-w4-isolation Removing ",
+        " Network fvpn-w4-isolation Resource is still in use ",
+        " Network fvpn-w4-isolation-origin Resource is still in use ",
+        " Volume fvpn-w4-isolation-pg Removed ",
+        " Volume fvpn-w4-isolation-nb Removed ",
+        " Volume fvpn-w4-isolation-pgbackrest-repo Removed ",
+        "e2e stack is down",
+        "owned-prefix inventory: {\"containers\": [], \"images\": [], \"networks\": [], \"volumes\": []}",
+        "at-isolation lab=0 stack=1",
+        "make: *** [mk/at-isolation.mk:57: at-isolation] Error 2"
+      ]
+    },
+    {
+      "gate": "handover",
+      "command": [
+        "python3",
+        "tests/e2e/at/isolation/run.py",
+        "go",
+        "test",
+        "-count=1",
+        "./tests/handover/..."
+      ],
+      "started_at": "2026-10-31T22:06:21.330556+00:00",
+      "exit": 0,
+      "elapsed_seconds": 0.968,
+      "output_tail": [
+        "+ go test -count=1 ./tests/handover/...",
+        "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/handover\t0.540s"
+      ]
+    },
+    {
+      "gate": "root-lint",
+      "command": [
+        "python3",
+        "tests/e2e/at/isolation/run.py",
+        "make",
+        "go-lint",
+        "go-with-disk-tmp="
+      ],
+      "started_at": "2026-10-31T22:06:22.298884+00:00",
+      "exit": 0,
+      "elapsed_seconds": 2.464,
+      "output_tail": [
+        "+ make go-lint go-with-disk-tmp="
+      ]
+    },
+    {
+      "gate": "gofmt",
+      "command": [
+        "bash",
+        "-c",
+        "test -z \"$(gofmt -l $(git ls-files '*.go'))\""
+      ],
+      "started_at": "2026-10-31T22:06:24.763517+00:00",
+      "exit": 0,
+      "elapsed_seconds": 0.081,
+      "output_tail": []
+    },
+    {
+      "gate": "diff-check",
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit": 0,
+      "elapsed_seconds": 0.481,
+      "note": "Five text captures had terminal blank lines removed; original local copies retained; D-120 replay byte-identical.",
+      "output_tail": []
+    },
+    {
+      "gate": "hygiene",
+      "command": [
+        "python3",
+        "tests/e2e/at/isolation/run.py",
+        "go",
+        "test",
+        "-count=1",
+        "-v",
+        "-run",
+        "^TestCommittedEvidenceFiles_ValidAndHygieneClean$",
+        "./tests/e2e/at/isolation"
+      ],
+      "started_at": "2026-10-31T22:06:25.313313+00:00",
+      "exit": 0,
+      "elapsed_seconds": 0.83,
+      "output_tail": [
+        "+ go test -count=1 -v -run ^TestCommittedEvidenceFiles_ValidAndHygieneClean$ ./tests/e2e/at/isolation",
+        "=== RUN   TestCommittedEvidenceFiles_ValidAndHygieneClean",
+        "--- PASS: TestCommittedEvidenceFiles_ValidAndHygieneClean (0.71s)",
+        "PASS",
+        "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/isolation\t0.714s"
+      ]
+    }
+  ],
+  "archive_check": {
+    "pin_counts": {
+      "follow-up-10": 100,
+      "follow-up-10-attempt-1": 92,
+      "follow-up-10-attempt-2": 98,
+      "follow-up-6": 44,
+      "follow-up-7": 52,
+      "follow-up-8": 80,
+      "follow-up-9": 86
+    },
+    "new_archive_matches_baseline": true,
+    "earlier_archives_unchanged": true
+  },
+  "cleanup": {
+    "containers": [],
+    "images": [],
+    "networks": [],
+    "volumes": []
+  },
+  "interpretation": "Assembled exit 2 preserves blocked operator coverage; it is not a fully passing acceptance run. No historical outcome or predicate changed.",
+  "final_evidence_hygiene": {
+    "exit": 0,
+    "output_tail": [
+      "+ go test -count=1 -v -run ^TestCommittedEvidenceFiles_ValidAndHygieneClean$ ./tests/e2e/at/isolation",
+      "=== RUN   TestCommittedEvidenceFiles_ValidAndHygieneClean",
+      "--- PASS: TestCommittedEvidenceFiles_ValidAndHygieneClean (0.74s)",
+      "PASS",
+      "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/isolation\t0.744s"
+    ]
+  },
+  "independent_final_inventory": {
+    "containers": [],
+    "images": [],
+    "networks": [],
+    "volumes": []
+  },
+  "text_capture_normalization": {
+    "files": 5,
+    "change": "terminal blank lines only; originals retained locally",
+    "d120_replay": "byte-identical"
+  }
+}

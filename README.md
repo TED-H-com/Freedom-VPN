@@ -1,7 +1,7 @@
 # Freedom VPN
 
-**Current cut — [follow-up 23](docs/handover/follow-up-23.md) (2026-11-01 EDT):** Through #362: month-boundary fixture fixed; regular updates pass; members F11-02 closed; native IPv6 F8-02 and five-SYN pattern reproduced. D-135 / D-136 / D-137 remain provisional; historical failures stay failed.
-Previous cut: [follow-up 22](docs/handover/follow-up-22.md), through #356.
+**Current cut — [follow-up 25](docs/handover/follow-up-25.md) (2026-11-01 EST):** Through #373: F11-01 drop located; members F13-01 raw bytes kept; updates F13-01 exit unobserved; AT10 blocked on ISO-F6-01 assertion 6; r18 archived with five open findings. D-135 / D-136 / D-137 / D-138 stay provisional; historical failures stay failed. No new operator guidance.
+Previous cut: [follow-up 24](docs/handover/follow-up-24.md), through #369.
 
 Freedom VPN is a member-based, multi-region VPN platform for a small paid community, starting at about 20 members. Every exit node runs the same node package and joins one central control plane, whether it is a pre-installed box, a cloud Ubuntu VM or any other Ubuntu host.
 

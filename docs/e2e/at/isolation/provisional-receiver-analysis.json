@@ -1,16 +1,16 @@
 {
-  "run_id": "edd986c4-16d2-4aab-b92f-baa19f8bd829",
+  "run_id": "1c25ee44-1872-4cce-a9f5-d52491d87095",
   "recipe": "D-087 real lease-only eligibility switch on a clean fixed-generation published node",
   "recipe_executed": true,
   "transition": "member-grants-transition.json",
   "proof": {
     "distinct_reports_and_leases": true,
     "empty_lease_report_join": true,
-    "generation": "12",
+    "generation": "13",
     "invariants_byte_equal": true,
     "populated_lease_report_join": true,
-    "true_to_serving_receipt_ms": 379,
-    "wire_hashes": 254,
+    "true_to_serving_receipt_ms": 243,
+    "wire_hashes": 261,
     "wire_hashes_valid": true
   },
   "qualifying_reports": [
@@ -18,7 +18,7 @@
       "report": {
         "agent_version": "0.1.0",
         "applied_binding_revision": "1",
-        "applied_config_generation": "12",
+        "applied_config_generation": "13",
         "applied_policy_refs": {
           "authorization_generation": "1",
           "dns_generation": "1",
@@ -29,74 +29,74 @@
           {
             "error_code": null,
             "name": "dns_policy",
-            "observed_at": "2026-10-31T21:50:01.228723385Z",
+            "observed_at": "2026-11-01T09:42:56.619673707Z",
             "status": "passed"
           },
           {
             "error_code": null,
             "name": "internet_only",
-            "observed_at": "2026-10-31T21:50:01.228723385Z",
+            "observed_at": "2026-11-01T09:42:56.619673707Z",
             "status": "passed"
           },
           {
             "detail": "Serving lease has no member grants yet.",
             "error_code": "AWAITING_MEMBER_GRANTS",
             "name": "lease",
-            "observed_at": "2026-10-31T21:50:01.228723385Z",
+            "observed_at": "2026-11-01T09:42:56.619673707Z",
             "status": "failed"
           },
           {
             "error_code": null,
             "name": "meter_path",
-            "observed_at": "2026-10-31T21:50:01.228723385Z",
+            "observed_at": "2026-11-01T09:42:56.619673707Z",
             "status": "passed"
           },
           {
             "error_code": null,
             "name": "policy_signature",
-            "observed_at": "2026-10-31T21:50:01.228723385Z",
+            "observed_at": "2026-11-01T09:42:56.619673707Z",
             "status": "passed"
           },
           {
-            "detail": "read_at=2026-10-31T21:50:01.11251309Z source=live candidate=12 verified=true {\"generation\":\"12\",\"phase\":\"verify\",\"reads\":20,\"objects\":6,\"truncated\":true,\"sha256\":\"122093db19e91023347f91c9fb8cbe8280611a451a8fa6f4f937230c74c9989b\"}",
+            "detail": "read_at=2026-11-01T09:42:56.524874622Z source=live candidate=13 verified=true {\"generation\":\"13\",\"phase\":\"verify\",\"reads\":20,\"objects\":6,\"truncated\":true,\"sha256\":\"7b8d1b28e059a19b0e475d146cfcca02be30f3688875e2a536d0ea0422ea2cbe\"}",
             "error_code": "AWAITING_MEMBER_GRANTS",
             "name": "qos",
-            "observed_at": "2026-10-31T21:50:01.228723385Z",
+            "observed_at": "2026-11-01T09:42:56.619673707Z",
             "status": "failed"
           },
           {
             "error_code": null,
             "name": "release_supported",
-            "observed_at": "2026-10-31T21:50:01.228723385Z",
+            "observed_at": "2026-11-01T09:42:56.619673707Z",
             "status": "passed"
           },
           {
             "detail": "No member binding was admitted.",
             "error_code": "AWAITING_MEMBER_GRANTS",
             "name": "source_binding",
-            "observed_at": "2026-10-31T21:50:01.228723385Z",
+            "observed_at": "2026-11-01T09:42:56.619673707Z",
             "status": "failed"
           },
           {
             "error_code": null,
             "name": "storage",
-            "observed_at": "2026-10-31T21:50:01.228723385Z",
+            "observed_at": "2026-11-01T09:42:56.619673707Z",
             "status": "passed"
           },
           {
             "detail": "Egress probe used no extra target.",
             "error_code": null,
             "name": "tunnel_probe",
-            "observed_at": "2026-10-31T21:50:01.228723385Z",
+            "observed_at": "2026-11-01T09:42:56.619673707Z",
             "status": "passed"
           }
         ],
-        "current_release_id": "01a193ee-6ca2-763a-9b00-b929aaa6f3ed",
+        "current_release_id": "01a1967b-1d8e-7e40-93f4-f29e28cd6c62",
         "data_health": "healthy",
         "dns_policy_evidence": {
-          "applied_at": "2026-10-31T21:50:01.226090367Z",
-          "content_sha256": "34f78ac72c104be10aae4f3ba7426a0e234f4c612dfdcf982a57173345000e45",
-          "document_id": "01a193ee-7323-78e5-acee-7937e9054984",
+          "applied_at": "2026-11-01T09:42:56.617079174Z",
+          "content_sha256": "97691973bd562582d984e1f129d4823193c87d5cfcab868a12f1c7da9f720f0c",
+          "document_id": "01a1967b-238b-7cb4-8185-98bdc4b57f93",
           "error_code": null,
           "feeds": [],
           "generation": "1",
@@ -106,17 +106,17 @@
           {
             "code": "AWAITING_MEMBER_GRANTS",
             "message": "Serving lease has no member grants yet.",
-            "observed_at": "2026-10-31T21:50:01.228723385Z",
+            "observed_at": "2026-11-01T09:42:56.619673707Z",
             "stage": "lease"
           }
         ],
         "forwarding_block_reasons": [
           "awaiting_member_grants"
         ],
-        "last_good_release_id": "01a193ee-6ca2-763a-9b00-b929aaa6f3ed",
+        "last_good_release_id": "01a1967b-1d8e-7e40-93f4-f29e28cd6c62",
         "lease": {
-          "expires_at": "2026-10-31T21:51:01.128138318Z",
-          "lease_id": "19a145f0-b72d-4964-a52c-6a2b82ea8ba2"
+          "expires_at": "2026-11-01T09:43:56.535817609Z",
+          "lease_id": "56757638-8512-4857-8ff4-fa0c69ac8155"
         },
         "member_forwarding_enabled": false,
         "netbird": {
@@ -124,11 +124,11 @@
           "peer_id": null,
           "version": null
         },
-        "node_id": "01a193ee-71a5-744e-8414-fc222496d91e",
-        "node_incarnation_id": "01a193ee-7550-76ad-80ce-78692130576c",
-        "observed_at": "2026-10-31T21:50:01.254767727Z",
+        "node_id": "01a1967b-22a7-79ad-876e-8d83cd68c103",
+        "node_incarnation_id": "01a1967b-25c8-7e73-88f3-4a07daa04692",
+        "observed_at": "2026-11-01T09:42:56.646104693Z",
         "provisioning_state": "ready",
-        "report_id": "01a193f0-e826-7be7-9a46-33b888b0fe31",
+        "report_id": "01a1967d-9b86-71b9-9fd3-2cb1060face5",
         "safety_status": "passed",
         "tc_evidence": {
           "attachments": [
@@ -137,14 +137,14 @@
               "interface": "fvmb0",
               "objects": [
                 {
-                  "handle": "8dbe:",
+                  "handle": "2a73:",
                   "kind": "fq_codel",
-                  "parent": "1:8dbe"
+                  "parent": "1:2a73"
                 },
                 {
-                  "handle": "b875:",
+                  "handle": "2bb0:",
                   "kind": "fq_codel",
-                  "parent": "1:b875"
+                  "parent": "1:2bb0"
                 },
                 {
                   "handle": "1:",
@@ -158,14 +158,14 @@
               "interface": "fvup0",
               "objects": [
                 {
-                  "handle": "8dbe:",
+                  "handle": "2a73:",
                   "kind": "fq_codel",
-                  "parent": "1:8dbe"
+                  "parent": "1:2a73"
                 },
                 {
-                  "handle": "b875:",
+                  "handle": "2bb0:",
                   "kind": "fq_codel",
-                  "parent": "1:b875"
+                  "parent": "1:2bb0"
                 },
                 {
                   "handle": "1:",
@@ -180,12 +180,12 @@
               "objects": []
             },
             {
-              "attachment": "1:8dbe",
+              "attachment": "1:2a73",
               "interface": "fvmb0",
               "objects": []
             },
             {
-              "attachment": "1:b875",
+              "attachment": "1:2bb0",
               "interface": "fvmb0",
               "objects": []
             },
@@ -195,12 +195,12 @@
               "objects": []
             },
             {
-              "attachment": "8dbe:",
+              "attachment": "2a73:",
               "interface": "fvmb0",
               "objects": []
             },
             {
-              "attachment": "b875:",
+              "attachment": "2bb0:",
               "interface": "fvmb0",
               "objects": []
             },
@@ -225,12 +225,12 @@
               "objects": []
             },
             {
-              "attachment": "1:8dbe",
+              "attachment": "1:2a73",
               "interface": "fvup0",
               "objects": []
             },
             {
-              "attachment": "1:b875",
+              "attachment": "1:2bb0",
               "interface": "fvup0",
               "objects": []
             },
@@ -240,19 +240,19 @@
               "objects": []
             },
             {
-              "attachment": "8dbe:",
+              "attachment": "2a73:",
               "interface": "fvup0",
               "objects": []
             }
           ],
-          "candidate_generation": "12",
+          "candidate_generation": "13",
           "error_code": null,
           "objects_total": 6,
           "phase": "verify",
-          "read_at": "2026-10-31T21:50:01.112267241Z",
+          "read_at": "2026-11-01T09:42:56.524599301Z",
           "reads_total": 20,
           "rejected": null,
-          "sha256": "122093db19e91023347f91c9fb8cbe8280611a451a8fa6f4f937230c74c9989b",
+          "sha256": "7b8d1b28e059a19b0e475d146cfcca02be30f3688875e2a536d0ea0422ea2cbe",
           "truncated": true,
           "verified": true
         },
@@ -267,16 +267,16 @@
           "blocked_seq": null,
           "central_acked_through": "1",
           "last_durable_event_seq": "1",
-          "ledger_epoch": "3d0852ee-1eb0-45c6-a6e4-6db2b51cda98",
+          "ledger_epoch": "d442c17b-2e82-44c9-a4c4-709ad048ca74",
           "meter_epoch_id": null,
           "oldest_unacked_at": null,
           "unacked_event_count": 0,
           "unacked_payload_bytes": "0"
         }
       },
-      "received_at": "2026-10-31T21:50:01.258225247Z",
+      "received_at": "2026-11-01T09:42:56.649091826Z",
       "status": 202
     }
   ],
-  "observation_posts": 644
+  "observation_posts": 621
 }

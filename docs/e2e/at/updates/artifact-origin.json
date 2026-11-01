@@ -1,9 +1,9 @@
 {
-  "run_id": "2babf9b6-86a3-489d-a678-0bd447f2f8b0",
-  "source_commit": "5b2ae0748bbbffb0d370d4842bb0623e74e844b7",
-  "at": "2026-10-31T22:15:50.561171+00:00",
+  "run_id": "759d244a-2dc4-460c-9f82-e37ce0ac7560",
+  "source_commit": "20d1f6e83d4a0dce97e2cf87e4ccd4a31dc580a5",
+  "at": "2026-11-01T09:49:17.433810+00:00",
   "scope": "TEST ONLY post-handoff uncached seed of retired installer fixture; no apply or central acceptance claim",
-  "artifact_url": "https://releases.example.invalid/r/01a19401-10b3-7de8-beaf-ec4601beb6e6/amd64.tar.zst",
+  "artifact_url": "https://releases.example.invalid/r/01a1967b-c41d-71a4-a35f-1ac001f5e975/amd64.tar.zst",
   "config": {
     "allow_loopback": true,
     "allowed_artifact_origins": [
@@ -11,12 +11,12 @@
     ],
     "desired_state": "/var/lib/vpn-node/state/desired-state.json",
     "desired_trust": "/etc/vpn-node/desired-trust.json",
-    "incarnation_id": "01a19401-45a5-76f4-864b-9ff219d4fd3c",
+    "incarnation_id": "01a1967b-f94e-71d3-98d2-a3a2a3d99edb",
     "meter_checkpoint": "/var/lib/vpn-node/state/meter.checkpoint",
     "mtls_ca": "/etc/vpn-node/ca.pem",
     "mtls_cert": "/var/lib/vpn-node/identity/cert.pem",
     "mtls_key": "/var/lib/vpn-node/identity/key.pem",
-    "node_id": "01a19401-3f46-7ba0-85f1-309fad2249b7",
+    "node_id": "01a1967b-f35e-72f4-8b1a-efaf9e6c377b",
     "platform": {
       "os_id": "ubuntu",
       "os_version": "24.04",
@@ -42,18 +42,18 @@
       "fvpn-watchdog.service"
     ]
   },
-  "cache_sha256_before": "66324699c3fae214be808e7e43f18b6acca7c7bbdaf52e09f6efad6214f6ee8b",
-  "current_before": "/opt/vpn-node/releases/01a19401-10b3-7de8-beaf-ec4601beb6e6",
-  "current_link_before": "releases/01a19401-10b3-7de8-beaf-ec4601beb6e6",
+  "cache_sha256_before": "1d1bbcc05503e991250c547d9d49e5cbf67fd5e915399ab52c6e14ef045c125b",
+  "current_before": "/opt/vpn-node/releases/01a1967b-c41d-71a4-a35f-1ac001f5e975",
+  "current_link_before": "releases/01a1967b-c41d-71a4-a35f-1ac001f5e975",
   "status_before": {
     "generation": "1",
-    "job_id": "bdcc8a39-32cc-53f9-bf76-7979da5d0528",
+    "job_id": "fda1c86d-256c-5bf1-a540-f1aba5046037",
     "source": "installer",
-    "requested_release_id": "01a19401-3896-73d0-9ada-ae2a3857264e",
+    "requested_release_id": "01a1967b-ecca-79ca-b637-634ac7c9eb66",
     "stage": "verify",
     "state": "failed",
-    "current_release_id": "01a19401-10b3-7de8-beaf-ec4601beb6e6",
-    "last_good_release_id": "01a19401-10b3-7de8-beaf-ec4601beb6e6",
+    "current_release_id": "01a1967b-c41d-71a4-a35f-1ac001f5e975",
+    "last_good_release_id": "01a1967b-c41d-71a4-a35f-1ac001f5e975",
     "recovery_required": false,
     "last_result_state": "failed",
     "last_rejection": null,
@@ -67,31 +67,31 @@
       "--config",
       "/etc/vpn-node/updater.json",
       "--manifest",
-      "/var/lib/vpn-node/update-staging/01a19401-10b3-7de8-beaf-ec4601beb6e6.manifest.json",
+      "/var/lib/vpn-node/update-staging/01a1967b-c41d-71a4-a35f-1ac001f5e975.manifest.json",
       "--tree",
-      "/opt/vpn-node/releases/01a19401-10b3-7de8-beaf-ec4601beb6e6"
+      "/opt/vpn-node/releases/01a1967b-c41d-71a4-a35f-1ac001f5e975"
     ],
     "exit": 0,
     "stdout": "",
-    "stderr": "{\"time\":\"2026-10-31T22:15:50.298380689Z\",\"level\":\"INFO\",\"msg\":\"verified installer baseline seeded\",\"release_id\":\"01a19401-10b3-7de8-beaf-ec4601beb6e6\"}"
+    "stderr": "{\"time\":\"2026-11-01T09:49:17.204993305Z\",\"level\":\"INFO\",\"msg\":\"verified installer baseline seeded\",\"release_id\":\"01a1967b-c41d-71a4-a35f-1ac001f5e975\"}"
   },
   "cache_restored_identical": true,
   "generated_config_unchanged": true,
   "status_after": {
     "generation": "1",
-    "job_id": "bdcc8a39-32cc-53f9-bf76-7979da5d0528",
+    "job_id": "fda1c86d-256c-5bf1-a540-f1aba5046037",
     "source": "installer",
-    "requested_release_id": "01a19401-3896-73d0-9ada-ae2a3857264e",
+    "requested_release_id": "01a1967b-ecca-79ca-b637-634ac7c9eb66",
     "stage": "verify",
     "state": "failed",
-    "current_release_id": "01a19401-10b3-7de8-beaf-ec4601beb6e6",
-    "last_good_release_id": "01a19401-10b3-7de8-beaf-ec4601beb6e6",
+    "current_release_id": "01a1967b-c41d-71a4-a35f-1ac001f5e975",
+    "last_good_release_id": "01a1967b-c41d-71a4-a35f-1ac001f5e975",
     "seeded_baseline": {
-      "release_id": "01a19401-10b3-7de8-beaf-ec4601beb6e6",
-      "manifest_sha256": "895f54f02192573b98a081d24221f4d2ff8e7f1ef991e3e84cbafb3ea41147e1",
-      "tree_hash": "c205e3bf66bb89c69be6ea5a3f57100730508e9f91f3bbb32efc67915e89743c",
+      "release_id": "01a1967b-c41d-71a4-a35f-1ac001f5e975",
+      "manifest_sha256": "d46de908d07b49de26b1c623368775af6bb9b126870c1776e9c6c80921bc28e7",
+      "tree_hash": "50f879e754ce5c0881e59c29da894cadc7e60512a4e09506ad63185a207901b1",
       "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
-      "seeded_at": "2026-10-31T22:15:50.29575526Z"
+      "seeded_at": "2026-11-01T09:49:17.195203769Z"
     },
     "recovery_required": false,
     "last_result_state": "failed",
@@ -111,12 +111,12 @@
     "is_rfc1918": false,
     "is_cgnat": false,
     "classification": "controlled Docker origin; address omitted",
-    "address_sha256": "861c0d22df07f908bd67dcc8fde3e947e6ecdb102f494a895ccb28d8ea67d033"
+    "address_sha256": "a77a1d2b8fb5d3ae30ddbac23fd867d10db04b9edf047d56af01483987c1e318"
   },
   "decision": "No rejection and no new origin input: allowed_artifact_origins grants private/CGNAT exceptions, not a universal host restriction. Cache restored; only verified seeded_baseline added.",
   "stimulus": {
-    "cache_path": "/var/lib/vpn-node/update-staging/66324699c3fae214be808e7e43f18b6acca7c7bbdaf52e09f6efad6214f6ee8b.tar.zst",
-    "held_path": "/var/lib/vpn-node/update-staging/66324699c3fae214be808e7e43f18b6acca7c7bbdaf52e09f6efad6214f6ee8b.tar.zst.f12-origin-held",
+    "cache_path": "/var/lib/vpn-node/update-staging/1d1bbcc05503e991250c547d9d49e5cbf67fd5e915399ab52c6e14ef045c125b.tar.zst",
+    "held_path": "/var/lib/vpn-node/update-staging/1d1bbcc05503e991250c547d9d49e5cbf67fd5e915399ab52c6e14ef045c125b.tar.zst.f12-origin-held",
     "steps": [
       "Read retained signed manifest for current and record status/config/cache hashes.",
       "Move only the retained archive to a held sibling; run recorded seed with unchanged generated config.",

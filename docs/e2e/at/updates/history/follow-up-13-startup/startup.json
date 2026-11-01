@@ -1,0 +1,14 @@
+{
+  "at": "2026-11-01",
+  "source_commit": "6ded9ec7",
+  "product_main": "5bd751026073444087b32ac2a7115f8566104f8b",
+  "live_target_exit": 2,
+  "elapsed_seconds": 24.395,
+  "phase": "shared stack startup",
+  "regular_test_started": false,
+  "installer_test_started": false,
+  "reason": "Owned gateway could not bind 127.0.0.1:42443/tcp: address already in use",
+  "cleanup": "shared e2e-down completed",
+  "acceptance_claims": "none; no AT predicate executed",
+  "retry_policy": "No failed AT is retried for a pass. Admission can resume only after the occupied port is released."
+}

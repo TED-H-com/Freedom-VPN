@@ -59,3 +59,31 @@ preserved byte-identically under
 before the owned relative-symlink probe fix. Its make failure and the incorrect
 unconditional narrative are explicitly retained and explained. The later run
 must supply all current claims independently. No prior archive was rewritten.
+
+## Follow-up 13 archive — 2026-11-01
+
+Before any follow-up 13 execution, all **44** root files on main
+`5bd751026073444087b32ac2a7115f8566104f8b` were copied byte-identically to
+[follow-up 12](history/follow-up-12/ARCHIVE.md), with the same
+[SHA256SUMS](history/follow-up-12/SHA256SUMS) manifest shape as follow-up 11.
+Every copy was compared with its source main blob. Run
+`2babf9b6-86a3-489d-a678-0bd447f2f8b0` is the immutable comparison baseline
+for the new agent-stop measurements. Its product baseline is
+`45209609d33d567c5f04d49441799cdd3efac59b`.
+The failed first attempt and every earlier archive remain untouched.
+New digest-dependent evidence consumers must pin history paths only.
+This archive and audit extension are committed before running any gate or lab.
+
+The follow-up 13 inventory has 1,090 references under `internal node packaging
+tests`, still exactly four product-path sites. Both fleetupdate fixtures again
+match their follow-up 9 archive bytes. The product sites remain provenance or
+frozen fixtures; `node/` and `packaging/` have no literal living AT reads.
+The new archive test reads all 44 follow-up 12 pins. The stop observer reads
+only its own running fixture's SQLite state, never AT documents as product input.
+
+The retained regular-fixture SQLite journals from run 2babf9b6 were additionally
+read before stack reset. Their four-field stage/time projection is pinned in
+[follow-up-12-stop-journal](history/follow-up-12-stop-journal/ARCHIVE.md).
+It is separate from the byte-identical root archive: stage brackets cannot be
+relabeled as direct command durations or termination evidence. The installer
+journal was not retained after teardown. All previous archives remain untouched.

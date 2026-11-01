@@ -1,14 +1,14 @@
-# Isolation run procedure — Follow-up 11
+# Isolation run procedure — Follow-up 12
 
-Product baseline: `45209609d33d567c5f04d49441799cdd3efac59b` (main after
-agent-core 29 / PR #356 and netlab 21 / PR #355). The preflight command
+Product baseline: `5bd751026073444087b32ac2a7115f8566104f8b` (main after
+agent-core 31 / PR #369 and netlab 22 / PR #365). The preflight command
 `go env GOCACHE` returned `/data/ted-h-cache/go-build`; no cache path is
 hard-coded in the runner. Runtime source identity is recorded in each AT row.
 
 Before the one assembled run, retain `vmstat 5 7` and
 `pgrep -af 'gates.sh|mk/at-'`. The public `host-preflight.json` keeps the CPU
 samples and sanitized suite inventory; original command output remains in
-`.agent/follow-up-11/`. These host observations do not attribute a failure.
+`.agent/f12/`. These host observations do not attribute a failure.
 
 Run from the worktree root:
 
@@ -223,3 +223,69 @@ source `2304f77a733978405a35eea3b8d0a075027ce88e` with `source_dirty=false`.
 Full foreground command 1,199.880 seconds, exit 2 (lab=0, stack=1); AT10/AT12
 pass, AT11/AT13 retain operator blocks. The completed-guard and host results
 are in `summary.md`; these are independent measurements, not a quiet A/B leg.
+
+## Follow-up 12 lifecycle consumer and restart observations
+
+First commit `b597f995` archives all 103 root files of run edd986c4 under
+`history/follow-up-11/`, byte-identical with SHA-256 pins. Earlier archives
+are untouched. Handover reads immutable evidence; mutable root strings are
+rejection inputs, so the D-132 one-file exception is not needed.
+
+Runtime source `99e58bff0cf7276e36cb04f35605835208c8638e` adds consumer validation
+and observation only. Agent-core 31 enables netlab 22's per-Apply `commands`
+under the existing TestMode/TestTimingPath gate. The consumer checks kind, phase,
+availability, start/return/wait/cancel stamps, resource before/after brackets,
+started/ok, exit/signal/CPU/switch fields, and containment within the exact
+Apply. Records join only by run/boot/sequence, with command indices. Descriptions
+name the observed phases; absent records are unavailable. Historical replay
+preserves all prior results apart from these additive unavailable fields.
+Command cancellation, exit and host observations do not establish scheduler
+causality; causes stay unproven. Exact child-start and hidden host ancestors
+remain explicitly unavailable when the producer says so. D-106 is unchanged.
+
+The normal restart now uses Docker stop then start, retaining a SQLite lease
+snapshot while stopped. This adds a measured snapshot interval to the outage.
+`restart-lifecycle.json` records stop, snapshot and restart command durations,
+lease ID and original monotonic anchor. It is not an exact SIGTERM/exit trace.
+The cloned-identity fixture retains its own whole-call bracket and Docker
+finished/started timestamps when available. Terminal source/clone service stops
+retain durations and before/after lease snapshots in `receiver-closure.json`.
+A stored lease surviving does not prove that it remains eligible for serving.
+
+D-136 correction: only recovery from a retained Apply error uses the verified
+deny-all candidate. The ordinary stale-lease path installs the node-wide
+baseline, ACKs, renews, then Applies, verifies and heartbeats. `policy_missing`
+alone does not establish generation mismatch. Any observed transition is
+bracketed from baseline to the next successful Apply, with later verification
+and heartbeat/egress evidence kept distinct; every loss remains counted.
+There is no finite recovery guarantee and the 100 ms install budget does not
+bound the outage. See the agent-core 31 generation-change design note.
+
+The expanded command stream is stored as lossless `producer-operations.jsonl.gz`
+when needed for publication. Decompression is compared byte-for-byte to the
+export before the raw working copy is moved to private run storage.
+`read_operations` accepts raw historical JSONL and gzip; the evidence hygiene
+test scans decompressed content and validates every JSONL record. Successful
+Apply inventories reference original command indices by run/boot/sequence;
+failed/nearest Apply details retain full records. No record is sampled away.
+
+After the assembled run, replay with:
+
+```sh
+python3 -B tests/e2e/at/isolation/review_followup10.py docs/e2e/at/isolation
+python3 -B tests/e2e/at/isolation/review_policy_missing.py docs/e2e/at/isolation
+```
+
+The lifecycle reader/compact review and D-136 review are offline consumer
+changes after runtime commit `99e58bff`; they do not alter the running binaries.
+Their synthetic regressions include absent recovery and all retained losses.
+
+Final run `1c25ee44-1872-4cce-a9f5-d52491d87095`: full command 1207.405 s,
+exit 2; AT10 blocked 8/1/0 (ISO-F6-01 5/6, missing dirty-generation report),
+AT11 blocked 2/1/0, AT12 pass 10/0/0, AT13 blocked 6/1/0.
+The sixth predicate is unchanged. Local generation-30 failures and kernel
+denial do not substitute for the absent current central observation.
+Ordinary stop/start retains the lease, but exact signal/exit events were
+unavailable. The later clone fixture's event observer records SIGTERM then
+SIGKILL after 20.007193 s, exit 137. It is not a graceful-stop qualification.
+See `summary.md`, `iso-f6-01-observation-gap.json`, and the three dated hand-offs.
