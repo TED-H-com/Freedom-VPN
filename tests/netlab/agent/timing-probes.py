@@ -132,25 +132,34 @@ def trace(mode, deadline, output):
             s.close()
 
 
-def restart_agent(output):
+def stop_agent(timeout):
     # Only the harness-owned process in this lab container; topology is intact.
     if not Path('/.dockerenv').exists():
         raise RuntimeError('lab container required')
     pidfile = Path('/scratch/w2/agent.pid')
     pid = int(pidfile.read_text())
     evidence = dict(start_ns=str(time.monotonic_ns()))
-    os.kill(pid, signal.SIGTERM)
-    until = time.monotonic()+2
+    try:
+        os.kill(pid, signal.SIGTERM)
+    except ProcessLookupError:
+        pass
+    until = time.monotonic()+timeout
     while time.monotonic() < until:
         try:
             if Path(f'/proc/{pid}/stat').read_text().split()[2] == 'Z':
                 break
-        except FileNotFoundError:
+        except (FileNotFoundError, ProcessLookupError):
             break
         time.sleep(.005)
     else:
         raise RuntimeError('agent failed to stop gracefully')
     evidence['stopped_ns'] = str(time.monotonic_ns())
+    return evidence
+
+
+def restart_agent(output):
+    evidence = stop_agent(2)
+    pidfile = Path('/scratch/w2/agent.pid')
     with open('/scratch/w2/agent.log','ab') as log:
         child = subprocess.Popen(['fvpn-agent','run','-config','/scratch/w2/agent.json'],stdout=log,stderr=log,start_new_session=True)
     pidfile.write_text(str(child.pid)+'\n')
@@ -161,6 +170,10 @@ def restart_agent(output):
 if __name__ == '__main__':
     if sys.argv[1] == 'restart':
         restart_agent(sys.argv[2])
+    elif sys.argv[1] == 'stop':
+        evidence = stop_agent(float(sys.argv[3]))
+        Path(sys.argv[2]).write_text(json.dumps(evidence, indent=2)+'\n')
+        print(json.dumps(evidence))
     elif sys.argv[1] == 'serve':
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s.bind(('203.0.113.10', PORT))

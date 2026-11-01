@@ -37,7 +37,7 @@ func followup31RestartCapture(t *testing.T) func(string) {
 	}
 	t.Cleanup(func() {
 		capture("finished")
-		for _, name := range []string{"operations.jsonl", "agent.log"} {
+		for _, name := range []string{"operations.jsonl", "agent.log", "restart-stop.json"} {
 			raw, _, err := dockerExec("cat", labDir+"/"+name)
 			if err == nil {
 				err = os.WriteFile(filepath.Join(dir, name), []byte(raw), 0600)
