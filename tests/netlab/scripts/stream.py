@@ -8,6 +8,31 @@ import sys
 import time
 
 
+class TraceEnd:
+    """One serial successor cycle, never a retry of a failed datagram.
+
+    At a loop boundary every UDP send has its read. Earlier losses already
+    have successors, so only the last read can need one. A failed successor
+    exhausts the bound: keep both its failure and the resulting missing tail.
+    """
+    def __init__(self):
+        self.last_udp_failed = False
+        self.extra_cycles = 0
+
+    def udp_read(self, outcome, response_matches=False):
+        self.last_udp_failed = outcome != "ok" or response_matches is not True
+
+    def boundary(self, requested):
+        if not requested:
+            return None
+        if not self.last_udp_failed:
+            return "complete"
+        if self.extra_cycles == 1:
+            return "missing"
+        self.extra_cycles += 1
+        return None
+
+
 def main() -> None:
     dst = sys.argv[1]
     tcp_port = int(sys.argv[2])
@@ -24,6 +49,7 @@ def main() -> None:
         except FileNotFoundError:
             pass
     recording = True
+    ending = TraceEnd()
 
     def event(kind: str, **fields) -> None:
         if not recording:
@@ -33,6 +59,8 @@ def main() -> None:
                                     wall_ns=str(time.time_ns()),
                                     mono_ns=str(time.monotonic_ns()), **fields)) + "\n")
         trace.flush()
+        if kind == "udp_read":
+            ending.udp_read(fields.get("outcome"), fields.get("response_matches"))
 
     def log(msg: str) -> None:
         logf.write(f"{time.time():.3f} {msg}\n")
@@ -46,13 +74,17 @@ def main() -> None:
     log("up")
     n = 0
     while True:
-        if recording and os.path.exists(path + ".trace-stop"):
-            # The preceding read is complete. Keep the acceptance stream
-            # running for revoke tests, but end this measurement sidecar.
-            event("trace_end")
+        end_reason = ending.boundary(recording and os.path.exists(path + ".trace-stop"))
+        if end_reason:
+            # finish_stream requests this only after the final guard closes.
+            # The count bound preserves a failed/missing successor as failure.
+            # Keep the acceptance stream running for the later revoke test.
+            event("trace_end", end_reason=end_reason, extra_cycles=ending.extra_cycles)
             recording = False
             with open(path + ".trace-done", "w", encoding="utf-8") as done:
-                done.write("ok\n")
+                json.dump(dict(end_reason=end_reason, extra_cycles=ending.extra_cycles,
+                               sequence=n), done)
+                done.write("\n")
         n += 1
         token = f"t{n}\n".encode()
         stage = "tcp"

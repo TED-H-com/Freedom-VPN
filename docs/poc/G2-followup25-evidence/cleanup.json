@@ -1,0 +1,68 @@
+{
+  "owned_objects_remaining": 0,
+  "commands": [
+    {
+      "command": [
+        "docker",
+        "image",
+        "rm",
+        "fvpn-w1-netlab-f25:lab"
+      ],
+      "exit": 0,
+      "output": "Untagged: fvpn-w1-netlab-f25:lab\nDeleted: sha256:86e56b947d6f01370f15c237131e15302ab55f6415905c7720c21249960639c0\n"
+    },
+    {
+      "command": [
+        "docker",
+        "ps",
+        "-a",
+        "--filter",
+        "name=fvpn-w1-netlab-f25",
+        "--format",
+        "{{.Names}}"
+      ],
+      "exit": 0,
+      "output": ""
+    },
+    {
+      "command": [
+        "docker",
+        "images",
+        "--filter",
+        "reference=fvpn-w1-netlab-f25*",
+        "--format",
+        "{{.Repository}}:{{.Tag}}"
+      ],
+      "exit": 0,
+      "output": ""
+    },
+    {
+      "command": [
+        "docker",
+        "network",
+        "ls",
+        "--filter",
+        "name=fvpn-w1-netlab-f25",
+        "--format",
+        "{{.Name}}"
+      ],
+      "exit": 0,
+      "output": ""
+    },
+    {
+      "command": [
+        "docker",
+        "volume",
+        "ls",
+        "--filter",
+        "name=fvpn-w1-netlab-f25",
+        "--format",
+        "{{.Name}}"
+      ],
+      "exit": 0,
+      "output": ""
+    }
+  ],
+  "scratch_binary_removed": true,
+  "scratch_directory_removed": true
+}

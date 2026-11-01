@@ -177,3 +177,18 @@ qualifying share above zero whose promotion costs less than (c), and the
 design-only findings closed. Agent-core 33's note and test-only reference stay
 on main as history. D-135 / D-136 / D-137 / D-138 remain provisional; historical
 failures stay failed. Earlier review disposition tables retain their cutoff.
+
+## r19 dispositions at the follow-up 28 cutoff (2026-11-01 EST)
+
+[Follow-up 28](../handover/follow-up-28.md) verifies the fixes through #390.
+The original report and the #385 disposition table above retain their bytes.
+
+| Finding | Disposition at #390 |
+|---|---|
+| H-1 | Fixed — #389: source denials precede generic established / related returns, with exact resolver DNS replies retained. ctdenyd is diagnostic, never usage. |
+| M-2 | Fixed — #388; production-reachable with due renewal h and busy Apply retaining g. ACK and minimal applied snapshot commit together; only matching refs reported. |
+| L-2 | Fixed — #388: reserve conntrack delete batch before Apply. About 1.1 ms, p99 1.59 ms before restricting install with queued deletes; accepted under D-138, cost explicit. |
+| H-2, M-1, M-3–M-8, L-1, L-3, L-4 | Design-only findings stay recorded under provisional D-141; no implementation or closure claimed. |
+
+RELATED ICMP from a spec-denied outer source is a new open owner question,
+not a defect or a decision. Historical failures stay failed.

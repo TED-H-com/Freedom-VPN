@@ -188,3 +188,18 @@ claims use only the exact roadmap rows. D-098 owner archives and the dated
 906-file devstack capture inventory have independent hash checks. The previous
 cut's register and entrypoint inputs are frozen; its body-content check permits
 only removal of the single pinned installer note added by this cut.
+
+## Follow-up 28 provenance
+
+Main aae6763f through #390: five exact final roadmap rows, 16 immutable snapshots
+with source digest / offset / length, and 1,644 owner archive/run file checks
+(987 devstack 26, 609 netlab 24, 48 updates 13). Follow-up 27's register and
+entrypoints are frozen; its old guide-body check excludes only the exact new
+node-diagnostics note, whose current text is independently pinned. The #381
+row still equals the original follow-up 27 snapshot (400d5cf9…).
+
+Updates 14 run 2704600f is cited only by roadmap row / PR: living roots are
+never copied or read by claims. D-098 includes dated devstack runs and the
+per-follow-up netlab tree. D-109 implementation claims name Go tests; dated
+hand-offs and merged-PR excerpts supply immutable context. Earlier claims,
+decisions and historical failures remain intact.
