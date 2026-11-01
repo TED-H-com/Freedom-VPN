@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Analyze a new, unpinned follow-up 24 run using exact private trace receipts."""
+"""Analyze a new, unpinned native first-selection run using exact private trace receipts."""
 import argparse
 import hashlib
 import json
@@ -45,9 +45,11 @@ def main(run, private):
         row = dict(label=sample['label'], points={})
         for role in ['member', 'node']:
             point = sample['points'][role]
-            row['points'][role] = {k: point.get(k) for k in ['start', 'end', 'wireguard_endpoint', 'wireguard_peer_matched', 'latest_handshake_unix_seconds', 'local', 'remote']}
-            row['points'][role]['read_ok'] = {k: point['commands'].get(k, {}).get('ok', False) for k in ['snmp6', 'nstat', 'conntrack6', 'wg_latest_handshakes', 'wg_endpoints']}
+            row['points'][role] = {k: point.get(k) for k in ['start', 'end', 'wireguard_endpoint', 'wireguard_peer_matched', 'latest_handshake_unix_seconds', 'local', 'remote', 'uses_kernel_interface']}
+            row['points'][role]['read_ok'] = {k: point['commands'].get(k, {}).get('ok', False) for k in ['snmp4', 'snmp6', 'nstat', 'conntrack6', 'wg_latest_handshakes', 'wg_endpoints']}
             row['points'][role]['snmp6'] = {k: point['kernel']['snmp6'].get(k) for k in ['Ip6InReceives', 'Ip6InHdrErrors', 'Ip6InAddrErrors', 'Ip6InDiscards', 'Ip6InDelivers', 'Udp6InDatagrams', 'Udp6InErrors', 'Udp6InCsumErrors', 'Udp6NoPorts']}
+            row['points'][role]['snmp4'] = point['kernel'].get('snmp4', {})
+            row['points'][role]['nstat4'] = {k: v for k, v in point['kernel']['nstat'].items() if k.startswith(('IpIn', 'IpExtIn', 'UdpIn', 'UdpNoPorts'))}
             row['points'][role]['nstat_hdr_errors'] = point['kernel']['nstat'].get('Ip6InHdrErrors')
             row['points'][role]['loopback_conntrack'] = point['kernel']['loopback_conntrack']
         result['samples'].append(row)

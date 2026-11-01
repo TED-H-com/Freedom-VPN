@@ -256,6 +256,7 @@ func Read(ctx context.Context, target, origin string) (Snapshot, error) {
 	}
 	if os.Getenv("FVPN_E2E_KERNEL_OBSERVE") == "1" {
 		out.Kernel = &KernelDiagnostics{
+			SNMP4:             SNMP4Counters(run("snmp4", "cat", "/proc/net/snmp")),
 			SNMP6:             NumericCounters(run("snmp6", "cat", "/proc/net/snmp6")),
 			Nstat:             NumericCounters(run("nstat", "nstat", "-asz")),
 			LoopbackConntrack: LoopbackConntrack(run("conntrack6", "conntrack", "-L", "-f", "ipv6", "-p", "udp")),

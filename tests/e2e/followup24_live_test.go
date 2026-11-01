@@ -39,7 +39,7 @@ func (r *runner) exportNative24(ctx context.Context, s *Stack) {
 		} else {
 			recPathNote(&rec)(role+"_kernel_release", string(release))
 		}
-		receipt, err := s.ExportContainerFile(ctx, role, "/var/lib/vpn-node/e2e/netbird-service.log", filepath.Join(r.lab.root, ".agent/tmp/followup24", r.runID, role+"-debug.log"))
+		receipt, err := s.ExportContainerFile(ctx, role, "/var/lib/vpn-node/e2e/netbird-service.log", filepath.Join(r.lab.root, ".agent/tmp/"+nativeCampaignDirectory(), r.runID, role+"-debug.log"))
 		noteJSON(&rec, role, receipt)
 		if err != nil {
 			rec.Status = StatusFail

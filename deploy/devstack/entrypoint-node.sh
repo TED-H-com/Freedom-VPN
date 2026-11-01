@@ -108,6 +108,11 @@ fvpn-watchdog run -config /etc/vpn-node/agent-run.json >/var/lib/vpn-node/e2e/wa
     done
 ) &
 (
+    # TEST ONLY diagnostic, armed before enrollment by Followup25. Scope this
+    # environment setting to the lab daemon; the ordinary kernel path is unchanged.
+    if [ -f /var/lib/vpn-node/e2e/test-only-userspace-wireguard ]; then
+        export NB_WG_KERNEL_DISABLED=true
+    fi
     netbird service run --log-level warn --log-file console >/var/lib/vpn-node/e2e/netbird-service.log 2>&1 &
     ready=0
     i=0

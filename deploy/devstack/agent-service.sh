@@ -134,8 +134,17 @@ supervise_start() {
         return 0
     fi
     printf '%s\n' "$_sup_release" > "$base/agent-selected"
-    nohup "$_sup_binary" run -config "$_sup_config" > "$base/agent.log" 2>&1 < /dev/null &
-    printf '%s\n' "$!" > "$base/agent.pid"
+    # The waiter owns the child and persists the actual wait status after reap.
+    # Its argv deliberately lacks "fvpn-agent run", so process scans count only
+    # the agent. agent.pid continues to contain the child PID, not the waiter.
+    nohup fvpn-e2e-nodeconfig agent-wait "$_sup_binary" "$_sup_config" > "$base/agent.log" 2>&1 < /dev/null &
+}
+
+exit_recorded() {
+    # No identity means this container has not started an agent yet.
+    [ -s "$base/agent-process-id" ] || return 0
+    _exit_id=$(cat "$base/agent-process-id")
+    [ -s "$base/agent-exits/$_exit_id.json" ]
 }
 
 public_stop() {
@@ -145,7 +154,7 @@ public_stop() {
     _pub_i=0
     while [ "$_pub_i" -lt 100 ]; do
         if [ "$(count_agents)" -eq 0 ] && { ! [ -s "$base/agent.pid" ] || ! kill -0 "$(cat "$base/agent.pid")" 2>/dev/null; }; then
-            if [ "$_pub_prev" -eq 0 ]; then
+            if [ "$_pub_prev" -eq 0 ] && exit_recorded; then
                 printf '%s\n' 0
                 return 0
             fi
