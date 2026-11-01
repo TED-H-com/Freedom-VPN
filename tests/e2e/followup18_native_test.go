@@ -609,6 +609,23 @@ func (r *runner) nativeTransfer26(ctx context.Context, s *Stack, record *Record,
 	if os.Getenv("FVPN_E2E_FOLLOWUP26") == "1" {
 		reproduce := os.Getenv("FVPN_E2E_REPRODUCE_TRACE26") == "1" && rec.ID == "initial-selection"
 		noteJSON(&rec, "historical_node_tracer_reproduction", reproduce)
+		if reproduce && os.Getenv("FVPN_E2E_TRACE_HOLD26") == "1" {
+			rec.Title = "Historical node tracer hold fault probe; not first-selection acceptance"
+			noteJSON(&rec, "trace_hold_started_at", time.Now().UTC())
+			// Explicit diagnostic only: cross two fixture poll intervals with
+			// the old observer installed. Never delay the normal control arm.
+			for i := 0; i < 12; i++ {
+				if c.Sample(ctx, fmt.Sprintf("trace-hold-%d", i)) != nil {
+					return
+				}
+				select {
+				case <-ctx.Done():
+					return
+				case <-time.After(time.Second):
+				}
+			}
+			noteJSON(&rec, "trace_hold_completed_at", time.Now().UTC())
+		}
 		if !reproduce && !r.servingGate26(ctx, rec.ID+"-ready", c) {
 			return
 		}

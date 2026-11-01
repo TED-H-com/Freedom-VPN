@@ -39,3 +39,15 @@ stack in the ledger. Schedule **one additional fresh ipv4-09 diagnostic** after
 the corrected controls so there are eight actual IPv4 reproduction requests.
 The first stack's earlier compile-only command is also retained. Neither
 compile failure is counted as a network pass or replaced failed HTTP request.
+
+## Two additional causal fault probes, declared 12:35 UTC
+
+The early requests pass before the next serving check rejects the historical
+tracer. After the scheduled campaign, add **one fresh stack per family** with
+`FVPN_E2E_TRACE_HOLD26=1`: after proven serving admission, hold the historical
+tracer for 12 one-second observation intervals before selecting and requesting.
+These deliberately exposed-node fault probes are separate from first-selection
+acceptance and the original 8+8 population. Keep failed requests, the complete
+central record, baseline timings and the post-removal recovery bound. They do
+not replace any original row or re-grant failure. Run the final stop proof and
+focused checks on the last fault-probe stack before its teardown.
