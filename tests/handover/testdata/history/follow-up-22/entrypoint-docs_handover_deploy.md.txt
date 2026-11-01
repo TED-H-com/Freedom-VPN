@@ -1,0 +1,33 @@
+# Production Deployment Runbook (`docs/handover/deploy.md`)
+
+**Current cut — [follow-up 21](follow-up-21.md) (2026-10-31 EDT):** Through #351: positive-cache limits, retained verified install archives and Dependabot #22 status are documented. Regular AT23–AT27 and assembled D-087 AT10 pass; historical failures remain frozen.
+Previous cut: [follow-up 20](follow-up-20.md), through #344.
+
+Installer 7 reporting inputs are required: a validated HTTPS control origin
+(`--control-url`) and its readable server CA bundle (`--server-ca`). Generated
+`result_url` appends `/api/v1/agent/update-results`; `mtls_ca` uses enrollment
+server trust, and `mtls_cert` / `mtls_key` use the enrolled node identity.
+`allowed_artifact_origins` contains exactly the control origin. Invalid inputs
+fail before host changes; a same-release rerun repairs reporting fields and
+server CA while preserving unrelated settings and durable state.
+`install --allow-loopback` is **TEST ONLY**, for an isolated HTTPS lab; leave it
+disabled in production. Updates 11 (#346) closes the distinct artifact-origin
+question by measurement: the list grants private / CGNAT exceptions only;
+the measured non-private origin needs none, and no rejection occurred.
+
+Updater 18 logs `result_url_missing` when sealing without reporting config and
+keeps the original receipt pending. Explicit flush fails `VALIDATION_FAILED`
+without a sink. After configuration repair, flush sends that identical receipt
+once; only the central ACK establishes delivery. Node process restarts may now
+adopt fully verified same-boot serving under the original valid lease and
+deadline; failed qualification or OS reboot still closes forwarding. Use the
+[operator reporting/restart procedure](operator-guide.md#reporting-and-restart-changes-at-344)
+and [installer input reference](../node/install.md#authenticated-updater-reporting-f10-02-136-13103).
+
+Initial and same-release installs retain the verified archive and envelope
+before seed (#351). With the archive present, seed verifies a private copy and
+the whole tree without fetching the artifact; only absence chooses the guarded
+signed-URL download. Corrupt archives fail closed. This is offline seed, not
+offline enrollment. See [operator changes at #351](operator-guide.md#operator-changes-at-351)
+for this correction, the F9-INFLIGHT positive-cache limitation when choosing
+`blocked_response_ttl`, and Dependabot #22's pending owner disposition.

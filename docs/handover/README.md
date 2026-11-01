@@ -59,15 +59,17 @@ Historical status at main `c6e3eca`, superseded where stated by follow-up 15 bel
 
 The [follow-up 19 register](../../tests/handover/testdata/history/follow-up-20/register19.md) is frozen at #337.
 
-## Follow-up 21 decisions register (2026-10-31 EDT)
+## Follow-up 22 decisions register (2026-10-31 EDT)
 
-Verified against main `6d1e320d` through #351. The [operator evidence](follow-up-21.md)
-and [acceptance snapshot](../ops/README.md#follow-up-21-acceptance-snapshot-2026-10-31-edt)
-pin all seven deliveries #345–#351. The [follow-up 20 register](../../tests/handover/testdata/history/follow-up-21/register20.md)
-retains its #344 cutoff; the earlier reports and source inventories stay frozen.
-`TestHandover_Followup21Claims` checks current dispositions separately.
-**No new decision: D-133 remains the latest.** D-121, D-122, D-124 and D-133
-remain process / test-acceptance decisions. No decision row changes this cut.
+Verified against main `45209609` through #356. The [operator evidence](follow-up-22.md)
+and [acceptance snapshot](../ops/README.md#follow-up-22-acceptance-snapshot-2026-10-31-edt)
+pin all five deliveries #352–#356. The [follow-up 21 register](../../tests/handover/testdata/history/follow-up-22/register21.md)
+retains its #351 cutoff; original claims, source inventories and earlier frozen
+reads stay unchanged. `TestHandover_Followup22Claims` checks this cut separately.
+D-134 records netlab 21's assessments; **D-135 is provisional — pending the
+owner's confirmation**. Earlier decision rows stay frozen. D-133's attribution
+process does not establish the cause of historical overruns: #356 did not
+reproduce an install overrun under controlled CPU contention.
 
 | Decision | Operator meaning and delivery boundary |
 |---|---|
@@ -107,6 +109,8 @@ remain process / test-acceptance decisions. No decision row changes this cut.
 | D-131 | #335's TEST ONLY WithTestOnlyGrantEligibilityReaderFactory on httpwire.Open substitutes the lease-issuance reader once per renewal transaction. Default leases.DBEntitlementReader; a nil reader fails closed. No production config / env / HTTP surface. Desired-state compilation retains its production reader, keeping bindings/generation unchanged. #343 composes the TEST ONLY FVPN_E2E_GRANT_SEAM=1 control and exports the seam (7/0/0 twice); central-seam blocker closed, assembled AT10 pending isolation 10. |
 | D-132 | Product tests pin AT evidence only at immutable docs/e2e/at/<lane>/history/<follow-up>/ paths, never living roots. Two internal/fleetupdate/d062_integration_test.go reads broke the chain; #337's dated one-file exception pins the follow-up 9 archive. Fleet-update 13 (#340) closes the lane follow-up with byte-identical owned testdata, explicit empty-result failure and a package-wide mutable-reference guard. Evidence hygiene does not promote acceptance. |
 | D-133 | A failed live timing gate is attributed before a delivery is accepted. The lane runs back-to-back A/B on the same host: unchanged main vs the branch, in order A, B, A, B, on a CPU-quiet host defined by runnable queue and idle, never by load average. Retain full p50 / p90 / p99 / max over completed guards, list failed operations separately, and record host state per leg. If the branch is worse, the lane fixes its own regression; “outside my ownership” is accepted only with that A/B and routes to the owner with both distributions. If both pass under equal quiet conditions, attribute the failure to host contention and proceed with the distributions retained. A product change never merges on an ownership claim alone. Decided 12:4x EDT, applied 14:0x EDT on #344; process / test-acceptance decision, no product value changed. See the [retained application and measured limits](follow-up-20.md#agent-core-28--344-historical-writer-still-unattributed). |
+| D-134 | Decided 16:0x EDT, 2026-10-31, from netlab 21 (#355). Absolute expiry reserves 100 ms for installation plus 1 ms truncation: conservative transition window [D−101 ms, D]. Every pre-D and renewal loss stays counted; never claim literal zero pre-D loss. Retain the atomic outer guard and report the full p50 / p90 / p99 / max distribution per run; historical 52.596 ms is a measurement, not a guarantee. An install overrun never opens the guard: baseline atomically replaces it with closed generation-0 rules. D-104 / D-120 / AT13 / AT29 predicates unchanged. |
+| D-135 | 17:2x EDT, 2026-10-31 — **provisional — pending the owner's confirmation**, from agent-core 29 request 2 (#356). A failed Apply installs the node-wide generation-0 baseline by design; no previous-generation restoration, revocation always preserved. Every member closes, and the admitted sibling returns with the next successful Apply. Repeated failures keep baseline indefinitely; 100 ms is an install budget, not an outage ceiling. Proposed AT02 positive control asserts revoked-source drop and brackets the sibling outage baseline→recovery ending at the next successful Apply, every loss counted; the bracket is reported, never waived. Historical AT02 stays failed. Any stronger availability guarantee is a separate enforcement design under D-133. Owner confirmation remains required. |
 
 Current contract is revision 14: OpenAPI `1.10.0`, `50` operations (#289).
 Wire-members follow-up 11 (#297) registers `revokeMemberGrant` at
@@ -136,28 +140,30 @@ the SQL shortcut stays labelled.
 | ISO-F6-03 | OPEN — real product defect | #350 fresh D-104 passes, but historical 96 / 65 / 41 stays failed and its writer unattributed. #344 restart proofs do not identify that writer retrospectively. |
 | D-087 central seam | CLOSED | #343 TEST ONLY composed seam, two fixed-generation runs 7/0/0, 3,980 / 4,112 ms. |
 | D-087 assembled AT10 | CLOSED | #350 real transition, AT10 PASS 9 / 0 / 0; 962.448 ms, generation 13 and 297 wire hashes byte-identical. |
-| Updates F10-01 | CLOSED | #343 aligned shared fixture plus #346 regular AT23–AT27 5 / 5 measurement, including physical AT26 rollback witnessed by AT27. |
+| Updates F10-01 | CLOSED | #343 aligned fixture plus #346 regular AT23–AT27 5 / 5; #353 closes the installer-side reconciliation, no behaviour change, privileged 13 / 13. |
 | Updates F10-02 | CLOSED | #341 generated reporting, #346 no-adapter installer 27 / 27 and 13 result POSTs; #351 config-shape proof. No reporting-field divergence. |
 | Members F10-02 | HISTORICAL FAIL — unattributed | #348 new finite-expiry row passes 186 / 186; the unreadable historical sample stays failed in the follow-up 10 archive. Re-measurement delivered; no retrospective fix. |
 | Members F10-03 | HISTORICAL FAIL — unattributed | #348 new cache row passes, AT20 blocked 81 / 0 / 0 with 39 / 39 traces; #345 documents positive-cache semantics. Historical missing responder remains unrecoverable. |
-| F8-02 / native MTU 1280 | OPEN — unattributed | #348 recurring dual / 1280 failure: 13,013 / 64,064 bytes in 12,010 ms over direct P2P IPv6 underlay, distinct from #343 IPv4 capture. Both underlays → netlab 21; no global MTU fix or IPv6 service claim. |
-| F18-01 | OPEN — classification confirmation | #346 / #351 retain the intended D-125 stopped-producer 1 / 1 / 2 negative; devstack 21 confirmation remains pending. Historical failure stays failed. |
-| D-133 measured limits | OPEN — not defects of record | Literal zero pre-D loss and historical 52.596 ms outer ceiling remain unmet. #350 adds the independent 968-guard sample (outer max 52.93 ms) and one counted pre-D ingress loss. Netlab 21 assessment; no tolerance requested. Earlier failed Apply 712 (215.891 ms) → agent-core 29 under D-133. |
+| F8-02 / native MTU 1280 | OPEN — common mechanism established | #355 captures IPv6 reverse oversized-datagram loss beyond enforcement, consistent with #343 IPv4: 1,340 + 20 = 1,360 bytes. Receive-link rejection is the supported inference; native capture pending devstack 22. No global MTU / MSS fix. Historical native failure remains failed. |
+| F18-01 | INTENDED D-125 NEGATIVE | #346 / #351 retain 1 / 1 / 2; #352 explicitly documents stopped-producer negative coverage. Historical failed candidate-success row stays failed; no passing upgrade. |
+| D-133 measured limits | ASSESSED — D-134 | #355 records [D−101 ms, D] reserve and full guard distributions; every pre-D / renewal loss counted, no fixed historical 52.596 ms ceiling. Predicates unchanged; no tolerance or retrospective pass. |
 | Dependabot #22 | OPEN — dependency hygiene | #349: minimatch < 11.0.1 / GHSA-g3hv-75wg-m249, development only, no production-bundle path. Audit fix changes nothing; 11.0.3 blanket override breaks jsx-a11y after clean npm ci. Dependency files byte-identical; owner disposition pending, not a product defect. |
 | Artifact-origin question | CLOSED by measurement | #346 no rejection; private / CGNAT exceptions only, measured non-private origin needs no exception. No policy or hosting change. |
 | Updates F11-02 | CLOSED | #351 corrects offline-install documentation: retained verified archive on initial / same-release installs; only absence downloads the signed URL. |
-| Updates F11-01 | OPEN — shared wrapper | #346 shared wrapper exits 64 without TEST ONLY --allow-loopback; explicit opt-in request → devstack 21. Separate from members F11-01. |
+| Updates F11-01 | CLOSED — fix + measurement | #352 shared installerSpec.AllowLoopback plus exact local ControlURL gate; TEST ONLY, false elsewhere. Run 33b9621a 3 / 0 / 0, install exit 0, generated result_url unchanged, certificate-free 403 / authenticated invalid body 400. Updates 11 27 / 27 stands. |
 | F9-INFLIGHT | OPEN — inherent backend finding, documented | #345 late upstream reply before the 10 s timeout replaces newer cache data. No exposed setting fixes insertion ordering; TTL is a maximum lifetime. |
-| Members F11-01 | OPEN — transport gap | #348 AT01 selected route carries five member packets, no node / origin receipt → devstack 21. |
-| Members F11-02 | OPEN — readiness gate | #348 D-077 positive probe starts at generation 10 with zero member grants / AWAITING → members harness readiness. |
-| Members F11-03 | OPEN — cause unattributed | #348 admitted sibling hits baseline during generation-13 failed Applies with HEALTH_CHECK_FAILED → agent-core 29 / devstack 21 / netlab 21. |
+| Members F11-01 | OPEN — bounded transport gap | #352 / #355 bound after inner member egress and before observable inner node ingress; native AT01 route is outside the kernel fixture. Route correlation pending devstack / members. |
+| Members F11-02 | OPEN — readiness gate | #348 generation-10 zero grants / AWAITING positive probe remains failed; #352 D-102 serving/populated-lease prerequisite documented. Members 12 harness gate pending. |
+| Members F11-03 | OPEN — stage established, cause unproven | #352 eight over-budget install_ok=false Applies, no verification; #355 node-wide rollback/sibling loss measured; #356 controlled contention does not reproduce overrun. AT02 remains failed. Expectation rewrite under provisional D-135 pending members 12 and owner confirmation. |
+| Install-overrun cause | OPEN — unproven | #356 six interventions, 40 loaded Applies each, up to 384 workers / 24 CPUs / 0 % idle; max render→installed 53.133 ms. Historical correlation is not causation; loaded meter / restart / expiry failures remain undiagnosed. Command-lifecycle evidence → netlab 22. |
 
 AT11 real platform routes, AT13 full fault matrix including physical arm64,
 AT29 / AT31 resources, OS reboot, power loss, real platform clients and
 QUIC / PMTU tooling remain open. Production blocked_response_ttl and commercial
-feed approval remain the owner's decisions. The two D-133 limits remain for
-netlab 21; no later lane's results enter this #351 cut. See
-[the full current evidence](follow-up-21.md).
+feed approval remain the owner's decisions. D-135 confirmation is an explicit
+owner decision; native capture, readiness and consumer labelling remain with
+devstack 22 / members 12 / isolation 11 / netlab 22. No later lane's results
+enter this #356 cut. See [the full current evidence](follow-up-22.md).
 
 [r17](../reviews/r17-rev14-d104-d117-review.md) and
 [r16](../reviews/r16-rev13-d089-d099-review.md) remain byte-identical archives.

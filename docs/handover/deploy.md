@@ -1,7 +1,7 @@
 # Production Deployment Runbook (`docs/handover/deploy.md`)
 
-**Current cut — [follow-up 21](follow-up-21.md) (2026-10-31 EDT):** Through #351: positive-cache limits, retained verified install archives and Dependabot #22 status are documented. Regular AT23–AT27 and assembled D-087 AT10 pass; historical failures remain frozen.
-Previous cut: [follow-up 20](follow-up-20.md), through #344.
+**Current cut — [follow-up 22](follow-up-22.md) (2026-10-31 EDT):** Through #356: shared installer loopback fixed; F8-02 mechanism captured on both underlays; install-overrun cause unproven. D-134 expiry semantics and provisional D-135 node-wide rollback are recorded; historical failures stay failed.
+Previous cut: [follow-up 21](follow-up-21.md), through #351.
 
 Installer 7 reporting inputs are required: a validated HTTPS control origin
 (`--control-url`) and its readable server CA bundle (`--server-ca`). Generated

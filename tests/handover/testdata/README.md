@@ -119,3 +119,16 @@ no members 11, isolation 10 or updates 11 living root is copied or read.
 Historical owner archives are verified directly: members 10 (35 files),
 updates 10 (39), isolation 9 (86), and both isolation 10 attempts (92 / 98).
 The live scope-review manifest remains separate from dated claims.
+
+Follow-up 22 fixes main `45209609`, through #356, with five exact roadmap rows
+in `followup22-main.json` and 22 exact prose/manifest snapshots in
+`followup22-snapshots.json`. Eight excerpts freeze follow-up 21's remaining
+register/entrypoint reads; its 21 assertions, seven rows, 13 original snapshots
+and 350 owner-archive files remain intact. Dated installer 8 / netlab 21 /
+agent-core 29 hand-offs and devstack 21 prose/answers are frozen with full-source
+hashes and byte offsets. No living raw AT or current netlab/agent JSON is read.
+The 114 devstack follow-up 20 run files and 82 netlab follow-up 20 archived
+files are checked by their manifests (four unscoped devstack prose files use
+exact owned snapshots); the manifest's provenance paths are never read.
+D-134 and provisional D-135 are registered separately from historical outcomes.
+Current owned-document digests in scope-review remain live integrity checks.
