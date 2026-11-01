@@ -87,3 +87,17 @@ read before stack reset. Their four-field stage/time projection is pinned in
 It is separate from the byte-identical root archive: stage brackets cannot be
 relabeled as direct command durations or termination evidence. The installer
 journal was not retained after teardown. All previous archives remain untouched.
+
+## Follow-up 14 archive — 2026-11-01
+
+Before any follow-up 14 gate or lab execution, all **48** root files on main
+`f680d6ddb8fd19979c0471a2ce06ffc6e16c7cd2` were copied byte-identically to
+[follow-up 13](history/follow-up-13/ARCHIVE.md), with the same
+[SHA256SUMS](history/follow-up-13/SHA256SUMS) manifest shape as follow-up 12.
+Every copy was compared with its source main blob. Run
+`759d244a-2dc4-460c-9f82-e37ce0ac7560` is the immutable stop comparison baseline;
+its product baseline is `5bd751026073444087b32ac2a7115f8566104f8b`.
+Updates F13-01 stays unobserved in that run. Follow-up-13-startup and all earlier
+archives remain untouched. No source file is moved or compressed: existing
+links keep their plain-file targets. New digest-dependent consumers must pin
+history paths only. This archive and audit are committed before any gate or lab.
