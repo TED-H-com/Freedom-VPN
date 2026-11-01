@@ -128,7 +128,8 @@ func (l *live) populatedHold(r *record, name string, count, capacity int) {
 	if name == "sibling-removal" || name == "sole-member" {
 		at := time.Now().UTC()
 		mutation := l.patchMember(r, l.b, map[string]any{"admin_suspended": true, "suspension_reason": "TEST ONLY populated hold member revocation"})
-		ev["member_revocation"] = map[string]any{"member_id": l.b.member, "started_at": at, "completed_at": time.Now().UTC(), "status": mutation.status, "body": json.RawMessage(mutation.body)}
+		completed := time.Now().UTC()
+		ev["member_revocation"] = map[string]any{"member_id": l.b.member, "started_at": at, "completed_at": completed, "status": mutation.status, "body": json.RawMessage(mutation.body)}
 		if name == "sole-member" {
 			closed := l.wait(15*time.Second, func() bool {
 				return l.count(`SELECT count(*) FROM node_generation_holds WHERE id=$1 AND end_reason='members_revoked'`, incident) == 1
@@ -139,7 +140,7 @@ func (l *live) populatedHold(r *record, name string, count, capacity int) {
 			// A later matching generation may legitimately close the incident; require
 			// an original post-revocation hold sample before claiming survivor coverage.
 			held := l.wait(12*time.Second, func() bool {
-				return l.count(`SELECT count(*) FROM node_generation_holds h JOIN node_generation_hold_reports s ON s.hold_id=h.id JOIN node_observations o ON o.node_id=s.node_id AND o.incarnation_id=s.incarnation_id AND o.report_id=s.report_id WHERE h.id=$1 AND h.ended_at IS NULL AND o.received_at>$2 AND EXISTS(SELECT 1 FROM serving_lease_members lm JOIN members m ON m.id=lm.member_id WHERE lm.lease_id=s.lease_id AND m.id<>$3 AND m.status NOT IN ('suspended','closed') AND NOT m.admin_suspended)`, incident, at, l.b.member) > 0
+				return l.count(`SELECT count(*) FROM node_generation_holds h JOIN node_generation_hold_reports s ON s.hold_id=h.id JOIN node_observations o ON o.node_id=s.node_id AND o.incarnation_id=s.incarnation_id AND o.report_id=s.report_id WHERE h.id=$1 AND h.ended_at IS NULL AND o.received_at>$2 AND EXISTS(SELECT 1 FROM serving_lease_members lm JOIN members m ON m.id=lm.member_id WHERE lm.lease_id=s.lease_id AND m.id<>$3 AND m.status NOT IN ('suspended','closed') AND NOT m.admin_suspended)`, incident, completed, l.b.member) > 0
 			})
 			ev["survivor_hold_observed"] = held
 			if !held {
