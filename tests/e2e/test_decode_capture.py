@@ -40,8 +40,6 @@ class HeaderOnly(unittest.TestCase):
         ptb=bytes([0x60,0,0,0])+struct.pack('!H',8)+bytes([58,64])+bytes(32)+bytes([2,0,0,0])+struct.pack('!I',1280)
         self.assertEqual(decode_ip(ptb,lambda _: 'endpoint')['icmp']['mtu'],1280)
 
-if __name__=='__main__':
-    unittest.main()
 
 class DNSHeaderOnly(unittest.TestCase):
     def test_closed_idna_wire_and_nonfixture_rejection(self):
@@ -67,3 +65,6 @@ class NativeDebugAllowlist(unittest.TestCase):
         self.assertEqual(got[0]['family'],'ipv6')
         self.assertNotIn('PRIVATE',json.dumps(got))
         self.assertNotIn('2001:db8',json.dumps(got))
+
+if __name__=='__main__':
+    unittest.main()

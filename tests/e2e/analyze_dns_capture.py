@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """TEST ONLY exact synthetic DNS reply joins; never infer client acceptance."""
 import argparse
-from collections import Counter
+import hashlib
+import re
 import json
 from pathlib import Path
 from analyze_native_capture import offsets, bound
@@ -10,14 +11,26 @@ from analyze_native_capture import offsets, bound
 def analyze(root):
     source=json.loads((root/'native-dns-delivery.json').read_text())
     notes={o['name']:json.loads(o['detail']) for o in source['observations'] if o['name'] in ('capture','decode','rr','idna-udp','idna-tcp')}
-    ev=notes['capture']; checks={Path(c['file']).stem:c for c in notes['decode']};packets={};captures={}
+    ev=notes['capture']; supplements={}
+    supplement=root/'capture-statistics-readback.json'
+    if supplement.exists():
+        supplements={o['name']:json.loads(o['detail']) for o in json.loads(supplement.read_text())['observations']}
+    checks={Path(c['file']).stem:c for c in notes['decode']};packets={};captures={}
     for role,p in ev['points'].items():
         rows=[json.loads(x) for x in (root/'headers'/'native-dns-delivery'/(role+'.headers.jsonl')).read_text().splitlines()]
         check=checks[role]
+        original=p
+        if role in supplements:
+            fix=supplements[role];assert fix['capture_id']==ev['id']
+            raw=fix['statistics'].encode();assert hashlib.sha256(raw).hexdigest()==fix['sha256'] and len(raw)==fix['bytes']
+            for label,key in [('captured','captured'),('received by filter','received_by_filter'),('dropped by kernel','kernel_drops')]:
+                match=re.search(r'(?m)^(\d+) packets? '+label+r'$',fix['statistics'])
+                assert match and int(match[1])==fix[key]
+            p=dict(p,captured=fix['captured'],kernel_drops=fix['kernel_drops'],statistics_ok=True)
         complete=p['process_stopped'] and p['statistics_ok'] and p['kernel_drops']==0 and p['captured']==check['records']==len(rows) and check['header_errors']==check['snap_truncated_records']==0 and check['file_complete']
         assert complete,role+' capture incomplete'
         off=offsets(ev,role)
-        captures[role]=dict(complete=complete,records=len(rows),clock_offsets=off)
+        captures[role]=dict(complete=complete,records=len(rows),clock_offsets=off,original_statistics_ok=original['statistics_ok'],supplement_used=role in supplements)
         (root/'headers'/'native-dns-delivery'/(role+'.bounds.jsonl')).write_text(''.join(json.dumps(bound(x,off),separators=(',',':'))+'\n' for x in rows))
         links={link['ifindex']:link['ifname'] for link in ev['samples'][0]['points'][role]['links']}
         packets[role]=[dict(bound(x,off),interface=links.get(x['interface_index'],'unknown'),packet_type=x['packet_type'],src=x['src'],dst=x['dst'],transport=x.get('udp',x.get('tcp')),dns=x['dns']) for x in rows if 'dns' in x]

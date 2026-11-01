@@ -6,14 +6,15 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
-	"github.com/google/uuid"
-	"golang.org/x/net/dns/dnsmessage"
 	"net"
 	"net/netip"
 	"os"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/google/uuid"
+	"golang.org/x/net/dns/dnsmessage"
 )
 
 type Event struct {

@@ -3,13 +3,14 @@ package dnsrelay
 import (
 	"crypto/sha256"
 	"fmt"
-	"golang.org/x/net/dns/dnsmessage"
 	"net"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 	"time"
+
+	"golang.org/x/net/dns/dnsmessage"
 )
 
 func TestAT20_TraceRetainsMetadataWithoutQueryOrAddress(t *testing.T) {

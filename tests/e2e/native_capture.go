@@ -210,7 +210,7 @@ func (c *NativeCapture) Stop(ctx context.Context, directory string) (NativeCaptu
 func parseNativeCaptureStats(raw string) (int, int, int, bool) {
 	counts := []int{-1, -1, -1}
 	for i, label := range []string{"packets captured", "packets received by filter", "packets dropped by kernel"} {
-		match := regexp.MustCompile(`(?m)^(\d+) ` + label + `$`).FindStringSubmatch(raw)
+		match := regexp.MustCompile(`(?m)^(\d+) ` + strings.Replace(label, "packets", "packets?", 1) + `$`).FindStringSubmatch(raw)
 		if len(match) != 2 {
 			return counts[0], counts[1], counts[2], false
 		}

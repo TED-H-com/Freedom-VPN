@@ -1043,3 +1043,27 @@ interval safely below its remaining TTL after accounting for rounding and
 command overhead. A later TTL-zero or too-short sample cannot be silently retried
 to replace this failed combined row. No negative TTL extension or cache flush
 is exported, and the original F12-03 result stays failed.
+
+**Request 5 / F4-05 / F4-07:** the positive IDNA fixture is delivered:
+`ProbeNativeIDNA(ctx, tcp)` converts the closed U-label, checks its A-label,
+and probes it through the native stub. The [dated wire evidence](runs/2026-11-01/followup23/9bb2098e-1c6f-48a8-9fbd-fd99bd9fc49e/analysis.md)
+records positive A answers over **UDP and TCP, 1 ms each**, TTL **5 / 4**,
+matching the controlled origin. Both replies join primary egress, node forwarding,
+member tunnel ingress and local-stub output. The original capture gate failure
+(singular tcpdump statistics) remains failed; a separate same-capture readback
+proves one secondary packet / zero drops, and the parser regression is fixed.
+No traffic retry was used. Production automatic nameserver distribution remains
+outside this TEST ONLY `ConfigureNativeDNS` integration; operator/platform
+Private DNS, browser DoH and Unicode UI checks remain outstanding.
+
+**Request 12 / F12-04:** `StartNativeDNSCapture`, opaque resolver query/reply
+hashes, wire IDs and the closed DNS-header decoder now observe the previously
+missing relay-send → node → member tunnel → local-stub segment. The [exact joins](runs/2026-11-01/followup23/9bb2098e-1c6f-48a8-9fbd-fd99bd9fc49e/dns-delivery-analysis.json)
+show the fresh RR reply at primary packet **4**, node **14/15**, member tunnel
+**15**, and a reserialized local response **16**. This new query succeeds in
+**2 ms**; it does **not** reproduce or close the historical **5,001 ms SERVFAIL**.
+The historic responder and cause remain **unattributed / unproven** because those
+interfaces were not captured then. Members owns using the export around its
+original AT20 query and preceding mutations; a successful relay socket write
+is still not proof of client delivery or processing. No AdGuard/cache/transport
+cause is inferred, and no query is repeated to replace the failed row.

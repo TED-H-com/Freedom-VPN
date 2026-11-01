@@ -10,10 +10,10 @@ import (
 	"os/exec"
 	"regexp"
 	"strconv"
-
-	"github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/nativecapture"
 	"strings"
 	"time"
+
+	"github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/nativecapture"
 )
 
 // PrepareNativeUnderlay attaches a dedicated IPv6-only bridge to the real node
