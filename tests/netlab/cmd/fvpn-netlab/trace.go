@@ -2,9 +2,11 @@ package main
 
 import (
 	"context"
+	"crypto/sha256"
 	"encoding/json"
 	"errors"
 	"flag"
+	"fmt"
 	"io"
 	"log/slog"
 	"os"
@@ -36,10 +38,12 @@ func traceNow() traceStamp {
 }
 
 type traceBatch struct {
-	Kind  string     `json:"kind"`
-	Start traceStamp `json:"start"`
-	End   traceStamp `json:"end"`
-	OK    bool       `json:"ok"`
+	Kind   string     `json:"kind"`
+	Start  traceStamp `json:"start"`
+	End    traceStamp `json:"end"`
+	OK     bool       `json:"ok"`
+	Script string     `json:"test_only_script,omitempty"`
+	SHA256 string     `json:"test_only_sha256,omitempty"`
 }
 type traceExecutor struct {
 	enforce.System
@@ -48,11 +52,14 @@ type traceExecutor struct {
 	// candidate, guard and rollback still execute in the real kernel.
 	FailVerificationRead bool
 	FaultInjected        bool
+	FaultObserved        *traceStamp
 }
 
 func (e *traceExecutor) Output(ctx context.Context, name string, args ...string) ([]byte, error) {
 	if e.FailVerificationRead && !e.FaultInjected && name == "nft" && len(e.Batches) > 0 && e.Batches[len(e.Batches)-1].Kind == "guard_release" {
 		e.FaultInjected = true
+		observed := traceNow()
+		e.FaultObserved = &observed
 		return nil, errors.New("TEST ONLY injected post-release verification read failure")
 	}
 	return e.System.Output(ctx, name, args...)
@@ -71,7 +78,7 @@ func (e *traceExecutor) NftBatch(ctx context.Context, script string) error {
 	}
 	start := traceNow()
 	err := e.System.NftBatch(ctx, script)
-	e.Batches = append(e.Batches, traceBatch{Kind: kind, Start: start, End: traceNow(), OK: err == nil})
+	e.Batches = append(e.Batches, traceBatch{Kind: kind, Start: start, End: traceNow(), OK: err == nil, Script: script})
 	return err
 }
 func tracedApply(ctx context.Context, m enforce.Model, prev map[string]enforce.CounterValue, dst io.Writer) (enforce.ApplyResult, error) {
@@ -79,26 +86,45 @@ func tracedApply(ctx context.Context, m enforce.Model, prev map[string]enforce.C
 }
 
 func tracedApplyExecutor(ctx context.Context, ex *traceExecutor, m enforce.Model, prev map[string]enforce.CounterValue, dst io.Writer) (enforce.ApplyResult, error) {
+	input, encodeErr := json.Marshal(m)
+	if encodeErr != nil {
+		return enforce.ApplyResult{}, encodeErr
+	}
+	var capture enforce.ApplyCaptureForTest
+	ctx = enforce.WithApplyCaptureForTest(enforce.WithCommandLifecycleForTest(ctx), &capture)
 	start := traceNow()
 	res, err := enforce.Apply(ctx, ex, m, prev)
 	end := traceNow()
+	// Hash/encode only after the operation, never inside an installed guard.
+	for i := range ex.Batches {
+		ex.Batches[i].SHA256 = fmt.Sprintf("%x", sha256.Sum256([]byte(ex.Batches[i].Script)))
+	}
+	rendered, encodeErr := json.Marshal(capture)
+	if encodeErr != nil {
+		return res, encodeErr
+	}
 	var reason enforce.Reason
 	var check *enforce.CheckError
 	if errors.As(err, &check) {
 		reason = check.Reason
 	}
 	row := struct {
-		Event         string                   `json:"event"`
-		Generation    uint64                   `json:"generation,string"`
-		Start         traceStamp               `json:"start"`
-		End           traceStamp               `json:"end"`
-		Verified      bool                     `json:"verified"`
-		Error         enforce.Reason           `json:"error,omitempty"`
-		Deadline      enforce.DeadlineEvidence `json:"deadline"`
-		Batches       []traceBatch             `json:"batches"`
-		Timing        *enforce.TimingEvidence  `json:"timing"`
-		FaultInjected bool                     `json:"test_read_fault_injected,omitempty"`
-	}{"apply", m.Generation, start, end, res.Verified, reason, res.Deadline, ex.Batches, res.Evidence.TimingEvidence(), ex.FaultInjected}
+		Event             string                   `json:"event"`
+		Generation        uint64                   `json:"generation,string"`
+		Start             traceStamp               `json:"start"`
+		End               traceStamp               `json:"end"`
+		Verified          bool                     `json:"verified"`
+		Error             enforce.Reason           `json:"error,omitempty"`
+		Deadline          enforce.DeadlineEvidence `json:"deadline"`
+		Batches           []traceBatch             `json:"batches"`
+		Timing            *enforce.TimingEvidence  `json:"timing"`
+		FaultInjected     bool                     `json:"test_read_fault_injected,omitempty"`
+		TestInput         json.RawMessage          `json:"test_only_input_model"`
+		TestInputSHA256   string                   `json:"test_only_input_sha256"`
+		TestRender        json.RawMessage          `json:"test_only_render"`
+		TestFaultObserved *traceStamp              `json:"test_only_fault_observed,omitempty"`
+		TestRenderSHA256  string                   `json:"test_only_render_sha256"`
+	}{"apply", m.Generation, start, end, res.Verified, reason, res.Deadline, ex.Batches, res.Evidence.TimingEvidence(), ex.FaultInjected, input, fmt.Sprintf("%x", sha256.Sum256(input)), rendered, ex.FaultObserved, fmt.Sprintf("%x", sha256.Sum256(rendered))}
 	if logErr := json.NewEncoder(dst).Encode(row); err == nil && logErr != nil {
 		return res, logErr
 	}

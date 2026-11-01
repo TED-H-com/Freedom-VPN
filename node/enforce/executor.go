@@ -78,7 +78,7 @@ func (System) Output(ctx context.Context, name string, args ...string) ([]byte, 
 	var buf bytes.Buffer
 	cmd.Stdout = &buf
 	cmd.Stderr = &buf
-	if err := cmd.Run(); err != nil {
+	if err := runCommand(ctx, cmd, name); err != nil {
 		return nil, &CmdError{Cmd: name + " " + strings.Join(args, " "), Err: err, Out: buf.String()}
 	}
 	return buf.Bytes(), nil
@@ -90,7 +90,7 @@ func runStdin(ctx context.Context, script, name string, args ...string) error {
 	var buf bytes.Buffer
 	cmd.Stdout = &buf
 	cmd.Stderr = &buf
-	if err := cmd.Run(); err != nil {
+	if err := runCommand(ctx, cmd, name); err != nil {
 		return &CmdError{Cmd: name, Err: err, Out: buf.String()}
 	}
 	return nil
