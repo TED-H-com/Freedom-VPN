@@ -34,6 +34,13 @@ func TestE2E_Followup25Native(t *testing.T) {
 		t.Fatal("explicit kernel or userspace arm required")
 	}
 	if arm == "userspace" {
+		t.Cleanup(func() {
+			clean, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+			defer cancel()
+			if err := exec.CommandContext(clean, "docker", "exec", l.node, "rm", "-f", "/var/lib/vpn-node/e2e/test-only-userspace-wireguard").Run(); err != nil {
+				t.Error("remove diagnostic marker:", err)
+			}
+		})
 		// Entry point has not enrolled or launched its daemon on this fresh stack.
 		if err := exec.CommandContext(t.Context(), "docker", "exec", l.node, "touch", "/var/lib/vpn-node/e2e/test-only-userspace-wireguard").Run(); err != nil {
 			t.Fatal(err)
